@@ -51,7 +51,7 @@
 #						   compensate for a change of
 #						   broadcast address on any "detect"
 #						   interface.
-#	   shorewall show <chain>		   Display the rules in a <chain>
+#	   shorewall show <chain> [ <chain> ... ]  Display the rules in each <chain> listed
 #	   shorewall show log			   Print the last 20 log messages
 #	   shorewall show connections		   Show the kernel's connection
 #						   tracking table
@@ -590,7 +590,7 @@ usage() # $1 = exit status
     echo "   reset"
     echo "   restart"
     echo "   save"
-    echo "   show [<chain>|classifiers|connections|log|nat|tc|tos]"
+    echo "   show [<chain> [ <chain> ... ]|classifiers|connections|log|nat|tc|tos]"
     echo "   start"
     echo "   stop"
     echo "   status"
@@ -738,26 +738,29 @@ case "$1" in
 	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $1 $2 $3
 	;;
     show|list)
-	[ $# -gt 2 ] && usage 1
 	case "$2" in
 	connections)
+	    [ $# -gt 2 ] && usage 1
 	    echo "Shorewall-$version Connections at $HOSTNAME - `date`"
 	    echo
 	    cat /proc/net/ip_conntrack
 	    ;;
 	nat)
+	    [ $# -gt 2 ] && usage 1
 	    echo "Shorewall-$version NAT at $HOSTNAME - `date`"
 	    echo
 	    show_reset
 	    iptables -t nat -L -n -v
 	    ;;
 	tos|mangle)
+	    [ $# -gt 2 ] && usage 1
 	    echo "Shorewall-$version TOS at $HOSTNAME - `date`"
 	    echo
 	    show_reset
 	    iptables -t mangle -L -n -v
 	    ;;
 	log)
+	    [ $# -gt 2 ] && usage 1
 	    get_config
 	    echo "Shorewall-$version Log at $HOSTNAME - `date`"
 	    echo
@@ -766,20 +769,26 @@ case "$1" in
 	    packet_log 20
 	    ;;
 	tc)
+	    [ $# -gt 2 ] && usage 1
 	    echo "Shorewall-$version Traffic Control at $HOSTNAME - `date`"
 	    echo
 	    show_tc
 	    ;;
 	classifiers)
+	    [ $# -gt 2 ] && usage 1
 	    echo "Shorewall-$version Clasifiers at $HOSTNAME - `date`"
 	    echo
 	    show_classifiers
 	    ;;
 	*)
-	    echo "Shorewall-$version Chain $2 at $HOSTNAME - `date`"
+	    shift
+	    
+	    echo "Shorewall-$version `[ $# -gt 1 ] && echo Chains || echo Chain` $* at $HOSTNAME - `date`"
 	    echo
 	    show_reset
-	    iptables -L $2 -n -v
+	    for chain in $*; do
+		iptables -L $chain -n -v
+	    done
 	    ;;
 	esac
 	;;

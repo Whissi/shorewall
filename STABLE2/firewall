@@ -3068,7 +3068,7 @@ add_nat_rule() {
 	    else
 		for adr in $(separate_list $addr); do
 		    if [ -n "$loglevel" ]; then
-			log_rule_limit $loglevel $OUTPUT $logtarget "$ratelimit" "$logtag" -t nat \
+			log_rule_limit $loglevel OUTPUT $logtarget "$ratelimit" "$logtag" -t nat \
 			    $(fix_bang $proto $cli $sports $userandgroup -d $adr $multiport $dports)
 		    fi
 
@@ -3099,7 +3099,7 @@ add_nat_rule() {
 		done
 
 		if [ -n "$loglevel" ]; then
-		    log_rule_limit $loglevel $chain $logtarget "$ratelimit" -t nat
+		    log_rule_limit $loglevel $chain $logtarget "$ratelimit" "$logtag" -t nat
 		fi
 
 		addnatrule $chain $ratelimit $proto -j $target1 # Protocol is necessary for port redirection

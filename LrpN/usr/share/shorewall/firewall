@@ -1646,6 +1646,8 @@ setup_ipsec() {
 
 	for option in $opts; do
 	    case $option in
+		strict)       newoptions="$newoptions --strict" ;;
+		next)         newoptions="$newoptions --next" ;;
 		reqid=*)      newoptions="$newoptions --reqid ${option#*=}" ;;
 		spi=*)        newoptions="$newoptions --spi ${option#*=}" ;;
 		proto=*)      newoptions="$newoptions --proto ${option#*=}" ;;
@@ -4567,27 +4569,15 @@ setup_masq()
 	options=$(separate_list $options)
 	for option in $options; do
 	    case $option in
-		reqid=*)
-		    policy="$policy --reqid ${option#*=}"
-		    ;;
-		spi=*)
-		    policy="$policy --spi ${option#*=}"
-		    ;;
-		proto=*)
-		    policy="$policy --proto ${option#*=}"
-		    ;;
-		mode=*)
-		    policy="$policy --mode ${option#*=}"
-		    ;;
-		tunnel-src=*)
-		    policy="$policy --tunnel-src ${option#*=}"
-		    ;;
-		tunnel-dst=*)
-		    policy="$policy --tunnel-dst ${option#*=}"
-		    ;;
-		*)
-		    fatal_error "Invalid IPSEC option \"$option\""
-		    ;;
+		strict)         policy="$policy --strict" ;;
+		next)           policy="$policy --next" ;;
+		reqid=*)        policy="$policy --reqid ${option#*=}" ;;
+		spi=*)          policy="$policy --spi ${option#*=}" ;;
+		proto=*)        policy="$policy --proto ${option#*=}" ;;
+		mode=*)         policy="$policy --mode ${option#*=}" ;;
+		tunnel-src=*)   policy="$policy --tunnel-src ${option#*=}" ;;
+		tunnel-dst=*)   policy="$policy --tunnel-dst ${option#*=}" ;;
+		*)              fatal_error "Invalid IPSEC option \"$option\"" ;;
 	    esac
 	done
     }

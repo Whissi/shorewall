@@ -16,8 +16,9 @@
 #				option in /etc/shorewall/hosts. 				
 #
 #		OPTIONS,        A comma-separated list of options as follows:
-#		IN OPTIONS,	reqid=<number> where <number> is specified
-#		OUT OPTIONS	using setkey(8) using the 'unique:<number>
+#		IN OPTIONS,
+#		OUT OPTIONS	reqid=<number> where <number> is specified
+#				using setkey(8) using the 'unique:<number>
 #				option for the SPD level.
 #
 #				spi=<number> where <number> is the SPI of
@@ -32,6 +33,11 @@
 #
 #				tunnel-dst=<address>[/<mask>] (only
 #				available with mode=tunnel)
+#
+#				strict  Means that packets must match all rules.
+#
+#				next    Separates rules; can only be used with
+#                                       strict..
 #
 #			Example:
 #				mode=transport,reqid=44

@@ -1857,7 +1857,6 @@ process_accounting_rule() {
     if iptables -A accounting $rule ; then
 	[ "x$rule2" != x ] && run_iptables -A accounting $rule2
 	echo "   Accounting rule" $action $source $dest $proto $port $sport Added
-	fi
     else
 	accounting_error
     fi

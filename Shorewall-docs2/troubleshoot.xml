@@ -13,7 +13,7 @@
       <surname>Eastep</surname>
     </author>
 
-    <pubdate>2004-04-03</pubdate>
+    <pubdate>2004-08-25</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -27,7 +27,8 @@
       1.2 or any later version published by the Free Software Foundation; with
       no Invariant Sections, with no Front-Cover, and with no Back-Cover
       Texts. A copy of the license is included in the section entitled
-      <quote><ulink type="" url="Copyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+      <quote><ulink type="" url="Copyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
 
@@ -48,12 +49,13 @@
       <title>Check the Errata</title>
 
       <para>Check the <ulink url="errata.htm">Shorewall Errata</ulink> to be
-      sure that there isn&#39;t an update that you are missing for your
-      version of the firewall.</para>
+      sure that there isn't an update that you are missing for your version of
+      the firewall.</para>
     </section>
 
     <section>
-      <title>Try Searching the Shorewall Site and Mailing List Archives</title>
+      <title>Try Searching the Shorewall Site and Mailing List
+      Archives</title>
 
       <para>The <ulink url="http://lists.shorewall.net/htdig/search.html">Site
       and Mailing List Archives search facility</ulink> can locate documents
@@ -66,7 +68,7 @@
     Errors</title>
 
     <para>If you receive an error message when starting or restarting the
-    firewall and you can&#39;t determine the cause, then do the following:</para>
+    firewall and you can't determine the cause, then do the following:</para>
 
     <itemizedlist>
       <listitem>
@@ -74,7 +76,7 @@
       </listitem>
 
       <listitem>
-        <para><command>shorewall debug start 2&#62; /tmp/trace</command></para>
+        <para><command>shorewall debug start 2&gt; /tmp/trace</command></para>
       </listitem>
 
       <listitem>
@@ -86,8 +88,8 @@
       </listitem>
 
       <listitem>
-        <para>If you still can&#39;t determine what&#39;s wrong then see the
-        <ulink url="support.htm">support page</ulink>.</para>
+        <para>If you still can't determine what's wrong then see the <ulink
+        url="support.htm">support page</ulink>.</para>
       </listitem>
     </itemizedlist>
 
@@ -103,11 +105,11 @@ Terminated</programlisting>
       <para>A search through the trace for <quote>No chain/target/match by
       that name</quote> turned up the following:</para>
 
-      <programlisting>+ echo &#39;Adding Common Rules&#39;
+      <programlisting>+ echo 'Adding Common Rules'
 + add_common_rules
 + run_iptables -A reject -p tcp -j REJECT --reject-with tcp-reset
 ++ echo -A reject -p tcp -j REJECT --reject-with tcp-reset
-++ sed &#39;s/!/! /g&#39;
+++ sed 's/!/! /g'
 + iptables -A reject -p tcp -j REJECT --reject-with tcp-reset
 iptables: No chain/target/match by that name
 </programlisting>
@@ -129,18 +131,18 @@ iptables: No chain/target/match by that name
         external IP address does not mean that the request will be associated
         with the external interface or the <quote>net</quote> zone. Any
         traffic that you generate from the local network will be associated
-        with your local interface and will be treated as loc-&#62;fw traffic.</para>
+        with your local interface and will be treated as loc-&gt;fw
+        traffic.</para>
       </listitem>
 
       <listitem>
         <para><emphasis role="bold">IP addresses are properties of systems,
         not of interfaces</emphasis>. It is a mistake to believe that your
         firewall is able to forward packets just because you can ping the IP
-        address of all of the firewall&#39;s interfaces from the local
-        network. The only conclusion you can draw from such pinging success is
-        that the link between the local system and the firewall works and that
-        you probably have the local system&#39;s default gateway set
-        correctly.</para>
+        address of all of the firewall's interfaces from the local network.
+        The only conclusion you can draw from such pinging success is that the
+        link between the local system and the firewall works and that you
+        probably have the local system's default gateway set correctly.</para>
       </listitem>
 
       <listitem>
@@ -148,8 +150,9 @@ iptables: No chain/target/match by that name
         interfaces are in the $FW (fw) zone</emphasis>. If 192.168.1.254 is
         the IP address of your internal interface then you can write
         <quote><emphasis role="bold">$FW:192.168.1.254</emphasis></quote> in a
-        rule but you may not write <quote><emphasis role="bold">loc:192.168.1.254</emphasis></quote>.
-        Similarly, it is nonsensical to add 192.168.1.254 to the <emphasis
+        rule but you may not write <quote><emphasis
+        role="bold">loc:192.168.1.254</emphasis></quote>. Similarly, it is
+        nonsensical to add 192.168.1.254 to the <emphasis
         role="bold">loc</emphasis> zone using an entry in
         <filename>/etc/shorewall/hosts</filename>.</para>
       </listitem>
@@ -178,7 +181,8 @@ iptables: No chain/target/match by that name
     <title>Your Network Environment</title>
 
     <para>Many times when people have problems with Shorewall, the problem is
-    actually an ill-conceived network setup. Here are several popular snafus:</para>
+    actually an ill-conceived network setup. Here are several popular
+    snafus:</para>
 
     <itemizedlist>
       <listitem>
@@ -201,9 +205,23 @@ iptables: No chain/target/match by that name
         role="bold">arp_filter</emphasis> option in <filename><ulink
         url="Documentation.htm#Interfaces">/etc/shorewall/interfaces</ulink></filename>
         for all interfaces connected to the common hub/switch. Using such a
-        setup with a production firewall is strongly recommended against.</para>
+        setup with a production firewall is strongly recommended
+        against.</para>
       </listitem>
     </itemizedlist>
+  </section>
+
+  <section>
+    <title>New Device Doesn't Work?</title>
+
+    <para>If you have just added a new device such as VOIP and it doesn't
+    work, be sure that you have assigned it an IP address in your local
+    network and that its default gateway has been set to the IP address of
+    your internal interface. For many of these devices, the simplest solution
+    is to run a DHCP server; running it on your firewall is fine — be sure to
+    set the <emphasis role="bold">dhcp</emphasis> option on your internal
+    interface in <ulink
+    url="Documentation.htm#INterfaces">/etc/shorewall/interfaces</ulink>.</para>
   </section>
 
   <section>
@@ -218,22 +236,23 @@ iptables: No chain/target/match by that name
     <para>I also recommend against setting all of your policies to ACCEPT in
     an effort to make something work. That robs you of one of your best
     diagnostic tools - the <quote>Shorewall</quote> messages that Netfilter
-    will generate when you try to connect in a way that isn&#39;t permitted by
+    will generate when you try to connect in a way that isn't permitted by
     your rule set.</para>
 
-    <para>Check your log (<quote><command>/sbin/shorewall show log</command></quote>).
-    If you don&#39;t see Shorewall messages, then your problem is probably NOT
-    a Shorewall problem. If you DO see packet messages, it may be an
-    indication that you are missing one or more rules -- see <ulink
-    url="FAQ.htm#faq17">FAQ 17</ulink>.</para>
+    <para>Check your log (<quote><command>/sbin/shorewall show
+    log</command></quote>). If you don't see Shorewall messages, then your
+    problem is probably NOT a Shorewall problem. If you DO see packet
+    messages, it may be an indication that you are missing one or more rules
+    -- see <ulink url="FAQ.htm#faq17">FAQ 17</ulink>.</para>
 
     <para>While you are troubleshooting, it is a good idea to clear two
-    variables in <filename><filename>/etc/shorewall/shorewall.conf</filename></filename>:</para>
+    variables in
+    <filename><filename>/etc/shorewall/shorewall.conf</filename></filename>:</para>
 
     <para><programlisting>LOGRATE=
-LOGBURST=&#34;&#34;</programlisting>This way, you will see all of the log
-    messages being generated (be sure to restart shorewall after clearing
-    these variables).</para>
+LOGBURST=""</programlisting>This way, you will see all of the log messages
+    being generated (be sure to restart shorewall after clearing these
+    variables).</para>
 
     <example>
       <title>Log Message</title>
@@ -244,13 +263,14 @@ LOGBURST=&#34;&#34;</programlisting>This way, you will see all of the log
                                 PREC=0x00 TTL=63 ID=5805 DF
                                 PROTO=UDP SPT=1803 DPT=53 LEN=47</programlisting>
 
-      <para>Let&#39;s look at the important parts of this message:</para>
+      <para>Let's look at the important parts of this message:</para>
 
       <itemizedlist>
         <listitem>
           <para>all2all:REJECT - This packet was REJECTed out of the all2all
-          chain -- the packet was rejected under the <quote>all</quote>-&#62;<quote>all</quote>
-          REJECT policy (see <ulink url="FAQ.htm#faq17">FAQ 17</ulink>).</para>
+          chain -- the packet was rejected under the
+          <quote>all</quote>-&gt;<quote>all</quote> REJECT policy (see <ulink
+          url="FAQ.htm#faq17">FAQ 17</ulink>).</para>
         </listitem>
 
         <listitem>
@@ -258,7 +278,8 @@ LOGBURST=&#34;&#34;</programlisting>This way, you will see all of the log
         </listitem>
 
         <listitem>
-          <para>OUT=eth1 - if accepted, the packet would be sent on eth1</para>
+          <para>OUT=eth1 - if accepted, the packet would be sent on
+          eth1</para>
         </listitem>
 
         <listitem>
@@ -266,7 +287,8 @@ LOGBURST=&#34;&#34;</programlisting>This way, you will see all of the log
         </listitem>
 
         <listitem>
-          <para>DST=192.168.1.3 - the packet is destined for 192.168.1.3</para>
+          <para>DST=192.168.1.3 - the packet is destined for
+          192.168.1.3</para>
         </listitem>
 
         <listitem>
@@ -279,7 +301,8 @@ LOGBURST=&#34;&#34;</programlisting>This way, you will see all of the log
       </itemizedlist>
 
       <para>In this case, 192.168.2.2 was in the <quote>dmz</quote> zone and
-      192.168.1.3 is in the <quote>loc</quote> zone. I was missing the rule:</para>
+      192.168.1.3 is in the <quote>loc</quote> zone. I was missing the
+      rule:</para>
 
       <programlisting>#ACTION   SOURCE           DEST                  PROTO   DEST
 #                                                        PORT(S)
@@ -290,26 +313,27 @@ ACCEPT    dmz              loc                   udp     53</programlisting>
   <section>
     <title>Ping Problems</title>
 
-    <para>Either can&#39;t ping when you think you should be able to or are
-    able to ping when you think that you shouldn&#39;t be allowed?
-    Shorewall&#39;s <quote>Ping</quote> Management is <ulink url="ping.html">described
+    <para>Either can't ping when you think you should be able to or are able
+    to ping when you think that you shouldn't be allowed? Shorewall's
+    <quote>Ping</quote> Management is <ulink url="ping.html">described
     here</ulink>. Here are a couple of tips:</para>
 
     <itemizedlist>
       <listitem>
-        <para>Remember that Shorewall doesn&#39;t automatically allow ICMP
-        type 8 (<quote>ping</quote>) requests to be sent between zones. If you
-        want pings to be allowed between zones, you need a rule of the form:</para>
+        <para>Remember that Shorewall doesn't automatically allow ICMP type 8
+        (<quote>ping</quote>) requests to be sent between zones. If you want
+        pings to be allowed between zones, you need a rule of the form:</para>
 
         <programlisting>#ACTION  SOURCE          DEST                  PROTO   DEST
 #                                                      PORT(S)
-ACCEPT&#x00A0;&#x00A0; <emphasis>&#60;source zone&#62;</emphasis>&#x00A0;&#x00A0; <emphasis>&#60;destination zone&#62;</emphasis>&#x00A0;&#x00A0;&#x00A0; icmp&#x00A0;&#x00A0;&#x00A0; echo-request</programlisting>
+ACCEPT&nbsp;&nbsp; <emphasis>&lt;source zone&gt;</emphasis>&nbsp;&nbsp; <emphasis>&lt;destination zone&gt;</emphasis>&nbsp;&nbsp;&nbsp; icmp&nbsp;&nbsp;&nbsp; echo-request</programlisting>
 
         <para>The ramifications of this can be subtle. For example, if you
-        have the following in <filename><ulink url="NAT.htm">/etc/shorewall/nat</ulink></filename>:</para>
+        have the following in <filename><ulink
+        url="NAT.htm">/etc/shorewall/nat</ulink></filename>:</para>
 
         <programlisting>#EXTERNAL   INTERFACE  INTERNAL
-10.1.1.2&#x00A0;&#x00A0;&#x00A0; eth0&#x00A0;&#x00A0;&#x00A0;    130.252.100.18</programlisting>
+10.1.1.2&nbsp;&nbsp;&nbsp; eth0&nbsp;&nbsp;&nbsp;    130.252.100.18</programlisting>
 
         <para>and you ping 130.252.100.18, unless you have allowed icmp type 8
         between the zone containing the system you are pinging from and the
@@ -339,17 +363,19 @@ DROP      net              fw                  icmp    echo-request</programlist
         <orderedlist>
           <listitem>
             <para>your zone definitions are screwed up and the host that is
-            sending the packets or the destination host isn&#39;t in any zone
-            (using an <ulink url="Documentation.htm#Hosts"><filename>/etc/shorewall/hosts</filename></ulink>
+            sending the packets or the destination host isn't in any zone
+            (using an <ulink
+            url="Documentation.htm#Hosts"><filename>/etc/shorewall/hosts</filename></ulink>
             file are you?); or</para>
           </listitem>
 
           <listitem>
             <para>the source and destination hosts are both connected to the
-            same interface and you don&#39;t have a policy or rule for the
-            source zone to or from the destination zone or you haven&#39;t set
-            the <emphasis role="bold">routeback</emphasis> option for the
-            interface in <ulink url="Documentation.htm#Interfaces"><filename>/etc/shorewall/interfaces</filename></ulink>.</para>
+            same interface and you don't have a policy or rule for the source
+            zone to or from the destination zone or you haven't set the
+            <emphasis role="bold">routeback</emphasis> option for the
+            interface in <ulink
+            url="Documentation.htm#Interfaces"><filename>/etc/shorewall/interfaces</filename></ulink>.</para>
           </listitem>
         </orderedlist>
       </listitem>
@@ -364,11 +390,11 @@ DROP      net              fw                  icmp    echo-request</programlist
         need to be configured with their default gateway set to the IP address
         of their nearest firewall interface. One often overlooked aspect of
         routing is that in order for two hosts to communicate, the routing
-        between them must be set up <emphasis role="bold">in both directions</emphasis>.
-        So when setting up routing between <emphasis role="bold">A</emphasis>
-        and <emphasis role="bold">B</emphasis>, be sure to verify that the
-        route from <emphasis role="bold">B</emphasis> back to <emphasis
-        role="bold">A</emphasis> is defined.</para>
+        between them must be set up <emphasis role="bold">in both
+        directions</emphasis>. So when setting up routing between <emphasis
+        role="bold">A</emphasis> and <emphasis role="bold">B</emphasis>, be
+        sure to verify that the route from <emphasis role="bold">B</emphasis>
+        back to <emphasis role="bold">A</emphasis> is defined.</para>
       </listitem>
 
       <listitem>
@@ -380,15 +406,17 @@ DROP      net              fw                  icmp    echo-request</programlist
 
       <listitem>
         <para>Do you have your kernel properly configured? <ulink
-        url="kernel.htm">Click here to see my kernel configuration</ulink>.</para>
+        url="kernel.htm">Click here to see my kernel
+        configuration</ulink>.</para>
       </listitem>
 
       <listitem>
         <para>Shorewall requires the <quote>ip</quote> program. That program
         is generally included in the <quote>iproute</quote> package which
         should be included with your distribution (though many distributions
-        don&#39;t install iproute by default). You may also download the
-        latest source tarball from <ulink url="ftp://ftp.inr.ac.ru/ip-routing">ftp://ftp.inr.ac.ru/ip-routing</ulink>
+        don't install iproute by default). You may also download the latest
+        source tarball from <ulink
+        url="ftp://ftp.inr.ac.ru/ip-routing">ftp://ftp.inr.ac.ru/ip-routing</ulink>
         .</para>
       </listitem>
 
@@ -404,17 +432,77 @@ DROP      net              fw                  icmp    echo-request</programlist
   <section>
     <title>Still Having Problems?</title>
 
-    <para>See the <ulink url="support.htm">Shorewall Support Page</ulink>.</para>
+    <para>See the <ulink url="support.htm">Shorewall Support
+    Page</ulink>.</para>
   </section>
 
   <appendix>
     <title>Revision History</title>
 
-    <para><revhistory><revision><revnumber>1.8</revnumber><date>2004-04-03</date><authorinitials>TE</authorinitials><revremark>Point
-    out that firewall addresses are in the $FW zone.</revremark></revision><revision><revnumber>1.7</revnumber><date>2004-02-02</date><authorinitials>TE</authorinitials><revremark>Add
-    hint about testing from inside the firewall.</revremark></revision><revision><revnumber>1.6</revnumber><date>2004-01-06</date><authorinitials>TE</authorinitials><revremark>Add
-    pointer to Site and Mailing List Archives Searches.</revremark></revision><revision><revnumber>1.5</revnumber><date>2004-01-01</date><authorinitials>TE</authorinitials><revremark>Added
-    information about eliminating ping-generated log messages.</revremark></revision><revision><revnumber>1.4</revnumber><date>2003-12-22</date><authorinitials>TE</authorinitials><revremark>Initial
-    Docbook Conversion</revremark></revision></revhistory></para>
+    <para><revhistory>
+        <revision>
+          <revnumber>1.9</revnumber>
+
+          <date>2004-08-25</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Advice for the networking-challenged.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.8</revnumber>
+
+          <date>2004-04-03</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Point out that firewall addresses are in the $FW
+          zone.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.7</revnumber>
+
+          <date>2004-02-02</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Add hint about testing from inside the
+          firewall.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.6</revnumber>
+
+          <date>2004-01-06</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Add pointer to Site and Mailing List Archives
+          Searches.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.5</revnumber>
+
+          <date>2004-01-01</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Added information about eliminating ping-generated log
+          messages.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.4</revnumber>
+
+          <date>2003-12-22</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Initial Docbook Conversion</revremark>
+        </revision>
+      </revhistory></para>
   </appendix>
 </article>

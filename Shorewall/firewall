@@ -2851,8 +2851,8 @@ get_routed_subnets() # $1 = interface name
 decodeaddr() {
     local x
     local temp=0
-
-    ifs=$IFS
+    local ifs=$IFS
+    
     IFS=.
 
     for x in $1; do
@@ -2882,6 +2882,18 @@ encodeaddr() {
 # Enumerate the members of an IP range
 #
 ip_range() {
+    local first
+    local last
+
+    case $1 in 
+    *-*)
+	;;
+    *)
+	echo $1
+	return
+	;;
+    esac
+
     first=`decodeaddr ${1%-*}`
     last=`decodeaddr ${1#*-}`
 

@@ -57,14 +57,18 @@ list_search() # $1 = element to search for , $2-$n = list
 }
 
 #
-# Function to count list elements
+# Functions to count list elements
 #
 list_count() {
     arg_count() {
 	echo $#
     }
 
-    arg_count `separate_list $1`
+    arg_count `separate_list $@`
+}
+
+list_count1() {
+    echo $#
 }
 
 #
@@ -4420,7 +4424,7 @@ activate_rules()
 		    subnet1=${host1#*:}
 
 		    if list_search $host1 $source_hosts && ! list_search $host1 $routeback; then
-			if [ `list_count $source_hosts` -gt 1 ]; then
+			if [ `list_count1 $source_hosts` -gt 1 ]; then
 			    run_iptables -A $frwd_chain -s ! $subnet1 -o $interface1 -d $subnet1 -j $chain
 			fi
 		    else

@@ -92,9 +92,82 @@ and installing a setup that matches the documentation on this site.
 See the <a href="two-interface.htm">Two-interface QuickStart
 Guide</a> for details.
       <h2><b>News</b></h2>
-      <p><b>1/13/2004 - Shorewall 1.4.9</b> <b><img
- style="border: 0px solid ; width: 28px; height: 12px;"
- src="images/new10.gif" alt="(New)" title=""><br>
+      <p><b>1/30/2004 - Shorewall 1.4.10</b><b> <img alt="(New)"
+ src="images/new10.gif"
+ style="border: 0px solid ; width: 28px; height: 12px;" title=""></b></p>
+      <p>Problems Corrected since version 1.4.9</p>
+      <ol>
+        <li>The column descriptions in the action.template file did not
+match the column headings. That has been corrected.</li>
+        <li>The presence of IPV6 addresses on devices generated error
+messages during [re]start if ADD_IP_ALIASES=Yes or ADD_SNAT_ALIASES=Yes
+are specified in /etc/shorewall/shorewall.conf. These messages have
+been eliminated.</li>
+        <li value="3">The CONTINUE action in /etc/shorewall/rules now
+works
+correctly. A couple of problems involving rate limiting have been
+corrected. These bug fixes courtesy of Steven Jan Springl.</li>
+        <li>Shorewall now tried to avoid sending an ICMP response to
+broadcasts and smurfs.</li>
+        <li>Specifying "-" or "all" in the PROTO column of an action no
+longer causes a startup error. </li>
+      </ol>
+Migragion Issues:<br>
+      <br>
+&nbsp;&nbsp;&nbsp; None.<br>
+      <br>
+New Features:<br>
+      <ol>
+        <li>The INTERFACE column in the /etc/shorewall/masq file may
+now specify a destination list. <br>
+          <br>
+Example:<br>
+          <br>
+&nbsp;&nbsp;&nbsp; #INTERFACE&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; SUBNET&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; ADDRESS<br>
+&nbsp;&nbsp;&nbsp; eth0:192.0.2.3,192.0.2.16/28&nbsp;&nbsp;&nbsp; eth1<br>
+          <br>
+If the list begins with "!" then SNAT will occur only if the
+destination IP address is NOT included in the list.<br>
+          <br>
+        </li>
+        <li>Output traffic control rules (those with the firewall as
+the
+source) may now be qualified by the effective userid and/or effective
+group id of the program generating the output. This feature is courtesy
+of&nbsp; Frédéric LESPEZ.<br>
+          <br>
+A new USER column has been added to /etc/shorewall/tcrules. It may
+contain :<br>
+          <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [&lt;user name or number&gt;]:[&lt;group
+name or number&gt;]<br>
+          <br>
+The colon is optionnal when specifying only a user.<br>
+          <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Examples : john: / john / :users /
+john:users<br>
+          <br>
+        </li>
+        <li>A "detectnets" interface option has been added for entries
+in
+/etc/shorewall/interfaces. This option automatically taylors the
+definition of the zone named in the ZONE column to include just&nbsp;
+those
+hosts that have routes through the interface named in the INTERFACE
+column. The named interface must be UP when Shorewall is [re]started.<br>
+          <br>
+&nbsp;WARNING: DO NOT SET THIS OPTION ON YOUR INTERNET INTERFACE!
+&nbsp;&nbsp; </li>
+      </ol>
+      <p><b>1/17/2004 - FAQ Wiki Available&nbsp;</b><b></b></p>
+It has been asserted that the use of CVS for maintaining the
+Shorewall documentation has been a barrier to community participation.
+To test this theory, Alex Martin <a
+ href="http://wiki.rettc.com/wiki.phtml?title=Wiki_Shorewall_FAQ">has
+created a Wiki</a> and with the help of Mike Noyes has populated the
+Wiki with the Shorewall FAQ.
+      <p><b>1/13/2004 - Shorewall 1.4.9</b> <b><br>
       </b></p>
       <p>Problems Corrected since version 1.4.8:<br>
       </p>
@@ -201,25 +274,6 @@ packets with a null source address. Ad Koster reported a case where
 these were occuring frequently as a result of a broken system on his
 external network.</li>
       </ol>
-      <p><b>12/28/2003 - www.shorewall.net/ftp.shorewall.net Back
-On-line</b> <b><img alt="(New)" src="images/new10.gif"
- style="border: 0px solid ; width: 28px; height: 12px;" title=""> <br>
-      </b></p>
-      <p>Our high-capacity server has been restored to service --
-please let <a href="mailto:webmaster@shorewall.net">us</a> know if you
-find any problems.</p>
-      <p><b>12/03/2003 - Support Torch Passed</b> <b><img
- style="border: 0px solid ; width: 28px; height: 12px;"
- src="images/new10.gif" alt="(New)" title=""></b></p>
-Effective today, I am reducing my participation in the day-to-day
-support of Shorewall. As part of this shift to community-based
-Shorewall support a new <a
- href="https://lists.shorewall.net/mailman/listinfo/shorewall-newbies">Shorewall
-Newbies mailing list</a> has been established to field questions
-and problems from new users. I will not monitor that list
-personally. I will continue my active development of Shorewall and
-will be available via the development list to handle development
-issues -- Tom.
       <p><b><a href="News.htm">More News</a></b></p>
       <b></b>
       <h2><b></b></h2>
@@ -268,7 +322,7 @@ Children's Foundation.</font></a> Thanks!</font></font></p>
     </tr>
   </tbody>
 </table>
-<p><font size="2">Updated 01/13/2004 - <a href="support.htm">Tom
+<p><font size="2">Updated 01/30/2004 - <a href="support.htm">Tom
 Eastep</a></font><br>
 </p>
 </body>

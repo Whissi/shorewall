@@ -2315,6 +2315,26 @@ add_a_rule()
 {
     local natrule=
 
+    do_ports() {
+	if [ -n "$port" ]; then
+	    dports="--dport"
+	    if [ -n "$multioption" -a "$port" != "${port%,*}" ]; then
+		multiport="$multioption"
+		dports="--dports"
+	    fi
+	    dports="$dports $port"
+	fi
+	
+	if [ -n "$cport" ]; then
+	    sports="--sport"
+	    if [ -n "$multioption" -a "$cport" != "${cport%,*}" ]; then
+		multiport="$multioption"
+		sports="--sports"
+	    fi
+	    sports="$sports $cport"
+	fi
+    }
+
     # Set source variables. The 'cli' variable will hold the client match predicate(s).
 
     cli=
@@ -2370,44 +2390,11 @@ add_a_rule()
 
     case $proto in
 	tcp|TCP|6)
-	    if [ -n "$port" ]; then
-		dports="--dport"
-		if [ -n "$multioption" -a "$port" != "${port%,*}" ]; then
-		    multiport="$multioption"
-		    dports="--dports"
-		fi
-		dports="$dports $port"
-	    fi
-
-	    if [ -n "$cport" ]; then
-		sports="--sport"
-		if [ -n "$multioption" -a "$cport" != "${cport%,*}" ]; then
-		    multiport="$multioption"
-		    sports="--sports"
-		fi
-		sports="$sports $cport"
-	    fi
-
+	    do_ports
 	    [ "$target" = QUEUE ] && proto="$proto --syn"
 	    ;;
 	udp|UDP|17)
-	    if [ -n "$port" ]; then
-		dports="--dport"
-		if [ -n "$multioption" -a "$port" != "${port%,*}" ]; then
-		    multiport="$multioption"
-		    dports="--dports"
-		fi
-		dports="$dports $port"
-	    fi
-
-	    if [ -n "$cport" ]; then
-		sports="--sport"
-		if [ -n "$multioption" -a "$cport" != "${cport%,*}" ]; then
-		    multiport="$multioption"
-		    sports="--sports"
-		fi
-		sports="$sports $cport"
-	    fi
+	    do_ports
 	    ;;
 	icmp|ICMP|1)
 	    [ -n "$port" ]  && 	dports="--icmp-type $port"

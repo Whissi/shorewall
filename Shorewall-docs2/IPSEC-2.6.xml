@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-02-13</pubdate>
+    <pubdate>2005-02-17</pubdate>
 
     <copyright>
       <year>2004</year>
@@ -401,6 +401,25 @@ sainfo address 192.168.1.0/24 any address 134.28.54.2/32 any
         authentication_algorithm hmac_sha1, hmac_md5 ;
         compression_algorithm deflate ;
 }</programlisting>
+
+      <warning>
+        <para>If you have hosts that access the internet through an IPSEC
+        tunnel, then it is a good idea to set the MSS value for traffic from
+        those hosts explicitly in the
+        <filename>/etc/shorewall/ipsec</filename> file. For example, if hosts
+        in the <emphasis role="bold">sec</emphasis> zone access the internet
+        through an ESP tunnel then the following entry would be
+        appropriate:</para>
+
+        <programlisting>#ZONE   IPSEC   OPTIONS                 IN                      OUT
+#       ONLY                            OPTIONS                 OPTIONS
+sec     yes     mode=tunnel             <emphasis role="bold">mss=1400</emphasis></programlisting>
+
+        <para>Note that CLAMPMSS=Yes in <filename>shorewall.conf</filename>
+        isn't effective with the 2.6 native IPSEC implementation because there
+        is no separate ipsec device with a lower mtu as there was under the
+        2.4 and earlier kernels.</para>
+      </warning>
     </blockquote>
   </section>
 
@@ -732,9 +751,10 @@ all             all             REJECT          info
   <section>
     <title>IPSEC and <trademark>Windows</trademark> XP</title>
 
-    <para>I have successfully configured my work laptop to use IPSEC for
-    wireless IP communication when it is undocked at home. I looked at dozens
-    of sites and the one I found most helpful was <ulink
+    <para>I have successfully configured my work laptop to use IPSEC with
+    X.509 certificates for wireless IP communication when it is undocked at
+    home. I looked at dozens of sites and the one I found most helpful was
+    <ulink
     url="http://ipsec.math.ucla.edu/services/ipsec-windows.html">http://ipsec.math.ucla.edu/services/ipsec-windows.html</ulink>.
     The instructions on that site are directed to students at UCLA but they
     worked fine for me (once I followed them very carefully).</para>
@@ -748,7 +768,7 @@ all             all             REJECT          info
 
       <para>One piece of information that may not be so easy to find is "How
       to I generate a PKCS#12 certificate to import into Windows?". Here's the
-      openssl command I used:</para>
+      openssl command that I used:</para>
 
       <programlisting><command>openssl pkcs12 -export -in eastepnc6000.pem -inkey eastepnc6000_key.pem -out eastepnc6000.pfx -name "IPSEC Cert for Home Wireless"</command> </programlisting>
 
@@ -775,7 +795,7 @@ all             all             REJECT          info
 
         <listitem>
           <para>"IPSEC Cert for Home Wireless" is the friendly name for the
-          certificate.I</para>
+          certificate.</para>
         </listitem>
       </itemizedlist>
 

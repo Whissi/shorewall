@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-02-15</pubdate>
+    <pubdate>2005-02-17</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -214,7 +214,6 @@ TCP_FLAGS_DISPOSITION=DROP</programlisting>
       <blockquote>
         <para><programlisting>MIRRORS=&lt;list of shorewall mirror ip addresses&gt;
 NTPSERVERS=&lt;list of the NTP servers I sync with&gt;
-TEXAS=&lt;ip address of gateway in Plano&gt;
 LOG=ULOG
 WIFI_IF=eth0
 EXT_IF=eth2
@@ -231,7 +230,6 @@ DMZ_IF=eth1</programlisting></para>
 net     Internet        Internet
 dmz     DMZ             Demilitarized zone
 loc     Local           Local networks
-tx      Texas           Peer Network in Dallas
 Wifi    Wireless        Wirewall Network
 sec     Secure          Secure Wireless Zone
 vpn     OpenVPN         Open VPN Clients
@@ -251,7 +249,6 @@ vpn     OpenVPN         Open VPN Clients
 net     $EXT_IF         206.124.146.255 dhcp,norfc1918,routefilter,logmartians,blacklist,tcpflags,nosmurfs
 loc     $INT_IF         detect          dhcp
 dmz     $DMZ_IF         -
--       texas           -
 vpn     tun+            -
 Wifi    $WIFI_IF        -               maclist,dhcp
 #LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
@@ -263,7 +260,6 @@ Wifi    $WIFI_IF        -               maclist,dhcp
 
       <blockquote>
         <programlisting>#ZONE           HOST(S)                 OPTIONS
-tx              texas:192.168.8.0/22
 sec             $WIFI_IF:192.168.3.0/24
 sec             $EXT_IF:0.0.0.0/0
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
@@ -274,11 +270,15 @@ sec             $EXT_IF:0.0.0.0/0
       <title>Ipsec File</title>
 
       <para><blockquote>
+          <para>Note the mss=1400 IN option. This causes TCP connections
+          originating in the secure wireless zone to have their MSS set to
+          1400 so that misconfigured routers on the internet don't cause
+          problems with non-fragmentable packets larger than that.</para>
+
           <programlisting>#ZONE   IPSEC   OPTIONS                 IN                      OUT
 #       ONLY                            OPTIONS                 OPTIONS
 sec     Yes     mode=tunnel             mss=1400
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
-</programlisting>
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
         </blockquote></para>
     </section>
 
@@ -348,10 +348,7 @@ sec             Wifi            NONE
 fw              Wifi            ACCEPT
 loc             vpn             ACCEPT
 $FW             loc             ACCEPT
-$FW             tx              ACCEPT
-loc             tx              ACCEPT
 loc             fw              REJECT          $LOG
-dmz             tx              ACCEPT
 net             all             DROP            $LOG            10/sec:40
 all             all             REJECT          $LOG
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
@@ -406,12 +403,10 @@ $EXT_IF::                  eth2            206.124.146.176
     </section>
 
     <section>
-      <title>Tunnels File (Shell variable TEXAS set in
-      /etc/shorewall/params)</title>
+      <title>Tunnels</title>
 
       <blockquote>
         <programlisting>#TYPE                   ZONE    GATEWAY         GATEWAY ZONE    PORT
-gre                     net     $TEXAS
 openvpn:1194            net     0.0.0.0/0
 openvpn:1194            Wifi    192.168.3.0/24
 ipsec                   Wifi    192.168.3.0/24  sec
@@ -476,8 +471,8 @@ DROP      loc:eth2:!192.168.1.0/24       #So that my braindead Windows[tm] XP sy
       <blockquote>
         <programlisting>##########################################################################################################################################################################
 #####
-#RESULT         CLIENT(S)                       SERVER(S)               PROTO   PORT(S)                                 CLIENT          ORIGINAL        RATE    USER
-#                                                                                                                       PORT(S)         DEST:SNAT               SET
+#RESULT         CLIENT(S)                       SERVER(S)               PROTO   PORT(S)                                 CLIENT          ORIGINAL        RATE    USER/
+#                                                                                                                       PORT(S)         DEST                    GROUP
 ##########################################################################################################################################################################
 #####
 # Local Network to Internet - Reject attempts by Trojans to call home, direct SMTP and MS Message Service
@@ -583,10 +578,10 @@ AllowPing       net                             dmz
 #
 # Net to Local
 #
-# When I'm "on the road", the following two rules allow me VPN access back home.
+# When I'm "on the road", the following two rules allow me VPN access back home using PPTP.
 #
 DNAT            net                             loc:192.168.1.4         tcp     1723    -
-DNAT            net:!$TEXAS                     loc:192.168.1.4         gre     -
+DNAT            net                             loc:192.168.1.4         gre     -
 ACCEPT          net                             loc:192.168.1.5         tcp     22
 #
 # ICQ
@@ -667,7 +662,6 @@ ACCEPT          fw                              dmz                     udp     
 REJECT          fw                              dmz                     udp     137:139
 ##########################################################################################################################################################################
 #####
-ACCEPT          tx                              loc:192.168.1.5         all
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
       </blockquote>
     </section>

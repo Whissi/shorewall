@@ -3609,7 +3609,7 @@ process_actions3() {
 	    dropInvalid)
 		if [ "$COMMAND" != check ]; then
 		    [ -n "$xlevel" ] && \
-			log_rule_limit ${xlevel%\!} $xchain dropNotSyn $2 "" "$xtag" -A -m state --state INVALID
+			log_rule_limit ${xlevel%\!} $xchain dropInvalid $2 "" "$xtag" -A -m state --state INVALID
 		    run_iptables -A $xchain -m state --state INVALID -j DROP
 		fi
 		;;
@@ -5622,12 +5622,13 @@ initialize_netfilter () {
     [ -f $accounting_file ] && setup_accounting $accounting_file
 
     #
-    # Allow DNS lookups during startup for FQDNs and deep-six INVALID packets
+    # Allow DNS lookups during startup for FQDNs
     #
 
     for chain in INPUT OUTPUT FORWARD; do
 	run_iptables -A $chain -p udp --dport 53 -j ACCEPT
-	run_iptables -A $chain -p ! icmp -m state --state INVALID -j DROP
+	[ -n "$DROPINVALID" ] && \
+	    run_iptables -A $chain -p ! icmp -m state --state INVALID -j DROP
     done
 
     if [ -n "$CLAMPMSS" ]; then
@@ -5785,7 +5786,7 @@ add_common_rules() {
 	    network=${host#*:}
 
 	    for chain in $(first_chains $interface); do
-		run_iptables -A $chain  -m state --state NEW $(match_source_hosts $network) $policy -j smurfs
+		run_iptables -A $chain  -m state --state NEW,INVALID $(match_source_hosts $network) $policy -j smurfs
 	    done
 	done
     fi
@@ -7066,6 +7067,7 @@ do_initialize() {
     DELAYBLACKLISTLOAD=
     LOGTAGONLY=
     LOGALLNEW=
+    DROPINVALID=
 
     RESTOREBASE=
     TMP_DIR=
@@ -7260,6 +7262,7 @@ do_initialize() {
     RETAIN_ALIASES=$(added_param_value_no RETAIN_ALIASES $RETAIN_ALIASES)
     DELAYBLACKLISTLOAD=$(added_param_value_no DELAYBLACKLISTLOAD $DELAYBLACKLISTLOAD)
     LOGTAGONLY=$(added_param_value_no LOGTAGONLY $LOGTAGONLY)
+    DROPINVALID=$(added_param_value_yes DROPINVALID $DROPINVALID)
     #
     # Strip the files that we use often
     #

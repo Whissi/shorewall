@@ -1,0 +1,17 @@
+##############################################################################
+# Shorewall 1.2 /etc/shorewall/icmp.def
+#
+# This file defines the default rules for accepting ICMP packets. 
+#
+# Do not modify this file -- if you want to change these rules, copy this
+# file to /etc/shorewall/icmpdef and modify that file.
+#
+# In particular, if you want to accept 'ping' everywhere then add
+#
+# run_iptables -A icmpdef -p ICMP --icmp-type echo-request -j ACCEPT
+#
+run_iptables -A icmpdef -p ICMP --icmp-type echo-reply              -j ACCEPT
+run_iptables -A icmpdef -p ICMP --icmp-type source-quench           -j ACCEPT
+run_iptables -A icmpdef -p ICMP --icmp-type destination-unreachable -j ACCEPT
+run_iptables -A icmpdef -p ICMP --icmp-type time-exceeded           -j ACCEPT
+run_iptables -A icmpdef -p ICMP --icmp-type parameter-problem       -j ACCEPT

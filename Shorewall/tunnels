@@ -1,0 +1,51 @@
+#
+# Shorewall 1.2 - /etc/shorewall/tunnels
+#
+#	This file defines IPSEC, GRE and IPIP tunnels.
+#
+#	IPIP and GRE tunnels must be configured on the firewall/gateway itself.
+#	IPSEC endpoints may be defined on the firewall/gateway or on an
+#	internal system.
+#
+#	The columns are:
+#
+#	TYPE	    --	must start in column 1 and be "ipsec", "ip" or "gre"
+#
+#	ZONE	    --	The zone of the physical interface through which
+#			tunnel traffic passes. This is normally your internet
+#			zone.
+#
+#	GATEWAY	    --	The IP address of the remote tunnel gateway. If the
+#			remote getway has no fixed address (Road Warrior)
+#			then specify the gateway as 0.0.0.0/0.
+#
+#	GATEWAY ZONE--	Optional. If the gateway system specified in the third
+#			column is a standalone host then this column should
+#			contain the name of the zone that the host is in. This
+#			column only applies to IPSEC tunnels.
+#
+#		Example 1:
+#
+#			IPSec tunnel. The remote gateway is 4.33.99.124 and
+#			the remote subnet is 192.168.9.0/24
+#
+#			ipsec	net	4.33.99.124
+#
+#		Example 2:
+#
+#			Road Warrior (LapTop that may connect from anywhere)
+#			where the "gw" zone is used to represent the remote
+#			LapTop.
+#
+#			ipsec	net	0.0.0.0/0	gw
+#
+#		Example 3:
+#
+#			Host 4.33.99.124 is a standalone system connected
+#			via an ipsec tunnel to the firewall system. The host
+#			is in zone gw.
+#
+#			ipsec	net	4.33.99.124	gw
+#
+# TYPE		ZONE	GATEWAY		GATEWAY ZONE
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

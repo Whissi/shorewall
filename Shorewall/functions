@@ -1,0 +1,167 @@
+#
+# Shorewall 1.2 -- /etc/shorewall/functions
+
+#
+# Suppress all output for a command
+#    
+qt()  
+{ 
+    "$@" >/dev/null 2>&1
+}
+
+#
+# Find a File -- Look first in $SHOREWALL_DIR then in /etc/shorewall
+#
+find_file()
+{
+    if [ -n "$SHOREWALL_DIR" -a -f $SHOREWALL_DIR/$1 ]; then
+    	echo $SHOREWALL_DIR/$1
+    else
+    	echo /etc/shorewall/$1
+    fi
+}
+
+#
+# Replace commas with spaces and echo the result
+#
+separate_list()
+{
+    echo $1 | sed 's/,/ /g'
+}
+
+#
+# Find the zones
+#
+find_zones() # $1 = name of the zone file
+{
+    while read zone display comments; do
+	[ -n "$zone" ] && case "$zone" in
+	    \#*)
+		;;
+            $FW|multi)
+	        echo "Reserved zone name \"$zone\" in zones file ignored" >&2
+		;;
+            *)
+		echo $zone
+		;;
+        esac
+    done < $1
+}
+
+find_display() # $1 = zone, $2 = name of the zone file
+{
+    grep ^$1 $2 | while read z display comments; do
+	[ "x$1" = "x$z" ] && echo $display
+    done
+}
+
+determine_zones() 
+{
+    local zonefile=`find_file zones`
+
+    multi_display=Multi-zone
+
+    if [ -f $zonefile ]; then
+	zones=`find_zones $zonefile`
+	zones=`echo $zones` # Remove extra trash
+
+	for zone in $zones; do
+	    dsply=`find_display $zone $zonefile`
+	    eval ${zone}_display=\$dsply
+        done
+    else
+	zones="net local dmz gw"
+	net_display=Net
+	local_display=Local
+	dmz_display=DMZ
+	gw_display=Gateway
+    fi
+
+}
+
+###############################################################################
+# The following functions may be used by apps that wish to ensure that
+# the state of Shorewall isn't changing
+#------------------------------------------------------------------------------
+# This function loads the STATEDIR variable (directory where Shorewall is to
+# store state files). If your application supports alternate Shorewall
+# configurations then the name of the alternate configuration directory should
+# be in $SHOREWALL_DIR at the time of the call.
+#
+# If the shorewall.conf file does not exist, this function does not return
+###############################################################################
+get_statedir()
+{
+    local config=`find_file shorewall.conf`
+
+    if [ -f $config ]; then
+       . $config
+    else
+	echo "/etc/shorewall/shorewall.conf does not exist!" >&2
+	exit 2
+    fi
+
+    [ -z "${STATEDIR}" ] && STATEDIR=/var/state/shorewall
+}
+
+###############################################################################
+# Call this function to assert MUTEX with Shorewall. If you invoke the
+# /sbin/shorewall program while holding MUTEX, you should pass "nolock" as
+# the first argument. Example "shorewall nolock refresh"
+#
+# This function uses the lockfile utility from procmail if it exists.
+# Otherwise, it uses a somewhat race-prone algorithm to attempt to simulate the
+# behavior of lockfile.
+###############################################################################
+mutex_on()
+{
+    local try=0
+    local max=15
+    local int=2
+
+    local lockf=$STATEDIR/lock
+
+    [ -d $STATEDIR ] || mkdir -p $STATEDIR
+
+    if qt which lockfile; then
+	lockfile -030 -r1 ${lockf} || exit 2
+    else
+	while [ -f ${lockf} -a ${try} -lt ${max} ] ; do
+	    sleep ${int}
+	    try=$((${try} + 1))
+	    done
+
+	if  [ ${try} -lt ${max} ] ; then
+	    # Create the lockfile
+	    echo $$ > ${lockf}
+	else
+	    echo "Giving up on lock file ${lockf}" >&2
+	    exit 2
+	fi
+    fi
+}
+
+###############################################################################
+# Call this function to release MUTEX
+###############################################################################
+mutex_off()
+{
+    rm -f $STATEDIR/lock
+}
+
+###############################################################################
+# Strip comments and blank lines from a file and place the result in the      #
+# temporary directory                                                         #
+###############################################################################
+strip_file() # $1 = Base Name of the file, $2 = Full Name of File (optional)
+{
+    local fname
+
+    [ $# = 1 ] && fname=`find_file $1` || fname=$2
+
+    if [ -f $fname ]; then
+	cut -d'#' -f1 $fname | grep -v '^[[:space:]]*$' > $TMP_DIR/$1
+    else
+	> $TMP_DIR/$1
+    fi
+}

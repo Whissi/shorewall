@@ -23,6 +23,11 @@ Problems Corrected since 2.0.2
    /etc/shorewall when the files were actually installed in
    /usr/share/shorewall.
 
+7) Shorewall checks netfilter capabilities before loading kernel
+   modules. Hence if kernel module autoloading isn't enabled, the
+   capabilities will be misdetected.
+
+8) The 'newnotsyn' option in /etc/shorewall/hosts has no effect.
 -----------------------------------------------------------------------
 Issues when migrating from Shorewall 2.0.2 to Shorewall 2.0.3:
 
@@ -30,10 +35,6 @@ Issues when migrating from Shorewall 2.0.2 to Shorewall 2.0.3:
    'dropNotSyn' standard builtin action. The old name can still be used
    but will generate a warning.
 
-2) To lay the groundwork for eventual removal of NEWNOTSYN from
-   shorewall.conf and removal of the 'newnotsyn' interface option,
-   several new standard builtin actions have been defined. See New
-   Feature 3 below.
 -----------------------------------------------------------------------
 New Features:
 
@@ -81,4 +82,5 @@ New Features:
 
       a) Early in your rules file, place:
 
-         dropNotSyn    net	  all	tcp   
+         dropNotSyn    net	  all	tcp
+

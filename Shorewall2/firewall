@@ -777,7 +777,7 @@ validate_interfaces_file() {
 		    if [ -z "$found_obsolete_option" ]; then
 			found_obsolete_option=yes
 			error_message \
-			    "Warning: The 'dropunclean' and 'logunclean' options are not supported by Shorewall 2.0"
+			    "WARNING: The 'dropunclean' and 'logunclean' options are not supported by Shorewall 2.0"
 			error_message \
 			    "         PLEASE STAND BY WHILE SHOREWALL REFORMATS YOUR HARD DRIVE TO REMOVE THESE OPTIONS..."
 			sleep 5
@@ -2331,7 +2331,7 @@ check_config() {
 
     verify_os_version
 
-    load_kernel_modules
+    load_kernel_modules check
 
     echo "Determining Zones..."
 
@@ -2899,7 +2899,7 @@ process_actions2() {
 			done
 		    fi
 		fi
-		;;
+		;;		
 	    dropNonSyn)
 		error_message "WARNING: \"dropNonSyn\" has been replaced by \"dropNotSyn\""
 		[ "$COMMAND" != check ] && run_iptables -A dropNonSyn -p tcp ! --syn -j DROP
@@ -4623,32 +4623,34 @@ add_ip_aliases()
 #
 # Load kernel modules required for Shorewall
 #
-load_kernel_modules() {
+load_kernel_modules() #1 = command
+{
 
     [ -z "$MODULESDIR" ] && \
-	MODULESDIR=/lib/modules/$osversion/kernel/net/ipv4/netfilter
+	MODULESDIR=/lib/modules/$(uname -r)/kernel/net/ipv4/netfilter
 
     modules=$(find_file modules)
 
     if [ -f $modules -a -d $MODULESDIR ]; then
-	echo "Loading Modules..."
+ 	[ "$1" = silent ] || echo "Loading Modules..."
 	. $modules
 
-	if [ "$command" != check ]; then
+	case $1 in
+	    start|restart)
+		save_progress_message "Loading kernel modules..."
+		save_command "reload_kernel_modules <<__EOF__"
 
-	    save_progress_message "Loading kernel modules..."
-	    save_command "reload_kernel_modules <<__EOF__"
-
-	    while read command; do
-		case "$command" in
-		loadmodule*)
-		    save_command $command
-		    ;;
-		esac
-	    done < $modules
-	    
-	    save_command __EOF__
-	fi
+		while read command; do
+		    case "$command" in
+			loadmodule*)
+			    save_command $command
+			    ;;
+		    esac
+		done < $modules
+		
+		save_command __EOF__
+		;;
+	esac
     fi
 }
 
@@ -4801,10 +4803,13 @@ initialize_netfilter () {
     if [ -z "$NEWNOTSYN" ]; then
 	createchain newnotsyn no
 
-	for interface in $(find_interfaces_by_option newnotsyn); do
-	    run_iptables -A newnotsyn -i $interface -p tcp --tcp-flags ACK ACK -j RETURN
-	    run_iptables -A newnotsyn -i $interface -p tcp --tcp-flags RST RST -j RETURN
-	    run_iptables -A newnotsyn -i $interface -p tcp --tcp-flags FIN FIN -j RETURN
+	for host in $(find_hosts_by_option newnotsyn); do
+	    interface=${host%%:*}
+	    network=${host#*:}
+	    run_iptables -A newnotsyn -i $interface $(match_source_hosts $network) -p tcp --tcp-flags ACK ACK -j ACCEPT
+	    run_iptables -A newnotsyn -i $interface $(match_source_hosts $network) -p tcp --tcp-flags RST RST -j ACCEPT
+	    run_iptables -A newnotsyn -i $interface $(match_source_hosts $network) -p tcp --tcp-flags FIN FIN -j ACCEPT
+	    run_iptables -A newnotsyn -i $interface $(match_source_hosts ${host#*:}) -j RETURN
 	done
 
 	run_user_exit newnotsyn
@@ -5514,7 +5519,7 @@ define_firewall() # $1 = Command (Start or Restart)
     save_command "MODULESDIR=\"$MODULESDIR\""
     save_command "MODULE_SUFFIX=\"$MODULE_SUFFIX\""
 
-    load_kernel_modules
+    load_kernel_modules $command
 
     echo "Initializing...";                    initialize_netfilter
     echo "Configuring Proxy ARP";              setup_proxy_arp
@@ -6040,7 +6045,9 @@ do_initialize() {
     ensure_config_path
     #
     # Determine the capabilities of the installed iptables/netfilter
+    # We silently load the modules
     #
+    qt load_kernel_modules silent
     determine_capabilities
 
     [ -z "${STATEDIR}" ] && STATEDIR=/var/state/shorewall

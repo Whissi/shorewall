@@ -3272,6 +3272,7 @@ define_firewall() # $1 = Command (Start or Restart)
 	echo "   after you have completed Shorewall configuration,"
 	echo "   remove the file /etc/shorewall/startup_disabled"
 
+	[ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
 	my_mutex_off
 	exit 2
     fi
@@ -3648,6 +3649,7 @@ case "$command" in
 	if qt iptables -L shorewall -n ; then
 	    [ -n "$SUBSYSLOCK" ] && touch $SUBSYSLOCK
 	    echo "Shorewall Already Started"
+	    [ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
 	    my_mutex_off
 	    exit 0;
 	fi
@@ -3685,6 +3687,7 @@ case "$command" in
 	my_mutex_on
 	if ! qt iptables -L shorewall -n ; then
 	    echo "Shorewall Not Started"
+	    [ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
 	    my_mutex_off
 	    exit 2;
 	fi

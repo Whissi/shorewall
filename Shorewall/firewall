@@ -867,8 +867,7 @@ find_hosts_by_option() # $1 = option
     while read ignore interface ignore1 options; do
 	expandv options
 	list_search $1 `separate_list $options` && \
-	    echo `expand $interface`:0.0.0.0/0 && \
-	    break 1
+	    echo `expand $interface`:0.0.0.0/0
     done < $TMP_DIR/interfaces
 }
 

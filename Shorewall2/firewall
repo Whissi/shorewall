@@ -5893,6 +5893,12 @@ add_common_rules() {
 		    "Warning: Cannot set Martian logging on $interface"
 	    fi
 	done
+
+	if [ -n "$ROUTE_FILTER" ]; then
+	    run_and_save_command "echo 1 > /proc/sys/net/ipv4/conf/default/rp_filter"
+	    run_and_save_command "echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter"
+	fi
+
     fi
 
     if [ -n "$DYNAMIC_ZONES" ]; then

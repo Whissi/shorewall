@@ -40,6 +40,16 @@ Problems Corrected:
    The firewall script has been modified to eliminate the error
    messages.
 
+10) When ADD_SNAT_ALIASES=Yes in shorewall.conf, the following entry in
+    /etc/shorewall/masq resulted in a startup error:
+
+    eth0	eth1	 206.124.146.20-206.124.146.24
+
+11) Shorewall previously choked over IPV6 addresses configured on
+    interfaces in contexts where Shorewall needed to detect something
+    about the interface (such as when "detect" appears in the BROADCAST
+    column of the /etc/shorewall/interfaces file).
+
 Migration Issues:
 
 1) In earlier versions, an undocumented feature allowed entries in

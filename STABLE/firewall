@@ -828,7 +828,7 @@ find_interface_address() # $1 = interface
     #
     # get the line of output containing the first IP address
     #
-    addr=`ip addr show $1 2> /dev/null | grep inet | head -n1`
+    addr=`ip -f inet addr show $1 2> /dev/null | grep inet | head -n1`
     #
     # If there wasn't one, bail out now
     #
@@ -846,7 +846,7 @@ find_interface_address() # $1 = interface
 #
 find_interface_addresses() # $1 = interface
 {
-    ip addr show $1 | grep inet | sed 's/inet //;s/\/.*//;s/ peer.*//'
+    ip -f inet addr show $1 | grep inet | sed 's/inet //;s/\/.*//;s/ peer.*//'
 }
 
 #
@@ -1360,7 +1360,7 @@ setup_mac_lists() {
     #
     for interface in $maclist_interfaces; do
 	chain=`mac_chain $interface`
-	blob=`ip addr show $interface 2> /dev/null | grep inet | sed 's/inet //; s/brd //; s/scope.*//;'`
+	blob=`ip -f inet addr show $interface 2> /dev/null | grep inet | sed 's/inet //; s/brd //; s/scope.*//;'`
 
 	[ -z "$blob" ] && \
 	    fatal_error "Interface $interface must be up before Shorewall can start"

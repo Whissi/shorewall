@@ -193,7 +193,7 @@ New Features:
     questions on the support and development lists regarding why the
     default entries are the way they are.
 
-5)  Previously, specifying a log level (and optionally a log tag) on a
+5)  Previously, including a log level (and optionally a log tag) on a
     rule that specified a user-defined (or Shorewall-defined) action
     would log all traffic passed to the action. Beginning with this
     release, specifying a log level in a rule that specifies a user-
@@ -218,7 +218,7 @@ New Features:
 
 		foo:debug	fw	net
 
-	Logging in the invoke 'foo' action will be:
+	Logging in the invoked 'foo' action will be:
 
 		ACCEPT:debug	-	-	tcp	22
 		bar:info	
@@ -244,7 +244,7 @@ New Features:
 	
     This change has an effect on extension scripts used with
     user-defined actions. If you define an action 'acton' and you have
-    a /etc/shorewall/acton script then when that script is invoked,
+    an /etc/shorewall/acton script then when that script is invoked,
     the following three variables will be set for use by the script:
 
 	$CHAIN = the name of the chain where your rules are to be
@@ -264,7 +264,7 @@ New Features:
 
     Your /etc/shorewall/acton file will be run with:
 
-	 $CHAIN="acton1"
+	 $CHAIN="%acton1"
 	 $LEVEL="info"
 	 $TAG="test"
 
@@ -282,8 +282,9 @@ New Features:
 
 7)  Some additional support has been added for the 2.6 Kernel IPSEC
     implementation. To use this support, you must have installed the
-    IPSEC policy match patch from Patch-0-Matic-ng. That patch affects
-    both your kernel and iptables.
+    IPSEC policy match patch and the four IPSEC/Netfilter patches
+    from Patch-0-Matic-ng. The policy match patch affects both your
+    kernel and iptables.
 
     There are two ways to specify that IPSEC is to be used when
     communicating with a set of hosts; both methods involve the new
@@ -402,7 +403,7 @@ New Features:
 	 should only appear in the IN OPTIONS and OUT OPTIONS columns.
 
 	 strict  (if specified, packets must match all policies;
-	 polcies are delimited by 'next').
+	 policies are delimited by 'next').
 
 	 next    (only available with strict)
 
@@ -477,7 +478,7 @@ New Features:
 
 15) Support has been added for the iptables CLASSIFY target. That
     target allows you to classify packets for traffic shaping directly
-    rather than indirectly through fwmark. Simply entry the
+    rather than indirectly through fwmark. Simply enter the
     <major>:<minor> classification in the first column of
     /etc/shorewall/tcrules:
 
@@ -542,3 +543,11 @@ New Features:
     
 	Type 3 code 4 (fragmentation needed)
 	Type 11       (TTL exceeded)
+
+21) Explicit control over the kernel's Martian logging is now provided
+    using the new 'logmartians' interface option. If you include
+    'logmartians' in the interface option list then logging of Martian
+    packets on will be enabled on the specified interface.
+    If you wish to globally enable martian logging, you can set
+    MARTIAN_LOGGING=Yes in shorewall.conf.
+

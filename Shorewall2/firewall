@@ -3060,8 +3060,8 @@ createlogactionchain() # $1 = Action Name, $2 = Log Level [: Log Tag ]
     eval actchain=\${${action}_actchain}
 
     case ${#action} in
-	10|11)
-	    CHAIN=$(echo $action | cut -b -9)
+	29|30)
+	    CHAIN=$(echo $action | cut -b -28)
 	    ;;
 	*)
 	    CHAIN=${action}
@@ -3072,7 +3072,7 @@ createlogactionchain() # $1 = Action Name, $2 = Log Level [: Log Tag ]
     [ "$COMMAND" != check ] && \
 	while havechain %${CHAIN}${actchain}; do
 	    actchain=$(($actchain + 1))
-	    [ $actchain -eq 10 -a ${#CHAIN} -eq 9 ] && CHAIN=$(echo $CHAIN | cut -b -8)
+	    [ $actchain -eq 10 -a ${#CHAIN} -eq 28 ] && CHAIN=$(echo $CHAIN | cut -b -27)
         done
 
     CHAIN=%${CHAIN}${actchain}
@@ -3233,7 +3233,7 @@ merge_levels() # $1=level at which superior action is called, $2=level at which 
 # As the rules file is scanned, each action[:level[:tag]] is merged onto the USEDACTIONS list. When an <action> 
 # is merged onto this list, its action chain is created. Where logging is specified, a chain with the name
 # %<action>n is used where the <action> name is truncated on the right where necessary to ensure that the total
-# length of the chain name does not exceed 11 characters.
+# length of the chain name does not exceed 30 characters.
 #
 # The second phase (process_actions2) occurs after the rules file is scanned. The transitive closure of 
 # USEDACTIONS is generated; again, as new actions are merged onto this list, their action chains are created.

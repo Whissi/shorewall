@@ -315,6 +315,15 @@ monitor_firewall() # $1 = timeout -- if negative, prompt each time that
 
     qt which awk && { haveawk=Yes; determine_zones; } || haveawk=
 
+    case `echo -e` in
+	-e*)
+	    ring_bell="echo \'\a\'"
+	    ;;
+	*)
+	    ring_bell="echo -e \'\a\'"
+	    ;;
+    esac
+
     while true; do
 	display_chains
 	
@@ -332,11 +341,7 @@ monitor_firewall() # $1 = timeout -- if negative, prompt each time that
 	if [ "$rejects" != "$oldrejects" ]; then
 	    oldrejects="$rejects"
 	    
-	    if [ -n "$BASH_VERSION" ]; then
-		echo -e '\a'
-	    else
-		echo '\a'
-	    fi
+	    $ring_bell
 
 	    packet_log 20
 
@@ -411,6 +416,15 @@ logwatch() # $1 = timeout -- if negative, prompt each time that
 
     qt which awk && haveawk=Yes || haveawk=
 
+    case `echo -e` in
+	-e*)
+	    ring_bell="echo \'\a\'"
+	    ;;
+	*)
+	    ring_bell="echo -e \'\a\'"
+	    ;;
+    esac
+
     while true; do
 	clear
 	echo "$banner `date`"
@@ -426,11 +440,7 @@ logwatch() # $1 = timeout -- if negative, prompt each time that
 	if [ "$rejects" != "$oldrejects" ]; then
 	    oldrejects="$rejects"
 
-	    if [ -n "$BASH_VERSION" ]; then
-		echo -e '\a'
-	    else
-		echo '\a'
-	    fi
+	    $ring_bell
 
 	    packet_log 40
 

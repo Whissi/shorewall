@@ -233,8 +233,7 @@ createchain() # $1 = chain name, $2 = If "yes", create default rules
     run_iptables -N $1
 
     if [ $2 = yes ]; then
-	state="ESTABLISHED,RELATED"
-	run_iptables -A $1 -m state --state $state -j ACCEPT
+	run_iptables -A $1 -m state --state ESTABLISHED,RELATED -j ACCEPT
 	[ -z "$NEWNOTSYN" ] && \
 	    run_iptables -A $1 -m state --state NEW -p tcp ! --syn -j newnotsyn
     fi
@@ -3207,7 +3206,7 @@ load_kernel_modules() {
 # Verify that the 'ip' program is installed
 
 verify_ip() {
-    qt which ip ||\
+    qt ip link ls ||\
 	startup_error "Shorewall $version requires the iproute package ('ip' utility)"
 }
 

@@ -2,19 +2,9 @@ This is a minor release of Shorewall.
 
 Problems Corrected:
 
-1) The command "shorewall debug try <directory>" now correctly traces
-   the attempt.
-
-2) The INCLUDE directive now works properly in the zones file;
-   previously, INCLUDE in that file was ignored.
-
-3) /etc/shorewall/routestopped records with an empty second column are no
-   longer ignored.
+1) A problem seen on RH7.3 systems where Shorewall encountered start
+   errors when started using the "service" mechanism has been worked
+   around.
 
 New Features:
-
-1) The ORIGINAL DEST column in a DNAT[-] or REDIRECT[-] rule may now
-   contain a list of addresses. If the list begins with "!' then the
-   rule will take effect only if the original destination address in
-   the connection request does not match any of the addresses listed.
 

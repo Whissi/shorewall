@@ -2764,6 +2764,10 @@ process_actions1() {
 
 	    createchain dropNonSyn no
 	    run_iptables -A dropNonSyn -p tcp ! --syn -j DROP
+
+	    createchain RejectNonSyn no
+	    run_iptables -A rejectNonSyn -p tcp ! --syn -j REJECT --reject-with tcp-reset
+
 	fi
 
 	ACTIONS="dropBcast dropNonSyn"
@@ -4791,10 +4795,9 @@ initialize_netfilter () {
 	createchain newnotsyn no
 
 	for interface in $(find_interfaces_by_option newnotsyn); do
-	    run_iptables -A newnotsyn -i $interface -p tcp --tcp-flags ACK ACK -j ACCEPT
-	    run_iptables -A newnotsyn -i $interface -p tcp --tcp-flags RST RST -j ACCEPT
-	    run_iptables -A newnotsyn -i $interface -p tcp --tcp-flags FIN FIN -j ACCEPT
-	    run_iptables -A newnotsyn -i $interface -j RETURN
+	    run_iptables -A newnotsyn -i $interface -p tcp --tcp-flags ACK ACK -j RETURN
+	    run_iptables -A newnotsyn -i $interface -p tcp --tcp-flags RST RST -j RETURN
+	    run_iptables -A newnotsyn -i $interface -p tcp --tcp-flags FIN FIN -j RETURN
 	done
 
 	run_user_exit newnotsyn

@@ -8,96 +8,193 @@
       <firstname>Tom</firstname>
       <surname>Eastep</surname>
 		</author>
-    <pubdate>2003&#047;12&#047;24</pubdate>
+    <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
 		<copyright>
+			<year>2002</year>
 			<year>2003</year>
+			<year>2004</year>
 			<holder>Thomas M. Eastep</holder>
 		</copyright>
 		<legalnotice>
 			<para>
-			Permission is granted to copy, distribute and/or modify this document under the terms of the GNU Free Documentation License, Version 1.2 or any later version published by the Free Software Foundation; with	no Invariant Sections, with no Front-Cover, and with no Back-Cover	Texts. A copy of the license is included in the section entitled <quote><ulink url="copyright.htm" type="">GNU Free Documentation License</ulink></quote>.
+			Permission is granted to copy, distribute and/or modify this document under the terms of the GNU Free Documentation License, Version 1.2 or any later version published by the Free Software Foundation; with	no Invariant Sections, with no Front-Cover, and with no Back-Cover	Texts. A copy of the license is included in the section entitled <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.
 			</para>
 		</legalnotice>
 	</articleinfo>
+
 	<section>
 		<title>Introduction</title>
-		<para>
-		Setting up a Linux system as a firewall for a small network is a fairly straight-forward task if you understand the basics and follow the documentation.
-		</para>
-		<para>
-		This guide doesn't attempt to acquaint you with all of the features of Shorewall. It rather focuses on what is required to configure Shorewall in its most common configuration:
-		</para>
-		<itemizedlist mark="bullet" spacing="compact">
-			<listitem>
-				<para>
-				Linux system used as a firewall/router for a small local network.
-				</para>
-			</listitem>
-			<listitem>
-				<para>
-				<emphasis role="bold">Single public IP address.</emphasis> If you have more than one public IP address, this is not the guide you want -- see the <ulink url="shorewall_setup_guide.htm">Shorewall Setup Guide</ulink> instead.
-				</para>
-			</listitem>
-			<listitem>
-				<para>
-				Internet connection through cable modem, DSL, ISDN, Frame Relay, dial-up ...
-				</para>
-			</listitem>
-		</itemizedlist>
-		<para>
-		Here is a schematic of a typical installation:
-		</para>
-		<figure label="1">
-			<title>Common two interface firewall configuration</title>
-			<mediaobject>
-				<imageobject>
-					<imagedata fileref="images/basics.png" format="PNG" align="center" width="4in" />
-				</imageobject>
-			</mediaobject>
-		</figure>
-		<note>
-			<title>Shorewall and <trademark>Mandrake</trademark> 9.0&#043;</title>
 			<para>
-			If you are running Shorewall under <trademark>Mandrake</trademark> 9.0 or later, you can easily configure the above setup using the <trademark>Mandrake</trademark> <quote>Internet Connection Sharing</quote> applet. From the <emphasis><interface>Mandrake Control Center</interface></emphasis>, select <quote><guimenuitem>Network</guimenuitem> &#038; <guisubmenu>Internet</guisubmenu></quote> then <quote><interface>Connection Sharing</interface></quote>.
+			Setting up a Linux system as a firewall for a small network is a fairly straight-forward task if you understand the basics and follow the documentation.
 			</para>
 			<para>
-			Note however, that the Shorewall configuration produced by <emphasis>Mandrake Internet Connection Sharing</emphasis> is strange and is apt to confuse you if you use the rest of this documentation (it has two local zones; <varname>loc</varname> and <varname>masq</varname> where <varname>loc</varname> is empty; this conflicts with this documentation which assumes a single local zone <varname>loc</varname>). We therefore recommend that once you have set up this sharing that you uninstall the <trademark>Mandrake</trademark> Shorewall RPM and install the one from the <ulink url="download.htm">download</ulink> page then follow the instructions in this Guide.
+			This guide doesn't attempt to acquaint you with all of the features of Shorewall. It rather focuses on what is required to configure Shorewall in its most common configuration:
 			</para>
-		</note>
-		<para>
-		Shorewall requires that you have the <command>iproute</command>/<command>iproute2</command> package installed (on <trademark>RedHat</trademark>, the package is called <command>iproute</command>). You can tell if this package is installed by the presence of an <command>ip</command> program on your firewall system. As <literal>root</literal>, you can use the <command>which</command> command to check for this program:
-		<programlisting>
-[root@gateway root]# which ip
-/sbin/ip
-[root@gateway root]#
-		</programlisting>
-		I recommend that you first read through the guide to familiarize yourself with what's involved then go back through it again making your configuration changes.
-		</para>
-		<caution>
-			<para>
-			If you edit your configuration files on a <trademark>Windows</trademark> system, you must save them as <trademark>Unix</trademark> files if your editor supports that option or you must run them through <command>dos2unix</command> before trying to use them. Similarly, if you copy a configuration file from your <trademark>Windows</trademark> hard drive to a floppy disk, you must run <command>dos2unix</command> against the copy before using it with Shorewall.
-			<itemizedlist>
+
+			<itemizedlist mark="bullet" spacing="compact">
 				<listitem>
 					<para>
-						<ulink url="http://www.simtel.net/pub/pd/51438.html"><trademark>Windows</trademark> Version of <command>dos2unix</command></ulink>
+					Linux system used as a firewall/router for a small local network.
 					</para>
 				</listitem>
 				<listitem>
 					<para>
-						<ulink url="http://www.megaloman.com/%7Ehany/software/hd2u/">Linux Version of <command>dos2unix</command></ulink>
+					<emphasis role="bold">Single public IP address.</emphasis> If you have more than one public IP address, this is not the guide you want -- see the <ulink url="shorewall_setup_guide.htm">Shorewall Setup Guide</ulink> instead.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+					Internet connection through cable modem, DSL, ISDN, Frame Relay, dial-up ...
 					</para>
 				</listitem>
 			</itemizedlist>
-			</para>
-		</caution>
-	</section>
+
+			<para>
+			Here is a schematic of a typical installation:
+
+			<figure label="1">
+			<title>Common two interface firewall configuration</title>
+				<mediaobject>
+					<imageobject>
+						<imagedata fileref="images/basics.png" format="PNG" align="center" width="4in" />
+					</imageobject>
+				</mediaobject>
+			</figure>
+
+			<tip>
+				<title>Shorewall and <trademark>Mandrake</trademark> 9.0&#043;</title>
+					<para>
+					If you are running Shorewall under <trademark>Mandrake</trademark> 9.0 or later, you can easily configure the above setup using the <trademark>Mandrake</trademark> <quote>Internet Connection Sharing</quote> applet. From the <emphasis><interface>Mandrake Control Center</interface></emphasis>, select <quote><guimenuitem>Network</guimenuitem> &#038; <guisubmenu>Internet</guisubmenu></quote> then <quote><interface>Connection Sharing</interface></quote>.
+					</para>
+					<para>
+					Note however, that the Shorewall configuration produced by <emphasis>Mandrake Internet Connection Sharing</emphasis> is strange and is apt to confuse you if you use the rest of this documentation (it has two local zones; <varname>loc</varname> and <varname>masq</varname> where <varname>loc</varname> is empty; this conflicts with this documentation which assumes a single local zone <varname>loc</varname>). We therefore recommend that once you have set up this sharing that you uninstall the <trademark>Mandrake</trademark> Shorewall RPM and install the one from the <ulink url="download.htm">download</ulink> page then follow the instructions in this Guide.
+					</para>
+			</tip>
+
+			<caution>
+				<para>
+				If you edit your configuration files on a <trademark>Windows</trademark> system, you must save them as <trademark>Unix</trademark> files if your editor supports that option or you must run them through <command>dos2unix</command> before trying to use them. Similarly, if you copy a configuration file from your <trademark>Windows</trademark> hard drive to a floppy disk, you must run <command>dos2unix</command> against the copy before using it with Shorewall.
+
+					<itemizedlist>
+						<listitem>
+							<para><ulink url="http://www.simtel.net/pub/pd/51438.html"><trademark>Windows</trademark> Version of <command>dos2unix</command></ulink></para>
+						</listitem>
+						<listitem>
+							<para><ulink url="http://www.megaloman.com/%7Ehany/software/hd2u/">Linux Version of <command>dos2unix</command></ulink></para>
+						</listitem>
+					</itemizedlist>
+				</para>
+			</caution>
+		</para>
+
+		<section>
+			<title>System Requirements</title>
+				<para>
+				Shorewall requires that you have the <command>iproute</command>/<command>iproute2</command> package installed (on <trademark>RedHat</trademark>, the package is called <command>iproute</command>). You can tell if this package is installed by the presence of an <command>ip</command> program on your firewall system. As  <systemitem class="username">root</systemitem>, you can use the <command>which</command> command to check for this program:
+
+				<programlisting>
+[root@gateway root]# which ip
+/sbin/ip
+[root@gateway root]#
+				</programlisting>
+
+				I recommend that you first read through the guide to familiarize yourself with what's involved then go back through it again making your configuration changes.
+				</para>
+		</section>
+
+		<section>
+			<title>Conventions</title>
+
+				<para>
+				Points at which configuration changes are recommended are flagged with <inlinegraphic fileref="images/BD21298_.gif" format="GIF" />.
+				</para>
+
+      	<para>
+				Configuration notes that are unique to LEAF/Bering are marked with <inlinegraphic fileref="images/leaflogo.gif" format="GIF" />.
+				</para>
+
+		</section>
+</section>
+
 	<section>
 		<title>PPTP/ADSL</title>
-		<important>
 			<para>
-			If you have an <acronym>ADSL</acronym> Modem and you use <acronym>PPTP</acronym> to communicate with a server in that modem, you must make the changes recommended here in addition to those detailed below. <acronym>ADSL</acronym> with <acronym>PPTP</acronym> is most commonly found in Europe, notably in Austria.
+			<inlinegraphic fileref="images/BD21298_.gif" format="GIF" />If you have an <acronym>ADSL</acronym> Modem and you use <acronym>PPTP</acronym> to communicate with a server in that modem, you must make the changes recommended here in addition to those detailed below. <acronym>ADSL</acronym> with <acronym>PPTP</acronym> is most commonly found in Europe, notably in Austria.
 			</para>
-		</important>
+	</section>
 
+	<section>
+		<title>Shorewall Concepts</title>
+			<para>
+			<inlinegraphic fileref="images/BD21298_.gif" format="GIF" />The configuration files for Shorewall are contained in the directory <filename class="directory">/etc/shorewall</filename> -- for simple setups, you will only need to deal with a few of these as described in this guide.
+				<tip>
+					<para>
+					After you have <ulink url="Install.htm">installed Shorewall</ulink>, download the <ulink url="http://www1.shorewall.net/pub/shorewall/Samples/">two-interface sample</ulink>, un-tar it (<command>tar <option>-zxvf</option> <filename>two-interfaces.tgz</filename></command>) and and copy the files to <filename class="directory">/etc/shorewall</filename> <emphasis role="bold">(these files will replace files with the same name)</emphasis>.
+					</para>
+				</tip>
+			As each file is introduced, I suggest that you look through the actual file on your system -- each file contains detailed configuration instructions and default entries.
+		</para>
+
+		<para>
+		Shorewall views the network where it is running as being composed of a set of zones. In the two-interface sample configuration, the following zone names are used:
+			<informaltable frame="all" pgwide="0">
+				<tgroup cols="2" align="left">
+					<thead valign="middle">
+						<row valign="middle">
+							<entry align="left">Name</entry>
+							<entry align="left">Description</entry>
+						</row>
+					</thead>
+					<tbody valign="middle">
+						<row valign="middle">
+							<entry align="left"><varname>net</varname></entry>
+							<entry align="left">The Internet</entry>
+						</row>
+						<row valign="middle">
+							<entry align="left"><varname>loc</varname></entry>
+							<entry align="left">Your Local Network</entry>
+						</row>
+						<row valign="middle">
+							<entry align="left"><varname>dmz</varname></entry>
+							<entry align="left">Demilitarized Zone</entry>
+						</row>
+					</tbody>
+				</tgroup>
+			</informaltable>
+			Zones are defined in the <ulink url="Documentation.htm#Zones"><filename class="directory">/etc/shorewall/</filename><filename>zones</filename></ulink> file.
+		</para>
+		<para>
+		Shorewall also recognizes the firewall system as its own zone - by default, the firewall itself is known as <varname>fw</varname>.
+		</para>
+		<para>
+		Rules about what traffic to allow and what traffic to deny are expressed in terms of zones.
+			<itemizedlist spacing="compact">
+				<listitem>
+					<para>
+					You express your default policy for connections from one zone to another zone in the <ulink url="Documentation.htm#Policy"><filename class="directory">/etc/shorewall/</filename><filename>policy</filename></ulink> file.
+					</para>
+				</listitem>
+				<listitem>
+					<para>
+					You define exceptions to those default policies in the <ulink url="Documentation.htm#Rules"><filename class="directory">/etc/shorewall/</filename><filename>rules</filename></ulink> file.
+					</para>
+				</listitem>
+			</itemizedlist>
+		For each connection request entering the firewall, the request is first checked against the <filename class="directory">/etc/shorewall/</filename><filename>rules</filename> file. If no rule in that file matches the connection request then the first policy in <filename class="directory">/etc/shorewall/</filename><filename>policy</filename> that matches the request is applied. If that policy is <varname>REJECT</varname> or <varname>DROP</varname> the request is first checked against the rules in <filename class="directory">/etc/shorewall/</filename><filename>common</filename> if that file exists; otherwise the rules in <filename class="directory">/etc/shorewall/</filename><filename>common.def</filename> are checked.
+		</para>
+		<para>
+		The <filename class="directory">/etc/shorewall/</filename><filename>policy</filename> file included with the two-interface sample has the following policies:
+
+			<informaltable pgwide="0" frame="all" label="policy file">
+				<tgroup cols="5" align="left">
+					<thead valign="middle">
+						
+					</thead>
+				</tgroup>
+
+			</informaltable>
+
+
+		</para>
 	</section>
 </article>

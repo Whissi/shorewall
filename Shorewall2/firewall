@@ -2073,10 +2073,11 @@ setup_mac_lists() {
 	ipsec=${hosts%^*}
 	hosts=${hosts#*^}
 	[ -n "$POLICY_MATCH" ] && policy="-m policy --pol $ipsec --dir in" || policy=
+	[ -n "$MACLISTNEWONLY" ] && state="-m state --state NEW" || state=
 	interface=${hosts%%:*}
 	hosts=${hosts#*:}
 	for chain in $(first_chains $interface) ; do
-	    run_iptables -A $chain $(match_source_hosts $hosts) -m state --state NEW \
+	    run_iptables -A $chain $(match_source_hosts $hosts) $state \
 		$policy -j $(mac_chain $interface)
 	done
     done
@@ -7126,6 +7127,7 @@ do_initialize() {
     LOGTAGONLY=
     LOGALLNEW=
     DROPINVALID=
+    MACLISTNEWONLY=
 
     RESTOREBASE=
     TMP_DIR=
@@ -7321,6 +7323,7 @@ do_initialize() {
     DELAYBLACKLISTLOAD=$(added_param_value_no DELAYBLACKLISTLOAD $DELAYBLACKLISTLOAD)
     LOGTAGONLY=$(added_param_value_no LOGTAGONLY $LOGTAGONLY)
     DROPINVALID=$(added_param_value_yes DROPINVALID $DROPINVALID)
+    MACLISTNEWONLY=$(added_param_value_yes MACLISTNEWONLY $MACLISTNEWONLY)
     #
     # Strip the files that we use often
     #

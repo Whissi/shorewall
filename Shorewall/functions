@@ -116,7 +116,7 @@ get_statedir()
 mutex_on()
 {
     local try=0
-    local max=15
+    local max=30
     local int=2
 
     local lockf=$STATEDIR/lock
@@ -124,7 +124,7 @@ mutex_on()
     [ -d $STATEDIR ] || mkdir -p $STATEDIR
 
     if qt which lockfile; then
-	lockfile -030 -r1 ${lockf} || rm -f ${lockf}
+	lockfile -060 -r1 ${lockf}
     else
 	while [ -f ${lockf} -a ${try} -lt ${max} ] ; do
 	    sleep ${int}
@@ -136,7 +136,6 @@ mutex_on()
 	    echo $$ > ${lockf}
 	else
 	    echo "Giving up on lock file ${lockf}" >&2
-	    rm -f ${lockf}
 	fi
     fi
 }

@@ -2697,6 +2697,10 @@ verify_os_version() {
 ################################################################################
 add_ip_aliases()
 {
+    local external
+    local interface
+    local primary
+
     do_one() 
     {
 	#
@@ -2732,8 +2736,9 @@ add_ip_aliases()
     while [ $# -gt 0 ]; do
 	external=$1
 	interface=$2
+	primary=`find_interface_address $interface`
 	shift;shift
-	do_one
+	[ "x${primary}" = "x${external}" ] || do_one
     done
 }
 

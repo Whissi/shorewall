@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article>
+  <articleinfo>
+    <title>6to4 Tunnels</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Eric</firstname>
+
+        <surname>de Thouars</surname>
+      </author>
+
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <date>2003-05-18</date>
+  </articleinfo>
+
+  <warning>
+    <para>The 6to4 tunnel feature of Shorewall only facilitates IPv6 over IPv4
+    tunneling. It does not provide any IPv6 security measures.</para>
+  </warning>
+
+  <para>6to4 tunneling with Shorewall can be used to connect your IPv6 network
+  to another IPv6 network over an IPv4 infrastructure.</para>
+
+  <para>More information on Linux and IPv6 can be found in the <ulink
+  url="http://www.tldp.org/HOWTO/Linux+IPv6-HOWTO">Linux IPv6 HOWTO</ulink>.
+  Details on how to setup a 6to4 tunnels are described in the section <ulink
+  url="http://www.tldp.org/HOWTO/Linux+IPv6-HOWTO/configuring-ipv6to4-tunnels.html">Setup
+  of 6to4 tunnels</ulink>.</para>
+
+  <section>
+    <title>Connecting two IPv6 Networks</title>
+
+    <para>Suppose that we have the following situation:</para>
+
+    <figure>
+      <title></title>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="images/TwoIPv6Nets1.png" />
+        </imageobject>
+      </mediaobject>
+    </figure>
+
+    <para>We want systems in the 2002:100:333::/64 subnetwork to be able to
+    communicate with the systems in the 2002:488:999::/64 network. This is
+    accomplished through use of the /etc/shorewall/tunnels file and the
+    &#34;ip&#34; utility for network interface and routing configuration.</para>
+
+    <para>Unlike GRE and IPIP tunneling, the /etc/shorewall/policy,
+    /etc/shorewall/interfaces and /etc/shorewall/zones files are not used.
+    There is no need to declare a zone to represent the remote IPv6 network.
+    This remote network is not visible on IPv4 interfaces and to iptables. All
+    that is visible on the IPv4 level is an IPv4 stream which contains IPv6
+    traffic. Separate IPv6 interfaces and ip6tables rules need to be defined
+    to handle this traffic.</para>
+
+    <para>In /etc/shorewall/tunnels on system A, we need the following:</para>
+
+    <informaltable>
+      <tgroup cols="4">
+        <thead>
+          <row>
+            <entry align="center">TYPE</entry>
+
+            <entry align="center">ZONE</entry>
+
+            <entry align="center">GATEWAY</entry>
+
+            <entry align="center">GATEWAY ZONE</entry>
+          </row>
+        </thead>
+
+        <tbody>
+          <row>
+            <entry>6to4</entry>
+
+            <entry>net</entry>
+
+            <entry>134.28.54.2</entry>
+
+            <entry></entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+    <para>This entry in /etc/shorewall/tunnels, opens the firewall so that the
+    IPv6 encapsulation protocol (41) will be accepted to/from the remote
+    gateway.</para>
+
+    <para>Use the following commands to setup system A:</para>
+
+    <programlisting>&#62;ip tunnel add tun6to4 mode sit ttl 254 remote 134.28.54.2
+&#62;ip link set dev tun6to4 up
+&#62;ip addr add 3ffe:8280:0:2001::1/64 dev tun6to4
+&#62;ip route add 2002:488:999::/64 via 3ffe:8280:0:2001::2</programlisting>
+
+    <para>Similarly, in /etc/shorewall/tunnels on system B we have:</para>
+
+    <informaltable>
+      <tgroup cols="4">
+        <thead>
+          <row>
+            <entry align="center">TYPE</entry>
+
+            <entry align="center">ZONE</entry>
+
+            <entry align="center">GATEWAY</entry>
+
+            <entry align="center">GATEWAY ZONE</entry>
+          </row>
+        </thead>
+
+        <tbody>
+          <row>
+            <entry>6to4</entry>
+
+            <entry>net</entry>
+
+            <entry>206.191.148.9</entry>
+
+            <entry></entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+    <para>And use the following commands to setup system B:</para>
+
+    <programlisting>&#62;ip tunnel add tun6to4 mode sit ttl 254 remote 206.191.148.9
+&#62;ip link set dev tun6to4 up
+&#62;ip addr add 3ffe:8280:0:2001::2/64 dev tun6to4
+&#62;ip route add 2002:100:333::/64 via 3ffe:8280:0:2001::1</programlisting>
+
+    <para>On both systems, restart Shorewall and issue the configuration
+    commands as listed above. The systems in both IPv6 subnetworks can now
+    talk to each other using IPv6.</para>
+  </section>
+</article>

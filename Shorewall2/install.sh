@@ -551,7 +551,7 @@ if [ -z "$PREFIX" -a -n "$first_install" ]; then
 	    if insserv /etc/init.d/shorewall ; then
 		echo
 		echo "shorewall will start automatically at boot"
-		echo "Remove /etc/shorewall/startup_disabled in /etc/default/shorewall to enable"
+		echo "Set STARTUP_ENABLED=Yes in /etc/shorewall/shorewall.conf to enable"
 	    else
 		cant_autostart
 	    fi
@@ -559,7 +559,7 @@ if [ -z "$PREFIX" -a -n "$first_install" ]; then
 	    if chkconfig --add shorewall ; then
 		echo
 		echo "shorewall will start automatically in run levels as follows:"
-		echo "Remove /etc/shorewall/startup_disabled in /etc/default/shorewall to enable"
+		echo "Set STARTUP_ENABLED=Yes in /etc/shorewall/shorewall.conf to enable"
 		chkconfig --list shorewall
 	    else
 		cant_autostart
@@ -568,18 +568,13 @@ if [ -z "$PREFIX" -a -n "$first_install" ]; then
 	    if rc-update add shorewall default; then
 		echo
 		echo "shorewall will start automatically at boot"
-		echo "Remove /etc/shorewall/startup_disabled in /etc/default/shorewall to enable"
+		echo "Set STARTUP_ENABLED=Yes in /etc/shorewall/shorewall.conf to enable"
 	    else
 		cant_autostart
 	    fi
 	elif [ "$INIT" != rc.firewall ]; then #Slackware starts this automatically
 	    cant_autostart
 	fi
-
-	echo \
-"########################################################################
-#      REMOVE THIS FILE AFTER YOU HAVE CONFIGURED SHOREWALL            #
-########################################################################" > /etc/shorewall/startup_disabled
     fi
 fi
 

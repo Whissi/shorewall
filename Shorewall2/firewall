@@ -156,7 +156,11 @@ run_iptables() {
     [ -n "$BRIDGING" ] && [ -f $TMP_DIR/physdev ] && rm -f $TMP_DIR/physdev
 
     if ! iptables $@ ; then
-	[ -z "$stopping" ] && { stop_firewall; exit 2; }
+	if [ -z "$stopping" ]; then
+	    error_message "ERROR: Command \"$@\" Failed"
+	    stop_firewall
+	    exit 2
+	fi
     fi
 }
 
@@ -183,7 +187,11 @@ run_iptables2() {
 #
 run_ip() {
     if ! ip $@ ; then
-	[ -z "$stopping" ] && { stop_firewall; exit 2; }
+	if [ -z "$stopping" ]; then
+	    error_message "ERROR: Command \"$@\" Failed"
+	    stop_firewall
+	    exit 2
+	fi
     fi
 }
 
@@ -192,7 +200,11 @@ run_ip() {
 #
 run_tc() {
     if ! tc $@ ; then
-	[ -z "$stopping" ] && { stop_firewall; exit 2; }
+	if [ -z "$stopping" ]; then
+	    error_message "ERROR: Command \"$@\" Failed"
+	    stop_firewall
+	    exit 2
+	fi
     fi
 }
 
@@ -2784,7 +2796,7 @@ createlogactionchain() # $1 = Action Name, $2 = Log Level [: Log Tag ]
     
     [ "$COMMAND" != check ] && \
 	while havechain %${CHAIN}${actchain}; do
-	    actchain=$((${actchain-0} + 1))
+	    actchain=$(($actchain + 1))
 	    [ $actchain -eq 10 -a ${#CHAIN} -eq 9 ] && CHAIN=$(echo $CHAIN | cut -b -8)
         done
 
@@ -2865,6 +2877,9 @@ find_logactionchain() # $1 = Action, including log level and tag if any
 
 }
 
+#
+# This function determines the logging for a subordinate action or a rule within a subordinate action
+# 
 merge_levels() # $1=level at which superior action is called, $2=level at which the subordinate rule is called
 {
     local superior=$1 subordinate=$2
@@ -2925,13 +2940,33 @@ merge_levels() # $1=level at which superior action is called, $2=level at which 
 	    ;;
     esac
 }
-	    
-	    
-#
-# Read /etc/shorewall/actions and /usr/share/shorewall/actions.std and for each defined <action>, pre-process 
-# /etc/shorewall/action.<action>
-#
 
+#
+# The next two functions implement the two phases of action processing.
+#
+# The first phase (process_actions1) occurs before the rules file is processed. /usr/share/shorewall/actions.std
+# and /etc/shorewall/actions are scanned (in that order) and for each action:
+#
+#      a) The related action definition file is located and scanned.
+#      b) Forward and unresolved action references are trapped as errors.
+#      c) A dependency graph is created. For each <action>, the variable 'requiredby_<action>' lists the 
+#         action[:level[:tag]] of each action invoked by <action>.
+#      d) All actions are listed in the global variable ACTIONS.	    
+#      e) Common actions are recorded (in variables of the name <policy>_common) and are added to the global
+#         USEDACTIONS list and their action chain is created.
+#
+# As the rules file is scanned, each action[:level[:tag]] is merged onto the USEDACTIONS list. When an <action> 
+# is merged onto this list, its action chain is created. Where logging is specified, a chain with the name
+# %<action>n is used where the <action> name is truncated on the right where necessary to ensure that the total
+# length of the chain name does not exceed 11 characters.
+#
+# The second phase (process_actions2) occurs after the rules file is scanned. The transitive closure of 
+# USEDACTIONS is generated; again, as new actions are merged onto this list, their action chains are created.
+#
+# The final step is to traverse the USEDACTIONS list populating each chain appropriately by reading the
+# action definition files and creating rules. Note that a given action definition file is processed once for
+# each unique [:level[:tag]] applied to an invocation of the action.
+#
 process_actions1() {
 	
     ACTIONS="dropBcast dropNonSyn dropNotSyn rejNotSyn dropInvalid"
@@ -3003,53 +3038,8 @@ process_actions1() {
 	done < $TMP_DIR/$inputfile
     done
 }
-#
-# Generate the transitive closure of $USEDACTIONS (the actions directly referred to in rules and as common actions) then
-# process the associated action files.
-#
+
 process_actions2() {
-    #
-    # Process a rule where the source or destination is "all"
-    #
-    process_wildcard_rule() {
-	local yclients yservers ysourcezone ydestzone ypolicy
-	
-	for yclients in $xclients; do
-	    for yservers in $xservers; do
-		ysourcezone=${yclients%%:*}
-		ydestzone=${yservers%%:*}
-		if [ "${ysourcezone}" != "${ydestzone}" ] ; then
-		    eval ypolicy=\$${ysourcezone}2${ydestzone}_policy
-		    if [ "$ypolicy" != NONE ] ; then
-			rule="$(echo $xtarget $yclients $yservers $xprotocol $xports $xcports $xratelimit $xuserspec)"
-			process_action $xchain $xaction1 $xaction2 $yclients $yservers $xprotocol $xports $xcports $xratelimit $xuserspec
-		    fi
-		fi
-	    done
-	done
-    }
-
-    do_it() {
-	expandv xclients xservers xprotocol xports xcports xratelimit xuserspec
-
-	if [ "x$xclients" = xall ]; then
-	    xclients="$zones $FW"
-	    if [ "x$xservers" = xall ]; then
-		xservers="$zones $FW"
-	    fi
-	    process_wildcard_rule
-	    continue
-	fi
-
-	if [ "x$xservers" = xall ]; then
-	    xservers="$zones $FW"
-	    process_wildcard_rule
-	    continue
-	fi
-
-	rule="$(echo $xtarget $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec)"
-	process_action $xchain $xaction1 $xaction2 $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec
-    }
 
     drop_broadcasts() {
 	for address in $(find_broadcasts) 255.255.255.255 224.0.0.0/4 ; do
@@ -3065,9 +3055,7 @@ process_actions2() {
 	    run_iptables -A $xchain -d $address -j DROP
 	done
     }
-    #
-    # B O D Y   S T A R T S   H E R E
-    #
+    
     progress_message "   Generating Transitive Closure of Used-action List..."
 
     changed=Yes
@@ -3179,7 +3167,7 @@ process_actions2() {
 				
 		echo "Processing $fn for Chain $xchain..."
 		
-		while read xtarget xclients xservers xprotocol xports xcports xratelimit $xuserspec; do
+		while read xtarget xclients xservers xprotocol xports xcports xratelimit xuserspec; do
 		    expandv xtarget
 		    #
 		    # Generate the target:level:tag to pass to process_action()
@@ -3204,7 +3192,11 @@ process_actions2() {
 			    ;;
 		    esac
 
-		    do_it
+		    expandv xclients xservers xprotocol xports xcports xratelimit xuserspec
+
+		    rule="$(echo $xtarget $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec)"
+		    process_action $xchain $xaction1 $xaction2 $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec
+
 		done < $TMP_DIR/$f
 		;;
 	esac
@@ -5819,10 +5811,11 @@ activate_rules()
 # Check for disabled startup
 #
 check_disabled_startup() {
-    if [ -f /etc/shorewall/startup_disabled ]; then
+    if [ -z "$STARTUP_ENABLED" ]; then
 	echo "   Shorewall Startup is disabled -- to enable startup"
 	echo "   after you have completed Shorewall configuration,"
-	echo "   remove the file /etc/shorewall/startup_disabled"
+	echo "   change the setting of STARTUP_ENABLED to Yes in"
+        echo "   /etc/shorewall/shorewall.conf"
 
 	[ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
 	my_mutex_off
@@ -6509,6 +6502,7 @@ do_initialize() {
     BRIDGING=$(added_param_value_no BRIDGING $BRIDGING)
     DYNAMIC_ZONES=$(added_param_value_no DYNAMIC_ZONES $DYNAMIC_ZONES)
     PKTTYPE=$(added_param_value_no PKTTYPE $PKTTYPE)
+    STARTUP_ENABLED=$(added_param_value_yes STARTUP_ENABLED $STARTUP_ENABLED)
 
     #
     # Strip the files that we use often

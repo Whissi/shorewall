@@ -161,3 +161,14 @@ New Features:
 	 $LEVEL="info"
 	 $TAG="test"
 
+6)  The /etc/shorewall/startup_disabled file is no longer created when 
+    Shorewall is first installed. Rather, the variable STARTUP_ENABLED
+    is set to 'No' in /etc/shorewall/shorewall.conf. In order to get 
+    Shorewall to start, that variable's value must be set to
+    'Yes'. This change accomplishes two things:
+
+    a) It prevents Shorewall from being started prematurely by the
+    user's initialization scripts.
+
+    b) It causes /etc/shorewall/shorewall.conf to be modified so that
+    it won't be replaced by upgrades using RPM.

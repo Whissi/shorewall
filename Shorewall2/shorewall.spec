@@ -40,20 +40,6 @@ rm -rf $RPM_BUILD_ROOT
 
 %post
 
-if [ $1 -eq 1 ]; then
-    	echo \
-"########################################################################
-#      REMOVE THIS FILE AFTER YOU HAVE CONFIGURED SHOREWALL            #
-########################################################################" \
-	> /etc/shorewall/startup_disabled
-
-	if [ -x /sbin/insserv ]; then
-		/sbin/insserv /etc/rc.d/shorewall
-	elif [ -x /sbin/chkconfig ]; then
-		/sbin/chkconfig --add shorewall;
-	fi
-fi
-
 %preun
 
 if [ $1 = 0 ]; then
@@ -141,6 +127,8 @@ fi
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel
 
 %changelog
+* Mon Aug 02 2004 Tom Eastep tom@shorewall.net
+- Remove startup_disabled.
 * Thu Jul 29 2004 Tom Eastep tom@shorewall.net
 - Updated to 2.1.2-1
 * Mon Jul 12 2004 Tom Eastep tom@shorewall.net

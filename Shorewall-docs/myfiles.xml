@@ -51,7 +51,7 @@
     </caution>
 
     <para>I have DSL service and have 5 static IP addresses
-    (206.124.146.176-180). My DSL &#34;modem&#34; (Fujitsu Speedport) is
+    (206.124.146.176-180). My DSL <quote>modem</quote> (Fujitsu Speedport) is
     connected to eth0. I have a local network connected to eth2 (subnet
     192.168.1.0/24), a DMZ connected to eth1 (192.168.2.0/24) and a Wireless
     network connected to eth3 (192.168.3.0/24).</para>
@@ -91,15 +91,15 @@
     <para>Wookie and the Firewall both run Samba and the Firewall acts as a
     WINS server.</para>
 
-    <para>Wookie is in its own &#39;whitelist&#39; zone called &#39;me&#39;
-    which is embedded in the local zone.</para>
+    <para>Wookie is in its own <quote>whitelist</quote> zone called
+    <quote>me</quote> which is embedded in the local zone.</para>
 
     <para>The wireless network connects to eth3 via a LinkSys WAP11.&#x00A0;
     In additional to using the rather weak WEP 40-bit encryption (64-bit with
     the 24-bit preamble), I use <ulink url="MAC_Validation.html">MAC
     verification</ulink>. This is still a weak combination and if I lived near
-    a wireless &#34;hot spot&#34;, I would probably add IPSEC or something
-    similar to my WiFi-&#62;local connections.</para>
+    a wireless <quote>hot spot</quote>, I would probably add IPSEC or
+    something similar to my WiFi-&#62;local connections.</para>
 
     <para>The single system in the DMZ (address 206.124.146.177) runs postfix,
     Courier IMAP (imaps and pop3), DNS, a Web server (Apache) and an FTP
@@ -198,7 +198,7 @@ tx      Texas           Peer Network in Dallas
 
       <blockquote>
         <para>This is set up so that I can start the firewall before bringing
-        up my Ethernet interfaces. </para>
+        up my Ethernet interfaces.</para>
 
         <programlisting>#ZONE   INERFACE        BROADCAST       OPTIONS
 net     eth0            206.124.146.255 dhcp,norfc1918,routefilter,blacklist,tcpflags
@@ -580,8 +580,8 @@ gre                     net     $TEXAS
 
       <blockquote>
         <para>I prefer to allow SYN, FIN and RST packets unconditionally
-        rather than just on &#39;newnotsyn&#39; interfaces as is the case with
-        the standard Shorewall ruleset. This file deletes the
+        rather than just on <quote>newnotsyn</quote> interfaces as is the case
+        with the standard Shorewall ruleset. This file deletes the
         Shorewall-generated rules for these packets and creates my own.</para>
 
         <programlisting>#!/bin/sh
@@ -603,8 +603,8 @@ run_iptables -A newnotsyn -p tcp --tcp-flags FIN FIN -j ACCEPT</programlisting>
 
       <blockquote>
         <para>This file is Redhat specific and adds a route to my DMZ server
-        when eth1 is brought up. It allows me to enter &#34;Yes&#34; in the
-        HAVEROUTE column of my Proxy ARP file.</para>
+        when eth1 is brought up. It allows me to enter <quote>Yes</quote> in
+        the HAVEROUTE column of my Proxy ARP file.</para>
 
         <programlisting>#!/bin/sh
 

@@ -34,12 +34,12 @@
   </articleinfo>
 
   <note>
-    <para>Shorewall &#39;Ping&#39; management has evolved over time with the
-    latest change coming in Shorewall version 1.4.0. To find out which version
-    of Shorewall you are running, at a shell prompt type &#34;/sbin/shorewall
-    version&#34;. If that command gives you an error, it&#39;s time to upgrade
-    since you have a very old version of Shorewall installed (1.2.4 or
-    earlier).</para>
+    <para>Shorewall <quote>Ping</quote> management has evolved over time with
+    the latest change coming in Shorewall version 1.4.0. To find out which
+    version of Shorewall you are running, at a shell prompt type
+    <quote>/sbin/shorewall version</quote>. If that command gives you an
+    error, it&#39;s time to upgrade since you have a very old version of
+    Shorewall installed (1.2.4 or earlier).</para>
   </note>
 
   <section>
@@ -138,14 +138,14 @@
       </informaltable>
     </example>
 
-    <para>If you would like to accept &#39;ping&#39; by default even when the
-    relevant policy is DROP or REJECT, create /etc/shorewall/icmpdef if it
+    <para>If you would like to accept <quote>ping</quote> by default even when
+    the relevant policy is DROP or REJECT, create /etc/shorewall/icmpdef if it
     doesn&#39;t already exist and in that file place the following command:</para>
 
     <programlisting>     run_iptables -A icmpdef -p icmp --icmp-type 8 -j ACCEPT</programlisting>
 
-    <para>With that rule in place, if you want to ignore &#39;ping&#39; from
-    z1 to z2 then you need a rule of the form:</para>
+    <para>With that rule in place, if you want to ignore <quote>ping</quote>
+    from z1 to z2 then you need a rule of the form:</para>
 
     <informaltable>
       <tgroup cols="7">
@@ -334,14 +334,14 @@
       </informaltable>
     </example>
 
-    <para>If you would like to accept &#39;ping&#39; by default even when the
-    relevant policy is DROP or REJECT, create /etc/shorewall/icmpdef if it
+    <para>If you would like to accept <quote>ping</quote> by default even when
+    the relevant policy is DROP or REJECT, create /etc/shorewall/icmpdef if it
     doesn&#39;t already exist and in that file place the following command:</para>
 
     <programlisting>     run_iptables -A icmpdef -p icmp --icmp-type 8 -j ACCEPT</programlisting>
 
-    <para>With that rule in place, if you want to ignore &#39;ping&#39; from
-    z1 to z2 then you need a rule of the form:</para>
+    <para>With that rule in place, if you want to ignore <quote>ping</quote>
+    from z1 to z2 then you need a rule of the form:</para>
 
     <informaltable>
       <tgroup cols="7">
@@ -437,7 +437,7 @@
     <note>
       <para>There is one exception to the above description. In 1.3.14 and
       1.3.14a, ping from the firewall itself is enabled unconditionally. This
-      suprising &#34;feature&#34; was removed in version 1.4.0.</para>
+      suprising <quote>feature</quote> was removed in version 1.4.0.</para>
     </note>
   </section>
 

@@ -3015,7 +3015,7 @@ verify_os_version() {
 	;;
     esac
 
-    [ -n "`lsmod 2> /dev/null | grep '^ipchains'`" ] && \
+    [ $command = start -a -n "`lsmod 2> /dev/null | grep '^ipchains'`" ] && \
 	startup_error "Shorewall can't start with the ipchains kernel module loaded - see FAQ #8"
 }
 

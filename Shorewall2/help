@@ -29,11 +29,18 @@
 case $1 in
 
 add)
-	echo "add: add <interface>[:<bridge-port>][:<host-list>] ... <zone>
+	echo "add: add <interface>[:<host-list>] ... <zone>
     Adds a list of hosts or subnets to a dynamic zone usually used with VPN's.
 
-    shorewall add interface[:<port>][:host-list] ... zone - Adds the specified interface
-    (and bridge port/host if included) to the specified zone.
+    shorewall add interface:host-list ... zone - Adds the specified interface
+    (and host-list if included) to the specified zone.
+
+    A host-list is a comma-separated list whose elements are:
+
+        A host or network address
+        The name of a bridge port
+        The name of a bridge port followed by a colon (":") and a host or
+        network address.
 
     Example:
 
@@ -95,11 +102,18 @@ debug)
 	;;
 
 delete)
-	echo "delete: delete <interface>[:<bridge-port>][:<host-list>] ... <zone>
-    Deletes a host or subnet from a dynamic zone usually used with VPN's.
+	echo "delete: delete <interface>[:<host-list>] ... <zone>
+    Deletes a list of hosts or networks from a dynamic zone usually used with VPN's.
 
-    shorewall delete interface[:port][:host-list] ... zone - Deletes the specified
-    interfaces (and bridge ports/hosts if included) from the specified zone.
+    shorewall delete interface[:host-list] ... zone - Deletes the specified
+    interfaces (and host list if included) from the specified zone.
+
+    A host-list is a comma-separated list whose elements are:
+
+        A host or network address
+        The name of a bridge port
+        The name of a bridge port followed by a colon (":") and a host or
+        network address.
 
     Example:
 

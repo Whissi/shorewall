@@ -124,6 +124,8 @@ restore_file /usr/share/shorewall/configpath
 
 restore_file /etc/shorewall/init
 
+restore_file /etc/shorewall/initdone
+
 restore_file /etc/shorewall/start
 
 restore_file /etc/shorewall/stop

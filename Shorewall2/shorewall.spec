@@ -91,6 +91,7 @@ fi
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/hosts
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/blacklist
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/init
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/initdone
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/start
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/stop
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/stopped
@@ -140,6 +141,8 @@ fi
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel
 
 %changelog
+* Fri May 10 2004 Tom Eastep tom@shorewall.net
+- Add /etc/shorewall/initdone
 * Fri May 07 2004 Tom Eastep tom@shorewall.net
 - Shorewall 2.0.2-RC1
 * Tue May 04 2004 Tom Eastep tom@shorewall.net

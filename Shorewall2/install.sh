@@ -414,6 +414,16 @@ else
     echo "Init file installed as ${PREFIX}/etc/shorewall/init"
 fi
 #
+# Install the initdone file
+#
+if [ -f ${PREFIX}/etc/shorewall/initdone ]; then
+    backup_file /etc/shorewall/initdone
+else
+    run_install -o $OWNER -g $GROUP -m 0600 initdone ${PREFIX}/etc/shorewall/initdone
+    echo
+    echo "Initdone file installed as ${PREFIX}/etc/shorewall/initdone"
+fi
+#
 # Install the start file
 #
 if [ -f ${PREFIX}/etc/shorewall/start ]; then

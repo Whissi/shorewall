@@ -3302,8 +3302,12 @@ add_common_rules() {
     #
     # Reject Rules
     #
-    run_iptables -A reject -p tcp -j REJECT --reject-with tcp-reset
-    run_iptables -A reject -j REJECT
+    run_iptables -A reject -p tcp  -j REJECT --reject-with tcp-reset
+    run_iptables -A reject -p udp  -j REJECT
+    qt iptables  -A reject -p icmp -j REJECT --reject-with icmp-host-unreachable
+    qt iptables  -A reject         -j REJECT --reject-with icmp-host-prohibited
+    run_iptables -A reject         -j REJECT
+
     #
     # dropunclean rules
     #

@@ -1,282 +1,283 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-
+    
   <meta http-equiv="Content-Type"
  content="text/html; charset=windows-1252">
   <title>OpenVPN Tunnels</title>
-
+       
   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
-
+    
   <meta name="ProgId" content="FrontPage.Editor.Document">
 </head>
   <body>
-
+  
 <table border="0" cellpadding="0" cellspacing="0"
  style="border-collapse: collapse;" bordercolor="#111111" width="100%"
- id="AutoNumber1" bgcolor="#400169" height="90">
-    <tbody>
-      <tr>
-      <td width="100%">
+ id="AutoNumber1" bgcolor="#3366ff" height="90">
+     <tbody>
+       <tr>
+       <td width="100%">       
       <h1 align="center"><font color="#ffffff">OpenVPN Tunnels</font></h1>
-      </td>
-    </tr>
-
-  </tbody>
+       </td>
+     </tr>
+    
+  </tbody> 
 </table>
-
+  
 <h3><br>
-  </h3>
-
-<p>OpenVPN is a robust and highly configurable VPN (Virtual Private Network)
- daemon which can be used to securely link two or more private networks using
- an encrypted tunnel over the internet. OpenVPN is an Open Source project
-and is <a href="http://openvpn.sourceforge.net/license.html">licensed under
+   </h3>
+  
+<p>OpenVPN is a robust and highly configurable VPN (Virtual Private Network) 
+ daemon which can be used to securely link two or more private networks using 
+ an encrypted tunnel over the internet. OpenVPN is an Open Source project 
+and is <a href="http://openvpn.sourceforge.net/license.html">licensed under 
 the GPL</a>. OpenVPN can be downloaded from <a
  href="http://openvpn.sourceforge.net/">http://openvpn.sourceforge.net/</a>.<br>
-  </p>
-
+   </p>
+  
 <p>OpenVPN support was added to Shorewall in version 1.3.14.<br>
-  </p>
-
+   </p>
+  
 <h2>Bridging two Masqueraded Networks</h2>
-
+  
 <p>Suppose that we have the following situation:</p>
-
+  
 <p align="center"><img border="0" src="images/TwoNets1.png" width="745"
  height="427">
- </p>
-
-<p align="left">We want systems in the 192.168.1.0/24 subnetwork to be able
- to communicate with the systems in the 10.0.0.0/8 network. This is accomplished
- through use of the /etc/shorewall/tunnels file and the /etc/shorewall/policy
+  </p>
+  
+<p align="left">We want systems in the 192.168.1.0/24 subnetwork to be able 
+ to communicate with the systems in the 10.0.0.0/8 network. This is accomplished 
+ through use of the /etc/shorewall/tunnels file and the /etc/shorewall/policy 
  file and OpenVPN.</p>
-
-<p align="left">While it was possible to use the Shorewall start and stop
- script to start and stop OpenVPN, I decided to use the init script of OpenVPN
+  
+<p align="left">While it was possible to use the Shorewall start and stop 
+ script to start and stop OpenVPN, I decided to use the init script of OpenVPN 
  to start and stop it.</p>
-
-<p align="left">On each firewall, you will need to declare a zone to represent
- the remote subnet. We'll assume that this zone is called 'vpn' and declare
+  
+<p align="left">On each firewall, you will need to declare a zone to represent 
+ the remote subnet. We'll assume that this zone is called 'vpn' and declare 
  it in  /etc/shorewall/zones on both systems as follows.</p>
-
-<blockquote>
+  
+<blockquote>   
   <table border="2" cellpadding="2" style="border-collapse: collapse;">
-                 <tbody>
-        <tr>
-                <td><strong>ZONE</strong></td>
-                <td><strong>DISPLAY</strong></td>
-                <td><strong>COMMENTS</strong></td>
-            </tr>
-            <tr>
-                <td>vpn</td>
-                <td>VPN</td>
-                <td>Remote Subnet</td>
-            </tr>
-
-    </tbody>
+                  <tbody>
+         <tr>
+                 <td><strong>ZONE</strong></td>
+                 <td><strong>DISPLAY</strong></td>
+                 <td><strong>COMMENTS</strong></td>
+             </tr>
+             <tr>
+                 <td>vpn</td>
+                 <td>VPN</td>
+                 <td>Remote Subnet</td>
+             </tr>
+      
+    </tbody>   
+  </table>
+    </blockquote>
+  
+<p align="left">On system A, the 10.0.0.0/8 will comprise the <b>vpn</b> zone.
+In /etc/shorewall/interfaces:</p>
+  
+<blockquote>   
+  <table border="2" cellpadding="2" style="border-collapse: collapse;">
+       <tbody>
+         <tr>
+         <td><b>ZONE</b></td>
+         <td><b>INTERFACE</b></td>
+         <td><b>BROADCAST</b></td>
+         <td><b>OPTIONS</b></td>
+       </tr>
+       <tr>
+         <td>vpn</td>
+         <td>tun0</td>
+         <td><br>
+           </td>
+         <td> </td>
+       </tr>
+      
+    </tbody>   
   </table>
    </blockquote>
-
-<p align="left">On system A, the 10.0.0.0/8 will comprise the <b>vpn</b>
-zone. In /etc/shorewall/interfaces:</p>
-
-<blockquote>
-  <table border="2" cellpadding="2" style="border-collapse: collapse;">
-      <tbody>
-        <tr>
-        <td><b>ZONE</b></td>
-        <td><b>INTERFACE</b></td>
-        <td><b>BROADCAST</b></td>
-        <td><b>OPTIONS</b></td>
-      </tr>
-      <tr>
-        <td>vpn</td>
-        <td>tun0</td>
-        <td><br>
-          </td>
-        <td> </td>
-      </tr>
-
-    </tbody>
-  </table>
-  </blockquote>
-
+  
 <p align="left">In /etc/shorewall/tunnels on system A, we need the following:</p>
-
-<blockquote>
+  
+<blockquote>   
   <table border="2" cellpadding="2" style="border-collapse: collapse;">
-      <tbody>
-        <tr>
-        <td><b>TYPE</b></td>
-        <td><b>ZONE</b></td>
-        <td><b>GATEWAY</b></td>
-        <td><b>GATEWAY ZONE</b></td>
-      </tr>
-      <tr>
-        <td>openvpn</td>
-        <td>net</td>
-        <td>134.28.54.2</td>
-        <td> </td>
-      </tr>
-
-    </tbody>
+       <tbody>
+         <tr>
+         <td><b>TYPE</b></td>
+         <td><b>ZONE</b></td>
+         <td><b>GATEWAY</b></td>
+         <td><b>GATEWAY ZONE</b></td>
+       </tr>
+       <tr>
+         <td>openvpn</td>
+         <td>net</td>
+         <td>134.28.54.2</td>
+         <td> </td>
+       </tr>
+      
+    </tbody>   
   </table>
-  </blockquote>
-
-<p>This entry in /etc/shorewall/tunnels opens the firewall so that OpenVPN
- traffic on the default port 5000/udp will be accepted to/from the remote
-gateway. If you change the port used by OpenVPN to 7777, you can define /etc/shorewall/tunnels
+   </blockquote>
+  
+<p>This entry in /etc/shorewall/tunnels opens the firewall so that OpenVPN 
+ traffic on the default port 5000/udp will be accepted to/from the remote 
+gateway. If you change the port used by OpenVPN to 7777, you can define /etc/shorewall/tunnels 
  like this:<br>
-  </p>
-
-<blockquote>
+   </p>
+  
+<blockquote>   
   <table border="2" cellpadding="2" style="border-collapse: collapse;">
-      <tbody>
-        <tr>
-        <td><b>TYPE</b></td>
-        <td><b>ZONE</b></td>
-        <td><b>GATEWAY</b></td>
-        <td><b>GATEWAY ZONE</b></td>
-      </tr>
-      <tr>
-        <td>openvpn:7777</td>
-        <td>net</td>
-        <td>134.28.54.2</td>
-        <td> </td>
-      </tr>
-
-    </tbody>
+       <tbody>
+         <tr>
+         <td><b>TYPE</b></td>
+         <td><b>ZONE</b></td>
+         <td><b>GATEWAY</b></td>
+         <td><b>GATEWAY ZONE</b></td>
+       </tr>
+       <tr>
+         <td>openvpn:7777</td>
+         <td>net</td>
+         <td>134.28.54.2</td>
+         <td> </td>
+       </tr>
+      
+    </tbody>   
   </table>
-  </blockquote>
-
+   </blockquote>
+  
 <p>This is the OpenVPN config on system A:</p>
-
-<blockquote>
+  
+<blockquote>   
   <p></p>
-  </blockquote>
-
-<blockquote>
+   </blockquote>
+  
+<blockquote>   
   <p>dev tun<br>
-  local 206.162.148.9<br>
-  remote 134.28.54.2<br>
-  ifconfig 192.168.99.1 192.168.99.2<br>
-  up ./route-a.up<br>
-  tls-server<br>
-  dh dh1024.pem<br>
-  ca ca.crt<br>
-  cert my-a.crt<br>
-  key my-a.key<br>
-  comp-lzo<br>
-  verb 5<br>
-    </p>
-  </blockquote>
-
-<p>Similarly, On system B the 192.168.1.0/24 subnet will comprise the <b>vpn</b>
+   local 206.162.148.9<br>
+   remote 134.28.54.2<br>
+   ifconfig 192.168.99.1 192.168.99.2<br>
+   up ./route-a.up<br>
+   tls-server<br>
+   dh dh1024.pem<br>
+   ca ca.crt<br>
+   cert my-a.crt<br>
+   key my-a.key<br>
+   comp-lzo<br>
+   verb 5<br>
+     </p>
+   </blockquote>
+  
+<p>Similarly, On system B the 192.168.1.0/24 subnet will comprise the <b>vpn</b> 
  zone. In /etc/shorewall/interfaces:</p>
-
-<blockquote>
+  
+<blockquote>   
   <table border="2" cellpadding="2" style="border-collapse: collapse;">
-      <tbody>
-        <tr>
-        <td><b>ZONE</b></td>
-        <td><b>INTERFACE</b></td>
-        <td><b>BROADCAST</b></td>
-        <td><b>OPTIONS</b></td>
-      </tr>
-      <tr>
-        <td>vpn</td>
-        <td>tun0</td>
-        <td>192.168.1.255</td>
-        <td> </td>
-      </tr>
-
-    </tbody>
+       <tbody>
+         <tr>
+         <td><b>ZONE</b></td>
+         <td><b>INTERFACE</b></td>
+         <td><b>BROADCAST</b></td>
+         <td><b>OPTIONS</b></td>
+       </tr>
+       <tr>
+         <td>vpn</td>
+         <td>tun0</td>
+         <td>192.168.1.255</td>
+         <td> </td>
+       </tr>
+      
+    </tbody>   
   </table>
-  </blockquote>
-
+   </blockquote>
+  
 <p>In /etc/shorewall/tunnels on system B, we have:</p>
-
-<blockquote>
+  
+<blockquote>   
   <table border="2" cellpadding="2" style="border-collapse: collapse;">
-      <tbody>
-        <tr>
-        <td><b>TYPE</b></td>
-        <td><b>ZONE</b></td>
-        <td><b>GATEWAY</b></td>
-        <td><b>GATEWAY ZONE</b></td>
-      </tr>
-      <tr>
-        <td>openvpn</td>
-        <td>net</td>
-        <td>206.191.148.9</td>
-        <td> </td>
-      </tr>
-
-    </tbody>
+       <tbody>
+         <tr>
+         <td><b>TYPE</b></td>
+         <td><b>ZONE</b></td>
+         <td><b>GATEWAY</b></td>
+         <td><b>GATEWAY ZONE</b></td>
+       </tr>
+       <tr>
+         <td>openvpn</td>
+         <td>net</td>
+         <td>206.191.148.9</td>
+         <td> </td>
+       </tr>
+      
+    </tbody>   
   </table>
-  </blockquote>
-
+   </blockquote>
+  
 <p>And in the OpenVPN config on system B:</p>
-
-<blockquote>
+  
+<blockquote>   
   <p>dev tun<br>
-  local 134.28.54.2<br>
-  remote 206.162.148.9<br>
-  ifconfig 192.168.99.2 192.168.99.1<br>
-  up ./route-b.up<br>
-  tls-client<br>
-  ca ca.crt<br>
-  cert my-b.crt<br>
-  key my-b.key<br>
-  comp-lzo<br>
-  verb 5<br>
-    </p>
-  </blockquote>
-
-<p align="left">You will need to allow traffic between the "vpn" zone and
-       the "loc" zone on both systems -- if you simply want to admit all
-traffic        in both directions, you can use the policy file:</p>
-
-<blockquote>
+   local 134.28.54.2<br>
+   remote 206.162.148.9<br>
+   ifconfig 192.168.99.2 192.168.99.1<br>
+   up ./route-b.up<br>
+   tls-client<br>
+   ca ca.crt<br>
+   cert my-b.crt<br>
+   key my-b.key<br>
+   comp-lzo<br>
+   verb 5<br>
+     </p>
+   </blockquote>
+  
+<p align="left">You will need to allow traffic between the "vpn" zone and 
+       the "loc" zone on both systems -- if you simply want to admit all traffic
+       in both directions, you can use the policy file:</p>
+  
+<blockquote>   
   <table border="2" cellpadding="2" style="border-collapse: collapse;">
-                 <tbody>
-        <tr>
-                <td><strong>SOURCE</strong></td>
-                <td><strong>DEST</strong></td>
-                <td><strong>POLICY</strong></td>
-                <td><strong>LOG LEVEL</strong></td>
-            </tr>
-            <tr>
-                <td>loc</td>
-                <td>vpn</td>
-                <td>ACCEPT</td>
-            <td> </td>
-            </tr>
-                                <tr>
-                <td>vpn</td>
-                <td>loc</td>
-                <td>ACCEPT</td>
-            <td> </td>
-            </tr>
-
-    </tbody>
+                  <tbody>
+         <tr>
+                 <td><strong>SOURCE</strong></td>
+                 <td><strong>DEST</strong></td>
+                 <td><strong>POLICY</strong></td>
+                 <td><strong>LOG LEVEL</strong></td>
+             </tr>
+             <tr>
+                 <td>loc</td>
+                 <td>vpn</td>
+                 <td>ACCEPT</td>
+             <td> </td>
+             </tr>
+                                 <tr>
+                 <td>vpn</td>
+                 <td>loc</td>
+                 <td>ACCEPT</td>
+             <td> </td>
+             </tr>
+      
+    </tbody>   
   </table>
-  </blockquote>
-
-<p>On both systems, restart Shorewall and start OpenVPN. The systems in the
+   </blockquote>
+  
+<p>On both systems, restart Shorewall and start OpenVPN. The systems in the 
  two masqueraded subnetworks can now talk to each other.</p>
-
-<p><font size="2">Updated 2/4/2003 - <a href="support.htm">Tom Eastep</a></font>
+  
+<p><font size="2">Updated 2/4/2003 - <a href="support.htm">Tom Eastep</a></font> 
 <small>and Simon Mater</small><br>
- </p>
-
+  </p>
+  
 <p><font size="2"> </font></p>
-
-<p><font face="Trebuchet MS"><a href="copyright.htm"><font size="2">Copyright</font>
+  
+<p><font face="Trebuchet MS"><a href="copyright.htm"><font size="2">Copyright</font> 
  © <font size="2">2003 Thomas M. Eastep. and Simon Mater<br>
- </font></a></font></p>
-  <br>
+  </font></a></font></p>
+   <br>
+   <br>
   <br>
  <br>
 </body>

@@ -233,8 +233,7 @@ createchain() # $1 = chain name, $2 = If "yes", create default rules
     run_iptables -N $1
 
     if [ $2 = yes ]; then
-	state="ESTABLISHED,RELATED"
-	run_iptables -A $1 -m state --state $state -j ACCEPT
+	run_iptables -A $1 -m state --state ESTABLISHED,RELATED -j ACCEPT
 	[ -z "$NEWNOTSYN" ] && \
 	    run_iptables -A $1 -m state --state NEW -p tcp ! --syn -j newnotsyn
     fi
@@ -495,10 +494,17 @@ first_chains() #$1 = interface
 #
 find_hosts() # $1 = host zone
 {
-    local hosts
+    local hosts interface address addresses
 
     while read z hosts options; do
-	[ "x`expand $z`" = "x$1" ] && expandv hosts && echo `separate_list $hosts`
+	if [ "x`expand $z`" = "x$1" ]; then
+	    expandv hosts
+	    interface=${hosts%:*}
+	    addresses=${hosts#*:}
+	    for address in `separate_list $addresses`; do 
+		echo $interface:$address
+	    done
+	fi
     done < $TMP_DIR/hosts
 }
 
@@ -608,7 +614,7 @@ validate_interfaces_file() {
 
 	for option in $options; do
 	    case $option in
-		dhcp|norfc1918|tcpflags)
+		dhcp|norfc1918|tcpflags|newnotsyn)
 		    ;;
 		routefilter|dropunclean|logunclean|blacklist|proxyarp|maclist|-)
 		    ;;
@@ -636,18 +642,20 @@ validate_hosts_file() {
 	r="$z $hosts $options"
 	validate_zone $z || startup_error "Invalid zone ($z) in record \"$r\""
 
+	interface=${hosts%:*}
+
+	list_search  $interface $all_interfaces || \
+	    startup_error "Unknown interface ($interface) in record \"$r\""
+
+	hosts=${hosts#*:}
+
 	for host in `separate_list $hosts`; do
-	    interface=${host%:*}
-
-	    list_search  $interface $all_interfaces || \
-		startup_error "Unknown interface ($interface) in record \"$r\""
-
 	    for option in `separate_list $options`; do
 		case $option in
 		    maclist|-)
 			;;
 		    routeback)
-			eval ${z}_routeback=\"$host \$${z}_routeback\"
+			eval ${z}_routeback=\"$interface:$host \$${z}_routeback\"
 			;;
 		    *)
 			error_message "Warning: Invalid option ($option) in record \"$r\""
@@ -689,7 +697,7 @@ validate_policy()
 	    [ $1 = $2 ]  || \
 	    [ $1 = all ] || \
 	    [ $2 = all ] || \
-	    echo "   Policy for $1 to $2 is $policy"
+	    echo "   Policy for $1 to $2 is $policy using chain $chain"
     }
 
     all_policy_chains=
@@ -833,6 +841,15 @@ find_interface_address() # $1 = interface
 }
 
 #
+# Find interface addresses--returns the set of addresses assigned to the passed
+# device
+#
+find_interface_addresses() # $1 = interface
+{
+    ip addr show $1 | grep inet | sed 's/inet //;s/\/.*//;s/ peer.*//'
+}
+
+#
 # Find interfaces that have the passed option specified
 #
 find_interfaces_by_option() # $1 = option
@@ -848,10 +865,18 @@ find_interfaces_by_option() # $1 = option
 #
 find_hosts_by_option() # $1 = option
 {
+    local ignore hosts interface address addresses options
+
     while read ignore hosts options; do
 	expandv options
-	list_search $1 `separate_list $options` && \
-	    echo `expand $hosts`
+	if list_search $1 `separate_list $options`; then
+	    expandv hosts
+	    interface=${hosts%:*}
+	    addresses=${hosts#*:}
+	    for address in `separate_list $addresses`; do 
+		echo $interface:$address
+	    done
+	fi
     done < $TMP_DIR/hosts
 
     for interface in $all_interfaces; do
@@ -1685,13 +1710,15 @@ check_config() {
 
     disclaimer() {
 	echo
-	echo "WARNING: THE 'check' COMMAND IS TOTALLY UNSUPPORTED AND PROBLEM"
-	echo "         REPORTS COMPLAINING ABOUT ERRORS THAT IT DIDN'T CATCH"
-	echo "         WILL NOT BE ACCEPTED"
+	echo "Notice:  The 'check' command is unsupported and problem"
+	echo "         reports complaining about errors that it didn't catch"
+	echo "         will not be accepted"
 	echo
     }
 
     disclaimer
+
+    report_capabilities
 
     echo "Verifying Configuration..."
 
@@ -1839,7 +1866,11 @@ add_nat_rule() {
 
     if [ -n "$serv" ]; then
 	servport="${servport:+:$servport}"
-	target1="DNAT --to-destination ${serv}${servport}"
+	serv1=
+	for srv in `separate_list $serv`; do
+	    serv1="$serv1 --to-destination ${srv}${servport}"
+	done
+	target1="DNAT $serv1"
     else
 	target1="REDIRECT --to-port $servport"
     fi
@@ -1856,7 +1887,10 @@ add_nat_rule() {
 		chain=nonat${nonat_seq}
 		nonat_seq=$(($nonat_seq + 1))
 		createnatchain $chain
-		run_iptables -t nat -A OUTPUT $cli $proto $multiport $sports $dports -j $chain
+
+		for adr in `separate_list $addr`; do
+		    run_iptables2 -t nat -A OUTPUT $cli $proto $multiport $sports $dports -d $adr -j $chain
+		done
 
 		for adr in $excludedests; do
 		    addnatrule $chain -d $adr -j RETURN
@@ -1866,11 +1900,15 @@ add_nat_rule() {
 		    log_rule $loglevel $chain $logtarget -t nat
 		fi
 
-		addnatrule $chain -j $target1
+		addnatrule $chain $proto -j $target1 # Protocol is necessary for port redirection
 	    else
 		for adr in `separate_list $addr`; do
-		    run_iptables2 -t nat -A OUTPUT $proto $sports -d $adr \
-			$multiport $dports -j $target1
+		    if [ -n "$loglevel" ]; then
+			log_rule $loglevel $OUTPUT $logtarget -t nat \
+			    `fix_bang $proto $cli $sports -d $adr $multiport $dports`
+		    fi
+
+		    run_iptables2 -t nat -A OUTPUT $proto $sports -d $adr $multiport $dports -j $target1
 		done
 	    fi
 	else
@@ -1880,13 +1918,15 @@ add_nat_rule() {
 		chain=nonat${nonat_seq}
 		nonat_seq=$(($nonat_seq + 1))
 		createnatchain $chain
-		addnatrule `dnat_chain $source` $cli $proto $multiport $sports $dports -j $chain
+
+		for adr in `separate_list $addr`; do
+		    addnatrule `dnat_chain $source` $cli $proto $multiport $sports $dports -d $adr -j $chain
+		done
+
 		for z in $excludezones; do
 		    eval hosts=\$${z}_hosts
 		    for host in $hosts; do
-			for adr in `separate_list $addr`; do
-			    addnatrule $chain -s ${host#*:} -d $adr -j RETURN
-			done
+			addnatrule $chain -s ${host#*:} -j RETURN
 		    done
 		done
 
@@ -1894,13 +1934,11 @@ add_nat_rule() {
 		    addnatrule $chain -d $adr -j RETURN
 		done
 
-		for adr in `separate_list $addr`; do
-		    if [ -n "$loglevel" ]; then
-			log_rule $loglevel $chain $logtarget -t nat -d `fix_bang $adr`
-		    fi
+		if [ -n "$loglevel" ]; then
+		    log_rule $loglevel $chain $logtarget -t nat
+		fi
 
-		    addnatrule $chain -d $adr -j $target1
-		done
+		addnatrule $chain $proto -j $target1 # Protocol is necessary for port redirection
 	    else
 		for adr in `separate_list $addr`; do
 		    if [ -n "$loglevel" ]; then
@@ -1943,6 +1981,8 @@ add_nat_rule() {
 	    done
 	fi
     fi
+
+    [ "x$addr" = "x0.0.0.0/0" ] && addr= 
 }
 
 #
@@ -2015,9 +2055,12 @@ add_a_rule()
     servport=$serverport
     multiport=
 
+    [ x$port  = x- ] && port=
+    [ x$cport = x- ] && cport=
+
     case $proto in
 	tcp|udp|TCP|UDP|6|17)
-	    if [ -n "$port" -a "x${port}" != "x-" ]; then
+	    if [ -n "$port" ]; then
 		dports="--dport"
 		if [ -n "$multioption" -a "$port" != "${port%,*}" ]; then
 		    multiport="$multioption"
@@ -2026,7 +2069,7 @@ add_a_rule()
 		dports="$dports $port"
 	    fi
 
-	    if [ -n "$cport" -a "x${cport}" != "x-" ]; then
+	    if [ -n "$cport" ]; then
 		sports="--sport"
 		if [ -n "$multioption" -a "$cport" != "${cport%,*}" ]; then
 		    multiport="$multioption"
@@ -2036,18 +2079,17 @@ add_a_rule()
 	    fi
 		;;
 	icmp|ICMP|1)
-	    [ -n "$port" ] && [ "x${port}" != "x-" ] && \
-		dports="--icmp-type $port"
+	    [ -n "$port" ]  && 	dports="--icmp-type $port"
 	    state=
 	    ;;
 	all|ALL)
-	    [ -n "$port" ] && [ "x${port}" != "x-" ] && \
-		fatal_error "Port number not allowed with \"all\"; rule: \"$rule\""
+	    [ -n "$port" ] && \
+		fatal_error "Port number not allowed with protocol \"all\"; rule: \"$rule\""
 	    proto=
 	    ;;
 	*)
 	    state=
-	    [ -n "$port" ] && [ "x${port}" != "x-" ] && \
+	    [ -n "$port" ] && \
 		fatal_error "Port number not allowed with protocol \"$proto\"; rule: \"$rule\""
 	    ;;
     esac
@@ -2098,15 +2140,39 @@ add_a_rule()
 	    fi
 
 	    if [ -z "$dnat_only" -a $chain != ${FW}2${FW} ]; then
-		serv="${serv:+-d $serv}"
+		if [ -n "$serv" ]; then
+		    for serv1 in `separate_list $serv`; do
+			for srv in `ip_range $serv1`; do
+			    if [ -n "$addr" -a -n "$CONNTRACK_MATCH" ]; then
+				for adr in `separate_list $addr`; do
+				    if [ -n "$loglevel" -a -z "$natrule" ]; then
+					log_rule $loglevel $chain $logtarget -m conntrack --ctorigdst $adr \
+					    `fix_bang $proto $sports $multiport $state $cli -d $srv $dports`
+				    fi
 
-		if [ -n "$loglevel" -a -z "$natrule" ]; then
-		    log_rule $loglevel $chain $logtarget \
-			`fix_bang $proto $sports $multiport $state $cli $serv $dports`
+				    run_iptables2 -A $chain $proto $multiport $state $cli $sports \
+					-d $srv $dports -m conntrack --ctorigdst $adr -j $target
+				done
+			    else
+				if [ -n "$loglevel" -a -z "$natrule" ]; then
+				    log_rule $loglevel $chain $logtarget \
+					`fix_bang $proto $sports $multiport $state $cli -d $srv $dports`
+				fi
+
+				run_iptables2 -A $chain $proto $multiport $state $cli $sports \
+				    -d $srv $dports -j $target
+			    fi
+			done
+		    done
+		else
+		    if [ -n "$loglevel" -a -z "$natrule" ]; then
+		        log_rule $loglevel $chain $logtarget \
+			    `fix_bang $proto $sports $multiport $state $cli $dports`
+		    fi
+
+		    run_iptables2 -A $chain $proto $multiport $state $cli $sports \
+			$dports -j $target
 		fi
-
-		run_iptables2 -A $chain $proto $multiport $state $cli $sports \
-		    $serv $dports -j $target
 	    fi
 	fi
     else
@@ -2218,11 +2284,11 @@ process_rule() # $1 = target
 	   fatal_error "Empty source zone or qualifier: rule \"$rule\""
     fi
 
-    if [ "$clientzone" = "${clientzone%\!*}" ]; then
+    if [ "$clientzone" = "${clientzone%!*}" ]; then
 	excludezones=
     else
-	excludezones="${clientzone#*\!}"
-	clientzone="${clientzone%\!*}"
+	excludezones="${clientzone#*!}"
+	clientzone="${clientzone%!*}"
 
 	[ "$logtarget" = DNAT ] || [ "$logtarget" = REDIRECT ] ||\
 	    fatal_error "Exclude list only allowed with DNAT or REDIRECT"
@@ -2293,42 +2359,83 @@ process_rule() # $1 = target
 
     # Generate Netfilter rule(s)
 
-    if [ -n "$MULTIPORT" -a \
-	 "$ports" = "${ports%:*}" -a \
-	 "$cports" = "${cports%:*}" -a \
-	 `list_count $ports` -le 15 -a \
-	 `list_count $cports` -le 15 ]
-    then
-	#
-	# MULTIPORT is enabled, there are no port ranges in the rule and less than
-	# 16 ports are listed - use multiport match.
-	#
-	multioption="-m multiport"
-	for client in `separate_list ${clients:=-}`; do
-	    for server in `separate_list ${servers:=-}`; do
-		#
-		# add_a_rule() modifies these so we must set their values each time
-		#
-		port=${ports:=-}
-		cport=${cports:=-}
-		add_a_rule
-	    done
-	done
-    else
-	#
-	# MULTIPORT is disabled or the rule isn't compatible with multiport match
-	#
-	multioption=
-	for client in `separate_list ${clients:=-}`; do
-	    for server in `separate_list ${servers:=-}`; do
-		for port in `separate_list ${ports:=-}`; do
-		    for cport in `separate_list ${cports:=-}`; do
+    case $logtarget in
+	DNAT*)
+	    if [ -n "$MULTIPORT" -a \
+		"$ports" = "${ports%:*}" -a \
+		"$cports" = "${cports%:*}" -a \
+		`list_count $ports` -le 15 -a \
+		`list_count $cports` -le 15 ]
+		then
+	        #
+	        # MULTIPORT is enabled, there are no port ranges in the rule and less than
+	        # 16 ports are listed - use multiport match.
+	        #
+		multioption="-m multiport"
+		for client in `separate_list ${clients:=-}`; do
+		    #
+		    # add_a_rule() modifies these so we must set their values each time
+		    #
+		    server=${servers:=-}
+		    port=${ports:=-}
+		    cport=${cports:=-}
+		    add_a_rule
+		done
+	    else
+	        #
+	        # MULTIPORT is disabled or the rule isn't compatible with multiport match
+	        #
+		multioption=
+		for client in `separate_list ${clients:=-}`; do
+		    for port in `separate_list ${ports:=-}`; do
+			for cport in `separate_list ${cports:=-}`; do
+			    server=${servers:=-}
+			    add_a_rule
+			done
+		    done
+		done
+	    fi
+	    ;;
+	*)
+
+	    if [ -n "$MULTIPORT" -a \
+		"$ports" = "${ports%:*}" -a \
+		"$cports" = "${cports%:*}" -a \
+		`list_count $ports` -le 15 -a \
+		`list_count $cports` -le 15 ]
+		then
+	        #
+	        # MULTIPORT is enabled, there are no port ranges in the rule and less than
+	        # 16 ports are listed - use multiport match.
+	        #
+		multioption="-m multiport"
+		for client in `separate_list ${clients:=-}`; do
+		    for server in `separate_list ${servers:=-}`; do
+		        #
+		        # add_a_rule() modifies these so we must set their values each time
+		        #
+			port=${ports:=-}
+			cport=${cports:=-}
 			add_a_rule
 		    done
 		done
-	    done
-	done
-    fi
+	    else
+	        #
+	        # MULTIPORT is disabled or the rule isn't compatible with multiport match
+	        #
+		multioption=
+		for client in `separate_list ${clients:=-}`; do
+		    for server in `separate_list ${servers:=-}`; do
+			for port in `separate_list ${ports:=-}`; do
+			    for cport in `separate_list ${cports:=-}`; do
+				add_a_rule
+			    done
+			done
+		    done
+		done
+	    fi
+	    ;;
+    esac
     #
     # Report Result
     #
@@ -2360,7 +2467,7 @@ process_rules() # $1 = name of rules file
     while read xtarget xclients xservers xprotocol xports xcports xaddress; do
 	case "${xtarget%:*}" in
 
-	    ACCEPT|DROP|REJECT|DNAT|DNAT|DNAT-|REDIRECT|REDIRECT-|LOG|CONTINUE)
+	    ACCEPT|DROP|REJECT|DNAT|DNAT-|REDIRECT|REDIRECT-|LOG|CONTINUE)
 		expandv xclients xservers xprotocol xports xcports xaddress
 
 		if [ "x$xclients" = xall ]; then
@@ -2382,7 +2489,7 @@ process_rules() # $1 = name of rules file
 		;;
 	    *)
 		rule="`echo $xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress`"
-		fatal_error "Invalid Target in rule \"$rule\""
+		fatal_error "Invalid Action in rule \"$rule\""
 		;;
 
 	esac
@@ -2582,24 +2689,19 @@ loadmodule() # $1 = module name, $2 - * arguments
 {
     local modulename=$1
     local modulefile
+    local suffix
 
     if [ -z "`lsmod | grep $modulename`" ]; then
 	shift
-	modulefile=$MODULESDIR/${modulename}.o
+	
+	for suffix in o gz ko ; do
+	    modulefile=$MODULESDIR/${modulename}.${suffix}
 
-	if [ -f $modulefile ]; then
-	    insmod $modulefile $*
-	    return
-	fi
-	#
-	# If the modules directory contains compressed modules then we'll
-	# assume that insmod can load them
-	#
-	modulefile=${modulefile}.gz
-
-	if [ -f $modulefile ]; then
-	    insmod $modulefile $*
-	fi
+	    if [ -f $modulefile ]; then
+		insmod $modulefile $*
+		return
+	    fi
+	done
     fi
 }
 
@@ -2900,8 +3002,16 @@ setup_masq()
 	esac
 
 	if [ -n "$address" -a -n "$ADD_SNAT_ALIASES" ]; then
-	    list_search $address $aliases_to_add || \
-		aliases_to_add="$aliases_to_add $address $fullinterface"
+	    for addr in `ip_range $address` ; do
+		if ! list_search $addr $aliases_to_add; then
+		    aliases_to_add="$aliases_to_add $addr $fullinterface"
+		    case $fullinterface in
+		    *:*)
+			fullinterface=${fullinterface%:*}:$((${fullinterface#*:} + 1 ))
+			;;
+		    esac
+		fi
+	    done
 	fi
 
 	destination=$destnet
@@ -3118,7 +3228,7 @@ verify_os_version() {
     osversion=`uname -r`
 
     case $osversion in
-    2.4.*|2.5.*)
+    2.4.*|2.5.*|2.6.*)
 	;;
     *)
 	startup_error "Shorewall version $version does not work with kernel version $osversion"
@@ -3134,35 +3244,30 @@ verify_os_version() {
 #
 add_ip_aliases()
 {
-    local external
-    local interface
-    local primary
+    local addresses external interface inet cidr rest val
 
-    do_one()
+    address_details() 
     {
 	#
 	# Folks feel uneasy if they don't see all of the same
 	# decoration on these IP addresses that they see when their
 	# distro's net config tool adds them. In an attempt to reduce
 	# the anxiety level, we have the following code which sets
-	# the VLSM and BRD from the primary address
+	# the VLSM and BRD from an existing address in the same subnet
 	#
-	# Get all of the lines that contain inet addresses with broadcast
+	# Get all of the lines that contain inet addresses 
 	#
-	val=`ip addr show $interface | grep 'inet.*brd '` 2> /dev/null
+	ip addr show $interface 2> /dev/null | grep 'inet' | while read inet cidr rest ; do
+	    if in_subnet $external $cidr; then
+		echo "/${cidr#*/} brd `broadcastaddress $cidr`"
+		break
+	    fi
+	done
+    }
 
-	if [ -n "$val" ] ; then
-	    #
-	    # Hack off the leading 'inet <ip addr>' (actually cut off the
-	    # "/" as well but add it back in).
-	    #
-	    val="/${val#*/}"
-	    #
-	    # Now get the VLSM, "brd" and the broadcast address
-	    #
-	    val=${val%% scope*}
-	fi
-
+    do_one()
+    {
+	val=`address_details`
 	run_ip addr add ${external}${val} dev $interface $label
 	echo "$external $interface" >> ${STATEDIR}/nat
 	[ -n "$label" ] && label="with $label"
@@ -3182,9 +3287,9 @@ add_ip_aliases()
 	    label="label $interface:$label"
 	fi
 
-	primary=`find_interface_address $interface`
 	shift;shift
-	[ "x${primary}" = "x${external}" ] || do_one
+
+	list_search $external `find_interface_addresses $interface` || do_one
     done
 }
 
@@ -3207,8 +3312,44 @@ load_kernel_modules() {
 # Verify that the 'ip' program is installed
 
 verify_ip() {
-    qt which ip ||\
+    qt ip link ls ||\
 	startup_error "Shorewall $version requires the iproute package ('ip' utility)"
+}
+
+# 
+# Determine which optional facilities are supported by iptables/netfilter
+#
+determine_capabilities() {
+    qt iptables -t nat    -L -n && NAT_ENABLED=Yes    || NAT_ENABLED=
+    qt iptables -t mangle -L -n && MANGLE_ENABLED=Yes || MANGLE_ENABLED=
+
+    CONNTRACK_MATCH=
+    MULTIPORT=
+
+    if qt iptables -N fooX1234 ; then
+	qt iptables -A fooX1234 -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT && CONNTRACK_MATCH=Yes
+        qt iptables -A fooX1234 -p tcp -m multiport --dports 21,22 -j ACCEPT   && MULTIPORT=Yes
+
+	qt iptables -F fooX1234
+	qt iptables -X fooX1234
+    fi
+}
+
+report_capability() # $1 = Capability Name, $2 Capability Setting (if any)
+{
+    local setting=
+
+    [ "x$1" = "xYes" ] && { setting="Available"; shift; } || setting="Not available"
+
+    echo "  " $@: $setting
+}
+
+report_capabilities() {
+    echo "Shorewall has detected the following iptables/netfilter capabilities:"
+    report_capability $NAT_ENABLED "NAT"
+    report_capability $MANGLE_ENABLED "Packet Mangling"
+    report_capability $MULTIPORT "Multi-port Match"
+    report_capability $CONNTRACK_MATCH "Connection Tracking Match"
 }
 
 #
@@ -3220,6 +3361,8 @@ verify_ip() {
 #	- Determine the zones
 #
 initialize_netfilter () {
+
+    report_capabilities
 
     echo "Determining Zones..."
 
@@ -3307,7 +3450,16 @@ initialize_netfilter () {
 
     if [ -z "$NEWNOTSYN" ]; then
 	createchain newnotsyn no
+
+	for interface in `find_interfaces_by_option newnotsyn`; do
+	    run_iptables -A newnotsyn -i $interface -p tcp --tcp-flags ACK ACK -j ACCEPT
+	    run_iptables -A newnotsyn -i $interface -p tcp --tcp-flags RST RST -j ACCEPT
+	    run_iptables -A newnotsyn -i $interface -p tcp --tcp-flags FIN FIN -j ACCEPT
+	    run_iptables -A newnotsyn -i $interface -j RETURN
+	done
+
 	run_user_exit newnotsyn
+
 	if [ -n "$LOGNEWNOTSYN" ]; then
 	    log_rule $LOGNEWNOTSYN newnotsyn DROP
 	fi
@@ -3334,7 +3486,7 @@ initialize_netfilter () {
 	done < /var/lib/shorewall/save
     fi
 
-    echo "Creating input Chains..."
+    echo "Creating Interface Chains..."
 
     for interface in $all_interfaces; do
 	createchain `forward_chain $interface` no
@@ -3369,6 +3521,7 @@ build_common_chain() {
     if [ -n "$NEWNOTSYN" ]; then
 	run_iptables -A common -p tcp --tcp-flags ACK ACK -j ACCEPT
 	run_iptables -A common -p tcp --tcp-flags RST RST -j ACCEPT
+	run_iptables -A common -p tcp --tcp-flags FIN FIN -j ACCEPT
     fi
     #
     # BROADCASTS
@@ -3462,13 +3615,17 @@ add_common_rules() {
     #
     # DHCP
     #
-    echo "Adding rules for DHCP"
+    interfaces=`find_interfaces_by_option dhcp`
 
-    for interface in `find_interfaces_by_option dhcp`; do
-	run_iptables -A `input_chain $interface` -p udp --dport 67:68 -j ACCEPT
-	run_iptables -A OUTPUT	  -o $interface	 -p udp --dport 67:68 -j ACCEPT
-    done
+    if [ -n "$interfaces" ]; then
 
+	echo "Adding rules for DHCP"
+
+	for interface in $interfaces; do
+	    run_iptables -A `input_chain $interface` -p udp --dport 67:68 -j ACCEPT
+	    run_iptables -A OUTPUT    -o $interface  -p udp --dport 67:68 -j ACCEPT
+	done
+    fi
     #
     # RFC 1918
     #
@@ -3487,11 +3644,12 @@ add_common_rules() {
 	
 	run_iptables -A logdrop -j DROP
 
-	if [ -n "$MANGLE_ENABLED" ]; then
+	if [ -n "$MANGLE_ENABLED" -a -z "$CONNTRACK_MATCH" ]; then
 	    #
-	    # Mangling is enabled -- create a chain in the mangle table to
-	    # filter RFC1918 destination addresses. This must be done in the
-	    # mangle table before we apply any DNAT rules in the nat table
+	    # Mangling is enabled but conntrack match isn't available -- 
+	    # create a chain in the mangle table to filter RFC1918 destination
+            # addresses. This must be done in the mangle table before we apply
+	    # any DNAT rules in the nat table
 	    #
 	    # Also add a chain to log and drop any RFC1918 packets that we find
 	    #
@@ -3511,11 +3669,17 @@ add_common_rules() {
 	    esac
 
 	    run_iptables2 -A rfc1918 -s $subnet -j $target
-	    #
-	    # If packet mangling is enabled, trap packets with an
-	    # RFC1918 destination
-	    #
-	    if [ -n "$MANGLE_ENABLED" ]; then
+
+	    if [ -n "$CONNTRACK_MATCH" ]; then
+		#
+		# We have connection tracking match -- match on the original destination
+		#
+		run_iptables2 -A rfc1918 -m conntrack --ctorigdst $subnet -j $target
+	    elif [ -n "$MANGLE_ENABLED" ]; then
+		#
+		# No connection tracking match but we have mangling -- add a rule to
+		# the mangle table
+		#
 		run_iptables2 -t mangle -A man1918 -d $subnet -j $target
 	    fi
 	done < $TMP_DIR/rfc1918
@@ -3525,7 +3689,7 @@ add_common_rules() {
 		run_iptables -A $chain -m state --state NEW -j rfc1918
 	    done
 
-	    [ -n "$MANGLE_ENABLED" ] && \
+	    [ -n "$MANGLE_ENABLED" -a -z "$CONNTRACK_MATCH" ] && \
 		run_iptables -t mangle -A PREROUTING -m state --state NEW -i $interface -j man1918
 	done
 
@@ -4366,6 +4530,7 @@ added_param_value_no() # $1 = Parameter Name, $2 = Parameter value
 # Initialize this program
 #
 do_initialize() {
+    
     # Run all utility programs using the C locale
     #
     # Thanks to Vincent Planchenault for this tip #
@@ -4388,8 +4553,6 @@ do_initialize() {
     LOGRATE=
     LOGBURST=
     LOGPARMS=
-    NAT_ENABLED=
-    MANGLE_ENABLED=
     ADD_IP_ALIASES=
     ADD_SNAT_ALIASES=
     TC_ENABLED=
@@ -4399,7 +4562,6 @@ do_initialize() {
     CLAMPMSS=
     ROUTE_FILTER=
     NAT_BEFORE_RULES=
-    MULTIPORT=
     DETECT_DNAT_IPADDRS=
     MUTEX_TIMEOUT=
     NEWNOTSYN=
@@ -4433,6 +4595,7 @@ do_initialize() {
     FUNCTIONS=$SHARED_DIR/functions
 
     if [ -f $FUNCTIONS ]; then
+	echo "Loading $FUNCTIONS..."
 	. $FUNCTIONS
     else
 	startup_error "$FUNCTIONS does not exist!"
@@ -4463,8 +4626,6 @@ do_initialize() {
     ALLOWRELATED="`added_param_value_yes ALLOWRELATED $ALLOWRELATED`"
     [ -n "$ALLOWRELATED" ] || \
 	startup_error "ALLOWRELATED=No is not supported"
-    NAT_ENABLED="`added_param_value_yes NAT_ENABLED $NAT_ENABLED`"
-    MANGLE_ENABLED="`added_param_value_yes MANGLE_ENABLED $MANGLE_ENABLED`"
     ADD_IP_ALIASES="`added_param_value_yes ADD_IP_ALIASES $ADD_IP_ALIASES`"
     TC_ENABLED="`added_param_value_yes TC_ENABLED $TC_ENABLED`"
 
@@ -4496,7 +4657,6 @@ do_initialize() {
     ADD_SNAT_ALIASES=`added_param_value_no ADD_SNAT_ALIASES $ADD_SNAT_ALIASES`
     ROUTE_FILTER=`added_param_value_no ROUTE_FILTER $ROUTE_FILTER`
     NAT_BEFORE_RULES=`added_param_value_yes NAT_BEFORE_RULES $NAT_BEFORE_RULES`
-    MULTIPORT=`added_param_value_no MULTIPORT $MULTIPORT`
     DETECT_DNAT_IPADDRS=`added_param_value_no DETECT_DNAT_IPADDRS $DETECT_DNAT_IPADDRS`
     FORWARDPING=`added_param_value_no FORWARDPING $FORWARDPING`
     [ -n "$FORWARDPING" ] && \
@@ -4567,6 +4727,19 @@ do_initialize() {
     #
     strip_file interfaces
     strip_file hosts
+    #
+    # Determine the capabilities of the installed iptables/netfilter
+    #
+    determine_capabilities
+    #
+    # Check out the user's shell
+    #
+    [ -n "$SHOREWALL_SHELL" ] || SHOREWALL_SHELL=/bin/sh
+
+    temp=`decodeaddr 192.168.1.1` 
+    if [ `encodeaddr $temp` != 192.168.1.1 ]; then
+	startup_error "Shell $SHOREWALL_SHELL is broken and may not be used with Shorewall"
+    fi
 }
 
 #
@@ -4719,6 +4892,15 @@ case "$command" in
 	my_mutex_off
 	;;
 
+    call)
+	#
+	# Undocumented way to call functions in /usr/share/shorewall/firewall directly
+	#
+	shift;
+	do_initialize
+	EMPTY=
+	$@
+	;;
     *)
 	usage
 	;;

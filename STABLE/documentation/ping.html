@@ -2,191 +2,190 @@
 <html>
 <head>
   <title>ICMP Echo-request (Ping)</title>
-       
+                     
   <meta http-equiv="content-type"
  content="text/html; charset=ISO-8859-1">
-    
+            
   <meta name="author" content="Tom Eastep">
 </head>
   <body>
-  
+      
 <table border="0" cellpadding="0" cellspacing="0"
  style="border-collapse: collapse;" bordercolor="#111111" width="100%"
- id="AutoNumber1" bgcolor="#400169" height="90">
-        <tbody>
-         <tr>
-          <td width="100%">       
+ id="AutoNumber1" bgcolor="#3366ff" height="90">
+          <tbody>
+           <tr>
+            <td width="100%">                     
       <h1 align="center"><font color="#ffffff">ICMP Echo-request (Ping)</font></h1>
-          </td>
-        </tr>
-    
-  </tbody> 
+            </td>
+          </tr>
+            
+  </tbody>   
 </table>
-     <br>
-     Shorewall 'Ping' management has evolved over time with the latest change 
- coming in Shorewall version 1.4.0. <br>
-  
+       <br>
+       Shorewall 'Ping' management has evolved over time with the latest
+change   coming in Shorewall version 1.4.0. To find out which version of
+Shorewall you are running, at a shell prompt type "<font color="#009900"><b>/sbin/shorewall 
+version</b></font>". If that command gives you an error, it's time to upgrade 
+since you have a very old version of Shorewall installed (1.2.4 or earlier).<br>
+      
 <h2>Shorewall Versions &gt;= 1.4.0</h2>
-In Shoreall 1.4.0 and later version, ICMP echo-request's are treated just
-like any other connection request.<br>
-<br>
-  In order to accept ping requests from zone z1 to zone z2 where the policy 
-for z1 to z2 is not ACCEPT, you need a rule in /etc/shoreall/rules of the 
-form:<br>
-  
-<blockquote>ACCEPT&nbsp;&nbsp;&nbsp; <i>z1&nbsp;&nbsp;&nbsp; z2&nbsp;&nbsp;&nbsp; 
-   </i>icmp&nbsp;&nbsp;&nbsp; 8<br>
-    </blockquote>
-    Example: <br>
-    <br>
-    To permit ping from the local zone to the firewall:<br>
-  
-<blockquote>ACCEPT&nbsp;&nbsp;&nbsp; loc&nbsp;&nbsp;&nbsp; fw&nbsp;&nbsp;&nbsp; 
- icmp&nbsp;&nbsp;&nbsp; 8<br>
-    </blockquote>
-        If you would like to accept 'ping' by default even when the relevant 
- policy is DROP or REJECT, create <b>/etc/shorewall/icmpdef </b>if it doesn't 
- already exist and in that file place the following command:<br>
-  
-<blockquote>   
-  <pre><b><font color="#009900">run_iptables -A icmpdef -p icmp --icmp-type 8 -j ACCEPT<br></font></b></pre>
-    </blockquote>
-    With that rule in place, if you want to ignore 'ping' from z1 to z2 then 
- you need a rule of the form:<br>
-  
-<blockquote>DROP&nbsp;&nbsp;&nbsp; <i>z1&nbsp;&nbsp;&nbsp; z2&nbsp;&nbsp;&nbsp; 
-   </i>icmp&nbsp;&nbsp;&nbsp; 8<br>
-    </blockquote>
-    Example:<br>
-    <br>
-    To drop ping from the internet, you would need this rule in /etc/shorewall/rules:<br>
+  In Shoreall 1.4.0 and later version, ICMP echo-request's are treated just
+ like any other connection request.<br>
   <br>
-  
-<blockquote>DROP&nbsp;&nbsp;&nbsp; net&nbsp;&nbsp;&nbsp; fw&nbsp;&nbsp;&nbsp; 
- icmp&nbsp;&nbsp;&nbsp; 8<br>
-  </blockquote>
-  
-<h2>Shorewall Versions &gt;= 1.3.14 &nbsp;and &lt; 1.4.0 with OLD_PING_HANDLING=No
-in /etc/shorewall/shorewall.conf</h2>
-    In 1.3.14, Ping handling was put under control of the rules and policies 
- just like any other connection request. In order to accept ping requests 
-from zone z1 to zone z2 where the policy for z1 to z2 is not ACCEPT, you
-need a rule in /etc/shoreall/rules of the form:<br>
-  
+    In order to accept ping requests from zone z1 to zone z2 where the policy 
+ for z1 to z2 is not ACCEPT, you need a rule in /etc/shoreall/rules of the 
+ form:<br>
+      
 <blockquote>ACCEPT&nbsp;&nbsp;&nbsp; <i>z1&nbsp;&nbsp;&nbsp; z2&nbsp;&nbsp;&nbsp; 
-   </i>icmp&nbsp;&nbsp;&nbsp; 8<br>
-    </blockquote>
-    Example: <br>
-    <br>
-    To permit ping from the local zone to the firewall:<br>
-  
-<blockquote>ACCEPT&nbsp;&nbsp;&nbsp; loc&nbsp;&nbsp;&nbsp; fw&nbsp;&nbsp;&nbsp; 
- icmp&nbsp;&nbsp;&nbsp; 8<br>
-    </blockquote>
-        If you would like to accept 'ping' by default even when the relevant 
- policy is DROP or REJECT, create <b>/etc/shorewall/icmpdef </b>if it doesn't 
- already exist and in that file place the following command:<br>
-  
-<blockquote>   
-  <pre><b><font color="#009900">run_iptables -A icmpdef -p icmp --icmp-type 8 -j ACCEPT<br></font></b></pre>
-    </blockquote>
-    With that rule in place, if you want to ignore 'ping' from z1 to z2 then 
- you need a rule of the form:<br>
-  
-<blockquote>DROP&nbsp;&nbsp;&nbsp; <i>z1&nbsp;&nbsp;&nbsp; z2&nbsp;&nbsp;&nbsp; 
-   </i>icmp&nbsp;&nbsp;&nbsp; 8<br>
-    </blockquote>
-    Example:<br>
-    <br>
-    To drop ping from the internet, you would need this rule in /etc/shorewall/rules:<br>
-  
-<blockquote>DROP&nbsp;&nbsp;&nbsp; net&nbsp;&nbsp;&nbsp; fw&nbsp;&nbsp;&nbsp; 
- icmp&nbsp;&nbsp;&nbsp; 8<br>
-    </blockquote>
-  
-<blockquote>      </blockquote>
-  
-<h2>Shorewall Versions &lt; 1.3.14 or with OLD_PING_HANDLING=Yes in /etc/shorewall/shorewall.conf<br>
-    </h2>
-    There are several aspects to the old Shorewall Ping management:<br>
-  
-<ol>
-       <li>The <b>noping</b> and <b>filterping </b>interface options in <a
- href="Documentation.htm#Interfaces">/etc/shorewall/interfaces</a>.</li>
-       <li>The <b>FORWARDPING</b> option in<a
- href="Documentation.htm#Conf">  /etc/shorewall/shorewall.conf</a>.</li>
-       <li>Explicit rules in <a href="Documentation.htm#Rules">/etc/shorewall/rules</a>.</li>
-  
-</ol>
-     There are two cases to consider:<br>
-  
-<ol>
-       <li>Ping requests addressed to the firewall itself; and</li>
-       <li>Ping requests being forwarded to another system. Included here 
-are   all cases of packet forwarding including NAT, DNAT rule, Proxy ARP and
-simple   routing.</li>
-  
-</ol>
-     These cases will be covered separately.<br>
-  
-<h3>Ping Requests Addressed to the Firewall Itself</h3>
-     For ping requests addressed to the firewall, the sequence is as follows:<br>
-  
-<ol>
-       <li>If neither <b>noping</b> nor <b>filterping </b>are specified for 
- the  interface that receives the ping request then the request will be responded 
-  to with an ICMP echo-reply.</li>
-       <li>If <b>noping</b> is specified for the interface that receives
-the  ping request then the request is ignored.</li>
-       <li>If <b>filterping </b>is specified for the interface then the request 
-  is passed to the rules/policy evaluation.</li>
-  
-</ol>
-  
-<h3>Ping Requests Forwarded by the Firewall</h3>
-     These requests are <b>always</b> passed to rules/policy evaluation.<br>
-  
-<h3>Rules Evaluation</h3>
-     Ping requests are ICMP type 8. So the general rule format is:<br>
-     <br>
-     &nbsp;&nbsp;&nbsp; <i>Target&nbsp;&nbsp;&nbsp; Source&nbsp;&nbsp;&nbsp; 
- Destination&nbsp;&nbsp;&nbsp; </i>icmp&nbsp;&nbsp;&nbsp; 8<br>
-     <br>
-     Example 1. Accept pings from the net to the dmz (pings are responded 
-to  with an ICMP echo-reply):<br>
-     <br>
-     &nbsp;&nbsp;&nbsp; ACCEPT&nbsp;&nbsp;&nbsp; net&nbsp;&nbsp;&nbsp; dmz&nbsp;&nbsp;&nbsp; 
-  icmp&nbsp;&nbsp;&nbsp; 8<br>
-     <br>
-     Example 2. Drop pings from the net to the firewall<br>
-     <br>
-     &nbsp;&nbsp;&nbsp; DROP&nbsp;&nbsp;&nbsp; net&nbsp;&nbsp;&nbsp; fw&nbsp;&nbsp;&nbsp; 
-  icmp&nbsp;&nbsp;&nbsp; 8<br>
-  
-<h3>Policy Evaluation</h3>
-     If no applicable rule is found, then the policy for the source to the 
-destination  is applied.<br>
-  
-<ol>
-       <li>If the relevant policy is ACCEPT then the request is responded 
-to  with an ICMP echo-reply.</li>
-       <li>If <b>FORWARDPING</b> is set to Yes in /etc/shorewall/shorewall.conf 
-  then the request is responded to with an ICMP echo-reply.</li>
-       <li>Otherwise, the relevant REJECT or DROP policy is used and the
-request   is either rejected or simply ignored.</li>
-  
-</ol>
-  
-<p><font size="2">Updated 5/4/2003 - <a href="support.htm">Tom Eastep</a> 
- </font></p>
-  
-<p><a href="copyright.htm"><font size="2">Copyright</font>  &copy; <font
- size="2">2001, 2002, 2003 Thomas M. Eastep.</font></a></p>
+    </i>icmp&nbsp;&nbsp;&nbsp; 8<br>
+      </blockquote>
+      Example: <br>
       <br>
-     <br>
+      To permit ping from the local zone to the firewall:<br>
+      
+<blockquote>ACCEPT&nbsp;&nbsp;&nbsp; loc&nbsp;&nbsp;&nbsp; fw&nbsp;&nbsp;&nbsp; 
+  icmp&nbsp;&nbsp;&nbsp; 8<br>
+      </blockquote>
+          If you would like to accept 'ping' by default even when the relevant 
+  policy is DROP or REJECT, create <b>/etc/shorewall/icmpdef </b>if it doesn't 
+  already exist and in that file place the following command:<br>
+      
+<blockquote>         
+  <pre><b><font color="#009900">run_iptables -A icmpdef -p icmp --icmp-type 8 -j ACCEPT<br></font></b></pre>
+      </blockquote>
+      With that rule in place, if you want to ignore 'ping' from z1 to z2 
+then   you need a rule of the form:<br>
+      
+<blockquote>DROP&nbsp;&nbsp;&nbsp; <i>z1&nbsp;&nbsp;&nbsp; z2&nbsp;&nbsp;&nbsp; 
+    </i>icmp&nbsp;&nbsp;&nbsp; 8<br>
+      </blockquote>
+      Example:<br>
+      <br>
+      To drop ping from the internet, you would need this rule in /etc/shorewall/rules:<br>
     <br>
-   <br>
-  <br>
+      
+<blockquote>DROP&nbsp;&nbsp;&nbsp; net&nbsp;&nbsp;&nbsp; fw&nbsp;&nbsp;&nbsp; 
+  icmp&nbsp;&nbsp;&nbsp; 8<br>
+    </blockquote>
+      
+<h2>Shorewall Versions &gt;= 1.3.14 &nbsp;and &lt; 1.4.0 with OLD_PING_HANDLING=No
+ in /etc/shorewall/shorewall.conf</h2>
+      In 1.3.14, Ping handling was put under control of the rules and policies 
+  just like any other connection request. In order to accept ping requests 
+ from zone z1 to zone z2 where the policy for z1 to z2 is not ACCEPT, you
+ need a rule in /etc/shoreall/rules of the form:<br>
+      
+<blockquote>ACCEPT&nbsp;&nbsp;&nbsp; <i>z1&nbsp;&nbsp;&nbsp; z2&nbsp;&nbsp;&nbsp; 
+    </i>icmp&nbsp;&nbsp;&nbsp; 8<br>
+      </blockquote>
+      Example: <br>
+      <br>
+      To permit ping from the local zone to the firewall:<br>
+      
+<blockquote>ACCEPT&nbsp;&nbsp;&nbsp; loc&nbsp;&nbsp;&nbsp; fw&nbsp;&nbsp;&nbsp; 
+  icmp&nbsp;&nbsp;&nbsp; 8<br>
+      </blockquote>
+          If you would like to accept 'ping' by default even when the relevant 
+  policy is DROP or REJECT, create <b>/etc/shorewall/icmpdef </b>if it doesn't 
+  already exist and in that file place the following command:<br>
+      
+<blockquote>         
+  <pre><b><font color="#009900">run_iptables -A icmpdef -p icmp --icmp-type 8 -j ACCEPT<br></font></b></pre>
+      </blockquote>
+      With that rule in place, if you want to ignore 'ping' from z1 to z2 
+then   you need a rule of the form:<br>
+      
+<blockquote>DROP&nbsp;&nbsp;&nbsp; <i>z1&nbsp;&nbsp;&nbsp; z2&nbsp;&nbsp;&nbsp; 
+    </i>icmp&nbsp;&nbsp;&nbsp; 8<br>
+      </blockquote>
+      Example:<br>
+      <br>
+      To drop ping from the internet, you would need this rule in /etc/shorewall/rules:<br>
+      
+<blockquote>DROP&nbsp;&nbsp;&nbsp; net&nbsp;&nbsp;&nbsp; fw&nbsp;&nbsp;&nbsp; 
+  icmp&nbsp;&nbsp;&nbsp; 8<br>
+      </blockquote>
+      
+<blockquote>      </blockquote>
+      
+<h2>Shorewall Versions &lt; 1.3.14 or with OLD_PING_HANDLING=Yes in /etc/shorewall/shorewall.conf<br>
+      </h2>
+      There are several aspects to the old Shorewall Ping management:<br>
+      
+<ol>
+         <li>The <b>noping</b> and <b>filterping </b>interface options in 
+    <a href="Documentation.htm#Interfaces">/etc/shorewall/interfaces</a>.</li>
+         <li>The <b>FORWARDPING</b> option in<a
+ href="Documentation.htm#Conf">  /etc/shorewall/shorewall.conf</a>.</li>
+         <li>Explicit rules in <a href="Documentation.htm#Rules">/etc/shorewall/rules</a>.</li>
+      
+</ol>
+       There are two cases to consider:<br>
+      
+<ol>
+         <li>Ping requests addressed to the firewall itself; and</li>
+         <li>Ping requests being forwarded to another system. Included here 
+ are   all cases of packet forwarding including NAT, DNAT rule, Proxy ARP 
+and simple   routing.</li>
+      
+</ol>
+       These cases will be covered separately.<br>
+      
+<h3>Ping Requests Addressed to the Firewall Itself</h3>
+       For ping requests addressed to the firewall, the sequence is as follows:<br>
+      
+<ol>
+         <li>If neither <b>noping</b> nor <b>filterping </b>are specified 
+for   the  interface that receives the ping request then the request will 
+be responded    to with an ICMP echo-reply.</li>
+         <li>If <b>noping</b> is specified for the interface that receives
+ the  ping request then the request is ignored.</li>
+         <li>If <b>filterping </b>is specified for the interface then the 
+request    is passed to the rules/policy evaluation.</li>
+      
+</ol>
+      
+<h3>Ping Requests Forwarded by the Firewall</h3>
+       These requests are <b>always</b> passed to rules/policy evaluation.<br>
+      
+<h3>Rules Evaluation</h3>
+       Ping requests are ICMP type 8. So the general rule format is:<br>
+       <br>
+       &nbsp;&nbsp;&nbsp; <i>Target&nbsp;&nbsp;&nbsp; Source&nbsp;&nbsp;&nbsp; 
+  Destination&nbsp;&nbsp;&nbsp; </i>icmp&nbsp;&nbsp;&nbsp; 8<br>
+       <br>
+       Example 1. Accept pings from the net to the dmz (pings are responded 
+ to  with an ICMP echo-reply):<br>
+       <br>
+       &nbsp;&nbsp;&nbsp; ACCEPT&nbsp;&nbsp;&nbsp; net&nbsp;&nbsp;&nbsp;
+dmz&nbsp;&nbsp;&nbsp;    icmp&nbsp;&nbsp;&nbsp; 8<br>
+       <br>
+       Example 2. Drop pings from the net to the firewall<br>
+       <br>
+       &nbsp;&nbsp;&nbsp; DROP&nbsp;&nbsp;&nbsp; net&nbsp;&nbsp;&nbsp; fw&nbsp;&nbsp;&nbsp; 
+   icmp&nbsp;&nbsp;&nbsp; 8<br>
+      
+<h3>Policy Evaluation</h3>
+       If no applicable rule is found, then the policy for the source to
+the  destination  is applied.<br>
+      
+<ol>
+         <li>If the relevant policy is ACCEPT then the request is responded 
+ to  with an ICMP echo-reply.</li>
+         <li>If <b>FORWARDPING</b> is set to Yes in /etc/shorewall/shorewall.conf 
+   then the request is responded to with an ICMP echo-reply.</li>
+         <li>Otherwise, the relevant REJECT or DROP policy is used and the
+ request   is either rejected or simply ignored.</li>
+      
+</ol>
+      
+<p><font size="2">Updated 7/7/2003 - <a href="support.htm">Tom Eastep</a> 
+  </font></p>
+      
+<p><a href="copyright.htm"><font size="2">Copyright</font>  &copy; <font
+ size="2">2001, 2002, 2003 Thomas M. Eastep.</font></a><br>
+ </p>
  <br>
 </body>
 </html>

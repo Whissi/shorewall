@@ -82,6 +82,22 @@
 #						   be automatically reinstated the
 #						   next time that Shorewall starts.
 #
+#          shorewall ipaddr [ <address>/<cidr> | <address> <netmask> ]
+#
+#                                                  Displays information about the network
+#                                                  defined by the argument[s]
+#
+#          shorewall iprange <address>-<address>   Decomposes a range of IP addresses into
+#                                                  a list of network/host addresses.
+#
+# Fatal Error
+#
+fatal_error() # $@ = Message
+{
+    echo "   $@" >&2
+    exit 2
+}
+
 # Display a chain if it exists
 #
 
@@ -138,6 +154,13 @@ get_config() {
     [ -n "LOGFORMAT" ] && LOGFORMAT="${LOGFORMAT%%%*}"
 
     [ -n "$LOGFORMAT" ] || LOGFORMAT="Shorewall:"
+
+    if [ -n "$SHOREWALL_SHELL" ]; then
+	if [ ! -e "$SHOREWALL_SHELL" ]; then
+	    echo "The program specified in SHOREWALL_SHELL does not exist or is not executable" >&2
+	    exit 2
+	fi
+    fi
 }
 
 #
@@ -521,6 +544,8 @@ usage() # $1 = exit status
     echo "   reject <address> ..."
     echo "   allow <address> ..."
     echo "   save"
+    echo "   ipcalc [ <address>/<vlsm> | <address> <netmask> ]"
+    echo "   iprange <address>-<address>"
     exit $1
 }
 
@@ -653,11 +678,13 @@ esac
 case "$1" in
     start|stop|restart|reset|clear|refresh|check)
 	[ $# -ne 1 ] && usage 1
-	exec $FIREWALL $debugging $nolock $1
+	get_config
+	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $1
 	;;
     add|delete)
 	[ $# -ne 3 ] && usage 1
-	exec $FIREWALL $debugging $nolock $1 $2 $3
+	get_config
+	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $1 $2 $3
 	;;
     show|list)
 	[ $# -gt 2 ] && usage 1
@@ -860,7 +887,48 @@ case "$1" in
 	fi
 	mutex_off
 	;;
+    ipcalc)
+	if [ $# -eq 2 ]; then
+	    address=${2%/*}
+	    vlsm=${2#*/}
+	elif [ $# -eq 3 ]; then
+	    address=$2
+	    vlsm=`ip_vlsm $3`
+	else
+	    usage 1
+	fi
+	
+	[ -z "$vlsm" ] && exit 2
+	[ "x$address" = "x$vlsm" ] && usage 2
+	[ $vlsm -gt 32 ] && echo "Invalid VLSM: /$vlsm" >&2 && exit 2
+
+	address=$address/$vlsm
+
+	                                  echo "   CIDR=$address"
+	temp=`ip_netmask $address`;       echo "   NETMASK=`encodeaddr $temp`"
+	temp=`ip_network $address`;       echo "   NETWORK=$temp"
+	temp=`broadcastaddress $address`; echo "   BROADCAST=$temp"
+	;;
+
+    iprange)
+	case $2 in
+	    *.*.*.*-*.*.*.*)
+		ip_range $2
+		;;
+	    *)
+		usage 1
+		;;
+	esac
+	;;
+    call) 
+	#
+	# Undocumented way to call functions in /usr/share/shorewall/functions directly
+	#
+	shift;
+	$@
+	;;
     *)
 	usage 1
 	;;
+
 esac

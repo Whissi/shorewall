@@ -83,29 +83,23 @@ find_display() # $1 = zone, $2 = name of the zone file
 	[ "x$1" = "x$z" ] && echo $display
     done
 }
-
+#
+# This function assumes that the TMP_DIR variable is set and that
+# its value named an existing directory.
+#
 determine_zones()
 {
     local zonefile=`find_file zones`
 
     multi_display=Multi-zone
-
-    if [ -f $zonefile ]; then
-	zones=`find_zones $zonefile`
-	zones=`echo $zones` # Remove extra trash
-
-	for zone in $zones; do
-	    dsply=`find_display $zone $zonefile`
-	    eval ${zone}_display=\$dsply
-        done
-    else
-	zones="net local dmz gw"
-	net_display=Net
-	local_display=Local
-	dmz_display=DMZ
-	gw_display=Gateway
-    fi
-
+    strip_file zones $zonefile
+    zones=`find_zones $TMP_DIR/zones`
+    zones=`echo $zones` # Remove extra trash
+    
+    for zone in $zones; do
+	dsply=`find_display $zone $TMP_DIR/zones`
+	eval ${zone}_display=\$dsply
+    done
 }
 
 #
@@ -225,3 +219,164 @@ strip_file() # $1 = Base Name of the file, $2 = Full Name of File (optional)
 	> $TMP_DIR/$1
     fi
 }
+
+#
+#  Note: The following set of IP address manipulation functions have anomalous
+#        behavior when the shell only supports 32-bit signed arithmatic and
+#        the IP address is 128.0.0.0 or 128.0.0.1.
+#
+#
+# So that emacs doesn't get lost, we use $LEFTSHIFT rather than <<
+#
+LEFTSHIFT='<<'
+
+#
+# Convert an IP address in dot quad format to an integer
+#
+decodeaddr() {
+    local x
+    local temp=0
+    local ifs=$IFS
+    
+    IFS=.
+
+    for x in $1; do
+	temp=$(( $(( $temp $LEFTSHIFT 8 )) | $x ))
+    done
+
+    echo $temp
+
+    IFS=$ifs
+}
+
+#
+# convert an integer to dot quad format
+#
+encodeaddr() {
+    addr=$1
+    local x
+    local y=$(($addr & 255))
+
+    for x in 1 2 3 ; do
+	addr=$(($addr >> 8))
+	y=$(($addr & 255)).$y
+    done
+
+    echo $y
+}
+
+#
+# Enumerate the members of an IP range -- When using a shell supporting only
+# 32-bit signed arithmetic, the range cannot span 128.0.0.0.
+#
+ip_range() {
+    local first last l x y z vlsm
+
+    case $1 in 
+    [0-9]*.*.*.*-*.*.*.*)
+	;;
+    *)
+	echo $1
+	return
+	;;
+    esac
+
+    first=`decodeaddr ${1%-*}`
+    last=`decodeaddr ${1#*-}`
+
+    if [ $first -gt $last ]; then
+	fatal_error "Invalid IP address range: $1"
+    fi
+
+    l=$(( $last + 1 ))
+
+    while [ $first -le $last ]; do
+	vlsm=
+	x=31
+	y=2
+	z=1
+
+	while [ $(( $first % $y )) -eq 0 -a $(( $first + $y )) -le $l ]; do
+	    vlsm=/$x
+	    x=$(( $x - 1 ))
+	    z=$y
+	    y=$(( $y * 2 ))
+	done
+
+	echo `encodeaddr $first`$vlsm
+	first=$(($first + $z))
+    done
+}
+
+#
+# Netmask from CIDR
+#
+ip_netmask() {
+    local vlsm=${1#*/}
+
+    [ $vlsm -eq 0 ] && echo 0 || echo $(( -1 $LEFTSHIFT $(( 32 - $vlsm )) ))
+}
+
+#
+# Network address from CIDR
+#
+ip_network() {
+    local decodedaddr=`decodeaddr ${1%/*}`
+    local netmask=`ip_netmask $1`
+
+    echo `encodeaddr $(($decodedaddr & $netmask))`
+}
+
+#
+# The following hack is supplied to compensate for the fact that many of
+# the popular light-weight Bourne shell derivatives don't support XOR ("^").
+#
+# Note: 2147483647 = 0x7fffffff
+
+ip_broadcast() {
+    local x=$(( ${1#*/} - 1 ))
+
+    [ $x -eq -1 ] && echo -1 || echo $(( 2147483647 >> $x ))
+}
+
+#
+# Calculate broadcast address from CIDR
+#
+broadcastaddress() {
+    local decodedaddr=`decodeaddr ${1%/*}`
+    local netmask=`ip_netmask $1`
+    local broadcast=`ip_broadcast $1`
+
+    echo `encodeaddr $(( $(($decodedaddr & $netmask)) | $broadcast ))`
+}
+
+#
+# Test for subnet membership
+#
+in_subnet() # $1 = IP address, $2 = CIDR network
+{
+    local netmask=`ip_netmask $2`
+
+    test $(( `decodeaddr $1` & $netmask)) -eq $(( `decodeaddr ${2%/*}` & $netmask ))
+}
+
+#
+# Netmask to VLSM
+#
+ip_vlsm() {
+    local mask=`decodeaddr $1`
+    local vlsm=0
+    local x=$(( 128 $LEFTSHIFT 24 ))
+
+    while [ $(( $x & $mask )) -ne 0 ]; do
+	[ $mask -eq $x ] && mask=0 || mask=$(( $mask $LEFTSHIFT 1 )) # Don't Ask...
+	vlsm=$(($vlsm + 1))
+    done
+
+    if [ $(( $mask & 2147483647)) -ne 0 ]; then
+	echo "Invalid net mask: $1" >&2
+    else
+	echo $vlsm
+    fi
+}
+

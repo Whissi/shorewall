@@ -1,15 +1,53 @@
-Changes since 1.4.4b
+Changes since 1.4.5
 
-1) The command "shorewall debug try <directory>" now correctly traces
-   the attempt.
+1) Worked around RH7.3 "service" anomaly.
 
-2) The ORIGINAL DEST column in a DNAT[-] or REDIRECT[-] rule may now
-   contain a list of addresses. If the list begins with "!' then the
-   rule will take effect only if the original destination address in
-   the connection request does not match any of the addresses listed.
+2) Implemented 'newnotsyn' interface option.
 
-3) Enhanced processing of the zones file to allow the INCLUDE
-   directive.
- 
-4) Fix processing of the routestopped file's second column.
+3) Document range in masq ADDRESS column and suppress ADD_SNAT_ALIASES
+   behavior in that case.
 
+4) Enable ADD_SNAT_ALIASES=Yes for SNAT ranges.
+
+5) Allow Shorewall to add aliases to other than the first subnet on an
+   interface.
+
+6) Add support for load-balancing.
+
+7) Toned down the disclaimer for the 'check' command.
+
+8) Implemented support for the Connection Tracking Match extension in
+   iptables 1.2.8/Kernel 2.4.21.
+
+9) Removed the NAT_ENABLED, MANGLE_ENABLED and MULTIPORT configuration
+   parameters and replaced them with code that detects these
+   capabilities.
+
+10) Added the SHOREWALL_SHELL configuraiton parameter.
+
+11) Fixed capability reporting (thanks to Simon Matter).
+
+12) Correct the implementation of destination IP list in DNAT[-] rules.
+
+13) Check for shells whose arithmetic support is broken.
+
+14) Moved IP Address manipulation functions to
+    /usr/share/shorewall/functions.
+
+15. Added ipcalc command.
+
+16. Fixed handling of destination DNS names containing a "-"
+
+17. Make ip_range() smarter.
+
+18. Added /sbin/shorewall iprange command.
+
+19. Fixed handling of excluded zone processing in DNAT and REDIRECT
+    rules (re-added the protocol to the rule). Fixed parsing of exclude
+    zones.
+
+20. Display policy chain along with policy in 'check' command.
+
+21. Support Linux 2.6 compressed modules.
+
+22. Don't display DHCP message when there are no DHCP interface.

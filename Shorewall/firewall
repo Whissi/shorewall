@@ -1656,29 +1656,21 @@ add_a_rule()
     case $proto in
 	tcp|udp|TCP|UDP|6|17)
 	    if [ -n "$port" -a "x${port}" != "x-" ]; then
-		if [ -n "$multioption" ]; then 
-		    if [ "$port" != "${port%,*}" ]; then
-			multiport="$multioption"
-			dports="--dports $port"
-		    else
-			dports="--dport $port"
-		    fi
-		else
-		    dports="--dport $port"
+		dports="--dport"
+		if [ -n "$multioption" -a "$port" != "${port%,*}" ]; then
+		    multiport="$multioption"
+		    dports="--dports"
 		fi
+		dports="$dports $ports"
 	    fi
 
 	    if [ -n "$cport" -a "x${cport}" != "x-" ]; then
-		if [ -n "$multioption" ]; then
-		    if [ "$cport" != "${cport%,*}" ]; then
-			multiport="$multioption"
-			sports="--sports $cport"
-		    else
-			sports="--sport $cport"
-		    fi
-		else
-		    sports="--sport $cport"
+		sports="--sport"
+		if [ -n "$multioption" -a "$cport" != "${cport%,*}" ]; then
+		    multiport="$multioption"
+		    sports="--sports"
 		fi
+		sports="$sports $cport"
 	    fi
 		;;
 	icmp|ICMP|1)

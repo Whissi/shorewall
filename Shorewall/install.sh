@@ -555,6 +555,16 @@ else
     echo
     echo "ECN  file installed as ${PREFIX}/etc/shorewall/ecn"
 fi
+##
+# Install the Accounting file
+#
+if [ -f ${PREFIX}/etc/shorewall/accounting ]; then
+    backup_file /etc/shorewall/accounting
+else
+    run_install -o $OWNER -g $GROUP -m 0600 ecn ${PREFIX}/etc/shorewall/accounting
+    echo
+    echo "Accounting file installed as ${PREFIX}/etc/shorewall/accounting"
+fi
 #
 # Backup the version file
 #

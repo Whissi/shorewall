@@ -1745,6 +1745,92 @@ delete_tc()
 }
 
 #
+# Process a record from the accounting file
+#
+process_accounting_rule() {
+    rule=
+
+    case $source in
+	*:*)
+	    rule="-s ${source#*:} -i ${source%:*}"
+	    ;;
+	*.*.*.*)
+	    rule="-s $source"
+	    ;;
+	-|all|any)
+	    ;;
+	*)
+	    rule="-i $source"
+	    ;;
+    esac
+
+    [ "x$dest" != x ] && case $dest in
+	*:*)
+	    rule="$rule -d ${dest#*:} -o ${dest%:*}"
+	    ;;
+	*.*.*.*)
+	    rule="$rule -d $dest"
+	    ;;
+	-|all|any)
+	    ;;
+	*)
+	    rule="$rule -d $dest"
+	    ;;
+    esac
+
+    [ "x$proto" != x ] && case $proto in
+	-|any|all)
+	    ;;
+	*)
+	    rule="$rule -p $proto"
+	    ;;
+    esac
+
+    [ "x$port" != x ] && case $port in
+	-|any|all)
+	    ;;
+	*)
+	    rule="$rule --dport $port"
+	    ;;
+    esac
+
+    [ "x$sport" != x ] && case $sport in
+	-|any|all)
+	    ;;
+	*)
+	    rule="$rule --sport $sport"
+	    ;;
+    esac
+
+    if iptables -A accounting $rule ; then
+	echo "   Accounting rule" $source $dest $proto $port $sport Added
+    else
+	error_message "Warning: Invalid Accounting rule" $source $dest $proto $port $sport
+    fi
+}
+
+#
+# Set up Accounting
+#
+setup_accounting() # $1 = Name of accounting file
+{
+    
+    echo "Setting up Accounting..."
+
+    strip_file accounting $1
+
+    createchain accounting No
+    
+    for chain in INPUT FORWARD OUTPUT; do
+	run_iptables -A $chain -j accounting
+    done
+
+    while read source dest proto port sport ; do
+	[ "x$source" != x ] && process_accounting_rule
+    done < $TMP_DIR/accounting
+}
+
+#      
 # Check the configuration
 #
 check_config() {
@@ -3475,6 +3561,10 @@ initialize_netfilter () {
     #
     run_iptables -A INPUT  -i lo -j ACCEPT
     run_iptables -A OUTPUT -o lo -j ACCEPT
+
+    accounting_file=`find_file accounting`
+
+    [ -f $accounting_file ] && setup_accounting $accounting_file
 
     #
     # Allow DNS lookups during startup for FQDNs and deep-six INVALID packets

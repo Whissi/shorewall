@@ -134,6 +134,8 @@ restore_file /etc/shorewall/stopped
 
 restore_file /etc/shorewall/ecn
 
+restore_file /etc/shorewall/accounting
+
 if [ -f /usr/lib/shorewall/version-${VERSION}.bkout ]; then
     restore_file /usr/lib/shorewall/version
     oldversion="`cat /usr/lib/shorewall/version`"

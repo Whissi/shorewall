@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article id="ECN">
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>ECN</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate>2003-03-28</pubdate>
+
+    <copyright>
+      <year>2001</year>
+
+      <year>2002</year>
+
+      <year>2003</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <section>
+    <title>Explicit Congestion Notification (ECN)</title>
+
+    <para>Explicit Congestion Notification (ECN) is described in RFC 3168 and
+    is a proposed internet standard. Unfortunately, not all sites support ECN
+    and when a TCP connection offering ECN is sent to sites that don&#39;t
+    support it, the result is often that the connection request is ignored.</para>
+
+    <para>To allow ECN to be used, Shorewall allows you to enable ECN on your
+    Linux systems then disable it in your firewall when the destination
+    matches a list that you create (the /etc/shorewall/ecn file).</para>
+
+    <para>You enable ECN by</para>
+
+    <programlisting>echo 1 &#62; /proc/sys/net/ipv4/tcp_ecn</programlisting>
+
+    <para>You must arrange for that command to be executed at system boot.
+    Most distributions have a method for doing that -- on RedHat, you make an
+    entry in /etc/sysctl.conf.</para>
+
+    <programlisting>net.ipv4.tcp_ecn = 1</programlisting>
+
+    <para>Entries in /etc/shorewall/ecn have two columns as follows:</para>
+
+    <variablelist>
+      <varlistentry>
+        <term>INTERFACE</term>
+
+        <listitem>
+          <para>The name of an interface on your system</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>HOST(S)</term>
+
+        <listitem>
+          <para>An address (host or subnet) of a system or group of systems
+          accessed through the interface in the first column. You may include
+          a comma-separated list of such addresses in this column.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+
+    <example>
+      <title>Your external interface is eth0 and you want to disable ECN for
+      tcp connections to 192.0.2.0/24:</title>
+
+      <para><table><title>/etc/shorewall/ecn</title><tgroup cols="2"><thead><row><entry
+      align="center">INTERFACE</entry><entry align="center">HOST(S)</entry></row></thead><tbody><row><entry>eth0</entry><entry>192.0.2.0/24</entry></row></tbody></tgroup></table></para>
+    </example>
+  </section>
+</article>

@@ -1,0 +1,1428 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article id="PPTP">
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>PPTP</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate>2003-12-23</pubdate>
+
+    <copyright>
+      <year>2001</year>
+
+      <year>2002</year>
+
+      <year>2003</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+    </legalnotice>
+
+    <revhistory>
+      <revision>
+        <revnumber>1.1</revnumber>
+
+        <date>2003-12-23</date>
+
+        <authorinitials>TE</authorinitials>
+
+        <revremark>Added note about PPTP module support in Bering 1.2</revremark>
+      </revision>
+    </revhistory>
+
+    <abstract>
+      <para>Shorewall easily supports PPTP in a number of configurations.</para>
+    </abstract>
+  </articleinfo>
+
+  <section>
+    <title>Overview</title>
+
+    <note>
+      <para>I am no longer attempting to maintain MPPE patches for current
+      Linux kernel&#39;s and pppd. I recommend that you refer to the following
+      URLs for information about installing MPPE into your kernel and pppd.</para>
+    </note>
+
+    <para>The <ulink url="http://pptpclient.sourceforge.net">Linux PPTP client
+    project</ulink> has a nice GUI for configuring and managing VPN
+    connections where your Linux system is the PPTP client. This is what I
+    currently use. I am no longer running PoPToP but rather I use the PPTP
+    Server included with XP Professional (see <ulink
+    url="PPTP.htm#ServerBehind">PPTP Server running behind your Firewall</ulink>
+    below).</para>
+
+    <variablelist>
+      <varlistentry>
+        <term><ulink url="http://pptpclient.sourceforge.net">http://pptpclient.sourceforge.net</ulink></term>
+
+        <listitem>
+          <para>Everything you need to run a PPTP client.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><ulink url="http://www.poptop.org">http://www.poptop.org</ulink></term>
+
+        <listitem>
+          <para>The <quote>kernelmod</quote> package can be used to quickly
+          install MPPE into your kernel without rebooting.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+
+    <para>I am leaving the instructions for building MPPE-enabled kernels and
+    pppd in the text below for those who may wish to obtain the relevant
+    current patches and <quote>roll their own</quote>.</para>
+  </section>
+
+  <section id="ServerFW">
+    <title>PPTP Server Running on your Firewall</title>
+
+    <para>I will try to give you an idea of how to set up a PPTP server on
+    your firewall system. This isn&#39;t a detailed HOWTO but rather an
+    example of how I have set up a working PPTP server on my own firewall.</para>
+
+    <para>The steps involved are:</para>
+
+    <orderedlist>
+      <listitem>
+        <para><xref linkend="PatchPppd" /></para>
+      </listitem>
+
+      <listitem>
+        <para><xref linkend="PatchKernel" /></para>
+      </listitem>
+
+      <listitem>
+        <para><xref linkend="Samba" /></para>
+      </listitem>
+
+      <listitem>
+        <para><xref linkend="ConfigPppd" /></para>
+      </listitem>
+
+      <listitem>
+        <para><xref linkend="ConfigPptpd" /></para>
+      </listitem>
+
+      <listitem>
+        <para><xref linkend="ConfigFw" /></para>
+      </listitem>
+    </orderedlist>
+
+    <section id="PatchPppd">
+      <title>Patching and building pppd</title>
+
+      <para>To run pppd on a 2.4 kernel, you need the pppd 2.4.1 or later. The
+      primary site for releases of pppd is <ulink
+      url="ftp://ftp.samba.org/pub/ppp">ftp://ftp.samba.org/pub/ppp</ulink>.</para>
+
+      <para>You will need the following patches:</para>
+
+      <simplelist>
+        <member><ulink
+        url="http://www.shorewall.net/pub/shorewall/pptp/ppp-2.4.1-openssl-0.9.6-mppe-patch.gz">http://www.shorewall.net/pub/shorewall/pptp/ppp-2.4.1-openssl-0.9.6-mppe-patch.gz</ulink></member>
+
+        <member><ulink
+        url="http://www.shorewall.net/pub/shorewall/pptp/ppp-2.4.1-MSCHAPv2-fix.patch.gz">http://www.shorewall.net/pub/shorewall/pptp/ppp-2.4.1-MSCHAPv2-fix.patch.gz</ulink></member>
+      </simplelist>
+
+      <para>You may also want the following patch if you want to require
+      remote hosts to use encryption:</para>
+
+      <simplelist>
+        <member><ulink
+        url="ftp://ftp.shorewall.net/pub/shorewall/pptp/require-mppe.diff">ftp://ftp.shorewall.net/pub/shorewall/pptp/require-mppe.diff</ulink></member>
+      </simplelist>
+
+      <para>Un-tar the pppd source and uncompress the patches into one
+      directory (the patches and the ppp-2.4.1 directory are all in a single
+      parent directory):</para>
+
+      <programlisting>cd ppp-2.4.1
+patch -p1 &#60; ../ppp-2.4.0-openssl-0.9.6-mppe.patch
+patch -p1 &#60; ../ppp-2.4.1-MSCHAPv2-fix.patch
+(Optional) patch -p1 &#60; ../require-mppe.diff
+./configure
+make</programlisting>
+
+      <para>You will need to install the resulting binary on your firewall
+      system. To do that, I NFS mount my source filesystem and use
+      <quote>make install</quote> from the ppp-2.4.1 directory.</para>
+    </section>
+
+    <section id="PatchKernel">
+      <title>Patching and building your Kernel</title>
+
+      <para>You will need one of the following patches depending on your
+      kernel version:</para>
+
+      <simplelist>
+        <member>http://www.shorewall.net/pub/shorewall/pptp/linux-2.4.4-openssl-0.9.6a-mppe-patch.gz</member>
+
+        <member>http://www.shorewall/net/pub/shorewall/pptp/linux-2.4.16-openssl-0.9.6b-mppe-patch.gz</member>
+      </simplelist>
+
+      <para>Uncompress the patch into the same directory where your top-level
+      kernel source is located and:</para>
+
+      <programlisting>cd &#60;your GNU/Linux source top-level directory&#62;
+patch -p1 &#60; ../linux-2.4.16-openssl-0.9.6b-mppe.patch</programlisting>
+
+      <para>Now configure your kernel. Here is my ppp configuration:</para>
+
+      <graphic fileref="images/ppp.jpg" />
+    </section>
+
+    <section id="Samba">
+      <title>Configuring Samba</title>
+
+      <para>You will need a WINS server (Samba configured to run as a WINS
+      server is fine). Global section from /etc/samba/smb.conf on my WINS
+      server (192.168.1.3) is:</para>
+
+      <programlisting>[global]
+     workgroup = TDM-NSTOP
+     netbios name = WOOKIE
+     server string = GNU/Linux Box
+     encrypt passwords = Yes
+     log file = /var/log/samba/%m.log
+     max log size = 0
+     socket options = TCP_NODELAY SO_RCVBUF=8192 SO_SNDBUF=8192
+     os level = 65
+     domain master = True
+     preferred master = True
+     dns proxy = No
+     wins support = Yes
+     printing = lprng
+
+[homes]
+     comment = Home Directories
+     valid users = %S
+     read only = No
+     create mask = 0664
+     directory mask = 0775
+
+[printers]
+     comment = All Printers
+     path = /var/spool/samba
+     printable = Yes</programlisting>
+    </section>
+
+    <section id="ConfigPppd">
+      <title>Configuring pppd</title>
+
+      <para>Here is a copy of my /etc/ppp/options.poptop file:</para>
+
+      <programlisting>ipparam PoPToP
+lock
+mtu 1490
+mru 1490
+ms-wins 192.168.1.3
+ms-dns 206.124.146.177
+multilink
+proxyarp
+auth
++chap
++chapms
++chapms-v2
+ipcp-accept-local
+ipcp-accept-remote
+lcp-echo-failure 30
+lcp-echo-interval 5
+deflate 0
+mppe-128
+mppe-stateless
+require-mppe
+require-mppe-stateless</programlisting>
+
+      <note>
+        <itemizedlist>
+          <listitem>
+            <para>System 192.168.1.3 acts as a WINS server so I have included
+            that IP as the <quote>ms-wins</quote> value.</para>
+          </listitem>
+
+          <listitem>
+            <para>I have pointed the remote clients at my DNS server -- it has
+            external address 206.124.146.177.</para>
+          </listitem>
+
+          <listitem>
+            <para>I am requiring 128-bit stateless compression (my kernel is
+            built with the <quote>require-mppe.diff</quote> patch mentioned
+            above.</para>
+          </listitem>
+        </itemizedlist>
+      </note>
+
+      <para>Here&#39;s my /etc/ppp/chap-secrets:</para>
+
+      <programlisting>Secrets for authentication using CHAP
+# client        server    secret    IP addresses
+CPQTDM\\TEastep *         &#60;shhhhhh&#62; 192.168.1.7
+TEastep         *         &#60;shhhhhh&#62; 192.168.1.7</programlisting>
+
+      <para>I am the only user who connects to the server but I may connect
+      either with or without a domain being specified. The system I connect
+      from is my laptop so I give it the same IP address when tunneled in at
+      it has when I use its wireless LAN card around the house.</para>
+
+      <para>You will also want the following in /etc/modules.conf:</para>
+
+      <programlisting>alias ppp-compress-18 ppp_mppe
+alias ppp-compress-21 bsd_comp
+alias ppp-compress-24 ppp_deflate
+alias ppp-compress-26 ppp_deflate</programlisting>
+    </section>
+
+    <section id="ConfigPptpd">
+      <title>Configuring pptpd</title>
+
+      <para>PoPTop (pptpd) is available from <ulink
+      url="http://poptop.lineo.com/">http://poptop.lineo.com/</ulink>.</para>
+
+      <para>Here is a copy of my /etc/pptpd.conf file:</para>
+
+      <programlisting>option /etc/ppp/options.poptop
+speed 115200
+localip 192.168.1.254
+remoteip 192.168.1.33-38</programlisting>
+
+      <note>
+        <itemizedlist>
+          <listitem>
+            <para>I specify the /etc/ppp/options.poptop file as my ppp options
+            file (I have several).</para>
+          </listitem>
+
+          <listitem>
+            <para>The local IP is the same as my internal interface&#39;s
+            (192.168.1.254).</para>
+          </listitem>
+
+          <listitem>
+            <para>I have assigned a remote IP range that overlaps my local
+            network. This, together with <quote>proxyarp</quote> in my
+            /etc/ppp/options.poptop file make the remote hosts look like they
+            are part of the local subnetwork.</para>
+          </listitem>
+        </itemizedlist>
+      </note>
+
+      <para>I use this file to start/stop pptpd -- I have this in
+      /etc/init.d/pptpd:</para>
+
+      <programlisting>#!/bin/sh
+#
+# /etc/rc.d/init.d/pptpd
+#
+# chkconfig: 5 12 85
+# description: control pptp server
+#
+
+case &#34;$1&#34; in
+start)
+    echo 1 &#62; /proc/sys/net/ipv4/ip_forward
+    modprobe ppp_async
+    modprobe ppp_generic
+    modprobe ppp_mppe
+    modprobe slhc
+    if /usr/local/sbin/pptpd; then
+        touch /var/lock/subsys/pptpd
+    fi
+    ;;
+stop)
+    killall pptpd
+    rm -f /var/lock/subsys/pptpd
+    ;;
+restart)
+    killall pptpd
+    if /usr/local/sbin/pptpd; then
+        touch /var/lock/subsys/pptpd
+    fi
+    ;;
+status)
+    ifconfig
+    ;;
+*)
+    echo &#34;Usage: $0 {start|stop|restart|status}&#34;
+    ;;
+esac</programlisting>
+    </section>
+
+    <section id="ConfigFw">
+      <title>Configuring Shorewall</title>
+
+      <section>
+        <title>Basic Setup</title>
+
+        <para>Here&#39; a basic setup that treats your remote users as if they
+        were part of your <emphasis role="bold">loc</emphasis> zone. Note that
+        if your primary internet connection uses ppp0, then be sure that
+        <emphasis role="bold">loc</emphasis> follows <emphasis role="bold">net</emphasis>
+        in /etc/shorewall/zones.</para>
+
+        <table>
+          <title>/etc/shorewall/tunnels</title>
+
+          <tgroup cols="4">
+            <thead>
+              <row>
+                <entry align="center">TYPE</entry>
+
+                <entry align="center">ZONE</entry>
+
+                <entry align="center">GATEWAY</entry>
+
+                <entry align="center">GATEWAY ZONE</entry>
+              </row>
+            </thead>
+
+            <tbody>
+              <row>
+                <entry>pptpserver</entry>
+
+                <entry>net</entry>
+
+                <entry>0.0.0.0/0</entry>
+
+                <entry></entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+
+        <table>
+          <title>/etc/shorewall/interfaces</title>
+
+          <tgroup cols="4">
+            <thead>
+              <row>
+                <entry align="center">ZONE</entry>
+
+                <entry align="center">INTERFACE</entry>
+
+                <entry align="center">BROADCAST</entry>
+
+                <entry align="center">OPTIONS</entry>
+              </row>
+            </thead>
+
+            <tbody>
+              <row>
+                <entry>loc</entry>
+
+                <entry>ppp+</entry>
+
+                <entry>-</entry>
+
+                <entry></entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+      </section>
+
+      <section>
+        <title>Remote Users in a Separate Zone</title>
+
+        <para>If you want to place your remote users in their own zone so that
+        you can control connections between these users and the local network,
+        follow this example. Note that if your primary internet connection
+        uses ppp0 then be sure that <emphasis role="bold">vpn</emphasis>
+        follows <emphasis role="bold">net</emphasis> in /etc/shorewall/zones
+        as shown below.</para>
+
+        <table>
+          <title>/etc/shorewall/tunnels</title>
+
+          <tgroup cols="4">
+            <thead>
+              <row>
+                <entry align="center">TYPE</entry>
+
+                <entry align="center">ZONE</entry>
+
+                <entry align="center">GATEWAY</entry>
+
+                <entry align="center">GATEWAY ZONE</entry>
+              </row>
+            </thead>
+
+            <tbody>
+              <row>
+                <entry>pptpserver</entry>
+
+                <entry>net</entry>
+
+                <entry>0.0.0.0/0</entry>
+
+                <entry></entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+
+        <table>
+          <title>/etc/shorewall/zones</title>
+
+          <tgroup cols="3">
+            <thead>
+              <row>
+                <entry align="center">ZONE</entry>
+
+                <entry align="center">DISPLAY</entry>
+
+                <entry align="center">COMMENTS</entry>
+              </row>
+            </thead>
+
+            <tbody>
+              <row>
+                <entry>net</entry>
+
+                <entry>Internet</entry>
+
+                <entry>The Internet</entry>
+              </row>
+
+              <row>
+                <entry>loc</entry>
+
+                <entry>Local</entry>
+
+                <entry>Local Network</entry>
+              </row>
+
+              <row>
+                <entry>vpn</entry>
+
+                <entry>VPN</entry>
+
+                <entry>Remote Users</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+
+        <table>
+          <title>/etc/shorewall/interfaces</title>
+
+          <tgroup cols="4">
+            <thead>
+              <row>
+                <entry align="center">ZONE</entry>
+
+                <entry align="center">INTERFACE</entry>
+
+                <entry align="center">BROADCAST</entry>
+
+                <entry align="center">OPTIONS</entry>
+              </row>
+            </thead>
+
+            <tbody>
+              <row>
+                <entry>net</entry>
+
+                <entry>eth0</entry>
+
+                <entry>206.124.146.255</entry>
+
+                <entry>norfc1918</entry>
+              </row>
+
+              <row>
+                <entry>loc</entry>
+
+                <entry>eth2</entry>
+
+                <entry>192.168.10.255</entry>
+
+                <entry></entry>
+              </row>
+
+              <row>
+                <entry>vpn</entry>
+
+                <entry>ppp+</entry>
+
+                <entry>-</entry>
+
+                <entry></entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+
+        <para>Your policies and rules may now be configured for traffic
+        to/from the <emphasis role="bold">vpn</emphasis> zone.</para>
+      </section>
+
+      <section>
+        <title>Multiple Remote Networks</title>
+
+        <para>Often there will be situations where you want multiple
+        connections from remote networks with these networks having different
+        firewalling requirements.<graphic fileref="images/MultiPPTP.png" /></para>
+
+        <para>Here&#39;s how you configure this in Shorewall. Note that if
+        your primary internet connection uses ppp0 then be sure that the
+        <emphasis role="bold">vpn{1-3}</emphasis> zones follows <emphasis
+        role="bold">net</emphasis> in /etc/shorewall/zones as shown below.</para>
+
+        <table>
+          <title>/etc/shorewall/tunnels</title>
+
+          <tgroup cols="4">
+            <thead>
+              <row>
+                <entry align="center">TYPE</entry>
+
+                <entry align="center">ZONE</entry>
+
+                <entry align="center">GATEWAY</entry>
+
+                <entry align="center">GATEWAY ZONE</entry>
+              </row>
+            </thead>
+
+            <tbody>
+              <row>
+                <entry>pptpserver</entry>
+
+                <entry>net</entry>
+
+                <entry>0.0.0.0/0</entry>
+
+                <entry></entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+
+        <table>
+          <title>/etc/shorewall/zones</title>
+
+          <tgroup cols="3">
+            <thead>
+              <row>
+                <entry align="center">ZONE</entry>
+
+                <entry align="center">DISPLAY</entry>
+
+                <entry align="center">COMMENTS</entry>
+              </row>
+            </thead>
+
+            <tbody>
+              <row>
+                <entry>net</entry>
+
+                <entry>Internet</entry>
+
+                <entry>The Internet</entry>
+              </row>
+
+              <row>
+                <entry>loc</entry>
+
+                <entry>Local</entry>
+
+                <entry>Local Network</entry>
+              </row>
+
+              <row>
+                <entry>vpn1</entry>
+
+                <entry>Remote1</entry>
+
+                <entry>Remote Network 1</entry>
+              </row>
+
+              <row>
+                <entry>vpn2</entry>
+
+                <entry>Remote2</entry>
+
+                <entry>Remote Network 2</entry>
+              </row>
+
+              <row>
+                <entry>vpn3</entry>
+
+                <entry>Remote3</entry>
+
+                <entry>Remote Network 3</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+
+        <table>
+          <title>/etc/shorewall/interfaces</title>
+
+          <tgroup cols="4">
+            <thead>
+              <row>
+                <entry align="center">ZONE</entry>
+
+                <entry align="center">INTERFACE</entry>
+
+                <entry align="center">BROADCAST</entry>
+
+                <entry align="center">OPTIONS</entry>
+              </row>
+            </thead>
+
+            <tbody>
+              <row>
+                <entry>net</entry>
+
+                <entry>eth0</entry>
+
+                <entry>206.124.146.255</entry>
+
+                <entry>norfc1918</entry>
+              </row>
+
+              <row>
+                <entry>loc</entry>
+
+                <entry>eth2</entry>
+
+                <entry>192.168.10.255</entry>
+
+                <entry></entry>
+              </row>
+
+              <row>
+                <entry>-</entry>
+
+                <entry>ppp+</entry>
+
+                <entry>-</entry>
+
+                <entry></entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+
+        <table>
+          <title>/etc/shorewall/hosts</title>
+
+          <tgroup cols="3">
+            <thead>
+              <row>
+                <entry align="center">ZONE</entry>
+
+                <entry align="center">HOST(S)</entry>
+
+                <entry align="center">OPTIONS</entry>
+              </row>
+            </thead>
+
+            <tbody>
+              <row>
+                <entry>vpn1</entry>
+
+                <entry>ppp+:192.168.1.0/24</entry>
+
+                <entry></entry>
+              </row>
+
+              <row>
+                <entry>vpn2</entry>
+
+                <entry>ppp+:192.168.2.0/24</entry>
+
+                <entry></entry>
+              </row>
+
+              <row>
+                <entry>vpn3</entry>
+
+                <entry>ppp+:192.168.3.0/24</entry>
+
+                <entry></entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+
+        <para>Your policies and rules can now be configured using separate
+        zones (vpn1, vpn2, and vpn3) for the three remote network.</para>
+      </section>
+    </section>
+  </section>
+
+  <section id="ServerBehind">
+    <title>PPTP Server Running Behind your Firewall</title>
+
+    <para>If you have a single external IP address, add the following to your
+    /etc/shorewall/rules file:</para>
+
+    <table>
+      <title>/etc/shorewall/rules</title>
+
+      <tgroup cols="7">
+        <thead>
+          <row>
+            <entry align="center">ACTION</entry>
+
+            <entry align="center">SOURCE</entry>
+
+            <entry>DEST</entry>
+
+            <entry>PROTO</entry>
+
+            <entry>DEST PORT(S)</entry>
+
+            <entry>SOURCE PORT(S)</entry>
+
+            <entry>ORIGINAL DEST</entry>
+          </row>
+        </thead>
+
+        <tbody>
+          <row>
+            <entry>DNAT</entry>
+
+            <entry>net</entry>
+
+            <entry>loc:&#60;<emphasis>server address</emphasis>&#62;</entry>
+
+            <entry>tcp</entry>
+
+            <entry>1723</entry>
+
+            <entry></entry>
+
+            <entry></entry>
+          </row>
+
+          <row>
+            <entry>DNAT</entry>
+
+            <entry>net</entry>
+
+            <entry>loc:&#60;<emphasis>server address</emphasis>&#62;</entry>
+
+            <entry>47</entry>
+
+            <entry>-</entry>
+
+            <entry></entry>
+
+            <entry></entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+
+    <para>If you have multiple external IP address and you want to forward a
+    single &#60;<emphasis>external address</emphasis>&#62;, add the following
+    to your /etc/shorewall/rules file:</para>
+
+    <table>
+      <title>/etc/shorewall/rules</title>
+
+      <tgroup cols="7">
+        <thead>
+          <row>
+            <entry align="center">ACTION</entry>
+
+            <entry align="center">SOURCE</entry>
+
+            <entry>DEST</entry>
+
+            <entry>PROTO</entry>
+
+            <entry>DEST PORT(S)</entry>
+
+            <entry>SOURCE PORT(S)</entry>
+
+            <entry>ORIGINAL DEST</entry>
+          </row>
+        </thead>
+
+        <tbody>
+          <row>
+            <entry>DNAT</entry>
+
+            <entry>net</entry>
+
+            <entry>loc:&#60;<emphasis>server address</emphasis>&#62;</entry>
+
+            <entry>tcp</entry>
+
+            <entry>1723</entry>
+
+            <entry>-</entry>
+
+            <entry>&#60;<emphasis>external address</emphasis>&#62;</entry>
+          </row>
+
+          <row>
+            <entry>DNAT</entry>
+
+            <entry>net</entry>
+
+            <entry>loc:&#60;<emphasis>server address</emphasis>&#62;</entry>
+
+            <entry>47</entry>
+
+            <entry>-</entry>
+
+            <entry>-</entry>
+
+            <entry>&#60;<emphasis>external address</emphasis>&#62;</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </section>
+
+  <section id="ClientsBehind">
+    <title>PPTP Clients Running Behind your Firewall</title>
+
+    <para>You shouldn&#39;t have to take any special action for this case
+    unless you wish to connect multiple clients to the same external server.
+    In that case, you will need to follow the instructions at <ulink
+    url="http://www.impsec.org/linux/masquerade/ip_masq_vpn.html">http://www.impsec.org/linux/masquerade/ip_masq_vpn.html</ulink>.
+    I recommend that you also add these three lines to your
+    /etc/shorewall/modules file:</para>
+
+    <programlisting>loadmodule ip_conntrack_proto_gre
+loadmodule ip_conntrack_pptp
+loadmodule ip_nat_pptp</programlisting>
+
+    <para>For LEAF/Bering users, the 2.4.20 kernel as already been patched as
+    described at the URL above and the three modules are included in the
+    Bering 1.2 modules tarball.</para>
+  </section>
+
+  <section id="ClientFW">
+    <title>PPTP Client Running on your Firewall</title>
+
+    <para>The PPTP GNU/Linux client is available at <ulink
+    url="http://sourceforge.net/projects/pptpclient/">http://sourceforge.net/projects/pptpclient/</ulink>.
+    Rather than use the configuration script that comes with the client, I
+    built my own. I also build my own kernel <link linkend="PatchKernel">as
+    described above</link> rather than using the mppe package that is
+    available with the client. My /etc/ppp/options file is mostly unchanged
+    from what came with the client (see below).</para>
+
+    <para>The key elements of this setup are as follows:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>Define a zone for the remote network accessed via PPTP.</para>
+      </listitem>
+
+      <listitem>
+        <para>Associate that zone with a ppp interface.</para>
+      </listitem>
+
+      <listitem>
+        <para>Define rules for PPTP traffic to/from the firewall.</para>
+      </listitem>
+
+      <listitem>
+        <para>Define rules for traffic two and from the remote zone.</para>
+      </listitem>
+    </orderedlist>
+
+    <para>Here are examples from my setup:</para>
+
+    <table>
+      <title>/etc/shorewall/zones</title>
+
+      <tgroup cols="3">
+        <thead>
+          <row>
+            <entry align="center">ZONE</entry>
+
+            <entry align="center">DISPLAY</entry>
+
+            <entry align="center">COMMENTS</entry>
+          </row>
+        </thead>
+
+        <tbody>
+          <row>
+            <entry>cpq</entry>
+
+            <entry>Compaq</entry>
+
+            <entry>Compaq Intranet</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+
+    <table>
+      <title>/etc/shorewall/interfaces</title>
+
+      <tgroup cols="4">
+        <thead>
+          <row>
+            <entry align="center">ZONE</entry>
+
+            <entry align="center">INTERFACE</entry>
+
+            <entry align="center">BROADCAST</entry>
+
+            <entry align="center">OPTIONS</entry>
+          </row>
+        </thead>
+
+        <tbody>
+          <row>
+            <entry>-</entry>
+
+            <entry>ppp+</entry>
+
+            <entry></entry>
+
+            <entry></entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+
+    <table>
+      <title>/etc/shorewall/hosts</title>
+
+      <tgroup cols="3">
+        <thead>
+          <row>
+            <entry align="center">ZONE</entry>
+
+            <entry align="center">HOST(S)</entry>
+
+            <entry align="center">OPTIONS</entry>
+          </row>
+        </thead>
+
+        <tbody>
+          <row>
+            <entry>-</entry>
+
+            <entry>ppp+:!192.168.1.0/24</entry>
+
+            <entry></entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+
+    <table>
+      <title>/etc/shorewall/rules (For Shorewall versions up to and including
+      1.3.9b)</title>
+
+      <tgroup cols="7">
+        <thead>
+          <row>
+            <entry align="center">ACTION</entry>
+
+            <entry align="center">SOURCE</entry>
+
+            <entry align="center">DEST</entry>
+
+            <entry align="center">PROTO</entry>
+
+            <entry align="center">DEST PORT(S)</entry>
+
+            <entry align="center">SOURCE PORT(S)</entry>
+
+            <entry align="center">ORIGINAL DEST</entry>
+          </row>
+        </thead>
+
+        <tbody>
+          <row>
+            <entry>ACCEPT</entry>
+
+            <entry>fw</entry>
+
+            <entry>net</entry>
+
+            <entry>tcp</entry>
+
+            <entry>1723</entry>
+
+            <entry></entry>
+
+            <entry></entry>
+          </row>
+
+          <row>
+            <entry>ACCEPT</entry>
+
+            <entry>fw</entry>
+
+            <entry>net</entry>
+
+            <entry>47</entry>
+
+            <entry>-</entry>
+
+            <entry></entry>
+
+            <entry></entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+
+    <table>
+      <title>/etc/shorewall/tunnels (For Shorewall versions 1.3.10 and later)</title>
+
+      <tgroup cols="4">
+        <thead>
+          <row>
+            <entry align="center">TYPE</entry>
+
+            <entry align="center">ZONE</entry>
+
+            <entry align="center">GATEWAY</entry>
+
+            <entry align="center">GATEWAY ZONE</entry>
+          </row>
+        </thead>
+
+        <tbody>
+          <row>
+            <entry>pptpclient</entry>
+
+            <entry>net</entry>
+
+            <entry>0.0.0.0/0</entry>
+
+            <entry></entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+
+    <para>I use the combination of interface and hosts file to define the
+    <quote>cpq</quote> zone because I also run a PPTP server on my firewall
+    (see above). Using this technique allows me to distinguish clients of my
+    own PPTP server from arbitrary hosts at Compaq; I assign addresses in
+    192.168.1.0/24 to my PPTP clients and Compaq doesn&#39;t use that RFC1918
+    Class C subnet.</para>
+
+    <para>I use this script in /etc/init.d to control the client. The reason
+    that I disable ECN when connecting is that the Compaq tunnel servers
+    don&#39;t do ECN yet and reject the initial TCP connection request if I
+    enable ECN :-(</para>
+
+    <programlisting>#!/bin/sh
+#
+# /etc/rc.d/init.d/pptp
+#
+# chkconfig: 5 60 85
+# description: PPTP Link Control
+#
+NAME=&#34;Tandem&#34;
+ADDRESS=tunnel-tandem.compaq.com
+USER=&#39;Tandem\tommy&#39;
+ECN=0
+DEBUG=
+
+start_pptp() {
+    echo $ECN &#62; /proc/sys/net/ipv4/tcp_ecn
+    if /usr/sbin/pptp $ADDRESS user $USER noauth $DEBUG; then
+        touch /var/lock/subsys/pptp
+        echo &#34;PPTP Connection to $NAME Started&#34;
+    fi
+}
+
+stop_pptp() {
+    if killall /usr/sbin/pptp 2&#62; /dev/null; then
+        echo &#34;Stopped pptp&#34;
+    else
+        rm -f /var/run/pptp/*
+    fi
+
+    # if killall pppd; then
+    # echo &#34;Stopped pppd&#34;
+    # fi
+
+    rm -f /var/lock/subsys/pptp
+
+    echo 1 &#62; /proc/sys/net/ipv4/tcp_ecn
+}
+
+
+case &#34;$1&#34; in
+start)
+    echo &#34;Starting PPTP Connection to ${NAME}...&#34;
+    start_pptp
+    ;;
+stop)
+    echo &#34;Stopping $NAME PPTP Connection...&#34;
+    stop_pptp
+    ;;
+restart)
+    echo &#34;Restarting $NAME PPTP Connection...&#34;
+    stop_pptp
+    start_pptp
+    ;;
+status)
+    ifconfig
+    ;;
+*)
+    echo &#34;Usage: $0 {start|stop|restart|status}&#34;
+    ;;
+esac</programlisting>
+
+    <para>Here&#39;s my /etc/ppp/options file:</para>
+
+    <programlisting>#
+# Identify this connection
+#
+ipparam Compaq
+#
+# Lock the port
+#
+lock
+#
+# We don&#39;t need the tunnel server to authenticate itself
+#
+noauth
+
++chap
++chapms
++chapms-v2
+
+multilink
+mrru 1614
+#
+# Turn off transmission protocols we know won&#39;t be used
+#
+nobsdcomp
+nodeflate
+
+#
+# We want MPPE
+#
+mppe-128
+mppe-stateless
+
+#
+# We want a sane mtu/mru
+#
+mtu 1000
+mru 1000
+
+#
+# Time this thing out of it goes poof
+#
+lcp-echo-failure 10
+lcp-echo-interval 10</programlisting>
+
+    <para>My /etc/ppp/ip-up.local file sets up the routes that I need to route
+    Compaq traffic through the PPTP tunnel:</para>
+
+    <programlisting>#/bin/sh
+
+case $6 in
+Compaq)
+    route add -net 16.0.0.0 netmask 255.0.0.0 gw $5 $1
+    route add -net 130.252.0.0 netmask 255.255.0.0 gw $5 $1
+    route add -net 131.124.0.0 netmask 255.255.0.0 gw $5 $1
+    ...
+    ;;
+esac</programlisting>
+
+    <para>Finally, I run the following script every five minutes under crond
+    to restart the tunnel if it fails:</para>
+
+    <programlisting>#!/bin/sh
+restart_pptp() {
+    /sbin/service pptp stop
+    sleep 10
+    if /sbin/service pptp start; then
+        /usr/bin/logger &#34;PPTP Restarted&#34;
+    fi
+}
+
+if [ -n &#34;`ps ax | grep /usr/sbin/pptp | grep -v grep`&#34; ]; then
+    exit 0
+fi
+
+echo &#34;Attempting to restart PPTP&#34;
+
+restart_pptp &#62; /dev/null 2&#62;&#38;1 &#38;</programlisting>
+
+    <para><ulink url="ftp://ftp.shorewall.net/pub/shorewall/misc/Vonau">Here&#39;s
+    a scriptand corresponding ip-up.local</ulink> from Jerry Vonau
+    <email>jvonau@home.com</email> that controls two PPTP connections.</para>
+  </section>
+
+  <section id="PPTP_ADSL">
+    <title>PPTP Client running on your Firewall with PPTP Server in an ADSL
+    Modem</title>
+
+    <para>Some ADSL systems in Europe (most notably in Austria) feature a PPTP
+    server built into an ADSL <quote>Modem</quote>. In this setup, an ethernet
+    interface is dedicated to supporting the PPTP tunnel between the firewall
+    and the <quote>Modem</quote> while the actual internet access is through
+    PPTP (interface ppp0). If you have this type of setup, you need to modify
+    the sample configuration that you downloaded as described in this section.
+    <emphasis role="bold">These changes are in addition to those described in
+    the <ulink url="shorewall_quickstart_guide.htm">QuickStart Guides</ulink>.</emphasis></para>
+
+    <para>Lets assume the following:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>ADSL Modem connected through eth0</para>
+      </listitem>
+
+      <listitem>
+        <para>Modem IP address = 192.168.1.1</para>
+      </listitem>
+
+      <listitem>
+        <para>eth0 IP address = 192.168.1.2</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>The changes you need to make are as follows:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>Add this entry to /etc/shorewall/zones:</para>
+
+        <table>
+          <title>/etc/shorewall/zones</title>
+
+          <tgroup cols="3">
+            <thead>
+              <row>
+                <entry align="center">ZONE</entry>
+
+                <entry align="center">DISPLAY</entry>
+
+                <entry align="center">COMMENTS</entry>
+              </row>
+            </thead>
+
+            <tbody>
+              <row>
+                <entry>modem</entry>
+
+                <entry>Modem</entry>
+
+                <entry>ADSL Modem</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+
+        <para>That entry defines a new zone called <quote>modem</quote> which
+        will contain only your ADSL modem.</para>
+      </listitem>
+
+      <listitem>
+        <para>Add the following entry to /etc/shorewall/interfaces:</para>
+
+        <table>
+          <title>/etc/shorewall/interfaces</title>
+
+          <tgroup cols="4">
+            <thead>
+              <row>
+                <entry align="center">ZONE</entry>
+
+                <entry align="center">INTERFACE</entry>
+
+                <entry align="center">BROADCAST</entry>
+
+                <entry align="center">OPTIONS</entry>
+              </row>
+            </thead>
+
+            <tbody>
+              <row>
+                <entry>modem</entry>
+
+                <entry>eth0</entry>
+
+                <entry>192.168.1.255</entry>
+
+                <entry>dhcp</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+
+        <para>You will of course modify the <quote>net</quote> entry in
+        /etc/shorewall/interfaces to specify <quote>ppp0</quote> as the
+        interface as described in the QuickStart Guide corresponding to your
+        setup.</para>
+      </listitem>
+
+      <listitem>
+        <para>Add the following to /etc/shorewall/tunnels:</para>
+
+        <table>
+          <title>/etc/shorewall/tunnels</title>
+
+          <tgroup cols="4">
+            <thead>
+              <row>
+                <entry align="center">TYPE</entry>
+
+                <entry align="center">ZONE</entry>
+
+                <entry align="center">GATEWAY</entry>
+
+                <entry align="center">GATEWAY ZONE</entry>
+              </row>
+            </thead>
+
+            <tbody>
+              <row>
+                <entry>pptpclient</entry>
+
+                <entry>modem</entry>
+
+                <entry>192.168.1.1</entry>
+
+                <entry></entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table>
+
+        <para>That entry allows a PPTP tunnel to be established between your
+        Shorewall system and the PPTP server in the modem.</para>
+      </listitem>
+    </orderedlist>
+  </section>
+</article>

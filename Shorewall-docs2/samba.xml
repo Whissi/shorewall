@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article>
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>Samba/SMB</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate>2004-02-08</pubdate>
+
+    <copyright>
+      <year>2002</year>
+
+      <year>2004</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <para>If you wish to run Samba on your firewall and access shares between
+  the firewall and local hosts, you need the following rules:</para>
+
+  <para><emphasis role="bold">/etc/shorewall/rules:</emphasis><programlisting>#ACTION   SOURCE   DEST   PROTO    DEST PORT(S)   SOURCE
+#                                                 PORT(S)
+ACCEPT    fw       loc    udp      137:139
+ACCEPT    fw       loc    tcp      137,139,445
+ACCEPT    fw       loc    udp      1024:          137
+ACCEPT    loc      fw     udp      137:139
+ACCEPT    loc      fw     tcp      137,139,445
+ACCEPT    loc      fw     udp      1024:          137</programlisting></para>
+
+  <para>To pass traffic SMB/Samba traffic between zones Z1 and Z2:</para>
+
+  <para><emphasis role="bold">/etc/shorewall/rules:</emphasis><programlisting>#ACTION   SOURCE   DEST   PROTO    DEST PORT(S)   SOURCE
+#                                                 PORT(S)
+ACCEPT    Z1       Z2     udp      137:139
+ACCEPT    Z1       Z2     tcp      137,139,445
+ACCEPT    Z1       Z2     udp      1024:          137
+ACCEPT    Z2       Z1     udp      137:139
+ACCEPT    Z2       Z1     tcp      137,139,445
+ACCEPT    Z1       Z1     udp      1024:          137</programlisting></para>
+
+  <para>To make network browsing (<quote>Network Neighborhood</quote>) work
+  properly between Z1 and Z2 requires a Windows Domain Controller and/or a
+  WINS server. I run Samba on my firewall to handle browsing between two zones
+  connected to my firewall. Details are <ulink url="myfiles.htm">here</ulink>.</para>
+</article>

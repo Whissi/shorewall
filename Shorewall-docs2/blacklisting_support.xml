@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article>
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>Shorewall Blacklisting Support</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate>2004-01-17</pubdate>
+
+    <copyright>
+      <year>2002-2004</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <section>
+    <title>Introduction</title>
+
+    <para>Shorewall supports two different forms of blacklisting; static and
+    dynamic. Beginning with Shorewall version 1.4.8, the BLACKLISTNEWONLY
+    option in /etc/shorewall/shorewall.conf controls the degree of blacklist
+    filtering:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>BLACKLISTNEWONLY=No --&#x00A0; All incoming packets are checked
+        against the blacklist. New blacklist entries can be used to terminate
+        existing connections. Versions of Shorewall prior to 1.4.8 behave in
+        this manner.</para>
+      </listitem>
+
+      <listitem>
+        <para>BLACKLISTNEWONLY=Yes -- The blacklists are only consulted for
+        new connection requests. Blacklists may not be used to terminate
+        existing connections. Only the source address is checked against the
+        blacklists.</para>
+      </listitem>
+    </orderedlist>
+
+    <para>Only the source address is checked against the blacklists.</para>
+  </section>
+
+  <section>
+    <title>Static Blacklisting</title>
+
+    <para>Shorewall static blacklisting support has the following
+    configuration parameters:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>You specify whether you want packets from blacklisted hosts
+        dropped or rejected using the BLACKLIST_DISPOSITION setting in <ulink
+        url="Documentation.htm#Config"><filename>/etc/shorewall/shorewall.conf</filename>.</ulink></para>
+      </listitem>
+
+      <listitem>
+        <para>You specify whether you want packets from blacklisted hosts
+        logged and at what syslog level using the BLACKLIST_LOGLEVEL setting
+        in <ulink url="Documentation.htm#Config"><filename>/etc/shorewall/shorewall.conf</filename></ulink>.</para>
+      </listitem>
+
+      <listitem>
+        <para>You list the IP addresses/subnets that you wish to blacklist in
+        <ulink url="Documentation.htm#Blacklist"><filename>/etc/shorewall/blacklist</filename></ulink>.
+        Beginning with Shorewall version 1.3.8, you may also specify PROTOCOL
+        and Port numbers/Service names in the blacklist file.</para>
+      </listitem>
+
+      <listitem>
+        <para>You specify the interfaces whose incoming packets you want
+        checked against the blacklist using the <quote>blacklist</quote>
+        option in <ulink url="Documentation.htm#Interfaces"><filename>/etc/shorewall/interfaces</filename></ulink>.</para>
+      </listitem>
+
+      <listitem>
+        <para>The black list is refreshed from <filename>/etc/shorewall/blacklist</filename>
+        by the <quote><ulink url="starting_and_stopping_shorewall.htm"><command>shorewall
+        refresh</command></ulink></quote> command.</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Dynamic Blacklisting</title>
+
+    <para>Dynamic blacklisting support was added in version 1.3.2. Dynamic
+    blacklisting doesn&#39;t use any configuration parameters but is rather
+    controlled using /sbin/shorewall commands:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>drop <emphasis>&#60;ip address list&#62;</emphasis> - causes
+        packets from the listed IP addresses to be silently dropped by the
+        firewall.</para>
+      </listitem>
+
+      <listitem>
+        <para>reject <emphasis>&#60;ip address list&#62;</emphasis> - causes
+        packets from the listed IP addresses to be rejected by the firewall.</para>
+      </listitem>
+
+      <listitem>
+        <para>allow <emphasis>&#60;ip address list&#62;</emphasis> -
+        re-enables receipt of packets from hosts previously blacklisted by a
+        <emphasis>drop</emphasis> or <emphasis>reject</emphasis> command.</para>
+      </listitem>
+
+      <listitem>
+        <para>save - save the dynamic blacklisting configuration so that it
+        will be automatically restored the next time that the firewall is
+        restarted.</para>
+      </listitem>
+
+      <listitem>
+        <para>show dynamic - displays the dynamic blacklisting configuration.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>Dynamic blacklisting is not dependent on the <quote>blacklist</quote>
+    option in <filename>/etc/shorewall/interfaces</filename>.</para>
+
+    <example>
+      <title>Ignore packets from a pair of systems</title>
+
+      <programlisting>    <command>shorewall drop 192.0.2.124 192.0.2.125</command></programlisting>
+
+      <para>Drops packets from hosts 192.0.2.124 and 192.0.2.125</para>
+    </example>
+
+    <example>
+      <title>Re-enable packetes from a system</title>
+
+      <programlisting>    <command>shorewall allow 192.0.2.125</command></programlisting>
+
+      <para>Re-enables traffic from 192.0.2.125.</para>
+    </example>
+  </section>
+</article>

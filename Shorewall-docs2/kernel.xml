@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article>
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>Kernel Configuration</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate>2003-07-20</pubdate>
+
+    <copyright>
+      <year>2001-2003</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <note>
+    <para>For information regarding configuring and building GNU/Linux
+    kernels, see <ulink url="http://www.kernelnewbies.org">http://www.kernelnewbies.org</ulink>.</para>
+  </note>
+
+  <section>
+    <title>Network Options Configuration</title>
+
+    <para>Here&#39;s a screen shot of my Network Options Configuration:<graphic
+    align="center" fileref="images/netopts.jpg" /></para>
+
+    <para>While not all of the options that I&#39;ve selected are required,
+    they should be sufficient for most applications. Here&#39;s an excerpt
+    from the corresponding .config file (Note: If you are running a kernel
+    older than 2.4.17, be sure to select CONFIG_NETLINK and CONFIG_RTNETLINK):</para>
+
+    <blockquote>
+      <programlisting>#
+ # Networking options
+ #
+ CONFIG_PACKET=y
+ # CONFIG_PACKET_MMAP is not set
+ # CONFIG_NETLINK_DEV is not set
+ CONFIG_NETFILTER=y
+ # CONFIG_NETFILTER_DEBUG is not set
+ CONFIG_FILTER=y
+ CONFIG_UNIX=y
+ CONFIG_INET=y
+ CONFIG_IP_MULTICAST=y
+ CONFIG_IP_ADVANCED_ROUTER=y
+ CONFIG_IP_MULTIPLE_TABLES=y
+ CONFIG_IP_ROUTE_FWMARK=y
+ CONFIG_IP_ROUTE_NAT=y
+ CONFIG_IP_ROUTE_MULTIPATH=y
+ CONFIG_IP_ROUTE_TOS=y
+ CONFIG_IP_ROUTE_VERBOSE=y
+ # CONFIG_IP_ROUTE_LARGE_TABLES is not set
+ # CONFIG_IP_PNP is not set
+ CONFIG_NET_IPIP=y
+ CONFIG_NET_IPGRE=y
+ # CONFIG_NET_IPGRE_BROADCAST is not set
+ # CONFIG_IP_MROUTE is not set
+ # CONFIG_ARPD is not set
+ CONFIG_INET_ECN=y
+ CONFIG_SYN_COOKIES=y</programlisting>
+    </blockquote>
+  </section>
+
+  <section>
+    <title>Netfilter Configuration</title>
+
+    <para>Here&#39;s a screen shot of my Netfilter configuration:<graphic
+    align="center" fileref="images/menuconfig1.jpg" /></para>
+
+    <para>Note that I have built everything I need as modules. You can also
+    build everything into your kernel but if you want to be able to deal with
+    FTP running on a non-standard port then I recommend that you modularize
+    FTP Protocol support.</para>
+
+    <para>Here&#39;s the corresponding part of my .config file:</para>
+
+    <blockquote>
+      <programlisting>#
+#&#x00A0;&#x00A0; IP: Netfilter Configuration
+#
+CONFIG_IP_NF_CONNTRACK=m
+CONFIG_IP_NF_FTP=m
+CONFIG_IP_NF_AMANDA=m
+CONFIG_IP_NF_TFTP=m
+# CONFIG_IP_NF_IRC is not set
+# CONFIG_IP_NF_QUEUE is not set
+CONFIG_IP_NF_IPTABLES=m
+CONFIG_IP_NF_MATCH_LIMIT=m
+CONFIG_IP_NF_MATCH_MAC=m
+CONFIG_IP_NF_MATCH_PKTTYPE=m
+CONFIG_IP_NF_MATCH_MARK=m
+CONFIG_IP_NF_MATCH_MULTIPORT=m
+CONFIG_IP_NF_MATCH_TOS=m
+CONFIG_IP_NF_MATCH_ECN=m
+CONFIG_IP_NF_MATCH_DSCP=m
+CONFIG_IP_NF_MATCH_AH_ESP=m
+CONFIG_IP_NF_MATCH_LENGTH=m
+# CONFIG_IP_NF_MATCH_TTL is not set
+CONFIG_IP_NF_MATCH_TCPMSS=m
+CONFIG_IP_NF_MATCH_HELPER=m
+CONFIG_IP_NF_MATCH_STATE=m
+CONFIG_IP_NF_MATCH_CONNTRACK=m
+CONFIG_IP_NF_MATCH_UNCLEAN=m
+# CONFIG_IP_NF_MATCH_OWNER is not set
+CONFIG_IP_NF_FILTER=m
+CONFIG_IP_NF_TARGET_REJECT=m
+# CONFIG_IP_NF_TARGET_MIRROR is not set
+CONFIG_IP_NF_NAT=m
+CONFIG_IP_NF_NAT_NEEDED=y
+CONFIG_IP_NF_TARGET_MASQUERADE=m
+CONFIG_IP_NF_TARGET_REDIRECT=m
+CONFIG_IP_NF_NAT_AMANDA=m
+CONFIG_IP_NF_NAT_LOCAL=y
+# CONFIG_IP_NF_NAT_SNMP_BASIC is not set
+CONFIG_IP_NF_NAT_FTP=m
+CONFIG_IP_NF_NAT_TFTP=m
+CONFIG_IP_NF_MANGLE=m
+CONFIG_IP_NF_TARGET_TOS=m
+CONFIG_IP_NF_TARGET_ECN=m
+CONFIG_IP_NF_TARGET_DSCP=m
+CONFIG_IP_NF_TARGET_MARK=m
+CONFIG_IP_NF_TARGET_LOG=m
+CONFIG_IP_NF_TARGET_ULOG=m
+CONFIG_IP_NF_TARGET_TCPMSS=m
+CONFIG_IP_NF_ARPTABLES=m
+CONFIG_IP_NF_ARPFILTER=m
+# CONFIG_IP_NF_COMPAT_IPCHAINS is not set
+# CONFIG_IP_NF_COMPAT_IPFWADM is not set</programlisting>
+    </blockquote>
+  </section>
+</article>

@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article>
+  <articleinfo>
+    <title>Shorewall Errata</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate>2004-02-03</pubdate>
+
+    <copyright>
+      <year>2001-2004</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <caution>
+    <itemizedlist>
+      <listitem>
+        <para>If you use a Windows system to download a corrected script, be
+        sure to run the script through <ulink
+        url="http://www.megaloman.com/~hany/software/hd2u/">dos2unix</ulink>
+        after you have moved it to your Linux system.</para>
+      </listitem>
+
+      <listitem>
+        <para>If you are installing Shorewall for the first time and plan to
+        use the .tgz and install.sh script, you can untar the archive, replace
+        the <quote>firewall</quote> script in the untarred directory with the
+        one you downloaded below, and then run install.sh.</para>
+      </listitem>
+
+      <listitem>
+        <para>When the instructions say to install a corrected firewall script
+        in /usr/share/shorewall/firewall, you may rename the existing file
+        before copying in the new file.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">DO NOT INSTALL CORRECTED COMPONENTS ON A
+        RELEASE EARLIER THAN THE ONE THAT THEY ARE LISTED UNDER BELOW.</emphasis>
+        For example, do NOT install the 1.3.9a firewall script if you are
+        running 1.3.7c.</para>
+      </listitem>
+    </itemizedlist>
+  </caution>
+
+  <section>
+    <title>RFC1918 File</title>
+
+    <para><ulink url="http://shorewall.net/pub/shorewall/errata/1.4.8/rfc1918">Here</ulink>
+    is the most up to date version of the <ulink
+    url="Documentation.htm#rfc1918">rfc1918 file</ulink>.</para>
+  </section>
+
+  <section>
+    <title>Problems in Version 2.0</title>
+
+    <section>
+      <title>Shorewall 2.0.0-Beta 1</title>
+
+      <itemizedlist>
+        <listitem>
+          <para></para>
+        </listitem>
+      </itemizedlist>
+    </section>
+  </section>
+
+  <section>
+    <title>Upgrade Issues</title>
+
+    <para>The upgrade issues have moved to <ulink url="upgrade_issues.htm">a
+    separate page</ulink>.</para>
+  </section>
+
+  <section>
+    <title>Problem with iptables version 1.2.3</title>
+
+    <para>There are a couple of serious bugs in iptables 1.2.3 that prevent it
+    from working with Shorewall. Regrettably, RedHat released this buggy
+    iptables in RedHat 7.2.&#x00A0;</para>
+
+    <para>I have built a <ulink
+    url="ftp://ftp.shorewall.net/pub/shorewall/errata/iptables-1.2.3-3.i386.rpm">corrected
+    1.2.3 rpm which you can download here</ulink>&#x00A0; and I have also
+    built an <ulink
+    url="ftp://ftp.shorewall.net/pub/shorewall/iptables-1.2.4-1.i386.rpm">iptables-1.2.4
+    rpm which you can download here</ulink>. If you are currently running
+    RedHat 7.1, you can install either of these RPMs before you upgrade to
+    RedHat 7.2.</para>
+
+    <para><emphasis role="bold">Update 11/9/2001:</emphasis> RedHat has
+    released an iptables-1.2.4 RPM of their own which you can download from
+    <ulink url="http://www.redhat.com/support/errata/RHSA-2001-144.html.">http://www.redhat.com/support/errata/RHSA-2001-144.html</ulink>.I
+    have installed this RPM on my firewall and it works fine.</para>
+
+    <para>If you would like to patch iptables 1.2.3 yourself, the patches are
+    available for download. This <ulink
+    url="ftp://ftp.shorewall.net/pub/shorewall/errata/iptables-1.2.3/loglevel.patch">patch</ulink>
+    which corrects a problem with parsing of the --log-level specification
+    while this <ulink
+    url="ftp://ftp.shorewall.net/pub/shorewall/errata/iptables-1.2.3/tos.patch">patch</ulink>
+    corrects a problem in handling the&#x00A0; TOS target.</para>
+
+    <para>To install one of the above patches:<programlisting>     cd iptables-1.2.3/extensions
+     patch -p0 &#60; the-patch-file</programlisting></para>
+  </section>
+
+  <section>
+    <title>Problems with kernels &#62;= 2.4.18 and RedHat iptables</title>
+
+    <para>Users who use RedHat iptables RPMs and who upgrade to kernel
+    2.4.18/19 may experience the following:</para>
+
+    <blockquote>
+      <programlisting># shorewall start
+Processing /etc/shorewall/shorewall.conf ...
+Processing /etc/shorewall/params ...
+Starting Shorewall...
+Loading Modules...
+Initializing...
+Determining Zones...
+Zones: net
+Validating interfaces file...
+Validating hosts file...
+Determining Hosts in Zones...
+Net Zone: eth0:0.0.0.0/0
+iptables: libiptc/libip4tc.c:380: do_check: Assertion
+`h-&#62;info.valid_hooks == (1 &#60;&#60; 0 | 1 &#60;&#60; 3)&#39; failed.
+Aborted (core dumped)
+iptables: libiptc/libip4tc.c:380: do_check: Assertion
+`h-&#62;info.valid_hooks == (1 &#60;&#60; 0 | 1 &#60;&#60; 3)&#39; failed.
+Aborted (core dumped)</programlisting>
+    </blockquote>
+
+    <para>The RedHat iptables RPM is compiled with debugging enabled but the
+    user-space debugging code was not updated to reflect recent changes in the
+    Netfilter <quote>mangle</quote> table. You can correct the problem by
+    installing <ulink
+    url="http://www.shorewall.net/pub/shorewall/iptables-1.2.5-1.i386.rpm">this
+    iptables RPM</ulink>. If you are already running a 1.2.5 version of
+    iptables, you will need to specify the --oldpackage option to rpm (e.g.,
+    <quote>iptables -Uvh --oldpackage iptables-1.2.5-1.i386.rpm</quote>).</para>
+  </section>
+
+  <section>
+    <title>Problems with iptables version 1.2.7 and MULTIPORT=Yes</title>
+
+    <para>The iptables 1.2.7 release of iptables has made an incompatible
+    change to the syntax used to specify multiport match rules; as a
+    consequence, if you install iptables 1.2.7 you must be running Shorewall
+    1.3.7a or later or:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>set MULTIPORT=No in /etc/shorewall/shorewall.conf; or</para>
+      </listitem>
+
+      <listitem>
+        <para>If you are running Shorewall 1.3.6 you may install <ulink
+        url="http://www.shorewall.net/pub/shorewall/errata/1.3.6/firewall">this
+        firewall script</ulink> in /usr/lib/shorewall/firewall as described
+        above.</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Problems with RH Kernel 2.4.18-10 and NAT</title>
+
+    <para>/etc/shorewall/nat entries of the following form will result in
+    Shorewall being unable to start:</para>
+
+    <programlisting>     #EXTERNAL&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0; INTERFACE&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0; INTERNAL&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0; ALL INTERFACES&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0; LOCAL
+     192.0.2.22&#x00A0;&#x00A0;&#x00A0;   eth0&#x00A0;&#x00A0;&#x00A0;         192.168.9.22&#x00A0;&#x00A0;  yes&#x00A0;&#x00A0;&#x00A0;&#x00A0;                 yes
+     #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+
+    <para>Error message is:</para>
+
+    <programlisting>     Setting up NAT...
+     iptables: Invalid argument
+     Terminated</programlisting>
+
+    <para>The solution is to put <quote>no</quote> in the LOCAL column. Kernel
+    support for LOCAL=yes has never worked properly and 2.4.18-10 has disabled
+    it. The 2.4.19 kernel contains corrected support under a new kernel
+    configuraiton option; see <ulink
+    url="http://www.shorewall.net/Documentation.htm#NAT">http://www.shorewall.net/Documentation.htm#NAT</ulink>.</para>
+  </section>
+
+  <section>
+    <title>Problems with RH Kernels after 2.4.20-9 and REJECT (also applies to
+    2.4.21-RC1)</title>
+
+    <para>Beginning with errata kernel 2.4.20-13.9, <quote>REJECT
+    --reject-with tcp-reset</quote> is broken. The symptom most commonly seen
+    is that REJECT rules act just like DROP rules when dealing with TCP. A
+    kernel patch and precompiled modules to fix this problem are available at
+    <ulink url="ftp://ftp1.shorewall.net/pub/shorewall/errata/kernel">ftp://ftp1.shorewall.net/pub/shorewall/errata/kernel</ulink></para>
+
+    <note>
+      <para>RedHat have corrected this problem in their 2.4.20-27.x kernels.</para>
+    </note>
+  </section>
+
+  <appendix>
+    <title>Revision History4</title>
+
+    <para><revhistory><revision><revnumber>1.5</revnumber><date>2004-02-03</date><authorinitials>TE</authorinitials><revremark>Update
+    for Shorewall 2.0.0.</revremark></revision><revision><revnumber>1.4</revnumber><date>2004-01-19</date><authorinitials>TE</authorinitials><revremark>IPV6
+    address problems. Make RFC1918 file section more prominent.</revremark></revision><revision><revnumber>1.3</revnumber><date>2004-01-14</date><authorinitials>TE</authorinitials><revremark>Confusing
+    template file in 1.4.9</revremark></revision><revision><revnumber>1.3</revnumber><date>2004-01-03</date><authorinitials>TE</authorinitials><revremark>Added
+    note about REJECT RedHat Kernal problem being corrected.</revremark></revision><revision><revnumber>1.2</revnumber><date>2003-12-29</date><authorinitials>TE</authorinitials><revremark>Updated
+    RFC1918 file</revremark></revision><revision><revnumber>1.1</revnumber><date>2003-12-17</date><authorinitials>TE</authorinitials><revremark>Initial
+    Conversion to Docbook XML</revremark></revision></revhistory></para>
+  </appendix>
+</article>

@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article id="NetfilterOverview">
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>Netfilter Overview</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate>2003-10-14</pubdate>
+
+    <copyright>
+      <year>2003</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <section>
+    <title>Netfilter Overview</title>
+
+    <para>Netfilter consists of three tables: <emphasis role="bold">Filter</emphasis>,
+    <emphasis role="bold">Nat</emphasis> and <emphasis role="bold">Mangle</emphasis>.
+    Each table has a number of build-in chains: <emphasis role="bold">PREROUTING</emphasis>,
+    <emphasis role="bold">INPUT</emphasis>, <emphasis role="bold">FORWARD</emphasis>,
+    <emphasis role="bold">OUTPUT</emphasis> and <emphasis role="bold">POSTROUTING</emphasis>.</para>
+
+    <para>Rules in the various tables are used as follows:</para>
+
+    <variablelist>
+      <varlistentry>
+        <term>Filter</term>
+
+        <listitem>
+          <para>Packet filtering (rejecting, dropping or accepting packets)</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Nat</term>
+
+        <listitem>
+          <para>Network Address Translation including DNAT, SNAT and
+          Masquerading</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Mangle</term>
+
+        <listitem>
+          <para>General packet header modification such as setting the TOS
+          value or marking packets for policy routing and traffic shaping.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+
+    <para>The following diagram shows how packets traverse the various builtin
+    chains within Netfilter. Note that not all table/chain combinations are
+    used.</para>
+
+    <graphic fileref="images/Netfilter.png" />
+
+    <para><quote>Local Process</quote> means a process running on the
+    Shorewall system itself.</para>
+
+    <para>In the above diagram are boxes similar to this:</para>
+
+    <graphic fileref="images/Legend.png" />
+
+    <para>The above box gives the name of the built-in chain (<emphasis
+    role="bold">INPUT</emphasis>) along with the names of the tables (<emphasis
+    role="bold">Mangle</emphasis> and <emphasis role="bold">Filter</emphasis>)
+    that the chain exists in and in the order that the chains are traversed.
+    The above sample indicates that packets go first through the <emphasis
+    role="bold">INPUT</emphasis> chain of the <emphasis role="bold">Mangle</emphasis>
+    table then through the <emphasis role="bold">INPUT</emphasis> chain of the
+    <emphasis role="bold">Filter</emphasis> table. When a chain is enclosed in
+    parentheses, Shorewall does not use the named chain (<emphasis role="bold">INPUT</emphasis>)
+    in that table (<emphasis role="bold">Mangle</emphasis>).</para>
+
+    <important>
+      <para>Keep in mind that chains in the <emphasis role="bold">Nat</emphasis>
+      table are <emphasis role="bold">only traversed for new connection
+      requests</emphasis> (including those related to existing connections)
+      while the chains in the other tables are traversed on every packet.</para>
+    </important>
+
+    <para>The above diagram should help you understand the output of
+    <quote>shorewall status</quote>.</para>
+
+    <para>Here are some excerpts from <quote>shorewall status</quote> on a
+    server with one interface (eth0):</para>
+
+    <programlisting>[root@lists html]# shorewall status
+ 
+Shorewall-1.4.7 Status at lists.shorewall.net - Mon Oct 13 12:51:13 PDT 2003
+                                                                                                                                                                                    
+Counters reset Sat Oct 11 08:12:57 PDT 2003</programlisting>
+
+    <para>The first table shown is the <emphasis role="bold">Filter</emphasis>
+    table.</para>
+
+    <programlisting>Chain INPUT (policy DROP 0 packets, 0 bytes)
+ pkts bytes target     prot opt in     out     source               destination
+ 679K  182M ACCEPT     all  --  lo     *       0.0.0.0/0            0.0.0.0/0
+ 785K   93M accounting  all  --  *      *       0.0.0.0/0            0.0.0.0/0
+    0     0 DROP      !icmp --  *      *       0.0.0.0/0            0.0.0.0/0          state INVALID</programlisting>
+
+    <para>The following rule indicates that all traffic destined for the
+    firewall that comes into the firewall on eth0 is passed to a chain called
+    <quote>eth0_in</quote>. That chain will be shown further down.</para>
+
+    <programlisting> 785K   93M eth0_in    all  --  eth0   *       0.0.0.0/0            0.0.0.0/0
+    0     0 common     all  --  *      *       0.0.0.0/0            0.0.0.0/0
+    0     0 LOG        all  --  *      *       0.0.0.0/0            0.0.0.0/0          LOG flags 0 level 6 prefix `Shorewall:INPUT:REJECT:&#39;
+    0     0 reject     all  --  *      *       0.0.0.0/0            0.0.0.0/0
+                                                                                                                                                                                    
+Chain FORWARD (policy DROP 0 packets, 0 bytes)
+ pkts bytes target     prot opt in     out     source               destination
+    0     0 accounting  all  --  *      *       0.0.0.0/0            0.0.0.0/0
+    0     0 DROP      !icmp --  *      *       0.0.0.0/0            0.0.0.0/0          state INVALID
+    0     0 eth0_fwd   all  --  eth0   *       0.0.0.0/0            0.0.0.0/0
+    0     0 common     all  --  *      *       0.0.0.0/0            0.0.0.0/0
+    0     0 LOG        all  --  *      *       0.0.0.0/0            0.0.0.0/0          LOG flags 0 level 6 prefix `Shorewall:FORWARD:REJECT:&#39;
+    0     0 reject     all  --  *      *       0.0.0.0/0            0.0.0.0/0
+                                                                                                                                                                                    
+Chain OUTPUT (policy DROP 1 packets, 60 bytes)
+ pkts bytes target     prot opt in     out     source               destination
+ 679K  182M ACCEPT     all  --  *      lo      0.0.0.0/0            0.0.0.0/0
+ 922K  618M accounting  all  --  *      *       0.0.0.0/0            0.0.0.0/0
+    0     0 DROP      !icmp --  *      *       0.0.0.0/0            0.0.0.0/0          state INVALID
+ 922K  618M fw2net     all  --  *      eth0    0.0.0.0/0            0.0.0.0/0
+    0     0 common     all  --  *      *       0.0.0.0/0            0.0.0.0/0
+    0     0 LOG        all  --  *      *       0.0.0.0/0            0.0.0.0/0          LOG flags 0 level 6 prefix `Shorewall:OUTPUT:REJECT:&#39;
+    0     0 reject     all  --  *      *       0.0.0.0/0            0.0.0.0/0</programlisting>
+
+    <para>Here is the eth0_in chain:</para>
+
+    <programlisting>Chain eth0_in (1 references)
+ pkts bytes target     prot opt in     out     source               destination
+ 785K   93M dynamic    all  --  *      *       0.0.0.0/0            0.0.0.0/0
+ 785K   93M net2fw     all  --  *      *       0.0.0.0/0            0.0.0.0/0</programlisting>
+
+    <para>The <quote>dynamic</quote> chain above is where dynamic blacklisting
+    is done.</para>
+
+    <para>Next comes the <emphasis role="bold">Nat</emphasis> table:</para>
+
+    <programlisting>NAT Table
+ 
+Chain PREROUTING (policy ACCEPT 182K packets, 12M bytes)
+ pkts bytes target     prot opt in     out     source               destination
+20005 1314K net_dnat   all  --  eth0   *       0.0.0.0/0            0.0.0.0/0
+ 
+Chain POSTROUTING (policy ACCEPT 678K packets, 44M bytes)
+ pkts bytes target     prot opt in     out     source               destination
+ 
+Chain OUTPUT (policy ACCEPT 678K packets, 44M bytes)
+ pkts bytes target     prot opt in     out     source               destination
+ 
+Chain net_dnat (1 references)
+ pkts bytes target     prot opt in     out     source               destination
+  638 32968 REDIRECT   tcp  --  *      *       0.0.0.0/0           !206.124.146.177    tcp dpt:80 redir ports 3128
+</programlisting>
+
+    <para>And finally, the <emphasis role="bold">Mangle</emphasis> table:</para>
+
+    <programlisting>Mangle Table
+ 
+Chain PREROUTING (policy ACCEPT 14M packets, 2403M bytes)
+ pkts bytes target     prot opt in     out     source               destination
+1464K  275M pretos     all  --  *      *       0.0.0.0/0            0.0.0.0/0
+ 
+Chain INPUT (policy ACCEPT 14M packets, 2403M bytes)
+ pkts bytes target     prot opt in     out     source               destination
+ 
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt in     out     source               destination
+ 
+Chain OUTPUT (policy ACCEPT 15M packets, 7188M bytes)
+ pkts bytes target     prot opt in     out     source               destination
+1601K  800M outtos     all  --  *      *       0.0.0.0/0            0.0.0.0/0
+ 
+Chain POSTROUTING (policy ACCEPT 15M packets, 7188M bytes)
+ pkts bytes target     prot opt in     out     source               destination
+ 
+Chain outtos (1 references)
+ pkts bytes target     prot opt in     out     source               destination
+    0     0 TOS        tcp  --  *      *       0.0.0.0/0            0.0.0.0/0          tcp dpt:22 TOS set 0x10
+ 315K  311M TOS        tcp  --  *      *       0.0.0.0/0            0.0.0.0/0          tcp spt:22 TOS set 0x10
+    0     0 TOS        tcp  --  *      *       0.0.0.0/0            0.0.0.0/0          tcp dpt:21 TOS set 0x10
+  683 59143 TOS        tcp  --  *      *       0.0.0.0/0            0.0.0.0/0          tcp spt:21 TOS set 0x10
+ 3667 5357K TOS        tcp  --  *      *       0.0.0.0/0            0.0.0.0/0          tcp spt:20 TOS set 0x08
+    0     0 TOS        tcp  --  *      *       0.0.0.0/0            0.0.0.0/0          tcp dpt:20 TOS set 0x08
+ 
+Chain pretos (1 references)
+ pkts bytes target     prot opt in     out     source               destination
+ 271K   15M TOS        tcp  --  *      *       0.0.0.0/0            0.0.0.0/0          tcp dpt:22 TOS set 0x10
+    0     0 TOS        tcp  --  *      *       0.0.0.0/0            0.0.0.0/0          tcp spt:22 TOS set 0x10
+  730 41538 TOS        tcp  --  *      *       0.0.0.0/0            0.0.0.0/0          tcp dpt:21 TOS set 0x10
+    0     0 TOS        tcp  --  *      *       0.0.0.0/0            0.0.0.0/0          tcp spt:21 TOS set 0x10
+    0     0 TOS        tcp  --  *      *       0.0.0.0/0            0.0.0.0/0          tcp spt:20 TOS set 0x08
+ 2065  111K TOS        tcp  --  *      *       0.0.0.0/0            0.0.0.0/0          tcp dpt:20 TOS set 0x08</programlisting>
+  </section>
+</article>

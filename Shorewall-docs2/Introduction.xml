@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article id="usefull_links">
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>Introduction</title>
+
+    <author>
+      <firstname>Tom</firstname>
+
+      <surname>Eastep</surname>
+    </author>
+
+    <pubdate>2004-02-03</pubdate>
+
+    <copyright>
+      <year>2003-2004</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink type="" url="Copyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <section>
+    <title>Introduction</title>
+
+    <para>The information in this document applies only to 2.0.x releases of
+    Shorewall.</para>
+
+    <section>
+      <title>Glossary</title>
+
+      <itemizedlist>
+        <listitem>
+          <para><ulink url="http://www.netfilter.org">Netfilter</ulink> - the
+          packet filter facility built into the 2.4 and later Linux kernels.</para>
+        </listitem>
+
+        <listitem>
+          <para>ipchains - the packet filter facility built into the 2.2 Linux
+          kernels. Also the name of the utility program used to configure and
+          control that facility. Netfilter can be used in ipchains
+          compatibility mode.</para>
+        </listitem>
+
+        <listitem>
+          <para>iptables - the utility program used to configure and control
+          Netfilter. The term <quote>iptables</quote> is often used to refer
+          to the combination of iptables+Netfilter (with Netfilter not in
+          ipchains compatibility mode).</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section>
+      <title>What is Shorewall?</title>
+
+      <para>The Shoreline Firewall, more commonly known as <quote>Shorewall</quote>,
+      is high-level tool for configuring Netfilter. You describe your
+      firewall/gateway requirements using entries in a set of configuration
+      files. Shorewall reads those configuration files and with the help of
+      the iptables utility, Shorewall configures Netfilter to match your
+      requirements. Shorewall can be used on a dedicated firewall system, a
+      multi-function gateway/router/server or on a standalone GNU/Linux
+      system. Shorewall does not use Netfilter&#39;s ipchains compatibility
+      mode and can thus take advantage of Netfilter&#39;s connection state
+      tracking capabilities.</para>
+
+      <para>Shorewall is not a daemon. Once Shorewall has configured
+      Netfilter, it&#39;s job is complete although the <ulink
+      url="starting_and_stopping_shorewall.htm">/sbin/shorewall program can be
+      used at any time to monitor the Netfilter firewall</ulink>.</para>
+    </section>
+
+    <section>
+      <title>Getting Started with Shorewall</title>
+
+      <para>New to Shorewall? Start by selecting the <ulink
+      url="shorewall_quickstart_guide.htm">QuickStart Guide</ulink> that most
+      closely match your environment and follow the step by step instructions.</para>
+    </section>
+
+    <section>
+      <title>Looking for Information?</title>
+
+      <para>The <ulink url="Documentation_Index.html">Documentation Index</ulink>
+      is a good place to start.</para>
+    </section>
+  </section>
+
+  <section>
+    <title>Shorewall Concepts</title>
+
+    <para>The configuration files for Shorewall are contained in the directory
+    <filename class="directory">/etc/shorewall</filename> -- for simple
+    setups, you will only need to deal with a few of them.</para>
+
+    <para>Shorewall views the network where it is running as being composed of
+    a set of zones. In the <ulink url="three-interface.htm">three-interface
+    sample configuration</ulink> for example, the following zone names are
+    used: <informaltable frame="all" pgwide="0"><tgroup align="left" cols="2"><thead
+    valign="middle"><row valign="middle"><entry align="left">Name</entry><entry
+    align="left">Description</entry></row></thead><tbody valign="middle"><row
+    valign="middle"><entry align="left"><varname>net</varname></entry><entry
+    align="left">The Internet</entry></row><row valign="middle"><entry
+    align="left"><varname>loc</varname></entry><entry align="left">Your Local
+    Network</entry></row><row valign="middle"><entry align="left"><varname>dmz</varname></entry><entry
+    align="left">Demilitarized Zone</entry></row></tbody></tgroup></informaltable>Zones
+    are defined in the <ulink url="Documentation.htm#Zones"><filename
+    class="directory">/etc/shorewall/</filename><filename>zones</filename></ulink>
+    file.</para>
+
+    <para>Shorewall also recognizes the firewall system as its own zone - by
+    default, the firewall itself is known as <emphasis role="bold"><varname>fw</varname></emphasis>.</para>
+
+    <para>Rules about what traffic to allow and what traffic to deny are
+    expressed in terms of zones. <itemizedlist spacing="compact"><listitem><para>You
+    express your default policy for connections from one zone to another zone
+    in the <ulink url="Documentation.htm#Policy"><filename class="directory">/etc/shorewall/</filename><filename>policy</filename></ulink>
+    file. The choices for policy are:</para><itemizedlist><listitem><para>ACCEPT
+    - Accept the connection.</para></listitem><listitem><para>DROP - Ignore
+    the connection request.</para></listitem><listitem><para>REJECT - Return
+    an appropriate error to the connection request.</para></listitem></itemizedlist><para>Connection
+    request logging may be specified as part of a policy and it is
+    conventional to log DROP and REJECT policies.</para></listitem><listitem><para>You
+    define exceptions to those default policies in the <ulink
+    url="Documentation.htm#Rules"><filename class="directory">/etc/shorewall/</filename><filename>rules</filename></ulink>
+    file.</para></listitem></itemizedlist>For each connection request entering
+    the firewall, the request is first checked against the <filename
+    class="directory">/etc/shorewall/</filename><filename>rules</filename>
+    file. If no rule in that file matches the connection request then the
+    first policy in <filename class="directory">/etc/shorewall/</filename><filename>policy</filename>
+    that matches the request is applied. If there is a common action defined
+    for the policy in /etc/shorewall/actions then that action is invoked
+    before the policy is enforces. In the standard Shorewall distribution, the
+    DROP policy has a common action called <emphasis role="bold">Drop</emphasis>
+    and the REJECT policy has a common action called <emphasis role="bold">Reject</emphasis>.
+    Common actions are used primarily to discard </para>
+
+    <para>The <filename class="directory">/etc/shorewall/</filename><filename>policy</filename>
+    file included with the three-interface sample has the following policies:
+    <programlisting>#SOURCE    DEST        POLICY      LOG LEVEL    LIMIT:BURST
+loc        net         ACCEPT
+net        all         DROP        info
+all        all         REJECT      info</programlisting>In the three-interface
+    sample, the line below is included but commented out. If you want your
+    firewall system to have full access to servers on the internet, uncomment
+    that line. <programlisting>#SOURCE    DEST        POLICY      LOG LEVEL    LIMIT:BURST
+fw         net         ACCEPT</programlisting> The above policy will:
+    <itemizedlist><listitem><para>Allow all connection requests from your
+    local network to the internet</para></listitem><listitem><para>Drop
+    (ignore) all connection requests from the internet to your firewall or
+    local network; these ignored connection requests will be logged using the
+    <emphasis>info</emphasis> syslog priority (log level).</para></listitem><listitem><para>Optionally
+    accept all connection requests from the firewall to the internet (if you
+    uncomment the additional policy)</para></listitem><listitem><para>reject
+    all other connection requests; these rejected connection requests will be
+    logged using the <emphasis>info</emphasis> syslog priority (log level).</para></listitem></itemizedlist></para>
+
+    <para>The simplest way to define a zone is to associate the zone with a
+    network interface using the <ulink url="Documentation.htm#Interfaces"><filename>/etc/shorewall/interfaces</filename></ulink>
+    file. In the three-interface sample, the three zones are defined using
+    that file as follows:</para>
+
+    <programlisting>#ZONE      INTERFACE     BROADCAST     OPTIONS
+net        eth0          detect        dhcp,routefilter,norfc1918
+loc        eth1          detect
+dmz        eth2          detect</programlisting>
+
+    <para>The above file defines the net zone as all hosts interfacing to the
+    firewall through eth0, the loc zone as all hosts interfacing through eth1
+    and the dmz as all hosts interfacing through eth2.</para>
+  </section>
+
+  <section>
+    <title>License</title>
+
+    <para>This program is free software; you can redistribute it and/or modify
+    it under the terms of <ulink url="http://www.gnu.org/licenses/gpl.html">Version
+    2 of the GNU General Public License</ulink> as published by the Free
+    Software Foundation.</para>
+
+    <para>This program is distributed in the hope that it will be useful, but
+    WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+    or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+    for more detail.</para>
+
+    <para>You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software Foundation,
+    Inc., 675 Mass Ave, Cambridge, MA 02139, USA</para>
+  </section>
+</article>

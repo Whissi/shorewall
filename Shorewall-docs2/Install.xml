@@ -1,0 +1,371 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article id="Install">
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>Shorewall Installation and Upgrade</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate>2003-04-08</pubdate>
+
+    <copyright>
+      <year>2001</year>
+
+      <year>2002</year>
+
+      <year>2003</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <important>
+    <para>Before upgrading, be sure to review the <ulink
+    url="upgrade_issues.htm">Upgrade Issues</ulink>.</para>
+  </important>
+
+  <important>
+    <para>Before attempting installation, I strongly urge you to read and
+    print a copy of the <ulink url="shorewall_quickstart_guide.htm">Shorewall
+    QuickStart</ulink> Guide for the configuration that most closely matches
+    your own.</para>
+  </important>
+
+  <section id="Install_RPM">
+    <title>Install using RPM</title>
+
+    <para>To install Shorewall using the RPM:</para>
+
+    <warning>
+      <para>If you have RedHat 7.2 and are running iptables version 1.2.3 (at
+      a shell prompt, type <quote>/sbin/iptables --version</quote>), you must
+      upgrade to version 1.2.4 either from the <ulink
+      url="http://www.redhat.com/support/errata/RHSA-2001-144.html">RedHat
+      update site</ulink> or from the <ulink url="errata.htm">Shorewall Errata
+      page</ulink> before attempting to start Shorewall.</para>
+    </warning>
+
+    <orderedlist>
+      <listitem>
+        <para>Install the RPM</para>
+
+        <programlisting>rpm -ivh &#60;shorewall rpm&#62;</programlisting>
+
+        <note>
+          <para>Some SuSE users have encountered a problem whereby rpm reports
+          a conflict with kernel &#60;= 2.2 even though a 2.4 kernel is
+          installed. If this happens, simply use the --nodeps option to rpm.</para>
+
+          <programlisting>rpm -ivh --nodeps &#60;shorewall rpm&#62;</programlisting>
+        </note>
+
+        <note>
+          <para>Beginning with Shorewall 1.4.0, Shorewall is dependent on the
+          iproute package. Unfortunately, some distributions call this package
+          iproute2 which will cause the installation of Shorewall to fail with
+          the diagnostic:</para>
+
+          <programlisting>error: failed dependencies:iproute is needed by shorewall-1.4.x-1</programlisting>
+
+          <para>This may be worked around by using the --nodeps option of rpm.</para>
+
+          <programlisting>rpm -ivh --nodeps &#60;shorewall rpm&#62;</programlisting>
+        </note>
+      </listitem>
+
+      <listitem>
+        <para>Edit the <link linkend="Config_Files">configuration files</link>
+        to match your configuration.</para>
+
+        <warning>
+          <para>YOU CAN <emphasis role="bold">NOT</emphasis> SIMPLY INSTALL
+          THE RPM AND ISSUE A <quote>shorewall start</quote> COMMAND. SOME
+          CONFIGURATION IS REQUIRED BEFORE THE FIREWALL WILL START. IF YOU
+          ISSUE A <quote>start</quote> COMMAND AND THE FIREWALL FAILS TO
+          START, YOUR SYSTEM WILL NO LONGER ACCEPT ANY NETWORK TRAFFIC. IF
+          THIS HAPPENS, ISSUE A <quote>shorewall clear</quote> COMMAND TO
+          RESTORE NETWORK CONNECTIVITY.</para>
+        </warning>
+      </listitem>
+
+      <listitem>
+        <para>Start the firewall by typing</para>
+
+        <programlisting>shorewall start</programlisting>
+      </listitem>
+    </orderedlist>
+  </section>
+
+  <section id="Install_Tarball">
+    <title>Install using tarball</title>
+
+    <para>To install Shorewall using the tarball and install script:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>unpack the tarball (tar -zxf shorewall-x.y.z.tgz).</para>
+      </listitem>
+
+      <listitem>
+        <para>cd to the shorewall directory (the version is encoded in the
+        directory name as in <quote>shorewall-1.1.10</quote>).</para>
+      </listitem>
+
+      <listitem>
+        <para>If you are using <ulink
+        url="http://www.caldera.com/openstore/openlinux/">Caldera</ulink>,
+        <ulink url="http://www.redhat.com">RedHat</ulink>, <ulink
+        url="http://www.linux-mandrake.com">Mandrake</ulink>, <ulink
+        url="http://www.corel.com">Corel</ulink>, <ulink
+        url="http://www.slackware.com/">Slackware</ulink> or <ulink
+        url="http://www.debian.org">Debian</ulink> then type</para>
+
+        <programlisting>./install.sh</programlisting>
+
+        <orderedlist numeration="loweralpha">
+          <listitem>
+            <para>If you are using <ulink url="http://www.suse.com">SuSe</ulink>
+            then type</para>
+
+            <programlisting>./install.sh /etc/init.d</programlisting>
+          </listitem>
+
+          <listitem>
+            <para>If your distribution has directory /etc/rc.d/init.d or
+            /etc/init.d then type</para>
+
+            <programlisting>./install.sh</programlisting>
+          </listitem>
+
+          <listitem>
+            <para>For other distributions, determine where your distribution
+            installs init scripts and type</para>
+
+            <programlisting>./install.sh &#60;init script directory&#62;</programlisting>
+          </listitem>
+        </orderedlist>
+      </listitem>
+
+      <listitem>
+        <para>Edit the <link linkend="Config_Files">configuration files</link>
+        to match your configuration.</para>
+      </listitem>
+
+      <listitem>
+        <para>Start the firewall by typing</para>
+
+        <programlisting>shorewall start</programlisting>
+      </listitem>
+
+      <listitem>
+        <para>If the install script was unable to configure Shorewall to be
+        started automatically at boot, see <ulink
+        url="starting_and_stopping_shorewall.htm">these instructions</ulink>.</para>
+      </listitem>
+    </orderedlist>
+  </section>
+
+  <section id="LRP">
+    <title>Install the .lrp</title>
+
+    <para>To install my version of Shorewall on a fresh Bering disk, simply
+    replace the <quote>shorwall.lrp</quote> file on the image with the file
+    that you downloaded. See the <ulink url="two-interface.htm">two-interface
+    QuickStart Guide</ulink> for information about further steps required.</para>
+  </section>
+
+  <section id="Upgrade_RPM">
+    <title>Upgrade using RPM</title>
+
+    <para>If you already have the Shorewall RPM installed and are upgrading to
+    a new version:</para>
+
+    <important>
+      <para>If you are upgrading from a 1.2 version of Shorewall to a 1.4
+      version or and you have entries in the /etc/shorewall/hosts file then
+      please check your /etc/shorewall/interfaces file to be sure that it
+      contains an entry for each interface mentioned in the hosts file. Also,
+      there are certain 1.2 rule forms that are no longer supported under 1.4
+      (you must use the new 1.4 syntax). See <ulink url="errata.htm#Upgrade">the
+      upgrade issues</ulink> for details.</para>
+    </important>
+
+    <orderedlist>
+      <listitem>
+        <para>Upgrade the RPM</para>
+
+        <programlisting>rpm -Uvh &#60;shorewall rpm file&#62;</programlisting>
+
+        <note>
+          <para>If you are installing version 1.2.0 and have one of the 1.2.0
+          Beta RPMs installed, you must use the <quote>--oldpackage</quote>
+          option to rpm.</para>
+
+          <informalexample>
+            <programlisting>rpm -Uvh --oldpackage shorewall-1.2-0.noarch.rpm</programlisting>
+          </informalexample>
+        </note>
+
+        <note>
+          <para>Some SuSE users have encountered a problem whereby rpm reports
+          a conflict with kernel &#60;= 2.2 even though a 2.4 kernel is
+          installed. If this happens, simply use the --nodeps option to rpm.</para>
+
+          <programlisting>rpm -Uvh --nodeps &#60;shorewall rpm&#62;</programlisting>
+        </note>
+
+        <note>
+          <para>Beginning with Shorewall 1.4.0, Shorewall is dependent on the
+          iproute package. Unfortunately, some distributions call this package
+          iproute2 which will cause the upgrade of Shorewall to fail with the
+          diagnostic:</para>
+
+          <programlisting>error: failed dependencies:iproute is needed by shorewall-1.4.0-1</programlisting>
+
+          <para>This may be worked around by using the --nodeps option of rpm.</para>
+
+          <programlisting>rpm -Uvh --nodeps &#60;shorewall rpm&#62;</programlisting>
+        </note>
+      </listitem>
+
+      <listitem>
+        <para>See if there are any incompatibilities between your
+        configuration and the new Shorewall version and correct as necessary.</para>
+
+        <programlisting>shorewall check</programlisting>
+      </listitem>
+
+      <listitem>
+        <para>Restart the firewall.</para>
+
+        <programlisting>shorewall restart</programlisting>
+      </listitem>
+    </orderedlist>
+  </section>
+
+  <section id="Upgrade_Tarball">
+    <title>Upgrade using tarball</title>
+
+    <para>If you already have Shorewall installed and are upgrading to a new
+    version using the tarball:</para>
+
+    <important>
+      <para>If you are upgrading from a 1.2 version of Shorewall to a 1.4
+      version and you have entries in the /etc/shorewall/hosts file then
+      please check your /etc/shorewall/interfaces file to be sure that it
+      contains an entry for each interface mentioned in the hosts file. Also,
+      there are certain 1.2 rule forms that are no longer supported under 1.4
+      (you must use the new 1.4 syntax). See <ulink url="errata.htm#Upgrade">the
+      upgrade issues</ulink> for details.</para>
+    </important>
+
+    <orderedlist>
+      <listitem>
+        <para>unpack the tarball.</para>
+
+        <programlisting>tar -zxf shorewall-x.y.z.tgz</programlisting>
+      </listitem>
+
+      <listitem>
+        <para>cd to the shorewall directory (the version is encoded in the
+        directory name as in <quote>shorewall-3.0.1</quote>).</para>
+      </listitem>
+
+      <listitem>
+        <para>If you are using <ulink
+        url="http://www.caldera.com/openstore/openlinux/">Caldera</ulink>,
+        <ulink url="http://www.redhat.com">RedHat</ulink>, <ulink
+        url="http://www.linux-mandrake.com">Mandrake</ulink>, <ulink
+        url="http://www.corel.com">Corel</ulink>, <ulink
+        url="http://www.slackware.com/">Slackware</ulink> or <ulink
+        url="http://www.debian.org">Debian</ulink> then type</para>
+
+        <programlisting>./install.sh</programlisting>
+
+        <orderedlist numeration="loweralpha">
+          <listitem>
+            <para>If you are using <ulink url="http://www.suse.com">SuSe</ulink>
+            then type</para>
+
+            <programlisting>./install.sh /etc/init.d</programlisting>
+          </listitem>
+
+          <listitem>
+            <para>If your distribution has directory /etc/rc.d/init.d or
+            /etc/init.d then type</para>
+
+            <programlisting>./install.sh</programlisting>
+          </listitem>
+
+          <listitem>
+            <para>For other distributions, determine where your distribution
+            installs init scripts and type</para>
+
+            <programlisting>./install.sh &#60;init script directory&#62;</programlisting>
+          </listitem>
+        </orderedlist>
+      </listitem>
+
+      <listitem>
+        <para>See if there are any incompatibilities between your
+        configuration and the new Shorewall version and correct as necessary.</para>
+
+        <programlisting>shorewall check</programlisting>
+      </listitem>
+
+      <listitem>
+        <para>Start the firewall by typing</para>
+
+        <programlisting>shorewall start</programlisting>
+      </listitem>
+
+      <listitem>
+        <para>If the install script was unable to configure Shorewall to be
+        started automatically at boot, see <ulink
+        url="starting_and_stopping_shorewall.htm">these instructions</ulink>.</para>
+      </listitem>
+    </orderedlist>
+  </section>
+
+  <section id="LRP_Upgrade">
+    <title>Upgrade the .lrp</title>
+
+    <para>If you already have a running Bering installation and wish to
+    upgrade to a later version of Shorewall:</para>
+
+    <remark>UNDER CONSTRUCTION...</remark>
+  </section>
+
+  <section id="Config_Files">
+    <title>Configuring Shorewall</title>
+
+    <para>You will need to edit some or all of the configuration files to
+    match your setup. In most cases, the <ulink
+    url="shorewall_quickstart_guide.htm">Shorewall QuickStart Guides</ulink>
+    contain all of the information you need.</para>
+  </section>
+
+  <section>
+    <title>Uninstall/Fallback</title>
+
+    <para>See <quote><ulink url="fallback.htm">Fallback and Uninstall</ulink></quote>.</para>
+  </section>
+</article>

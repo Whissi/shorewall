@@ -2443,7 +2443,7 @@ process_rules() # $1 = name of rules file
     while read xtarget xclients xservers xprotocol xports xcports xaddress; do
 	case "${xtarget%:*}" in
 
-	    ACCEPT|DROP|REJECT|DNAT|DNAT|DNAT-|REDIRECT|REDIRECT-|LOG|CONTINUE)
+	    ACCEPT|DROP|REJECT|DNAT|DNAT-|REDIRECT|REDIRECT-|LOG|CONTINUE)
 		expandv xclients xservers xprotocol xports xcports xaddress
 
 		if [ "x$xclients" = xall ]; then

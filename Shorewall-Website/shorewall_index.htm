@@ -32,7 +32,8 @@ to 2.x releases of Shorewall. For older versions:</p>
  href="http://shorewall.net/pub/shorewall/2.2/shorewall-2.2.0/releasenotes.txt">release
 notes</a> and here are the <a
  href="http://shorewall.net/pub/shorewall/2.2/shorewall-2.2.0/known_problems.txt">known
-problems</a>.<br>
+problems</a> and <a
+ href="http://shorewall.net/pub/shorewall/2.2/shorewall-2.2.0/errata/">updates</a>.<br>
 </p>
 <p><a
  href="http://lists.shorewall.net/pipermail/shorewall-announce/2004-December/000451.html"><span
@@ -47,7 +48,7 @@ Foundation; with no Invariant Sections, with no Front-Cover, and with
 no Back-Cover Texts. A copy of the license is included in the section
 entitled “<a href="GnuCopyright.htm" target="_self">GNU
 Free Documentation License</a>”.</p>
-<p>2005-02-01</p>
+<p>2005-02-05</p>
 <hr>
 <h3>Table of Contents</h3>
 <p style="margin-left: 0.42in; margin-bottom: 0in;"><a href="#Intro">Introduction
@@ -63,7 +64,9 @@ Shorewall on Mandrake® with a two-interface setup?</a><br>
 <a href="#License">License</a></p>
 <p style="margin-bottom: 0in; margin-left: 40px;"><a href="#2_0_10">News</a></p>
 <p style="margin-left: 0.83in; margin-bottom: 0in;"><span
- style="text-decoration: underline;"></span><a href="#2_2_0">Shorewall
+ style="text-decoration: underline;"></span><a href="#2_0_16">Shorewall
+2.0.16</a><br>
+<a href="#2_2_0">Shorewall
 2.2.0</a><br>
 <br>
 </p>
@@ -158,6 +161,34 @@ of the license is included in the section entitled "GNU Free
 Documentation License". </p>
 <hr>
 <h2><a name="News"></a>News</h2>
+<span style="font-weight: bold;"><a name="2_0_16"></a>02/01/2005
+Shorewall 2.0.16<br>
+</span><br>
+This release back-ports the DROPINVALID shorewall.conf option from
+2.2.0.<br>
+<ol>
+  <li>Recent 2.6 kernels include code that evaluates TCP packets based
+on TCP Window analysis. This can cause packets that were previously
+classified as NEW or ESTABLISHED to be classified as INVALID.<br>
+    <br>
+The new kernel code can be disabled by including this command in your
+/etc/shorewall/init file:<br>
+    <br>
+echo 1 &gt; /proc/sys/net/ipv4/netfilter/ip_conntrack_tcp_be_liberal<br>
+    <br>
+Additional kernel logging about INVALID TCP packets may be obtained by
+adding this command to /etc/shorewall/init:<br>
+    <br>
+echo 1 &gt; /proc/sys/net/ipv4/netfilter/ip_conntrack_log_invalid<br>
+    <br>
+Traditionally, Shorewall has dropped INVALID TCP packets early. The new
+DROPINVALID option allows INVALID packets to be passed through the
+normal rules chains by setting DROPINVALID=No.<br>
+    <br>
+If not specified or if specified as empty (e.g., DROPINVALID="") then
+DROPINVALID=Yes is assumed.<br>
+  </li>
+</ol>
 <span style="font-weight: bold;"><a name="2_2_0"></a>02/01/2005
 Shorewall 2.2.0<br>
 <br>

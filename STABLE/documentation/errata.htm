@@ -2,698 +2,731 @@
 <html>
 <head>
                                                                         
-                       
+                           
   <meta http-equiv="Content-Type"
  content="text/html; charset=windows-1252">
   <title>Shorewall 1.3 Errata</title>
                                                                         
                                                                         
-                        
+                               
   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
                                                                         
-                       
+                           
   <meta name="ProgId" content="FrontPage.Editor.Document">
                                                                         
-                               
+                                   
   <meta name="Microsoft Theme" content="none">
 </head>
   <body>
-                                              
+                                                
 <table border="0" cellpadding="0" cellspacing="0"
  style="border-collapse: collapse;" width="100%" id="AutoNumber1"
  bgcolor="#400169" height="90">
-                          <tbody>
-                          <tr>
-                            <td width="100%">                           
+                           <tbody>
+                           <tr>
+                             <td width="100%">                          
                                                                         
-                                                           
+                                                                   
       <h1 align="center"><font color="#ffffff">Shorewall Errata/Upgrade Issues</font></h1>
-                            </td>
-                          </tr>
+                             </td>
+                           </tr>
                                                                         
-                 
-  </tbody>                      
+                     
+  </tbody>                       
 </table>
-                                                           
+                                                             
 <p align="center">       <b><u>IMPORTANT</u></b></p>
-                                                           
+                                                             
 <ol>
-                          <li>                                          
+                           <li>                                         
                                                                         
-         
-    <p align="left">          <b><u>I</u>f you use a Windows system to download
-           a corrected     script, be sure to run the script through <u>
-           <a href="http://www.megaloman.com/%7Ehany/software/hd2u/"
- style="text-decoration: none;"> dos2unix</a></u>      after you have moved
+               
+    <p align="left">          <b><u>I</u>f you use a Windows system to download 
+           a corrected     script, be sure to run the script through <u> 
+          <a href="http://www.megaloman.com/%7Ehany/software/hd2u/"
+ style="text-decoration: none;"> dos2unix</a></u>      after you have moved 
            it to your Linux system.</b></p>
-                                       </li>
-                          <li>                                          
+                                        </li>
+                           <li>                                         
                                                                         
-         
-    <p align="left">          <b>If you are installing Shorewall for the
-first time and plan to use the        .tgz and install.sh script, you can
-untar the archive, replace the        'firewall' script in the untarred directory
+               
+    <p align="left">          <b>If you are installing Shorewall for the first
+time and plan to use the        .tgz and install.sh script, you can untar
+the archive, replace the        'firewall' script in the untarred directory 
            with the one you downloaded        below, and then run install.sh.</b></p>
-                                       </li>
-                          <li>                                          
+                                        </li>
+                           <li>                                         
                                                                         
-         
-    <p align="left">          <b>If you are running a Shorewall version earlier
-    than 1.3.11, when the instructions say to install a corrected       
-firewall     script in        /etc/shorewall/firewall, /usr/lib/shorewall/firewall
-      or /var/lib/shorewall/firewall,  use the 'cp' (or 'scp') utility to
-overwrite        the        existing file. DO  NOT REMOVE OR RENAME THE OLD
-/etc/shorewall/firewall               or /var/lib/shorewall/firewall  before
-you do that. /etc/shorewall/firewall               and /var/lib/shorewall/firewall
- are symbolic links that point           to the 'shorewall' file used by
-your  system initialization scripts     to         start Shorewall during
-boot. It is  that file that must be overwritten              with the corrected
-script. Beginning with Shorewall 1.3.11, you may rename the existing file
+               
+    <p align="left">          <b>If you are running a Shorewall version earlier 
+    than 1.3.11, when the instructions say to install a corrected        firewall
+    script in        /etc/shorewall/firewall, /usr/lib/shorewall/firewall 
+      or /var/lib/shorewall/firewall,  use the 'cp' (or 'scp') utility to 
+overwrite        the        existing file. DO  NOT REMOVE OR RENAME THE OLD 
+/etc/shorewall/firewall               or /var/lib/shorewall/firewall  before 
+you do that. /etc/shorewall/firewall               and /var/lib/shorewall/firewall 
+ are symbolic links that point           to the 'shorewall' file used by your
+ system initialization scripts     to         start Shorewall during boot.
+It is  that file that must be overwritten              with the corrected 
+script. Beginning with Shorewall 1.3.11, you may rename the existing file 
 before copying in the new file.</b></p>
-                  </li>
-                  <li>                                                  
-                             
-    <p align="left"><b><font color="#ff0000">DO NOT INSTALL CORRECTED COMPONENTS
-        ON A RELEASE EARLIER THAN THE ONE THAT THEY ARE LISTED UNDER BELOW.
-  For    example,  do NOT install the 1.3.9a firewall script if you are running
+                   </li>
+                   <li>                                                 
+                                   
+    <p align="left"><b><font color="#ff0000">DO NOT INSTALL CORRECTED COMPONENTS 
+        ON A RELEASE EARLIER THAN THE ONE THAT THEY ARE LISTED UNDER BELOW. 
+  For    example,  do NOT install the 1.3.9a firewall script if you are running 
    1.3.7c.</font></b><br>
-                              </p>
-                  </li>
-                               
+                               </p>
+                   </li>
+                                 
 </ol>
-                                                           
+                                                             
 <ul>
-                          <li><b><a href="upgrade_issues.htm">Upgrade Issues</a></b></li>
-                          <li>                            <b><a
+                           <li><b><a href="upgrade_issues.htm">Upgrade Issues</a></b></li>
+                           <li>                            <b><a
  href="#V1.3">Problems      in  Version    1.3</a></b></li>
-                          <li>                            <b><a
+                           <li>                            <b><a
  href="errata_2.htm">Problems      in  Version 1.2</a></b></li>
-                          <li>                            <b><font
+                           <li>                            <b><font
  color="#660066">       <a href="errata_1.htm">Problems in Version 1.1</a></font></b></li>
-                          <li>                            <b><font
- color="#660066"><a href="#iptables">    Problem with iptables version 1.2.3 
-    on RH7.2</a></font></b></li>
-                          <li>                            <b><a
- href="#Debug">Problems      with   kernels  &gt;= 2.4.18 and           
-RedHat iptables</a></b></li>
-                          <li><b><a href="#SuSE">Problems installing/upgrading
+                           <li>                            <b><font
+ color="#660066"><a href="#iptables">    Problem with iptables version 1.2.3
+     on RH7.2</a></font></b></li>
+                           <li>                            <b><a
+ href="#Debug">Problems      with   kernels  &gt;= 2.4.18 and            RedHat
+iptables</a></b></li>
+                           <li><b><a href="#SuSE">Problems installing/upgrading 
    RPM   on  SuSE</a></b></li>
-                          <li><b><a href="#Multiport">Problems with iptables
+                           <li><b><a href="#Multiport">Problems with iptables 
   version     1.2.7    and       MULTIPORT=Yes</a></b></li>
-                    <li><b><a href="#NAT">Problems with RH Kernel 2.4.18-10 
- and   NAT</a></b><br>
-                    </li>
-                                              
+                     <li><b><a href="#NAT">Problems with RH Kernel 2.4.18-10
+  and   NAT</a></b><br>
+                     </li>
+                                                
 </ul>
-                                              
-<hr>                                              
+                                                
+<hr>                                               
 <h2 align="left"><a name="V1.3"></a>Problems in Version 1.3</h2>
                                                                         
-                   
+                     
 <h3>Version 1.3.14</h3>
-     
+       
 <ul>
-     <li>There is an <a
- href="http://www.shorewall.net/pub/shorewall/errata/1.3.14/rfc1918">updated 
- rfc1918</a> file that reflects the resent allocation of 222.0.0.0/8 and 223.0.0.0/8.</li>
- 
+      <li>There is an <a
+ href="http://www.shorewall.net/pub/shorewall/errata/1.3.14/rfc1918">updated
+  rfc1918</a> file that reflects the resent allocation of 222.0.0.0/8 and
+223.0.0.0/8.</li>
+   
 </ul>
- 
+   
 <ul>
-     <li>The documentation for the routestopped file claimed that a comma-separated 
- list could appear in the second column while the code only supported a single 
- host or network address.</li>
-    <li>Log messages produced by 'logunclean' and 'dropunclean' were not
+      <li>The documentation for the routestopped file claimed that a comma-separated
+  list could appear in the second column while the code only supported a
+single   host or network address.</li>
+     <li>Log messages produced by 'logunclean' and 'dropunclean' were not 
 rate-limited.</li>
-  <li>802.11b devices with names of the form <i>wlan</i>&lt;n&gt; don't support
-the 'maclist' interface option.<br>
+   <li>802.11b devices with names of the form <i>wlan</i>&lt;n&gt; don't
+support the 'maclist' interface option.</li>
+  <li>Log messages generated by RFC 1918 filtering are not rate limited.<br>
   </li>
-     
+       
 </ul>
-  These three problems have been corrected in <a
- href="http://www.shorewall.net/pub/shorewall/errata/1.3.14/firewall">this 
- firewall script</a> which may be installed in /usr/lib/shorewall as described 
- above.<br>
-     
+   These four problems have been corrected in <a
+ href="http://www.shorewall.net/pub/shorewall/errata/1.3.14/firewall">this
+  firewall script</a> which may be installed in /usr/lib/shorewall as described
+  above.<br>
+       
 <h3>Version 1.3.13</h3>
-             
+               
 <ul>
-         <li>The 'shorewall add' command produces an error message referring
+          <li>The 'shorewall add' command produces an error message referring 
   to  'find_interfaces_by_maclist'.</li>
-        <li>The 'shorewall delete' command can leave behind undeleted rules.</li>
-      <li>The 'shorewall add' command can fail with "iptables: Index of insertion
-  too big".<br>
-      </li>
-             
-</ul>
-      All three problems are corrected by <a
- href="http://www.shorewall.net/pub/shorewall/errata/1.3.13/firewall">this
-    firewall script</a> which may be installed in /usr/lib/shorewall as described
-    above.<br>
-         
-<ul>
-       <li>VLAN interface names of the form "eth<i>n</i>.<i>m</i>" (e.g., 
-eth0.1)   are not supported in this version or in 1.3.12. If you need such 
-support,   post on the users list and I can provide you with a patched version.<br>
+         <li>The 'shorewall delete' command can leave behind undeleted rules.</li>
+       <li>The 'shorewall add' command can fail with "iptables: Index of
+insertion   too big".<br>
        </li>
-         
-</ul>
-                
-<h3>Version 1.3.12</h3>
                
+</ul>
+       All three problems are corrected by <a
+ href="http://www.shorewall.net/pub/shorewall/errata/1.3.13/firewall">this 
+    firewall script</a> which may be installed in /usr/lib/shorewall as described 
+    above.<br>
+           
 <ul>
-          <li>If RFC_1918_LOG_LEVEL is set to anything but ULOG, the effect 
- is  the  same as if RFC_1918_LOG_LEVEL=info had been specified. The problem
-  is  corrected  by <a
- href="http://www.shorewall.net/pub/shorewall/errata/1.3.12/firewall">this
-    firewall script</a> which may be installed in /usr/lib/shorewall as described
-    above.</li>
-       <li>VLAN interface names of the form "eth<i>n</i>.<i>m</i>" (e.g., 
-eth0.1)   are not supported in this version or in 1.3.13. If you need such 
-support,   post on the users list and I can provide you with a patched version.<br>
+        <li>VLAN interface names of the form "eth<i>n</i>.<i>m</i>" (e.g.,
+ eth0.1)   are not supported in this version or in 1.3.12. If you need such
+ support,   post on the users list and I can provide you with a patched version.<br>
         </li>
-               
+           
 </ul>
-               
-<h3>Version 1.3.12 LRP</h3>
+                  
+<h3>Version 1.3.12</h3>
                  
 <ul>
-           <li>The .lrp was missing the /etc/shorewall/routestopped file
---  a  new   lrp (shorwall-1.3.12a.lrp) has been released which corrects
-this  problem.<br>
-           </li>
+           <li>If RFC_1918_LOG_LEVEL is set to anything but ULOG, the effect
+  is  the  same as if RFC_1918_LOG_LEVEL=info had been specified. The problem 
+  is  corrected  by <a
+ href="http://www.shorewall.net/pub/shorewall/errata/1.3.12/firewall">this 
+    firewall script</a> which may be installed in /usr/lib/shorewall as described 
+    above.</li>
+        <li>VLAN interface names of the form "eth<i>n</i>.<i>m</i>" (e.g.,
+ eth0.1)   are not supported in this version or in 1.3.13. If you need such
+ support,   post on the users list and I can provide you with a patched version.<br>
+         </li>
                  
 </ul>
                  
-<h3>Version 1.3.11a</h3>
+<h3>Version 1.3.12 LRP</h3>
                    
 <ul>
-            <li><a
- href="http://www.shorewall.net/pub/shorewall/errata/1.3.11/rfc1918">This
-     copy of /etc/shorewall/rfc1918</a> reflects the recent allocation of
-82.0.0.0/8.<br>
+            <li>The .lrp was missing the /etc/shorewall/routestopped file 
+--  a  new   lrp (shorwall-1.3.12a.lrp) has been released which corrects this
+ problem.<br>
             </li>
                    
 </ul>
                    
+<h3>Version 1.3.11a</h3>
+                     
+<ul>
+             <li><a
+ href="http://www.shorewall.net/pub/shorewall/errata/1.3.11/rfc1918">This 
+     copy of /etc/shorewall/rfc1918</a> reflects the recent allocation of 
+82.0.0.0/8.<br>
+             </li>
+                     
+</ul>
+                     
 <h3>Version 1.3.11</h3>
-                         
+                           
 <ul>
-               <li>When installing/upgrading using the .rpm, you may receive
+                <li>When installing/upgrading using the .rpm, you may receive 
   the   following   warnings:<br>
-                 <br>
-                  user teastep does not exist - using root<br>
-                  group teastep does not exist - using root<br>
-                 <br>
-             These warnings are harmless and may be ignored. Users downloading
-   the   .rpm  from shorewall.net or mirrors should no longer see these warnings
+                  <br>
+                   user teastep does not exist - using root<br>
+                   group teastep does not exist - using root<br>
+                  <br>
+              These warnings are harmless and may be ignored. Users downloading 
+   the   .rpm  from shorewall.net or mirrors should no longer see these warnings 
    as  the .rpm you will get from there has been corrected.</li>
-              <li>DNAT rules that exclude a source subzone (SOURCE column 
-contains     !  followed by a sub-zone list) result in an error message and 
-Shorewall    fails  to start.<br>
-                <br>
-            Install <a
- href="http://www.shorewall.net/pub/shorewall/errata/1.3.11/firewall">this
-      corrected script</a> in /usr/lib/shorewall/firewall to correct this
-problem.     Thanks go to Roger Aich who analyzed this problem and provided
+               <li>DNAT rules that exclude a source subzone (SOURCE column
+ contains     !  followed by a sub-zone list) result in an error message
+and  Shorewall    fails  to start.<br>
+                 <br>
+             Install <a
+ href="http://www.shorewall.net/pub/shorewall/errata/1.3.11/firewall">this 
+      corrected script</a> in /usr/lib/shorewall/firewall to correct this 
+problem.     Thanks go to Roger Aich who analyzed this problem and provided 
 a fix.<br>
-               <br>
-           This problem is corrected in version 1.3.11a.<br>
-              </li>
-                         
+                <br>
+            This problem is corrected in version 1.3.11a.<br>
+               </li>
+                           
 </ul>
-                         
+                           
 <h3>Version 1.3.10</h3>
-                             
+                               
 <ul>
-                 <li>If you experience problems connecting to a PPTP server 
- running     on  your firewall and you have a 'pptpserver' entry in /etc/shorewall/tunnels,
+                  <li>If you experience problems connecting to a PPTP server
+  running     on  your firewall and you have a 'pptpserver' entry in /etc/shorewall/tunnels, 
            <a
- href="http://www.shorewall.net/pub/shorewall/errata/1.3.10/firewall">this
-       version of the firewall script</a> may help. Please report any cases
-  where     installing this script in /usr/lib/shorewall/firewall solved
-your   connection     problems. Beginning with version 1.3.10, it is safe
-to save   the old version     of /usr/lib/shorewall/firewall before copying
-in the  new one since /usr/lib/shorewall/firewall     is the real script
-now and not just a symbolic link to the real script.<br>
-                 </li>
-                             
+ href="http://www.shorewall.net/pub/shorewall/errata/1.3.10/firewall">this 
+       version of the firewall script</a> may help. Please report any cases 
+  where     installing this script in /usr/lib/shorewall/firewall solved your
+  connection     problems. Beginning with version 1.3.10, it is safe to save
+  the old version     of /usr/lib/shorewall/firewall before copying in the
+ new one since /usr/lib/shorewall/firewall     is the real script now and
+not just a symbolic link to the real script.<br>
+                  </li>
+                               
 </ul>
-                             
+                               
 <h3>Version 1.3.9a</h3>
-                               
-<ul>
-                  <li> If entries are used in /etc/shorewall/hosts and MERGE_HOSTS=No 
-      then  the following message appears during "shorewall [re]start":</li>
-                               
-</ul>
                                  
+<ul>
+                   <li> If entries are used in /etc/shorewall/hosts and MERGE_HOSTS=No
+       then  the following message appears during "shorewall [re]start":</li>
+                                 
+</ul>
+                                   
 <pre>          recalculate_interfacess: command not found<br></pre>
-                               
+                                 
 <blockquote> The updated firewall script at  <a
  href="ftp://www.shorewall.net/pub/shorewall/errata/1.3.9/firewall"
- target="_top">ftp://www.shorewall.net/pub/shorewall/errata/1.3.9/firewall</a> 
-        corrects this problem.Copy the script to /usr/lib/shorewall/firewall 
-   as   described  above.<br>
-                </blockquote>
-                               
-<blockquote> Alternatively, edit /usr/lob/shorewall/firewall and change the
-        single occurence (line 483 in version 1.3.9a) of 'recalculate_interefacess'
-        to 'recalculate_interface'. <br>
-                </blockquote>
-                               
-<ul>
-                  <li>The installer (install.sh) issues a misleading message
-  "Common     functions   installed in /var/lib/shorewall/functions" whereas
-  the file   is  installed  in /usr/lib/shorewall/functions. The installer
- also performs   incorrectly  when updating old configurations that had the
- file /etc/shorewall/functions.         <a
- href="ftp://ftp.shorewall.net/pub/shorewall/errata/1.3.9/install.sh">Here
-        is an updated version that corrects these problems.<br>
-                    </a></li>
-                               
-</ul>
+ target="_top">ftp://www.shorewall.net/pub/shorewall/errata/1.3.9/firewall</a>
+         corrects this problem.Copy the script to /usr/lib/shorewall/firewall
+    as   described  above.<br>
+                 </blockquote>
                                  
+<blockquote> Alternatively, edit /usr/lob/shorewall/firewall and change the 
+        single occurence (line 483 in version 1.3.9a) of 'recalculate_interefacess' 
+        to 'recalculate_interface'. <br>
+                 </blockquote>
+                                 
+<ul>
+                   <li>The installer (install.sh) issues a misleading message 
+  "Common     functions   installed in /var/lib/shorewall/functions" whereas 
+  the file   is  installed  in /usr/lib/shorewall/functions. The installer 
+ also performs   incorrectly  when updating old configurations that had the 
+ file /etc/shorewall/functions.         <a
+ href="ftp://ftp.shorewall.net/pub/shorewall/errata/1.3.9/install.sh">Here 
+        is an updated version that corrects these problems.<br>
+                     </a></li>
+                                 
+</ul>
+                                   
 <h3>Version 1.3.9</h3>
-                   <b>TUNNELS Broken in 1.3.9!!! </b>There is an updated
+                    <b>TUNNELS Broken in 1.3.9!!! </b>There is an updated 
 firewall     script    at  <a
  href="ftp://www.shorewall.net/pub/shorewall/errata/1.3.9/firewall"
- target="_top">ftp://www.shorewall.net/pub/shorewall/errata/1.3.9/firewall</a> 
-        -- copy that file to /usr/lib/shorewall/firewall as described above.<br>
-                    <br>
-                   Version 1.3.8                      
+ target="_top">ftp://www.shorewall.net/pub/shorewall/errata/1.3.9/firewall</a>
+         -- copy that file to /usr/lib/shorewall/firewall as described above.<br>
+                     <br>
+                    Version 1.3.8                       
 <ul>
-                       <li> Use of shell variables in the LOG LEVEL or SYNPARMS 
-   columns     of  the  policy file doesn't work.</li>
-                       <li>A DNAT rule with the same original and new IP
-addresses      but   with   different  port numbers doesn't work (e.g., "DNAT
+                        <li> Use of shell variables in the LOG LEVEL or SYNPARMS
+    columns     of  the  policy file doesn't work.</li>
+                        <li>A DNAT rule with the same original and new IP 
+addresses      but   with   different  port numbers doesn't work (e.g., "DNAT 
 loc dmz:10.1.1.1:24        tcp   25 - 10.1.1.1")<br>
-                       </li>
-                                         
-</ul>
-                     Installing                               <a
- href="http://www.shorewall.net/pub/shorewall/errata/1.3.8/firewall">   
-                           this corrected firewall script</a> in /var/lib/shorewall/firewall
-                                          as described above corrects these
-  problems.                             
-<h3>Version 1.3.7b</h3>
-                                                                        
-   
-<p>DNAT rules where the source zone is 'fw' ($FW)                       
-        result in an error message. Installing                          
-    <a
- href="http://www.shorewall.net/pub/shorewall/errata/1.3.7/firewall">   
-                           this corrected firewall script</a> in /var/lib/shorewall/firewall
-                                          as described above corrects this
- problem.</p>
-                                                                        
-   
-<h3>Version 1.3.7a</h3>
-                                                                        
-   
-<p>"shorewall refresh" is not creating the proper                       
-        rule for FORWARDPING=Yes. Consequently, after                   
-            "shorewall refresh", the firewall will not forward          
-                     icmp echo-request (ping) packets. Installing       
-                       <a
- href="http://www.shorewall.net/pub/shorewall/errata/1.3.7/firewall">   
-                           this corrected firewall script</a> in /var/lib/shorewall/firewall
-                                          as described above corrects this
- problem.</p>
-                                                                        
-   
-<h3>Version &lt;= 1.3.7a</h3>
-                                                                        
-   
-<p>If "norfc1918" and "dhcp" are both specified as                      
-         options on a given interface then RFC 1918                     
-          checking is occurring before DHCP checking. This              
-                 means that if a DHCP client broadcasts using an        
-                       RFC 1918 source address, then the firewall will  
-                             reject the broadcast (usually logging it). This
-                                          has two problems:</p>
-                                                                        
-   
-<ol>
-                                                       <li>If the firewall
- is  running     a  DHCP   server,                                   the
-client   won't be   able   to obtain   an IP  address                   
-              lease  from that   server.</li>
-                                                       <li>With this order
- of  checking,      the   "dhcp"                                   option
-cannot  be used as   a  noise-reduction                                 
-   measure  where there   are  both dynamic and    static               
-                  clients  on a LAN segment.</li>
-                                              
-</ol>
-                                                                        
-                   
-<p>                               <a
- href="http://www.shorewall.net/pub/shorewall/errata/1.3.7/firewall">   
-                           This version of the 1.3.7a firewall script </a> 
-                                         corrects the problem. It must be 
-installed          in /var/lib/shorewall                                as 
-described  above.</p>
-                                                                        
-   
-<h3>Version 1.3.7</h3>
-                                                                        
-   
-<p>Version 1.3.7 dead on arrival -- please use                          
-     version 1.3.7a and check your version against                      
-         these md5sums -- if there's a difference, please               
-                download again.</p>
-                                                                        
-   
-<pre>	d2fffb7fb99bcc6cb047ea34db1df10 shorewall-1.3.7a.tgz<br>	6a7fd284c8685b2b471a2f47b469fb94 shorewall-1.3.7a-1.noarch.rpm<br>	3decd14296effcff16853106771f7035 shorwall-1.3.7a.lrp</pre>
-                                              
-<p>In other words, type "md5sum &lt;<i>whatever package you downloaded</i>&gt;
-           and   compare the result with what you see above.</p>
-                                              
-<p>I'm embarrassed to report that 1.2.7 was also DOA -- maybe I'll skip the
-           .7   version in each sequence from now on.</p>
-                                                                        
-<h3 align="left">Version 1.3.6</h3>
-                                                                        
-<ul>
-                                   <li>                                 
-                                                                        
-                               
-    <p align="left">If ADD_SNAT_ALIASES=Yes is specified in            /etc/shorewall/shorewall.conf,
-           an error occurs when the firewall            script attempts to
- add    an   SNAT   alias.  </p>
-                        </li>
-                        <li>                                            
-                                                                        
-                    
-    <p align="left">The <b>logunclean </b>and <b>dropunclean</b> options
-           cause errors during startup when Shorewall is run with iptables
-           1.2.7. </p>
                         </li>
                                            
 </ul>
+                      Installing                               <a
+ href="http://www.shorewall.net/pub/shorewall/errata/1.3.8/firewall">    
+                          this corrected firewall script</a> in /var/lib/shorewall/firewall 
+                                          as described above corrects these 
+  problems.                              
+<h3>Version 1.3.7b</h3>
                                                                         
+     
+<p>DNAT rules where the source zone is 'fw' ($FW)                        
+       result in an error message. Installing                           
+   <a
+ href="http://www.shorewall.net/pub/shorewall/errata/1.3.7/firewall">    
+                          this corrected firewall script</a> in /var/lib/shorewall/firewall 
+                                          as described above corrects this 
+ problem.</p>
+                                                                        
+     
+<h3>Version 1.3.7a</h3>
+                                                                        
+     
+<p>"shorewall refresh" is not creating the proper                        
+       rule for FORWARDPING=Yes. Consequently, after                    
+           "shorewall refresh", the firewall will not forward           
+                    icmp echo-request (ping) packets. Installing        
+                      <a
+ href="http://www.shorewall.net/pub/shorewall/errata/1.3.7/firewall">    
+                          this corrected firewall script</a> in /var/lib/shorewall/firewall 
+                                          as described above corrects this 
+ problem.</p>
+                                                                        
+     
+<h3>Version &lt;= 1.3.7a</h3>
+                                                                        
+     
+<p>If "norfc1918" and "dhcp" are both specified as                       
+        options on a given interface then RFC 1918                      
+         checking is occurring before DHCP checking. This               
+                means that if a DHCP client broadcasts using an         
+                      RFC 1918 source address, then the firewall will   
+                            reject the broadcast (usually logging it). This 
+                                          has two problems:</p>
+                                                                        
+     
+<ol>
+                                                        <li>If the firewall 
+ is  running     a  DHCP   server,                                   the client
+  won't be   able   to obtain   an IP  address                          
+       lease  from that   server.</li>
+                                                        <li>With this order 
+ of  checking,      the   "dhcp"                                   option 
+cannot  be used as   a  noise-reduction                                  
+  measure  where there   are  both dynamic and    static                
+                 clients  on a LAN segment.</li>
+                                                
+</ol>
+                                                                        
+                     
+<p>                               <a
+ href="http://www.shorewall.net/pub/shorewall/errata/1.3.7/firewall">    
+                          This version of the 1.3.7a firewall script </a>
+                                          corrects the problem. It must be
+ installed          in /var/lib/shorewall                               
+as  described  above.</p>
+                                                                        
+     
+<h3>Version 1.3.7</h3>
+                                                                        
+     
+<p>Version 1.3.7 dead on arrival -- please use                           
+    version 1.3.7a and check your version against                       
+        these md5sums -- if there's a difference, please                
+               download again.</p>
+                                                                        
+     
+<pre>	d2fffb7fb99bcc6cb047ea34db1df10 shorewall-1.3.7a.tgz<br>	6a7fd284c8685b2b471a2f47b469fb94 shorewall-1.3.7a-1.noarch.rpm<br>	3decd14296effcff16853106771f7035 shorwall-1.3.7a.lrp</pre>
+                                                
+<p>In other words, type "md5sum &lt;<i>whatever package you downloaded</i>&gt; 
+           and   compare the result with what you see above.</p>
+                                                
+<p>I'm embarrassed to report that 1.2.7 was also DOA -- maybe I'll skip the 
+           .7   version in each sequence from now on.</p>
+                                                                        
+ 
+<h3 align="left">Version 1.3.6</h3>
+                                                                        
+ 
+<ul>
+                                    <li>                                
+                                                                        
+                                     
+    <p align="left">If ADD_SNAT_ALIASES=Yes is specified in            /etc/shorewall/shorewall.conf, 
+           an error occurs when the firewall            script attempts to 
+ add    an   SNAT   alias.  </p>
+                         </li>
+                         <li>                                           
+                                                                        
+                          
+    <p align="left">The <b>logunclean </b>and <b>dropunclean</b> options 
+          cause errors during startup when Shorewall is run with iptables 
+           1.2.7. </p>
+                         </li>
+                                             
+</ul>
+                                                                        
+ 
 <p align="left">These problems are fixed in           <a
- href="http://www.shorewall.net/pub/shorewall/errata/1.3.6/firewall">   
-       this correct firewall script</a> which must be installed in      
-     /var/lib/shorewall/ as described above. These problems are also    
-       corrected in version 1.3.7.</p>
+ href="http://www.shorewall.net/pub/shorewall/errata/1.3.6/firewall">    
+      this correct firewall script</a> which must be installed in       
+    /var/lib/shorewall/ as described above. These problems are also     
+      corrected in version 1.3.7.</p>
                                                                         
+ 
 <h3 align="left">Two-interface Samples 1.3.6 (file two-interfaces.tgz)</h3>
                                                                         
-<p align="left">A line was inadvertently deleted from the "interfaces   
-        file" -- this line should be added back in if the version that you
+ 
+<p align="left">A line was inadvertently deleted from the "interfaces    
+       file" -- this line should be added back in if the version that you 
                       downloaded is missing it:</p>
                                                                         
+ 
 <p align="left">net    eth0    detect               routefilter,dhcp,norfc1918</p>
                                                                         
-<p align="left">If you downloaded two-interfaces-a.tgz then the above   
-        line should already be in the file.</p>
+ 
+<p align="left">If you downloaded two-interfaces-a.tgz then the above    
+       line should already be in the file.</p>
                                                                         
+ 
 <h3 align="left">Version 1.3.5-1.3.5b</h3>
                                                                         
-<p align="left">The new 'proxyarp' interface option doesn't work :-(    
-       This is fixed in           <a
- href="http://www.shorewall.net/pub/shorewall/errata/1.3.5/firewall">   
-       this corrected firewall script</a> which must be installed in    
-       /var/lib/shorewall/ as described above.</p>
+ 
+<p align="left">The new 'proxyarp' interface option doesn't work :-(     
+      This is fixed in           <a
+ href="http://www.shorewall.net/pub/shorewall/errata/1.3.5/firewall">    
+      this corrected firewall script</a> which must be installed in     
+      /var/lib/shorewall/ as described above.</p>
                                                                         
+ 
 <h3 align="left">Versions 1.3.4-1.3.5a</h3>
                                                                         
-<p align="left">Prior to version 1.3.4, host file entries such as the   
-        following were allowed:</p>
+ 
+<p align="left">Prior to version 1.3.4, host file entries such as the    
+       following were allowed:</p>
                                                                         
-<div align="left">                                   
+ 
+<div align="left">                                    
 <pre>	adm	eth0:1.2.4.5,eth0:5.6.7.8</pre>
-                        </div>
-                                              
-<div align="left">                          
-<p align="left">That capability was lost in version 1.3.4 so that it is only
-               possible to  include a single host specification on each line.
+                         </div>
+                                                
+<div align="left">                           
+<p align="left">That capability was lost in version 1.3.4 so that it is only 
+               possible to  include a single host specification on each line. 
     This         problem is corrected by    <a
- href="http://www.shorewall.net/pub/shorewall/errata/1.3.5a/firewall">this
-               modified 1.3.5a firewall script</a>. Install the script in
+ href="http://www.shorewall.net/pub/shorewall/errata/1.3.5a/firewall">this 
+               modified 1.3.5a firewall script</a>. Install the script in 
 /var/lib/pub/shorewall/firewall               as instructed above.</p>
-                      </div>
-                                                               
-<div align="left">                          
+                       </div>
+                                                                 
+<div align="left">                           
 <p align="left">This problem is corrected in version 1.3.5b.</p>
-                      </div>
+                       </div>
                                                                         
+ 
 <h3 align="left">Version 1.3.5</h3>
                                                                         
-<p align="left">REDIRECT rules are broken in this version. Install      
-    <a
- href="http://www.shorewall.net/pub/shorewall/errata/1.3.5/firewall">   
-       this corrected firewall script</a> in /var/lib/pub/shorewall/firewall
-                      as instructed above. This problem is corrected in version
+ 
+<p align="left">REDIRECT rules are broken in this version. Install       
+   <a
+ href="http://www.shorewall.net/pub/shorewall/errata/1.3.5/firewall">    
+      this corrected firewall script</a> in /var/lib/pub/shorewall/firewall 
+                      as instructed above. This problem is corrected in version 
       1.3.5a.</p>
                                                                         
+ 
 <h3 align="left">Version 1.3.n, n &lt; 4</h3>
                                                                         
-<p align="left">The "shorewall start" and "shorewall restart" commands  
-         to not verify that the zones named in the /etc/shorewall/policy
-file            have been previously defined in the /etc/shorewall/zones
-file. The            "shorewall check" command does perform this verification
-so it's a            good idea to run that command after you have made configuration
+ 
+<p align="left">The "shorewall start" and "shorewall restart" commands   
+        to not verify that the zones named in the /etc/shorewall/policy file
+           have been previously defined in the /etc/shorewall/zones file.
+The            "shorewall check" command does perform this verification so
+it's a            good idea to run that command after you have made configuration 
                       changes.</p>
                                                                         
+ 
 <h3 align="left">Version 1.3.n, n &lt; 3</h3>
                                                                         
-<p align="left">If you have upgraded from Shorewall 1.2 and after       
-    "Activating rules..." you see the message: "iptables: No            chains/target/match
-           by that name" then you probably have an entry in            /etc/shorewall/hosts
-           that specifies an interface that you didn't            include
-in   /etc/shorewall/interfaces.        To correct this problem, you     
-      must add an entry to /etc/shorewall/interfaces.        Shorewall 1.3.3
- and             later versions produce a clearer error    message    in
-this  case.</p>
+ 
+<p align="left">If you have upgraded from Shorewall 1.2 and after        
+   "Activating rules..." you see the message: "iptables: No            chains/target/match 
+           by that name" then you probably have an entry in            /etc/shorewall/hosts 
+           that specifies an interface that you didn't            include 
+in   /etc/shorewall/interfaces.        To correct this problem, you      
+     must add an entry to /etc/shorewall/interfaces.        Shorewall 1.3.3 
+ and             later versions produce a clearer error    message    in this
+ case.</p>
                                                                         
+ 
 <h3 align="left">Version 1.3.2</h3>
                                                                         
-<p align="left">Until approximately 2130 GMT on 17 June 2002, the       
-    download sites contained an incorrect version of the .lrp file. That
-           file can be identified by its size (56284 bytes). The correct
-version            has a size of 38126 bytes.</p>
+ 
+<p align="left">Until approximately 2130 GMT on 17 June 2002, the        
+   download sites contained an incorrect version of the .lrp file. That 
+          file can be identified by its size (56284 bytes). The correct version
+           has a size of 38126 bytes.</p>
                                                                         
+ 
 <ul>
-                                   <li>The code to detect a duplicate interface 
-   entry    in             /etc/shorewall/interfaces contained a typo that 
- prevented    it from               working correctly. </li>
-                                   <li>"NAT_BEFORE_RULES=No" was broken;
+                                    <li>The code to detect a duplicate interface
+    entry    in             /etc/shorewall/interfaces contained a typo that
+  prevented    it from               working correctly. </li>
+                                    <li>"NAT_BEFORE_RULES=No" was broken; 
 it  behaved     just   like   "NAT_BEFORE_RULES=Yes".</li>
-                                              
+                                                
 </ul>
                                                                         
+ 
 <p align="left">Both problems are corrected in           <a
- href="http://www.shorewall.net/pub/shorewall/errata/1.3.2/firewall">   
-       this script</a> which should be installed in <b><u>/var/lib/shorewall</u></b>
+ href="http://www.shorewall.net/pub/shorewall/errata/1.3.2/firewall">    
+      this script</a> which should be installed in <b><u>/var/lib/shorewall</u></b> 
            as described above.</p>
                                                                         
+ 
 <ul>
-                                   <li>                                 
+                                    <li>                                
                                                                         
-                               
-    <p align="left">The IANA have just announced the allocation of subnet
+                                     
+    <p align="left">The IANA have just announced the allocation of subnet 
                       221.0.0.0/8. This           <a
- href="http://www.shorewall.net/pub/shorewall/errata/1.3.2/rfc1918">    
-      updated rfc1918</a> file reflects that allocation.</p>
-                                                    </li>
-                                              
+ href="http://www.shorewall.net/pub/shorewall/errata/1.3.2/rfc1918">     
+     updated rfc1918</a> file reflects that allocation.</p>
+                                                     </li>
+                                                
 </ul>
                                                                         
+ 
 <h3 align="left">Version 1.3.1</h3>
                                                                         
+ 
 <ul>
-                                   <li>TCP SYN packets may be double counted
-  when              LIMIT:BURST  is included in a CONTINUE or ACCEPT policy
+                                    <li>TCP SYN packets may be double counted 
+  when              LIMIT:BURST  is included in a CONTINUE or ACCEPT policy 
   (i.e.,    each              packet is sent through the limit chain twice).</li>
-                                   <li>An unnecessary jump to the policy
+                                    <li>An unnecessary jump to the policy 
 chain    is  sometimes                 generated for a CONTINUE policy.</li>
-                                   <li>When an option is given for more than
-  one   interface      in               /etc/shorewall/interfaces then depending
-   on the option,     Shorewall                may ignore all but the first
-  appearence of the   option.  For example:<br>
-                                   <br>
-                                   net    eth0    dhcp<br>
-                                   loc    eth1    dhcp<br>
-                                   <br>
-                                   Shorewall will ignore the 'dhcp' on eth1.</li>
-                                   <li>Update 17 June 2002 - The bug described
-   in  the   prior    bullet               affects the following options:
-dhcp,   dropunclean,   logunclean,                 norfc1918, routefilter,
-multi,   filterping and   noping. An additional                 bug has been
+                                    <li>When an option is given for more
+than   one   interface      in               /etc/shorewall/interfaces then
+depending    on the option,     Shorewall                may ignore all but
+the first   appearence of the   option.  For example:<br>
+                                    <br>
+                                    net    eth0    dhcp<br>
+                                    loc    eth1    dhcp<br>
+                                    <br>
+                                    Shorewall will ignore the 'dhcp' on eth1.</li>
+                                    <li>Update 17 June 2002 - The bug described 
+   in  the   prior    bullet               affects the following options: 
+dhcp,   dropunclean,   logunclean,                 norfc1918, routefilter, 
+multi,   filterping and   noping. An additional                 bug has been 
 found   that affects only   the 'routestopped' option.<br>
-                                   <br>
-                                   Users who downloaded the corrected script
-  prior    to  1850   GMT   today              should download and install
- the corrected     script   again   to ensure              that this second
+                                    <br>
+                                    Users who downloaded the corrected script 
+  prior    to  1850   GMT   today              should download and install 
+ the corrected     script   again   to ensure              that this second 
  problem is corrected.</li>
-                                              
+                                                
 </ul>
                                                                         
+ 
 <p align="left">These problems are corrected in           <a
- href="http://www.shorewall.net/pub/shorewall/errata/1.3.1/firewall">   
-       this firewall script</a> which should be installed in            /etc/shorewall/firewall
+ href="http://www.shorewall.net/pub/shorewall/errata/1.3.1/firewall">    
+      this firewall script</a> which should be installed in            /etc/shorewall/firewall 
            as described above.</p>
                                                                         
+ 
 <h3 align="left">Version 1.3.0</h3>
                                                                         
+ 
 <ul>
-                                   <li>Folks who downloaded 1.3.0 from the
- links    on  the   download    page              before 23:40 GMT, 29 May
- 2002 may    have  downloaded   1.2.13    rather than              1.3.0.
-The "shorewall    version"  command   will tell    you which version    
-         that you   have installed.</li>
-                                   <li>The documentation NAT.htm file uses
- non-existent                  wallpaper and bullet graphic files. The  
-        <a
- href="http://www.shorewall.net/pub/shorewall/errata/1.3.0/NAT.htm">    
-      corrected version is here</a>.</li>
-                                              
+                                    <li>Folks who downloaded 1.3.0 from the 
+ links    on  the   download    page              before 23:40 GMT, 29 May 
+ 2002 may    have  downloaded   1.2.13    rather than              1.3.0. 
+The "shorewall    version"  command   will tell    you which version     
+        that you   have installed.</li>
+                                    <li>The documentation NAT.htm file uses 
+ non-existent                  wallpaper and bullet graphic files. The   
+       <a
+ href="http://www.shorewall.net/pub/shorewall/errata/1.3.0/NAT.htm">     
+     corrected version is here</a>.</li>
+                                                
 </ul>
-                                              
-<hr>                                              
+                                                
+<hr>                                               
 <h2 align="left"><a name="Upgrade"></a>Upgrade Issues</h2>
                                                                         
+ 
 <p align="left">The upgrade issues have moved to           <a
  href="upgrade_issues.htm">a separate page</a>.</p>
-                                                               
-<hr>                                                
-<h3 align="left"><a name="iptables"></a><font color="#660066">  Problem with
+                                                                 
+<hr>                                                 
+<h3 align="left"><a name="iptables"></a><font color="#660066">  Problem with 
            iptables version 1.2.3</font></h3>
-                                                           
-<blockquote>                                                             
-                         
-  <p align="left">There are a couple of serious bugs in iptables 1.2.3 that 
-                   prevent it from working with Shorewall. Regrettably,  RedHat
-      released    this buggy iptables in RedHat   7.2. </p>
+                                                             
+<blockquote>                                                            
+                             
+  <p align="left">There are a couple of serious bugs in iptables 1.2.3 that
+                    prevent it from working with Shorewall. Regrettably,
+ RedHat       released    this buggy iptables in RedHat   7.2. </p>
                                                                         
-                                     
+                                         
   <p align="left"> I have built a <a
- href="ftp://ftp.shorewall.net/pub/shorewall/errata/iptables-1.2.3-3.i386.rpm"> 
-            corrected 1.2.3 rpm which you can download here</a>  and I have 
-  also     built            an <a
- href="ftp://ftp.shorewall.net/pub/shorewall/iptables-1.2.4-1.i386.rpm"> 
-iptables-1.2.4   rpm which you can download here</a>. If  you are currently
-           running RedHat 7.1, you can install either of these RPMs     
-        <b><u>before</u>        </b>you upgrade to RedHat 7.2.</p>
+ href="ftp://ftp.shorewall.net/pub/shorewall/errata/iptables-1.2.3-3.i386.rpm">
+             corrected 1.2.3 rpm which you can download here</a>  and I have
+   also     built            an <a
+ href="ftp://ftp.shorewall.net/pub/shorewall/iptables-1.2.4-1.i386.rpm">
+ iptables-1.2.4   rpm which you can download here</a>. If  you are currently 
+           running RedHat 7.1, you can install either of these RPMs      
+       <b><u>before</u>        </b>you upgrade to RedHat 7.2.</p>
                                                                         
-                               
-  <p align="left"><font color="#ff6633"><b>Update   11/9/2001: </b></font>RedHat
-           has   released an iptables-1.2.4 RPM of their own which you can
+                                   
+  <p align="left"><font color="#ff6633"><b>Update   11/9/2001: </b></font>RedHat 
+           has   released an iptables-1.2.4 RPM of their own which you can 
  download         from<font color="#ff6633">   <a
- href="http://www.redhat.com/support/errata/RHSA-2001-144.html">http://www.redhat.com/support/errata/RHSA-2001-144.html</a>. 
-             </font>I have installed this RPM   on my firewall and it works 
-  fine.</p>
+ href="http://www.redhat.com/support/errata/RHSA-2001-144.html">http://www.redhat.com/support/errata/RHSA-2001-144.html</a>.
+              </font>I have installed this RPM   on my firewall and it works
+   fine.</p>
                                                                         
-                                     
-  <p align="left">If you         would like to patch iptables 1.2.3 yourself,
+                                         
+  <p align="left">If you         would like to patch iptables 1.2.3 yourself, 
            the patches are available         for download. This <a
- href="ftp://ftp.shorewall.net/pub/shorewall/errata/iptables-1.2.3/loglevel.patch">patch</a> 
-               which corrects a problem with parsing of the --log-level specification
-           while         this <a
- href="ftp://ftp.shorewall.net/pub/shorewall/errata/iptables-1.2.3/tos.patch">patch</a> 
-                   corrects a problem in handling the  TOS target.</p>
+ href="ftp://ftp.shorewall.net/pub/shorewall/errata/iptables-1.2.3/loglevel.patch">patch</a>
+                which corrects a problem with parsing of the --log-level
+specification            while         this <a
+ href="ftp://ftp.shorewall.net/pub/shorewall/errata/iptables-1.2.3/tos.patch">patch</a>
+                    corrects a problem in handling the  TOS target.</p>
                                                                         
-                                       
+                                           
   <p align="left">To install one of the above patches:</p>
                                                                         
-                       
+                           
   <ul>
-                                 <li>cd iptables-1.2.3/extensions</li>
-                                 <li>patch -p0 &lt; <i>the-patch-file</i></li>
+                                  <li>cd iptables-1.2.3/extensions</li>
+                                  <li>patch -p0 &lt; <i>the-patch-file</i></li>
                                                                         
-                       
+                           
   </ul>
-                                  </blockquote>
+                                   </blockquote>
                                                                         
-               
-<h3><a name="Debug"></a>Problems with kernels &gt;= 2.4.18              
-               and RedHat iptables</h3>
-                                              
-<blockquote>                                                             
-       
-  <p>Users who use RedHat iptables RPMs and who upgrade to kernel 2.4.18/19
+                 
+<h3><a name="Debug"></a>Problems with kernels &gt;= 2.4.18               
+              and RedHat iptables</h3>
+                                                
+<blockquote>                                                            
+           
+  <p>Users who use RedHat iptables RPMs and who upgrade to kernel 2.4.18/19 
            may     experience the following:</p>
                                                                         
-                   
-  <blockquote>                                                           
-                                                        
+                       
+  <blockquote>                                                          
+                                                              
     <pre># shorewall start<br>Processing /etc/shorewall/shorewall.conf ...<br>Processing /etc/shorewall/params ...<br>Starting Shorewall...<br>Loading Modules...<br>Initializing...<br>Determining Zones...<br>Zones: net<br>Validating interfaces file...<br>Validating hosts file...<br>Determining Hosts in Zones...<br>Net Zone: eth0:0.0.0.0/0<br>iptables: libiptc/libip4tc.c:380: do_check: Assertion<br>`h-&gt;info.valid_hooks == (1 &lt;&lt; 0 | 1 &lt;&lt; 3)' failed.<br>Aborted (core dumped)<br>iptables: libiptc/libip4tc.c:380: do_check: Assertion<br>`h-&gt;info.valid_hooks == (1 &lt;&lt; 0 | 1 &lt;&lt; 3)' failed.<br>Aborted (core dumped)<br></pre>
-                          </blockquote>
+                           </blockquote>
                                                                         
-                   
-  <p>The RedHat iptables RPM is compiled with debugging enabled but the  
-  user-space debugging code was not updated to reflect recent changes in
-           the     Netfilter 'mangle' table. You can correct the problem
-by   installing            <a
- href="http://www.shorewall.net/pub/shorewall/iptables-1.2.5-1.i386.rpm"> 
-              this iptables RPM</a>. If you are already running a 1.2.5 version 
-      of       iptables, you will need to specify the --oldpackage option 
-to   rpm   (e.g.,        "iptables -Uvh --oldpackage iptables-1.2.5-1.i386.rpm").</p>
-                        </blockquote>
+                       
+  <p>The RedHat iptables RPM is compiled with debugging enabled but the 
+   user-space debugging code was not updated to reflect recent changes in 
+           the     Netfilter 'mangle' table. You can correct the problem by
+  installing            <a
+ href="http://www.shorewall.net/pub/shorewall/iptables-1.2.5-1.i386.rpm">
+               this iptables RPM</a>. If you are already running a 1.2.5
+version        of       iptables, you will need to specify the --oldpackage
+option  to   rpm   (e.g.,        "iptables -Uvh --oldpackage iptables-1.2.5-1.i386.rpm").</p>
+                         </blockquote>
                                                                         
-                                     
-<h3><a name="SuSE"></a>Problems                                installing/upgrading
+                                       
+<h3><a name="SuSE"></a>Problems                                installing/upgrading 
            RPM on SuSE</h3>
                                                                         
-   
-<p>If you find that rpm complains about a conflict                      
-         with kernel &lt;= 2.2 yet you have a 2.4 kernel                
-               installed, simply use the "--nodeps" option to           
-                    rpm.</p>
+     
+<p>If you find that rpm complains about a conflict                       
+        with kernel &lt;= 2.2 yet you have a 2.4 kernel                 
+              installed, simply use the "--nodeps" option to            
+                   rpm.</p>
                                                                         
-   
+     
 <p>Installing: rpm -ivh --nodeps <i>&lt;shorewall rpm&gt;</i></p>
                                                                         
-   
+     
 <p>Upgrading: rpm -Uvh --nodeps <i>&lt;shorewall rpm&gt;</i></p>
                                                                         
-   
-<h3><a name="Multiport"></a><b>Problems with                            
-   iptables version 1.2.7 and MULTIPORT=Yes</b></h3>
+     
+<h3><a name="Multiport"></a><b>Problems with                             
+  iptables version 1.2.7 and MULTIPORT=Yes</b></h3>
                                                                         
-   
-<p>The iptables 1.2.7 release of iptables has made                      
-         an incompatible change to the syntax used to                   
-            specify multiport match rules; as a consequence,            
-                   if you install iptables 1.2.7 you must be running    
-                           Shorewall 1.3.7a or later or:</p>
+     
+<p>The iptables 1.2.7 release of iptables has made                       
+        an incompatible change to the syntax used to                    
+           specify multiport match rules; as a consequence,             
+                  if you install iptables 1.2.7 you must be running     
+                          Shorewall 1.3.7a or later or:</p>
                                                                         
-   
+     
 <ul>
-                                                       <li>set MULTIPORT=No 
- in                                   /etc/shorewall/shorewall.conf; or </li>
-                                                       <li>if you are running 
-  Shorewall      1.3.6    you may                                  install 
-                                 <a
- href="http://www.shorewall.net/pub/shorewall/errata/1.3.6/firewall">   
-                             this firewall script</a> in /var/lib/shorewall/firewall
+                                                        <li>set MULTIPORT=No
+  in                                   /etc/shorewall/shorewall.conf; or
+  </li>
+                                                        <li>if you are running
+   Shorewall      1.3.6    you may                                  install
+                                  <a
+ href="http://www.shorewall.net/pub/shorewall/errata/1.3.6/firewall">    
+                            this firewall script</a> in /var/lib/shorewall/firewall 
                                             as described above.</li>
-                                   
+                                     
 </ul>
-                                   
+                                     
 <h3><a name="NAT"></a>Problems with RH Kernel 2.4.18-10 and NAT<br>
-                     </h3>
-                  /etc/shorewall/nat entries of the following form will result
-   in  Shorewall     being unable to start:<br>
-                  <br>
-                                   
+                      </h3>
+                   /etc/shorewall/nat entries of the following form will
+result    in  Shorewall     being unable to start:<br>
+                   <br>
+                                     
 <pre>#EXTERNAL       INTERFACE       INTERNAL        ALL INTERFACES          LOCAL<br>192.0.2.22      eth0            192.168.9.22    yes                     yes<br>#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</pre>
-                  Error message is:<br>
-                                   
+                   Error message is:<br>
+                                     
 <pre>Setting up NAT...<br>iptables: Invalid argument<br>Terminated<br><br></pre>
-                  The solution is to put "no" in the LOCAL column. Kernel 
-support     for   LOCAL=yes   has never worked properly and 2.4.18-10 has 
-disabled  it.   The  2.4.19 kernel   contains corrected support under a new 
-kernel configuraiton    option; see <a href="Documentation.htm#NAT">http://www.shorewall.net/Documentation.htm#NAT</a><br>
-                                              
-<p><font size="2">  Last updated 2/18/2003 -                             
- <a href="support.htm">Tom Eastep</a></font> </p>
-                                               
+                   The solution is to put "no" in the LOCAL column. Kernel
+ support     for   LOCAL=yes   has never worked properly and 2.4.18-10 has
+ disabled  it.   The  2.4.19 kernel   contains corrected support under a
+new  kernel configuraiton    option; see <a href="Documentation.htm#NAT">http://www.shorewall.net/Documentation.htm#NAT</a><br>
+                                                
+<p><font size="2">  Last updated 3/8/2003 -                              
+<a href="support.htm">Tom Eastep</a></font> </p>
+                                                 
 <p><a href="copyright.htm"><font size="2">Copyright</font>          © <font
  size="2">2001, 2002, 2003 Thomas M. Eastep.</font></a><br>
-</p>
+ </p>
+ <br>
 </body>
 </html>

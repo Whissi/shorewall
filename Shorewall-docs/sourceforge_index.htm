@@ -93,6 +93,87 @@ setup that matches the documentation on this site. See the <a
 details.
       <h2></h2>
       <h2><b>News</b></h2>
+      <p><b>12/07/2003 - Shorewall 1.4.9 Beta 1 </b><b> <img
+ style="border: 0px solid ; width: 28px; height: 12px;"
+ src="images/new10.gif" alt="(New)" title=""><br>
+      </b></p>
+      <div style="margin-left: 40px;"><a
+ href="http://shorewall.net/pub/shorewall/Beta">http://shorewall.net/pub/shorewall/Beta</a><br>
+      <a href="ftp://shorewall.net/pub/shorewall/Beta" target="_top">ftp://shorewall.net/pub/shorewall/Beta</a><br>
+      </div>
+      <p>Problems Corrected since version 1.4.8:<br>
+      </p>
+      <ol>
+        <li>There has been a low continuing level of confusion over the
+terms "Source NAT" (SNAT) and "Static NAT". To avoid future confusion,
+all instances of "Static NAT" have been replaced with "One-to-one NAT"
+in the documentation and configuration files.</li>
+        <li>The description of NEWNOTSYN in shorewall.conf has been
+reworded for clarity.</li>
+        <li>Wild-card rules (those involving "all" as SOURCE or DEST)
+will no longer produce an error if they attempt to add a rule that
+would override a NONE policy. The logic for expanding these wild-card
+rules now simply skips those (SOURCE,DEST) pairs that have a NONE
+policy.<br>
+        </li>
+      </ol>
+      <p>Migration Issues:<br>
+      <br>
+&nbsp;&nbsp;&nbsp; None.<br>
+      <br>
+New Features:<br>
+      </p>
+      <ol>
+        <li>To cut down on the number of "Why are these ports closed
+rather than stealthed?" questions, the SMB-related rules in
+/etc/shorewall/common.def have been changed from 'reject' to 'DROP'.</li>
+        <li>For easier identification, packets logged under the
+'norfc1918' interface option are now logged out of chains named
+'rfc1918'. Previously, such packets were logged under chains named
+'logdrop'.</li>
+        <li>Distributors and developers seem to be regularly inventing
+new naming conventions for kernel modules. To avoid the need to change
+Shorewall code for each new convention, the MODULE_SUFFIX option has
+been added to shorewall.conf. MODULE_SUFFIX may be set to the suffix
+for module names in your particular distribution. If MODULE_SUFFIX is
+not set in shorewall.conf, Shorewall will use the list "o gz ko o.gz".<br>
+          <br>
+To see what suffix is used by your distribution:<br>
+          <br>
+ls /lib/modules/$(uname -r)/kernel/net/ipv4/netfilter<br>
+          <br>
+All of the files listed should have the same suffix (extension). Set
+MODULE_SUFFIX to that suffix.<br>
+          <br>
+Examples:<br>
+          <br>
+&nbsp;&nbsp;&nbsp;&nbsp; If all files end in ".kzo" then set
+MODULE_SUFFIX="kzo"<br>
+&nbsp;&nbsp;&nbsp;&nbsp; If all files end in ".kz.o" then set
+MODULE_SUFFIX="kz.o"</li>
+        <li>Support for user defined rule ACTIONS has been implemented
+through two new files:<br>
+          <br>
+/etc/shorewall/actions - used to list the user-defined ACTIONS.<br>
+/etc/shorewall/action.template - For each user defined &lt;action&gt;,
+copy this file to /etc/shorewall/action.&lt;action&gt; and add the
+appropriate rules for that &lt;action&gt;. Once an &lt;action&gt; has
+been defined, it may be used like any of the builtin ACTIONS (ACCEPT,
+DROP, etc.) in /etc/shorewall/rules.<br>
+          <br>
+Example: You want an action that logs a packet at the 'info' level and
+accepts the connection.<br>
+          <br>
+In /etc/shorewall/actions, you would add:<br>
+          <br>
+&nbsp;&nbsp;&nbsp;&nbsp; LogAndAccept<br>
+          <br>
+You would then copy /etc/shorewall/action.template to
+/etc/shorewall/LogAndAccept and in that file, you would add the two
+rules:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; LOG:info<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ACCEPT</li>
+      </ol>
       <p><b>12/03/2003 - Support Torch Passed</b><b> <img
  style="border: 0px solid ; width: 28px; height: 12px;"
  src="images/new10.gif" alt="(New)" title=""></b></p>
@@ -337,7 +418,7 @@ Children's Foundation.</font></a> Thanks!</font></font></p>
     </tr>
   </tbody>
 </table>
-<p><font size="2">Updated 12/03/2003 - <a href="support.htm">Tom Eastep</a></font>
+<p><font size="2">Updated 12/07/2003 - <a href="support.htm">Tom Eastep</a></font>
 <br>
 </p>
 </body>

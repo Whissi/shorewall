@@ -6772,16 +6772,20 @@ add_to_zone() # $1...${n-1} = <interface>[:<hosts>] $n = zone
 		    do_iptables -A $(dynamic_in $interface) $(match_source_hosts $host) $(match_ipsec_in $z1 $newhost) -j $chain
 		else
 		    source_chain=$(dynamic_fwd $interface)
-		    eval dest_hosts=\"\$${z2}_hosts\"
+		    if is_ipsec_host $z1 $newhost ; then
+			do_iptables -A $source_chain $(match_source_hosts $host) $(match_ipsec_in $z1 $newhost) -j ${z1}_frwd
+		    else
+			eval dest_hosts=\"\$${z2}_hosts\"
 
-		    for h in $dest_hosts; do
-			iface=${h%%:*}
-			hosts=${h#*:}
-
-			if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
-			    do_iptables -A $source_chain $(match_source_hosts $host) -o $iface $(match_dest_hosts $hosts) $(match_ipsec_out $z2 $h) -j $chain
-			fi
-		    done
+			for h in $dest_hosts; do
+			    iface=${h%%:*}
+			    hosts=${h#*:}
+			    
+			    if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
+				do_iptables -A $source_chain $(match_source_hosts $host) -o $iface $(match_dest_hosts $hosts) $(match_ipsec_out $z2 $h) -j $chain
+			    fi
+			done
+		    fi
 		fi
 	    elif [ "$z2" = "$zone" ]; then
 		if [ "$z1" = "$FW" ]; then
@@ -6797,7 +6801,11 @@ add_to_zone() # $1...${n-1} = <interface>[:<hosts>] $n = zone
 			hosts=${h#*:}
 
 			if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
-			    do_iptables -A $(dynamic_fwd $iface) $rulenum $(match_source_hosts $hosts) -o $interface $(match_dest_hosts $host) $(match_ipsec_out $z2 $newhost) -j $chain
+			    if is_ipsec_host $z1 $h; then
+				do_iptables -I ${z1}_frwd $(match_source_hosts $hosts) -o $interface $(match_dest_hosts $host) $(match_ipsec_out $z2 $newhost) -j $chain
+			    else
+				do_iptables -A $(dynamic_fwd $iface) $(match_source_hosts $hosts) -o $interface $(match_dest_hosts $host) $(match_ipsec_out $z2 $newhost) -j $chain
+			    fi
 			fi
 		    done
 		fi
@@ -6940,18 +6948,26 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		    qt_iptables -D $(dynamic_in $interface) $(match_source_hosts $host) $(match_ipsec_in $z1 $newhost) -j $chain
 		else
 		    source_chain=$(dynamic_fwd $interface)
-		    eval dest_hosts=\"\$${z2}_hosts\"
+		    if is_ipsec_host $z1 $newhost ; then
+			do_iptables -D $source_chain $(match_source_hosts $host) $(match_ipsec_in $z1 $newhost) -j ${z1}_frwd
+		    else
+			eval dest_hosts=\"\$${z2}_hosts\"
 
-		    [ "$z2" = "$zone" ] && dest_hosts="$dest_hosts $hostlist"
+			[ "$z2" = "$zone" ] && dest_hosts="$dest_hosts $hostlist"
 		    
-		    for h in $dest_hosts; do
-			iface=${h%%:*}
-			hosts=${h#*:}
-			
-			if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
-			    qt_iptables -D $source_chain $(match_source_hosts $host) -o $iface $(match_dest_hosts $hosts) $(match_ipsec_out $z2 $h) -j $chain
-			fi
-		    done
+			for h in $dest_hosts; do
+			    iface=${h%%:*}
+			    hosts=${h#*:}
+			    
+			    if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
+				if is_ipsec_host $z1 $h; then
+				    do_iptables -D ${z1}_frwd $(match_source_hosts $hosts) -o $interface $(match_dest_hosts $host) $(match_ipsec_out $z2 $newhost) -j $chain
+				else
+				    qt_iptables -D $source_chain $(match_source_hosts $host) -o $iface $(match_dest_hosts $hosts) $(match_ipsec_out $z2 $h) -j $chain
+				fi
+			    fi
+			done
+		    fi
 		fi
 	    elif [ "$z2" = "$zone" ]; then
 		if [ "$z1" = "$FW" ]; then

@@ -1,165 +1,102 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
- 
+     
   <meta http-equiv="Content-Type"
  content="text/html; charset=windows-1252">
   <title>Shorewall Kernel Configuration</title>
-  
+         
   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
- 
+     
   <meta name="ProgId" content="FrontPage.Editor.Document">
 </head>
   <body>
- 
+   
 <table border="0" cellpadding="0" cellspacing="0"
  style="border-collapse: collapse;" bordercolor="#111111" width="100%"
  id="AutoNumber1" bgcolor="#3366ff" height="90">
-   <tbody>
-    <tr>
-     <td width="100%">     
+    <tbody>
+     <tr>
+      <td width="100%">            
       <h1 align="center"><font color="#ffffff">Kernel Configuration</font></h1>
-     </td>
-   </tr>
- 
-  </tbody>
+      </td>
+    </tr>
+     
+  </tbody> 
 </table>
- 
-<p>For information regarding configuring and building GNU/Linux kernels,
-see <a href="http://www.kernelnewbies.org">http://www.kernelnewbies.org</a>.</p>
- 
+   
+<p>For information regarding configuring and building GNU/Linux kernels, see
+<a href="http://www.kernelnewbies.org">http://www.kernelnewbies.org</a>.</p>
+   
 <p>Here's a screen shot of my Network Options Configuration:</p>
- 
-<blockquote>   
+   
+<blockquote>      
   <p> <img border="0" src="images/netopts.jpg" width="609" height="842">
-  </p>
- </blockquote>
- 
-<p>While not all of the options that I've selected are required, they should
-be sufficient for most applications. Here's an excerpt from the corresponding
-.config file (Note: If you are running a kernel older than 2.4.17, be sure
-to select CONFIG_NETLINK and CONFIG_RTNETLINK):</p>
-  
-<blockquote>   <font size="2">   
-  <p>#<br>
-   # Networking options<br>
-   #<br>
-   CONFIG_PACKET=y<br>
-   # CONFIG_PACKET_MMAP is not set<br>
-   # CONFIG_NETLINK_DEV is not set<br>
-   CONFIG_NETFILTER=y<br>
-   CONFIG_NETFILTER_DEBUG=y<br>
-   CONFIG_FILTER=y<br>
-   CONFIG_UNIX=y<br>
-   CONFIG_INET=y<br>
-   CONFIG_IP_MULTICAST=y<br>
-   CONFIG_IP_ADVANCED_ROUTER=y<br>
-   CONFIG_IP_MULTIPLE_TABLES=y<br>
-   CONFIG_IP_ROUTE_FWMARK=y<br>
-   CONFIG_IP_ROUTE_NAT=y<br>
-   CONFIG_IP_ROUTE_MULTIPATH=y<br>
-   CONFIG_IP_ROUTE_TOS=y<br>
-   CONFIG_IP_ROUTE_VERBOSE=y<br>
-   # CONFIG_IP_ROUTE_LARGE_TABLES is not set<br>
-   # CONFIG_IP_PNP is not set<br>
-   CONFIG_NET_IPIP=m<br>
-   CONFIG_NET_IPGRE=m<br>
-   # CONFIG_NET_IPGRE_GROADCAST is not set<br>
-   # CONFIG_IP_MROUTE is not set<br>
-   # CONFIG_ARPD is not set<br>
-   CONFIG_INET_ECN=y<br>
-   CONFIG_SYN_COOKIES=y</p>
-   </font> </blockquote>
-  
-<p>Here's a screen shot of my Netfilter configuration:</p>
- 
-<blockquote>  
-  <p><img border="0" src="images/menuconfig.jpg" width="609"
- height="842">
-  </p>
- </blockquote>
-  
-<p>Here's an excerpt from the corresponding .config file.</p>
- 
-<blockquote>   
-  <p><font size="2">#<br>
-   #   IP: Netfilter Configuration<br>
-   #<br>
-   CONFIG_IP_NF_CONNTRACK=y<br>
-   CONFIG_IP_NF_FTP=m<br>
-   # CONFIG_IP_NF_QUEUE is not set<br>
-   CONFIG_IP_NF_IPTABLES=y<br>
-   CONFIG_IP_NF_MATCH_LIMIT=y<br>
-   CONFIG_IP_NF_MATCH_MAC=y<br>
-   CONFIG_IP_NF_MATCH_MARK=y<br>
-   CONFIG_IP_NF_MATCH_MULTIPORT=y<br>
-   CONFIG_IP_NF_MATCH_TOS=y<br>
-   # CONFIG_IP_NF_MATCH_TCPMSS is not set<br>
-   CONFIG_IP_NF_MATCH_STATE=y<br>
-   # CONFIG_IP_NF_MATCH_UNCLEAN is not set<br>
-   # CONFIG_IP_NF_MATCH_OWNER is not set<br>
-   CONFIG_IP_NF_FILTER=y<br>
-   CONFIG_IP_NF_TARGET_REJECT=y<br>
-   # CONFIG_IP_NF_TARGET_MIRROR is not set<br>
-   CONFIG_IP_NF_NAT=y<br>
-   CONFIG_IP_NF_NAT_NEEDED=y<br>
-   CONFIG_IP_NF_TARGET_MASQUERADE=y<br>
-   CONFIG_IP_NF_TARGET_REDIRECT=y<br>
-   CONFIG_IP_NF_NAT_FTP=m<br>
-   CONFIG_IP_NF_MANGLE=y<br>
-   CONFIG_IP_NF_TARGET_TOS=y<br>
-   CONFIG_IP_NF_TARGET_MARK=y<br>
-   CONFIG_IP_NF_TARGET_LOG=y<br>
-   CONFIG_IP_NF_TARGET_TCPMSS=y<br>
-   # CONFIG_IPV6 is not set</font><font face="Courier"><br>
-   </font></p>
- </blockquote>
- 
-<p>Note that I have built everything I need into the kernel except for the
-FTP connection tracking and NAT modules. I have also run successfully with
-all of the options selected above built as modules:</p>
-  
-<blockquote>   
-  <p><img border="0" src="images/menuconfig1.jpg" width="609"
- height="842">
-  </p>
-    
-  <p><font size="2">#<br>
-   #   IP: Netfilter Configuration<br>
-   #<br>
-   CONFIG_IP_NF_CONNTRACK=m<br>
-   CONFIG_IP_NF_FTP=m<br>
-   # CONFIG_IP_NF_QUEUE is not set<br>
-   CONFIG_IP_NF_IPTABLES=m<br>
-   CONFIG_IP_NF_MATCH_LIMIT=m<br>
-   CONFIG_IP_NF_MATCH_MAC=m<br>
-   CONFIG_IP_NF_MATCH_MARK=m<br>
-   CONFIG_IP_NF_MATCH_MULTIPORT=m<br>
-   CONFIG_IP_NF_MATCH_TOS=m<br>
-   # CONFIG_IP_NF_MATCH_TCPMSS is not set<br>
-   CONFIG_IP_NF_MATCH_STATE=m<br>
-   # CONFIG_IP_NF_MATCH_UNCLEAN is not set<br>
-   # CONFIG_IP_NF_MATCH_OWNER is not set<br>
-   CONFIG_IP_NF_FILTER=m<br>
-   CONFIG_IP_NF_TARGET_REJECT=m<br>
-   # CONFIG_IP_NF_TARGET_MIRROR is not set<br>
-   CONFIG_IP_NF_NAT=m<br>
-   CONFIG_IP_NF_NAT_NEEDED=m<br>
-   CONFIG_IP_NF_TARGET_MASQUERADE=m<br>
-   CONFIG_IP_NF_TARGET_REDIRECT=m<br>
-   CONFIG_IP_NF_NAT_FTP=m<br>
-   CONFIG_IP_NF_MANGLE=m<br>
-   CONFIG_IP_NF_TARGET_TOS=m<br>
-   CONFIG_IP_NF_TARGET_MARK=m<br>
-   CONFIG_IP_NF_TARGET_LOG=m<br>
-   CONFIG_IP_NF_TARGET_TCPMSS=m<br>
-   # CONFIG_IPV6 is not set<br>
-   </font></p>
+   </p>
   </blockquote>
-  
-<p><font size="2">Last updated 3/10/2002 - </font><font size="2"> <a
+   
+<p>While not all of the options that I've selected are required, they should 
+be sufficient for most applications. Here's an excerpt from the corresponding 
+.config file (Note: If you are running a kernel older than 2.4.17, be sure 
+to select CONFIG_NETLINK and CONFIG_RTNETLINK):</p>
+    
+<blockquote>   <font size="2">      
+  <p>#<br>
+# Networking options<br>
+#<br>
+CONFIG_PACKET=y<br>
+# CONFIG_PACKET_MMAP is not set<br>
+# CONFIG_NETLINK_DEV is not set<br>
+CONFIG_NETFILTER=y<br>
+# CONFIG_NETFILTER_DEBUG is not set<br>
+CONFIG_FILTER=y<br>
+CONFIG_UNIX=y<br>
+CONFIG_INET=y<br>
+CONFIG_IP_MULTICAST=y<br>
+CONFIG_IP_ADVANCED_ROUTER=y<br>
+CONFIG_IP_MULTIPLE_TABLES=y<br>
+CONFIG_IP_ROUTE_FWMARK=y<br>
+CONFIG_IP_ROUTE_NAT=y<br>
+CONFIG_IP_ROUTE_MULTIPATH=y<br>
+CONFIG_IP_ROUTE_TOS=y<br>
+CONFIG_IP_ROUTE_VERBOSE=y<br>
+# CONFIG_IP_ROUTE_LARGE_TABLES is not set<br>
+# CONFIG_IP_PNP is not set<br>
+CONFIG_NET_IPIP=y<br>
+CONFIG_NET_IPGRE=y<br>
+# CONFIG_NET_IPGRE_BROADCAST is not set<br>
+# CONFIG_IP_MROUTE is not set<br>
+# CONFIG_ARPD is not set<br>
+CONFIG_INET_ECN=y<br>
+CONFIG_SYN_COOKIES=y<br>
+  </p>
+    </font> </blockquote>
+    
+<p>Here's a screen shot of my Netfilter configuration:</p>
+   
+<blockquote>     
+  <p><img src="images/menuconfig1.jpg" alt="(Netfilter Options)"
+ width="589" height="849">
+  <br>
+   </p>
+  </blockquote>
+    
+<p>Note that I have built everything I need as modules. You can also build
+everything into your kernel but if you want to be able to deal with FTP running
+on a non-standard port then I recommend that you modularize FTP Protocol
+support.<br>
+</p>
+<p>Here's the corresponding part of my .config file:<br>
+</p>
+    
+<blockquote>              
+  <pre>#<br>#   IP: Netfilter Configuration<br>#<br>CONFIG_IP_NF_CONNTRACK=m<br>CONFIG_IP_NF_FTP=m<br>CONFIG_IP_NF_AMANDA=m<br>CONFIG_IP_NF_TFTP=m<br># CONFIG_IP_NF_IRC is not set<br># CONFIG_IP_NF_QUEUE is not set<br>CONFIG_IP_NF_IPTABLES=m<br>CONFIG_IP_NF_MATCH_LIMIT=m<br>CONFIG_IP_NF_MATCH_MAC=m<br>CONFIG_IP_NF_MATCH_PKTTYPE=m<br>CONFIG_IP_NF_MATCH_MARK=m<br>CONFIG_IP_NF_MATCH_MULTIPORT=m<br>CONFIG_IP_NF_MATCH_TOS=m<br>CONFIG_IP_NF_MATCH_ECN=m<br>CONFIG_IP_NF_MATCH_DSCP=m<br>CONFIG_IP_NF_MATCH_AH_ESP=m<br>CONFIG_IP_NF_MATCH_LENGTH=m<br># CONFIG_IP_NF_MATCH_TTL is not set<br>CONFIG_IP_NF_MATCH_TCPMSS=m<br>CONFIG_IP_NF_MATCH_HELPER=m<br>CONFIG_IP_NF_MATCH_STATE=m<br>CONFIG_IP_NF_MATCH_CONNTRACK=m<br>CONFIG_IP_NF_MATCH_UNCLEAN=m<br># CONFIG_IP_NF_MATCH_OWNER is not set<br>CONFIG_IP_NF_FILTER=m<br>CONFIG_IP_NF_TARGET_REJECT=m<br># CONFIG_IP_NF_TARGET_MIRROR is not set<br>CONFIG_IP_NF_NAT=m<br>CONFIG_IP_NF_NAT_NEEDED=y<br>CONFIG_IP_NF_TARGET_MASQUERADE=m<br>CONFIG_IP_NF_TARGET_REDIRECT=m<br>CONFIG_IP_NF_NAT_AMANDA=m<br>CONFIG_IP_NF_NAT_LOCAL=y<br># CONFIG_IP_NF_NAT_SNMP_BASIC is not set<br>CONFIG_IP_NF_NAT_FTP=m<br>CONFIG_IP_NF_NAT_TFTP=m<br>CONFIG_IP_NF_MANGLE=m<br>CONFIG_IP_NF_TARGET_TOS=m<br>CONFIG_IP_NF_TARGET_ECN=m<br>CONFIG_IP_NF_TARGET_DSCP=m<br>CONFIG_IP_NF_TARGET_MARK=m<br>CONFIG_IP_NF_TARGET_LOG=m<br>CONFIG_IP_NF_TARGET_ULOG=m<br>CONFIG_IP_NF_TARGET_TCPMSS=m<br>CONFIG_IP_NF_ARPTABLES=m<br>CONFIG_IP_NF_ARPFILTER=m<br># CONFIG_IP_NF_COMPAT_IPCHAINS is not set<br># CONFIG_IP_NF_COMPAT_IPFWADM is not set<br></pre>
+   </blockquote>
+    
+<p><font size="2">Last updated 7/20/2003 - </font><font size="2"> <a
  href="support.htm">Tom Eastep</a></font> </p>
- <a href="copyright.htm"><font size="2">Copyright</font> © <font
- size="2">2001, 2002 Thomas M. Eastep.</font></a><br>
+  <a href="copyright.htm"><font size="2">Copyright</font> © <font
+ size="2">2001-2003,  Thomas M. Eastep.</font></a><br>
+ <br>
 </body>
 </html>

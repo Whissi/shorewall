@@ -878,8 +878,6 @@ validate_policy()
 	    ;;
 	esac
 
-	echo "	 Policy \"$client $server $policy $loglevel\" Validated"
-
     done < $TMP_DIR/policy
 }
 
@@ -2608,6 +2606,10 @@ initialize_netfilter () {
 
     validate_hosts_file
 
+    echo "Validating Policy file..."
+
+    validate_policy
+
     echo "Determining Hosts in Zones..."
 
     determine_interfaces
@@ -2884,8 +2886,6 @@ apply_policy_rules() {
     #
     while read client server policy loglevel synparams; do
 	expandv client server policy loglevel synparams
-	validate_zone $client
-	validate_zone $server
 
 	chain=${client}2${server}
 
@@ -3116,8 +3116,6 @@ define_firewall() # $1 = Command (Start or Restart)
     policy=`find_file policy`
 
     echo "Processing $policy..."
-
-    strip_file policy $policy
 
     apply_policy_rules
 

@@ -3709,10 +3709,8 @@ activate_rules()
 
 		if [ -n "$complex" ]; then
 		    chain1=$frwd_chain
-		    subnet=
 		else
 		    chain1=`forward_chain $interface`
-		    subnet="-s ${host#*:}"
 		fi
 
 		for host1 in $dest_hosts; do
@@ -3720,7 +3718,7 @@ activate_rules()
 		    subnet1=${host1#*:}
 
 		    if [ "$host" != "$host1" ]; then
-			run_iptables -A $chain1 $subnet -o $interface1 -d $subnet1 -j $chain
+			run_iptables -A $chain1 -o $interface1 -d $subnet1 -j $chain
 		    fi
 		done
 	    done

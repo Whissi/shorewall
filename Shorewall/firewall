@@ -2907,7 +2907,7 @@ networkaddress() {
     local decodedaddr=`decodeaddr ${1%/*}`
     local netmask=`ip_netmask ${1#*/}`
 
-    echo `encodeaddr $((decodedaddr & netmask))`
+    echo `encodeaddr $(($decodedaddr & $netmask))`
 }
 #
 # Calculate broadcast address from CIDR

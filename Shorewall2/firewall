@@ -2786,6 +2786,8 @@ createlogactionchain() # $1 = Action Name, $2 = Log Level [: Log Tag ]
 
     eval ${action}_chains=\"\$${action}_chains $level $CHAIN\"
 
+    echo "   *** Action $1:$2 is $CHAIN ***"
+
 }
 
 #
@@ -2818,6 +2820,13 @@ createactionchain() # $1 = Action, including log level and tag if any
 find_logactionchain() # $1 = Action, including log level and tag if any
 {
     local fullaction=$1 action=${1%%:*} level= chains=
+
+    case $action in 
+	ACCEPT|DROP|REJECT|LOG|QUEUE|CONTINUE)
+	    echo $fullaction
+	    return
+	    ;;
+    esac
 
     case $fullaction in
 	*:*)
@@ -3056,12 +3065,13 @@ process_actions2() {
 	changed=
 	for xaction in $USEDACTIONS; do
 	    
-	    eval required=\"\$requiredby_${xaction#*:}\"
+	    eval required=\"\$requiredby_${xaction%%:*}\"
 	    
 	    for action in $required; do
-		if ! list_search $action $USEDACTIONS; then
-		    USEDACTIONS="$USEDACTIONS $action"
-		    createactionchain $action
+		action1=$(evaluate_levels $xaction $action)
+		if ! list_search $action1 $USEDACTIONS; then
+		    USEDACTIONS="$USEDACTIONS $action1"
+		    createactionchain $action1
 		    changed=Yes
 		fi
 	    done
@@ -3070,15 +3080,15 @@ process_actions2() {
     #
     # Now process the relevant action files -- they were already stripped in process_actions1() above.
     #
-    for xaction in $USEDACTIONS; do
-	xchain=$(find_logactionchain $xaction)
+    for xaction1 in $USEDACTIONS; do
+	xchain=$(find_logactionchain $xaction1)
 
-        set -- $(split $xaction)
+        set -- $(split $xaction1)
 
 	xlevel=$2
 	xtag=$3
 
-	case ${xaction%%:*} in
+	case ${xaction1%%:*} in
 	    dropBcast)
 		if [ "$COMMAND" != check ]; then
 		    if [ -n "$PKTTYPE" ]; then
@@ -3095,9 +3105,9 @@ process_actions2() {
 			
 			run_iptables -A dropBcast -m pkttype --pkt-type broadcast -j DROP
 			run_iptables -A dropBcast -m pkttype --pkt-type multicast -j DROP
+		    else
+			drop_broadcasts
 		    fi
-		else
-		    drop_broadcasts
 		fi
 		;;
 		
@@ -3106,7 +3116,7 @@ process_actions2() {
 		
 		if [ "$COMMAND" != check ]; then
 		    [ -n "$xlevel" ] && \
-			log_rule_limit ${xlevel%\!} $xchain dropBcast $2 "" "$xtag" -p tcp ! -- syn
+			log_rule_limit ${xlevel%\!} $xchain dropBcast $2 "" "$xtag" -p tcp ! --syn
 		    
 		    run_iptables -A $xchain -p tcp ! --syn -j DROP
 		fi
@@ -3115,14 +3125,14 @@ process_actions2() {
 	    dropNotSyn)
 		if [ "$COMMAND" != check ]; then
 		    [ -n "$xlevel" ] && \
-			log_rule_limit ${xlevel%\!} $xchain dropNotSyn $2 "" "$xtag" -p tcp ! -- syn
+			log_rule_limit ${xlevel%\!} $xchain dropNotSyn $2 "" "$xtag" -p tcp ! --syn
 		    run_iptables -A dropNotSyn -p tcp ! --syn -j DROP
 		fi
 		;;
 	    rejNotSyn)
 		if [ "$COMMAND" != check ]; then
 		    [ -n "$xlevel" ] && \
-			log_rule_limit ${xlevel%\!} $xchain rejNotSyn $2 "" "$xtag" -p tcp ! -- syn
+			log_rule_limit ${xlevel%\!} $xchain rejNotSyn $2 "" "$xtag" -p tcp ! --syn
 		    run_iptables -A rejectNotSyn -p tcp ! --syn -j REJECT --reject-with tcp-reset
 		fi
 		;;
@@ -3134,13 +3144,16 @@ process_actions2() {
 		fi
 		;;
 	    *)
-		f=action.${xaction%%:*}
+		f=action.${xaction1%%:*}
 		fn=$(find_file $f)
 		
+		xaction=$(find_logactionchain $xaction1)
+		
 		echo "Processing $fn..."
+		
 		while read xtarget xclients xservers xprotocol xports xcports xratelimit $xuserspec; do
-		    xtarget=$(evaluate_levels $xaction $xtarget)
-		    xaction=$(find_logactionchain $xaction)
+		    xtarget=$(evaluate_levels $xaction1 $xtarget)
+		    xtarget=$(find_logactionchain $xtarget)
 		    do_it
 		done < $TMP_DIR/$f
 		;;

@@ -116,6 +116,14 @@ drop)
     See also \"help address\""
 	;;
 
+forget)
+	echo "forget: forget
+    Deletes /var/lib/shorewall/save and /var/lib/shorewall/restore. Those
+    files are created by the 'shorewall save' command
+
+    See also \"help save\""
+	;;
+
 help)
 	echo "help: help [<command> | host | address ]
     Display helpful information about the shorewall commands."
@@ -147,15 +155,21 @@ logwatch)
 
 monitor)
 	echo "monitor: monitor [<refresh_interval>]
+
+    shorewall [-x] monitor [<refresh_interval>]
+
     Continuously display the firewall status, last 20 log entries and nat.
-    When the log entry display changes, an audible alarm is sounded."
+    When the log entry display changes, an audible alarm is sounded.
+
+    When -x is given, that option is also passed to iptables to display actual packet and byte counts."
 	;;
 
 refresh)
-	echo "refresh: refresh
+	echo "refresh: [ -q ] refresh
     The rules involving the broadcast addresses of firewall interfaces,
     the black list, traffic control rules and ECN control rules are recreated
-    to reflect any changes made.  Existing connections are untouched"
+    to reflect any changes made.  Existing connections are untouched
+    If \"-q\" is specified, less detain is displayed making it easier to spot warnings"
 	;;
 
 reject)
@@ -173,26 +187,41 @@ reset)
 	;;
 
 restart)
-	echo "restart: restart [ -c <configuration-directory> ]
+	echo "restart: restart [ -q ] [ -c <configuration-directory> ]
     Restart is the same as a shorewall stop && shorewall start.
-    Existing connections are dropped."
+    Existing connections are maintained.
+    If \"-q\" is specified, less detain is displayed making it easier to spot warnings"
+	;;
+
+restore)
+	echo "restore: restore
+    Restore Shorewall to its last state saved using the 'save' command
+    Existing connections are maintained.
+
+    See also \"help save\" and \"help forget\""
 	;;
 
 save)
 	echo "save: save
-    The dynamic data is stored in /var/lib/shorewall/save
-    Shorewall allow, drop, rejct and save implement dynamic blacklisting."
+    The dynamic data is stored in /var/lib/shorewall/save. The state of the 
+    firewall is stored in /var/lib/shorewall/restore for use by the 'shorewall restore'
+    and 'shorewall -f start' commands.
+
+    Shorewall allow, drop, rejct and save implement dynamic blacklisting.
+
+    See also \"help restore\" and \"help forget\""
 	;;
 
 show)
-	echo "show: show [<chain> [ <chain> ...] |classifiers|connections|log|nat|tc|tos]
-    shorewall show <chain> [ <chain> ... ]  - produce a verbose report about the IPtable chain(s).
+	echo "show: show [ <chain> [ <chain> ...] |classifiers|connections|log|nat|tc|tos]
+
+    shorewall [-x] show <chain> [ <chain> ... ]  - produce a verbose report about the IPtable chain(s).
     (iptables -L chain -n -v)
 
-    shorewall show nat - produce a verbose report about the nat table.
+    shorewall [-x] show nat - produce a verbose report about the nat table.
     (iptables -t nat -L -n -v)
 
-    shorewall show tos - produce a verbose report about the mangle table.
+    shorewall [-x] show tos - produce a verbose report about the mangle table.
     (iptables -t mangle -L -n -v)
 
     shorewall show log - display the last 20 packet log entries.
@@ -201,14 +230,18 @@ show)
 	being tracked by the firewall.
 
     shorewall show tc - displays information about the traffic
-	control/shaping configuration."
+	control/shaping configuration.
+
+    When -x is given, that option is also passed to iptables to display actual packet and byte counts."
 	;;
 
 start)
-	echo "start: start [ -c <configuration-directory> ]
+	echo "start: [ -q ] [ -f ] [ -c <configuration-directory> ] start
     Start shorewall.  Existing connections through shorewall managed
     interfaces are untouched.  New connections will be allowed only
-    if they are allowed by the firewall rules or policies."
+    if they are allowed by the firewall rules or policies.
+    If \"-q\" is specified, less detain is displayed making it easier to spot warnings
+    If \"-f\" is specified, the last saved configuraton if any will be restored"
 	;;
 
 stop)
@@ -221,9 +254,14 @@ stop)
 
 status)
 	echo "status: status
+
+    shorewall [-x] status
+
     Produce a verbose report about the firewall.
    
-    (iptables -L -n -v)"
+    (iptables -L -n -)
+
+    When -x is given, that option is also passed to iptables to display actual packet and byte counts."
 	;;
 
 trace)

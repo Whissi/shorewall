@@ -26,7 +26,7 @@
 #       You may only use this script to uninstall the version
 #       shown below. Simply run this script to remove Seattle Firewall
 
-VERSION=1.4.9-Beta2
+VERSION=1.4.9
 
 usage() # $1 = exit status
 {
@@ -60,8 +60,8 @@ remove_file() # $1 = file to restore
     fi
 }
 
-if [ -f /usr/lib/shorewall/version ]; then
-    INSTALLED_VERSION="`cat /usr/lib/shorewall/version`"
+if [ -f /usr/share/shorewall/version ]; then
+    INSTALLED_VERSION="`cat /usr/share/shorewall/version`"
     if [ "$INSTALLED_VERSION" != "$VERSION" ]; then
 	echo "WARNING: Shorewall Version $INSTALLED_VERSION is installed"
 	echo "         and this is the $VERSION uninstaller."

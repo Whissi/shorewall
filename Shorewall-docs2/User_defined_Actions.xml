@@ -15,12 +15,14 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-09-17</pubdate>
+    <pubdate>2005-01-14</pubdate>
 
     <copyright>
       <year>2003</year>
 
       <year>2004</year>
+
+      <year>2005</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -371,12 +373,8 @@ acton:info:test  fw               net</programlisting>
     <title>Standard Actions In Shorewall 2.0</title>
 
     <para>Beginning with Shorewall 2.0.0-Beta1, Shorewall includes a number of
-    defined actions. These defined actions are listed in
+    pre-defined actions. These defined actions are listed in
     <filename>/usr/share/shorewall/actions.std</filename>.</para>
-
-    <para>The <filename>/usr/share/shorewall/actions.std</filename> file
-    includes the common actions <quote>Drop</quote> for DROP policies and
-    <quote>Reject</quote> for REJECT policies.</para>
 
     <example>
       <title>Example of Using a Standard Action</title>
@@ -404,10 +402,62 @@ AllowFTP  loc         fw</programlisting>
     <filename>Action.Reject</filename> to <filename
     class="directory">/etc/shorewall</filename> and modify that copy as
     desired.</para>
+
+    <note>
+      <para>Some of the standard actions are <firstterm>built-in</firstterm>s.
+      This means that there is no corresponding action.* file and that
+      Shorewall constructs the rules for the actions using direct
+      <command>iptables</command> commands. If you need to modify one of these
+      built-in actions, you will need to use the <link
+      linkend="Extension">Extension Script mechanism</link> described below
+      and you will need to give the action a different name.</para>
+    </note>
   </section>
 
-  <section>
-    <title>Creating an Action using an Extension Script</title>
+  <section id="Common">
+    <title>Common Actions</title>
+
+    <para>Also beginning with Shorewall version 2.2.0-Beta1, when an ACCEPT,
+    DROP or REJECT policy is about to be enforced, a <firstterm>common
+    action</firstterm> can first be invoked. In /etc/shorewall/actions.std are
+    found these two entries:</para>
+
+    <programlisting>Drop:DROP       #Common Action for DROP policy
+Reject:REJECT   #Common Action for REJECT policy</programlisting>
+
+    <para>These entries designate the action named <firstterm>Drop</firstterm>
+    as the common action for DROP policies and the common action
+    <firstterm>Reject</firstterm> as the common action for REJECT policies.
+    </para>
+
+    <para>The purpose of common actions is:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>To avoid filling your log with useless clutter. For example, one
+        of the things that the Drop action does is to silently drop SMB
+        traffic by invoking the <firstterm>DropSMB</firstterm> action. </para>
+      </listitem>
+
+      <listitem>
+        <para>To ensure proper behavior. For example, both the Drop and Reject
+        actions invoke the <firstterm>RejectAuth</firstterm> action to REJECT
+        connection requests on TCP port 113. If these requests are simply
+        dropped, connection timeouts can occur when you connect to a server
+        that uses AUTH identification.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>It should be stressed that <emphasis role="bold">the common actions
+    do not cause any traffic to be dropped or rejected that isn't about to be
+    dropped or rejected anyway</emphasis> (remember that these actions are
+    invoked just before the connection request is going to be dropped or
+    rejected by policy anyway). Their main function is to avoid log
+    clutter.</para>
+  </section>
+
+  <section id="Extension">
+    <title> Creating an Action using an Extension Script</title>
 
     <para>There may be cases where you wish to create a chain with rules that
     can't be constructed using the tools defined in the action.template. In

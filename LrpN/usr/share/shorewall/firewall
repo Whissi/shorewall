@@ -2270,7 +2270,7 @@ setup_netmap() {
 setup_ecn() # $1 = file name
 {
     local interfaces=""
-    local hosts
+    local hosts=
     local h
 
     strip_file ecn $1
@@ -3404,7 +3404,7 @@ merge_levels() # $1=level at which superior action is called, $2=level at which 
 #
 process_actions1() {
 	
-    ACTIONS="dropBcast allowBcast dropNonSyn dropNotSyn rejNotSyn dropInvalid"
+    ACTIONS="dropBcast allowBcast dropNonSyn dropNotSyn rejNotSyn dropInvalid allowInvalid"
     USEDACTIONS=
 
     strip_file actions
@@ -3617,6 +3617,13 @@ process_actions3() {
 		    [ -n "$xlevel" ] && \
 			log_rule_limit ${xlevel%\!} $xchain dropInvalid $2 "" "$xtag" -A -m state --state INVALID
 		    run_iptables -A $xchain -m state --state INVALID -j DROP
+		fi
+		;;
+	    allowInvalid)
+		if [ "$COMMAND" != check ]; then
+		    [ -n "$xlevel" ] && \
+			log_rule_limit ${xlevel%\!} $xchain allowInvalid $2 "" "$xtag" -A -m state --state INVALID
+		    run_iptables -A $xchain -m state --state INVALID -j ACCEPT
 		fi
 		;;
 	    *)

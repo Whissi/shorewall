@@ -1000,7 +1000,7 @@ stop_firewall() {
 
     while read interface host; do
 	expandv interface host
-	[ "x$host" = "x-" ] && host=0.0.0.0/0
+	[ "x$host" = "x-" -o -z "$hosts" ] && host=0.0.0.0/0
 	for h in `separate_list $host`; do
 	    hosts="$hosts $interface:$h"
 	done

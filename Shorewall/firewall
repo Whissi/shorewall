@@ -1068,7 +1068,7 @@ setup_tunnels() # $1 = name of tunnels file
 	    fi
 	fi
 
-	echo "	 IPSEC tunnel to $gateway defined."
+	echo "   IPSEC tunnel to $gateway defined."
     }
 
     setup_one_other() # $1 = TYPE, $2 = gateway, $3 = protocol
@@ -1077,7 +1077,7 @@ setup_tunnels() # $1 = name of tunnels file
 	addrule $inchain  -p $3 -s $2 $options
 	addrule $outchain -p $3 -d $2 $options
 
-	echo "	 $1 tunnel to $gateway defined."
+	echo "   $1 tunnel to $gateway defined."
     }
 
     strip_file tunnels $1
@@ -1144,7 +1144,7 @@ setup_proxy_arp() {
 
 	echo $address $interface $external $haveroute >> ${STATEDIR}/proxyarp
 
-	echo "	 Host $address connected to $interface added to ARP on $external"
+	echo "   Host $address connected to $interface added to ARP on $external"
     }
 
     > ${STATEDIR}/proxyarp
@@ -1184,7 +1184,7 @@ setup_syn_flood_chain ()
 enable_syn_flood_protection() # $1 = chain, $2 = protection chain
 {
     run_iptables -I $1 2 -p tcp --syn -j @$2
-    echo "	Enabled SYN flood protection"
+    echo "      Enabled SYN flood protection"
 }
 
 ################################################################################
@@ -1271,7 +1271,7 @@ setup_nat() {
 	    echo "$external $interface" >> ${STATEDIR}/nat
 	fi
 
-	echo "	 Host $internal NAT $external on $interface"
+	echo "   Host $internal NAT $external on $interface"
     done < $TMP_DIR/nat
 }
 
@@ -2174,7 +2174,7 @@ default_policy() # $1 = client $2 = server
 	    esac
 	fi
 
-	echo "	 Policy $policy for $1 to $2 using chain $chain"
+	echo "   Policy $policy for $1 to $2 using chain $chain"
     }
 
     while read client server policy loglevel synparams; do
@@ -2372,7 +2372,7 @@ setup_masq()
 	fi
 
 	[ -n "$nomasq" ] && source="$source except $nomasq"
-	echo "	  To $destination from $source through ${interface}${using}"
+	echo "   To $destination from $source through ${interface}${using}"
     }
 
     strip_file masq $1

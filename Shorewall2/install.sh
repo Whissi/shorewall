@@ -54,7 +54,7 @@
 #        /etc/rc.d/rc.local file is modified to start the firewall.
 #
 
-VERSION=2.0.0-Alpha1
+VERSION=2.0.0-Alpha2
 
 usage() # $1 = exit status
 {
@@ -176,9 +176,13 @@ fi
 #
 # Determine where to install the firewall script
 #
+DEBIAN=
+
 if [ -n "$PREFIX" ]; then
 	install -d -o $OWNER -g $GROUP -m 755 ${PREFIX}/sbin
 	install -d -o $OWNER -g $GROUP -m 755 ${PREFIX}${DEST}
+elif [ -d /etc/apt -a -e /usr/bin/dpkg ]; then
+    DEBIAN=yes
 fi
 
 FIREWALL="shorewall2"
@@ -555,11 +559,13 @@ if [ -z "$PREFIX" -a -n "$first_install" ]; then
 	ln -s ../init.d/shorewall2 /etc/rcS.d/S40shorewall2
 	echo
 	echo "Shorewall2 will start automatically at boot"
+	echo "Set startup=1 in /etc/default/shorewall2 to enable"
     else
 	if [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
 	    if insserv /etc/init.d/shorewalls ; then
 		echo
 		echo "Shorewall2 will start automatically at boot"
+		echo "Remove /etc/shorewall2/startup_disabled in /etc/default/shorewall2 to enable"
 	    else
 		cant_autostart
 	    fi
@@ -567,6 +573,7 @@ if [ -z "$PREFIX" -a -n "$first_install" ]; then
 	    if chkconfig --add shorewall2 ; then
 		echo
 		echo "Shorewall2 will start automatically in run levels as follows:"
+		echo "Remove /etc/shorewall2/startup_disabled in /etc/default/shorewall2 to enable"
 		chkconfig --list $FIREWALL
 	    else
 		cant_autostart
@@ -575,6 +582,7 @@ if [ -z "$PREFIX" -a -n "$first_install" ]; then
 	    if rc-update add shorewall2 default; then
 		echo
 		echo "Shorewall2 will start automatically at boot"
+		echo "Remove /etc/shorewall2/startup_disabled in /etc/default/shorewall2 to enable"
 	    else
 		cant_autostart
 	    fi

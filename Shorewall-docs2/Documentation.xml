@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-12-11</pubdate>
+    <pubdate>2004-12-31</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -2219,6 +2219,67 @@ eth0       192.168.1.0/24  :4000-5000             tcp</programlisting>
               <para>A range of port numbers of the form &lt;<emphasis>low
               port</emphasis>&gt;:&lt;<emphasis>high
               port</emphasis>&gt;</para>
+            </listitem>
+          </itemizedlist>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>IPSEC (Added in Shorewall version 2.2.0)</term>
+
+        <listitem>
+          <para>If you specify a value other than "-" in this column, you must
+          be running kernel 2.6 and your kernel and iptables must include
+          policy match support.</para>
+
+          <para>The value in this column is a comma-separated list of options
+          from the following. Only packets that will be encrypted via an SA
+          that matches these options will have their source address
+          changed.</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>Yes or yes ― Match any SA. Normally used as the only
+              option.</para>
+            </listitem>
+
+            <listitem>
+              <para>reqid=&lt;<emphasis>number</emphasis>&gt; where
+              &lt;<emphasis>number</emphasis>&gt; is specified using setkey(8)
+              using the 'unique:&lt;<emphasis>number</emphasis>&gt;' option
+              for the SPD level.</para>
+            </listitem>
+
+            <listitem>
+              <para>spi=&lt;<emphasis>number</emphasis>&gt; where
+              &lt;<emphasis>number</emphasis>&gt; is the SPI of the SA.</para>
+            </listitem>
+
+            <listitem>
+              <para>proto=ah|esp|ipcomp</para>
+            </listitem>
+
+            <listitem>
+              <para>mode=transport|tunnel</para>
+            </listitem>
+
+            <listitem>
+              <para>tunnel-src=&lt;<emphasis>address</emphasis>&gt;[/&lt;<emphasis>mask</emphasis>&gt;]
+              (only available with mode=tunnel)</para>
+            </listitem>
+
+            <listitem>
+              <para>tunnel-dst=&lt;<emphasis>address</emphasis>&gt;[/&lt;<emphasis>mask</emphasis>&gt;]
+              (only available with mode=tunnel)</para>
+            </listitem>
+
+            <listitem>
+              <para>strict — Means that packets must match all rules.</para>
+            </listitem>
+
+            <listitem>
+              <para>next — Separates rules; can only be used with
+              strict.</para>
             </listitem>
           </itemizedlist>
         </listitem>

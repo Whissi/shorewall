@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-08-10</pubdate>
+    <pubdate>2004-09-10</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -1759,6 +1759,17 @@ DNAT    loc:<emphasis role="bold">192.168.1.0/24</emphasis> loc:192.168.1.3 tcp 
           address), the original source address is used. If you want any
           destination address to match the rule but want to specify SNAT,
           simply use a colon followed by the SNAT address.</para>
+
+          <important>
+            <para>Shorewall does not take any steps to ensure that IP
+            addresses entered in this column are added to the appropriate
+            firewall interface. Unless traffic for this address is
+            automatically routed to the firewall by another router, it is your
+            responsibility to add the address using your distributions network
+            configuration facilities. See <ulink
+            url="Shorewall_and_Aliased_Interfaces.html">this article</ulink>
+            for additional information.</para>
+          </important>
         </listitem>
       </varlistentry>
 
@@ -3553,7 +3564,7 @@ eth1                -</programlisting>
             <member>No - Only traffic to/from some of the hosts in this zone
             is encrypted. Those encrypted hosts are designated using the
             <emphasis role="bold">ipsec</emphasis> option in <link
-            linkend="Hosts">/etc/shorewall/hosts</link>. </member>
+            linkend="Hosts">/etc/shorewall/hosts</link>.</member>
           </simplelist>
         </glossdef>
       </glossentry>

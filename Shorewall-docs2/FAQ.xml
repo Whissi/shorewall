@@ -17,7 +17,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-08-31</pubdate>
+    <pubdate>2004-09-23</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -617,6 +617,10 @@ to debug/develop the newnat interface.</programlisting></para>
       <para>Answer: Add the <firstterm>routeback</firstterm> option to
       <filename class="devicefile">br0</filename> in <ulink
       url="Documentation.htm#Interfaces">/etc/shorewall/interfaces</ulink>.</para>
+
+      <para>For more information on this type of configuration, see the <ulink
+      url="SimpleBridge.html">Shorewall Simple Bridge
+      documentation</ulink>.</para>
     </section>
   </section>
 
@@ -817,10 +821,11 @@ LOGBURST=""</programlisting>
     </section>
 
     <section id="faq17">
-      <title>(FAQ 17) What does this log message mean?</title>
+      <title>(FAQ 17) Why are these packets being Dropped/Rejected?</title>
 
-      <para><emphasis role="bold">Answer:</emphasis> Logging occurs out of a
-      number of chains (as indicated in the log message) in Shorewall:</para>
+      <para><emphasis role="bold">Answer:</emphasis> Logging of
+      dropped/rejected packets occurs out of a number of chains (as indicated
+      in the log message) in Shorewall:</para>
 
       <variablelist>
         <varlistentry>
@@ -937,9 +942,14 @@ LOGBURST=""</programlisting>
             <para>The packet has a source IP address that isn't in any of your
             defined zones (<quote>shorewall check</quote> and look at the
             printed zone definitions) or the chain is FORWARD and the
-            destination IP isn't in any of your defined zones. Also see <xref
-            linkend="faq2a" /> for another cause of packets being logged in
-            the FORWARD chain.</para>
+            destination IP isn't in any of your defined zones. If the chain is
+            FORWARD and the IN and OUT interfaces are the same, then you
+            probably need the <emphasis role="bold">routeback</emphasis>
+            option on that interface in <filename><ulink
+            url="Documentation.htm#Interfaces">/etc/shorewall/interfaces</ulink></filename>
+            or you need the <emphasis role="bold">routeback</emphasis> option
+            in the relevant entry in <filename><ulink
+            url="Documentation.htm#Hosts">/etc/shorewall/hosts</ulink></filename>.</para>
           </listitem>
         </varlistentry>
 
@@ -976,7 +986,7 @@ LOGBURST=""</programlisting>
               <para>This packet was REJECTed out of the <emphasis
               role="bold">all2all</emphasis> chain -- the packet was rejected
               under the <quote>all</quote>-&gt;<quote>all</quote> REJECT
-              policy (<xref linkend="all2all" /> above).</para>
+              policy (<link linkend="all2all">all2all</link> above).</para>
             </listitem>
           </varlistentry>
 
@@ -1820,6 +1830,27 @@ iptables: Invalid argument
     <title>Revision History</title>
 
     <para><revhistory>
+        <revision>
+          <revnumber>1.32</revnumber>
+
+          <date>2004-09-23</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Add link to simple bridge documentation from FAQ
+          35.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.31</revnumber>
+
+          <date>2004-09-12</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Rename FAQ 17.</revremark>
+        </revision>
+
         <revision>
           <revnumber>1.30</revnumber>
 

@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-02-04</pubdate>
+    <pubdate>2004-09-16</pubdate>
 
     <copyright>
       <year>2003-2004</year>
@@ -29,7 +29,8 @@
       1.2 or any later version published by the Free Software Foundation; with
       no Invariant Sections, with no Front-Cover, and with no Back-Cover
       Texts. A copy of the license is included in the section entitled
-      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
 
@@ -41,9 +42,8 @@
   KazaaLite, iMash and Grokster.</para>
 
   <para>To filter traffic from your <quote>loc</quote> zone with ftwall, you
-  insert the following rules <emphasis role="bold">near the top</emphasis> of
-  your /etc/shorewall/rules file (before any ACCEPT rules whose source is the
-  <quote>loc</quote> zone).</para>
+  insert the following rules in /etc/shorewall/rules file after any DROP or
+  REJECT rules whose source is the <quote>loc</quote> zone.</para>
 
   <programlisting>        #ACTION SOURCE     DEST       PROTO
         QUEUE   loc        net        tcp
@@ -54,8 +54,9 @@
   and restart Shorewall.</para>
 
   <tip>
-    <para>There are ftwall init scripts for use with <trademark>SuSE</trademark>
-    and <trademark>Debian</trademark> Linux at <ulink
+    <para>There are ftwall init scripts for use with
+    <trademark>SuSE</trademark> and <trademark>Debian</trademark> Linux at
+    <ulink
     url="http://shorewall.net/pub/shorewall/contrib/ftwall">http://shorewall.net/pub/shorewall/contrib/ftwall</ulink>.</para>
   </tip>
 </article>

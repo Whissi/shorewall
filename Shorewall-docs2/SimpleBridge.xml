@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article>
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>Shorewall and a Simple Bridge</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate>2004-09-23</pubdate>
+
+    <copyright>
+      <year>2004</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <section>
+    <title>Background</title>
+
+    <para>Systems where Shorewall runs normally function as
+    <firstterm>routers</firstterm>. In the context of the Open System
+    Interconnect (OSI) reference model, a router operates at layer 3.
+    Shorewall may also be deployed on a GNU Linux System that acts as a
+    <firstterm>bridge</firstterm>. Bridges are layer-2 devices in the OSI
+    model (think of a bridge as an ethernet switch).</para>
+
+    <para>Some differences between routers and bridges are:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>Routers determine packet destination based on the destination IP
+        address while bridges route traffic based on the destination MAC
+        address in the ethernet frame.</para>
+      </listitem>
+
+      <listitem>
+        <para>As a consequence of the first difference, routers can be
+        connected to more than one IP network while a bridge may be part of
+        only a single network.</para>
+      </listitem>
+
+      <listitem>
+        <para>A router cannot forward broadcast packets while a bridge
+        can.</para>
+      </listitem>
+    </orderedlist>
+  </section>
+
+  <section>
+    <title>Application</title>
+
+    <para>There are cases where you want to create a bridge to join two or
+    more LAN segments and you don't need to restrict the traffic between those
+    segments. This is the environment that is described in this article.
+    </para>
+
+    <para>If you do need to restrict traffic through the bridge, please refer
+    to the <ulink url="bridge.html">Shorewall Bridge/Firewall
+    documentation</ulink>. Also please refer to that documentation for
+    information about how to create a bridge.</para>
+
+    <para>The following diagram shows a firewall for two bridged LAN
+    segments.</para>
+
+    <graphic align="center" fileref="images/SimpleBridge.png" valign="middle" />
+
+    <para>This is fundimentally the Two-interface Firewall described in the
+    <ulink url="two-interface.htm">Two-interface Quickstart Guide</ulink>. The
+    bridge-specific changes are restricted to the
+    <filename>/etc/shorewall/interfaces</filename> file.</para>
+
+    <para><filename>/etc/shorewall/interfaces</filename>:</para>
+
+    <programlisting>#ZONE          INTERFACE       BROADCAST      OPTIONS
+net            eth0            detect         ...
+loc            <emphasis role="bold">br0</emphasis>             10.0.1.255     <emphasis
+        role="bold">routeback</emphasis>,...</programlisting>
+
+    <para>So the key points here are:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>The <emphasis role="bold">loc</emphasis> interface is <filename
+        class="devicefile">br0</filename>.</para>
+      </listitem>
+
+      <listitem>
+        <para>Neither <filename class="devicefile">eth1</filename> nor
+        <filename class="devicefile">eth2</filename> have IP addresses and
+        neither are mentioned in the Shorewall configuration.</para>
+      </listitem>
+
+      <listitem>
+        <para>The <emphasis role="bold">routeback</emphasis> option is
+        specified for <filename class="devicefile">br0</filename>.</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+</article>

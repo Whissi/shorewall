@@ -13,7 +13,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-07-31</pubdate>
+    <pubdate>2004-09-21</pubdate>
 
     <copyright>
       <year>2001-2002</year>
@@ -29,7 +29,8 @@
       1.2 or any later version published by the Free Software Foundation; with
       no Invariant Sections, with no Front-Cover, and with no Back-Cover
       Texts. A copy of the license is included in the section entitled
-      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
     </legalnotice>
 
     <abstract>
@@ -50,8 +51,8 @@
       <filename>/usr/share/shorewall/actions.std</filename> file for a list of
       the actions in your distribution. If you find what you need, you simply
       use the action in a rule. For example, to allow DNS queries from the
-      <emphasis role="bold">dmz</emphasis> zone to the <emphasis role="bold">net</emphasis>
-      zone:</para>
+      <emphasis role="bold">dmz</emphasis> zone to the <emphasis
+      role="bold">net</emphasis> zone:</para>
 
       <programlisting>#ACTION         SOURCE        DESTINATION
 AllowDNS        dmz           net</programlisting>
@@ -67,7 +68,7 @@ AllowDNS        dmz           net</programlisting>
       at 192.168.1.4 in your DMZ. The FTP section below gives you:</para>
 
       <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        21</programlisting>
+ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        21</programlisting>
 
       <para>You would code your rule as follows:</para>
 
@@ -80,23 +81,23 @@ DNAT       net       dmz:192.168.1.4  tcp        21</programlisting>
     <title>Auth (identd)</title>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        113</programlisting>
+ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        113</programlisting>
   </section>
 
   <section>
     <title>DNS</title>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    udp        53
-ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        53</programlisting>
+ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    udp        53
+ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        53</programlisting>
 
     <para>Note that if you are setting up a DNS server that supports recursive
-    resolution, the server is the &#60;<emphasis>destination</emphasis>&#62;
-    for resolution requests (from clients) and is also the &#60;<emphasis>source</emphasis>&#62;
-    of recursive resolution requests (usually to other servers in the
-    &#39;net&#39; zone). So for example, if you have a public DNS server in
-    your DMZ that supports recursive resolution for local clients then you
-    would need:</para>
+    resolution, the server is the &lt;<emphasis>destination</emphasis>&gt; for
+    resolution requests (from clients) and is also the
+    &lt;<emphasis>source</emphasis>&gt; of recursive resolution requests
+    (usually to other servers in the 'net' zone). So for example, if you have
+    a public DNS server in your DMZ that supports recursive resolution for
+    local clients then you would need:</para>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
 ACCEPT     all       dmz              udp        53
@@ -105,9 +106,9 @@ ACCEPT     dmz       net              udp        53
 ACCEPT     dmz       net              tcp        53</programlisting>
 
     <note>
-      <para>Recursive Resolution means that if the server itself can&#39;t
-      resolve the name presented to it, the server will attempt to resolve the
-      name with the help of other servers.</para>
+      <para>Recursive Resolution means that if the server itself can't resolve
+      the name presented to it, the server will attempt to resolve the name
+      with the help of other servers.</para>
     </note>
   </section>
 
@@ -115,36 +116,37 @@ ACCEPT     dmz       net              tcp        53</programlisting>
     <title>FTP</title>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        21</programlisting>
+ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        21</programlisting>
 
-    <para>Look <ulink url="FTP.html">here</ulink> for much more information.</para>
+    <para>Look <ulink url="FTP.html">here</ulink> for much more
+    information.</para>
   </section>
 
   <section>
     <title>ICQ/AIM</title>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&#60;source&#62;</emphasis>  net              tcp        5190</programlisting>
+ACCEPT     <emphasis>&lt;source&gt;</emphasis>  net              tcp        5190</programlisting>
   </section>
 
   <section>
     <title>IMAP</title>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        143           #Unsecure IMAP
-ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        993           #Secure IMAP</programlisting>
+ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        143           #Unsecure IMAP
+ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        993           #Secure IMAP</programlisting>
   </section>
 
   <section>
     <title>IPSEC</title>
 
     <programlisting>#ACTION    SOURCE         DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>     &#60;destination&#62;</emphasis>    50     
-ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>     &#60;destination&#62;</emphasis>    51
-ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>     &#60;destination&#62;</emphasis>    udp        500
-ACCEPT     <emphasis>&#60;destination&#62;</emphasis>  <emphasis>&#60;source&#62;</emphasis>         50     
-ACCEPT     <emphasis>&#60;destination&#62;</emphasis>  <emphasis>&#60;source&#62;</emphasis>         51
-ACCEPT     <emphasis>&#60;destination&#62;</emphasis>  <emphasis>&#60;source&#62;</emphasis>         udp        500</programlisting>
+ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>     &lt;destination&gt;</emphasis>    50     
+ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>     &lt;destination&gt;</emphasis>    51
+ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>     &lt;destination&gt;</emphasis>    udp        500
+ACCEPT     <emphasis>&lt;destination&gt;</emphasis>  <emphasis>&lt;source&gt;</emphasis>         50     
+ACCEPT     <emphasis>&lt;destination&gt;</emphasis>  <emphasis>&lt;source&gt;</emphasis>         51
+ACCEPT     <emphasis>&lt;destination&gt;</emphasis>  <emphasis>&lt;source&gt;</emphasis>         udp        500</programlisting>
 
     <para>Lots more information <ulink url="IPSEC.htm">here</ulink> and <ulink
     url="VPN.htm">here</ulink>.</para>
@@ -154,23 +156,23 @@ ACCEPT     <emphasis>&#60;destination&#62;</emphasis>  <emphasis>&#60;source&#62
     <title>NFS</title>
 
     <programlisting>#ACTION    SOURCE                         DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&#60;z1&#62;</emphasis>:&#60;list of client IPs&#62;  <emphasis>    &#60;z2&#62;</emphasis>:a.b.c.d     tcp        111
-ACCEPT     <emphasis>&#60;z1&#62;</emphasis>:&#60;list of client IPs&#62;  <emphasis>    &#60;z2&#62;</emphasis>:a.b.c.d     udp</programlisting>
+ACCEPT     <emphasis>&lt;z1&gt;</emphasis>:&lt;list of client IPs&gt;  <emphasis>    &lt;z2&gt;</emphasis>:a.b.c.d     tcp        111
+ACCEPT     <emphasis>&lt;z1&gt;</emphasis>:&lt;list of client IPs&gt;  <emphasis>    &lt;z2&gt;</emphasis>:a.b.c.d     udp</programlisting>
   </section>
 
   <section>
     <title>NTP (Network Time Protocol)</title>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    udp        123</programlisting>
+ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    udp        123</programlisting>
   </section>
 
   <section>
     <title><trademark>PCAnywhere</trademark></title>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    udp        5632
-ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        5631</programlisting>
+ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    udp        5632
+ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        5631</programlisting>
   </section>
 
   <section>
@@ -179,16 +181,16 @@ ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62
     <para>TCP Port 110 (Secure Pop3 is TCP Port 995)</para>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        110           #Unsecure Pop3
-ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        995           #Secure Pop3</programlisting>
+ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        110           #Unsecure Pop3
+ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        995           #Secure Pop3</programlisting>
   </section>
 
   <section>
     <title>PPTP</title>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    47    
-ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        1723</programlisting>
+ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    47    
+ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        1723</programlisting>
 
     <para>Lots more information <ulink url="PPTP.htm">here</ulink> and <ulink
     url="VPN.htm">here</ulink>.</para>
@@ -198,24 +200,24 @@ ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62
     <title>rdate</title>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        37</programlisting>
+ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        37</programlisting>
   </section>
 
   <section>
     <title>SSH</title>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        22</programlisting>
+ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        22</programlisting>
   </section>
 
   <section>
     <title>SMB/NMB (Samba/Windows Browsing/File Sharing)</title>
 
     <programlisting>#ACTION    SOURCE         DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>     &#60;destination&#62;</emphasis>    tcp        137,139,445     
-ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>     &#60;destination&#62;</emphasis>    udp        137:139
-ACCEPT     <emphasis>&#60;destination&#62;</emphasis>  <emphasis>&#60;source&#62;</emphasis>         tcp        137,139,445
-ACCEPT     <emphasis>&#60;destination&#62;</emphasis>  <emphasis>&#60;source&#62;</emphasis>         udp        137:139</programlisting>
+ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>     &lt;destination&gt;</emphasis>    tcp        137,139,445     
+ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>     &lt;destination&gt;</emphasis>    udp        137:139
+ACCEPT     <emphasis>&lt;destination&gt;</emphasis>  <emphasis>&lt;source&gt;</emphasis>         tcp        137,139,445
+ACCEPT     <emphasis>&lt;destination&gt;</emphasis>  <emphasis>&lt;source&gt;</emphasis>         udp        137:139</programlisting>
 
     <para>Also, see <ulink url="samba.htm">this page</ulink>.</para>
   </section>
@@ -224,57 +226,67 @@ ACCEPT     <emphasis>&#60;destination&#62;</emphasis>  <emphasis>&#60;source&#62
     <title>SMTP</title>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        25     #Insecure SMTP
-ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        465    #SMTP over SSL (TLS)</programlisting>
+ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        25     #Insecure SMTP
+ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        465    #SMTP over SSL (TLS)</programlisting>
   </section>
 
   <section>
     <title>SNMP</title>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    udp        161:162
-ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        161</programlisting>
+ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    udp        161:162
+ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        161</programlisting>
   </section>
 
   <section>
     <title>Telnet</title>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        23</programlisting>
+ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        23</programlisting>
   </section>
 
   <section>
     <title>TFTP</title>
 
     <para>You must have TFTP connection tracking support in your kernel. If
-    modularized, the modules are <emphasis role="bold">ip_conntrack_tftp</emphasis>
-    (and <emphasis role="bold">ip_nat_tftp</emphasis> if any form of NAT is
-    involved) These modules may be loaded using entries in
-    <filename>/etc/shorewall/modules</filename>. The <emphasis role="bold">ip_conntrack_tftp</emphasis>
-    module must be loaded first. Note that the <filename>/etc/shorewall/modules</filename>
-    file released with recent Shorewall versions contains entries for these
-    modules.</para>
+    modularized, the modules are <emphasis
+    role="bold">ip_conntrack_tftp</emphasis> (and <emphasis
+    role="bold">ip_nat_tftp</emphasis> if any form of NAT is involved) These
+    modules may be loaded using entries in
+    <filename>/etc/shorewall/modules</filename>. The <emphasis
+    role="bold">ip_conntrack_tftp</emphasis> module must be loaded first. Note
+    that the <filename>/etc/shorewall/modules</filename> file released with
+    recent Shorewall versions contains entries for these modules.</para>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    udp        69</programlisting>
+ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    udp        69</programlisting>
   </section>
 
   <section>
     <title>Traceroute</title>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    udp        33434:33443        #Good for 10 hops
-ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    icmp       8</programlisting>
+ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    udp        33434:33443        #Good for 10 hops
+ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    icmp       8</programlisting>
 
-    <para>UDP traceroute uses ports 33434 through 33434+&#60;max number of
-    hops&#62;-1</para>
+    <para>UDP traceroute uses ports 33434 through 33434+&lt;max number of
+    hops&gt;-1. Note that for the firewall to respond with a TTL expired ICMP
+    reply, you will need to allow ICMP 11 outbound from the firewall. The
+    standard Shorewall sample configurations all set this up for you
+    automatically since those sample configurations enable all ICMP packet
+    types originating on the firewall itself.</para>
+
+    <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
+ACCEPT     fw        net              icmp
+ACCEPT     fw        loc              icmp
+ACCEPT     fw        ...</programlisting>
   </section>
 
   <section>
     <title>Usenet (NNTP)</title>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        119</programlisting>
+ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        119</programlisting>
 
     <para>TCP Port 119</para>
   </section>
@@ -282,43 +294,60 @@ ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62
   <section>
     <title>VNC</title>
 
-    <para>Vncviewer to Vncserver -- TCP port 5900 + &#60;display number&#62;.</para>
+    <para>Vncviewer to Vncserver -- TCP port 5900 + &lt;display
+    number&gt;.</para>
+
+    <para>Vncviewer to Vncserver -- TCP port 5900 + &lt;display
+    number&gt;.</para>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        5901               #Display Number 1
-ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        5902               #Display Number 2
+ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        5901               #Display Number 1
+ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        5902               #Display Number 2
 ...</programlisting>
 
     <para>Vncserver to Vncviewer in listen mode -- TCP port 5500.</para>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        5500</programlisting>
+ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        5500</programlisting>
+  </section>
+
+  <section>
+    <title><trademark>Vonage</trademark></title>
+
+    <para>The standard Shorewall loc-&gt;net ACCEPT policy is all that is
+    required for <trademark>Vonage</trademark> IP phone service to work,
+    provided that you have loaded the tftp helper modules (add the following
+    entries to /etc/shorewall/modules if they are not there already):</para>
+
+    <programlisting>    loadmodule ip_conntrack_tftp
+    loadmodule ip_nat_tftp</programlisting>
   </section>
 
   <section>
     <title>Web Access</title>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        80       #Insecure HTTP
-ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        443      #Secure HTTP</programlisting>
+ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        80       #Insecure HTTP
+ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        443      #Secure HTTP</programlisting>
   </section>
 
   <section>
     <title>X/XDMCP</title>
 
-    <para>Assume that the Choser and/or X Server are running at &#60;<emphasis>chooser</emphasis>&#62;
-    and the Display Manager/X applications are running at &#60;<emphasis>apps</emphasis>&#62;.</para>
+    <para>Assume that the Choser and/or X Server are running at
+    &lt;<emphasis>chooser</emphasis>&gt; and the Display Manager/X
+    applications are running at &lt;<emphasis>apps</emphasis>&gt;.</para>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     &#60;<emphasis>chooser</emphasis>&#62; &#60;<emphasis>apps</emphasis>&#62;           udp        177         #XDMCP
-ACCEPT     &#60;<emphasis>apps</emphasis>&#62;    &#60;<emphasis>chooser</emphasis>&#62;        tcp        6000:6009   #X Displays 0-9</programlisting>
+ACCEPT     &lt;<emphasis>chooser</emphasis>&gt; &lt;<emphasis>apps</emphasis>&gt;           udp        177         #XDMCP
+ACCEPT     &lt;<emphasis>apps</emphasis>&gt;    &lt;<emphasis>chooser</emphasis>&gt;        tcp        6000:6009   #X Displays 0-9</programlisting>
   </section>
 
   <section>
     <title>Other Source of Port Information</title>
 
-    <para>Didn&#39;t find what you are looking for -- have you looked in your
-    own /etc/services file?</para>
+    <para>Didn't find what you are looking for -- have you looked in your own
+    /etc/services file?</para>
 
     <para>Still looking? Try <ulink
     url="http://www.networkice.com/advice/Exploits/Ports">http://www.networkice.com/advice/Exploits/Ports</ulink></para>
@@ -327,16 +356,138 @@ ACCEPT     &#60;<emphasis>apps</emphasis>&#62;    &#60;<emphasis>chooser</emphas
   <appendix>
     <title>Revision History</title>
 
-    <para><revhistory><revision><revnumber>1.11</revnumber><date>2004-05-28</date><authorinitials>TE</authorinitials><revremark>Corrected
-    directory for actions.std and enhanced the DNS section.</revremark></revision><revision><revnumber>1.10</revnumber><date>2004-05-09</date><authorinitials>TE</authorinitials><revremark>Added
-    TFTP.</revremark></revision><revision><revnumber>1.9</revnumber><date>2004-04-24</date><authorinitials>TE</authorinitials><revremark>Revised
-    ICQ/AIM.</revremark></revision><revision><revnumber>1.8</revnumber><date>2004-04-23</date><authorinitials>TE</authorinitials><revremark>Added
-    SNMP.</revremark></revision><revision><revnumber>1.7</revnumber><date>2004-02-18</date><authorinitials>TE</authorinitials><revremark>Make
-    NFS work for everyone.</revremark></revision><revision><revnumber>1.6</revnumber><date>2004-02-14</date><authorinitials>TE</authorinitials><revremark>Add
-    PCAnywhere.</revremark></revision><revision><revnumber>1.5</revnumber><date>2004-02-05</date><authorinitials>TE</authorinitials><revremark>Added
-    information about VNC viewers in listen mode.</revremark></revision><revision><revnumber>1.4</revnumber><date>2004-01-26</date><authorinitials>TE</authorinitials><revremark>Correct
-    ICQ.</revremark></revision><revision><revnumber>1.3</revnumber><date>2004-01-04</date><authorinitials>TE</authorinitials><revremark>Alphabetize</revremark></revision><revision><revnumber>1.2</revnumber><date>2004-01-03</date><authorinitials>TE</authorinitials><revremark>Add
-    rules file entries.</revremark></revision><revision><revnumber>1.1</revnumber><date>2002-07-30</date><authorinitials>TE</authorinitials><revremark>Initial
-    version converted to Docbook XML</revremark></revision></revhistory></para>
+    <para><revhistory>
+        <revision>
+          <revnumber>1.13</revnumber>
+
+          <date>2004-09-21</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Add note about ICMP type 11 to Traceroute.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.12</revnumber>
+
+          <date>2004-09-09</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Add note about <trademark>Vonage</trademark>.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.11</revnumber>
+
+          <date>2004-05-28</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Corrected directory for actions.std and enhanced the DNS
+          section.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.10</revnumber>
+
+          <date>2004-05-09</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Added TFTP.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.9</revnumber>
+
+          <date>2004-04-24</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Revised ICQ/AIM.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.8</revnumber>
+
+          <date>2004-04-23</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Added SNMP.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.7</revnumber>
+
+          <date>2004-02-18</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Make NFS work for everyone.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.6</revnumber>
+
+          <date>2004-02-14</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Add PCAnywhere.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.5</revnumber>
+
+          <date>2004-02-05</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Added information about VNC viewers in listen
+          mode.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.4</revnumber>
+
+          <date>2004-01-26</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Correct ICQ.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.3</revnumber>
+
+          <date>2004-01-04</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Alphabetize</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.2</revnumber>
+
+          <date>2004-01-03</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Add rules file entries.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.1</revnumber>
+
+          <date>2002-07-30</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Initial version converted to Docbook XML</revremark>
+        </revision>
+      </revhistory></para>
   </appendix>
 </article>

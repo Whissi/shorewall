@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-09-06</pubdate>
+    <pubdate>2004-09-07</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -78,11 +78,11 @@
 
       <listitem>
         <para>I use SNAT through 206.124.146.179 for&nbsp;my Wife's Windows XP
-        system <quote>Tarry</quote>, and our&nbsp; dual-booting (Windows
-        XP/SuSE 9.1) laptop <quote>Tipper</quote> which connects through the
-        Wireless Access Point (wap) via a Wireless Bridge (wet).<note>
+        system <quote>Tarry</quote>, and our&nbsp; dual-booting (SuSE
+        9.1/Windows XP) laptop <quote>Tipper</quote> which connects through
+        the Wireless Access Point (wap) via a Wireless Bridge (wet).<note>
             <para>While the distance between the WAP and where I usually use
-            the laptop isn't very far (25 feet or so), using a WAC11 (CardBus
+            the laptop isn't very far (50 feet or so), using a WAC11 (CardBus
             wireless card) has proved very unsatisfactory (lots of lost
             connections). By replacing the WAC11 with the WET11 wireless
             bridge, I have virtually eliminated these problems (Being an old
@@ -148,7 +148,8 @@
 
     <para>Tarry (192.168.1.4) runs a PPTP server for Road Warrior access from
     my work laptop and the Firewall is configured with IPSEC for tunnel mode
-    road warrior access from Tipper.</para>
+    access from our second home in <ulink
+    url="http://www.omakchamber.com/">Omak, Washington</ulink>.</para>
 
     <para><graphic align="center" fileref="images/network.png" /></para>
   </section>
@@ -397,7 +398,7 @@ $EXT_IF:2                  eth2            206.124.146.179
     </section>
 
     <section>
-      <title>Tunnels File (Shell variable TEXAS set in
+      <title>Tunnels File (Shell variables TEXAS and OMAK set in
       /etc/shorewall/params)</title>
 
       <blockquote>
@@ -653,6 +654,10 @@ ACCEPT          tx                              loc:192.168.1.5         all
       <title>zones</title>
 
       <blockquote>
+        <para>Because <emphasis role="bold">loc</emphasis> is a sub-zone of
+        <emphasis role="bold">net</emphasis>, <emphasis
+        role="bold">loc</emphasis> must be defined first.</para>
+
         <programlisting>#ZONE   DISPLAY         COMMENTS
 loc     Local           Local networks
 net     Internet        The Big Bad Internet
@@ -688,7 +693,7 @@ all             all             REJECT          info
 
       <blockquote>
         <programlisting>#ZONE    INTERFACE      BROADCAST       OPTIONS
--       br0             192.168.1.255   dhcp
+-        br0            192.168.1.255   dhcp
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
       </blockquote>
     </section>
@@ -754,17 +759,28 @@ br0:eth0                00:0b:c1:53:cc:97       192.168.1.8     #TIPPER
       <blockquote>
         <para>This file is SuSE-specific and creates the bridge device
         <filename class="devicefile">br0</filename>. A script for other
-        disbributions would be similar.</para>
+        distributions would be similar (see the <ulink
+        url="bridge.html">Shorewall Bridge documentation</ulink> for
+        examples).</para>
 
         <programlisting>#!/bin/sh
 ################################################################################
-#   Script to create a bridge between eth0, eth1 and eth2
+#   Script to create a bridge
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
 #
 #     (c) 2004 - Tom Eastep (teastep@shorewall.net)
 #
 #   Modify the following variables to match your configuration
+#
+#### BEGIN INIT INFO
+# Provides:       bridge
+# Required-Start: coldplug
+# Required-Stop:
+# Default-Start:  2 3 5
+# Default-Stop:   0 1 6
+# Description:    starts and stops a bridge
+### END INIT INFO
 #
 # chkconfig: 2345 05 89
 # description: Layer 2 Bridge
@@ -773,21 +789,29 @@ br0:eth0                00:0b:c1:53:cc:97       192.168.1.8     #TIPPER
 
 PATH=$PATH:/sbin:/usr/sbin:/usr/local/sbin
 
+INTERFACES="eth0 eth1"
+BRIDGE="br0"
+
 do_stop() {
-    echo "Stopping Bridge"
-    brctl delbr br0
-    ip link set eth0 down
-    ip link set eth1 down
+    echo "Stopping Bridge $BRIDGE"
+    brctl delbr $BRIDGE
+    for interface in $INTERFACES; do
+        ip link set $interface down
+    done
 }
 
 do_start() {
 
-      echo "Starting Bridge"
-      ip link set eth0 up
-      ip link set eth1 up
-      brctl addbr br0
-      brctl addif br0 eth0
-      brctl addif br0 eth1
+      echo "Starting Bridge $BRIDGE"
+      for interface in $INTERFACES; do
+          ip link set $interface up
+      done
+
+      brctl addbr $BRIDGE
+
+      for interface in $INTERFACES; do
+          brctl addif $BRIDGE $interface
+      done
 }
 
 case "$1" in
@@ -816,11 +840,7 @@ exit 0</programlisting>
       <blockquote>
         <para>This file is SuSE-specific</para>
 
-        <programlisting>BOOTPROTO='static'
-BROADCAST='192.168.1.255'
-IPADDR='192.168.1.5'
-NETWORK='192.168.1.0'
-NETMASK='255.255.255.0'
+        <programlisting>BOOTPROTO='dhcp'
 REMOTE_IPADDR=''
 STARTMODE='onboot'
 UNIQUE='3hqH.MjuOqWfSZ+C'
@@ -835,8 +855,9 @@ MTU=''</programlisting>
       <blockquote>
         <para>This file is SuSE-specific</para>
 
-        <programlisting>192.168.1.0 - 255.255.255.0 br0
-default 192.168.1.254 - -</programlisting>
+        <programlisting>192.168.1.0/24 dev br0  proto kernel  scope link  src 192.168.1.5
+127.0.0.0/8 dev lo  scope link
+default via 192.168.1.254 dev br0</programlisting>
       </blockquote>
     </section>
   </section>

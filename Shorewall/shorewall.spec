@@ -100,6 +100,8 @@ fi
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/accounting
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/usersets
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/users
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/actions
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.template
 %attr(0544,root,root) /sbin/shorewall
 %attr(0444,root,root) /usr/share/shorewall/functions
 %attr(0544,root,root) /usr/share/shorewall/firewall
@@ -108,6 +110,8 @@ fi
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel
 
 %changelog
+* Wed Dec 03 2003 Tom Eastep <tom@shorewall.net>
+- Added User Defined Actions Files
 * Fri Nov 07 2003 Tom Eastep <tom@shorewall.net>
 - Changed version to 1.4.8
 * Sat Nov 01 2003 Tom Eastep <tom@shorewall.net>

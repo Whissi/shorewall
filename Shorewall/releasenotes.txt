@@ -48,6 +48,33 @@ New Features:
 	    If all files end in ".kzo" then set MODULE_SUFFIX="kzo"
 	    If all files end in ".kz.o" then set MODULE_SUFFIX="kz.o"
 
+4) Support for user defined rule ACTIONS has been implemented through
+   two new files:
+
+   /etc/shorewall/actions         - used to list the user-defined ACTIONS.
+   /etc/shorewall/action.template - For each user defined <action>, copy
+				    this file to
+				    /etc/shorewall/action.<action> and
+				    add the appropriate rules for that
+				    <action>.
+   Once an <action> has been defined, it may be used like any of the
+   builtin ACTIONS (ACCEPT, DROP, etc.) in /etc/shorewall/rules.
+
+   Example: You want an action that logs a packet at the 'info' level
+   and accepts the connection.
+
+   In /etc/shorewall/actions, you would add:
+
+      LogAndAccept
+
+   You would then copy /etc/shorewall/action.template to
+   /etc/shorewall/LogAndAccept and in that file, you would add the two
+   rules:
+
+	LOG:info
+	ACCEPT
+
+
 
 	    
 

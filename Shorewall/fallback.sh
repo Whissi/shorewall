@@ -140,6 +140,10 @@ restore_file /etc/shorewall/usersets
 
 restore_file /etc/shorewall/users
 
+restore_file /etc/shorewall/actions
+
+restore_file /etc/shorewall/action.template
+
 if [ -f /usr/lib/shorewall/version-${VERSION}.bkout ]; then
     restore_file /usr/lib/shorewall/version
     oldversion="`cat /usr/lib/shorewall/version`"

@@ -356,6 +356,30 @@ output_chain() # $1 = interface
 }
 
 ################################################################################
+# Masquerade Chain for an interface                                            #
+################################################################################
+masq_chain() # $1 = interface
+{
+   echo `chain_base $1`_masq
+}
+
+################################################################################
+# DNAT Chain from a zone                                                       #
+################################################################################
+dnat_chain() # $1 = zone
+{
+   echo ${1}_dnat
+}
+
+################################################################################
+# SNAT Chain to a zone                                                         #
+################################################################################
+snat_chain() # $1 = zone
+{
+   echo ${1}_snat
+}
+
+################################################################################
 # First chains for an interface                                                #
 ################################################################################
 first_chains() #$1 = interface
@@ -1432,13 +1456,13 @@ add_nat_rule() {
 	run_iptables -t nat -A OUTPUT $proto $sports $addr \
 	    $multiport $dports -j $target1
     else
-	chain=$source
+	chain=`dnat_chain $source`
 	    
 	if [ -n "$excludezones" ]; then
 	    chain=nonat${nonat_seq}
 	    nonat_seq=$(($nonat_seq + 1))
 	    createnatchain $chain
-	    addnatrule $source -j $chain
+	    addnatrule `dnat_chain $source` -j $chain
 	    for z in $excludezones; do
 		eval hosts=\$${z}_hosts
 		for host in $hosts; do
@@ -1460,14 +1484,14 @@ add_nat_rule() {
 
     if [ -n "$snat" ]; then
 	if [ -n "$cli" ]; then
-	    run_iptables -t nat -A POSTROUTING $proto $cli $multiport \
+	    addnatrule `snat_chain $dest` $proto $cli $multiport \
 		$sports -d $serv $dports -j SNAT --to-source $snat
 	else
 	    for source_host in $source_hosts; do
 		[ "x${source_host#*:}" = "x0.0.0.0/0" ] && \
 		    error_message "Warning: SNAT will occur on all connections to this server and port - rule \"$rule\""
 		
-		run_iptables -t nat -A POSTROUTING \
+		addnatrule `snat_chain $dest` \
 		    -s ${source_host#*:} $proto $sports $multiport \
 		    -d $serv $dports -j SNAT --to-source $snat
 	    done
@@ -2274,7 +2298,7 @@ setup_masq()
 	    subnet="${subnet%!*}"
 	fi
 
-	chain=`output_chain $interface`
+	chain=`masq_chain $interface`
 	iface=
 
 	case $subnet in
@@ -2843,59 +2867,51 @@ apply_policy_rules() {
 }
 
 ################################################################################
-# Jump to a NAT chain from one of the builtin chains                           #
-#------------------------------------------------------------------------------#
-# If NAT_BEFORE_RULES then insert the jump near the front of the source        #
-# chain; otherwise, append the rule                                            #
-################################################################################
-addnatjump() # $1 = BUILTIN chain, $2 = user chain, $3 - * other arguments
-{
-    local sourcechain=$1 destchain=$2
-    shift
-    shift
-    
-    if havenatchain $destchain; then
-	if [ -n "$NAT_BEFORE_RULES" ]; then
-	    eval run_iptables -t nat -I $sourcechain \
-                \$${sourcechain}_rule $@ -j $destchain
-	    eval ${sourcechain}_rule=\$\(\(\$${sourcechain}_rule + 1\)\)
-	else
-	    run_iptables -t nat -A $sourcechain $@ -j $destchain
-	fi
-    fi
-}
- 
-################################################################################
-# Jump to a NAT chain from one of the builtin chains                           #
-#------------------------------------------------------------------------------#
-# If not NAT_BEFORE_RULES then insert the jump near the front of the source    #
-# chain; otherwise, append the rule                                            #
-################################################################################
-insertnatjump() # $1 = BUILTIN chain, $2 = user chain, $3 - * other arguments
-{
-    local sourcechain=$1 destchain=$2
-    shift
-    shift
-    
-    if havenatchain $destchain; then
-	if [ -z "$NAT_BEFORE_RULES" ]; then
-	    eval run_iptables -t nat -I $sourcechain \
-                \$${sourcechain}_rule $@ -j $destchain
-	    eval ${sourcechain}_rule=\$\(\(\$${sourcechain}_rule + 1\)\)
-	else
-	    run_iptables -t nat -A $sourcechain $@ -j $destchain
-	fi
-    fi
-}
- 
-################################################################################
 # Activate the rules							       #
 ################################################################################
-activate_rules() {
+activate_rules() 
+{
+    local PREROUTING_rule=1
+    local POSTROUTING_rule=1
+    ############################################################################
+    # Jump to a NAT chain from one of the builtin nat chains
+    #
+    addnatjump() # $1 = BUILTIN chain, $2 = user chain, $3 - * other arguments
+    {
+	local sourcechain=$1 destchain=$2
+	shift
+	shift
+	
+	havenatchain $destchain && \
+	    run_iptables -t nat -A $sourcechain $@ -j $destchain
+    }
+ 
+    ############################################################################
+    # Jump to a RULES chain from one of the builtin nat chains
+    #---------------------------------------------------------------------------
+    # If NAT_BEFORE_RULES then append the rule to the chain; otherwise, insert
+    # the jump near the front of the builtin chain
+    #
+    addrulejump() # $1 = BUILTIN chain, $2 = user chain, $3 - * other arguments
+    {
+	local sourcechain=$1 destchain=$2
+	shift
+	shift
+	
+	if havenatchain $destchain; then
+	    if [ -n "$NAT_BEFORE_RULES" ]; then
+		run_iptables -t nat -A $sourcechain $@ -j $destchain
+	    else
+		eval run_iptables -t nat -I $sourcechain \
+		    \$${sourcechain}_rule $@ -j $destchain
+		eval ${sourcechain}_rule=\$\(\(\$${sourcechain}_rule + 1\)\)
+	    fi
+	fi
+    }
 
-    PREROUTING_rule=1
-    POSTROUTING_rule=1
-
+    #
+    # Add jumps from the builtin chains to the nat chains
+    #
     addnatjump PREROUTING  nat_in
     addnatjump POSTROUTING nat_out
 
@@ -2915,8 +2931,11 @@ activate_rules() {
 
 	    run_iptables -A OUTPUT -o \
 	        $interface -d $subnet -j `rules_chain $FW $zone`
-
-	    insertnatjump PREROUTING $zone -i $interface -s $subnet
+	    #
+	    # Add jumps from the builtin chains for DNAT and SNAT rules
+	    #
+	    addrulejump PREROUTING  `dnat_chain $zone` -i $interface -s $subnet
+	    addrulejump POSTROUTING `snat_chain $zone` -o $interface -d $subnet
 
 	    run_iptables -A `input_chain $interface` -s $subnet \
 		-j `rules_chain $zone $FW`
@@ -2957,6 +2976,7 @@ activate_rules() {
     for interface in $all_interfaces; do
        run_iptables -A FORWARD -i $interface -j `forward_chain $interface`
        run_iptables -A INPUT   -i $interface -j `input_chain $interface`
+       addnatjump POSTROUTING `masq_chain $interface` -o $interface
     done
 
     complete_standard_chain INPUT all $FW

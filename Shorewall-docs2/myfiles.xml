@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-10-02</pubdate>
+    <pubdate>2004-10-09</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -351,7 +351,7 @@ all             all             REJECT          $LOG
       <blockquote>
         <para>Although most of our internal systems use one-to-one NAT, my
         wife's system (192.168.1.4) uses IP Masquerading (actually SNAT) as
-        does our laptop (192.168.3.8) and visitors with laptops.</para>
+        does our laptop (192.168.1.8) and visitors with laptops.</para>
 
         <para>The first entry allows access to the DSL modem and uses features
         introduced in Shorewall 2.1.1. The leading plus sign ("+_") causes the
@@ -536,7 +536,6 @@ ACCEPT          net                             dmz                     tcp     
 ACCEPT          net                             dmz                     udp     domain
 ACCEPT          net                             dmz                     udp     33434:33436
 Mirrors         net                             dmz                     tcp     rsync
-ACCEPT          net:$OMAK                       dmz                     tcp     22      #SSH from Omak
 AllowPing       net                             dmz
 ###############################################################################################################################################################################
 #
@@ -596,8 +595,6 @@ ACCEPT          dmz:206.124.146.177             loc:192.168.1.5         udp
 #
 REJECT          net                             fw                      tcp     www,ftp,https
 ACCEPT          net                             dmz                     udp     33434:33435
-ACCEPT          net:$OMAK                       fw                      udp     ntp
-ACCEPT          net:$OMAK                       fw                      tcp     22      #SSH from Omak
 ###############################################################################################################################################################################
 # Firewall to Internet
 #

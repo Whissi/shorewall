@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-10-01</pubdate>
+    <pubdate>2004-10-08</pubdate>
 
     <copyright>
       <year>2004</year>
@@ -35,12 +35,19 @@
   </articleinfo>
 
   <warning>
-    <para>To use this support, your kernel and iptables must include the
-    Netfilter+ipsec patches and policy match support and you must be running
-    Shorewall 2.1.5 or later. The Netfilter patches are available from
-    Netfilter Patch-O-Matic-NG and are also included in some commercial
-    distributions (most notably <trademark>SuSE</trademark> 9.1).</para>
+    <para>To use the features described in this article, your kernel and
+    iptables must include the Netfilter+ipsec patches and policy match support
+    and you must be running Shorewall 2.1.5 or later. The Netfilter patches
+    are available from Netfilter Patch-O-Matic-NG and are also included in
+    some commercial distributions (most notably <trademark>SuSE</trademark>
+    9.1).</para>
   </warning>
+
+  <important>
+    <para>You must have <emphasis role="bold">BOTH</emphasis> the
+    Netfilter+ipsec patches and the policy match patch. <emphasis
+    role="bold">One without the other will not work</emphasis>.</para>
+  </important>
 
   <warning>
     <para>As of this writing, the Netfilter+ipsec and policy match support are
@@ -112,7 +119,7 @@
     must be matched against policies in the SPD and/or the appropriate
     SA.</para>
 
-    <para>Shorewall provides support for policy matching in two ways:</para>
+    <para>Shorewall provides support for policy matching in three ways:</para>
 
     <orderedlist>
       <listitem>
@@ -128,6 +135,13 @@
         url="Documentation.htm#Ipsec"><filename>/etc/shorewall/ipsec</filename></ulink>
         file allows you to associate zones with traffic that will be encrypted
         or that has been decrypted.</para>
+      </listitem>
+
+      <listitem>
+        <para>A new option (<emphasis role="bold">ipsec</emphasis>) has been
+        provided for entries in <filename>/etc/shorewall/hosts</filename>.
+        When an entry has this option specified, traffic to/from the hosts
+        described in the entry is assumed to be encrypted.</para>
       </listitem>
     </orderedlist>
 
@@ -231,28 +245,37 @@ ipsec         net         206.161.148.9
       B:</para>
 
       <programlisting>#ZONE           DISPLAY         COMMENTS
-net             Internet        The big bad internet
 vpn             VPN             Virtual Private Network
+net             Internet        The big bad internet
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
     </blockquote>
+
+    <important>
+      <para>Note that the <quote>vpn</quote> zone is defined before the
+      <quote>net</quote> zone. This is necessary if you are using a Shorewall
+      version earlier than 2.1.11.</para>
+    </important>
 
     <para>Remember the assumption that both systems A and B have eth0 as their
     internet interface.</para>
 
     <para>You must define the vpn zone using the
-    <filename>/etc/shorewall/hosts</filename> file.</para>
+    <filename>/etc/shorewall/hosts</filename> file. The hosts file entries
+    below assume that you want the remote gateway to be part of the vpn zone —
+    If you don't wish the remote gateway included, simply omit it's IP address
+    from the HOSTS column.</para>
 
     <blockquote>
       <para>/etc/shorewall/hosts — System A</para>
 
-      <programlisting>#ZONE             HOSTS                  OPTIONS
-vpn               eth0:10.0.0.0/8        <emphasis role="bold">ipsec</emphasis>
+      <programlisting>#ZONE             HOSTS                                OPTIONS
+vpn               eth0:10.0.0.0/8,134.28.54.2        <emphasis role="bold">  ipsec</emphasis>
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
 
       <para>/etc/shorewall/hosts — System B</para>
 
-      <programlisting>#ZONE             HOSTS                  OPTIONS
-vpn               eth0:192.168.1.0/24    <emphasis role="bold">ipsec</emphasis>
+      <programlisting>#ZONE             HOSTS                                OPTIONS
+vpn               eth0:192.168.1.0/24,206.161.148.9    <emphasis role="bold">ipsec</emphasis>
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
     </blockquote>
 
@@ -271,47 +294,86 @@ vpn              loc                    ACCEPT</programlisting>
 
     <para>For full encrypted connectivity in this configuration (between the
     subnets, between each subnet and the opposite gateway, and between the
-    gateways), you will need six policies in
+    gateways), you will need eight policies in
     <filename>/etc/racoon/setkey.conf</filename>. For example, on gateway
     A:</para>
 
     <blockquote>
-      <programlisting># First of all flush the SPD database
+      <programlisting># First of all flush the SPD and SAD databases
 spdflush;
+flush;
 
 # Add some SPD rules
 
 spdadd 192.168.1.0/24   10.0.0.0/8       any -P out ipsec esp/tunnel/206.161.148.9-134.28.54.2/require;
 spdadd 192.168.1.0/24   134.28.54.2/32   any -P out ipsec esp/tunnel/206.161.148.9-134.28.54.2/require;
 spdadd 206.161.148.9/32 134.28.54.2/32   any -P out ipsec esp/tunnel/206.161.148.9-134.28.54.2/require;
+spdadd 206.161.148.9/32 10.0.0.0/8       any -P out ipsec esp/tunnel/206.161.148.9-134.28.54.2/require;
 spdadd 10.0.0.0/8       192.168.1.0/24   any -P in  ipsec esp/tunnel/134.28.54.2-206.161.148.9/require;
 spdadd 10.0.0.0/8       206.161.148.9/32 any -P in  ipsec esp/tunnel/134.28.54.2-206.161.148.9/require;
-spdadd 134.28.54.2/32   192.168.1.0/24   any -P in  ipsec esp/tunnel/134.28.54.2-206.161.148.9/require;</programlisting>
+spdadd 134.28.54.2/32   192.168.1.0/24   any -P in  ipsec esp/tunnel/134.28.54.2-206.161.148.9/require;
+spdadd 134.28.54.2/32   206.161.148.9/32 any -P in  ipsec esp/tunnel/134.28.54.2-206.161.148.9/require;</programlisting>
     </blockquote>
 
     <para>The <filename>setkey.conf</filename> file on gateway B would be
     similar.</para>
 
     <para>A sample <filename>/etc/racoon/racoon.conf</filename> file using
-    pre-shared keys might look like:</para>
+    X.509 certificates might look like:</para>
 
     <blockquote>
-      <programlisting>path pre_shared_key "/etc/racoon/psk.txt" ;
+      <programlisting>path certificates "/etc/certs" ;
 
-remote anonymous
+listen 
+{
+        isakmp 206.161.148.9;
+}
+
+remote 134.28.54.2
 {
         exchange_mode main ;
-        my_identifier address ;
+        certificate_type x509 "GatewayA.pem" "GatewayA_key.pem" ;
+        verify_cert on;
+        my_identifier asn1dn ;
+        peers_identifier asn1dn ;
+        verify_identifier on ;
         lifetime time 24 hour ;
         proposal {
                 encryption_algorithm 3des;
                 hash_algorithm sha1;
-                authentication_method pre_shared_key ;
+                authentication_method rsasig ;
                 dh_group 2 ;
         }
 }
 
-sainfo anonymous
+sainfo address 192.168.1.0/24 any address 10.0.0.0/8 any
+{
+        pfs_group 2;
+        lifetime time 12 hour ;
+        encryption_algorithm 3des, blowfish, des, rijndael ;
+        authentication_algorithm hmac_sha1, hmac_md5 ;
+        compression_algorithm deflate ;
+}
+
+sainfo address 206.161.148.9/32 any address 10.0.0.0/8 any
+{
+        pfs_group 2;
+        lifetime time 12 hour ;
+        encryption_algorithm 3des, blowfish, des, rijndael ;
+        authentication_algorithm hmac_sha1, hmac_md5 ;
+        compression_algorithm deflate ;
+}
+
+sainfo address 206.161.148.9/32 any address 134.28.54.2/32 any
+{
+        pfs_group 2;
+        lifetime time 12 hour ;
+        encryption_algorithm 3des, blowfish, des, rijndael ;
+        authentication_algorithm hmac_sha1, hmac_md5 ;
+        compression_algorithm deflate ;
+}
+
+sainfo address 192.168.1.0/24 any address 134.28.54.2/32 any
 {
         pfs_group 2;
         lifetime time 12 hour ;
@@ -327,6 +389,9 @@ sainfo anonymous
     <blockquote>
       <programlisting>134.28.54.2            &lt;the key&gt;</programlisting>
     </blockquote>
+
+    <para>Note that the <emphasis role="bold">same key </emphasis>must be used
+    in both directions.</para>
   </section>
 
   <section>
@@ -349,10 +414,16 @@ sainfo anonymous
         <para>/etc/shorewall/zones — System A</para>
 
         <programlisting>#ZONE           DISPLAY         COMMENTS
-net             Internet        The big bad internet
 vpn             VPN             Road Warriors
+net             Internet        The big bad internet
 loc             local           Local Network (192.168.1.0/24)
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+
+        <important>
+          <para>Note that the <quote>vpn</quote> zone is defined before the
+          <quote>net</quote> zone. This is necessary if you are using a
+          Shorewall version earlier than 2.1.11.</para>
+        </important>
       </blockquote>
 
       <para>In this instance, the mobile system (B) has IP address 134.28.54.2
@@ -458,6 +529,12 @@ spdadd 192.168.20.40/32 192.168.20.10/32 any -P in  ipsec esp/transport/192.168.
 net     Net             Internet
 loc     Local           Local Network
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+
+      <important>
+        <para>Note that the <quote>vpn</quote> zone is defined before the
+        <quote>net</quote> zone. This is advised if you are using a Shorewall
+        version earlier than 2.1.11.</para>
+      </important>
 
       <para><filename>/etc/shorewall/interfaces</filename>:</para>
 

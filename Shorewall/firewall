@@ -3872,26 +3872,28 @@ setup_masq()
 
 	if [ -n "$subnet" ]; then
 	    for s in $subnet; do
-		for destnet in $(separate_list $destnets); do
-		    if [ -n "$addresses" ]; then
+		if [ -n "$addresses" ]; then
+		    for destnet in $(separate_list $destnets); do
 			addnatrule $chain -s $s -d $destnet -j SNAT $temp
-			echo "   To $destination from $s through ${interface} using $addresses"
-		    else
+		    done
+		    echo "   To $destination from $s through ${interface} using $addresses"
+		else
+		    for destnet in $(separate_list $destnets); do
 			addnatrule $chain -s $s -d $destnet -j MASQUERADE
-			echo "   To $destination from $s through ${interface}"
-		    fi
-		done
+		    done
+		    echo "   To $destination from $s through ${interface}"
+		fi
 	    done
 	elif [ -n "$address" ]; then
 	    for destnet in $(separate_list $destnets); do
 		addnatrule $chain -d $destnet -j SNAT $temp
-		echo "   To $destination from $source through ${interface} using $addresses"
 	    done
+	    echo "   To $destination from $source through ${interface} using $addresses"
 	else
 	    for destnet in $(separate_list $destnets); do
 		addnatrule $chain -d $destnet -j MASQUERADE
-		echo "   To $destination from $source through ${interface}"
 	    done
+	    echo "   To $destination from $source through ${interface}"
 	fi
 
     }

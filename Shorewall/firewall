@@ -3304,8 +3304,14 @@ add_common_rules() {
     #
     run_iptables -A reject -p tcp  -j REJECT --reject-with tcp-reset
     run_iptables -A reject -p udp  -j REJECT
+    #
+    # Not all versions of iptables support these so don't complain if they don't work
+    #
     qt iptables  -A reject -p icmp -j REJECT --reject-with icmp-host-unreachable
     qt iptables  -A reject         -j REJECT --reject-with icmp-host-prohibited
+    #
+    # A catchall in case the above doesn't work
+    #
     run_iptables -A reject         -j REJECT
 
     #

@@ -4303,19 +4303,17 @@ do_initialize() {
 
     trap "rm -rf $TMP_DIR; my_mutex_off; exit 2" 1 2 3 4 5 6 9
 
-    if [ -n "$SHOREWALL_DIR" -a -f $SHOREWALL_DIR/params ]; then
-	params=$SHOREWALL_DIR/params
+    FUNCTIONS=$SHARED_DIR/functions
+
+    if [ -f $FUNCTIONS ]; then
+	. $FUNCTIONS
     else
-	params=/etc/shorewall/params
+	startup_error "$FUNCTIONS does not exist!"
     fi
 
-    [ -f $params ] && echo "Processing $params..." && . $params
+    run_user_exit params
 
-    if [ -n "$SHOREWALL_DIR" -a -f $SHOREWALL_DIR/shorewall.conf ]; then
-	config=$SHOREWALL_DIR/shorewall.conf
-    else
-	config=/etc/shorewall/shorewall.conf
-    fi
+    config=`find_file shorewall.conf`
 
     if [ -f $config ]; then
 	echo "Processing $config..."
@@ -4323,14 +4321,6 @@ do_initialize() {
     else
 	echo "$config does not exist!" >&2
 	exit 2
-    fi
-
-    FUNCTIONS=$SHARED_DIR/functions
-
-    if [ -f $FUNCTIONS ]; then
-	. $FUNCTIONS
-    else
-	startup_error "$FUNCTIONS does not exist!"
     fi
 
     VERSION_FILE=$SHARED_DIR/version

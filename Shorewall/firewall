@@ -3456,6 +3456,8 @@ refresh_firewall()
 ################################################################################
 add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 {
+    local base
+
     chain_exists() # $1 = chain name
     {
 	qt iptables -L $1 -n
@@ -3527,29 +3529,39 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
     chain=${zone}_dnat
 
     if nat_chain_exists $chain; then
-	do_iptables -t nat -A PREROUTING -i $interface -s $host -j $chain
+	do_iptables -t nat -I PREROUTING -i $interface -s $host -j $chain
     fi
 
     while read z1 z2 chain; do
 	if [ "$z1" = "$zone" ]; then
 	    if [ "$z2" = "$FW" ]; then
-		do_iptables -A `input_chain $interface` -i $interface -s $host -j $chain 
+		do_iptables -I `input_chain $interface` 2 -i $interface -s $host -j $chain 
 	    else
 		source_chain=`forward_chain $interface`
 		eval dest_hosts=\"\$${z2}_hosts\"
 
+		base=`chain_base $interface`
+
+		eval rulenum=\$${base}_rulenum
+		
+		[ -z "$rulenum" ] && rulenum=2
+		
 		for h in $dest_hosts; do
 		    iface=${h%:*}
 		    hosts=${h#*:}
 		    
 		    if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
-			do_iptables -A $source_chain -s $host -o $iface -d $hosts -j $chain
+			do_iptables -I $source_chain $rulenum -s $host -o $iface -d $hosts -j $chain
+			rulenum=$(($rulenum + 1))
 		    fi
 		done
+
+		eval ${base}_rulenum=$rulenum
+
 	    fi
 	elif [ "$z2" = "$zone" ]; then
 	    if [ "$z1" = "$FW" ]; then
-		do_iptables -I OUTPUT `output_rule_num` $num -o $interface -d $host -j $chain
+		do_iptables -I OUTPUT `output_rule_num` -o $interface -d $host -j $chain
 	    else
 		eval source_hosts=\"\$${z1}_hosts\"
 		
@@ -3557,9 +3569,18 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		    iface=${h%:*}
 		    hosts=${h#*:}
 
+		    base=`chain_base $face`
+
+		    eval rulenum=\$${base}_rulenum
+		    
+		    [ -z "$rulenum" ] && rulenum=2
+
 		    if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
-			do_iptables -A `forward_chain $iface` -s $hosts -o $interface -d $host -j $chain
+			do_iptables -I `forward_chain $iface` $rulenum -s $hosts -o $interface -d $host -j $chain
+			rulenum=$(($rulenum + 1))
 		    fi
+
+		    eval ${base}_rulenum=$rulenum
 		done
 	    fi
 	fi
@@ -3588,7 +3609,7 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		hosts=
 		
 		for h in $temp; do
-		    if [ "$h" = "$newhost" ]; then
+		    if [ "$h" = "$delhost" ]; then
 			echo Yes
 		    else
 			hosts="$hosts $h"
@@ -3622,7 +3643,7 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
 	startup_error "Error: Unknown interface $interface"
     fi
 
-    newhost="$interface:$host"
+    delhost="$interface:$host"
 
     [ -z "`delete_from_zones_file`" ] && startup_error "Error: $1 not in zone $2"
 
@@ -3640,7 +3661,7 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		source_chain=`forward_chain $interface`
 		eval dest_hosts=\"\$${z2}_hosts\"
 
-		for h in $dest_hosts $newhost; do
+		for h in $dest_hosts $delhost; do
 		    iface=${h%:*}
 		    hosts=${h#*:}
 		    

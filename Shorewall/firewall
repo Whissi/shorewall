@@ -2687,6 +2687,14 @@ add_common_rules() {
 	fi
 	
 	while read subnet target; do
+	    case $target in
+		logdrop|DROP|RETURN)
+		    ;;
+		*)
+		    fatal_error "   Error:Illegal target ($target) for $subnet"
+		    ;;
+	    esac
+
 	    run_iptables -A rfc1918 -s $subnet -j $target
 	    ####################################################################
 	    # If packet mangling is enabled, trap packets with an

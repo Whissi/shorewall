@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-12-04</pubdate>
+    <pubdate>2004-12-18</pubdate>
 
     <copyright>
       <year>2004</year>
@@ -453,7 +453,137 @@ vpn               eth0:0.0.0.0/0        <emphasis role="bold"> ipsec</emphasis>
 
       <para>You will need to configure your <quote>through the tunnel</quote>
       policy as shown under the first example above.</para>
+
+      <para>On the laptop:</para>
+
+      <blockquote>
+        <para>/etc/shorewall/zones - System B:</para>
+
+        <programlisting>#ZONE           DISPLAY         COMMENTS
+vpn             VPN             VPN back home
+net             Internet        The big bad internet
+loc             local           Local Network (192.168.1.0/24)
+#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+
+        <para>/etc/shorewall/tunnels - System B:</para>
+
+        <programlisting>#TYPE         ZONE        GATEWAY             GATEWAY ZONE
+ipsec         net         206.162.148.9       vpn
+#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+
+        <para>/etc/shorewall/hosts - System B:</para>
+
+        <programlisting>#ZONE             HOSTS                  OPTIONS
+vpn               eth0:0.0.0.0/0        <emphasis role="bold"> ipsec</emphasis>
+#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+      </blockquote>
+
+      <para>On system A, here are the IPSEC files:</para>
+
+      <blockquote>
+        <para>/etc/racoon/racoon.conf - System A:</para>
+
+        <programlisting>path certificate "/etc/certs" ;
+ 
+listen
+{
+        isakmp 206.162.148.9;
+}
+ 
+remote <emphasis role="bold">anonymous</emphasis>
+{
+        exchange_mode main ;
+        <emphasis role="bold">generate_policy on</emphasis> ;
+        <emphasis role="bold">passive on</emphasis> ;
+        certificate_type x509 "GatewayA.pem" "GatewayA_key.pem" ;
+        verify_cert on;
+        my_identifier asn1dn ;
+        peers_identifier asn1dn ;
+        verify_identifier on ;
+        lifetime time 24 hour ;
+        proposal {
+                encryption_algorithm 3des;
+                hash_algorithm sha1;
+                authentication_method rsasig ;
+                dh_group 2 ;
+        }
+}
+ 
+sainfo <emphasis role="bold">anonymous</emphasis>
+{
+        pfs_group 2;
+        lifetime time 12 hour ;
+        encryption_algorithm 3des, blowfish, des, rijndael ;
+        authentication_algorithm hmac_sha1, hmac_md5 ;
+        compression_algorithm deflate ;
+}</programlisting>
+
+        <para>/etc/racoon/setkey.conf - System A:</para>
+
+        <programlisting>flush;
+spdflush;</programlisting>
+      </blockquote>
+
+      <para>On the mobile system (system B), it is not possible to create a
+      static IPSEC configuration because the IP address of the laptop's
+      internet connection isn't static. I have created an 'ipsecvpn' script
+      and included in the tarball and in the RPM's documentation directory;
+      this script can be used to start and stop the connection.</para>
+
+      <para>The ipsecvpn script has some variable assignments at the top -- in
+      the above case, these would be as follows:</para>
+
+      <blockquote>
+        <programlisting>#
+# External Interface
+#
+INTERFACE=eth0
+#
+# Remote IPSEC Gateway
+#
+GATEWAY=206.162.148.9
+#
+# Networks behind the remote gateway
+#
+NETWORKS="192.168.1.0/24"
+#
+# Directory where X.509 certificates are stored.
+#
+CERTS=/etc/certs
+#
+# Certificate to be used for this connection. The cert
+# directory must contain:
+#
+#     ${CERT}.pem     - the certificate
+#     ${CERT}_key.pem - the certificates's key
+#
+CERT=roadwarrior
+#
+#     The setkey binary
+#
+SETKEY=/usr/sbin/setkey
+#
+#     The racoon binary
+#
+RACOON=/usr/sbin/racoon</programlisting>
+      </blockquote>
+
+      <para>The ipsecvpn script can be installed in /etc/init.d/ but it is
+      probably best installed in /usr/local/sbin and run manually:</para>
+
+      <blockquote>
+        <para><command>ipsecvpn start </command># Starts the tunnel</para>
+
+        <para><command>ipsecvpn stop</command> # Stops the tunnel</para>
+      </blockquote>
     </example>
+
+    <warning>
+      <para>Although the ipsecvpn script allows you to specify multiple remote
+      NETWORKS as a space-separated list, SAs are created on the gateway only
+      during ISAKMP negotiation. So in practice, only the first remote network
+      accessed will be accessible from the roadwarrior.</para>
+    </warning>
   </section>
 
   <section>

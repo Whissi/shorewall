@@ -1,0 +1,264 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article>
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>VPN, Netfilter and Shorewall — The Basics</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate>2004-12-18</pubdate>
+
+    <copyright>
+      <year>2004</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <section>
+    <title>Gateway-to-gateway traffic vs. Host-to-host traffic.</title>
+
+    <para>The purpose of a <firstterm>Virtual Private Network</firstterm>
+    (VPN) is to provide for secure communication between a set of hosts.
+    Communication between a pair of hosts connected by a VPN occurs in
+    stages:</para>
+
+    <orderedlist>
+      <listitem>
+        <para><emphasis role="bold">Local-host-to-local-gateway</emphasis>.
+        This communication is not encrypted; in the case where the traffic
+        originates on the gateway itself, the communication is local to that
+        system.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis
+        role="bold">Local-gateway-to-remote-gateway</emphasis>. This
+        communication is encrypted and can use a tunneling protocol such as
+        GRE, AH or ESP or a standard protocol such as UDP or TCP. Some VPNs
+        use multiple protocols; for example PPTP uses TCP port 1723 and GRE
+        while IPSEC uses UDP port 500 together with ESP or AH.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">Remote-gateway-to-remote-host</emphasis>.
+        This is just the unencrypted traffic described in the first item as it
+        is delivered to its destination.</para>
+      </listitem>
+    </orderedlist>
+
+    <para>Of course, one-way communication generally isn't useful so we need
+    traffic in the other direction as well.</para>
+
+    <orderedlist>
+      <listitem>
+        <para><emphasis
+        role="bold">Remote-host-to-remote-gateway</emphasis>.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis
+        role="bold">Remote-gateway-to-local-gateway</emphasis>.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis
+        role="bold">Local-gateway-to-local-host</emphasis>.</para>
+      </listitem>
+    </orderedlist>
+  </section>
+
+  <section>
+    <title>Relationship to Netfilter</title>
+
+    <para>When Netfilter is configured on a VPN gateway, each VPN packet goes
+    through Netfilter twice! Let's first consider outbound traffic:</para>
+
+    <orderedlist>
+      <listitem>
+        <para><emphasis role="bold">Local-host-to-local-gateway</emphasis>.
+        This traffic has a source address in the local network or on the
+        gateway itself. The destination IP address is that of a remote host;
+        either the remote gateway itself or a host behind that gaeway.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis
+        role="bold">Local-gateway-to-remote-gateway.</emphasis> This
+        (encrypted) traffic has a source IP address on the gateway and is
+        addressed to the remote gateway.</para>
+      </listitem>
+    </orderedlist>
+
+    <para>Incoming traffic is similar.</para>
+  </section>
+
+  <section>
+    <title>What does this mean with Shorewall?</title>
+
+    <para>When Shorewall is installed on a VPN gateway system, it catagorizes
+    the VPN-related traffic slightly differently:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>Local-host-to-remote-host — same as Local-host-to-local-gateway
+        above.</para>
+      </listitem>
+
+      <listitem>
+        <para>Local-gateway-to-remote-gateway.</para>
+      </listitem>
+
+      <listitem>
+        <para>Remote-gateway-to-local-gateway.</para>
+      </listitem>
+
+      <listitem>
+        <para>Remote-host-to-local-host — same as Local-gateway-to-local-host
+        above.</para>
+      </listitem>
+    </orderedlist>
+
+    <para>Shorewall implements a set of features for dealing with VPN.</para>
+
+    <orderedlist>
+      <listitem>
+        <para>The <filename>/etc/shorewall/tunnels</filename> file. This file
+        is used to define remote gateways and the type of encrypted traffic
+        that will be passed between the Shorewall system and those remote
+        gateways. In other words, the tunnels file deals with <emphasis
+        role="bold">Local-gateway-to-remote-gateway</emphasis> and <emphasis
+        role="bold">Remote-gateway-to-local-gateway</emphasis> traffic.</para>
+      </listitem>
+
+      <listitem>
+        <para>The <filename>/etc/shorewall/zones</filename> file. An entry in
+        this file allows you to associated a name with the set of hosts behind
+        the remote gateway (or to the remote gateway itself if it is a
+        standalone system).</para>
+      </listitem>
+
+      <listitem>
+        <para>The <filename>/etc/shorewall/interfaces</filename> and
+        <filename>/etc/shorewall/hosts</filename> files. These files are used
+        to associate a set of remote hosts with the zone name defined in
+        <filename>/etc/shorewall/zones</filename>.</para>
+      </listitem>
+
+      <listitem>
+        <para>The <filename>/etc/shorewall/policy </filename>and
+        <filename>/etc/shorewall/rules files</filename>. These files are used
+        to define the connections that are permitted between the remote and
+        local hosts -- in other words, the <emphasis
+        role="bold">Local-host-to-remote-host</emphasis> and <emphasis
+        role="bold">Remote-host-to-local-host</emphasis> traffic.</para>
+      </listitem>
+    </orderedlist>
+  </section>
+
+  <section>
+    <title>Eliminating the /etc/shorewall/tunnels file</title>
+
+    <para>The /etc/shorewall/tunnels file provides no functionality that could
+    not be implemented using entries in /etc/shorewall/rules and I have
+    elimination of the /etc/shorewall/tunnels file as a long-term goal. The
+    following sections show how entries in /etc/shorewall/tunnels can be
+    replaced by rules for some common tunnel types.</para>
+
+    <section>
+      <title>IPSEC</title>
+
+      <para>/etc/shorewall/tunnels:</para>
+
+      <blockquote>
+        <programlisting>#TYPE           ZONE          GATEWAY          GATEWAY ZONE
+ipsec           Z1            1.2.3.4          Z2</programlisting>
+      </blockquote>
+
+      <para>/etc/shorewall/rules:</para>
+
+      <blockquote>
+        <programlisting>#ACTION  SOURCE         DEST            PROTO   DEST    SOURCE 
+#                                               PORT    PORT(S)
+ACCEPT   $FW            Z1:1.2.3.4      udp     500
+ACCEPT   Z1:1.2.3.4     $FW             udp     500
+ACCEPT   $FW            Z1:1.2.3.4      50
+ACCEPT   Z1:1.2.3.4     $FW             50
+ACCEPT   $FW            Z1:1.2.3.4      51
+ACCEPT   Z1:1.2.3.4     $FW             51
+ACCEPT   $FW            Z2:1.2.3.4      udp     500
+ACCEPT   Z2:1.2.3.4     $FW             udp     500</programlisting>
+      </blockquote>
+
+      <para>The "noah" option causes the rules for protocol 50 to be
+      eliminated. The "ipsecnat" causes UDP port 4500 to be accepted in both
+      directions. If no GATEWAY ZONE is given then the last two rules above
+      are omitted.</para>
+    </section>
+
+    <section>
+      <title>PPTP</title>
+
+      <para>/etc/shorewall/tunnels:</para>
+
+      <blockquote>
+        <programlisting>#TYPE           ZONE          GATEWAY          GATEWAY ZONE
+pptpserver      Z1            1.2.3.4</programlisting>
+      </blockquote>
+
+      <para>/etc/shorewall/rules:</para>
+
+      <blockquote>
+        <programlisting>#ACTION  SOURCE         DEST            PROTO   DEST    SOURCE 
+#                                               PORT    PORT(S)
+
+ACCEPT   Z1:1.2.3.4     $FW             tcp     1723
+ACCEPT   $FW            Z1:1.2.3.4      47
+ACCEPT   Z1:1.2.3.4     $FW             47</programlisting>
+      </blockquote>
+
+      <para>Tunnel type "pptpclient" simply reverses the direction of the tcp
+      port 1723 rule.</para>
+    </section>
+
+    <section>
+      <title>OpenVPN</title>
+
+      <para>/etc/shorewall/tunnels:</para>
+
+      <blockquote>
+        <programlisting>#TYPE           ZONE          GATEWAY          GATEWAY ZONE
+openvpn:P       Z1            1.2.3.4</programlisting>
+      </blockquote>
+
+      <para>/etc/shorewall/rules:</para>
+
+      <blockquote>
+        <programlisting>#ACTION  SOURCE         DEST            PROTO   DEST    SOURCE 
+#                                               PORT    PORT(S)
+
+ACCEPT   Z1:1.2.3.4     $FW             udp     P
+ACCEPT   $FW            Z1:1.2.3.4      udp     P</programlisting>
+      </blockquote>
+    </section>
+  </section>
+</article>

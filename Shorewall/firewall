@@ -996,11 +996,25 @@ stop_firewall() {
     delete_proxy_arp
     [ -n "$CLEAR_TC" ] && delete_tc
 
-    for chain in INPUT OUTPUT FORWARD; do
-	setpolicy $chain DROP
-    done
+    if [ -z "$ADMINISABSENTMINDED" ]; then
+	for chain in INPUT OUTPUT FORWARD; do
+	    setpolicy $chain DROP
+	done
 
-    deleteallchains
+	deleteallchains
+    else
+	for chain in INPUT FORWARD; do
+	    setpolicy $chain DROP
+	done
+
+	setpolicy OUTPUT ACCEPT
+
+	deleteallchains
+
+	for chain in INPUT FORWARD; do
+	    setcontinue $chain
+	done
+    fi
 
     hosts=
 
@@ -1018,7 +1032,8 @@ stop_firewall() {
 	interface=${host%:*}
 	subnet=${host#*:}
 	iptables -A INPUT  -i $interface -s $subnet -j ACCEPT
-	iptables -A OUTPUT -o $interface -d $subnet -j ACCEPT
+	[ -z "$ADMINISABSENTMINDED" ] && \
+	    iptables -A OUTPUT -o $interface -d $subnet -j ACCEPT
 
 	for host1 in $hosts; do
 	    [ "$host" != "$host1" ] && \
@@ -1028,11 +1043,13 @@ stop_firewall() {
     done
 
     iptables -A INPUT  -i lo -j ACCEPT
-    iptables -A OUTPUT -o lo -j ACCEPT
+    [ -z "$ADMINISABSENTMINDED" ] && \
+	iptables -A OUTPUT -o lo -j ACCEPT
 
     for interface in `find_interfaces_by_option dhcp`; do
 	iptables -A INPUT  -p udp -i $interface --dport 67:68 -j ACCEPT
-	iptables -A OUTPUT -p udp -o $interface --dport 67:68 -j ACCEPT
+	[ -z "$ADMINISABSENTMINDED" ] && \
+	    iptables -A OUTPUT -p udp -o $interface --dport 67:68 -j ACCEPT
     done
 
     case "$IP_FORWARDING" in
@@ -4582,6 +4599,7 @@ do_initialize() {
     VERSION_FILE=
     LOGFORMAT=
     LOGRULENUMBERS=
+    ADMINISABSENTMINDED=
 
     stopping=
     have_mutex=
@@ -4730,6 +4748,7 @@ do_initialize() {
     else
 	LOGFORMAT="Shorewall:%s:%s:"
     fi
+    ADMINISABSENTMINDED=`added_param_value_no ADMINISABSENTMINDED $ADMINISABSENTMINDED`
     #
     # Strip the files that we use often
     #

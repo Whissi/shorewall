@@ -38,3 +38,42 @@ New Features:
    /etc/shorewall/startup_disabled exists. This prevents people from
    shooting themselves in the foot prior to having configured
    Shorewall.
+
+4) A new option "ADMINISABSENTMINDED" has been added to
+   /etc/shorewall/shorewall.conf. This option has a default value of
+   "No" in which case Shorewall's 'stopped' state continues as it has
+   been; namely, in the stopped state only traffic to/from hosts listed
+   in /etc/shorewall/routestopped is accepted.
+
+   With ADMINISABSENTMINDED=Yes, in addition to traffic to/from the
+   hosts listed in /etc/shorewall/routestopped, Shorewall will allow:
+
+   a) All traffic originating from the firewall itself; and
+   b) All traffic that is part of or related to an already-existing
+   connection.
+
+   In particular, with ADMINISABSENTMINDED=Yes, a "shorewall stop"
+   entered through an ssh session will not kill the session.
+
+   Note though that it is still possible for people to shoot themselves
+   in the foot.
+
+   Example:
+
+   /etc/shorewall/nat:
+
+   206.124.146.178	eth0:0	192.168.1.5	
+
+   /etc/shorewall/rules:
+
+   ACCEPT	net	loc:192.168.1.5	tcp	22
+   ACCEPT	loc	fw		tcp	22
+
+   I ssh into 206.124.146.178 which establishes an SSH connection with
+   192.168.1.5. I then create a second SSH connection from that
+   computer to the firewall and confidently type "shorewall
+   stop". As part of stopping, Shorewall removes eth0:0 which kills my
+   SSH connection to 192.168.1.5!!!
+
+   
+

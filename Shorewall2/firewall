@@ -2341,6 +2341,16 @@ process_action() # $1 = action
 }
 
 #
+# Create an action chain and run it's associated user exit
+#
+
+createactionchain() # $1 = chain name
+{
+    createchain $1 no
+    run_user_exit $1
+}
+
+#
 # Read /etc/shorewall/actions and for each defined <action>, pre-process 
 # /etc/shorewall/action.<action>
 #
@@ -2388,7 +2398,7 @@ process_actions1() {
 			eval ${temp}_common=$xaction
 			if ! list_search $xaction $USEDACTIONS; then
 			    USEDACTIONS="$USEDACTIONS $xaction"
-			    [ $command = check ] || createchain $xaction no
+			    [ $command = check ] || createactionchain $xaction
 			fi
 			;;
 		    *)
@@ -2487,7 +2497,7 @@ process_actions2() {
 	    for action in $required; do
 		if ! list_search $action $USEDACTIONS; then
 		    USEDACTIONS="$USEDACTIONS $action"
-		    [ $command = check ] || createchain $action no
+		    [ $command = check ] || createactionchain $action
 		    changed=Yes
 		fi
 	    done
@@ -3287,7 +3297,7 @@ process_rules()
 	    *)
 		if list_search $temp $ACTIONS; then
 		    if ! list_search $temp $USEDACTIONS; then
-			[ $command = check ] || createchain $temp no
+			[ $command = check ] || createactionchain $temp
 			USEDACTIONS="$USEDACTIONS $temp"
 		    fi
 

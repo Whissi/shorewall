@@ -9,6 +9,8 @@ Problems Corrected since version 1.4.9:
    during [re]start if ADD_IP_ALIASES=Yes or ADD_SNAT_ALIASES=Yes are
    specified in /etc/shorewall/shorewall.conf.
 
+3. Shorewall now tried to avoid sending an ICMP response to broadcasts.
+
 Migration Issues:
 
 None.
@@ -45,7 +47,7 @@ New Features:
    /etc/shorewall/interfaces. This option automatically taylors the
    definition of the zone named in the ZONE column to include just
    those hosts that have routes through the interface named in the
-   INTERFACE column. The named interface must be UP prior when
+   INTERFACE column. The named interface must be UP when
    Shorewall is [re]started.
 
    WARNING: DO NOT SET THIS OPTION ON YOUR INTERNET INTERFACE!

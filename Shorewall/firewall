@@ -2944,6 +2944,8 @@ process_rule() # $1 = target
 
     # Function Body - isolate rate limit
 
+    [ "x$ratelimit" = "x-" ] && ratelimit=
+
     if [ -z "$ratelimit" ]; then
 	if [ "$target" != "${target%<*}" ]; then
 	    ratelimit="${target#*<}"
@@ -2955,9 +2957,6 @@ process_rule() # $1 = target
     
     if [ -n "$ratelimit" ]; then
 	case $ratelimit in
-	    -)
-		ratelimit=
-		;;
 	    *:*)
 		ratelimit="-m limit --limit ${ratelimit%:*} --limit-burst ${ratelimit#*:}"
 		;;
@@ -2995,7 +2994,11 @@ process_rule() # $1 = target
 	case "$userset" in
 	    *:*)
 		case $target in 
-		    ACCEPT|REJECT|DROP)
+		    ACCEPT)
+			;;
+		    REJECT|DROP)
+			[ -n "$ratelimit" ] && fatal_error \
+			    "Rate Limiting only available with ACCEPT, DNAT[-], REDIRECT[-] and LOG"
 			;;
 		    *)
 			fatal_error "<user>:<group> may only be specified in ACCEPT, REJECT and DROP rules: rule \"$rule\""
@@ -3021,9 +3024,13 @@ process_rule() # $1 = target
 			target=`accept_chain $userset`
 			;;
 		    DROP)
+			[ -n "$ratelimit" ] && fatal_error \
+			    "Rate Limiting only available with ACCEPT, DNAT[-], REDIRECT[-] and LOG"
 			target=`drop_chain $userset`
 			;;
 		    REJECT)
+			[ -n "$ratelimit" ] && fatal_error \
+			    "Rate Limiting only available with ACCEPT, DNAT[-], REDIRECT[-] and LOG"
 			target=`reject_chain $userset`
 			;;
 		    *)
@@ -3039,7 +3046,14 @@ process_rule() # $1 = target
 	    ACCEPT|LOG)
 		;;
 	    REJECT)
+		[ -n "$ratelimit" ] && fatal_error \
+		    "Rate Limiting only available with ACCEPT, DNAT[-], REDIRECT[-] and LOG"
 		target=reject
+		;;
+	    CONTINUE)
+		[ -n "$ratelimit" ] && fatal_error \
+		    "Rate Limiting only available with ACCEPT, DNAT[-], REDIRECT[-] and LOG"
+		target=RETURN
 		;;
 	    DNAT)
 		target=ACCEPT
@@ -4433,6 +4447,19 @@ add_common_rules() {
     # Reject Rules
     #
     run_iptables -A reject -p tcp  -j REJECT --reject-with tcp-reset
+    #
+    # Don't respond to broadcasts with an ICMP
+    #
+    qt iptables -A reject -m pkttype --pkt-type broadcast -j DROP
+    if ! qt iptables -A reject -m pkttype --pkt-type multicast -j DROP; then
+	run_iptables -A reject -d 255.255.255.255 -j DROP
+	run_iptables -A reject -d 224.0.0.0/4     -j DROP
+    
+	for address in $(find_broadcasts) ; do
+	    run_iptables -A reject -d $address -j DROP
+	done
+    fi
+
     run_iptables -A reject -p udp  -j REJECT
     #
     # Not all versions of iptables support these so don't complain if they don't work

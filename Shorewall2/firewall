@@ -392,6 +392,31 @@ mac_chain() # $1 = interface
 }
 
 #
+# Functions for creating dynamic zone rules
+#
+dynamic_fwd() # $1 = interface
+{
+   echo $(chain_base $1)_dynf
+}
+
+dynamic_in() # $1 = interface
+{
+   echo $(chain_base $1)_dyni
+}
+
+dynamic_out() # $1 = interface
+{
+   echo $(chain_base $1)_dyno
+}
+
+dynamic_chains() #$1 = interface
+{
+   local c=$(chain_base $1)
+
+   echo ${c}_dyni ${c}_dynf ${c}_dyno
+}
+
+#
 # DNAT Chain from a zone
 #
 dnat_chain() # $1 = zone
@@ -4883,6 +4908,23 @@ add_common_rules() {
 	run_ip route flush cache
     fi
 
+    if [ -n "$DYNAMIC_ZONES" ]; then
+	echo "Setting up Dynamic Zone Chains..."
+
+	for interface in $all_interfaces; do
+	    for chain in $(dynamic_chains $interface); do
+		createchain $chain no
+	    done
+
+	    chain=$(dynamic_in $interface)
+	    createnatchain $chain
+
+	    run_iptables -A $(input_chain $interface)   -j $chain
+	    run_iptables -A $(forward_chain $interface) -j $(dynamic_fwd $interface)
+	    run_iptables -A OUTPUT                      -j $(dynamic_out $interface)
+	done
+    fi
+
     setup_forwarding
 }
 
@@ -4992,6 +5034,12 @@ activate_rules()
 	fi
     }
 
+    #
+    # Add jumps for dynamic nat chains
+    #
+    [ -n "$DYNAMIC_ZONES" ] && for interface in $all_interfaces ; do
+	addrulejump PREROUTING $(dynamic_in $interface)
+    done
     #
     # Add jumps from the builtin chains to the nat chains
     #
@@ -5301,11 +5349,6 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 	fi
     }
 
-    output_rule_num() {
-	local num=$(iptables -L OUTPUT -n --line-numbers | grep icmp | cut -d' ' -f1 | head -n1)
-
-	[ -n "$num" ] && echo $(($num+1))
-    }
     #
     # Isolate interface and host parts
     #
@@ -5329,24 +5372,22 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
     validate_zone $zone || startup_error "Unknown zone: $zone"
 
     [ "$zone" = $FW ] && startup_error "Can't add $1 to firewall zone"
+    
     #
     # Be sure that Shorewall has been restarted using a DZ-aware version of the code
     #
     [ -f ${STATEDIR}/chains ] || startup_error "${STATEDIR}/chains -- file not found"
     [ -f ${STATEDIR}/zones ]  || startup_error "${STATEDIR}/zones -- file not found"
     #
-    # Be sure that the interface was present at last [re]start
+    # Be sure that the interface was dynamic at last [re]start
     #
     if ! chain_exists $(input_chain $interface) ; then
 	startup_error "Unknown interface $interface"
     fi
-    #
-    # Build lists of interfaces with special rules
-    #
-    dhcp_interfaces=$(find_interfaces_by_option dhcp)
-    blacklist_interfaces=$(find_interfaces_by_option blacklist)
-    maclist_interfaces=$(find_interfaces_by_option maclist)
-    tcpflags_interfaces=$(find_interfaces_by_option tcpflags)
+
+    if ! chain_exists $(dynamic_in $interface) ; then
+	startup_error "Interface $interface is not dynamic"
+    fi
     #
     # Normalize the first argument to this function
     #
@@ -5386,111 +5427,44 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
     chain=${zone}_dnat
 
     if nat_chain_exists $chain; then
-	do_iptables -t nat -I PREROUTING -i $interface -s $host -j $chain
+	do_iptables -t nat -A $(dynamic_in) -s $host -j $chain
     fi
     #
-    # Insert new rules into the input chains for the passed interface
+    # Insert new rules into the filter table for the passed interface
     #
     while read z1 z2 chain; do
 	if [ "$z1" = "$zone" ]; then
 	    if [ "$z2" = "$FW" ]; then
-		#
-		# We will insert the rule right after the DHCP, 'ping' and
-                # MAC rules (if any)
-		#
-		if list_search $interface $dhcp_interfaces; then
-		    rulenum=3
-		else
-		    rulenum=2
-		fi
-
-		if list_search $interface $maclist_interfaces; then
-		    rulenum=$(($rulenum + 1))
-		fi
-
-		if list_search $interface $tcpflags_interfaces; then
-		    rulenum=$(($rulenum + 1))
-		fi
-
-		do_iptables -I $(input_chain $interface) $rulenum -s $host -j $chain
+		do_iptables -A $(dynamic_in $interface) -s $host -j $chain
 	    else
-		#
-		# Insert rules into the passed interface's forward chain
-		#
-		# We insert them after any blacklist/MAC verification rules
-		#
-		source_chain=$(forward_chain $interface)
+		source_chain=$(dynamic_fwd $interface)
 		eval dest_hosts=\"\$${z2}_hosts\"
-
-		base=$(chain_base $interface)
-
-		eval rulenum=\$${base}_rulenum
-
-		if [ -z "$rulenum" ]; then
-		    if list_search $interface $blacklist_interfaces; then
-			rulenum=3
-		    else
-			rulenum=2
-		    fi
-
-		    if list_search $interface $maclist_interfaces; then
-			rulenum=$(($rulenum + 1))
-		    fi
-
-		    if list_search $interface $tcpflags_interfaces; then
-			rulenum=$(($rulenum + 1))
-		    fi
-		fi
 
 		for h in $dest_hosts; do
 		    iface=${h%%:*}
 		    hosts=${h#*:}
 
 		    if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
-			do_iptables -I $source_chain $rulenum -s $host -o $iface $(match_dest_hosts $hosts) -j $chain
-			rulenum=$(($rulenum + 1))
+			do_iptables -A $source_chain -s $host -o $iface $(match_dest_hosts $hosts) -j $chain
 		    fi
 		done
-
-		eval ${base}_rulenum=$rulenum
-
 	    fi
 	elif [ "$z2" = "$zone" ]; then
 	    if [ "$z1" = "$FW" ]; then
 		#
 		# Add a rule to the OUTPUT chain -- always after the icmp * ACCEPT rule
 		#
-		do_iptables -I OUTPUT $(output_rule_num) -o $interface -d $host -j $chain
+		do_iptables -A $(dynamic_out $interface) -d $host -j $chain
 	    else
-		#
-		# Insert rules into the source interface's forward chain
-		#
-		# We insert them after any blacklist rules
-		#
 		eval source_hosts=\"\$${z1}_hosts\"
 
 		for h in $source_hosts; do
 		    iface=${h%%:*}
 		    hosts=${h#*:}
 
-		    base=$(chain_base $iface)
-
-		    eval rulenum=\$${base}_rulenum
-
-		    if [ -z "$rulenum" ]; then
-			if list_search $iface $blacklist_interfaces; then
-			    rulenum=3
-			else
-			    rulenum=2
-			fi
-		    fi
-
 		    if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
-			do_iptables -I $(forward_chain $iface) $rulenum $(match_source_hosts $hosts) -o $interface -d $host -j $chain
-			rulenum=$(($rulenum + 1))
+			do_iptables -A $(dynamic_fwd $iface) $rulenum $(match_source_hosts $hosts) -o $interface -d $host -j $chain
 		    fi
-
-		    eval ${base}_rulenum=$rulenum
 		done
 	    fi
 	fi
@@ -5560,6 +5534,10 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
     if ! chain_exists $(input_chain $interface) ; then
 	startup_error "Unknown interface $interface"
     fi
+
+    if ! chain_exists $(dynamic_in $interface) ; then
+	startup_error "Interface $interface is not dynamic"
+    fi
     #
     # Normalize the first argument to this function
     #
@@ -5580,16 +5558,16 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
     #
     # Delete any nat table entries for the host(s)
     #
-    qt iptables -t nat -D PREROUTING -i $interface -s $host -j ${zone}_dnat
+    qt iptables -t nat -D $(dynamic_in $interface) -s $host -j ${zone}_dnat
     #
     # Delete rules rules the input chains for the passed interface
     #
     while read z1 z2 chain; do
 	if [ "$z1" = "$zone" ]; then
 	    if [ "$z2" = "$FW" ]; then
-		qt iptables -D $(input_chain $interface) -s $host -j $chain
+		qt iptables -D $(dynamic_in $interface) -s $host -j $chain
 	    else
-		source_chain=$(forward_chain $interface)
+		source_chain=$(dynamic_fwd $interface)
 		eval dest_hosts=\"\$${z2}_hosts\"
 
 		for h in $dest_hosts $delhost; do
@@ -5603,7 +5581,7 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
 	    fi
 	elif [ "$z2" = "$zone" ]; then
 	    if [ "$z1" = "$FW" ]; then
-		qt iptables -D OUTPUT -o $interface -d $host -j $chain
+		qt iptables -D $(dynamic_out $interface) -d $host -j $chain
 	    else
 		eval source_hosts=\"\$${z1}_hosts\"
 		
@@ -5612,7 +5590,7 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		    hosts=${h#*:}
 
 		    if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
-			qt iptables -D $(forward_chain $iface) $(match_source_hosts $hosts) -o $interface -d $host -j $chain
+			qt iptables -D $(dynamic_fwd $iface) $(match_source_hosts $hosts) -o $interface -d $host -j $chain
 		    fi
 		done
 	    fi
@@ -5730,6 +5708,7 @@ do_initialize() {
     SMURF_LOG_LEVEL=
     DISABLE_IPV6=
     BRIDGING=
+    DYNAMIC_ZONES=
 
     stopping=
     have_mutex=
@@ -5883,6 +5862,8 @@ do_initialize() {
     BLACKLISTNEWONLY=$(added_param_value_no BLACKLISTNEWONLY $BLACKLISTNEWONLY)
     DISABLE_IPV6=$(added_param_value_no DISABLE_IPV6 $DISABLE_IPV6)
     BRIDGING=$(added_param_value_no BRIDGING $BRIDGING)
+    DYNAMIC_ZONES=$(added_param_value_no DYNAMIC_ZONES $DYNAMIC_ZONES)
+
     [ -n "$MODULE_SUFFIX" ] || MODULE_SUFFIX="o gz ko o.gz"
 
     #

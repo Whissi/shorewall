@@ -8,8 +8,16 @@ None.
 -----------------------------------------------------------------------
 Issues when migrating from Shorewall 2.0.0 to Shorewall 2.0.1:
 
-None.
+1) Dynamic Zone support.
+
+If you don't need to use the "shorewall start" and "shorewall stop"
+command, you should set DYNAMIC_ZONES=No in
+/etc/shorewall/shorewall.conf .
 
 New Features:
 
-None.
+1) The previous implementation of dynamic zones was difficult to
+   maintain. I have changed the code to make dynamic zones options
+   under the control of the DYNAMIC_ZONES option in
+   /etc/shorewall/shorewall.conf.
+

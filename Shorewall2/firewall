@@ -1958,8 +1958,8 @@ delete_proxy_arp() {
 
     [ -d ${STATEDIR} ] && touch ${STATEDIR}/proxyarp
 
-    for f in $(ls /proc/sys/net/ipv4/conf/*/proxy_arp); do
-	echo 0 > $f
+    for f in /proc/sys/net/ipv4/conf/*; do
+	[ -f $f/proxy_arp] && echo 0 > $f/proxy_arp
     done
 }
 
@@ -5658,8 +5658,8 @@ add_common_rules() {
     #
     save_progress_message "Restoring ARP filtering..."
 
-    for f in /proc/sys/net/ipv4/conf/*/arp_filter; do
-	run_and_save_command "echo 0 > $f"
+    for f in /proc/sys/net/ipv4/conf/*; do
+	run_and_save_command "[ -f $f/arp_filter ] && echo 0 > $f/arp_filter"
     done
 
     interfaces=$(find_interfaces_by_option arp_filter)
@@ -5687,8 +5687,8 @@ add_common_rules() {
 
 	save_progress_message "Restoring Route Filtering..."
 
-	for f in /proc/sys/net/ipv4/conf/*/rp_filter; do
-	    run_and_save_command "echo 0 > $f"
+	for f in /proc/sys/net/ipv4/conf/*; do
+	    run_and_save_command "[ -f $f/rp_filter ] && echo 0 > $f/rp_filter"
 	done
 
 	for interface in $interfaces; do

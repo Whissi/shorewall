@@ -241,8 +241,8 @@
 
           <listitem>
             <para>Locate the appropriate DNAT rule. It will be in a chain
-            called <emphasis>&#60;source zone&#62;</emphasis>_dnat
-            (&#39;net_dnat&#39; in the above examples).</para>
+            called <emphasis>&#60;source zone&#62;</emphasis>_dnat (<quote>net_dnat</quote>
+            in the above examples).</para>
           </listitem>
 
           <listitem>
@@ -702,21 +702,21 @@
 
     <section id="faq4">
       <title>(FAQ 4) I just used an online port scanner to check my firewall
-      and it shows some ports as &#39;closed&#39; rather than
-      &#39;blocked&#39;. Why?</title>
+      and it shows some ports as <quote>closed</quote> rather than
+      <quote>blocked</quote>. Why?</title>
 
       <para><emphasis role="bold">Answer:</emphasis> The common.def included
       with version 1.3.x always rejects connection requests on TCP port 113
       rather than dropping them. This is necessary to prevent outgoing
-      connection problems to services that use the &#39;Auth&#39; mechanism
-      for identifying requesting users. Shorewall also rejects TCP ports 135,
-      137 and 139 as well as UDP ports 137-139. These are ports that are used
-      by Windows (Windows <emphasis>can</emphasis> be configured to use the
-      DCE cell locator on port 135). Rejecting these connection requests
-      rather than dropping them cuts down slightly on the amount of Windows
-      chatter on LAN segments connected to the Firewall.</para>
+      connection problems to services that use the <quote>Auth</quote>
+      mechanism for identifying requesting users. Shorewall also rejects TCP
+      ports 135, 137 and 139 as well as UDP ports 137-139. These are ports
+      that are used by Windows (Windows <emphasis>can</emphasis> be configured
+      to use the DCE cell locator on port 135). Rejecting these connection
+      requests rather than dropping them cuts down slightly on the amount of
+      Windows chatter on LAN segments connected to the Firewall.</para>
 
-      <para>If you are seeing port 80 being &#39;closed&#39;, that&#39;s
+      <para>If you are seeing port 80 being <quote>closed</quote>, that&#39;s
       probably your ISP preventing you from running a web server in violation
       of your Service Agreement.</para>
 
@@ -784,8 +784,8 @@
         </listitem>
       </orderedlist>
 
-      <para>For a complete description of Shorewall &#39;ping&#39; management,
-      see <ulink url="ping.html">this page</ulink>.</para>
+      <para>For a complete description of Shorewall <quote>ping</quote>
+      management, see <ulink url="ping.html">this page</ulink>.</para>
     </section>
 
     <section id="faq15">
@@ -962,11 +962,11 @@ run_iptables -A common -p udp --sport 53 -mstate --state NEW -j DROP</programlis
 
       <para><emphasis role="bold">Answer:</emphasis> If you are running
       Shorewall version 1.4.4 or 1.4.4a then check the <ulink url="errata.htm">errata</ulink>.
-      Otherwise, see the &#39;dmesg&#39; man page (<quote>man dmesg</quote>).
-      You must add a suitable &#39;dmesg&#39; command to your startup scripts
-      or place it in /etc/shorewall/start. Under RedHat, the max log level
-      that is sent to the console is specified in /etc/sysconfig/init in the
-      LOGLEVEL variable.</para>
+      Otherwise, see the <quote>dmesg</quote> man page (<quote>man dmesg</quote>).
+      You must add a suitable <quote>dmesg</quote> command to your startup
+      scripts or place it in /etc/shorewall/start. Under RedHat, the max log
+      level that is sent to the console is specified in /etc/sysconfig/init in
+      the LOGLEVEL variable.</para>
     </section>
 
     <section id="faq17">
@@ -1195,8 +1195,8 @@ run_iptables -A common -p udp --sport 53 -mstate --state NEW -j DROP</programlis
 
       <para><emphasis role="bold">Answer:</emphasis> While most people
       associate the Internet Control Message Protocol (ICMP) with
-      &#39;ping&#39;, ICMP is a key piece of the internet. ICMP is used to
-      report problems back to the sender of a packet; this is what is
+      <quote>ping</quote>, ICMP is a key piece of the internet. ICMP is used
+      to report problems back to the sender of a packet; this is what is
       happening here. Unfortunately, where NAT is involved (including SNAT,
       DNAT and Masquerade), there are a lot of broken implementations. That is
       what you are seeing with these messages.</para>
@@ -1463,13 +1463,13 @@ ip route add 127.0.0.0/8 dev lo table T2</programlisting>
     <title>Starting and Stopping</title>
 
     <section id="faq7">
-      <title>(FAQ 7) When I stop Shorewall using &#39;shorewall stop&#39;, I
-      can&#39;t connect to anything. Why doesn&#39;t that command work?</title>
+      <title>(FAQ 7) When I stop Shorewall using <quote>shorewall stop</quote>,
+      I can&#39;t connect to anything. Why doesn&#39;t that command work?</title>
 
-      <para>The &#39;stop&#39; command is intended to place your firewall into
-      a safe state whereby only those hosts listed in
+      <para>The <quote>stop</quote> command is intended to place your firewall
+      into a safe state whereby only those hosts listed in
       /etc/shorewall/routestopped&#39; are activated. If you want to totally
-      open up your firewall, you must use the &#39;shorewall clear&#39;
+      open up your firewall, you must use the <quote>shorewall clear</quote>
       command.</para>
     </section>
 

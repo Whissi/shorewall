@@ -2868,7 +2868,7 @@ find_logactionchain() # $1 = Action, including log level and tag if any
 	shift;shift
     done
 
-    createlogctionchain $action $level
+    createlogactionchain $action $level
 
     echo $CHAIN
 
@@ -3060,7 +3060,7 @@ process_actions2() {
     drop_broadcasts() {
 	for address in $(find_broadcasts) 255.255.255.255 224.0.0.0/4 ; do
 	    case $xlevel in
-		none\!)
+		none*)
 		    ;;
 		*)
 		    [ -n "$xlevel" ] && \

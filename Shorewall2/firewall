@@ -1047,15 +1047,6 @@ find_interface_address() # $1 = interface
 }
 
 #
-# Find interface addresses--returns the set of addresses assigned to the passed
-# device
-#
-find_interface_addresses() # $1 = interface
-{
-    ip -f inet addr show $1 | grep inet | sed 's/inet //;s/\/.*//;s/ peer.*//'
-}
-
-#
 # Find interfaces that have the passed option specified
 #
 find_interfaces_by_option() # $1 = option
@@ -2743,7 +2734,7 @@ createactionchain() # $1 = chain name
 
 process_actions1() {
 	
-    ACTIONS="dropBcast dropNonSyn dropNotSyn rejNotSyn logNotSyn rLogNotSyn dLogNotSyn"
+    ACTIONS="dropBcast dropNonSyn dropNotSyn rejNotSyn logNotSyn rLogNotSyn dLogNotSyn dropInvalid"
     USEDACTIONS=
 
     strip_file actions
@@ -2916,6 +2907,9 @@ process_actions2() {
 		;;
 	    dLogNotSyn)
 		log_action dLogNotSyn DROP		
+		;;
+	    dropInvalid)
+		[ "COMMAND" != check ] && run_iptables -A dropInvalid -m state --state INVALID -j DROP
 		;;
 	    *)
 		f=action.$xaction

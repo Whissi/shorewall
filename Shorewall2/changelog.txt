@@ -1,40 +1,10 @@
-Changes since 2.0.2
+Changes since 2.0.3
 
-1) Remove restore files; don't generate them for non-statechanging
-   commands.
 
-2) Restore file now loads kernel modules.
+1) Fix security vulnerability involving temporary files/directories.
 
-3) Minor tweaks to the restore mechanism.
+2) Hack security fix so that it works under Slackware.
 
-4) Allow "!" in accounting rules.
+3) Correct mktempfile() for case where mktemp isn't installed.
 
-5) Backport bug fixes from stable (/var/lib/shorewall existence and
-   null common action).
-
-6) Add lots of overhead to [re]start in order to catch typing errors.
-
-7) Correct reporting of installation directory in install.sh.
-
-8) Load kernel modules before detecting capabilities.
-
-9) Added the 'rejectNonSyn' standard built-in action.
-
-10) Merged Tuomo Soini's patch to the install script.
-
-11) Correct brain-cramp in module loading fix (8 above).
-
-12) Add 'key' to sample tunnel file.
-
-13) Allow multiple saved configurations.
-
-14) Add %attr spec to /etc/init.d/shorewall in the .spec file.
-
-15) Fix rules that have bridge ports in both SOURCE and DEST. Update
-    comments in the rules file WRT "all" in SOURCE or DEST.
-
-16) Pass INVALID icmp packets through the blacklisting chains.
-
-17) Fix bogus code in procerss_tc_rule()
-
-18) Fix security vulnerability involving temporary files/directories.
+4) Implement 'dropInvalid' builtin action.

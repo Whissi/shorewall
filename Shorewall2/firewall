@@ -1087,10 +1087,12 @@ log_rule_limit() # $1 = log level, $2 = chain, $3 = disposition , $4 = rate limi
 	eval rulenum=\$${chain}_logrules
 
 	[ -z "$rulenum" ] && rulenum=1
+
+	prefix="$(printf "$LOGFORMAT" $chain $rulenum $disposition)${tag:+$tag }"
+
 	rulenum=$(($rulenum + 1))
 	eval ${chain}_logrules=$rulenum
 
-	prefix="$(printf "$LOGFORMAT" $chain $rulenum $disposition)${tag:+$tag }"
     else
 	prefix="$(printf "$LOGFORMAT" $chain $disposition)${tag:+$tag }"
     fi

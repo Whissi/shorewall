@@ -157,7 +157,7 @@ run_iptables() {
 
     if ! iptables $@ ; then
 	if [ -z "$stopping" ]; then
-	    error_message "ERROR: Command \"$@\" Failed"
+	    error_message "ERROR: Command \"iptables $@\" Failed"
 	    stop_firewall
 	    exit 2
 	fi
@@ -188,7 +188,7 @@ run_iptables2() {
 run_ip() {
     if ! ip $@ ; then
 	if [ -z "$stopping" ]; then
-	    error_message "ERROR: Command \"$@\" Failed"
+	    error_message "ERROR: Command \"ip $@\" Failed"
 	    stop_firewall
 	    exit 2
 	fi
@@ -201,7 +201,7 @@ run_ip() {
 run_tc() {
     if ! tc $@ ; then
 	if [ -z "$stopping" ]; then
-	    error_message "ERROR: Command \"$@\" Failed"
+	    error_message "ERROR: Command \"tc $@\" Failed"
 	    stop_firewall
 	    exit 2
 	fi
@@ -607,6 +607,46 @@ verify_interface()
 }
 
 #
+# Generate a match for decrypted packets
+#
+match_ipsec_in() # $1 = zone, $2 = host
+{
+    eval local hosts=\"\$${1}_ipsec_hosts\"
+
+    list_search $2 $hosts && echo "-m policy --pol ipsec --dir in"
+}
+
+#
+# Generate a match for packets that will be encrypted
+#
+match_ipsec_out() # $1 = zone, $2 = host
+{
+    eval local hosts=\"\$${1}_ipsec_hosts\"
+
+   list_search $2 $hosts && echo "-m policy --pol ipsec --dir out"
+}
+
+#
+# Generate a match for packets that have been decrypted and that will be encrypted
+#
+match_ipsec_inout() # $1 =input zone, $2 = input host, $3 = output zone, $4 = output host"
+{
+    local result="-m policy --pol ipsec"
+    eval local input_hosts=\"\$${1}_ipsec_hosts\"
+    eval local output_hosts=\"\$${3}_ipsec_hosts\"
+
+    if list_search $2 $input_hosts; then
+	result="$result --dir in"
+        if list_search $4 $output_hosts; then
+	    result="$result --dir out"
+        fi
+	echo $result
+    elif list_search $4 $output_hosts; then
+	echo "$result --dir out"
+    fi
+}
+
+#
 #
 # Find hosts in a given zone
 #
@@ -855,7 +895,10 @@ validate_hosts_file() {
 
 	    for option in $(separate_list $options) ; do
 		case $option in
-		    maclist|norfc1918|nobogons|blacklist|tcpflags|nosmurfs|newnotsyn|ipsec|-)
+		    maclist|norfc1918|nobogons|blacklist|tcpflags|nosmurfs|newnotsyn|-)
+			;;
+		    ipsec)
+			eval ${z}_ipsec_hosts=\"\$${z}_ipsec_hosts $interface:$host\"
 			;;
 		    routeback)
 			[ -z "$ports" ] && \
@@ -5598,7 +5641,7 @@ activate_rules()
 	if havenatchain $destchain ; then
 	    run_iptables -t nat -A $sourcechain $@ -j $destchain
 	elif [ -n "$BRIDGING" -a -f $TMP_DIR/physdev ]; then
-	    rm -f #TMP_DIR/physdev
+	    rm -f $TMP_DIR/physdev
 	fi
     }
 
@@ -5617,7 +5660,7 @@ activate_rules()
 		\$${sourcechain}_rule $@ -j $destchain
 	    eval ${sourcechain}_rule=\$\(\(\$${sourcechain}_rule + 1\)\)
 	elif [ -n "$BRIDGING" -a -f $TMP_DIR/physdev ]; then
-	    rm -f $TMP_DIR/physdev        
+	    rm -f $TMP_DIR/physdev
 	fi
     }
     #
@@ -5671,18 +5714,18 @@ activate_rules()
 	    interface=${host%%:*}
 	    networks=${host#*:}
 
-	    run_iptables -A OUTPUT -o $interface $(match_dest_hosts $networks) -j $chain1
+	    run_iptables -A OUTPUT -o $interface $(match_dest_hosts $networks) $(match_ipsec_out $zone $host) -j $chain1
 
 	    #
 	    # Add jumps from the builtin chains for DNAT and SNAT rules
 	    #
-	    addrulejump PREROUTING  $(dnat_chain $zone) -i $interface $(match_source_hosts $networks)
-	    addrulejump POSTROUTING $(snat_chain $zone) -o $interface $(match_dest_hosts $networks)
+	    addrulejump PREROUTING  $(dnat_chain $zone) -i $interface $(match_source_hosts $networks) $(match_ipsec_in $zone $host)
+	    addrulejump POSTROUTING $(snat_chain $zone) -o $interface $(match_dest_hosts $networks) $(match_ipsec_out $zone $host)
 
 	    run_iptables -A $(input_chain $interface) $(match_source_hosts $networks) -j $chain2
 
 	    [ -n "$complex" ] && \
-		run_iptables -A $(forward_chain $interface) $(match_source_hosts $networks) -j $frwd_chain
+		run_iptables -A $(forward_chain $interface) $(match_source_hosts $networks) $(match_ipsec_in $zone $host) -j $frwd_chain
 
 	    case $networks in
 		*.*.*.*)
@@ -5747,22 +5790,22 @@ activate_rules()
 		    # routeback was specified for this host group
 		    #
 		    if [ $zone != $zone1 -o $num_ifaces -gt 1 ] || list_search $host1 $routeback ; then
-			run_iptables -A $frwd_chain -o $interface1 $(match_dest_hosts $networks1) -j $chain			
+			run_iptables -A $frwd_chain -o $interface1 $(match_dest_hosts $networks1) $(match_ipsec_out $zone1 $host1) -j $chain			
 		    fi
 		done
 	    else
 		for host in $source_hosts; do
 		    interface=${host%%:*}
 		    networks=${host#*:}
-
+		    
 		    chain1=$(forward_chain $interface)
-
+		  
 		    for host1 in $dest_hosts; do
 			interface1=${host1%%:*}
 			networks1=${host1#*:}
 
 			if [ "$host" != "$host1" ] || list_search $host $routeback; then
-			    run_iptables -A $chain1 $(match_source_hosts $networks) -o $interface1 $(match_dest_hosts $networks1) -j $chain
+			    run_iptables -A $chain1 $(match_source_hosts $networks) -o $interface1 $(match_dest_hosts $networks1) $(match_ipsec_inout $zone $host $zone1 $host1) -j $chain
 			fi
 		    done
 		done
@@ -6338,6 +6381,8 @@ do_initialize() {
     RESTOREBASE=
     TMP_DIR=
 
+    ALL_INTERFACES=
+
     stopping=
     have_mutex=
     masq_seq=1
@@ -6524,7 +6569,6 @@ do_initialize() {
     fi
 
     rm -f $TMP_DIR/physdev
-
 }
 
 #

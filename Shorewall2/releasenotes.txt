@@ -172,3 +172,40 @@ New Features:
 
     b) It causes /etc/shorewall/shorewall.conf to be modified so that
     it won't be replaced by upgrades using RPM.
+
+7)  Some additional support has been added for the 2.6 Kernel IPSEC
+    implementation. To use this support, you must have installed the
+    IPSEC policy match patch from Patch-0-Matic-ng. That patch affects
+    both your kernel and iptables.
+
+    This new Shorewall support is enabled through use of the 'ipsec'
+    option in /etc/shorewall/hosts.
+
+    Example:
+
+    Under 2.4 Kernel FreeS/Wan:
+
+	  /etc/shorewall/zones:
+
+	  net	Net	The big bad Internet
+	  vpn	VPN	Remote Network
+
+	  /etc/shorewall/interfaces:
+
+	  net	eth0	...
+	  vpn	ipsec0	...
+
+    Under 2.6 Kernel with this new support:
+    
+	/etc/shorewall/zones (note the change of order):
+
+	vpn	VPN	Remote Network
+	net	Net	The big bad Internet
+
+	/etc/shorewall/interfaces:
+
+	net	eth0	...
+    
+	/etc/shorewall/hosts:
+
+	vpn	eth0:0.0.0.0/0	ipsec

@@ -66,8 +66,8 @@
 
       <listitem>
         <para><emphasis role="bold">/etc/shorewall/tcstart </emphasis>- A
-        user-supplied file that is sourced by Shorewall during &#34;shorewall
-        start&#34; and which you can use to define your traffic shaping
+        user-supplied file that is sourced by Shorewall during <quote>shorewall
+        start</quote> and which you can use to define your traffic shaping
         disciplines and classes. I have provided a <ulink
         url="ftp://ftp.shorewall.net/pub/shorewall/cbq">sample</ulink> that
         does table-driven CBQ shaping but if you read the traffic shaping
@@ -79,8 +79,8 @@
         As of 2.4.20, HTB is a standard part of the kernel but iproute2 must
         be patched in order to use it.</para>
 
-        <para>In tcstart, when you want to run the &#39;tc&#39; utility, use
-        the run_tc function supplied by shorewall if you want tc errors to
+        <para>In tcstart, when you want to run the <quote>tc</quote> utility,
+        use the run_tc function supplied by shorewall if you want tc errors to
         stop the firewall.</para>
 
         <para>You can generally use off-the-shelf traffic shaping scripts by
@@ -101,8 +101,7 @@
         <para><emphasis role="bold">/etc/shorewall/tcclear</emphasis> - A
         user-supplied file that is sourced by Shorewall when it is clearing
         traffic shaping. This file is normally not required as Shorewall&#39;s
-        method of clearing qdisc and filter definitions is pretty general.
-        </para>
+        method of clearing qdisc and filter definitions is pretty general.</para>
       </listitem>
     </itemizedlist>
 
@@ -119,17 +118,18 @@
 
       <listitem>
         <para>Supply an /etc/shorewall/tcstart script to configure your
-        traffic shaping rules. </para>
+        traffic shaping rules.</para>
       </listitem>
 
       <listitem>
         <para>Optionally supply an /etc/shorewall/tcclear script to stop
-        traffic shaping. That is usually unnecessary. </para>
+        traffic shaping. That is usually unnecessary.</para>
       </listitem>
 
       <listitem>
-        <para>If your tcstart script uses the &#39;fwmark&#39; classifier, you
-        can mark packets using entries in /etc/shorewall/tcrules.</para>
+        <para>If your tcstart script uses the <quote>fwmark</quote>
+        classifier, you can mark packets using entries in
+        /etc/shorewall/tcrules.</para>
       </listitem>
     </orderedlist>
 
@@ -145,12 +145,13 @@
 
       <listitem>
         <para>Do not supply /etc/shorewall/tcstart or /etc/shorewall/tcclear
-        scripts. </para>
+        scripts.</para>
       </listitem>
 
       <listitem>
-        <para>If your tcstart script uses the &#39;fwmark&#39; classifier, you
-        can mark packets using entries in /etc/shorewall/tcrules. </para>
+        <para>If your tcstart script uses the <quote>fwmark</quote>
+        classifier, you can mark packets using entries in
+        /etc/shorewall/tcrules.</para>
       </listitem>
     </orderedlist>
   </section>
@@ -182,19 +183,19 @@
       <listitem>
         <para>MARK - Specifies the mark value is to be assigned in case of a
         match. This is an integer in the range 1-255. Beginning with Shorewall
-        version 1.3.14, this value may be optionally followed by &#34;:&#34;
-        and either &#39;F&#39; or &#39;P&#39; to designate that the marking
-        will occur in the FORWARD or PREROUTING chains respectively. If this
-        additional specification is omitted, the chain used to mark packets
-        will be determined by the setting of the MARK_IN_FORWARD_CHAIN option
-        in shorewall.conf.</para>
+        version 1.3.14, this value may be optionally followed by
+        <quote>:</quote> and either <quote>F</quote> or <quote>P</quote> to
+        designate that the marking will occur in the FORWARD or PREROUTING
+        chains respectively. If this additional specification is omitted, the
+        chain used to mark packets will be determined by the setting of the
+        MARK_IN_FORWARD_CHAIN option in shorewall.conf.</para>
       </listitem>
 
       <listitem>
         <para>SOURCE - The source of the packet. If the packet originates on
-        the firewall, place &#34;fw&#34; in this column. Otherwise, this is a
-        comma-separated list of interface names, IP addresses, MAC addresses
-        in Shorewall Format and/or Subnets.</para>
+        the firewall, place <quote>fw</quote> in this column. Otherwise, this
+        is a comma-separated list of interface names, IP addresses, MAC
+        addresses in Shorewall Format and/or Subnets.</para>
 
         <para>Examples <programlisting>    eth0
     192.168.2.4,192.168.1.0/24</programlisting></para>
@@ -207,20 +208,20 @@
 
       <listitem>
         <para>PROTO - Protocol - Must be the name of a protocol from
-        /etc/protocol, a number or &#34;all&#34;</para>
+        /etc/protocol, a number or <quote>all</quote></para>
       </listitem>
 
       <listitem>
         <para>PORT(S) - Destination Ports. A comma-separated list of Port
         names (from /etc/services), port numbers or port ranges (e.g., 21:22);
-        if the protocol is &#34;icmp&#34;, this column is interpreted as the
-        destination icmp type(s).</para>
+        if the protocol is <quote>icmp</quote>, this column is interpreted as
+        the destination icmp type(s).</para>
       </listitem>
 
       <listitem>
         <para>CLIENT PORT(S) - (Optional) Port(s) used by the client. If
         omitted, any source port is acceptable. Specified as a comma-separate
-        list of port names, port numbers or port ranges. </para>
+        list of port names, port numbers or port ranges.</para>
       </listitem>
     </itemizedlist>
 
@@ -420,21 +421,21 @@
       <programlisting>run_tc qdisc add dev eth0 root handle 1: htb default 30
 
 run_tc class add dev eth0 parent 1: classid 1:1 htb rate 384kbit burst 15k
-echo &#34;   Added Top Level Class -- rate 384kbit&#34;
+echo <quote>   Added Top Level Class -- rate 384kbit</quote>
 
 run_tc class add dev eth0 parent 1:1 classid 1:10 htb rate 140kbit ceil 384kbit burst 15k prio 1
 run_tc class add dev eth0 parent 1:1 classid 1:20 htb rate 224kbit ceil 384kbit burst 15k prio 0
 run_tc class add dev eth0 parent 1:1 classid 1:30 htb rate 20kbit  ceil 384kbit burst 15k quantum 1500 prio 1
-echo &#34;   Added Second Level Classes -- rates 140kbit, 224kbit, 20kbit&#34;
+echo <quote>   Added Second Level Classes -- rates 140kbit, 224kbit, 20kbit</quote>
 
 run_tc qdisc add dev eth0 parent 1:10 pfifo limit 5run_tc qdisc add dev eth0 parent 1:20 pfifo limit 10
 run_tc qdisc add dev eth0 parent 1:30 pfifo limit 5
-echo &#34;   Enabled PFIFO on Second Level Classes&#34;
+echo <quote>   Enabled PFIFO on Second Level Classes</quote>
 
 run_tc filter add dev eth0 protocol ip parent 1:0 prio 1 handle 1 fw classid 1:10
 run_tc filter add dev eth0 protocol ip parent 1:0 prio 0 handle 2 fw classid 1:20
 run_tc filter add dev eth0 protocol ip parent 1:0 prio 1 handle 3 fw classid 1:30
-echo &#34;   Defined fwmark filters&#34;
+echo <quote>   Defined fwmark filters</quote>
 </programlisting>
     </blockquote>
 
@@ -446,12 +447,12 @@ echo &#34;   Defined fwmark filters&#34;
         <para>I wanted to allow up to 140kbits/second for traffic outbound
         from my DMZ (eth1 -- note that the ceiling is set to 384kbit so
         outbound DMZ traffic can use all available bandwidth if there is no
-        traffic from the local systems or from my laptop or firewall). </para>
+        traffic from the local systems or from my laptop or firewall).</para>
       </listitem>
 
       <listitem>
         <para>My laptop (which at that time connected via eth3) and local
-        systems (eth2) could use up to 224kbits/second. </para>
+        systems (eth2) could use up to 224kbits/second.</para>
       </listitem>
 
       <listitem>

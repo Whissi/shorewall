@@ -129,7 +129,7 @@
 
     <para>I have one system (Roadwarrior, 206.124.146.179) outside the
     firewall. This system, which runs Debian Sarge (testing) is used for
-    roadwarrior IPSEC testing and for checking my firewall "from the
+    roadwarrior VPN testing and for checking my firewall "from the
     outside".</para>
 
     <para>All administration and publishing is done using ssh/scp. I have a
@@ -250,7 +250,7 @@ net     $EXT_IF   206.124.146.255 dhcp,norfc1918,routefilter,logmartians,blackli
 loc     $INT_IF   detect          dhcp
 dmz     $DMZ_IF   -
 -       texas     -
-road    tun+      -
+road    tun+      -               routeback
 #LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
       </blockquote>
     </section>
@@ -442,74 +442,6 @@ DROP      loc:eth2:!192.168.1.0/24       #So that my braindead Windows[tm] XP sy
     </section>
 
     <section>
-      <title>/etc/racoon/setkey.conf</title>
-
-      <blockquote>
-        <para>This defines the policies for encryption to/from our second
-        home.</para>
-
-        <programlisting>flush;
-spdflush;
-
-spdadd 192.168.1.0/24     64.139.97.48/32     any -P out ipsec esp/tunnel/206.124.146.176-64.139.97.48/require;
-spdadd 64.139.97.48/32    192.168.1.0/24      any -P in  ipsec esp/tunnel/64.139.97.48-206.124.146.176/require;
-spdadd 64.139.97.48/32    206.124.146.176/32  any -P in  ipsec esp/tunnel/64.139.97.48-206.124.146.176/require;
-spdadd 206.124.146.176/32 64.139.97.48/32     any -P out ipsec esp/tunnel/206.124.146.176-64.139.97.48/require;
-</programlisting>
-      </blockquote>
-    </section>
-
-    <section>
-      <title>/etc/racoon/racoon.conf</title>
-
-      <blockquote>
-        <para>SA parameters for communication with our second home.</para>
-
-        <programlisting> path certificate "/etc/certs" ;
- listen
- {
-         isakmp 206.124.146.176;
- }
- 
-remote 64.139.97.48
-{
-        exchange_mode main ;
-        certificate_type x509 "gateway.pem" "gateway_key.pem";
-        verify_cert on;
-        my_identifier asn1dn ;
-        peers_identifier asn1dn ;
-        verify_identifier on ;
-        lifetime time 24 hour ;
-        proposal {
-                encryption_algorithm 3des;
-                hash_algorithm sha1;
-                authentication_method rsasig ;
-                dh_group 2 ;
-        }
-}
-
-sainfo address 192.168.1.0/24 any address 64.139.97.48/32 any
-{
-        pfs_group 2;
-        lifetime time 12 hour ;
-        encryption_algorithm 3des, blowfish, des, rijndael ;
-        authentication_algorithm hmac_sha1, hmac_md5 ;
-        compression_algorithm deflate ;
-}
-
-sainfo address 206.124.146.176/32 any address 64.139.97.48/32 any
-{
-        pfs_group 2;
-        lifetime time 12 hour ;
-        encryption_algorithm 3des, blowfish, des, rijndael ;
-        authentication_algorithm hmac_sha1, hmac_md5 ;
-        compression_algorithm deflate ;
-}
-</programlisting>
-      </blockquote>
-    </section>
-
-    <section>
       <title>Rules File (The shell variables are set in
       /etc/shorewall/params)</title>
 
@@ -657,30 +589,36 @@ ACCEPT          tx                              loc:192.168.1.5         all
       <para>This is my OpenVPN server configuration file:</para>
 
       <blockquote>
-        <programlisting>dev tun
-
+        <programlisting>ddev tun
+ 
 server 192.168.2.0 255.255.255.0
-
-dh /etc/openvpn/dh1024.pem
-
+ 
+dh dh1024.pem
+ 
 ca /etc/certs/cacert.pem
-
+ 
+crl-verify /etc/certs/crl.pem
+ 
 cert /etc/certs/gateway.pem
 key /etc/certs/gateway_key.pem
-
+ 
 port 1194
-
+ 
 comp-lzo
-
+ 
 user nobody
 group nogroup
-
+ 
 ping 15
 ping-restart 45
 ping-timer-rem
 persist-tun
 persist-key
-
+ 
+client-config-dir /etc/openvpn/clients
+ccd-exclusive
+client-to-client
+ 
 verb 3</programlisting>
       </blockquote>
     </section>
@@ -1167,7 +1105,7 @@ verb 3</programlisting>
  
 ip route add 192.168.1.0/24 via $5     #Access to Home Network
 ip route add 206.124.146.177/32 via $5 #So that DNS names will resolve in my
-                                       #Internal zone because the source IP will
+                                       #Internal Bind 9 view because the source IP will
                                        #be in 192.168.2.0/24</programlisting>
       </blockquote>
     </section>

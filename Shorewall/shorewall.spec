@@ -1,6 +1,6 @@
 %define name shorewall
-%define version 1.3.14
-%define release 0RC1
+%define version 2.0.0
+%define release 0Alpha1
 %define prefix /usr
 
 Summary: Shoreline Firewall is an iptables-based firewall for Linux systems.
@@ -71,11 +71,10 @@ fi
 %files 
 /etc/init.d/shorewall
 %attr(0700,root,root) %dir /etc/shorewall
-%attr(0700,root,root) %dir /usr/lib/shorewall
+%attr(0700,root,root) %dir /usr/share/shorewall
 %attr(0700,root,root) %dir /var/lib/shorewall
-%attr(0600,root,root) /usr/lib/shorewall/version
+%attr(0600,root,root) /usr/share/shorewall/version
 %attr(0600,root,root) /etc/shorewall/common.def
-%attr(0600,root,root) /etc/shorewall/icmp.def
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/shorewall.conf
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/zones
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/policy
@@ -99,12 +98,16 @@ fi
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/stop
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/stopped
 %attr(0544,root,root) /sbin/shorewall
-%attr(0444,root,root) /usr/lib/shorewall/functions
-%attr(0544,root,root) /usr/lib/shorewall/firewall
+%attr(0444,root,root) /usr/share/shorewall/functions
+%attr(0544,root,root) /usr/share/shorewall/firewall
 %doc documentation
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel
 
 %changelog
+* Thu Feb 06 2003 Tom Eastep <tom@shorewall.net>
+- Changes version to 2.0.0Alpha1
+- Delete icmp.def
+- Move firewall and version to /usr/share/shorewall
 * Tue Feb 04 2003 Tom Eastep <tom@shorewall.net>
 - Changes version to 1.3.14-0RC1
 * Tue Jan 28 2003 Tom Eastep <tom@shorewall.net>

@@ -54,7 +54,7 @@
 #        /etc/rc.d/rc.local file is modified to start the firewall.
 #
 
-VERSION=1.3.14RC1
+VERSION=2.0.0Alpha1
 
 usage() # $1 = exit status
 {
@@ -92,6 +92,18 @@ backup_file() # $1 = file to backup
         fi
     fi
 }
+
+delete_file() # $1 = file to delete
+{
+    if [ -z "$PREFIX" -a -f $1 -a ! -f ${1}-${VERSION}.bkout ]; then
+	if (mv $1 ${1}-${VERSION}.bkout); then
+	    echo
+	    echo "$1 moved to ${1}-${VERSION}.bkout"
+        else
+	    exit 1
+        fi
+    fi
+}    
 
 modify_rclocal()
 {
@@ -261,10 +273,10 @@ echo
 echo  "Shorewall script installed in ${PREFIX}${DEST}/$FIREWALL"
 
 #
-# Create /etc/shorewall, /usr/lib/shorewall and /var/shorewall if needed
+# Create /etc/shorewall, /usr/share/shorewall and /var/shorewall if needed
 #
 mkdir -p ${PREFIX}/etc/shorewall
-mkdir -p ${PREFIX}/usr/lib/shorewall
+mkdir -p ${PREFIX}/usr/share/shorewall
 mkdir -p ${PREFIX}/var/lib/shorewall
 #
 # Install the config file
@@ -300,10 +312,10 @@ if [ -f ${PREFIX}/var/lib/shorewall/functions ]; then
     rm -f  ${PREFIX}/var/lib/shorewall/functions
 fi
     
-install_file_with_backup functions ${PREFIX}/usr/lib/shorewall/functions 0444
+install_file_with_backup functions ${PREFIX}/usr/share/shorewall/functions 0444
 
 echo
-echo "Common functions installed in ${PREFIX}/usr/lib/shorewall/functions"
+echo "Common functions installed in ${PREFIX}/usr/share/shorewall/functions"
 #
 # Install the common.def file
 #
@@ -311,13 +323,11 @@ install_file_with_backup common.def ${PREFIX}/etc/shorewall/common.def 0444
 
 echo
 echo "Common rules installed in ${PREFIX}/etc/shorewall/common.def"
-#
-# Install the icmp.def file
-#
-install_file_with_backup icmp.def ${PREFIX}/etc/shorewall/icmp.def 0444
 
-echo
-echo "Common ICMP rules installed in ${PREFIX}/etc/shorewall/icmp.def"
+#
+# Delete the icmp.def file
+#
+delete_file icmp.def
 
 #
 # Install the policy file
@@ -531,7 +541,9 @@ fi
 # Backup the version file
 #
 if [ -z "$PREFIX" ]; then
-    if [ -f /usr/lib/shorewall/version ]; then
+    if [ -f /usr/share/shorewall/version ]; then
+	backup_file /usr/share/shorewall/version
+    elif [ -f /usr/lib/shorewall/version ]; then
 	backup_file /usr/lib/shorewall/version
     elif [ -n "$oldversion" ]; then
 	echo $oldversion > /usr/lib/shorewall/version-${VERSION}.bkout
@@ -542,10 +554,10 @@ fi
 #
 # Create the version file
 #
-echo "$VERSION" > ${PREFIX}/usr/lib/shorewall/version
-chmod 644 ${PREFIX}/usr/lib/shorewall/version
+echo "$VERSION" > ${PREFIX}/usr/share/shorewall/version
+chmod 644 ${PREFIX}/usr/share/shorewall/version
 #
-# Remove and create the symbolic link to the firewall script
+# Remove and create the symbolic link to the init script
 #
 
 if [ -z "$PREFIX" ]; then
@@ -554,12 +566,13 @@ if [ -z "$PREFIX" ]; then
     [ -L /usr/lib/shorewall/firewall ] && \
 	mv -f /usr/lib/shorewall/firewall /usr/lib/shorewall/firewall-${VERSION}.bkout
     rm -f /usr/lib/shorewall/init
-    ln -s ${DEST}/${FIREWALL} /usr/lib/shorewall/init
+    rm -f /usr/share/shorewall/init
+    ln -s ${DEST}/${FIREWALL} /usr/share/shorewall/init
 fi
 #
 # Install the firewall script
 #
-install_file_with_backup firewall ${PREFIX}/usr/lib/shorewall/firewall 0544
+install_file_with_backup firewall ${PREFIX}/usr/share/shorewall/firewall 0544
 
 if [ -z "$PREFIX" -a -n "$first_install" ]; then
     if [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then

@@ -1,7 +1,7 @@
 #!/bin/sh
 RCDLINKS="2,S41 3,S41 6,K41"
 #
-#     The Shoreline Firewall (Shorewall) Packet Filtering Firewall - V1.3 6/14/2002
+#     The Shoreline Firewall (Shorewall) Packet Filtering Firewall - V2.0 3/14/2003
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]	      
 #

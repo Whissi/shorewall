@@ -26,7 +26,7 @@
 #       You may only use this script to uninstall the version
 #       shown below. Simply run this script to remove Seattle Firewall
 
-VERSION=1.3.14RC1
+VERSION=2.0.0Alpha1
 
 usage() # $1 = exit status
 {
@@ -108,6 +108,7 @@ fi
 rm -rf /etc/shorewall
 rm -rf /usr/lib/shorewall
 rm -rf /var/lib/shorewall
+rm -rf /usr/share/shorewall
 
 echo "Shorewall Uninstalled"
 

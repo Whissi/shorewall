@@ -1,5 +1,5 @@
 ############################################################################
-# Shorewall 1.3 -- /etc/shorewall/common.def
+# Shorewall 2.0 -- /etc/shorewall/common.def
 #
 # This file defines the rules that are applied before a policy of 
 # DROP or REJECT is applied. In addition to the rules defined in this file,
@@ -36,5 +36,9 @@ run_iptables -A common -d 224.0.0.0/4     -j DROP
 # AUTH -- Silently reject it so that connections don't get delayed.
 #
 run_iptables -A common -p tcp --dport 113 -j reject
+############################################################################
+# DNS -- Silenty drop late replies
+run_iptables -A common -p udp --sport 53 -mstate --state NEW -j DROP
+
 
 

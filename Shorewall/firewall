@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-#     The Shoreline Firewall (Shorewall) Packet Filtering Firewall - V1.3 6/14/2002
+#     The Shoreline Firewall (Shorewall) Packet Filtering Firewall - V2.0 3/14/2003
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]	      
 #
@@ -95,7 +95,7 @@ error_message() # $* = Error Message
 #
 fatal_error() # $* = Error Message
 {
-    echo "   $@" >&2
+    echo "   Error: $@" >&2
     stop_firewall
     exit 2
 }
@@ -106,7 +106,7 @@ fatal_error() # $* = Error Message
 #
 startup_error() # $* = Error Message
 {
-    echo "   $@" >&2
+    echo "   Error: $@" >&2
     my_mutex_off
     [ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
     kill $$
@@ -225,13 +225,12 @@ run_tc() {
 # variable ${1}_exists and set its value to Yes to indicate that the chain now
 # exists.
 #
-createchain() # $1 = chain name, $2 = If non-null, don't create default rules
+createchain() # $1 = chain name, $2 = If "yes", create default rules
 {
     run_iptables -N $1
 
-    if [ $# -eq 1 ]; then
-	state="ESTABLISHED"
-	[ -n "$ALLOWRELATED" ] && state="$state,RELATED"
+    if [ $2 = yes ]; then
+	state="ESTABLISHED,RELATED"
 	run_iptables -A $1 -m state --state $state -j ACCEPT
 	[ -z "$NEWNOTSYN" ] && \
 	    run_iptables -A $1 -m state --state NEW -p tcp ! --syn -j newnotsyn
@@ -273,7 +272,7 @@ mangle_chain_exists() # $1 = chain name
 #
 ensurechain() # $1 = chain name
 {
-    havechain $1 || createchain $1
+    havechain $1 || createchain $1 yes
 }
 
 #
@@ -502,8 +501,11 @@ determine_interfaces() {
 # Determine the defined hosts in each zone and generate report
 #
 determine_hosts() {
-    do_a_zone()
-    {
+
+    for zone in $zones; do
+	hosts=`find_hosts $zone`
+	hosts=`echo $hosts` # Remove extra trash
+
 	eval interfaces=\$${zone}_interfaces
 
 	for interface in $interfaces; do
@@ -513,10 +515,7 @@ determine_hosts() {
 		hosts="$hosts $interface:0.0.0.0/0"
 	    fi
 	done
-    }
 
-    recalculate_interfaces()
-    {
 	interfaces=
 	
 	for host in $hosts; do
@@ -531,32 +530,6 @@ determine_hosts() {
 	done
 
 	eval ${zone}_interfaces="\$interfaces"
-    }
-
-    for zone in $zones; do
-	hosts=`find_hosts $zone`
-	hosts=`echo $hosts` # Remove extra trash
-
-	if [ -n "MERGE_HOSTS" ]; then
-	    #
-	    # Zone will be the union of its host and interface definitions
-	    #
-	    do_a_zone
-	    recalculate_interfaces
-	elif [ -n "$hosts" ]; then
-	    #
-	    # Zone is defined in terms of hosts -- derive the interface list
-	    # from the host list
-	    #
-	    recalculate_interface
-	else
-	    #
-	    # If no hosts are defined for a zone then the zone consists of any
-	    # host that can send us messages via the interfaces to the zone
-	    #
-	    do_a_zone
-	fi
-
 	eval ${zone}_hosts="\$hosts"
 
 	if [ -n "$hosts" ]; then
@@ -591,10 +564,16 @@ validate_interfaces_file() {
 	fi
 
 	[ "x$interface" = "xlo" ] && \
-	    startup_error "Error: The loopback interface (lo) may not be defined in /etc/shorewall/interfaces"
+	    startup_error "The loopback interface (lo) may not be defined in /etc/shorewall/interfaces"
 
 	list_search $interface $all_interfaces && \
-	    startup_error "Error: Duplicate Interface $interface"
+	    startup_error "Duplicate Interface $interface"
+
+	case $interface in
+	    *:*)
+		startup_error "Invalid Interface Name: $interface"
+		;;
+	esac
 	
 	all_interfaces="$all_interfaces $interface"
 	options=`separate_list $options`
@@ -606,13 +585,9 @@ validate_interfaces_file() {
 
 	for option in $options; do
 	    case $option in
-		dhcp|routestopped|norfc1918|multi|tcpflags)
+		dhcp|norfc1918|multi|tcpflags)
 		    ;;
 		routefilter|dropunclean|logunclean|blacklist|proxyarp|maclist|-)
-		    ;;
-		noping|filterping)
-		    [ -n "$OLD_PING_HANDLING" ] || \
-			startup_error "Option $option only allowed with old ping handling"
 		    ;;
 		*)
 		    error_message "Warning: Invalid option ($option) in record \"$r\""
@@ -620,7 +595,7 @@ validate_interfaces_file() {
 	    esac
 	done
 	
-    [ -z "$all_interfaces" ] && startup_error "Error: No Interfaces Defined"
+    [ -z "$all_interfaces" ] && startup_error "No Interfaces Defined"
 
     done < $TMP_DIR/interfaces
 }
@@ -642,7 +617,7 @@ validate_hosts_file() {
 
 	    for option in `separate_list $options`; do
 		case $option in
-		    routestopped|maclist|-)
+		    maclist|-)
 			;;
 		    *)
 			error_message "Warning: Invalid option ($option) in record \"$r\""
@@ -725,7 +700,7 @@ validate_rule() {
 		serv=$server
 		;;
 	    ~*)
-		startup_error "Error: Rule \"$rule\" - Destination may not be specified by MAC Address"
+		startup_error "Rule \"$rule\" - Destination may not be specified by MAC Address"
 		;;
 	    *)
 		dest_interface="-o $server"
@@ -771,21 +746,29 @@ validate_rule() {
 	REJECT)
 	    target=reject
 	    [ -n "$servport" ] && \
-		startup_error "Error: server port may not be specified in a REJECT rule;"\
+		startup_error "Server port may not be specified in a REJECT rule;"\
                               "rule: \"$rule\""
 	    ;;
 	ACCEPT)
 	    [ -n "$servport" ] && \
-		startup_error "Error: server port may not be specified in an ACCEPT rule;"\
+		startup_error "Server port may not be specified in an ACCEPT rule;"\
                               "rule: \"$rule\""
 	    ;;
+	LOG)
+	    [ -n "$servport" ] && \
+		startup_error "Server port may not be specified in an LOG rule;"\
+                              "rule: \"$rule\""
+
+	    [ -n "$loglevel" ] || \
+		startup_error "LOG target requires a log level"
+	    ;;
 	REDIRECT)
-	    [ -n "$serv" ] && startup_error "Error: REDIRECT rules cannot"\
+	    [ -n "$serv" ] && startup_error "REDIRECT rules cannot"\
 		" specify a server IP; rule: \"$rule\""
 	    servport=${servport:=$port}
 	    ;;
 	DNAT)
-	    [ -n "$serv" ] || startup_error "Error: DNAT rules require a" \
+	    [ -n "$serv" ] || startup_error "DNAT rules require a" \
 		" server address; rule: \"$rule\""
 	    ;;
 	esac
@@ -805,17 +788,17 @@ validate_rule() {
 		#
 		if [ -z "$NAT_ENABLED" ]; then
 		    startup_error \
-		    "Error - Rule \"$rule\" requires NAT which is disabled"
+		    "Rule \"$rule\" requires NAT which is disabled"
 		fi
 
 		if [ "$target" != "ACCEPT" ]; then
-		    startup_error "Error - Only ACCEPT rules may specify " \
+		    startup_error "Only ACCEPT rules may specify " \
 			"port mapping; rule \"$rule\""
 		fi
 	    fi
 	else
 	    [ -n "$addr" ] && startup_error \
-		  "Error: An ADDRESS ($addr) is only allowed in" \
+		  "An ADDRESS ($addr) is only allowed in" \
 		  " a DNAT or REDIRECT rule: \"$rule\""
 	fi
     }
@@ -835,9 +818,7 @@ validate_rule() {
     logtarget="$target"
     #
     # DNAT and REDIRECT targets were implemented in version 1.3 to replace
-    # an older syntax. We simply map the new syntax into the old and proceed;
-    # that way, people who have files with the old syntax don't need to
-    # convert right away.
+    # an older syntax. We simply map the new syntax into the old and proceed.
     #
     case $target in
     DNAT)
@@ -858,11 +839,10 @@ validate_rule() {
 	    servers="fw::$servers"
 	fi
 	;;
-    ACCEPT|DROP|REJECT)
+    ACCEPT|DROP|REJECT|LOG)
 	;;
     *)
-	startup_error "Error: Invalid target;" \
-		      " rule: \"$rule\""
+	startup_error "Invalid target; rule: \"$rule\""
 
     esac
 
@@ -873,7 +853,7 @@ validate_rule() {
 	clientzone="${clients%%:*}"
 	clients="${clients#*:}"
 	[ -z "$clientzone" -o -z "$clients" ] && \
-	   startup_error "Error: Empty source zone or qualifier: rule \"$rule\""
+	   startup_error "Empty source zone or qualifier: rule \"$rule\""
     fi
     
     if [ "$clientzone" = "${clientzone%\!*}" ]; then
@@ -883,13 +863,13 @@ validate_rule() {
 	clientzone="${clientzone%\!*}"
 
 	[ "$logtarget" = DNAT ] || [ "$logtarget" = REDIRECT ] ||\
-	    startup_error "Error: Exclude list only allowed with DNAT or REDIRECT"
+	    startup_error "Exclude list only allowed with DNAT or REDIRECT"
     fi
     #
     # Validate the Source Zone
     #
     if ! validate_zone $clientzone; then
-	[ "x$clientzone" = xall ] || startup_error "Error: Undefined Client Zone in rule \"$rule\""
+	[ "x$clientzone" = xall ] || startup_error "Undefined Client Zone in rule \"$rule\""
     fi
 
     source=$clientzone
@@ -910,18 +890,18 @@ validate_rule() {
 	    serverport="${servers#*:}"
 	    servers="${servers%:*}"
 	    [ -z "$serverzone" -o -z "$serverport" ] && \
-	        startup_error "Error: Empty destination zone or server port: rule \"$rule\""
+	        startup_error "Empty destination zone or server port: rule \"$rule\""
 	else
 	    serverport=
 	    [ -z "$serverzone" -o -z "$servers" ] && \
-	        startup_error "Error: Empty destination zone or qualifier: rule \"$rule\""
+	        startup_error "Empty destination zone or qualifier: rule \"$rule\""
 	fi
     fi
     #
     # Validate the destination zone
     #
     if ! validate_zone $serverzone; then
-	[ "x$serverzone" = xall ] || startup_error "Error: Undefined Server Zone in rule \"$rule\""
+	[ "x$serverzone" = xall ] || startup_error "Undefined Server Zone in rule \"$rule\""
     fi
 
     dest=$serverzone
@@ -976,13 +956,13 @@ validate_rules() # $1 = name of rules file
 	expandv clients servers protocol ports cports address
 	case "$target" in
 
-	ACCEPT*|DROP*|REJECT*|DNAT*|REDIRECT*)
+	ACCEPT*|DROP*|REJECT*|DNAT*|REDIRECT*|LOG*)
 	    rule="`echo $target $clients $servers $protocol $ports $cports $address`"
 	    validate_rule
 	    ;;
 	*)
 	    rule="`echo $target $clients $servers $protocol $ports $cports $address`"
-	    startup_error "Error: Invalid Target - rule \"$rule\" ignored"
+	    startup_error "Invalid Target - rule \"$rule\" ignored"
 	    ;;
 	esac
     done < $TMP_DIR/rules
@@ -1013,7 +993,7 @@ validate_policy()
 
     all_policy_chains=
 
-    strip_file policy $policy
+    strip_file policy
 
     while read client server policy loglevel synparams; do
 	expandv client server policy loglevel synparams
@@ -1027,7 +1007,7 @@ validate_policy()
 	    ;;
 	*)
 	    if ! validate_zone $client; then
-		startup_error "Error: Undefined zone $client"
+		startup_error "Undefined zone $client"
 	    fi
 	esac
 
@@ -1037,7 +1017,7 @@ validate_policy()
 	    ;;
 	*)
 	    if ! validate_zone $server; then
-		startup_error "Error: Undefined zone $server"
+		startup_error "Undefined zone $server"
 	    fi
 	esac
 
@@ -1045,17 +1025,17 @@ validate_policy()
 	ACCEPT|REJECT|DROP|CONTINUE)
 	    ;;
 	*)
-	    startup_error "Error: Invalid policy $policy"
+	    startup_error "Invalid policy $policy"
 	    ;;
 	esac
 
 	chain=${client}2${server}
 
 	[ "x$chain" = "x${FW}2${FW}" ] && \
-	    startup_error "Error: fw->fw policy not allowed: $policy"
+	    startup_error "fw->fw policy not allowed: $policy"
 	
 	if is_policy_chain $chain ; then
-	    startup_error "Error: Duplicate policy $policy"
+	    startup_error "Duplicate policy $policy"
 	fi
 
 	[ "x$loglevel" = "x-" ] && loglevel=
@@ -1275,7 +1255,7 @@ stop_firewall() {
 
     deleteallchains
 
-    hosts="`find_hosts_by_option routestopped`"
+    hosts=
 
     strip_file routestopped 
 
@@ -1522,8 +1502,6 @@ setup_proxy_arp() {
 
     > ${STATEDIR}/proxyarp
 
-    strip_file proxyarp
-
     while read address interface external haveroute; do
 	expandv address interface external haveroute
 	setup_one_proxy_arp
@@ -1578,7 +1556,7 @@ setup_mac_lists() {
 	    eth*)
 		;;
 	    *)
-		fatal_error "Error: MAC verification is only supported on ethernet devices: $interface"
+		fatal_error "MAC verification is only supported on ethernet devices: $interface"
 		;;
 	esac
 
@@ -1587,7 +1565,6 @@ setup_mac_lists() {
     #
     # Process the maclist file producing the verification rules
     #
-    strip_file maclist
 
     while read interface mac addresses; do
 	expandv interface mac addresses
@@ -1595,7 +1572,7 @@ setup_mac_lists() {
 	chain=`mac_chain $interface`
 
 	if ! havechain $chain ; then
-	    fatal_error "Error: No hosts on $interface have the maclist option specified"
+	    fatal_error "No hosts on $interface have the maclist option specified"
 	fi
 	
 	macpart=`mac_match $mac`
@@ -1629,7 +1606,7 @@ setup_mac_lists() {
 	blob=`ip addr show $interface 2> /dev/null | grep inet | sed 's/inet //; s/brd //; s/scope.*//;'`
 
 	[ -z "$blob" ] && \
-	    fatal_error "Error: Interface $interface must be up before Shorewall can start"
+	    fatal_error "Interface $interface must be up before Shorewall can start"
 
 	set -- $blob
 
@@ -1728,8 +1705,6 @@ setup_nat() {
     #
     > ${STATEDIR}/nat
 
-    strip_file nat
-
     echo "Setting up NAT..."
 
     while read external interface internal allints localnat; do
@@ -1807,7 +1782,7 @@ process_tc_rule()
 		    ;;
 		*)
 		    if ! list_search $source $all_interfaces; then
-			fatal_error "Error: Unknown interface $source in rule \"$rule\""
+			fatal_error "Unknown interface $source in rule \"$rule\""
 		    fi
 		    
 		    r="-i $source "
@@ -1976,19 +1951,18 @@ refresh_tc() {
 add_nat_rule() {
     local chain
 
-    # Be sure NAT is enabled
-
-    if [ -z "$NAT_ENABLED" ]; then
-	fatal_error \
-	    "Error - Rule \"$rule\" requires NAT which is disabled"
-    fi
-
-    # Onle ACCEPT (plus DNAT and REDIRECT) may result in NAT
-
-    if [ "$target" != "ACCEPT" ]; then
-	fatal_error "Error - Only DNAT and REDIRECT rules may specify " \
-	    "port mapping; rule \"$rule\""
-    fi
+    # Be sure we should and can NAT
+    
+    case $logtarget in
+	DNAT|REDIRECT)
+	    if [ -z "$NAT_ENABLED" ]; then
+		fatal_error "Rule \"$rule\" requires NAT which is disabled"
+	    fi
+	    ;;
+	*)
+	    fatal_error "Only DNAT and REDIRECT rules may specify port mapping; rule \"$rule\""
+	    ;;
+    esac
 
     # Parse SNAT address if any
 
@@ -2126,20 +2100,19 @@ add_a_rule()
     # Set destination variables
 
     dest_interface=
+    serv=
 
     [ -n "$server" ] && case "$server" in
     -)
-	serv=
 	;;
     *.*.*)
 	serv=$server
 	;;
     ~*)
-	fatal_error "Error: Rule \"$rule\" - Destination may not be specified by MAC Address"
+	fatal_error "Rule \"$rule\" - Destination may not be specified by MAC Address"
 	;;
     *)
 	dest_interface="-o $server"
-	serv=
 	;;
     esac
 
@@ -2180,8 +2153,7 @@ add_a_rule()
 	    ;;
 	all|ALL)
 	    [ -n "$port" ] && [ "x${port}" != "x-" ] && \
-		fatal_error "Port number not allowed with \"all\";" \
-				" rule: \"$rule\""
+		fatal_error "Port number not allowed with \"all\"; rule: \"$rule\""
 	    proto=
 	    ;;
 	related|RELATED)
@@ -2191,8 +2163,7 @@ add_a_rule()
 	*)
 	    state=
 	    [ -n "$port" ] && [ "x${port}" != "x-" ] && \
-		fatal_error "Port number not allowed with protocol " \
-		"\"$proto\"; rule: \"$rule\""
+		fatal_error "Port number not allowed with protocol \"$proto\"; rule: \"$rule\""
 	    ;;
     esac
 
@@ -2204,17 +2175,20 @@ add_a_rule()
 	REJECT)
 	    target=reject
 	    [ -n "$servport" ] && \
-		fatal_error "Error: server port may not be specified in a REJECT rule;"\
+		fatal_error "Server port may not be specified in a REJECT rule;"\
                             "rule: \"$rule\""
 	    ;;
 	REDIRECT)
-	    [ -n "$serv" ] && startup_error "Error: REDIRECT rules cannot"\
+	    [ -n "$serv" ] && startup_error "REDIRECT rules cannot"\
 		" specify a server IP; rule: \"$rule\""
 	    servport=${servport:=$port}
 	    ;;
 	DNAT)
-	    [ -n "$serv" ] || fatal_error "Error: DNAT rules require a" \
+	    [ -n "$serv" ] || fatal_error "DNAT rules require a" \
 		" server address; rule: \"$rule\""
+	    ;;
+	LOG)
+	    [ -z "$loglevel" ] && fatal_error "LOG requires log level"
 	    ;;
     esac
 
@@ -2260,7 +2234,7 @@ add_a_rule()
 	# Destination is a simple zone
 
 	[ -n "$addr" ] && fatal_error \
-	    "Error: An ORIGINAL DESTINATION ($addr) is only allowed in" \
+	    "An ORIGINAL DESTINATION ($addr) is only allowed in" \
 	    " a DNAT or REDIRECT: \"$rule\""
 
 	if [ -n "$loglevel" ]; then
@@ -2276,8 +2250,10 @@ add_a_rule()
 	    fi
 	fi
 
-	run_iptables2 -A $chain $proto $multiport $dest_interface $state \
-	    $cli $sports $dports -j $target
+	if [ $logtarget != LOG ]; then
+	    run_iptables2 -A $chain $proto $multiport $dest_interface $state \
+		$cli $sports $dports -j $target
+	fi
     fi
 }
 
@@ -2349,7 +2325,7 @@ process_rule() # $1 = target
 	clientzone="${clients%%:*}"
 	clients="${clients#*:}"
 	[ -z "$clientzone" -o -z "$clients" ] && \
-	   fatal_error "Error: Empty source zone or qualifier: rule \"$rule\""
+	   fatal_error "Empty source zone or qualifier: rule \"$rule\""
     fi
     
     if [ "$clientzone" = "${clientzone%\!*}" ]; then
@@ -2359,11 +2335,11 @@ process_rule() # $1 = target
 	clientzone="${clientzone%\!*}"
 
 	[ "$logtarget" = DNAT ] || [ "$logtarget" = REDIRECT ] ||\
-	    fatal_error "Error: Exclude list only allowed with DNAT or REDIRECT"
+	    fatal_error "Exclude list only allowed with DNAT or REDIRECT"
     fi
 
     if ! validate_zone $clientzone; then
-	fatal_error "Error: Undefined Client Zone in rule \"$rule\""
+	fatal_error "Undefined Client Zone in rule \"$rule\""
     fi
 
     # Parse and validate destination
@@ -2383,16 +2359,16 @@ process_rule() # $1 = target
 	    serverport="${servers#*:}"
 	    servers="${servers%:*}"
 	    [ -z "$serverzone" -o -z "$serverport" ] && \
-	        fatal_error "Error: Empty destination zone or server port: rule \"$rule\""
+	        fatal_error "Empty destination zone or server port: rule \"$rule\""
 	else
 	    serverport=
 	    [ -z "$serverzone" -o -z "$servers" ] && \
-	        startup_error "Error: Empty destination zone or qualifier: rule \"$rule\""
+	        startup_error "Empty destination zone or qualifier: rule \"$rule\""
 	fi
     fi
 
     if ! validate_zone $serverzone; then
-	fatal_error "Error: Undefined Server Zone in rule \"$rule\""
+	fatal_error "Undefined Server Zone in rule \"$rule\""
     fi
 
     dest=$serverzone
@@ -2466,12 +2442,10 @@ process_rules() # $1 = name of rules file
 	done
     }
 
-    strip_file rules $1
-
     while read xtarget xclients xservers xprotocol xports xcports xaddress; do
 	case "$xtarget" in
 
-	    ACCEPT|ACCEPT:*|DROP|DROP:*|REJECT|REJECT:*|DNAT|DNAT-|DNAT:*|DNAT-:*|REDIRECT|REDIRECT:*)
+	    ACCEPT|ACCEPT:*|DROP|DROP:*|REJECT|REJECT:*|DNAT|DNAT-|DNAT:*|DNAT-:*|REDIRECT|REDIRECT:*|LOG|LOG:*)
 		expandv xclients xservers xprotocol xports xcports xaddress
 
 		if [ "x$xclients" = xall ]; then
@@ -2493,7 +2467,7 @@ process_rules() # $1 = name of rules file
 		;;
 	    *)
 		rule="`echo $xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress`"
-		fatal_error "Error: Invalid Target in rule \"$rule\""
+		fatal_error "Invalid Target in rule \"$rule\""
 		;;
 	    
 	esac
@@ -2871,7 +2845,7 @@ default_policy() # $1 = client $2 = server
     if [ -n "$chain1" ]; then
 	apply_default $1 $2
     else
-	fatal_error "Error: No default policy for zone $1 to zone $2"
+	fatal_error "No default policy for zone $1 to zone $2"
     fi
 }
 
@@ -2921,7 +2895,7 @@ rules_chain() # $1 = source zone, $2 = destination zone
 
     [ -n "$chain" ] && { echo $chain; return; }
 
-    fatal_error "Error: No appropriate chain for zone $1 to zone $2"
+    fatal_error "No appropriate chain for zone $1 to zone $2"
 }
 
 #
@@ -2975,7 +2949,7 @@ setup_masq()
 	interface=${fullinterface%:*}
 
 	if ! list_search $interface $all_interfaces; then
-	    fatal_error "Error: Unknown interface $interface"
+	    fatal_error "Unknown interface $interface"
 	fi
 	
 	if [ "$subnet" = "${subnet%!*}" ]; then
@@ -3348,7 +3322,7 @@ initialize_netfilter () {
 
     determine_zones
 
-    [ -z "$zones" ] && startup_error "ERROR: No Zones Defined"
+    [ -z "$zones" ] && startup_error "No Zones Defined"
 
     display_list "Zones:" $zones
 
@@ -3368,6 +3342,17 @@ initialize_netfilter () {
 
     determine_interfaces
     determine_hosts
+    
+    #
+    # The some files might be large so strip them while the firewall is still running
+    # (restart command). This reduces the length of time that the firewall isn't
+    # accepting new connections.
+    #
+
+    strip_file rules
+    strip_file proxyarp
+    strip_file maclist
+    strip_file nat
 
     deletechain shorewall
 
@@ -3399,7 +3384,8 @@ initialize_netfilter () {
     #
     run_iptables -A INPUT   -p udp --dport 53 -j ACCEPT # I suppose that there
                                                         # is an idiot somewhere
-                                                        # who needs this
+                                                        # who needs this    strip_file nat
+
     run_iptables -A OUTPUT  -p udp --dport 53 -j ACCEPT
     run_iptables -A FORWARD -p udp --dport 53 -j ACCEPT
 
@@ -3458,13 +3444,6 @@ initialize_netfilter () {
 #
 build_common_chain() {
     
-    if [ -n "$OLD_PING_HANDLING" ]; then
-        #
-        # PING
-        #
-	[ -n "$FORWARDPING" ] && \
-	    run_iptables -A icmpdef -p icmp --icmp-type echo-request -j ACCEPT
-    fi
     #
     # Common ICMP rules
     #
@@ -3618,7 +3597,7 @@ add_common_rules() {
 		logdrop|DROP|RETURN)
 		    ;;
 		*)
-		    fatal_error "   Error:Illegal target ($target) for $subnet"
+		    fatal_error "Illegal target ($target) for $subnet"
 		    ;;
 	    esac
 
@@ -3780,7 +3759,7 @@ apply_policy_rules() {
 	    # related sessions associated with sessions going
 	    # in the other direction
 	    #
-	    createchain $chain
+	    createchain $chain yes
 
 	    #
 	    # If either client or server is 'all' then this MUST be
@@ -4017,26 +3996,6 @@ define_firewall() # $1 = Command (Start or Restart)
 
     process_rules $rules
 
-    if [ -n "$OLD_PING_HANDLING" ]; then
-	echo "Setting up ICMP Echo handling..."
-
-	filterping_interfaces="`find_interfaces_by_option filterping`"
-	noping_interfaces="`find_interfaces_by_option noping`"
-
-	for interface in $all_interfaces; do
-	    if ! list_search $interface $filterping_interfaces; then
-		if list_search $interface $noping_interfaces; then
-		    target=DROP
-		else
-		    target=ACCEPT
-		fi
-		
-		run_iptables -A `input_chain $interface` \
-		    -p icmp --icmp-type echo-request -j $target
-	    fi
-	done
-    fi
-
     policy=`find_file policy`
 
     echo "Processing $policy..."
@@ -4086,7 +4045,7 @@ check_config() {
 	
     determine_zones
 	
-    [ -z "$zones" ] && startup_error "ERROR: No Zones Defined"
+    [ -z "$zones" ] && startup_error "No Zones Defined"
 	
     display_list "Zones:" $zones
 	
@@ -4109,7 +4068,7 @@ check_config() {
 	
     echo "Validating policy file..."
 	
-    validate_policy	
+    validate_policy 	
 	
     rm -rf $TMP_DIR
 
@@ -4129,7 +4088,7 @@ refresh_firewall()
 
     validate_interfaces_file
 
-    [ -z "$zones" ] && startup_error "ERROR: No Zones Defined"
+    [ -z "$zones" ] && startup_error "No Zones Defined"
 
     determine_interfaces
 
@@ -4171,7 +4130,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
     do_iptables() # $@ = command
     {
 	if ! iptables $@ ; then
-	    startup_error "Error: can't add $1 to zone $2"
+	    startup_error "Can't add $1 to zone $2"
 	fi
     }
 
@@ -4196,26 +4155,25 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
     #
     zone=$2
 
-    validate_zone $zone || startup_error "Error: Unknown zone: $zone"
+    validate_zone $zone || startup_error "Unknown zone: $zone"
 
-    [ "$zone" = $FW ] && startup_error "Error: Can't add $1 to firewall zone"
+    [ "$zone" = $FW ] && startup_error "Can't add $1 to firewall zone"
     #
     # Be sure that Shorewall has been restarted using a DZ-aware version of the code
     #
-    [ -f ${STATEDIR}/chains ] || startup_error "Error: ${STATEDIR}/chains -- file not found"
-    [ -f ${STATEDIR}/zones ]  || startup_error "Error: ${STATEDIR}/zones -- file not found"
+    [ -f ${STATEDIR}/chains ] || startup_error "${STATEDIR}/chains -- file not found"
+    [ -f ${STATEDIR}/zones ]  || startup_error "${STATEDIR}/zones -- file not found"
     #
     # Be sure that the interface was present at last [re]start
     #
     if ! chain_exists `input_chain $interface` ; then
-	startup_error "Error: Unknown interface $interface"
+	startup_error "Unknown interface $interface"
     fi
     #
     # Build lists of interfaces with special rules
     #
     dhcp_interfaces=`find_interfaces_by_option dhcp`
     blacklist_interfaces=`find_interfaces_by_option blacklist`
-    filterping_interfaces=`find_interfaces_by_option filterping`
     maclist_interfaces=`find_interfaces_by_option maclist`
     tcpflags_interfaces=`find_interfaces_by_option tcpflags`
     #
@@ -4234,7 +4192,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 	    for h in $hosts; do
 		if [ "$h" = "$newhost" ]; then
 		    rm -f ${STATEDIR}/zones_$$
-		    startup_error "Error: $1 already in zone $zone"
+		    startup_error "$1 already in zone $zone"
 		fi
 	    done
 	    
@@ -4271,10 +4229,6 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		    rulenum=3
 		else
 		    rulenum=2
-		fi
-
-		if list_search $interface $filterping_interfaces; then
-		    rulenum=$(($rulenum + 1))
 		fi
 
 		if list_search $interface $maclist_interfaces; then
@@ -4417,19 +4371,19 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
 
     zone=$2
 
-    validate_zone $zone || startup_error "Error: Unknown zone: $zone"
+    validate_zone $zone || startup_error "Unknown zone: $zone"
 
-    [ "$zone" = $FW ] && startup_error "Error: Can't remove $1 from firewall zone"
+    [ "$zone" = $FW ] && startup_error "Can't remove $1 from firewall zone"
     #
     # Be sure that Shorewall has been restarted using a DZ-aware version of the code
     #
-    [ -f ${STATEDIR}/chains ] || startup_error "Error: ${STATEDIR}/chains -- file not found"
-    [ -f ${STATEDIR}/zones ]  || startup_error "Error: ${STATEDIR}/zones -- file not found"
+    [ -f ${STATEDIR}/chains ] || startup_error "${STATEDIR}/chains -- file not found"
+    [ -f ${STATEDIR}/zones ]  || startup_error "${STATEDIR}/zones -- file not found"
     #
     # Be sure that the interface was present at last [re]start
     #
     if ! chain_exists `input_chain $interface` ; then
-	startup_error "Error: Unknown interface $interface"
+	startup_error "Unknown interface $interface"
     fi
     #
     # Normalize the first argument to this function
@@ -4555,7 +4509,7 @@ do_initialize() {
     FW=
     SUBSYSLOCK=
     STATEDIR=
-    ALLOWRELATED=
+    ALLOWRELATED=Yes
     LOGRATE=
     LOGBURST=
     LOGPARMS=
@@ -4572,7 +4526,6 @@ do_initialize() {
     NAT_BEFORE_RULES=
     MULTIPORT=
     DETECT_DNAT_IPADDRS=
-    MERGE_HOSTS=
     MUTEX_TIMEOUT=
     NEWNOTSYN=
     LOGNEWNOTSYN=
@@ -4583,8 +4536,7 @@ do_initialize() {
     TCP_FLAGS_LOG_LEVEL=
     RFC1918_LOG_LEVEL=
     MARK_IN_FORWARD_CHAIN=
-    OLD_PING_HANDLING=
-    SHARED_DIR=/usr/lib/shorewall
+    SHARED_DIR=/usr/share/shorewall
     FUNCTIONS=
     VERSION_FILE=
 
@@ -4633,6 +4585,8 @@ do_initialize() {
     [ -z "$FW" ] && FW=fw
 
     ALLOWRELATED="`added_param_value_yes ALLOWRELATED $ALLOWRELATED`"
+    [ -n "$ALLOWRELATED" ] || \
+	startup_error "ALLOWRELATED=No is not supported"
     NAT_ENABLED="`added_param_value_yes NAT_ENABLED $NAT_ENABLED`"
     MANGLE_ENABLED="`added_param_value_yes MANGLE_ENABLED $MANGLE_ENABLED`"
     ADD_IP_ALIASES="`added_param_value_yes ADD_IP_ALIASES $ADD_IP_ALIASES`"
@@ -4668,8 +4622,10 @@ do_initialize() {
     NAT_BEFORE_RULES=`added_param_value_yes NAT_BEFORE_RULES $NAT_BEFORE_RULES`
     MULTIPORT=`added_param_value_no MULTIPORT $MULTIPORT`
     DETECT_DNAT_IPADDRS=`added_param_value_no DETECT_DNAT_IPADDRS $DETECT_DNAT_IPADDRS`
-    MERGE_HOSTS=`added_param_value_no MERGE_HOSTS $MERGE_HOSTS`
     FORWARDPING=`added_param_value_no FORWARDPING $FORWARDPING`
+    [ -n "$FORWARDPING" ] && \
+	startup_error "FORWARDPING=Yes is no longer supported"
+
     NEWNOTSYN=`added_param_value_yes NEWNOTSYN $NEWNOTSYN`
 
     maclist_target=reject
@@ -4709,10 +4665,6 @@ do_initialize() {
     else
 	CLEAR_TC=
     fi
-    OLD_PING_HANDLING=`added_param_value_yes OLD_PING_HANDLING $OLD_PING_HANDLING`
-
-    [ -z "$OLD_PING_HANDLING" -a -n "$FORWARDPING" ] && \
-	startup_error "FORWARDPING=Yes is incompatible with OLD_PING_HANDLING=No"
 
     run_user_exit params
 

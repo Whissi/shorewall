@@ -3330,7 +3330,7 @@ apply_policy_rules() {
 		run_iptables -I $chain 2 -p tcp --syn -j @$chain
 	else
 	    #
-	    # A wild-card rule. Create the chain and add policy
+	    # The chain doesn't exist. Create the chain and add policy
 	    # rules
 	    #
 	    # We must include the ESTABLISHED and RELATED state
@@ -3340,6 +3340,13 @@ apply_policy_rules() {
 	    #
 	    createchain $chain
 
+	    #
+	    # If either client or server is 'all' then this MUST be
+	    # a policy chain and we must apply the appropriate policy rules
+	    #
+	    # Otherwise, this is a canonical chain which will be handled in
+	    # the for loop below
+	    #
 	    [ "$client" = "all" -o "$server" = "all" ] && \
 		policy_rules $chain $policy $loglevel
 

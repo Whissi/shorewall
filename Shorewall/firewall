@@ -1187,7 +1187,7 @@ setup_tunnels() # $1 = name of tunnels file
 	echo "   OPENVPN tunnel to $1:$p defined."
     }
 
-    setup_one_generic() # $1 = gateway, $2 = kind:protocol[:port]
+    setup_one_generic() # $1 = gateway, $2 = kind:protocol[:port], $3 = Gateway Zone
     {
 	local procotol
 	local p=
@@ -1207,10 +1207,20 @@ setup_tunnels() # $1 = name of tunnels file
 		;;
 	esac
 
-	p=${p+=--dport $p}
+	p=${p:+--dport $p}
 
 	addrule $inchain  -p $protocol -s $1 $p -j ACCEPT
 	addrule $outchain -p $protocol -d $1 $p -j ACCEPT
+
+	for z in `separate_list $3`; do
+	    if validate_zone $z; then
+		addrule ${FW}2${z} -p $protocol $p -j ACCEPT
+		addrule ${z}2${FW} -p $protocol $p -j ACCEPT
+	    else
+		error_message "Warning: Invalid gateway zone ($z)" \
+		" -- Tunnel \"$tunnel\" may encounter problems"
+	    fi
+	done
 
 	echo "   GENERIC tunnel to $1:$p defined."
     }
@@ -1249,7 +1259,7 @@ setup_tunnels() # $1 = name of tunnels file
 		    setup_one_openvpn $gateway $kind
 		    ;;
 		generic:*|GENERIC:*)
-		    setup_one_generic $gateway $kind
+		    setup_one_generic $gateway $kind $z1
 		    ;;
 		*)
 		    error_message "Tunnels of type $kind are not supported:" \
@@ -3021,16 +3031,18 @@ setup_masq()
 	    ;;
 	esac
 
-	if [ -n "$address" -a -n "$ADD_SNAT_ALIASES" ]; then
-	    for addr in `ip_range $address` ; do
-		if ! list_search $addr $aliases_to_add; then
-		    aliases_to_add="$aliases_to_add $addr $fullinterface"
-		    case $fullinterface in
-		    *:*)
-			fullinterface=${fullinterface%:*}:$((${fullinterface#*:} + 1 ))
-			;;
-		    esac
-		fi
+	if [ -n "$addresses" -a -n "$ADD_SNAT_ALIASES" ]; then
+	    for address in `separate_list $addresses`; do
+		for addr in `ip_range $address` ; do
+		    if ! list_search $addr $aliases_to_add; then
+			aliases_to_add="$aliases_to_add $addr $fullinterface"
+			case $fullinterface in
+			    *:*)
+				fullinterface=${fullinterface%:*}:$((${fullinterface#*:} + 1 ))
+				;;
+			esac
+		    fi
+		done
 	    done
 	fi
 
@@ -3062,19 +3074,26 @@ setup_masq()
 	    destnet="-d $destnet"
 	fi
 
+	if [ -n "$addresses" ]; then
+	    temp=
+	    for address in `separate_list $addresses`; do
+		temp="$temp --to-source $address"
+	    done
+	fi
+
 	if [ -n "$subnet" ]; then
 	    for s in $subnet; do
-		if [ -n "$address" ]; then
-		    addnatrule $chain -s $s $destnet -j SNAT --to-source $address
-		    echo "   To $destination from $s through ${interface} using $address"
+		if [ -n "$addresses" ]; then
+		    addnatrule $chain -s $s $destnet -j SNAT $temp
+		    echo "   To $destination from $s through ${interface} using $addresses"
 		else
 		    addnatrule $chain -s $s $destnet -j MASQUERADE
 		    echo "   To $destination from $s through ${interface}"
 		fi
 	    done
 	elif [ -n "$address" ]; then
-	    addnatrule $chain $destnet -j SNAT --to-source $address
-	    echo "   To $destination from $source through ${interface} using $address"
+	    addnatrule $chain $destnet -j SNAT $temp
+	    echo "   To $destination from $source through ${interface} using $addresses"
 	else
 	    addnatrule $chain $destnet -j MASQUERADE
 	    echo "   To $destination from $source through ${interface}"
@@ -3086,8 +3105,8 @@ setup_masq()
 
     [ -n "$NAT_ENABLED" ] && echo "Masqueraded Subnets and Hosts:"
 
-    while read fullinterface subnet address; do
-	expandv fullinterface subnet address
+    while read fullinterface subnet addresses; do
+	expandv fullinterface subnet addresses
 	[ -n "$NAT_ENABLED" ] && setup_one || \
 	    error_message "Warning: NAT disabled; masq rule ignored"
     done < $TMP_DIR/masq

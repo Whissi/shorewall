@@ -1,4 +1,4 @@
-Shorewall 2.0.0-Beta1
+Shorewall 2.0.0-Beta2
 
 ----------------------------------------------------------------------
 Problems Corrected since prior version.
@@ -27,13 +27,14 @@ Issues when migrating from Shorewall 1.4.x to Shorewall 2.0.0:
        /etc/shorewall/common.def
        /etc/shorewall/common
        /etc/shorewall/icmpdef
+       /etc/shorewall/action.template
 
    The /etc/shorewall/action file now allows an action to be
    designated as the "common" action for a particular policy type by
    following the action name with ":" and the policy (DROP, REJECT or
    ACCEPT).
 
-   The file /etc/shorewall/actions.std has been added to define those
+   The file /usr/share/shorewall/actions.std has been added to define those
    actions that are released as part of Shorewall. In that file are
    two actions as follows:
 
@@ -51,15 +52,20 @@ Issues when migrating from Shorewall 1.4.x to Shorewall 2.0.0:
    policies but does not specify such an action in the default
    configuration.
 
-   /etc/shorewall/actions contains an INCLUDE for
-   /etc/shorewall/actions.std. This causes a large number of actions to
-   be defined; in the current release:
+   The file /usr/share/shorewall/actions.std catalogs the standard 
+   actions and is processed prior to /etc/shorewall/actions. This
+   causes a large number of actions to be defined. The files which
+   define these aactions are also located in /usr/share/shorewall as
+   is the he action template file (action.template).
 
-      DropBcast       #Silently Drops Broadcast Traffic
+   In the initial release, the following actions are defined:
+
+      dropBcast       #Silently Drops Broadcast Traffic
+      dropNonSyn      #Silently Drop Non-syn TCP packets
+
       DropSMB         #Silently Drops Microsoft SMB Traffic
       RejectSMB       #Silently Reject Microsoft SMB Traffic
       DropUPnP        #Silently Drop UPnP Probes
-      DropNonSyn      #Silently Drop Non-syn TCP packets
       RejectAuth      #Silently Reject Auth
       DropPing        #Silently Drop Ping
       DropDNSrep      #Silently Drop DNS Replies
@@ -77,47 +83,38 @@ Issues when migrating from Shorewall 1.4.x to Shorewall 2.0.0:
       AllowTelnet     #Allow Telnet Access (not recommended for use over the
                       #Internet)
       AllowVNC        #Allow VNC, Displays 0-9
+      AllowVNCL	      #Allow access to VNC viewer in listen mode
       AllowNTP        #Allow Network Time Protocol (ntpd)
       AllowRdate      #Allow remote time (rdate).
       AllowNNTP       #Allow network news (Usenet).
       AllowTrcrt      #Allows Traceroute (20 hops)
       AllowSNMP	      #Allows SNMP (including traps)
+      AllowPCA	      #Allows PCAnywhere (tm).
 
       Drop:DROP       #Common rules for DROP policy
       Reject:REJECT   #Common Action for Reject policy
 
-   If you don't want to create all of the action chains, you can remove
-   the INCLUDE and only include those actions that you need. Here's my
-   /etc/shorewall/actions file:
+   if you want to redefine any of the Shorewall-defined actions, 
+   simply copy the appropriate action file from /usr/share/shorewall
+   to /etc/shorewall and modify the copy as desired. Your modified
+   copy will be used rather than the original one in
+   /usr/share/shorewall. 
 
-      DropBcast       #Silently Drops Broadcast Traffic
-      DropSMB         #Silently Drops Microsoft SMB Traffic
-      RejectSMB       #Silently Reject Microsoft SMB Traffic
-      DropUPnP        #Silently Drop UPnP Probes
-      DropNonSyn      #Silently Drop Non-syn TCP packets
-      RejectAuth      #Silently Reject Auth
-      DropPing        #Silently Drop Ping
-      DropDNSrep      #Silently Drop DNS Replies
-      AllowPing       #Accept Ping
+       Note: The 'dropBcast' and 'dropNonSyn' actions are built into
+       Shorewall and may not be changed.
 
-      Mirrors         #Accept traffic from Shorewall Mirrors
-
-      MyDrop:DROP
-      MyReject:REJECT
-
-   At any rate, if you have an existing /etc/shorewall/actions file,
-   then you MUST either add "INCLUDE /etc/shorewall/actions.std" to
-   that file or you must include the definitions similar to mine above
-   in your /etc/shorewall/actions file.
+   Beginning with version 2.0.0-Beta2, Shorewall will only create a
+   chain for those actions that are actually used.
 
 5) The /etc/shorewall directory no longer contains a 'users' file or a
    'usersets' file. Similar functionality is now available using
    user-defined actions.
 
-   Now, action files created by copying /etc/shorewall/action.template
-   may now specify a USER and or GROUP name/id in the final column just
-   like in the rules file (see below). It is thus possible to create
-   actions that control traffic from a list of users and/or groups.
+   Now, action files created by copying
+   /usr/share/shorewall/action.template may now specify a USER and or
+   GROUP name/id in the final column just like in the rules file (see
+   below). It is thus possible to create actions that control traffic
+   from a list of users and/or groups.
 
    The last column in /etc/shorewall/rules is now labeled USER/GROUP
    and may contain:
@@ -165,6 +162,17 @@ New Features:
    follow the tunnel type ("ipsec" or "ipsecnet") with ":noah"
    (e.g., "ipsec:noah"), then Shorewall will only create rules for
    ESP (protocol 50) and will not create rules for AH (protocol 51).
+
+7) A new DISABLE_IPV6 option has been added to shorewall.conf. When
+   this option is set to "Yes", Shorewall will set the policy for the
+   IPv6 INPUT, OUTPUT and FORWARD chains to DROP during "shorewall
+   [re]start" and "shorewall stop". Regardless of the setting of this
+   variable, "shorewall clear" will silently attempt to set these
+   policies to ACCEPT.
+
+   If this option is not set in your existing shorewall.conf then a
+   setting of DISABLE_IPV6=No is assumed in which case, Shorewall will
+   not touch any IPv6 settings except during "shorewall clear".
 
 
  

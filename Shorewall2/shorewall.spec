@@ -72,8 +72,6 @@ fi
 %attr(0700,root,root) %dir /etc/shorewall
 %attr(0700,root,root) %dir /usr/share/shorewall
 %attr(0700,root,root) %dir /var/lib/shorewall
-%attr(0600,root,root) /usr/share/shorewall/version
-%attr(0600,root,root) /etc/shorewall/actions.std
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/shorewall.conf
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/zones
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/policy
@@ -98,40 +96,44 @@ fi
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/stopped
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/ecn
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/accounting
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.AllowAuth
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.AllowDNS
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.AllowFTP
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.AllowIMAP
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.AllowNNTP
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.AllowNTP
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.AllowPCA
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.AllowPing
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.AllowPOP3
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.AllowRdate
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.AllowSMB
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.AllowSMTP
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.AllowSNMP
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.AllowSSH
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.AllowTelnet
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.AllowTrcrt
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.AllowVNC
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.AllowVNCL*
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.AllowWeb
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.Drop
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.DropDNSrep
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.DropPing
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.DropSMB
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.DropUPnP
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.Reject
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.RejectAuth
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.RejectSMB
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.template
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/actions
 
 %attr(0544,root,root) /sbin/shorewall
+
+%attr(0600,root,root) /usr/share/shorewall/version
+%attr(0600,root,root) /usr/share/shorewall/actions.std
+%attr(0600,root,root) /usr/share/shorewall/action.AllowAuth
+%attr(0600,root,root) /usr/share/shorewall/action.AllowDNS
+%attr(0600,root,root) /usr/share/shorewall/action.AllowFTP
+%attr(0600,root,root) /usr/share/shorewall/action.AllowIMAP
+%attr(0600,root,root) /usr/share/shorewall/action.AllowNNTP
+%attr(0600,root,root) /usr/share/shorewall/action.AllowNTP
+%attr(0600,root,root) /usr/share/shorewall/action.AllowPCA
+%attr(0600,root,root) /usr/share/shorewall/action.AllowPing
+%attr(0600,root,root) /usr/share/shorewall/action.AllowPOP3
+%attr(0600,root,root) /usr/share/shorewall/action.AllowRdate
+%attr(0600,root,root) /usr/share/shorewall/action.AllowSMB
+%attr(0600,root,root) /usr/share/shorewall/action.AllowSMTP
+%attr(0600,root,root) /usr/share/shorewall/action.AllowSNMP
+%attr(0600,root,root) /usr/share/shorewall/action.AllowSSH
+%attr(0600,root,root) /usr/share/shorewall/action.AllowTelnet
+%attr(0600,root,root) /usr/share/shorewall/action.AllowTrcrt
+%attr(0600,root,root) /usr/share/shorewall/action.AllowVNC
+%attr(0600,root,root) /usr/share/shorewall/action.AllowVNCL
+%attr(0600,root,root) /usr/share/shorewall/action.AllowWeb
+%attr(0600,root,root) /usr/share/shorewall/action.Drop
+%attr(0600,root,root) /usr/share/shorewall/action.DropDNSrep
+%attr(0600,root,root) /usr/share/shorewall/action.DropPing
+%attr(0600,root,root) /usr/share/shorewall/action.DropSMB
+%attr(0600,root,root) /usr/share/shorewall/action.DropUPnP
+%attr(0600,root,root) /usr/share/shorewall/action.Reject
+%attr(0600,root,root) /usr/share/shorewall/action.RejectAuth
+%attr(0600,root,root) /usr/share/shorewall/action.RejectSMB
+%attr(0600,root,root) /usr/share/shorewall/action.template
 %attr(0444,root,root) /usr/share/shorewall/functions
 %attr(0544,root,root) /usr/share/shorewall/firewall
 %attr(0544,root,root) /usr/share/shorewall/help
+
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel
 
 %changelog

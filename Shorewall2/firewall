@@ -1012,6 +1012,12 @@ stop_firewall() {
     delete_proxy_arp
     [ -n "$CLEAR_TC" ] && delete_tc
 
+    if [ -n "$DISABLE_IPV6" ]; then
+	ip6tables -P FORWARD DROP
+	ip6tables -P INPUT DROP
+	ip6tables -P OUTPUT DROP
+    fi
+
     if [ -z "$ADMINISABSENTMINDED" ]; then
 	for chain in INPUT OUTPUT FORWARD; do
 	    setpolicy $chain DROP
@@ -1104,6 +1110,10 @@ clear_firewall() {
     setpolicy INPUT ACCEPT
     setpolicy FORWARD ACCEPT
     setpolicy OUTPUT ACCEPT
+
+    ip6tables -P INPUT   ACCEPT 2> /dev/null
+    ip6tables -P OUTPUT  ACCEPT 2> /dev/null
+    ip6tables -P FORWARD ACCEPT 2> /dev/null
 
     run_user_exit clear
 
@@ -2386,58 +2396,64 @@ process_actions1() {
 
     strip_file actions
 
-    while read xaction rest; do
-	[ "x$rest" = x ] || fatal_error "Invalid Action: $xaction $rest"
+    strip_file actions.std /usr/share/shorewall/actions.std
 
-	case $xaction in
-	    *:*)
-		temp=${xaction#*:}
-		xaction=${xaction%:*}
-		case $temp in
-		    ACCEPT|REJECT|DROP)
-			eval ${temp}_common=$xaction
-			if ! list_search $xaction $USEDACTIONS; then
-			    USEDACTIONS="$USEDACTIONS $xaction"
-			    [ $command = check ] || createactionchain $xaction
-			fi
-			;;
-		    *)
-			fatal_error "Common Actions are only allowed for ACCEPT, DROP and REJECT"
-			;;
-		esac
-	esac
-	
-	f=action.$xaction
-	fn=$(find_file $f)
+    for inputfile in actions.std actions; do
+	while read xaction rest; do
+	    [ "x$rest" = x ] || fatal_error "Invalid Action: $xaction $rest"
 
-	eval requiredby_${action}=
-
-	if [ -f $fn ]; then
-	    echo "   Pre-processing $fn..."
-	    strip_file $f $fn
-	    while read xtarget xclients xservers xprotocol xports xcports xratelimit $xuserspec; do
-		expandv xtarget
-		temp="${xtarget%:*}"
-		case "${temp%<*}" in
-		    ACCEPT|DROP|REJECT|LOG|QUEUE)
-			;;
-		    *)
-			if list_search $temp $ACTIONS; then
-			    eval requiredby_${xaction}=\"\$requiredby_${xaction} $temp\"
-			else
-			    rule="$(echo $xtarget $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec)"
-			    fatal_error "Invalid TARGET in rule \"$rule\""
-			fi
-			;;
-		    
-		esac
-	    done < $TMP_DIR/$f
-	else
-	    fatal_error "Missing Action File: $f"
-	fi
-	
-	ACTIONS="$ACTIONS $xaction"
-    done < $TMP_DIR/actions
+	    case $xaction in
+		*:*)
+		    temp=${xaction#*:}
+		    xaction=${xaction%:*}
+		    case $temp in
+			ACCEPT|REJECT|DROP)
+			    eval ${temp}_common=$xaction
+			    if ! list_search $xaction $USEDACTIONS; then
+				USEDACTIONS="$USEDACTIONS $xaction"
+				[ $command = check ] || createactionchain $xaction
+			    fi
+			    ;;
+			*)
+			    fatal_error "Common Actions are only allowed for ACCEPT, DROP and REJECT"
+			    ;;
+		    esac
+	    esac
+	    
+	    if ! list_search $xaction $ACTIONS; then
+		f=action.$xaction
+		fn=$(find_file $f)
+	    
+		eval requiredby_${action}=
+		
+		if [ -f $fn ]; then
+		    echo "   Pre-processing $fn..."
+		    strip_file $f $fn
+		    while read xtarget xclients xservers xprotocol xports xcports xratelimit $xuserspec; do
+			expandv xtarget
+			temp="${xtarget%:*}"
+			case "${temp%<*}" in
+			    ACCEPT|DROP|REJECT|LOG|QUEUE)
+				;;
+			    *)
+				if list_search $temp $ACTIONS; then
+				    eval requiredby_${xaction}=\"\$requiredby_${xaction} $temp\"
+				else
+				    rule="$(echo $xtarget $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec)"
+				    fatal_error "Invalid TARGET in rule \"$rule\""
+				fi
+				;;
+			    
+			esac
+		    done < $TMP_DIR/$f
+		else
+		    fatal_error "Missing Action File: $f"
+		fi
+		
+		ACTIONS="$ACTIONS $xaction"
+	    fi
+	done < $TMP_DIR/$inputfile
+    done
 }
 #
 # Generate the transitive closure of $USEDACTIONS (the actions directly referred to in rules and as common actions) then
@@ -2508,7 +2524,7 @@ process_actions2() {
     #
     for xaction in $USEDACTIONS; do
 	case $xaction in
-	    dropNonSyn|dropBcasts)
+	    dropNonSyn|dropBcast)
 		;;
 	    *)
 		f=action.$xaction
@@ -4278,6 +4294,12 @@ initialize_netfilter () {
     setcontinue INPUT
     setcontinue OUTPUT
 
+    if [ -n "$DISABLE_IPV6" ]; then
+	ip6tables -P FORWARD DROP
+	ip6tables -P INPUT DROP
+	ip6tables -P OUTPUT DROP
+    fi
+
     #
     # Enable the Loopback interface for now
     #
@@ -5441,6 +5463,7 @@ do_initialize() {
     ACTIONS=
     USEDACTIONS=
     SMURF_LOG_LEVEL=
+    DISABLE_IPV6=
 
     stopping=
     have_mutex=
@@ -5590,6 +5613,7 @@ do_initialize() {
     fi
     ADMINISABSENTMINDED=$(added_param_value_no ADMINISABSENTMINDED $ADMINISABSENTMINDED)
     BLACKLISTNEWONLY=$(added_param_value_no BLACKLISTNEWONLY $BLACKLISTNEWONLY)
+    DISABLE_IPV6=$(added_param_value_no DISABLE_IPV6 $DISABLE_IPV6)
     [ -n "$MODULE_SUFFIX" ] || MODULE_SUFFIX="o gz ko o.gz"
 
     #

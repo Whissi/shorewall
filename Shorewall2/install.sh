@@ -54,7 +54,7 @@
 #        /etc/rc.d/rc.local file is modified to start the firewall.
 #
 
-VERSION=2.0.0-Beta1
+VERSION=2.0.0-Beta2
 
 usage() # $1 = exit status
 {
@@ -503,7 +503,7 @@ fi
 #
 # Install the Standard Actions file
 #
-install_file_with_backup actions.std ${PREFIX}/etc/shorewall/actions.std 0600
+install_file_with_backup actions.std ${PREFIX}/usr/share/shorewall/actions.std 0600
 echo
 echo "Standard actions file installed as ${PREFIX}/etc/shorewall/actions.std"
 
@@ -521,10 +521,10 @@ fi
 # Install the Action files
 #
 for f in action.* ; do
-    if [ -f ${PREFIX}/etc/shorewall/$f ]; then
-	backup_file /etc/shorewall/$f
+    if [ -f ${PREFIX}/usr/share/shorewall/$f ]; then
+	backup_file /usr/share/shorewall/$f
     else
-	run_install -o $OWNER -g $GROUP -m 0600 $f ${PREFIX}/etc/shorewall/$f
+	run_install -o $OWNER -g $GROUP -m 0600 $f ${PREFIX}/usr/share/shorewall/$f
 	echo
 	echo "Action ${f#*.} file installed as ${PREFIX}/etc/shorewall/$f"
     fi
@@ -548,8 +548,9 @@ chmod 644 ${PREFIX}/usr/share/shorewall/version
 
 if [ -z "$PREFIX" ]; then
     rm -f /usr/share/shorewall/init
-    ln -s ${DEST}/firewall /usr/share/shorewall/init
+    ln -s ${DEST}/shorewall /usr/share/shorewall/init
 fi
+
 #
 # Install the firewall script
 #

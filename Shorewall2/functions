@@ -94,6 +94,10 @@ find_file()
 	*)
 	    if [ -n "$SHOREWALL_DIR" -a -f $SHOREWALL_DIR/$1 ]; then
 		echo $SHOREWALL_DIR/$1
+	    elif [ -f /etc/shorewall/$1 ]; then
+		echo /etc/shorewall/$1
+	    elif [ -f /usr/share/shorewall/$1 ]; then
+		echo /usr/share/shorewall/$1
 	    else
 		echo /etc/shorewall/$1
 	    fi

@@ -609,7 +609,7 @@ usage() # $1 = exit status
     echo "   restart [ <directory> ]"
     echo "   restore [ <file name> ]"
     echo "   save [ <file name> ]"
-    echo "   show [<chain> [ <chain> ... ]|classifiers|connections|log|nat|tc|tos]"
+    echo "   show [<chain> [ <chain> ... ]|classifiers|connections|log|nat|tc|tos|zones]"
     echo "   start [ <directory> ]"
     echo "   stop"
     echo "   status"
@@ -912,6 +912,24 @@ case "$1" in
 	    echo "Shorewall-$version Clasifiers at $HOSTNAME - $(date)"
 	    echo
 	    show_classifiers
+	    ;;
+	zones)
+	    [ $# -gt 2 ] && usage 1
+	    [ -z "${STATEDIR}" ] && STATEDIR=/var/state/shorewall
+	    if [ -f $STATEDIR/zones ]; then
+		echo "Shorewall-$version Zones at $HOSTNAME - $(date)"
+		echo
+		while read zone hosts; do
+		    echo $zone
+		    for host in $hosts; do
+			echo "   $host"
+		    done
+		done < $STATEDIR/zones
+		echo
+	    else
+		echo "   ERROR: Dynamic zones are not enabled" >&2
+		exit 1
+	    fi
 	    ;;
 	*)
 	    shift

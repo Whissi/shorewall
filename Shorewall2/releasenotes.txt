@@ -712,3 +712,26 @@ New Features:
     can be used to designate the iptables executable to be used by
     Shorewall. If not specified, the iptables executable determined by
     the PATH setting is used.
+
+31) When DYNAMIC_ZONES=Yes in /etc/shorewall/shorewall.conf, you can
+    now use the "shorewall show zones" command to display the current
+    contents of the zones.
+
+    Example:
+
+	ursa:/etc/shorewall # shorewall show zones
+	Shorewall-2.2.0-Beta7 Zones at ursa - Sat Nov 27 11:18:25 PST 2004
+ 
+	loc
+	   eth0:192.168.1.0/24
+	   eth1:1.2.3.4
+	net	   
+	   eth0:0.0.0.0/0
+	WiFi
+	   eth1:0.0.0.0/0
+	sec
+	   eth1:0.0.0.0/0
+ 
+	ursa:/etc/shorewall #
+
+

@@ -13,10 +13,10 @@
       <surname>Eastep</surname>
     </author>
 
-    <pubdate>2003/12/23</pubdate>
+    <pubdate>2004-01-26</pubdate>
 
     <copyright>
-      <year>2003</year>
+      <year>2003-2004</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -96,6 +96,82 @@
       <para>The <ulink url="Documentation_Index.html">Documentation Index</ulink>
       is a good place to start.</para>
     </section>
+  </section>
+
+  <section>
+    <title>Shorewall Concepts</title>
+
+    <para>The configuration files for Shorewall are contained in the directory
+    <filename class="directory">/etc/shorewall</filename> -- for simple
+    setups, you will only need to deal with a few of them.</para>
+
+    <para>Shorewall views the network where it is running as being composed of
+    a set of zones. In the <ulink url="three-interface.htm">three-interface
+    sample configuration</ulink> for example, the following zone names are
+    used: <informaltable frame="all" pgwide="0"><tgroup align="left" cols="2"><thead
+    valign="middle"><row valign="middle"><entry align="left">Name</entry><entry
+    align="left">Description</entry></row></thead><tbody valign="middle"><row
+    valign="middle"><entry align="left"><varname>net</varname></entry><entry
+    align="left">The Internet</entry></row><row valign="middle"><entry
+    align="left"><varname>loc</varname></entry><entry align="left">Your Local
+    Network</entry></row><row valign="middle"><entry align="left"><varname>dmz</varname></entry><entry
+    align="left">Demilitarized Zone</entry></row></tbody></tgroup></informaltable>Zones
+    are defined in the <ulink url="Documentation.htm#Zones"><filename
+    class="directory">/etc/shorewall/</filename><filename>zones</filename></ulink>
+    file.</para>
+
+    <para>Shorewall also recognizes the firewall system as its own zone - by
+    default, the firewall itself is known as <emphasis role="bold"><varname>fw</varname></emphasis>.</para>
+
+    <para>Rules about what traffic to allow and what traffic to deny are
+    expressed in terms of zones. <itemizedlist spacing="compact"><listitem><para>You
+    express your default policy for connections from one zone to another zone
+    in the <ulink url="Documentation.htm#Policy"><filename class="directory">/etc/shorewall/</filename><filename>policy</filename></ulink>
+    file.</para></listitem><listitem><para>You define exceptions to those
+    default policies in the <ulink url="Documentation.htm#Rules"><filename
+    class="directory">/etc/shorewall/</filename><filename>rules</filename></ulink>
+    file.</para></listitem></itemizedlist>For each connection request entering
+    the firewall, the request is first checked against the <filename
+    class="directory">/etc/shorewall/</filename><filename>rules</filename>
+    file. If no rule in that file matches the connection request then the
+    first policy in <filename class="directory">/etc/shorewall/</filename><filename>policy</filename>
+    that matches the request is applied. If that policy is <varname>REJECT</varname>
+    or <varname>DROP</varname> the request is first checked against the rules
+    in <filename class="directory">/etc/shorewall/</filename><filename>common</filename>
+    if that file exists; otherwise the rules in <filename class="directory">/etc/shorewall/</filename><filename>common.def</filename>
+    are checked.</para>
+
+    <para>The <filename class="directory">/etc/shorewall/</filename><filename>policy</filename>
+    file included with the three-interface sample has the following policies:
+    <programlisting>#SOURCE    DEST        POLICY      LOG LEVEL    LIMIT:BURST
+loc        net         ACCEPT
+net        all         DROP        info
+all        all         REJECT      info</programlisting>In the three-interface
+    sample, the line below is included but commented out. If you want your
+    firewall system to have full access to servers on the internet, uncomment
+    that line. <programlisting>#SOURCE    DEST        POLICY      LOG LEVEL    LIMIT:BURST
+fw         net         ACCEPT</programlisting> The above policy will:
+    <itemizedlist><listitem><para>Allow all connection requests from your
+    local network to the internet</para></listitem><listitem><para>Drop
+    (ignore) all connection requests from the internet to your firewall or
+    local network</para></listitem><listitem><para>Optionally accept all
+    connection requests from the firewall to the internet (if you uncomment
+    the additional policy)</para></listitem><listitem><para>reject all other
+    connection requests.</para></listitem></itemizedlist></para>
+
+    <para>The simplest way to define a zone is to associate the zone with a
+    network interface using the <ulink url="Documentation.htm#Interfaces"><filename>/etc/shorewall/interfaces</filename></ulink>
+    file. In the three-interface sample, the three zones are defined using
+    that file as follows:</para>
+
+    <programlisting>#ZONE      INTERFACE     BROADCAST     OPTIONS
+net        eth0          detect        dhcp,routefilter,norfc1918
+loc        eth1          detect
+dmz        eth2          detect</programlisting>
+
+    <para>The above file defines the net zone as all hosts interfacing to the
+    firewall through eth0, the loc zone as all hosts interfacing through eth1
+    and the dmz as all hosts interfacing through eth2.</para>
   </section>
 
   <section>

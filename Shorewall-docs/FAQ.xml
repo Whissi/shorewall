@@ -17,7 +17,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-01-24</pubdate>
+    <pubdate>2004-01-25</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -60,132 +60,22 @@
       shows how to do port forwarding under Shorewall. The format of a
       port-forwarding rule to a local system is as follows:</para>
 
-      <informaltable>
-        <tgroup cols="7">
-          <thead>
-            <row>
-              <entry align="center">ACTION</entry>
-
-              <entry align="center">SOURCE</entry>
-
-              <entry align="center">DESTINATION</entry>
-
-              <entry align="center">PROTOCOL</entry>
-
-              <entry align="center">PORT</entry>
-
-              <entry align="center">SOURCE PORT</entry>
-
-              <entry align="center">ORIG. DEST.</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>DNAT</entry>
-
-              <entry>net</entry>
-
-              <entry>loc:&#60;local IP address&#62;[:&#60;local port&#62;]</entry>
-
-              <entry>&#60;protocol&#62;</entry>
-
-              <entry>&#60;port #&#62;</entry>
-
-              <entry></entry>
-
-              <entry></entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable>
+      <programlisting>#ACTION    SOURCE      DEST                                   PROTO        DEST PORT
+DNAT       net         loc:&#60;l<emphasis>ocal IP address</emphasis>&#62;[:&#60;<emphasis>local port</emphasis>&#62;]  &#60;<emphasis>protocol</emphasis>&#62;   &#60;<emphasis>port #</emphasis>&#62;</programlisting>
 
       <para>So to forward UDP port 7777 to internal system 192.168.1.5, the
       rule is:</para>
 
-      <informaltable>
-        <tgroup cols="7">
-          <thead>
-            <row>
-              <entry align="center">ACTION</entry>
-
-              <entry align="center">SOURCE</entry>
-
-              <entry align="center">DESTINATION</entry>
-
-              <entry align="center">PROTOCOL</entry>
-
-              <entry align="center">PORT</entry>
-
-              <entry align="center">SOURCE PORT</entry>
-
-              <entry align="center">ORIG. DEST.</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>DNAT</entry>
-
-              <entry>net</entry>
-
-              <entry>loc:192.168.1.5</entry>
-
-              <entry>udp</entry>
-
-              <entry>7777</entry>
-
-              <entry></entry>
-
-              <entry></entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable>
+      <programlisting>#ACTION    SOURCE   DEST             PROTO    DEST PORT
+DNAT       net      loc:192.168.1.5  udp      7777</programlisting>
 
       <para>If you want to forward requests directed to a particular address (
       <emphasis>&#60;external IP&#62;</emphasis> ) on your firewall to an
       internal system:</para>
 
-      <informaltable>
-        <tgroup cols="7">
-          <thead>
-            <row>
-              <entry align="center">ACTION</entry>
-
-              <entry align="center">SOURCE</entry>
-
-              <entry align="center">DESTINATION</entry>
-
-              <entry align="center">PROTOCOL</entry>
-
-              <entry align="center">PORT</entry>
-
-              <entry align="center">SOURCE PORT</entry>
-
-              <entry align="center">ORIG. DEST.</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>DNAT</entry>
-
-              <entry>net</entry>
-
-              <entry>loc:&#60;local IP address&#62;[:&#60;local port&#62;]</entry>
-
-              <entry>&#60;protocol&#62;</entry>
-
-              <entry>&#60;port #&#62;</entry>
-
-              <entry>-</entry>
-
-              <entry>&#60;external IP&#62;</entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable>
+      <programlisting>#ACTION SOURCE DEST                                   PROTO       DEST PORT  SOURCE  ORIGINAL
+#                                                                            PORT    DEST.
+DNAT    net    loc:&#60;l<emphasis>ocal IP address</emphasis>&#62;[:&#60;<emphasis>local port</emphasis>&#62;]  &#60;<emphasis>protocol</emphasis>&#62;  &#60;<emphasis>port #</emphasis>&#62;   -       &#60;<emphasis>external IP</emphasis>&#62;</programlisting>
 
       <para>Finally, if you need to forward a range of ports, in the PORT
       column specify the range as <emphasis>&#60;low-port&#62;:&#60;high-port&#62;</emphasis>.</para>
@@ -235,8 +125,8 @@
 
         <itemizedlist>
           <listitem>
-            <para>As root, type <quote>iptables -t nat -Z</quote>. This clears
-            the NetFilter counters in the nat table.</para>
+            <para>As root, type <quote><command>iptables -t nat -Z</command></quote>.
+            This clears the NetFilter counters in the nat table.</para>
           </listitem>
 
           <listitem>
@@ -244,7 +134,7 @@
           </listitem>
 
           <listitem>
-            <para>As root type <quote>shorewall show nat</quote></para>
+            <para>As root type <quote><command>shorewall show nat</command></quote></para>
           </listitem>
 
           <listitem>
@@ -295,47 +185,10 @@
         my firewall and have the firewall forward the connection to port 22 on
         local system 192.168.1.3. How do I do that?</title>
 
-        <para>In /etc/shorewall/rules:</para>
+        <para>In /<filename>etc/shorewall/rules</filename>:</para>
 
-        <informaltable>
-          <tgroup cols="7">
-            <thead>
-              <row>
-                <entry align="center">ACTION</entry>
-
-                <entry align="center">SOURCE</entry>
-
-                <entry>DESTINATION</entry>
-
-                <entry>PROTOCOL</entry>
-
-                <entry>PORT</entry>
-
-                <entry>SOURCE PORT</entry>
-
-                <entry>ORIG. DEST.</entry>
-              </row>
-            </thead>
-
-            <tbody>
-              <row>
-                <entry>DNAT</entry>
-
-                <entry>net</entry>
-
-                <entry>loc:192.168.1.3:22</entry>
-
-                <entry>tcp</entry>
-
-                <entry>1022</entry>
-
-                <entry></entry>
-
-                <entry></entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </informaltable>
+        <programlisting>#ACTION    SOURCE   DEST              PROTO    DEST PORT
+DNAT       net      loc:192.168.3:22  tcp      1022</programlisting>
       </section>
     </section>
 
@@ -407,127 +260,30 @@
 
       <itemizedlist>
         <listitem>
-          <para>In /etc/shorewall/interfaces:</para>
+          <para>In <filename>/etc/shorewall/interfaces</filename>:</para>
 
-          <informaltable>
-            <tgroup cols="4">
-              <thead>
-                <row>
-                  <entry align="center">ZONE</entry>
-
-                  <entry align="center">INTERFACE</entry>
-
-                  <entry align="center">BROADCAST</entry>
-
-                  <entry align="center">OPTIONS</entry>
-                </row>
-              </thead>
-
-              <tbody>
-                <row>
-                  <entry>loc</entry>
-
-                  <entry>eth1</entry>
-
-                  <entry>detect</entry>
-
-                  <entry><emphasis role="bold">routeback</emphasis></entry>
-                </row>
-              </tbody>
-            </tgroup>
-          </informaltable>
+          <programlisting>#ZONE    INTERFACE    BROADCAST    OPTIONS
+loc      eth1         detect       <emphasis role="bold">routeback</emphasis></programlisting>
         </listitem>
 
         <listitem>
-          <para>In /etc/shorewall/rules:</para>
+          <para>In <filename>/etc/shorewall/rules</filename>:</para>
 
-          <informaltable>
-            <tgroup cols="7">
-              <thead>
-                <row>
-                  <entry align="center">ACTION</entry>
-
-                  <entry align="center">SOURCE</entry>
-
-                  <entry align="center">DESTINATION</entry>
-
-                  <entry align="center">PROTOCOL</entry>
-
-                  <entry align="center">PORT</entry>
-
-                  <entry align="center">SOURCE PORT</entry>
-
-                  <entry align="center">ORIG. DEST.</entry>
-                </row>
-              </thead>
-
-              <tbody>
-                <row>
-                  <entry>DNAT</entry>
-
-                  <entry>loc</entry>
-
-                  <entry>web:192.168.1.5</entry>
-
-                  <entry>tcp</entry>
-
-                  <entry>www</entry>
-
-                  <entry>-</entry>
-
-                  <entry>130.151.100.69:192.168.1.254</entry>
-                </row>
-              </tbody>
-            </tgroup>
-          </informaltable>
+          <programlisting>#ACTION    SOURCE  DEST               PROTO    DEST PORT   SOURCE    ORIGINAL
+#                                                          PORT      DEST.
+DNAT       loc     loc:192.168.1.5    tcp      www         -         130.151.100.69:192.168.1.254</programlisting>
 
           <para>That rule only works of course if you have a static external
           IP address. If you have a dynamic IP address and are running
-          Shorewall 1.3.4 or later then include this in /etc/shorewall/init:</para>
+          Shorewall 1.3.4 or later then include this in <filename>/etc/shorewall/init</filename>:</para>
 
-          <programlisting>ETH0_IP=`find_interface_address eth0`</programlisting>
+          <programlisting><command>ETH0_IP=`find_interface_address eth0`</command></programlisting>
 
           <para>and make your DNAT rule:</para>
 
-          <informaltable>
-            <tgroup cols="7">
-              <thead>
-                <row>
-                  <entry align="center">ACTION</entry>
-
-                  <entry align="center">SOURCE</entry>
-
-                  <entry align="center">DESTINATION</entry>
-
-                  <entry align="center">PROTOCOL</entry>
-
-                  <entry align="center">PORT</entry>
-
-                  <entry align="center">SOURCE PORT</entry>
-
-                  <entry align="center">ORIG. DEST.</entry>
-                </row>
-              </thead>
-
-              <tbody>
-                <row>
-                  <entry>DNAT</entry>
-
-                  <entry>loc</entry>
-
-                  <entry>web:192.168.1.5</entry>
-
-                  <entry>tcp</entry>
-
-                  <entry>www</entry>
-
-                  <entry>-</entry>
-
-                  <entry>$ETH0_IP:192.168.1.254</entry>
-                </row>
-              </tbody>
-            </tgroup>
-          </informaltable>
+          <programlisting>#ACTION    SOURCE  DEST               PROTO    DEST PORT   SOURCE    ORIGINAL
+#                                                          PORT      DEST.
+DNAT       loc     loc:192.168.1.5    tcp      www         -         $ETH0_IP:192.168.1.254</programlisting>
 
           <para>Using this technique, you will want to configure your
           DHCP/PPPoE client to automatically restart Shorewall each time that
@@ -597,94 +353,23 @@
 
           <literallayout>Zone: dmz Interface: eth2 Subnet: 192.168.2.0/24</literallayout>
 
-          <para>In /etc/shorewall/interfaces:</para>
+          <para>In <filename>/etc/shorewall/interfaces</filename>:</para>
 
-          <informaltable>
-            <tgroup cols="4">
-              <thead>
-                <row>
-                  <entry align="center">ZONE</entry>
+          <programlisting>#ZONE    INTERFACE    BROADCAST       OPTIONS
+loc      eth2         192.168.2.255   <emphasis role="bold">routeback</emphasis></programlisting>
 
-                  <entry align="center">INTERFACE</entry>
+          <para>In <filename>/etc/shorewall/policy</filename>:</para>
 
-                  <entry align="center">BROADCAST</entry>
+          <programlisting>#SOURCE    DESTINATION    POLICY     LIMIT:BURST
+dmz        dmz            ACCEPT</programlisting>
 
-                  <entry align="center">OPTIONS</entry>
-                </row>
-              </thead>
+          <para>In <filename>/etc/shorewall/masq</filename>:</para>
 
-              <tbody>
-                <row>
-                  <entry>dmz</entry>
+          <programlisting>#INTERFACE       SUBNET            ADDRESS
+eth2             192.168.2.0/24</programlisting>
 
-                  <entry>eth2</entry>
-
-                  <entry>192.168.2.255</entry>
-
-                  <entry><emphasis role="bold">routeback</emphasis></entry>
-                </row>
-              </tbody>
-            </tgroup>
-          </informaltable>
-
-          <para>In /etc/shorewall/policy:</para>
-
-          <informaltable>
-            <tgroup cols="4">
-              <thead>
-                <row>
-                  <entry align="center">SOURCE</entry>
-
-                  <entry align="center">DESTINATION</entry>
-
-                  <entry align="center">POLICY</entry>
-
-                  <entry align="center">LIMIT:BURST</entry>
-                </row>
-              </thead>
-
-              <tbody>
-                <row>
-                  <entry>dmz</entry>
-
-                  <entry>dmz</entry>
-
-                  <entry>ACCEPT</entry>
-
-                  <entry><emphasis role="bold"></emphasis></entry>
-                </row>
-              </tbody>
-            </tgroup>
-          </informaltable>
-
-          <para>In /etc/shorewall/masq:</para>
-
-          <informaltable>
-            <tgroup cols="3">
-              <thead>
-                <row>
-                  <entry align="center">INTERFACE</entry>
-
-                  <entry align="center">SUBNET</entry>
-
-                  <entry align="center">ADDRESS</entry>
-                </row>
-              </thead>
-
-              <tbody>
-                <row>
-                  <entry>eth2</entry>
-
-                  <entry>192.168.2.0/24</entry>
-
-                  <entry><emphasis role="bold"></emphasis></entry>
-                </row>
-              </tbody>
-            </tgroup>
-          </informaltable>
-
-          <para>In /etc/shorewall/nat, be sure that you have <quote>Yes</quote>
-          in the ALL INTERFACES column.</para>
+          <para>In <filename>/etc/shorewall/na</filename>t, be sure that you
+          have <quote>Yes</quote> in the ALL INTERFACES column.</para>
         </example>
       </section>
     </section>
@@ -791,18 +476,19 @@
 
       <orderedlist>
         <listitem>
-          <para>Create /etc/shorewall/common if it doesn&#39;t already exist.</para>
+          <para>Create <filename>/etc/shorewall/common</filename> if it
+          doesn&#39;t already exist.</para>
         </listitem>
 
         <listitem>
           <para>Be sure that the first command in the file is <quote>.
-          /etc/shorewall/common.def</quote></para>
+          <filename>/etc/shorewall/common.de</filename>f</quote></para>
         </listitem>
 
         <listitem>
-          <para>Add the following to /etc/shorewall/common</para>
+          <para>Add the following to <filename>/etc/shorewall/common</filename></para>
 
-          <programlisting>run_iptables -A icmpdef -p ICMP --icmp-type echo-request -j ACCEPT</programlisting>
+          <programlisting><command>run_iptables -A icmpdef -p ICMP --icmp-type echo-request -j ACCEPT</command></programlisting>
         </listitem>
       </orderedlist>
 
@@ -859,14 +545,15 @@
       see <quote>man syslog</quote>) in your <ulink
       url="Documentation.htm#Policy">policies</ulink> and <ulink
       url="Documentation.htm#Rules">rules</ulink>. The destination for
-      messaged logged by syslog is controlled by /etc/syslog.conf (see
-      <quote>man syslog.conf</quote>). When you have changed /etc/syslog.conf,
-      be sure to restart syslogd (on a RedHat system, <quote>service syslog
-      restart</quote>).</para>
+      messaged logged by syslog is controlled by <filename>/etc/syslog.conf</filename>
+      (see <quote>man syslog.conf</quote>). When you have changed
+      /etc/syslog.conf, be sure to restart syslogd (on a RedHat system,
+      <quote>service syslog restart</quote>).</para>
 
       <para>By default, older versions of Shorewall ratelimited log messages
       through <ulink url="Documentation.htm#Conf">settings</ulink> in
-      /etc/shorewall/shorewall.conf -- If you want to log all messages, set:</para>
+      <filename>/etc/shorewall/shorewall.conf</filename> -- If you want to log
+      all messages, set:</para>
 
       <programlisting>LOGLIMIT=&#34;&#34;
 LOGBURST=&#34;&#34;</programlisting>
@@ -929,20 +616,21 @@ url="http://www.shorewall.net/pub/shorewall/parsefw/">http://www.shorewall.net/p
         </orderedlist>
 
         <para>You can distinguish the difference by setting the <emphasis
-        role="bold">logunclean</emphasis> option (<ulink
-        url="Documentation.htm#Interfaces">/etc/shorewall/interfaces</ulink>)
+        role="bold">logunclean</emphasis> option (<filename><ulink
+        url="Documentation.htm#Interfaces">/etc/shorewall/interfaces</ulink></filename>)
         on your external interface (eth0 in the above example). If they get
         logged twice, they are corrupted. I solve this problem by using an
         /etc/shorewall/common file like this:</para>
 
         <programlisting>#
 # Include the standard common.def file
-# . /etc/shorewall/common.def
+# 
+<command>. /etc/shorewall/common.def</command>
 #
 # The following rule is non-standard and compensates for tardy
 # DNS replies
 #
-run_iptables -A common -p udp --sport 53 -mstate --state NEW -j DROP</programlisting>
+<command>run_iptables -A common -p udp --sport 53 -mstate --state NEW -j DROP</command></programlisting>
 
         <para>The above file is also include in all of my sample
         configurations available in the <ulink
@@ -1012,8 +700,8 @@ run_iptables -A common -p udp --sport 53 -mstate --state NEW -j DROP</programlis
 
       <tip>
         <para>Under Debian, you can set KLOGD=<quote>-c 5</quote> in
-        /etc/init.d/klogd to suppress info (log level 6) messages on the
-        console.</para>
+        <filename>/etc/init.d/klogd</filename> to suppress info (log level 6)
+        messages on the console.</para>
       </tip>
 
       <tip>
@@ -1034,9 +722,9 @@ run_iptables -A common -p udp --sport 53 -mstate --state NEW -j DROP</programlis
           <term>man1918 or logdrop</term>
 
           <listitem>
-            <para>The destination address is listed in /etc/shorewall/rfc1918
+            <para>The destination address is listed in <filename>/etc/shorewall/rfc1918</filename>
             with a <emphasis role="bold">logdrop</emphasis> target -- see
-            <ulink url="Documentation.htm#rfc1918">/etc/shorewall/rfc1918</ulink>.</para>
+            <filename><ulink url="Documentation.htm#rfc1918">/etc/shorewall/rfc1918</ulink></filename>.</para>
           </listitem>
         </varlistentry>
 
@@ -1044,9 +732,9 @@ run_iptables -A common -p udp --sport 53 -mstate --state NEW -j DROP</programlis
           <term>rfc1918 or logdrop</term>
 
           <listitem>
-            <para>The source address is listed in /etc/shorewall/rfc1918 with
-            a <emphasis role="bold">logdrop</emphasis> target -- see <ulink
-            url="Documentation.htm#rfc1918">/etc/shorewall/rfc1918</ulink>.</para>
+            <para>The source address is listed in <filename>/etc/shorewall/rfc1918</filename>
+            with a <emphasis role="bold">logdrop</emphasis> target -- see
+            <filename><ulink url="Documentation.htm#rfc1918">/etc/shorewall/rfc1918</ulink></filename>.</para>
           </listitem>
         </varlistentry>
 
@@ -1099,7 +787,7 @@ run_iptables -A common -p udp --sport 53 -mstate --state NEW -j DROP</programlis
             <para>The packet is being logged under the <emphasis role="bold">dropunclean</emphasis>
             <ulink url="Documentation.htm#Interfaces">interface option</ulink>
             as specified in the <emphasis role="bold">LOGUNCLEAN</emphasis>
-            setting in <ulink url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>.</para>
+            setting in <ulink url="Documentation.htm#Conf"><filename>/etc/shorewall/shorewall.conf</filename></ulink>.</para>
           </listitem>
         </varlistentry>
 
@@ -1108,7 +796,8 @@ run_iptables -A common -p udp --sport 53 -mstate --state NEW -j DROP</programlis
 
           <listitem>
             <para>The packet is being logged because the source IP is
-            blacklisted in the <ulink url="Documentation.htm#Blacklist">/etc/shorewall/blacklist</ulink>
+            blacklisted in the <filename><ulink
+            url="Documentation.htm#Blacklist">/etc/shorewall/blacklist</ulink></filename>
             file.</para>
           </listitem>
         </varlistentry>
@@ -1121,7 +810,7 @@ run_iptables -A common -p udp --sport 53 -mstate --state NEW -j DROP</programlis
             is not part of any current connection yet it is not a syn packet.
             Options affecting the logging of such packets include <emphasis
             role="bold">NEWNOTSYN</emphasis> and <emphasis role="bold">LOGNEWNOTSYN</emphasis>
-            in <ulink url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>.</para>
+            in <ulink url="Documentation.htm#Conf"><filename>/etc/shorewall/shorewall.conf</filename></ulink>.</para>
           </listitem>
         </varlistentry>
 
@@ -1290,78 +979,29 @@ run_iptables -A common -p udp --sport 53 -mstate --state NEW -j DROP</programlis
       <para>Setting this up in Shorewall is easy; setting up the routing is a
       bit harder.</para>
 
-      <para>Assuming that eth0 and eth1 are the interfaces to the two ISPs
-      then:</para>
+      <para>Assuming that <filename class="devicefile">eth0</filename> and
+      <filename class="devicefile">eth1</filename> are the interfaces to the
+      two ISPs then:</para>
 
-      <para>/etc/shorewall/interfaces:</para>
+      <para><filename>/etc/shorewall/interfaces</filename>:</para>
 
-      <informaltable>
-        <tgroup cols="4">
-          <thead>
-            <row>
-              <entry align="center">ZONE</entry>
+      <programlisting>#ZONE    INTERFACE    BROADCAST       OPTIONS
+net      eth0         detect
+net      eth1         detect</programlisting>
 
-              <entry align="center">INTERFACE</entry>
+      <para><filename>/etc/shorewall/policy</filename>:</para>
 
-              <entry align="center">BROADCAST</entry>
+      <programlisting>#SOURCE    DESTINATION    POLICY     LIMIT:BURST
+net        net            DROP</programlisting>
 
-              <entry align="center">OPTIONS</entry>
-            </row>
-          </thead>
+      <para>If you have masqueraded hosts, be sure to update
+      <filename>/etc/shorewall/masq</filename> to masquerade to both ISPs. For
+      example, if you masquerade all hosts connected to <filename
+      class="devicefile">eth2</filename> then:</para>
 
-          <tbody>
-            <row>
-              <entry>net</entry>
-
-              <entry>eth0</entry>
-
-              <entry>detect</entry>
-
-              <entry>...</entry>
-            </row>
-
-            <row>
-              <entry>net</entry>
-
-              <entry>eth1</entry>
-
-              <entry>detect</entry>
-
-              <entry>...</entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable>
-
-      <para>/etc/shorewall/policy:</para>
-
-      <informaltable>
-        <tgroup cols="4">
-          <thead>
-            <row>
-              <entry align="center">SOURCE</entry>
-
-              <entry align="center">DESTINATION</entry>
-
-              <entry align="center">POLICY</entry>
-
-              <entry align="center">LIMIT:BURST</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>net</entry>
-
-              <entry>net</entry>
-
-              <entry>DROP</entry>
-
-              <entry></entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable>
+      <programlisting>#INTERFACE       SUBNET            ADDRESS
+eth0             eth2
+eth1             eth2</programlisting>
 
       <para><citetitle>There was an article in SysAdmin covering this topic.
       It may be found at <ulink
@@ -1520,11 +1160,11 @@ ip route add 127.0.0.0/8 dev lo table T2</programlisting>
       <title>(FAQ 7) When I stop Shorewall using <quote>shorewall stop</quote>,
       I can&#39;t connect to anything. Why doesn&#39;t that command work?</title>
 
-      <para>The <quote>stop</quote> command is intended to place your firewall
-      into a safe state whereby only those hosts listed in
-      /etc/shorewall/routestopped&#39; are activated. If you want to totally
-      open up your firewall, you must use the <quote>shorewall clear</quote>
-      command.</para>
+      <para>The <quote><command>stop</command></quote> command is intended to
+      place your firewall into a safe state whereby only those hosts listed in
+      <filename>/etc/shorewall/routestopped</filename>&#39; are activated. If
+      you want to totally open up your firewall, you must use the
+      <quote><command>shorewall clear</command></quote> command.</para>
     </section>
 
     <section id="faq8">
@@ -1590,12 +1230,13 @@ Creating input Chains...
       <para><emphasis role="bold">Answer:</emphasis> The above output is
       perfectly normal. The Net zone is defined as all hosts that are
       connected through eth0 and the local zone is defined as all hosts
-      connected through eth1. If you are running Shorewall 1.4.10 or later,
-      you can consider setting the <ulink url="Documentation.htm#Interfaces"><emphasis
-      role="bold">detectnets</emphasis> interface option</ulink> on your local
-      interface (eth1 in the above example). That will cause Shorewall to
-      restrict the local zone to only those networks routed through that
-      interface.</para>
+      connected through <filename class="devicefile">eth1</filename>. If you
+      are running Shorewall 1.4.10 or later, you can consider setting the
+      <ulink url="Documentation.htm#Interfaces"><emphasis role="bold">detectnets</emphasis>
+      interface option</ulink> on your local interface (<filename
+      class="devicefile">eth1</filename> in the above example). That will
+      cause Shorewall to restrict the local zone to only those networks routed
+      through that interface.</para>
     </section>
 
     <section id="faq22">
@@ -1665,7 +1306,7 @@ Creating input Chains...
 
       <para>At the shell prompt, type:</para>
 
-      <programlisting>/sbin/shorewall version</programlisting>
+      <programlisting><command>/sbin/shorewall version</command></programlisting>
     </section>
 
     <section id="faq31">
@@ -1745,32 +1386,15 @@ Creating input Chains...
       version of Shorewall earlier than 1.3.1, create /etc/shorewall/start and
       in it, place the following:</para>
 
-      <programlisting>run_iptables -I rfc1918 -s 192.168.100.1 -j ACCEPT</programlisting>
+      <programlisting><command>run_iptables -I rfc1918 -s 192.168.100.1 -j ACCEPT</command></programlisting>
 
       <para>If you are running version 1.3.1 or later, simply add the
       following to <ulink url="Documentation.htm#rfc1918">/etc/shorewall/rfc1918</ulink>:</para>
 
       <para>Be sure that you add the entry ABOVE the entry for 192.168.0.0/16.</para>
 
-      <informaltable>
-        <tgroup cols="2">
-          <thead>
-            <row>
-              <entry align="center">SUBNET</entry>
-
-              <entry align="center">TARGET</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>192.168.100.1</entry>
-
-              <entry>RETURN</entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable>
+      <programlisting>#SUBNET        TARGET
+192.168.100.1  RETURN</programlisting>
 
       <note>
         <para>If you add a second IP address to your external firewall
@@ -1779,31 +1403,9 @@ Creating input Chains...
         configure the address 192.168.100.2 on your firewall, then you would
         add two entries to /etc/shorewall/rfc1918:</para>
 
-        <informaltable>
-          <tgroup cols="2">
-            <thead>
-              <row>
-                <entry align="center">SUBNET</entry>
-
-                <entry align="center">TARGET</entry>
-              </row>
-            </thead>
-
-            <tbody>
-              <row>
-                <entry>192.168.100.1</entry>
-
-                <entry>RETURN</entry>
-              </row>
-
-              <row>
-                <entry>192.168.100.2</entry>
-
-                <entry>RETURN</entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </informaltable>
+        <programlisting>#SUBNET        TARGET
+192.168.100.1  RETURN
+192.168.100.2  RETURN</programlisting>
       </note>
 
       <section id="faq14a">
@@ -1883,7 +1485,7 @@ Creating input Chains...
 
         <para>Add this command to your /etc/shorewall/start file:</para>
 
-        <programlisting>run_iptables -D OUTPUT -p ! icmp -m state --state INVALID -j DROP</programlisting>
+        <programlisting><command>run_iptables -D OUTPUT -p ! icmp -m state --state INVALID -j DROP</command></programlisting>
       </section>
     </section>
 
@@ -1941,8 +1543,9 @@ iptables: Invalid argument
   <appendix>
     <title>Revision History</title>
 
-    <para><revhistory><revision><revnumber>1.14</revnumber><date>2004-01-24</date><authorinitials>TE</authorinitials><revremark>Added
-    FAQ 27a regarding kernel/iptables incompatibility.<emphasis role="bold"></emphasis></revremark></revision><revision><revnumber>1.13</revnumber><date>2004-01-24</date><authorinitials>TE</authorinitials><revremark>Add
+    <para><revhistory><revision><revnumber>1.15</revnumber><date>2004-01-25</date><authorinitials>TE</authorinitials><revremark>Updated
+    FAQ 32 to mention masquerading. Remove tables.</revremark></revision><revision><revnumber>1.14</revnumber><date>2004-01-24</date><authorinitials>TE</authorinitials><revremark>Added
+    FAQ 27a regarding kernel/iptables incompatibility.</revremark></revision><revision><revnumber>1.13</revnumber><date>2004-01-24</date><authorinitials>TE</authorinitials><revremark>Add
     a note about the <emphasis role="bold">detectnets</emphasis> interface
     option in FAQ 9.</revremark></revision><revision><revnumber>1.12</revnumber><date>2004-01-20</date><authorinitials>TE</authorinitials><revremark>Improve
     FAQ 16 answer.</revremark></revision><revision><revnumber>1.11</revnumber><date>2004-01-14</date><authorinitials>TE</authorinitials><revremark>Corrected

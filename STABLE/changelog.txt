@@ -1,23 +1,23 @@
-Changes since 1.4.8
+Changes since 1.4.9
 
-1) Replace "Static NAT" with "One-to-one NAT".
+1) Implement destination list in masq file.
 
-2) Change SMB common rules to DROP.
+2) Appled Frédéric LESPEZ's patch for packet marking by user/group id.
 
-3) Change wording in release notes.
+3) Correct column headings in action.template
 
-4) Move ip_forward handling to a function.
+4) Handle IPV6 addresses correctly with ADD_IP_ALIASES=Yes or
+   ADD_SNAT_ALIASES=Yes.
 
-5) Change 'norfc1918' logging to log out of chains named 'rfc1918'.
+5) Implement "detectnets" option.
 
-6) Reword the description of NEWNOTSYN in shorewall.conf.
+6) Correct the CONTINUE target and fix a couple of bugs in rate
+   limiting (with an assist from Steven Jan Springl).
 
-7) Added MODULE_SUFFIX option to shorewall.conf.
+7) Silently drop smurfs and broadcasts in the 'reject' chain.
 
-8) Add /etc/shorewall/actions and /etc/shorewall/action.template
+8) Add multicast to 'detectnets' zones.
 
-9) Fix SNAT handling in DNAT rules.
+9) Don't add broadcasts to /0 groups.
 
-10) Change default to NEWNOTSYN=Yes
-
-11) Add rule to drop null source addressed ICMPs.
+10) Fix "-" in PROTO column of an action file.

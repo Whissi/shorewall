@@ -15,14 +15,10 @@
       </author>
     </authorgroup>
 
-    <pubdate>2003-12-09</pubdate>
+    <pubdate>2003-01-29</pubdate>
 
     <copyright>
-      <year>2001</year>
-
-      <year>2002</year>
-
-      <year>2003</year>
+      <year>2003-2004</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -37,8 +33,8 @@
     </legalnotice>
   </articleinfo>
 
-  <para>Prior to Shorewall version 1.4.9, rules in /etc/shorewall/rules were
-  limited to those defined by Netfilter (ACCEPT, DROP, REJECT, etc.).
+  <para>Prior to Shorewall version 1.4.9, rules in <filename>/etc/shorewall/rules</filename>
+  were limited to those defined by Netfilter (ACCEPT, DROP, REJECT, etc.).
   Beginning with Shorewall version 1.4.9, users may use sequences of these
   elementary operations to define more complex actions.</para>
 
@@ -46,18 +42,19 @@
 
   <orderedlist>
     <listitem>
-      <para>Add a line to /etc/shorewall/actions that names your new action.
-      Action names must be valid shell variable names as well as valid
-      Netfilter chain names. It is recommended that the name you select for a
-      new action begins with with a capital letter; that way, the name
-      won&#39;t conflict with a Shorewall-defined chain name.</para>
+      <para>Add a line to <filename><filename>/etc/shorewall/actions</filename></filename>
+      that names your new action. Action names must be valid shell variable
+      names as well as valid Netfilter chain names. It is recommended that the
+      name you select for a new action begins with with a capital letter; that
+      way, the name won&#39;t conflict with a Shorewall-defined chain name.</para>
     </listitem>
 
     <listitem>
       <para>Once you have defined your new action name (ActionName), then copy
-      /etc/shorewall/action.template to /etc/shorewall/action.ActionName (for
-      example, if your new action name is <quote>Foo</quote> then copy
-      /etc/shorewall/action.template to /etc/shorewall/action.foo).</para>
+      /etc/shorewall/action.template to <filename>/etc/shorewall/action.ActionName</filename>
+      (for example, if your new action name is <quote>Foo</quote> then copy
+      <filename>/etc/shorewall/action.template</filename> to
+      <filename>/etc/shorewall/action.Foo</filename>).</para>
     </listitem>
 
     <listitem>
@@ -70,13 +67,15 @@
   <itemizedlist>
     <listitem>
       <para>TARGET - Must be ACCEPT, DROP, REJECT, LOG, QUEUE or
-      &#60;action&#62; where &#60;action&#62; is a previously-defined action.
-      The TARGET may optionally be followed by a colon (<quote>:</quote>) and
-      a syslog log level (e.g, REJECT:info or ACCEPT:debugging). This causes
-      the packet to be logged at the specified level. You may also specify
-      ULOG (must be in upper case) as a log level.This will log to the ULOG
-      target for routing to a separate log through use of ulogd
-      (http://www.gnumonks.org/projects/ulogd).</para>
+      &#60;action&#62; where &#60;action&#62; is a previously-defined action
+      (that is, it must precede the action being defined in this file in your
+      <filename>/etc/shorewall/actions</filename> file). The TARGET may
+      optionally be followed by a colon (<quote>:</quote>) and a syslog log
+      level (e.g, REJECT:info or ACCEPT:debugging). This causes the packet to
+      be logged at the specified level. You may also specify ULOG (must be in
+      upper case) as a log level.This will log to the ULOG target for routing
+      to a separate log through use of ulogd (<ulink
+      url="http://www.gnumonks.org/projects/ulogd">http://www.gnumonks.org/projects/ulogd</ulink>).</para>
     </listitem>
 
     <listitem>
@@ -97,7 +96,8 @@
       MAC addresses are not allowed.</para>
 
       <para>Unlike in the SOURCE column, you may specify a range of up to 256
-      IP addresses using the syntax &#60;first ip&#62;-&#60;last ip&#62;.</para>
+      IP addresses using the syntax &#60;<emphasis>first ip</emphasis>&#62;-&#60;<emphasis>last
+      ip</emphasis>&#62;.</para>
     </listitem>
 
     <listitem>
@@ -107,20 +107,45 @@
 
     <listitem>
       <para>DEST PORT(S) - Destination Ports. A comma-separated list of Port
-      names (from /etc/services), port numbers or port ranges; if the protocol
-      is <quote>icmp</quote>, this column is interpreted as the destination
-      icmp-type(s).</para>
+      names (from <filename>/etc/services</filename>), port numbers or port
+      ranges; if the protocol is <quote>icmp</quote>, this column is
+      interpreted as the destination icmp-type(s).</para>
 
-      <para>A port range is expressed as &#60;low port&#62;:&#60;high
-      port&#62;.</para>
+      <para>A port range is expressed as &#60;<emphasis>low port</emphasis>&#62;:&#60;<emphasis>high
+      port</emphasis>&#62;.</para>
 
       <para>This column is ignored if PROTOCOL = all but must be entered if
       any of the following ields are supplied. In that case, it is suggested
       that this field contain <quote>-</quote>.</para>
 
       <para>If your kernel contains multi-port match support, then only a
-      single Netfilter rule will be generated if in this list and the CLIENT
-      PORT(S) list below:</para>
+      single Netfilter rule will be generated if in this list and in the
+      CLIENT PORT(S) list below:</para>
+
+      <orderedlist>
+        <listitem>
+          <para>There are 15 or less ports listed.</para>
+        </listitem>
+
+        <listitem>
+          <para>No port ranges are included.</para>
+        </listitem>
+      </orderedlist>
+
+      <para>Otherwise, a separate rule will be generated for each port.</para>
+    </listitem>
+
+    <listitem>
+      <para>SOURCE PORT(S) - Port(s) used by the client. If omitted, any
+      source port is acceptable. Specified as a comma-separated list of port
+      names, port numbers or port ranges.</para>
+
+      <para>If you don&#39;t want to restrict client ports but need to specify
+      an ADDRESS in the next column, then place &#34;-&#34; in this column.</para>
+
+      <para>If your kernel contains multi-port match support, then only a
+      single Netfilter rule will be generated if in this list and in the DEST
+      PORT(S) list above:</para>
 
       <orderedlist>
         <listitem>
@@ -139,11 +164,13 @@
       <para>RATE LIMIT - You may rate-limit the rule by placing a value in
       this column:</para>
 
-      <para><programlisting>     &#60;rate&#62;/&#60;interval&#62;[:&#60;burst&#62;]</programlisting>where
-      &#60;rate&#62; is the number of connections per &#60;interval&#62; (<quote>sec</quote>
-      or <quote>min</quote>) and &#60;burst&#62; is the largest burst
-      permitted. If no &#60;burst&#62; is given, a value of 5 is assumed.
-      There may be no whitespace embedded in the specification.</para>
+      <para><programlisting>     &#60;<emphasis>rate</emphasis>&#62;/&#60;<emphasis>interval</emphasis>&#62;[:&#60;<emphasis>burst</emphasis>&#62;]</programlisting>where
+      &#60;<emphasis>rate</emphasis>&#62; is the number of connections per
+      &#60;<emphasis>interval</emphasis>&#62; (<quote>sec</quote> or
+      <quote>min</quote>) and &#60;<emphasis>burst</emphasis>&#62; is the
+      largest burst permitted. If no &#60;<emphasis>burst</emphasis>&#62; is
+      given, a value of 5 is assumed. There may be no whitespace embedded in
+      the specification.</para>
 
       <para><programlisting>     Example: 10/sec:20</programlisting></para>
     </listitem>
@@ -151,9 +178,8 @@
 
   <para>Example:</para>
 
-  <para><emphasis role="bold">/etc/shorewall/actions:</emphasis></para>
+  <para><filename>/etc/shorewall/actions</filename>:</para>
 
-  <para><programlisting>     LogAndAccept</programlisting><emphasis
-  role="bold">/etc/shorewall/action.LogAndAccept</emphasis><programlisting>     LOG:info
+  <para><programlisting>     LogAndAccept</programlisting><phrase><filename>/etc/shorewall/action.LogAndAccept</filename></phrase><programlisting>     LOG:info
      ACCEPT</programlisting></para>
 </article>

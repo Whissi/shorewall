@@ -775,7 +775,7 @@ validate_rule() {
 	clientzone="$clients"
 	clients=
     else
-	clientzone="${clients%:*}"
+	clientzone="${clients%%:*}"
 	clients="${clients#*:}"
 	[ -z "$clientzone" -o -z "$clients" ] && \
 	   startup_error "Error: Empty source zone or qualifier: rule \"$rule\""
@@ -1631,7 +1631,11 @@ add_a_rule()
 	cli=`mac_match $client`
 	;;
     *)
-	cli="-i $client"
+        if [ "$client" != "${client%:*}" ]; then
+	    cli="-i ${client%:*} -s ${client#*:}"
+	else
+	    cli="-i $client"
+	fi
 	;;
     esac
 
@@ -1816,7 +1820,7 @@ process_rule() {
 	clientzone="$clients"
 	clients=
     else
-	clientzone="${clients%:*}"
+	clientzone="${clients%%:*}"
 	clients="${clients#*:}"
 	[ -z "$clientzone" -o -z "$clients" ] && \
 	   fatal_error "Error: Empty source zone or qualifier: rule \"$rule\""

@@ -34,6 +34,16 @@ Problems Corrected since version 1.4.6:
    IP address in the dynamic chain so that multiple 'allow' commands
    were required to re-enable traffic to/from the address.
 
+8) When ADD_SNAT_ALIASES=Yes in shorewall.conf, the following entry in
+   /etc/shorewall/masq resulted in a startup error:
+
+   eth0	eth1	 206.124.146.20-206.124.146.24
+
+9) Shorewall previously choked over IPV6 addresses configured on
+   interfaces in contexts where Shorewall needed to detect something
+   about the interface (such as when "detect" appears in the BROADCAST
+   column of the /etc/shorewall/interfaces file).
+
 Migration Issues:
 
 1) IP Traffic Accounting is changed from Snapshot 20030813. 

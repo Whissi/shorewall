@@ -269,6 +269,13 @@ encodeaddr() {
 # Enumerate the members of an IP range -- When using a shell supporting only
 # 32-bit signed arithmetic, the range cannot span 128.0.0.0.
 #
+# Comes in two flavors:
+#
+# ip_range() - produces a mimimal list of network/host addresses that spans 
+#              the range.
+#
+# ip_range_explicit() - explicitly enumerates the range.
+#
 ip_range() {
     local first last l x y z vlsm
 

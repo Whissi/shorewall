@@ -4572,6 +4572,7 @@ do_initialize() {
     FUNCTIONS=$SHARED_DIR/functions
 
     if [ -f $FUNCTIONS ]; then
+	echo "Loading $FUNCTIONS..."
 	. $FUNCTIONS
     else
 	startup_error "$FUNCTIONS does not exist!"
@@ -4868,6 +4869,14 @@ case "$command" in
 	my_mutex_off
 	;;
 
+    call)
+	#
+	# Undocumented way to call functions in /usr/share/shorewall/firewall directly
+	#
+	shift;
+	do_initialize
+	$@
+	;;
     *)
 	usage
 	;;

@@ -897,6 +897,15 @@ case "$1" in
 	temp=`broadcastaddress $address`; echo "   BROADCAST=$temp"
 	;;
 
+    call) 
+	#
+	# Undocumented way to call functions in /usr/share/shorewall/functions directly
+	#
+	shift;
+	get_config
+	. /usr/share/shorewall/functions
+	$@
+	;;
     *)
 	usage 1
 	;;

@@ -1,95 +1,99 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-     
+         
   <meta http-equiv="Content-Language" content="en-us">
-     
+         
   <meta http-equiv="Content-Type"
  content="text/html; charset=windows-1252">
-     
+         
   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
-     
+         
   <meta name="ProgId" content="FrontPage.Editor.Document">
   <title>Blacklisting Support</title>
 </head>
   <body>
-    
+      
 <table border="0" cellpadding="0" cellspacing="0"
  style="border-collapse: collapse;" bordercolor="#111111" width="100%"
  id="AutoNumber1" bgcolor="#400169" height="90">
-    <tbody>
-     <tr>
-      <td width="100%">            
+     <tbody>
+      <tr>
+       <td width="100%">                   
       <h1 align="center"><font color="#ffffff">Blacklisting Support</font></h1>
-      </td>
-    </tr>
-     
-  </tbody> 
+       </td>
+     </tr>
+         
+  </tbody>  
 </table>
-   
+     
 <p>Shorewall supports two different forms of blacklisting; static and dynamic.</p>
-   
+     
 <h2>Static Blacklisting</h2>
-   
-<p>Shorewall static blacklisting support has the following configuration parameters:</p>
-   
+     
+<p>Shorewall static blacklisting support has the following configuration
+parameters:</p>
+     
 <ul>
-    <li>You specify whether you want packets from blacklisted hosts dropped 
-or     rejected using the <a href="Documentation.htm#BLDisposition">BLACKLIST_DISPOSITION</a>
+     <li>You specify whether you want packets from blacklisted hosts dropped
+ or     rejected using the <a href="Documentation.htm#BLDisposition">BLACKLIST_DISPOSITION</a> 
      setting in /etc/shorewall/shorewall.conf</li>
-    <li>You specify whether you want packets from blacklisted hosts logged 
-and at     what syslog level using the <a
- href="Documentation.htm#BLLoglevel">BLACKLIST_LOGLEVEL</a>     setting in 
-/etc/shorewall/shorewall.conf</li>
-    <li>You list the IP addresses/subnets that you wish to blacklist in <a
- href="Documentation.htm#Blacklist">/etc/shorewall/blacklist.</a> Beginning 
-with Shorewall version 1.3.8, you may also specify PROTOCOL and Port numbers/Service 
-names in the blacklist file.<br>
-   </li>
-    <li>You specify the interfaces whose incoming packets you want checked 
-against     the blacklist using the "<a
+     <li>You specify whether you want packets from blacklisted hosts logged
+ and at     what syslog level using the <a
+ href="Documentation.htm#BLLoglevel">BLACKLIST_LOGLEVEL</a>     setting in
+ /etc/shorewall/shorewall.conf</li>
+     <li>You list the IP addresses/subnets that you wish to blacklist in
+    <a href="Documentation.htm#Blacklist">/etc/shorewall/blacklist.</a> Beginning
+ with Shorewall version 1.3.8, you may also specify PROTOCOL and Port numbers/Service
+ names in the blacklist file.<br>
+    </li>
+     <li>You specify the interfaces whose incoming packets you want checked
+ against     the blacklist using the "<a
  href="Documentation.htm#Interfaces">blacklist</a>"     option in /etc/shorewall/interfaces.</li>
-    <li>The black list is refreshed from /etc/shorewall/blacklist by the
+     <li>The black list is refreshed from /etc/shorewall/blacklist by the 
 "<a href="Documentation.htm#Starting">shorewall     refresh</a>" command.</li>
-   
+     
 </ul>
-   
+     
 <h2>Dynamic Blacklisting</h2>
-   
-<p>Dynamic blacklisting support was added in version 1.3.2. Dynamic blacklisting 
- doesn't use any configuration parameters but is rather controlled using 
-/sbin/shorewall commands:</p>
-   
+     
+<p>Dynamic blacklisting support was added in version 1.3.2. Dynamic blacklisting
+  doesn't use any configuration parameters but is rather controlled using
+ /sbin/shorewall commands:</p>
+     
 <ul>
-    <li>drop <i>&lt;ip address list&gt; </i>- causes packets from the listed 
-IP    addresses to be silently dropped by the firewall.</li>
-    <li>reject <i>&lt;ip address list&gt; </i>- causes packets from the listed 
-IP    addresses to be rejected by the firewall.</li>
-    <li>allow <i>&lt;ip address list&gt; </i>- re-enables receipt of packets 
-from hosts    previously blacklisted by a <i>deny</i> or <i>reject</i> command.</li>
-    <li>save - save the dynamic blacklisting configuration so that it will 
-be    automatically restored the next time that the firewall is restarted.</li>
-    <li>show dynamic - displays the dynamic blacklisting configuration.</li>
-   
+     <li>drop <i>&lt;ip address list&gt; </i>- causes packets from the listed
+ IP    addresses to be silently dropped by the firewall.</li>
+     <li>reject <i>&lt;ip address list&gt; </i>- causes packets from the
+listed  IP    addresses to be rejected by the firewall.</li>
+     <li>allow <i>&lt;ip address list&gt; </i>- re-enables receipt of packets
+ from hosts    previously blacklisted by a <i>deny</i> or <i>reject</i> command.</li>
+     <li>save - save the dynamic blacklisting configuration so that it will
+ be    automatically restored the next time that the firewall is restarted.</li>
+     <li>show dynamic - displays the dynamic blacklisting configuration.</li>
+     
 </ul>
-   
+Dynamic blacklisting is <u>not</u> dependent on the "blacklist" option in
+/etc/shorewall/interfaces.<br>
+     
 <p>Example 1:</p>
-   
-<pre>     shorewall drop 192.0.2.124 192.0.2.125</pre>
-   
+     
+<pre>     <b><font color="#009900">shorewall drop 192.0.2.124 192.0.2.125</font></b></pre>
+     
 <p>    Drops packets from hosts 192.0.2.124 and 192.0.2.125</p>
-   
+     
 <p>Example 2:</p>
-   
-<pre>     shorewall allow 192.0.2.125</pre>
-   
+     
+<pre>     <b><font color="#009900">shorewall allow 192.0.2.125</font></b></pre>
+     
 <p>    Reenables access from 192.0.2.125.</p>
-   
-<p><font size="2">Last updated 10/7/2002 - <a href="support.htm">Tom Eastep</a></font></p>
-    
-<p><font face="Trebuchet MS"><a href="copyright.htm"><font size="2">Copyright</font> 
- © <font size="2">2002 Thomas M. Eastep.</font></a></font></p>
-   <br>
+     
+<p><font size="2">Last updated 2/7/2003 - <a href="support.htm">Tom Eastep</a></font></p>
+      
+<p><font face="Trebuchet MS"><a href="copyright.htm"><font size="2">Copyright</font>
+  © <font size="2">2002, 2003 Thomas M. Eastep.</font></a></font></p>
+    <br>
+  <br>
  <br>
 </body>
 </html>

@@ -3615,13 +3615,17 @@ add_common_rules() {
     #
     # DHCP
     #
-    echo "Adding rules for DHCP"
+    interfaces=`find_interfaces_by_option dhcp`
 
-    for interface in `find_interfaces_by_option dhcp`; do
-	run_iptables -A `input_chain $interface` -p udp --dport 67:68 -j ACCEPT
-	run_iptables -A OUTPUT	  -o $interface	 -p udp --dport 67:68 -j ACCEPT
-    done
+    if [ -n "$interfaces" ]; then
 
+	echo "Adding rules for DHCP"
+
+	for interface in $interfaces; do
+	    run_iptables -A `input_chain $interface` -p udp --dport 67:68 -j ACCEPT
+	    run_iptables -A OUTPUT    -o $interface  -p udp --dport 67:68 -j ACCEPT
+	done
+    fi
     #
     # RFC 1918
     #

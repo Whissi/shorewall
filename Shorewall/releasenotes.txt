@@ -3,13 +3,22 @@ fixes.
 
 New features include:
 
-1) The new "Shorewall Setup Guide" is included in this release. This
-   guide is intended for users who have multiple static external IP
-   addresses and for users who what to learn a bit more abound
-   Shorewall than is described in the single-address guides.
+1) The 'icmp.def' file is now empty! The rules in that file were
+   required in ipchains firewalls but are not required in Shorewall. 
+   Users who have ALLOWRELATED=No in shorewall.conf should see the
+   Upgrade Issues.
+2) A 'FORWARDPING' option has been added to shorewall.conf. The effect
+   of setting this variable to Yes is the same as the effect of adding
+   an ACCEPT rule for ICMP echo-request in
+   /etc/shorewall/icmpdef. Users who have such a rule in icmpdef are
+   encouraged to switch to FORWARDPING=Yes.
+3) The loopback CLASS A Network (127.0.0.0/8) has been added to the
+   rfc1918 file.
+4) Shorewall now works with iptables 1.2.7.
+5) The documentation and Web site no longer use FrontPage themes.
 
-2) Shorewall now drops non-SYN tcp packets that are not part of an
-   established connection. These packets can be optionally logged by
-   setting the new LOGNEWNOTSYN variable in shorewall.conf.
+I would like to thank John Distler for his valuable input regarding TCP
+SYN and ICMP treatment in Shorewall. That input has led to marked
+improvement in Shorewall in the last two releases.
 
 

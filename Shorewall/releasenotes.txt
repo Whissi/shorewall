@@ -19,6 +19,18 @@ Problems Corrected:
    the output of the capabilities report was corrupted in the case
    where the capability was not available.
 
+4) Where a list of IP addresses appears in the DEST column of a DNAT[-]
+   rule, Shorewall incorrectly created multiple DNAT rules in the nat
+   table (one for each element in the list). Shorewall now correctly
+   creates a single DNAT rule with multiple "--to-destination" clauses.
+
+Migration Considerations:
+
+   This version of Shorewall uses shell features that aren't available
+   in all shells. Before you upgrade to this version of Shorewall, you
+   should download and run the 'shellcheck.sh' script from
+   http://shorewall.net/pub/shorewall/misc.
+
 New Features:
 
 1) A 'newnotsyn' interface option has been added. This option may be

@@ -1849,7 +1849,11 @@ add_nat_rule() {
 
     if [ -n "$serv" ]; then
 	servport="${servport:+:$servport}"
-	target1="DNAT --to-destination ${serv}${servport}"
+	serv1=
+	for srv in `separate_list $serv`; do
+	    serv1="$serv1 --to-destination ${srv}${servport}"
+	done
+	target1="DNAT $serv1"
     else
 	target1="REDIRECT --to-port $servport"
     fi
@@ -2111,26 +2115,28 @@ add_a_rule()
 
 	    if [ -z "$dnat_only" -a $chain != ${FW}2${FW} ]; then
 		if [ -n "$serv" ]; then
-		    for srv in `ip_range $serv`; do
-			if [ -n "$addr" -a -n "$CONNTRACK_MATCH" ]; then
-			    for adr in $addr; do
+		    for serv1 in `separate_list $serv`; do
+			for srv in `ip_range $serv1`; do
+			    if [ -n "$addr" -a -n "$CONNTRACK_MATCH" ]; then
+				for adr in $addr; do
+				    if [ -n "$loglevel" -a -z "$natrule" ]; then
+					log_rule $loglevel $chain $logtarget -m conntrack --ctorigdst $adr \
+					    `fix_bang $proto $sports $multiport $state $cli -d $srv $dports`
+				    fi
+
+				    run_iptables2 -A $chain $proto $multiport $state $cli $sports \
+					-d $srv $dports -m conntrack --ctorigdst $adr -j $target
+				done
+			    else
 				if [ -n "$loglevel" -a -z "$natrule" ]; then
-				    log_rule $loglevel $chain $logtarget -m conntrack --ctorigdst $adr \
+				    log_rule $loglevel $chain $logtarget \
 					`fix_bang $proto $sports $multiport $state $cli -d $srv $dports`
 				fi
 
 				run_iptables2 -A $chain $proto $multiport $state $cli $sports \
-				    -d $srv $dports -m conntrack --ctorigdst $adr -j $target
-			    done
-			else
-			    if [ -n "$loglevel" -a -z "$natrule" ]; then
-				log_rule $loglevel $chain $logtarget \
-				    `fix_bang $proto $sports $multiport $state $cli -d $srv $dports`
+				    -d $srv $dports -j $target
 			    fi
-
-			    run_iptables2 -A $chain $proto $multiport $state $cli $sports \
-				-d $srv $dports -j $target
-			fi
+			done
 		    done
 		else
 		    if [ -n "$loglevel" -a -z "$natrule" ]; then
@@ -2327,42 +2333,83 @@ process_rule() # $1 = target
 
     # Generate Netfilter rule(s)
 
-    if [ -n "$MULTIPORT" -a \
-	 "$ports" = "${ports%:*}" -a \
-	 "$cports" = "${cports%:*}" -a \
-	 `list_count $ports` -le 15 -a \
-	 `list_count $cports` -le 15 ]
-    then
-	#
-	# MULTIPORT is enabled, there are no port ranges in the rule and less than
-	# 16 ports are listed - use multiport match.
-	#
-	multioption="-m multiport"
-	for client in `separate_list ${clients:=-}`; do
-	    for server in `separate_list ${servers:=-}`; do
-		#
-		# add_a_rule() modifies these so we must set their values each time
-		#
-		port=${ports:=-}
-		cport=${cports:=-}
-		add_a_rule
-	    done
-	done
-    else
-	#
-	# MULTIPORT is disabled or the rule isn't compatible with multiport match
-	#
-	multioption=
-	for client in `separate_list ${clients:=-}`; do
-	    for server in `separate_list ${servers:=-}`; do
-		for port in `separate_list ${ports:=-}`; do
-		    for cport in `separate_list ${cports:=-}`; do
+    case $logtarget in
+	DNAT*)
+	    if [ -n "$MULTIPORT" -a \
+		"$ports" = "${ports%:*}" -a \
+		"$cports" = "${cports%:*}" -a \
+		`list_count $ports` -le 15 -a \
+		`list_count $cports` -le 15 ]
+		then
+	        #
+	        # MULTIPORT is enabled, there are no port ranges in the rule and less than
+	        # 16 ports are listed - use multiport match.
+	        #
+		multioption="-m multiport"
+		for client in `separate_list ${clients:=-}`; do
+		    #
+		    # add_a_rule() modifies these so we must set their values each time
+		    #
+		    server=${servers:=-}
+		    port=${ports:=-}
+		    cport=${cports:=-}
+		    add_a_rule
+		done
+	    else
+	        #
+	        # MULTIPORT is disabled or the rule isn't compatible with multiport match
+	        #
+		multioption=
+		for client in `separate_list ${clients:=-}`; do
+		    for port in `separate_list ${ports:=-}`; do
+			for cport in `separate_list ${cports:=-}`; do
+			    server=${servers:=-}
+			    add_a_rule
+			done
+		    done
+		done
+	    fi
+	    ;;
+	*)
+
+	    if [ -n "$MULTIPORT" -a \
+		"$ports" = "${ports%:*}" -a \
+		"$cports" = "${cports%:*}" -a \
+		`list_count $ports` -le 15 -a \
+		`list_count $cports` -le 15 ]
+		then
+	        #
+	        # MULTIPORT is enabled, there are no port ranges in the rule and less than
+	        # 16 ports are listed - use multiport match.
+	        #
+		multioption="-m multiport"
+		for client in `separate_list ${clients:=-}`; do
+		    for server in `separate_list ${servers:=-}`; do
+		        #
+		        # add_a_rule() modifies these so we must set their values each time
+		        #
+			port=${ports:=-}
+			cport=${cports:=-}
 			add_a_rule
 		    done
 		done
-	    done
-	done
-    fi
+	    else
+	        #
+	        # MULTIPORT is disabled or the rule isn't compatible with multiport match
+	        #
+		multioption=
+		for client in `separate_list ${clients:=-}`; do
+		    for server in `separate_list ${servers:=-}`; do
+			for port in `separate_list ${ports:=-}`; do
+			    for cport in `separate_list ${cports:=-}`; do
+				add_a_rule
+			    done
+			done
+		    done
+		done
+	    fi
+	    ;;
+    esac
     #
     # Report Result
     #
@@ -2872,7 +2919,7 @@ decodeaddr() {
     IFS=.
 
     for x in $1; do
-	temp=$(( $(( $temp << 8 )) | $x ))
+	temp=$(( $(( $temp $LEFTSHIFT 8 )) | $x ))
     done
 
     echo $temp
@@ -2926,8 +2973,9 @@ ip_range() {
 # Netmask from CIDR
 #
 ip_netmask() {
-    echo $(( -1 << $((32 - ${1#*/})) ))
+    echo $(( -1 $LEFTSHIFT $((32 - ${1#*/})) ))
 }
+
 #
 # Network address from CIDR
 #
@@ -4551,6 +4599,18 @@ added_param_value_no() # $1 = Parameter Name, $2 = Parameter value
 # Initialize this program
 #
 do_initialize() {
+    #
+    # Code to see if shell can support xor
+    #
+    check_xor() {
+	echo $(( 256 ^ -1 ))
+    }
+    
+    check_xor1() {
+	local x=`check_xor 2> /dev/null`
+	[ -n "$x" ] && echo $x || echo 0
+    }
+
     # Run all utility programs using the C locale
     #
     # Thanks to Vincent Planchenault for this tip #
@@ -4562,6 +4622,10 @@ do_initialize() {
     # Establish termination function
     #
     terminator=startup_error
+    #
+    # So that emacs doesn't get lost
+    #
+    LEFTSHIFT='<<'
     #
     # Clear all configuration variables
     #
@@ -4750,7 +4814,15 @@ do_initialize() {
     # Determine the capabilities of the installed iptables/netfilter
     #
     determine_capabilities
+    #
+    # Check out the user's shell
+    #
+    [ -n "$SHOREWALL_SHELL" ] || SHOREWALL_SHELL=/bin/sh
 
+    temp=`decodeaddr 192.168.1.1` 
+    if [ `encodeaddr $temp` != 192.168.1.1 -o `check_xor1` -ne -257 ]; then
+	startup_error "Shell $SHOREWALL_SHELL is broken and may not be used with Shorewall"
+    fi
 }
 
 #

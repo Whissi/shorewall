@@ -4465,7 +4465,6 @@ case "$command" in
 	do_initialize
 	my_mutex_on
 	echo -n "Stopping Shorewall..."
-	determine_zones
 	stop_firewall
 	[ -n "$SUBSYSLOCK" ] && rm -f $SUBSYSLOCK
 	echo "done."
@@ -4546,7 +4545,6 @@ case "$command" in
 	do_initialize
 	my_mutex_on
 	echo -n "Clearing Shorewall..."
-	determine_zones
 	clear_firewall
 	[ -n "$SUBSYSLOCK" ] && rm -f $SUBSYSLOCK
 	echo "done."

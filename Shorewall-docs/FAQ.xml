@@ -1897,6 +1897,33 @@ Creating input Chains...
       (READ HELP)</emphasis></quote> on the Netfilter Configuration menu.
       Otherwise, DNAT rules with your firewall as the source zone won&#39;t
       work with your new kernel.</para>
+
+      <section id="faq27a">
+        <title>(FAQ 27a) I just built and installed a new kernel and now
+        Shorewall won&#39;t start. I know that my kernel options are correct.</title>
+
+        <para>The last few lines of <ulink url="troubleshoot.htm">a startup
+        trace</ulink> are these:</para>
+
+        <programlisting>+ run_iptables2 -t nat -A eth0_masq -s 192.168.2.0/24 -d 0.0.0.0/0 -j
+MASQUERADE
++ &#39;[&#39; &#39;x-t nat -A eth0_masq -s 192.168.2.0/24 -d 0.0.0.0/0 -j
+MASQUERADE&#39; = &#39;x-t nat -A eth0_masq -s 192.168.2.0/24 -d 0.0.0.
+0/0 -j MASQUERADE&#39; &#39;]&#39;
++ run_iptables -t nat -A eth0_masq -s 192.168.2.0/24 -d 0.0.0.0/0 -j
+MASQUERADE
++ iptables -t nat -A eth0_masq -s 192.168.2.0/24 -d 0.0.0.0/0 -j
+MASQUERADE
+iptables: Invalid argument
++ &#39;[&#39; -z &#39;&#39; &#39;]&#39;
++ stop_firewall
++ set +x</programlisting>
+
+        <para><emphasis role="bold">Answer:</emphasis> Your new kernel
+        contains headers that are incompatible with the ones used to compile
+        your <command>iptables</command> utility. You need to rebuild
+        <command>iptables</command> using your new kernel source.</para>
+      </section>
     </section>
 
     <section id="faq28">
@@ -1914,7 +1941,8 @@ Creating input Chains...
   <appendix>
     <title>Revision History</title>
 
-    <para><revhistory><revision><revnumber>1.13</revnumber><date>2004-01-24</date><authorinitials>TE</authorinitials><revremark>Add
+    <para><revhistory><revision><revnumber>1.14</revnumber><date>2004-01-24</date><authorinitials>TE</authorinitials><revremark>Added
+    FAQ 27a regarding kernel/iptables incompatibility.<emphasis role="bold"></emphasis></revremark></revision><revision><revnumber>1.13</revnumber><date>2004-01-24</date><authorinitials>TE</authorinitials><revremark>Add
     a note about the <emphasis role="bold">detectnets</emphasis> interface
     option in FAQ 9.</revremark></revision><revision><revnumber>1.12</revnumber><date>2004-01-20</date><authorinitials>TE</authorinitials><revremark>Improve
     FAQ 16 answer.</revremark></revision><revision><revnumber>1.11</revnumber><date>2004-01-14</date><authorinitials>TE</authorinitials><revremark>Corrected

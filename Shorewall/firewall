@@ -1844,12 +1844,34 @@ add_nat_rule() {
 	target1="REDIRECT --to-port $servport"
     fi
 
+    if [ $source = $FW ]; then
+	[ -n "$excludezones" ] && fatal_error "Invalid Source in rule \"$rule\""
+    fi
+
     # Generate nat table rules
 
     if [ $command != check ]; then
 	if [ "$source" = "$FW" ]; then
-	    run_iptables2 -t nat -A OUTPUT $proto $sports -d $addr \
-		$multiport $dports -j $target1
+	    if [ -n "$excludedests" ]; then
+		chain=nonat${nonat_seq}
+		nonat_seq=$(($nonat_seq + 1))
+		createnatchain $chain
+		run_iptables -t nat -A OUTPUT $cli $proto $multiport $sports $dports -j $chain
+		for adr in $excludedests; do
+		    addnatrule $chain -d $adr -j RETURN
+		done
+
+		if [ -n "$loglevel" ]; then
+		    log_rule $loglevel OUTPUT $logtarget -t nat
+		fi
+
+		addnatrule $chain -j $target1
+	    else
+		for adr in `separate_list $addr`; do
+		    run_iptables2 -t nat -A OUTPUT $proto $sports -d $adr \
+			$multiport $dports -j $target1
+		done
+	    fi
 	else
 	    chain=`dnat_chain $source`
 
@@ -1873,11 +1895,10 @@ add_nat_rule() {
 
 		for adr in `separate_list $addr`; do
 		    if [ -n "$loglevel" ]; then
-			ensurenatchain $chain
 			log_rule $loglevel $chain $logtarget -t nat -d `fix_bang $adr`
 		    fi
 
-		    addnatrule $chain -j $target1
+		    addnatrule $chain -d $adr -j $target1
 		done
 	    else
 		for adr in `separate_list $addr`; do

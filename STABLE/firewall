@@ -542,6 +542,9 @@ determine_hosts() {
 		    interfaces="$interfaces $interface"
 		fi
 	    fi
+
+	    [ "${host#*:}" = "0.0.0.0/0" ] || \
+		eval ${zone}_is_complex=Yes
 	done
 
 	eval ${zone}_interfaces="\$interfaces"
@@ -605,6 +608,10 @@ validate_interfaces_file() {
 		    ;;
 		routefilter|dropunclean|logunclean|blacklist|proxyarp|maclist|-)
 		    ;;
+		routeback)
+		    [ -n "$z" ] || startup_error "The routeback option may not be specified on a multi-zone interface"
+		    eval ${z}_routeback=\"$interface:0.0.0.0/0 \$${z}_routeback\"
+		    ;;
 		*)
 		    error_message "Warning: Invalid option ($option) in record \"$r\""
 		    ;;
@@ -634,6 +641,9 @@ validate_hosts_file() {
 	    for option in `separate_list $options`; do
 		case $option in
 		    maclist|-)
+			;;
+		    routeback)
+			eval ${z}_routeback=\"$host \$${z}_routeback\"
 			;;
 		    *)
 			error_message "Warning: Invalid option ($option) in record \"$r\""
@@ -1453,7 +1463,7 @@ setup_ecn() # $1 = file name
     while read interface host; do
 	expandv interface host
 	list_search  $interface $all_interfaces || \
-	    startup_error "Unknown interface $interface"	
+	    startup_error "Unknown interface $interface"
 	list_search $interface $interfaces || \
 	    interfaces="$interfaces $interface"
 	[ "x$host" = "x-" ] && host=
@@ -1464,7 +1474,7 @@ setup_ecn() # $1 = file name
 
     if [ -n "$interfaces" ]; then
 	echo "Setting up ECN control on${interfaces}..."
-	
+
 	for interface in $interfaces; do
 	    chain=`ecn_chain $interface`
 	    if mangle_chain_exists $chain; then
@@ -1475,7 +1485,7 @@ setup_ecn() # $1 = file name
 		run_iptables -t mangle -A OUTPUT      -p tcp -o $interface -j $chain
 	    fi
 	done
-	
+
 	for host in $hosts; do
 	    interface=${host%:*}
 	    h=${host#*:}
@@ -1637,44 +1647,44 @@ check_config() {
     }
 
     disclaimer
-    
+
     echo "Verifying Configuration..."
 
     verify_os_version
-	
+
     load_kernel_modules
-    
+
     echo "Determining Zones..."
-	
+
     determine_zones
-	
+
     [ -z "$zones" ] && startup_error "ERROR: No Zones Defined"
-	
+
     display_list "Zones:" $zones
-	
+
     echo "Validating interfaces file..."
-	
+
     validate_interfaces_file
-	
+
     echo "Validating hosts file..."
-	
+
     validate_hosts_file
-		
+
     echo "Determining Hosts in Zones..."
 
     determine_interfaces
     determine_hosts
 
     echo "Validating policy file..."
-	
-    validate_policy	
+
+    validate_policy
 
     echo "Validating rules file..."
 
     rules=`find_file rules`
     strip_file rules $rules
     process_rules
-		
+
     rm -rf $TMP_DIR
 
     echo "Configuration Validated"
@@ -1997,10 +2007,10 @@ add_a_rule()
 	    elif [ -n "$servport" -a "$servport" != "$port" ]; then
 		add_nat_rule
 	    fi
-	    
+
 	    if [ -z "$dnat_only" -a $chain != ${FW}2${FW} ]; then
 		serv="${serv:+-d $serv}"
-		
+
 		if [ -n "$loglevel" ]; then
 		    if [ "$loglevel" = ULOG ]; then
 			run_iptables2 -A $chain $proto $multiport \
@@ -2013,7 +2023,7 @@ add_a_rule()
 			    --log-level $loglevel
 		    fi
 		fi
-		
+
 
 		run_iptables2 -A $chain $proto $multiport $state $cli $sports \
 		    $serv $dports -j $target
@@ -3185,15 +3195,16 @@ initialize_netfilter () {
     setcontinue FORWARD
     setcontinue INPUT
     setcontinue OUTPUT
+
     #
     # Allow DNS lookups during startup for FQDNs and deep-six INVALID packets
     #
 
     for chain in INPUT OUTPUT FORWARD; do
 	run_iptables -A $chain -p udp --dport 53 -j ACCEPT
-	run_iptables -A $chain -m state --state INVALID -j DROP
+	run_iptables -A $chain -p ! icmp -m state --state INVALID -j DROP
     done
-    
+
     [ -n "$CLAMPMSS" ] && \
 	run_iptables -A FORWARD -p tcp \
 	    --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
@@ -3661,6 +3672,13 @@ activate_rules()
 	chain1=`rules_chain $FW $zone`
 	chain2=`rules_chain $zone $FW`
 
+	eval complex=\$${zone}_is_complex
+
+	if [ -n "$complex" ]; then
+	    frwd_chain=${zone}_frwd
+	    createchain $frwd_chain No
+	fi
+
 	echo "$FW $zone $chain1" >> ${STATEDIR}/chains
 	echo "$zone $FW $chain2" >> ${STATEDIR}/chains
 
@@ -3678,6 +3696,8 @@ activate_rules()
 
 	    run_iptables -A `input_chain $interface` -s $subnet -j $chain2
 
+	    [ -n "$complex" ] && \
+		run_iptables -A `forward_chain $interface` -s $subnet -j $frwd_chain
 	done
 
 	for zone1 in $zones; do
@@ -3685,24 +3705,34 @@ activate_rules()
 	    eval policy=\$${zone}2${zone1}_policy
 
 	    [ "$policy" = NONE ] && continue
-	    
+
 	    eval dest_hosts=\$${zone1}_hosts
 
 	    chain="`rules_chain $zone $zone1`"
 
 	    echo "$zone $zone1 $chain" >> ${STATEDIR}/chains
 
+	    if [ $zone = $zone1 ]; then
+		eval routeback=\"\$${zone}_routeback\"
+	    else
+		routeback=
+	    fi
+	    
 	    for host in $source_hosts; do
 		interface=${host%:*}
-		subnet=${host#*:}
-		chain1=`forward_chain $interface`
+
+		if [ -n "$complex" ]; then
+		    chain1=$frwd_chain
+		else
+		    chain1=`forward_chain $interface`
+		fi
 
 		for host1 in $dest_hosts; do
 		    interface1=${host1%:*}
 		    subnet1=${host1#*:}
 
-		    if [ "$host" != "$host1" ]; then
-			run_iptables -A $chain1 -s $subnet -o $interface1 -d $subnet1 -j $chain
+		    if [ "$host" != "$host1" ] || list_search $host $routeback; then
+			run_iptables -A $chain1 -o $interface1 -d $subnet1 -j $chain
 		    fi
 		done
 	    done
@@ -3795,7 +3825,7 @@ define_firewall() # $1 = Command (Start or Restart)
 
     ecn=`find_file ecn`
 
-    [ -f $ecn ] && [ -n "$MANGLE_ENABLED" ] && setup_ecn $ecn    
+    [ -f $ecn ] && [ -n "$MANGLE_ENABLED" ] && setup_ecn $ecn
 
     [ -n "$TC_ENABLED" ] && setup_tc
 
@@ -3850,7 +3880,7 @@ refresh_firewall()
 
     ecn=`find_file ecn`
 
-    [ -f $ecn ] && [ -n "$MANGLE_ENABLED" ] && setup_ecn $ecn    
+    [ -f $ecn ] && [ -n "$MANGLE_ENABLED" ] && setup_ecn $ecn
     #
     # Refresh Traffic Control
     #
@@ -4547,7 +4577,7 @@ case "$command" in
 	do_initialize
 	check_config
 	;;
-    
+
     add)
 	[ $# -ne 3 ] && usage
 	do_initialize

@@ -1,263 +1,255 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-
-
+         
   <meta http-equiv="Content-Type"
  content="text/html; charset=windows-1252">
   <title>Shorewall 1.4 Errata</title>
-
-
-
+                
   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
-
-
+         
   <meta name="ProgId" content="FrontPage.Editor.Document">
-
-
+         
   <meta name="Microsoft Theme" content="none">
-
+        
   <meta name="author" content="Tom Eastep">
 </head>
   <body>
-
+    
 <table border="0" cellpadding="0" cellspacing="0"
  style="border-collapse: collapse;" width="100%" id="AutoNumber1"
  bgcolor="#400169" height="90">
-                         <tbody>
-                         <tr>
-                           <td width="100%">
-
-
+                           <tbody>
+                           <tr>
+                             <td width="100%">                
       <h1 align="center"><font color="#ffffff">Shorewall Errata/Upgrade Issues</font></h1>
-                           </td>
-                         </tr>
-
-
-  </tbody>
+                             </td>
+                           </tr>
+         
+  </tbody>  
 </table>
-
+    
 <p align="center">       <b><u>IMPORTANT</u></b></p>
-
+    
 <ol>
-                         <li>
-
-
+                           <li>            
     <p align="left">          <b><u>I</u>f you use a Windows system to download
-          a corrected     script, be sure to run the script through <u>
+           a corrected     script, be sure to run the script through <u>
          <a href="http://www.megaloman.com/%7Ehany/software/hd2u/"
  style="text-decoration: none;"> dos2unix</a></u>      after you have moved
-          it to your Linux system.</b></p>
-                                      </li>
-                         <li>
-
-
+           it to your Linux system.</b></p>
+                                        </li>
+                           <li>            
     <p align="left">          <b>If you are installing Shorewall for the first
 time and plan to use the        .tgz and install.sh script, you can untar
 the archive, replace the        'firewall' script in the untarred directory
-          with the one you downloaded        below, and then run install.sh.</b></p>
-                                      </li>
-                         <li>
-
-
+           with the one you downloaded        below, and then run install.sh.</b></p>
+                                        </li>
+                           <li>            
     <p align="left">          <b>When the instructions say to install a corrected
-        firewall   script in        /usr/share/shorewall/firewall, you may
- rename the existing file before copying in the new file.</b></p>
-                 </li>
-                 <li>
-
+         firewall   script in        /usr/share/shorewall/firewall, you may
+  rename the existing file before copying in the new file.</b></p>
+                   </li>
+                   <li>           
     <p align="left"><b><font color="#ff0000">DO NOT INSTALL CORRECTED COMPONENTS
-       ON A RELEASE EARLIER THAN THE ONE THAT THEY ARE LISTED UNDER BELOW.
- For    example,  do NOT install the 1.3.9a firewall script if you are running
-  1.3.7c.</font></b><br>
-                             </p>
-                 </li>
-
+        ON A RELEASE EARLIER THAN THE ONE THAT THEY ARE LISTED UNDER BELOW.
+  For    example,  do NOT install the 1.3.9a firewall script if you are running
+   1.3.7c.</font></b><br>
+                               </p>
+                   </li>
+    
 </ol>
-
+    
 <ul>
-                         <li><b><a href="upgrade_issues.htm">Upgrade Issues</a></b></li>
-    <li><b><a href="#V1.4">Problems in Version 1.4</a></b><br>
-    </li>
-                         <li>                            <b><a
+                           <li><b><a href="upgrade_issues.htm">Upgrade Issues</a></b></li>
+      <li><b><a href="#V1.4">Problems in Version 1.4</a></b><br>
+      </li>
+                           <li>                            <b><a
  href="errata_3.html">Problems      in  Version    1.3</a></b></li>
-                         <li>                            <b><a
+                           <li>                            <b><a
  href="errata_2.htm">Problems      in  Version 1.2</a></b></li>
-                         <li>                            <b><font
+                           <li>                            <b><font
  color="#660066">       <a href="errata_1.htm">Problems in Version 1.1</a></font></b></li>
-                         <li>                            <b><font
+                           <li>                            <b><font
  color="#660066"><a href="#iptables">    Problem with iptables version 1.2.3
-    on RH7.2</a></font></b></li>
-                         <li>                            <b><a
+     on RH7.2</a></font></b></li>
+                           <li>                            <b><a
  href="#Debug">Problems      with   kernels  &gt;= 2.4.18 and            RedHat
 iptables</a></b></li>
-                         <li><b><a href="#SuSE">Problems installing/upgrading
-  RPM   on  SuSE</a></b></li>
-                         <li><b><a href="#Multiport">Problems with iptables
- version     1.2.7    and       MULTIPORT=Yes</a></b></li>
-                   <li><b><a href="#NAT">Problems with RH Kernel 2.4.18-10
- and   NAT</a></b><br>
-                   </li>
-
+                           <li><b><a href="#SuSE">Problems installing/upgrading
+   RPM   on  SuSE</a></b></li>
+                           <li><b><a href="#Multiport">Problems with iptables
+  version     1.2.7    and       MULTIPORT=Yes</a></b></li>
+                     <li><b><a href="#NAT">Problems with RH Kernel 2.4.18-10
+  and   NAT</a></b><br>
+                     </li>
+    
 </ul>
-
-<hr>
+    
+<hr>  
 <h2 align="left"><a name="V1.4"></a>Problems in Version 1.4</h2>
-
-
+     
 <h3></h3>
-
-<h3>1.4.0</h3>
+    
+<h3>1.4.1a, 1.4.1 and 1.4.0</h3>
 <ul>
-  <li>When running under certain shells Shorewall will attempt to create
-ECN rules even when /etc/shorewall/ecn is empty. You may either just remove
-/etc/shorewall/ecn or you can install <a
- href="http://www.shorewall.net/pub/shorewall/errata/1.4.0/firewall">this
-correct script</a> in /usr/share/shorewall/firewall as described above.<br>
+  <li>Some TCP requests are rejected in the 'common' chain with an ICMP port-unreachable
+response rather than the more appropriate TCP RST response. This problem
+is corrected in this updated common.def file which may be installed in /etc/shorewall/common.def.<br>
   </li>
 </ul>
-<hr width="100%" size="2">
+<h3>1.4.1</h3>
+ 
+<ul>
+   <li>When a "shorewall check" command is executed, each "rule" produces 
+the harmless additional message:<br>
+     <br>
+      /usr/share/shorewall/firewall: line 2174: [: =: unary operator expected<br>
+     <br>
+ You may correct the problem by installing <a
+ href="ftp://ftp.shorewall.net/pub/shorewall/errata/1.4.1/firewall"
+ target="_top">this corrected script</a> in /usr/share/shorewall/firewall 
+as described above.<br>
+   </li>
+ 
+</ul>
+ 
+<h3>1.4.0</h3>
+   
+<ul>
+    <li>When running under certain shells Shorewall will attempt to create
+ ECN rules even when /etc/shorewall/ecn is empty. You may either just remove
+ /etc/shorewall/ecn or you can install <a
+ href="http://www.shorewall.net/pub/shorewall/errata/1.4.0/firewall">this
+ correct script</a> in /usr/share/shorewall/firewall as described above.<br>
+    </li>
+   
+</ul>
+   
+<hr width="100%" size="2">  
 <h2 align="left"><a name="Upgrade"></a>Upgrade Issues</h2>
-
+    
 <p align="left">The upgrade issues have moved to           <a
  href="upgrade_issues.htm">a separate page</a>.</p>
-
-<hr>
+    
+<hr>  
 <h3 align="left"><a name="iptables"></a><font color="#660066">  Problem with
-          iptables version 1.2.3</font></h3>
-
-<blockquote>
-
+           iptables version 1.2.3</font></h3>
+    
+<blockquote>       
   <p align="left">There are a couple of serious bugs in iptables 1.2.3 that
-                   prevent it from working with Shorewall. Regrettably,
+                    prevent it from working with Shorewall. Regrettably,
 RedHat       released    this buggy iptables in RedHat   7.2. </p>
-
-
+         
   <p align="left"> I have built a <a
  href="ftp://ftp.shorewall.net/pub/shorewall/errata/iptables-1.2.3-3.i386.rpm">
-            corrected 1.2.3 rpm which you can download here</a>  and I have
-  also     built            an <a
+             corrected 1.2.3 rpm which you can download here</a>  and I have
+   also     built            an <a
  href="ftp://ftp.shorewall.net/pub/shorewall/iptables-1.2.4-1.i386.rpm">
  iptables-1.2.4   rpm which you can download here</a>. If  you are currently
-          running RedHat 7.1, you can install either of these RPMs
-      <b><u>before</u>        </b>you upgrade to RedHat 7.2.</p>
-
-
+           running RedHat 7.1, you can install either of these RPMs     
+   <b><u>before</u>        </b>you upgrade to RedHat 7.2.</p>
+         
   <p align="left"><font color="#ff6633"><b>Update   11/9/2001: </b></font>RedHat
-          has   released an iptables-1.2.4 RPM of their own which you can
-download         from<font color="#ff6633">   <a
+           has   released an iptables-1.2.4 RPM of their own which you can
+ download         from<font color="#ff6633">   <a
  href="http://www.redhat.com/support/errata/RHSA-2001-144.html">http://www.redhat.com/support/errata/RHSA-2001-144.html</a>.
-             </font>I have installed this RPM   on my firewall and it works
-  fine.</p>
-
-
+              </font>I have installed this RPM   on my firewall and it works
+   fine.</p>
+         
   <p align="left">If you         would like to patch iptables 1.2.3 yourself,
-          the patches are available         for download. This <a
+           the patches are available         for download. This <a
  href="ftp://ftp.shorewall.net/pub/shorewall/errata/iptables-1.2.3/loglevel.patch">patch</a>
-               which corrects a problem with parsing of the --log-level specification
-          while         this <a
+                which corrects a problem with parsing of the --log-level
+specification            while         this <a
  href="ftp://ftp.shorewall.net/pub/shorewall/errata/iptables-1.2.3/tos.patch">patch</a>
-                   corrects a problem in handling the  TOS target.</p>
-
-
+                    corrects a problem in handling the  TOS target.</p>
+         
   <p align="left">To install one of the above patches:</p>
-
-
+         
   <ul>
-                                <li>cd iptables-1.2.3/extensions</li>
-                                <li>patch -p0 &lt; <i>the-patch-file</i></li>
-
-
+                                  <li>cd iptables-1.2.3/extensions</li>
+                                  <li>patch -p0 &lt; <i>the-patch-file</i></li>
+         
   </ul>
-                                 </blockquote>
-
-
-<h3><a name="Debug"></a>Problems with kernels &gt;= 2.4.18
-              and RedHat iptables</h3>
-
-<blockquote>
-
+                                   </blockquote>
+     
+<h3><a name="Debug"></a>Problems with kernels &gt;= 2.4.18               and
+RedHat iptables</h3>
+    
+<blockquote>       
   <p>Users who use RedHat iptables RPMs and who upgrade to kernel 2.4.18/19
-          may     experience the following:</p>
-
-
-  <blockquote>
-
+           may     experience the following:</p>
+         
+  <blockquote>           
     <pre># shorewall start<br>Processing /etc/shorewall/shorewall.conf ...<br>Processing /etc/shorewall/params ...<br>Starting Shorewall...<br>Loading Modules...<br>Initializing...<br>Determining Zones...<br>Zones: net<br>Validating interfaces file...<br>Validating hosts file...<br>Determining Hosts in Zones...<br>Net Zone: eth0:0.0.0.0/0<br>iptables: libiptc/libip4tc.c:380: do_check: Assertion<br>`h-&gt;info.valid_hooks == (1 &lt;&lt; 0 | 1 &lt;&lt; 3)' failed.<br>Aborted (core dumped)<br>iptables: libiptc/libip4tc.c:380: do_check: Assertion<br>`h-&gt;info.valid_hooks == (1 &lt;&lt; 0 | 1 &lt;&lt; 3)' failed.<br>Aborted (core dumped)<br></pre>
-                         </blockquote>
-
-
-  <p>The RedHat iptables RPM is compiled with debugging enabled but the
-   user-space debugging code was not updated to reflect recent changes in
-          the     Netfilter 'mangle' table. You can correct the problem by
- installing            <a
+                           </blockquote>
+         
+  <p>The RedHat iptables RPM is compiled with debugging enabled but the  
+ user-space debugging code was not updated to reflect recent changes in  
+        the     Netfilter 'mangle' table. You can correct the problem by
+  installing            <a
  href="http://www.shorewall.net/pub/shorewall/iptables-1.2.5-1.i386.rpm">
-              this iptables RPM</a>. If you are already running a 1.2.5 version
-      of       iptables, you will need to specify the --oldpackage option
-to   rpm   (e.g.,        "iptables -Uvh --oldpackage iptables-1.2.5-1.i386.rpm").</p>
-                       </blockquote>
-
-
+               this iptables RPM</a>. If you are already running a 1.2.5
+version        of       iptables, you will need to specify the --oldpackage
+option  to   rpm   (e.g.,        "iptables -Uvh --oldpackage iptables-1.2.5-1.i386.rpm").</p>
+                         </blockquote>
+     
 <h3><a name="SuSE"></a>Problems                                installing/upgrading
-          RPM on SuSE</h3>
-
-
-<p>If you find that rpm complains about a conflict
-        with kernel &lt;= 2.2 yet you have a 2.4 kernel
-              installed, simply use the "--nodeps" option to
-                   rpm.</p>
-
-
+           RPM on SuSE</h3>
+     
+<p>If you find that rpm complains about a conflict         with kernel &lt;= 
+2.2 yet you have a 2.4 kernel               installed, simply use the "--nodeps" 
+option to                    rpm.</p>
+     
 <p>Installing: rpm -ivh --nodeps <i>&lt;shorewall rpm&gt;</i></p>
-
-
+     
 <p>Upgrading: rpm -Uvh --nodeps <i>&lt;shorewall rpm&gt;</i></p>
-
-
-<h3><a name="Multiport"></a><b>Problems with
-  iptables version 1.2.7 and MULTIPORT=Yes</b></h3>
-
-
-<p>The iptables 1.2.7 release of iptables has made
-        an incompatible change to the syntax used to
-           specify multiport match rules; as a consequence,
-                  if you install iptables 1.2.7 you must be running
-                          Shorewall 1.3.7a or later or:</p>
-
-
+     
+<h3><a name="Multiport"></a><b>Problems with   iptables version 1.2.7 and 
+MULTIPORT=Yes</b></h3>
+     
+<p>The iptables 1.2.7 release of iptables has made         an incompatible 
+change to the syntax used to            specify multiport match rules; as 
+a consequence,                   if you install iptables 1.2.7 you must be 
+running                           Shorewall 1.3.7a or later or:</p>
+     
 <ul>
-                                                      <li>set MULTIPORT=No
- in                                   /etc/shorewall/shorewall.conf; or </li>
-                                                      <li>if you are running
-  Shorewall      1.3.6    you may                                  install
-                                 <a
- href="http://www.shorewall.net/pub/shorewall/errata/1.3.6/firewall">
-                            this firewall script</a> in /var/lib/shorewall/firewall
-                                           as described above.</li>
-
+                                                        <li>set MULTIPORT=No
+  in                                   /etc/shorewall/shorewall.conf; or
+  </li>
+                                                        <li>if you are running
+   Shorewall      1.3.6    you may                                  install
+                                  <a
+ href="http://www.shorewall.net/pub/shorewall/errata/1.3.6/firewall">    
+                        this firewall script</a> in /var/lib/shorewall/firewall
+                                            as described above.</li>
+    
 </ul>
-
+    
 <h3><a name="NAT"></a>Problems with RH Kernel 2.4.18-10 and NAT<br>
-                    </h3>
-                 /etc/shorewall/nat entries of the following form will result
-  in  Shorewall     being unable to start:<br>
-                 <br>
-
+                      </h3>
+                   /etc/shorewall/nat entries of the following form will
+result    in  Shorewall     being unable to start:<br>
+                   <br>
+    
 <pre>#EXTERNAL       INTERFACE       INTERNAL        ALL INTERFACES          LOCAL<br>192.0.2.22      eth0            192.168.9.22    yes                     yes<br>#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</pre>
-                 Error message is:<br>
-
+                   Error message is:<br>
+    
 <pre>Setting up NAT...<br>iptables: Invalid argument<br>Terminated<br><br></pre>
-                 The solution is to put "no" in the LOCAL column. Kernel
-support     for   LOCAL=yes   has never worked properly and 2.4.18-10 has
-disabled  it.   The  2.4.19 kernel   contains corrected support under a new
-kernel configuraiton    option; see <a href="Documentation.htm#NAT">http://www.shorewall.net/Documentation.htm#NAT</a><br>
-
-<p><font size="2">  Last updated 3/21/2003 -
-  <a href="support.htm">Tom Eastep</a></font> </p>
-
+                   The solution is to put "no" in the LOCAL column. Kernel
+ support     for   LOCAL=yes   has never worked properly and 2.4.18-10 has
+ disabled  it.   The  2.4.19 kernel   contains corrected support under a
+new  kernel configuraiton    option; see <a href="Documentation.htm#NAT">http://www.shorewall.net/Documentation.htm#NAT</a><br>
+    
+<p><font size="2">  Last updated 3/25/2003 -   <a href="support.htm">Tom Eastep</a></font>
+</p>
+    
 <p><a href="copyright.htm"><font size="2">Copyright</font>          © <font
  size="2">2001, 2002, 2003 Thomas M. Eastep.</font></a><br>
-  </p>
+    </p>
+    <br>
+   <br>
   <br>
  <br>
 </body>

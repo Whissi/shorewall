@@ -21,17 +21,17 @@
  Shorewall views the network in which it is running as a set of
       <i> zones. </i>Shorewall itself defines exactly   one zone called "fw"
 which refers to the firewall system itself . The   /etc/shorewall/zones file
-is used to define additional zones and the example file   provided with Shorewall 
+is used to define additional zones and the example file   provided with Shorewall
 defines the zones:</p>
       <ol>
         <li>
  net -- the (untrusted) internet.</li>
         <li>
- dmz - systems that must be accessible from       the internet and from the 
-local network.  These systems cannot be trusted completely since their servers 
+ dmz - systems that must be accessible from       the internet and from the
+local network.  These systems cannot be trusted completely since their servers
 may have been       compromised through a security exploit.</li>
         <li>
- loc - systems in your local network(s).       These systems must be protected 
+ loc - systems in your local network(s).       These systems must be protected
 from the internet and from the DMZ and in       some cases, from each other.</li>
       </ol>
  <p><b>Note: </b><a href="#Conf">You can specify the name of the firewall zone</a>.
@@ -41,79 +41,79 @@ from the internet and from the DMZ and in       some cases, from each other.</li
  with the exception of the firewall zone, Shorewall itself attaches no meaning to
  zone names. Zone names are simply labels used to refer to a collection of
  network hosts.</p>
- <p>While zones are normally disjoint (no two zones have a host in common), 
+ <p>While zones are normally disjoint (no two zones have a host in common),
  there are cases where nested or overlapping zone definitions are appropriate.</p>
  <p>For a general picture of how packets traverse a Netfilter firewall, see
  <a href="http://www.netfilter.org/documentation/tutorials/blueflux/iptables-tutorial.html#TRAVERSINGOFTABLES">
  http://www.netfilter.org/documentation/tutorials/blueflux/iptables-tutorial.html#TRAVERSINGOFTABLES.</a><br>
  <br>
- Packets entering the firewall first pass through the <i>mangle </i>table's 
- PREROUTING chain (you can see the mangle table by typing &quot;shorewall show 
- mangle&quot;). If the packet entered through an interface that has the <b>norfc1918</b> 
- option, then the packet is sent down the <b>man1918</b>&nbsp; which will drop 
- the packet if its destination IP address is reserved (as specified in the 
- /etc/shorewall/rfc1918 file). Next the packet passes through the<b> pretos</b> 
- chain to set its TOS field as specified in the /etc/shorewall/tos file. 
- Finally, if traffic control/shaping is being used, the packet is sent through 
- the<b> tcpre</b> chain to be marked for later use in policy routing or traffic 
+ Packets entering the firewall first pass through the <i>mangle </i>table's
+ PREROUTING chain (you can see the mangle table by typing &quot;shorewall show
+ mangle&quot;). If the packet entered through an interface that has the <b>norfc1918</b>
+ option, then the packet is sent down the <b>man1918</b>&nbsp; which will drop
+ the packet if its destination IP address is reserved (as specified in the
+ /etc/shorewall/rfc1918 file). Next the packet passes through the<b> pretos</b>
+ chain to set its TOS field as specified in the /etc/shorewall/tos file.
+ Finally, if traffic control/shaping is being used, the packet is sent through
+ the<b> tcpre</b> chain to be marked for later use in policy routing or traffic
  control.</p>
- <p>Next, if the packet isn't part of an established connection, it passes 
- through the<i> nat</i> table's PREROUTING chain (you can see the nat table by 
- typing &quot;shorewall show nat&quot;). If you are doing both static nat and 
- port forwarding, the order in which chains are traversed is dependent on the 
- setting of NAT_BEFORE_RULES in shorewall.conf. If NAT_BEFORE_RULES is on then 
- packets will ender a chain called <i>interface_</i>in where <i>interface</i> is 
- the name of the interface on which the packet entered. Here it's destination IP 
- is compared to each of the <i>EXTERNAL</i> IP addresses from /etc/shorewall/nat 
- that correspond to this interface; if there is a match, DNAT is applied and the 
- packet header is modified to the IP in the <i>INTERNAL</i> column of the nat 
+ <p>Next, if the packet isn't part of an established connection, it passes
+ through the<i> nat</i> table's PREROUTING chain (you can see the nat table by
+ typing &quot;shorewall show nat&quot;). If you are doing both static nat and
+ port forwarding, the order in which chains are traversed is dependent on the
+ setting of NAT_BEFORE_RULES in shorewall.conf. If NAT_BEFORE_RULES is on then
+ packets will ender a chain called <i>interface_</i>in where <i>interface</i> is
+ the name of the interface on which the packet entered. Here it's destination IP
+ is compared to each of the <i>EXTERNAL</i> IP addresses from /etc/shorewall/nat
+ that correspond to this interface; if there is a match, DNAT is applied and the
+ packet header is modified to the IP in the <i>INTERNAL</i> column of the nat
  file record. If the destination address doesn't match any of the rules in the
- <i>interface_</i>in chain then the packet enters a chain called <i>sourcezone</i>_dnat 
- where <i>sourcezone</i> is the source zone of the packet. There it is compared 
+ <i>interface_</i>in chain then the packet enters a chain called <i>sourcezone</i>_dnat
+ where <i>sourcezone</i> is the source zone of the packet. There it is compared
  for a match against each of the DNAT records in the rules file that specify <i>
- sourcezone </i>as the source zone. If a match is found, the destination IP 
- address (and possibly the destination port) is modified based on the rule 
+ sourcezone </i>as the source zone. If a match is found, the destination IP
+ address (and possibly the destination port) is modified based on the rule
  matched. If NAT_BEFORE_RULES is off, then the order of traversal of the <i>
  interface_</i>in and <i>sourcezone</i>_dnat is reversed.</p>
       <p>
- Traffic is next sent to an<i> input </i>chain in the mail Netfilter table 
- (called 'filter'). If the traffic is destined for the 
- firewall itself, the name of the input chain is formed by appending &quot;_in&quot; to 
- the interface name. So traffic on eth0 destined for the firewall will enter a 
- chain called <i>eth0_in</i>. The input chain for traffic that will be routed to 
- another system is formed by appending &quot;_fwd&quot; to the interface name. So traffic 
- from eth1 that is going to be forwarded enters a chain called<i> eth1_fwd</i>. 
- Interfaces described with the wild-card character (&quot;+&quot;) in 
- /etc/shorewall/interfaces, share input chains. if <i>ppp+ </i>appears in 
- /etc/shorewall/interfaces then all PPP interfaces (ppp0, ppp1, ...) will share 
- the input chains <i>ppp_in</i> and <i>ppp_fwd</i>. In other words, &quot;+&quot; is 
+ Traffic is next sent to an<i> input </i>chain in the mail Netfilter table
+ (called 'filter'). If the traffic is destined for the
+ firewall itself, the name of the input chain is formed by appending &quot;_in&quot; to
+ the interface name. So traffic on eth0 destined for the firewall will enter a
+ chain called <i>eth0_in</i>. The input chain for traffic that will be routed to
+ another system is formed by appending &quot;_fwd&quot; to the interface name. So traffic
+ from eth1 that is going to be forwarded enters a chain called<i> eth1_fwd</i>.
+ Interfaces described with the wild-card character (&quot;+&quot;) in
+ /etc/shorewall/interfaces, share input chains. if <i>ppp+ </i>appears in
+ /etc/shorewall/interfaces then all PPP interfaces (ppp0, ppp1, ...) will share
+ the input chains <i>ppp_in</i> and <i>ppp_fwd</i>. In other words, &quot;+&quot; is
  deleted from the name before forming the input chain names.</p>
       <p>
- While the use of input chains may seem wasteful in simple environments, in 
- complex setups it substantially reduces the number of rules that each packet 
+ While the use of input chains may seem wasteful in simple environments, in
+ complex setups it substantially reduces the number of rules that each packet
  must traverse.&nbsp; </p>
       <p>
- Traffic directed from a zone to the firewall itself is sent through a  
+ Traffic directed from a zone to the firewall itself is sent through a
 chain named &lt;<i>zone name&gt;</i>2fw. For example, traffic inbound from
 the   internet and addressed to the firewall is sent through a chain named
 net2fw.   Similarly, traffic originating in the firewall and being sent to
-a host in a   given zone is sent through a chain named fw2<i>&lt;zone name&gt;. 
-      </i>For   example, traffic originating in the firewall and destined 
+a host in a   given zone is sent through a chain named fw2<i>&lt;zone name&gt;.
+      </i>For   example, traffic originating in the firewall and destined
 for a host in the   local network is sent through a chain named <i>fw2loc.</i>
       <font face="Century Gothic, Arial, Helvetica">
   </font></p>
       <p>
- Traffic being forwarded between two zones (or from one interface to a  
+ Traffic being forwarded between two zones (or from one interface to a
 zone to another interface to that zone) is sent through a chain named <i>
 &lt;source   zone&gt;</i>2<i> &lt;destination zone&gt;</i>. So for example,
 traffic   originating in a local system and destined for a remote web server
 is   sent through chain       <i>loc2net. </i>This chain is referred to
-as the <i>canonical</i>    chain from &lt;source zone&gt; to &lt;destination 
-zone&gt;. Any destination NAT will have occurred <u>before</u>   the packet 
-traverses one of these chains so rules in /etc/shorewall/rules   should be 
-expressed in terms of the destination system's real IP address as   opposed 
+as the <i>canonical</i>    chain from &lt;source zone&gt; to &lt;destination
+zone&gt;. Any destination NAT will have occurred <u>before</u>   the packet
+traverses one of these chains so rules in /etc/shorewall/rules   should be
+expressed in terms of the destination system's real IP address as   opposed
 to its apparent external address. Similarly, source NAT will occur <u>after</u>
-    the packet has traversed the appropriate forwarding chain so the rules 
+    the packet has traversed the appropriate forwarding chain so the rules
 again   will be expressed using the source system's real IP address.</p>
       <p>
  For each record in the /etc/shorewall/policy file, a chain is   created. Policies
@@ -129,19 +129,19 @@ chains    as follows:</p>
         <li>
  If the canonical chain exists, packets first traverse that chain.</li>
         <li>
- If the canonical chain and policy chain are different and the packet   
-   does not match a rule in the canonical chain, it then is sent to the 
+ If the canonical chain and policy chain are different and the packet
+   does not match a rule in the canonical chain, it then is sent to the
      policy chain.</li>
         <li>
- If the canonical chain does not exist, packets are sent immediately    
+ If the canonical chain does not exist, packets are sent immediately
   to the policy chain.</li>
       </ol>
       <p>
- The canonical chain from zone za to zone zb will be created only if there 
-are   exception rules defined in /etc/shorewall/rules for packets going from 
+ The canonical chain from zone za to zone zb will be created only if there
+are   exception rules defined in /etc/shorewall/rules for packets going from
 za to   zb.</p>
       <p>
- Shorewall is built on top of the Netfilter kernel facility. Netfilter  
+ Shorewall is built on top of the Netfilter kernel facility. Netfilter
 implements connection tracking function that allow what is often referred
 to   as "statefull inspection" of packets. This statefull property allows
   firewall rules to be defined in terms of "connections" rather than   in
@@ -152,22 +152,22 @@ terms of "packets". With Shorewall, you:</p>
         <li>
  Identify the server's zone.</li>
         <li>
- If the POLICY from the client's zone to the server's zone is what you  
+ If the POLICY from the client's zone to the server's zone is what you
     want for this client/server pair, you need do nothing further.</li>
         <li>
  If the POLICY is not what you want, then you must add a rule. That rule
       is expressed in terms of the client's zone and the server's zone.</li>
       </ol>
       <p>
- Just because connections of a particular type are allowed between zone A 
+ Just because connections of a particular type are allowed between zone A
   and the firewall and are also allowed between the firewall and zone B <font color="#ff6633"><b><u>
   DOES   NOT mean that these connections are allowed between zone A and zone
  B</u></b></font>.   It rather means that you can have a proxy running on
 the firewall that accepts   a connection from zone A and then establishes
 its own separate connection from   the firewall to zone B.</p>
       <p>
- If you adopt the default policy of ACCEPT from the local zone to the   internet 
-zone and you are having problems connecting from a local client to an   internet 
+ If you adopt the default policy of ACCEPT from the local zone to the   internet
+zone and you are having problems connecting from a local client to an   internet
 server, <font color="#ff6633"><b><u> adding a rule won't help</u></b></font>
     (see point 3 above).</p>
 <p><font size="2">Last modified 8/22/2002 - <a href="support.htm">Tom

@@ -1,66 +1,66 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-     
+
   <meta http-equiv="Content-Language" content="en-us">
-     
+
   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
-     
+
   <meta name="ProgId" content="FrontPage.Editor.Document">
-     
+
   <meta http-equiv="Content-Type"
  content="text/html; charset=windows-1252">
   <title>Whitelisting under Shorewall</title>
 </head>
   <body>
-    
+
 <table border="0" cellpadding="0" cellspacing="0"
  style="border-collapse: collapse;" bordercolor="#111111" width="100%"
  id="AutoNumber1" bgcolor="#400169" height="90">
     <tbody>
      <tr>
-      <td width="100%">            
+      <td width="100%">
       <h1 align="center"><font color="#ffffff">Whitelisting under Shorewall</font></h1>
       </td>
     </tr>
-     
-  </tbody> 
+
+  </tbody>
 </table>
-   
+
 <p align="left">For a brief time, the 1.2 version of Shorewall supported an
  /etc/shorewall/whitelist file. This file was intended to contain a list of
-IP  addresses of hosts whose POLICY to all zones was ACCEPT. The whitelist 
-file was  implemented as a stop-gap measure until the facilities necessary 
-for  implementing white lists using zones was in place. As of Version 1.3 
+IP  addresses of hosts whose POLICY to all zones was ACCEPT. The whitelist
+file was  implemented as a stop-gap measure until the facilities necessary
+for  implementing white lists using zones was in place. As of Version 1.3
 RC1, those  facilities were available.</p>
-   
-<p align="left">White lists are most often used to give special privileges 
-to a  set  of hosts within an organization. Let us suppose that we have the 
+
+<p align="left">White lists are most often used to give special privileges
+to a  set  of hosts within an organization. Let us suppose that we have the
  following environment:</p>
-   
+
 <ul>
-    <li>A firewall with three interfaces -- one to the internet, one    to 
+    <li>A firewall with three interfaces -- one to the internet, one    to
 a local network and one to a DMZ.</li>
-    <li>The local network uses SNAT to the internet and is comprised    of 
-the class B network 10.10.0.0/16 (Note: While this example uses an RFC 1918 
+    <li>The local network uses SNAT to the internet and is comprised    of
+the class B network 10.10.0.0/16 (Note: While this example uses an RFC 1918
    local network, the technique described here in no way depends on that or
 on    SNAT. It may be used with Proxy ARP, Subnet Routing, Static NAT, etc.).</li>
-    <li>The network operations staff have workstations with IP    addresses 
+    <li>The network operations staff have workstations with IP    addresses
 in the class C network 10.10.10.0/24</li>
-    <li>We want the network operations staff to have full access to    all 
+    <li>We want the network operations staff to have full access to    all
 other hosts.</li>
-    <li>We want the network operations staff to bypass the transparent  
+    <li>We want the network operations staff to bypass the transparent
  HTTP proxy running on our firewall.</li>
-   
+
 </ul>
-   
-<p align="left">The basic approach will be that we will place the operations 
- staff's class C in its own zone called <b>ops</b>. Here are the appropriate 
+
+<p align="left">The basic approach will be that we will place the operations
+ staff's class C in its own zone called <b>ops</b>. Here are the appropriate
  configuration files:</p>
-   
+
 <h2 align="left">Zone File</h2>
-   
-<blockquote>      
+
+<blockquote>
   <table border="2">
                           <tbody>
        <tr>
@@ -88,17 +88,17 @@ other hosts.</li>
            <td>DMZ</td>
            <td>Demilitarized  zone</td>
          </tr>
-                                                                        
-    </tbody>   
+
+    </tbody>
   </table>
   </blockquote>
-   
-<p>The <b>ops </b>zone has been added to the standard 3-zone zones file -- 
+
+<p>The <b>ops </b>zone has been added to the standard 3-zone zones file --
 since <b>ops</b> is a sub-zone of <b>loc</b>, we list it <u>BEFORE</u> <b>loc</b>.</p>
-   
+
 <h2>Interfaces File</h2>
-   
-<blockquote>      
+
+<blockquote>
   <table border="2">
                             <tbody>
        <tr>
@@ -126,20 +126,20 @@ since <b>ops</b> is a sub-zone of <b>loc</b>, we list it <u>BEFORE</u> <b>loc</b
            <td>10.10.255.255</td>
            <td> </td>
          </tr>
-                                                                        
-     
-    </tbody>   
+
+
+    </tbody>
   </table>
   </blockquote>
-   
-<p>Because <b>eth2</b> interfaces to two zones (<b>ops</b> and <b>loc)</b>, 
+
+<p>Because <b>eth2</b> interfaces to two zones (<b>ops</b> and <b>loc)</b>,
 we  don't specify a zone for it here.</p>
-   
+
 <h2>Hosts File</h2>
-   
-<blockquote>   <font face="Century Gothic, Arial, Helvetica">            
-                                                                </font> 
- 
+
+<blockquote>   <font face="Century Gothic, Arial, Helvetica">
+                                                                </font>
+
   <table border="2">
                                       <tbody>
        <tr>
@@ -158,24 +158,24 @@ we  don't specify a zone for it here.</p>
            <td>eth2:0.0.0.0/0</td>
            <td> </td>
          </tr>
-                                                                        
-                                    
-    </tbody>   
+
+
+    </tbody>
   </table>
   </blockquote>
-   
-<p>Here we define the <b>ops</b> and <b>loc</b> zones. When Shorewall is 
+
+<p>Here we define the <b>ops</b> and <b>loc</b> zones. When Shorewall is
 stopped, only the hosts in the <b>ops</b> zone will be allowed to access the
  firewall and the DMZ. I use 0.0.0.0/0 to define the <b>loc</b> zone rather
-than  10.10.0.0/16 so that the limited broadcast address (255.255.255.255) 
-falls into  that zone. If I used 10.10.0.0/16 then I would have to have a 
+than  10.10.0.0/16 so that the limited broadcast address (255.255.255.255)
+falls into  that zone. If I used 10.10.0.0/16 then I would have to have a
 separate entry for  that special address.</p>
-   
+
 <h2>Policy File</h2>
-   
-<blockquote>   <font face="Century Gothic, Arial, Helvetica">            
-                                                                    </font> 
-  
+
+<blockquote>   <font face="Century Gothic, Arial, Helvetica">
+                                                                    </font>
+
   <table border="2">
                                         <tbody>
        <tr>
@@ -189,18 +189,18 @@ separate entry for  that special address.</p>
            <td><font color="#0000ff">ops</font></td>
            <td><font color="#0000ff">all</font></td>
            <td><font color="#0000ff">ACCEPT</font></td>
-                                                                        
+
          <td> </td>
-                                                                        
+
          <td> </td>
          </tr>
          <tr>
            <td><font color="#0000ff">all</font></td>
            <td><font color="#0000ff">ops</font></td>
            <td><font color="#0000ff">CONTINUE</font></td>
-                                                                        
+
          <td> </td>
-                                                                        
+
          <td> </td>
          </tr>
          <tr>
@@ -208,7 +208,7 @@ separate entry for  that special address.</p>
            <td>net</td>
            <td>ACCEPT</td>
    <td> </td>
-                                                                        
+
          <td> </td>
               </tr>
          <tr>
@@ -225,19 +225,19 @@ separate entry for  that special address.</p>
            <td>info</td>
            <td> </td>
          </tr>
-                                                                        
-                                          
-    </tbody>   
+
+
+    </tbody>
   </table>
   </blockquote>
-   
-<p>Two entries for <b>ops</b> have been added to the standard 3-zone policy 
+
+<p>Two entries for <b>ops</b> have been added to the standard 3-zone policy
 file.<font color="#ff0000"><b></b></font></p>
-   
+
 <h2>Rules File</h2>
-   
-<blockquote>   <font face="Century Gothic, Arial, Helvetica">          </font> 
-  
+
+<blockquote>   <font face="Century Gothic, Arial, Helvetica">          </font>
+
   <table border="2">
                                                     <tbody>
        <tr>
@@ -270,18 +270,18 @@ file.<font color="#ff0000"><b></b></font></p>
            <td> </td>
            <td> </td>
          </tr>
-                                                                        
-                                                                        
-     
-    </tbody>   
+
+
+
+    </tbody>
   </table>
   </blockquote>
-   
-<p>This is the rule that transparently redirects web traffic to the transparent 
- proxy running on the firewall. The SOURCE column explicitly excludes the 
+
+<p>This is the rule that transparently redirects web traffic to the transparent
+ proxy running on the firewall. The SOURCE column explicitly excludes the
 <b>ops</b>  zone from the rule.</p>
 <h2>Routestopped File</h2>
- 
+
 <blockquote>
   <table border="2">
     <tbody>
@@ -301,25 +301,25 @@ file.<font color="#ff0000"><b></b></font></p>
         </td>
           <td>10.10.10.0/24</td>
               </tr>
-                                                                        
-                                      
+
+
     </tbody>
   </table>
  <br>
 </blockquote>
-                                                                        
-                                                                        
-                                                                        
-                                     
+
+
+
+
 <p><font size="2">   Updated 2/18/2003 - <a href="support.htm">Tom  Eastep</a>
     </font></p>
-                                                                        
-                                                                        
-                             
-<p><font face="Trebuchet MS"><a href="copyright.htm"><font size="2">Copyright</font> 
+
+
+
+<p><font face="Trebuchet MS"><a href="copyright.htm"><font size="2">Copyright</font>
    © <font size="2">2002, 2003Thomas M. Eastep.</font></a></font></p>
-                                                                        
-                                                                        
+
+
                             <br>
  <br>
 </body>

@@ -2856,7 +2856,7 @@ decodeaddr() {
     IFS=.
 
     for x in $1; do
-	temp=$(( $temp * 256 + $x ))
+	temp=$(( $(( $temp << 8 )) | $x ))
     done
 
     echo $temp

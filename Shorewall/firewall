@@ -3532,9 +3532,9 @@ add_common_rules() {
 	run_iptables -A tcpflags -p tcp --tcp-flags SYN,RST SYN,RST $disposition
 	run_iptables -A tcpflags -p tcp --tcp-flags SYN,FIN SYN,FIN $disposition
 	#
-	# A Shorewall user reported seeing outgoing SYN ACK packets with DPT=0
-	# That prompted me to add the following which will stop an incoming
-	# SYN with SPT=0
+	# There are a lot of probes to ports 80, 3128 and 8080 that use a source
+	# port of 0. This catches them even if they are directed at an IP that
+	# hosts a web server.
 	#
 	run_iptables -A tcpflags -p tcp --syn --sport 0             $disposition
 	

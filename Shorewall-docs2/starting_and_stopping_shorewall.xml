@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-05-14</pubdate>
+    <pubdate>2004-06-12</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -78,13 +78,8 @@
         the bottom of this page for more information. The -q option was added
         in Shorewall 2.0.2 Beta 1 and reduces the amout of output produced.
         Also beginning with Shorewall version 2.0.2 Beta 1, the -f option may
-        be specified; if this option is given and the file
-        <filename>/var/lib/shorewall/restore</filename> is present (see
-        <command>shorewall save</command> below), then that script is run to
-        restore the state of the firewall to the state when
-        <filename>/var/lib/shorewall/restore</filename> was created. This is
-        generally must faster than starting the firewall without the -f
-        option.</para>
+        be specified. See the <link linkend="Saved">Saved Configurations</link>
+        section below for details.</para>
       </listitem>
 
       <listitem>
@@ -121,15 +116,16 @@
 
       <listitem>
         <para><command>shorewall save</command> - Beginning with Shorewall
-        2.0.2 Beta1, this command creates a script <filename>/var/lib/shorewall/restore</filename>
-        which when run will restore the state of the firewall to its current
-        state.</para>
+        2.0.2 Beta1, this command creates a script which when run will restore
+        the state of the firewall to its current state. See the <link
+        linkend="Saved">Saved Configurations</link> section below for details.</para>
       </listitem>
 
       <listitem>
-        <para><command>shorewall restore</command> - Runs the
-        <filename>/var/lib/shorewall/restore </filename>created by the
-        <command>shorewall save</command> command.</para>
+        <para><command>shorewall restore [ &#60;file name&#62; ]</command> -
+        Runs a script created by the <command>shorewall save</command>
+        command. See the <link linkend="Saved">Saved Configurations</link>
+        section below for details.</para>
       </listitem>
 
       <listitem>
@@ -277,12 +273,13 @@
       </listitem>
 
       <listitem>
-        <para><command>shorewall save</command> - save the dynamic
-        blacklisting configuration so that it will be automatically restored
-        the next time that the firewall is restarted. Beginning with Shorewall
-        version 2.0.2 Beta1, this command also creates the
-        <filename>/var/lib/shorewall/restore</filename> script as described
-        above.</para>
+        <para><command>shorewall save [ &#60;file name&#62; ]</command> - save
+        the dynamic blacklisting configuration so that it will be
+        automatically restored the next time that the firewall is restarted.
+        Beginning with Shorewall version 2.0.2 Beta1, this command also
+        creates a script that can be used to restore the state of the
+        firewall. See the <link linkend="Saved">Saved Configurations</link>
+        section below for details.</para>
       </listitem>
 
       <listitem>
@@ -401,6 +398,65 @@
 
       <listitem>
         <para><command>rm -rf /etc/test</command></para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section id="Saved">
+    <title>Saved Configurations</title>
+
+    <para>Beginning with Shorewall 2.0.2 Beta 1, Shorewall is integrated with
+    the iptables-save/iptables-restore programs through
+    <firstterm>saved configurations</firstterm>. A saved configuration is a
+    shell script that when executed will restore the firewall state to match
+    what it was when the script was created. Because of the way in which saved
+    configurations are used, they are also referred to using the term
+    <firstterm>restore script</firstterm>.</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>The <command>shorewall save</command> command creates a restore
+        script.</para>
+      </listitem>
+
+      <listitem>
+        <para>The <command>shorewall restore</command> command executes a
+        restore script.</para>
+      </listitem>
+
+      <listitem>
+        <para>The <command>shorewall forget</command> command deleted a
+        restore script.</para>
+      </listitem>
+
+      <listitem>
+        <para>The <firstterm>-f </firstterm>option of the <command>shorewall
+        start</command> command causes a restore script to be executed if it
+        exists.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>In Shorewall 2.0.2, the name of the restore script is fixed:
+    <filename>/var/lib/shorewall/restore</filename>. Beginning with Shorewall
+    2.0.3 Beta 1, multiple restore scripts are permitted in <filename
+    class="directory">/var/lib/shorewall</filename>.</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>The <command>shorewall save</command>, <command>shorewall
+        restore</command> and <command>shorewall forget</command> commands are
+        extended to allow you to specify a simple file name (one not
+        containing embedded slashes). The fiile name specifies the name of a
+        restore script in <filename class="directory">/var/lib/shorewall</filename>.</para>
+      </listitem>
+
+      <listitem>
+        <para>A RESTOREFILE option has been added to <filename>shorewall.conf</filename>.
+        This variable may contain a simple file name that designates the
+        default restore script when the command doesn&#39;t specify one. To
+        maintain backward compatibility with Shorewall 2.0.2, if RESTOREFILE
+        is not set or is set to the empty value (RESTOREFILE=&#34;&#34;), the
+        the default value is <filename>restore</filename>.</para>
       </listitem>
     </itemizedlist>
   </section>

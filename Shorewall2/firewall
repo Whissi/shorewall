@@ -926,7 +926,8 @@ log_rule_limit() # $1 = log level, $2 = chain, $3 = disposition , $4 = rate limi
 		eval iptables -A $chain $@ $limit -j ULOG $LOGPARMS --ulog-prefix '"$(printf "$LOGFORMAT" $chain $rulenum $disposition)"'
 		;;
 	    *)
-		eval iptables -A $chain $@ $limit -j LOG $LOGPARMS --log-level $level --log-prefix '"$(printf "$LOGFORMAT" $chain $rulenum $disposition)"'
+		eval iptables -A $chain $@ $limit -j LOG $LOGPARMS --log-level $level \
+		    --log-prefix '"$(printf "$LOGFORMAT" $chain $rulenum $disposition)"'
 		;;
 	esac
 	
@@ -943,7 +944,8 @@ log_rule_limit() # $1 = log level, $2 = chain, $3 = disposition , $4 = rate limi
 		eval iptables -A $chain $@ $limit -j ULOG $LOGPARMS --ulog-prefix '"$(printf "$LOGFORMAT" $chain $disposition)"'
 		;;
 	    *)
-		eval iptables -A $chain $@ $limit -j LOG $LOGPARMS --log-level $level --log-prefix '"$(printf "$LOGFORMAT" $chain $disposition)"'
+		eval iptables -A $chain $@ $limit -j LOG $LOGPARMS --log-level $level \
+		    --log-prefix '"$(printf "$LOGFORMAT" $chain $disposition)"'
 		;;
 	esac
 	

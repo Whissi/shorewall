@@ -1,9 +1,16 @@
-Shorewall 2.0.0-Beta2
+Shorewall 2.0.0-Beta3
 
 ----------------------------------------------------------------------
 Problems Corrected since prior version.
 
-	 None - this is the initial release.
+1) A blank USER/GROUP column in /etc/shorewall/tcrules no longer causes
+   a [re]start error.
+
+2) The 'fgrep' utility is no longer required (caused startup problems
+   on LEAF/Bering).
+
+3) The "shorewall add" command no longer inserts rules before checking
+   of the blacklist.
 -----------------------------------------------------------------------
 Issues when migrating from Shorewall 1.4.x to Shorewall 2.0.0:
 
@@ -27,7 +34,8 @@ Issues when migrating from Shorewall 1.4.x to Shorewall 2.0.0:
        /etc/shorewall/common.def
        /etc/shorewall/common
        /etc/shorewall/icmpdef
-       /etc/shorewall/action.template
+       /etc/shorewall/action.template (Moved to /usr/share/shorewall)
+       /etc/shorewall/rfc1918 (Moved to /usr/share/shorewall).
 
    The /etc/shorewall/action file now allows an action to be
    designated as the "common" action for a particular policy type by
@@ -131,6 +139,13 @@ Issues when migrating from Shorewall 1.4.x to Shorewall 2.0.0:
 6) It is no longer possible to specify rate limiting in the ACTION
    column of /etc/shorewall/rules -- you must use the RATE LIMIT
    column.
+
+7) Depending on which method you use to upgrade, if you have your own
+   version of /etc/shorewall/rfc1918, you may have to take special
+   action to restore it after the upgrade. Look for
+   /etc/shorewall/rfc1918*, locate the proper file and rename it back
+   to /etc/shorewall/rfc1918. The contents of that file will supercede
+   the contents of /usr/share/shorewall/rfc1918.
 
 New Features:
 

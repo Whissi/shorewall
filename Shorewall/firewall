@@ -3308,12 +3308,12 @@ add_common_rules() {
     # Not all versions of iptables support these so don't complain if they don't work
     #
     qt iptables  -A reject -p icmp -j REJECT --reject-with icmp-host-unreachable
-    qt iptables  -A reject         -j REJECT --reject-with icmp-host-prohibited
-    #
-    # A catchall in case the above doesn't work
-    #
-    run_iptables -A reject         -j REJECT
-
+    if ! qt iptables -A reject -j REJECT --reject-with icmp-host-prohibited; then
+	#
+	# In case the above doesn't work
+	#
+	run_iptables -A reject -j REJECT
+    fi
     #
     # dropunclean rules
     #

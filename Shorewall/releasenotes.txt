@@ -5,6 +5,13 @@ Problems Corrected:
 1) The command "shorewall debug try <directory>" now correctly traces
    the attempt.
 
+2) Shorewall now works properly with RedHat errata kernels and
+   2.4.21-rc1. In these kernels, the REJECT target with "--reject-with
+   tcp-reset" behaves like DROP when invoked on a packet that is being
+   forwarded by the firewall. Shorewall now only uses that target when
+   it is certain that the run will not be invoked on packets whose
+   destination is another host.
+
 New Features:
 
 1) The ORIGINAL DEST column in a DNAT[-] or REDIRECT[-] rule may now

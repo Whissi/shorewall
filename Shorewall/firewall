@@ -749,6 +749,10 @@ validate_policy()
 	eval ${chain}_policy=$policy
 	eval ${chain}_loglevel=$loglevel
 	eval ${chain}_synparams=$synparams
+	
+	if [ $server = $FW ]; then
+	    eval ${chain}_is_input=Yes
+	fi
 
 	if [ -n "${clientwild}" ]; then
 	    if [ -n "${serverwild}" ]; then
@@ -1964,6 +1968,7 @@ add_nat_rule() {
 add_a_rule()
 {
     local natrule=
+    local is_input=
 
     # Set source variables. The 'cli' variable will hold the client match predicate(s).
 
@@ -2058,7 +2063,8 @@ add_a_rule()
 
     case "$logtarget" in
 	REJECT)
-	    target=reject
+	    eval is_input=\$${chain}_is_input
+	    [ -z "$is_input" ] && target=reject || target=rejecti
 	    [ -n "$servport" ] && \
 		fatal_error "Server port may not be specified in a REJECT rule;"\
                             "rule: \"$rule\""
@@ -2289,6 +2295,10 @@ process_rule() # $1 = target
 	# Create the canonical chain if it doesn't already exist
     
 	[ $command = check ] || ensurechain $chain
+    fi
+
+    if [ $dest = $FW ]; then
+	eval ${chain}_is_input=Yes
     fi
 
     # Generate Netfilter rule(s)
@@ -2631,6 +2641,7 @@ policy_rules() # $1 = chain to add rules to
 	       # $3 = loglevel
 {
     local target="$2"
+    local is_input
 
     case "$target" in
     ACCEPT)
@@ -2641,7 +2652,8 @@ policy_rules() # $1 = chain to add rules to
 	;;
     REJECT)
 	run_iptables -A $1 -j common
-	target=reject
+	eval is_input=\$${1}_is_input
+	[ -z "$is_input" ] && target=reject || target=rejecti
 	;;
     CONTINUE)
 	target=
@@ -3317,16 +3329,22 @@ initialize_netfilter () {
 
     createchain icmpdef no
     createchain common	no
-    createchain reject	no
+    createchain reject  no
+    createchain rejecti	no
     createchain dynamic no
+
+    INPUT_is_input=Yes
 
     if [ -f /var/lib/shorewall/save ]; then
 	echo "Restoring dynamic rules..."
 
 	while read target ignore1 ignore2 address rest; do
 	    case $target in
-	    DROP|reject)
+	    DROP)
 		run_iptables2 -A dynamic -s $address -j $target
+		;;
+	    reject*)
+		run_iptables2 -A dynamic -s $address -j $reject
 		;;
 	    *)
 		;;
@@ -3384,7 +3402,20 @@ add_common_rules() {
     #
     # Reject Rules
     #
-    run_iptables -A reject -p tcp  -j REJECT --reject-with tcp-reset
+    run_iptables -A rejecti -p tcp -j REJECT --reject-with tcp-reset
+    run_iptables -A rejecti -p udp  -j REJECT
+    #
+    # Not all versions of iptables support these so don't complain if they don't work
+    #
+    qt iptables  -A rejecti -p icmp -j REJECT --reject-with icmp-host-unreachable
+    if ! qt iptables -A rejecti -j REJECT --reject-with icmp-host-prohibited; then
+	#
+	# In case the above doesn't work
+	#
+	run_iptables -A rejecti -j REJECT
+    fi
+
+    run_iptables -A reject -p tcp  -j REJECT
     run_iptables -A reject -p udp  -j REJECT
     #
     # Not all versions of iptables support these so don't complain if they don't work
@@ -3551,7 +3582,7 @@ add_common_rules() {
 	    
 	    case $TCP_FLAGS_DISPOSITION in
 		REJECT)
-		    run_iptables -A logflags -j REJECT --reject-with tcp-reset
+		    run_iptables -A logflags -p tcp -j REJECT --reject-with tcp-reset
 		    ;;
 		*)
 		    run_iptables -A logflags -j $TCP_FLAGS_DISPOSITION
@@ -4504,11 +4535,11 @@ do_initialize() {
 
     NEWNOTSYN=`added_param_value_yes NEWNOTSYN $NEWNOTSYN`
 
-    maclist_target=reject
 
     if [ -n "$MACLIST_DISPOSITION" ] ; then
 	case $MACLIST_DISPOSITION in
 	    REJECT)
+		maclist_target=reject
 		;;
 	    ACCEPT|DROP)
 		maclist_target=$MACLIST_DISPOSITION
@@ -4518,7 +4549,7 @@ do_initialize() {
 		;;
 	esac
     else
-	MACLIST_DISPOSITION=REJECT
+	MACLIST_DISPOSITION=reject
     fi
 
     if [ -n "$TCP_FLAGS_DISPOSITION" ] ; then

@@ -523,7 +523,10 @@ New Features:
 
 	#MARK/      SOURCE       DEST      PROTO     PORT(S)
 	#CLASSIFY
-	1:30	    -		 -	   tcp	     25
+	1:30	    -		 eth0	   tcp	     25
+
+    Note that when using this form of rule, it is acceptable to include
+    the name of an interface in the DEST column.
 
     Marking using the CLASSIFY target always occurs in the POSTROUTING
     chain of the mangle table and is not affected by the setting of

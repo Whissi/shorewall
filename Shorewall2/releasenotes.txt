@@ -383,7 +383,7 @@ New Features:
     entry.
 
     The OPTIONS, IN OPTIONS and OUT OPTIONS columns specify the
-    input-output, input and output characteristing of the security
+    input-output, input and output characteristics of the security
     policies to be used to decrypt (input) or encrypt (output) traffic
     to/from the zone.
 
@@ -397,7 +397,10 @@ New Features:
 	 option should only be listed in the IN OPTIONS and OUT OPTIONS
 	 columns.
 
-	 proto[!]=ah|esp|ipcomp 
+	 proto[!]=ah|esp|ipcomp
+
+	 mss=<number> (sets the MSS value in TCP SYN packets and is not
+                       related to policy matching) 
 
 	 mode[!]=transport|tunnel
 
@@ -420,12 +423,6 @@ New Features:
 	vpn	Yes	mode=tunnel,proto=esp	spi=1000	spi=1001
 	loc	No	reqid=44,mode=transport
 
-    The last column (MSS) in the /etc/shorewall/ipsec file is intended
-    to help compensate for the fact that there is no longer a
-    pseudo-interface (e.g., ipsec0) with it's own MTU. If you specify a
-    number in this column, Shorewall will generate rules to set the MSS
-    field in TCP SYN packets the the value of that field.
- 
     The /etc/shorewall/masq file has a new IPSEC column added. If you
     specify Yes or yes in that column then the unencrypted packets will
     have their source address changed. Otherwise, the unencrypted

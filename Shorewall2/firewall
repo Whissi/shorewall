@@ -1746,12 +1746,32 @@ setup_tunnels() # $1 = name of tunnels file
 
 setup_ipsec() {
 
-    set_mss() # $1 = chain
+    set_mss1() # $1 = chain, $2 = MSS
     {
 	eval local policy=\$${1}_policy
 	if [ "$policy" != NONE ]; then
 	    ensurechain $1
-	    run_iptables -I $1 -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss $mss
+	    run_iptables -I $1 -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss $2
+	fi
+    }
+
+    set_mss() # $1 = MSS value, $2 = _in, _out or ""
+    {
+	if [ $COMMAND != check ]; then
+	    for z in $zones; do
+		case $2 in
+		    _in)
+			set_mss1 ${z}2${zone} $1
+			;;
+		    _out)			
+			set_mss1 ${zone}2${z} $1
+			;;
+		    *)
+			set_mss1 ${z}2${zone} $1
+			set_mss1 ${zone}2${z} $1
+			;;
+		esac
+	    done
 	fi
     }
 
@@ -1779,6 +1799,7 @@ setup_ipsec() {
 		mode!=*)       newoptions="$newoptions ! --mode ${option#*=}" ;;
 		tunnel-src!=*) newoptions="$newoptions ! --tunnel-src ${option#*=}" ;;
 		tunnel-dst!=*) newoptions="$newoptions ! --tunnel-dst ${option#*=}" ;;
+		mss=[0-9]*)    set_mss ${option#*=} $1 ;;					   
 		*)             fatal_error "Invalid option \"$option\" for zone $zone" ;;
 	    esac
 	done
@@ -1813,15 +1834,6 @@ setup_ipsec() {
 	do_options ""     $options
 	do_options "_in"  $in_options
 	do_options "_out" $out_options
-
-	if [ $COMMAND != check -a -n "$mss" -a "x$mss" != "x-" ]; then
-	    for z in $zones; do
-		if [ $z != $zone ]; then
-		    set_mss ${z}2${zone}
-		    set_mss ${zone}2${z}
-		fi
-	    done
-	fi		
 	    
     done < $TMP_DIR/ipsec
 }	

@@ -2899,6 +2899,47 @@ rules_chain() # $1 = source zone, $2 = destination zone
 }
 
 #
+#  Get primary addresses of an interface
+#
+get_primary_addresses() # $1 = interface name
+{
+    local address
+
+    ip addr show dev $1 2> /dev/null | \
+	grep inet | \
+	grep -v secondary | \
+	sed s/"    "// | \
+	cut -d' ' -f2 | \
+	while read address; do
+	    [ -z "`echo "$address" | grep '/'`" ] && address="${address}/32"
+	    echo $address
+        done
+}
+
+#
+# Show network address corresponding to the passed PREFIX/VLSM using 
+# the ipcalc utility. This probably only works on RedHat systems :-(
+#
+show_network() {
+    local ipcalc=`which ipcalc 2> /dev/null`
+    local network
+    #
+    # If the distribution doesn't have ipcalc we'll just have to be ugly
+    #
+    [ -z "$ipcalc" ] && echo $1 && return
+
+    case $1 in
+	*/32)
+	    echo $1
+	    ;;
+	*)
+	    network=`$ipcalc -n $1`
+	    echo ${network#*=}/${1#*/}
+	    ;;
+    esac
+}
+
+#
 # Set up Source NAT (including masquerading)
 #
 setup_masq()
@@ -2927,10 +2968,10 @@ setup_masq()
 	chain=`masq_chain $interface`
 	iface=
 
+	source="$subnet"
+	
 	case $subnet in
 	*.*.*)
-	    source="$subnet"
-	    subnet="-s $subnet"
 	    ;;
 	-)
 	    #
@@ -2943,16 +2984,9 @@ setup_masq()
 	    iface="-o $interface"
 	    ;;
 	*)
-	    ipaddr="`ip addr show $subnet 2> /dev/null | grep 'inet '`"
-	    source="$subnet"
-	    if [ -z "$ipaddr" ]; then
-		fatal_error \
-		  "Interface $subnet must be up before Shorewall starts"
-	    fi
-
-	    subnet="`echo $ipaddr | sed s/"    "// | cut -d' ' -f2`"
-	    [ -z "`echo "$subnet" | grep '/'`" ] && subnet="${subnet}/32"
-	    subnet="-s $subnet"	    
+	    subnets=`get_primary_addresses $subnet`
+	    [ -z "$subnets" ] && startup_error "Unable to determine the address(es) for interface $subnet"
+	    subnet="$subnets"
 	    ;;
 	esac
 
@@ -2966,7 +3000,15 @@ setup_masq()
 	if [ -n "$nomasq" ]; then
 	    newchain=masq${masq_seq}
 	    createnatchain $newchain
-	    addnatrule $chain -d $destnet $iface $subnet -j $newchain
+	    
+	    if [ -n "$subnet" ]; then
+		for s in $subnet; do
+		    addnatrule $chain -d $destnet $iface -s $s -j $newchain
+		done
+	    else
+		addnatrule $chain -d $destnet $iface -j $newchain
+	    fi
+
 	    masq_seq=$(($masq_seq + 1))
 	    chain=$newchain
 	    subnet=
@@ -2976,21 +3018,34 @@ setup_masq()
 	    for addr in `separate_list $nomasq`; do
 		addnatrule $chain -s $addr -j RETURN
 	    done
+	
+	    source="$source except $nomasq"
 	else
 	    destnet="-d $destnet"
 	fi
 
 	if [ -n "$address" ]; then
-	    addnatrule $chain $subnet $destnet $iface \
-		-j SNAT --to-source $address
-	    using=" using $address"
+	    if [ -n "$subnet" ]; then
+		for s in $subnet; do
+		    addnatrule $chain -s $s $destnet $iface \
+			-j SNAT --to-source $address
+		    echo "   To $destination from `show_network $s` through ${interface} using $address"
+		done
+	    else
+		addnatrule $chain $destnet $iface \
+			-j SNAT --to-source $address
+		echo "   To $destination from $source through ${interface} using $address"
+	    fi
+	elif [ -n "$subnet" ]; then
+	    for s in $subnet; do
+		addnatrule $chain -s $s $destnet $iface -j MASQUERADE
+		echo "   To $destination from `show_network $s` through ${interface}"
+	    done
 	else
-	    addnatrule $chain $subnet $destnet $iface -j MASQUERADE
-	    using=
+	    addnatrule $chain $destnet $iface -j MASQUERADE
+	    echo "   To $destination from $source through ${interface}"
 	fi
 
-	[ -n "$nomasq" ] && source="$source except $nomasq"
-	echo "   To $destination from $source through ${interface}${using}"
     }
 
     strip_file masq $1

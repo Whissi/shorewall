@@ -333,10 +333,9 @@ packet_log() # $1 = number of messages
 
     [ -n "$realtail" ] && options="-n$1"
 
-    grep "${LOGFORMAT}\|ipt_unclean" $LOGFILE | \
+    grep "${LOGFORMAT}" $LOGFILE | \
 	 sed s/" kernel:"// | \
 	 sed s/" $host $LOGFORMAT"/" "/ | \
-	 sed s/" $host kernel: ipt_unclean: "/" "/ | \
 	 sed 's/MAC=.* SRC=/SRC=/' | \
 	 tail $options
 }

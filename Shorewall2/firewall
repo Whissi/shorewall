@@ -766,6 +766,17 @@ find_hosts() # $1 = host zone
 }
 
 #
+# Check for duplicate zone definitions
+#
+check_duplicate_zones() {
+    local localzones=
+
+    for zone in $zones; do
+	list_search $zone $localzones && startup_error "Zone $zone is defined more than once"
+	localzones="$localzones $zone"
+    done
+}
+#
 # Determine the interfaces on the firewall
 #
 # For each zone, create a variable called ${zone}_interfaces. This
@@ -2631,6 +2642,7 @@ check_config() {
     echo "Determining Zones..."
 
     determine_zones
+    check_dupliate_zones
 
     [ -z "$zones" ] && startup_error "ERROR: No Zones Defined"
 
@@ -5387,6 +5399,7 @@ initialize_netfilter () {
     echo "Determining Zones..."
 
     determine_zones
+    check_duplicate_zones
 
     [ -z "$zones" ] && startup_error "No Zones Defined"
 
@@ -6112,7 +6125,7 @@ activate_rules()
     # Create forwarding chains for complex zones and generate jumps for IPSEC source hosts to that chain.
     #
     for zone in $zones; do
-	if eval test -n \$${zone}_is_complex ; then
+	if eval test -n \"\$${zone}_is_complex\" ; then
 	    frwd_chain=${zone}_frwd
 	    createchain $frwd_chain No
 

@@ -54,7 +54,7 @@
 #        /etc/rc.d/rc.local file is modified to start the firewall.
 #
 
-VERSION=1.3.0
+VERSION=1.3.1
 
 usage() # $1 = exit status
 {
@@ -421,6 +421,15 @@ fi
 if [ -f ${PREFIX}/etc/shorewall/whitelist ]; then
     backup_file /etc/shorewall/whitelist
     rm -f ${PREFIX}/etc/shorewall/whitelist
+fi
+#
+# Install the rfc1918 file
+#
+if [ -f ${PREFIX}/etc/shorewall/rfc1918 ]; then
+    backup_file /etc/shorewall/rfc1918
+else
+    run_install -o $OWNER -g $GROUP -m 0600 rfc1918 ${PREFIX}/etc/shorewall/rfc1918
+    echo -e "\nRFC 1918 file installed as ${PREFIX}/etc/shorewall/rfc1918"
 fi
 #
 # Backup the version file

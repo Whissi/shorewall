@@ -1,6 +1,6 @@
 %define name shorewall
 %define version 1.3
-%define release 0
+%define release 1
 %define prefix /usr
 
 Summary: Shoreline Firewall is an iptables-based firewall for Linux systems.
@@ -70,6 +70,7 @@ if [ $1 = 0 ]; then if [ -x /sbin/insserv ]; then /sbin/insserv -r /etc/init.d/s
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/tunnels
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/hosts
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/blacklist
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/rfc1918
 %attr(0544,root,root) /sbin/shorewall
 %attr(0444,root,root) /etc/shorewall/functions
 /etc/shorewall/firewall
@@ -77,6 +78,9 @@ if [ $1 = 0 ]; then if [ -x /sbin/insserv ]; then /sbin/insserv -r /etc/init.d/s
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel
 
 %changelog
+* Fri May 31 2002 Tom Eastep <tom@shorewall.net>
+- Changed version to 1.3.1
+- Added the rfc1918 file
 * Wed May 29 2002 Tom Eastep <tom@shorewall.net>
 - Changed version to 1.3.0
 * Mon May 20 2002 Tom Eastep <tom@shorewall.net>

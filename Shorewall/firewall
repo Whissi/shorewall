@@ -1964,15 +1964,18 @@ policy_rules() # $1 = chain to add rules to
     	run_iptables -A $1 -j common
 	target=reject
 	;;
+    CONTINUE)
+        target=
+	;;
     *)
-	fatal_error "Invalid policy ($policy) for $1 to $2"
+	fatal_error "Invalid policy ($policy) for $1"
 	;;
 
     esac
 
     [ $# -eq 3 ] && [ "x${3}" != "x-" ] && run_iptables -A $1 -j LOG $LOGPARMS \
-	--log-prefix "Shorewall:$chain:$policy:" --log-level $3
-    run_iptables -A $1 -j $target
+	--log-prefix "Shorewall:${1}:${2}:" --log-level $3
+    [ -n "$target" ] && run_iptables -A $1 -j $target
 }
 
 ################################################################################
@@ -2000,17 +2003,7 @@ default_policy() # $1 = client $2 = server
 
 	echo "   Policy $policy for $1 to $2 using chain $chain1"
 
-	if [ "$policy" = CONTINUE ]; then
-	    ####################################################################
-	    # The policy is CONTINUE -- simply add any logging and syn flood
-	    # jump rules to the canonical chain
-	    #
-	    [ -n "$loglevel" ] && run_iptables -A $chain -j LOG $LOGPARMS \
-	        --log-prefix "Shorewall:$chain:$policy:" --log-level $loglevel
-	    [ -n "$synparams" ] && \
-	        enable_syn_flood_protection $chain $chain1
-
-	elif [ "$chain" = "$chain1" ]; then
+	if [ "$chain" = "$chain1" ]; then
 	    ####################################################################
 	    # The policy chain is the canonical chain; add policy rule to it
 	    # The syn flood jump has already been added if required.
@@ -2019,14 +2012,13 @@ default_policy() # $1 = client $2 = server
 	else
 	    ####################################################################
 	    # Policy chain is different; add a rule to jump from the canonical
-	    # chain to the policy chain and optionally, insert a jump to the
-	    # policy chain's syn flood chain.
+	    # chain to the policy chain (unless the policy is CONTINUE) and
+	    # optionally, insert a jump to the policy chain's syn flood chain.
 	    #
 	    run_iptables -A $chain -j $chain1
 
 	    [ -n "$synparams" ] && \
 	        enable_syn_flood_protection $chain $chain1
-
 	fi
     }
 
@@ -2071,6 +2063,9 @@ complete_standard_chain() # $1 = chain, $2 = source zone, $3 = destination zone
 
     while read client server policy loglevel synparams; do
         expandv client server policy loglevelsynparams
+	
+	[ "x$loglevel" = "x-" ] && loglevel=
+
 	case "$client" in
 	all|ALL)
 	    if [ "$server" = "$3" -o "$server" = "all" ]; then
@@ -2110,15 +2105,14 @@ rules_chain() # $1 = source zone, $2 = destination zone
 	case "$client" in
 	all|ALL)
 	    if [ "$server" = "$2" -o "$server" = "all" ]; then
-	        echo all2${server}
+		echo all2${server}
 		return
 	    fi
 	    ;;
 	*)
-	    if  [ "$client" = "$1" ] && \
-		[ "$server" = "all" -o "$server" = "$2" ]; then
-		    echo ${client}2${server}
-		    return
+	    if [ "$client" = "$1" -a "$server" = "all" ]; then
+		echo ${client}2${server}
+		return
 	    fi
 	    ;;
 	esac
@@ -2535,12 +2529,7 @@ add_common_rules() {
 	strip_file rfc1918
 
 	disp="LOG --log-prefix "Shorewall:rfc1918:DROP:" --log-level info"
-	########################################################################
-	# Since the limited broadcast address falls into 240.0.0.0/4 which we 
-	# filter, we must make a special case. Also, we drop the autoconfig
-	# class B but don't log since too many folks on cable/dsl screw up
-	# their Windows Networking config and end up with an autoconfiged IP.
-	#
+	
 	createchain rfc1918 no
 
 	createchain logdrop no
@@ -2651,34 +2640,25 @@ apply_policy_rules() {
 	[ -n "$synparams" ] && setup_syn_flood_chain $chain $synparams
 
 	if havechain $chain; then
-	    [ -n "$synparams" ] && enable_syn_flood_protection $chain $chain
-	elif [ "$client" = "all" -o "$server" = "all" ]; then
+	    [ -n "$synparams" ] && \
+	        run_iptables -I $chain 2 -p tcp --syn -j @$chain
+	else
 	    #
 	    # A wild-card rule. Create the chain and add policy
-	    # rules if the policy isn't CONTINUE
-	    #
-	    createchain $chain
+	    # rules
 	    #
 	    # We must include the ESTABLISHED and RELATED state
 	    # rule here to account for replys and reverse
 	    # related sessions associated with sessions going
 	    # in the other direction
 	    #
-	    if [ "$policy" != CONTINUE ]; then
-		policy_rules $chain $policy $loglevel
-
-		[ -n "$synparams" ] && \
-		    [ $policy = ACCEPT ] && \
-		    run_iptables -I $chain 2 -p tcp --syn -j @$chain
-	    fi
-	else
-	    #
-	    # This policy chain is also a canonical chain -- create it
-	    #
 	    createchain $chain
 
+	    [ "$client" = "all" -o "$server" = "all" ] && \
+	        policy_rules $chain $policy $loglevel
+
 	    [ -n "$synparams" ] && \
-		[ $policy = ACCEPT ] && \
+		[ $policy = ACCEPT -o $policy = CONTINUE ] && \
 		run_iptables -I $chain 2 -p tcp --syn -j @$chain
 	fi
 
@@ -2731,23 +2711,20 @@ activate_rules() {
 		interface=${host%:*}
 		subnet=${host#*:}
 		chain1=`forward_chain $interface`
+		
 		list_search $interface $multi_interfaces && multi=yes || multi=
-
+		
 		for host1 in $dest_hosts; do
 		    interface1=${host1%:*}
 		    subnet1=${host1#*:}
-		    
-		    if [ $interface != $interface1 -o \
-		         "x$subnet"  != "x$subnet1" -o \
-		          -n "$multi" ]; then
+
+		    if [ $interface != $interface1 -o -n "$multi" ]; then
 			run_iptables -A $chain1 -s $subnet \
 			    -o $interface1 -d $subnet1 -j $chain
 		    fi
 		done
-
 	    done
 	done
-
     done
 
     for interface in $all_interfaces; do

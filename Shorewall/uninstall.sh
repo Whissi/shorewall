@@ -26,7 +26,7 @@
 #       You may only use this script to uninstall the version
 #       shown below. Simply run this script to remove Seattle Firewall
 
-VERSION=1.3.0
+VERSION=1.3.1
 
 usage() # $1 = exit status
 {
@@ -104,6 +104,7 @@ if [ -n "$VERSION" ]; then
     remove_file /etc/shorewall/modules-${VERSION}.bkout
     remove_file /etc/shorewall/blacklist-${VERSION}.bkout
     remove_file /etc/shorewall/whitelist-${VERSION}.bkout
+    remove_file /etc/shorewall/rfc1918-${VERSION}.bkout
 fi
 
 remove_file /etc/shorewall/firewall
@@ -143,6 +144,8 @@ remove_file /etc/shorewall/tunnels
 remove_file /etc/shorewall/blacklist
 
 remove_file /etc/shorewall/whitelist
+
+remove_file /etc/shorewall/rfc1918
 
 remove_file /etc/shorewall/shorewall.conf
 

@@ -1,30 +1,13 @@
-Changes since 1.2.13
+Changes since 1.3.0
 
-1. Changed all file versions to 1.3
+1. Corrected policy handling for "all z CONTINUE" policies.
+2. Corrected problems with "-" as LOGLEVEL in the policy file.
+3. Added /etc/shorewall/rfc1918 file for defining the behavior of the
+   'norfc1918' interface option.
+4. Avoided forwarding rules between zones on the same interface when 'multi'
+   isn't specified on that interface.
 
-2. Changed the rules file and firewall file to implement the new forwarding
-   and redirection syntax.
-   
-3. Removed the sample rules from the rules file -- the quickstart samples
-   should provide those sample rules.
-   
-4. Added a silent Auth reject rule to common.def.
 
-5. Changed the handling of the nat table to have a separate chain for each
-   source zone.
-   
-6. Removed the code that tested each rules column for "none" -- this was never
-   documented and was there to support the brain-dead parameterized samples.
-   
-7. Reworked the chain structure in the filter table so that each interface has
-   its own input and forward chain.
-   
-8. Added logic to allow a subzone to be excluded from a DNAT or REDIRECT rule.
-
-9. Removed white list capability
-
-10. Added 'filterping' interface option.
-   
 
 
 

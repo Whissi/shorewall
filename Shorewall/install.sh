@@ -274,7 +274,7 @@ if [ -f ${PREFIX}/etc/shorewall/zones ]; then
     backup_file /etc/shorewall/zones
 else
     run_install -o $OWNER -g $GROUP -m 0744 zones ${PREFIX}/etc/shorewall/zones
-    echo -e "\nZones file installed as ${PREFIX}/etc/shorewall/policy"
+    echo -e "\nZones file installed as ${PREFIX}/etc/shorewall/zones"
 fi
 
 #

@@ -148,8 +148,24 @@ Issues when migrating from Shorewall to Shorewall2:
 
    Now, action files created by copying /etc/shorewall2/action.template
    may now specify a USER and or GROUP name/id in the final column just
-   like in the rules file. It is thus possible to create actions that
-   ACCEPT traffic from a list of users and/or groups.
+   like in the rules file (see below). It is thus possible to create
+   actions that control traffic from a list of users and/or groups.
+
+   The last column in /etc/shorewall2/rules is now labeled /USER/GROUP
+   and may contain:
+
+       [!]<user id>[:]
+       [!]<user name>[:]
+       [!]:<group id>
+       [!]:<group number>
+       [!]<user id>:<group id>
+       [!]<user number>:<group id>
+       [!]<user number>:<group id>
+       [!]<user number>:<group number>
+
+7) It is no longer possible to specify rate limiting in the ACTION
+   column of /etc/shorewall2/rules -- you must use the RATE LIMIT
+   column.
 
 New Features:
 
@@ -160,4 +176,11 @@ New Features:
    option causes smurfs (packets with a broadcast address as their
    source) to be dropped and optionally logged (based on the setting of
    a new SMURF_LOG_LEVEL option in shorewall.conf).
+
+3) fw->fw traffic may now be controlled by Shorewall. There is no need
+   to define the loopback interface in /etc/shorewall2/interfaces; you
+   simply add a fw->fw policy and fw->fw rules. If you have neither a
+   fw->fw policy nor fw->fw rules, all fw->fw traffic is allowed.
+
+
  

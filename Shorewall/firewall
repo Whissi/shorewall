@@ -1442,7 +1442,7 @@ delete_nat() {
 #
 setup_ecn() # $1 = file name
 {
-    local interfaces
+    local interfaces=""
     local hosts
     local h
 
@@ -2169,7 +2169,7 @@ process_rule() # $1 = target
 
     chain=${source}2${dest}
 
-    eval policy=${chain}_policy
+    eval policy=\$${chain}_policy
 
     [ $policy = NONE ] && \
 	fatal_error "Rules may not override a NONE policy: rule \"$rule\""
@@ -2691,6 +2691,8 @@ complete_standard_chain() # $1 = chain, $2 = source zone, $3 = destination zone
 rules_chain() # $1 = source zone, $2 = destination zone
 {
     local chain=${1}2${2}
+
+    [ "$1" = "$2" ] && { echo ACCEPT; return; }
 
     havechain $chain && { echo $chain; return; }
 
@@ -3688,12 +3690,7 @@ activate_rules()
 	    
 	    eval dest_hosts=\$${zone1}_hosts
 
-	    if [ $zone = $zone1 ]; then
-		chain=${zone}2${zone}
-		havechain $chain || chain=ACCEPT
-	    else
-		chain="`rules_chain $zone $zone1`"
-	    fi
+	    chain="`rules_chain $zone $zone1`"
 
 	    eval policy_chain=
 

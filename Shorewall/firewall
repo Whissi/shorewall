@@ -2123,6 +2123,17 @@ process_rule() # $1 = target
 	    servers="$FW::$servers"
 	fi
 	;;
+    REDIRECT-)
+	target=ACCEPT
+	logtarget=REDIRECT
+	dnat_only=Yes
+	address=${address:=all}
+	if [ "x-" = "x$servers" ]; then
+	    servers=$FW
+	else
+	    servers="$FW::$servers"
+	fi
+	;;
     esac
 
     # Parse and validate source
@@ -2263,7 +2274,7 @@ process_rules() # $1 = name of rules file
     while read xtarget xclients xservers xprotocol xports xcports xaddress; do
 	case "${xtarget%:*}" in
 
-	    ACCEPT|DROP|REJECT|DNAT|DNAT|DNAT-|REDIRECT|LOG|CONTINUE)
+	    ACCEPT|DROP|REJECT|DNAT|DNAT|DNAT-|REDIRECT|REDIRECT-|LOG|CONTINUE)
 		expandv xclients xservers xprotocol xports xcports xaddress
 
 		if [ "x$xclients" = xall ]; then

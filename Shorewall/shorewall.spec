@@ -1,5 +1,5 @@
 %define name shorewall
-%define version 1.4.6_20030726
+%define version 1.4.6_20030727
 %define release 1
 %define prefix /usr
 
@@ -101,10 +101,14 @@ fi
 %attr(0544,root,root) /sbin/shorewall
 %attr(0444,root,root) /usr/share/shorewall/functions
 %attr(0544,root,root) /usr/share/shorewall/firewall
+%attr(0544,root,root) /usr/share/shorewall/help
 %doc documentation
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel
 
 %changelog
+* Sun Jul 27 2003 Tom Eastep <tom@shorewall.net>
+- Added /usr/share/shorewall/help
+- Changed version to 1.4.6_20030727-1
 * Sat Jul 26 2003 Tom Eastep <tom@shorewall.net>
 - Changed version to 1.4.6_20030726-1
 * Sat Jul 19 2003 Tom Eastep <tom@shorewall.net>

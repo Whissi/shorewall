@@ -82,6 +82,7 @@ restore_file /etc/shorewall/functions
 restore_file /usr/lib/shorewall/functions
 restore_file /var/lib/shorewall/functions
 restore_file /usr/lib/shorewall/firewall
+restore_file /usr/lib/shorewall/help
 
 restore_file /etc/shorewall/common.def
 

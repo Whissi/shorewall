@@ -54,7 +54,7 @@
 #        /etc/rc.d/rc.local file is modified to start the firewall.
 #
 
-VERSION=1.4.6-20030726
+VERSION=1.4.6-20030727
 
 usage() # $1 = exit status
 {
@@ -316,6 +316,14 @@ install_file_with_backup functions ${PREFIX}/usr/share/shorewall/functions 0444
 
 echo
 echo "Common functions installed in ${PREFIX}/usr/share/shorewall/functions"
+
+#
+# Install the Help file
+#
+install_file_with_backup help ${PREFIX}/usr/share/shorewall/help 0544
+
+echo
+echo "Help command executor installed in ${PREFIX}/usr/share/shorewall/help"
 #
 # Install the common.def file
 #

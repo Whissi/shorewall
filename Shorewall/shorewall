@@ -555,6 +555,16 @@ save_dynamic_blacklist() {
     fi
 
 }
+
+#
+# Help information
+#
+help()
+{
+    [ -x $HELP ] && { export version; exec $HELP $*; }
+    echo "Help subsystem is not installed at $HELP"
+}
+ 
 #
 # Give Usage Information
 #
@@ -563,27 +573,28 @@ usage() # $1 = exit status
     echo "Usage: `basename $0` [debug] [nolock] [-c <directory>] <command>"
     echo "where <command> is one of:"
     echo "   add <interface>[:<host>] <zone>"
+    echo "   allow <address> ..."
+    echo "   check"
+    echo "   clear"
     echo "   delete <interface>[:<host>] <zone>"
+    echo "   drop|dropall <address> ..."
+    echo "   help [ <command > | host | address ]"
+    echo "   hits"
+    echo "   ipcalc [ <address>/<vlsm> | <address> <netmask> ]"
+    echo "   iprange <address>-<address>"
+    echo "   logwatch [<refresh interval>]"
+    echo "   monitor [<refresh interval>]"
+    echo "   refresh"
+    echo "   reject|rejectall <address> ..."
+    echo "   reset"
+    echo "   restart"
+    echo "   save"
     echo "   show [<chain>|classifiers|connections|log|nat|tc|tos]"
     echo "   start"
     echo "   stop"
-    echo "   reset"
-    echo "   restart"
     echo "   status"
-    echo "   clear"
-    echo "   refresh"
-    echo "   hits"
-    echo "   monitor [<refresh interval>]"
-    echo "   version"
-    echo "   check"
     echo "   try <directory> [ <timeout> ]"
-    echo "   logwatch [<refresh interval>]"
-    echo "   drop|dropall <address> ..."
-    echo "   reject|rejectall <address> ..."
-    echo "   allow <address> ..."
-    echo "   save"
-    echo "   ipcalc [ <address>/<vlsm> | <address> <netmask> ]"
-    echo "   iprange <address>-<address>"
+    echo "   version"
     exit $1
 }
 
@@ -653,6 +664,7 @@ SHARED_DIR=/usr/share/shorewall
 FIREWALL=$SHARED_DIR/firewall
 FUNCTIONS=$SHARED_DIR/functions
 VERSION_FILE=$SHARED_DIR/version
+HELP=$SHARED_DIR/help
 
 if [ -f $FUNCTIONS ]; then
     . $FUNCTIONS
@@ -1007,6 +1019,11 @@ case "$1" in
 	#
 	shift;
 	$@
+	;;
+    help)
+	shift
+	[ $# -ne 1 ] && usage 1
+	help $@
 	;;
     *)
 	usage 1

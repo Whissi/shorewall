@@ -26,7 +26,14 @@ Problems Corrected since 2.0.2
 -----------------------------------------------------------------------
 Issues when migrating from Shorewall 2.0.2 to Shorewall 2.0.3:
 
-None.
+1) The 'dropNonSyn' standard builtin action has been replaced with the
+   'dropNotSyn' standard builtin action. The old name can still be used
+   but will generate a warning.
+
+2) To lay the groundwork for eventual removal of NEWNOTSYN from
+   shorewall.conf and removal of the 'newnotsyn' interface option,
+   several new standard builtin actions have been defined. See New
+   Feature 3 below.
 -----------------------------------------------------------------------
 New Features:
 
@@ -41,4 +48,37 @@ New Features:
 3) A new 'rejectNonSyn' built-in standard action has been added. This
    action responds to "New not SYN" packets with an RST.
 
-   
+   The 'dropNonSyn' action has been superceded by the new 'dropNotSyn'
+   action. The old name will be accepted until the next major release
+   of Shorewall but will generate a warning.
+
+   Several new logging actions involving "New not SYN" packets have
+   been added:
+
+	logNewNotSyn  -- logs the packet with disposition = LOG
+	dLogNewNotSyn -- logs the packet with disposition = DROP
+	rLogNewNotSyn -- logs the packet with disposition = REJECT
+
+   The packets are logged at the log level specified in the
+   LOGNEWNOTSYN option in shorewall.conf. If than option is empty or
+   not specified, then 'info' is assumed.
+
+   Examples (In all cases, set NEWNOTSYN=Yes in shorewall.conf):
+
+   A: To simulate the behavior of NEWNOTSYN=No:
+
+      a) Add 'NoNewNotSyn' to /etc/shorewall/actions.
+      b) Create /etc/shorewall/action.NoNewNotSyn containing:
+
+	    dLogNotSyn
+	    dropNotSyn
+
+      c) Early in your rules file, place:
+
+	 NoNewNotSyn   all   all     tcp
+
+   B: Drop 'New not SYN' packets from the net only. Don't log them.
+
+      a) Early in your rules file, place:
+
+         dropNotSyn    net	  all	tcp   

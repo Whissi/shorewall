@@ -2745,37 +2745,9 @@ createactionchain() # $1 = chain name
 #
 
 process_actions1() {
-    #
-    # Add the builtin actions
-    #
-    add_builtin_actions() {
 	
-	if [ "$COMMAND" != check ]; then
-	    createchain dropBcast no
-	    qt iptables -A dropBcast -m pkttype --pkt-type broadcast -j DROP
-	    if ! qt iptables -A dropBcast -m pkttype --pkt-type multicast -j DROP; then
-                #
-                # No pkttype support -- do it the hard way
-                #
-		for address in $(find_broadcasts) 255.255.255.255 224.0.0.0/4 ; do
-		    run_iptables -A dropBcast -d $address -j DROP
-		done
-	    fi
-
-	    createchain dropNonSyn no
-	    run_iptables -A dropNonSyn -p tcp ! --syn -j DROP
-
-	    createchain rejectNonSyn no
-	    run_iptables -A rejectNonSyn -p tcp ! --syn -j REJECT --reject-with tcp-reset
-
-	fi
-
-	ACTIONS="dropBcast dropNonSyn RejectNonSyn"
-	USEDACTIONS="dropBcast dropNonSyn RejectNonSyn"
-	
-    }
-	
-    add_builtin_actions
+    ACTIONS="dropBcast dropNonSyn dropNotSyn rejectNotSyn logNotSyn rLogNotSyn dLogNotSyn"
+    USEDACTIONS=
 
     strip_file actions
 
@@ -2888,6 +2860,10 @@ process_actions2() {
 	process_action $xaction $xtarget $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec
 
     }
+
+    log_action() {
+	[ "$COMMAND" != check ] && log_rule ${LOGNEWNOTSYN:-info} $1 $2 "" "" -p tcp ! --syn
+    }
     #
     # Generate the transitive closure of $USEDACTIONS
     #
@@ -2911,7 +2887,38 @@ process_actions2() {
     #
     for xaction in $USEDACTIONS; do
 	case $xaction in
-	    dropNonSyn|dropBcast|RejectNonSyn)
+	    dropBcast)
+		if [ "$COMMAND" != check ]; then
+		    qt iptables -A dropBcast -m pkttype --pkt-type broadcast -j DROP
+		    if ! qt iptables -A dropBcast -m pkttype --pkt-type multicast -j DROP; then
+                        #
+                        # No pkttype support -- do it the hard way
+                        #
+			for address in $(find_broadcasts) 255.255.255.255 224.0.0.0/4 ; do
+			    run_iptables -A dropBcast -d $address -j DROP
+			done
+		    fi
+		fi
+		;;
+	    dropNonSyn)
+		error_message "WARNING: \"dropNonSyn\" has been replaced by \"dropNotSyn\""
+		[ "$COMMAND" != check ] && run_iptables -A dropNonSyn -p tcp ! --syn -j DROP
+		;;
+
+	    dropNotSyn)
+		[ "$COMMAND" != check ] && run_iptables -A dropNotSyn -p tcp ! --syn -j DROP
+		;;
+	    rejectNotSyn)
+		[ "$COMMAND" != check ] && run_iptables -A rejectNotSyn -p tcp ! --syn -j REJECT --reject-with tcp-reset
+		;;
+	    logNotSyn)
+		log_action logNotSyn LOG
+		;;
+	    rLogNotSyn)
+		log_action rLogNotSyn REJECT
+		;;
+	    dLogNotSyn)
+		log_action dLogNotSyn DROP		
 		;;
 	    *)
 		f=action.$xaction

@@ -1,5 +1,5 @@
 %define name shorewall
-%define version 2.1.2
+%define version 2.1.3
 %define release 1
 %define prefix /usr
 
@@ -127,6 +127,8 @@ fi
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel
 
 %changelog
+* Sat Aug 07 2004 Tom Eastep tom@shorewall.net
+- Updated to 2.1.3-1
 * Mon Aug 02 2004 Tom Eastep tom@shorewall.net
 - Remove startup_disabled.
 * Thu Jul 29 2004 Tom Eastep tom@shorewall.net

@@ -3517,7 +3517,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 	    [ -z "$hosts" ] && hosts=$newhost || hosts="$hosts $newhost"
 	fi
 
-	eval ${z}_hosts=$hosts
+	eval ${z}_hosts=\"$hosts\"
 	
 	echo "$z $hosts" >> ${STATEDIR}/zones_$$
     done < ${STATEDIR}/zones
@@ -3536,23 +3536,28 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		do_iptables -A `input_chain $interface` -i $interface -s $host -j $chain 
 	    else
 		source_chain=`forward_chain $interface`
-		eval dest_hosts=\$${z2}_hosts
+		eval dest_hosts=\"\$${z2}_hosts\"
 
 		for h in $dest_hosts; do
-		    do_iptables -A $source_chain -s $host -o ${h%:*} -d ${h#*:} -j $chain
+		    iface=${h%:*}
+		    hosts=${h#*:}
+		    
+		    if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
+			do_iptables -A $source_chain -s $host -o $iface -d $hosts -j $chain
+		    fi
 		done
 	    fi
 	elif [ "$z2" = "$zone" ]; then
 	    if [ "$z1" = "$FW" ]; then
 		do_iptables -I OUTPUT `output_rule_num` $num -o $interface -d $host -j $chain
 	    else
-		eval source_hosts=\$${z1}_hosts
+		eval source_hosts=\"\$${z1}_hosts\"
 		
 		for h in $source_hosts; do
 		    iface=${h%:*}
 		    hosts=${h#*:}
 
-		    if [ "$iface" != "$interface" ]; then
+		    if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
 			do_iptables -A `forward_chain $iface` -s $hosts -o $interface -d $host -j $chain
 		    fi
 		done
@@ -3583,7 +3588,7 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		hosts=
 		
 		for h in $temp; do
-		    if [ "$h" = "$temp" ]; then
+		    if [ "$h" = "$newhost" ]; then
 			echo Yes
 		    else
 			hosts="$hosts $h"
@@ -3622,7 +3627,7 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
     [ -z "`delete_from_zones_file`" ] && startup_error "Error: $1 not in zone $2"
 
     while read z hosts; do
-	eval ${z}_hosts=$hosts
+	eval ${z}_hosts=\"$hosts\"
     done < ${STATEDIR}/zones
 
     qt iptables -t nat -D PREROUTING -i $interface -s $host -j ${zone}_dnat
@@ -3633,23 +3638,28 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		qt iptables -D `input_chain $interface` -i $interface -s $host -j $chain 
 	    else
 		source_chain=`forward_chain $interface`
-		eval dest_hosts=\$${z2}_hosts
+		eval dest_hosts=\"\$${z2}_hosts\"
 
-		for h in $dest_hosts; do
-		    qt iptables -D $source_chain -s $host -o ${h%:*} -d ${h#*:} -j $chain
+		for h in $dest_hosts $newhost; do
+		    iface=${h%:*}
+		    hosts=${h#*:}
+		    
+		    if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
+			qt iptables -D $source_chain -s $host -o $iface -d $hosts -j $chain
+		    fi
 		done
 	    fi
 	elif [ "$z2" = "$zone" ]; then
 	    if [ "$z1" = "$FW" ]; then
 		qt iptables -D OUTPUT -o $interface -d $host -j $chain
 	    else
-		eval source_hosts=\$${z1}_hosts
+		eval source_hosts=\"\$${z1}_hosts\"
 		
 		for h in $source_hosts; do
 		    iface=${h%:*}
 		    hosts=${h#*:}
 
-		    if [ "$iface" != "$interface" ]; then
+		    if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
 			qt iptables -D `forward_chain $iface` -s $hosts -o $interface -d $host -j $chain
 		    fi
 		done

@@ -141,6 +141,8 @@ fi
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel
 
 %changelog
+* Fri Jul 02 2004 Tom Eastep tom@shorewall.net
+- Updated to 2.0.2c-1
 * Wed Jun 30 2004 Tom Eastep tom@shorewall.net
 - Updated to 2.0.2b-1
 * Mon Jun 28 2004 Tom Eastep tom@shorewall.net

@@ -1,0 +1,15 @@
+#
+# Shorewall 2.0 /etc/shorewall/action.DropSMB
+#
+#	This action silently drops Microsoft SMB traffic
+#
+######################################################################################
+#TARGET  SOURCE		DEST      	PROTO	DEST    SOURCE	   ORIGINAL	RATE
+#                       	        	PORT    PORT(S)    DEST         LIMIT
+DROP	 -	        -               udp     135
+DROP     -              -               udp     137:139
+DROP     -              -               udp     445
+DROP     -              -               tcp     135
+DROP     -              -               tcp     139
+DROP     -              -               tcp     445
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

@@ -1,0 +1,11 @@
+#
+# Shorewall 2.0 /etc/shorewall/action.AllowTrcrt
+#
+#	This action accepts Traceroute (for up to 20 hops):
+#
+######################################################################################
+#TARGET  SOURCE		DEST      	PROTO	DEST    SOURCE	   ORIGINAL	RATE
+#                       	        	PORT    PORT(S)    DEST         LIMIT
+ACCEPT	 -	        -               udp	33434:33454 #UDP Traceroute
+ACCEPT	 -		-		icmp	8	    #ICMP Traceroute
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

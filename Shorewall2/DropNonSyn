@@ -1,0 +1,7 @@
+#
+# Shorewall 2.0 /etc/shorewall/DropNonSyn
+#
+# System-provided user exit for adding rules to the DropNonSyn chain
+# created by the DropNonSyn action (action.DropNonSyn)
+
+run_iptables -A DropNonSyn -p tcp ! --syn -j DROP

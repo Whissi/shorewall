@@ -1,0 +1,497 @@
+#!/bin/sh
+#
+#     The Shoreline Firewall (Shorewall) Packet Filtering Firewall - V2.0 2/14/2004
+#
+#     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
+#
+#     (c) 1999,2000,2001,2002,2003,2004 - Tom Eastep (teastep@shorewall.net)
+#
+#	On most distributions, this file should be called:
+#	/etc/rc.d/init.d/shorewall or /etc/init.d/shorewall
+#
+#	Complete documentation is available at http://shorewall.net
+#
+#	This program is free software; you can redistribute it and/or modify
+#	it under the terms of Version 2 of the GNU General Public License
+#	as published by the Free Software Foundation.
+#
+#	This program is distributed in the hope that it will be useful,
+#	but WITHOUT ANY WARRANTY; without even the implied warranty of
+#	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#	GNU General Public License for more details.
+#
+#	You should have received a copy of the GNU General Public License
+#	along with this program; if not, write to the Free Software
+#	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
+#
+#	If an error occurs while starting or restarting the firewall, the
+#	firewall is automatically stopped.
+#
+#	Commands are:
+#
+#	   firewall start			  Starts the firewall
+#	   firewall restart			  Restarts the firewall
+#	   firewall stop			  Stops the firewall
+#	   firewall status			  Displays firewall status
+#	   firewall reset			  Resets iptabless packet and
+#						  byte counts
+#	   firewall clear			  Remove all Shorewall chains
+#						  and rules/policies.
+#	   firewall refresh	.		  Rebuild the common chain
+#          firewall check                         Verify the more heavily-used
+#                                                 configuration files.
+#          firewall add <if>:<host/net>           add a host or net to a zone
+#          firewall delete <if>:<host/net>        delete a host or net from a zone
+#
+# Search a list looking for a match -- returns zero if a match found
+# 1 otherwise
+#
+list_search() # $1 = element to search for , $2-$n = list
+{
+    local e=$1
+
+    while [ $# -gt 1 ]; do
+	shift
+	[ "x$e" = "x$1" ] && return 0
+    done
+
+    return 1
+}
+
+#
+# Functions to count list elements
+# - - - - - - - - - - - - - - - -
+# Whitespace-separated list
+#
+list_count1() {
+    echo $#
+}
+#
+# Comma-separated list
+#
+list_count() {
+    list_count1 `separate_list $1`
+}
+
+#
+# Mutual exclusion -- These functions are jackets for the mutual exclusion
+#		      routines in $FUNCTIONS. They invoke
+#		      the corresponding function in that file if the user did
+#		      not specify "nolock" on the runline.
+#
+my_mutex_on() {
+    [ -n "$nolock" ] || { mutex_on; have_mutex=Yes; }
+}
+
+my_mutex_off() {
+    [ -n "$have_mutex" ] && { mutex_off; have_mutex=; }
+}
+
+#
+# Message to stderr
+#
+error_message() # $* = Error Message
+{
+   echo "   $@" >&2
+}
+
+#
+# Fatal error -- stops the firewall after issuing the error message
+#
+fatal_error() # $* = Error Message
+{
+    echo "   Error: $@" >&2
+    if [ $command = check ]; then
+	[ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
+    else
+	stop_firewall
+    fi
+    exit 2
+}
+
+#
+# Fatal error during startup -- generate an error message and abend with
+#				altering the state of the firewall
+#
+startup_error() # $* = Error Message
+{
+    echo "   Error: $@" >&2
+    my_mutex_off
+    [ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
+    kill $$
+    exit 2
+}
+
+#
+# Send a message to STDOUT and the System Log
+#
+report () { # $* = message
+    echo "$@"
+    logger "$@"
+}
+
+#
+# Perform variable substitution on the passed argument and echo the result
+#
+expand() # $1 = contents of variable which may be the name of another variable
+{
+    eval echo \"$1\"
+}
+
+#
+# Perform variable substitition on the values of the passed list of variables
+#
+expandv() # $* = list of variable names
+{
+    local varval
+
+    while [ $# -gt 0 ]; do
+	eval varval=\$${1}
+	eval $1=\"$varval\"
+	shift
+    done
+}
+
+#
+# Replace all leading "!" with "! " in the passed argument list
+#
+
+fix_bang() {
+    local i;
+
+    for i in $@; do
+	case $i in
+	    !*)
+		echo "! ${i#!}"
+		;;
+	    *)
+		echo $i
+		;;
+	esac
+    done
+}
+
+#
+# Run iptables and if an error occurs, stop the firewall and quit
+#
+run_iptables() {
+
+    if ! iptables $@ ; then
+	[ -z "$stopping" ] && { stop_firewall; exit 2; }
+    fi
+}
+
+#
+# Version of 'run_iptables' that inserts white space after "!" in the arg list
+#
+run_iptables2() {
+
+    if [ "x${*%!*}" = "x$*" ]; then
+	#
+	# No "!" in the command -- just execute it
+	#
+	run_iptables $@
+	return
+    fi
+    #
+    # Need to insert white space before each "!"
+    #
+    run_iptables `fix_bang $@`
+}
+
+#
+# Run ip and if an error occurs, stop the firewall and quit
+#
+run_ip() {
+    if ! ip $@ ; then
+	[ -z "$stopping" ] && { stop_firewall; exit 2; }
+    fi
+}
+
+#
+# Run arp and if an error occurs, stop the firewall and quit
+#
+run_arp() {
+    if ! arp $@ ; then
+	[ -z "$stopping" ] && { stop_firewall; exit 2; }
+    fi
+}
+
+#
+# Run tc and if an error occurs, stop the firewall and quit
+#
+run_tc() {
+    if ! tc $@ ; then
+	[ -z "$stopping" ] && { stop_firewall; exit 2; }
+    fi
+}
+
+#
+# Create a filter chain
+#
+# If the chain isn't one of the common chains then add a rule to the chain
+# allowing packets that are part of an established connection. Create a
+# variable exists_${1} and set its value to Yes to indicate that the chain now
+# exists.
+#
+createchain() # $1 = chain name, $2 = If "yes", create default rules
+{
+    local c=`chain_base $1`
+
+    run_iptables -N $1
+
+    if [ $2 = yes ]; then
+	run_iptables -A $1 -m state --state ESTABLISHED,RELATED -j ACCEPT
+	[ -z "$NEWNOTSYN" ] && \
+	    run_iptables -A $1 -m state --state NEW -p tcp ! --syn -j newnotsyn
+    fi
+
+    eval exists_${c}=Yes
+}
+
+createchain2() # $1 = chain name, $2 = If "yes", create default rules
+{
+    local c=`chain_base $1`
+
+    if iptables -N $1; then
+
+	if [ $2 = yes ]; then
+	    run_iptables -A $1 -m state --state ESTABLISHED,RELATED -j ACCEPT
+	    [ -z "$NEWNOTSYN" ] && \
+		run_iptables -A $1 -m state --state NEW -p tcp ! --syn -j newnotsyn
+	fi
+	
+	eval exists_${c}=Yes
+    fi
+}
+
+#
+# Determine if a chain exists
+#
+# When we create a chain "chain", we create a variable named exists_chain and
+# set its value to Yes. This function tests for the "exists_" variable
+# corresponding to the passed chain having the value of "Yes".
+#
+havechain() # $1 = name of chain
+{
+    local c=`chain_base $1`
+
+    eval test \"\$exists_${c}\" = Yes
+}
+
+#
+# Query NetFilter about the existence of a filter chain
+#
+chain_exists() # $1 = chain name
+{
+    qt iptables -L $1 -n
+}
+
+#
+# Query NetFilter about the existence of a mangle chain
+#
+mangle_chain_exists() # $1 = chain name
+{
+    qt iptables -t mangle -L $1 -n
+}
+
+#
+# Ensure that a chain exists (create it if it doesn't)
+#
+ensurechain() # $1 = chain name
+{
+    havechain $1 || createchain $1 yes
+}
+
+#
+# Add a rule to a chain creating the chain if necessary
+#
+addrule() # $1 = chain name, remainder of arguments specify the rule
+{
+    ensurechain $1
+    run_iptables -A $@
+}
+
+#
+# Create a nat chain
+#
+# Create a variable exists_nat_${1} and set its value to Yes to indicate that
+# the chain now exists.
+#
+createnatchain() # $1 = chain name
+{
+    run_iptables -t nat -N $1
+
+    eval exists_nat_${1}=Yes
+}
+
+#
+# Determine if a nat chain exists
+#
+# When we create a chain "chain", we create a variable named exists_nat_chain
+# and set its value to Yes. This function tests for the "exists_" variable
+# corresponding to the passed chain having the value of "Yes".
+#
+havenatchain() # $1 = name of chain
+{
+    eval test \"\$exists_nat_${1}\" = Yes
+}
+
+#
+# Ensure that a nat chain exists (create it if it doesn't)
+#
+ensurenatchain() # $1 = chain name
+{
+    havenatchain $1 || createnatchain $1
+}
+
+#
+# Add a rule to a nat chain creating the chain if necessary
+#
+addnatrule() # $1 = chain name, remainder of arguments specify the rule
+{
+    ensurenatchain $1
+    run_iptables2 -t nat -A $@
+}
+
+#
+# Delete a chain if it exists
+#
+deletechain() # $1 = name of chain
+{
+    qt iptables -L $1 -n && qt iptables -F $1 && qt iptables -X $1
+}
+
+#
+# Determine if a chain is a policy chain
+#
+is_policy_chain() # $1 = name of chain
+{
+    eval test \"\$${1}_is_policy\" = Yes
+}
+
+#
+# Set a standard chain's policy
+#
+setpolicy() # $1 = name of chain, $2 = policy
+{
+    run_iptables -P $1 $2
+}
+
+#
+# Set a standard chain to enable established and related connections
+#
+setcontinue() # $1 = name of chain
+{
+    run_iptables -A $1 -m state --state ESTABLISHED,RELATED -j ACCEPT
+}
+
+#
+# Flush one of the NAT table chains
+#
+flushnat() # $1 = name of chain
+{
+    run_iptables -t nat -F $1
+}
+
+#
+# Flush one of the Mangle table chains
+#
+flushmangle() # $1 = name of chain
+{
+    run_iptables -t mangle -F $1
+}
+
+#
+# Find interfaces to a given zone
+#
+# Search the variables representing the contents of the interfaces file and
+# for each record matching the passed ZONE, echo the expanded contents of
+# the "INTERFACE" column
+#
+find_interfaces() # $1 = interface zone
+{
+    local zne=$1
+    local z
+    local interface
+
+    for interface in $all_interfaces; do
+	eval z=\$`chain_base ${interface}`_zone
+	[ "x${z}" = x${zne} ] && echo $interface
+    done
+}
+
+#
+# Forward Chain for an interface
+#
+forward_chain() # $1 = interface
+{
+   echo `chain_base $1`_fwd
+}
+
+#
+# Input Chain for an interface
+#
+input_chain() # $1 = interface
+{
+   echo `chain_base $1`_in
+}
+
+#
+# Output Chain for an interface
+#
+output_chain() # $1 = interface
+{
+   echo `chain_base $1`_out
+}
+
+#
+# Masquerade Chain for an interface
+#
+masq_chain() # $1 = interface
+{
+   echo `chain_base $1`_masq
+}
+
+#
+# MAC Verification Chain for an interface
+#
+mac_chain() # $1 = interface
+{
+   echo `chain_base $1`_mac
+}
+
+#
+# DNAT Chain from a zone
+#
+dnat_chain() # $1 = zone
+{
+   echo ${1}_dnat
+}
+
+#
+# SNAT Chain to a zone
+#
+snat_chain() # $1 = zone
+{
+   echo `chain_base $1`_snat
+}
+
+#
+# ECN Chain to an interface
+#
+ecn_chain() # $1 = interface
+{
+   echo `chain_base $1`_ecn
+}
+
+#
+# First chains for an interface
+#
+first_chains() #$1 = interface
+{
+   local c=`chain_base $1`
+
+   echo ${c}_fwd ${c}_in
+}
+

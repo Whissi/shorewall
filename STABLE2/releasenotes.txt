@@ -145,4 +145,33 @@ Problems corrected in version 2.0.10
    through an interface named in the SUBNET column of
    /etc/shorewall/masq was less than helpful since it didn't include
    the interface name.
+-----------------------------------------------------------------------
+New Features in 2.0.10
+
+The "shorewall status" command has been enhanced to include the values
+of key /proc settings:
+
+Example from a two-interface firewall:
+
+/proc
+
+   /proc/sys/net/ipv4/ip_forward = 1
+   /proc/sys/net/ipv4/conf/all/proxy_arp = 0
+   /proc/sys/net/ipv4/conf/all/arp_filter = 0
+   /proc/sys/net/ipv4/conf/all/rp_filter = 0
+   /proc/sys/net/ipv4/conf/default/proxy_arp = 0
+   /proc/sys/net/ipv4/conf/default/arp_filter = 0
+   /proc/sys/net/ipv4/conf/default/rp_filter = 0
+   /proc/sys/net/ipv4/conf/eth0/proxy_arp = 0
+   /proc/sys/net/ipv4/conf/eth0/arp_filter = 0
+   /proc/sys/net/ipv4/conf/eth0/rp_filter = 0
+   /proc/sys/net/ipv4/conf/eth1/proxy_arp = 0
+   /proc/sys/net/ipv4/conf/eth1/arp_filter = 0
+   /proc/sys/net/ipv4/conf/eth1/rp_filter = 0
+   /proc/sys/net/ipv4/conf/lo/proxy_arp = 0
+   /proc/sys/net/ipv4/conf/lo/arp_filter = 0
+   /proc/sys/net/ipv4/conf/lo/rp_filter = 0
+
+
+
 

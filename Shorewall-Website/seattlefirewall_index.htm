@@ -3,27 +3,30 @@
 <head>
   <meta content="HTML Tidy, see www.w3.org" name="generator">
   <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
-  <title>Shoreline Firewall (Shorewall) 2.0</title>
+  <title>Shoreline Firewall (Shorewall) 1.4</title>
   <base target="_self">
 </head>
 <body>
 <div>
-<table border="0" cellpadding="0" cellspacing="0" id="AutoNumber4"
- style="border-collapse: collapse; width: 100%; height: 100%;">
+<table id="AutoNumber4"
+ style="border-collapse: collapse; width: 100%; height: 100%;"
+ border="0" cellpadding="0" cellspacing="0">
   <tbody>
     <tr>
       <td width="90%">
       <h2>Introduction to Shorewall</h2>
-      <h3>This is the Shorewall 2.0 Web Site</h3>
-      <div style="margin-left: 40px;">The information on this site
-applies only to 2.0.x releases of
+      <h3>This is the Shorewall 1.4 Web Site</h3>
+      <div style="margin-left: 40px;"><a
+ href="http://lists.shorewall.net/pipermail/shorewall-announce/2004-December/000451.html"><span
+ style="font-weight: bold;">Preparing for Shorewall 2.2 -- End of
+support life for Shorewall 1.4 is Near! </span></a><br>
+      <br>
+The information on this site
+applies only to 1.4.x releases of
 Shorewall. For older versions:<br>
       </div>
       <ul>
         <ul>
-          <li>The 1.4 site is <a href="http://www.shorewall.net/1.4"
- target="_top">here.<br>
-            </a></li>
           <li>The 1.3 site is <a href="http://www.shorewall.net/1.3"
  target="_top">here.</a></li>
           <li>The 1.2 site is <a href="http://shorewall.net/1.2/"
@@ -61,9 +64,8 @@ state tracking
 capabilities</a>.<br>
       <br>
 Shorewall is <span style="text-decoration: underline;">not</span> a
-daemon. Once Shorewall has configured Netfilter, it's job is complete.
-After that, there is no Shorewall code running although the <a
- href="starting_and_stopping_shorewall.htm">/sbin/shorewall
+daemon. Once Shorewall has configured Netfilter, it's job is complete
+although the <a href="starting_and_stopping_shorewall.htm">/sbin/shorewall
 program can be used at any time to monitor the Netfilter firewall</a>.<br>
       </div>
       <h3>Getting Started with Shorewall</h3>
@@ -77,20 +79,14 @@ closely match your environment and follow the step by step instructions.<br>
  href="Documentation_Index.html">Documentation
 Index</a> is a good place to start as is the Quick Search in the frame
 above. </div>
-      <h3>Running Shorewall on Mandrake® with a two-interface setup?</h3>
+      <h3>Running Shorewall on Mandrake with a two-interface setup?</h3>
       <div style="margin-left: 40px;">If so, the documentation on this
 site will not apply directly
 to your setup. If you want to use the documentation that you find here,
 you will want to consider uninstalling what you have and installing a
 setup that matches the documentation on this site. See the <a
  href="two-interface.htm">Two-interface QuickStart Guide</a> for
-details.<br>
-      <br>
-      <span style="font-weight: bold;">Update: </span>I've been
-informed by Mandrake Development that this problem has been corrected
-in Mandrake 10.0 Final (the problem still exists in the 10.0 Community
-release).<br>
-      </div>
+details.</div>
       <h3>License</h3>
       <div style="margin-left: 40px;">This program is free software;
 you can redistribute it and/or modify it
@@ -118,127 +114,211 @@ Documentation License"</a>. </div>
       <p>Copyright © 2001-2004 Thomas M. Eastep </p>
       <hr style="width: 100%; height: 2px;">
       <h2>News</h2>
-      <p><b>4/5/2004 - Shorewall 2.0.1 </b><b> <img alt="(New)"
+      <p><b>3/16/2004 - Shorewall 1.4.10d </b><b> <img alt="(New)"
  src="images/new10.gif"
- style="border: 0px solid ; width: 28px; height: 12px;" title=""></b><br>
-      <b></b></p>
-Problems Corrected since 2.0.0<br>
-      <br>
+ style="border: 0px solid ; width: 28px; height: 12px;" title=""></b></p>
+      <p>Corrects one problem:<br>
+      </p>
+      <ul>
+        <li>Rules involving user-defined actions often resulted in a
+warning that the rule was a POLICY.<br>
+        </li>
+      </ul>
+      <p><b>2/15/2004 - Shorewall 1.4.10c&nbsp;</b><b></b></p>
+      <p>Corrects one problem:<br>
+      </p>
+      <ul>
+        <li>Entries in /etc/shorewall/tcrules with an empty USER/GROUP
+column would cause a startup error.<br>
+        </li>
+      </ul>
+      <p><b>2/12/2004 - Shorewall 1.4.10b&nbsp;</b><b></b></p>
+      <p>Corrects one problem:<br>
+      </p>
+      <ul>
+        <li>In the /etc/shorewall/masq entry “<span class="quote">eth0:!10.1.1.150
+&nbsp; &nbsp;0.0.0.0/0!10.1.0.0/16 &nbsp; &nbsp; 10.1.2.16</span>”, the
+“<span class="quote">!10.1.0.0/16</span>” is ignored.</li>
+      </ul>
+      <p><b>2/8/2004 - Shorewall 1.4.10a&nbsp;</b><b></b></p>
+      <p>Corrects two problems:<br>
+      </p>
+      <ul>
+        <li>A problem which can cause [re]start to fail inexplicably
+while processing /etc/shorewall/masq.</li>
+        <li>Interfaces using the Atheros WiFi card to use the 'maclist'
+option.<br>
+        </li>
+      </ul>
+      <p><b>1/30/2004 - Shorewall 1.4.10</b></p>
+      <p>Problems Corrected since version 1.4.9</p>
       <ol>
-        <li>Using actions in the manner recommended in the
-documentation results in a Warning that the rule is a policy.</li>
-        <li>When a zone on a single interface is defined using
-/etc/shorewall/hosts, superfluous rules are generated in the
-&lt;zone&gt;_frwd chain.</li>
-        <li>Thanks to Sean Mathews, a long-standing problem with Proxy
-ARP and IPSEC has been corrected. Thanks Sean!!!</li>
-        <li>The "shorewall show log" and "shorewall logwatch" commands
-incorrectly displayed type 3 ICMP packets.<br>
+        <li>The column descriptions in the action.template file did not
+match the column headings. That has been corrected.</li>
+        <li>The presence of IPV6 addresses on devices generated error
+messages during [re]start if ADD_IP_ALIASES=Yes or ADD_SNAT_ALIASES=Yes
+are specified in /etc/shorewall/shorewall.conf. These messages have
+been eliminated.</li>
+        <li>The CONTINUE action in /etc/shorewall/rules now works
+correctly. A couple of problems involving rate limiting have been
+corrected. These bug fixes courtesy of Steven Jan Springl.</li>
+        <li>Shorewall now tried to avoid sending an ICMP response to
+broadcasts and smurfs.</li>
+        <li>Specifying "-" or "all" in the PROTO column of an action no
+longer causes a startup error. <br>
+          <br>
         </li>
       </ol>
-Issues when migrating from Shorewall 2.0.0 to Shorewall 2.0.1:<br>
+Migragion Issues:<br>
       <br>
-      <ol>
-        <li>The function of 'norfc1918' is now split between that
-option and a new 'nobogons' option.<br>
-          <br>
-The rfc1918 file released with Shorewall now contains entries for only
-those three address ranges reserved by RFC 1918. A 'nobogons' interface
-option has been added which handles bogon source addresses (those which
-are reserved by the IANA, those reserved for DHCP auto-configuration
-and the class C test-net reserved for testing and documentation
-examples). This will allow users to perform RFC 1918 filtering without
-having to deal with out of date data from IANA. Those who are willing
-to update their /usr/share/shorewall/bogons file regularly can specify
-the 'nobogons' option in addition to 'norfc1918'.<br>
-          <br>
-The level at which bogon packets are logged is specified in the new
-BOGON_LOG_LEVEL variable in shorewall.conf. If that option is not
-specified or is specified as empty (e.g, BOGON_LOG_LEVEL="") then bogon
-packets whose TARGET is 'logdrop' in /usr/share/shorewall/bogons are
-logged at the 'info' level.</li>
-      </ol>
+&nbsp;&nbsp;&nbsp; None.<br>
+      <br>
 New Features:<br>
-      <br>
       <ol>
-        <li>Support for Bridging Firewalls has been added. For details,
-see<br>
+        <li>The INTERFACE column in the /etc/shorewall/masq file may
+now specify a destination list. <br>
           <br>
-http://shorewall.net/bridge.html<br>
+Example:<br>
           <br>
-        </li>
-        <li>Support for NETMAP has been added. NETMAP allows NAT to be
-defined between two network:<br>
+&nbsp;&nbsp;&nbsp; #INTERFACE&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; SUBNET&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; ADDRESS<br>
+&nbsp;&nbsp;&nbsp; eth0:192.0.2.3,192.0.2.16/28&nbsp;&nbsp;&nbsp; eth1<br>
           <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;
-a.b.c.1&nbsp;&nbsp;&nbsp; -&gt; x.y.z.1<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-a.b.c.2&nbsp;&nbsp;&nbsp; -&gt; x.y.z.2<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-a.b.c.3&nbsp;&nbsp;&nbsp; -&gt; x.y.z.3<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ...<br>
-          <br>
-&nbsp;&nbsp; http://shorewall.net/netmap.htm<br>
+If the list begins with "!" then SNAT will occur only if the
+destination IP address is NOT included in the list.<br>
           <br>
         </li>
-        <li>The /sbin/shorewall program now accepts a "-x" option to
-cause iptables to print out the actual packet and byte counts rather
-than abbreviated counts such as "13MB".<br>
+        <li>Output traffic control rules (those with the firewall as
+the source) may now be qualified by the effective userid and/or
+effective group id of the program generating the output. This feature
+is courtesy of&nbsp; Frédéric LESPEZ.<br>
           <br>
-Commands affected by this are:<br>
+A new USER column has been added to /etc/shorewall/tcrules. It may
+contain :<br>
           <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-shorewall -x show [ &lt;chain&gt;[ &lt;chain&gt; ...] ]<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-shorewall -x show tos|mangle<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-shorewall -x show nat<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-shorewall -x status<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-shorewall -x monitor [ &lt;interval&gt; ]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [&lt;user name or number&gt;]:[&lt;group
+name or number&gt;]<br>
           <br>
-        </li>
-        <li>Shorewall now traps two common zone definition errors:<br>
-          <ul>
-            <li>Including the firewall zone in a /etc/shorewall/hosts
-record.</li>
-            <li>Defining an interface for a zone in both
-/etc/shorewall/interfaces and /etc/shorewall/hosts.<br>
-              <br>
-            </li>
-          </ul>
-        </li>
-        <li>In the second case, the following will appear during
-"shorewall [re]start" or "shorewall check":<br>
+The colon is optional when specifying only a user.<br>
           <br>
-&nbsp;&nbsp; Determining Hosts in Zones...<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ...<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Error: Invalid zone definition for zone
-&lt;name of zone&gt;<br>
-&nbsp;&nbsp; Terminated<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Examples : john: / john / :users /
+john:users<br>
           <br>
         </li>
-        <li>To support bridging, the following options have been added
-to entries in /etc/shorewall/hosts:<br>
+        <li>A "detectnets" interface option has been added for entries
+in /etc/shorewall/interfaces. This option automatically taylors the
+definition of the zone named in the ZONE column to include just&nbsp;
+those hosts that have routes through the interface named in the
+INTERFACE column. The named interface must be UP when Shorewall is
+[re]started.<br>
           <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; norfc1918<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; nobogons<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; blacklist<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; tcpflags<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; nosmurfs<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; newnotsyn<br>
+&nbsp;WARNING: DO NOT SET THIS OPTION ON YOUR INTERNET INTERFACE! <br>
+        </li>
+      </ol>
+      <p><b>1/17/2004 - FAQ Wiki Available&nbsp;</b></p>
+      <p>It has been asserted that the use of CVS for maintaining the
+Shorewall documentation has been a barrier to community participation.
+To test this theory, Alex Martin <a
+ href="http://wiki.rettc.com/wiki.phtml?title=Wiki_Shorewall_FAQ">has
+created a Wiki</a> and with the help of Mike Noyes has populated the
+Wiki with the Shorewall FAQ. <br>
+      </p>
+      <p><b>1/13/2004 - Shorewall 1.4.9&nbsp;</b><b> </b></p>
+      <p>Problems Corrected since version 1.4.8:</p>
+      <ol>
+        <li>There has been a low continuing level of confusion over the
+terms "Source NAT" (SNAT) and "Static NAT". To avoid future confusion,
+all instances of "Static NAT" have been replaced with "One-to-one NAT"
+in the documentation and configuration files.</li>
+        <li>The description of NEWNOTSYN in shorewall.conf has been
+reworded for clarity.</li>
+        <li>Wild-card rules (those involving "all" as SOURCE or DEST)
+will no longer produce an error if they attempt to add a rule that
+would override a NONE policy. The logic for expanding these wild-card
+rules now simply skips those (SOURCE,DEST) pairs that have a NONE
+policy.</li>
+        <li>DNAT rules that also specified SNAT now work reliably.
+Previously, there were cases where the SNAT specification was
+effectively ignored.<br>
+        </li>
+      </ol>
+      <p>Migration Issues:</p>
+      <p>&nbsp;&nbsp;&nbsp; None.<br>
+      <br>
+New Features: </p>
+      <ol>
+        <li>The documentation has been completely rebased to Docbook
+XML. The documentation is now released as separate HTML and XML
+packages.<br>
+        </li>
+        <li>To cut down on the number of "Why are these ports closed
+rather than stealthed?" questions, the SMB-related rules in
+/etc/shorewall/common.def have been changed from 'reject' to 'DROP'.</li>
+        <li>For easier identification, packets logged under the
+'norfc1918' interface option are now logged out of chains named
+'rfc1918'. Previously, such packets were logged under chains named
+'logdrop'.</li>
+        <li>Distributors and developers seem to be regularly inventing
+new naming conventions for kernel modules. To avoid the need to change
+Shorewall code for each new convention, the MODULE_SUFFIX option has
+been added to shorewall.conf. MODULE_SUFFIX may be set to the suffix
+for module names in your particular distribution. If MODULE_SUFFIX is
+not set in shorewall.conf, Shorewall will use the list "o gz ko o.gz".<br>
           <br>
-With the exception of 'newnotsyn', these options are only useful when
-the entry refers to a bridge port.<br>
+To see what suffix is used by your distribution:<br>
           <br>
-&nbsp;&nbsp; Example:<br>
+ls /lib/modules/$(uname -r)/kernel/net/ipv4/netfilter<br>
           <br>
-&nbsp;&nbsp; #ZONE&nbsp;&nbsp; HOST(S)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-OPTIONS<br>
-&nbsp;&nbsp; net&nbsp;&nbsp;&nbsp;&nbsp;
-br0:eth0&nbsp;&nbsp;&nbsp;&nbsp;
-norfc1918,nobogons,blacklist,tcpflags,nosmurfs<br>
+All of the files listed should have the same suffix (extension). Set
+MODULE_SUFFIX to that suffix.<br>
+          <br>
+Examples:<br>
+          <br>
+&nbsp;&nbsp;&nbsp;&nbsp; If all files end in ".kzo" then set
+MODULE_SUFFIX="kzo"<br>
+&nbsp;&nbsp;&nbsp;&nbsp; If all files end in ".kz.o" then set
+MODULE_SUFFIX="kz.o"</li>
+        <li>Support for user defined rule ACTIONS has been implemented
+through two new files:<br>
+          <br>
+/etc/shorewall/actions - used to list the user-defined ACTIONS.<br>
+/etc/shorewall/action.template - For each user defined &lt;action&gt;,
+copy this file to /etc/shorewall/action.&lt;action&gt; and add the
+appropriate rules for that &lt;action&gt;. Once an &lt;action&gt; has
+been defined, it may be used like any of the builtin ACTIONS (ACCEPT,
+DROP, etc.) in /etc/shorewall/rules.<br>
+          <br>
+Example: You want an action that logs a packet at the 'info' level and
+accepts the connection.<br>
+          <br>
+In /etc/shorewall/actions, you would add:<br>
+          <br>
+&nbsp;&nbsp;&nbsp;&nbsp; LogAndAccept<br>
+          <br>
+You would then copy /etc/shorewall/action.template to
+/etc/shorewall/action.LogAndAccept and in that file, you would add the
+two
+rules:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; LOG:info<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ACCEPT<br>
+        </li>
+        <li>The default value for NEWNOTSYN in shorewall.conf is now
+"Yes" (non-syn TCP packets that are not part of an existing connection
+are filtered according to the rules and policies rather than being
+dropped). I have made this change for two reasons:<br>
+          <br>
+a) NEWNOTSYN=No tends to result in lots of "stuck" connections since
+any timeout during TCP session tear down results in the firewall
+dropping all of the retries.<br>
+          <br>
+b) The old default of NEWNOTSYN=No and LOGNEWNOTSYN=info resulted in
+lots of confusing messages when a connection got "stuck". While I could
+have changed the default value of LOGNEWNOTSYN to suppress logging, I
+dislike defaults that silently throw away packets.</li>
+        <li>The common.def file now contains an entry that silently
+drops ICMP packets with a null source address. Ad Koster reported a
+case where these were occuring frequently as a result of a broken
+system on his external network.<br>
           <br>
         </li>
       </ol>
@@ -279,7 +359,7 @@ please consider making a donation to the <a href="http://www.alz.org/"
   </tbody>
 </table>
 </div>
-<p><font size="2">Updated 04/05/2004 - <a href="support.htm">Tom Eastep</a></font><br>
+<p><font size="2">Updated 04/03/2004 - <a href="support.htm">Tom Eastep</a></font><br>
 </p>
 </body>
 </html>

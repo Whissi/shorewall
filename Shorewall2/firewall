@@ -1876,7 +1876,7 @@ delete_proxy_arp() {
 # Setup Static Network Address Translation (NAT)
 #
 setup_nat() {
-    local external, interface, internal, allints, localnat
+    local external= interface= internal= allints= localnat=
 
     do_one_nat() {
 	local add_ip_aliases=$ADD_IP_ALIASES, iface=${interface%:*}
@@ -2781,7 +2781,45 @@ process_action() # $1 = action
 createactionchain() # $1 = chain name
 {
     createchain $1 no
+    CHAIN=$1
+    run_user_exit $CHAIN
+}
+
+createlogactionchain() # $1 = Action Name, $2 = Log Level
+{
+    local actchain=
+
+    eval actchain=\$${1}_actchain
+
+    [ -n "$actchain" ] || actchain=1
+
+    CHAIN=${1}${actchain}
+
+    eval ${1}_actchain=$(($actchain + 1))
+
+    createchain $CHAIN
     run_user_exit $1
+}
+
+find_logactionchain() # $1 = Action Name, $2 = Log Level
+{
+    local action=$1 level=$2 chains=
+
+    eval chains="\$${action}_chains"
+
+    set -- $chains
+
+    while [ $# -gt 0 ]; do
+	[ "$1" = "$level" ] && { echo $2 ; return ; }
+	shift;shift
+    done
+
+    createlogactionchain $action $level
+
+    echo $CHAIN
+
+    eval ${action}_chains=\"\$${action}_chains $level $CHAIN\"
+
 }
 
 #

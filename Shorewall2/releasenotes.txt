@@ -9,6 +9,9 @@ Problems Corrected since 2.0.1
    normal Shorewall distribution and is provided by the Debian
    maintainer.
 
+2) A meaningless warning message out of the proxyarp file processing
+   has been eliminated.
+
 -----------------------------------------------------------------------
 Issues when migrating from Shorewall 2.0.0 to Shorewall 2.0.1:
 
@@ -63,9 +66,9 @@ New Features:
    independently of the contents of the ALL INTERFACES column.
 
 4) The folks at Mandrake have created yet another kernel module
-   naming convention. As a consequence, beginning with this release,
-   if MODULE_PREFIX isn't specified in shorewall.conf, then the default
-   value is "o gz ko o.gz ko.gz".
+   naming convention (module names end in "ko.gz"). As a consequence,
+   beginning with this release, if MODULE_PREFIX isn't specified in
+   shorewall.conf, then the default value is "o gz ko o.gz ko.gz".
 
 5) An updated bogons file is included in this release.
 
@@ -87,7 +90,11 @@ New Features:
    characters; if a larger prefix is generated, Shorewall will issue a
    warning message and will truncate the prefix to 29 characters.
 
-   
+ 7) A new "-q" option has been added to /sbin/shorewall commands. It
+    causes the start, restart, check and refresh commands to produce
+    much less output so that warning messages are more visible. When
+    testing this change, I discovered a bug where a bogus warning
+    message was being generated :-)
 
 
 

@@ -51,6 +51,11 @@ my_mutex_off() {
     [ -n "$have_mutex" ] && { mutex_off; have_mutex=; }
 }
 
+progress_message() # $* = Message
+{
+    [ -n "$QUIET" ] || echo $@
+}
+
 #
 # Message to stderr
 #
@@ -840,7 +845,7 @@ validate_policy()
 	    [ $1 = $2 ]  || \
 	    [ $1 = all ] || \
 	    [ $2 = all ] || \
-	    echo "   Policy for $1 to $2 is $policy using chain $chain"
+	    progress_message "   Policy for $1 to $2 is $policy using chain $chain"
     }
 
     all_policy_chains=
@@ -1063,7 +1068,7 @@ run_user_exit() # $1 = file name
     local user_exit=$(find_file $1)
 
     if [ -f $user_exit ]; then
-	echo "Processing $user_exit ..."
+	progress_message "Processing $user_exit ..."
 	. $user_exit
     fi
 }
@@ -1373,7 +1378,7 @@ setup_tunnels() # $1 = name of tunnels file
 	    fi
 	done
 
-	echo "   IPSEC tunnel to $gateway defined."
+	progress_message "   IPSEC tunnel to $gateway defined."
     }
 
     setup_one_other() # $1 = TYPE, $2 = gateway, $3 = protocol
@@ -1381,7 +1386,7 @@ setup_tunnels() # $1 = name of tunnels file
 	addrule $inchain  -p $3 -s $2 -j ACCEPT
 	addrule $outchain -p $3 -d $2 -j ACCEPT
 
-	echo "   $1 tunnel to $2 defined."
+	progress_message "   $1 tunnel to $2 defined."
     }
 
     setup_pptp_client() # $1 = gateway
@@ -1390,7 +1395,7 @@ setup_tunnels() # $1 = name of tunnels file
 	addrule $inchain  -p 47               -j ACCEPT
 	addrule $outchain -p tcp --dport 1723 -d $1 -j ACCEPT
 
-	echo "   PPTP tunnel to $1 defined."
+	progress_message "   PPTP tunnel to $1 defined."
     }
 
     setup_pptp_server()
@@ -1399,7 +1404,7 @@ setup_tunnels() # $1 = name of tunnels file
 	addrule $outchain -p 47               -j ACCEPT
 	addrule $inchain  -p tcp --dport 1723 -j ACCEPT
 
-	echo "   PPTP server defined."
+	progress_message "   PPTP server defined."
     }
 
     setup_one_openvpn() # $1 = gateway, $2 = kind[:port]
@@ -1416,7 +1421,7 @@ setup_tunnels() # $1 = name of tunnels file
 	addrule $inchain  -p udp -s $1 --sport $p --dport $p -j ACCEPT
 	addrule $outchain -p udp -d $1 --sport $p --dport $p -j ACCEPT
 
-	echo "   OPENVPN tunnel to $1:$p defined."
+	progress_message "   OPENVPN tunnel to $1:$p defined."
     }
 
     setup_one_generic() # $1 = gateway, $2 = kind:protocol[:port], $3 = Gateway Zone
@@ -1454,7 +1459,7 @@ setup_tunnels() # $1 = name of tunnels file
 	    fi
 	done
 
-	echo "   GENERIC tunnel to $1:$p defined."
+	progress_message "   GENERIC tunnel to $1:$p defined."
     }
 
     strip_file tunnels $1
@@ -1546,14 +1551,13 @@ setup_proxy_arp() {
 	    persistent=
 	    ;;
 	[Yy][Ee][Ss])
+	    [ -z "$haveroute" ] || print_warning
 	    ;;
 	*)
 	    if [ -n "$persistent" ]; then
 		print_error1
 		return
 	    fi
-
-	    [ -z "$haveroute" ] || print_warning
 	    ;;
 	esac
 
@@ -1569,7 +1573,7 @@ setup_proxy_arp() {
 
 	echo $address $interface $external $haveroute >> ${STATEDIR}/proxyarp
 
-	echo "   Host $address connected to $interface added to ARP on $external"
+	progress_message "   Host $address connected to $interface added to ARP on $external"
     }
 
     > ${STATEDIR}/proxyarp
@@ -1583,7 +1587,7 @@ setup_proxy_arp() {
 
     for interface in $interfaces; do
 	if echo 1 > /proc/sys/net/ipv4/conf/$interface/proxy_arp 2> /dev/null; then
-	    echo "   Enabled proxy ARP on $interface"
+	    progress_message "   Enabled proxy ARP on $interface"
         else
 	    error_message "Warning: Unable to enable proxy ARP on $interface"
         fi
@@ -1619,7 +1623,7 @@ setup_mac_lists() {
 	fi
     done
 
-    echo "Setting up MAC Verification on $maclist_interfaces..."
+    progress_message "Setting up MAC Verification on $maclist_interfaces..."
     #
     # Be sure that they are all ethernet interfaces
     #
@@ -1740,7 +1744,7 @@ setup_syn_flood_chain ()
 enable_syn_flood_protection() # $1 = chain, $2 = protection chain
 {
     run_iptables -I $1 2 -p tcp --syn -j @$2
-    echo "      Enabled SYN flood protection"
+    progress_message "      Enabled SYN flood protection"
 }
 
 #
@@ -1807,7 +1811,7 @@ setup_nat() {
 		aliases_to_add="$aliases_to_add $external $interface"
 	fi
 
-	echo "   Host $internal NAT $external on $interface"
+	progress_message "   Host $internal NAT $external on $interface"
     done < $TMP_DIR/nat
 }
 
@@ -1852,7 +1856,7 @@ setup_netmap() {
 		;;
 	esac
 
-	echo "   Network $net1 on $interface mapped to $net2 ($type)"
+	progress_message "   Network $net1 on $interface mapped to $net2 ($type)"
 
     done < $TMP_DIR/netmap
 }
@@ -1883,7 +1887,7 @@ setup_ecn() # $1 = file name
     done < $TMP_DIR/ecn
 
     if [ -n "$interfaces" ]; then
-	echo "Setting up ECN control on${interfaces}..."
+	progress_message "Setting up ECN control on${interfaces}..."
 
 	for interface in $interfaces; do
 	    chain=$(ecn_chain $interface)
@@ -1900,7 +1904,7 @@ setup_ecn() # $1 = file name
 	    interface=${host%:*}
 	    h=${host#*:}
 	    run_iptables -t mangle -A $(ecn_chain $interface) -p tcp -d $h -j ECN --ecn-tcp-remove
-	    echo "   ECN Disabled to $h through $interface"
+	    progress_message "   ECN Disabled to $h through $interface"
 	done
     fi
 }
@@ -1995,7 +1999,7 @@ process_tc_rule()
 	done
     done
 
-    echo "   TC Rule \"$rule\" added"
+    progress_message "   TC Rule \"$rule\" added"
 }
 
 #
@@ -2166,7 +2170,7 @@ process_accounting_rule() {
 
     if iptables -A $chain $rule ; then
 	[ "x$rule2" != x ] && run_iptables -A $jumpchain $rule2
-	echo "   Accounting rule" $action $chain $source $dest $proto $port $sport Added
+	progress_message "   Accounting rule" $action $chain $source $dest $proto $port $sport Added
     else
 	accounting_error
     fi
@@ -2590,9 +2594,9 @@ process_action() # $1 = action
     # Report Result
     #
     if [ $COMMAND = check ]; then
-	echo "   Rule \"$rule\" checked."
+	progress_message "   Rule \"$rule\" checked."
     else
-	echo "   Rule \"$rule\" added."
+	progress_message "   Rule \"$rule\" added."
     fi
 }
 
@@ -3491,9 +3495,9 @@ process_rule() # $1 = target
     # Report Result
     #
     if [ $COMMAND = check ]; then
-	echo "   Rule \"$rule\" checked."
+	progress_message "   Rule \"$rule\" checked."
     else
-	echo "   Rule \"$rule\" added."
+	progress_message "   Rule \"$rule\" added."
     fi
 }
 
@@ -3728,7 +3732,7 @@ process_tos_rule() {
 	esac
     done
 
-    echo "   Rule \"$rule\" added."
+    progress_message "   Rule \"$rule\" added."
 }
 
 #
@@ -3906,7 +3910,7 @@ default_policy() # $1 = client $2 = server
 	    esac
 	fi
 
-	echo "   Policy $policy for $1 to $2 using chain $chain"
+	progress_message "   Policy $policy for $1 to $2 using chain $chain"
     }
 
     eval chain1=\$${1}2${2}_policychain
@@ -4140,12 +4144,12 @@ setup_masq()
 		    for destnet in $(separate_list $destnets); do
 			addnatrule $chain -s $s -d $destnet -j SNAT $addrlist
 		    done
-		    echo "   To $destination from $s through ${interface} using $addresses"
+		    progress_message "   To $destination from $s through ${interface} using $addresses"
 		else
 		    for destnet in $(separate_list $destnets); do
 			addnatrule $chain -s $s -d $destnet -j MASQUERADE
 		    done
-		    echo "   To $destination from $s through ${interface}"
+		    progress_message "   To $destination from $s through ${interface}"
 		fi
 	    done
 	elif [ -n "$addresses" ]; then
@@ -4157,7 +4161,7 @@ setup_masq()
 	    for destnet in $(separate_list $destnets); do
 		addnatrule $chain -d $destnet -j MASQUERADE
 	    done
-	    echo "   To $destination from $source through ${interface}"
+	    progress_message "   To $destination from $source through ${interface}"
 	fi
 
     }
@@ -4259,7 +4263,7 @@ process_blacklist_rec() {
 	    addr="$addr $protocol"
 	fi
 
-	echo "   $addr added to Black List"
+	progress_message "   $addr added to Black List"
     done
 }
 
@@ -4290,7 +4294,7 @@ setup_blacklist() {
 	    
 	    [ $network = 0/0.0.0.0 ] && network= || network=":$network"
 
-	    echo "   Blacklisting enabled on ${interface}${network}"
+	    progress_message "   Blacklisting enabled on ${interface}${network}"
 	done
 
 	[ "$disposition" = REJECT ] && disposition=reject
@@ -4381,7 +4385,7 @@ add_ip_aliases()
 	run_ip addr add ${external}${val} dev $interface $label
 	echo "$external $interface" >> ${STATEDIR}/nat
 	[ -n "$label" ] && label="with $label"
-	echo "   IP Address $external added to interface $interface $label"
+	progress_message "   IP Address $external added to interface $interface $label"
     }
 
     set -- $aliases_to_add
@@ -5488,7 +5492,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 
     rm -rf $TMP_DIR
     
-    echo "$1 added to zone $2"
+    progress_message "$1 added to zone $2"
 }
 
 #
@@ -5615,7 +5619,7 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
 
     rm -rf $TMP_DIR
 
-    echo "$1 removed from zone $2"
+    progress_message "$1 removed from zone $2"
 }
 
 #

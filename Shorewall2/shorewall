@@ -531,7 +531,7 @@ help()
 #
 usage() # $1 = exit status
 {
-    echo "Usage: $(basename $0) [debug|trace] [nolock] [-c <directory>] [ -x ] <command>"
+    echo "Usage: $(basename $0) [debug|trace] [nolock] [-c <directory>] [ -x ] [ -q ] <command>"
     echo "where <command> is one of:"
     echo "   add <interface>[:<host>] <zone>"
     echo "   allow <address> ..."
@@ -586,6 +586,7 @@ if [ $# -gt 0 ] && [ "$1" = "nolock" ]; then
 fi
 
 SHOREWALL_DIR=
+QUIET=
 IPT_OPTIONS="-nv"
 done=0
 
@@ -611,6 +612,10 @@ while [ $done -eq 0 ]; do
 	IPT_OPTIONS="-xnv"
 	shift
 	;;
+    -q)
+	QUIET=Yes
+	shift
+	;;
     *)
 	done=1
 	;;
@@ -622,6 +627,7 @@ if [ $# -eq 0 ]; then
 fi
 
 [ -n "$SHOREWALL_DIR" ] && export SHOREWALL_DIR
+[ -n "$QUIET" ]         && export QUIET
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 MUTEX_TIMEOUT=

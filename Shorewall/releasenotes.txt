@@ -1,8 +1,14 @@
 This is a minor release of Shorewall.
 
-Changes are:
+Problems Corrected:
 
-a) Where an entry in the/etc/shorewall/hosts file specifies a
+1) TCP connection requests rejected out of the common chain are now
+   properly rejected with TCP RST; previously, some of these requests
+   were rejeced with an ICMP port-unreachable response.
+
+New Features:
+
+1) Where an entry in the/etc/shorewall/hosts file specifies a
    particular host or network, Shorewall now creates an intermediate
    chain for handling input from the related zone. This can
    substantially reduce the number of rules traversed by connections

@@ -444,7 +444,7 @@ validate_interfaces_file() {
 	[ "x$z" = "x-" ] || validate_zone $z || startup_error "Invalid zone ($z) in record \"$r\""
 
 	list_search $interface $all_interfaces && \
-	    startup_error "Duplicate Interface $intr"
+	    startup_error "Duplicate Interface $interface"
 	
 	all_interfaces="$all_interfaces $interface"
 

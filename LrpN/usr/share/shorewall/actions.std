@@ -1,0 +1,49 @@
+#
+# Shorewall 2.0 /usr/share/shorewall/actions.std
+#
+#
+# Builtin Actions are:
+#
+#    dropBcast          #Silently Drop Broadcast/multicast
+#    dropNonSyn         #Silently Drop Non-syn TCP packets
+#    rejNonSyn          #Silently Reject Non-syn TCP packets
+#    logNonSyn          #Log Non-syn TCP packets with disposition LOG
+#    dLogNonSyn         #Log Non-syn TCP packets with disposition DROP
+#    rLogNonSyn          #Log Non-syn TCP packets with disposition REJECT
+#
+# The NonSyn logging builtins log at the level specified by LOGNEWNOTSYN in
+# shorewall.conf. If that option isn't specified then 'info' is used.
+#
+#ACTION
+
+DropSMB		#Silently Drops Microsoft SMB Traffic
+RejectSMB	#Silently Reject Microsoft SMB Traffic
+DropUPnP	#Silently Drop UPnP Probes
+RejectAuth	#Silently Reject Auth
+DropPing	#Silently Drop Ping
+DropDNSrep	#Silently Drop DNS Replies
+
+AllowPing	#Accept Ping
+AllowFTP	#Accept FTP
+AllowDNS	#Accept DNS
+AllowSSH	#Accept SSH
+AllowWeb	#Allow Web Browsing
+AllowSMB	#Allow MS Networking
+AllowAuth	#Allow Auth (identd)
+AllowSMTP	#Allow SMTP (Email)
+AllowPOP3	#Allow reading mail via POP3
+AllowIMAP	#Allow reading mail via IMAP
+AllowTelnet	#Allow Telnet Access (not recommended for use over the
+		#Internet)
+AllowVNC	#Allow VNC viewer->server, Displays 0-9
+AllowVNCL	#Allow VNC server->viewer in listening mode
+AllowNTP	#Allow Network Time Protocol (ntpd)
+AllowRdate	#Allow remote time (rdate).
+AllowNNTP	#Allow network news (Usenet).
+AllowTrcrt	#Allows Traceroute (20 hops)
+AllowSNMP	#Allows SNMP (including traps)
+AllowPCA        #Allows PCAnywhere (tm)
+
+Drop:DROP	#Common Action for DROP policy
+Reject:REJECT   #Common Action for REJECT policy
+#LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE

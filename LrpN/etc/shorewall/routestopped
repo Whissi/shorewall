@@ -1,0 +1,31 @@
+##############################################################################
+#
+# Shorewall 2.0 -- Hosts Accessible when the Firewall is Stopped
+#
+# /etc/shorewall/routestopped
+#
+#	This file is used to define the hosts that are accessible when the
+#	firewall is stopped
+#
+# Columns must be separated by white space and are:
+#
+#	INTERFACE	- Interface through which host(s) communicate with
+#			  the firewall
+#	HOST(S)		- (Optional) Comma-separated list of IP/subnet
+#			  If left empty or supplied as "-",
+#			  0.0.0.0/0 is assumed.
+#	OPTIONS         - (Optional) A comma-separated list of
+#			  options. The currently-supported options are:
+#
+#			  routeback - Set up a rule to ACCEPT traffic from
+#			  these hosts back to themselves. 
+#
+# Example:
+#
+#	INTERFACE	HOST(S)			OPTIONS
+#	eth2		192.168.1.0/24
+#	eth0		192.0.2.44
+#	br0		-			routeback
+##############################################################################
+#INTERFACE	HOST(S)		OPTIONS
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

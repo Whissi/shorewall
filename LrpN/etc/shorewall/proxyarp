@@ -1,0 +1,44 @@
+##############################################################################
+#
+# Shorewall 2.0 -- Proxy ARP
+#
+# /etc/shorewall/proxyarp
+#
+#	This file is used to define Proxy ARP.
+#
+# Columns must be separated by white space and are:
+#
+#	ADDRESS		IP Address
+#
+#	INTERFACE	Local interface where system is connected. If the
+#			local interface is obvious from the subnetting,
+#			you may enter "-" in this column.
+#
+#	EXTERNAL	External Interface to be used to access this system
+#
+#	HAVEROUTE	If there is already a route from the firewall to
+#			the host whose address is given, enter "Yes" or "yes"
+#			in this column. Otherwise, entry "no", "No" or leave
+#			the column empty and Shorewall will add the route for
+#			you. If Shorewall adds the route,the route will be
+#			persistent if the PERSISTENT column contains Yes;
+#			otherwise, "shorewall stop" or "shorewall clear" will
+#			delete the route.
+#
+#	PERSISTENT	If HAVEROUTE is No or "no", then the value of this
+#			column determines if the route added by Shorewall
+#			persists after a "shorewall stop" or a "shorewall
+#			clear". If this column contains "Yes" or "yes" then
+#			the route persists; If the column is empty or contains
+#			"No"or "no" then the route is deleted at "shorewall
+#			stop" or "shorewall clear".
+#
+#			Example: Host with IP 155.186.235.6 is connected to
+#			interface eth1 and we want hosts attached via eth0
+#			to be able to access it using that address.
+#
+#			#ADDRESS	INTERFACE	EXTERNAL
+#			155.186.235.6	eth1		eth0
+##############################################################################
+#ADDRESS	INTERFACE	EXTERNAL	HAVEROUTE	PERSISTENT
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

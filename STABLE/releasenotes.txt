@@ -19,3 +19,19 @@ New Features:
    (http://www.fireparse.com) by setting LOGMARKER="fp=" in
    /etc/shorewall/shorewall.conf. Note: You may not use ULOG
    with fireparse unless you modify fireparse. 
+
+3) If you are running iptables 1.2.7a and kernel 2.4.20, then
+   Shorewall will return reject replies as follows:
+
+   a) tcp - RST
+   b) udp - ICMP port unreachable
+   c) icmp - ICMP host unreachable
+   d) Otherwise - ICMP host prohibited
+
+   If you are running earlier software, Shorewall will follow it's
+   traditional convention:
+
+   a) tcp - RST
+   b) Otherwise - ICMP port unreachable
+
+4) UDP Port 135 is now silently dropped in the common.def chain.

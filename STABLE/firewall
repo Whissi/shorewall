@@ -95,7 +95,11 @@ error_message() # $* = Error Message
 fatal_error() # $* = Error Message
 {
     echo "   Error: $@" >&2
-    [ $command = check ] || stop_firewall
+    if [ $command = check ]; then
+	[ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
+    else
+	stop_firewall
+    fi
     exit 2
 }
 
@@ -1130,6 +1134,9 @@ setup_tunnels() # $1 = name of tunnels file
 		gre|GRE)
 		    setup_one_other GRE $gateway 47
 		    ;;
+		6to4|6TO4)
+		    setup_one_other 6to4 $gateway 41
+		    ;;
 		pptpclient|PPTPCLIENT)
 		    setup_pptp_client $gateway
 		    ;;
@@ -1316,7 +1323,7 @@ setup_mac_lists() {
 	done
 
 	[ -n "$logpart" ] && \
-	    run_iptables -A $chain $logpart "Shorewall:$chain:$MACLIST_DISPOSITION:"
+	    run_iptables -A $chain $logpart "${LOGMARKER}$chain:$MACLIST_DISPOSITION:"
 
 	run_iptables -A $chain -j $maclist_target
     done
@@ -2015,11 +2022,11 @@ add_a_rule()
 		    if [ "$loglevel" = ULOG ]; then
 			run_iptables2 -A $chain $proto $multiport \
 			    $state $cli $sports $serv $dports -j ULOG $LOGPARMS \
-			    --ulog-prefix "Shorewall:$chain:$logtarget:"
+			    --ulog-prefix "${LOGMARKER}$chain:$logtarget:"
 		    else
 			run_iptables2 -A $chain $proto $multiport \
 			    $state $cli $sports $serv $dports -j LOG $LOGPARMS \
-			    --log-prefix "Shorewall:$chain:$logtarget:" \
+			    --log-prefix "${LOGMARKER}$chain:$logtarget:" \
 			    --log-level $loglevel
 		    fi
 		fi
@@ -2042,11 +2049,11 @@ add_a_rule()
 		if [ "$loglevel" = ULOG ]; then
 		    run_iptables2 -A $chain $proto $multiport \
 			$dest_interface $state $cli $sports $dports -j ULOG \
-			$LOGPARMS --ulog-prefix "Shorewall:$chain:$logtarget:"
+			$LOGPARMS --ulog-prefix "${LOGMARKER}$chain:$logtarget:"
 		else
 		    run_iptables2 -A $chain $proto $multiport \
 			$dest_interface $state $cli $sports $dports -j LOG \
-			$LOGPARMS --log-prefix "Shorewall:$chain:$logtarget:" \
+			$LOGPARMS --log-prefix "${LOGMARKER}$chain:$logtarget:" \
 			--log-level $loglevel
 		fi
 	    fi
@@ -2551,10 +2558,10 @@ policy_rules() # $1 = chain to add rules to
     if [ $# -eq 3 -a "x${3}" != "x-" ]; then
 	if [ "$3" = ULOG ]; then
 	    run_iptables -A $1 -j ULOG $LOGPARMS \
-		--ulog-prefix "Shorewall:${1}:${2}:"
+		--ulog-prefix "${LOGMARKER}${1}:${2}:"
 	else
 	    run_iptables -A $1 -j LOG $LOGPARMS \
-		--log-prefix "Shorewall:${1}:${2}:" --log-level $3
+		--log-prefix "${LOGMARKER}${1}:${2}:" --log-level $3
 	fi
     fi
 
@@ -2878,11 +2885,11 @@ add_blacklist_rule() {
 	if [ "$BLACKLIST_LOGLEVEL" = ULOG ]; then
 	    run_iptables2 -A blacklst $source $proto $dport -j \
 		ULOG $LOGPARMS --ulog-prefix \
-		"Shorewall:blacklst:$BLACKLIST_DISPOSITION:"
+		"${LOGMARKER}blacklst:$BLACKLIST_DISPOSITION:"
 	else
 	    run_iptables2 -A blacklst $source $proto $dport -j \
 		LOG $LOGPARMS --log-prefix \
-		"Shorewall:blacklst:$BLACKLIST_DISPOSITION:" \
+		"${LOGMARKER}blacklst:$BLACKLIST_DISPOSITION:" \
 		--log-level $BLACKLIST_LOGLEVEL
 	fi
     fi
@@ -3195,9 +3202,10 @@ initialize_netfilter () {
     setcontinue FORWARD
     setcontinue INPUT
     setcontinue OUTPUT
-    
+
     #
     # Enable the Loopback interface
+    #
     run_iptables -A INPUT  -i lo -j ACCEPT
     run_iptables -A OUTPUT -o lo -j ACCEPT
 
@@ -3221,10 +3229,10 @@ initialize_netfilter () {
 	if [ -n "$LOGNEWNOTSYN" ]; then
 	    if [ "$LOGNEWNOTSYN" = ULOG ]; then
 		run_iptables -A newnotsyn -j ULOG $LOGPARMS \
-		    --ulog-prefix "Shorewall:newnotsyn:DROP:"
+		    --ulog-prefix "${LOGMARKER}newnotsyn:DROP:"
 	    else
 		run_iptables -A newnotsyn -j LOG $LOGPARMS \
-		    --log-prefix "Shorewall:newnotsyn:DROP:" --log-level $LOGNEWNOTSYN
+		    --log-prefix "${LOGMARKER}newnotsyn:DROP:" --log-level $LOGNEWNOTSYN
 	    fi
 	fi
 
@@ -3299,16 +3307,26 @@ add_common_rules() {
     logdisp() # $1 = Chain Name
     {
 	if [ "$RFC1918_LOG_LEVEL" = ULOG ]; then
-	    echo "ULOG $LOGPARMS --ulog-prefix Shorewall:${1}:DROP:"
+	    echo "ULOG $LOGPARMS --ulog-prefix ${LOGMARKER}${1}:DROP:"
 	else
-	    echo "LOG $LOGPARMS --log-prefix Shorewall:${1}:DROP: --log-level $RFC1918_LOG_LEVEL"
+	    echo "LOG $LOGPARMS --log-prefix ${LOGMARKER}${1}:DROP: --log-level $RFC1918_LOG_LEVEL"
 	fi
     }
     #
     # Reject Rules
     #
-    run_iptables -A reject -p tcp -j REJECT --reject-with tcp-reset
-    run_iptables -A reject -j REJECT
+    run_iptables -A reject -p tcp  -j REJECT --reject-with tcp-reset
+    run_iptables -A reject -p udp  -j REJECT
+    #
+    # Not all versions of iptables support these so don't complain if they don't work
+    #
+    qt iptables  -A reject -p icmp -j REJECT --reject-with icmp-host-unreachable
+    if ! qt iptables -A reject -j REJECT --reject-with icmp-host-prohibited; then
+	#
+	# In case the above doesn't work
+	#
+	run_iptables -A reject -j REJECT
+    fi
     #
     # dropunclean rules
     #
@@ -3319,10 +3337,10 @@ add_common_rules() {
 
 	if [ -n "$LOGUNCLEAN" ]; then
             if [ "$LOGUNCLEAN" = ULOG ]; then
-		logoptions="-j ULOG $LOGPARMS --ulog-prefix Shorewall:badpkt:DROP:"
+		logoptions="-j ULOG $LOGPARMS --ulog-prefix ${LOGMARKER}badpkt:DROP:"
 		logoptions="$logoptions --log-ip-options"
 	    else
-		logoptions="-j LOG $LOGPARMS --log-prefix Shorewall:badpkt:DROP:"
+		logoptions="-j LOG $LOGPARMS --log-prefix ${LOGMARKER}badpkt:DROP:"
 		logoptions="$logoptions --log-level $LOGUNCLEAN --log-ip-options"
 	    fi
 
@@ -3351,10 +3369,10 @@ add_common_rules() {
 	[ -z"$LOGUNCLEAN" ] && LOGUNCLEAN=info
 
 	if [ "$LOGUNCLEAN" = ULOG ]; then
-	    logoptions="-j ULOG $LOGPARMS --ulog-prefix Shorewall:logpkt:LOG:"
+	    logoptions="-j ULOG $LOGPARMS --ulog-prefix ${LOGMARKER}logpkt:LOG:"
 	    logoptions="$logoptions --log-ip-options"
 	else
-	    logoptions="-j LOG $LOGPARMS --log-prefix Shorewall:logpkt:LOG:"
+	    logoptions="-j LOG $LOGPARMS --log-prefix ${LOGMARKER}logpkt:LOG:"
 	    logoptions="$logoptions --log-level $LOGUNCLEAN --log-ip-options"
 	fi
 
@@ -3455,12 +3473,12 @@ add_common_rules() {
 
 	    if [ "$TCP_FLAGS_LOG_LEVEL" = ULOG ]; then
 		run_iptables -A logflags -j ULOG  $LOGPARMS \
-		    --ulog-prefix "Shorewall:logflags:$TCP_FLAGS_DISPOSITION:" \
+		    --ulog-prefix "${LOGMARKER}logflags:$TCP_FLAGS_DISPOSITION:" \
 		    --log-tcp-options --log-ip-options
 	    else
 		run_iptables -A logflags -j LOG  $LOGPARMS \
 		    --log-level $TCP_FLAGS_LOG_LEVEL \
-		    --log-prefix "Shorewall:logflags:$TCP_FLAGS_DISPOSITION:" \
+		    --log-prefix "${LOGMARKER}logflags:$TCP_FLAGS_DISPOSITION:" \
 		    --log-tcp-options --log-ip-options
 	    fi
 	    case $TCP_FLAGS_DISPOSITION in
@@ -4101,7 +4119,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
     done < ${STATEDIR}/chains
 
     rm -rf $TMP_DIR
-
+    
     echo "$1 added to zone $2"
 }
 
@@ -4210,7 +4228,7 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		qt iptables -D OUTPUT -o $interface -d $host -j $chain
 	    else
 		eval source_hosts=\"\$${z1}_hosts\"
-
+		
 		for h in $source_hosts; do
 		    iface=${h%:*}
 		    hosts=${h#*:}
@@ -4326,6 +4344,7 @@ do_initialize() {
     SHARED_DIR=/usr/share/shorewall
     FUNCTIONS=
     VERSION_FILE=
+    LOGMARKER=
 
     stopping=
     have_mutex=
@@ -4451,6 +4470,8 @@ do_initialize() {
     else
 	CLEAR_TC=
     fi
+
+    [ -n "$LOGMARKER" ] || LOGMARKER="Shorewall:"
 
     #
     # Strip the files that we use often

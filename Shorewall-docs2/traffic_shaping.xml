@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-10-25</pubdate>
+    <pubdate>2004-11-24</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -310,9 +310,10 @@
       </listitem>
 
       <listitem>
-        <para>CLIENT PORT(S) - (Optional) Port(s) used by the client. If
-        omitted, any source port is acceptable. Specified as a comma-separate
-        list of port names, port numbers or port ranges.</para>
+        <para>CLIENT PORT(S) (Renamed SOURCE PORT(S) in Shorewall 2.2.0) -
+        (Optional) Source port(s). If omitted, any source port is acceptable.
+        Specified as a comma-separate list of port names, port numbers or port
+        ranges.</para>
       </listitem>
 
       <listitem>
@@ -333,7 +334,7 @@
       <listitem>
         <para>TEST (added in Shorewall version 2.2.0). Defines a test on the
         existing packet or connection mark. The rule will match only if the
-        test returns true. Tests have the format </para>
+        test returns true. Tests have the format</para>
 
         <programlisting>[!]&lt;value&gt;[/&lt;mask&gt;][:C]</programlisting>
 
@@ -361,7 +362,7 @@
       arriving on eth2 and eth3 should be marked with 2. All packets
       originating on the firewall itself should be marked with 3.</para>
 
-      <programlisting>#MARK   SOURCE    DESTINATION    PROTOCOL   USER/GROUP    TEST
+      <programlisting>#MARK   SOURCE    DESTINATION    PROTO   PORT(S)   SOURCE PORT(S)   USER/GROUP    TEST
 1       eth1      0.0.0.0/0      all
 2       eth2      0.0.0.0/0      all
 2       eth3      0.0.0.0/0      all
@@ -374,7 +375,7 @@
       <para>All GRE (protocol 47) packets not originating on the firewall and
       destined for 155.186.235.151 should be marked with 12.</para>
 
-      <programlisting>#MARK   SOURCE    DESTINATION     PROTOCOL   USER/GROUP    TEST
+      <programlisting>#MARK   SOURCE    DESTINATION     PROTO   PORT(S)    SOURCE PORT(S)     USER/GROUP    TEST
 12      0.0.0.0/0 155.182.235.151 47</programlisting>
     </example>
 
@@ -384,7 +385,7 @@
       <para>All SSH packets originating in 192.168.1.0/24 and destined for
       155.186.235.151 should be marked with 22.</para>
 
-      <programlisting>#MARK   SOURCE         DESTINATION     PROTOCOL   USER/GROUP    TEST
+      <programlisting>#MARK   SOURCE         DESTINATION     PROTOCOL   PORT(S)       SOURCE PORT(S)   USER/GROUP    TEST
 22      192.168.1.0/24 155.182.235.151 tcp        22</programlisting>
     </example>
   </section>

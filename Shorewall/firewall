@@ -1142,7 +1142,7 @@ setup_tunnels() # $1 = name of tunnels file
     local inchain
     local outchain
 
-    setup_one_ipsec() # $1 = gateway $2 = gateway zone
+    setup_one_ipsec() # $1 = gateway $2 = gateway zones
     {
 	options="-m state --state NEW -j ACCEPT"
 	addrule $inchain	  -p 50	 -s $1 -j ACCEPT
@@ -1152,14 +1152,14 @@ setup_tunnels() # $1 = name of tunnels file
 	run_iptables -A $inchain  -p udp -s $1 --sport 500 --dport 500 $options
 	run_iptables -A $outchain -p udp -d $1 --dport 500 --sport 500 $options
 
-	if [ -n "$2" ]; then
-	    if validate_zone $2; then
-		addrule ${FW}2${2} -p udp --sport 500 --dport 500 $options
+	for z in `separate_list $2`; do
+	    if validate_zone $z; then
+		addrule ${FW}2${z} -p udp --sport 500 --dport 500 $options
 	    else
-		error_message "Warning: Invalid gateway zone ($2)" \
+		error_message "Warning: Invalid gateway zone ($z)" \
 		" -- Tunnel \"$tunnel\" may encounter keying problems"
 	    fi
-	fi
+	done
 
 	echo "   IPSEC tunnel to $gateway defined."
     }
@@ -3183,29 +3183,42 @@ activate_rules()
 
     multi_interfaces=`find_interfaces_by_option multi`
 
+    > ${STATEDIR}/chains
+    > ${STATEDIR}/zones
+
     for zone in $zones; do
 	eval source_hosts=\$${zone}_hosts
 
+	echo $zone $source_hosts >> ${STATEDIR}/zones
+
+	chain1=`rules_chain $FW $zone`
+	chain2=`rules_chain $zone $FW`
+
+	echo "$FW $zone $chain1" >> ${STATEDIR}/chains
+	echo "$zone $FW $chain2" >> ${STATEDIR}/chains
+	
 	for host in $source_hosts; do
 	    interface=${host%:*}
 	    subnet=${host#*:}
 
-	    run_iptables -A OUTPUT -o \
-		$interface -d $subnet -j `rules_chain $FW $zone`
+	    run_iptables -A OUTPUT -o $interface -d $subnet -j $chain1	    
+
 	    #
 	    # Add jumps from the builtin chains for DNAT and SNAT rules
 	    #
 	    addrulejump PREROUTING  `dnat_chain $zone` -i $interface -s $subnet
 	    addrulejump POSTROUTING `snat_chain $zone` -o $interface -d $subnet
 
-	    run_iptables -A `input_chain $interface` -s $subnet \
-		-j `rules_chain $zone $FW`
+	    run_iptables -A `input_chain $interface` -s $subnet -j $chain2
+
 	done
 
 	for zone1 in $zones; do
 	    eval dest_hosts=\$${zone1}_hosts
 
 	    chain="`rules_chain $zone $zone1`"
+
+	    echo "$zone $zone1 $chain" >> ${STATEDIR}/chains
 
 	    if havechain ${zone}2${zone1} || havechain ${zone1}2${zone}; then
 		have_canonical=Yes
@@ -3439,6 +3452,215 @@ refresh_firewall()
 }
 
 ################################################################################
+# Add a host or subnet to a zone                                               #
+################################################################################
+add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
+{
+    chain_exists() # $1 = chain name
+    {
+	qt iptables -L $1 -n
+    }
+	
+    nat_chain_exists() # $1 = chain name
+    {
+	qt iptables -t nat -L $1 -n
+    }
+
+    do_iptables() # $@ = command
+    {
+	if ! iptables $@ ; then
+	    startup_error "Error: can't add $1 to zone $2"
+	fi
+    }
+
+    output_rule_num() {
+	local num=`iptables -L OUTPUT -n --line-numbers | grep common | cut -d' ' -f1 | tail -n1`
+
+	[ -z "$num" ] && num=`iptables -L OUTPUT -n --line-numbers | grep ACCEPT | cut -d' ' -f1 | tail -n1`
+	
+	echo $num
+    }
+	
+    interface=${1%:*}
+    host=${1#*:}
+
+    [ -z "$host" ] && host="0.0.0.0/0"
+
+    determine_zones
+
+    zone=$2
+
+    validate_zone $zone || startup_error "Error: Unknown zone: $zone"
+
+    [ "$zone" = $FW ] && startup_error "Error: Can't add $1 to firewall zone"
+
+    [ -f ${STATEDIR}/chains ] || startup_error "Error: ${STATEDIR}/chains -- file not found"
+    [ -f ${STATEDIR}/zones ]  || startup_error "Error: ${STATEDIR}/zones -- file not found"
+
+    if ! chain_exists `input_chain $interface` ; then
+	startup_error "Error: Unknown interface $interface"
+    fi
+
+    newhost="$interface:$host"
+
+    > ${STATEDIR}/zones_$$
+
+    while read z hosts; do
+	if [ "$z" = "$zone" ]; then
+	    for h in $hosts; do
+		if [ "$h" = "$newhost" ]; then
+		    rm -f ${STATEDIR}/zones_$$
+		    startup_error "Error: $1 already in zone $zone"
+		fi
+	    done
+	    
+	    [ -z "$hosts" ] && hosts=$newhost || hosts="$hosts $newhost"
+	fi
+
+	eval ${z}_hosts=$hosts
+	
+	echo "$z $hosts" >> ${STATEDIR}/zones_$$
+    done < ${STATEDIR}/zones
+
+    mv -f ${STATEDIR}/zones_$$ ${STATEDIR}/zones
+
+    chain=${zone}_dnat
+
+    if nat_chain_exists $chain; then
+	do_iptables -t nat -A PREROUTING -i $interface -s $host -j $chain
+    fi
+
+    while read z1 z2 chain; do
+	if [ "$z1" = "$zone" ]; then
+	    if [ "$z2" = "$FW" ]; then
+		do_iptables -A `input_chain $interface` -i $interface -s $host -j $chain 
+	    else
+		source_chain=`forward_chain $interface`
+		eval dest_hosts=\$${z2}_hosts
+
+		for h in $dest_hosts; do
+		    do_iptables -A $source_chain -s $host -o ${h%:*} -d ${h#*:} -j $chain
+		done
+	    fi
+	elif [ "$z2" = "$zone" ]; then
+	    if [ "$z1" = "$FW" ]; then
+		do_iptables -I OUTPUT `output_rule_num` $num -o $interface -d $host -j $chain
+	    else
+		eval source_hosts=\$${z1}_hosts
+		
+		for h in $source_hosts; do
+		    iface=${h%:*}
+		    hosts=${h#*:}
+
+		    if [ "$iface" != "$interface" ]; then
+			do_iptables -A `forward_chain $iface` -s $hosts -o $interface -d $host -j $chain
+		    fi
+		done
+	    fi
+	fi
+    done < ${STATEDIR}/chains
+
+    echo "$1 added to zone $2"
+}   
+
+################################################################################
+# Delete a host or subnet from a zone                                          #
+################################################################################
+delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
+{
+    chain_exists() # $1 = chain name
+    {
+	qt iptables -L $1 -n
+    }
+	
+    delete_from_zones_file()
+    {
+	> ${STATEDIR}/zones_$$
+
+	while read z hosts; do
+	    if [ "$z" = "$zone" ]; then
+		temp=$hosts
+		hosts=
+		
+		for h in $temp; do
+		    if [ "$h" = "$temp" ]; then
+			echo Yes
+		    else
+			hosts="$hosts $h"
+		    fi
+		done
+	    fi
+	
+	    echo "$z $hosts" >> ${STATEDIR}/zones_$$
+	done < ${STATEDIR}/zones
+
+	mv -f ${STATEDIR}/zones_$$ ${STATEDIR}/zones
+    }
+
+    interface=${1%:*}
+    host=${1#*:}
+
+    [ -z "$host" ] && host="0.0.0.0/0"
+
+    determine_zones
+
+    zone=$2
+
+    validate_zone $zone || startup_error "Error: Unknown zone: $zone"
+
+    [ "$zone" = $FW ] && startup_error "Error: Can't remove $1 to firewall zone"
+
+    [ -f ${STATEDIR}/chains ] || startup_error "Error: ${STATEDIR}/chains -- file not found"
+    [ -f ${STATEDIR}/zones ]  || startup_error "Error: ${STATEDIR}/zones -- file not found"
+
+    if ! chain_exists `input_chain $interface` ; then
+	startup_error "Error: Unknown interface $interface"
+    fi
+
+    newhost="$interface:$host"
+
+    [ -z "`delete_from_zones_file`" ] && startup_error "Error: $1 not in zone $2"
+
+    while read z hosts; do
+	eval ${z}_hosts=$hosts
+    done < ${STATEDIR}/zones
+
+    qt iptables -t nat -D PREROUTING -i $interface -s $host -j ${zone}_dnat
+
+    while read z1 z2 chain; do
+	if [ "$z1" = "$zone" ]; then
+	    if [ "$z2" = "$FW" ]; then
+		qt iptables -D `input_chain $interface` -i $interface -s $host -j $chain 
+	    else
+		source_chain=`forward_chain $interface`
+		eval dest_hosts=\$${z2}_hosts
+
+		for h in $dest_hosts; do
+		    qt iptables -D $source_chain -s $host -o ${h%:*} -d ${h#*:} -j $chain
+		done
+	    fi
+	elif [ "$z2" = "$zone" ]; then
+	    if [ "$z1" = "$FW" ]; then
+		qt iptables -D OUTPUT -o $interface -d $host -j $chain
+	    else
+		eval source_hosts=\$${z1}_hosts
+		
+		for h in $source_hosts; do
+		    iface=${h%:*}
+		    hosts=${h#*:}
+
+		    if [ "$iface" != "$interface" ]; then
+			qt iptables -D `forward_chain $iface` -s $hosts -o $interface -d $host -j $chain
+		    fi
+		done
+	    fi
+	fi
+    done < ${STATEDIR}/chains
+
+    echo "$1 removed from zone $2"
+}   
+
+################################################################################
 # Determine the value for a parameter that defaults to Yes		       #
 ################################################################################
 added_param_value_yes() # $1 = Parameter Name, $2 = Parameter value
@@ -3609,7 +3831,7 @@ do_initialize() {
 # Give Usage Information						       #
 ################################################################################
 usage() {
-    echo "Usage: $0 [debug] {start|stop|reset|restart|status|refresh|clear]}"
+    echo "Usage: $0 [debug] {start|stop|reset|restart|status|refresh|clear|{add|delete} <interface>[:hosts] zone}}"
     exit 1
 }
 
@@ -3625,14 +3847,13 @@ nolock=
 
 [ $# -gt 1 ] && [ "$1" = "nolock" ] && { nolock=Yes; shift ; }
 
-[ $# -ne 1 ] && usage
-
 trap "my_mutex_off; exit 2" 1 2 3 4 5 6 9
 
 command="$1"
 
 case "$command" in
     stop)
+	[ $# -ne 1 ] && usage
 	do_initialize
 	my_mutex_on
 	echo -n "Stopping Shorewall..."
@@ -3644,6 +3865,7 @@ case "$command" in
 	;;
 
     start)
+	[ $# -ne 1 ] && usage
 	do_initialize
 	my_mutex_on
 	if qt iptables -L shorewall -n ; then
@@ -3658,6 +3880,7 @@ case "$command" in
 	;;
 
     restart)
+	[ $# -ne 1 ] && usage
 	do_initialize
 	my_mutex_on
 	if qt iptables -L shorewall -n ; then
@@ -3672,17 +3895,20 @@ case "$command" in
 	;;
 
     status)
+	[ $# -ne 1 ] && usage
 	echo -e "Shorewall-$version Status at $HOSTNAME - `date`\\n"
 	iptables -L -n -v
 	;;
 
     reset)
+	[ $# -ne 1 ] && usage
 	iptables -L -n -Z -v
 	report "Shorewall Counters Reset"
 	date > $STATEDIR/restarted
 	;;
 
     refresh)
+	[ $# -ne 1 ] && usage
 	do_initialize
 	my_mutex_on
 	if ! qt iptables -L shorewall -n ; then
@@ -3696,6 +3922,7 @@ case "$command" in
 	;;
 
     clear)
+	[ $# -ne 1 ] && usage
 	do_initialize
 	my_mutex_on
 	echo -n "Clearing Shorewall..."
@@ -3707,10 +3934,36 @@ case "$command" in
 	;;
 
     check)
+	[ $# -ne 1 ] && usage
 	do_initialize
 	check_config
 	;;
-
+    add)
+	[ $# -ne 3 ] && usage
+	do_initialize
+	my_mutex_on
+	if ! qt iptables -L shorewall -n ; then
+	    echo "Shorewall Not Started"
+	    [ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
+	    my_mutex_off
+	    exit 2;
+	fi
+	add_to_zone $2 $3
+	my_mutex_off
+	;;
+    delete)
+	[ $# -ne 3 ] && usage
+	do_initialize
+	my_mutex_on
+	if ! qt iptables -L shorewall -n ; then
+	    echo "Shorewall Not Started"
+	    [ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
+	    my_mutex_off
+	    exit 2;
+	fi
+	delete_from_zone $2 $3
+	my_mutex_off
+	;;
     *)
 	usage
 	;;

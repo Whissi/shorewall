@@ -971,7 +971,7 @@ case "$1" in
 	show_proc /proc/sys/net/ipv4/ip_forward
 
 	for directory in /proc/sys/net/ipv4/conf/*; do
-	    for file in proxy_arp arp_filter rp_filter; do
+	    for file in proxy_arp arp_filter rp_filter log_martians; do
 		show_proc $directory/$file
 	    done
 	done

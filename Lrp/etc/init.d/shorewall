@@ -200,7 +200,8 @@ createchain() # $1 = chain name, $2 = If non-null, don't create default rules
 	state="ESTABLISHED"
 	[ -n "$ALLOWRELATED" ] && state="$state,RELATED"
 	run_iptables -A $1 -m state --state $state -j ACCEPT
-	run_iptables -A $1 -m state --state NEW -p tcp !--syn -j newnotsyn
+	[ -z "$NEWNOTSYN" ] && \
+	    run_iptables -A $1 -m state --state NEW -p tcp !--syn -j newnotsyn
     fi
 
     eval ${1}_exists=Yes
@@ -1536,7 +1537,7 @@ add_nat_rule() {
     # Generate nat table rules
 
     if [ "$source" = "$FW" ]; then
-	run_iptables -t nat -A OUTPUT $proto $sports -d addr
+	run_iptables -t nat -A OUTPUT $proto $sports -d $addr \
 	    $multiport $dports -j $target1
     else
 	chain=`dnat_chain $source`
@@ -2396,6 +2397,10 @@ setup_masq()
 	    interface="${interface%:*}"
 	fi
 
+	if ! list_search $interface $all_interfaces; then
+	    fatal_error "Error: Unknown interface $interface"
+	fi
+	
 	if [ "$subnet" = "${subnet%!*}" ]; then
 	    nomasq=
 	else
@@ -2523,7 +2528,7 @@ process_blacklist_rec() {
 		--log-level $BLACKLIST_LOGLEVEL
 	run_iptables -A blacklst $source -j $disposition
 
-	echo "	 $addr added to Black List"
+	echo "   $addr added to Black List"
     done
 }
 
@@ -2726,12 +2731,14 @@ initialize_netfilter () {
 	    --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
 
     
-    createchain newnotsyn no
-    run_user_exit newnotsyn
-    [ -n "$LOGNEWNOTSYN" ] && \
-	run_iptables -A newnotsyn -j LOG \
-	--log-prefix "Shorewall:newnotsyn:DROP:" --log-level $LOGNEWNOTSYN
-    run_iptables -A newnotsyn -j DROP	
+    if [ -z "$NEWNOTSYN" ]; then
+	createchain newnotsyn no
+	run_user_exit newnotsyn
+	[ -n "$LOGNEWNOTSYN" ] && \
+	    run_iptables -A newnotsyn -j LOG \
+	    --log-prefix "Shorewall:newnotsyn:DROP:" --log-level $LOGNEWNOTSYN
+	run_iptables -A newnotsyn -j DROP
+    fi	
 
     createchain icmpdef no
     createchain common	no
@@ -2829,7 +2836,7 @@ add_common_rules() {
     # PING
     #
     [ -n "$FORWARDPING" ] && \
-	run_iptables -A common -p icmp --icmp-type echo-request -j ACCEPT
+	run_iptables -A icmpdef -p icmp --icmp-type echo-request -j ACCEPT
     ############################################################################
     # Common ICMP rules
     #
@@ -2848,6 +2855,16 @@ add_common_rules() {
     # BROADCASTS
     #
     drop_broadcasts `find_broadcasts`
+    ###########################################################################
+    # DHCP
+    #
+    echo "Adding rules for DHCP"
+
+    for interface in `find_interfaces_by_option dhcp`; do
+	run_iptables -A `input_chain $interface` -p udp --dport 67:68 -j ACCEPT
+	run_iptables -A OUTPUT	  -o $interface	 -p udp --dport 67:68 -j ACCEPT
+    done
+
     ###########################################################################
     # RFC 1918
     #
@@ -3176,13 +3193,6 @@ define_firewall() # $1 = Command (Start or Restart)
 
     process_rules $rules
 
-    echo "Adding rules for DHCP"
-
-    for interface in `find_interfaces_by_option dhcp`; do
-	run_iptables -A `input_chain $interface` -p udp --dport 67:68 -j ACCEPT
-	run_iptables -A OUTPUT	  -o $interface	 -p udp --dport 67:68 -j ACCEPT
-    done
-
     echo "Setting up ICMP Echo handling..."
 
     filterping_interfaces="`find_interfaces_by_option filterping`"
@@ -3408,6 +3418,7 @@ do_initialize() {
     DETECT_DNAT_IPADDRS=
     MERGE_HOSTS=
     MUTEX_TIMEOUT=
+    NEWNOTSYN=
     LOGNEWNOTSYN=
     FORWARDPING=
     stopping=
@@ -3487,6 +3498,7 @@ do_initialize() {
     DETECT_DNAT_IPADDRS=`added_param_value_no DETECT_DNAT_IPADDRS $DETECT_DNAT_IPADDRS`
     MERGE_HOSTS=`added_param_value_no MERGE_HOSTS $MERGE_HOSTS`
     FORWARDPING=`added_param_value_no FORWARDPING $FORWARDPING`
+    NEWNOTSYN=`added_param_value_yes NEWNOTSYN $NEWNOTSYN`
 }
 
 ################################################################################

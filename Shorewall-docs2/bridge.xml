@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-01-01</pubdate>
+    <pubdate>2005-01-14</pubdate>
 
     <copyright>
       <year>2004</year>
@@ -428,6 +428,43 @@ ifconfig most 192.168.1.31 netmask 255.255.255.0 up
 3) I made rc.brige executable and added the following line to /etc/rc.d/rc.local
 
 /etc/rc.d/rc.bridge </programlisting>
+    </blockquote>
+
+    <para>Joshua Schmidlkofer writes:</para>
+
+    <blockquote>
+      <programlisting>Bridge Setup for Gentoo
+
+#install bridge-utils
+emerge bridge-utils
+
+## create a link for net.br0
+cd /etc/init.d
+ln -s net.eth0 net.br0
+
+# Remove net.eth*, add net.br0 and bridge.
+rc-update del net.eth0
+rc-update del net.eth1
+rc-update add net,br0 default
+rc-update add bridge boot
+
+
+
+/etc/conf.d/bridge:
+
+  #bridge contains the name of each bridge you want created.
+  bridge="br0"
+
+  # bridge_&lt;bridge&gt;_devices contains the devices to use at bridge startup.
+  bridge_br0_devices="eth0 eth1"
+
+/etc/conf.d/net
+
+   iface_br0="10.0.0.1     broadcast 10.0.0.255 netmask 255.255.255.0"
+   #for dhcp:
+   #iface_br0="dhcp"
+   #comment this out if you use dhcp.
+   gateway="eth0/10.0.0.1" </programlisting>
     </blockquote>
 
     <para>Users who successfully configure bridges on other distributions,

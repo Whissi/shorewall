@@ -15,12 +15,12 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-07-11</pubdate>
+    <pubdate>2005-01-23</pubdate>
 
     <copyright>
       <year>2003</year>
 
-      <year>2004</year>
+      <year>2005</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -31,18 +31,21 @@
       1.2 or any later version published by the Free Software Foundation; with
       no Invariant Sections, with no Front-Cover, and with no Back-Cover
       Texts. A copy of the license is included in the section entitled
-      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
 
   <section>
     <title>Netfilter Overview</title>
 
-    <para>Netfilter consists of three tables: <emphasis role="bold">Filter</emphasis>,
-    <emphasis role="bold">Nat</emphasis> and <emphasis role="bold">Mangle</emphasis>.
-    Each table has a number of build-in chains: <emphasis role="bold">PREROUTING</emphasis>,
-    <emphasis role="bold">INPUT</emphasis>, <emphasis role="bold">FORWARD</emphasis>,
-    <emphasis role="bold">OUTPUT</emphasis> and <emphasis role="bold">POSTROUTING</emphasis>.</para>
+    <para>Netfilter consists of three tables: <emphasis
+    role="bold">Filter</emphasis>, <emphasis role="bold">Nat</emphasis> and
+    <emphasis role="bold">Mangle</emphasis>. Each table has a number of
+    build-in chains: <emphasis role="bold">PREROUTING</emphasis>, <emphasis
+    role="bold">INPUT</emphasis>, <emphasis role="bold">FORWARD</emphasis>,
+    <emphasis role="bold">OUTPUT</emphasis> and <emphasis
+    role="bold">POSTROUTING</emphasis>.</para>
 
     <para>Rules in the various tables are used as follows:</para>
 
@@ -51,7 +54,8 @@
         <term>Filter</term>
 
         <listitem>
-          <para>Packet filtering (rejecting, dropping or accepting packets)</para>
+          <para>Packet filtering (rejecting, dropping or accepting
+          packets)</para>
         </listitem>
       </varlistentry>
 
@@ -69,7 +73,8 @@
 
         <listitem>
           <para>General packet header modification such as setting the TOS
-          value or marking packets for policy routing and traffic shaping.</para>
+          value or marking packets for policy routing and traffic
+          shaping.</para>
         </listitem>
       </varlistentry>
     </variablelist>
@@ -78,34 +83,39 @@
     chains within Netfilter. Note that not all table/chain combinations are
     used.</para>
 
-    <graphic fileref="images/Netfilter.png" />
+    <graphic align="center" fileref="images/Netfilter.png" />
 
     <para><quote>Local Process</quote> means a process running on the
     Shorewall system itself.</para>
 
     <para>A more elaborate version of this flow is available <ulink
-    url="http://shorewall.net/pub/shorewall/misc/netfilterflow.pdf">here</ulink>.</para>
+    url="http://shorewall.net/pub/shorewall/misc/netfilterflow.pdf">here</ulink>
+    and <ulink url="http://www.docum.org/docum.org/kptd/">this one</ulink>
+    contrasts the Netfilter flow with that of ipchains.</para>
 
     <para>In the above diagram are boxes similar to this:</para>
 
     <graphic fileref="images/Legend.png" />
 
     <para>The above box gives the name of the built-in chain (<emphasis
-    role="bold">INPUT</emphasis>) along with the names of the tables (<emphasis
-    role="bold">Mangle</emphasis> and <emphasis role="bold">Filter</emphasis>)
-    that the chain exists in and in the order that the chains are traversed.
-    The above sample indicates that packets go first through the <emphasis
-    role="bold">INPUT</emphasis> chain of the <emphasis role="bold">Mangle</emphasis>
-    table then through the <emphasis role="bold">INPUT</emphasis> chain of the
-    <emphasis role="bold">Filter</emphasis> table. When a chain is enclosed in
-    parentheses, Shorewall does not use the named chain (<emphasis role="bold">INPUT</emphasis>)
-    in that table (<emphasis role="bold">Mangle</emphasis>).</para>
+    role="bold">INPUT</emphasis>) along with the names of the tables
+    (<emphasis role="bold">Mangle</emphasis> and <emphasis
+    role="bold">Filter</emphasis>) that the chain exists in and in the order
+    that the chains are traversed. The above sample indicates that packets go
+    first through the <emphasis role="bold">INPUT</emphasis> chain of the
+    <emphasis role="bold">Mangle</emphasis> table then through the <emphasis
+    role="bold">INPUT</emphasis> chain of the <emphasis
+    role="bold">Filter</emphasis> table. When a chain is enclosed in
+    parentheses, Shorewall does not use the named chain (<emphasis
+    role="bold">INPUT</emphasis>) in that table (<emphasis
+    role="bold">Mangle</emphasis>).</para>
 
     <important>
-      <para>Keep in mind that chains in the <emphasis role="bold">Nat</emphasis>
-      table are <emphasis role="bold">only traversed for new connection
-      requests</emphasis> (including those related to existing connections)
-      while the chains in the other tables are traversed on every packet.</para>
+      <para>Keep in mind that chains in the <emphasis
+      role="bold">Nat</emphasis> table are <emphasis role="bold">only
+      traversed for new connection requests</emphasis> (including those
+      related to existing connections) while the chains in the other tables
+      are traversed on every packet.</para>
     </important>
 
     <para>The above diagram should help you understand the output of
@@ -137,7 +147,7 @@ Counters reset Sat Oct 11 08:12:57 PDT 2003</programlisting>
 
     <programlisting> 785K   93M eth0_in    all  --  eth0   *       0.0.0.0/0            0.0.0.0/0
     0     0 common     all  --  *      *       0.0.0.0/0            0.0.0.0/0
-    0     0 LOG        all  --  *      *       0.0.0.0/0            0.0.0.0/0          LOG flags 0 level 6 prefix `Shorewall:INPUT:REJECT:&#39;
+    0     0 LOG        all  --  *      *       0.0.0.0/0            0.0.0.0/0          LOG flags 0 level 6 prefix `Shorewall:INPUT:REJECT:'
     0     0 reject     all  --  *      *       0.0.0.0/0            0.0.0.0/0
                                                                                                                                                                                     
 Chain FORWARD (policy DROP 0 packets, 0 bytes)
@@ -146,7 +156,7 @@ Chain FORWARD (policy DROP 0 packets, 0 bytes)
     0     0 DROP      !icmp --  *      *       0.0.0.0/0            0.0.0.0/0          state INVALID
     0     0 eth0_fwd   all  --  eth0   *       0.0.0.0/0            0.0.0.0/0
     0     0 common     all  --  *      *       0.0.0.0/0            0.0.0.0/0
-    0     0 LOG        all  --  *      *       0.0.0.0/0            0.0.0.0/0          LOG flags 0 level 6 prefix `Shorewall:FORWARD:REJECT:&#39;
+    0     0 LOG        all  --  *      *       0.0.0.0/0            0.0.0.0/0          LOG flags 0 level 6 prefix `Shorewall:FORWARD:REJECT:'
     0     0 reject     all  --  *      *       0.0.0.0/0            0.0.0.0/0
                                                                                                                                                                                     
 Chain OUTPUT (policy DROP 1 packets, 60 bytes)
@@ -156,7 +166,7 @@ Chain OUTPUT (policy DROP 1 packets, 60 bytes)
     0     0 DROP      !icmp --  *      *       0.0.0.0/0            0.0.0.0/0          state INVALID
  922K  618M fw2net     all  --  *      eth0    0.0.0.0/0            0.0.0.0/0
     0     0 common     all  --  *      *       0.0.0.0/0            0.0.0.0/0
-    0     0 LOG        all  --  *      *       0.0.0.0/0            0.0.0.0/0          LOG flags 0 level 6 prefix `Shorewall:OUTPUT:REJECT:&#39;
+    0     0 LOG        all  --  *      *       0.0.0.0/0            0.0.0.0/0          LOG flags 0 level 6 prefix `Shorewall:OUTPUT:REJECT:'
     0     0 reject     all  --  *      *       0.0.0.0/0            0.0.0.0/0</programlisting>
 
     <para>Here is the eth0_in chain:</para>
@@ -188,7 +198,8 @@ Chain net_dnat (1 references)
   638 32968 REDIRECT   tcp  --  *      *       0.0.0.0/0           !206.124.146.177    tcp dpt:80 redir ports 3128
 </programlisting>
 
-    <para>And finally, the <emphasis role="bold">Mangle</emphasis> table:</para>
+    <para>And finally, the <emphasis role="bold">Mangle</emphasis>
+    table:</para>
 
     <programlisting>Mangle Table
  

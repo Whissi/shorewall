@@ -2,39 +2,33 @@ This is a minor release of Shorewall that has a couple of new features.
 
 New features include:
 
-1) "shorewall refresh" now reloads the traffic shaping rules (tcrules
-   and tcstart).
+1) A new 'DNAT-' action has been added for entries in the
+   /etc/shorewall/rules file. DNAT- is intended for advanced users who
+   wish to minimize the number of rules that connection requests must
+   traverse.
+   
+   A Shorewall DNAT rule actually generates two iptables rules: an
+   address rewriting rule in the 'nat' table and an ACCEPT rule in the
+   'filter' table. A DNAT- rule only generates the first of these
+   rules. This is handy when you have several DNAT rules that would
+   generate the same ACCEPT rule.
 
-2) "shorewall debug [re]start" now turns off debugging after an error
-   occurs. This places the point of the failure near the end of the
-   trace rather than up in the middle of it.
+   Here are three rules from my previous rules file:
+   
+	DNAT   net  dmz:206.124.146.177 tcp smtp - 206.124.146.178
+	DNAT   net  dmz:206.124.146.177 tcp smtp - 206.124.146.179
+	ACCEPT net  dmz:206.124.146.177 tcp www,smtp,ftp,...
 
-3) "shorewall [re]start" has been speeded up by more than 40% with
-   my configuration. Your milage may vary. 
+   These three rules ended up generating _three_ copies of 
 
-4) A "shorewall show classifiers" command has been added which shows
-   the current packet classification filters. The output from this
-   command is also added as a separate page in "shorewall monitor"
+	 ACCEPT net  dmz:206.124.146.177 tcp smtp
 
-5) ULOG (must be all caps) is now accepted as a valid syslog level and
-   causes the subject packets to be logged using the ULOG target rather
-   than the LOG target. This allows you to run ulogd (available from
-   www.gnumonks.org/projects/ulogd) and log all Shorewall messages to
-   a separate log file.
+   By writing the rules this way, I end up with only one copy of the
+   ACCEPT rule.
 
-6) If you are running a kernel that has a FORWARD chain in the mangle
-   table ("shorewall show mangle" will show you the chains in the
-   mangle table), you can set MARK_IN_FORWARD=Yes in
-   shorewall.conf. This allows for marking inbound packets based on
-   their destination even when you are using Masquerading or SNAT.
+	DNAT-  net  dmz:206.124.146.177 tcp smtp -  206.124.146.178
+	DNAT-  net  dmz:206.124.146.177 tcp smtp -  206.124.146.179
+	ACCEPT net  dmz:206.124.146.177 tcp www,smtp,ftp,...
 
-7) I have cluttered up the /etc/shorewall directory with empty 'init',
-   'start', 'stop' and 'stopped' files. If you already have a file with
-   one of these names, don't worry -- the upgrade process won't
-   overwrite your file.
-
-8) I have added a new RFC1918_LOG_LEVEL variable to
-   shorewall.conf. This variable specifies the syslog level at which
-   packets are logged as a result of entries in the
-   /etc/shorewall/rfc1918 file. Previously, these packets were always
-   logged at the 'info' level.
+2) The 'shorewall check' command now prints out the applicable policy
+   between each pair of zones.

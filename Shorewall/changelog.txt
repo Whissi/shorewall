@@ -1,43 +1,6 @@
-Changes since 1.3.11
+Changes since 1.3.12
 
-1. Fixed DNAT/REDIRECT bug with excluded sub-zones.
+1. Added 'DNAT-' target.
 
-2. "shorewall refresh" now refreshes the traffic shaping rules
+2. Print policies in 'check' command.
 
-3. Turned off debugging after error.
-
-4. Removed drop of INVALID state output ICMP packets. 
-
-5. Replaced 'sed' invocation in separate_list() by shell code (speedup).
-
-6. Replaced 'wc' invocation in list_count() by shell code (speedup)
-
-7. Replaced 'sed' invocation in run_iptables() by shell code and
-   optomized (speedup)
-
-8. Only read the interfaces file once (speedup)
-
-9. Only read the policy file once (speedup)
-
-10. Removed redundant function input_chains() (duplicate of first_chains()) 
-
-11. Generated an error if 'lo' is defined in the interfaces file.
-
-12. Clarified error message where ORIGINAL DEST is specified on an
-    ACCEPT, DROP or REJECT rule.
-
-13. Added "shorewall show classifiers" command and added packet
-    classification filter display to "shorewall monitor"
-
-14. Added an error message when the destination in a rule contained a
-    MAC address.
-
-15. Added ULOG target support.
- 
-16. Add MARK_IN_FORWARD option.
-
-17. General Cleanup for Release
-
-18. Release changes and add init, start, stop and stopped files.
-
-19. Add headings to NAT and Mangle tables in "shorewall status" output

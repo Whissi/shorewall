@@ -833,6 +833,11 @@ validate_rule() {
 	target=ACCEPT
 	address=${address:=detect}
 	;;
+    DNAT-)
+	target=ACCEPT
+	address=${address:=detect}
+	logtarget=DNAT
+	;;
     REDIRECT)
 	target=ACCEPT
 	address=${address:=all}
@@ -983,6 +988,17 @@ validate_policy()
     local zone1
     local pc
     local chain
+    local policy
+    local loglevel
+    local synparams
+
+    print_policy() # $1 = source zone, $2 = destination zone
+    {
+	[ $command != check ] || \
+	    [ $1 = all ] || \
+	    [ $2 = all ] || \
+	    echo "   Policy for $1 to $2 is $policy"
+    }
 
     all_policy_chains=
 
@@ -1048,27 +1064,34 @@ validate_policy()
 		    for zone1 in $zones $FW all; do
 			eval pc=\$${zone}2${zone1}_policychain
 
-			[ -n "$pc" ] || \
+			if [ -z "$pc" ]; then
 			    eval ${zone}2${zone1}_policychain=$chain
+			    print_policy $zone $zone1
+			fi
 		    done
 		done
 	    else
 		for zone in $zones $FW all; do
 		    eval pc=\$${zone}2${server}_policychain
 		    
-		    [ -n "$pc" ] || \
+		    if [ -z "$pc" ]; then
 			eval ${zone}2${server}_policychain=$chain
+			print_policy $zone $server
+		    fi
 		done
 	    fi
 	elif [ -n "$serverwild" ]; then
 	    for zone in $zones $FW all; do
 		eval pc=\$${client}2${zone}_policychain
 		    
-		    [ -n "$pc" ] || \
-			eval ${client}2${zone}_policychain=$chain
+		    if [ -z "$pc" ]; then
+			eval ${client}2${zone}_policychain=$chain 
+			print_policy $client $zone
+		    fi
 	    done
 	else
 	    eval ${chain}_policychain=${chain}
+	    print_policy $client $server
 	fi	    
 
     done < $TMP_DIR/policy
@@ -2152,7 +2175,7 @@ add_a_rule()
 	    add_nat_rule
 	fi
 
-	if [ $chain != ${FW}2${FW} ]; then
+	if [ -z "$dnat_only" -a $chain != ${FW}2${FW} ]; then
 	    serv="${serv:+-d $serv}"
 
 	    if [ -n "$loglevel" ]; then
@@ -2229,6 +2252,7 @@ process_rule() # $1 = target
     fi
 
     logtarget="$target"
+    dnat_only=
 
     # Convert 1.3 Rule formats to 1.2 format
 
@@ -2236,6 +2260,12 @@ process_rule() # $1 = target
     DNAT)
 	target=ACCEPT
 	address=${address:=detect}
+	;;
+    DNAT-)
+	target=ACCEPT
+	address=${address:=detect}
+	dnat_only=Yes
+	logtarget=DNAT
 	;;
     REDIRECT)
 	target=ACCEPT
@@ -2379,7 +2409,7 @@ process_rules() # $1 = name of rules file
     while read xtarget xclients xservers xprotocol xports xcports xaddress; do
 	case "$xtarget" in
 
-	    ACCEPT|ACCEPT:*|DROP|DROP:*|REJECT|REJECT:*|DNAT|DNAT:*|REDIRECT|REDIRECT:*)
+	    ACCEPT|ACCEPT:*|DROP|DROP:*|REJECT|REJECT:*|DNAT|DNAT-|DNAT:*|DNAT-:*|REDIRECT|REDIRECT:*)
 		expandv xclients xservers xprotocol xports xcports xaddress
 
 		if [ "x$xclients" = xall ]; then

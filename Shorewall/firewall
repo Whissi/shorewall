@@ -536,19 +536,21 @@ validate_hosts_file() {
 	r="$z $hosts $options"
 	validate_zone $z || startup_error "Invalid zone ($z) in record \"$r\""
 
-	interface=${hosts%:*}
+	for host in `separate_list $hosts`; do
+	    interface=${host%:*}
 
-	list_search  $interface $all_interfaces || \
-	    startup_error "Unknown interface ($interface) in record \"$r\""
+	    list_search  $interface $all_interfaces || \
+		startup_error "Unknown interface ($interface) in record \"$r\""
 
-	for option in `separate_list $options`; do
-	    case $option in
-	    routestopped|-)
-		;;
-	    *)
-		error_message "Warning: Invalid option ($option) in record \"$r\""
-		;;
-	    esac
+	    for option in `separate_list $options`; do
+		case $option in
+		    routestopped|-)
+			;;
+		    *)
+			error_message "Warning: Invalid option ($option) in record \"$r\""
+			;;
+		esac
+	    done
 	done
     done < $TMP_DIR/hosts
 }
@@ -2588,7 +2590,7 @@ verify_os_version() {
 ################################################################################
 # Add IP Aliases                                                               #
 ################################################################################
-add_ip_aliases() # $* = addresses and devices
+add_ip_aliases()
 {
     do_one() 
     {
@@ -2620,6 +2622,8 @@ add_ip_aliases() # $* = addresses and devices
 	echo "   IP Address $external added to interface $interface"
     }
 
+    set -- $aliases_to_add
+    
     while [ $# -gt 0 ]; do
 	external=$1
 	interface=$2
@@ -3199,7 +3203,7 @@ define_firewall() # $1 = Command (Start or Restart)
 
     [ -n "$aliases_to_add" ] && \
 	echo "Adding IP Addresses..." && \
-	add_ip_aliases $aliases_to_add
+	add_ip_aliases
 
     run_user_exit start
 

@@ -3124,7 +3124,10 @@ add_a_rule()
 	fatal_error "Rule \"$rule\" - Destination may not be specified by MAC Address"
 	;;
     *)
-	[ -n "$server" ] && dest_interface="$(match_dest_dev $server)"
+	if [ -n "$server" ]; then
+	    [ -n "$nonat" ] && fatal_error "Destination interface not allowe with $logtarget"
+	    dest_interface="$(match_dest_dev $server)"
+	fi
 	;;
     esac
 
@@ -3168,7 +3171,6 @@ add_a_rule()
 
     case "$logtarget" in
 	ACCEPT|DROP|REJECT|CONTINUE)	
-	
 	    [ "$logtarget" = REJECT -a -n "$servport" ] && \
 		fatal_error "Server port may not be specified in a REJECT rule; rule: \"$rule\""
 	    if [ -z "$proto" -a -z "$cli" -a -z "$serv" -a -z "$servport" -a -z "$userspec" ] ; then
@@ -3223,21 +3225,13 @@ add_a_rule()
 					$(fix_bang $proto $sports $multiport $cli -d $srv $dports)
 				fi
 				
-				case $logtarget in
-				    NONAT|ACCEPT+)
-					addnatrule $(dnat_chain $source) $proto $multiport \
-					    $cli $sports -d $srv $dports $ratelimit $userandgroup -j RETURN
-					;;
-				esac
+				[ -n "$nonat" ] && \
+				    addnatrule $(dnat_chain $source) $proto $multiport \
+				        $cli $sports -d $srv $dports $ratelimit $userandgroup -j RETURN
 
-				case $logtarget in
-				    NONAT)
-					;;
-				    *)
-					run_iptables2 -A $chain $proto $multiport $cli $sports \
-					    -d $srv $dports $ratelimit $userandgroup -j $target
-					;;
-				    esac
+				[ "$logtarget" != NONAT ] && \
+				    run_iptables2 -A $chain $proto $multiport $cli $sports \
+					-d $srv $dports $ratelimit $userandgroup -j $target
 			    fi
 			done
 		    done
@@ -3247,21 +3241,13 @@ add_a_rule()
 			    $(fix_bang $proto $sports $multiport $cli $dports)
 		    fi
 
-		    case $logtarget in
-			NONAT|ACCEPT+)
-			    addnatrule $(dnat_chain $source) $proto $multiport \
-				$cli $sports $dports $ratelimit $userandgroup -j RETURN
-                            ;;
-                    esac
+		    [ -n "$nonat" ] && \
+			addnatrule $(dnat_chain $source) $proto $multiport \
+			    $cli $sports $dports $ratelimit $userandgroup -j RETURN
 
-		    case $logtarget in
-			NONAT)
-			    ;;
-			*)
-			    run_iptables2 -A $chain $proto $multiport $cli $sports \
-				$dports $ratelimit $userandgroup -j $target
-			    ;;
-		    esac
+		    [ "$logtarget" != NONAT ] && \
+			run_iptables2 -A $chain $proto $multiport $cli $sports \
+			    $dports $ratelimit $userandgroup -j $target
 		fi
 	    fi
 	fi
@@ -3279,23 +3265,15 @@ add_a_rule()
 		    $(fix_bang $proto $multiport $dest_interface $cli $sports $dports)
 	    fi
 
-	    case $logtarget in
-		LOG)
-		    ;;
-		NONAT|ACCEPT+)
+	    if [ "$logtarget" != LOG ]; then
+		[ -n "$nonat" ] && \
 		    addnatrule $(dnat_chain $source) $proto $multiport \
 		       $cli $sports $dports $ratelimit $userandgroup -j RETURN
-		    ;;
-		esac
 
-	    case $logtarget in
-		LOG|NONAT)
-		    ;;
-		*)
+		[ "$logtarget" != NONAT ] && \
 		    run_iptables2 -A $chain $proto $multiport $dest_interface \
 			$cli $sports $dports $ratelimit $userandgroup -j $target
-		    ;;
-		esac
+	    fi
 	fi
     fi
 }
@@ -3325,6 +3303,7 @@ process_rule() # $1 = target
     local userandgroup=
     local rule="$(echo $target $clients $servers $protocol $ports $cports $address $ratelimit $userspec)"
     local logtag=
+    local nonat=
 
     # Function Body - isolate rate limit
 
@@ -3407,10 +3386,11 @@ process_rule() # $1 = target
     fi
 
     case $target in
-	ACCEPT+)
+	ACCEPT+|NONAT)
+	    nonat=Yes
 	    target=ACCEPT
 	    ;;
-	ACCEPT|LOG|NONAT)
+	ACCEPT|LOG)
 	    ;;
 	DROP)
 	    [ -n "$ratelimit" ] && fatal_error "Rate Limiting not available with DROP"

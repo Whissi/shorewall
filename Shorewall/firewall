@@ -3246,10 +3246,14 @@ add_ip_aliases()
 	# Get all of the lines that contain inet addresses 
 	#
 	ip addr show $interface 2> /dev/null | grep 'inet' | while read inet cidr rest ; do
-	    if in_subnet $external $cidr; then
-		echo "/${cidr#*/} brd `broadcastaddress $cidr`"
-		break
-	    fi
+	    case $cidr in
+		*/*)
+		    if in_subnet $external $cidr; then
+			echo "/${cidr#*/} brd `broadcastaddress $cidr`"
+			break
+		    fi
+		    ;;
+	    esac
 	done
     }
 

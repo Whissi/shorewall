@@ -9,6 +9,19 @@ Problems Corrected since version 1.4.6:
    tcrules file. Previously, these addresses resulted in an invalid
    iptables command.
 
+3) The "shorewall stop" command is now disabled when
+   /etc/shorewall/startup_disabled exists. This prevents people from
+   shooting themselves in the foot prior to having configured
+   Shorewall.
+
+4) A change introduced in version 1.4.6 caused error messages during
+   "shorewall [re]start" when ADD_IP_ALIASES=Yes and ip addresses were
+   being added to a PPP interface; the addresses were successfully
+   added in spite of the messages.
+   
+   The firewall script has been modified to eliminate the error
+   messages.
+
 Migration Issues:
 
 1) Once you have installed this version of Shorewall, you must 
@@ -34,23 +47,21 @@ New Features:
 2) Thanks to Steve Herber, the help command can now give
    command-specific help.
 
-3) The "shorewall stop" command is now disabled when
-   /etc/shorewall/startup_disabled exists. This prevents people from
-   shooting themselves in the foot prior to having configured
-   Shorewall.
-
-4) A new option "ADMINISABSENTMINDED" has been added to
+3) A new option "ADMINISABSENTMINDED" has been added to
    /etc/shorewall/shorewall.conf. This option has a default value of
-   "No" in which case Shorewall's 'stopped' state continues as it has
+   "No" for existing Shorewall users who are upgrading to this release.
+   With this setting, Shorewall's 'stopped' state continues as it has
    been; namely, in the stopped state only traffic to/from hosts listed
    in /etc/shorewall/routestopped is accepted.
 
-   With ADMINISABSENTMINDED=Yes, in addition to traffic to/from the
-   hosts listed in /etc/shorewall/routestopped, Shorewall will allow:
+   The default for new users installing Shorewall for the first time is
+   ADMINISABSENTMINDED=Yes.With that setting, in addition to traffic
+   to/from the hosts listed in /etc/shorewall/routestopped, Shorewall
+   will allow:
 
-   a) All traffic originating from the firewall itself; and
-   b) All traffic that is part of or related to an already-existing
-   connection.
+	a) All traffic originating from the firewall itself; and
+	b) All traffic that is part of or related to an already-existing
+           connection.
 
    In particular, with ADMINISABSENTMINDED=Yes, a "shorewall stop"
    entered through an ssh session will not kill the session.
@@ -74,6 +85,4 @@ New Features:
    computer to the firewall and confidently type "shorewall
    stop". As part of stopping, Shorewall removes eth0:0 which kills my
    SSH connection to 192.168.1.5!!!
-
-   
 

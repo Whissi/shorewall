@@ -993,6 +993,8 @@ clear_firewall() {
 
     run_iptables -F
 
+    echo 1 > /proc/sys/net/ipv4/ip_forward
+    
     setpolicy INPUT ACCEPT
     setpolicy FORWARD ACCEPT
     setpolicy OUTPUT ACCEPT

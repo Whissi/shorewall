@@ -327,8 +327,6 @@ ip_range_explicit() {
 	fatal_error "Invalid IP address range: $1"
     fi
 
-    l=$(( $last + 1 ))
-
     while [ $first -le $last ]; do
 	echo `encodeaddr $first`
 	first=$(($first + 1))

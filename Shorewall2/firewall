@@ -1746,6 +1746,15 @@ setup_tunnels() # $1 = name of tunnels file
 
 setup_ipsec() {
 
+    set_mss() # $1 = chain
+    {
+	eval local policy=\$${1}_policy
+	if [ "$policy" != NONE ]; then
+	    ensurechain $1
+	    run_iptables -A $1 -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss $mss
+	fi
+    }
+
     do_options() # $1 = _in, _out or "" - $2 = option list
     {
 	local option opts newoptions=
@@ -1782,8 +1791,8 @@ setup_ipsec() {
 
     strip_file ipsec $1
     
-    while read zone ipsec options in_options out_options; do
-	expandv zone ipsec options in_options out_options
+    while read zone ipsec options in_options out_options mss; do
+	expandv zone ipsec options in_options out_options mss
 
 	[ -n "$POLICY_MATCH" ] || fatal_error "Your kernel and/or iptables does not support policy match"
 
@@ -1805,6 +1814,15 @@ setup_ipsec() {
 	do_options "_in"  $in_options
 	do_options "_out" $out_options
 
+	if [ $COMMAND != check -a -n "$mss" -a "x$mss" != "x-" ]; then
+	    for z in $zones; do
+		if [ $z != $zone ]; then
+		    set_mss ${z}2${zone}
+		    set_mss ${zone}2${z}
+		fi
+	    done
+	fi		
+	    
     done < $TMP_DIR/ipsec
 }	
 
@@ -5494,7 +5512,7 @@ initialize_netfilter () {
 	    Yes)
 		option="--clamp-mss-to-pmtu"
 		;;
-	    *)
+          	    *)
 		option="--set-mss $CLAMPMSS"
 		;;
 	esac
@@ -6096,6 +6114,7 @@ activate_rules()
 
 	fi
     }
+
     #
     # Add jumps to early SNAT chains
     #

@@ -3197,17 +3197,12 @@ initialize_netfilter () {
     setcontinue OUTPUT
 
     #
-    # Make 'traceroute -I' work
-    #
-    run_iptables -I OUTPUT -p icmp --icmp-type time-exceeded -j ACCEPT
-
-    #
     # Allow DNS lookups during startup for FQDNs and deep-six INVALID packets
     #
 
     for chain in INPUT OUTPUT FORWARD; do
 	run_iptables -A $chain -p udp --dport 53 -j ACCEPT
-	run_iptables -A $chain -m state --state INVALID -j DROP
+	run_iptables -A $chain -p ! icmp -m state --state INVALID -j DROP
     done
 
     [ -n "$CLAMPMSS" ] && \

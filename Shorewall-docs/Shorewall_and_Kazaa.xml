@@ -31,25 +31,22 @@
     </legalnotice>
   </articleinfo>
 
-  <section>
-    <title>ftwall</title>
+  <para>Beginning with Shorewall version 1.4.8, Shorewall can interface to
+  ftwall. <emphasis role="bold">ftwall</emphasis> is part of the <ulink
+  url="http://p2pwall.sourceforge.net">p2pwall project</ulink> and is a
+  user-space filter for applications based on the &#34;Fast Track&#34; peer to
+  peer protocol. Applications using this protocol include Kazaa, KazaaLite,
+  iMash and Grokster.</para>
 
-    <para>Beginning with Shorewall version 1.4.8, Shorewall can interface to
-    ftwall. <emphasis role="bold">ftwall</emphasis> is part of the p2pwall
-    project and is a user-space filter for applications based on the &#34;Fast
-    Track&#34; peer to peer protocol. Applications using this protocol include
-    Kazaa, KazaaLite, iMash and Grokster.</para>
+  <para>To filter traffic from your &#39;loc&#39; zone with ftwall, you insert
+  the following rules <emphasis role="bold">near the top</emphasis> of your
+  /etc/shorewall/rules file (before and ACCEPT rules whose source is the
+  &#39;loc&#39; zone).</para>
 
-    <para>To filter traffic from your &#39;loc&#39; zone with ftwall, you
-    insert the following rules <emphasis role="bold">near the top</emphasis>
-    of your /etc/shorewall/rules file (before and ACCEPT rules whose source is
-    the &#39;loc&#39; zone).</para>
+  <programlisting>        QUEUE   loc        net        tcp
+        QUEUE   loc        net        udp
+        QUEUE   loc        fw         udp</programlisting>
 
-    <programlisting>QUEUE   loc        net        tcp
-QUEUE   loc        net        udp
-QUEUE   loc        fw         udp</programlisting>
-
-    <para>Now simply configure ftwall as described in the ftwall documentation
-    and restart Shorewall.</para>
-  </section>
+  <para>Now simply configure ftwall as described in the ftwall documentation
+  and restart Shorewall.</para>
 </article>

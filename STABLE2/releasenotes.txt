@@ -15,3 +15,15 @@ Problems Corrected in version 2.0.5
 
 2) An anachronistic reference to the mangle option was removed from
    shorewall.conf.
+
+----------------------------------------------------------------------
+Problems Corrected in version 2.0.6
+
+1) Some users have reported with the pkttype match option in iptables/
+   Netfilter failing to match certain broadcast packets. The result 
+   is that the firewall log shows a lot of broadcast packets being 
+   logged. 
+
+   Users experiencing this problem can use PKTTYPE=No in
+   shorewall.conf to cause Shorewall to use IP address filtering of 
+   broadcasts rather than packet type.

@@ -2908,6 +2908,13 @@ process_actions2() {
     log_action() {
 	[ "$COMMAND" != check ] && log_rule ${LOGNEWNOTSYN:-info} $1 $2 "" "" -p tcp ! --syn
     }
+
+    drop_broadcasts() {
+	for address in $(find_broadcasts) 255.255.255.255 224.0.0.0/4 ; do
+	    run_iptables -A dropBcast -d $address -j DROP
+	done
+    }
+
     #
     # Generate the transitive closure of $USEDACTIONS
     #
@@ -2933,14 +2940,16 @@ process_actions2() {
 	case $xaction in
 	    dropBcast)
 		if [ "$COMMAND" != check ]; then
-		    qt iptables -A dropBcast -m pkttype --pkt-type broadcast -j DROP
-		    if ! qt iptables -A dropBcast -m pkttype --pkt-type multicast -j DROP; then
-                        #
-                        # No pkttype support -- do it the hard way
-                        #
-			for address in $(find_broadcasts) 255.255.255.255 224.0.0.0/4 ; do
-			    run_iptables -A dropBcast -d $address -j DROP
-			done
+		    if [ -n "$PKTTYPE" ]; then
+			qt iptables -A dropBcast -m pkttype --pkt-type broadcast -j DROP
+			if ! qt iptables -A dropBcast -m pkttype --pkt-type multicast -j DROP; then
+			    #
+			    # No pkttype support -- do it the hard way
+			    #
+			    drop_broadcasts
+			fi
+		    else
+			drop_broadcasts
 		    fi
 		fi
 		;;		
@@ -6053,6 +6062,7 @@ do_initialize() {
     DISABLE_IPV6=
     BRIDGING=
     DYNAMIC_ZONES=
+    PKTTYPE=
     RESTOREBASE=
     TMP_DIR=
 
@@ -6225,6 +6235,7 @@ do_initialize() {
     DISABLE_IPV6=$(added_param_value_no DISABLE_IPV6 $DISABLE_IPV6)
     BRIDGING=$(added_param_value_no BRIDGING $BRIDGING)
     DYNAMIC_ZONES=$(added_param_value_no DYNAMIC_ZONES $DYNAMIC_ZONES)
+    PKTTYPE=$(added_param_value_no PKTTYPE $PKTTYPE)
 
     #
     # Strip the files that we use often

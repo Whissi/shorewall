@@ -331,12 +331,15 @@ ACCEPT          fw              net             udp     53
 #       Accept SSH connections from the local network for administration
 #
 ACCEPT          loc             fw              tcp     22
-#       Allow Ping To And From Firewall
+#       Allow Ping To Firewall
 #
 ACCEPT          loc             fw              icmp    8
 ACCEPT          net             fw              icmp    8
-ACCEPT          fw              loc             icmp    8
-ACCEPT          fw              net             icmp    8
+#
+#	Allow all ICMP types (including ping) From Firewall
+#
+ACCEPT          fw              loc             icmp
+ACCEPT          fw              net             icmp
 #
 # Bering specific rules:
 # allow loc to fw udp/53 for local/caching DNS servers to work

@@ -348,21 +348,6 @@ flushnat() # $1 = name of chain
 }
 
 #
-# Find interfaces to a given zone
-#
-# Read the interfaces file and for each record matching the passed ZONE,
-# echo the expanded contents of the "INTERFACE" column
-#
-find_interfaces() # $1 = interface zone
-{
-    local zne=$1
-
-    while read z interface subnet options; do
-	[ "x`expand $z`" = "x$zne" ] && echo `expand $interface`
-    done < $TMP_DIR/interfaces
-}
-
-#
 # Chain name base for an interface
 #
 chain_base() #$1 = interface
@@ -370,6 +355,25 @@ chain_base() #$1 = interface
     local c=${1%%+*}
 
     echo ${c:=common}
+}
+
+#
+# Find interfaces to a given zone
+#
+# Search the variables representing the contents of the interfaces file and
+# for each record matching the passed ZONE, echo the expanded contents of 
+# the "INTERFACE" column
+#
+find_interfaces() # $1 = interface zone
+{
+    local zne=$1
+    local z
+    local interface
+
+    for interface in $all_interfaces; do
+	eval z=\$`chain_base ${interface}`_zone
+	[ "x${z}" = x${zne} ] && echo $interface
+    done
 }
 
 #
@@ -562,7 +566,12 @@ validate_interfaces_file() {
     while read z interface subnet options; do
 	expandv z interface subnet options
 	r="$z $interface $subnet $options"
-	[ "x$z" = "x-" ] || validate_zone $z || startup_error "Invalid zone ($z) in record \"$r\""
+
+	[ "x$z" = "x-" ] && z=
+
+	if [ -n "$z" ]; then 
+	    validate_zone $z || startup_error "Invalid zone ($z) in record \"$r\""
+	fi
 
 	[ "x$interface" = "xlo" ] && \
 	    startup_error "Error: The loopback interface (lo) may not be defined in /etc/shorewall/interfaces"
@@ -571,6 +580,12 @@ validate_interfaces_file() {
 	    startup_error "Error: Duplicate Interface $interface"
 	
 	all_interfaces="$all_interfaces $interface"
+	options=`separate_list $options`
+	interface=`chain_base $interface`
+	
+	eval ${interface}_broadcast="$subnet"
+	eval ${interface}_zone="$z"
+	eval ${interface}_options=\"$options\"
 
 	for option in `separate_list $options`; do
 	    case $option in
@@ -946,12 +961,26 @@ validate_rules() # $1 = name of rules file
 #
 validate_policy()
 {
+    local clientwild
+    local serverwild
+    local zone
+    local zone1
+    local pc
+    local chain
+
+    all_policy_chains=
+
     strip_file policy $policy
 
     while read client server policy loglevel synparams; do
 	expandv client server policy loglevel synparams
+
+	clientwild=
+	serverwild=
+
 	case "$client" in
 	all|ALL)
+	    clientwild=Yes
 	    ;;
 	*)
 	    if ! validate_zone $client; then
@@ -961,6 +990,7 @@ validate_policy()
 
 	case "$server" in
 	all|ALL)
+	    serverwild=Yes
 	    ;;
 	*)
 	    if ! validate_zone $server; then
@@ -985,7 +1015,45 @@ validate_policy()
 	    startup_error "Error: Duplicate policy $policy"
 	fi
 
-	eval ${client}2${server}_is_policy=Yes
+	[ "x$loglevel" = "x-" ] && loglevel=
+
+	chain=${client}2${server}
+
+	all_policy_chains="$all_policy_chains $chain"
+
+	eval ${chain}_is_policy=Yes
+	eval ${chain}_policy=$policy
+	eval ${chain}_loglevel=$loglevel
+	eval ${chain}_synparams=$synparams
+
+	if [ -n "${clientwild}" ]; then
+	    if [ -n "${serverwild}" ]; then
+		for zone in $zones $FW; do
+		    for zone1 in $zones $FW; do
+			eval pc=\$${zone}2${zone1}_policychain
+
+			[ -n "$pc" ] || \
+			    eval ${zone}2${zone1}_policychain=$chain
+		    done
+		done
+	    else
+		for zone in $zones $FW; do
+		    eval pc=\$${zone}2${server}_policychain
+		    
+		    [ -n "$pc" ] || \
+			eval ${zone}2${server}_policychain=$chain
+		done
+	    fi
+	elif [ -n "$serverwild" ]; then
+	    for zone in $zones $FW; do
+		eval pc=\$${client}2${zone}_policychain
+		    
+		    [ -n "$pc" ] || \
+			eval ${client}2${zone}_policychain=$chain
+	    done
+	else
+	    eval ${chain}_policychain=${chain}
+	fi	    
 
     done < $TMP_DIR/policy
 }
@@ -994,8 +1062,9 @@ validate_policy()
 # Find broadcast addresses
 #
 find_broadcasts() {
-    while read z interface bcast options; do
-	expandv interface bcast
+    for interface in $all_interfaces; do
+	interface=`chain_base $interface`
+	eval bcast=\$${interface}_broadcast
 	if [ "x$bcast" = "xdetect" ]; then
 	    addr="`ip addr show $interface 2> /dev/null`"
 	    if [ -n "`echo "$addr" | grep 'inet.*brd '`" ]; then
@@ -1006,7 +1075,7 @@ find_broadcasts() {
 	elif [ "x${bcast}" != "x-" ]; then
 	    echo `separate_list $bcast`
 	fi
-    done < $TMP_DIR/interfaces
+    done
 }
 
 #
@@ -1014,23 +1083,19 @@ find_broadcasts() {
 #
 find_interface_broadcasts() # $1 = Interface name
 {
-    while read z interface bcast options; do
-	expandv interface bcast
-	if [ "$interface" = "$1" ]; then
-	    if [ "x$bcast" = "xdetect" ]; then
-		addr="`ip addr show $interface 2> /dev/null`"
-		if [ -n "`echo "$addr" | grep 'inet.*brd '`" ]; then
-		    addr="`echo "$addr" | \
+    eval bcast=\$${1}_broadcast
+    
+    if [ "x$bcast" = "xdetect" ]; then
+	addr="`ip addr show $interface 2> /dev/null`"
+	if [ -n "`echo "$addr" | grep 'inet.*brd '`" ]; then
+	    addr="`echo "$addr" | \
 		grep "inet " | sed 's/^.* inet.*brd //;s/scope.*//'`"
-		    echo $addr | cut -d' ' -f 1
-		fi
-	    elif [ "x${bcast}" != "x-" ]; then
-		echo `separate_list $bcast`
-	    fi
-	    
-	    return
+	    echo $addr | cut -d' ' -f 1
 	fi
-    done < $TMP_DIR/interfaces
+    elif [ "x${bcast}" != "x-" ]; then
+	echo `separate_list $bcast`
+    fi
+    
 }
 
 #
@@ -1059,11 +1124,10 @@ find_interface_address() # $1 = interface
 #
 find_interfaces_by_option() # $1 = option
 {
-    while read ignore interface subnet options; do
-	expandv options
-	list_search $1 `separate_list $options` && \
-	    echo `expand $interface`
-    done < $TMP_DIR/interfaces
+    for interface in $all_interfaces; do
+	eval options=\$`chain_base ${interface}`_options
+	list_search $1 $options && echo $interface
+    done
 }
 
 #
@@ -1077,11 +1141,11 @@ find_hosts_by_option() # $1 = option
 	    echo `expand $hosts`
     done < $TMP_DIR/hosts
 
-    while read ignore interface ignore1 options; do
-	expandv options
-	list_search $1 `separate_list $options` && \
-	    echo `expand $interface`:0.0.0.0/0
-    done < $TMP_DIR/interfaces
+    for interface in $all_interfaces; do
+	eval options=\$`chain_base ${interface}`_options
+	list_search $options && \
+	    echo ${interface}:0.0.0.0/0
+    done 
 }
 
 #
@@ -1092,12 +1156,17 @@ find_hosts_by_option() # $1 = option
 have_interfaces_in_zone_with_option() # $1 = zone, $2 = option
 {
     local zne=$1
+    local z
+    local interface
 
-    while read z interface broadcast options; do
-	[ "x`expand $z`" = "x$zne" ] && expandv options && \
-	    list_search $1 `separate_list $options` && \
+    for interface in $all_interfaces; do
+	eval z=\$`chain_base ${interface}`_zone
+
+	[ "x$z" = "x$zne" ] && \
+	    list_search $1 $options && \
 	    return 0
-    done < $TMP_DIR/interfaces
+    done
+
     return 1
 }
 
@@ -2577,12 +2646,14 @@ default_policy() # $1 = client $2 = server
     apply_default()
     {
 	#
+	# Generate policy file column values from the policy chain
+	#
+	eval policy=\$${chain1}_policy
+	eval loglevel=\$${chain1}_loglevel
+	eval synparams=\$${chain1}_synparams
+	#
 	# Add the appropriate rules to the canonical chain ($chain) to enforce
 	# the specified policy
-	#
-	# Construct policy chain name
-	#
-	chain1=${client}2${server}
 
 	if [ "$chain" = "$chain1" ]; then
 	    #
@@ -2636,27 +2707,13 @@ default_policy() # $1 = client $2 = server
 	echo "   Policy $policy for $1 to $2 using chain $chain"
     }
 
-    while read client server policy loglevel synparams; do
-	expandv client server policy loglevel synparams
-	case "$client" in
-	all|ALL)
-	    if [ "$server" = "$2" -o "$server" = "all" ]; then
-		apply_default $1 $2
-		return
-	    fi
-	    ;;
-	*)
-	    if	[ "$client" = "$1" ] && \
-		[ "$server" = "all" -o "$server" = "$2" ]
-	    then
-		apply_default $1 $2
-		return
-	    fi
-	    ;;
-	esac
-    done < $TMP_DIR/policy
+    eval chain1=\$${1}2${2}_policychain
 
-    fatal_error "Error: No default policy for zone $1 to zone $2"
+    if [ -n "$chain1" ]; then
+	apply_default $1 $2
+    else
+	fatal_error "Error: No default policy for zone $1 to zone $2"
+    fi
 }
 
 #
@@ -2672,33 +2729,20 @@ complete_standard_chain() # $1 = chain, $2 = source zone, $3 = destination zone
 {
     local policy=
     local loglevel=
+    local policychain=
 
     run_user_exit $1
+    
+    eval policychain=\$${2}2${3}_policychain
 
-    while read client server policy loglevel synparams; do
-	expandv client server policy loglevel synparams
-	
-	[ "x$loglevel" = "x-" ] && loglevel=
+    if [ -n "$policychain" ]; then
+	eval policy=\$${policychain}_policy
+	eval loglevel=\$${policychain}_loglevel
 
-	case "$client" in
-	all|ALL)
-	    if [ "$server" = "$3" -o "$server" = "all" ]; then
-		policy_rules $1 $policy $loglevel
-		return
-	    fi
-	    ;;
-	*)
-	    if	[ "$client" = "$2" ] && \
-		[ "$server" = "all" -o "$server" = "$3" ]
-	    then
-		policy_rules $1 $policy $loglevel
-		return
-	    fi
-	    ;;
-	esac
-    done < $TMP_DIR/policy
-
-    policy_rules $1 DROP INFO
+	policy_rules $1 $policy $loglevel
+    else
+	policy_rules $1 DROP INFO
+    fi
 }
 
 #
@@ -2713,24 +2757,10 @@ rules_chain() # $1 = source zone, $2 = destination zone
     local chain=${1}2${2}
 
     havechain $chain && { echo $chain; return; }
+    
+    eval chain=\$${chain}_policychain
 
-    while read client server policy loglevel ; do
-	expandv client server policy loglevel
-	case "$client" in
-	all|ALL)
-	    if [ "$server" = "$2" -o "$server" = "all" ]; then
-		echo all2${server}
-		return
-	    fi
-	    ;;
-	*)
-	    if [ "$client" = "$1" -a "$server" = "all" ]; then
-		echo ${client}2${server}
-		return
-	    fi
-	    ;;
-	esac
-    done < $TMP_DIR/policy
+    [ -n "$chain" ] && { echo $chain; return; }
 
     fatal_error "Error: No appropriate chain for zone $1 to zone $2"
 }
@@ -3471,10 +3501,10 @@ apply_policy_rules() {
     #
     # Create policy chains
     #
-    while read client server policy loglevel synparams; do
-	expandv client server policy loglevel synparams
-
-	chain=${client}2${server}
+    for chain in $all_policy_chains; do
+	eval policy=\$${chain}_policy
+	eval loglevel=\$${chain}_loglevel
+	eval synparams=\$${chain}_synparams
 
 	[ -n "$synparams" ] && setup_syn_flood_chain $chain $synparams
 
@@ -3500,15 +3530,18 @@ apply_policy_rules() {
 	    # Otherwise, this is a canonical chain which will be handled in
 	    # the for loop below
 	    #
-	    [ "$client" = "all" -o "$server" = "all" ] && \
-		policy_rules $chain $policy $loglevel
+	    case $chain in
+		all2*|*2all)
+		    policy_rules $chain $policy $loglevel
+		    ;;
+	    esac
 
 	    [ -n "$synparams" ] && \
 		[ $policy = ACCEPT -o $policy = CONTINUE ] && \
 		run_iptables -I $chain 2 -p tcp --syn -j @$chain
 	fi
 
-    done < $TMP_DIR/policy
+    done
     #
     # Add policy rules to canonical chains
     #

@@ -2849,6 +2849,16 @@ add_common_rules() {
     #
     drop_broadcasts `find_broadcasts`
     ###########################################################################
+    # DHCP
+    #
+    echo "Adding rules for DHCP"
+
+    for interface in `find_interfaces_by_option dhcp`; do
+       run_iptables -A `input_chain $interface` -p udp --dport 67:68 -j ACCEPT
+       run_iptables -A OUTPUT    -o $interface  -p udp --dport 67:68 -j ACCEPT
+    done
+
+    ###########################################################################
     # RFC 1918
     #
     norfc1918_interfaces="`find_interfaces_by_option norfc1918`"
@@ -3175,13 +3185,6 @@ define_firewall() # $1 = Command (Start or Restart)
     echo "Processing $rules..."
 
     process_rules $rules
-
-    echo "Adding rules for DHCP"
-
-    for interface in `find_interfaces_by_option dhcp`; do
-	run_iptables -A `input_chain $interface` -p udp --dport 67:68 -j ACCEPT
-	run_iptables -A OUTPUT	  -o $interface	 -p udp --dport 67:68 -j ACCEPT
-    done
 
     echo "Setting up ICMP Echo handling..."
 

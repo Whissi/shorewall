@@ -69,6 +69,10 @@
 #			   Your kernel and iptables must  include CONNMARK support.
 #			   As in a) above, may be followed by ":P" or ":F
 #
+#			d) CONTINUE -- don't process any more marking rules in
+#			   the table. As in a) above, may be followed by ":P" or
+#			   ":F".
+#
 #	SOURCE 		Source of the packet. A comma-separated list of
 #			interface names, IP addresses, MAC addresses
 #			and/or subnets. If your kernel and iptables include
@@ -124,9 +128,21 @@
 #			   [<user name or number>]:[<group name or number>]
 #
 #			The colon is optionnal when specifying only a user.
-#			Examples : john: / john / :users / john:users	
+#			Examples : john: / john / :users / john:users
 #
+#	TEST		Defines a test on the existing packet or connection mark. 
+#			The rule will match only if the test returns true. Tests
+#			have the format [!]<value>[/<mask>][:C]
+#
+#			Where:
+#
+#				!	Inverts the test (not equal)
+#				<value> Value of the packet or connection mark.
+#				<mask>  A mask to be applied to the mark before
+#					testing 
+#				:C	Designates a connection mark. If omitted,
+#					the packet mark's value is tested.
 ##############################################################################
-#MARK		SOURCE 		DEST		PROTO	PORT(S)	CLIENT	USER
+#MARK		SOURCE 		DEST		PROTO	PORT(S)	CLIENT	USER	TEST
 #								PORT(S)
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

@@ -2292,7 +2292,7 @@ setup_ecn() # $1 = file name
 #
 process_tc_rule()
 {
-    chain=$MARKING_CHAIN target="MARK --set-mark"
+    chain=$MARKING_CHAIN target="MARK --set-mark" marktest=
 
     verify_designator() {
 	[ "$chain" = tcout ] && \
@@ -2342,11 +2342,34 @@ process_tc_rule()
 	    esac
 	fi
 
+	case $testval in
+	    -)
+		;;
+	    !*:C)
+		marktest="connmark ! "
+		testval=${testval%:*}
+		testval=${testval#!}
+		;;
+	    *:C)
+		marktest="connmark "
+		testval=${testval%:*}
+		;;
+	    !*)
+		marktest="mark ! "
+		testval=${testval#!}
+		;;
+	    *)
+		[ -n "$testval" ] && marktest="mark "
+		;;
+	esac
+
+	[ -n "$marktest" ] && r="${r}-m ${marktest}--mark $testval "
+
 	[ "x$dest"   = "x-"  ] || r="${r}$(dest_ip_range $dest) "
 
 	if [ "x$proto" = xipp2p ]; then
 	    [ "x$port" = "x-" ] && port="ipp2p"
-	    r="${r} -p tcp -m ipp2p --${port}"
+	    r="${r}-p tcp -m ipp2p --${port} "
 	else
 	    [ "x$proto"  = "x-"  ] && proto=all
 	    [ "x$proto"  = "x"   ] && proto=all
@@ -2409,7 +2432,11 @@ process_tc_rule()
 	RESTORE/*)
 	    target="CONNMARK --restore-mark --mask"
 	    mark=${mark#*/}
-	    ;;	    
+	    ;;
+	CONTINUE)
+	    target=RETURN
+	    mark=
+	    ;;
     esac
 
     for source in $(separate_list ${sources:=-}); do
@@ -2442,9 +2469,9 @@ setup_tc1() {
     #
     strip_file tcrules
 
-    while read mark sources dests proto ports sports user; do
-	expandv mark sources dests proto ports sports user
-	rule=$(echo "$mark $sources $dests $proto $ports $sports $user")
+    while read mark sources dests proto ports sports user testval; do
+	expandv mark sources dests proto ports sports user testval
+	rule=$(echo "$mark $sources $dests $proto $ports $sports $user $testval")
 	process_tc_rule
     done < $TMP_DIR/tcrules
     #

@@ -2537,7 +2537,7 @@ initialize_netfilter () {
     createchain reject  no
     createchain dynamic no
     
-    if [ -f /etc/shorewall/save ]; then
+    if [ -f /var/lib/shorewall/save ]; then
         echo "Restoring dynamic rules..."
 
 	while read target ignore1 ignore2 address rest; do
@@ -2548,7 +2548,7 @@ initialize_netfilter () {
 	    *)
 	    	;;
 	esac
-	done < /etc/shorewall/save
+	done < /var/lib/shorewall/save
     fi
     
     echo "Creating input Chains..."

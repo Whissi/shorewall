@@ -4043,25 +4043,29 @@ process_rule() # $1 = target
 	        # 16 ports are listed - use multiport match.
 	        #
 		multioption="-m multiport"
-		for client in $(separate_list ${clients:=-}); do
-		    #
-		    # add_a_rule() modifies these so we must set their values each time
-		    #
-		    server=${servers:=-}
-		    port=${ports:=-}
-		    cport=${cports:=-}
-		    add_a_rule
+		for clientrange in $(separate_list ${clients:=-}); do
+		    for client in $(ip_range $clientrange); do
+		        #
+		        # add_a_rule() modifies these so we must set their values each time
+		        #
+			server=${servers:=-}
+			port=${ports:=-}
+			cport=${cports:=-}
+			add_a_rule
+		    done
 		done
 	    else
 	        #
 	        # MULTIPORT is disabled or the rule isn't compatible with multiport match
 	        #
 		multioption=
-		for client in $(separate_list ${clients:=-}); do
-		    for port in $(separate_list ${ports:=-}); do
-			for cport in $(separate_list ${cports:=-}); do
-			    server=${servers:=-}
-			    add_a_rule
+		for clientrange in $(separate_list ${clients:=-}); do
+		    for client in $(ip_range $clientrange); do
+			for port in $(separate_list ${ports:=-}); do
+			    for cport in $(separate_list ${cports:=-}); do
+				server=${servers:=-}
+				add_a_rule
+			    done
 			done
 		    done
 		done
@@ -4081,14 +4085,16 @@ process_rule() # $1 = target
 	        # 16 ports are listed - use multiport match.
 	        #
 		multioption="-m multiport"
-		for client in $(separate_list ${clients:=-}); do
-		    for server in $(separate_list ${servers:=-}); do
-		        #
-		        # add_a_rule() modifies these so we must set their values each time
-		        #
-			port=${ports:=-}
-			cport=${cports:=-}
-			add_a_rule
+		for clientrange in $(separate_list ${clients:=-}); do
+		    for client in $(ip_range $clientrange); do
+			for server in $(separate_list ${servers:=-}); do
+		            #
+		            # add_a_rule() modifies these so we must set their values each time
+		            #
+			    port=${ports:=-}
+			    cport=${cports:=-}
+			    add_a_rule
+			done
 		    done
 		done
 	    else
@@ -4096,11 +4102,13 @@ process_rule() # $1 = target
 	        # MULTIPORT is disabled or the rule isn't compatible with multiport match
 	        #
 		multioption=
-		for client in $(separate_list ${clients:=-}); do
-		    for server in $(separate_list ${servers:=-}); do
-			for port in $(separate_list ${ports:=-}); do
-			    for cport in $(separate_list ${cports:=-}); do
-				add_a_rule
+		for clientrange in $(separate_list ${clients:=-}); do
+		    for client in $(ip_range $clientrange); do
+			for server in $(separate_list ${servers:=-}); do
+			    for port in $(separate_list ${ports:=-}); do
+				for cport in $(separate_list ${cports:=-}); do
+				    add_a_rule
+				done
 			    done
 			done
 		    done

@@ -31,9 +31,9 @@ to 2.x releases of Shorewall. For older versions:</p>
 <p>The current 2.0 Stable Release is 2.0.13 -- Here are the <a
  href="http://shorewall.net/pub/shorewall/2.0/shorewall-2.0.13/releasenotes.txt">release
 notes</a>.<br>
-The current Developement Release is 2.2.0 Beta 7 -- Here
+The current Developement Release is 2.2.0 RC1 -- Here
 are the <a
- href="http://shorewall.net/pub/shorewall/2.2-Beta/shorewall-2.2.0-Beta7/releasenotes.txt">release
+ href="http://shorewall.net/pub/shorewall/2.2-Beta/shorewall-2.2.0-RC1/releasenotes.txt">release
 notes</a>.<br>
 <br>
 Copyright © 2001-2004 Thomas M. Eastep</p>
@@ -44,7 +44,7 @@ Foundation; with no Invariant Sections, with no Front-Cover, and with
 no Back-Cover Texts. A copy of the license is included in the section
 entitled “<a href="GnuCopyright.htm" target="_self">GNU
 Free Documentation License</a>”.</p>
-<p>2004-12-04</p>
+<p>2004-12-11</p>
 <hr>
 <h3>Table of Contents</h3>
 <p style="margin-left: 0.42in; margin-bottom: 0in;"><a href="#Intro">Introduction
@@ -59,8 +59,10 @@ Shorewall</a><br>
 Shorewall on Mandrake® with a two-interface setup?</a><br>
 <a href="#License">License</a></p>
 <p style="margin-bottom: 0in; margin-left: 40px;"><a href="#2_0_10">News</a></p>
-<p style="margin-left: 0.83in; margin-bottom: 0in;"><a
- href="#2_2_0_Beta7">Shorewall 2.2.0 Beta 7</a><br>
+<p style="margin-left: 0.83in; margin-bottom: 0in;"><a href="#2_2_0_RC1">Shorewall
+2.2.0 RC1</a><br>
+<a href="#2_2_0_Beta8">Shorewall 2.2.0 Beta 8</a><br>
+<a href="#2_2_0_Beta7">Shorewall 2.2.0 Beta 7</a><br>
 <a href="#2_0_13">Shorewall
 2.0.13</a><br>
 <a href="#2_0_12">Shorewall
@@ -166,6 +168,90 @@ of the license is included in the section entitled "GNU Free
 Documentation License". </p>
 <hr>
 <h2><a name="News"></a>News</h2>
+<span style="font-weight: bold;"><a name="2_2_0_RC1"></a>12/19/2004 -
+Shorewall 2.2.0 RC1<br>
+<br>
+</span>Problems Corrected:<br>
+<ol>
+  <li>The syntax of the add and delete command has been clarified in
+the help summary produced by /sbin/shorewall.</li>
+</ol>
+New Features:<br>
+<ol>
+  <li>TCP OpenVPN tunnels are now supported using the 'openvpn' tunnel
+type. OpenVPN entries in /etc/shorewall/tunnels have this format:<br>
+    <br>
+&nbsp;&nbsp;&nbsp; openvpn[:{tcp|udp}][:&lt;port&gt;]&nbsp;&nbsp;&nbsp;
+&lt;zone&gt;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;gateway&gt;<br>
+    <br>
+Examples:<br>
+    <pre>&nbsp;&nbsp;&nbsp; openvpn:tcp&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;  net&nbsp;&nbsp;&nbsp; 1.2.3.4    # TCP tunnel on port 5000<br>    openvpn:3344&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; net&nbsp;&nbsp;&nbsp; 1.2.3.4    # UDP on port 3344<br>    openvpn:tcp:4455&nbsp;&nbsp;&nbsp; net&nbsp;&nbsp;&nbsp; 1.2.3.4&nbsp;&nbsp;&nbsp; # TCP on port 4455</pre>
+  </li>
+  <li>A new 'ipsecvpn' script is included in the tarball and in the
+RPM. The RPM installs the file in the Documentation directory
+(/usr/share/doc/packages/shorewall-2.2.0-0RC1).<br>
+    <br>
+This script is intended for use on Roadwarrior laptops for establishing
+an IPSEC SA to/from remote networks. The script has some limitations:<br>
+    <br>
+&nbsp;&nbsp;&nbsp; - Only one instance of the script may be used at a
+time.<br>
+&nbsp;&nbsp;&nbsp; - Only the first SPD accessed will be instantiated
+at the remote gateway. So while the script creates SPDs to/from the
+remote gateway and each network listed in the NETWORKS setting at the
+front of the script, only one of these may be used at a time.<br>
+  </li>
+</ol>
+<span style="font-weight: bold;"><a name="2_2_0_Beta8"></a>12/11/2004 -
+Shorewall 2.2.0 Beta 8<br>
+<br>
+</span>Problems Corrected:<br>
+<ol>
+  <li>A typo in the /etc/shorewall/interfaces file has been corrected.</li>
+  <li>Previously, the "add" and "delete" commands were generating
+incorrect policy matches when policy match support was available.</li>
+</ol>
+New Features:<br>
+<ol>
+  <li>Recent 2.6 kernels include code that evaluates TCP packets based
+on TCP Window analysis. This can cause packets that were previously
+classified as NEW or ESTABLISHED to be classified as INVALID.<br>
+    <br>
+The new kernel code can be disabled by including this command in your
+/etc/shorewall/init file:<br>
+    <br>
+&nbsp;&nbsp;&nbsp; echo 1 &gt;
+/proc/sys/net/ipv4/netfilter/ip_conntrack_tcp_be_liberal<br>
+    <br>
+Additional kernel logging about INVALID TCP packets may be obtained by
+adding this command to /etc/shorewall/init:<br>
+    <br>
+&nbsp;&nbsp;&nbsp; echo 1 &gt;
+/proc/sys/net/ipv4/netfilter/ip_conntrack_log_invalid<br>
+    <br>
+Traditionally, Shorewall has dropped INVALID TCP packets early. The new
+DROPINVALID option allows INVALID packets to be passed through the
+normal rules chains by setting DROPINVALID=No.<br>
+    <br>
+If not specified or if specified as empty (e.g., DROPINVALID="") then
+DROPINVALID=Yes is assumed.<br>
+    <br>
+  </li>
+  <li>The "shorewall add" and "shorewall delete" commands now accept a
+list of hosts to add or delete.<br>
+    <br>
+Examples:<br>
+    <br>
+&nbsp;&nbsp;&nbsp; shorewall add eth1:1.2.3.4 eth1:2.3.4.5 z12<br>
+&nbsp;&nbsp;&nbsp; shorewall delete eth1:1.2.3.4 eth1:2.3.4.5 z12<br>
+    <br>
+The above commands may also be written:<br>
+    <br>
+&nbsp;&nbsp;&nbsp; shorewall add eth1:1.2.3.4,2.3.4.5 z12<br>
+&nbsp;&nbsp;&nbsp; shorewall delete eth1:1.2.3.4,2.3.4.5 z12<br>
+&nbsp;&nbsp; <br>
+  </li>
+</ol>
 <span style="font-weight: bold;"><a name="2_2_0_Beta7"></a>12/04/2004 -
 Shorewall 2.2.0 Beta 7<br>
 </span><br>

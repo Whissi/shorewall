@@ -597,9 +597,9 @@ while [ $done -eq 0 ]; do
 	-*)
 	    option=${option#-}
 
-	    [ "x$option" = x ] && usage 1
+	    [ -z "$option" ] && usage 1
 	    
-	    while [ "x$option" != x ]; do
+	    while [ -n "$option" ]; do
 		case $option in
 		    c)
 			[ $# -eq 1 ] && usage 1

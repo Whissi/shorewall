@@ -1,5 +1,5 @@
 %define name shorewall
-%define version 1.3.10
+%define version 1.3.10b1
 %define release 1
 %define prefix /usr
 
@@ -101,6 +101,8 @@ fi
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel
 
 %changelog
+* Wed Oct 23 2002 Tom Eastep <tom@shorewall.net>
+- Changes version to 1.3.10b1
 * Tue Oct 22 2002 Tom Eastep <tom@shorewall.net>
 - Added maclist file
 * Tue Oct 15 2002 Tom Eastep <tom@shorewall.net>

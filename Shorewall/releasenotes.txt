@@ -77,6 +77,18 @@ Changes for 1.4 include:
 10) The /etc/shorewall/params file is now processed first so that
     variables may be used in the /etc/shorewall/shorewall.conf file.
 
+11) Packets with state INVALID are now silently dropped.
+
+12) Shorewall now gives a more helpful diagnostic when the 'ipchains'
+    compatibility kernel module is loaded and a 'shorewall start'
+    command is issued.
+
+13) The SHARED_DIR variable has been removed from shorewall.conf. This
+    variable was for use by package maintainers and was not documented
+    for general use.
+
+14) Shorewall now ignores 'default' routes when detecting masq'd
+    networks.
 
 
 

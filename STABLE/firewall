@@ -1459,7 +1459,7 @@ setup_mac_lists() {
     #
     for interface in $maclist_interfaces; do
 	case $interface in
-	    eth*|wlan*|br[0-9])
+	    eth*|wlan*|br[0-9]|ath[0-9])
 		;;
 	    *)
 		fatal_error "MAC verification is only supported on ethernet and 802.11b devices: $interface"
@@ -3917,8 +3917,8 @@ setup_masq()
 		;;
 	esac
 
+	temp=
 	if [ -n "$addresses" ]; then
-	    temp=
 	    for address in `separate_list $addresses`; do
 		temp="$temp --to-source $address"
 	    done
@@ -3938,7 +3938,7 @@ setup_masq()
 		    echo "   To $destination from $s through ${interface}"
 		fi
 	    done
-	elif [ -n "$address" ]; then
+	elif [ -n "$addresses" ]; then
 	    for destnet in $(separate_list $destnets); do
 		addnatrule $chain -d $destnet -j SNAT $temp
 	    done

@@ -95,7 +95,11 @@ error_message() # $* = Error Message
 fatal_error() # $* = Error Message
 {
     echo "   Error: $@" >&2
-    [ $command = check ] || stop_firewall
+    if [ $command = check ]; 
+	[ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
+    else
+	stop_firewall
+    fi
     exit 2
 }
 
@@ -1129,6 +1133,9 @@ setup_tunnels() # $1 = name of tunnels file
 		    ;;
 		gre|GRE)
 		    setup_one_other GRE $gateway 47
+		    ;;
+		6to4|6TO4)
+		    setup_one_other 6to4 $gateway 41
 		    ;;
 		pptpclient|PPTPCLIENT)
 		    setup_pptp_client $gateway
@@ -4221,7 +4228,7 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		qt iptables -D OUTPUT -o $interface -d $host -j $chain
 	    else
 		eval source_hosts=\"\$${z1}_hosts\"
-
+		
 		for h in $source_hosts; do
 		    iface=${h%:*}
 		    hosts=${h#*:}

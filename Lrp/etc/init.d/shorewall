@@ -70,10 +70,18 @@ list_search() # $1 = element to search for , $2-$n = list
 
     return 1
 }
+###############################################################################
+# Function to count list elements                                             #
+###############################################################################
+list_count() {
+    local temp="`separate_list $1`"
+    
+    echo $temp | wc -w
+}
 
 ###############################################################################
 # Mutual exclusion -- These functions are jackets for the mutual exclusion    #
-#		      routines in /var/lib/shorewall/functions. They invoke   #
+#		      routines in /usr/lib/shorewall/functions. They invoke   #
 #		      the corresponding function in that file if the user did #
 #		      not specify "nolock" on the runline.		      #
 ###############################################################################
@@ -200,7 +208,8 @@ createchain() # $1 = chain name, $2 = If non-null, don't create default rules
 	state="ESTABLISHED"
 	[ -n "$ALLOWRELATED" ] && state="$state,RELATED"
 	run_iptables -A $1 -m state --state $state -j ACCEPT
-	run_iptables -A $1 -m state --state NEW -p tcp !--syn -j newnotsyn
+	[ -z "$NEWNOTSYN" ] && \
+	    run_iptables -A $1 -m state --state NEW -p tcp !--syn -j newnotsyn
     fi
 
     eval ${1}_exists=Yes
@@ -583,7 +592,7 @@ validate_rule() {
     # Ensure that the passed comma-separated list has 15 or fewer elements
     #
     validate_list() {
-	local temp=`separate_list $1`
+	local temp="`separate_list $1`"
 	
 	[ `echo $temp | wc -w` -le 15 ]
     }
@@ -600,10 +609,13 @@ validate_rule() {
 	[ -n "$client" ] && case "$client" in
 	    -)
 		;;
+            *:*)
+		cli="-i ${client%:*} -s ${client#*:}"
+		;;
 	    ~*)
 		cli=`mac_match $client`
 		;;
-	    [0-9]*|![0-9]*)
+	    *.*.*)
 		#
 		# IP Address, address or subnet
 		#
@@ -623,7 +635,7 @@ validate_rule() {
 	    -)
 		serv=
 		;;
-	    [0-9]*|![0-9]*)
+	    *.*.*)
 		serv=$server
 		;;
 	    ~*)
@@ -660,6 +672,7 @@ validate_rule() {
 		state="-m state --state RELATED"
 		;;
 	    *)
+		state=
 		[ -n "$port" ] && [ "x${port}" != "x-" ] && \
 		    startup_error "Port number not allowed with protocol " \
 				  "\"$proto\"; rule: \"$rule\""
@@ -766,7 +779,7 @@ validate_rule() {
 	clientzone="$clients"
 	clients=
     else
-	clientzone="${clients%:*}"
+	clientzone="${clients%%:*}"
 	clients="${clients#*:}"
 	[ -z "$clientzone" -o -z "$clients" ] && \
 	   startup_error "Error: Empty source zone or qualifier: rule \"$rule\""
@@ -1132,10 +1145,10 @@ setup_tunnels() # $1 = name of tunnels file
     setup_one_ipsec() # $1 = gateway $2 = gateway zone
     {
 	options="-m state --state NEW -j ACCEPT"
-	addrule $inchain	  -p 50	 -s $1 $options
-	addrule $outchain	  -p 50	 -d $1 $options
-	run_iptables -A $inchain  -p 51	 -s $1 $options
-	run_iptables -A $outchain -p 51	 -d $1 $options
+	addrule $inchain	  -p 50	 -s $1
+	addrule $outchain	  -p 50	 -d $1
+	run_iptables -A $inchain  -p 51	 -s $1
+	run_iptables -A $outchain -p 51	 -d $1
 	run_iptables -A $inchain  -p udp -s $1 --sport 500 --dport 500 $options
 	run_iptables -A $outchain -p udp -d $1 --dport 500 --sport 500 $options
 
@@ -1153,9 +1166,8 @@ setup_tunnels() # $1 = name of tunnels file
 
     setup_one_other() # $1 = TYPE, $2 = gateway, $3 = protocol
     {
-	options="-m state --state NEW -j ACCEPT"
-	addrule $inchain  -p $3 -s $2 $options
-	addrule $outchain -p $3 -d $2 $options
+	addrule $inchain  -p $3 -s $2
+	addrule $outchain -p $3 -d $2
 
 	echo "   $1 tunnel to $gateway defined."
     }
@@ -1372,7 +1384,7 @@ process_tc_rule()
 
 	if [ "x$source" != "x-"	 ]; then
 	    case $source in
-	    [0-9]*)
+	    *.*.*)
 		r="-s $source "
 		;;
 	    ~*)
@@ -1615,7 +1627,10 @@ add_a_rule()
     [ -n "$client" ] && case "$client" in
     -)
 	;;
-    [0-9]*|![0-9]*)
+    *:*)
+	cli="-i ${client%:*} -s ${client#*:}"
+	;;
+    *.*.*)
 	cli="-s $client"
 	;;
     ~*)
@@ -1634,7 +1649,7 @@ add_a_rule()
     -)
 	serv=
 	;;
-    [0-9]*|![0-9]*)
+    *.*.*)
 	serv=$server
 	;;
     *)
@@ -1689,6 +1704,7 @@ add_a_rule()
 	    state="-m state --state RELATED"
 	    ;;
 	*)
+	    state=
 	    [ -n "$port" ] && [ "x${port}" != "x-" ] && \
 		fatal_error "Port number not allowed with protocol " \
 		"\"$proto\"; rule: \"$rule\""
@@ -1728,7 +1744,11 @@ add_a_rule()
 
 	# A specific server or server port given
 
-	[ -n "$addr" -a "$addr" != "$serv" ] && add_nat_rule
+	if [ -n "$addr" -a "$addr" != "$serv" ]; then
+	    add_nat_rule
+	elif [ -n "$servport" -a "$servport" != "$port" ]; then
+	    add_nat_rule
+	fi
 
 	serv="${serv:+-d $serv}"
 
@@ -1771,14 +1791,6 @@ add_a_rule()
 ################################################################################
 process_rule() {
 
-    # Function to count list elements
-
-    list_count() {
-	local temp=`separate_list $1`
-	
-	echo $temp | wc -w
-    }
-
     # Function Body -- isolate log level
  
    if [ "$target" = "${target%:*}" ]; then
@@ -1815,7 +1827,7 @@ process_rule() {
 	clientzone="$clients"
 	clients=
     else
-	clientzone="${clients%:*}"
+	clientzone="${clients%%:*}"
 	clients="${clients#*:}"
 	[ -z "$clientzone" -o -z "$clients" ] && \
 	   fatal_error "Error: Empty source zone or qualifier: rule \"$rule\""
@@ -1962,7 +1974,7 @@ process_tos_rule() {
     fi
 
     [ -n "$src" ] && case "$src" in
-	[0-9]*|![0-9]*)
+	*.*.*)
 	    #
 	    # IP Address or subnet
 	    #
@@ -2005,7 +2017,7 @@ process_tos_rule() {
     fi
 
     [ -n "$dst" ] && case "$dst" in
-	[0-9]*|![0-9]*)
+	*.*.*)
 	    #
 	    # IP Address or subnet
 	    #
@@ -2322,7 +2334,7 @@ complete_standard_chain() # $1 = chain, $2 = source zone, $3 = destination zone
     run_user_exit $1
 
     while read client server policy loglevel synparams; do
-	expandv client server policy loglevelsynparams
+	expandv client server policy loglevel synparams
 	
 	[ "x$loglevel" = "x-" ] && loglevel=
 
@@ -2396,6 +2408,10 @@ setup_masq()
 	    interface="${interface%:*}"
 	fi
 
+	if ! list_search $interface $all_interfaces; then
+	    fatal_error "Error: Unknown interface $interface"
+	fi
+	
 	if [ "$subnet" = "${subnet%!*}" ]; then
 	    nomasq=
 	else
@@ -2407,7 +2423,7 @@ setup_masq()
 	iface=
 
 	case $subnet in
-	[0-9]*|![0-9]*)
+	*.*.*)
 	    source="$subnet"
 	    subnet="-s $subnet"
 	    ;;
@@ -2496,15 +2512,34 @@ setup_intrazone() # $1 = zone
 	ensurechain ${1}2${1}
     fi
 }
+###############################################################################
+# Add a record to the blacklst chain                                          #
+#                                                                             #
+#   $source      = address match                                              #
+#   $proto       = protocol selector                                          #
+#   $dport       = destination port selector                                  #
+###############################################################################
+add_blacklist_rule() {
+    [ -n "$BLACKLIST_LOGLEVEL" ] && \
+	run_iptables -A blacklst $source $proto $dport -j \
+	LOG $LOGPARMS --log-prefix \
+	"Shorewall:blacklst:$BLACKLIST_DISPOSITION:" \
+	--log-level $BLACKLIST_LOGLEVEL
+    run_iptables -A blacklst $source $proto $dport -j $disposition
+}
 
 ###############################################################################
 # Process a record from the blacklist file				      #
 #									      #
 #   $subnet	 = address/subnet					      #
+#   $protocol    = Protocol Number/Name                                       #
+#   $port        = Port Number/Name                                           #
 ###############################################################################
 process_blacklist_rec() {
     local source
     local addr
+    local proto
+    local dport
 
     for addr in `separate_list $subnet`; do
 	case $addr in
@@ -2516,14 +2551,55 @@ process_blacklist_rec() {
 	    source="-s $addr"
 	    ;;
 	esac
+	
+	if [ -n "$protocol" ]; then
+	    proto=" -p $protocol "
 
-	[ -n "$BLACKLIST_LOGLEVEL" ] && \
-	    run_iptables -A blacklst $source -j LOG $LOGPARMS --log-prefix \
-		"Shorewall:blacklst:$BLACKLIST_DISPOSITION:" \
-		--log-level $BLACKLIST_LOGLEVEL
-	run_iptables -A blacklst $source -j $disposition
+	    case $protocol in
+		tcp|TCP|6|udp|UDP|17)
+		    if [ -n "$ports" ]; then 
+			if [ -n "$MULTIPORT" -a \
+			    "$ports" != "${ports%,*}" -a \
+			    "$ports" = "${ports%:*}" -a \
+			    `list_count $ports` -le 15 ]
+			then
+			    dport="-m multiport --dports $ports"
+			    add_blacklist_rule
+			else
+			    for dport in `separate_list $ports`; do
+				dport="--dport $dport"
+				add_blacklist_rule
+			    done
+			fi
+		    else
+			add_blacklist_rule
+		    fi
+		    ;;
+		icmp|ICMP|0)
+		    if [ -n "$ports" ]; then
+			for dport in `separate_list $ports`; do
+			    dport="--icmp-type $dport"
+			    add_blacklist_rule
+			done
+		    else
+			add_blacklist_rule
+		    fi
+		    ;;
+		*)
+		    add_blacklist_rule
+		    ;;
+	    esac
+	else
+	    add_blacklist_rule
+	fi
 
-	echo "	 $addr added to Black List"
+	if [ -n "$ports" ]; then
+	    addr="$addr $protocol $ports"
+	elif [ -n "$protocol" ]; then
+	    addr="$addr $protocol"
+	fi
+	
+	echo "   $addr added to Black List"
     done
 }
 
@@ -2552,8 +2628,8 @@ setup_blacklist() {
 
 	[ "$disposition" = REJECT ] && disposition=reject
 
-	while read subnet; do
-	    expandv subnet
+	while read subnet protocol ports; do
+	    expandv subnet protocol ports
 	    process_blacklist_rec
 	done < $TMP_DIR/blacklist
 
@@ -2576,8 +2652,8 @@ refresh_blacklist() {
 
 	run_iptables -F blacklst
 
-	while read subnet; do
-	    expandv subnet
+	while read subnet protocol ports; do
+	    expandv subnet protocol ports
 	    process_blacklist_rec
 	done < $TMP_DIR/blacklist
     fi
@@ -2714,24 +2790,31 @@ initialize_netfilter () {
     setpolicy INPUT DROP
     setpolicy OUTPUT DROP
     setpolicy FORWARD DROP
-
+    
     deleteallchains
 
     setcontinue FORWARD
     setcontinue INPUT
     setcontinue OUTPUT
+    #
+    # Allow DNS lookups during startup for FQDNs
+    #
+    run_iptables -A OUTPUT  -p udp --dport 53 -j ACCEPT
+    run_iptables -A FORWARD -p udp --dport 53 -j ACCEPT
 
     [ -n "$CLAMPMSS" ] && \
 	run_iptables -A FORWARD -p tcp \
 	    --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
 
     
-    createchain newnotsyn no
-    run_user_exit newnotsyn
-    [ -n "$LOGNEWNOTSYN" ] && \
-	run_iptables -A newnotsyn -j LOG \
-	--log-prefix "Shorewall:newnotsyn:DROP:" --log-level $LOGNEWNOTSYN
-    run_iptables -A newnotsyn -j DROP	
+    if [ -z "$NEWNOTSYN" ]; then
+	createchain newnotsyn no
+	run_user_exit newnotsyn
+	[ -n "$LOGNEWNOTSYN" ] && \
+	    run_iptables -A newnotsyn -j LOG \
+	    --log-prefix "Shorewall:newnotsyn:DROP:" --log-level $LOGNEWNOTSYN
+	run_iptables -A newnotsyn -j DROP
+    fi	
 
     createchain icmpdef no
     createchain common	no
@@ -2760,6 +2843,42 @@ initialize_netfilter () {
 	createchain `input_chain $interface`   no
 	run_iptables -A `input_chain $interface`   -j dynamic
     done
+}
+
+################################################################################
+# Build the common chain -- called during [re]start and refresh                #
+################################################################################
+build_common_chain() {
+    ###########################################################################
+    # PING
+    #
+    [ -n "$FORWARDPING" ] && \
+	run_iptables -A icmpdef -p icmp --icmp-type echo-request -j ACCEPT
+    ############################################################################
+    # Common ICMP rules
+    #
+    run_user_exit icmpdef
+    ############################################################################
+    # Common rules in each chain
+    #
+    common=`find_file common`
+
+    if [ -f $common ]; then
+	. $common
+    else
+	. `find_file common.def`
+    fi
+    ###########################################################################
+    # New Not Syn Stuff
+    #
+    if [ -n "$NEWNOTSYN" ]; then
+	run_iptables -A common -p tcp --tcp-flags ACK ACK -j ACCEPT
+	run_iptables -A common -p tcp --tcp-flags RST RST -j ACCEPT
+    fi	
+    ###########################################################################
+    # BROADCASTS
+    #
+    drop_broadcasts `find_broadcasts`
 }
 
 ################################################################################
@@ -2825,37 +2944,17 @@ add_common_rules() {
 	    echo "   $interface"
 	done
     fi
-    ###########################################################################
-    # PING
-    #
-    [ -n "$FORWARDPING" ] && \
-	run_iptables -A common -p icmp --icmp-type echo-request -j ACCEPT
-    ############################################################################
-    # Common ICMP rules
-    #
-    run_user_exit icmpdef
-    ############################################################################
-    # Common rules in each chain
-    #
-    common=`find_file common`
 
-    if [ -f $common ]; then
-	. $common
-    else
-	. `find_file common.def`
-    fi
-    ###########################################################################
-    # BROADCASTS
-    #
-    drop_broadcasts `find_broadcasts`
+    build_common_chain
+
     ###########################################################################
     # DHCP
     #
     echo "Adding rules for DHCP"
 
     for interface in `find_interfaces_by_option dhcp`; do
-       run_iptables -A `input_chain $interface` -p udp --dport 67:68 -j ACCEPT
-       run_iptables -A OUTPUT    -o $interface  -p udp --dport 67:68 -j ACCEPT
+	run_iptables -A `input_chain $interface` -p udp --dport 67:68 -j ACCEPT
+	run_iptables -A OUTPUT	  -o $interface	 -p udp --dport 67:68 -j ACCEPT
     done
 
     ###########################################################################
@@ -3108,19 +3207,29 @@ activate_rules()
 
 	    chain="`rules_chain $zone $zone1`"
 
+	    if havechain ${zone}2${zone1} || havechain ${zone1}2${zone}; then
+		have_canonical=Yes
+	    else
+		have_canonical=
+	    fi
+
 	    for host in $source_hosts; do
 		interface=${host%:*}
 		subnet=${host#*:}
 		chain1=`forward_chain $interface`
 		
-		case $interface in
-		    *+*)
-			multi=yes
-			;;
-		    *)
-			list_search $interface $multi_interfaces && multi=yes || multi=
-			;;
-		esac
+		if [ -n "$have_canonical" ]; then
+		    multi=yes
+		else
+		    case $interface in
+			*+*)
+			    multi=yes
+			    ;;
+			*)
+			    list_search $interface $multi_interfaces && multi=yes || multi=
+			    ;;
+		    esac
+		fi
 
 		for host1 in $dest_hosts; do
 		    interface1=${host1%:*}
@@ -3148,6 +3257,9 @@ activate_rules()
     run_iptables -D INPUT 1
     run_iptables -D OUTPUT 1
     run_iptables -D FORWARD 1
+
+    run_iptables -D OUTPUT  -p udp --dport 53 -j ACCEPT
+    run_iptables -D FORWARD -p udp --dport 53 -j ACCEPT
 }
 
 ################################################################################
@@ -3155,6 +3267,16 @@ activate_rules()
 ################################################################################
 define_firewall() # $1 = Command (Start or Restart)
 {
+    if [ -f /etc/shorewall/startup_disabled ]; then
+	echo "   Shorewall Startup is disabled -- to enable startup"
+	echo "   after you have completed Shorewall configuration,"
+	echo "   remove the file /etc/shorewall/startup_disabled"
+
+	[ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
+	my_mutex_off
+	exit 2
+    fi
+
     echo "${1}ing Shorewall..."
 
     verify_os_version
@@ -3232,7 +3354,7 @@ define_firewall() # $1 = Command (Start or Restart)
 
     createchain shorewall no
 
-    date > /var/lib/shorewall/restarted
+    date > $STATEDIR/restarted
 
     report "Shorewall ${1}ed"
 
@@ -3303,25 +3425,8 @@ refresh_firewall()
     run_iptables -F common
 
     echo "Adding Common Rules"
-    ###########################################################################
-    # PING
-    #
-    [ -n "$FORWARDPING" ] && \
-	run_iptables -A common -p icmp --icmp-type echo-request -j ACCEPT
-    ############################################################################
-    # Common rules in each chain
-    #
-    common=`find_file common`
 
-    if [ -f $common ]; then
-	. $common
-    else
-	. `find_file common.def`
-    fi
-    ###########################################################################
-    # BROADCASTS
-    #
-    drop_broadcasts `find_broadcasts`
+    build_common_chain
 
     ###########################################################################
     # Blacklist
@@ -3416,6 +3521,7 @@ do_initialize() {
     DETECT_DNAT_IPADDRS=
     MERGE_HOSTS=
     MUTEX_TIMEOUT=
+    NEWNOTSYN=
     LOGNEWNOTSYN=
     FORWARDPING=
     stopping=
@@ -3431,7 +3537,7 @@ do_initialize() {
 
     trap "rm -rf $TMP_DIR; my_mutex_off; exit 2" 1 2 3 4 5 6 9
 
-    functions=/var/lib/shorewall/functions
+    functions=/usr/lib/shorewall/functions
 
     if [ -f $functions ]; then
 	. $functions
@@ -3439,7 +3545,7 @@ do_initialize() {
 	startup_error "$functions does not exist!"
     fi
 
-    version_file=/var/lib/shorewall/version
+    version_file=/usr/lib/shorewall/version
 
     [ -f $version_file ] && version=`cat $version_file`
     #
@@ -3454,6 +3560,7 @@ do_initialize() {
     [ -z "${STATEDIR}" ] && STATEDIR=/var/state/shorewall
 
     [ -d $STATEDIR ] || mkdir -p $STATEDIR
+
 
     [ -z "$FW" ] && FW=fw
 
@@ -3495,6 +3602,7 @@ do_initialize() {
     DETECT_DNAT_IPADDRS=`added_param_value_no DETECT_DNAT_IPADDRS $DETECT_DNAT_IPADDRS`
     MERGE_HOSTS=`added_param_value_no MERGE_HOSTS $MERGE_HOSTS`
     FORWARDPING=`added_param_value_no FORWARDPING $FORWARDPING`
+    NEWNOTSYN=`added_param_value_yes NEWNOTSYN $NEWNOTSYN`
 }
 
 ################################################################################
@@ -3541,6 +3649,7 @@ case "$command" in
 	if qt iptables -L shorewall -n ; then
 	    [ -n "$SUBSYSLOCK" ] && touch $SUBSYSLOCK
 	    echo "Shorewall Already Started"
+	    [ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
 	    my_mutex_off
 	    exit 0;
 	fi
@@ -3570,7 +3679,7 @@ case "$command" in
     reset)
 	iptables -L -n -Z -v
 	report "Shorewall Counters Reset"
-	date > /var/lib/shorewall/restarted
+	date > $STATEDIR/restarted
 	;;
 
     refresh)
@@ -3578,6 +3687,7 @@ case "$command" in
 	my_mutex_on
 	if ! qt iptables -L shorewall -n ; then
 	    echo "Shorewall Not Started"
+	    [ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
 	    my_mutex_off
 	    exit 2;
 	fi

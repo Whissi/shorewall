@@ -3002,9 +3002,14 @@ process_rule() # $1 = target
 	target="${target%:*}"
 	expandv loglevel
     fi
-  
-    logtarget="$target"
-    dnat_only=
+    #
+    # Save the original target in 'logtarget' for logging rules
+    #
+    logtarget=${target%-}
+    #
+    # Targets ending in "-" only apply to the nat table
+    #
+    [ $target = $logtarget ] && dnat_only= || dnat_only=Yes
 
     # Tranform the rule:
     #
@@ -3054,32 +3059,16 @@ process_rule() # $1 = target
 	    [ -n "$ratelimit" ] && fatal_error "Rate Limiting not available with DROP"
 	    ;;
 	REJECT)
+	    target=reject
 	    ;;
 	CONTINUE)
 	    ;;
-	DNAT)
+	DNAT*)
 	    target=ACCEPT
 	    address=${address:=detect}
 	    ;;
-	DNAT-)
+	REDIRECT*)
 	    target=ACCEPT
-	    logtarget=DNAT
-	    address=${address:=detect}
-	    dnat_only=Yes
-	    ;;
-	REDIRECT)
-	    target=ACCEPT
-	    address=${address:=all}
-	    if [ "x-" = "x$servers" ]; then
-		servers=$FW
-	    else
-		servers="$FW::$servers"
-	    fi
-	    ;;
-	REDIRECT-)
-	    target=ACCEPT
-	    logtarget=REDIRECT
-	    dnat_only=Yes
 	    address=${address:=all}
 	    if [ "x-" = "x$servers" ]; then
 		servers=$FW

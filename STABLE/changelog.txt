@@ -1,22 +1,66 @@
-Changes since 1.3.13
+Changes since 1.3.14
 
-1. Fix 'shorewall add' bug.
+1. All versions changed to 1.4.
 
-2. Add OLD_PING_HANDLING option
+2. Rework of error message generation to make the 'firewall' script
+   smaller.
 
-3. Allow adding alias labels under ADD_IP_ALIASES=Yes.
+3. Deimplemented MERGE_HOSTS=No.
 
-4. Allow adding alias labels under ADD_SNAT_ALIASES=Yes.
+4. Generate error for <dev>:<integer> name in interfaces file.
 
-5. Use the routing table to generate list of subnets to be masqueraded
-   when an interface name appears in the SUBNET column of
-   /etc/shorewall/masq.
+5. Deimplement old ping handling.
 
-6. Restore $dev.$vid naming of VLAN interfaces.
+6. Deimplement 'routestopped' interface/hosts option.
 
-7. Updated copyrights for 2003.
+7. Strip comments from potentially large files while the firewall is
+   still up and running during 'restart'.
 
-8. Added support for openvpn tunnels on arbitrary ports
+8. Disallow the old port forwarding/redirection syntax.
 
-9. Corrected rule number calculation problem in 'shorewall add' command
-   processing.
+9. Reorganize shorewall.conf.
+
+10. Added support for LOG target.
+
+11. Move firewall and version (one more time....)
+
+12. Add late DNS reply rule to the common chain.
+
+12. Corrected rule number calculation problem in 'shorewall add' command
+    processing.
+
+13. Update Documentation for 1.4
+
+14. Remove icmp.def file.
+
+15. Added CONTINUE rule target.
+
+16. Added Andrew Zhoglo's fix for logunclean.
+
+17. Removed 'multi' option.
+
+18. Support 802.11b devices with maclist.
+
+19. Don't detect loopback simply by name.
+
+20. Removed trailing white space from all files.
+
+21. Improved parsing of comma-separated lists.
+
+22. Add ECN Removal support
+
+23. Add TCP ports 445 and 139 to the common silent list.
+
+24. Remove 'check' command support.
+
+25. Restore 'check' command support.
+
+26. Remove unused function find_interface_broadcasts()
+
+27. Remove stale comments in the params file.
+
+28. Silently drop INVALID state packets
+
+29. Ignore the 'default' route when detecting masq'd networks.
+
+30. REALLY process the params file first now (honest).

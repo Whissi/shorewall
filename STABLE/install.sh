@@ -2,14 +2,14 @@
 #
 # Script to install Shoreline Firewall
 #
-#     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]         
+#     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
 #
 #     (c) 2000,2001,2002,2003 - Tom Eastep (teastep@shorewall.net)
 #
 #       Seawall documentation is available at http://seawall.sourceforge.net
 #
 #       This program is free software; you can redistribute it and/or modify
-#       it under the terms of Version 2 of the GNU General Public License 
+#       it under the terms of Version 2 of the GNU General Public License
 #       as published by the Free Software Foundation.
 #
 #       This program is distributed in the hope that it will be useful,
@@ -24,7 +24,7 @@
 #    Usage:
 #
 #        If you are running a distribution that has a directory called /etc/rc.d/init.d or one
-#        called /etc/init.d or you are running Slackware then simply cd to the directory 
+#        called /etc/init.d or you are running Slackware then simply cd to the directory
 #        containing this script and run it.
 #
 #            ./install.sh
@@ -35,7 +35,7 @@
 #            ./install.sh /etc/rc.d/scripts
 #
 #        The default is that the firewall will be started in run levels 2-5 starting at
-#        position 15 and stopping at position 90. This is correct RedHat/Mandrake, Debian, 
+#        position 15 and stopping at position 90. This is correct RedHat/Mandrake, Debian,
 #        Caldera and Corel.
 #
 #        If you wish to change that, you can pass -r "<levels startpos stoppos>".
@@ -45,7 +45,7 @@
 #
 #            ./install.sh -r "23 15 90"
 #
-#       Example 2: You wish to start your firewall only in run level 3, start at position 5 
+#       Example 2: You wish to start your firewall only in run level 3, start at position 5
 #                  and stop at position 95.
 #
 #            ./install.sh -r "3 5 95" /etc/rc.d/scripts
@@ -54,7 +54,7 @@
 #        /etc/rc.d/rc.local file is modified to start the firewall.
 #
 
-VERSION=1.3.14
+VERSION=1.4.0
 
 usage() # $1 = exit status
 {
@@ -93,6 +93,18 @@ backup_file() # $1 = file to backup
     fi
 }
 
+delete_file() # $1 = file to delete
+{
+    if [ -z "$PREFIX" -a -f $1 -a ! -f ${1}-${VERSION}.bkout ]; then
+	if (mv $1 ${1}-${VERSION}.bkout); then
+	    echo
+	    echo "$1 moved to ${1}-${VERSION}.bkout"
+        else
+	    exit 1
+        fi
+    fi
+}
+
 modify_rclocal()
 {
     if [ -f /etc/rc.d/rc.local ]; then
@@ -104,11 +116,11 @@ modify_rclocal()
 	fi
     else
 	cant_autostart
-    fi	
+    fi
 }
 
 install_file_with_backup() # $1 = source $2 = target $3 = mode
-{    
+{
     backup_file $2
     run_install -o $OWNER -g $GROUP -m $3 $1 ${2}
 }
@@ -170,7 +182,7 @@ while [ $# -gt 0 ] ; do
 done
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
-    
+
 #
 # Determine where to install the firewall script
 #
@@ -212,7 +224,7 @@ fi
 # Change to the directory containing this script
 #
 cd "`dirname $0`"
-    
+
 echo "Installing Shorewall Version $VERSION"
 
 #
@@ -251,20 +263,20 @@ if [ -n "$RUNLEVELS" ]; then
     fi
 
     install_file_with_backup init.temp ${PREFIX}${DEST}/$FIREWALL 0544
-    
+
     rm -f init.temp awk.tmp
 else
     install_file_with_backup init.sh ${PREFIX}${DEST}/$FIREWALL 0544
 fi
-    
+
 echo
 echo  "Shorewall script installed in ${PREFIX}${DEST}/$FIREWALL"
 
 #
-# Create /etc/shorewall, /usr/lib/shorewall and /var/shorewall if needed
+# Create /etc/shorewall, /usr/share/shorewall and /var/shorewall if needed
 #
 mkdir -p ${PREFIX}/etc/shorewall
-mkdir -p ${PREFIX}/usr/lib/shorewall
+mkdir -p ${PREFIX}/usr/share/shorewall
 mkdir -p ${PREFIX}/var/lib/shorewall
 #
 # Install the config file
@@ -294,16 +306,16 @@ if [ -f ${PREFIX}/etc/shorewall/functions ]; then
     backup_file ${PREFIX}/etc/shorewall/functions
     rm -f  ${PREFIX}/etc/shorewall/functions
 fi
-    
+
 if [ -f ${PREFIX}/var/lib/shorewall/functions ]; then
     backup_file ${PREFIX}/var/lib/shorewall/functions
     rm -f  ${PREFIX}/var/lib/shorewall/functions
 fi
-    
-install_file_with_backup functions ${PREFIX}/usr/lib/shorewall/functions 0444
+
+install_file_with_backup functions ${PREFIX}/usr/share/shorewall/functions 0444
 
 echo
-echo "Common functions installed in ${PREFIX}/usr/lib/shorewall/functions"
+echo "Common functions installed in ${PREFIX}/usr/share/shorewall/functions"
 #
 # Install the common.def file
 #
@@ -311,13 +323,11 @@ install_file_with_backup common.def ${PREFIX}/etc/shorewall/common.def 0444
 
 echo
 echo "Common rules installed in ${PREFIX}/etc/shorewall/common.def"
-#
-# Install the icmp.def file
-#
-install_file_with_backup icmp.def ${PREFIX}/etc/shorewall/icmp.def 0444
 
-echo
-echo "Common ICMP rules installed in ${PREFIX}/etc/shorewall/icmp.def"
+#
+# Delete the icmp.def file
+#
+delete_file icmp.def
 
 #
 # Install the policy file
@@ -369,13 +379,13 @@ else
     echo
     echo "NAT file installed as ${PREFIX}/etc/shorewall/nat"
 fi
-# 
+#
 # Install the Parameters file
 #
 if [ -f ${PREFIX}/etc/shorewall/params ]; then
     backup_file /etc/shorewall/params
 else
-    run_install -o $OWNER -g $GROUP -m 0600 params ${PREFIX}/etc/shorewall/params   
+    run_install -o $OWNER -g $GROUP -m 0600 params ${PREFIX}/etc/shorewall/params
     echo
     echo "Parameter file installed as ${PREFIX}/etc/shorewall/params"
 fi
@@ -528,10 +538,22 @@ else
     echo "Stopped file installed as ${PREFIX}/etc/shorewall/stopped"
 fi
 #
+# Install the ECN file
+#
+if [ -f ${PREFIX}/etc/shorewall/ecn ]; then
+    backup_file /etc/shorewall/ecn
+else
+    run_install -o $OWNER -g $GROUP -m 0600 ecn ${PREFIX}/etc/shorewall/ecn
+    echo
+    echo "ECN  file installed as ${PREFIX}/etc/shorewall/ecn"
+fi
+#
 # Backup the version file
 #
 if [ -z "$PREFIX" ]; then
-    if [ -f /usr/lib/shorewall/version ]; then
+    if [ -f /usr/share/shorewall/version ]; then
+	backup_file /usr/share/shorewall/version
+    elif [ -f /usr/lib/shorewall/version ]; then
 	backup_file /usr/lib/shorewall/version
     elif [ -n "$oldversion" ]; then
 	echo $oldversion > /usr/lib/shorewall/version-${VERSION}.bkout
@@ -542,10 +564,10 @@ fi
 #
 # Create the version file
 #
-echo "$VERSION" > ${PREFIX}/usr/lib/shorewall/version
-chmod 644 ${PREFIX}/usr/lib/shorewall/version
+echo "$VERSION" > ${PREFIX}/usr/share/shorewall/version
+chmod 644 ${PREFIX}/usr/share/shorewall/version
 #
-# Remove and create the symbolic link to the firewall script
+# Remove and create the symbolic link to the init script
 #
 
 if [ -z "$PREFIX" ]; then
@@ -554,12 +576,13 @@ if [ -z "$PREFIX" ]; then
     [ -L /usr/lib/shorewall/firewall ] && \
 	mv -f /usr/lib/shorewall/firewall /usr/lib/shorewall/firewall-${VERSION}.bkout
     rm -f /usr/lib/shorewall/init
-    ln -s ${DEST}/${FIREWALL} /usr/lib/shorewall/init
+    rm -f /usr/share/shorewall/init
+    ln -s ${DEST}/${FIREWALL} /usr/share/shorewall/init
 fi
 #
 # Install the firewall script
 #
-install_file_with_backup firewall ${PREFIX}/usr/lib/shorewall/firewall 0544
+install_file_with_backup firewall ${PREFIX}/usr/share/shorewall/firewall 0544
 
 if [ -z "$PREFIX" -a -n "$first_install" ]; then
     if [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then

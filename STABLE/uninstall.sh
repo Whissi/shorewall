@@ -2,14 +2,14 @@
 #
 # Script to back uninstall Shoreline Firewall
 #
-#     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]         
+#     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
 #
 #     (c) 2000,2001,2002,2003 - Tom Eastep (teastep@shorewall.net)
 #
 #       Shorewall documentation is available at http://shorewall.sourceforge.net
 #
 #       This program is free software; you can redistribute it and/or modify
-#       it under the terms of Version 2 of the GNU General Public License 
+#       it under the terms of Version 2 of the GNU General Public License
 #       as published by the Free Software Foundation.
 #
 #       This program is distributed in the hope that it will be useful,
@@ -26,7 +26,7 @@
 #       You may only use this script to uninstall the version
 #       shown below. Simply run this script to remove Seattle Firewall
 
-VERSION=1.3.14
+VERSION=1.4.0
 
 usage() # $1 = exit status
 {
@@ -35,8 +35,8 @@ usage() # $1 = exit status
     exit $1
 }
 
-qt()  
-{ 
+qt()
+{
     "$@" >/dev/null 2>&1
 }
 
@@ -49,7 +49,7 @@ restore_file() # $1 = file to restore
         else
 	    exit 1
         fi
-    fi	
+    fi
 }
 
 remove_file() # $1 = file to restore
@@ -108,6 +108,7 @@ fi
 rm -rf /etc/shorewall
 rm -rf /usr/lib/shorewall
 rm -rf /var/lib/shorewall
+rm -rf /usr/share/shorewall
 
 echo "Shorewall Uninstalled"
 

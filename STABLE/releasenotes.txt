@@ -1,105 +1,94 @@
-This is a minor release of Shorewall that has a couple of new features.
+This is a major release of Shorewall.
 
-New features include:
+Function from 1.3 that has been omitted from this version includes:
 
-1) An OLD_PING_HANDLING option has been added to shorewall.conf. When
-   set to Yes, Shorewall ping handling is as it has always been (see
-   http://www.shorewall.net/ping.html).
+1) The MERGE_HOSTS variable in shorewall.conf is no longer
+   supported. Shorewall 1.4 behavior is the same as 1.3 with
+   MERGE_HOSTS=Yes.
 
-   When OLD_PING_HANDLING=No, icmp echo (ping) is handled via rules and
-   policies just like any other connection request. The FORWARDPING
-   option in shorewall.conf is ignored and the 'noping' and
-   'filterping' options in /etc/shorewall/interfaces will generate an
-   error.
+2) Interface names of the form <device>:<integer> in
+   /etc/shorewall/interfaces now generate an error.
 
-2) It is now possible to direct Shorewall to create a "label" such as
-   "eth0:0" for IP addresses that it creates under ADD_IP_ALIASES=Yes
-   and ADD_SNAT_ALIASES=Yes. This is done by specifying the label
-   instead of just the interface name:
+3) Shorewall 1.4 implements behavior consistent with
+   OLD_PING_HANDLING=No. OLD_PING_HANDLING=Yes will generate an error
+   at startup as will specification of the 'noping' or 'filterping'
+   interface options.
 
-   a) In the INTERFACE column of /etc/shorewall/masq
-   b) In the INTERFACE column of /etc/shorewall/nat
+4) The 'routestopped' option in the /etc/shorewall/interfaces and
+   /etc/shorewall/hosts files is no longer supported and will generate
+   an error at startup if specified.
 
-3) The ability to name your VLAN interfaces using the $dev.$vid
-   convention (e.g., "eth0.0") has been restored. This capability was
-   inadvertently broken in version 1.3.12.
+5) The Shorewall 1.2 syntax for DNAT and REDIRECT rules is no longer
+   accepted.
 
-4) Support has been added for defining OpenVPN tunnels in the
-   /etc/shorewall/tunnels file.
+6) The ALLOWRELATED variable in shorewall.conf is no longer
+   supported. Shorewall 1.4 behavior is the same as 1.3 with
+   ALLOWRELATED=Yes.
 
-5) When an interface name is entered in the SUBNET column of the
-   /etc/shorewall/masq file, Shorewall previously masqueraded traffic
-   from only the first subnet defined on that interface. It did not
-   masquerade traffic from:
+7) The 'multi' interface option is no longer supported. Shorewall will
+   generate rules for sending packets back out the same interface
+   that they arrived on in two cases:
 
-   a) The subnets associated with other addresses on the interface.
-   b) Subnets accessed through local routers.
+   a) There is an _explicit_ policy for the source zone to the
+   destination zone. An explicit policy names both zones and does not
+   use the 'all' reserved word.
 
-   Beginning with Shorewall 1.3.14, if you enter an interface name in
-   the SUBNET column, shorewall will use the firewall's routing table
-   to construct the masquerading/SNAT rules.
+   b) There are one or more rules for traffic for the source zone to
+   or from the destination zone including rules that use the 'all'
+   reserved word. Exception: If the source and the destination are
+   the same zone then the rule must be explicit - it must name the zone
+   in both the SOURCE and DESTINATION columns.
 
-   Example 1 -- This is how it works in 1.3.14.
-   
-   [root@gateway test]# cat /etc/shorewall/masq
-   #INTERFACE              SUBNET                  ADDRESS
-   eth0                    eth2                    206.124.146.176
-   #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE
-   
-   [root@gateway test]# ip route show dev eth2
-   192.168.1.0/24  scope link
-   192.168.10.0/24  proto kernel  scope link  src 192.168.10.254
-   
-   [root@gateway test]# ip route show dev eth2
-   192.168.1.0/24  scope link
-   192.168.10.0/24  proto kernel  scope link  src 192.168.10.254
-   [root@gateway test]# shorewall start
-   ...
-   Masqueraded Subnets and Hosts:
-       To 0.0.0.0/0 from 192.168.1.0/24 through eth0 using 206.124.146.176
-       To 0.0.0.0/0 from 192.168.10.0/24 through eth0 using 206.124.146.176
-   Processing /etc/shorewall/tos...
+Changes for 1.4 include:
 
-   When upgrading to Shorewall 1.3.14, if you have multiple local
-   subnets connected to an interface that is specified in the SUBNET
-   column of an /etc/shorewall/masq entry, your /etc/shorewall/masq
-   file will need changing. In most cases, you will simply be able to
-   remove redundant entries. In some cases though, you might want to change
-   from using the interface name to listing specific subnetworks if the
-   change described above will cause masquerading to occur on
-   subnetworks that you don't wish to masquerade.
+1) shorewall.conf has been completely reorganized into logical
+   sections.
 
-   Example 2 -- Suppose that your current config is as follows:
-   
-   [root@gateway test]# cat /etc/shorewall/masq
-   #INTERFACE              SUBNET                  ADDRESS
-   eth0                    eth2                    206.124.146.176
-   eth0			   192.168.10.0/24	   206.124.146.176
-   #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE
-   
-   [root@gateway test]# ip route show dev eth2
-   192.168.1.0/24  scope link
-   192.168.10.0/24  proto kernel  scope link  src 192.168.10.254
-   [root@gateway test]#
+2) LOG is now a valid action for a rule (/etc/shorewall/rules).
 
-   In this case, the second entry in /etc/shorewall/masq is no longer
-   required.
+3) The firewall script and version file are now installed in
+   /usr/share/shorewall.
 
-   Example 3 -- What if your current configuration is like this?
+4. Late arriving DNS replies are now silently dropped in the common
+   chain by default.
 
-   [root@gateway test]# cat /etc/shorewall/masq
-   #INTERFACE              SUBNET                  ADDRESS
-   eth0                    eth2                    206.124.146.176
-   #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE
-   
-   [root@gateway test]# ip route show dev eth2
-   192.168.1.0/24  scope link
-   192.168.10.0/24  proto kernel  scope link  src 192.168.10.254
-   [root@gateway test]#
+5) In addition to behaving like OLD_PING_HANDLING=No, Shorewall 1.4 no
+   longer unconditionally accepts outbound ICMP packets. So if you want
+   to 'ping' from the firewall, you will need the appropriate rule or
+   policy.
 
-   In this case, you would want to change the entry in
-   /etc/shorewall/masq to:
+6) CONTINUE is now a valid action for a rule (/etc/shorewall/rules).
 
-   #INTERFACE              SUBNET                  ADDRESS
-   eth0                    192.168.1.0/24          206.124.146.176
-   #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE
+7) 802.11b devices with names of the form wlan<n> now support the
+   'maclist' option.
+
+8) IMPORTANT: Shorewall now REQUIRES the iproute package ('ip'
+   utility).
+
+9) Explicit Congestion Notification (ECN - RFC 3168) may now be turned
+   off on a host or network basis using the new /etc/shorewall/ecn
+   file. To use this facility:
+
+   a) You must be running kernel 2.4.20
+   b) You must have applied the patch in
+   http://www.shorewall/net/pub/shorewall/ecn/patch.
+   c) You must have iptables 1.2.7a installed.
+
+10) The /etc/shorewall/params file is now processed first so that
+    variables may be used in the /etc/shorewall/shorewall.conf file.
+
+11) Packets with state INVALID are now silently dropped.
+
+12) Shorewall now gives a more helpful diagnostic when the 'ipchains'
+    compatibility kernel module is loaded and a 'shorewall start'
+    command is issued.
+
+13) The SHARED_DIR variable has been removed from shorewall.conf. This
+    variable was for use by package maintainers and was not documented
+    for general use.
+
+14) Shorewall now ignores 'default' routes when detecting masq'd
+    networks.
+
+
+

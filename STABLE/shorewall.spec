@@ -1,5 +1,5 @@
 %define name shorewall
-%define version 1.3.14
+%define version 1.4.0
 %define release 1
 %define prefix /usr
 
@@ -15,7 +15,7 @@ Source: %{name}-%{version}.tgz
 URL: http://www.shorewall.net/
 BuildArch: noarch
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
-Requires: iptables
+Requires: iptables iproute
 Conflicts: kernel <= 2.2
 
 %description
@@ -48,10 +48,10 @@ if [ $1 -eq 1 ]; then
 ########################################################################" \
 	> /etc/shorewall/startup_disabled
 
-	if [ -x /sbin/insserv ]; then 
+	if [ -x /sbin/insserv ]; then
 		/sbin/insserv /etc/rc.d/shorewall
 	elif [ -x /sbin/chkconfig ]; then
-		/sbin/chkconfig --add shorewall; 
+		/sbin/chkconfig --add shorewall;
 	fi
 fi
 
@@ -68,14 +68,13 @@ if [ $1 = 0 ]; then
 
 fi
 
-%files 
+%files
 /etc/init.d/shorewall
 %attr(0700,root,root) %dir /etc/shorewall
-%attr(0700,root,root) %dir /usr/lib/shorewall
+%attr(0700,root,root) %dir /usr/share/shorewall
 %attr(0700,root,root) %dir /var/lib/shorewall
-%attr(0600,root,root) /usr/lib/shorewall/version
+%attr(0600,root,root) /usr/share/shorewall/version
 %attr(0600,root,root) /etc/shorewall/common.def
-%attr(0600,root,root) /etc/shorewall/icmp.def
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/shorewall.conf
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/zones
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/policy
@@ -98,15 +97,30 @@ fi
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/start
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/stop
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/stopped
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/ecn
 %attr(0544,root,root) /sbin/shorewall
-%attr(0444,root,root) /usr/lib/shorewall/functions
-%attr(0544,root,root) /usr/lib/shorewall/firewall
+%attr(0444,root,root) /usr/share/shorewall/functions
+%attr(0544,root,root) /usr/share/shorewall/firewall
 %doc documentation
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel
 
 %changelog
-* Fri Feb 07 2003 Tom Eastep <tom@shorewall.net>
-- Changes version to 1.3.14-1
+* Mon Mar 17 2003 Tom Eastep <tom@shorewall.net>
+- Changed version to 1.4.0-1
+* Fri Mar 07 2003 Tom Eastep <tom@shorewall.net>
+- Changed version to 1.4.0-0RC2
+* Wed Mar 05 2003 Tom Eastep <tom@shorewall.net>
+- Changed version to 1.4.0-0RC1
+* Mon Feb 24 2003 Tom Eastep <tom@shorewall.net>
+- Changed version to 1.4.0-0Beta2
+* Sun Feb 23 2003 Tom Eastep <tom@shorewall.net>
+- Add ecn file
+* Fri Feb 21 2003 Tom Eastep <tom@shorewall.net>
+- Changes version to 1.4.0-0Beta1
+* Thu Feb 06 2003 Tom Eastep <tom@shorewall.net>
+- Changes version to 1.4.0Alpha1
+- Delete icmp.def
+- Move firewall and version to /usr/share/shorewall
 * Tue Feb 04 2003 Tom Eastep <tom@shorewall.net>
 - Changes version to 1.3.14-0RC1
 * Tue Jan 28 2003 Tom Eastep <tom@shorewall.net>
@@ -276,7 +290,7 @@ fi
 - Changed the release to 4
 - Added Zones and Functions files
 * Mon Mar 12 2001 Tom Eastep <teastep@seattlefirewall.dyndns.org>
-- Change ipchains dependency to an iptables dependency and 
+- Change ipchains dependency to an iptables dependency and
   changed the release to 3
 * Fri Mar 9 2001 Tom Eastep <teastep@seattlefirewall.dyndns.org>
 - Add additional files.

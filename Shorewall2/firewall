@@ -41,37 +41,6 @@
 #          shorewall check                        Verify the more heavily-used
 #                                                 configuration files.
 #
-# Search a list looking for a match -- returns zero if a match found
-# 1 otherwise
-#
-list_search() # $1 = element to search for , $2-$n = list
-{
-    local e=$1
-
-    while [ $# -gt 1 ]; do
-	shift
-	[ "x$e" = "x$1" ] && return 0
-    done
-
-    return 1
-}
-
-#
-# Functions to count list elements
-# - - - - - - - - - - - - - - - -
-# Whitespace-separated list
-#
-list_count1() {
-    echo $#
-}
-#
-# Comma-separated list
-#
-list_count() {
-    list_count1 $(separate_list $1)
-}
-
-#
 # Mutual exclusion -- These functions are jackets for the mutual exclusion
 #		      routines in $FUNCTIONS. They invoke
 #		      the corresponding function in that file if the user did
@@ -126,47 +95,6 @@ startup_error() # $* = Error Message
 report () { # $* = message
     echo "$@"
     logger "$@"
-}
-
-#
-# Perform variable substitution on the passed argument and echo the result
-#
-expand() # $1 = contents of variable which may be the name of another variable
-{
-    eval echo \"$1\"
-}
-
-#
-# Perform variable substitition on the values of the passed list of variables
-#
-expandv() # $* = list of variable names
-{
-    local varval
-
-    while [ $# -gt 0 ]; do
-	eval varval=\$${1}
-	eval $1=\"$varval\"
-	shift
-    done
-}
-
-#
-# Replace all leading "!" with "! " in the passed argument list
-#
-
-fix_bang() {
-    local i;
-
-    for i in $@; do
-	case $i in
-	    !*)
-		echo "! ${i#!}"
-		;;
-	    *)
-		echo $i
-		;;
-	esac
-    done
 }
 
 #
@@ -414,7 +342,7 @@ find_interfaces() # $1 = interface zone
     local interface
 
     for interface in $all_interfaces; do
-	eval z=\$$(chain_base ${interface})_zone
+	eval z=\$$(chain_base $interface)_zone
 	[ "x${z}" = x${zne} ] && echo $interface
     done
 }
@@ -543,7 +471,7 @@ determine_hosts() {
 	eval interfaces=\$${zone}_interfaces
 
 	for interface in $interfaces; do
-	    eval options=\$$(chain_base ${interface})_options
+	    eval options=\$$(chain_base $interface)_options
 
 	    if list_search detectnets $options; then
 		subnets=$(get_routed_subnets $interface)
@@ -895,7 +823,7 @@ find_interface_addresses() # $1 = interface
 find_interfaces_by_option() # $1 = option
 {
     for interface in $all_interfaces; do
-	eval options=\$$(chain_base ${interface})_options
+	eval options=\$$(chain_base $interface)_options
 	list_search $1 $options && echo $interface
     done
 }
@@ -920,7 +848,7 @@ find_hosts_by_option() # $1 = option
     done < $TMP_DIR/hosts
 
     for interface in $all_interfaces; do
-	eval options=\$$(chain_base ${interface})_options
+	eval options=\$$(chain_base $interface)_options
 	list_search $1 $options && \
 	    echo ${interface}:0.0.0.0/0
     done
@@ -4726,7 +4654,7 @@ activate_rules()
 
 	    if [ "$subnet" != 0.0.0.0/0 ]; then
 		if ! list_search $interface $need_broadcast ; then
-		    eval options=\$$(chain_base ${interface})_options
+		    eval options=\$$(chain_base $interface)_options
 		    list_search detectnets $options && need_broadcast="$need_broadcast $interface"
 		fi
 	    fi

@@ -3,11 +3,83 @@
 # Shorewall 2.0 -- /usr/lib/shorewall/functions
 
 #
+# Search a list looking for a match -- returns zero if a match found
+# 1 otherwise
+#
+list_search() # $1 = element to search for , $2-$n = list
+{
+    local e=$1
+
+    while [ $# -gt 1 ]; do
+	shift
+	[ "x$e" = "x$1" ] && return 0
+    done
+
+    return 1
+}
+
+#
+# Functions to count list elements
+# - - - - - - - - - - - - - - - -
+# Whitespace-separated list
+#
+list_count1() {
+    echo $#
+}
+#
+# Comma-separated list
+#
+list_count() {
+    list_count1 $(separate_list $1)
+}
+
+#
 # Suppress all output for a command
 #
 qt()
 {
     "$@" >/dev/null 2>&1
+}
+
+#
+# Perform variable substitution on the passed argument and echo the result
+#
+expand() # $1 = contents of variable which may be the name of another variable
+{
+    eval echo \"$1\"
+}
+
+#
+# Perform variable substitition on the values of the passed list of variables
+#
+expandv() # $* = list of variable names
+{
+    local varval
+
+    while [ $# -gt 0 ]; do
+	eval varval=\$${1}
+	eval $1=\"$varval\"
+	shift
+    done
+}
+
+#
+# Replace all leading "!" with "! " in the passed argument list
+#
+
+fix_bang() {
+    local i;
+
+    for i in $@; do
+	case $i in
+	    !*)
+		echo "! ${i#!}"
+		;;
+	    *)
+		echo $i
+		;;
+	esac
+    done
 }
 
 #

@@ -658,6 +658,14 @@ validate_rule() {
 	case "$logtarget" in
 	REJECT)
 	    target=reject
+	    [ -n "$servport" ] && \
+		startup_error "Error: server port may not be specified in a REJECT rule;"\
+                              "rule: \"$rule\""
+	    ;;
+	ACCEPT)
+	    [ -n "$servport" ] && \
+		startup_error "Error: server port may not be specified in an ACCEPT rule;"\
+                              "rule: \"$rule\""
 	    ;;
 	REDIRECT)
 	    [ -n "$serv" ] && startup_error "Error: REDIRECT rules cannot"\

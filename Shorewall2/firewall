@@ -1828,14 +1828,14 @@ setup_mac_lists() {
     # Generate jumps from the input and forward chains
     #
     for hosts in $maclist_hosts; do
-	ipsec=${hosst%^*}
+	ipsec=${hosts%^*}
 	hosts=${hosts#*^}
 	[ -n $POLICY_MATCH ] && policy="-m policy --pol $ipsec --dir in" || policy=
 	interface=${hosts%%:*}
 	hosts=${hosts#*:}
 	for chain in $(first_chains $interface) ; do
 	    run_iptables -A $chain $(match_source_hosts $hosts) -m state --state NEW \
-		-j $(mac_chain $interface)
+		$policy -j $(mac_chain $interface)
 	done
     done
 }

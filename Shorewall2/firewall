@@ -2427,6 +2427,8 @@ process_actions1() {
 			    ;;
 		    esac
 	    esac
+
+	    [ -z "$xaction" ] && continue
 	    
 	    [ "$xaction" = "$(chain_base $xaction)" ] || fatal_error "Invalid Action Name: $xaction"
 

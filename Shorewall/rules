@@ -228,6 +228,17 @@
 #			If you place a rate limit in this column, you may not
 #			place a similar limit in the ACTION column.
 #
+#	USER SET	This column may only be non-empty if the SOURCE is
+#			the firewall itself and the ACTION is ACCEPT, DROP or
+#			REJECT.
+#			
+#			The format of the column is a comma separated list of
+#			user set names defined in the /etc/shorewall/usersets file.
+#			
+#			When this column is non-empty, the rule applies only
+#			if the program generating the output is running under
+#			the effective <user> and/or <group> specified.
+#
 #	Example: Accept SMTP requests from the DMZ to the internet
 #
 #	#ACTION SOURCE	DEST PROTO	DEST    SOURCE	ORIGINAL
@@ -271,7 +282,7 @@
 #	#                               	PORT    PORT(S) DEST
 #	ACCEPT	 net:130.252.100.69,130.252.100.70 fw \
 #					tcp	22
-#########################################################################################
-#ACTION  SOURCE		DEST      	PROTO	DEST    SOURCE	   ORIGINAL	RATE
+####################################################################################################
+#ACTION  SOURCE		DEST      	PROTO	DEST    SOURCE	   ORIGINAL	RATE		USER
 #                       	        	PORT    PORT(S)    DEST		LIMIT
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

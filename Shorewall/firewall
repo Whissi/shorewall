@@ -484,6 +484,29 @@ first_chains() #$1 = interface
 }
 
 #
+# ACCEPT chain for a userset
+#
+accept_chain() # $1 = userset
+{
+    echo ${1}_acc
+}
+
+#
+# DROP chain for a userset
+#
+drop_chain() # $1 = userset
+{
+    echo ${1}_drp
+}
+#
+# REJECT chain for a userset
+#
+reject_chain() # $1 = userset
+{
+    echo ${1}_rej
+}
+
+#
 # Find hosts in a given zone
 #
 # Read hosts file and for each record matching the passed ZONE,
@@ -1895,6 +1918,46 @@ setup_accounting() # $1 = Name of accounting file
 
 }
 
+process_user_set_entry() {
+    local acceptchain=`accept_chain $userset`
+    local dropchain=`drop_chain $userset`
+    local rejectchain=`reject_chain $userset`
+    local rule="-m owner"
+    
+    if ! havechain $acceptchain; then
+	createchain $acceptchain No
+	createchain $dropchain No
+	createchain $rejectchain No
+    fi
+
+    [ "x$user" = "x-" ] && user=
+
+    [ -z "${user}${group}" ] && \
+	fatal_error "Either user or group must be specified for user set $userset"
+
+    [ -n "$user" ]  && rule="$rule --uid-owner $user"  || user='*'
+    [ -n "$group" ] && rule="$rule --gid-owner $group" || group='*'
+
+    run_iptables -A $acceptchain $rule -j ACCEPT
+    run_iptables -A $dropchain   $rule -j DROP
+    run_iptables -A $rejectchain $rule -j reject
+
+    echo "   User $user:$group added to user set $userset"
+}
+
+setup_usersets() # $1 = Name of usersets file
+{
+    
+    echo "Setting up User Sets..."
+
+    strip_file usersets $1
+
+    while read userset user group ; do
+	expandv userset user group
+	process_user_set_entry
+    done < $TMP_DIR/usersets
+}
+
 #      
 # Check the configuration
 #
@@ -2295,7 +2358,6 @@ add_a_rule()
 
     case "$logtarget" in
 	REJECT)
-	    target=reject
 	    [ -n "$servport" ] && \
 		fatal_error "Server port may not be specified in a REJECT rule;"\
                             "rule: \"$rule\""
@@ -2318,7 +2380,7 @@ add_a_rule()
 
     # Complain if the rule is really a policy
 
-    if [ -z "$proto" -a -z "$cli" -a -z "$serv" -a -z "$servport" -a "$logtarget" != LOG ]; then
+    if [ -z "$proto" -a -z "$cli" -a -z "$serv" -a -z "$servport" -a -z "$userset" -a "$logtarget" != LOG ]; then
 	error_message "Warning -- Rule \"$rule\" is a POLICY"
 	error_message "	       -- and should be moved to the policy file"
     fi
@@ -2403,6 +2465,7 @@ process_rule() # $1 = target
                # $6 = cports
                # $7 = address
                # $8 = ratelimit
+               # $9 = userset
 {
     local target="$1"
     local clients="$2"
@@ -2412,7 +2475,8 @@ process_rule() # $1 = target
     local cports="$6"
     local address="$7"
     local ratelimit="$8"
-    local rule="`echo $target $clients $servers $protocol $ports $cports $address`"
+    local userset="$9"
+    local rule="`echo $target $clients $servers $protocol $ports $cports $address $ratelimit $userset`"
 
     # Function Body - isolate rate limit
 
@@ -2427,6 +2491,9 @@ process_rule() # $1 = target
     
     if [ -n "$ratelimit" ]; then
 	case $ratelimit in
+	    -)
+		ratelimit=
+		;;
 	    *:*)
 		ratelimit="-m limit --limit ${ratelimit%:*} --limit-burst ${ratelimit#*:}"
 		;;
@@ -2449,6 +2516,8 @@ process_rule() # $1 = target
     logtarget="$target"
     dnat_only=
 
+    [ "x$userset" = x- ] && userset=
+
     # Tranform the rule:
     #
     # - set 'target' to the filter table target.
@@ -2458,44 +2527,68 @@ process_rule() # $1 = target
 
     [ "x$address" = "x-" ] && address=
 
-    case $target in
-	DNAT)
-	    target=ACCEPT
-	    address=${address:=detect}
-	    ;;
-	DNAT-)
-	    target=ACCEPT
-	    address=${address:=detect}
-	    dnat_only=Yes
-	    logtarget=DNAT
-	    ;;
-	REDIRECT)
-	    target=ACCEPT
-	    address=${address:=all}
-	    if [ "x-" = "x$servers" ]; then
-		servers=$FW
-	    else
-		servers="$FW::$servers"
-	    fi
-	    ;;
-	REDIRECT-)
-	    target=ACCEPT
-	    logtarget=REDIRECT
-	    dnat_only=Yes
-	    address=${address:=all}
-	    if [ "x-" = "x$servers" ]; then
-		servers=$FW
-	    else
-		servers="$FW::$servers"
-	    fi
-	    ;;
-	ACCEPT|LOG)
-	    ;;
-	*)
-	    [ -n "$ratelimit" ] && fatal_error \
-		"Rate Limiting only available with ACCEPT, DNAT[-], REDIRECT[-] and LOG"
-	    ;;
-    esac
+    if [ -n "$userset" ]; then
+	if ! havechain `accept_chain $userset`; then
+	    fatal_error "Unknown user set $userset: rule \"$rule\""
+	fi
+
+	case $target in
+	    ACCEPT)
+		target=`accept_chain $userset`
+		;;
+	    DROP)
+		target=`drop_chain $userset`
+		;;
+	    REJECT)
+		target=`reject_chain $userset`
+		;;
+	    *)
+		[ -n "$userset" ] && \
+		    fatal_error "A user set may only be specified in ACCEPT, REJECT and DROP rules: rule \"$rule\""
+	esac
+    else
+	case $target in
+	    ACCEPT|LOG)
+		;;
+	    REJECT)
+		target=reject
+		;;
+	    DNAT)
+		target=ACCEPT
+		address=${address:=detect}
+		;;
+	    DNAT-)
+		target=ACCEPT
+		address=${address:=detect}
+		dnat_only=Yes
+		logtarget=DNAT
+		;;
+	    REDIRECT)
+		target=ACCEPT
+		address=${address:=all}
+		if [ "x-" = "x$servers" ]; then
+		    servers=$FW
+		else
+		    servers="$FW::$servers"
+		fi
+		;;
+	    REDIRECT-)
+		target=ACCEPT
+		logtarget=REDIRECT
+		dnat_only=Yes
+		address=${address:=all}
+		if [ "x-" = "x$servers" ]; then
+		    servers=$FW
+		else
+		    servers="$FW::$servers"
+		fi
+		;;
+	    *)
+		[ -n "$ratelimit" ] && fatal_error \
+		    "Rate Limiting only available with ACCEPT, DNAT[-], REDIRECT[-] and LOG"
+		;;
+	esac
+    fi
 
     # Parse and validate source
 
@@ -2525,7 +2618,11 @@ process_rule() # $1 = target
 
     source=$clientzone
 
-    [ $source = $FW ] && source_hosts= || eval source_hosts=\"\$${source}_hosts\"
+    if [ $source = $FW ]; then
+	source_hosts= || eval source_hosts=\"\$${source}_hosts\"
+    elif [ -n "$userset" ]; then
+	fatal_error "Invalid use of a user set: rule \"$rule\""
+    fi
 
     if [ "$servers" = "${servers%:*}" ] ; then
 	serverzone="$servers"
@@ -2683,17 +2780,17 @@ process_rules() # $1 = name of rules file
 	for yclients in $xclients; do
 	    for yservers in $xservers; do
 		if [ "${yclients}" != "${yservers}" ] ; then
-		    process_rule $xtarget $yclients $yservers $xprotocol $xports $xcports $xaddress $xratelimit
+		    process_rule $xtarget $yclients $yservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserset
 		fi
 	    done
 	done
     }
 
-    while read xtarget xclients xservers xprotocol xports xcports xaddress xratelimit; do
+    while read xtarget xclients xservers xprotocol xports xcports xaddress xratelimit xuserset; do
 	temp="${xtarget%:*}"
 	case "${temp%<*}" in
 	    ACCEPT|DROP|REJECT|DNAT|DNAT-|REDIRECT|REDIRECT-|LOG|CONTINUE)
-		expandv xclients xservers xprotocol xports xcports xaddress xratelimit
+		expandv xclients xservers xprotocol xports xcports xaddress xratelimit xuserset
 
 		if [ "x$xclients" = xall ]; then
 		    xclients="$zones $FW"
@@ -2710,10 +2807,10 @@ process_rules() # $1 = name of rules file
 		    continue
 		fi
 
-		process_rule $xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit
+		process_rule $xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserset
 		;;
 	    *)
-		rule="`echo $xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit`"
+		rule="`echo $xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserset`"
 		fatal_error "Invalid Action in rule \"$rule\""
 		;;
 
@@ -3701,6 +3798,10 @@ initialize_netfilter () {
     createchain common	no
     createchain reject	no
     createchain dynamic no
+
+    usersets_file=`find_file usersets`
+
+    [ -f $usersets_file ] && setup_usersets $usersets_file
 
     for interface in $all_interfaces; do
 	chain=`dynamic_chain $interface`

@@ -388,6 +388,9 @@ chain_base() #$1 = interface
     local c=${1%%+*}
 
     case $c in
+	*.*.*.*)
+	    echo $c | sed 's/\./_/g'
+	    ;;
         *.*)
 	    echo ${c%.*}_${c#*.}
 	    ;;

@@ -1569,18 +1569,22 @@ process_tc_rule()
 
 	if [ "x$source" != "x-"	 ]; then
 	    case $source in
-	    *.*.*)
-		r="-s $source "
-		;;
-	    ~*)
-		r=`mac_match $source`
-		;;
-	    $FW)
-		chain=tcout
-		;;
-	    *)
-		r="-i $source "
-		;;
+		*.*.*)
+		    r="-s $source "
+		    ;;
+		~*)
+		    r=`mac_match $source`
+		    ;;
+		$FW)
+		    chain=tcout
+		    ;;
+		*)
+		    if ! list_search $source $all_interfaces; then
+			fatal_error "Error: Unknown interface $source"
+		    fi
+		    
+		    r="-i $source "
+		    ;;
 	    esac
 	fi
 	[ "x$dest"   = "x-"  ] || r="${r}-d $dest "

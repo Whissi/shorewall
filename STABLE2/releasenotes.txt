@@ -45,6 +45,28 @@ New Features in version 2.2.2
    with "multiport match", a separate iptables rule will be generated
    for each element in the list.
 
+5) Traditionally, the RETURN target in the 'rfc1918' file has caused
+   'norfc1918' processing to cease for a packet if the packet's source
+   IP address matches the rule. Thus, if you have:
+
+	SUBNETS			TARGET
+	192.168.1.0/24		RETURN
+
+   then traffic from 192.168.1.4 to 10.0.3.9 will be accepted even
+   though you also have:
+
+	SUBNETS			TARGET
+	10.0.0.0/8		logdrop
+
+   Setting RFC1918_STRICT=Yes in shorewall.conf will cause such traffic
+   to be logged and dropped since while the packet's source matches the
+   RETURN rule, the packet's destination matches the 'logdrop' rule.
+  
+   If not specified or specified as empty (e.g., RFC1918_STRICT="")
+   then RFC1918_STRICT=No is assumed.
+
+   WARNING: RFC1918_STRICT=Yes requires that your kernel and iptables
+   support 'Connection Tracking' match.
 -----------------------------------------------------------------------
 Problems corrected in version 2.2.1
 

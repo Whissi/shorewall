@@ -5632,6 +5632,10 @@ initialize_netfilter () {
 	[ -n "$PHYSDEV_MATCH" ] || startup_error "BRIDGING=Yes requires Physdev Match support in your Kernel and iptables"
     fi
 
+
+    [ -n "$RFC1918_STRICT" -a -z "$CONNTRACK_MATCH" ] && \
+	startup_error "RFC1918_STRICT=Yes requires Connection Tracking match"
+
     echo "Determining Zones..."
 
     determine_zones
@@ -5922,7 +5926,15 @@ add_common_rules() {
 	
 	run_iptables -A rfc1918 -j DROP
 
-	if [ -n "$MANGLE_ENABLED" -a -z "$CONNTRACK_MATCH" ]; then
+	chain=norfc1918
+
+	if [ -n "$RFC1918_STRICT" ]; then
+	    #
+	    # We'll generate two chains - one for source and one for destination
+	    #
+	    chain=rfc1918d
+	    createchain $chain no	    
+	elif [ -n "$MANGLE_ENABLED" -a -z "$CONNTRACK_MATCH" ]; then
 	    #
 	    # Mangling is enabled but conntrack match isn't available -- 
 	    # create a chain in the mangle table to filter RFC1918 destination
@@ -5941,8 +5953,13 @@ add_common_rules() {
 	    case $target in
 		logdrop)
 		    target=rfc1918
+		    s_target=rfc1918
 		    ;;
-		DROP|RETURN)
+		DROP)
+		    s_target=DROP
+		    ;;
+		RETURN)
+		    [ -n "$RFC1918_STRICT" ] && s_target=rfc1918d || s_target=RETURN
 		    ;;
 		*)
 		    fatal_error "Invalid target ($target) for $networks"
@@ -5950,13 +5967,13 @@ add_common_rules() {
 	    esac
 
 	    for network in $(separate_list $networks); do
-		run_iptables2 -A norfc1918 $(source_ip_range $network) -j $target
+		run_iptables2 -A norfc1918 $(source_ip_range $network) -j $s_target
 	
 		if [ -n "$CONNTRACK_MATCH" ]; then
 		    #
 		    # We have connection tracking match -- match on the original destination
 		    #
-		    run_iptables2 -A norfc1918 -m conntrack --ctorigdst $network -j $target
+		    run_iptables2 -A $chain -m conntrack --ctorigdst $network -j $target
 		elif [ -n "$MANGLE_ENABLED" ]; then
 		    #
 		    # No connection tracking match but we have mangling -- add a rule to
@@ -5967,6 +5984,8 @@ add_common_rules() {
 	    done
 	done < $TMP_DIR/rfc1918
 
+	[ -n "$RFC1918_STRICT" ] && run_iptables -A norfc1918 -j rfc1918d
+ 
 	for host in $hosts; do
 	    ipsec=${host%^*}
 	    host=${host#*^}
@@ -7207,6 +7226,7 @@ do_initialize() {
     LOGTAGONLY=
     LOGALLNEW=
     DROPINVALID=
+    RFC1918_STRICT=
 
     RESTOREBASE=
     TMP_DIR=
@@ -7402,6 +7422,7 @@ do_initialize() {
     DELAYBLACKLISTLOAD=$(added_param_value_no DELAYBLACKLISTLOAD $DELAYBLACKLISTLOAD)
     LOGTAGONLY=$(added_param_value_no LOGTAGONLY $LOGTAGONLY)
     DROPINVALID=$(added_param_value_yes DROPINVALID $DROPINVALID)
+    RFC1918_STRICT=$(added_param_value_no RFC1918_STRICT $RFC1918_STRICT)
     #
     # Strip the files that we use often
     #

@@ -2257,6 +2257,9 @@ add_an_action()
     [ x$cport = x- ] && cport=
 
     case $proto in
+	all|-)
+	    proto=
+	    ;;
 	tcp|TCP|6)
 	    do_ports
 	    [ "$target" = QUEUE ] && proto="$proto --syn"

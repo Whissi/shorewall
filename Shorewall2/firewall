@@ -4879,10 +4879,9 @@ get_routed_networks() # $1 = interface name
 setup_masq()
 {
     do_ipsec_options() {
-	local options=$(separate_list $ipsec) option 
-	policy ="-m policy --pol ipsec --dir out"
+	local options="$(separate_list $ipsec)" option 
+	policy="-m policy --pol ipsec --dir out"
 
-	options=$(separate_list $options)
 	for option in $options; do
 	    case $option in
 		strict)         policy="$policy --strict" ;;
@@ -4921,7 +4920,11 @@ setup_masq()
 		policy="-m policy --pol none --dir out"
 		;;
 	    *)
-		[ -n "$ipsec" ] && do_ipsec_options || [ -n "$POLICY_MATCH" ] && policy="-m policy --pol none --dir out"
+		if [ -n "$ipsec" ]; then
+		    do_ipsec_options
+		elif [ -n "$POLICY_MATCH" ]; then
+		    policy="-m policy --pol none --dir out"
+		fi
 		;;
 	esac
 

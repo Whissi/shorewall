@@ -2285,7 +2285,7 @@ check_config() {
 
     verify_os_version
 
-    load_kernel_modules
+    load_kernel_modules check
 
     echo "Determining Zones..."
 
@@ -4527,30 +4527,32 @@ add_ip_aliases()
 #
 # Load kernel modules required for Shorewall
 #
-load_kernel_modules() {
+load_kernel_modules() #1 = command
+{
 
     [ -z "$MODULESDIR" ] && \
-	MODULESDIR=/lib/modules/$osversion/kernel/net/ipv4/netfilter
+	MODULESDIR=/lib/modules/$(uname -r)/kernel/net/ipv4/netfilter
 
     modules=$(find_file modules)
 
     if [ -f $modules -a -d $MODULESDIR ]; then
-	echo "Loading Modules..."
+	[ "$1" = silent ] || echo "Loading Modules..."
 	. $modules
+	case $1 in
+	    start|restart)
+		save_command "reload_kernel_modules <<EOF"
 
-	if [ "$command" != check ]; then
-	    save_command "reload_kernel_modules <<EOF"
-
-	    while read command; do
-		case "$command" in
-		loadmodule*)
-		    save_command $command
-		    ;;
-		esac
-	    done < $modules
+		while read command; do
+		    case "$command" in
+			loadmodule*)
+			    save_command $command
+			    ;;
+		    esac
+		done < $modules
 	    
-	    save_command EOF
-	fi
+		save_command EOF
+		;;
+	esac
     fi
 }
 
@@ -5410,7 +5412,7 @@ define_firewall() # $1 = Command (Start or Restart)
     save_command "MODULESDIR=\"$MODULESDIR\""
     save_command "MODULE_SUFFIX=\"$MODULE_SUFFIX\""
 
-    load_kernel_modules
+    load_kernel_modules $command
 
     echo "Initializing...";                    initialize_netfilter
     echo "Configuring Proxy ARP";              setup_proxy_arp
@@ -5934,7 +5936,9 @@ do_initialize() {
     ensure_config_path
     #
     # Determine the capabilities of the installed iptables/netfilter
+    # We silently load the modules
     #
+    qt load_kernel_modules silent
     determine_capabilities
 
     [ -z "${STATEDIR}" ] && STATEDIR=/var/state/shorewall

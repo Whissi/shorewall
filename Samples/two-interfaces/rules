@@ -32,17 +32,18 @@
 #			logged at the specified level.
 #
 #	SOURCE		Source hosts to which the rule applies. May be a zone
-#                       defined in /etc/shorewall/zones or $FW to indicate the
-#			firewall itself. If the ACTION is DNAT or REDIRECT,
-#			sub-zones of the specified zone may be excluded from
-#			the rule by following the zone name with "!' and a
-#			comma-separated list of sub-zone names.
+#                       defined in /etc/shorewall/zones, $FW to indicate the
+#			firewall itself, or "all" If the ACTION is DNAT or
+#			REDIRECT, sub-zones of the specified zone may be
+#			excluded from the rule by following the zone name with
+#			"!' and a comma-separated list of sub-zone names.
 #
-#			Clients may be further restricted to a list of subnets
-#			and/or hosts by appending ":" and a comma-separated
-#			list of subnets and/or hosts. Hosts may be specified
-#			by IP or MAC address; mac addresses must begin with
-#			"~" and must use "-" as a separator.
+#			Except when "all" is specified, clients may be further
+#			restricted to a list of subnets and/or hosts by
+#			appending ":" and a comma-separated list of subnets
+#			and/or hosts. Hosts may be specified by IP or MAC
+#			address; mac addresses must begin with "~" and must use
+#			"-" as a separator.
 #
 #			dmz:192.168.2.2		Host 192.168.2.2 in the DMZ
 #
@@ -62,14 +63,22 @@
 #			through eth1. This may be optionally followed by
 #			another colon (":") and an IP/MAC/subnet address
 #			as described above (e.g., loc:eth1:192.168.1.5).
-##
-#	DEST		Location of Server. May be a zone defined in
-#			/etc/shorewall/zones or $FW to indicate the firewall
-#			itself.
 #
-#			The server may be further restricted to a particular
-#			subnet, host or interface by appending ":" and the
-#			subnet, host or interface. See above.
+#	DEST		Location of Server. May be a zone defined in
+#			/etc/shorewall/zones, $FW to indicate the firewall
+#			itself or "all"
+#
+#			Except when "all" is specified, the server may be
+#			further restricted to a particular subnet, host or
+#			interface by appending ":" and the subnet, host or
+#			interface. See above.
+#
+#				Restrictions:
+#
+#				1. MAC addresses are not allowed.
+#				2. In DNAT rules, only IP addresses are
+#				   allowed; no FQDNs or subnet addresses
+#				   are permitted.
 #
 #			The port that the server is listening on may be
 #			included and separated from the server's IP address by

@@ -886,11 +886,16 @@ case "$1" in
 	echo
 	ip addr ls
 	echo
-	echo "Routing"
+	echo "Routing Rules"
 	echo
 	ip rule ls
-	echo
-	ip route ls
+	ip rule ls | while read rule; do
+	    table=${rule##* }
+	    echo
+	    echo "Table $table:"
+	    echo
+	    ip route ls table $table
+	done
 	;;
     hits)
     	[ -n "$debugging" ] && set -x

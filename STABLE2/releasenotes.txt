@@ -41,16 +41,72 @@ Problems Corrected in version 2.0.6
 -----------------------------------------------------------------------
 Problems Corrected in version 2.0.7
 
-1) To improve supportability, the "shorewall status" command now
-   includes the output from "ip rule ls", "ip route ls" and 
-   "ip addr ls".
-
-2) The PKTTYPE option introduced in version 2.0.6 is now used when
+1) The PKTTYPE option introduced in version 2.0.6 is now used when
    generating rules to REJECT packets. Broadcast packets are silently
    dropped rather than being rejected with an ICMP (which is a protocol
    violation) and users whose kernels have broken packet type match
    support are likely to see messages reporting this violation.
    Setting PKTTYPE=No should cause these messages to cease. 
+
+New Features in version 2.0.7
+
+1) To improve supportability, the "shorewall status" command now
+   includes IP and Route configuration information.
+
+   Example:
+
+   IP Configuration
+
+   1: lo: <LOOPBACK,UP> mtu 16436 qdisc noqueue
+      link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+      inet 127.0.0.1/8 brd 127.255.255.255 scope host lo
+      inet6 ::1/128 scope host
+   2: eth0: <BROADCAST,MULTICAST,PROMISC,UP> mtu 1500 qdisc pfifo_fast qlen 1000
+      link/ether 00:a0:c9:15:39:78 brd ff:ff:ff:ff:ff:ff
+      inet6 fe80::2a0:c9ff:fe15:3978/64 scope link
+   3: eth1: <BROADCAST,MULTICAST,PROMISC,UP> mtu 1500 qdisc pfifo_fast qlen 1000
+      link/ether 00:a0:c9:a7:d7:bf brd ff:ff:ff:ff:ff:ff
+      inet6 fe80::2a0:c9ff:fea7:d7bf/64 scope link
+   5: sit0@NONE: <NOARP> mtu 1480 qdisc noop
+      link/sit 0.0.0.0 brd 0.0.0.0
+   6: eth2: <BROADCAST,MULTICAST,PROMISC,UP> mtu 1500 qdisc pfifo_fast qlen 1000
+      link/ether 00:40:d0:07:3a:1b brd ff:ff:ff:ff:ff:ff
+      inet6 fe80::240:d0ff:fe07:3a1b/64 scope link
+   7: br0: <BROADCAST,MULTICAST,NOTRAILERS,UP> mtu 1500 qdisc noqueue
+      link/ether 00:40:d0:07:3a:1b brd ff:ff:ff:ff:ff:ff
+      inet 192.168.1.3/24 brd 192.168.1.255 scope global br0
+      inet6 fe80::240:d0ff:fe07:3a1b/64 scope link
+
+   Routing Rules
+
+   0:      from all lookup local	
+   32765:  from all fwmark       ca lookup www.out
+   32766:  from all lookup main
+   32767:  from all lookup default
+
+   Table local:
+
+   broadcast 192.168.1.0 dev br0  proto kernel  scope link  src 192.168.1.3
+   broadcast 127.255.255.255 dev lo  proto kernel  scope link  src 127.0.0.1
+   local 192.168.1.3 dev br0  proto kernel  scope host  src 192.168.1.3
+   broadcast 192.168.1.255 dev br0  proto kernel  scope link  src 192.168.1.3
+   broadcast 127.0.0.0 dev lo  proto kernel  scope link  src 127.0.0.1
+   local 127.0.0.1 dev lo  proto kernel  scope host  src 127.0.0.1
+   local 127.0.0.0/8 dev lo  proto kernel  scope host  src 127.0.0.1
+
+   Table www.out:
+
+   default via 192.168.1.3 dev br0
+
+   Table main:
+
+   192.168.1.0/24 dev br0  proto kernel  scope link  src 192.168.1.3
+   default via 192.168.1.254 dev br0
+
+   Table default:
+
+
+
 
 
 

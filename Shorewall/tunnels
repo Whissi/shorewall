@@ -10,7 +10,7 @@
 #	The columns are:
 #
 #	TYPE	    --	must start in column 1 and be "ipsec", "ipsecnat","ip"
-#			or "gre"
+#			"gre","pptpclient" or "pptpserver"
 #
 #	ZONE	    --	The zone of the physical interface through which
 #			tunnel traffic passes. This is normally your internet
@@ -58,5 +58,18 @@
 #
 #			ipsec	net	0.0.0.0/0	vpn1,vpn2,vpn3
 #
-# TYPE		ZONE	GATEWAY		GATEWAY ZONE
+#		Example 5:
+#
+#			You run the Linux PPTP client on your firewall and
+#			connect to server 192.0.2.221.
+#
+#			pptpclient	net	192.0.2.221
+#
+#		Example 6:
+#
+#			You run a PPTP server on your firewall.
+#
+#			pptpserver	net
+#
+# TYPE			ZONE	GATEWAY		GATEWAY ZONE
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

@@ -1175,7 +1175,23 @@ setup_tunnels() # $1 = name of tunnels file
 	addrule $inchain  -p $3 -s $2 -j ACCEPT
 	addrule $outchain -p $3 -d $2 -j ACCEPT
 
-	echo "   $1 tunnel to $gateway defined."
+	echo "   $1 tunnel to $2 defined."
+    }
+
+    setup_pptp_client() # $1 = gateway
+    {
+	addrule $outchain -p 47               -d $1 -j ACCEPT
+	addrule $outchain -p tcp --dport 1723 -d $1 -j ACCEPT
+
+	echo "   PPTP tunnel to $1 defined."
+    }
+
+    setup_pptp_server()
+    {
+	addrule $inchain -p 47               -j ACCEPT
+	addrule $inchain -p tcp --dport 1723 -j ACCEPT
+
+	echo "   PPTP server defined."
     }
 
     strip_file tunnels $1
@@ -1197,7 +1213,13 @@ setup_tunnels() # $1 = name of tunnels file
 		    setup_one_other IPIP $gateway 4
 		    ;;
 		gre|GRE)
-		    setup_one_other GRE $gateway 47 
+		    setup_one_other GRE $gateway 47
+		    ;;
+		pptpclient|PPTPCLIENT)
+		    setup_pptp_client $gateway
+		    ;;
+		pptpserver|PPTPSERVER)
+		    setup_pptp_server
 		    ;;
 		*)
 		    error_message "Tunnels of type $kind are not supported:" \

@@ -3265,9 +3265,9 @@ add_common_rules() {
     logdisp() # $1 = Chain Name
     {
 	if [ "$RFC1918_LOG_LEVEL" = ULOG ]; then
-	    echo "ULOG --ulog-prefix Shorewall:${1}:DROP:"
+	    echo "ULOG $LOGPARMS --ulog-prefix Shorewall:${1}:DROP:"
 	else
-	    echo "LOG --log-prefix Shorewall:${1}:DROP: --log-level $RFC1918_LOG_LEVEL"
+	    echo "LOG $LOGPARMS --log-prefix Shorewall:${1}:DROP: --log-level $RFC1918_LOG_LEVEL"
 	fi
     }
     #
@@ -3715,13 +3715,10 @@ activate_rules()
     complete_standard_chain OUTPUT $FW all
     complete_standard_chain FORWARD all all
 
-    run_iptables -D INPUT   -m state --state ESTABLISHED -j ACCEPT
-    run_iptables -D OUTPUT  -m state --state ESTABLISHED -j ACCEPT
-    run_iptables -D FORWARD -m state --state ESTABLISHED -j ACCEPT
-
-    run_iptables -D INPUT   -p udp --dport 53 -j ACCEPT
-    run_iptables -D OUTPUT  -p udp --dport 53 -j ACCEPT
-    run_iptables -D FORWARD -p udp --dport 53 -j ACCEPT
+    for chain in INPUT OUTPUT FORWARD; do
+	run_iptables -D $chain -m state --state ESTABLISHED -j ACCEPT
+	run_iptables -D $chain -p udp --dport 53 -j ACCEPT
+    done
 }
 
 #

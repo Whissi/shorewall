@@ -3483,37 +3483,53 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 	
 	[ -n "$num" ] && echo $(($num+1))
     }
-	
+    #
+    # Isolate interface and host parts
+    #
     interface=${1%:*}
     host=${1#*:}
 
     [ -z "$host" ] && host="0.0.0.0/0"
-
+    #
+    # Load $zones
+    #
     determine_zones
-    
-
+    #
+    # Validate Zone
+    #
     zone=$2
 
     validate_zone $zone || startup_error "Error: Unknown zone: $zone"
 
     [ "$zone" = $FW ] && startup_error "Error: Can't add $1 to firewall zone"
-
+    #
+    # Be sure that Shorewall has been restarted using a DZ-aware version of the code
+    #
     [ -f ${STATEDIR}/chains ] || startup_error "Error: ${STATEDIR}/chains -- file not found"
     [ -f ${STATEDIR}/zones ]  || startup_error "Error: ${STATEDIR}/zones -- file not found"
-
+    #
+    # Be sure that the interface was present at last [re]start
+    #
     if ! chain_exists `input_chain $interface` ; then
 	startup_error "Error: Unknown interface $interface"
     fi
-
-    
+    #
+    # Build lists of interfaces with special rules
+    #
     dhcp_interfaces=`find_interfaces_by_option dhcp`
     blacklist_interfaces=`find_interfaces_by_option blacklist`
     filterping_interfaces=`find_interfaces_by_option filterping`
-
+    #
+    # Normalize the first argument to this function
+    #
     newhost="$interface:$host"
-
+    #
+    # Create a new Zone state file
+    #
     > ${STATEDIR}/zones_$$
-
+    #
+    # Add $1 to the Zone state file
+    #
     while read z hosts; do
 	if [ "$z" = "$zone" ]; then
 	    for h in $hosts; do
@@ -3532,16 +3548,26 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
     done < ${STATEDIR}/zones
 
     mv -f ${STATEDIR}/zones_$$ ${STATEDIR}/zones
-
+    #
+    # If the zone passed in the command has a dnat chain then insert a rule in
+    # the nat table PREROUTING chain to jump to that chain when the source
+    # matches the new host(s)
+    #
     chain=${zone}_dnat
 
     if nat_chain_exists $chain; then
 	do_iptables -t nat -I PREROUTING -i $interface -s $host -j $chain
     fi
-
+    #
+    # Insert new rules into the input chains for the passed interface
+    #
     while read z1 z2 chain; do
 	if [ "$z1" = "$zone" ]; then
 	    if [ "$z2" = "$FW" ]; then
+		#
+		# We will insert the rule right after the DHCP and 'ping' rules 
+		# (if any)
+		#
 		if list_search $interface $dhcp_interfaces; then
 		    rulenum=3
 		else
@@ -3554,6 +3580,11 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 
 		do_iptables -I `input_chain $interface` $rulenum -s $host -j $chain 
 	    else
+		#
+		# Insert rules into the passed interface's forward chain
+		#
+		# We insert them after any blacklist rules
+		#
 		source_chain=`forward_chain $interface`
 		eval dest_hosts=\"\$${z2}_hosts\"
 
@@ -3584,8 +3615,16 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 	    fi
 	elif [ "$z2" = "$zone" ]; then
 	    if [ "$z1" = "$FW" ]; then
+		#
+		# Add a rule to the OUTPUT chain -- always after the icmp * ACCEPT rule
+		#
 		do_iptables -I OUTPUT `output_rule_num` -o $interface -d $host -j $chain
 	    else
+		#
+		# Insert rules into the source interface's forward chain
+		#
+		# We insert them after any blacklist rules
+		#
 		eval source_hosts=\"\$${z1}_hosts\"
 		
 		for h in $source_hosts; do
@@ -3623,6 +3662,9 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 ################################################################################
 delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
 {
+    #
+    # Delete the subnect host(s) from the zone state file
+    #
     delete_from_zones_file()
     {
 	> ${STATEDIR}/zones_$$
@@ -3646,12 +3688,16 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
 
 	mv -f ${STATEDIR}/zones_$$ ${STATEDIR}/zones
     }
-
+    #
+    # Isolate interface and host parts
+    #
     interface=${1%:*}
     host=${1#*:}
 
     [ -z "$host" ] && host="0.0.0.0/0"
-
+    #
+    # Load $zones
+    #
     determine_zones
 
     zone=$2
@@ -3659,25 +3705,39 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
     validate_zone $zone || startup_error "Error: Unknown zone: $zone"
 
     [ "$zone" = $FW ] && startup_error "Error: Can't remove $1 from firewall zone"
-
+    #
+    # Be sure that Shorewall has been restarted using a DZ-aware version of the code
+    #
     [ -f ${STATEDIR}/chains ] || startup_error "Error: ${STATEDIR}/chains -- file not found"
     [ -f ${STATEDIR}/zones ]  || startup_error "Error: ${STATEDIR}/zones -- file not found"
-
+    #
+    # Be sure that the interface was present at last [re]start
+    #
     if ! chain_exists `input_chain $interface` ; then
 	startup_error "Error: Unknown interface $interface"
     fi
-
+    #
+    # Normalize the first argument to this function
+    #
     delhost="$interface:$host"
-
+    #
+    # Delete the passed hosts from the zone state file
+    #
     [ -z "`delete_from_zones_file`" ] && \
 	error_message "Warning: $1 does not appear to be in zone $2"
-
+    #
+    # Construct the zone host maps
+    #
     while read z hosts; do
 	eval ${z}_hosts=\"$hosts\"
     done < ${STATEDIR}/zones
-
+    #
+    # Delete any nat table entries for the host(s)
+    #
     qt iptables -t nat -D PREROUTING -i $interface -s $host -j ${zone}_dnat
-
+    #
+    # Delete rules rules the input chains for the passed interface
+    #
     while read z1 z2 chain; do
 	if [ "$z1" = "$zone" ]; then
 	    if [ "$z2" = "$FW" ]; then

@@ -1012,52 +1012,35 @@ setup_tunnels() # $1 = name of tunnels file
     local inchain
     local outchain
 
-    setup_one_ipsec() # $1 = zone, $2 = gateway $3 = gateway zone
+    setup_one_ipsec() # $1 = gateway $2 = gateway zone
     {
-	if ! validate_zone $1; then
-
-	    error_message "Invalid gateway zone ($3)" \
-			  " -- Tunnel \"$tunnel\" Ignored"
-	    return 1
-	fi
-
 	options="-m state --state NEW -j ACCEPT"
-	inchain=${1}2${FW}
-	outchain=${FW}2${1}
-	addrule $inchain          -p 50  -s $2 $options
-	addrule $outchain         -p 50  -d $2 $options
-	run_iptables -A $inchain  -p 51  -s $2 $options
-	run_iptables -A $outchain -p 51  -d $2 $options
-	run_iptables -A $inchain  -p udp -s $2 --sport 500 --dport 500 $options
-	run_iptables -A $outchain -p udp -d $2 --dport 500 --sport 500 $options
+	addrule $inchain          -p 50  -s $1 $options
+	addrule $outchain         -p 50  -d $1 $options
+	run_iptables -A $inchain  -p 51  -s $1 $options
+	run_iptables -A $outchain -p 51  -d $1 $options
+	run_iptables -A $inchain  -p udp -s $1 --sport 500 --dport 500 $options
+	run_iptables -A $outchain -p udp -d $1 --dport 500 --sport 500 $options
 
-	if [ -n "$3" ]; then
-	    if validate_zone $3; then
-		addrule ${FW}2${3} -p udp --sport 500 --dport 500 $options
+	if [ -n "$2" ]; then
+	    if validate_zone $2; then
+		addrule ${FW}2${2} -p udp --sport 500 --dport 500 $options
 	    else
-		error_message "Warning: Invalid gateway zone ($3)" \
+		error_message "Warning: Invalid gateway zone ($2)" \
 		" -- Tunnel \"$tunnel\" may encounter keying problems"
 	    fi
 	fi
 
-	return 0
+	echo "   IPSEC tunnel to $gateway defined."
     }
 
-    setup_one_other() # $1 = zone, $2 = gateway, $3 = protocol
+    setup_one_other() # $1 = TYPE, $2 = gateway, $3 = protocol
     {
-	if ! validate_zone $1; then
-	    error_message "Invalid gateway zone ($3)" \
-		" -- Tunnel \"$tunnel\" Ignored"
-	    return 1
-	fi
-
 	options="-m state --state NEW -j ACCEPT"
-	inchain=${1}2${FW}
-	outchain=${FW}2${1}
 	addrule $inchain  -p $3 -s $2 $options
 	addrule $outchain -p $3 -d $2 $options
 
-	return 0
+	echo "   $1 tunnel to $gateway defined."
     }
 
     strip_file tunnels $1
@@ -1065,24 +1048,28 @@ setup_tunnels() # $1 = name of tunnels file
     while read kind z gateway z1; do
         expandv kind z gateway z1
 	tunnel="`echo $kind $z $gateway $z1`"
-	case $kind in
-	    ipsec|IPSEC)
-		setup_one_ipsec $z $gateway $z1 && \
-		echo "   IPSEC tunnel to $gateway defined."
-		;;
-	    ipip|IPIP)
-		setup_one_other $z $gateway 4 && \
-		echo "   IPIP tunnel to $gateway defined."
-		;;
-	    gre|GRE)
-		setup_one_other $z $gateway 47 $z1 \
-                echo "   GRE tunnel to $gateway defined."
-                ;;
-	    *)
-		error_message "Tunnels of type $kind are not supported:" \
-		    "Tunnel \"$tunnel\" Ignored"
-	        ;;
-	esac
+        if validate_zone $z; then
+	    inchain=${z}2${FW}
+	    outchain=${FW}2${z}
+	    case $kind in
+		ipsec|IPSEC)
+		    setup_one_ipsec $gateway $z1
+		    ;;
+		ipip|IPIP)
+		    setup_one_other IPIP $gateway 4
+		    ;;
+		gre|GRE)
+		    setup_one_other GRE $gateway 47 
+		    ;;
+		*)
+		    error_message "Tunnels of type $kind are not supported:" \
+			"Tunnel \"$tunnel\" Ignored"
+		    ;;
+	    esac
+	else
+	    error_message "Invalid gateway zone ($z)" \
+		" -- Tunnel \"$tunnel\" Ignored"
+	fi	    
     done < $TMP_DIR/tunnels
 }
 
@@ -1379,6 +1366,7 @@ delete_tc()
 # The caller has established the following variables:                          #
 #    cli            = Source IP, interface or MAC Specification                #
 #    serv           = Destination IP Specification                             #
+#    servport       = Port the server is listening on                          #
 #    dest_interface = Destination Interface Specification                      #
 #    proto          = Protocol Specification                                   #
 #    addr           = Original Destination Address                             #
@@ -2866,8 +2854,15 @@ activate_rules() {
 		subnet=${host#*:}
 		chain1=`forward_chain $interface`
 		
-		list_search $interface $multi_interfaces && multi=yes || multi=
-		
+		case $interface in
+		    *+*)
+			multi=yes
+			;;
+		    *)
+			list_search $interface $multi_interfaces && multi=yes || multi=
+			;;
+		esac
+
 		for host1 in $dest_hosts; do
 		    interface1=${host1%:*}
 		    subnet1=${host1#*:}

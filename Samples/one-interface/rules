@@ -1,5 +1,5 @@
 #	
-# 	Shorewall version 2.0 - Sample Rules File For One Interface
+# 	Shorewall version 2.2 - Sample Rules File For One Interface
 #
 # 	/etc/shorewall/rules
 #
@@ -121,6 +121,10 @@
 #			/etc/shorewall/zones, $FW to indicate the firewall
 #			itself or "all"
 #
+#			When "all" is used either in the SOURCE or DEST column
+#			intra-zone traffic is not affected. You must add
+#			separate rules to handle that traffic.
+#
 #			Except when "all" is specified, the server may be
 #			further restricted to a particular subnet, host or
 #			interface by appending ":" and the subnet, host or
@@ -156,13 +160,19 @@
 #			contain the port number on the firewall that the
 #			request should be redirected to.
 #
-#	PROTO		Protocol - Must be "tcp", "udp", "icmp", a number or
-#			"all".
+#	PROTO		Protocol - Must be "tcp", "udp", "icmp", "ipp2p",
+#			a number, or "all". "ipp2p" requires ipp2p match
+#			support in your kernel and iptables.
 #
 #	DEST PORT(S)	Destination Ports. A comma-separated list of Port
 #			names (from /etc/services), port numbers or port
 #			ranges; if the protocol is "icmp", this column is
 #			interpreted as the destination icmp-type(s).
+#
+#			If the protocol is ipp2p, this column is interpreted
+#			as an ipp2p option without the leading "--" (example "bit"
+#			for bit-torrent). If no port is given, "ipp2p" is
+#			assumed.
 #
 #			A port range is expressed as <low port>:<high port>.
 #
@@ -185,8 +195,8 @@
 #			ranges.
 #
 #			If you don't want to restrict client ports but need to
-#			specify an ADDRESS in the next column, then place "-"
-#			in this column.
+#			specify an ORIGINAL DEST in the next column, then place
+#			"-" in this column.
 #
 #			If your kernel contains multiport match support, then
 #			only a single Netfilter rule will be generated if in
@@ -212,14 +222,6 @@
 #			the rule will be followed only if the original
 #			destination address in the connection request does not
 #			match any of the addresses listed.
-#
-#			The address may optionally be followed by
-#			a colon (":") and a second IP address. This causes
-#			Shorewall to use the second IP address as the source
-#			address in forwarded packets. See the Shorewall
-#			documentation for restrictions concerning this feature.
-#			If no source IP address is given, the original source
-#			address is not altered.
 #
 #	RATE LIMIT	You may rate-limit the rule by placing a value in this column:
 #

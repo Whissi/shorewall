@@ -19,7 +19,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2003-12-22</pubdate>
+    <pubdate>2003-12-30</pubdate>
 
     <copyright>
       <year>2001-2003</year>
@@ -62,10 +62,12 @@
     donnera les indications générales à suivre et vous renseignera sur
     d&#39;autres ressources si nécessaire.</para>
 
-    <para><inlinegraphic fileref="images/j0213519.gif" /> Si vous utilisez
-    LEAF Bering, votre configuration Shorewall n&#39;est PAS ce que je publie
-    -- Je suggère de prendre en considération l&#39;installation de Shorewall
-    LPR disponible sur le site de shorewall.net avant de poursuivre.</para>
+    <caution>
+      <para>Si vous utilisez LEAF Bering, votre configuration Shorewall
+      n&#39;est PAS ce que je publie -- Je suggère de prendre en considération
+      l&#39;installation de Shorewall LPR disponible sur le site de
+      shorewall.net avant de poursuivre.</para>
+    </caution>
 
     <para>Shorewall nécessite que le package iproute/iproute2 soit installé
     (sur RedHat, le package s&#39;appelle <emphasis>iproute</emphasis>). Vous
@@ -84,25 +86,27 @@
     modifier votre configuration. Les Points de configuration à changer sont
     précédés du symbole <inlinegraphic fileref="images/BD21298_.gif" /></para>
 
-    <para><inlinegraphic fileref="images/j0213519.gif" />Si vous éditez vos
-    fichiers de configuration sur un système Windows, vous devez les sauver
-    comme des fichiers Unix si votre éditeur supporte cette option sinon vous
-    devez les faire passer par dos2unix avant d&#39;essayer de les utiliser.
-    De la même manière, si vous copiez un fichier de configuration depuis
-    votre disque dur Windows vers une disquette, vous devez lancer dos2unix
-    sur la copie avant de l&#39;utiliser avec Shorewall.</para>
+    <caution>
+      <para>Si vous éditez vos fichiers de configuration sur un système
+      Windows, vous devez les sauver comme des fichiers Unix si votre éditeur
+      supporte cette option sinon vous devez les faire passer par dos2unix
+      avant d&#39;essayer de les utiliser. De la même manière, si vous copiez
+      un fichier de configuration depuis votre disque dur Windows vers une
+      disquette, vous devez lancer dos2unix sur la copie avant de
+      l&#39;utiliser avec Shorewall.</para>
 
-    <itemizedlist>
-      <listitem>
-        <para><ulink url="http://www.simtel.net/pub/pd/51438.html">Windows
-        Version of dos2unix</ulink></para>
-      </listitem>
+      <itemizedlist>
+        <listitem>
+          <para><ulink url="http://www.simtel.net/pub/pd/51438.html">Windows
+          Version of dos2unix</ulink></para>
+        </listitem>
 
-      <listitem>
-        <para><ulink url="http://www.megaloman.com/%7Ehany/software/hd2u/">Linux
-        Version of dos2unix</ulink></para>
-      </listitem>
-    </itemizedlist>
+        <listitem>
+          <para><ulink url="http://www.megaloman.com/%7Ehany/software/hd2u/">Linux
+          Version of dos2unix</ulink></para>
+        </listitem>
+      </itemizedlist>
+    </caution>
   </section>
 
   <section>
@@ -388,10 +392,12 @@
     switch (note: Si vous avez une machine DMZ unique, vous pouvez connecter
     le firewall directement à l&#39;ordinateur en utilisant un câble croisé).</para>
 
-    <para><inlinegraphic fileref="images/j0213519.gif" />Ne pas connecter plus
-    d&#39;une interface au même hub ou switch (sauf pour tester). Cela ne
-    fonctionne pas comme vous pourriez vous y attendre et vous terminerez
-    confus en croyant que le réseau ne fonctionne pas entièrement.</para>
+    <caution>
+      <para>Ne pas connecter plus d&#39;une interface au même hub ou switch
+      (sauf pour tester). Cela ne fonctionne pas comme vous pourriez vous y
+      attendre et vous terminerez confus en croyant que le réseau ne
+      fonctionne pas entièrement.</para>
+    </caution>
 
     <para>Pour le besoin de ce Guide, nous décidons que:</para>
 
@@ -1122,7 +1128,7 @@
 
       <para>Comme vous pouvez le constater ci-dessus, l&#39;adresse MAC codé
       sur 6 bytes (48 bits). Une carte MAC est généralement aussi imprimé sur
-      la carte elle-même. </para>
+      la carte elle-même.</para>
 
       <para>Parce que IP utilise les adresses IP et Ethernet les adresses MAC,
       un mécanisme est nécessaire pour transcrire une adresse IP en adresse
@@ -1334,7 +1340,7 @@
       <para>La plus part d&#39;entre nous n&#39;a pas le luxe d&#39;avoir
       assez d&#39;adresses publiques IP pour configurer notre réseau comme
       montré dans le précédent exemple (même&#x00A0; si la configuration est
-      routé). </para>
+      routé).</para>
 
       <para><emphasis role="bold">Pour le besoin de cette section, admettons
       que notre FAI nous a assigné les adresses IP 192.0.2.176-180 et nous a
@@ -1367,7 +1373,7 @@
         </listitem>
       </itemizedlist>
 
-      <para> Souvent une combinaison de ces techniques est utilisée. Chacune
+      <para>Souvent une combinaison de ces techniques est utilisée. Chacune
       d&#39;entre elle sera détaillée dans la section suivante.</para>
 
       <section>
@@ -1516,13 +1522,12 @@
             <para>Un hôte <emphasis role="bold">H</emphasis> derrière votre
             firewall est assigné à une de vos adresses publiques (<emphasis
             role="bold">A</emphasis>), a le même masque de réseau (<emphasis
-            role="bold">M</emphasis>) que l&#39;interface externe du firewall.
-            </para>
+            role="bold">M</emphasis>) que l&#39;interface externe du firewall.</para>
           </listitem>
 
           <listitem>
             <para>Le firewall répond à ARP &#34;qui a&#34; demandé <emphasis
-            role="bold">A</emphasis>. </para>
+            role="bold">A</emphasis>.</para>
           </listitem>
 
           <listitem>
@@ -1609,13 +1614,12 @@
         déplacer un système parallèle à votre firewall derrière le Proxy ARP
         du firewall, cela peut mettre des HEURES avant que le système puisse
         communiquer avec Internet. Il y a deux choses que vous pouvez essayer
-        de faire: </para>
+        de faire:</para>
 
         <orderedlist>
           <listitem>
             <para>(Courtoisement de Bradey Honsinger) Une lecture de
-            Stevens&#39; TCP/IP Illustrated, Vol 1 révèle qu&#39;un paquet ARP
-            </para>
+            Stevens&#39; TCP/IP Illustrated, Vol 1 révèle qu&#39;un paquet ARP</para>
 
             <para>&#34;gratuitous&#34; peut entraîner le routeur de votre FAI
             à rafraîchir son cache(section 4.7). Une &#34;gratuitous&#34; ARP
@@ -1722,7 +1726,7 @@
         maintenant que vous avez décidé d&#39;allouer à votre fille sa propre
         adresse IP (192.0.2.179) pour l&#39;ensemble des connexions entrantes
         et sortantes. Vous devrez faire cela en ajoutant une entrée dans le
-        fichier<ulink url="NAT.htm">/etc/shorewall/nat</ulink>. </para>
+        fichier<ulink url="NAT.htm">/etc/shorewall/nat</ulink>.</para>
 
         <informaltable>
           <tgroup cols="5">
@@ -1895,8 +1899,7 @@ role="underline">0:4:e2:20:20:33</emphasis> 0:0:77:95:dd:19 ip 98: 192.0.2.177 &
         utilisées dans cette section, elle ne sont pas affichées.</para>
       </note>
 
-      <para>Vous souhaiter certainement autoriser ping entre vos zones:
-      </para>
+      <para>Vous souhaiter certainement autoriser ping entre vos zones:</para>
 
       <informaltable>
         <tgroup cols="5">
@@ -2084,7 +2087,7 @@ role="underline">0:4:e2:20:20:33</emphasis> 0:0:77:95:dd:19 ip 98: 192.0.2.177 &
 
               <entry>http</entry>
 
-              <entry># WWW depuis le Net </entry>
+              <entry># WWW depuis le Net</entry>
             </row>
 
             <row>
@@ -3107,7 +3110,7 @@ view &#34;external&#34; {
 ; ############################################################
 177.2.0.192.in-addr.arpa. 86400 IN PTR www.foobar.net.</programlisting>
 
-    <para>db.192.0.2.178 - Zone inverse du serveur mail </para>
+    <para>db.192.0.2.178 - Zone inverse du serveur mail</para>
 
     <programlisting>; ############################################################
 ; Start of Authority (Inverse Address Arpa) for 192.0.2.178/32
@@ -3131,8 +3134,7 @@ view &#34;external&#34; {
 ; ############################################################
 178.2.0.192.in-addr.arpa. 86400 IN PTR mail.foobar.net.<optional></optional></programlisting>
 
-    <para>db.192.0.2.179 - Zone inverse du serveur web publique de votre fille
-    </para>
+    <para>db.192.0.2.179 - Zone inverse du serveur web publique de votre fille</para>
 
     <programlisting>; ############################################################
 ; Start of Authority (Inverse Address Arpa) for 192.0.2.179/32

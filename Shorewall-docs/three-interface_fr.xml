@@ -95,25 +95,27 @@
     où les changements dans la configuration sont recommandées, sont signalés
     par une <inlinegraphic fileref="images/BD21298_.gif" /></para>
 
-    <para><inlinegraphic fileref="images/j0213519.gif" />Si vous éditez vos
-    fichiers de configuration sur un système Windows, vous devez les sauver
-    comme des fichiers Unix si votre éditeur supporte cette option sinon vous
-    devez les faire passer par dos2unix avant d&#39;essayer de les utiliser.
-    De la même manière, si vous copiez un fichier de configuration depuis
-    votre disque dur Windows vers une disquette, vous devez lancer dos2unix
-    sur la copie avant de l&#39;utiliser avec Shorewall.</para>
+    <caution>
+      <para>Si vous éditez vos fichiers de configuration sur un système
+      Windows, vous devez les sauver comme des fichiers Unix si votre éditeur
+      supporte cette option sinon vous devez les faire passer par dos2unix
+      avant d&#39;essayer de les utiliser. De la même manière, si vous copiez
+      un fichier de configuration depuis votre disque dur Windows vers une
+      disquette, vous devez lancer dos2unix sur la copie avant de
+      l&#39;utiliser avec Shorewall.</para>
 
-    <itemizedlist>
-      <listitem>
-        <para><ulink url="http://www.simtel.net/pub/pd/51438.html">Windows
-        Version of dos2unix</ulink></para>
-      </listitem>
+      <itemizedlist>
+        <listitem>
+          <para><ulink url="http://www.simtel.net/pub/pd/51438.html">Windows
+          Version of dos2unix</ulink></para>
+        </listitem>
 
-      <listitem>
-        <para><ulink url="http://www.megaloman.com/%7Ehany/software/hd2u/">Linux
-        Version of dos2unix</ulink></para>
-      </listitem>
-    </itemizedlist>
+        <listitem>
+          <para><ulink url="http://www.megaloman.com/%7Ehany/software/hd2u/">Linux
+          Version of dos2unix</ulink></para>
+        </listitem>
+      </itemizedlist>
+    </caution>
   </section>
 
   <section>
@@ -358,10 +360,11 @@
     switch (note : si vous n&#39;avez qu&#39;un seul ordinateur dans la DMZ,
     vous pouvez le connecter directement au firewall par un câble croisé).</para>
 
-    <para><inlinegraphic fileref="images/j0213519.gif" />Ne connectez pas
-    l&#39;interface interne et externe sur le même hub ou switch (même pour
-    tester). Cela ne fonctionnera pas et ne croyez pas que ce soit shorewall
-    qui ne marche pas.</para>
+    <caution>
+      <para>Ne connectez pas l&#39;interface interne et externe sur le même
+      hub ou switch (même pour tester). Cela ne fonctionnera pas et ne croyez
+      pas que ce soit shorewall qui ne marche pas.</para>
+    </caution>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" />L&#39;exemple de
     configuration de Shorewall pour trois interfaces suppose que
@@ -429,7 +432,7 @@
     notation Classless InterDomain Routing (CIDR)</ulink> qui consiste en
     l&#39;adresse du sous-réseau suivie par &#34;/24&#34;. Le &#34;24&#34; se
     réfère au nombre de bits &#34;1&#34; consécutifs dans la partie gauche du
-    masque de sous-réseau. </para>
+    masque de sous-réseau.</para>
 
     <table>
       <title>Un exemple de sous-réseau (sub-network) :</title>
@@ -513,7 +516,7 @@
     routés à travers Internet, donc l&#39;hôte Internet ne pourra adresser sa
     réponse à l&#39;ordinateur 1). Lorsque le firewall reçoit le paquet de
     réponse, il remet l&#39;adresse de destination à 10.10.10.1 et fait passer
-    le paquet vers l&#39;ordinateur 1. </para>
+    le paquet vers l&#39;ordinateur 1.</para>
 
     <para>Sur les systèmes Linux, ce procédé est souvent appelé de l&#39;IP
     Masquerading mais vous verrez aussi le terme de Source Network Address
@@ -874,8 +877,7 @@
         leur site web, vous pouvez configurer votre système interne afin de
         les utiliser. Si cette information n&#39;est pas disponible, regardez
         dans /etc/resolv.conf sur votre firewall -- les noms des serveurs sont
-        donnés dans l&#39;enregistrement &#34;nameserver&#34; dans ce fichier.
-        </para>
+        donnés dans l&#39;enregistrement &#34;nameserver&#34; dans ce fichier.</para>
       </listitem>
 
       <listitem>
@@ -894,8 +896,7 @@
         firewall vers le réseau local; vous ferez ceci en ajoutant les règles
         suivantes dans /etc/shorewall/rules.</para>
 
-        <para>Si vous faites tourner le serveur de nom sur le firewall :
-        </para>
+        <para>Si vous faites tourner le serveur de nom sur le firewall :</para>
 
         <table>
           <title>/etc/shorewall/rules</title>

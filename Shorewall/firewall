@@ -916,26 +916,41 @@ log_rule() # $1 = log level, $2 = chain, $3 = disposition , $... = predicates fo
 
     shift;shift;shift
 
-    eval rulenum=\$${chain}_logrules
+    if [ -n "$LOGRULENUMBERS" ]; then
+	eval rulenum=\$${chain}_logrules
 
-    [ -z "$rulenum" ] && rulenum=1
+	[ -z "$rulenum" ] && rulenum=1
 
-    case $level in
-	ULOG)
-	    eval iptables -A $chain $@ -j ULOG $LOGPARMS --ulog-prefix '"`printf "$LOGFORMAT" $chain $rulenum $disposition`"'
-	    ;;
-	*)
-	    eval iptables -A $chain $@ -j LOG $LOGPARMS --log-prefix '"`printf "$LOGFORMAT" $chain $rulenum $disposition`"'
-	    ;;
-    esac
+	case $level in
+	    ULOG)
+		eval iptables -A $chain $@ -j ULOG $LOGPARMS --ulog-prefix '"`printf "$LOGFORMAT" $chain $rulenum $disposition`"'
+		;;
+	    *)
+		eval iptables -A $chain $@ -j LOG $LOGPARMS --log-prefix '"`printf "$LOGFORMAT" $chain $rulenum $disposition`"'
+		;;
+	esac
+	
+	if [ $? -ne 0 ] ; then
+	    [ -z "$stopping" ] && { stop_firewall; exit 2; }
+	fi
 
-    if [ $? -ne 0 ] ; then
-	[ -z "$stopping" ] && { stop_firewall; exit 2; }
+	rulenum=$(($rulenum + 1))
+
+	eval ${chain}_logrules=$rulenum
+    else
+	case $level in
+	    ULOG)
+		eval iptables -A $chain $@ -j ULOG $LOGPARMS --ulog-prefix '"`printf "$LOGFORMAT" $chain $disposition`"'
+		;;
+	    *)
+		eval iptables -A $chain $@ -j LOG $LOGPARMS --log-prefix '"`printf "$LOGFORMAT" $chain $disposition`"'
+		;;
+	esac
+	
+	if [ $? -ne 0 ] ; then
+	    [ -z "$stopping" ] && { stop_firewall; exit 2; }
+	fi
     fi
-
-    rulenum=$(($rulenum + 1))
-
-    eval ${chain}_logrules=$rulenum
 }
 
 #
@@ -4339,6 +4354,7 @@ do_initialize() {
     FUNCTIONS=
     VERSION_FILE=
     LOGFORMAT=
+    LOGRULENUMBERS=
 
     stopping=
     have_mutex=
@@ -4464,13 +4480,14 @@ do_initialize() {
     else
 	CLEAR_TC=
     fi
-
+    
     if [ -n "$LOGFORMAT" ]; then
 	if ! qt printf "$LOGFORMAT" foo 1 bar ; then
 	    startup_error "Invalid LOGFORMAT string: \"$LOGFORMAT\""
 	fi
+	[ -n "`echo $LOGFORMAT | grep '%d'`" ] && LOGRULENUMBERS=Yes
     else
-	LOGFORMAT="Shorewall:%s:%d:%s:"
+	LOGFORMAT="Shorewall:%s:%s:"
     fi
     #
     # Strip the files that we use often

@@ -2899,44 +2899,18 @@ rules_chain() # $1 = source zone, $2 = destination zone
 }
 
 #
-#  Get primary addresses of an interface
+#  Get the subnets routed out of a given interface
 #
-get_primary_addresses() # $1 = interface name
+get_routed_subnets() # $1 = interface name
 {
     local address
+    local rest
 
-    ip addr show dev $1 2> /dev/null | \
-	grep inet | \
-	grep -v secondary | \
-	sed s/"    "// | \
-	cut -d' ' -f2 | \
-	while read address; do
+    ip route show dev $1 2> /dev/null |
+	while read address rest; do
 	    [ -z "`echo "$address" | grep '/'`" ] && address="${address}/32"
 	    echo $address
         done
-}
-
-#
-# Show network address corresponding to the passed PREFIX/VLSM using 
-# the ipcalc utility. This probably only works on RedHat systems :-(
-#
-show_network() {
-    local ipcalc=`which ipcalc 2> /dev/null`
-    local network
-    #
-    # If the distribution doesn't have ipcalc we'll just have to be ugly
-    #
-    [ -z "$ipcalc" ] && echo $1 && return
-
-    case $1 in
-	*/32)
-	    echo $1
-	    ;;
-	*)
-	    network=`$ipcalc -n $1`
-	    echo ${network#*=}/${1#*/}
-	    ;;
-    esac
 }
 
 #
@@ -2984,7 +2958,7 @@ setup_masq()
 	    iface="-o $interface"
 	    ;;
 	*)
-	    subnets=`get_primary_addresses $subnet`
+	    subnets=`get_routed_subnets $subnet`
 	    [ -z "$subnets" ] && startup_error "Unable to determine the address(es) for interface $subnet"
 	    subnet="$subnets"
 	    ;;
@@ -3029,7 +3003,7 @@ setup_masq()
 		for s in $subnet; do
 		    addnatrule $chain -s $s $destnet $iface \
 			-j SNAT --to-source $address
-		    echo "   To $destination from `show_network $s` through ${interface} using $address"
+		    echo "   To $destination from $s through ${interface} using $address"
 		done
 	    else
 		addnatrule $chain $destnet $iface \
@@ -3039,7 +3013,7 @@ setup_masq()
 	elif [ -n "$subnet" ]; then
 	    for s in $subnet; do
 		addnatrule $chain -s $s $destnet $iface -j MASQUERADE
-		echo "   To $destination from `show_network $s` through ${interface}"
+		echo "   To $destination from $s through ${interface}"
 	    done
 	else
 	    addnatrule $chain $destnet $iface -j MASQUERADE

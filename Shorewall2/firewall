@@ -760,7 +760,7 @@ validate_hosts_file() {
 
 	    for option in $(separate_list $options) ; do
 		case $option in
-		    maclist|-)
+		    maclist|routeback|norfc1918|nobogons|blacklist|tcpflags|nosmurfs|newnotsyn|-)
 			;;
 		    routeback)
 			[ -z "$ports" ] && \
@@ -4736,7 +4736,7 @@ add_common_rules() {
     #
     # Bogons
     #
-    hosts="$(find_hosts_by_option bogons)"
+    hosts="$(find_hosts_by_option nobogons)"
     
     if [ -n "$hosts" ]; then
 	echo "Enabling Bogon Filtering"

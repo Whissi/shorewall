@@ -1,4 +1,4 @@
-Shorewall 2.0.1-RC1
+Shorewall 2.0.1-RC2
 
 ----------------------------------------------------------------------
 Problems Corrected since 2.0.0
@@ -13,19 +13,12 @@ Problems Corrected since 2.0.0
 3) Thanks to Sean Mathews, a long-standing problem with Proxy ARP and
    IPSEC has been corrected. Thanks Sean!!!
 
-Problems Corrected since 2.0.1 Beta 1
+Problems Corrected since 2.0.1 RC1
 
-1) The BOGON_LOG_LEVEL variable is now included in shorewall.conf. It
-   was inadvertently omitted from the Beta 1 file.
+1) Although the release notes listed a set of new options available in
+   the /etc/shorewall/hosts file, those options were not accepted.
 
-2) Previously, setting 'norfc1918' also set 'nobogons'; setting
-   'nobogons' by itself had no effect.
-
-Problems Corrected since 2.0.1 Beta 2
-
-1) The Default value for ALL INTERFACES in the /etc/shorewall/nat file
-   is supposed to be 'no' but it remained 'yes' as in 1.4.
- 
+2) The 'nobogons' interface option didn't work.
 -----------------------------------------------------------------------
 Issues when migrating from Shorewall 2.0.0 to Shorewall 2.0.1:
 
@@ -80,7 +73,7 @@ New Features:
 4) Shorewall now traps two common zone definition errors:
 
    - Including the firewall zone in a /etc/shorewall/hosts record.
-   - Defining a interface for a zone in both /etc/shorewall/interfaces
+   - Defining an interface for a zone in both /etc/shorewall/interfaces
      and /etc/shorewall/hosts.
 
    In the second case, the following will appear during "shorewall

@@ -3124,7 +3124,7 @@ loadmodule() # $1 = module name, $2 - * arguments
     if [ -z "`lsmod | grep $modulename`" ]; then
 	shift
 	
-	for suffix in o gz ko o.gz ; do
+	for suffix in $MODULE_SUFFIX ; do
 	    modulefile=$MODULESDIR/${modulename}.${suffix}
 
 	    if [ -f $modulefile ]; then
@@ -5059,6 +5059,7 @@ do_initialize() {
     LOGRULENUMBERS=
     ADMINISABSENTMINDED=
     BLACKLISTNEWONLY=
+    MODULE_SUFFIX=
 
     stopping=
     have_mutex=
@@ -5209,6 +5210,8 @@ do_initialize() {
     fi
     ADMINISABSENTMINDED=`added_param_value_no ADMINISABSENTMINDED $ADMINISABSENTMINDED`
     BLACKLISTNEWONLY=`added_param_value_no BLACKLISTNEWONLY $BLACKLISTNEWONLY`
+    [ -n "$MODULE_SUFFIX" ] || MODULE_SUFFIX="o gz ko o.gz"
+
     #
     # Strip the files that we use often
     #

@@ -25,9 +25,31 @@ New Features:
    'rfc1918'. Previously, such packets were logged under chains named
    'logdrop'.
 
+3) Distributers and developers seem to be regularly inventing new
+   naming conventions for kernel modules. To avoid the need to change
+   Shorewall code for each new convention, the MODULE_SUFFIX option has
+   been added to shorewall.conf. MODULE_SUFFIX may be set to the suffix
+   for module names in your particular distribution. If MODULE_SUFFIX
+   is not set in shorewall.conf, Shorewall will use the list "o gz ko
+   o.gz".
+
+   To see what suffix is used by your distribution:
+
+      ls /lib/modules/`uname -r`/kernel/net/ipv4/netfilter
+
+   IMPORTANT: Those are back single quotes (upper lefthand corner of
+   your keyboard).
+   
+   All of the files listed should have the same suffix (extension). Set
+   MODULE_SUFFIX to that suffix.
+
+   Examples: 
+
+	    If all files end in ".kzo" then set MODULE_SUFFIX="kzo"
+	    If all files end in ".kz.o" then set MODULE_SUFFIX="kz.o"
 
 
-
+	    
 
 
 

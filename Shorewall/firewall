@@ -2134,7 +2134,7 @@ add_a_rule()
 	# Destination is a simple zone
 
 	[ -n "$addr" ] && fatal_error \
-	    "Error: An ADDRESS ($addr) is only allowed in" \
+	    "Error: An ORIGINAL DESTINATION ($addr) is only allowed in" \
 	    " a DNAT or REDIRECT: \"$rule\""
 
 	[ -n "$loglevel" ] && run_iptables -A $chain $proto $multiport \

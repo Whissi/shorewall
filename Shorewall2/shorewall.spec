@@ -1,6 +1,6 @@
 %define name shorewall
 %define version 2.0.0
-%define release 0Beta3
+%define release 0RC1
 %define prefix /usr
 
 Summary: Shoreline Firewall is an iptables-based firewall for Linux systems.
@@ -33,7 +33,7 @@ a multi-function gateway/ router/server or on a standalone GNU/Linux system.
 export PREFIX=$RPM_BUILD_ROOT ; \
 export OWNER=`id -n -u` ; \
 export GROUP=`id -n -g` ;\
-./install.sh /etc/init.d
+./install.sh
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -137,6 +137,8 @@ fi
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel
 
 %changelog
+* Fri Feb 27 2004 Tom Eastep <tom@shorewall.net>
+- Update for RC1
 * Mon Feb 16 2004 Tom Eastep <tom@shorewall.net>
 - Moved rfc1918 to /usr/share/shorewall
 - Update for Beta 3

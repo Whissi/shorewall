@@ -65,7 +65,7 @@ error_message() # $* = Error Message
 fatal_error() # $* = Error Message
 {
     echo "   Error: $@" >&2
-    if [ $command = check ]; then
+    if [ $COMMAND = check ]; then
 	[ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
     else
 	stop_firewall
@@ -663,7 +663,7 @@ validate_policy()
 
     print_policy() # $1 = source zone, $2 = destination zone
     {
-	[ $command != check ] || \
+	[ $COMMAND != check ] || \
 	    [ $1 = $2 ]  || \
 	    [ $1 = all ] || \
 	    [ $2 = all ] || \
@@ -982,7 +982,7 @@ stop_firewall() {
     #
     # Turn off trace unless we were tracing "stop" or "clear"
     #
-    case $command in
+    case $COMMAND in
 	stop|clear)
 	    ;;
 	check)
@@ -1080,7 +1080,7 @@ stop_firewall() {
 
     rm -rf $TMP_DIR
 
-    case $command in
+    case $COMMAND in
     stop|clear)
 	;;
     *)
@@ -1468,7 +1468,7 @@ setup_mac_lists() {
 	[ -z "$blob" ] && \
 	    fatal_error "Interface $interface must be up before Shorewall can start"
 
-	ip -f inet addr show $interface 2> /dev/null | grep inet | sed 's/inet //; s/brd //; s/scope.*//;' | while read address broadcast; do
+	ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet //; s/brd //; s/scope.*//;' | while read address broadcast; do
 	    if [ -n "$broadcast" ]; then
 		run_iptables -A $chain -s ${address%/*} -d $broadcast -j RETURN
 	    fi
@@ -2176,7 +2176,7 @@ add_an_action()
 	    ;;
     esac
 
-    if [ $command != check ]; then
+    if [ $COMMAND != check ]; then
        if [ -n "${serv}" ]; then
 	    for serv1 in $(separate_list $serv); do
 		for srv in $(ip_range $serv1); do
@@ -2339,7 +2339,7 @@ process_action() # $1 = action
     #
     # Report Result
     #
-    if [ $command = check ]; then
+    if [ $COMMAND = check ]; then
 	echo "   Rule \"$rule\" checked."
     else
 	echo "   Rule \"$rule\" added."
@@ -2367,7 +2367,7 @@ process_actions1() {
     #
     add_builtin_actions() {
 	
-	if [ "$command" != check ]; then
+	if [ "$COMMAND" != check ]; then
 	    createchain dropBcast no
 	    qt iptables -A dropBcast -m pkttype --pkt-type broadcast -j DROP
 	    if ! qt iptables -A dropBcast -m pkttype --pkt-type multicast -j DROP; then
@@ -2407,7 +2407,7 @@ process_actions1() {
 			    eval ${temp}_common=$xaction
 			    if ! list_search $xaction $USEDACTIONS; then
 				USEDACTIONS="$USEDACTIONS $xaction"
-				[ $command = check ] || createactionchain $xaction
+				[ $COMMAND = check ] || createactionchain $xaction
 			    fi
 			    ;;
 			*)
@@ -2513,7 +2513,7 @@ process_actions2() {
 	    for action in $required; do
 		if ! list_search $action $USEDACTIONS; then
 		    USEDACTIONS="$USEDACTIONS $action"
-		    [ $command = check ] || createactionchain $action
+		    [ $COMMAND = check ] || createactionchain $action
 		    changed=Yes
 		fi
 	    done
@@ -2621,7 +2621,7 @@ add_nat_rule() {
 
     # Generate nat table rules
 
-    if [ $command != check ]; then
+    if [ $COMMAND != check ]; then
 	if [ "$source" = "$FW" ]; then
 	    if [ -n "$excludedests" ]; then
 		chain=nonat${nonat_seq}
@@ -2708,14 +2708,14 @@ add_nat_rule() {
 
     if [ -n "$snat" ]; then
 	if [ -n "$cli" ]; then
-	    [ $command = check ] || addnatrule $(snat_chain $dest) $proto $cli $multiport \
+	    [ $COMMAND = check ] || addnatrule $(snat_chain $dest) $proto $cli $multiport \
 		$sports -d $serv $dports -j SNAT --to-source $snat
 	else
 	    for source_host in $source_hosts; do
 		[ "x${source_host#*:}" = "x0.0.0.0/0" ] && \
 		    error_message "Warning: SNAT will occur on all connections to this server and port - rule \"$rule\""
 
-		[ $command = check ] || addnatrule $(snat_chain $dest) \
+		[ $COMMAND = check ] || addnatrule $(snat_chain $dest) \
 		    -s ${source_host#*:} $proto $sports $multiport \
 		    -d $serv $dports -j SNAT --to-source $snat
 	    done
@@ -2877,7 +2877,7 @@ add_a_rule()
     fi
 
     if [ -n "${serv}${servport}" ]; then
-	if [ $command != check ]; then
+	if [ $COMMAND != check ]; then
 
 	    # A specific server or server port given
 
@@ -2931,7 +2931,7 @@ add_a_rule()
 	    "An ORIGINAL DESTINATION ($addr) is only allowed in" \
 	    " a DNAT or REDIRECT: \"$rule\""
 
-	if [ $command != check ]; then
+	if [ $COMMAND != check ]; then
 	    if [ -n "$loglevel" ]; then
 		log_rule_limit $loglevel $chain $logtarget "$ratelimit" $userandgroup \
 		    $(fix_bang $proto $multiport $dest_interface $cli $sports $dports)
@@ -3145,7 +3145,7 @@ process_rule() # $1 = target
 
     # Create the canonical chain if it doesn't already exist
     
-    [ $command = check ] || ensurechain $chain
+    [ $COMMAND = check ] || ensurechain $chain
 
     # Generate Netfilter rule(s)
 
@@ -3233,7 +3233,7 @@ process_rule() # $1 = target
     #
     # Report Result
     #
-    if [ $command = check ]; then
+    if [ $COMMAND = check ]; then
 	echo "   Rule \"$rule\" checked."
     else
 	echo "   Rule \"$rule\" added."
@@ -3295,7 +3295,7 @@ process_rules()
 	    *)
 		if list_search $temp $ACTIONS; then
 		    if ! list_search $temp $USEDACTIONS; then
-			[ $command = check ] || createactionchain $temp
+			[ $COMMAND = check ] || createactionchain $temp
 			USEDACTIONS="$USEDACTIONS $temp"
 		    fi
 
@@ -4079,7 +4079,7 @@ verify_os_version() {
 	;;
     esac
 
-    [ $command = start -a -n "$(lsmod 2> /dev/null | grep '^ipchains')" ] && \
+    [ $COMMAND = start -a -n "$(lsmod 2> /dev/null | grep '^ipchains')" ] && \
 	startup_error "Shorewall can't start with the ipchains kernel module loaded - see FAQ #8"
 }
 
@@ -5645,9 +5645,9 @@ nolock=
 
 trap "my_mutex_off; exit 2" 1 2 3 4 5 6 9
 
-command="$1"
+COMMAND="$1"
 
-case "$command" in
+case "$COMMAND" in
     stop)
 	[ $# -ne 1 ] && usage
 	do_initialize

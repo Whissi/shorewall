@@ -22,14 +22,14 @@
 #       Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
 #
 
-VERSION=2.0.0-Beta3
+VERSION=2.0.0-RC1
 
 usage() # $1 = exit status
 {
     ME=$(basename $0)
-    echo "usage: $ME
+    echo "usage: $ME"
     echo "       $ME -v"
-    echo "       $ME -h "
+    echo "       $ME -h"
     exit $1
 }
 

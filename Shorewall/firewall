@@ -2839,6 +2839,8 @@ apply_policy_rules() {
 ################################################################################
 activate_rules() {
 
+    local nat=1
+
     multi_interfaces=`find_interfaces_by_option multi`
 
     for zone in $zones; do
@@ -2852,8 +2854,14 @@ activate_rules() {
 	        $interface -d $subnet -j `rules_chain $FW $zone`
 
 	    if havenatchain $zone; then
-		run_iptables -t nat -A PREROUTING \
-		    -i $interface -s $subnet -j $zone
+		if [ -n "$NAT_BEFORE_RULES" ]; then
+		    run_iptables -t nat -A PREROUTING \
+			-i $interface -s $subnet -j $zone
+		else
+		    run_iptables -t nat -I PREROUTING $nat \
+			-i $interface -s $subnet -j $zone
+		    nat=$((nat+1))
+		fi
 	    fi
 
 	    run_iptables -A `input_chain $interface` -s $subnet \
@@ -2925,7 +2933,7 @@ define_firewall() # $1 = Command (Start or Restart)
 
     setup_proxy_arp
 
-    [ -n "$NAT_BEFORE_RULES" ] && setup_nat
+    setup_nat
 
     echo "Adding Common Rules"
 
@@ -2966,8 +2974,6 @@ define_firewall() # $1 = Command (Start or Restart)
 		-p icmp --icmp-type echo-request -j $target
 	fi
     done
-
-    [ -z "$NAT_BEFORE_RULES" ] && setup_nat
 
     policy=`find_file policy`
 

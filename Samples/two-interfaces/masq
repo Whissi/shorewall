@@ -73,6 +73,23 @@
 #
 #			This column may not contain DNS names.
 #
+#			Normally, Netfilter will attempt to retain
+#			the source port number. You may cause
+#			netfilter to remap the source port by following
+#			an address or range (if any) by ":" and
+#			a port range with the format <low port>-
+#			<high port>. If this is done, you must
+#			specify "tcp" or "udp" in the PROTO column.
+#
+#			Examples:
+#
+#				192.0.2.4:5000-6000
+#				:4000-5000
+#
+#			If you want to leave this column empty
+#			but you need to specify the next column then
+#			place a hyphen ("-") here.
+#
 #	PROTO -- (Optional)
 #			If you wish to restrict this entry to a
 #			particular protocol then enter the protocol

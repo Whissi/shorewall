@@ -597,7 +597,7 @@ validate_interfaces_file() {
 	eval ${interface}_zone="$z"
 	eval ${interface}_options=\"$options\"
 
-	for option in `separate_list $options`; do
+	for option in $options; do
 	    case $option in
 	    dhcp|noping|filterping|routestopped|norfc1918|multi|tcpflags)
                 ;;
@@ -2160,8 +2160,8 @@ add_a_rule()
 		if [ "$loglevel" = ULOG ]; then
 		    run_iptables2 -A $chain $proto $multiport \
 			$state $cli $sports $serv $dports -j ULOG $LOGPARMS \
-			--ulog-prefix "Shorewall:$chain:$logtarget:" \
-			else
+			--ulog-prefix "Shorewall:$chain:$logtarget:"
+		else
 		    run_iptables2 -A $chain $proto $multiport \
 			$state $cli $sports $serv $dports -j LOG $LOGPARMS \
 			--log-prefix "Shorewall:$chain:$logtarget:" \

@@ -54,7 +54,7 @@
 #        /etc/rc.d/rc.local file is modified to start the firewall.
 #
 
-VERSION=1.3.9b
+VERSION=1.3.10
 
 usage() # $1 = exit status
 {
@@ -237,7 +237,7 @@ if [ -n "$RUNLEVELS" ]; then
     echo "/# chkconfig/ { print \"# chkconfig: $RUNLEVELS\" ; next }" > awk.temp
     echo "{ print }" >> awk.temp
 
-    awk -f awk.temp firewall > firewall.temp
+    awk -f awk.temp init.sh > init.temp
 
     if [ $? -ne 0 ]; then
 	echo -e "\nERROR: Error running awk."
@@ -246,11 +246,11 @@ if [ -n "$RUNLEVELS" ]; then
 	exit 1
     fi
 
-    install_file_with_backup firewall.temp ${PREFIX}${DEST}/$FIREWALL 0544
+    install_file_with_backup init.temp ${PREFIX}${DEST}/$FIREWALL 0544
     
-    rm -f firewall.temp awk.tmp
+    rm -f init.temp awk.tmp
 else
-    install_file_with_backup firewall ${PREFIX}${DEST}/$FIREWALL 0544
+    install_file_with_backup init.sh ${PREFIX}${DEST}/$FIREWALL 0544
 fi
     
 echo -e "\nShorewall script installed in ${PREFIX}${DEST}/$FIREWALL"
@@ -382,6 +382,15 @@ else
     echo -e "\nStopped Routing file installed as ${PREFIX}/etc/shorewall/routestopped"
 fi
 #
+# Install the Mac List file
+#
+if [ -f ${PREFIX}/etc/shorewall/maclist ]; then
+    backup_file /etc/shorewall/maclist
+else
+    run_install -o $OWNER -g $GROUP -m 0600 maclist ${PREFIX}/etc/shorewall/maclist
+    echo -e "\nMAC list file installed as ${PREFIX}/etc/shorewall/maclist"
+fi
+#
 # Install the Masq file
 #
 if [ -f ${PREFIX}/etc/shorewall/masq ]; then
@@ -476,13 +485,15 @@ chmod 644 ${PREFIX}/usr/lib/shorewall/version
 if [ -z "$PREFIX" ]; then
     rm -f /etc/shorewall/firewall
     rm -f /var/lib/shorewall/firewall
-    rm -f /usr/lib/shorewall/firewall
-    ln -s ${DEST}/${FIREWALL} /usr/lib/shorewall/firewall
-else
-    pushd ${PREFIX}/usr/lib/shorewall/ >> /dev/null && ln -s ../../..${DEST}/${FIREWALL} firewall && popd >> /dev/null
+    [ -L /usr/lib/shorewall/firewall ] && \
+	mv -f /usr/lib/shorewall/firewall /usr/lib/shorewall/firewall-${VERSION}.bkout
+    rm -f /usr/lib/shorewall/init
+    ln -s ${DEST}/${FIREWALL} /usr/lib/shorewall/init
 fi
-
-echo -e "\n${PREFIX}/usr/lib/shorewall/firewall linked to ${PREFIX}$DEST/$FIREWALL"
+#
+# Install the firewall script
+#
+install_file_with_backup firewall ${PREFIX}/usr/lib/shorewall/firewall 0544
 
 if [ -z "$PREFIX" -a -n "$first_install" ]; then
     if [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then

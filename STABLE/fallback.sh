@@ -28,7 +28,7 @@
 #       shown below. Simply run this script to revert to your prior version of 
 #       Shoreline Firewall.
 
-VERSION=1.3.9b
+VERSION=1.3.10
 
 usage() # $1 = exit status
 {
@@ -38,7 +38,7 @@ usage() # $1 = exit status
 
 restore_file() # $1 = file to restore
 {
-    if [ -f ${1}-${VERSION}.bkout ]; then
+    if [ -f ${1}-${VERSION}.bkout -o -L ${1}-${VERSION}.bkout ]; then
 	if (mv -f ${1}-${VERSION}.bkout $1); then
 	    echo
 	    echo "$1 restored"
@@ -62,6 +62,10 @@ if [ -L /usr/lib/shorewall/firewall ]; then
 elif [ -L /var/lib/shorewall/firewall ]; then
     FIREWALL=`ls -l /var/lib/shorewall/firewall | sed 's/^.*> //'`
     restore_file $FIREWALL
+elif [ -L /usr/lib/shorewall/init ]; then
+    FIREWALL=`ls -l /usr/lib/shorewall/init | sed 's/^.*> //'`
+    restore_file $FIREWALL
+    restore_file /usr/lib/shorewall/firewall
 fi
 
 restore_file /sbin/shorewall
@@ -73,6 +77,7 @@ restore_file /etc/shorewall/shorewall.conf
 restore_file /etc/shorewall/functions
 restore_file /usr/lib/shorewall/functions
 restore_file /var/lib/shorewall/functions
+restore_file /usr/lib/shorewall/firewall
 
 restore_file /etc/shorewall/common.def
 
@@ -95,6 +100,8 @@ restore_file /etc/shorewall/params
 restore_file /etc/shorewall/proxyarp
 
 restore_file /etc/shorewall/routestopped
+
+restore_file /etc/shorewall/maclist
 
 restore_file /etc/shorewall/masq
 

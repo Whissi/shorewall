@@ -1,205 +1,199 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
- 
-  <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+     
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=windows-1252">
   <title>Shorewall Troubleshooting</title>
-  
+         
   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
- 
+     
   <meta name="ProgId" content="FrontPage.Editor.Document">
- 
-   
-  </head>
+</head>
   <body>
-
-
-    
-      <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%" id="AutoNumber1" bgcolor="#400169" height="90">
-        <tr>
-          <td width="100%">
-          <h1 align="center"><font color="#FFFFFF">Shorewall Troubleshooting</font></h1>
-          </td>
-        </tr>
-      </table>
+              
+<table border="0" cellpadding="0" cellspacing="0"
+ style="border-collapse: collapse;" bordercolor="#111111" width="100%"
+ id="AutoNumber1" bgcolor="#400169" height="90">
+         <tbody>
+    <tr>
+           <td width="100%">           
+      <h1 align="center"><font color="#ffffff">Shorewall Troubleshooting</font></h1>
+           </td>
+         </tr>
+       
+  </tbody>
+</table>
+                 
+<h3 align="left">Check the Errata</h3>
+            
+<p align="left">Check the <a href="errata.htm">Shorewall Errata</a>  to be
+sure   that there isn't an update that you are missing for your version of
+the   firewall.</p>
+            
+<h3 align="left">Check the FAQs</h3>
+            
+<p align="left">Check the <a href="FAQ.htm">FAQs</a> for solutions to common
+problems.</p>
+                  
+<h3 align="left">If the firewall fails to start</h3>
+      If you receive an error message when starting or restarting the firewall
+and you can't determine the cause, then do the following:   
+<ul>
+     <li>shorewall debug start 2&gt; /tmp/trace</li>
+     <li>Look at the /tmp/trace file and see if that helps you     determine
+what the problem is.</li>
+     <li>If you still can't determine what's wrong then see the     <a
+ href="support.htm">support page</a>.</li>
    
-
-    
-      <h3 align="Left">Check the Errata</h3>
-    
-      <p align="Left">Check the <a href="errata.htm">Shorewall Errata</a>
- to be sure   that there isn't an update that you are missing for your version
-of the   firewall.</p>
-    
-      <h3 align="Left">Check the FAQs</h3>
-    
-      <p align="Left">Check the <a href="FAQ.htm">FAQs</a> for solutions to common problems.</p>
-    
-
-    
-      <h3 align="Left">If the firewall fails to start</h3>
-  
-  If you
-receive an error message when starting or restarting the firewall and you
-can't determine the cause, then do the following:
-  <ul>
-    <li>shorewall debug start 2&gt; /tmp/trace</li>
-    <li>Look at the /tmp/trace file and see if that helps you     determine what
-the problem is.</li>
-    <li>If you still can't determine what's wrong then see the
-    <a href="support.htm">support page</a>.</li>
-  </ul>
-  <h3>Your test environment</h3>
-  <p>Many times when people have problems with Shorewall, the problem is 
-  actually an ill-conceived test setup. Here are several popular snafus: </p>
-  <ul>
-    <li>Port
-          Forwarding where client and server are in the same subnet. See <a href="FAQ.htm">FAQ
-          2.</a></li>
-    <li>Changing the IP address of a local system to be in the external subnet, 
-    thinking that Shorewall will suddenly believe that the system is in the 
-    'net' zone.</li>
-    <li>Multiple interfaces connected to the same HUB or Switch. Given the way 
-    that the Linux kernel respond to ARP &quot;who-has&quot; requests, this type of setup 
-    does NOT work the way that you expect it to.</li>
-  </ul>
-  
-      <h3 align="Left">If you are having
-connection problems:</h3>
-    
-      <p align="Left">If the appropriate policy for the connection that you
-are trying to make is ACCEPT, please DO NOT ADD ADDITIONAL ACCEPT RULES TRYING
-TO MAKE IT WORK. Such additional rules will NEVER make it work, they add
-clutter to your rule set and they represent a big security hole in the event
-that you forget to remove them later.</p>
-    
-      <p align="Left">I also recommend against setting all of your policies to 
-      ACCEPT in an effort to make something work. That robs you of one of your 
-      best diagnostic tools - the &quot;Shorewall&quot; messages that Netfilter will 
-      generate when you try to connect in a way that isn't permitted by your 
-      rule set.</p>
-    
-      <p align="Left">Check your log. If you don't see Shorewall  messages,
-then your problem is probably NOT a Shorewall problem. If you DO see packet
-messages, it is an indication that you are missing one or more rules.</p>
-  
-      <p align="Left">While you are troubleshooting, it is a good idea to clear
+</ul>
+   
+<h3>Your test environment</h3>
+   
+<p>Many times when people have problems with Shorewall, the problem is  
+ actually an ill-conceived test setup. Here are several popular snafus: </p>
+   
+<ul>
+     <li>Port           Forwarding where client and server are in the same
+subnet. See <a href="FAQ.htm">FAQ           2.</a></li>
+     <li>Changing the IP address of a local system to be in the external
+subnet,      thinking that Shorewall will suddenly believe that the system
+is in the      'net' zone.</li>
+     <li>Multiple interfaces connected to the same HUB or Switch. Given the
+way      that the Linux kernel respond to ARP "who-has" requests, this type
+of setup      does NOT work the way that you expect it to.</li>
+   
+</ul>
+          
+<h3 align="left">If you are having connection problems:</h3>
+            
+<p align="left">If the appropriate policy for the connection that you are
+trying to make is ACCEPT, please DO NOT ADD ADDITIONAL ACCEPT RULES TRYING 
+TO MAKE IT WORK. Such additional rules will NEVER make it work, they add clutter
+to your rule set and they represent a big security hole in the event that
+you forget to remove them later.</p>
+            
+<p align="left">I also recommend against setting all of your policies to
+       ACCEPT in an effort to make something work. That robs you of one of
+your        best diagnostic tools - the "Shorewall" messages that Netfilter
+will        generate when you try to connect in a way that isn't permitted
+by your        rule set.</p>
+            
+<p align="left">Check your log. If you don't see Shorewall  messages, then
+your problem is probably NOT a Shorewall problem. If you DO see packet messages,
+it may be an indication that you are missing one or more rules -- see <a
+ href="FAQ.htm#faq17">FAQ 17</a>.</p>
+          
+<p align="left">While you are troubleshooting, it is a good idea to clear 
       two variables in /etc/shorewall/shorewall.conf:</p>
-  
-      <p align="Left">LOGRATE=&quot;&quot;<br>
-      LOGBURST=&quot;&quot;</p>
-  
-      <p align="Left">This way, you will see all of the log messages being
-      generated (be sure to restart shorewall after clearing these variables).</p>
-  
-      <p align="Left">Example:</p>
-  
-  <font face="Century Gothic, Arial, Helvetica">
-  
-      <p align="Left"><font face="Courier">Jun 27 15:37:56 gateway kernel: 
-      Shorewall:all2all:REJECT:IN=eth2 
-OUT=eth1 SRC=192.168.2.2 DST=192.168.1.3 LEN=67 TOS=0x00 PREC=0x00 TTL=63 
-ID=5805 DF PROTO=UDP SPT=1803 DPT=53 LEN=47</font></p>
-  
-     </font>
-  
-      <p align="Left">Let's look at the important parts of this message:</p>
+          
+<p align="left">LOGRATE=""<br>
+       LOGBURST=""</p>
+          
+<p align="left">This way, you will see all of the log messages being    
+  generated (be sure to restart shorewall after clearing these variables).</p>
+          
+<p align="left">Example:</p>
+      <font face="Century Gothic, Arial, Helvetica">          
+<p align="left"><font face="Courier">Jun 27 15:37:56 gateway kernel:    
+   Shorewall:all2all:REJECT:IN=eth2  OUT=eth1 SRC=192.168.2.2 DST=192.168.1.3
+LEN=67 TOS=0x00 PREC=0x00 TTL=63  ID=5805 DF PROTO=UDP SPT=1803 DPT=53 LEN=47</font></p>
+         </font>          
+<p align="left">Let's look at the important parts of this message:</p>
+       
+<ul>
+     <li>all2all:REJECT - This packet was REJECTed out of the all2all chain
+-- the packet was rejected under the     "all"-&gt;"all" REJECT policy (see
+    <a href="FAQ.htm#faq17">FAQ 17).</a></li>
+     <li>IN=eth2 - the packet entered the firewall via eth2</li>
+     <li>OUT=eth1 - if accepted, the packet would be sent on eth1</li>
+     <li>SRC=192.168.2.2 - the packet was sent by 192.168.2.2</li>
+     <li>DST=192.168.1.3 - the packet is destined for 192.168.1.3</li>
+     <li>PROTO=UDP - UDP Protocol</li>
+     <li>DPT=53 - DNS</li>
    
-  <ul>
-    <li>all2all:REJECT - the packet was rejected under the     "all"-&gt;"all" REJECT
-policy</li>
-    <li>IN=eth2 - the packet entered the firewall via eth2</li>
-    <li>OUT=eth1 - if accepted, the packet would be sent on eth1</li>
-    <li>SRC=192.168.2.2 - the packet was sent by 192.168.2.2</li>
-    <li>DST=192.168.1.3 - the packet is destined for 192.168.1.3</li>
-    <li>PROTO=UDP - UDP Protocol</li>
-    <li>DPT=53 - DNS</li>
-  </ul>
-  
-      <p align="Left">In this case, 192.168.2.2 was in the "dmz" zone and 
-192.168.1.3 is in the "loc" zone. I was missing the rule:</p>
- 
-      <p align="Left">ACCEPT    dmz    loc    udp    53</p>
-  
-
-    
-      <h3 align="Left">Other Gotchas</h3>
-   
-  <ul>
-    <li>Seeing rejected/dropped packets logged out of the INPUT or FORWARD 
-    chains? This means that:<ol>
-      <li>your zone definitions are screwed up and the host that is sending the 
-      packets or the destination host isn't in any zone (using an
-      <a href="Documentation.htm#Hosts">/etc/shorewall/hosts</a> file are you?); 
-      or</li>
-      <li>the source and destination hosts are both connected to the same 
-      interface and that interface doesn't have the 'multi' option specified in
-      <a href="Documentation.htm#Interfaces">/etc/shorewall/interfaces</a>.</li>
+</ul>
+          
+<p align="left">In this case, 192.168.2.2 was in the "dmz" zone and  192.168.1.3
+is in the "loc" zone. I was missing the rule:</p>
+         
+<p align="left">ACCEPT    dmz    loc    udp    53</p>
+                
+<h3 align="left">Other Gotchas</h3>
+       
+<ul>
+     <li>Seeing rejected/dropped packets logged out of the INPUT or FORWARD
+     chains? This means that:
+    <ol>
+       <li>your zone definitions are screwed up and the host that is sending
+the        packets or the destination host isn't in any zone (using an  
+    <a href="Documentation.htm#Hosts">/etc/shorewall/hosts</a> file are you?);
+       or</li>
+       <li>the source and destination hosts are both connected to the same
+       interface and that interface doesn't have the 'multi' option specified
+in       <a href="Documentation.htm#Interfaces">/etc/shorewall/interfaces</a>.</li>
+     
     </ol>
-    </li>
-    <li>Remember that Shorewall doesn't automatically allow ICMP     type 8 ("ping")
-requests to be sent between zones. If you want     pings to be allowed between
-zones, you need a rule of the form:<br>
-     <br>
-         ACCEPT    &lt;source     zone&gt;    &lt;destination zone&gt;   
+     </li>
+     <li>Remember that Shorewall doesn't automatically allow ICMP     type
+8 ("ping") requests to be sent between zones. If you want     pings to be
+allowed between zones, you need a rule of the form:<br>
+      <br>
+          ACCEPT    &lt;source     zone&gt;    &lt;destination zone&gt;    
 icmp        echo-request<br>
-     <br>
-     The ramifications of this can be subtle. For example, if you have the 
-    following in /etc/shorewall/nat:<br>
-     <br>
-         10.1.1.2    eth0        130.252.100.18<br>
-     <br>
-     and you ping 130.252.100.18, unless you have allowed icmp type 8 between
-the     zone containing the system you are pinging from and the zone containing 
-    10.1.1.2, the ping requests will be dropped. This is true even if you
+      <br>
+      The ramifications of this can be subtle. For example, if you have the
+     following in /etc/shorewall/nat:<br>
+      <br>
+          10.1.1.2    eth0        130.252.100.18<br>
+      <br>
+      and you ping 130.252.100.18, unless you have allowed icmp type 8 between 
+the     zone containing the system you are pinging from and the zone containing
+     10.1.1.2, the ping requests will be dropped. This is true even if you 
 have     NOT specified 'noping' for eth0 in /etc/shorewall/interfaces.</li>
-    <li>If you specify "routefilter" for an interface,     that interface must be
-up prior to starting the firewall.</li>
-    <li>Is your routing correct? For example, internal systems usually need to 
-    be configured with their default gateway set to the IP address of their 
-    nearest firewall interface. One often overlooked aspect of routing is that 
-    in order for two hosts to communicate, the routing between them must be set 
-    up <u>in both directions.</u> So when setting up routing between <b>A</b> 
-    and<b> B</b>, be sure to verify that the route from <b>B</b> back to <b>A</b> 
-    is defined.</li>
-    <li>Some versions of LRP (EigerStein2Beta for example) have a     shell with
-broken variable expansion. <a href="ftp://ftp.shorewall.net/pub/shorewall/ash.gz">
-You     can get a corrected shell from the Shorewall Errata download site.</a>
-    </li>
-    <li>Do you have your kernel properly configured? <a href="kernel.htm">Click 
-   here to see my kernel configuration.</a> </li>
-    <li>Some features require the "ip" program. That     program is generally included
-in the "iproute" package which should     be included with your distribution
-(though many distributions don't install     iproute by     default). You
-may also download the latest source tarball from <a href="ftp://ftp.inr.ac.ru/ip-routing" target="_blank">
-ftp://ftp.inr.ac.ru/ip-routing</a>
+     <li>If you specify "routefilter" for an interface,     that interface
+must be up prior to starting the firewall.</li>
+     <li>Is your routing correct? For example, internal systems usually need
+to      be configured with their default gateway set to the IP address of
+their      nearest firewall interface. One often overlooked aspect of routing
+is that      in order for two hosts to communicate, the routing between them
+must be set      up <u>in both directions.</u> So when setting up routing
+between <b>A</b>      and<b> B</b>, be sure to verify that the route from
+    <b>B</b> back to <b>A</b>      is defined.</li>
+     <li>Some versions of LRP (EigerStein2Beta for example) have a     shell
+with broken variable expansion. <a
+ href="ftp://ftp.shorewall.net/pub/shorewall/ash.gz"> You     can get a corrected
+shell from the Shorewall Errata download site.</a>     </li>
+     <li>Do you have your kernel properly configured? <a
+ href="kernel.htm">Click     here to see my kernel configuration.</a> </li>
+     <li>Some features require the "ip" program. That     program is generally
+included in the "iproute" package which should     be included with your
+distribution (though many distributions don't install     iproute by    
+default). You may also download the latest source tarball from <a
+ href="ftp://ftp.inr.ac.ru/ip-routing" target="_blank"> ftp://ftp.inr.ac.ru/ip-routing</a> 
 .</li>
-    <li>If you have <u>any</u>   entry for a zone in /etc/shorewall/hosts then the
-zone must be entirely   defined in /etc/shorewall/hosts unless you have 
-    specified MERGE_HOSTS=Yes (Shorewall version 1.3.5 and later). For example, if
-a zone has two interfaces but   only one interface has an entry in /etc/shorewall/hosts
-then hosts attached to   the other interface will <u>not</u> be considered
-part of the zone.</li>
-    <li>Problems with NAT? Be sure that you let Shorewall add all     external addresses
-to be use with NAT unless you have set <a href="Documentation.htm#Aliases">
-ADD_IP_ALIASES</a>
-=No     in /etc/shorewall/shorewall.conf.</li>
-  </ul>
-      <h3>Still Having Problems?</h3>
-      <p>See the<a href="support.htm"> support page.</a></p>
+     <li>If you have <u>any</u>   entry for a zone in /etc/shorewall/hosts
+then the zone must be entirely   defined in /etc/shorewall/hosts unless you
+have      specified MERGE_HOSTS=Yes (Shorewall version 1.3.5 and later).
+For example, if a zone has two interfaces but   only one interface has an
+entry in /etc/shorewall/hosts then hosts attached to   the other interface
+will <u>not</u> be considered part of the zone.</li>
+     <li>Problems with NAT? Be sure that you let Shorewall add all     external
+addresses to be use with NAT unless you have set <a
+ href="Documentation.htm#Aliases"> ADD_IP_ALIASES</a> =No     in /etc/shorewall/shorewall.conf.</li>
+   
+</ul>
+       
+<h3>Still Having Problems?</h3>
+       
+<p>See the<a href="support.htm"> support page.</a></p>
+        <font face="Century Gothic, Arial, Helvetica">          
+<blockquote> </blockquote>
+         </font>            
+<p><font size="2">Last updated 10/17/2002 - Tom Eastep</font>  </p>
     
-  <font face="Century Gothic, Arial, Helvetica">
-  
-      <blockquote> </blockquote>
-  
-     </font>
-  
-        <p><font size="2">Last updated 9/13/2002 -
-Tom Eastep</font>
- </p>
-
-  <p><font face="Trebuchet MS"><a href="copyright.htm"><font size="2">Copyright</font> 
-  © <font size="2">2001, 2002 Thomas M. Eastep.</font></a></font></p>
-
+<p><font face="Trebuchet MS"><a href="copyright.htm"><font size="2">Copyright</font>
+   © <font size="2">2001, 2002 Thomas M. Eastep.</font></a></font></p>
+  <br>
 </body>
-  </html>
+</html>

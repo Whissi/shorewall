@@ -26,7 +26,7 @@
 #       You may only use this script to uninstall the version
 #       shown below. Simply run this script to remove Seattle Firewall
 
-VERSION=1.3.9b
+VERSION=1.3.10
 
 usage() # $1 = exit status
 {
@@ -61,7 +61,7 @@ remove_file() # $1 = file to restore
 }
 
 if [ -f /usr/lib/shorewall/version ]; then
-    INSTALLED_VERSION="`cat /var/lib/shorewall/version`"
+    INSTALLED_VERSION="`cat /usr/lib/shorewall/version`"
     if [ "$INSTALLED_VERSION" != "$VERSION" ]; then
 	echo "WARNING: Shorewall Version $INSTALLED_VERSION is installed"
 	echo "         and this is the $VERSION uninstaller."
@@ -82,6 +82,8 @@ if [ -L /usr/lib/shorewall/firewall ]; then
     FIREWALL=`ls -l /usr/lib/shorewall/firewall | sed 's/^.*> //'`
 elif [ -L /var/lib/shorewall/firewall ]; then
     FIREWALL=`ls -l /var/lib/shorewall/firewall | sed 's/^.*> //'`
+elif [ -L /usr/lib/shorewall/init ]; then
+    FIREWALL=`ls -l /usr/lib/shorewall/init | sed 's/^.*> //'`
 else
     FIREWALL=
 fi
@@ -94,6 +96,7 @@ if [ -n "$FIREWALL" ]; then
     fi
 
     remove_file $FIREWALL
+    rm -f ${FIREWALL}-*.bkout
 fi
 
 remove_file /sbin/shorewall

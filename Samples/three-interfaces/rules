@@ -249,8 +249,8 @@ ACCEPT	loc		dmz		tcp	22
 ACCEPT	dmz		net		tcp	53
 ACCEPT	dmz		net		udp	53
 #
-#	Make ping work between the DMZ, net and local zone (assumes that the loc->
-#	net policy is ACCEPT).
+#	Make ping work bi-directionally between the dmz, net, Firewall and local zone 
+#	(assumes that the loc-> net policy is ACCEPT).
 #
 ACCEPT	net		fw		icmp	8
 ACCEPT	loc		fw		icmp	8
@@ -258,6 +258,8 @@ ACCEPT	dmz		fw		icmp	8
 ACCEPT	loc		dmz		icmp	8
 ACCEPT	dmz		loc		icmp	8
 ACCEPT	dmz		net		icmp	8
+ACCEPT	fw		loc		icmp	8
+ACCEPT	fw		dmz		icmp	8
 ACCEPT	net		dmz		icmp	8	# Only with Proxy ARP and
 ACCEPT	net		loc		icmp	8 	# static NAT
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

@@ -230,11 +230,11 @@ ACCEPT		fw		net		udp	53
 #
 ACCEPT		loc		fw		tcp	22
 #
-#	Accept Ping Ubiquitously
+#	Allow Ping To And From Firewall
 #
 ACCEPT		loc		fw		icmp	8
 ACCEPT		net		fw		icmp	8
-#
-# 	All ICMP are accepted fw->all
+ACCEPT		fw		loc		icmp	8
+ACCEPT		fw		net		icmp	8
 #
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

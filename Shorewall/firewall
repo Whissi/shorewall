@@ -200,8 +200,7 @@ createchain() # $1 = chain name, $2 = If non-null, don't create default rules
 	state="ESTABLISHED"
 	[ -n "$ALLOWRELATED" ] && state="$state,RELATED"
 	run_iptables -A $1 -m state --state $state -j ACCEPT
-	[ -n "$LOGNEWNOTSYN" ] && target=newnotsyn || target=DROP
-	run_iptables -A $1 -m state --state NEW -p tcp !--syn -j $target
+	run_iptables -A $1 -m state --state NEW -p tcp !--syn -j newnotsyn
     fi
 
     eval ${1}_exists=Yes
@@ -2718,22 +2717,12 @@ initialize_netfilter () {
 	    --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
 
     
-    if [ -n "$LOGNEWNOTSYN" ]; then
-	createchain newnotsyn no
-        #
-        # Don't bother the world with these
-        #
-	run_iptables -A newnotsyn -p tcp --tcp-flags ACK,FIN ACK,FIN -j DROP
-        #
-        # Log
-        #
+    createchain newnotsyn no
+    run_user_exit newnotsyn
+    [ -n "$LOGNEWNOTSYN" ] && \
 	run_iptables -A newnotsyn -j LOG \
-	    --log-prefix "Shorewall:newnotsyn:DROP:" --log-level $LOGNEWNOTSYN
-        #
-        # DROP
-        #
-	run_iptables -A newnotsyn -p tcp -j DROP
-    fi
+	--log-prefix "Shorewall:newnotsyn:DROP:" --log-level $LOGNEWNOTSYN
+    run_iptables -A newnotsyn -p tcp -j DROP
 
     createchain icmpdef no
     createchain common	no

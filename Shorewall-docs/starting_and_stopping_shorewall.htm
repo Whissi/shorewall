@@ -1,13 +1,13 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-         
+             
   <meta http-equiv="Content-Language" content="en-us">
-         
+             
   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
-         
+             
   <meta name="ProgId" content="FrontPage.Editor.Document">
-         
+             
   <meta http-equiv="Content-Type"
  content="text/html; charset=windows-1252">
   <title>Starting and Stopping Shorewall</title>
@@ -15,37 +15,37 @@
   <body>
                                                                         
                                                                         
-                                   
+                                     
 <table border="0" cellpadding="0" cellspacing="0"
  style="border-collapse: collapse;" bordercolor="#111111" width="100%"
  id="AutoNumber1" bgcolor="#400169" height="90">
                                                                         
-            <tbody>
-      <tr>
+             <tbody>
+       <tr>
                                                                         
-              <td width="100%">                                         
-                                                         
-      <h1 align="center"><font color="#ffffff">Starting/Stopping and Monitoring
+               <td width="100%">                                        
+                                                                 
+      <h1 align="center"><font color="#ffffff">Starting/Stopping and Monitoring 
  the Firewall</font></h1>
                                                                         
-              </td>
+               </td>
                                                                         
-            </tr>
+             </tr>
                                                                         
-                
-  </tbody>  
+                    
+  </tbody>   
 </table>
                                                                         
                                                                         
                                                                         
-                                  
-<p>   If you have a permanent internet connection such as DSL     or Cable,
- I  recommend that you start the firewall     automatically at boot. Once
-you  have installed      "firewall" in your init.d directory, simply type
-    "chkconfig --add firewall". This will start the     firewall in run levels
- 2-5 and stop it in run levels 1 and 6.     If you want to configure your
-firewall differently from this     default, you can use the "--level" option
-in     chkconfig (see "man chkconfig") or using your     favorite graphical
+                                    
+<p>   If you have a permanent internet connection such as DSL     or Cable, 
+ I  recommend that you start the firewall     automatically at boot. Once 
+you  have installed      "firewall" in your init.d directory, simply type 
+    "chkconfig --add firewall". This will start the     firewall in run levels 
+ 2-5 and stop it in run levels 1 and 6.     If you want to configure your 
+firewall differently from this     default, you can use the "--level" option 
+in     chkconfig (see "man chkconfig") or using your     favorite graphical 
 run-level editor.</p>
                                                                         
                                                                         
@@ -53,188 +53,194 @@ run-level editor.</p>
                                                                         
                                                                         
                                                                         
-                                                                    
+                                                                      
 <p><strong><u>   <font color="#000099">   Important Notes:</font></u></strong><br>
-  </p>
-   
-<ol>
-    <li>Shorewall startup is disabled by default. Once you have configured
- your firewall, you can enable startup by removing the file /etc/shorewall/startup_disabled.
- Note: Users of the .deb package must edit /etc/default/shorewall and set 
-'startup=1'.<br>
-    </li>
-    <li>If you use dialup, you may want to start the firewall     in your 
-/etc/ppp/ip-up.local   script. I recommend just placing     "shorewall restart" 
-in that script.</li>
-   
-</ol>
-   
-<p>                                                                     
-           </p>
-                                                                        
-                                                                        
-                                                                        
-                                    
-<p>   You can manually start and stop Shoreline Firewall using     the "shorewall" 
-  shell program: </p>
-                                                                        
-      
-<ul>
-      <li>shorewall start - starts the firewall</li>
-      <li>shorewall stop - stops the firewall</li>
-      <li>shorewall restart - stops the firewall (if it's             running)
- and  then starts it again</li>
-      <li>shorewall reset - reset the packet and byte counters          
-  in the  firewall</li>
-      <li>shorewall clear - remove all rules and chains             installed
- by Shoreline  Firewall</li>
-      <li>shorewall refresh - refresh the rules involving the broadcast 
-       addresses  of firewall interfaces and the black and white lists.</li>
+   </p>
      
+<ol>
+     <li>Shorewall startup is disabled by default. Once you have configured 
+ your firewall, you can enable startup by removing the file /etc/shorewall/startup_disabled. 
+ Note: Users of the .deb package must edit /etc/default/shorewall and set
+ 'startup=1'.<br>
+     </li>
+     <li>If you use dialup, you may want to start the firewall     in your
+ /etc/ppp/ip-up.local   script. I recommend just placing     "shorewall restart"
+ in that script.</li>
+     
+</ol>
+     
+<p>                                                                      
+          </p>
+                                                                        
+                                                                        
+                                                                        
+                                      
+<p>   You can manually start and stop Shoreline Firewall using     the "shorewall"
+   shell program: </p>
+                                                                        
+        
+<ul>
+       <li>shorewall start - starts the firewall</li>
+       <li>shorewall stop - stops the firewall</li>
+       <li>shorewall restart - stops the firewall (if it's             running) 
+ and  then starts it again</li>
+       <li>shorewall reset - reset the packet and byte counters         
+   in the  firewall</li>
+       <li>shorewall clear - remove all rules and chains             installed 
+ by Shoreline  Firewall</li>
+       <li>shorewall refresh - refresh the rules involving the broadcast
+        addresses  of firewall interfaces and the black and white lists.</li>
+       
 </ul>
                                                                         
                                                                         
                                                                         
-                                    
+                                      
 <p>   The "shorewall" program may also be used to monitor the     firewall.</p>
                                                                         
-      
+        
 <ul>
-      <li>shorewall status - produce a verbose report about the firewall
+       <li>shorewall status - produce a verbose report about the firewall 
           (iptables -L -n -v)</li>
-      <li>shorewall show <i>chain</i> - produce a verbose report about <i>chain
+       <li>shorewall show <i>chain</i> - produce a verbose report about <i>chain 
            </i>(iptables -L <i>chain</i> -n -v)</li>
-      <li>shorewall show nat - produce a verbose report about the nat table
+       <li>shorewall show nat - produce a verbose report about the nat table 
            (iptables -t nat -L -n -v)</li>
-      <li>shorewall show tos - produce a verbose report about the mangle
+       <li>shorewall show tos - produce a verbose report about the mangle 
 table          (iptables -t mangle -L -n -v)</li>
-      <li>shorewall show log - display the last 20 packet log entries.</li>
-      <li>shorewall show connections - displays the IP connections currently
+       <li>shorewall show log - display the last 20 packet log entries.</li>
+       <li>shorewall show connections - displays the IP connections currently 
  being     tracked by the firewall.</li>
-      <li>shorewall                                                     
-                               show                                     
-                                               tc     - displays information
+       <li>shorewall                                                    
+                                show                                    
+                                                tc     - displays information 
  about the traffic control/shaping configuration.</li>
-      <li>shorewall monitor [ delay ] - Continuously display the firewall 
-          status, last 20 log entries and nat. When the log entry display
+       <li>shorewall monitor [ delay ] - Continuously display the firewall
+           status, last 20 log entries and nat. When the log entry display 
            changes, an audible alarm is sounded.</li>
-      <li>shorewall hits - Produces several reports about the Shorewall packet
- log          messages in the current /var/log/messages file.</li>
-      <li>shorewall version -  Displays the installed     version number.</li>
-      <li>shorewall check -  Performs a <u>cursory</u> validation     of
+       <li>shorewall hits - Produces several reports about the Shorewall
+packet  log          messages in the current /var/log/messages file.</li>
+       <li>shorewall version -  Displays the installed     version number.</li>
+       <li>shorewall check -  Performs a <u>cursory</u> validation     of 
 the  zones, interfaces, hosts, rules and policy files.    <font size="4"
- color="#ff6666"><b>The "check" command does not parse and     validate the
- generated iptables commands so even though the "check" command     completes
- successfully, the configuration may fail to start. See the     recommended
+ color="#ff6666"><b>The "check" command does not parse and     validate the 
+ generated iptables commands so even though the "check" command     completes 
+ successfully, the configuration may fail to start. See the     recommended 
  way to make configuration changes described below. </b></font>    </li>
-      <li>shorewall try<i> configuration-directory</i> [<i> timeout</i> ] 
--  Restart shorewall using the     specified configuration and if an error
- occurs or if the<i> timeout </i>    option is given and the new configuration
- has been up for that many seconds     then shorewall is restarted using
-the  standard configuration.</li>
-      <li>shorewall deny, shorewall reject, shorewall accept and shorewall
+       <li>shorewall try<i> configuration-directory</i> [<i> timeout</i>
+]  -  Restart shorewall using the     specified configuration and if an error 
+ occurs or if the<i> timeout </i>    option is given and the new configuration 
+ has been up for that many seconds     then shorewall is restarted using the
+ standard configuration.</li>
+       <li>shorewall deny, shorewall reject, shorewall accept and shorewall 
  save     implement <a href="blacklisting_support.htm">dynamic blacklisting</a>.</li>
-      <li>shorewall logwatch (added in version 1.3.2) - Monitors the    <a
- href="#Conf">LOGFILE </a>and produces an audible alarm when new Shorewall
+       <li>shorewall logwatch (added in version 1.3.2) - Monitors the   
+    <a href="#Conf">LOGFILE </a>and produces an audible alarm when new Shorewall 
      messages are logged.</li>
-     
+       
 </ul>
-Finally, the "shorewall" program may be used to dynamically alter the contents
+ Finally, the "shorewall" program may be used to dynamically alter the contents 
 of a zone.<br>
+ 
 <ul>
-  <li>shorewall add <i>interface</i>[:<i>host]</i> <i>zone </i>- Adds the
+   <li>shorewall add <i>interface</i>[:<i>host]</i> <i>zone </i>- Adds the 
 specified interface (and host if included) to the specified zone.</li>
-  <li>shorewall delete <i>interface</i>[:<i>host]</i> <i>zone </i>- Deletes
+   <li>shorewall delete <i>interface</i>[:<i>host]</i> <i>zone </i>- Deletes 
 the specified interface (and host if included) from the specified zone.</li>
+ 
 </ul>
+ 
 <blockquote>Examples:<br>
-  <blockquote>shorewall add ipsec0:192.0.2.24 vpn1 -- adds the address 192.0.2.24
-from interface ipsec0 to the zone vpn1<br>
-shorewall delete ipsec0:192.0.2.24 vpn1 -- deletes the address 192.0.2.24
-from interface ipsec0 from zone vpn1<br>
-  </blockquote>
-</blockquote>
-                                                                        
-                                              
-<p>  The <b>shorewall start</b>, <b>shorewall restart, shorewall check </b> and 
-  <b>shorewall try </b>commands allow you to specify which <a
- href="#Configs">   Shorewall configuration</a>    to use:</p>
-                                                                        
-                                             
-<blockquote>                                                            
-                                                                   
-  <p>  shorewall [ -c <i>configuration-directory</i> ] {start|restart|check}<br>
-    shorewall try <i>configuration-directory</i></p>
-    </blockquote>
-                                                                        
-                                                   
-<p>  If a <i>configuration-directory</i> is specified, each time that Shorewall 
-  is going to use a file in /etc/shorewall it will first look in the <i>configuration-directory</i> 
-   . If the file is present in the <i>configuration-directory</i>, that file 
-  will be used; otherwise, the file in /etc/shorewall will be used.</p>
-                                                                        
-                                                                        
-                                                                        
    
-<p>  When changing the configuration of a production firewall, I recommend
+  <blockquote>shorewall add ipsec0:192.0.2.24 vpn1 -- adds the address 192.0.2.24 
+from interface ipsec0 to the zone vpn1<br>
+ shorewall delete ipsec0:192.0.2.24 vpn1 -- deletes the address 192.0.2.24 
+from interface ipsec0 from zone vpn1<br>
+   </blockquote>
+ </blockquote>
+                                                                        
+                                                
+<p>  The <b>shorewall start</b>, <b>shorewall restart, shorewall check </b> and
+   <b>shorewall try </b>commands allow you to specify which <a
+ href="configuration_file_basics.htm#Configs">   Shorewall configuration</a>
+   to use:</p>
+                                                                        
+                                               
+<blockquote>                                                             
+                                                                     
+  <p>  shorewall [ -c <i>configuration-directory</i> ] {start|restart|check}<br>
+     shorewall try <i>configuration-directory</i></p>
+     </blockquote>
+                                                                        
+                                                     
+<p>  If a <i>configuration-directory</i> is specified, each time that Shorewall
+   is going to use a file in /etc/shorewall it will first look in the <i>configuration-directory</i>
+    . If the file is present in the <i>configuration-directory</i>, that
+file    will be used; otherwise, the file in /etc/shorewall will be used.</p>
+                                                                        
+                                                                        
+                                                                        
+     
+<p>  When changing the configuration of a production firewall, I recommend 
  the   following:</p>
                                                                         
                                                                         
                                                                         
-   
+     
 <ul>
                                                                         
-              <li>mkdir /etc/test</li>
+               <li>mkdir /etc/test</li>
                                                                         
-              <li>cd /etc/test</li>
+               <li>cd /etc/test</li>
                                                                         
-              <li>&lt;copy any files that you need to change from /etc/shorewall
+               <li>&lt;copy any files that you need to change from /etc/shorewall 
  to . and change them here&gt;</li>
                                                                         
-              <li>shorewall -c . check</li>
+               <li>shorewall -c . check</li>
                                                                         
-              <li>&lt;correct any errors found by check and check again&gt;</li>
+               <li>&lt;correct any errors found by check and check again&gt;</li>
                                                                         
-              <li>/sbin/shorewall try .</li>
-     
+               <li>/sbin/shorewall try .</li>
+       
 </ul>
                                                                         
-                                                   
-<p>  If the configuration starts but doesn't work, just "shorewall restart"
- to   restore the old configuration. If the new configuration fails to start,
+                                                     
+<p>  If the configuration starts but doesn't work, just "shorewall restart" 
+ to   restore the old configuration. If the new configuration fails to start, 
  the   "try" command will automatically start the old one for you.</p>
                                                                         
                                                                         
                                                                         
-   
+     
 <p>  When the new configuration works then just </p>
                                                                         
                                                                         
                                                                         
-   
+     
 <ul>
                                                                         
-              <li>cp * /etc/shorewall</li>
+               <li>cp * /etc/shorewall</li>
                                                                         
-              <li>cd</li>
+               <li>cd</li>
                                                                         
-              <li>rm -rf /etc/test</li>
-     
+               <li>rm -rf /etc/test</li>
+       
 </ul>
                                                                         
                                                                         
                                                                         
-   
-<p><font size="2">   Updated 10/23/2002 - <a href="support.htm">Tom  Eastep</a> 
-    </font></p>
+     
+<p><font size="2">   Updated 11/21/2002 - <a href="support.htm">Tom  Eastep</a>
+     </font></p>
                                                                         
                                                                         
-                               
-<p><font face="Trebuchet MS"><a href="copyright.htm"><font size="2">Copyright</font>
+                                 
+<p><font face="Trebuchet MS"><a href="copyright.htm"><font size="2">Copyright</font> 
     © <font size="2">2001, 2002 Thomas M. Eastep.</font></a></font></p>
                                                                         
                                                                         
-                             <br>
+                              <br>
+   <br>
   <br>
  <br>
 </body>

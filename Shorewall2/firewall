@@ -1602,11 +1602,11 @@ setup_tunnels() # $1 = name of tunnels file
 	progress_message "   PPTP tunnel to $1 defined."
     }
 
-    setup_pptp_server()
+    setup_pptp_server() # $1 = gateway
     {
-	addrule $inchain  -p 47               -j ACCEPT
-	addrule $outchain -p 47               -j ACCEPT
-	addrule $inchain  -p tcp --dport 1723 -j ACCEPT
+	addrule $inchain  -p 47               -s $1 -j ACCEPT
+	addrule $outchain -p 47               -d $1 -j ACCEPT
+	addrule $inchain  -p tcp --dport 1723 -s $1 -j ACCEPT
 
 	progress_message "   PPTP server defined."
     }
@@ -1674,6 +1674,7 @@ setup_tunnels() # $1 = name of tunnels file
 	if validate_zone $z; then
 	    inchain=${z}2${FW}
 	    outchain=${FW}2${z}
+	    gateway=${gateway:-0.0.0.0/0}
 	    case $kind in
 		ipsec|IPSEC|ipsec:*|IPSEC:*)
 		    setup_one_ipsec $gateway $kind $z1
@@ -1693,7 +1694,7 @@ setup_tunnels() # $1 = name of tunnels file
 		pptpclient|PPTPCLIENT)
 		    setup_pptp_client $gateway
 		    ;;
-		pptpserver|PPTPSERVER)
+		pptpserver|PPTPSERVER) $gateway
 		    setup_pptp_server
 		    ;;
 		openvpn|OPENVPN|openvpn:*|OPENVPN:*)

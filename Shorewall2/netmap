@@ -1,0 +1,36 @@
+##############################################################################
+#
+# Shorewall 2.0  -- Network Mapping Table
+#
+# /etc/shorewall/netmap
+#
+#	This file is used to map a network on one interface to another
+#	different interface. For a /24 network, it is like having 256 entries
+#	in the /etc/shorewall/nat file.
+#
+#	WARNING: To use this file, your kernel and iptables must have
+#		 NETMAP support included.
+#
+# Columns must be separated by white space and are:
+#
+#	NET1		Network 1 in CIDR format (e.g., 192.168.1.0/24)
+#
+#	INTERFACE	The network interface to NET1. The interface must
+#			be defined in /etc/shorewall/interfaces.
+#
+#	NET2		Network 2 in CIDR format
+#
+# Example:
+#
+#	NET1		INTERFACE 	NET2
+#	192.168.1.0/24	eth0		10.1.1.0/24
+#
+#	Packets entering on eth0 with destination address 192.168.1.n will
+#	be modified to have destination IP address 10.1.1.n.
+#
+#	Packets leaving on eth0 with source IP address 10.1.1.n will be
+#	modified to have source IP address 192.168.1.n.
+##############################################################################
+#NET1			INTERFACE	NET2
+#
+#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE

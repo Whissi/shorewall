@@ -152,7 +152,7 @@ while [ $# -gt 0 ] ; do
 		usage 1
             fi
 
-	    echo "Seattle Firewall Installer Version $VERSION"
+	    echo "Shorewall Firewall Installer Version $VERSION"
 	    exit 0
 	    ;;
 	*)
@@ -254,11 +254,10 @@ fi
 echo -e "\nShorewall script installed in ${PREFIX}${DEST}/$FIREWALL"
 
 #
-# Create /etc/shorewall if needed
+# Create /etc/shorewall and /var/shorewall if needed
 #
-if [ ! -d ${PREFIX}/etc/shorewall ]; then
-    mkdir ${PREFIX}/etc/shorewall
-fi
+mkdir -p ${PREFIX}/etc/shorewall
+mkdir -p ${PREFIX}/var/lib/shorewall
 #
 # Install the config file
 #
@@ -281,9 +280,9 @@ fi
 #
 # Install the functions file
 #
-install_file_with_backup functions ${PREFIX}/etc/shorewall/functions 0444
+install_file_with_backup functions ${PREFIX}/var/lib/shorewall/functions 0444
 
-echo -e "\nCommon functions installed in ${PREFIX}/etc/shorewall/functions"
+echo -e "\nCommon functions installed in ${PREFIX}/var/lib/shorewall/functions"
 #
 # Install the common.def file
 #
@@ -435,31 +434,32 @@ fi
 # Backup the version file
 #
 if [ -z "$PREFIX" ]; then
-    if [ -f /etc/shorewall/version ]; then
-	backup_file /etc/shorewall/version
+    if [ -f /var/lib/shorewall/version ]; then
+	backup_file /var/lib/shorewall/version
     elif [ -n "$oldversion" ]; then
-	echo $oldversion > /etc/shorewall/version-${VERSION}.bkout
+	echo $oldversion > /var/lib/shorewall/version-${VERSION}.bkout
     else
-	echo "Unknown" > /etc/shorewall/version-${VERSION}.bkout
+	echo "Unknown" > /var/lib/shorewall/version-${VERSION}.bkout
     fi
 fi
 #
 # Create the version file
 #
-echo "$VERSION" > ${PREFIX}/etc/shorewall/version
-chmod 644 ${PREFIX}/etc/shorewall/version
+echo "$VERSION" > ${PREFIX}/var/lib/shorewall/version
+chmod 644 ${PREFIX}/var/lib/shorewall/version
 #
 # Remove and create the symbolic link to the firewall script
 #
 
 if [ -z "$PREFIX" ]; then
     rm -f /etc/shorewall/firewall
-    ln -s ${DEST}/${FIREWALL} /etc/shorewall/firewall
+    rm -f /var/lib/shorewall/firewall
+    ln -s ${DEST}/${FIREWALL} /var/lib/shorewall/firewall
 else
-    pushd ${PREFIX}/etc/shorewall/ >> /dev/null && ln -s ../..${DEST}/${FIREWALL} firewall && popd >> /dev/null
+    pushd ${PREFIX}/var/lib/shorewall/ >> /dev/null && ln -s ../../..${DEST}/${FIREWALL} firewall && popd >> /dev/null
 fi
 
-echo -e "\n${PREFIX}/etc/shorewall/firewall linked to ${PREFIX}$DEST/$FIREWALL"
+echo -e "\n${PREFIX}/var/lib/shorewall/firewall linked to ${PREFIX}$DEST/$FIREWALL"
 
 if [ -z "$PREFIX" -a -n "$first_install" ]; then
     if [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then

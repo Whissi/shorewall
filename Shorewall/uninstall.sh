@@ -35,6 +35,11 @@ usage() # $1 = exit status
     exit $1
 }
 
+qt()  
+{ 
+    "$@" >/dev/null 2>&1
+}
+
 restore_file() # $1 = file to restore
 {
     if [ -f ${1}-shorewall.bkout ]; then
@@ -55,22 +60,26 @@ remove_file() # $1 = file to restore
     fi
 }
 
-if [ -f /etc/shorewall/version ]; then
-    INSTALLED_VERSION="`cat /etc/shorewall/version`"
+if [ -f /var/lib/shorewall/version ]; then
+    INSTALLED_VERSION="`cat /var/lib/shorewall/version`"
     if [ "$INSTALLED_VERSION" != "$VERSION" ]; then
-	echo "WARNING: Shoreline Firewall Version $INSTALLED_VERSION is installed"
+	echo "WARNING: Shorewall Version $INSTALLED_VERSION is installed"
 	echo "         and this is the $VERSION uninstaller."
 	VERSION="$INSTALLED_VERSION"
     fi
 else
-    echo "WARNING: Shoreline Firewall Version $VERSION is not installed"
+    echo "WARNING: Shorewall Version $VERSION is not installed"
     VERSION=""
 fi
 
-echo "Uninstalling Shoreline Firewall $VERSION"
+echo "Uninstalling Shorewall $VERSION"
 
-if [ -L /etc/shorewall/firewall ]; then
-    FIREWALL=`ls -l /etc/shorewall/firewall | sed 's/^.*> //'`
+if qt iptables -L shorewall -n; then
+   /sbin/shorewall clear
+fi
+
+if [ -L /var/lib/shorewall/firewall ]; then
+    FIREWALL=`ls -l /var/lib/shorewall/firewall | sed 's/^.*> //'`
 
     if [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
         insserv -r $FIREWALL
@@ -85,74 +94,11 @@ remove_file /sbin/shorewall
 
 if [ -n "$VERSION" ]; then
     restore_file /etc/rc.d/rc.local
-    remove_file /etc/shorewall/shorewall.conf-${VERSION}.bkout
-    remove_file /etc/shorewall/zones-${VERSION}.bkout
-    remove_file /etc/shorewall/policy-${VERSION}.bkout
-    remove_file /etc/shorewall/interfaces-${VERSION}.bkout
-    remove_file /etc/shorewall/rules-${VERSION}.bkout
-    remove_file /etc/shorewall/nat-${VERSION}.bkout
-    remove_file /etc/shorewall/params-${VERSION}.bkout
-    remove_file /etc/shorewall/proxyarp-${VERSION}.bkout
-    remove_file /etc/shorewall/masq-${VERSION}.bkout
-    remove_file /etc/shorewall/version-${VERSION}.bkout
-    remove_file /etc/shorewall/functions-${VERSION}.bkout
-    remove_file /etc/shorewall/common.def-${VERSION}.bkout
-    remove_file /etc/shorewall/icmp.def-${VERSION}.bkout
-    remove_file /etc/shorewall/tunnels-${VERSION}.bkout
-    remove_file /etc/shorewall/tcrules-${VERSION}.bkout
-    remove_file /etc/shorewall/tos-${VERSION}.bkout
-    remove_file /etc/shorewall/modules-${VERSION}.bkout
-    remove_file /etc/shorewall/blacklist-${VERSION}.bkout
-    remove_file /etc/shorewall/whitelist-${VERSION}.bkout
-    remove_file /etc/shorewall/rfc1918-${VERSION}.bkout
 fi
 
-remove_file /etc/shorewall/firewall
+rm -rf /etc/shorewall
+rm -rf /var/lib/shorewall
 
-remove_file /etc/shorewall/functions
-
-remove_file /etc/shorewall/common.def
-
-remove_file /etc/shorewall/icmp.def
-
-remove_file /etc/shorewall/zones
-
-remove_file /etc/shorewall/policy
-
-remove_file /etc/shorewall/interfaces
-    
-remove_file /etc/shorewall/hosts
-
-remove_file /etc/shorewall/rules
-
-remove_file /etc/shorewall/nat
-
-remove_file /etc/shorewall/params
-
-remove_file /etc/shorewall/proxyarp
-
-remove_file /etc/shorewall/masq
-    
-remove_file /etc/shorewall/modules
-    
-remove_file /etc/shorewall/tcrules
-
-remove_file /etc/shorewall/tos
-
-remove_file /etc/shorewall/tunnels
-
-remove_file /etc/shorewall/blacklist
-
-remove_file /etc/shorewall/whitelist
-
-remove_file /etc/shorewall/rfc1918
-
-remove_file /etc/shorewall/shorewall.conf
-
-remove_file /etc/shorewall/version
-
-rmdir /etc/shorewall
-
-echo "Shoreline Firewall Uninstalled"
+echo "Shorewall Uninstalled"
 
 

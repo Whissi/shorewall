@@ -73,9 +73,9 @@ list_search() # $1 = element to search for , $2-$n = list
 
 ###############################################################################
 # Mutual exclusion -- These functions are jackets for the mutual exclusion    #
-#                     routines in /etc/shorewall/functions. They invoke the   #
-#                     corresponding function in that file if the user did not #
-#                     specify "nolock" on the runeline.                       #
+#                     routines in /var/lib/shorewall/functions. They invoke   #
+#                     the corresponding function in that file if the user did #
+#                     not specify "nolock" on the runline.                    #
 ###############################################################################
 my_mutex_on() {
     [ -n "$nolock" ] || { mutex_on; have_mutex=Yes; }
@@ -3138,18 +3138,15 @@ do_initialize() {
 
     trap "rm -rf $TMP_DIR; my_mutex_off; exit 2" 1 2 3 4 5 6 9
 
-    functions=/etc/shorewall/functions
-
-    [ -n "$SHOREWALL_DIR" -a -f $SHOREWALL_DIR/functions ] && \
-        functions=$SHOREWALL_DIR/functions
+    functions=/var/lib/shorewall/functions
 
     if [ -f $functions ]; then
         . $functions
     else
-        startup_error "/etc/shorewall/functions does not exist!"
+        startup_error "$functions does not exist!"
     fi
 
-    version_file=`find_file version`
+    version_file=/var/lib/shorewall/version
 
     [ -f $version_file ] && version=`cat $version_file`
     #

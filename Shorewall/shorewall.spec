@@ -52,7 +52,8 @@ if [ $1 = 0 ]; then if [ -x /sbin/insserv ]; then /sbin/insserv -r /etc/init.d/s
 %files 
 /etc/init.d/shorewall
 %attr(0700,root,root) %dir /etc/shorewall
-%attr(0600,root,root) /etc/shorewall/version
+%attr(0700,root,root) %dir /var/lib/shorewall
+%attr(0600,root,root) /var/lib/shorewall/version
 %attr(0600,root,root) /etc/shorewall/common.def
 %attr(0600,root,root) /etc/shorewall/icmp.def
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/shorewall.conf
@@ -72,8 +73,8 @@ if [ $1 = 0 ]; then if [ -x /sbin/insserv ]; then /sbin/insserv -r /etc/init.d/s
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/blacklist
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/rfc1918
 %attr(0544,root,root) /sbin/shorewall
-%attr(0444,root,root) /etc/shorewall/functions
-/etc/shorewall/firewall
+%attr(0444,root,root) /var/lib/shorewall/functions
+/var/lib/shorewall/firewall
 %doc documentation
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel
 

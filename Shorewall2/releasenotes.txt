@@ -1,4 +1,4 @@
-Shorewall 2.1.9
+Shorewall 2.1.10
 
 ----------------------------------------------------------------------
 Problems Corrected since 2.0.3
@@ -495,4 +495,23 @@ New Features:
     construction of the blacklist, it can substantially reduce the time
     that all new connections are disabled during "shorewall [re]start".
 
+18) Using the default LOGFORMAT, chain names longer than 11 characters 
+    (such as in user-defined actions) may result in log prefix
+    truncation. A new shorewall.conf action  LOGTAGONLY has been added
+    to deal with this problem. When LOGTAGONLY=Yes, logging rules that
+    specify a log tag will substitute the tag for the chain name in the
+    log prefix.
 
+    Example -- file /etc/shorewall/action.thisisaverylogactionname:
+
+    Rule:
+
+	DROP:info:ftp	0.0.0.0/0	0.0.0.0/0	tcp	    21
+	
+    Log prefix with LOGTAGONLY=No:
+
+	Shorewall:thisisaverylongacti
+
+    Log prefix with LOGTAGONLY=Yes:
+
+	Shorewall:ftp:DROP

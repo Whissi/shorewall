@@ -1239,18 +1239,24 @@ log_rule_limit() # $1 = log level, $2 = chain, $3 = display Chain $4 = dispositi
     local limit="${5:-$LOGLIMIT}"
     local tag=${6:+$6 }
     local prefix
+    local base=$(chain_base $displayChain)
 
     shift;shift;shift;shift;shift
 
-    if [ -n "$LOGRULENUMBERS" ]; then
-	eval rulenum=\$${chain}_logrules
+    if [ -n "$tag" -a -n "$LOGTAGONLY" ]; then
+	displayChain=$tag
+	tag=
+    fi
 
-	[ -z "$rulenum" ] && rulenum=1
+    if [ -n "$LOGRULENUMBERS" ]; then
+	eval rulenum=\$${base}_logrules
+
+	rulenum=${rulenum:-1}
 
 	prefix="$(printf "$LOGFORMAT" $displayChain $rulenum $disposition)${tag}"
 
 	rulenum=$(($rulenum + 1))
-	eval ${chain}_logrules=$rulenum
+	eval ${base}_logrules=$rulenum
     else
 	prefix="$(printf "$LOGFORMAT" $displayChain $disposition)${tag}"
     fi
@@ -6800,6 +6806,7 @@ do_initialize() {
     PKTTYPE=
     RETAIN_ALIASES=
     DELAYBLACKLISTLOAD=
+    LOGTAGONLY=
 
     RESTOREBASE=
     TMP_DIR=
@@ -6977,6 +6984,7 @@ do_initialize() {
     STARTUP_ENABLED=$(added_param_value_yes STARTUP_ENABLED $STARTUP_ENABLED)
     RETAIN_ALIASES=$(added_param_value_no RETAIN_ALIASES $RETAIN_ALIASES)
     DELAYBLACKLISTLOAD=$(added_param_value_no DELAYBLACKLISTLOAD $DELAYBLACKLISTLOAD)
+    LOGTAGONLY=$(added_param_value_no LOGTAGONLY $LOGTAGONLY)
     #
     # Strip the files that we use often
     #

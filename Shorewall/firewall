@@ -1317,31 +1317,8 @@ setup_nat() {
 	fi
 
 	if [ -n "$ADD_IP_ALIASES" ]; then
-	    #
-	    # Folks feel uneasy if they don't see all of the same
-	    # decoration on these IP addresses that they see when their
-	    # distro's net config tool adds them. In an attempt to reduce
-	    # the anxiety level, we have the following code which sets
-	    # the VLSM and BRD from the primary address
-	    #
-	    # Get all of the lines that contain inet addresses with broadcast
-	    #
-	    val=`ip addr show $interface | grep 'inet.*brd '` 2> /dev/null
-
-	    if [ -n "$val" ] ; then
-		#
-		# Hack off the leading 'inet <ip addr>' (actually cut off the
-		# "/" as well but add it back in).
-		#
-		val="/${val#*/}"
-		#
-		# Now get the VLSM, "brd" and the broadcast address
-		#
-		val=${val%% scope*}
-	    fi
-
-	    run_ip addr add ${external}${val} dev $interface
-	    echo "$external $interface" >> ${STATEDIR}/nat
+	    list_search $external $aliases_to_add || \
+		aliases_to_add="$aliases_to_add $external $interface"
 	fi
 
 	echo "   Host $internal NAT $external on $interface"
@@ -2435,16 +2412,8 @@ setup_masq()
 	esac
 
 	if [ -n "$address" -a -n "$ADD_SNAT_ALIASES" ]; then
-	    qt ip addr del $address dev $interface
-
-	    val=`ip addr show $interface | grep 'inet.*brd '` 2> /dev/null
-	    if [ -n "$val" ] ; then
-		val="/${val#*/}"
-		val=${val%% scope*}
-	    fi
-	    run_ip addr add ${address}${val} dev $interface
-
-	    echo "$address $interface" >> ${STATEDIR}/nat
+	    list_search $address $aliases_to_add || \
+		aliases_to_add="$aliases_to_add $external $address"
 	fi
 
 	destination=$destnet
@@ -2604,6 +2573,48 @@ verify_os_version() {
 	startup_error "Shorewall version $version does not work with kernel version $osversion"
 	;;
     esac
+}
+
+################################################################################
+# Add IP Aliases                                                               #
+################################################################################
+add_ip_aliases() # $* = addresses and devices
+{
+    do_one() 
+    {
+	#
+	# Folks feel uneasy if they don't see all of the same
+	# decoration on these IP addresses that they see when their
+	# distro's net config tool adds them. In an attempt to reduce
+	# the anxiety level, we have the following code which sets
+	# the VLSM and BRD from the primary address
+	#
+	# Get all of the lines that contain inet addresses with broadcast
+	#
+	val=`ip addr show $interface | grep 'inet.*brd '` 2> /dev/null
+
+	if [ -n "$val" ] ; then
+	    #
+	    # Hack off the leading 'inet <ip addr>' (actually cut off the
+	    # "/" as well but add it back in).
+	    #
+	    val="/${val#*/}"
+	    #
+	    # Now get the VLSM, "brd" and the broadcast address
+	    #
+	    val=${val%% scope*}
+	fi
+
+	run_ip addr add ${external}${val} dev $interface
+	echo "$external $interface" >> ${STATEDIR}/nat
+    }
+
+    while [ $# -gt 0 ]; do
+	external=$1
+	interface=$2
+	shift;shift
+	do_one
+    done
 }
 
 ################################################################################
@@ -3175,6 +3186,10 @@ define_firewall() # $1 = Command (Start or Restart)
 
     activate_rules
 
+    [ -n "$aliases_to_add" ] && \
+	echo "Adding IP Aliases..." && \
+	add_ip_aliases $aliases_to_add
+
     run_user_exit start
 
     createchain shorewall no
@@ -3361,6 +3376,7 @@ do_initialize() {
     have_mutex=
     masq_seq=1
     nonat_seq=1
+    aliases_to_add=
 
     TMP_DIR=/tmp/shorewall-$$
     rm -rf $TMP_DIR

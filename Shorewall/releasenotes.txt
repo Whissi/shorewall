@@ -7,8 +7,8 @@ New features include:
    wish to minimize the number of rules that connection requests must
    traverse.
    
-   A Shorewall DNAT rule actually generates two iptables rules: an
-   address rewriting rule in the 'nat' table and an ACCEPT rule in the
+   A Shorewall DNAT rule actually generates two iptables rules: a
+   header rewriting rule in the 'nat' table and an ACCEPT rule in the
    'filter' table. A DNAT- rule only generates the first of these
    rules. This is handy when you have several DNAT rules that would
    generate the same ACCEPT rule.
@@ -32,3 +32,6 @@ New features include:
 
 2) The 'shorewall check' command now prints out the applicable policy
    between each pair of zones.
+
+3. An exit status of 255 from /etc/shorewall/tcclear will prevent
+   Shorewall from clearing the QOS configuration.

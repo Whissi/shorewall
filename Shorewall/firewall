@@ -1843,23 +1843,27 @@ setup_tc() {
 #
 delete_tc()
 {
+    local result
+
     clear_one_tc() {
 	tc qdisc del dev $1 root    2> /dev/null
 	tc qdisc del dev $1 ingress 2> /dev/null
     }
 
     run_user_exit tcclear
+    result=$?
 
-    run_ip link list | \
-    while read inx interface details; do
-	case $inx in
-	[0-9]*)
-	    clear_one_tc ${interface%:}
-	    ;;
-	*)
-	    ;;
-	esac
-    done
+    if [ $result -ne 255 ]; then
+	run_ip link list | while read inx interface details; do
+	    case $inx in
+		[0-9]*)
+                    clear_one_tc ${interface%:}
+		    ;;
+		*)
+		    ;;
+	    esac
+	done
+    fi
 }
 
 #
@@ -3297,7 +3301,7 @@ initialize_netfilter () {
 	run_user_exit newnotsyn
 	if [ -n "$LOGNEWNOTSYN" ]; then
 	    if [ "$LOGNEWNOTSYN" = ULOG ]; then
-		run_iptables -A newnotsyn -j ULOG \
+		run_iptables -A newnotsyn -j ULOG 
 		    --ulog-prefix "Shorewall:newnotsyn:DROP:"
 	    else
 		run_iptables -A newnotsyn -j LOG \

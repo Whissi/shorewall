@@ -472,6 +472,11 @@ validate_hosts_file() {
 	r="$z $hosts $options"
 	validate_zone $z || startup_error "Invalid zone ($z) in record \"$r\""
 
+	interface=${hosts%:*}
+
+	list_search  $interface $all_interfaces || \
+	    startup_error "Unknown interface ($interface) in record \"$r\""
+
         for option in `separate_list $options`; do
 	    case $option in
 	    routestopped|-)
@@ -1370,7 +1375,8 @@ delete_tc()
 #    dest_interface = Destination Interface Specification                      #
 #    proto          = Protocol Specification                                   #
 #    addr           = Original Destination Address                             #
-#    dports         = Destination Port Specification                           #
+#    dports         = Destination Port Specification. 'dports' may be changed  #
+#                     by this function                                         #
 #    cport          = Source Port Specification                                #
 #    multioption    = String to invoke multiport match if appropriate          #  
 ################################################################################

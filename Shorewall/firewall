@@ -3878,7 +3878,7 @@ initialize_netfilter () {
 	createchain `forward_chain $interface` no
 	run_iptables -A `forward_chain $interface` -j dynamic
 	createchain `input_chain $interface`   no
-	run_iptables -A `forward_chain $interface` -j dynamic
+	run_iptables -A `input_chain $interface` -j dynamic
     done
 }
 

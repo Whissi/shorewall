@@ -82,6 +82,8 @@ if [ -L /usr/lib/shorewall/firewall ]; then
     FIREWALL=`ls -l /usr/lib/shorewall/firewall | sed 's/^.*> //'`
 elif [ -L /var/lib/shorewall/firewall ]; then
     FIREWALL=`ls -l /var/lib/shorewall/firewall | sed 's/^.*> //'`
+elif [ -L /usr/lib/shorewall/init ]; then
+    FIREWALL=`ls -l /usr/lib/shorewall/init | sed 's/^.*> //'`
 else
     FIREWALL=
 fi

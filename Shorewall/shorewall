@@ -138,6 +138,13 @@ get_config() {
     [ -n "LOGFORMAT" ] && LOGFORMAT="${LOGFORMAT%%%*}"
 
     [ -n "$LOGFORMAT" ] || LOGFORMAT="Shorewall:"
+
+    if [ -n "$SHOREWALL_SHELL" ]; then
+	if [ ! -e "$SHOREWALL_SHELL" ]; then
+	    echo "The program specified in SHOREWALL_SHELL does not exist or is not executable" >&2
+	    exit 2
+	fi
+    fi
 }
 
 #
@@ -653,11 +660,13 @@ esac
 case "$1" in
     start|stop|restart|reset|clear|refresh|check)
 	[ $# -ne 1 ] && usage 1
-	exec $FIREWALL $debugging $nolock $1
+	get_config
+	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $1
 	;;
     add|delete)
 	[ $# -ne 3 ] && usage 1
-	exec $FIREWALL $debugging $nolock $1 $2 $3
+	get_config
+	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $1 $2 $3
 	;;
     show|list)
 	[ $# -gt 2 ] && usage 1

@@ -2025,9 +2025,12 @@ add_a_rule()
     servport=$serverport
     multiport=
 
+    [ x$port  = x- ] && port=
+    [ x$cport = x- ] && cport=
+
     case $proto in
 	tcp|udp|TCP|UDP|6|17)
-	    if [ -n "$port" -a "x${port}" != "x-" ]; then
+	    if [ -n "$port" ]; then
 		dports="--dport"
 		if [ -n "$multioption" -a "$port" != "${port%,*}" ]; then
 		    multiport="$multioption"
@@ -2036,7 +2039,7 @@ add_a_rule()
 		dports="$dports $port"
 	    fi
 
-	    if [ -n "$cport" -a "x${cport}" != "x-" ]; then
+	    if [ -n "$cport" ]; then
 		sports="--sport"
 		if [ -n "$multioption" -a "$cport" != "${cport%,*}" ]; then
 		    multiport="$multioption"
@@ -2046,18 +2049,17 @@ add_a_rule()
 	    fi
 		;;
 	icmp|ICMP|1)
-	    [ -n "$port" ] && [ "x${port}" != "x-" ] && \
-		dports="--icmp-type $port"
+	    [ -n "$port" ]  && 	dports="--icmp-type $port"
 	    state=
 	    ;;
 	all|ALL)
-	    [ -n "$port" ] && [ "x${port}" != "x-" ] && \
+	    [ -n "$port" ] && \
 		fatal_error "Port number not allowed with \"all\"; rule: \"$rule\""
 	    proto=
 	    ;;
 	*)
 	    state=
-	    [ -n "$port" ] && [ "x${port}" != "x-" ] && \
+	    [ -n "$port" ] && \
 		fatal_error "Port number not allowed with protocol \"$proto\"; rule: \"$rule\""
 	    ;;
     esac

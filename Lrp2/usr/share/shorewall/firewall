@@ -2285,8 +2285,6 @@ check_config() {
 
     verify_os_version
 
-    load_kernel_modules check
-
     echo "Determining Zones..."
 
     determine_zones
@@ -4527,8 +4525,9 @@ add_ip_aliases()
 #
 # Load kernel modules required for Shorewall
 #
-load_kernel_modules() #1 = command
+load_kernel_modules()
 {
+    local save_modules_dir=$MODULESDIR
 
     [ -z "$MODULESDIR" ] && \
 	MODULESDIR=/lib/modules/$(uname -r)/kernel/net/ipv4/netfilter
@@ -4536,24 +4535,33 @@ load_kernel_modules() #1 = command
     modules=$(find_file modules)
 
     if [ -f $modules -a -d $MODULESDIR ]; then
-	[ "$1" = silent ] || echo "Loading Modules..."
+	echo "Loading Modules..."
 	. $modules
-	case $1 in
-	    start|restart)
-		save_command "reload_kernel_modules <<EOF"
+    fi
 
-		while read command; do
-		    case "$command" in
-			loadmodule*)
-			    save_command $command
-			    ;;
-		    esac
-		done < $modules
-	    
-		save_command EOF
+    MODULESDIR=$save_modules_dir
+}
+
+save_load_kernel_modules()
+{
+
+    [ -z "$MODULESDIR" ] && \
+	MODULESDIR=/lib/modules/$(uname -r)/kernel/net/ipv4/netfilter
+
+    modules=$(find_file modules)
+
+    save_command "reload_kernel_modules <<EOF"
+
+    while read command; do
+	case "$command" in
+	    loadmodule*)
+		save_command $command
 		;;
 	esac
-    fi
+    done < $modules
+    
+    save_command EOF
+
 }
 
 # Verify that the 'ip' program is installed
@@ -4705,11 +4713,13 @@ initialize_netfilter () {
     if [ -z "$NEWNOTSYN" ]; then
 	createchain newnotsyn no
 
-	for interface in $(find_interfaces_by_option newnotsyn); do
-	    run_iptables -A newnotsyn -i $interface -p tcp --tcp-flags ACK ACK -j ACCEPT
-	    run_iptables -A newnotsyn -i $interface -p tcp --tcp-flags RST RST -j ACCEPT
-	    run_iptables -A newnotsyn -i $interface -p tcp --tcp-flags FIN FIN -j ACCEPT
-	    run_iptables -A newnotsyn -i $interface -j RETURN
+	for host in $(find_hosts_by_option newnotsyn); do
+	    interface=${host%%:*}
+	    network=${host#*:}
+	    run_iptables -A newnotsyn -i $interface $(match_source_hosts $network) -p tcp --tcp-flags ACK ACK -j ACCEPT
+	    run_iptables -A newnotsyn -i $interface $(match_source_hosts $network) -p tcp --tcp-flags RST RST -j ACCEPT
+	    run_iptables -A newnotsyn -i $interface $(match_source_hosts $network) -p tcp --tcp-flags FIN FIN -j ACCEPT
+	    run_iptables -A newnotsyn -i $interface $(match_source_hosts $network) -j RETURN
 	done
 
 	run_user_exit newnotsyn
@@ -5412,7 +5422,7 @@ define_firewall() # $1 = Command (Start or Restart)
     save_command "MODULESDIR=\"$MODULESDIR\""
     save_command "MODULE_SUFFIX=\"$MODULE_SUFFIX\""
 
-    load_kernel_modules $command
+    save_load_kernel_modules
 
     echo "Initializing...";                    initialize_netfilter
     echo "Configuring Proxy ARP";              setup_proxy_arp
@@ -5936,9 +5946,11 @@ do_initialize() {
     ensure_config_path
     #
     # Determine the capabilities of the installed iptables/netfilter
-    # We silently load the modules
+    # We load the kernel modules so that capabilities can be 
+    # accurately detected when kernel module autoloading is not
+    # enabled.
     #
-    qt load_kernel_modules silent
+    load_kernel_modules
     determine_capabilities
 
     [ -z "${STATEDIR}" ] && STATEDIR=/var/state/shorewall

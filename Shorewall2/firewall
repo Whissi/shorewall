@@ -1222,6 +1222,8 @@ stop_firewall() {
 	    ;;
 	*)
 	    set +x
+	    rm -f /var/lib/shorewall/restore-$$
+
 	    if [ -f /var/lib/shorewall/restore ]; then
 		echo Restoring Shorewall...
 		. /var/lib/shorewall/restore
@@ -1349,6 +1351,8 @@ stop_firewall() {
 	# else. Remove the lock file and Kill the shell in case we're in a
 	# subshell
 	#
+	rm -f /var/lib/shorewall/restore-$$
+
 	my_mutex_off
 	kill $$
 	;;
@@ -1369,9 +1373,11 @@ clear_firewall() {
     setpolicy FORWARD ACCEPT
     setpolicy OUTPUT ACCEPT
 
-    ip6tables -P INPUT   ACCEPT 2> /dev/null
-    ip6tables -P OUTPUT  ACCEPT 2> /dev/null
-    ip6tables -P FORWARD ACCEPT 2> /dev/null
+    if qt which ip6tables; then
+	ip6tables -P INPUT   ACCEPT 2> /dev/null
+	ip6tables -P OUTPUT  ACCEPT 2> /dev/null
+	ip6tables -P FORWARD ACCEPT 2> /dev/null
+    fi
 
     run_user_exit clear
 
@@ -4151,13 +4157,16 @@ setup_masq()
 		    if [ -n "$ports" ]; then
 			displayproto="($proto $ports)"
 
-			if [ $(list_count $ports) -gt 1 ]; then
+			listcount=$(list_count $ports)
+
+			if [ $listcount -gt 1 ]; then
 			    case $ports in
 				*:*)
 				    fatal_error "Port Range not allowed in list ($ports)"
 				    ;;
 				*)
 				    if [ -n "$MULTIPORT" ]; then
+					[ $listcount -gt 15 ] && fatal_error "Too many entries in port list ($ports)"
 					ports="-m multiport --dports $ports"
 				    else
 					fatal_error "Port Ranges require multiport match support in your kernel ($ports)"

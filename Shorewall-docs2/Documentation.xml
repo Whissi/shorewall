@@ -1437,7 +1437,8 @@ DNAT      net       loc:192.168.1.3 tcp      ssh
               <listitem>
                 <para>(Shorewall 1.4.9 and later) - An action defined in the
                 <filename><ulink url="User_defined_Actions.html">/etc/shorewall/actions</ulink></filename>
-                file.</para>
+                or <filename>/usr/share/shorewall/actions.std</filename>
+                files.</para>
               </listitem>
             </varlistentry>
           </variablelist>
@@ -1460,6 +1461,24 @@ DNAT      net       loc:192.168.1.3 tcp      ssh
           iptables is 29 characters; if a larger prefix is generated,
           Shorewall will issue a warning message and will truncate the prefix
           to 29 characters.</para>
+
+          <para>Specifying a log level for a &#60;<emphasis>defined action</emphasis>&#62;
+          will log all invocations of the action. For example:</para>
+
+          <programlisting>AllowFTP:info          net        dmz</programlisting>
+
+          <para>will log all net-&#62;dmz traffic that has not been handled by
+          earlier rules. That&#39;s probably not what you want. If you want to
+          log the FTP connections that are actually accepted, you need to log
+          within the action itself. One way to do that would be to copy
+          <filename>/usr/share/shorewall/action.AllowFTP</filename> to
+          <filename class="directory">/etc/shorewall</filename> and modify the
+          copy as follows:</para>
+
+          <programlisting>#TARGET       SOURCE         DEST            PROTO   DEST    SOURCE          RATE    USER/
+#                                                    PORT    PORT(S)         LIMIT   GROUP
+ACCEPT<emphasis role="bold">:info</emphasis>   -              -               tcp     21
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
 
           <para>The use of DNAT or REDIRECT requires that you have NAT enabled
           in your <ulink url="kernel.htm">kernel configuration</ulink>.</para>

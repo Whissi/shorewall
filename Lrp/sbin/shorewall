@@ -195,7 +195,7 @@ get_config() {
 #
 display_chains()
 {
-    trap "rm -f /tmp/chains-$$; exit 1" 1 2 3 4 5 6 9
+    trap "rm -f $tmpfile; exit 1" 1 2 3 4 5 6 9
 
     if [ "$haveawk" = "Yes" ]; then
 	#

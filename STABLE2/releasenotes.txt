@@ -9,6 +9,28 @@ Problems corrected in version 2.2.1
 2) Shorewall previously used root's default umask which could cause
    files in /var/lib/shorewall to be world-readable. Shorewall now uses
    umask 0177.
+
+3) In log messages produced by logging a built-in action, the packet
+   disposition was displayed incorrectly. 
+ 
+   Example:
+
+	    rejNotSyn:ULOG	all	all		tcp
+
+   produces the log message:
+
+	    Feb 12 23:57:08 server Shorewall:rejNotSyn:ULOG: ...
+
+   rather than
+
+	    Feb 12 23:57:08 server Shorewall:rejNotSyn:REJECT: ...
+
+3) The comments regarding built-in actions in
+   /usr/share/shorewall/actions.std have been corrected.
+
+4) The /etc/shorewall/policy file in the LRP package was missing the
+   'all->all' policy.
+ 
 -----------------------------------------------------------------------
 Issues when migrating from Shorewall 2.0 to Shorewall 2.2:
 

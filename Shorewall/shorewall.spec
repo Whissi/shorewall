@@ -63,6 +63,9 @@ if [ $1 = 0 ]; then
 	elif [ -x /sbin/chkconfig ]; then
 		/sbin/chkconfig --del shorewall
 	fi
+
+	rm -f /etc/shorewall/startup_disabled
+
 fi
 
 %files 

@@ -609,10 +609,13 @@ validate_rule() {
 	[ -n "$client" ] && case "$client" in
 	    -)
 		;;
+            *:*)
+		cli="-i ${client%:*} -s ${client#*:}"
+		;;
 	    ~*)
 		cli=`mac_match $client`
 		;;
-	    [0-9]*|![0-9]*)
+	    *.*.*)
 		#
 		# IP Address, address or subnet
 		#
@@ -632,7 +635,7 @@ validate_rule() {
 	    -)
 		serv=
 		;;
-	    [0-9]*|![0-9]*)
+	    *.*.*)
 		serv=$server
 		;;
 	    ~*)
@@ -1381,7 +1384,7 @@ process_tc_rule()
 
 	if [ "x$source" != "x-"	 ]; then
 	    case $source in
-	    [0-9]*)
+	    *.*.*)
 		r="-s $source "
 		;;
 	    ~*)
@@ -1624,18 +1627,17 @@ add_a_rule()
     [ -n "$client" ] && case "$client" in
     -)
 	;;
-    [0-9]*|![0-9]*)
+    *:*)
+	cli="-i ${client%:*} -s ${client#*:}"
+	;;
+    *.*.*)
 	cli="-s $client"
 	;;
     ~*)
 	cli=`mac_match $client`
 	;;
     *)
-        if [ "$client" != "${client%:*}" ]; then
-	    cli="-i ${client%:*} -s ${client#*:}"
-	else
-	    cli="-i $client"
-	fi
+	cli="-i $client"
 	;;
     esac
 
@@ -1647,7 +1649,7 @@ add_a_rule()
     -)
 	serv=
 	;;
-    [0-9]*|![0-9]*)
+    *.*.*)
 	serv=$server
 	;;
     *)
@@ -1741,7 +1743,11 @@ add_a_rule()
 
 	# A specific server or server port given
 
-	[ -n "$addr" -a "$addr" != "$serv" ] && add_nat_rule
+	if [ -n "$addr" -a "$addr" != "$serv" ]; then
+	    add_nat_rule
+	elif [ -n "$servport" -a "$servport" != "$port" ]; then
+	    add_nat_rule
+	fi
 
 	serv="${serv:+-d $serv}"
 
@@ -1967,7 +1973,7 @@ process_tos_rule() {
     fi
 
     [ -n "$src" ] && case "$src" in
-	[0-9]*|![0-9]*)
+	*.*.*)
 	    #
 	    # IP Address or subnet
 	    #
@@ -2010,7 +2016,7 @@ process_tos_rule() {
     fi
 
     [ -n "$dst" ] && case "$dst" in
-	[0-9]*|![0-9]*)
+	*.*.*)
 	    #
 	    # IP Address or subnet
 	    #
@@ -2416,7 +2422,7 @@ setup_masq()
 	iface=
 
 	case $subnet in
-	[0-9]*|![0-9]*)
+	*.*.*)
 	    source="$subnet"
 	    subnet="-s $subnet"
 	    ;;
@@ -2783,12 +2789,17 @@ initialize_netfilter () {
     setpolicy INPUT DROP
     setpolicy OUTPUT DROP
     setpolicy FORWARD DROP
-
+    
     deleteallchains
 
     setcontinue FORWARD
     setcontinue INPUT
     setcontinue OUTPUT
+    #
+    # Allow DNS lookups during startup for FQDNs
+    #
+    run_iptables -A OUTPUT  -p udp --dport 53 -j ACCEPT
+    run_iptables -A FORWARD -p udp --dport 53 -j ACCEPT
 
     [ -n "$CLAMPMSS" ] && \
 	run_iptables -A FORWARD -p tcp \
@@ -3245,6 +3256,9 @@ activate_rules()
     run_iptables -D INPUT 1
     run_iptables -D OUTPUT 1
     run_iptables -D FORWARD 1
+
+    run_iptables -D OUTPUT  -p udp --dport 53 -j ACCEPT
+    run_iptables -D FORWARD -p udp --dport 53 -j ACCEPT
 }
 
 ################################################################################

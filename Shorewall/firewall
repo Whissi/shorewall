@@ -168,12 +168,17 @@ fix_bang() {
 run_iptables() {
 
     if [ "x${*%!*}" = "x$*" ]; then
+	#
+	# No "!" in the command -- just execute it
+	#
 	if ! iptables $@ ; then
 	    [ -z "$stopping" ] && { stop_firewall; exit 2; }
 	fi
 	return
     fi
-
+    #
+    # Need to insert white space before each "!"
+    #
     if ! iptables `fix_bang $@`; then
 	[ -z "$stopping" ] && { stop_firewall; exit 2; }
     fi
@@ -399,16 +404,6 @@ forward_chain() # $1 = interface
 input_chain() # $1 = interface
 {
    echo `chain_base $1`_in
-}
-
-#
-# Input Chains (input and forward) for an interface
-#
-input_chains() # $1 = interface
-{
-    local base=`chain_base $1`
-
-    echo ${base}_in ${base}_fwd
 }
 
 #
@@ -1591,7 +1586,7 @@ setup_mac_lists() {
     for hosts in $maclist_hosts; do
 	interface=${hosts%:*}
 	hosts=${hosts#*:}
-	for chain in `input_chains $interface` ; do 
+	for chain in `first_chains $interface` ; do 
 	    run_iptables -A $chain -s $hosts -m state --state NEW \
 		-j `mac_chain $interface`
 	done

@@ -1779,15 +1779,26 @@ delete_nat() {
 # Setup Network Mapping (NETMAP)
 #
 setup_netmap() {
-    local allints
     
-    while read net1 interface net2 ; do
-	expandv net1 interface net2 
-	
-	addnatrule $(input_chain $interface)  -d $net1 -j NETMAP --to $net2
-	addnatrule $(output_chain $interface) -s $net2 -j NETMAP --to $net1
+    while read type net1 interface net2 ; do
+	expandv type net1 interface net2
 
-	echo "   Network $net1 on $interface mapped to $net2"
+	list_search $interface $all_interfaces || \
+	    fatal_error "Unknown interface $interface in entry \"$type $net1 $interface $net2\""
+
+	case $type in
+	    DNAT)
+		addnatrule $(input_chain $interface)  -d $net1 -j NETMAP --to $net2
+		;;
+	    SNAT)
+		addnatrule $(output_chain $interface) -s $net1 -j NETMAP --to $net2
+		;;
+	    *)
+		fatal_error "Unvalid type $type in entry \"$type $net1 $interface $net2\""
+		;;
+	esac
+
+	echo "   Network $net1 on $interface mapped to $net2 ($type)"
 
     done < $TMP_DIR/netmap
 }

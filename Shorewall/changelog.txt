@@ -4,9 +4,25 @@ Changes since 1.3.11
 
 2. "shorewall refresh" now refreshes the traffic shaping rules
 
-3. Turn off debugging after error.
+3. Turned off debugging after error.
 
-4. Various speedups.
+4. Removed drop of INVALID state output ICMP packets. 
 
-5. Remove drop of INVALID state output ICMP packets. 
-. 
+5. Replaced 'sed' invocation in separate_list() by shell code (speedup).
+
+6. Replace 'wc' invocation in list_count() by shell code (speedup)
+
+7. Replace 'sed' invocation in run_iptables() by shell code and
+   optomize (speedup)
+
+8. Only read the interfaces file once (speedup)
+
+9. Only read the policy file once (speedup)
+
+10. Remove redundant function input_chains() (duplicate of first_chains()) 
+
+11. Generate an error if 'lo' is defined in the interfaces file.
+
+12. Clarify error message where ORIGINAL DEST is specified on an
+    ACCEPT, DROP or REJECT rule.
+ 

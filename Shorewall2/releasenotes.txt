@@ -1,73 +1,40 @@
 Shorewall 2.0.0-Beta1
 
-This is a major release of Shorewall. During the Alpha and Beta stages,
-the product name is changed to "Shorewall2" so that Shorewall version 1
-and Shorewall version 2 may coexist on a system.
-
-The following name changes have occured:
-
-       /sbin/shorewall       -> /sbin/shorewall2
-       /etc/shorewall        -> /etc/shorewall2
-       /etc/init.d/shorewall -> /etc/init.d/shorewall2
-       /usr/share/shorewall  -> /usr/share/shorewall2
-
-Shorewall2 continues to use /var/lib/shorewall as it's default state
-directory so that switching back and forth between Shorewall and
-Shorewall2 works properly.
-
-To switch from shorewall version 1 to shorewall version 2:
-
-   shorewall2 restart
-
-To switch back:
-
-   shorewall restart
-
-In the first release candidate, the product name will return to
-"Shorewall". The installer (install.sh) will only be able to upgrade
-to Shorewall 2.0 from Shorewall version 1.4.0 or later.
-
-During the Alpha and Beta periods, there will be no RPMs nor will there
-be any documentation tarballs. Note that the installer does NOT attempt
-to migrate your Shorewall version 1 configuration to version 2. When
-you install Shorewall2, you get a clean shorewall2 configuration in
-/etc/shorewall2; you must manually move files from /etc/shorewall to
-/etc/shorewall2 and modify them as described below.
------------------------------------------------------------------------
+----------------------------------------------------------------------
 Problems Corrected since prior version.
 
 	 None - this is the initial release.
 -----------------------------------------------------------------------
-Issues when migrating from Shorewall to Shorewall2:
+Issues when migrating from Shorewall to Shorewall:
 
 1) The 'dropunclean' and 'logunclean' interface options are no longer
    supported. If either option is specified in
-   /etc/shorewall2/interfaces, an threatening message will be
+   /etc/shorewall/interfaces, an threatening message will be
    generated.
 
 2) The NAT_BEFORE_RULES option has been removed from
-   shorewall.conf. The behavior of Shorewall2 is as if
+   shorewall.conf. The behavior of Shorewall is as if
    NAT_BEFORE_RULES=No had been specified. In other words, DNAT rules
    now always take precidence over one-to-one NAT specifications.
 
 3) The default value for the ALL INTERFACES column in
-   /etc/shorewall2/nat has changed. In Shorewall, if the column was
+   /etc/shorewall/nat has changed. In Shorewall, if the column was
    left empty, a value of "Yes" was assumed. This has been changed so
    that a value of "No" is now assumed.
 
-4) The following files don't exist in Shorewall2:
+4) The following files don't exist in Shorewall:
 
-       /etc/shorewall2/common.def
-       /etc/shorewall2/common
-       /etc/shorewall2/icmpdef
+       /etc/shorewall/common.def
+       /etc/shorewall/common
+       /etc/shorewall/icmpdef
 
-   The /etc/shorewall2/action file now allows an action to be
+   The /etc/shorewall/action file now allows an action to be
    designated as the "common" action for a particular policy type by
    following the action name with ":" and the policy (DROP, REJECT or
    ACCEPT).
 
-   The file /etc/shorewall2/actions.std has been added to define those
-   actions that are released as part of Shorewall2. In that file are
+   The file /etc/shorewall/actions.std has been added to define those
+   actions that are released as part of Shorewall. In that file are
    two actions as follows:
 
        Drop:DROP
@@ -80,7 +47,7 @@ Issues when migrating from Shorewall to Shorewall2:
    between "Reject" and "Drop" is that "Reject" REJECTs SMB traffic
    while "Drop" silently drops such traffic.
 
-   As described above, Shorewall2 allows a common action for ACCEPT
+   As described above, Shorewall allows a common action for ACCEPT
    policies but does not specify such an action in the default
    configuration.
 
@@ -121,7 +88,7 @@ Issues when migrating from Shorewall to Shorewall2:
 
    If you don't want to create all of the action chains, you can remove
    the INCLUDE and only include those actions that you need. Here's my
-   /etc/shorewall2/actions file:
+   /etc/shorewall/actions file:
 
       DropBcast       #Silently Drops Broadcast Traffic
       DropSMB         #Silently Drops Microsoft SMB Traffic
@@ -143,16 +110,16 @@ Issues when migrating from Shorewall to Shorewall2:
    that file or you must include the definitions similar to mine above
    in your /etc/shorewall/actions file.
 
-5) The /etc/shorewall2 directory no longer contains a 'users' file or a
+5) The /etc/shorewall directory no longer contains a 'users' file or a
    'usersets' file. Similar functionality is now available using
    user-defined actions.
 
-   Now, action files created by copying /etc/shorewall2/action.template
+   Now, action files created by copying /etc/shorewall/action.template
    may now specify a USER and or GROUP name/id in the final column just
    like in the rules file (see below). It is thus possible to create
    actions that control traffic from a list of users and/or groups.
 
-   The last column in /etc/shorewall2/rules is now labeled USER/GROUP
+   The last column in /etc/shorewall/rules is now labeled USER/GROUP
    and may contain:
 
        [!]<user number>[:]
@@ -165,7 +132,7 @@ Issues when migrating from Shorewall to Shorewall2:
        [!]<user name>:<group name>
 
 6) It is no longer possible to specify rate limiting in the ACTION
-   column of /etc/shorewall2/rules -- you must use the RATE LIMIT
+   column of /etc/shorewall/rules -- you must use the RATE LIMIT
    column.
 
 New Features:
@@ -173,13 +140,13 @@ New Features:
 1) The INCLUDE directive now allows absolute file names.
 
 2) A 'nosmurfs' interface option has been added to
-   /etc/shorewall2/interfaces. When specified for an interface, this
+   /etc/shorewall/interfaces. When specified for an interface, this
    option causes smurfs (packets with a broadcast address as their
    source) to be dropped and optionally logged (based on the setting of
    a new SMURF_LOG_LEVEL option in shorewall.conf).
 
 3) fw->fw traffic may now be controlled by Shorewall. There is no need
-   to define the loopback interface in /etc/shorewall2/interfaces; you
+   to define the loopback interface in /etc/shorewall/interfaces; you
    simply add a fw->fw policy and fw->fw rules. If you have neither a
    fw->fw policy nor fw->fw rules, all fw->fw traffic is allowed.
 

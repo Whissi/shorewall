@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-08-19</pubdate>
+    <pubdate>2004-08-21</pubdate>
 
     <copyright>
       <year>2004</year>
@@ -336,8 +336,8 @@ vpn               eth0:0.0.0.0/0        <emphasis role="bold"> ipsec</emphasis>
 
 remote anonymous
 {
-        exchange_mode aggressive ;
-        my_identifier user_fqdn "teastep@shorewall.net" ;
+        exchange_mode main ;
+        my_identifier address ;
         lifetime time 24 hour ;
         proposal {
                 encryption_algorithm 3des;
@@ -374,7 +374,9 @@ spdadd 192.168.20.40/32 192.168.20.10/32 any -P in  ipsec esp/transport/192.168.
 
       <para>/etc/racoon/psk.txt:</para>
 
-      <programlisting>teastep@shorewall.net             &lt;key&gt;</programlisting>
+      <programlisting>192.168.20.20             &lt;key for 192.168.20.10&lt;-&gt;192.168.20.20&gt;
+192.168.20.30             &lt;key for 192.168.20.10&lt;-&gt;192.168.20.30&gt;
+192.168.20.40             &lt;key for 192.168.20.10&lt;-&gt;192.168.20.40&gt;</programlisting>
     </blockquote>
 
     <para>Shorewall configuration goes as follows:</para>

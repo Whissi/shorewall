@@ -1537,7 +1537,7 @@ setup_tunnels() # $1 = name of tunnels file
 
     setup_one_generic() # $1 = gateway, $2 = kind:protocol[:port], $3 = Gateway Zone
     {
-	local procotol
+	local protocol
 	local p=
 
 	case $2 in
@@ -2863,47 +2863,6 @@ process_actions1() {
 # process the associated action files.
 #
 process_actions2() {
-    #
-    # Process a rule where the source or destination is "all"
-    #
-    process_wildcard_rule() {
-	local yclients yservers ysourcezone ydestzone ypolicy
-	
-	for yclients in $xclients; do
-	    for yservers in $xservers; do
-		ysourcezone=${yclients%%:*}
-		ydestzone=${yservers%%:*}
-		if [ "${ysourcezone}" != "${ydestzone}" ] ; then
-		    eval ypolicy=\$${ysourcezone}2${ydestzone}_policy
-		    if [ "$ypolicy" != NONE ] ; then
-			process_action $xaction $xtarget $yclients $yservers $xprotocol $xports $xcports $xratelimit $xuserspec
-		    fi
-		fi
-	    done
-	done
-    }
-
-    do_it() {
-	expandv xclients xservers xprotocol xports xcports xratelimit xuserspec
-
-	if [ "x$xclients" = xall ]; then
-	    xclients="$zones $FW"
-	    if [ "x$xservers" = xall ]; then
-		xservers="$zones $FW"
-	    fi
-	    process_wildcard_rule
-	    continue
-	fi
-
-	if [ "x$xservers" = xall ]; then
-	    xservers="$zones $FW"
-	    process_wildcard_rule
-	    continue
-	fi
-
-	process_action $xaction $xtarget $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec
-
-    }
 
     log_action() {
 	[ "$COMMAND" != check ] && log_rule ${LOGNEWNOTSYN:-info} $1 $2 "" "" -p tcp ! --syn
@@ -2981,8 +2940,9 @@ process_actions2() {
 		fn=$(find_file $f)
 		
 		echo "Processing $fn..."
-		while read xtarget xclients xservers xprotocol xports xcports xratelimit $xuserspec; do
-		    do_it
+		while read xtarget xclients xservers xprotocol xports xcports xratelimit xuserspec ; do
+		    expandv xtarget xclients xservers xprotocol xports xcports xratelimit xuserspec
+		    process_action $xaction $xtarget $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec
 		done < $TMP_DIR/$f
 		;;
 	esac

@@ -3414,10 +3414,10 @@ initialize_netfilter () {
 	run_user_exit newnotsyn
 	if [ -n "$LOGNEWNOTSYN" ]; then
 	    if [ "$LOGNEWNOTSYN" = ULOG ]; then
-		run_iptables -A newnotsyn -j ULOG 
+		run_iptables -A newnotsyn -j ULOG $LOGPARMS \
 		    --ulog-prefix "Shorewall:newnotsyn:DROP:"
 	    else
-		run_iptables -A newnotsyn -j LOG \
+		run_iptables -A newnotsyn -j LOG $LOGPARMS \
 		    --log-prefix "Shorewall:newnotsyn:DROP:" --log-level $LOGNEWNOTSYN
 	    fi
 	fi

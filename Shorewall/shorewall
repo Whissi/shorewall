@@ -348,7 +348,13 @@ monitor_firewall() # $1 = timeout -- if negative, prompt each time that
 	timeout=$1
     fi
 
+    TMP_DIR=/tmp/shorewall-$$
+
+    mkdir $TMP_DIR
+
     qt which awk && { haveawk=Yes; determine_zones; } || haveawk=
+
+    rm -rf $TMP_DIR
 
     while true; do
 	display_chains

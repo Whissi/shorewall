@@ -1447,13 +1447,13 @@ process_rule() {
 	    if [ -n "$cli" ]; then
 		run_iptables -t nat -A POSTROUTING $proto $cli \
 		    $sports -d $serv $dports -j SNAT --to-source $snat
-		else
-		    for source_host in $source_hosts; do
-		        run_iptables -t nat -A POSTROUTING \
-			    -s ${source_host#*:} $proto $sports \
-			    -d $serv $dports -j SNAT --to-source $snat
-		    done
-		fi
+	    else
+		for source_host in $source_hosts; do
+		    run_iptables -t nat -A POSTROUTING \
+		        -s ${source_host#*:} $proto $sports \
+		        -d $serv $dports -j SNAT --to-source $snat
+		done
+	    fi
 	fi
     }
 

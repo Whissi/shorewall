@@ -184,6 +184,9 @@ Problems corrected since 2.2.0 Beta 7:
 
 1) A typo in the /etc/shorewall/interfaces file has been corrected.
 
+2) The "add" and "delete" commands were generating incorrect policy 
+   matches when policy match support was available.
+
 -----------------------------------------------------------------------
 Issues when migrating from Shorewall 2.0 to Shorewall 2.1:
 
@@ -806,3 +809,12 @@ New Features:
 
     If not specified or if specified as empty (e.g., DROPINVALID="")
     then DROPINVALID=Yes is assumed.
+
+36) The "shorewall add" and "shorewall delete" commands now accept a
+    list of hosts to add or delete.
+
+    Examples:
+
+    shorewall add eth1:1.2.3.4 eth1:2.3.4.5 z12
+    shorewall delete eth1:1.2.3.4 eth1:2.3.4.5 z12
+

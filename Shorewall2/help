@@ -29,10 +29,10 @@
 case $1 in
 
 add)
-	echo "add: add <interface>[:<bridge-port>][:<host>] <zone>
-    Adds a host or subnet to a dynamic zone usually used with VPN's.
+	echo "add: add <interface>[:<bridge-port>][:<host-list>] ... <zone>
+    Adds a list of hosts or subnets to a dynamic zone usually used with VPN's.
 
-    shorewall add interface[:host] zone - Adds the specified interface
+    shorewall add interface[:<port>][:host-list] ... zone - Adds the specified interface
     (and bridge port/host if included) to the specified zone.
 
     Example:
@@ -95,11 +95,11 @@ debug)
 	;;
 
 delete)
-	echo "delete: delete <interface>[:<bridge-port>][:<host>] <zone>
+	echo "delete: delete <interface>[:<bridge-port>][:<host-list>] ... <zone>
     Deletes a host or subnet from a dynamic zone usually used with VPN's.
 
-    shorewall delete interface[:port][:host] zone - Deletes the specified
-    interface (and bridge port/host if included) from the specified zone.
+    shorewall delete interface[:port][:host-list] ... zone - Deletes the specified
+    interfaces (and bridge ports/hosts if included) from the specified zone.
 
     Example:
 

@@ -867,8 +867,8 @@ case "$1" in
 	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $1
 	;;
     add|delete)
-	[ $# -ne 3 ] && usage 1
-	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $1 $2 $3
+	[ $# -lt 3 ] && usage 1
+	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $@
 	;;
     show|list)
     	[ -n "$debugging" ] && set -x

@@ -1,4 +1,4 @@
-Shorewall 2.2.0-RC1
+Shorewall 2.2.0-RC2
 
 ----------------------------------------------------------------------
 Problems Corrected since 2.0.3
@@ -853,3 +853,10 @@ New Features:
       gateway and each network listed in the NETWORKS setting at the
       front of the script, only one of these may be used at a time.
 
+39) The IANA has recently registered port 1194 for use by OpenVPN. In
+    previous versions of Shorewall (and OpenVPN), the default port was
+    5000. To deal with this change of default, the OPENVPNPORT option
+    has been added to shorewall.conf. If this option is not set then
+    the OpenVPN port will continue to default to 5000. Otherwise, it
+    will default to the value of this option (which is set to 1194 in
+    the released shorewall.conf file).

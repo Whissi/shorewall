@@ -539,50 +539,53 @@ fi
 #
 install_file_with_backup firewall ${PREFIX}/usr/share/shorewall/firewall 0544
 
-if [ -z "$PREFIX" -a -n "$first_install" ]; then
-    if [ -n "$DEBIAN" ]; then
-	run_install -o $OWNER -g $GROUP -m 0644 default.debian /etc/default/shorewall
-	ln -s ../init.d/shorewall /etc/rcS.d/S40shorewall
-	echo
-	echo "shorewall will start automatically at boot"
-	echo "Set startup=1 in /etc/default/shorewall to enable"
-    else
-	if [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
-	    if insserv /etc/init.d/shorewall ; then
-		echo
-		echo "shorewall will start automatically at boot"
-		echo "Remove /etc/shorewall/startup_disabled in /etc/default/shorewall to enable"
-	    else
+if [ -z "$PREFIX" ]; then
+    if -n "$first_install" ]; then
+	if [ -n "$DEBIAN" ]; then
+	    run_install -o $OWNER -g $GROUP -m 0644 default.debian /etc/default/shorewall
+	    ln -s ../init.d/shorewall /etc/rcS.d/S40shorewall
+	    echo
+	    echo "shorewall will start automatically at boot"
+	    echo "Set startup=1 in /etc/default/shorewall to enable"
+	else
+	    if [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
+		if insserv /etc/init.d/shorewall ; then
+		    echo
+		    echo "shorewall will start automatically at boot"
+		    echo "Remove /etc/shorewall/startup_disabled in /etc/default/shorewall to enable"
+		else
+		    cant_autostart
+		fi
+	    elif [ -x /sbin/chkconfig -o -x /usr/sbin/chkconfig ]; then
+		if chkconfig --add shorewall ; then
+		    echo
+		    echo "shorewall will start automatically in run levels as follows:"
+		    echo "Remove /etc/shorewall/startup_disabled in /etc/default/shorewall to enable"
+		    chkconfig --list shorewall
+		else
+		    cant_autostart
+		fi
+	    elif [ -x /sbin/rc-update ]; then
+		if rc-update add shorewall default; then
+		    echo
+		    echo "shorewall will start automatically at boot"
+		    echo "Remove /etc/shorewall/startup_disabled in /etc/default/shorewall to enable"
+		else
+		    cant_autostart
+		fi
+	    elif [ "$INIT" != rc.firewall ]; then #Slackware starts this automatically
 		cant_autostart
 	    fi
-	elif [ -x /sbin/chkconfig -o -x /usr/sbin/chkconfig ]; then
-	    if chkconfig --add shorewall ; then
-		echo
-		echo "shorewall will start automatically in run levels as follows:"
-		echo "Remove /etc/shorewall/startup_disabled in /etc/default/shorewall to enable"
-		chkconfig --list shorewall
-	    else
-		cant_autostart
-	    fi
-	elif [ -x /sbin/rc-update ]; then
-	    if rc-update add shorewall default; then
-		echo
-		echo "shorewall will start automatically at boot"
-		echo "Remove /etc/shorewall/startup_disabled in /etc/default/shorewall to enable"
-	    else
-		cant_autostart
-	    fi
-	elif [ "$INIT" != rc.firewall ]; then #Slackware starts this automatically
-	    cant_autostart
-	fi
-
-	echo \
+	    
+	    echo \
 "########################################################################
 #      REMOVE THIS FILE AFTER YOU HAVE CONFIGURED SHOREWALL            #
 ########################################################################" > /etc/shorewall/startup_disabled
-    fi
-fi
-
+	fi
+    elif [ -n "$DEBIAN" -a ! -f /etc/default/shorewall ]; then
+ 	run_install -o $OWNER -g $GROUP -m 0644 default.debian /etc/default/shorewall
+    fi	
+fi	   
 #
 #  Report Success
 #

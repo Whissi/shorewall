@@ -192,12 +192,15 @@ run_tc() {
 ################################################################################
 createchain() # $1 = chain name, $2 = If non-null, don't create default rules
 {
+    local target
+
     run_iptables -N $1
 
     if [ $# -eq 1 ]; then
 	state="ESTABLISHED"
 	[ -n "$ALLOWRELATED" ] && state="$state,RELATED"
 	run_iptables -A $1 -m state --state $state -j ACCEPT
+	run_iptables -A $1 -m state --state NEW -p tcp !--syn -j newnotsyn
     fi
 
     eval ${1}_exists=Yes
@@ -1236,7 +1239,7 @@ setup_proxy_arp() {
     interfaces=`find_interfaces_by_option proxyarp`
 
     for interface in $interfaces; do
-	if qt echo 1 > /proc/sys/net/ipv4/conf/$interface/proxy_arp; then
+	if echo 1 > /proc/sys/net/ipv4/conf/$interface/proxy_arp 2> /dev/null; then
 	    echo "   Enabled proxy ARP on $interface"
         else
 	    error_message "Warning: Unable to enable proxy ARP on $interface"
@@ -2713,11 +2716,19 @@ initialize_netfilter () {
 	run_iptables -A FORWARD -p tcp \
 	    --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
 
+    
+    createchain newnotsyn no
+    run_user_exit newnotsyn
+    [ -n "$LOGNEWNOTSYN" ] && \
+	run_iptables -A newnotsyn -j LOG \
+	--log-prefix "Shorewall:newnotsyn:DROP:" --log-level $LOGNEWNOTSYN
+    run_iptables -A newnotsyn -j DROP	
+
     createchain icmpdef no
     createchain common	no
     createchain reject	no
     createchain dynamic no
-    
+	    
     if [ -f /var/lib/shorewall/save ]; then
 	echo "Restoring dynamic rules..."
 
@@ -3388,6 +3399,7 @@ do_initialize() {
     DETECT_DNAT_IPADDRS=
     MERGE_HOSTS=
     MUTEX_TIMEOUT=
+    LOGNEWNOTSYN=
     stopping=
     have_mutex=
     masq_seq=1

@@ -471,3 +471,16 @@ New Features:
     Marking using the CLASSIFY target always occurs in the POSTROUTING
     chain of the mangle table and is not affected by the setting of
     MARK_IN_FORWARD_CHAIN in shorewall.conf.
+
+16) During "shorewall start", IP addresses to be added as a consequence
+    of ADD_IP_ALIASES=Yes and ADD_SNAT_ALIASES=Yes are quietly deleted
+    when /etc/shorewall/nat and /etc/shorewall/masq are processed then
+    the are re-added later. This is done to help ensure that the
+    addresses can be added with the specified labels but can have
+    the undesirable side effect of causing routes to be quietly
+    deleted. A new RETAIN_ALIASES option has been added to
+    shorewall.conf; when this option is set to Yes, existing addresses
+    will not be deleted. Regardless of the setting of RETAIN_ALIASES,
+    addresses added during "shorewall start" are still deleted at a
+    subsequent "shorewall stop" or "shorewall restart".
+

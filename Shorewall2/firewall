@@ -2069,7 +2069,7 @@ setup_nat() {
 		    add_ip_aliases=
 		    ;;
 		*)
-		    run_and_save_command qt ip addr del $external dev $iface
+		    [ -n "$RETAIN_ALIASES" ] || run_and_save_command qt ip addr del $external dev $iface
 		    ;;
 	    esac
 	else
@@ -2105,7 +2105,7 @@ setup_nat() {
 	policyout="-m policy --pol none --dir out"
     fi
 
-    save_progress_message "Restoring one-to-one NAT..."
+    [ -n "$RETAIN_ALIASES" ] || save_progress_message "Restoring one-to-one NAT..."
 
     while read external interface internal allints localnat; do
 	expandv external interface internal allints localnat
@@ -4807,7 +4807,7 @@ setup_masq()
 		if [ -n "$address" ]; then
 		    for addr in $(ip_range_explicit ${address%:*}) ; do
 			if ! list_search $addr $aliases_to_add; then
-			    save_command qt ip addr del $addr dev $interface 
+			    [ -n "$RETAIN_ALIASES" ] || save_command qt ip addr del $addr dev $interface 
 			    aliases_to_add="$aliases_to_add $addr $fullinterface"
 			    case $fullinterface in 
 				*:*)
@@ -4980,7 +4980,10 @@ setup_masq()
 
     strip_file masq $1
 
-    [ -n "$NAT_ENABLED" ] && echo "Masqueraded Networks and Hosts:" && save_progress_message "Restoring Masquerading/SNAT..."
+    if [ -n "$NAT_ENABLED" ]; then
+	echo "Masqueraded Networks and Hosts:"
+	[ -n "$RETAIN_ALIASES" ] || save_progress_message "Restoring Masquerading/SNAT..."
+    fi
 
     while read fullinterface networks addresses proto ports ipsec; do
 	expandv fullinterface networks addresses proto ports ipsec
@@ -5198,7 +5201,14 @@ add_ip_aliases()
     do_one()
     {
 	val=$(address_details)
-	ensure_and_save_command ip addr add ${external}${val} dev $interface $label
+
+	if [ -n "$RETAIN_ALIASES" ]; then
+	    run_ip addr add ${external}${val} dev $interface $label
+	    save_command qt ip addr add ${external}${val} dev $interface $label
+	else
+	    ensure_and_save_command ip addr add ${external}${val} dev $interface $label
+	fi
+
 	echo "$external $interface" >> ${STATEDIR}/nat
 	[ -n "$label" ] && label="with $label"
 	progress_message "   IP Address $external added to interface $interface $label"
@@ -6740,9 +6750,10 @@ do_initialize() {
     BRIDGING=
     DYNAMIC_ZONES=
     PKTTYPE=
+    RETAIN_ALIASES=
+
     RESTOREBASE=
     TMP_DIR=
-
     ALL_INTERFACES=
 
     stopping=
@@ -6914,7 +6925,7 @@ do_initialize() {
     DYNAMIC_ZONES=$(added_param_value_no DYNAMIC_ZONES $DYNAMIC_ZONES)
     PKTTYPE=$(added_param_value_no PKTTYPE $PKTTYPE)
     STARTUP_ENABLED=$(added_param_value_yes STARTUP_ENABLED $STARTUP_ENABLED)
-
+    RETAIN_ALIASES=$(added_param_value_no RETAIN_ALIASES $RETAIN_ALIASES)
     #
     # Strip the files that we use often
     #

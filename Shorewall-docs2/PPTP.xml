@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-05-22</pubdate>
+    <pubdate>2004-11-02</pubdate>
 
     <copyright>
       <year>2001</year>
@@ -35,10 +35,21 @@
       1.2 or any later version published by the Free Software Foundation; with
       no Invariant Sections, with no Front-Cover, and with no Back-Cover
       Texts. A copy of the license is included in the section entitled
-      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
     </legalnotice>
 
     <revhistory>
+      <revision>
+        <revnumber>1.4</revnumber>
+
+        <date>2004-11-02</date>
+
+        <authorinitials>TE</authorinitials>
+
+        <revremark>Added link to Greg Kops's tutorial.</revremark>
+      </revision>
+
       <revision>
         <revnumber>1.3</revnumber>
 
@@ -46,7 +57,8 @@
 
         <authorinitials>TE</authorinitials>
 
-        <revremark>Warning about PPTP conntrack patch and GRE tunnels.</revremark>
+        <revremark>Warning about PPTP conntrack patch and GRE
+        tunnels.</revremark>
       </revision>
 
       <revision>
@@ -56,7 +68,8 @@
 
         <authorinitials>TE</authorinitials>
 
-        <revremark>Revised instructions regarding PPTP conntrack patch.</revremark>
+        <revremark>Revised instructions regarding PPTP conntrack
+        patch.</revremark>
       </revision>
 
       <revision>
@@ -66,12 +79,14 @@
 
         <authorinitials>TE</authorinitials>
 
-        <revremark>Added note about PPTP module support in Bering 1.2</revremark>
+        <revremark>Added note about PPTP module support in Bering
+        1.2</revremark>
       </revision>
     </revhistory>
 
     <abstract>
-      <para>Shorewall easily supports PPTP in a number of configurations.</para>
+      <para>Shorewall easily supports PPTP in a number of
+      configurations.</para>
     </abstract>
   </articleinfo>
 
@@ -80,8 +95,9 @@
 
     <note>
       <para>I am no longer attempting to maintain MPPE patches for current
-      Linux kernel&#39;s and pppd. I recommend that you refer to the following
-      URLs for information about installing MPPE into your kernel and pppd.</para>
+      Linux kernel's and pppd. I recommend that you refer to the following
+      URLs for information about installing MPPE into your kernel and
+      pppd.</para>
     </note>
 
     <para>The <ulink url="http://pptpclient.sourceforge.net">Linux PPTP client
@@ -89,12 +105,13 @@
     connections where your Linux system is the PPTP client. This is what I
     currently use. I am no longer running PoPToP but rather I use the PPTP
     Server included with XP Professional (see <ulink
-    url="PPTP.htm#ServerBehind">PPTP Server running behind your Firewall</ulink>
-    below).</para>
+    url="PPTP.htm#ServerBehind">PPTP Server running behind your
+    Firewall</ulink> below).</para>
 
     <variablelist>
       <varlistentry>
-        <term><ulink url="http://pptpclient.sourceforge.net">http://pptpclient.sourceforge.net</ulink></term>
+        <term><ulink
+        url="http://pptpclient.sourceforge.net">http://pptpclient.sourceforge.net</ulink></term>
 
         <listitem>
           <para>Everything you need to run a PPTP client.</para>
@@ -102,11 +119,21 @@
       </varlistentry>
 
       <varlistentry>
-        <term><ulink url="http://www.poptop.org">http://www.poptop.org</ulink></term>
+        <term><ulink
+        url="http://www.poptop.org">http://www.poptop.org</ulink></term>
 
         <listitem>
           <para>The <quote>kernelmod</quote> package can be used to quickly
           install MPPE into your kernel without rebooting.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><ulink
+        url="http://devel.elucid8design.com/el8/devel/tutorials/pptp.php">http://devel.elucid8design.com/el8/devel/tutorials/pptp.php</ulink></term>
+
+        <listitem>
+          <para>A nice tutorial for installing a PPTP server on Fedora.</para>
         </listitem>
       </varlistentry>
     </variablelist>
@@ -120,8 +147,8 @@
     <title>PPTP Server Running on your Firewall</title>
 
     <para>I will try to give you an idea of how to set up a PPTP server on
-    your firewall system. This isn&#39;t a detailed HOWTO but rather an
-    example of how I have set up a working PPTP server on my own firewall.</para>
+    your firewall system. This isn't a detailed HOWTO but rather an example of
+    how I have set up a working PPTP server on my own firewall.</para>
 
     <para>The steps involved are:</para>
 
@@ -181,15 +208,15 @@
       parent directory):</para>
 
       <programlisting>cd ppp-2.4.1
-patch -p1 &#60; ../ppp-2.4.0-openssl-0.9.6-mppe.patch
-patch -p1 &#60; ../ppp-2.4.1-MSCHAPv2-fix.patch
-(Optional) patch -p1 &#60; ../require-mppe.diff
+patch -p1 &lt; ../ppp-2.4.0-openssl-0.9.6-mppe.patch
+patch -p1 &lt; ../ppp-2.4.1-MSCHAPv2-fix.patch
+(Optional) patch -p1 &lt; ../require-mppe.diff
 ./configure
 make</programlisting>
 
       <para>You will need to install the resulting binary on your firewall
-      system. To do that, I NFS mount my source filesystem and use
-      <quote>make install</quote> from the ppp-2.4.1 directory.</para>
+      system. To do that, I NFS mount my source filesystem and use <quote>make
+      install</quote> from the ppp-2.4.1 directory.</para>
     </section>
 
     <section id="PatchKernel">
@@ -207,8 +234,8 @@ make</programlisting>
       <para>Uncompress the patch into the same directory where your top-level
       kernel source is located and:</para>
 
-      <programlisting>cd &#60;your GNU/Linux source top-level directory&#62;
-patch -p1 &#60; ../linux-2.4.16-openssl-0.9.6b-mppe.patch</programlisting>
+      <programlisting>cd &lt;your GNU/Linux source top-level directory&gt;
+patch -p1 &lt; ../linux-2.4.16-openssl-0.9.6b-mppe.patch</programlisting>
 
       <para>Now configure your kernel. Here is my ppp configuration:</para>
 
@@ -297,12 +324,12 @@ require-mppe-stateless</programlisting>
         </itemizedlist>
       </note>
 
-      <para>Here&#39;s my /etc/ppp/chap-secrets:</para>
+      <para>Here's my /etc/ppp/chap-secrets:</para>
 
       <programlisting>Secrets for authentication using CHAP
 # client        server    secret    IP addresses
-CPQTDM\\TEastep *         &#60;shhhhhh&#62; 192.168.1.7
-TEastep         *         &#60;shhhhhh&#62; 192.168.1.7</programlisting>
+CPQTDM\\TEastep *         &lt;shhhhhh&gt; 192.168.1.7
+TEastep         *         &lt;shhhhhh&gt; 192.168.1.7</programlisting>
 
       <para>I am the only user who connects to the server but I may connect
       either with or without a domain being specified. The system I connect
@@ -338,7 +365,7 @@ remoteip 192.168.1.33-38</programlisting>
           </listitem>
 
           <listitem>
-            <para>The local IP is the same as my internal interface&#39;s
+            <para>The local IP is the same as my internal interface's
             (192.168.1.254).</para>
           </listitem>
 
@@ -362,9 +389,9 @@ remoteip 192.168.1.33-38</programlisting>
 # description: control pptp server
 #
 
-case &#34;$1&#34; in
+case "$1" in
 start)
-    echo 1 &#62; /proc/sys/net/ipv4/ip_forward
+    echo 1 &gt; /proc/sys/net/ipv4/ip_forward
     modprobe ppp_async
     modprobe ppp_generic
     modprobe ppp_mppe
@@ -387,7 +414,7 @@ status)
     ifconfig
     ;;
 *)
-    echo &#34;Usage: $0 {start|stop|restart|status}&#34;
+    echo "Usage: $0 {start|stop|restart|status}"
     ;;
 esac</programlisting>
     </section>
@@ -398,11 +425,11 @@ esac</programlisting>
       <section>
         <title>Basic Setup</title>
 
-        <para>Here&#39; a basic setup that treats your remote users as if they
+        <para>Here' a basic setup that treats your remote users as if they
         were part of your <emphasis role="bold">loc</emphasis> zone. Note that
         if your primary internet connection uses ppp0, then be sure that
-        <emphasis role="bold">loc</emphasis> follows <emphasis role="bold">net</emphasis>
-        in /etc/shorewall/zones.</para>
+        <emphasis role="bold">loc</emphasis> follows <emphasis
+        role="bold">net</emphasis> in /etc/shorewall/zones.</para>
 
         <table>
           <title>/etc/shorewall/tunnels</title>
@@ -606,12 +633,14 @@ esac</programlisting>
 
         <para>Often there will be situations where you want multiple
         connections from remote networks with these networks having different
-        firewalling requirements.<graphic fileref="images/MultiPPTP.png" /></para>
+        firewalling requirements.<graphic
+        fileref="images/MultiPPTP.png" /></para>
 
-        <para>Here&#39;s how you configure this in Shorewall. Note that if
-        your primary internet connection uses ppp0 then be sure that the
-        <emphasis role="bold">vpn{1-3}</emphasis> zones follows <emphasis
-        role="bold">net</emphasis> in /etc/shorewall/zones as shown below.</para>
+        <para>Here's how you configure this in Shorewall. Note that if your
+        primary internet connection uses ppp0 then be sure that the <emphasis
+        role="bold">vpn{1-3}</emphasis> zones follows <emphasis
+        role="bold">net</emphasis> in /etc/shorewall/zones as shown
+        below.</para>
 
         <table>
           <title>/etc/shorewall/tunnels</title>
@@ -833,7 +862,7 @@ esac</programlisting>
 
             <entry>net</entry>
 
-            <entry>loc:&#60;<emphasis>server address</emphasis>&#62;</entry>
+            <entry>loc:&lt;<emphasis>server address</emphasis>&gt;</entry>
 
             <entry>tcp</entry>
 
@@ -849,7 +878,7 @@ esac</programlisting>
 
             <entry>net</entry>
 
-            <entry>loc:&#60;<emphasis>server address</emphasis>&#62;</entry>
+            <entry>loc:&lt;<emphasis>server address</emphasis>&gt;</entry>
 
             <entry>47</entry>
 
@@ -864,8 +893,8 @@ esac</programlisting>
     </table>
 
     <para>If you have multiple external IP address and you want to forward a
-    single &#60;<emphasis>external address</emphasis>&#62;, add the following
-    to your /etc/shorewall/rules file:</para>
+    single &lt;<emphasis>external address</emphasis>&gt;, add the following to
+    your /etc/shorewall/rules file:</para>
 
     <table>
       <title>/etc/shorewall/rules</title>
@@ -895,7 +924,7 @@ esac</programlisting>
 
             <entry>net</entry>
 
-            <entry>loc:&#60;<emphasis>server address</emphasis>&#62;</entry>
+            <entry>loc:&lt;<emphasis>server address</emphasis>&gt;</entry>
 
             <entry>tcp</entry>
 
@@ -903,7 +932,7 @@ esac</programlisting>
 
             <entry>-</entry>
 
-            <entry>&#60;<emphasis>external address</emphasis>&#62;</entry>
+            <entry>&lt;<emphasis>external address</emphasis>&gt;</entry>
           </row>
 
           <row>
@@ -911,7 +940,7 @@ esac</programlisting>
 
             <entry>net</entry>
 
-            <entry>loc:&#60;<emphasis>server address</emphasis>&#62;</entry>
+            <entry>loc:&lt;<emphasis>server address</emphasis>&gt;</entry>
 
             <entry>47</entry>
 
@@ -919,7 +948,7 @@ esac</programlisting>
 
             <entry>-</entry>
 
-            <entry>&#60;<emphasis>external address</emphasis>&#62;</entry>
+            <entry>&lt;<emphasis>external address</emphasis>&gt;</entry>
           </row>
         </tbody>
       </tgroup>
@@ -929,10 +958,10 @@ esac</programlisting>
   <section id="ClientsBehind">
     <title>PPTP Clients Running Behind your Firewall</title>
 
-    <para>You shouldn&#39;t have to take any special action for this case
-    unless you wish to connect multiple clients to the same external server.
-    In that case, you must install the PPTP connection/tracking and NAT patch
-    from <ulink url="http://www.netfilter.org">Netfilter Patch-O-Mati</ulink>c
+    <para>You shouldn't have to take any special action for this case unless
+    you wish to connect multiple clients to the same external server. In that
+    case, you must install the PPTP connection/tracking and NAT patch from
+    <ulink url="http://www.netfilter.org">Netfilter Patch-O-Mati</ulink>c
     (some distributions are now shipping with this patch installed). I
     recommend that you also add these four lines to your
     /etc/shorewall/modules file:</para>
@@ -1127,7 +1156,8 @@ loadmodule ip_nat_proto_gre</programlisting>
     </table>
 
     <table>
-      <title>/etc/shorewall/tunnels (For Shorewall versions 1.3.10 and later)</title>
+      <title>/etc/shorewall/tunnels (For Shorewall versions 1.3.10 and
+      later)</title>
 
       <tgroup cols="4">
         <thead>
@@ -1160,13 +1190,13 @@ loadmodule ip_nat_proto_gre</programlisting>
     <quote>cpq</quote> zone because I also run a PPTP server on my firewall
     (see above). Using this technique allows me to distinguish clients of my
     own PPTP server from arbitrary hosts at Compaq; I assign addresses in
-    192.168.1.0/24 to my PPTP clients and Compaq doesn&#39;t use that RFC1918
+    192.168.1.0/24 to my PPTP clients and Compaq doesn't use that RFC1918
     Class C subnet.</para>
 
     <para>I use this script in /etc/init.d to control the client. The reason
-    that I disable ECN when connecting is that the Compaq tunnel servers
-    don&#39;t do ECN yet and reject the initial TCP connection request if I
-    enable ECN :-(</para>
+    that I disable ECN when connecting is that the Compaq tunnel servers don't
+    do ECN yet and reject the initial TCP connection request if I enable ECN
+    :-(</para>
 
     <programlisting>#!/bin/sh
 #
@@ -1175,48 +1205,48 @@ loadmodule ip_nat_proto_gre</programlisting>
 # chkconfig: 5 60 85
 # description: PPTP Link Control
 #
-NAME=&#34;Tandem&#34;
+NAME="Tandem"
 ADDRESS=tunnel-tandem.compaq.com
-USER=&#39;Tandem\tommy&#39;
+USER='Tandem\tommy'
 ECN=0
 DEBUG=
 
 start_pptp() {
-    echo $ECN &#62; /proc/sys/net/ipv4/tcp_ecn
+    echo $ECN &gt; /proc/sys/net/ipv4/tcp_ecn
     if /usr/sbin/pptp $ADDRESS user $USER noauth $DEBUG; then
         touch /var/lock/subsys/pptp
-        echo &#34;PPTP Connection to $NAME Started&#34;
+        echo "PPTP Connection to $NAME Started"
     fi
 }
 
 stop_pptp() {
-    if killall /usr/sbin/pptp 2&#62; /dev/null; then
-        echo &#34;Stopped pptp&#34;
+    if killall /usr/sbin/pptp 2&gt; /dev/null; then
+        echo "Stopped pptp"
     else
         rm -f /var/run/pptp/*
     fi
 
     # if killall pppd; then
-    # echo &#34;Stopped pppd&#34;
+    # echo "Stopped pppd"
     # fi
 
     rm -f /var/lock/subsys/pptp
 
-    echo 1 &#62; /proc/sys/net/ipv4/tcp_ecn
+    echo 1 &gt; /proc/sys/net/ipv4/tcp_ecn
 }
 
 
-case &#34;$1&#34; in
+case "$1" in
 start)
-    echo &#34;Starting PPTP Connection to ${NAME}...&#34;
+    echo "Starting PPTP Connection to ${NAME}..."
     start_pptp
     ;;
 stop)
-    echo &#34;Stopping $NAME PPTP Connection...&#34;
+    echo "Stopping $NAME PPTP Connection..."
     stop_pptp
     ;;
 restart)
-    echo &#34;Restarting $NAME PPTP Connection...&#34;
+    echo "Restarting $NAME PPTP Connection..."
     stop_pptp
     start_pptp
     ;;
@@ -1224,11 +1254,11 @@ status)
     ifconfig
     ;;
 *)
-    echo &#34;Usage: $0 {start|stop|restart|status}&#34;
+    echo "Usage: $0 {start|stop|restart|status}"
     ;;
 esac</programlisting>
 
-    <para>Here&#39;s my /etc/ppp/options file:</para>
+    <para>Here's my /etc/ppp/options file:</para>
 
     <programlisting>#
 # Identify this connection
@@ -1239,7 +1269,7 @@ ipparam Compaq
 #
 lock
 #
-# We don&#39;t need the tunnel server to authenticate itself
+# We don't need the tunnel server to authenticate itself
 #
 noauth
 
@@ -1250,7 +1280,7 @@ noauth
 multilink
 mrru 1614
 #
-# Turn off transmission protocols we know won&#39;t be used
+# Turn off transmission protocols we know won't be used
 #
 nobsdcomp
 nodeflate
@@ -1295,19 +1325,19 @@ restart_pptp() {
     /sbin/service pptp stop
     sleep 10
     if /sbin/service pptp start; then
-        /usr/bin/logger &#34;PPTP Restarted&#34;
+        /usr/bin/logger "PPTP Restarted"
     fi
 }
 
-if [ -n &#34;`ps ax | grep /usr/sbin/pptp | grep -v grep`&#34; ]; then
+if [ -n "`ps ax | grep /usr/sbin/pptp | grep -v grep`" ]; then
     exit 0
 fi
 
-echo &#34;Attempting to restart PPTP&#34;
+echo "Attempting to restart PPTP"
 
-restart_pptp &#62; /dev/null 2&#62;&#38;1 &#38;</programlisting>
+restart_pptp &gt; /dev/null 2&gt;&amp;1 &amp;</programlisting>
 
-    <para><ulink url="ftp://ftp.shorewall.net/pub/shorewall/misc/Vonau">Here&#39;s
+    <para><ulink url="ftp://ftp.shorewall.net/pub/shorewall/misc/Vonau">Here's
     a scriptand corresponding ip-up.local</ulink> from Jerry Vonau
     <email>jvonau@home.com</email> that controls two PPTP connections.</para>
   </section>
@@ -1323,7 +1353,8 @@ restart_pptp &#62; /dev/null 2&#62;&#38;1 &#38;</programlisting>
     PPTP (interface ppp0). If you have this type of setup, you need to modify
     the sample configuration that you downloaded as described in this section.
     <emphasis role="bold">These changes are in addition to those described in
-    the <ulink url="shorewall_quickstart_guide.htm">QuickStart Guides</ulink>.</emphasis></para>
+    the <ulink url="shorewall_quickstart_guide.htm">QuickStart
+    Guides</ulink>.</emphasis></para>
 
     <para>Lets assume the following:</para>
 

@@ -1368,7 +1368,7 @@ setup_proxy_arp() {
 	    [ -n "$persistent" ] && haveroute=yes
 	fi
 
-	run_arp -Ds $address $external pub
+	run_arp -i $external -Ds $address $external pub
 
 	echo 1 > /proc/sys/net/ipv4/conf/$interface/proxy_arp
 	echo 0 > /proc/sys/net/ipv4/conf/$external/proxy_arp

@@ -295,6 +295,12 @@ ensurechain1() # $1 = chain name
 addrule() # $1 = chain name, remainder of arguments specify the rule
 {
     ensurechain $1
+    run_iptables -A $@
+}
+
+addrule2() # $1 = chain name, remainder of arguments specify the rule
+{
+    ensurechain $1
     run_iptables2 -A $@
 }
 
@@ -1558,8 +1564,8 @@ setup_tunnels() # $1 = name of tunnels file
 	[ $kind = IPSEC ] && kind=ipsec
 
 	options="-m state --state NEW -j ACCEPT"
-	addrule $inchain	  -p 50	 $(source_ip_range $1) -j ACCEPT
-	addrule $outchain	  -p 50	 $(dest_ip_range $1)   -j ACCEPT
+	addrule2 $inchain	  -p 50	 $(source_ip_range $1) -j ACCEPT
+	addrule2 $outchain	  -p 50	 $(dest_ip_range $1)   -j ACCEPT
 	if [ -z "$noah" ]; then
 	    run_iptables -A $inchain  -p 51 $(source_ip_range $1) -j ACCEPT
 	    run_iptables -A $outchain -p 51 $(dest_ip_range $1)   -j ACCEPT
@@ -1593,26 +1599,26 @@ setup_tunnels() # $1 = name of tunnels file
 
     setup_one_other() # $1 = TYPE, $2 = gateway, $3 = protocol
     {
-	addrule $inchain  -p $3 $(source_ip_range $2) -j ACCEPT
-	addrule $outchain -p $3 $(dest_ip_range $2) -j ACCEPT
+	addrule2 $inchain  -p $3 $(source_ip_range $2) -j ACCEPT
+	addrule2 $outchain -p $3 $(dest_ip_range $2) -j ACCEPT
 
 	progress_message "   $1 tunnel to $2 defined."
     }
 
     setup_pptp_client() # $1 = gateway
     {
-	addrule $outchain -p 47               $(dest_ip_range $1) -j ACCEPT
-	addrule $inchain  -p 47                                   -j ACCEPT
-	addrule $outchain -p tcp --dport 1723 $(dest_ip_range $1) -j ACCEPT
+	addrule2 $outchain -p 47               $(dest_ip_range $1)   -j ACCEPT
+	addrule2 $inchain  -p 47               $(source_ip_range $1) -j ACCEPT
+	addrule2 $outchain -p tcp --dport 1723 $(dest_ip_range $1)   -j ACCEPT
 
 	progress_message "   PPTP tunnel to $1 defined."
     }
 
     setup_pptp_server() # $1 = gateway
     {
-	addrule $inchain  -p 47               -s $1 -j ACCEPT
-	addrule $outchain -p 47               -d $1 -j ACCEPT
-	addrule $inchain  -p tcp --dport 1723 -s $1 -j ACCEPT
+	addrule2 $inchain  -p 47               $(source_ip_range $1) -j ACCEPT
+	addrule2 $outchain -p 47               $(dest_ip_range $1)   -j ACCEPT
+	addrule2 $inchain  -p tcp --dport 1723 $(source_ip_range $1) -j ACCEPT
 
 	progress_message "   PPTP server defined."
     }
@@ -1628,8 +1634,8 @@ setup_tunnels() # $1 = name of tunnels file
 		;;
 	esac
 
-	addrule $inchain  -p udp $(source_ip_range $1) --dport $p -j ACCEPT
-	addrule $outchain -p udp $(dest_ip_range $1)   --dport $p -j ACCEPT
+	addrule2 $inchain  -p udp $(source_ip_range $1) --dport $p -j ACCEPT
+	addrule2 $outchain -p udp $(dest_ip_range $1)   --dport $p -j ACCEPT
 
 	progress_message "   OPENVPN tunnel to $1:$p defined."
     }
@@ -1656,8 +1662,8 @@ setup_tunnels() # $1 = name of tunnels file
 
 	p=${p:+--dport $p}
 
-	addrule $inchain  -p $protocol $(source_ip_range $1) $p -j ACCEPT
-	addrule $outchain -p $protocol $(dest_ip_range $1)   $p -j ACCEPT
+	addrule2 $inchain  -p $protocol $(source_ip_range $1) $p -j ACCEPT
+	addrule2 $outchain -p $protocol $(dest_ip_range $1)   $p -j ACCEPT
 
 	for z in $(separate_list $3); do
 	    if validate_zone $z; then

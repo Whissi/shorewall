@@ -52,10 +52,11 @@ New Features:
       (currently, the firewall is placed in the 'stopped' state).
 
    f) If you have previously saved the running configuration and want
-      Shorewall to discard it, simply 'rm /var/lib/shorewall/restore'.
+      Shorewall to discard it, use the 'shorewall forget' command.
 
    WARNING: iptables 1.2.9 is broken with respect to iptables-save;
-   you must patch iptables 1.2.9 with the iptables patch availale from
+   If your kernel has connection tracking match support, you must
+   patch iptables 1.2.9 with the iptables patch availale from
    the Shorewall errata page.
 
 2) The previous implementation of dynamic zones was difficult to

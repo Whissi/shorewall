@@ -80,6 +80,10 @@
 #						   "dropped" addresses so that it will
 #						   be automatically reinstated the
 #						   next time that Shorewall starts.
+#                                                  Save the current state so that 'shorewall
+#                                                  restore' can be used.
+#
+#          shorewall forget                        Discard the data saved by 'shorewall save'
 #
 #          shorewall ipaddr [ <address>/<cidr> | <address> <netmask> ]
 #
@@ -539,6 +543,7 @@ usage() # $1 = exit status
     echo "   clear"
     echo "   delete <interface>[:<host>] <zone>"
     echo "   drop <address> ..."
+    echo "   forget"
     echo "   help [ <command > | host | address ]"
     echo "   hits"
     echo "   ipcalc [ <address>/<vlsm> | <address> <netmask> ]"
@@ -985,6 +990,11 @@ case "$1" in
 	    echo "Shorewall isn't started"
 	fi
 	mutex_off
+	;;
+    forget)
+	rm -f /var/lib/shorewall/restore
+	rm -f /var/lib/shorewall/save
+	echo "   Previously saved information discarded"
 	;;
     ipcalc)
     	[ -n "$debugging" ] && set -x

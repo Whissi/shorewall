@@ -422,8 +422,14 @@ chain_base() #$1 = interface
 
     while true; do
 	case $c in
+	    [0-9]*)
+                c=C${c}
+		;;
 	    *.*)
 		c="${c%.*}_${c##*.}"
+		;;
+	    *-*)
+		c="${c%-*}_${c##*-}"
 		;;
 	    *)
 		echo ${c:=common}

@@ -57,14 +57,18 @@ list_search() # $1 = element to search for , $2-$n = list
 }
 
 #
-# Function to count list elements
+# Functions to count list elements
+# - - - - - - - - - - - - - - - -
+# Whitespace-separated list
+#
+list_count1() {
+    echo $#
+}
+#
+# Comma-separated list
 #
 list_count() {
-    arg_count() {
-	echo $#
-    }
-
-    arg_count `separate_list $1`
+    list_count1 `separate_list $1`
 }
 
 #
@@ -230,6 +234,8 @@ run_tc() {
 #
 createchain() # $1 = chain name, $2 = If "yes", create default rules
 {
+    local c=`chain_base $1`
+
     run_iptables -N $1
 
     if [ $2 = yes ]; then
@@ -238,11 +244,13 @@ createchain() # $1 = chain name, $2 = If "yes", create default rules
 	    run_iptables -A $1 -m state --state NEW -p tcp ! --syn -j newnotsyn
     fi
 
-    eval ${1}_exists=Yes
+    eval ${c}_exists=Yes
 }
 
 createchain2() # $1 = chain name, $2 = If "yes", create default rules
 {
+    local c=`chain_base $1`
+
     if iptables -N $1; then
 
 	if [ $2 = yes ]; then
@@ -251,7 +259,7 @@ createchain2() # $1 = chain name, $2 = If "yes", create default rules
 		run_iptables -A $1 -m state --state NEW -p tcp ! --syn -j newnotsyn
 	fi
 	
-	eval ${1}_exists=Yes
+	eval ${c}_exists=Yes
     fi
 }
 
@@ -264,7 +272,9 @@ createchain2() # $1 = chain name, $2 = If "yes", create default rules
 #
 havechain() # $1 = name of chain
 {
-    eval test \"\$${1}_exists\" = Yes
+    local c=`chain_base $1`
+
+    eval test \"\$${c}_exists\" = Yes
 }
 
 #
@@ -716,7 +726,6 @@ validate_policy()
     print_policy() # $1 = source zone, $2 = destination zone
     {
 	[ $command != check ] || \
-	    [ $1 = $2 ]  || \
 	    [ $1 = all ] || \
 	    [ $2 = all ] || \
 	    echo "   Policy for $1 to $2 is $policy using chain $chain"
@@ -1668,9 +1677,10 @@ setup_ecn() # $1 = file name
 #
 process_tc_rule()
 {
+    chain=$marking_chain
+    
     add_a_tc_rule() {
 	r=
-	chain=$marking_chain
 
 	if [ "x$source" != "x-"	 ]; then
 	    case $source in
@@ -1693,26 +1703,6 @@ process_tc_rule()
 	    esac
 	fi
 
-	if [ "$mark" != "${mark%:*}" ]; then
-
-	    [ "$chain" = tcout ] && \
-		fatal_error "Chain designator not allowed when source is \$FW; rule \"$rule\""
-
-	    case "${mark#*:}" in
-		p|P)
-		    chain=tcpre
-		    ;;
-		f|F)
-		    chain=tcfor
-		    ;;
-		*)
-		    fatal_error "Invalid chain designator: (${mark#*:}) in rule \"$rule\""
-		    ;;
-	    esac
-
-	    mark="${mark%:*}"
-	fi
-
 	[ "x$dest"   = "x-"  ] || r="${r}-d $dest "
 	[ "$proto"   = "all" ] || r="${r}-p $proto "
 	[ "x$port"   = "x-"  ] || r="${r}--dport $port "
@@ -1721,6 +1711,26 @@ process_tc_rule()
 	run_iptables2 -t mangle -A $chain $r -j MARK --set-mark $mark
 
     }
+
+    if [ "$mark" != "${mark%:*}" ]; then
+
+	[ "$chain" = tcout ] && \
+	    fatal_error "Chain designator not allowed when source is \$FW; rule \"$rule\""
+	
+	case "${mark#*:}" in
+	    p|P)
+		chain=tcpre
+		;;
+	    f|F)
+		chain=tcfor
+		;;
+	    *)
+		fatal_error "Invalid chain designator: (${mark#*:}) in rule \"$rule\""
+		;;
+	esac
+
+	mark="${mark%:*}"
+    fi
 
     for source in `separate_list ${sources:=-}`; do
 	for dest in `separate_list ${dests:=-}`; do
@@ -4424,7 +4434,7 @@ activate_rules()
 		    subnet1=${host1#*:}
 
 		    if list_search $host1 $source_hosts && ! list_search $host1 $routeback; then
-			if [ `list_count $source_hosts` -gt 1 ]; then
+			if [ `list_count1 $source_hosts` -gt 1 ]; then
 			    run_iptables -A $frwd_chain -s ! $subnet1 -o $interface1 -d $subnet1 -j $chain
 			fi
 		    else

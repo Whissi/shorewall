@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-09-12</pubdate>
+    <pubdate>2004-10-27</pubdate>
 
     <copyright>
       <year>2001</year>
@@ -398,8 +398,131 @@ INIT="rc.firewall"</programlisting>
       url="upgrade_issues.htm">Upgrade Issues</ulink>.</para>
     </important>
 
-    <para>There appears to be no standard method for upgrading LEAF/Bering
-    packages — Sorry to be so unhelpful.</para>
+    <para>The following was contributed by Charles Steinkuehler on the Leaf
+    mailing list:</para>
+
+    <blockquote>
+      <para>It's *VERY* simple...just put in a new CD and reboot! &nbsp;:-)
+      Actually, I'm only slightly kidding...that's exactly how I upgrade my
+      prodution firewalls. &nbsp;The partial backup feature I added to
+      Dachstein allows configuration data to be stored seperately from the
+      rest of the package.</para>
+
+      <para>Once the config data is seperated from the rest of the package,
+      it's an easy matter to upgrade the pacakge while keeping your current
+      configuration (in my case, just inserting a new CD and
+      re-booting).</para>
+
+      <para>Users who aren't running with multiple package paths and using
+      partial backups can still upgrade a package, it just takes a bit of
+      extra work. &nbsp;The general idea is to use a partial backup to save
+      your configuration, replace the package, and restore your old
+      configuration files. Step-by-step instructions for one way to do this
+      (assuming a conventional single-floppy LEAF system) would be:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>Make a backup copy of your firewall disk ('NEW'). &nbsp;This
+          is the disk you will add the upgraded package(s) to.</para>
+        </listitem>
+
+        <listitem>
+          <para>Format a floppy to use as a temporary location for your
+          configuration file(s) ('XFER'). &nbsp;This disk should have the same
+          format as your firewall disk (and could simply be another backup
+          copy of your current firewall).</para>
+        </listitem>
+
+        <listitem>
+          <para>Make sure you have a working copy of your existing firewall
+          ('OLD') in a safe place, that you *DO NOT* use durring this process.
+          That way, if anything goes wrong you can simply reboot off the OLD
+          disk to get back to a working configuration.</para>
+        </listitem>
+
+        <listitem>
+          <para>Remove your current firewall configuration disk and replace it
+          with the XFER disk.</para>
+        </listitem>
+
+        <listitem>
+          <para>Use the lrcfg backup menu to make a partial backup of the
+          package(s) you want to upgrade, being sure to backup the files to
+          the XFER disk. &nbsp;From the backup menu:</para>
+
+          <programlisting>t e &lt;enter&gt; p &lt;enter&gt;
+b &lt;package1&gt; &lt;enter&gt;
+b &lt;package2&gt; &lt;enter&gt;
+...</programlisting>
+        </listitem>
+
+        <listitem>
+          <para>Download and copy the package(s) you want to upgrade onto the
+          NEW disk.</para>
+        </listitem>
+
+        <listitem>
+          <para>Reboot your firewall using the NEW disk...at this point your
+          upgraded packages will have their default configuration.</para>
+        </listitem>
+
+        <listitem>
+          <para>Mount the XFER disk (mount -t msdos /dev/fd0u1680 /mnt)</para>
+        </listitem>
+
+        <listitem>
+          <para>CD to the root directory (cd /)</para>
+        </listitem>
+
+        <listitem>
+          <para>Manually extract configuration data for each package you
+          upgraded:</para>
+
+          <programlisting>tar -xzvf /mnt/package1.lrp
+tar -xzvf /mnt/package2.lrp
+...</programlisting>
+        </listitem>
+
+        <listitem>
+          <para>Unmount (umount /mnt) and remove the XFER disk</para>
+        </listitem>
+
+        <listitem>
+          <para>Using lrcfg, do *FULL* backups of your upgraded
+          packages.</para>
+        </listitem>
+
+        <listitem>
+          <para>Reboot, verifying the firewall works as expected. &nbsp;Some
+          configuration files may need to be 'tweaked' to work properly with
+          the upgraded package binaries.</para>
+        </listitem>
+      </itemizedlist>
+
+      <important>
+        <para>The new package file &lt;package&gt;.local can be used to
+        fine-tune which files are included (and excluded) from the partial
+        backup (see the Dachstein-CD README for details). &nbsp;If this file
+        doesn't exist, the backup scripts assume anything from the
+        &lt;package&gt;.list file that resides in /etc or /var/lib/lrpkg is
+        part of the configuration data and is used to create the partial
+        backup. &nbsp;If shorewall puts anything in /etc that isn't a user
+        modified configuration file, a proper shorwall.local file should be
+        created prior to making the partial backup [<emphasis
+        role="bold">Editor's note</emphasis>: Shorewall places only
+        user-modifiable files in /etc].</para>
+      </important>
+
+      <note>
+        <para>It's obviously possible to do the above 'in-place', without
+        using multiple disks, and even without making a partial backup (ie:
+        copy current config files to /tmp, manually extract new package on top
+        of current running firewall, then copy or merge config data from /tmp
+        and backup...or similar), but anyone capable of that level of command
+        line gymnastics is probably doing it already, without needing detailed
+        instructions! :-)</para>
+      </note>
+    </blockquote>
   </section>
 
   <section id="Config_Files">

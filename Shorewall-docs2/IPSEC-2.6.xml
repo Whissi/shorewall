@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-10-08</pubdate>
+    <pubdate>2004-10-25</pubdate>
 
     <copyright>
       <year>2004</year>
@@ -37,10 +37,10 @@
   <warning>
     <para>To use the features described in this article, your kernel and
     iptables must include the Netfilter+ipsec patches and policy match support
-    and you must be running Shorewall 2.1.5 or later. The Netfilter patches
-    are available from Netfilter Patch-O-Matic-NG and are also included in
-    some commercial distributions (most notably <trademark>SuSE</trademark>
-    9.1).</para>
+    and you must be running Shorewall 2.1.5 or later (with Shorewall 2.2.0
+    Beta 1 or later recommended). The Netfilter patches are available from
+    Netfilter Patch-O-Matic-NG and are also included in some commercial
+    distributions (most notably <trademark>SuSE</trademark> 9.1).</para>
   </warning>
 
   <important>
@@ -56,7 +56,7 @@
   </warning>
 
   <section>
-    <title>Shorewall 2.1 and Kernel 2.6 IPSEC</title>
+    <title>Shorewall 2.2 and Kernel 2.6 IPSEC</title>
 
     <para>This is <emphasis role="bold">not</emphasis> a HOWTO for Kernel 2.6
     IPSEC -- for that, please see <ulink
@@ -176,6 +176,14 @@
     <note>
       <para>For simple zones such as are shown in the following examples, the
       two techniques are equivalent and are used interchangably.</para>
+    </note>
+
+    <note>
+      <para>It is redundent to have <emphasis role="bold">Yes</emphasis> in
+      the IPSEC column of the <filename>/etc/shorewall/ipsec</filename> entry
+      for a zone and to also have the <emphasis role="bold">ipsec</emphasis>
+      option in <filename>/etc/shorewall/hosts</filename> entries for that
+      zone.</para>
     </note>
 
     <para>Finally, the OPTIONS, IN OPTIONS and OUT OPTIONS columns in

@@ -592,33 +592,48 @@ done=0
 
 while [ $done -eq 0 ]; do
     [ $# -eq 0 ] && usage 1
-    case $1 in
-    -c)
-	[ $# -eq 1 ] && usage 1
+    option=$1
+    case $option in
+	-*)
+	    option=${option#-}
 
-	if [ ! -d $2 ]; then
-	    if [ -e $2 ]; then
-		echo "$2 is not a directory" >&2 && exit 2
-	    else
-		echo "Directory $2 does not exist" >&2 && exit 2
-	    fi
-	fi
+	    [ "x$option" = x ] && usage 1
+	    
+	    while [ "x$option" != x ]; do
+		case $option in
+		    c)
+			[ $# -eq 1 ] && usage 1
 
-	SHOREWALL_DIR=$2
-	shift
-	shift
-	;;
-    -x)
-	IPT_OPTIONS="-xnv"
-	shift
-	;;
-    -q)
-	QUIET=Yes
-	shift
-	;;
-    *)
-	done=1
-	;;
+			if [ ! -d $2 ]; then
+			    if [ -e $2 ]; then
+				echo "$2 is not a directory" >&2 && exit 2
+			    else
+				echo "Directory $2 does not exist" >&2 && exit 2
+			    fi
+			fi
+			
+			SHOREWALL_DIR=$2
+			option=
+			shift
+			;;
+		    x*)
+			IPT_OPTIONS="-xnv"
+			option=${option#x}
+			;;
+		    q*)
+			QUIET=Yes
+			option=${option#q}
+			;;
+		    *)
+			usage 1
+			;;
+		esac
+	    done
+	    shift
+	    ;;
+	*)
+	    done=1
+            ;;
     esac
 done
 

@@ -2,6 +2,8 @@
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
 "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
 <article id="NAT">
+  <!--$Id$-->
+
   <articleinfo>
     <title>One-to-one NAT</title>
 
@@ -30,8 +32,8 @@
       document under the terms of the GNU Free Documentation License, Version
       1.2 or any later version published by the Free Software Foundation; with
       no Invariant Sections, with no Front-Cover, and with no Back-Cover
-      Texts. A copy of the license is included in the section entitled &#34;<ulink
-      url="GnuCopyright.htm">GNU Free Documentation License</ulink>&#34;.</para>
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
 
@@ -113,25 +115,26 @@
     /etc/shorewall/masq or /etc/shorewall/proxyarp.</para>
 
     <note>
-      <para>The &#34;ALL INTERFACES&#34; column is used to specify whether
-      access to the external IP from all firewall interfaces should undergo
-      NAT (Yes or yes) or if only access from the interface in the INTERFACE
-      column should undergo NAT. If you leave this column empty, &#34;Yes&#34;
-      is assumed. The ALL INTERFACES column was added in version 1.1.6.
-      <emphasis role="bold">Specifying &#34;Yes&#34; in this column will not
-      allow systems on the lower LAN to access each other using their public
-      IP addresses.</emphasis> For example, the lower left-hand system
-      (10.1.1.2) cannot connect to 130.252.100.19 and expect to be connected
-      to the lower right-hand system. <ulink url="FAQ.htm#faq2a">See FAQ 2a</ulink>.</para>
+      <para>The <quote>ALL INTERFACES</quote> column is used to specify
+      whether access to the external IP from all firewall interfaces should
+      undergo NAT (Yes or yes) or if only access from the interface in the
+      INTERFACE column should undergo NAT. If you leave this column empty,
+      <quote>Yes</quote> is assumed. The ALL INTERFACES column was added in
+      version 1.1.6. <emphasis role="bold">Specifying <quote>Yes</quote> in
+      this column will not allow systems on the lower LAN to access each other
+      using their public IP addresses.</emphasis> For example, the lower
+      left-hand system (10.1.1.2) cannot connect to 130.252.100.19 and expect
+      to be connected to the lower right-hand system. <ulink
+      url="FAQ.htm#faq2a">See FAQ 2a</ulink>.</para>
     </note>
 
     <note>
       <para>Shorewall will automatically add the external address to the
       specified interface unless you specify <ulink
-      url="Documentation.htm#Aliases">ADD_IP_ALIASES</ulink>=&#34;no&#34; (or
-      &#34;No&#34;) in /etc/shorewall/shorewall.conf; If you do not set
-      ADD_IP_ALIASES or if you set it to &#34;Yes&#34; or &#34;yes&#34; then
-      you must NOT configure your own alias(es).</para>
+      url="Documentation.htm#Aliases">ADD_IP_ALIASES</ulink>=<quote>no</quote>
+      (or <quote>No</quote>) in /etc/shorewall/shorewall.conf; If you do not
+      set ADD_IP_ALIASES or if you set it to <quote>Yes</quote> or
+      <quote>yes</quote> then you must NOT configure your own alias(es).</para>
 
       <para><important><para>Shorewall versions earlier than 1.4.6 can only
       add external addresses to an interface that is configured with a single
@@ -141,13 +144,13 @@
     </note>
 
     <note>
-      <para>The contents of the &#34;LOCAL&#34; column determine whether
+      <para>The contents of the <quote>LOCAL</quote> column determine whether
       packets originating on the firewall itself and destined for the EXTERNAL
       address are redirected to the internal ADDRESS. If this column contains
-      &#34;yes&#34; or &#34;Yes&#34; (and the ALL INTERFACES COLUMN also
-      contains &#34;Yes&#34; or &#34;yes&#34;) then such packets are
-      redirected; otherwise, such packets are not redirected. The LOCAL column
-      was added in version 1.1.8.</para>
+      <quote>yes</quote> or <quote>Yes</quote> (and the ALL INTERFACES COLUMN
+      also contains <quote>Yes</quote> or <quote>yes</quote>) then such
+      packets are redirected; otherwise, such packets are not redirected. The
+      LOCAL column was added in version 1.1.8.</para>
     </note>
   </section>
 </article>

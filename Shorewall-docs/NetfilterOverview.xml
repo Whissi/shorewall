@@ -2,6 +2,8 @@
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
 "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
 <article id="NetfilterOverview">
+  <!--$Id$-->
+
   <articleinfo>
     <title>Netfilter Overview</title>
 
@@ -26,8 +28,8 @@
       document under the terms of the GNU Free Documentation License, Version
       1.2 or any later version published by the Free Software Foundation; with
       no Invariant Sections, with no Front-Cover, and with no Back-Cover
-      Texts. A copy of the license is included in the section entitled &#34;<ulink
-      url="GnuCopyright.htm">GNU Free Documentation License</ulink>&#34;.</para>
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
 
@@ -76,8 +78,8 @@
 
     <graphic fileref="images/Netfilter.png" />
 
-    <para>&#34;Local Process&#34; means a process running on the Shorewall
-    system itself.</para>
+    <para><quote>Local Process</quote> means a process running on the
+    Shorewall system itself.</para>
 
     <para>In the above diagram are boxes similar to this:</para>
 
@@ -102,10 +104,10 @@
     </important>
 
     <para>The above diagram should help you understand the output of
-    &#34;shorewall status&#34;.</para>
+    <quote>shorewall status</quote>.</para>
 
-    <para>Here are some excerpts from &#34;shorewall status&#34; on a server
-    with one interface (eth0):</para>
+    <para>Here are some excerpts from <quote>shorewall status</quote> on a
+    server with one interface (eth0):</para>
 
     <programlisting>[root@lists html]# shorewall status
  
@@ -124,7 +126,7 @@ Counters reset Sat Oct 11 08:12:57 PDT 2003</programlisting>
 
     <para>The following rule indicates that all traffic destined for the
     firewall that comes into the firewall on eth0 is passed to a chain called
-    &#34;eth0_in&#34;. That chain will be shown further down.</para>
+    <quote>eth0_in</quote>. That chain will be shown further down.</para>
 
     <programlisting> 785K   93M eth0_in    all  --  eth0   *       0.0.0.0/0            0.0.0.0/0
     0     0 common     all  --  *      *       0.0.0.0/0            0.0.0.0/0
@@ -157,8 +159,8 @@ Chain OUTPUT (policy DROP 1 packets, 60 bytes)
  785K   93M dynamic    all  --  *      *       0.0.0.0/0            0.0.0.0/0
  785K   93M net2fw     all  --  *      *       0.0.0.0/0            0.0.0.0/0</programlisting>
 
-    <para>The &#34;dynamic&#34; chain above is where dynamic blacklisting is
-    done.</para>
+    <para>The <quote>dynamic</quote> chain above is where dynamic blacklisting
+    is done.</para>
 
     <para>Next comes the <emphasis role="bold">Nat</emphasis> table:</para>
 

@@ -2,6 +2,8 @@
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
 "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
 <article id="Multiple_Zones">
+  <!--$Id$-->
+
   <articleinfo>
     <title>Multiple Zones per Interface</title>
 
@@ -26,8 +28,8 @@
       document under the terms of the GNU Free Documentation License, Version
       1.2 or any later version published by the Free Software Foundation; with
       no Invariant Sections, with no Front-Cover, and with no Back-Cover
-      Texts. A copy of the license is included in the section entitled &#34;<ulink
-      url="GnuCopyright.htm">GNU Free Documentation License</ulink>&#34;.</para>
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
 
@@ -82,11 +84,11 @@
 
     <para><emphasis role="bold">These examples use the local zone but the same
     technique works for any zone.</emphasis> Remember that Shorewall
-    doesn&#39;t have any conceptual knowledge of &#34;Internet&#34;,
-    &#34;Local&#34;, or &#34;DMZ&#34; so all zones except the firewall itself
-    ($FW) are the same as far as Shorewall is concerned. Also, the examples
-    use private (RFC 1918) addresses but public IP addresses can be used in
-    exactly the same way.</para>
+    doesn&#39;t have any conceptual knowledge of <quote>Internet</quote>,
+    <quote>Local</quote>, or <quote>DMZ</quote> so all zones except the
+    firewall itself ($FW) are the same as far as Shorewall is concerned. Also,
+    the examples use private (RFC 1918) addresses but public IP addresses can
+    be used in exactly the same way.</para>
   </section>
 
   <section>
@@ -95,9 +97,9 @@
     <para>Here is an example of a router in the local zone.</para>
 
     <note>
-      <para> the <emphasis role="bold">box called &#34;Router&#34; could be a
-      VPN server</emphasis> or other such device; from the point of view of
-      this discussion, it makes no difference.</para>
+      <para>the <emphasis role="bold">box called <quote>Router</quote> could
+      be a VPN server</emphasis> or other such device; from the point of view
+      of this discussion, it makes no difference.</para>
     </note>
 
     <graphic fileref="images/MultiZone1.png" />
@@ -145,8 +147,8 @@
         </listitem>
 
         <listitem>
-          <para>Set the &#39;routeback&#39; and &#39;newnotsyn&#39; options
-          for eth1 (the local firewall interface) in
+          <para>Set the <quote>routeback</quote> and <quote>newnotsyn</quote>
+          options for eth1 (the local firewall interface) in
           /etc/shorewall/interfaces.</para>
         </listitem>
 
@@ -165,19 +167,19 @@
       <section>
         <title>Nested Zones</title>
 
-        <para>You can define one zone (called it &#39;loc&#39;) as being all
-        hosts connectied to eth1 and a second zone &#39;loc1&#39;
+        <para>You can define one zone (called it <quote>loc</quote>) as being
+        all hosts connectied to eth1 and a second zone <quote>loc1</quote>
         (192.168.2.0/24) as a sub-zone.</para>
 
         <graphic fileref="images/MultiZone1A.png" />
 
-        <para>The advantage of this approach is that the zone &#39;loc1&#39;
+        <para>The advantage of this approach is that the zone <quote>loc1</quote>
         can use CONTINUE policies such that if a connection request
-        doesn&#39;t match a &#39;loc1&#39; rule, it will be matched against
-        the &#39;loc&#39; rules. For example, if your loc1-&#62;net policy is
-        CONTINUE then if a connection request from loc1 to the internet
-        doesn&#39;t match any rules for loc1-&#62;net then it will be checked
-        against the loc-&#62;net rules.</para>
+        doesn&#39;t match a <quote>loc1</quote> rule, it will be matched
+        against the <quote>loc</quote> rules. For example, if your
+        loc1-&#62;net policy is CONTINUE then if a connection request from
+        loc1 to the internet doesn&#39;t match any rules for loc1-&#62;net
+        then it will be checked against the loc-&#62;net rules.</para>
 
         <table>
           <title>/etc/shorewall/zones</title>
@@ -274,8 +276,8 @@
         </table>
 
         <para>If you don&#39;t need Shorewall to set up infrastructure to
-        route traffic between &#39;loc&#39; and &#39;loc1&#39;, add these two
-        policies:</para>
+        route traffic between <quote>loc</quote> and <quote>loc1</quote>, add
+        these two policies:</para>
 
         <table>
           <title>/etc/shorewall/policy</title>
@@ -435,8 +437,8 @@
         </table>
 
         <para>If you don&#39;t need Shorewall to set up infrastructure to
-        route traffic between &#39;loc&#39; and &#39;loc1&#39;, add these two
-        policies:</para>
+        route traffic between <quote>loc</quote> and <quote>loc1</quote>, add
+        these two policies:</para>
 
         <table>
           <title>/etc/shorewall/policy</title>
@@ -593,8 +595,8 @@
     </table>
 
     <para>You probably don&#39;t want Shorewall to set up infrastructure to
-    route traffic between &#39;loc&#39; and &#39;loc1&#39; so you should add
-    these two policies:</para>
+    route traffic between <quote>loc</quote> and <quote>loc1</quote> so you
+    should add these two policies:</para>
 
     <table>
       <title>/etc/shorewall/policy</title>

@@ -2162,7 +2162,7 @@ setup_nat() {
     }
 
     do_one_nat() {
-	local add_ip_aliases=$ADD_IP_ALIASES, iface=${interface%:*}
+	local add_ip_aliases=$ADD_IP_ALIASES iface=${interface%:*}
 	
 	if [ -n "$add_ip_aliases" ]; then
 	    case $interface in
@@ -4879,12 +4879,12 @@ get_routed_networks() # $1 = interface name
 setup_masq()
 {
     do_ipsec_options() {
-	local options=$(separate_list $ipsec) option 
-	policy ="-m policy --pol ipsec --dir out"
+	local options="$(separate_list $ipsec)" option 
+	policy="-m policy --pol ipsec --dir out"
 
-	options=$(separate_list $options)
 	for option in $options; do
 	    case $option in
+		[Yy]es)         ;;
 		strict)         policy="$policy --strict" ;;
 		next)           policy="$policy --next" ;;
 		reqid=*)        policy="$policy --reqid ${option#*=}" ;;
@@ -4905,7 +4905,7 @@ setup_masq()
     }
 
     setup_one() {
-	local add_snat_aliases=$ADD_SNAT_ALIASES, pre_nat= policy= destnets=
+	local add_snat_aliases=$ADD_SNAT_ALIASES pre_nat= policy= destnets=
 
 	[ "x$ipsec" = x- ] && ipsec=
 
@@ -4921,7 +4921,11 @@ setup_masq()
 		policy="-m policy --pol none --dir out"
 		;;
 	    *)
-		[ -n "$ipsec" ] && do_ipsec_options || [ -n "$POLICY_MATCH" ] && policy="-m policy --pol none --dir out"
+		if [ -n "$ipsec" ]; then
+		    do_ipsec_options
+		elif [ -n "$POLICY_MATCH" ]; then
+		    policy="-m policy --pol none --dir out"
+		fi
 		;;
 	esac
 

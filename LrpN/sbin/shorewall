@@ -1018,6 +1018,13 @@ case "$1" in
 	    echo
 	    ip route ls table $table
 	done
+
+	if qt which lsmod; then
+	    echo
+	    echo "Modules"
+	    echo
+	    lsmod | grep -E '^ip_|^ipt_'
+	fi
 	;;
     hits)
     	[ -n "$debugging" ] && set -x

@@ -1418,20 +1418,9 @@ setup_tunnels() # $1 = name of tunnels file
 
     setup_one_ipsec() # $1 = gateway $2 = Tunnel Kind $3 = gateway zones
     {
-    	local kind=$2 noah= markval=
-
-	case $kind in 
-	    *:*:*)
-		markval=${kind#*}
-		kind=${kind%%:*}
-		;;
-	esac
+    	local kind=$2 noah= 
 
 	case $kind in
-	    *:[1-9]*)
-		markval=${kind#*}
-		kind=${kind%:*}
-		;;		
 	    *:*)
 	    	noah=${kind#*:}
 		[ $noah = noah -o $noah = NOAH ] || fatal_error "Invalid IPSEC modifier $noah in tunnel \"$tunnel\""
@@ -2129,9 +2118,9 @@ setup_tc1() {
     # Link to the TC mangle chains from the main chains
     #
 
-    run_iptables -t mangle -A FORWARD -m mark --mark 0 -j tcfor
-    run_iptables -t mangle -A PREROUTING               -j tcpre
-    run_iptables -t mangle -A OUTPUT                   -j tcout
+    run_iptables -t mangle -A FORWARD    -j tcfor
+    run_iptables -t mangle -A PREROUTING -j tcpre
+    run_iptables -t mangle -A OUTPUT     -j tcout
 
     run_user_exit tcstart
 

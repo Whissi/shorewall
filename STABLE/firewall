@@ -1668,9 +1668,10 @@ setup_ecn() # $1 = file name
 #
 process_tc_rule()
 {
+    chain=$marking_chain
+    
     add_a_tc_rule() {
 	r=
-	chain=$marking_chain
 
 	if [ "x$source" != "x-"	 ]; then
 	    case $source in
@@ -1693,26 +1694,6 @@ process_tc_rule()
 	    esac
 	fi
 
-	if [ "$mark" != "${mark%:*}" ]; then
-
-	    [ "$chain" = tcout ] && \
-		fatal_error "Chain designator not allowed when source is \$FW; rule \"$rule\""
-
-	    case "${mark#*:}" in
-		p|P)
-		    chain=tcpre
-		    ;;
-		f|F)
-		    chain=tcfor
-		    ;;
-		*)
-		    fatal_error "Invalid chain designator: (${mark#*:}) in rule \"$rule\""
-		    ;;
-	    esac
-
-	    mark="${mark%:*}"
-	fi
-
 	[ "x$dest"   = "x-"  ] || r="${r}-d $dest "
 	[ "$proto"   = "all" ] || r="${r}-p $proto "
 	[ "x$port"   = "x-"  ] || r="${r}--dport $port "
@@ -1721,6 +1702,26 @@ process_tc_rule()
 	run_iptables2 -t mangle -A $chain $r -j MARK --set-mark $mark
 
     }
+
+    if [ "$mark" != "${mark%:*}" ]; then
+
+	[ "$chain" = tcout ] && \
+	    fatal_error "Chain designator not allowed when source is \$FW; rule \"$rule\""
+	
+	case "${mark#*:}" in
+	    p|P)
+		chain=tcpre
+		;;
+	    f|F)
+		chain=tcfor
+		;;
+	    *)
+		fatal_error "Invalid chain designator: (${mark#*:}) in rule \"$rule\""
+		;;
+	esac
+
+	mark="${mark%:*}"
+    fi
 
     for source in `separate_list ${sources:=-}`; do
 	for dest in `separate_list ${dests:=-}`; do

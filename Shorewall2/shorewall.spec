@@ -40,6 +40,14 @@ rm -rf $RPM_BUILD_ROOT
 
 %post
 
+if [ $1 -eq 1 ]; then
+	if [ -x /sbin/insserv ]; then
+		/sbin/insserv /etc/rc.d/shorewall
+	elif [ -x /sbin/chkconfig ]; then
+		/sbin/chkconfig --add shorewall;
+	fi
+fi
+
 %preun
 
 if [ $1 = 0 ]; then

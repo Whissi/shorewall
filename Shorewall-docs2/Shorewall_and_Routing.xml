@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article>
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>Shorewall and Routing</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate>2005-02-19</pubdate>
+
+    <copyright>
+      <year>2005</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <section>
+    <title>Routing vs. Firewalling.</title>
+
+    <para>One of the most misunderstood aspects of Shorewall is its
+    releationship with routing. This article attempts to clear some of the fog
+    that surrounds this issue.</para>
+
+    <para>As a general principle:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>Routing determines where packets are to be sent.</para>
+      </listitem>
+
+      <listitem>
+        <para>Once routing determines where the packet is to go, the firewall
+        (Shorewall) determines if the packet is allowed to go there.</para>
+      </listitem>
+    </orderedlist>
+
+    <para>There are ways that Shorewall can affect routing which are described
+    in the following sections.</para>
+  </section>
+
+  <section>
+    <title>Routing and Netfilter</title>
+
+    <para>The following diagram shows the relationship between routing
+    decisions and Netfilter.</para>
+
+    <graphic fileref="images/Netfilter.png" />
+
+    <para>The light blue boxes indicate where routing decisions are made. The
+    green boxes show where Netfilter processing takes place (as directed by
+    Shorewall). You will notice that there are two different paths through
+    this maze, depending on where the packet originates. We will look at each
+    of these separately.</para>
+
+    <section>
+      <title>Packets Entering the Firewall from Outside</title>
+
+      <para>When a packet arrives from outside, it first undergoes Netfilter
+      PREROUTING processing. In Shorewall terms:</para>
+
+      <orderedlist>
+        <listitem>
+          <para>Packets may be marked using entries in the <ulink
+          url="???">/etc/shorewall/tcrules</ulink> file. Entries in that file
+          containing ":P" in the mark column are applied here as are rules
+          that default to the MARK_IN_FORWARD_CHAIN=No setting in
+          <filename>/etc/shorewall/shorewall.conf</filename>. These marks may
+          be used to specify that the packet should be routed using an
+          <firstterm>alternate routing table</firstterm>; see the <ulink
+          url="Shorewall_Squid_Usage.html">Shorewall Squid
+          documentation</ulink> for examples.</para>
+        </listitem>
+
+        <listitem>
+          <para>The destination IP address may be rewritten as a consequence
+          of:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>DNAT[-] rules.</para>
+            </listitem>
+
+            <listitem>
+              <para>REDIRECT[-] rules.</para>
+            </listitem>
+
+            <listitem>
+              <para>Entries in <filename>/etc/shorewall/nat</filename>.</para>
+            </listitem>
+          </itemizedlist>
+        </listitem>
+      </orderedlist>
+
+      <para>So the only influence that Shorewall has over where these packets
+      go is via NAT or by marking them so that they may be routed using an
+      alternate routing table.</para>
+    </section>
+
+    <section>
+      <title>Packets Originating on the Firewall</title>
+
+      <para>Processing of packets that originate on the firewall itself are
+      initially routed using the default routing table then passed through the
+      OUTPUT chains. Shorewall can influence what happens here:</para>
+
+      <orderedlist>
+        <listitem>
+          <para>Packets may be marked using entries in the <ulink
+          url="???">/etc/shorewall/tcrules</ulink> file (rules with "$FW" in
+          the SOURCE column). These marks may be used to specify that the
+          packet should be re-routed using an alternate routing table.</para>
+        </listitem>
+
+        <listitem>
+          <para>The destination IP address may be rewritten as a consequence
+          of:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>DNAT[-] rules that specify $FW as the SOURCE.</para>
+            </listitem>
+
+            <listitem>
+              <para>Entries in <filename>/etc/shorewall/nat</filename> that
+              have "Yes" in LOCAL column.</para>
+            </listitem>
+          </itemizedlist>
+        </listitem>
+      </orderedlist>
+
+      <para>So again in this case, the only influence that Shorewall has over
+      the packet destination is NAT or marking.</para>
+    </section>
+  </section>
+
+  <section>
+    <title>Alternate Routing Table Configuration</title>
+
+    <para>The <ulink url="Shorewall_Squid_Usage.html">Shorewall Squid
+    documentation</ulink> shows how alternate routing tables can be created
+    and used. That documentation shows how you can use logic in
+    <filename>/etc/shorewall/init</filename> to create and populate an
+    alternate table and to add a routing rule for its use. It is fine to use
+    that technique so long as you understand that you are basically just using
+    the Shorewall init script (<filename>/etc/init.d/shorewall</filename>) to
+    configure your alternate routing table at boot time and that <emphasis
+    role="bold">other than as described in the previous section, there is no
+    connection between Shorewall and routing</emphasis>. </para>
+  </section>
+</article>

@@ -952,6 +952,14 @@ case "$1" in
 	echo "IP Configuration"
 	echo
 	ip addr ls
+	
+	if qt which brctl; then
+	    echo
+	    echo "Bridges"
+	    echo
+	    brctl show
+	fi
+
 	echo
 	echo "Routing Rules"
 	echo

@@ -2716,7 +2716,7 @@ setup_masq()
 
 	if [ -n "$nomasq" ]; then
 	    newchain=masq${masq_seq}
-	    run_iptables -t nat -N $newchain
+	    createnatchain $newchain
 	    addnatrule $chain -d $destnet $iface $subnet -j $newchain
 	    masq_seq=$(($masq_seq + 1))
 	    chain=$newchain

@@ -2689,30 +2689,19 @@ loadmodule() # $1 = module name, $2 - * arguments
 {
     local modulename=$1
     local modulefile
+    local suffix
 
     if [ -z "`lsmod | grep $modulename`" ]; then
 	shift
-	modulefile=$MODULESDIR/${modulename}.o
+	
+	for suffix in o gz ko ; do
+	    modulefile=$MODULESDIR/${modulename}.${suffix}
 
-	if [ -f $modulefile ]; then
-	    insmod $modulefile $*
-	    return
-	fi
-	#
-	# If the modules directory contains compressed modules then we'll
-	# assume that insmod can load them
-	#
-	modulefile=${modulefile}.gz
-
-	if [ -f $modulefile ]; then
-	    insmod $modulefile $*
-	fi
-
-	modulefile=${modulefile}.ko
-
-	if [ -f $modulefile ]; then
-	    insmod $modulefile $*
-	fi
+	    if [ -f $modulefile ]; then
+		insmod $modulefile $*
+		return
+	    fi
+	done
     fi
 }
 

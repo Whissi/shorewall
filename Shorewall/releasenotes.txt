@@ -261,13 +261,14 @@ New Features:
    To specify a rate limit, follow ACCEPT, DNAT[-], REDIRECT[-] or LOG
    with
 
-      < <rate>/<interval>:<burst> >
+      < <rate>/<interval>[:<burst>] >
 
    where
 
       <rate> is the sustained rate per <interval>
       <interval> is "sec" or "min"
-      <burst> is the largest burst accepted within an <interval>
+      <burst> is the largest burst accepted within an <interval>. If
+              not given, the default of 5 is assumed.
 
    There may be no white space between the ACTION and "<" nor there may
    be any white space within the burst specification. If you want to
@@ -291,5 +292,6 @@ New Features:
    SOURCE or DEST fields, the limit will apply to each pair of
    zones individually rather than as a single limit for all pairs of
    zones covered by the rule.
+
 
    

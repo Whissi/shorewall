@@ -1466,13 +1466,18 @@ setup_syn_flood_chain ()
 	# $2 = synparams
 {
     local chain=$1
-    local limit=${2%:*}
-    local limit_burst=${2#*:}
+    local limit=$2
+    local limit_burst=
+
+    case $limit in
+	*:*)
+	    limit_burst="--limit-burst ${limit#*:}"
+	    limit=${limit%:*}
+	    ;;
+    esac
 
     run_iptables -N @$chain
-    run_iptables -A @$chain \
-	-m limit --limit $limit --limit-burst $limit_burst \
-	-j RETURN
+    run_iptables -A @$chain -m limit --limit $limit $limit_burst -j RETURN
     run_iptables -A @$chain -j DROP
 }
 
@@ -2454,7 +2459,14 @@ process_rule() # $1 = target
 	ratelimit="${ratelimit%>*}"
 	target="${target%<*}${target#*>}"
 	expandv ratelimit
-	ratelimit="-m limit --limit ${ratelimit%:*} --limit-burst ${ratelimit#*:}"
+	case $ratelimit in
+	    *:*)
+		ratelimit="-m limit --limit ${ratelimit%:*} --limit-burst ${ratelimit#*:}"
+		;;
+	    *)
+		ratelimit="-m limit --limit $ratelimit"
+		;;
+	esac
     fi
 
     # Isolate log level

@@ -4311,6 +4311,10 @@ do_initialize() {
 	startup_error "$FUNCTIONS does not exist!"
     fi
 
+    VERSION_FILE=$SHARED_DIR/version
+
+    [ -f $VERSION_FILE ] && version=`cat $VERSION_FILE`
+
     run_user_exit params
 
     config=`find_file shorewall.conf`
@@ -4322,10 +4326,6 @@ do_initialize() {
 	echo "$config does not exist!" >&2
 	exit 2
     fi
-
-    VERSION_FILE=$SHARED_DIR/version
-
-    [ -f $VERSION_FILE ] && version=`cat $VERSION_FILE`
 
     [ -z "${STATEDIR}" ] && STATEDIR=/var/state/shorewall
 

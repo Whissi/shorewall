@@ -571,24 +571,11 @@ fi
 [ -n "$SHOREWALL_DIR" ] && export SHOREWALL_DIR
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
-SHARED_DIR=/usr/share/shorewall
 MUTEX_TIMEOUT=
-
-if [ -n "$SHOREWALL_DIR" -a -f $SHOREWALL_DIR/shorewall.conf ]; then
-    config=$SHOREWALL_DIR/shorewall.conf
-else
-    config=/etc/shorewall/shorewall.conf
-fi
-
-if [ -f $config ]; then
-    . $config
-else
-    echo "$config does not exist!" >&2
-    exit 2
-fi
 
 [ -z "${STATEDIR}" ] && STATEDIR=/var/state/shorewall
 
+SHARED_DIR=/usr/share/shorewall
 FIREWALL=$SHARED_DIR/firewall
 FUNCTIONS=$SHARED_DIR/functions
 VERSION_FILE=$SHARED_DIR/version
@@ -597,6 +584,15 @@ if [ -f $FUNCTIONS ]; then
     . $FUNCTIONS
 else
     echo "$FUNCTIONS does not exist!" >&2
+    exit 2
+fi
+
+config=`find_file shorewall.conf`
+
+if [ -f $config ]; then
+    . $config
+else
+    echo "$config does not exist!" >&2
     exit 2
 fi
 

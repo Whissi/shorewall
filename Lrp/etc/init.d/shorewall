@@ -422,7 +422,7 @@ determine_interfaces() {
 # Determine the defined hosts in each zone and generate report		       #
 ################################################################################
 determine_hosts() {
-    do_a_zone() # $1 = zone name
+    do_a_zone()
     {
 	eval interfaces=\$${zone}_interfaces
 
@@ -435,16 +435,40 @@ determine_hosts() {
 	done
     }
 
+    recalculate_hosts()
+    {
+	interfaces=
+	
+	for host in $hosts; do
+	    interface=${host%:*}
+	    if ! list_search $interface $interfaces; then
+		if [ -z "$interfaces" ]; then
+		    interfaces=$interface
+		else
+		    interfaces="$interfaces $interface"
+		fi
+	    fi
+	done
+
+	eval ${zone}_interfaces="\$interfaces"
+    }
+
     for zone in $zones; do
 	hosts=`find_hosts $zone`
 	hosts=`echo $hosts` # Remove extra trash
 
-	if [ -z "$hosts" ]; then
+	if [ -n "$hosts" ]; then
+	    ####################################################################
+	    # Zone is defined in terms of hosts -- derive the interface list
+	    # from the host list
+	    #
+	    recalculate_hosts
+	else
 	    ####################################################################
 	    # If no hosts are defined for a zone then the zone consists of any
 	    # host that can send us messages via the interfaces to the zone
 	    #
-	    do_a_zone $zone
+	    do_a_zone
 	fi
 
 	eval ${zone}_hosts="\$hosts"
@@ -698,7 +722,7 @@ validate_rule() {
     case $target in
     DNAT)
 	target=ACCEPT
-	address=${address:=all}
+	address=${address:=detect}
 	;;
     REDIRECT)
 	target=ACCEPT
@@ -854,8 +878,6 @@ validate_policy()
 	    ;;
 	esac
 
-	echo "	 Policy \"$client $server $policy $loglevel\" Validated"
-
     done < $TMP_DIR/policy
 }
 
@@ -876,6 +898,27 @@ find_broadcasts() {
 	    echo `separate_list $bcast`
 	fi
     done < $TMP_DIR/interfaces
+}
+
+################################################################################
+# Find interface address--returns the first IP address assigned to the passed  #
+# device								       #
+################################################################################
+find_interface_address() # $1 = interface
+{
+    # 
+    # get the line of output containing the first IP address
+    #
+    addr=`ip addr show $1 2> /dev/null | grep inet | head -n1`
+    #
+    # If there wasn't one, bail out now
+    #
+    [ -n "$addr" ] || fatal_error "Can't determine the IP address of $1"
+    #
+    # Strip off the trailing VLSM mask (or the peer IP in case of a P-t-P link)
+    # along with everything else on the line
+    #
+    echo $addr | sed 's/inet //;s/\/.*//;s/ peer.*//'
 }
 
 ################################################################################
@@ -972,6 +1015,14 @@ stop_firewall() {
 
     hosts="`find_hosts_by_option routestopped`"
 
+    strip_file routestopped 
+
+    while read interface host; do
+	expandv interface host
+	[ "x$host" = "x-" ] && host=
+	hosts="$hosts $interface:${host:-0.0.0.0/0}"
+    done < $TMP_DIR/routestopped
+
     for host in $hosts; do
 	interface=${host%:*}
 	subnet=${host#*:}
@@ -1002,6 +1053,8 @@ stop_firewall() {
 	echo 0 > /proc/sys/net/ipv4/ip_forward
 	;;
     esac
+
+    run_user_exit stopped
 
     logger "Shorewall Stopped"
 
@@ -1170,8 +1223,8 @@ setup_syn_flood_chain ()
 
     run_iptables -N @$chain
     run_iptables -A @$chain \
-	      -m limit --limit $limit --limit-burst $limit_burst \
-	      -j RETURN
+	-m limit --limit $limit --limit-burst $limit_burst \
+	-j RETURN
     run_iptables -A @$chain -j DROP
 }
 
@@ -1439,7 +1492,22 @@ add_nat_rule() {
 
     # Set original destination address
 
-    [ "$addr" = "all" ] && addr= || addr=${addr:+-d $addr}
+    case $addr in
+	all)
+	    addr=
+	    ;;
+	detect)
+	   addr=
+           if [ -n "$DETECT_DNAT_IPADDRS" -a "$source" != "$FW" ]; then
+	       eval interfaces=\$${source}_interfaces
+	       for interface in $interfaces; do
+		   addr="`find_interface_address $interface` $addr"
+	       done
+	   fi
+	   ;;
+    esac
+
+    addr=${addr:-0.0.0.0/0}
 
     # Select target
 
@@ -1453,7 +1521,7 @@ add_nat_rule() {
     # Generate nat table rules
 
     if [ "$source" = "$FW" ]; then
-	run_iptables -t nat -A OUTPUT $proto $sports $addr \
+	run_iptables -t nat -A OUTPUT $proto $sports -d addr
 	    $multiport $dports -j $target1
     else
 	chain=`dnat_chain $source`
@@ -1466,14 +1534,18 @@ add_nat_rule() {
 	    for z in $excludezones; do
 		eval hosts=\$${z}_hosts
 		for host in $hosts; do
-		    addnatrule $chain $proto -s ${host#*:} \
-			$multiport $sports $addr $dports -j RETURN
+		    for adr in $addr; do
+			addnatrule $chain $proto -s ${host#*:} \
+			    $multiport $sports -d $adr $dports -j RETURN
+		    done
 		done
 	    done
 	fi
-
-	addnatrule $chain $proto $cli $sports \
-	    $multiport $addr $dports -j $target1
+	
+	for adr in $addr; do
+	    addnatrule $chain $proto $cli $sports \
+		-d $adr $multiport $dports -j $target1
+	done
     fi
 
     # Replace destination port by the new destination port
@@ -1697,7 +1769,7 @@ process_rule() {
     case $target in
     DNAT)
 	target=ACCEPT
-	address=${address:=all}
+	address=${address:=detect}
 	;;
     REDIRECT)
 	target=ACCEPT
@@ -2544,6 +2616,10 @@ initialize_netfilter () {
 
     validate_hosts_file
 
+    echo "Validating Policy file..."
+
+    validate_policy
+
     echo "Determining Hosts in Zones..."
 
     determine_interfaces
@@ -2820,8 +2896,6 @@ apply_policy_rules() {
     #
     while read client server policy loglevel synparams; do
 	expandv client server policy loglevel synparams
-	validate_zone $client
-	validate_zone $server
 
 	chain=${client}2${server}
 
@@ -3053,8 +3127,6 @@ define_firewall() # $1 = Command (Start or Restart)
 
     echo "Processing $policy..."
 
-    strip_file policy $policy
-
     apply_policy_rules
 
     masq=`find_file masq`
@@ -3249,6 +3321,7 @@ do_initialize() {
     ROUTE_FILTER=
     NAT_BEFORE_RULES=
     MULTIPORT=
+    DETECT_DNAT_IPADDRS=
     stopping=
     have_mutex=
     masq_seq=1
@@ -3322,6 +3395,7 @@ do_initialize() {
     ROUTE_FILTER=`added_param_value_no ROUTE_FILTER $ROUTE_FILTER`
     NAT_BEFORE_RULES=`added_param_value_yes NAT_BEFORE_RULES $NAT_BEFORE_RULES`
     MULTIPORT=`added_param_value_no MULTIPORT $MULTIPORT`
+    DETECT_DNAT_IPADDRS=`added_param_value_no DETECT_DNAT_IPADDRS $DETECT_DNAT_IPADDRS`
 }
 
 ################################################################################

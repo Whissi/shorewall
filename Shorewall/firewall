@@ -1515,13 +1515,16 @@ process_rule() {
         case $proto in
 	    tcp|udp|TCP|UDP|6|17)
 	    	if [ -n "$port" -a "x${port}" != "x-" ]; then
-		    [ `list_count $port` -gt 1 ] && \
+		    [ -n "$multioption" ] && \
+		    [ "$port" != "${port%,*}" ] && \
 			multiport="$multioption"
 		    dports="--dport $port"
 	        fi
 
 		if [ -n "$cport" -a "x${cport}" != "x-" ]; then
-		    [ `list_count $cport` -gt 1 ] && \
+		    [ -n "$multioption" ] && \
+		    [ -z "$multiport" ] && \
+		    [ "$cport" != "${cport%,*}" ] && \
 			multiport="$multioption"
 		    sports="--sport $cport"
 		fi

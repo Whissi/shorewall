@@ -14,3 +14,20 @@ In this release:
 3. The time that the counters were last reset is now displayed in the
    heading of the 'status' and 'show' commands.
 
+4. Added MUTEX_TIMEOUT variable in shorewall.conf and changed the way
+   in which Shorewall protects itself from concurrent state
+   changes. 
+
+   Previously, if a state-changing operation (like restart)
+   found a lock file, it would wait for 30 seconds for the lock file to
+   be removed. If the file was not removed within 30 seconds, a message
+   was issued and the operation was aborted. 
+
+   With the new code, the wait time is determined by the value of
+   MUTEX_TIMEOUT (default 60 seconds). If the file is not removed
+   within MUTEX_TIMEOUT, the state-changing operation will assume that
+   the lock file is stale and will issue a message and continue.
+
+   An appopriate setting for MUTEX_TIMEOUT is twice the time that it takes
+   your firewall system to process a "shorewall restart" command.
+

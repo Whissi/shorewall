@@ -2,109 +2,111 @@
 <html>
 <head>
   <title>MAC Verification</title>
-                                                
+                                                       
   <meta http-equiv="content-type"
  content="text/html; charset=ISO-8859-1">
-                           
+                               
   <meta name="author" content="Tom Eastep">
 </head>
   <body>
-             
+               
 <table border="0" cellpadding="0" cellspacing="0"
  style="border-collapse: collapse;" width="100%" id="AutoNumber4"
  bgcolor="#400169" height="90">
-                <tbody>
-               <tr>
-                 <td width="100%">                                      
-                                            
+                 <tbody>
+                <tr>
+                  <td width="100%">                                     
+                                                    
       <h1 align="center"><font color="#ffffff">MAC Verification</font><br>
-        </h1>
-                 <br>
-        </td>
-               </tr>
-                                              
-  </tbody>           
+         </h1>
+                  <br>
+         </td>
+                </tr>
+                                                  
+  </tbody>            
 </table>
-       <br>
-       Beginning with Shorewall version 1.3.10, all traffic from an interface 
-  or  from a subnet on an interface can be verified to originate from a defined 
-   set of MAC addresses. Furthermore, each MAC address may be optionally associated
-   with one or more IP addresses. <br>
-   <br>
-   <b>You must have the iproute package (ip utility) installed to use MAC 
-Verification and your kernel must include MAC match support (CONFIG_IP_NF_MATCH_MAC 
-- module name ipt_mac.o).</b><br>
-   <br>
-   There are four components to this facility.<br>
-             
+        <br>
+        All traffic from an interface    or  from a subnet on an interface
+can be verified to originate from a defined     set of MAC addresses. Furthermore,
+each MAC address may be optionally associated    with one or more IP addresses.
+<br>
+    <br>
+    <b>Your kernel must include MAC match support (CONFIG_IP_NF_MATCH_MAC
+ - module name ipt_mac.o).</b><br>
+    <br>
+    There are four components to this facility.<br>
+               
 <ol>
-         <li>The <b>maclist</b> interface option in <a
- href="Documentation.htm#Interfaces">/etc/shorewall/interfaces</a>. When this
-option is specified, all traffic arriving on the interface is subjet to MAC
-verification.</li>
-         <li>The <b>maclist </b>option in <a
- href="Documentation.htm#Hosts">/etc/shorewall/hosts</a>.   When this option
- is specified for a subnet, all traffic from that subnet  is subject to MAC
+          <li>The <b>maclist</b> interface option in <a
+ href="Documentation.htm#Interfaces">/etc/shorewall/interfaces</a>. When
+this option is specified, all traffic arriving on the interface is subjet
+to MAC verification.</li>
+          <li>The <b>maclist </b>option in <a
+ href="Documentation.htm#Hosts">/etc/shorewall/hosts</a>.   When this option 
+ is specified for a subnet, all traffic from that subnet  is subject to MAC 
  verification.</li>
-         <li>The /etc/shorewall/maclist file. This file is used to associate
-  MAC  addresses with interfaces and to optionally associate IP addresses
+          <li>The /etc/shorewall/maclist file. This file is used to associate 
+  MAC  addresses with interfaces and to optionally associate IP addresses 
 with  MAC  addresses.</li>
-         <li>The <b>MACLIST_DISPOSITION </b>and <b>MACLIST_LOG_LEVEL </b>variables 
-   in <a href="Documentation.htm#Conf">/etc/shorewall/shorewall.conf.</a> 
-The   MACLIST_DISPOSITION variable has the value DROP, REJECT or ACCEPT and 
-determines   the disposition of connection requests that fail MAC verification. 
-The MACLIST_LOG_LEVEL   variable gives the syslogd level at which connection 
-requests that fail verification  are to be logged. If set the the empty value 
-(e.g., MACLIST_LOG_LEVEL="")   then failing connection requests are not logged.<br>
-         </li>
-             
+          <li>The <b>MACLIST_DISPOSITION </b>and <b>MACLIST_LOG_LEVEL </b>variables
+    in <a href="Documentation.htm#Conf">/etc/shorewall/shorewall.conf.</a>
+ The   MACLIST_DISPOSITION variable has the value DROP, REJECT or ACCEPT
+and  determines   the disposition of connection requests that fail MAC verification.
+ The MACLIST_LOG_LEVEL   variable gives the syslogd level at which connection
+ requests that fail verification  are to be logged. If set the the empty
+value  (e.g., MACLIST_LOG_LEVEL="")   then failing connection requests are
+not logged.<br>
+          </li>
+               
 </ol>
-       The columns in /etc/shorewall/maclist are:<br>
-             
+        The columns in /etc/shorewall/maclist are:<br>
+               
 <ul>
-         <li>INTERFACE - The name of an ethernet interface on the Shorewall 
- system.</li>
-         <li>MAC - The MAC address of a device on the ethernet segment connected 
-   by INTERFACE. It is not necessary to use the Shorewall MAC format in this 
-   column although you may use that format if you so choose.</li>
-         <li>IP Address - An optional comma-separated list of IP addresses
+          <li>INTERFACE - The name of an ethernet interface on the Shorewall
+  system.</li>
+          <li>MAC - The MAC address of a device on the ethernet segment connected
+    by INTERFACE. It is not necessary to use the Shorewall MAC format in
+this     column although you may use that format if you so choose.</li>
+          <li>IP Address - An optional comma-separated list of IP addresses 
  for   the device whose MAC is listed in the MAC column.</li>
-             
+               
 </ul>
-             
+               
 <h3>Example 1: Here are my files:</h3>
-       <b>/etc/shorewall/shorewall.conf:<br>
-       </b>       
+        <b>/etc/shorewall/shorewall.conf:<br>
+        </b>        
 <pre>     MACLIST_DISPOSITION=REJECT<br>     MACLIST_LOG_LEVEL=info<br></pre>
-       <b>/etc/shorewall/interfaces:</b><br>
-             
+        <b>/etc/shorewall/interfaces:</b><br>
+               
 <pre>     #ZONE           INTERFACE       BROADCAST       OPTIONS<br>     net             eth0            206.124.146.255 norfc1918,dhcp,blacklist<br>     loc             eth2            192.168.1.255   dhcp,maclist<br>     dmz             eth1            192.168.2.255<br>     net             eth3            206.124.146.255 blacklist<br>     -               texas           192.168.9.255<br>     loc             ppp+<br></pre>
-       <b>/etc/shorewall/maclist:</b><br>
-             
+        <b>/etc/shorewall/maclist:</b><br>
+               
 <pre>     #INTERFACE              MAC                     IP ADDRESSES (Optional)<br>     eth2                    00:A0:CC:63:66:89       192.168.1.3      #Wookie<br>     eth2                    00:10:B5:EC:FD:0B       192.168.1.4      #Tarry<br>     eth2                    00:A0:CC:DB:31:C4       192.168.1.5      #Ursa<br>     eth2                    00:A0:CC:DB:31:C4       192.168.1.128/26 #PPTP Clients to server on Ursa<br>     eth2                    00:06:25:aa:a8:0f       192.168.1.7      #Eastept1 (Wireless)<br>     eth2                    00:04:5A:0E:85:B9       192.168.1.250    #Wap<br></pre>
-       As shown above, I use MAC Verification on my local    zone.<br>
-             
+        As shown above, I use MAC Verification on my local    zone.<br>
+               
 <h3>Example 2: Router in Local Zone</h3>
-       Suppose now that I add a second ethernet segment to my local zone
-and   gateway  that segment via a router with MAC address 00:06:43:45:C6:15
-and   IP address  192.168.1.253. Hosts in the second segment have IP addresses
- in the subnet  192.168.2.0/24. I would add the following entry to my /etc/shorewall/maclist 
-   file:<br>
-             
+        Suppose now that I add a second ethernet segment to my local zone 
+and   gateway  that segment via a router with MAC address 00:06:43:45:C6:15 
+and   IP address  192.168.1.253. Hosts in the second segment have IP addresses 
+ in the subnet  192.168.2.0/24. I would add the following entry to my /etc/shorewall/maclist
+    file:<br>
+               
 <pre>     eth2                     00:06:43:45:C6:15       192.168.1.253,192.168.2.0/24<br></pre>
-       This entry accomodates traffic from the router itself (192.168.1.253)
-  and  from the second LAN segment (192.168.2.0/24). Remember that all traffic 
-  being  sent to my firewall from the 192.168.2.0/24 segment will be forwarded 
-  by the router so that traffic's MAC address will be that of the router (00:06:43:45:C6:15)
-   and not that of the host sending the traffic.       
-<p><font size="2">   Updated 2/18/2002 - <a href="support.htm">Tom  Eastep</a>
+        This entry accomodates traffic from the router itself (192.168.1.253) 
+  and  from the second LAN segment (192.168.2.0/24). Remember that all traffic
+   being  sent to my firewall from the 192.168.2.0/24 segment will be forwarded
+   by the router so that traffic's MAC address will be that of the router
+(00:06:43:45:C6:15)    and not that of the host sending the traffic.    
+   
+<p><font size="2">   Updated 2/21/2002 - <a href="support.htm">Tom  Eastep</a> 
        </font></p>
                                                                         
                                                                         
-                                                  
-<p><a href="copyright.htm"><font size="2">Copyright</font>         &copy; 
-<font size="2">2001, 2002, 2003 Thomas M. Eastep.</font></a><br>
- </p>
+                                                    
+<p><a href="copyright.htm"><font size="2">Copyright</font>         &copy;
+ <font size="2">2001, 2002, 2003 Thomas M. Eastep.</font></a><br>
+  </p>
+  <br>
  <br>
 </body>
 </html>

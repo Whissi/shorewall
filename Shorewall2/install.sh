@@ -402,7 +402,7 @@ echo "Bogon file installed as ${PREFIX}/usr/share/shorewall/bogons"
 #
 install_file_with_backup configpath ${PREFIX}/usr/share/shorewall/configpath 0600
 echo
-echo " Default config path file installed as ${PREFIX}/etc/shorewall/configpath"
+echo " Default config path file installed as ${PREFIX}/usr/share/shorewall/configpath"
 #
 # Install the init file
 #
@@ -500,7 +500,7 @@ for f in action.* ; do
     else
 	run_install -o $OWNER -g $GROUP -m 0600 $f ${PREFIX}/usr/share/shorewall/$f
 	echo
-	echo "Action ${f#*.} file installed as ${PREFIX}/etc/shorewall/$f"
+	echo "Action ${f#*.} file installed as ${PREFIX}/usr/share/shorewall/$f"
     fi
 done
 #

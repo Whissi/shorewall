@@ -534,8 +534,8 @@ if_match() # $1 = Name in interfaces file - may end in "+"
     local pattern=${1%+}
     local interface=${2%+}
 
-    test  "x${interface:0:${#pattern}}" = "x${pattern}"
-    
+#   test  "x${interface:0:${#pattern}}" = "x${pattern}"
+    test  "x$(echo ${interface} | cut -b -${#pattern} )" = "x${pattern}"
 }
 
 #

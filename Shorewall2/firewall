@@ -699,10 +699,10 @@ verify_interface()
 #
 # Determine of communication to/from a host is encrypted using IPSEC
 #
-ipsec_host() # $1 = zone, $2 = host
+is_ipsec_host() # $1 = zone, $2 = host
 {
     eval local is_ipsec=\$${1}_is_ipsec
-    eval local hosts=\"\$${1}_ipsec_hosts\"
+    eval local hosts=\"\$${1}_is_ipsec_hosts\"
 
     test -n "$is_ipsec" || list_search $2 $hosts
 }
@@ -712,7 +712,7 @@ ipsec_host() # $1 = zone, $2 = host
 #
 match_ipsec_in() # $1 = zone, $2 = host
 {
-    if ipsec_host $1 $2 ; then
+    if is_ipsec_host $1 $2 ; then
 	eval local options=\"\$${1}_ipsec_options \$${1}_ipsec_in_options\"
 	echo "-m policy --pol ipsec --dir in $options"
     elif [ -n "$POLICY_MATCH" ]; then
@@ -725,7 +725,7 @@ match_ipsec_in() # $1 = zone, $2 = host
 #
 match_ipsec_out() # $1 = zone, $2 = host
 {
-    if ipsec_host $1 $2 ; then
+    if is_ipsec_host $1 $2 ; then
 	eval local options=\"\$${1}_ipsec_options \$${1}_ipsec_out_options\"
 	echo "-m policy --pol ipsec --dir out $options"
     elif [ -n "$POLICY_MATCH" ]; then
@@ -983,7 +983,7 @@ validate_hosts_file() {
 		    ipsec)
 			[ -n "$POLICY_MATCH" ] || \
 			    startup_error "Your kernel and/or iptables does not support policy match: ipsec"
-			eval ${z}_ipsec_hosts=\"\$${z}_ipsec_hosts $interface:$host\"
+			eval ${z}_is_ipsec_hosts=\"\$${z}_is_ipsec_hosts $interface:$host\"
 			eval ${z}_is_complex=Yes
 			;;
 		    routeback)
@@ -1273,7 +1273,7 @@ log_rule_limit() # $1 = log level, $2 = chain, $3 = display Chain $4 = dispositi
     fi
 
     if [ ${#prefix} -gt 29 ]; then
-	prefix="$(echo $prefix | cut -b -29)"
+	prefix="$(echo $prefix | truncate 29)"
 	error_message "Warning: Log Prefix shortened to \"$prefix\""
     fi
 
@@ -3041,7 +3041,9 @@ process_action() # $1 = chain    (Chain to add the rules to)
 }
 
 #
-# Create and record a log action chain -- in the functions that follow, 
+# Create and record a log action chain -- Log action chains have names
+# that are formed from the action name by prepending a "%" and appending
+# a 1- or 2-digit sequence number. In the functions that follow, 
 # the CHAIN, LEVEL and TAG variable serves as arguments to the user's
 # exit. We call the exit corresponding to the name of the action but we
 # set CHAIN to the name of the iptables chain where rules are to be added.
@@ -3052,6 +3054,10 @@ process_action() # $1 = chain    (Chain to add the rules to)
 #    <action>_actchain - The action chain number.
 #    <action>_chains   - List of ( level[:tag] , chainname ) pairs 
 #
+# The maximum length of a chain name is 30 characters -- since the log 
+# action chain name is 2-3 characters longer than the base chain name, 
+# this function truncates the original chain name where necessary before 
+# it adds the leading "%" and trailing sequence number.
 
 createlogactionchain() # $1 = Action Name, $2 = Log Level [: Log Tag ]
 {
@@ -3061,18 +3067,17 @@ createlogactionchain() # $1 = Action Name, $2 = Log Level [: Log Tag ]
 
     case ${#action} in
 	29|30)
-	    CHAIN=$(echo $action | cut -b -28)
+	    CHAIN=$(echo $action | truncate 28) # %...n makes 30
 	    ;;
 	*)
 	    CHAIN=${action}
 	    ;;
     esac
-
     
     [ "$COMMAND" != check ] && \
 	while havechain %${CHAIN}${actchain}; do
 	    actchain=$(($actchain + 1))
-	    [ $actchain -eq 10 -a ${#CHAIN} -eq 28 ] && CHAIN=$(echo $CHAIN | cut -b -27)
+	    [ $actchain -eq 10 -a ${#CHAIN} -eq 28 ] && CHAIN=$(echo $CHAIN | truncate 27) # %...nn makes 30
         done
 
     CHAIN=%${CHAIN}${actchain}
@@ -6094,13 +6099,10 @@ activate_rules()
     > ${STATEDIR}/chains
     > ${STATEDIR}/zones
     #
-    # Create forwarding chains for complex zones and generate jumps for IPSEC hosts to that chain.
+    # Create forwarding chains for complex zones and generate jumps for IPSEC source hosts to that chain.
     #
     for zone in $zones; do
-
-	eval complex=\$${zone}_is_complex
-
-	if [ -n "$complex" ]; then
+	if eval test -n \$${zone}_is_complex ; then
 	    frwd_chain=${zone}_frwd
 	    createchain $frwd_chain No
 
@@ -6111,7 +6113,7 @@ activate_rules()
 		    interface=${host%%:*}
 		    networks=${host#*:}
 		    
-		    ipsec_host $zone $host && \
+		    is_ipsec_host $zone $host && \
 			run_iptables -A $(forward_chain $interface) $(match_source_hosts $networks) $(match_ipsec_in $zone $host) -j $frwd_chain
 		done
 	    fi
@@ -6148,7 +6150,7 @@ activate_rules()
 
 	    run_iptables -A $(input_chain $interface) $(match_source_hosts $networks) $(match_ipsec_in $zone $host) -j $chain2
 
-	    if [ -n "$complex" ] && ! ipsec_host $zone $host ; then
+	    if [ -n "$complex" ] && ! is_ipsec_host $zone $host ; then
                 run_iptables -A $(forward_chain $interface) $(match_source_hosts $networks) $(match_ipsec_in $zone $host) -j $frwd_chain
 	    fi
 

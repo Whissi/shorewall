@@ -2,6 +2,16 @@
 #
 # Shorewall 2.1 -- /usr/share/shorewall/functions
 
+# Function to truncate a string -- It uses 'cut -b -<n>'
+# rather than ${v:first:last} because light-weight shells like ash and
+# dash do not support that form of expansion.
+#
+
+truncate() # $1 = length
+{
+    cut -b -${1}
+}
+
 #
 # Split a colon-separated list into a space-separated list
 #
@@ -724,11 +734,7 @@ if_match() # $1 = Name in interfaces file - may end in "+"
     
     case $1 in
 	*+)
-	    #
-	    # Can't use ${2:0:${#pattern}} because ash and dash don't support that flavor of
-	    # variable expansion :-(
-	    #
-	    test  "x$(echo $2 | cut -b -${#pattern} )" = "x${pattern}"
+	    test  "x$(echo $2 | truncate ${#pattern} )" = "x${pattern}"
 	    ;;
 	*)
 	    test "x$1" = "x$2"

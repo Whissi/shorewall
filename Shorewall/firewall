@@ -367,6 +367,14 @@ flushnat() # $1 = name of chain
 }
 
 #
+# Flush one of the Mangle table chains
+#
+flushmangle() # $1 = name of chain
+{
+    run_iptables -t mangle -F $1
+}
+
+#
 # Chain name base for an interface
 #
 chain_base() #$1 = interface
@@ -455,7 +463,15 @@ dnat_chain() # $1 = zone
 #
 snat_chain() # $1 = zone
 {
-   echo ${1}_snat
+   echo `chain_base $1`_snat
+}
+
+#
+# ECN Chain to an interface
+#
+ecn_chain() # $1 = interface
+{
+   echo ${1}_ecn
 }
 
 #
@@ -1764,6 +1780,52 @@ delete_nat() {
     fi
 
     [ -d ${STATEDIR} ] && touch ${STATEDIR}/nat
+}
+
+#
+# Setup ECN disabling rules
+#
+setup_ecn() # $1 = file name
+{
+    local interfaces
+    local hosts
+    local h
+
+    strip_file ecn $1
+
+    while read interface host; do
+	expandv interface host
+	list_search  $interface $all_interfaces || \
+	    startup_error "Unknown interface $interface"	
+	list_search $interface $interfaces || \
+	    interfaces="$interfaces $interface"
+	[ "x$host" = "x-" ] && host=0.0.0.0/0
+	for h in `separate_list $host`; do
+	    hosts="$hosts $interface:$h"
+	done
+    done < $TMP_DIR/ecn
+
+    if [ -n "$interfaces" ]; then
+	echo "Setting up ECN control on${interfaces}..."
+	
+	for interface in $interfaces; do
+	    chain=`ecn_chain $interface`
+	    if mangle_chain_exists $chain; then
+		flushmangle $chain
+	    else
+		run_iptables -t mangle -N $chain
+		run_iptables -t mangle -A POSTROUTING -p tcp -o $interface -j $chain
+		run_iptables -t mangle -A OUTPUT      -p tcp -o $interface -j $chain
+	    fi
+	done
+	
+	for host in $hosts; do
+	    interface=${host%:*}
+	    h=${host#*:}
+	    run_iptables -t mangle -A `ecn_chain $interface` -p tcp -d $h -j ECN --ecn-tcp-remove
+	    echo "   ECN Disabled to $h through $interface"
+	done
+    fi
 }
 
 #
@@ -4004,6 +4066,10 @@ define_firewall() # $1 = Command (Start or Restart)
 
     [ -f $tos ] && [ -n "$MANGLE_ENABLED" ] && process_tos $tos
 
+    ecn=`find_file ecn`
+
+    [ -f $ecn ] && [ -n "$MANGLE_ENABLED" ] && setup_ecn $ecn    
+
     [ -n "$TC_ENABLED" ] && setup_tc
 
     echo "Activating Rules..."
@@ -4099,6 +4165,9 @@ refresh_firewall()
     #
     refresh_blacklist
 
+    ecn=`find_file ecn`
+
+    [ -f $ecn ] && [ -n "$MANGLE_ENABLED" ] && setup_ecn $ecn    
     #
     # Refresh Traffic Control
     #

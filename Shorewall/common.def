@@ -22,6 +22,8 @@ run_iptables -A common -m state -p tcp --state INVALID -j DROP
 #
 run_iptables -A common -p udp --dport 137:139     -j REJECT
 run_iptables -A common -p udp --dport 445         -j REJECT
+run_iptables -A common -p tcp --dport 139         -j REJECT
+run_iptables -A common -p tcp --dport 445         -j REJECT
 run_iptables -A common -p tcp --dport 135	  -j reject
 ############################################################################
 # UPnP

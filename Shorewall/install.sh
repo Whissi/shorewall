@@ -54,7 +54,7 @@
 #        /etc/rc.d/rc.local file is modified to start the firewall.
 #
 
-VERSION=1.4.0-Beta1
+VERSION=1.4.0-Beta2
 
 usage() # $1 = exit status
 {
@@ -536,6 +536,16 @@ else
     run_install -o $OWNER -g $GROUP -m 0600 stopped ${PREFIX}/etc/shorewall/stopped
     echo
     echo "Stopped file installed as ${PREFIX}/etc/shorewall/stopped"
+fi
+#
+# Install the ECN file
+#
+if [ -f ${PREFIX}/etc/shorewall/ecn ]; then
+    backup_file /etc/shorewall/ecn
+else
+    run_install -o $OWNER -g $GROUP -m 0600 ecn ${PREFIX}/etc/shorewall/ecn
+    echo
+    echo "ECN  file installed as ${PREFIX}/etc/shorewall/ecn"
 fi
 #
 # Backup the version file

@@ -28,7 +28,7 @@
 #       shown below. Simply run this script to revert to your prior version of
 #       Shoreline Firewall.
 
-VERSION=1.4.0-Beta1
+VERSION=1.4.0-Beta2
 
 usage() # $1 = exit status
 {
@@ -130,6 +130,8 @@ restore_file /etc/shorewall/start
 restore_file /etc/shorewall/stop
 
 restore_file /etc/shorewall/stopped
+
+restore_file /etc/shorewall/ecn
 
 if [ -f /usr/lib/shorewall/version-${VERSION}.bkout ]; then
     restore_file /usr/lib/shorewall/version

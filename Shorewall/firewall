@@ -2375,7 +2375,7 @@ process_action() # $1 = action
 
     # Generate Netfilter rule(s)
 
-    [ "x$protocol"="x-" ] && protocol=all || protocol=${protocol:=all}
+    [ "x$protocol" = "x-" ] && protocol=all || protocol=${protocol:=all}
 
     if [ -n "$MULTIPORT" ] && \
 	! list_search $protocol "icmp" "ICMP" "1" && \

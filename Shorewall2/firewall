@@ -2050,11 +2050,7 @@ process_tc_rule()
 	    esac
 	fi
 
-	if [ "x$dest" != "x-"  ]; then
-	    verify_interface $dest || fatal_error "Unknown interface $dest in rule \"$rule\""
-	    r="${r}$(match_dest_dev $dest) "
-	fi
-
+	[ "x$dest"   = "x-"  ] || r="${r}-d $dest "
 	[ "$proto"   = "all" ] || r="${r}-p $proto "
 	[ "x$port"   = "x-"  ] || r="${r}--dport $port "
 	[ "x$sport"  = "x-"  ] || r="${r}--sport $sport "

@@ -520,8 +520,8 @@
                 <para>(Added in version 1.4.7) - This option causes
                 /proc/sys/net/ipv4/conf/&#60;interface&#62;/arp_filter to be
                 set with the result that this interface will only answer ARP
-                &#39;who-has&#39; requests from hosts that are routed out of
-                that interface. Setting this option facilitates testing of
+                <quote>who-has</quote> requests from hosts that are routed out
+                of that interface. Setting this option facilitates testing of
                 your firewall where multiple firewall interfaces are connected
                 to the same HUB/Switch (all interface connected to the single
                 HUB/Switch should have this option specified). Note that using
@@ -643,8 +643,8 @@
 
               <listitem>
                 <para>Packets from this interface that are selected by the
-                &#39;unclean&#39; match target in iptables will be optionally
-                logged and then dropped.</para>
+                <quote>unclean</quote> match target in iptables will be
+                optionally logged and then dropped.</para>
 
                 <warning>
                   <para>This feature requires that UNCLEAN match support be
@@ -681,7 +681,7 @@
               <listitem>
                 <para>This option works like <emphasis role="bold">dropunclean</emphasis>
                 with the exception that packets selected by the
-                &#39;unclean&#39; match target in iptables are logged
+                <quote>unclean</quote> match target in iptables are logged
                 <emphasis>but not dropped</emphasis>. The level at which the
                 packets are logged is determined by the setting of LOGUNCLEAN
                 and if LOGUNCLEAN has not been set, <quote>info</quote> is
@@ -1014,8 +1014,8 @@
         </tgroup>
       </informaltable>
 
-      <para>The &#39;-&#39; in the ZONE column for eth1 tells Shorewall that
-      eth1 interfaces to multiple zones.</para>
+      <para>The <quote>-</quote> in the ZONE column for eth1 tells Shorewall
+      that eth1 interfaces to multiple zones.</para>
 
       <informaltable>
         <tgroup cols="3">
@@ -1475,7 +1475,7 @@
 
       <orderedlist>
         <listitem>
-          <para>Multiple &#39;net&#39; interfaces to different ISPs. You
+          <para>Multiple <quote>net</quote> interfaces to different ISPs. You
           don&#39;t want to route traffic from one ISP to the other through
           your firewall.</para>
         </listitem>
@@ -1922,10 +1922,11 @@
 
       <para>The first rule allows Sam SSH access to the firewall. The second
       rule says that any clients from the net zone with the exception of those
-      in the &#39;sam&#39; zone should have their connection port forwarded to
-      192.168.1.3. If you need to exclude more than one zone in this way, you
-      can list the zones separated by commas (e.g., net!sam,joe,fred). This
-      technique also may be used when the ACTION is REDIRECT.</para>
+      in the <quote>sam</quote> zone should have their connection port
+      forwarded to 192.168.1.3. If you need to exclude more than one zone in
+      this way, you can list the zones separated by commas (e.g.,
+      net!sam,joe,fred). This technique also may be used when the ACTION is
+      REDIRECT.</para>
     </section>
   </section>
 
@@ -1979,11 +1980,11 @@
                 <orderedlist>
                   <listitem>
                     <para>a header-rewriting rule in the Netfilter
-                    &#39;nat&#39; table</para>
+                    <quote>nat</quote> table</para>
                   </listitem>
 
                   <listitem>
-                    <para>an ACCEPT rule in the Netfilter &#39;filter&#39;
+                    <para>an ACCEPT rule in the Netfilter <quote>filter</quote>
                     table. DNAT- works like DNAT but only generates the
                     header-rewriting rule.</para>
                   </listitem>
@@ -2010,11 +2011,11 @@
                 <orderedlist>
                   <listitem>
                     <para>a header-rewriting rule in the Netfilter
-                    &#39;nat&#39; table</para>
+                    <quote>nat</quote> table</para>
                   </listitem>
 
                   <listitem>
-                    <para>an ACCEPT rule in the Netfilter &#39;filter&#39;
+                    <para>an ACCEPT rule in the Netfilter <quote>filter</quote>
                     table. REDIRECT- works like REDIRECT but only generates
                     the header-rewriting rule.</para>
                   </listitem>
@@ -2123,7 +2124,7 @@
           comma-separated list of those sub-zones to be excluded. There is an
           <link linkend="Exclude">example</link> above.</para>
 
-          <para>If the source is not &#39;all&#39; then the source may be
+          <para>If the source is not <quote>all</quote> then the source may be
           further restricted by adding a colon (<quote>:</quote>) followed by
           a comma-separated list of qualifiers. Qualifiers are may include:</para>
 
@@ -2784,10 +2785,10 @@
         </tgroup>
       </informaltable>
 
-      <para><note><para>When &#39;all&#39; is used as a source or destination,
-      intra-zone traffic is not affected. In this example, if there were two
-      DMZ interfaces then the above rule would NOT enable SMTP traffic between
-      hosts on these interfaces.</para></note></para>
+      <para><note><para>When <quote>all</quote> is used as a source or
+      destination, intra-zone traffic is not affected. In this example, if
+      there were two DMZ interfaces then the above rule would NOT enable SMTP
+      traffic between hosts on these interfaces.</para></note></para>
     </example>
 
     <example>
@@ -3011,8 +3012,8 @@
 
     <para>The /etc/shorewall/common file is expected to contain iptables
     commands; rather than running iptables directly, you should run it
-    indirectly using the Shorewall function &#39;run_iptables&#39;. That way,
-    if iptables encounters an error, the firewall will be safely stopped.</para>
+    indirectly using the Shorewall function <quote>run_iptables</quote>. That
+    way, if iptables encounters an error, the firewall will be safely stopped.</para>
   </section>
 
   <section id="Masq" xreflabel="/etc/shorewall/masq">
@@ -3055,7 +3056,7 @@
           an interface name. In the latter instance, the interface must be
           configured and started before Shorewall is started as Shorewall will
           determine the subnet based on information obtained from the
-          &#39;ip&#39; utility.</para>
+          <quote>ip</quote> utility.</para>
 
           <caution>
             <para>When using Shorewall 1.3.13 or earlier, when an interface
@@ -3576,14 +3577,14 @@
         <listitem>
           <para>(Added at version 1.4.4) - The value of this variable generate
           the --log-prefix setting for Shorewall logging rules. It contains a
-          &#39;printf&#39; formatting template which accepts three arguments
-          (the chain name, logging rule number (optional) and the
+          <quote>printf</quote> formatting template which accepts three
+          arguments (the chain name, logging rule number (optional) and the
           disposition). To use LOGFORMAT with <ulink
           url="http://www.fireparse.com">fireparse</ulink>, set it as:</para>
 
           <programlisting>LOGFORMAT=&#34;fp=%s:%d a=%s &#34;</programlisting>
 
-          <para>If the LOGFORMAT value contains the substring &#39;%d&#39;
+          <para>If the LOGFORMAT value contains the substring <quote>%d</quote>
           then the logging rule number is calculated and formatted in that
           position; if that substring is not included then the rule number is
           not included. If not supplied or supplied as empty
@@ -3592,12 +3593,12 @@
 
           <caution>
             <para>/sbin/shorewall uses the leading part of the LOGFORMAT
-            string (up to but not including the first &#39;%&#39;) to find log
-            messages in the &#39;show log&#39;, &#39;status&#39; and
-            &#39;hits&#39; commands. This part should not be omitted (the
-            LOGFORMAT should not begin with <quote>%</quote>) and the leading
-            part should be sufficiently unique for /sbin/shorewall to identify
-            Shorewall messages.</para>
+            string (up to but not including the first <quote>%</quote>) to
+            find log messages in the <quote>show log</quote>, <quote>status</quote>
+            and <quote>hits</quote> commands. This part should not be omitted
+            (the LOGFORMAT should not begin with <quote>%</quote>) and the
+            leading part should be sufficiently unique for /sbin/shorewall to
+            identify Shorewall messages.</para>
           </caution>
         </listitem>
       </varlistentry>
@@ -3607,15 +3608,15 @@
 
         <listitem>
           <para>(Added at version 1.3.13) - If this option is set to
-          &#39;No&#39; then Shorewall won&#39;t clear the current traffic
+          <quote>No</quote> then Shorewall won&#39;t clear the current traffic
           control rules during [re]start. This setting is intended for use by
           people that prefer to configure traffic shaping when the network
           interfaces come up rather than when the firewall is started. If that
           is what you want to do, set TC_ENABLED=Yes and CLEAR_TC=No and do
           not supply an /etc/shorewall/tcstart file. That way, your traffic
-          shaping rules can still use the &#39;fwmark&#39; classifier based on
-          packet marking defined in /etc/shorewall/tcrules. If not specified,
-          CLEAR_TC=Yes is assumed.</para>
+          shaping rules can still use the <quote>fwmark</quote> classifier
+          based on packet marking defined in /etc/shorewall/tcrules. If not
+          specified, CLEAR_TC=Yes is assumed.</para>
         </listitem>
       </varlistentry>
 
@@ -3644,7 +3645,7 @@
 
         <listitem>
           <para>(Added at version 1.3.12) - This parameter determines the
-          level at which packets logged under the <link linkend="rfc1918">&#39;norfc1918&#39;
+          level at which packets logged under the <link linkend="rfc1918"><quote>norfc1918</quote>
           mechanism</link> are logged. The value must be a valid <ulink
           url="shorewall_logging.html">syslog level</ulink> and if no level is
           given, then info is assumed. Prior to Shorewall version 1.3.12,
@@ -4017,12 +4018,12 @@
 
         <listitem>
           <para>This parameter determines the logging level of mangled/invalid
-          packets controlled by the &#39;dropunclean and logunclean&#39;
+          packets controlled by the <quote>dropunclean and logunclean</quote>
           interface options. If LOGUNCLEAN is empty (LOGUNCLEAN=) then packets
-          selected by &#39;dropclean&#39; are dropped silently
-          (&#39;logunclean&#39; packets are logged under the &#39;info&#39;
-          log level). Otherwise, these packets are logged at the specified
-          level (Example: LOGUNCLEAN=debug).</para>
+          selected by <quote>dropclean</quote> are dropped silently (<quote>logunclean</quote>
+          packets are logged under the <quote>info</quote> log level).
+          Otherwise, these packets are logged at the specified level (Example:
+          LOGUNCLEAN=debug).</para>
         </listitem>
       </varlistentry>
 
@@ -4352,7 +4353,7 @@
     blacklist file will be disposed of according to the value assigned to the
     <link linkend="Conf">BLACKLIST_DISPOSITION</link> and <link linkend="Conf">BLACKLIST_LOGLEVEL</link>
     variables in /etc/shorewall/shorewall.conf. Only packets arriving on
-    interfaces that have the &#39;<link linkend="Interfaces">blacklist</link>&#39;
+    interfaces that have the <quote><link linkend="Interfaces">blacklist</link></quote>
     option in /etc/shorewall/interfaces are checked against the blacklist. The
     black list is designed to prevent listed hosts/subnets from accessing
     services on <emphasis role="bold">your</emphasis> network.</para>

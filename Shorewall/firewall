@@ -1490,7 +1490,7 @@ add_nat_rule() {
 	    ;;
 	detect)
 	   addr=
-           if [ -n "$DETECT_IPADDRS" && "$source"! = "$FW" ]; then
+           if [ -n "$DETECT_DNAT_IPADDRS" -a "$source" != "$FW" ]; then
 	       eval interfaces=\$${source}_interfaces
 	       for interface in $interfaces; do
 		   addr="`find_interface_address $interface` $addr"
@@ -3313,7 +3313,7 @@ do_initialize() {
     ROUTE_FILTER=
     NAT_BEFORE_RULES=
     MULTIPORT=
-    DETECT_IPADDRS=
+    DETECT_DNAT_IPADDRS=
     stopping=
     have_mutex=
     masq_seq=1
@@ -3387,7 +3387,7 @@ do_initialize() {
     ROUTE_FILTER=`added_param_value_no ROUTE_FILTER $ROUTE_FILTER`
     NAT_BEFORE_RULES=`added_param_value_yes NAT_BEFORE_RULES $NAT_BEFORE_RULES`
     MULTIPORT=`added_param_value_no MULTIPORT $MULTIPORT`
-    DETECT_IPADDRS=`added_param_value_no DETECT_IPADDRS $DETECT_IPADDRS`
+    DETECT_DNAT_IPADDRS=`added_param_value_no DETECT_DNAT_IPADDRS $DETECT_DNAT_IPADDRS`
 }
 
 ################################################################################

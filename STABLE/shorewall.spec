@@ -1,5 +1,5 @@
 %define name shorewall
-%define version 1.4.8
+%define version 1.4.9
 %define release 1
 %define prefix /usr
 
@@ -100,14 +100,25 @@ fi
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/accounting
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/usersets
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/users
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/actions
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.template
 %attr(0544,root,root) /sbin/shorewall
 %attr(0444,root,root) /usr/share/shorewall/functions
 %attr(0544,root,root) /usr/share/shorewall/firewall
 %attr(0544,root,root) /usr/share/shorewall/help
-%doc documentation
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel
 
 %changelog
+* Tue Jan 13 2004 Tom Eastep <tom@shorewall.net>
+- Changed version to 1.4.9
+* Mon Dec 29 2003 Tom Eastep <tom@shorewall.net>
+- Remove Documentation from this RPM
+* Sun Dec 28 2003 Tom Eastep <tom@shorewall.net>
+- Updated for Beta 2
+* Sun Dec 07 2003 Tom Eastep <tom@shorewall.net>
+- Added User Defined Actions Files
+* Wed Dec 03 2003 Tom Eastep <tom@shorewall.net>
+- Added User Defined Actions Files
 * Fri Nov 07 2003 Tom Eastep <tom@shorewall.net>
 - Changed version to 1.4.8
 * Sat Nov 01 2003 Tom Eastep <tom@shorewall.net>

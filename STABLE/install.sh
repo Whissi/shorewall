@@ -54,7 +54,7 @@
 #        /etc/rc.d/rc.local file is modified to start the firewall.
 #
 
-VERSION=1.4.8
+VERSION=1.4.9
 
 usage() # $1 = exit status
 {
@@ -584,6 +584,26 @@ else
     run_install -o $OWNER -g $GROUP -m 0600 users ${PREFIX}/etc/shorewall/users
     echo
     echo "Users file installed as ${PREFIX}/etc/shorewall/users"
+fi
+#
+# Install the Actions file
+#
+if [ -f ${PREFIX}/etc/shorewall/actions ]; then
+    backup_file /etc/shorewall/actions
+else
+    run_install -o $OWNER -g $GROUP -m 0600 actions ${PREFIX}/etc/shorewall/actions
+    echo
+    echo "Actions file installed as ${PREFIX}/etc/shorewall/actions"
+fi
+#
+# Install the Action Template file
+#
+if [ -f ${PREFIX}/etc/shorewall/action.template ]; then
+    backup_file /etc/shorewall/action.template
+else
+    run_install -o $OWNER -g $GROUP -m 0600 action.template ${PREFIX}/etc/shorewall/action.template
+    echo
+    echo "Action Template file installed as ${PREFIX}/etc/shorewall/action.template"
 fi
 #
 # Backup the version file

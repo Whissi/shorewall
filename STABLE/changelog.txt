@@ -1,40 +1,23 @@
-Changes since 1.4.7
+Changes since 1.4.8
 
-1) Applied patch from Tuomo Soini that fixes syntax error occuring with
-   some versions of 'ash'.
+1) Replace "Static NAT" with "One-to-one NAT".
 
-2) Applied Andrew Zhoglo's patch that avoids using multiport match for
-   ICMP.
+2) Change SMB common rules to DROP.
 
-3) Added support for QUEUE target.
+3) Change wording in release notes.
 
-4) Fix error handling after "Unable to determine the routes..."
+4) Move ip_forward handling to a function.
 
-5) Fix handling of LOGUNCLEAN
+5) Change 'norfc1918' logging to log out of chains named 'rfc1918'.
 
-6) Added BLACKLISTNEWONLY support.
+6) Reword the description of NEWNOTSYN in shorewall.conf.
 
-7) Correct optimization for 'complex' zones.
+7) Added MODULE_SUFFIX option to shorewall.conf.
 
-8) Fix tcrules processing.
+8) Add /etc/shorewall/actions and /etc/shorewall/action.template
 
-9) Liberalize chain names used in the accounting file.
+9) Fix SNAT handling in DNAT rules.
 
-10) Fix the fix for 'complex' zones (twice).
+10) Change default to NEWNOTSYN=Yes
 
-11) Remove incorrect comment from shorewall.conf regarding Debian
-    lockfiles.
-
-12) Change "_exists" suffix (including _nat_exists) to an "exists_"
-    prefix to allow chain names beginning with a digit without
-    lengthening the variable name.
-
-13) Applied and improved Eric Bowles's fix for route filtering.
-
-14) Corrected handling of /32 addresses with broadcast in maclist
-    processing.
-
-15) Generate error for NONE policy where source or destination zone is
-    the firewall itself.
-
-16) Fix 'routeback' for wildcard interfaces.
+11) Add rule to drop null source addressed ICMPs.

@@ -1028,6 +1028,22 @@ log_rule() # $1 = log level, $2 = chain, $3 = disposition , $... = predicates fo
 }
 
 #
+# Set /proc/sys/net/ipv4/ip_forward based on $IP_FORWARDING
+#
+setup_forwarding() {
+    case "$IP_FORWARDING" in
+    [Oo][Nn])
+	echo 1 > /proc/sys/net/ipv4/ip_forward
+	echo "IP Forwarding Enabled"
+	;;
+    [Oo][Ff][Ff])
+	echo 0 > /proc/sys/net/ipv4/ip_forward
+	echo "IP Forwarding Disabled!"
+	;;
+    esac
+}
+
+#
 # Stop the Firewall
 #
 stop_firewall() {
@@ -1118,14 +1134,7 @@ stop_firewall() {
 	    iptables -A OUTPUT -p udp -o $interface --dport 67:68 -j ACCEPT
     done
 
-    case "$IP_FORWARDING" in
-    [Oo][Nn])
-	echo 1 > /proc/sys/net/ipv4/ip_forward
-	;;
-    [Oo][Ff][Ff])
-	echo 0 > /proc/sys/net/ipv4/ip_forward
-	;;
-    esac
+    setup_forwarding
 
     run_user_exit stopped
 
@@ -2063,6 +2072,10 @@ check_config() {
 
     validate_policy
 
+    echo "Validating Actions..."
+
+    process_actions
+
     echo "Validating rules file..."
 
     rules=`find_file rules`
@@ -2113,6 +2126,349 @@ refresh_tc() {
 
 }
 
+#
+# Add one Filter Rule from an action -- Helper function for the action file processor
+#
+# The caller has established the following variables:
+#    check       = current command. If 'check', we're executing a 'check'
+#                  which only goes through the motions.
+#    client	 = SOURCE IP or MAC
+#    server	 = DESTINATION IP or interface
+#    protocol	 = Protocol
+#    address	 = Original Destination Address
+#    port	 = Destination Port
+#    cport	 = Source Port
+#    multioption = String to invoke multiport match if appropriate
+#    action	 = The chain for this rule
+#    ratelimit   = Optional rate limiting clause
+#
+add_an_action()
+{
+    do_ports() {
+	if [ -n "$port" ]; then
+	    dports="--dport"
+	    if [ -n "$multioption" -a "$port" != "${port%,*}" ]; then
+		multiport="$multioption"
+		dports="--dports"
+	    fi
+	    dports="$dports $port"
+	fi
+	
+	if [ -n "$cport" ]; then
+	    sports="--sport"
+	    if [ -n "$multioption" -a "$cport" != "${cport%,*}" ]; then
+		multiport="$multioption"
+		sports="--sports"
+	    fi
+	    sports="$sports $cport"
+	fi
+    }
+
+    # Set source variables. The 'cli' variable will hold the client match predicate(s).
+
+    cli=
+
+    case "$client" in
+    -)
+	;;
+    *:*)
+	cli="-i ${client%:*} -s ${client#*:}"
+	;;
+    *.*.*)
+	cli="-s $client"
+	;;
+    ~*)
+	cli=`mac_match $client`
+	;;
+    *)
+	[ -n "$client" ] && cli="-i $client"
+	;;
+    esac
+
+    # Set destination variables - 'serv' and 'dest_interface' hold the server match predicate(s).
+
+    dest_interface=
+    serv=
+
+    case "$server" in
+    -)
+	;;
+    *.*.*)
+	serv=$server
+	;;
+    ~*)
+	fatal_error "Rule \"$rule\" - Destination may not be specified by MAC Address"
+	;;
+    *)
+	[ -n "$server" ] && dest_interface="-o $server"
+	;;
+    esac
+
+    # Setup protocol and port variables
+
+    sports=
+    dports=
+    state="-m state --state NEW"
+    proto=$protocol
+    servport=$serverport
+    multiport=
+
+    [ x$port  = x- ] && port=
+    [ x$cport = x- ] && cport=
+
+    case $proto in
+	tcp|TCP|6)
+	    do_ports
+	    [ "$target" = QUEUE ] && proto="$proto --syn"
+	    ;;
+	udp|UDP|17)
+	    do_ports
+	    ;;
+	icmp|ICMP|1)
+	    [ -n "$port" ]  && 	dports="--icmp-type $port"
+	    state=
+	    ;;
+	all|ALL)
+	    [ -n "$port" ] && \
+		fatal_error "Port number not allowed with protocol \"all\"; rule: \"$rule\""
+	    proto=
+	    ;;
+	*)
+	    state=
+	    [ -n "$port" ] && \
+		fatal_error "Port number not allowed with protocol \"$proto\"; rule: \"$rule\""
+	    ;;
+    esac
+
+    proto="${proto:+-p $proto}"
+
+    # Some misc. setup
+
+    case "$logtarget" in
+	LOG)
+	    [ -z "$loglevel" ] && fatal_error "LOG requires log level"
+	    ;;
+    esac
+
+    if [ $command != check ]; then
+       if [ -n "${serv}" ]; then
+	    for serv1 in `separate_list $serv`; do
+		for srv in `ip_range $serv1`; do
+		    if [ -n "$loglevel" ]; then
+			log_rule_limit $loglevel $action $logtarget "$ratelimit" \
+			    `fix_bang $proto $sports $multiport $state $cli -d $srv $dports`
+		    fi
+		    
+		    run_iptables2 -A $action $proto $multiport $state $cli $sports \
+			-d $srv $dports $ratelimit -j $target
+		done
+	    done
+	else
+	    if [ -n "$loglevel" ]; then
+		log_rule_limit $loglevel $action $logtarget "$ratelimit" \
+		    `fix_bang $proto $sports $multiport $state $cli $dports`
+	    fi
+		    
+	    run_iptables2 -A $action $proto $multiport $state $cli $sports \
+		$dports $ratelimit -j $target
+	fi
+    fi
+}
+
+#
+# Process a record from an action file for the 'start', 'restart' or 'check' commands
+#
+process_action() # $1 = action
+                 # $1 = target
+                 # $2 = clients
+                 # $3 = servers
+                 # $4 = protocol
+                 # $5 = ports
+                 # $6 = cports
+                 # $7 = ratelimit
+{
+    local action="$1"
+    local target="$2"
+    local clients="$3"
+    local servers="$4"
+    local protocol="$5"
+    local ports="$6"
+    local cports="$7"
+    local ratelimit="$8"
+    local rule="`echo $target $clients $servers $protocol $ports $cports $ratelimit`"
+
+    if [ -n "$ratelimit" ]; then
+	case $ratelimit in
+	    -)
+		ratelimit=
+		;;
+	    *:*)
+		ratelimit="-m limit --limit ${ratelimit%:*} --limit-burst ${ratelimit#*:}"
+		;;
+	    *)
+		ratelimit="-m limit --limit $ratelimit"
+		;;
+	esac
+    fi
+
+    # Isolate log level
+
+    if [ "$target" = "${target%:*}" ]; then
+	loglevel=
+    else
+	loglevel="${target#*:}"
+	target="${target%:*}"
+	expandv loglevel
+    fi
+  
+    logtarget="$target"
+
+    case $target in
+	ACCEPT|LOG)
+	    ;;
+	REJECT)
+	    target=reject
+	    ;;
+	*)
+	    ;;
+	esac
+
+    # Generate Netfilter rule(s)
+
+    protocol=${protocol:=all}
+
+    if [ -n "$MULTIPORT" ] && \
+	! list_search $protocol "icmp" "ICMP" "1" && \
+	[ "$ports" = "${ports%:*}" -a \
+	"$cports" = "${cports%:*}" -a \
+	`list_count $ports` -le 15 -a \
+	`list_count $cports` -le 15 ]
+	then
+	#
+	# MULTIPORT is enabled, there are no port ranges in the rule and less than
+	# 16 ports are listed - use multiport match.
+	#
+	multioption="-m multiport"
+	for client in `separate_list ${clients:=-}`; do
+	    for server in `separate_list ${servers:=-}`; do
+		#
+		# add_a_rule() modifies these so we must set their values each time
+		#
+		port=${ports:=-}
+		cport=${cports:=-}
+		add_an_action
+	    done
+	done
+    else
+	#
+	# MULTIPORT is disabled or the rule isn't compatible with multiport match
+	#
+	multioption=
+	for client in `separate_list ${clients:=-}`; do
+	    for server in `separate_list ${servers:=-}`; do
+		for port in `separate_list ${ports:=-}`; do
+		    for cport in `separate_list ${cports:=-}`; do
+			add_an_action
+		    done
+		done
+	    done
+	done
+    fi
+    #
+    # Report Result
+    #
+    if [ $command = check ]; then
+	echo "   Rule \"$rule\" checked."
+    else
+	echo "   Rule \"$rule\" added."
+    fi
+}
+
+#
+# Read /etc/shorewall/actions and for each defined <action>, process 
+# /etc/shorewall/action.<action>
+#
+
+process_actions() {
+    #
+    # Process a rule where the source or destination is "all"
+    #
+    process_wildcard_rule() {
+	local yclients yservers ysourcezone ydestzone ypolicy
+	
+	for yclients in $xclients; do
+	    for yservers in $xservers; do
+		ysourcezone=${yclients%%:*}
+		ydestzone=${yservers%%:*}
+		if [ "${ysourcezone}" != "${ydestzone}" ] ; then
+		    eval ypolicy=\$${ysourcezone}2${ydestzone}_policy
+		    if [ "$ypolicy" != NONE ] ; then
+			process_action $xaction $xtarget $yclients $yservers $xprotocol $xports $xcports $xratelimit
+		    fi
+		fi
+	    done
+	done
+    }
+
+    do_it() {
+	expandv xclients xservers xprotocol xports xcports xratelimit
+
+	if [ "x$xclients" = xall ]; then
+	    xclients="$zones $FW"
+	    if [ "x$xservers" = xall ]; then
+		xservers="$zones $FW"
+	    fi
+	    process_wildcard_rule
+	    continue
+	fi
+
+	if [ "x$xservers" = xall ]; then
+	    xservers="$zones $FW"
+	    process_wildcard_rule
+	    continue
+	fi
+
+	process_action $xaction $xtarget $xclients $xservers $xprotocol $xports $xcports $xratelimit
+    }
+
+    strip_file actions
+
+    while read xaction rest; do
+	[ "x$rest" = x ] || fatal_error "Invalid Action: $xaction $rest"
+	[ "$command" = check ] || createchain $xaction No
+
+	f=action.$xaction
+	fn=`find_file $f`
+
+	if [ -f $fn ]; then
+	    echo "Processing $fn..."
+	    strip_file $f $fn
+	    while read xtarget xclients xservers xprotocol xports xcports xratelimit ; do
+		expandv xtarget
+		temp="${xtarget%:*}"
+		case "${temp%<*}" in
+		    ACCEPT|DROP|REJECT|LOG|QUEUE)
+			do_it
+			;;
+		    *)
+			if list_search $temp $ACTIONS; then
+			    do_it
+			else
+			    rule="`echo $xtarget $xclients $xservers $xprotocol $xports $xcports $xratelimit`"
+			    fatal_error "Invalid TARGET in rule \"$rule\""
+			fi
+			;;
+		    
+		esac
+	    done < $TMP_DIR/$f
+	else
+	    fatal_error "Missing Action File: $f"
+	fi
+	
+	ACTIONS="$ACTIONS $xaction"
+    done < $TMP_DIR/actions
+}
+	
 #
 # Add a NAT rule - Helper function for the rules file processor
 #
@@ -2878,41 +3234,56 @@ process_rules()
     # Process a rule where the source or destination is "all"
     #
     process_wildcard_rule() {
+	local yclients yservers ysourcezone ydestzone ypolicy
+	
 	for yclients in $xclients; do
 	    for yservers in $xservers; do
-		if [ "${yclients}" != "${yservers}" ] ; then
-		    process_rule $xtarget $yclients $yservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserset
+		ysourcezone=${yclients%%:*}
+		ydestzone=${yservers%%:*}
+		if [ "${ysourcezone}" != "${ydestzone}" ] ; then
+		    eval ypolicy=\$${ysourcezone}2${ydestzone}_policy
+		    if [ "$ypolicy" != NONE ] ; then
+			process_rule $xtarget $yclients $yservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserset
+		    fi
 		fi
 	    done
 	done
+    }
+
+    do_it() {
+	expandv xclients xservers xprotocol xports xcports xaddress xratelimit xuserset
+
+	if [ "x$xclients" = xall ]; then
+	    xclients="$zones $FW"
+	    if [ "x$xservers" = xall ]; then
+		xservers="$zones $FW"
+	    fi
+	    process_wildcard_rule
+	    continue
+	fi
+
+	if [ "x$xservers" = xall ]; then
+	    xservers="$zones $FW"
+	    process_wildcard_rule
+	    continue
+	fi
+	
+	process_rule $xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserset
     }
 
     while read xtarget xclients xservers xprotocol xports xcports xaddress xratelimit xuserset; do
 	temp="${xtarget%:*}"
 	case "${temp%<*}" in
 	    ACCEPT|DROP|REJECT|DNAT|DNAT-|REDIRECT|REDIRECT-|LOG|CONTINUE|QUEUE)
-		expandv xclients xservers xprotocol xports xcports xaddress xratelimit xuserset
-
-		if [ "x$xclients" = xall ]; then
-		    xclients="$zones $FW"
-		    if [ "x$xservers" = xall ]; then
-			xservers="$zones $FW"
-		    fi
-		    process_wildcard_rule
-		    continue
-		fi
-
-		if [ "x$xservers" = xall ]; then
-		    xservers="$zones $FW"
-		    process_wildcard_rule
-		    continue
-		fi
-
-		process_rule $xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserset
+		do_it
 		;;
 	    *)
-		rule="`echo $xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserset`"
-		fatal_error "Invalid Action in rule \"$rule\""
+		if list_search $temp $ACTIONS; then
+		    do_it
+		else
+		    rule="`echo $xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserset`"
+		    fatal_error "Invalid Action in rule \"$rule\""
+		fi
 		;;
 
 	esac
@@ -3117,7 +3488,7 @@ loadmodule() # $1 = module name, $2 - * arguments
     if [ -z "`lsmod | grep $modulename`" ]; then
 	shift
 	
-	for suffix in o gz ko o.gz ; do
+	for suffix in $MODULE_SUFFIX ; do
 	    modulefile=$MODULESDIR/${modulename}.${suffix}
 
 	    if [ -f $modulefile ]; then
@@ -4081,13 +4452,13 @@ add_common_rules() {
 
 	strip_file rfc1918
 
-	createchain rfc1918 no
+	createchain norfc1918 no
 
-	createchain logdrop no
+	createchain rfc1918 no
 	
-	log_rule $RFC1918_LOG_LEVEL logdrop DROP
+	log_rule $RFC1918_LOG_LEVEL rfc1918 DROP
 	
-	run_iptables -A logdrop -j DROP
+	run_iptables -A rfc1918 -j DROP
 
 	if [ -n "$MANGLE_ENABLED" -a -z "$CONNTRACK_MATCH" ]; then
 	    #
@@ -4099,27 +4470,30 @@ add_common_rules() {
 	    # Also add a chain to log and drop any RFC1918 packets that we find
 	    #
 	    run_iptables -t mangle -N man1918
-	    run_iptables -t mangle -N logdrop
-	    log_rule $RFC1918_LOG_LEVEL logdrop DROP -t mangle
-	    run_iptables -t mangle -A logdrop -j DROP
+	    run_iptables -t mangle -N rfc1918
+	    log_rule $RFC1918_LOG_LEVEL rfc1918 DROP -t mangle
+	    run_iptables -t mangle -A rfc1918 -j DROP
 	fi
 
 	while read subnet target; do
 	    case $target in
-		logdrop|DROP|RETURN)
+		logdrop)
+		    target=rfc1918
+		    ;;
+		DROP|RETURN)
 		    ;;
 		*)
 		    fatal_error "Invalid target ($target) for $subnet"
 		    ;;
 	    esac
 
-	    run_iptables2 -A rfc1918 -s $subnet -j $target
+	    run_iptables2 -A norfc1918 -s $subnet -j $target
 
 	    if [ -n "$CONNTRACK_MATCH" ]; then
 		#
 		# We have connection tracking match -- match on the original destination
 		#
-		run_iptables2 -A rfc1918 -m conntrack --ctorigdst $subnet -j $target
+		run_iptables2 -A norfc1918 -m conntrack --ctorigdst $subnet -j $target
 	    elif [ -n "$MANGLE_ENABLED" ]; then
 		#
 		# No connection tracking match but we have mangling -- add a rule to
@@ -4131,7 +4505,7 @@ add_common_rules() {
 
 	for interface in $norfc1918_interfaces; do
 	    for chain in `first_chains $interface`; do
-		run_iptables -A $chain -m state --state NEW -j rfc1918
+		run_iptables -A $chain -m state --state NEW -j norfc1918
 	    done
 
 	    [ -n "$MANGLE_ENABLED" -a -z "$CONNTRACK_MATCH" ] && \
@@ -4237,19 +4611,8 @@ add_common_rules() {
 	[ -n "$ROUTE_FILTER" ] && echo 1 > /proc/sys/net/ipv4/conf/default/rp_filter
 	run_ip route flush cache
     fi
-    #
-    # IP Forwarding
-    #
-    case "$IP_FORWARDING" in
-    [Oo][Nn])
-	echo 1 > /proc/sys/net/ipv4/ip_forward
-	echo "IP Forwarding Enabled"
-	;;
-    [Oo][Ff][Ff])
-	echo 0 > /proc/sys/net/ipv4/ip_forward
-	echo "IP Forwarding Disabled!"
-	;;
-    esac
+
+    setup_forwarding
 }
 
 #
@@ -4475,6 +4838,7 @@ activate_rules()
 	run_iptables -D $chain -m state --state ESTABLISHED,RELATED -j ACCEPT
 	run_iptables -D $chain -p udp --dport 53 -j ACCEPT
     done
+
 }
 
 #
@@ -4533,6 +4897,10 @@ define_firewall() # $1 = Command (Start or Restart)
     fi
 
     rules=`find_file rules`
+
+    echo "Processing Actions..."
+
+    process_actions
 
     echo "Processing $rules..."
 
@@ -5059,6 +5427,8 @@ do_initialize() {
     LOGRULENUMBERS=
     ADMINISABSENTMINDED=
     BLACKLISTNEWONLY=
+    MODULE_SUFFIX=
+    ACTIONS=
 
     stopping=
     have_mutex=
@@ -5209,6 +5579,8 @@ do_initialize() {
     fi
     ADMINISABSENTMINDED=`added_param_value_no ADMINISABSENTMINDED $ADMINISABSENTMINDED`
     BLACKLISTNEWONLY=`added_param_value_no BLACKLISTNEWONLY $BLACKLISTNEWONLY`
+    [ -n "$MODULE_SUFFIX" ] || MODULE_SUFFIX="o gz ko o.gz"
+
     #
     # Strip the files that we use often
     #

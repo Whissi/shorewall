@@ -1,6 +1,6 @@
 %define name shorewall
 %define version 1.2
-%define release 13
+%define release 90
 %define prefix /usr
 
 Summary: Shoreline Firewall is an iptables-based firewall for Linux systems.
@@ -17,7 +17,6 @@ BuildArch: noarch
 BuildRoot: /%{_tmppath}/%{name}-%{version}-%{release}-root
 Requires: iptables
 Conflicts: kernel <= 2.2
-Provides: shorewall
 
 %description
 
@@ -79,6 +78,9 @@ if [ $1 = 0 ]; then if [ -x /sbin/insserv ]; then /sbin/insserv -r /etc/init.d/s
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel
 
 %changelog
+* Wed May 8 Tom Eastep <tom@shorewall.net>
+- changed version to 90
+- removed 'provides' tag.
 * Tue Apr 23 2002 Tom Eastep <tom@shorewall.net>
 - changed version to 13
 - Added whitelist file.

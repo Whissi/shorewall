@@ -4538,7 +4538,7 @@ process_blacklist_rec() {
 # Setup the Black List
 #
 setup_blacklist() {
-    local hosts=$(find_hosts_by_option blacklist)
+    local hosts="$(find_hosts_by_option blacklist)"
     local f=$(find_file blacklist)
     local disposition=$BLACKLIST_DISPOSITION
 
@@ -4922,6 +4922,13 @@ initialize_netfilter () {
 add_common_rules() {
     local savelogparms="$LOGPARMS"
     local broadcasts="$(find_broadcasts) 255.255.255.255 224.0.0.0/4"
+
+    drop_broadcasts() {
+	for address in $broadcasts ; do
+	    run_iptables -A reject -d $address -j DROP
+	done
+    }
+
     #
     # Populate the smurf chain
     #
@@ -4932,14 +4939,16 @@ add_common_rules() {
     #
     # Reject Rules -- Don't respond to broadcasts with an ICMP
     #
-    qt iptables -A reject -m pkttype --pkt-type broadcast -j DROP
-    if ! qt iptables -A reject -m pkttype --pkt-type multicast -j DROP; then
-	#
-	# No pkttype support -- do it the hard way
-	#
-	for address in $broadcasts ; do
-	    run_iptables -A reject -d $address -j DROP
-	done
+    if [ -n "$PKTTYPE" ]; then
+	qt iptables -A reject -m pkttype --pkt-type broadcast -j DROP
+	if ! qt iptables -A reject -m pkttype --pkt-type multicast -j DROP; then
+            #
+	    # No pkttype support -- do it the hard way
+	    #
+	    drop_broadcasts
+	fi
+    else
+	drop_broadcasts
     fi
     #
     # Don't feed the smurfs

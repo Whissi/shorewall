@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-10-16</pubdate>
+    <pubdate>2004-10-20</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -741,15 +741,16 @@ WiFi    eth1            192.168.3.255   nobogons,blacklist,maclist,routeback
       <title>ipsec</title>
 
       <blockquote>
-        <para>The mss=1400 in the OUT OPTIONS uses a feature added in 2.1.12
-        and sets the MSS field in forwarded TCP SYN packets from the 'sec'
-        zone to 1400. This works around a problem whereby ICMP
+        <para>The mss=1400 in the OUT OPTIONS of the 'net' zone uses a feature
+        added in 2.1.12 and sets the MSS field in TCP SYN packets forwarded to
+        the 'net' zone to 1400. This works around a problem whereby ICMP
         fragmentation-needed packets are being dropped somewhere between my
         main firewall and the IMAP server at my work.</para>
 
         <programlisting>#ZONE   IPSEC   OPTIONS                 IN                      OUT
 #       ONLY                            OPTIONS                 OPTIONS
-sec     yes     mode=tunnel             -                       <emphasis
+sec     yes     mode=tunnel             
+net     no      -                       -                       <emphasis
             role="bold">mss=1400</emphasis>
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
 </programlisting>

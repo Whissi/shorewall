@@ -15,10 +15,12 @@
       </author>
     </authorgroup>
 
-    <pubdate>2002-12-21</pubdate>
+    <pubdate>2004-10-21</pubdate>
 
     <copyright>
       <year>2002</year>
+
+      <year>2004</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -29,7 +31,8 @@
       1.2 or any later version published by the Free Software Foundation; with
       no Invariant Sections, with no Front-Cover, and with no Back-Cover
       Texts. A copy of the license is included in the section entitled
-      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
 
@@ -49,10 +52,11 @@
     address 192.0.2.224.</para>
 
     <para>If PPTP is being used, there are no firewall requirements beyond the
-    default loc-&#62;net ACCEPT policy. There is one restriction however: Only
+    default loc-&gt;net ACCEPT policy. There is one restriction however: Only
     one local system at a time can be connected to a single remote gateway
     unless you patch your kernel from the <quote>Patch-o-matic</quote> patches
-    available at <ulink url="http://www.netfilter.org">http://www.netfilter.org</ulink>.</para>
+    available at <ulink
+    url="http://www.netfilter.org">http://www.netfilter.org</ulink>.</para>
 
     <para>If IPSEC is being used then only one system may connect to the
     remote gateway and there are firewall configuration requirements as
@@ -118,7 +122,19 @@
 
     <para>If you want to be able to give access to all of your local systems
     to the remote network, you should consider running a VPN client on your
-    firewall. As starting points, see <ulink url="Documentation.htm#Tunnels">http://www.shorewall.net/Documentation.htm#Tunnels</ulink>
+    firewall. As starting points, see <ulink
+    url="Documentation.htm#Tunnels">http://www.shorewall.net/Documentation.htm#Tunnels</ulink>
     or <ulink url="PPTP.htm">http://www.shorewall.net/PPTP.htm</ulink>.</para>
+
+    <para>Alternatively, you should configure IPSEC to use <firstterm>NAT
+    Traversal</firstterm> -- Under NAT traversal the IPSEC packets (protocol
+    50 or 51) are encapsulated in UDP packets with destination port 4500.
+    Additionally, <firstterm>keep-alive messages</firstterm> are sent
+    frequently so that NATing gateways between the end-points will retain
+    their connection-tracking entries. This is the way that I connect to the
+    HP Intranet and it works flawlessly without anything in Shorewall other
+    than my ACCEPT loc-&gt;net policy. NAT traversal is available as a patch
+    for Windows 2K and is a standard feature of Windows XP -- simply select
+    "</para>
   </section>
 </article>

@@ -2042,7 +2042,7 @@ ACCEPT   fw      net    tcp     www</programlisting>
 
           <para>Also new in the Shorewall 2.1 series, the effect of
           ADD_SNAT_ALIASES=Yes can be negated for an entry by following the
-          interface name by ":" but no digit. </para>
+          interface name by ":" but no digit.</para>
 
           <para>Examples:</para>
 
@@ -2407,7 +2407,7 @@ eth0                  eth1            206.124.146.176</programlisting>
 
           <para>Beginning with Shorewall 2.1.1, the effect of
           ADD_IP_ALIASES=Yes can be negated for an entry by following the
-          interface name by ":" but no digit. </para>
+          interface name by ":" but no digit.</para>
 
           <para>Example:</para>
 
@@ -2490,6 +2490,24 @@ eth0                  eth1            206.124.146.176</programlisting>
     <para>This file is used to set the following firewall parameters:</para>
 
     <variablelist>
+      <varlistentry>
+        <term>STARTUP_ENABLED</term>
+
+        <listitem>
+          <para>(Added at version 2.2.0) - When set to Yes or yes, Shorewall
+          may be started. Used as guard against Shorewall being accidentally
+          started before it has been configured.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term></term>
+
+        <listitem>
+          <para></para>
+        </listitem>
+      </varlistentry>
+
       <varlistentry>
         <term>DYNAMIC_ZONES</term>
 
@@ -3020,6 +3038,25 @@ LOGBURST=5</programlisting>
 
           <para>If this variable is not set or is given an empty value
           (ADD_SNAT_ALIASES="") then ADD_SNAT_ALIASES=No is assumed.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>RETAIN_ALIASES</term>
+
+        <listitem>
+          <para>(Added in 2.2.0) - During "shorewall start", IP addresses to
+          be added as a consequence of ADD_IP_ALIASES=Yes and
+          ADD_SNAT_ALIASES=Yes are quietly deleted when <link
+          linkend="NAT">/etc/shorewall/nat</link> and <link
+          linkend="Masq">/etc/shorewall/masq</link> are processed then are
+          re-added later. This is done to help ensure that the addresses can
+          be added with the specified labels but can have the undesirable side
+          effect of causing routes to be quietly deleted. When RETAIN_ALIASES
+          is set to Yes, existing addresses will not be deleted. Regardless of
+          the setting of RETAIN_ALIASES, addresses added during "shorewall
+          start" are still deleted at a subsequent "shorewall stop" or
+          "shorewall restart".</para>
         </listitem>
       </varlistentry>
 
@@ -3573,7 +3610,15 @@ eth1                -</programlisting>
 
     <para>This file is used to identify the Security Associations used to
     encrypt traffic to hosts in a zone and to decrypt traffic from hosts in a
-    zone. Columns are:</para>
+    zone. Use of this file requires a 2.6 kernel that includes the
+    IPSEC-Netfilter patches and the policy match patch. Your iptables must
+    also support policy match. For additional information, see the <ulink
+    url="IPSEC-2.6.html">Shorewall Kernel 2.6 IPSEC
+    documentation</ulink>.</para>
+
+    <para></para>
+
+    <para>Columns are:</para>
 
     <glosslist>
       <glossentry>
@@ -3609,32 +3654,40 @@ eth1                -</programlisting>
 
           <simplelist>
             <member><emphasis
-            role="bold">proto=ah|esp|ipcomp</emphasis></member>
+            role="bold">proto[!]=ah|esp|ipcomp</emphasis></member>
 
             <member><emphasis
-            role="bold">mode=transport|tunnel</emphasis></member>
+            role="bold">mode[!]=transport|tunnel</emphasis></member>
 
             <member><emphasis
-            role="bold">reqid=&lt;<emphasis>number</emphasis>&gt;</emphasis> —
-            A number assiged to a security policy using the
+            role="bold">reqid[!]=&lt;<emphasis>number</emphasis>&gt;</emphasis>
+            — A number assiged to a security policy using the
             unique:&lt;number&gt; as the SPD level. See setkey(8).</member>
 
             <member><emphasis
-            role="bold">tunnel-src=&lt;<emphasis>address</emphasis>&gt;[/&lt;<emphasis>mask</emphasis>&gt;]</emphasis>
+            role="bold">tunnel-src[!]=&lt;<emphasis>address</emphasis>&gt;[/&lt;<emphasis>mask</emphasis>&gt;]</emphasis>
             — Tunnel Source; may only be included with mode=tunnel. Since
             tunnel source and destination are dependent on the direction of
             the traffic, this option and the following one should only be
             included in the IN OPTIONS and OUT OPTIONS columns.</member>
 
             <member><emphasis
-            role="bold">tunnel-dst=&lt;<emphasis>address</emphasis>&gt;[/&lt;<emphasis>mask</emphasis>&gt;]
+            role="bold">tunnel-dst[!]=&lt;<emphasis>address</emphasis>&gt;[/&lt;<emphasis>mask</emphasis>&gt;]
             </emphasis>— Tunnel Destination; may only be included with
             mode=tunnel.</member>
 
+            <member><emphasis role="bold">mss</emphasis>=&lt;number&gt; — Sets
+            the MSS field in TCP syn packets forwarded to/from this zone. May
+            be used to compensate for the lack of IPSEC pseuo-deviceses with
+            their own MTU in the 2.6 Kernel IPSEC implementation. If specified
+            in the IN OPTIONS, TCP SYN packets from the zone will have MSS
+            altered; if specified in the OUT OPTIONS, TCP SYN packets to the
+            zone will have MSS altered.</member>
+
             <member><emphasis
-            role="bold">spi=&lt;<emphasis>number</emphasis>&gt;</emphasis> —
-            The security parameter index of the Security Association. Since a
-            different SA is used for incoming and outgoing traffic, this
+            role="bold">spi[!]=&lt;<emphasis>number</emphasis>&gt;</emphasis>
+            — The security parameter index of the Security Association. Since
+            a different SA is used for incoming and outgoing traffic, this
             option should only be listed in the IN OPTIONS and OUT OPTIONS
             columns.</member>
 
@@ -3658,9 +3711,19 @@ eth1                -</programlisting>
 
     <para><revhistory>
         <revision>
+          <revnumber>1.20</revnumber>
+
+          <date>2004-10-22</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Changes for Shorewall 2.2 Beta 1.</revremark>
+        </revision>
+
+        <revision>
           <revnumber>1.19</revnumber>
 
-          <date>2004-09012</date>
+          <date>2004-09-12</date>
 
           <authorinitials>TE</authorinitials>
 

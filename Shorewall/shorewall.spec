@@ -106,10 +106,11 @@ fi
 %attr(0444,root,root) /usr/share/shorewall/functions
 %attr(0544,root,root) /usr/share/shorewall/firewall
 %attr(0544,root,root) /usr/share/shorewall/help
-%doc documentation
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel
 
 %changelog
+* Mon Dec 29 2003 Tom Eastep <tom@shorewall.net>
+- Remove Documentation from this RPM
 * Sun Dec 28 2003 Tom Eastep <tom@shorewall.net>
 - Updated for Beta 2
 * Sun Dec 07 2003 Tom Eastep <tom@shorewall.net>

@@ -26,16 +26,19 @@ None.
 
 New Features:
 
-1) To cut down on the number of "Why are these ports closed rather than
+1) The documentation has been completely rebased to Docbook XML. The
+   documentation is now released as separate HTML and XML packages.
+
+2) To cut down on the number of "Why are these ports closed rather than
    stealthed?" questions, the SMB-related rules in
    /etc/shorewall/common.def have been changed from 'reject' to 'DROP'.
 
-2) For easier identification, packets logged under the 'norfc1918'
+3) For easier identification, packets logged under the 'norfc1918'
    interface option are now logged out of chains named
    'rfc1918'. Previously, such packets were logged under chains named
    'logdrop'.
 
-3) Distributors and developers seem to be regularly inventing new
+4) Distributors and developers seem to be regularly inventing new
    naming conventions for kernel modules. To avoid the need to change
    Shorewall code for each new convention, the MODULE_SUFFIX option has
    been added to shorewall.conf. MODULE_SUFFIX may be set to the suffix
@@ -55,7 +58,7 @@ New Features:
 	    If all files end in ".kzo" then set MODULE_SUFFIX="kzo"
 	    If all files end in ".kz.o" then set MODULE_SUFFIX="kz.o"
 
-4) Support for user defined rule ACTIONS has been implemented through
+5) Support for user defined rule ACTIONS has been implemented through
    two new files:
 
    /etc/shorewall/actions         - used to list the user-defined ACTIONS.
@@ -80,3 +83,22 @@ New Features:
 
 	LOG:info
 	ACCEPT
+
+6) The default value for NEWNOTSYN in shorewall.conf is now "Yes"
+   (non-syn TCP packets that are not part of an existing connection are
+   filtered according to the rules and policies rather than being
+   dropped). I have made this change for two reasons:
+
+   a) NEWNOTSYN=No tends to result in lots of "stuck" connections since
+   any timeout during TCP session tear down results in the firewall
+   dropping all of the retries.
+
+   b) The old default of NEWNOTSYN=No and LOGNEWNOTSYN=info resulted in
+   lots of confusing messages when a connection got "stuck". While I
+   could have changed the default value of LOGNEWNOTSYN to suppress
+   logging, I dislike defaults that silently throw away packets.
+
+7) The common.def file now contains an entry that silently drops ICMP
+   packets with a null source address. Ad Koster reported a case where
+   these were occuring frequently as a result of a broken system on his
+   external network.    

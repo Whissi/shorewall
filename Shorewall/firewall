@@ -95,7 +95,7 @@ error_message() # $* = Error Message
 fatal_error() # $* = Error Message
 {
     echo "   Error: $@" >&2
-    if [ $command = check ]; 
+    if [ $command = check ]; then
 	[ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
     else
 	stop_firewall

@@ -1211,6 +1211,7 @@ setup_tunnels() # $1 = name of tunnels file
     setup_pptp_client() # $1 = gateway
     {
 	addrule $outchain -p 47               -d $1 -j ACCEPT
+	addrule $inchain  -p 47               -s $1 -j ACCEPT
 	addrule $outchain -p tcp --dport 1723 -d $1 -j ACCEPT
 
 	echo "   PPTP tunnel to $1 defined."
@@ -1218,8 +1219,9 @@ setup_tunnels() # $1 = name of tunnels file
 
     setup_pptp_server()
     {
-	addrule $inchain -p 47               -j ACCEPT
-	addrule $inchain -p tcp --dport 1723 -j ACCEPT
+	addrule $inchain  -p 47               -j ACCEPT
+	addrule $outchain -p 47               -j ACCEPT
+	addrule $inchain  -p tcp --dport 1723 -j ACCEPT
 
 	echo "   PPTP server defined."
     }

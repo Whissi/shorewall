@@ -42,6 +42,11 @@ Problems corrected since 2.1.7
 
 2)  Fix parsing of PROTO column in /etc/shorewall/tcrules.
 
+3)  Packets that will be encrypted or that have been decrypted by IPSEC
+    are now exempted from the rules established by one-to-one NAT. This
+    allows tunnel mode IPSEC to work for local networks where some of
+    the systems use one-to-one NAT.
+
 -----------------------------------------------------------------------
 Issues when migrating from Shorewall 2.0 to Shorewall 2.1:
 

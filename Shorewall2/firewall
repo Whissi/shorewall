@@ -1967,7 +1967,7 @@ delete_proxy_arp() {
 # Setup Static Network Address Translation (NAT)
 #
 setup_nat() {
-    local external= interface= internal= allints= localnat=
+    local external= interface= internal= allints= localnat= policyin= policyout=
 
     validate_one() #1 = Variable Name, $2 = Column name, $3 = value 
     {
@@ -2005,15 +2005,15 @@ setup_nat() {
 	validate_one localnat "LOCAL"          $localnat
 	
 	if [ -n "$allints" ]; then
-	    addnatrule nat_in  -d $external -j DNAT --to-destination $internal
-	    addnatrule nat_out -s $internal -j SNAT --to-source $external
+	    addnatrule nat_in  -d $external $policyin  -j DNAT --to-destination $internal
+	    addnatrule nat_out -s $internal $policyout -j SNAT --to-source $external
 	else
-	    addnatrule $(input_chain $iface) -d $external -j DNAT --to-destination $internal
-	    addnatrule $(output_chain $iface) -s $internal -j SNAT --to-source $external
+	    addnatrule $(input_chain $iface)  -d $external $policyin  -j DNAT --to-destination $internal
+	    addnatrule $(output_chain $iface) -s $internal $policyout -j SNAT --to-source $external
 	fi
 	
 	[ -n "$localnat" ] && \
-	    run_iptables2 -t nat -A OUTPUT -d $external -j DNAT --to-destination $internal
+	    run_iptables2 -t nat -A OUTPUT -d $external $policyout -j DNAT --to-destination $internal
 
 	if [ -n "$add_ip_aliases" ]; then
 	    list_search $external $aliases_to_add || \
@@ -2024,6 +2024,11 @@ setup_nat() {
     # At this point, we're just interested in the network translation
     #
     > ${STATEDIR}/nat
+
+    if [ -n "$POLICY_MATCH" ]; then
+	policyin="-m policy --pol none --dir in"
+	policyout="-m policy --pol none --dir out"
+    fi
 
     save_progress_message "Restoring one-to-one NAT..."
 

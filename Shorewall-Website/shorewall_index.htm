@@ -9,11 +9,11 @@
   <meta name="CHANGED" content="20040920;15183300">
 </head>
 <body dir="ltr" lang="en-US">
-<h1>Shorewall 2.0</h1>
+<h1>Shorewall 2.x</h1>
 <p><b>Tom Eastep</b><br>
 <br>
 The information on this site applies only
-to 2.0.x releases of Shorewall. For older versions:</p>
+to 2.x releases of Shorewall. For older versions:</p>
 <ul>
   <li>
     <p style="margin-bottom: 0in;">The 1.4 site is <a
@@ -31,9 +31,9 @@ to 2.0.x releases of Shorewall. For older versions:</p>
 <p>The current 2.0 Stable Release is 2.0.10 -- Here are the <a
  href="http://shorewall.net/pub/shorewall/2.0/shorewall-2.0.10/releasenotes.txt">release
 notes</a>.<br>
-The current Developement Release is 2.2.0 Beta 2 -- Here
+The current Developement Release is 2.2.0 Beta 4 -- Here
 are the <a
- href="http://shorewall.net/pub/shorewall/2.2-Beta/shorewall-2.2.0-Beta2/releasenotes.txt">release
+ href="http://shorewall.net/pub/shorewall/2.2-Beta/shorewall-2.2.0-Beta4/releasenotes.txt">release
 notes</a>.<br>
 <br>
 Copyright © 2001-2004 Thomas M. Eastep</p>
@@ -44,7 +44,7 @@ Foundation; with no Invariant Sections, with no Front-Cover, and with
 no Back-Cover Texts. A copy of the license is included in the section
 entitled “<a href="GnuCopyright.htm" target="_self">GNU
 Free Documentation License</a>”.</p>
-<p>2004-11-02</p>
+<p>2004-11-19</p>
 <hr>
 <h3>Table of Contents</h3>
 <p style="margin-left: 0.42in; margin-bottom: 0in;"><a href="#Intro">Introduction
@@ -60,7 +60,9 @@ Shorewall on Mandrake® with a two-interface setup?</a><br>
 <a href="#License">License</a></p>
 <p style="margin-bottom: 0in; margin-left: 40px;"><a href="#2_0_10">News</a></p>
 <p style="margin-left: 0.83in; margin-bottom: 0in;"><a
- href="#2_2_0_Beta2">Shorewall 2.2.0 Beta 2</a><br>
+ href="#2_2_0_Beta4">Shorewall 2.2.0 Beta 4</a><br>
+<a href="#2_2_0_Beta3">Shorewall 2.2.0 Beta 3</a><br>
+<a href="#2_2_0_Beta2">Shorewall 2.2.0 Beta 2</a><br>
 <a href="#2_0_10">Shorewall
 2.0.10</a><br>
 <a href="#2_2_0_Beta1">Shorewall 2.2.0 Beta 1</a><br>
@@ -155,6 +157,39 @@ of the license is included in the section entitled "GNU Free
 Documentation License". </p>
 <hr>
 <h2><a name="News"></a>News</h2>
+<span style="font-weight: bold;"><a name="2_2_0_Beta4"></a>11/19/2004 -
+Shorewall 2.2.0 Beta 4<br>
+</span><br>
+Problems Corrected:<br>
+<ol>
+  <li>A cut and paste error resulted in some nonsense in the
+description of the IPSEC column in /etc/shorewall/masq.</li>
+  <li>A typo in /etc/shorewall/rules has been corrected.</li>
+  <li>The bogons file has been updated.</li>
+  <li>The "shorewall add" command previously reported success but did
+nothing -- now it works.</li>
+</ol>
+New Features:<br>
+<ol>
+  <li>The AllowNNTP action now allows NNTP over SSL/TLS (NNTPS).<br>
+  </li>
+</ol>
+<span style="font-weight: bold;"><a name="2_2_0_Beta3"></a>11/09/2004 -
+Shorewall 2.2.0 Beta 3<br>
+</span><br>
+Problems Corrected:<br>
+<ol>
+  <li>Missing '#' in the rfc1918 file has been corrected.</li>
+  <li>The INSTALL file now includes special instructions for Slackware
+users.</li>
+</ol>
+New Features:<br>
+<ol>
+  <li>In CLASSIFY rules (/etc/shorewall/tcrules), an interface name may
+now appear in the DEST column as in:<br>
+    <pre>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; #MARK/&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SOURCE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; DEST&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; PROTO&nbsp;&nbsp;&nbsp;&nbsp; PORT(S)<br>        #CLASSIFY<br>        1:30&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; eth0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; tcp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 25</pre>
+  </li>
+</ol>
 <span style="font-weight: bold;"><a name="2_2_0_Beta2"></a>11/02/2004 -
 Shorewall 2.2.0 Beta 2<br>
 <br>

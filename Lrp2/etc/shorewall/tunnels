@@ -1,5 +1,5 @@
 #
-# Shorewall 2.0 - /etc/shorewall/tunnels
+# Shorewall 2.2 - /etc/shorewall/tunnels
 #
 #	This file defines IPSEC, GRE, IPIP and OPENVPN tunnels.
 #
@@ -9,7 +9,7 @@
 #
 #	The columns are:
 #
-#	TYPE	    --	must start in column 1 and be "ipsec", "ipsecnat","ip"
+#	TYPE	    --	must start in column 1 and be "ipsec", "ipsecnat","ipip"
 #			"gre", "6to4", "pptpclient", "pptpserver", "openvpn" or 
 #			"generic"
 #
@@ -34,7 +34,10 @@
 #
 #	GATEWAY	    --	The IP address of the remote tunnel gateway. If the
 #			remote getway has no fixed address (Road Warrior)
-#			then specify the gateway as 0.0.0.0/0.
+#			then specify the gateway as 0.0.0.0/0. May be 
+#			specified as a network address and if your kernel and
+#			iptables include iprange match support then IP address
+#			ranges are also allowed.
 #
 #	GATEWAY
 #	ZONES --	Optional. If the gateway system specified in the third

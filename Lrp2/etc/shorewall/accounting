@@ -1,5 +1,5 @@
 #
-# Shorewall version 2.0 - Accounting File
+# Shorewall version 2.2 - Accounting File
 #
 # /etc/shorewall/accounting
 #
@@ -47,9 +47,12 @@
 #			Format the same as the SOURCE column.
 #
 #	PROTOCOL	A protocol name (from /etc/protocols), a protocol
-#			number.
+#			number, or "ipp2p"
 #
-#	DEST PORT	Destination Port number
+#	DEST PORT	Destination Port number. If the PROTOCOL is "ipp2p" then
+#			this column must contain an ipp2p option ("iptables -m 
+#			ipp2p --help") without the leading "--". If no option
+#			is given in this column, "ipp2p" is assumed.
 #
 #			Service name from /etc/services or port number. May
 #			only be specified if the protocol is TCP or UDP (6
@@ -61,13 +64,33 @@
 #			only be specified if the protocol is TCP or UDP (6
 #			or 17).
 #
+#	USER/GROUP	This column may only be non-empty if the CHAIN is
+#			OUTPUT.
+#			
+#			The column may contain:
+#
+#			   [!][<user name or number>][:<group name or number>]
+#
+#			When this column is non-empty, the rule applies only
+#			if the program generating the output is running under
+#			the effective <user> and/or <group> specified (or is
+#			NOT running under that id if "!" is given).
+#
+#			Examples:
+#
+#				joe	#program must be run by joe
+#				:kids	#program must be run by a member of
+#					#the 'kids' group
+#				!:kids  #program must not be run by a member
+#					#of the 'kids' group
+#
 #	In all of the above columns except ACTION and CHAIN, the values "-",
 #	"any" and "all" may be used as wildcards
 #
 #	Please see http://shorewall.net/Accounting.html for examples and 
 #	additional information about how to use this file.
 #
-#ACTION	CHAIN 	SOURCE		DESTINATION	PROTO	DEST	   	SOURCE
-#							PORT		PORT
+#ACTION	CHAIN 	SOURCE		DESTINATION	PROTO	DEST	   	SOURCE	USER/
+#							PORT		PORT	GROUP
 #
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

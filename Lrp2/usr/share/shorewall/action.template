@@ -1,5 +1,5 @@
 #
-# Shorewall 2.0 /etc/shorewall/action.template
+# Shorewall 2.2 /etc/shorewall/action.template
 #
 #	This file is a template for files with names of the form 
 #	/etc/shorewall/action.<action-name> where <action> is an
@@ -37,6 +37,10 @@
 #			ACCEPT:debugging). This causes the packet to be
 #			logged at the specified level.
 #
+#			The special log level 'none' does not result in logging
+#			but rather exempts the rule from being overridden by a
+#			non-forcing log level when the action is invoked.
+#
 #			You may also specify ULOG (must be in upper case) as a
 #			log level.This will log to the ULOG target for routing
 #			to a separate log through use of ulogd
@@ -61,6 +65,10 @@
 #
 #			155.186.235.0/24	Subnet 155.186.235.0/24
 #
+#			10.0.0.4-10.0.0.9	Range of IP addresses; your
+#						kernel and iptables must have
+#						iprange match support. 
+#
 #			192.168.1.1,192.168.1.2
 #						Hosts 192.168.1.1 and
 #						192.168.1.2.
@@ -76,10 +84,6 @@
 #
 #	DEST		Location of Server. Same as above with the exception that
 #			MAC addresses are not allowed.
-#
-#			Unlike in the SOURCE column, you may specify a range of
-#			up to 256 IP addresses using the syntax
-#			<first ip>-<last ip>.
 #
 #	PROTO		Protocol - Must be "tcp", "udp", "icmp", a number, or
 #			"all".
@@ -155,6 +159,6 @@
 #					#of the 'kids' group
 #
 ######################################################################################
-#TARGET  SOURCE		DEST      	PROTO	DEST		SOURCE	   RATE
-#                       	        	PORT		PORT(S)    LIMIT
+#TARGET  SOURCE		DEST      	PROTO	DEST		SOURCE	   RATE		USER/
+#                       	        	PORT		PORT(S)    LIMIT	GROUP
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

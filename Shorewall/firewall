@@ -607,7 +607,7 @@ validate_interfaces_file() {
 
 	for option in $options; do
 	    case $option in
-		dhcp|norfc1918|tcpflags)
+		dhcp|norfc1918|tcpflags|newnotsyn)
 		    ;;
 		routefilter|dropunclean|logunclean|blacklist|proxyarp|maclist|-)
 		    ;;
@@ -3306,7 +3306,13 @@ initialize_netfilter () {
 
     if [ -z "$NEWNOTSYN" ]; then
 	createchain newnotsyn no
+
+	for interface in `find_interfaces_by_option newnotsyn`; do
+	    run_iptables -A newnotsyn -i $interface -j RETURN
+	done
+
 	run_user_exit newnotsyn
+
 	if [ -n "$LOGNEWNOTSYN" ]; then
 	    log_rule $LOGNEWNOTSYN newnotsyn DROP
 	fi

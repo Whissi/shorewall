@@ -46,18 +46,6 @@
 #                                      a DHCP server running on the firewall or
 #				       you have a static IP but are on a LAN
 #				       segment with lots of Laptop DHCP clients.
-#			noping	     - icmp echo-request (ping) packets
-#				       addressed to the firewall should
-#				       be ignored on this interface
-#			filterping   - icmp echo-request (ping) packets 
-#				       addressed to the firewall should
-#				       be controlled by the rules file and
-#				       applicable policy. If neither 'noping'
-#				       nor 'filterping' are specified then
-#				       the firewall will respond to 'ping'
-#				       requests. 'filterping' takes 
-#				       precedence over 'noping' if both are
-#				       given.
 #			routestopped - (Deprecated -- use 
 #				       /etc/shorewall/routestopped)
 #				       When the firewall is stopped, allow
@@ -117,15 +105,14 @@
 #			eth1 connected to your local network and that your
 #			local subnet is 192.168.1.0/24. The interface gets
 #			it's IP address via DHCP from subnet
-#			206.191.149.192/27 and you want pings from the internet
-#			to be ignored. You interface a DMZ with subnet
+#			206.191.149.192/27. You have a DMZ with subnet
 #			192.168.2.0/24 using eth2. You want to be able to
 #			access the firewall from the local network when the
 #			firewall is stopped.
 #
 #			Your entries for this setup would look like:
 #
-#			net	eth0	206.191.149.223	noping,dhcp
+#			net	eth0	206.191.149.223	dhcp
 #			local	eth1	192.168.1.255	routestopped
 #			dmz	eth2	192.168.2.255
 #

@@ -37,7 +37,7 @@ Documentation License</a></span>”.</p>
 </div>
 </div>
 <div>
-<p class="pubdate">2004-07-02<br>
+<p class="pubdate">2004-07-29<br>
 </p>
 <hr style="width: 100%; height: 2px;"></div>
 <h3>Table of Contents</h3>
@@ -51,9 +51,15 @@ Shorewall</a><br>
 two-interface setup?</a><br>
 <a href="#License">License</a><br>
 </div>
-<a href="#News">News</a><a href="#2_0_3b"><br>
+<a href="#News">News</a><a href="#2_0_7"><br>
 </a>
-<div style="margin-left: 40px;"><a href="#2_0_3c">Shorewall 2.0.3c</a><br>
+<div style="margin-left: 40px;"><a href="#2_0_7">Shorewall 2.0.7</a><br>
+<a href="#2_0_6">Shorewall 2.0.6</a><br>
+<a href="#2_0_5">Shorewall 2.0.5</a><br>
+<a href="#2_0_4">Shorewall 2.0.4</a><br>
+<a href="#Release_Model">New Release
+Model</a><br>
+<a href="#2_0_3c">Shorewall 2.0.3c</a><br>
 <a href="#2_0_3b">Shorewall 2.0.3b</a><br>
 <a href="#2_0_3a">Shorewall 2.0.3a</a><br>
 <a href="#2_0_3">Shorewall
@@ -152,8 +158,280 @@ Documentation License"</a>. </div>
 <p> </p>
 <hr style="width: 100%; height: 2px;">
 <h2><a name="News"></a>News</h2>
-<span style="font-weight: bold;"><a name="2_0_3c"><span
- style="font-weight: bold;">7/02/2004 -
+<span style="font-weight: bold;"><a name="2_0_7"></a>7/29/2004 -
+Shorewall 2.0.7<br>
+<br>
+</span>Problems Corrected:<br>
+<ol>
+  <li>The PKTTYPE option introduced in version 2.0.6 is now used when
+generating rules to REJECT packets. Broadcast packets are silently
+dropped rather than being rejected with an ICMP (which is a protocol
+violation) and users whose kernels have broken packet type match
+support are likely to see messages reporting this violation. Setting
+PKTTYPE=No should cause these messages to cease.</li>
+  <li>Multiple interfaces with the 'blacklist' option no longer result
+in an error message at startup.</li>
+  <li>The following has been added to /etc/shorewall/bogons:<br>
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0.0.0.0&nbsp;&nbsp; RETURN<br>
+    <br>
+This prevents the 'nobogons' option from logging DHCP 'DISCOVER'
+broadcasts.<br>
+  </li>
+</ol>
+New Features:<br>
+<br>
+<ol>
+  <li>To improve supportability, the "shorewall status" command now
+includes IP and Route configuration information.<br>
+    <br>
+&nbsp;&nbsp; Example:<br>
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp; IP Configuration</span><br
+ style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp; 1: lo:
+&lt;LOOPBACK,UP&gt; mtu 16436 qdisc noqueue</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+inet 127.0.0.1/8 brd 127.255.255.255 scope host lo</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+inet6 ::1/128 scope host</span><br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp; 2: eth0:
+&lt;BROADCAST,MULTICAST,PROMISC,UP&gt; mtu 1500 qdisc pfifo_fast qlen
+1000</span><br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+link/ether 00:a0:c9:15:39:78 brd ff:ff:ff:ff:ff:ff</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+inet6 fe80::2a0:c9ff:fe15:3978/64 scope link</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp; 3: eth1:
+&lt;BROADCAST,MULTICAST,PROMISC,UP&gt; mtu 1500 qdisc pfifo_fast qlen
+1000</span><br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+link/ether 00:a0:c9:a7:d7:bf brd ff:ff:ff:ff:ff:ff</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+inet6 fe80::2a0:c9ff:fea7:d7bf/64 scope link</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp; 5: sit0@NONE:
+&lt;NOARP&gt; mtu 1480 qdisc noop</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+link/sit 0.0.0.0 brd 0.0.0.0</span><br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp; 6: eth2:
+&lt;BROADCAST,MULTICAST,PROMISC,UP&gt; mtu 1500 qdisc pfifo_fast qlen
+1000</span><br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+link/ether 00:40:d0:07:3a:1b brd ff:ff:ff:ff:ff:ff</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+inet6 fe80::240:d0ff:fe07:3a1b/64 scope link</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp; 7: br0:
+&lt;BROADCAST,MULTICAST,NOTRAILERS,UP&gt; mtu 1500 qdisc noqueue</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+link/ether 00:40:d0:07:3a:1b brd ff:ff:ff:ff:ff:ff</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+inet 192.168.1.3/24 brd 192.168.1.255 scope global br0</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+inet6 fe80::240:d0ff:fe07:3a1b/64 scope link</span><br
+ style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp; Routing Rules</span><br
+ style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;
+0:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; from all lookup local</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp; 32765:&nbsp;
+from all fwmark&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ca lookup www.out</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp; 32766:&nbsp;
+from all lookup main</span><br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp; 32767:&nbsp;
+from all lookup default</span><br style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp; Table local:</span><br
+ style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp; broadcast
+192.168.1.0 dev br0&nbsp; proto kernel&nbsp; scope link&nbsp; src
+192.168.1.3</span><br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp; broadcast
+127.255.255.255 dev lo&nbsp; proto kernel&nbsp; scope link&nbsp; src
+127.0.0.1</span><br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp; local
+192.168.1.3 dev br0&nbsp; proto kernel&nbsp; scope host&nbsp; src
+192.168.1.3</span><br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp; broadcast
+192.168.1.255 dev br0&nbsp; proto kernel&nbsp; scope link&nbsp; src
+192.168.1.3</span><br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp; broadcast
+127.0.0.0 dev lo&nbsp; proto kernel&nbsp; scope link&nbsp; src 127.0.0.1</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp; local 127.0.0.1
+dev lo&nbsp; proto kernel&nbsp; scope host&nbsp; src 127.0.0.1</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp; local
+127.0.0.0/8 dev lo&nbsp; proto kernel&nbsp; scope host&nbsp; src
+127.0.0.1</span><br style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp; Table www.out:</span><br
+ style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp; default via
+192.168.1.3 dev br0</span><br style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp; Table main:</span><br
+ style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp; 192.168.1.0/24
+dev br0&nbsp; proto kernel&nbsp; scope link&nbsp; src 192.168.1.3</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp; default via
+192.168.1.254 dev br0</span><br style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp; Table default:</span><br
+ style="font-family: monospace;">
+  </li>
+</ol>
+<span style="font-weight: bold;"><a name="2_0_6"></a>7/16/2004 -
+Shorewall 2.0.6<br>
+<br>
+</span>Problems Corrected:<br>
+<ul>
+  <li>Some users have reported the packet type match option in
+iptables/Netfilter failing to match certain broadcast packets. The
+result is that the firewall log shows a lot of broadcast packets.<br>
+    <br>
+Other users have complained of the following message when starting
+Shorewall:<br>
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+modprobe: cant locate module ipt_pkttype<br>
+    <br>
+Users experiencing either of these problems can use PKTTYPE=No in
+shorewall.conf to cause Shorewall to use IP address filtering of
+broadcasts rather than packet type.</li>
+  <li>The shorewall.conf and zones file are no longer given execute
+permission by the installer script.</li>
+  <li>ICMP packets that are in the INVALID state are now dropped by the
+Reject and Drop default actions. They do so using the new 'dropInvalid'
+builtin action.<br>
+  </li>
+</ul>
+<span style="font-weight: bold;"><a name="2_0_5"></a>7/10/2004 -
+Shorewall 2.0.5<br>
+</span><br>
+Problems Corrected:<br>
+<ul>
+  <li>If DISABLE_IPV6=Yes in shorewall.conf then harmless error
+messages referring to $RESTOREBASE are generated during <span
+ style="font-weight: bold;">shorewall stop</span>.</li>
+  <li>An anachronistic comment concerning a mangle option has been
+removed from shorewall.conf.<br>
+  </li>
+</ul>
+<a name="2_0_4"></a><span style="font-weight: bold;">7/06/2004 -
+Shorewall 2.0.4<br>
+</span><br>
+Problems Corrected:<br>
+<ul>
+  <li>Rules with $FW as the source zone and that specify logging can
+cause "shorewall start" to fail.<br>
+  </li>
+</ul>
+<a name="Release_Model"></a><span style="font-weight: bold;">7/03/2004
+- New Shorewall Release Model<br>
+<br>
+</span>Effective today, Shorewall is adopting a new release model which
+takes ideas from the one used in the Linux Kernel and from the release
+model for Postfix.<br>
+<ol>
+  <li>Releases continue to have a three-level identification <span
+ style="font-style: italic;">x.y.z</span> (e.g., 2.0.3).<br>
+  </li>
+  <li>The first two levels (<span style="font-style: italic;">x.y)</span>
+designate the <span style="font-style: italic;">Major Release Number</span>
+(e.g., 2.0)</li>
+  <li>The third level (<span style="font-style: italic;">z</span>)
+designates the <span style="font-style: italic;">Minor Release Number</span>.</li>
+  <li>Even numbered major releases (e.g., <span
+ style="font-style: italic;">1.4, 2.0, 2.2, ...)</span> are <span
+ style="font-style: italic;">Stable Releases</span>. No new features
+are added to stable releases and new minor releases of a stable release
+will only contain bug fixes. Installing a new minor release for the
+major release that you are currently running involves no migration
+issues (for example, if you are running 1.4.10 and I release 1.4.11,
+your current configuration is 100% compatible with the new release).</li>
+  <li>Support is available through the <a
+ href="http://lists.shorewall.net">Mailing List </a>for the two most
+recent Stable Releases.<br>
+  </li>
+  <li>Odd numbered major releases (e.g., 2.1, 2.3, ...) are <span
+ style="font-style: italic;">Development Releases</span>. Development
+releases are where new functionality is introduced. Documentation for
+new features will be available but it may not be up to the standards of
+the stable release documentation. Sites running Development Releases
+should be prepared to play an active role in testing new features. Bug
+fixes and problem resolution for the development release take a back
+seat to support of the stable releases. Problem reports for the current
+development release should be sent to the <a
+ href="mailto:shorewall-devel@lists.shorewall.net">Shorewall
+Development Mailing List</a>.<br>
+  </li>
+  <li>When the level of functionality of the current development
+release is judged adaquate, the Beta period for a new Stable release
+will begin. Beta releases have identifications of the form <span
+ style="font-style: italic;">x.y.0-BetaN</span> where <span
+ style="font-style: italic;">x.y</span> is the number of the next
+Stable Release and <span style="font-style: italic;">N</span>=1,2,3...
+. Betas are expected to occur rougly once per year. Beta releases may
+contain new functionality not present in the previous beta release
+(e.g., 2.2.0-Beta4 may contain functionality not present in
+2.2.0-Beta3). When I'm confident that the current Beta release is
+stable, I will release the first <span style="font-style: italic;">Release
+Candidate. </span>Release candidates have identifications of the form <span
+ style="font-style: italic;">x.y.0-RCn </span>where<span
+ style="font-style: italic;"> <span style="font-style: italic;">x.y</span>
+    </span>is the number of the next Stable Release and<span
+ style="font-style: italic;"> <span style="font-style: italic;">n</span></span>=1,2,3...
+. Release candidates contain no new functionailty -- they only contain
+bug fixes. When the stability of the current release candidate is
+judged to be sufficient then that release candidate will be released as
+the new stable release (e.g., 2.2.0). At that time, the new stable
+release and the prior stable release are those that are supported.</li>
+  <li>What does it mean for a major release to be <span
+ style="font-style: italic;">supported?</span> It means that I will
+answer questions about the release and that if a bug is found, I will
+fix the bug and include the fix in the next minor release.</li>
+  <li>Between minor releases, bug fixes will continue to be made
+available through the Errata page for each major release.<br>
+  </li>
+</ol>
+The immediate implications of this change are as follows:<br>
+<ol>
+  <li>The functionality of the 2.0 major release is frozen at the level
+of minor release 2.0.3.</li>
+  <li>The two major releases currently supported are 1.4 and 2.0.</li>
+  <li>I will be opening the 2.1 development release shortly with the
+release of 2.1.0.</li>
+  <li>Bug-fix releases with identifications of the form <span
+ style="font-style: italic;">x.y.zX </span>where X=a,b,c,... (e.g.,
+2.0.3c) will not be seen in the future.<br>
+  </li>
+</ol>
+<span style="font-weight: bold;"></span><span style="font-weight: bold;"><a
+ name="2_0_3c"><span style="font-weight: bold;">7/02/2004 -
 Shorewall 2.0.3c<br>
 <br>
 </span></a></span>Problems Corrected<span style="font-weight: bold;">:<br>
@@ -371,16 +649,16 @@ Netfilter configuration tool.<br>
 <div style="text-align: center;"> </div>
 </div>
 <hr style="width: 100%; height: 2px;">
-<h2><a name="Donations"></a>Donations
-</h2>
-<p style="text-align: left;"> </p>
+<h2><a name="Donations"></a>Donations</h2>
 <p style="text-align: left;"><big><a href="http://www.alz.org"
- target="_top"><img src="images/alz_logo2.gif" title=""
+ target="_top"><img src="images/alz_logo2.gif"
  alt="(Alzheimer's Association Logo)"
- style="border: 0px solid ; width: 300px; height: 60px;" align="left"></a></big></p>
+ style="border: 0px solid ; width: 300px; height: 60px;" align="right"></a></big></p>
+<h2></h2>
+<p style="text-align: left;"> </p>
 <h2><big><a href="http://www.starlight.org" target="_top"><img
  src="images/newlog.gif" title="" alt="(Starlight Foundation Logo)"
- style="border: 0px solid ; width: 59px; height: 102px;" align="left"></a></big></h2>
+ style="border: 0px solid ; width: 59px; height: 102px;" align="right"></a></big></h2>
 <p style="text-align: left;"><big>Shorewall
 is free but
 if you

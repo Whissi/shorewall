@@ -295,7 +295,7 @@ ensurechain1() # $1 = chain name
 addrule() # $1 = chain name, remainder of arguments specify the rule
 {
     ensurechain $1
-    run_iptables -A $@
+    run_iptables2 -A $@
 }
 
 #
@@ -5893,7 +5893,7 @@ add_common_rules() {
 	done
 
 	for interface in $interfaces; do
-	    file/=proc/sys/net/ipv4/conf/$interface/log_martians
+	    file=proc/sys/net/ipv4/conf/$interface/log_martians
 	    if [ -f $file ]; then
 		run_and_save_command "echo 1 > $file"
 	    else

@@ -20,7 +20,11 @@ New features include:
    a) In the INTERFACE column of /etc/shorewall/masq
    b) In the INTERFACE column of /etc/shorewall/nat
 
-3) When an interface name is entered in the SUBNET column of the
+3) The ability to name your VLAN interfaces using the $dev.$vid
+   convention (e.g., "eth0.0") has been restored. This capability was
+   inadvertently broken in version 1.3.12.
+
+4) When an interface name is entered in the SUBNET column of the
    /etc/shorewall/masq file, Shorewall previously masqueraded traffic
    from only the first subnet defined on that interface. It did not
    masquerade traffic from:

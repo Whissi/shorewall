@@ -2437,7 +2437,7 @@ setup_masq()
 
 	if [ -n "$address" -a -n "$ADD_SNAT_ALIASES" ]; then
 	    list_search $address $aliases_to_add || \
-		aliases_to_add="$aliases_to_add $external $address"
+		aliases_to_add="$aliases_to_add $interface $address"
 	fi
 
 	destination=$destnet

@@ -4306,6 +4306,14 @@ do_initialize() {
 
     trap "rm -rf $TMP_DIR; my_mutex_off; exit 2" 1 2 3 4 5 6 9
 
+    if [ -n "$SHOREWALL_DIR" -a -f $SHOREWALL_DIR/params ]; then
+	params=$SHOREWALL_DIR/params
+    else
+	params=/etc/shorewall/params
+    fi
+
+    [ -f $params ] && echo "Processing $params..." && . $params
+
     if [ -n "$SHOREWALL_DIR" -a -f $SHOREWALL_DIR/shorewall.conf ]; then
 	config=$SHOREWALL_DIR/shorewall.conf
     else
@@ -4313,6 +4321,7 @@ do_initialize() {
     fi
 
     if [ -f $config ]; then
+	echo "Processing $config..."
 	. $config
     else
 	echo "$config does not exist!" >&2
@@ -4418,8 +4427,6 @@ do_initialize() {
     else
 	CLEAR_TC=
     fi
-
-    run_user_exit params
 
     #
     # Strip the files that we use often

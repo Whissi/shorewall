@@ -717,6 +717,8 @@ case "$1" in
 	[ $# -ne 1 ] && usage 1
 	mutex_on
 	if qt iptables -L shorewall -n; then
+	    [ -d /var/lib/shorewall ] || mkdir /var/lib/shorewall
+
 	    if iptables -L dynamic -n > /var/lib/shorewall/save; then
 		echo "Dynamic Rules Saved"
 	    else

@@ -14,20 +14,35 @@
 # Columns are:
 #
 #
-#	MARK		The mark value which is an
-#			integer in the range 1-255
+#	MARK/		a) A mark value which is a integer in the range 1-255
+#       CLASSIFY
+#			   May optionally be followed by ":P" or ":F"
+#			   where ":P" indicates that marking should occur in
+#			   the PREROUTING chain and ":F" indicates that marking
+#			   should occur in the FORWARD chain. If neither
+#			   ":P" nor ":F" follow the mark value then the chain is
+#			   determined by the setting of MARK_IN_FORWARD_CHAIN in
+#			   /etc/shorewall/shorewall.conf.
 #
-#			May optionally be followed by ":P" or ":F"
-#			where ":P" indicates that marking should occur in
-#			the PREROUTING chain and ":F" indicates that marking
-#			should occur in the FORWARD chain. If neither
-#			":P" nor ":F" follow the mark value then the chain is
-#			determined by the setting of MARK_IN_FORWARD_CHAIN in
-#			/etc/shorewall/shorewall.conf.
+#			b) A classification of the form <major>:<minor> where
+#		    	   <major> and <minor> are integers. Corresponds to 
+#			   the 'class' specification in these traffic shaping
+#			   modules:
+#
+#				- atm
+#				- cbq
+#				- dsmark
+#				- pfifo_fast
+#				- htb
+#				- prio
+#
+#			   Marking always occurs in the POSTROUTING chain.
 #
 #	SOURCE 		Source of the packet. A comma-separated list of
 #			interface names, IP addresses, MAC addresses
-#			and/or subnets. Use $FW if the packet originates on
+#			and/or subnets. If your kernel and iptables include
+#			iprange match support, IP address ranges are also
+#			allowed. Use $FW if the packet originates on
 #			the firewall in which case the MARK column may NOT
 #			specify either ":P" or ":F" (marking always occurs
 #			in the OUTPUT chain).
@@ -38,7 +53,9 @@
 #			Example: ~00-A0-C9-15-39-78
 #
 #	DEST		Destination of the packet. Comma separated list of
-#			IP addresses and/or subnets.
+#			IP addresses and/or subnets. If your kernel and 
+#			iptables include iprange match support, IP address
+#			ranges are also allowed.
 #
 #	PROTO		Protocol - Must be "tcp", "udp", "icmp", a number,
 #			or "all".

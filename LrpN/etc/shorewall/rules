@@ -118,6 +118,10 @@
 #			address; mac addresses must begin with "~" and must use
 #			"-" as a separator.
 #
+#			Hosts may be specified as an IP address range using the
+#			syntax <low address>-<high address>. This requires that
+#			your kernel and iptables contain iprange match support.
+#
 #			dmz:192.168.2.2		Host 192.168.2.2 in the DMZ
 #
 #			net:155.186.235.0/24	Subnet 155.186.235.0/24 on the
@@ -128,6 +132,10 @@
 #						192.168.1.2 in the local zone.
 #			loc:~00-A0-C9-15-39-78  Host in the local zone with
 #                                               MAC address 00:A0:C9:15:39:78.
+#
+#			net:192.0.2.11-192.0.2.17
+#						Hosts 192.0.2.11-192.0.2.17 in
+#						the net zone.
 #
 #			Alternatively, clients may be specified by interface
 #			by appending ":" to the zone name followed by the
@@ -159,7 +167,7 @@
 #				3. You may not specify both an interface and
 #				   an address.
 #
-#			Unlike in the SOURCE column, you may specify a range of
+#			Like in the SOURCE column, you may specify a range of
 #			up to 256 IP addresses using the syntax
 #			<first ip>-<last ip>. When the ACTION is DNAT or DNAT-,
 #			the connections will be assigned to addresses in the
@@ -236,14 +244,6 @@
 #			the rule will be followed only if the original 
 #			destination address in the connection request does not
 #			match any of the addresses listed.
-#
-#			The address (list) may optionally be followed by
-#			a colon (":") and a second IP address. This causes
-#			Shorewall to use the second IP address as the source
-#			address in forwarded packets. See the Shorewall
-#			documentation for restrictions concerning this feature.
-#			If no source IP address is given, the original source
-#			address is not altered.
 #
 #	RATE LIMIT	You may rate-limit the rule by placing a value in 
 #			this colume:

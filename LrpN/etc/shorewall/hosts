@@ -28,12 +28,15 @@
 #			a) The IP address of a host
 #			b) A subnetwork in the form
 #			   <subnet-address>/<mask width>
-#			c) A physical port name; only allowed when the
+#			c) An IP address range of the form <low address>-<high
+#			   address>. Your kernel and iptables must have iprange
+#			   match support.
+#			d) A physical port name; only allowed when the
 #			   interface names a bridge created by the
 #			   brctl addbr command. This port must not
 #			   be defined in /etc/shorewall/interfaces and may
 #			   optionally followed by a colon (":") and a
-#			   host or network IP.
+#			   host or network IP or a range.
 #			   See http://www.shorewall.net/Bridge.html for details.
 #
 #		  Examples:
@@ -43,6 +46,7 @@
 #			eth3:192.168.2.0/24,192.168.3.1
 #			br0:eth4
 #			br0:eth0:192.168.1.16/28
+#			eth4:192.168.1.44-192.168.1.49
 #
 #	OPTIONS - A comma-separated list of options. Currently-defined
 #		  options are:

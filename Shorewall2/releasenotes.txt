@@ -5,6 +5,10 @@ Problems corrected in version 2.2.1
 
 1) The /etc/shorewall/policy file contained a misleading comment and
    both that file and the /etc/shorewall/zones file lacked examples.
+
+2) Shorewall previously used root's default umask which could cause
+   files in /var/lib/shorewall to be world-readable. Shorewall now uses
+   umask 0177.
 -----------------------------------------------------------------------
 Issues when migrating from Shorewall 2.0 to Shorewall 2.2:
 
@@ -88,7 +92,7 @@ Issues when migrating from Shorewall 2.0 to Shorewall 2.2:
     OpenVPN.
 
 -----------------------------------------------------------------------
-New Features:
+New Features in Shorewall 2.2.0:
 
 1)  ICMP packets that are in the INVALID state are now dropped by the
     Reject and Drop default actions. They do so using the new 

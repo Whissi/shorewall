@@ -619,5 +619,89 @@ iface eth1 inet static
 </emphasis>...</programlisting>
       </blockquote>
     </section>
+
+    <section id="Dhcpd">
+      <title>/etc/dhcpd.conf (MAC Addresses Omitted)</title>
+
+      <blockquote>
+        <para>While this is a little off-topic, I&#39;ve included it to show
+        how to set up DHCP on two interfaces.<programlisting>default-lease-time 67200; max-lease-time 67200;
+get-lease-hostnames on;
+
+group {
+        option subnet-mask 255.255.255.0;
+        option broadcast-address 192.168.1.255;
+        option routers 192.168.1.254;
+        option ntp-servers 192.168.1.254;
+        option domain-name-servers 192.168.1.193;
+        option netbios-name-servers 192.168.1.254;
+        option domain-name &#34;shorewall.net&#34;;
+        option netbios-dd-server 192.168.1.254;
+        option netbios-node-type 8;
+        option netbios-scope &#34;&#34;;
+
+        subnet 192.168.1.0 netmask 255.255.255.0 {
+                range 192.168.1.11 192.168.1.20;
+        }
+
+         host ursa.shorewall.net {
+                hardware ethernet …;
+                fixed-address 192.168.1.5;
+        }
+
+        host eastept1 {
+                hardware ethernet …;
+                fixed-address 192.168.1.7;
+        }
+
+        host tarry {
+                hardware ethernet …;
+                fixed-address 192.168.1.4;
+        }
+
+        host wookie.shorewall.net {
+                hardware ethernet  …;
+                fixed-address 192.168.1.3;
+        }
+
+        host testws.shorewall.net {
+                hardware ethernet …;
+                fixed-address 192.168.1.6;
+        }
+
+        host printer.shorewall.net {
+                hardware ethernet …;
+                fixed-address 192.168.1.10;
+        }
+
+}
+
+group {
+        option subnet-mask 255.255.255.0;
+        option broadcast-address 192.168.3.255;
+        option routers 192.168.3.254;
+        option ntp-servers 192.168.3.254;
+        option domain-name-servers 206.124.146.177;
+        option netbios-name-servers 192.168.3.254;
+        option domain-name &#34;shorewall.net&#34;;
+        option netbios-dd-server 192.168.3.254;
+        option netbios-node-type 8;
+        option netbios-scope &#34;&#34;;
+
+        subnet 192.168.3.0 netmask 255.255.255.0 {
+                range 192.168.3.11 192.168.3.20;
+        }
+
+        host easteplaptop {
+                hardware ethernet …;
+                fixed-address 192.168.3.7;
+        }
+
+        host tipper.shorewall.net {
+                hardware ethernet …;
+                fixed-address 192.168.3.8;
+        }</programlisting></para>
+      </blockquote>
+    </section>
   </section>
 </article>

@@ -6,27 +6,32 @@
 <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
 <meta name="ProgId" content="FrontPage.Editor.Document">
 <title>Shorewall PPTP</title>
-<meta name="Microsoft Theme" content="radial 011">
 </head>
 
-<body background="_themes/radial/radbkgnd.gif" bgcolor="#FFFFFF" text="#000000" link="#6666FF" vlink="#993333" alink="#66CCCC"><!--mstheme--><font face="arial, Arial, Helvetica">
+<body>
 
-<h1 align="center"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">PPTP<!--mstheme--></font></h1>
+<table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%" id="AutoNumber1" bgcolor="#400169" height="90">
+  <tr>
+    <td width="100%">
+    <h1 align="center"><font color="#FFFFFF">PPTP</font></h1>
+    </td>
+  </tr>
+</table>
 
 <p align="left">Shorewall easily supports PPTP in a number of configurations:</p>
-<!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">
-    <a href="#ServerFW">PPTP Server running on your Firewall</a><!--mstheme--></font><!--msthemelist--></td></tr>
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">
+<ul>
+  <li>
+    <a href="#ServerFW">PPTP Server running on your Firewall</a></li>
+  <li>
     <a href="#ServerBehind">PPTP Server running behind your
-    Firewall.</a><!--mstheme--></font><!--msthemelist--></td></tr>
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">
+    Firewall.</a></li>
+  <li>
     <a href="#ClientsBehind">PPTP Clients running behind your
-    Firewall.</a><!--mstheme--></font><!--msthemelist--></td></tr>
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">
-    <a href="#ClientFW">PPTP Client running on your Firewall.</a><!--mstheme--></font><!--msthemelist--></td></tr>
-<!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
-<h2 align="center"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666"><a name="ServerFW"></a>1. PPTP Server Running on your Firewall<!--mstheme--></font></h2>
+    Firewall.</a></li>
+  <li>
+    <a href="#ClientFW">PPTP Client running on your Firewall.</a></li>
+</ul>
+<h2 align="center"><a name="ServerFW"></a>1. PPTP Server Running on your Firewall</h2>
 <p>I will try to give you an idea of how to set up a PPTP server
 on your firewall system. This isn't a detailed HOWTO but rather an example of
 how I have set up a working PPTP server on my own firewall.</p>
@@ -39,56 +44,56 @@ how I have set up a working PPTP server on my own firewall.</p>
   <li><a href="#ConfigPptpd">Configuring pptpd</a></li>
   <li><a href="#ConfigFw">Configuring Shorewall</a></li>
 </ol>
-<h3><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666"><a name="PatchPppd"></a>Patching and Building pppd<!--mstheme--></font></h3>
+<h3><a name="PatchPppd"></a>Patching and Building pppd</h3>
 <p>To run pppd on a 2.4 kernel, you need the pppd 2.4.1 or later. The primary
 site for releases of pppd is <a href="ftp://ftp.samba.org/pub/ppp">ftp://ftp.samba.org/pub/ppp</a>.</p>
 <p>You will need the following patches:</p>
-<!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">
-  <a href="http://www.shorewall.net/pub/shorewall/pptp/ppp-2.4.1-openssl-0.9.6-mppe-patch.gz">http://www.shorewall.net/pub/shorewall/pptp/ppp-2.4.1-openssl-0.9.6-mppe-patch.gz</a><!--mstheme--></font><!--msthemelist--></td></tr>
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><a href="http://www.shorewall.net/pub/shorewall/pptp/ppp-2.4.1-MSCHAPv2-fix.patch.gz">http://www.shorewall.net/pub/shorewall/pptp/ppp-2.4.1-MSCHAPv2-fix.patch.gz</a><!--mstheme--></font><!--msthemelist--></td></tr>
-<!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+<ul>
+  <li>
+  <a href="http://www.shorewall.net/pub/shorewall/pptp/ppp-2.4.1-openssl-0.9.6-mppe-patch.gz">http://www.shorewall.net/pub/shorewall/pptp/ppp-2.4.1-openssl-0.9.6-mppe-patch.gz</a></li>
+  <li><a href="http://www.shorewall.net/pub/shorewall/pptp/ppp-2.4.1-MSCHAPv2-fix.patch.gz">http://www.shorewall.net/pub/shorewall/pptp/ppp-2.4.1-MSCHAPv2-fix.patch.gz</a></li>
+</ul>
 <p>You may also want the following patch if you want to require remote hosts to
 use encryption:</p>
-<!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><a href="ftp://ftp.shorewall.net/pub/shorewall/pptp/require-mppe.diff">ftp://ftp.shorewall.net/pub/shorewall/pptp/require-mppe.diff</a><!--mstheme--></font><!--msthemelist--></td></tr>
-<!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+<ul>
+  <li><a href="ftp://ftp.shorewall.net/pub/shorewall/pptp/require-mppe.diff">ftp://ftp.shorewall.net/pub/shorewall/pptp/require-mppe.diff</a></li>
+</ul>
 <p>Un-tar the pppd source and uncompress the patches into one directory (the
 patches and the ppp-2.4.1 directory are all in a single parent directory):</p>
-<!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">cd ppp-2.4.1<!--mstheme--></font><!--msthemelist--></td></tr>
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">patch -p1 &lt; ../ppp-2.4.0-openssl-0.9.6-mppe.patch<!--mstheme--></font><!--msthemelist--></td></tr>
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">patch -p1 &lt; ../ppp-2.4.1-MSCHAPv2-fix.patch<!--mstheme--></font><!--msthemelist--></td></tr>
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">(Optional) patch -p1 &lt; ../require-mppe.diff<!--mstheme--></font><!--msthemelist--></td></tr>
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">./configure<!--mstheme--></font><!--msthemelist--></td></tr>
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">make<!--mstheme--></font><!--msthemelist--></td></tr>
-<!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+<ul>
+  <li>cd ppp-2.4.1</li>
+  <li>patch -p1 &lt; ../ppp-2.4.0-openssl-0.9.6-mppe.patch</li>
+  <li>patch -p1 &lt; ../ppp-2.4.1-MSCHAPv2-fix.patch</li>
+  <li>(Optional) patch -p1 &lt; ../require-mppe.diff</li>
+  <li>./configure</li>
+  <li>make</li>
+</ul>
 <p>You will need to install the resulting binary on your firewall system. To do
 that, I NFS mount my source filesystem and use &quot;make install&quot; from the
 ppp-2.4.1 directory.</p>
-<h3><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666"><a name="PatchKernel"></a>Patching and Building your Kernel<!--mstheme--></font></h3>
+<h3><a name="PatchKernel"></a>Patching and Building your Kernel</h3>
 <p>You will need one of the following patches depending on your kernel version:</p>
-<!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">
-  <a href="http://www.shorewall.net/pub/shorewall/pptp/linux-2.4.4-openssl-0.9.6a-mppe-patch.gz">http://www.shorewall.net/pub/shorewall/pptp/linux-2.4.4-openssl-0.9.6a-mppe-patch.gz</a><!--mstheme--></font><!--msthemelist--></td></tr>
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">
-  <a href="http://www.shorewall.net/pub/shorewall/pptp/linux-2.4.16-openssl-0.9.6b-mppe-patch.gz">http://www.shorewall/net/pub/shorewall/pptp/linux-2.4.16-openssl-0.9.6b-mppe-patch.gz</a><!--mstheme--></font><!--msthemelist--></td></tr>
-<!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+<ul>
+  <li>
+  <a href="http://www.shorewall.net/pub/shorewall/pptp/linux-2.4.4-openssl-0.9.6a-mppe-patch.gz">http://www.shorewall.net/pub/shorewall/pptp/linux-2.4.4-openssl-0.9.6a-mppe-patch.gz</a></li>
+  <li>
+  <a href="http://www.shorewall.net/pub/shorewall/pptp/linux-2.4.16-openssl-0.9.6b-mppe-patch.gz">http://www.shorewall/net/pub/shorewall/pptp/linux-2.4.16-openssl-0.9.6b-mppe-patch.gz</a></li>
+</ul>
 <p>Uncompress the patch into the same directory where your top-level kernel
 source is located and:</p>
-<!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">cd &lt;your GNU/Linux source top-level directory&gt;<!--mstheme--></font><!--msthemelist--></td></tr>
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">patch -p1 &lt; ../linux-2.4.16-openssl-0.9.6b-mppe.patch<!--mstheme--></font><!--msthemelist--></td></tr>
-<!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+<ul>
+  <li>cd &lt;your GNU/Linux source top-level directory&gt;</li>
+  <li>patch -p1 &lt; ../linux-2.4.16-openssl-0.9.6b-mppe.patch</li>
+</ul>
 <p>Now configure your kernel. Here is my ppp configuration:</p>
 <blockquote>
 <p><img border="0" src="images/ppp.jpg" width="592" height="734"></p>
 </blockquote>
-<h3><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666"><a name="Samba"></a>Configuring Samba<!--mstheme--></font></h3>
+<h3><a name="Samba"></a>Configuring Samba</h3>
 <p>You will need a WINS server (Samba configured to run as a WINS server is 
 fine). Global section from /etc/samba/smb.conf on my WINS server (192.168.1.3) is:</p>
 <blockquote>
-  <!--mstheme--></font><pre>[global]
+  <pre>[global]
      workgroup = TDM-NSTOP
      netbios name = WOOKIE
      server string = GNU/Linux Box
@@ -113,9 +118,9 @@ fine). Global section from /etc/samba/smb.conf on my WINS server (192.168.1.3) i
 [printers]
      comment = All Printers
      path = /var/spool/samba
-     printable = Yes</pre><!--mstheme--><font face="arial, Arial, Helvetica">
+     printable = Yes</pre>
 </blockquote>
-<h3><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666"><a name="ConfigPppd"></a>Configuring pppd<!--mstheme--></font></h3>
+<h3><a name="ConfigPppd"></a>Configuring pppd</h3>
 <p>Here is a copy of my /etc/ppp/options.poptop file:</p>
 <blockquote>
   <p><font face="Courier" size="2">ipparam PoPToP<br>
@@ -141,14 +146,14 @@ fine). Global section from /etc/samba/smb.conf on my WINS server (192.168.1.3) i
   require-mppe-stateless</font></p>
 </blockquote>
 <p>Notes:</p>
-<!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">Since the firewall itself is acting as a WINS server, I have included the
-    firewall's internal IP as the 'ms-wins' value.<!--mstheme--></font><!--msthemelist--></td></tr>
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">I have pointed the remote clients at my DNS server -- it has external
-    address 206.124.146.177.<!--mstheme--></font><!--msthemelist--></td></tr>
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">I am requiring 128-bit stateless compression (my kernel is built with the
-    'require-mppe.diff' patch mentioned above.<!--mstheme--></font><!--msthemelist--></td></tr>
-<!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+<ul>
+  <li>Since the firewall itself is acting as a WINS server, I have included the
+    firewall's internal IP as the 'ms-wins' value.</li>
+  <li>I have pointed the remote clients at my DNS server -- it has external
+    address 206.124.146.177.</li>
+  <li>I am requiring 128-bit stateless compression (my kernel is built with the
+    'require-mppe.diff' patch mentioned above.</li>
+</ul>
 <p>Here's my /etc/ppp/chap-secrets:</p>
 <blockquote>
   <p><font face="Courier" size="2"> Secrets for authentication using CHAP<br>
@@ -164,11 +169,11 @@ or without a domain being specified. The system I connect from is my laptop so I
 give it the same IP address when tunneled in as it has when it is in its docking
 station.</p>
 <p>You will also want the following in /etc/modules.conf:</p>
-<!--mstheme--></font><pre>     alias ppp-compress-18 ppp_mppe
+<pre>     alias ppp-compress-18 ppp_mppe
      alias ppp-compress-21 bsd_comp
      alias ppp-compress-24 ppp_deflate
-     alias ppp-compress-26 ppp_deflate</pre><!--mstheme--><font face="arial, Arial, Helvetica">
-<h3><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666"><a name="ConfigPptpd"></a>Configuring pptpd<!--mstheme--></font></h3>
+     alias ppp-compress-26 ppp_deflate</pre>
+<h3><a name="ConfigPptpd"></a>Configuring pptpd</h3>
 <p>PoPTop (pptpd) is available from <a href="http://poptop.lineo.com/">http://poptop.lineo.com/</a>.</p>
 <p>Here is a copy of my /etc/pptpd.conf file:</p>
 <blockquote>
@@ -178,14 +183,14 @@ station.</p>
   remoteip 192.168.1.33-38</font></p>
 </blockquote>
 <p>Notes:</p>
-<!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">I specify the /etc/ppp/options.poptop file as my ppp options file (I have
-    several).<!--mstheme--></font><!--msthemelist--></td></tr>
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">The local IP is the same as my internal interface's (192.168.1.254).<!--mstheme--></font><!--msthemelist--></td></tr>
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">I have assigned a remote IP range that overlaps my local network. This,
+<ul>
+  <li>I specify the /etc/ppp/options.poptop file as my ppp options file (I have
+    several).</li>
+  <li>The local IP is the same as my internal interface's (192.168.1.254).</li>
+  <li>I have assigned a remote IP range that overlaps my local network. This,
     together with 'proxyarp' in my /etc/ppp/options.poptop file make the remote
-    hosts look like they are part of the local subnetwork.<!--mstheme--></font><!--msthemelist--></td></tr>
-<!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+    hosts look like they are part of the local subnetwork.</li>
+</ul>
 <p>I use this file to start/stop pptpd -- I have this in /etc/init.d/pptpd:</p>
 <blockquote>
   <p><font face="Courier" size="2">#!/bin/sh<br>
@@ -225,249 +230,249 @@ station.</p>
   &nbsp;&nbsp;&nbsp; ;;<br>
   esac</font></p>
 </blockquote>
-<h3><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666"><a name="ConfigFw"></a>Configuring Shorewall<!--mstheme--></font></h3>
+<h3><a name="ConfigFw"></a>Configuring Shorewall</h3>
 <p>I consider hosts connected to my PPTP server to be just like local systems.
 My key Shorewall entries are:</p>
-<h4><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">/etc/shorewall/zones:<!--mstheme--></font></h4>
+<h4>/etc/shorewall/zones:</h4>
 <blockquote>
-  <!--mstheme--></font><table border="2" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+  <table border="2" cellpadding="2" style="border-collapse: collapse">
     <tr>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>ZONE</b><!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>DISPLAY</b><!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>COMMENTS</b><!--mstheme--></font></td>
+      <td><b>ZONE</b></td>
+      <td><b>DISPLAY</b></td>
+      <td><b>COMMENTS</b></td>
     </tr>
     <tr>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">Internet<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">The Internet<!--mstheme--></font></td>
+      <td>net</td>
+      <td>Internet</td>
+      <td>The Internet</td>
     </tr>
     <tr>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">loc<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">Local<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">My Local Network including remote PPTP clients<!--mstheme--></font></td>
+      <td>loc</td>
+      <td>Local</td>
+      <td>My Local Network including remote PPTP clients</td>
     </tr>
-  </table><!--mstheme--><font face="arial, Arial, Helvetica">
+  </table>
 </blockquote>
-<h4><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">/etc/shorewall/interfaces:<!--mstheme--></font></h4>
+<h4>/etc/shorewall/interfaces:</h4>
 <blockquote>
-  <!--mstheme--></font><table border="2" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+  <table border="2" cellpadding="2" style="border-collapse: collapse">
     <tr>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>ZONE</b><!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>INTERFACE</b><!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>BROADCAST</b><!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>OPTIONS</b><!--mstheme--></font></td>
+      <td><b>ZONE</b></td>
+      <td><b>INTERFACE</b></td>
+      <td><b>BROADCAST</b></td>
+      <td><b>OPTIONS</b></td>
     </tr>
     <tr>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">eth0<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">206.124.146.255<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">noping,norfc1918<!--mstheme--></font></td>
+      <td>net</td>
+      <td>eth0</td>
+      <td>206.124.146.255</td>
+      <td>noping,norfc1918</td>
     </tr>
     <tr>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">loc<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">eth2<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">192.168.1.255<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+      <td>loc</td>
+      <td>eth2</td>
+      <td>192.168.1.255</td>
+      <td>&nbsp;</td>
     </tr>
     <tr>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">-<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">ppp+<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+      <td>-</td>
+      <td>ppp+</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
     </tr>
-  </table><!--mstheme--><font face="arial, Arial, Helvetica">
+  </table>
 </blockquote>
-<h4><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">/etc/shorewall/hosts:<!--mstheme--></font></h4>
+<h4>/etc/shorewall/hosts:</h4>
 <blockquote>
-  <!--mstheme--></font><table border="2" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+  <table border="2" cellpadding="2" style="border-collapse: collapse">
     <tr>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>ZONE</b><!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>HOST(S)</b><!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>OPTIONS</b><!--mstheme--></font></td>
+      <td><b>ZONE</b></td>
+      <td><b>HOST(S)</b></td>
+      <td><b>OPTIONS</b></td>
     </tr>
     <tr>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">loc<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">eth2:192.168.1.0/24<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">routestopped<!--mstheme--></font></td>
+      <td>loc</td>
+      <td>eth2:192.168.1.0/24</td>
+      <td>routestopped</td>
     </tr>
     <tr>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">loc<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">ppp+:192.168.1.0/24<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+      <td>loc</td>
+      <td>ppp+:192.168.1.0/24</td>
+      <td>&nbsp;</td>
     </tr>
-  </table><!--mstheme--><font face="arial, Arial, Helvetica">
+  </table>
 </blockquote>
-<h4><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">/etc/shorewall/policy:<!--mstheme--></font></h4>
+<h4>/etc/shorewall/policy:</h4>
 <blockquote>
-  <!--mstheme--></font><table border="2" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+  <table border="2" cellpadding="2" style="border-collapse: collapse">
     <tr>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>SOURCE</b><!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>DEST</b><!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>POLICY</b><!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>LOG LEVEL</b><!--mstheme--></font></td>
+      <td><b>SOURCE</b></td>
+      <td><b>DEST</b></td>
+      <td><b>POLICY</b></td>
+      <td><b>LOG LEVEL</b></td>
     </tr>
     <tr>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">loc<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">loc<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">ACCEPT<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+      <td>loc</td>
+      <td>loc</td>
+      <td>ACCEPT</td>
+      <td>&nbsp;</td>
     </tr>
-  </table><!--mstheme--><font face="arial, Arial, Helvetica">
+  </table>
 </blockquote>
-<h4><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">/etc/shorewall/rules:<!--mstheme--></font></h4>
+<h4>/etc/shorewall/rules:</h4>
 <blockquote>
-  <!--mstheme--></font><table border="2" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+  <table border="2" cellpadding="2" style="border-collapse: collapse">
   <tr>
     <font face="Century Gothic, Arial, Helvetica">
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>ACTION</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>SOURCE</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>DEST</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  PROTO</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>DEST<br>
-  PORT(S)</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>SOURCE<br>
-         PORT(S)</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>ORIGINAL<br>
-         DEST</b><!--mstheme--></font></td>
+         <td><b>ACTION</b></td>
+         <td><b>SOURCE</b></td>
+         <td><b>DEST</b></td>
+         <td><b>
+  PROTO</b></td>
+         <td><b>DEST<br>
+  PORT(S)</b></td>
+         <td><b>SOURCE<br>
+         PORT(S)</b></td>
+         <td><b>ORIGINAL<br>
+         DEST</b></td>
     </font>
   </tr>
   <tr>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">ACCEPT<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">fw<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">tcp<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">1723<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+    <td>ACCEPT</td>
+    <td>net</td>
+    <td>fw</td>
+    <td>tcp</td>
+    <td>1723</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
   </tr>
   <tr>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">ACCEPT<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">fw<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">47<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">-<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+    <td>ACCEPT</td>
+    <td>net</td>
+    <td>fw</td>
+    <td>47</td>
+    <td>-</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
   </tr>
   <tr>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">ACCEPT<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">fw<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">47<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">-<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+    <td>ACCEPT</td>
+    <td>fw</td>
+    <td>net</td>
+    <td>47</td>
+    <td>-</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
   </tr>
-</table><!--mstheme--><font face="arial, Arial, Helvetica">
+</table>
 </blockquote>
   <p align="left">Note: I have multiple ppp interfaces on my firewall. If you 
   have a single ppp interface, you probably want:</p>
-<h4><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">/etc/shorewall/interfaces:<!--mstheme--></font></h4>
+<h4>/etc/shorewall/interfaces:</h4>
 <blockquote>
-  <!--mstheme--></font><table border="2" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+  <table border="2" cellpadding="2" style="border-collapse: collapse">
     <tr>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>ZONE</b><!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>INTERFACE</b><!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>BROADCAST</b><!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>OPTIONS</b><!--mstheme--></font></td>
+      <td><b>ZONE</b></td>
+      <td><b>INTERFACE</b></td>
+      <td><b>BROADCAST</b></td>
+      <td><b>OPTIONS</b></td>
     </tr>
     <tr>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">eth0<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">206.124.146.255<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">noping,norfc1918<!--mstheme--></font></td>
+      <td>net</td>
+      <td>eth0</td>
+      <td>206.124.146.255</td>
+      <td>noping,norfc1918</td>
     </tr>
     <tr>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">loc<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">eth2<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">192.168.1.255<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+      <td>loc</td>
+      <td>eth2</td>
+      <td>192.168.1.255</td>
+      <td>&nbsp;</td>
     </tr>
     <tr>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">loc<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">ppp0<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+      <td>loc</td>
+      <td>ppp0</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
     </tr>
-  </table><!--mstheme--><font face="arial, Arial, Helvetica">
+  </table>
 </blockquote>
   <p align="left">and <u><b>no</b></u> entries in /etc/shorewall/hosts.</p>
-  <h2 align="center"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666"><a name="ServerBehind"></a>2. PPTP Server Running Behind your Firewall<!--mstheme--></font></h2>
+  <h2 align="center"><a name="ServerBehind"></a>2. PPTP Server Running Behind your Firewall</h2>
   <p>If you have a single external IP address, add the following to your
   /etc/shorewall/rules file:</p>
-<!--mstheme--></font><table border="2" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+<table border="2" cellpadding="2" style="border-collapse: collapse">
   <tr>
     <font face="Century Gothic, Arial, Helvetica">
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>ACTION</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>SOURCE</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>DEST</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  PROTO</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>DEST<br>
-  PORT(S)</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>SOURCE<br>
-         PORT(S)</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>ORIGINAL<br>
-         DEST</b><!--mstheme--></font></td>
+         <td><b>ACTION</b></td>
+         <td><b>SOURCE</b></td>
+         <td><b>DEST</b></td>
+         <td><b>
+  PROTO</b></td>
+         <td><b>DEST<br>
+  PORT(S)</b></td>
+         <td><b>SOURCE<br>
+         PORT(S)</b></td>
+         <td><b>ORIGINAL<br>
+         DEST</b></td>
     </font>
   </tr>
   <tr>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">DNAT<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">loc:<i>&lt;server address&gt;</i><!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">tcp<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">1723<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+    <td>DNAT</td>
+    <td>net</td>
+    <td>loc:<i>&lt;server address&gt;</i></td>
+    <td>tcp</td>
+    <td>1723</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
   </tr>
   <tr>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">DNAT<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">loc:<i>&lt;server address&gt;</i><!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">47<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">-<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+    <td>DNAT</td>
+    <td>net</td>
+    <td>loc:<i>&lt;server address&gt;</i></td>
+    <td>47</td>
+    <td>-</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
   </tr>
-</table><!--mstheme--><font face="arial, Arial, Helvetica">
+</table>
 <p>If you have multiple external IP address and you want to forward a single <i>&lt;external
-address&gt;, </i>add the following to your /etc/shorewall/rules file:<p>&nbsp;<!--mstheme--></font><table border="2" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+address&gt;, </i>add the following to your /etc/shorewall/rules file:<p>&nbsp;<table border="2" cellpadding="2" style="border-collapse: collapse">
   <tr>
     <font face="Century Gothic, Arial, Helvetica">
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>ACTION</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>SOURCE</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>DEST</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  PROTO</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>DEST<br>
-  PORT(S)</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>SOURCE<br>
-         PORT(S)</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>ORIGINAL<br>
-         DEST</b><!--mstheme--></font></td>
+         <td><b>ACTION</b></td>
+         <td><b>SOURCE</b></td>
+         <td><b>DEST</b></td>
+         <td><b>
+  PROTO</b></td>
+         <td><b>DEST<br>
+  PORT(S)</b></td>
+         <td><b>SOURCE<br>
+         PORT(S)</b></td>
+         <td><b>ORIGINAL<br>
+         DEST</b></td>
     </font>
   </tr>
   <tr>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">DNAT<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">loc:<i>&lt;server address&gt;</i><!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">tcp<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">1723<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">-<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica"><i>&lt;external address&gt;</i><!--mstheme--></font></td>
+    <td>DNAT</td>
+    <td>net</td>
+    <td>loc:<i>&lt;server address&gt;</i></td>
+    <td>tcp</td>
+    <td>1723</td>
+    <td>-</td>
+    <td><i>&lt;external address&gt;</i></td>
   </tr>
   <tr>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">DNAT<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">loc:<i>&lt;server address&gt;</i><!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">47<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">-<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">-<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica"><i>&lt;external address&gt;</i><!--mstheme--></font></td>
+    <td>DNAT</td>
+    <td>net</td>
+    <td>loc:<i>&lt;server address&gt;</i></td>
+    <td>47</td>
+    <td>-</td>
+    <td>-</td>
+    <td><i>&lt;external address&gt;</i></td>
   </tr>
-</table><!--mstheme--><font face="arial, Arial, Helvetica">
-<h2 align="center"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666"><a name="ClientsBehind"></a>3. PPTP Clients Running Behind your Firewall<!--mstheme--></font></h2>
+</table>
+<h2 align="center"><a name="ClientsBehind"></a>3. PPTP Clients Running Behind your Firewall</h2>
 <p>You shouldn't have to take any special action for this case unless you wish
 to connect multiple clients to the same external server. In that case, you will
 need to follow the instructions at <a href="http://www.impsec.org/linux/masquerade/ip_masq_vpn.html">http://www.impsec.org/linux/masquerade/ip_masq_vpn.html</a>.
@@ -477,7 +482,7 @@ file:
   <p>loadmodule ip_conntrack_pptp<br>
   loadmodule ip_nat_pptp
 </blockquote>
-<h2 align="center"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666"><a name="ClientFW"></a>4. PPTP Client Running on your Firewall.<!--mstheme--></font></h2>
+<h2 align="center"><a name="ClientFW"></a>4. PPTP Client Running on your Firewall.</h2>
 <p align="left">The PPTP GNU/Linux client is available at <a href="http://sourceforge.net/projects/pptpclient/">http://sourceforge.net/projects/pptpclient/</a>.&nbsp;&nbsp;&nbsp;
 Rather than use the configuration script that comes with the client, I built my
 own. I also build my own kernel <a href="#PatchKernel">as described above</a>
@@ -492,90 +497,90 @@ below).</p>
   <li>Define rules for traffic two and from the remote zone.</li>
 </ol>
 <p>Here are examples from my setup:</p>
-<h4><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">/etc/shorewall/zones<!--mstheme--></font></h4>
+<h4>/etc/shorewall/zones</h4>
 <blockquote>
-  <!--mstheme--></font><table border="2" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+  <table border="2" cellpadding="2" style="border-collapse: collapse">
     <tr>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>ZONE</b><!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>DISPLAY</b><!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>COMMENTS</b><!--mstheme--></font></td>
+      <td><b>ZONE</b></td>
+      <td><b>DISPLAY</b></td>
+      <td><b>COMMENTS</b></td>
     </tr>
     <tr>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">cpq<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">Compaq<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">Compaq Intranet<!--mstheme--></font></td>
+      <td>cpq</td>
+      <td>Compaq</td>
+      <td>Compaq Intranet</td>
     </tr>
-  </table><!--mstheme--><font face="arial, Arial, Helvetica">
+  </table>
 </blockquote>
-<h4><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">/etc/shorewall/interfaces<!--mstheme--></font></h4>
+<h4>/etc/shorewall/interfaces</h4>
 <blockquote>
-  <!--mstheme--></font><table border="2" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+  <table border="2" cellpadding="2" style="border-collapse: collapse">
     <tr>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>ZONE</b><!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>INTERFACE</b><!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>BROADCAST</b><!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>OPTIONS</b><!--mstheme--></font></td>
+      <td><b>ZONE</b></td>
+      <td><b>INTERFACE</b></td>
+      <td><b>BROADCAST</b></td>
+      <td><b>OPTIONS</b></td>
     </tr>
     <tr>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">-<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">ppp+<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+      <td>-</td>
+      <td>ppp+</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
     </tr>
-  </table><!--mstheme--><font face="arial, Arial, Helvetica">
+  </table>
 </blockquote>
-<h4><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">/etc/shorewall/hosts<!--mstheme--></font></h4>
+<h4>/etc/shorewall/hosts</h4>
 <blockquote>
-  <!--mstheme--></font><table border="2" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+  <table border="2" cellpadding="2" style="border-collapse: collapse">
     <tr>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>ZONE</b><!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>HOST(S)</b><!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>OPTIONS</b><!--mstheme--></font></td>
+      <td><b>ZONE</b></td>
+      <td><b>HOST(S)</b></td>
+      <td><b>OPTIONS</b></td>
     </tr>
     <tr>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">-<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">ppp+:!192.168.1.0/24<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+      <td>-</td>
+      <td>ppp+:!192.168.1.0/24</td>
+      <td>&nbsp;</td>
     </tr>
-  </table><!--mstheme--><font face="arial, Arial, Helvetica">
+  </table>
 </blockquote>
-<h4><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">/etc/shorewall/rules<!--mstheme--></font></h4>
+<h4>/etc/shorewall/rules</h4>
 <blockquote>
-  <!--mstheme--></font><table border="2" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+  <table border="2" cellpadding="2" style="border-collapse: collapse">
     <tr>
     <font face="Century Gothic, Arial, Helvetica">
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>ACTION</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>SOURCE</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>DEST</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  PROTO</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>DEST<br>
-  PORT(S)</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>SOURCE<br>
-         PORT(S)</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>ORIGINAL<br>
-         DEST</b><!--mstheme--></font></td>
+         <td><b>ACTION</b></td>
+         <td><b>SOURCE</b></td>
+         <td><b>DEST</b></td>
+         <td><b>
+  PROTO</b></td>
+         <td><b>DEST<br>
+  PORT(S)</b></td>
+         <td><b>SOURCE<br>
+         PORT(S)</b></td>
+         <td><b>ORIGINAL<br>
+         DEST</b></td>
     </font>
     </tr>
     <tr>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">ACCEPT<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">fw<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">tcp<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">1723<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+      <td>ACCEPT</td>
+      <td>fw</td>
+      <td>net</td>
+      <td>tcp</td>
+      <td>1723</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
     </tr>
     <tr>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">ACCEPT<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">fw<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">47<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">-<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+      <td>ACCEPT</td>
+      <td>fw</td>
+      <td>net</td>
+      <td>47</td>
+      <td>-</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
     </tr>
-  </table><!--mstheme--><font face="arial, Arial, Helvetica">
+  </table>
 </blockquote>
 <p>I use the combination of interface and hosts file to define the 'cpq' zone
 because I also run a PPTP server on my firewall (see above). Using this
@@ -706,7 +711,7 @@ traffic through the PPTP tunnel:
   &nbsp;&nbsp;&nbsp; ;;<br>
   esac</font></blockquote>
   <p>Finally, I run the following script every five minutes under crond to 
-  restart the tunnel if it fails:<!--mstheme--></font><pre>     #!/bin/sh
+  restart the tunnel if it fails:<pre>     #!/bin/sh
      restart_pptp() {
          /sbin/service pptp stop
          sleep 10
@@ -722,10 +727,10 @@ traffic through the PPTP tunnel:
      echo &quot;Attempting to restart PPTP&quot;
 
      restart_pptp &gt; /dev/null 2&gt;&amp;1 &amp;
-</pre><!--mstheme--><font face="arial, Arial, Helvetica">
+</pre>
   <p><a href="ftp://ftp.shorewall.net/pub/shorewall/misc/Vonau">Here's a script
   and corresponding ip-up.local </a>from <a href="mailto:jvonau@home.com">Jerry
   Vonau </a>that controls two PPTP connections.</p>
 <p><font size="2">Last modified 7/11/2002 - <a href="support.htm">Tom
 Eastep</a></font><p><font face="Trebuchet MS"><a href="copyright.htm">
-<font size="2">Copyright</font> © <font size="2">2001, 2002 Thomas M. Eastep.</font></a></font><!--mstheme--></font></body></html>
+<font size="2">Copyright</font> © <font size="2">2001, 2002 Thomas M. Eastep.</font></a></font></body></html>

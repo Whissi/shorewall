@@ -10,15 +10,19 @@
   <meta name="ProgId" content="FrontPage.Editor.Document">
      
        
-  <meta name="Microsoft Theme" content="radial 011">
+  <meta name="Microsoft Theme" content="none">
 </head>
- <body background="_themes/radial/radbkgnd.gif" bgcolor="#FFFFFF" text="#000000" link="#6666FF" vlink="#993333" alink="#66CCCC"><!--mstheme--><font face="arial, Arial, Helvetica">
- <h1 align="center"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">Shorewall Errata<!--mstheme--></font></h1>
+ <body>
+ <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" width="100%" id="AutoNumber1" bgcolor="#400169" height="90">
+   <tr>
+     <td width="100%">
+     <h1 align="center"><font color="#FFFFFF">Shorewall Errata/Upgrade Issues</font></h1>
+     </td>
+   </tr>
+ </table>
             
  <p align="center">
-  <font face="Century Gothic, Arial, Helvetica">
-  
-      <b><u>IMPORTANT</u></b></font></p>
+      <b><u>IMPORTANT</u></b></p>
             
  <ol>
    <li>
@@ -58,36 +62,111 @@ dos2unix</a></u>
    </li>
  </ol>
             
- <p align="left">
-  
-      <b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </b></p>
-            
-   <!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-     <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">
+ <ul>
+   <li><b><a href="#Upgrade">Upgrade Issues</a></b></li>
+   <li>
             
           <b><font color="#660066">
- <a href="errata_1.htm">Problems in Version 1.1</a></font></b><!--mstheme--></font><!--msthemelist--></td></tr>
-     <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">
+ <a href="errata_1.htm">Problems in Version 1.1</a></font></b></li>
+   <li>
                 
-          <b><a href="errata_2.htm">Problems in Version 1.2</a></b><!--mstheme--></font><!--msthemelist--></td></tr>
-     <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">
+          <b><a href="errata_2.htm">Problems in Version 1.2</a></b></li>
+   <li>
                 
-          <b><a href="#V1.3">Problems in Version 1.3</a></b><!--mstheme--></font><!--msthemelist--></td></tr>
-     <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">
+          <b><a href="#V1.3">Problems in Version 1.3</a></b></li>
+   <li>
                 
           <b><font color="#660066"><a href="#iptables">
- Problem with iptables version 1.2.3</a></font></b><!--mstheme--></font><!--msthemelist--></td></tr>
-     <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">
+   Problem with iptables version 1.2.3 on RH7.2</a></font></b></li>
+   <li>
                 
-          <b><a href="#Debug">Problems with kernel 2.4.18 and 
-          RedHat iptables</a></b><!--mstheme--></font><!--msthemelist--></td></tr>
-     <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b><a href="#SuSE">Problems installing/upgrading RPM on SuSE SMP</a></b><!--mstheme--></font><!--msthemelist--></td></tr>
- <!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
- <!--msthemeseparator--><p align="center"><img src="_themes/radial/aradrule.gif" width="614" height="7"></p>
+          <b><a href="#Debug">Problems with kernels &gt;= 2.4.18 and 
+          RedHat iptables</a></b></li>
+   <li><b><a href="#SuSE">Problems installing/upgrading RPM on SuSE</a></b></li>
+   <li><b><a href="#Multiport">Problems with iptables version 1.2.7 and 
+   MULTIPORT=Yes</a></b></li>
+ </ul>
+ <hr>
             
-          <h2 align="Left"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666"><a name="V1.3"></a>Problems in Version 1.3<!--mstheme--></font></h2>
+          <h2 align="Left"><a name="Upgrade"></a>Upgrade Issues</h2>
                 
-          <h3 align="Left"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">Versions &gt;= 1.3.5<!--mstheme--></font></h3>
+                              <h3>Version &gt;= 1.3.7</h3>
+
+                              <p>Users specifying ALLOWRELATED=No in 
+                              /etc/shorewall.conf will need to include the 
+                              following rules in their /etc/shorewall/icmpdef 
+                              file (creating this file if necessary):</p>
+
+                              <pre>	run_iptables -A icmpdef -p ICMP --icmp-type echo-reply -j ACCEPT
+	run_iptables -A icmpdef -p ICMP --icmp-type source-quench -j ACCEPT
+	run_iptables -A icmpdef -p ICMP --icmp-type destination-unreachable -j ACCEPT
+	run_iptables -A icmpdef -p ICMP --icmp-type time-exceeded -j ACCEPT
+	run_iptables -A icmpdef -p ICMP --icmp-type parameter-problem -j ACCEPT</pre>
+ <p>Users having an /etc/shorewall/icmpdef file may remove the &quot;. 
+ /etc/shorewall/icmp.def&quot; command from that file since the icmp.def file is now 
+ empty.</p>
+ <h3><b><a name="Bering">Upgrading </a>Bering to 
+                              Shorewall &gt;= 1.3.3</b></h3>
+
+                              <p>To properly upgrade with Shorewall version 
+                              1.3.3 and later:</p>
+
+                              <ol>
+                                <li>Be sure you have a backup -- you will need 
+                                to transcribe any Shorewall configuration 
+                                changes that you have made to the new 
+                                configuration.</li>
+                                <li>Replace the shorwall.lrp package provided on 
+                                the Bering floppy with the later one. If you did 
+                                not obtain the later version from Jacques's 
+                                site, see additional instructions below.</li>
+                                <li>Edit the /var/lib/lrpkg/root.exclude.list 
+                                file and remove the /var/lib/shorewall entry if 
+                                present. Then do not forget to backup root.lrp !</li>
+ </ol>
+ <p>The .lrp that I release isn't set up for a two-interface firewall like 
+ Jacques's. You need to follow the <a href="two-interface.htm">instructions for 
+ setting up a two-interface firewall</a> plus you also need to add the following 
+ two Bering-specific rules to /etc/shorewall/rules:</p>
+ <blockquote>
+   <pre># Bering specific rules:
+# allow loc to fw udp/53 for dnscache to work
+# allow loc to fw tcp/80 for weblet to work
+#
+ACCEPT loc fw udp 53
+ACCEPT loc fw tcp 80</pre>
+ </blockquote>
+                
+          <h3 align="Left">Version &gt;= 1.3.6</h3>
+                
+          <p align="Left">If you have a pair of firewall systems configured for 
+          failover, you will need to modify your firewall setup slightly under 
+          Shorewall versions &gt;= 1.3.6. </p>
+                
+          <ol>
+            <li>
+                
+          <p align="Left">Create the file /etc/shorewall/newnotsyn and in it add 
+          the following rule<br>
+          <br>
+          <font face="Courier">run_iptables -A newnotsyn -j RETURN # So that the 
+          connection tracking table can be rebuilt<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+          # from non-SYN packets after takeover.<br>
+&nbsp;</font></li>
+ <li>
+                
+          <p align="Left">Create /etc/shorewall/common (if you don't already 
+          have that file) and include the following:<br>
+          <br>
+          <font face="Courier">run_iptables -A common -p tcp --tcp-flags 
+          ACK,FIN,RST ACK -j ACCEPT #Accept Acks to rebuild connection<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+          #tracking table. <br>
+          . /etc/shorewall/common.def</font></li>
+</ol>
+                
+          <h3 align="Left">Versions &gt;= 1.3.5</h3>
                 
           <p align="Left">Some forms of pre-1.3.0 rules file syntax are no 
           longer supported. </p>
@@ -95,26 +174,60 @@ dos2unix</a></u>
           <p align="Left">Example 1:</p>
                 
           <div align="left">
-            <!--mstheme--></font><pre>	ACCEPT    net    loc:192.168.1.12:22    tcp    11111    -    all</pre><!--mstheme--><font face="arial, Arial, Helvetica">
+            <pre>	ACCEPT    net    loc:192.168.1.12:22    tcp    11111    -    all</pre>
  </div>
                 
           <p align="Left">Must be replaced with:</p>
                 
           <div align="left">
-            <!--mstheme--></font><pre>	DNAT	net	loc:192.168.1.12:22	tcp	11111</pre><!--mstheme--><font face="arial, Arial, Helvetica">
+            <pre>	DNAT	net	loc:192.168.1.12:22	tcp	11111</pre>
  </div>
  <div align="left">
    <p align="left">Example 2:</div>
  <div align="left">
-   <!--mstheme--></font><pre>	ACCEPT	loc	fw::3128	tcp	80	-	all</pre><!--mstheme--><font face="arial, Arial, Helvetica">
+   <pre>	ACCEPT	loc	fw::3128	tcp	80	-	all</pre>
  </div>
  <div align="left">
    <p align="left">Must be replaced with:</div>
  <div align="left">
-   <!--mstheme--></font><pre>	REDIRECT	loc	3128	tcp	80</pre><!--mstheme--><font face="arial, Arial, Helvetica">
+   <pre>	REDIRECT	loc	3128	tcp	80</pre>
  </div>
                 
-          <h3 align="Left"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">Version 1.3.5-1.3.5b<!--mstheme--></font></h3>
+          <h2 align="Left"><a name="V1.3"></a>Problems in Version 1.3</h2>
+                
+          <h3 align="Left">Version 1.3.6</h3>
+                
+          <ul>
+            <li>
+                
+          <p align="Left">If ADD_SNAT_ALIASES=Yes is specified in 
+          /etc/shorewall/shorewall.conf, an error occurs when the firewall 
+          script attempts to add an SNAT alias.</li>
+ <li>
+                
+          <p align="Left">The <b>logunclean </b>and <b>dropunclean</b> options 
+          cause errors during startup when Shorewall is run with iptables 1.2.7.</li>
+</ul>
+                
+          <p align="Left">These problems are fixed in
+          <a href="http://www.shorewall.net/pub/shorewall/errata/1.3.6/firewall">
+          this correct firewall script</a> which must be installed in 
+          /var/lib/shorewall/ as described above. These problems are also 
+          corrected in version 1.3.7.</p>
+                
+          <h3 align="Left">Two-interface Samples 1.3.6 (file two-interfaces.tgz)</h3>
+                
+          <p align="Left">A line was inadvertently deleted from the &quot;interfaces 
+          file&quot; -- this line should be added back in if the version that you 
+          downloaded is missing it:</p>
+                
+          <p align="Left">net&nbsp;&nbsp;&nbsp; eth0&nbsp;&nbsp;&nbsp; detect&nbsp;&nbsp;&nbsp; 
+          routefilter,dhcp,norfc1918</p>
+                
+          <p align="Left">If you downloaded two-interfaces-a.tgz then the above 
+          line should already be in the file.</p>
+                
+          <h3 align="Left">Version 1.3.5-1.3.5b</h3>
                 
           <p align="Left">The new 'proxyarp' interface option doesn't work :-( 
           This is fixed in
@@ -122,13 +235,13 @@ dos2unix</a></u>
           this corrected firewall script</a> which must be installed in 
           /var/lib/shorewall/ as described above.</p>
                 
-          <h3 align="Left"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">Versions 1.3.4-1.3.5a<!--mstheme--></font></h3>
+          <h3 align="Left">Versions 1.3.4-1.3.5a</h3>
                 
           <p align="Left">Prior to version 1.3.4, host file entries such as the 
           following were allowed:</p>
                 
           <div align="left">
-            <!--mstheme--></font><pre>	adm	eth0:1.2.4.5,eth0:5.6.7.8</pre><!--mstheme--><font face="arial, Arial, Helvetica">
+            <pre>	adm	eth0:1.2.4.5,eth0:5.6.7.8</pre>
  </div>
  <div align="left">
    <p align="left">That capability was lost in version 1.3.4 so that it is only 
@@ -141,14 +254,14 @@ dos2unix</a></u>
  <div align="left">
    <p align="left">This problem is corrected in version 1.3.5b.</div>
                 
-          <h3 align="Left"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">Version 1.3.5<!--mstheme--></font></h3>
+          <h3 align="Left">Version 1.3.5</h3>
                 
           <p align="Left">REDIRECT rules are broken in this version. Install
           <a href="http://www.shorewall.net/pub/shorewall/errata/1.3.5/firewall">
           this corrected firewall script</a> in /var/lib/pub/shorewall/firewall 
           as instructed above. This problem is corrected in version 1.3.5a.</p>
                 
-          <h3 align="Left"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">Version 1.3.n, n &lt; 4<!--mstheme--></font></h3>
+          <h3 align="Left">Version 1.3.n, n &lt; 4</h3>
                 
           <p align="Left">The &quot;shorewall start&quot; and &quot;shorewall restart&quot; commands 
           to not verify that the zones named in the /etc/shorewall/policy file 
@@ -157,7 +270,7 @@ dos2unix</a></u>
           good idea to run that command after you have made configuration 
           changes.</p>
                 
-          <h3 align="Left"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">Version 1.3.n, n &lt; 3<!--mstheme--></font></h3>
+          <h3 align="Left">Version 1.3.n, n &lt; 3</h3>
                 
           <p align="Left">If you have upgraded from Shorewall 1.2 and after 
           &quot;Activating rules...&quot; you see the message: &quot;iptables: No 
@@ -167,82 +280,82 @@ dos2unix</a></u>
           must add an entry to /etc/shorewall/interfaces. Shorewall 1.3.3 and 
           later versions produce a clearer error message in this case.</p>
                 
-          <h3 align="Left"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">Version 1.3.2<!--mstheme--></font></h3>
+          <h3 align="Left">Version 1.3.2</h3>
                 
           <p align="Left">Until approximately 2130 GMT on 17 June 2002, the 
           download sites contained an incorrect version of the .lrp file. That 
           file can be identified by its size (56284 bytes). The correct version 
           has a size of 38126 bytes.</p>
                 
-          <!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-            <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">The code to detect a duplicate interface entry in 
+          <ul>
+            <li>The code to detect a duplicate interface entry in 
           /etc/shorewall/interfaces contained a typo that prevented it from 
-          working correctly. <!--mstheme--></font><!--msthemelist--></td></tr>
-            <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">&quot;NAT_BEFORE_RULES=No&quot; was broken; it behaved just like &quot;NAT_BEFORE_RULES=Yes&quot;.<!--mstheme--></font><!--msthemelist--></td></tr>
- <!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+          working correctly. </li>
+            <li>&quot;NAT_BEFORE_RULES=No&quot; was broken; it behaved just like &quot;NAT_BEFORE_RULES=Yes&quot;.</li>
+ </ul>
                 
           <p align="Left">Both problems are corrected in
           <a href="http://www.shorewall.net/pub/shorewall/errata/1.3.2/firewall">
           this script</a> which should be installed in <b><u>/var/lib/shorewall</u></b> as described above.</p>
                 
-          <!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-            <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">
+          <ul>
+            <li>
                 
           <p align="Left">The IANA have just announced the allocation of subnet 
           221.0.0.0/8. This
           <a href="http://www.shorewall.net/pub/shorewall/errata/1.3.2/rfc1918">
           updated rfc1918</a> file reflects that allocation.</p>
                 
-            <!--mstheme--></font><!--msthemelist--></td></tr>
- <!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+            </li>
+ </ul>
                 
-          <h3 align="Left"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">Version 1.3.1<!--mstheme--></font></h3>
+          <h3 align="Left">Version 1.3.1</h3>
                 
-          <!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-            <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">TCP SYN packets may be double counted when 
+          <ul>
+            <li>TCP SYN packets may be double counted when 
           LIMIT:BURST is included in a CONTINUE or ACCEPT policy (i.e., each 
-          packet is sent through the limit chain twice).<!--mstheme--></font><!--msthemelist--></td></tr>
-            <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">An unnecessary jump to the policy chain is sometimes 
-          generated for a CONTINUE policy.<!--mstheme--></font><!--msthemelist--></td></tr>
-            <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">When an option is given for more than one interface in 
+          packet is sent through the limit chain twice).</li>
+            <li>An unnecessary jump to the policy chain is sometimes 
+          generated for a CONTINUE policy.</li>
+            <li>When an option is given for more than one interface in 
             /etc/shorewall/interfaces then depending on the option, Shorewall 
             may ignore all but the first appearence of the option. For example:<br>
             <br>
             net&nbsp;&nbsp;&nbsp; eth0&nbsp;&nbsp;&nbsp; dhcp<br>
             loc&nbsp;&nbsp;&nbsp; eth1&nbsp;&nbsp;&nbsp; dhcp<br>
             <br>
-            Shorewall will ignore the 'dhcp' on eth1.<!--mstheme--></font><!--msthemelist--></td></tr>
-            <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">Update 17 June 2002 - The bug described in the prior bullet 
+            Shorewall will ignore the 'dhcp' on eth1.</li>
+            <li>Update 17 June 2002 - The bug described in the prior bullet 
             affects the following options: dhcp, dropunclean, logunclean, 
             norfc1918, routefilter, multi, filterping and noping. An additional 
             bug has been found that affects only the 'routestopped' option.<br>
             <br>
             Users who downloaded the corrected script prior to 1850 GMT today 
             should download and install the corrected script again to ensure 
-            that this second problem is corrected.<!--mstheme--></font><!--msthemelist--></td></tr>
- <!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+            that this second problem is corrected.</li>
+ </ul>
                 
           <p align="Left">These problems are corrected in
           <a href="http://www.shorewall.net/pub/shorewall/errata/1.3.1/firewall">
           this firewall script</a> which should be installed in 
           /etc/shorewall/firewall as described above.</p>
                 
-          <h3 align="Left"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">Version 1.3.0<!--mstheme--></font></h3>
+          <h3 align="Left">Version 1.3.0</h3>
                 
-          <!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-            <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">Folks who downloaded 1.3.0 from the links on the download page 
+          <ul>
+            <li>Folks who downloaded 1.3.0 from the links on the download page 
             before 23:40 GMT, 29 May 2002 may have downloaded 1.2.13 rather than 
             1.3.0. The &quot;shorewall version&quot; command will tell you which version 
-            that you have installed.<!--mstheme--></font><!--msthemelist--></td></tr>
-            <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">The documentation NAT.htm file uses non-existent 
+            that you have installed.</li>
+            <li>The documentation NAT.htm file uses non-existent 
           wallpaper and bullet graphic files. The
           <a href="http://www.shorewall.net/pub/shorewall/errata/1.3.0/NAT.htm">
-          corrected version is here</a>.<!--mstheme--></font><!--msthemelist--></td></tr>
- <!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
- <!--msthemeseparator--><p align="center"><img src="_themes/radial/aradrule.gif" width="614" height="7"></p>
+          corrected version is here</a>.</li>
+ </ul>
+ <hr>
                 
-        <h3 align="Left"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666"><a name="iptables"></a><font color="#660066">
- Problem with iptables version 1.2.3</font><!--mstheme--></font></h3>
+        <h3 align="Left"><a name="iptables"></a><font color="#660066">
+ Problem with iptables version 1.2.3</font></h3>
             
  <blockquote>
             
@@ -257,9 +370,9 @@ RedHat released this buggy iptables in RedHat   7.2.&nbsp;</p>
 you are currently running RedHat 7.1, you can install either of these RPMs 
           <b><u>before</u> </b>you upgrade to RedHat 7.2.</p>
             
-  <p align="Left"><font face="Century Gothic, Arial, Helvetica" color="#FF6633"><b>Update
+  <p align="Left"><font color="#FF6633"><b>Update
   11/9/2001: </b></font>RedHat has
-  released an iptables-1.2.4 RPM of their own which you can download from<font face="Century Gothic, Arial, Helvetica" color="#FF6633">
+  released an iptables-1.2.4 RPM of their own which you can download from<font color="#FF6633">
   <a href="http://www.redhat.com/support/errata/RHSA-2001-144.html">http://www.redhat.com/support/errata/RHSA-2001-144.html</a>.
   </font>I have installed this RPM
   on my firewall and it works fine.</p>
@@ -272,20 +385,20 @@ you are currently running RedHat 7.1, you can install either of these RPMs
         corrects a problem in handling the&nbsp; TOS target.</p>
             
           <p align="Left">To install one of the above patches:</p>
-        <!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-          <!--msthemelist--><tr><td valign="top" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">cd iptables-1.2.3/extensions<!--mstheme--></font><!--msthemelist--></td></tr>
-          <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">patch -p0 &lt; <i>the-patch-file</i><!--mstheme--></font><!--msthemelist--></td></tr>
-        <!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+        <ul>
+          <li>cd iptables-1.2.3/extensions</li>
+          <li>patch -p0 &lt; <i>the-patch-file</i></li>
+        </ul>
          
  </blockquote>
               
-                            <h3><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666"><a name="Debug"></a>Problems with kernel 2.4.18 
-                            and RedHat iptables<!--mstheme--></font></h3>
+                            <h3><a name="Debug"></a>Problems with kernels &gt;= 2.4.18 
+                            and RedHat iptables</h3>
  <blockquote>
-   <p>Users who use RedHat iptables RPMs and who upgrade to kernel 2.4.18 may 
+   <p>Users who use RedHat iptables RPMs and who upgrade to kernel 2.4.18/19 may 
    experience the following:</p>
    <blockquote>
-     <!--mstheme--></font><pre># shorewall start
+     <pre># shorewall start
 Processing /etc/shorewall/shorewall.conf ...
 Processing /etc/shorewall/params ...
 Starting Shorewall...
@@ -303,7 +416,7 @@ Aborted (core dumped)
 iptables: libiptc/libip4tc.c:380: do_check: Assertion
 `h-&gt;info.valid_hooks == (1 &lt;&lt; 0 | 1 &lt;&lt; 3)' failed.
 Aborted (core dumped)
-</pre><!--mstheme--><font face="arial, Arial, Helvetica">
+</pre>
    </blockquote>
    <p>The RedHat iptables RPM is compiled with debugging enabled but the 
    user-space debugging code was not updated to reflect recent changes in the 
@@ -314,8 +427,8 @@ Aborted (core dumped)
    &quot;iptables -Uvh --oldpackage iptables-1.2.5-1.i386.rpm&quot;).</p>
  </blockquote>
                                   
-                              <h3><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666"><a name="SuSE"></a>Problems 
-                              installing/upgrading RPM on SuSE SMP<!--mstheme--></font></h3>
+                              <h3><a name="SuSE"></a>Problems 
+                              installing/upgrading RPM on SuSE</h3>
 
                               <p>If you find that rpm complains about a conflict 
                               with kernel &lt;= 2.2 yet you have a 2.4 kernel 
@@ -326,13 +439,29 @@ Aborted (core dumped)
 
                               <p>Upgrading: rpm -Uvh <i>&lt;shorewall rpm&gt;</i></p>
 
-                              <p><font face="Century Gothic, Arial, Helvetica"><font size="2">
- Last updated 8/4/2002 - </font><font size="2">
-                              <a href="support.htm">Tom Eastep</a></font>
-  </font></p>
+                              <h3><a name="Multiport"></a><b>Problems with 
+                              iptables version 1.2.7 and MULTIPORT=Yes</b></h3>
+
+                              <p>The iptables 1.2.7 release of iptables has made 
+                              an incompatible change to the syntax used to 
+                              specify multiport match rules; as a consequence, 
+                              if you install iptables 1.2.7 you must</p>
+
+                              <ul>
+                                <li>set MULTIPORT=No in 
+                                /etc/shorewall/shorewall.conf; or </li>
+                                <li>if you are running Shorewall 1.3.6 you may 
+                                install
+                                <a href="http://www.shorewall.net/pub/shorewall/errata/1.3.6/firewall">
+                                this firewall script</a> in /var/lib/shorewall/firewall 
+                                as described above.</li>
+ </ul>
+ <p><font size="2">
+ Last updated 8/22/2002 -
+                              <a href="support.htm">Tom Eastep</a></font> </p>
 
  <p><font face="Trebuchet MS"><a href="copyright.htm"><font size="2">Copyright</font> 
  © <font size="2">2001, 2002 Thomas M. Eastep.</font></a></font></p>
 
-<!--mstheme--></font></body>
+</body>
                         </html>

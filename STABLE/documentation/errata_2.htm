@@ -1,0 +1,439 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+     
+  <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+  <title>Shorewall 1.2 Errata</title>
+         
+  <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+     
+  <meta name="ProgId" content="FrontPage.Editor.Document">
+     
+       
+  </head>
+ <body>
+ <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%" id="AutoNumber1" height="90" bgcolor="#400169">
+   <tr>
+     <td width="100%">
+     <h1 align="center"><font color="#FFFFFF">Shorewall 1.2 Errata</font></h1>
+     </td>
+   </tr>
+ </table>
+            
+ <p align="center">
+  <font face="Century Gothic, Arial, Helvetica">
+  
+      <b><u>IMPORTANT</u></b></font></p>
+            
+ <p align="center">
+  
+      <b><u>If you use a Windows system to download a corrected     script, be sure to
+run the script through <a href="http://www.megaloman.com/%7Ehany/software/hd2u/">
+dos2unix</a>
+     after you have moved it to your Linux system.</u></b></p>
+            
+ <p align="center">
+  
+      <u><b>When the instructions say to install a corrected firewall script in 
+      /etc/shorewall/firewall, use the 'cp' (or 'scp') utility to overwrite the 
+      existing file. DO NOT REMOVE OR RENAME THE OLD /etc/shorewall/firewall 
+      before you do that. /etc/shorewall/firewall is a symbolic link that points 
+      to the 'shorewall' file used by your system initialization scripts to 
+      start Shorewall during boot and it is that file that must be overwritten 
+      with the corrected script. </b></u></p>
+            
+ <ul>
+   <li>
+            
+          <h3 align="Left"><font color="#660066">
+ <a href="errata_1.htm">
+ Problems in Version 1.1</a></font></h3>
+                
+   </li>
+   <li>
+                
+          <h3 align="Left"><a href="#V1.2">Problems in Version 1.2</a></h3>
+                
+   </li>
+   <li>
+                
+          <h3 align="Left"><font color="#660066"><a href="#iptables">
+ Problem with iptables version 1.2.3</a></font></h3>
+                
+   </li>
+   <li>
+                
+          <h3 align="Left"><a href="#Debug">Problems with kernel 2.4.18 and 
+          RedHat iptables</a></h3>
+                
+   </li>
+ </ul>
+ <hr>
+            
+          <h3 align="Left"><a name="V1.2"></a>Problems in Version 1.2</h3>
+                
+          <h3 align="Left">Version 1.2.13</h3>
+                
+          <ul>
+            <li>
+                
+          <p align="Left">Some users have reported problems installing the RPM 
+          on SuSE 7.3 where rpm reports a conflict with kernel &lt;= 2.2 even 
+          though a 2.4 kernel RPM is installed. To get around this problem, use 
+          the --nodeps option to rpm (e.g., &quot;rpm -ivh --nodeps 
+          shorewall-1.2-13.noarch.rpm&quot;).<br>
+          <br>
+          The problem stems from the fact that SuSE does not 
+          include a package named &quot;kernel&quot; but rather has a number of packages 
+          that provide the virtual package &quot;kernel&quot;. Since virtual packages have 
+          no version associated with them, a conflict results. Since the 
+          workaround is simple, I don't intend to change the Shorewall package.</p>
+                
+            </li>
+            <li>
+                
+          <p align="Left">Shorewall accepts invalid rules of the form:<br>
+          <br>
+          <font face="Courier">ACCEPT &lt;src&gt; &lt;dest&gt;:&lt;ip addr&gt; all &lt;port number&gt; - 
+          &lt;original ip address&gt;<br>
+          <br>
+          </font>The &lt;port number&gt; is ignored with the result that <u>all</u> 
+          connection requests from the &lt;src&gt; zone whose original destination IP 
+          address matches the last column are forwarded to the &lt;dest&gt; zone, IP 
+          address &lt;ip addr&gt;.&nbsp;
+          <a href="http://www.shorewall.net/pub/shorewall/errata/1.2.13/firewall">
+          This corrected firewall script</a> correctly generates an error when 
+          such a rule is encountered.</p>
+                
+            </li>
+ </ul>
+                
+          <h3 align="Left">Version 1.2.11</h3>
+                
+          <ul>
+            <li>
+                
+          <p align="Left">The 'try' command is broken.</li>
+            <li>
+                
+          <p align="Left">The usage text printed by the shorewall utility 
+          doesn't show the optional timeout for the 'try' command.</li>
+ </ul>
+                
+          <p align="Left">Both problems are corrected by
+          <a href="http://www.shorewall.net/pub/shorewall/errata/1.2.11/shorewall">
+          this new version of /sbin/shorewall</a>.</p>
+                
+          <h3 align="Left">Sample Configurations:</h3>
+                
+          <ul>
+            <li>
+                
+          <p align="Left">There have been several problems with SSH, DNS and 
+          ping in the two- and three-interface examples. Before reporting 
+          problems with these services, please verify that you have the latest 
+          version of the appropriate sample 'rules' file.</li>
+ </ul>
+                
+          <h3 align="Left">All Versions through 1.2.10</h3>
+                
+          <ul>
+            <li>
+            
+          <p align="Left">The <a href="PPTP.htm#ServerFW">documentation for 
+          running PoPToP on the firewall system</a> contained an incorrect entry 
+          in the /etc/shorewall/hosts file. The corrected entry (underlined) is 
+          shown here:</li>
+ </ul>
+ <blockquote>
+   <blockquote>
+     <table border="2">
+    <tr>
+      <td><b>ZONE</b></td>
+      <td><b>HOST(S)</b></td>
+      <td><b>OPTIONS</b></td>
+    </tr>
+    <tr>
+      <td>loc</td>
+      <td><u>eth2</u>:192.168.1.0/24</td>
+      <td>routestopped</td>
+    </tr>
+    <tr>
+      <td>loc</td>
+      <td>ppp+:192.168.1.0/24</td>
+      <td>&nbsp;</td>
+    </tr>
+  </table>
+   </blockquote>
+ </blockquote>
+                
+          <h3 align="Left">All Versions through 1.2.8</h3>
+                
+          <ul>
+            <li>
+                
+          <p align="Left">The shorewall.conf file and the documentation 
+          incorrectly refer to a parameter in /etc/shorewall/shorewall.conf 
+          called LOCKFILE; the correct name for the parameter is SUBSYSLOCK (<a href="Documentation.htm#Conf">see 
+          the corrected online documentation</a>). Users of the rpm should 
+          change the name (and possibly the value) of this parameter so that 
+          Shorewall interacts properly with the SysV init scripts. The 
+          documentation on this web site has been corrected and
+          <a href="http://www.shorewall.net/pub/shorewall/errata/1.2.8/shorewall.conf">
+          here's a corrected version of shorewall.conf</a>.</p>
+                
+            </li>
+            <li>
+                
+          <p align="Left">The documentation indicates that a comma-separated 
+          list of IP/subnet addresses may appear in an entry in the hosts file. 
+          This is not the case; if you want to specify multiple addresses for a 
+          zone, you need to have a separate entry for each address.</p>
+                
+            </li>
+ </ul>
+                
+          <h3 align="Left">Version 1.2.7</h3>
+                
+          <p align="Left">Version 1.2.7 is quite broken -- please install 1.2.8</p>
+                
+          <p>If you have installed and started version 1.2.7 then before trying 
+          to restart under 1.2.8:</p>
+ <ol>
+   <li>Look at your /etc/shorewall/shorewall.conf file and note the directory 
+   named in the STATEDIR variable. If that variable is empty, assume 
+   /var/state/shorewall.</li>
+   <li>Remove the file 'lock' in the directory determined in step 1.</li>
+ </ol>
+ <p>You may now restart using 1.2.8.</p>
+                
+          <h3 align="Left">Version 1.2.6</h3>
+                
+ <ul>
+   <li>
+                
+          <p align="Left">GRE and IPIP tunnels are broken.</li>
+   <li>
+                
+          <p align="Left">The following rule results in a start error:<br>
+          <br>
+&nbsp;&nbsp;&nbsp; ACCEPT&nbsp;&nbsp;&nbsp; z1&nbsp;&nbsp;&nbsp; z2&nbsp;&nbsp;&nbsp; 
+          icmp</li>
+ </ul>
+                
+          <p align="Left">To correct the above problems, install
+          <a href="http://www.shorewall.net/pub/shorewall/errata/1.2.6/firewall">this
+    corrected firewall script</a> in&nbsp; /etc/shorewall/firewall..<h3 align="Left">Version 1.2.5</h3>
+                
+ <ul>
+   <li>
+                
+          <p align="Left">The new ADDRESS column in /etc/shorewall/masq cannot 
+          contain a $-variable name.</li>
+   <li>
+                
+          <p align="Left">Errors result if $FW appears in the 
+          /etc/shorewall/policy file.</li>
+   <li>
+                
+          <p align="Left">Using Blacklisting without setting BLACKLIST_LOGLEVEL 
+          results in an error at start time.</li>
+ </ul>
+                
+          <p align="Left">To correct the above problems, install
+          <a href="http://www.shorewall.net/pub/shorewall/errata/1.2.5/firewall">this
+    corrected firewall script</a> in  /etc/shorewall/firewall.<p align="Left">&nbsp;<ul>
+   <li>
+                
+          <p align="Left">The /sbin/shorewall script produces error messages 
+          saying that 'mygrep' cannot be found.
+          <a href="http://www.shorewall.net/pub/shorewall/errata/1.2.5/shorewall">
+          Here is the correct version of /sbin/shorewall.</a></li>
+ </ul>
+                
+          <h3 align="Left">Version 1.2.4</h3>
+                
+ <ul>
+   <li><p align="Left">This version will not install &quot;out of the box&quot; without
+    modification. Before attempting to start the
+    firewall, please change the STATEDIR in /etc/shorewall/shorewall.conf to
+    refer to /var/lib/shorewall. This only applies to fresh installations -- if
+    you are upgrading from a previous version of Shorewall, version 1.2.4 will
+    work without modification.</li>
+ </ul>
+                
+          <h3 align="Left">Version 1.2.3</h3>
+                
+ <ul>
+   <li>
+    <p align="Left">When BLACKLIST_LOGLEVEL is set, packets from blacklisted
+    hosts aren't logged. Install <a href="http://www.shorewall.net/pub/shorewall/errata/1.2.3/firewall">this
+    corrected firewall script</a> in /etc/shorewall/firewall.</li>
+ </ul>
+ <blockquote>
+                              
+ <p>Alternatively, edit /etc/shorewall/firewall and change line 1564 from:</p>
+                              
+ </blockquote>
+ <pre>          run_iptables -A blacklst -d $addr -j LOG $LOGPARAMS --log-prefix \</pre>
+ <blockquote>
+                              
+ <p>to</p>
+                              
+ </blockquote>
+ <pre>          run_iptables -A blacklst -s $addr -j LOG $LOGPARAMS --log-prefix \</pre>
+                              
+          <h3 align="Left">Version 1.2.2</h3>
+                
+ <ul>
+   <li>The &quot;shorewall status&quot; command hangs after
+          it displays the chain information. <a href="pub/shorewall/errata/1.2.2/shorewall">Here's
+          a corrected /sbin/shorewall.</a> if&nbsp; you want to simply modify your copy of
+          /sbin/shorewall, then at line 445 change this:</li>
+ </ul>
+              
+ <div align="left">
+                
+          <pre align="Left">       status)
+           clear</pre>
+                
+ </div>
+ <blockquote>
+                
+          <p align="Left">to this:</p>
+                
+ </blockquote>
+ <div align="left">
+                
+          <pre align="Left">       status)
+           get_config
+           clear</pre>
+                
+ </div>
+ <ul>
+   <li>The &quot;shorewall monitor&quot; command
+    doesn't show the icmpdef chain - <a href="pub/shorewall/errata/1.2.2/shorewall">this
+    corrected /sbin/shorewall</a> fixes that problem as well as the status
+    problem described above.</li>
+ </ul>
+ <ul>
+   <li>In all 1.2.x versions, the 'CLIENT PORT(S)'
+    column in /etc/shorewall/tcrules is ignored. This is corrected in <a href="/pub/shorewall/errata/1.2.2/firewall">this
+    updated firewall script</a>.&nbsp; Place the script in  /etc/shorewall/firewall. Thanks to Shingo Takeda for
+    spotting this bug.</li>
+ </ul>
+                
+          <h3 align="Left">Version 1.2.1</h3>
+                
+ <ul>
+   <li>The new <i>logunclean </i>interface option is not
+          described in the help text in /etc/shorewall/interfaces. An <a href="ftp://ftp.shorewall.net/pub/shorewall/errata/1.2.1/interfaces">updated
+          interfaces file</a> is available.</li>
+   <li>When REJECT is specified in a TCP rule, Shorewall
+          correctly replies with a TCP RST packet. Previous versions of the
+          firewall script are broken in the case of a REJECT policy, however; in
+          REJECT policy chains, all requests are currently replied to with an
+          ICMP port-unreachable packet. <a href="http://www.shorewall.net/pub/shorewall/errata/1.2.1/firewall">This
+          corrected firewall script</a> replies to TCP requests with TCP RST in 
+   REJECT policy chains. Place the script in /etc/shorewall/firewall.</li>
+ </ul>
+                
+          <h3 align="Left">Version 1.2.0</h3>
+                
+ <blockquote>
+              
+          <p align="Left"><b>Note: </b>If you are upgrading from one of the Beta
+          RPMs to 1.2.0, you must use the &quot;--oldpackage&quot; option to rpm
+          (e.g., rpm -Uvh --oldpackage shorewall-1.2-0.noarch.rpm).</p>
+                
+          <p align="Left">The tunnel script released in version 1.2.0 contained
+          errors -- a <a href="ftp://ftp.shorewall.net/pub/shorewall/errata/1.2.0/tunnel">corrected
+          script</a> is available.</p>
+                
+ </blockquote>
+              
+ <hr>
+                
+        <h3 align="Left"><a name="iptables"></a><font color="#660066">
+ Problem with iptables version 1.2.3</font></h3>
+            
+ <blockquote>
+            
+        <p align="Left">There are a couple of serious bugs in iptables 1.2.3 that
+        prevent it from working with Shorewall. Regrettably, 
+RedHat released this buggy iptables in RedHat   7.2.&nbsp;</p>
+            
+        <p align="Left"> I have built a <a href="ftp://ftp.shorewall.net/pub/shorewall/errata/iptables-1.2.3-3.i386.rpm">
+ corrected 1.2.3 rpm which you can download here</a>&nbsp; and I have also built
+        an <a href="ftp://ftp.shorewall.net/pub/shorewall/iptables-1.2.4-1.i386.rpm">
+ iptables-1.2.4   rpm which you can download here</a>. If 
+you are currently running RedHat 7.1, you can install either of these RPMs 
+          <b><u>before</u> </b>you upgrade to RedHat 7.2.</p>
+            
+  <p align="Left"><font face="Century Gothic, Arial, Helvetica" color="#FF6633"><b>Update
+  11/9/2001: </b></font>RedHat has
+  released an iptables-1.2.4 RPM of their own which you can download from<font face="Century Gothic, Arial, Helvetica" color="#FF6633">
+  <a href="http://www.redhat.com/support/errata/RHSA-2001-144.html">http://www.redhat.com/support/errata/RHSA-2001-144.html</a>.
+  </font>I have installed this RPM
+  on my firewall and it works fine.</p>
+            
+        <p align="Left">If you
+        would like to patch iptables 1.2.3 yourself, the patches are available
+        for download. This <a href="ftp://ftp.shorewall.net/pub/shorewall/errata/iptables-1.2.3/loglevel.patch">patch</a>
+    which corrects a problem with parsing of the --log-level specification while
+        this <a href="ftp://ftp.shorewall.net/pub/shorewall/errata/iptables-1.2.3/tos.patch">patch</a>
+        corrects a problem in handling the&nbsp; TOS target.</p>
+            
+          <p align="Left">To install one of the above patches:</p>
+        <ul>
+          <li>cd iptables-1.2.3/extensions</li>
+          <li>patch -p0 &lt; <i>the-patch-file</i></li>
+        </ul>
+         
+ </blockquote>
+              
+                            <h3><a name="Debug"></a>Problems with kernel 2.4.18 
+                            and RedHat iptables</h3>
+ <blockquote>
+   <p>Users who use RedHat iptables RPMs and who upgrade to kernel 2.4.18 may 
+   experience the following:</p>
+   <blockquote>
+     <pre># shorewall start
+Processing /etc/shorewall/shorewall.conf ...
+Processing /etc/shorewall/params ...
+Starting Shorewall...
+Loading Modules...
+Initializing...
+Determining Zones...
+Zones: net
+Validating interfaces file...
+Validating hosts file...
+Determining Hosts in Zones...
+Net Zone: eth0:0.0.0.0/0
+iptables: libiptc/libip4tc.c:380: do_check: Assertion
+`h-&gt;info.valid_hooks == (1 &lt;&lt; 0 | 1 &lt;&lt; 3)' failed.
+Aborted (core dumped)
+iptables: libiptc/libip4tc.c:380: do_check: Assertion
+`h-&gt;info.valid_hooks == (1 &lt;&lt; 0 | 1 &lt;&lt; 3)' failed.
+Aborted (core dumped)
+</pre>
+   </blockquote>
+   <p>The RedHat iptables RPM is compiled with debugging enabled but the 
+   user-space debugging code was not updated to reflect recent changes in the 
+   Netfilter 'mangle' table. You can correct the problem by installing
+   <a href="http://www.shorewall.net/pub/shorewall/iptables-1.2.5-1.i386.rpm">
+   this iptables RPM</a>. If you are already running a 1.2.5 version of 
+   iptables, you will need to specify the --oldpackage option to rpm (e.g., 
+   &quot;iptables -Uvh --oldpackage iptables-1.2.5-1.i386.rpm&quot;).</p>
+ </blockquote>
+                                  
+                              <p><font face="Century Gothic, Arial, Helvetica"><font size="2">
+ Last updated 5/24/2002 - </font><font size="2">
+                              <a href="support.htm">Tom Eastep</a></font>
+  </font></p>
+
+ <p><font face="Trebuchet MS"><a href="copyright.htm"><font size="2">Copyright</font> 
+ © <font size="2">2001, 2002 Thomas M. Eastep.</font></a></font></p>
+
+</body>
+                        </html>

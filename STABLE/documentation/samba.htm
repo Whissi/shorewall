@@ -6,88 +6,93 @@
 <meta name="ProgId" content="FrontPage.Editor.Document">
 <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
 <title>Samba</title>
-<meta name="Microsoft Theme" content="radial 011">
 </head>
 
-<body background="_themes/radial/radbkgnd.gif" bgcolor="#FFFFFF" text="#000000" link="#6666FF" vlink="#993333" alink="#66CCCC"><!--mstheme--><font face="arial, Arial, Helvetica">
+<body>
 
-<h1 align="center"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">Samba<!--mstheme--></font></h1>
+<table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%" id="AutoNumber1" bgcolor="#400169" height="90">
+  <tr>
+    <td width="100%">
+    <h1 align="center"><font color="#FFFFFF">Samba</font></h1>
+    </td>
+  </tr>
+</table>
 <p>If you wish to run Samba on your firewall and access shares between the 
 firewall and local hosts, you need the following rules:</p>
-<h4><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">/etc/shorewall/rules:<!--mstheme--></font></h4>
+<h4>/etc/shorewall/rules:</h4>
 <blockquote>
-  <!--mstheme--></font><table border="2" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+  <table border="2" cellpadding="2" style="border-collapse: collapse">
   <tr>
     <font face="Century Gothic, Arial, Helvetica">
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>ACTION</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>SOURCE</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>DEST</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  PROTO</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>DEST<br>
-  PORT(S)</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>SOURCE<br>
-         PORT(S)</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>ORIGINAL<br>
-         DEST</b><!--mstheme--></font></td>
+         <td><b>ACTION</b></td>
+         <td><b>SOURCE</b></td>
+         <td><b>DEST</b></td>
+         <td><b>
+  PROTO</b></td>
+         <td><b>DEST<br>
+  PORT(S)</b></td>
+         <td><b>SOURCE<br>
+         PORT(S)</b></td>
+         <td><b>ORIGINAL<br>
+         DEST</b></td>
     </font>
   </tr>
   <tr>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">ACCEPT<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">fw<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">loc<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">udp<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">137:139<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+    <td>ACCEPT</td>
+    <td>fw</td>
+    <td>loc</td>
+    <td>udp</td>
+    <td>137:139</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
   </tr>
   <tr>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">ACCEPT<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">fw<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">loc<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">tcp<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">137,139<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+    <td>ACCEPT</td>
+    <td>fw</td>
+    <td>loc</td>
+    <td>tcp</td>
+    <td>137,139</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
   </tr>
   <tr>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">ACCEPT<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">fw<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">loc<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">udp<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">1024:<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">137<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+    <td>ACCEPT</td>
+    <td>fw</td>
+    <td>loc</td>
+    <td>udp</td>
+    <td>1024:</td>
+    <td>137</td>
+    <td>&nbsp;</td>
   </tr>
   <tr>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">ACCEPT<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">loc<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">fw<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">udp<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">137:139<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+    <td>ACCEPT</td>
+    <td>loc</td>
+    <td>fw</td>
+    <td>udp</td>
+    <td>137:139</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
   </tr>
   <tr>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">ACCEPT<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">loc<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">fw<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">tcp<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">137,139<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+    <td>ACCEPT</td>
+    <td>loc</td>
+    <td>fw</td>
+    <td>tcp</td>
+    <td>137,139</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
   </tr>
   <tr>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">ACCEPT<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">loc<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">fw<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">udp<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">1024:<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">137<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+    <td>ACCEPT</td>
+    <td>loc</td>
+    <td>fw</td>
+    <td>udp</td>
+    <td>1024:</td>
+    <td>137</td>
+    <td>&nbsp;</td>
   </tr>
-</table><!--mstheme--><font face="arial, Arial, Helvetica">
+</table>
 </blockquote>
 <p><font size="2">Last modified 5/29/2002 - <a href="support.htm">Tom
 Eastep</a></font><p><font face="Trebuchet MS"><a href="copyright.htm">
-<font size="2">Copyright</font> © <font size="2">2002 Thomas M. Eastep.</font></a></font><!--mstheme--></font></body></html>
+<font size="2">Copyright</font> © <font size="2">2002 Thomas M. Eastep.</font></a></font></body></html>

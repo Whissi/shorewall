@@ -5,46 +5,59 @@
 <title>Shorewall Proxy ARP</title>
 <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
 <meta name="ProgId" content="FrontPage.Editor.Document">
-<meta name="Microsoft Theme" content="radial 011">
+<meta name="Microsoft Theme" content="none">
 </head>
 
-<body background="_themes/radial/radbkgnd.gif" bgcolor="#FFFFFF" text="#000000" link="#6666FF" vlink="#993333" alink="#66CCCC"><!--mstheme--><font face="arial, Arial, Helvetica">
+<body>
 
-<blockquote>
-    <h1 align="center"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">Proxy ARP<!--mstheme--></font></h1>
-    <p>&nbsp;</p>
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" width="100%" id="AutoNumber1" bgcolor="#400169" height="90">
+      <tr>
+        <td width="100%">
+        <h1 align="center"><font color="#FFFFFF">Proxy ARP</font></h1>
+        </td>
+      </tr>
+    </table>
     <p>Proxy ARP allows you to insert a firewall in front of a set of servers 
     without changing their IP addresses and without having to re-subnet.</p>
     <p>The following figure represents a Proxy ARP
     environment.</p>
-    <p align="center"><strong><img src="images/proxyarp.jpg" width="595" height="455"></strong></p>
+
+<blockquote>
+    <p align="center"><strong>
+    <img src="images/proxyarp.png" width="519" height="397"></strong></p>
     <blockquote>
     </blockquote>
+</blockquote>
+
     <p align="left">Proxy ARP can be used to make the systems with addresses 
     130.252.100.18 and 130.252.100.19 appear to be on the upper (130.252.100.*) 
     subnet.&nbsp; Assuming that the upper firewall interface is eth0 and the 
     lower interface is eth1, this is accomplished using the following entries in 
     /etc/shorewall/proxyarp:</p>
-    <!--mstheme--></font><table border="2" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+
+<blockquote>
+    <table border="2" cellpadding="2" style="border-collapse: collapse">
       <tr>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>ADDRESS</b><!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>INTERFACE</b><!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>EXTERNAL</b><!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>HAVEROUTE</b><!--mstheme--></font></td>
+        <td><b>ADDRESS</b></td>
+        <td><b>INTERFACE</b></td>
+        <td><b>EXTERNAL</b></td>
+        <td><b>HAVEROUTE</b></td>
       </tr>
       <tr>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica">130.252.100.18<!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica">eth1<!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica">eth0<!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica">no<!--mstheme--></font></td>
+        <td>130.252.100.18</td>
+        <td>eth1</td>
+        <td>eth0</td>
+        <td>no</td>
       </tr>
       <tr>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica">130.252.100.19<!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica">eth1<!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica">eth0<!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica">no<!--mstheme--></font></td>
+        <td>130.252.100.19</td>
+        <td>eth1</td>
+        <td>eth0</td>
+        <td>no</td>
       </tr>
-    </table><!--mstheme--><font face="arial, Arial, Helvetica">
+    </table>
+</blockquote>
+
     <p>Be sure that the internal systems (130.242.100.18 and 130.252.100.19&nbsp; 
     in the above example) are not included in any specification in 
     /etc/shorewall/masq or /etc/shorewall/nat.</p>
@@ -53,13 +66,41 @@
     <p>The lower systems (130.252.100.18 and 130.252.100.19) should have their 
     subnet mask and default gateway configured exactly the same way that the 
     Firewall system's eth0 is configured.</p>
-</blockquote>
+<div align="left">
+  <p align="left">A word of warning is in order here. ISPs typically configure 
+  their routers with a long ARP cache timeout. If you move a system from 
+  parallel to your firewall to behind your firewall with Proxy ARP, it will 
+  probably be HOURS before that system can communicate with the internet. You 
+  can call your ISP and ask them to purge the stale ARP cache entry but many 
+  either can't or won't purge individual entries. You can determine if your 
+  ISP's gateway ARP cache is stale using ping and tcpdump. Suppose that we 
+  suspect that the gateway router has a stale ARP cache entry for 130.252.100.19. 
+  On the firewall, run tcpdump as follows:</div>
+<div align="left">
+  <pre>	tcpdump -nei eth0 icmp</pre>
+</div>
+<div align="left">
+  <p align="left">Now from 130.252.100.19, ping the ISP's gateway (which we will 
+  assume is 130.252.100.254):</div>
+<div align="left">
+  <pre>	ping 130.252.100.254</pre>
+</div>
+<div align="left">
+  <p align="left">We can now observe the tcpdump output:</div>
+<div align="left">
+  <pre>	13:35:12.159321 <u>0:4:e2:20:20:33</u> 0:0:77:95:dd:19 ip 98: 130.252.100.19 &gt; 130.252.100.254: icmp: echo request (DF)
+	13:35:12.207615 0:0:77:95:dd:19 <u>0:c0:a8:50:b2:57</u> ip 98: 130.252.100.254 &gt; 130.252.100.177 : icmp: echo reply</pre>
+</div>
+<div align="left">
+  <p align="left">Notice that the source MAC address in the echo request is 
+  different from the destination MAC address in the echo reply!! In this case 
+  0:4:e2:20:20:33 was the MAC of the firewall's eth0 NIC while 0:c0:a8:50:b2:57 
+  was the MAC address of the system on the lower left. In other words, the gateway's ARP cache still 
+  associates 130.252.100.19 with the NIC in that system rather than with the firewall's 
+  eth0.</div>
 
-<blockquote>
-</blockquote>
-
-<p><font size="2">Last updated 5/16/2002 - </font><font size="2">
+<p><font size="2">Last updated 8/17/2002 - </font><font size="2">
 <a href="support.htm">Tom
 Eastep</a></font> </p>
 <font face="Trebuchet MS"><a href="copyright.htm"><font size="2">Copyright</font> 
-© <font size="2">2001, 2002 Thomas M. Eastep.</font></a></font><!--mstheme--></font></body></html>
+© <font size="2">2001, 2002 Thomas M. Eastep.</font></a></font></body></html>

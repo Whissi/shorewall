@@ -6,12 +6,17 @@
 <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
 <meta name="ProgId" content="FrontPage.Editor.Document">
 <title>Traffic Shaping</title>
-<meta name="Microsoft Theme" content="radial 011">
 </head>
 
-<body background="_themes/radial/radbkgnd.gif" bgcolor="#FFFFFF" text="#000000" link="#6666FF" vlink="#993333" alink="#66CCCC"><!--mstheme--><font face="arial, Arial, Helvetica">
+<body>
 
-<h1 align="center"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">Traffic Shaping/Control<!--mstheme--></font></h1>
+<table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%" id="AutoNumber1" bgcolor="#400169" height="90">
+  <tr>
+    <td width="100%">
+    <h1 align="center"><font color="#FFFFFF">Traffic Shaping/Control</font></h1>
+    </td>
+  </tr>
+</table>
 <p align="left">Beginning with version 1.2.0, Shorewall has limited support for traffic
 shaping/control. In order to use traffic shaping under Shorewall, it is
 essential that you get a copy of the <a href="http://ds9a.nl/lartc">Linux Advanced Routing
@@ -21,15 +26,15 @@ utilities.</p>
 
 <p align="left">Shorewall traffic shaping support consists of the following:</p>
 
-<!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">A new TC_ENABLED parameter in /etc/shorewall.conf. Traffic
+<ul>
+  <li>A new TC_ENABLED parameter in /etc/shorewall.conf. Traffic
     Shaping also requires that you enable packet mangling.<br>
-  <!--mstheme--></font><!--msthemelist--></td></tr>
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">/etc/shorewall/tcrules - A file where you can specify
+  </li>
+  <li>/etc/shorewall/tcrules - A file where you can specify
     firewall marking of packets. The firewall mark value may be used to classify
     packets for traffic shaping/control.<br>
-  <!--mstheme--></font><!--msthemelist--></td></tr>
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">/etc/shorewall/tcstart - A user-supplied file that is
+  </li>
+  <li>/etc/shorewall/tcstart - A user-supplied file that is
     sourced by Shorewall during &quot;shorewall start&quot; and which you can
     use to define your traffic shaping disciplines and classes. I have provided
     a <a href="ftp://ftp.shorewall.net/pub/shorewall/cbq">sample</a> that does
@@ -44,24 +49,24 @@ utilities.</p>
     <br>
     In tcstart, when you want to run the 'tc' utility, use the run_tc function
     supplied by shorewall. <br>
-  <!--mstheme--></font><!--msthemelist--></td></tr>
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">/etc/shorewall/tcclear - A user-supplied file that is
+  </li>
+  <li>/etc/shorewall/tcclear - A user-supplied file that is
     sourced by Shorewall when it is clearing traffic shaping. This file is
     normally not required as Shorewall's method of clearing qdisc and filter
-    definitions is pretty general.<!--mstheme--></font><!--msthemelist--></td></tr>
-<!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
-<h3 align="left"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666"><a name="tcrules"></a>/etc/shorewall/tcrules<!--mstheme--></font></h3>
+    definitions is pretty general.</li>
+</ul>
+<h3 align="left"><a name="tcrules"></a>/etc/shorewall/tcrules</h3>
 <p align="left">The fwmark classifier provides a convenient way to classify
 packets for traffic shaping. The /etc/shorewall/tcrules file provides a means
 for specifying these marks in a tabular fashion.</p>
 <p align="left">Columns in the file are as follows:</p>
-<!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">MARK - Specifies the mark value is to be assigned in case of
+<ul>
+  <li>MARK - Specifies the mark value is to be assigned in case of
     a match. This is an integer in the range 1-255.<br>
     <br>
     Example - 5<br>
-  <!--mstheme--></font><!--msthemelist--></td></tr>
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">SOURCE - The source of the packet. If the packet originates
+  </li>
+  <li>SOURCE - The source of the packet. If the packet originates
     on the firewall, place &quot;fw&quot; in this column. Otherwise, this is a
     comma-separated list of interface names, IP addresses, MAC addresses in
   <a href="Documentation.htm#MAC">Shorewall Format</a> and/or Subnets.<br>
@@ -69,110 +74,110 @@ for specifying these marks in a tabular fashion.</p>
     Examples<br>
     &nbsp;&nbsp;&nbsp; eth0<br>
     &nbsp;&nbsp;&nbsp; 192.168.2.4,192.168.1.0/24<br>
-  <!--mstheme--></font><!--msthemelist--></td></tr>
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">DEST -- Destination of the packet. Comma-separated list of
+  </li>
+  <li>DEST -- Destination of the packet. Comma-separated list of
     IP addresses and/or subnets.<br>
-  <!--mstheme--></font><!--msthemelist--></td></tr>
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">PROTO - Protocol - Must be the name of a protocol from
+  </li>
+  <li>PROTO - Protocol - Must be the name of a protocol from
     /etc/protocol, a number or &quot;all&quot;<br>
-  <!--mstheme--></font><!--msthemelist--></td></tr>
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">PORT(S) - Destination Ports. A comma-separated list of Port
+  </li>
+  <li>PORT(S) - Destination Ports. A comma-separated list of Port
     names (from /etc/services), port numbers or port ranges (e.g., 21:22); if
     the protocol is &quot;icmp&quot;, this column is interpreted as the
     destination icmp type(s).<br>
-  <!--mstheme--></font><!--msthemelist--></td></tr>
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">CLIENT PORT(S) - (Optional) Port(s) used by the client. If
+  </li>
+  <li>CLIENT PORT(S) - (Optional) Port(s) used by the client. If
     omitted, any source port is acceptable. Specified as a comma-separate list
-    of port names, port numbers or port ranges.<!--mstheme--></font><!--msthemelist--></td></tr>
-<!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+    of port names, port numbers or port ranges.</li>
+</ul>
 <p align="left">Example 1 - All packets arriving on eth1 should be marked with
 1. All packets arriving on eth2 should be marked with 2. All packets originating
 on the firewall itself should be marked with 3.</p>
-<!--mstheme--></font><table border="2" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+<table border="2" cellpadding="2" style="border-collapse: collapse">
   <tr>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>MARK</b><!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>SOURCE</b><!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>DEST</b><!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>PROTO</b><!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>PORT(S)</b><!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>CLIENT PORT(S)</b><!--mstheme--></font></td>
+    <td><b>MARK</b></td>
+    <td><b>SOURCE</b></td>
+    <td><b>DEST</b></td>
+    <td><b>PROTO</b></td>
+    <td><b>PORT(S)</b></td>
+    <td><b>CLIENT PORT(S)</b></td>
   </tr>
   <tr>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">1<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">eth1<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">0.0.0.0/0<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">all<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+    <td>1</td>
+    <td>eth1</td>
+    <td>0.0.0.0/0</td>
+    <td>all</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
   </tr>
   <tr>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">2<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">eth2<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">0.0.0.0/0<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">all<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+    <td>2</td>
+    <td>eth2</td>
+    <td>0.0.0.0/0</td>
+    <td>all</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
   </tr>
   <tr>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">3<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">fw<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">0.0.0.0/0<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">all<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+    <td>3</td>
+    <td>fw</td>
+    <td>0.0.0.0/0</td>
+    <td>all</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
   </tr>
-</table><!--mstheme--><font face="arial, Arial, Helvetica">
+</table>
 <p align="left">Example 2 - All GRE (protocol 47) packets not originating on the
 firewall and destined for 155.186.235.151 should be marked with 12.</p>
-<!--mstheme--></font><table border="2" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+<table border="2" cellpadding="2" style="border-collapse: collapse">
   <tr>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>MARK</b><!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>SOURCE</b><!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>DEST</b><!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>PROTO</b><!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>PORT(S)</b><!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>CLIENT PORT(S)</b><!--mstheme--></font></td>
+    <td><b>MARK</b></td>
+    <td><b>SOURCE</b></td>
+    <td><b>DEST</b></td>
+    <td><b>PROTO</b></td>
+    <td><b>PORT(S)</b></td>
+    <td><b>CLIENT PORT(S)</b></td>
   </tr>
   <tr>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">12<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">0.0.0.0/0<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">155.186.235.151<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">47<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+    <td>12</td>
+    <td>0.0.0.0/0</td>
+    <td>155.186.235.151</td>
+    <td>47</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
   </tr>
-</table><!--mstheme--><font face="arial, Arial, Helvetica">
+</table>
 <p align="left">Example 3 - All SSH packets originating in 192.168.1.0/24 and
 destined for 155.186.235.151 should be marked with 22.</p>
-<!--mstheme--></font><table border="2" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+<table border="2" cellpadding="2" style="border-collapse: collapse">
   <tr>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>MARK</b><!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>SOURCE</b><!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>DEST</b><!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>PROTO</b><!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>PORT(S)</b><!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>CLIENT PORT(S)</b><!--mstheme--></font></td>
+    <td><b>MARK</b></td>
+    <td><b>SOURCE</b></td>
+    <td><b>DEST</b></td>
+    <td><b>PROTO</b></td>
+    <td><b>PORT(S)</b></td>
+    <td><b>CLIENT PORT(S)</b></td>
   </tr>
   <tr>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">22<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">192.168.1.0/24<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">155.186.235.151<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">tcp<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">22<!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+    <td>22</td>
+    <td>192.168.1.0/24</td>
+    <td>155.186.235.151</td>
+    <td>tcp</td>
+    <td>22</td>
+    <td>&nbsp;</td>
   </tr>
-</table><!--mstheme--><font face="arial, Arial, Helvetica">
-<h3><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">Hierarchical Token Bucket<!--mstheme--></font></h3>
+</table>
+<h3>Hierarchical Token Bucket</h3>
 <p>I personally use HTB. I have found a couple of things that may be of
 use to others.</p>
-<!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">The gzipped tc binary at the <a href="http://luxik.cdi.cz/~devik/qos/htb/">HTB
+<ul>
+  <li>The gzipped tc binary at the <a href="http://luxik.cdi.cz/~devik/qos/htb/">HTB
     website</a> didn't work for me -- I had to download the lastest version of
     the <a href="ftp://ftp.inr.ac.ru/ip-routing">iproute2 sources</a> and patch
-    them for HTB.<!--mstheme--></font><!--msthemelist--></td></tr>
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">The HTB example in the HOWTO seems to be full of errors. I'm currently
-    running with this set of shaping rules in my tcstart file so I know that it works.<!--mstheme--></font><!--msthemelist--></td></tr>
-<!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+    them for HTB.</li>
+  <li>The HTB example in the HOWTO seems to be full of errors. I'm currently
+    running with this set of shaping rules in my tcstart file so I know that it works.</li>
+</ul>
 <blockquote>
   <p><font face="Courier" size="2">run_tc qdisc add dev eth0 root handle 1: htb default 30<br>
   <br>
@@ -201,6 +206,6 @@ Eastep</a></font></p>
 <p><font face="Trebuchet MS"><a href="copyright.htm"><font size="2">Copyright</font> 
 © <font size="2">2001, 2002 Thomas M. Eastep.</font></a></font></p>
 
-<!--mstheme--></font></body>
+</body>
 
 </html>

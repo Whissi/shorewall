@@ -9,103 +9,112 @@
                     
        
   <base target="_self">
-<meta name="Microsoft Theme" content="radial 011">
+<meta name="Microsoft Theme" content="none, default">
 <meta name="Microsoft Border" content="none, default">
 </head>
- <body background="_themes/radial/radbkgnd.gif" bgcolor="#FFFFFF" text="#000000" link="#6666FF" vlink="#993333" alink="#66CCCC"><!--mstheme--><font face="arial, Arial, Helvetica">
- <h1 align="center"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">Shorewall 1.3 Reference<!--mstheme--></font></h1>
+ <body>
+ <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" width="100%" id="AutoNumber4" bgcolor="#400169" height="90">
+   <tr>
+     <td width="100%">
+     <h1 align="center"><font color="#FFFFFF">Shorewall 1.3 Reference</font></h1>
+     </td>
+   </tr>
+ </table>
   
 
            
-      <h2 align="center"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">This documentation is intended primarily for reference. 
+      <h2 align="center">This documentation is intended primarily for reference. 
       Step-by-step instructions for configuring Shorewall in common setups may 
-      be found in the <a href="shorewall_quickstart_guide.htm">QuickStart Guides</a>.<!--mstheme--></font></h2>
+      be found in the <a href="shorewall_quickstart_guide.htm">QuickStart Guides</a>.</h2>
                     
 
            
-      <h2><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">Components<!--mstheme--></font></h2>
+      <h2>Components</h2>
                     
       <p>Shorewall consists of the following components:     </p>
              
- <!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
+ <ul>
+   <li><b><a href="#Variables">params</a></b> -- a parameter file installed in 
+   /etc/shorewall that can be used to establish the values of shell variables 
+   for use in other files.</li>
+   <li><b>
    <a href="#Conf">shorewall.conf</a></b> -- a parameter file installed in /etc/shorewall        
-  that is used to set several firewall parameters.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
+  that is used to set several firewall parameters.</li>
+   <li><b>
    <a href="#Zones">zones</a></b> - a parameter file installed in /etc/shorewall that defines     
-     a network partitioning into "zones"<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
+     a network partitioning into "zones"</li>
+   <li><b>
    <a href="#Policy">policy</a></b> -- a parameter file installed in /etc/shorewall/ that          
-establishes  overall firewall policy.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
+establishes  overall firewall policy.</li>
+   <li><b>
    <a href="#Rules">rules</a> </b> -- a parameter file installed in /etc/shorewall and used        
   to express firewall rules that are exceptions to the high-level       
-   policies established in /etc/shorewall/policy.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b><a href="#Blacklist">blacklist</a> -- </b>a parameter file installed in /etc/shorewall and used
-    to list blacklisted IP/subnet/MAC addresses.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
+   policies established in /etc/shorewall/policy.</li>
+   <li><b><a href="#Blacklist">blacklist</a> -- </b>a parameter file installed in /etc/shorewall and used
+    to list blacklisted IP/subnet/MAC addresses.</li>
+   <li><b>
   functions</b> -- a set of shell functions used by both the firewall and 
    shorewall shell programs. Installed in /etc/shorewall prior to version 1.3.2 
-   and in /var/lib/shorewall in later versions.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
+   and in /var/lib/shorewall in later versions.</li>
+   <li><b>
    <a href="#modules">modules</a></b> -- a parameter file installed in /etc/shorewall and that      
   specifies kernel modules and their parameters. Shorewall will         automatically
- load the modules specified in this file.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><a href="#TOS"><b>
+ load the modules specified in this file.</li>
+   <li><a href="#TOS"><b>
   tos</b> </a>-- a parameter file installed in /etc/shorewall that is used to   
-     specify how the Type of Service (TOS) field in packets is to be set.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><a href="#Scripts"><b>
+     specify how the Type of Service (TOS) field in packets is to be set.</li>
+   <li><a href="#Scripts"><b>
   icmp.def</b> </a>-- a parameter file installed in /etc/shorewall and that     
    specifies the default handling of ICMP packets when the applicable policy is 
-   DROP or REJECT.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b><a href="#Scripts">common.def</a></b> -- a parameter file installed in 
+   DROP or REJECT.</li>
+   <li><b><a href="#Scripts">common.def</a></b> -- a parameter file installed in 
    in /etc/shorewall that defines firewall-wide rules that are applied before a 
-   DROP or REJECT policy is applied.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
+   DROP or REJECT policy is applied.</li>
+   <li><b>
    <a href="#Interfaces">interfaces</a> </b> -- a parameter file installed in /etc/shorewall/           and
- used to describe the interfaces on the firewall system.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><a href="#Hosts"><b>
+ used to describe the interfaces on the firewall system.</li>
+   <li><a href="#Hosts"><b>
   hosts</b> </a>-- a parameter file installed in /etc/shorewall/ and           used
- to describe individual hosts or subnetworks in zones.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
+ to describe individual hosts or subnetworks in zones.</li>
+   <li><b>
    <a href="#Masq">masq</a></b> - This file           also describes IP masquerading under Shorewall
- and is installed in           /etc/shorewall.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b><a href="#Structure">firewall</a></b> -- a shell program that reads the configuration files in     
+ and is installed in           /etc/shorewall.</li>
+   <li><b><a href="#Structure">firewall</a></b> -- a shell program that reads the configuration files in     
      /etc/shorewall and configures your             firewall. This file is
  installed in your init.d             directory (/etc/rc.d/init.d  ) where it is renamed <i>shorewall.</i>&nbsp; 
    /etc/shorewall/firewall (/var/lib/shorewall/firewall in version 1.3.2 and 
-   later) is a symbolic link to this program.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
+   later) is a symbolic link to this program.</li>
+   <li><b>
    <a href="#NAT">nat</a></b> -- a parameter file in /etc/shorewall used to define <a href="#NAT">
  static            NAT</a>
-  .<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
+  .</li>
+   <li><b>
    <a href="#ProxyArp">proxyarp</a></b> -- a parameter file in /etc/shorewall used to define <a href="#ProxyArp">
   Proxy           Arp</a>
-  .<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b><a href="#Routestopped">routestopped</a></b> -- a parameter file in 
+  .</li>
+   <li><b><a href="#Routestopped">routestopped</a></b> -- a parameter file in 
    /etc/shorewall used to define those hosts that can access the firewall when 
-   Shorewall is stopped.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><a href="traffic_shaping.htm#tcrules"><b>tcrules</b> </a>-- a parameter file in /etc/shorewall used to define rules for
+   Shorewall is stopped.</li>
+   <li><a href="traffic_shaping.htm#tcrules"><b>tcrules</b> </a>-- a parameter file in /etc/shorewall used to define rules for
     classifying packets for <a href="traffic_shaping.htm">Traffic
-    Shaping/Control</a>.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
+    Shaping/Control</a>.</li>
+   <li><b>
    <a href="#Tunnels">tunnels</a></b> -- a parameter file in /etc/shorewall used to define          
-IPSec  tunnels.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
+IPSec  tunnels.</li>
+   <li><b>
    <a href="#Starting">shorewall</a> </b> -- a shell program (requiring a Bourne
 shell  or             derivative) used to control and monitor    
         the firewall. This should be placed in /sbin or in             /usr/sbin
-(the install.sh script and the rpm install this file             in /sbin).<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
+(the install.sh script and the rpm install this file             in /sbin).</li>
+   <li><b>
    <a href="#Version">version</a></b> -- a file created in /etc/shorewall/             
    (/var/lib/shorewall in version 1.3.2 and later) that describes 
-the version of  Shorewall             installed on your system.<!--mstheme--></font><!--msthemelist--></td></tr>
- <!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+the version of  Shorewall             installed on your system.</li>
+ </ul>
             
      
-      <h2><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666"><a name="Variables"></a>
-      /etc/shorewall/params<!--mstheme--></font></h2>
+      <h2><a name="Variables"></a>
+      /etc/shorewall/params</h2>
                    
       <p>You may use the file /etc/shorewall/params 
    file to set shell variables that you can then use in some of the other 
@@ -117,90 +126,72 @@ Shorewall    programs</p>
                    
       <p>Example:</p>
                    
-      <blockquote>                       
-        <p>NET_IF=eth0<br>
-       NET_BCAST=130.252.100.255<br>
-       NET_OPTIONS=noping,norfc1918</p>
-     </blockquote>
-                       
-        <p><br>
-     Example (/etc/shorewall/interfaces record):</p>
-                       
-  <font face="Century Gothic, Arial, Helvetica">    
-       
-        <blockquote>                           
-          <p><font face="Courier">net $NET_IF $NET_BCAST $NET_OPTIONS</font></p>
-     </blockquote>
-                           
-           </font>                   
-                           
-          <p>The result will be the same as if the record had been written</p>
-                           
-  <font face="Century Gothic, Arial, Helvetica">    
-       
-          <blockquote>                               
-            <p>net eth0 130.252.100.255 noping,norfc1918</p>
-     </blockquote>
-                               
-           </font>                   
-                               
-            <p>Variables may be used anywhere in the 
+      <pre><font face="Courier"> 	NET_IF=eth0
+	NET_BCAST=130.252.100.255
+	NET_OPTIONS=noping,norfc1918</font></pre>
+ <p>Example (/etc/shorewall/interfaces record):</p>
+ <pre>	<font face="Courier">net $NET_IF $NET_BCAST $NET_OPTIONS</font></pre>
+ <p>The result will be the same as if the record had been written</p>
+ <pre>	<font face="Courier">net eth0 130.252.100.255 noping,norfc1918</font></pre>
+ <p>Variables may be used anywhere in the 
             other configuration files.</p>
                                
-                  <h2><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666"><b><a name="Zones"></a>
-                  </b>/etc/shorewall/zones<!--mstheme--></font></h2>
+                  <h2><b><a name="Zones"></a>
+                  </b>/etc/shorewall/zones</h2>
                                            
                   <p>This file  is used
  to define the   network zones.  There is one entry in /etc/shorewall/zones
  for each zone;   Columns in an entry are:</p>
                          
- <!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
+ <ul>
+   <li><b>
   ZONE</b> - short name for the zone. The name should be 5 characters or less in 
    length and consist of lower-case letters or numbers. Short names must begin 
    with a letter and the name assigned to the firewall is reserved for       use by Shorewall itself. Note that the output produced
  by iptables is much       easier to read if you select short names that
-are  three characters or less       in length.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  DISPLAY</b> - The name of the zone as displayed during Shorewall startup.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
+are  three characters or less       in length. The name &quot;all&quot; may not be used as 
+   a zone name nor may the zone name assigned to the firewall itself via the FW 
+   variable in <a href="#Conf">/etc/shorewall/shorewall.conf</a>.</li>
+   <li><b>
+  DISPLAY</b> - The name of the zone as displayed during Shorewall startup.</li>
+   <li><b>
   COMMENTS</b> - Any comments that you want to make about the zone.       Shorewall
- ignores these comments.<!--mstheme--></font><!--msthemelist--></td></tr>
- <!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+ ignores these comments.</li>
+ </ul>
             
                               
                   <p>The /etc/shorewall/zones file released with Shorewall
  is as follows:</p>
                          
-  <!--mstheme--></font><table border="1" style="border-collapse: collapse" cellpadding="2" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+  <table border="1" style="border-collapse: collapse" cellpadding="2">
        <tbody>
                         <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  ZONE</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  DISPLAY</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  COMMENTS</b><!--mstheme--></font></td>
+         <td><b>
+  ZONE</b></td>
+         <td><b>
+  DISPLAY</b></td>
+         <td><b>
+  COMMENTS</b></td>
        </tr>
             
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">Net<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">Internet<!--mstheme--></font></td>
+         <td>net</td>
+         <td>Net</td>
+         <td>Internet</td>
        </tr>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">loc<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">Local<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">Local  networks<!--mstheme--></font></td>
+         <td>loc</td>
+         <td>Local</td>
+         <td>Local  networks</td>
        </tr>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">dmz<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">DMZ<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">Demilitarized  zone<!--mstheme--></font></td>
+         <td>dmz</td>
+         <td>DMZ</td>
+         <td>Demilitarized  zone</td>
        </tr>
                                                
                     </tbody>                                      
-                  </table><!--mstheme--><font face="arial, Arial, Helvetica">                   
+                  </table>                   
                   <p>You may 
 add, delete and modify entries in the /etc/shorewall/zones file   as desired 
 so long as you have at least one zone defined.</p>
@@ -214,30 +205,35 @@ rather than "shorewall restart".</font></b></p>
  order of entries in the /etc/shorewall/zones file is significant <a href="#Nested">in
  some cases</a>.</font></b></p>
                    
-                  <h2><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666"><font color="#660066"><a name="Interfaces"></a>
-                  </font>/etc/shorewall/interfaces<!--mstheme--></font></h2>
+                  <h2><font color="#660066"><a name="Interfaces"></a>
+                  </font>/etc/shorewall/interfaces</h2>
                    
                   <p>This file 
 is used to tell the firewall which of your firewall's network   interfaces 
 are connected to which zone. There will be one entry in   /etc/shorewall/interfaces 
 for each of your interfaces. Columns in an entry   are:</p>
- <!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
+ <ul>
+   <li><b>
   ZONE</b> - A zone defined in the <a href="#Zones">/etc/shorewall/zones</a>
          file or  "-". If you specify "-", you must use the <a href="#Hosts">
   /etc/shorewall/hosts</a>
-         file to define the zones accessed via this interface.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  INTERFACE</b> - the name of the interface (examples: eth0, ppp0, ipsec+)<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  BROADCAST</b> - the broadcast address for the sub-network attached to the 
-     interface. This should be left empty for P-T-P interfaces (ppp*, ippp*);
- if you need to       specify options for such an interface, enter "-" in
-this column.       If you supply the special value "detect" in this column,
-the       firewall will automatically determine the broadcast address. Note
-that to       use this feature, you must have iproute installed and the interface
- must       be up before you start your firewall. <!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
+         file to define the zones accessed via this interface.</li>
+   <li><b>
+  INTERFACE</b> - the name of the interface (examples: eth0, ppp0, ipsec+)</li>
+   <li><b>
+  BROADCAST</b> - the broadcast address(es) for the sub-network(s) attached to the 
+     interface. This should be left empty for P-T-P interfaces (ppp*, ippp*); if 
+   you need to specify options for such an interface, enter &quot;-&quot; in this column. 
+   If you supply the special value &quot;detect&quot; in this column, the firewall will 
+   automatically determine the broadcast address. In order to use &quot;detect&quot;:<ul>
+   <li>you must have iproute installed</li>
+   <li>the interface must be up before you start your firewall</li>
+   <li>the interface must only be attached to 
+   a single sub-network (i.e., there must have a single broadcast address).&nbsp;</li>
+ </ul>
+                                     
+                  </li>
+   <li><b>
   OPTIONS</b> - a comma-separated list of options. Possible options       include:                         
                         <p>
   <b>blacklist</b> - This option causes incoming packets on this
@@ -350,8 +346,8 @@ appropriate forwarding       rule.</p>
                     not</u> set this option if you are implementing Proxy ARP 
                     through entries in <a href="#ProxyArp">
                     /etc/shorewall/proxyarp</a>.</p>
-                    <!--mstheme--></font><!--msthemelist--></td></tr>
- <!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+                    </li>
+ </ul>
                                      
                   <p>Example
  1: You have a conventional firewall setup in which eth0 connects   to a
@@ -361,65 +357,91 @@ Cable  or DSL modem and eth1 connects to your local network and eth0 gets
                   against the <a href="#Blacklist">black list</a>. Your /etc/shorewall/interfaces file would be as follows:</p>
                                          
                   <blockquote> </font>
-                    <!--mstheme--></font><table border="1" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+                    <table border="1" cellpadding="2" style="border-collapse: collapse">
        <tbody>
                           <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  ZONE</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  INTERFACE</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  BROADCAST</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  OPTIONS</b><!--mstheme--></font></td>
+         <td><b>
+  ZONE</b></td>
+         <td><b>
+  INTERFACE</b></td>
+         <td><b>
+  BROADCAST</b></td>
+         <td><b>
+  OPTIONS</b></td>
        </tr>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">eth0<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">detect<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">dhcp,noping,norfc1918,blacklist<!--mstheme--></font></td>
+         <td>net</td>
+         <td>eth0</td>
+         <td>detect</td>
+         <td>dhcp,noping,norfc1918,blacklist</td>
        </tr>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">loc<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">eth1<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">detect<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">routestopped<!--mstheme--></font></td>
+         <td>loc</td>
+         <td>eth1</td>
+         <td>detect</td>
+         <td>&nbsp;</td>
        </tr>
                                                    
                       </tbody>                                          
-                    </table><!--mstheme--><font face="arial, Arial, Helvetica"></blockquote>
+                    </table></blockquote>
                                            
                     <p>Example
  2: You have a standalone dialup GNU/Linux System. Your   /etc/shorewall/interfaces
  file would be:</p>
                                               
                     <blockquote> 
-                      <!--mstheme--></font><table border="1" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+                      <table border="1" cellpadding="2" style="border-collapse: collapse">
        <tbody>
                             <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  ZONE</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  INTERFACE</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  BROADCAST</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  OPTIONS</b><!--mstheme--></font></td>
+         <td><b>
+  ZONE</b></td>
+         <td><b>
+  INTERFACE</b></td>
+         <td><b>
+  BROADCAST</b></td>
+         <td><b>
+  OPTIONS</b></td>
        </tr>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">ppp0<!--mstheme--></font></td>
+         <td>net</td>
+         <td>ppp0</td>
                                                   
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+         <td>&nbsp;</td>
+         <td>&nbsp;</td>
        </tr>
                                                        
                         </tbody>                                        
      
-                      </table><!--mstheme--><font face="arial, Arial, Helvetica"></blockquote>
+                      </table></blockquote>
                                                   
-                      <h2><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666"><font color="#660066"><a name="Hosts"></a>
-                      </font>/etc/shorewall/hosts Configuration<!--mstheme--></font></h2>
+                      <p>Example 3: You have local interface eth1 with two IP 
+                      addresses - 192.168.1.1/24 and 192.168.12.1/24</p>
+                         
+                      <blockquote>
+                        <table border="1" cellpadding="2" style="border-collapse: collapse">
+                            <tr>
+         <td><b>
+  ZONE</b></td>
+         <td><b>
+  INTERFACE</b></td>
+         <td><b>
+  BROADCAST</b></td>
+         <td><b>
+  OPTIONS</b></td>
+       </tr>
+       <tr>
+         <td>loc</td>
+         <td>eth1</td>
+                                                  
+         <td>192.168.1.255,192.168.12.255</td>
+         <td>&nbsp;</td>
+       </tr>
+                                                       
+                      </table>
+ </blockquote>
+                                                  
+                      <h2><font color="#660066"><a name="Hosts"></a>
+                      </font>/etc/shorewall/hosts Configuration</h2>
                          
                       <p>For most applications, specifying zones entirely
  in terms of network   interfaces is sufficient. There may be times though
@@ -438,14 +460,14 @@ Cable  or DSL modem and eth1 connects to your local network and eth0 gets
 file  are:</p>
                                  
                 
- <!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
+ <ul>
+   <li><b>
   ZONE </b> - A zone defined in the <a href="#Zones">/etc/shorewall/zones</a>
-         file.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
+         file.</li>
+   <li><b>
   HOST(S)</b> - The name of a network interface followed by a colon       (":")
- followed by either:<!--mstheme--></font><!--msthemelist--></td></tr>
- <!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+ followed by either:</li>
+ </ul>
             
                                       
                       <blockquote>                                      
@@ -464,11 +486,11 @@ file  are:</p>
      </blockquote>
                                  
                  
- <!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
+ <ul>
+   <li><b>
   OPTIONS</b> - A comma-separated list of options. Currently only a single  
-    option is defined:<!--mstheme--></font><!--msthemelist--></td></tr>
- <!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+    option is defined:</li>
+ </ul>
             
                                           
                         <blockquote>                                    
@@ -506,43 +528,43 @@ able to access without adding additional rules.</p>
  groups of local hosts that you want to make into separate zones:</p>
                                  
                     
- <!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">192.168.1.0/25 <!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">192.168.1.128/25<!--mstheme--></font><!--msthemelist--></td></tr>
- <!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+ <ul>
+   <li>192.168.1.0/25 </li>
+   <li>192.168.1.128/25</li>
+ </ul>
                                                    
                           <p>
   Your /etc/shorewall/interfaces file might look like:</p>
                                                          
                           <blockquote> 
-                            <!--mstheme--></font><table border="1" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+                            <table border="1" cellpadding="2" style="border-collapse: collapse">
        <tbody>
                                   <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  ZONE</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  INTERFACE</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  BROADCAST</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  OPTIONS</b><!--mstheme--></font></td>
+         <td><b>
+  ZONE</b></td>
+         <td><b>
+  INTERFACE</b></td>
+         <td><b>
+  BROADCAST</b></td>
+         <td><b>
+  OPTIONS</b></td>
        </tr>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">eth0<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">detect<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">dhcp,noping,norfc1918<!--mstheme--></font></td>
+         <td>net</td>
+         <td>eth0</td>
+         <td>detect</td>
+         <td>dhcp,noping,norfc1918</td>
        </tr>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">-<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">eth1<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">detect<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+         <td>-</td>
+         <td>eth1</td>
+         <td>detect</td>
+         <td>&nbsp;</td>
        </tr>
                                                                    
                               </tbody>                                  
                        
-                            </table><!--mstheme--><font face="arial, Arial, Helvetica"></blockquote>
+                            </table></blockquote>
                                                              
                             <p>
   The '-' in the ZONE column for eth1 tells Shorewall that eth1 interfaces
@@ -552,41 +574,41 @@ able to access without adding additional rules.</p>
   Your /etc/shorewall/hosts file might look like:</p>
                                                               
                             <blockquote> 
-                              <!--mstheme--></font><table border="1" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+                              <table border="1" cellpadding="2" style="border-collapse: collapse">
        <tbody>
                                     <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  ZONE</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  HOST(S)</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  OPTIONS</b><!--mstheme--></font></td>
+         <td><b>
+  ZONE</b></td>
+         <td><b>
+  HOST(S)</b></td>
+         <td><b>
+  OPTIONS</b></td>
        </tr>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">loc1<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">eth1:192.168.1.0/25<!--mstheme--></font></td>
+         <td>loc1</td>
+         <td>eth1:192.168.1.0/25</td>
  <font face="Century Gothic, Arial, Helvetica">
                                                    
               
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+         <td>&nbsp;</td>
        </tr>
    </font>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">loc2<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">eth1:192.168.1.128/25<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">routestopped<!--mstheme--></font></td>
+         <td>loc2</td>
+         <td>eth1:192.168.1.128/25</td>
+         <td>routestopped</td>
        </tr>
                                                                        
                                 </tbody>                                
                              
-                              </table><!--mstheme--><font face="arial, Arial, Helvetica"></blockquote>
+                              </table></blockquote>
                                                                  
                               <p>
   Hosts in 'loc2' can communicate with the firewall while Shorewall is stopped 
  -- those in 'loc1' cannot.</p>
                                                                   
-                              <h4><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666"><font color="#660066"><a name="Nested"></a>
-  Nested and Overlapping Zones</font><!--mstheme--></font></h4>
+                              <h4><font color="#660066"><a name="Nested"></a>
+  Nested and Overlapping Zones</font></h4>
                                                                   
                               <p>
   The /etc/shorewall/interfaces and /etc/shorewall/hosts file allow   you 
@@ -603,8 +625,8 @@ one  zone may be managed by the rules of all of those zones. This is done throug
  use of the special <a href="#CONTINUE">CONTINUE policy</a>
    described below.</p>
                                                                   
-                              <h2><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666"><font color="#660066"><a name="Policy"></a>
-                              </font>/etc/shorewall/policy Configuration.<!--mstheme--></font></h2>
+                              <h2><font color="#660066"><a name="Policy"></a>
+                              </font>/etc/shorewall/policy Configuration.</h2>
                                          
                               <p>This file is used to describe the firewall
  policy regarding   establishment of connections. Connection establishment
@@ -621,20 +643,20 @@ applies  to a particular   connection request then the policy from /etc/shorewal
                               <p>Four policies are defined:</p>
                                    
                                
- <!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  ACCEPT</b> - The connection is allowed.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  DROP</b> - The connection request is ignored.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
+ <ul>
+   <li><b>
+  ACCEPT</b> - The connection is allowed.</li>
+   <li><b>
+  DROP</b> - The connection request is ignored.</li>
+   <li><b>
   REJECT</b> - The connection request is rejected with an RST (TCP) or an ICMP       destination-unreachable
- packet being returned to the client.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
+ packet being returned to the client.</li>
+   <li><b>
   CONTINUE </b> - The connection is neither ACCEPTed, DROPped nor REJECTed.  
   CONTINUE may be used when one or both of the zones named in the entry are 
      sub-zones of or intersect with another zone. For more information, see 
-     below. <!--mstheme--></font><!--msthemelist--></td></tr>
- <!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+     below. </li>
+ </ul>
                                                              
                               <p>
   For each policy specified in /etc/shorewall/policy, you can indicate  
@@ -690,60 +712,60 @@ zones. </p>
   The policy file installed by default is as follows:</p>
                                                                   
                               <blockquote> 
-                                <!--mstheme--></font><table border="1" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+                                <table border="1" cellpadding="2" style="border-collapse: collapse">
        <tbody>
                                       <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>SOURCE</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>DEST</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  POLICY</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  LOG LEVEL</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>LIMIT:BURST</b><!--mstheme--></font></td>
+         <td><b>SOURCE</b></td>
+         <td><b>DEST</b></td>
+         <td><b>
+  POLICY</b></td>
+         <td><b>
+  LOG LEVEL</b></td>
+         <td><b>LIMIT:BURST</b></td>
        </tr>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">loc<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">ACCEPT<!--mstheme--></font></td>
+         <td>loc</td>
+         <td>net</td>
+         <td>ACCEPT</td>
  <font face="Century Gothic, Arial, Helvetica">
                                                    
                   
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+         <td>&nbsp;</td>
                                                    
                   
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+         <td>&nbsp;</td>
        </tr>
     </font>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">all<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">DROP<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">info<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+         <td>net</td>
+         <td>all</td>
+         <td>DROP</td>
+         <td>info</td>
+         <td>&nbsp;</td>
        </tr>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">all<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">all<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">REJECT<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">info<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+         <td>all</td>
+         <td>all</td>
+         <td>REJECT</td>
+         <td>info</td>
+         <td>&nbsp;</td>
        </tr>
                                                                         
   
                                   </tbody>                               
                                   
-                                </table><!--mstheme--><font face="arial, Arial, Helvetica"></blockquote>
+                                </table></blockquote>
                                                                       
                                 <p>
   This table may be interpreted as follows:</p>
                                         
- <!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">All connection requests from the local network to hosts on the       internet
- are accepted.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">All connection requests originating from the internet are ignored and 
-     logged at level KERNEL.INFO.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">All other connection requests are rejected and logged.<!--mstheme--></font><!--msthemelist--></td></tr>
- <!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+ <ul>
+   <li>All connection requests from the local network to hosts on the       internet
+ are accepted.</li>
+   <li>All connection requests originating from the internet are ignored and 
+     logged at level KERNEL.INFO.</li>
+   <li>All other connection requests are rejected and logged.</li>
+ </ul>
                                 <p><b><font size="4" color="#ff0000">
   WARNING:</font></b></p>
                                 <p><font color="#ff0000"><b>
@@ -753,45 +775,45 @@ from  top to bottom and <u>uses   the first applicable policy that it finds.</u>
  connections would be ACCEPT as   specified in the first entry even though
  the third entry in the file specifies   REJECT.</b></font></p>
                                 <blockquote>
-                                  <!--mstheme--></font><table border="1" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+                                  <table border="1" cellpadding="2" style="border-collapse: collapse">
        <tbody>
                                         <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>SOURCE</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>DEST</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>POLICY</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>LOG LEVEL</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>LIMIT:BURST</b><!--mstheme--></font></td>
+         <td><b>SOURCE</b></td>
+         <td><b>DEST</b></td>
+         <td><b>POLICY</b></td>
+         <td><b>LOG LEVEL</b></td>
+         <td><b>LIMIT:BURST</b></td>
        </tr>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">loc<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">all<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">ACCEPT<!--mstheme--></font></td>
+         <td>loc</td>
+         <td>all</td>
+         <td>ACCEPT</td>
          <font face="Century Gothic, Arial, Helvetica">
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+         <td>&nbsp;</td>
+         <td>&nbsp;</td>
        </tr>
                                         </font>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">all<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">DROP<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">info<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+         <td>net</td>
+         <td>all</td>
+         <td>DROP</td>
+         <td>info</td>
+         <td>&nbsp;</td>
        </tr>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">loc<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">loc<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">REJECT<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">info<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+         <td>loc</td>
+         <td>loc</td>
+         <td>REJECT</td>
+         <td>info</td>
+         <td>&nbsp;</td>
        </tr>
                                                                         
       
                                     </tbody>                             
                                         
-                                  </table><!--mstheme--><font face="arial, Arial, Helvetica"></blockquote>
-                                  <h4><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666"><font color="#660066"><a name="CONTINUE"></a>
-                                  The CONTINUE policy</font><!--mstheme--></font></h4>
+                                  </table></blockquote>
+                                  <h4><font color="#660066"><a name="CONTINUE"></a>
+                                  The CONTINUE policy</font></h4>
                                   <p>
   Where zones are <a href="#Nested">nested or overlapping</a>
   , the CONTINUE policy allows hosts that are within multiple zones to be 
@@ -799,98 +821,98 @@ managed under the rules of all of these zones. Let's look at an example:</p>
                                   <p>
   /etc/shorewall/zones:</p>
                                   <blockquote>
-                                    <!--mstheme--></font><table border="1" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+                                    <table border="1" cellpadding="2" style="border-collapse: collapse">
        <tbody>
                                           <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  ZONE</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  DISPLAY</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  COMMENTS</b><!--mstheme--></font></td>
+         <td><b>
+  ZONE</b></td>
+         <td><b>
+  DISPLAY</b></td>
+         <td><b>
+  COMMENTS</b></td>
        </tr>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">sam<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">Sam<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">Sam's  system at home<!--mstheme--></font></td>
+         <td>sam</td>
+         <td>Sam</td>
+         <td>Sam's  system at home</td>
        </tr>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">Internet<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">The  Internet<!--mstheme--></font></td>
+         <td>net</td>
+         <td>Internet</td>
+         <td>The  Internet</td>
        </tr>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">loc<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">Loc<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">Local  Network<!--mstheme--></font></td>
+         <td>loc</td>
+         <td>Loc</td>
+         <td>Local  Network</td>
        </tr>
                                                                         
           
                                       </tbody>                           
                                               
-                                    </table><!--mstheme--><font face="arial, Arial, Helvetica"></blockquote>
+                                    </table></blockquote>
                                     <p>
   /etc/shorewall/interfaces:</p>
                                     <blockquote>
-                                      <!--mstheme--></font><table border="1" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+                                      <table border="1" cellpadding="2" style="border-collapse: collapse">
        <tbody>
                                             <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  ZONE</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  INTERFACE</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  BROADCAST</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  OPTIONS</b><!--mstheme--></font></td>
+         <td><b>
+  ZONE</b></td>
+         <td><b>
+  INTERFACE</b></td>
+         <td><b>
+  BROADCAST</b></td>
+         <td><b>
+  OPTIONS</b></td>
        </tr>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">-<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">eth0<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">detect<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">dhcp,noping,norfc1918<!--mstheme--></font></td>
+         <td>-</td>
+         <td>eth0</td>
+         <td>detect</td>
+         <td>dhcp,noping,norfc1918</td>
        </tr>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">loc<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">eth1<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">detect<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">routestopped<!--mstheme--></font></td>
+         <td>loc</td>
+         <td>eth1</td>
+         <td>detect</td>
+         <td>routestopped</td>
        </tr>
                                                                         
               
                                         </tbody>                         
                                                     
-                                      </table><!--mstheme--><font face="arial, Arial, Helvetica"></blockquote>
+                                      </table></blockquote>
                                       <p>
   /etc/shorewall/hosts:</p>
                                       <blockquote>
-                                        <!--mstheme--></font><table border="1" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+                                        <table border="1" cellpadding="2" style="border-collapse: collapse">
        <tbody>
                                               <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  ZONE</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  HOST(S)</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  OPTIONS</b><!--mstheme--></font></td>
+         <td><b>
+  ZONE</b></td>
+         <td><b>
+  HOST(S)</b></td>
+         <td><b>
+  OPTIONS</b></td>
        </tr>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">eth0:0.0.0.0/0<!--mstheme--></font></td>
+         <td>net</td>
+         <td>eth0:0.0.0.0/0</td>
          <font face="Century Gothic, Arial, Helvetica">
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+         <td>&nbsp;</td>
        </tr>
                                               </font>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">sam<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">eth0:206.191.149.197<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">routestopped<!--mstheme--></font></td>
+         <td>sam</td>
+         <td>eth0:206.191.149.197</td>
+         <td>routestopped</td>
        </tr>
                                                                         
                   
                                           </tbody>                       
                                                           
-                                        </table><!--mstheme--><font face="arial, Arial, Helvetica"></blockquote>
+                                        </table></blockquote>
                                         <p>
   Note that Sam's home system is a member of both the <b>sam</b> zone and 
 the                                         <b>net</b> zone and <a href="#Nested">
@@ -899,51 +921,51 @@ the                                         <b>net</b> zone and <a href="#Nested
                                         <p>
   /etc/shorewall/policy:</p>
                                         <blockquote>
-                                          <!--mstheme--></font><table border="1" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+                                          <table border="1" cellpadding="2" style="border-collapse: collapse">
        <tbody>
                                                 <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-         SOURCE</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-         DEST</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  POLICY</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  LOG LEVEL</b><!--mstheme--></font></td>
+         <td><b>
+         SOURCE</b></td>
+         <td><b>
+         DEST</b></td>
+         <td><b>
+  POLICY</b></td>
+         <td><b>
+  LOG LEVEL</b></td>
        </tr>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">loc<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">ACCEPT<!--mstheme--></font></td>
+         <td>loc</td>
+         <td>net</td>
+         <td>ACCEPT</td>
          <font face="Century Gothic, Arial, Helvetica">
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+         <td>&nbsp;</td>
        </tr>
                                                 </font>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">sam<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">all<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">CONTINUE<!--mstheme--></font></td>
+         <td>sam</td>
+         <td>all</td>
+         <td>CONTINUE</td>
          <font face="Century Gothic, Arial, Helvetica">
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+         <td>&nbsp;</td>
        </tr>
                                                 </font>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">all<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">DROP<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">info<!--mstheme--></font></td>
+         <td>net</td>
+         <td>all</td>
+         <td>DROP</td>
+         <td>info</td>
        </tr>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">all<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">all<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">REJECT<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">info<!--mstheme--></font></td>
+         <td>all</td>
+         <td>all</td>
+         <td>REJECT</td>
+         <td>info</td>
        </tr>
                                                                         
                       
                                             </tbody>                     
                                                                 
-                                          </table><!--mstheme--><font face="arial, Arial, Helvetica"></blockquote>
+                                          </table></blockquote>
                                           <p>
   The second entry above says that when Sam is the client, connection requests 
  should first be process under rules where the source zone is <b>sam</b> and
@@ -953,66 +975,66 @@ if there is no match then the connection request should be treated under
                                           <p>
   Partial /etc/shorewall/rules:</p>
                                           <blockquote>
-                                            <!--mstheme--></font><table border="1" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+                                            <table border="1" cellpadding="2" style="border-collapse: collapse">
        <tbody>
                                                   <tr>
     <font face="Century Gothic, Arial, Helvetica">
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>ACTION</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>SOURCE</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>DEST</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  PROTO</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>DEST<br>
-  PORT(S)</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>SOURCE<br>
-         PORT(S)</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>ORIGINAL<br>
-         DEST</b><!--mstheme--></font></td>
+         <td><b>ACTION</b></td>
+         <td><b>SOURCE</b></td>
+         <td><b>DEST</b></td>
+         <td><b>
+  PROTO</b></td>
+         <td><b>DEST<br>
+  PORT(S)</b></td>
+         <td><b>SOURCE<br>
+         PORT(S)</b></td>
+         <td><b>ORIGINAL<br>
+         DEST</b></td>
     </font>
                                                   </tr>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">...<!--mstheme--></font></td>
+         <td>...</td>
          <font face="Century Gothic, Arial, Helvetica">
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+         <td>&nbsp;</td>
+         <td>&nbsp;</td>
+         <td>&nbsp;</td>
+         <td>&nbsp;</td>
+         <td>&nbsp;</td>
+         <td>&nbsp;</td>
        </tr>
                                                   </font>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">DNAT<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">sam<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">loc:192.168.1.3<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">tcp<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">ssh<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">-<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+         <td>DNAT</td>
+         <td>sam</td>
+         <td>loc:192.168.1.3</td>
+         <td>tcp</td>
+         <td>ssh</td>
+         <td>-</td>
+         <td>&nbsp;</td>
        </tr>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">DNAT<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">loc:192.168.1.5<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">tcp<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">www<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">-<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+         <td>DNAT</td>
+         <td>net</td>
+         <td>loc:192.168.1.5</td>
+         <td>tcp</td>
+         <td>www</td>
+         <td>-</td>
+         <td>&nbsp;</td>
        </tr>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">...<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+         <td>...</td>
+         <td>&nbsp;</td>
+         <td>&nbsp;</td>
+         <td>&nbsp;</td>
+         <td>&nbsp;</td>
+         <td>&nbsp;</td>
+         <td>&nbsp;</td>
        </tr>
                                                                         
                           
                                               </tbody>                   
                                                                       
-                                            </table><!--mstheme--><font face="arial, Arial, Helvetica"></blockquote>
+                                            </table></blockquote>
                                             <p>
   Given these two rules, Sam can connect to the firewall's internet interface 
  with ssh and the connection request will be forwarded to 192.168.1.3. Like
@@ -1031,72 +1053,72 @@ if there is no match then the connection request should be treated under
                                             <p>
   &nbsp;</p>
  
-                                              <!--mstheme--></font><table border="1" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+                                              <table border="1" cellpadding="2" style="border-collapse: collapse">
        <tr>
     <font face="Century Gothic, Arial, Helvetica">
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>ACTION</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>SOURCE</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>DEST</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  PROTO</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>DEST<br>
-  PORT(S)</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>SOURCE<br>
-         PORT(S)</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>ORIGINAL<br>
-         DEST</b><!--mstheme--></font></td>
+         <td><b>ACTION</b></td>
+         <td><b>SOURCE</b></td>
+         <td><b>DEST</b></td>
+         <td><b>
+  PROTO</b></td>
+         <td><b>DEST<br>
+  PORT(S)</b></td>
+         <td><b>SOURCE<br>
+         PORT(S)</b></td>
+         <td><b>ORIGINAL<br>
+         DEST</b></td>
     </font>
        </tr>
                                                   <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+         <td>&nbsp;</td>
+         <td>&nbsp;</td>
+         <td>&nbsp;</td>
+         <td>&nbsp;</td>
+         <td>&nbsp;</td>
+         <td>&nbsp;</td>
+         <td>&nbsp;</td>
        </tr>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">...<!--mstheme--></font></td>
+         <td>...</td>
          <font face="Century Gothic, Arial, Helvetica">
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+         <td>&nbsp;</td>
+         <td>&nbsp;</td>
+         <td>&nbsp;</td>
+         <td>&nbsp;</td>
+         <td>&nbsp;</td>
+         <td>&nbsp;</td>
                                                   </font>
        </tr>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">DNAT<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">sam<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">fw<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">tcp<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">ssh<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">-<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+         <td>DNAT</td>
+         <td>sam</td>
+         <td>fw</td>
+         <td>tcp</td>
+         <td>ssh</td>
+         <td>-</td>
+         <td>&nbsp;</td>
        </tr>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">DNAT<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">net!sam<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">loc:192.168.1.3<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">tcp<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">ssh<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">-<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+         <td>DNAT</td>
+         <td>net!sam</td>
+         <td>loc:192.168.1.3</td>
+         <td>tcp</td>
+         <td>ssh</td>
+         <td>-</td>
+         <td>&nbsp;</td>
        </tr>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">...<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+         <td>...</td>
+         <td>&nbsp;</td>
+         <td>&nbsp;</td>
+         <td>&nbsp;</td>
+         <td>&nbsp;</td>
+         <td>&nbsp;</td>
+         <td>&nbsp;</td>
        </tr>
                                                                         
                           
-                                            </table><!--mstheme--><font face="arial, Arial, Helvetica">
+                                            </table>
  </blockquote>
  
                                             <p>The first rule allows Sam SSH 
@@ -1113,8 +1135,8 @@ if there is no match then the connection request should be treated under
                                             the ACTION is REDIRECT.</p>
                                                                         
                     
-                                            <h2><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666"><font color="#660066"><a name="Rules"></a>
-                                            </font>/etc/shorewall/rules<!--mstheme--></font></h2>
+                                            <h2><font color="#660066"><a name="Rules"></a>
+                                            </font>/etc/shorewall/rules</h2>
                                                                         
                     
                                             <p>The /etc/shorewall/rules file
@@ -1124,24 +1146,24 @@ if there is no match then the connection request should be treated under
                        
                                             <p>Entries in the file have the
  following columns:</p>
- <!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>ACTION</b><!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-     <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul2.gif" width="12" height="12" hspace="15" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">ACCEPT, DROP or REJECT. These have the same meaning here as in the 
-     policy file above.<!--mstheme--></font><!--msthemelist--></td></tr>
-     <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul2.gif" width="12" height="12" hspace="15" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">DNAT -- Causes the connection request to be forwarded to the system 
+ <ul>
+   <li><b>ACTION</b><ul>
+     <li>ACCEPT, DROP or REJECT. These have the same meaning here as in the 
+     policy file above.</li>
+     <li>DNAT -- Causes the connection request to be forwarded to the system 
      specified in the DEST column (port forwarding). &quot;DNAT&quot; stands for &quot;<u>D</u>estination
-     <u>N</u>etwork <u>A</u>ddress <u>T</u>ranslation&quot;<!--mstheme--></font><!--msthemelist--></td></tr>
-     <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul2.gif" width="12" height="12" hspace="15" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">REDIRECT -- Causes the connection request to be redirected to a port on 
-     the local (firewall) system.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+     <u>N</u>etwork <u>A</u>ddress <u>T</u>ranslation&quot;</li>
+     <li>REDIRECT -- Causes the connection request to be redirected to a port on 
+     the local (firewall) system.</li>
+   </ul>
    <p>The ACTION may optionally be followed by 
    &quot;:&quot; and a syslogd log level (example: REJECT:info). This causes the 
    packet to be logged at the specified level prior to being processed according 
    to the specified ACTION.<br>
    <br>
    The use of DNAT or REDIRECT requires that you have <a href="#NatEnabled">NAT     enabled</a>.<br>
-&nbsp;<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>SOURCE</b> - Describes the source hosts to which the rule applies.. The contents of this field must begin  
+&nbsp;</li>
+   <li><b>SOURCE</b> - Describes the source hosts to which the rule applies.. The contents of this field must begin  
     with the name of a zone defined in /etc/shorewall/zones or $FW. If the 
    ACTION is DNAT or REDIRECT, sub-zones may be excluded from the rule by 
    following the initial zone name with &quot;!' and a comma-separated list of those 
@@ -1150,28 +1172,28 @@ if there is no match then the connection request should be treated under
    The source may be further restricted by adding a colon (&quot;:&quot;) followed by a 
    comma-separated list of qualifiers. Qualifiers are may 
       include:
-   <!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-     <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul2.gif" width="12" height="12" hspace="15" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">An interface name - refers to any connection requests arriving on     
-     the specified interface (example loc:eth4).<!--mstheme--></font><!--msthemelist--></td></tr>
-     <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul2.gif" width="12" height="12" hspace="15" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">An IP address - refers to a connection request from the host with     
-     the specified address (example net:155.186.235.151)<!--mstheme--></font><!--msthemelist--></td></tr>
-     <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul2.gif" width="12" height="12" hspace="15" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">A MAC Address in <a href="#MAC">Shorewall format</a>.<!--mstheme--></font><!--msthemelist--></td></tr>
-     <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul2.gif" width="12" height="12" hspace="15" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">A subnet - refers to a connection request from any host in the       specified
- subnet (example net:155.186.235.0/24).<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
-   <!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>DEST</b> - Describes the destination host(s) to which the rule applies. May take any of the forms described    
+   <ul>
+     <li>An interface name - refers to any connection requests arriving on     
+     the specified interface (example loc:eth4).</li>
+     <li>An IP address - refers to a connection request from the host with     
+     the specified address (example net:155.186.235.151)</li>
+     <li>A MAC Address in <a href="#MAC">Shorewall format</a>.</li>
+     <li>A subnet - refers to a connection request from any host in the       specified
+ subnet (example net:155.186.235.0/24).</li>
+   </ul>
+   </li>
+   <li><b>DEST</b> - Describes the destination host(s) to which the rule applies. May take any of the forms described    
   above for SOURCE plus the following two additional forms:
-   <!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-     <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul2.gif" width="12" height="12" hspace="15" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">An IP address followed by a colon and the port <u>number</u> that     
+   <ul>
+     <li>An IP address followed by a colon and the port <u>number</u> that     
      the server is listening on (service names from /etc/services are not 
-          allowed - example loc:192.168.1.3:80).&nbsp;<!--mstheme--></font><!--msthemelist--></td></tr>
-     <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul2.gif" width="12" height="12" hspace="15" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">A single port number (again, service names are not allowed) -- this form is only allowed 
+          allowed - example loc:192.168.1.3:80).&nbsp;</li>
+     <li>A single port number (again, service names are not allowed) -- this form is only allowed 
      if the ACTION is REDIRECT and refers to a server running on the firewall itself and   
-       listening on the specified port.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
-   <!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
+       listening on the specified port.</li>
+   </ul>
+   </li>
+   <li><b>
   PROTO</b> - Protocol. Must be a protocol name from /etc/protocols, a number, 
       "all" or "related". Specifies the protocol
  of the connection       request. "related" should be specified only if you
@@ -1179,8 +1201,8 @@ if there is no match then the connection request should be treated under
 you  wish       to override that setting for related connections originating
 with  the       client(s) and server(s) specified in this rule. When "related" 
       is given for the protocol, the remainder of the columns should be left 
-       blank.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
+       blank.</li>
+   <li><b>
    DEST
   PORT(S)</b> - Port or port range (&lt;low port&gt;:&lt;high port&gt;) being connected to. May only be       specified
  if the protocol is tcp, udp or icmp. For icmp, this column's       contents
@@ -1188,16 +1210,16 @@ with  the       client(s) and server(s) specified in this rule. When "related"
  but need to include information in one of the columns to the       right,
  enter "-" in this column. You may give a list of ports and/or port ranges 
    separated by commas. Port numbers may be either integers or service names 
-   from /etc/services.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
+   from /etc/services.</li>
+   <li><b>
    SOURCE</b> <b>PORTS(S) </b>- May be used to restrict the rule to a particular 
    client port or port range (a port range is specified as &lt;low port 
    number&gt;:&lt;high port number&gt;). If you don't want to restrict client ports but 
    want to specify something in the next column, enter &quot;-&quot; in this column. If 
    you wish to specify a list of port number or ranges, separate the list 
    elements with commas (with no embedded white space). Port numbers may be 
-   either integers or service names from /etc/services.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>ORIGINAL DEST</b> - This column may only be non-empty if the ACTION is DNAT 
+   either integers or service names from /etc/services.</li>
+   <li><b>ORIGINAL DEST</b> - This column may only be non-empty if the ACTION is DNAT 
    or 
    REDIRECT.<br>
    <br>
@@ -1231,8 +1253,8 @@ with  the       client(s) and server(s) specified in this rule. When "related"
          </b>If SNAT is not used (no ":" and second IP address), the    
   original source address is used. If you want any destination address to match 
    the rule but want to specify SNAT, simply use a colon followed by the SNAT 
-   address.<!--mstheme--></font><!--msthemelist--></td></tr>
- <!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+   address.</li>
+ </ul>
                                                                         
                               
                                               <p><b>
@@ -1242,38 +1264,38 @@ with  the       client(s) and server(s) specified in this rule. When "related"
   internet to local system 192.168.1.3. </p>
      
                                               <blockquote>
-                                                <!--mstheme--></font><table border="1" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+                                                <table border="1" cellpadding="2" style="border-collapse: collapse">
        <tbody>
                                                       <tr>
     <font face="Century Gothic, Arial, Helvetica">
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>ACTION</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>SOURCE</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>DEST</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  PROTO</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>DEST<br>
-  PORT(S)</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>SOURCE<br>
-         PORT(S)</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>ORIGINAL<br>
-         DEST</b><!--mstheme--></font></td>
+         <td><b>ACTION</b></td>
+         <td><b>SOURCE</b></td>
+         <td><b>DEST</b></td>
+         <td><b>
+  PROTO</b></td>
+         <td><b>DEST<br>
+  PORT(S)</b></td>
+         <td><b>SOURCE<br>
+         PORT(S)</b></td>
+         <td><b>ORIGINAL<br>
+         DEST</b></td>
     </font>
                                                       </tr>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">DNAT<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">loc:192.168.1.3<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">tcp<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">ssh<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+         <td>DNAT</td>
+         <td>net</td>
+         <td>loc:192.168.1.3</td>
+         <td>tcp</td>
+         <td>ssh</td>
+         <td>&nbsp;</td>
+         <td>&nbsp;</td>
        </tr>
                                                                         
                                   
                                                   </tbody>               
                                                                         
          
-                                                </table><!--mstheme--><font face="arial, Arial, Helvetica"></blockquote>
+                                                </table></blockquote>
       
                                                 <p><b>
   Example 2. </b> You want to redirect all local www connection requests EXCEPT 
@@ -1290,47 +1312,47 @@ with  the       client(s) and server(s) specified in this rule. When "related"
                                                 redirected to local port 3128.</p>
          
                                                 <blockquote>
-                                                  <!--mstheme--></font><table border="1" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+                                                  <table border="1" cellpadding="2" style="border-collapse: collapse">
        <tbody>
                                                         <tr>
     <font face="Century Gothic, Arial, Helvetica">
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>ACTION</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>SOURCE</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>DEST</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  PROTO</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>DEST<br>
-  PORT(S)</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>SOURCE<br>
-         PORT(S)</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>ORIGINAL<br>
-         DEST</b><!--mstheme--></font></td>
+         <td><b>ACTION</b></td>
+         <td><b>SOURCE</b></td>
+         <td><b>DEST</b></td>
+         <td><b>
+  PROTO</b></td>
+         <td><b>DEST<br>
+  PORT(S)</b></td>
+         <td><b>SOURCE<br>
+         PORT(S)</b></td>
+         <td><b>ORIGINAL<br>
+         DEST</b></td>
     </font>
                                                         </tr>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">REDIRECT<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">loc<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">3128<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">tcp<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">www<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">!206.124.146.177<!--mstheme--></font></td>
+         <td>REDIRECT</td>
+         <td>loc</td>
+         <td>3128</td>
+         <td>tcp</td>
+         <td>www</td>
+         <td>&nbsp;</td>
+         <td>!206.124.146.177</td>
        </tr>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">ACCEPT<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">fw<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">tcp<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">www<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+         <td>ACCEPT</td>
+         <td>fw</td>
+         <td>net</td>
+         <td>tcp</td>
+         <td>www</td>
+         <td>&nbsp;</td>
+         <td>&nbsp;</td>
        </tr>
                                                                         
                                       
                                                     </tbody>             
                                                                         
                
-                                                  </table><!--mstheme--><font face="arial, Arial, Helvetica"></blockquote>
+                                                  </table></blockquote>
           
                                                   <p><b>
   Example 3. </b> You want to run a web server at 155.186.235.222 in your 
@@ -1338,49 +1360,49 @@ DMZ    and have it accessible remotely and locally. the DMZ is managed by
 Proxy ARP   or by classical sub-netting.</p>
              
                                                   <blockquote>
-                                                    <!--mstheme--></font><table border="1" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+                                                    <table border="1" cellpadding="2" style="border-collapse: collapse">
        <tbody>
                                                           <tr>
     <font face="Century Gothic, Arial, Helvetica">
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>ACTION</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>SOURCE</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>DEST</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  PROTO</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>DEST<br>
-  PORT(S)</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>SOURCE<br>
-         PORT(S)</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>ORIGINAL<br>
-         DEST</b><!--mstheme--></font></td>
+         <td><b>ACTION</b></td>
+         <td><b>SOURCE</b></td>
+         <td><b>DEST</b></td>
+         <td><b>
+  PROTO</b></td>
+         <td><b>DEST<br>
+  PORT(S)</b></td>
+         <td><b>SOURCE<br>
+         PORT(S)</b></td>
+         <td><b>ORIGINAL<br>
+         DEST</b></td>
     </font>
                                                           </tr>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">ACCEPT<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">dmz:155.186.235.222<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">tcp<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">www<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">-<!--mstheme--></font></td>
+         <td>ACCEPT</td>
+         <td>net</td>
+         <td>dmz:155.186.235.222</td>
+         <td>tcp</td>
+         <td>www</td>
+         <td>-</td>
          <font face="Century Gothic, Arial, Helvetica">
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+         <td>&nbsp;</td>
        </tr>
                                                           </font>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">ACCEPT<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">loc<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">dmz:155.186.235.222<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">tcp<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">www<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+         <td>ACCEPT</td>
+         <td>loc</td>
+         <td>dmz:155.186.235.222</td>
+         <td>tcp</td>
+         <td>www</td>
+         <td>&nbsp;</td>
+         <td>&nbsp;</td>
        </tr>
                                                                         
                                           
                                                       </tbody>           
                                                                         
                      
-                                                    </table><!--mstheme--><font face="arial, Arial, Helvetica"></blockquote>
+                                                    </table></blockquote>
               
                                                     <p><b>
   Example 4. </b> You want to run wu-ftpd on 192.168.2.2 in your masqueraded 
@@ -1406,49 +1428,49 @@ Proxy ARP   or by classical sub-netting.</p>
                                                     <img border="0" src="images/SY00079.gif" width="20" height="20" align="top">.</p>
                  
                                                     <blockquote>
-                                                      <!--mstheme--></font><table border="1" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+                                                      <table border="1" cellpadding="2" style="border-collapse: collapse">
        <tbody>
                                                             <tr>
     <font face="Century Gothic, Arial, Helvetica">
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>ACTION</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>SOURCE</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>DEST</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  PROTO</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>DEST<br>
-  PORT(S)</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>SOURCE<br>
-         PORT(S)</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>ORIGINAL<br>
-         DEST</b><!--mstheme--></font></td>
+         <td><b>ACTION</b></td>
+         <td><b>SOURCE</b></td>
+         <td><b>DEST</b></td>
+         <td><b>
+  PROTO</b></td>
+         <td><b>DEST<br>
+  PORT(S)</b></td>
+         <td><b>SOURCE<br>
+         PORT(S)</b></td>
+         <td><b>ORIGINAL<br>
+         DEST</b></td>
     </font>
                                                             </tr>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">DNAT<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">dmz:192.168.2.2<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">tcp<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">ftp<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+         <td>DNAT</td>
+         <td>net</td>
+         <td>dmz:192.168.2.2</td>
+         <td>tcp</td>
+         <td>ftp</td>
+         <td>&nbsp;</td>
+         <td>&nbsp;</td>
        </tr>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">DNAT<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">loc:192.168.1.0/24<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">dmz:192.168.2.2<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">tcp<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">ftp<!--mstheme--></font></td>
+         <td>DNAT</td>
+         <td>loc:192.168.1.0/24</td>
+         <td>dmz:192.168.2.2</td>
+         <td>tcp</td>
+         <td>ftp</td>
          <font face="Century Gothic, Arial, Helvetica">
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">-<!--mstheme--></font></td>
+         <td>-</td>
          </font>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">155.186.235.151<!--mstheme--></font></td>
+         <td>155.186.235.151</td>
        </tr>
                                                                         
                                               
                                                         </tbody>         
                                                                         
                            
-                                                      </table><!--mstheme--><font face="arial, Arial, Helvetica"></blockquote>
+                                                      </table></blockquote>
                                                                         
                                         
                                                       <p>If you are running
@@ -1482,34 +1504,34 @@ is unique and will not overlap with any usage on the   firewall system.</p>
                                                                         
                                               
                                                         <blockquote>
-                                                          <!--mstheme--></font><table border="1" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+                                                          <table border="1" cellpadding="2" style="border-collapse: collapse">
                                                       <tr>
     <font face="Century Gothic, Arial, Helvetica">
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>ACTION</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>SOURCE</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>DEST</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  PROTO</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>DEST<br>
-  PORT(S)</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>SOURCE<br>
-         PORT(S)</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>ORIGINAL<br>
-         DEST</b><!--mstheme--></font></td>
+         <td><b>ACTION</b></td>
+         <td><b>SOURCE</b></td>
+         <td><b>DEST</b></td>
+         <td><b>
+  PROTO</b></td>
+         <td><b>DEST<br>
+  PORT(S)</b></td>
+         <td><b>SOURCE<br>
+         PORT(S)</b></td>
+         <td><b>ORIGINAL<br>
+         DEST</b></td>
     </font>
                                                       </tr>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">ACCEPT<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">loc:~02-00-08-E3-FA-55<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">dmz<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">all<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+         <td>ACCEPT</td>
+         <td>loc:~02-00-08-E3-FA-55</td>
+         <td>dmz</td>
+         <td>all</td>
+         <td>&nbsp;</td>
+         <td>&nbsp;</td>
+         <td>&nbsp;</td>
        </tr>
                                                                         
                                   
-                                                </table><!--mstheme--><font face="arial, Arial, Helvetica">
+                                                </table>
  </blockquote>
                                                                         
                                               
@@ -1518,8 +1540,8 @@ is unique and will not overlap with any usage on the   firewall system.</p>
                                                           </p>
                                                                         
                                             
-                                                        <h2><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666"><a name="Common">
-                                                        </a>/etc/shorewall/common<!--mstheme--></font></h2>
+                                                        <h2><a name="Common">
+                                                        </a>/etc/shorewall/common</h2>
                                                                         
                                               
                                                         <p>Shorewall allows 
@@ -1554,8 +1576,8 @@ is unique and will not overlap with any usage on the   firewall system.</p>
                                                         stopped.</p>
                                                                         
                                               
-                                                        <h2><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666"><a name="Masq"></a>
-                                                        /etc/shorewall/masq<!--mstheme--></font></h2>
+                                                        <h2><a name="Masq"></a>
+                                                        /etc/shorewall/masq</h2>
                                                                         
                                               
                                                         <p>The /etc/shorewall/masq
@@ -1566,13 +1588,13 @@ use of this feature, you must have <a href="#NatEnabled">NAT   enabled</a>
                                                                         
                                               
                                                         <p> Columns are:</p>
- <!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
+ <ul>
+   <li><b>
   INTERFACE</b> - The interface that will masquerade the subnet; this is    
   normally your internet interface. This interface name can be optionally 
       qualified by adding ":" and a subnet or host IP. When this       qualification
- is added, only packets addressed to that host or subnet will       be masqueraded.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
+ is added, only packets addressed to that host or subnet will       be masqueraded.</li>
+   <li><b>
   SUBNET</b> - The subnet that you want to have masqueraded through the 
    INTERFACE. This may be expressed as a single IP address, a subnet or an 
    interface name. In the latter instance, the interface must be configured and 
@@ -1581,13 +1603,13 @@ use of this feature, you must have <a href="#NatEnabled">NAT   enabled</a>
    <br>
    The subnet may be optionally followed by &quot;!' 
    and a comma-separated list of addresses and/or subnets that are to be 
-   excluded from masquerading.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>ADDRESS</b> - The source address to be used
+   excluded from masquerading.</li>
+   <li><b>ADDRESS</b> - The source address to be used
     for outgoing packets. This column is optional and if left blank, the current
     primary IP address of the interface in the first column is used. If you have 
    a static IP on that interface, listing it here makes processing of output 
-   packets a little less expensive for the firewall.<!--mstheme--></font><!--msthemelist--></td></tr>
- <!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+   packets a little less expensive for the firewall.</li>
+ </ul>
                                                          
                                                         <p><b>
   Example 1: </b> You have eth0 connected to a cable modem and eth1 connected
@@ -1595,26 +1617,26 @@ use of this feature, you must have <a href="#NatEnabled">NAT   enabled</a>
 would look   like:    </p>
                         
                                                         <blockquote>
-                                                          <!--mstheme--></font><table border="1" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+                                                          <table border="1" cellpadding="2" style="border-collapse: collapse">
        <tbody>
                                                                 <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  INTERFACE</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  SUBNET</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>ADDRESS</b><!--mstheme--></font></td>
+         <td><b>
+  INTERFACE</b></td>
+         <td><b>
+  SUBNET</b></td>
+         <td><b>ADDRESS</b></td>
        </tr>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">eth0<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">192.168.9.0/24<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+         <td>eth0</td>
+         <td>192.168.9.0/24</td>
+         <td>&nbsp;</td>
        </tr>
                                                                         
                                                       
                                                             </tbody>     
                                                                         
                                        
-                                                          </table><!--mstheme--><font face="arial, Arial, Helvetica"></blockquote>
+                                                          </table></blockquote>
                             
                                                           <p><b>
   Example 2:</b> You have a number of IPSEC tunnels through ipsec0   and
@@ -1622,26 +1644,26 @@ you  want to masquerade traffic from your 192.168.9.0/24 subnet to the
 remote  subnet 10.1.0.0/16 only.</p>
                             
                                                           <blockquote>
-                                                            <!--mstheme--></font><table border="1" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+                                                            <table border="1" cellpadding="2" style="border-collapse: collapse">
        <tbody>
                                                                   <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  INTERFACE</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  SUBNET</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>ADDRESS</b><!--mstheme--></font></td>
+         <td><b>
+  INTERFACE</b></td>
+         <td><b>
+  SUBNET</b></td>
+         <td><b>ADDRESS</b></td>
        </tr>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">ipsec0:10.1.0.0/16<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">192.168.9.0/24<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+         <td>ipsec0:10.1.0.0/16</td>
+         <td>192.168.9.0/24</td>
+         <td>&nbsp;</td>
        </tr>
                                                                         
                                                           
                                                               </tbody>   
                                                                         
                                              
-                                                            </table><!--mstheme--><font face="arial, Arial, Helvetica"></blockquote>
+                                                            </table></blockquote>
                                 
                                                           <p><b>
   Example 3:</b> You have a DSL line connected on eth0 and a local network
@@ -1653,22 +1675,22 @@ remote  subnet 10.1.0.0/16 only.</p>
                                                           206.124.146.176.</p>
                             
  <blockquote>
-  <!--mstheme--></font><table border="1" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+  <table border="1" cellpadding="2" style="border-collapse: collapse">
                                                                 <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  INTERFACE</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  SUBNET</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>ADDRESS</b><!--mstheme--></font></td>
+         <td><b>
+  INTERFACE</b></td>
+         <td><b>
+  SUBNET</b></td>
+         <td><b>ADDRESS</b></td>
        </tr>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">eth0<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">192.168.10.0/24<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">206.124.146.176<!--mstheme--></font></td>
+         <td>eth0</td>
+         <td>192.168.10.0/24</td>
+         <td>206.124.146.176</td>
        </tr>
                                                                         
                                                       
-                                                          </table><!--mstheme--><font face="arial, Arial, Helvetica">
+                                                          </table>
  </blockquote>
                                 
                                                             <p><b>Example 4: </b>
@@ -1681,26 +1703,26 @@ remote  subnet 10.1.0.0/16 only.</p>
                                                                         
                                                     
                                                             <blockquote>
-                                                              <!--mstheme--></font><table border="1" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+                                                              <table border="1" cellpadding="2" style="border-collapse: collapse">
                                                                 <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  INTERFACE</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  SUBNET</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>ADDRESS</b><!--mstheme--></font></td>
+         <td><b>
+  INTERFACE</b></td>
+         <td><b>
+  SUBNET</b></td>
+         <td><b>ADDRESS</b></td>
        </tr>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">eth0<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">192.168.10.0/24!192.168.10.44,192.168.10.45<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">206.124.146.176<!--mstheme--></font></td>
+         <td>eth0</td>
+         <td>192.168.10.0/24!192.168.10.44,192.168.10.45</td>
+         <td>206.124.146.176</td>
        </tr>
                                                                         
                                                       
-                                                          </table><!--mstheme--><font face="arial, Arial, Helvetica">
+                                                          </table>
  </blockquote>
                                 
-                                                            <h2><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666"><font color="#660066"><b><a name="ProxyArp"></a>
-                                                              </b></font>/etc/shorewall/proxyarp<!--mstheme--></font></h2>
+                                                            <h2><font color="#660066"><b><a name="ProxyArp"></a>
+                                                              </b></font>/etc/shorewall/proxyarp</h2>
                                                                         
                                                     
                                                             <p>If you want to 
@@ -1740,16 +1762,16 @@ remote  subnet 10.1.0.0/16 only.</p>
                                                             this file for each 
                                                             system using proxy 
                                                             ARP. Columns are:</p>
- <!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  ADDRESS</b> - address of the system.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
+ <ul>
+   <li><b>
+  ADDRESS</b> - address of the system.</li>
+   <li><b>
   INTERFACE</b> - the interface that connects to the system. If the interface 
-is      obvious from the subnetting, you may enter "-" in this column.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
+is      obvious from the subnetting, you may enter "-" in this column.</li>
+   <li><b>
   EXTERNAL</b> - the external interface that you want to honor ARP requests 
-     for the ADDRESS specified in the first column.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>HAVEROUTE</b> - If
+     for the ADDRESS specified in the first column.</li>
+   <li><b>HAVEROUTE</b> - If
                                                                 you already have
                                                                 a route through
                                                                 INTERFACE to
@@ -1766,8 +1788,8 @@ is      obvious from the subnetting, you may enter "-" in this column.<!--msthem
                                                                 contain
                                                                 &quot;No&quot;
                                                                 or
-                                                                &quot;no&quot;.<!--mstheme--></font><!--msthemelist--></td></tr>
- <!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+                                                                &quot;no&quot;.</li>
+ </ul>
  <p><font color="#CC6666"><b>Note: After you have made a change to the 
  /etc/shorewall/proxyarp file, you may need to flush the ARP cache of all 
  routers on the LAN segment connected to the interface specified in the EXTERNAL 
@@ -1787,11 +1809,11 @@ is      obvious from the subnetting, you may enter "-" in this column.<!--msthem
                                                             <p><b>Example:
                                                              </b> You have
  public IP addresses 155.182.235.0/28. You configure   your firewall as follows:</p>
- <!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">eth0 - 155.186.235.1 (internet connection)<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">eth1 - 192.168.9.0/24 (masqueraded local systems)<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">eth2 - 192.168.10.1 (interface to your DMZ)<!--mstheme--></font><!--msthemelist--></td></tr>
- <!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+ <ul>
+   <li>eth0 - 155.186.235.1 (internet connection)</li>
+   <li>eth1 - 192.168.9.0/24 (masqueraded local systems)</li>
+   <li>eth2 - 192.168.10.1 (interface to your DMZ)</li>
+ </ul>
                                                        
                                                             <p>
   In your DMZ, you want to install a Web/FTP server with public address 
@@ -1800,29 +1822,29 @@ and   you configure 155.186.235.1 as the default gateway. In your   /etc/shorewa
 file, you will have:</p>
                                 
                                                             <blockquote>
-                                                              <!--mstheme--></font><table border="2" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+                                                              <table border="2" cellpadding="2" style="border-collapse: collapse">
        <tbody>
                                                                     <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  ADDRESS</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  INTERFACE</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  EXTERNAL</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>HAVEROUTE</b><!--mstheme--></font></td>
+         <td><b>
+  ADDRESS</b></td>
+         <td><b>
+  INTERFACE</b></td>
+         <td><b>
+  EXTERNAL</b></td>
+         <td><b>HAVEROUTE</b></td>
        </tr>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">155.186.235.4<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">eth2<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">eth0<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">No<!--mstheme--></font></td>
+         <td>155.186.235.4</td>
+         <td>eth2</td>
+         <td>eth0</td>
+         <td>No</td>
        </tr>
                                                                         
                                                               
                                                                 </tbody>
                                                                         
                                                     
-                                                              </table><!--mstheme--><font face="arial, Arial, Helvetica"></blockquote>
+                                                              </table></blockquote>
                                     
  <p>
   Note: You may want to configure the servers in your DMZ with a   subnet 
@@ -1847,8 +1869,8 @@ ARP Subnet Mini HOWTO (<a href="http://www.tldp.org/HOWTO/mini/Proxy-ARP-Subnet/
  <p>In /etc/shorewall/start, include:</p>
  <p>&nbsp;&nbsp;&nbsp; qt service ipsec start</p>
                                     
-                                                              <h2><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666"><font color="#660066"><b><a name="NAT"></a>
-                                                                </b></font>/etc/shorewall/nat<!--mstheme--></font></h2>
+                                                              <h2><font color="#660066"><b><a name="NAT"></a>
+                                                                </b></font>/etc/shorewall/nat</h2>
                                                                         
                                                         
                                                               <p>The /etc/shorewall/nat
@@ -1890,16 +1912,16 @@ use of  this feature, you must have <a href="#NatEnabled">NAT   enabled</a>
                                                           
                                                               <p>Columns
 in an entry are:</p>
- <!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
+ <ul>
+   <li><b>
   EXTERNAL</b> - External IP address - <u>This should NOT be the primary IP 
-   address of the interface named in the next column.</u><!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
+   address of the interface named in the next column.</u></li>
+   <li><b>
   INTERFACE</b> - Interface that you want the EXTERNAL IP address to appear 
-     on.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  INTERNAL </b> - Internal IP address.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>ALL
+     on.</li>
+   <li><b>
+  INTERNAL </b> - Internal IP address.</li>
+   <li><b>ALL
                                                                       INTERFACES</b>
                                                                       - If Yes
                                                                       or yes (or
@@ -1925,19 +1947,19 @@ in an entry are:</p>
    Note:</b> If two or more NATed systems are connected to the same firewall 
    interface and you want them to be able to communicate using their EXTERNAL IP 
    addresses, then you will want to specify the <b>multi</b> option in the
-   <a href="#Interfaces">/etc/shorewall/interface</a> entry for that interface.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>LOCAL</b> - If Yes or yes and the ALL INTERFACES column contains Yes 
+   <a href="#Interfaces">/etc/shorewall/interface</a> entry for that interface.</li>
+   <li><b>LOCAL</b> - If Yes or yes and the ALL INTERFACES column contains Yes 
    or yes, NAT will be effective from the firewall system. <b>Note: </b>For this 
    to work, you must be running kernel 2.4.19 or later and iptables 1.2.6a or 
    later and you must have enabled&nbsp; <b>CONFIG_IP_NF_NAT_LOCAL</b> in your 
-   kernel.<!--mstheme--></font><!--msthemelist--></td></tr>
- <!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+   kernel.</li>
+ </ul>
                                                               <p><b><a href="NAT.htm">
   Look here for additional information and an example.</a>
                                                                 </b></p>
                                      
-                                                              <h2><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666"><font color="#660066"><a name="Tunnels"></a>
-                                                              </font>/etc/shorewall/tunnels<!--mstheme--></font></h2>
+                                                              <h2><font color="#660066"><a name="Tunnels"></a>
+                                                              </font>/etc/shorewall/tunnels</h2>
                                   
                                                               <p>
   The /etc/shorewall/tunnels file allows you to define IPSec, GRE and IPIP tunnels
@@ -1957,13 +1979,19 @@ a development   snapshot as patching with version 1.9 results in kernel compilat
                                                               tunnels under
                                                               Shorewall.</p>
                                      
-                                                              <h2><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666"><font color="#660066"><a name="Conf"></a>
-                                                              </font>/etc/shorewall/shorewall.conf<!--mstheme--></font></h2>
+                                                              <h2><font color="#660066"><a name="Conf"></a>
+                                                              </font>/etc/shorewall/shorewall.conf</h2>
                                   
                                                               <p>
   This file is used to set the following firewall parameters:</p>
- <!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>LOGNEWNOTSYN</b> - Added in Version 1.3.6<br>
+ <ul>
+   <li><b>FORWARDPING</b> - Added in Version 1.3.7<br>
+   When set to &quot;Yes&quot; or &quot;yes&quot;, ICMP echo-request (ping) packets from interfaces 
+   that specify &quot;filterping&quot; are ACCEPTed by the firewall. When set to &quot;No&quot; or 
+   &quot;no&quot;, such ping requests are silently dropped unless they are handled by an 
+   explicit entry in the <a href="#Rules">rules file</a>. If not specified, &quot;No&quot; 
+   is assumed.</li>
+   <li><b>LOGNEWNOTSYN</b> - Added in Version 1.3.6<br>
    Beginning with version 1.3.6, Shorewall drops non-SYN TCP packets that are 
    not part of an existing connection. If you would like to log these packets, 
    set LOGNEWNOTSYN to the syslog level at which you want the packets logged. 
@@ -1972,8 +2000,8 @@ a development   snapshot as patching with version 1.9 results in kernel compilat
    <b>Note: </b>Packets logged under this option are usually the result of 
    broken remote IP stacks rather than the result of any sort of attempt to 
    breach your firewall.<br>
-&nbsp;<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>MERGE_HOSTS </b>- Added in Version 1.3.5<br>
+&nbsp;</li>
+   <li><b>MERGE_HOSTS </b>- Added in Version 1.3.5<br>
    Prior to 1.3.5, when the <a href="#Hosts">/etc/shorewall/hosts</a> file 
    included an entry for a zone then the entire zone had to be defined in the 
    /etc/shorewall/hosts file and any associations between the zone and 
@@ -1988,61 +2016,61 @@ a development   snapshot as patching with version 1.9 results in kernel compilat
    Example:<br>
    <br>
    Interfaces File:<br>
-&nbsp;<!--mstheme--></font><table border="1" cellpadding="2" style="border-collapse: collapse" id="AutoNumber2" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+&nbsp;<table border="1" cellpadding="2" style="border-collapse: collapse" id="AutoNumber2">
      <tr>
-       <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>ZONE</b></u><!--mstheme--></font></td>
-       <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>HOSTS</b></u><!--mstheme--></font></td>
-       <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>BROADCAST</b></u><!--mstheme--></font></td>
-       <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>OPTIONS</b></u><!--mstheme--></font></td>
+       <td><u><b>ZONE</b></u></td>
+       <td><u><b>HOSTS</b></u></td>
+       <td><u><b>BROADCAST</b></u></td>
+       <td><u><b>OPTIONS</b></u></td>
      </tr>
      <tr>
-       <td><!--mstheme--><font face="arial, Arial, Helvetica">loc<!--mstheme--></font></td>
-       <td><!--mstheme--><font face="arial, Arial, Helvetica">eth1<!--mstheme--></font></td>
-       <td><!--mstheme--><font face="arial, Arial, Helvetica">-<!--mstheme--></font></td>
-       <td><!--mstheme--><font face="arial, Arial, Helvetica">dhcp<!--mstheme--></font></td>
+       <td>loc</td>
+       <td>eth1</td>
+       <td>-</td>
+       <td>dhcp</td>
      </tr>
      <tr>
-       <td><!--mstheme--><font face="arial, Arial, Helvetica">-<!--mstheme--></font></td>
-       <td><!--mstheme--><font face="arial, Arial, Helvetica">ppp+<!--mstheme--></font></td>
-       <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-       <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+       <td>-</td>
+       <td>ppp+</td>
+       <td>&nbsp;</td>
+       <td>&nbsp;</td>
      </tr>
-   </table><!--mstheme--><font face="arial, Arial, Helvetica">
+   </table>
    <p><br>
    Hosts File:<br>
 &nbsp;</p>
-   <!--mstheme--></font><table border="1" cellpadding="2" style="border-collapse: collapse" id="AutoNumber3" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+   <table border="1" cellpadding="2" style="border-collapse: collapse" id="AutoNumber3">
      <tr>
-       <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>ZONE</b></u><!--mstheme--></font></td>
-       <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>HOSTS</b></u><!--mstheme--></font></td>
+       <td><u><b>ZONE</b></u></td>
+       <td><u><b>HOSTS</b></u></td>
      </tr>
      <tr>
-       <td><!--mstheme--><font face="arial, Arial, Helvetica">loc<!--mstheme--></font></td>
-       <td><!--mstheme--><font face="arial, Arial, Helvetica">ppp+:192.168.12.0/24<!--mstheme--></font></td>
+       <td>loc</td>
+       <td>ppp+:192.168.12.0/24</td>
      </tr>
-   </table><!--mstheme--><font face="arial, Arial, Helvetica">
+   </table>
    <p><font face="Courier"><br>
    </font>With MERGE_HOSTS=No, the<b> loc</b> zone consists of only ppp+:192.168.12.0/24; 
    with MERGE_HOSTS=Yes, it includes eth1:0.0.0.0/0 and ppp+:192.168.12.0/24.<br>
-&nbsp;<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>MULTIPORT</b> - Added in Version 1.3.2<br>
+&nbsp;</li>
+   <li><b>MULTIPORT</b> - Added in Version 1.3.2<br>
    If set to &quot;Yes&quot; or &quot;yes&quot;, Shorewall will use the Netfilter multiport 
    facility. In order to use this facility, your kernel must have multiport 
    support (CONFIG_IP_NF_MATCH_MULTIPORT). When this support is used, Shorewall 
    will generate a single rule from each record in the /etc/shorewall/rules file 
    that meets these criteria:<br>
-&nbsp;<!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-     <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul2.gif" width="12" height="12" hspace="15" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">No port range(s) specified<!--mstheme--></font><!--msthemelist--></td></tr>
-     <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul2.gif" width="12" height="12" hspace="15" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">Specifies 15 or fewer ports<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+&nbsp;<ul>
+     <li>No port range(s) specified</li>
+     <li>Specifies 15 or fewer ports</li>
+   </ul>
    <p>Rules not meeting those criteria will continue to generate an individual 
-   rule for each listed port or port range.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>NAT_BEFORE_RULES</b><br>
+   rule for each listed port or port range.</li>
+   <li><b>NAT_BEFORE_RULES</b><br>
    If set to &quot;No&quot; or &quot;no&quot;, port forwarding rules can override the contents of 
    the <a href="#NAT">/etc/shorewall/nat</a> file. If set to &quot;Yes&quot; or &quot;yes&quot;, 
    port forwarding rules cannot override static NAT. If not set or set to an 
-   empty value, &quot;Yes&quot; is assumed.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>FW<br>
+   empty value, &quot;Yes&quot; is assumed.</li>
+   <li><b>FW<br>
                                                                   </b>This
                                                                   parameter
                                                                   specifies the
@@ -2053,8 +2081,8 @@ a development   snapshot as patching with version 1.9 results in kernel compilat
                                                                   empty string,
                                                                   the value
                                                                   &quot;fw&quot;
-                                                                  is assumed.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>SUBSYSLOCK</b><br>
+                                                                  is assumed.</li>
+   <li><b>SUBSYSLOCK</b><br>
          This parameter should be set to the name of a file that the firewall 
        should create if it starts successfully and remove when it stops. Creating
        and removing this file allows Shorewall to work with your distribution's
@@ -2062,8 +2090,8 @@ a development   snapshot as patching with version 1.9 results in kernel compilat
        For Debian, the value is /var/state/shorewall and in LEAF it is
                                                                   /var/run/shorwall.
                                                                   Example: 
-   SUBSYSLOCK=/var/lock/subsys/shorewall.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
+   SUBSYSLOCK=/var/lock/subsys/shorewall.</li>
+   <li><b>
   STATEDIR</b><br>
          This parameter specifies the name of a directory where Shorewall 
 stores        state information. If the directory doesn't exist when Shorewall 
@@ -2071,20 +2099,23 @@ starts,        it will create the directory. Example: STATEDIR=/tmp/shorewall.<b
    <br>
    <b>NOTE:</b> If you change the STATEDIR variable while the firewall is 
    running, create the new directory if necessary then copy the contents of the 
-   old directory to the new directory. <!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
+   old directory to the new directory. </li>
+   <li><b>
   ALLOWRELATED</b><br>
          This parameter must be assigned the value "Yes"       ("yes") or 
 "No" ("no") and specifies whether       Shorewall allows connection requests 
 that are related to an already       allowed connection. If you say "No" ("no"),
 you can       still override this setting by including "related" rules in
-       /etc/shorewall/rules ("related" given as the protocol).<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
+       /etc/shorewall/rules ("related" given as the protocol). If you specify 
+   ALLOWRELATED=No, you will need to include rules in
+   <a href="shorewall_extension_scripts.htm">/etc/shorewall/icmpdef</a> to 
+   handle common ICMP packet types.</li>
+   <li><b>
   MODULESDIR</b><br>
          This parameter specifies the directory where your kernel netfilter
  modules       may be found. If you leave the variable empty, Shorewall will
- supply the       value "/lib/modules/`uname -r`/kernel/net/ipv4/netfilter.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
+ supply the       value "/lib/modules/`uname -r`/kernel/net/ipv4/netfilter.</li>
+   <li><b>
   LOGRATE </b> and <b> LOGBURST</b><br>
          These parameters set the match rate and initial burst size for logged 
    packets. Please see the iptables man page for a description of the behavior 
@@ -2095,8 +2126,8 @@ you can       still override this setting by including "related" rules in
    Example:<br>
 &nbsp;&nbsp;&nbsp; LOGRATE=10/minute<br>
 &nbsp;&nbsp;&nbsp; LOGBURST=5<br>
-&nbsp;<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>LOGFILE</b><br>
+&nbsp;</li>
+   <li><b>LOGFILE</b><br>
                                                                   This parameter
                                                                   tells the
                                                                   /sbin/shorewall
@@ -2117,8 +2148,8 @@ you can       still override this setting by including "related" rules in
                                                                   an empty
                                                                   value,
                                                                   /var/log/messages
-                                                                  is assumed.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>NAT_ENABLED</b><br>
+                                                                  is assumed.</li>
+   <li><b>NAT_ENABLED</b><br>
          This parameter determines whether Shorewall supports NAT operations. NAT 
        operations include:<br>
          <br>
@@ -2131,8 +2162,8 @@ you can       still override this setting by including "related" rules in
  then NAT is enabled. If the parameter has a value of       "no" or "No"
 then  NAT is disabled.<br>
           
-   <!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
+   </li>
+   <li><b>
    MANGLE_ENABLED</b><br>
          This parameter determines if packet mangling is enabled. If the
 parameter        has no value or has a value of "Yes" or "yes" than     
@@ -2140,8 +2171,8 @@ parameter        has no value or has a value of "Yes" or "yes" than
 or "No" then packet  mangling is disabled. If packet mangling is       disabled,
 the /etc/shorewall/tos  file is ignored.<br>
           
-   <!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
+   </li>
+   <li><b>
   IP_FORWARDING</b><br>
          This parameter determines whether Shorewall enables or disables
 IPV4        Packet Forwarding (/proc/sys/net/ipv4/ip_forward). Possible values
@@ -2155,8 +2186,8 @@ IPV4        Packet Forwarding (/proc/sys/net/ipv4/ip_forward). Possible values
          If this variable is not set or is given an empty value (IP_FORWARD="") 
        then IP_FORWARD=On is assumed.<br>
       
-   <!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>ADD_IP_ALIASES</b><br>
+   </li>
+   <li><b>ADD_IP_ALIASES</b><br>
         This parameter determines whether Shorewall automatically adds the 
                                                                     <i>external
        </i>address(es) in <a href="#NAT">/etc/shorewall/nat</a>
@@ -2166,8 +2197,8 @@ these aliases yourself using your distribution's network       configuration
 tools.<br>
         <br>
         If this variable is not set or is given an empty value (ADD_IP_ALIASES="")
-       then ADD_IP_ALIASES=Yes is assumed.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>ADD_SNAT_ALIASES</b><br>
+       then ADD_IP_ALIASES=Yes is assumed.</li>
+   <li><b>ADD_SNAT_ALIASES</b><br>
    This parameter determines whether Shorewall automatically adds the SNAT <i>
    ADDRESS </i>in <a href="#Masq">/etc/shorewall/masq</a>. If the variable is 
    set to &quot;Yes&quot; or &quot;yes&quot; then Shorewall automatically adds these addresses. If 
@@ -2176,8 +2207,8 @@ tools.<br>
         <br>
         If this variable is not set or is given an empty value (ADD_SNAT_ALIASES="")
        then ADD_SNAT_ALIASES=No is assumed.<br>
-   <!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>LOGUNCLEAN</b><br>
+   </li>
+   <li><b>LOGUNCLEAN</b><br>
                                                                   This parameter
                                                                   determines the
                                                                   logging level
@@ -2208,8 +2239,8 @@ tools.<br>
                                                                   the specified
                                                                   level
                                                                   (Example:
-                                                                  LOGUNCLEAN=debug).<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>BLACKLIST_DISPOSITION</b><br>
+                                                                  LOGUNCLEAN=debug).</li>
+   <li><b>BLACKLIST_DISPOSITION</b><br>
                                                                   This parameter
                                                                   determines the
                                                                   disposition of
@@ -2234,8 +2265,8 @@ tools.<br>
                                                                   you assign an
                                                                   empty value
                                                                   then DROP is
-                                                                  assumed.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>BLACKLIST_LOGLEVEL</b><br>
+                                                                  assumed.</li>
+   <li><b>BLACKLIST_LOGLEVEL</b><br>
                                                                   This paremter
                                                                   determines if
                                                                   packets from
@@ -2260,8 +2291,8 @@ tools.<br>
                                                                   from
                                                                   blacklisted
                                                                   hosts are not
-                                                                  logged.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>CLAMPMSS</b><br>
+                                                                  logged.</li>
+   <li><b>CLAMPMSS</b><br>
                                                                   This parameter
                                                                   enables the
                                                                   TCP Clamp MSS
@@ -2292,17 +2323,17 @@ tools.<br>
                                                                   requires
                                                                   CONFIG_IP_NF_TARGET_TCPMSS
                                                                   <a href="kernel.htm">in
-                                                                  your kernel</a>.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>ROUTE_FILTER</b><br>
+                                                                  your kernel</a>.</li>
+   <li><b>ROUTE_FILTER</b><br>
    If this parameter is given the value &quot;Yes&quot; or &quot;yes&quot; then route filtering 
    (anti-spoofing) is 
-   enabled on all network interfaces. The default value is &quot;no&quot;.<!--mstheme--></font><!--msthemelist--></td></tr>
- <!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+   enabled on all network interfaces. The default value is &quot;no&quot;.</li>
+ </ul>
             
                                                                         
                                             
-                                                              <h2><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666"><a name="modules"></a>
-                                                              /etc/shorewall/modules Configuration<!--mstheme--></font></h2>
+                                                              <h2><a name="modules"></a>
+                                                              /etc/shorewall/modules Configuration</h2>
                                                                         
                                                           
                                                               <p>The file
@@ -2403,8 +2434,8 @@ so,   then the following command is executed:</p>
                                                                         
                                                                         
        
-                                                                          <h2><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666"><a name="TOS"></a>
-                                                                          /etc/shorewall/tos Configuration<!--mstheme--></font></h2>
+                                                                          <h2><a name="TOS"></a>
+                                                                          /etc/shorewall/tos Configuration</h2>
                                                                         
                                                                         
          
@@ -2421,8 +2452,8 @@ by   Shorewall, you must have <a href="#MangleEnabled">mangle support enabled</a
   Entries in the file have the following columns:</p>
                                  
                                                
- <!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
+ <ul>
+   <li><b>
   SOURCE</b> -- The source zone. May be qualified by following the zone name
       with a colon (":") and either an IP address, an IP subnet, a MAC address 
    in <a href="#MAC">Shorewall Format</a> or the  
@@ -2430,25 +2461,25 @@ by   Shorewall, you must have <a href="#MangleEnabled">mangle support enabled</a
                                                                   the firewall</a>
                                                                   zone to       indicate
  packets originating on the firewall itself or "all" to       indicate any
- source.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
+ source.</li>
+   <li><b>
   DEST</b> -- The destination zone. May be qualified by following the zone  
     name with a colon (":") and either an IP address or an IP       subnet.
  Because packets are marked prior to routing, you may not specify       the
  name of an interface. This column may also contain        "all" to indicate
- any destination.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
+ any destination.</li>
+   <li><b>
   PROTOCOL</b> -- The name of a protocol in /etc/protocols or the protocol's
-      number.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
+      number.</li>
+   <li><b>
   SOURCE PORT(S)</b> -- The source port or a port range. For all ports, place 
-      a hyphen ("-") in this column.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
+      a hyphen ("-") in this column.</li>
+   <li><b>
   DEST PORT(S)</b>&nbsp; -- The destination port or a port range. To indicate    
-  all ports, place a hyphen ("-") in this column.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>
-  TOS</b> -- The type of service. Must be one of the following:<!--mstheme--></font><!--msthemelist--></td></tr>
- <!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+  all ports, place a hyphen ("-") in this column.</li>
+   <li><b>
+  TOS</b> -- The type of service. Must be one of the following:</li>
+ </ul>
                                                                         
                                                                           <blockquote>
                                                               
@@ -2468,65 +2499,65 @@ by   Shorewall, you must have <a href="#MangleEnabled">mangle support enabled</a
   following entries.</p>
                                                                     
                                                                               <blockquote>
-  <!--mstheme--></font><table border="2" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+  <table border="2" cellpadding="2" style="border-collapse: collapse">
        <tbody>
                                                                         
              <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>SOURCE</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>DEST</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>PROTOCOL</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>SOURCE<br>
-         PORT(S)</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>DEST  PORT(S)</b><!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>TOS</b><!--mstheme--></font></td>
+         <td><b>SOURCE</b></td>
+         <td><b>DEST</b></td>
+         <td><b>PROTOCOL</b></td>
+         <td><b>SOURCE<br>
+         PORT(S)</b></td>
+         <td><b>DEST  PORT(S)</b></td>
+         <td><b>TOS</b></td>
        </tr>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">all<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">all<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">tcp<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">-<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">ssh<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">16<!--mstheme--></font></td>
+         <td>all</td>
+         <td>all</td>
+         <td>tcp</td>
+         <td>-</td>
+         <td>ssh</td>
+         <td>16</td>
        </tr>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">all<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">all<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">tcp<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">ssh<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">-<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">16<!--mstheme--></font></td>
+         <td>all</td>
+         <td>all</td>
+         <td>tcp</td>
+         <td>ssh</td>
+         <td>-</td>
+         <td>16</td>
        </tr>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">all<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">all<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">tcp<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">-<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">ftp<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">16<!--mstheme--></font></td>
+         <td>all</td>
+         <td>all</td>
+         <td>tcp</td>
+         <td>-</td>
+         <td>ftp</td>
+         <td>16</td>
        </tr>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">all<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">all<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">tcp<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">ftp<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">-<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">16<!--mstheme--></font></td>
+         <td>all</td>
+         <td>all</td>
+         <td>tcp</td>
+         <td>ftp</td>
+         <td>-</td>
+         <td>16</td>
        </tr>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">all<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">all<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">tcp<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">-<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">ftp-data<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">8<!--mstheme--></font></td>
+         <td>all</td>
+         <td>all</td>
+         <td>tcp</td>
+         <td>-</td>
+         <td>ftp-data</td>
+         <td>8</td>
        </tr>
        <tr>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">all<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">all<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">tcp<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">ftp-data<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">-<!--mstheme--></font></td>
-         <td><!--mstheme--><font face="arial, Arial, Helvetica">8<!--mstheme--></font></td>
+         <td>all</td>
+         <td>all</td>
+         <td>tcp</td>
+         <td>ftp-data</td>
+         <td>-</td>
+         <td>8</td>
        </tr>
                                                                         
                                                                         
@@ -2535,12 +2566,12 @@ by   Shorewall, you must have <a href="#MangleEnabled">mangle support enabled</a
                                                                         
                                                                         
                  
-                                                                                </table><!--mstheme--><font face="arial, Arial, Helvetica"></blockquote>
+                                                                                </table></blockquote>
                                                                         
                                                                                 <p><b>WARNING: </b>Users have reported that odd routing problems result from adding the ESP and AH protocols to the /etc/shorewall/tos file.
  </p>
                                                                         
-                                                                                <h2><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666"><a name="Blacklist"></a>/etc/shorewall/blacklist<!--mstheme--></font></h2>
+                                                                                <h2><a name="Blacklist"></a>/etc/shorewall/blacklist</h2>
                                                                         
                                                                                 <p>Each
                                                                                 line
@@ -2555,8 +2586,8 @@ by   Shorewall, you must have <a href="#MangleEnabled">mangle support enabled</a
                                                                                 address.
                                                                                 Example:</p>
                                                                         
- <!--mstheme--></font><pre>      130.252.100.69
-      206.124.146.0/24</pre><!--mstheme--><font face="arial, Arial, Helvetica">
+ <pre>      130.252.100.69
+      206.124.146.0/24</pre>
                                                                         
                                                                                 <p>Packets
                                                                                 <u><b>from</b></u>
@@ -2604,7 +2635,7 @@ by   Shorewall, you must have <a href="#MangleEnabled">mangle support enabled</a
                                                                         
                                                                         
                      
-                                                                                <h2><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666"><a name="rfc1918"></a>/etc/shorewall/rfc1918 (Added in Version 1.3.1)<!--mstheme--></font></h2>
+                                                                                <h2><a name="rfc1918"></a>/etc/shorewall/rfc1918 (Added in Version 1.3.1)</h2>
                                                                         
                                                                         
                      
@@ -2612,19 +2643,19 @@ by   Shorewall, you must have <a href="#MangleEnabled">mangle support enabled</a
                                                                         
                                                                         
                      
-                                                                                <!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                                                                  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>SUBNET</b> - The subnet using VLSM notation (e.g., 192.168.0.0/16).<!--mstheme--></font><!--msthemelist--></td></tr>
-                                                                                  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>TARGET<i> </i></b>- What to do with packets to/from the SUBNET:<!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                                                                    <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul2.gif" width="12" height="12" hspace="15" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>RETURN</b> - Process the packet normally thru the rules and policies.<!--mstheme--></font><!--msthemelist--></td></tr>
-                                                                                    <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul2.gif" width="12" height="12" hspace="15" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>DROP</b> - Silently drop the packet.<!--mstheme--></font><!--msthemelist--></td></tr>
-                                                                                    <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul2.gif" width="12" height="12" hspace="15" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>logdrop</b> - Log then drop the packet.<!--mstheme--></font><!--msthemelist--></td></tr>
-                                                                                  <!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
-                                                                                  <!--mstheme--></font><!--msthemelist--></td></tr>
- <!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+                                                                                <ul>
+                                                                                  <li><b>SUBNET</b> - The subnet using VLSM notation (e.g., 192.168.0.0/16).</li>
+                                                                                  <li><b>TARGET<i> </i></b>- What to do with packets to/from the SUBNET:<ul>
+                                                                                    <li><b>RETURN</b> - Process the packet normally thru the rules and policies.</li>
+                                                                                    <li><b>DROP</b> - Silently drop the packet.</li>
+                                                                                    <li><b>logdrop</b> - Log then drop the packet.</li>
+                                                                                  </ul>
+                                                                                  </li>
+ </ul>
                                                                         
                                                                         
                      
-                                                                                <h2><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666"><a name="Routestopped"></a>25. /etc/shorewall/routestopped (Added in Version 1.3.4)<!--mstheme--></font></h2>
+                                                                                <h2><a name="Routestopped"></a>25. /etc/shorewall/routestopped (Added in Version 1.3.4)</h2>
                                                                         
                                                                         
                      
@@ -2632,10 +2663,10 @@ by   Shorewall, you must have <a href="#MangleEnabled">mangle support enabled</a
                                                                         
                                                                         
                      
-                                                                                <!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                                                                  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>INTERFACE </b>- The firewall interface through which the host(s) comminicate with the firewall.<!--mstheme--></font><!--msthemelist--></td></tr>
-                                                                                  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><b>HOST(S) </b>- (Optional) - A comma-separated list of IP/Subnet addresses. If not supplied or supplied as &quot;-&quot; then 0.0.0.0/0 is assumed.<!--mstheme--></font><!--msthemelist--></td></tr>
- <!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+                                                                                <ul>
+                                                                                  <li><b>INTERFACE </b>- The firewall interface through which the host(s) comminicate with the firewall.</li>
+                                                                                  <li><b>HOST(S) </b>- (Optional) - A comma-separated list of IP/Subnet addresses. If not supplied or supplied as &quot;-&quot; then 0.0.0.0/0 is assumed.</li>
+ </ul>
                                                                         
                                                                         
                      
@@ -2644,26 +2675,26 @@ by   Shorewall, you must have <a href="#MangleEnabled">mangle support enabled</a
                                                                         
                      
                                                                                 <blockquote>
-                                                                                  <!--mstheme--></font><table border="2" style="border-collapse: collapse" id="AutoNumber1" cellpadding="2" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+                                                                                  <table border="2" style="border-collapse: collapse" id="AutoNumber1" cellpadding="2">
                                                                                     <tr>
-                                                                                      <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>INTERFACE</b></u><!--mstheme--></font></td>
-                                                                                      <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>HOST(S)</b></u><!--mstheme--></font></td>
+                                                                                      <td><u><b>INTERFACE</b></u></td>
+                                                                                      <td><u><b>HOST(S)</b></u></td>
                                                                                     </tr>
                                                                                     <tr>
-                                                                                      <td><!--mstheme--><font face="arial, Arial, Helvetica">eth2<!--mstheme--></font></td>
-                                                                                      <td><!--mstheme--><font face="arial, Arial, Helvetica">192.168.1.0/24<!--mstheme--></font></td>
+                                                                                      <td>eth2</td>
+                                                                                      <td>192.168.1.0/24</td>
                                                                                     </tr>
                                                                                     <tr>
-                                                                                      <td><!--mstheme--><font face="arial, Arial, Helvetica">eth1<!--mstheme--></font></td>
-                                                                                      <td><!--mstheme--><font face="arial, Arial, Helvetica">-<!--mstheme--></font></td>
+                                                                                      <td>eth1</td>
+                                                                                      <td>-</td>
                                                                                     </tr>
-                                                                                  </table><!--mstheme--><font face="arial, Arial, Helvetica">
+                                                                                  </table>
  </blockquote>
                                                                         
                                                                         
                      
                                                                                   <p><font size="2">
-  Updated 8/6/2002 - <a href="support.htm">Tom 
+  Updated 8/22/2002 - <a href="support.htm">Tom 
 Eastep</a>
    </font></p>
                                                                         
@@ -2678,4 +2709,4 @@ Eastep</a>
                                                                         
                                                                         
                          
-                                                                                  </font><!--mstheme--></font></body></html>
+                                                                                  </font></body></html>

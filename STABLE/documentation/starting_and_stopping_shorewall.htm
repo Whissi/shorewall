@@ -6,14 +6,19 @@
 <meta name="ProgId" content="FrontPage.Editor.Document">
 <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
 <title>Starting and Stopping Shorewall</title>
-<meta name="Microsoft Theme" content="radial 011, default">
 </head>
 
-<body background="_themes/radial/radbkgnd.gif" bgcolor="#FFFFFF" text="#000000" link="#6666FF" vlink="#993333" alink="#66CCCC"><!--mstheme--><font face="arial, Arial, Helvetica">
+<body>
 
                                                                         
                      
-                                                                                <h1 align="center"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">Starting/Stopping and Monitoring the Firewall<!--mstheme--></font></h1>
+                                                                                <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%" id="AutoNumber1" bgcolor="#400169" height="90">
+                                                                                  <tr>
+                                                                                    <td width="100%">
+                                                                                    <h1 align="center"><font color="#FFFFFF">Starting/Stopping and Monitoring the Firewall</font></h1>
+                                                                                    </td>
+                                                                                  </tr>
+                                                                                </table>
                                                                         
                                                                         
                      
@@ -46,71 +51,76 @@ from this     default, you can use the "--level" option in     chkconfig
   You can manually start and stop Shoreline Firewall using     the "shorewall"
  shell program: </p>
                                                                         
- <!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">shorewall start - starts the firewall<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">shorewall stop - stops the firewall<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">shorewall restart - stops the firewall (if it's             running) and
- then starts it again<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">shorewall reset - reset the packet and byte counters             in the 
-firewall<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">shorewall clear - remove all rules and chains             installed by
-Shoreline  Firewall<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">shorewall refresh - refresh the rules involving the broadcast         addresses
- of firewall interfaces and the black and white lists.<!--mstheme--></font><!--msthemelist--></td></tr>
-<!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+ <ul>
+   <li>shorewall start - starts the firewall</li>
+   <li>shorewall stop - stops the firewall</li>
+   <li>shorewall restart - stops the firewall (if it's             running) and
+ then starts it again</li>
+   <li>shorewall reset - reset the packet and byte counters             in the 
+firewall</li>
+   <li>shorewall clear - remove all rules and chains             installed by
+Shoreline  Firewall</li>
+   <li>shorewall refresh - refresh the rules involving the broadcast         addresses
+ of firewall interfaces and the black and white lists.</li>
+</ul>
                                                                         
                                                                         
                        
                                                                                 <p>
   The "shorewall" program may also be used to monitor the     firewall.</p>
                                                                         
- <!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">shorewall status - produce a verbose report about the firewall        
-  (iptables -L -n -v)<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">shorewall show <i>chain</i> - produce a verbose report about <i>chain 
-         </i>(iptables -L <i>chain</i> -n -v)<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">shorewall show nat - produce a verbose report about the nat table     
-     (iptables -t nat -L -n -v)<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">shorewall show tos - produce a verbose report about the mangle table  
-      (iptables -t mangle -L -n -v)<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">shorewall show log - display the last 20 packet log entries.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">shorewall show connections - displays the IP connections currently being 
-   tracked by the firewall.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">shorewall
+ <ul>
+   <li>shorewall status - produce a verbose report about the firewall        
+  (iptables -L -n -v)</li>
+   <li>shorewall show <i>chain</i> - produce a verbose report about <i>chain 
+         </i>(iptables -L <i>chain</i> -n -v)</li>
+   <li>shorewall show nat - produce a verbose report about the nat table     
+     (iptables -t nat -L -n -v)</li>
+   <li>shorewall show tos - produce a verbose report about the mangle table  
+      (iptables -t mangle -L -n -v)</li>
+   <li>shorewall show log - display the last 20 packet log entries.</li>
+   <li>shorewall show connections - displays the IP connections currently being 
+   tracked by the firewall.</li>
+   <li>shorewall
                                                                                     show
                                                                                     tc 
-   - displays information about the traffic control/shaping configuration.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">shorewall monitor [ delay ] - Continuously display the firewall       
+   - displays information about the traffic control/shaping configuration.</li>
+   <li>shorewall monitor [ delay ] - Continuously display the firewall       
    status, last 20 log entries and nat. When the log entry display      
-    changes, an audible alarm is sounded.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">shorewall hits - Produces several reports about the Shorewall packet log 
-        messages in the current /var/log/messages file.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">shorewall version -  Displays the installed
-    version number.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">shorewall check -  Performs a <u>cursory</u> validation 
-   of the zones, interfaces, hosts, rules and policy files.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">shorewall try<i> configuration-directory</i> [<i> timeout</i> ] -  Restart shorewall using the 
+    changes, an audible alarm is sounded.</li>
+   <li>shorewall hits - Produces several reports about the Shorewall packet log 
+        messages in the current /var/log/messages file.</li>
+   <li>shorewall version -  Displays the installed
+    version number.</li>
+   <li>shorewall check -  Performs a <u>cursory</u> validation 
+   of the zones, interfaces, hosts, rules and policy files.
+   <font size="4" color="#FF6666"><b>The &quot;check&quot; command does not parse and 
+   validate the generated iptables commands so even though the &quot;check&quot; command 
+   completes successfully, the configuration may fail to start. See the 
+   recommended way to make configuration changes described below. </b></font>
+   </li>
+   <li>shorewall try<i> configuration-directory</i> [<i> timeout</i> ] -  Restart shorewall using the 
    specified configuration and if an error occurs or if the<i> timeout </i>
    option is given and the new configuration has been up for that many seconds 
-   then shorewall is restarted using the standard configuration.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">shorewall deny, shorewall reject, shorewall accept and shorewall save 
-   implement <a href="blacklisting_support.htm">dynamic blacklisting</a>.<!--mstheme--></font><!--msthemelist--></td></tr>
-   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">shorewall logwatch (added in version 1.3.2) - Monitors the
+   then shorewall is restarted using the standard configuration.</li>
+   <li>shorewall deny, shorewall reject, shorewall accept and shorewall save 
+   implement <a href="blacklisting_support.htm">dynamic blacklisting</a>.</li>
+   <li>shorewall logwatch (added in version 1.3.2) - Monitors the
    <a href="#Conf">LOGFILE </a>and produces an audible alarm when new Shorewall 
-   messages are logged.<!--mstheme--></font><!--msthemelist--></td></tr>
-<!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+   messages are logged.</li>
+</ul>
                                  
                                                                                 <p>
- The <b>shorewall start </b>and
-                                                                                <b>
-  shorewall restart</b> commands allow you to specify which <a href="#Configs">
+ The <b>shorewall start</b>, <b>shorewall restart, shorewall check </b>&nbsp;and
+ <b>shorewall try </b>commands allow you to specify which <a href="#Configs">
   Shorewall configuration</a>
    to use:</p>
                                 
                                                                                 <blockquote>
                                       
                                                                                   <p>
- shorewall [ -c <i>configuration-directory</i> ] {start|restart}</p>
+ shorewall [ -c <i>configuration-directory</i> ] {start|restart|check}<br>
+ shorewall try <i>configuration-directory</i></p>
  </blockquote>
                                     
                                                                                   <p>
@@ -121,8 +131,43 @@ Shoreline  Firewall<!--mstheme--></font><!--msthemelist--></td></tr>
                                      
                                                                         
                        
+                                                                                  <p>
+ When changing the configuration of a production firewall, I recommend the 
+ following:</p>
+                                     
+                                                                        
+                       
+                                                                                  <ul>
+                                                                                    <li>mkdir /etc/test</li>
+                                                                                    <li>cd /etc/test</li>
+                                                                                    <li>&lt;copy any files that you need to change from /etc/shorewall to . and change them here&gt;</li>
+                                                                                    <li>shorewall -c . check</li>
+                                                                                    <li>&lt;correct any errors found by check and check again&gt;</li>
+                                                                                    <li>/sbin/shorewall try .</li>
+</ul>
+                                    
+                                                                                  <p>
+ If the configuration starts but doesn't work, just &quot;shorewall restart&quot; to 
+ restore the old configuration. If the new configuration fails to start, the 
+ &quot;try&quot; command will automatically start the old one for you.</p>
+                                     
+                                                                        
+                       
+                                                                                  <p>
+ When the new configuration works then just </p>
+                                     
+                                                                        
+                       
+                                                                                  <ul>
+                                                                                    <li>cp * /etc/shorewall</li>
+                                                                                    <li>cd</li>
+                                                                                    <li>rm -rf /etc/test</li>
+</ul>
+                                     
+                                                                        
+                       
                                                                                   <p><font size="2">
-  Updated 7/26/2002 - <a href="support.htm">Tom 
+  Updated 8/8/2002 - <a href="support.htm">Tom 
 Eastep</a>
    </font></p>
                                                                         
@@ -133,6 +178,6 @@ Eastep</a>
                                                                         
                                                                         
                        
-  <!--mstheme--></font></body>
+  </body>
 
 </html>

@@ -6,50 +6,55 @@
 <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
 <meta name="ProgId" content="FrontPage.Editor.Document">
 <title>Blacklisting Support</title>
-<meta name="Microsoft Theme" content="radial 011">
 </head>
 
-<body background="_themes/radial/radbkgnd.gif" bgcolor="#FFFFFF" text="#000000" link="#6666FF" vlink="#993333" alink="#66CCCC"><!--mstheme--><font face="arial, Arial, Helvetica">
+<body>
 
-<h1 align="center"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">Blacklisting Support<!--mstheme--></font></h1>
+<table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%" id="AutoNumber1" bgcolor="#400169" height="90">
+  <tr>
+    <td width="100%">
+    <h1 align="center"><font color="#FFFFFF">Blacklisting Support</font></h1>
+    </td>
+  </tr>
+</table>
 <p>Shorewall supports two different forms of blacklisting; static and dynamic.</p>
-<h2><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">Static Blacklisting<!--mstheme--></font></h2>
+<h2>Static Blacklisting</h2>
 <p>Shorewall
 static blacklisting support has the following configuration parameters:</p>
-<!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">You specify whether you want packets from blacklisted hosts dropped or
+<ul>
+  <li>You specify whether you want packets from blacklisted hosts dropped or
     rejected using the <a href="Documentation.htm#BLDisposition">BLACKLIST_DISPOSITION</a>
-    setting in /etc/shorewall/shorewall.conf<!--mstheme--></font><!--msthemelist--></td></tr>
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">You specify whether you want packets from blacklisted hosts logged and at
+    setting in /etc/shorewall/shorewall.conf</li>
+  <li>You specify whether you want packets from blacklisted hosts logged and at
     what syslog level using the <a href="Documentation.htm#BLLoglevel">BLACKLIST_LOGLEVEL</a>
-    setting in /etc/shorewall/shorewall.conf<!--mstheme--></font><!--msthemelist--></td></tr>
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">You list the IP addresses/subnets that you wish to blacklist in <a href="Documentation.htm#Blacklist">/etc/shorewall/blacklist</a><!--mstheme--></font><!--msthemelist--></td></tr>
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">You specify the interfaces whose incoming packets you want checked against
+    setting in /etc/shorewall/shorewall.conf</li>
+  <li>You list the IP addresses/subnets that you wish to blacklist in <a href="Documentation.htm#Blacklist">/etc/shorewall/blacklist</a></li>
+  <li>You specify the interfaces whose incoming packets you want checked against
     the blacklist using the &quot;<a href="Documentation.htm#BLInterface">blacklist</a>&quot;
-    option in /etc/shorewall/interfaces.<!--mstheme--></font><!--msthemelist--></td></tr>
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">The black list is refreshed from /etc/shorewall/blacklist by the &quot;<a href="Documentation.htm#Starting">shorewall
-    refresh</a>&quot; command.<!--mstheme--></font><!--msthemelist--></td></tr>
-<!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
-<h2><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">Dynamic Blacklisting<!--mstheme--></font></h2>
+    option in /etc/shorewall/interfaces.</li>
+  <li>The black list is refreshed from /etc/shorewall/blacklist by the &quot;<a href="Documentation.htm#Starting">shorewall
+    refresh</a>&quot; command.</li>
+</ul>
+<h2>Dynamic Blacklisting</h2>
 <p>Dynamic blacklisting support was added in version 1.3.2. Dynamic blacklisting 
 doesn't use any configuration parameters but is rather controlled using 
 /sbin/shorewall commands:</p>
-<!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">deny <i>&lt;ip address list&gt; </i>- causes packets from the listed IP 
-  addresses to be silently dropped by the firewall.<!--mstheme--></font><!--msthemelist--></td></tr>
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">reject <i>&lt;ip address list&gt; </i>- causes packets from the listed IP 
-  addresses to be rejected by the firewall.<!--mstheme--></font><!--msthemelist--></td></tr>
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">allow <i>&lt;ip address list&gt; </i>- re-enables receipt of packets from hosts 
-  previously blacklisted by a <i>deny</i> or <i>reject</i> command.<!--mstheme--></font><!--msthemelist--></td></tr>
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">save - save the dynamic blacklisting configuration so that it will be 
-  automatically restored the next time that the firewall is restarted.<!--mstheme--></font><!--msthemelist--></td></tr>
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">show dynamic - displays the dynamic blacklisting configuration.<!--mstheme--></font><!--msthemelist--></td></tr>
-<!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+<ul>
+  <li>deny <i>&lt;ip address list&gt; </i>- causes packets from the listed IP 
+  addresses to be silently dropped by the firewall.</li>
+  <li>reject <i>&lt;ip address list&gt; </i>- causes packets from the listed IP 
+  addresses to be rejected by the firewall.</li>
+  <li>allow <i>&lt;ip address list&gt; </i>- re-enables receipt of packets from hosts 
+  previously blacklisted by a <i>deny</i> or <i>reject</i> command.</li>
+  <li>save - save the dynamic blacklisting configuration so that it will be 
+  automatically restored the next time that the firewall is restarted.</li>
+  <li>show dynamic - displays the dynamic blacklisting configuration.</li>
+</ul>
 <p>Example 1:</p>
-<!--mstheme--></font><pre>     shorewall deny 192.0.2.124 192.0.2.125</pre><!--mstheme--><font face="arial, Arial, Helvetica">
+<pre>     shorewall deny 192.0.2.124 192.0.2.125</pre>
 <p>&nbsp;&nbsp;&nbsp; Drops packets from hosts 192.0.2.124 and 192.0.2.125</p>
 <p>Example 2:</p>
-<!--mstheme--></font><pre>     shorewall allow 192.0.2.125</pre><!--mstheme--><font face="arial, Arial, Helvetica">
+<pre>     shorewall allow 192.0.2.125</pre>
 <p>&nbsp;&nbsp;&nbsp; Reenables access from 192.0.2.125.</p>
 <p><font size="2">Last updated 6/16/2002 - <a href="support.htm">Tom
 Eastep</a></font></p>
@@ -57,6 +62,6 @@ Eastep</a></font></p>
 <p><font face="Trebuchet MS"><a href="copyright.htm"><font size="2">Copyright</font> 
 © <font size="2">2002 Thomas M. Eastep.</font></a></font></p>
 
-<!--mstheme--></font></body>
+</body>
 
 </html>

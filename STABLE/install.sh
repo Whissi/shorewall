@@ -54,7 +54,7 @@
 #        /etc/rc.d/rc.local file is modified to start the firewall.
 #
 
-VERSION=1.3.6
+VERSION=1.3.7
 
 usage() # $1 = exit status
 {
@@ -479,8 +479,14 @@ if [ -z "$PREFIX" -a -n "$first_install" ]; then
 	fi
     elif [ -x /sbin/chkconfig -o -x /usr/sbin/chkconfig ]; then
 	if chkconfig --add $FIREWALL ; then
-	    echo -e "\nFirewall will automatically start in run levels as follows:"
+	    echo -e "\nFirewall will start automatically in run levels as follows:"
 	    chkconfig --list $FIREWALL
+	else
+	    cant_autostart
+	fi
+    elif [ -x /sbin/rc-update ]; then
+	if rc-update add shorewall default; then
+	    echo -e "\nFirewall will start automatically at boot"
 	else
 	    cant_autostart
 	fi

@@ -5,13 +5,18 @@
 <title>GRE/IPIP Tunnels</title>
 <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
 <meta name="ProgId" content="FrontPage.Editor.Document">
-<meta name="Microsoft Theme" content="radial 011">
 </head>
 
-<body background="_themes/radial/radbkgnd.gif" bgcolor="#FFFFFF" text="#000000" link="#6666FF" vlink="#993333" alink="#66CCCC"><!--mstheme--><font face="arial, Arial, Helvetica">
-<h1 align="center"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">GRE and IPIP Tunnels<!--mstheme--></font></h1>
-<h3><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666"><font color="#FF6633">Warning: </font>GRE and IPIP Tunnels are insecure when used
-over the internet; use them at your own risk<!--mstheme--></font></h3>
+<body>
+<table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%" id="AutoNumber1" bgcolor="#400169" height="90">
+  <tr>
+    <td width="100%">
+    <h1 align="center"><font color="#FFFFFF">GRE and IPIP Tunnels</font></h1>
+    </td>
+  </tr>
+</table>
+<h3><font color="#FF6633">Warning: </font>GRE and IPIP Tunnels are insecure when used
+over the internet; use them at your own risk</h3>
 <p>GRE and IPIP tunneling with Shorewall requires iproute2 and can be used to bridge two masqueraded networks.&nbsp;GRE
 tunnels were introduced in shorewall version 1.2.0_Beta2.</p>
 <p>The simple scripts described in the <a href="http://ds9a.nl/lartc">Linux Advanced Routing
@@ -19,9 +24,10 @@ and Shaping HOWTO</a> work fine with Shorewall. Shorewall also includes a tunnel
 script for automating tunnel configuration. If you have installed the RPM, the
 tunnel script may be found in the Shorewall documentation directory (usually
 /usr/share/doc/shorewall-&lt;version&gt;/).</p>
-<h2><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">Bridging two Masqueraded Networks<!--mstheme--></font></h2>
+<h2>Bridging two Masqueraded Networks</h2>
 <p>Suppose that we have the following situation:</p>
-<p align="center"><img border="0" src="images/TwoNets1.jpg" width="651" height="394"></p>
+<p align="center">
+<img border="0" src="images/TwoNets1.png" width="745" height="427"></p>
 <p align="left">We want systems in the 192.168.1.0/24 subnetwork to be able to
 communicate with the systems in the 10.0.0.0/8 network. This is accomplished
 through use of the /etc/shorewall/tunnels file, the /etc/shorewall/policy file
@@ -39,37 +45,37 @@ parameter to the type of tunnel that you want to create.</p>
 <p align="left">On system A, the 10.0.0.0/8 will comprise the <b>gw</b> zone. In
 /etc/shorewall/interfaces:</p>
 <blockquote>
-  <!--mstheme--></font><table border="2" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+  <table border="2" cellpadding="2" style="border-collapse: collapse">
     <tr>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>ZONE</b><!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>INTERFACE</b><!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>BROADCAST</b><!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>OPTIONS</b><!--mstheme--></font></td>
+      <td><b>ZONE</b></td>
+      <td><b>INTERFACE</b></td>
+      <td><b>BROADCAST</b></td>
+      <td><b>OPTIONS</b></td>
     </tr>
     <tr>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">gw<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">tosysb<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">10.255.255.255<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+      <td>gw</td>
+      <td>tosysb</td>
+      <td>10.255.255.255</td>
+      <td>&nbsp;</td>
     </tr>
-  </table><!--mstheme--><font face="arial, Arial, Helvetica">
+  </table>
 </blockquote>
 <p align="left">In /etc/shorewall/tunnels on system A, we need the following:</p>
 <blockquote>
-  <!--mstheme--></font><table border="2" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+  <table border="2" cellpadding="2" style="border-collapse: collapse">
     <tr>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>TYPE</b><!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>ZONE</b><!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>GATEWAY</b><!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>GATEWAY ZONE</b><!--mstheme--></font></td>
+      <td><b>TYPE</b></td>
+      <td><b>ZONE</b></td>
+      <td><b>GATEWAY</b></td>
+      <td><b>GATEWAY ZONE</b></td>
     </tr>
     <tr>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">ipip<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">134.28.54.2<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+      <td>ipip</td>
+      <td>net</td>
+      <td>134.28.54.2</td>
+      <td>&nbsp;</td>
     </tr>
-  </table><!--mstheme--><font face="arial, Arial, Helvetica">
+  </table>
 </blockquote>
 <p>This entry in /etc/shorewall/tunnels, opens the firewall so that the IP 
 encapsulation protocol (4) will be accepted to/from the remote gateway.</p>
@@ -85,37 +91,37 @@ encapsulation protocol (4) will be accepted to/from the remote gateway.</p>
 <p>Similarly, On system B the 192.168.1.0/24 subnet will comprise the <b>gw</b>
 zone. In /etc/shorewall/interfaces:</p>
 <blockquote>
-  <!--mstheme--></font><table border="2" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+  <table border="2" cellpadding="2" style="border-collapse: collapse">
     <tr>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>ZONE</b><!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>INTERFACE</b><!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>BROADCAST</b><!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>OPTIONS</b><!--mstheme--></font></td>
+      <td><b>ZONE</b></td>
+      <td><b>INTERFACE</b></td>
+      <td><b>BROADCAST</b></td>
+      <td><b>OPTIONS</b></td>
     </tr>
     <tr>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">gw<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">tosysa<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">192.168.1.255<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+      <td>gw</td>
+      <td>tosysa</td>
+      <td>192.168.1.255</td>
+      <td>&nbsp;</td>
     </tr>
-  </table><!--mstheme--><font face="arial, Arial, Helvetica">
+  </table>
 </blockquote>
 <p>In /etc/shorewall/tunnels on system B, we have:</p>
 <blockquote>
-  <!--mstheme--></font><table border="2" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+  <table border="2" cellpadding="2" style="border-collapse: collapse">
     <tr>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>TYPE</b><!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>ZONE</b><!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>GATEWAY</b><!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>GATEWAY ZONE</b><!--mstheme--></font></td>
+      <td><b>TYPE</b></td>
+      <td><b>ZONE</b></td>
+      <td><b>GATEWAY</b></td>
+      <td><b>GATEWAY ZONE</b></td>
     </tr>
     <tr>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">ipip<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">206.191.148.9<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+      <td>ipip</td>
+      <td>net</td>
+      <td>206.191.148.9</td>
+      <td>&nbsp;</td>
     </tr>
-  </table><!--mstheme--><font face="arial, Arial, Helvetica">
+  </table>
 </blockquote>
 <p>And in the tunnel script on system B:</p>
 <blockquote>
@@ -135,28 +141,28 @@ secured so that root can execute them.  </p>
                 
       
       <blockquote>
-        <!--mstheme--></font><table border="2" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+        <table border="2" cellpadding="2" style="border-collapse: collapse">
                <tr>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica"><strong>SOURCE</strong><!--mstheme--></font></td>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica"><strong>DEST</strong><!--mstheme--></font></td>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica"><strong>POLICY</strong><!--mstheme--></font></td>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica"><strong>LOG LEVEL</strong><!--mstheme--></font></td>
+              <td><strong>SOURCE</strong></td>
+              <td><strong>DEST</strong></td>
+              <td><strong>POLICY</strong></td>
+              <td><strong>LOG LEVEL</strong></td>
           </tr>
           <tr>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica">loc<!--mstheme--></font></td>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica">gw<!--mstheme--></font></td>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica">ACCEPT<!--mstheme--></font></td>
-          <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+              <td>loc</td>
+              <td>gw</td>
+              <td>ACCEPT</td>
+          <td>&nbsp;</td>
           </tr>
                    
           <tr>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica">gw<!--mstheme--></font></td>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica">loc<!--mstheme--></font></td>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica">ACCEPT<!--mstheme--></font></td>
-          <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+              <td>gw</td>
+              <td>loc</td>
+              <td>ACCEPT</td>
+          <td>&nbsp;</td>
           </tr>
                    
-    </table><!--mstheme--><font face="arial, Arial, Helvetica">
+    </table>
 </blockquote>
 <p>On both systems, restart Shorewall and
 run the modified tunnel script with the &quot;start&quot; argument on each
@@ -167,6 +173,6 @@ Eastep</a> </font></p>
 <p><font face="Trebuchet MS"><a href="copyright.htm"><font size="2">Copyright</font> 
 © <font size="2">2001, 2002 Thomas M. Eastep.</font></a></font></p>
 
-<!--mstheme--></font></body>
+</body>
 
 </html>

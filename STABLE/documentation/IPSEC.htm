@@ -10,11 +10,16 @@
   <meta name="ProgId" content="FrontPage.Editor.Document">
          
    
-  <meta name="Microsoft Theme" content="radial 011">
-</head>
- <body background="_themes/radial/radbkgnd.gif" bgcolor="#FFFFFF" text="#000000" link="#6666FF" vlink="#993333" alink="#66CCCC"><!--mstheme--><font face="arial, Arial, Helvetica">
- <h1 align="center"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">IPSEC Tunnels<!--mstheme--></font></h1>
- <h2><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666"><font color="#660066">Configuring FreeS/Wan</font><!--mstheme--></font></h2>
+  </head>
+ <body>
+ <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%" id="AutoNumber1" bgcolor="#400169" height="90">
+   <tr>
+     <td width="100%">
+     <h1 align="center"><font color="#FFFFFF">IPSEC Tunnels</font></h1>
+     </td>
+   </tr>
+ </table>
+ <h2><font color="#660066">Configuring FreeS/Wan</font></h2>
 There is an excellent guide to configuring IPSEC tunnels at<a href="http://jixen.tripod.com">
  http://jixen.tripod.com</a>
 . I highly recommend that you consult that site for information about confuring
@@ -31,18 +36,18 @@ FreeS/Wan. <p><font color="#FF6633"><b>Warning: </b></font>Do not use Proxy ARP
  <p>&nbsp;&nbsp;&nbsp;&nbsp; qt service ipsec stop</p>
  <p>In /etc/shorewall/start, include:</p>
  <p>&nbsp;&nbsp;&nbsp; qt service ipsec start</p>
- <h2><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">
+ <h2>
 
 <font color="#660066">IPSec Gateway
 on the Firewall System
-  </font><!--mstheme--></font></h2>
+  </font></h2>
           
  <p>Suppose that we have the following sutuation:</p>
           
 <font color="#660066">
           
 <p align="Center"><font face="Century Gothic, Arial, Helvetica">
-<img src="images/TwoNets1.jpg" width="651" height="394">
+<img src="images/TwoNets1.png" width="745" height="427">
        </font></p>
           
   </font>
@@ -65,109 +70,129 @@ adding an entry to the /etc/shorewall/tunnels file.</p>
 on system A, we need the following </p>
           
 <blockquote> 
-  <!--mstheme--></font><table border="2" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+  <table border="2" cellpadding="2" style="border-collapse: collapse">
           <tbody>
              <tr>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica"><strong>
- TYPE</strong><!--mstheme--></font></td>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica"><strong>
- ZONE</strong><!--mstheme--></font></td>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica"><strong>
- GATEWAY</strong><!--mstheme--></font></td>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica"><strong>
- GATEWAY ZONE</strong><!--mstheme--></font></td>
+              <td><strong>
+ TYPE</strong></td>
+              <td><strong>
+ ZONE</strong></td>
+              <td><strong>
+ GATEWAY</strong></td>
+              <td><strong>
+ GATEWAY ZONE</strong></td>
           </tr>
           <tr>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica">ipsec<!--mstheme--></font></td>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica">134.28.54.2<!--mstheme--></font></td>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+              <td>ipsec</td>
+              <td>net</td>
+              <td>134.28.54.2</td>
+              <td>&nbsp;</td>
           </tr>
                  
     </tbody>         
-  </table><!--mstheme--><font face="arial, Arial, Helvetica"></blockquote>
+  </table></blockquote>
             
   <p align="Left">In /etc/shorewall/tunnels
 on system B, we would have:</p>
             
   <blockquote> 
-    <!--mstheme--></font><table border="2" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+    <table border="2" cellpadding="2" style="border-collapse: collapse">
           <tbody>
                <tr>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica"><strong>
- TYPE</strong><!--mstheme--></font></td>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica"><strong>
- ZONE</strong><!--mstheme--></font></td>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica"><strong>
- GATEWAY</strong><!--mstheme--></font></td>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica"><strong>
- GATEWAY ZONE</strong><!--mstheme--></font></td>
+              <td><strong>
+ TYPE</strong></td>
+              <td><strong>
+ ZONE</strong></td>
+              <td><strong>
+ GATEWAY</strong></td>
+              <td><strong>
+ GATEWAY ZONE</strong></td>
           </tr>
           <tr>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica">ipsec<!--mstheme--></font></td>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica">206.161.148.9<!--mstheme--></font></td>
-          <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+              <td>ipsec</td>
+              <td>net</td>
+              <td>206.161.148.9</td>
+          <td>&nbsp;</td>
           </tr>
                    
       </tbody>           
-    </table><!--mstheme--><font face="arial, Arial, Helvetica"></blockquote>
+    </table></blockquote>
+             
+    <p align="Left">You need to define a zone for the remote subnet or include 
+    it in your local zone. In this example, we'll assume that you have created a 
+    zone called &quot;vpn&quot; to represent the remote subnet.</p>
+              
+    <blockquote>
+    <table border="2" cellpadding="2" style="border-collapse: collapse">
+               <tr>
+              <td><strong>ZONE</strong></td>
+              <td><strong>DISPLAY</strong></td>
+              <td><strong>COMMENTS</strong></td>
+          </tr>
+          <tr>
+              <td>vpn</td>
+              <td>VPN</td>
+              <td>Remote Subnet</td>
+          </tr>
+                   
+    </table>
+ </blockquote>
              
     <p align="Left">At both
-systems, ipsec0 would be included in /etc/shorewall/interfaces as a "gw"
+systems, ipsec0 would be included in /etc/shorewall/interfaces as a "vpn"
 interface:</p>
               
     <blockquote> 
-      <!--mstheme--></font><table border="2" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+      <table border="2" cellpadding="2" style="border-collapse: collapse">
           <tbody>
                  <tr>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica"><strong>
- ZONE</strong><!--mstheme--></font></td>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica"><strong>
- INTERFACE</strong><!--mstheme--></font></td>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica"><strong>
- BROADCAST</strong><!--mstheme--></font></td>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica"><strong>
- OPTIONS</strong><!--mstheme--></font></td>
+              <td><strong>
+ ZONE</strong></td>
+              <td><strong>
+ INTERFACE</strong></td>
+              <td><strong>
+ BROADCAST</strong></td>
+              <td><strong>
+ OPTIONS</strong></td>
           </tr>
           <tr>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica">gw<!--mstheme--></font></td>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica">ipsec0<!--mstheme--></font></td>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+              <td>vpn</td>
+              <td>ipsec0</td>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
           </tr>
                      
         </tbody>             
-      </table><!--mstheme--><font face="arial, Arial, Helvetica"></blockquote>
+      </table></blockquote>
                 
-      <p align="Left"> You will need to allow traffic between the &quot;gw&quot; zone and 
+      <p align="Left"> You will need to allow traffic between the &quot;vpn&quot; zone and 
       the &quot;loc&quot; zone -- if you simply want to admit all traffic in both 
       directions, you can use the policy file:</p>
                 
       
       <blockquote>
-        <!--mstheme--></font><table border="2" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+        <table border="2" cellpadding="2" style="border-collapse: collapse">
                <tr>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica"><strong>SOURCE</strong><!--mstheme--></font></td>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica"><strong>DEST</strong><!--mstheme--></font></td>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica"><strong>POLICY</strong><!--mstheme--></font></td>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica"><strong>LOG LEVEL</strong><!--mstheme--></font></td>
+              <td><strong>SOURCE</strong></td>
+              <td><strong>DEST</strong></td>
+              <td><strong>POLICY</strong></td>
+              <td><strong>LOG LEVEL</strong></td>
           </tr>
           <tr>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica">loc<!--mstheme--></font></td>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica">gw<!--mstheme--></font></td>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica">ACCEPT<!--mstheme--></font></td>
-          <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+              <td>loc</td>
+              <td>vpn</td>
+              <td>ACCEPT</td>
+          <td>&nbsp;</td>
           </tr>
                    
           <tr>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica">gw<!--mstheme--></font></td>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica">loc<!--mstheme--></font></td>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica">ACCEPT<!--mstheme--></font></td>
-          <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+              <td>vpn</td>
+              <td>loc</td>
+              <td>ACCEPT</td>
+          <td>&nbsp;</td>
           </tr>
                    
-    </table><!--mstheme--><font face="arial, Arial, Helvetica">
+    </table>
  </blockquote>
                 
       <p align="Left"> Once
@@ -177,16 +202,36 @@ you are now ready to configure the tunnel in <a href="http://www.xs4all.nl/%7Efr
  .</p>
                 
       
-      <h2><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666"><font color="#660066"><a name="RoadWarrior"></a>
- Mobile System (Road Warrior)</font><!--mstheme--></font></h2>
+      <h2><font color="#660066"><a name="RoadWarrior"></a>
+ Mobile System (Road Warrior)</font></h2>
                 
       <p>Suppose that you have
 a laptop system (B) that you take with you when you travel and you want to
 be able to establish a secure connection back to your local network.</p>
                 
       <p align="Center"><strong><font face="Century Gothic, Arial, Helvetica">
-      <img src="images/Mobile.jpg" width="535" height="402">
+      <img src="images/Mobile.png" width="677" height="426">
              </font></strong></p>
+                
+    <p align="Left">You need to define a zone for the laptop or include it in 
+    your local zone. In this example, we'll assume that you have created a zone 
+    called &quot;vpn&quot; to represent the remote host.</p>
+              
+    <blockquote>
+    <table border="2" cellpadding="2" style="border-collapse: collapse">
+               <tr>
+              <td><strong>ZONE</strong></td>
+              <td><strong>DISPLAY</strong></td>
+              <td><strong>COMMENTS</strong></td>
+          </tr>
+          <tr>
+              <td>vpn</td>
+              <td>VPN</td>
+              <td>Remote Subnet</td>
+          </tr>
+                   
+    </table>
+ </blockquote>
                 
       <p align="Left"> In this
 instance, the mobile system (B) has IP address 134.28.54.2 but that cannot
@@ -194,31 +239,30 @@ be determined in advance. In the /etc/shorewall/tunnels file on system A,
 the following entry should be made:</p>
                 
       <blockquote> 
-        <!--mstheme--></font><table border="2" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+        <table border="2" cellpadding="2" style="border-collapse: collapse">
           <tbody>
                    <tr>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica"><strong>
- TYPE</strong><!--mstheme--></font></td>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica"><strong>
- ZONE</strong><!--mstheme--></font></td>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica"><strong>
- GATEWAY</strong><!--mstheme--></font></td>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica"><strong>
- GATEWAY ZONE</strong><!--mstheme--></font></td>
+              <td><strong>
+ TYPE</strong></td>
+              <td><strong>
+ ZONE</strong></td>
+              <td><strong>
+ GATEWAY</strong></td>
+              <td><strong>
+ GATEWAY ZONE</strong></td>
           </tr>
           <tr>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica">ipsec<!--mstheme--></font></td>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica">0.0.0.0/0<!--mstheme--></font></td>
-              <td><!--mstheme--><font face="arial, Arial, Helvetica">gw<!--mstheme--></font></td>
+              <td>ipsec</td>
+              <td>net</td>
+              <td>0.0.0.0/0</td>
+              <td>vpn</td>
           </tr>
                        
           </tbody>               
-        </table><!--mstheme--><font face="arial, Arial, Helvetica"></blockquote>
+        </table></blockquote>
                   
         <p>Note that the GATEWAY
-ZONE column contains the name of the zone corresponding to peer subnetworks
-(<i>gw</i> in the default /etc/shorewall/zones). This indicates that the
+ZONE column contains the name of the zone corresponding to peer subnetworks. This indicates that the
 gateway system itself comprises the peer subnetwork; in other words, the
 remote gateway is a standalone system.</p>
                  
@@ -228,7 +272,7 @@ remote gateway is a standalone system.</p>
                  
         
         <p><font size="2"> Last
-updated 5/18/2002 - </font><font size="2">
+updated 8/20/2002 - </font><font size="2">
         <a href="support.htm">Tom Eastep</a></font>
  </p>
                  
@@ -236,5 +280,5 @@ updated 5/18/2002 - </font><font size="2">
         <p><font face="Trebuchet MS"><a href="copyright.htm"><font size="2">
         Copyright</font> © <font size="2">2001, 2002 Thomas M. Eastep.</font></a></font></p>
   
-<!--mstheme--></font></body>
+</body>
         </html>

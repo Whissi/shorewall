@@ -5,13 +5,18 @@
 <title>Shorewall NAT</title>
 <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
 <meta name="ProgId" content="FrontPage.Editor.Document">
-<meta name="Microsoft Theme" content="radial 011">
 </head>
 
-<body background="_themes/radial/radbkgnd.gif" bgcolor="#FFFFFF" text="#000000" link="#6666FF" vlink="#993333" alink="#66CCCC"><!--mstheme--><font face="arial, Arial, Helvetica">
+<body>
 
 <blockquote>
-    <h1 align="center"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">Static NAT<!--mstheme--></font></h1>
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" width="100%" id="AutoNumber1" bgcolor="#400169" height="90">
+      <tr>
+        <td width="100%">
+        <h1 align="center"><font color="#FFFFFF">Static NAT</font></h1>
+        </td>
+      </tr>
+    </table>
     <p><font color="#FF0000"><b>IMPORTANT: If all you want to do is forward 
     ports to servers behind your firewall, you do NOT want to use static NAT. 
     Port forwarding can be accomplished with simple entries in the
@@ -22,7 +27,8 @@
     addresses.</p>
     <p>The following figure represents a static NAT
     environment.</p>
-    <p align="center"><strong><img src="images/staticnat.jpg" width="595" height="455"></strong></p>
+    <p align="center"><strong>
+    <img src="images/staticnat.png" width="435" height="397"></strong></p>
     <blockquote>
     </blockquote>
     <p align="left">Static NAT can be used to make the systems with the
@@ -31,29 +37,29 @@
     /etc/shorewall/NAT file would make the lower left-hand system appear to have
     IP address 130.252.100.18 and the right-hand one to have IP address
     130.252.100.19.</p>
-    <!--mstheme--></font><table border="2" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+    <table border="2" cellpadding="2" style="border-collapse: collapse">
       <tr>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>EXTERNAL</b><!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>INTERFACE</b><!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>INTERNAL</b><!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>ALL INTERFACES</b><!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>LOCAL</b><!--mstheme--></font></td>
+        <td><b>EXTERNAL</b></td>
+        <td><b>INTERFACE</b></td>
+        <td><b>INTERNAL</b></td>
+        <td><b>ALL INTERFACES</b></td>
+        <td><b>LOCAL</b></td>
       </tr>
       <tr>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica">130.252.100.18<!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica">eth0<!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica">10.1.1.2<!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica">yes<!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica">yes<!--mstheme--></font></td>
+        <td>130.252.100.18</td>
+        <td>eth0</td>
+        <td>10.1.1.2</td>
+        <td>yes</td>
+        <td>yes</td>
       </tr>
       <tr>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica">130.252.100.19<!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica">eth0<!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica">10.1.1.3<!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica">yes<!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica">yes<!--mstheme--></font></td>
+        <td>130.252.100.19</td>
+        <td>eth0</td>
+        <td>10.1.1.3</td>
+        <td>yes</td>
+        <td>yes</td>
       </tr>
-    </table><!--mstheme--><font face="arial, Arial, Helvetica">
+    </table>
     <p>Be sure that the internal system(s) (10.1.1.2 and 10.1.1.3 in the above
     example) is (are) not included in any specification in /etc/shorewall/masq
     or /etc/shorewall/proxyarp.</p>
@@ -83,4 +89,4 @@
 <a href="support.htm">Tom
 Eastep</a></font> </p>
 <font face="Trebuchet MS"><a href="copyright.htm"><font size="2">Copyright</font> 
-© <font size="2">2001, 2002 Thomas M. Eastep.</font></a></font><!--mstheme--></font></body></html>
+© <font size="2">2001, 2002 Thomas M. Eastep.</font></a></font></body></html>

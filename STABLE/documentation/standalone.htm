@@ -6,32 +6,39 @@
 <meta name="ProgId" content="FrontPage.Editor.Document">
 <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
 <title>Standalone Firewall</title>
-<meta name="Microsoft Theme" content="radial 011, default">
 </head>
 
-<body background="_themes/radial/radbkgnd.gif" bgcolor="#FFFFFF" text="#000000" link="#6666FF" vlink="#993333" alink="#66CCCC"><!--mstheme--><font face="arial, Arial, Helvetica">
+<body>
 
-<h1 align="center"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">Standalone Firewall<!--mstheme--></font></h1>
+<table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%" id="AutoNumber6" bgcolor="#400169" height="90">
+  <tr>
+    <td width="100%">
 
-<h2 align="center"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">Version 2.0.1<!--mstheme--></font></h2>
+<h1 align="center"><font color="#FFFFFF">Standalone Firewall</font></h1>
+
+    </td>
+  </tr>
+</table>
+
+<h2 align="center">Version 2.0.1</h2>
 <p align="left">Setting up Shorewall on a standalone Linux system is very easy if you understand the basics and follow the 
 documentation.</p>
 <p>This guide doesn't attempt to acquaint you with all of the features of 
 Shorewall. It rather focuses on what is required to configure Shorewall in one 
 of its 
 most common configurations:</p>
-<!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">Linux system<!--mstheme--></font><!--msthemelist--></td></tr>
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">Single external IP address<!--mstheme--></font><!--msthemelist--></td></tr>
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">Connection through Cable Modem, DSL, ISDN, Frame Relay, dial-up...<!--mstheme--></font><!--msthemelist--></td></tr>
-<!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+<ul>
+  <li>Linux system</li>
+  <li>Single external IP address</li>
+  <li>Connection through Cable Modem, DSL, ISDN, Frame Relay, dial-up...</li>
+</ul>
 <p>This guide assumes that you have the iproute/iproute2 package installed (on 
 RedHat, the package is called <i>iproute</i>)<i>. </i>You can tell if this 
 package is installed by the presence of an <b>ip</b> program on your firewall 
 system. As root, you can use the 'which' command to check for this program:</p>
-<!--mstheme--></font><pre>     [root@gateway root]# which ip
+<pre>     [root@gateway root]# which ip
      /sbin/ip
-     [root@gateway root]#</pre><!--mstheme--><font face="arial, Arial, Helvetica"><p>I recommend that you read through the guide 
+     [root@gateway root]#</pre><p>I recommend that you read through the guide 
 first to familiarize yourself with what's involved then go back through it again 
 making your configuration changes.&nbsp; Points at which configuration changes 
 are recommended are flagged with <img border="0" src="images/BD21298_.gif" width="13" height="13">.</p>
@@ -41,13 +48,13 @@ Unix files if your editor supports that option or you must run them through
 dos2unix before trying to use them. Similarly, if you copy a configuration file 
 from your Windows hard drive to a floppy disk, you must run dos2unix against the 
 copy before using it with Shorewall.</p>
-<!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><a href="http://www.simtel.net/pub/pd/51438.html">Windows Version of 
-  dos2unix</a><!--mstheme--></font><!--msthemelist--></td></tr>
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><a href="http://www.megaloman.com/~hany/software/hd2u/">Linux Version of 
-  dos2unix</a><!--mstheme--></font><!--msthemelist--></td></tr>
-<!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
-<h2 align="left"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">Shorewall Concepts<!--mstheme--></font></h2>
+<ul>
+  <li><a href="http://www.simtel.net/pub/pd/51438.html">Windows Version of 
+  dos2unix</a></li>
+  <li><a href="http://www.megaloman.com/~hany/software/hd2u/">Linux Version of 
+  dos2unix</a></li>
+</ul>
+<h2 align="left">Shorewall Concepts</h2>
 <p>The configuration files for Shorewall are contained in the directory 
 /etc/shorewall -- for simple setups, you  only need to deal with a few of 
 these as described in this guide.  After you have <a href="Install.htm">installed Shorewall</a>, 
@@ -61,28 +68,28 @@ configuration instructions and default entries.</p>
 <p>Shorewall views the network where it is running as being composed of a set of 
 <i>zones.</i> In the one-interface sample configuration, only one zone is 
 defined:</p>
-<!--mstheme--></font><table border="0" style="border-collapse: collapse" cellpadding="3" cellspacing="0" id="AutoNumber2">
+<table border="0" style="border-collapse: collapse" cellpadding="3" cellspacing="0" id="AutoNumber2">
   <tr>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>Name</b></u><!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>Description</b></u><!--mstheme--></font></td>
+    <td><u><b>Name</b></u></td>
+    <td><u><b>Description</b></u></td>
   </tr>
   <tr>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>net</b><!--mstheme--></font></td>
-    <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>The Internet</b><!--mstheme--></font></td>
+    <td><b>net</b></td>
+    <td><b>The Internet</b></td>
   </tr>
-  </table><!--mstheme--><font face="arial, Arial, Helvetica">
+  </table>
 <p>Shorewall zones are defined in <a href="Documentation.htm#Zones">
 /etc/shorewall/zones</a>.</p>
 <p>Shorewall also recognizes the firewall system as its own zone - by default, 
 the firewall itself is known as <b>fw</b>.</p>
 <p>Rules about what traffic to allow and what traffic to deny are expressed in 
 terms of zones.</p>
-<!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">You express your default policy for connections from one zone to another 
-  zone in the<a href="Documentation.htm#Policy"> /etc/shorewall/policy </a>file.<!--mstheme--></font><!--msthemelist--></td></tr>
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">You define exceptions to those default policies in the
-  <a href="Documentation.htm#Rules">/etc/shorewall/rules </a>file.<!--mstheme--></font><!--msthemelist--></td></tr>
-<!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+<ul>
+  <li>You express your default policy for connections from one zone to another 
+  zone in the<a href="Documentation.htm#Policy"> /etc/shorewall/policy </a>file.</li>
+  <li>You define exceptions to those default policies in the
+  <a href="Documentation.htm#Rules">/etc/shorewall/rules </a>file.</li>
+</ul>
 <p>For each connection request entering the firewall, the request is first checked against the 
 /etc/shorewall/rules file. If no rule in that file matches the connection 
 request then the first policy in /etc/shorewall/policy that matches the 
@@ -93,40 +100,40 @@ file for you).</p>
 <p>The /etc/shorewall/policy file included with the one-interface sample has the 
 following policies:</p>
 <blockquote>
-  <!--mstheme--></font><table border="1" cellpadding="2" style="border-collapse: collapse" bordercolor="#111111" id="AutoNumber3" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+  <table border="1" cellpadding="2" style="border-collapse: collapse" id="AutoNumber3">
     <tr>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>SOURCE ZONE</b></u><!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>DESTINATION ZONE</b></u><!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>POLICY</b></u><!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>LOG LEVEL</b></u><!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>LIMIT:BURST</b></u><!--mstheme--></font></td>
+      <td><u><b>SOURCE ZONE</b></u></td>
+      <td><u><b>DESTINATION ZONE</b></u></td>
+      <td><u><b>POLICY</b></u></td>
+      <td><u><b>LOG LEVEL</b></u></td>
+      <td><u><b>LIMIT:BURST</b></u></td>
     </tr>
     <tr>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">fw<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">ACCEPT<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+      <td>fw</td>
+      <td>net</td>
+      <td>ACCEPT</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
     </tr>
     <tr>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">DROP<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">info<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+      <td>net</td>
+      <td>net</td>
+      <td>DROP</td>
+      <td>info</td>
+      <td>&nbsp;</td>
     </tr>
     <tr>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">all<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">all<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">REJECT<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">info<!--mstheme--></font></td>
-      <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+      <td>all</td>
+      <td>all</td>
+      <td>REJECT</td>
+      <td>info</td>
+      <td>&nbsp;</td>
     </tr>
-  </table><!--mstheme--><font face="arial, Arial, Helvetica">
+  </table>
 </blockquote>
-<!--mstheme--></font><pre>     fw		net	ACCEPT
+<pre>     fw		net	ACCEPT
      net	all	DROP	info
-     all	all	REJECT	info</pre><!--mstheme--><font face="arial, Arial, Helvetica">
+     all	all	REJECT	info</pre>
 <p>The above policy will:</p>
 <ol>
   <li>allow all connection requests from the firewall to the internet</li>
@@ -136,7 +143,7 @@ following policies:</p>
 </ol>
 <p>At this point, edit your /etc/shorewall/policy and make any changes that you 
 wish.</p>
-<h2 align="left"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">External Interface<!--mstheme--></font></h2>
+<h2 align="left">External Interface</h2>
 <p align="left">The firewall has a single network interface. Where Internet 
 connectivity is through a cable or DSL &quot;Modem&quot;, the <i>External Interface</i> 
 will be the ethernet adapter (<b>eth0</b>) that is connected to that &quot;Modem&quot;&nbsp;
@@ -150,24 +157,24 @@ the external interface is <b>eth0</b>.
 If your configuration is different, you will have to modify the sample 
 /etc/shorewall/interfaces file accordingly. While you are there, you may wish to 
 review the list of options that are specified for the interface. Some hints:</p>
-<!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">
+<ul>
+  <li>
   <p align="left">If your external interface is <b>ppp0</b> or <b>ippp0</b>, you can replace the 
-  &quot;detect&quot; in the second column with &quot;-&quot;.<!--mstheme--></font><!--msthemelist--></td></tr>
-  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">
+  &quot;detect&quot; in the second column with &quot;-&quot;.</li>
+  <li>
   <p align="left">If your external interface is <b>ppp0</b> or <b>ippp0</b> or if you have a static IP 
-  address, you can remove &quot;dhcp&quot; from the option list.<!--mstheme--></font><!--msthemelist--></td></tr>
-<!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+  address, you can remove &quot;dhcp&quot; from the option list.</li>
+</ul>
 <div align="left">
-  <h2 align="left"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">IP Addresses<!--mstheme--></font></h2>
+  <h2 align="left">IP Addresses</h2>
 </div>
 <div align="left">
 <p align="left">RFC 1918 reserves several <i>Private </i>IP address ranges for 
 use in private networks:</p>
 <div align="left">
-  <!--mstheme--></font><pre>     10.0.0.0    - 10.255.255.255
+  <pre>     10.0.0.0    - 10.255.255.255
      172.16.0.0  - 172.31.255.255
-     192.168.0.0 - 192.168.255.255</pre><!--mstheme--><font face="arial, Arial, Helvetica">
+     192.168.0.0 - 192.168.255.255</pre>
 </div>
   <p align="left">These addresses are sometimes referred to as <i>non-routable</i> 
   because the Internet backbone routers will not forward a packet whose 
@@ -179,32 +186,32 @@ use in private networks:</p>
   interface and if it is one of the above ranges, you should remove the 
   'norfc1918' option from the entry in /etc/shorewall/interfaces.</div>
 <div align="left">
-  <h2 align="left"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">Enabling other Connections<!--mstheme--></font></h2>
+  <h2 align="left">Enabling other Connections</h2>
 </div>
 <div align="left">
   <p align="left">If you wish to enable connections from the internet to your firewall, the general format is:</div>
 <div align="left">
   <blockquote>
-    <!--mstheme--></font><table border="1" cellpadding="2" style="border-collapse: collapse" bordercolor="#111111" id="AutoNumber4" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+    <table border="1" cellpadding="2" style="border-collapse: collapse" id="AutoNumber4">
       <tr>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>ACTION</b></u><!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>SOURCE</b></u><!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>DESTINATION</b></u><!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>PROTOCOL</b></u><!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>PORT</b></u><!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>SOURCE PORT</b></u><!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>ORIGINAL ADDRESS</b></u><!--mstheme--></font></td>
+        <td><u><b>ACTION</b></u></td>
+        <td><u><b>SOURCE</b></u></td>
+        <td><u><b>DESTINATION</b></u></td>
+        <td><u><b>PROTOCOL</b></u></td>
+        <td><u><b>PORT</b></u></td>
+        <td><u><b>SOURCE PORT</b></u></td>
+        <td><u><b>ORIGINAL ADDRESS</b></u></td>
       </tr>
       <tr>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica">ACCEPT<!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica">fw<!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica"><i>&lt;protocol&gt;</i><!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica"><i>&lt;port&gt;</i><!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+        <td>ACCEPT</td>
+        <td>net</td>
+        <td>fw</td>
+        <td><i>&lt;protocol&gt;</i></td>
+        <td><i>&lt;port&gt;</i></td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
       </tr>
-    </table><!--mstheme--><font face="arial, Arial, Helvetica">
+    </table>
   </blockquote>
 </div>
 <div align="left">
@@ -212,35 +219,35 @@ use in private networks:</p>
   system:</div>
 <div align="left">
   <blockquote>
-    <!--mstheme--></font><table border="1" cellpadding="2" style="border-collapse: collapse" bordercolor="#111111" id="AutoNumber5" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+    <table border="1" cellpadding="2" style="border-collapse: collapse" id="AutoNumber5">
       <tr>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>ACTION</b></u><!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>SOURCE</b></u><!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>DESTINATION</b></u><!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>PROTOCOL</b></u><!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>PORT</b></u><!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>SOURCE PORT</b></u><!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>ORIGINAL ADDRESS</b></u><!--mstheme--></font></td>
+        <td><u><b>ACTION</b></u></td>
+        <td><u><b>SOURCE</b></u></td>
+        <td><u><b>DESTINATION</b></u></td>
+        <td><u><b>PROTOCOL</b></u></td>
+        <td><u><b>PORT</b></u></td>
+        <td><u><b>SOURCE PORT</b></u></td>
+        <td><u><b>ORIGINAL ADDRESS</b></u></td>
       </tr>
       <tr>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica">ACCEPT<!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica">fw<!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica">tcp<!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica">80<!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+        <td>ACCEPT</td>
+        <td>net</td>
+        <td>fw</td>
+        <td>tcp</td>
+        <td>80</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
       </tr>
       <tr>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica">ACCEPT<!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica">fw<!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica">tcp<!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica">110<!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+        <td>ACCEPT</td>
+        <td>net</td>
+        <td>fw</td>
+        <td>tcp</td>
+        <td>110</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
       </tr>
-    </table><!--mstheme--><font face="arial, Arial, Helvetica">
+    </table>
   </blockquote>
 </div>
 <div align="left">
@@ -252,36 +259,36 @@ use in private networks:</p>
   access to your firewall from the internet, use SSH:</div>
 <div align="left">
   <blockquote>
-    <!--mstheme--></font><table border="1" cellpadding="2" style="border-collapse: collapse" bordercolor="#111111" id="AutoNumber4" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+    <table border="1" cellpadding="2" style="border-collapse: collapse" id="AutoNumber4">
       <tr>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>ACTION</b></u><!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>SOURCE</b></u><!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>DESTINATION</b></u><!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>PROTOCOL</b></u><!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>PORT</b></u><!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>SOURCE PORT</b></u><!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>ORIGINAL ADDRESS</b></u><!--mstheme--></font></td>
+        <td><u><b>ACTION</b></u></td>
+        <td><u><b>SOURCE</b></u></td>
+        <td><u><b>DESTINATION</b></u></td>
+        <td><u><b>PROTOCOL</b></u></td>
+        <td><u><b>PORT</b></u></td>
+        <td><u><b>SOURCE PORT</b></u></td>
+        <td><u><b>ORIGINAL ADDRESS</b></u></td>
       </tr>
       <tr>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica">ACCEPT<!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica">fw<!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica">tcp<!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica">22<!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
-        <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+        <td>ACCEPT</td>
+        <td>net</td>
+        <td>fw</td>
+        <td>tcp</td>
+        <td>22</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
       </tr>
-    </table><!--mstheme--><font face="arial, Arial, Helvetica">
+    </table>
   </blockquote>
 </div>
 <div align="left">
-  <!--mstheme--></font><pre>     ACCEPT	net	fw	tcp	22</pre><!--mstheme--><font face="arial, Arial, Helvetica">
+  <pre>     ACCEPT	net	fw	tcp	22</pre>
 </div>
 <div align="left">
   <p align="left"><img border="0" src="images/BD21298_3.gif" width="13" height="13">&nbsp;&nbsp;&nbsp; At this point, edit 
   /etc/shorewall/rules to add other connections as desired.</div>
 <div align="left">
-  <h2 align="left"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">Starting and Stopping Your Firewall<!--mstheme--></font></h2>
+  <h2 align="left">Starting and Stopping Your Firewall</h2>
 </div>
 <div align="left">
   <p align="left">The <a href="Install.htm">installation procedure </a>
@@ -308,6 +315,6 @@ Eastep</a></font></p>
 
 <p align="left"><a href="copyright.htm"><font size="2">Copyright  2002 Thomas M. Eastep</font></a></p>
 
-<!--mstheme--></font></body>
+</body>
 
 </html>

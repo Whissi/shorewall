@@ -1565,7 +1565,13 @@ add_nat_rule() {
 
     # Replace destination port by the new destination port
 
-    [ -n "$servport" ] && dports="--dport ${servport#*:}"
+    if [ -n "$servport" ]; then
+	if [ -z "$multiport" ]; then
+	    dports="--dport ${servport#*:}"
+	else
+	    dports="--dports ${servport#*:}"
+	fi
+    fi
 
     # Handle SNAT
 
@@ -1650,18 +1656,21 @@ add_a_rule()
     case $proto in
 	tcp|udp|TCP|UDP|6|17)
 	    if [ -n "$port" -a "x${port}" != "x-" ]; then
-		[ -n "$multioption" ] && \
-		    [ "$port" != "${port%,*}" ] && \
+		dports="--dport"
+		if [ -n "$multioption" -a "$port" != "${port%,*}" ]; then
 		    multiport="$multioption"
-		dports="--dport $port"
+		    dports="--dports"
+		fi
+		dports="$dports $ports"
 	    fi
 
 	    if [ -n "$cport" -a "x${cport}" != "x-" ]; then
-		[ -n "$multioption" ] && \
-		    [ -z "$multiport" ] && \
-		    [ "$cport" != "${cport%,*}" ] && \
+		sports="--sport"
+		if [ -n "$multioption" -a "$cport" != "${cport%,*}" ]; then
 		    multiport="$multioption"
-		sports="--sport $cport"
+		    sports="--sports"
+		fi
+		sports="$sports $cport"
 	    fi
 		;;
 	icmp|ICMP|1)
@@ -2428,7 +2437,7 @@ setup_masq()
 
 	if [ -n "$address" -a -n "$ADD_SNAT_ALIASES" ]; then
 	    list_search $address $aliases_to_add || \
-		aliases_to_add="$aliases_to_add $external $address"
+		aliases_to_add="$aliases_to_add $address $interface" 
 	fi
 
 	destination=$destnet
@@ -2778,7 +2787,8 @@ add_common_rules() {
 	    logoptions="$LOGPARAMS --log-prefix Shorewall:badpkt:DROP:"
 	    logoptions="$logoptions --log-level $LOGUNCLEAN --log-ip-options"
 	    run_iptables -A badpkt -p tcp -j LOG $logoptions --log-tcp-options
-	    run_iptables -A badpkt -p !tcp -j LOG $logoptions
+	    run_iptables -A badpkt -p tcp -j DROP # Workaround for iptables 1.2.7
+	    run_iptables -A badpkt -j LOG $logoptions
 	fi
 
 	run_iptables -A badpkt -j DROP
@@ -2803,7 +2813,8 @@ add_common_rules() {
 	logoptions="$LOGPARAMS --log-prefix Shorewall:logpkt:LOG:"
 	logoptions="$logoptions --log-level $LOGUNCLEAN --log-ip-options"
 	run_iptables -A logpkt -p tcp -j LOG $logoptions --log-tcp-options
-	run_iptables -A logpkt -p !tcp -j LOG $logoptions
+	run_iptables -A logpkt -p tcp -j RETURN # Workaround for iptables 1.2.7
+	run_iptables -A logpkt -j LOG $logoptions
 
 	echo "Mangled/Invalid Packet Logging enabled on:"
 
@@ -2814,16 +2825,15 @@ add_common_rules() {
 	    echo "   $interface"
 	done
     fi
+    ###########################################################################
+    # PING
+    #
+    [ -n "$FORWARDPING" ] && \
+	run_iptables -A common -p icmp --icmp-type echo-request -j ACCEPT
     ############################################################################
     # Common ICMP rules
     #
-    icmpdef=`find_file icmpdef`
-
-    if [ -f $icmpdef ]; then
-	. $icmpdef
-    else
-	. `find_file icmp.def`
-    fi
+    run_user_exit icmpdef
     ############################################################################
     # Common rules in each chain
     #
@@ -2838,7 +2848,6 @@ add_common_rules() {
     # BROADCASTS
     #
     drop_broadcasts `find_broadcasts`
-    
     ###########################################################################
     # RFC 1918
     #
@@ -3400,6 +3409,7 @@ do_initialize() {
     MERGE_HOSTS=
     MUTEX_TIMEOUT=
     LOGNEWNOTSYN=
+    FORWARDPING=
     stopping=
     have_mutex=
     masq_seq=1
@@ -3476,6 +3486,7 @@ do_initialize() {
     MULTIPORT=`added_param_value_no MULTIPORT $MULTIPORT`
     DETECT_DNAT_IPADDRS=`added_param_value_no DETECT_DNAT_IPADDRS $DETECT_DNAT_IPADDRS`
     MERGE_HOSTS=`added_param_value_no MERGE_HOSTS $MERGE_HOSTS`
+    FORWARDPING=`added_param_value_no FORWARDPING $FORWARDPING`
 }
 
 ################################################################################

@@ -2938,7 +2938,7 @@ process_actions2() {
 		[ "$COMMAND" != check ] && run_iptables -A dropNotSyn -p tcp ! --syn -j DROP
 		;;
 	    rejNotSyn)
-		[ "$COMMAND" != check ] && run_iptables -A rejectNotSyn -p tcp ! --syn -j REJECT --reject-with tcp-reset
+		[ "$COMMAND" != check ] && run_iptables -A rejNotSyn -p tcp ! --syn -j REJECT --reject-with tcp-reset
 		;;
 	    logNotSyn)
 		log_action logNotSyn LOG

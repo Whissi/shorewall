@@ -21,7 +21,24 @@
 #			DROP	- silently drop the packet
 #			logdrop - log then drop
 #
-###############################################################################
+# By default, the RETURN target in the 'rfc1918' causes 'norfc1918'
+# processing to cease for a packet if the packet's source IP address matches
+# the rule. Thus, if you have:
+#
+#	SUBNETS			TARGET
+#	192.168.1.0/24		RETURN
+#
+# then traffic from 192.168.1.4 to 10.0.3.9 will be accepted even though you 
+# also have:
+#
+#	SUBNETS			TARGET
+#	10.0.0.0/8		logdrop
+#
+# Setting RFC1918_STRICT=Yes in shorewall.conf will cause such traffic to be
+# logged and dropped since while the packet's source matches the RETURN rule,
+# the packet's destination matches the 'logdrop' rule.
+#
+################################################################################
 #SUBNETS		TARGET
 172.16.0.0/12		logdrop		# RFC 1918
 192.168.0.0/16		logdrop		# RFC 1918

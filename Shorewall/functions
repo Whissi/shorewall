@@ -124,7 +124,7 @@ mutex_on()
     [ -d $STATEDIR ] || mkdir -p $STATEDIR
 
     if qt which lockfile; then
-	lockfile -030 -r1 ${lockf} || exit 2
+	lockfile -030 -r1 ${lockf} || rm -f ${lockf}
     else
 	while [ -f ${lockf} -a ${try} -lt ${max} ] ; do
 	    sleep ${int}
@@ -136,7 +136,7 @@ mutex_on()
 	    echo $$ > ${lockf}
 	else
 	    echo "Giving up on lock file ${lockf}" >&2
-	    exit 2
+	    rm -f ${lockf}
 	fi
     fi
 }

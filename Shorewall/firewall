@@ -2607,6 +2607,7 @@ add_ip_aliases() # $* = addresses and devices
 
 	run_ip addr add ${external}${val} dev $interface
 	echo "$external $interface" >> ${STATEDIR}/nat
+	echo "   IP Address $external added to interface $interface"
     }
 
     while [ $# -gt 0 ]; do
@@ -3187,7 +3188,7 @@ define_firewall() # $1 = Command (Start or Restart)
     activate_rules
 
     [ -n "$aliases_to_add" ] && \
-	echo "Adding IP Aliases..." && \
+	echo "Adding IP Addresses..." && \
 	add_ip_aliases $aliases_to_add
 
     run_user_exit start

@@ -3825,12 +3825,14 @@ setup_masq()
 		chain=$newchain
 		destnets=0.0.0.0/0
 
-		for addr in `separate_list $nomasq`; do
-		    addnatrule $chain -s $addr -j RETURN
-		done
+		if [ -n "$nonmasq" ]; then
+		    for addr in `separate_list $nomasq`; do
+			addnatrule $chain -s $addr -j RETURN
+		    done
+		    source="$source except $nomasq"
+		fi
 		;;
 	    *)
-
 		if [ -n "$nomasq" ]; then
 		    newchain=masq${masq_seq}
 		    createnatchain $newchain

@@ -26,8 +26,8 @@
       document under the terms of the GNU Free Documentation License, Version
       1.2 or any later version published by the Free Software Foundation; with
       no Invariant Sections, with no Front-Cover, and with no Back-Cover
-      Texts. A copy of the license is included in the section entitled &#34;<ulink
-      url="GnuCopyright.htm">GNU Free Documentation License</ulink>&#34;.</para>
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
 
@@ -51,7 +51,7 @@
       </listitem>
 
       <listitem>
-        <para>Install the Mandrake &#34;cooker&#34; version of Shorewall.</para>
+        <para>Install the Mandrake <quote>cooker</quote> version of Shorewall.</para>
       </listitem>
 
       <listitem>
@@ -67,10 +67,10 @@
     role="bold">control</emphasis> connection goes from the FTP client to port
     21 on the FTP server. This connection is used for logon and to send
     commands and responses between the endpoints. Data transfers (including
-    the output of &#34;ls&#34; and &#34;dir&#34; commands) requires a second
-    data connection. The <emphasis role="bold">data</emphasis> connection is
-    dependent on the <emphasis role="bold">mode</emphasis> that the client is
-    operating in:</para>
+    the output of <quote>ls</quote> and <quote>dir</quote> commands) requires
+    a second data connection. The <emphasis role="bold">data</emphasis>
+    connection is dependent on the <emphasis role="bold">mode</emphasis> that
+    the client is operating in:</para>
 
     <variablelist>
       <varlistentry>
@@ -104,7 +104,7 @@
     <para>You can see these commands in action using your linux ftp
     command-line client in debugging mode. Note that my ftp client defaults to
     passive mode and that I can toggle between passive and active mode by
-    issuing a &#34;passive&#34; command:</para>
+    issuing a <quote>passive</quote> command:</para>
 
     <programlisting>[teastep@wookie Shorewall]$ <emphasis role="bold">ftp ftp1.shorewall.net</emphasis>
 Connected to lists.shorewall.net.
@@ -185,10 +185,10 @@ ftp&#62;</programlisting>
 
     <para>Given the normal loc-&#62;net policy of ACCEPT, passive mode access
     from local clients to remote servers will always work but active mode
-    requires the firewall to dynamically open a &#34;hole&#34; for the
+    requires the firewall to dynamically open a <quote>hole</quote> for the
     server&#39;s connection back to the client. Similarly, if you are running
     an FTP server in your local zone then active mode should always work but
-    passive mode requires the firewall to dynamically open a &#34;hole&#34;
+    passive mode requires the firewall to dynamically open a <quote>hole</quote>
     for the client&#39;s second connection to the server. This is the role of
     FTP connection-tracking support in the Linux kernel.</para>
 
@@ -198,9 +198,9 @@ ftp&#62;</programlisting>
     function.</para>
 
     <para>Including FTP connection-tracking and NAT support normally means
-    that the modules &#34;ip_conntrack_ftp&#34; and &#34;ip_nat_ftp&#34; need
-    to be loaded. Shorewall automatically loads these &#34;helper&#34; modules
-    from /lib/modules/&#60;<emphasis>kernel-version</emphasis>&#62;/kernel/net/ipv4/netfilter/
+    that the modules <quote>ip_conntrack_ftp</quote> and <quote>ip_nat_ftp</quote>
+    need to be loaded. Shorewall automatically loads these <quote>helper</quote>
+    modules from /lib/modules/&#60;<emphasis>kernel-version</emphasis>&#62;/kernel/net/ipv4/netfilter/
     and you can determine if they are loaded using the &#39;lsmod&#39;
     command. The &#60;<emphasis>kernel-version</emphasis>&#62; may be obtained
     by typing</para>

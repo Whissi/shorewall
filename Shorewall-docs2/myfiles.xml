@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-01-12</pubdate>
+    <pubdate>2005-02-06</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -48,19 +48,19 @@
 
     <caution>
       <para>The configuration shown here corresponds to Shorewall version
-      2.2.0 RC2. My configuration uses features not available in earlier
-      Shorewall releases.</para>
+      2.2.0. My configuration uses features not available in earlier Shorewall
+      releases.</para>
     </caution>
 
     <para>I have DSL service and have 5 static IP addresses
     (206.124.146.176-180). My DSL <quote>modem</quote> (Westell 2200 running
-    in Bridge mode) is connected to eth1 and has IP address 192.168.1.1
+    in Bridge mode) is connected to eth2 and has IP address 192.168.1.1
     (factory default). The modem is configured in <quote>bridge</quote> mode
-    so PPPoE is not involved. I have a local network connected to eth0 (subnet
-    192.168.1.0/24) and a DMZ connected to eth2 (206.124.146.176/32). Note
-    that I configure the same IP address on both <filename
-    class="devicefile">eth1</filename> and <filename
-    class="devicefile">eth2</filename>.</para>
+    so PPPoE is not involved. I have a local network connected to eth3 (subnet
+    192.168.1.0/24), a wireless network (192.168.3.0/24) connected to eth0,
+    and a DMZ connected to eth1 (206.124.146.176/32). Note that I configure
+    the same IP address on both <filename class="devicefile">eth1</filename>
+    and <filename class="devicefile">eth2</filename>.</para>
 
     <para>In this configuration:</para>
 
@@ -97,11 +97,6 @@
 
     <itemizedlist>
       <listitem>
-        <para>I have Ursa (192.168.1.5/192.168.3.254/206.124.146.178)
-        configured as an IPSEC gateway for the Wireless network.</para>
-      </listitem>
-
-      <listitem>
         <para>Squid runs on the firewall and is configured as a transparent
         proxy.</para>
       </listitem>
@@ -112,7 +107,7 @@
     <para>Ursa runs Samba for file sharing with the Windows systems and is
     configured as a Wins server.</para>
 
-    <para>The wireless network connects to Ursa's eth1 via a LinkSys
+    <para>The wireless network connects to the firewall's eth0 via a LinkSys
     WAP11.&nbsp; In additional to using the rather weak WEP 40-bit encryption
     (64-bit with the 24-bit preamble), I use <ulink
     url="MAC_Validation.html">MAC verification</ulink> and <ulink
@@ -151,10 +146,9 @@
     /etc/network/interfaces file (see below) adds a host route to
     206.124.146.177 through eth1 when that interface is brought up.</para>
 
-    <para>Ursa (206.124.146.178/192.168.1.5) is configured with OpenVPN for
-    VPN access from our second home in <ulink
-    url="http://www.omakchamber.com/">Omak, Washington</ulink> or when we are
-    otherwise out of town.</para>
+    <para>The firewall is configured with OpenVPN for VPN access from our
+    second home in <ulink url="http://www.omakchamber.com/">Omak,
+    Washington</ulink> or when we are otherwise out of town.</para>
 
     <para><graphic align="center" fileref="images/network.png" /></para>
   </section>
@@ -217,9 +211,10 @@ TCP_FLAGS_DISPOSITION=DROP</programlisting>
 NTPSERVERS=&lt;list of the NTP servers I sync with&gt;
 TEXAS=&lt;ip address of gateway in Plano&gt;
 LOG=ULOG
-EXT_IF=eth1
-INT_IF=eth2
-DMZ_IF=eth0</programlisting></para>
+WIFI_IF=eth0
+EXT_IF=eth2
+INT_IF=eth3
+DMZ_IF=eth1</programlisting></para>
       </blockquote>
     </section>
 
@@ -232,6 +227,8 @@ net     Internet        Internet
 dmz     DMZ             Demilitarized zone
 loc     Local           Local networks
 tx      Texas           Peer Network in Dallas
+Wifi    Wireless        Wirewall Network
+sec     Secure          Secure Wireless Zone
 #LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE
 </programlisting>
       </blockquote>
@@ -244,11 +241,13 @@ tx      Texas           Peer Network in Dallas
         <para>This is set up so that I can start the firewall before bringing
         up my Ethernet interfaces.</para>
 
-        <programlisting>#ZONE   INTERFACE BROADCAST       OPTIONS
-net     $EXT_IF   206.124.146.255 dhcp,norfc1918,routefilter,logmartians,blacklist,tcpflags,nosmurfs
-loc     $INT_IF   detect          dhcp
-dmz     $DMZ_IF   -
--       texas     -
+        <programlisting>#ZONE   INTERFACE       BROADCAST       OPTIONS
+net     $EXT_IF         206.124.146.255 dhcp,norfc1918,routefilter,logmartians,blacklist,tcpflags,nosmurfs
+loc     $INT_IF         detect          dhcp
+dmz     $DMZ_IF         -
+-       texas           -
+road    tun+            -
+Wifi    $WIFI_IF        -               maclist
 #LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
       </blockquote>
     </section>
@@ -259,8 +258,21 @@ dmz     $DMZ_IF   -
       <blockquote>
         <programlisting>#ZONE           HOST(S)                 OPTIONS
 tx              texas:192.168.8.0/22
+sec             eth0:192.168.3.0/24
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
       </blockquote>
+    </section>
+
+    <section>
+      <title>Ipsec File</title>
+
+      <para><blockquote>
+          <programlisting>#ZONE   IPSEC   OPTIONS                 IN                      OUT
+#       ONLY                            OPTIONS                 OPTIONS
+sec     yes     mode=tunnel
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
+</programlisting>
+        </blockquote></para>
     </section>
 
     <section>
@@ -314,6 +326,17 @@ $INT_IF         -
         <programlisting>#SOURCE         DESTINATION     POLICY          LOG LEVEL       BURST:LIMIT
 fw              fw              ACCEPT
 loc             net             ACCEPT
+$FW             road            ACCEPT
+road            net             ACCEPT
+road            loc             ACCEPT
+sec             road            ACCEPT
+road            sec             ACCEPT
+sec             loc             ACCEPT
+loc             sec             ACCEPT
+fw              sec             ACCEPT
+sec             net             ACCEPT
+fw              Wifi            ACCEPT
+loc             road            ACCEPT
 $FW             loc             ACCEPT
 $FW             tx              ACCEPT
 loc             tx              ACCEPT
@@ -379,6 +402,9 @@ $EXT_IF::                  eth2            206.124.146.176
       <blockquote>
         <programlisting>#TYPE                   ZONE    GATEWAY         GATEWAY ZONE    PORT
 gre                     net     $TEXAS
+openvpn:1194            net     0.0.0.0/0
+openvpn:1194            Wifi    192.168.3.0/24
+ipsec                   Wifi    192.168.3.0/24  sec
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
       </blockquote>
     </section>
@@ -438,19 +464,23 @@ DROP      loc:eth2:!192.168.1.0/24       #So that my braindead Windows[tm] XP sy
       /etc/shorewall/params)</title>
 
       <blockquote>
-        <programlisting>###############################################################################################################################################################################
+        <programlisting>##########################################################################################################################################################################
+#####
 #RESULT         CLIENT(S)                       SERVER(S)               PROTO   PORT(S)                                 CLIENT          ORIGINAL        RATE    USER
 #                                                                                                                       PORT(S)         DEST:SNAT               SET
-###############################################################################################################################################################################
+##########################################################################################################################################################################
+#####
 # Local Network to Internet - Reject attempts by Trojans to call home, direct SMTP and MS Message Service
 #
-REJECT:$LOG     loc                             net                     tcp     6667,25
+REJECT:$LOG     loc                             net                     tcp     25
 REJECT:$LOG     loc                             net                     udp     1025:1031
 #
 # Stop NETBIOS crap
 #
 REJECT          loc                             net                     tcp     137,445
 REJECT          loc                             net                     udp     137:139
+REJECT          sec                             net                     tcp     137,445
+REJECT          sec                             net                     udp     137:139
 #
 # Stop my idiotic XP box from sending to the net with an HP source IP address
 #
@@ -459,19 +489,56 @@ DROP            loc:!192.168.0.0/22             net
 # SQUID
 #
 REDIRECT        loc                             3128                    tcp     80
-###############################################################################################################################################################################
-# Local Network to Firewall
+REDIRECT        sec                             3128                    tcp     80
+##########################################################################################################################################################################
+#####
+# Local Network to Firewall 
 #
 DROP            loc:!192.168.0.0/22             fw                      # Silently drop traffic with an HP source IP from my XP box
-ACCEPT          loc                             fw                      tcp     ssh,time
-ACCEPT          loc                             fw                      udp     161,ntp
-###############################################################################################################################################################################
+ACCEPT          loc                             fw                      tcp     ssh,time,631,8080
+ACCEPT          loc                             fw                      udp     161,ntp,631
+DROP            loc                             fw                      tcp     3185          #SuSE Meta pppd
+##########################################################################################################################################################################
+#####
+# Secure wireless to Firewall 
+#
+ACCEPT          sec                             fw                      tcp     ssh,time,631,8080
+ACCEPT          sec                             fw                      udp     161,ntp,631
+DROP            sec                             fw                      tcp     3185          #SuSE Meta pppd
+##########################################################################################################################################################################
+#####
+# Roadwarriors to Firewall 
+#
+ACCEPT          road                            fw                      tcp     ssh,time,631,8080
+ACCEPT          road                            fw                      udp     161,ntp,631
+##########################################################################################################################################################################
+#####
 # Local Network to DMZ
 #
 DROP            loc:!192.168.0.0/22             dmz
 ACCEPT          loc                             dmz                     udp     domain,xdmcp
-ACCEPT          loc                             dmz                     tcp     www,smtp,smtps,domain,ssh,imap,https,imaps,cvspserver,ftp,10027,pop3    -
-###############################################################################################################################################################################
+ACCEPT          loc                             dmz                     tcp     www,smtp,smtps,domain,ssh,imap,https,imaps,cvspserver,ftp,10023,pop3    -
+##########################################################################################################################################################################
+#####
+# Insecure Wireless to DMZ
+#
+ACCEPT          Wifi                            dmz                     udp     domain
+ACCEPT          Wifi                            dmz                     tcp     domain
+##########################################################################################################################################################################
+#####
+# Secure Wireless to DMZ
+#
+DROP            sec:!192.168.0.0/22             dmz
+ACCEPT          sec                             dmz                     udp     domain,xdmcp
+ACCEPT          sec                             dmz                     tcp     www,smtp,smtps,domain,ssh,imap,https,imaps,cvspserver,ftp,10023,pop3    -
+##########################################################################################################################################################################
+#####
+# Road Warriors to DMZ
+#
+ACCEPT          road                            dmz                     udp     domain
+ACCEPT          road                            dmz                     tcp     www,smtp,smtps,domain,ssh,imap,https,imaps,cvspserver,ftp,10023,pop3    -
+##########################################################################################################################################################################
+#####
 # Internet to ALL -- drop NewNotSyn packets
 #
 dropNotSyn      net             fw              tcp
@@ -484,21 +551,23 @@ dropNotSyn      net             dmz             tcp
 
 DropPing        net             fw
 DropPing        net             loc
-###############################################################################################################################################################################
-# Internet to DMZ
+##########################################################################################################################################################################
+#####
+# Internet to DMZ 
 #
-DNAT-           net                             dmz:206.124.146.177     tcp     smtp                                    -               206.124.146.178
+DNAT-           net                             dmz:206.124.146.177     tcp     smtp                                    -               206.124.146.178 
 ACCEPT          net                             dmz                     tcp     smtp,smtps,www,ftp,imaps,domain,https,cvspserver        -
 ACCEPT          net                             dmz                     udp     domain
-ACCEPT          net                             dmz                     udp     33434:33436
+ACCEPT          net                             dmz                     udp     33434:33454
 Mirrors         net                             dmz                     tcp     rsync
-ACCEPT          net                             dmz                     tcp     22
+ACCEPT          net:$OMAK                       dmz                     tcp     22      #SSH from Omak
 AllowPing       net                             dmz
-###############################################################################################################################################################################
+##########################################################################################################################################################################
+#####
 #
 # Net to Local
 #
-# When I'm "on the road", the following two rules allow me VPN access back home via PPTP.
+# When I'm "on the road", the following two rules allow me VPN access back home.
 #
 DNAT            net                             loc:192.168.1.4         tcp     1723    -
 DNAT            net:!$TEXAS                     loc:192.168.1.4         gre     -
@@ -517,14 +586,19 @@ ACCEPT          net                             loc:192.168.1.5         udp     
 #ACCEPT         net                             loc:192.168.1.5         tcp     4662
 #ACCEPT         net                             loc:192.168.1.5         udp     12112
 #
+# OpenVPN
+#
+ACCEPT          net                             loc:192.168.1.5         udp     1194
+#
 # Silently Handle common probes
 #
 REJECT          net                             loc                     tcp     www,ftp,https
-###############################################################################################################################################################################
+##########################################################################################################################################################################
+#####
 # DMZ to Internet
 #
 ACCEPT          dmz                             net                     tcp     smtp,domain,www,81,https,whois,echo,2702,21,2703,ssh,8080
-ACCEPT          dmz                             net                     udp     domain
+ACCEPT          dmz                             net                     udp     domain,ntp
 REJECT:$LOG     dmz                             net                     udp     1025:1031
 ACCEPT          dmz                             net:$POPSERVERS         tcp     pop3
 #
@@ -533,25 +607,31 @@ ACCEPT          dmz                             net:$POPSERVERS         tcp     
 # the following works around the problem.
 #
 ACCEPT:$LOG     dmz                             net                     tcp     1024:                                   20
-###############################################################################################################################################################################
+##########################################################################################################################################################################
+#####
 # DMZ to Firewall -- ntp &amp; snmp, Silently reject Auth
 #
 ACCEPT          dmz                             fw                      udp     ntp                                     ntp
 ACCEPT          dmz                             fw                      tcp     161,ssh
 ACCEPT          dmz                             fw                      udp     161
 REJECT          dmz                             fw                      tcp     auth
-###############################################################################################################################################################################
-# DMZ to Local Network
+##########################################################################################################################################################################
+#####
+# DMZ to Local Network  
 #
 ACCEPT          dmz                             loc                     tcp     smtp,6001:6010
 ACCEPT          dmz:206.124.146.177             loc:192.168.1.5         tcp     111
 ACCEPT          dmz:206.124.146.177             loc:192.168.1.5         udp
-###############################################################################################################################################################################
+##########################################################################################################################################################################
+#####
 # Internet to Firewall
 #
 REJECT          net                             fw                      tcp     www,ftp,https
-ACCEPT          net                             dmz                     udp     33434:33435
-###############################################################################################################################################################################
+ACCEPT          net                             dmz                     udp     33434:33454
+ACCEPT          net:$OMAK                       fw                      udp     ntp
+ACCEPT          net:$OMAK                       fw                      tcp     22      #SSH from Omak
+##########################################################################################################################################################################
+#####
 # Firewall to Internet
 #
 ACCEPT          fw                              net:$NTPSERVERS         udp     ntp                                     ntp
@@ -562,13 +642,15 @@ ACCEPT          fw                              net                     udp     
 ACCEPT          fw                              net                     icmp
 REJECT:$LOG     fw                              net                     udp     1025:1031
 DROP            fw                              net                     udp     ntp
-###############################################################################################################################################################################
+##########################################################################################################################################################################
+#####
 # Firewall to DMZ
 #
-ACCEPT          fw                              dmz                     tcp     www,ftp,ssh,smtp
+ACCEPT          fw                              dmz                     tcp     www,ftp,ssh,smtp,993,465
 ACCEPT          fw                              dmz                     udp     domain
 REJECT          fw                              dmz                     udp     137:139
-###############################################################################################################################################################################
+##########################################################################################################################################################################
+#####
 ACCEPT          tx                              loc:192.168.1.5         all
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
 </programlisting>
@@ -583,37 +665,36 @@ ACCEPT          tx                              loc:192.168.1.5         all
 
       <blockquote>
         <programlisting># The loopback network interface
-
 auto lo
 iface lo inet loopback
 
-# DMZ interface -- after the interface is up, add a host route to the server. This allows 'Yes' in the
-#                  HAVEROUTE column of the /etc/shorewall/proxyarp file. Note that the DMZ interface has
-#                  the same IP address as the Internet interface but has no broadcast address or network.
-
-auto eth0
-iface eth0 inet static
-	address 206.124.146.176
-	netmask 255.255.255.255
-	broadcast 0.0.0.0
-	up ip route add 206.124.146.177 dev eth0
-
-# Internet interface -- after the interface is up, add a host route to the DSL 'Modem' (Westell 2200).
-
+# DMZ interface
 auto eth1
 iface eth1 inet static
-	address 206.124.146.176
-	netmask 255.255.255.0
-	gateway 206.124.146.254
-	up ip route add 192.168.1.1 dev eth1
+        address 206.124.146.176
+        netmask 255.255.255.255
+        broadcast 0.0.0.0
+        up ip route add 206.124.146.177 dev eth1
 
-# Local LAN interface -- after the interface is up, add a net route to the Wireless network through 'Ursa'.
-
+# Internet interface
 auto eth2
 iface eth2 inet static
-	address 192.168.1.254
-	netmask 255.255.255.0
-	up ip route add 192.168.3.0/24 via 192.168.1.5
+        address 206.124.146.176
+        netmask 255.255.255.0
+        gateway 206.124.146.254
+        up ip route add 192.168.1.1 dev eth2
+
+# Wireless interface
+auto eth0
+iface eth0 inet static
+        address 192.168.3.254
+        netmask 255.255.255.0
+
+# LAN interface
+auto eth3
+iface eth3 inet static
+        address 192.168.1.254
+        netmask 255.255.255.0
 </programlisting>
       </blockquote>
     </section>
@@ -629,260 +710,6 @@ iface eth2 inet static
 syslogfile /var/log/ulog/syslogemu.log
 # do we want to fflush() the file after each write?
 syslogsync 1</programlisting>
-      </blockquote>
-    </section>
-  </section>
-
-  <section>
-    <title>Wireless IPSEC/OpenVPN Gateway (Ursa) Configuration</title>
-
-    <para>As mentioned above, Ursa acts as an IPSEC gateway for the wireless
-    network and as an OpenVPN gateway for roadwarrior access from Tipper and
-    my new work laptop. It's view of the network is diagrammed in the
-    following figure.</para>
-
-    <graphic align="center" fileref="images/network1.png" valign="middle" />
-
-    <para>I've included the files that I used to configure that system.</para>
-
-    <section>
-      <title>zones</title>
-
-      <blockquote>
-        <para>Because <emphasis role="bold">loc</emphasis> is a sub-zone of
-        <emphasis role="bold">net</emphasis>, <emphasis
-        role="bold">loc</emphasis> must be defined first.</para>
-
-        <programlisting>#ZONE   DISPLAY         COMMENTS
-loc     Local           Local networks
-net     Internet        The Big Bad Internet
-WiFi    Wireless        Wireless Network
-sec     Secure          Secure Wireless Network
-road    Roadwarriors    Roadwarriors
-#LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE
-</programlisting>
-      </blockquote>
-    </section>
-
-    <section>
-      <title>policy</title>
-
-      <blockquote>
-        <programlisting>#SOURCE         DEST            POLICY          LOG             LIMIT:BURST
-loc             fw              ACCEPT
-loc             net             NONE
-loc             sec             ACCEPT
-loc             road            ACCEPT
-net             fw              ACCEPT
-net             loc             NONE
-net             sec             ACCEPT
-sec             fw              ACCEPT
-sec             loc             ACCEPT
-sec             net             ACCEPT
-road            sec             ACCEPT
-road            loc             ACCEPT
-road            net             ACCEPT
-road            fw              ACCEPT
-fw              loc             ACCEPT
-fw              net             ACCEPT
-fw              sec             ACCEPT
-fw              WiFi            ACCEPT
-fw              Road            ACCEPT
-sec             WiFi            NONE
-WiFi            sec             NONE
-all             all             REJECT          info
-#LAST LINE -- DO NOT REMOVE</programlisting>
-
-        <blockquote>
-          <para></para>
-        </blockquote>
-      </blockquote>
-    </section>
-
-    <section>
-      <title>interfaces</title>
-
-      <blockquote>
-        <programlisting>#ZONE    INTERFACE      BROADCAST       OPTIONS
-net     eth0            192.168.1.255   dhcp,nobogons,blacklist
-WiFi    eth1            192.168.3.255   nobogons,blacklist,maclist,routeback
-road    tun0            -
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
-      </blockquote>
-    </section>
-
-    <section>
-      <title>ipsec</title>
-
-      <blockquote>
-        <para>The mss=1400 in the OUT OPTIONS of the 'net' zone uses a feature
-        added in 2.1.12 and sets the MSS field in TCP SYN packets forwarded to
-        the 'net' zone to 1400. This works around a problem whereby ICMP
-        fragmentation-needed packets are being dropped somewhere between my
-        main firewall and the IMAP server at my work.</para>
-
-        <programlisting>#ZONE   IPSEC   OPTIONS                 IN                      OUT
-#       ONLY                            OPTIONS                 OPTIONS
-sec     yes     mode=tunnel             
-net     no      -                       -                       <emphasis
-            role="bold">mss=1400</emphasis>
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
-</programlisting>
-      </blockquote>
-    </section>
-
-    <section>
-      <title>hosts</title>
-
-      <blockquote>
-        <programlisting>#ZONE           HOST(S)                         OPTIONS
-sec             eth1:0.0.0.0/0                  routeback
-loc             eth0:192.168.1.0/24
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS LINE -- DO NOT REMOVE</programlisting>
-      </blockquote>
-    </section>
-
-    <section>
-      <title>tunnels</title>
-
-      <blockquote>
-        <programlisting># TYPE                  ZONE    GATEWAY         GATEWAY
-#                                               ZONE
-ipsec:noah              WiFi    192.168.3.8
-openvpn:1194            net     0.0.0.0/0
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
-</programlisting>
-      </blockquote>
-    </section>
-
-    <section>
-      <title>rules</title>
-
-      <blockquote>
-        <programlisting>#ACTION    SOURCE          DEST            PROTO   DEST    SOURCE  ORIGINAL
-#                                          PORT            PORT(S) DEST
-allowBcast WiFi            fw
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
-      </blockquote>
-    </section>
-
-    <section>
-      <title>routestopped</title>
-
-      <blockquote>
-        <programlisting>#INTERFACE      HOST(S)         OPTIONS
-eth1            0.0.0.0/0
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
-      </blockquote>
-    </section>
-
-    <section>
-      <title>maclist</title>
-
-      <blockquote>
-        <programlisting>#INTERFACE              MAC                     IP ADDRESSES (Optional)
-eth1                    00:A0:1C:DB:0C:A0       192.168.3.7     #Work Laptop
-eth1                    00:04:59:0e:85:b9                       #WAP11
-eth1                    00:06:D5:45:33:3c                       #WET11
-eth1                    00:0b:c1:53:cc:97       192.168.3.8     #TIPPER
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
-      </blockquote>
-    </section>
-
-    <section>
-      <title>/etc/racoon/setkey.conf</title>
-
-      <blockquote>
-        <para>This defines encryption policies to/from the wireless
-        network.</para>
-
-        <programlisting>flush;
-spdflush;
-
-spdadd 0.0.0.0/0          192.168.3.8/32     any -P out  ipsec esp/tunnel/192.168.3.254-192.168.3.8/require;
-spdadd 192.168.3.8/32     0.0.0.0/0          any -P in   ipsec esp/tunnel/192.168.3.8-192.168.3.254/require;</programlisting>
-      </blockquote>
-    </section>
-
-    <section>
-      <title>/etc/racoon/racoon.conf</title>
-
-      <blockquote>
-        <para>SA parameters for communication with our wireless network
-        (Tipper is currently the only Wireless host).</para>
-
-        <programlisting>path certificate "/etc/certs";
-
-listen
-{
-        isakmp 192.168.3.254;
-}
-
-remote 192.168.3.8
-{
-        exchange_mode main ;
-        certificate_type x509 "ursa.pem" "ursa_key.pem";
-        verify_cert on;
-        my_identifier asn1dn ;
-        peers_identifier asn1dn ;
-        verify_identifier on ;
-        lifetime time 24 hour ;
-        proposal {
-                encryption_algorithm blowfish ;
-                hash_algorithm sha1;
-                authentication_method rsasig ;
-                dh_group 2 ;
-        }
-}
-
-sainfo address 0.0.0.0/0 any address 192.168.3.8/32 any
-{
-        pfs_group 2;
-        lifetime time 12 hour ;
-        encryption_algorithm blowfish ;
-        authentication_algorithm hmac_sha1, hmac_md5 ;
-        compression_algorithm deflate ;
-}</programlisting>
-      </blockquote>
-    </section>
-
-    <section>
-      <title>/etc/openvpn/server.conf</title>
-
-      <para>This is my OpenVPN server configuration file:</para>
-
-      <blockquote>
-        <programlisting>dev tun
- 
-server 192.168.2.0 255.255.255.0
- 
-dh dh1024.pem
- 
-ca /etc/certs/cacert.pem
- 
-crl-verify /etc/certs/crl.pem
- 
-cert /etc/certs/ursa.pem
-key /etc/certs/ursa_key.pem
- 
-port 1194
- 
-comp-lzo
- 
-user nobody
-group nogroup
- 
-ping 15
-ping-restart 45
-ping-timer-rem
-persist-tun
-persist-key
- 
-client-config-dir /etc/openvpn/clients
-ccd-exclusive
-client-to-client
- 
-verb 3</programlisting>
       </blockquote>
     </section>
   </section>

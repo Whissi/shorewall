@@ -2536,12 +2536,29 @@ initialize_netfilter () {
     createchain icmpdef no
     createchain common  no
     createchain reject  no
+    createchain dynamic no
+    
+    if [ -f /etc/shorewall/save ]; then
+        echo "Restoring dynamic rules..."
+
+	while read target ignore1 ignore2 address rest; do
+	    case $target in
+	    DROP|reject)
+	    	run_iptables -A dynamic -s $address -j $target
+		;;
+	    *)
+	    	;;
+	esac
+	done < /etc/shorewall/save
+    fi
     
     echo "Creating input Chains..."
-    
+
     for interface in $all_interfaces; do
 	createchain `forward_chain $interface` no
+	run_iptables -A `forward_chain $interface` -j dynamic
 	createchain `input_chain $interface`   no
+	run_iptables -A `input_chain $interface`   -j dynamic
     done
 }
 

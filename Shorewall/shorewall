@@ -68,8 +68,10 @@
 #						   starting the new configuration.
 #	   shorewall logwatch [ refresh-interval ] Monitor the local log for Shorewall
 #						   messages.
-#	   shorewall blacklist <address> ...       Temporarily blacklist the listed
-#						   address(es)
+#	   shorewall drop <address> ...            Temporarily drop all packets from the
+#						   listed address(es)
+#	   shorewall reject <address> ...          Temporarily reject all packets from the
+#						   listed address(es)
 #
 # Display a chain if it exists
 #
@@ -406,7 +408,10 @@ usage() # $1 = exit status
     echo "   check"
     echo "   try <directory> [ <timeout> ]"
     echo "   logwatch [<refresh interval>]"
-    echo "   blacklist <address> ..."
+    echo "   drop <address> ..."
+    echo "   reject <address> ..."
+    echo "   allow <address> ..."
+    echo "   save"
     exit $1
 }
 
@@ -622,15 +627,43 @@ case "$1" in
 	    usage 1
 	fi
         ;;
-    blacklist)
+    drop)
     	[ $# -eq 1 ] && usage 1
 	mutex_on
 	while [ $# -gt 1 ]; do
 	    shift
-	    iptables -A blacklst -s $1 -j DROP || break 1
-	    echo "$1 Temporarily Blacklisted"
+	    iptables -A dynamic -s $1 -j DROP || break 1
+	    echo "$1 Dropped"
 	done
 	mutex_off
+	;;
+    reject)
+    	[ $# -eq 1 ] && usage 1
+	mutex_on
+	while [ $# -gt 1 ]; do
+	    shift
+	    iptables -A dynamic -s $1 -j reject || break 1
+	    echo "$1 Rejected"
+	done
+	mutex_off
+	;;
+    allow)
+    	[ $# -eq 1 ] && usage 1
+	mutex_on
+	while [ $# -gt 1 ]; do
+	    shift
+	    if qt iptables -D dynamic -s $1 -j reject || qt iptables -D dynamic -s $1 -j DROP; then
+	       echo "$1 Allowed"
+	    else
+	       echo "$1 Not Dropped or Rejected"
+	    fi
+	done
+	mutex_off
+	;;
+    save)
+        if iptables -L dynamic -n > /etc/shorewall/save; then
+	    echo "Dynamic Rules Saved"
+	fi
 	;;
     *)
 	usage 1

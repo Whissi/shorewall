@@ -3684,7 +3684,14 @@ process_rule() # $1 = target
 	    loglevel="${loglevel%:*}"
 	    expandv logtag
 	fi
-	
+
+	if [ $loglevel = none ]; then
+	    loglevel=
+	    logtag=
+	    [ $target = LOG ] && return
+	fi
+
+	loglevel=${loglevel%\!}	
     fi
     #
     # Save the original target in 'logtarget' for logging rules

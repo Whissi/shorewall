@@ -1536,7 +1536,7 @@ add_nat_rule() {
     # Generate nat table rules
 
     if [ "$source" = "$FW" ]; then
-	run_iptables -t nat -A OUTPUT $proto $sports -d addr \
+	run_iptables -t nat -A OUTPUT $proto $sports -d $addr \
 	    $multiport $dports -j $target1
     else
 	chain=`dnat_chain $source`

@@ -1,0 +1,580 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article id="Shorewall_and_Aliased_Interfaces">
+  <articleinfo>
+    <title>Shorewall and Aliased Interfaces</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate>2003-11-13</pubdate>
+
+    <copyright>
+      <year>2001</year>
+
+      <year>2002</year>
+
+      <year>2003</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled &#34;<ulink
+      url="GnuCopyright.htm">GNU Free Documentation License</ulink>&#34;.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <section>
+    <title>Background</title>
+
+    <para>The traditional net-tools contain a program called
+    <emphasis>ifconfig</emphasis> which is used to configure network devices.
+    ifconfig introduced the concept of <emphasis>aliased</emphasis> or
+    <emphasis>virtual</emphasis> interfaces. These virtual interfaces have
+    names of the form <emphasis>interface:integer</emphasis> (e.g., eth0:0)
+    and ifconfig treats them more or less like real interfaces.</para>
+
+    <example>
+      <title>ifconfig</title>
+
+      <programlisting>[root@gateway root]# ifconfig eth0:0
+eth0:0    Link encap:Ethernet  HWaddr 02:00:08:3:FA:55
+          inet addr:206.124.146.178  Bcast:206.124.146.255  Mask:255.255.255.0
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          Interrupt:11 Base address:0x2000
+[root@gateway root]# </programlisting>
+    </example>
+
+    <para>The ifconfig utility is being gradually phased out in favor of the
+    ip utility which is part of the <emphasis>iproute</emphasis> package. The
+    ip utility does not use the concept of aliases or virtual interfaces but
+    rather treats additional addresses on an interface as objects in their own
+    right. The ip utility does provide for interaction with ifconfig in that
+    it allows addresses to be <emphasis>labeled</emphasis> where these labels
+    take the form of ipconfig virtual interfaces.</para>
+
+    <example>
+      <title>ip</title>
+
+      <programlisting>[root@gateway root]# ip addr show dev eth0
+2: eth0: &#60;BROADCAST,MULTICAST,UP&#62; mtu 1500 qdisc htb qlen 100
+    link/ether 02:00:08:e3:fa:55 brd ff:ff:ff:ff:ff:ff
+    inet 206.124.146.176/24 brd 206.124.146.255 scope global eth0
+    inet 206.124.146.178/24 brd 206.124.146.255 scope global secondary eth0:0
+[root@gateway root]# </programlisting>
+
+      <para><note><para>One <emphasis role="bold">cannot</emphasis> type
+      &#34;ip addr show dev eth0:0&#34; because &#34;eth0:0&#34; is a label
+      for a particular address rather than a device name.</para><programlisting>[root@gateway root]# ip addr show dev eth0:0
+Device &#34;eth0:0&#34; does not exist.
+[root@gateway root]#</programlisting></note></para>
+    </example>
+
+    <para>The iptables program doesn&#39;t support virtual interfaces in
+    either it&#39;s &#34;-i&#34; or &#34;-o&#34; command options; as a
+    consequence, Shorewall does not allow them to be used in the
+    /etc/shorewall/interfaces file or anywhere else except as described in the
+    discussion below.</para>
+  </section>
+
+  <section>
+    <title>Adding Addresses to Interfaces</title>
+
+    <para>Most distributions have a facility for adding additional addresses
+    to interfaces. If you have already used your distribution&#39;s capability
+    to add your required addresses, you can skip this section.</para>
+
+    <para>Shorewall provides facilities for automatically adding addresses to
+    interfaces as described in the following section. It is also easy to add
+    them yourself using the <emphasis role="bold">ip</emphasis> utility. The
+    above alias was added using:</para>
+
+    <programlisting>ip addr add 206.124.146.178/24 brd 206.124.146.255 dev eth0 label eth0:0</programlisting>
+
+    <para>You probably want to arrange to add these addresses when the device
+    is started rather than placing commands like the above in one of the
+    Shorewall extension scripts. For example, on RedHat systems, you can place
+    the commands in /sbin/ifup-local:</para>
+
+    <programlisting>#!/bin/sh
+
+case $1 in
+    eth0)
+        /sbin/ip addr add 206.124.146.177 dev eth0 label eth0:0
+        ;;
+esac</programlisting>
+
+    <para>RedHat systems also allow adding such aliases from the network
+    administration GUI (which only works well if you have a graphical
+    environment on your firewall).</para>
+  </section>
+
+  <section>
+    <title>So how do I handle more than one address on an interface?</title>
+
+    <para>The answer depends on what you are trying to do with the interfaces.
+    In the sub-sections that follow, we&#39;ll take a look at common
+    scenarios.</para>
+
+    <section>
+      <title>Separate Rules</title>
+
+      <para>If you need to make a rule for traffic to/from the firewall itself
+      that only applies to a particular IP address, simply qualify the $FW
+      zone with the IP address.</para>
+
+      <example>
+        <title>allow SSH from net to eth0:0 above</title>
+
+        <para><table><title>/etc/shorewall/rules</title><tgroup cols="7"><thead><row><entry
+        align="center">ACTION</entry><entry align="center">SOURCE</entry><entry
+        align="center">DESTINATION</entry><entry align="center">PROTOCOL</entry><entry
+        align="center">PORT(S)</entry><entry align="center">SOURCE PORT(S)</entry><entry
+        align="center">ORIGINAL DESTINATION</entry></row></thead><tbody><row><entry>ACCEPT</entry><entry>net</entry><entry>$FW:206.124.146.178</entry><entry>tcp</entry><entry>22</entry><entry></entry><entry></entry></row></tbody></tgroup></table></para>
+      </example>
+    </section>
+
+    <section>
+      <title>DNAT</title>
+
+      <para>Suppose that I had set up eth0:0 as above and I wanted to port
+      forward from that virtual interface to a web server running in my local
+      zone at 192.168.1.3. That is accomplised by a single rule in the
+      /etc/shorewall/rules file:</para>
+
+      <table>
+        <title>/etc/shorewall/rules</title>
+
+        <tgroup cols="7">
+          <thead>
+            <row>
+              <entry align="center">ACTION</entry>
+
+              <entry align="center">SOURCE</entry>
+
+              <entry align="center">DESTINATION</entry>
+
+              <entry align="center">PROTOCOL</entry>
+
+              <entry align="center">PORT(S)</entry>
+
+              <entry align="center">SOURCE PORT(S)</entry>
+
+              <entry align="center">ORIGINAL DESTINATION</entry>
+            </row>
+          </thead>
+
+          <tbody>
+            <row>
+              <entry>DNAT</entry>
+
+              <entry>net</entry>
+
+              <entry>loc:192.168.1.3</entry>
+
+              <entry>tcp</entry>
+
+              <entry>80</entry>
+
+              <entry>-</entry>
+
+              <entry>206.124.146.178</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
+
+    <section>
+      <title>SNAT</title>
+
+      <para>If you wanted to use eth0:0 as the IP address for outbound
+      connections from your local zone (eth1), then in /etc/shorewall/masq:</para>
+
+      <table>
+        <title>/etc/shorewall/masq</title>
+
+        <tgroup cols="3">
+          <thead>
+            <row>
+              <entry align="center">INTERFACE</entry>
+
+              <entry align="center">SUBNET</entry>
+
+              <entry align="center">ADDRESS</entry>
+            </row>
+          </thead>
+
+          <tbody>
+            <row>
+              <entry>eth0</entry>
+
+              <entry>eth1</entry>
+
+              <entry>206.124.146.178</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+
+      <para>Shorewall can create the alias (additional address) for you if you
+      set ADD_SNAT_ALIASES=Yes in /etc/shorewall/shorewall.conf. Beginning
+      with Shorewall 1.3.14, Shorewall can actually create the &#34;label&#34;
+      (virtual interface) so that you can see the created address using
+      ifconfig. In addition to setting ADD_SNAT_ALIASES=Yes, you specify the
+      virtual interface name in the INTERFACE column as follows:</para>
+
+      <table>
+        <title>/etc/shorewall/masq</title>
+
+        <tgroup cols="3">
+          <thead>
+            <row>
+              <entry align="center">INTERFACE</entry>
+
+              <entry align="center">SUBNET</entry>
+
+              <entry align="center">ADDRESS</entry>
+            </row>
+          </thead>
+
+          <tbody>
+            <row>
+              <entry>eth0:0</entry>
+
+              <entry>eth1</entry>
+
+              <entry>206.124.146.178</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+
+      <para>Shorewall can also set up SNAT to round-robin over a range of IP
+      addresses. Do do that, you specify a range of IP addresses in the
+      ADDRESS column. If you specify a label in the INTERFACE column,
+      Shorewall will use that label for the first address of the range and
+      will increment the label by one for each subsequent label.</para>
+
+      <table>
+        <title>/etc/shorewall/masq</title>
+
+        <tgroup cols="3">
+          <thead>
+            <row>
+              <entry align="center">INTERFACE</entry>
+
+              <entry align="center">SUBNET</entry>
+
+              <entry align="center">ADDRESS</entry>
+            </row>
+          </thead>
+
+          <tbody>
+            <row>
+              <entry>eth0:0</entry>
+
+              <entry>eth1</entry>
+
+              <entry>206.124.146.178-206.124.146.180</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+
+      <para>The above would create three IP addresses:</para>
+
+      <programlisting>eth0:0 = 206.124.146.178
+eth0:1 = 206.124.146.179
+eth0:2 = 206.124.146.180</programlisting>
+    </section>
+
+    <section>
+      <title>One-to-one NAT</title>
+
+      <para>If you wanted to use one-to-one NAT to link eth0:0 with local
+      address 192.168.1.3, you would have the following in /etc/shorewall/nat:<table><title>/etc/shorewall/nat</title><tgroup
+      cols="5"><thead><row><entry align="center">EXTERNAL</entry><entry
+      align="center">INTERFACE</entry><entry align="center">INTERNAL</entry><entry
+      align="center">ALL INTERFACES</entry><entry align="center">LOCAL</entry></row></thead><tbody><row><entry>206.124.146.178</entry><entry>eth0</entry><entry>192.168.1.3</entry><entry>no</entry><entry>no</entry></row></tbody></tgroup></table></para>
+
+      <para>Shorewall can create the alias (additional address) for you if you
+      set ADD_IP_ALIASES=Yes in /etc/shorewall/shorewall.conf. Beginning with
+      Shorewall 1.3.14, Shorewall can actually create the &#34;label&#34;
+      (virtual interface) so that you can see the created address using
+      ifconfig. In addition to setting ADD_IP_ALIASES=Yes, you specify the
+      virtual interface name in the INTERFACE column as follows:</para>
+
+      <table>
+        <title>/etc/shorewall/nat</title>
+
+        <tgroup cols="5">
+          <thead>
+            <row>
+              <entry align="center">EXTERNAL</entry>
+
+              <entry align="center">INTERFACE</entry>
+
+              <entry align="center">INTERNAL</entry>
+
+              <entry align="center">ALL INTERFACES</entry>
+
+              <entry align="center">LOCAL</entry>
+            </row>
+          </thead>
+
+          <tbody>
+            <row>
+              <entry>206.124.146.178</entry>
+
+              <entry>eth0:0</entry>
+
+              <entry>192.168.1.3</entry>
+
+              <entry>no</entry>
+
+              <entry>no</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+
+      <para>In either case, to create rules that pertain only to this NAT
+      pair, you simply qualify the local zone with the internal IP address.</para>
+
+      <example>
+        <title>You want to allow SSH from the net to 206.124.146.178 a.k.a.
+        192.168.1.3.</title>
+
+        <para><table><title>/etc/shorewall/rules</title><tgroup cols="7"><thead><row><entry
+        align="center">ACTION</entry><entry align="center">SOURCE</entry><entry
+        align="center">DESTINATION</entry><entry align="center">PROTOCOL</entry><entry
+        align="center">PORT(S)</entry><entry align="center">SOURCE PORT(S)</entry><entry
+        align="center">ORIGINAL DESTINATION</entry></row></thead><tbody><row><entry>ACCEPT</entry><entry>net</entry><entry>loc:192.168.1.3</entry><entry>tcp</entry><entry>22</entry><entry></entry><entry></entry></row></tbody></tgroup></table></para>
+      </example>
+    </section>
+
+    <section>
+      <title>MULTIPLE SUBNETS</title>
+
+      <para>Sometimes multiple IP addresses are used because there are
+      multiple subnetworks configured on a LAN segment. This technique does
+      not provide for any security between the subnetworks if the users of the
+      systems have administrative privileges because in that case, the users
+      can simply manipulate their system&#39;s routing table to bypass your
+      firewall/router. Nevertheless, there are cases where you simply want to
+      consider the LAN segment itself as a zone and allow your firewall/router
+      to route between the two subnetworks.</para>
+
+      <example>
+        <title>Local interface eth1 interfaces to 192.168.1.0/24 and
+        192.168.20.0/24. The primary IP address of eth1 is 192.168.1.254 and
+        eth1:0 is 192.168.20.254. You want to simply route all requests
+        between the two subnetworks.</title>
+
+        <variablelist>
+          <varlistentry>
+            <term>If you are running Shorewall 1.4.1 or Later</term>
+
+            <listitem>
+              <para>In /etc/shorewall/interfaces:</para>
+
+              <table>
+                <title>/etc/shorewall/interfaces</title>
+
+                <tgroup cols="4">
+                  <thead>
+                    <row>
+                      <entry align="center">ZONE</entry>
+
+                      <entry align="center">INTERFACE</entry>
+
+                      <entry align="center">BROADCAST</entry>
+
+                      <entry align="center">OPTIONS</entry>
+                    </row>
+                  </thead>
+
+                  <tbody>
+                    <row>
+                      <entry>-</entry>
+
+                      <entry>eth1</entry>
+
+                      <entry>192.168.1.255,192.168.20.255</entry>
+
+                      <entry></entry>
+                    </row>
+                  </tbody>
+                </tgroup>
+              </table>
+
+              <para>In /etc/shorewall/hosts:</para>
+
+              <table>
+                <title>/etc/shorewall/hosts</title>
+
+                <tgroup cols="3">
+                  <thead>
+                    <row>
+                      <entry align="center">ZONE</entry>
+
+                      <entry align="center">HOSTS</entry>
+
+                      <entry align="center">OPTIONS</entry>
+                    </row>
+                  </thead>
+
+                  <tbody>
+                    <row>
+                      <entry>loc</entry>
+
+                      <entry>eth1:192.168.1.0/24</entry>
+
+                      <entry></entry>
+                    </row>
+
+                    <row>
+                      <entry>loc</entry>
+
+                      <entry>eth1:192.168.20.0/24</entry>
+
+                      <entry></entry>
+                    </row>
+                  </tbody>
+                </tgroup>
+              </table>
+
+              <note>
+                <para>You do NOT need any entry in /etc/shorewall/policy as
+                Shorewall 1.4.1 and later releases default to allowing
+                intra-zone traffic.</para>
+              </note>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>If you are running Shorewall 1.4.0 or earlier</term>
+
+            <listitem>
+              <para>In /etc/shorewall/interfaces:</para>
+
+              <table>
+                <title>/etc/shorewall/interfaces</title>
+
+                <tgroup cols="4">
+                  <thead>
+                    <row>
+                      <entry align="center">ZONE</entry>
+
+                      <entry align="center">INTERFACE</entry>
+
+                      <entry align="center">BROADCAST</entry>
+
+                      <entry align="center">OPTIONS</entry>
+                    </row>
+                  </thead>
+
+                  <tbody>
+                    <row>
+                      <entry>-</entry>
+
+                      <entry>eth1</entry>
+
+                      <entry>192.168.1.255,192.168.20.255</entry>
+
+                      <entry><xref linkend="multiple_subnets-ex1-n1" /></entry>
+                    </row>
+                  </tbody>
+                </tgroup>
+              </table>
+
+              <note id="multiple_subnets-ex1-n1">
+                <para> If you are running Shorewall 1.3.10 or earlier then you
+                must specify the <emphasis role="bold">multi</emphasis>
+                option.</para>
+              </note>
+
+              <para>In /etc/shorewall/policy:</para>
+
+              <table>
+                <title>/etc/shorewall/policy</title>
+
+                <tgroup cols="5">
+                  <thead>
+                    <row>
+                      <entry align="center">SOURCE</entry>
+
+                      <entry align="center">DESTINATION</entry>
+
+                      <entry align="center">POLICY</entry>
+
+                      <entry align="center">LOG LEVEL</entry>
+
+                      <entry align="center">BURST:LIMIT</entry>
+                    </row>
+                  </thead>
+
+                  <tbody>
+                    <row>
+                      <entry>loc</entry>
+
+                      <entry>loc</entry>
+
+                      <entry>ACCEPT</entry>
+
+                      <entry></entry>
+
+                      <entry></entry>
+                    </row>
+                  </tbody>
+                </tgroup>
+              </table>
+            </listitem>
+          </varlistentry>
+        </variablelist>
+      </example>
+
+      <example>
+        <title>Local interface eth1 interfaces to 192.168.1.0/24 and
+        192.168.20.0/24. The primary IP address of eth1 is 192.168.1.254 and
+        eth1:0 is 192.168.20.254. You want to make these subnetworks into
+        separate zones and control the access between them (the users of the
+        systems do not have administrative privileges).</title>
+
+        <para>In /etc/shorewall/zones:<table><title>etc/shorewall/zones</title><tgroup
+        cols="3"><thead><row><entry align="center">ZONE</entry><entry
+        align="center">DISPLAY</entry><entry align="center">DESCRIPTION</entry></row></thead><tbody><row><entry>loc</entry><entry>Local</entry><entry>Local
+        Zone 1</entry></row><row><entry>loc2</entry><entry>Local2</entry><entry>Local
+        Zone 2</entry></row></tbody></tgroup></table></para>
+
+        <para>In /etc/shorewall/interfaces:<table><title>/etc/shorewall/interfaces</title><tgroup
+        cols="4"><thead><row><entry align="center">ZONE</entry><entry
+        align="center">INTERFACE</entry><entry align="center">BROADCAST</entry><entry
+        align="center">OPTIONS</entry></row></thead><tbody><row><entry>-</entry><entry>eth1</entry><entry>192.168.1.255,192.168.20.255</entry><entry><xref
+        linkend="multiple_subnets-ex2-n1" /></entry></row></tbody></tgroup></table><note
+        id="multiple_subnets-ex2-n1"><para> If you are running Shorewall
+        1.3.10 or earlier then you must specify the <emphasis role="bold">multi</emphasis>
+        option.</para></note></para>
+
+        <para>In /etc/shorewall/hosts:<table><title>/etc/shorewall/hosts</title><tgroup
+        cols="3"><thead><row><entry align="center">ZONE</entry><entry
+        align="center">HOSTS</entry><entry align="center">OPTIONS</entry></row></thead><tbody><row><entry>loc</entry><entry>eth1:192.168.1.0/24</entry><entry></entry></row><row><entry>loc2</entry><entry>eth1:192.168.20.0/24</entry><entry></entry></row></tbody></tgroup></table></para>
+
+        <para>In /etc/shorewall/rules, simply specify ACCEPT rules for the
+        traffic that you want to permit.</para>
+      </example>
+    </section>
+  </section>
+</article>

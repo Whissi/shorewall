@@ -618,9 +618,12 @@ show_reset() {
 	echo "Counters reset $(cat $STATEDIR/restarted)" && \
 	echo
 }
-
-show_proc() {
-    echo "   $1 = $(cat $1)"
+#
+# Display's the passed file name followed by "=" and the file's contents.
+#
+show_proc() # $1 = name of a file  
+{
+    [ -f $1 ] && echo "   $1 = $(cat $1)"
 }
 
 #

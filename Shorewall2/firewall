@@ -5057,8 +5057,6 @@ activate_rules()
     for zone in $zones; do
 	eval source_hosts=\$${zone}_hosts
 
-	echo $zone $source_hosts >> ${STATEDIR}/zones
-
 	chain1=$(rules_chain $FW $zone)
 	chain2=$(rules_chain $zone $FW)
 
@@ -5069,8 +5067,11 @@ activate_rules()
 	    createchain $frwd_chain No
 	fi
 
-	echo "$FW $zone $chain1" >> ${STATEDIR}/chains
-	echo "$zone $FW $chain2" >> ${STATEDIR}/chains
+	if [ -n "$DYNAMIC_CHAINS" ]; then
+	    echo $zone $source_hosts >> ${STATEDIR}/zones
+	    echo "$FW $zone $chain1" >> ${STATEDIR}/chains
+	    echo "$zone $FW $chain2" >> ${STATEDIR}/chains
+	fi
 
 	need_broadcast=
 
@@ -5118,7 +5119,7 @@ activate_rules()
 
 	    chain="$(rules_chain $zone $zone1)"
 
-	    echo "$zone $zone1 $chain" >> ${STATEDIR}/chains
+	    [ -n "$DYNAMIC_ZONES" ] && echo "$zone $zone1 $chain" >> ${STATEDIR}/chains
 
 	    if [ $zone = $zone1 ]; then
 		#
@@ -5709,6 +5710,7 @@ do_initialize() {
     DISABLE_IPV6=
     BRIDGING=
     DYNAMIC_ZONES=
+    CONFIG_PATH=/etc/shorewall:/usr/share/shorewall
 
     stopping=
     have_mutex=
@@ -5738,6 +5740,8 @@ do_initialize() {
 
     run_user_exit params
 
+    [ -n "$SHOREWALL_DIR" ] && CONFIG_PATH=$SHOREWALL_DIR:$CONFIG_PATH
+
     config=$(find_file shorewall.conf)
 
     if [ -f $config ]; then
@@ -5747,6 +5751,11 @@ do_initialize() {
 	echo "$config does not exist!" >&2
 	exit 2
     fi
+    #
+    # Restore CONFIG_PATH if the shorewall.conf file cleared it
+    #
+    [ -n "$CONFIG_PATH"] || CONFIG_PATH=/etc/shorewall:/usr/share/shorewall
+    [ -n "$SHOREWALL_DIR" ] && CONFIG_PATH=$SHOREWALL_DIR:$CONFIG_PATH
     #
     # Determine the capabilities of the installed iptables/netfilter
     #

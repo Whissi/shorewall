@@ -21,3 +21,30 @@ New Features:
    under the control of the DYNAMIC_ZONES option in
    /etc/shorewall/shorewall.conf.
 
+2) In earlier Shorewall 2.0 releases, Shorewall searches in order the
+   following directories for configuration files.
+
+   a) The directory specified in a 'try' command or specified using
+      the -c option.
+
+   b) /etc/shorewall
+
+   c) /usr/share/shorewall
+
+   In this release, the CONFIG_PATH option is added to shorewall.conf.
+   CONFIG_PATH contains a list of directory names separated by colons
+   (":"). If not set or set to a null value (e.g., CONFIG_PATH="") then
+   "CONFIG_PATH=/etc/shorewall:/usr/share/shorewall" is assumed.
+
+   Now Shorewall searches for shorewall.conf according to the old
+   rules and for other configuration files as follows:
+
+   a) The directory specified in a 'try' command or specified using
+      the -c option.
+
+   b) Each directory in $CONFIG_PATH is searched in sequence.
+
+   For those of you who are logic-challenged, your CONFIG_PATH should
+   include both /etc/shorewall and /usr/share/shorewall (in that
+   order, although there may be intervening directories).
+

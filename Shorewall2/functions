@@ -87,20 +87,26 @@ fix_bang() {
 #
 find_file()
 {
+    local saveifs= directory
+
     case $1 in
 	/*)
 	    echo $1
 	    ;;
 	*)
-	    if [ -n "$SHOREWALL_DIR" -a -f $SHOREWALL_DIR/$1 ]; then
-		echo $SHOREWALL_DIR/$1
-	    elif [ -f /etc/shorewall/$1 ]; then
-		echo /etc/shorewall/$1
-	    elif [ -f /usr/share/shorewall/$1 ]; then
-		echo /usr/share/shorewall/$1
-	    else
-		echo /etc/shorewall/$1
-	    fi
+	    saveifs=$IFS
+	    IFS=:
+	    for directory in $CONFIG_PATH; do
+	        if [ -f $directory/$1 ]; then
+		    echo $directory/$1
+		    IFS=$saveifs
+		    return
+		fi
+	    done
+		
+	    IFS=$saveifs
+			
+	    echo /etc/shorewall/$1
 	    ;;
     esac
 }

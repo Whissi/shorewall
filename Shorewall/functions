@@ -80,17 +80,17 @@ determine_zones()
 
 }
 
-###############################################################################
+#
 # The following functions may be used by apps that wish to ensure that
 # the state of Shorewall isn't changing
-#------------------------------------------------------------------------------
+#
 # This function loads the STATEDIR variable (directory where Shorewall is to
 # store state files). If your application supports alternate Shorewall
 # configurations then the name of the alternate configuration directory should
 # be in $SHOREWALL_DIR at the time of the call.
 #
 # If the shorewall.conf file does not exist, this function does not return
-###############################################################################
+#
 get_statedir()
 {
     MUTEX_TIMEOUT=
@@ -107,7 +107,7 @@ get_statedir()
     [ -z "${STATEDIR}" ] && STATEDIR=/var/state/shorewall
 }
 
-###############################################################################
+#
 # Call this function to assert MUTEX with Shorewall. If you invoke the
 # /sbin/shorewall program while holding MUTEX, you should pass "nolock" as
 # the first argument. Example "shorewall nolock refresh"
@@ -115,7 +115,7 @@ get_statedir()
 # This function uses the lockfile utility from procmail if it exists.
 # Otherwise, it uses a somewhat race-prone algorithm to attempt to simulate the
 # behavior of lockfile.
-###############################################################################
+#
 mutex_on()
 {
     local try=0
@@ -145,18 +145,18 @@ mutex_on()
     fi
 }
 
-###############################################################################
+#
 # Call this function to release MUTEX
-###############################################################################
+#
 mutex_off()
 {
     rm -f $STATEDIR/lock
 }
 
-###############################################################################
-# Strip comments and blank lines from a file and place the result in the      #
-# temporary directory                                                         #
-###############################################################################
+#
+# Strip comments and blank lines from a file and place the result in the
+# temporary directory
+#
 strip_file() # $1 = Base Name of the file, $2 = Full Name of File (optional)
 {
     local fname

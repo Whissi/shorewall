@@ -110,9 +110,9 @@ showchain() # $1 = name of chain
     fi
 }
 
-#################################################################################
-# Set the configuration variables from shorewall.conf				#
-#################################################################################
+#
+# Set the configuration variables from shorewall.conf
+#
 get_config() {
 
     [ -z "$LOGFILE" ] && LOGFILE=/var/log/messages
@@ -134,10 +134,10 @@ get_config() {
     [ -n "$FW" ] || FW=fw
 }
 
-#################################################################################
-# Display IPTABLES rules -- we used to store them in a variable but ash		#
-# dies when trying to display large sets of rules				#
-#################################################################################
+#
+# Display IPTABLES rules -- we used to store them in a variable but ash
+# dies when trying to display large sets of rules
+#
 display_chains()
 {
     trap "rm -f /tmp/chains-$$; exit 1" 1 2 3 4 5 6 9
@@ -227,10 +227,10 @@ display_chains()
 
 }
 
-#################################################################################
-# Delay $timeout seconds -- if we're running on a recent bash2 then allow	# 
-# <enter> to terminate the delay						#
-#################################################################################
+#
+# Delay $timeout seconds -- if we're running on a recent bash2 then allow
+# <enter> to terminate the delay
+#
 timed_read () 
 {
     read -t $timeout foo 2> /dev/null
@@ -238,9 +238,9 @@ timed_read ()
     test $? -eq 2 && sleep $timeout
 }
 
-#################################################################################
-# Display the last $1 packets logged						#
-#################################################################################
+#
+# Display the last $1 packets logged
+#
 packet_log() # $1 = number of messages 
 {
     local options
@@ -254,9 +254,9 @@ packet_log() # $1 = number of messages
 	 tail $options
 }
 
-#################################################################################
-# Show traffic control information						#
-#################################################################################
+#
+# Show traffic control information
+#
 show_tc() {
 
     show_one_tc() {
@@ -284,9 +284,9 @@ show_tc() {
 
 }
 
-#################################################################################
-# Monitor the Firewall								#
-#################################################################################
+#
+# Monitor the Firewall
+#
 monitor_firewall() # $1 = timeout -- if negative, prompt each time that
 		   #		     an 'interesting' packet count changes
 {
@@ -360,9 +360,9 @@ monitor_firewall() # $1 = timeout -- if negative, prompt each time that
     done
 }
 
-#################################################################################
-# Watch the Firewall Log							#
-#################################################################################
+#
+# Watch the Firewall Log
+#
 logwatch() # $1 = timeout -- if negative, prompt each time that
 	   #		     an 'interesting' packet count changes
 {
@@ -410,9 +410,9 @@ logwatch() # $1 = timeout -- if negative, prompt each time that
     done
 }
 
-#################################################################################
-# Give Usage Information							#
-#################################################################################
+#
+# Give Usage Information
+#
 usage() # $1 = exit status
 {
     echo "Usage: `basename $0` [debug] [nolock] [-c <directory>] <command>"
@@ -440,17 +440,17 @@ usage() # $1 = exit status
     exit $1
 }
 
-#################################################################################
-# Display the time that the counters were last reset                            #
-#################################################################################
+#
+# Display the time that the counters were last reset
+#
 show_reset() {
     [ -f $STATEDIR/restarted ] && \
 	echo -e "Counters reset `cat $STATEDIR/restarted`\\n"
 }
 
-#################################################################################
-# Execution begins here								#
-#################################################################################
+#
+# Execution begins here
+#
 debugging=
 
 if [ $# -gt 0 ] && [ "$1" = "debug" ]; then

@@ -48,11 +48,6 @@
 #				       requests. 'filterping' takes 
 #				       precedence over 'noping' if both are
 #				       given.
-#			routestopped - (Deprecated -- use 
-#				       /etc/shorewall/routestopped)
-#				       When the firewall is stopped, allow
-#				       and route traffic to and from this
-#				       interface.
 #			norfc1918    - This interface should not receive
 #				       any packets whose source is in one
 #				       of the ranges reserved by RFC 1918
@@ -80,21 +75,19 @@
 #			it's IP address via DHCP from subnet
 #			206.191.149.192/27 and you want pings from the internet
 #			to be ignored. You interface a DMZ with subnet
-#			192.168.2.0/24 using eth2. You want to be able to
-#			access the firewall from the local network when the
-#			firewall is stopped.
+#			192.168.2.0/24 using eth2.
 #
 #			Your entries for this setup would look like:
 #
 #			net	eth0	206.191.149.223	noping,dhcp
-#			local	eth1	192.168.1.255	routestopped
+#			local	eth1	192.168.1.255
 #			dmz	eth2	192.168.2.255
 #
 #	Example 2:	The same configuration without specifying broadcast
 #			addresses is:
 #
 #			net	eth0	detect		noping,dhcp
-#			loc	eth1	detect		routestopped
+#			loc	eth1	detect
 #			dmz	eth2	detect
 #
 #	Example 3:	You have a simple dial-in system with no ethernet

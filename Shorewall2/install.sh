@@ -22,7 +22,7 @@
 #       Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
 #
 
-VERSION=2.1.6
+VERSION=2.1.7
 
 usage() # $1 = exit status
 {

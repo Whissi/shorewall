@@ -1,4 +1,4 @@
-Shorewall 2.1.6
+Shorewall 2.1.7
 
 ----------------------------------------------------------------------
 Problems Corrected since 2.0.3
@@ -30,6 +30,11 @@ Problems Corrected since 2.1.4
 
 1)  Per-interface options like 'norfc1918' are not applied to requests
     that have been unencrypted as a result of an entry in the SPD.
+
+Problems corrected since 2.1.6
+
+1)  Dynamic zones marked as 'ipsec' in /etc/shorewall/ipsec now work
+    correctly.
 
 -----------------------------------------------------------------------
 Issues when migrating from Shorewall 2.0 to Shorewall 2.1:
@@ -401,6 +406,14 @@ New Features:
 
     #INTERFACE SUBNET		  ADDRESS		PROTO
     eth0       10.0.0.0/8	  192.0.2.44:7000-8000	udp
+
+12) You may now account by user/group ID for outbound traffic from the
+    firewall itself with entries in /etc/shorewall/accounting. Such
+    accounting rules must be placed in the OUTPUT chain.
+
+    See the comments at the top of /etc/shorewall/accounting for
+    details.
+
 
     
 

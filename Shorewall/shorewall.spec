@@ -71,8 +71,9 @@ fi
 %files 
 /etc/init.d/shorewall
 %attr(0700,root,root) %dir /etc/shorewall
+%attr(0700,root,root) %dir /usr/lib/shorewall
 %attr(0700,root,root) %dir /var/lib/shorewall
-%attr(0600,root,root) /var/lib/shorewall/version
+%attr(0600,root,root) /usr/lib/shorewall/version
 %attr(0600,root,root) /etc/shorewall/common.def
 %attr(0600,root,root) /etc/shorewall/icmp.def
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/shorewall.conf
@@ -93,8 +94,8 @@ fi
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/blacklist
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/rfc1918
 %attr(0544,root,root) /sbin/shorewall
-%attr(0444,root,root) /var/lib/shorewall/functions
-/var/lib/shorewall/firewall
+%attr(0444,root,root) /usr/lib/shorewall/functions
+/usr/lib/shorewall/firewall
 %doc documentation
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel
 

@@ -3536,7 +3536,7 @@ do_initialize() {
 
     trap "rm -rf $TMP_DIR; my_mutex_off; exit 2" 1 2 3 4 5 6 9
 
-    functions=/var/lib/shorewall/functions
+    functions=/usr/lib/shorewall/functions
 
     if [ -f $functions ]; then
 	. $functions
@@ -3544,7 +3544,7 @@ do_initialize() {
 	startup_error "$functions does not exist!"
     fi
 
-    version_file=/var/lib/shorewall/version
+    version_file=/usr/lib/shorewall/version
 
     [ -f $version_file ] && version=`cat $version_file`
     #

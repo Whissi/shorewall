@@ -78,9 +78,15 @@ if qt iptables -L shorewall -n; then
    /sbin/shorewall clear
 fi
 
-if [ -L /var/lib/shorewall/firewall ]; then
+if [ -L /usr/lib/shorewall/firewall ]; then
+    FIREWALL=`ls -l /usr/lib/shorewall/firewall | sed 's/^.*> //'`
+elif [ -L /var/lib/shorewall/firewall ]; then
     FIREWALL=`ls -l /var/lib/shorewall/firewall | sed 's/^.*> //'`
+else
+    FIREWALL=
+fi
 
+if [ -n "$FIREWALL" ]; then
     if [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
         insserv -r $FIREWALL
     elif [ -x /sbin/chkconfig -o -x /usr/sbin/chkconfig ]; then
@@ -97,6 +103,7 @@ if [ -n "$VERSION" ]; then
 fi
 
 rm -rf /etc/shorewall
+rm -rf /usr/lib/shorewall
 rm -rf /var/lib/shorewall
 
 echo "Shorewall Uninstalled"

@@ -495,7 +495,7 @@ fi
 
 [ -n "$SHOREWALL_DIR" ] && export SHOREWALL_DIR
 
-functions=/var/lib/shorewall/functions
+functions=/usr/lib/shorewall/functions
 
 if [ -f $functions ]; then
     . $functions
@@ -504,7 +504,7 @@ else
     exit 2
 fi
 
-firewall=/var/lib/shorewall/firewall
+firewall=/usr/lib/shorewall/firewall
 
 if [ ! -f $firewall ]; then
     echo "ERROR: Shorewall is not properly installed"
@@ -512,7 +512,7 @@ if [ ! -f $firewall ]; then
 	echo "	     $firewall is a symbolic link to a"
 	echo "	     non-existant file"
     else
-	echo "	     The file /var/lib/shorewall/firewall does not exist"
+	echo "	     The file /usr/lib/shorewall/firewall does not exist"
     fi
 
     exit 2
@@ -520,13 +520,13 @@ fi
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 
-version_file=/var/lib/shorewall/version
+version_file=/usr/lib/shorewall/version
 
 if [ -f $version_file ]; then
     version=`cat $version_file`
 else
     echo "ERROR: Shorewall is not properly installed"
-    echo "	 The file /var/lib/shorewall/version does not exist"
+    echo "	 The file /usr/lib/shorewall/version does not exist"
     exit 1
 fi
 

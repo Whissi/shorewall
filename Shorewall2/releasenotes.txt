@@ -437,3 +437,19 @@ New Features:
     with the exception of the /etc/shorewall/netmap file, anywhere that
     a network address may appear an IP address range of the form <low
     address>-<high address> may also appear.
+
+15) Support has been added for the iptables CLASSIFY target. That
+    target allows you to classify packets for traffic shaping directly
+    rather than indirectly through fwmark. Simply entry the
+    <major>:<minor> classification in the first column of
+    /etc/shorewall/tcrules:
+
+    Example:
+
+	#MARK/      SOURCE       DEST      PROTO     PORT(S)
+	#CLASSIFY
+	1:30	    -		 -	   tcp	     25
+
+    Marking using the CLASSIFY target always occurs in the POSTROUTING
+    chain of the mangle table and is not affected by the setting of
+    MARK_IN_FORWARD_CHAIN in shorewall.conf.

@@ -2175,13 +2175,20 @@ setup_ecn() # $1 = file name
 }
 
 #
-# Process a TC Rule - $marking_chain is assumed to contain the name of the
+# Process a TC Rule - $MARKING_CHAIN is assumed to contain the name of the
 #                     default marking chain
 #
 process_tc_rule()
 {
-    chain=$marking_chain
-    
+    chain=$MARKING_CHAIN
+
+    verify_designator() {
+	[ "$chain" = tcout ] && \
+	    fatal_error "Chain designator not allowed when source is \$FW; rule \"$rule\""
+	chain=$1
+	mark="${mark%:*}"
+    }
+
     add_a_tc_rule() {
 	r=
 
@@ -2230,28 +2237,30 @@ process_tc_rule()
 	[ "x$port"   = "x-"  ] || r="${r}--dport $port "
 	[ "x$sport"  = "x-"  ] || r="${r}--sport $sport "
 
-	run_iptables2 -t mangle -A $chain $r -j MARK --set-mark $mark
+	case $chain in
+	    tcpost)
+		run_iptables2 -t mangle -A tcpost $r -j CLASSIFY --set-class $mark
+		;;
+	    *)
+		run_iptables2 -t mangle -A $chain $r -j MARK --set-mark $mark
+		;;
+	esac
 
     }
 
     if [ "$mark" != "${mark%:*}" ]; then
-
-	[ "$chain" = tcout ] && \
-	    fatal_error "Chain designator not allowed when source is \$FW; rule \"$rule\""
-	
 	case "${mark#*:}" in
 	    p|P)
-		chain=tcpre
+		verify_designator tcpre
 		;;
 	    f|F)
-		chain=tcfor
+		verify_designator tcfor
 		;;
 	    *)
-		fatal_error "Invalid chain designator: (${mark#*:}) in rule \"$rule\""
+		chain=tcpost
 		;;
 	esac
 
-	mark="${mark%:*}"
     fi
 
     for source in $(separate_list ${sources:=-}); do
@@ -2278,6 +2287,7 @@ setup_tc1() {
     run_iptables -t mangle -N tcpre
     run_iptables -t mangle -N tcfor
     run_iptables -t mangle -N tcout
+    run_iptables -t mangle -N tcpost
     #
     # Process the TC Rules File
     #
@@ -2292,9 +2302,10 @@ setup_tc1() {
     # Link to the TC mangle chains from the main chains
     #
 
-    run_iptables -t mangle -A FORWARD    -j tcfor
-    run_iptables -t mangle -A PREROUTING -j tcpre
-    run_iptables -t mangle -A OUTPUT     -j tcout
+    run_iptables -t mangle -A FORWARD     -j tcfor
+    run_iptables -t mangle -A PREROUTING  -j tcpre
+    run_iptables -t mangle -A OUTPUT      -j tcout
+    run_iptables -t mangle -A POSTROUTING -j tcpost
 
     run_user_exit tcstart
 
@@ -6832,7 +6843,7 @@ do_initialize() {
     [ -z "$BOGON_LOG_LEVEL" ]   && BOGON_LOG_LEVEL=info
 
     MARK_IN_FORWARD_CHAIN=$(added_param_value_no MARK_IN_FORWARD_CHAIN $MARK_IN_FORWARD_CHAIN)
-    [ -n "$MARK_IN_FORWARD_CHAIN" ] && marking_chain=tcfor || marking_chain=tcpre
+    [ -n "$MARK_IN_FORWARD_CHAIN" ] && MARKING_CHAIN=tcfor || MARKING_CHAIN=tcpre
     if [ -n "$TC_ENABLED" ]; then
 	CLEAR_TC=$(added_param_value_yes CLEAR_TC $CLEAR_TC)
     else

@@ -211,7 +211,11 @@ echo "Shorewall2 control program installed in ${PREFIX}/sbin/shorewall2"
 #
 # Install the Firewall Script
 #
-install_file_with_backup init.sh ${PREFIX}${DEST}/$FIREWALL 0544
+if [ -n "$DEBIAN" ]; then
+    install_file_with_backup init.debian.sh /etc/init.d/shorewall2
+else
+    install_file_with_backup init.sh ${PREFIX}${DEST}/$FIREWALL 0544
+fi
 
 echo
 echo  "Shorewall script installed in ${PREFIX}${DEST}/$FIREWALL"

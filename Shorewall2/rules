@@ -301,9 +301,9 @@
 #		 to local system 192.168.1.3 with a limit of 3 per second and
 #		 a maximum burst of 10
 #
-#	#ACTION 	SOURCE	DEST            PROTO	DEST    SOURCE	ORIGINAL
-#	#                                       	PORT    PORT(S) DEST
-#	DNAT<3/sec:10>	net	loc:192.168.1.3 tcp	http
+#	#ACTION 	SOURCE	DEST            PROTO	DEST    SOURCE	ORIGINAL	RATE
+#	#                                       	PORT    PORT(S) DEST		LIMIT
+#	DNAT		net	loc:192.168.1.3 tcp	http	-	-		3/sec:10
 #
 #	Example: Redirect all locally-originating www connection requests to
 #		 port 3128 on the firewall (Squid running on the firewall

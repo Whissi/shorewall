@@ -3167,15 +3167,14 @@ initialize_netfilter () {
     setcontinue INPUT
     setcontinue OUTPUT
     #
-    # Allow DNS lookups during startup for FQDNs
+    # Allow DNS lookups during startup for FQDNs and deep-six INVALID packets
     #
-    run_iptables -A INPUT   -p udp --dport 53 -j ACCEPT # I suppose that there
-                                                        # is an idiot somewhere
-                                                        # who needs this    strip_file nat
 
-    run_iptables -A OUTPUT  -p udp --dport 53 -j ACCEPT
-    run_iptables -A FORWARD -p udp --dport 53 -j ACCEPT
-
+    for chain in INPUT OUTPUT FORWARD; do
+	run_iptables -A $chain -p udp --dport 53 -j ACCEPT
+	run_iptables -A $chain -m state --state INVALID -j DROP
+    done
+    
     [ -n "$CLAMPMSS" ] && \
 	run_iptables -A FORWARD -p tcp \
 	    --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
@@ -3186,10 +3185,10 @@ initialize_netfilter () {
 	run_user_exit newnotsyn
 	if [ -n "$LOGNEWNOTSYN" ]; then
 	    if [ "$LOGNEWNOTSYN" = ULOG ]; then
-		run_iptables -A newnotsyn -j ULOG
+		run_iptables -A newnotsyn -j ULOG $LOGPARMS \
 		    --ulog-prefix "Shorewall:newnotsyn:DROP:"
 	    else
-		run_iptables -A newnotsyn -j LOG \
+		run_iptables -A newnotsyn -j LOG $LOGPARMS \
 		    --log-prefix "Shorewall:newnotsyn:DROP:" --log-level $LOGNEWNOTSYN
 	    fi
 	fi

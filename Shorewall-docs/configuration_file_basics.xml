@@ -5,7 +5,7 @@
   <!--$Id$-->
 
   <articleinfo>
-    <title>Configuration Files </title>
+    <title>Configuration Files</title>
 
     <authorgroup>
       <author>
@@ -67,16 +67,16 @@
     - defines IPSEC, GRE and IPIP tunnels with end-points on the firewall
     system.</para></listitem><listitem><para>/etc/shorewall/blacklist - lists
     blacklisted IP/subnet/MAC addresses.</para></listitem><listitem><para>/etc/shorewall/init
-    - commands that you wish to execute at the beginning of a &#34;shorewall
-    start&#34; or &#34;shorewall restart&#34;.</para></listitem><listitem><para>/etc/shorewall/start
-    - commands that you wish to execute at the completion of a &#34;shorewall
-    start&#34; or &#34;shorewall restart&#34;</para></listitem><listitem><para>/etc/shorewall/stop
-    - commands that you wish to execute at the beginning of a &#34;shorewall
-    stop&#34;.</para></listitem><listitem><para>/etc/shorewall/stopped -
-    commands that you wish to execute at the completion of a &#34;shorewall
-    stop&#34;.</para></listitem><listitem><para>/etc/shorewall/ecn - disable
-    Explicit Congestion Notification (ECN - RFC 3168) to remote hosts or
-    networks.</para></listitem><listitem><para>/etc/shorewall/accounting -
+    - commands that you wish to execute at the beginning of a <quote>shorewall
+    start</quote> or <quote>shorewall restart</quote>.</para></listitem><listitem><para>/etc/shorewall/start
+    - commands that you wish to execute at the completion of a <quote>shorewall
+    start</quote> or <quote>shorewall restart</quote></para></listitem><listitem><para>/etc/shorewall/stop
+    - commands that you wish to execute at the beginning of a <quote>shorewall
+    stop</quote>.</para></listitem><listitem><para>/etc/shorewall/stopped -
+    commands that you wish to execute at the completion of a <quote>shorewall
+    stop</quote>.</para></listitem><listitem><para>/etc/shorewall/ecn -
+    disable Explicit Congestion Notification (ECN - RFC 3168) to remote hosts
+    or networks.</para></listitem><listitem><para>/etc/shorewall/accounting -
     define IP traffic accounting rules</para></listitem><listitem><para>/etc/shorewall/usersets
     and /etc/shorewall/users - define sets of users/groups with similar access
     rights</para></listitem><listitem><para>/etc/shorewall/actions and
@@ -88,9 +88,9 @@
     <title>Comments</title>
 
     <para>You may place comments in configuration files by making the first
-    non-whitespace character a pound sign (&#34;#&#34;). You may also place
-    comments at the end of any line, again by delimiting the comment from the
-    rest of the line with a pound sign.</para>
+    non-whitespace character a pound sign (<quote>#</quote>). You may also
+    place comments at the end of any line, again by delimiting the comment
+    from the rest of the line with a pound sign.</para>
 
     <example>
       <title>Comments in a Configuration File</title>
@@ -104,7 +104,7 @@ ACCEPT  net     fw      tcp     www     #This is an end-of-line comment</program
     <title>Line Continuation</title>
 
     <para>You may continue lines in the configuration files using the usual
-    backslash (&#34;\&#34;) followed immediately by a new line character.</para>
+    backslash (<quote>\</quote>) followed immediately by a new line character.</para>
 
     <example>
       <title>Line Continuation</title>
@@ -179,7 +179,7 @@ smtp,www,pop3,imap  #Services running on the firewall</programlisting>
     <title>Using DNS Names</title>
 
     <caution>
-      <para> I personally recommend strongly against using DNS names in
+      <para>I personally recommend strongly against using DNS names in
       Shorewall configuration files. If you use DNS names and you are called
       out of bed at 2:00AM because Shorewall won&#39;t start as a result of
       DNS problems then don&#39;t say that you were not forewarned.</para>
@@ -285,9 +285,9 @@ smtp,www,pop3,imap  #Services running on the firewall</programlisting>
     <title>Complementing an Address or Subnet</title>
 
     <para>Where specifying an IP address, a subnet or an interface, you can
-    precede the item with &#34;!&#34; to specify the complement of the item.
-    For example, !192.168.1.4 means &#34;any host but 192.168.1.4&#34;. There
-    must be no white space following the &#34;!&#34;.</para>
+    precede the item with <quote>!</quote> to specify the complement of the
+    item. For example, !192.168.1.4 means <quote>any host but 192.168.1.4</quote>.
+    There must be no white space following the <quote>!</quote>.</para>
   </section>
 
   <section id="Lists">
@@ -319,7 +319,7 @@ smtp,www,pop3,imap  #Services running on the firewall</programlisting>
     <title>Port Numbers/Service Names</title>
 
     <para>Unless otherwise specified, when giving a port number you can use
-    either an integer or a service name from /etc/services. </para>
+    either an integer or a service name from /etc/services.</para>
   </section>
 
   <section id="Ranges">
@@ -328,7 +328,7 @@ smtp,www,pop3,imap  #Services running on the firewall</programlisting>
     <para>If you need to specify a range of ports, the proper syntax is
     &#60;low port number&#62;:&#60;high port number&#62;. For example, if you
     want to forward the range of tcp ports 4000 through 4100 to local host
-    192.168.1.3, the entry in /etc/shorewall/rules is: </para>
+    192.168.1.3, the entry in /etc/shorewall/rules is:</para>
 
     <informaltable>
       <tgroup cols="7">
@@ -370,7 +370,7 @@ smtp,www,pop3,imap  #Services running on the firewall</programlisting>
       </tgroup>
     </informaltable>
 
-    <para> If you omit the low port number, a value of zero is assumed; if you
+    <para>If you omit the low port number, a value of zero is assumed; if you
     omit the high port number, a value of 65535 is assumed.</para>
   </section>
 
@@ -438,9 +438,9 @@ role="bold">02:00:08:E3:FA:55</emphasis>
 
     <para>Because Shorewall uses colons as a separator for address fields,
     Shorewall requires MAC addresses to be written in another way. In
-    Shorewall, MAC addresses begin with a tilde (&#34;~&#34;) and consist of 6
-    hex numbers separated by hyphens. In Shorewall, the MAC address in the
-    example above would be written &#34;~02-00-08-E3-FA-55&#34;.</para>
+    Shorewall, MAC addresses begin with a tilde (<quote>~</quote>) and consist
+    of 6 hex numbers separated by hyphens. In Shorewall, the MAC address in
+    the example above would be written <quote>~02-00-08-E3-FA-55</quote>.</para>
 
     <note>
       <para>It is not necessary to use the special Shorewall notation in the
@@ -460,7 +460,7 @@ role="bold">02:00:08:E3:FA:55</emphasis>
     from /etc/shorewall.</para>
 
     <para>This facility permits you to easily create a test or temporary
-    configuration by </para>
+    configuration by</para>
 
     <orderedlist>
       <listitem>

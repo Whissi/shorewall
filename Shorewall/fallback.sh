@@ -49,7 +49,8 @@ restore_file() # $1 = file to restore
     fi	
 }
 
-if [ ! -f /var/lib/shorewall/version-${VERSION}.bkout ]; then
+if [ ! -f /var/lib/shorewall/version-${VERSION}.bkout -a \
+     ! -f /etc/shorewall/version-${VERSION}.bkout ]; then
     echo "Shorewall Version $VERSION is not installed"
     exit 1
 fi
@@ -106,10 +107,13 @@ restore_file /etc/shorewall/whitelist
 
 restore_file /etc/shorewall/rfc1918
 
-restore_file /etc/shorewall/version
-restore_file /var/lib/shorewall/version
-
-oldversion="`cat /var/lib/shorewall/version`"
+if [ -f /var/lib/shorewall/version-${VERSION}.bkout ]; then
+    restore_file /var/shorewall/version
+    oldversion="`cat /var/lib/shorewall/version`"
+else
+    restore_file /etc/shorewall/version
+    oldversion="`cat /etc/shorewall/version`"
+fi
 
 echo "Shorewall Restored to Version $oldversion"
 

@@ -5,9 +5,21 @@ In this release:
 1. A new "logwatch" command has been added to the /sbin/shorewall program.
 
 2. Shorewall can now take advantage of the Netfilter 'multiport' match
-   function. 
+   function (kernel configuration option CONFIG_IP_NF_MATCH_MULTIPORT).  
    
-3.
+3. Dynamic blacklisting is now supported through the use of three new 
+   commands in /sbin/shorewall:
+
+   deny - drop packets from one or more hosts.
+   reject - reject packets from one or more hosts.
+   allow - reverse the effect of a prior 'deny' or 'reject' command.
+   save - save the current dynamic blacklisting settings so that they 
+          will be applied the next time that Shorewall is started.
+
+4. The 'firewall', 'version' and 'functions' files have been moved from
+   /etc/shorewall to /var/lib/shorewall.
+
+
 
 
 

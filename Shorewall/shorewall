@@ -312,6 +312,8 @@ monitor_firewall() # $1 = timeout -- if negative, prompt each time that
 
 	echo -e "Dropped/Rejected Packet Log\\n"
 
+	show_reset
+
 	rejects=`iptables -L -v -n | grep 'LOG'`
 
 	if [ "$rejects" != "$oldrejects" ]; then
@@ -383,6 +385,8 @@ logwatch() # $1 = timeout -- if negative, prompt each time that
 	echo -e "$banner `date`\\n"
 
 	echo -e "Dropped/Rejected Packet Log\\n"
+
+	show_reset
 
 	rejects=`iptables -L -v -n | grep 'LOG'`
 
@@ -553,6 +557,7 @@ case "$1" in
 	log)
 	    get_config
 	    echo -e "Shorewall-$version Log at $HOSTNAME - `date`\\n"
+	    show_reset
 	    host=`echo $HOSTNAME | sed 's/\..*$//'`
 	    packet_log 20
 	    ;;

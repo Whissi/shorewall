@@ -1,5 +1,5 @@
 %define name shorewall
-%define version 2.0.3b
+%define version 2.0.3c
 %define release 1
 %define prefix /usr
 
@@ -142,13 +142,13 @@ fi
 
 %changelog
 * Fri Jul 02 2004 Tom Eastep tom@shorewall.net
-- Updated to 2.0.2c-1
+- Updated to 2.0.3c-1
 * Wed Jun 30 2004 Tom Eastep tom@shorewall.net
-- Updated to 2.0.2b-1
+- Updated to 2.0.3b-1
 * Mon Jun 28 2004 Tom Eastep tom@shorewall.net
-- Updated to 2.0.2a-1
+- Updated to 2.0.3a-1
 * Wed Jun 23 2004 Tom Eastep tom@shorewall.net
-- Updated to 2.0.2-1
+- Updated to 2.0.3-1
 * Sat Jun 19 2004 Tom Eastep tom@shorewall.net
 - Updated to 2.0.2-0RC2
 * Tue Jun 15 2004 Tom Eastep tom@shorewall.net

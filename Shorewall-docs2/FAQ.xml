@@ -1784,7 +1784,8 @@ TOS=0x00 PREC=0x00 TTL=64 ID=26774 DF PROTO=TCP SPT=32797 DPT=80 WINDOW=5840 RES
 
         <orderedlist>
           <listitem>
-            <para>Add a zone for the modem in /etc/shorewall/zones:</para>
+            <para>Add a zone for the modem in
+            <filename>/etc/shorewall/zones</filename>:</para>
 
             <programlisting>#ZONE    DISPLAY       COMMENTS
 modem    ADSLModem     Zone for modem</programlisting>
@@ -1793,7 +1794,8 @@ modem    ADSLModem     Zone for modem</programlisting>
           <listitem>
             <para>Define the zone to be associated with <filename
             class="devicefile">eth0</filename> (or whatever interface connects
-            to your modem) in /etc/shorewall/interfaces:</para>
+            to your modem) in
+            <filename>/etc/shorewall/interfaces</filename>:</para>
 
             <programlisting>#ZONE      INTERFACE   BROADCAST    OPTIONS
 modem      eth0        detect</programlisting>
@@ -1801,13 +1803,30 @@ modem      eth0        detect</programlisting>
 
           <listitem>
             <para>Allow web traffic to the modem in
-            /etc/shorewall/rules:</para>
+            <filename>/etc/shorewall/rules</filename>:</para>
 
             <programlisting>#ACTION    SOURCE      DEST      PROTO     DEST PORT(S)
 ACCEPT     fw          modem     tcp       80
 ACCEPT     loc         modem     tcp       80</programlisting>
           </listitem>
         </orderedlist>
+
+        <para>Note that many of these ADSL/Cable Modems have no default
+        gateway or their default gateway is at a fixed IP address that is
+        different from the IP address you have assigned to your external
+        interface. In either case, you may have problems browsing the modem
+        from your local network even if you have the correct routes
+        established on your firewall. This is usually solved by masquerading
+        traffic from your local network to the modem.</para>
+
+        <para><filename>/etc/shorewall/masq</filename>:</para>
+
+        <programlisting>#INTERFACE         SUBNET          ADDRESS
+eth0               eth1                        # eth1 = interface to local network</programlisting>
+
+        <para>For an example of this when the ADSL/Cable modem is bridged, see
+        <ulink url="myfiles.htm">my configuration</ulink>. In that case, I
+        masquerade using the IP address of my local interface!</para>
       </section>
     </section>
   </section>

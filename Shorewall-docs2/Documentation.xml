@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-02-01</pubdate>
+    <pubdate>2005-03-10</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -2652,6 +2652,41 @@ eth0                  eth1            206.124.146.176</programlisting>
       </varlistentry>
 
       <varlistentry>
+        <term>RFC1918_STRICT</term>
+
+        <listitem>
+          <para>(Added at version 2.2.2) — Traditionally, the RETURN target in
+          the 'rfc1918' file has caused <link
+          linkend="Interfaces">norfc1918</link> processing to cease for a
+          packet if the packet's source IP address matches the rule. Thus, if
+          you have this entry in <link
+          linkend="rfc1918">/etc/shorewall/rfc1918</link>:</para>
+
+          <programlisting>#SUBNETS                 TARGET
+192.168.1.0/24           RETURN</programlisting>
+
+          <para>then traffic from 192.168.1.4 to 10.0.3.9 will be accepted
+          even though you also have:</para>
+
+          <programlisting>#SUBNETS                 TARGET
+10.0.0.0/8               logdrop</programlisting>
+
+          <para>Setting RFC1918_STRICT=Yes in shorewall.conf will cause such
+          traffic to be logged and dropped since while the packet's source
+          matches the RETURN rule, the packet's destination matches the
+          'logdrop' rule.</para>
+
+          <para>If not specified or specified as empty (e.g.,
+          RFC1918_STRICT="") then RFC1918_STRICT=No is assumed.</para>
+
+          <warning>
+            <para>RFC1918_STRICT=Yes requires that your kernel and iptables
+            support 'conntrack state' match.</para>
+          </warning>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term>DROPINVALID</term>
 
         <listitem>
@@ -3674,8 +3709,9 @@ all      all     tcp         ftp-data          -               8</programlisting
               <term>RETURN</term>
 
               <listitem>
-                <para>Process the packet normally thru the rules and
-                policies.</para>
+                <para>Process the packet normally thru the rules and policies.
+                See also <link linkend="Conf">RFC1918_STRICT</link>
+                above.</para>
               </listitem>
             </varlistentry>
 
@@ -3984,6 +4020,16 @@ eth1                -</programlisting>
     <title>Revision History</title>
 
     <para><revhistory>
+        <revision>
+          <revnumber>1.23</revnumber>
+
+          <date>2005-03-10</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Changes for Shorewall 2.2.2.</revremark>
+        </revision>
+
         <revision>
           <revnumber>1.20</revnumber>
 

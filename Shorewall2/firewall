@@ -2613,7 +2613,6 @@ process_action() # $1 = action
     local cports="$7"
     local ratelimit="$8"
     local userspec="$9"
-    local rule="$(echo $target $clients $servers $protocol $ports $cports $ratelimit)"
     local userandgroup=
     local logtag=
 
@@ -2786,7 +2785,7 @@ createlogactionchain() # $1 = Action Name, $2 = Log Level [: Log Tag ]
 
     eval ${action}_chains=\"\$${action}_chains $level $CHAIN\"
 
-    echo "   *** Action $1:$2 is $CHAIN ***"
+#   echo "   *** Action $1:$2 is $CHAIN ***"
 
 }
 
@@ -2820,13 +2819,6 @@ createactionchain() # $1 = Action, including log level and tag if any
 find_logactionchain() # $1 = Action, including log level and tag if any
 {
     local fullaction=$1 action=${1%%:*} level= chains=
-
-    case $action in 
-	ACCEPT|DROP|REJECT|LOG|QUEUE|CONTINUE)
-	    echo $fullaction
-	    return
-	    ;;
-    esac
 
     case $fullaction in
 	*:*)
@@ -2940,7 +2932,7 @@ process_actions1() {
 	    case $xaction in
 		*:*)
 		    temp=${xaction#*:}
-		    [ ${#temp} -lt 12 ] || fatal_error "Action Name Too Long: $temp"
+		    [ ${#temp} -le 11 ] || fatal_error "Action Name Longer than 11 Characters: $temp"
 		    xaction=${xaction%:*}
 		    case $temp in
 			ACCEPT|REJECT|DROP)
@@ -3013,6 +3005,7 @@ process_actions2() {
 		if [ "${ysourcezone}" != "${ydestzone}" ] ; then
 		    eval ypolicy=\$${ysourcezone}2${ydestzone}_policy
 		    if [ "$ypolicy" != NONE ] ; then
+			rule="$(echo $origtarget $yclients $yservers $xprotocol $xports $xcports $xratelimit $xuserspec)"
 			process_action $xaction $xtarget $yclients $yservers $xprotocol $xports $xcports $xratelimit $xuserspec
 		    fi
 		fi
@@ -3038,6 +3031,7 @@ process_actions2() {
 	    continue
 	fi
 
+	rule="$(echo $origtarget $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec)"
 	process_action $xaction $xtarget $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec
     }
 
@@ -3149,11 +3143,21 @@ process_actions2() {
 		
 		xaction=$(find_logactionchain $xaction1)
 		
-		echo "Processing $fn..."
+		echo "Processing $fn for Action $xaction..."
 		
-		while read xtarget xclients xservers xprotocol xports xcports xratelimit $xuserspec; do
-		    xtarget=$(evaluate_levels $xaction1 $xtarget)
-		    xtarget=$(find_logactionchain $xtarget)
+		while read origtarget xclients xservers xprotocol xports xcports xratelimit $xuserspec; do
+		    expandv origtarget
+		    xtarget=$(evaluate_levels $xaction1 $origtarget)
+
+		    case ${xtarget%%:*} in 
+			ACCEPT|DROP|REJECT|LOG|QUEUE|CONTINUE)
+			    ;;
+			*)
+			    origtarget=$xtarget
+			    xtarget=$(find_logactionchain $xtarget)
+			    ;;
+		    esac
+
 		    do_it
 		done < $TMP_DIR/$f
 		;;
@@ -3621,7 +3625,6 @@ process_rule() # $1 = target
     local ratelimit="$8"
     local userspec="$9"
     local userandgroup=
-    local rule="$(echo $target $clients $servers $protocol $ports $cports $address $ratelimit $userspec)"
     local logtag=
     local nonat=
 
@@ -4497,7 +4500,7 @@ setup_masq()
 				    ;;
 				*)
 				    if [ -n "$MULTIPORT" ]; then
-					[ $listcount -gt 15 ] && fatal_error "Too many entries in port list ($ports)"
+					[ $listcount -le 15 ] || fatal_error "More than 15 entries in port list ($ports)"
 					ports="-m multiport --dports $ports"
 				    else
 					fatal_error "Port Ranges require multiport match support in your kernel ($ports)"
@@ -6443,9 +6446,7 @@ do_initialize() {
 	    fi
 	fi
 
-	if [ ${#temp} -gt 29 ]; then
-	    startup_error "LOGFORMAT string is too long: \"$LOGFORMAT\""
-	fi
+	[ ${#temp} -le 29 ] || startup_error "LOGFORMAT string is longer than 29 characters: \"$LOGFORMAT\""
     else
 	LOGFORMAT="Shorewall:%s:%s:"
     fi

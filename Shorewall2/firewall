@@ -2363,11 +2363,15 @@ setup_tc1() {
     run_iptables -t mangle -A OUTPUT      -j tcout
     run_iptables -t mangle -A POSTROUTING -j tcpost
 
-    run_user_exit tcstart
+    f=$(find_file tcstart)
 
-    save_progress_message "Restoring Traffic Control..."
-    save_command . $(find_file tcstart)
+    if [ -f $f ]; then
 
+	run_user_exit tcstart
+
+	save_progress_message "Restoring Traffic Control..."
+	save_command . $(find_file tcstart)
+    fi
 }
 
 setup_tc() {

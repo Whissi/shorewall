@@ -31,7 +31,7 @@
     </legalnotice>
   </articleinfo>
 
-  <para> <ulink url="http://www.squid-cache.org/"><inlinemediaobject><imageobject><imagedata
+  <para><ulink url="http://www.squid-cache.org/"><inlinemediaobject><imageobject><imagedata
   align="left" fileref="images/squidnow.gif" /></imageobject></inlinemediaobject></ulink>
   <ulink url="http://www.squid-cache.org/"><inlinemediaobject><imageobject><imagedata
   align="right" fileref="images/cache_now.gif" /></imageobject></inlinemediaobject></ulink></para>
@@ -39,7 +39,8 @@
   <para>This page covers Shorewall configuration to use with Squid running as
   a Transparent Proxy or as a Manual Proxy.</para>
 
-  <para>If you are running Shorewall 1.3, please see this documentation.</para>
+  <para>If you are running Shorewall 1.3, please see <ulink
+  url="1.3/Shorewall_Squid_Usage.html">this documentation</ulink>.</para>
 
   <section>
     <title>Squid as a Transparent Proxy</title>
@@ -389,7 +390,7 @@ fi</programlisting>
 
           <programlisting>iptables -t nat -A PREROUTING -i eth0 -d ! 192.168.1.3 -p tcp --dport 80 -j REDIRECT --to-ports 3128</programlisting>
 
-          <para> If you are running RedHat on the server, you can simply
+          <para>If you are running RedHat on the server, you can simply
           execute the following commands after you have typed the iptables
           command above:</para>
 

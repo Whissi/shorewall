@@ -1889,7 +1889,7 @@ add_nat_rule() {
 		createnatchain $chain
 
 		for adr in `separate_list $addr`; do
-		    run_iptables -t nat -A OUTPUT $cli $proto $multiport $sports $dports -d `fix_bang $adr` -j $chain
+		    run_iptables2 -t nat -A OUTPUT $cli $proto $multiport $sports $dports -d $adr -j $chain
 		done
 
 		for adr in $excludedests; do

@@ -1603,8 +1603,8 @@ setup_proxy_arp() {
 	echo 0 > /proc/sys/net/ipv4/conf/$external/proxy_arp
 
 	save_command arp -i $external -Ds $address $external pub
-	eval save_command echo 1 '\>' /proc/sys/net/ipv4/conf/$interface/proxy_arp
-	eval save_command echo 0 '\>' /proc/sys/net/ipv4/conf/$external/proxy_arp
+	save_command "echo 1 > /proc/sys/net/ipv4/conf/$interface/proxy_arp"
+	save_command "echo 0 > /proc/sys/net/ipv4/conf/$external/proxy_arp"
 
 	echo $address $interface $external $haveroute >> ${STATEDIR}/proxyarp
 
@@ -1623,6 +1623,7 @@ setup_proxy_arp() {
     for interface in $interfaces; do
 	if echo 1 > /proc/sys/net/ipv4/conf/$interface/proxy_arp 2> /dev/null; then
 	    progress_message "   Enabled proxy ARP on $interface"
+	    save_command "echo 1 > /proc/sys/net/ipv4/conf/$interface/proxy_arp"
         else
 	    error_message "Warning: Unable to enable proxy ARP on $interface"
         fi
@@ -3801,6 +3802,11 @@ loadmodule() # $1 = module name, $2 - * arguments
     local modulename=$1
     local modulefile
     local suffix
+    moduleloader=modprobe
+
+    if ! qt which modprobe; then 
+	moduleloader=insmod
+    fi
 
     if [ -z "$(lsmod | grep $modulename)" ]; then
 	shift
@@ -3809,7 +3815,15 @@ loadmodule() # $1 = module name, $2 - * arguments
 	    modulefile=$MODULESDIR/${modulename}.${suffix}
 
 	    if [ -f $modulefile ]; then
-		insmod $modulefile $*
+		case $moduleloader in
+		    insmod)
+			insmod $modulefile $*
+			;;
+		    *)
+			modprobe $modulename
+			;;
+		esac
+
 		return
 	    fi
 	done

@@ -61,9 +61,11 @@ list_search() # $1 = element to search for , $2-$n = list
 # Function to count list elements
 #
 list_count() {
-    local temp="`separate_list $1`"
-    
-    echo $temp | wc -w
+    arg_count() {
+	echo $#
+    }
+
+    arg_count `separate_list $1`
 }
 
 #
@@ -1103,6 +1105,17 @@ run_user_exit() # $1 = file name
 # Stop the Firewall
 #
 stop_firewall() {
+    #
+    # Turn off trace unless we were tracing "stop" or "clear"
+    #
+    case $command in
+	stop|clear)
+	    ;;
+	*)
+	    set +x
+	    ;;
+    esac
+
     stopping="Yes"
 
     deletechain shorewall
@@ -3386,7 +3399,7 @@ add_common_rules() {
     #
     # Enable icmp output
     #
-    run_iptables -A OUTPUT -m state --state ! INVALID -p icmp -j ACCEPT
+    run_iptables -A OUTPUT -p icmp -j ACCEPT
     #
     # Route Filtering
     #

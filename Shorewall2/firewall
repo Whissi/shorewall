@@ -153,7 +153,8 @@ append_file() # $1 = File Name
 #
 run_iptables() {
 
-    [ -n "$BRIDGING" ] && [ -f $TMP_DIR/physdev ] && rm -f $TMP_DIR/physdev
+    [ -n "$BRIDGING" ]      && [ -f $TMP_DIR/physdev ] && rm -f $TMP_DIR/physdev
+    [ -n "$IPRANGE_MATCH" ] && [ -f $TMP_DIR/iprange ] && rm -f $TMP_DIR/iprange
 
     if ! iptables $@ ; then
 	if [ -z "$stopping" ]; then
@@ -508,13 +509,27 @@ first_chains() #$1 = interface
 }
 
 #
+# Horrible hack to work around an iptables limitation
+#
+iprange_echo() 
+{
+    if [ -f $TMP_DIR/iprange ]; then
+	echo $@
+    else
+	echo "-m iprange $@"
+	> $TMP_DIR/iprange
+    fi
+}
+
+
+#
 # Source IP range
 #
 source_ip_range() # $1 = Address or Address Range
 {
     case $1 in
 	*.*.*.*-*.*.*.*)
-	    echo "-m iprange --src-range $1"
+	    iprange_echo "--src-range $1"
 	    ;;
 	*)
 	    echo "-s $1"
@@ -529,7 +544,7 @@ dest_ip_range() # $1 = Address or Address Range
 {
     case $1 in
 	*.*.*.*-*.*.*.*)
-	    echo "-m iprange --dst-range $1"
+	    iprange_echo "--dst-range $1"
 	    ;;
 	*)
 	    echo "-d $1"
@@ -537,8 +552,35 @@ dest_ip_range() # $1 = Address or Address Range
     esac
 }
 
+both_ip_ranges() # $1 = Source address or range, $2 = dest address or range
+{
+    local prefix= match=
+
+    case $1 in 
+	*.*.*.*-*.*.*.*)
+	    prefix="-m iprange"
+	    match="--src-range $1"
+	    ;;
+	*)
+	    match="-s $1"
+	    ;;
+    esac
+
+    case $2 in 
+	*.*.*.*-*.*.*.*)
+	    prefix="-m iprange"
+	    match="$match --dst-range $2"
+	    ;;
+	*)
+	    match="$match -d $2"
+	    ;;
+    esac
+
+    echo "$prefix $match"
+}    
+
 #
-# Horrible hack to work around an iptables bug
+# Horrible hack to work around an iptables limitation
 #
 physdev_echo() 
 {
@@ -1391,7 +1433,7 @@ stop_firewall() {
 			else
 			    routeback=Yes
 			    for h in $(separate_list $host); do
-				iptables -A FORWARD -i $interface -s $h -o $interface $(dest_ip_range $h) -j ACCEPT
+				iptables -A FORWARD -i $interface -o $interface $(both_ip_ranges $h $h) -j ACCEPT
 			    done
 			fi
 			;;
@@ -1407,12 +1449,12 @@ stop_firewall() {
     for host in $hosts; do
 	interface=${host%:*}
 	networks=${host#*:}
-	iptables -A INPUT  -i $interface -s $networks -j ACCEPT
+	iptables -A INPUT  -i $interface $(source_ip_range $networks) -j ACCEPT
 	[ -z "$ADMINISABSENTMINDED" ] && \
 	    iptables -A OUTPUT -o $interface $(dest_ip_range $networks) -j ACCEPT
 
 	for host1 in $hosts; do
-	    [ "$host" != "$host1" ] && iptables -A FORWARD -i $interface -s $networks -o ${host1%:*} $(dest_ip_range ${host1#*:}) -j ACCEPT
+	    [ "$host" != "$host1" ] && iptables -A FORWARD -i $interface -o ${host1%:*} $(both_ip_ranges $networks ${host1#*:}) -j ACCEPT
 	done
     done
 
@@ -1518,13 +1560,13 @@ setup_tunnels() # $1 = name of tunnels file
 	    run_iptables -A $outchain -p 51 $(dest_ip_range $1)   -j ACCEPT
 	fi
 
-	run_iptables -A $outchain -p udp -d $1 --dport 500 $options
+	run_iptables -A $outchain -p udp $(dest_ip_range $1) --dport 500 $options
 
 	if [ $kind = ipsec ]; then
-	    run_iptables -A $inchain  -p udp -s $1 --dport 500 $options
+	    run_iptables -A $inchain  -p udp $(source_ip_range $1) --dport 500 $options
 	else
-	    run_iptables -A $inchain  -p udp -s $1 --dport 500 $options
-	    run_iptables -A $inchain  -p udp -s $1 --dport 4500 $options
+	    run_iptables -A $inchain  -p udp $(source_ip_range $1) --dport 500 $options
+	    run_iptables -A $inchain  -p udp $(source_ip_range $1) --dport 4500 $options
 	fi
 
 	for z in $(separate_list $3); do
@@ -2712,7 +2754,7 @@ add_an_action()
 	;;
     *:*)
 	action_interface_verify ${client%:*}
-	cli="$(match_source_dev ${client%:*}) -s ${client#*:}"
+	cli="$(match_source_dev ${client%:*}) $(source_ip_range ${client#*:})"
 	;;
     *.*.*)
 	cli="-s $client"
@@ -4873,7 +4915,7 @@ setup_masq()
 		    if [ -n "$networks" ]; then
 			for s in $networks; do
 			    for destnet in $(separate_list $destnets); do
-				addnatrule $chain $(dest_ip_range $destnet) $(source_ip_range $s) $proto $ports -j $newchain
+				addnatrule $chain $(both_ip_ranges $s $destnet) $proto $ports -j $newchain
 			    done
 			done
 		    else
@@ -4919,7 +4961,7 @@ setup_masq()
 	if [ -n "$networks" ]; then
 	    for network in $networks; do
 		for destnet in $(separate_list $destnets); do
-		    addnatrule $chain $(source_ip_range $network) $(dest_ip_range $destnet) $proto $ports $policy -j $target $addrlist
+		    addnatrule $chain $(both_ip_ranges $network $destnet) $proto $ports $policy -j $target $addrlist
 		done
 
 		if [ -n "$addresses" ]; then
@@ -5914,8 +5956,9 @@ activate_rules()
 
 	if havenatchain $destchain ; then
 	    run_iptables -t nat -A $sourcechain $@ -j $destchain
-	elif [ -n "$BRIDGING" -a -f $TMP_DIR/physdev ]; then
-	    rm -f $TMP_DIR/physdev
+	else
+	    [ -n "$BRIDGING" -a -f $TMP_DIR/physdev ]      && -rm -f $TMP_DIR/physdev
+	    [ -n "$IPRANGE_MATCH" -a -f $TMP_DIR/iprange ] && rm -f $TMP_DIR/iprange
 	fi
     }
 
@@ -5933,8 +5976,10 @@ activate_rules()
 	    eval run_iptables -t nat -I $sourcechain \
 		\$${sourcechain}_rule $@ -j $destchain
 	    eval ${sourcechain}_rule=\$\(\(\$${sourcechain}_rule + 1\)\)
-	elif [ -n "$BRIDGING" -a -f $TMP_DIR/physdev ]; then
-	    rm -f $TMP_DIR/physdev
+	else 
+	    [ -n "$BRIDGING" -a -f $TMP_DIR/physdev ]      && rm -f $TMP_DIR/physdev
+	    [ -n "$IPRANGE_MATCH" -a -f $TMP_DIR/iprange ] && rm -f $TMP_DIR/iprange
+
 	fi
     }
     #
@@ -6892,6 +6937,7 @@ do_initialize() {
     fi
 
     rm -f $TMP_DIR/physdev
+    rm -f $TMP_DIR/iprange
 }
 
 #

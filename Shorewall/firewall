@@ -171,6 +171,7 @@ run_iptables() {
 	[ -z "$stopping" ] && { stop_firewall; exit 2; }
     fi
 }
+
 #
 # Version of 'run_iptables' that inserts white space after "!" in the arg list
 #
@@ -1685,7 +1686,7 @@ setup_nat() {
 	    addnatrule nat_out -s $internal -j SNAT --to-source $external
 	    
 	    if [ "$localnat" = "Yes" -o "$localnat" = "yes" ]; then
-		run_iptables -t nat -A OUTPUT -d $external \
+		run_iptables2 -t nat -A OUTPUT -d $external \
 		    -j DNAT --to-destination $internal
 	    fi
 	else
@@ -1723,13 +1724,14 @@ delete_nat() {
 }
 
 #
-# Process a TC Rule
+# Process a TC Rule - $chain is assumed to contain the name of the 
+#                     marking chain
 #
 process_tc_rule()
 {
     add_a_tc_rule() {
 	r=
-	[ -n "$MARK_IN_FORWARD_CHAIN" ] && chain=tcfor || chain=tcpre
+	chain1=$chain
 
 	if [ "x$source" != "x-"	 ]; then
 	    case $source in
@@ -1740,7 +1742,7 @@ process_tc_rule()
 		    r=`mac_match $source`
 		    ;;
 		$FW)
-		    chain=tcout
+		    chain1=tcout
 		    ;;
 		*)
 		    if ! list_search $source $all_interfaces; then
@@ -1756,7 +1758,7 @@ process_tc_rule()
 	[ "x$port"   = "x-"  ] || r="${r}--dport $port "
 	[ "x$sport"  = "x-"  ] || r="${r}--sport $sport "
 
-	run_iptables -t mangle -A $chain $r -j MARK --set-mark $mark
+	run_iptables2 -t mangle -A $chain1 $r -j MARK --set-mark $mark
 
     }
 
@@ -1780,12 +1782,9 @@ setup_tc1() {
     #
     # Create the TC mangle chains
     #
+    [ -n "$MARK_IN_FORWARD_CHAIN" ] && chain=tcfor || chain=tcpre
     
-    if [ -n "$MARK_IN_FORWARD_CHAIN" ]; then
-	run_iptables -t mangle -N tcfor
-    else
-	run_iptables -t mangle -N tcpre
-    fi
+    run_iptables -t mangle -N $chain
 
     run_iptables -t mangle -N tcout
     #
@@ -1801,13 +1800,12 @@ setup_tc1() {
     #
     # Link to the TC mangle chains from the main chains
     #
-
-    if [ -n "$MARK_IN_FORWARD_CHAIN" ]; then
+    
+    if [ $chain = tcfor ]; then
 	run_iptables -t mangle -A FORWARD -j tcfor
     else
-	run_iptables -t mangle -A PREROUTING  -j tcpre
+	run_iptables -t mangle -A PREROUTING -j tcpre
     fi
-    run_iptables -t mangle -A OUTPUT	  -j tcout
 
     run_user_exit tcstart
 
@@ -1853,17 +1851,13 @@ refresh_tc() {
 
     delete_tc
 
+    [ -n "$MARK_IN_FORWARD_CHAIN" ] && chain=tcfor || chain=tcpre
     
-    
-    if mangle_chain_exists tcpre; then
+    if mangle_chain_exists $chain; then
         #
         # Flush the TC mangle chains
         #
-	if [ -n "$MARK_IN_FORWARD_CHAIN" ]; then
-	    run_iptables -t mangle -F tcfor
-	else
-	    run_iptables -t mangle -F tcpre
-	fi
+	run_iptables -t mangle -F $chain
 
         run_iptables -t mangle -F tcout
         #
@@ -2559,7 +2553,7 @@ process_tos_rule() {
 	all|ALL)
 	    run_iptables2 -t mangle -A outtos \
 		$protocol $dest $dports $sports $tos
-	    run_iptables -t mangle -A pretos \
+	    run_iptables2 -t mangle -A pretos \
 		$protocol $dest $dports $sports $tos
 	    ;;
 	*)

@@ -17,10 +17,10 @@
       </author>
     </authorgroup>
 
-    <pubdate>2003-12-31</pubdate>
+    <pubdate>2004-01-09</pubdate>
 
     <copyright>
-      <year>2001-2003</year>
+      <year>2001-2004</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -401,7 +401,9 @@
       <para>If you are running Shorewall 1.4.1 or Shorewall 1.4.1a, please
       upgrade to Shorewall 1.4.2 or later.</para>
 
-      <para>Otherwise:</para>
+      <para>Otherwise:<warning><para>In this configuration, all loc-&#62;loc
+      traffic will look to the server as if it came from the firewall rather
+      than from the original client!</para></warning></para>
 
       <itemizedlist>
         <listitem>
@@ -903,9 +905,9 @@ url="http://www.shorewall.net/pub/shorewall/parsefw/">http://www.shorewall.net/p
       </section>
 
       <section id="faq6c">
-        <title>All day long I get a steady flow of these DROP messages from
-        port 53 to some high numbered port. They get dropped, but what the
-        heck are they?</title>
+        <title>(FAQ 6c) All day long I get a steady flow of these DROP
+        messages from port 53 to some high numbered port. They get dropped,
+        but what the heck are they?</title>
 
         <programlisting>Jan 8 15:50:48 norcomix kernel:
         Shorewall:net2all:DROP:IN=eth0 OUT=
@@ -949,11 +951,11 @@ run_iptables -A common -p udp --sport 53 -mstate --state NEW -j DROP</programlis
       </section>
 
       <section id="faq6d">
-        <title>(FAQ 6c) Why is the MAC address in Shorewall log messages so
+        <title>(FAQ 6d) Why is the MAC address in Shorewall log messages so
         long? I thought MAC addresses were only 6 bytes in length.</title>
 
         <para>What is labeled as the MAC address in a Shorewall log message is
-        actually the Ethernet frame header. IT contains:</para>
+        actually the Ethernet frame header. It contains:</para>
 
         <itemizedlist>
           <listitem>
@@ -1520,8 +1522,8 @@ rmmod ipchains</programlisting>
       RH7.2.</para>
 
       <section id="faq8a">
-        <title>When I try to start Shorewall on RedHat I get a message
-        referring me to FAQ #8</title>
+        <title>(FAQ 8a) When I try to start Shorewall on RedHat I get a
+        message referring me to FAQ #8</title>
 
         <para><emphasis role="bold">Answer:</emphasis> This is usually cured
         by the sequence of commands shown above in <xref linkend="faq8" />.</para>
@@ -1840,7 +1842,7 @@ Creating input Chains...
       <section id="faq26a">
         <title>(FAQ 26a) When I try to use the <quote>-O</quote> option of
         nmap from the firewall system, I get <quote>operation not permitted</quote>.
-        How to I allow this option?</title>
+        How do I allow this option?</title>
 
         <para>Add this command to your /etc/shorewall/start file:</para>
 
@@ -1875,7 +1877,10 @@ Creating input Chains...
   <appendix>
     <title>Revision History</title>
 
-    <para><revhistory><revision><revnumber>1.8</revnumber><date>2003-12-31</date><authorinitials>TE</authorinitials><revremark>Additions
+    <para><revhistory><revision><revnumber>1.10</revnumber><date>2004-01-09</date><authorinitials>TE</authorinitials><revremark>Added
+    a couple of more legacy FAQ numbers.</revremark></revision><revision><revnumber>1.9</revnumber><date>2004-01-08</date><authorinitials>TE</authorinitials><revremark>Corrected
+    typo in FAQ 26a. Added warning to FAQ 2 regarding source address of
+    redirected requests.</revremark></revision><revision><revnumber>1.8</revnumber><date>2003-12-31</date><authorinitials>TE</authorinitials><revremark>Additions
     to FAQ 4.</revremark></revision><revision><revnumber>1.7</revnumber><date>2003-12-30</date><authorinitials>TE</authorinitials><revremark>Remove
     dead link from FAQ 1.</revremark></revision><revision><revnumber>1.6</revnumber><date>2003.12-18</date><authorinitials>TE</authorinitials><revremark>Add
     external link reference to FAQ 17.</revremark></revision><revision><revnumber>1.5</revnumber><date>2003-12-16</date><authorinitials>TE</authorinitials><revremark>Added

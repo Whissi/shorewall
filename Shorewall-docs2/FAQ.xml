@@ -17,7 +17,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-02-03</pubdate>
+    <pubdate>2004-03-05</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -570,6 +570,19 @@ eth2             192.168.2.0/24</programlisting>
       <para><emphasis role="bold">Answer</emphasis>: Most likely, you need to
       set CLAMPMSS=Yes in <ulink url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>.</para>
     </section>
+
+    <section id="faq35">
+      <title>(FAQ 35) I have two Ethernet interfaces to my local network which
+      I have bridged. When Shorewall is started, I&#39;m unable to pass
+      traffic through the bridge. I have defined the bridge interface (br0) as
+      the local interface in /etc/shorewall/interfaces; the bridged Ethernet
+      interfaces are not defined to Shorewall. How do I tell Shorewall to
+      allow traffic through the bridge?</title>
+
+      <para>Answer: Add the <firstterm>routeback</firstterm> option to
+      <filename class="devicefile">br0</filename> in <ulink
+      url="Documentation.htm#Interfaces">/etc/shorewall/interfaces</ulink>.</para>
+    </section>
   </section>
 
   <section>
@@ -617,7 +630,7 @@ url="http://www.shorewall.net/pub/shorewall/parsefw/">http://www.shorewall.net/p
 <ulink url="http://gege.org/iptables">http://gege.org/iptables</ulink>
 <ulink url="http://home.regit.org/ulogd-php.html">http://home.regit.org/ulogd-php.html</ulink></literallayout>
 
-        <para>I personnaly use Logwatch. It emails me a report each day from
+        <para>I personally use Logwatch. It emails me a report each day from
         my various systems with each report summarizing the logged activity on
         the corresponding system.</para>
       </section>
@@ -763,9 +776,9 @@ url="http://www.shorewall.net/pub/shorewall/parsefw/">http://www.shorewall.net/p
           <term>man1918 or logdrop</term>
 
           <listitem>
-            <para>The destination address is listed in <filename>/etc/shorewall/rfc1918</filename>
+            <para>The destination address is listed in <filename>/usr/share/shorewall/rfc1918</filename>
             with a <emphasis role="bold">logdrop</emphasis> target -- see
-            <filename><ulink url="Documentation.htm#rfc1918">/etc/shorewall/rfc1918</ulink></filename>.</para>
+            <filename><ulink url="Documentation.htm#rfc1918">/usr/share/shorewall/rfc1918</ulink></filename>.</para>
           </listitem>
         </varlistentry>
 
@@ -773,9 +786,10 @@ url="http://www.shorewall.net/pub/shorewall/parsefw/">http://www.shorewall.net/p
           <term>rfc1918 or logdrop</term>
 
           <listitem>
-            <para>The source address is listed in <filename>/etc/shorewall/rfc1918</filename>
-            with a <emphasis role="bold">logdrop</emphasis> target -- see
-            <filename><ulink url="Documentation.htm#rfc1918">/etc/shorewall/rfc1918</ulink></filename>.</para>
+            <para>The source or destination address is listed in
+            <filename>/usr/share/shorewall/rfc1918</filename> with a <emphasis
+            role="bold">logdrop</emphasis> target -- see <filename><ulink
+            url="Documentation.htm#rfc1918">/usr/share/shorewall/rfc1918</ulink></filename>.</para>
           </listitem>
         </varlistentry>
 
@@ -1226,9 +1240,9 @@ Perhaps iptables or your kernel needs to be upgraded.</programlisting>
       <para>This problem is usually corrected through the following sequence
       of commands</para>
 
-      <programlisting>service ipchains stop
+      <programlisting><command>service ipchains stop
 chkconfig --delete ipchains
-rmmod ipchains</programlisting>
+rmmod ipchains</command></programlisting>
 
       <para>Also, be sure to check the <ulink url="errata.htm">errata</ulink>
       for problems concerning the version of iptables (v1.2.3) shipped with
@@ -1294,6 +1308,16 @@ Creating input Chains...
       unconditional DROP, ACCEPT or REJECT rule and any rules that you add
       after that will be ignored. Check <quote>man iptables</quote> and look
       at the -I (--insert) command.</para>
+    </section>
+
+    <section id="faq34">
+      <title>(FAQ 34) How can I speed up start (restart)?</title>
+
+      <para>Using a light-weight shell such as <command>ash</command> can
+      dramatically decrease the time required to <emphasis role="bold">start</emphasis>
+      or <emphasis role="bold">restart</emphasis> Shorewall. See the
+      SHOREWALL_SHELL variable in <filename><ulink
+      url="Documentation.htm#Conf">shorewall.conf</ulink></filename>.</para>
     </section>
   </section>
 
@@ -1380,7 +1404,9 @@ Creating input Chains...
           <listitem>
             <para>Answer: Shorewall can be configured to do that using the
             <ulink url="blacklisting_support.htm">blacklisting</ulink>
-            facility.</para>
+            facility. Shorewall versions 2.0.0 and later filter these packets
+            under the <firstterm>nosmurfs</firstterm> interface option in
+            <ulink url="Documentation.htm#Interfaces">/etc/shorewall/interfaces</ulink>.</para>
           </listitem>
         </varlistentry>
 
@@ -1414,10 +1440,11 @@ Creating input Chains...
       how can you not support that version?</title>
 
       <para>The first release of Shorewall was in March of 2001. Shorewall
-      1.2.12 was released in May of 2002. It is now the year 2004 and soon
-      Shorewall 2.0 will be available. Shorewall 1.2.12 is poorly documented
-      and is missing many of the features that Shorewall users find essential
-      today.</para>
+      1.2.12 was released in May of 2002. It is now the year 2004 and
+      Shorewall 2.0 is available. Shorewall 1.2.12 is poorly documented and is
+      missing many of the features that Shorewall users find essential today
+      and it is silly to continue to run it simply because it is bundled with
+      an ancient Debian release.</para>
     </section>
   </section>
 
@@ -1440,8 +1467,11 @@ Creating input Chains...
 
       <programlisting><command>run_iptables -I rfc1918 -s 192.168.100.1 -j ACCEPT</command></programlisting>
 
-      <para>If you are running version 1.3.1 or later, simply add the
-      following to <ulink url="Documentation.htm#rfc1918">/etc/shorewall/rfc1918</ulink>:</para>
+      <para>If you are running version 1.3.1 or later, add the following to
+      <ulink url="Documentation.htm#rfc1918">/etc/shorewall/rfc1918</ulink>
+      (Note: If you are running Shorewall 2.0.0 or later, you may need to
+      first copy <filename>/usr/share/shorewall/rfc1918</filename> to
+      <filename>/etc/shorewall/rfc1918</filename>):</para>
 
       <para>Be sure that you add the entry ABOVE the entry for 192.168.0.0/16.</para>
 
@@ -1583,19 +1613,19 @@ iptables: Invalid argument
     <section id="faq28">
       <title>(FAQ 28) How do I use Shorewall as a Bridging Firewall?</title>
 
-      <para>Basically, you don&#39;t. While there are kernel patches that
-      allow you to route bridge traffic through Netfilter, the environment is
-      so different from the Layer 3 firewalling environment that very little
-      of Shorewall works. In fact, so much of Shorewall doesn&#39;t work that
-      my official position is that <quote>Shorewall doesn&#39;t work with
-      Layer 2 Bridging</quote>.</para>
+      <para>Experimental Shorewall Bridging Firewall support is available —
+      <ulink url="bridge.html">check here for details</ulink>.</para>
     </section>
   </section>
 
   <appendix>
     <title>Revision History</title>
 
-    <para><revhistory><revision><revnumber>1.17</revnumber><date>2004-02-03</date><authorinitials>TE</authorinitials><revremark>Added
+    <para><revhistory><revision><revnumber>1.20</revnumber><date>2004-03-05</date><authorinitials>TE</authorinitials><revremark>Added
+    Bridging link.</revremark></revision><revision><revnumber>1.20</revnumber><date>2004-02-27</date><authorinitials>TE</authorinitials><revremark>Added
+    FAQ 35.</revremark></revision><revision><revnumber>1.19</revnumber><date>2004-02-22</date><authorinitials>TE</authorinitials><revremark>Added
+    mention of nosmurfs option under FAQ 31.</revremark></revision><revision><revnumber>1.18</revnumber><date>2004-02-15</date><authorinitials>TE</authorinitials><revremark>Added
+    FAQ 34.</revremark></revision><revision><revnumber>1.17</revnumber><date>2004-02-11</date><authorinitials>TE</authorinitials><revremark>Added
     FAQ 33.</revremark></revision><revision><revnumber>1.16</revnumber><date>2004-02-03</date><authorinitials>TE</authorinitials><revremark>Updated
     for Shorewall 2.0.</revremark></revision><revision><revnumber>1.15</revnumber><date>2004-01-25</date><authorinitials>TE</authorinitials><revremark>Updated
     FAQ 32 to mention masquerading. Remove tables.</revremark></revision><revision><revnumber>1.14</revnumber><date>2004-01-24</date><authorinitials>TE</authorinitials><revremark>Added

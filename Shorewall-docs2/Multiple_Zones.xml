@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-02-07</pubdate>
+    <pubdate>2004-03-15</pubdate>
 
     <copyright>
       <year>2003</year>
@@ -304,8 +304,9 @@ loc1                loc                  NONE</programlisting>
     (More on that topic may be found <ulink
     url="Shorewall_and_Aliased_Interfaces.html">here</ulink>). Hosts in the
     <quote>loc</quote> zone are configured with their default gateway set to
-    the Shorewall router&#39;s RFC1918 address.<graphic
-    fileref="images/MultiZone3.png" /></para>
+    the Shorewall router&#39;s RFC1918 address.</para>
+
+    <para><graphic fileref="images/MultiZone3.png" /></para>
 
     <para><filename>/etc/shorewall/zones</filename></para>
 
@@ -324,7 +325,18 @@ net                 eth0                detect</programlisting>
 
     <para><filename>/etc/shorewall/hosts</filename></para>
 
-    <programlisting>#ZONE               HOSTS
-loc                 eth0:192.168.1.0/24</programlisting>
+    <programlisting>#ZONE               HOSTS                              OPTIONS
+loc                 eth0:192.168.1.0/24                maclist</programlisting>
+
+    <para><filename><filename>/etc/shorewall/masq</filename></filename></para>
+
+    <programlisting>#INTERFACE              SUBNET          ADDRESS
+eth0:!192.168.1.0/24    192.168.1.0/24</programlisting>
+
+    <para>Note that the maclist option is specified in <filename>/etc/shorewall/interfaces</filename>.
+    This is to help protect your router from unauthorized access by your
+    friends and neighbors. Start without maclist then add it and configure
+    your <ulink url="MAC_Validation.html"><filename>/etc/shorewall/maclist</filename></ulink>
+    file when everything else is working.</para>
   </section>
 </article>

@@ -12,7 +12,7 @@
       <surname>Eastep</surname>
     </author>
 
-    <pubdate>2003-02-08</pubdate>
+    <pubdate>2003-03-16</pubdate>
 
     <copyright>
       <year>2002</year>
@@ -83,14 +83,15 @@
     <varname>loc</varname>). We therefore recommend that once you have set up
     this sharing that you uninstall the <trademark>Mandrake</trademark>
     Shorewall RPM and install the one from the <ulink url="download.htm">download</ulink>
-    page then follow the instructions in this Guide.</para></tip>
-    <caution><para>If you edit your configuration files on a
-    <trademark>Windows</trademark> system, you must save them as
-    <trademark>Unix</trademark> files if your editor supports that option or
-    you must run them through <command>dos2unix</command> before trying to use
-    them. Similarly, if you copy a configuration file from your
-    <trademark>Windows</trademark> hard drive to a floppy disk, you must run
-    <command>dos2unix</command> against the copy before using it with
+    page then follow the instructions in this Guide.</para></tip><note><para><emphasis
+    role="bold">The above Shorewall Issue is corrected in Mandrake 10.0 and
+    later.</emphasis></para></note> <caution><para>If you edit your
+    configuration files on a <trademark>Windows</trademark> system, you must
+    save them as <trademark>Unix</trademark> files if your editor supports
+    that option or you must run them through <command>dos2unix</command>
+    before trying to use them. Similarly, if you copy a configuration file
+    from your <trademark>Windows</trademark> hard drive to a floppy disk, you
+    must run <command>dos2unix</command> against the copy before using it with
     Shorewall. <itemizedlist><listitem><para><ulink
     url="http://www.simtel.net/pub/pd/51438.html"><trademark>Windows</trademark>
     Version of <command>dos2unix</command></ulink></para></listitem><listitem><para><ulink
@@ -262,15 +263,24 @@ fw         net         ACCEPT</programlisting> The above policy will:
     your configuration is different, you will have to modify the sample
     <filename class="directory">/etc/shorewall/</filename><filename>interfaces</filename>
     file accordingly. While you are there, you may wish to review the list of
-    options that are specified for the interfaces. Some hints: <itemizedlist
-    spacing="compact"><listitem><para>If your external interface is <filename
-    class="devicefile">ppp0</filename> or <filename class="devicefile">ippp0</filename>,
-    you can replace the <varname>detect</varname> in the second column with a
-    <quote>-</quote> (minus the quotes).</para></listitem><listitem><para>If
+    options that are specified for the interfaces. Some hints: <tip><para>If
     your external interface is <filename class="devicefile">ppp0</filename> or
-    <filename class="devicefile">ippp0</filename> or if you have a static
+    <filename class="devicefile">ippp0</filename>, you can replace the
+    <varname>detect</varname> in the second column with a <quote>-</quote>
+    (minus the quotes).</para></tip><tip><para>If your external interface is
+    <filename class="devicefile">ppp0</filename> or <filename
+    class="devicefile">ippp0</filename> or if you have a static
     <acronym>IP</acronym> address, you can remove <varname>dhcp</varname> from
-    the option list.</para></listitem></itemizedlist></para>
+    the option list.</para></tip><tip><para>If your internal interface is a
+    bridge create using the <command>brctl</command> utility then you must add
+    the <varname>routeback</varname> option to the option list.</para></tip><tip><para>If
+    you specify <emphasis>norfc1918</emphasis> for your external interface,
+    you will want to check the <ulink url="errata.htm">Shorewall Errata</ulink>
+    periodically for updates to the <filename>/usr/share/shorewall/rfc1918
+    file</filename>. Alternatively, you can copy <filename>/usr/share/shorewall/rfc1918</filename>
+    to <filename>/etc/shorewall/rfc1918</filename> then <ulink
+    url="myfiles.htm#RFC1918">strip down your <filename>/etc/shorewall/rfc1918</filename>
+    file as I do</ulink>.</para></tip></para>
   </section>
 
   <section>
@@ -659,7 +669,7 @@ ACCEPT     loc       fw      tcp       80          #Allow Weblet to work</progra
     traffic may flow freely between the local wired network and the wireless
     network.</para>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /> </para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
     <para>There are only two changes that need to be made to the Shorewall
     configuration:</para>
@@ -701,6 +711,6 @@ eth0                 wlan0</programlisting>
     either a WINS server or a PDC. I personally use Samba configured as a WINS
     server running on my firewall. Running a WINS server on your firewall
     requires the rules listed in the <ulink url="samba.htm">Shorewall/Samba
-    documentation</ulink>. </para>
+    documentation</ulink>.</para>
   </section>
 </article>

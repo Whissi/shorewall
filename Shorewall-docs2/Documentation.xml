@@ -221,7 +221,7 @@
         <term><link linkend="rfc1918">rfc1918</link></term>
 
         <listitem>
-          <para>a parameter file in <filename class="directory">/etc/shorewall</filename>
+          <para>a parameter file in <filename class="directory">/usr/share/shorewall</filename>
           used to define the treatment of packets under the <link
           linkend="Interfaces">norfc1918 interface option</link>.</para>
         </listitem>
@@ -708,25 +708,12 @@ loc      eth1         192.168.1.255,192.168.12.255</programlisting>
     purpose of the <filename>/etc/shorewall/hosts</filename> file.</para>
 
     <warning>
-      <para>The only times that you need entries in <filename>/etc/shorewall/hosts</filename>
-      are:</para>
+      <para>The only time that you need entries in <filename>/etc/shorewall/hosts</filename>
+      is where you have <ulink url="Multiple_Zones.html">more than one zone
+      connecting through a single interface</ulink>.</para>
 
-      <orderedlist>
-        <listitem>
-          <para>You have <ulink url="Multiple_Zones.html">more than one zone
-          connecting through a single interface</ulink>; or</para>
-        </listitem>
-
-        <listitem>
-          <para>You have a <ulink url="Shorewall_and_Aliased_Interfaces.html">zone
-          that has multiple subnetworks that connect through a single
-          interface</ulink> and you want the Shorewall box to route traffic
-          between those subnetworks.</para>
-        </listitem>
-      </orderedlist>
-
-      <para><emphasis role="bold">IF YOU DON&#39;T HAVE EITHER OF THOSE
-      SITUATIONS THEN DON&#39;T TOUCH THIS FILE!!</emphasis></para>
+      <para><emphasis role="bold">IF YOU DON&#39;T HAVE THIS SITUATION THEN
+      DON&#39;T TOUCH THIS FILE!!</emphasis></para>
     </warning>
 
     <para>Columns in this file are:</para>
@@ -2863,7 +2850,8 @@ all      all     tcp         ftp-data          -               8</programlisting
   </section>
 
   <section id="rfc1918" xreflabel="/etc/shorewall/rfc1918">
-    <title>/etc/shorewall/rfc1918 (Added in Version 1.3.1)</title>
+    <title>/etc/shorewall/rfc1918 — Moved to /usr/share/shorewall in Version
+    2.0.0</title>
 
     <para>This file lists the subnets affected by the <link
     linkend="Interfaces">norfc1918 interface option</link>. Columns in the
@@ -2913,6 +2901,10 @@ all      all     tcp         ftp-data          -               8</programlisting
         </listitem>
       </varlistentry>
     </variablelist>
+
+    <para>If you want to modify this file, DO NOT MODIFY <filename>/usr/share/shorewall/rfc1918</filename>.
+    Rather copy that file to <filename>/etc/shorewall/rfc1918 </filename>and
+    modify the copy.</para>
   </section>
 
   <section id="Routestopped" xreflabel="/etc/shorewall/routestopped">
@@ -2976,7 +2968,8 @@ eth1                -</programlisting>
   <appendix>
     <title>Revision History</title>
 
-    <para><revhistory><revision><revnumber>1.14</revnumber><date>2004-02-13</date><authorinitials>TE</authorinitials><revremark>Add
+    <para><revhistory><revision><revnumber>1.15</revnumber><date>2004-02-16</date><authorinitials>TE</authorinitials><revremark>Move
+    the rfc1918 file to /usr/share/shorewall.</revremark></revision><revision><revnumber>1.14</revnumber><date>2004-02-13</date><authorinitials>TE</authorinitials><revremark>Add
     a note about the order of rules.</revremark></revision><revision><revnumber>1.13</revnumber><date>2004-02-03</date><authorinitials>TE</authorinitials><revremark>Update
     for Shorewall 2.0.</revremark></revision><revision><revnumber>1.12</revnumber><date>2004-01-21</date><authorinitials>TE</authorinitials><revremark>Add
     masquerade destination list.</revremark></revision><revision><revnumber>1.12</revnumber><date>2004-01-18</date><authorinitials>TE</authorinitials><revremark>Correct

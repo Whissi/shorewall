@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2003-04-08</pubdate>
+    <pubdate>2004-03-01</pubdate>
 
     <copyright>
       <year>2001</year>
@@ -23,6 +23,8 @@
       <year>2002</year>
 
       <year>2003</year>
+
+      <year>2004</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -37,22 +39,15 @@
     </legalnotice>
   </articleinfo>
 
-  <important>
-    <para>Before upgrading, be sure to review the <ulink
-    url="upgrade_issues.htm">Upgrade Issues</ulink>.</para>
-  </important>
-
-  <important>
-    <para>Before attempting installation, I strongly urge you to read and
-    print a copy of the <ulink url="shorewall_quickstart_guide.htm">Shorewall
-    QuickStart</ulink> Guide for the configuration that most closely matches
-    your own.</para>
-  </important>
-
   <section id="Install_RPM">
     <title>Install using RPM</title>
 
-    <para>To install Shorewall using the RPM:</para>
+    <important>
+      <para>Before attempting installation, I strongly urge you to read and
+      print a copy of the <ulink url="shorewall_quickstart_guide.htm">Shorewall
+      QuickStart</ulink> Guide for the configuration that most closely matches
+      your own.</para>
+    </important>
 
     <warning>
       <para>If you have RedHat 7.2 and are running iptables version 1.2.3 (at
@@ -63,18 +58,20 @@
       page</ulink> before attempting to start Shorewall.</para>
     </warning>
 
+    <para>To install Shorewall using the RPM:</para>
+
     <orderedlist>
       <listitem>
         <para>Install the RPM</para>
 
-        <programlisting>rpm -ivh &#60;shorewall rpm&#62;</programlisting>
+        <programlisting><command>rpm -ivh &#60;shorewall rpm&#62;</command></programlisting>
 
         <note>
           <para>Some SuSE users have encountered a problem whereby rpm reports
           a conflict with kernel &#60;= 2.2 even though a 2.4 kernel is
           installed. If this happens, simply use the --nodeps option to rpm.</para>
 
-          <programlisting>rpm -ivh --nodeps &#60;shorewall rpm&#62;</programlisting>
+          <programlisting><filename><command>rpm -ivh --nodeps &#60;shorewall rpm&#62;</command></filename></programlisting>
         </note>
 
         <note>
@@ -87,7 +84,7 @@
 
           <para>This may be worked around by using the --nodeps option of rpm.</para>
 
-          <programlisting>rpm -ivh --nodeps &#60;shorewall rpm&#62;</programlisting>
+          <programlisting><command>rpm -ivh --nodeps &#60;shorewall rpm&#62;</command></programlisting>
         </note>
       </listitem>
 
@@ -109,13 +106,20 @@
       <listitem>
         <para>Start the firewall by typing</para>
 
-        <programlisting>shorewall start</programlisting>
+        <programlisting><command>shorewall start</command></programlisting>
       </listitem>
     </orderedlist>
   </section>
 
   <section id="Install_Tarball">
     <title>Install using tarball</title>
+
+    <important>
+      <para>Before attempting installation, I strongly urge you to read and
+      print a copy of the <ulink url="shorewall_quickstart_guide.htm">Shorewall
+      QuickStart</ulink> Guide for the configuration that most closely matches
+      your own.</para>
+    </important>
 
     <para>To install Shorewall using the tarball and install script:</para>
 
@@ -135,33 +139,11 @@
         <ulink url="http://www.redhat.com">RedHat</ulink>, <ulink
         url="http://www.linux-mandrake.com">Mandrake</ulink>, <ulink
         url="http://www.corel.com">Corel</ulink>, <ulink
-        url="http://www.slackware.com/">Slackware</ulink> or <ulink
-        url="http://www.debian.org">Debian</ulink> then type</para>
+        url="http://www.suse.com">SuSe</ulink>,<ulink
+        url="http://www.slackware.com/"> Slackware</ulink> or <ulink
+        url="http://www.debian.org">Debian/Gentoo</ulink> then type</para>
 
-        <programlisting>./install.sh</programlisting>
-
-        <orderedlist numeration="loweralpha">
-          <listitem>
-            <para>If you are using <ulink url="http://www.suse.com">SuSe</ulink>
-            then type</para>
-
-            <programlisting>./install.sh /etc/init.d</programlisting>
-          </listitem>
-
-          <listitem>
-            <para>If your distribution has directory /etc/rc.d/init.d or
-            /etc/init.d then type</para>
-
-            <programlisting>./install.sh</programlisting>
-          </listitem>
-
-          <listitem>
-            <para>For other distributions, determine where your distribution
-            installs init scripts and type</para>
-
-            <programlisting>./install.sh &#60;init script directory&#62;</programlisting>
-          </listitem>
-        </orderedlist>
+        <programlisting><command>./install.sh</command></programlisting>
       </listitem>
 
       <listitem>
@@ -170,9 +152,15 @@
       </listitem>
 
       <listitem>
+        <para>Enable Startup by removing <filename>/etc/shorewall/startup_disabled</filename>
+        (Debian users will edit <filename>/etc/default/shorewall</filename>
+        and set startup=1).</para>
+      </listitem>
+
+      <listitem>
         <para>Start the firewall by typing</para>
 
-        <programlisting>shorewall start</programlisting>
+        <programlisting><command>shorewall start</command></programlisting>
       </listitem>
 
       <listitem>
@@ -186,6 +174,13 @@
   <section id="LRP">
     <title>Install the .lrp</title>
 
+    <important>
+      <para>Before attempting installation, I strongly urge you to read and
+      print a copy of the <ulink url="shorewall_quickstart_guide.htm">Shorewall
+      QuickStart</ulink> Guide for the configuration that most closely matches
+      your own.</para>
+    </important>
+
     <para>To install my version of Shorewall on a fresh Bering disk, simply
     replace the <quote>shorwall.lrp</quote> file on the image with the file
     that you downloaded. See the <ulink url="two-interface.htm">two-interface
@@ -194,6 +189,11 @@
 
   <section id="Upgrade_RPM">
     <title>Upgrade using RPM</title>
+
+    <important>
+      <para>Before upgrading, be sure to review the <ulink
+      url="upgrade_issues.htm">Upgrade Issues</ulink>.</para>
+    </important>
 
     <para>If you already have the Shorewall RPM installed and are upgrading to
     a new version:</para>
@@ -212,24 +212,14 @@
       <listitem>
         <para>Upgrade the RPM</para>
 
-        <programlisting>rpm -Uvh &#60;shorewall rpm file&#62;</programlisting>
-
-        <note>
-          <para>If you are installing version 1.2.0 and have one of the 1.2.0
-          Beta RPMs installed, you must use the <quote>--oldpackage</quote>
-          option to rpm.</para>
-
-          <informalexample>
-            <programlisting>rpm -Uvh --oldpackage shorewall-1.2-0.noarch.rpm</programlisting>
-          </informalexample>
-        </note>
+        <programlisting><command>rpm -Uvh &#60;shorewall rpm file&#62;</command></programlisting>
 
         <note>
           <para>Some SuSE users have encountered a problem whereby rpm reports
           a conflict with kernel &#60;= 2.2 even though a 2.4 kernel is
           installed. If this happens, simply use the --nodeps option to rpm.</para>
 
-          <programlisting>rpm -Uvh --nodeps &#60;shorewall rpm&#62;</programlisting>
+          <programlisting><command>rpm -Uvh --nodeps &#60;shorewall rpm&#62;</command></programlisting>
         </note>
 
         <note>
@@ -242,7 +232,7 @@
 
           <para>This may be worked around by using the --nodeps option of rpm.</para>
 
-          <programlisting>rpm -Uvh --nodeps &#60;shorewall rpm&#62;</programlisting>
+          <programlisting><command>rpm -Uvh --nodeps &#60;shorewall rpm&#62;</command></programlisting>
         </note>
       </listitem>
 
@@ -250,19 +240,24 @@
         <para>See if there are any incompatibilities between your
         configuration and the new Shorewall version and correct as necessary.</para>
 
-        <programlisting>shorewall check</programlisting>
+        <programlisting><command>shorewall check</command></programlisting>
       </listitem>
 
       <listitem>
         <para>Restart the firewall.</para>
 
-        <programlisting>shorewall restart</programlisting>
+        <programlisting><command>shorewall restart</command></programlisting>
       </listitem>
     </orderedlist>
   </section>
 
   <section id="Upgrade_Tarball">
     <title>Upgrade using tarball</title>
+
+    <important>
+      <para>Before upgrading, be sure to review the <ulink
+      url="upgrade_issues.htm">Upgrade Issues</ulink>.</para>
+    </important>
 
     <para>If you already have Shorewall installed and are upgrading to a new
     version using the tarball:</para>
@@ -281,7 +276,7 @@
       <listitem>
         <para>unpack the tarball.</para>
 
-        <programlisting>tar -zxf shorewall-x.y.z.tgz</programlisting>
+        <programlisting><command>tar -zxf shorewall-x.y.z.tgz</command></programlisting>
       </listitem>
 
       <listitem>
@@ -295,46 +290,24 @@
         <ulink url="http://www.redhat.com">RedHat</ulink>, <ulink
         url="http://www.linux-mandrake.com">Mandrake</ulink>, <ulink
         url="http://www.corel.com">Corel</ulink>, <ulink
+        url="http://www.suse.com">SuSe</ulink>, <ulink
         url="http://www.slackware.com/">Slackware</ulink> or <ulink
-        url="http://www.debian.org">Debian</ulink> then type</para>
+        url="http://www.debian.org">Debian/Gentoo</ulink> then type</para>
 
-        <programlisting>./install.sh</programlisting>
-
-        <orderedlist numeration="loweralpha">
-          <listitem>
-            <para>If you are using <ulink url="http://www.suse.com">SuSe</ulink>
-            then type</para>
-
-            <programlisting>./install.sh /etc/init.d</programlisting>
-          </listitem>
-
-          <listitem>
-            <para>If your distribution has directory /etc/rc.d/init.d or
-            /etc/init.d then type</para>
-
-            <programlisting>./install.sh</programlisting>
-          </listitem>
-
-          <listitem>
-            <para>For other distributions, determine where your distribution
-            installs init scripts and type</para>
-
-            <programlisting>./install.sh &#60;init script directory&#62;</programlisting>
-          </listitem>
-        </orderedlist>
+        <programlisting><command>./install.sh</command></programlisting>
       </listitem>
 
       <listitem>
         <para>See if there are any incompatibilities between your
         configuration and the new Shorewall version and correct as necessary.</para>
 
-        <programlisting>shorewall check</programlisting>
+        <programlisting><command>shorewall check</command></programlisting>
       </listitem>
 
       <listitem>
         <para>Start the firewall by typing</para>
 
-        <programlisting>shorewall start</programlisting>
+        <programlisting><command>shorewall start</command></programlisting>
       </listitem>
 
       <listitem>
@@ -348,10 +321,13 @@
   <section id="LRP_Upgrade">
     <title>Upgrade the .lrp</title>
 
-    <para>If you already have a running Bering installation and wish to
-    upgrade to a later version of Shorewall:</para>
+    <important>
+      <para>Before upgrading, be sure to review the <ulink
+      url="upgrade_issues.htm">Upgrade Issues</ulink>.</para>
+    </important>
 
-    <remark>UNDER CONSTRUCTION...</remark>
+    <para>There appears to be no standard method for upgrading LEAF/Bering
+    packages — Sorry to be so unhelpful.</para>
   </section>
 
   <section id="Config_Files">

@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-02-15</pubdate>
+    <pubdate>2004-02-20</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -80,9 +80,8 @@
     - define IP traffic accounting rules</para></listitem><listitem><para><filename>/etc/shorewall/actions</filename>
     and <filename>/usr/share/shorewall/action.template</filename> - define
     your own actions for rules in /etc/shorewall/rules (shorewall 1.4.9 and
-    later).</para></listitem><listitem><para><filename>/etc/shorewall/actions.std</filename>
-    - Actions defined by Shorewall. Included using the <link linkend="INCLUDE">INCLUDE
-    command</link> by <filename>/etc/shorewall/actions</filename>.</para></listitem><listitem><para><filename>/etc/shorewall/actions.*</filename>
+    later).</para></listitem><listitem><para><filename>/usr/share/shorewall/actions.std</filename>
+    - Actions defined by Shorewall.</para></listitem><listitem><para><filename>/usr/share/shorewall/actions.*</filename>
     - Details of actions defined by Shorewall.</para></listitem></itemizedlist></para>
   </section>
 
@@ -121,9 +120,9 @@ smtp,www,pop3,imap  #Services running on the firewall</programlisting>
 
     <para>Beginning with Shorewall version 1.4.2, any file may contain INCLUDE
     directives. An INCLUDE directive consists of the word INCLUDE followed by
-    a file name and causes the contents of the named file to be logically
-    included into the file containing the INCLUDE. File names given in an
-    INCLUDE directive are assumed to reside in /etc/shorewall or in an
+    a path name and causes the contents of the named file to be logically
+    included into the file containing the INCLUDE. Relative path names given
+    in an INCLUDE directive are assumed to reside in /etc/shorewall or in an
     alternate configuration directory if one has been specified for the
     command.</para>
 
@@ -385,7 +384,7 @@ DNAT       net        loc:192.168.1.3 tcp       4000:4100</programlisting>
     numbers separated by colons.</para>
 
     <example>
-      <title>MAC Address of a NIC</title>
+      <title>MAC Address of an Ethernet Controller</title>
 
       <programlisting> &#x00A0;&#x00A0;&#x00A0;&#x00A0; [root@gateway root]# <command>ifconfig eth0</command>
  &#x00A0;&#x00A0;&#x00A0;&#x00A0; eth0 Link encap:Ethernet HWaddr <emphasis
@@ -404,7 +403,7 @@ role="bold">02:00:08:E3:FA:55</emphasis>
     Shorewall requires MAC addresses to be written in another way. In
     Shorewall, MAC addresses begin with a tilde (<quote>~</quote>) and consist
     of 6 hex numbers separated by hyphens. In Shorewall, the MAC address in
-    the example above would be written <quote>~02-00-08-E3-FA-55</quote>.</para>
+    the example above would be written <emphasis role="bold">~02-00-08-E3-FA-55</emphasis>.</para>
 
     <note>
       <para>It is not necessary to use the special Shorewall notation in the

@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-02-05</pubdate>
+    <pubdate>2004-02-16</pubdate>
 
     <copyright>
       <year>2002-2004</year>
@@ -261,9 +261,11 @@ all            all                REJECT   info</programlisting>
     <tip>
       <para>If you specify <emphasis>norfc1918</emphasis> for your external
       interface, you will want to check the <ulink url="errata.htm">Shorewall
-      Errata</ulink> periodically for updates to the <filename>/etc/shorewall/rfc1918
-      file</filename>. Alternatively, you can <ulink url="myfiles.htm#RFC1918">strip
-      down your <filename>/etc/shorewall/rfc1918</filename> file as I do</ulink>.</para>
+      Errata</ulink> periodically for updates to the <filename>/usr/share/shorewall/rfc1918
+      file</filename>. Alternatively, you can copy <filename>/usr/share/shorewall/rfc1918</filename>
+      to <filename>/etc/shorewall/rfc1918</filename> then <ulink
+      url="myfiles.htm#RFC1918">strip down your <filename>/etc/shorewall/rfc1918</filename>
+      file as I do</ulink>.</para>
     </tip>
   </section>
 
@@ -300,8 +302,7 @@ all            all                REJECT   info</programlisting>
     actions included in your version of Shorewall in the file
     <filename>/etc/shorewall/actions.std</filename>.</para>
 
-    <para>Those actions that allow a connection begin with <quote>Allow</quote>.
-    </para>
+    <para>Those actions that allow a connection begin with <quote>Allow</quote>.</para>
 
     <para>If you wish to enable connections from the internet to your firewall
     and you find an appropriate <quote>Allow</quote> action in
@@ -406,7 +407,8 @@ AllowSSH  net       fw            </programlisting>
   <appendix>
     <title>Revision History</title>
 
-    <para><revhistory><revision><revnumber>1.6</revnumber><date>2004-02-05</date><authorinitials>TE</authorinitials><revremark>Update
+    <para><revhistory><revision><revnumber>1.7</revnumber><date>2004-02-16</date><authorinitials>TE</authorinitials><revremark>Move
+    /etc/shorewall/rfc1918 to /usr/share/shorewall.</revremark></revision><revision><revnumber>1.6</revnumber><date>2004-02-05</date><authorinitials>TE</authorinitials><revremark>Update
     for Shorewall 2.0</revremark></revision><revision><revnumber>1.5</revnumber><date>2004-01-05</date><authorinitials>TE</authorinitials><revremark>Standards
     Changes</revremark></revision><revision><revnumber>1.4</revnumber><date>2003-12-30</date><authorinitials>TE</authorinitials><revremark>Add
     tip about /etc/shorewall/rfc1918 updates.</revremark></revision><revision><revnumber>1.3</revnumber><date>2003-11-15</date><authorinitials>TE</authorinitials><revremark>Initial

@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article>
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>Shorewall and Bridged Firewalls</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate>2004-03-06</pubdate>
+
+    <copyright>
+      <year>2004</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <section>
+    <title>Background</title>
+
+    <para>Systems where Shorewall runs normally function as
+    <firstterm>routers</firstterm>. In the context of the Open System
+    Interconnect (OSI) reference model, a router operates at layer 3.
+    Beginning with Shorewall version 2.0.1, Shorewall may also be deployed on
+    a GNU Linux System that acts as a <firstterm>bridge</firstterm>. Bridges
+    are layer-2 devices in the OSI model (think of a bridge as an ethernet
+    switch).</para>
+
+    <para>Some differences between routers and bridges are:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>Routers determine packet destination based on the destination IP
+        address while bridges route traffic based on the destination MAC
+        address in the ethernet frame.</para>
+      </listitem>
+
+      <listitem>
+        <para>As a consequence of the first difference, routers can be
+        connected to more than one IP network while a bridge may be part of
+        only a single network.</para>
+      </listitem>
+
+      <listitem>
+        <para>A router cannot forward broadcast packets while a bridge can.</para>
+      </listitem>
+    </orderedlist>
+  </section>
+
+  <section>
+    <title>Requirements</title>
+
+    <para>In order to use Shorewall with a bridging firewall, your kernel must
+    meet the following requirements:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>It must contain bridge support (CONFIG_BRIDGE=m or
+        CONFIG_BRIDGE=y).</para>
+      </listitem>
+
+      <listitem>
+        <para>It must contain Netfilter physdev match support
+        (CONFIG_IP_NF_MATCH_PHYSDEV=m or CONFIG_IP_NF_MATCH_PHYSDEV=y).
+        Physdev match is available in the 2.6 kernel series but must be
+        patched into the 2.4 kernels (see <ulink url="http://bridge.sf.net">http://bridge.sf.net</ulink>).</para>
+      </listitem>
+
+      <listitem>
+        <para>Your iptables must contain physdev match support. iptables 1.2.9
+        and later contain this support.</para>
+      </listitem>
+
+      <listitem>
+        <para>You must have the bridge utilities (bridge-utils) package
+        installed.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>You must also be running Shorewall 2.0.1 or later (users running
+    Shorewall 2.0.0-RC* or Shorewall-2.0.0 may find the necessary updated
+    files at <ulink url="http://shorewall.net/pub/shorewall/Bridging">http://shorewall.net/pub/shorewall/Bridging</ulink>).</para>
+  </section>
+
+  <section>
+    <title>Application</title>
+
+    <para>The following diagram shows a typical application of a
+    bridge/firewall. There is already an existing router in place whose
+    internal interface supports a network and you want to insert a firewall
+    between the router and the systems in the local network. In the example
+    shown, the network uses RFC 1918 addresses but that is not a requirement;
+    the bridge would work exactly the same if public IP addresses were used
+    (remember that the bridge doesn&#39;t deal with IP addresses).</para>
+
+    <graphic fileref="images/bridge.png" />
+
+    <para>There are a several key differences in this setup and a normal
+    Shorewall configuration:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>The Shorewall system (the Bridge/Firewall) has only a single IP
+        address even though it has two ethernet interfaces! The IP address is
+        configured on the bridge itself rather than on either of the network
+        cards.</para>
+      </listitem>
+
+      <listitem>
+        <para>The systems connected to the LAN are configured with the
+        router&#39;s IP address (192.168.1.254 in the above diagram) as their
+        default gateway.</para>
+      </listitem>
+
+      <listitem>
+        <para><command>traceroute</command> doesn&#39;t detect the
+        Bridge/Firewall as an intermediate router.</para>
+      </listitem>
+
+      <listitem>
+        <para>If the router runs a DHCP server, the hosts connected to the LAN
+        can use that server without having <command>dhcrelay</command> running
+        on the Bridge/Firewall.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>There are other possibilities here -- there could be a hub or switch
+    between the router and the Bridge/Firewall and there could be other
+    systems connected to that switch. All of the systems on the local side of
+    the router would still be configured with IP addresses in 192.168.1.0/24.</para>
+  </section>
+
+  <section>
+    <title>Configuring the Bridge</title>
+
+    <para>Configuring the bridge itself is quite simple and used the
+    <command>brctl</command> utility from the bridge-utils package. Bridge
+    configuration information may be found at <ulink
+    url="http://bridge.sf.net">http://bridge.sf.net</ulink>.</para>
+
+    <para>Unfortunately, Linux distributions don&#39;t have good bridge
+    configuration tools and the network configuration GUIs don&#39;t detect
+    the presence of bridge devices. You may refer to <ulink
+    url="http://shorewall.net/2.0/myfiles.htm">my configuration files</ulink>
+    for an example of configuring a bridge at system boot under
+    <trademark>SuSE</trademark>. Here is an excerpt from a Debian
+    <filename>/etc/network/interfaces</filename> file for a bridge:</para>
+
+    <programlisting>auto br0
+iface br0 inet static
+        address 192.168.1.253
+        netmask 255.255.255.0
+        network 192.168.1.0
+        broadcast 192.168.1.255
+        pre-up /sbin/ip link set eth0 up
+        pre-up /sbin/ip link set eth1 up
+        pre-up /usr/sbin/brctl addbr br0
+        pre-up /usr/sbin/brctl addif br0 eth0
+        pre-up /usr/sbin/brctl addif br0 eth1
+gateway:/etc/network#</programlisting>
+
+    <para>While it is not a requirement to give the bridge an IP address,
+    doing so allows the bridge/firewall to access other systems and allows the
+    bridge/firewall to be managed remotely. I have not tested Shorewall with a
+    bridge configured without an IP address so if you try it and it
+    doesn&#39;t work do not be surprised.</para>
+  </section>
+
+  <section>
+    <title>Configuring Shorewall</title>
+
+    <para>Bridging in Shorewall is enabled using the BRIDGING option in
+    <filename>/etc/shorewall/shorewall.conf</filename>:</para>
+
+    <programlisting>BRIDGING=Yes</programlisting>
+
+    <para>In the scenario pictured above, there would probably be two zones
+    defined -- one for the internet and one for the local LAN so in
+    <filename>/etc/shorewall/zones</filename>:</para>
+
+    <programlisting>#ZONE   DISPLAY         COMMENTS
+net     Net             Internet
+loc     Local           Local networks
+#LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
+
+    <para>A conventional two-zone policy file is appropriate here —
+    <filename>/etc/shorewall/policy</filename>:</para>
+
+    <programlisting>#SOURCE     DEST        POLICY        LOG       LIMIT:BURST
+loc         net         ACCEPT
+net         all         DROP          info
+all         all         REJECT        info
+#LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
+
+    <para>Only the bridge device itself is configured with an IP address so
+    only that device is defined to Shorewall in <filename>/etc/shorewall/interfaces</filename>:</para>
+
+    <programlisting>#ZONE    INTERFACE      BROADCAST       OPTIONS
+-       br0             192.168.1.255
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+
+    <para>The zones are defined using the <filename>/etc/shorewall/hosts</filename>
+    file. Assuming that the router is connected to <filename
+    class="devicefile">eth0</filename> and the switch to <filename
+    class="devicefile">eth1</filename>:</para>
+
+    <programlisting>#ZONE           HOST(S)                         OPTIONS
+net             br0:eth0
+loc             br0:eth1
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS LINE -- DO NOT REMOVE</programlisting>
+
+    <para>When Shorewall is stopped, you want to allow only local traffic
+    through the bridge — <filename><filename>/etc/shorewall/routestopped</filename></filename>:</para>
+
+    <programlisting>#INTERFACE      HOST(S)         OPTIONS
+br0             192.168.1.0/24  routeback
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+
+    <para>The <filename>/etc/shorewall/rules</filename> file from the
+    two-interface sample is a good place to start for defining a set of
+    firewall rules.</para>
+  </section>
+
+  <section>
+    <title>Combination Router/Bridge</title>
+
+    <para>A system running Shorewall doesn&#39;t have to be exclusively a
+    bridge or a router -- it can act as both. Here&#39;s an example:<graphic
+    fileref="images/bridge2.png" /></para>
+
+    <para>This is basically the same setup as shown in the <ulink
+    url="shorewall_setup_guide.htm">Shorewall Setup Guide</ulink> with the
+    exception that the DMZ is bridged rather than using Proxy ARP. Changes in
+    the configuration shown in the Setup Guide are as follows:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>The <filename>/etc/shorewall/proxyarp</filename> file is empty
+        in this confiiguration.</para>
+      </listitem>
+
+      <listitem>
+        <para>The <filename>/etc/shorewall/interfaces</filename> file is as
+        follows:<programlisting>#ZONE    INTERFACE      BROADCAST     OPTIONS
+-        br0            detect        rfc1918,routefilter
+loc      eth1           detect</programlisting></para>
+      </listitem>
+
+      <listitem>
+        <para>The <filename>/etc/shorewall/hosts</filename> file would have:</para>
+
+        <programlisting>#ZONE    HOSTS                        OPTIONS
+net      br0:eth0
+dmz      br0:eth2</programlisting>
+      </listitem>
+    </orderedlist>
+  </section>
+
+  <section>
+    <title>Limitations</title>
+
+    <para>Bridging doesn&#39; t work with some wireless cards — see <ulink
+    url="http://bridge.sf.net">http://bridge.sf.net</ulink>.</para>
+  </section>
+</article>

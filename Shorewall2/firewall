@@ -1100,7 +1100,7 @@ validate_policy()
 	esac
 
 	case $policy in
-	ACCEPT|REJECT|DROP|CONTINUE)
+	ACCEPT|REJECT|DROP|CONTINUE|QUEUE)
 	    ;;
 	NONE)
 	    [ "$client" = "$FW" -o "$server" = "$FW" ] && \
@@ -3490,14 +3490,14 @@ process_actions1() {
 		    [ ${#temp} -le 30 ] || fatal_error "Action Name Longer than 30 Characters: $temp"
 		    xaction=${xaction%:*}
 		    case $temp in
-			ACCEPT|REJECT|DROP)
+			ACCEPT|REJECT|DROP|QUEUE)
 			    eval ${temp}_common=$xaction
 			    if [ -n "$xaction" ] && ! list_search $xaction $USEDACTIONS; then
 				USEDACTIONS="$USEDACTIONS $xaction"
 			    fi
 			    ;;
 			*)
-			    startup_error "Common Actions are only allowed for ACCEPT, DROP and REJECT"
+			    startup_error "Common Actions are only allowed for ACCEPT, DROP, REJECT and QUEUE"
 			    ;;
 		    esac
 	    esac
@@ -4806,6 +4806,9 @@ policy_rules() # $1 = chain to add rules to
 	    [ -n "$REJECT_common" ] && run_iptables -A $1 -j $REJECT_common    
 	    target=reject
 	    ;;
+	QUEUE)
+	    [ -n "$QUEUE_common" ] && run_iptables -A $1 -j $QUEUE_common    
+	    ;;
 	CONTINUE)
 	    target=
 	    ;;
@@ -4871,7 +4874,7 @@ default_policy() # $1 = client $2 = server
 	    # depends on the policy
 	    #
 	    case $policy in
-	    ACCEPT)
+	    ACCEPT|QUEUE)
 		if [ -n "$synparams" ]; then
 		    #
 		    # To avoid double-counting SYN packets, enforce the policy

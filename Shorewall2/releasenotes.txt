@@ -85,4 +85,21 @@ New Features:
       ...
       Error: Invalid zone definition for zone <name of zone>
    Terminated
- 
+
+5) To support bridging, the following options have been added to
+   entries in /etc/shorewall/hosts:
+
+	   norfc1918
+	   nobogons
+	   blacklist
+	   tcpflags
+	   nosmurfs
+	   newnotsyn
+
+   With the excpection of 'newnotsyn', these options are only
+   useful when the entry refers to a bridge port.
+
+   Example:
+   
+   #ZONE   HOST(S)	OPTIONS
+   net	   br0:eth0	norfc1918,nobogons,blacklist,tcpflags,nosmurfs

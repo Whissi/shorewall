@@ -975,7 +975,7 @@ find_hosts_by_option() # $1 = option
     done < $TMP_DIR/hosts
 
     for interface in $all_interfaces; do
-	interface_has_option $interface $option && \
+	interface_has_option $interface $1 && \
 	    echo ${interface}:0.0.0.0/0
     done
 }
@@ -1889,7 +1889,7 @@ process_tc_rule()
 			fatal_error "Unknown interface $source in rule \"$rule\""
 		    fi
 
-		    r="$(select_source_dev) $source "
+		    r="$(match_source_dev) $source "
 		    ;;
 	    esac
 	fi
@@ -4207,11 +4207,11 @@ process_blacklist_rec() {
 # Setup the Black List
 #
 setup_blacklist() {
-    local interfaces=$(find_interfaces_by_option blacklist)
+    local hosts=$(find_hosts_by_option blacklist)
     local f=$(find_file blacklist)
     local disposition=$BLACKLIST_DISPOSITION
 
-    if [ -n "$interfaces" -a -f $f ]; then
+    if [ -n "$hosts" -a -f $f ]; then
 	echo "Setting up Blacklisting..."
 
 	strip_file blacklist $f
@@ -4220,12 +4220,17 @@ setup_blacklist() {
 
 	[ -n "$BLACKLISTNEWONLY" ] && state="-m state --state NEW" || state=
 	
-	for interface in $interfaces; do
-	    for chain in $(first_chains $interface); do
-		run_iptables -A $chain $state -j blacklst
-	    done
+	for host in $hosts; do
+	    interface=${host%%:*}
+	    network=${host#*:}
 
-	    echo "   Blacklisting enabled on $interface"
+	    for chain in $(first_chains $interface); do
+		run_iptables -A $chain $state $(match_source_hosts $network) -j blacklst
+	    done
+	    
+	    [ $network = 0/0.0.0.0 ] && network= || network=":$network"
+
+	    echo "   Blacklisting enabled on ${interface}${network}"
 	done
 
 	[ "$disposition" = REJECT ] && disposition=reject
@@ -4605,15 +4610,18 @@ add_common_rules() {
     #
     # SMURFS
     #
-    interfaces=$(find_interfaces_by_option nosmurfs)
+    hosts=$(find_hosts_by_option nosmurfs)
 
-    if [ -n "$interfaces" ]; then
+    if [ -n "$hosts" ]; then
 	
 	echo "Adding Anti-smurf Rules"
 
-	for interface in $interfaces; do
+	for host in $hosts; do
+	    interface=${host%%:*}
+	    subnet=${host#*:}
+
 	    for chain in $(first_chains $interface); do
-		run_iptables -A $chain  -m state --state NEW -j smurfs
+		run_iptables -A $chain  -m state --state NEW $(match_source_hosts $network) -j smurfs
 	    done
 	done
     fi
@@ -4639,9 +4647,9 @@ add_common_rules() {
     #
     # RFC 1918
     #
-    norfc1918_interfaces="$(find_interfaces_by_option norfc1918)"
+    hosts="$(find_hosts_by_option norfc1918)"
 
-    if [ -n "$norfc1918_interfaces" ]; then
+    if [ -n "$hosts" ]; then
 	echo "Enabling RFC1918 Filtering"
 
 	strip_file rfc1918
@@ -4697,21 +4705,24 @@ add_common_rules() {
 	    fi
 	done < $TMP_DIR/rfc1918
 
-	for interface in $norfc1918_interfaces; do
+	for host in $hosts; do
+	    interface=${host%%:*}
+	    subnet=${host#*:}
+
 	    for chain in $(first_chains $interface); do
-		run_iptables -A $chain -m state --state NEW -j norfc1918
+		run_iptables -A $chain -m state --state NEW $(match_source_hosts $subnet) -j norfc1918
 	    done
 
 	    [ -n "$MANGLE_ENABLED" -a -z "$CONNTRACK_MATCH" ] && \
-		run_iptables -t mangle -A PREROUTING -m state --state NEW -i $interface -j man1918
+		run_iptables -t mangle -A PREROUTING -m state --state NEW -i $interface $(match_source_hosts $subnet) -j man1918
 	done
     fi
     #
     # Bogons
     #
-    nobogon_interfaces="$(find_interfaces_by_option bogons)"
+    hosts="$(find_hosts_by_option bogons)"
     
-    if [ -n "$nobogon_interfaces" ]; then
+    if [ -n "$hosts" ]; then
 	echo "Enabling Bogon Filtering"
 
 	strip_file bogons
@@ -4740,17 +4751,20 @@ add_common_rules() {
 
 	done < $TMP_DIR/bogons
 
-	for interface in $nobogon_interfaces; do
+	for host in $hosts; do
+	    interface=${host%%:*}
+	    network=${host#*:}
+
 	    for chain in $(first_chains $interface); do
-		run_iptables -A $chain -m state --state NEW -j nobogons
+		run_iptables -A $chain -m state --state NEW $(match_source_hosts $network) -j nobogons
 	    done
 	done
 
     fi
 
-    interfaces=$(find_interfaces_by_option tcpflags)
+    hosts=$(find_hosts_by_option tcpflags)
 
-    if [ -n "$interfaces" ]; then
+    if [ -n "$hosts" ]; then
 	echo "Setting up TCP Flags checking..."
 
 	createchain tcpflags no
@@ -4791,9 +4805,12 @@ add_common_rules() {
 	#
 	run_iptables -A tcpflags -p tcp --syn --sport 0             $disposition
 
-	for interface in $interfaces; do
+	for host in $hosts; do
+	    interface=${host%%:*}
+	    network=${host#*:}
+
 	    for chain in $(first_chains $interface); do
-		run_iptables -A $chain -p tcp -j tcpflags
+		run_iptables -A $chain -p tcp $(match_source_hosts $network) -j tcpflags
 	    done
 	done
     fi
@@ -5117,7 +5134,6 @@ activate_rules()
 	run_iptables -D $chain -m state --state ESTABLISHED,RELATED -j ACCEPT
 	run_iptables -D $chain -p udp --dport 53 -j ACCEPT
     done
-
 }
 
 #

@@ -87,7 +87,9 @@ debug)
 	shorewall debug start 2> /tmp/trace
 
     The above command would trace the 'start' command and
-    place the trace information in the file /tmp/trace."
+    place the trace information in the file /tmp/trace.
+
+    The word 'trace' is a synonym for 'debug'.
 	;;
 
 delete)
@@ -222,6 +224,23 @@ status)
     Produce a verbose report about the firewall.
    
     (iptables -L -n -v)"
+	;;
+
+trace)
+	echo "trace: trace
+    If you include the keyword trace as the first argument to any
+    of these commands:
+
+	start|stop|restart|reset|clear|refresh|check|add|delete
+
+    then a shell trace of the command is produced.  For example:
+
+	shorewall trace start 2> /tmp/trace
+
+    The above command would trace the 'start' command and
+    place the trace information in the file /tmp/trace.
+
+    The word 'debug' is a synonym for 'trace'.
 	;;
 
 try)

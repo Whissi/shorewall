@@ -613,11 +613,12 @@ match_ipsec_in() # $1 = zone, $2 = host
 {
     eval local is_ipsec=\$${1}_is_ipsec
     eval local hosts=\"\$${1}_ipsec_hosts\"
+    eval local options=\"\$${1}_ipsec_options\"
 
     if [ -n "$is_ipsec" ] || list_search $2 $hosts; then
-	echo "-m policy --pol ipsec --dir in"
+	echo "-m policy --pol ipsec --dir in $options"
     elif [ -n "$POLICY_MATCH" ]; then
-	echo "-m policy --pol none --dir in"
+	echo "-m policy --pol none --dir in $options"
     fi
 }
 
@@ -628,11 +629,12 @@ match_ipsec_out() # $1 = zone, $2 = host
 {
     eval local is_ipsec=\$${1}_is_ipsec
     eval local hosts=\"\$${1}_ipsec_hosts\"
+    eval local options=\"\$${1}_ipsec_options\"
 
     if [ -n "$is_ipsec" ] || list_search $2 $hosts; then
-	echo "-m policy --pol ipsec --dir out"
+	echo "-m policy --pol ipsec --dir out $options"
     elif [ -n "$POLICY_MATCH" ]; then
-	echo "-m policy --pol none --dir out"
+	echo "-m policy --pol none --dir out $options"
     fi
 }
 
@@ -1454,6 +1456,7 @@ setup_tunnels() # $1 = name of tunnels file
     local inchain
     local outchain
 
+
     setup_one_ipsec() # $1 = gateway $2 = Tunnel Kind $3 = gateway zones
     {
     	local kind=$2 noah=
@@ -1485,7 +1488,21 @@ setup_tunnels() # $1 = name of tunnels file
 	    run_iptables -A $inchain  -p udp -s $1 --dport 4500 $options
 	fi
 
-	for z in $(separate_list $3); do
+	for z in $3; do
+	    case $z in 
+		*:ipsec)
+		    z=${z%:*}
+		    eval ${z}_is_ipsec=Yes
+		    ;;
+	        *:ipsec\(*)
+                    do_options
+		    eval ${z}_is_ipsec=Yes
+		    ;;
+		*:mixed\(*)
+	            do_options
+		    ;;
+            esac	
+
 	    if validate_zone $z; then
 		addrule ${FW}2${z} -p udp --dport 500 $options
 		if [ $kind = ipsec ]; then
@@ -1495,8 +1512,7 @@ setup_tunnels() # $1 = name of tunnels file
 		    addrule ${z}2${FW} -p udp --dport 4500 $options
 		fi
 	    else
-		error_message "Warning: Invalid gateway zone ($z)" \
-		" -- Tunnel \"$tunnel\" may encounter keying problems"
+		fatal_error ": Invalid gateway zone ($z) -- Tunnel \"$tunnel\""
 	    fi
 	done
 
@@ -1631,6 +1647,64 @@ setup_tunnels() # $1 = name of tunnels file
 	fi
     done < $TMP_DIR/tunnels
 }
+
+setup_ipsec() {
+
+    do_options() {
+	local option newoptions=
+
+	options=$(separate_list $options)
+
+	for option in $options; do
+	    case $option in
+		reqid=*)
+		    newoptions="$newoptions --reqid ${option#*=}"
+		    ;;
+		spi=*)
+		    newoptions="$newoptions --spi ${option#*=}"
+		    ;;
+		proto=*)
+		    newoptions="$newoptions --proto ${option#*=}"
+		    ;;
+		mode=*)
+		    newoptions="$newoptions --mode ${option#*=}"
+		    ;;
+		tunnel-src=*)
+		    newoptions="$newoptions --tunnel-src ${option#*=}"
+		    ;;
+		tunnel-dst=*)
+		    newoptions="$newoptions --tunnel-dst ${option#*=}"
+		    ;;
+		*)
+		    fatal_error "Invalid option \"$option\" for zone $zone"
+		    ;;
+	    esac
+	done
+	eval ${zone}_ipsec_options=\"${newoptions# }\"	    
+    }
+
+    strip_file ipsec $1
+    
+    while read zone ipsec options; do
+	expandv zone ipsec options
+
+	validate_zone1 $zone || fatal_error "Unknown zone: $zone"
+
+	case $ipsec in
+	    -|No|no)
+		;;
+	    Yes|yes)
+		eval ${zone}_is_ipsec=Yes
+		;;
+	    *)
+		fatal_error "Invalid IPSEC column value: $ipsec"
+		;;
+	esac
+
+	do_options
+
+    done < $TMP_DIR/ipsec
+}	
 
 #
 # Setup Proxy ARP
@@ -2423,6 +2497,12 @@ check_config() {
     [ -z "$zones" ] && startup_error "ERROR: No Zones Defined"
 
     display_list "Zones:" $zones
+
+    ipsecfile=$(find_file ipsec)
+
+    [ -f $ipsecfile ] && \
+	echo "Validating ipsec file..." && \
+	setup_ipsec $ipsecfile
 
     echo "Validating interfaces file..."
 
@@ -4496,6 +4576,38 @@ get_routed_networks() # $1 = interface name
 #
 setup_masq()
 {
+    do_ipsec_options() {
+	local options=$(separate_list $ipsec) option 
+	policy ="-m policy --pol ipsec --dir out"
+
+	options=$(separate_list $options)
+	for option in $options; do
+	    case $option in
+		reqid=*)
+		    policy="$policy --reqid ${option#*=}"
+		    ;;
+		spi=*)
+		    policy="$policy --spi ${option#*=}"
+		    ;;
+		proto=*)
+		    policy="$policy --proto ${option#*=}"
+		    ;;
+		mode=*)
+		    policy="$policy --mode ${option#*=}"
+		    ;;
+		tunnel-src=*)
+		    policy="$policy --tunnel-src ${option#*=}"
+		    ;;
+		tunnel-dst=*)
+		    policy="$policy --tunnel-dst ${option#*=}"
+		    ;;
+		*)
+		    fatal_error "Invalid IPSEC option \"$option\""
+		    ;;
+	    esac
+	done
+    }
+
     setup_one() {
 	local add_snat_aliases=$ADD_SNAT_ALIASES, pre_nat= policy=
 
@@ -4513,9 +4625,7 @@ setup_masq()
 		policy="-m policy --pol none --dir out"
 		;;
 	    *)
-		[ -n "$ipsec" ] && \
-		    fatal_error "Invalid value in IPSEC column: $ipsec"
-		[ -n "$POLICY_MATCH" ] && policy="-m policy --pol none --dir out"
+		[ -n "$ipsec" ] && do_ipsec_options || [ -n "$POLICY_MATCH" ] && policy="-m policy --pol none --dir out"
 		;;
 	esac
 
@@ -5985,6 +6095,10 @@ define_firewall() # $1 = Command (Start or Restart)
     [ -f $tunnels ] && \
 	echo "Processing $tunnels..." &&       setup_tunnels $tunnels
 
+    ipsecfile=$(find_file ipsec)
+    [ -f $ipsecfile ] && \
+	echo "Processing $ipsecfile..." &&     setup_ipsec $ipsecfile
+
     maclist_hosts=$(find_hosts_by_option maclist)
     [ -n "$maclist_hosts" ] &&                 setup_mac_lists
 
@@ -6118,11 +6232,12 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
     [ "$zone" = $FW ] && startup_error "Can't add $1 to firewall zone"
 
     eval is_ipsec=\$${zone}_is_ipsec
+    eval options=\"\$${zone}_ipsec_options\"
 
     if [ -n "$is_ipsec" ]; then
 	[ -n "$POLICY_MATCH" ] || startup_error "Your kernel and/or iptables lacks policy match support"
-	policyin="-m policy --pol ipsec --dir in"
-	policyout="-m policy --pol ipsec --dir out"
+	policyin="-m policy --pol ipsec --dir in $options"
+	policyout="-m policy --pol ipsec --dir out $options"
     elif [ -n "$POLICY_MATCH" ]; then
  	policyin="-m policy --pol none --dir in"
 	policyout="-m policy --pol none --dir out"

@@ -107,8 +107,31 @@
 #				       source address changed.
 #
 #				- or empty is the same as No providing that 
-#				your kernel and iptables contain policy match
-#				support.
+#				       your kernel and iptables contain policy match
+#				       support.
+#
+#				Comma-separated list of options from the following.
+#				Only packets that will be encrypted via an SA that
+#				matches these options will have their source address
+#				changed.
+#
+#					reqid=<number> where <number> is specified
+#					using setkey(8) using the 'unique:<number>
+#					option for the SPD level.
+#
+#					spi=<number> where <number> is the SPI of
+#					the SA.
+#
+#					proto=ah|esp|ipcomp 
+#
+#					mode=transport|tunnel
+#
+#					tunnel-src=<address>[/<mask>] (only
+#					available with mode=tunnel)
+#
+#					tunnel-dst=<address>[/<mask>] (only
+#					available with mode=tunnel) 
+#
 #
 #	Example 1:
 #

@@ -270,15 +270,7 @@ determine_zones()
     
     for zone in $zones; do
 	dsply=$(find_display $zone $TMP_DIR/zones)
-	case $zone in 
-	    *:ipsec)
-		zone=${zone%:*}
-		eval ${zone}_is_ipsec=Yes
-		;;
-	    *)
-	esac
-	
-	[ ${#zone} -gt 5 ] && echo "   Warning: Zone name longer than 5 characters: $zone" 2> /tmp/trace
+	[ ${#zone} -gt 5 ] && echo "   Warning: Zone name longer than 5 characters: $zone" >&2
 	eval ${zone}_display=\$dsply
 	newzones="$newzones $zone"
     done

@@ -22,7 +22,7 @@
 #       Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
 #
 
-VERSION=2.1.4
+VERSION=2.1.5
 
 usage() # $1 = exit status
 {
@@ -245,6 +245,16 @@ else
     run_install -o $OWNER -g $GROUP -m 0600 interfaces ${PREFIX}/etc/shorewall/interfaces
     echo
     echo "Interfaces file installed as ${PREFIX}/etc/shorewall/interfaces"
+fi
+#
+# Install the ipsec file
+#
+if [ -f ${PREFIX}/etc/shorewall/ipsec ]; then
+    backup_file /etc/shorewall/ipsec
+else
+    run_install -o $OWNER -g $GROUP -m 0600 ipsec ${PREFIX}/etc/shorewall/ipsec
+    echo
+    echo "Ipsec file installed as ${PREFIX}/etc/shorewall/ipsec"
 fi
 #
 # Install the hosts file

@@ -28,7 +28,7 @@
 #       shown below. Simply run this script to revert to your prior version of
 #       Shoreline Firewall.
 
-VERSION=2.1.4
+VERSION=2.1.5
 
 usage() # $1 = exit status
 {
@@ -84,6 +84,8 @@ restore_file /etc/shorewall/zones
 restore_file /etc/shorewall/policy
 
 restore_file /etc/shorewall/interfaces
+
+restore_file /etc/shorewall/ipsec
 
 restore_file /etc/shorewall/hosts
 

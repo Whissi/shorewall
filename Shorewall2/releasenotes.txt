@@ -230,8 +230,23 @@ New Features:
     IPSEC policy match patch from Patch-0-Matic-ng. That patch affects
     both your kernel and iptables.
 
-    This new Shorewall support is enabled through use of the 'ipsec'
-    option in /etc/shorewall/hosts.
+    There are two ways to specify that IPSEC is to be used when
+    communicating with a set of hosts; both methods involve the new
+    /etc/shorewall/ipsec file:
+
+    a) If encrypted communication is used with all hosts in a zone,
+    then you can designate the zone as an "ipsec" zone by placing
+    'Yes" in the IPSEC ONLY column in the /etc/shorewall/ipsec:
+
+	#ZONE		IPSEC	OPTIONS
+	#		ONLY
+	vpn		Yes
+
+    The hosts in the zone (if any) must be specified in
+    /etc/shorewall/hosts but you do not need to specify the 'ipsec'
+    option on the entries in that file (see below).
+
+    Dynamic zones involving IPSEC must use that technique.
 
     Example:
 
@@ -249,10 +264,10 @@ New Features:
 
     Under 2.6 Kernel with this new support:
     
-	/etc/shorewall/zones (note the change of order):
+	/etc/shorewall/zones:
 
-	vpn	VPN	Remote Network
-	net	Net	The big bad Internet
+	net		Net	The big bad Internet
+	vpn		VPN	Remote Network
 
 	/etc/shorewall/interfaces:
 
@@ -260,13 +275,84 @@ New Features:
     
 	/etc/shorewall/hosts:
 
-	vpn	eth0:0.0.0.0/0	ipsec
+	vpn	eth0:0.0.0.0/0
 
+	/etc/shorewall/ipsec
+
+	vpn	Yes
+
+    b) If only part of the hosts in a zone require encrypted
+    communication, you may use of the new 'ipsec' option in
+    /etc/shorewall/hosts to designate those hosts.
+
+    Example:
+
+    Under 2.4 Kernel FreeS/Wan:
+
+	  /etc/shorewall/zones:
+
+	  net	Net	The big bad Internet
+	  loc	Local	Extended local zone
+
+	  /etc/shorewall/interfaces:
+
+	  net	eth0	...
+	  loc	eth1	...
+	  loc	ipsec0	...
+
+    Under 2.6 Kernel with this new support:
+    
+	/etc/shorewall/zones:
+
+	net		Net	The big bad Internet
+	vpn      	VPN	Remote Network
+
+	/etc/shorewall/interfaces:
+
+	net	eth0	...
+	loc	eth1	...
+    
+	/etc/shorewall/hosts:
+
+	vpn	eth0:0.0.0.0/0	ipsec,...
+
+    Regardless of which technique you choose, you can specify
+    additional SA options for the zone in the /etc/shorewall/ipsec
+    entry.
+
+    The OPTIONS column specifies 
+
+    The available options are:
+
+	reqid=<number> where <number> is specified using setkey(8) using
+	the 'unique:<number>' option for the SPD level.
+
+	 spi=<number> where <number> is the SPI of the SA.
+
+	 proto=ah|esp|ipcomp 
+
+	 mode=transport|tunnel
+
+	 tunnel-src=<address>[/<mask>] (only available with mode=tunnel)
+
+	 tunnel-dst=<address>[/<mask>] (only available with mode=tunnel) 
+
+    Examples:
+
+	#ZONE	IPSEC	OPTIONS
+	#	ONLY
+	vpn	Yes	mode=tunnel,proto=esp
+	loc	No	reqid=44,mode=transport
+ 
     The /etc/shorewall/masq file has a new IPSEC column added. If you
     specify Yes or yes in that column then the unencrypted packets will
     have their source address changed. Otherwise, the unencrypted
-    packets will not have their source addresses changed.
- 
+    packets will not have their source addresses changed. This column
+    may also contain a comma-separated list of the options specified
+    above in which case only those packets that will be encrypted
+    by an SA matching the given options will have their source address
+    changed.
+
 8)  To improve interoperability, tunnels of type 'ipsec' no longer
     enforce the use of source port 500 for ISAKMP.
 

@@ -5813,22 +5813,14 @@ add_common_rules() {
 
 	echo "Adding rules for DHCP"
 
-	if [ -n "$POLICY_MATCH" ]; then
-	    policyin="-m policy --dir in --pol none"
-	    policyout="-m policy --dir out --pol none"
-	else
-	    policyin=
-	    policyout=
-	fi
-
 	for interface in $interfaces; do
 	    if [ -n "$BRIDGING" ]; then
 		eval is_bridge=\$$(chain_base $interface)_ports
 		[ -n "$is_bridge" ] && \
-		    $IPTABLES -A $(forward_chain $interface) -p udp -o $interface --dport 67:68 $policyin -j ACCEPT
+		    $IPTABLES -A $(forward_chain $interface) -p udp -o $interface --dport 67:68 -j ACCEPT
             fi
-	    run_iptables -A $(input_chain $interface) -p udp --dport 67:68 $policyin  -j ACCEPT
-	    run_iptables -A OUTPUT -o $interface      -p udp --dport 67:68 $policyout -j ACCEPT
+	    run_iptables -A $(input_chain $interface) -p udp --dport 67:68 -j ACCEPT
+	    run_iptables -A OUTPUT -o $interface      -p udp --dport 67:68 -j ACCEPT
 	done
     fi
     #

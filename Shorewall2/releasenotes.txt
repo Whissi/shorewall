@@ -1,222 +1,4 @@
-Shorewall 2.2.0-RC5
-
-----------------------------------------------------------------------
-Problems Corrected since 2.0.3
-
-1)  A non-empty DEST entry in /etc/shorewall/tcrules will generate an
-    error and Shorewall fails to start.
-
-2)  A potential security vulnerablilty in the way that Shorewall
-    handles temporary files and directories has been corrected.
-
-3)  Two problems with logging NAT rules (DNAT and REDIRECT) could cause
-    startup failures.
-
-4)  Some users have reported the pkttype match option in iptables/
-    Netfilter failing to match certain broadcast packets. The result 
-    is that the firewall log shows a lot of broadcast packets.
-
-    Users experiencing this problem can use PKTTYPE=No in
-    shorewall.conf to cause Shorewall to use IP address filtering of 
-    broadcasts rather than packet type.
-
-Problems Corrected since 2.1.0
-
-1)  The "check" command fails with the following message:
-
-	iptables: No chain/target/match by that name
-
-Problems Corrected since 2.1.4
-
-1)  Per-interface options like 'norfc1918' are not applied to requests
-    that have been unencrypted as a result of an entry in the SPD.
-
-Problems corrected since 2.1.6
-
-1)  Dynamic zones marked as 'ipsec' in /etc/shorewall/ipsec now work
-    correctly.
-
-Problems corrected since 2.1.7
-
-1)  Fix parsing of ACTION with ":" but no log level (Richard Musil).
-
-2)  Fix parsing of PROTO column in /etc/shorewall/tcrules.
-
-3)  Packets that will be encrypted or that have been decrypted by IPSEC
-    are now exempted from the rules established by one-to-one NAT. This
-    allows tunnel mode IPSEC to work for local networks where some of
-    the systems use one-to-one NAT.
-
-4)  The shorewall.spec file now directs rpm to cause Shorewall to start
-    automatically at boot. This feature was inadvertently removed in
-    Shorewall 2.1.3.
-
-Problems corrected since 2.1.8
-
-1)  IP ranges in the routestopped and tunnels files now work.
-
-2)  Rules where an IP range appears in both the source and destination
-    now work correctly.
-
-3)  With complex proxy arp configurations involving two or more 
-    ordered pairs of interfaces, the /proc/sys/net/ipv4/conf/*/proxy_arp
-    flags were sometimes set incorrectly. This has been fixed.
-
-Problems corrected since 2.1.9
-
-1)  With DELAYBLACKLISTLOAD=No, the blacklist was previously not
-    loaded.
-
-Problems corrected since 2.1.10
-
-1)  If TC_ENABLED=Yes but you have no /etc/shorewall/tcstart file then
-    "shorewall restore" will no longer attempt to run the tcstart file.
-
-2)  Previously it was necessary to define ipsec zones (those with 
-    "Yes" in the IPSEC column in /etc/shorewall/ipsec or those having
-    an entry in /etc/shorewall/hosts having the "ipsec" option) before
-    other zones using the same interface. This has been corrected.
-
-3)  A typo has been corrected that prevented the 'logmartians' interface
-    option from working correctly.
-
-4)  A typo has been corrected in and a clarification added to the
-    /etc/shorewall/blacklist file.
-
-Problems corrected since 2.1.11
-
-1)  If a zone name appears more than once in /etc/shorewall/zones,
-    Shorewall will now issue an error message and terminate during
-    "shorewall [re]start" or "shorewall check".
-
-2)  If a configuration has two or more "complex" zones (zones having
-    IPSEC hosts or zones having more than one subnet on an interface)
-    then an incorrect ruleset is generated. This problem was introduced
-    in 2.1.11. 
-
-Problems corrected since 2.2.0 Beta 1.
-
-1)  The "shorewall check" command results in the (harmless) error
-    message:
-
-	/usr/share/shorewall/firewall: line 2753: 
-           check_dupliate_zones: command not found
-	   
-2)  The AllowNTP standard action now allows outgoing responses to 
-    broadcasts.
-    
-3)  A clarification has been added to the hosts file's description of
-    the 'ipsec' option pointing out that the option is redundent if the
-    zone named in the ZONE column has been designated an IPSEC zone in
-    the /etc/shorewall/ipsec file.
-
-Problems corrected since 2.2.0 Beta 2.
-
-1)  Missing '#' in the rfc1918 file.
-
-2) The INSTALL file now includes special instructions for Slackware
-   users.
-
-Problems corrected since 2.2.0 Beta 3.
-
-1) A cut and paste error resulted in some nonsense in the description
-   of the IPSEC column in /etc/shorewall/masq.
-
-2) A typo in /etc/shorewall/rules has been corrected.
-
-3) The bogons file has been updated.
-
-4) The "shorewall add" command previously reported success but did 
-   nothing -- now it works.
-
-Problems corrected since 2.2.0 Beta 4:
-
-1) A typo in shorewall.conf (NETNOTSYN) has been corrected.
-
-Problems corrected since 2.2.0 Beta 5:
-
-1) Many problems associated with an empty IPTABLES variable have been
-   corrected.
-
-2) A 'chain already exists' error occurs on "shorewall add" if you are
-   using the 'mss' option in the ipsec file.
-
-Problems corrected since 2.2.0 Beta 6:
-
-1) The "shorewall add" and "shorewall delete" commands now work in a
-   bridged environment. The syntax is:
-
-	   shorewall add <interface>[:<port>]:<address> <zone>
-	   shorewall delete <interface>[:<port>]:<address> <zone>
-
-   Examples:
-
-	   shorewall add br0:eth2:192.168.1.3 OK
-	   shorewall delete br0:eth2:192.168.1.3 OK
-
-2) Previously, "shorewall save" created an out-of-sequence restore
-   script. The commands saved in the user's /etc/shorewall/start script
-   were executed prior to the Netfilter configuration being
-   restored. This has been corrected so that "shorewall save" now
-   places those commands at the end of the script. 
-
-   To accomplish this change, the "restore base" file
-   (/var/lib/shorewall/restore-base) has been split into two files:
-
-   /var/lib/shorewall/restore-base -- commands to be executed before
-   Netfilter the configuration is restored.
-
-   /var/lib/shorewall/restore-tail -- commands to be executed after the
-   Netfilter configuration is restored.
-
-3) Previously, traffic from the firewall to a dynamic zone member host
-   did not need to match the interface specified when the host was
-   added to the zone. For example, if eth0:1.2.3.4 is added to dynamic
-   zone Z then traffic out of any firewall interface to 1.2.3.4 will
-   obey the fw->Z policies and rules. This has been corrected.
-
-4) Shorewall uses the temporary chain 'fooX1234' to probe iptables for
-   detrmining which features are supported. Previously, if that chain
-   happened to exist when Shorewall was run, capabilities were
-   mis-detected.
-
-Problems corrected since 2.2.0 Beta 7:
-
-1) A typo in the /etc/shorewall/interfaces file has been corrected.
-
-2) The "add" and "delete" commands were generating incorrect policy 
-   matches when policy match support was available.
-
-Problems corrected since 2.2.0 Beta 8:
-
-1) The syntax of the add and delete command has been clarified in the
-   help summary produced by /sbin/shorewall.
-
-Problems corrected since 2.2.0 RC2
-
-1) The following error message could appear during "shorewall stop" or
-   "shorewall clear":
-
-	      local: lo:: bad variable name
-
-2) The rate limiting example in /etc/shorewall/rules has been changed
-   to use the RATE LIMIT column.
-
-3) Entries in /etc/shorewall/masq with the INTERFACE column containing
-   <ifname>:: would generate a progress message but would not generate
-   an iptables rule. 
-
-4) A misleading typo in /etc/shorewall/tunnels has been corrected.
-
-Problems corrected since 2.2.0 RC3
-
-1) Several problems associated with processing the IPSEC colummn in
-   /etc/shorewall/masq have been corrected.
-
-Problems corrected since 2.2.0 RC4
-
-1) Using some lightweight shells, valid entries in /etc/shorewall/ecn
-   produce startup errors.
+Shorewall 2.2.0
 
 -----------------------------------------------------------------------
 Issues when migrating from Shorewall 2.0 to Shorewall 2.2:
@@ -245,7 +27,7 @@ Issues when migrating from Shorewall 2.0 to Shorewall 2.2:
 
 	shorwall-<version>.lrp
 
-    Beginning with 2.1, that file will now be named:
+    Beginning with 2.2, that file will now be named:
 
 	shorewall-lrp-<version>.tgz
 
@@ -258,7 +40,7 @@ Issues when migrating from Shorewall 2.0 to Shorewall 2.2:
 
     Example from Shorewall FAQ #1:
 
-    Prior to Shorewall 2.1:
+    Prior to Shorewall 2.2:
 
 	  /etc/shorewall/interfaces
 
@@ -269,7 +51,7 @@ Issues when migrating from Shorewall 2.0 to Shorewall 2.2:
 		DNAT	loc	loc:192.168.1.12	tcp	80 \
 			-	130.252.100.69:192.168.1.254
 
-    Shorewall 2.1 and Later:
+    Shorewall 2.2 and Later:
 
 	  /etc/shorewall/interfaces
 

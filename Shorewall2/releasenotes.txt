@@ -10,6 +10,19 @@ Problems Corrected since 2.0.2
 2) The /var/lib/shorewall/restore script did not load the kernel
    modules specified in /etc/shorewall/modules.
 
+3) Specifying a null common action in /etc/shorewall/actions (e.g.,
+   :REJECT) results in a startup error.
+
+4) If /var/lib/shorewall does not exist, shorewall start fails.
+
+5) DNAT rules with a dynamic source zone don't work properly. When
+   used, these rules cause the rule to be checked against ALL input,
+   not just input from the designated zone.
+
+6) The install.sh script reported installing some files in
+   /etc/shorewall when the files were actually installed in
+   /usr/share/shorewall.
+
 -----------------------------------------------------------------------
 Issues when migrating from Shorewall 2.0.2 to Shorewall 2.0.3:
 

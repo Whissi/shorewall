@@ -3049,12 +3049,8 @@ process_rule() # $1 = target
 	    [ -n "$ratelimit" ] && fatal_error "Rate Limiting not available with DROP"
 	    ;;
 	REJECT)
-	    [ -n "$ratelimit" ] && fatal_error "Rate Limiting not available with REJECT"
-	    target=reject
 	    ;;
 	CONTINUE)
-	    [ -n "$ratelimit" ] && fatal_error "Rate Limiting not available with CONTINUE"
-	    target=RETURN
 	    ;;
 	DNAT)
 	    target=ACCEPT

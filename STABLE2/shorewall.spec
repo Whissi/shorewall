@@ -1,5 +1,5 @@
 %define name shorewall
-%define version 2.0.2f
+%define version 2.0.3
 %define release 1
 %define prefix /usr
 
@@ -68,7 +68,7 @@ if [ $1 = 0 ]; then
 fi
 
 %files
-/etc/init.d/shorewall
+%attr(0544,root,root) /etc/init.d/shorewall
 %attr(0700,root,root) %dir /etc/shorewall
 %attr(0700,root,root) %dir /usr/share/shorewall
 %attr(0700,root,root) %dir /var/lib/shorewall
@@ -141,16 +141,14 @@ fi
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel
 
 %changelog
-* Thu Jun 03 2004 Tom Eastep tom@shorewall.net
-- Updated for 2.0.2f-1
-* Sat May 29 2004 Tom Eastep tom@shorewall.net
-- Updated for 2.0.2e-1
-* Thu May 27 2004 Tom Eastep tom@shorewall.net
-- Updated for 2.0.2d-1
-* Fri May 21 2004 Tom Eastep tom@shorewall.net
-- Updated for 2.0.2c-1
-* Mon May 17 2004 Tom Eastep tom@shorewall.net
-- Updated for 2.0.2b-1
+* Wed Jun 23 2004 Tom Eastep tom@shorewall.net
+- Updated to 2.0.2-1
+* Sat Jun 19 2004 Tom Eastep tom@shorewall.net
+- Updated to 2.0.2-0RC2
+* Tue Jun 15 2004 Tom Eastep tom@shorewall.net
+- Updated to 2.0.2-0RC1
+* Mon Jun 14 2004 Tom Eastep tom@shorewall.net
+- Added %attr spec for /etc/init.d/shorewall
 * Sat May 15 2004 Tom Eastep tom@shorewall.net
 - Updated for 2.0.2a-1
 * Thu May 13 2004 Tom Eastep tom@shorewall.net

@@ -1,79 +1,36 @@
-Changes since 2.0.1
+Changes since 2.0.2
 
-1) Reformat the code in define_firewall().
+1) Remove restore files; don't generate them for non-statechanging
+   commands.
 
-2) Reimplement dynamic zones.
+2) Restore file now loads kernel modules.
 
-3) Tweak new dynamic zone implementation.
+3) Minor tweaks to the restore mechanism.
 
-4) Implement CONFIG_PATH.
+4) Allow "!" in accounting rules.
 
-5) Apply Stijn Jonker's fix for CONFIG_PATH.
+5) Backport bug fixes from stable (/var/lib/shorewall existence and
+   null common action).
 
-6) Restore logic to make 'find_file' check for SHOREWALL_DIR separately.
+6) Add lots of overhead to [re]start in order to catch typing errors.
 
-7) Allow CONFIG_PATH to be inherited.
+7) Correct reporting of installation directory in install.sh.
 
-8) Fix ensure_config_path call.
+8) Load kernel modules before detecting capabilities.
 
-9) Make LOCAL and ALL INTERFACES independent in the nat file.
+9) Added the 'rejectNonSyn' standard built-in action.
 
-10) Add "ko.gz" to the vast list of module suffixes that distributions
-    have invented.
+10) Merged Tuomo Soini's patch to the install script.
 
-11) Update the bogons file
+11) Correct brain-cramp in module loading fix (8 above).
 
-12) Added example for log rate limiting knobs in shorewall.conf.
+12) Add 'key' to sample tunnel file.
 
-13) Fix init.debian.sh.
+13) Allow multiple saved configurations.
 
-14) Implement the -q option.
+14) Add %attr spec to /etc/init.d/shorewall in the .spec file.
 
-15) Add saved configuration support (iptables-save/iptables-restore
-    integration).
+15) Fix rules that have bridge ports in both SOURCE and DEST. Update
+    comments in the rules file WRT "all" in SOURCE or DEST.
 
-16) Use modprobe if it is available.
-
-17) Lots of fixes to 'save'
-
-18) 'shorewall forget'
-
-19) SNAT/MASQUERADE by proto/port(s)
-
-20) Shorewall 2.0.2 Beta 1 changes.
-
-21) Fix ALL INTERFACES column parsing.
-
-22) Correct "shorewall delete" processing.
-
-23) Apply Alex Wilms's patch for install.sh
-
-24) Add ACCEPT+ and NONAT targets.
-
-25) Added 'initialized' extension script.
-
-26) Renamed 'initialized' to 'initdone'
-
-27) Applied Stijn Jonker's fix for "shorewall add"
-
-28) Correct typo that broke "shorewall delete"
-
-29) Apply Stijn Jonker's -q fix.
-
-30) Remove restore-$$ files.
-
-31) Save 'loadmodule' commands in /var/lib/shorewall/restore-base.
-
-32) Correct null common action handling.
-
-33) Create /var/lib/shorewall if it doesn't exist.
-
-34) Fix dynamic in chains in the nat table.
-
-35) Load modules before detecting capabilities.
-
-36) Fix 'newnotsyn' in the hosts file.
-
-37) Fix double LOG rules in actions.
-
-38) Another kernel module disaster fixed.
+16) Pass INVALID icmp packets through the blacklisting chains.

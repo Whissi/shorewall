@@ -22,7 +22,7 @@
 #       Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
 #
 
-VERSION=2.0.2f
+VERSION=2.0.3
 
 usage() # $1 = exit status
 {
@@ -87,10 +87,19 @@ install_file_with_backup() # $1 = source $2 = target $3 = mode
 # RUNLEVELS is the chkconfig parmeters for firewall
 # ARGS is "yes" if we've already parsed an argument
 #
-DEST="/etc/init.d"
-INIT="shorewall"
-RUNLEVELS=""
 ARGS=""
+
+if [ -z "$DEST" ] ; then
+	DEST="/etc/init.d"
+fi
+
+if [ -z "$INIT" ] ; then
+	INIT="shorewall"
+fi
+
+if [ -z "$RUNLEVELS" ] ; then
+	RUNLEVELS=""
+fi
 
 if [ -z "$OWNER" ] ; then
 	OWNER=root
@@ -402,7 +411,7 @@ echo "Bogon file installed as ${PREFIX}/usr/share/shorewall/bogons"
 #
 install_file_with_backup configpath ${PREFIX}/usr/share/shorewall/configpath 0600
 echo
-echo " Default config path file installed as ${PREFIX}/etc/shorewall/configpath"
+echo " Default config path file installed as ${PREFIX}/usr/share/shorewall/configpath"
 #
 # Install the init file
 #
@@ -500,7 +509,7 @@ for f in action.* ; do
     else
 	run_install -o $OWNER -g $GROUP -m 0600 $f ${PREFIX}/usr/share/shorewall/$f
 	echo
-	echo "Action ${f#*.} file installed as ${PREFIX}/etc/shorewall/$f"
+	echo "Action ${f#*.} file installed as ${PREFIX}/usr/share/shorewall/$f"
     fi
 done
 #

@@ -76,14 +76,17 @@
 #						   listed address(es)
 #	   shorewall allow <address> ...	   Reenable address(es) previously
 #						   disabled with "drop" or "reject"
-#	   shorewall save			   Save the list of "rejected" and
+#	   shorewall save [ <file> ]		   Save the list of "rejected" and
 #						   "dropped" addresses so that it will
 #						   be automatically reinstated the
 #						   next time that Shorewall starts.
 #                                                  Save the current state so that 'shorewall
 #                                                  restore' can be used.
 #
-#          shorewall forget                        Discard the data saved by 'shorewall save'
+#          shorewall forget [ <file> ]             Discard the data saved by 'shorewall save'
+#
+#          shorewall restore [ <file> ]            Restore the state of the firewall from
+#                                                  previously saved information.
 #
 #          shorewall ipaddr [ <address>/<cidr> | <address> <netmask> ]
 #
@@ -132,6 +135,19 @@ showchain() # $1 = name of chain
 }
 
 #
+# Validate the value of RESTOREFILE
+#
+validate_restorefile() # $* = label
+{
+    case $RESTOREFILE in
+	*/*)
+	    echo "   ERROR: $@ must specify a simple file name: $RESTOREFILE" >&2
+	    exit 2
+	    ;;
+    esac    
+}
+
+#
 # Set the configuration variables from shorewall.conf
 #
 get_config() {
@@ -160,10 +176,16 @@ get_config() {
 
     if [ -n "$SHOREWALL_SHELL" ]; then
 	if [ ! -e "$SHOREWALL_SHELL" ]; then
-	    echo "The program specified in SHOREWALL_SHELL does not exist or is not executable" >&2
+	    echo "   ERROR: The program specified in SHOREWALL_SHELL does not exist or is not executable" >&2
 	    exit 2
 	fi
     fi
+
+    [ -n "$RESTOREFILE" ] || RESTOREFILE=restore
+
+    validate_restorefile RESTOREFILE
+
+    export RESTOREFILE
 
 }
 
@@ -535,7 +557,7 @@ help()
 #
 usage() # $1 = exit status
 {
-    echo "Usage: $(basename $0) [debug|trace] [nolock] [-c <directory>] [ -x ] [ -q ] <command>"
+    echo "Usage: $(basename $0) [debug|trace] [nolock] [-c <directory>] [ -x ] [ -q ] [ -f ] <command>"
     echo "where <command> is one of:"
     echo "   add <interface>[:<host>] <zone>"
     echo "   allow <address> ..."
@@ -543,7 +565,7 @@ usage() # $1 = exit status
     echo "   clear"
     echo "   delete <interface>[:<host>] <zone>"
     echo "   drop <address> ..."
-    echo "   forget"
+    echo "   forget [ <file name> ]"
     echo "   help [ <command > | host | address ]"
     echo "   hits"
     echo "   ipcalc [ <address>/<vlsm> | <address> <netmask> ]"
@@ -554,8 +576,8 @@ usage() # $1 = exit status
     echo "   reject <address> ..."
     echo "   reset"
     echo "   restart"
-    echo "   restore"
-    echo "   save"
+    echo "   restore [ <file name> ]"
+    echo "   save [ <file name> ]"
     echo "   show [<chain> [ <chain> ... ]|classifiers|connections|log|nat|tc|tos]"
     echo "   start"
     echo "   stop"
@@ -735,11 +757,14 @@ case "$1" in
 	[ $# -ne 1 ] && usage 1
 	get_config
 	if [ -n "$FAST" ]; then
-	    if [ -f /var/lib/shorewall/restore ]; then
+	    
+	    RESTOREPATH=/var/lib/shorewall/$RESTOREFILE
+
+	    if [ -x $RESTOREPATH ]; then
 		echo Restoring Shorewall...
-		. /var/lib/shorewall/restore
+		$RESTOREPATH
 		date > $STATEDIR/restarted
-		echo Shorewall restored
+		echo Shorewall restored from $RESTOREPATH
 	    else
 		exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock start
 	    fi
@@ -963,28 +988,57 @@ case "$1" in
 	;;
     save)
     	[ -n "$debugging" ] && set -x
-	[ $# -ne 1 ] && usage 1
+
+	get_config
+
+	case $# in
+	1)
+	    ;;
+	2)
+	    RESTOREFILE="$2"
+	    validate_restorefile '<restore file>'
+	    ;;
+	*)
+	    usage 1
+	    ;;
+	esac
+
+	RESTOREPATH=/var/lib/shorewall/$RESTOREFILE
+
 	mutex_on
 
 	if qt iptables -L shorewall -n; then
-	    [ -d /var/lib/shorewall ] || mkdir /var/lib/shorewall
+	    [ -d /var/lib/shorewall ] || mkdir -p /var/lib/shorewall
 
-	    if iptables -L dynamic -n > /var/lib/shorewall/save; then
-		echo "   Dynamic Rules Saved"
-		if [ -f /var/lib/shorewall/restore-base ]; then
-		    cp -f /var/lib/shorewall/restore-base /var/lib/shorewall/restore-$$
-		    if iptables-save >> /var/lib/shorewall/restore-$$ ; then
-			echo EOF >> /var/lib/shorewall/restore-$$
-			mv -f /var/lib/shorewall/restore-$$ /var/lib/shorewall/restore
-			chmod +x /var/lib/shorewall/restore
-			echo "   Currently-running Configuration Saved"
-                    else
-			rm -f /var/lib/shorewall/restore-$$
-			echo "   ERROR: Currently-running Configuration Not Saved"
-		    fi
-		fi
+	    if [ -f $RESTOREPATH -a ! -x $RESTOREPATH ]; then
+		echo "   ERROR: $RESTOREPATH exists and is not a saved Shorewall configuration"
 	    else
-		echo "Error Saving the Dynamic Rules"
+		case $RESTOREFILE in
+		    save|restore-base)
+			echo "   ERROR: Reserved file name: save"
+			;;
+		    *)
+			if iptables -L dynamic -n > /var/lib/shorewall/save; then
+			    echo "   Dynamic Rules Saved"
+			    if [ -f /var/lib/shorewall/restore-base ]; then
+				cp -f /var/lib/shorewall/restore-base /var/lib/shorewall/restore-$$
+				if iptables-save >> /var/lib/shorewall/restore-$$ ; then
+				    echo __EOF__ >> /var/lib/shorewall/restore-$$
+				    mv -f /var/lib/shorewall/restore-$$ $RESTOREPATH
+				    chmod +x $RESTOREPATH
+				    echo "   Currently-running Configuration Saved to $RESTOREPATH"
+				else
+				    rm -f /var/lib/shorewall/restore-$$
+				    echo "   ERROR: Currently-running Configuration Not Saved"
+				fi
+			    else
+				echo "   ERROR: /var/lib/shorewall/restore-base does not exist"
+			    fi
+			else
+			    echo "Error Saving the Dynamic Rules"
+			fi
+			;;
+		esac
 	    fi
 	else
 	    echo "Shorewall isn't started"
@@ -992,9 +1046,28 @@ case "$1" in
 	mutex_off
 	;;
     forget)
-	rm -f /var/lib/shorewall/restore
-	rm -f /var/lib/shorewall/save
-	echo "   Previously saved information discarded"
+	get_config
+	case $# in
+	1)
+	    ;;
+	2)
+	    RESTOREFILE="$2"
+	    validate_restorefile '<restore file>'
+	    ;;
+	*)
+	    usage 1
+	    ;;
+	esac
+
+
+	RESTOREPATH=/var/lib/shorewall/$RESTOREFILE
+
+	if [ -x $RESTOREPATH ]; then
+	    rm -f $RESTOREPATH
+	    echo "    $RESTOREPATH removed"
+	elif [ -f $RESTOREPATH ]; then
+	    echo "   ERROR: $RESTOREPATH is not a restore script"
+	fi
 	;;
     ipcalc)
     	[ -n "$debugging" ] && set -x
@@ -1032,12 +1105,26 @@ case "$1" in
 	esac
 	;;
     restore)
-	if [ -f /var/lib/shorewall/restore ]; then
+	get_config
+	case $# in
+	1)
+	    ;;
+	2)
+	    RESTOREFILE="$2"
+	    validate_restorefile '<restore file>'
+	    ;;
+	*)
+	    usage 1
+	    ;;
+	esac
+
+	RESTOREPATH=/var/lib/shorewall/$RESTOREFILE
+
+	if [ -x $RESTOREPATH ]; then
 	    echo Restoring Shorewall...
-	    . /var/lib/shorewall/restore
-            echo Shorewall restored
+	    $RESTOREPATH && echo "Shorewall restored from /var/lib/shorewall/$RESTOREFILE"
 	else
-	    echo "File /var/lib/shorewall/restore: file not found"
+	    echo "File /var/lib/shorewall/$RESTOREFILE: file not found"
             exit 2
         fi
         ;;

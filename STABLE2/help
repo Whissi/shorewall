@@ -117,9 +117,9 @@ drop)
 	;;
 
 forget)
-	echo "forget: forget
-    Deletes /var/lib/shorewall/save and /var/lib/shorewall/restore. Those
-    files are created by the 'shorewall save' command
+	echo "forget: forget [ <file name> ]
+    Deletes /var/lib/shorewall/<file name>. If no <file name> is given then
+    the file specified by RESTOREFILE in shorewall.conf is removed.
 
     See also \"help save\""
 	;;
@@ -194,18 +194,22 @@ restart)
 	;;
 
 restore)
-	echo "restore: restore
-    Restore Shorewall to its last state saved using the 'save' command
-    Existing connections are maintained.
+	echo "restore: restore [ <file name> ]
+    Restore Shorewall to a state saved using the 'save' command
+    Existing connections are maintained. The <file name> names a restore file in 
+    /var/lib/shorewall created using "shorewall save"; if no <file name> is given 
+    then Shorewall will be restored from the file specified by the RESTOREFILE
+    option in shorewall.conf.
 
     See also \"help save\" and \"help forget\""
 	;;
 
 save)
-	echo "save: save
+	echo "save: save [ <file name> ]
     The dynamic data is stored in /var/lib/shorewall/save. The state of the 
-    firewall is stored in /var/lib/shorewall/restore for use by the 'shorewall restore'
-    and 'shorewall -f start' commands.
+    firewall is stored in /var/lib/shorewall/<file name> for use by the 'shorewall restore'
+    and 'shorewall -f start' commands. If <file name> is not given then the state is saved
+    in the file specified by the RESTOREFILE option in shorewall.conf.
 
     Shorewall allow, drop, rejct and save implement dynamic blacklisting.
 
@@ -240,8 +244,9 @@ start)
     Start shorewall.  Existing connections through shorewall managed
     interfaces are untouched.  New connections will be allowed only
     if they are allowed by the firewall rules or policies.
-    If \"-q\" is specified, less detain is displayed making it easier to spot warnings
-    If \"-f\" is specified, the last saved configuraton if any will be restored"
+    If \"-q\" is specified, less detail is displayed making it easier to spot warnings
+    If \"-f\" is specified, the saved configuration specified by the RESTOREFILE option
+    in shorewall.conf will be restored if that saved configuration exists"
 	;;
 
 stop)

@@ -1,21 +1,6 @@
-Shorewall 2.0.2f
+Shorewall 2.0.3 RC2
 
 ----------------------------------------------------------------------
-Problems Corrected since 2.0.1
-
-1) The /etc/init.d/shorewall script installed on Debian by install.sh
-   failed silently due to a missing file
-   (/usr/share/shorewall/wait4ifup). That file is not part of the
-   normal Shorewall distribution and is provided by the Debian
-   maintainer.
-
-2) A meaningless warning message out of the proxyarp file processing
-   has been eliminated.
-
-3) The "shorewall delete" command now correctly removes all dynamic 
-   rules pertaining to the host(s) being deleted. Thanks to Stefan 
-   Engel for this correction.
-
 Problems Corrected since 2.0.2
 
 1) The 'firewall' script is not purging temporary restore files in
@@ -34,222 +19,139 @@ Problems Corrected since 2.0.2
    used, these rules cause the rule to be checked against ALL input,
    not just input from the designated zone.
 
-6) Shorewall checks netfilter capabilities before loading kernel
+6) The install.sh script reported installing some files in
+   /etc/shorewall when the files were actually installed in
+   /usr/share/shorewall.
+
+7) Shorewall checks netfilter capabilities before loading kernel
    modules. Hence if kernel module autoloading isn't enabled, the
    capabilities will be misdetected.
 
-7) The 'newnotsyn' option in /etc/shorewall/hosts has no effect.
+8) The 'newnotsyn' option in /etc/shorewall/hosts has no effect.
 
-8) When used within an action, the LOG target produces two logging
-   rules.
+9) The file /etc/init.d/shorewall now gets proper ownership when the
+   RPM is built by a non-root user.
 
-9) Kernel Modules loading is still screwed up.
+10) Rules that specify bridge ports in both the SOURCE and DEST
+    columns no longer cause "shorewall start" to fail.
+
+11) Comments in the rules file have been added to advise users that
+    "all" in the SOURCE or DEST column does not affect intra-zone
+    traffic.
+
+12) With BLACKLISTNEWONLY=Yes, ICMP packets with state INVALID are now
+    passed through the blacklisting chains. Without this change, it is
+    not possible to blacklist hosts that are mounting certain types of
+    ICMP-based DOS attacks.
+
 -----------------------------------------------------------------------
-Issues when migrating from Shorewall 2.0.1 to Shorewall 2.0.2:
+Issues when migrating from Shorewall 2.0.2 to Shorewall 2.0.3:
 
-1) Extension Scripts
+1) The 'dropNonSyn' standard builtin action has been replaced with the
+   'dropNotSyn' standard builtin action. The old name can still be used
+   but will generate a warning.
 
-   In order for extension scripts to work properly with the new
-   iptables-save/restore integration (see New Feature 1 below), some
-   change may be required to your extension scripts.
-
-   If your extension scripts are executing commands other than iptables
-   then those commands must also be written to the restore file (a
-   temporary file in /var/lib/shorewall that is renamed
-   /var/lib/shorewall/restore-base at the end of the operation).
-
-   The following functions should be of help:
-
-   A. save_command() -- saves the passed command to the restore file.
-
-   Example:
-
-    save_command echo Operation Complete
-
-   That command would simply write "echo Operation Complete" to the
-   restore file.
-
-   B. run_and_save_command() -- saves the passed command to the restore
-   file then executes it. The return value is the exit status of the
-   command.
-
-   Example: 
-
-     run_and_save_command "echo 1 > /proc/sys/net/ipv4/icmp_echo_ignore_all"
-
-   Note that as in this example, when the command involves file
-   redirection then the entire command must be enclosed in quotes. This
-   applies to all of the functions described here.
-
-   C. ensure_and_save_command() -- runs the passed command. If the
-   command fails, the firewall is restored to it's prior saved state
-   and the operation is terminated. If the command succeeds, the
-   command is written to the restore file.
-
-2) Dynamic Zone support.
-
-   If you don't need to use the "shorewall add" and "shorewall delete"
-   commands, you should set DYNAMIC_ZONES=No in
-   /etc/shorewall/shorewall.conf.
-
+-----------------------------------------------------------------------
 New Features:
 
-1) Shorewall has now been integrated with
-   iptables-save/iptables-restore to provide very fast start and
-   restart. The elements of this integration are as follows:
+1) Shorewall now supports multiple saved configurations.
 
-   a) The 'shorewall save' command now saves the current configuration
-      in addition to the current dynamic blacklist. If you have
-      dynamic zones, you will want to issue 'shorewall save' when the
-      zones are empty or the current contents of the zones will be
-      restored by the 'shorewall restore' and 'shorewall -f start'
-      commands.
+   a) The default saved configuration (restore script) in
+      /var/lib/shorewall is now specified using the RESTOREFILE option
+      in shorewall.conf. If this variable isn't set then to maitain
+      backward compatibility, 'restore' is assumed.
+      
+      The value of RESTOREFILE must be a simple file name; no slashes
+      ("/") may be included.
+      
+   b)  The "save" command has been extended to be able to specify the
+      name of a saved configuration.
 
-   b) The 'shorewall restore' command has been added. This command
-      restores the configuration at the time of the last 'save'.
+	   shorewall save [ <file name> ]
 
-   c) The -f (fast) option has been added to 'shorewall start'. When
-      specified (e.g. 'shorewall -f start'), shorewall will perform a
-      'shorewall restore' if there is a saved configuration. If there
-      is no saved configuration, a normal 'shorewall start' is
-      performed.
+      The current state is saved to /var/lib/shorewall/<file name>. If
+      no <file name> is given, the configuration is saved to
+      the file determined by the RESTOREFILE setting.
 
-   d) The /etc/init.d/shorewall script now translates the 'start'
-      command into 'shorewall -f start' so that fast restart is
-      possible.
+   c) The "restore" command has been extended to be able to specify 
+      the name of a saved configuration:
 
-   e) When a state-changing command encounters an error and there is a
-      current saved configuration, that configuration will be restored
-      (currently, the firewall is placed in the 'stopped' state).
+	  shorewall restore [ <file name> ]
 
-   f) If you have previously saved the running configuration and want
-      Shorewall to discard it, use the 'shorewall forget' command.
+      The firewall state is restored from /var/lib/shorewall/<file
+      name>. If no <file name> is given, the firewall state is
+      restored from the file determined by the RESTOREFILE setting.
 
-   WARNING: iptables 1.2.9 is broken with respect to iptables-save;
-   If your kernel has connection tracking match support, you must
-   patch iptables 1.2.9 with the iptables patch availale from
-   the Shorewall errata page.
+   c) The "forget" command has changed. Previously, the command
+      unconditionally removed the /var/lib/shorewall/save file which
+      records the current dynamic blacklist. The "forget" command now
+      leaves that file alone.
 
-2) The previous implementation of dynamic zones was difficult to
-   maintain. I have changed the code to make dynamic zones optional
-   under the control of the DYNAMIC_ZONES option in
-   /etc/shorewall/shorewall.conf.
+      Also, the "forget" command has been extended to be able to
+      specify the name of a saved configuration:
 
-3) In earlier Shorewall 2.0 releases, Shorewall searches in order the
-   following directories for configuration files.
+	      shorewall forget [ <file name> ]
 
-   a) The directory specified in a 'try' command or specified using
-      the -c option.
+      The file /var/lib/shorewall/<file name> is removed. If no <file
+      name> is given, the file determined by the RESTOREFILE setting
+      is removed.
 
-   b) /etc/shorewall
+   d) The "shorewall -f start" command restores the state from the
+      file determined by the RESTOREFILE setting. 
 
-   c) /usr/share/shorewall
+2) "!" is now allowed in accounting rules.
 
-   In this release, the CONFIG_PATH option is added to shorewall.conf.
-   CONFIG_PATH contains a list of directory names separated by colons
-   (":"). If not set or set to a null value (e.g., CONFIG_PATH="") then
-   "CONFIG_PATH=/etc/shorewall:/usr/share/shorewall" is assumed.
+3) Interface names appearing within the configuration are now
+   verified. Interface names must match the name of an entry in
+   /etc/shorewall/interfaces (or if bridging is enabled, they must
+   match the name of an entry in /etc/shorewall/interfaces or the name
+   of a bridge port appearing in /etc/shorewall/hosts).
 
-   Now Shorewall searches for shorewall.conf according to the old
-   rules and for other configuration files as follows:
+4) A new 'rejNotSyn' built-in standard action has been added. This
+   action responds to "New not SYN" packets with an RST.
 
-   a) The directory specified in a 'try' command or specified using
-      the -c option.
+   The 'dropNonSyn' action has been superceded by the new 'dropNotSyn'
+   action. The old name will be accepted until the next major release
+   of Shorewall but will generate a warning.
 
-   b) Each directory in $CONFIG_PATH is searched in sequence.
+   Several new logging actions involving "New not SYN" packets have
+   been added:
 
-   In case it is not obvious, your CONFIG_PATH should include
-   /usr/share/shorewall and your shorewall.conf file must be in the
-   directory specified via -c or in a try command, in /etc/shorewall
-   or in /usr/share/shorewall.
+	logNewNotSyn  -- logs the packet with disposition = LOG
+	dLogNewNotSyn -- logs the packet with disposition = DROP
+	rLogNewNotSyn -- logs the packet with disposition = REJECT
 
-   For distribution packagers, the default CONFIG_PATH is set in
-   /usr/share/shorewall/configpath. You can customize this file to
-   have a default that differs from mine.
+   The packets are logged at the log level specified in the
+   LOGNEWNOTSYN option in shorewall.conf. If than option is empty or
+   not specified, then 'info' is assumed.
 
-4) Previously, in /etc/shorewall/nat a Yes (or yes) in the LOCAL column
-   would only take effect if the ALL INTERFACES column also contained
-   Yes or yes. Now, the LOCAL columns contents are treated
-   independently of the contents of the ALL INTERFACES column.
+   Examples (In all cases, set NEWNOTSYN=Yes in shorewall.conf):
 
-5) The folks at Mandrake have created yet another kernel module
-   naming convention (module names end in "ko.gz"). As a consequence,
-   beginning with this release, if MODULE_SUFFIX isn't specified in
-   shorewall.conf, then the default value is "o gz ko o.gz ko.gz".
+   A: To simulate the behavior of NEWNOTSYN=No:
 
-6) An updated bogons file is included in this release.
+      a) Add 'NoNewNotSyn' to /etc/shorewall/actions.
+      b) Create /etc/shorewall/action.NoNewNotSyn containing:
 
-7) In /etc/shorewall/rules and in action files generated from
-   /usr/share/shorewall/action.template, rules that perform logging can
-   specify an optional "log tag". A log tag is a string of alphanumeric
-   characters and is specified by following the log level with ":" and
-   the log tag.
+	    dLogNotSyn
+	    dropNotSyn
 
-   Example:
+      c) Early in your rules file, place:
 
-	ACCEPT:info:ftp	net	dmz	tcp	21
+	 NoNewNotSyn   all   all     tcp
 
-   The log tag is appended to the log prefix generated by the LOGPREFIX
-   variable in /etc/shorewall/conf. If "ACCEPT:info" generates the log
-   prefix "Shorewall:net2dmz:ACCEPT:" then "ACCEPT:info:ftp" will
-   generate "Shorewall:net2dmz:ACCEPT:ftp " (note the trailing blank). 
-   The maximum length of a log prefix supported by iptables is 29
-   characters; if a larger prefix is generated, Shorewall will issue a
-   warning message and will truncate the prefix to 29 characters.
+   B: Drop 'New not SYN' packets from the net only. Don't log them.
 
-8) A new "-q" option has been added to /sbin/shorewall commands. It
-   causes the start, restart, check and refresh commands to produce
-   much less output so that warning messages are more visible (when
-   testing this change, I discovered a bug where a bogus warning
-   message was being generated).
+      a) Early in your rules file, place:
 
-9) Shorewall now uses 'modprobe' to load kernel modules if that utility
-   is available in the PATH; otherwise, 'insmod' is used.
+         dropNotSyn    net	  all	tcp
 
-10) It is now possible to restrict entries in the /etc/shorewall/masq
-    file to particular protocols and destination port(s). Two new
-    columns (PROTO and PORT(S)) have been added to the file.
+5) Slackware users no longer have to modify the install.sh script
+   before installation. Tuomo Soini has provided a change that allows
+   the INIT and FIREWALL variables to be specified outside the script
+   as in:
 
-    Example:
+      DEST=/etc/rc.d INIT=rc.firewall ./install.sh
 
-    You want all outgoing SMTP traffic entering the firewall
-    on eth1 to be sent from eth0 with source IP address 
-    206.124.146.177. You want all other outgoing traffic 
-    from eth1 to be sent from eth0 with source IP address
-    206.124.146.176.
 
-	eth0	eth1	206.124.146.177	tcp	25
-	eth0	eth1	206.124.146.176
+ 
 
-    THE ORDER OF THE ABOVE TWO RULES IS SIGNIFICANT!!!!!
-
-    Assuming that 10.0.0.0/8 is the only host/network connected
-    to eth1, the progress message at "shorewall start" would be:
-
-    Masqueraded Networks and Hosts:
-       To 0.0.0.0/0 (tcp 25) from 10.0.0.0/8 through eth0 using 206.124.146.177
-       To 0.0.0.0/0 (all) from 10.0.0.0/8 through eth0 using 206.124.146.176
-
-11) Two new actions are available in the /etc/shorewall/rules file.
-
-    ACCEPT+    -- Behaves like ACCEPT with the exception that it exempts
-                  matching connections from subsequent DNAT[-] and
-                  REDIRECT[-] rules.
-
-    NONAT      -- Exempts matching connections from subsequent DNAT[-]
-                  and REDIRECT[-] rules.
-
-12) A new extension script 'initdone' has been added. This script is invoked
-    at the same point as the 'common' script was previously and is useful for
-    users who mis-used that script under Shorewall 1.x (the script was intended 
-    for adding rules to the 'common' chain but many users treated it as a script
-    for adding rules before Shorewall's).
-
-13) Installing/Upgrading Shorewall on Slackware has been
-    improved. Slackware users must use the tarball and must modify
-    settings in the install.sh script before running it as follows:
-
-    DEST="/etc/rc.d"
-    INIT="rc.firewall"
-
-    Thanks to Alex Wilms for helping with this change.

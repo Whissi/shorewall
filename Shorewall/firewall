@@ -572,9 +572,6 @@ determine_hosts() {
 		    interfaces="$interfaces $interface"
 		fi
 	    fi
-
-	    [ "${host#*:}" = "0.0.0.0/0" ] || \
-		eval ${zone}_is_complex=Yes
 	done
 
 	eval ${zone}_interfaces="\$interfaces"
@@ -4371,13 +4368,6 @@ activate_rules()
 	chain1=`rules_chain $FW $zone`
 	chain2=`rules_chain $zone $FW`
 
-	eval complex=\$${zone}_is_complex
-
-	if [ -n "$complex" ]; then
-	    frwd_chain=${zone}_frwd
-	    createchain $frwd_chain No
-	fi
-
 	echo "$FW $zone $chain1" >> ${STATEDIR}/chains
 	echo "$zone $FW $chain2" >> ${STATEDIR}/chains
 
@@ -4394,9 +4384,6 @@ activate_rules()
 	    addrulejump POSTROUTING `snat_chain $zone` -o $interface -d $subnet
 
 	    run_iptables -A `input_chain $interface` -s $subnet -j $chain2
-
-	    [ -n "$complex" ] && \
-		run_iptables -A `forward_chain $interface` -s $subnet -j $frwd_chain
 	done
 
 	for zone1 in $zones; do
@@ -4419,19 +4406,16 @@ activate_rules()
 	    
 	    for host in $source_hosts; do
 		interface=${host%:*}
+		subnet=${host#*:}
 
-		if [ -n "$complex" ]; then
-		    chain1=$frwd_chain
-		else
-		    chain1=`forward_chain $interface`
-		fi
+		chain1=`forward_chain $interface`
 
 		for host1 in $dest_hosts; do
 		    interface1=${host1%:*}
 		    subnet1=${host1#*:}
 
 		    if [ "$host" != "$host1" ] || list_search $host $routeback; then
-			run_iptables -A $chain1 -o $interface1 -d $subnet1 -j $chain
+			run_iptables -A $chain1 -s $subnet -o $interface1 -d $subnet1 -j $chain
 		    fi
 		done
 	    done

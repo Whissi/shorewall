@@ -26,6 +26,13 @@ Problems Corrected since version 1.4.6:
 4) Handling of the LOGUNCLEAN option in shorewall.conf has been
    corrected.
 
+5) In Shorewall 1.4.2, an optimization was added. This optimization
+   involved creating a chain named "<zone>_frwd" for most zones
+   defined using the /etc/shorewall/hosts file. It has since been
+   discovered that these new chains contain redundant rules in many
+   cases so that the "optimization" is less than optimal. As a result,
+   the optimization has been removed. 
+
 Migration Issues:
 
 None.

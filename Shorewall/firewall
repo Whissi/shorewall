@@ -310,7 +310,7 @@ havenatchain() # $1 = name of chain
 }
 
 #
-# Ensure that a chain exists (create it if it doesn't)
+# Ensure that a nat chain exists (create it if it doesn't)
 #
 ensurenatchain() # $1 = chain name
 {
@@ -493,7 +493,7 @@ determine_interfaces() {
     for zone in $zones; do
 	interfaces=`find_interfaces $zone`
 	interfaces=`echo $interfaces` # Remove extra trash
-	eval ${zone}_interfaces="\$interfaces"
+	eval ${zone}_interfaces=\"\$interfaces\"
     done
 }
     
@@ -585,7 +585,7 @@ validate_interfaces_file() {
 
 	for option in $options; do
 	    case $option in
-		dhcp|norfc1918|multi|tcpflags)
+		dhcp|norfc1918|tcpflags)
 		    ;;
 		routefilter|dropunclean|logunclean|blacklist|proxyarp|maclist|-)
 		    ;;
@@ -728,10 +728,6 @@ validate_rule() {
 		[ -n "$port" ] && dports="--icmp-type $port"
 		state=""
 		;;
-	    related|RELATED)
-		proto=
-		state="-m state --state RELATED"
-		;;
 	    *)
 		state=
 		[ -n "$port" ] && [ "x${port}" != "x-" ] && \
@@ -752,6 +748,12 @@ validate_rule() {
 	ACCEPT)
 	    [ -n "$servport" ] && \
 		startup_error "Server port may not be specified in an ACCEPT rule;"\
+                              "rule: \"$rule\""
+	    ;;
+	CONTINUE)
+	    target=RETURN
+	    [ -n "$servport" ] && \
+		startup_error "Server port may not be specified in a CONTINUE rule;"\
                               "rule: \"$rule\""
 	    ;;
 	LOG)
@@ -956,7 +958,7 @@ validate_rules() # $1 = name of rules file
 	expandv clients servers protocol ports cports address
 	case "$target" in
 
-	ACCEPT*|DROP*|REJECT*|DNAT*|REDIRECT*|LOG*)
+	ACCEPT*|DROP*|REJECT*|DNAT*|REDIRECT*|LOG*|CONTINUE*)
 	    rule="`echo $target $clients $servers $protocol $ports $cports $address`"
 	    validate_rule
 	    ;;
@@ -1261,8 +1263,10 @@ stop_firewall() {
 
     while read interface host; do
 	expandv interface host
-	[ "x$host" = "x-" ] && host=
-	hosts="$hosts $interface:${host:-0.0.0.0/0}"
+	[ "x$host" = "x-" ] && host=0.0.0.0/0
+	for h in `separate_list $host`; do
+	    hosts="$hosts $interface:$h"
+	done
     done < $TMP_DIR/routestopped
 
     for host in $hosts; do
@@ -1553,10 +1557,10 @@ setup_mac_lists() {
     #
     for interface in $maclist_interfaces; do
 	case $interface in
-	    eth*)
+	    eth*|wlan*)
 		;;
 	    *)
-		fatal_error "MAC verification is only supported on ethernet devices: $interface"
+		fatal_error "MAC verification is only supported on ethernet and 802.11b devices: $interface"
 		;;
 	esac
 
@@ -2156,10 +2160,6 @@ add_a_rule()
 		fatal_error "Port number not allowed with \"all\"; rule: \"$rule\""
 	    proto=
 	    ;;
-	related|RELATED)
-	    proto=
-	    state="-m state --state RELATED"
-	    ;;
 	*)
 	    state=
 	    [ -n "$port" ] && [ "x${port}" != "x-" ] && \
@@ -2443,9 +2443,9 @@ process_rules() # $1 = name of rules file
     }
 
     while read xtarget xclients xservers xprotocol xports xcports xaddress; do
-	case "$xtarget" in
+	case "${xtarget%:*}" in
 
-	    ACCEPT|ACCEPT:*|DROP|DROP:*|REJECT|REJECT:*|DNAT|DNAT-|DNAT:*|DNAT-:*|REDIRECT|REDIRECT:*|LOG|LOG:*)
+	    ACCEPT|DROP|REJECT|DNAT|DNAT|DNAT-|REDIRECT|LOG|CONTINUE)
 		expandv xclients xservers xprotocol xports xcports xaddress
 
 		if [ "x$xclients" = xall ]; then
@@ -3050,19 +3050,6 @@ setup_masq()
 }
 
 #
-# Setup Intrazone chain if appropriate
-#
-setup_intrazone() # $1 = zone
-{
-    eval hosts=\$${1}_hosts
-
-    if [ "$hosts" != "${hosts% *}" ] || \
-	have_interfaces_in_zone_with_option $1 multi
-    then
-	ensurechain ${1}2${1}
-    fi
-}
-#
 # Add a record to the blacklst chain
 #
 #   $source      = address match
@@ -3498,10 +3485,10 @@ add_common_rules() {
 
 	if [ -n "$LOGUNCLEAN" ]; then
             if [ "$LOGUNCLEAN" = ULOG ]; then
-		logoptions="-j ULOG $LOGPARAMS --ulog-prefix Shorewall:badpkt:DROP:"
+		logoptions="-j ULOG $LOGPARMS --ulog-prefix Shorewall:badpkt:DROP:"
 		logoptions="$logoptions --log-ip-options"
 	    else
-		logoptions="-j LOG $LOGPARAMS --log-prefix Shorewall:badpkt:DROP:"
+		logoptions="-j LOG $LOGPARMS --log-prefix Shorewall:badpkt:DROP:"
 		logoptions="$logoptions --log-level $LOGUNCLEAN --log-ip-options"
 	    fi
 
@@ -3530,10 +3517,10 @@ add_common_rules() {
 	[ -z"$LOGUNCLEAN" ] && LOGUNCLEAN=info
 
 	if [ "$LOGUNCLEAN" = ULOG ]; then
-	    logoptions="-j ULOG $LOGPARAMS --ulog-prefix Shorewall:logpkt:LOG:"
+	    logoptions="-j ULOG $LOGPARMS --ulog-prefix Shorewall:logpkt:LOG:"
 	    logoptions="$logoptions --log-ip-options"
 	else
-	    logoptions="-j LOG $LOGPARAMS --log-prefix Shorewall:logpkt:LOG:"
+	    logoptions="-j LOG $LOGPARMS --log-prefix Shorewall:logpkt:LOG:"
 	    logoptions="$logoptions --log-level $LOGUNCLEAN --log-ip-options"
 	fi
 
@@ -3776,11 +3763,11 @@ apply_policy_rules() {
 	fi
 
     done
+
     #
     # Add policy rules to canonical chains
     #
     for zone in $FW $zones; do
-	setup_intrazone $zone
 	for zone1 in $FW $zones; do
 	    chain=${zone}2${zone1}
 	    if havechain $chain; then
@@ -3845,8 +3832,6 @@ activate_rules()
 	addnatjump POSTROUTING `output_chain $interface` -o $interface
     done
 
-    multi_interfaces=`find_interfaces_by_option multi`
-
     > ${STATEDIR}/chains
     > ${STATEDIR}/zones
 
@@ -3896,14 +3881,14 @@ activate_rules()
 		chain1=`forward_chain $interface`
 		
 		if [ -n "$have_canonical" ]; then
-		    multi=yes
+		    bounce=yes
 		else
 		    case $interface in
 			*+*)
-			    multi=yes
+			    bounce=yes
 			    ;;
 			*)
-			    list_search $interface $multi_interfaces && multi=yes || multi=
+			    bounce=
 			    ;;
 		    esac
 		fi
@@ -3912,9 +3897,8 @@ activate_rules()
 		    interface1=${host1%:*}
 		    subnet1=${host1#*:}
 
-		    if [ $interface != $interface1 -o -n "$multi" ]; then
-			run_iptables -A $chain1 -s $subnet \
-			    -o $interface1 -d $subnet1 -j $chain
+		    if [ $interface != $interface1 -o -n "$bounce" ]; then
+			run_iptables -A $chain1 -s $subnet -o $interface1 -d $subnet1 -j $chain
 		    fi
 		done
 	    done
@@ -4053,6 +4037,8 @@ check_config() {
 	
     validate_hosts_file
 		
+    validate_bounce_file
+
     echo "Determining Hosts in Zones..."
 
     determine_interfaces
@@ -4204,7 +4190,19 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
     #
     # If the zone passed in the command has a dnat chain then insert a rule in
     # the nat table PREROUTING chain to jump to that chain when the source
-    # matches the new host(s)
+    # matches the new host(s)#
+# Setup Intrazone chain if appropriate
+#
+setup_intrazone() # $1 = zone
+{
+    eval hosts=\$${1}_hosts
+
+    if have_interfaces_in_zone_with_option $1 multi; then
+	ensurechain ${1}2${1}
+    fi
+}
+
+
     #
     chain=${zone}_dnat
 

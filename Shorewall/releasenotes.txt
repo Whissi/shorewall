@@ -1,6 +1,6 @@
 This is a major release of Shorewall.
 
-Function from 1.3 that has been omitted from this version include:
+Function from 1.3 that has been omitted from this version includes:
 
 1) The MERGE_HOSTS variable in shorewall.conf is no longer
    supported. Shorewall 1.4 behavior is the same as 1.3 with
@@ -25,6 +25,20 @@ Function from 1.3 that has been omitted from this version include:
    supported. Shorewall 1.4 behavior is the same as 1.3 with
    ALLOWRELATED=Yes.
 
+7. The 'multi' interface option is no longer supported. Shorewall will
+   generate rules for sending packets back out the same interface
+   that they arrived on in two cases:
+
+   a) There is an _explicit_ policy for the source zone to the
+   destination zone. An explicit policy names both zones and does not
+   use the 'all' reserved word.
+
+   b) There are one or more rules for traffic for the source zone to
+   or from the destination zone including rules that use the 'all'
+   reserved word. Exception: If the source and the destination are
+   the same zone then the rule must be explicit - it must name the zone
+   in both the SOURCE and DESTINATION columns.
+
 Changes for 1.4 include:
 
 1. shorewall.conf has been completely reorganized into logical
@@ -38,9 +52,16 @@ Changes for 1.4 include:
 4. Late arriving DNS replies are now silently dropped in the common
    chain by default.
 
-5. In addition to behaving like OLD_PING_HANDLING=No, Shorewall 2.0 no
+5. In addition to behaving like OLD_PING_HANDLING=No, Shorewall 1.4 no
    longer unconditionally accepts outbound ICMP packets. So if you want
    to 'ping' from the firewall, you will need the appropriate rule or
-   policy. 
+   policy.
+
+6. CONTINUE is now a valid action for a rule (/etc/shorewall/rules).
+
+7. 802.11b devices with names of the form wlan<n> now support the
+   'maclist' option.
+
+
 
  

@@ -20,6 +20,20 @@
 #		     This may be qualified by adding the character
 #                    ":" followed by a destination host or subnet.
 #
+#		     If you wish to inhibit the action of ADD_SNAT_ALIASES
+#		     for this entry then include the ":" but omit the digit:
+#
+#				eth0:
+#				eth2::192.0.2.32/27
+#
+#		     Normally Masq/SNAT rules are evaluated after those for
+#		     one-to-one NAT (/etc/shorewall/nat file). If you want
+#		     the rule to be applied before one-to-one NAT rules,
+#		     prefix the interface name with "+":
+#
+#			+eth0
+#			+eth0:192.0.2.32/27
+#			+eth0:2
 #
 #	SUBNET -- Subnet that you wish to masquerade. You can specify this as
 #		  a subnet or as an interface. If you give the name of an
@@ -130,5 +144,5 @@
 #
 ###############################################################################
 #INTERFACE	        SUBNET		ADDRESS		PROTO	PORT(S)
-eth0                    eth1
+eth0			eth1
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE

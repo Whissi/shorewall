@@ -1907,6 +1907,7 @@ add_nat_rule() {
 			log_rule $loglevel $OUTPUT $logtarget -t nat \
 			    `fix_bang $proto $cli $sports -d $adr $multiport $dports`
 		    fi
+
 		    run_iptables2 -t nat -A OUTPUT $proto $sports -d $adr $multiport $dports -j $target1
 		done
 	    fi

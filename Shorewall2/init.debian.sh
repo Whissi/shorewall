@@ -7,7 +7,6 @@ WAIT_FOR_IFUP=/usr/share/shorewall/wait4ifup
 INITLOG=/var/log/shorewall-init.log
 
 test -x $SRWL || exit 0
-test -x $WAIT_FOR_IFUP || exit 0
 test -n $INITLOG || {
 	echo "INITLOG cannot be empty, please configure $0" ; 
 	exit 1;
@@ -66,10 +65,17 @@ fi
 wait_for_pppd () {
 	if [ "$wait_interface" != "" ]
 	then
+	    if [ -f $WAIT_FOR_IFUP ]
+	    then
 		for i in $wait_interface
 		do
 			$WAIT_FOR_IFUP $i 90
 		done
+	    else
+		echo "$WAIT_FOR_IFUP: File not found" >> $INITLOG
+		echo_notdone
+		exit 2
+	    fi
 	fi
 }
 

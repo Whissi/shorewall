@@ -1159,7 +1159,7 @@ find_hosts_by_option() # $1 = option
 
     for interface in $all_interfaces; do
 	eval options=\$`chain_base ${interface}`_options
-	list_search $options && \
+	list_search $1 $options && \
 	    echo ${interface}:0.0.0.0/0
     done 
 }
@@ -1679,8 +1679,7 @@ setup_nat() {
 	    qt ip addr del $external dev $interface
 	fi
 
-	if [ -z "$allints" -o "$allints" = "Yes" \
-	    -o "$allints" = "yes" ]
+	if [ -z "$allints" -o "$allints" = "Yes" -o "$allints" = "yes" ]
 	then
 	    addnatrule nat_in  -d $external -j DNAT --to-destination $internal
 	    addnatrule nat_out -s $internal -j SNAT --to-source $external

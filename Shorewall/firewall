@@ -839,6 +839,14 @@ validate_rule() {
     fi
 
     dest=$serverzone
+
+    chain=${source}2${dest}
+
+    if [ "x$chain" = xfw2fw ]; then
+	error_message "WARNING: fw -> fw rules are not supported; rule \"$rule\" ignored"
+	return
+    fi
+
     #
     # Check length of port lists if MULTIPORT set
     #
@@ -2070,6 +2078,12 @@ process_rule() {
     # Create canonical chain if necessary
 
     chain=${source}2${dest}
+
+    if [ "x$chain" = xfw2fw ]; then
+	error_message "WARNING: fw -> fw rules are not supported; rule \"$rule\" ignored"
+	return
+    fi
+
     ensurechain $chain
 
     # Generate Netfilter rule(s)

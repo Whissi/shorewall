@@ -542,6 +542,9 @@ determine_hosts() {
 		    interfaces="$interfaces $interface"
 		fi
 	    fi
+
+	    [ "${host#*:}" = "0.0.0.0/0" ] || \
+		eval ${zone}_is_constrained=Yes
 	done
 
 	eval ${zone}_interfaces="\$interfaces"
@@ -3661,6 +3664,13 @@ activate_rules()
 	chain1=`rules_chain $FW $zone`
 	chain2=`rules_chain $zone $FW`
 
+	eval constrained=\$${zone}_is_constrained
+
+	if [ -n "$constrained" ]; then
+	    frwd_chain=${zone}_frwd
+	    createchain $frwd_chain No
+	fi
+	    
 	echo "$FW $zone $chain1" >> ${STATEDIR}/chains
 	echo "$zone $FW $chain2" >> ${STATEDIR}/chains
 
@@ -3678,6 +3688,8 @@ activate_rules()
 
 	    run_iptables -A `input_chain $interface` -s $subnet -j $chain2
 
+	    [ -n "$constrained" ] && \
+		run_iptables -A `forward_chain $interface` -s $subnet -j $frwd_chain
 	done
 
 	for zone1 in $zones; do
@@ -3694,15 +3706,21 @@ activate_rules()
 
 	    for host in $source_hosts; do
 		interface=${host%:*}
-		subnet=${host#*:}
-		chain1=`forward_chain $interface`
+
+		if [ -n "$constrained" ]; then
+		    chain1=$frwd_chain
+		    subnet=
+		else
+		    chain1=`forward_chain $interface`
+		    subnet="-s ${host#*:}"
+		fi
 
 		for host1 in $dest_hosts; do
 		    interface1=${host1%:*}
 		    subnet1=${host1#*:}
 
 		    if [ "$host" != "$host1" ]; then
-			run_iptables -A $chain1 -s $subnet -o $interface1 -d $subnet1 -j $chain
+			run_iptables -A $chain1 $subnet -o $interface1 -d $subnet1 -j $chain
 		    fi
 		done
 	    done

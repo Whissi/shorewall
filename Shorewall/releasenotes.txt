@@ -1,19 +1,11 @@
 This is a minor release of Shorewall.
 
-This release introduces incompatibilities with prior releases. See
-http://www.shorewall.net/upgrade_issues.htm.
-
 Changes are:
 
-a) There is now a new NONE policy specifiable in
-/etc/shorewall/policy. This policy will cause Shorewall to assume that
-there will never be any traffic between the source and destination
-zones.
-
-b) Shorewall no longer creates rules to govern traffic from an
-interface:subnet to itself.
-
-c) Intra-zone traffic is always accepted now (exception is (b)
- above).. Intrazone policies and rules are no longer allowed.
+a) Where an entry in the/etc/shorewall/hosts file specifies a
+   particular host or network, Shorewall now creates an intermediate
+   chain for handling input from the related zone. This can
+   substantially reduce the number of rules traversed by connections
+   requests from such zones. 
 
 

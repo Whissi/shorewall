@@ -1,0 +1,79 @@
+#
+# Shorewall 1.2 -- Interfaces File
+#
+# /etc/shorewall/interfaces
+#
+# Columns are:
+#
+#	ZONE		Zone for this interface. Much match the short name
+#			of a zone defined in /etc/shorewall/zones.
+#
+#			$<variable-name> is not allowed in this column.
+#
+#	INTERFACE	Name of interface
+#
+#	BROADCAST	The broadcast address for the subnetwork to which the
+#			interface belongs. For P-T-P interfaces, this
+#			column is left black.
+#
+#			If you use the special value "detect", the firewall
+#			will detect the broadcast address for you. If you
+#			select this option, the interface must be up before
+#			the firewall is started and you must have iproute
+#			installed.
+#			
+#			If you don't want to give a value for this column but
+#			you want to enter a value in the OPTIONS column, enter
+#			"-" in this column.
+#
+#	OPTIONS		A comma-separated list of options including the
+#			following:
+#
+#			dhcp	     - interface is managed by DHCP
+#			noping	     - icmp echo-request (ping) packets should
+#				       be ignored on this interface
+#			routestopped - When the firewall is stopped, allow
+#				       and route traffic to and from this
+#				       interface.
+#			norfc1918    - This interface should not receive
+#				       any packets whose source is in one
+#				       of the ranges reserved by RFC 1918
+#				       (i.e., private or "non-routable"
+#				       addresses.
+#			multi	     - This interface has multiple IP
+#				       addresses and you want to be able to
+#				       route between them.
+#			routefilter  - turn on kernel route filtering for this
+#				       interface (anti-spoofing measure).
+#
+#	Example 1:	Suppose you have eth0 connected to a DSL modem and
+#			eth1 connected to your local network and that your
+#			local subnet is 192.168.1.0/24. The interface gets
+#			it's IP address via DHCP from subnet
+#			206.191.149.192/27 and you want pings from the internet
+#			to be ignored. You interface a DMZ with subnet
+#			192.168.2.0/24 using eth2. You want to be able to
+#			access the firewall from the local network when the
+#			firewall is stopped.
+#
+#			Your entries for this setup would look like:
+#
+#			net	eth0	206.191.149.223	noping,dhcp
+#			local	eth1	192.168.1.255	routestopped
+#			dmz	eth2	192.168.2.255
+#
+#	Example 2:	The same configuration without specifying broadcast
+#			addresses is:
+#
+#			net	eth0	detect		noping,dhcp
+#			local	eth1	detect		routestopped
+#			dmz	eth2	detect
+#
+#	Example 3:	You have a simple dial-in system with no ethernet
+#			connections and you want to ignore ping requests.
+#
+#			net	ppp0	-		noping
+##############################################################################
+#ZONE	INTERFACE	BROADCAST	OPTIONS
+net	eth0		detect		norfc1918,routefilter,dhcp
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

@@ -1,0 +1,45 @@
+#
+# Shorewall 1.2 -- Policy File
+#
+# /etc/shorewall/policy
+#
+#	This file determines what to do with a new connection request if we
+#	don't get a match from the /etc/seafall/rules file. For each
+#	client/server pair, the file is processed in order until a match is
+#	found ("all" will match any client or server).
+#
+#	$<variable-name> is only permitted in the fourth colunm (LOG LEVEL).
+#
+# Columns are:
+#
+#	SOURCE		Location of client. Must be the name of a zone defined
+#			in /etc/shorewall/zones, "fw" or "all".
+#
+#	DESTINATION	Location of server. Must be the name of a zone defined
+#			in /etc/shorewall/zones, "fw" or "all"
+#
+#	POLICY		Policy if no match from the rules file is found. Must
+#			be "ACCEPT", "DENY", "REJECT"
+#
+#	LOG LEVEL	If supplied, each connection handled under the default
+#			POLICY is logged at that level. If not supplied, no
+#			log message is generated. See syslog.conf(5) for a
+#			description of log levels.
+#
+#	As shipped, the default policies are:
+#
+#	a) All connections from the local network to the internet are allowed
+#	b) All connections from the network are ignored but logged at syslog
+#	   level KERNEL.INFO.
+#	d) All other connection requests are rejected and logged at level
+#	   KERNEL.INFO.
+###############################################################################
+#SOURCE		DESTINATION	POLICY		LOG LEVEL
+loc		net		ACCEPT
+#
+# If you want open access to the internet from your firewall, uncomment the
+# following line
+#fw		net		ACCEPT
+net		all		DROP		info
+all		all		REJECT		info
+#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOTE	

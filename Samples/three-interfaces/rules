@@ -1,0 +1,145 @@
+#
+# Shorewall version 1.2 - Rules File
+#
+# /etc/shorewall/rules 
+#
+#	Rules in this file govern connection establishment. Requests and
+#	responses are automatically allowed using connection tracking.
+#
+# Columns are:
+#
+#
+#	RESULT		ACCEPT, DROP or REJECT
+#
+#				ACCEPT -- allow the connection request
+#				DROP   -- ignore the request
+#				REJECT -- disallow the request and return an
+#					  icmp-unreachable packet.
+#
+#			The line may NOT start with $<variable-name>
+#
+#			May optionally be followed by ":" and a syslog log
+#			level (e.g, REJECT:info). This causes the packet to be
+#			logged at the specified level.
+#
+#	SOURCE		Hosts permitted to be clients. May be a zone defined
+#			in /etc/shorewall/zones or "fw" to indicate the
+#			firewall itself.
+#
+#			Clients may be further restricted to a particular
+#			subnet or host by appending ":" and the subnet or host.
+#
+#			dmz:192.168.2.2		Host 192.168.2.2 in the DMZ
+#			net:155.186.235.0/24	Subnet 155.186.235.0/24 on the
+#						Internet
+#
+#			Alternatively, clients may be specified by interface
+#			by appending ":" followed by the interface name. For
+#			example, loc:eth1 specifies a client that
+#			communicates with the firewall system through eth1.
+#
+#	DESTINATION	Location of Server. May be a zone defined in
+#			/etc/shorewall/zones or "fw" to indicate the firewall
+#			itself.
+#
+#			The server may be further restricted to a particular
+#			subnet, host or interface by appending ":" and the
+#			subnet, host or interface. See above.
+#
+#			The port that the server is listening on may be
+#			included and separated from the server's IP address by
+#			":". If omitted, the firewall will not modifiy the
+#			destination port.
+#
+#			Example: loc:192.168.1.3:8080 specifies a local
+#			server at IP address 192.168.1.3 and listening on port
+#			8080. The port number MUST be specified as an integer
+#			and not as a name from /etc/services.
+#
+#	PROTO		Protocol - Must be "tcp", "udp", "icmp", a number,
+#			"all" or "related". If "related", the remainder of the
+#			entry must be omitted and connection requests that are
+#			related to existing requests will be accepted.
+#
+#	PORT(S)		Destination Port. A comma-separated list of Port names
+#			(from /etc/services), port numbers or port ranges;
+#			if the protocol is "icmp", this column is interpreted as
+#			the destination icmp-type. If this column contains the
+#			value "none", the rule is ignored.
+#
+#			This column is ignored if PROTOCOL = all but must be
+#			entered if any of the following fields are supplied.
+#			In that case, it is suggested that this field contain
+#			 "-"
+#
+#	CLIENT PORT(S)	(Optional) Port(s) used by the client. If omitted,
+#			any source port is acceptable.
+#
+#			If you don't want to restrict client ports but need to
+#			specify an ADDRESS in the next column, then place "-"
+#			in this column.
+#
+#	ADDRESS		(0ptional) If included and different from the IP
+#			address given in the SERVER column, this is an address
+#			on some interface on the firewall and connections to
+#			that address will be forwarded to the IP and port
+#			specified in the SERVER column.
+#
+#			If the special value "all" is used, then requests from
+#			the client zone given in the CLIENT(s) column with the
+#			destination port given in PORT(s) will be forwarded to
+#			the IP address given in SERVER.
+#
+#			The address (or "all") may optionally be followed by
+#			a colon (":") an an IP address. This causes Shorewall
+#			to use the specified IP address as the source address
+#			in forwarded packets. See the Shorewall documentation
+#			for restrictions concerning this feature. If no source
+#			IP address is given, the original source address is not
+#			altered.
+#
+#	Example: Forward all ssh and www connection requests from the internet to
+#		 local system 192.168.1.3
+#
+#	#RESULT CLIENTS	SERVER(S)	  PROTO	PORT(S)	CLIENT PORT(S) ADDRESS
+#	ACCEPT	net	loc:192.168.1.3 tcp	ssh,www	-	       all
+#
+#	Example: Redirect all locally-originating www connection requests to
+#		 port 8080 on the firewall (Squid running on the firewall
+#		 system)
+#
+#	#RESULT CLIENTS	SERVER(S) PROTO	PORTS(S) CLIENT PORT(S)	ADDRESS
+#	ACCEPT	loc	fw::8080  tcp	www	 -		all
+##############################################################################
+#RESULT	CLIENT(S) SERVER(S)		PROTO	PORT(S)	CLIENT PORT(S) ADDRESS
+#
+# Accept outgoing DNS connections from the firewall
+#
+ACCEPT	fw	  net			tcp	53
+ACCEPT	fw	  net			udp	53
+#
+# To avoid connection delays, reject AUTH
+#
+REJECT		net	  fw		tcp	113
+#
+# Accept SSH connections from the local network to the firewall and DMZ
+#
+ACCEPT	loc	  fw			tcp	22
+ACCEPT	loc	  dmz			tcp	22
+#
+# DMZ DNS access to the internet
+#
+ACCEPT	dmz       net			tcp	53	
+ACCEPT	dmz	  net			udp	53
+#
+# Make ping work
+#
+ACCEPT		fw	  loc		icmp	8
+ACCEPT		loc	  fw		icmp	8
+ACCEPT		loc	  dmz           icmp    8
+ACCEPT		dmz	  loc		icmp	8
+ACCEPT		dmz	  fw		icmp	8
+ACCEPT		fw	  dmz		icmp	8
+ACCEPT		fw	  net		icmp	8
+
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

@@ -1693,13 +1693,15 @@ check_config() {
 
     disclaimer() {
 	echo
-	echo "WARNING: THE 'check' COMMAND IS TOTALLY UNSUPPORTED AND PROBLEM"
-	echo "         REPORTS COMPLAINING ABOUT ERRORS THAT IT DIDN'T CATCH"
-	echo "         WILL NOT BE ACCEPTED"
+	echo "Notice:  The 'check' command is unsupported and problem"
+	echo "         reports complaining about errors that it didn't catch"
+	echo "         will not be accepted"
 	echo
     }
 
     disclaimer
+
+    report_capabilities
 
     echo "Verifying Configuration..."
 
@@ -2108,13 +2110,25 @@ add_a_rule()
 	    if [ -z "$dnat_only" -a $chain != ${FW}2${FW} ]; then
 		if [ -n "$serv" ]; then
 		    for srv in `ip_range $serv`; do
-			if [ -n "$loglevel" -a -z "$natrule" ]; then
-			    log_rule $loglevel $chain $logtarget \
-				`fix_bang $proto $sports $multiport $state $cli -d $srv $dports`
-			fi
+			if [ -n "$addr" -a -n "$CONNTRACK_MATCH" ]; then
+			    for adr in $addr; do
+				if [ -n "$loglevel" -a -z "$natrule" ]; then
+				    log_rule $loglevel $chain $logtarget -m conntrack --ctorigdst $adr \
+					`fix_bang $proto $sports $multiport $state $cli -d $srv $dports`
+				fi
 
-			run_iptables2 -A $chain $proto $multiport $state $cli $sports \
-			    -d $srv $dports -j $target
+				run_iptables2 -A $chain $proto $multiport $state $cli $sports \
+				    -d $srv $dports -m conntrack --ctorigdst $adr -j $target
+			    done
+			else
+			    if [ -n "$loglevel" -a -z "$natrule" ]; then
+				log_rule $loglevel $chain $logtarget \
+				    `fix_bang $proto $sports $multiport $state $cli -d $srv $dports`
+			    fi
+
+			    run_iptables2 -A $chain $proto $multiport $state $cli $sports \
+				-d $srv $dports -j $target
+			fi
 		    done
 		else
 		    if [ -n "$loglevel" -a -z "$natrule" ]; then
@@ -3325,6 +3339,41 @@ verify_ip() {
 	startup_error "Shorewall $version requires the iproute package ('ip' utility)"
 }
 
+# 
+# Determine which optional facilities are supported by iptables/netfilter
+#
+determine_capabilities() {
+    qt iptables -t nat    -L -n && NAT_ENABLED=Yes    || NAT_ENABLED=
+    qt iptables -t mangle -L -n && MANGLE_ENABLED=Yes || MANGLE_ENABLED=
+
+    CONNTRACK_MATCH=
+    MULTIPORT=
+
+    if qt iptables -N fooX1234 ; then
+	qt iptables -A fooX1234 -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT && CONNTRACK_MATCH=Yes
+        qt iptables -A fooX1234 -p tcp -m multiport --dports 21,22 -j ACCEPT   && MULTIPORT=Yes
+
+	qt iptables -F fooX1234
+	qt iptables -X fooX1234
+    fi
+}
+
+report_capability() # $1 = Capability Name, $2 Capability Setting (if any)
+{
+    local setting=
+
+    [ $1 = "Yes" ] && { setting="Available"; shift; } || setting="Not available"
+
+    echo "  " $@: $setting
+}
+
+report_capabilities() {
+    echo "Shorewall has detected the following iptables/netfilter capabilities:"
+    report_capability $NAT_ENABLED "NAT"
+    report_capability $MANGLE_ENABLED "Packet Mangling"
+    report_capability $CONNTRACK_MATCH "Connection Tracking Match"
+}
+
 #
 # Perform Initialization
 #	- Delete all old rules
@@ -3334,6 +3383,8 @@ verify_ip() {
 #	- Determine the zones
 #
 initialize_netfilter () {
+
+    report_capabilities
 
     echo "Determining Zones..."
 
@@ -3611,11 +3662,12 @@ add_common_rules() {
 	
 	run_iptables -A logdrop -j DROP
 
-	if [ -n "$MANGLE_ENABLED" ]; then
+	if [ -n "$MANGLE_ENABLED" -a -z "$CONNTRACK_MATCH" ]; then
 	    #
-	    # Mangling is enabled -- create a chain in the mangle table to
-	    # filter RFC1918 destination addresses. This must be done in the
-	    # mangle table before we apply any DNAT rules in the nat table
+	    # Mangling is enabled but conntrack match isn't available -- 
+	    # create a chain in the mangle table to filter RFC1918 destination
+            # addresses. This must be done in the mangle table before we apply
+	    # any DNAT rules in the nat table
 	    #
 	    # Also add a chain to log and drop any RFC1918 packets that we find
 	    #
@@ -3635,11 +3687,17 @@ add_common_rules() {
 	    esac
 
 	    run_iptables2 -A rfc1918 -s $subnet -j $target
-	    #
-	    # If packet mangling is enabled, trap packets with an
-	    # RFC1918 destination
-	    #
-	    if [ -n "$MANGLE_ENABLED" ]; then
+
+	    if [ -n "$CONNTRACK_MATCH" ]; then
+		#
+		# We have connection tracking match -- match on the original destination
+		#
+		run_iptables2 -A rfc1918 -m conntrack --ctorigdst $subnet -j $target
+	    elif [ -n "$MANGLE_ENABLED" ]; then
+		#
+		# No connection tracking match but we have mangling -- add a rule to
+		# the mangle table
+		#
 		run_iptables2 -t mangle -A man1918 -d $subnet -j $target
 	    fi
 	done < $TMP_DIR/rfc1918
@@ -3649,7 +3707,7 @@ add_common_rules() {
 		run_iptables -A $chain -m state --state NEW -j rfc1918
 	    done
 
-	    [ -n "$MANGLE_ENABLED" ] && \
+	    [ -n "$MANGLE_ENABLED" -a -z "$CONNTRACK_MATCH" ] && \
 		run_iptables -t mangle -A PREROUTING -m state --state NEW -i $interface -j man1918
 	done
 
@@ -4512,8 +4570,6 @@ do_initialize() {
     LOGRATE=
     LOGBURST=
     LOGPARMS=
-    NAT_ENABLED=
-    MANGLE_ENABLED=
     ADD_IP_ALIASES=
     ADD_SNAT_ALIASES=
     TC_ENABLED=
@@ -4523,7 +4579,6 @@ do_initialize() {
     CLAMPMSS=
     ROUTE_FILTER=
     NAT_BEFORE_RULES=
-    MULTIPORT=
     DETECT_DNAT_IPADDRS=
     MUTEX_TIMEOUT=
     NEWNOTSYN=
@@ -4587,8 +4642,6 @@ do_initialize() {
     ALLOWRELATED="`added_param_value_yes ALLOWRELATED $ALLOWRELATED`"
     [ -n "$ALLOWRELATED" ] || \
 	startup_error "ALLOWRELATED=No is not supported"
-    NAT_ENABLED="`added_param_value_yes NAT_ENABLED $NAT_ENABLED`"
-    MANGLE_ENABLED="`added_param_value_yes MANGLE_ENABLED $MANGLE_ENABLED`"
     ADD_IP_ALIASES="`added_param_value_yes ADD_IP_ALIASES $ADD_IP_ALIASES`"
     TC_ENABLED="`added_param_value_yes TC_ENABLED $TC_ENABLED`"
 
@@ -4620,7 +4673,6 @@ do_initialize() {
     ADD_SNAT_ALIASES=`added_param_value_no ADD_SNAT_ALIASES $ADD_SNAT_ALIASES`
     ROUTE_FILTER=`added_param_value_no ROUTE_FILTER $ROUTE_FILTER`
     NAT_BEFORE_RULES=`added_param_value_yes NAT_BEFORE_RULES $NAT_BEFORE_RULES`
-    MULTIPORT=`added_param_value_no MULTIPORT $MULTIPORT`
     DETECT_DNAT_IPADDRS=`added_param_value_no DETECT_DNAT_IPADDRS $DETECT_DNAT_IPADDRS`
     FORWARDPING=`added_param_value_no FORWARDPING $FORWARDPING`
     [ -n "$FORWARDPING" ] && \
@@ -4691,6 +4743,11 @@ do_initialize() {
     #
     strip_file interfaces
     strip_file hosts
+    #
+    # Determine the capabilities of the installed iptables/netfilter
+    #
+    determine_capabilities
+
 }
 
 #

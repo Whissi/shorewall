@@ -849,8 +849,14 @@ validate_rule() {
     chain=${source}2${dest}
 
     if [ "x$chain" = x${FW}2${FW} ]; then
-	error_message "WARNING: fw -> fw rules are not supported; rule \"$rule\" ignored"
-	return
+	case $logtarget in
+	    REDIRECT)
+		;;
+	    *)
+		error_message "WARNING: fw -> fw rules are not supported; rule \"$rule\" ignored"
+		return
+		;;
+	esac
     fi
 
     #
@@ -1966,16 +1972,18 @@ add_a_rule()
 	    add_nat_rule
 	fi
 
-	serv="${serv:+-d $serv}"
+	if [ $chain != ${FW}2${FW} ]; then
+	    serv="${serv:+-d $serv}"
 
-	[ -n "$loglevel" ] && run_iptables -A $chain $proto $multiport \
-	    $state $cli $sports $serv $dports -j LOG $LOGPARMS \
-	    --log-prefix "Shorewall:$chain:$logtarget:" \
-	    --log-level $loglevel
-	run_iptables -A $chain $proto $multiport $state $cli $sports \
-	    $serv $dports -j $target
+	    [ -n "$loglevel" ] && run_iptables -A $chain $proto $multiport \
+		$state $cli $sports $serv $dports -j LOG $LOGPARMS \
+		--log-prefix "Shorewall:$chain:$logtarget:" \
+		--log-level $loglevel
+	    run_iptables -A $chain $proto $multiport $state $cli $sports \
+		$serv $dports -j $target
+	fi
     else
-
+	    
 	# Destination is a simple zone
 
 	[ -n "$addr" ] && fatal_error \
@@ -2104,11 +2112,17 @@ process_rule() # $1 = target
     chain=${source}2${dest}
 
     if [ "x$chain" = x${FW}2${FW} ]; then
-	error_message "WARNING: fw -> fw rules are not supported; rule \"$rule\" ignored"
-	return
+	case $logtarget in
+	    REDIRECT)
+		;;
+	    *)
+		error_message "WARNING: fw -> fw rules are not supported; rule \"$rule\" ignored"
+		return
+		;;
+	esac
+    else
+	ensurechain $chain
     fi
-
-    ensurechain $chain
 
     # Generate Netfilter rule(s)
 

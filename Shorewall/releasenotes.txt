@@ -9,3 +9,10 @@ New Features:
    Netfilter nat table REDIRECT rule is added but not the companion
    filter table ACCEPT rule.
 
+2) The LOGMARKER variable has been renamed LOGFORMAT and has been
+   changed to a 'printf' formatting template which accepts three
+   arguments (the chain name, logging rule number and the disposition).
+   To use LOGFORMAT with ULOG, set it as:
+
+       LOGFORMAT="fp=%s:%d a=%s"
+

@@ -877,18 +877,18 @@ case "$1" in
     ipcalc)
 	if [ $# -eq 2 ]; then
 	    address=${2%/*}
-	    cidr=${2#*/}
+	    vlsm=${2#*/}
 	elif [ $# -eq 3 ]; then
 	    address=$2
-	    cidr=`ip_cidr $3`
+	    vlsm=`ip_vlsm $3`
 	else
 	    usage 1
 	fi
 	
-	[ -z "$cidr" ] && exit 2
-	[ "x$address" = "x$cidr" ] && usage 2
+	[ -z "$vlsm" ] && exit 2
+	[ "x$address" = "x$vlsm" ] && usage 2
 
-	address=$address/$cidr
+	address=$address/$vlsm
 
 	                                  echo "   CIDR=$address"
 	temp=`ip_netmask $address`;       echo "   NETMASK=`encodeaddr $temp`"

@@ -341,22 +341,22 @@ in_subnet() # $1 = IP address, $2 = CIDR network
 }
 
 #
-# Netmask to CIDR
+# Netmask to VLSM
 #
-ip_cidr() {
+ip_vlsm() {
     local mask=`decodeaddr $1`
-    local cidr=0
+    local vlsm=0
     local x=$(( 128 $LEFTSHIFT 24 ))
 
     while [ $(( $x & $mask )) -ne 0 ]; do
 	[ $mask -eq $x ] && mask=0 || mask=$(( $mask $LEFTSHIFT 1 )) # Don't Ask...
-	cidr=$(($cidr + 1))
+	vlsm=$(($vlsm + 1))
     done
 
     if [ $(( $mask & 2147483647)) -ne 0 ]; then
 	echo "Invalid net mask: $1" >&2
     else
-	echo $cidr
+	echo $vlsm
     fi
 }
 	

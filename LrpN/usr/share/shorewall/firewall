@@ -613,7 +613,11 @@ match_ipsec_in() # $1 = zone, $2 = host
 {
     eval local hosts=\"\$${1}_ipsec_hosts\"
 
-    list_search $2 $hosts && echo "-m policy --pol ipsec --dir in"
+    if list_search $2 $hosts; then
+	echo "-m policy --pol ipsec --dir in"
+    elif [ -n "$POLICY_MATCH" ]; then
+	echo "-m policy --pol none --dir in"
+    fi
 }
 
 #
@@ -623,26 +627,10 @@ match_ipsec_out() # $1 = zone, $2 = host
 {
     eval local hosts=\"\$${1}_ipsec_hosts\"
 
-   list_search $2 $hosts && echo "-m policy --pol ipsec --dir out"
-}
-
-#
-# Generate a match for packets that have been decrypted and that will be encrypted
-#
-match_ipsec_inout() # $1 =input zone, $2 = input host, $3 = output zone, $4 = output host"
-{
-    local result="-m policy --pol ipsec"
-    eval local input_hosts=\"\$${1}_ipsec_hosts\"
-    eval local output_hosts=\"\$${3}_ipsec_hosts\"
-
-    if list_search $2 $input_hosts; then
-	result="$result --dir in"
-        if list_search $4 $output_hosts; then
-	    result="$result --dir out"
-        fi
-	echo $result
-    elif list_search $4 $output_hosts; then
-	echo "$result --dir out"
+    if list_search $2 $hosts; then
+	echo "-m policy --pol ipsec --dir out"
+    elif [ -n "$POLICY_MATCH" ]; then
+	echo "-m policy --pol none --dir out"
     fi
 }
 
@@ -898,7 +886,10 @@ validate_hosts_file() {
 		    maclist|norfc1918|nobogons|blacklist|tcpflags|nosmurfs|newnotsyn|-)
 			;;
 		    ipsec)
+			[ -n "$POLICY_MATCH" ] || \
+			    startup_error "Your kernel and/or iptables does not not support policy match: ipsec"
 			eval ${z}_ipsec_hosts=\"\$${z}_ipsec_hosts $interface:$host\"
+			eval ${z}_is_complex=Yes
 			;;
 		    routeback)
 			[ -z "$ports" ] && \
@@ -1231,7 +1222,7 @@ setup_forwarding() {
 # Disable IPV6
 #
 disable_ipv6() {
-    local foo=$(ip -f inet6 addr ls 2> /dev/null)
+    local foo="$(ip -f inet6 addr ls 2> /dev/null)"
 
     if [ -n "$foo" ]; then
 	if qt which ip6tables; then
@@ -1481,10 +1472,10 @@ setup_tunnels() # $1 = name of tunnels file
 	    run_iptables -A $outchain -p 51	 -d $1 -j ACCEPT
 	fi
 
-	run_iptables -A $outchain -p udp -d $1 --dport 500 --sport 500 $options
+	run_iptables -A $outchain -p udp -d $1 --dport 500 $options
 
 	if [ $kind = ipsec ]; then
-	    run_iptables -A $inchain  -p udp -s $1 --sport 500 --dport 500 $options
+	    run_iptables -A $inchain  -p udp -s $1 --dport 500 $options
 	else
 	    run_iptables -A $inchain  -p udp -s $1 --dport 500 $options
 	    run_iptables -A $inchain  -p udp -s $1 --dport 4500 $options
@@ -1492,9 +1483,9 @@ setup_tunnels() # $1 = name of tunnels file
 
 	for z in $(separate_list $3); do
 	    if validate_zone $z; then
-		addrule ${FW}2${z} -p udp --sport 500 --dport 500 $options
+		addrule ${FW}2${z} -p udp --dport 500 $options
 		if [ $kind = ipsec ]; then
-		    addrule ${z}2${FW} -p udp --sport 500 --dport 500 $options
+		    addrule ${z}2${FW} -p udp --dport 500 $options
 		else
 		    addrule ${z}2${FW} -p udp --dport 500 $options
 		    addrule ${z}2${FW} -p udp --dport 4500 $options
@@ -1902,6 +1893,21 @@ delete_proxy_arp() {
 setup_nat() {
     local external= interface= internal= allints= localnat=
 
+    validate_one() #1 = Variable Name, $2 = Column name, $3 = value 
+    {
+	case $3 in
+	    Yes|yes)
+                ;;
+	    No|no)
+		eval ${1}=
+		;;
+	    *)
+		[ -n "$3" ] && \
+		    fatal_error "Invalid value ($3) for $2 in entry \"$external $interface $internal $allints $localnat\""
+		;;
+	esac
+    }
+
     do_one_nat() {
 	local add_ip_aliases=$ADD_IP_ALIASES, iface=${interface%:*}
 	
@@ -1918,22 +1924,20 @@ setup_nat() {
 	else
 	    interface=${interface%:}
 	fi
+
+	validate_one allints  "ALL INTERFACES" $allints
+	validate_one localnat "LOCAL"          $localnat
 	
-	if [ "x$allints" = "xYes" -o "x$allints" = "xyes" ]; then
+	if [ -n "$allints" ]; then
 	    addnatrule nat_in  -d $external -j DNAT --to-destination $internal
 	    addnatrule nat_out -s $internal -j SNAT --to-source $external
-	elif [ -z "$allints" -o "x$allints" = "x-" -o "x$allints" = "xNo" -o "x$allints" = "xno" ]; then       
+	else
 	    addnatrule $(input_chain $iface) -d $external -j DNAT --to-destination $internal
 	    addnatrule $(output_chain $iface) -s $internal -j SNAT --to-source $external
-	else
-	    fatal_error "Invalid value ($allints) for ALL INTERFACES in entry \"$external $interface $internal $allints $localnat\""
 	fi
 	
-	if [ "x$localnat" = "xYes" -o "x$localnat" = "xyes" ]; then
+	[ -n "$localnat" ] && \
 	    run_iptables2 -t nat -A OUTPUT -d $external -j DNAT --to-destination $internal
-	elif [ "x$localnat" != "x-" -a -n "$localnat" -a "x$localnat" != "xNo" -a "x$localnat" != "xno" ]; then
-	    fatal_error "Invalid value ($allints) for LOCAL in entry \"$external $interface $internal $allints $localnat\""	    
-	fi
 
 	if [ -n "$add_ip_aliases" ]; then
 	    list_search $external $aliases_to_add || \
@@ -3013,7 +3017,7 @@ merge_levels() # $1=level at which superior action is called, $2=level at which 
 #
 process_actions1() {
 	
-    ACTIONS="dropBcast dropNonSyn dropNotSyn rejNotSyn dropInvalid"
+    ACTIONS="dropBcast allowBcast dropNonSyn dropNotSyn rejNotSyn dropInvalid"
     USEDACTIONS=
 
     strip_file actions
@@ -3166,12 +3170,44 @@ process_actions3() {
 		    fi
 		fi
 		;;
+	    allowBcast)
+		if [ "$COMMAND" != check ]; then
+		    if [ -n "$PKTTYPE" ]; then
+			case $xlevel in
+			    none'!')
+	                        ;;
+			    *)
+			        if [ -n "$xlevel" ]; then
+				    log_rule_limit ${xlevel%\!} $xchain allowBcast $2 "" "$xtag" -m pkttype --pkt-type broadcast
+				    log_rule_limit ${xlevel%\!} $xchain allowBcast $2 "" "$xtag" -m pkttype --pkt-type multicast
+				fi
+				;;
+			esac
+			
+			run_iptables -A allowBcast -m pkttype --pkt-type broadcast -j ACCEPT
+			run_iptables -A allowBcast -m pkttype --pkt-type multicast -j ACCEPT
+		    else
+			for address in $(find_broadcasts) 255.255.255.255 224.0.0.0/4 ; do
+			    case $xlevel in
+				none*)
+				    ;;
+				*)
+				    [ -n "$xlevel" ] && \
+					log_rule_limit ${xlevel%\!} $xchain allowBcast $2 "" "$xtag" -d $address
+				    ;;
+			    esac
+			    
+			    run_iptables -A $xchain -d $address -j ACCEPT
+			done
+		    fi
+		fi
+		;;
 	    dropNonSyn)
 		error_message "WARNING: \"dropNonSyn\" has been replaced by \"dropNotSyn\""
 		
 		if [ "$COMMAND" != check ]; then
 		    [ -n "$xlevel" ] && \
-			log_rule_limit ${xlevel%\!} $xchain dropBcast $2 "" "$xtag" -p tcp ! --syn
+			log_rule_limit ${xlevel%\!} $xchain dropNonSyn $2 "" "$xtag" -p tcp ! --syn
 		    run_iptables -A $xchain -p tcp ! --syn -j DROP
 		fi
 		;;
@@ -3273,10 +3309,7 @@ add_nat_rule() {
     # Parse SNAT address if any
 
     if [ "$addr" != "${addr%:*}" ]; then
-	snat="${addr#*:}"
-	addr="${addr%:*}"
-    else
-	snat=""
+	fatal_error "SNAT may no longer be specified in a DNAT rule; use /etc/shorewall/masq instead"
     fi
 
     # Set original destination address
@@ -3403,24 +3436,6 @@ add_nat_rule() {
 	    dports="--dport ${servport#*:}"
 	else
 	    dports="--dports ${servport#*:}"
-	fi
-    fi
-
-    # Handle SNAT
-
-    if [ -n "$snat" ]; then
-	if [ -n "$cli" ]; then
-	    [ $COMMAND = check ] || addnatrule $(snat_chain $dest) $proto $cli $multiport \
-		$sports -d $serv $dports -j SNAT --to-source $snat
-	else
-	    for source_host in $source_hosts; do
-		[ "x${source_host#*:}" = "x0.0.0.0/0" ] && \
-		    error_message "Warning: SNAT will occur on all connections to this server and port - rule \"$rule\""
-
-		[ $COMMAND = check ] || addnatrule $(snat_chain $dest) \
-		    $(match_source_hosts ${source_host#*:}) $proto $sports $multiport \
-		    -d $serv $dports -j SNAT --to-source $snat
-	    done
 	fi
     fi
 
@@ -4458,7 +4473,6 @@ get_routed_networks() # $1 = interface name
     ip route show dev $1 2> /dev/null |
 	while read address rest; do
 	    if [ "x$address" = xdefault ]; then
-//*-+9
 		error_message "Warning: default route ignored on interface $1"
 	    else
 		[ "$address" = "${address%/*}" ] && address="${address}/32"
@@ -4473,7 +4487,27 @@ get_routed_networks() # $1 = interface name
 setup_masq()
 {
     setup_one() {
-	local add_snat_aliases=$ADD_SNAT_ALIASES, pre_nat=
+	local add_snat_aliases=$ADD_SNAT_ALIASES, pre_nat= policy=
+
+	[ "x$ipsec" = x- ] && ipsec=
+
+	case $ipsec in
+	    Yes|yes)
+		[ -n "$POLICY_MATCH" ] || \
+		    fatal_error "IPSEC=Yes requires policy match support in your kernel and iptables"
+		policy="-m policy --pol ipsec --dir out"
+		;;
+	    No|no)
+		[ -n "$POLICY_MATCH" ] || \
+		    fatal_error "IPSEC=No requires policy match support in your kernel and iptables"
+		policy="-m policy --pol none --dir out"
+		;;
+	    *)
+		[ -n "$ipsec" ] && \
+		    fatal_error "Invalid value in IPSEC column: $ipsec"
+		[ -n "$POLICY_MATCH" ] && policy="-m policy --pol none --dir out"
+		;;
+	esac
 
 	case $fullinterface in
 	    +*)
@@ -4621,7 +4655,7 @@ setup_masq()
 
 		if [ -n "$networks" ]; then
 		    for s in $networks; do
-			addnatrule $chain -s $s $proto $ports -j $newchain
+			addnatrule $chain -s $s $proto $ports $policy -j $newchain
 		    done
 		    networks=
 		else
@@ -4633,6 +4667,7 @@ setup_masq()
 		destnets=0.0.0.0/0
 		proto=
 		ports=
+		policy=
 
 		if [ -n "$nomasq" ]; then
 		    for addr in $(separate_list $nomasq); do
@@ -4654,7 +4689,7 @@ setup_masq()
 			done
 		    else
 			for destnet in $(separate_list $destnets); do
-			    addnatrule $chain -d $destnet $proto $ports -j $newchain
+			    addnatrule $chain -d $destnet $proto $ports $policy -j $newchain
 			done
 		    fi
 
@@ -4664,7 +4699,8 @@ setup_masq()
 		    destnets=0.0.0.0/0
 		    proto=
 		    ports=
-		    
+		    policy=
+
 		    for addr in $(separate_list $nomasq); do
 			addnatrule $chain -s $addr -j RETURN
 		    done
@@ -4686,24 +4722,24 @@ setup_masq()
 	    for s in $networks; do
 		if [ -n "$addresses" ]; then
 		    for destnet in $(separate_list $destnets); do
-			addnatrule $chain -s $s -d $destnet $proto $ports -j SNAT $addrlist
+			addnatrule $chain -s $s -d $destnet $proto $ports $policy -j SNAT $addrlist
 		    done
 		    progress_message "   To $destination $displayproto from $s through ${interface} using $addresses"
 		else
 		    for destnet in $(separate_list $destnets); do
-			addnatrule $chain -s $s -d $destnet $proto $ports -j MASQUERADE
+			addnatrule $chain -s $s -d $destnet $proto $ports $policy -j MASQUERADE
 		    done
 		    progress_message "   To $destination $displayproto from $s through ${interface}"
 		fi
 	    done
 	elif [ -n "$addresses" ]; then
 	    for destnet in $(separate_list $destnets); do
-		addnatrule $chain -d $destnet $proto $ports -j SNAT $addrlist
+		addnatrule $chain -d $destnet $proto $ports $policy -j SNAT $addrlist
 	    done
 	    echo "   To $destination $displayproto from $source through ${interface} using $addresses"
 	else
 	    for destnet in $(separate_list $destnets); do
-		addnatrule $chain -d $destnet $proto $ports -j MASQUERADE
+		addnatrule $chain -d $destnet $proto $ports $policy -j MASQUERADE
 	    done
 	    progress_message "   To $destination $displayproto from $source through ${interface}"
 	fi
@@ -4714,8 +4750,8 @@ setup_masq()
 
     [ -n "$NAT_ENABLED" ] && echo "Masqueraded Networks and Hosts:" && save_progress_message "Restoring Masquerading/SNAT..."
 
-    while read fullinterface networks addresses proto ports; do
-	expandv fullinterface networks addresses proto ports
+    while read fullinterface networks addresses proto ports ipsec; do
+	expandv fullinterface networks addresses proto ports ipsec
 	[ -n "$NAT_ENABLED" ] && setup_one || \
 	    error_message "Warning: NAT disabled; masq rule ignored"
     done < $TMP_DIR/masq
@@ -5009,10 +5045,13 @@ determine_capabilities() {
 
     CONNTRACK_MATCH=
     MULTIPORT=
+    POLICY_MATCH=
 
     if qt iptables -N fooX1234 ; then
 	qt iptables -A fooX1234 -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT && CONNTRACK_MATCH=Yes
         qt iptables -A fooX1234 -p tcp -m multiport --dports 21,22 -j ACCEPT   && MULTIPORT=Yes
+	qt iptables -A fooX1234 -m policy --pol ipsec --dir in -j ACCEPT       && POLICY_MATCH=Yes
+	
 
 	qt iptables -F fooX1234
 	qt iptables -X fooX1234
@@ -5044,6 +5083,7 @@ report_capabilities() {
     report_capability $MULTIPORT "Multi-port Match"
     report_capability $CONNTRACK_MATCH "Connection Tracking Match"
     report_capability $PKTTYPE "Packet Type Match"
+    report_capability $POLICY_MATCH "Policy Match"
 }
 
 #
@@ -5722,7 +5762,7 @@ activate_rules()
 	    addrulejump PREROUTING  $(dnat_chain $zone) -i $interface $(match_source_hosts $networks) $(match_ipsec_in $zone $host)
 	    addrulejump POSTROUTING $(snat_chain $zone) -o $interface $(match_dest_hosts $networks) $(match_ipsec_out $zone $host)
 
-	    run_iptables -A $(input_chain $interface) $(match_source_hosts $networks) -j $chain2
+	    run_iptables -A $(input_chain $interface) $(match_source_hosts $networks) $(match_ipsec_in $zone $host) -j $chain2
 
 	    [ -n "$complex" ] && \
 		run_iptables -A $(forward_chain $interface) $(match_source_hosts $networks) $(match_ipsec_in $zone $host) -j $frwd_chain
@@ -5805,7 +5845,7 @@ activate_rules()
 			networks1=${host1#*:}
 
 			if [ "$host" != "$host1" ] || list_search $host $routeback; then
-			    run_iptables -A $chain1 $(match_source_hosts $networks) -o $interface1 $(match_dest_hosts $networks1) $(match_ipsec_inout $zone $host $zone1 $host1) -j $chain
+			    run_iptables -A $chain1 $(match_source_hosts $networks) -o $interface1 $(match_dest_hosts $networks1) $(match_ipsec_out $zone1 $host1) -j $chain
 			fi
 		    done
 		done

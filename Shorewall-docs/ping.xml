@@ -1,0 +1,681 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article>
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>ICMP Echo-request (Ping)</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate>2003-08-23</pubdate>
+
+    <copyright>
+      <year>2001-2003</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <note>
+    <para>Shorewall &#39;Ping&#39; management has evolved over time with the
+    latest change coming in Shorewall version 1.4.0. To find out which version
+    of Shorewall you are running, at a shell prompt type &#34;/sbin/shorewall
+    version&#34;. If that command gives you an error, it&#39;s time to upgrade
+    since you have a very old version of Shorewall installed (1.2.4 or
+    earlier).</para>
+  </note>
+
+  <section>
+    <title>Shorewall Versions &#62;= 1.4.0</title>
+
+    <para>In Shoreall 1.4.0 and later version, ICMP echo-request&#39;s are
+    treated just like any other connection request.</para>
+
+    <para>In order to accept ping requests from zone z1 to zone z2 where the
+    policy for z1 to z2 is not ACCEPT, you need a rule in /etc/shoreall/rules
+    of the form:</para>
+
+    <informaltable>
+      <tgroup cols="7">
+        <thead>
+          <row>
+            <entry align="center">ACTION</entry>
+
+            <entry align="center">SOURCE</entry>
+
+            <entry align="center">DESTINATION</entry>
+
+            <entry align="center">PROTOCOL</entry>
+
+            <entry align="center">PORT(S)</entry>
+
+            <entry align="center">SOURCE PORT(S)</entry>
+
+            <entry align="center">ORIGINAL DEST</entry>
+          </row>
+        </thead>
+
+        <tbody>
+          <row>
+            <entry>ACCEPT</entry>
+
+            <entry>z1</entry>
+
+            <entry>z2</entry>
+
+            <entry>icmp</entry>
+
+            <entry>8</entry>
+
+            <entry></entry>
+
+            <entry></entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+    <example>
+      <title>Ping from local zone to firewall</title>
+
+      <para>To permit ping from the local zone to the firewall:</para>
+
+      <informaltable>
+        <tgroup cols="7">
+          <thead>
+            <row>
+              <entry align="center">ACTION</entry>
+
+              <entry align="center">SOURCE</entry>
+
+              <entry align="center">DESTINATION</entry>
+
+              <entry align="center">PROTOCOL</entry>
+
+              <entry align="center">PORT(S)</entry>
+
+              <entry align="center">SOURCE PORT(S)</entry>
+
+              <entry align="center">ORIGINAL DEST</entry>
+            </row>
+          </thead>
+
+          <tbody>
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>loc</entry>
+
+              <entry>fw</entry>
+
+              <entry>icmp</entry>
+
+              <entry>8</entry>
+
+              <entry></entry>
+
+              <entry></entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </example>
+
+    <para>If you would like to accept &#39;ping&#39; by default even when the
+    relevant policy is DROP or REJECT, create /etc/shorewall/icmpdef if it
+    doesn&#39;t already exist and in that file place the following command:</para>
+
+    <programlisting>     run_iptables -A icmpdef -p icmp --icmp-type 8 -j ACCEPT</programlisting>
+
+    <para>With that rule in place, if you want to ignore &#39;ping&#39; from
+    z1 to z2 then you need a rule of the form:</para>
+
+    <informaltable>
+      <tgroup cols="7">
+        <thead>
+          <row>
+            <entry align="center">ACTION</entry>
+
+            <entry align="center">SOURCE</entry>
+
+            <entry align="center">DESTINATION</entry>
+
+            <entry align="center">PROTOCOL</entry>
+
+            <entry align="center">PORT(S)</entry>
+
+            <entry align="center">SOURCE PORT(S)</entry>
+
+            <entry align="center">ORIGINAL DEST</entry>
+          </row>
+        </thead>
+
+        <tbody>
+          <row>
+            <entry>DROP</entry>
+
+            <entry>z1</entry>
+
+            <entry>z2</entry>
+
+            <entry>icmp</entry>
+
+            <entry>8</entry>
+
+            <entry></entry>
+
+            <entry></entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+    <example>
+      <title>Silently drop pings from the Internet</title>
+
+      <para>To drop ping from the internet, you would need this rule in
+      /etc/shorewall/rules:</para>
+
+      <informaltable>
+        <tgroup cols="7">
+          <thead>
+            <row>
+              <entry align="center">ACTION</entry>
+
+              <entry align="center">SOURCE</entry>
+
+              <entry align="center">DESTINATION</entry>
+
+              <entry align="center">PROTOCOL</entry>
+
+              <entry align="center">PORT(S)</entry>
+
+              <entry align="center">SOURCE PORT(S)</entry>
+
+              <entry align="center">ORIGINAL DEST</entry>
+            </row>
+          </thead>
+
+          <tbody>
+            <row>
+              <entry>DROP</entry>
+
+              <entry>net</entry>
+
+              <entry>fw</entry>
+
+              <entry>icmp</entry>
+
+              <entry>8</entry>
+
+              <entry></entry>
+
+              <entry></entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </example>
+
+    <para>Note that the above rule may be used without any additions to
+    /etc/shorewall/icmpdef to prevent your log from being flooded by messages
+    generated from remote pinging.</para>
+  </section>
+
+  <section>
+    <title>Shorewall Versions &#62;= 1.3.14 and &#60; 1.4.0 with
+    OLD_PING_HANDLING=No in /etc/shorewall/shorewall.conf</title>
+
+    <para>In 1.3.14, Ping handling was put under control of the rules and
+    policies just like any other connection request. In order to accept ping
+    requests from zone z1 to zone z2 where the policy for z1 to z2 is not
+    ACCEPT, you need a rule in /etc/shoreall/rules of the form:</para>
+
+    <informaltable>
+      <tgroup cols="7">
+        <thead>
+          <row>
+            <entry align="center">ACTION</entry>
+
+            <entry align="center">SOURCE</entry>
+
+            <entry align="center">DESTINATION</entry>
+
+            <entry align="center">PROTOCOL</entry>
+
+            <entry align="center">PORT(S)</entry>
+
+            <entry align="center">SOURCE PORT(S)</entry>
+
+            <entry align="center">ORIGINAL DEST</entry>
+          </row>
+        </thead>
+
+        <tbody>
+          <row>
+            <entry>ACCEPT</entry>
+
+            <entry>z1</entry>
+
+            <entry>z2</entry>
+
+            <entry>icmp</entry>
+
+            <entry>8</entry>
+
+            <entry></entry>
+
+            <entry></entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+    <example>
+      <title>Ping from local zone to firewall</title>
+
+      <para>To permit ping from the local zone to the firewall:</para>
+
+      <informaltable>
+        <tgroup cols="7">
+          <thead>
+            <row>
+              <entry align="center">ACTION</entry>
+
+              <entry align="center">SOURCE</entry>
+
+              <entry align="center">DESTINATION</entry>
+
+              <entry align="center">PROTOCOL</entry>
+
+              <entry align="center">PORT(S)</entry>
+
+              <entry align="center">SOURCE PORT(S)</entry>
+
+              <entry align="center">ORIGINAL DEST</entry>
+            </row>
+          </thead>
+
+          <tbody>
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>loc</entry>
+
+              <entry>fw</entry>
+
+              <entry>icmp</entry>
+
+              <entry>8</entry>
+
+              <entry></entry>
+
+              <entry></entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </example>
+
+    <para>If you would like to accept &#39;ping&#39; by default even when the
+    relevant policy is DROP or REJECT, create /etc/shorewall/icmpdef if it
+    doesn&#39;t already exist and in that file place the following command:</para>
+
+    <programlisting>     run_iptables -A icmpdef -p icmp --icmp-type 8 -j ACCEPT</programlisting>
+
+    <para>With that rule in place, if you want to ignore &#39;ping&#39; from
+    z1 to z2 then you need a rule of the form:</para>
+
+    <informaltable>
+      <tgroup cols="7">
+        <thead>
+          <row>
+            <entry align="center">ACTION</entry>
+
+            <entry align="center">SOURCE</entry>
+
+            <entry align="center">DESTINATION</entry>
+
+            <entry align="center">PROTOCOL</entry>
+
+            <entry align="center">PORT(S)</entry>
+
+            <entry align="center">SOURCE PORT(S)</entry>
+
+            <entry align="center">ORIGINAL DEST</entry>
+          </row>
+        </thead>
+
+        <tbody>
+          <row>
+            <entry>DROP</entry>
+
+            <entry>z1</entry>
+
+            <entry>z2</entry>
+
+            <entry>icmp</entry>
+
+            <entry>8</entry>
+
+            <entry></entry>
+
+            <entry></entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+    <example>
+      <title>Silently drop pings from the Internet</title>
+
+      <para>To drop ping from the internet, you would need this rule in
+      /etc/shorewall/rules:</para>
+
+      <informaltable>
+        <tgroup cols="7">
+          <thead>
+            <row>
+              <entry align="center">ACTION</entry>
+
+              <entry align="center">SOURCE</entry>
+
+              <entry align="center">DESTINATION</entry>
+
+              <entry align="center">PROTOCOL</entry>
+
+              <entry align="center">PORT(S)</entry>
+
+              <entry align="center">SOURCE PORT(S)</entry>
+
+              <entry align="center">ORIGINAL DEST</entry>
+            </row>
+          </thead>
+
+          <tbody>
+            <row>
+              <entry>DROP</entry>
+
+              <entry>net</entry>
+
+              <entry>fw</entry>
+
+              <entry>icmp</entry>
+
+              <entry>8</entry>
+
+              <entry></entry>
+
+              <entry></entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </example>
+
+    <para>The above rule may be used without any additions to
+    /etc/shorewall/icmpdef to prevent your log from being flooded by messages
+    generated from remote pinging.</para>
+
+    <note>
+      <para>There is one exception to the above description. In 1.3.14 and
+      1.3.14a, ping from the firewall itself is enabled unconditionally. This
+      suprising &#34;feature&#34; was removed in version 1.4.0.</para>
+    </note>
+  </section>
+
+  <section>
+    <title>Shorewall Versions &#60; 1.3.14 or with OLD_PING_HANDLING=Yes in
+    /etc/shorewall/shorewall.conf</title>
+
+    <para>There are several aspects to the old Shorewall Ping management:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>The <emphasis role="bold">noping</emphasis> and <emphasis
+        role="bold">filterping</emphasis> interface options in <ulink
+        url="Documentation.htm#Interfaces">/etc/shorewall/interfaces</ulink>.</para>
+      </listitem>
+
+      <listitem>
+        <para>The <emphasis role="bold">FORWARDPING</emphasis> option in
+        <ulink url="Documentation.htm#Config">/etc/shorewall/shorewall.conf</ulink>.</para>
+      </listitem>
+
+      <listitem>
+        <para>Explicit rules in <ulink url="Documentation.htm#rules">/etc/shorewall/rules</ulink>.</para>
+      </listitem>
+    </orderedlist>
+
+    <para>There are two cases to consider:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>Ping requests addressed to the firewall itself; and</para>
+      </listitem>
+
+      <listitem>
+        <para>Ping requests being forwarded to another system. Included here
+        are all cases of packet forwarding including NAT, DNAT rule, Proxy ARP
+        and simple routing.</para>
+      </listitem>
+    </orderedlist>
+
+    <para>These cases will be covered separately.</para>
+
+    <section>
+      <title>Ping Requests Addressed to the Firewall Itself</title>
+
+      <para>For ping requests addressed to the firewall, the sequence is as
+      follows:</para>
+
+      <orderedlist>
+        <listitem>
+          <para>If neither <emphasis role="bold">noping</emphasis> nor
+          <emphasis role="bold">filterping</emphasis> are specified for the
+          interface that receives the ping request then the request will be
+          responded to with an ICMP echo-reply.</para>
+        </listitem>
+
+        <listitem>
+          <para>If <emphasis role="bold">noping</emphasis> is specified for
+          the interface that receives the ping request then the request is
+          ignored.</para>
+        </listitem>
+
+        <listitem>
+          <para>If <emphasis role="bold">filterping</emphasis> is specified
+          for the interface then the request is passed to the rules/policy
+          evaluation.</para>
+        </listitem>
+      </orderedlist>
+    </section>
+
+    <section>
+      <title>Ping Requests Forwarded by the Firewall</title>
+
+      <para>These requests are always passed to rules/policy evaluation.</para>
+
+      <section>
+        <title>Rules Evaluation</title>
+
+        <para>Ping requests are ICMP type 8. So the general rule format is:</para>
+
+        <informaltable>
+          <tgroup cols="7">
+            <thead>
+              <row>
+                <entry align="center">ACTION</entry>
+
+                <entry align="center">SOURCE</entry>
+
+                <entry align="center">DESTINATION</entry>
+
+                <entry align="center">PROTOCOL</entry>
+
+                <entry align="center">PORT(S)</entry>
+
+                <entry align="center">SOURCE PORT(S)</entry>
+
+                <entry align="center">ORIGINAL DEST</entry>
+              </row>
+            </thead>
+
+            <tbody>
+              <row>
+                <entry>&#60;<emphasis>action</emphasis>&#62;</entry>
+
+                <entry>&#60;<emphasis>source</emphasis>&#62;</entry>
+
+                <entry>&#60;<emphasis>destination</emphasis>&#62;</entry>
+
+                <entry>icmp</entry>
+
+                <entry>8</entry>
+
+                <entry></entry>
+
+                <entry></entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+
+        <example>
+          <title>Allow ping from DMZ to Net</title>
+
+          <para>Example 1. Accept pings from the net to the dmz (pings are
+          responded to with an ICMP echo-reply):</para>
+
+          <informaltable>
+            <tgroup cols="7">
+              <thead>
+                <row>
+                  <entry align="center">ACTION</entry>
+
+                  <entry align="center">SOURCE</entry>
+
+                  <entry align="center">DESTINATION</entry>
+
+                  <entry align="center">PROTOCOL</entry>
+
+                  <entry align="center">PORT(S)</entry>
+
+                  <entry align="center">SOURCE PORT(S)</entry>
+
+                  <entry align="center">ORIGINAL DEST</entry>
+                </row>
+              </thead>
+
+              <tbody>
+                <row>
+                  <entry>ACCEPT</entry>
+
+                  <entry>dmz</entry>
+
+                  <entry>net</entry>
+
+                  <entry>icmp</entry>
+
+                  <entry>8</entry>
+
+                  <entry></entry>
+
+                  <entry></entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </informaltable>
+        </example>
+
+        <example>
+          <title>Silently drop pings from the Net</title>
+
+          <para>Drop pings from the net to the firewall:</para>
+
+          <informaltable>
+            <tgroup cols="7">
+              <thead>
+                <row>
+                  <entry align="center">ACTION</entry>
+
+                  <entry align="center">SOURCE</entry>
+
+                  <entry align="center">DESTINATION</entry>
+
+                  <entry align="center">PROTOCOL</entry>
+
+                  <entry align="center">PORT(S)</entry>
+
+                  <entry align="center">SOURCE PORT(S)</entry>
+
+                  <entry align="center">ORIGINAL DEST</entry>
+                </row>
+              </thead>
+
+              <tbody>
+                <row>
+                  <entry>DROP</entry>
+
+                  <entry>net</entry>
+
+                  <entry>fw</entry>
+
+                  <entry>icmp</entry>
+
+                  <entry>8</entry>
+
+                  <entry></entry>
+
+                  <entry></entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </informaltable>
+        </example>
+      </section>
+
+      <section>
+        <title>Policy Evaluation</title>
+
+        <para>If no applicable rule is found, then the policy for the source
+        to the destination is applied.</para>
+
+        <orderedlist>
+          <listitem>
+            <para>If the relevant policy is ACCEPT then the request is
+            responded to with an ICMP echo-reply.</para>
+          </listitem>
+
+          <listitem>
+            <para>If <emphasis role="bold">FORWARDPING</emphasis> is set to
+            Yes in /etc/shorewall/shorewall.conf then the request is responded
+            to with an ICMP echo-reply.</para>
+          </listitem>
+
+          <listitem>
+            <para>Otherwise, the relevant REJECT or DROP policy is used and
+            the request is either rejected or simply ignored.</para>
+          </listitem>
+        </orderedlist>
+      </section>
+    </section>
+  </section>
+</article>

@@ -15,10 +15,10 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-12-31</pubdate>
+    <pubdate>2005-01-26</pubdate>
 
     <copyright>
-      <year>2001-2004</year>
+      <year>2001-2005</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -638,6 +638,14 @@ dmz        DMZ            Demilitarized zone</programlisting>
                 address reserved by the IANA or by other RFCs (other than
                 1918) are dropped after being optionally logged. See the
                 /etc/shorewall/bogons file documentation below.</para>
+
+                <para>I personally recommend against using the nobogons
+                option. The IPV4 address space is being rapidly depleated so
+                the benefit of blocking traffic from unallocated address
+                ranges is minimal. Plus the rate at which address blocks are
+                being assigned causes your /etc/shorewall/bogons file to
+                become out of date with the result that legitimate traffic
+                gets blocked.</para>
               </listitem>
             </varlistentry>
 

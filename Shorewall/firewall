@@ -2574,6 +2574,10 @@ initialize_netfilter () {
 # Construct zone-independent rules					       #
 ################################################################################
 add_common_rules() {
+    logdisp() # $1 = Chain Name
+    {
+	echo "LOG --log-prefix "Shorewall:$1{1}:DROP:" --log-level info"
+    }
     ############################################################################
     # Reject Rules
     #
@@ -2661,13 +2665,11 @@ add_common_rules() {
 	echo "Enabling RFC1918 Filtering"
 	
 	strip_file rfc1918
-
-	disp="LOG --log-prefix "Shorewall:rfc1918:DROP:" --log-level info"
 	
 	createchain rfc1918 no
 
 	createchain logdrop no
-	run_iptables -A logdrop -j $disp
+	run_iptables -A logdrop -j `logdisp rfc1818`
 	run_iptables -A logdrop -j DROP
 
 	if [ -n "$MANGLE_ENABLED" ]; then
@@ -2678,9 +2680,9 @@ add_common_rules() {
 	    #
 	    # Also add a chain to log and drop any RFC1918 packets that we find
 	    #
-	    run_iptables -t mangle -N rfc1918
+	    run_iptables -t mangle -N man1918
 	    run_iptables -t mangle -N logdrop
-	    run_iptables -t mangle -A logdrop -j $disp
+	    run_iptables -t mangle -A logdrop -j `logdisp man1918`
 	    run_iptables -t mangle -A logdrop -j DROP
 	fi
 	
@@ -2691,7 +2693,7 @@ add_common_rules() {
 	    # RFC1918 destination
 	    #
 	    if [ -n "$MANGLE_ENABLED" ]; then
-	 	run_iptables -t mangle -A rfc1918 -d $subnet -j $target
+	 	run_iptables -t mangle -A man1918 -d $subnet -j $target
 	    fi
 	done < $TMP_DIR/rfc1918
 	    
@@ -2701,7 +2703,7 @@ add_common_rules() {
 	    done
 	    
 	    [ -n "$MANGLE_ENABLED" ] && \
-		run_iptables -t mangle -A PREROUTING -i $interface -j rfc1918
+		run_iptables -t mangle -A PREROUTING -i $interface -j man1918
 	done
 
     fi

@@ -1646,15 +1646,21 @@ setup_ipsec() {
 
 	for option in $opts; do
 	    case $option in
-		strict)       newoptions="$newoptions --strict" ;;
-		next)         newoptions="$newoptions --next" ;;
-		reqid=*)      newoptions="$newoptions --reqid ${option#*=}" ;;
-		spi=*)        newoptions="$newoptions --spi ${option#*=}" ;;
-		proto=*)      newoptions="$newoptions --proto ${option#*=}" ;;
-		mode=*)       newoptions="$newoptions --mode ${option#*=}" ;;
-		tunnel-src=*) newoptions="$newoptions --tunnel-src ${option#*=}" ;;
-		tunnel-dst=*) newoptions="$newoptions --tunnel-dst ${option#*=}" ;;
-		*)            fatal_error "Invalid option \"$option\" for zone $zone" ;;
+		strict)        newoptions="$newoptions --strict" ;;
+		next)          newoptions="$newoptions --next" ;;
+		reqid=*)       newoptions="$newoptions --reqid ${option#*=}" ;;
+		spi=*)         newoptions="$newoptions --spi ${option#*=}" ;;
+		proto=*)       newoptions="$newoptions --proto ${option#*=}" ;;
+		mode=*)        newoptions="$newoptions --mode ${option#*=}" ;;
+		tunnel-src=*)  newoptions="$newoptions --tunnel-src ${option#*=}" ;;
+		tunnel-dst=*)  newoptions="$newoptions --tunnel-dst ${option#*=}" ;;
+		reqid!=*)      newoptions="$newoptions ! --reqid ${option#*=}" ;;
+		spi!=*)        newoptions="$newoptions ! --spi ${option#*=}" ;;
+		proto!=*)      newoptions="$newoptions ! --proto ${option#*=}" ;;
+		mode!=*)       newoptions="$newoptions ! --mode ${option#*=}" ;;
+		tunnel-src!=*) newoptions="$newoptions ! --tunnel-src ${option#*=}" ;;
+		tunnel-dst!=*) newoptions="$newoptions ! --tunnel-dst ${option#*=}" ;;
+		*)             fatal_error "Invalid option \"$option\" for zone $zone" ;;
 	    esac
 	done
 
@@ -1952,8 +1958,8 @@ delete_proxy_arp() {
 
     [ -d ${STATEDIR} ] && touch ${STATEDIR}/proxyarp
 
-    for f in $(ls /proc/sys/net/ipv4/conf/*/proxy_arp); do
-	echo 0 > $f
+    for f in /proc/sys/net/ipv4/conf/*; do
+	[ -f $f/proxy_arp ] && echo 0 > $f/proxy_arp
     done
 }
 
@@ -2318,11 +2324,11 @@ process_accounting_rule() {
     jumpchain=
 	
     accounting_error() {
-	error_message "Warning: Invalid Accounting rule" $action $chain $source $dest $proto $port $sport
+	error_message "Warning: Invalid Accounting rule" $action $chain $source $dest $proto $port $sport $user
     }
 
     accounting_interface_error() {
-	error_message "Warning: Unknown interface $1 in " $action $chain $source $dest $proto $port $sport
+	error_message "Warning: Unknown interface $1 in " $action $chain $source $dest $proto $port $sport $user
     }
 
     accounting_interface_verify() {
@@ -2398,6 +2404,25 @@ process_accounting_rule() {
 	    ;;
     esac
 
+    [ -n "$user" ] && case $user in
+	-|any|all)
+	    ;;
+	*:*)
+	    [ "$chain" != OUTPUT ] && \
+		fatal_error "Invalid use of a user/group: chain is not OUTPUT but $chain"
+	    rule="$rule -m owner"
+	    temp="${user%:*}"
+	    [ -n "$temp" ] && rule="$rule --uid-owner $temp " 
+	    temp="${user#*:}"
+	    [ -n "$temp" ] && rule="$rule --gid-owner $temp "
+	    ;;
+	*)
+	    [ "$chain" != OUTPUT ] && \
+		fatal_error "Invalid use of a user/group: chain is not OUTPUT but $chain"
+	    rule="$rule -m owner --uid-owner $user "
+	    ;;
+    esac
+
     case $action in
 	COUNT)
 	    ;;
@@ -2426,7 +2451,7 @@ process_accounting_rule() {
 
     if iptables -A $chain $(fix_bang $rule) ; then
 	[ -n "$rule2" ] && run_iptables2 -A $jumpchain $rule2
-	progress_message "   Accounting rule" $action $chain $source $dest $proto $port $sport Added
+	progress_message "   Accounting rule" $action $chain $source $dest $proto $port $sport $user Added
     else
 	accounting_error
     fi
@@ -2442,8 +2467,8 @@ setup_accounting() # $1 = Name of accounting file
 
     strip_file accounting $1
 
-    while read action chain source dest proto port sport ; do
-	expandv action chain source dest proto port sport
+    while read action chain source dest proto port sport user ; do
+	expandv action chain source dest proto port sport user
 	process_accounting_rule
     done < $TMP_DIR/accounting
 
@@ -4577,6 +4602,12 @@ setup_masq()
 		mode=*)         policy="$policy --mode ${option#*=}" ;;
 		tunnel-src=*)   policy="$policy --tunnel-src ${option#*=}" ;;
 		tunnel-dst=*)   policy="$policy --tunnel-dst ${option#*=}" ;;
+		reqid!=*)       policy="$policy ! --reqid ${option#*=}" ;;
+		spi!=*)         policy="$policy ! --spi ${option#*=}" ;;
+		proto!=*)       policy="$policy ! --proto ${option#*=}" ;;
+		mode!=*)        policy="$policy ! --mode ${option#*=}" ;;
+		tunnel-src!=*)  policy="$policy ! --tunnel-src ${option#*=}" ;;
+		tunnel-dst!=*)  policy="$policy ! --tunnel-dst ${option#*=}" ;;
 		*)              fatal_error "Invalid IPSEC option \"$option\"" ;;
 	    esac
 	done
@@ -4675,17 +4706,20 @@ setup_masq()
 
 	if [ -n "$addresses" -a -n "$add_snat_aliases" ]; then
 	    for address in $(separate_list $addresses); do
-		for addr in $(ip_range_explicit $address) ; do
-		    if ! list_search $addr $aliases_to_add; then
-			save_command qt ip addr del $addr dev $interface 
-			aliases_to_add="$aliases_to_add $addr $fullinterface"
-			case $fullinterface in 
-			    *:*)
-				fullinterface=${fullinterface%:*}:$((${fullinterface#*:} + 1 ))
-				;;
-			esac
-		    fi
-		done
+		address=${address%:)}
+		if [ -n "$address" ]; then
+		    for addr in $(ip_range_explicit ${address%:*}) ; do
+			if ! list_search $addr $aliases_to_add; then
+			    save_command qt ip addr del $addr dev $interface 
+			    aliases_to_add="$aliases_to_add $addr $fullinterface"
+			    case $fullinterface in 
+				*:*)
+				    fullinterface=${fullinterface%:*}:$((${fullinterface#*:} + 1 ))
+				    ;;
+			    esac
+			fi
+		    done
+		fi
 	    done
 	fi
 
@@ -4805,37 +4839,44 @@ setup_masq()
 	esac
 
 	addrlist=
+	target=MASQUERADE
 
 	if [ -n "$addresses" ]; then
 	    for address in $(separate_list $addresses); do
-		addrlist="$addrlist --to-source $address"
+		case $address in
+		    *.*.*.*)
+			target=SNAT
+			addrlist="$addrlist --to-source $address"
+			;;
+		    *)
+			addrlist="$addrlist --to-ports ${address#:}"
+			;;
+		esac
 	    done
 	fi
 
 	if [ -n "$networks" ]; then
-	    for s in $networks; do
+	    for network in $networks; do
+		for destnet in $(separate_list $destnets); do
+		    addnatrule $chain -s $network -d $destnet $proto $ports $policy -j $target $addrlist
+		done
+
 		if [ -n "$addresses" ]; then
-		    for destnet in $(separate_list $destnets); do
-			addnatrule $chain -s $s -d $destnet $proto $ports $policy -j SNAT $addrlist
-		    done
-		    progress_message "   To $destination $displayproto from $s through ${interface} using $addresses"
+		    progress_message "   To $destination $displayproto from $network through ${interface} using $addresses"
 		else
-		    for destnet in $(separate_list $destnets); do
-			addnatrule $chain -s $s -d $destnet $proto $ports $policy -j MASQUERADE
-		    done
-		    progress_message "   To $destination $displayproto from $s through ${interface}"
+		    progress_message "   To $destination $displayproto from $network through ${interface}"
 		fi
 	    done
-	elif [ -n "$addresses" ]; then
-	    for destnet in $(separate_list $destnets); do
-		addnatrule $chain -d $destnet $proto $ports $policy -j SNAT $addrlist
-	    done
-	    echo "   To $destination $displayproto from $source through ${interface} using $addresses"
 	else
 	    for destnet in $(separate_list $destnets); do
-		addnatrule $chain -d $destnet $proto $ports $policy -j MASQUERADE
+		addnatrule $chain -d $destnet $proto $ports $policy -j $target $addrlist
 	    done
-	    progress_message "   To $destination $displayproto from $source through ${interface}"
+	    
+	    if [ -n "$addresses" ]; then
+		progress_message "   To $destination $displayproto from $source through ${interface} using $addresses"
+	    else
+		progress_message "   To $destination $displayproto from $source through ${interface}"
+	    fi
 	fi
 
     }
@@ -5254,6 +5295,9 @@ initialize_netfilter () {
 
     echo "Deleting user chains..."
 
+    exists_INPUT=Yes
+    exists_OUTPUT=Yes
+    exists_FORWARD=Yes
     setpolicy INPUT DROP
     setpolicy OUTPUT DROP
     setpolicy FORWARD DROP
@@ -5646,8 +5690,8 @@ add_common_rules() {
     #
     save_progress_message "Restoring ARP filtering..."
 
-    for f in /proc/sys/net/ipv4/conf/*/arp_filter; do
-	run_and_save_command "echo 0 > $f"
+    for f in /proc/sys/net/ipv4/conf/*; do
+	run_and_save_command "[ -f $f/arp_filter ] && echo 0 > $f/arp_filter"
     done
 
     interfaces=$(find_interfaces_by_option arp_filter)
@@ -5675,8 +5719,8 @@ add_common_rules() {
 
 	save_progress_message "Restoring Route Filtering..."
 
-	for f in /proc/sys/net/ipv4/conf/*/rp_filter; do
-	    run_and_save_command "echo 0 > $f"
+	for f in /proc/sys/net/ipv4/conf/*; do
+	    run_and_save_command "[ -f $f/rp_filter ] && echo 0 > $f/rp_filter"
 	done
 
 	for interface in $interfaces; do
@@ -6054,6 +6098,12 @@ define_firewall() # $1 = Command (Start or Restart)
     save_command "#"
     save_command ". /usr/share/shorewall/functions"
 
+    f=$(find_file params)
+
+    [ -f $f ] && \
+	save_command ". $f"
+
+    save_command "#"
     save_command "MODULESDIR=\"$MODULESDIR\""
     save_command "MODULE_SUFFIX=\"$MODULE_SUFFIX\""
 
@@ -6203,15 +6253,23 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 
     validate_zone $zone || startup_error "Unknown zone: $zone"
 
+    f=$(find_file ipsec)
+    if [ -f $f ]; then
+	progress_message "Processing $f..."
+	setup_ipsec $f
+    fi
+
     [ "$zone" = $FW ] && startup_error "Can't add $1 to firewall zone"
 
     eval is_ipsec=\$${zone}_is_ipsec
     eval options=\"\$${zone}_ipsec_options\"
+    eval in_options=\"\$${zone}_ipsec_in_options\"
+    eval out_options=\"\$${zone}_ipsec_out_options\"
 
     if [ -n "$is_ipsec" ]; then
 	[ -n "$POLICY_MATCH" ] || startup_error "Your kernel and/or iptables lacks policy match support"
-	policyin="-m policy --pol ipsec --dir in $options"
-	policyout="-m policy --pol ipsec --dir out $options"
+	policyin="-m policy --pol ipsec --dir in $options $in_options"
+	policyout="-m policy --pol ipsec --dir out $options $out_options"
     elif [ -n "$POLICY_MATCH" ]; then
  	policyin="-m policy --pol none --dir in"
 	policyout="-m policy --pol none --dir out"
@@ -6361,11 +6419,31 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
     #
     determine_zones
 
+    f=$(find_file ipsec)
+    if [ -f $f ]; then
+	progress_message "Processing $f..."
+	setup_ipsec $f
+    fi
+
     zone=$2
 
     validate_zone $zone || startup_error "Unknown zone: $zone"
 
     [ "$zone" = $FW ] && startup_error "Can't remove $1 from firewall zone"
+
+    eval is_ipsec=\$${zone}_is_ipsec
+    eval options=\"\$${zone}_ipsec_options\"
+    eval in_options=\"\$${zone}_ipsec_in_options\"
+    eval out_options=\"\$${zone}_ipsec_out_options\"
+
+    if [ -n "$is_ipsec" ]; then
+	[ -n "$POLICY_MATCH" ] || startup_error "Your kernel and/or iptables lacks policy match support"
+	policyin="-m policy --pol ipsec --dir in $options $in_options"
+	policyout="-m policy --pol ipsec --dir out $options $out_options"
+    elif [ -n "$POLICY_MATCH" ]; then
+ 	policyin="-m policy --pol none --dir in"
+	policyout="-m policy --pol none --dir out"
+    fi   
     #
     # Be sure that Shorewall has been restarted using a DZ-aware version of the code
     #
@@ -6401,14 +6479,14 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
     #
     # Delete any nat table entries for the host(s)
     #
-    qt iptables -t nat -D $(dynamic_in $interface) -s $host -j ${zone}_dnat
+    qt iptables -t nat -D $(dynamic_in $interface) -s $host $policyin -j ${zone}_dnat
     #
     # Delete rules rules the input chains for the passed interface
     #
     while read z1 z2 chain; do
 	if [ "$z1" = "$zone" ]; then
 	    if [ "$z2" = "$FW" ]; then
-		qt iptables -D $(dynamic_in $interface) -s $host -j $chain
+		qt iptables -D $(dynamic_in $interface) -s $host $policyin -j $chain
 	    else
 		source_chain=$(dynamic_fwd $interface)
 		eval dest_hosts=\"\$${z2}_hosts\"
@@ -6418,13 +6496,13 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		    hosts=${h#*:}
 
 		    if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
-			qt iptables -D $source_chain -s $host -o $iface $(match_dest_hosts $hosts) -j $chain
+			qt iptables -D $source_chain -s $host -o $iface $(match_dest_hosts $hosts) $policyout -j $chain
 		    fi
 		done
 	    fi
 	elif [ "$z2" = "$zone" ]; then
 	    if [ "$z1" = "$FW" ]; then
-		qt iptables -D $(dynamic_out $interface) -d $host -j $chain
+		qt iptables -D $(dynamic_out $interface) -d $host $policyout -j $chain
 	    else
 		eval source_hosts=\"\$${z1}_hosts\"
 		
@@ -6433,7 +6511,7 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		    hosts=${h#*:}
 
 		    if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
-			qt iptables -D $(dynamic_fwd $iface) $(match_source_hosts $hosts) -o $interface -d $host -j $chain
+			qt iptables -D $(dynamic_fwd $iface) $(match_source_hosts $hosts) -o $interface -d $host $policyout -j $chain
 		    fi
 		done
 	    fi

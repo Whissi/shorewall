@@ -70,6 +70,14 @@ list_search() # $1 = element to search for , $2-$n = list
 
     return 1
 }
+###############################################################################
+# Function to count list elements                                             #
+###############################################################################
+list_count() {
+    local temp=`separate_list $1`
+    
+    echo $temp | wc -w
+}
 
 ###############################################################################
 # Mutual exclusion -- These functions are jackets for the mutual exclusion    #
@@ -200,7 +208,8 @@ createchain() # $1 = chain name, $2 = If non-null, don't create default rules
 	state="ESTABLISHED"
 	[ -n "$ALLOWRELATED" ] && state="$state,RELATED"
 	run_iptables -A $1 -m state --state $state -j ACCEPT
-	run_iptables -A $1 -m state --state NEW -p tcp !--syn -j newnotsyn
+	[ -z "$NEWNOTSYN" ] && \
+	    run_iptables -A $1 -m state --state NEW -p tcp !--syn -j newnotsyn
     fi
 
     eval ${1}_exists=Yes
@@ -1771,14 +1780,6 @@ add_a_rule()
 ################################################################################
 process_rule() {
 
-    # Function to count list elements
-
-    list_count() {
-	local temp=`separate_list $1`
-	
-	echo $temp | wc -w
-    }
-
     # Function Body -- isolate log level
  
    if [ "$target" = "${target%:*}" ]; then
@@ -2396,6 +2397,10 @@ setup_masq()
 	    interface="${interface%:*}"
 	fi
 
+	if ! list_search $interface $all_interfaces; then
+	    fatal_error "Error: Unknown interface $interface"
+	fi
+	
 	if [ "$subnet" = "${subnet%!*}" ]; then
 	    nomasq=
 	else
@@ -2496,15 +2501,34 @@ setup_intrazone() # $1 = zone
 	ensurechain ${1}2${1}
     fi
 }
+###############################################################################
+# Add a record to the blacklst chain                                          #
+#                                                                             #
+#   $source      = address match                                              #
+#   $proto       = protocol selector                                          #
+#   $dport       = destination port selector                                  #
+###############################################################################
+add_blacklist_rule() {
+    [ -n "$BLACKLIST_LOGLEVEL" ] && \
+	run_iptables -A blacklst $source $proto $dport -j \
+	LOG $LOGPARMS --log-prefix \
+	"Shorewall:blacklst:$BLACKLIST_DISPOSITION:" \
+	--log-level $BLACKLIST_LOGLEVEL
+    run_iptables -A blacklst $source $proto $dport -j $disposition
+}
 
 ###############################################################################
 # Process a record from the blacklist file				      #
 #									      #
 #   $subnet	 = address/subnet					      #
+#   $protocol    = Protocol Number/Name                                       #
+#   $port        = Port Number/Name                                           #
 ###############################################################################
 process_blacklist_rec() {
     local source
     local addr
+    local proto
+    local dport
 
     for addr in `separate_list $subnet`; do
 	case $addr in
@@ -2516,14 +2540,55 @@ process_blacklist_rec() {
 	    source="-s $addr"
 	    ;;
 	esac
+	
+	if [ -n "$protocol" ]; then
+	    proto=" -p $protocol "
 
-	[ -n "$BLACKLIST_LOGLEVEL" ] && \
-	    run_iptables -A blacklst $source -j LOG $LOGPARMS --log-prefix \
-		"Shorewall:blacklst:$BLACKLIST_DISPOSITION:" \
-		--log-level $BLACKLIST_LOGLEVEL
-	run_iptables -A blacklst $source -j $disposition
+	    case $protocol in
+		tcp|TCP|6|udp|UDP|17)
+		    if [ -n "$ports" ]; then 
+			if [ -n "$MULTIPORT" -a \
+			    "$ports" != "${ports%,*}" -a \
+			    "$ports" = "${ports%:*}" -a \
+			    `list_count $ports` -le 15 ]
+			then
+			    dport="-m multiport --dports $ports"
+			    add_blacklist_rule
+			else
+			    for dport in `separate_list $ports`; do
+				dport="--dport $dport"
+				add_blacklist_rule
+			    done
+			fi
+		    else
+			add_blacklist_rule
+		    fi
+		    ;;
+		icmp|ICMP|0)
+		    if [ -n "$ports" ]; then
+			for dport in `separate_list $ports`; do
+			    dport="--icmp-type $dport"
+			    add_blacklist_rule
+			done
+		    else
+			add_blacklist_rule
+		    fi
+		    ;;
+		*)
+		    add_blacklist_rule
+		    ;;
+	    esac
+	else
+	    add_blacklist_rule
+	fi
 
-	echo "	 $addr added to Black List"
+	if [ -n "$ports" ]; then
+	    addr="$addr $protocol $ports"
+	elif [ -n "$protocol" ]; then
+	    addr="$addr $protocol"
+	fi
+	
+	echo "   $addr added to Black List"
     done
 }
 
@@ -2552,8 +2617,8 @@ setup_blacklist() {
 
 	[ "$disposition" = REJECT ] && disposition=reject
 
-	while read subnet; do
-	    expandv subnet
+	while read subnet protocol ports; do
+	    expandv subnet protocol ports
 	    process_blacklist_rec
 	done < $TMP_DIR/blacklist
 
@@ -2576,8 +2641,8 @@ refresh_blacklist() {
 
 	run_iptables -F blacklst
 
-	while read subnet; do
-	    expandv subnet
+	while read subnet protocol ports; do
+	    expandv subnet protocol ports
 	    process_blacklist_rec
 	done < $TMP_DIR/blacklist
     fi
@@ -2726,12 +2791,14 @@ initialize_netfilter () {
 	    --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
 
     
-    createchain newnotsyn no
-    run_user_exit newnotsyn
-    [ -n "$LOGNEWNOTSYN" ] && \
-	run_iptables -A newnotsyn -j LOG \
-	--log-prefix "Shorewall:newnotsyn:DROP:" --log-level $LOGNEWNOTSYN
-    run_iptables -A newnotsyn -j DROP	
+    if [ -z "$NEWNOTSYN" ]; then
+	createchain newnotsyn no
+	run_user_exit newnotsyn
+	[ -n "$LOGNEWNOTSYN" ] && \
+	    run_iptables -A newnotsyn -j LOG \
+	    --log-prefix "Shorewall:newnotsyn:DROP:" --log-level $LOGNEWNOTSYN
+	run_iptables -A newnotsyn -j DROP
+    fi	
 
     createchain icmpdef no
     createchain common	no
@@ -2760,6 +2827,42 @@ initialize_netfilter () {
 	createchain `input_chain $interface`   no
 	run_iptables -A `input_chain $interface`   -j dynamic
     done
+}
+
+################################################################################
+# Build the common chain -- called during [re]start and refresh                #
+################################################################################
+build_common_chain() {
+    ###########################################################################
+    # PING
+    #
+    [ -n "$FORWARDPING" ] && \
+	run_iptables -A icmpdef -p icmp --icmp-type echo-request -j ACCEPT
+    ############################################################################
+    # Common ICMP rules
+    #
+    run_user_exit icmpdef
+    ############################################################################
+    # Common rules in each chain
+    #
+    common=`find_file common`
+
+    if [ -f $common ]; then
+	. $common
+    else
+	. `find_file common.def`
+    fi
+    ###########################################################################
+    # New Not Syn Stuff
+    #
+    if [ -n "$NEWNOTSYN" ]; then
+	run_iptables -A common -p tcp --tcp-flags ACK ACK -j ACCEPT
+	run_iptables -A common -p tcp --tcp-flags RST RST -j ACCEPT
+    fi	
+    ###########################################################################
+    # BROADCASTS
+    #
+    drop_broadcasts `find_broadcasts`
 }
 
 ################################################################################
@@ -2825,37 +2928,17 @@ add_common_rules() {
 	    echo "   $interface"
 	done
     fi
-    ###########################################################################
-    # PING
-    #
-    [ -n "$FORWARDPING" ] && \
-	run_iptables -A common -p icmp --icmp-type echo-request -j ACCEPT
-    ############################################################################
-    # Common ICMP rules
-    #
-    run_user_exit icmpdef
-    ############################################################################
-    # Common rules in each chain
-    #
-    common=`find_file common`
 
-    if [ -f $common ]; then
-	. $common
-    else
-	. `find_file common.def`
-    fi
-    ###########################################################################
-    # BROADCASTS
-    #
-    drop_broadcasts `find_broadcasts`
+    build_common_chain
+
     ###########################################################################
     # DHCP
     #
     echo "Adding rules for DHCP"
 
     for interface in `find_interfaces_by_option dhcp`; do
-       run_iptables -A `input_chain $interface` -p udp --dport 67:68 -j ACCEPT
-       run_iptables -A OUTPUT    -o $interface  -p udp --dport 67:68 -j ACCEPT
+	run_iptables -A `input_chain $interface` -p udp --dport 67:68 -j ACCEPT
+	run_iptables -A OUTPUT	  -o $interface	 -p udp --dport 67:68 -j ACCEPT
     done
 
     ###########################################################################
@@ -3108,19 +3191,29 @@ activate_rules()
 
 	    chain="`rules_chain $zone $zone1`"
 
+	    if havechain ${zone}2${zone1} || havechain ${zone1}2${zone}; then
+		have_canonical=Yes
+	    else
+		have_canonical=
+	    fi
+
 	    for host in $source_hosts; do
 		interface=${host%:*}
 		subnet=${host#*:}
 		chain1=`forward_chain $interface`
 		
-		case $interface in
-		    *+*)
-			multi=yes
-			;;
-		    *)
-			list_search $interface $multi_interfaces && multi=yes || multi=
-			;;
-		esac
+		if [ -n "$have_canonical" ]; then
+		    multi=yes
+		else
+		    case $interface in
+			*+*)
+			    multi=yes
+			    ;;
+			*)
+			    list_search $interface $multi_interfaces && multi=yes || multi=
+			    ;;
+		    esac
+		fi
 
 		for host1 in $dest_hosts; do
 		    interface1=${host1%:*}
@@ -3303,25 +3396,8 @@ refresh_firewall()
     run_iptables -F common
 
     echo "Adding Common Rules"
-    ###########################################################################
-    # PING
-    #
-    [ -n "$FORWARDPING" ] && \
-	run_iptables -A common -p icmp --icmp-type echo-request -j ACCEPT
-    ############################################################################
-    # Common rules in each chain
-    #
-    common=`find_file common`
 
-    if [ -f $common ]; then
-	. $common
-    else
-	. `find_file common.def`
-    fi
-    ###########################################################################
-    # BROADCASTS
-    #
-    drop_broadcasts `find_broadcasts`
+    build_common_chain
 
     ###########################################################################
     # Blacklist
@@ -3416,6 +3492,7 @@ do_initialize() {
     DETECT_DNAT_IPADDRS=
     MERGE_HOSTS=
     MUTEX_TIMEOUT=
+    NEWNOTSYN=
     LOGNEWNOTSYN=
     FORWARDPING=
     stopping=
@@ -3495,6 +3572,7 @@ do_initialize() {
     DETECT_DNAT_IPADDRS=`added_param_value_no DETECT_DNAT_IPADDRS $DETECT_DNAT_IPADDRS`
     MERGE_HOSTS=`added_param_value_no MERGE_HOSTS $MERGE_HOSTS`
     FORWARDPING=`added_param_value_no FORWARDPING $FORWARDPING`
+    NEWNOTSYN=`added_param_value_yes NEWNOTSYN $NEWNOTSYN`
 }
 
 ################################################################################

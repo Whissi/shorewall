@@ -101,6 +101,7 @@ fi
 %attr(0600,root,root) /usr/share/shorewall/action.AllowAuth
 %attr(0600,root,root) /usr/share/shorewall/action.AllowDNS
 %attr(0600,root,root) /usr/share/shorewall/action.AllowFTP
+%attr(0600,root,root) /usr/share/shorewall/action.AllowICMPs
 %attr(0600,root,root) /usr/share/shorewall/action.AllowIMAP
 %attr(0600,root,root) /usr/share/shorewall/action.AllowNNTP
 %attr(0600,root,root) /usr/share/shorewall/action.AllowNTP

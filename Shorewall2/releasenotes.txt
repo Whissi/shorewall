@@ -520,4 +520,9 @@ New Features:
     interfaces. If you wish to accept source routing on an interface,
     you must specify the new 'sourceroute' interface option in
     /etc/shorewall/interfaces.
- 
+
+20) The default Drop and Reject actions now invoke the new standard
+    action 'AllowICMPs'. This new action accepts critical ICMP types:
+    
+	Type 3 code 4 (fragmentation needed)
+	Type 11       (TTL exceeded)

@@ -1,5 +1,5 @@
 %define name shorewall
-%define version 1.4.6_20030821
+%define version 1.4.6_20030823
 %define release 1
 %define prefix /usr
 
@@ -111,6 +111,7 @@ fi
 %changelog
 * Sat Aug 23 2003 Tom Eastep <tom@shorewall.net>
 - Added /etc/shorewall/users
+- Changed version to 1.4.6_20030823-1
 * Thu Aug 21 2003 Tom Eastep <tom@shorewall.net>
 - Changed version to 1.4.6_20030821-1
 - Added /etc/shorewall/usersets

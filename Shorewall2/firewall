@@ -2180,6 +2180,8 @@ process_tc_rule()
 	fi
 
 	[ "x$dest"   = "x-"  ] || r="${r}-d $dest "
+	[ "x$proto"  = "x-"  ] && proto=all
+	[ "x$proto"  = "x"   ] && proto=all
 	[ "$proto"   = "all" ] || r="${r}-p $proto "
 	[ "x$port"   = "x-"  ] || r="${r}--dport $port "
 	[ "x$sport"  = "x-"  ] || r="${r}--sport $sport "

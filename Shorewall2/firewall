@@ -6244,7 +6244,9 @@ activate_rules()
 	    createchain $frwd_chain No
 
 	    if [ -n "$POLICY_MATCH" ]; then
-		eval source_hosts=\$${zone}_ipsec_hosts
+	        eval is_ipsec=\$${zone}_is_ipsec
+
+		[ -n "$is_ipsec" ] && eval source_hosts=\$${zone}_hosts || eval source_hosts=\$${zone}_ipsec_hosts
 	    
 		for host in $source_hosts; do
 		    interface=${host%%:*}

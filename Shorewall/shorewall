@@ -252,9 +252,10 @@ display_chains()
 	echo "$banner `date`"
 	echo
 	firstchain=Yes
-	echo "Dynamic Chain"
+	echo "Dynamic Chains"
 	echo
 	showchain dynamic
+	showchain '.*_dyn'
 	timed_read
 
 	qt rm -f /tmp/chains-$$

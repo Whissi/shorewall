@@ -74,7 +74,7 @@ list_search() # $1 = element to search for , $2-$n = list
 # Function to count list elements                                             #
 ###############################################################################
 list_count() {
-    local temp=`separate_list $1`
+    local temp="`separate_list $1`"
     
     echo $temp | wc -w
 }
@@ -592,7 +592,7 @@ validate_rule() {
     # Ensure that the passed comma-separated list has 15 or fewer elements
     #
     validate_list() {
-	local temp=`separate_list $1`
+	local temp="`separate_list $1`"
 	
 	[ `echo $temp | wc -w` -le 15 ]
     }

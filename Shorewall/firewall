@@ -1236,7 +1236,7 @@ setup_proxy_arp() {
     interfaces=`find_interfaces_by_option proxyarp`
 
     for interface in $interfaces; do
-	if qt echo 1 > /proc/sys/net/ipv4/conf/$interface/proxy_arp; then
+	if echo 1 > /proc/sys/net/ipv4/conf/$interface/proxy_arp 2> /dev/null; then
 	    echo "   Enabled proxy ARP on $interface"
         else
 	    error_message "Warning: Unable to enable proxy ARP on $interface"

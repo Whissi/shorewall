@@ -1,5 +1,5 @@
 %define name shorewall
-%define version 1.3.7b
+%define version 1.3.7c
 %define release 1
 %define prefix /usr
 
@@ -76,6 +76,8 @@ if [ $1 = 0 ]; then if [ -x /sbin/insserv ]; then /sbin/insserv -r /etc/init.d/s
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel
 
 %changelog
+* Mon Sep 02 2002 Tom Eastep <tom@shorewall.net>
+- Changed version to 1.3.7c
 * Mon Aug 26 2002 Tom Eastep <tom@shorewall.net>
 - Changed version to 1.3.7b
 * Thu Aug 22 2002 Tom Eastep <tom@shorewall.net>

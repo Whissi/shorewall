@@ -126,6 +126,10 @@ policy</li>
       <h3 align="Left">Other Gotchas</h3>
    
   <ul>
+    <li>Seeing rejected/dropped packets logged out of the INPUT or FORWARD 
+    chains? This means that your zone definitions are screwed up and the host 
+    that is sending the packets isn't in any zone (using a /etc/shorewall/hosts 
+    file are you?).</li>
     <li>Remember that Shorewall doesn't automatically allow ICMP     type 8 ("ping")
 requests to be sent between zones. If you want     pings to be allowed between
 zones, you need a rule of the form:<br>
@@ -183,7 +187,7 @@ ADD_IP_ALIASES</a>
   
      </font>
   
-        <p><font size="2">Last updated 7/27/2002 -
+        <p><font size="2">Last updated 8/29/2002 -
 Tom Eastep</font>
  </p>
 

@@ -46,7 +46,7 @@ INTERFACE=eth0
 #
 GATEWAY=1.2.3.4
 #
-# Networks behind the remote gateway
+# Networks behind the remote gateway (space-separated list)
 #
 NETWORKS="192.168.1.0/24"
 #
@@ -109,7 +109,7 @@ find_first_interface_address() # $1 = interface
 }
 
 #
-# Create a Racoon configuration file using the variables below
+# Create a Racoon configuration file using the variables above
 #
 make_racoon_conf() {
     echo "path certificate \"$CERTS\";"
@@ -124,7 +124,7 @@ make_racoon_conf() {
     echo "    exchange_mode main;"
     echo "    certificate_type x509 \"$CERT.pem\" \"${CERT}_key.pem\";"
     echo "    verify_cert on;"
-    echo "	  my_identifier asn1dn ;"
+    echo "    my_identifier asn1dn ;"
     echo "    peers_identifier asn1dn ;"
     echo "    verify_identifier on ;"
     echo "    lifetime time 24 hour ;"
@@ -178,7 +178,7 @@ make_racoon_conf() {
 }
 
 #
-# Make a setkey configuration file using the variables below
+# Make a setkey configuration file using the variables above
 #
 make_setkey_conf() 
 {
@@ -199,29 +199,44 @@ make_setkey_conf()
 #
 start() 
 {
+    #
+    # Get the first IP address configured on the device in INTERFACE
+    #
     IPADDR=$(find_first_interface_address $INTERFACE)
-    
+    #
+    # Create the name of the setkey temporary file
+    #
     TEMPFILE=$(mktemp /tmp/$(basename $0).XXXXXXXX)
     [ $? -eq 0 ] || fatal_error "Can't create temporary file name"
-
+    #
+    # Create the file
+    #
     make_setkey_conf > $TEMPFILE
-
+    #
+    # Create the SPD
+    #
     $SETKEY -f $TEMPFILE
-
+    #
+    # We can now remove the file
+    #
     rm -f $TEMPFILE
-
+    #
+    # Create another name -- make this distict to aid debugging
+    # (just comment out the 'rm' commands)
+    #
     TEMPFILE=$(mktemp /tmp/$(basename $0).XXXXXXXX)
     [ $? -eq 0 ] || fatal_error "Can't create temporary file name"
-
+    #
+    # Create the file
+    #
     make_racoon_conf > $TEMPFILE
-
-    TEMPFILE=$(mktemp /tmp/$(basename $0).XXXXXXXX)
-    [ $? -eq 0 ] || fatal_error "Can't create temporary file name"
-
-    make_racoon_conf > $TEMPFILE
-
+    #
+    # Start Racoon Daemon
+    #
     $RACOON -4 -f $TEMPFILE
-
+    #
+    # Once the Daemon is running, we can remove the file
+    #
     rm -f $TEMPFILE
 }
 #
@@ -229,16 +244,27 @@ start()
 #
 stop() 
 {
+    #
+    # Kill any racoon daemons
+    #
     killall racoon
+    #
+    # Purge the SAD and SPD
+    #
     setkey -F -FP
 }
 
+#
+# Display command syntax and abend
+#
 usage() 
 {
     error_message "usage: $(basename $0) [start|stop|restart]"
     exit 1
 }
-
+################################################################################
+#                       C O D E    S T A R T S    H E R E
+################################################################################
 [ $# -eq 1 ] || usage
 
 

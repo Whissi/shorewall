@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-09-23</pubdate>
+    <pubdate>2004-12-07</pubdate>
 
     <copyright>
       <year>2004</year>
@@ -71,8 +71,8 @@
 
     <para>There are cases where you want to create a bridge to join two or
     more LAN segments and you don't need to restrict the traffic between those
-    segments. This is the environment that is described in this article.
-    </para>
+    segments. This is the environment that is described in this
+    article.</para>
 
     <para>If you do need to restrict traffic through the bridge, please refer
     to the <ulink url="bridge.html">Shorewall Bridge/Firewall
@@ -113,6 +113,11 @@ loc            <emphasis role="bold">br0</emphasis>             10.0.1.255     <
       <listitem>
         <para>The <emphasis role="bold">routeback</emphasis> option is
         specified for <filename class="devicefile">br0</filename>.</para>
+      </listitem>
+
+      <listitem>
+        <para>The default gateway for hosts in the local segments will be
+        192.168.1.254 — the IP address of the bridge itself.</para>
       </listitem>
     </itemizedlist>
   </section>

@@ -1724,7 +1724,7 @@ process_tc_rule()
 {
     add_a_tc_rule() {
 	r=
-	chain=tcpre
+	[ -n "$MARK_IN_FORWARD_CHAIN" ] && chain=tcfor || chain=tcpre
 
 	if [ "x$source" != "x-"	 ]; then
 	    case $source in
@@ -1775,7 +1775,13 @@ setup_tc1() {
     #
     # Create the TC mangle chains
     #
-    run_iptables -t mangle -N tcpre
+    
+    if [ -n "$MARK_IN_FORWARD_CHAIN" ]; then
+	run_iptables -t mangle -N tcfor
+    else
+	run_iptables -t mangle -N tcpre
+    fi
+
     run_iptables -t mangle -N tcout
     #
     # Process the TC Rules File
@@ -1790,7 +1796,12 @@ setup_tc1() {
     #
     # Link to the TC mangle chains from the main chains
     #
-    run_iptables -t mangle -A PREROUTING  -j tcpre
+
+    if [ -n "$MARK_IN_FORWARD_CHAIN" ]; then
+	run_iptables -t mangle -A FORWARD -j tcfor
+    else
+	run_iptables -t mangle -A PREROUTING  -j tcpre
+    fi
     run_iptables -t mangle -A OUTPUT	  -j tcout
 
     run_user_exit tcstart
@@ -1836,12 +1847,19 @@ refresh_tc() {
     echo "Refreshing Traffic Control Rules..."
 
     delete_tc
+
+    
     
     if mangle_chain_exists tcpre; then
         #
         # Flush the TC mangle chains
         #
-        run_iptables -t mangle -F tcpre
+	if [ -n "$MARK_IN_FORWARD_CHAIN" ]; then
+	    run_iptables -t mangle -F tcfor
+	else
+	    run_iptables -t mangle -F tcpre
+	fi
+
         run_iptables -t mangle -F tcout
         #
         # Process the TC Rules File
@@ -4416,6 +4434,7 @@ do_initialize() {
     TCP_FLAGS_DISPOSITION=
     TCP_FLAGS_LOG_LEVEL=
     RFC1918_LOG_LEVEL=
+    MARK_IN_FORWARD_CHAIN=
     stopping=
     have_mutex=
     masq_seq=1
@@ -4526,6 +4545,7 @@ do_initialize() {
     fi
 
     [ -z "$RFC1918_LOG_LEVEL" ] && RFC1918_LOG_LEVEL=info
+    MARK_IN_FORWARD_CHAIN=`added_param_value_no MARK_IN_FORWARD_CHAIN $MARK_IN_FORWARD_CHAIN`
 
 }
 

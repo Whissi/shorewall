@@ -1847,7 +1847,7 @@ setup_nat() {
 	    run_and_save_command qt ip addr del $external dev $iface
 	fi
 
-	if [ "x$allints" = "xYes" -o "$xallints" = "xyes" ]; then
+	if [ "x$allints" = "xYes" -o "x$allints" = "xyes" ]; then
 	    addnatrule nat_in  -d $external -j DNAT --to-destination $internal
 	    addnatrule nat_out -s $internal -j SNAT --to-source $external
 

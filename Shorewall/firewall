@@ -2899,7 +2899,7 @@ rules_chain() # $1 = source zone, $2 = destination zone
 }
 
 #
-#  Get the subnets routed out of a given interface
+#  echo the list of subnets routed out of a given interface
 #
 get_routed_subnets() # $1 = interface name
 {
@@ -2908,7 +2908,7 @@ get_routed_subnets() # $1 = interface name
 
     ip route show dev $1 2> /dev/null |
 	while read address rest; do
-	    [ -z "`echo "$address" | grep '/'`" ] && address="${address}/32"
+	    [ "$address" = "${address%/*}" ] && address="${address}/32"
 	    echo $address
         done
 }
@@ -2979,7 +2979,7 @@ setup_masq()
 	    ;;
 	*)
 	    subnets=`get_routed_subnets $subnet`
-	    [ -z "$subnets" ] && startup_error "Unable to determine the address(es) for interface $subnet"
+	    [ -z "$subnets" ] && startup_error "Unable to determine the routes through interface $subnet"
 	    subnet="$subnets"
 	    ;;
 	esac

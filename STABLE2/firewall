@@ -1526,14 +1526,13 @@ setup_proxy_arp() {
 	    persistent=
 	    ;;
 	[Yy][Ee][Ss])
+	    [ -z "$haveroute" ] || print_warning
 	    ;;
 	*)
 	    if [ -n "$persistent" ]; then
 		print_error1
 		return
 	    fi
-
-	    [ -z "$haveroute" ] || print_warning
 	    ;;
 	esac
 

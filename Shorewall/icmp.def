@@ -1,22 +1,6 @@
 ##############################################################################
 # Shorewall 1.3 /etc/shorewall/icmp.def
 #
-# This file defines the default rules for accepting ICMP packets. 
+# This file is obsolete and is included for compatibility with existing
+# icmpdef extension scripts that source it.
 #
-# Do not modify this file -- if you wish to change these rules, create
-# /etc/shorewall/icmpdef to replace it. It is suggested that you include
-# the command "source /etc/shorewall/icmp.def" in your
-# /etc/shorewall/icmpdef file so that you will continue to get the
-# advantage of new releases of this file.
-#
-# For example, if you want to accept 'ping' everywhere then create
-# /etc/shorewall/icmpdef with the following two lines:
-#
-# source /etc/shorewall/icmp.def
-# run_iptables -A icmpdef -p ICMP --icmp-type echo-request -j ACCEPT
-#
-run_iptables -A icmpdef -p ICMP --icmp-type echo-reply              -j ACCEPT
-run_iptables -A icmpdef -p ICMP --icmp-type source-quench           -j ACCEPT
-run_iptables -A icmpdef -p ICMP --icmp-type destination-unreachable -j ACCEPT
-run_iptables -A icmpdef -p ICMP --icmp-type time-exceeded           -j ACCEPT
-run_iptables -A icmpdef -p ICMP --icmp-type parameter-problem       -j ACCEPT

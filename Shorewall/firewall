@@ -2814,16 +2814,15 @@ add_common_rules() {
 	    echo "   $interface"
 	done
     fi
+    ###########################################################################
+    # PING
+    #
+    [ -n "$FORWARDPING" ] && \
+	run_iptables -A common -p icmp --icmp-type echo-request -j ACCEPT
     ############################################################################
     # Common ICMP rules
     #
-    icmpdef=`find_file icmpdef`
-
-    if [ -f $icmpdef ]; then
-	. $icmpdef
-    else
-	. `find_file icmp.def`
-    fi
+    run_user_exit icmpdef
     ############################################################################
     # Common rules in each chain
     #
@@ -2838,7 +2837,6 @@ add_common_rules() {
     # BROADCASTS
     #
     drop_broadcasts `find_broadcasts`
-    
     ###########################################################################
     # RFC 1918
     #
@@ -3400,6 +3398,7 @@ do_initialize() {
     MERGE_HOSTS=
     MUTEX_TIMEOUT=
     LOGNEWNOTSYN=
+    FORWARDPING=
     stopping=
     have_mutex=
     masq_seq=1
@@ -3476,6 +3475,7 @@ do_initialize() {
     MULTIPORT=`added_param_value_no MULTIPORT $MULTIPORT`
     DETECT_DNAT_IPADDRS=`added_param_value_no DETECT_DNAT_IPADDRS $DETECT_DNAT_IPADDRS`
     MERGE_HOSTS=`added_param_value_no MERGE_HOSTS $MERGE_HOSTS`
+    FORWARDPING=`added_param_value_no FORWARDPING $FORWARDPING`
 }
 
 ################################################################################

@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-11-26</pubdate>
+    <pubdate>2004-11-27</pubdate>
 
     <copyright>
       <year>2004</year>
@@ -367,16 +367,17 @@
         <term>add</term>
 
         <listitem>
-          <para><command>shorewall add &lt;interface&gt;[:&lt;host&gt;]
-          &lt;zone&gt;</command></para>
+          <para><command>shorewall add &lt;interface&gt;[:&lt;bridge
+          port&gt;][:&lt;host&gt;] &lt;zone&gt;</command></para>
 
           <para>Adds a host or subnet to a dynamic zone usually used with
           VPN's.</para>
 
-          <para>Note that there is no provision in the syntax for specifying a
-          <ulink url="bridge.html">bridge</ulink> port and that the "shorewall
-          add" command is not supported for hosts connected to the firewall
-          through a bridge port.</para>
+          <para>Note that there was no provision in the syntax for specifying
+          a <ulink url="bridge.html">bridge</ulink> port prior to Shorewall
+          versions 2.0.12 and 2.2.0 Beta 7 and that the "shorewall add"
+          command was not supported for hosts connected to the firewall
+          through a bridge port prior to those releases.</para>
 
           <para>Example: <command>shorewall add ipsec0:192.0.2.24
           vpn1</command></para>
@@ -447,16 +448,17 @@
         <term>delete</term>
 
         <listitem>
-          <para><command>shorewall delete &lt;interface&gt;[:&lt;host&gt;]
-          &lt;zone&gt;</command></para>
+          <para><command>shorewall delete &lt;interface&gt;[:&lt;bridge
+          port&gt;][:&lt;host&gt;] &lt;zone&gt;</command></para>
 
           <para>Deletes the specified interface (and host if included) from
           the specified zone.</para>
 
-          <para>Note that there is no provision in the syntax for specifying a
-          <ulink url="bridge.html">bridge</ulink> port and that the "shorewall
-          delete" command is not supported for hosts connected to the firewall
-          through a bridge port.</para>
+          <para>Note that there was no provision in the syntax for specifying
+          a <ulink url="bridge.html">bridge</ulink> port prior to Shorewall
+          versions 2.0.12 and 2.2.0 Beta 7 and that the "shorewall delete"
+          command was not supported for hosts connected to the firewall
+          through a bridge port prior to those releases.</para>
 
           <para>Example:</para>
 

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE article PUBLIC "-//OASIS//DTD Simplified DocBook XML V1.0//EN"
-"http://www.oasis-open.org/docbook/xml/simple/1.0/sdocbook.dtd">
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
 <article>
   <articleinfo>
     <title>Shorewall FAQs</title>
@@ -567,10 +567,11 @@
             <para>Set the ALL INTERFACES column in the nat file to
             &#34;Yes&#34;.</para>
 
-            <para><emphasis role="bold">WARNING:</emphasis> In this
-            configuration, all Z-&#62;Z traffic will look to the server as if
-            it came from the firewall rather than from the original client! I
-            DO NOT RECOMMEND THIS SETUP.</para>
+            <warning>
+              <para>In this configuration, all Z-&#62;Z traffic will look to
+              the server as if it came from the firewall rather than from the
+              original client! I DO NOT RECOMMEND THIS SETUP.</para>
+            </warning>
           </listitem>
         </orderedlist>
 
@@ -1764,7 +1765,7 @@ Creating input Chains...
   </section>
 
   <section>
-    <title>MISCELLANEOUS</title>
+    <title>Miscellaneous</title>
 
     <section id="faq19">
       <title>I have added entries to /etc/shorewall/tcrules but they don&#39;t

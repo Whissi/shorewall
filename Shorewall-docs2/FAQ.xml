@@ -17,7 +17,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-05-18</pubdate>
+    <pubdate>2004-05-21</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -520,29 +520,9 @@ eth2             192.168.2.0/24</programlisting>
       <title>(FAQ 5) I&#39;ve installed Shorewall and now I can&#39;t ping
       through the firewall</title>
 
-      <para><emphasis role="bold">Answer:</emphasis> If you want your firewall
-      to be totally open for <quote>ping</quote>,</para>
-
-      <orderedlist>
-        <listitem>
-          <para>Create <filename>/etc/shorewall/common</filename> if it
-          doesn&#39;t already exist.</para>
-        </listitem>
-
-        <listitem>
-          <para>Be sure that the first command in the file is <quote>.
-          <filename>/etc/shorewall/common.de</filename>f</quote></para>
-        </listitem>
-
-        <listitem>
-          <para>Add the following to <filename>/etc/shorewall/common</filename></para>
-
-          <programlisting><command>run_iptables -A icmpdef -p ICMP --icmp-type echo-request -j ACCEPT</command></programlisting>
-        </listitem>
-      </orderedlist>
-
-      <para>For a complete description of Shorewall <quote>ping</quote>
-      management, see <ulink url="ping.html">this page</ulink>.</para>
+      <para><emphasis role="bold">Answer:</emphasis> For a complete
+      description of Shorewall <quote>ping</quote> management, see <ulink
+      url="ping.html">this page</ulink>.</para>
     </section>
 
     <section id="faq15">
@@ -1753,7 +1733,8 @@ iptables: Invalid argument
   <appendix>
     <title>Revision History</title>
 
-    <para><revhistory><revision><revnumber>1.25</revnumber><date>2004-05-18</date><authorinitials>TE</authorinitials><revremark>Empty
+    <para><revhistory><revision><revnumber>1.26</revnumber><date>2004-05-18</date><authorinitials>TE</authorinitials><revremark>Delete
+    obsolete ping information.</revremark></revision><revision><revnumber>1.25</revnumber><date>2004-05-18</date><authorinitials>TE</authorinitials><revremark>Empty
     /etc/shorewall on Debian.</revremark></revision><revision><revnumber>1.25</revnumber><date>2004-05-08</date><authorinitials>TE</authorinitials><revremark>Update
     for Shorewall 2.0.2</revremark></revision><revision><revnumber>1.24</revnumber><date>2004-04-25</date><authorinitials>TE</authorinitials><revremark>Add
     MA Brown&#39;s notes on multi-ISP routing.</revremark></revision><revision><revnumber>1.23</revnumber><date>2004-04-22</date><authorinitials>TE</authorinitials><revremark>Refined

@@ -2276,7 +2276,7 @@ add_an_action()
 }
 
 #
-# Process a record from the rules file for the 'start', 'restart' or 'check' commands
+# Process a record from an action file for the 'start', 'restart' or 'check' commands
 #
 process_action() # $1 = target
                  # $2 = clients
@@ -2382,6 +2382,11 @@ process_action() # $1 = target
 	echo "   Rule \"$rule\" added."
     fi
 }
+
+#
+# Read /etc/shorewall/actions and for each defined <action>, process 
+# /etc/shorewall/action.<action>
+#
 
 process_actions() {
     #

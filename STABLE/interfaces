@@ -1,5 +1,5 @@
 #
-# Shorewall 1.4 -- Interfaces File
+# Shorewall 2.0 -- Interfaces File
 #
 # /etc/shorewall/interfaces
 #
@@ -24,11 +24,12 @@
 #			want to make an entry that applies to all PPP
 #			interfaces, use 'ppp+'.
 #
-#			DO NOT DEFINE THE LOOPBACK INTERFACE (lo) IN THIS FILE.
+#			There is no need to define the loopback	interface (lo)
+#			in this file. 
 #
 #	BROADCAST	The broadcast address for the subnetwork to which the
 #			interface belongs. For P-T-P interfaces, this
-#			column is left black.If the interface has multiple
+#			column is left blank.If the interface has multiple
 #			addresses on multiple subnets then list the broadcast
 #			addresses as a comma-separated list.
 #
@@ -36,8 +37,7 @@
 #			will detect the broadcast address for you. If you
 #			select this option, the interface must be up before
 #			the firewall is started, you must have iproute
-#			installed and the interface must only be associated
-#			with a single subnet.
+#			installed.
 #
 #			If you don't want to give a value for this column but
 #			you want to enter a value in the OPTIONS column, enter
@@ -46,38 +46,51 @@
 #	OPTIONS		A comma-separated list of options including the
 #			following:
 #
-#			dhcp	     - interface is managed by DHCP or used by
-#                                      a DHCP server running on the firewall or
-#				       you have a static IP but are on a LAN
-#				       segment with lots of Laptop DHCP clients.
+#			dhcp	     - Specify this option when any of
+#				       the following are true:
+#				       1. the interface gets its IP address
+#				          via DHCP 
+#				       2. the interface is used by
+#                                         a DHCP server running on the firewall
+#				       3. you have a static IP but are on a LAN
+#				          segment with lots of Laptop DHCP
+#					  clients.
+#				       4. the interface is a bridge with
+#				          a DHCP server on one port and DHCP
+#					  clients on another port.
+#
 #			norfc1918    - This interface should not receive
 #				       any packets whose source is in one
 #				       of the ranges reserved by RFC 1918
 #				       (i.e., private or "non-routable"
-#				       addresses. If packet mangling is
-#				       enabled in shorewall.conf, packets
-#				       whose destination addresses are
-#				       reserved by RFC 1918 are also rejected.
+#				       addresses. If packet mangling or
+#				       connection-tracking match is enabled in
+#				       your kernel, packets whose destination
+#				       addresses are reserved by RFC 1918 are
+#				       also rejected.
+#
+#			nobogons    -  This interface should not receive
+#				       any packets whose source is in one
+#				       of the ranges reserved by IANA (this
+#				       option does not cover those ranges
+#				       reserved by RFC 1918 -- see above).
+#
 #			routefilter  - turn on kernel route filtering for this
 #				       interface (anti-spoofing measure). This
 #                                      option can also be enabled globally in
 #				       the /etc/shorewall/shorewall.conf file.
-#			dropunclean  - Logs and drops mangled/invalid
-#				       packets. USE OF THIS OPTION IS
-#				       NOT RECOMMENDED. It will be removed in
-#				       Shorewall 2.0.
-#			logunclean   - Logs mangled/invalid packets but does
-#				       not drop them. This option will be
-#				       removed in Shorewall 2.0.
+#
 #	.	.	blacklist    - Check packets arriving on this interface
 #				       against the /etc/shorewall/blacklist
 #				       file.
+#
 #			maclist	     - Connection requests from this interface
 #				       are compared against the contents of
 #				       /etc/shorewall/maclist. If this option
 #				       is specified, the interface must be
 #				       an ethernet NIC and must be up before
 #				       Shorewall is started.
+#
 #			tcpflags     - Packets arriving on this interface are
 #				       checked for certain illegal combinations
 #				       of TCP flags. Packets found to have
@@ -86,6 +99,7 @@
 #				       TCP_FLAGS_DISPOSITION after having been
 #				       logged according to the setting of
 #				       TCP_FLAGS_LOG_LEVEL.
+#
 #			proxyarp     -
 #				Sets
 #				/proc/sys/net/ipv4/conf/<interface>/proxy_arp.
@@ -101,10 +115,20 @@
 #				       established connection will be accepted
 #				       from this interface, even if 
 #				       NEWNOTSYN=No has been specified in
-#				       /etc/shorewall/shorewall.conf.
+#				       /etc/shorewall/shorewall.conf. In other
+#				       words, packets coming in on this interface
+#				       are processed as if NEWNOTSYN=Yes had been
+#				       specified in /etc/shorewall/shorewall.conf.
 #
 #				       This option has no effect if 
 #				       NEWNOTSYN=Yes.
+#
+#				       It is the opinion of the author that
+#			  	       NEWNOTSYN=No creates more problems than
+#				       it solves and I recommend against using 
+#				       that setting in shorewall.conf (hence 
+#				       making the use of the 'newnotsyn'
+#				       interface option unnecessary).
 #
 #			routeback    - If specified, indicates that Shorewall
 #				       should include rules that allow filtering
@@ -120,12 +144,21 @@
 #                                      interface. The interface must be up
 #				       when Shorewall is started.
 #
+#			nosmurfs     - Filter packets for smurfs
+#				       (packets with a broadcast
+#				       address as the source).
+#
+#				       Smurfs will be optionally logged based
+#				       on the setting of SMURF_LOG_LEVEL in
+#				       shorewall.conf. After logging, the
+#				       packets are dropped.
+#
 #			detectnets   - Automatically taylors the zone named
 #				       in the ZONE column to include only those
 #				       hosts routed through the interface.
 #
 #		        WARNING: DO NOT SET THE detectnets OPTION ON YOUR
-#			         INTERNET INTERFACE!
+#			         INTERNET INTERFACE.
 #
 #			The order in which you list the options is not
 #			significant but the list should have no embedded white
@@ -157,4 +190,5 @@
 #			net	ppp0	-
 ##############################################################################
 #ZONE	 INTERFACE	BROADCAST	OPTIONS
+#
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

@@ -1,4 +1,4 @@
-Shoreline Firewall (Shorewall) Version 1.4 - 3/14/2003
+Shoreline Firewall (Shorewall) Version 2.0 - 2/14/2004
 -----         ----
 
 -----------------------------------------------------------------------------
@@ -30,18 +30,23 @@ o Edit the configuration files to fit your environment.
 
       http://www.shorewall.net/shorewall_quickstart_guide.htm
 
-o If you are using Caldera, Redhat, Mandrake, Corel, Slackware, SuSE or
-  Debian, then type "./install.sh".
-o For other distributions, determine where your distribution installs
-  init scripts and type "./install.sh <init script directory>"
+o Slackware users type:
+
+  	DEST=/etc/rc.d INIT=rc.firewall ./install.sh
+
+  All other users type:
+
+	./install.sh
+
 o Start the firewall by typing "shorewall start"
 o If the install script was unable to configure Shoreline Firewall to
-  start automatically at boot, see the HTML documentation contains in the
-  "documentation" directory.
+  start automatically at boot, you will have to used your
+  distribution's runlevel editor to configure Shorewall manually.
 
 Upgrade:
 
 o run the install script as described above.
-o shorewall restart
+o "shorewall check" and correct any errors found.
+o "shorewall restart"
 
 

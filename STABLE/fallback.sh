@@ -5,7 +5,7 @@
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
 #
-#     (c) 2001,2002,2003 - Tom Eastep (teastep@shorewall.net)
+#     (c) 2001,2002,2003,2004 - Tom Eastep (teastep@shorewall.net)
 #
 #       Shorewall documentation is available at http://seattlefirewall.dyndns.org
 #
@@ -28,11 +28,11 @@
 #       shown below. Simply run this script to revert to your prior version of
 #       Shoreline Firewall.
 
-VERSION=1.4.11
+VERSION=2.0.16
 
 usage() # $1 = exit status
 {
-    echo "usage: `basename $0`"
+    echo "usage: $(basename $0)"
     exit $1
 }
 
@@ -57,30 +57,19 @@ fi
 echo "Backing Out Installation of Shorewall $VERSION"
 
 if [ -L /usr/share/shorewall/init ]; then
-    FIREWALL=`ls -l /usr/share/shorewall/firewall | sed 's/^.*> //'`
+    FIREWALL=$(ls -l /usr/share/shorewall/firewall | sed 's/^.*> //')
     restore_file $FIREWALL
-    restore_file /usr/share/shorewall/firewall
-elif [ -L /usr/lib/shorewall/firewall ]; then
-    FIREWALL=`ls -l /usr/lib/shorewall/firewall | sed 's/^.*> //'`
-    restore_file $FIREWALL
-elif [ -L /var/lib/shorewall/firewall ]; then
-    FIREWALL=`ls -l /var/lib/shorewall/firewall | sed 's/^.*> //'`
-    restore_file $FIREWALL
-elif [ -L /usr/lib/shorewall/init ]; then
-    FIREWALL=`ls -l /usr/lib/shorewall/init | sed 's/^.*> //'`
-    restore_file $FIREWALL
-    restore_file /usr/lib/shorewall/firewall
+else
+    restore_file /etc/init.d/shorewall
 fi
 
-restore_file /sbin/shorewall
+restore_file /usr/share/shorewall/firewall
 
-[ -f /etc/shorewall.conf.$VERSION ] && rm -f /etc/shorewall.conf.$VERSION
+restore_file /sbin/shorewall
 
 restore_file /etc/shorewall/shorewall.conf
 
 restore_file /etc/shorewall/functions
-restore_file /usr/share/shorewall/functions
-restore_file /usr/share/shorewall/firewall
 restore_file /usr/lib/shorewall/functions
 restore_file /var/lib/shorewall/functions
 restore_file /usr/lib/shorewall/firewall
@@ -101,6 +90,8 @@ restore_file /etc/shorewall/hosts
 restore_file /etc/shorewall/rules
 
 restore_file /etc/shorewall/nat
+
+restore_file /etc/shorewall/netmap
 
 restore_file /etc/shorewall/params
 
@@ -125,8 +116,15 @@ restore_file /etc/shorewall/blacklist
 restore_file /etc/shorewall/whitelist
 
 restore_file /etc/shorewall/rfc1918
+restore_file /usr/share/shorewall/rfc1918
+
+restore_file /usr/share/shorewall/bogons
+
+restore_file /usr/share/shorewall/configpath
 
 restore_file /etc/shorewall/init
+
+restore_file /etc/shorewall/initdone
 
 restore_file /etc/shorewall/start
 
@@ -138,27 +136,15 @@ restore_file /etc/shorewall/ecn
 
 restore_file /etc/shorewall/accounting
 
-restore_file /etc/shorewall/usersets
-
-restore_file /etc/shorewall/users
+restore_file /etc/shorewall/actions.std
 
 restore_file /etc/shorewall/actions
 
-restore_file /etc/shorewall/action.template
+for f in /usr/share/shorewall/action.*-${VERSION}.bkout; do
+    restore_file $(echo $f | sed "s/-${VERSION}.bkout//")
+done
 
-if [ -f /usr/share/shorewall/version-${VERSION}.bkout ]; then
-    restore_file /usr/share/shorewall/version
-    oldversion="`cat /usr/share/shorewall/version`"
-elif [ -f /usr/lib/shorewall/version-${VERSION}.bkout ]; then
-    restore_file /usr/lib/shorewall/version
-    oldversion="`cat /usr/lib/shorewall/version`"
-elif [ -f /var/lib/shorewall/version-${VERSION}.bkout ]; then
-    restore_file /var/lib/shorewall/version
-    oldversion="`cat /var/lib/shorewall/version`"
-else
-    restore_file /etc/shorewall/version
-    oldversion="`cat /etc/shorewall/version`"
-fi
+restore_file /usr/share/shorewall/version
 
 echo "Shorewall Restored to Version $oldversion"
 

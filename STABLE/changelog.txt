@@ -1,4 +1,121 @@
-Changes since 1.4.10g
+Changes in 2.0.4
 
-1)  Fix installer to not give zones and shorewall.conf execute
-    permission.
+1) Fix DNAT logging with 'fw' as the source zone.
+
+Change in 2.0.5
+
+1) Eradicate more RESTOREBASE messages.
+
+2) Remove 'mangle' reference from shorewall.conf.
+
+Change in 2.0.6
+
+1) Add PKTTYPE option.
+
+       shorewall.conf
+       firewall
+
+2) Sanitized some correct but confusing code in determine_hosts().
+
+   There was a loop:
+
+	 for networks in $networks
+	 ...
+
+   It now reads:
+
+	 for network in $networks
+	 ... 
+
+
+3) Don't give shorewall.conf and zones execute permission.
+  
+4) Backport 'dropInvalid' from 2.1
+
+Changes in 2.0.7
+
+1) Include output of "ip rule ls" and "ip route ls" in "shorewall
+   status".
+
+2) Consult PKTTYPE when generating 'REJECT' rules.
+
+3) Enhance IP/Routing output in "shorewall status".
+
+4) Correct handling of multiple 'blacklist' interfaces.
+
+5) Add "0.0.0.0 RETURN" to nobogons.
+
+Changes in 2.0.8
+
+1) Removed dead code from process_actions2()
+
+2) Corrected read command in process_actions2() (userspec)
+
+Changes in 2.0.9
+
+1) Corrected setup_tc1() handling of the PROTO column.
+
+2) Added warning about ADD_SNAT_ALIASES in the masq file.
+
+3) Added "brctl show" to the status command. 
+
+Changes in 2.0.10
+
+1) Corrected GATEWAY handling for 'pptpserver's
+
+2) Correct log rule number generation.
+
+3) Add clarification to /etc/shorewall/tcrules.
+
+4) Apply part of Ian Allen's fix for down interface in the SUBNET
+   column of /etc/shorewall/masq.
+
+5) Add key /proc settings to "shorewall status" output.
+
+Changes in 2.0.11
+
+1) Add note for Slackware users to INSTALL.
+
+2) Correct bogons file.
+
+3) Replace service names by port numbers in /etc/shorewall/tos.
+
+4) Added NNTPS to action.AllowNNTP.
+
+5) Fix install.sh
+
+Changes in 2.0.12
+
+1) Correct typo in shorewall.conf.
+
+2) Fix "shorewall add" and "shorewall delete" with bridging.
+
+3) Implement variable expansion in INCLUDE directives
+
+4) Split restore-base into two files.
+
+5) Correct dynamic zone OUTPUT handling.
+
+Changes in 2.0.13
+
+1) Correct typo in "shorewall add" code.
+
+Changes in 2.0.14
+
+1)  Log drops due to policy rate limiting.
+
+2)  Fix typo in interfaces file.
+
+3)  Eliminate "bad variable" errors during stop/clear.
+
+4)  Fix typo in tunnels file.
+
+Changes in 2.0.15
+
+1)  Increased port range for Traceroute.
+
+2)  Corrected port of rate-limit logging change.
+
+Changes in 2.0.16
+
+1)  Backport DROPINVALID from 2.2.0.

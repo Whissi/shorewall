@@ -1,6 +1,45 @@
 #!/bin/sh
 #
-# Shorewall 1.4 -- /usr/lib/shorewall/functions
+# Shorewall 2.0 -- /usr/share/shorewall/functions
+
+#
+# Search a list looking for a match -- returns zero if a match found
+# 1 otherwise
+#
+list_search() # $1 = element to search for , $2-$n = list
+{
+    local e=$1
+
+    while [ $# -gt 1 ]; do
+	shift
+	[ "x$e" = "x$1" ] && return 0
+    done
+
+    return 1
+}
+
+#
+# Functions to count list elements
+# - - - - - - - - - - - - - - - -
+# Whitespace-separated list
+#
+list_count1() {
+    echo $#
+}
+#
+# Comma-separated list
+#
+list_count() {
+    list_count1 $(separate_list $1)
+}
+
+#
+# Conditionally produce message
+#
+progress_message() # $* = Message
+{
+    [ -n "$QUIET" ] || echo "$@"
+}
 
 #
 # Suppress all output for a command
@@ -11,15 +50,88 @@ qt()
 }
 
 #
-# Find a File -- Look first in $SHOREWALL_DIR then in /etc/shorewall
+# Perform variable substitution on the passed argument and echo the result
+#
+expand() # $@ = contents of variable which may be the name of another variable
+{
+    eval echo \"$@\"
+}
+
+#
+# Perform variable substitition on the values of the passed list of variables
+#
+expandv() # $* = list of variable names
+{
+    local varval
+
+    while [ $# -gt 0 ]; do
+	eval varval=\$${1}
+	eval $1=\"$varval\"
+	shift
+    done
+}
+
+#
+# Replace all leading "!" with "! " in the passed argument list
+#
+
+fix_bang() {
+    local i;
+
+    for i in $@; do
+	case $i in
+	    !*)
+		echo "! ${i#!}"
+		;;
+	    *)
+		echo $i
+		;;
+	esac
+    done
+}
+
+#
+# Set default config path
+#
+ensure_config_path() {
+    local F=/usr/share/shorewall/configpath
+    if [ -z "$CONFIG_PATH" ]; then
+	[ -f $F ] || { echo "   ERROR: $F does not exist"; exit 2; }
+	. $F
+    fi
+}
+   
+#
+# Find a File -- For relative file name, look first in $SHOREWALL_DIR then in /etc/shorewall
 #
 find_file()
 {
-    if [ -n "$SHOREWALL_DIR" -a -f $SHOREWALL_DIR/$1 ]; then
-    	echo $SHOREWALL_DIR/$1
-    else
-    	echo /etc/shorewall/$1
-    fi
+    local saveifs= directory
+
+    case $1 in
+	/*)
+	    echo $1
+	    ;;
+	*)
+	    if [ -n "$SHOREWALL_DIR" -a -f $SHOREWALL_DIR/$1 ]; then
+		echo $SHOREWALL_DIR/$1
+	    else
+		saveifs=$IFS
+		IFS=:
+		for directory in $CONFIG_PATH; do
+		    if [ -f $directory/$1 ]; then
+			echo $directory/$1
+			IFS=$saveifs
+			return
+		    fi
+		done
+		
+		IFS=$saveifs
+		
+		echo /etc/shorewall/$1
+	    fi
+	    ;;
+    esac
 }
 
 #
@@ -59,6 +171,55 @@ separate_list() {
 }
 
 #
+# Load a Kernel Module
+#
+loadmodule() # $1 = module name, $2 - * arguments
+{
+    local modulename=$1
+    local modulefile
+    local suffix
+    moduleloader=modprobe
+
+    if ! qt which modprobe; then 
+	moduleloader=insmod
+    fi
+
+    if [ -z "$(lsmod | grep $modulename)" ]; then
+	shift
+	
+	for suffix in $MODULE_SUFFIX ; do
+	    modulefile=$MODULESDIR/${modulename}.${suffix}
+
+	    if [ -f $modulefile ]; then
+		case $moduleloader in
+		    insmod)
+			insmod $modulefile $*
+			;;
+		    *)
+			modprobe $modulename $*
+			;;
+		esac
+
+		return
+	    fi
+	done
+    fi
+}
+
+#
+# Reload the Modules
+#
+reload_kernel_modules() {
+
+    [ -z "$MODULESDIR" ] && MODULESDIR=/lib/modules/$(uname -r)/kernel/net/ipv4/netfilter
+
+    while read command; do 
+	eval $command
+    done
+
+}
+
+#
 # Find the zones
 #
 find_zones() # $1 = name of the zone file
@@ -67,7 +228,7 @@ find_zones() # $1 = name of the zone file
 	[ -n "$zone" ] && case "$zone" in
 	    \#*)
 		;;
-            $FW|multi)
+            $FW)
 	        echo "Reserved zone name \"$zone\" in zones file ignored" >&2
 		;;
             *)
@@ -89,15 +250,15 @@ find_display() # $1 = zone, $2 = name of the zone file
 #
 determine_zones()
 {
-    local zonefile=`find_file zones`
+    local zonefile=$(find_file zones)
 
     multi_display=Multi-zone
     strip_file zones $zonefile
-    zones=`find_zones $TMP_DIR/zones`
-    zones=`echo $zones` # Remove extra trash
+    zones=$(find_zones $TMP_DIR/zones)
+    zones=$(echo $zones) # Remove extra trash
     
     for zone in $zones; do
-	dsply=`find_display $zone $TMP_DIR/zones`
+	dsply=$(find_display $zone $TMP_DIR/zones)
 	eval ${zone}_display=\$dsply
     done
 }
@@ -117,7 +278,7 @@ get_statedir()
 {
     MUTEX_TIMEOUT=
 
-    local config=`find_file shorewall.conf`
+    local config=$(find_file shorewall.conf)
 
     if [ -f $config ]; then
        . $config
@@ -238,7 +399,6 @@ mktempfile() {
     fi
 }
 
-
 #
 # create a temporary directory
 #
@@ -260,8 +420,7 @@ mktempdir() {
 	    echo "   ERROR:Internal error in mktempdir"
 	    ;;
 	esac
-}	
-
+}		
 
 #
 # Read a file and handle "INCLUDE" directives
@@ -271,24 +430,29 @@ read_file() # $1 = file name, $2 = nest count
 {
     local first rest
 
-    while read first rest; do
-	if [ "x$first"  = "xINCLUDE" ]; then
-	    if [ $2 -lt 4 ]; then
-		read_file `find_file ${rest%#*}` $(($2 + 1))
+    if [  -f $1 ]; then
+	while read first rest; do
+	    if [ "x$first"  = "xINCLUDE" ]; then
+		if [ $2 -lt 4 ]; then
+		    read_file $(find_file $(expand ${rest%#*})) $(($2 + 1))
+		else
+		    echo "   WARNING: INCLUDE in $1 ignored (nested too deeply)" >&2
+		fi
 	    else
-		echo "   WARNING: INCLUDE in $1 ignored (nested too deeply)" >&2
+		echo "$first $rest"
 	    fi
-	else
-	    echo "$first $rest"
-	fi
-    done < $1
+	done < $1
+    else
+	[ -n "$terminator" ] && $terminator "No such file: $1"
+	echo "Warning -- No such file: $1"
+    fi
 }
 
 #
 # Function for including one file into another
 #
 INCLUDE() {
-    . `find_file $@`
+    . $(find_file $(expand $@))
 }
 
 #
@@ -299,7 +463,7 @@ strip_file() # $1 = Base Name of the file, $2 = Full Name of File (optional)
 {
     local fname
 
-    [ $# = 1 ] && fname=`find_file $1` || fname=$2
+    [ $# = 1 ] && fname=$(find_file $1) || fname=$2
 
     if [ -f $fname ]; then
 	read_file $fname 0 | cut -d'#' -f1 | grep -v '^[[:space:]]*$' > $TMP_DIR/$1
@@ -376,8 +540,8 @@ ip_range() {
 	;;
     esac
 
-    first=`decodeaddr ${1%-*}`
-    last=`decodeaddr ${1#*-}`
+    first=$(decodeaddr ${1%-*})
+    last=$(decodeaddr ${1#*-})
 
     if [ $first -gt $last ]; then
 	fatal_error "Invalid IP address range: $1"
@@ -398,7 +562,7 @@ ip_range() {
 	    y=$(( $y * 2 ))
 	done
 
-	echo `encodeaddr $first`$vlsm
+	echo $(encodeaddr $first)$vlsm
 	first=$(($first + $z))
     done
 }
@@ -415,15 +579,15 @@ ip_range_explicit() {
 	;;
     esac
 
-    first=`decodeaddr ${1%-*}`
-    last=`decodeaddr ${1#*-}`
+    first=$(decodeaddr ${1%-*})
+    last=$(decodeaddr ${1#*-})
 
     if [ $first -gt $last ]; then
 	fatal_error "Invalid IP address range: $1"
     fi
 
     while [ $first -le $last ]; do
-	echo `encodeaddr $first`
+	echo $(encodeaddr $first)
 	first=$(($first + 1))
     done
 }
@@ -441,10 +605,10 @@ ip_netmask() {
 # Network address from CIDR
 #
 ip_network() {
-    local decodedaddr=`decodeaddr ${1%/*}`
-    local netmask=`ip_netmask $1`
+    local decodedaddr=$(decodeaddr ${1%/*})
+    local netmask=$(ip_netmask $1)
 
-    echo `encodeaddr $(($decodedaddr & $netmask))`
+    echo $(encodeaddr $(($decodedaddr & $netmask)))
 }
 
 #
@@ -462,37 +626,37 @@ ip_broadcast() {
 # Calculate broadcast address from CIDR
 #
 broadcastaddress() {
-    local decodedaddr=`decodeaddr ${1%/*}`
-    local netmask=`ip_netmask $1`
-    local broadcast=`ip_broadcast $1`
+    local decodedaddr=$(decodeaddr ${1%/*})
+    local netmask=$(ip_netmask $1)
+    local broadcast=$(ip_broadcast $1)
 
-    echo `encodeaddr $(( $(($decodedaddr & $netmask)) | $broadcast ))`
+    echo $(encodeaddr $(( $(($decodedaddr & $netmask)) | $broadcast )))
 }
 
 #
-# Test for subnet membership
+# Test for network membership
 #
-in_subnet() # $1 = IP address, $2 = CIDR network
+in_network() # $1 = IP address, $2 = CIDR network
 {
-    local netmask=`ip_netmask $2`
+    local netmask=$(ip_netmask $2)
 
-    test $(( `decodeaddr $1` & $netmask)) -eq $(( `decodeaddr ${2%/*}` & $netmask ))
+    test $(( $(decodeaddr $1) & $netmask)) -eq $(( $(decodeaddr ${2%/*}) & $netmask ))
 }
 
 #
 # Netmask to VLSM
 #
 ip_vlsm() {
-    local mask=`decodeaddr $1`
+    local mask=$(decodeaddr $1)
     local vlsm=0
-    local x=$(( 128 $LEFTSHIFT 24 ))
+    local x=$(( 128 $LEFTSHIFT 24 )) # 0x80000000
 
     while [ $(( $x & $mask )) -ne 0 ]; do
-	[ $mask -eq $x ] && mask=0 || mask=$(( $mask $LEFTSHIFT 1 )) # Don't Ask...
+	[ $mask -eq $x ] && mask=0 || mask=$(( $mask $LEFTSHIFT 1 )) # Not all shells shift 0x80000000 left properly.
 	vlsm=$(($vlsm + 1))
     done
 
-    if [ $(( $mask & 2147483647)) -ne 0 ]; then
+    if [ $(( $mask & 2147483647 )) -ne 0 ]; then # 2147483647 = 0x7fffffff
 	echo "Invalid net mask: $1" >&2
     else
 	echo $vlsm
@@ -502,11 +666,11 @@ ip_vlsm() {
 
 #
 # Chain name base for an interface -- replace all periods with underscores in the passed name.
-#                                     The result is echoed (less "+" and anything following).
+#                                     The result is echoed (less trailing "+").
 #
 chain_base() #$1 = interface
 {
-    local c=${1%%+*}
+    local c=${1%%+}
 
     while true; do
 	case $c in
@@ -525,28 +689,24 @@ chain_base() #$1 = interface
 }
 
 #
-# Remove trailing digits from a name
-#
-strip_trailing_digits() {
-    echo $1 | sed s'/[0-9].*$//'
-}
-
-#
 # Loosly Match the name of an interface
 #
 
 if_match() # $1 = Name in interfaces file - may end in "+"
-           # $2 = Name from routing table
+           # $2 = Full interface name - may also end in "+"
 {
-    local if_file=$1
-    local rt_table=$2
-
-    case $if_file in
+    local pattern=${1%+}
+    
+    case $1 in
 	*+)
-	    test "`strip_trailing_digits $rt_table`" = "${if_file%+}"
+	    #
+	    # Can't use ${2:0:${#pattern}} because ash and dash don't support that flavor of
+	    # variable expansion :-(
+	    #
+	    test  "x$(echo $2 | cut -b -${#pattern} )" = "x${pattern}"
 	    ;;
 	*)
-	    test "$rt_table" = "$if_file"
+	    test "x$1" = "x$2"
 	    ;;
     esac
 }
@@ -571,13 +731,13 @@ find_rt_interface() {
     ip route ls | while read addr rest; do
 	case $addr in
 	    */*)
-		in_subnet ${1%/*} $addr && echo `find_device $rest`
+		in_network ${1%/*} $addr && echo $(find_device $rest)
 		;;
 	    default)
 		;;
 	    *)
 		if [ "$addr" = "$1" -o "$addr/32" = "$1" ]; then
-		    echo `find_device $rest`
+		    echo $(find_device $rest)
 		fi
 		;;
 	esac
@@ -589,7 +749,7 @@ find_rt_interface() {
 #
 find_default_interface() {
     ip route ls | while read first rest; do
-	[ "$first" = default ] && echo `find_device $rest` && return
+	[ "$first" = default ] && echo $(find_device $rest) && return
     done
 }
 
@@ -599,10 +759,10 @@ find_default_interface() {
 #
 
 find_interface_by_address() {
-    local dev="`find_rt_interface $1`"
+    local dev="$(find_rt_interface $1)"
     local first rest
 
-    [ -z "$dev" ] && dev=`find_default_interface`
+    [ -z "$dev" ] && dev=$(find_default_interface)
 
     [ -n "$dev" ] && echo $dev
 }

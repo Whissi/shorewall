@@ -1,7 +1,301 @@
-Shorewall 1.4.11
+Shorewall 2.0.16
 
-Problems Corrected since version 1.4.10g
+----------------------------------------------------------------------
+Problems Corrected in version 2.0.4
 
-1)  The shorewall.conf and zones file are no longer given execute
-    permission by the installer.
+1)  A DNAT rule with 'fw' as the source that specified logging caused
+    "shorewall start" to fail.
 
+----------------------------------------------------------------------
+Problems Corrected in version 2.0.5
+
+1) Eliminated "$RESTOREBASE: ambiguous redirect" messages during 
+   "shorewll stop" in the case where DISABLE_IPV6=Yes in 
+   shorewall.conf.
+
+2) An anachronistic reference to the mangle option was removed from
+   shorewall.conf.
+
+----------------------------------------------------------------------
+Problems Corrected in version 2.0.6
+
+1) Some users have reported the pkttype match option in iptables/
+   Netfilter failing to match certain broadcast packets. The result 
+   is that the firewall log shows a lot of broadcast packets.
+
+   Other users have complained of the following message when 
+   starting Shorewall:
+
+	    modprobe: cant locate module ipt_pkttype
+
+   Users experiencing either of these problems can use PKTTYPE=No in
+   shorewall.conf to cause Shorewall to use IP address filtering of 
+   broadcasts rather than packet type.
+
+2) The shorewall.conf and zones file are no longer given execute
+   permission by the installer script.
+
+3) ICMP packets that are in the INVALID state are now dropped by the
+   Reject and Drop default actions. They do so using the new 
+   'dropInvalid' builtin action.
+-----------------------------------------------------------------------
+Problems Corrected in version 2.0.7
+
+1) The PKTTYPE option introduced in version 2.0.6 is now used when
+   generating rules to REJECT packets. Broadcast packets are silently
+   dropped rather than being rejected with an ICMP (which is a protocol
+   violation) and users whose kernels have broken packet type match
+   support are likely to see messages reporting this violation.
+   Setting PKTTYPE=No should cause these messages to cease. 
+
+2) Multiple interfaces with the 'blacklist' option no longer result in
+   an error message at startup.
+
+3) The following has been added to /etc/shorewall/bogons:
+
+       0.0.0.0	 RETURN
+
+   This prevents the 'nobogons' option from logging DHCP 'DISCOVER'
+   broadcasts. 
+-----------------------------------------------------------------------
+New Features in version 2.0.7
+
+1) To improve supportability, the "shorewall status" command now
+   includes IP and Route configuration information.
+
+   Example:
+
+   IP Configuration
+
+   1: lo: <LOOPBACK,UP> mtu 16436 qdisc noqueue
+      link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+      inet 127.0.0.1/8 brd 127.255.255.255 scope host lo
+      inet6 ::1/128 scope host
+   2: eth0: <BROADCAST,MULTICAST,PROMISC,UP> mtu 1500 qdisc pfifo_fast qlen 1000
+      link/ether 00:a0:c9:15:39:78 brd ff:ff:ff:ff:ff:ff
+      inet6 fe80::2a0:c9ff:fe15:3978/64 scope link
+   3: eth1: <BROADCAST,MULTICAST,PROMISC,UP> mtu 1500 qdisc pfifo_fast qlen 1000
+      link/ether 00:a0:c9:a7:d7:bf brd ff:ff:ff:ff:ff:ff
+      inet6 fe80::2a0:c9ff:fea7:d7bf/64 scope link
+   5: sit0@NONE: <NOARP> mtu 1480 qdisc noop
+      link/sit 0.0.0.0 brd 0.0.0.0
+   6: eth2: <BROADCAST,MULTICAST,PROMISC,UP> mtu 1500 qdisc pfifo_fast qlen 1000
+      link/ether 00:40:d0:07:3a:1b brd ff:ff:ff:ff:ff:ff
+      inet6 fe80::240:d0ff:fe07:3a1b/64 scope link
+   7: br0: <BROADCAST,MULTICAST,NOTRAILERS,UP> mtu 1500 qdisc noqueue
+      link/ether 00:40:d0:07:3a:1b brd ff:ff:ff:ff:ff:ff
+      inet 192.168.1.3/24 brd 192.168.1.255 scope global br0
+      inet6 fe80::240:d0ff:fe07:3a1b/64 scope link
+
+   Routing Rules
+
+   0:      from all lookup local	
+   32765:  from all fwmark       ca lookup www.out
+   32766:  from all lookup main
+   32767:  from all lookup default
+
+   Table local:
+
+   broadcast 192.168.1.0 dev br0  proto kernel  scope link  src 192.168.1.3
+   broadcast 127.255.255.255 dev lo  proto kernel  scope link  src 127.0.0.1
+   local 192.168.1.3 dev br0  proto kernel  scope host  src 192.168.1.3
+   broadcast 192.168.1.255 dev br0  proto kernel  scope link  src 192.168.1.3
+   broadcast 127.0.0.0 dev lo  proto kernel  scope link  src 127.0.0.1
+   local 127.0.0.1 dev lo  proto kernel  scope host  src 127.0.0.1
+   local 127.0.0.0/8 dev lo  proto kernel  scope host  src 127.0.0.1
+
+   Table www.out:
+
+   default via 192.168.1.3 dev br0
+
+   Table main:
+
+   192.168.1.0/24 dev br0  proto kernel  scope link  src 192.168.1.3
+   default via 192.168.1.254 dev br0
+
+   Table default:
+-----------------------------------------------------------------------
+Problems Corrected in version 2.0.8
+
+1) User/group restricted rules now work in actions.
+
+-----------------------------------------------------------------------
+Problems Corrected in version 2.0.9
+
+1) Previously, an empty PROTO column or a value of "all" in that column
+   would cause errors when processing the /etc/shorewall/tcrules file.
+
+New Fewatures in version 2.0.9
+
+1) The "shorewall status" command now includes the output of "brctl
+   show" if the bridge tools are installed.
+-----------------------------------------------------------------------
+Problems corrected in version 2.0.10
+
+1) The GATEWAY column was previously ignored in 'pptpserver' entries in
+   /etc/shorewall/tunnels.
+
+2) When log rule numbers are included in the LOGFORMAT, duplicate
+   rule numbers could previously be generated.
+
+3) The /etc/shorewall/tcrules file now includes a note to the effect
+   that rule evaluation continues after a match.
+
+4) The error message produced if Shorewall couldn't obtain the routes 
+   through an interface named in the SUBNET column of
+   /etc/shorewall/masq was less than helpful since it didn't include
+   the interface name.
+-----------------------------------------------------------------------
+New Features in 2.0.10
+
+The "shorewall status" command has been enhanced to include the values
+of key /proc settings:
+
+Example from a two-interface firewall:
+
+/proc
+
+   /proc/sys/net/ipv4/ip_forward = 1
+   /proc/sys/net/ipv4/conf/all/proxy_arp = 0
+   /proc/sys/net/ipv4/conf/all/arp_filter = 0
+   /proc/sys/net/ipv4/conf/all/rp_filter = 0
+   /proc/sys/net/ipv4/conf/default/proxy_arp = 0
+   /proc/sys/net/ipv4/conf/default/arp_filter = 0
+   /proc/sys/net/ipv4/conf/default/rp_filter = 0
+   /proc/sys/net/ipv4/conf/eth0/proxy_arp = 0
+   /proc/sys/net/ipv4/conf/eth0/arp_filter = 0
+   /proc/sys/net/ipv4/conf/eth0/rp_filter = 0
+   /proc/sys/net/ipv4/conf/eth1/proxy_arp = 0
+   /proc/sys/net/ipv4/conf/eth1/arp_filter = 0
+   /proc/sys/net/ipv4/conf/eth1/rp_filter = 0
+   /proc/sys/net/ipv4/conf/lo/proxy_arp = 0
+   /proc/sys/net/ipv4/conf/lo/arp_filter = 0
+   /proc/sys/net/ipv4/conf/lo/rp_filter = 0
+
+-----------------------------------------------------------------------
+Problems corrected in 2.0.11
+
+1) The INSTALL file now include special instructions for Slackware
+   users.
+
+2) The bogons file has been updated.
+
+3) Service names are replaced by port numbers in /etc/shorewall/tos.
+
+4) A typo in the install.sh file that caused an error during a new
+install has been corrected.
+-----------------------------------------------------------------------
+New Features in 2.0.11
+
+1) The AllowNNTP action now allows NNTP over SSL/TLS (NTTPS).
+
+-----------------------------------------------------------------------
+Problems corrected in 2.0.12
+
+1) A typo in shorewall.conf (NETNOTSYN) has been corrected.
+
+2) The "shorewall add" and "shorewall delete" commands now work in a
+   bridged environment. The syntax is:
+
+	   shorewall add <interface>[:<port>]:<address> <zone>
+	   shorewall delete <interface>[:<port>]:<address> <zone>
+
+   Examples:
+
+	   shorewall add br0:eth2:192.168.1.3 OK
+	   shorewall delete br0:eth2:192.168.1.3 OK
+
+3) Previously, "shorewall save" created an out-of-sequence restore
+   script. The commands saved in the user's /etc/shorewall/start script
+   were executed prior to the Netfilter configuration being
+   restored. This has been corrected so that "shorewall save" now
+   places those commands at the end of the script. 
+
+   To accomplish this change, the "restore base" file
+   (/var/lib/shorewall/restore-base) has been split into two files:
+
+   /var/lib/shorewall/restore-base -- commands to be executed before
+   Netfilter the configuration is restored.
+
+   /var/lib/shorewall/restore-tail -- commands to be executed after the
+   Netfilter configuration is restored.
+
+4) Previously, traffic from the firewall to a dynamic zone member host
+   did not need to match the interface specified when the host was
+   added to the zone. For example, if eth0:1.2.3.4 is added to dynamic
+   zone Z then traffic out of any firewall interface to 1.2.3.4 will
+   obey the fw->Z policies and rules. This has been corrected.
+
+-----------------------------------------------------------------------
+New Features in 2.0.12
+
+1)  Variable expansion may now be used with the INCLUDE directive.
+
+    Example:
+
+	/etc/shorewall/params
+
+	    FILE=/etc/foo/bar
+
+        Any other config file:
+
+	    INCLUDE $FILE
+-----------------------------------------------------------------------
+Problems corrected in 2.0.13
+
+1) A typo in /usr/share/shorewall/firewall caused the following:
+
+   /usr/share/shorewall/firewall: line 1: match_destination_hosts: command 
+   not found
+-----------------------------------------------------------------------
+New Features in 2.0.14
+
+1)  Previously, when rate-limiting was specified in
+    /etc/shorewall/policy (LIMIT:BURST column), any traffic which
+    exceeded the specified rate was silently dropped. Now, if a log
+    level is given in the entry (LEVEL column) then drops are logged at
+    that level at a rate of 5/min with a burst of 5.
+-----------------------------------------------------------------------
+Problems corrected in 2.0.14
+
+1)  A typo in the /etc/shorewall/interfaces file has been fixed.
+
+2)  "bad variable" error messages occurring during "shorewall stop" and
+    "shorewall clear" have been eliminated.
+
+3)  A misleading typo in /etc/shorewall/tunnels has been corrected.
+-----------------------------------------------------------------------
+Problems corrected in 2.0.15
+
+1)  The range of ports opened by the AllowTrcrt action has been
+    expanded to 33434:33524.
+
+2)  Code mis-ported from 2.2.0 caused the following error during
+    "shorewall start" where SYN rate-limiting is present in
+    /etc/shorewall/policy:
+
+      Bad argument `DROP'
+      Try `iptables -h' or 'iptables --help' for more information.
+-----------------------------------------------------------------------
+New Features in 2.0.16
+
+1)  Recent 2.6 kernels include code that evaluates TCP packets based on
+    TCP Window analysis. This can cause packets that were previously
+    classified as NEW or ESTABLISHED to be classified as INVALID.
+
+    The new kernel code can be disabled by including this command in
+    your /etc/shorewall/init file:
+
+    echo 1 > /proc/sys/net/ipv4/netfilter/ip_conntrack_tcp_be_liberal
+
+    Additional kernel logging about INVALID TCP packets may be
+    obtained by adding this command to /etc/shorewall/init:
+
+    echo 1 > /proc/sys/net/ipv4/netfilter/ip_conntrack_log_invalid
+
+    Traditionally, Shorewall has dropped INVALID TCP packets early. The
+    new DROPINVALID option allows INVALID packets to be passed through
+    the normal rules chains by setting DROPINVALID=No.
+
+    If not specified or if specified as empty (e.g., DROPINVALID="")
+    then DROPINVALID=Yes is assumed.

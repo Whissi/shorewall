@@ -1986,7 +1986,6 @@ setup_mac_lists() {
     #
     # Process the maclist file producing the verification rules
     #
-
     while read interface mac addresses; do
 	expandv interface mac addresses
 
@@ -5834,20 +5833,22 @@ add_common_rules() {
 		    ;;
 	    esac
 
-	    run_iptables2 -A norfc1918 $(source_ip_range $networks) -j $target
-
-	    if [ -n "$CONNTRACK_MATCH" ]; then
-		#
-		# We have connection tracking match -- match on the original destination
-		#
-		run_iptables2 -A norfc1918 -m conntrack --ctorigdst $networks -j $target
-	    elif [ -n "$MANGLE_ENABLED" ]; then
-		#
-		# No connection tracking match but we have mangling -- add a rule to
-		# the mangle table
-		#
-		run_iptables2 -t mangle -A man1918 $(dest_ip_range $networks) -j $target
-	    fi
+	    for network in $(separate_list $networks); do
+		run_iptables2 -A norfc1918 $(source_ip_range $network) -j $target
+	
+		if [ -n "$CONNTRACK_MATCH" ]; then
+		    #
+		    # We have connection tracking match -- match on the original destination
+		    #
+		    run_iptables2 -A norfc1918 -m conntrack --ctorigdst $network -j $target
+		elif [ -n "$MANGLE_ENABLED" ]; then
+		    #
+		    # No connection tracking match but we have mangling -- add a rule to
+		    # the mangle table
+		    #
+		    run_iptables2 -t mangle -A man1918 $(dest_ip_range $network) -j $target
+		fi
+	    done
 	done < $TMP_DIR/rfc1918
 
 	for host in $hosts; do

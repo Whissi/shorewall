@@ -1,5 +1,5 @@
 #
-# Shorewall 2.1 -- RFC1918 File
+# Shorewall 2.2 -- RFC1918 File
 #
 # /etc/shorewall/rfc1918
 #
@@ -12,16 +12,17 @@
 #
 # Columns are:
 #
-# 	SUBNET		The subnet (host addresses also allowed as are IP
+# 	SUBNETS		A comma-separated list of subnet addresses
+			(host addresses also allowed as are IP
 #			address ranges provided that your kernel and iptables
-#			have iprange match support).
+#			have iprange match support). 
 #	TARGET		Where to send packets to/from this subnet
 #			RETURN	- let the packet be processed normally
 #			DROP	- silently drop the packet
 #			logdrop - log then drop
 #
 ###############################################################################
-#SUBNET			TARGET
+#SUBNETS		TARGET
 172.16.0.0/12		logdrop		# RFC 1918
 192.168.0.0/16		logdrop		# RFC 1918
 10.0.0.0/8		logdrop		# RFC 1918

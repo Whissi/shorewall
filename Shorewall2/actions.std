@@ -2,11 +2,16 @@
 # Shorewall 2.0 /etc/shorewall/actions.std
 #
 #
-DropBcast	#Silently Drops Broadcast Traffic
+# Builtin Actions are:
+#
+#    dropBcast          #Silently Drop Broadcast/multicast
+#    dropNonSyn         #Silently Drop Non-syn TCP packets
+#
+#ACTION
+
 DropSMB		#Silently Drops Microsoft SMB Traffic
 RejectSMB	#Silently Reject Microsoft SMB Traffic
 DropUPnP	#Silently Drop UPnP Probes
-DropNonSyn	#Silently Drop Non-syn TCP packets
 RejectAuth	#Silently Reject Auth
 DropPing	#Silently Drop Ping
 DropDNSrep	#Silently Drop DNS Replies
@@ -30,6 +35,6 @@ AllowNNTP	#Allow network news (Usenet).
 AllowTrcrt	#Allows Traceroute (20 hops)
 AllowSNMP	#Allows SNMP (including traps)
 
-Drop:DROP	#Common rules for DROP policy
-Reject:REJECT   #Common Action for Reject policy
+Drop:DROP	#Common Action for DROP policy
+Reject:REJECT   #Common Action for REJECT policy
 #LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE

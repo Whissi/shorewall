@@ -2326,6 +2326,31 @@ process_action() # $1 = action
 
 process_actions() {
     #
+    # Add the builtin actions
+    #
+    add_builtin_actions() {
+	
+	if [ "$command" != check ]; then
+	    createchain dropBcast no
+	    qt iptables -A dropBcast -m pkttype --pkt-type broadcast -j DROP
+	    if ! qt iptables -A dropBcast -m pkttype --pkt-type multicast -j DROP; then
+                #
+                # No pkttype support -- do it the hard way
+                #
+		for address in $(find_broadcasts) 255.255.255.255 224.0.0.0/4 ; do
+		    run_iptables -A dropBcast -d $address -j DROP
+		done
+	    fi
+
+	    createchain dropNonSyn no
+	    run_iptables -A dropNonSyn -p tcp ! --syn -j DROP
+	fi
+
+	ACTIONS="dropBcast dropNonSyn"
+	
+    }
+	
+    #
     # Process a rule where the source or destination is "all"
     #
     process_wildcard_rule() {
@@ -2365,6 +2390,8 @@ process_actions() {
 
 	process_action $xaction $xtarget $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec
     }
+
+    add_builtin_actions
 
     strip_file actions
 
@@ -2613,7 +2640,7 @@ add_nat_rule() {
 # Add one Filter Rule -- Helper function for the rules file processor
 #
 # The caller has established the following variables:
-#    check       = current command. If 'check', we're executing a 'check'
+#    command     = current command. If 'check', we're executing a 'check'
 #                  which only goes through the motions.
 #    client	 = SOURCE IP or MAC
 #    server	 = DESTINATION IP or interface

@@ -2506,10 +2506,14 @@ setup_intrazone() # $1 = zone
 # Process a record from the blacklist file				      #
 #									      #
 #   $subnet	 = address/subnet					      #
+#   $protocol    = Protocol Number/Name                                       #
+#   $port        = Port Number/Name                                           #
 ###############################################################################
 process_blacklist_rec() {
     local source
     local addr
+    local proto=
+    local dport
 
     for addr in `separate_list $subnet`; do
 	case $addr in
@@ -2521,13 +2525,26 @@ process_blacklist_rec() {
 	    source="-s $addr"
 	    ;;
 	esac
+	
+	if [ -n "$protocol" ]; then
+	    proto=" -p $protocol "
+	    
+	    [ -n "$port" ] && dport="--dport $port"
+	fi
 
 	[ -n "$BLACKLIST_LOGLEVEL" ] && \
-	    run_iptables -A blacklst $source -j LOG $LOGPARMS --log-prefix \
-		"Shorewall:blacklst:$BLACKLIST_DISPOSITION:" \
-		--log-level $BLACKLIST_LOGLEVEL
-	run_iptables -A blacklst $source -j $disposition
+	    run_iptables -A blacklst $source $proto $dport -j \
+	    LOG $LOGPARMS --log-prefix \
+	    "Shorewall:blacklst:$BLACKLIST_DISPOSITION:" \
+	    --log-level $BLACKLIST_LOGLEVEL
+	run_iptables -A blacklst $source $proto $dport -j $disposition
 
+	if [ -n "$port" ]; then
+	    addr="$addr $protocol $port"
+	elif [ -n "$protocol" ]; then
+	    addr="$addr $protocol"
+	fi
+	
 	echo "   $addr added to Black List"
     done
 }
@@ -2557,8 +2574,8 @@ setup_blacklist() {
 
 	[ "$disposition" = REJECT ] && disposition=reject
 
-	while read subnet; do
-	    expandv subnet
+	while read subnet protocol port; do
+	    expandv subnet protocol port
 	    process_blacklist_rec
 	done < $TMP_DIR/blacklist
 
@@ -2581,8 +2598,8 @@ refresh_blacklist() {
 
 	run_iptables -F blacklst
 
-	while read subnet; do
-	    expandv subnet
+	while read subnet protocol port; do
+	    expandv subnet protocol port
 	    process_blacklist_rec
 	done < $TMP_DIR/blacklist
     fi
@@ -3115,19 +3132,29 @@ activate_rules()
 
 	    chain="`rules_chain $zone $zone1`"
 
+	    if havechain ${zone}2${zone1} || havechain ${zone1}2${zone}; then
+		have_canonical=Yes
+	    else
+		have_canonical=
+	    fi
+
 	    for host in $source_hosts; do
 		interface=${host%:*}
 		subnet=${host#*:}
 		chain1=`forward_chain $interface`
 		
-		case $interface in
-		    *+*)
-			multi=yes
-			;;
-		    *)
-			list_search $interface $multi_interfaces && multi=yes || multi=
-			;;
-		esac
+		if [ -n "$have_canonical" ]; then
+		    multi=yes
+		else
+		    case $interface in
+			*+*)
+			    multi=yes
+			    ;;
+			*)
+			    list_search $interface $multi_interfaces && multi=yes || multi=
+			    ;;
+		    esac
+		fi
 
 		for host1 in $dest_hosts; do
 		    interface1=${host1%:*}

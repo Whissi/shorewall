@@ -320,7 +320,10 @@ New Features:
     additional SA options for the zone in the /etc/shorewall/ipsec
     entry.
 
-    The OPTIONS column specifies 
+    The OPTIONS, IN OPTIONS and OUT OPTIONS columns specify the
+    input-output, input and output characteristing of the security
+    policies to be used to decrypt (input) or encrypt (output) traffic
+    to/from the zone.
 
     The available options are:
 
@@ -339,9 +342,9 @@ New Features:
 
     Examples:
 
-	#ZONE	IPSEC	OPTIONS
-	#	ONLY
-	vpn	Yes	mode=tunnel,proto=esp
+	#ZONE	IPSEC	OPTIONS			IN		OUT
+	#	ONLY				OPTIONS		OPTIONS
+	vpn	Yes	mode=tunnel,proto=esp	spi=1000	spi=1001
 	loc	No	reqid=44,mode=transport
  
     The /etc/shorewall/masq file has a new IPSEC column added. If you

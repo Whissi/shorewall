@@ -11,10 +11,10 @@ Prefix: %{prefix}
 License: GPL
 Packager: Tom Eastep <teastep@shorewall.net>
 Group: Networking/Utilities
-Source: %{name}-%{version}.%{release}.tgz
+Source: %{name}-%{version}.tgz
 URL: http://www.shorewall.net/
 BuildArch: noarch
-BuildRoot: /%{_tmppath}/%{name}-%{version}-%{release}-root
+BuildRoot: %{_tmppath}/%{name}-%{version}-root
 Requires: iptables
 Conflicts: kernel <= 2.2
 
@@ -30,7 +30,7 @@ server systems.
 
 %prep
 
-%setup -n %name-%version.%release
+%setup
 
 %build
 

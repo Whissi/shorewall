@@ -587,6 +587,10 @@ determine_hosts() {
 	for host in $hosts; do
 	    interface=${host%:*}
 	    if list_search $interface $interfaces; then
+		list_search $interface:0.0.0.0/0 $hosts && \
+		    startup_error "Invalid zone definition for zone $zone"
+		list_search $interface:0/0 $hosts && \
+		    startup_error "Invalid zone definition for zone $zone"
 		eval ${zone}_is_complex=Yes
 	    else
 		if [ -z "$interfaces" ]; then
@@ -615,6 +619,13 @@ determine_hosts() {
 validate_zone() # $1 = zone
 {
     list_search $1 $zones $FW
+}
+#
+# Ensure that the passed zone is defined in the zones file.
+#
+validate_zone1() # $1 = zone
+{
+    list_search $1 $zones
 }
 
 #
@@ -701,7 +712,7 @@ validate_hosts_file() {
     while read z hosts options; do
 	expandv z hosts options
 	r="$z $hosts $options"
-	validate_zone $z || startup_error "Invalid zone ($z) in record \"$r\""
+	validate_zone1 $z || startup_error "Invalid zone ($z) in record \"$r\""
 
 	interface=${hosts%%:*}
 	iface=$(chain_base $interface)

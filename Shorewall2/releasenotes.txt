@@ -72,4 +72,17 @@ New Features:
 	    shorewall -x status
 	    shorewall -x monitor [ <interval> ]
 
+4) Shorewall now traps two common zone definition errors:
+
+   - Including the firewall zone in a /etc/shorewall/hosts record.
+   - Defining a interface for a zone in both /etc/shorewall/interfaces
+     and /etc/shorewall/hosts.
+
+   In the second case, the following will appear during "shorewall
+   [re]start" or "shorewall check":
+
+   Determining Hosts in Zones...
+      ...
+      Error: Invalid zone definition for zone <name of zone>
+   Terminated
  

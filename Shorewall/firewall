@@ -3383,7 +3383,7 @@ add_common_rules() {
 	if [ "$RFC1918_LOG_LEVEL" = ULOG ]; then
 	    echo "ULOG --ulog-prefix Shorewall:${1}:DROP:"
 	else
-	    echo "LOG --log-prefix Shorewall:${1}:DROP: --log-level info"
+	    echo "LOG --log-prefix Shorewall:${1}:DROP: --log-level $RFC1918_LOG_LEVEL"
 	fi
     }
     #

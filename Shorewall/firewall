@@ -443,7 +443,7 @@ validate_interfaces_file() {
         r="$z $interface $subnet $options"
 	[ "x$z" = "x-" ] || validate_zone $z || startup_error "Invalid zone ($z) in record \"$r\""
 
-	list_search $intr $all_interfaces && \
+	list_search $interface $all_interfaces && \
 	    startup_error "Duplicate Interface $intr"
 	
 	all_interfaces="$all_interfaces $interface"

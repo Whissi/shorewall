@@ -1730,7 +1730,7 @@ process_tc_rule()
 	    esac
 	fi
 
-	if [ "x$user" != "x-" ]; then
+	if [ "x${user:--}" != "x-" ]; then
 
 	    [ "$chain" != tcout ] && \
 		fatal_error "Invalid use of a user/group: rule \"$rule\""
@@ -2632,7 +2632,7 @@ add_nat_rule() {
 		    addnatrule `dnat_chain $source` $cli $proto $multiport $sports $dports -d $adr -j $chain
 		done
 
-		for z in $excludezones; do
+		for z in $(separate_list $excludezones); do
 		    eval hosts=\$${z}_hosts
 		    for host in $hosts; do
 			addnatrule $chain -s ${host#*:} -j RETURN

@@ -1749,6 +1749,7 @@ setup_tunnels() # $1 = name of tunnels file
 # Process the ipsec file
 #
 setup_ipsec() {
+    local zone
     #
     # Add a --set-mss rule to the passed chain
     #
@@ -6642,17 +6643,20 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
     #
     validate_interfaces_file
     #
+    # Validate IPSec File
+    #
+    f=$(find_file ipsec)
+
+    if [ -f $f ]; then
+	progress_message "Processing $f..."
+	setup_ipsec $f
+    fi
+    #
     # Validate Zone
     #
     zone=$2
 
     validate_zone $zone || startup_error "Unknown zone: $zone"
-
-    f=$(find_file ipsec)
-    if [ -f $f ]; then
-	progress_message "Processing $f..."
-	setup_ipsec $f
-    fi
 
     [ "$zone" = $FW ] && startup_error "Can't add $1 to firewall zone"
 

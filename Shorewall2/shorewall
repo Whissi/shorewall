@@ -971,6 +971,7 @@ case "$1" in
 		    if iptables-save >> /var/lib/shorewall/restore-$$ ; then
 			echo EOF >> /var/lib/shorewall/restore-$$
 			mv -f /var/lib/shorewall/restore-$$ /var/lib/shorewall/restore
+			chmod +x /var/lib/shorewall/restore
 			echo "   Currently-running Configuration Saved"
                     else
 			rm -f /var/lib/shorewall/restore-$$

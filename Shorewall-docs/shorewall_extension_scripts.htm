@@ -1,133 +1,126 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
- 
+     
   <meta http-equiv="Content-Language" content="en-us">
- 
+     
   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
- 
+     
   <meta name="ProgId" content="FrontPage.Editor.Document">
- 
+     
   <meta http-equiv="Content-Type"
  content="text/html; charset=windows-1252">
   <title>Shorewall Extension Scripts</title>
 </head>
   <body>
                                                                         
-           
+             
 <table border="0" cellpadding="0" cellspacing="0"
  style="border-collapse: collapse;" bordercolor="#111111" width="100%"
  id="AutoNumber1" bgcolor="#400169" height="90">
                                                                         
-            <tbody>
-    <tr>
+             <tbody>
+     <tr>
                                                                         
-              <td width="100%">                                         
-                                             
+               <td width="100%">                                        
+                                                     
       <h1 align="center"><font color="#ffffff">Extension Scripts</font></h1>
                                                                         
-              </td>
+               </td>
                                                                         
-            </tr>
+             </tr>
                                                                         
-          
-  </tbody>
+              
+  </tbody> 
 </table>
                                                                         
-                                                 
-<p>  Extension scripts are   user-provided  scripts that are invoked at various
-points during firewall   start, restart,  stop and clear. The scripts are
-placed in /etc/shorewall and   are processed  using the Bourne shell "source"
+                                                   
+<p>  Extension scripts are   user-provided  scripts that are invoked at various 
+points during firewall   start, restart,  stop and clear. The scripts are 
+placed in /etc/shorewall and   are processed  using the Bourne shell "source" 
 mechanism. The   following scripts can be  supplied:</p>
-  
+    
 <ul>
-    <li>init -- invoked early in "shorewall start" and       "shorewall restart"</li>
-    <li>start -- invoked after the firewall has been started or restarted.</li>
-    <li>stop -- invoked as a first step when the firewall is being stopped.</li>
-    <li>stopped -- invoked after the firewall has been stopped.</li>
-    <li>clear -- invoked after the firewall has been cleared.</li>
-    <li>refresh -- invoked while the firewall is being refreshed but before
+     <li>init -- invoked early in "shorewall start" and       "shorewall
+restart"</li>
+     <li>start -- invoked after the firewall has been started or restarted.</li>
+     <li>stop -- invoked as a first step when the firewall is being stopped.</li>
+     <li>stopped -- invoked after the firewall has been stopped.</li>
+     <li>clear -- invoked after the firewall has been cleared.</li>
+     <li>refresh -- invoked while the firewall is being refreshed but before 
 the     common and/or blacklst chains have been rebuilt.</li>
-    <li>newnotsyn (added in version 1.3.6) -- invoked after the 'newnotsyn'
+     <li>newnotsyn (added in version 1.3.6) -- invoked after the 'newnotsyn' 
 chain     has been created but before any rules have been added to it.</li>
- 
+   
 </ul>
                                                                         
                                                                         
                                                                         
-                                    
-<p><u><b>If your version of Shorewall doesn't have the file that you want
+                                      
+<p><u><b>If your version of Shorewall doesn't have the file that you want 
 to use from the above list, you can simply create the file yourself.</b></u></p>
-<p>   You can also supply a script with the same name as any of the filter
-  chains  in the firewall and the script will be invoked after the   /etc/shorewall/rules 
- file has been processed but before the   /etc/shorewall/policy file has been
- processed.</p>
+ 
+<p>   You can also supply a script with the same name as any of the filter 
+  chains  in the firewall and the script will be invoked after the   /etc/shorewall/rules
+  file has been processed but before the   /etc/shorewall/policy file has
+been  processed.</p>
                                                                         
                                                                         
                                                                         
-                                    
-<p>The /etc/shorewall/common file receives special treatment. If this file
-is present, the rules that it       defines will totally replace the default
-rules in the common chain. These         default rules are contained in the
-file /etc/shorewall/common.def which        may be used as a starting point
+                                      
+<p>The /etc/shorewall/common file receives special treatment. If this file 
+is present, the rules that it       defines will totally replace the default 
+rules in the common chain. These         default rules are contained in the 
+file /etc/shorewall/common.def which        may be used as a starting point 
 for making your own customized file.</p>
                                                                         
                                                                         
                                                                         
-                                    
-<p>   Rather than running iptables directly, you should run it using the
-  function  run_iptables. Similarly, rather than running "ip" directly, 
- you should use run_ip. These functions accept the same arguments as the
-  underlying command but cause the firewall to be stopped if an error occurs
+                                      
+<p>   Rather than running iptables directly, you should run it using the 
+ function  run_iptables. Similarly, rather than running "ip" directly,  
+you should use run_ip. These functions accept the same arguments as the 
+ underlying command but cause the firewall to be stopped if an error occurs 
   during processing of the command.</p>
                                                                         
                                                                         
                                                                         
-                                   
-<p>   If you decide to create /etc/shorewall/common it is a good idea to
-use the    following technique</p>
+                                     
+<p>   If you decide to create /etc/shorewall/common it is a good idea to use
+the    following technique</p>
                                                                         
                                                                         
                                                                         
-                                   
+                                     
 <p>   /etc/shorewall/common:</p>
                                                                         
                                                                         
                                                                         
-                                   
-<blockquote>                                                            
-                        
+                                     
+<blockquote>                                                             
+                          
   <pre>. /etc/shorewall/common.def<br>&lt;add your rules here&gt;</pre>
-  </blockquote>
-  
-<p>If you need to supercede a rule in the released common.def file, you can
-add   the superceding rule before the '.' command. Using this technique allows
-  you to add new rules while still getting the benefit of the latest common.def
+   </blockquote>
+    
+<p>If you need to supercede a rule in the released common.def file, you can 
+add   the superceding rule before the '.' command. Using this technique allows 
+  you to add new rules while still getting the benefit of the latest common.def 
   file.</p>
                                                                         
                                                                         
-                           
-<p>Remember that /etc/shorewall/common defines rules   that are only applied
-if the applicable policy is DROP or REJECT. These rules   are NOT applied
+                             
+<p>Remember that /etc/shorewall/common defines rules   that are only applied 
+if the applicable policy is DROP or REJECT. These rules   are NOT applied 
 if the policy is ACCEPT or CONTINUE.</p>
                                                                         
                                                                         
-                           
-<p>If you set ALLOWRELATED=No in shorewall.conf, then most ICMP packets will
-be   rejected by the firewall. It is recommended with this setting that you
-create   the file /etc/shorewall/icmpdef and in it place the following commands:</p>
-                                                                        
-                                                                        
-                                                                        
-                                   
-<pre>	run_iptables -A icmpdef -p ICMP --icmp-type echo-reply -j ACCEPT<br>	run_iptables -A icmpdef -p ICMP --icmp-type source-quench -j ACCEPT<br>	run_iptables -A icmpdef -p ICMP --icmp-type destination-unreachable -j ACCEPT<br>	run_iptables -A icmpdef -p ICMP --icmp-type time-exceeded -j ACCEPT<br>	run_iptables -A icmpdef -p ICMP --icmp-type parameter-problem -j ACCEPT<br></pre>
-                                                                        
-          
-<p align="left"><font size="2">Last updated 12/22/2002 - <a
+                             
+<p align="left"><font size="2">Last updated 2/18/2003 - <a
  href="support.htm">Tom Eastep</a></font></p>
-  
-<p align="left"><a href="copyright.htm"><font size="2">Copyright  2002 Thomas
-M. Eastep</font></a></p>
-  <br>
+    
+<p align="left"><a href="copyright.htm"><font size="2">Copyright  2002, 2003
+Thomas M. Eastep</font></a></p>
+   <br>
+ <br>
 </body>
 </html>

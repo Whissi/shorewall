@@ -1,22 +1,42 @@
 #
-# Shorewall 1.4 - /etc/shorewall/bounce
+# Shorewall 1.4 - /etc/shorewall/hosts
 #
-#	Normally, Shorewall assumes that the firewall/gateway will not be
-#	routing requests back out the same interface that they came in on.
-#	If you have such requirements, they should be defined here.
+#    WARNING: 90% of Shorewall users don't need to add entries to this
+#             file and 80% of those who try to add such entries get it
+#	      wrong. Unless you are ABSOLUTELY SURE that you need entries
+#	      in this file, don't touch it!
 #
-#	Columns are:
+#	This file is used to define zones in terms of subnets and/or
+#	individual IP addresses. Most simple setups don't need to
+#	(should not) place anything in this file.
 #
-#		INTERFACE		The name of an interfaces defined 
-#					in /etc/shorewall/interfaces
+#	ZONE	- The name of a zone defined in /etc/shorewall/zones
 #
-#		SOURCE			The name of a zone followed by a 
-#					colon (":") and the  address of a
-#					host or subnet.
+#	HOST(S)	- The name of an interface followed by a colon (":") and
+#		  either:
 #
-#		DESTINATION		The name of a zone followed by a
-#					colon and the address of a host
-#					or subnet.
+#			a) The IP address of a host
+#			b) A subnetwork in the form
+#			   <subnet-address>/<mask width>
+#		  
+#		  The interface must be defined in the
+#		  /etc/shorewall/interfaces file.
 #
-#INTERFACE		SOURCE		DESTINATION
+#		  Examples:
+#
+#			eth1:192.168.1.3
+#			eth2:192.168.2.0/24	
+#
+#	OPTIONS - A comma-separated list of options. Currently-defined
+#		  options are:
+#
+#			maclist	     - Connection requests from these hosts
+#				       are compared against the contents of
+#				       /etc/shorewall/maclist. If this option
+#				       is specified, the interface must be
+#				       an ethernet NIC and must be up before
+#				       Shorewall is started.
+#
+#
+#ZONE		HOST(S)				OPTIONS
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS LINE -- DO NOT REMOVE

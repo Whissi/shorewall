@@ -564,11 +564,21 @@ determine_hosts() {
 	eval interfaces=\$${zone}_interfaces
 
 	for interface in $interfaces; do
-	    if [ -z "$hosts" ]; then
-		hosts=$interface:0.0.0.0/0
+	    eval options=\$`chain_base ${interface}`_options
+
+	    if list_search detectnets $options; then
+		subnets=`get_routed_subnets $interface`
 	    else
-		hosts="$hosts $interface:0.0.0.0/0"
+		subnets=0.0.0.0/0
 	    fi
+
+	    for subnet in $subnets; do
+		if [ -z "$hosts" ]; then
+		    hosts=$interface:$subnet
+		else
+		    hosts="$hosts $interface:$subnet"
+		fi
+	    done
 	done
 
 	interfaces=
@@ -611,6 +621,8 @@ validate_zone() # $1 = zone
 # Validate the zone names and options in the interfaces file
 #
 validate_interfaces_file() {
+    local wildcard
+
     while read z interface subnet options; do
 	expandv z interface subnet options
 	r="$z $interface $subnet $options"
@@ -628,9 +640,14 @@ validate_interfaces_file() {
 	list_search $interface $all_interfaces && \
 	    startup_error "Duplicate Interface $interface"
 
+	wildcard=
+
 	case $interface in
 	    *:*)
 		startup_error "Invalid Interface Name: $interface"
+		;;
+	    *+*)
+		wildcard=Yes
 		;;
 	esac
 
@@ -645,6 +662,10 @@ validate_interfaces_file() {
 	for option in $options; do
 	    case $option in
 		dhcp|norfc1918|tcpflags|newnotsyn|arp_filter|routefilter|blacklist|proxyarp|maclist|-)
+		    ;;
+		detectnets)
+		    [ -n "$wildcard" ] && \
+			startup_error "The \"detectnets\" option may not be used with a wild-card interface"
 		    ;;
 		dropunclean|logunclean)
 		    error_message \
@@ -844,7 +865,7 @@ find_broadcasts() {
     for interface in $all_interfaces; do
 	eval bcast=\$`chain_base $interface`_broadcast
 	if [ "x$bcast" = "xdetect" ]; then
-	    addr="`ip addr show $interface 2> /dev/null`"
+	    addr="`ip -f inet addr show $interface 2> /dev/null`"
 	    if [ -n "`echo "$addr" | grep 'inet.*brd '`" ]; then
 		addr="`echo "$addr" | \
 		grep "inet " | sed 's/^.* inet.*brd //;s/scope.*//'`"
@@ -4113,7 +4134,7 @@ add_ip_aliases()
 	#
 	# Get all of the lines that contain inet addresses 
 	#
-	ip addr show $interface 2> /dev/null | grep 'inet' | while read inet cidr rest ; do
+	ip -f inet addr show $interface 2> /dev/null | grep 'inet' | while read inet cidr rest ; do
 	    case $cidr in
 		*/*)
 		    if in_subnet $external $cidr; then
@@ -4817,6 +4838,8 @@ activate_rules()
 	echo "$FW $zone $chain1" >> ${STATEDIR}/chains
 	echo "$zone $FW $chain2" >> ${STATEDIR}/chains
 
+	need_broadcast=
+
 	for host in $source_hosts; do
 	    interface=${host%:*}
 	    subnet=${host#*:}
@@ -4834,8 +4857,16 @@ activate_rules()
 	    [ -n "$complex" ] && \
 		run_iptables -A `forward_chain $interface` -s $subnet -j $frwd_chain
 
+	    if ! list_search $interface $need_broadcast ; then
+		eval options=\$`chain_base ${interface}`_options
+		list_search detectnets $options && need_broadcast="$need_broadcast $interface"
+	    fi
 	done
 
+	for interface in $need_broadcast ; do
+	    run_iptables -A OUTPUT -o $interface -d 255.255.255.255 -j $chain1
+	done
+   
 	for zone1 in $zones; do
 
 	    eval policy=\$${zone}2${zone1}_policy

@@ -2,7 +2,12 @@ This is a minor release of Shorewall.
 
 Problems Corrected since version 1.4.9:
 
-None.
+1. The column descriptions in the action.template file did not match
+   the column headings. That has been corrected.
+
+2. The presence of IPV6 addresses on devices generates error messages
+   during [re]start if ADD_IP_ALIASES=Yes or ADD_SNAT_ALIASES=Yes are
+   specified in /etc/shorewall/shorewall.conf.
 
 Migration Issues:
 
@@ -35,3 +40,12 @@ New Features:
    The colon is optionnal when specifying only a user.
 
        Examples : john: / john / :users / john:users	
+
+3) A "detectnets" interface option has been added for entries in
+   /etc/shorewall/interfaces. This option automatically taylors the
+   definition of the zone named in the ZONE column to include just
+   those hosts that have routes through the interface named in the
+   INTERFACE column. The named interface must be UP prior when
+   Shorewall is [re]started.
+
+   WARNING: DO NOT SET THIS OPTION ON YOUR INTERNET INTERFACE!

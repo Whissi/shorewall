@@ -1751,7 +1751,7 @@ setup_ipsec() {
 	eval local policy=\$${1}_policy
 	if [ "$policy" != NONE ]; then
 	    ensurechain $1
-	    run_iptables -A $1 -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss $mss
+	    run_iptables -I $1 -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss $mss
 	fi
     }
 

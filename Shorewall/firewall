@@ -3307,14 +3307,9 @@ initialize_netfilter () {
     if [ -z "$NEWNOTSYN" ]; then
 	createchain newnotsyn no
 
-	interfaces=`find_interfaces_by_option newnotsyn`
-
-	for interface in $interfaces; do
-	    for interface1 in $interfaces; do
-		run_iptables -A newnotsyn -i $interface -o $interface1 -p tcp --tcp-flags ACK ACK -j ACCEPT
-		run_iptables -A newnotsyn -i $interface -o $interface1 -p tcp --tcp-flags RST RST -j ACCEPT
-	    done
-	    
+	for interface in `find_interfaces_by_option newnotsyn`; do
+	    run_iptables -A newnotsyn -i $interface -p tcp --tcp-flags ACK ACK -j ACCEPT
+	    run_iptables -A newnotsyn -i $interface -p tcp --tcp-flags RST RST -j ACCEPT
 	    run_iptables -A newnotsyn -i $interface -j RETURN
 	done
 

@@ -1113,8 +1113,8 @@ validate_policy()
 #
 find_broadcasts() {
     for interface in $all_interfaces; do
-	interface=`chain_base $interface`
-	eval bcast=\$${interface}_broadcast
+	iface=`chain_base $interface`
+	eval bcast=\$${iface}_broadcast
 	if [ "x$bcast" = "xdetect" ]; then
 	    addr="`ip addr show $interface 2> /dev/null`"
 	    if [ -n "`echo "$addr" | grep 'inet.*brd '`" ]; then
@@ -1133,7 +1133,7 @@ find_broadcasts() {
 #
 find_interface_broadcasts() # $1 = Interface name
 {
-    eval bcast=\$${1}_broadcast
+    eval bcast=\$`chain_base ${1}`_broadcast
     
     if [ "x$bcast" = "xdetect" ]; then
 	addr="`ip addr show $interface 2> /dev/null`"

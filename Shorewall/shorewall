@@ -589,18 +589,24 @@ case "$1" in
 
         if [ `grep -c "Shorewall:" $LOGFILE ` -gt 0 ] ; then
             echo "   HITS IP              DATE"
+            echo "   ---- --------------- ------"
             grep "Shorewall:" $LOGFILE | sed 's/\(.\{6\}\)\(.*SRC=\)\(.*\)\( DST=.*\)/\3	\1/' | sort | uniq -c | sort -rn
             echo ""
 
-            echo "   HITS IP"
-            grep "Shorewall:" $LOGFILE | sed 's/\(.*SRC=\)\(.* \)\(DST=.*\)/\2/' | sort | uniq -c | sort -rn
+            echo "   HITS IP              PORT"
+            echo "   ---- --------------- -----"
+            grep "Shorewall:" $LOGFILE | sed 's/\(.*SRC=\)\(.*\)\( DST=.*DPT=\)\([0-9]\{1,5\}\)\(.*\)/\2	\4/
+						t
+						s/\(.*SRC=\)\(.*\)\( DST=.*\)/\2/' | sort | uniq -c | sort -rn
             echo ""
 
             echo "   HITS DATE"
+            echo "   ---- ------"
             grep "Shorewall:" $LOGFILE | sed 's/\(.\{6\}\)\(.*\)/\1/' | sort | uniq -c | sort -rn
             echo ""
 
             echo "   HITS  PORT SERVICE(S)"
+            echo "   ---- ----- ----------" 
             grep 'Shorewall:.*DPT' $LOGFILE | sed 's/\(.*DPT=\)\([0-9]\{1,5\}\)\(.*\)/\2/' | sort | uniq -c | sort -rn | \
             while read count port ; do
                 # List all services defined for the given port

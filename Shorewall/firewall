@@ -4424,7 +4424,9 @@ activate_rules()
 		    subnet1=${host1#*:}
 
 		    if list_search $host1 $source_hosts && ! list_search $host1 $routeback; then
-			run_iptables -A $frwd_chain -s ! $subnet1 -o $interface1 -d $subnet1 -j $chain
+			if [ `list_count $source_hosts` -gt 1 ]; then
+			    run_iptables -A $frwd_chain -s ! $subnet1 -o $interface1 -d $subnet1 -j $chain
+			fi
 		    else
 			run_iptables -A $frwd_chain -o $interface1 -d $subnet1 -j $chain
 		    fi

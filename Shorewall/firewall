@@ -4174,6 +4174,8 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
     # Normalize the first argument to this function
     #
     newhost="$interface:$host"
+
+    terminator=fatal_error
     #
     # Create a new Zone state file
     #
@@ -4203,18 +4205,6 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
     # If the zone passed in the command has a dnat chain then insert a rule in
     # the nat table PREROUTING chain to jump to that chain when the source
     # matches the new host(s)#
-# Setup Intrazone chain if appropriate
-#
-setup_intrazone() # $1 = zone
-{
-    eval hosts=\$${1}_hosts
-
-    if have_interfaces_in_zone_with_option $1 multi; then
-	ensurechain ${1}2${1}
-    fi
-}
-
-
     #
     chain=${zone}_dnat
 
@@ -4406,6 +4396,8 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
     while read z hosts; do
 	eval ${z}_hosts=\"$hosts\"
     done < ${STATEDIR}/zones
+
+    terminator=fatal_error
     #
     # Delete any nat table entries for the host(s)
     #

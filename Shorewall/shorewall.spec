@@ -78,7 +78,7 @@ if [ $1 = 0 ]; then if [ -x /sbin/insserv ]; then /sbin/insserv -r /etc/init.d/s
 %changelog
 * Sat Jul 13 2002 Tom Eastep <tom@shorewall.net>
 - Changed version to 1.3.4
-* Web Jul 10 2002 Tom Eastep <tom@shorewall.net>
+* Wed Jul 10 2002 Tom Eastep <tom@shorewall.net>
 - Added 'routestopped' configuration file.
 * Fri Jul 05 2002 Tom Eastep <tom@shorewall.net>
 - Changed version to 1.3.3

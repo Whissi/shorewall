@@ -1695,9 +1695,6 @@ add_a_rule()
 	REDIRECT)
 	    [ -n "$serv" ] && startup_error "Error: REDIRECT rules cannot"\
 		" specify a server IP; rule: \"$rule\""
-	    [ -n "$servport" ] && \
-		startup_error "Error: server port may not be specified in an ACCEPT rule;" \
-		              "rule: \"$rule\""
 	    servport=${servport:=$port}
 	    ;;
 	DNAT)

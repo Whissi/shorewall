@@ -192,6 +192,19 @@ get_config() {
 
     [ -n "$LOGFORMAT" ] || LOGFORMAT="Shorewall:"
 
+    if [ -n "$IPTABLES" ]; then
+	if [ ! -e "$IPTABLES" ]; then
+	    echo "   ERROR: The program specified in IPTABLES does not exist or is not executable" >&2
+	    exit 2
+	fi
+    else
+	IPTABLES=$(which iptables 2> /dev/null)
+	if [ -z "$IPTABLES" ] ; then
+	    echo "   ERROR: Can't find iptables executable" >&2
+	    exit 2
+	fi
+    fi
+
     if [ -n "$SHOREWALL_SHELL" ]; then
 	if [ ! -e "$SHOREWALL_SHELL" ]; then
 	    echo "   ERROR: The program specified in SHOREWALL_SHELL does not exist or is not executable" >&2
@@ -223,7 +236,7 @@ display_chains()
 	TMPFILE=$(mktempfile)
 	[ -n "$TMPFILE" ] || { echo "   ERROR:Cannot create temporary file" >&2; exit 1; }
 
-	iptables -L $IPT_OPTIONS >> $TMPFILE
+	$IPTABLES -L $IPT_OPTIONS >> $TMPFILE
 
 	clear
 	echo "$banner $(date)"
@@ -306,7 +319,7 @@ display_chains()
 
 	qt rm -f $TMPFILE
     else
-	iptables -L -n -v
+	$IPTABLES -L -n -v
 	timed_read
     fi
     trap - 1 2 3 4 5 6 9
@@ -407,7 +420,7 @@ monitor_firewall() # $1 = timeout -- if negative, prompt each time that
 
     get_config
     host=$(echo $HOSTNAME | sed 's/\..*$//')
-    oldrejects=$(iptables -L -v -n | grep 'LOG')
+    oldrejects=$($IPTABLES -L -v -n | grep 'LOG')
 
     if [ $1 -lt 0 ]; then
 	let "timeout=- $1"
@@ -440,7 +453,7 @@ monitor_firewall() # $1 = timeout -- if negative, prompt each time that
 
 	show_reset
 
-	rejects=$(iptables -L -v -n | grep 'LOG')
+	rejects=$($IPTABLES -L -v -n | grep 'LOG')
 
 	if [ "$rejects" != "$oldrejects" ]; then
 	    oldrejects="$rejects"
@@ -467,7 +480,7 @@ monitor_firewall() # $1 = timeout -- if negative, prompt each time that
 	echo
 	echo "NAT Status"
 	echo
-	iptables -t nat -L $IPT_OPTIONS
+	$IPTABLES -t nat -L $IPT_OPTIONS
 	timed_read
 
 	clear
@@ -476,7 +489,7 @@ monitor_firewall() # $1 = timeout -- if negative, prompt each time that
 	echo
 	echo "TOS/MARK Status"
 	echo
-	iptables -t mangle -L $IPT_OPTIONS
+	$IPTABLES -t mangle -L $IPT_OPTIONS
 	timed_read
 
 	clear
@@ -517,7 +530,7 @@ logwatch() # $1 = timeout -- if negative, prompt each time that
 
     get_config
     host=$(echo $HOSTNAME | sed 's/\..*$//')
-    oldrejects=$(iptables -L -v -n | grep 'LOG')
+    oldrejects=$($IPTABLES -L -v -n | grep 'LOG')
 
     if [ $1 -lt 0 ]; then
 	timeout=$((- $1))
@@ -539,7 +552,7 @@ logwatch() # $1 = timeout -- if negative, prompt each time that
 
 	show_reset
 
-	rejects=$(iptables -L -v -n | grep 'LOG')
+	rejects=$($IPTABLES -L -v -n | grep 'LOG')
 
 	if [ "$rejects" != "$oldrejects" ]; then
 	    oldrejects="$rejects"
@@ -876,14 +889,14 @@ case "$1" in
 	    echo "Shorewall-$version NAT at $HOSTNAME - $(date)"
 	    echo
 	    show_reset
-	    iptables -t nat -L $IPT_OPTIONS
+	    $IPTABLES -t nat -L $IPT_OPTIONS
 	    ;;
 	tos|mangle)
 	    [ $# -gt 2 ] && usage 1
 	    echo "Shorewall-$version TOS at $HOSTNAME - $(date)"
 	    echo
 	    show_reset
-	    iptables -t mangle -L $IPT_OPTIONS
+	    $IPTABLES -t mangle -L $IPT_OPTIONS
 	    ;;
 	log)
 	    [ $# -gt 2 ] && usage 1
@@ -914,10 +927,10 @@ case "$1" in
 	    show_reset
 	    if [ $# -gt 0 ]; then
 		for chain in $*; do
-		    iptables -L $chain $IPT_OPTIONS
+		    $IPTABLES -L $chain $IPT_OPTIONS
 		done
 	    else
-		iptables -L $IPT_OPTIONS
+		$IPTABLES -L $IPT_OPTIONS
 	    fi
 	    ;;
 	esac
@@ -941,17 +954,17 @@ case "$1" in
 	echo
 	show_reset
 	host=$(echo $HOSTNAME | sed 's/\..*$//')
-	iptables -L $IPT_OPTIONS
+	$IPTABLES -L $IPT_OPTIONS
 	echo
 	packet_log 20
 	echo
 	echo "NAT Table"
 	echo
-	iptables -t nat -L $IPT_OPTIONS
+	$IPTABLES -t nat -L $IPT_OPTIONS
 	echo
 	echo "Mangle Table"
 	echo
-	iptables -t mangle -L $IPT_OPTIONS
+	$IPTABLES -t mangle -L $IPT_OPTIONS
 	echo
 	cat /proc/net/ip_conntrack
 	echo
@@ -971,6 +984,7 @@ case "$1" in
 	echo
 
 	show_proc /proc/sys/net/ipv4/ip_forward
+	show_proc /proc/sys/net/ipv4/icmp_echo_ignore_all
 
 	for directory in /proc/sys/net/ipv4/conf/*; do
 	    for file in proxy_arp arp_filter rp_filter log_martians; do
@@ -1041,10 +1055,10 @@ case "$1" in
 	[ -n "$SHOREWALL_DIR" ] && startup_error "Error: -c option may not be used with \"try\""
 	[ $# -lt 2 -o $# -gt 3 ] && usage 1
 	if ! $0 $debugging -c $2 restart; then
-	    if ! iptables -L shorewall > /dev/null 2> /dev/null; then
+	    if ! $IPTABLES -L shorewall > /dev/null 2> /dev/null; then
 		$0 start
 	    fi
-	elif ! iptables -L shorewall > /dev/null 2> /dev/null; then
+	elif ! $IPTABLES -L shorewall > /dev/null 2> /dev/null; then
 	    $0 start
 	elif [ $# -eq 3 ]; then
 	    sleep $3
@@ -1067,9 +1081,9 @@ case "$1" in
 	mutex_on
 	while [ $# -gt 1 ]; do
 	    shift
-	    qt iptables -D dynamic -s $1 -j reject
-	    qt iptables -D dynamic -s $1 -j DROP
-	    iptables -A dynamic -s $1 -j DROP || break 1
+	    qt $IPTABLES -D dynamic -s $1 -j reject
+	    qt $IPTABLES -D dynamic -s $1 -j DROP
+	    $IPTABLES -A dynamic -s $1 -j DROP || break 1
 	    echo "$1 Dropped"
 	done
 	mutex_off
@@ -1080,9 +1094,9 @@ case "$1" in
 	mutex_on
 	while [ $# -gt 1 ]; do
 	    shift
-	    qt iptables -D dynamic -s $1 -j reject
-	    qt iptables -D dynamic -s $1 -j DROP
-	    iptables -A dynamic -s $1 -j reject || break 1
+	    qt $IPTABLES -D dynamic -s $1 -j reject
+	    qt $IPTABLES -D dynamic -s $1 -j DROP
+	    $IPTABLES -A dynamic -s $1 -j reject || break 1
 	    echo "$1 Rejected"
 	done
 	mutex_off
@@ -1093,7 +1107,7 @@ case "$1" in
 	mutex_on
 	while [ $# -gt 1 ]; do
 	    shift
-	    if	qt iptables -D dynamic -s $1 -j reject || qt iptables -D dynamic -s $1 -j DROP; then
+	    if	qt $IPTABLES -D dynamic -s $1 -j reject || qt $IPTABLES -D dynamic -s $1 -j DROP; then
 		echo "$1 Allowed"
 	    else
 		echo "$1 Not Dropped or Rejected"
@@ -1122,7 +1136,7 @@ case "$1" in
 
 	mutex_on
 
-	if qt iptables -L shorewall -n; then
+	if qt $IPTABLES -L shorewall -n; then
 	    [ -d /var/lib/shorewall ] || mkdir -p /var/lib/shorewall
 
 	    if [ -f $RESTOREPATH -a ! -x $RESTOREPATH ]; then
@@ -1133,7 +1147,7 @@ case "$1" in
 			echo "   ERROR: Reserved file name: $RESTOREFILE"
 			;;
 		    *)
-			if iptables -L dynamic -n > /var/lib/shorewall/save; then
+			if $IPTABLES -L dynamic -n > /var/lib/shorewall/save; then
 			    echo "   Dynamic Rules Saved"
 			    if [ -f /var/lib/shorewall/restore-base ]; then
 				cp -f /var/lib/shorewall/restore-base /var/lib/shorewall/restore-$$

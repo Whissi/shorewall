@@ -156,9 +156,9 @@ run_iptables() {
     [ -n "$BRIDGING" ]      && [ -f $TMP_DIR/physdev ] && rm -f $TMP_DIR/physdev
     [ -n "$IPRANGE_MATCH" ] && [ -f $TMP_DIR/iprange ] && rm -f $TMP_DIR/iprange
 
-    if ! iptables $@ ; then
+    if ! $IPTABLES $@ ; then
 	if [ -z "$stopping" ]; then
-	    error_message "ERROR: Command \"iptables $@\" Failed"
+	    error_message "ERROR: Command \"$IPTABLES $@\" Failed"
 	    stop_firewall
 	    exit 2
 	fi
@@ -234,7 +234,7 @@ createchain2() # $1 = chain name, $2 = If "yes", create default rules
 {
     local c=$(chain_base $1)
 
-    if iptables -N $1; then
+    if $IPTABLES -N $1; then
 
 	if [ $2 = yes ]; then
 	    run_iptables -A $1 -m state --state ESTABLISHED,RELATED -j ACCEPT
@@ -265,7 +265,7 @@ havechain() # $1 = name of chain
 #
 chain_exists() # $1 = chain name
 {
-    qt iptables -L $1 -n
+    qt $IPTABLES -L $1 -n
 }
 
 #
@@ -273,7 +273,7 @@ chain_exists() # $1 = chain name
 #
 mangle_chain_exists() # $1 = chain name
 {
-    qt iptables -t mangle -L $1 -n
+    qt $IPTABLES -t mangle -L $1 -n
 }
 
 #
@@ -351,7 +351,7 @@ addnatrule() # $1 = chain name, remainder of arguments specify the rule
 #
 deletechain() # $1 = name of chain
 {
-    qt iptables -L $1 -n && qt iptables -F $1 && qt iptables -X $1
+    qt $IPTABLES -L $1 -n && qt $IPTABLES -F $1 && qt $IPTABLES -X $1
 }
 
 #
@@ -1292,10 +1292,10 @@ log_rule_limit() # $1 = log level, $2 = chain, $3 = display Chain $4 = dispositi
 
     case $level in
 	ULOG)
-	    iptables $command $chain $@ $limit -j ULOG $LOGPARMS --ulog-prefix "$prefix"
+	    $IPTABLES $command $chain $@ $limit -j ULOG $LOGPARMS --ulog-prefix "$prefix"
 	    ;;
 	*)
-	    iptables $command $chain $@ $limit -j LOG $LOGPARMS --log-level $level --log-prefix "$prefix"
+	    $IPTABLES $command $chain $@ $limit -j LOG $LOGPARMS --log-level $level --log-prefix "$prefix"
 	    ;;
     esac
 	
@@ -1462,7 +1462,7 @@ stop_firewall() {
 			else
 			    routeback=Yes
 			    for h in $(separate_list $host); do
-				iptables -A FORWARD -i $interface -o $interface $(both_ip_ranges $h $h) -j ACCEPT
+				$IPTABLES -A FORWARD -i $interface -o $interface $(both_ip_ranges $h $h) -j ACCEPT
 			    done
 			fi
 			;;
@@ -1478,27 +1478,27 @@ stop_firewall() {
     for host in $hosts; do
 	interface=${host%:*}
 	networks=${host#*:}
-	iptables -A INPUT  -i $interface $(source_ip_range $networks) -j ACCEPT
+	$IPTABLES -A INPUT  -i $interface $(source_ip_range $networks) -j ACCEPT
 	[ -z "$ADMINISABSENTMINDED" ] && \
-	    iptables -A OUTPUT -o $interface $(dest_ip_range $networks) -j ACCEPT
+	    $IPTABLES -A OUTPUT -o $interface $(dest_ip_range $networks) -j ACCEPT
 
 	for host1 in $hosts; do
-	    [ "$host" != "$host1" ] && iptables -A FORWARD -i $interface -o ${host1%:*} $(both_ip_ranges $networks ${host1#*:}) -j ACCEPT
+	    [ "$host" != "$host1" ] && $IPTABLES -A FORWARD -i $interface -o ${host1%:*} $(both_ip_ranges $networks ${host1#*:}) -j ACCEPT
 	done
     done
 
-    iptables -A INPUT  -i lo -j ACCEPT
+    $IPTABLES -A INPUT  -i lo -j ACCEPT
     [ -z "$ADMINISABSENTMINDED" ] && \
-	iptables -A OUTPUT -o lo -j ACCEPT
+	$IPTABLES -A OUTPUT -o lo -j ACCEPT
 
     for interface in $(find_interfaces_by_option dhcp); do
-	iptables -A INPUT  -p udp -i $interface --dport 67:68 -j ACCEPT
+	$IPTABLES -A INPUT  -p udp -i $interface --dport 67:68 -j ACCEPT
 	[ -z "$ADMINISABSENTMINDED" ] && \
-	    iptables -A OUTPUT -p udp -o $interface --dport 67:68 -j ACCEPT
+	    $IPTABLES -A OUTPUT -p udp -o $interface --dport 67:68 -j ACCEPT
 	#
 	# This might be a bridge
 	#
-	iptables -A FORWARD -p udp -i $interface -o $interface --dport 67:68 -j ACCEPT
+	$IPTABLES -A FORWARD -p udp -i $interface -o $interface --dport 67:68 -j ACCEPT
     done
 
     case "$IP_FORWARDING" in
@@ -2700,7 +2700,7 @@ process_accounting_rule() {
 		
     ensurechain1 $chain
 
-    if iptables -A $chain $(fix_bang $rule) ; then
+    if $IPTABLES -A $chain $(fix_bang $rule) ; then
 	[ -n "$rule2" ] && run_iptables2 -A $jumpchain $rule2
 	progress_message "   Accounting rule" $action $chain $source $dest $proto $port $sport $user Added
     else
@@ -5303,7 +5303,7 @@ refresh_blacklist() {
     local f=$(find_file blacklist)
     local disposition=$BLACKLIST_DISPOSITION
 
-    if qt iptables -L blacklst -n ; then
+    if qt $IPTABLES -L blacklst -n ; then
 	echo "Loading Black List..."
 
 	strip_file blacklist $f
@@ -5456,8 +5456,8 @@ verify_ip() {
 # Determine which optional facilities are supported by iptables/netfilter
 #
 determine_capabilities() {
-    qt iptables -t nat    -L -n && NAT_ENABLED=Yes    || NAT_ENABLED=
-    qt iptables -t mangle -L -n && MANGLE_ENABLED=Yes || MANGLE_ENABLED=
+    qt $IPTABLES -t nat    -L -n && NAT_ENABLED=Yes    || NAT_ENABLED=
+    qt $IPTABLES -t mangle -L -n && MANGLE_ENABLED=Yes || MANGLE_ENABLED=
 
     CONNTRACK_MATCH=
     MULTIPORT=
@@ -5465,20 +5465,20 @@ determine_capabilities() {
     PHYSDEV_MATCH=
     IPRANGE_MATCH=
 
-    if qt iptables -N fooX1234 ; then
-	qt iptables -A fooX1234 -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT             && CONNTRACK_MATCH=Yes
-        qt iptables -A fooX1234 -p tcp -m multiport --dports 21,22 -j ACCEPT               && MULTIPORT=Yes
-	qt iptables -A fooX1234 -m policy --pol ipsec --dir in -j ACCEPT                   && POLICY_MATCH=Yes
-	qt iptables -A fooX1234 -m physdev --physdev-in eth0 -j ACCEPT                     && PHYSDEV_MATCH=Yes
-	qt iptables -A fooX1234 -m iprange --src-range 192.168.1.5-192.168.1.124 -j ACCEPT && IPRANGE_MATCH=Yes
+    if qt $IPTABLES -N fooX1234 ; then
+	qt $IPTABLES -A fooX1234 -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT             && CONNTRACK_MATCH=Yes
+        qt $IPTABLES -A fooX1234 -p tcp -m multiport --dports 21,22 -j ACCEPT               && MULTIPORT=Yes
+	qt $IPTABLES -A fooX1234 -m policy --pol ipsec --dir in -j ACCEPT                   && POLICY_MATCH=Yes
+	qt $IPTABLES -A fooX1234 -m physdev --physdev-in eth0 -j ACCEPT                     && PHYSDEV_MATCH=Yes
+	qt $IPTABLES -A fooX1234 -m iprange --src-range 192.168.1.5-192.168.1.124 -j ACCEPT && IPRANGE_MATCH=Yes
 
 
 	if [ -n "$PKTTYPE" ]; then
-	    qt iptables -A fooX1234 -m pkttype --pkt-type broadcast -j ACCEPT || PKTTYPE=
+	    qt $IPTABLES -A fooX1234 -m pkttype --pkt-type broadcast -j ACCEPT || PKTTYPE=
 	fi
 	    
-	qt iptables -F fooX1234
-	qt iptables -X fooX1234
+	qt $IPTABLES -F fooX1234
+	qt $IPTABLES -X fooX1234
     fi
 }
 
@@ -5706,8 +5706,8 @@ add_common_rules() {
     # Reject Rules -- Don't respond to broadcasts with an ICMP
     #
     if [ -n "$PKTTYPE" ]; then
-	qt iptables -A reject -m pkttype --pkt-type broadcast -j DROP
-	if ! qt iptables -A reject -m pkttype --pkt-type multicast -j DROP; then
+	qt $IPTABLES -A reject -m pkttype --pkt-type broadcast -j DROP
+	if ! qt $IPTABLES -A reject -m pkttype --pkt-type multicast -j DROP; then
             #
 	    # No pkttype support -- do it the hard way
 	    #
@@ -5728,8 +5728,8 @@ add_common_rules() {
     #
     # Not all versions of iptables support these so don't complain if they don't work
     #
-    qt iptables  -A reject -p icmp -j REJECT --reject-with icmp-host-unreachable
-    if ! qt iptables -A reject -j REJECT --reject-with icmp-host-prohibited; then
+    qt $IPTABLES  -A reject -p icmp -j REJECT --reject-with icmp-host-unreachable
+    if ! qt $IPTABLES -A reject -j REJECT --reject-with icmp-host-prohibited; then
 	#
 	# In case the above doesn't work
 	#
@@ -5792,7 +5792,7 @@ add_common_rules() {
 	    if [ -n "$BRIDGING" ]; then
 		eval is_bridge=\$$(chain_base $interface)_ports
 		[ -n "$is_bridge" ] && \
-		    iptables -A $(forward_chain $interface) -p udp -o $interface --dport 67:68 $policyin -j ACCEPT
+		    $IPTABLES -A $(forward_chain $interface) -p udp -o $interface --dport 67:68 $policyin -j ACCEPT
             fi
 	    run_iptables -A $(input_chain $interface) -p udp --dport 67:68 $policyin  -j ACCEPT
 	    run_iptables -A OUTPUT -o $interface      -p udp --dport 67:68 $policyout -j ACCEPT
@@ -6617,12 +6617,12 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 
     nat_chain_exists() # $1 = chain name
     {
-	qt iptables -t nat -L $1 -n
+	qt $IPTABLES -t nat -L $1 -n
     }
 
     do_iptables() # $@ = command
     {
-	if ! iptables $@ ; then
+	if ! $IPTABLES $@ ; then
 	    startup_error "Can't add $1 to zone $2"
 	fi
     }
@@ -6878,14 +6878,14 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
     #
     # Delete any nat table entries for the host(s)
     #
-    qt iptables -t nat -D $(dynamic_in $interface) $(source_ip_range $host) $policyin -j ${zone}_dnat
+    qt $IPTABLES -t nat -D $(dynamic_in $interface) $(source_ip_range $host) $policyin -j ${zone}_dnat
     #
     # Delete rules rules the input chains for the passed interface
     #
     while read z1 z2 chain; do
 	if [ "$z1" = "$zone" ]; then
 	    if [ "$z2" = "$FW" ]; then
-		qt iptables -D $(dynamic_in $interface) $(source_ip_range $host) $policyin -j $chain
+		qt $IPTABLES -D $(dynamic_in $interface) $(source_ip_range $host) $policyin -j $chain
 	    else
 		source_chain=$(dynamic_fwd $interface)
 		eval dest_hosts=\"\$${z2}_hosts\"
@@ -6895,13 +6895,13 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		    hosts=${h#*:}
 
 		    if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
-			qt iptables -D $source_chain $(source_ip_range $host) -o $iface $(match_dest_hosts $hosts) $policyout -j $chain
+			qt $IPTABLES -D $source_chain $(source_ip_range $host) -o $iface $(match_dest_hosts $hosts) $policyout -j $chain
 		    fi
 		done
 	    fi
 	elif [ "$z2" = "$zone" ]; then
 	    if [ "$z1" = "$FW" ]; then
-		qt iptables -D $(dynamic_out $interface) $(dest_ip_range $host) $policyout -j $chain
+		qt $IPTABLES -D $(dynamic_out $interface) $(dest_ip_range $host) $policyout -j $chain
 	    else
 		eval source_hosts=\"\$${z1}_hosts\"
 		
@@ -6910,7 +6910,7 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		    hosts=${h#*:}
 
 		    if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
-			qt iptables -D $(dynamic_fwd $iface) $(match_source_hosts $hosts) -o $interface $(dest_ip_range $host) $policyout -j $chain
+			qt $IPTABLES -D $(dynamic_fwd $iface) $(match_source_hosts $hosts) -o $interface $(dest_ip_range $host) $policyout -j $chain
 		    fi
 		done
 	    fi
@@ -6988,6 +6988,7 @@ do_initialize() {
     # Clear all configuration variables
     #
     version=
+    IPTABLES=
     FW=
     SUBSYSLOCK=
     STATEDIR=
@@ -7101,6 +7102,14 @@ do_initialize() {
     [ -z "${STATEDIR}" ] && STATEDIR=/var/state/shorewall
    
     [ -d $STATEDIR ] || mkdir -p $STATEDIR
+
+    if [ -z "$IPTABLES" ]; then
+	IPTABLES=$(which iptables 2> /dev/null)
+
+	[ -z "$IPTABLES" ] && startup_error "Can't find iptables executable"
+    else
+	[ -e "$IPTABLES" ] || startup_error "\$IPTABLES=$IPTABLES does not exist or is not executable"
+    fi
 
     [ -z "$FW" ] && FW=fw
 
@@ -7283,7 +7292,7 @@ case "$COMMAND" in
 	[ $# -ne 1 ] && usage
 	do_initialize
 	my_mutex_on
-	if qt iptables -L shorewall -n ; then
+	if qt $IPTABLES -L shorewall -n ; then
 	    [ -n "$SUBSYSLOCK" ] && touch $SUBSYSLOCK
 	    echo "Shorewall Already Started"
 	    [ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
@@ -7298,7 +7307,7 @@ case "$COMMAND" in
 	[ $# -ne 1 ] && usage
 	do_initialize
 	my_mutex_on
-	if qt iptables -L shorewall -n ; then
+	if qt $IPTABLES -L shorewall -n ; then
 	    define_firewall "Restart"
 	else
 	    echo "Shorewall Not Currently Running"
@@ -7313,22 +7322,22 @@ case "$COMMAND" in
 	[ $# -ne 1 ] && usage
 	echo "Shorewall-$version Status at $HOSTNAME - $(date)"
 	echo
-	iptables -L -n -v
+	$IPTABLES -L -n -v
 	;;
 
     reset)
 	[ $# -ne 1 ] && usage
 	do_initialize
 	my_mutex_on
-	if ! qt iptables -L shorewall -n ; then
+	if ! qt $IPTABLES -L shorewall -n ; then
 	    echo "Shorewall Not Started"
 	    [ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
 	    my_mutex_off
 	    exit 2;
 	fi
-	iptables -Z
-	iptables -t nat -Z
-	iptables -t mangle -Z
+	$IPTABLES -Z
+	$IPTABLES -t nat -Z
+	$IPTABLES -t mangle -Z
 	report "Shorewall Counters Reset"
 	date > $STATEDIR/restarted
 	my_mutex_off
@@ -7338,7 +7347,7 @@ case "$COMMAND" in
 	[ $# -ne 1 ] && usage
 	do_initialize
 	my_mutex_on
-	if ! qt iptables -L shorewall -n ; then
+	if ! qt $IPTABLES -L shorewall -n ; then
 	    echo "Shorewall Not Started"
 	    [ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
 	    my_mutex_off
@@ -7369,7 +7378,7 @@ case "$COMMAND" in
 	[ $# -ne 3 ] && usage
 	do_initialize
 	my_mutex_on
-	if ! qt iptables -L shorewall -n ; then
+	if ! qt $IPTABLES -L shorewall -n ; then
 	    echo "Shorewall Not Started"
 	    [ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
 	    my_mutex_off
@@ -7383,7 +7392,7 @@ case "$COMMAND" in
 	[ $# -ne 3 ] && usage
 	do_initialize
 	my_mutex_on
-	if ! qt iptables -L shorewall -n ; then
+	if ! qt $IPTABLES -L shorewall -n ; then
 	    echo "Shorewall Not Started"
 	    [ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
 	    my_mutex_off

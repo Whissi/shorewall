@@ -2315,6 +2315,26 @@ add_a_rule()
 {
     local natrule=
 
+    do_ports() {
+	if [ -n "$port" ]; then
+	    dports="--dport"
+	    if [ -n "$multioption" -a "$port" != "${port%,*}" ]; then
+		multiport="$multioption"
+		dports="--dports"
+	    fi
+	    dports="$dports $port"
+	fi
+	
+	if [ -n "$cport" ]; then
+	    sports="--sport"
+	    if [ -n "$multioption" -a "$cport" != "${cport%,*}" ]; then
+		multiport="$multioption"
+		sports="--sports"
+	    fi
+	    sports="$sports $cport"
+	fi
+    }
+
     # Set source variables. The 'cli' variable will hold the client match predicate(s).
 
     cli=
@@ -2369,25 +2389,12 @@ add_a_rule()
     [ x$cport = x- ] && cport=
 
     case $proto in
-	tcp|udp|TCP|UDP|6|17)
-	    if [ -n "$port" ]; then
-		dports="--dport"
-		if [ -n "$multioption" -a "$port" != "${port%,*}" ]; then
-		    multiport="$multioption"
-		    dports="--dports"
-		fi
-		dports="$dports $port"
-	    fi
-
-	    if [ -n "$cport" ]; then
-		sports="--sport"
-		if [ -n "$multioption" -a "$cport" != "${cport%,*}" ]; then
-		    multiport="$multioption"
-		    sports="--sports"
-		fi
-		sports="$sports $cport"
-	    fi
-		;;
+	tcp|TCP|6)
+	    do_ports
+	    ;;
+	udp|UDP|17)
+	    do_ports
+	    ;;
 	icmp|ICMP|1)
 	    [ -n "$port" ]  && 	dports="--icmp-type $port"
 	    state=
@@ -4385,6 +4392,7 @@ activate_rules()
 
 	    [ -n "$complex" ] && \
 		run_iptables -A `forward_chain $interface` -s $subnet -j $frwd_chain
+
 	done
 
 	for zone1 in $zones; do
@@ -4405,24 +4413,35 @@ activate_rules()
 		routeback=
 	    fi
 	    
-	    for host in $source_hosts; do
-		interface=${host%:*}
-
-		if [ -n "$complex" ]; then
-		    chain1=$frwd_chain
-		else
-		    chain1=`forward_chain $interface`
-		fi
-
+	    if [ -n "$complex" ]; then
 		for host1 in $dest_hosts; do
 		    interface1=${host1%:*}
 		    subnet1=${host1#*:}
 
-		    if [ "$host" != "$host1" ] || list_search $host $routeback; then
-			run_iptables -A $chain1 -o $interface1 -d $subnet1 -j $chain
+		    if list_search $host1 $source_hosts && ! list_search $host1 $routeback; then
+			if [ `list_count $source_hosts` -gt 1 ]; then
+			    run_iptables -A $frwd_chain -s ! $subnet1 -o $interface1 -d $subnet1 -j $chain
+			fi
+		    else
+			run_iptables -A $frwd_chain -o $interface1 -d $subnet1 -j $chain
 		    fi
 		done
-	    done
+	    else
+		for host in $source_hosts; do
+		    interface=${host%:*}
+
+		    chain1=`forward_chain $interface`
+
+		    for host1 in $dest_hosts; do
+			interface1=${host1%:*}
+			subnet1=${host1#*:}
+
+			if [ "$host" != "$host1" ] || list_search $host $routeback; then
+			    run_iptables -A $chain1 -o $interface1 -d $subnet1 -j $chain
+			fi
+		    done
+		done
+	    fi
 	done
     done
 

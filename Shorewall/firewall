@@ -1145,10 +1145,10 @@ setup_tunnels() # $1 = name of tunnels file
     setup_one_ipsec() # $1 = gateway $2 = gateway zone
     {
 	options="-m state --state NEW -j ACCEPT"
-	addrule $inchain	  -p 50	 -s $1
-	addrule $outchain	  -p 50	 -d $1
-	run_iptables -A $inchain  -p 51	 -s $1
-	run_iptables -A $outchain -p 51	 -d $1
+	addrule $inchain	  -p 50	 -s $1 -j ACCEPT
+	addrule $outchain	  -p 50	 -d $1 -j ACCEPT
+	run_iptables -A $inchain  -p 51	 -s $1 -j ACCEPT
+	run_iptables -A $outchain -p 51	 -d $1 -j ACCEPT
 	run_iptables -A $inchain  -p udp -s $1 --sport 500 --dport 500 $options
 	run_iptables -A $outchain -p udp -d $1 --dport 500 --sport 500 $options
 
@@ -1166,8 +1166,8 @@ setup_tunnels() # $1 = name of tunnels file
 
     setup_one_other() # $1 = TYPE, $2 = gateway, $3 = protocol
     {
-	addrule $inchain  -p $3 -s $2
-	addrule $outchain -p $3 -d $2
+	addrule $inchain  -p $3 -s $2 -j ACCEPT
+	addrule $outchain -p $3 -d $2 -j ACCEPT
 
 	echo "   $1 tunnel to $gateway defined."
     }

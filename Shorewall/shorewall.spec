@@ -1,5 +1,5 @@
 %define name shorewall
-%define version 1.4.6_20030813
+%define version 1.4.6_20030821
 %define release 1
 %define prefix /usr
 
@@ -99,6 +99,7 @@ fi
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/stopped
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/ecn
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/accounting
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/usersets
 %attr(0544,root,root) /sbin/shorewall
 %attr(0444,root,root) /usr/share/shorewall/functions
 %attr(0544,root,root) /usr/share/shorewall/firewall
@@ -107,6 +108,9 @@ fi
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel
 
 %changelog
+* Thu Aug 21 2003 Tom Eastep <tom@shorewall.net>
+- Changed version to 1.4.6_20030821-1
+- Added /etc/shorewall/usersets
 * Wed Aug 13 2003 Tom Eastep <tom@shorewall.net>
 - Changed version to 1.4.6_20030813-1
 * Sat Aug 09 2003 Tom Eastep <tom@shorewall.net>

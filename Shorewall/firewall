@@ -952,14 +952,15 @@ run_user_exit() # $1 = file name
 #
 # Add a logging rule.
 #
-log_rule() # $1 = log level, $2 = chain, $3 = disposition , $... = predicates for the rule
+log_rule_limit() # $1 = log level, $2 = chain, $3 = disposition , $4 = rate limit $... = predicates for the rule
 {
     local level=$1
     local chain=$2
     local disposition=$3
     local rulenum=
+    local limit=${4:-$LOGLIMIT}
 
-    shift;shift;shift
+    shift;shift;shift;shift
 
     if [ -n "$LOGRULENUMBERS" ]; then
 	eval rulenum=\$${chain}_logrules
@@ -968,10 +969,10 @@ log_rule() # $1 = log level, $2 = chain, $3 = disposition , $... = predicates fo
 
 	case $level in
 	    ULOG)
-		eval iptables -A $chain $@ -j ULOG $LOGPARMS --ulog-prefix '"`printf "$LOGFORMAT" $chain $rulenum $disposition`"'
+		eval iptables -A $chain $@ $limit -j ULOG $LOGPARMS --ulog-prefix '"`printf "$LOGFORMAT" $chain $rulenum $disposition`"'
 		;;
 	    *)
-		eval iptables -A $chain $@ -j LOG $LOGPARMS --log-level $level --log-prefix '"`printf "$LOGFORMAT" $chain $rulenum $disposition`"'
+		eval iptables -A $chain $@ $limit -j LOG $LOGPARMS --log-level $level --log-prefix '"`printf "$LOGFORMAT" $chain $rulenum $disposition`"'
 		;;
 	esac
 	
@@ -985,10 +986,10 @@ log_rule() # $1 = log level, $2 = chain, $3 = disposition , $... = predicates fo
     else
 	case $level in
 	    ULOG)
-		eval iptables -A $chain $@ -j ULOG $LOGPARMS --ulog-prefix '"`printf "$LOGFORMAT" $chain $disposition`"'
+		eval iptables -A $chain $@ $limit -j ULOG $LOGPARMS --ulog-prefix '"`printf "$LOGFORMAT" $chain $disposition`"'
 		;;
 	    *)
-		eval iptables -A $chain $@ -j LOG $LOGPARMS --log-level $level --log-prefix '"`printf "$LOGFORMAT" $chain $disposition`"'
+		eval iptables -A $chain $@ $limit -j LOG $LOGPARMS --log-level $level --log-prefix '"`printf "$LOGFORMAT" $chain $disposition`"'
 		;;
 	esac
 	
@@ -996,6 +997,17 @@ log_rule() # $1 = log level, $2 = chain, $3 = disposition , $... = predicates fo
 	    [ -z "$stopping" ] && { stop_firewall; exit 2; }
 	fi
     fi
+}
+
+log_rule() # $1 = log level, $2 = chain, $3 = disposition , $... = predicates for the rule
+{
+    local level=$1
+    local chain=$2
+    local disposition=$3
+
+    shift;shift;shift
+
+    log_rule_limit $level $chain $disposition "$LOGLIMIT" $@
 }
 
 #
@@ -2191,7 +2203,7 @@ add_nat_rule() {
 		done
 
 		if [ -n "$loglevel" ]; then
-		    log_rule $loglevel $chain $logtarget $ratelimit -t nat
+		    log_rule_limit $loglevel $chain $logtarget "$ratelimit" -t nat
 		fi
 
 		addnatrule $chain $ratelimit $proto -j $target1 # Protocol is necessary for port redirection
@@ -2199,7 +2211,7 @@ add_nat_rule() {
 		for adr in `separate_list $addr`; do
 		    if [ -n "$loglevel" ]; then
 			ensurenatchain $chain
-			log_rule $loglevel $chain $logtarget $ratelimit -t nat \
+			log_rule_limit $loglevel $chain $logtarget "$ratelimit" -t nat \
 			    `fix_bang $proto $cli $sports -d $adr $multiport $dports`
 		    fi
 		    
@@ -2403,7 +2415,7 @@ add_a_rule()
 			    if [ -n "$addr" -a -n "$CONNTRACK_MATCH" ]; then
 				for adr in `separate_list $addr`; do
 				    if [ -n "$loglevel" -a -z "$natrule" ]; then
-					log_rule $loglevel $chain $logtarget $ratelimit -m conntrack --ctorigdst $adr \
+					log_rule_limit $loglevel $chain $logtarget "$ratelimit" -m conntrack --ctorigdst $adr \
 					    `fix_bang $proto $sports $multiport $state $cli -d $srv $dports`
 				    fi
 
@@ -2412,7 +2424,7 @@ add_a_rule()
 				done
 			    else
 				if [ -n "$loglevel" -a -z "$natrule" ]; then
-				    log_rule $loglevel $chain $logtarget $ratelimit \
+				    log_rule_limit $loglevel $chain $logtarget "$ratelimit" \
 					`fix_bang $proto $sports $multiport $state $cli -d $srv $dports`
 				fi
 
@@ -2423,7 +2435,7 @@ add_a_rule()
 		    done
 		else
 		    if [ -n "$loglevel" -a -z "$natrule" ]; then
-		        log_rule $loglevel $chain $logtarget $ratelimit \
+		        log_rule_limit $loglevel $chain $logtarget "$ratelimit" \
 			    `fix_bang $proto $sports $multiport $state $cli $dports`
 		    fi
 
@@ -2442,7 +2454,7 @@ add_a_rule()
 
 	if [ $command != check ]; then
 	    if [ -n "$loglevel" ]; then
-		log_rule $loglevel $chain $logtarget $ratelimit \
+		log_rule_limit $loglevel $chain $logtarget "$ratelimit" \
 		    `fix_bang $proto $multiport $dest_interface $state $cli $sports $dports`
 	    fi
 
@@ -4936,6 +4948,7 @@ do_initialize() {
     LOGRATE=
     LOGBURST=
     LOGPARMS=
+    LOGLIMIT=
     ADD_IP_ALIASES=
     ADD_SNAT_ALIASES=
     TC_ENABLED=
@@ -5018,9 +5031,9 @@ do_initialize() {
     TC_ENABLED="`added_param_value_yes TC_ENABLED $TC_ENABLED`"
 
     if [ -n "${LOGRATE}${LOGBURST}" ]; then
-	LOGPARMS="--match limit"
-	[ -n "$LOGRATE" ]  && LOGPARMS="$LOGPARMS --limit $LOGRATE"
-	[ -n "$LOGBURST" ] && LOGPARMS="$LOGPARMS --limit-burst $LOGBURST"
+	LOGLIMIT="--match limit"
+	[ -n "$LOGRATE" ]  && LOGLIMIT="$LOGLIMIT --limit $LOGRATE"
+	[ -n "$LOGBURST" ] && LOGLIMIT="$LOGLIMIT --limit-burst $LOGBURST"
     fi
 
     if [ -n "$IP_FORWARDING" ]; then

@@ -54,7 +54,7 @@
 #        /etc/rc.d/rc.local file is modified to start the firewall.
 #
 
-VERSION=1.4.6-20030813
+VERSION=1.4.6-20030821
 
 usage() # $1 = exit status
 {
@@ -553,17 +553,27 @@ if [ -f ${PREFIX}/etc/shorewall/ecn ]; then
 else
     run_install -o $OWNER -g $GROUP -m 0600 ecn ${PREFIX}/etc/shorewall/ecn
     echo
-    echo "ECN  file installed as ${PREFIX}/etc/shorewall/ecn"
+    echo "ECN file installed as ${PREFIX}/etc/shorewall/ecn"
 fi
-##
+#
 # Install the Accounting file
 #
 if [ -f ${PREFIX}/etc/shorewall/accounting ]; then
     backup_file /etc/shorewall/accounting
 else
-    run_install -o $OWNER -g $GROUP -m 0600 ecn ${PREFIX}/etc/shorewall/accounting
+    run_install -o $OWNER -g $GROUP -m 0600 accounting ${PREFIX}/etc/shorewall/accounting
     echo
     echo "Accounting file installed as ${PREFIX}/etc/shorewall/accounting"
+fi
+#
+# Install the User Sets file
+#
+if [ -f ${PREFIX}/etc/shorewall/usersets ]; then
+    backup_file /etc/shorewall/usersets
+else
+    run_install -o $OWNER -g $GROUP -m 0600 usersets ${PREFIX}/etc/shorewall/usersets
+    echo
+    echo "User sets file installed as ${PREFIX}/etc/shorewall/usersets"
 fi
 #
 # Backup the version file

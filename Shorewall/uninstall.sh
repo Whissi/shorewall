@@ -26,7 +26,7 @@
 #       You may only use this script to uninstall the version
 #       shown below. Simply run this script to remove Seattle Firewall
 
-VERSION=1.4.6-20030813
+VERSION=1.4.6-20030821
 
 usage() # $1 = exit status
 {
@@ -99,7 +99,8 @@ if [ -n "$FIREWALL" ]; then
     rm -f ${FIREWALL}-*.bkout
 fi
 
-remove_file /sbin/shorewall
+rm -f /sbin/shorewall
+rm -f /sbin/shorewall-*.bkout
 
 if [ -n "$VERSION" ]; then
     restore_file /etc/rc.d/rc.local

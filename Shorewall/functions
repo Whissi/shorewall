@@ -381,7 +381,8 @@ ip_vlsm() {
 
 
 #
-# Chain name base for an interface -- remove all periods from the passed name.
+# Chain name base for an interface -- replace all periods with underscores in the passed name.
+#                                     The result is echoed (less "+" and anything following).
 #
 chain_base() #$1 = interface
 {

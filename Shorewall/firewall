@@ -2916,117 +2916,6 @@ get_routed_subnets() # $1 = interface name
 	    fi
         done
 }
-#
-# Convert an IP address in dot quad format to an integer
-#
-decodeaddr() {
-    local x
-    local temp=0
-    local ifs=$IFS
-    
-    IFS=.
-
-    for x in $1; do
-	temp=$(( $(( $temp $LEFTSHIFT 8 )) | $x ))
-    done
-
-    echo $temp
-
-    IFS=$ifs
-}
-#
-# convert an integer to dot quad format
-#
-encodeaddr() {
-    addr=$1
-    local x
-    local y=$(($addr & 255))
-
-    for x in 1 2 3 ; do
-	addr=$(($addr >> 8))
-	y=$(($addr & 255)).$y
-    done
-
-    echo $y
-}
-#
-# Enumerate the members of an IP range -- When using a shell supporting only
-# 32-bit signed arithmetic, the range cannot span 128.0.0.0.
-#
-ip_range() {
-    local first
-    local last
-
-    case $1 in 
-    *-*)
-	;;
-    *)
-	echo $1
-	return
-	;;
-    esac
-
-    first=`decodeaddr ${1%-*}`
-    last=`decodeaddr ${1#*-}`
-
-    if [ $first -gt $last -o $(($last - $first)) -gt 256 ]; then
-	fatal_error "Invalid IP address range: $1"
-    fi
-
-    while [ $first -le $last ]; do
-	echo `encodeaddr $first`
-	first=$(($first + 1))
-    done
-}
-#
-# Netmask from CIDR
-#
-ip_netmask() {
-    echo $(( -1 $LEFTSHIFT $(( 32 - ${1#*/} )) ))
-}
-
-#
-# Network address from CIDR
-#
-networkaddress() {
-    local decodedaddr=`decodeaddr ${1%/*}`
-    local netmask=`ip_netmask $1`
-
-    echo `encodeaddr $(($decodedaddr & $netmask))`
-}
-
-#
-# The following hack is supplied to compensate for the fact that many of
-# the popular light-weight Bourne shell derivatives don't support XOR ("^").
-#
-# Note: 2147483647 = 0x7fffffff
-
-ip_broadcast() {
-    local x=$(( ${1#*/} - 1 ))
-
-    [ $x -eq -1 ] && echo -1 || echo $(( 2147483647 >> $x ))
-}
-
-#
-# Calculate broadcast address from CIDR
-#
-broadcastaddress() {
-    local decodedaddr=`decodeaddr ${1%/*}`
-    local netmask=`ip_netmask $1`
-    local broadcast=`ip_broadcast $1`
-
-    echo `encodeaddr $(( $(($decodedaddr & $netmask)) | $broadcast ))`
-}
-
-#
-# Test for subnet membership
-#
-in_subnet() # $1 = IP address, $2 = CIDR network
-{
-    local netmask=`ip_netmask $2`
-
-    test $(( `decodeaddr $1` & $netmask)) -eq $(( `decodeaddr ${2%/*}` & $netmask ))
-}
 
 #
 # Set up Source NAT (including masquerading)
@@ -3326,7 +3215,7 @@ verify_os_version() {
     osversion=`uname -r`
 
     case $osversion in
-    2.4.*|2.5.*)
+    2.4.*|2.5.*|2.6.*)
 	;;
     *)
 	startup_error "Shorewall version $version does not work with kernel version $osversion"
@@ -4820,10 +4709,6 @@ do_initialize() {
     #
     strip_file interfaces
     strip_file hosts
-    #
-    # So that emacs doesn't get lost, we use $LEFTSHIFT rather than <<
-    #
-    LEFTSHIFT='<<'
     #
     # Determine the capabilities of the installed iptables/netfilter
     #

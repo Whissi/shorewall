@@ -16,12 +16,12 @@ run_iptables -A common -p icmp -j icmpdef
 ############################################################################
 # NETBIOS chatter
 #
-run_iptables -A common -p udp --dport 135	  -j reject
-run_iptables -A common -p udp --dport 137:139     -j reject
-run_iptables -A common -p udp --dport 445         -j reject
-run_iptables -A common -p tcp --dport 139         -j reject
-run_iptables -A common -p tcp --dport 445         -j reject
-run_iptables -A common -p tcp --dport 135	  -j reject
+run_iptables -A common -p udp --dport 135	  -j DROP
+run_iptables -A common -p udp --dport 137:139     -j DROP
+run_iptables -A common -p udp --dport 445         -j DROP
+run_iptables -A common -p tcp --dport 139         -j DROP
+run_iptables -A common -p tcp --dport 445         -j DROP
+run_iptables -A common -p tcp --dport 135	  -j DROP
 ############################################################################
 # UPnP
 #

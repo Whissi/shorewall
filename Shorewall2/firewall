@@ -5552,6 +5552,7 @@ save_load_kernel_modules()
     done < $modules
     
     save_command __EOF__
+    save_command ""
 
 }
 
@@ -5593,26 +5594,26 @@ determine_capabilities() {
     qt $IPTABLES -X fooX1234
 }
 
-report_capability() # $1 = Capability Name, $2 Capability Setting (if any)
+report_capability() # $1 = Capability Description , $2 Capability Setting (if any)
 {
     local setting=
 
-    [ "x$1" = "xYes" ] && { setting="Available"; shift; } || setting="Not available"
+    [ "x$2" = "xYes" ] && setting="Available" || setting="Not available"
 
-    echo "  " $@: $setting
+    echo "  " $1: $setting
 }
 
 report_capabilities() {
     echo "Shorewall has detected the following iptables/netfilter capabilities:"
-    report_capability $NAT_ENABLED "NAT"
-    report_capability $MANGLE_ENABLED "Packet Mangling"
-    report_capability $MULTIPORT "Multi-port Match"
-    [ -n "$MULTIPORT" ] && report_capability $XMULTIPORT "Extended Multi-port Match"
-    report_capability $CONNTRACK_MATCH "Connection Tracking Match"
-    report_capability $PKTTYPE "Packet Type Match"
-    report_capability $POLICY_MATCH "Policy Match"
-    report_capability $PHYSDEV_MATCH "Physdev Match"
-    report_capability $IPRANGE_MATCH "IP range Match"
+    report_capability "NAT" $NAT_ENABLED
+    report_capability "Packet Mangling" $MANGLE_ENABLED
+    report_capability "Multi-port Match" $MULTIPORT
+    [ -n "$MULTIPORT" ] && report_capability "Extended Multi-port Match" $XMULTIPORT
+    report_capability "Connection Tracking Match" $CONNTRACK_MATCH
+    report_capability "Packet Type Match" $PKTTYPE
+    report_capability "Policy Match" $POLICY_MATCH
+    report_capability "Physdev Match" $PHYSDEV_MATCH
+    report_capability "IP range Match" $IPRANGE_MATCH
 }
 
 #

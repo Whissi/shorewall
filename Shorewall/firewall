@@ -2761,13 +2761,13 @@ process_rule() # $1 = target
 
     # Generate Netfilter rule(s)
 
+    protocol=${protocol:=all}
+
     case $logtarget in
 	DNAT*)
-	    if [ -n "$MULTIPORT" -a \
-                "$protocol" != "icmp" -a \
-                "$protocol" != "ICMP" -a \
-                "$protocol" != "1" -a \
-		"$ports" = "${ports%:*}" -a \
+	    if [ -n "$MULTIPORT" ] && \
+	       ! list_search $protocol "icmp" "ICMP" "1" && \
+	       [ "$ports" = "${ports%:*}" -a \
 		"$cports" = "${cports%:*}" -a \
 		`list_count $ports` -le 15 -a \
 		`list_count $cports` -le 15 ]
@@ -2803,11 +2803,9 @@ process_rule() # $1 = target
 	    ;;
 	*)
 
-	    if [ -n "$MULTIPORT" -a \
-                "$protocol" != "icmp" -a \
-                "$protocol" != "ICMP" -a \
-                "$protocol" != "1" -a \
-		"$ports" = "${ports%:*}" -a \
+	    if [ -n "$MULTIPORT" ] && \
+	       ! list_search $protocol "icmp" "ICMP" "1" && \
+	       [ "$ports" = "${ports%:*}" -a \
 		"$cports" = "${cports%:*}" -a \
 		`list_count $ports` -le 15 -a \
 		`list_count $cports` -le 15 ]

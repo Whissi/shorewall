@@ -27,10 +27,10 @@ New Features in version 2.2.3
 
    Beginning with Shorewall version 2.2.3, /etc/shorewall/routestopped
    will be processed TWICE during 'shorewall start' and during
-   'shorewall restart'. It will be processed to add rules allowing new
-   connections during the 'start/restart' and it will be processed
-   again when the 'start/restart' is complete to remove the rules added
-   earlier.
+   'shorewall restart'. It will be processed early in the command 
+   execution to add rules allowing new connections while the command
+   is running and it will be processed again when the
+   command is complete to remove the rules added earlier.
 
    The result of this change will be that during most of [re]start, new
    connections will be allowed in accordance with the contents of

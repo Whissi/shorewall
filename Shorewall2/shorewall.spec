@@ -104,6 +104,7 @@ fi
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/action.AllowIMAP
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/action.AllowNNTP
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/action.AllowNTP
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.AllowPCA
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/action.AllowPing
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/action.AllowPOP3
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/action.AllowRdate
@@ -135,6 +136,8 @@ fi
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel
 
 %changelog
+* Thu Feb 12 2004 Tom Eastep <tom@shorewall.net>
+- Added action.AllowPCA
 * Sun Feb 08 2004 Tom Eastep <tom@shorewall.net>
 - Updates for Shorewall 2.0.0.
 * Mon Dec 29 2003 Tom Eastep <tom@shorewall.net>

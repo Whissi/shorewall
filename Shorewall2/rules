@@ -4,7 +4,10 @@
 # /etc/shorewall/rules
 #
 #	Rules in this file govern connection establishment. Requests and
-#	responses are automatically allowed using connection tracking.
+#	responses are automatically allowed using connection tracking. For any
+#       particular (source,dest) pair of zones, the rules are evaluated in the
+#       order in which they appear in this file and the first match is the one
+#       that determines the disposition of the request.
 #
 #	In most places where an IP address or subnet is allowed, you
 #	can preceed the address/subnet with "!" (e.g., !192.168.1.0/24) to

@@ -72,18 +72,20 @@
 showfirstchain() # $1 = name of chain
 {
     awk \
-    'BEGIN       {prnt=0;}; \
+    'BEGIN       {prnt=0; rslt=1; }; \
     /^$/         { next; };\
-    /^Chain/     {if ( prnt == 1 ) exit; };\
+    /^Chain/     {if ( prnt == 1 ) { rslt=0; exit 0; }; };\
     /Chain '$1'/ { prnt=1; }; \
-                 { if (prnt == 1)  print; }' /tmp/chains-$$
+                 { if (prnt == 1)  print; };\
+    END		 { exit rslt; }' /tmp/chains-$$
 }
 
 showchain() # $1 = name of chain
 {
     if [ "$firstchain" = "Yes" ]; then
-	showfirstchain $1
-	firstchain=
+	if showfirstchain $1; then
+	    firstchain=
+	fi
     else
 	awk \
         'BEGIN       {prnt=0;};\
@@ -146,6 +148,7 @@ display_chains()
 
 	clear
 	echo -e "$banner `date`\\n"
+	firstchain=Yes
         echo -e "Input Chains\\n"
 
 	chains=`grep '^Chain.*_[in|fwd]' /tmp/chains-$$ | cut -d' ' -f 2`
@@ -180,8 +183,8 @@ display_chains()
 	echo -e "$banner `date`\\n"
 	firstchain=Yes
 	echo -e "Policy Chains\\n"
-        showchain badpkt
 	showchain common
+        showchain badpkt
 	showchain icmpdef
 	showchain rfc1918
 	showchain blacklst

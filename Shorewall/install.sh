@@ -54,7 +54,7 @@
 #        /etc/rc.d/rc.local file is modified to start the firewall.
 #
 
-VERSION=1.2.90
+VERSION=1.3.0
 
 usage() # $1 = exit status
 {
@@ -416,13 +416,11 @@ else
     echo -e "\nBlacklist file installed as ${PREFIX}/etc/shorewall/blacklist"
 fi
 #
-# Install the whitelist file
+# Backup and remove the whitelist file
 #
 if [ -f ${PREFIX}/etc/shorewall/whitelist ]; then
     backup_file /etc/shorewall/whitelist
-else
-    run_install -o $OWNER -g $GROUP -m 0600 whitelist ${PREFIX}/etc/shorewall/whitelist
-    echo -e "\nWhitelist file installed as ${PREFIX}/etc/shorewall/whitelist"
+    rm -f ${PREFIX}/etc/shorewall/whitelist
 fi
 #
 # Backup the version file

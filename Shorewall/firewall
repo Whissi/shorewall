@@ -56,6 +56,22 @@ RCDLINKS="2,S41 3,S41 6,K41"
 #
 
 ###############################################################################
+# Search a list looking for a match -- returns zero if a match found	      #
+# 1 otherwise								      #
+###############################################################################
+list_search() # $1 = element to search for , $2-$n = list
+{
+    local e=$1
+
+    while [ $# -gt 1 ]; do
+	shift
+	[ "x$e" = "x$1" ] && return 0
+    done
+
+    return 1
+}
+
+###############################################################################
 # Mutual exclusion -- These functions are jackets for the mutual exclusion    #
 #                     routines in /etc/shorewall/functions. They invoke the   #
 #                     corresponding function in that file if the user did not #
@@ -74,7 +90,7 @@ my_mutex_off() {
 ###############################################################################
 error_message() # $* = Error Message
 {
-   echo "$@" >&2
+   echo "   $@" >&2
 }
 
 ###############################################################################
@@ -82,7 +98,7 @@ error_message() # $* = Error Message
 ###############################################################################
 fatal_error() # $* = Error Message
 {
-    echo "$@" >&2
+    echo "   $@" >&2
     stop_firewall
     exit 2
 }
@@ -93,7 +109,7 @@ fatal_error() # $* = Error Message
 ###############################################################################
 startup_error() # $* = Error Message
 {
-    echo "$@" >&2
+    echo "   $@" >&2
     my_mutex_off
     [ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
     kill $$
@@ -312,7 +328,7 @@ chain_base() #$1 = interface
 {
     local c=${1%%+*}
 
-    echo ${c:=multi}
+    echo ${c:=common}
 }
 
 ################################################################################
@@ -405,7 +421,7 @@ determine_hosts() {
 	    eval display=\$${zone}_display
 	    display_list "$display Zone:" $hosts
 	else
-	    error_message "   Warning: Zone $zone is empty"
+	    error_message "Warning: Zone $zone is empty"
 	fi 
     done
 }
@@ -415,11 +431,7 @@ determine_hosts() {
 ################################################################################
 validate_zone() # $1 = zone
 {
-    local zone
-    for zone in $zones $FW; do
-	[ "$zone" = "$1" ] && return 0
-    done
-    return 1
+    list_search $1 $zones $FW
 }
 
 ################################################################################
@@ -431,18 +443,17 @@ validate_interfaces_file() {
         r="$z $interface $subnet $options"
 	[ "x$z" = "x-" ] || validate_zone $z || startup_error "Invalid zone ($z) in record \"$r\""
 
-	for intr in $all_interfaces; do
-	   [ "$intr" = "$interface" ] && startup_error "Duplicate Interface $intr"
-	done
+	list_search $intr $all_interfaces && \
+	    startup_error "Duplicate Interface $intr"
 	
 	all_interfaces="$all_interfaces $interface"
 
         for option in `separate_list $options`; do
 	    case $option in
-	    dhcp|noping|routestopped|norfc1918|multi|routefilter|dropunclean|logunclean|blacklist|-)
+	    dhcp|noping|filterping|routestopped|norfc1918|multi|routefilter|dropunclean|logunclean|blacklist|-)
 	        ;;
 	    *)
-	        error_message "   Warning: Invalid option ($option) in record \"$r\""
+	        error_message "Warning: Invalid option ($option) in record \"$r\""
 		;;
 	    esac
 	done
@@ -466,7 +477,7 @@ validate_hosts_file() {
 	    routestopped|-)
 		;;
 	    *)
-	        error_message "   Warning: Invalid option ($option) in record \"$r\""
+	        error_message "Warning: Invalid option ($option) in record \"$r\""
 		;;
 	    esac
 	done
@@ -561,14 +572,14 @@ validate_rule() {
 		[ -n "$port" ] && dports="--icmp-type $port"
 		state=""
 		;;
-	    all|ALL)
-		proto=
-		;;
 	    related|RELATED)
 		proto=
 		state="-m state --state RELATED"
 		;;
 	    *)
+		[ -n "$port" ] && [ "x${port}" != "x-" ] && \
+		    startup_error "Port number not allowed with protocol " \
+		                  "\"$proto\"; rule: \"$rule\""
 		;;
 	esac
 
@@ -579,13 +590,19 @@ validate_rule() {
 	    target=reject
 	    ;;
 	REDIRECT)
+	    [ -n "$serv" ] && startup_error "Error: REDIRECT rules cannot"\
+		" specify a server IP; rule: \"$rule\""
 	    servport=${servport:=$port}
+	    ;;
+	DNAT)
+	    [ -n "$serv" ] || startup_error "Error: DNAT rules require a" \
+		" server address; rule: \"$rule\""
 	    ;;
 	esac
 
 	if [ -z "$proto" -a -z "$cli" -a -z "$serv" -a -z "$servport" ]; then
-	    error_message "   Warning -- Rule \"$rule\" is a POLICY"
-            error_message "           -- and should be moved to the policy file"
+	    error_message "Warning -- Rule \"$rule\" is a POLICY"
+            error_message "        -- and should be moved to the policy file"
         fi
 
 	if [ -n "${serv}${servport}" ]; then
@@ -598,18 +615,18 @@ validate_rule() {
 		#
 		if [ -z "$NAT_ENABLED" ]; then
 	    	    startup_error \
-                    "   Error - Rule \"$rule\" requires NAT which is disabled"
+                    "Error - Rule \"$rule\" requires NAT which is disabled"
 		fi
 
 		if [ "$target" != "ACCEPT" ]; then
-		    startup_error "   Error - Only ACCEPT rules may specify " \
+		    startup_error "Error - Only ACCEPT rules may specify " \
                         "port mapping; rule \"$rule\""
 		fi
 	    fi
         else
 	    [ -n "$addr" ] && startup_error \
-	          "   Error: An ADDRESS ($addr) is only allowed in" \
-                  " a port mapping rule: \"$rule\""
+	          "Error: An ADDRESS ($addr) is only allowed in" \
+                  " a DNAT or REDIRECT rule: \"$rule\""
 	fi
     }
     ############################################################################
@@ -649,7 +666,7 @@ validate_rule() {
     ACCEPT|DROP|REJECT)
     	;;
     *)
-	startup_error "   Error: Invalid target;" \
+	startup_error "Error: Invalid target;" \
 	              " rule: \"$rule\""
 
     esac
@@ -669,13 +686,13 @@ validate_rule() {
         clientzone="${clientzone%\!*}"
 
 	[ "$logtarget" = DNAT ] || [ "$logtarget" = REDIRECT ] ||\
-	    startup_error "   Error: Exclude list only allowed with DNAT or REDIRECT"
+	    startup_error "Error: Exclude list only allowed with DNAT or REDIRECT"
     fi
     ############################################################################
     # Validate the Source Zone
 
     if ! validate_zone $clientzone; then
-	startup_error "   Error: Undefined Client Zone in rule \"$rule\""
+	startup_error "Error: Undefined Client Zone in rule \"$rule\""
     fi
 
     source=$clientzone
@@ -703,7 +720,7 @@ validate_rule() {
     # Validate the destination zone
     #
     if ! validate_zone $serverzone; then
-	startup_error "   Error: Undefined Server Zone in rule \"$rule\""
+	startup_error "Error: Undefined Server Zone in rule \"$rule\""
     fi
 
     dest=$serverzone
@@ -760,7 +777,7 @@ validate_policy()
 	    ;;
 	*)
 	    if ! validate_zone $client; then
-		startup_error "   Error: Undefined zone $client"
+		startup_error "Error: Undefined zone $client"
             fi
 	esac
 
@@ -769,7 +786,7 @@ validate_policy()
 	    ;;
 	*)
 	    if ! validate_zone $server; then
-		startup_error "   Error: Undefined zone $server"
+		startup_error "Error: Undefined zone $server"
             fi
 	esac
 
@@ -777,7 +794,7 @@ validate_policy()
 	ACCEPT|REJECT|DROP|CONTINUE)
 	    ;;
 	*)
-	    startup_error "   Error: Invalid policy $policy"
+	    startup_error "Error: Invalid policy $policy"
 	    ;;
         esac
 
@@ -812,9 +829,8 @@ find_interfaces_by_option() # $1 = option
 {
     while read ignore interface subnet options; do
 	expandv options
-	for option in `separate_list $options`; do
-	    [ "$option" = "$1" ] && echo `expand $interface` && break 1
-	done
+	list_search $1 `separate_list $options` && \
+	    echo `expand $interface` && break 1
     done < $TMP_DIR/interfaces
 }
 
@@ -825,17 +841,15 @@ find_hosts_by_option() # $1 = option
 {
     while read ignore hosts options; do
 	expandv options
-	for option in `separate_list $options`; do
-	    [ "$option" = "$1" ] && echo `expand $hosts`
-	done
+	list_search $1 `separate_list $options` && \
+	    echo `expand $hosts`
     done < $TMP_DIR/hosts
 
     while read ignore interface ignore1 options; do
 	expandv options
-	for option in `separate_list $options`; do
-	    [ "$option" = "$1" ] && \
-		echo `expand $interface`:0.0.0.0/0 && break 1
-	done
+	list_search $1 `separate_list $options` && \
+	    echo `expand $interface`:0.0.0.0/0 && \
+	    break 1
     done < $TMP_DIR/interfaces
 }
 
@@ -849,11 +863,9 @@ have_interfaces_in_zone_with_option() # $1 = zone, $2 = option
     local zne=$1
 
     while read z interface broadcast options; do
-	[ "x`expand $z`" = "x$zne" ] && \
-	    expandv options && \
-	    for option in `separate_list $options`; do
-	    	[ "$option" = "$2" ] && return 0
-	    done
+	[ "x`expand $z`" = "x$zne" ] && expandv options && \
+	    list_search $1 `separate_list $options` && \
+	    return 0
     done < $TMP_DIR/interfaces
     return 1
 }
@@ -1219,7 +1231,7 @@ setup_nat() {
 }
 
 ################################################################################
-# Delete existing Static NAT and Port Forwarding			       #
+# Delete existing Static NAT						       #
 ################################################################################
 delete_nat() {
     run_iptables -t nat -F
@@ -1358,11 +1370,11 @@ process_rule() {
 
 	if [ -z "$NAT_ENABLED" ]; then
 	    fatal_error \
-                "   Error - Rule \"$rule\" requires NAT which is disabled"
+                "Error - Rule \"$rule\" requires NAT which is disabled"
 	fi
 
 	if [ "$target" != "ACCEPT" ]; then
-	    fatal_error "   Error - Only ACCEPT rules may specify " \
+	    fatal_error "Error - Only DNAT and REDIRECT rules may specify " \
 		"port mapping; rule \"$rule\""
 	fi
 
@@ -1373,7 +1385,7 @@ process_rule() {
 	    snat=""
 	fi
 
-	[ "$addr" = "all" ] && addr= || addr="-d $addr"
+	[ "$addr" = "all" ] && addr= || addr=${addr:+-d $addr}
 
 	if [ -n "$serv" ]; then
 	    servport="${servport:+:$servport}"
@@ -1489,6 +1501,9 @@ process_rule() {
 		state=""
 		;;
 	    all|ALL)
+		[ -n "$port" ] && [ "x${port}" != "x-" ] && \
+		    fatal_error "Port number not allowed with \"all\";" \
+		                " rule: \"$rule\""
 		proto=
 		;;
 	    related|RELATED)
@@ -1496,6 +1511,9 @@ process_rule() {
 		state="-m state --state RELATED"
 		;;
 	    *)
+		[ -n "$port" ] && [ "x${port}" != "x-" ] && \
+		    fatal_error "Port number not allowed with protocol " \
+		                "\"$proto\"; rule: \"$rule\""
 		;;
 	esac
 
@@ -1506,13 +1524,19 @@ process_rule() {
 	    target=reject
 	    ;;
 	REDIRECT)
+	    [ -n "$serv" ] && startup_error "Error: REDIRECT rules cannot"\
+		" specify a server IP; rule: \"$rule\""
 	    servport=${servport:=$port}
+	    ;;
+	DNAT)
+	    [ -n "$serv" ] || fatal_error "Error: DNAT rules require a" \
+	    				  " server address; rule: \"$rule\""
 	    ;;
 	esac
 
 	if [ -z "$proto" -a -z "$cli" -a -z "$serv" -a -z "$servport" ]; then
-	    error_message "   Warning -- Rule \"$rule\" is a POLICY"
-            error_message "           -- and should be moved to the policy file"
+	    error_message "Warning -- Rule \"$rule\" is a POLICY"
+            error_message "        -- and should be moved to the policy file"
         fi
 
 	if [ -n "${serv}${servport}" ]; then
@@ -1521,7 +1545,7 @@ process_rule() {
 	    #
 	    if [ -n "$addr" -a "$addr" != "$serv" ]; then
 		##############################################################
- 		# Must use Prerouting DNAT
+ 		# Must use Prerouting DNAT or REDIRECT
 		#
 		add_nat_rule
 	    fi
@@ -1538,8 +1562,8 @@ process_rule() {
 	    # Destination is just a zone or an interface
 	    #
 	    [ -n "$addr" ] && fatal_error \
-	          "   Error: An ADDRESS ($addr) is only allowed in" \
-                  " a port mapping rule: \"$rule\""
+	          "Error: An ADDRESS ($addr) is only allowed in" \
+                  " a DNAT or REDIRECT: \"$rule\""
 	    
 	    [ -n "$loglevel" ] && run_iptables -A $chain $proto \
 		$dest_interface $state $cli $sports $dports -j LOG \
@@ -1550,6 +1574,7 @@ process_rule() {
 		$cli $sports $dports -j $target
 	fi
     }
+    
     ############################################################################
     # P r o c e s s _ R u l e    S t a r t s    H e r e
     ############################################################################
@@ -1602,14 +1627,14 @@ process_rule() {
         clientzone="${clientzone%\!*}"
 
 	[ "$logtarget" = DNAT ] || [ "$logtarget" = REDIRECT ] ||\
-	    fatal_error "   Error: Exclude list only allowed with DNAT or REDIRECT"
+	    fatal_error "Error: Exclude list only allowed with DNAT or REDIRECT"
     fi
 
     ############################################################################
     # Validate the Source Zone
 
     if ! validate_zone $clientzone; then
-	fatal_error "   Error: Undefined Client Zone in rule \"$rule\""
+	fatal_error "Error: Undefined Client Zone in rule \"$rule\""
     fi
 
     source=$clientzone
@@ -1637,7 +1662,7 @@ process_rule() {
     # Validate the destination zone
     #
     if ! validate_zone $serverzone; then
-	fatal_error "   Error: Undefined Server Zone in rule \"$rule\""
+	fatal_error "Error: Undefined Server Zone in rule \"$rule\""
     fi
 
     dest=$serverzone
@@ -2268,32 +2293,6 @@ process_blacklist_rec() {
 }
 
 ###############################################################################
-# Process a record from the whilelist file				      #
-#									      #
-#   $subnet      = address/subnet					      #
-###############################################################################
-process_whitelist_rec() {
-    local source
-    local addr
-
-    for addr in `separate_list $subnet`; do
-	case $addr in
-	~*)
-	    addr=`echo $addr | sed 's/~//;s/-/:/g'`
-	    source="--match mac --mac-source $addr"
-	    ;;
-	*)
-	    source="-s $addr"
-            ;;
-        esac
-
-	run_iptables -A common $source -j ACCEPT
-
-	echo "   $addr added to White List"
-    done
-}
-
-###############################################################################
 # Setup the Black List							      #
 ###############################################################################
 setup_blacklist() {
@@ -2327,25 +2326,6 @@ setup_blacklist() {
 }
 
 ###############################################################################
-# Setup the White List							      #
-###############################################################################
-setup_whitelist() {
-    local f=`find_file whitelist`
-
-    if [ -f $f ]; then
-    	echo "Setting up Whitelisting..."
-
-	strip_file whitelist $f
-
-        while read subnet; do
-	    expandv subnet
-	    process_whitelist_rec
-	done < $TMP_DIR/whitelist
-
-    fi
-}
-
-###############################################################################
 # Refresh the Black List						      #
 ###############################################################################
 refresh_blacklist() {
@@ -2365,25 +2345,6 @@ refresh_blacklist() {
 	    expandv subnet
 	    process_blacklist_rec
 	done < $TMP_DIR/blacklist
-
-    fi
-}
-
-###############################################################################
-# Refresh the White List						      #
-###############################################################################
-refresh_whitelist() {
-    local f=`find_file whitelist`
-
-    if [ -f $f ]; then
-	echo "Refreshing White List..."
-
-	strip_file whitelist $f
-
-        while read subnet; do
-	    expandv subnet
-	    process_whitelist_rec
-	done < $TMP_DIR/whitelist
 
     fi
 }
@@ -2488,12 +2449,8 @@ initialize_netfilter () {
     echo "Creating input Chains..."
     
     for interface in $all_interfaces; do
-	chain=`forward_chain $interface`
-
-	if ! havechain $chain; then
-	    createchain $chain no
-	    createchain `input_chain $interface` no
-	fi
+	createchain `forward_chain $interface` no
+	createchain `input_chain $interface`   no
     done
 }
 
@@ -2554,11 +2511,6 @@ add_common_rules() {
 	    echo "   $interface"
 	done
     fi
-    ############################################################################
-    # White List
-    #
-    setup_whitelist
-
     ############################################################################
     # Common ICMP rules
     #
@@ -2764,6 +2716,8 @@ apply_policy_rules() {
 ################################################################################
 activate_rules() {
 
+    multi_interfaces=`find_interfaces_by_option multi`
+
     for zone in $zones; do
 	eval source_hosts=\$${zone}_hosts
 
@@ -2792,33 +2746,24 @@ activate_rules() {
 		interface=${host%:*}
 		subnet=${host#*:}
 		chain1=`forward_chain $interface`
+		list_search $interface $multi_interfaces && multi=yes || multi=
 
 		for host1 in $dest_hosts; do
 		    interface1=${host1%:*}
 		    subnet1=${host1#*:}
-
-		    [ $interface = $interface1 -a "x$subnet" = "x$subnet1" ] ||\
+		    
+		    if [ $interface != $interface1 -o \
+		         "x$subnet"  != "x$subnet1" -o \
+		          -n "$multi" ]; then
 			run_iptables -A $chain1 -s $subnet \
 			    -o $interface1 -d $subnet1 -j $chain
+		    fi
 		done
-		
+
 	    done
 	done
 
     done
-
-    while read zone interface broadcast options; do
-        expandv zone
-	if [ "x$zone" != "x-" ]; then
-	    expandv interface options
-	    for option in `separate_list $options`; do
-	        [ "$option" = "multi" ] && \
-		    run_iptables -A `forward_chain $interface` \
-			-o $interface -j ${zone}2${zone} && \
-		    break 1
-	    done
-	fi
-    done < $TMP_DIR/interfaces
 
     for interface in $all_interfaces; do
        run_iptables -A FORWARD -i $interface -j `forward_chain $interface`
@@ -2864,9 +2809,6 @@ define_firewall() # $1 = Command (Start or Restart)
     [ -f $tunnels ] && \
 	echo "Processing $tunnels..." && setup_tunnels $tunnels
 
-    chains="`run_iptables -L -n | grep ^Chain | cut -d' ' -f2`"
-    chains=`echo $chains`
-
     rules=`find_file rules`
 
     echo "Processing $rules..."
@@ -2882,13 +2824,20 @@ define_firewall() # $1 = Command (Start or Restart)
 
     echo "Setting up ICMP Echo handling..."
 
+    filterping_interfaces="`find_interfaces_by_option filterping`"
     noping_interfaces="`find_interfaces_by_option noping`"
 
     for interface in $all_interfaces; do
-	[ -n "`echo $noping_interfaces | grep $interface`" ] && \
-	    target=DROP || target=ACCEPT
-	run_iptables -A `input_chain $interface` \
-	    -p icmp --icmp-type echo-request -j $target
+	if ! list_search $interface $filterping_interfaces; then
+	    if list_search $interface $noping_interfaces; then
+		target=DROP
+	    else
+		target=ACCEPT
+	    fi
+	    
+	    run_iptables -A `input_chain $interface` \
+		-p icmp --icmp-type echo-request -j $target
+	fi
     done
 
     [ -z "$NAT_BEFORE_RULES" ] && setup_nat
@@ -2910,7 +2859,6 @@ define_firewall() # $1 = Command (Start or Restart)
     [ -f $tos ] && [ -n "$MANGLE_ENABLED" ] && process_tos $tos
 
     [ -n "$TC_ENABLED" ] && setup_tc
-
 
     echo "Activating Rules..."
 
@@ -2984,13 +2932,10 @@ refresh_firewall()
 
     determine_interfaces
 
+    run_user_exit refresh
+
     run_iptables -F common
 
-    ############################################################################
-    # White List
-    #
-    refresh_whitelist
-    
     echo "Adding Common Rules"
     ############################################################################
     # Common rules in each chain
@@ -3208,6 +3153,7 @@ case "$command" in
 	echo "done."
 	my_mutex_off
 	;;
+
     start)
 	do_initialize
 	my_mutex_on
@@ -3220,6 +3166,7 @@ case "$command" in
 	define_firewall "Start" && [ -n "$SUBSYSLOCK" ] && touch $SUBSYSLOCK
 	my_mutex_off
 	;;
+
     restart)
 	do_initialize
 	my_mutex_on
@@ -3233,14 +3180,17 @@ case "$command" in
 	[ $? -eq 0 ] && [ -n "$SUBSYSLOCK" ] && touch $SUBSYSLOCK
 	my_mutex_off
 	;;
+
     status)
 	echo -e "Shorewall-$version Status at $HOSTNAME - `date`\\n"
 	iptables -L -n -v
 	;;
+
     reset)
 	iptables -L -n -Z -v
 	report "Shorewall Counters Reset"
 	;;
+
     refresh)
 	do_initialize
 	my_mutex_on
@@ -3252,6 +3202,7 @@ case "$command" in
 	refresh_firewall;
 	my_mutex_off
 	;;
+
     clear)
 	do_initialize
 	my_mutex_on
@@ -3262,11 +3213,14 @@ case "$command" in
 	echo "done."
 	my_mutex_off
 	;;
+
     check)
 	do_initialize
 	check_config
 	;;
+
     *)
 	usage
 	;;
+
 esac

@@ -1,6 +1,6 @@
 %define name shorewall
-%define version 1.2
-%define release 90
+%define version 1.3
+%define release 0
 %define prefix /usr
 
 Summary: Shoreline Firewall is an iptables-based firewall for Linux systems.
@@ -70,7 +70,6 @@ if [ $1 = 0 ]; then if [ -x /sbin/insserv ]; then /sbin/insserv -r /etc/init.d/s
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/tunnels
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/hosts
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/blacklist
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/whitelist
 %attr(0544,root,root) /sbin/shorewall
 %attr(0444,root,root) /etc/shorewall/functions
 /etc/shorewall/firewall
@@ -78,7 +77,13 @@ if [ $1 = 0 ]; then if [ -x /sbin/insserv ]; then /sbin/insserv -r /etc/init.d/s
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel
 
 %changelog
-* Wed May 8 Tom Eastep <tom@shorewall.net>
+* Wed May 29 2002 Tom Eastep <tom@shorewall.net>
+- Changed version to 1.3.0
+* Mon May 20 2002 Tom Eastep <tom@shorewall.net>
+- Removed whitelist file
+* Sat May 18 2002 Tom Eastep <tom@shorewall.net>
+- changed version to 91
+* Wed May 8 2002 Tom Eastep <tom@shorewall.net>
 - changed version to 90
 - removed 'provides' tag.
 * Tue Apr 23 2002 Tom Eastep <tom@shorewall.net>

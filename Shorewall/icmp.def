@@ -3,11 +3,16 @@
 #
 # This file defines the default rules for accepting ICMP packets. 
 #
-# Do not modify this file -- if you want to change these rules, copy this
-# file to /etc/shorewall/icmpdef and modify that file.
+# Do not modify this file -- if you wish to change these rules, create
+# /etc/shorewall/icmpdef to replace it. It is suggested that you include
+# the command "source /etc/shorewall/icmp.def" in your
+# /etc/shorewall/icmpdef file so that you will continue to get the
+# advantage of new releases of this file.
 #
-# In particular, if you want to accept 'ping' everywhere then add
+# For example, if you want to accept 'ping' everywhere then create
+# /etc/shorewall/icmpdef with the following two lines:
 #
+# source /etc/shorewall/icmp.def
 # run_iptables -A icmpdef -p ICMP --icmp-type echo-request -j ACCEPT
 #
 run_iptables -A icmpdef -p ICMP --icmp-type echo-reply              -j ACCEPT

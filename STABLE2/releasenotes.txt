@@ -204,6 +204,22 @@ Problems corrected in 2.0.12
 
 	   shorewall add br0:eth2:192.168.1.3 OK
 	   shorewall delete br0:eth2:192.168.1.3 OK
+
+3) Previously, "shorewall save" created an out-of-sequence restore
+   script. The commands saved in the user's /etc/shorewall/start script
+   were executed prior to the Netfilter configuration being
+   restored. This has been corrected so that "shorewall save" now
+   places those commands at the end of the script. 
+
+   To accomplish this change, the "restore base" file
+   (/var/lib/shorewall/restore-base) has been split into two files:
+
+   /var/lib/shorewall/restore-base -- commands to be executed before
+   Netfilter the configuration is restored.
+
+   /var/lib/shorewall/restore-tail -- commands to be executed after the
+   Netfilter configuration is restored.
+
 -----------------------------------------------------------------------
 New Features in 2.0.12
 

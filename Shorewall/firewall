@@ -1257,7 +1257,7 @@ stop_firewall() {
 
     [ -n "$NAT_ENABLED" ] && delete_nat
     delete_proxy_arp
-    [ -n "$TC_ENABLED" ] && delete_tc
+    [ -n "$CLEAR_TC" ] && delete_tc
 
     setpolicy INPUT DROP
     setpolicy OUTPUT DROP
@@ -1843,7 +1843,6 @@ setup_tc() {
 #
 delete_tc()
 {
-    local result
 
     clear_one_tc() {
 	tc qdisc del dev $1 root    2> /dev/null
@@ -1851,19 +1850,17 @@ delete_tc()
     }
 
     run_user_exit tcclear
-    result=$?
 
-    if [ $result -ne 255 ]; then
-	run_ip link list | while read inx interface details; do
-	    case $inx in
-		[0-9]*)
-                    clear_one_tc ${interface%:}
-		    ;;
-		*)
-		    ;;
-	    esac
-	done
-    fi
+    run_ip link list | \
+    while read inx interface details; do
+	case $inx in
+	    [0-9]*)
+		clear_one_tc ${interface%:}
+		;;
+	    *)
+		;;
+	esac
+    done
 }
 
 #
@@ -1873,7 +1870,7 @@ refresh_tc() {
 
     echo "Refreshing Traffic Control Rules..."
 
-    delete_tc
+    [ -n "$CLEAR_TC" ] && delete_tc
 
     [ -n "$MARK_IN_FORWARD_CHAIN" ] && chain=tcfor || chain=tcpre
     
@@ -3267,7 +3264,7 @@ initialize_netfilter () {
 	run_iptables -t mangle -F && \
 	run_iptables -t mangle -X
 
-    [ -n "$TC_ENABLED" ] && delete_tc
+    [ -n "$CLEAR_TC" ] && delete_tc
 
     run_user_exit init
 
@@ -4578,7 +4575,11 @@ do_initialize() {
     [ -z "$RFC1918_LOG_LEVEL" ] && RFC1918_LOG_LEVEL=info
     MARK_IN_FORWARD_CHAIN=`added_param_value_no MARK_IN_FORWARD_CHAIN $MARK_IN_FORWARD_CHAIN`
     [ -n "$MARK_IN_FORWARD_CHAIN" ] && marking_chain=tcfor || marking_chain=tcpre
-
+    if [ -n "$TC_ENABLED" ]; then
+	CLEAR_TC=`added_param_value_yes CLEAR_TC $CLEAR_TC`
+    else
+	CLEAR_TC=
+    fi
 }
 
 #

@@ -33,5 +33,12 @@ New features include:
 2) The 'shorewall check' command now prints out the applicable policy
    between each pair of zones.
 
-3. An exit status of 255 from /etc/shorewall/tcclear will prevent
-   Shorewall from clearing the QOS configuration.
+3. A new CLEAR_TC option has been added to shorewall.conf. If this
+   option is set to 'No' then Shorewall won't clear the current
+   traffic control rules during [re]start. This setting is intended
+   for use by people that prefer to configure traffic shaping when
+   the network interfaces come up rather than when the firewall
+   is started. By setting TC_ENABLED=Yes and CLEAR_TC=No and by
+   not supplying an /etc/shorewall/tcstart file, your traffic 
+   shaping rules can still use the 'fw' classifier based on packet
+   marking defined in /etc/shorewall/tcrules.

@@ -14,12 +14,18 @@
 #	HOST(S)		- (Optional) Comma-separated list of IP/subnet
 #			  If left empty or supplied as "-",
 #			  0.0.0.0/0 is assumed.
+#	OPTIONS         - (Optional) A comma-separated list of
+#			  options. The currently-supported options are:
+#
+#			  routeback - Set up a rule to ACCEPT traffic from
+#			  these hosts back to themselves. 
 #
 # Example:
 #
-#	INTERFACE	HOST(S)
+#	INTERFACE	HOST(S)			OPTIONS
 #	eth2		192.168.1.0/24
 #	eth0		192.0.2.44
+#	br0		-			routeback
 ##############################################################################
-#INTERFACE	HOST(S)
+#INTERFACE	HOST(S)		OPTIONS
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

@@ -22,7 +22,7 @@
 #       Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
 #
 
-VERSION=2.0.10
+VERSION=2.0.11
 
 usage() # $1 = exit status
 {
@@ -540,7 +540,7 @@ fi
 install_file_with_backup firewall ${PREFIX}/usr/share/shorewall/firewall 0544
 
 if [ -z "$PREFIX" ]; then
-    if -n "$first_install" ]; then
+    if [ -n "$first_install" ]; then
 	if [ -n "$DEBIAN" ]; then
 	    run_install -o $OWNER -g $GROUP -m 0644 default.debian /etc/default/shorewall
 	    ln -s ../init.d/shorewall /etc/rcS.d/S40shorewall

@@ -1,0 +1,3340 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article id="IPIP">
+  <articleinfo>
+    <title>Guide de Configuration de Shorewall</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+
+      <author>
+        <firstname>Fabien</firstname>
+
+        <surname>Demassieux</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate>2003-12-22</pubdate>
+
+    <copyright>
+      <year>2001-2003</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled &#34;<ulink
+      url="GnuCopyright.htm">GNU Free Documentation License</ulink>&#34;.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <note>
+    <para><emphasis role="underline">Notes du traducteur :</emphasis></para>
+
+    <para>Je remercie l&#39;équipe Shorewall, pour ce firewall formidable et
+    l&#39;aide personnelle que m&#39;a donné Tom Eastep.</para>
+
+    <para>J&#39;espère que cette traduction vous aidera à utiliser
+    efficacement ce firewall.</para>
+
+    <para>Toutefois, si ce manuel comporte des lacunes, des incohérences ou
+    afin d&#39;améliorer sa compréhension, n&#39;hésitez pas à me contacter
+    <ulink url="mailto:fd03x@wanadoo.fr">fabien demassieux</ulink></para>
+  </note>
+
+  <section id="Documentation">
+    <title>Introduction</title>
+
+    <para>Ce guide est destiné aux utilisateurs qui configurent Shorewall dans
+    un environnement ou un ensemble d&#39;adresses IP publiques doivent être
+    prises en compte ou à ceux qui souhaitent en savoir plus à propos de
+    Shorewall que ce que contient le guide pour une utilisation Simple
+    Adresse. Parce que le champ d&#39;utilisation est si élevé, le guide vous
+    donnera les indications générales à suivre et vous renseignera sur
+    d&#39;autres ressources si nécessaire.</para>
+
+    <para><inlinegraphic fileref="images/j0213519.gif" /> Si vous utilisez
+    LEAF Bering, votre configuration Shorewall n&#39;est PAS ce que je publie
+    -- Je suggère de prendre en considération l&#39;installation de Shorewall
+    LPR disponible sur le site de shorewall.net avant de poursuivre.</para>
+
+    <para>Shorewall nécessite que le package iproute/iproute2 soit installé
+    (sur RedHat, le package s&#39;appelle <emphasis>iproute</emphasis>). Vous
+    pouvez voir si le package est installé grâce au programme <emphasis
+    role="bold">ip</emphasis> sur votre système firewall. En tant que root,
+    vous pouvez utiliser la commande &#39;which&#39; pour vérifier que le
+    programme est présent:</para>
+
+    <programlisting>     [root@gateway root]# which ip
+     /sbin/ip
+     [root@gateway root]#
+</programlisting>
+
+    <para>Je vous recommande de parcourir en premier le guide pour vous
+    familiariser avec ce que cela implique puis de le reprendre afin de
+    modifier votre configuration. Les Points de configuration à changer sont
+    précédés du symbole <inlinegraphic fileref="images/BD21298_.gif" /></para>
+
+    <para><inlinegraphic fileref="images/j0213519.gif" />Si vous éditez vos
+    fichiers de configuration sur un système Windows, vous devez les sauver
+    comme des fichiers Unix si votre éditeur supporte cette option sinon vous
+    devez les faire passer par dos2unix avant d&#39;essayer de les utiliser.
+    De la même manière, si vous copiez un fichier de configuration depuis
+    votre disque dur Windows vers une disquette, vous devez lancer dos2unix
+    sur la copie avant de l&#39;utiliser avec Shorewall.</para>
+
+    <itemizedlist>
+      <listitem>
+        <para><ulink url="http://www.simtel.net/pub/pd/51438.html">Windows
+        Version of dos2unix</ulink></para>
+      </listitem>
+
+      <listitem>
+        <para><ulink url="http://www.megaloman.com/%7Ehany/software/hd2u/">Linux
+        Version of dos2unix</ulink></para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Les Concepts de Shorewall</title>
+
+    <para><inlinegraphic fileref="images/BD21298_.gif" /> Les fichiers de
+    configuration de Shorewall se trouvent dans le répertoire /etc/shorewall
+    -- pour la plus par des paramétrages, vous avez juste besoin de
+    quelques-uns d&#39;entre eux comme cela est décrit dans le&#x00A0; manuel.
+    Des squelettes de fichiers sont créés durant La procédure
+    d&#39;installation de Shorewall.</para>
+
+    <para>Comme chaque fichier est abordé, je vous suggère de regarder celui
+    de votre système -- chaque fichier contient des instructions détaillées de
+    configuration et d&#39;autres des entrées par défaut.</para>
+
+    <para>Shorewall voit le réseau ou il opère comme composé d&#39;un ensemble
+    de zones. Dans la configuration par défaut, les zones suivantes sont
+    utilisées:</para>
+
+    <table>
+      <title>Les Zones</title>
+
+      <tgroup cols="2">
+        <tbody>
+          <row>
+            <entry align="left"><emphasis role="bold">Nom</emphasis></entry>
+
+            <entry align="left" role="underline"><emphasis role="bold">Description</emphasis></entry>
+          </row>
+
+          <row>
+            <entry>net</entry>
+
+            <entry>L&#39;internet</entry>
+          </row>
+
+          <row>
+            <entry>loc</entry>
+
+            <entry>Votre Réseau locale</entry>
+          </row>
+
+          <row>
+            <entry>dmz</entry>
+
+            <entry>Zone Démilitarisée</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+
+    <para>Les Zones sont définies dans le fichier <ulink
+    url="Documentation.htm#Zones">/etc/shorewall/zones</ulink>.</para>
+
+    <para>Shorewall reconnaît aussi le système firewall comme sa propre zone -
+    par défaut, le firewall lui-même est connu sous le nom <emphasis
+    role="bold">fw</emphasis> cela peut être modifié dans le fichier<ulink
+    url="Documentation.htm#Config"> /etc/shorewall/shorewall.conf</ulink> .
+    Dans ce guide, le nom par défaut (<emphasis role="bold">fw</emphasis>)
+    sera utilisé.</para>
+
+    <para>Mise à par <emphasis role="bold">fw</emphasis>, Shorewall
+    n&#39;attache aucune importance au nom des zones. Les Zones sont
+    entièrement ce que VOUS en faites. Cela veut dire que vous ne devez pas
+    vous attendre à ce que Shorewall fasse quelque chose de spécial &#34;car
+    il s&#39;agit de la zone Internet&#34; ou &#34;car c&#39;est la zone
+    DMZ&#34;.</para>
+
+    <para><inlinegraphic fileref="images/BD21298_.gif" /> Editez le fichier
+    /etc/shorewall/zones et faites tout changement qui s&#39;impose.</para>
+
+    <para>Les Règles qui concernent le trafic à autoriser ou à refuser sous
+    exprimés en terme de Zones.</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Vous désignez les Polices par défaut entre une zone et une autre
+        dans le fichier <ulink url="Documentation.htm#Policy">/etc/shorewall/policy</ulink>.</para>
+      </listitem>
+
+      <listitem>
+        <para>Vous définissez les exceptions à ces Polices par défaut dans le
+        fichier <ulink url="Documentation.htm#Rules">/etc/shorewall/rules</ulink>.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>Shorewall est construit sur les possibilités du noyau (kernel)
+    <ulink url="http://www.netfilter.org">Netfilter</ulink>. Netfilter
+    implémente une <ulink
+    url="http://www.cs.princeton.edu/~jns/security/iptables/iptables_conntrack.html">fonction
+    de tracking</ulink> qui autorise ce qui est souvent désigné comme
+    une&#x00A0; inspection déclarée de paquets. Les propriétés de déclaration
+    permettent au firewall d&#39;être définie en terme de connexions plutôt
+    qu&#39;en terme de paquet. Avec Shorewall, vous:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>Identifiez la zone source.</para>
+      </listitem>
+
+      <listitem>
+        <para>Identifiez la zone destination.</para>
+      </listitem>
+
+      <listitem>
+        <para>Si la POLICE de la zone client vers la zone destination est ce
+        que vous souhaitez pour cette paire client/serveur, vous n&#39;avez
+        besoin de rien de plus.</para>
+      </listitem>
+
+      <listitem>
+        <para>Si la POLICE n&#39;est pas ce que vous souhaitez, alors vous
+        devez ajouter une règle. Cette règle est exprimé en terme de zone
+        client et de zone serveur.</para>
+      </listitem>
+    </orderedlist>
+
+    <para>Si les connexions d&#39;un certain type sont autorisés de la zone A
+    au firewall et sont aussi autorisés du firewall à la zone B cela&#x00A0;
+    <emphasis role="bold">NE VEUT PAS dire que ces connections sont autorisés
+    de la zone A à la zone B</emphasis>. Cela veut plutôt dire que vous avez
+    un proxy qui tourne sur le firewall qui accepte les connections de la zone
+    A et qui ensuite établit ces propres connections du firewall à&#x00A0; la
+    zone B.</para>
+
+    <para>Pour chaque requête de connexion sur le firewall, la requête est
+    d&#39;abord évalué à travers le fichier /etc/shorewall/rules file. Si
+    aucune règle dans ce fichier ne correspond, la connexion interroge ensuite
+    la première police dans /etc/shorewall/policy qui correspond à la requête
+    et l&#39;applique. Si cette police est REJECT ou DROP, la requête est a
+    nouveau évaluée à travers les règles du fichier /etc/shorewall/common.def.</para>
+
+    <para>Le fichier de défaut /etc/shorewall/policy a les polices suivantes:</para>
+
+    <table>
+      <title>/etc/shorewall/policy</title>
+
+      <tgroup cols="5">
+        <tbody>
+          <row>
+            <entry><emphasis role="bold">SOURCE ZONE</emphasis></entry>
+
+            <entry><emphasis role="bold">DESTINATION ZONE</emphasis></entry>
+
+            <entry><emphasis role="bold">POLICY</emphasis></entry>
+
+            <entry><emphasis role="bold">LOG LEVEL</emphasis></entry>
+
+            <entry><emphasis role="bold">LIMIT:BURST</emphasis></entry>
+          </row>
+
+          <row>
+            <entry>fw</entry>
+
+            <entry>net</entry>
+
+            <entry>ACCEPT</entry>
+
+            <entry></entry>
+
+            <entry></entry>
+          </row>
+
+          <row>
+            <entry>net</entry>
+
+            <entry>all</entry>
+
+            <entry>DROP</entry>
+
+            <entry>info</entry>
+
+            <entry></entry>
+          </row>
+
+          <row>
+            <entry>all</entry>
+
+            <entry>all</entry>
+
+            <entry>REJECT</entry>
+
+            <entry>info</entry>
+
+            <entry></entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+
+    <para>La police précédente:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>Permet toutes les connexions de votre réseau local vers Internet</para>
+      </listitem>
+
+      <listitem>
+        <para>Drop (ignore) toutes les connexions d&#39;Internet vers le
+        firewall ou votre réseau local et génère un message au niveau info
+        (ici se trouve la description des niveaux de log).</para>
+      </listitem>
+
+      <listitem>
+        <para>Rejette toutes les autres connexions et génère un message au
+        niveau info. Quant la requête est rejeté, le firewall retourne un RST
+        (si le protocole est TCP) ou un ICMP port-unreachable paquet pour les
+        autres protocoles.</para>
+      </listitem>
+    </orderedlist>
+
+    <para><inlinegraphic fileref="images/BD21298_.gif" /> Maintenant, éditez
+    votre /etc/shorewall/policy et apportez tous les changements que vous
+    souhaitez.</para>
+  </section>
+
+  <section>
+    <title>Interfaces Réseau</title>
+
+    <para>Pour le reste de ce guide, nous utiliserons le schéma ci-dessous.
+    Bien qu&#39;il ne puisse correspondre à votre propre réseau, il peut être
+    utilisé pour illustrer les aspects importants de la configuration de
+    Shorewall.</para>
+
+    <para>Sur ce schéma:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>La zone DMZ est composée des systèmes DMZ 1 et DMZ 2. Une DMZ
+        est utilisée pour isoler vos serveurs accessibles depuis Internet de
+        vos systèmes locaux. Ainsi si un de ces serveurs est compromis, vous
+        avez encore votre firewall entre le système compromis et vos systèmes
+        locaux.</para>
+      </listitem>
+
+      <listitem>
+        <para>La zone Local est composée des systèmes Local 1, Local 2 et
+        Local 3.</para>
+      </listitem>
+
+      <listitem>
+        <para>Tous les systèmes du FAI vers l&#39;extérieur et qui englobe la
+        Zone Internet.</para>
+      </listitem>
+    </itemizedlist>
+
+    <graphic align="center" fileref="images/dmz3.png" />
+
+    <para>La façon la plus simple pour définir les zones est d&#39;associer le
+    nom de la zone (définie précédemment dans&#x00A0; /etc/shorewall/zones)
+    avec une interface réseau.</para>
+
+    <para>C&#39;est fait dans le fichier <ulink
+    url="Documentation.htm#Interfaces">/etc/shorewall/interfaces</ulink>.</para>
+
+    <para>Le firewall illustré ci-dessus à trois interfaces. Si la connexion
+    se fait à travers un câble ou un &#34;modem&#34; DSL , l&#39;Interface
+    Externe sera l&#39;adaptateur qui est branché au &#34;Modem&#34; (e.g.,
+    <emphasis role="bold">eth0</emphasis>)&#x00A0;tant que vous ne vous
+    n&#39;utilisez pas le Point-to-Point Protocol over Ethernet (PPPoE) ou le
+    Point-to-PointTunnelingProtocol(PPTP) dans ce cas l&#39;Interface Externe
+    sera de type ppp (e.g., <emphasis role="bold">ppp0</emphasis>). Si vous
+    vous connectez à travers un modem classique, votre Interface Externe sera
+    également <emphasis role="bold">ppp0</emphasis>. Si vous utilisez ISDN,
+    votre Interface Externe sera <emphasis role="bold">ippp0</emphasis>.</para>
+
+    <para><inlinegraphic fileref="images/BD21298_.gif" /> Si votre Interface
+    Externe est&#x00A0; ppp0 ou ippp0 alors vous pouvez fixer CLAMPMSS=yes
+    dans /etc/shorewall/shorewall.conf.</para>
+
+    <para>Votre Interface Locale doit être un adaptateur Ethernet&#x00A0; (<emphasis
+    role="bold">eth0</emphasis>, <emphasis role="bold">eth1</emphasis> or
+    <emphasis role="bold">eth2</emphasis>) et doit être connecté à un hub ou
+    un switch. Vos ordinateurs locaux doivent être&#x00A0; connectés au même
+    switch (note: Si vous avez une machine unique, vous pouvez connecter le
+    firewall directement à l&#39;ordinateur en utilisant un câble croisé).</para>
+
+    <para>Votre Interface DMZ&#x00A0; doit aussi être un adaptateur Ethernet (<emphasis
+    role="bold">eth0</emphasis>, <emphasis role="bold">eth1</emphasis> or
+    <emphasis role="bold">eth2</emphasis>) et doit être connecté à un hub ou
+    un switch. Vos ordinateurs DMZ doivent être&#x00A0; connectés au même
+    switch (note: Si vous avez une machine DMZ unique, vous pouvez connecter
+    le firewall directement à l&#39;ordinateur en utilisant un câble croisé).</para>
+
+    <para><inlinegraphic fileref="images/j0213519.gif" />Ne pas connecter plus
+    d&#39;une interface au même hub ou switch (sauf pour tester). Cela ne
+    fonctionne pas comme vous pourriez vous y attendre et vous terminerez
+    confus en croyant que le réseau ne fonctionne pas entièrement.</para>
+
+    <para>Pour le besoin de ce Guide, nous décidons que:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>L&#39;interface externe est <emphasis role="bold">eth0</emphasis>.</para>
+      </listitem>
+
+      <listitem>
+        <para>L&#39;interface locale est <emphasis role="bold">eth1</emphasis>.</para>
+      </listitem>
+
+      <listitem>
+        <para>L&#39;interface DMZ est <emphasis role="bold">eth2</emphasis>.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>La configuration par défaut de Shorewall ne définit pas le contenu
+    de chaque zone. Pour définir la précédente configuration en utilisant le
+    fichier <ulink url="Documentation.htm#Interfaces">/etc/shorewall/interfaces
+    </ulink>file, ce fichier doit contenir:</para>
+
+    <table>
+      <title>/etc/shorewall/interfaces</title>
+
+      <tgroup cols="4">
+        <tbody>
+          <row>
+            <entry><emphasis role="bold">ZONE</emphasis></entry>
+
+            <entry><emphasis role="bold">INTERFACE</emphasis></entry>
+
+            <entry><emphasis role="bold">BROADCAST</emphasis></entry>
+
+            <entry><emphasis role="bold">OPTIONS</emphasis></entry>
+          </row>
+
+          <row>
+            <entry>net</entry>
+
+            <entry>eth0</entry>
+
+            <entry>detect</entry>
+
+            <entry>rfc1918</entry>
+          </row>
+
+          <row>
+            <entry>loc</entry>
+
+            <entry>eth1</entry>
+
+            <entry>detect</entry>
+
+            <entry></entry>
+          </row>
+
+          <row>
+            <entry>dmz</entry>
+
+            <entry>eth2</entry>
+
+            <entry>detect</entry>
+
+            <entry></entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+
+    <para><inlinegraphic fileref="images/BD21298_.gif" /> Editer le fichier
+    /etc/shorewall/interfaces et définissez les interfaces du réseau sur votre
+    firewall et associez chaque interface avec une zone. Si vous avez une zone
+    qui est interfacée avec plus d&#39;une interface, incluez simplement une
+    entrée pour chaque interface et répéter le nom de&#x00A0; zone autant de
+    fois que nécessaire.</para>
+
+    <para>Exemple:</para>
+
+    <table>
+      <title>/etc/shorewall/interfaces</title>
+
+      <tgroup cols="4">
+        <tbody>
+          <row>
+            <entry><emphasis role="bold">ZONE</emphasis></entry>
+
+            <entry><emphasis role="bold">INTERFACE</emphasis></entry>
+
+            <entry><emphasis role="bold">BROADCAST</emphasis></entry>
+
+            <entry><emphasis role="bold">OPTIONS</emphasis></entry>
+          </row>
+
+          <row>
+            <entry>net</entry>
+
+            <entry>eth0</entry>
+
+            <entry>detect</entry>
+
+            <entry>rfc1918</entry>
+          </row>
+
+          <row>
+            <entry>loc</entry>
+
+            <entry>eth1</entry>
+
+            <entry>detect</entry>
+
+            <entry></entry>
+          </row>
+
+          <row>
+            <entry>dmz</entry>
+
+            <entry>eth2</entry>
+
+            <entry>detect</entry>
+
+            <entry>dhcp</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+
+    <para><inlinegraphic fileref="images/BD21298_.gif" /> Vous pouvez définir
+    des zones plus compliquées en utilisant le fichier <ulink
+    url="Documentation.htm#Hosts">/etc/shorewall/hosts</ulink> mais dans la
+    plus part des cas, ce n&#39;est pas nécessaire.</para>
+  </section>
+
+  <section>
+    <title>Adressage, Sous-réseaux et Routage</title>
+
+    <para>Normalement, votre FAI vous assigne des adresses Publiques. Vous
+    pouvez configurer l&#39;interface externe du firewall en utilisant
+    l&#39;une de ces adresses permanentes et vous pouvez décider comment
+    utiliser le reste de vos adresses.</para>
+
+    <para>Si vous êtes déjà familier avec l&#39;adressage IP et le routage,
+    vous pouvez aller à la prochaine section.</para>
+
+    <para>La discussion suivante aborde tout juste les concepts
+    d&#39;adressage et de routage. Si vous souhaitez approfondir vos
+    connaissances sur ce sujet, je vous recommande vivement
+    l&#39;ouvrage&#x00A0; &#34;<emphasis>IP Fundamentals: What Everyone Needs
+    to Know about Addressing &#38; Routing</emphasis>&#34;, Thomas A. Maufer,
+    Prentice-Hall, 1999, ISBN 0-13-975483-0.</para>
+
+    <section>
+      <title>Adressage IP</title>
+
+      <para>L&#39;adressage IP version 4 (IPv4) est codé sur 32-bit. La
+      notation w.x.y.z se réfère à une adresse dont le byte d&#39;ordre
+      supérieur est &#34;w&#34;, le suivant à pour valeur &#34;x&#34;, etc. Si
+      nous prenons l&#39;adresse 192.0.2.14 et l&#39;exprimons en hexadécimal,
+      nous obtenons:</para>
+
+      <para><programlisting>        C0.00.02.0E</programlisting>ou
+      l&#39;exprimons comme un entier de 32-bit</para>
+
+      <para><programlisting>        C000020E</programlisting></para>
+    </section>
+
+    <section>
+      <title>Sous -réseaux</title>
+
+      <para>Vous entendrez toujours les termes &#34;réseaux de Class A&#34;,
+      &#34;réseaux de Class B&#34; et &#34;réseaux de Class C&#34;. Au début
+      de l&#39;existence de l&#39;IP, les réseaux ne comportez que trois
+      tailles (il y avait aussi le réseau de Class D mais il étaient utilisés
+      différemment):</para>
+
+      <simplelist>
+        <member>Classe A - masque réseau 255.0.0.0, taille = 2 ** 24</member>
+
+        <member>Classe B - masque réseau 255.255.0.0, taille = 2 ** 16</member>
+
+        <member>Classe C - masque réseau 255.255.255.0, taille = 256</member>
+      </simplelist>
+
+      <para>La taille d&#39;un réseau était uniquement déterminé par la valeur
+      du byte de l&#39;ordre supérieur, ainsi vous pouviez regarder une
+      adresse IP et déterminer immédiatement le masque réseau. Le masque
+      réseau est un nombre qui se termine logiquement avec une adresse qui
+      isole le <emphasis>numéro de réseau</emphasis>; le reste de
+      l&#39;adresse est le <emphasis>numéro d&#39;hôte</emphasis>. Par
+      exemple, dans la Classe C l&#39;adresse 192.0.2.14, le numéro
+      hexadécimal du réseau est C00002 et le numéro hexadécimal d&#39;hôte est
+      0E.</para>
+
+      <para>Comme l&#39;Internet se développait, il semblait clair que la
+      classification en adressage 32-bit allait devenir très limité
+      (rapidement, les grandes sociétés et les universités s&#39;étaient
+      assigné leur propre réseau de classe A!). Après quelques faux départs,
+      la technique courante du sous-adressage de ces réseaux en plus petits
+      sous-réseaux&#x00A0; évolua; cette technique est consignée par le
+      Classless Inter Domain Routing (CIDR). Aujourd&#39;hui, tous les
+      systèmes avec lesquels vous travaillerez&#x00A0; comprennent
+      probablement la notation CIDR. Le réseau basé sur les Classes est du
+      domaine du passé .</para>
+
+      <para>Un sous-réseau (aussi appelé subnetwork et subnet) est un ensemble
+      d&#39;adresses IP tel que:</para>
+
+      <orderedlist>
+        <listitem>
+          <para>Le nombre d&#39;adresses dans le jeu est un multiple de 2; et</para>
+        </listitem>
+
+        <listitem>
+          <para>La première adresse dans le jeu est un multiple de la taille
+          du jeu.</para>
+        </listitem>
+
+        <listitem>
+          <para>La première adresse du sous-réseau est réservée et se réfère à
+          <emphasis>l&#39;adresse du sous-réseau</emphasis>.</para>
+        </listitem>
+
+        <listitem>
+          <para>La dernière adresse du sous-réseau est réservée comme
+          <emphasis>adresse broadcast du sous-réseau</emphasis>.</para>
+        </listitem>
+      </orderedlist>
+
+      <table>
+        <title>Logarithme Naturel</title>
+
+        <tgroup cols="3">
+          <tbody>
+            <row>
+              <entry><emphasis role="bold">n</emphasis></entry>
+
+              <entry><emphasis role="bold">log2 n</emphasis></entry>
+
+              <entry><emphasis role="bold">(32 - log2 n)</emphasis></entry>
+            </row>
+
+            <row>
+              <entry>8</entry>
+
+              <entry>3</entry>
+
+              <entry>29</entry>
+            </row>
+
+            <row>
+              <entry>16</entry>
+
+              <entry>4</entry>
+
+              <entry>28</entry>
+            </row>
+
+            <row>
+              <entry>32</entry>
+
+              <entry>5</entry>
+
+              <entry>27</entry>
+            </row>
+
+            <row>
+              <entry>64</entry>
+
+              <entry>6</entry>
+
+              <entry>26</entry>
+            </row>
+
+            <row>
+              <entry>128</entry>
+
+              <entry>7</entry>
+
+              <entry>25</entry>
+            </row>
+
+            <row>
+              <entry>256</entry>
+
+              <entry>8</entry>
+
+              <entry>24</entry>
+            </row>
+
+            <row>
+              <entry>512</entry>
+
+              <entry>9</entry>
+
+              <entry>23</entry>
+            </row>
+
+            <row>
+              <entry>1024</entry>
+
+              <entry>10</entry>
+
+              <entry>22</entry>
+            </row>
+
+            <row>
+              <entry>2048</entry>
+
+              <entry>11</entry>
+
+              <entry>21</entry>
+            </row>
+
+            <row>
+              <entry>4096</entry>
+
+              <entry>12</entry>
+
+              <entry>20</entry>
+            </row>
+
+            <row>
+              <entry>8192</entry>
+
+              <entry>13</entry>
+
+              <entry>19</entry>
+            </row>
+
+            <row>
+              <entry>16384</entry>
+
+              <entry>14</entry>
+
+              <entry>18</entry>
+            </row>
+
+            <row>
+              <entry>32768</entry>
+
+              <entry>15</entry>
+
+              <entry>17</entry>
+            </row>
+
+            <row>
+              <entry>65536</entry>
+
+              <entry>16</entry>
+
+              <entry>16</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+
+      <para>Vous pourrez voir que la table ci-dessus contient aussi une
+      colonne (32 - log2<emphasis role="bold"> n</emphasis>). Ce nombre est la
+      <emphasis>Variable de Longueur&#x00A0; du Masque de Sous-réseau</emphasis>
+      (VLSM Variable Length Subnet Mask) pour un réseau de taille n. De la
+      table ci-dessus, nous pouvons dériver celle-ci, ce qui est plus facile à
+      utiliser.</para>
+
+      <table>
+        <title>VLSM</title>
+
+        <tgroup cols="3">
+          <tbody>
+            <row>
+              <entry><emphasis role="bold">Taille du sous-réseau</emphasis></entry>
+
+              <entry><emphasis role="bold">VLSM</emphasis></entry>
+
+              <entry><emphasis role="bold">Masque sous-réseau</emphasis></entry>
+            </row>
+
+            <row>
+              <entry>8</entry>
+
+              <entry>/29</entry>
+
+              <entry>255.255.255.248</entry>
+            </row>
+
+            <row>
+              <entry>16</entry>
+
+              <entry>/28</entry>
+
+              <entry>255.255.255.240</entry>
+            </row>
+
+            <row>
+              <entry>32</entry>
+
+              <entry>/27</entry>
+
+              <entry>255.255.255.224</entry>
+            </row>
+
+            <row>
+              <entry>64</entry>
+
+              <entry>/26</entry>
+
+              <entry>255.255.255.192</entry>
+            </row>
+
+            <row>
+              <entry>128</entry>
+
+              <entry>/25</entry>
+
+              <entry>255.255.255.128</entry>
+            </row>
+
+            <row>
+              <entry>256</entry>
+
+              <entry>/24</entry>
+
+              <entry>255.255.255.0</entry>
+            </row>
+
+            <row>
+              <entry>512</entry>
+
+              <entry>/23</entry>
+
+              <entry>255.255.254.0</entry>
+            </row>
+
+            <row>
+              <entry>1024</entry>
+
+              <entry>/22</entry>
+
+              <entry>255.255.252.0</entry>
+            </row>
+
+            <row>
+              <entry>2048</entry>
+
+              <entry>/21</entry>
+
+              <entry>255.255.248.0</entry>
+            </row>
+
+            <row>
+              <entry>4096</entry>
+
+              <entry>/20</entry>
+
+              <entry>255.255.240.0</entry>
+            </row>
+
+            <row>
+              <entry>8192</entry>
+
+              <entry>/19</entry>
+
+              <entry>255.255.224.0</entry>
+            </row>
+
+            <row>
+              <entry>16384</entry>
+
+              <entry>/18</entry>
+
+              <entry>255.255.192.0</entry>
+            </row>
+
+            <row>
+              <entry>32768</entry>
+
+              <entry>/17</entry>
+
+              <entry>255.255.128.0</entry>
+            </row>
+
+            <row>
+              <entry>65536</entry>
+
+              <entry>/16</entry>
+
+              <entry>255.255.0.0</entry>
+            </row>
+
+            <row>
+              <entry>2 ** 24</entry>
+
+              <entry>/8</entry>
+
+              <entry>255.0.0.0</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+
+      <para>Notez que le VLSM est écrit avec un slash (&#34;/&#34;) -- vous
+      pouvez souvent entendre un sous-réseau de taille 64 qui fait référence à
+      un sous-réseau &#34;slash 26&#34; et un de taille 8 faisant référence à
+      un &#34;slash 29&#34;.</para>
+
+      <para>Le masque de sous-réseau (aussi référencé par son
+      netmask)&#x00A0;est simplement un nombre de 32-bit avec le premier bit
+      &#34;VLSM&#34; à un et les autres à zéro. Par exemple, pour un
+      sous-réseau de taille 64, le masque de sous-réseau débute par 26 bits à
+      un:<programlisting>        11111111111111111111111111000000 = FFFFFFC0 = FF.FF.FF.C0 = 255.255.255.192</programlisting>Le
+      masque de sous-réseau a la propriété suivante: si vous terminez
+      logiquement le masque de sous-réseau avec une adresse dans le
+      sous-réseau, le résultat est l&#39;adresse du sous-réseau. Attention, si
+      vous terminez logiquement le masque de sous-réseau avec une adresse en
+      dehors du sous-réseau, le résultat n&#39;est PAS l&#39;adresse du
+      sous-réseau. Comme nous l&#39;avons vu précédemment, la propriété du
+      masque de sous-réseau est très importante dans le routage. Pour un
+      sous-réseau dont l&#39;adresse est a.b.c.d et dont la VLSM est /v, nous
+      notons le sous-réseau par &#34;a.b.c.d/v&#34; en utilisant la Notation
+      CIDR.&#x00A0;</para>
+
+      <para>Exemple:</para>
+
+      <table>
+        <title>Un exemple de sous-réseau (sub-network) :</title>
+
+        <tgroup cols="2">
+          <tbody>
+            <row>
+              <entry><emphasis role="bold">Sous-réseau:</emphasis></entry>
+
+              <entry>10.10.10.0 - 10.10.10.127</entry>
+            </row>
+
+            <row>
+              <entry><emphasis role="bold">Adresse Sous-réseau:</emphasis></entry>
+
+              <entry>10.10.10.0</entry>
+            </row>
+
+            <row>
+              <entry><emphasis role="bold">Adresse Broadcast:</emphasis></entry>
+
+              <entry>10.10.10.127</entry>
+            </row>
+
+            <row>
+              <entry><emphasis role="bold">Notation CIDR:</emphasis></entry>
+
+              <entry>10.10.10.0/25</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+
+      <para>Il y a deux sous-réseaux dérivés qui doivent être mentionnés; A
+      savoir, le sous-réseau avec un membre et le sous-réseau avec 2 ** 32
+      membres.</para>
+
+      <table>
+        <title>/32 et /0</title>
+
+        <tgroup cols="4">
+          <tbody>
+            <row>
+              <entry><emphasis role="bold">Taille du sous-réseau</emphasis></entry>
+
+              <entry><emphasis role="bold">Longueur VLSM</emphasis></entry>
+
+              <entry><emphasis role="bold">Masque sous-réseau</emphasis></entry>
+
+              <entry><emphasis role="bold">Notation CIDR</emphasis></entry>
+            </row>
+
+            <row>
+              <entry>1</entry>
+
+              <entry>32</entry>
+
+              <entry>255.255.255.255</entry>
+
+              <entry>a.b.c.d/32</entry>
+            </row>
+
+            <row>
+              <entry>32</entry>
+
+              <entry>0</entry>
+
+              <entry>0.0.0.0</entry>
+
+              <entry>0.0.0.0/0</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+
+      <para>Ainsi, chaque adresse <emphasis role="bold">a.b.c.d</emphasis>
+      peut aussi être écrite <emphasis role="bold">a.b.c.d/32</emphasis> et
+      l&#39;ensemble des adresses possibles est écrit <emphasis role="bold">0.0.0.0/0</emphasis>.</para>
+
+      <para>Plus loin dans ce manuel, vous verrez la notation <emphasis
+      role="bold">a.b.c.d/v</emphasis> utilisé pour décrire la configuration
+      IP d&#39;une interface réseau (l&#39;utilitaire &#39;ip&#39; utilise
+      aussi cette syntaxe). cela veut simplement dire que l&#39;interface est
+      configuré avec une adresse ip <emphasis role="bold">a.b.c.d</emphasis>
+      et avec le masque de réseau qui correspond à la variable VLSM /<emphasis
+      role="bold">v</emphasis>.</para>
+    </section>
+
+    <section>
+      <title>Routage</title>
+
+      <para>L&#39;un des buts des sous-réseaux est la base du routage.
+      Ci-dessous se trouve la table de routage de mon firewall:</para>
+
+      <programlisting>        [root@gateway root]# netstat -nr
+        Kernel IP routing table
+        Destination      Gateway         Genmask         Flags MSS Window irtt Iface
+        192.168.9.1      0.0.0.0         255.255.255.255 UH    40  0         0 texas
+        206.124.146.177  0.0.0.0         255.255.255.255 UH    40  0         0 eth1
+        206.124.146.180  0.0.0.0         255.255.255.255 UH    40  0         0 eth3
+        192.168.3.0      0.0.0.0         255.255.255.0   U     40  0         0 eth3
+        192.168.2.0      0.0.0.0         255.255.255.0   U     40  0         0 eth1
+        192.168.1.0      0.0.0.0         255.255.255.0   U     40  0         0 eth2
+        206.124.146.0    0.0.0.0         255.255.255.0   U     40  0         0 eth0
+        192.168.9.0      192.0.2.223     255.255.255.0   UG    40  0         0 texas
+        127.0.0.0        0.0.0.0         255.0.0.0       U     40  0         0 lo
+        0.0.0.0          206.124.146.254 0.0.0.0         UG    40  0         0 eth0
+        [root@gateway root]#</programlisting>
+
+      <para>Le périphérique <emphasis>texas</emphasis> est le tunnel GRE vers
+      un site peer à Dallas, la zone Texas.</para>
+
+      <para>Les trois premières routes sont des routes hôte puisqu&#39;elles
+      indiquent comment aller vers un hôte unique. Dans la sortie de
+      &#39;netstat&#39; cela peut-être vu par le &#34;Genmask&#34; (Masque
+      sous-réseau) de 255.255.255.255 et le &#34;H&#34;&#x00A0; dans la
+      colonne &#34;Flags&#34;. Les autres sont des routes &#39;net&#39; car
+      elles indiquent au noyau comment router des paquets à un sous-réseau. La
+      dernière route est <emphasis>la route par défaut</emphasis> est la
+      passerelle (gateway) mentionnée est appelé <emphasis>passerelle par
+      défaut (default gateway).</emphasis></para>
+
+      <para>Quant le noyau essaye d&#39;envoyer un paquet à une adresse IP A,
+      il commence au début de la table de routage et :</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>A est logiquement terminé avec la valeur du &#39;Genmask&#39;
+          dans l&#39;entrée de la table.</para>
+        </listitem>
+
+        <listitem>
+          <para>Le résultat est comparé avec la valeur de la destination
+          &#39;Destination&#39; dans l&#39;entrée de la table.</para>
+        </listitem>
+
+        <listitem>
+          <para>Si le résultat et la valeur de la&#x00A0;
+          &#39;Destination&#39; sont identiques, alors:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>Si la colonne &#39;Gateway&#39; est n&#39;est pas nulle,
+              le paquet est envoyé au gateway à travers l&#39;interface nommée
+              dans la colonne &#39;Iface&#39;.</para>
+            </listitem>
+
+            <listitem>
+              <para>Sinon, le paquet est directement envoyé à A à travers
+              l&#39;interface nommée dans la colonne &#39;iface&#39;.</para>
+            </listitem>
+          </itemizedlist>
+        </listitem>
+
+        <listitem>
+          <para>Autrement, les étapes précédentes sont répétées sur
+          l&#39;entrée suivante de la table.</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>Puisque la route par défaut correspond à toutes les adresses IP (<emphasis
+      role="bold">A </emphasis>donne 0.0.0.0 = 0.0.0.0), les paquets qui ne
+      correspondent à aucune des autres entrées de la table de routage sont
+      envoyés au gateway par défaut qui généralement est un routeur vers le
+      FAI.</para>
+
+      <para>Voici un exemple. Supposez que vous souhaitez router un paquet à
+      192.168.1.5. Cette adresse ne correspond à aucune route d&#39;hôte dans
+      la table mais si nous terminons logiquement cette adresse avec
+      255.255.255.0, le résultat est 192.168.1.0 qui correspond à la
+      l&#39;entrée dans la table:</para>
+
+      <para><programlisting>        192.168.1.0     0.0.0.0         255.255.255.0   U     40  0         0 eth2</programlisting></para>
+
+      <para>Donc le paquet vers 192.168.1.5 est directement envoyé à travers
+      eth2.</para>
+
+      <para>Un des points qui doit être souligné -- tous les paquets sont
+      envoyés en utilisant la table de routage et les réponses ne sont pas
+      exclues de ce principe. Il semble y avoir&#x00A0; une croyance de la
+      part des ceux qui croient que les paquets réponses sont comme les
+      saumons et contiennent un code génétique qui leur permet de suivre la
+      route emprunté par les paquets envoyés. Ce n&#39;est pas le cas; La
+      réponse peut prendre un chemin totalement différent de celui de la
+      requête du client -- les routes requête/réponse sont totalement
+      indépendantes.</para>
+    </section>
+
+    <section>
+      <title>Protocole de Résolution d&#39;Adresse (ARP)</title>
+
+      <para>Quant on envoie des paquets à travers Ethernet, les adresses IP ne
+      sont pas utilisées. Bien que l&#39;adressage Ethernet soit basé sur les
+      adresses <emphasis>Media Access Control</emphasis> (MAC). Chaque
+      périphérique Ethernet à sa propre adresse&#x00A0; MAC qui est contenu
+      dans une PROM lors de la fabrication. Vous pouvez obtenir l&#39;adresse
+      MAC grâce à l&#39;utilitaire &#39;ip&#39;:</para>
+
+      <programlisting>        [root@gateway root]# ip addr show eth0
+        2: eth0: &#60;BROADCAST,MULTICAST,UP&#62; mtu 1500 qdisc htb qlen 100
+        link/ether 02:00:08:e3:fa:55 brd ff:ff:ff:ff:ff:ff
+        inet 206.124.146.176/24 brd 206.124.146.255 scope global eth0
+        inet 206.124.146.178/24 brd 206.124.146.255 scope global secondary eth0
+        inet 206.124.146.179/24 brd 206.124.146.255 scope global secondary eth0
+        [root@gateway root]#
+</programlisting>
+
+      <para>Comme vous pouvez le constater ci-dessus, l&#39;adresse MAC codé
+      sur 6 bytes (48 bits). Une carte MAC est généralement aussi imprimé sur
+      la carte elle-même. </para>
+
+      <para>Parce que IP utilise les adresses IP et Ethernet les adresses MAC,
+      un mécanisme est nécessaire pour transcrire une adresse IP en adresse
+      MAC; C&#39;est ce dont est chargé le protocole de résolution
+      d&#39;adresse <emphasis>Address Resolution Protocol</emphasis> (ARP).
+      Voici ARP en action:</para>
+
+      <programlisting>        [root@gateway root]# tcpdump -nei eth2 arp
+        tcpdump: listening on eth2
+        09:56:49.766757 2:0:8:e3:4c:48 0:6:25:aa:8a:f0 arp 42: arp who-has 192.168.1.19 tell 192.168.1.254
+        09:56:49.769372 0:6:25:aa:8a:f0 2:0:8:e3:4c:48 arp 60: arp reply 192.168.1.19 is-at 0:6:25:aa:8a:f0
+
+        2 paquets received by filter
+        0 paquets dropped by kernel
+        [root@gateway root]#</programlisting>
+
+      <para>Dans cet échange , 192.168.1.254 (MAC 2:0:8:e3:4c:48) veut
+      connaître l&#39;adresse MAC du périphérique avec l&#39;adresse IP
+      192.168.1.19. Le système ayant cette adresse IP répond que l&#39;adresse
+      MAC du périphérique avec l&#39;adresse IP 192.168.1.19 est
+      0:6:25:aa:8a:f0.</para>
+
+      <para>Afin de rendre disponible les informations d&#39;échange ARP
+      chaque fois qu&#39;un paquet est envoyé, le système maintient un
+      <emphasis>cache ARP</emphasis> des correspondances IP&#60;-&#62;MAC.
+      Vous pouvez voir le cache ARP sur votre système (également sur les
+      systèmes Windows) en utilisant la commande &#39;arp&#39;:</para>
+
+      <programlisting>        [root@gateway root]# arp -na
+        ? (206.124.146.177) at 00:A0:C9:15:39:78 [ether] on eth1
+        ? (192.168.1.3) at 00:A0:CC:63:66:89 [ether] on eth2
+        ? (192.168.1.5) at 00:A0:CC:DB:31:C4 [ether] on eth2
+        ? (206.124.146.254) at 00:03:6C:8A:18:38 [ether] on eth0
+        ? (192.168.1.19) at 00:06:25:AA:8A:F0 [ether] on eth2
+</programlisting>
+
+      <para>Les détails de réponse sont le résultat de l&#39;utilisation de
+      l&#39;option &#39;n&#39; (Windows &#39;arp&#39; n&#39;accepte pas cette
+      option) qui force le programme &#39;arp&#39; à la translation de
+      résolution de noms IP-&#62;DNS. Si je n&#39;utilise pas cette option, la
+      marque de question aurait été remplacé par le FQDN correspondant à
+      chaque adresse IP. Notez que la dernière information dans la table
+      d&#39;enregistrement est celle que nous voyons en utilisant précédemment
+      tcpdump.</para>
+    </section>
+
+    <section>
+      <title>RFC 1918</title>
+
+      <para>Les adresses IP sont alloués par l&#39;autorité <ulink
+      url="http://www.iana.org/">Internet Assigned Number Authority</ulink>
+      (IANA) qui délégue des allocations géographiques basés sur le Regional
+      Internet Registries (RIRs). Par exemple, les allocations pour les
+      Etats-Unis sont déléguées à <ulink url="http://www.arin.net/">American
+      Registry for Internet Numbers</ulink> (ARIN). Ces&#x00A0; RIRs peuvent
+      déléguer à des bureaux nationaux. La plus part d&#39;entre nous ne
+      traite pas avec autorités mais obtienne plutôt leur adresse IP par leur
+      FAI.</para>
+
+      <para>Dans la réalité, généralement on ne peut se permettre autant
+      d&#39;adresses IP Publiques que de périphériques à assigner si bien que
+      nous utiliseront des adresses IP Privées. RFC 1918 réserve plusieurs
+      plages d&#39;adresse IP à cet usage:</para>
+
+      <programlisting>     10.0.0.0    - 10.255.255.255
+     172.16.0.0  - 172.31.255.255
+     192.168.0.0 - 192.168.255.255</programlisting>
+
+      <para>Les adresses réservées par la RFC 1918 sont parfois appelées
+      non-routable car le routeur passerelle Internet ne renvoit pas les
+      paquets qui ont une adresse de destination RFC-1918. cela est
+      compréhensible car tout le monde peut choisir ces adresses pour un usage
+      privé.</para>
+
+      <para>Quant on choisit des adresses de ces plages, il y a deux choses à
+      garder en mémoire:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>Comme l&#39;espace des adresses IPv4 s&#39;épuise, de plus en
+          plus d&#39;organisation (comprenant les FAI) commencent à utiliser
+          les adresses RFC 1918 dans leur infrastructures.</para>
+        </listitem>
+
+        <listitem>
+          <para>Vous ne voulez pas utiliser des adresses IP qui sont utilisés
+          par votre FAI ou une autre organisation avec laquelle vous souhaiter
+          établir une liaison VPN.0</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>C&#39;est pourquoi c&#39;est une bonne idée de vérifier avec votre
+      FAI s&#39;il n&#39;utilise pas (ou ne prévoie pas d&#39;utiliser) des
+      adresses privées avant de décider les adresses que vous allez utiliser.</para>
+    </section>
+  </section>
+
+  <section>
+    <title>Configurer votre Réseau</title>
+
+    <para>Le choix de configuration de votre réseau dépend d&#39;abord du
+    nombre d&#39;adresses Public IP dont vous avez besoin, c&#39;est à dire du
+    nombre d&#39;entités adressables que vous avez sur votre réseau. En
+    fonction du nombre d&#39;adresses que vous avez, votre FAI peut servir ce
+    jeu d&#39;adresses de deux manières:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Routé - Le trafic vers chacune de vos adresses sera routé à
+        travers une unique adresse passerelle. Cela sera généralement fait si
+        votre FAI vous assigne un sous-réseau complet (/29 ou plus). Dans ce
+        cas, vous assignerez l&#39;adresse passerelle comme adresse IP de
+        l&#39;interface externe de votre firewall/router.</para>
+      </listitem>
+
+      <listitem>
+        <para>Non-routé - Votre FAI vous enverra directement le trafic de
+        chaque adresse directement.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>Dans les paragraphes qui suivent, nous étudierons chaque cas
+    séparément.</para>
+
+    <para>Avant de commencer, il y a une chose que vous devez vérifier:</para>
+
+    <para><inlinegraphic fileref="images/BD21298_.gif" /> Si vous utilisez le
+    package Debian, vérifier svp votre fichier shorewall.conf afin de
+    contrôler les paramètres suivants; si ce n&#39;est pas juste, appliquer
+    les&#x00A0; changements nécessaires:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>NAT_ENABLED=Yes (Shorewall versions antérieures à 1.4.6)</para>
+      </listitem>
+
+      <listitem>
+        <para>IP_FORWARDING=On</para>
+      </listitem>
+    </itemizedlist>
+
+    <section>
+      <title>Routage</title>
+
+      <para>Supposons que votre fournisseur d&#39;accès FAI vous a assigné le
+      sous-réseau 192.0.2.64/28 routé à travers 192.0.2.65. cela veut dire que
+      vous avez les adresses IP&#x00A0; 192.0.2.64 - 192.0.2.79 et que
+      l&#39;adresse externe de votre firewall est 192.0.2.65. Votre FAI vous a
+      aussi dit que vous pouvez utiliser le masque de réseau 255.255.255.0
+      (ainsi votre /28 est une partie de /24). Avec ces adresses IP, vous
+      pouvez scinder votre réseau /28 en deux /29 et configurer votre réseau
+      comme l&#39;indique le diagramme suivant.</para>
+
+      <graphic align="center" fileref="images/dmz4.png" />
+
+      <para>Ici, la zone démilitarisé DMZ comprend le sous-réseau
+      192.0.2.64/29 et le réseau Local 192.0.2.72/29. La passerelle par défaut
+      pour les hôtes dans la DMZ pourra être configuré à 192.0.2.66 et la
+      passerelle par défaut pour les hôtes du réseau local pourra être
+      192.0.2.73.</para>
+
+      <para>Notez que cet arrangement est plus gourmand en adresses publiques
+      puisqu&#39;il utilise 192.0.2.64 et 192.0.2.72 pour les adresses du
+      sous-réseau, 192.0.2.71 et 192.0.2.79 pour les adresses broadcast du
+      réseau, de même que 192.0.2.66 et 168.0.2.73 pour les adresses internes
+      que le firewall/routeur. Néanmoins, cela montre comment nous pouvons
+      faire avec un réseau /24 plutôt qu&#39;un /28, l&#39;utilisation de 6
+      adresses IP parmi les 256 peut être justifié par la simplicité du
+      paramétrage.</para>
+
+      <para>Le lecteur astucieux aura remarqué que l&#39;interface externe du
+      firewall/Routeur est actuellement inclus dans le sous-réseau DMZ
+      (192.0.2.64/29). Que se passe-t-il si DMZ 1 (192.0.2.67) essaye de
+      communiquer avec 192.0.2.65? La table de routage sur DMZ 1 peut
+      ressembler à cela:</para>
+
+      <programlisting>        Kernel IP routing table
+        Destination      Gateway         Genmask         Flags MSS Window irtt Iface
+        192.0.2.64       0.0.0.0         255.255.255.248 U     40  0         0 eth0
+        0.0.0.0          192.0.2.66      0.0.0.0         UG    40  0         0 eth0</programlisting>
+
+      <para>Cela indique que DMZ 1 enverra une requête ARP &#34;qui-a
+      192.0.2.65&#34; et aucune interface sur le segment Ethernet DMZ&#x00A0;
+      à cette adresse IP. Assez bizarrement, le firewall répondra à la requête
+      avec l&#39;adresse MAC de sa propre <emphasis role="underline">Interface
+      DMZ!!</emphasis> DMZ 1 peut alors envoyer des trames Ethernet frames
+      adressées à cette adresse MAC et les trames seront reçues (correctement)
+      par le firewall/routeur.</para>
+
+      <para>C&#39;est plutôt une possibilité inattendue d&#39;ARP sur la
+      partie du Noyau Linux qui pousse cet avertissement très tôt dans ce
+      manuel à propos de la connexion de plusieurs interfaces firewall/routeur
+      au même hub ou switch. Quant une requête ARP destiné à une des adresses
+      firewall/routeur est envoyé par un autre système connecté au hub/switch,
+      toutes les interfaces du firewall qui se connectent au hub/switch
+      peuvent répondre! C&#39;est alors une course à la réponse qui
+      &#34;est-là&#34; qui atteindra en premier l&#39;émetteur.</para>
+    </section>
+
+    <section>
+      <title>Non-routé</title>
+
+      <para>Avec la situation précédente mais non-routé, vous pouvez
+      configurer votre réseau exactement comme décrit ci-dessus avec une
+      condition supplémentaire; spécifiez simplement l&#39;option
+      &#34;proxyarp&#34; sur les trois interfaces du firewall dans le fichier
+      /etc/shorewall/interfaces.</para>
+
+      <para>La plus part d&#39;entre nous n&#39;a pas le luxe d&#39;avoir
+      assez d&#39;adresses publiques IP pour configurer notre réseau comme
+      montré dans le précédent exemple (même&#x00A0; si la configuration est
+      routé). </para>
+
+      <para><emphasis role="bold">Pour le besoin de cette section, admettons
+      que notre FAI nous a assigné les adresses IP 192.0.2.176-180 et nous a
+      dit d&#39;utiliser le masque de réseau 255.255.255.0 et la passerelle
+      par défaut 192.0.2.254.</emphasis></para>
+
+      <para>Clairement, ce jeu d&#39;adresses ne comprend pas de sous-réseau
+      et n&#39;a pas suffisamment d&#39;adresses pour toutes les interfaces de
+      notre réseau. Il y a quatre possibilités qui peuvent être utilisées pour
+      règler ce problème.</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>Translation d&#39;Adresses Réseau Source : Source Network
+          Address Translation (SNAT).</para>
+        </listitem>
+
+        <listitem>
+          <para>Translation d&#39;Adresses Réseau Destination : Destination
+          Network Address Translation (DNAT) aussi nommé Port Forwarding.</para>
+        </listitem>
+
+        <listitem>
+          <para>Proxy ARP.</para>
+        </listitem>
+
+        <listitem>
+          <para>Translation d&#39;&#39;Adresses Réseau : Network Address
+          Translation (NAT) aussi appelé One-to-one NAT.</para>
+        </listitem>
+      </itemizedlist>
+
+      <para> Souvent une combinaison de ces techniques est utilisée. Chacune
+      d&#39;entre elle sera détaillée dans la section suivante.</para>
+
+      <section>
+        <title>SNAT</title>
+
+        <para>Avec SNAT, un segment interne LAN est configuré en utilisant les
+        adresses RFC 1918. Quant un hôte <emphasis role="bold">A</emphasis>
+        sur ce segment interne initialise une connexion à l&#39;hôte <emphasis
+        role="bold">B</emphasis> sur Internet, le firewall/routeur réécrit les
+        entêtes IP dans la requête pour utiliser une de vos adresses publiques
+        IP en tant qu&#39;adresse source. Quant <emphasis role="bold">B</emphasis>
+        répond et que la réponse est reçu par le firewall, le firewall change
+        l&#39;adresse destination par celle RFC 1918 de <emphasis role="bold">A</emphasis>
+        et renvoi la réponse à <emphasis role="bold">A.</emphasis></para>
+
+        <para>Supposons que vous décidiez d&#39;utiliser SNAT sur votre zone
+        locale et utilisiez l&#39;adresse publique 192.0.2.176 à la fois comme
+        adresse externe du firewall et l&#39;adresse source des requêtes
+        Internet envoyées depuis cette zone.</para>
+
+        <graphic align="center" fileref="images/dmz5.png" />
+
+        <para>La zone locale a été assigné au sous-réseau 192.168.201.0/29
+        (netmask 255.255.255.248).</para>
+
+        <simplelist>
+          <member><inlinegraphic fileref="images/BD21298_.gif" /> Le système
+          dans la zone locale pourra être configuré avec la passerelle par
+          défaut 192.168.201.1 (L&#39;adresse IP de l&#39;interface local du
+          firewall).</member>
+
+          <member><inlinegraphic fileref="images/BD21298_.gif" /> SNAT est
+          configuré dans Shorewall avec le fichier <ulink
+          url="Documentation.htm#Masq">/etc/shorewall/masq</ulink>.</member>
+        </simplelist>
+
+        <informaltable>
+          <tgroup cols="3">
+            <thead>
+              <row>
+                <entry>INTERFACE</entry>
+
+                <entry>SOUS-RESEAU</entry>
+
+                <entry>ADDRESSE</entry>
+              </row>
+            </thead>
+
+            <tbody>
+              <row>
+                <entry>eth0</entry>
+
+                <entry>192.168.201.0/29</entry>
+
+                <entry>192.0.2.176</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+
+        <para>Cet exemple utilise la technique normale pour assigner la même
+        adresse publique IP pour l&#39;interface externe du firewall et pour
+        SNAT. Si vous souhaitez utiliser une adresse IP différente, vous
+        pouvez soit utiliser les outils de configuration réseau de votre
+        distribution pour ajouter cette adresse IP ou vous pouvez mettre la
+        variable ADD_SNAT_ALIASES=Yes dans /etc/shorewall/shorewall.conf si
+        bien que Shorewall ajoutera l&#39;adresse pour vous.</para>
+      </section>
+
+      <section>
+        <title>DNAT</title>
+
+        <para>Quant SNAT est utilisé, il est impossible pour les hôtes sur
+        Internet d&#39;initialiser une connexion avec un des systèmes puisque
+        ces systèmes n&#39;ont pas d&#39;adresses publiques IP. DNAT fournit
+        une méthode pour autoriser des connexions sélectionnés depuis
+        Internet.</para>
+
+        <para><inlinegraphic fileref="images/BD21298_.gif" /> Supposons que
+        votre fille souhaite héberger un server web sur son système &#34;Local
+        3&#34;. Vous pouvez autoriser les connexions d&#39;Internet à son
+        serveur en ajoutant l&#39;entrée suivante dans le fichier <ulink
+        url="Documentation.htm#Rules">/etc/shorewall/rules</ulink>:</para>
+
+        <informaltable>
+          <tgroup cols="7">
+            <thead>
+              <row>
+                <entry>ACTION</entry>
+
+                <entry>SOURCE</entry>
+
+                <entry>DESTINATION</entry>
+
+                <entry>PROTOCOL</entry>
+
+                <entry>PORT(S)</entry>
+
+                <entry>SOURCE PORT(S)</entry>
+
+                <entry>ORIGINAL DEST</entry>
+              </row>
+            </thead>
+
+            <tbody>
+              <row>
+                <entry>DNAT</entry>
+
+                <entry>net</entry>
+
+                <entry>loc:192.168.201.4</entry>
+
+                <entry>tcp</entry>
+
+                <entry>www</entry>
+
+                <entry>-</entry>
+
+                <entry>192.0.2.176</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+
+        <para>Si une des amies de votre fille avec une adresse A veut accéder
+        au serveur de votre fille, elle peut se connecter à l&#39;adresse
+        http://192.0.2.176 (l&#39;adresse IP externe de votre firewall) et le
+        firewall réécrira l&#39;adresse IP à 192.168.201.4 (le système de
+        votre fille) et enverra la requête. Quant le serveur de votre fille
+        répond, le firewall réécrira la source de réponse avec 192.0.2.176 et
+        retournera la réponse à <emphasis role="bold">A</emphasis>.</para>
+
+        <para>Cet exemple l&#39;adresse externe IP du firewall pour DNAT. Vous
+        pouvez utiliser une autre de vos adresses IP publiques, mais Shorewall
+        n&#39;ajoutera pas pour vous cette adresse à l&#39;interface externe
+        du firewall.</para>
+      </section>
+
+      <section>
+        <title>Proxy ARP</title>
+
+        <para>Le principe du proxy ARP est:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>Un hôte <emphasis role="bold">H</emphasis> derrière votre
+            firewall est assigné à une de vos adresses publiques (<emphasis
+            role="bold">A</emphasis>), a le même masque de réseau (<emphasis
+            role="bold">M</emphasis>) que l&#39;interface externe du firewall.
+            </para>
+          </listitem>
+
+          <listitem>
+            <para>Le firewall répond à ARP &#34;qui a&#34; demandé <emphasis
+            role="bold">A</emphasis>. </para>
+          </listitem>
+
+          <listitem>
+            <para>Quant <emphasis role="bold">H</emphasis> délivre une requête
+            ARP &#34;qui a&#34; pour une adresse du sous -réseau définit
+            par&#x00A0; A et <emphasis role="bold">M</emphasis>, le firewall
+            répondra (avec l&#39;adresse MAC si le firewall s&#39;interface à
+            <emphasis>H</emphasis>).</para>
+          </listitem>
+        </itemizedlist>
+
+        <para>Supposons que nous décidons d&#39;utiliser Proxy ARP sur DMZ de
+        notre exemple réseau.</para>
+
+        <graphic align="center" fileref="images/dmz6.png" />
+
+        <para>Ici, nous avons assigné les adresses IP 192.0.2.177 au système
+        DMZ 1 et 192.0.2.178 à DMZ 2. Notez que nous avons juste assigné une
+        adresse arbitraire RFC 1918 et un masque de sous-réseau à
+        l&#39;interface DMZ de notre firewall. Cette adresse et le masque ne
+        sont pas pertinentes - vérifiez juste que celle-ci n&#39;écrase pas un
+        autre sous-réseau déjà définit.</para>
+
+        <para>La configuration de Proxy ARP est faite dans le fichier <ulink
+        url="ProxyARP.htm">/etc/shorewall/proxyarp</ulink>.</para>
+
+        <informaltable>
+          <tgroup cols="4">
+            <thead>
+              <row>
+                <entry>ADDRESS</entry>
+
+                <entry>EXTERNAL</entry>
+
+                <entry>INTERFACE</entry>
+
+                <entry>HAVE ROUTE</entry>
+              </row>
+            </thead>
+
+            <tbody>
+              <row>
+                <entry>192.0.2.177</entry>
+
+                <entry>eth2</entry>
+
+                <entry>eth0</entry>
+
+                <entry>No</entry>
+              </row>
+
+              <row>
+                <entry>192.0.2.178</entry>
+
+                <entry>eth2</entry>
+
+                <entry>eth0</entry>
+
+                <entry>No</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+
+        <para>Parce que la&#x00A0; variable HAVE ROUTE contient No, Shorewall
+        ajoutera les routes d&#39;hôte à travers eth2 à 192.0.2.177 et
+        192.0.2.178.</para>
+
+        <para>Les interfaces ethernet de DMZ 1 et DMZ 2&#x00A0; pourront être
+        configurées pour avoir les adresses IP apparentes mais devront avoir
+        la même passerelle par défaut que le firewall lui-même -- nommé
+        192.0.2.254. En d&#39;autres termes, elles pourront être configurées
+        juste comme elles devraient être si elles étaient parallèles au
+        firewall plutôt que derrière lui.</para>
+
+        <note>
+          <para><emphasis role="bold">Ne pas ajouter le(s) adresse(s) ARP
+          (192.0.2.177 et 192.0.2.178 dans l&#39;exemple ci-dessus)&#x00A0; à
+          l&#39;interface externe (eth0 dans cet exemple) du firewall.</emphasis></para>
+        </note>
+
+        <para>Un mot de mise en garde à sa place ici. Les FAIs configure(nt)
+        typiquement leur routeur avec un timeout de cache ARP élevé. Si vous
+        déplacer un système parallèle à votre firewall derrière le Proxy ARP
+        du firewall, cela peut mettre des HEURES avant que le système puisse
+        communiquer avec Internet. Il y a deux choses que vous pouvez essayer
+        de faire: </para>
+
+        <orderedlist>
+          <listitem>
+            <para>(Courtoisement de Bradey Honsinger) Une lecture de
+            Stevens&#39; TCP/IP Illustrated, Vol 1 révèle qu&#39;un paquet ARP
+            </para>
+
+            <para>&#34;gratuitous&#34; peut entraîner le routeur de votre FAI
+            à rafraîchir son cache(section 4.7). Une &#34;gratuitous&#34; ARP
+            est simplement une requête d&#39;un hôte demandant l&#39;adresse
+            MAC de sa propre adresse IP; éventuellement pour vérifier que
+            l&#39;adresse IP n&#39;est pas dupliquée,...</para>
+
+            <para>si l&#39;hôte envoyant la commande &#34;gratuitous&#34; ARP
+            vient juste de changer son adresse IP..., ce paquet entraîne tous
+            les autres hôtes...qui ont une entrée dans son cache pour
+            l&#39;ancienne adresse matériel de mettre à jour également ses
+            caches ARP.&#34;</para>
+
+            <para>Ce qui est exactement, bien sûr, ce que vous souhaitez faire
+            lorsque vous basculez un hôte vulnérable à Internet derrière
+            Shorewall utilisant proxy ARP (ou one-to-one NAT). Heureusement,
+            des packages récents (Redhat) iputils incluent &#34;arping&#34;,
+            avec l&#39;option &#34;-U&#34; qui fait cela:</para>
+
+            <para><programlisting>        arping -U -I &#60;net if&#62; &#60;newly proxied IP&#62;
+        arping -U -I eth0 66.58.99.83 # for example</programlisting>Stevens
+            continue en mentionnant que tous les systèmes répondent
+            correctement au gratuitous ARPs,&#x00A0; et&#x00A0;
+            &#34;googling&#34; pour &#34;arping -U&#34; semble aller dans ce
+            sens.</para>
+          </listitem>
+
+          <listitem>
+            <para>Vous pouvez appeler votre FAI et dire de purger
+            l&#39;ancienne entrée du cache ARP mais la plupart ne veulent ou
+            ne peuvent le faire.</para>
+          </listitem>
+        </orderedlist>
+
+        <para>Vous pouvez vérifier si le cache ARP de votre FAI est ancien en
+        utilisant ping et tcpdump. Supposez que vous pensez que la
+        passerelle&#x00A0; routeur a une ancienne entrée ARP pour 192.0.2.177.
+        Sur le firewall, lancez tcpdump de cette façon:</para>
+
+        <para><programlisting>        tcpdump -nei eth0 icmp</programlisting></para>
+
+        <para>Maintenant depuis 192.0.2.177, utilisez ping vers la passerelle
+        du FAI&#x00A0; (que nous supposons être 192.0.2.254):</para>
+
+        <para><programlisting>        ping 192.0.2.254</programlisting></para>
+
+        <para>Nous pouvons maintenant observer le résultat de tcpdump:</para>
+
+        <para><programlisting>       13:35:12.159321 0:4:e2:20:20:33 0:0:77:95:dd:19 ip 98: 192.0.2.177 &#62; 192.0.2.254: icmp: echo request (DF)
+       13:35:12.207615 0:0:77:95:dd:19 0:c0:a8:50:b2:57 ip 98: 192.0.2.254 &#62; 192.0.2.177 : icmp: echo reply</programlisting>Notez
+        que l&#39;adresse source&#x00A0; MAC dans la requête&#x00A0;
+        echo&#x00A0; est différente de&#x00A0; l&#39;adresse de destination
+        dans&#x00A0; la réponse&#x00A0; echo!! Dans le cas ou 0:4:e2:20:20:33
+        était l&#39;adresse MAC de l&#39;interface NIC eth0 du firewall tandis
+        que 0:c0:a8:50:b2:57 était l&#39;adresse MAC de DMZ 1. En
+        d&#39;autre&#x00A0; termes, le cache ARP de la passerelle associe
+        encore 192.0.2.177 avec la NIC de DMZ 1 plutôt qu&#39;avec eth0 du
+        firewall.</para>
+      </section>
+
+      <section>
+        <title>One-to-one NAT</title>
+
+        <para>Avec one-to-one NAT, vous assignez les adresses systèmes RFC
+        1918 puis établissez une à une l&#39;assignation entre ces adresses et
+        les adresses publiques. Pour les occurrences des connexions sortantes
+        SNAT (Source Network Address Translation) et pour les occurrences des
+        connexions entrantes DNAT (Destination Network Address Translation).
+        Voyons avec l&#39;exemple précédent du serveur web de votre fille
+        tournant sur le système Local 3.</para>
+
+        <graphic align="center" fileref="images/dmz6.png" />
+
+        <para>Rappel du paramétrage, le réseau local utilise SNAT et partage
+        l&#39;IP externe du firewall (192.0.2.176) pour les connexions
+        sortantes. cela est obtenu avec l&#39;entrée suivante dans le fichier
+        /etc/shorewall/masq:</para>
+
+        <informaltable>
+          <tgroup cols="3">
+            <thead>
+              <row>
+                <entry>INTERFACE</entry>
+
+                <entry>SOUS-RESEAU</entry>
+
+                <entry>ADDRESSE</entry>
+              </row>
+            </thead>
+
+            <tbody>
+              <row>
+                <entry>eth0</entry>
+
+                <entry>192.168.201.0/29</entry>
+
+                <entry>192.0.2.176</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+
+        <para><inlinegraphic fileref="images/BD21298_.gif" /> Supposons
+        maintenant que vous avez décidé d&#39;allouer à votre fille sa propre
+        adresse IP (192.0.2.179) pour l&#39;ensemble des connexions entrantes
+        et sortantes. Vous devrez faire cela en ajoutant une entrée dans le
+        fichier<ulink url="NAT.htm">/etc/shorewall/nat</ulink>. </para>
+
+        <informaltable>
+          <tgroup cols="5">
+            <thead>
+              <row>
+                <entry>EXTERNAL</entry>
+
+                <entry>INTERFACE</entry>
+
+                <entry>INTERNAL</entry>
+
+                <entry>ALL INTERFACES</entry>
+
+                <entry>LOCAL</entry>
+              </row>
+            </thead>
+
+            <tbody>
+              <row>
+                <entry>192.0.2.179</entry>
+
+                <entry>eth0</entry>
+
+                <entry>192.168.201.4</entry>
+
+                <entry>No</entry>
+
+                <entry>No</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+
+        <para>Avec cette entrée active, votre fille a sa propre adresse IP et
+        les deux autres systèmes locaux partagent l&#39;adresse IP du
+        firewall.</para>
+
+        <para><inlinegraphic fileref="images/BD21298_.gif" /> Une fois que la
+        relation entre 192.0.2.179 et192.168.201.4 est établie par
+        l&#39;entrée ci-dessus, ce n&#39;est pas nécessaire d&#39;utiliser une
+        règle DNAT pour le serveur web de votre fille -- vous devez simplement
+        utiliser une règle ACCEPT:</para>
+
+        <informaltable>
+          <tgroup cols="7">
+            <thead>
+              <row>
+                <entry>ACTION</entry>
+
+                <entry>SOURCE</entry>
+
+                <entry>DESTINATION</entry>
+
+                <entry>PROTOCOL</entry>
+
+                <entry>PORT(S)</entry>
+
+                <entry>SOURCE PORT(S)</entry>
+
+                <entry>ORIGINAL DEST</entry>
+              </row>
+            </thead>
+
+            <tbody>
+              <row>
+                <entry>ACCEPT</entry>
+
+                <entry>net</entry>
+
+                <entry>loc:192.168.201.4</entry>
+
+                <entry>tcp</entry>
+
+                <entry>www</entry>
+
+                <entry></entry>
+
+                <entry></entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+
+        <para>Un mot de mise en garde à sa place ici. Les FAIs configure(nt)
+        typiquement leur routeur avec un timeout de cache ARP élevé. Si vous
+        déplacer un système parallèle à votre firewall derrière le One-on-one
+        NAT du firewall, cela peut mettre des HEURES avant que le système
+        puisse communiquer avec Internet. Il y a deux choses que vous pouvez
+        essayer de faire:</para>
+
+        <orderedlist>
+          <listitem>
+            <para>(Courtoisement de Bradey Honsinger) Une lecture de
+            Stevens&#39; TCP/IP Illustrated, Vol 1 révèle qu&#39;un paquet ARP</para>
+
+            <para>&#34;gratuitous&#34; peut entraîner le routeur de votre FAI
+            à rafraîchir son cache(section 4.7). Une &#34;gratuitous&#34; ARP
+            est simplement une requête d&#39;un hôte demandant l&#39;adresse
+            MAC de sa propre adresse IP; éventuellement pour vérifier que
+            l&#39;adresse IP n&#39;est pas dupliquée,...</para>
+
+            <para>si l&#39;hôte envoyant la commande &#34;gratuitous&#34; ARP
+            vient juste de changer son adresse IP..., ce paquet entraîne tous
+            les autres hôtes...qui ont une entrée dans son cache pour
+            l&#39;ancienne adresse matériel de mettre à jour également ses
+            caches ARP.&#34;</para>
+
+            <para>Ce qui est exactement, bien sûr, ce que vous souhaitez faire
+            lorsque vous basculez un hôte vulnérable à Internet derrière
+            Shorewall utilisant proxy ARP (ou one-to-one NAT). Heureusement,
+            des packages récents (Redhat) iputils incluent &#34;arping&#34;,
+            avec l&#39;option &#34;-U&#34; qui fait cela:</para>
+
+            <para><programlisting>        arping -U -I &#60;net if&#62; &#60;newly proxied IP&#62;
+        arping -U -I eth0 66.58.99.83 # for example</programlisting>Stevens
+            continue en mentionnant que tous les systèmes répondent
+            correctement au gratuitous ARPs,&#x00A0; et&#x00A0;
+            &#34;googling&#34; pour &#34;arping -U&#34; semble aller dans ce
+            sens.</para>
+          </listitem>
+
+          <listitem>
+            <para>Vous pouvez appeler votre FAI et dire de purger
+            l&#39;ancienne entrée du cache ARP mais la plupart ne veulent ou
+            ne peuvent le faire.</para>
+          </listitem>
+        </orderedlist>
+
+        <para>Vous pouvez vérifier si le cache ARP de votre FAI est ancien en
+        utilisant ping et tcpdump. Supposez que vous pensez que la
+        passerelle&#x00A0; routeur a une ancienne entrée ARP pour 192.0.2.177.
+        Sur le firewall, lancez tcpdump de cette façon:</para>
+
+        <para><programlisting>        tcpdump -nei eth0 icmp</programlisting></para>
+
+        <para>Maintenant depuis 192.0.2.177, utilisez ping vers la passerelle
+        du FAI&#x00A0; (que nous supposons être 192.0.2.254):</para>
+
+        <para><programlisting>        ping 192.0.2.254</programlisting></para>
+
+        <para>Nous pouvons maintenant observer le résultat de tcpdump:</para>
+
+        <para><programlisting>       13:35:12.159321 <emphasis
+role="underline">0:4:e2:20:20:33</emphasis> 0:0:77:95:dd:19 ip 98: 192.0.2.177 &#62; 192.0.2.254: icmp: echo request (DF)
+       13:35:12.207615 0:0:77:95:dd:19 <emphasis role="underline">0:c0:a8:50:b2:57</emphasis> ip 98: 192.0.2.254 &#62; 192.0.2.177 : icmp: echo reply</programlisting>Notez
+        que l&#39;adresse source&#x00A0; MAC dans la requête&#x00A0;
+        echo&#x00A0; est différente de&#x00A0; l&#39;adresse de destination
+        dans&#x00A0; la réponse&#x00A0; echo!! Dans le cas ou 0:4:e2:20:20:33
+        était l&#39;adresse MAC de l&#39;interface NIC eth0 du firewall tandis
+        que 0:c0:a8:50:b2:57 était l&#39;adresse MAC de DMZ 1. En
+        d&#39;autre&#x00A0; termes, le cache ARP de la passerelle associe
+        encore 192.0.2.177 avec la NIC de DMZ 1 plutôt qu&#39;avec eth0 du
+        firewall.</para>
+      </section>
+    </section>
+
+    <section>
+      <title>Règles</title>
+
+      <para>Avec les polices par défaut, vos systèmes locaux (Local 1-3)
+      peuvent accéder à tous les serveurs sur Internet et la DMZ ne peut
+      accéder à aucun autre hôte (incluant le firewall). Avec les exceptions
+      des règles règles NAT qui entraîne la translation d&#39;adresses et
+      permet aux requêtes de connexion translatées de passer&#x00A0; à travers
+      le firewall, la façon d&#39;autoriser des requêtes à travers le firewall
+      est d&#39;utiliser des règles ACCEPT.</para>
+
+      <note>
+        <para>Puisque les colonnes SOURCE PORT et ORIG. DEST. ne sont pas
+        utilisées dans cette section, elle ne sont pas affichées.</para>
+      </note>
+
+      <para>Vous souhaiter certainement autoriser ping entre vos zones:
+      </para>
+
+      <informaltable>
+        <tgroup cols="5">
+          <thead>
+            <row>
+              <entry>ACTION</entry>
+
+              <entry>SOURCE</entry>
+
+              <entry>DESTINATION</entry>
+
+              <entry>PROTOCOL</entry>
+
+              <entry>PORT(S)</entry>
+            </row>
+          </thead>
+
+          <tbody>
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>net</entry>
+
+              <entry>dmz</entry>
+
+              <entry>icmp</entry>
+
+              <entry>echo-request</entry>
+            </row>
+
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>net</entry>
+
+              <entry>loc</entry>
+
+              <entry>icmp</entry>
+
+              <entry>echo-request</entry>
+            </row>
+
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>dmz</entry>
+
+              <entry>loc</entry>
+
+              <entry>icmp</entry>
+
+              <entry>echo-request</entry>
+            </row>
+
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>loc</entry>
+
+              <entry>dmz</entry>
+
+              <entry>icmp</entry>
+
+              <entry>echo-request</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+
+      <para>En supposant que vous avez des serveurs mail et pop3 actifs sur
+      DMZ 2 et un serveur Web sur DMZ 1. Les règles dont vous avez besoin
+      sont:</para>
+
+      <informaltable>
+        <tgroup cols="6">
+          <thead>
+            <row>
+              <entry>ACTION</entry>
+
+              <entry>SOURCE</entry>
+
+              <entry>DESTINATION</entry>
+
+              <entry>PROTOCOL</entry>
+
+              <entry>PORT(S)</entry>
+
+              <entry>COMMENTS</entry>
+            </row>
+          </thead>
+
+          <tbody>
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>net</entry>
+
+              <entry>dmz:192.0.2.178</entry>
+
+              <entry>tcp</entry>
+
+              <entry>smtp</entry>
+
+              <entry># Mail depuis Internet</entry>
+            </row>
+
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>net</entry>
+
+              <entry>dmz:192.0.2.178</entry>
+
+              <entry>tcp</entry>
+
+              <entry>pop3</entry>
+
+              <entry># Pop3 depuis Internet</entry>
+            </row>
+
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>loc</entry>
+
+              <entry>dmz:192.0.2.178</entry>
+
+              <entry>tcp</entry>
+
+              <entry>smtp</entry>
+
+              <entry># Mail depuis le Réseau Local</entry>
+            </row>
+
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>loc</entry>
+
+              <entry>dmz:192.0.2.178</entry>
+
+              <entry>tcp</entry>
+
+              <entry>pop3</entry>
+
+              <entry># Pop3 depuis le Réseau Local</entry>
+            </row>
+
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>fw</entry>
+
+              <entry>dmz:192.0.2.178</entry>
+
+              <entry>tcp</entry>
+
+              <entry>smtp</entry>
+
+              <entry># Mail depuis le firewall</entry>
+            </row>
+
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>dmz:192.0.2.178</entry>
+
+              <entry>net</entry>
+
+              <entry>tcp</entry>
+
+              <entry>smtp</entry>
+
+              <entry># Mails vers Internet</entry>
+            </row>
+
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>net</entry>
+
+              <entry>dmz:192.0.2.177</entry>
+
+              <entry>tcp</entry>
+
+              <entry>http</entry>
+
+              <entry># WWW depuis le Net </entry>
+            </row>
+
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>net</entry>
+
+              <entry>dmz:192.0.2.177</entry>
+
+              <entry>tcp</entry>
+
+              <entry>https</entry>
+
+              <entry># HTTP sécurisé depuis le Net</entry>
+            </row>
+
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>loc</entry>
+
+              <entry>dmz:192.0.2.177</entry>
+
+              <entry>htp</entry>
+
+              <entry>https</entry>
+
+              <entry># HTTP sécurisé depuis le Réseau Local</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+
+      <para>Si vous utilisez un serveur DNS publique sur 192.0.2.177, vous
+      devez ajouter les règles suivantes:</para>
+
+      <informaltable>
+        <tgroup cols="6">
+          <thead>
+            <row>
+              <entry>ACTION</entry>
+
+              <entry>SOURCE</entry>
+
+              <entry>DESTINATION</entry>
+
+              <entry>PROTOCOL</entry>
+
+              <entry>PORT(S)</entry>
+
+              <entry>COMMENTS</entry>
+            </row>
+          </thead>
+
+          <tbody>
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>net</entry>
+
+              <entry>dmz:192.0.2.177</entry>
+
+              <entry>udp</entry>
+
+              <entry>domain</entry>
+
+              <entry># UDP DNS depuis Internet</entry>
+            </row>
+
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>net</entry>
+
+              <entry>dmz:192.0.2.177</entry>
+
+              <entry>tcp</entry>
+
+              <entry>domain</entry>
+
+              <entry># TCP DNS depuis Internet</entry>
+            </row>
+
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>fw</entry>
+
+              <entry>dmz:192.0.2.177</entry>
+
+              <entry>udp</entry>
+
+              <entry>domain</entry>
+
+              <entry># UDP DNS depuis le firewall</entry>
+            </row>
+
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>fw</entry>
+
+              <entry>dmz:192.0.2.177</entry>
+
+              <entry>tcp</entry>
+
+              <entry>domain</entry>
+
+              <entry># TCP DNS depuis le firewall</entry>
+            </row>
+
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>loc</entry>
+
+              <entry>dmz:192.0.2.177</entry>
+
+              <entry>udp</entry>
+
+              <entry>domain</entry>
+
+              <entry># UDP DNS depuis le Réseau Local</entry>
+            </row>
+
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>loc</entry>
+
+              <entry>dmz:192.0.2.177</entry>
+
+              <entry>tcp</entry>
+
+              <entry>domain</entry>
+
+              <entry># TCP DNS depuis le Réseau Local</entry>
+            </row>
+
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>dmz:192.0.2.177</entry>
+
+              <entry>net</entry>
+
+              <entry>udp</entry>
+
+              <entry>domain</entry>
+
+              <entry># UDP DNS vers Internet</entry>
+            </row>
+
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>dmz:192.0.2.177</entry>
+
+              <entry>net</entry>
+
+              <entry>tcp</entry>
+
+              <entry>domain</entry>
+
+              <entry># TCP DNS vers Internet</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+
+      <para>Vous souhaitez probablement communiquer entre votre firewall et
+      les systèmes DMZ depuis le réseau local -- Je recommande SSH qui, grâce
+      à son utilitaire scp&#x00A0; peut aussi faire de la diffusion et de la
+      mise à jour de logiciels.</para>
+
+      <informaltable>
+        <tgroup cols="6">
+          <thead>
+            <row>
+              <entry>ACTION</entry>
+
+              <entry>SOURCE</entry>
+
+              <entry>DESTINATION</entry>
+
+              <entry>PROTOCOL</entry>
+
+              <entry>PORT(S)</entry>
+
+              <entry>COMMENTS</entry>
+            </row>
+          </thead>
+
+          <tbody>
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>loc</entry>
+
+              <entry>dmz</entry>
+
+              <entry>tcp</entry>
+
+              <entry>ssh</entry>
+
+              <entry># SSH vers la DMZ</entry>
+            </row>
+
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>loc</entry>
+
+              <entry>fw</entry>
+
+              <entry>tcp</entry>
+
+              <entry>ssh</entry>
+
+              <entry># SSH vers le firewall</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </section>
+
+    <section>
+      <title>D&#39;autres petites choses</title>
+
+      <para>La discussion précédente reflète ma préférence personnelle pour
+      l&#39;utilisation de Proxy ARP associé à mes serveurs de la DMZ et
+      SNAT/NAT pour mes systèmes locaux. Je préfère utiliser NAT seulement
+      dans le cas ou un système qui fait partie d&#39;un sous-réseau RFC 1918
+      à besoin d&#39;avoir sa propre adresse IP.&#x00A0;</para>
+
+      <para><inlinegraphic fileref="images/BD21298_.gif" /> Si vous ne
+      l&#39;avez pas fait, ce peut-être une bonne idée de parcourir le fichier
+      <ulink url="Documentation.htm#Config">/etc/shorewall/shorewall.conf</ulink>
+      afin de voir si autre chose pourrait être intéressant. Vous pouvez aussi
+      regarder aux autres fichiers de configuration que vous n&#39;avez pas
+      touché pour un aperçu des autres possibilités de Shorewall.</para>
+
+      <para>Dans le cas ou vous n&#39;auriez pas validé les étapes, ci-dessous
+      se trouve un jeu final des fichiers de configuration pour notre réseau
+      exemple. Uniquement ceux qui auraient étés modifiés de la configuration
+      originale sont montrés. /etc/shorewall/interfaces (Les &#34;options&#34;
+      seront spécifiques aux sites).</para>
+
+      <informaltable>
+        <tgroup cols="4">
+          <thead>
+            <row>
+              <entry>ZONE</entry>
+
+              <entry>INTERFACE</entry>
+
+              <entry>BROADCAST</entry>
+
+              <entry>OPTIONS</entry>
+            </row>
+          </thead>
+
+          <tbody>
+            <row>
+              <entry>net</entry>
+
+              <entry>eth0</entry>
+
+              <entry>detect</entry>
+
+              <entry>norfc1918,routefilter</entry>
+            </row>
+
+            <row>
+              <entry>loc</entry>
+
+              <entry>eth1</entry>
+
+              <entry>detect</entry>
+
+              <entry></entry>
+            </row>
+
+            <row>
+              <entry>dmz</entry>
+
+              <entry>eth2</entry>
+
+              <entry>detect</entry>
+
+              <entry></entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+
+      <para>La configuration décrit nécessite que votre réseau soit démarré
+      avant que Shorewall&#x00A0; puisse&#x00A0; se lancer. Cela ouvre un
+      lapse de temps durant lequel vous n&#39;avez pas de protection firewall.</para>
+
+      <para>Si vous remplacez &#39;detect&#39; par les valeurs des adresses
+      broadcoast dans les entrées suivantes, vous pouvez activer Shorewall
+      avant les interfaces réseau.</para>
+
+      <informaltable>
+        <tgroup cols="4">
+          <thead>
+            <row>
+              <entry>ZONE</entry>
+
+              <entry>INTERFACE</entry>
+
+              <entry>BROADCAST</entry>
+
+              <entry>OPTIONS</entry>
+            </row>
+          </thead>
+
+          <tbody>
+            <row>
+              <entry>net</entry>
+
+              <entry>eth0</entry>
+
+              <entry>192.0.2.255</entry>
+
+              <entry>norfc1918,routefilter</entry>
+            </row>
+
+            <row>
+              <entry>loc</entry>
+
+              <entry>eth1</entry>
+
+              <entry>192.168.201.7</entry>
+
+              <entry></entry>
+            </row>
+
+            <row>
+              <entry>dmz</entry>
+
+              <entry>eth2</entry>
+
+              <entry>192.168.202.7</entry>
+
+              <entry></entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+
+      <para>/etc/shorewall/masq - Sous-réseau Local</para>
+
+      <informaltable>
+        <tgroup cols="3">
+          <thead>
+            <row>
+              <entry>INTERFACE</entry>
+
+              <entry>SOUS-RESEAU</entry>
+
+              <entry>ADDRESSE</entry>
+            </row>
+          </thead>
+
+          <tbody>
+            <row>
+              <entry>eth0</entry>
+
+              <entry>192.168.201.0/29</entry>
+
+              <entry>192.0.2.176</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+
+      <para>/etc/shorewall/proxyarp - DMZ</para>
+
+      <informaltable>
+        <tgroup cols="4">
+          <thead>
+            <row>
+              <entry>ADDRESS</entry>
+
+              <entry>EXTERNAL</entry>
+
+              <entry>INTERFACE</entry>
+
+              <entry>HAVE ROUTE</entry>
+            </row>
+          </thead>
+
+          <tbody>
+            <row>
+              <entry>192.0.2.177</entry>
+
+              <entry>eth2</entry>
+
+              <entry>eth0</entry>
+
+              <entry>No</entry>
+            </row>
+
+            <row>
+              <entry>192.0.2.178</entry>
+
+              <entry>eth2</entry>
+
+              <entry>eth0</entry>
+
+              <entry>No</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+
+      <para>/etc/shorewall/nat- Le système de ma fille</para>
+
+      <informaltable>
+        <tgroup cols="5">
+          <thead>
+            <row>
+              <entry>EXTERNAL</entry>
+
+              <entry>INTERFACE</entry>
+
+              <entry>INTERNAL</entry>
+
+              <entry>ALL INTERFACES</entry>
+
+              <entry>LOCAL</entry>
+            </row>
+          </thead>
+
+          <tbody>
+            <row>
+              <entry>192.0.2.179</entry>
+
+              <entry>eth0</entry>
+
+              <entry>192.168.201.4</entry>
+
+              <entry>No</entry>
+
+              <entry>No</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+
+      <para>/etc/shorewall/rules</para>
+
+      <informaltable>
+        <tgroup cols="6">
+          <thead>
+            <row>
+              <entry>ACTION</entry>
+
+              <entry>SOURCE</entry>
+
+              <entry>DESTINATION</entry>
+
+              <entry>PROTOCOL</entry>
+
+              <entry>PORT(S)</entry>
+
+              <entry>COMMENTS</entry>
+            </row>
+          </thead>
+
+          <tbody>
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>net</entry>
+
+              <entry>dmz:192.0.2.178</entry>
+
+              <entry>tcp</entry>
+
+              <entry>smtp</entry>
+
+              <entry># Mail depuis Internet</entry>
+            </row>
+
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>net</entry>
+
+              <entry>dmz:192.0.2.178</entry>
+
+              <entry>tcp</entry>
+
+              <entry>pop3</entry>
+
+              <entry># Pop3 depuis Internet</entry>
+            </row>
+
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>loc</entry>
+
+              <entry>dmz:192.0.2.178</entry>
+
+              <entry>tcp</entry>
+
+              <entry>smtp</entry>
+
+              <entry># Mail depuis le Réseau Local</entry>
+            </row>
+
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>loc</entry>
+
+              <entry>dmz:192.0.2.178</entry>
+
+              <entry>tcp</entry>
+
+              <entry>pop3</entry>
+
+              <entry># Pop3 depuis le Réseau Local</entry>
+            </row>
+
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>fw</entry>
+
+              <entry>dmz:192.0.2.178</entry>
+
+              <entry>tcp</entry>
+
+              <entry>smtp</entry>
+
+              <entry># Mail depuis le firewall</entry>
+            </row>
+
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>dmz:192.0.2.178</entry>
+
+              <entry>net</entry>
+
+              <entry>tcp</entry>
+
+              <entry>smtp</entry>
+
+              <entry># Mails vers Internet</entry>
+            </row>
+
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>net</entry>
+
+              <entry>dmz:192.0.2.177</entry>
+
+              <entry>tcp</entry>
+
+              <entry>http</entry>
+
+              <entry># WWW depuis le Net</entry>
+            </row>
+
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>net</entry>
+
+              <entry>dmz:192.0.2.177</entry>
+
+              <entry>tcp</entry>
+
+              <entry>https</entry>
+
+              <entry># HTTP sécurisé depuis le Net</entry>
+            </row>
+
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>loc</entry>
+
+              <entry>dmz:192.0.2.177</entry>
+
+              <entry>htp</entry>
+
+              <entry>https</entry>
+
+              <entry># HTTP sécurisé depuis le Réseau Local</entry>
+            </row>
+
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>net</entry>
+
+              <entry>dmz:192.0.2.177</entry>
+
+              <entry>udp</entry>
+
+              <entry>domain</entry>
+
+              <entry># UDP DNS depuis Internet</entry>
+            </row>
+
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>net</entry>
+
+              <entry>dmz:192.0.2.177</entry>
+
+              <entry>tcp</entry>
+
+              <entry>domain</entry>
+
+              <entry># TCP DNS depuis Internet</entry>
+            </row>
+
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>fw</entry>
+
+              <entry>dmz:192.0.2.177</entry>
+
+              <entry>udp</entry>
+
+              <entry>domain</entry>
+
+              <entry># UDP DNS depuis le firewall</entry>
+            </row>
+
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>fw</entry>
+
+              <entry>dmz:192.0.2.177</entry>
+
+              <entry>tcp</entry>
+
+              <entry>domain</entry>
+
+              <entry># TCP DNS depuis le firewall</entry>
+            </row>
+
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>loc</entry>
+
+              <entry>dmz:192.0.2.177</entry>
+
+              <entry>udp</entry>
+
+              <entry>domain</entry>
+
+              <entry># UDP DNS depuis le Réseau Local</entry>
+            </row>
+
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>loc</entry>
+
+              <entry>dmz:192.0.2.177</entry>
+
+              <entry>tcp</entry>
+
+              <entry>domain</entry>
+
+              <entry># TCP DNS depuis le Réseau Local</entry>
+            </row>
+
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>dmz:192.0.2.177</entry>
+
+              <entry>net</entry>
+
+              <entry>udp</entry>
+
+              <entry>domain</entry>
+
+              <entry># UDP DNS vers Internet</entry>
+            </row>
+
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>dmz:192.0.2.177</entry>
+
+              <entry>net</entry>
+
+              <entry>tcp</entry>
+
+              <entry>domain</entry>
+
+              <entry># TCP DNS vers Internet</entry>
+            </row>
+
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>net</entry>
+
+              <entry>dmz</entry>
+
+              <entry>icmp</entry>
+
+              <entry>echo-request</entry>
+
+              <entry>Ping</entry>
+            </row>
+
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>dmz</entry>
+
+              <entry>net</entry>
+
+              <entry>icmp</entry>
+
+              <entry>echo-request</entry>
+
+              <entry>&#34;</entry>
+            </row>
+
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>dmz</entry>
+
+              <entry>loc</entry>
+
+              <entry>icmp</entry>
+
+              <entry>echo-request</entry>
+
+              <entry>&#34;</entry>
+            </row>
+
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>loc</entry>
+
+              <entry>dmz</entry>
+
+              <entry>icmp</entry>
+
+              <entry>echo-request</entry>
+
+              <entry>&#34;</entry>
+            </row>
+
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>loc</entry>
+
+              <entry>dmz</entry>
+
+              <entry>tcp</entry>
+
+              <entry>ssh</entry>
+
+              <entry># SSH vers la DMZ</entry>
+            </row>
+
+            <row>
+              <entry>ACCEPT</entry>
+
+              <entry>loc</entry>
+
+              <entry>fw</entry>
+
+              <entry>tcp</entry>
+
+              <entry>ssh</entry>
+
+              <entry># SSH vers le firewall</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </section>
+  </section>
+
+  <section>
+    <title>DNS</title>
+
+    <para>En donnant une collection d&#39;adresses RFC 1918 et publiques dans
+    la configuration, cela justifie d&#39;avoir des serveurs DNS interne et
+    externe. Vous pouvez combiner les deux dans un unique serveur BIND 9
+    utilisant les vues (Views). Si vous n&#39;êtes pas intéressé par les vues
+    BIND 9, vous pouvez allez à la section suivante.</para>
+
+    <para>Supposons que votre domain est foobar.net et vous voulez que les
+    deux systèmes DMZ s&#39;appellent www.foobar.net et mail.foobar.net, les
+    trois systèmes locaux&#x00A0; &#34;winken.foobar.net, blinken.foobar.net
+    et nod.foobar.net. Vous voulez que le firewall soit connu à
+    l&#39;extérieur sous le nom firewall.foobar.net, son interface vers le
+    réseau local gateway.foobar.net et son interface vers la DMZ
+    dmz.foobar.net. Mettons le serveur DNS sur 192.0.2.177 qui sera aussi
+    connu sous le nom ns1.foobar.net.</para>
+
+    <para>Le fichier&#x00A0; /etc/named.conf devrait ressembler à cela:</para>
+
+    <programlisting>options {
+       directory &#34;/var/named&#34;;
+       listen-on { 127.0.0.1 ; 192.0.2.177; };
+};
+
+logging {
+      channel xfer-log {
+              file &#34;/var/log/named/bind-xfer.log&#34;;
+              print-category yes;
+              print-severity yes;
+              print-time yes;
+              severity info;
+       };
+  
+       category xfer-in { xfer-log; };
+       category xfer-out { xfer-log; };
+       category notify { xfer-log; };
+};
+#
+# Ceci est la vue présente sur vos systèmes internes.
+#
+view &#34;internal&#34; {
+       #
+       # Les clients suivants peuvent voir le serveur
+       #
+       match-clients { 192.168.201.0/29;
+                       192.168.202.0/29;
+                       127.0.0.0/8;
+                       192.0.2.176/32; 
+                       192.0.2.178/32;
+                       192.0.2.179/32;
+                       192.0.2.180/32; };
+      #
+      # Si le serveur ne peut répondre à la requête, il utilisera des serveurs externes
+      # 
+      #
+      recursion yes;
+
+      zone &#34;.&#34; in {
+           type hint;
+            file &#34;int/root.cache&#34;;
+      };
+
+      zone &#34;foobar.net&#34; in {
+            type master;
+            notify no;
+            allow-update { none; };
+            file &#34;int/db.foobar&#34;;
+      };
+
+      zone &#34;0.0.127.in-addr.arpa&#34; in {
+            type master;
+            notify no;
+            allow-update { none; };
+            file &#34;int/db.127.0.0&#34;;  
+      };
+
+      zone &#34;201.168.192.in-addr.arpa&#34; in {
+            type master;
+            notify no;
+            allow-update { none; };
+            file &#34;int/db.192.168.201&#34;;
+      };
+
+      zone &#34;202.168.192.in-addr.arpa&#34; in {
+            type master;
+            notify no;
+            allow-update { none; };
+            file &#34;int/db.192.168.202&#34;;
+      };
+
+      zone &#34;176.2.0.192.in-addr.arpa&#34; in {
+            type master;
+            notify no;
+            allow-update { none; };
+            file &#34;db.192.0.2.176&#34;;
+      };
+ 
+      zone &#34;177.2.0.192.in-addr.arpa&#34; in {
+            type master;
+            notify no;
+            allow-update { none; };
+            file &#34;db.192.0.2.177&#34;;
+      };
+
+      zone &#34;178.2.0.192.in-addr.arpa&#34; in {
+            type master;
+            notify no;
+            allow-update { none; };
+            file &#34;db.192.0.2.178&#34;;
+      };
+
+      zone &#34;179.2.0.192.in-addr.arpa&#34; in {
+            type master;
+            notify no;
+            allow-update { none; };
+            file &#34;db.206.124.146.179&#34;;
+      };
+
+};
+#
+# Ceci est la vue qui sera présente pour le monde extérieur
+#
+view &#34;external&#34; {
+      match-clients { any; };
+      #
+      # Si nous pouvons répondre à la requéte, nous le disons
+      #
+      recursion no;
+
+      zone &#34;foobar.net&#34; in {
+          type master;
+            notify yes;
+            allow-update {none; };
+            allow-transfer { &#60;secondary NS IP&#62;; };
+            file &#34;ext/db.foobar&#34;;
+      };
+
+      zone &#34;176.2.0.192.in-addr.arpa&#34; in {
+            type master;
+            notify yes;
+            allow-update { none; };
+            allow-transfer { &#60;secondary NS IP&#62;; };
+            file &#34;db.192.0.2.176&#34;;
+      };
+
+      zone &#34;177.2.0.192.in-addr.arpa&#34; in {
+            type master;
+            notify yes;
+            allow-update { none; };
+            allow-transfer { &#60;secondary NS IP&#62;; };
+            file &#34;db.192.0.2.177&#34;;
+      };
+
+      zone &#34;178.2.0.192.in-addr.arpa&#34; in {
+            type master;
+            notify yes;
+            allow-update { none; };
+            allow-transfer { &#60;secondary NS IP&#62;; };
+            file &#34;db.192.0.2.178&#34;;
+      };
+
+      zone &#34;179.2.0.192.in-addr.arpa&#34; in {
+            type master;
+            notify yes;
+            allow-update { none; };
+            allow-transfer { &#60;secondary NS IP&#62;; };
+            file &#34;db.192.0.2.179&#34;;
+      };
+};</programlisting>
+
+    <para>Voici les fichiers de /var/named (ceux qui ne sont pas présents font
+    partis de votre distribution BIND).</para>
+
+    <para>db.192.0.2.176 - Zone inverse de l&#39;interface externe du firewall</para>
+
+    <programlisting>; ############################################################
+; Start of Authority (Inverse Address Arpa) for 192.0.2.176/32
+; Filename: db.192.0.2.176
+; ############################################################
+@ 604800 IN SOA ns1.foobar.net. netadmin.foobar.net. (
+                        2001102303 ; serial
+                        10800 ; refresh (3 hour)
+                        3600 ; retry (1 hour)
+                        604800 ; expire (7 days)
+                        86400 ) ; minimum (1 day)
+;
+; ############################################################
+; Specify Name Servers for all Reverse Lookups (IN-ADDR.ARPA)
+; ############################################################
+@        604800  IN NS   ns1.foobar.net.
+@        604800  IN NS   &#60;name of secondary ns&#62;.
+;
+; ############################################################
+; Iverse Address Arpa Records (PTR&#39;s) 
+; ############################################################
+176.2.0.192.in-addr.arpa. 86400 IN PTR firewall.foobar.net.</programlisting>
+
+    <para>db.192.0.2.177 - Zone inverse pour le serveur www/DNS server</para>
+
+    <programlisting>; ############################################################
+; Start of Authority (Inverse Address Arpa) for 192.0.2.177/32
+; Filename: db.192.0.2.177
+; ############################################################
+@ 604800 IN SOA ns1.foobar.net. netadmin.foobar.net. (
+                        2001102303 ; serial
+                        10800 ; refresh (3 hour)
+                        3600 ; retry (1 hour)
+                        604800 ; expire (7 days)
+                        86400 ) ; minimum (1 day)
+;
+; ############################################################
+; Specify Name Servers for all Reverse Lookups (IN-ADDR.ARPA)
+; ############################################################
+@        604800  IN NS   ns1.foobar.net.
+@        604800  IN NS   &#60;name of secondary ns&#62;.
+;
+; ############################################################
+; Iverse Address Arpa Records (PTR&#39;s) 
+; ############################################################
+177.2.0.192.in-addr.arpa. 86400 IN PTR www.foobar.net.</programlisting>
+
+    <para>db.192.0.2.178 - Zone inverse du serveur mail </para>
+
+    <programlisting>; ############################################################
+; Start of Authority (Inverse Address Arpa) for 192.0.2.178/32
+; Filename: db.192.0.2.178
+; ############################################################
+@ 604800 IN SOA ns1.foobar.net. netadmin.foobar.net. (
+                      2001102303 ; serial
+                      10800 ; refresh (3 hour)
+                      3600 ; retry (1 hour)
+                      604800 ; expire (7 days)
+                      86400 ) ; minimum (1 day)
+;
+; ############################################################
+; Specify Name Servers for all Reverse Lookups (IN-ADDR.ARPA)
+; ############################################################
+@        604800  IN NS   ns1.foobar.net.
+@        604800  IN NS   &#60;name of secondary ns&#62;.
+;
+; ############################################################
+; Iverse Address Arpa Records (PTR&#39;s) 
+; ############################################################
+178.2.0.192.in-addr.arpa. 86400 IN PTR mail.foobar.net.<optional></optional></programlisting>
+
+    <para>db.192.0.2.179 - Zone inverse du serveur web publique de votre fille
+    </para>
+
+    <programlisting>; ############################################################
+; Start of Authority (Inverse Address Arpa) for 192.0.2.179/32
+; Filename: db.192.0.2.179
+; ############################################################
+@ 604800 IN SOA ns1.foobar.net. netadmin.foobar.net. (
+                      2001102303 ; serial
+                      10800 ; refresh (3 hour)
+                      3600 ; retry (1 hour)
+                      604800 ; expire (7 days)
+                      86400 ) ; minimum (1 day)
+;
+; ############################################################
+; Specify Name Servers for all Reverse Lookups (IN-ADDR.ARPA)
+; ############################################################
+@        604800  IN NS   ns1.foobar.net.
+@        604800  IN NS   &#60;name of secondary ns&#62;.
+;
+; ############################################################
+; Iverse Address Arpa Records (PTR&#39;s) 
+; ############################################################
+179.2.0.192.in-addr.arpa. 86400 IN PTR nod.foobar.net.</programlisting>
+
+    <para>int/db.127.0.0 - Zone inverse pour localhost</para>
+
+    <programlisting>; ############################################################
+; Start of Authority (Inverse Address Arpa) for 127.0.0.0/8
+; Filename: db.127.0.0
+; ############################################################
+@ 604800 IN SOA ns1.foobar.net. netadmin.foobar.net. (
+                             2001092901 ; serial
+                             10800 ; refresh (3 hour)
+                             3600 ; retry (1 hour)
+                             604800 ; expire (7 days)
+                             86400 ) ; minimum (1 day)
+; ############################################################
+; Specify Name Servers for all Reverse Lookups (IN-ADDR.ARPA)
+; ############################################################
+@     604800          IN NS   ns1.foobar.net.
+
+; ############################################################
+; Iverse Address Arpa Records (PTR&#39;s)
+; ############################################################
+1       86400           IN PTR  localhost.foobar.net.</programlisting>
+
+    <para>int/db.192.168.201 - Zone inverse pour le réseau local. cela
+    n&#39;est montré qu&#39;aux clients internes</para>
+
+    <programlisting>; ############################################################
+; Start of Authority (Inverse Address Arpa) for 192.168.201.0/29
+; Filename: db.192.168.201
+; ############################################################
+@ 604800 IN SOA ns1.foobar.net netadmin.foobar.net. (
+                                2002032501 ; serial
+                                10800 ; refresh (3 hour)
+                                3600 ; retry (1 hour)
+                                604800 ; expire (7 days)
+                                86400 ) ; minimum (1 day)
+
+; ############################################################
+; Specify Name Servers for all Reverse Lookups (IN-ADDR.ARPA)
+; ############################################################
+@       604800          IN NS   ns1.foobar.net.
+; ############################################################
+; Iverse Address Arpa Records (PTR&#39;s)
+; ############################################################
+1       86400           IN PTR  gateway.foobar.net.
+2       86400           IN PTR  winken.foobar.net.
+3       86400           IN PTR  blinken.foobar.net.
+4       86400           IN PTR  nod.foobar.net.</programlisting>
+
+    <para>int/db.192.168.202 - Zone inverse de l&#39;interface DMZ du firewall</para>
+
+    <programlisting>; ############################################################
+; Start of Authority (Inverse Address Arpa) for 192.168.202.0/29
+; Filename: db.192.168.202
+; ############################################################
+@ 604800 IN SOA ns1.foobar.net netadmin.foobar.net. (
+                                2002032501 ; serial
+                                10800 ; refresh (3 hour)
+                                3600 ; retry (1 hour)
+                                604800 ; expire (7 days)
+                                86400 ) ; minimum (1 day)
+
+; ############################################################
+; Specify Name Servers for all Reverse Lookups (IN-ADDR.ARPA)
+; ############################################################
+@             604800  IN NS   ns1.foobar.net.
+
+; ############################################################
+; Iverse Address Arpa Records (PTR&#39;s)
+; ############################################################
+1               86400 IN PTR  dmz.foobar.net.</programlisting>
+
+    <para>int/db.foobar - Forward zone pour l&#39;utilisation des clients
+    internes.</para>
+
+    <programlisting>;##############################################################
+; Start of Authority for foobar.net.
+; Filename: db.foobar
+;##############################################################
+@ 604800 IN SOA ns1.foobar.net. netadmin.foobar.net. (
+                        2002071501 ; serial
+                        10800 ; refresh (3 hour)
+                        3600 ; retry (1 hour)
+                        604800 ; expire (7 days)
+                        86400 ); minimum (1 day)
+;############################################################
+; foobar.net Nameserver Records (NS)
+;############################################################
+@                 604800  IN NS   ns1.foobar.net.
+
+;############################################################
+; Foobar.net Office Records (ADDRESS)
+;############################################################
+localhost 86400   IN A    127.0.0.1
+
+firewall       86400   IN A    192.0.2.176
+www            86400   IN A    192.0.2.177
+ns1            86400   IN A    192.0.2.177
+www            86400   IN A    192.0.2.177
+
+gateway              86400   IN A    192.168.201.1
+winken               86400   IN A    192.168.201.2
+blinken              86400   IN A    192.168.201.3
+nod                  86400   IN A    192.168.201.4</programlisting>
+
+    <para>ext/db.foobar - Forward zone pour les clients externes</para>
+
+    <programlisting>;##############################################################
+; Start of Authority for foobar.net.
+; Filename: db.foobar
+;##############################################################
+@ 86400 IN SOA ns1.foobar.net. netadmin.foobar.net. (
+                        2002052901 ; serial
+                        10800 ; refresh (3 hour)
+                        3600 ; retry (1 hour)
+                        604800 ; expire (7 days)
+                        86400 ); minimum (1 day)
+;############################################################
+; Foobar.net Nameserver Records (NS)
+;############################################################
+@                86400   IN NS   ns1.foobar.net.
+@                86400   IN NS   &#60;secondary NS&#62;.
+;############################################################
+; Foobar.net        Foobar Wa Office Records (ADDRESS)
+;############################################################
+localhost         86400   IN A    127.0.0.1
+;
+; The firewall itself
+;
+firewall          86400   IN A    192.0.2.176
+;
+; The DMZ
+;
+ns1               86400   IN A    192.0.2.177
+www               86400   IN A    192.0.2.177
+mail              86400   IN A    192.0.2.178
+;
+; The Local Network
+;
+nod             86400   IN A    192.0.2.179
+
+;############################################################
+; Current Aliases for foobar.net (CNAME)
+;############################################################
+
+;############################################################
+; foobar.net MX Records (MAIL EXCHANGER)
+;############################################################
+foobar.net.      86400   IN A    192.0.2.177
+                 86400   IN MX 0 mail.foobar.net.
+                 86400   IN MX 1 &#60;backup MX&#62;.</programlisting>
+  </section>
+
+  <section>
+    <title>Démarrer et Stopper le firewall</title>
+
+    <para>La <ulink url="Install.htm">procédure d&#39;installation</ulink>
+    configure votre système pour que Shorewall démarre au boot du système.</para>
+
+    <para>Le firewall est démarré en utilisant la commande &#34;shorewall
+    start&#34; et arrêté avec &#34;shorewall stop&#34;. Quand le firewall est
+    arrêté, le routage est actif sur les hôtes qui ont une entrée dans le
+    fichier <ulink url="Documentation.htm#Routestopped">/etc/shorewall/routestopped</ulink>.
+    Le firewall actif peut-être relancé grâce à la commande &#34;shorewall
+    restart&#34;. Si vous voulez retirer toute trace de Shorewall de votre
+    configuration Netfilter, utilisez &#34;shorewall clear&#34;.</para>
+
+    <para><inlinegraphic fileref="images/BD21298_.gif" /> Editez le fichier
+    <ulink url="Documentation.htm#Routestopped">/etc/shorewall/routestopped</ulink>
+    file et ajouter les systèmes qui doivent pouvoir se connecter au firewall
+    quant il est arrêté.</para>
+
+    <para>ATTENTION: Si vous êtes connecté à votre firewall depuis Internet,
+    ne pas exécutez la commande&#x00A0; &#34;shorewall stop&#34; tant que vous
+    n&#39;avez pas une entrée active pour l&#39;adresse IP de votre hôte dans
+    le fichier <ulink url="Documentation.htm#Routestopped">/etc/shorewall/routestopped</ulink>.
+    Egalement, je ne recommande pas d&#39;utiliser &#34;shorewall
+    restart&#34;; il est préférable d&#39;utiliser <ulink
+    url="starting_and_stopping_shorewall.htm"><emphasis>une configuration
+    alternative</emphasis></ulink>&#x00A0; et la tester avec la commande &#34;<ulink
+    url="starting_and_stopping_shorewall.htm">shorewall try</ulink>&#34;.</para>
+  </section>
+</article>

@@ -1250,11 +1250,13 @@ stop_firewall() {
 	    set +x
 
 	    [ -z "$RESTOREFILE" ] && RESTOREFILE=restore
+
+	    RESTOREPATH=/var/lib/shorewall/$RESTOREFILE
 	    
-	    if [ -x /var/lib/shorewall/$RESTOREFILE ]; then
+	    if [ -x $RESTOREPATH ]; then
 		echo Restoring Shorewall...
-		/var/lib/shorewall/$RESTOREFILE
-		echo "Shorewall restored from /var/lib/shorewall/$RESTOREFILE"
+		$RESTOREPATH
+		echo "Shorewall restored from $RESTOREPATH"
 		my_mutex_off
 		kill $$
 		exit 2

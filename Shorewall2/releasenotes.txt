@@ -41,23 +41,31 @@ New Features:
 
 1) Shorewall now supports multiple saved configurations.
 
-   a) The "save" command has been extended to be able to specify the
+   a) The default saved configuration (restore script) in
+      /var/lib/shorewall is now specified using the RESTOREFILE option
+      in shorewall.conf. If this variable isn't set then to maitain
+      backward compatibility, 'restore' is assumed.
+      
+      The value of RESTOREFILE must be a simple file name; no slashes
+      ("/") may be included.
+      
+   b)  The "save" command has been extended to be able to specify the
       name of a saved configuration.
 
 	   shorewall save [ <file name> ]
 
       The current state is saved to /var/lib/shorewall/<file name>. If
       no <file name> is given, the configuration is saved to
-      /var/lib/shorewall/restore (current behavior).
+      the file determined by the RESTOREFILE setting.
 
-   b) The "restore" command has been extended to be able to specify 
+   c) The "restore" command has been extended to be able to specify 
       the name of a saved configuration:
 
 	  shorewall restore [ <file name> ]
 
       The firewall state is restored from /var/lib/shorewall/<file
       name>. If no <file name> is given, the firewall state is
-      restored from /var/lib/shorewall/restore.
+      restored from the file determined by the RESTOREFILE setting.
 
    c) The "forget" command has changed. Previously, the command
       unconditionally removed the /var/lib/shorewall/save file which
@@ -70,10 +78,11 @@ New Features:
 	      shorewall forget [ <file name> ]
 
       The file /var/lib/shorewall/<file name> is removed. If no <file
-      name> is given, the file /var/lib/shorewall/restore is removed.
+      name> is given, the file determined by the RESTOREFILE setting
+      is removed.
 
-   d) The "shorewall -f start" command continues to restore the state
-      recorded in /var/lib/shorewall/restore.
+   d) The "shorewall -f start" command restores the state from the
+      file determined by the RESTOREFILE setting. 
 
 2) "!" is now allowed in accounting rules.
 

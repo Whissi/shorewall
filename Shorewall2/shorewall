@@ -135,6 +135,19 @@ showchain() # $1 = name of chain
 }
 
 #
+# Validate the value of RESTOREFILE
+#
+validate_restorefile() # $* = label
+{
+    case $RESTOREFILE in
+	*/*)
+	    echo "   ERROR: $@ must specify a simple file name: $RESTOREFILE" >&2
+	    exit 2
+	    ;;
+    esac    
+}
+
+#
 # Set the configuration variables from shorewall.conf
 #
 get_config() {
@@ -163,12 +176,16 @@ get_config() {
 
     if [ -n "$SHOREWALL_SHELL" ]; then
 	if [ ! -e "$SHOREWALL_SHELL" ]; then
-	    echo "The program specified in SHOREWALL_SHELL does not exist or is not executable" >&2
+	    echo "   ERROR: The program specified in SHOREWALL_SHELL does not exist or is not executable" >&2
 	    exit 2
 	fi
     fi
 
     [ -n "$RESTOREFILE" ] || RESTOREFILE=restore
+
+    validate_restorefile RESTOREFILE
+
+    export RESTOREFILE
 
 }
 
@@ -740,11 +757,14 @@ case "$1" in
 	[ $# -ne 1 ] && usage 1
 	get_config
 	if [ -n "$FAST" ]; then
-	    if [ -x /var/lib/shorewall/$RESTOREFILE ]; then
+	    
+	    RESTOREPATH=/var/lib/shorewall/$RESTOREFILE
+
+	    if [ -x $RESTOREPATH ]; then
 		echo Restoring Shorewall...
-		/var/lib/shorewall/$RESTOREFILE
+		$RESTOREPATH
 		date > $STATEDIR/restarted
-		echo Shorewall restored from /var/lib/shorewall/$RESTOREFILE
+		echo Shorewall restored from $RESTOREPATH
 	    else
 		exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock start
 	    fi
@@ -976,19 +996,22 @@ case "$1" in
 	    ;;
 	2)
 	    RESTOREFILE="$2"
+	    validate_restorefile '<restore file>'
 	    ;;
 	*)
 	    usage 1
 	    ;;
 	esac
 
+	RESTOREPATH=/var/lib/shorewall/$RESTOREFILE
+
 	mutex_on
 
 	if qt iptables -L shorewall -n; then
 	    [ -d /var/lib/shorewall ] || mkdir -p /var/lib/shorewall
 
-	    if [ -f /var/lib/shorewall/$RESTOREFILE -a ! -x /var/lib/shorewall/$RESTOREFILE ]; then
-		echo "   ERROR: /var/lib/shorewall/$RESTOREFILE exists and is not a saved Shorewall configuration"
+	    if [ -f $RESTOREPATH -a ! -x $RESTOREPATH ]; then
+		echo "   ERROR: $RESTOREPATH exists and is not a saved Shorewall configuration"
 	    else
 		case $RESTOREFILE in
 		    save|restore-base)
@@ -1001,9 +1024,9 @@ case "$1" in
 				cp -f /var/lib/shorewall/restore-base /var/lib/shorewall/restore-$$
 				if iptables-save >> /var/lib/shorewall/restore-$$ ; then
 				    echo __EOF__ >> /var/lib/shorewall/restore-$$
-				    mv -f /var/lib/shorewall/restore-$$ /var/lib/shorewall/$RESTOREFILE
-				    chmod +x /var/lib/shorewall/$RESTOREFILE
-				    echo "   Currently-running Configuration Saved to /var/lib/shorewall/$RESTOREFILE"
+				    mv -f /var/lib/shorewall/restore-$$ $RESTOREPATH
+				    chmod +x $RESTOREPATH
+				    echo "   Currently-running Configuration Saved to $RESTOREPATH"
 				else
 				    rm -f /var/lib/shorewall/restore-$$
 				    echo "   ERROR: Currently-running Configuration Not Saved"
@@ -1029,17 +1052,21 @@ case "$1" in
 	    ;;
 	2)
 	    RESTOREFILE="$2"
+	    validate_restorefile '<restore file>'
 	    ;;
 	*)
 	    usage 1
 	    ;;
 	esac
 
-	if [ -x /var/lib/shorewall/$RESTOREFILE ]; then
-	    rm -f /var/lib/shorewall/$RESTOREFILE
-	    echo "    /var/lib/shorewall/$RESTOREFILE removed"
-	elif [ -f /var/lib/shorewall/$RESTOREFILE ]; then
-	    echo "   ERROR: /var/lib/shorewall/$RESTOREFILE is not a restore script"
+
+	RESTOREPATH=/var/lib/shorewall/$RESTOREFILE
+
+	if [ -x $RESTOREPATH ]; then
+	    rm -f $RESTOREPATH
+	    echo "    $RESTOREPATH removed"
+	elif [ -f $RESTOREPATH ]; then
+	    echo "   ERROR: $RESTOREPATH is not a restore script"
 	fi
 	;;
     ipcalc)
@@ -1084,15 +1111,18 @@ case "$1" in
 	    ;;
 	2)
 	    RESTOREFILE="$2"
+	    validate_restorefile '<restore file>'
 	    ;;
 	*)
 	    usage 1
 	    ;;
 	esac
 
-	if [ -x /var/lib/shorewall/$RESTOREFILE ]; then
+	RESTOREPATH=/var/lib/shorewall/$RESTOREFILE
+
+	if [ -x $RESTOREPATH ]; then
 	    echo Restoring Shorewall...
-	    /var/lib/shorewall/$RESTOREFILE && echo "Shorewall restored from /var/lib/shorewall/$RESTOREFILE"
+	    $RESTOREPATH && echo "Shorewall restored from /var/lib/shorewall/$RESTOREFILE"
 	else
 	    echo "File /var/lib/shorewall/$RESTOREFILE: file not found"
             exit 2

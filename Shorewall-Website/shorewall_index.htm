@@ -31,9 +31,9 @@ to 2.0.x releases of Shorewall. For older versions:</p>
 <p>The current 2.0 Stable Release is 2.0.10 -- Here are the <a
  href="http://shorewall.net/pub/shorewall/2.0/shorewall-2.0.10/releasenotes.txt">release
 notes</a>.<br>
-The current Developement Release is 2.2.0 Beta 1 -- Here
+The current Developement Release is 2.2.0 Beta 2 -- Here
 are the <a
- href="http://shorewall.net/pub/shorewall/2.2-Beta/shorewall-2.2.0-Beta1/releasenotes.txt">release
+ href="http://shorewall.net/pub/shorewall/2.2-Beta/shorewall-2.2.0-Beta2/releasenotes.txt">release
 notes</a>.<br>
 <br>
 Copyright © 2001-2004 Thomas M. Eastep</p>
@@ -44,7 +44,7 @@ Foundation; with no Invariant Sections, with no Front-Cover, and with
 no Back-Cover Texts. A copy of the license is included in the section
 entitled “<a href="GnuCopyright.htm" target="_self">GNU
 Free Documentation License</a>”.</p>
-<p>2004-10-25</p>
+<p>2004-11-02</p>
 <hr>
 <h3>Table of Contents</h3>
 <p style="margin-left: 0.42in; margin-bottom: 0in;"><a href="#Intro">Introduction
@@ -59,7 +59,9 @@ Shorewall</a><br>
 Shorewall on Mandrake® with a two-interface setup?</a><br>
 <a href="#License">License</a></p>
 <p style="margin-bottom: 0in; margin-left: 40px;"><a href="#2_0_10">News</a></p>
-<p style="margin-left: 0.83in; margin-bottom: 0in;"><a href="#2_0_10">Shorewall
+<p style="margin-left: 0.83in; margin-bottom: 0in;"><a
+ href="#2_2_0_Beta2">Shorewall 2.2.0 Beta 2</a><br>
+<a href="#2_0_10">Shorewall
 2.0.10</a><br>
 <a href="#2_2_0_Beta1">Shorewall 2.2.0 Beta 1</a><br>
 <br>
@@ -153,6 +155,34 @@ of the license is included in the section entitled "GNU Free
 Documentation License". </p>
 <hr>
 <h2><a name="News"></a>News</h2>
+<span style="font-weight: bold;"><a name="2_2_0_Beta2"></a>11/02/2004 -
+Shorewall 2.2.0 Beta 2<br>
+<br>
+</span>Problems Corrected:<br>
+<ol>
+  <li>The "shorewall check" command results in the (harmless) error
+message:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/usr/share/shorewall/firewall: line 2753:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+check_dupliate_zones: command not found<br>
+    <br>
+  </li>
+  <li>The AllowNTP standard action now allows outgoing responses to
+broadcasts.</li>
+  <li>A clarification has been added to the hosts file's description of
+the 'ipsec' option pointing out that the option is redundent if the
+zone named in the ZONE column has been designated an IPSEC zone in the
+/etc/shorewall/ipsec file.<span style="font-weight: bold;"></span></li>
+</ol>
+New Features:<br>
+<ol>
+  <li>The SUBNET column in /etc/shorewall/rfc1918 has been renamed
+SUBNETS and it is now possible to specify a list of addresses in that
+column.<br>
+  </li>
+</ol>
 <span style="font-weight: bold;"><a name="2_0_10"></a>10/25/2004 -
 Shorewall 2.0.10<br>
 </span><br>

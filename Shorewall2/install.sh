@@ -58,7 +58,7 @@ VERSION=2.0.0-Alpha2
 
 usage() # $1 = exit status
 {
-    ME=`basename $0`
+    ME=$(basename $0)
     echo "usage: $ME [ -r \"<chkconfig parameters>\" ] [ <init scripts directory> ]"
     echo "       $ME [ -v ]"
     echo "       $ME [ -h ]"
@@ -190,7 +190,7 @@ FIREWALL="shorewall2"
 #
 # Change to the directory containing this script
 #
-cd "`dirname $0`"
+cd "$(dirname $0)"
 
 echo "Installing Shorewall Version $VERSION"
 

@@ -179,7 +179,7 @@ display_chains()
 	iptables -L -n -v > /tmp/chains-$$
 
 	clear
-	echo "$banner `date`"
+	echo "$banner $(date)"
 	echo
 	echo "Standard Chains"
 	echo
@@ -191,13 +191,13 @@ display_chains()
 	timed_read
 
 	clear
-	echo "$banner `date`"
+	echo "$banner $(date)"
 	echo
 	firstchain=Yes
 	echo "Input Chains"
 	echo
 
-	chains=`grep '^Chain.*_[in|fwd]' /tmp/chains-$$ | cut -d' ' -f 2`
+	chains=$(grep '^Chain.*_[in|fwd]' /tmp/chains-$$ | cut -d' ' -f 2)
 
 	for chain in $chains; do
 	    showchain $chain
@@ -207,9 +207,9 @@ display_chains()
 
 	for zone in $zones; do
 
-	    if [ -n "`grep "^Chain \.*${zone}" /tmp/chains-$$`" ] ; then
+	    if [ -n "$(grep "^Chain \.*${zone}" /tmp/chains-$$)" ] ; then
 		clear
-		echo "$banner `date`"
+		echo "$banner $(date)"
 		echo
 		firstchain=Yes
 		eval display=\$${zone}_display
@@ -228,7 +228,7 @@ display_chains()
 	done
 
 	clear
-	echo "$banner `date`"
+	echo "$banner $(date)"
 	echo
 	firstchain=Yes
 	echo "Policy Chains"
@@ -249,7 +249,7 @@ display_chains()
 	timed_read
 
 	clear
-	echo "$banner `date`"
+	echo "$banner $(date)"
 	echo
 	firstchain=Yes
 	echo "Dynamic Chain"
@@ -301,7 +301,7 @@ show_tc() {
 
     show_one_tc() {
 	local device=${1%@*}
-	qdisc=`tc qdisc list dev $device`
+	qdisc=$(tc qdisc list dev $device)
 
 	if [ -n "$qdisc" ]; then
 	    echo Device $device:
@@ -331,7 +331,7 @@ show_classifiers() {
 
     show_one_classifier() {
 	local device=${1%@*}
-	qdisc=`tc qdisc list dev $device`
+	qdisc=$(tc qdisc list dev $device)
 
 	if [ -n "$qdisc" ]; then
 	    echo Device $device:
@@ -360,8 +360,8 @@ monitor_firewall() # $1 = timeout -- if negative, prompt each time that
 {
 
     get_config
-    host=`echo $HOSTNAME | sed 's/\..*$//'`
-    oldrejects=`iptables -L -v -n | grep 'LOG'`
+    host=$(echo $HOSTNAME | sed 's/\..*$//')
+    oldrejects=$(iptables -L -v -n | grep 'LOG')
 
     if [ $1 -lt 0 ]; then
 	let "timeout=- $1"
@@ -386,7 +386,7 @@ monitor_firewall() # $1 = timeout -- if negative, prompt each time that
 	display_chains
 
 	clear
-	echo "$banner `date`"
+	echo "$banner $(date)"
 	echo
 
 	echo "Dropped/Rejected Packet Log"
@@ -394,7 +394,7 @@ monitor_firewall() # $1 = timeout -- if negative, prompt each time that
 
 	show_reset
 
-	rejects=`iptables -L -v -n | grep 'LOG'`
+	rejects=$(iptables -L -v -n | grep 'LOG')
 
 	if [ "$rejects" != "$oldrejects" ]; then
 	    oldrejects="$rejects"
@@ -417,7 +417,7 @@ monitor_firewall() # $1 = timeout -- if negative, prompt each time that
 	fi
 
 	clear
-	echo "$banner `date`"
+	echo "$banner $(date)"
 	echo
 	echo "NAT Status"
 	echo
@@ -425,7 +425,7 @@ monitor_firewall() # $1 = timeout -- if negative, prompt each time that
 	timed_read
 
 	clear
-	echo "$banner `date`"
+	echo "$banner $(date)"
 	echo
 	echo
 	echo "TOS/MARK Status"
@@ -434,7 +434,7 @@ monitor_firewall() # $1 = timeout -- if negative, prompt each time that
 	timed_read
 
 	clear
-	echo "$banner `date`"
+	echo "$banner $(date)"
 	echo
 	echo
 	echo "Tracked Connections"
@@ -443,7 +443,7 @@ monitor_firewall() # $1 = timeout -- if negative, prompt each time that
 	timed_read
 
 	clear
-	echo "$banner `date`"
+	echo "$banner $(date)"
 	echo
 	echo
 	echo "Traffic Shaping/Control"
@@ -452,7 +452,7 @@ monitor_firewall() # $1 = timeout -- if negative, prompt each time that
 	timed_read
 
 	clear
-	echo "$banner `date`"
+	echo "$banner $(date)"
 	echo
 	echo
 	echo "Packet Classifiers"
@@ -470,8 +470,8 @@ logwatch() # $1 = timeout -- if negative, prompt each time that
 {
 
     get_config
-    host=`echo $HOSTNAME | sed 's/\..*$//'`
-    oldrejects=`iptables -L -v -n | grep 'LOG'`
+    host=$(echo $HOSTNAME | sed 's/\..*$//')
+    oldrejects=$(iptables -L -v -n | grep 'LOG')
 
     if [ $1 -lt 0 ]; then
 	timeout=$((- $1))
@@ -485,7 +485,7 @@ logwatch() # $1 = timeout -- if negative, prompt each time that
 
     while true; do
 	clear
-	echo "$banner `date`"
+	echo "$banner $(date)"
 	echo
 
 	echo "Dropped/Rejected Packet Log"
@@ -493,7 +493,7 @@ logwatch() # $1 = timeout -- if negative, prompt each time that
 
 	show_reset
 
-	rejects=`iptables -L -v -n | grep 'LOG'`
+	rejects=$(iptables -L -v -n | grep 'LOG')
 
 	if [ "$rejects" != "$oldrejects" ]; then
 	    oldrejects="$rejects"
@@ -531,7 +531,7 @@ help()
 #
 usage() # $1 = exit status
 {
-    echo "Usage: `basename $0` [debug] [nolock] [-c <directory>] <command>"
+    echo "Usage: $(basename $0) [debug] [nolock] [-c <directory>] <command>"
     echo "where <command> is one of:"
     echo "   add <interface>[:<host>] <zone>"
     echo "   allow <address> ..."
@@ -564,7 +564,7 @@ usage() # $1 = exit status
 #
 show_reset() {
     [ -f $STATEDIR/restarted ] && \
-	echo "Counters reset `cat $STATEDIR/restarted`" && \
+	echo "Counters reset $(cat $STATEDIR/restarted)" && \
 	echo
 }
 
@@ -634,7 +634,7 @@ else
     exit 2
 fi
 
-config=`find_file shorewall.conf`
+config=$(find_file shorewall.conf)
 
 if [ -f $config ]; then
     . $config
@@ -658,7 +658,7 @@ if [ ! -f $FIREWALL ]; then
 fi
 
 if [ -f $VERSION_FILE ]; then
-    version=`cat $VERSION_FILE`
+    version=$(cat $VERSION_FILE)
 else
     echo "ERROR: Shorewall is not properly installed"
     echo "	 The file $VERSION_FILE does not exist"
@@ -668,7 +668,7 @@ fi
 banner="Shorewall-$version Status at $HOSTNAME -"
 
 
-case `echo -e` in
+case $(echo -e) in
     -e*)
 	RING_BELL="echo \a"
 	;;
@@ -677,7 +677,7 @@ case `echo -e` in
 	;;
 esac
 
-case `echo -n "Testing"` in
+case $(echo -n "Testing") in
     -n*)
 	ECHO_N=
 	;;
@@ -701,20 +701,20 @@ case "$1" in
 	case "$2" in
 	connections)
 	    [ $# -gt 2 ] && usage 1
-	    echo "Shorewall-$version Connections at $HOSTNAME - `date`"
+	    echo "Shorewall-$version Connections at $HOSTNAME - $(date)"
 	    echo
 	    cat /proc/net/ip_conntrack
 	    ;;
 	nat)
 	    [ $# -gt 2 ] && usage 1
-	    echo "Shorewall-$version NAT at $HOSTNAME - `date`"
+	    echo "Shorewall-$version NAT at $HOSTNAME - $(date)"
 	    echo
 	    show_reset
 	    iptables -t nat -L -n -v
 	    ;;
 	tos|mangle)
 	    [ $# -gt 2 ] && usage 1
-	    echo "Shorewall-$version TOS at $HOSTNAME - `date`"
+	    echo "Shorewall-$version TOS at $HOSTNAME - $(date)"
 	    echo
 	    show_reset
 	    iptables -t mangle -L -n -v
@@ -722,28 +722,28 @@ case "$1" in
 	log)
 	    [ $# -gt 2 ] && usage 1
 	    get_config
-	    echo "Shorewall-$version Log at $HOSTNAME - `date`"
+	    echo "Shorewall-$version Log at $HOSTNAME - $(date)"
 	    echo
 	    show_reset
-	    host=`echo $HOSTNAME | sed 's/\..*$//'`
+	    host=$(echo $HOSTNAME | sed 's/\..*$//')
 	    packet_log 20
 	    ;;
 	tc)
 	    [ $# -gt 2 ] && usage 1
-	    echo "Shorewall-$version Traffic Control at $HOSTNAME - `date`"
+	    echo "Shorewall-$version Traffic Control at $HOSTNAME - $(date)"
 	    echo
 	    show_tc
 	    ;;
 	classifiers)
 	    [ $# -gt 2 ] && usage 1
-	    echo "Shorewall-$version Clasifiers at $HOSTNAME - `date`"
+	    echo "Shorewall-$version Clasifiers at $HOSTNAME - $(date)"
 	    echo
 	    show_classifiers
 	    ;;
 	*)
 	    shift
 	    
-	    echo "Shorewall-$version `[ $# -gt 1 ] && echo Chains || echo Chain` $* at $HOSTNAME - `date`"
+	    echo "Shorewall-$version $([ $# -gt 1 ] && echo Chains || echo Chain) $* at $HOSTNAME - $(date)"
 	    echo
 	    show_reset
 	    if [ $# -gt 0 ]; then
@@ -769,10 +769,10 @@ case "$1" in
 	[ $# -eq 1 ] || usage 1
 	get_config
 	clear
-	echo "Shorewall-$version Status at $HOSTNAME - `date`"
+	echo "Shorewall-$version Status at $HOSTNAME - $(date)"
 	echo
 	show_reset
-	host=`echo $HOSTNAME | sed 's/\..*$//'`
+	host=$(echo $HOSTNAME | sed 's/\..*$//')
 	iptables -L -n -v
 	echo
 	packet_log 20
@@ -791,12 +791,12 @@ case "$1" in
 	[ $# -eq 1 ] || usage 1
 	get_config
 	clear
-	echo "Shorewall-$version Hits at $HOSTNAME - `date`"
+	echo "Shorewall-$version Hits at $HOSTNAME - $(date)"
 	echo
 
 	timeout=30
 
-	if [ `grep -c "$LOGFORMAT" $LOGFILE ` -gt 0 ] ; then
+	if [ $(grep -c "$LOGFORMAT" $LOGFILE ) -gt 0 ] ; then
 	    echo "   HITS IP		  DATE"
 	    echo "   ---- --------------- ------"
 	    grep "$LOGFORMAT" $LOGFILE | sed 's/\(.\{6\}\)\(.*SRC=\)\(.*\)\( DST=.*\)/\3	\1/' | sort | uniq -c | sort -rn
@@ -819,8 +819,8 @@ case "$1" in
 	    grep "$LOGFORMAT.*DPT" $LOGFILE | sed 's/\(.*DPT=\)\([0-9]\{1,5\}\)\(.*\)/\2/' | sort | uniq -c | sort -rn | \
 	    while read count port ; do
 		# List all services defined for the given port
-		srv=`grep "^[^#].*\\b$port/" /etc/services | cut -f 1 | sort -u`
-		srv=`echo $srv | sed 's/ /,/g'`
+		srv=$(grep "^[^#].*\\b$port/" /etc/services | cut -f 1 | sort -u)
+		srv=$(echo $srv | sed 's/ /,/g')
 
 		if [ -n "$srv" ] ; then
 		    printf '%7d %5d %s\n' $count $port $srv
@@ -915,7 +915,7 @@ case "$1" in
 	    vlsm=${2#*/}
 	elif [ $# -eq 3 ]; then
 	    address=$2
-	    vlsm=`ip_vlsm $3`
+	    vlsm=$(ip_vlsm $3)
 	else
 	    usage 1
 	fi
@@ -926,10 +926,10 @@ case "$1" in
 
 	address=$address/$vlsm
 
-	                                  echo "   CIDR=$address"
-	temp=`ip_netmask $address`;       echo "   NETMASK=`encodeaddr $temp`"
-	temp=`ip_network $address`;       echo "   NETWORK=$temp"
-	temp=`broadcastaddress $address`; echo "   BROADCAST=$temp"
+	                                   echo "   CIDR=$address"
+	temp=$(ip_netmask $address);       echo "   NETMASK=$(encodeaddr $temp)"
+	temp=$(ip_network $address);       echo "   NETWORK=$temp"
+	temp=$(broadcastaddress $address); echo "   BROADCAST=$temp"
 	;;
 
     iprange)

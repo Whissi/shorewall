@@ -30,7 +30,7 @@ VERSION=2.0.0-Alpha2
 
 usage() # $1 = exit status
 {
-    ME=`basename $0`
+    ME=$(basename $0)
     echo "usage: $ME"
     exit $1
 }
@@ -61,7 +61,7 @@ remove_file() # $1 = file to restore
 }
 
 if [ -f /usr/share/shorewall2/version ]; then
-    INSTALLED_VERSION="`cat /usr/share/shorewall2/version`"
+    INSTALLED_VERSION="$(cat /usr/share/shorewall2/version)"
     if [ "$INSTALLED_VERSION" != "$VERSION" ]; then
 	echo "WARNING: Shorewall Version $INSTALLED_VERSION is installed"
 	echo "         and this is the $VERSION uninstaller."
@@ -79,7 +79,7 @@ if qt iptables -L shorewall -n; then
 fi
 
 if [ -L /usr/share/shorewall2/init ]; then
-    FIREWALL=`ls -l /usr/share/shorewall2/init | sed 's/^.*> //'`
+    FIREWALL=$(ls -l /usr/share/shorewall2/init | sed 's/^.*> //')
 else
     FIREWALL=/etc/init.d/shorewall2
 fi
@@ -88,9 +88,9 @@ if [ -n "$FIREWALL" ]; then
     if [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
         insserv -r $FIREWALL
     elif [ -x /sbin/chkconfig -o -x /usr/sbin/chkconfig ]; then
-	chkconfig --del `basename $FIREWALL`
+	chkconfig --del $(basename $FIREWALL)
     else
-	rm -f /etc/rc*.d/*`basename $FIREWALL`
+	rm -f /etc/rc*.d/*$(basename $FIREWALL)
     fi
 
     remove_file $FIREWALL

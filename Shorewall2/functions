@@ -96,15 +96,15 @@ find_display() # $1 = zone, $2 = name of the zone file
 #
 determine_zones()
 {
-    local zonefile=`find_file zones`
+    local zonefile=$(find_file zones)
 
     multi_display=Multi-zone
     strip_file zones $zonefile
-    zones=`find_zones $TMP_DIR/zones`
-    zones=`echo $zones` # Remove extra trash
+    zones=$(find_zones $TMP_DIR/zones)
+    zones=$(echo $zones) # Remove extra trash
     
     for zone in $zones; do
-	dsply=`find_display $zone $TMP_DIR/zones`
+	dsply=$(find_display $zone $TMP_DIR/zones)
 	eval ${zone}_display=\$dsply
     done
 }
@@ -124,7 +124,7 @@ get_statedir()
 {
     MUTEX_TIMEOUT=
 
-    local config=`find_file shorewall.conf`
+    local config=$(find_file shorewall.conf)
 
     if [ -f $config ]; then
        . $config
@@ -194,7 +194,7 @@ read_file() # $1 = file name, $2 = nest count
 	while read first rest; do
 	    if [ "x$first"  = "xINCLUDE" ]; then
 		if [ $2 -lt 4 ]; then
-		    read_file `find_file ${rest%#*}` $(($2 + 1))
+		    read_file $(find_file ${rest%#*}) $(($2 + 1))
 		else
 		    echo "   WARNING: INCLUDE in $1 ignored (nested too deeply)" >&2
 		fi
@@ -212,7 +212,7 @@ read_file() # $1 = file name, $2 = nest count
 # Function for including one file into another
 #
 INCLUDE() {
-    . `find_file $@`
+    . $(find_file $@)
 }
 
 #
@@ -223,7 +223,7 @@ strip_file() # $1 = Base Name of the file, $2 = Full Name of File (optional)
 {
     local fname
 
-    [ $# = 1 ] && fname=`find_file $1` || fname=$2
+    [ $# = 1 ] && fname=$(find_file $1) || fname=$2
 
     if [ -f $fname ]; then
 	read_file $fname 0 | cut -d'#' -f1 | grep -v '^[[:space:]]*$' > $TMP_DIR/$1
@@ -300,8 +300,8 @@ ip_range() {
 	;;
     esac
 
-    first=`decodeaddr ${1%-*}`
-    last=`decodeaddr ${1#*-}`
+    first=$(decodeaddr ${1%-*})
+    last=$(decodeaddr ${1#*-})
 
     if [ $first -gt $last ]; then
 	fatal_error "Invalid IP address range: $1"
@@ -322,7 +322,7 @@ ip_range() {
 	    y=$(( $y * 2 ))
 	done
 
-	echo `encodeaddr $first`$vlsm
+	echo $(encodeaddr $first)$vlsm
 	first=$(($first + $z))
     done
 }
@@ -339,15 +339,15 @@ ip_range_explicit() {
 	;;
     esac
 
-    first=`decodeaddr ${1%-*}`
-    last=`decodeaddr ${1#*-}`
+    first=$(decodeaddr ${1%-*})
+    last=$(decodeaddr ${1#*-})
 
     if [ $first -gt $last ]; then
 	fatal_error "Invalid IP address range: $1"
     fi
 
     while [ $first -le $last ]; do
-	echo `encodeaddr $first`
+	echo $(encodeaddr $first)
 	first=$(($first + 1))
     done
 }
@@ -365,10 +365,10 @@ ip_netmask() {
 # Network address from CIDR
 #
 ip_network() {
-    local decodedaddr=`decodeaddr ${1%/*}`
-    local netmask=`ip_netmask $1`
+    local decodedaddr=$(decodeaddr ${1%/*})
+    local netmask=$(ip_netmask $1)
 
-    echo `encodeaddr $(($decodedaddr & $netmask))`
+    echo $(encodeaddr $(($decodedaddr & $netmask)))
 }
 
 #
@@ -386,11 +386,11 @@ ip_broadcast() {
 # Calculate broadcast address from CIDR
 #
 broadcastaddress() {
-    local decodedaddr=`decodeaddr ${1%/*}`
-    local netmask=`ip_netmask $1`
-    local broadcast=`ip_broadcast $1`
+    local decodedaddr=$(decodeaddr ${1%/*})
+    local netmask=$(ip_netmask $1)
+    local broadcast=$(ip_broadcast $1)
 
-    echo `encodeaddr $(( $(($decodedaddr & $netmask)) | $broadcast ))`
+    echo $(encodeaddr $(( $(($decodedaddr & $netmask)) | $broadcast )))
 }
 
 #
@@ -398,16 +398,16 @@ broadcastaddress() {
 #
 in_subnet() # $1 = IP address, $2 = CIDR network
 {
-    local netmask=`ip_netmask $2`
+    local netmask=$(ip_netmask $2)
 
-    test $(( `decodeaddr $1` & $netmask)) -eq $(( `decodeaddr ${2%/*}` & $netmask ))
+    test $(( $(decodeaddr $1) & $netmask)) -eq $(( $(decodeaddr ${2%/*}) & $netmask ))
 }
 
 #
 # Netmask to VLSM
 #
 ip_vlsm() {
-    local mask=`decodeaddr $1`
+    local mask=$(decodeaddr $1)
     local vlsm=0
     local x=$(( 128 $LEFTSHIFT 24 ))
 
@@ -467,7 +467,7 @@ if_match() # $1 = Name in interfaces file - may end in "+"
 
     case $if_file in
 	*+)
-	    test "`strip_trailing_digits $rt_table`" = "${if_file%+}"
+	    test "$(strip_trailing_digits $rt_table)" = "${if_file%+}"
 	    ;;
 	*)
 	    test "$rt_table" = "$if_file"
@@ -495,13 +495,13 @@ find_rt_interface() {
     ip route ls | while read addr rest; do
 	case $addr in
 	    */*)
-		in_subnet ${1%/*} $addr && echo `find_device $rest`
+		in_subnet ${1%/*} $addr && echo $(find_device $rest)
 		;;
 	    default)
 		;;
 	    *)
 		if [ "$addr" = "$1" -o "$addr/32" = "$1" ]; then
-		    echo `find_device $rest`
+		    echo $(find_device $rest)
 		fi
 		;;
 	esac
@@ -513,7 +513,7 @@ find_rt_interface() {
 #
 find_default_interface() {
     ip route ls | while read first rest; do
-	[ "$first" = default ] && echo `find_device $rest` && return
+	[ "$first" = default ] && echo $(find_device $rest) && return
     done
 }
 
@@ -523,10 +523,10 @@ find_default_interface() {
 #
 
 find_interface_by_address() {
-    local dev="`find_rt_interface $1`"
+    local dev="$(find_rt_interface $1)"
     local first rest
 
-    [ -z "$dev" ] && dev=`find_default_interface`
+    [ -z "$dev" ] && dev=$(find_default_interface)
 
     [ -n "$dev" ] && echo $dev
 }

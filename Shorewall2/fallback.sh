@@ -32,7 +32,7 @@ VERSION=2.0.0-Alpha2
 
 usage() # $1 = exit status
 {
-    echo "usage: `basename $0`"
+    echo "usage: $(basename $0)"
     exit $1
 }
 
@@ -57,7 +57,7 @@ fi
 echo "Backing Out Installation of Shorewall $VERSION"
 
 if [ -L /usr/share/shorewall2/init ]; then
-    FIREWALL=`ls -l /usr/share/shorewall2/firewall | sed 's/^.*> //'`
+    FIREWALL=$(ls -l /usr/share/shorewall2/firewall | sed 's/^.*> //')
     restore_file $FIREWALL
 else
     restore_file /etc/init.d/shorewall2

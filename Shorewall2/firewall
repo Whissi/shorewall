@@ -68,7 +68,7 @@ list_count1() {
 # Comma-separated list
 #
 list_count() {
-    list_count1 `separate_list $1`
+    list_count1 $(separate_list $1)
 }
 
 #
@@ -194,7 +194,7 @@ run_iptables2() {
     #
     # Need to insert white space before each "!"
     #
-    run_iptables `fix_bang $@`
+    run_iptables $(fix_bang $@)
 }
 
 #
@@ -234,7 +234,7 @@ run_tc() {
 #
 createchain() # $1 = chain name, $2 = If "yes", create default rules
 {
-    local c=`chain_base $1`
+    local c=$(chain_base $1)
 
     run_iptables -N $1
 
@@ -249,7 +249,7 @@ createchain() # $1 = chain name, $2 = If "yes", create default rules
 
 createchain2() # $1 = chain name, $2 = If "yes", create default rules
 {
-    local c=`chain_base $1`
+    local c=$(chain_base $1)
 
     if iptables -N $1; then
 
@@ -272,7 +272,7 @@ createchain2() # $1 = chain name, $2 = If "yes", create default rules
 #
 havechain() # $1 = name of chain
 {
-    local c=`chain_base $1`
+    local c=$(chain_base $1)
 
     eval test \"\$exists_${c}\" = Yes
 }
@@ -414,7 +414,7 @@ find_interfaces() # $1 = interface zone
     local interface
 
     for interface in $all_interfaces; do
-	eval z=\$`chain_base ${interface}`_zone
+	eval z=\$$(chain_base ${interface})_zone
 	[ "x${z}" = x${zne} ] && echo $interface
     done
 }
@@ -424,7 +424,7 @@ find_interfaces() # $1 = interface zone
 #
 forward_chain() # $1 = interface
 {
-   echo `chain_base $1`_fwd
+   echo $(chain_base $1)_fwd
 }
 
 #
@@ -432,7 +432,7 @@ forward_chain() # $1 = interface
 #
 input_chain() # $1 = interface
 {
-   echo `chain_base $1`_in
+   echo $(chain_base $1)_in
 }
 
 #
@@ -440,7 +440,7 @@ input_chain() # $1 = interface
 #
 output_chain() # $1 = interface
 {
-   echo `chain_base $1`_out
+   echo $(chain_base $1)_out
 }
 
 #
@@ -448,7 +448,7 @@ output_chain() # $1 = interface
 #
 masq_chain() # $1 = interface
 {
-   echo `chain_base $1`_masq
+   echo $(chain_base $1)_masq
 }
 
 #
@@ -456,7 +456,7 @@ masq_chain() # $1 = interface
 #
 mac_chain() # $1 = interface
 {
-   echo `chain_base $1`_mac
+   echo $(chain_base $1)_mac
 }
 
 #
@@ -472,7 +472,7 @@ dnat_chain() # $1 = zone
 #
 snat_chain() # $1 = zone
 {
-   echo `chain_base $1`_snat
+   echo $(chain_base $1)_snat
 }
 
 #
@@ -480,7 +480,7 @@ snat_chain() # $1 = zone
 #
 ecn_chain() # $1 = interface
 {
-   echo `chain_base $1`_ecn
+   echo $(chain_base $1)_ecn
 }
 
 #
@@ -488,7 +488,7 @@ ecn_chain() # $1 = interface
 #
 first_chains() #$1 = interface
 {
-   local c=`chain_base $1`
+   local c=$(chain_base $1)
 
    echo ${c}_fwd ${c}_in
 }
@@ -506,11 +506,11 @@ find_hosts() # $1 = host zone
     local hosts interface address addresses
 
     while read z hosts options; do
-	if [ "x`expand $z`" = "x$1" ]; then
+	if [ "x$(expand $z)" = "x$1" ]; then
 	    expandv hosts
 	    interface=${hosts%:*}
 	    addresses=${hosts#*:}
-	    for address in `separate_list $addresses`; do 
+	    for address in $(separate_list $addresses); do 
 		echo $interface:$address
 	    done
 	fi
@@ -525,8 +525,8 @@ find_hosts() # $1 = host zone
 #
 determine_interfaces() {
     for zone in $zones; do
-	interfaces=`find_interfaces $zone`
-	interfaces=`echo $interfaces` # Remove extra trash
+	interfaces=$(find_interfaces $zone)
+	interfaces=$(echo $interfaces) # Remove extra trash
 	eval ${zone}_interfaces=\"\$interfaces\"
     done
 }
@@ -537,16 +537,16 @@ determine_interfaces() {
 determine_hosts() {
 
     for zone in $zones; do
-	hosts=`find_hosts $zone`
-	hosts=`echo $hosts` # Remove extra trash
+	hosts=$(find_hosts $zone)
+	hosts=$(echo $hosts) # Remove extra trash
 
 	eval interfaces=\$${zone}_interfaces
 
 	for interface in $interfaces; do
-	    eval options=\$`chain_base ${interface}`_options
+	    eval options=\$$(chain_base ${interface})_options
 
 	    if list_search detectnets $options; then
-		subnets=`get_routed_subnets $interface`
+		subnets=$(get_routed_subnets $interface)
 	    else
 		subnets=0.0.0.0/0
 	    fi
@@ -628,8 +628,8 @@ validate_interfaces_file() {
 	esac
 
 	all_interfaces="$all_interfaces $interface"
-	options=`separate_list $options`
-	iface=`chain_base $interface`
+	options=$(separate_list $options)
+	iface=$(chain_base $interface)
 
 	eval ${iface}_broadcast="$subnet"
 	eval ${iface}_zone="$z"
@@ -687,8 +687,8 @@ validate_hosts_file() {
 
 	hosts=${hosts#*:}
 
-	for host in `separate_list $hosts`; do
-	    for option in `separate_list $options`; do
+	for host in $(separate_list $hosts); do
+	    for option in $(separate_list $options); do
 		case $option in
 		    maclist|-)
 			;;
@@ -711,7 +711,7 @@ validate_hosts_file() {
 #
 mac_match() # $1 = MAC address formated as described above
 {
-    echo "--match mac --mac-source `echo $1 | sed 's/~//;s/-/:/g'`"
+    echo "--match mac --mac-source $(echo $1 | sed 's/~//;s/-/:/g')"
 }
 
 #
@@ -845,16 +845,16 @@ validate_policy()
 #
 find_broadcasts() {
     for interface in $all_interfaces; do
-	eval bcast=\$`chain_base $interface`_broadcast
+	eval bcast=\$$(chain_base $interface)_broadcast
 	if [ "x$bcast" = "xdetect" ]; then
-	    addr="`ip -f inet addr show $interface 2> /dev/null`"
-	    if [ -n "`echo "$addr" | grep 'inet.*brd '`" ]; then
-		addr="`echo "$addr" | \
-		grep "inet " | sed 's/^.* inet.*brd //;s/scope.*//'`"
+	    addr="$(ip -f inet addr show $interface 2> /dev/null)"
+	    if [ -n "$(echo "$addr" | grep 'inet.*brd ')" ]; then
+		addr="$(echo "$addr" | \
+		grep "inet " | sed 's/^.* inet.*brd //;s/scope.*//')"
 		echo $addr | cut -d' ' -f 1
 	    fi
 	elif [ "x${bcast}" != "x-" ]; then
-	    echo `separate_list $bcast`
+	    echo $(separate_list $bcast)
 	fi
     done
 }
@@ -868,7 +868,7 @@ find_interface_address() # $1 = interface
     #
     # get the line of output containing the first IP address
     #
-    addr=`ip -f inet addr show $1 2> /dev/null | grep inet | head -n1`
+    addr=$(ip -f inet addr show $1 2> /dev/null | grep inet | head -n1)
     #
     # If there wasn't one, bail out now
     #
@@ -895,7 +895,7 @@ find_interface_addresses() # $1 = interface
 find_interfaces_by_option() # $1 = option
 {
     for interface in $all_interfaces; do
-	eval options=\$`chain_base ${interface}`_options
+	eval options=\$$(chain_base ${interface})_options
 	list_search $1 $options && echo $interface
     done
 }
@@ -909,18 +909,18 @@ find_hosts_by_option() # $1 = option
 
     while read ignore hosts options; do
 	expandv options
-	if list_search $1 `separate_list $options`; then
+	if list_search $1 $(separate_list $options); then
 	    expandv hosts
 	    interface=${hosts%:*}
 	    addresses=${hosts#*:}
-	    for address in `separate_list $addresses`; do 
+	    for address in $(separate_list $addresses); do 
 		echo $interface:$address
 	    done
 	fi
     done < $TMP_DIR/hosts
 
     for interface in $all_interfaces; do
-	eval options=\$`chain_base ${interface}`_options
+	eval options=\$$(chain_base ${interface})_options
 	list_search $1 $options && \
 	    echo ${interface}:0.0.0.0/0
     done
@@ -938,7 +938,7 @@ have_interfaces_in_zone_with_option() # $1 = zone, $2 = option
     local interface
 
     for interface in $all_interfaces; do
-	eval z=\$`chain_base ${interface}`_zone
+	eval z=\$$(chain_base $interface)_zone
 
 	[ "x$z" = "x$zne" ] && \
 	    list_search $1 $options && \
@@ -961,7 +961,7 @@ deleteallchains() {
 #
 run_user_exit() # $1 = file name
 {
-    local user_exit=`find_file $1`
+    local user_exit=$(find_file $1)
 
     if [ -f $user_exit ]; then
 	echo "Processing $user_exit ..."
@@ -989,10 +989,10 @@ log_rule_limit() # $1 = log level, $2 = chain, $3 = disposition , $4 = rate limi
 
 	case $level in
 	    ULOG)
-		eval iptables -A $chain $@ $limit -j ULOG $LOGPARMS --ulog-prefix '"`printf "$LOGFORMAT" $chain $rulenum $disposition`"'
+		eval iptables -A $chain $@ $limit -j ULOG $LOGPARMS --ulog-prefix '"$(printf "$LOGFORMAT" $chain $rulenum $disposition)"'
 		;;
 	    *)
-		eval iptables -A $chain $@ $limit -j LOG $LOGPARMS --log-level $level --log-prefix '"`printf "$LOGFORMAT" $chain $rulenum $disposition`"'
+		eval iptables -A $chain $@ $limit -j LOG $LOGPARMS --log-level $level --log-prefix '"$(printf "$LOGFORMAT" $chain $rulenum $disposition)"'
 		;;
 	esac
 	
@@ -1006,10 +1006,10 @@ log_rule_limit() # $1 = log level, $2 = chain, $3 = disposition , $4 = rate limi
     else
 	case $level in
 	    ULOG)
-		eval iptables -A $chain $@ $limit -j ULOG $LOGPARMS --ulog-prefix '"`printf "$LOGFORMAT" $chain $disposition`"'
+		eval iptables -A $chain $@ $limit -j ULOG $LOGPARMS --ulog-prefix '"$(printf "$LOGFORMAT" $chain $disposition)"'
 		;;
 	    *)
-		eval iptables -A $chain $@ $limit -j LOG $LOGPARMS --log-level $level --log-prefix '"`printf "$LOGFORMAT" $chain $disposition`"'
+		eval iptables -A $chain $@ $limit -j LOG $LOGPARMS --log-level $level --log-prefix '"$(printf "$LOGFORMAT" $chain $disposition)"'
 		;;
 	esac
 	
@@ -1108,7 +1108,7 @@ stop_firewall() {
     while read interface host; do
 	expandv interface host
 	[ "x$host" = "x-" -o -z "$host" ] && host=0.0.0.0/0
-	for h in `separate_list $host`; do
+	for h in $(separate_list $host); do
 	    hosts="$hosts $interface:$h"
 	done
     done < $TMP_DIR/routestopped
@@ -1131,7 +1131,7 @@ stop_firewall() {
     [ -z "$ADMINISABSENTMINDED" ] && \
 	iptables -A OUTPUT -o lo -j ACCEPT
 
-    for interface in `find_interfaces_by_option dhcp`; do
+    for interface in $(find_interfaces_by_option dhcp); do
 	iptables -A INPUT  -p udp -i $interface --dport 67:68 -j ACCEPT
 	[ -z "$ADMINISABSENTMINDED" ] && \
 	    iptables -A OUTPUT -p udp -o $interface --dport 67:68 -j ACCEPT
@@ -1204,7 +1204,7 @@ setup_tunnels() # $1 = name of tunnels file
 	    run_iptables -A $inchain  -p udp -s $1 --dport 4500 $options
 	fi
 
-	for z in `separate_list $3`; do
+	for z in $(separate_list $3); do
 	    if validate_zone $z; then
 		addrule ${FW}2${z} -p udp --sport 500 --dport 500 $options
 		if [ $2 = ipsec ]; then
@@ -1290,7 +1290,7 @@ setup_tunnels() # $1 = name of tunnels file
 	addrule $inchain  -p $protocol -s $1 $p -j ACCEPT
 	addrule $outchain -p $protocol -d $1 $p -j ACCEPT
 
-	for z in `separate_list $3`; do
+	for z in $(separate_list $3); do
 	    if validate_zone $z; then
 		addrule ${FW}2${z} -p $protocol $p -j ACCEPT
 		addrule ${z}2${FW} -p $protocol $p -j ACCEPT
@@ -1307,7 +1307,7 @@ setup_tunnels() # $1 = name of tunnels file
 
     while read kind z gateway z1; do
 	expandv kind z gateway z1
-	tunnel="`echo $kind $z $gateway $z1`"
+	tunnel="$(echo $kind $z $gateway $z1)"
 	if validate_zone $z; then
 	    inchain=${z}2${FW}
 	    outchain=${FW}2${z}
@@ -1425,7 +1425,7 @@ setup_proxy_arp() {
 	setup_one_proxy_arp
     done < $TMP_DIR/proxyarp
 
-    interfaces=`find_interfaces_by_option proxyarp`
+    interfaces=$(find_interfaces_by_option proxyarp)
 
     for interface in $interfaces; do
 	if echo 1 > /proc/sys/net/ipv4/conf/$interface/proxy_arp 2> /dev/null; then
@@ -1478,7 +1478,7 @@ setup_mac_lists() {
 		;;
 	esac
 
-	createchain `mac_chain $interface` no
+	createchain $(mac_chain $interface) no
     done
     #
     # Process the maclist file producing the verification rules
@@ -1487,18 +1487,18 @@ setup_mac_lists() {
     while read interface mac addresses; do
 	expandv interface mac addresses
 
-	chain=`mac_chain $interface`
+	chain=$(mac_chain $interface)
 
 	if ! havechain $chain ; then
 	    fatal_error "No hosts on $interface have the maclist option specified"
 	fi
 
-	macpart=`mac_match $mac`
+	macpart=$(mac_match $mac)
 
 	if [ -z "$addresses" ]; then
 	    run_iptables -A $chain $macpart -j RETURN
 	else
-	    for address in `separate_list $addresses` ; do
+	    for address in $(separate_list $addresses) ; do
 		run_iptables2 -A $chain $macpart -s $address -j RETURN
 	    done
 	fi
@@ -1508,9 +1508,9 @@ setup_mac_lists() {
     # chains
     #
     for interface in $maclist_interfaces; do
-	chain=`mac_chain $interface`
+	chain=$(mac_chain $interface)
 
-	blob=`ip link show $interface 2> /dev/null`
+	blob=$(ip link show $interface 2> /dev/null)
 
 	[ -z "$blob" ] && \
 	    fatal_error "Interface $interface must be up before Shorewall can start"
@@ -1536,9 +1536,9 @@ setup_mac_lists() {
     for hosts in $maclist_hosts; do
 	interface=${hosts%:*}
 	hosts=${hosts#*:}
-	for chain in `first_chains $interface` ; do
+	for chain in $(first_chains $interface) ; do
 	    run_iptables -A $chain -s $hosts -m state --state NEW \
-		-j `mac_chain $interface`
+		-j $(mac_chain $interface)
 	done
     done
 }
@@ -1593,7 +1593,7 @@ delete_proxy_arp() {
 
     [ -d ${STATEDIR} ] && touch ${STATEDIR}/proxyarp
 
-    for f in `ls /proc/sys/net/ipv4/conf/*/proxy_arp`; do
+    for f in $(ls /proc/sys/net/ipv4/conf/*/proxy_arp); do
 	echo 0 > $f
     done
 }
@@ -1628,9 +1628,9 @@ setup_nat() {
 		    -j DNAT --to-destination $internal
 	    fi
 	elif [ -z "$allints" -o "$allints" = "No" -o "$allints" = "no" ]; then        
-	    addnatrule `input_chain $iface` \
+	    addnatrule $(input_chain $iface) \
 		-d $external -j DNAT --to-destination $internal
-	    addnatrule `output_chain $iface` \
+	    addnatrule $(output_chain $iface) \
 		-s $internal -j SNAT --to-source $external
 	else
 	    fatal_error "Invalid value ($allints) for ALL INTERFACES in entry \"$external $interface $internal $allints $localnet\""
@@ -1683,7 +1683,7 @@ setup_ecn() # $1 = file name
 	list_search $interface $interfaces || \
 	    interfaces="$interfaces $interface"
 	[ "x$host" = "x-" ] && host=
-	for h in `separate_list ${host:-0.0.0.0/0}`; do
+	for h in $(separate_list ${host:-0.0.0.0/0}); do
 	    hosts="$hosts $interface:$h"
 	done
     done < $TMP_DIR/ecn
@@ -1692,7 +1692,7 @@ setup_ecn() # $1 = file name
 	echo "Setting up ECN control on${interfaces}..."
 
 	for interface in $interfaces; do
-	    chain=`ecn_chain $interface`
+	    chain=$(ecn_chain $interface)
 	    if mangle_chain_exists $chain; then
 		flushmangle $chain
 	    else
@@ -1705,7 +1705,7 @@ setup_ecn() # $1 = file name
 	for host in $hosts; do
 	    interface=${host%:*}
 	    h=${host#*:}
-	    run_iptables -t mangle -A `ecn_chain $interface` -p tcp -d $h -j ECN --ecn-tcp-remove
+	    run_iptables -t mangle -A $(ecn_chain $interface) -p tcp -d $h -j ECN --ecn-tcp-remove
 	    echo "   ECN Disabled to $h through $interface"
 	done
     fi
@@ -1728,7 +1728,7 @@ process_tc_rule()
 		    r="-s $source "
 		    ;;
 		~*)
-		    r="`mac_match $source` "
+		    r="$(mac_match $source) "
 		    ;;
 		$FW)
 		    chain=tcout
@@ -1791,10 +1791,10 @@ process_tc_rule()
 	mark="${mark%:*}"
     fi
 
-    for source in `separate_list ${sources:=-}`; do
-	for dest in `separate_list ${dests:=-}`; do
-	    for port in `separate_list ${ports:=-}`; do
-		for sport in `separate_list ${sports:=-}`; do
+    for source in $(separate_list ${sources:=-}); do
+	for dest in $(separate_list ${dests:=-}); do
+	    for port in $(separate_list ${ports:=-}); do
+		for sport in $(separate_list ${sports:=-}); do
 		    add_a_tc_rule
 		done
 	    done
@@ -1822,7 +1822,7 @@ setup_tc1() {
 
     while read mark sources dests proto ports sports user; do
 	expandv mark sources dests proto ports sports user
-	rule=`echo "$mark $sources $dests $proto $ports $sports $user"`
+	rule=$(echo "$mark $sources $dests $proto $ports $sports $user")
 	process_tc_rule
     done < $TMP_DIR/tcrules
     #
@@ -2056,7 +2056,7 @@ check_config() {
 
     echo "Validating rules file..."
 
-    rules=`find_file rules`
+    rules=$(find_file rules)
     strip_file rules $rules
     process_rules
 
@@ -2093,7 +2093,7 @@ refresh_tc() {
 
         while read mark sources dests proto ports sports; do
 	    expandv mark sources dests proto ports sports
-	    rule=`echo "$mark $sources $dests $proto $ports $sports"`
+	    rule=$(echo "$mark $sources $dests $proto $ports $sports")
 	    process_tc_rule
         done < $TMP_DIR/tcrules
 
@@ -2157,7 +2157,7 @@ add_an_action()
 	cli="-s $client"
 	;;
     ~*)
-	cli=`mac_match $client`
+	cli=$(mac_match $client)
 	;;
     *)
 	[ -n "$client" ] && cli="-i $client"
@@ -2226,11 +2226,11 @@ add_an_action()
 
     if [ $command != check ]; then
        if [ -n "${serv}" ]; then
-	    for serv1 in `separate_list $serv`; do
-		for srv in `ip_range $serv1`; do
+	    for serv1 in $(separate_list $serv); do
+		for srv in $(ip_range $serv1); do
 		    if [ -n "$loglevel" ]; then
 			log_rule_limit $loglevel $action $logtarget "$ratelimit" $userandgroup \
-			    `fix_bang $proto $sports $multiport $state $cli -d $srv $dports`
+			    $(fix_bang $proto $sports $multiport $state $cli -d $srv $dports)
 		    fi
 		    
 		    run_iptables2 -A $action $proto $multiport $state $cli $sports \
@@ -2240,7 +2240,7 @@ add_an_action()
 	else
 	    if [ -n "$loglevel" ]; then
 		log_rule_limit $loglevel $action $logtarget "$ratelimit" $userandgroup \
-		    `fix_bang $proto $sports $multiport $state $cli $dports`
+		    $(fix_bang $proto $sports $multiport $state $cli $dports)
 	    fi
 		    
 	    run_iptables2 -A $action $proto $multiport $state $cli $sports \
@@ -2271,7 +2271,7 @@ process_action() # $1 = action
     local cports="$7"
     local ratelimit="$8"
     local userspec="$9"
-    local rule="`echo $target $clients $servers $protocol $ports $cports $ratelimit`"
+    local rule="$(echo $target $clients $servers $protocol $ports $cports $ratelimit)"
     local userandgroup=
 
     if [ -n "$ratelimit" ]; then
@@ -2348,16 +2348,16 @@ process_action() # $1 = action
 	! list_search $protocol "icmp" "ICMP" "1" && \
 	[ "$ports" = "${ports%:*}" -a \
 	"$cports" = "${cports%:*}" -a \
-	`list_count $ports` -le 15 -a \
-	`list_count $cports` -le 15 ]
+	$(list_count $ports) -le 15 -a \
+	$(list_count $cports) -le 15 ]
 	then
 	#
 	# MULTIPORT is enabled, there are no port ranges in the rule and less than
 	# 16 ports are listed - use multiport match.
 	#
 	multioption="-m multiport"
-	for client in `separate_list ${clients:=-}`; do
-	    for server in `separate_list ${servers:=-}`; do
+	for client in $(separate_list ${clients:=-}); do
+	    for server in $(separate_list ${servers:=-}); do
 		#
 		# add_a_rule() modifies these so we must set their values each time
 		#
@@ -2371,10 +2371,10 @@ process_action() # $1 = action
 	# MULTIPORT is disabled or the rule isn't compatible with multiport match
 	#
 	multioption=
-	for client in `separate_list ${clients:=-}`; do
-	    for server in `separate_list ${servers:=-}`; do
-		for port in `separate_list ${ports:=-}`; do
-		    for cport in `separate_list ${cports:=-}`; do
+	for client in $(separate_list ${clients:=-}); do
+	    for server in $(separate_list ${servers:=-}); do
+		for port in $(separate_list ${ports:=-}); do
+		    for cport in $(separate_list ${cports:=-}); do
 			add_an_action
 		    done
 		done
@@ -2463,7 +2463,7 @@ process_actions() {
 	fi
 
 	f=action.$xaction
-	fn=`find_file $f`
+	fn=$(find_file $f)
 
 	if [ -f $fn ]; then
 	    echo "Processing $fn..."
@@ -2479,7 +2479,7 @@ process_actions() {
 			if list_search $temp $ACTIONS; then
 			    do_it
 			else
-			    rule="`echo $xtarget $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec`"
+			    rule="$(echo $xtarget $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec)"
 			    fatal_error "Invalid TARGET in rule \"$rule\""
 			fi
 			;;
@@ -2543,13 +2543,13 @@ add_nat_rule() {
 	    if [ -n "$DETECT_DNAT_IPADDRS" -a "$source" != "$FW" ]; then
 		eval interfaces=\$${source}_interfaces
 		for interface in $interfaces; do
-		    addr=${addr:+$addr,}`find_interface_address $interface`
+		    addr=${addr:+$addr,}$(find_interface_address $interface)
 		done
 	    fi
 	    ;;
 	!*)
-	    if [ `list_count $addr` -gt 1 ]; then
-		excludedests="`separate_list ${addr#\!}`"
+	    if [ $(list_count $addr) -gt 1 ]; then
+		excludedests="$(separate_list ${addr#\!})"
 		addr=
 	    fi
 	    ;;
@@ -2562,7 +2562,7 @@ add_nat_rule() {
     if [ -n "$serv" ]; then
 	servport="${servport:+:$servport}"
 	serv1=
-	for srv in `separate_list $serv`; do
+	for srv in $(separate_list $serv); do
 	    serv1="$serv1 --to-destination ${srv}${servport}"
 	done
 	target1="DNAT $serv1"
@@ -2583,7 +2583,7 @@ add_nat_rule() {
 		nonat_seq=$(($nonat_seq + 1))
 		createnatchain $chain
 
-		for adr in `separate_list $addr`; do
+		for adr in $(separate_list $addr); do
 		    run_iptables2 -t nat -A OUTPUT $cli $proto $userandgroup $multiport $sports $dports -d $adr -j $chain
 		done
 
@@ -2597,25 +2597,25 @@ add_nat_rule() {
 
 		addnatrule $chain $ratelimit $proto -j $target1 # Protocol is necessary for port redirection
 	    else
-		for adr in `separate_list $addr`; do
+		for adr in $(separate_list $addr); do
 		    if [ -n "$loglevel" ]; then
 			log_rule_limit $loglevel $OUTPUT $logtarget "$ratelimit" -t nat \
-			    `fix_bang $proto $cli $sports $userandgroup -d $adr $multiport $dports`
+			    $(fix_bang $proto $cli $sports $userandgroup -d $adr $multiport $dports)
 		    fi
 
 		    run_iptables2 -t nat -A OUTPUT $ratelimit $proto $sports $userandgroup -d $adr $multiport $dports -j $target1
 		done
 	    fi
 	else
-	    chain=`dnat_chain $source`
+	    chain=$(dnat_chain $source)
 
 	    if [ -n "${excludezones}${excludedests}" ]; then
 		chain=nonat${nonat_seq}
 		nonat_seq=$(($nonat_seq + 1))
 		createnatchain $chain
 
-		for adr in `separate_list $addr`; do
-		    addnatrule `dnat_chain $source` $cli $proto $multiport $sports $dports -d $adr -j $chain
+		for adr in $(separate_list $addr); do
+		    addnatrule $(dnat_chain $source) $cli $proto $multiport $sports $dports -d $adr -j $chain
 		done
 
 		for z in $excludezones; do
@@ -2635,11 +2635,11 @@ add_nat_rule() {
 
 		addnatrule $chain $ratelimit $proto -j $target1 # Protocol is necessary for port redirection
 	    else
-		for adr in `separate_list $addr`; do
+		for adr in $(separate_list $addr); do
 		    if [ -n "$loglevel" ]; then
 			ensurenatchain $chain
 			log_rule_limit $loglevel $chain $logtarget "$ratelimit" -t nat \
-			    `fix_bang $proto $cli $sports -d $adr $multiport $dports`
+			    $(fix_bang $proto $cli $sports -d $adr $multiport $dports)
 		    fi
 		    
 		    addnatrule $chain $proto $ratelimit $cli $sports \
@@ -2663,14 +2663,14 @@ add_nat_rule() {
 
     if [ -n "$snat" ]; then
 	if [ -n "$cli" ]; then
-	    [ $command = check ] || addnatrule `snat_chain $dest` $proto $cli $multiport \
+	    [ $command = check ] || addnatrule $(snat_chain $dest) $proto $cli $multiport \
 		$sports -d $serv $dports -j SNAT --to-source $snat
 	else
 	    for source_host in $source_hosts; do
 		[ "x${source_host#*:}" = "x0.0.0.0/0" ] && \
 		    error_message "Warning: SNAT will occur on all connections to this server and port - rule \"$rule\""
 
-		[ $command = check ] || addnatrule `snat_chain $dest` \
+		[ $command = check ] || addnatrule $(snat_chain $dest) \
 		    -s ${source_host#*:} $proto $sports $multiport \
 		    -d $serv $dports -j SNAT --to-source $snat
 	    done
@@ -2738,7 +2738,7 @@ add_a_rule()
 	cli="-s $client"
 	;;
     ~*)
-	cli=`mac_match $client`
+	cli=$(mac_match $client)
 	;;
     *)
 	[ -n "$client" ] && cli="-i $client"
@@ -2847,13 +2847,13 @@ add_a_rule()
 
 	    if [ -z "$dnat_only" -a $chain != ${FW}2${FW} ]; then
 		if [ -n "$serv" ]; then
-		    for serv1 in `separate_list $serv`; do
-			for srv in `ip_range $serv1`; do
+		    for serv1 in $(separate_list $serv); do
+			for srv in $(ip_range $serv1); do
 			    if [ -n "$addr" -a -n "$CONNTRACK_MATCH" ]; then
-				for adr in `separate_list $addr`; do
+				for adr in $(separate_list $addr); do
 				    if [ -n "$loglevel" -a -z "$natrule" ]; then
 					log_rule_limit $loglevel $chain $logtarget "$ratelimit" -m conntrack --ctorigdst $adr \
-					    $userandgroup `fix_bang $proto $sports $multiport $state $cli -d $srv $dports`
+					    $userandgroup $(fix_bang $proto $sports $multiport $state $cli -d $srv $dports)
 				    fi
 
 				    run_iptables2 -A $chain $proto $ratelimit $multiport $state $cli $sports \
@@ -2862,7 +2862,7 @@ add_a_rule()
 			    else
 				if [ -n "$loglevel" -a -z "$natrule" ]; then
 				    log_rule_limit $loglevel $chain $logtarget "$ratelimit" $userandgroup \
-					`fix_bang $proto $sports $multiport $state $cli -d $srv $dports`
+					$(fix_bang $proto $sports $multiport $state $cli -d $srv $dports)
 				fi
 
 				run_iptables2 -A $chain $proto $multiport $state $cli $sports \
@@ -2873,7 +2873,7 @@ add_a_rule()
 		else
 		    if [ -n "$loglevel" -a -z "$natrule" ]; then
 		        log_rule_limit $loglevel $chain $logtarget "$ratelimit" $userandgroup \
-			    `fix_bang $proto $sports $multiport $state $cli $dports`
+			    $(fix_bang $proto $sports $multiport $state $cli $dports)
 		    fi
 
 		    run_iptables2 -A $chain $proto $multiport $state $cli $sports \
@@ -2892,7 +2892,7 @@ add_a_rule()
 	if [ $command != check ]; then
 	    if [ -n "$loglevel" ]; then
 		log_rule_limit $loglevel $chain $logtarget "$ratelimit" $userandgroup \
-		    `fix_bang $proto $multiport $dest_interface $state $cli $sports $dports`
+		    $(fix_bang $proto $multiport $dest_interface $state $cli $sports $dports)
 	    fi
 
 	    if [ $logtarget != LOG ]; then
@@ -2926,7 +2926,7 @@ process_rule() # $1 = target
     local ratelimit="$8"
     local userspec="$9"
     local userandgroup=
-    local rule="`echo $target $clients $servers $protocol $ports $cports $address $ratelimit $userspec`"
+    local rule="$(echo $target $clients $servers $protocol $ports $cports $address $ratelimit $userspec)"
 
     # Function Body - isolate rate limit
 
@@ -3130,15 +3130,15 @@ process_rule() # $1 = target
 	       ! list_search $protocol "icmp" "ICMP" "1" && \
 	       [ "$ports" = "${ports%:*}" -a \
 		"$cports" = "${cports%:*}" -a \
-		`list_count $ports` -le 15 -a \
-		`list_count $cports` -le 15 ]
+		$(list_count $ports) -le 15 -a \
+		$(list_count $cports) -le 15 ]
 		then
 	        #
 	        # MULTIPORT is enabled, there are no port ranges in the rule and less than
 	        # 16 ports are listed - use multiport match.
 	        #
 		multioption="-m multiport"
-		for client in `separate_list ${clients:=-}`; do
+		for client in $(separate_list ${clients:=-}); do
 		    #
 		    # add_a_rule() modifies these so we must set their values each time
 		    #
@@ -3152,9 +3152,9 @@ process_rule() # $1 = target
 	        # MULTIPORT is disabled or the rule isn't compatible with multiport match
 	        #
 		multioption=
-		for client in `separate_list ${clients:=-}`; do
-		    for port in `separate_list ${ports:=-}`; do
-			for cport in `separate_list ${cports:=-}`; do
+		for client in $(separate_list ${clients:=-}); do
+		    for port in $(separate_list ${ports:=-}); do
+			for cport in $(separate_list ${cports:=-}); do
 			    server=${servers:=-}
 			    add_a_rule
 			done
@@ -3168,16 +3168,16 @@ process_rule() # $1 = target
 	       ! list_search $protocol "icmp" "ICMP" "1" && \
 	       [ "$ports" = "${ports%:*}" -a \
 		"$cports" = "${cports%:*}" -a \
-		`list_count $ports` -le 15 -a \
-		`list_count $cports` -le 15 ]
+		$(list_count $ports) -le 15 -a \
+		$(list_count $cports) -le 15 ]
 		then
 	        #
 	        # MULTIPORT is enabled, there are no port ranges in the rule and less than
 	        # 16 ports are listed - use multiport match.
 	        #
 		multioption="-m multiport"
-		for client in `separate_list ${clients:=-}`; do
-		    for server in `separate_list ${servers:=-}`; do
+		for client in $(separate_list ${clients:=-}); do
+		    for server in $(separate_list ${servers:=-}); do
 		        #
 		        # add_a_rule() modifies these so we must set their values each time
 		        #
@@ -3191,10 +3191,10 @@ process_rule() # $1 = target
 	        # MULTIPORT is disabled or the rule isn't compatible with multiport match
 	        #
 		multioption=
-		for client in `separate_list ${clients:=-}`; do
-		    for server in `separate_list ${servers:=-}`; do
-			for port in `separate_list ${ports:=-}`; do
-			    for cport in `separate_list ${cports:=-}`; do
+		for client in $(separate_list ${clients:=-}); do
+		    for server in $(separate_list ${servers:=-}); do
+			for port in $(separate_list ${ports:=-}); do
+			    for cport in $(separate_list ${cports:=-}); do
 				add_a_rule
 			    done
 			done
@@ -3269,7 +3269,7 @@ process_rules()
 		if list_search $temp $ACTIONS; then
 		    do_it
 		else
-		    rule="`echo $xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec`"
+		    rule="$(echo $xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec)"
 		    fatal_error "Invalid Action in rule \"$rule\""
 		fi
 		;;
@@ -3321,7 +3321,7 @@ process_tos_rule() {
 	    src="-s $src"
 	    ;;
 	~*)
-	    src=`mac_match $src`
+	    src=$(mac_match $src)
 	    ;;
 	*)
 	    #
@@ -3456,7 +3456,7 @@ process_tos() # $1 = name of tos file
 
     while read src dst protocol sport dport tos; do
 	expandv src dst protocol sport dport tos
-	rule="`echo $src $dst $protocol $sport $dport $tos`"
+	rule="$(echo $src $dst $protocol $sport $dport $tos)"
 	process_tos_rule
     done < $TMP_DIR/tos
 
@@ -3473,7 +3473,7 @@ loadmodule() # $1 = module name, $2 - * arguments
     local modulefile
     local suffix
 
-    if [ -z "`lsmod | grep $modulename`" ]; then
+    if [ -z "$(lsmod | grep $modulename)" ]; then
 	shift
 	
 	for suffix in $MODULE_SUFFIX ; do
@@ -3752,15 +3752,15 @@ setup_masq()
 	*.*.*)
 	    ;;
 	*)
-	    subnets=`get_routed_subnets $subnet`
+	    subnets=$(get_routed_subnets $subnet)
 	    [ -z "$subnets" ] && fatal_error "Unable to determine the routes through interface $subnet"
 	    subnet="$subnets"
 	    ;;
 	esac
 
 	if [ -n "$addresses" -a -n "$ADD_SNAT_ALIASES" ]; then
-	    for address in `separate_list $addresses`; do
-		for addr in `ip_range_explicit $address` ; do
+	    for address in $(separate_list $addresses); do
+		for addr in $(ip_range_explicit $address) ; do
 		    if ! list_search $addr $aliases_to_add; then
 			aliases_to_add="$aliases_to_add $addr $fullinterface"
 			case $fullinterface in
@@ -3775,7 +3775,7 @@ setup_masq()
 
 	destination=$destnets
 
-	chain=`masq_chain $interface`
+	chain=$(masq_chain $interface)
 
 	case $destnets in
 	    !*)
@@ -3801,7 +3801,7 @@ setup_masq()
 		destnets=0.0.0.0/0
 
 		if [ -n "$nonmasq" ]; then
-		    for addr in `separate_list $nomasq`; do
+		    for addr in $(separate_list $nomasq); do
 			addnatrule $chain -s $addr -j RETURN
 		    done
 		    source="$source except $nomasq"
@@ -3829,7 +3829,7 @@ setup_masq()
 		    subnet=
 		    destnets=0.0.0.0/0
 		    
-		    for addr in `separate_list $nomasq`; do
+		    for addr in $(separate_list $nomasq); do
 			addnatrule $chain -s $addr -j RETURN
 		    done
 
@@ -3840,7 +3840,7 @@ setup_masq()
 
 	if [ -n "$addresses" ]; then
 	    temp=
-	    for address in `separate_list $addresses`; do
+	    for address in $(separate_list $addresses); do
 		temp="$temp --to-source $address"
 	    done
 	fi
@@ -3893,7 +3893,7 @@ setup_masq()
 #
 add_blacklist_rule() {
     if [ -n "$BLACKLIST_LOGLEVEL" ]; then
-	log_rule $BLACKLIST_LOGLEVEL blacklst $BLACKLIST_DISPOSITION  `fix_bang $source $proto $dport`
+	log_rule $BLACKLIST_LOGLEVEL blacklst $BLACKLIST_DISPOSITION  $(fix_bang $source $proto $dport)
     fi
 
     run_iptables2 -A blacklst $source $proto $dport -j $disposition
@@ -3912,10 +3912,10 @@ process_blacklist_rec() {
     local proto
     local dport
 
-    for addr in `separate_list $subnet`; do
+    for addr in $(separate_list $subnet); do
 	case $addr in
 	~*)
-	    addr=`echo $addr | sed 's/~//;s/-/:/g'`
+	    addr=$(echo $addr | sed 's/~//;s/-/:/g')
 	    source="--match mac --mac-source $addr"
 	    ;;
 	*)
@@ -3932,12 +3932,12 @@ process_blacklist_rec() {
 			if [ -n "$MULTIPORT" -a \
 			    "$ports" != "${ports%,*}" -a \
 			    "$ports" = "${ports%:*}" -a \
-			    `list_count $ports` -le 15 ]
+			    $(list_count $ports) -le 15 ]
 			then
 			    dport="-m multiport --dports $ports"
 			    add_blacklist_rule
 			else
-			    for dport in `separate_list $ports`; do
+			    for dport in $(separate_list $ports); do
 				dport="--dport $dport"
 				add_blacklist_rule
 			    done
@@ -3948,7 +3948,7 @@ process_blacklist_rec() {
 		    ;;
 		icmp|ICMP|0)
 		    if [ -n "$ports" ]; then
-			for dport in `separate_list $ports`; do
+			for dport in $(separate_list $ports); do
 			    dport="--icmp-type $dport"
 			    add_blacklist_rule
 			done
@@ -3978,8 +3978,8 @@ process_blacklist_rec() {
 # Setup the Black List
 #
 setup_blacklist() {
-    local interfaces=`find_interfaces_by_option blacklist`
-    local f=`find_file blacklist`
+    local interfaces=$(find_interfaces_by_option blacklist)
+    local f=$(find_file blacklist)
     local disposition=$BLACKLIST_DISPOSITION
 
     if [ -n "$interfaces" -a -f $f ]; then
@@ -3992,7 +3992,7 @@ setup_blacklist() {
 	[ -n "$BLACKLISTNEWONLY" ] && state="-m state --state NEW" || state=
 	
 	for interface in $interfaces; do
-	    for chain in `first_chains $interface`; do
+	    for chain in $(first_chains $interface); do
 		run_iptables -A $chain $state -j blacklst
 	    done
 
@@ -4013,7 +4013,7 @@ setup_blacklist() {
 # Refresh the Black List
 #
 refresh_blacklist() {
-    local f=`find_file blacklist`
+    local f=$(find_file blacklist)
     local disposition=$BLACKLIST_DISPOSITION
 
     if qt iptables -L blacklst -n ; then
@@ -4037,7 +4037,7 @@ refresh_blacklist() {
 #
 verify_os_version() {
 
-    osversion=`uname -r`
+    osversion=$(uname -r)
 
     case $osversion in
     2.4.*|2.5.*|2.6.*)
@@ -4047,7 +4047,7 @@ verify_os_version() {
 	;;
     esac
 
-    [ $command = start -a -n "`lsmod 2> /dev/null | grep '^ipchains'`" ] && \
+    [ $command = start -a -n "$(lsmod 2> /dev/null | grep '^ipchains')" ] && \
 	startup_error "Shorewall can't start with the ipchains kernel module loaded - see FAQ #8"
 }
 
@@ -4073,7 +4073,7 @@ add_ip_aliases()
 	    case $cidr in
 		*/*)
 		    if in_subnet $external $cidr; then
-			echo "/${cidr#*/} brd `broadcastaddress $cidr`"
+			echo "/${cidr#*/} brd $(broadcastaddress $cidr)"
 			break
 		    fi
 		    ;;
@@ -4083,7 +4083,7 @@ add_ip_aliases()
 
     do_one()
     {
-	val=`address_details`
+	val=$(address_details)
 	run_ip addr add ${external}${val} dev $interface $label
 	echo "$external $interface" >> ${STATEDIR}/nat
 	[ -n "$label" ] && label="with $label"
@@ -4105,7 +4105,7 @@ add_ip_aliases()
 
 	shift;shift
 
-	list_search $external `find_interface_addresses $interface` || do_one
+	list_search $external $(find_interface_addresses $interface) || do_one
     done
 }
 
@@ -4117,7 +4117,7 @@ load_kernel_modules() {
     [ -z "$MODULESDIR" ] && \
 	MODULESDIR=/lib/modules/$osversion/kernel/net/ipv4/netfilter
 
-    modules=`find_file modules`
+    modules=$(find_file modules)
 
     if [ -f $modules -a -d $MODULESDIR ]; then
 	echo "Loading Modules..."
@@ -4250,7 +4250,7 @@ initialize_netfilter () {
     run_iptables -A INPUT  -i lo -j ACCEPT
     run_iptables -A OUTPUT -o lo -j ACCEPT
 
-    accounting_file=`find_file accounting`
+    accounting_file=$(find_file accounting)
 
     [ -f $accounting_file ] && setup_accounting $accounting_file
 
@@ -4271,7 +4271,7 @@ initialize_netfilter () {
     if [ -z "$NEWNOTSYN" ]; then
 	createchain newnotsyn no
 
-	for interface in `find_interfaces_by_option newnotsyn`; do
+	for interface in $(find_interfaces_by_option newnotsyn); do
 	    run_iptables -A newnotsyn -i $interface -p tcp --tcp-flags ACK ACK -j ACCEPT
 	    run_iptables -A newnotsyn -i $interface -p tcp --tcp-flags RST RST -j ACCEPT
 	    run_iptables -A newnotsyn -i $interface -p tcp --tcp-flags FIN FIN -j ACCEPT
@@ -4313,10 +4313,10 @@ initialize_netfilter () {
     echo "Creating Interface Chains..."
 
     for interface in $all_interfaces; do
-	createchain `forward_chain $interface` no
-	run_iptables -A `forward_chain $interface` $state -j dynamic
-	createchain `input_chain $interface`   no
-	run_iptables -A `input_chain $interface` $state -j dynamic
+	createchain $(forward_chain $interface) no
+	run_iptables -A $(forward_chain $interface) $state -j dynamic
+	createchain $(input_chain $interface)   no
+	run_iptables -A $(input_chain $interface) $state -j dynamic
     done
 }
 
@@ -4373,14 +4373,14 @@ add_common_rules() {
     #
     # SMURFS
     #
-    interfaces=`find_interfaces_by_option nosmurfs`
+    interfaces=$(find_interfaces_by_option nosmurfs)
 
     if [ -n "$interfaces" ]; then
 	
 	echo "Adding Anti-smurf Rules"
 
 	for interface in $interfaces; do
-	    for chain in `first_chains $interface`; do
+	    for chain in $(first_chains $interface); do
 		run_iptables -A $chain  -m state --state NEW -j smurfs
 	    done
 	done
@@ -4388,21 +4388,21 @@ add_common_rules() {
     #
     # DHCP
     #
-    interfaces=`find_interfaces_by_option dhcp`
+    interfaces=$(find_interfaces_by_option dhcp)
 
     if [ -n "$interfaces" ]; then
 
 	echo "Adding rules for DHCP"
 
 	for interface in $interfaces; do
-	    run_iptables -A `input_chain $interface` -p udp --dport 67:68 -j ACCEPT
+	    run_iptables -A $(input_chain $interface) -p udp --dport 67:68 -j ACCEPT
 	    run_iptables -A OUTPUT    -o $interface  -p udp --dport 67:68 -j ACCEPT
 	done
     fi
     #
     # RFC 1918
     #
-    norfc1918_interfaces="`find_interfaces_by_option norfc1918`"
+    norfc1918_interfaces="$(find_interfaces_by_option norfc1918)"
 
     if [ -n "$norfc1918_interfaces" ]; then
 	echo "Enabling RFC1918 Filtering"
@@ -4461,7 +4461,7 @@ add_common_rules() {
 	done < $TMP_DIR/rfc1918
 
 	for interface in $norfc1918_interfaces; do
-	    for chain in `first_chains $interface`; do
+	    for chain in $(first_chains $interface); do
 		run_iptables -A $chain -m state --state NEW -j norfc1918
 	    done
 
@@ -4471,7 +4471,7 @@ add_common_rules() {
 
     fi
 
-    interfaces=`find_interfaces_by_option tcpflags`
+    interfaces=$(find_interfaces_by_option tcpflags)
 
     if [ -n "$interfaces" ]; then
 	echo "Setting up TCP Flags checking..."
@@ -4515,7 +4515,7 @@ add_common_rules() {
 	run_iptables -A tcpflags -p tcp --syn --sport 0             $disposition
 
 	for interface in $interfaces; do
-	    for chain in `first_chains $interface`; do
+	    for chain in $(first_chains $interface); do
 		run_iptables -A $chain -p tcp -j tcpflags
 	    done
 	done
@@ -4527,7 +4527,7 @@ add_common_rules() {
 	echo 0 > $f
     done
 
-    interfaces=`find_interfaces_by_option arp_filter`
+    interfaces=$(find_interfaces_by_option arp_filter)
 
     if [ -n "$interfaces" ]; then
 	echo "Setting up ARP Filtering..."
@@ -4545,7 +4545,7 @@ add_common_rules() {
     #
     # Route Filtering
     #
-    interfaces="`find_interfaces_by_option routefilter`"
+    interfaces="$(find_interfaces_by_option routefilter)"
 
     if [ -n "$interfaces" -o -n "$ROUTE_FILTER" ]; then
 	echo "Setting up Kernel Route Filtering..."
@@ -4680,8 +4680,8 @@ activate_rules()
     addnatjump POSTROUTING nat_out
 
     for interface in $all_interfaces; do
-	addnatjump PREROUTING  `input_chain $interface`	 -i $interface
-	addnatjump POSTROUTING `output_chain $interface` -o $interface
+	addnatjump PREROUTING  $(input_chain $interface)	 -i $interface
+	addnatjump POSTROUTING $(output_chain $interface) -o $interface
     done
 
     > ${STATEDIR}/chains
@@ -4692,8 +4692,8 @@ activate_rules()
 
 	echo $zone $source_hosts >> ${STATEDIR}/zones
 
-	chain1=`rules_chain $FW $zone`
-	chain2=`rules_chain $zone $FW`
+	chain1=$(rules_chain $FW $zone)
+	chain2=$(rules_chain $zone $FW)
 
 	eval complex=\$${zone}_is_complex
 
@@ -4716,17 +4716,17 @@ activate_rules()
 	    #
 	    # Add jumps from the builtin chains for DNAT and SNAT rules
 	    #
-	    addrulejump PREROUTING  `dnat_chain $zone` -i $interface -s $subnet
-	    addrulejump POSTROUTING `snat_chain $zone` -o $interface -d $subnet
+	    addrulejump PREROUTING  $(dnat_chain $zone) -i $interface -s $subnet
+	    addrulejump POSTROUTING $(snat_chain $zone) -o $interface -d $subnet
 
-	    run_iptables -A `input_chain $interface` -s $subnet -j $chain2
+	    run_iptables -A $(input_chain $interface) -s $subnet -j $chain2
 
 	    [ -n "$complex" ] && \
-		run_iptables -A `forward_chain $interface` -s $subnet -j $frwd_chain
+		run_iptables -A $(forward_chain $interface) -s $subnet -j $frwd_chain
 
 	    if [ "$subnet" != 0.0.0.0/0 ]; then
 		if ! list_search $interface $need_broadcast ; then
-		    eval options=\$`chain_base ${interface}`_options
+		    eval options=\$$(chain_base ${interface})_options
 		    list_search detectnets $options && need_broadcast="$need_broadcast $interface"
 		fi
 	    fi
@@ -4746,7 +4746,7 @@ activate_rules()
 
 	    eval dest_hosts=\$${zone1}_hosts
 
-	    chain="`rules_chain $zone $zone1`"
+	    chain="$(rules_chain $zone $zone1)"
 
 	    echo "$zone $zone1 $chain" >> ${STATEDIR}/chains
 
@@ -4760,7 +4760,7 @@ activate_rules()
 		for host1 in $dest_hosts; do
 		    interface1=${host1%:*}
 		    subnet1=${host1#*:}
-		    if [ `list_count1 $source_hosts` -eq 1 -a "$source_hosts" = "$host1" ]; then
+		    if [ $(list_count1 $source_hosts) -eq 1 -a "$source_hosts" = "$host1" ]; then
 			if list_search $host1 $routeback; then
 			    run_iptables -A $frwd_chain -o $interface1 -d $subnet1 -j $chain
 			fi
@@ -4772,7 +4772,7 @@ activate_rules()
 		for host in $source_hosts; do
 		    interface=${host%:*}
 
-		    chain1=`forward_chain $interface`
+		    chain1=$(forward_chain $interface)
 
 		    for host1 in $dest_hosts; do
 			interface1=${host1%:*}
@@ -4788,9 +4788,9 @@ activate_rules()
     done
 
     for interface in $all_interfaces; do
-       run_iptables -A FORWARD -i $interface -j `forward_chain $interface`
-       run_iptables -A INPUT   -i $interface -j `input_chain $interface`
-       addnatjump POSTROUTING `masq_chain $interface` -o $interface
+       run_iptables -A FORWARD -i $interface -j $(forward_chain $interface)
+       run_iptables -A INPUT   -i $interface -j $(input_chain $interface)
+       addnatjump POSTROUTING $(masq_chain $interface) -o $interface
     done
 
     chain=${FW}2${FW}
@@ -4865,18 +4865,18 @@ define_firewall() # $1 = Command (Start or Restart)
 
     add_common_rules
 
-    tunnels=`find_file tunnels`
+    tunnels=$(find_file tunnels)
 
     [ -f $tunnels ] && \
 	echo "Processing $tunnels..." && setup_tunnels $tunnels
 
-    maclist_hosts=`find_hosts_by_option maclist`
+    maclist_hosts=$(find_hosts_by_option maclist)
 
     if [ -n "$maclist_hosts" ] ; then
 	setup_mac_lists
     fi
 
-    rules=`find_file rules`
+    rules=$(find_file rules)
 
     echo "Processing Actions..."
 
@@ -4886,21 +4886,21 @@ define_firewall() # $1 = Command (Start or Restart)
 
     process_rules
 
-    policy=`find_file policy`
+    policy=$(find_file policy)
 
     echo "Processing $policy..."
 
     apply_policy_rules
 
-    masq=`find_file masq`
+    masq=$(find_file masq)
 
     [ -f $masq ] && setup_masq $masq
 
-    tos=`find_file tos`
+    tos=$(find_file tos)
 
     [ -f $tos ] && [ -n "$MANGLE_ENABLED" ] && process_tos $tos
 
-    ecn=`find_file ecn`
+    ecn=$(find_file ecn)
 
     [ -f $ecn ] && [ -n "$MANGLE_ENABLED" ] && setup_ecn $ecn
 
@@ -4949,7 +4949,7 @@ refresh_firewall()
     #
     refresh_blacklist
 
-    ecn=`find_file ecn`
+    ecn=$(find_file ecn)
 
     [ -f $ecn ] && [ -n "$MANGLE_ENABLED" ] && setup_ecn $ecn
     #
@@ -4982,7 +4982,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
     }
 
     output_rule_num() {
-	local num=`iptables -L OUTPUT -n --line-numbers | grep icmp | cut -d' ' -f1 | head -n1`
+	local num=$(iptables -L OUTPUT -n --line-numbers | grep icmp | cut -d' ' -f1 | head -n1)
 
 	[ -n "$num" ] && echo $(($num+1))
     }
@@ -5013,16 +5013,16 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
     #
     # Be sure that the interface was present at last [re]start
     #
-    if ! chain_exists `input_chain $interface` ; then
+    if ! chain_exists $(input_chain $interface) ; then
 	startup_error "Unknown interface $interface"
     fi
     #
     # Build lists of interfaces with special rules
     #
-    dhcp_interfaces=`find_interfaces_by_option dhcp`
-    blacklist_interfaces=`find_interfaces_by_option blacklist`
-    maclist_interfaces=`find_interfaces_by_option maclist`
-    tcpflags_interfaces=`find_interfaces_by_option tcpflags`
+    dhcp_interfaces=$(find_interfaces_by_option dhcp)
+    blacklist_interfaces=$(find_interfaces_by_option blacklist)
+    maclist_interfaces=$(find_interfaces_by_option maclist)
+    tcpflags_interfaces=$(find_interfaces_by_option tcpflags)
     #
     # Normalize the first argument to this function
     #
@@ -5088,17 +5088,17 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		    rulenum=$(($rulenum + 1))
 		fi
 
-		do_iptables -I `input_chain $interface` $rulenum -s $host -j $chain
+		do_iptables -I $(input_chain $interface) $rulenum -s $host -j $chain
 	    else
 		#
 		# Insert rules into the passed interface's forward chain
 		#
 		# We insert them after any blacklist/MAC verification rules
 		#
-		source_chain=`forward_chain $interface`
+		source_chain=$(forward_chain $interface)
 		eval dest_hosts=\"\$${z2}_hosts\"
 
-		base=`chain_base $interface`
+		base=$(chain_base $interface)
 
 		eval rulenum=\$${base}_rulenum
 
@@ -5136,7 +5136,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		#
 		# Add a rule to the OUTPUT chain -- always after the icmp * ACCEPT rule
 		#
-		do_iptables -I OUTPUT `output_rule_num` -o $interface -d $host -j $chain
+		do_iptables -I OUTPUT $(output_rule_num) -o $interface -d $host -j $chain
 	    else
 		#
 		# Insert rules into the source interface's forward chain
@@ -5149,7 +5149,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		    iface=${h%:*}
 		    hosts=${h#*:}
 
-		    base=`chain_base $iface`
+		    base=$(chain_base $iface)
 
 		    eval rulenum=\$${base}_rulenum
 
@@ -5162,7 +5162,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		    fi
 
 		    if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
-			do_iptables -I `forward_chain $iface` $rulenum -s $hosts -o $interface -d $host -j $chain
+			do_iptables -I $(forward_chain $iface) $rulenum -s $hosts -o $interface -d $host -j $chain
 			rulenum=$(($rulenum + 1))
 		    fi
 
@@ -5233,7 +5233,7 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
     #
     # Be sure that the interface was present at last [re]start
     #
-    if ! chain_exists `input_chain $interface` ; then
+    if ! chain_exists $(input_chain $interface) ; then
 	startup_error "Unknown interface $interface"
     fi
     #
@@ -5243,7 +5243,7 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
     #
     # Delete the passed hosts from the zone state file
     #
-    [ -z "`delete_from_zones_file`" ] && \
+    [ -z "$(delete_from_zones_file)" ] && \
 	error_message "Warning: $1 does not appear to be in zone $2"
     #
     # Construct the zone host maps
@@ -5263,9 +5263,9 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
     while read z1 z2 chain; do
 	if [ "$z1" = "$zone" ]; then
 	    if [ "$z2" = "$FW" ]; then
-		qt iptables -D `input_chain $interface` -s $host -j $chain
+		qt iptables -D $(input_chain $interface) -s $host -j $chain
 	    else
-		source_chain=`forward_chain $interface`
+		source_chain=$(forward_chain $interface)
 		eval dest_hosts=\"\$${z2}_hosts\"
 
 		for h in $dest_hosts $delhost; do
@@ -5288,7 +5288,7 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		    hosts=${h#*:}
 
 		    if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
-			qt iptables -D `forward_chain $iface` -s $hosts -o $interface -d $host -j $chain
+			qt iptables -D $(forward_chain $iface) -s $hosts -o $interface -d $host -j $chain
 		    fi
 		done
 	    fi
@@ -5427,11 +5427,11 @@ do_initialize() {
 
     VERSION_FILE=$SHARED_DIR/version
 
-    [ -f $VERSION_FILE ] && version=`cat $VERSION_FILE`
+    [ -f $VERSION_FILE ] && version=$(cat $VERSION_FILE)
 
     run_user_exit params
 
-    config=`find_file shorewall.conf`
+    config=$(find_file shorewall.conf)
 
     if [ -f $config ]; then
 	echo "Processing $config..."
@@ -5451,11 +5451,11 @@ do_initialize() {
 
     [ -z "$FW" ] && FW=fw
 
-    ALLOWRELATED="`added_param_value_yes ALLOWRELATED $ALLOWRELATED`"
+    ALLOWRELATED="$(added_param_value_yes ALLOWRELATED $ALLOWRELATED)"
     [ -n "$ALLOWRELATED" ] || \
 	startup_error "ALLOWRELATED=No is not supported"
-    ADD_IP_ALIASES="`added_param_value_yes ADD_IP_ALIASES $ADD_IP_ALIASES`"
-    TC_ENABLED="`added_param_value_yes TC_ENABLED $TC_ENABLED`"
+    ADD_IP_ALIASES="$(added_param_value_yes ADD_IP_ALIASES $ADD_IP_ALIASES)"
+    TC_ENABLED="$(added_param_value_yes TC_ENABLED $TC_ENABLED)"
 
     if [ -n "${LOGRATE}${LOGBURST}" ]; then
 	LOGLIMIT="--match limit"
@@ -5481,15 +5481,15 @@ do_initialize() {
 
     [ -z "$BLACKLIST_DISPOSITION" ] && BLACKLIST_DISPOSITION=DROP
 
-    CLAMPMSS=`added_param_value_no CLAMPMSS $CLAMPMSS`
-    ADD_SNAT_ALIASES=`added_param_value_no ADD_SNAT_ALIASES $ADD_SNAT_ALIASES`
-    ROUTE_FILTER=`added_param_value_no ROUTE_FILTER $ROUTE_FILTER`
-    DETECT_DNAT_IPADDRS=`added_param_value_no DETECT_DNAT_IPADDRS $DETECT_DNAT_IPADDRS`
-    FORWARDPING=`added_param_value_no FORWARDPING $FORWARDPING`
+    CLAMPMSS=$(added_param_value_no CLAMPMSS $CLAMPMSS)
+    ADD_SNAT_ALIASES=$(added_param_value_no ADD_SNAT_ALIASES $ADD_SNAT_ALIASES)
+    ROUTE_FILTER=$(added_param_value_no ROUTE_FILTER $ROUTE_FILTER)
+    DETECT_DNAT_IPADDRS=$(added_param_value_no DETECT_DNAT_IPADDRS $DETECT_DNAT_IPADDRS)
+    FORWARDPING=$(added_param_value_no FORWARDPING $FORWARDPING)
     [ -n "$FORWARDPING" ] && \
 	startup_error "FORWARDPING=Yes is no longer supported"
 
-    NEWNOTSYN=`added_param_value_yes NEWNOTSYN $NEWNOTSYN`
+    NEWNOTSYN=$(added_param_value_yes NEWNOTSYN $NEWNOTSYN)
 
     maclist_target=reject
 
@@ -5521,23 +5521,23 @@ do_initialize() {
     fi
 
     [ -z "$RFC1918_LOG_LEVEL" ] && RFC1918_LOG_LEVEL=info
-    MARK_IN_FORWARD_CHAIN=`added_param_value_no MARK_IN_FORWARD_CHAIN $MARK_IN_FORWARD_CHAIN`
+    MARK_IN_FORWARD_CHAIN=$(added_param_value_no MARK_IN_FORWARD_CHAIN $MARK_IN_FORWARD_CHAIN)
     [ -n "$MARK_IN_FORWARD_CHAIN" ] && marking_chain=tcfor || marking_chain=tcpre
     if [ -n "$TC_ENABLED" ]; then
-	CLEAR_TC=`added_param_value_yes CLEAR_TC $CLEAR_TC`
+	CLEAR_TC=$(added_param_value_yes CLEAR_TC $CLEAR_TC)
     else
 	CLEAR_TC=
     fi
     
     if [ -n "$LOGFORMAT" ]; then
-	if [ -n "`echo $LOGFORMAT | grep '%d'`" ]; then
+	if [ -n "$(echo $LOGFORMAT | grep '%d')" ]; then
 	    LOGRULENUMBERS=Yes
-	    temp=`printf "$LOGFORMAT" fooxx 1 barxx 2> /dev/null`
+	    temp=$(printf "$LOGFORMAT" fooxx 1 barxx 2> /dev/null)
 	    if [ $? -ne 0 ]; then
 		startup_error "Invalid LOGFORMAT string: \"$LOGFORMAT\""
 	    fi
 	else
-	    temp=`printf "$LOGFORMAT" fooxx barxx 2> /dev/null`
+	    temp=$(printf "$LOGFORMAT" fooxx barxx 2> /dev/null)
 	    if [ $? -ne 0 ]; then
 		startup_error "Invalid LOGFORMAT string: \"$LOGFORMAT\""
 	    fi
@@ -5549,8 +5549,8 @@ do_initialize() {
     else
 	LOGFORMAT="Shorewall:%s:%s:"
     fi
-    ADMINISABSENTMINDED=`added_param_value_no ADMINISABSENTMINDED $ADMINISABSENTMINDED`
-    BLACKLISTNEWONLY=`added_param_value_no BLACKLISTNEWONLY $BLACKLISTNEWONLY`
+    ADMINISABSENTMINDED=$(added_param_value_no ADMINISABSENTMINDED $ADMINISABSENTMINDED)
+    BLACKLISTNEWONLY=$(added_param_value_no BLACKLISTNEWONLY $BLACKLISTNEWONLY)
     [ -n "$MODULE_SUFFIX" ] || MODULE_SUFFIX="o gz ko o.gz"
 
     #
@@ -5563,8 +5563,8 @@ do_initialize() {
     #
     [ -n "$SHOREWALL_SHELL" ] || SHOREWALL_SHELL=/bin/sh
 
-    temp=`decodeaddr 192.168.1.1` 
-    if [ `encodeaddr $temp` != 192.168.1.1 ]; then
+    temp=$(decodeaddr 192.168.1.1) 
+    if [ $(encodeaddr $temp) != 192.168.1.1 ]; then
 	startup_error "Shell $SHOREWALL_SHELL is broken and may not be used with Shorewall"
     fi
 }
@@ -5641,7 +5641,7 @@ case "$command" in
 
     status)
 	[ $# -ne 1 ] && usage
-	echo "Shorewall-$version Status at $HOSTNAME - `date`"
+	echo "Shorewall-$version Status at $HOSTNAME - $(date)"
 	echo
 	iptables -L -n -v
 	;;

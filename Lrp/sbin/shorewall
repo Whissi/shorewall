@@ -348,7 +348,16 @@ monitor_firewall() # $1 = timeout -- if negative, prompt each time that
 	timeout=$1
     fi
 
-    qt which awk && { haveawk=Yes; determine_zones; } || haveawk=
+
+    if qt which awk; then
+	TMP_DIR=/tmp/shorewall-$$
+	mkdir $TMP_DIR
+	haveawk=Yes
+	determine_zones
+	rm -rf $TMP_DIR
+    else
+	haveawk=
+    fi
 
     while true; do
 	display_chains
@@ -756,7 +765,7 @@ case "$1" in
 
 	    echo "   HITS  PORT SERVICE(S)"
 	    echo "   ---- ----- ----------"
-	    grep '${LOGFORMAT}.*DPT' $LOGFILE | sed 's/\(.*DPT=\)\([0-9]\{1,5\}\)\(.*\)/\2/' | sort | uniq -c | sort -rn | \
+	    grep "$LOGFORMAT.*DPT" $LOGFILE | sed 's/\(.*DPT=\)\([0-9]\{1,5\}\)\(.*\)/\2/' | sort | uniq -c | sort -rn | \
 	    while read count port ; do
 		# List all services defined for the given port
 		srv=`grep "^[^#].*\\b$port/" /etc/services | cut -f 1 | sort -u`
@@ -776,7 +785,7 @@ case "$1" in
     try)
 	[ -n "$SHOREWALL_DIR" ] && startup_error "Error: -c option may not be used with \"try\""
 	[ $# -lt 2 -o $# -gt 3 ] && usage 1
-	if ! $0 -c $2 restart; then
+	if ! $0 $debugging -c $2 restart; then
 	    if ! iptables -L shorewall > /dev/null 2> /dev/null; then
 		$0 start
 	    fi

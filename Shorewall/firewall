@@ -2960,14 +2960,16 @@ setup_intrazone() # $1 = zone
 #
 add_blacklist_rule() {
     if [ -n "$BLACKLIST_LOGLEVEL" ]; then
-	run_iptables2 -A blacklst $source $proto $dport -j \
-	    ULOG $LOGPARMS --ulog-prefix \
-	    "Shorewall:blacklst:$BLACKLIST_DISPOSITION:"
-    else
-	run_iptables2 -A blacklst $source $proto $dport -j \
-	    LOG $LOGPARMS --log-prefix \
-	    "Shorewall:blacklst:$BLACKLIST_DISPOSITION:" \
-	    --log-level $BLACKLIST_LOGLEVEL
+	if [ "$BLACKLIST_LOGLEVEL" = ULOG ]; then
+	    run_iptables2 -A blacklst $source $proto $dport -j \
+		ULOG $LOGPARMS --ulog-prefix \
+		"Shorewall:blacklst:$BLACKLIST_DISPOSITION:"
+	else
+	    run_iptables2 -A blacklst $source $proto $dport -j \
+		LOG $LOGPARMS --log-prefix \
+		"Shorewall:blacklst:$BLACKLIST_DISPOSITION:" \
+		--log-level $BLACKLIST_LOGLEVEL
+	fi
     fi
 
     run_iptables2 -A blacklst $source $proto $dport -j $disposition

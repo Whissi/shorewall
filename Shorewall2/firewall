@@ -889,19 +889,6 @@ validate_interfaces_file() {
 	    case $option in
 		dhcp|norfc1918|nobogons|tcpflags|newnotsyn|arp_filter|routefilter|blacklist|proxyarp|maclist|nosmurfs|-)
 		    ;;
-		dropunclean|logunclean)
-		    if [ -z "$found_obsolete_option" ]; then
-			found_obsolete_option=yes
-			error_message \
-			    "WARNING: The 'dropunclean' and 'logunclean' options are not supported by Shorewall 2.0"
-			error_message \
-			    "         PLEASE STAND BY WHILE SHOREWALL REFORMATS YOUR HARD DRIVE TO REMOVE THESE OPTIONS..."
-			sleep 5
-			error_message "GOTCHA!!!! :-)"
-			error_message \
-			    "         Now please remove these options from your interfaces file -- Thanks"
-		    fi
-		    ;;
 		detectnets)
 		    [ -n "$wildcard" ] && \
 			startup_error "The \"detectnets\" option may not be used with a wild-card interface"

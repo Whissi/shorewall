@@ -1,5 +1,5 @@
 %define name shorewall
-%define version 1.3.8
+%define version 1.3.9
 %define release 1
 %define prefix /usr
 
@@ -40,10 +40,28 @@ export GROUP=`id -n -g` ;\
 rm -rf $RPM_BUILD_ROOT
 
 %post
-if [ -x /sbin/insserv ]; then /sbin/insserv /etc/rc.d/shorewall; elif [ -x /sbin/chkconfig ]; then /sbin/chkconfig --add shorewall;  fi
+
+if [ $1 -eq 1 ]; then
+    echo \
+"########################################################################
+#      REMOVE THIS FILE AFTER YOU HAVE CONFIGURED SHOREWALL            #
+########################################################################" > /etc/shorewall/startup_disabled
+fi
+
+if [ -x /sbin/insserv ]; then 
+	/sbin/insserv /etc/rc.d/shorewall
+elif [ -x /sbin/chkconfig ]; then
+	/sbin/chkconfig --add shorewall; 
+fi
 
 %preun
-if [ $1 = 0 ]; then if [ -x /sbin/insserv ]; then /sbin/insserv -r /etc/init.d/shorewall ; elif [ -x /sbin/chkconfig ]; then /sbin/chkconfig --del shorewall; fi ; fi
+if [ $1 = 0 ]; then
+	if [ -x /sbin/insserv ]; then
+		/sbin/insserv -r /etc/init.d/shorewall
+	elif [ -x /sbin/chkconfig ]; then
+		/sbin/chkconfig --del shorewall
+	fi
+fi
 
 %files 
 /etc/init.d/shorewall
@@ -76,6 +94,8 @@ if [ $1 = 0 ]; then if [ -x /sbin/insserv ]; then /sbin/insserv -r /etc/init.d/s
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel
 
 %changelog
+* Thu Sep 18 2002 Tom Eastep <tom@shorewall.net>
+- Changed version to 1.3.8
 * Mon Sep 16 2002 Tom Eastep <tom@shorewall.net>
 - Changed version to 1.3.8
 * Mon Sep 02 2002 Tom Eastep <tom@shorewall.net>

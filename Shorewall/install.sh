@@ -54,7 +54,7 @@
 #        /etc/rc.d/rc.local file is modified to start the firewall.
 #
 
-VERSION=1.3.8
+VERSION=1.3.9
 
 usage() # $1 = exit status
 {
@@ -493,7 +493,13 @@ if [ -z "$PREFIX" -a -n "$first_install" ]; then
     else
        modify_rclocal
     fi
+
+    echo \
+"########################################################################
+#      REMOVE THIS FILE AFTER YOU HAVE CONFIGURED SHOREWALL            #
+########################################################################" > /etc/shorewall/startup_disabled
 fi
+
 #
 #  Report Success
 #

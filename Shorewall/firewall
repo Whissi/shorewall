@@ -3252,6 +3252,15 @@ activate_rules()
 ################################################################################
 define_firewall() # $1 = Command (Start or Restart)
 {
+    if [ -f /etc/shorewall/startup_disabled ]; then
+	echo "   Shorewall Startup is disabled -- to enable startup"
+	echo "   after you have completed Shorewall configuration,"
+	echo "   remove the file /etc/shorewall/startup_disabled"
+
+	my_mutex_off
+	exit 2
+    fi
+
     echo "${1}ing Shorewall..."
 
     verify_os_version

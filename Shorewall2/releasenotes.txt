@@ -21,7 +21,8 @@ Problems Corrected since 2.0.1
 
 Problems Corrected since 2.0.2 Beta 2
 
-None.
+1) A missing '#' in the rules file caused errors when processing the
+   file.
 
 -----------------------------------------------------------------------
 Issues when migrating from Shorewall 2.0.0 to Shorewall 2.0.1:
@@ -218,5 +219,8 @@ New Features:
     NONAT      -- Exempts matching connections from subsequent DNAT[-]
                   and REDIRECT[-] rules.
 
-
-
+12) A new extension script 'initialized' has been added. This script is invoked
+    at the same point as the 'common' script was previously and is useful for
+    users who mis-used that script under Shorewall 1.x (the script was intended 
+    for adding rules to the 'common' chain but many users treated it as a script
+    for adding rules before Shorewall's).

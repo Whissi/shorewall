@@ -198,8 +198,10 @@ createchain() # $1 = chain name, $2 = If non-null, don't create default rules
 	state="ESTABLISHED"
 	[ -n "$ALLOWRELATED" ] && state="$state,RELATED"
 	run_iptables -A $1 -m state --state $state -j ACCEPT
-	[ -z "$NEWNOTSYN" ] && \
-	    run_iptables -A $1 -p TCP !--syn -m state --state NEW -j badnew
+	if [ -n "$NEWNOTSYN" ]; then
+	    CHAIN=$1
+	    . $NEWNOTSYN
+        fi
     fi
 
     eval ${1}_exists=Yes
@@ -2697,8 +2699,6 @@ initialize_netfilter () {
 
     [ -n "$TC_ENABLED" ] && delete_tc
 
-    run_user_exit init
-
     echo "Deleting user chains..."
 
     setpolicy INPUT DROP
@@ -2711,18 +2711,11 @@ initialize_netfilter () {
     setcontinue INPUT
     setcontinue OUTPUT
 
+    run_user_exit init
+
     [ -n "$CLAMPMSS" ] && \
 	run_iptables -A FORWARD -p tcp \
 	    --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
-
-    if [ -z "$NEWNOTSYN" ]; then
-	createchain badnew no
-	[ -n "$LOGNEWNOTSYN" ] && \
-	    run_iptables -A badnew -j LOG $LOGPARMS \
-	    --log-prefix "Shorewall:badnew:DROP:" \
-	    --log-level $LOGNEWNOTSYN
-	run_iptables -A badnew -j DROP
-    fi
 
     createchain icmpdef no
     createchain common	no
@@ -3399,8 +3392,6 @@ do_initialize() {
     DETECT_DNAT_IPADDRS=
     MERGE_HOSTS=
     MUTEX_TIMEOUT=
-    NEWNOTSYN=
-    LOGNEWNOTSYN=
     stopping=
     have_mutex=
     masq_seq=1
@@ -3477,7 +3468,10 @@ do_initialize() {
     MULTIPORT=`added_param_value_no MULTIPORT $MULTIPORT`
     DETECT_DNAT_IPADDRS=`added_param_value_no DETECT_DNAT_IPADDRS $DETECT_DNAT_IPADDRS`
     MERGE_HOSTS=`added_param_value_no MERGE_HOSTS $MERGE_HOSTS`
-    NEWNOTSYN=`added_param_value_yes NEWNOTSYN $NEWNOTSYN`
+
+    NEWNOTSYN=`find_file newnotsyn`
+
+    [ -f $NEWNOTSYN ] || NEWNOTSYN=
 }
 
 ################################################################################

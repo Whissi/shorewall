@@ -1,39 +1,20 @@
-This is a minor release of Shorewall.
+This is a minor release of Shorewall which rolls up a number of bug
+fixes.
 
-In this release:
+New features include:
 
-1. Empty and invalid source and destination qualifiers are now detected
-   in the rules file. It is a good idea to use the 'shorewall check'
-   command before you issue a 'shorewall restart' command be be sure
-   that you don't have any configuration problems that will prevent a
-   successful restart.
+1) The new "Shorewall Setup Guide" is included in this release. This
+   guide is intended for users who have multiple static external IP
+   addresses and for users who what to learn a bit more abound
+   Shorewall than is described in the single-address guides.
 
-2. Added MERGE_HOSTS variable in shorewall.conf to provide saner
-   behavior of the /etc/shorewall/hosts file.
+2) A new 'newnotsyn' extension script has been provided for the benefit
+   of those users who are experimenting with treatment of TCP packets
+   that are not part of or related to an existing connection and that
+   do not have the SYN flag set and the ACK flag reset. 
 
-3. The time that the counters were last reset is now displayed in the
-   heading of the 'status' and 'show' commands.
 
-4. Added MUTEX_TIMEOUT variable in shorewall.conf and changed the way
-   in which Shorewall protects itself from concurrent state
-   changes. 
+3) The 'init' extension script is now called AFTER all existing user
+   chains have been deleted. Previously, this script was called just
+   before the chains were deleted.
 
-   Previously, if a state-changing operation (like restart)
-   found a lock file, it would wait for 30 seconds for the lock file to
-   be removed. If the file was not removed within 30 seconds, a message
-   was issued and the operation was aborted. 
-
-   With the new code, the wait time is determined by the value of
-   MUTEX_TIMEOUT (default 60 seconds). If the file is not removed
-   within MUTEX_TIMEOUT, the state-changing operation will assume that
-   the lock file is stale and will issue a message and continue.
-
-   An appopriate setting for MUTEX_TIMEOUT is twice the time that it takes
-   your firewall system to process a "shorewall restart" command.
-
-5. Added 'proxyarp' interface option to facilitate Proxy ARP subnetting as
-   described in the Proxy ARP subnetting mini-HOWTO
-   (http://www.tldp.org/HOWTO/mini/Proxy-ARP-Subnet/)
-
-   Specifying this option for an interface causes Shorewall to set
-   /proc/sys/net/ipv4/conf/<interface>/proxy_arp.

@@ -31,10 +31,13 @@ to 2.x releases of Shorewall. For older versions:</p>
 <p>The current 2.0 Stable Release is 2.0.13 -- Here are the <a
  href="http://shorewall.net/pub/shorewall/2.0/shorewall-2.0.13/releasenotes.txt">release
 notes</a>.<br>
-The current Developement Release is 2.2.0 RC2 -- Here
+The current Developement Release is 2.2.0 RC3 -- Here
 are the <a
- href="http://shorewall.net/pub/shorewall/2.2-Beta/shorewall-2.2.0-RC2/releasenotes.txt">release
-notes</a>.</p>
+ href="http://shorewall.net/pub/shorewall/2.2-Beta/shorewall-2.2.0-RC3/releasenotes.txt">release
+notes</a> and here are the <a
+ href="http://shorewall.net/pub/shorewall/2.2-Beta/shorewall-2.2.0-RC3/known_problems.txt">known
+problems</a>.<br>
+</p>
 <p><a
  href="http://lists.shorewall.net/pipermail/shorewall-announce/2004-December/000451.html"><span
  style="font-weight: bold;">Preparing for Shorewall 2.2 -- End of
@@ -48,7 +51,7 @@ Foundation; with no Invariant Sections, with no Front-Cover, and with
 no Back-Cover Texts. A copy of the license is included in the section
 entitled “<a href="GnuCopyright.htm" target="_self">GNU
 Free Documentation License</a>”.</p>
-<p>2004-12-26</p>
+<p>2004-12-31</p>
 <hr>
 <h3>Table of Contents</h3>
 <p style="margin-left: 0.42in; margin-bottom: 0in;"><a href="#Intro">Introduction
@@ -63,7 +66,11 @@ Shorewall</a><br>
 Shorewall on Mandrake® with a two-interface setup?</a><br>
 <a href="#License">License</a></p>
 <p style="margin-bottom: 0in; margin-left: 40px;"><a href="#2_0_10">News</a></p>
-<p style="margin-left: 0.83in; margin-bottom: 0in;"><a href="#2_2_0_RC2">Shorewall
+<p style="margin-left: 0.83in; margin-bottom: 0in;"><a
+ href="#Redhat_Fedora">Redhat/Fedora-specific RPMs available</a><br>
+<a href="#2_2_0_RC3">Shorewall
+2.2.0 RC3</a><br>
+<a href="#2_2_0_RC2">Shorewall
 2.2.0 RC2</a><br>
 <a href="#2_2_0_RC1">Shorewall
 2.2.0 RC1</a><br>
@@ -174,7 +181,37 @@ of the license is included in the section entitled "GNU Free
 Documentation License". </p>
 <hr>
 <h2><a name="News"></a>News</h2>
-<span style="font-weight: bold;"><a name="2_2_0_RC2"></a>12/19/2004 -
+<span style="font-weight: bold;"><a name="Redhat_Fedora"></a>12/31/2004
+- Redhat/Fedora-specific RPMs available<br>
+</span><br>
+Simon Matter has graciously volunteered to provide RPMs taylored for
+Redhat and Fedora. You can download Simon's RPMs from <a
+ href="http://www.invoca.ch/pub/packages/shorewall/">http://www.invoca.ch/pub/packages/shorewall/</a><br>
+<br>
+Thanks, Simon!<br>
+<br>
+<span style="font-weight: bold;"><a name="2_2_0_RC3"></a>12/30/2004 -
+Shorewall 2.2.0 RC3<br>
+</span><br>
+Problems Corrected:<br>
+<ol>
+  <li>The following error message could appear during "shorewall stop"
+or "shorewall clear":<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+local: lo:: bad variable name<br>
+    <br>
+  </li>
+  <li>The rate limiting example in /etc/shorewall/rules has been
+changed to use the RATE LIMIT column.</li>
+  <li>Entries in /etc/shorewall/masq with the INTERFACE column
+containing &lt;ifname&gt;:: (e.g., "eth0::") would generate a progress
+message but would not generate an iptables rule.</li>
+  <li>A misleading typo in /etc/shorewall/tunnels has been corrected.<br>
+  </li>
+</ol>
+<span style="font-weight: bold;"><a name="2_2_0_RC2"></a>12/24/2004 -
 Shorewall 2.2.0 RC2<br>
 <br>
 </span>New Features:<br>

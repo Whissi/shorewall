@@ -6,7 +6,7 @@
 #
 #     (c) 2000,2001,2002,2003,2004 - Tom Eastep (teastep@shorewall.net)
 #
-#       Seawall documentation is available at http://seawall.sourceforge.net
+#       Shorewall documentation is available at http://shorewall.net
 #
 #       This program is free software; you can redistribute it and/or modify
 #       it under the terms of Version 2 of the GNU General Public License
@@ -21,47 +21,15 @@
 #       along with this program; if not, write to the Free Software
 #       Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
 #
-#    Usage:
-#
-#        If you are running a distribution that has a directory called /etc/rc.d/init.d or one
-#        called /etc/init.d or you are running Slackware then simply cd to the directory
-#        containing this script and run it.
-#
-#            ./install.sh
-#
-#        If you don't have either of those directories, you will need to determine where the
-#        SysVInit scripts are kept on your system and pass the name of that directory.
-#
-#            ./install.sh /etc/rc.d/scripts
-#
-#        The default is that the firewall will be started in run levels 2-5 starting at
-#        position 15 and stopping at position 90. This is correct RedHat/Mandrake, Debian,
-#        Caldera and Corel.
-#
-#        If you wish to change that, you can pass -r "<levels startpos stoppos>".
-#
-#        Example 1: You wish to start your firewall in runlevels 2 and three, start at position
-#                   15 and stop at position 90
-#
-#            ./install.sh -r "23 15 90"
-#
-#       Example 2: You wish to start your firewall only in run level 3, start at position 5
-#                  and stop at position 95.
-#
-#            ./install.sh -r "3 5 95" /etc/rc.d/scripts
-#
-#        For distributions that don't include chkconfig (Slackware, for example), the
-#        /etc/rc.d/rc.local file is modified to start the firewall.
-#
 
 VERSION=2.0.0-Beta3
 
 usage() # $1 = exit status
 {
     ME=$(basename $0)
-    echo "usage: $ME [ -r \"<chkconfig parameters>\" ] [ <init scripts directory> ]"
-    echo "       $ME [ -v ]"
-    echo "       $ME [ -h ]"
+    echo "usage: $ME
+    echo "       $ME -v"
+    echo "       $ME -h "
     exit $1
 }
 
@@ -133,34 +101,14 @@ fi
 while [ $# -gt 0 ] ; do
     case "$1" in
 	-h|help|?)
-	    if [ -n "$ARGS" ]; then
-		usage 1
-            fi
-
 	    usage 0
 	    ;;
-	-r)
-	    if [ -n "$RUNLEVELS" -o $# -eq 1 ]; then
-		usage 1
-	    fi
-
-	    RUNLEVELS="$2";
-	    shift
-	    ;;
         -v)
-	    if [ -n "$ARGS" ]; then
-		usage 1
-            fi
-
 	    echo "Shorewall Firewall Installer Version $VERSION"
 	    exit 0
 	    ;;
 	*)
-	    if [ -n "$DEST" ]; then
-		usage 1
-            fi
-
-	    DEST="$1"
+	    usage 1
 	    ;;
     esac
     shift

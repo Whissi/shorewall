@@ -702,7 +702,7 @@ verify_interface()
 is_ipsec_host() # $1 = zone, $2 = host
 {
     eval local is_ipsec=\$${1}_is_ipsec
-    eval local hosts=\"\$${1}_is_ipsec_hosts\"
+    eval local hosts=\"\$${1}_ipsec_hosts\"
 
     test -n "$is_ipsec" || list_search $2 $hosts
 }
@@ -925,7 +925,7 @@ validate_interfaces_file() {
 	    esac
 	done
 
-    [ -z "$ALL_INTERFACES" ] && startup_error "No Interfaces Defined"
+	[ -z "$ALL_INTERFACES" ] && startup_error "No Interfaces Defined"
 
     done < $TMP_DIR/interfaces
 }
@@ -943,68 +943,69 @@ validate_hosts_file() {
        list_search $1 $all_ports || all_ports="$all_ports $1"
    }
 
-    while read z hosts options; do
-	expandv z hosts options
-	r="$z $hosts $options"
-	validate_zone1 $z || startup_error "Invalid zone ($z) in record \"$r\""
+   while read z hosts options; do
+       expandv z hosts options
+       r="$z $hosts $options"
+       validate_zone1 $z || startup_error "Invalid zone ($z) in record \"$r\""
 
-	interface=${hosts%%:*}
-	iface=$(chain_base $interface)
+       interface=${hosts%%:*}
+       iface=$(chain_base $interface)
 
-	list_search  $interface $ALL_INTERFACES || \
-	    startup_error "Unknown interface ($interface) in record \"$r\""
+       list_search  $interface $ALL_INTERFACES || \
+	   startup_error "Unknown interface ($interface) in record \"$r\""
 
-	hosts=${hosts#*:}
+       hosts=${hosts#*:}
 
-	eval ports=\$${iface}_ports
-	eval zports=\$${z}_ports
+       eval ports=\$${iface}_ports
+       eval zports=\$${z}_ports
 		
-	for host in $(separate_list $hosts); do
+       for host in $(separate_list $hosts); do
+	   if [ -n "$BRIDGING" ]; then
+	       case $host in
+		   *:*)
+		       known_interface ${host%:*} && \
+			   startup_error "Bridged interfaces may not be defined in /etc/shorewall/interfaces: $host"
+		       check_bridge_port ${host%%:*}
+		       ;;
+		   *.*.*.*)
+		       ;;
+		   *)
+		       known_interface $host && \
+			   startup_error "Bridged interfaces may not be defined in /etc/shorewall/interfaces: $host"
+		       check_bridge_port $host
+		       ;;
+	       esac
+	   fi
 
-	    [ -n "$BRIDGING" ] && case $host in
-		*:*)
-		    known_interface ${host%:*} && \
-			startup_error "Bridged interfaces may not be defined in /etc/shorewall/interfaces: $host"
-		    check_bridge_port ${host%%:*}
-		    ;;
-		*.*.*.*)
-		    ;;
-		*)
-		    known_interface $host && \
-			startup_error "Bridged interfaces may not be defined in /etc/shorewall/interfaces: $host"
-		    check_bridge_port $host
-		    ;;
-	    esac
+	   for option in $(separate_list $options) ; do
+	       case $option in
+		   maclist|norfc1918|nobogons|blacklist|tcpflags|nosmurfs|newnotsyn|-)
+		       ;;
+		   ipsec)
+		       [ -n "$POLICY_MATCH" ] || \
+			   startup_error "Your kernel and/or iptables does not support policy match: ipsec"
+		       eval ${z}_ipsec_hosts=\"\$${z}_ipsec_hosts $interface:$host\"
+		       eval ${z}_is_complex=Yes
+		       ;;
+		   routeback)
+		       [ -z "$ports" ] && \
+			   eval ${z}_routeback=\"$interface:$host \$${z}_routeback\"
+		       ;;
+		   *)
+		       error_message "Warning: Invalid option ($option) in record \"$r\""
+		       ;;
+	       esac
+	   done
+       done
 
-	    for option in $(separate_list $options) ; do
-		case $option in
-		    maclist|norfc1918|nobogons|blacklist|tcpflags|nosmurfs|newnotsyn|-)
-			;;
-		    ipsec)
-			[ -n "$POLICY_MATCH" ] || \
-			    startup_error "Your kernel and/or iptables does not support policy match: ipsec"
-			eval ${z}_is_ipsec_hosts=\"\$${z}_is_ipsec_hosts $interface:$host\"
-			eval ${z}_is_complex=Yes
-			;;
-		    routeback)
-			[ -z "$ports" ] && \
-			    eval ${z}_routeback=\"$interface:$host \$${z}_routeback\"
-			;;
-		    *)
-			error_message "Warning: Invalid option ($option) in record \"$r\""
-			;;
-		esac
-	    done
-	done
+       if [ -n "$ports" ]; then
+	   eval ${iface}_ports=\"$ports\"
+	   eval ${z}_ports=\"$zports\"
+       fi
+       
+   done < $TMP_DIR/hosts
 
-	if [ -n "$ports" ]; then
-	    eval ${iface}_ports=\"$ports\"
-	    eval ${z}_ports=\"$zports\"
-	fi
-
-    done < $TMP_DIR/hosts
-
-    [ -n "$all_ports" ] && echo "   Bridge ports are: $all_ports"
+   [ -n "$all_ports" ] && echo "   Bridge ports are: $all_ports"
 }
 
 #

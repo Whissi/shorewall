@@ -27,6 +27,19 @@ Problems Corrected:
    tcrules file. Previously, these addresses resulted in an invalid
    iptables command.
 
+8) The "shorewall stop" command is now disabled when
+   /etc/shorewall/startup_disabled exists. This prevents people from
+   shooting themselves in the foot prior to having configured
+   Shorewall.
+
+9) A change introduced in version 1.4.6 caused error messages during
+   "shorewall [re]start" when ADD_IP_ALIASES=Yes and ip addresses were
+   being added to a PPP interface; the addresses were successfully
+   added in spite of the messages.
+   
+   The firewall script has been modified to eliminate the error
+   messages.
+
 Migration Issues:
 
 1) In earlier versions, an undocumented feature allowed entries in

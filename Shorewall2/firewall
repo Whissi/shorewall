@@ -5132,11 +5132,12 @@ setup_blacklist() {
 
 	[ "$disposition" = REJECT ] && disposition=reject
 
-	while read networks protocol ports; do
-	    expandv networks protocol ports
-	    process_blacklist_rec
-	done < $TMP_DIR/blacklist
-
+	if [ -n "$DELAYBLACKLISTLOAD" ]; then
+	    while read networks protocol ports; do
+		expandv networks protocol ports
+		process_blacklist_rec
+	    done < $TMP_DIR/blacklist
+	fi
     fi
 }
 
@@ -5148,7 +5149,7 @@ refresh_blacklist() {
     local disposition=$BLACKLIST_DISPOSITION
 
     if qt iptables -L blacklst -n ; then
-	echo "Refreshing Black List..."
+	echo "Loading Black List..."
 
 	strip_file blacklist $f
 
@@ -6278,6 +6279,8 @@ define_firewall() # $1 = Command (Start or Restart)
 
     run_user_exit start
 
+    [ -n "$DELAYBLACKLISTLOAD" ] &&          refresh_blacklist
+
     createchain shorewall no
 
     date > $STATEDIR/restarted
@@ -6761,6 +6764,7 @@ do_initialize() {
     DYNAMIC_ZONES=
     PKTTYPE=
     RETAIN_ALIASES=
+    DELAYBLACKLISTLOAD=
 
     RESTOREBASE=
     TMP_DIR=
@@ -6936,6 +6940,7 @@ do_initialize() {
     PKTTYPE=$(added_param_value_no PKTTYPE $PKTTYPE)
     STARTUP_ENABLED=$(added_param_value_yes STARTUP_ENABLED $STARTUP_ENABLED)
     RETAIN_ALIASES=$(added_param_value_no RETAIN_ALIASES $RETAIN_ALIASES)
+    DELAYBLACKLISTLOAD=$(added_param_value_no DELAYBLACKLISTLOAD $DELAYBLACKLISTLOAD)
     #
     # Strip the files that we use often
     #

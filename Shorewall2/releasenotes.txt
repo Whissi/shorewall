@@ -486,3 +486,12 @@ New Features:
     addresses added during "shorewall start" are still deleted at a
     subsequent "shorewall stop" or "shorewall restart".
 
+17) Users with a large black list (from /etc/shorewall/blacklist) may 
+    want to set the new DELAYBLACKLISTLOAD option in
+    shorewall.conf. When DELAYBLACKLISTLOAD=Yes, Shorewall will
+    enable new connections before loading the blacklist rules. While
+    this may allow connections from blacklisted hosts to slip by during
+    construction of the blacklist, it can substantially reduce the time
+    that all new connections are disabled during "shorewall [re]start".
+
+

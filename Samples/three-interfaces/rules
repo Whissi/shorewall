@@ -221,45 +221,33 @@
 #ACTION		SOURCE		DEST		PROTO	DEST	SOURCE	ORIGINAL
 #							PORT	PORT(S)	DEST
 #
-#	Accept DNS connections from the firewall to the network
+#	Accept DNS connections from the firewall to the Internet
 #
 ACCEPT		fw		net		tcp	53
 ACCEPT		fw		net		udp	53
 #
-#	Accept SSH connections from the local network for administration.
-#
-ACCEPT		loc		fw		tcp	22
-#
-##############################################################################
-#ACTION	SOURCE		DEST		PROTO	DEST	SOURCE	ORIGINAL
-#						PORT	PORT(S)	DEST
-#
-#	Accept outgoing DNS connections from the firewall
-#
-ACCEPT	fw		net		tcp	53
-ACCEPT	fw		net		udp	53
 #
 #	Accept SSH connections from the local network to the firewall and DMZ
 #
-ACCEPT	loc		fw		tcp	22
-ACCEPT	loc		dmz		tcp	22
+ACCEPT		loc		fw		tcp	22
+ACCEPT		loc		dmz		tcp	22
 #
-#	DMZ DNS access to the internet
+#	DMZ DNS access to the Internet
 #
-ACCEPT	dmz		net		tcp	53
-ACCEPT	dmz		net		udp	53
+ACCEPT		dmz		net		tcp	53
+ACCEPT		dmz		net		udp	53
 #
 #	Make ping work bi-directionally between the dmz, net, Firewall and local zone 
 #	(assumes that the loc-> net policy is ACCEPT).
 #
-ACCEPT	net		fw		icmp	8
-ACCEPT	loc		fw		icmp	8
-ACCEPT	dmz		fw		icmp	8
-ACCEPT	loc		dmz		icmp	8
-ACCEPT	dmz		loc		icmp	8
-ACCEPT	dmz		net		icmp	8
-ACCEPT	fw		loc		icmp	8
-ACCEPT	fw		dmz		icmp	8
-ACCEPT	net		dmz		icmp	8	# Only with Proxy ARP and
-ACCEPT	net		loc		icmp	8 	# static NAT
+ACCEPT		net		fw		icmp	8
+ACCEPT		loc		fw		icmp	8
+ACCEPT		dmz		fw		icmp	8
+ACCEPT		loc		dmz		icmp	8
+ACCEPT		dmz		loc		icmp	8
+ACCEPT		dmz		net		icmp	8
+ACCEPT		fw		loc		icmp	8
+ACCEPT		fw		dmz		icmp	8
+ACCEPT		net		dmz		icmp	8	# Only with Proxy ARP and
+ACCEPT		net		loc		icmp	8 	# static NAT
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

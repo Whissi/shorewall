@@ -4308,7 +4308,8 @@ case "$command" in
 
     status)
 	[ $# -ne 1 ] && usage
-	echo -e "Shorewall-$version Status at $HOSTNAME - `date`\\n"
+	echo "Shorewall-$version Status at $HOSTNAME - `date`"
+	echo
 	iptables -L -n -v
 	;;
 

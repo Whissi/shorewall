@@ -631,7 +631,7 @@ FIREWALL=$SHARED_DIR/firewall
 FUNCTIONS=$SHARED_DIR/functions
 VERSION_FILE=$SHARED_DIR/version
 HELP=$SHARED_DIR/help
-CONFIG_PATH=/etc/shorewall:/usr/share/shorewall
+[ -n "$CONFIG_PATH" ] || CONFIG_PATH=/etc/shorewall:/usr/share/shorewall
 
 if [ -f $FUNCTIONS ]; then
     . $FUNCTIONS
@@ -649,7 +649,9 @@ else
     exit 2
 fi
 
-[ -z "$CONFIG_PATH" ] && CONFIG_PATH=/etc/shorewall:/usr/share/shorewall
+[ -n "$CONFIG_PATH" ] || CONFIG_PATH=/etc/shorewall:/usr/share/shorewall
+
+export CONFIG_PATH
 
 [ -z "${STATEDIR}" ] && STATEDIR=/var/state/shorewall
 

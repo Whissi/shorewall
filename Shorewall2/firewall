@@ -5710,7 +5710,7 @@ do_initialize() {
     DISABLE_IPV6=
     BRIDGING=
     DYNAMIC_ZONES=
-    CONFIG_PATH=/etc/shorewall:/usr/share/shorewall
+    [ -n "$CONFIG_PATH" ] || CONFIG_PATH=/etc/shorewall:/usr/share/shorewall
 
     stopping=
     have_mutex=

@@ -1,5 +1,5 @@
 %define name shorewall
-%define version 1.4.10f
+%define version 1.4.10g
 %define release 1
 %define prefix /usr
 
@@ -109,6 +109,8 @@ fi
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel
 
 %changelog
+* Wed Jun 30 2004 Tom Eastep <tom@shorewall.net>
+- Changed version to 1.4.10g-1
 * Mon Jun 28 2004 Tom Eastep <tom@shorewall.net>
 - Changed version to 1.4.10f-1
 * Tue Apr 13 2004 Tom Eastep <tom@shorewall.net>

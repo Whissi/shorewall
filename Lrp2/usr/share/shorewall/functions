@@ -34,6 +34,14 @@ list_count() {
 }
 
 #
+# Conditionally produce message
+#
+progress_message() # $* = Message
+{
+    [ -n "$QUIET" ] || echo "$@"
+}
+
+#
 # Suppress all output for a command
 #
 qt()

@@ -618,6 +618,13 @@ show_reset() {
 	echo "Counters reset $(cat $STATEDIR/restarted)" && \
 	echo
 }
+#
+# Display's the passed file name followed by "=" and the file's contents.
+#
+show_proc() # $1 = name of a file  
+{
+    [ -f $1 ] && echo "   $1 = $(cat $1)"
+}
 
 #
 # Execution begins here
@@ -863,7 +870,7 @@ case "$1" in
 	    [ $# -gt 2 ] && usage 1
 	    echo "Shorewall-$version Connections at $HOSTNAME - $(date)"
 	    echo
-	    cat /proc/net/ip_conntrack
+	    cat /pro/net/ip_conntrack
 	    ;;
 	nat)
 	    [ $# -gt 2 ] && usage 1
@@ -952,6 +959,26 @@ case "$1" in
 	echo "IP Configuration"
 	echo
 	ip addr ls
+	
+	if qt which brctl; then
+	    echo
+	    echo "Bridges"
+	    echo
+	    brctl show
+	fi
+
+	echo
+	echo "/proc"
+	echo
+
+	show_proc /proc/sys/net/ipv4/ip_forward
+
+	for directory in /proc/sys/net/ipv4/conf/*; do
+	    for file in proxy_arp arp_filter rp_filter log_martians; do
+		show_proc $directory/$file
+	    done
+	done
+
 	echo
 	echo "Routing Rules"
 	echo
@@ -1104,7 +1131,7 @@ case "$1" in
 	    else
 		case $RESTOREFILE in
 		    save|restore-base)
-			echo "   ERROR: Reserved file name: save"
+			echo "   ERROR: Reserved file name: $RESTOREFILE"
 			;;
 		    *)
 			if iptables -L dynamic -n > /var/lib/shorewall/save; then
@@ -1155,7 +1182,7 @@ case "$1" in
 	    rm -f $RESTOREPATH
 	    echo "    $RESTOREPATH removed"
 	elif [ -f $RESTOREPATH ]; then
-	    echo "   ERROR: $RESTOREPATH is not a restore script"
+	    echo "   $RESTOREPATH exists and is not a saved Shorewall configuration"
 	fi
 	;;
     ipcalc)

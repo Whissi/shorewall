@@ -298,6 +298,12 @@ addrule() # $1 = chain name, remainder of arguments specify the rule
     run_iptables -A $@
 }
 
+addrule2() # $1 = chain name, remainder of arguments specify the rule
+{
+    ensurechain $1
+    run_iptables2 -A $@
+}
+
 #
 # Create a nat chain
 #
@@ -899,7 +905,7 @@ validate_interfaces_file() {
 
 	for option in $options; do
 	    case $option in
-		dhcp|norfc1918|nobogons|tcpflags|newnotsyn|arp_filter|routefilter|blacklist|proxyarp|maclist|nosmurfs|-)
+		dhcp|norfc1918|nobogons|tcpflags|newnotsyn|arp_filter|routefilter|logmartians|sourceroute|blacklist|proxyarp|maclist|nosmurfs|-)
 		    ;;
 		detectnets)
 		    [ -n "$wildcard" ] && \
@@ -971,7 +977,7 @@ validate_hosts_file() {
 			;;
 		    ipsec)
 			[ -n "$POLICY_MATCH" ] || \
-			    startup_error "Your kernel and/or iptables does not not support policy match: ipsec"
+			    startup_error "Your kernel and/or iptables does not support policy match: ipsec"
 			eval ${z}_ipsec_hosts=\"\$${z}_ipsec_hosts $interface:$host\"
 			eval ${z}_is_complex=Yes
 			;;
@@ -1239,18 +1245,24 @@ log_rule_limit() # $1 = log level, $2 = chain, $3 = display Chain $4 = dispositi
     local limit="${5:-$LOGLIMIT}"
     local tag=${6:+$6 }
     local prefix
+    local base=$(chain_base $displayChain)
 
     shift;shift;shift;shift;shift
 
-    if [ -n "$LOGRULENUMBERS" ]; then
-	eval rulenum=\$${chain}_logrules
+    if [ -n "$tag" -a -n "$LOGTAGONLY" ]; then
+	displayChain=$tag
+	tag=
+    fi
 
-	[ -z "$rulenum" ] && rulenum=1
+    if [ -n "$LOGRULENUMBERS" ]; then
+	eval rulenum=\$${base}_logrules
+
+	rulenum=${rulenum:-1}
 
 	prefix="$(printf "$LOGFORMAT" $displayChain $rulenum $disposition)${tag}"
 
 	rulenum=$(($rulenum + 1))
-	eval ${chain}_logrules=$rulenum
+	eval ${base}_logrules=$rulenum
     else
 	prefix="$(printf "$LOGFORMAT" $displayChain $disposition)${tag}"
     fi
@@ -1552,8 +1564,8 @@ setup_tunnels() # $1 = name of tunnels file
 	[ $kind = IPSEC ] && kind=ipsec
 
 	options="-m state --state NEW -j ACCEPT"
-	addrule $inchain	  -p 50	 $(source_ip_range $1) -j ACCEPT
-	addrule $outchain	  -p 50	 $(dest_ip_range $1)   -j ACCEPT
+	addrule2 $inchain	  -p 50	 $(source_ip_range $1) -j ACCEPT
+	addrule2 $outchain	  -p 50	 $(dest_ip_range $1)   -j ACCEPT
 	if [ -z "$noah" ]; then
 	    run_iptables -A $inchain  -p 51 $(source_ip_range $1) -j ACCEPT
 	    run_iptables -A $outchain -p 51 $(dest_ip_range $1)   -j ACCEPT
@@ -1578,7 +1590,7 @@ setup_tunnels() # $1 = name of tunnels file
 		    addrule ${z}2${FW} -p udp --dport 4500 $options
 		fi
 	    else
-		fatal_error ": Invalid gateway zone ($z) -- Tunnel \"$tunnel\""
+		fatal_error "Invalid gateway zone ($z) -- Tunnel \"$tunnel\""
 	    fi
 	done
 
@@ -1587,26 +1599,26 @@ setup_tunnels() # $1 = name of tunnels file
 
     setup_one_other() # $1 = TYPE, $2 = gateway, $3 = protocol
     {
-	addrule $inchain  -p $3 $(source_ip_range $2) -j ACCEPT
-	addrule $outchain -p $3 $(dest_ip_range $2) -j ACCEPT
+	addrule2 $inchain  -p $3 $(source_ip_range $2) -j ACCEPT
+	addrule2 $outchain -p $3 $(dest_ip_range $2) -j ACCEPT
 
 	progress_message "   $1 tunnel to $2 defined."
     }
 
     setup_pptp_client() # $1 = gateway
     {
-	addrule $outchain -p 47               $(dest_ip_range $1) -j ACCEPT
-	addrule $inchain  -p 47                                   -j ACCEPT
-	addrule $outchain -p tcp --dport 1723 $(dest_ip_range $1) -j ACCEPT
+	addrule2 $outchain -p 47               $(dest_ip_range $1)   -j ACCEPT
+	addrule2 $inchain  -p 47               $(source_ip_range $1) -j ACCEPT
+	addrule2 $outchain -p tcp --dport 1723 $(dest_ip_range $1)   -j ACCEPT
 
 	progress_message "   PPTP tunnel to $1 defined."
     }
 
-    setup_pptp_server()
+    setup_pptp_server() # $1 = gateway
     {
-	addrule $inchain  -p 47               -j ACCEPT
-	addrule $outchain -p 47               -j ACCEPT
-	addrule $inchain  -p tcp --dport 1723 -j ACCEPT
+	addrule2 $inchain  -p 47               $(source_ip_range $1) -j ACCEPT
+	addrule2 $outchain -p 47               $(dest_ip_range $1)   -j ACCEPT
+	addrule2 $inchain  -p tcp --dport 1723 $(source_ip_range $1) -j ACCEPT
 
 	progress_message "   PPTP server defined."
     }
@@ -1622,8 +1634,8 @@ setup_tunnels() # $1 = name of tunnels file
 		;;
 	esac
 
-	addrule $inchain  -p udp $(source_ip_range $1) --dport $p -j ACCEPT
-	addrule $outchain -p udp $(dest_ip_range $1)   --dport $p -j ACCEPT
+	addrule2 $inchain  -p udp $(source_ip_range $1) --dport $p -j ACCEPT
+	addrule2 $outchain -p udp $(dest_ip_range $1)   --dport $p -j ACCEPT
 
 	progress_message "   OPENVPN tunnel to $1:$p defined."
     }
@@ -1650,8 +1662,8 @@ setup_tunnels() # $1 = name of tunnels file
 
 	p=${p:+--dport $p}
 
-	addrule $inchain  -p $protocol $(source_ip_range $1) $p -j ACCEPT
-	addrule $outchain -p $protocol $(dest_ip_range $1)   $p -j ACCEPT
+	addrule2 $inchain  -p $protocol $(source_ip_range $1) $p -j ACCEPT
+	addrule2 $outchain -p $protocol $(dest_ip_range $1)   $p -j ACCEPT
 
 	for z in $(separate_list $3); do
 	    if validate_zone $z; then
@@ -1674,6 +1686,7 @@ setup_tunnels() # $1 = name of tunnels file
 	if validate_zone $z; then
 	    inchain=${z}2${FW}
 	    outchain=${FW}2${z}
+	    gateway=${gateway:-0.0.0.0/0}
 	    case $kind in
 		ipsec|IPSEC|ipsec:*|IPSEC:*)
 		    setup_one_ipsec $gateway $kind $z1
@@ -1693,8 +1706,8 @@ setup_tunnels() # $1 = name of tunnels file
 		pptpclient|PPTPCLIENT)
 		    setup_pptp_client $gateway
 		    ;;
-		pptpserver|PPTPSERVER)
-		    setup_pptp_server
+		pptpserver|PPTPSERVER) 
+		    setup_pptp_server $gateway
 		    ;;
 		openvpn|OPENVPN|openvpn:*|OPENVPN:*)
 		    setup_one_openvpn $gateway $kind
@@ -1855,7 +1868,8 @@ setup_proxy_arp() {
     done < $TMP_DIR/proxyarp
 
     for interface in $resetlist; do
-	run_and_save_command "echo 0 > /proc/sys/net/ipv4/conf/$interface/proxy_arp"
+	list_search $interface $setlist || \
+	    run_and_save_command "echo 0 > /proc/sys/net/ipv4/conf/$interface/proxy_arp"
     done
 
     for interface in $setlist; do
@@ -1910,14 +1924,6 @@ setup_mac_lists() {
     # Be sure that they are all ethernet interfaces
     #
     for interface in $maclist_interfaces; do
-	case $interface in
-	    eth*|wlan*|br[0-9]|ath[0-9])
-		;;
-	    *)
-		fatal_error "MAC verification is only supported on ethernet and 802.11b devices: $interface"
-		;;
-	esac
-
 	createchain $(mac_chain $interface) no
     done
     #
@@ -3243,7 +3249,7 @@ process_actions1() {
 	    case $xaction in
 		*:*)
 		    temp=${xaction#*:}
-		    [ ${#temp} -le 11 ] || fatal_error "Action Name Longer than 11 Characters: $temp"
+		    [ ${#temp} -le 30 ] || fatal_error "Action Name Longer than 30 Characters: $temp"
 		    xaction=${xaction%:*}
 		    case $temp in
 			ACCEPT|REJECT|DROP)
@@ -5132,7 +5138,7 @@ setup_blacklist() {
 
 	[ "$disposition" = REJECT ] && disposition=reject
 
-	if [ -n "$DELAYBLACKLISTLOAD" ]; then
+	if [ -z "$DELAYBLACKLISTLOAD" ]; then
 	    while read networks protocol ports; do
 		expandv networks protocol ports
 		process_blacklist_rec
@@ -5847,7 +5853,7 @@ add_common_rules() {
 	save_progress_message "Restoring Route Filtering..."
 
 	for f in /proc/sys/net/ipv4/conf/*; do
-	    run_and_save_command "[ -f $f/rp_filter ] && echo 0 > $f/rp_filter"
+	    run_and_save_command "[ -f $f/rp_filter ]    && echo 0 > $f/rp_filter"
 	done
 
 	for interface in $interfaces; do
@@ -5864,9 +5870,66 @@ add_common_rules() {
 
 	if [ -n "$ROUTE_FILTER" ]; then
 	    run_and_save_command "echo 1 > /proc/sys/net/ipv4/conf/default/rp_filter"
+	    run_and_save_command "echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter"
 	fi
 
 	run_and_save_command ip route flush cache
+    fi
+
+    #
+    # Martian Logging
+    #
+    interfaces="$(find_interfaces_by_option logmartians)"
+
+    if [ -n "$interfaces" -o -n "$LOG_MARTIANS" ]; then
+	echo "Setting up Martian Logging..."
+
+	save_progress_message "Restoring Martian Logging..."
+
+	for f in /proc/sys/net/ipv4/conf/*; do
+	    run_and_save_command "[ -f $f/log_martians ]    && echo 0 > $f/log_martians"
+	done
+
+	for interface in $interfaces; do
+	    file=proc/sys/net/ipv4/conf/$interface/log_martians
+	    if [ -f $file ]; then
+		run_and_save_command "echo 1 > $file"
+	    else
+		error_message \
+		    "Warning: Cannot set Martian logging on $interface"
+	    fi
+	done
+
+	if [ -n "$LOG_MARTIANS" ]; then
+	    run_and_save_command "echo 1 > /proc/sys/net/ipv4/conf/default/log_martians"
+	    run_and_save_command "echo 1 > /proc/sys/net/ipv4/conf/all/log_martians"
+	fi
+
+    fi
+
+    #
+    # Source Routing
+    #
+    save_progress_message "Restoring Accept Source Routing..."
+
+    for f in /proc/sys/net/ipv4/conf/*; do
+	run_and_save_command "[ -f $f/accept_source_route ] && echo 0 > $f/accept_source_route"
+    done
+
+    interfaces=$(find_interfaces_by_option sourceroute)
+
+    if [ -n "$interfaces" ]; then
+	echo "Setting up Accept Source Routing..."
+	
+	for interface in $interfaces; do
+	    file=/proc/sys/net/ipv4/conf/$interface/accept_source_route
+	    if [ -f $file ]; then
+		run_and_save_command "echo 1 > $file"
+	    else
+		error_message \
+		    "Warning: Cannot set Accept Source Routing on $interface"
+	    fi
+	done
     fi
 
     if [ -n "$DYNAMIC_ZONES" ]; then
@@ -6736,6 +6799,7 @@ do_initialize() {
     BLACKLIST_LOGLEVEL=
     CLAMPMSS=
     ROUTE_FILTER=
+    LOG_MARTIANS=
     DETECT_DNAT_IPADDRS=
     MUTEX_TIMEOUT=
     NEWNOTSYN=
@@ -6765,6 +6829,7 @@ do_initialize() {
     PKTTYPE=
     RETAIN_ALIASES=
     DELAYBLACKLISTLOAD=
+    LOGTAGONLY=
 
     RESTOREBASE=
     TMP_DIR=
@@ -6867,6 +6932,7 @@ do_initialize() {
     CLAMPMSS=$(added_param_value_no CLAMPMSS $CLAMPMSS)
     ADD_SNAT_ALIASES=$(added_param_value_no ADD_SNAT_ALIASES $ADD_SNAT_ALIASES)
     ROUTE_FILTER=$(added_param_value_no ROUTE_FILTER $ROUTE_FILTER)
+    LOG_MARTIANS=$(added_param_value_no LOG_MARTIANS $LOG_MARTIANS)
     DETECT_DNAT_IPADDRS=$(added_param_value_no DETECT_DNAT_IPADDRS $DETECT_DNAT_IPADDRS)
     FORWARDPING=$(added_param_value_no FORWARDPING $FORWARDPING)
     [ -n "$FORWARDPING" ] && \
@@ -6941,6 +7007,7 @@ do_initialize() {
     STARTUP_ENABLED=$(added_param_value_yes STARTUP_ENABLED $STARTUP_ENABLED)
     RETAIN_ALIASES=$(added_param_value_no RETAIN_ALIASES $RETAIN_ALIASES)
     DELAYBLACKLISTLOAD=$(added_param_value_no DELAYBLACKLISTLOAD $DELAYBLACKLISTLOAD)
+    LOGTAGONLY=$(added_param_value_no LOGTAGONLY $LOGTAGONLY)
     #
     # Strip the files that we use often
     #

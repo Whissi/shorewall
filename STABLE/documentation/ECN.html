@@ -1,0 +1,83 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title>Shorewall and ECN</title>
+  <meta http-equiv="content-type"
+ content="text/html; charset=ISO-8859-1">
+  <meta name="author" content="Tom Eastep">
+</head>
+<body>
+<table border="0" cellpadding="0" cellspacing="0"
+ style="border-collapse: collapse;" width="100%" id="AutoNumber4"
+ bgcolor="#400169" height="90">
+                                                       <tbody>
+                                                        <tr>
+                                                         <td
+ width="100%">            
+      <h1 align="center"><font color="#ffffff">ECN</font></h1>
+                                                         </td>
+                                                       </tr>
+      
+  </tbody> 
+</table>
+<br>
+Explicit Congestion Notification (ECN) is described in RFC 3168 and is a
+proposed internet standard. Unfortunately, not all sites support ECN and
+when a TCP connection offering ECN is sent to sites that don't support it,
+the result is often that the connection request is ignored.<br>
+<br>
+To allow ECN to be used, Shorewall allows you to enable ECN on your Linux
+systems then disable it in your firewall when the destination matches a list
+that you create (the /etc/shorewall/ecn file).<br>
+<br>
+You enable ECN by<br>
+<br>
+<blockquote>
+  <pre><b><font color="#009900">echo 1 &gt; /proc/sys/net/ipv4/tcp_ecn</font></b></pre>
+</blockquote>
+You must arrange for that command to be executed at system boot. Most distributions
+have a method for doing that -- on RedHat, you make an entry in /etc/sysctl.conf.<br>
+<br>
+<blockquote>
+  <pre><b><font color="#009900">net.ipv4.tcp_ecn = 1<br><br></font></b></pre>
+</blockquote>
+Entries in /etc/shorewall/ecn have two columns as follows:<br>
+<br>
+INTERFACE&nbsp;&nbsp;&nbsp; - The name of an interface on your system<br>
+<br>
+HOST(S)&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; - An address (host or subnet)
+of a system or group of systems accessed through the &nbsp;interface in the
+first column. You may include a comma-separated list of such addresses in
+this column. <br>
+<br>
+Example: Your external interface is eth0 and you want to disable ECN for
+tcp connections to 192.0.2.0/24:<br>
+<br>
+In /etc/shorewall/ecn:<br>
+<br>
+<blockquote>
+  <table cellpadding="2" cellspacing="0" border="1">
+    <tbody>
+      <tr>
+        <td valign="top"><b>INTERFACE<br>
+        </b></td>
+        <td valign="top"><b>HOST(S)<br>
+        </b></td>
+      </tr>
+      <tr>
+        <td valign="top">eth0<br>
+        </td>
+        <td valign="top">192.0.2.0/24<br>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <br>
+</blockquote>
+<font size="2">Last updated 3/28/2003 - <a href="support.htm">Tom    Eastep</a></font> 
+ 
+<p><a href="copyright.htm"><font size="2">Copyright</font> &copy; <font
+ size="2">2001, 2002, 2003 Thomas M. Eastep.</font></a><br>
+ </p>
+</body>
+</html>

@@ -3195,6 +3195,11 @@ initialize_netfilter () {
     setcontinue FORWARD
     setcontinue INPUT
     setcontinue OUTPUT
+    
+    #
+    # Enable the Loopback interface
+    run_iptables -A INPUT  -i lo -j ACCEPT
+    run_iptables -A OUTPUT -o lo -j ACCEPT
 
     #
     # Allow DNS lookups during startup for FQDNs and deep-six INVALID packets
@@ -3493,12 +3498,6 @@ add_common_rules() {
     # Process Black List
     #
     setup_blacklist
-
-    #
-    # Enable the Loopback interface
-    #
-    run_iptables -A INPUT   -i lo -j ACCEPT
-    run_iptables -A OUTPUT  -o lo -j ACCEPT
 
     #
     # Route Filtering

@@ -5026,6 +5026,13 @@ activate_rules()
 
 	    if [ $zone = $zone1 ]; then
 		eval routeback=\"\$${zone}_routeback\"
+		eval interfaces=\"${zone}_interfaces\"
+
+		num_ifaces=$(list_count1 $interfaces)
+
+		if [ $num_ifaces -lt 2 -a -z "$routeback" ] ; then
+		    continue
+		fi
 	    else
 		routeback=
 	    fi
@@ -5034,12 +5041,9 @@ activate_rules()
 		for host1 in $dest_hosts; do
 		    interface1=${host1%%:*}
 		    subnet1=${host1#*:}
-		    if [ $(list_count1 $source_hosts) -eq 1 -a "$source_hosts" = "$host1" ]; then
-			if list_search $host1 $routeback; then
-			    run_iptables -A $frwd_chain -o $interface1 $(match_dest_hosts $subnet1) -j $chain
-			fi
-		    else
-			run_iptables -A $frwd_chain -o $interface1 $(match_dest_hosts $subnet1) -j $chain
+
+		    if [ $zone != $zone1 -o $num_ifaces -gt 1 ] || list_search $host1 $routeback ; then
+			run_iptables -A $frwd_chain -o $interface1 $(match_dest_hosts $subnet1) -j $chain			
 		    fi
 		done
 	    else

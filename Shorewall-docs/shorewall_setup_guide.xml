@@ -898,21 +898,22 @@ loc      eth2           detect</programlisting>
       <title>Routing</title>
 
       <para>One of the purposes of subnetting is that it forms the basis for
-      routing. Here&#39;s the routing table on my firewall:</para>
+      routing. Here&#39;s the routing table on my firewall (compressed for
+      PDF):</para>
 
       <programlisting>[root@gateway root]# netstat -nr
 Kernel IP routing table
-Destination      Gateway         Genmask         Flags MSS Window irtt Iface
-192.168.9.1      0.0.0.0         255.255.255.255 UH    40  0         0 texas
-206.124.146.177  0.0.0.0         255.255.255.255 UH    40  0         0 eth1
-206.124.146.180  0.0.0.0         255.255.255.255 UH    40  0         0 eth3
-192.168.3.0      0.0.0.0         255.255.255.0   U     40  0         0 eth3
-192.168.2.0      0.0.0.0         255.255.255.0   U     40  0         0 eth1
-192.168.1.0      0.0.0.0         255.255.255.0   U     40  0         0 eth2
-206.124.146.0    0.0.0.0         255.255.255.0   U     40  0         0 eth0
-192.168.9.0      192.0.2.223     255.255.255.0   UG    40  0         0 texas
-127.0.0.0        0.0.0.0         255.0.0.0       U     40  0         0 lo
-0.0.0.0          206.124.146.254 0.0.0.0         UG    40  0         0 eth0
+Destination     Gateway         Genmask         Flgs MSS Win irtt Iface
+192.168.9.1     0.0.0.0         255.255.255.255 UH   40  0      0 texas
+206.124.146.177 0.0.0.0         255.255.255.255 UH   40  0      0 eth1
+206.124.146.180 0.0.0.0         255.255.255.255 UH   40  0      0 eth3
+192.168.3.0     0.0.0.0         255.255.255.0   U    40  0      0 eth3
+192.168.2.0     0.0.0.0         255.255.255.0   U    40  0      0 eth1
+192.168.1.0     0.0.0.0         255.255.255.0   U    40  0      0 eth2
+206.124.146.0   0.0.0.0         255.255.255.0   U    40  0      0 eth0
+192.168.9.0     192.0.2.223     255.255.255.0   UG   40  0      0 texas
+127.0.0.0       0.0.0.0         255.0.0.0       U    40  0      0 lo
+0.0.0.0         206.124.146.254 0.0.0.0         UG   40  0      0 eth0
 [root@gateway root]#</programlisting>
 
       <para>The device <emphasis>texas</emphasis> is a GRE tunnel to a peer
@@ -975,7 +976,7 @@ Destination      Gateway         Genmask         Flags MSS Window irtt Iface
       logically and that address with 255.255.255.0, the result is 192.168.1.0
       which matches this routing table entry:</para>
 
-      <para><programlisting>192.168.1.0     0.0.0.0         255.255.255.0   U     40  0         0 eth2</programlisting></para>
+      <para><programlisting>192.168.1.0   0.0.0.0       255.255.255.0   U     40  0         0 eth2</programlisting></para>
 
       <para>So to route a packet to 192.168.1.5, the packet is sent directly
       over eth2.</para>
@@ -1002,10 +1003,10 @@ Destination      Gateway         Genmask         Flags MSS Window irtt Iface
 
       <programlisting>[root@gateway root]# <command>ip addr show eth0</command>
 2: eth0: &#60;BROADCAST,MULTICAST,UP&#62; mtu 1500 qdisc htb qlen 100
-   link/ether 02:00:08:e3:fa:55 brd ff:ff:ff:ff:ff:ff
-   inet 206.124.146.176/24 brd 206.124.146.255 scope global eth0
-   inet 206.124.146.178/24 brd 206.124.146.255 scope global secondary eth0
-   inet 206.124.146.179/24 brd 206.124.146.255 scope global secondary eth0
+link/ether 02:00:08:e3:fa:55 brd ff:ff:ff:ff:ff:ff
+inet 206.124.146.176/24 brd 206.124.146.255 scope global eth0
+inet 206.124.146.178/24 brd 206.124.146.255 scope global secondary eth0
+inet 206.124.146.179/24 brd 206.124.146.255 scope global secondary eth0
 [root@gateway root]#
 </programlisting>
 
@@ -1188,10 +1189,10 @@ tcpdump: listening on eth2
       What if DMZ 1 (192.0.2.67) tries to communicate with 192.0.2.65? The
       routing table on DMZ 1 will look like this:</para>
 
-      <programlisting>Kernel IP routing table
-Destination      Gateway         Genmask         Flags MSS Window irtt Iface
-192.0.2.64       0.0.0.0         255.255.255.248 U     40  0         0 eth0
-0.0.0.0          192.0.2.66      0.0.0.0         UG    40  0         0 eth0</programlisting>
+      <programlisting format="linespecific">Kernel IP routing table
+Destination    Gateway     Genmask         Flags MSS Window irtt Iface
+192.0.2.64     0.0.0.0     255.255.255.248 U     40  0         0 eth0
+0.0.0.0        192.0.2.66  0.0.0.0         UG    40  0         0 eth0</programlisting>
 
       <para>This means that DMZ 1 will send an ARP <quote>who-has 192.0.2.65</quote>
       request and no device on the DMZ Ethernet segment has that IP address.
@@ -1836,8 +1837,8 @@ view &#34;internal&#34; {
                         192.0.2.179/32;
                         192.0.2.180/32; };
         #
-        # If this server can&#39;t complete the request, it should use outside
-        # servers to do so
+        # If this server can&#39;t complete the request, it should use
+        # outside servers to do so
         #
         recursion yes;
 

@@ -327,18 +327,29 @@ New Features:
 
     The available options are:
 
-	reqid=<number> where <number> is specified using setkey(8) using
+	reqid[!]=<number> where <number> is specified using setkey(8) using
 	the 'unique:<number>' option for the SPD level.
 
-	 spi=<number> where <number> is the SPI of the SA.
+	 spi[!]=<number> where <number> is the SPI of the SA. Since
+	 different SAs are used to encrypt and decrypt traffic, this
+	 option should only be listed in the IN OPTIONS and OUT OPTIONS
+	 columns.
 
-	 proto=ah|esp|ipcomp 
+	 proto[!]=ah|esp|ipcomp 
 
-	 mode=transport|tunnel
+	 mode[!]=transport|tunnel
 
-	 tunnel-src=<address>[/<mask>] (only available with mode=tunnel)
+	 tunnel-src[!]=<address>[/<mask>] (only available with mode=tunnel)
 
-	 tunnel-dst=<address>[/<mask>] (only available with mode=tunnel) 
+	 tunnel-dst[!]=<address>[/<mask>] (only available with
+	 mode=tunnel). Because tunnel source and destination are
+	 dependent on the direction of the traffic, these options
+	 should only appear in the IN OPTIONS and OUT OPTIONS columns.
+
+	 strict  (if specified, packets must match all policies;
+	 polcies are delimited by 'next').
+
+	 next    (only available with strict)
 
     Examples:
 

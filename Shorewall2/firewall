@@ -1646,15 +1646,21 @@ setup_ipsec() {
 
 	for option in $opts; do
 	    case $option in
-		strict)       newoptions="$newoptions --strict" ;;
-		next)         newoptions="$newoptions --next" ;;
-		reqid=*)      newoptions="$newoptions --reqid ${option#*=}" ;;
-		spi=*)        newoptions="$newoptions --spi ${option#*=}" ;;
-		proto=*)      newoptions="$newoptions --proto ${option#*=}" ;;
-		mode=*)       newoptions="$newoptions --mode ${option#*=}" ;;
-		tunnel-src=*) newoptions="$newoptions --tunnel-src ${option#*=}" ;;
-		tunnel-dst=*) newoptions="$newoptions --tunnel-dst ${option#*=}" ;;
-		*)            fatal_error "Invalid option \"$option\" for zone $zone" ;;
+		strict)        newoptions="$newoptions --strict" ;;
+		next)          newoptions="$newoptions --next" ;;
+		reqid=*)       newoptions="$newoptions --reqid ${option#*=}" ;;
+		spi=*)         newoptions="$newoptions --spi ${option#*=}" ;;
+		proto=*)       newoptions="$newoptions --proto ${option#*=}" ;;
+		mode=*)        newoptions="$newoptions --mode ${option#*=}" ;;
+		tunnel-src=*)  newoptions="$newoptions --tunnel-src ${option#*=}" ;;
+		tunnel-dst=*)  newoptions="$newoptions --tunnel-dst ${option#*=}" ;;
+		reqid!=*)      newoptions="$newoptions ! --reqid ${option#*=}" ;;
+		spi!=*)        newoptions="$newoptions ! --spi ${option#*=}" ;;
+		proto!=*)      newoptions="$newoptions ! --proto ${option#*=}" ;;
+		mode!=*)       newoptions="$newoptions ! --mode ${option#*=}" ;;
+		tunnel-src!=*) newoptions="$newoptions ! --tunnel-src ${option#*=}" ;;
+		tunnel-dst!=*) newoptions="$newoptions ! --tunnel-dst ${option#*=}" ;;
+		*)             fatal_error "Invalid option \"$option\" for zone $zone" ;;
 	    esac
 	done
 
@@ -4577,6 +4583,12 @@ setup_masq()
 		mode=*)         policy="$policy --mode ${option#*=}" ;;
 		tunnel-src=*)   policy="$policy --tunnel-src ${option#*=}" ;;
 		tunnel-dst=*)   policy="$policy --tunnel-dst ${option#*=}" ;;
+		reqid!=*)       policy="$policy ! --reqid ${option#*=}" ;;
+		spi!=*)         policy="$policy ! --spi ${option#*=}" ;;
+		proto!=*)       policy="$policy ! --proto ${option#*=}" ;;
+		mode!=*)        policy="$policy ! --mode ${option#*=}" ;;
+		tunnel-src!=*)  policy="$policy ! --tunnel-src ${option#*=}" ;;
+		tunnel-dst!=*)  policy="$policy ! --tunnel-dst ${option#*=}" ;;
 		*)              fatal_error "Invalid IPSEC option \"$option\"" ;;
 	    esac
 	done

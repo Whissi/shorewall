@@ -6280,8 +6280,8 @@ activate_rules()
 		if [ -n "$is_ipsec" ]; then
 		    eval source_hosts=\$${zone}_hosts
 		    if [ -n "$DYNAMIC_ZONES" ]; then
-			createchain ${zone}_dynf No
-			run_iptables -A $frwd_chain -j ${zone}_dynf
+			createchain ${zone}_dyn No
+			run_iptables -A $frwd_chain -j ${zone}_dyn
 		    fi
 		else
 		    eval source_hosts=\$${zone}_ipsec_hosts
@@ -6810,7 +6810,7 @@ add_to_zone() # $1...${n-1} = <interface>[:<hosts>] $n = zone
 
 			if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
 			    if is_ipsec_host $z1 $h; then
-				do_iptables -A ${z1}_dynf -o $interface $(match_dest_hosts $host) $(match_ipsec_out $z2 $newhost) -j $chain
+				do_iptables -A ${z1}_dyn -o $interface $(match_dest_hosts $host) $(match_ipsec_out $z2 $newhost) -j $chain
 			    else
 				do_iptables -A $(dynamic_fwd $iface) $(match_source_hosts $hosts) -o $interface $(match_dest_hosts $host) $(match_ipsec_out $z2 $newhost) -j $chain
 			    fi
@@ -6985,7 +6985,7 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
 			
 			if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
 				if is_ipsec_host $z1 $h; then
-				    qt_iptables -D ${z1}_dynf -o $interface $(match_dest_hosts $host) $(match_ipsec_out $z2 $delhost) -j $chain
+				    qt_iptables -D ${z1}_dyn -o $interface $(match_dest_hosts $host) $(match_ipsec_out $z2 $delhost) -j $chain
 				else
 				    qt_iptables -D $(dynamic_fwd $iface) $(match_source_hosts $hosts) -o $interface $(match_dest_hosts $host)  $(match_ipsec_out $z2 $delhost) -j $chain
 				fi

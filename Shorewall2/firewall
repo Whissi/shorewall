@@ -739,7 +739,8 @@ validate_hosts_file() {
 	hosts=${hosts#*:}
 
 	eval ports=\$${iface}_ports
-	
+	eval zports=\$${z}_ports
+		
 	for host in $(separate_list $hosts); do
 
 	    [ -n "$BRIDGING" ] && case $host in
@@ -748,6 +749,7 @@ validate_hosts_file() {
 			startup_error "Bridged interfaces may not be defined in /etc/shorewall/interfaces: $host"
 		    port=${host%%:*}
 		    list_search $port $ports || ports="$ports $port"
+		    list_search ${interface}:${port} $zports || zports="$zports ${interface}:${port}"
 		    ;;
 		*.*.*.*)
 		    ;;
@@ -755,12 +757,13 @@ validate_hosts_file() {
 		    known_interface $host && \
 			startup_error "Bridged interfaces may not be defined in /etc/shorewall/interfaces: $host"
 		    list_search $host $ports || ports="$ports $host"
+		    list_search ${interface}:${host} $zports || zports="$zports ${interface}:${host}"
 		    ;;
 	    esac
 
 	    for option in $(separate_list $options) ; do
 		case $option in
-		    maclist|routeback|norfc1918|nobogons|blacklist|tcpflags|nosmurfs|newnotsyn|-)
+		    maclist|norfc1918|nobogons|blacklist|tcpflags|nosmurfs|newnotsyn|-)
 			;;
 		    routeback)
 			[ -z "$ports" ] && \
@@ -775,6 +778,7 @@ validate_hosts_file() {
 
 	if [ -n "$ports" ]; then
 	    eval ${iface}_ports=\"$ports\"
+	    eval ${z}_ports=\"$zports\"
 	fi
 
     done < $TMP_DIR/hosts
@@ -5069,23 +5073,38 @@ activate_rules()
 	    echo "$zone $zone1 $chain" >> ${STATEDIR}/chains
 
 	    if [ $zone = $zone1 ]; then
+		#
+		# Try not to generate superfluous intra-zone rules
+		#
 		eval routeback=\"\$${zone}_routeback\"
-		eval interfaces=\"${zone}_interfaces\"
+		eval interfaces=\"\$${zone}_interfaces\"
+		eval ports="\$${zone}_ports"
 
 		num_ifaces=$(list_count1 $interfaces)
-
+		#
+		# If the zone has a single interface then what matters is how many ports it has
+		#
+		[ $num_ifaces -eq 1 -a -n "$ports" ] && num_ifaces=$(list_count1 $ports)
+		#
+		# If we don't need to route back and if we have only one interface or one port to
+		# the zone then assume that hosts in the zone can communicate directly.
+		#
 		if [ $num_ifaces -lt 2 -a -z "$routeback" ] ; then
 		    continue
 		fi
 	    else
 		routeback=
+		num_ifaces=0
 	    fi
 	    
 	    if [ -n "$complex" ]; then
 		for host1 in $dest_hosts; do
 		    interface1=${host1%%:*}
 		    networks1=${host1#*:}
-
+		    #
+		    # Only generate an intrazone rule if the zone has more than one interface (port) or if
+		    # routeback was specified for this host group
+		    #
 		    if [ $zone != $zone1 -o $num_ifaces -gt 1 ] || list_search $host1 $routeback ; then
 			run_iptables -A $frwd_chain -o $interface1 $(match_dest_hosts $networks1) -j $chain			
 		    fi

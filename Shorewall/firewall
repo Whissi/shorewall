@@ -1183,7 +1183,6 @@ stop_firewall() {
     iptables -A INPUT  -i lo -j ACCEPT
     iptables -A OUTPUT -o lo -j ACCEPT
 
-
     for interface in `find_interfaces_by_option dhcp`; do
 	iptables -A INPUT  -p udp -i $interface --dport 67:68 -j ACCEPT
 	iptables -A OUTPUT -p udp -o $interface --dport 67:68 -j ACCEPT

@@ -696,7 +696,7 @@ validate_interfaces_file() {
 # Validate the zone names and options in the hosts file
 #
 validate_hosts_file() {
-   local z hosts options r interface host option options1 bridge
+   local z hosts options r interface host option port ports
 
     while read z hosts options; do
 	expandv z hosts options
@@ -711,38 +711,33 @@ validate_hosts_file() {
 
 	hosts=${hosts#*:}
 
+	eval ports=\$${iface}_ports
+	
 	for host in $(separate_list $hosts); do
-	    bridge=
 
 	    [ -n "$BRIDGING" ] && case $host in
 		*:*)
-		    bridge=Yes
 		    list_search ${host%:*} $all_interfaces && \
 			startup_error "Bridged interfaces may not be defined in /etc/shorewall/interfaces: $host"
+		    port=${host%%:*}
+		    list_search $port $ports || ports="$ports $port"
 		    ;;
 		*.*.*.*)
 		    ;;
 		*)
-		    bridge=Yes
-		    eval ${iface}_is_bridge=Yes
 		    list_search $host $all_interfaces && \
 			startup_error "Bridged interfaces may not be defined in /etc/shorewall/interfaces: $host"
+		    list_search $host $ports || ports="$ports $host"
 		    ;;
 	    esac
 
-	    options1=$(separate_list $options)
-
-	    if [ -n "$bridge" ]; then
-		eval ${iface}_is_bridge=Yes
-		list_search routeback $options1 || options1="$options1 routeback"
-	    fi
-
-	    for option in $options1 ; do
+	    for option in $(separate_list $options) ; do
 		case $option in
 		    maclist|-)
 			;;
 		    routeback)
-			eval ${z}_routeback=\"$interface:$host \$${z}_routeback\"
+			[ -z "$ports" ] && \
+			    eval ${z}_routeback=\"$interface:$host \$${z}_routeback\"
 			;;
 		    *)
 			error_message "Warning: Invalid option ($option) in record \"$r\""
@@ -750,6 +745,11 @@ validate_hosts_file() {
 		esac
 	    done
 	done
+
+	if [ -n "$ports" ]; then
+	    eval ${iface}_ports=\"$ports\"
+	fi
+
     done < $TMP_DIR/hosts
 }
 
@@ -4609,7 +4609,7 @@ add_common_rules() {
 
 	for interface in $interfaces; do
 	    if [ -n "$BRIDGING" ]; then
-		eval is_bridge=\$$(chain_base $interface)_is_bridge
+		eval is_bridge=\$$(chain_base $interface)_ports
 		[ -n "$is_bridge" ] && \
 		    iptables -A $(forward_chain $interface) -p udp -o $interface --dport 67:68 -j ACCEPT
             fi
@@ -5053,11 +5053,20 @@ activate_rules()
 	    fi
 	done
     done
-
-    for interface in $all_interfaces; do
-       run_iptables -A FORWARD -i $interface -j $(forward_chain $interface)
-       run_iptables -A INPUT   -i $interface -j $(input_chain $interface)
-       addnatjump POSTROUTING $(masq_chain $interface) -o $interface
+    
+    for interface in $all_interfaces ; do
+	
+	run_iptables -A FORWARD -i $interface -j $(forward_chain $interface)
+	run_iptables -A INPUT   -i $interface -j $(input_chain $interface)
+	addnatjump POSTROUTING $(masq_chain $interface) -o $interface
+	#
+        # Bridges have the wierd property that REJECTS have the physdev-in and physdev-out set to the input physdev.
+        # To accomodate this feature/bug, we effectively set 'routeback' on bridge ports.
+	#
+	eval ports=\$$(chain_base $interface)_ports
+	for port in $ports; do
+	    run_iptables -A $(forward_chain $interface) -o $interface -m physdev --physdev-in $port --physdev-out $port -j ACCEPT
+	done
     done
 
     chain=${FW}2${FW}

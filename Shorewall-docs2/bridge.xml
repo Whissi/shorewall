@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-07-31</pubdate>
+    <pubdate>2004-08-19</pubdate>
 
     <copyright>
       <year>2004</year>
@@ -29,7 +29,8 @@
       1.2 or any later version published by the Free Software Foundation; with
       no Invariant Sections, with no Front-Cover, and with no Back-Cover
       Texts. A copy of the license is included in the section entitled
-      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
 
@@ -60,7 +61,8 @@
       </listitem>
 
       <listitem>
-        <para>A router cannot forward broadcast packets while a bridge can.</para>
+        <para>A router cannot forward broadcast packets while a bridge
+        can.</para>
       </listitem>
     </orderedlist>
   </section>
@@ -80,7 +82,8 @@
         <para>Your kernel must contain Netfilter physdev match support
         (CONFIG_IP_NF_MATCH_PHYSDEV=m or CONFIG_IP_NF_MATCH_PHYSDEV=y).
         Physdev match is standard in the 2.6 kernel series but must be patched
-        into the 2.4 kernels (see <ulink url="http://bridge.sf.net">http://bridge.sf.net</ulink>).</para>
+        into the 2.4 kernels (see <ulink
+        url="http://bridge.sf.net">http://bridge.sf.net</ulink>).</para>
       </listitem>
 
       <listitem>
@@ -108,7 +111,7 @@
     between the router and the systems in the local network. In the example
     shown, the network uses RFC 1918 addresses but that is not a requirement;
     the bridge would work exactly the same if public IP addresses were used
-    (remember that the bridge doesn&#39;t deal with IP addresses).</para>
+    (remember that the bridge doesn't deal with IP addresses).</para>
 
     <graphic fileref="images/bridge.png" />
 
@@ -125,13 +128,13 @@
 
       <listitem>
         <para>The systems connected to the LAN are configured with the
-        router&#39;s IP address (192.168.1.254 in the above diagram) as their
+        router's IP address (192.168.1.254 in the above diagram) as their
         default gateway.</para>
       </listitem>
 
       <listitem>
-        <para><command>traceroute</command> doesn&#39;t detect the
-        Bridge/Firewall as an intermediate router.</para>
+        <para><command>traceroute</command> doesn't detect the Bridge/Firewall
+        as an intermediate router.</para>
       </listitem>
 
       <listitem>
@@ -157,9 +160,9 @@
     configuration information may be found at <ulink
     url="http://bridge.sf.net">http://bridge.sf.net</ulink>.</para>
 
-    <para>Unfortunately, Linux distributions don&#39;t have good bridge
-    configuration tools and the network configuration GUIs don&#39;t detect
-    the presence of bridge devices. You may refer to <ulink url="myfiles.htm">my
+    <para>Unfortunately, Linux distributions don't have good bridge
+    configuration tools and the network configuration GUIs don't detect the
+    presence of bridge devices. You may refer to <ulink url="myfiles.htm">my
     configuration files</ulink> for an example of configuring a three-port
     bridge at system boot under <trademark>SuSE</trademark>. Here is an
     excerpt from a Debian <filename>/etc/network/interfaces</filename> file
@@ -183,22 +186,24 @@ iface br0 inet static
     doing so allows the bridge/firewall to access other systems and allows the
     bridge/firewall to be managed remotely. The bridge must also have an IP
     address for REJECT rules and policies to work correctly — otherwise REJECT
-    behaves the same as DROP.</para>
+    behaves the same as DROP. It is also a requirement for bridges to have an
+    IP address if they are part of a <link
+    linkend="bridge-router">bridge/router</link>.</para>
 
-    <para>The bridge may have its IP address assigned via DHCP. Here&#39;s an
+    <para>The bridge may have its IP address assigned via DHCP. Here's an
     example of an /etc/sysconfig/network/ifcfg-br0 file from a
     <trademark>SuSE</trademark> system:</para>
 
     <blockquote>
-      <programlisting>BOOTPROTO=&#39;dhcp&#39;
-REMOTE_IPADDR=&#39;&#39;
-STARTMODE=&#39;onboot&#39;
-UNIQUE=&#39;3hqH.MjuOqWfSZ+C&#39;
-WIRELESS=&#39;no&#39;
-MTU=&#39;&#39;</programlisting>
+      <programlisting>BOOTPROTO='dhcp'
+REMOTE_IPADDR=''
+STARTMODE='onboot'
+UNIQUE='3hqH.MjuOqWfSZ+C'
+WIRELESS='no'
+MTU=''</programlisting>
     </blockquote>
 
-    <para>Here&#39;s an /etc/sysconfig/network-scripts/ifcfg-br0 file for a
+    <para>Here's an /etc/sysconfig/network-scripts/ifcfg-br0 file for a
     <trademark>Mandrake</trademark> system:</para>
 
     <blockquote>
@@ -209,7 +214,8 @@ ONBOOT=yes</programlisting>
 
     <para>On both the SuSE and Mandrake systems, a separate script is required
     to configure the bridge itself (again see <ulink url="myfiles.htm">my
-    configuration files</ulink> for an example - <filename>/etc/init.d/bridge</filename>).</para>
+    configuration files</ulink> for an example -
+    <filename>/etc/init.d/bridge</filename>).</para>
 
     <para>Axel Westerhold has contributed this example of configuring a bridge
     with a static IP address on a Fedora System (Core 1 and Core 2 Test 1).
@@ -243,12 +249,12 @@ ONBOOT=yes</programlisting></para>
 # description: Layer 2 Bridge
 #
 
-[ -f /etc/sysconfig/bridge ] &#38;&#38; . /etc/sysconfig/bridge
+[ -f /etc/sysconfig/bridge ] &amp;&amp; . /etc/sysconfig/bridge
 
 PATH=$PATH:/sbin:/usr/sbin:/usr/local/sbin
 
 do_stop() {
-    echo &#34;Stopping Bridge&#34;
+    echo "Stopping Bridge"
     for i in $INTERFACES $BRIDGE_INTERFACE ; do
     	ip link set $i down
     done
@@ -257,7 +263,7 @@ do_stop() {
 
 do_start() {
 
-   echo &#34;Starting Bridge&#34;
+   echo "Starting Bridge"
    for i in $INTERFACES ; do
         ip link set $i up
    done
@@ -269,7 +275,7 @@ do_start() {
    ifup $BRIDGE_INTERFACE 
 }
 
-case &#34;$1&#34; in
+case "$1" in
   start)
       do_start
     ;;
@@ -282,7 +288,7 @@ case &#34;$1&#34; in
       do_start
     ;;
   *)
-    echo &#34;Usage: $0 {start|stop|restart}&#34;
+    echo "Usage: $0 {start|stop|restart}"
     exit 1
 esac
 exit 0</programlisting>
@@ -290,7 +296,7 @@ exit 0</programlisting>
       <para>The <filename>/etc/sysconfig/bridge file</filename>:</para>
 
       <programlisting>BRIDGE_INTERFACE=br0          #The name of your Bridge
-INTERFACES=&#34;eth0 eth1&#34;        #The physical interfaces to be bridged</programlisting>
+INTERFACES="eth0 eth1"        #The physical interfaces to be bridged</programlisting>
     </blockquote>
 
     <para>Andrzej Szelachowski contributed the following.</para>
@@ -298,15 +304,15 @@ INTERFACES=&#34;eth0 eth1&#34;        #The physical interfaces to be bridged</pr
     <blockquote>
       <programlisting>Here is how I configured bridge in Slackware:
 
-1) I had to compile bridge-utils (It&#39;s not in the standard distribution)
-2) I&#39;ve created rc.bridge in /etc/rc.d:
+1) I had to compile bridge-utils (It's not in the standard distribution)
+2) I've created rc.bridge in /etc/rc.d:
 
 #########################
 #! /bin/sh
 
 ifconfig eth0 0.0.0.0
 ifconfig eth1 0.0.0.0
-#ifconfig lo 127.0.0.1 #this line should be uncommented if you don&#39;t use rc.inet1
+#ifconfig lo 127.0.0.1 #this line should be uncommented if you don't use rc.inet1
 
 brctl addbr most
 
@@ -315,7 +321,7 @@ brctl addif most eth1
 
 ifconfig most 192.168.1.31 netmask 255.255.255.0 up 
 #route add default gw 192.168.1.1 metric 1 #this line should be uncommented if
-                                           #you don&#39;t use rc.inet1
+                                           #you don't use rc.inet1
 #########################
 
 3) I made rc.brige executable and added the following line to /etc/rc.d/rc.local
@@ -356,16 +362,17 @@ all         all         REJECT        info
 #LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
 
     <para>Only the bridge device itself is configured with an IP address so
-    only that device is defined to Shorewall in <filename>/etc/shorewall/interfaces</filename>:</para>
+    only that device is defined to Shorewall in
+    <filename>/etc/shorewall/interfaces</filename>:</para>
 
     <programlisting>#ZONE    INTERFACE      BROADCAST       OPTIONS
 -       br0             192.168.1.255
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
 
-    <para>The zones are defined using the <filename>/etc/shorewall/hosts</filename>
-    file. Assuming that the router is connected to <filename
-    class="devicefile">eth0</filename> and the switch to <filename
-    class="devicefile">eth1</filename>:</para>
+    <para>The zones are defined using the
+    <filename>/etc/shorewall/hosts</filename> file. Assuming that the router
+    is connected to <filename class="devicefile">eth0</filename> and the
+    switch to <filename class="devicefile">eth1</filename>:</para>
 
     <programlisting>#ZONE           HOST(S)                         OPTIONS
 net             br0:eth0
@@ -373,7 +380,8 @@ loc             br0:eth1
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS LINE -- DO NOT REMOVE</programlisting>
 
     <para>When Shorewall is stopped, you want to allow only local traffic
-    through the bridge — <filename><filename>/etc/shorewall/routestopped</filename></filename>:</para>
+    through the bridge —
+    <filename><filename>/etc/shorewall/routestopped</filename></filename>:</para>
 
     <programlisting>#INTERFACE      HOST(S)         OPTIONS
 br0             192.168.1.0/24  routeback
@@ -384,11 +392,11 @@ br0             192.168.1.0/24  routeback
     firewall rules.</para>
   </section>
 
-  <section>
+  <section id="bridge-router">
     <title>Combination Router/Bridge</title>
 
-    <para>A system running Shorewall doesn&#39;t have to be exclusively a
-    bridge or a router -- it can act as both. Here&#39;s an example:<graphic
+    <para>A system running Shorewall doesn't have to be exclusively a bridge
+    or a router -- it can act as both. Here's an example:<graphic
     fileref="images/bridge2.png" /></para>
 
     <para>This is basically the same setup as shown in the <ulink
@@ -410,7 +418,8 @@ loc      eth1           detect</programlisting></para>
       </listitem>
 
       <listitem>
-        <para>The <filename>/etc/shorewall/hosts</filename> file would have:</para>
+        <para>The <filename>/etc/shorewall/hosts</filename> file would
+        have:</para>
 
         <programlisting>#ZONE    HOSTS                        OPTIONS
 net      br0:eth0
@@ -422,7 +431,7 @@ dmz      br0:eth2</programlisting>
   <section>
     <title>Limitations</title>
 
-    <para>Bridging doesn&#39; t work with some wireless cards — see <ulink
+    <para>Bridging doesn' t work with some wireless cards — see <ulink
     url="http://bridge.sf.net">http://bridge.sf.net</ulink>.</para>
   </section>
 </article>

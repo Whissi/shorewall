@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-08-15</pubdate>
+    <pubdate>2004-08-18</pubdate>
 
     <copyright>
       <year>2004</year>
@@ -45,6 +45,60 @@
     broken when used with a bridge device. The problem has been reported to
     the responsible Netfilter developer who has confirmed the problem.</para>
   </warning>
+
+  <section>
+    <title>Shorewall 2.1 and Kernel 2.6 IPSEC</title>
+
+    <para>The 2.6 Linux Kernel introduces new facilities for defining
+    encrypted communication between hosts in a network. The network
+    administrator defines a set of Security Policies which are stored in the
+    kernel as a Security Policy Database (SPD). Outgoing traffic is encrypted
+    according to the contents of the SPD and incoming traffic is verified
+    against the SPD to ensure that no unencrypted traffic is accepted in
+    violation of the administrator's policies.</para>
+
+    <para>There are three ways in which IPSEC traffic can interact with
+    Shorewall policies and rules:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>Traffic that is encrypted on the firewall system. The traffic
+        passes through Netfilter twice -- first as unencrypted then
+        encrypted.</para>
+      </listitem>
+
+      <listitem>
+        <para>Traffic that is decrypted on the firewall system. The traffic
+        passes through Netfilter twice -- first as encrypted then as
+        unencrypted.</para>
+      </listitem>
+
+      <listitem>
+        <para>Encrypted traffic that is passed through the firewall system.
+        The traffic passes through Netfilter once.</para>
+      </listitem>
+    </orderedlist>
+
+    <para>In cases 1 and 2, the encrypted traffic is handled by entries in
+    <filename>/etc/shorewall/tunnels</filename> (don't be mislead by the name
+    of the file -- <emphasis>transport mode</emphasis> encrypted traffic is
+    also handled by entries in that file). The unencrypted traffic is handled
+    by normal rules and policies.</para>
+
+    <para>Under the 2.4 Linux Kernel, the association of unencrypted traffic
+    and zones was made easy by the presense of IPSEC pseudo-interfaces with
+    names of the form <filename class="devicefile">ipsecn</filename> (e.g.
+    <filename class="devicefile">ipsec0</filename>). Outgoing unencrypted
+    traffic (case 1.) was send through an <filename
+    class="devicefile">ipsecn</filename> device while incoming unencrypted
+    traffic (case 2) arrived from an <filename
+    class="devicefile">ipsecn</filename> device. The 2.6 kernel-based
+    implementation does away with these pseudo-interfaces. Outgoing traffic
+    that is going to be encrypted and incoming traffic that has been decrypted
+    must be matched against policies in the SPD.</para>
+
+    <para></para>
+  </section>
 
   <section>
     <title>IPSec Gateway on the Firewall System</title>

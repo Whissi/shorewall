@@ -2369,7 +2369,7 @@ add_a_rule()
     [ x$cport = x- ] && cport=
 
     case $proto in
-	tcp|udp|TCP|UDP|6|17)
+	tcp|TCP|6)
 	    if [ -n "$port" ]; then
 		dports="--dport"
 		if [ -n "$multioption" -a "$port" != "${port%,*}" ]; then
@@ -2387,7 +2387,28 @@ add_a_rule()
 		fi
 		sports="$sports $cport"
 	    fi
-		;;
+
+	    [ "$target" = QUEUE ] && proto="$proto --syn"
+	    ;;
+	udp|UDP|17)
+	    if [ -n "$port" ]; then
+		dports="--dport"
+		if [ -n "$multioption" -a "$port" != "${port%,*}" ]; then
+		    multiport="$multioption"
+		    dports="--dports"
+		fi
+		dports="$dports $port"
+	    fi
+
+	    if [ -n "$cport" ]; then
+		sports="--sport"
+		if [ -n "$multioption" -a "$cport" != "${cport%,*}" ]; then
+		    multiport="$multioption"
+		    sports="--sports"
+		fi
+		sports="$sports $cport"
+	    fi
+	    ;;
 	icmp|ICMP|1)
 	    [ -n "$port" ]  && 	dports="--icmp-type $port"
 	    state=
@@ -2873,7 +2894,7 @@ process_rules()
     while read xtarget xclients xservers xprotocol xports xcports xaddress xratelimit xuserset; do
 	temp="${xtarget%:*}"
 	case "${temp%<*}" in
-	    ACCEPT|DROP|REJECT|DNAT|DNAT-|REDIRECT|REDIRECT-|LOG|CONTINUE)
+	    ACCEPT|DROP|REJECT|DNAT|DNAT-|REDIRECT|REDIRECT-|LOG|CONTINUE|QUEUE)
 		expandv xclients xservers xprotocol xports xcports xaddress xratelimit xuserset
 
 		if [ "x$xclients" = xall ]; then

@@ -24,4 +24,23 @@ None.
 
 New Features:
 
-None.
+1. A new QUEUE action has been introduced for rules. QUEUE allows you
+   to pass connection requests to a user-space filter such as p2pwall
+   (http://p2pwall.sourceforge.net).
+
+   For example, to use p2pwall to filter P2P applications, you would
+   add the following rules:
+
+   QUEUE   loc	     net	tcp
+   QUEUE   loc	     net	udp
+   QUEUE   loc	     fw		udp
+
+   You would normally want to place those two rules BEFORE any ACCEPT
+   rules for loc->net.
+
+   Note: When the protocol specified is TCP ("tcp", "TCP" or "6"),
+   Shorewall will only pass connection requests (SYN packets) to user
+   space. This is for compatibility with p2pwall.
+
+
+

@@ -54,7 +54,7 @@
 #        /etc/rc.d/rc.local file is modified to start the firewall.
 #
 
-VERSION=2.0.0-Alpha2
+VERSION=2.0.0-Beta1
 
 usage() # $1 = exit status
 {
@@ -77,7 +77,7 @@ run_install()
 cant_autostart()
 {
     echo
-    echo  "WARNING: Unable to configure Shorewall2 to start"
+    echo  "WARNING: Unable to configure shorewall to start"
     echo  "           automatically at boot"
 }
 
@@ -185,8 +185,6 @@ elif [ -d /etc/apt -a -e /usr/bin/dpkg ]; then
     DEBIAN=yes
 fi
 
-FIREWALL="shorewall2"
-
 #
 # Change to the directory containing this script
 #
@@ -195,85 +193,85 @@ cd "$(dirname $0)"
 echo "Installing Shorewall Version $VERSION"
 
 #
-# Check for /etc/shorewall2
+# Check for /etc/shorewall
 #
-if [ -d ${PREFIX}/etc/shorewall2 ]; then
+if [ -d ${PREFIX}/etc/shorewall ]; then
     first_install=""
 else
     first_install="Yes"
 fi
 
-install_file_with_backup shorewall ${PREFIX}/sbin/shorewall2 0544
+install_file_with_backup shorewall ${PREFIX}/sbin/shorewall 0544
 
 echo
-echo "Shorewall2 control program installed in ${PREFIX}/sbin/shorewall2"
+echo "shorewall control program installed in ${PREFIX}/sbin/shorewall"
 
 #
 # Install the Firewall Script
 #
 if [ -n "$DEBIAN" ]; then
-    install_file_with_backup init.debian.sh /etc/init.d/shorewall2
+    install_file_with_backup init.debian.sh /etc/init.d/shorewall 0544
 else
-    install_file_with_backup init.sh ${PREFIX}${DEST}/$FIREWALL 0544
+    install_file_with_backup init.sh ${PREFIX}${DEST}/shorewall 0544
 fi
 
 echo
-echo  "Shorewall script installed in ${PREFIX}${DEST}/$FIREWALL"
+echo  "Shorewall script installed in ${PREFIX}${DEST}/shorewall"
 
 #
-# Create /etc/shorewall2, /usr/share/shorewall2 and /var/shorewall if needed
+# Create /etc/shorewall, /usr/share/shorewall and /var/shorewall if needed
 #
-mkdir -p ${PREFIX}/etc/shorewall2
-mkdir -p ${PREFIX}/usr/share/shorewall2
+mkdir -p ${PREFIX}/etc/shorewall
+mkdir -p ${PREFIX}/usr/share/shorewall
 mkdir -p ${PREFIX}/var/lib/shorewall
 #
 # Install the config file
 #
-if [ -f ${PREFIX}/etc/shorewall2/shorewall.conf ]; then
-   backup_file /etc/shorewall2/shorewall.conf
+if [ -f ${PREFIX}/etc/shorewall/shorewall.conf ]; then
+   backup_file /etc/shorewall/shorewall.conf
 else
-   run_install -o $OWNER -g $GROUP -m 0744 shorewall.conf ${PREFIX}/etc/shorewall2/shorewall.conf
+   run_install -o $OWNER -g $GROUP -m 0744 shorewall.conf ${PREFIX}/etc/shorewall/shorewall.conf
    echo
-   echo "Config file installed as ${PREFIX}/etc/shorewall2/shorewall.conf"
+   echo "Config file installed as ${PREFIX}/etc/shorewall/shorewall.conf"
 fi
 #
 # Install the zones file
 #
-if [ -f ${PREFIX}/etc/shorewall2/zones ]; then
-    backup_file /etc/shorewall2/zones
+if [ -f ${PREFIX}/etc/shorewall/zones ]; then
+    backup_file /etc/shorewall/zones
 else
-    run_install -o $OWNER -g $GROUP -m 0744 zones ${PREFIX}/etc/shorewall2/zones
+    run_install -o $OWNER -g $GROUP -m 0744 zones ${PREFIX}/etc/shorewall/zones
     echo
-    echo "Zones file installed as ${PREFIX}/etc/shorewall2/zones"
+    echo "Zones file installed as ${PREFIX}/etc/shorewall/zones"
 fi
 
 #
 # Install the functions file
 #
-if [ -f ${PREFIX}/etc/shorewall2/functions ]; then
-    backup_file ${PREFIX}/etc/shorewall2/functions
-    rm -f  ${PREFIX}/etc/shorewall2/functions
+if [ -f ${PREFIX}/etc/shorewall/functions ]; then
+    backup_file ${PREFIX}/etc/shorewall/functions
+    rm -f  ${PREFIX}/etc/shorewall/functions
 fi
 
-install_file_with_backup functions ${PREFIX}/usr/share/shorewall2/functions 0444
+install_file_with_backup functions ${PREFIX}/usr/share/shorewall/functions 0444
 
 echo
-echo "Common functions installed in ${PREFIX}/usr/share/shorewall2/functions"
+echo "Common functions installed in ${PREFIX}/usr/share/shorewall/functions"
 
 #
 # Install the Help file
 #
-install_file_with_backup help ${PREFIX}/usr/share/shorewall2/help 0544
+install_file_with_backup help ${PREFIX}/usr/share/shorewall/help 0544
 
 echo
-echo "Help command executor installed in ${PREFIX}/usr/share/shorewall2/help"
+echo "Help command executor installed in ${PREFIX}/usr/share/shorewall/help"
 #
 # Install the common.def file
 #
-install_file_with_backup common.def ${PREFIX}/etc/shorewall2/common.def 0444
+install_file_with_backup common.def ${PREFIX}/etc/shorewall/common.def 0444
 
 echo
-echo "Common rules installed in ${PREFIX}/etc/shorewall2/common.def"
+echo "Common rules installed in ${PREFIX}/etc/shorewall/common.def"
 
 #
 # Delete the icmp.def file
@@ -283,310 +281,320 @@ delete_file icmp.def
 #
 # Install the policy file
 #
-if [ -f ${PREFIX}/etc/shorewall2/policy ]; then
-    backup_file /etc/shorewall2/policy
+if [ -f ${PREFIX}/etc/shorewall/policy ]; then
+    backup_file /etc/shorewall/policy
 else
-    run_install -o $OWNER -g $GROUP -m 0600 policy ${PREFIX}/etc/shorewall2/policy
+    run_install -o $OWNER -g $GROUP -m 0600 policy ${PREFIX}/etc/shorewall/policy
     echo
-    echo "Policy file installed as ${PREFIX}/etc/shorewall2/policy"
+    echo "Policy file installed as ${PREFIX}/etc/shorewall/policy"
 fi
 #
 # Install the interfaces file
 #
-if [ -f ${PREFIX}/etc/shorewall2/interfaces ]; then
-    backup_file /etc/shorewall2/interfaces
+if [ -f ${PREFIX}/etc/shorewall/interfaces ]; then
+    backup_file /etc/shorewall/interfaces
 else
-    run_install -o $OWNER -g $GROUP -m 0600 interfaces ${PREFIX}/etc/shorewall2/interfaces
+    run_install -o $OWNER -g $GROUP -m 0600 interfaces ${PREFIX}/etc/shorewall/interfaces
     echo
-    echo "Interfaces file installed as ${PREFIX}/etc/shorewall2/interfaces"
+    echo "Interfaces file installed as ${PREFIX}/etc/shorewall/interfaces"
 fi
 #
 # Install the hosts file
 #
-if [ -f ${PREFIX}/etc/shorewall2/hosts ]; then
-    backup_file /etc/shorewall2/hosts
+if [ -f ${PREFIX}/etc/shorewall/hosts ]; then
+    backup_file /etc/shorewall/hosts
 else
-    run_install -o $OWNER -g $GROUP -m 0600 hosts ${PREFIX}/etc/shorewall2/hosts
+    run_install -o $OWNER -g $GROUP -m 0600 hosts ${PREFIX}/etc/shorewall/hosts
     echo
-    echo "Hosts file installed as ${PREFIX}/etc/shorewall2/hosts"
+    echo "Hosts file installed as ${PREFIX}/etc/shorewall/hosts"
 fi
 #
 # Install the rules file
 #
-if [ -f ${PREFIX}/etc/shorewall2/rules ]; then
-    backup_file /etc/shorewall2/rules
+if [ -f ${PREFIX}/etc/shorewall/rules ]; then
+    backup_file /etc/shorewall/rules
 else
-    run_install -o $OWNER -g $GROUP -m 0600 rules ${PREFIX}/etc/shorewall2/rules
+    run_install -o $OWNER -g $GROUP -m 0600 rules ${PREFIX}/etc/shorewall/rules
     echo
-    echo "Rules file installed as ${PREFIX}/etc/shorewall2/rules"
+    echo "Rules file installed as ${PREFIX}/etc/shorewall/rules"
 fi
 #
 # Install the NAT file
 #
-if [ -f ${PREFIX}/etc/shorewall2/nat ]; then
-    backup_file /etc/shorewall2/nat
+if [ -f ${PREFIX}/etc/shorewall/nat ]; then
+    backup_file /etc/shorewall/nat
 else
-    run_install -o $OWNER -g $GROUP -m 0600 nat ${PREFIX}/etc/shorewall2/nat
+    run_install -o $OWNER -g $GROUP -m 0600 nat ${PREFIX}/etc/shorewall/nat
     echo
-    echo "NAT file installed as ${PREFIX}/etc/shorewall2/nat"
+    echo "NAT file installed as ${PREFIX}/etc/shorewall/nat"
 fi
 #
 # Install the Parameters file
 #
-if [ -f ${PREFIX}/etc/shorewall2/params ]; then
-    backup_file /etc/shorewall2/params
+if [ -f ${PREFIX}/etc/shorewall/params ]; then
+    backup_file /etc/shorewall/params
 else
-    run_install -o $OWNER -g $GROUP -m 0600 params ${PREFIX}/etc/shorewall2/params
+    run_install -o $OWNER -g $GROUP -m 0600 params ${PREFIX}/etc/shorewall/params
     echo
-    echo "Parameter file installed as ${PREFIX}/etc/shorewall2/params"
+    echo "Parameter file installed as ${PREFIX}/etc/shorewall/params"
 fi
 #
 # Install the proxy ARP file
 #
-if [ -f ${PREFIX}/etc/shorewall2/proxyarp ]; then
-    backup_file /etc/shorewall2/proxyarp
+if [ -f ${PREFIX}/etc/shorewall/proxyarp ]; then
+    backup_file /etc/shorewall/proxyarp
 else
-    run_install -o $OWNER -g $GROUP -m 0600 proxyarp ${PREFIX}/etc/shorewall2/proxyarp
+    run_install -o $OWNER -g $GROUP -m 0600 proxyarp ${PREFIX}/etc/shorewall/proxyarp
     echo
-    echo "Proxy ARP file installed as ${PREFIX}/etc/shorewall2/proxyarp"
+    echo "Proxy ARP file installed as ${PREFIX}/etc/shorewall/proxyarp"
 fi
 #
 # Install the Stopped Routing file
 #
-if [ -f ${PREFIX}/etc/shorewall2/routestopped ]; then
-    backup_file /etc/shorewall2/routestopped
+if [ -f ${PREFIX}/etc/shorewall/routestopped ]; then
+    backup_file /etc/shorewall/routestopped
 else
-    run_install -o $OWNER -g $GROUP -m 0600 routestopped ${PREFIX}/etc/shorewall2/routestopped
+    run_install -o $OWNER -g $GROUP -m 0600 routestopped ${PREFIX}/etc/shorewall/routestopped
     echo
-    echo "Stopped Routing file installed as ${PREFIX}/etc/shorewall2/routestopped"
+    echo "Stopped Routing file installed as ${PREFIX}/etc/shorewall/routestopped"
 fi
 #
 # Install the Mac List file
 #
-if [ -f ${PREFIX}/etc/shorewall2/maclist ]; then
-    backup_file /etc/shorewall2/maclist
+if [ -f ${PREFIX}/etc/shorewall/maclist ]; then
+    backup_file /etc/shorewall/maclist
 else
-    run_install -o $OWNER -g $GROUP -m 0600 maclist ${PREFIX}/etc/shorewall2/maclist
+    run_install -o $OWNER -g $GROUP -m 0600 maclist ${PREFIX}/etc/shorewall/maclist
     echo
-    echo "MAC list file installed as ${PREFIX}/etc/shorewall2/maclist"
+    echo "MAC list file installed as ${PREFIX}/etc/shorewall/maclist"
 fi
 #
 # Install the Masq file
 #
-if [ -f ${PREFIX}/etc/shorewall2/masq ]; then
-    backup_file /etc/shorewall2/masq
+if [ -f ${PREFIX}/etc/shorewall/masq ]; then
+    backup_file /etc/shorewall/masq
 else
-    run_install -o $OWNER -g $GROUP -m 0600 masq ${PREFIX}/etc/shorewall2/masq
+    run_install -o $OWNER -g $GROUP -m 0600 masq ${PREFIX}/etc/shorewall/masq
     echo
-    echo "Masquerade file installed as ${PREFIX}/etc/shorewall2/masq"
+    echo "Masquerade file installed as ${PREFIX}/etc/shorewall/masq"
 fi
 #
 # Install the Modules file
 #
-if [ -f ${PREFIX}/etc/shorewall2/modules ]; then
-    backup_file /etc/shorewall2/modules
+if [ -f ${PREFIX}/etc/shorewall/modules ]; then
+    backup_file /etc/shorewall/modules
 else
-    run_install -o $OWNER -g $GROUP -m 0600 modules ${PREFIX}/etc/shorewall2/modules
+    run_install -o $OWNER -g $GROUP -m 0600 modules ${PREFIX}/etc/shorewall/modules
     echo
-    echo "Modules file installed as ${PREFIX}/etc/shorewall2/modules"
+    echo "Modules file installed as ${PREFIX}/etc/shorewall/modules"
 fi
 #
 # Install the TC Rules file
 #
-if [ -f ${PREFIX}/etc/shorewall2/tcrules ]; then
-    backup_file /etc/shorewall2/tcrules
+if [ -f ${PREFIX}/etc/shorewall/tcrules ]; then
+    backup_file /etc/shorewall/tcrules
 else
-    run_install -o $OWNER -g $GROUP -m 0600 tcrules ${PREFIX}/etc/shorewall2/tcrules
+    run_install -o $OWNER -g $GROUP -m 0600 tcrules ${PREFIX}/etc/shorewall/tcrules
     echo
-    echo "TC Rules file installed as ${PREFIX}/etc/shorewall2/tcrules"
+    echo "TC Rules file installed as ${PREFIX}/etc/shorewall/tcrules"
 fi
 
 #
 # Install the TOS file
 #
-if [ -f ${PREFIX}/etc/shorewall2/tos ]; then
-    backup_file /etc/shorewall2/tos
+if [ -f ${PREFIX}/etc/shorewall/tos ]; then
+    backup_file /etc/shorewall/tos
 else
-    run_install -o $OWNER -g $GROUP -m 0600 tos ${PREFIX}/etc/shorewall2/tos
+    run_install -o $OWNER -g $GROUP -m 0600 tos ${PREFIX}/etc/shorewall/tos
     echo
-    echo "TOS file installed as ${PREFIX}/etc/shorewall2/tos"
+    echo "TOS file installed as ${PREFIX}/etc/shorewall/tos"
 fi
 #
 # Install the Tunnels file
 #
-if [ -f ${PREFIX}/etc/shorewall2/tunnels ]; then
-    backup_file /etc/shorewall2/tunnels
+if [ -f ${PREFIX}/etc/shorewall/tunnels ]; then
+    backup_file /etc/shorewall/tunnels
 else
-    run_install -o $OWNER -g $GROUP -m 0600 tunnels ${PREFIX}/etc/shorewall2/tunnels
+    run_install -o $OWNER -g $GROUP -m 0600 tunnels ${PREFIX}/etc/shorewall/tunnels
     echo
-    echo "Tunnels file installed as ${PREFIX}/etc/shorewall2/tunnels"
+    echo "Tunnels file installed as ${PREFIX}/etc/shorewall/tunnels"
 fi
 #
 # Install the blacklist file
 #
-if [ -f ${PREFIX}/etc/shorewall2/blacklist ]; then
-    backup_file /etc/shorewall2/blacklist
+if [ -f ${PREFIX}/etc/shorewall/blacklist ]; then
+    backup_file /etc/shorewall/blacklist
 else
-    run_install -o $OWNER -g $GROUP -m 0600 blacklist ${PREFIX}/etc/shorewall2/blacklist
+    run_install -o $OWNER -g $GROUP -m 0600 blacklist ${PREFIX}/etc/shorewall/blacklist
     echo
-    echo "Blacklist file installed as ${PREFIX}/etc/shorewall2/blacklist"
+    echo "Blacklist file installed as ${PREFIX}/etc/shorewall/blacklist"
 fi
 #
 # Backup and remove the whitelist file
 #
-if [ -f ${PREFIX}/etc/shorewall2/whitelist ]; then
-    backup_file /etc/shorewall2/whitelist
-    rm -f ${PREFIX}/etc/shorewall2/whitelist
+if [ -f ${PREFIX}/etc/shorewall/whitelist ]; then
+    backup_file /etc/shorewall/whitelist
+    rm -f ${PREFIX}/etc/shorewall/whitelist
 fi
 #
 # Install the rfc1918 file
 #
-if [ -f ${PREFIX}/etc/shorewall2/rfc1918 ]; then
-    backup_file /etc/shorewall2/rfc1918
+if [ -f ${PREFIX}/etc/shorewall/rfc1918 ]; then
+    backup_file /etc/shorewall/rfc1918
 else
-    run_install -o $OWNER -g $GROUP -m 0600 rfc1918 ${PREFIX}/etc/shorewall2/rfc1918
+    run_install -o $OWNER -g $GROUP -m 0600 rfc1918 ${PREFIX}/etc/shorewall/rfc1918
     echo
-    echo "RFC 1918 file installed as ${PREFIX}/etc/shorewall2/rfc1918"
+    echo "RFC 1918 file installed as ${PREFIX}/etc/shorewall/rfc1918"
 fi
 #
 # Install the init file
 #
-if [ -f ${PREFIX}/etc/shorewall2/init ]; then
-    backup_file /etc/shorewall2/init
+if [ -f ${PREFIX}/etc/shorewall/init ]; then
+    backup_file /etc/shorewall/init
 else
-    run_install -o $OWNER -g $GROUP -m 0600 init ${PREFIX}/etc/shorewall2/init
+    run_install -o $OWNER -g $GROUP -m 0600 init ${PREFIX}/etc/shorewall/init
     echo
-    echo "Init file installed as ${PREFIX}/etc/shorewall2/init"
+    echo "Init file installed as ${PREFIX}/etc/shorewall/init"
 fi
 #
 # Install the start file
 #
-if [ -f ${PREFIX}/etc/shorewall2/start ]; then
-    backup_file /etc/shorewall2/start
+if [ -f ${PREFIX}/etc/shorewall/start ]; then
+    backup_file /etc/shorewall/start
 else
-    run_install -o $OWNER -g $GROUP -m 0600 start ${PREFIX}/etc/shorewall2/start
+    run_install -o $OWNER -g $GROUP -m 0600 start ${PREFIX}/etc/shorewall/start
     echo
-    echo "Start file installed as ${PREFIX}/etc/shorewall2/start"
+    echo "Start file installed as ${PREFIX}/etc/shorewall/start"
 fi
 #
 # Install the stop file
 #
-if [ -f ${PREFIX}/etc/shorewall2/stop ]; then
-    backup_file /etc/shorewall2/stop
+if [ -f ${PREFIX}/etc/shorewall/stop ]; then
+    backup_file /etc/shorewall/stop
 else
-    run_install -o $OWNER -g $GROUP -m 0600 stop ${PREFIX}/etc/shorewall2/stop
+    run_install -o $OWNER -g $GROUP -m 0600 stop ${PREFIX}/etc/shorewall/stop
     echo
-    echo "Stop file installed as ${PREFIX}/etc/shorewall2/stop"
+    echo "Stop file installed as ${PREFIX}/etc/shorewall/stop"
 fi
 #
 # Install the stopped file
 #
-if [ -f ${PREFIX}/etc/shorewall2/stopped ]; then
-    backup_file /etc/shorewall2/stopped
+if [ -f ${PREFIX}/etc/shorewall/stopped ]; then
+    backup_file /etc/shorewall/stopped
 else
-    run_install -o $OWNER -g $GROUP -m 0600 stopped ${PREFIX}/etc/shorewall2/stopped
+    run_install -o $OWNER -g $GROUP -m 0600 stopped ${PREFIX}/etc/shorewall/stopped
     echo
-    echo "Stopped file installed as ${PREFIX}/etc/shorewall2/stopped"
+    echo "Stopped file installed as ${PREFIX}/etc/shorewall/stopped"
 fi
 #
 # Install the ECN file
 #
-if [ -f ${PREFIX}/etc/shorewall2/ecn ]; then
-    backup_file /etc/shorewall2/ecn
+if [ -f ${PREFIX}/etc/shorewall/ecn ]; then
+    backup_file /etc/shorewall/ecn
 else
-    run_install -o $OWNER -g $GROUP -m 0600 ecn ${PREFIX}/etc/shorewall2/ecn
+    run_install -o $OWNER -g $GROUP -m 0600 ecn ${PREFIX}/etc/shorewall/ecn
     echo
-    echo "ECN file installed as ${PREFIX}/etc/shorewall2/ecn"
+    echo "ECN file installed as ${PREFIX}/etc/shorewall/ecn"
 fi
 #
 # Install the Accounting file
 #
-if [ -f ${PREFIX}/etc/shorewall2/accounting ]; then
-    backup_file /etc/shorewall2/accounting
+if [ -f ${PREFIX}/etc/shorewall/accounting ]; then
+    backup_file /etc/shorewall/accounting
 else
-    run_install -o $OWNER -g $GROUP -m 0600 accounting ${PREFIX}/etc/shorewall2/accounting
+    run_install -o $OWNER -g $GROUP -m 0600 accounting ${PREFIX}/etc/shorewall/accounting
     echo
-    echo "Accounting file installed as ${PREFIX}/etc/shorewall2/accounting"
+    echo "Accounting file installed as ${PREFIX}/etc/shorewall/accounting"
 fi
 #
 #
+# Install the Standard Actions file
+#
+if [ -f ${PREFIX}/etc/shorewall/actions.std ]; then
+    backup_file /etc/shorewall/actions.std
+else
+    run_install -o $OWNER -g $GROUP -m 0600 actions.std ${PREFIX}/etc/shorewall/actions.std
+    echo
+    echo "Standard actions file installed as ${PREFIX}/etc/shorewall/actions.std"
+fi
+#
 # Install the Actions file
 #
-if [ -f ${PREFIX}/etc/shorewall2/actions ]; then
-    backup_file /etc/shorewall2/actions
+if [ -f ${PREFIX}/etc/shorewall/actions ]; then
+    backup_file /etc/shorewall/actions
 else
-    run_install -o $OWNER -g $GROUP -m 0600 actions ${PREFIX}/etc/shorewall2/actions
+    run_install -o $OWNER -g $GROUP -m 0600 actions ${PREFIX}/etc/shorewall/actions
     echo
-    echo "Actions file installed as ${PREFIX}/etc/shorewall2/actions"
+    echo "Actions file installed as ${PREFIX}/etc/shorewall/actions"
 fi
 #
 # Install the Action files
 #
 for f in action.* ; do
-    if [ -f ${PREFIX}/etc/shorewall2/$f ]; then
-	backup_file /etc/shorewall2/$f
+    if [ -f ${PREFIX}/etc/shorewall/$f ]; then
+	backup_file /etc/shorewall/$f
     else
-	run_install -o $OWNER -g $GROUP -m 0600 $f ${PREFIX}/etc/shorewall2/$f
+	run_install -o $OWNER -g $GROUP -m 0600 $f ${PREFIX}/etc/shorewall/$f
 	echo
-	echo "Action ${f#*.} file installed as ${PREFIX}/etc/shorewall2/$f"
+	echo "Action ${f#*.} file installed as ${PREFIX}/etc/shorewall/$f"
     fi
 done
 #
 # Backup the version file
 #
 if [ -z "$PREFIX" ]; then
-    if [ -f /usr/share/shorewall2/version ]; then
-	backup_file /usr/share/shorewall2/version
+    if [ -f /usr/share/shorewall/version ]; then
+	backup_file /usr/share/shorewall/version
     fi
 fi
 #
 # Create the version file
 #
-echo "$VERSION" > ${PREFIX}/usr/share/shorewall2/version
-chmod 644 ${PREFIX}/usr/share/shorewall2/version
+echo "$VERSION" > ${PREFIX}/usr/share/shorewall/version
+chmod 644 ${PREFIX}/usr/share/shorewall/version
 #
 # Remove and create the symbolic link to the init script
 #
 
 if [ -z "$PREFIX" ]; then
-    rm -f /usr/share/shorewall2/init
-    ln -s ${DEST}/${FIREWALL} /usr/share/shorewall2/init
+    rm -f /usr/share/shorewall/init
+    ln -s ${DEST}/firewall /usr/share/shorewall/init
 fi
 #
 # Install the firewall script
 #
-install_file_with_backup firewall ${PREFIX}/usr/share/shorewall2/firewall 0544
+install_file_with_backup firewall ${PREFIX}/usr/share/shorewall/firewall 0544
 
 if [ -z "$PREFIX" -a -n "$first_install" ]; then
     if [ -n "$DEBIAN" ]; then
-	run_install -o $OWNER -g $GROUP -m 0644 default.debian /etc/default/shorewall2
-	ln -s ../init.d/shorewall2 /etc/rcS.d/S40shorewall2
+	run_install -o $OWNER -g $GROUP -m 0644 default.debian /etc/default/shorewall
+	ln -s ../init.d/shorewall /etc/rcS.d/S40shorewall
 	echo
-	echo "Shorewall2 will start automatically at boot"
-	echo "Set startup=1 in /etc/default/shorewall2 to enable"
+	echo "shorewall will start automatically at boot"
+	echo "Set startup=1 in /etc/default/shorewall to enable"
     else
 	if [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
 	    if insserv /etc/init.d/shorewalls ; then
 		echo
-		echo "Shorewall2 will start automatically at boot"
-		echo "Remove /etc/shorewall2/startup_disabled in /etc/default/shorewall2 to enable"
+		echo "shorewall will start automatically at boot"
+		echo "Remove /etc/shorewall/startup_disabled in /etc/default/shorewall to enable"
 	    else
 		cant_autostart
 	    fi
 	elif [ -x /sbin/chkconfig -o -x /usr/sbin/chkconfig ]; then
-	    if chkconfig --add shorewall2 ; then
+	    if chkconfig --add shorewall ; then
 		echo
-		echo "Shorewall2 will start automatically in run levels as follows:"
-		echo "Remove /etc/shorewall2/startup_disabled in /etc/default/shorewall2 to enable"
-		chkconfig --list $FIREWALL
+		echo "shorewall will start automatically in run levels as follows:"
+		echo "Remove /etc/shorewall/startup_disabled in /etc/default/shorewall to enable"
+		chkconfig --list shorewall
 	    else
 		cant_autostart
 	    fi
 	elif [ -x /sbin/rc-update ]; then
-	    if rc-update add shorewall2 default; then
+	    if rc-update add shorewall default; then
 		echo
-		echo "Shorewall2 will start automatically at boot"
-		echo "Remove /etc/shorewall2/startup_disabled in /etc/default/shorewall2 to enable"
+		echo "shorewall will start automatically at boot"
+		echo "Remove /etc/shorewall/startup_disabled in /etc/default/shorewall to enable"
 	    else
 		cant_autostart
 	    fi
@@ -597,7 +605,7 @@ if [ -z "$PREFIX" -a -n "$first_install" ]; then
 	echo \
 "########################################################################
 #      REMOVE THIS FILE AFTER YOU HAVE CONFIGURED SHOREWALL            #
-########################################################################" > /etc/shorewall2/startup_disabled
+########################################################################" > /etc/shorewall/startup_disabled
     fi
 fi
 
@@ -605,4 +613,4 @@ fi
 #  Report Success
 #
 echo
-echo "Shorewall2 Version $VERSION Installed"
+echo "shorewall Version $VERSION Installed"

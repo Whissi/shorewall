@@ -1,6 +1,6 @@
 %define name shorewall
-%define version 1.4.9
-%define release 0Beta2
+%define version 2.0.0
+%define release 0Beta1
 %define prefix /usr
 
 Summary: Shoreline Firewall is an iptables-based firewall for Linux systems.
@@ -98,10 +98,36 @@ fi
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/stopped
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/ecn
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/accounting
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/usersets
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/users
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/actions
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.AllowAuth
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.AllowDNS
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.AllowFTP
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.AllowIMAP
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.AllowNNTP
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.AllowNTP
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.AllowPing
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.AllowPOP3
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.AllowRdate
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.AllowSMB
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.AllowSMTP
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.AllowSNMP
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.AllowSSH
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.AllowTelnet
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.AllowTrcrt
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.AllowVNC
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.AllowVNCL*
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.AllowWeb
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.Drop
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.DropDNSrep
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.DropPing
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.DropSMB
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.DropUPnP
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.Reject
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.RejectAuth
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.RejectSMB
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/action.template
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/actions
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/actions.std
+
 %attr(0544,root,root) /sbin/shorewall
 %attr(0444,root,root) /usr/share/shorewall/functions
 %attr(0544,root,root) /usr/share/shorewall/firewall
@@ -109,6 +135,8 @@ fi
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel
 
 %changelog
+* Sun Feb 08 2004 Tom Eastep <tom@shorewall.net>
+- Updates for Shorewall 2.0.0.
 * Mon Dec 29 2003 Tom Eastep <tom@shorewall.net>
 - Remove Documentation from this RPM
 * Sun Dec 28 2003 Tom Eastep <tom@shorewall.net>

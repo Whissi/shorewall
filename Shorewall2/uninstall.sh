@@ -26,7 +26,7 @@
 #       You may only use this script to uninstall the version
 #       shown below. Simply run this script to remove Seattle Firewall
 
-VERSION=2.0.0-Alpha2
+VERSION=2.0.0-Beta1
 
 usage() # $1 = exit status
 {
@@ -60,8 +60,8 @@ remove_file() # $1 = file to restore
     fi
 }
 
-if [ -f /usr/share/shorewall2/version ]; then
-    INSTALLED_VERSION="$(cat /usr/share/shorewall2/version)"
+if [ -f /usr/share/shorewall/version ]; then
+    INSTALLED_VERSION="$(cat /usr/share/shorewall/version)"
     if [ "$INSTALLED_VERSION" != "$VERSION" ]; then
 	echo "WARNING: Shorewall Version $INSTALLED_VERSION is installed"
 	echo "         and this is the $VERSION uninstaller."
@@ -72,16 +72,16 @@ else
     VERSION=""
 fi
 
-echo "Uninstalling Shorewall2 $VERSION"
+echo "Uninstalling shorewall $VERSION"
 
 if qt iptables -L shorewall -n; then
-   /sbin/shorewall2 clear
+   /sbin/shorewall clear
 fi
 
-if [ -L /usr/share/shorewall2/init ]; then
-    FIREWALL=$(ls -l /usr/share/shorewall2/init | sed 's/^.*> //')
+if [ -L /usr/share/shorewall/init ]; then
+    FIREWALL=$(ls -l /usr/share/shorewall/init | sed 's/^.*> //')
 else
-    FIREWALL=/etc/init.d/shorewall2
+    FIREWALL=/etc/init.d/shorewall
 fi
 
 if [ -n "$FIREWALL" ]; then
@@ -97,13 +97,13 @@ if [ -n "$FIREWALL" ]; then
     rm -f ${FIREWALL}-*.bkout
 fi
 
-rm -f /sbin/shorewall2
-rm -f /sbin/shorewall2-*.bkout
+rm -f /sbin/shorewall
+rm -f /sbin/shorewall-*.bkout
 
-rm -rf /etc/shorewall2
-rm -rf /var/lib/shorewall2
-rm -rf /usr/share/shorewall2
+rm -rf /etc/shorewall
+rm -rf /var/lib/shorewall
+rm -rf /usr/share/shorewall
 
-echo "Shorewall2 Uninstalled"
+echo "Shorewall Uninstalled"
 
 

@@ -83,7 +83,7 @@ fix_bang() {
 }
 
 #
-# Find a File -- For relative file name, look first in $SHOREWALL_DIR then in /etc/shorewall2
+# Find a File -- For relative file name, look first in $SHOREWALL_DIR then in /etc/shorewall
 #
 find_file()
 {
@@ -95,7 +95,7 @@ find_file()
 	    if [ -n "$SHOREWALL_DIR" -a -f $SHOREWALL_DIR/$1 ]; then
 		echo $SHOREWALL_DIR/$1
 	    else
-		echo /etc/shorewall2/$1
+		echo /etc/shorewall/$1
 	    fi
 	    ;;
     esac
@@ -201,7 +201,7 @@ get_statedir()
     if [ -f $config ]; then
        . $config
     else
-	echo "/etc/shorewall2/shorewall.conf does not exist!" >&2
+	echo "/etc/shorewall/shorewall.conf does not exist!" >&2
 	exit 2
     fi
 

@@ -422,8 +422,6 @@ first_chains() #$1 = interface
 }
 
 #
-
-#
 # Find hosts in a given zone
 #
 # Read hosts file and for each record matching the passed ZONE,
@@ -573,7 +571,7 @@ validate_interfaces_file() {
 			error_message \
 			    "Warning: The 'dropunclean' and 'logunclean' options are not supported by Shorewall 2.0"
 			error_message \
-			    "         PLEASE STAND BY WHILE SHOREWALL2 REFORMATS YOUR HARD DRIVE TO REMOVE THESE OPTIONS..."
+			    "         PLEASE STAND BY WHILE shorewall REFORMATS YOUR HARD DRIVE TO REMOVE THESE OPTIONS..."
 			sleep 5
 			error_message "GOTCHA!!!! :-)"
 			error_message \
@@ -1399,7 +1397,7 @@ setup_mac_lists() {
     #
     for interface in $maclist_interfaces; do
 	case $interface in
-	    eth*|wlan*|br[0-9])
+	    eth*|wlan*|br[0-9]|ath[0-9])
 		;;
 	    *)
 		fatal_error "MAC verification is only supported on ethernet and 802.11b devices: $interface"
@@ -2320,8 +2318,8 @@ process_action() # $1 = action
 }
 
 #
-# Read /etc/shorewall2/actions and for each defined <action>, process 
-# /etc/shorewall2/action.<action>
+# Read /etc/shorewall/actions and for each defined <action>, process 
+# /etc/shorewall/action.<action>
 #
 
 process_actions() {
@@ -3755,7 +3753,7 @@ setup_masq()
 		chain=$newchain
 		destnets=0.0.0.0/0
 
-		if [ -n "$nonmasq" ]; then
+		if [ -n "$nomasq" ]; then
 		    for addr in $(separate_list $nomasq); do
 			addnatrule $chain -s $addr -j RETURN
 		    done
@@ -4780,10 +4778,10 @@ activate_rules()
 # Check for disabled startup
 #
 check_disabled_startup() {
-    if [ -f /etc/shorewall2/startup_disabled ]; then
+    if [ -f /etc/shorewall/startup_disabled ]; then
 	echo "   Shorewall Startup is disabled -- to enable startup"
 	echo "   after you have completed Shorewall configuration,"
-	echo "   remove the file /etc/shorewall2/startup_disabled"
+	echo "   remove the file /etc/shorewall/startup_disabled"
 
 	[ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
 	my_mutex_off
@@ -5347,7 +5345,7 @@ do_initialize() {
     TCP_FLAGS_LOG_LEVEL=
     RFC1918_LOG_LEVEL=
     MARK_IN_FORWARD_CHAIN=
-    SHARED_DIR=/usr/share/shorewall2
+    SHARED_DIR=/usr/share/shorewall
     FUNCTIONS=
     VERSION_FILE=
     LOGFORMAT=

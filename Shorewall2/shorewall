@@ -27,7 +27,7 @@
 #	If an error occurs while starting or restarting the firewall, the
 #	firewall is automatically stopped.
 #
-#	The firewall uses configuration files in /etc/shorewall2/ - skeleton
+#	The firewall uses configuration files in /etc/shorewall/ - skeleton
 #	files is included with the firewall.
 #
 #	Commands are:
@@ -621,7 +621,7 @@ fi
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 MUTEX_TIMEOUT=
 
-SHARED_DIR=/usr/share/shorewall2
+SHARED_DIR=/usr/share/shorewall
 FIREWALL=$SHARED_DIR/firewall
 FUNCTIONS=$SHARED_DIR/functions
 VERSION_FILE=$SHARED_DIR/version
@@ -944,7 +944,7 @@ case "$1" in
 	;;
     call) 
 	#
-	# Undocumented way to call functions in /usr/share/shorewall2/functions directly
+	# Undocumented way to call functions in /usr/share/shorewall/functions directly
 	#
 	shift;
 	$@

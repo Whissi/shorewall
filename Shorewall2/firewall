@@ -592,7 +592,7 @@ determine_hosts() {
 		    hosts="$hosts $interface:$networks"
 		fi
 
-		if list_search routeback $options; then
+		if interface_has_option $interface routeback; then
 		    eval ${zone}_routeback=\"$interface:$networks \$${zone}_routeback\"
 		fi
 	    done

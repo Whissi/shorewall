@@ -1498,7 +1498,7 @@ setup_tunnels() # $1 = name of tunnels file
 
     setup_one_generic() # $1 = gateway, $2 = kind:protocol[:port], $3 = Gateway Zone
     {
-	local procotol
+	local protocol
 	local p=
 
 	case $2 in
@@ -2931,6 +2931,7 @@ process_actions1() {
 	    case $xaction in
 		*:*)
 		    temp=${xaction#*:}
+		    [ ${#temp} -lt 12 ] || fatal_error "Action Name Too Long: $temp"
 		    xaction=${xaction%:*}
 		    case $temp in
 			ACCEPT|REJECT|DROP)

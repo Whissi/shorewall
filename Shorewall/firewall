@@ -435,7 +435,7 @@ determine_hosts() {
 	done
     }
 
-    recalculate_hosts()
+    recalculate_interfaces()
     {
 	interfaces=
 	
@@ -457,12 +457,15 @@ determine_hosts() {
 	hosts=`find_hosts $zone`
 	hosts=`echo $hosts` # Remove extra trash
 
-	if [ -n "$hosts" ]; then
+	if [ -n "MERGE_HOSTS" ]; then
+	    do_a_zone
+	    recalculate_interfaces
+	elif [ -n "$hosts" ]; then
 	    ####################################################################
 	    # Zone is defined in terms of hosts -- derive the interface list
 	    # from the host list
 	    #
-	    recalculate_hosts
+	    recalculate_interfacess
 	else
 	    ####################################################################
 	    # If no hosts are defined for a zone then the zone consists of any
@@ -3348,6 +3351,7 @@ do_initialize() {
     NAT_BEFORE_RULES=
     MULTIPORT=
     DETECT_DNAT_IPADDRS=
+    MERGE_HOSTS=
     stopping=
     have_mutex=
     masq_seq=1
@@ -3422,6 +3426,7 @@ do_initialize() {
     NAT_BEFORE_RULES=`added_param_value_yes NAT_BEFORE_RULES $NAT_BEFORE_RULES`
     MULTIPORT=`added_param_value_no MULTIPORT $MULTIPORT`
     DETECT_DNAT_IPADDRS=`added_param_value_no DETECT_DNAT_IPADDRS $DETECT_DNAT_IPADDRS`
+    MERGE_HOSTS=`added_param_value_no MERGE_HOSTS $MERGE_HOSTS`
 }
 
 ################################################################################

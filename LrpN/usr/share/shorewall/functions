@@ -1,6 +1,17 @@
 #!/bin/sh
 #
-# Shorewall 2.0 -- /usr/share/shorewall/functions
+# Shorewall 2.1 -- /usr/share/shorewall/functions
+
+#
+# Split a colon-separated list into a space-separated list
+#
+split() {
+    local ifs=$IFS
+    IFS=:
+    set -- $1
+    echo $*
+    IFS=$ifs
+}
 
 #
 # Search a list looking for a match -- returns zero if a match found
@@ -377,7 +388,7 @@ mktempfile() {
 		> $1/shorewall-$$ && echo $1/shorewall-$$
 		;;
 	    *)
-		echo "   ERROR:Internal error in mktempfile"
+		echo "   ERROR:Internal error in mktempfile" >&2
 		;;
 	esac
     else
@@ -393,7 +404,7 @@ mktempfile() {
 		> /tmp/shorewall-$$ && echo /tmp/shorewall-$$
 		;;
 	    *)
-		echo "   ERROR:Internal error in mktempfile"
+		echo "   ERROR:Internal error in mktempfile" >&2
 		;;
 	esac
     fi
@@ -417,10 +428,10 @@ mktempdir() {
 	    mkdir /tmp/shorewall-$$ && chmod 700 /tmp/shorewall-$$ && echo /tmp/shorewall-$$
 	    ;;
 	*)
-	    echo "   ERROR:Internal error in mktempdir"
+	    echo "   ERROR:Internal error in mktempdir" >&2
 	    ;;
 	esac
-}		
+}	
 
 #
 # Read a file and handle "INCLUDE" directives
@@ -680,6 +691,9 @@ chain_base() #$1 = interface
 	    *-*)
 		c="${c%-*}_${c##*-}"
 		;;
+	    *%*)
+		c="${c%\%*}_${c##*%}"
+		;;
 	    *)
 		echo ${c:=common}
 		return
@@ -767,3 +781,11 @@ find_interface_by_address() {
     [ -n "$dev" ] && echo $dev
 }
 
+#
+# Find interface addresses--returns the set of addresses assigned to the passed
+# device
+#
+find_interface_addresses() # $1 = interface
+{
+    ip -f inet addr show $1 | grep inet | sed 's/inet //;s/\/.*//;s/ peer.*//'
+}

@@ -1,5 +1,5 @@
 #
-# Shorewall 2.0 /etc/shorewall/action.template
+# Shorewall 2.1 /etc/shorewall/action.template
 #
 #	This file is a template for files with names of the form 
 #	/etc/shorewall/action.<action-name> where <action> is an
@@ -36,6 +36,10 @@
 #			by ":" and a syslog log level (e.g, REJECT:info or
 #			ACCEPT:debugging). This causes the packet to be
 #			logged at the specified level.
+#
+#			The special log level 'none' does not result in logging
+#			but rather exempts the rule from being overridden by a
+#			non-forcing log level when the action is invoked.
 #
 #			You may also specify ULOG (must be in upper case) as a
 #			log level.This will log to the ULOG target for routing

@@ -1,5 +1,5 @@
 #
-# Shorewall 2.0 - Masquerade file
+# Shorewall 2.1 - Masquerade file
 #
 # /etc/shorewall/masq
 #
@@ -35,6 +35,10 @@
 #			+eth0:192.0.2.32/27
 #			+eth0:2
 #
+#		     This feature should only be required if you need to 
+#		     insert rules in this file that preempt entries in
+#		     /etc/shorewall/nat.
+#
 #	SUBNET -- Subnet that you wish to masquerade. You can specify this as
 #		  a subnet or as an interface. If you give the name of an
 #		  interface, you must have iproute installed and the interface
@@ -66,7 +70,7 @@
 #
 #				Finally, you may also specify a comma-separated
 #				list of ranges and/or addresses in this column.
-#				
+#
 #				This column may not contain DNS Names.
 #
 #				If you want to leave this column empty

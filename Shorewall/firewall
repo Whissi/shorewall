@@ -3067,9 +3067,11 @@ process_rule() # $1 = target
     source=$clientzone
 
     if [ $source = $FW ]; then
-	source_hosts= || eval source_hosts=\"\$${source}_hosts\"
+	source_hosts=
     elif [ -n "$userset" ]; then
 	fatal_error "Invalid use of a user set: rule \"$rule\""
+    else
+	eval source_hosts=\"\$${source}_hosts\"
     fi
 
     if [ "$servers" = "${servers%:*}" ] ; then

@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-10-24</pubdate>
+    <pubdate>2004-11-19</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -162,6 +162,17 @@
     <para>Zones are defined in the file <filename><ulink
     url="Documentation.htm#Zones"><filename>/etc/shorewall/zones</filename></ulink></filename>.</para>
 
+    <important>
+      <para>Beginning with Shorewall 2.2.0, the
+      <filename>/etc/shorewall/zones</filename> file included in the release
+      is empty. You can create the above set of zones by copying and pasting
+      the following into the file:</para>
+
+      <programlisting>net     Net             Internet
+loc     Local           Local networks
+dmz     DMZ             Demilitarized zone</programlisting>
+    </important>
+
     <para>Shorewall also recognizes the firewall system as its own zone - by
     default, the firewall itself is known as <emphasis
     role="bold">fw</emphasis> but that may be changed in the <ulink
@@ -280,6 +291,12 @@ all              all                 REJECT     info</programlisting>
 
     <para>At this point, edit your <filename>/etc/shorewall/policy
     </filename>and make any changes that you wish.</para>
+
+    <important>
+      <para>Beginning with Shorewall 2.2.0, the released policy file is empty.
+      You can copy and paste the above entries to create a starting point from
+      which to customize your policies.</para>
+    </important>
   </section>
 
   <section id="Interfaces">

@@ -17,7 +17,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-11-05</pubdate>
+    <pubdate>2004-11-18</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -1966,12 +1966,53 @@ REJECT    fw            net:216.239.39.99    all</programlisting>Given that
       then be accurately parsed and decisions can be made based on the
       result.</para>
     </section>
+
+    <section id="faq42">
+      <title>(FAQ 42) How can I tell which features my kernel and iptables
+      support?</title>
+
+      <para>Answer: At a root prompt, enter the command <command>shorewall
+      check</command>. There is a section near the top of the resulting output
+      that gives you a synopsis of your kernel/iptables capabilities.</para>
+
+      <programlisting>gateway:/etc/shorewall # shorewall check
+Loading /usr/share/shorewall/functions...
+Processing /etc/shorewall/params ...
+Processing /etc/shorewall/shorewall.conf...
+Loading Modules...
+
+Notice:  The 'check' command is unsupported and problem
+         reports complaining about errors that it didn't catch
+         will not be accepted
+
+Shorewall has detected the following iptables/netfilter capabilities:
+   NAT: Available
+   Packet Mangling: Available
+   Multi-port Match: Available
+   Connection Tracking Match: Available
+   Packet Type Match: Not available
+   Policy Match: Available
+   Physdev Match: Available
+   IP range Match: Available
+Verifying Configuration...
+...</programlisting>
+    </section>
   </section>
 
   <appendix>
     <title>Revision History</title>
 
     <para><revhistory>
+        <revision>
+          <revnumber>1.38</revnumber>
+
+          <date>2004-11-18</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Added FAQ 42.</revremark>
+        </revision>
+
         <revision>
           <revnumber>1.37</revnumber>
 

@@ -5,7 +5,7 @@
   <!--$Id$-->
 
   <articleinfo>
-    <title>Shorewall 2.0 Reference</title>
+    <title>Shorewall 2.x Reference</title>
 
     <authorgroup>
       <author>
@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-10-25</pubdate>
+    <pubdate>2004-11-18</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -178,6 +178,16 @@
           <para>a parameter file installed in <filename
           class="directory">/etc/shorewall</filename> and used to describe
           individual hosts or subnetworks in zones.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><link linkend="Ipsec">ipsec</link></term>
+
+        <listitem>
+          <para>a parameter file installed in <filename
+          class="directory">/etc/shorewall</filename> and used to describe
+          ipsec policies associated with zones.</para>
         </listitem>
       </varlistentry>
 
@@ -1625,7 +1635,11 @@ ACCEPT<emphasis role="bold">:info</emphasis>   -              -               tc
 
               <listitem>
                 <para>refers to a connection request from any host in the
-                specified subnet (example net:155.186.235.0/24).</para>
+                specified subnet (example net:155.186.235.0/24). Beginning
+                with Shorewall 2.1.0, IP address ranges of the form
+                &lt;<emphasis>first address</emphasis>&gt;-&lt;<emphasis>last
+                address</emphasis>&gt; may be specified. This requires that
+                your kernel and iptables have iprange match support.</para>
               </listitem>
             </varlistentry>
           </variablelist>
@@ -1674,7 +1688,7 @@ ACCEPT<emphasis role="bold">:info</emphasis>   -              -               tc
             </listitem>
           </itemizedlist>
 
-          <para>Unlike in the SOURCE column, a range of IP addresses may be
+          <para>Like in the SOURCE column, a range of IP addresses may be
           specified in the DEST column as &lt;<emphasis>first
           address</emphasis>&gt;-&lt;<emphasis>last address</emphasis>&gt;.
           When the ACTION is DNAT or DNAT-, connections will be assigned to
@@ -2566,7 +2580,7 @@ eth0                  eth1            206.124.146.176</programlisting>
           </itemizedlist>
 
           <para>Example: Using the default LOGFORMAT, the log prefix for
-          logging from the nat table's PREROUTING chain is: </para>
+          logging from the nat table's PREROUTING chain is:</para>
 
           <programlisting>Shorewall:nat:PREROUTING</programlisting>
 
@@ -2934,7 +2948,7 @@ eth0                  eth1            206.124.146.176</programlisting>
           enable martian logging for all interfaces, you may still enable it
           for individual interfaces using the <emphasis
           role="bold">logmartians</emphasis> interface option in <link
-          linkend="Interfaces">/etc/shorewall/interfaces</link>. </para>
+          linkend="Interfaces">/etc/shorewall/interfaces</link>.</para>
         </listitem>
       </varlistentry>
 

@@ -2895,17 +2895,17 @@ ip_range() {
     done
 }
 #
-# Netmask from VLSM
+# Netmask from CIDR
 #
 ip_netmask() {
-    echo $(( $(( 0xffffffff << $((32 - $1)) )) & 0xffffffff ))
+    echo $(( $(( 0xffffffff << $((32 - ${1#*/})) )) & 0xffffffff ))
 }
 #
 # Network address from CIDR
 #
 networkaddress() {
     local decodedaddr=`decodeaddr ${1%/*}`
-    local netmask=`ip_netmask ${1#*/}`
+    local netmask=`ip_netmask $1`
 
     echo `encodeaddr $(($decodedaddr & $netmask))`
 }
@@ -2914,7 +2914,7 @@ networkaddress() {
 #
 broadcastaddress() {
     local decodedaddr=`decodeaddr ${1%/*}`
-    local netmask=`ip_netmask ${1#*/}`
+    local netmask=`ip_netmask $1`
 
     echo `encodeaddr $(( $(($decodedaddr & $netmask)) | $(( $netmask ^ 0xffffffff )) ))`
 }
@@ -2923,7 +2923,7 @@ broadcastaddress() {
 #
 in_subnet() # $1 = IP address, $2 = CIDR network
 {
-    local netmask=`ip_netmask ${2#*/}`
+    local netmask=`ip_netmask $2`
 
     test $(( `decodeaddr $1` & $netmask)) -eq $(( `decodeaddr ${2%/*}` & $netmask ))
 }
@@ -3243,7 +3243,7 @@ add_ip_aliases()
 {
     local addresses external interface inet cidr rest val
 
-    details() 
+    address_details() 
     {
 	#
 	# Folks feel uneasy if they don't see all of the same
@@ -3252,7 +3252,7 @@ add_ip_aliases()
 	# the anxiety level, we have the following code which sets
 	# the VLSM and BRD from an existing address in the same subnet
 	#
-	# Get all of the lines that contain inet addresses with broadcast
+	# Get all of the lines that contain inet addresses 
 	#
 	ip addr show $interface 2> /dev/null | grep 'inet' | while read inet cidr rest ; do
 	    if in_subnet $external $cidr; then
@@ -3264,7 +3264,7 @@ add_ip_aliases()
 
     do_one()
     {
-	val=`details`
+	val=`address_details`
 	run_ip addr add ${external}${val} dev $interface $label
 	echo "$external $interface" >> ${STATEDIR}/nat
 	[ -n "$label" ] && label="with $label"

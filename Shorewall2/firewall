@@ -170,17 +170,15 @@ run_iptables() {
 #
 run_iptables2() {
 
-    if [ "x${*%!*}" = "x$*" ]; then
-	#
-	# No "!" in the command -- just execute it
-	#
-	run_iptables $@
-	return
-    fi
-    #
-    # Need to insert white space before each "!"
-    #
-    run_iptables $(fix_bang $@)
+    case "$@" in
+	*!*)
+	    run_iptables $(fix_bang $@)
+	    ;;
+	*)
+	    run_iptables $@
+	    ;;
+    esac
+
 }
 
 #
@@ -1771,6 +1769,8 @@ setup_ipsec() {
 #
 setup_proxy_arp() {
 
+    local setlist= resetlist=
+
     print_error() {
 	error_message "Invalid value for HAVEROUTE - ($haveroute)"
 	error_message "Entry \"$address $interface $external $haveroute\" ignored"
@@ -1824,9 +1824,6 @@ setup_proxy_arp() {
 
 	ensure_and_save_command arp -i $external -Ds $address $external pub
 
-	run_and_save_command "echo 1 > /proc/sys/net/ipv4/conf/$interface/proxy_arp"
-	run_and_save_command "echo 0 > /proc/sys/net/ipv4/conf/$external/proxy_arp"
-
 	echo $address $interface $external $haveroute >> ${STATEDIR}/proxyarp
 
 	progress_message "   Host $address connected to $interface added to ARP on $external"
@@ -1838,8 +1835,18 @@ setup_proxy_arp() {
 
     while read address interface external haveroute persistent; do
 	expandv address interface external haveroute persistent
+	list_search $interface $setlist   || setlist="$setlist $interface"
+	list_search $external  $resetlist || list_search $external $setlist || resetlist="$resetlist $external"
 	setup_one_proxy_arp
     done < $TMP_DIR/proxyarp
+
+    for interface in $resetlist; do
+	run_and_save_command "echo 0 > /proc/sys/net/ipv4/conf/$interface/proxy_arp"
+    done
+
+    for interface in $setlist; do
+	run_and_save_command "echo 1 > /proc/sys/net/ipv4/conf/$interface/proxy_arp"
+    done
 
     interfaces=$(find_interfaces_by_option proxyarp)
 

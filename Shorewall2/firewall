@@ -1391,6 +1391,58 @@ disable_ipv6_1() {
 }
 
 #
+# Process the routestopped file either adding or deleting rules
+#
+
+process_routestopped() # $1 = command
+{
+    local hosts= interface host host1 options networks
+
+    while read interface host options; do
+	expandv interface host options
+	[ "x$host" = "x-" -o -z "$host" ] && host=0.0.0.0/0
+	for h in $(separate_list $host); do
+	    hosts="$hosts $interface:$h"
+	done
+
+	routeback=
+
+	if [ -n "$options" ]; then
+	    for option in $(separate_list $options); do
+		case $option in
+		    routeback)
+			if [ -n "$routeback" ]; then
+			    error_message "Warning: Duplicate routestopped option ignored: routeback"
+			else
+			    routeback=Yes
+			    for h in $(separate_list $host); do
+				run_iptables $1 FORWARD -i $interface -o $interface $(both_ip_ranges $h $h) -j ACCEPT
+			    done
+			fi
+			;;
+		    *)
+			error_message "Warning: Unknown routestopped option ignored: $option"
+			;;
+		esac
+	    done
+	fi
+		    
+    done < $TMP_DIR/routestopped
+
+    for host in $hosts; do
+	interface=${host%:*}
+	networks=${host#*:}
+	$IPTABLES $1 INPUT  -i $interface $(source_ip_range $networks) -j ACCEPT
+	[ -z "$ADMINISABSENTMINDED" ] && \
+	    run_iptables $1 OUTPUT -o $interface $(dest_ip_range $networks) -j ACCEPT
+
+	for host1 in $hosts; do
+	    [ "$host" != "$host1" ] && run_iptables $1 FORWARD -i $interface -o ${host1%:*} $(both_ip_ranges $networks ${host1#*:}) -j ACCEPT
+	done
+    done
+}
+
+#
 # Stop the Firewall
 #
 stop_firewall() {
@@ -1465,50 +1517,9 @@ stop_firewall() {
 
     hosts=
 
-    strip_file routestopped
+    [ -f $TMP_DIR/routestopped ] || strip_file routestopped
 
-    while read interface host options; do
-	expandv interface host options
-	[ "x$host" = "x-" -o -z "$host" ] && host=0.0.0.0/0
-	for h in $(separate_list $host); do
-	    hosts="$hosts $interface:$h"
-	done
-
-	routeback=
-
-	if [ -n "$options" ]; then
-	    for option in $(separate_list $options); do
-		case $option in
-		    routeback)
-			if [ -n "$routeback" ]; then
-			    error_message "Warning: Duplicate option ignored: routeback"
-			else
-			    routeback=Yes
-			    for h in $(separate_list $host); do
-				$IPTABLES -A FORWARD -i $interface -o $interface $(both_ip_ranges $h $h) -j ACCEPT
-			    done
-			fi
-			;;
-		    *)
-			error_message "Warning: Unknown option ignored: $option"
-			;;
-		esac
-	    done
-	fi
-		    
-    done < $TMP_DIR/routestopped
-
-    for host in $hosts; do
-	interface=${host%:*}
-	networks=${host#*:}
-	$IPTABLES -A INPUT  -i $interface $(source_ip_range $networks) -j ACCEPT
-	[ -z "$ADMINISABSENTMINDED" ] && \
-	    $IPTABLES -A OUTPUT -o $interface $(dest_ip_range $networks) -j ACCEPT
-
-	for host1 in $hosts; do
-	    [ "$host" != "$host1" ] && $IPTABLES -A FORWARD -i $interface -o ${host1%:*} $(both_ip_ranges $networks ${host1#*:}) -j ACCEPT
-	done
-    done
+    process_routestopped -A
 
     $IPTABLES -A INPUT  -i lo -j ACCEPT
     [ -z "$ADMINISABSENTMINDED" ] && \
@@ -5723,6 +5734,14 @@ initialize_netfilter () {
 
     run_user_exit continue
 
+    f=$(find_file routestopped)
+
+    echo "Processing $f ..."
+
+    strip_file routestopped $f
+
+    process_routestopped -A
+
     [ -n "$DISABLE_IPV6" ] && disable_ipv6
 
     #
@@ -6360,7 +6379,7 @@ activate_rules()
 	    [ -n "$IPRANGE_MATCH" -a -f $TMP_DIR/iprange ] && rm -f $TMP_DIR/iprange
 
 	fi
-    }
+    }    
 
     #
     # Add jumps to early SNAT chains
@@ -6579,7 +6598,9 @@ activate_rules()
 	run_iptables -D $chain -m state --state ESTABLISHED,RELATED -j ACCEPT
 	run_iptables -D $chain -p udp --dport 53 -j ACCEPT
     done
-    
+ 
+    process_routestopped -D
+
     if [ -n "$LOGALLNEW" ]; then
 	for table in mangle nat filter; do
 	    case $table in

@@ -1680,13 +1680,19 @@ setup_ipsec() {
 		    ;;
 	    esac
 	done
-	eval ${zone}_ipsec_options=\"${newoptions# }\"	    
+	
+	if [ -n "$newoptions" ]; then
+	    eval ${zone}_is_complex=Yes
+	    eval ${zone}_ipsec_options=\"${newoptions# }\"
+	fi
     }
 
     strip_file ipsec $1
     
     while read zone ipsec options; do
 	expandv zone ipsec options
+
+	[ -n "$POLICY_MATCH" ] || fatal_error "Your kernel and/or iptables does not support policy match"
 
 	validate_zone1 $zone || fatal_error "Unknown zone: $zone"
 
@@ -1695,6 +1701,7 @@ setup_ipsec() {
 		;;
 	    Yes|yes)
 		eval ${zone}_is_ipsec=Yes
+		eval ${zone}_is_complex=Yes
 		;;
 	    *)
 		fatal_error "Invalid IPSEC column value: $ipsec"

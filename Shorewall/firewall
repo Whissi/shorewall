@@ -345,6 +345,16 @@ input_chain() # $1 = interface
 }
 
 ################################################################################
+# Input Chains (input and forward) for an interface   		               #
+################################################################################
+input_chains() # $1 = interface
+{
+    local base=`chain_base $1`
+
+    echo ${base}_in ${base}_fwd
+}
+
+################################################################################
 # Output Chain for an interface						       #
 ################################################################################
 output_chain() # $1 = interface
@@ -358,6 +368,14 @@ output_chain() # $1 = interface
 masq_chain() # $1 = interface
 {
    echo `chain_base $1`_masq
+}
+
+################################################################################
+# MAC Verification Chain for an interface			               #
+################################################################################
+mac_chain() # $1 = interface
+{
+   echo `chain_base $1`_mac
 }
 
 ################################################################################
@@ -1301,7 +1319,7 @@ setup_proxy_arp() {
 }
 
 ###############################################################################
-# Set up MAC List Chains						      #
+# Set up MAC Verification						      #
 ###############################################################################
 setup_mac_lists() {
     local interface
@@ -1340,7 +1358,7 @@ setup_mac_lists() {
 		;;
 	esac
 
-	createchain ${interface}_mac no
+	createchain `mac_chain $interface` no
     done
     #
     # Process the maclist file producing the verification rules
@@ -1350,7 +1368,7 @@ setup_mac_lists() {
     while read interface mac address; do
 	expandv interface mac address
 
-	chain=${interface}_mac
+	chain=`mac_chain $interface`
 
 	if ! havechain $chain ; then
 	    fatal_error "Error: No hosts on $interface have the maclist option specified"
@@ -1358,7 +1376,7 @@ setup_mac_lists() {
 
 	[ -n "$address" ] && addr_match="-s $address" || addr_match=
 
-	run_iptables -A ${interface}_mac `mac_match $mac` $addr_match -j RETURN
+	run_iptables -A $chain `mac_match $mac` $addr_match -j RETURN
     done < $TMP_DIR/maclist
     #
     # Setup Logging variables
@@ -1373,7 +1391,7 @@ setup_mac_lists() {
     # chains
     #
     for interface in $maclist_interfaces; do
-	chain=${interface}_mac
+	chain=`mac_chain $interface`
 	blob=`ip addr show $interface 2> /dev/null | grep inet | sed 's/inet //; s/brd //; s/scope.*//;'`
 
 	[ -z "$blob" ] && \
@@ -1406,16 +1424,13 @@ setup_mac_lists() {
     #
     # Generate jumps from the input and forward chains
     #
-    for blob in $maclist_hosts; do
-	chain=${blob%:*}_mac
-	hosts=${blob#*:}
-	#
-	# Evil reuse of 'blob'
-	#
-	blob="-s $hosts -m state --state NEW -j $chain"
-
-	run_iptables -A `input_chain $interface`   $blob
-	run_iptables -A `forward_chain $interface` $blob
+    for hosts in $maclist_hosts; do
+	interface=${hosts%:*}
+	hosts=${hosts#*:}
+	for chain in `input_chains $interface` ; do 
+	    run_iptables -A $chain -s $hosts -m state --state NEW \
+		-j `mac_chain $interface`
+	done
     done
 }    
 	

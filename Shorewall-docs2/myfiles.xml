@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-02-17</pubdate>
+    <pubdate>2005-02-25</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -53,10 +53,10 @@
     </caution>
 
     <para>I have DSL service and have 5 static IP addresses
-    (206.124.146.176-180). My DSL <quote>modem</quote> (Westell 2200 running
-    in Bridge mode) is connected to eth2 and has IP address 192.168.1.1
-    (factory default). The modem is configured in <quote>bridge</quote> mode
-    so PPPoE is not involved. I have a local network connected to eth3 (subnet
+    (206.124.146.176-180). My DSL <quote>modem</quote> (Westell 2200) is
+    connected to eth2 and has IP address 192.168.1.1 (factory default). The
+    modem is configured in <quote>bridge</quote> mode so PPPoE is not
+    involved. I have a local network connected to eth3 (subnet
     192.168.1.0/24), a wireless network (192.168.3.0/24) connected to eth0,
     and a DMZ connected to eth1 (206.124.146.176/32). Note that I configure
     the same IP address on both <filename class="devicefile">eth1</filename>
@@ -73,7 +73,7 @@
 
       <listitem>
         <para>I use one-to-one NAT for Eastepnc6000 (My work system -- Windows
-        XP SP1). Internal address 192.168.1.7 and external address
+        XP SP1). Internal address 192.168.1.6 and external address
         206.124.146.180.</para>
       </listitem>
 
@@ -214,6 +214,7 @@ TCP_FLAGS_DISPOSITION=DROP</programlisting>
       <blockquote>
         <para><programlisting>MIRRORS=&lt;list of shorewall mirror ip addresses&gt;
 NTPSERVERS=&lt;list of the NTP servers I sync with&gt;
+POPSERVERS=&lt;list of POP3 servers that I get mail from using 'fetchmail' on the DMZ server&gt;
 LOG=ULOG
 WIFI_IF=eth0
 EXT_IF=eth2
@@ -613,9 +614,10 @@ ACCEPT          dmz                             net                     udp     
 REJECT:$LOG     dmz                             net                     udp     1025:1031
 ACCEPT          dmz                             net:$POPSERVERS         tcp     pop3
 #
-# Something is wrong with the FTP connection tracking code or there is some client out there
-# that is sending a PORT command which that code doesn't understand. Either way,
-# the following works around the problem.
+# Some FTP clients insist on sending the PORT command in two separate packets. The FTP
+# connection tracker in the kernel cannot parse the command and therefore cannot set
+# up the proper expectations. We thus allow all outbound tcp traffic from local port 20
+# but log it so we can keep an eye on it.
 #
 ACCEPT:$LOG     dmz                             net                     tcp     1024:                                   20
 ##########################################################################################################################################################################

@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-02-05</pubdate>
+    <pubdate>2005-02-26</pubdate>
 
     <copyright>
       <year>2001</year>
@@ -61,6 +61,28 @@
 
     <orderedlist>
       <listitem>
+        <para><emphasis role="bold">Be sure that you have the correct RPM
+        package!</emphasis></para>
+
+        <para>The standard RPM package from shorewall.net and the mirrors is
+        known to work with <emphasis
+        role="bold"><trademark>Suse</trademark></emphasis>, <emphasis
+        role="bold"><trademark>Power PPC</trademark></emphasis>, <emphasis
+        role="bold"><trademark>Trustix</trademark></emphasis> and <emphasis
+        role="bold"><trademark>TurboLinux</trademark></emphasis>. There is
+        also an RPM package provided by Simon Matter that is taylored for
+        <trademark><emphasis role="bold">RedHat/Fedora</emphasis></trademark>
+        and another package from Jack Coates that is customized for <emphasis
+        role="bold"><trademark>Mandrake</trademark></emphasis>. All of these
+        are available from the <ulink
+        url="http://www.shorewall.net/download.htm">download
+        page</ulink>.</para>
+
+        <para>If you try to install the wrong package, it probably won't
+        work.</para>
+      </listitem>
+
+      <listitem>
         <para>Install the RPM</para>
 
         <programlisting><command>rpm -ivh &lt;shorewall rpm&gt;</command></programlisting>
@@ -85,15 +107,15 @@
         </note>
 
         <note>
-          <para>Beginning with Shorewall 1.4.0, Shorewall is dependent on the
-          iproute package. Unfortunately, some distributions call this package
-          iproute2 which will cause the installation of Shorewall to fail with
-          the diagnostic:</para>
+          <para>Shorewall is dependent on the iproute package. Unfortunately,
+          some distributions call this package iproute2 which will cause the
+          installation of Shorewall to fail with the diagnostic:</para>
 
-          <programlisting>error: failed dependencies:iproute is needed by shorewall-1.4.x-1</programlisting>
+          <programlisting>error: failed dependencies:iproute is needed by shorewall-2.2.x-1</programlisting>
 
-          <para>This may be worked around by using the --nodeps option of
-          rpm.</para>
+          <para>This problem should not occur if you are using the correct RPM
+          package (see 1., above) but may be worked around by using the
+          --nodeps option of rpm.</para>
 
           <programlisting><command>rpm -ivh --nodeps &lt;shorewall rpm&gt;</command></programlisting>
         </note>
@@ -261,17 +283,19 @@ INIT="rc.firewall"</programlisting>
     <para>If you already have the Shorewall RPM installed and are upgrading to
     a new version:</para>
 
-    <important>
-      <para>If you are upgrading from a 1.2 version of Shorewall to a 1.4
-      version or and you have entries in the /etc/shorewall/hosts file then
-      please check your /etc/shorewall/interfaces file to be sure that it
-      contains an entry for each interface mentioned in the hosts file. Also,
-      there are certain 1.2 rule forms that are no longer supported under 1.4
-      (you must use the new 1.4 syntax). See <ulink
-      url="errata.htm#Upgrade">the upgrade issues</ulink> for details.</para>
-    </important>
-
     <orderedlist>
+      <listitem>
+        <para><emphasis role="bold">Be sure that you have the correct RPM
+        package!</emphasis></para>
+
+        <para>The standard RPM package from shorewall.net and the mirrors is
+        known to work with Suse, Power PPC, Trustix and TurboLinux. There is
+        also an RPM package provided by Simon Matter that is taylored for
+        RedHat/Fedora and another package from Jack Coates that is customized
+        for Mandrake. If you try to upgrade using the wrong package, it
+        probably won't work.</para>
+      </listitem>
+
       <listitem>
         <para>Upgrade the RPM</para>
 
@@ -322,16 +346,6 @@ INIT="rc.firewall"</programlisting>
 
     <para>If you already have Shorewall installed and are upgrading to a new
     version using the tarball:</para>
-
-    <important>
-      <para>If you are upgrading from a 1.2 version of Shorewall to a 1.4
-      version and you have entries in the /etc/shorewall/hosts file then
-      please check your /etc/shorewall/interfaces file to be sure that it
-      contains an entry for each interface mentioned in the hosts file. Also,
-      there are certain 1.2 rule forms that are no longer supported under 1.4
-      (you must use the new 1.4 syntax). See <ulink
-      url="errata.htm#Upgrade">the upgrade issues</ulink> for details.</para>
-    </important>
 
     <orderedlist>
       <listitem>

@@ -17,7 +17,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-12-31</pubdate>
+    <pubdate>2005-03-01</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -296,19 +296,10 @@ DNAT       net      loc:192.168.1.3:22  tcp      1022</programlisting>
       <para>If you insist on an IP solution to the accessibility problem
       rather than a DNS solution, then assuming that your external interface
       is eth0 and your internal interface is eth1 and that eth1 has IP address
-      192.168.1.254 with subnet 192.168.1.0/24.</para>
-
-      <para>If you are running Shorewall 1.4.0 or earlier see the <ulink
-      url="1.3/FAQ.htm#faq2">1.3 FAQ</ulink> for instructions suitable for
-      those releases.</para>
-
-      <para>If you are running Shorewall 1.4.1 or Shorewall 1.4.1a, please
-      upgrade to Shorewall 1.4.2 or later.</para>
-
-      <para>Otherwise:<warning>
-          <para>In this configuration, all loc-&gt;loc traffic will look to
-          the server as if it came from the firewall rather than from the
-          original client!</para>
+      192.168.1.254 with subnet 192.168.1.0/24:<warning>
+          <para>All traffic redirected through use of this hack will look to
+          the server as if it came from the firewall (192.168.1.254) rather
+          than from the original client!</para>
         </warning></para>
 
       <itemizedlist>
@@ -645,11 +636,6 @@ SPT=33120 DPT=5000 LEN=22</programlisting>
       <programlisting># TYPE                  ZONE    GATEWAY         GATEWAY
 #                                               ZONE
 generic:udp:5000        net     69.145.71.133</programlisting>
-
-      <caution>
-        <para>You must be running Shorewall 1.4.6 or later to apply this
-        solution.</para>
-      </caution>
     </section>
   </section>
 
@@ -713,53 +699,6 @@ LOGBURST=""</programlisting>
         <para>Temporarily add the following rule:</para>
 
         <programlisting>DROP net fw udp 10619</programlisting>
-      </section>
-
-      <section id="faq6c">
-        <title>(FAQ 6c) All day long I get a steady flow of these DROP
-        messages from port 53 to some high numbered port. They get dropped,
-        but what the heck are they?</title>
-
-        <programlisting>Jan 8 15:50:48 norcomix kernel:
-        Shorewall:net2all:DROP:IN=eth0 OUT=
-        MAC=00:40:c7:2e:09:c0:00:01:64:4a:70:00:08:00 SRC=208.138.130.16
-        DST=24.237.22.45 LEN=53 TOS=0x00 PREC=0x00 TTL=251 ID=8288 DF
-        PROTO=UDP SPT=53 DPT=40275 LEN=33</programlisting>
-
-        <para><emphasis role="bold">Answer:</emphasis> There are two
-        possibilities:</para>
-
-        <orderedlist>
-          <listitem>
-            <para>They are late-arriving replies to DNS queries.</para>
-          </listitem>
-
-          <listitem>
-            <para>They are corrupted reply packets.</para>
-          </listitem>
-        </orderedlist>
-
-        <para>You can distinguish the difference by setting the <emphasis
-        role="bold">logunclean</emphasis> option (<filename><ulink
-        url="Documentation.htm#Interfaces">/etc/shorewall/interfaces</ulink></filename>)
-        on your external interface (eth0 in the above example). If they get
-        logged twice, they are corrupted. I solve this problem by using an
-        /etc/shorewall/common file like this:</para>
-
-        <programlisting>#
-# Include the standard common.def file
-# 
-<command>. /etc/shorewall/common.def</command>
-#
-# The following rule is non-standard and compensates for tardy
-# DNS replies
-#
-<command>run_iptables -A common -p udp --sport 53 -mstate --state NEW -j DROP</command></programlisting>
-
-        <para>The above file is also include in all of my sample
-        configurations available in the <ulink
-        url="shorewall_quickstart_guide.htm">Quick Start Guides</ulink> and in
-        the common.def file in Shorewall 1.4.0 and later.</para>
       </section>
 
       <section id="faq6d">
@@ -1817,6 +1756,49 @@ alias ipt_pkttype off</programlisting>
         <para>The solution is the same as <xref linkend="faq14" /> above.
         Simply substitute the IP address of your ISPs DHCP server.</para>
       </section>
+
+      <section>
+        <title>(FAQ 14b) I connect to the internet with PPPoE. When I try to
+        access the built-in web server in my DSL Modem, I get connection
+        Refused.</title>
+
+        <para>I see the following in my log:</para>
+
+        <programlisting>Mar  1 18:20:07 Mail kernel: Shorewall:OUTPUT:REJECT:IN= OUT=eth0 SRC=192.168.1.2 DST=192.168.1.1 LEN=60
+TOS=0x00 PREC=0x00 TTL=64 ID=26774 DF PROTO=TCP SPT=32797 DPT=80 WINDOW=5840 RES=0x00 SYN URGP=0 </programlisting>
+
+        <para>Answer: The fact that the message is being logged from the
+        OUTPUT chain means that the destination IP address is not in any
+        defined zone (see <link linkend="faq17">FAQ 17</link>). You need
+        to:</para>
+
+        <orderedlist>
+          <listitem>
+            <para>Add a zone for the modem in /etc/shorewall/zones:</para>
+
+            <programlisting>#ZONE    DISPLAY       COMMENTS
+modem    ADSLModem     Zone for modem</programlisting>
+          </listitem>
+
+          <listitem>
+            <para>Define the zone to be associated with <filename
+            class="devicefile">eth0</filename> (or whatever interface connects
+            to your modem) in /etc/shorewall/interfaces:</para>
+
+            <programlisting>#ZONE      INTERFACE   BROADCAST    OPTIONS
+modem      eth0        detect</programlisting>
+          </listitem>
+
+          <listitem>
+            <para>Allow web traffic to the modem in
+            /etc/shorewall/rules:</para>
+
+            <programlisting>#ACTION    SOURCE      DEST      PROTO     DEST PORT(S)
+ACCEPT     fw          modem     tcp       80
+ACCEPT     loc         modem     tcp       80</programlisting>
+          </listitem>
+        </orderedlist>
+      </section>
     </section>
   </section>
 
@@ -2032,6 +2014,16 @@ Verifying Configuration...
     <title>Revision History</title>
 
     <para><revhistory>
+        <revision>
+          <revnumber>1.43</revnumber>
+
+          <date>2005-03-01</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Added FAQ 14b.</revremark>
+        </revision>
+
         <revision>
           <revnumber>1.42</revnumber>
 

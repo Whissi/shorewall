@@ -182,6 +182,17 @@ run_iptables2() {
 }
 
 #
+# Quietly run iptables
+#
+qt_iptables() {
+
+    [ -n "$BRIDGING" ]      && [ -f $TMP_DIR/physdev ] && rm -f $TMP_DIR/physdev
+    [ -n "$IPRANGE_MATCH" ] && [ -f $TMP_DIR/iprange ] && rm -f $TMP_DIR/iprange
+
+    qt $IPTABLES $@
+}
+
+#
 # Run ip and if an error occurs, stop the firewall and quit
 #
 run_ip() {
@@ -1756,9 +1767,14 @@ setup_ipsec() {
     set_mss1() # $1 = chain, $2 = MSS
     {
 	eval local policy=\$${1}_policy
-	if [ "$policy" != NONE -a "$COMMAND" != add ]; then
-	    ensurechain $1
-	    run_iptables -I $1 -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss $2
+
+	if [ "$policy" != NONE ]; then
+	    case $COMMAND in
+		start|restart)
+		    ensurechain $1
+		    run_iptables -I $1 -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss $2
+		;;
+	    esac
 	fi
     }
     #
@@ -6622,6 +6638,9 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 
     do_iptables() # $@ = command
     {
+	[ -n "$BRIDGING" ]      && [ -f $TMP_DIR/physdev ] && rm -f $TMP_DIR/physdev
+	[ -n "$IPRANGE_MATCH" ] && [ -f $TMP_DIR/iprange ] && rm -f $TMP_DIR/iprange
+
 	if ! $IPTABLES $@ ; then
 	    startup_error "Can't add $1 to zone $2"
 	fi
@@ -6630,7 +6649,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
     #
     # Isolate interface and host parts
     #
-    interface=${1%:*}
+    interface=${1%%:*}
     host=${1#*:}
 
     [ -z "$host" ] && host="0.0.0.0/0"
@@ -6735,7 +6754,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
     while read z1 z2 chain; do
 	if [ "$z1" = "$zone" ]; then
 	    if [ "$z2" = "$FW" ]; then
-		do_iptables -A $(dynamic_in $interface) $(source_ip_range $host) $policyin -j $chain
+		do_iptables -A $(dynamic_in $interface) $(match_source_hosts $host) $policyin -j $chain
 	    else
 		source_chain=$(dynamic_fwd $interface)
 		eval dest_hosts=\"\$${z2}_hosts\"
@@ -6745,7 +6764,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		    hosts=${h#*:}
 
 		    if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
-			do_iptables -A $source_chain $(source_ip_range $host) -o $iface $(match_dest_hosts $hosts) $policyout -j $chain
+			do_iptables -A $source_chain $(match_source_hosts $host) -o $iface $(match_dest_hosts $hosts) $policyout -j $chain
 		    fi
 		done
 	    fi
@@ -6754,7 +6773,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		#
 		# Add a rule to the dynamic out chain for the interface
 		#
-		do_iptables -A $(dynamic_out $interface) $(dest_ip_range $host) $policyout -j $chain
+		do_iptables -A $(dynamic_out $interface) $(match_dest_hosts $host) $policyout -j $chain
 	    else
 		eval source_hosts=\"\$${z1}_hosts\"
 
@@ -6763,7 +6782,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		    hosts=${h#*:}
 
 		    if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
-			do_iptables -A $(dynamic_fwd $iface) $rulenum $(match_source_hosts $hosts) -o $interface $(dest_ip_range $host) $policyout -j $chain
+			do_iptables -A $(dynamic_fwd $iface) $rulenum $(match_source_hosts $hosts) -o $interface $(match_dest_hosts $host) $policyout -j $chain
 		    fi
 		done
 	    fi
@@ -6809,7 +6828,7 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
     #
     # Isolate interface and host parts
     #
-    interface=${1%:*}
+    interface=${1%%:*}
     host=${1#*:}
 
     [ -z "$host" ] && host="0.0.0.0/0"
@@ -6878,14 +6897,14 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
     #
     # Delete any nat table entries for the host(s)
     #
-    qt $IPTABLES -t nat -D $(dynamic_in $interface) $(source_ip_range $host) $policyin -j ${zone}_dnat
+    qt_iptables -t nat -D $(dynamic_in $interface) $(source_ip_range $host) $policyin -j ${zone}_dnat
     #
     # Delete rules rules the input chains for the passed interface
     #
     while read z1 z2 chain; do
 	if [ "$z1" = "$zone" ]; then
 	    if [ "$z2" = "$FW" ]; then
-		qt $IPTABLES -D $(dynamic_in $interface) $(source_ip_range $host) $policyin -j $chain
+		qt_iptables -D $(dynamic_in $interface) $(source_ip_range $host) $policyin -j $chain
 	    else
 		source_chain=$(dynamic_fwd $interface)
 		eval dest_hosts=\"\$${z2}_hosts\"
@@ -6895,13 +6914,13 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		    hosts=${h#*:}
 
 		    if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
-			qt $IPTABLES -D $source_chain $(source_ip_range $host) -o $iface $(match_dest_hosts $hosts) $policyout -j $chain
+			qt_iptables -D $source_chain $(source_ip_range $host) -o $iface $(match_dest_hosts $hosts) $policyout -j $chain
 		    fi
 		done
 	    fi
 	elif [ "$z2" = "$zone" ]; then
 	    if [ "$z1" = "$FW" ]; then
-		qt $IPTABLES -D $(dynamic_out $interface) $(dest_ip_range $host) $policyout -j $chain
+		qt_iptables -D $(dynamic_out $interface) $(dest_ip_range $host) $policyout -j $chain
 	    else
 		eval source_hosts=\"\$${z1}_hosts\"
 		
@@ -6910,7 +6929,7 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		    hosts=${h#*:}
 
 		    if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
-			qt $IPTABLES -D $(dynamic_fwd $iface) $(match_source_hosts $hosts) -o $interface $(dest_ip_range $host) $policyout -j $chain
+			qt_iptables -D $(dynamic_fwd $iface) $(match_source_hosts $hosts) -o $interface $(dest_ip_range $host) $policyout -j $chain
 		    fi
 		done
 	    fi

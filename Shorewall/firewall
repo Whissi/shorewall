@@ -1900,11 +1900,14 @@ add_nat_rule() {
 		    log_rule $loglevel $chain $logtarget -t nat
 		fi
 
-		addnatrule $chain $proto -j $target1
+		addnatrule $chain $proto -j $target1 # Protocol is necessary for port redirection
 	    else
 		for adr in `separate_list $addr`; do
-		    run_iptables2 -t nat -A OUTPUT $proto $sports -d `fix_bang $adr` \
-			$multiport $dports -j $target1
+		    if [ -n "$loglevel" ]; then
+			log_rule $loglevel $OUTPUT $logtarget -t nat \
+			    `fix_bang $proto $cli $sports -d $adr $multiport $dports`
+		    fi
+		    run_iptables2 -t nat -A OUTPUT $proto $sports -d $adr $multiport $dports -j $target1
 		done
 	    fi
 	else
@@ -1916,7 +1919,7 @@ add_nat_rule() {
 		createnatchain $chain
 
 		for adr in `separate_list $addr`; do
-		    addnatrule `dnat_chain $source` $cli $proto $multiport $sports $dports -d `fix_bang $adr` -j $chain
+		    addnatrule `dnat_chain $source` $cli $proto $multiport $sports $dports -d $adr -j $chain
 		done
 
 		for z in $excludezones; do
@@ -1934,7 +1937,7 @@ add_nat_rule() {
 		    log_rule $loglevel $chain $logtarget -t nat
 		fi
 
-		addnatrule $chain $proto -j $target1
+		addnatrule $chain $proto -j $target1 # Protocol is necessary for port redirection
 	    else
 		for adr in `separate_list $addr`; do
 		    if [ -n "$loglevel" ]; then

@@ -12,6 +12,14 @@ Problems Corrected since 2.0.3
 3)  Two problems with logging NAT rules (DNAT and REDIRECT) could cause
     startup failures.
 
+4)  Some users have reported the pkttype match option in iptables/
+    Netfilter failing to match certain broadcast packets. The result 
+    is that the firewall log shows a lot of broadcast packets.
+
+    Users experiencing this problem can use PKTTYPE=No in
+    shorewall.conf to cause Shorewall to use IP address filtering of 
+    broadcasts rather than packet type.
+
 Problems Corrected since 2.1.0
 
 1)  The "check" command fails with the following message:

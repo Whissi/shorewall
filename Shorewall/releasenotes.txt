@@ -131,9 +131,10 @@ New Features:
    will use all listed addresses/ranges in round-robin fashion.
 
 7) An /etc/shorewall/accounting file has been added to allow for 
-   traffic accounting.
+   traffic accounting. The file has two sections which will be
+   described in reverse order.
 
-   The file has the following columns:
+   The second seciton of the file has the following columns:
 
 	ACTION	      - What to do when a match is found.
 
@@ -194,3 +195,7 @@ New Features:
    named chain and the second is a RETURN rule which causes the
    accounting chain to be exited.
 
+   The first section of the file allows aggregation of counters in
+   chains in other chains. It does this by allowing you to create an
+   accounting chain hierarchy. This facility is described with an
+   example at http://shorewall.net/Accounting.html.

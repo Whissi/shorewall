@@ -7,10 +7,33 @@
 #	that you define in this file. You may display these rules and their
 #	packet and byte counters using the "shorewall show accounting" command.
 #
-#	In all columns of this file, the values "-", "any" and "all" may be used
-#	as wildcards
+#	Please see http://shorewall.net/Accounting.html for examples and 
+#	additional information about how to use this file.
 #
-# Columns are:
+#	This file has two sections -- the first section is used to create a
+#	hierarchy of accounting chains. The second section creates rules to
+#	count traffic through your firewall.
+#
+# In the first section of this file, entries have the following columns:
+#
+#	ACTION	      -	Must contain CHAIN
+#
+#	CHAIN	      - The name of a chain to create. Shorewall will create
+#			this chain. If the chain already exists, a warning
+#			message is issued and the entry is ignored.
+#
+#	NEXT CHAIN    - Optional - The name of a previously-created chain
+#
+#	If the NEXT CHAIN column is empty then Shorewall will add a single
+#	RETURN rule to the chain named in the CHAIN column. If the NEXT 
+#	CHAIN column is not empty then Shorewall will add a jump from the
+#	newly-created chain to the chain named in the NEXT CHAIN column.
+#	
+#ACTION		CHAIN		NEXT CHAIN	
+
+# ADD YOUR CHAIN DECLARATIONS ABOVE THIS LINE
+#
+# Columns in the second section of this file are are:
 #
 #	ACTION	      - What to do when a match is found.
 #
@@ -19,7 +42,9 @@
 #				DONE	- Count the match and don't attempt
 #					  to match any other accounting rules.
 #				<chain> - The name of a chain. Shoreall will 
-#					  create the chain automatically.
+#					  create the chain automatically if
+#					  it was not created by an earlier 
+#					  CHAIN declaration above.
 #
 #	SOURCE	      - Packet Source
 #
@@ -45,5 +70,11 @@
 #			Service name from /etc/services or port number. May
 #			only be specified if the protocol is TCP or UDP (6
 #			or 17).
+#
+#	In all of the above columns except ACTION, the values "-", "any" and
+#	"all" may be used as wildcards
+#
+#	Please see http://shorewall.net/Accounting.html for examples and 
+#	additional information about how to use this file.
 #
 #ACTION	SOURCE		DESTINATION	PROTOCOL	DEST PORT   SOURCE PORT

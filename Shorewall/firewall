@@ -374,7 +374,14 @@ chain_base() #$1 = interface
 {
     local c=${1%%+*}
 
-    echo ${c:=common}
+    case $c in 
+        *.*)
+	    echo ${c%.*}_${c#*.}
+	    ;;
+	*)
+	    echo ${c:=common}
+	    ;;
+    esac
 }
 
 #
@@ -609,7 +616,7 @@ validate_interfaces_file() {
 		    ;;
 		*)
 		    error_message "Warning: Invalid option ($option) in record \"$r\""
-		;;
+		    ;;
 	    esac
 	done
 	

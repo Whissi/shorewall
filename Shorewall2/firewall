@@ -2162,7 +2162,7 @@ setup_nat() {
     }
 
     do_one_nat() {
-	local add_ip_aliases=$ADD_IP_ALIASES, iface=${interface%:*}
+	local add_ip_aliases=$ADD_IP_ALIASES iface=${interface%:*}
 	
 	if [ -n "$add_ip_aliases" ]; then
 	    case $interface in
@@ -4904,7 +4904,7 @@ setup_masq()
     }
 
     setup_one() {
-	local add_snat_aliases=$ADD_SNAT_ALIASES, pre_nat= policy= destnets=
+	local add_snat_aliases=$ADD_SNAT_ALIASES pre_nat= policy= destnets=
 
 	[ "x$ipsec" = x- ] && ipsec=
 

@@ -354,11 +354,11 @@ setpolicy() # $1 = name of chain, $2 = policy
 }
 
 #
-# Set a standard chain to enable established connections
+# Set a standard chain to enable established and related connections
 #
 setcontinue() # $1 = name of chain
 {
-    run_iptables -A $1 -m state --state ESTABLISHED -j ACCEPT
+    run_iptables -A $1 -m state --state ESTABLISHED,RELATED -j ACCEPT
 }
 
 #
@@ -2081,7 +2081,7 @@ add_a_rule()
 
     # Complain if the rule is really a policy
 
-    if [ -z "$proto" -a -z "$cli" -a -z "$serv" -a -z "$servport" ]; then
+    if [ -z "$proto" -a -z "$cli" -a -z "$serv" -a -z "$servport" -a "$logtarget" != LOG ]; then
 	error_message "Warning -- Rule \"$rule\" is a POLICY"
 	error_message "	       -- and should be moved to the policy file"
     fi
@@ -3833,9 +3833,11 @@ activate_rules()
     complete_standard_chain INPUT all $FW
     complete_standard_chain OUTPUT $FW all
     complete_standard_chain FORWARD all all
-
+    #
+    # Remove rules added to keep the firewall alive during [re]start"
+    #
     for chain in INPUT OUTPUT FORWARD; do
-	run_iptables -D $chain -m state --state ESTABLISHED -j ACCEPT
+	run_iptables -D $chain -m state --state ESTABLISHED,RELATED -j ACCEPT
 	run_iptables -D $chain -p udp --dport 53 -j ACCEPT
     done
 }

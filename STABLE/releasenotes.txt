@@ -1,27 +1,23 @@
-This is a minor release of Shorewall that has a number of new features..
+This is a minor release of Shorewall that has a couple of new features.
 
 New features include:
 
-1) You may now define the contents of a zone dynamically with the 
-   "shorewall add" and "shorewall delete" commands. These commands
-   are expected to be used primarily within FreeS/Wan updown scripts.
-    
-2) Shorewall can now do MAC verification on ethernet segments. You can
-   specify the set of allowed MAC addresses on the segment and you can
-   optionally tie each MAC address to an IP address.
-    
-3) PPTP Servers and Clients running on the firewall system may now be
-   defined in the /etc/shorewall/tunnels file.
+1) A 'tcpflags' option has been added to entries in
+   /etc/shorewall/interfaces. This option causes Shorewall to make a
+   set of sanity check on TCP packet header flags.
 
-4) A new 'ipsecnat' tunnel type is supported for use when the remote
-   IPSEC endpoint is behind a NAT gateway.
-    
-5) The PATH used by Shorewall may now be specified in
-   /etc/shorewall/shorewall.conf.
-   
-6) The main firewall script is now /usr/lib/shorewall/firewall. The
-   script in /etc/init.d/shorewall is very small and uses
-   /sbin/shorewall to do the real work. This change makes custom
-   distributions such as for Debian and for Gentoo easier to manage
-   since it is /etc/init.d/shorewall that tends to have
-   distribution-dependent code.
+2) It is now allowed to use 'all' in the SOURCE or DEST column in a
+   rule. When used, 'all' must appear by itself (in may not be
+   qualified) and it does not enable intra-zone traffic (e.g., the rule
+   "ACCEPT loc	  all	  tcp 80" does not enable http traffic from
+   'loc' to 'loc').
+
+3) Shorewall's use of the 'echo' command is now compatible with bash
+   clones such as ash and dash.
+
+4) fw->fw policies now generate a startup error. fw->fw rules generate
+   a warning and are ignored.
+
+
+
+

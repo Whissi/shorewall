@@ -1,770 +1,489 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-                     
+                             
   <meta http-equiv="Content-Language" content="en-us">
-                     
+                             
   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
-                     
+                             
   <meta name="ProgId" content="FrontPage.Editor.Document">
-                     
+                             
   <meta http-equiv="Content-Type"
  content="text/html; charset=windows-1252">
   <title>Three-Interface Firewall</title>
 </head>
   <body>
-            
+                
 <table border="0" cellpadding="0" cellspacing="0"
  style="border-collapse: collapse;" bordercolor="#111111" width="100%"
  id="AutoNumber5" bgcolor="#400169" height="90">
-        <tbody>
-         <tr>
-          <td width="100%">                                        
+          <tbody>
+           <tr>
+            <td width="100%">                                           
+          
       <h1 align="center"><font color="#ffffff">Three-Interface Firewall</font></h1>
-          </td>
-        </tr>
-                     
-  </tbody>     
+            </td>
+          </tr>
+                             
+  </tbody>       
 </table>
-            
+                
 <h2 align="center">Version 2.0.1</h2>
-           
+               
 <p align="left">Setting up a Linux system as a firewall for a small network 
-  with  DMZ is a  fairly straight-forward task if you understand the basics 
-  and follow the  documentation.</p>
-           
+   with  DMZ is a  fairly straight-forward task if you understand the basics 
+   and follow the  documentation.</p>
+               
 <p>This guide doesn't attempt to acquaint you with all of the features of 
-   Shorewall. It rather focuses on what is required to configure Shorewall 
- in one  of its more popular configurations:</p>
-           
+    Shorewall. It rather focuses on what is required to configure Shorewall 
+  in one  of its more popular configurations:</p>
+               
 <ul>
-        <li>Linux system used as a firewall/router for a small local network.</li>
-        <li>Single public IP address.</li>
-        <li>DMZ connected to a separate ethernet interface.</li>
-        <li>Connection through DSL, Cable Modem, ISDN, Frame Relay, dial-up,
-  ...</li>
-           
+          <li>Linux system used as a firewall/router for a small local network.</li>
+          <li>Single public IP address.</li>
+          <li>DMZ connected to a separate ethernet interface.</li>
+          <li>Connection through DSL, Cable Modem, ISDN, Frame Relay, dial-up,
+   ...</li>
+               
 </ul>
-           
+               
 <p align="left">Here is a schematic of a typical installation.</p>
-           
+               
 <p align="center"> <img border="0" src="images/dmz1.png" width="692"
  height="635">
-     </p>
-           
+       </p>
+               
 <p>This guide assumes that you have the iproute/iproute2 package installed 
-  (on  RedHat, the package is called <i>iproute</i>)<i>. </i>You can tell 
-if  this  package is installed by the presence of an <b>ip</b> program on 
-your  firewall  system. As root, you can use the 'which' command to check 
-for this  program:</p>
-           
+   (on  RedHat, the package is called <i>iproute</i>)<i>. </i>You can tell 
+ if  this  package is installed by the presence of an <b>ip</b> program on 
+ your  firewall  system. As root, you can use the 'which' command to check 
+ for this  program:</p>
+               
 <pre>     [root@gateway root]# which ip<br>     /sbin/ip<br>     [root@gateway root]#</pre>
-         
+             
 <p>I recommend that you first read through the guide    to familiarize yourself 
-  with what's involved then go back through it again  making your configuration 
-  changes. Points at which configuration changes are  recommended are flagged 
-  with <img border="0" src="images/BD21298_.gif" width="13" height="13">
-     </p>
-           
+   with what's involved then go back through it again  making your configuration 
+   changes. Points at which configuration changes are  recommended are flagged 
+   with <img border="0" src="images/BD21298_.gif" width="13" height="13">
+       </p>
+               
 <p><img border="0" src="images/j0213519.gif" width="60" height="60">
-          If you edit your configuration files on a Windows system, you must
-  save them as  Unix files if your editor supports that option or you must
- run them through  dos2unix before trying to use them. Similarly, if you
-copy  a configuration file  from your Windows hard drive to a floppy disk,
+            If you edit your configuration files on a Windows system, you 
+must   save them as  Unix files if your editor supports that option or you 
+must  run them through  dos2unix before trying to use them. Similarly, if 
+you copy  a configuration file  from your Windows hard drive to a floppy disk,
 you must run dos2unix against the  copy before using it with Shorewall.</p>
-           
+               
 <ul>
-        <li><a href="http://www.simtel.net/pub/pd/51438.html">Windows Version 
-  of    dos2unix</a></li>
-        <li><a href="http://www.megaloman.com/%7Ehany/software/hd2u/">Linux 
- Version  of    dos2unix</a></li>
-           
+          <li><a href="http://www.simtel.net/pub/pd/51438.html">Windows Version 
+   of    dos2unix</a></li>
+          <li><a href="http://www.megaloman.com/%7Ehany/software/hd2u/">Linux 
+  Version  of    dos2unix</a></li>
+               
 </ul>
-           
+               
 <h2 align="left">Shorewall Concepts</h2>
-           
+               
 <p>The configuration files for Shorewall are contained in the directory 
 /etc/shorewall -- for simple setups, you will only need to deal with a few
 of  these as described in this guide.  After you have <a
  href="Install.htm">installed Shorewall</a>,  download the <a
  href="/pub/shorewall/LATEST.samples/three-interfaces.tgz">three-interface 
-  sample</a>, un-tar it  (tar -zxvf three-interfaces.tgz) and and copy the 
- files to /etc/shorewall  (the files will replace files with the same names 
- that were placed in  /etc/shorewall when Shorewall was installed).</p>
-           
+   sample</a>, un-tar it  (tar -zxvf three-interfaces.tgz) and and copy the 
+  files to /etc/shorewall  (the files will replace files with the same names 
+  that were placed in  /etc/shorewall when Shorewall was installed).</p>
+               
 <p>As each file is introduced, I suggest that you  look through the actual 
-  file on your system -- each file contains detailed  configuration instructions 
-  and default entries.</p>
-           
+   file on your system -- each file contains detailed  configuration instructions 
+   and default entries.</p>
+               
 <p>Shorewall views the network where it is running as being composed of a 
-  set of  <i>zones.</i> In the three-interface sample configuration, the following
-  zone names are used:</p>
-           
+   set of  <i>zones.</i> In the three-interface sample configuration, the 
+following   zone names are used:</p>
+               
 <table border="0" style="border-collapse: collapse;" cellpadding="3"
  cellspacing="0" id="AutoNumber2">
-        <tbody>
-         <tr>
-          <td><u><b>Name</b></u></td>
-          <td><u><b>Description</b></u></td>
-        </tr>
-        <tr>
-          <td><b>net</b></td>
-          <td><b>The Internet</b></td>
-        </tr>
-        <tr>
-          <td><b>loc</b></td>
-          <td><b>Your Local Network</b></td>
-        </tr>
-        <tr>
-          <td><b>dmz</b></td>
-          <td><b>Demilitarized Zone</b></td>
-        </tr>
-                       
-  </tbody>     
+          <tbody>
+           <tr>
+            <td><u><b>Name</b></u></td>
+            <td><u><b>Description</b></u></td>
+          </tr>
+          <tr>
+            <td><b>net</b></td>
+            <td><b>The Internet</b></td>
+          </tr>
+          <tr>
+            <td><b>loc</b></td>
+            <td><b>Your Local Network</b></td>
+          </tr>
+          <tr>
+            <td><b>dmz</b></td>
+            <td><b>Demilitarized Zone</b></td>
+          </tr>
+                               
+  </tbody>       
 </table>
-           
+               
 <p>Zone names are defined in <a href="Documentation.htm#Zones"> /etc/shorewall/zones</a>.</p>
-           
+               
 <p>Shorewall also recognizes the firewall system as its own zone - by default, 
-   the firewall itself is known as <b>fw</b>.</p>
-           
+    the firewall itself is known as <b>fw</b>.</p>
+               
 <p>Rules about what traffic to allow and what traffic to deny are expressed 
-  in  terms of zones.</p>
-           
+   in  terms of zones.</p>
+               
 <ul>
-        <li>You express your default policy for connections from one zone 
-to  another    zone in the<a href="Documentation.htm#Policy"> /etc/shorewall/policy
-      </a>file.</li>
-        <li>You define exceptions to those default policies in the   <a
+          <li>You express your default policy for connections from one zone 
+ to  another    zone in the<a href="Documentation.htm#Policy"> /etc/shorewall/policy
+       </a>file.</li>
+          <li>You define exceptions to those default policies in the   <a
  href="Documentation.htm#Rules">/etc/shorewall/rules </a>file.</li>
-           
+               
 </ul>
-           
+               
 <p>For each connection request entering the firewall, the request is first 
-  checked against the  /etc/shorewall/rules file. If no rule in that file 
-matches  the connection  request then the first policy in /etc/shorewall/policy 
-that  matches the    request is applied. If that policy is REJECT or DROP  
-the request is first  checked against the rules in /etc/shorewall/common (the
-samples provide that  file for you).</p>
-           
+   checked against the  /etc/shorewall/rules file. If no rule in that file 
+ matches  the connection  request then the first policy in /etc/shorewall/policy 
+ that  matches the    request is applied. If that policy is REJECT or DROP  
+ the request is first  checked against the rules in /etc/shorewall/common 
+(the samples provide that  file for you).</p>
+               
 <p>The /etc/shorewall/policy file included with the three-interface sample 
-  has the  following policies:</p>
-           
-<blockquote>                  
+   has the  following policies:</p>
+               
+<blockquote>                        
   <table border="1" cellpadding="2" style="border-collapse: collapse;"
  id="AutoNumber3">
-          <tbody>
-           <tr>
-            <td><u><b>Source Zone</b></u></td>
-            <td><u><b>Destination Zone</b></u></td>
-            <td><u><b>Policy</b></u></td>
-            <td><u><b>Log Level</b></u></td>
-            <td><u><b>Limit:Burst</b></u></td>
-          </tr>
-          <tr>
-            <td>loc</td>
-            <td>net</td>
-            <td>ACCEPT</td>
-            <td> </td>
-            <td> </td>
-          </tr>
-          <tr>
-            <td>net</td>
-            <td>all</td>
-            <td>DROP</td>
-            <td>info</td>
-            <td> </td>
-          </tr>
-          <tr>
-            <td>all</td>
-            <td>all</td>
-            <td>REJECT</td>
-            <td>info</td>
-            <td> </td>
-          </tr>
-                                 
-    </tbody>               
-  </table>
-      </blockquote>
-           
-<blockquote>                
-  <p>In the three-interface sample, the line below is included but commented 
-  out. If  you want your firewall system to have full access to servers on 
- the internet,  uncomment that line.</p>
-                     
-  <table border="1" cellpadding="2" style="border-collapse: collapse;"
- id="AutoNumber3">
-          <tbody>
-           <tr>
-            <td><u><b>Source Zone</b></u></td>
-            <td><u><b>Destination Zone</b></u></td>
-            <td><u><b>Policy</b></u></td>
-            <td><u><b>Log Level</b></u></td>
-            <td><u><b>Limit:Burst</b></u></td>
-          </tr>
-          <tr>
-            <td>fw</td>
-            <td>net</td>
-            <td>ACCEPT</td>
-            <td> </td>
-            <td> </td>
-          </tr>
-                                 
-    </tbody>               
-  </table>
-      </blockquote>
-           
-<p>The above policy will:</p>
-           
-<ol>
-        <li>allow all connection requests from your local network to the
-internet</li>
-        <li>drop (ignore) all connection requests from the internet to your 
- firewall     or local network</li>
-        <li>optionally accept all connection requests from the firewall to
- the     internet (if you uncomment the additional policy)</li>
-        <li>reject all other connection requests.</li>
-           
-</ol>
-           
-<p><img border="0" src="images/BD21298_1.gif" width="13" height="13">
-         At this point, edit your /etc/shorewall/policy  file and make any
- changes  that you  wish.</p>
-           
-<h2 align="left">Network Interfaces</h2>
-           
-<p align="center"> <img border="0" src="images/dmz1.png" width="692"
- height="635">
-     </p>
-           
-<p align="left">The firewall has three network interfaces. Where Internet 
-   connectivity is through a cable or DSL "Modem", the <i>External Interface</i> 
-   will be the ethernet adapter that is connected to that "Modem" (e.g., <b>eth0</b>) 
-  <u>unless</u> you connect via <i><u>P</u>oint-to-<u>P</u>oint <u>P</u>rotocol
-   over <u>E</u>thernet</i> (PPPoE) or <i><u>P</u>oint-to-<u>P</u>oint <u>T</u>unneling
-  <u>P</u>rotocol </i>(PPTP) in which case the External Interface will be
-a ppp  interface (e.g., <b>ppp0</b>). If you connect via a regular modem,
-your External  Interface will also be <b>ppp0</b>. If you connect using ISDN,
-  you external  interface will be <b>ippp0.</b></p>
-           
-<p align="left"><img border="0" src="images/BD21298_1.gif" width="13"
- height="13">
-         If your external interface is <b>ppp0</b>  or <b>ippp0 </b>then
-you   will want to  set CLAMPMSS=yes in <a href="Documentation.htm#Conf">
-/etc/shorewall/shorewall.conf.</a></p>
-           
-<p align="left">Your <i>Local Interface</i> will be an ethernet adapter (eth0, 
-   eth1 or eth2) and will be connected to a hub or switch. Your local computers 
-   will be connected to the same switch (note: If you have only a single local
-  system,  you can connect the firewall directly to the computer using a
-<i>cross-over   </i> cable).</p>
-           
-<p align="left">Your <i>DMZ Interface</i> will also be an ethernet adapter 
-  (eth0,  eth1 or eth2) and will be connected to a hub or switch. Your DMZ 
- computers will  be connected to the same switch (note: If you have only a
- single DMZ system,  you can connect the firewall directly to the computer 
- using a <i>cross-over </i> cable).</p>
-           
-<p align="left"><u><b> <img border="0" src="images/j0213519.gif"
- width="60" height="60">
-     </b></u>Do not connect more than one interface  to the same hub or switch 
-  (even for testing). It won't work the way that you  expect it to and you 
- will end up confused and  believing that Shorewall doesn't work at all.</p>
-           
-<p align="left"><img border="0" src="images/BD21298_2.gif" width="13"
- height="13">
-         The Shorewall three-interface sample configuration assumes that
- the   external interface is <b>eth0, </b>the local interface is <b>eth1
-</b>and    the DMZ interface is <b> eth2</b>.  If your configuration is different, 
- you will have to modify the sample  /etc/shorewall/interfaces file accordingly. 
-  While you are there, you may wish to  review the list of options that are 
-  specified for the interfaces. Some hints:</p>
-           
-<ul>
-        <li>                            
-    <p align="left">If your external interface is <b>ppp0</b> or <b>ippp0</b>, 
-  you can replace the    "detect" in the second column with "-".   </p>
-       </li>
-       <li>                            
-    <p align="left">If your external interface is <b>ppp0</b> or <b>ippp0</b> 
-  or if you have a static IP    address, you can remove "dhcp" from the option 
-  list. </p>
-       </li>
-         
-</ul>
-           
-<h2 align="left">IP Addresses</h2>
-           
-<p align="left">Before going further, we should say a few words about Internet 
-   Protocol (IP) <i>addresses</i>. Normally, your ISP will assign you a single 
-  <i> Public</i> IP address. This address may be assigned via the<i> Dynamic 
-  Host  Configuration Protocol</i> (DHCP) or as part of establishing your 
-connection   when you dial in (standard modem) or establish your PPP connection. 
-In rare   cases, your ISP may assign you a<i> static</i> IP address; that 
-means that  you  configure your firewall's external interface to use that 
-address permanently.<i>  </i>Regardless of how the address is assigned, it 
-will be shared by all of your  systems when you access the Internet. You will
-have to assign your  own addresses  for your internal network (the local and
-DMZ Interfaces on  your firewall plus your other  computers). RFC 1918 reserves
-several <i>Private  </i>IP address ranges for this  purpose:</p>
-           
-<div align="left">        
-<pre>     10.0.0.0    - 10.255.255.255<br>     172.16.0.0  - 172.31.255.255<br>     192.168.0.0 - 192.168.255.255</pre>
-      </div>
-           
-<div align="left">        
-<p align="left"><img border="0" src="images/BD21298_.gif" width="13"
- height="13">
-            Before starting Shorewall, you should look at the IP address
-of  your  external    interface and if it is one of the above ranges, you
-should  remove  the    'norfc1918' option from the external interface's entry
-in    /etc/shorewall/interfaces.</p>
-     </div>
-           
-<div align="left">        
-<p align="left">You will want to assign your local addresses from one <i>
-     sub-network </i>or <i>subnet</i> and your DMZ addresses from another
-subnet.  For our purposes, we can consider a subnet    to consists of a range
-of addresses  x.y.z.0 - x.y.z.255. Such a subnet will    have a <i>Subnet
-Mask </i>of 255.255.255.0.  The address x.y.z.0 is reserved as    the <i>Subnet 
- Address</i> and x.y.z.255  is reserved as the <i>Subnet Broadcast</i>   <i>Address</i>.
- In Shorewall,  a subnet is described using <a href="subnet_masks.htm"><i>Classless
- InterDomain Routing </i>(CIDR)</a> notation with consists of the subnet
-address  followed    by "/24". The "24" refers to the number of    consecutive
-"1"  bits from the left of the subnet mask. </p>
-     </div>
-           
-<div align="left">        
-<p align="left">Example sub-network:</p>
-     </div>
-           
-<div align="left">        
-<blockquote>                    
-  <table border="1" style="border-collapse: collapse;" id="AutoNumber1"
- cellpadding="2">
             <tbody>
-           <tr>
-              <td><b>Range:</b></td>
-              <td>10.10.10.0 - 10.10.10.255</td>
+             <tr>
+              <td><u><b>Source Zone</b></u></td>
+              <td><u><b>Destination Zone</b></u></td>
+              <td><u><b>Policy</b></u></td>
+              <td><u><b>Log Level</b></u></td>
+              <td><u><b>Limit:Burst</b></u></td>
             </tr>
             <tr>
-              <td><b>Subnet Address:</b></td>
-              <td>10.10.10.0</td>
+              <td>loc</td>
+              <td>net</td>
+              <td>ACCEPT</td>
+              <td> </td>
+              <td> </td>
             </tr>
             <tr>
-              <td><b>Broadcast Address:</b></td>
-              <td>10.10.10.255</td>
+              <td>net</td>
+              <td>all</td>
+              <td>DROP</td>
+              <td>info</td>
+              <td> </td>
             </tr>
             <tr>
-              <td><b>CIDR Notation:</b></td>
-              <td>10.10.10.0/24</td>
+              <td>all</td>
+              <td>all</td>
+              <td>REJECT</td>
+              <td>info</td>
+              <td> </td>
             </tr>
-                                   
-    </tbody>               
+                                             
+    </tbody>                     
   </table>
         </blockquote>
-      </div>
-           
-<div align="left">        
-<p align="left">It is conventional to assign the internal interface either 
-  the    first usable address in the subnet (10.10.10.1 in the above example) 
-  or the    last usable address (10.10.10.254).</p>
-     </div>
-           
-<div align="left">        
-<p align="left">One of the purposes of subnetting is to allow all computers 
-  in the    subnet to understand which other computers can be communicated 
- with directly.    To communicate with systems outside of the subnetwork, 
-systems send packets    through a<i>  gateway</i>  (router).</p>
-     </div>
-           
-<div align="left">        
+               
+<blockquote>                      
+  <p>In the three-interface sample, the line below is included but commented 
+   out. If  you want your firewall system to have full access to servers on
+  the internet,  uncomment that line.</p>
+                             
+  <table border="1" cellpadding="2" style="border-collapse: collapse;"
+ id="AutoNumber3">
+            <tbody>
+             <tr>
+              <td><u><b>Source Zone</b></u></td>
+              <td><u><b>Destination Zone</b></u></td>
+              <td><u><b>Policy</b></u></td>
+              <td><u><b>Log Level</b></u></td>
+              <td><u><b>Limit:Burst</b></u></td>
+            </tr>
+            <tr>
+              <td>fw</td>
+              <td>net</td>
+              <td>ACCEPT</td>
+              <td> </td>
+              <td> </td>
+            </tr>
+                                             
+    </tbody>                     
+  </table>
+        </blockquote>
+               
+<p>The above policy will:</p>
+               
+<ol>
+          <li>allow all connection requests from your local network to the
+ internet</li>
+          <li>drop (ignore) all connection requests from the internet to
+your   firewall     or local network</li>
+          <li>optionally accept all connection requests from the firewall 
+to  the     internet (if you uncomment the additional policy)</li>
+          <li>reject all other connection requests.</li>
+               
+</ol>
+               
+<p><img border="0" src="images/BD21298_1.gif" width="13" height="13">
+           At this point, edit your /etc/shorewall/policy  file and make
+any   changes  that you  wish.</p>
+               
+<h2 align="left">Network Interfaces</h2>
+               
+<p align="center"> <img border="0" src="images/dmz1.png" width="692"
+ height="635">
+       </p>
+               
+<p align="left">The firewall has three network interfaces. Where Internet 
+    connectivity is through a cable or DSL "Modem", the <i>External Interface</i> 
+    will be the ethernet adapter that is connected to that "Modem" (e.g., 
+<b>eth0</b>)    <u>unless</u> you connect via <i><u>P</u>oint-to-<u>P</u>oint 
+<u>P</u>rotocol    over <u>E</u>thernet</i> (PPPoE) or <i><u>P</u>oint-to-<u>P</u>oint 
+<u>T</u>unneling   <u>P</u>rotocol </i>(PPTP) in which case the External Interface
+will be a ppp  interface (e.g., <b>ppp0</b>). If you connect via a regular
+modem, your External  Interface will also be <b>ppp0</b>. If you connect
+using ISDN,   you external  interface will be <b>ippp0.</b></p>
+               
 <p align="left"><img border="0" src="images/BD21298_1.gif" width="13"
  height="13">
-         Your local  computers    (Local Computers 1 &amp; 2) should be configured 
-  with their<i>    default gateway</i> set to the IP address of the firewall's 
-  internal interface    and your DMZ computers ( DMZ Computers 1 &amp; 2) 
-should  be configured with their    default gateway set to the IP address 
-of the firewall's DMZ interface.   </p>
-     </div>
-           
+           If your external interface is <b>ppp0</b>  or <b>ippp0 </b>then
+ you   will want to  set CLAMPMSS=yes in <a
+ href="Documentation.htm#Conf">  /etc/shorewall/shorewall.conf.</a></p>
+               
+<p align="left">Your <i>Local Interface</i> will be an ethernet adapter (eth0, 
+    eth1 or eth2) and will be connected to a hub or switch. Your local computers 
+    will be connected to the same switch (note: If you have only a single 
+local   system,  you can connect the firewall directly to the computer using 
+a <i>cross-over   </i> cable).</p>
+               
+<p align="left">Your <i>DMZ Interface</i> will also be an ethernet adapter 
+   (eth0,  eth1 or eth2) and will be connected to a hub or switch. Your DMZ 
+  computers will  be connected to the same switch (note: If you have only 
+a  single DMZ system,  you can connect the firewall directly to the computer 
+  using a <i>cross-over </i> cable).</p>
+               
+<p align="left"><u><b> <img border="0" src="images/j0213519.gif"
+ width="60" height="60">
+       </b></u>Do not connect more than one interface  to the same hub or 
+switch    (even for testing). It won't work the way that you  expect it to 
+and you   will end up confused and  believing that Shorewall doesn't work 
+at all.</p>
+               
+<p align="left"><img border="0" src="images/BD21298_2.gif" width="13"
+ height="13">
+           The Shorewall three-interface sample configuration assumes that
+  the   external interface is <b>eth0, </b>the local interface is <b>eth1
+</b>and    the DMZ interface is <b> eth2</b>.  If your configuration is different, 
+  you will have to modify the sample  /etc/shorewall/interfaces file accordingly. 
+   While you are there, you may wish to  review the list of options that are
+   specified for the interfaces. Some hints:</p>
+               
+<ul>
+          <li>                                      
+    <p align="left">If your external interface is <b>ppp0</b> or <b>ippp0</b>, 
+   you can replace the    "detect" in the second column with "-".   </p>
+         </li>
+         <li>                                      
+    <p align="left">If your external interface is <b>ppp0</b> or <b>ippp0</b> 
+   or if you have a static IP    address, you can remove "dhcp" from the option
+   list. </p>
+         </li>
+             
+</ul>
+               
+<h2 align="left">IP Addresses</h2>
+               
+<p align="left">Before going further, we should say a few words about Internet 
+    Protocol (IP) <i>addresses</i>. Normally, your ISP will assign you a single
+   <i> Public</i> IP address. This address may be assigned via the<i> Dynamic
+   Host  Configuration Protocol</i> (DHCP) or as part of establishing your
+ connection   when you dial in (standard modem) or establish your PPP connection.
+ In rare   cases, your ISP may assign you a<i> static</i> IP address; that
+ means that  you  configure your firewall's external interface to use that
+ address permanently.<i>  </i>Regardless of how the address is assigned,
+it  will be shared by all of your  systems when you access the Internet.
+You will have to assign your  own addresses  for your internal network (the
+local and DMZ Interfaces on  your firewall plus your other  computers). RFC
+1918 reserves several <i>Private  </i>IP address ranges for this  purpose:</p>
+               
+<div align="left">          
+<pre>     10.0.0.0    - 10.255.255.255<br>     172.16.0.0  - 172.31.255.255<br>     192.168.0.0 - 192.168.255.255</pre>
+        </div>
+               
+<div align="left">          
+<p align="left"><img border="0" src="images/BD21298_.gif" width="13"
+ height="13">
+              Before starting Shorewall, you should look at the IP address
+ of  your  external    interface and if it is one of the above ranges, you
+ should  remove  the    'norfc1918' option from the external interface's
+entry  in    /etc/shorewall/interfaces.</p>
+       </div>
+               
+<div align="left">          
+<p align="left">You will want to assign your local addresses from one <i>
+      sub-network </i>or <i>subnet</i> and your DMZ addresses from another
+ subnet.  For our purposes, we can consider a subnet    to consists of a
+range  of addresses  x.y.z.0 - x.y.z.255. Such a subnet will    have a <i>Subnet
+ Mask </i>of 255.255.255.0.  The address x.y.z.0 is reserved as    the <i>Subnet 
+  Address</i> and x.y.z.255  is reserved as the <i>Subnet Broadcast</i>  
+<i>Address</i>.  In Shorewall,  a subnet is described using <a
+ href="subnet_masks.htm"><i>Classless  InterDomain Routing </i>(CIDR)</a> 
+notation with consists of the subnet address  followed    by "/24". The "24" 
+refers to the number of    consecutive "1"  bits from the left of the subnet 
+mask. </p>
+       </div>
+               
+<div align="left">          
+<p align="left">Example sub-network:</p>
+       </div>
+               
+<div align="left">          
+<blockquote>                          
+  <table border="1" style="border-collapse: collapse;" id="AutoNumber1"
+ cellpadding="2">
+              <tbody>
+             <tr>
+                <td><b>Range:</b></td>
+                <td>10.10.10.0 - 10.10.10.255</td>
+              </tr>
+              <tr>
+                <td><b>Subnet Address:</b></td>
+                <td>10.10.10.0</td>
+              </tr>
+              <tr>
+                <td><b>Broadcast Address:</b></td>
+                <td>10.10.10.255</td>
+              </tr>
+              <tr>
+                <td><b>CIDR Notation:</b></td>
+                <td>10.10.10.0/24</td>
+              </tr>
+                                               
+    </tbody>                     
+  </table>
+          </blockquote>
+        </div>
+               
+<div align="left">          
+<p align="left">It is conventional to assign the internal interface either 
+   the    first usable address in the subnet (10.10.10.1 in the above example) 
+   or the    last usable address (10.10.10.254).</p>
+       </div>
+               
+<div align="left">          
+<p align="left">One of the purposes of subnetting is to allow all computers 
+   in the    subnet to understand which other computers can be communicated 
+  with directly.    To communicate with systems outside of the subnetwork, 
+ systems send packets    through a<i>  gateway</i>  (router).</p>
+       </div>
+               
+<div align="left">          
+<p align="left"><img border="0" src="images/BD21298_1.gif" width="13"
+ height="13">
+           Your local  computers    (Local Computers 1 &amp; 2) should be 
+configured    with their<i>    default gateway</i> set to the IP address of
+the firewall's    internal interface    and your DMZ computers ( DMZ Computers 
+1 &amp; 2)  should  be configured with their    default gateway set to the 
+IP address  of the firewall's DMZ interface.   </p>
+       </div>
+               
 <p align="left">The foregoing short discussion barely scratches the surface 
-   regarding subnetting and routing. If you are interested in learning more 
-  about  IP addressing and routing, I highly recommend <i>"IP Fundamentals: 
-  What Everyone  Needs to Know about Addressing &amp; Routing",</i> Thomas 
- A. Maufer, Prentice-Hall,  1999, ISBN 0-13-975483-0.</p>
-           
+    regarding subnetting and routing. If you are interested in learning more 
+   about  IP addressing and routing, I highly recommend <i>"IP Fundamentals: 
+   What Everyone  Needs to Know about Addressing &amp; Routing",</i> Thomas 
+  A. Maufer, Prentice-Hall,  1999, ISBN 0-13-975483-0.</p>
+               
 <p align="left">The remainder of this quide will assume that you have configured 
-   your network as shown here:</p>
-           
+    your network as shown here:</p>
+               
 <p align="center"> <img border="0" src="images/dmz2.png" width="721"
  height="635">
-     </p>
-           
+       </p>
+               
 <p align="left">The default gateway for the DMZ computers would be 10.10.11.254 
-   and the default gateway for the Local computers would be 10.10.10.254.</p>
-           
+    and the default gateway for the Local computers would be 10.10.10.254.</p>
+               
 <h2 align="left">IP Masquerading (SNAT)</h2>
-           
+               
 <p align="left">The addresses reserved by RFC 1918 are sometimes referred 
-  to as <i>non-routable</i> because the Internet backbone routers don't forward 
-  packets  which have an RFC-1918 destination address. When one of your local 
-  systems  (let's assume local computer 1) sends a connection request to an
-  internet host, the  firewall must perform <i>Network Address Translation 
- </i>(NAT). The firewall  rewrites the source address in the packet to be 
-the address of the firewall's  external interface; in other words, the firewall 
- makes it look as if the firewall  itself is initiating the connection.  This
- is necessary so that the  destination host will be able to route return packets
-  back to the firewall  (remember that packets whose destination address
-is   reserved by RFC 1918 can't  be routed accross the internet). When the
-firewall   receives a return packet, it  rewrites the destination address
-back to 10.10.10.1   and  forwards the packet on to local computer 1. </p>
-           
+   to as <i>non-routable</i> because the Internet backbone routers don't forward
+   packets  which have an RFC-1918 destination address. When one of your
+local    systems  (let's assume local computer 1) sends a connection request
+to an   internet host, the  firewall must perform <i>Network Address Translation
+  </i>(NAT). The firewall  rewrites the source address in the packet to be
+ the address of the firewall's  external interface; in other words, the firewall
+  makes it look as if the firewall  itself is initiating the connection. 
+This  is necessary so that the  destination host will be able to route return
+packets   back to the firewall  (remember that packets whose destination
+address is   reserved by RFC 1918 can't  be routed accross the internet).
+When the firewall   receives a return packet, it  rewrites the destination
+address back to 10.10.10.1   and  forwards the packet on to local computer
+1. </p>
+               
 <p align="left">On Linux systems, the above process is often referred to as<i>
  IP Masquerading</i> and you will also see the term <i>Source Network Address
  Translation </i>(SNAT) used. Shorewall follows the convention used with
  Netfilter:</p>
-           
+               
 <ul>
-        <li>                            
+          <li>                                      
     <p align="left"><i>Masquerade</i> describes the case where you let your 
-     firewall system automatically detect the external interface address. 
-      </p>
-       </li>
-       <li>                            
+      firewall system automatically detect the external interface address. 
+       </p>
+         </li>
+         <li>                                      
     <p align="left"><i>SNAT</i> refers to the case when you explicitly specify 
-  the    source address that you want outbound packets from your local network 
-  to use.    </p>
-       </li>
-         
+   the    source address that you want outbound packets from your local network 
+   to use.    </p>
+         </li>
+             
 </ul>
-           
+               
 <p align="left">In Shorewall, both Masquerading and SNAT are configured with 
-   entries in the /etc/shorewall/masq file.</p>
-           
+    entries in the /etc/shorewall/masq file.</p>
+               
 <p align="left"><img border="0" src="images/BD21298_2.gif" width="13"
  height="13">
-         If your external firewall interface is <b>eth0</b>, your local 
-interface   <b>eth1 </b>and your DMZ interface is <b>eth2</b> then you do
-not  need to  modify the file provided with the sample. Otherwise, edit 
-/etc/shorewall/masq   and change it to match your configuration.</p>
-           
+           If your external firewall interface is <b>eth0</b>, your local 
+ interface   <b>eth1 </b>and your DMZ interface is <b>eth2</b> then you do
+ not  need to  modify the file provided with the sample. Otherwise, edit
+ /etc/shorewall/masq   and change it to match your configuration.</p>
+               
 <p align="left"><img border="0" src="images/BD21298_2.gif" width="13"
  height="13">
-         If your external IP  is static, you can enter it in the third column 
-  in the /etc/shorewall/masq entry  if you like although your firewall will 
-  work fine if you leave that column  empty. Entering your static IP in column 
-  3 makes processing outgoing packets a  little more efficient. </p>
-           
-<h2 align="left">Port Forwarding (DNAT)</h2>
-           
-<p align="left">One of your goals will be to run one or more servers on your 
-  DMZ computers. Because these computers have RFC-1918 addresses, it is not 
-   possible for clients on the internet to connect directly to them. It is 
- rather  necessary for those clients to address their connection requests 
-to your firewall  who rewrites the destination address to the address of your
-server and forwards  the packet to that server. When your server responds, 
- the firewall automatically  performs SNAT to rewrite the source address in
- the response.</p>
-           
-<p align="left">The above process is called<i> Port Forwarding</i> or <i>
-   Destination Network Address Translation</i> (DNAT). You configure port
- forwarding using DNAT rules in the /etc/shorewall/rules file.</p>
-           
-<p>The general  form of a simple port forwarding rule in  /etc/shorewall/rules 
-  is:</p>
-           
-<blockquote>                  
-  <table border="1" cellpadding="2" style="border-collapse: collapse;"
- id="AutoNumber4">
-          <tbody>
-           <tr>
-            <td><u><b>ACTION</b></u></td>
-            <td><u><b>SOURCE</b></u></td>
-            <td><u><b>DESTINATION</b></u></td>
-            <td><u><b>PROTOCOL</b></u></td>
-            <td><u><b>PORT</b></u></td>
-            <td><u><b>SOURCE PORT</b></u></td>
-            <td><u><b>ORIGINAL ADDRESS</b></u></td>
-          </tr>
-          <tr>
-            <td>DNAT</td>
-            <td>net</td>
-            <td>dmz:<i>&lt;server local ip address&gt; </i>[:<i>&lt;server
- port&gt;</i>]</td>
-            <td><i>&lt;protocol&gt;</i></td>
-            <td><i>&lt;port&gt;</i></td>
-            <td> </td>
-            <td> </td>
-          </tr>
-                                 
-    </tbody>               
-  </table>
-      </blockquote>
-           
-<p>If you don't specify the <i>&lt;server port&gt;</i>, it is assumed to be
-the same  as <i>&lt;port&gt;</i>.</p>
-           
-<p>Example - you run a Web Server on DMZ 2 and you want to forward incoming 
-   TCP port 80 to that system:</p>
-           
-<blockquote>                  
-  <table border="1" cellpadding="2" style="border-collapse: collapse;"
- id="AutoNumber4">
-          <tbody>
-           <tr>
-            <td><u><b>ACTION</b></u></td>
-            <td><u><b>SOURCE</b></u></td>
-            <td><u><b>DESTINATION</b></u></td>
-            <td><u><b>PROTOCOL</b></u></td>
-            <td><u><b>PORT</b></u></td>
-            <td><u><b>SOURCE PORT</b></u></td>
-            <td><u><b>ORIGINAL ADDRESS</b></u></td>
-          </tr>
-          <tr>
-            <td>DNAT</td>
-            <td>net</td>
-            <td>dmz:10.10.11.2</td>
-            <td>tcp</td>
-            <td>80</td>
-            <td># Forward port 80</td>
-            <td>from the internet</td>
-          </tr>
-          <tr>
-            <td>ACCEPT</td>
-            <td>loc</td>
-            <td>dmz:10.10.11.2</td>
-            <td>tcp</td>
-            <td>80</td>
-            <td>#Allow connections </td>
-            <td>from the local network</td>
-          </tr>
-                                 
-    </tbody>               
-  </table>
-      </blockquote>
-           
-<p>A  couple of important points  to keep in mind:</p>
-           
-<ul>
-        <li>When you are connecting to your server from your local systems, 
- you  must    use the server's internal IP address (10.10.11.2).</li>
-        <li>Many ISPs block incoming connection requests to port 80. If you 
- have     problems connecting to your web server, try the following rule and
- try     connecting to port 5000 (e.g., connect to <a
- href="http://w.x.y.z:5000">   http://w.x.y.z:5000</a> where w.x.y.z is your 
-  external IP).</li>
-           
-</ul>
-           
-<blockquote>                  
-  <table border="1" cellpadding="2" style="border-collapse: collapse;"
- id="AutoNumber4">
-          <tbody>
-           <tr>
-            <td><u><b>ACTION</b></u></td>
-            <td><u><b>SOURCE</b></u></td>
-            <td><u><b>DESTINATION</b></u></td>
-            <td><u><b>PROTOCOL</b></u></td>
-            <td><u><b>PORT</b></u></td>
-            <td><u><b>SOURCE PORT</b></u></td>
-            <td><u><b>ORIGINAL ADDRESS</b></u></td>
-          </tr>
-          <tr>
-            <td>DNAT</td>
-            <td>net</td>
-            <td>dmz:10.10.11.2:80</td>
-            <td>tcp</td>
-            <td>5000</td>
-            <td> </td>
-            <td> </td>
-          </tr>
-                                 
-    </tbody>               
-  </table>
-      </blockquote>
-           
-<p>If you want to be able  to access your server from the local network using 
-  your external address, then  if you have a static external IP you can replace 
-  the loc-&gt;dmz rule above with:</p>
-           
-<blockquote>                  
-  <table border="1" cellpadding="2" style="border-collapse: collapse;"
- id="AutoNumber4">
-          <tbody>
-           <tr>
-            <td><u><b>ACTION</b></u></td>
-            <td><u><b>SOURCE</b></u></td>
-            <td><u><b>DESTINATION</b></u></td>
-            <td><u><b>PROTOCOL</b></u></td>
-            <td><u><b>PORT</b></u></td>
-            <td><u><b>SOURCE PORT</b></u></td>
-            <td><u><b>ORIGINAL ADDRESS</b></u></td>
-          </tr>
-          <tr>
-            <td>DNAT</td>
-            <td>net</td>
-            <td>dmz:10.10.11.2:80</td>
-            <td>tcp</td>
-            <td>80</td>
-            <td>-</td>
-            <td><i>&lt;external IP&gt;</i></td>
-          </tr>
-                                 
-    </tbody>               
-  </table>
-      </blockquote>
-           
-<p>If you have a dynamic ip then you must ensure that your external interface 
-  is  up before starting Shorewall and you must take steps as follows (assume 
-  that  your external interface is <b>eth0</b>):</p>
-           
-<ol>
-        <li>Include the following in /etc/shorewall/params:<br>
-        <br>
-        ETH0_IP=`find_interface_address eth0`<br>
-       </li>
-        <li>Make your loc-&gt;dmz rule:</li>
-           
-</ol>
-           
-<blockquote>                  
-  <table border="1" cellpadding="2" style="border-collapse: collapse;"
- id="AutoNumber4">
-          <tbody>
-           <tr>
-            <td><u><b>ACTION</b></u></td>
-            <td><u><b>SOURCE</b></u></td>
-            <td><u><b>DESTINATION</b></u></td>
-            <td><u><b>PROTOCOL</b></u></td>
-            <td><u><b>PORT</b></u></td>
-            <td><u><b>SOURCE PORT</b></u></td>
-            <td><u><b>ORIGINAL ADDRESS</b></u></td>
-          </tr>
-          <tr>
-            <td>DNAT</td>
-            <td>loc<br>
-         </td>
-            <td>dmz:10.10.11.2:80</td>
-            <td>tcp</td>
-            <td>80</td>
-            <td>-</td>
-            <td>$ETH0_IP</td>
-          </tr>
-                                 
-    </tbody>               
-  </table>
-      </blockquote>
-           
-<p>If you want to access your server from the DMZ using your external IP 
-address, see <a href="FAQ.htm#faq2a">FAQ 2a</a>.</p>
-           
-<p><img border="0" src="images/BD21298_2.gif" width="13" height="13">
-         At this point, add the DNAT and  ACCEPT rules for your servers.
+           If your external IP  is static, you can enter it in the third
+column    in the /etc/shorewall/masq entry  if you like although your firewall
+will    work fine if you leave that column  empty. Entering your static IP
+in column    3 makes processing outgoing packets a  little more efficient.
 </p>
-           
-<h2 align="left">Domain Name Server (DNS)</h2>
-           
-<p align="left">Normally, when you connect to your ISP, as part of getting 
-  an IP  address your firewall's <i>Domain Name Service </i>(DNS) resolver 
- will be  automatically configured (e.g., the /etc/resolv.conf file will be
- written).  Alternatively, your ISP may have given you the IP address of
-a  pair of DNS <i> name servers</i> for you to manually configure as your 
-primary  and secondary  name servers. It is <u>your</u> responsibility to 
-configure  the resolver in your  internal systems. You can take one of two 
-approaches:</p>
-           
-<ul>
-        <li>                            
-    <p align="left">You can configure your internal systems to use your ISP's 
-  name    servers. If you ISP gave you the addresses of their servers or if
-  those    addresses are available on their web site, you can configure your
-  internal    systems to use those addresses. If that information isn't available,
-  look in    /etc/resolv.conf on your firewall system -- the name servers
-are  given in    "nameserver" records in that file.   </p>
-       </li>
-       <li>                            
-    <p align="left"><img border="0" src="images/BD21298_2.gif"
- width="13" height="13">
-         You can configure a<i> Caching Name Server </i>on your    firewall 
- or  in your DMZ.<i> </i>Red Hat has an RPM for a caching name server (which 
- also     requires the 'bind' RPM) and for Bering users, there is dnscache.lrp. 
- If you    take this approach, you configure your internal systems to use 
-the caching    name server as their primary (and only) name server. You use 
-the internal IP    address of the firewall (10.10.10.254 in the example above) 
-  for the name    server address if you choose to run the name server on your
-  firewall. To allow your local systems to talk to your caching name    server,
-  you must open port 53 (both UDP and TCP) from the local network to the
-   server; you do that by adding the rules in /etc/shorewall/rules.     </p>
-       </li>
-         
-</ul>
-           
-<blockquote>                  
-  <p align="left">If you run the name server on the firewall:            
- 
-  <table border="1" cellpadding="2" style="border-collapse: collapse;"
- id="AutoNumber4">
-          <tbody>
-           <tr>
-            <td><u><b>ACTION</b></u></td>
-            <td><u><b>SOURCE</b></u></td>
-            <td><u><b>DESTINATION</b></u></td>
-            <td><u><b>PROTOCOL</b></u></td>
-            <td><u><b>PORT</b></u></td>
-            <td><u><b>SOURCE PORT</b></u></td>
-            <td><u><b>ORIGINAL ADDRESS</b></u></td>
-          </tr>
-          <tr>
-            <td>ACCEPT</td>
-            <td>loc</td>
-            <td>fw</td>
-            <td>tcp</td>
-            <td>53</td>
-            <td> </td>
-            <td> </td>
-          </tr>
-          <tr>
-            <td>ACCEPT</td>
-            <td>loc</td>
-            <td>fw</td>
-            <td>udp</td>
-            <td>53</td>
-            <td> </td>
-            <td> </td>
-          </tr>
-          <tr>
-            <td>ACCEPT</td>
-            <td>dmz</td>
-            <td>fw</td>
-            <td>tcp</td>
-            <td>53</td>
-            <td> </td>
-            <td> </td>
-          </tr>
-          <tr>
-            <td>ACCEPT</td>
-            <td>dmz</td>
-            <td>fw</td>
-            <td>udp</td>
-            <td>53</td>
-            <td> </td>
-            <td> </td>
-          </tr>
-                                 
-    </tbody>               
-  </table>
-      </p>
-     </blockquote>
-           
-<div align="left">        
-<blockquote>                    
-  <p>Run name server on DMZ computer 1</p>
-                         
+               
+<h2 align="left">Port Forwarding (DNAT)</h2>
+               
+<p align="left">One of your goals will be to run one or more servers on your 
+   DMZ computers. Because these computers have RFC-1918 addresses, it is not
+    possible for clients on the internet to connect directly to them. It
+is   rather  necessary for those clients to address their connection requests 
+ to your firewall  who rewrites the destination address to the address of 
+your server and forwards  the packet to that server. When your server responds, 
+  the firewall automatically  performs SNAT to rewrite the source address 
+in  the response.</p>
+               
+<p align="left">The above process is called<i> Port Forwarding</i> or <i>
+    Destination Network Address Translation</i> (DNAT). You configure port
+  forwarding using DNAT rules in the /etc/shorewall/rules file.</p>
+               
+<p>The general  form of a simple port forwarding rule in  /etc/shorewall/rules 
+   is:</p>
+               
+<blockquote>                        
   <table border="1" cellpadding="2" style="border-collapse: collapse;"
  id="AutoNumber4">
             <tbody>
-           <tr>
+             <tr>
               <td><u><b>ACTION</b></u></td>
               <td><u><b>SOURCE</b></u></td>
               <td><u><b>DESTINATION</b></u></td>
@@ -774,192 +493,226 @@ the internal IP    address of the firewall (10.10.10.254 in the example above)
               <td><u><b>ORIGINAL ADDRESS</b></u></td>
             </tr>
             <tr>
-              <td>ACCEPT</td>
-              <td>loc</td>
-              <td>dmz:10.10.11.1</td>
-              <td>tcp</td>
-              <td>53</td>
-              <td> </td>
-              <td> </td>
-            </tr>
-            <tr>
-              <td>ACCEPT</td>
-              <td>loc</td>
-              <td>dmz:10.10.11.1</td>
-              <td>udp</td>
-              <td>53</td>
-              <td> </td>
-              <td> </td>
-            </tr>
-            <tr>
-              <td>ACCEPT</td>
-              <td>fw</td>
-              <td>dmz:10.10.10.1</td>
-              <td>tcp</td>
-              <td>53</td>
-              <td> </td>
-              <td> </td>
-            </tr>
-            <tr>
-              <td>ACCEPT</td>
-              <td>fw</td>
-              <td>dmz:10.10.10.1</td>
-              <td>udp</td>
-              <td>53</td>
-              <td> </td>
-              <td> </td>
-            </tr>
-                                   
-    </tbody>               
-  </table>
-        </blockquote>
-      </div>
-           
-<div align="left">        
-<h2 align="left">Other Connections</h2>
-      </div>
-           
-<div align="left">        
-<p align="left">The three-interface sample includes the following rules:</p>
-     </div>
-           
-<div align="left">        
-<blockquote>                    
-  <table border="1" cellpadding="2" style="border-collapse: collapse;"
- id="AutoNumber4">
-            <tbody>
-           <tr>
-              <td><u><b>ACTION</b></u></td>
-              <td><u><b>SOURCE</b></u></td>
-              <td><u><b>DESTINATION</b></u></td>
-              <td><u><b>PROTOCOL</b></u></td>
-              <td><u><b>PORT</b></u></td>
-              <td><u><b>SOURCE PORT</b></u></td>
-              <td><u><b>ORIGINAL ADDRESS</b></u></td>
-            </tr>
-            <tr>
-              <td>ACCEPT</td>
-              <td>fw</td>
+              <td>DNAT</td>
               <td>net</td>
-              <td>udp</td>
-              <td>53</td>
-              <td> </td>
-              <td> </td>
-            </tr>
-            <tr>
-              <td>ACCEPT</td>
-              <td>fw</td>
-              <td>net</td>
-              <td>tcp</td>
-              <td>53</td>
-              <td> </td>
-              <td> </td>
-            </tr>
-                                   
-    </tbody>               
-  </table>
-        </blockquote>
-      </div>
-           
-<div align="left">        
-<p align="left">Those rules allow DNS access from your firewall and may be 
-     removed if you commented out the line in /etc/shorewall/policy allowing 
-  all    connections from the firewall to the internet.</p>
-     </div>
-           
-<div align="left">        
-<p align="left">The sample also includes:</p>
-     </div>
-           
-<div align="left">        
-<blockquote>                    
-  <table border="1" cellpadding="2" style="border-collapse: collapse;"
- id="AutoNumber4">
-            <tbody>
-           <tr>
-              <td><u><b>ACTION</b></u></td>
-              <td><u><b>SOURCE</b></u></td>
-              <td><u><b>DESTINATION</b></u></td>
-              <td><u><b>PROTOCOL</b></u></td>
-              <td><u><b>PORT</b></u></td>
-              <td><u><b>SOURCE PORT</b></u></td>
-              <td><u><b>ORIGINAL ADDRESS</b></u></td>
-            </tr>
-            <tr>
-              <td>ACCEPT</td>
-              <td>loc</td>
-              <td>fw</td>
-              <td>tcp</td>
-              <td>22</td>
-              <td> </td>
-              <td> </td>
-            </tr>
-            <tr>
-              <td>ACCEPT</td>
-              <td>loc</td>
-              <td>dmz</td>
-              <td>tcp</td>
-              <td>22</td>
-              <td> </td>
-              <td> </td>
-            </tr>
-                                   
-    </tbody>               
-  </table>
-        </blockquote>
-      </div>
-           
-<div align="left">        
-<p align="left">That rule allows you to run an SSH server on your firewall 
-  and    in each of your DMZ systems and    to connect to those servers from 
-  your local systems.</p>
-     </div>
-           
-<div align="left">        
-<p align="left">If you wish to enable other connections between your systems, 
-  the general format is:</p>
-     </div>
-           
-<div align="left">        
-<blockquote>                    
-  <table border="1" cellpadding="2" style="border-collapse: collapse;"
- id="AutoNumber4">
-            <tbody>
-           <tr>
-              <td><u><b>ACTION</b></u></td>
-              <td><u><b>SOURCE</b></u></td>
-              <td><u><b>DESTINATION</b></u></td>
-              <td><u><b>PROTOCOL</b></u></td>
-              <td><u><b>PORT</b></u></td>
-              <td><u><b>SOURCE PORT</b></u></td>
-              <td><u><b>ORIGINAL ADDRESS</b></u></td>
-            </tr>
-            <tr>
-              <td>ACCEPT</td>
-              <td><i>&lt;source zone&gt;</i></td>
-              <td><i>&lt;destination zone&gt;</i></td>
+              <td>dmz:<i>&lt;server local ip address&gt; </i>[:<i>&lt;server
+  port&gt;</i>]</td>
               <td><i>&lt;protocol&gt;</i></td>
               <td><i>&lt;port&gt;</i></td>
               <td> </td>
               <td> </td>
             </tr>
-                                   
-    </tbody>               
+                                             
+    </tbody>                     
   </table>
         </blockquote>
-      </div>
-           
-<div align="left">        
-<p align="left">Example - You want to run a publicly-available DNS server 
-  on your firewall    system:</p>
-     </div>
-           
-<div align="left">        
-<blockquote>                    
+               
+<p>If you don't specify the <i>&lt;server port&gt;</i>, it is assumed to be
+the same  as <i>&lt;port&gt;</i>.</p>
+               
+<p>Example - you run a Web Server on DMZ 2 and you want to forward incoming 
+    TCP port 80 to that system:</p>
+               
+<blockquote>                        
   <table border="1" cellpadding="2" style="border-collapse: collapse;"
  id="AutoNumber4">
             <tbody>
-           <tr>
+             <tr>
+              <td><u><b>ACTION</b></u></td>
+              <td><u><b>SOURCE</b></u></td>
+              <td><u><b>DESTINATION</b></u></td>
+              <td><u><b>PROTOCOL</b></u></td>
+              <td><u><b>PORT</b></u></td>
+              <td><u><b>SOURCE PORT</b></u></td>
+              <td><u><b>ORIGINAL ADDRESS</b></u></td>
+            </tr>
+            <tr>
+              <td>DNAT</td>
+              <td>net</td>
+              <td>dmz:10.10.11.2</td>
+              <td>tcp</td>
+              <td>80</td>
+              <td># Forward port 80</td>
+              <td>from the internet</td>
+            </tr>
+            <tr>
+              <td>ACCEPT</td>
+              <td>loc</td>
+              <td>dmz:10.10.11.2</td>
+              <td>tcp</td>
+              <td>80</td>
+              <td>#Allow connections </td>
+              <td>from the local network</td>
+            </tr>
+                                             
+    </tbody>                     
+  </table>
+        </blockquote>
+               
+<p>A  couple of important points  to keep in mind:</p>
+               
+<ul>
+          <li>When you are connecting to your server from your local systems, 
+  you  must    use the server's internal IP address (10.10.11.2).</li>
+          <li>Many ISPs block incoming connection requests to port 80. If 
+you   have     problems connecting to your web server, try the following rule
+and  try     connecting to port 5000 (e.g., connect to <a
+ href="http://w.x.y.z:5000">   http://w.x.y.z:5000</a> where w.x.y.z is your 
+   external IP).</li>
+               
+</ul>
+               
+<blockquote>                        
+  <table border="1" cellpadding="2" style="border-collapse: collapse;"
+ id="AutoNumber4">
+            <tbody>
+             <tr>
+              <td><u><b>ACTION</b></u></td>
+              <td><u><b>SOURCE</b></u></td>
+              <td><u><b>DESTINATION</b></u></td>
+              <td><u><b>PROTOCOL</b></u></td>
+              <td><u><b>PORT</b></u></td>
+              <td><u><b>SOURCE PORT</b></u></td>
+              <td><u><b>ORIGINAL ADDRESS</b></u></td>
+            </tr>
+            <tr>
+              <td>DNAT</td>
+              <td>net</td>
+              <td>dmz:10.10.11.2:80</td>
+              <td>tcp</td>
+              <td>5000</td>
+              <td> </td>
+              <td> </td>
+            </tr>
+                                             
+    </tbody>                     
+  </table>
+        </blockquote>
+               
+<p>If you want to be able  to access your server from the local network using 
+   your external address, then  if you have a static external IP you can replace
+   the loc-&gt;dmz rule above with:</p>
+               
+<blockquote>                        
+  <table border="1" cellpadding="2" style="border-collapse: collapse;"
+ id="AutoNumber4">
+            <tbody>
+             <tr>
+              <td><u><b>ACTION</b></u></td>
+              <td><u><b>SOURCE</b></u></td>
+              <td><u><b>DESTINATION</b></u></td>
+              <td><u><b>PROTOCOL</b></u></td>
+              <td><u><b>PORT</b></u></td>
+              <td><u><b>SOURCE PORT</b></u></td>
+              <td><u><b>ORIGINAL ADDRESS</b></u></td>
+            </tr>
+            <tr>
+              <td>DNAT</td>
+              <td>net</td>
+              <td>dmz:10.10.11.2:80</td>
+              <td>tcp</td>
+              <td>80</td>
+              <td>-</td>
+              <td><i>&lt;external IP&gt;</i></td>
+            </tr>
+                                             
+    </tbody>                     
+  </table>
+        </blockquote>
+               
+<p>If you have a dynamic ip then you must ensure that your external interface 
+   is  up before starting Shorewall and you must take steps as follows (assume 
+   that  your external interface is <b>eth0</b>):</p>
+               
+<ol>
+          <li>Include the following in /etc/shorewall/params:<br>
+          <br>
+          ETH0_IP=`find_interface_address eth0`<br>
+         </li>
+          <li>Make your loc-&gt;dmz rule:</li>
+               
+</ol>
+               
+<blockquote>                        
+  <table border="1" cellpadding="2" style="border-collapse: collapse;"
+ id="AutoNumber4">
+            <tbody>
+             <tr>
+              <td><u><b>ACTION</b></u></td>
+              <td><u><b>SOURCE</b></u></td>
+              <td><u><b>DESTINATION</b></u></td>
+              <td><u><b>PROTOCOL</b></u></td>
+              <td><u><b>PORT</b></u></td>
+              <td><u><b>SOURCE PORT</b></u></td>
+              <td><u><b>ORIGINAL ADDRESS</b></u></td>
+            </tr>
+            <tr>
+              <td>DNAT</td>
+              <td>loc<br>
+           </td>
+              <td>dmz:10.10.11.2:80</td>
+              <td>tcp</td>
+              <td>80</td>
+              <td>-</td>
+              <td>$ETH0_IP</td>
+            </tr>
+                                             
+    </tbody>                     
+  </table>
+        </blockquote>
+               
+<p>If you want to access your server from the DMZ using your external IP 
+address, see <a href="FAQ.htm#faq2a">FAQ 2a</a>.</p>
+               
+<p><img border="0" src="images/BD21298_2.gif" width="13" height="13">
+           At this point, add the DNAT and  ACCEPT rules for your servers.
+ </p>
+               
+<h2 align="left">Domain Name Server (DNS)</h2>
+               
+<p align="left">Normally, when you connect to your ISP, as part of getting 
+   an IP  address your firewall's <i>Domain Name Service </i>(DNS) resolver 
+  will be  automatically configured (e.g., the /etc/resolv.conf file will 
+be  written).  Alternatively, your ISP may have given you the IP address of
+a  pair of DNS <i> name servers</i> for you to manually configure as your 
+ primary  and secondary  name servers. It is <u>your</u> responsibility to 
+ configure  the resolver in your  internal systems. You can take one of two 
+ approaches:</p>
+               
+<ul>
+          <li>                                      
+    <p align="left">You can configure your internal systems to use your ISP's 
+   name    servers. If you ISP gave you the addresses of their servers or 
+if   those    addresses are available on their web site, you can configure 
+your   internal    systems to use those addresses. If that information isn't 
+available,   look in    /etc/resolv.conf on your firewall system -- the name 
+servers are  given in    "nameserver" records in that file.   </p>
+         </li>
+         <li>                                      
+    <p align="left"><img border="0" src="images/BD21298_2.gif"
+ width="13" height="13">
+           You can configure a<i> Caching Name Server </i>on your    firewall 
+  or  in your DMZ.<i> </i>Red Hat has an RPM for a caching name server (which 
+  also     requires the 'bind' RPM) and for Bering users, there is dnscache.lrp. 
+  If you    take this approach, you configure your internal systems to use 
+ the caching    name server as their primary (and only) name server. You use
+ the internal IP    address of the firewall (10.10.10.254 in the example above)
+   for the name    server address if you choose to run the name server on
+your   firewall. To allow your local systems to talk to your caching name 
+   server,   you must open port 53 (both UDP and TCP) from the local network 
+to the    server; you do that by adding the rules in /etc/shorewall/rules. 
+    </p>
+         </li>
+             
+</ul>
+               
+<blockquote>                        
+  <p align="left">If you run the name server on the firewall:            
+       
+  <table border="1" cellpadding="2" style="border-collapse: collapse;"
+ id="AutoNumber4">
+            <tbody>
+             <tr>
               <td><u><b>ACTION</b></u></td>
               <td><u><b>SOURCE</b></u></td>
               <td><u><b>DESTINATION</b></u></td>
@@ -970,137 +723,393 @@ the internal IP    address of the firewall (10.10.10.254 in the example above)
             </tr>
             <tr>
               <td>ACCEPT</td>
-              <td>net</td>
+              <td>loc</td>
               <td>fw</td>
               <td>tcp</td>
               <td>53</td>
-              <td>#Allow DNS access</td>
-              <td>from the internet</td>
+              <td> </td>
+              <td> </td>
             </tr>
             <tr>
               <td>ACCEPT</td>
-              <td>net</td>
+              <td>loc</td>
+              <td>fw</td>
+              <td>udp</td>
+              <td>53</td>
+              <td> </td>
+              <td> </td>
+            </tr>
+            <tr>
+              <td>ACCEPT</td>
+              <td>dmz</td>
               <td>fw</td>
               <td>tcp</td>
               <td>53</td>
-              <td>#Allow DNS access</td>
-              <td>from the internet</td>
+              <td> </td>
+              <td> </td>
             </tr>
-                                   
-    </tbody>               
+            <tr>
+              <td>ACCEPT</td>
+              <td>dmz</td>
+              <td>fw</td>
+              <td>udp</td>
+              <td>53</td>
+              <td> </td>
+              <td> </td>
+            </tr>
+                                             
+    </tbody>                     
   </table>
-        </blockquote>
-      </div>
-           
-<div align="left">        
+        </p>
+       </blockquote>
+               
+<div align="left">          
+<blockquote>                          
+  <p>Run name server on DMZ computer 1</p>
+                                 
+  <table border="1" cellpadding="2" style="border-collapse: collapse;"
+ id="AutoNumber4">
+              <tbody>
+             <tr>
+                <td><u><b>ACTION</b></u></td>
+                <td><u><b>SOURCE</b></u></td>
+                <td><u><b>DESTINATION</b></u></td>
+                <td><u><b>PROTOCOL</b></u></td>
+                <td><u><b>PORT</b></u></td>
+                <td><u><b>SOURCE PORT</b></u></td>
+                <td><u><b>ORIGINAL ADDRESS</b></u></td>
+              </tr>
+              <tr>
+                <td>ACCEPT</td>
+                <td>loc</td>
+                <td>dmz:10.10.11.1</td>
+                <td>tcp</td>
+                <td>53</td>
+                <td> </td>
+                <td> </td>
+              </tr>
+              <tr>
+                <td>ACCEPT</td>
+                <td>loc</td>
+                <td>dmz:10.10.11.1</td>
+                <td>udp</td>
+                <td>53</td>
+                <td> </td>
+                <td> </td>
+              </tr>
+              <tr>
+                <td>ACCEPT</td>
+                <td>fw</td>
+                <td>dmz:10.10.10.1</td>
+                <td>tcp</td>
+                <td>53</td>
+                <td> </td>
+                <td> </td>
+              </tr>
+              <tr>
+                <td>ACCEPT</td>
+                <td>fw</td>
+                <td>dmz:10.10.10.1</td>
+                <td>udp</td>
+                <td>53</td>
+                <td> </td>
+                <td> </td>
+              </tr>
+                                               
+    </tbody>                     
+  </table>
+          </blockquote>
+        </div>
+               
+<div align="left">          
+<h2 align="left">Other Connections</h2>
+        </div>
+               
+<div align="left">          
+<p align="left">The three-interface sample includes the following rules:</p>
+       </div>
+               
+<div align="left">          
+<blockquote>                          
+  <table border="1" cellpadding="2" style="border-collapse: collapse;"
+ id="AutoNumber4">
+              <tbody>
+             <tr>
+                <td><u><b>ACTION</b></u></td>
+                <td><u><b>SOURCE</b></u></td>
+                <td><u><b>DESTINATION</b></u></td>
+                <td><u><b>PROTOCOL</b></u></td>
+                <td><u><b>PORT</b></u></td>
+                <td><u><b>SOURCE PORT</b></u></td>
+                <td><u><b>ORIGINAL ADDRESS</b></u></td>
+              </tr>
+              <tr>
+                <td>ACCEPT</td>
+                <td>fw</td>
+                <td>net</td>
+                <td>udp</td>
+                <td>53</td>
+                <td> </td>
+                <td> </td>
+              </tr>
+              <tr>
+                <td>ACCEPT</td>
+                <td>fw</td>
+                <td>net</td>
+                <td>tcp</td>
+                <td>53</td>
+                <td> </td>
+                <td> </td>
+              </tr>
+                                               
+    </tbody>                     
+  </table>
+          </blockquote>
+        </div>
+               
+<div align="left">          
+<p align="left">Those rules allow DNS access from your firewall and may be 
+      removed if you commented out the line in /etc/shorewall/policy allowing 
+   all    connections from the firewall to the internet.</p>
+       </div>
+               
+<div align="left">          
+<p align="left">The sample also includes:</p>
+       </div>
+               
+<div align="left">          
+<blockquote>                          
+  <table border="1" cellpadding="2" style="border-collapse: collapse;"
+ id="AutoNumber4">
+              <tbody>
+             <tr>
+                <td><u><b>ACTION</b></u></td>
+                <td><u><b>SOURCE</b></u></td>
+                <td><u><b>DESTINATION</b></u></td>
+                <td><u><b>PROTOCOL</b></u></td>
+                <td><u><b>PORT</b></u></td>
+                <td><u><b>SOURCE PORT</b></u></td>
+                <td><u><b>ORIGINAL ADDRESS</b></u></td>
+              </tr>
+              <tr>
+                <td>ACCEPT</td>
+                <td>loc</td>
+                <td>fw</td>
+                <td>tcp</td>
+                <td>22</td>
+                <td> </td>
+                <td> </td>
+              </tr>
+              <tr>
+                <td>ACCEPT</td>
+                <td>loc</td>
+                <td>dmz</td>
+                <td>tcp</td>
+                <td>22</td>
+                <td> </td>
+                <td> </td>
+              </tr>
+                                               
+    </tbody>                     
+  </table>
+          </blockquote>
+        </div>
+               
+<div align="left">          
+<p align="left">That rule allows you to run an SSH server on your firewall 
+   and    in each of your DMZ systems and    to connect to those servers from
+   your local systems.</p>
+       </div>
+               
+<div align="left">          
+<p align="left">If you wish to enable other connections between your systems, 
+   the general format is:</p>
+       </div>
+               
+<div align="left">          
+<blockquote>                          
+  <table border="1" cellpadding="2" style="border-collapse: collapse;"
+ id="AutoNumber4">
+              <tbody>
+             <tr>
+                <td><u><b>ACTION</b></u></td>
+                <td><u><b>SOURCE</b></u></td>
+                <td><u><b>DESTINATION</b></u></td>
+                <td><u><b>PROTOCOL</b></u></td>
+                <td><u><b>PORT</b></u></td>
+                <td><u><b>SOURCE PORT</b></u></td>
+                <td><u><b>ORIGINAL ADDRESS</b></u></td>
+              </tr>
+              <tr>
+                <td>ACCEPT</td>
+                <td><i>&lt;source zone&gt;</i></td>
+                <td><i>&lt;destination zone&gt;</i></td>
+                <td><i>&lt;protocol&gt;</i></td>
+                <td><i>&lt;port&gt;</i></td>
+                <td> </td>
+                <td> </td>
+              </tr>
+                                               
+    </tbody>                     
+  </table>
+          </blockquote>
+        </div>
+               
+<div align="left">          
+<p align="left">Example - You want to run a publicly-available DNS server 
+   on your firewall    system:</p>
+       </div>
+               
+<div align="left">          
+<blockquote>                          
+  <table border="1" cellpadding="2" style="border-collapse: collapse;"
+ id="AutoNumber4">
+              <tbody>
+             <tr>
+                <td><u><b>ACTION</b></u></td>
+                <td><u><b>SOURCE</b></u></td>
+                <td><u><b>DESTINATION</b></u></td>
+                <td><u><b>PROTOCOL</b></u></td>
+                <td><u><b>PORT</b></u></td>
+                <td><u><b>SOURCE PORT</b></u></td>
+                <td><u><b>ORIGINAL ADDRESS</b></u></td>
+              </tr>
+              <tr>
+                <td>ACCEPT</td>
+                <td>net</td>
+                <td>fw</td>
+                <td>tcp</td>
+                <td>53</td>
+                <td>#Allow DNS access</td>
+                <td>from the internet</td>
+              </tr>
+              <tr>
+                <td>ACCEPT</td>
+                <td>net</td>
+                <td>fw</td>
+                <td>tcp</td>
+                <td>53</td>
+                <td>#Allow DNS access</td>
+                <td>from the internet</td>
+              </tr>
+                                               
+    </tbody>                     
+  </table>
+          </blockquote>
+        </div>
+               
+<div align="left">          
 <p align="left">Those two rules would of course be in addition to the rules 
-     listed above under "If you run the name server on your firewall".</p>
-     </div>
-           
-<div align="left">        
+      listed above under "If you run the name server on your firewall".</p>
+       </div>
+               
+<div align="left">          
 <p align="left">If you don't know what port and protocol a particular    application
 uses, look <a href="ports.htm">here</a>.</p>
-     </div>
-           
-<div align="left">        
+       </div>
+               
+<div align="left">          
 <p align="left"><b>Important: </b>I don't recommend enabling telnet to/from 
-     the internet because it uses clear text (even for login!). If you want 
-  shell    access to your firewall from the internet, use SSH:</p>
-     </div>
-           
-<div align="left">        
-<blockquote>                    
+      the internet because it uses clear text (even for login!). If you want 
+   shell    access to your firewall from the internet, use SSH:</p>
+       </div>
+               
+<div align="left">          
+<blockquote>                          
   <table border="1" cellpadding="2" style="border-collapse: collapse;"
  id="AutoNumber4">
-            <tbody>
-           <tr>
-              <td><u><b>ACTION</b></u></td>
-              <td><u><b>SOURCE</b></u></td>
-              <td><u><b>DESTINATION</b></u></td>
-              <td><u><b>PROTOCOL</b></u></td>
-              <td><u><b>PORT</b></u></td>
-              <td><u><b>SOURCE PORT</b></u></td>
-              <td><u><b>ORIGINAL ADDRESS</b></u></td>
-            </tr>
-            <tr>
-              <td>ACCEPT</td>
-              <td>net</td>
-              <td>fw</td>
-              <td>tcp</td>
-              <td>22</td>
-              <td> </td>
-              <td> </td>
-            </tr>
-                                   
-    </tbody>               
+              <tbody>
+             <tr>
+                <td><u><b>ACTION</b></u></td>
+                <td><u><b>SOURCE</b></u></td>
+                <td><u><b>DESTINATION</b></u></td>
+                <td><u><b>PROTOCOL</b></u></td>
+                <td><u><b>PORT</b></u></td>
+                <td><u><b>SOURCE PORT</b></u></td>
+                <td><u><b>ORIGINAL ADDRESS</b></u></td>
+              </tr>
+              <tr>
+                <td>ACCEPT</td>
+                <td>net</td>
+                <td>fw</td>
+                <td>tcp</td>
+                <td>22</td>
+                <td> </td>
+                <td> </td>
+              </tr>
+                                               
+    </tbody>                     
   </table>
-        </blockquote>
-      </div>
-           
-<div align="left">        
+          </blockquote>
+        </div>
+               
+<div align="left">          
 <p align="left"><img border="0" src="images/BD21298_2.gif" width="13"
  height="13">
-         Now modify    /etc/shorewall/rules to add or remove other connections 
-  as required.</p>
-     </div>
-           
-<div align="left">        
+           Now modify    /etc/shorewall/rules to add or remove other connections 
+   as required.</p>
+       </div>
+               
+<div align="left">          
 <h2 align="left">Starting and Stopping Your Firewall</h2>
-      </div>
-           
-<div align="left">        
+        </div>
+               
+<div align="left">          
 <p align="left">     <img border="0" src="images/BD21298_2.gif"
  width="13" height="13" alt="Arrow">
-       The <a href="Install.htm">installation procedure </a>   configures 
- your system to start Shorewall at system boot  but beginning with Shorewall
- version 1.3.9 startup is disabled so that your system won't try to start
-Shorewall before configuration is complete. Once you have completed configuration
-of your firewall, you can enable Shorewall startup by removing the file /etc/shorewall/startup_disabled.<br>
-     </p>
-     
+         The <a href="Install.htm">installation procedure </a>   configures 
+  your system to start Shorewall at system boot  but beginning with Shorewall
+  version 1.3.9 startup is disabled so that your system won't try to start
+ Shorewall before configuration is complete. Once you have completed configuration
+ of your firewall, you can enable Shorewall startup by removing the file
+/etc/shorewall/startup_disabled.<br>
+       </p>
+         
 <p align="left"><font color="#ff0000"><b>IMPORTANT</b>: </font><font
  color="#ff0000">Users of the .deb package must edit /etc/default/shorewall
- and set 'startup=1'.</font><br>
-    </p>
-      </div>
-           
-<div align="left">        
+  and set 'startup=1'.</font><br>
+      </p>
+        </div>
+               
+<div align="left">          
 <p align="left">The firewall is started using the "shorewall start" command 
-     and stopped using "shorewall stop". When the firewall is stopped, routing 
-  is    enabled on those hosts that have an entry in   <a
+      and stopped using "shorewall stop". When the firewall is stopped, routing 
+   is    enabled on those hosts that have an entry in   <a
  href="Documentation.htm#Routestopped">/etc/shorewall/routestopped</a>. A 
-     running firewall may be restarted using the "shorewall restart" command. 
-  If    you want to totally remove any trace of Shorewall from your Netfilter 
-     configuration, use "shorewall clear".</p>
-     </div>
-           
-<div align="left">        
+      running firewall may be restarted using the "shorewall restart" command. 
+   If    you want to totally remove any trace of Shorewall from your Netfilter 
+      configuration, use "shorewall clear".</p>
+       </div>
+               
+<div align="left">          
 <p align="left"><img border="0" src="images/BD21298_2.gif" width="13"
  height="13">
-         The three-interface sample assumes that you want to enable    routing 
-  to/from <b>eth1 (</b>your local network) and<b> eth2 </b>(DMZ) when Shorewall 
-  is stopped.    If these two interfaces don't connect to your local network 
-  and DMZ or if you    want to enable a different set of hosts, modify /etc/shorewall/routestopped 
-     accordingly.</p>
-     </div>
-           
-<div align="left">        
+           The three-interface sample assumes that you want to enable   
+routing    to/from <b>eth1 (</b>your local network) and<b> eth2 </b>(DMZ)
+when Shorewall    is stopped.    If these two interfaces don't connect to
+your local network    and DMZ or if you    want to enable a different set
+of hosts, modify /etc/shorewall/routestopped       accordingly.</p>
+       </div>
+               
+<div align="left">          
 <p align="left"><b>WARNING: </b>If you are connected to your firewall from 
-  the    internet, do not issue a "shorewall stop" command unless you have 
- added an    entry for the IP address that you are connected from to   <a
+   the    internet, do not issue a "shorewall stop" command unless you have 
+  added an    entry for the IP address that you are connected from to   <a
  href="Documentation.htm#Routestopped">/etc/shorewall/routestopped</a>. 
   Also, I don't recommend using "shorewall restart"; it is better to create 
-  an   <i><a href="Documentation.htm#Configs">alternate configuration</a></i> 
-  and    test it using the <a href="Documentation.htm#Starting">"shorewall 
- try" command</a>.</p>
-     </div>
-           
-<p align="left"><font size="2">Last updated 10/22/2002 - <a
+   an   <i><a href="configuration_file_basics.htm#Configs">alternate configuration</a></i> 
+   and    test it using the <a
+ href="starting_and_stopping_shorewall.htm">"shorewall   try" command</a>.</p>
+       </div>
+               
+<p align="left"><font size="2">Last updated 11/21/2002 - <a
  href="support.htm">Tom Eastep</a></font></p>
-            
+                
 <p align="left"><a href="copyright.htm"><font size="2">Copyright  2002 Thomas 
-  M. Eastep</font></a></p>
+   M. Eastep</font></a></p>
+         <br>
        <br>
+      <br>
      <br>
     <br>
    <br>

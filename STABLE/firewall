@@ -187,8 +187,6 @@ run_tc() {
 #
 createchain() # $1 = chain name, $2 = If non-null, don't create default rules
 {
-    local target
-
     run_iptables -N $1
 
     if [ $# -eq 1 ]; then
@@ -280,6 +278,14 @@ deletechain() # $1 = name of chain
 {
     qt iptables -L $1 -n && qt iptables -F $1 && qt iptables -X $1
 }
+
+#
+# Determine if a chain is a policy chain
+#
+is_policy_chain() # $1 = name of chain
+{
+    eval test \"\$${1}_is_policy\" = Yes
+}    
 
 #
 # Set a standard chain's policy
@@ -529,7 +535,7 @@ validate_interfaces_file() {
 
 	for option in `separate_list $options`; do
 	    case $option in
-	    dhcp|noping|filterping|routestopped|norfc1918|multi)
+	    dhcp|noping|filterping|routestopped|norfc1918|multi|tcpflags)
                 ;;
 	    routefilter|dropunclean|logunclean|blacklist|proxyarp|maclist|-)
 		;;
@@ -803,7 +809,7 @@ validate_rule() {
     # Validate the Source Zone
     #
     if ! validate_zone $clientzone; then
-	startup_error "Error: Undefined Client Zone in rule \"$rule\""
+	[ "x$clientzone" = xall ] || startup_error "Error: Undefined Client Zone in rule \"$rule\""
     fi
 
     source=$clientzone
@@ -835,10 +841,18 @@ validate_rule() {
     # Validate the destination zone
     #
     if ! validate_zone $serverzone; then
-	startup_error "Error: Undefined Server Zone in rule \"$rule\""
+	[ "x$serverzone" = xall ] || startup_error "Error: Undefined Server Zone in rule \"$rule\""
     fi
 
     dest=$serverzone
+
+    chain=${source}2${dest}
+
+    if [ "x$chain" = x${FW}2${FW} ]; then
+	error_message "WARNING: fw -> fw rules are not supported; rule \"$rule\" ignored"
+	return
+    fi
+
     #
     # Check length of port lists if MULTIPORT set
     #
@@ -922,6 +936,17 @@ validate_policy()
 	    startup_error "Error: Invalid policy $policy"
 	    ;;
 	esac
+
+	chain=${client}2${server}
+
+	[ "x$chain" = "x${FW}2${FW}" ] && \
+	    startup_error "Error: fw->fw policy not allowed: $policy"
+	
+	if is_policy_chain $chain ; then
+	    startup_error "Error: Duplicate policy $policy"
+	fi
+
+	eval ${client}2${server}_is_policy=Yes
 
     done < $TMP_DIR/policy
 }
@@ -1211,7 +1236,7 @@ setup_tunnels() # $1 = name of tunnels file
     setup_pptp_client() # $1 = gateway
     {
 	addrule $outchain -p 47               -d $1 -j ACCEPT
-	addrule $inchain  -p 47               -s $1 -j ACCEPT
+	addrule $inchain  -p 47               -j ACCEPT
 	addrule $outchain -p tcp --dport 1723 -d $1 -j ACCEPT
 
 	echo "   PPTP tunnel to $1 defined."
@@ -1970,21 +1995,26 @@ add_a_rule()
 #
 # Process a record from the rules file
 #
-# The caller has loaded the column contents from the record into the following
-# variables:
-#
-#   target clients servers protocol ports cports address
-#
-# and has loaded a space-separated list of their values in "rule".
-#
-# The 'multioption' variable has also been loaded appropriately to reflect
-# the setting of the MULTIPORT option in /etc/shorewall/shorewall.conf
-#
-process_rule() {
+process_rule() # $1 = target
+               # $2 = clients
+               # $3 = servers
+               # $4 = protocol
+               # $5 = ports
+               # $6 = cports
+               # $7 = address 
+{
+    local target="$1"
+    local clients="$2"
+    local servers="$3"
+    local protocol="$4"
+    local ports="$5"
+    local cports="$6"
+    local address="$7"
+    local rule="`echo $target $clients $servers $protocol $ports $cports $address`"
 
     # Function Body -- isolate log level
  
-   if [ "$target" = "${target%:*}" ]; then
+    if [ "$target" = "${target%:*}" ]; then
 	loglevel=
     else
 	loglevel="${target#*:}"
@@ -2072,6 +2102,12 @@ process_rule() {
     # Create canonical chain if necessary
 
     chain=${source}2${dest}
+
+    if [ "x$chain" = x${FW}2${FW} ]; then
+	error_message "WARNING: fw -> fw rules are not supported; rule \"$rule\" ignored"
+	return
+    fi
+
     ensurechain $chain
 
     # Generate Netfilter rule(s)
@@ -2111,20 +2147,49 @@ process_rule() {
 #
 process_rules() # $1 = name of rules file
 {
-    strip_file rules
+    #
+    # Process a rule where the source or destination is "all"
+    #
+    process_wildcard_rule() {
+	for yclients in $xclients; do
+	    for yservers in $xservers; do
+		if [ "${yclients}" != "${yservers}" ] ; then
+		    process_rule $xtarget $yclients $yservers $xprotocol $xports $xcports $xaddress
+		fi
+	    done
+	done
+    }
 
-    while read target clients servers protocol ports cports address; do
-	case "$target" in
+    strip_file rules $1
 
-	ACCEPT*|DROP*|REJECT*|DNAT*|REDIRECT*)
-	    expandv clients servers protocol ports cports address
-	    rule="`echo $target $clients $servers $protocol $ports $cports $address`"
-	    process_rule
-	    ;;
-	*)
-	    rule="`echo $target $clients $servers $protocol $ports $cports $address`"
-	    fatal_error "Error: Invalid Target in rule \"$rule\""
-	    ;;
+    while read xtarget xclients xservers xprotocol xports xcports xaddress; do
+	case "$xtarget" in
+
+	    ACCEPT|ACCEPT:*|DROP|DROP:*|REJECT|REJECT:*|DNAT|DNAT:*|REDIRECT|REDIRECT:*)
+		expandv xclients xservers xprotocol xports xcports xaddress
+
+		if [ "x$xclients" = xall ]; then
+		    xclients="$zones $FW"
+		    if [ "x$xservers" = xall ]; then
+			xservers="$zones $FW"
+		    fi
+		    process_wildcard_rule
+		    continue
+		fi
+		
+		if [ "x$xservers" = xall ]; then
+		    xservers="$zones $FW"
+		    process_wildcard_rule
+		    continue
+		fi
+		
+		process_rule $xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress
+		;;
+	    *)
+		rule="`echo $xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress`"
+		fatal_error "Error: Invalid Target in rule \"$rule\""
+		;;
+	    
 	esac
     done < $TMP_DIR/rules
 }
@@ -3213,6 +3278,47 @@ add_common_rules() {
 	done
 
     fi
+    
+    interfaces=`find_interfaces_by_option tcpflags`
+
+    if [ -n "$interfaces" ]; then
+	echo "Setting up TCP Flags checking..."
+	
+	createchain tcpflags no
+
+	if [ -n "$TCP_FLAGS_LOG_LEVEL" ]; then
+	    createchain logflags no
+
+	    run_iptables -A logflags -j LOG  $LOGPARMS \
+		--log-level $TCP_FLAGS_LOG_LEVEL \
+		--log-prefix "Shorewall:logflags:$TCP_FLAGS_DISPOSITION:" \
+		--log-tcp-options --log-ip-options
+	    
+	    case $TCP_FLAGS_DISPOSITION in
+		REJECT)
+		    run_iptables -A logflags -j REJECT --reject-with tcp-reset
+		    ;;
+		*)
+		    run_iptables -A logflags -j $TCP_FLAGS_DISPOSITION
+		    ;;
+	    esac
+
+	    disposition="-j logflags"
+	else
+	    disposition="-j $TCP_FLAGS_DISPOSITION"
+	fi
+
+	run_iptables -A tcpflags -p tcp --tcp-flags ALL FIN,URG,PSH $disposition
+	run_iptables -A tcpflags -p tcp --tcp-flags ALL NONE        $disposition
+	run_iptables -A tcpflags -p tcp --tcp-flags SYN,RST SYN,RST $disposition
+	run_iptables -A tcpflags -p tcp --tcp-flags SYN,FIN SYN,FIN $disposition
+	
+	for interface in $interfaces; do
+	    for chain in `first_chains $interface`; do
+		run_iptables -A $chain -p tcp -j tcpflags
+	    done
+	done
+    fi
     #
     # Process Black List
     #
@@ -3291,7 +3397,7 @@ apply_policy_rules() {
 		run_iptables -I $chain 2 -p tcp --syn -j @$chain
 	else
 	    #
-	    # A wild-card rule. Create the chain and add policy
+	    # The chain doesn't exist. Create the chain and add policy
 	    # rules
 	    #
 	    # We must include the ESTABLISHED and RELATED state
@@ -3301,6 +3407,13 @@ apply_policy_rules() {
 	    #
 	    createchain $chain
 
+	    #
+	    # If either client or server is 'all' then this MUST be
+	    # a policy chain and we must apply the appropriate policy rules
+	    #
+	    # Otherwise, this is a canonical chain which will be handled in
+	    # the for loop below
+	    #
 	    [ "$client" = "all" -o "$server" = "all" ] && \
 		policy_rules $chain $policy $loglevel
 
@@ -3725,6 +3838,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
     blacklist_interfaces=`find_interfaces_by_option blacklist`
     filterping_interfaces=`find_interfaces_by_option filterping`
     maclist_interfaces=`find_interfaces_by_maclist`
+    tcpflags_interfaces=`find_interfaces_by_option tcpflags`
     #
     # Normalize the first argument to this function
     #
@@ -3788,6 +3902,10 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		    rulenum=$(($rulenum + 1))
 		fi
 
+		if ! list_search $interface $tcpflags_interfaces; then
+		    rulenum=$(($rulenum + 1))
+		fi
+
 		do_iptables -I `input_chain $interface` $rulenum -s $host -j $chain 
 	    else
 		#
@@ -3810,6 +3928,10 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		    fi
 
 		    if ! list_search $interface $maclist_interfaces; then
+			rulenum=$(($rulenum + 1))
+		    fi
+		    
+		    if ! list_search $interface $tcpflags_interfaces; then
 			rulenum=$(($rulenum + 1))
 		    fi
 		fi
@@ -4078,6 +4200,8 @@ do_initialize() {
     FORWARDPING=
     MACLIST_DISPOSITION=
     MACLIST_LOG_LEVEL=
+    TCP_FLAGS_DISPOSITION=
+    TCP_FLAGS_LOG_LEVEL=
     stopping=
     have_mutex=
     masq_seq=1
@@ -4175,6 +4299,18 @@ do_initialize() {
 	MACLIST_DISPOSITION=REJECT
     fi
 
+    if [ -n "$TCP_FLAGS_DISPOSITION" ] ; then
+	case $TCP_FLAGS_DISPOSITION in
+	    REJECT|ACCEPT|DROP)
+		;;
+	    *)
+		startup_error "Invalid value ($TCP_FLAGS_DISPOSITION) for TCP_FLAGS_DISPOSITION"
+		;;
+	esac
+    else
+	TCP_FLAGS_DISPOSITION=DROP
+    fi
+
 }
 
 #
@@ -4246,7 +4382,8 @@ case "$command" in
 
     status)
 	[ $# -ne 1 ] && usage
-	echo -e "Shorewall-$version Status at $HOSTNAME - `date`\\n"
+	echo "Shorewall-$version Status at $HOSTNAME - `date`"
+	echo
 	iptables -L -n -v
 	;;
 

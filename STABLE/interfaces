@@ -20,6 +20,8 @@
 #			an alias (e.g., eth0:0) here; see
 #			http://www.shorewall.net/FAQ.htm#faq18
 #
+#			DO NOT DEFINE THE LOOPBACK INTERFACE (lo) IN THIS FILE.
+#
 #	BROADCAST	The broadcast address for the subnetwork to which the
 #			interface belongs. For P-T-P interfaces, this
 #			column is left black.If the interface has multiple
@@ -89,6 +91,14 @@
 #				       is specified, the interface must be
 #				       an ethernet NIC and must be up before
 #				       Shorewall is started.
+#			tcpflags     - Packets arriving on this interface are
+#				       checked for certain illegal combinations
+#				       of TCP flags. Packets found to have
+#				       such a combination of flags are handled
+#				       according to the setting of
+#				       TCP_FLAGS_DISPOSITION after having been
+#				       logged according to the setting of
+#				       TCP_FLAGS_LOG_LEVEL.
 #			proxyarp     - 
 #				Sets 
 #				/proc/sys/net/ipv4/conf/<interface>/proxy_arp.

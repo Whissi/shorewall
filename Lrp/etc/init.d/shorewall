@@ -435,7 +435,7 @@ determine_hosts() {
 	done
     }
 
-    recalculate_hosts()
+    recalculate_interfaces()
     {
 	interfaces=
 	
@@ -457,12 +457,18 @@ determine_hosts() {
 	hosts=`find_hosts $zone`
 	hosts=`echo $hosts` # Remove extra trash
 
-	if [ -n "$hosts" ]; then
+	if [ -n "MERGE_HOSTS" ]; then
+	    ####################################################################
+	    # Zone will be the union of its host and interface definitions
+	    #
+	    do_a_zone
+	    recalculate_interfaces
+	elif [ -n "$hosts" ]; then
 	    ####################################################################
 	    # Zone is defined in terms of hosts -- derive the interface list
 	    # from the host list
 	    #
-	    recalculate_hosts
+	    recalculate_interfacess
 	else
 	    ####################################################################
 	    # If no hosts are defined for a zone then the zone consists of any
@@ -658,6 +664,14 @@ validate_rule() {
 	case "$logtarget" in
 	REJECT)
 	    target=reject
+	    [ -n "$servport" ] && \
+		startup_error "Error: server port may not be specified in a REJECT rule;"\
+                              "rule: \"$rule\""
+	    ;;
+	ACCEPT)
+	    [ -n "$servport" ] && \
+		startup_error "Error: server port may not be specified in an ACCEPT rule;"\
+                              "rule: \"$rule\""
 	    ;;
 	REDIRECT)
 	    [ -n "$serv" ] && startup_error "Error: REDIRECT rules cannot"\
@@ -747,6 +761,8 @@ validate_rule() {
     else
 	clientzone="${clients%:*}"
 	clients="${clients#*:}"
+	[ -z "$clientzone" -o -z "$clients" ] && \
+	   startup_error "Error: Empty source zone or qualifier: rule \"$rule\""
     fi
     
     if [ "$clientzone" = "${clientzone%\!*}" ]; then
@@ -782,8 +798,12 @@ validate_rule() {
 	if [ "$servers" != "${servers%:*}" ] ; then
 	    serverport="${servers#*:}"
 	    servers="${servers%:*}"
+	    [ -z "$serverzone" -o -z "$serverport" ] && \
+	        startup_error "Error: Empty destination zone or server port: rule \"$rule\""
 	else
 	    serverport=
+	    [ -z "$serverzone" -o -z "$servers" ] && \
+	        startup_error "Error: Empty destination zone or qualifier: rule \"$rule\""
 	fi
     fi
     ############################################################################
@@ -1297,31 +1317,8 @@ setup_nat() {
 	fi
 
 	if [ -n "$ADD_IP_ALIASES" ]; then
-	    #
-	    # Folks feel uneasy if they don't see all of the same
-	    # decoration on these IP addresses that they see when their
-	    # distro's net config tool adds them. In an attempt to reduce
-	    # the anxiety level, we have the following code which sets
-	    # the VLSM and BRD from the primary address
-	    #
-	    # Get all of the lines that contain inet addresses with broadcast
-	    #
-	    val=`ip addr show $interface | grep 'inet.*brd '` 2> /dev/null
-
-	    if [ -n "$val" ] ; then
-		#
-		# Hack off the leading 'inet <ip addr>' (actually cut off the
-		# "/" as well but add it back in).
-		#
-		val="/${val#*/}"
-		#
-		# Now get the VLSM, "brd" and the broadcast address
-		#
-		val=${val%% scope*}
-	    fi
-
-	    run_ip addr add ${external}${val} dev $interface
-	    echo "$external $interface" >> ${STATEDIR}/nat
+	    list_search $external $aliases_to_add || \
+		aliases_to_add="$aliases_to_add $external $interface"
 	fi
 
 	echo "   Host $internal NAT $external on $interface"
@@ -1678,10 +1675,16 @@ add_a_rule()
     case "$logtarget" in
 	REJECT)
 	    target=reject
+	    [ -n "$servport" ] && \
+		fatal_error "Error: server port may not be specified in a REJECT rule;"\
+                            "rule: \"$rule\""
 	    ;;
 	REDIRECT)
 	    [ -n "$serv" ] && startup_error "Error: REDIRECT rules cannot"\
 		" specify a server IP; rule: \"$rule\""
+	    [ -n "$servport" ] && \
+		startup_error "Error: server port may not be specified in an ACCEPT rule;" \
+		              "rule: \"$rule\""
 	    servport=${servport:=$port}
 	    ;;
 	DNAT)
@@ -1790,6 +1793,8 @@ process_rule() {
     else
 	clientzone="${clients%:*}"
 	clients="${clients#*:}"
+	[ -z "$clientzone" -o -z "$clients" ] && \
+	   fatal_error "Error: Empty source zone or qualifier: rule \"$rule\""
     fi
     
     if [ "$clientzone" = "${clientzone%\!*}" ]; then
@@ -1822,8 +1827,12 @@ process_rule() {
 	if [ "$servers" != "${servers%:*}" ] ; then
 	    serverport="${servers#*:}"
 	    servers="${servers%:*}"
+	    [ -z "$serverzone" -o -z "$serverport" ] && \
+	        fatal_error "Error: Empty destination zone or server port: rule \"$rule\""
 	else
 	    serverport=
+	    [ -z "$serverzone" -o -z "$servers" ] && \
+	        startup_error "Error: Empty destination zone or qualifier: rule \"$rule\""
 	fi
     fi
 
@@ -2403,16 +2412,8 @@ setup_masq()
 	esac
 
 	if [ -n "$address" -a -n "$ADD_SNAT_ALIASES" ]; then
-	    qt ip addr del $address dev $interface
-
-	    val=`ip addr show $interface | grep 'inet.*brd '` 2> /dev/null
-	    if [ -n "$val" ] ; then
-		val="/${val#*/}"
-		val=${val%% scope*}
-	    fi
-	    run_ip addr add ${address}${val} dev $interface
-
-	    echo "$address $interface" >> ${STATEDIR}/nat
+	    list_search $address $aliases_to_add || \
+		aliases_to_add="$aliases_to_add $external $address"
 	fi
 
 	destination=$destnet
@@ -2572,6 +2573,49 @@ verify_os_version() {
 	startup_error "Shorewall version $version does not work with kernel version $osversion"
 	;;
     esac
+}
+
+################################################################################
+# Add IP Aliases                                                               #
+################################################################################
+add_ip_aliases() # $* = addresses and devices
+{
+    do_one() 
+    {
+	#
+	# Folks feel uneasy if they don't see all of the same
+	# decoration on these IP addresses that they see when their
+	# distro's net config tool adds them. In an attempt to reduce
+	# the anxiety level, we have the following code which sets
+	# the VLSM and BRD from the primary address
+	#
+	# Get all of the lines that contain inet addresses with broadcast
+	#
+	val=`ip addr show $interface | grep 'inet.*brd '` 2> /dev/null
+
+	if [ -n "$val" ] ; then
+	    #
+	    # Hack off the leading 'inet <ip addr>' (actually cut off the
+	    # "/" as well but add it back in).
+	    #
+	    val="/${val#*/}"
+	    #
+	    # Now get the VLSM, "brd" and the broadcast address
+	    #
+	    val=${val%% scope*}
+	fi
+
+	run_ip addr add ${external}${val} dev $interface
+	echo "$external $interface" >> ${STATEDIR}/nat
+	echo "   IP Address $external added to interface $interface"
+    }
+
+    while [ $# -gt 0 ]; do
+	external=$1
+	interface=$2
+	shift;shift
+	do_one
+    done
 }
 
 ################################################################################
@@ -3143,9 +3187,15 @@ define_firewall() # $1 = Command (Start or Restart)
 
     activate_rules
 
+    [ -n "$aliases_to_add" ] && \
+	echo "Adding IP Addresses..." && \
+	add_ip_aliases $aliases_to_add
+
     run_user_exit start
 
     createchain shorewall no
+
+    date > /var/lib/shorewall/restarted
 
     report "Shorewall ${1}ed"
 
@@ -3322,10 +3372,13 @@ do_initialize() {
     NAT_BEFORE_RULES=
     MULTIPORT=
     DETECT_DNAT_IPADDRS=
+    MERGE_HOSTS=
+    MUTEX_TIMEOUT=
     stopping=
     have_mutex=
     masq_seq=1
     nonat_seq=1
+    aliases_to_add=
 
     TMP_DIR=/tmp/shorewall-$$
     rm -rf $TMP_DIR
@@ -3396,6 +3449,7 @@ do_initialize() {
     NAT_BEFORE_RULES=`added_param_value_yes NAT_BEFORE_RULES $NAT_BEFORE_RULES`
     MULTIPORT=`added_param_value_no MULTIPORT $MULTIPORT`
     DETECT_DNAT_IPADDRS=`added_param_value_no DETECT_DNAT_IPADDRS $DETECT_DNAT_IPADDRS`
+    MERGE_HOSTS=`added_param_value_no MERGE_HOSTS $MERGE_HOSTS`
 }
 
 ################################################################################
@@ -3469,6 +3523,7 @@ case "$command" in
     reset)
 	iptables -L -n -Z -v
 	report "Shorewall Counters Reset"
+	date > /var/lib/shorewall/restarted
 	;;
 
     refresh)

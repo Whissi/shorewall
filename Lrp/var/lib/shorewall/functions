@@ -1,5 +1,5 @@
 #
-# Shorewall 1.3 -- /etc/shorewall/functions
+# Shorewall 1.3 -- /var/lib/shorewall/functions
 
 #
 # Suppress all output for a command
@@ -92,6 +92,8 @@ determine_zones()
 ###############################################################################
 get_statedir()
 {
+    MUTEX_TIMEOUT=
+
     local config=`find_file shorewall.conf`
 
     if [ -f $config ]; then
@@ -116,15 +118,19 @@ get_statedir()
 mutex_on()
 {
     local try=0
-    local max=15
-    local int=2
+    local max=
+    local int=1
 
     local lockf=$STATEDIR/lock
+
+    MUTEX_TIMEOUT=${MUTEX_TIMEOUT:-60}
+
+    max=${MUTEX_TIMEOUT}
 
     [ -d $STATEDIR ] || mkdir -p $STATEDIR
 
     if qt which lockfile; then
-	lockfile -030 -r1 ${lockf} || exit 2
+	lockfile -${MUTEX_TIMEOUT} -r1 ${lockf}
     else
 	while [ -f ${lockf} -a ${try} -lt ${max} ] ; do
 	    sleep ${int}
@@ -136,7 +142,6 @@ mutex_on()
 	    echo $$ > ${lockf}
 	else
 	    echo "Giving up on lock file ${lockf}" >&2
-	    exit 2
 	fi
     fi
 }

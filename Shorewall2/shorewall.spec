@@ -135,10 +135,13 @@ fi
 %attr(0544,root,root) /usr/share/shorewall/help
 %attr(0600,root,root) /usr/share/shorewall/rfc1918
 %attr(0600,root,root) /usr/share/shorewall/bogons
+%attr(0600,root,root) /usr/share/shorewall/configpath
 
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel
 
 %changelog
+* Tue Apr 13 2004 Tom Eastep tom@shorewall.net
+- Add /usr/share/shorewall/configpath
 * Mon Apr 05 2004 Tom Eastep tom@shorewall.net
 - Updated for 2.0.1-1
 * Thu Apr 02 2004 Tom Eastep tom@shorewall.net

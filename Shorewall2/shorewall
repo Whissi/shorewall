@@ -631,7 +631,6 @@ FIREWALL=$SHARED_DIR/firewall
 FUNCTIONS=$SHARED_DIR/functions
 VERSION_FILE=$SHARED_DIR/version
 HELP=$SHARED_DIR/help
-[ -n "$CONFIG_PATH" ] || CONFIG_PATH=/etc/shorewall:/usr/share/shorewall
 
 if [ -f $FUNCTIONS ]; then
     . $FUNCTIONS
@@ -639,6 +638,8 @@ else
     echo "$FUNCTIONS does not exist!" >&2
     exit 2
 fi
+
+ensure_config_path
 
 config=$(find_file shorewall.conf)
 
@@ -649,7 +650,7 @@ else
     exit 2
 fi
 
-[ -n "$CONFIG_PATH" ] || CONFIG_PATH=/etc/shorewall:/usr/share/shorewall
+ensure_config_path
 
 export CONFIG_PATH
 

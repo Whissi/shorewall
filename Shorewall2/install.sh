@@ -392,13 +392,19 @@ fi
 #
 install_file_with_backup rfc1918 ${PREFIX}/usr/share/shorewall/rfc1918 0600
 echo
-echo "RFC 1918 file installed as ${PREFIX}/etc/shorewall/rfc1918"
+echo "RFC 1918 file installed as ${PREFIX}/usr/share/shorewall/rfc1918"
 #
 # Install the bogons file
 #
 install_file_with_backup bogons ${PREFIX}/usr/share/shorewall/bogons 0600
 echo
-echo "Bogon file installed as ${PREFIX}/etc/shorewall/bogons"
+echo "Bogon file installed as ${PREFIX}/usr/share/shorewall/bogons"
+#
+# Install the default config path file
+#
+install_file_with_backup configpath ${PREFIX}/usr/share/shorewall/configpath 0600
+echo
+echo " Default config path file installed as ${PREFIX}/etc/shorewall/configpath"
 #
 # Install the init file
 #

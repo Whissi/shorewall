@@ -5710,7 +5710,8 @@ do_initialize() {
     DISABLE_IPV6=
     BRIDGING=
     DYNAMIC_ZONES=
-    [ -n "$CONFIG_PATH" ] || CONFIG_PATH=/etc/shorewall:/usr/share/shorewall
+
+    ensure_config_path
 
     stopping=
     have_mutex=
@@ -5752,7 +5753,7 @@ do_initialize() {
     #
     # Restore CONFIG_PATH if the shorewall.conf file cleared it
     #
-    [ -n "$CONFIG_PATH" ] || CONFIG_PATH=/etc/shorewall:/usr/share/shorewall
+    ensure_config_path
     #
     # Determine the capabilities of the installed iptables/netfilter
     #

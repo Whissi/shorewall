@@ -785,3 +785,24 @@ New Features:
     exceeded the specified rate was silently dropped. Now, if a log
     level is given in the entry (LEVEL column) then drops are logged at
     that level at a rate of 5/min with a burst of 5.
+
+35) Recent 2.6 kernels include code that evaluates TCP packets based on
+    TCP Window analysis. This can cause packets that were previously
+    classified as NEW or ESTABLISHED to be classified as INVALID.
+
+    The new kernel code can be disabled by including this command in
+    your /etc/shorewall/init file:
+
+    echo 1 > /proc/sys/net/ipv4/netfilter/ip_conntrack_tcp_be_liberal
+
+    Additional kernel logging about INVALID TCP packets may be
+    obtained by adding this command to /etc/shorewall/init:
+
+    echo 1 > /proc/sys/net/ipv4/netfilter/ip_conntrack_log_invalid
+
+    Traditionally, Shorewall has dropped INVALID TCP packets early. The
+    new DROPINVALID option allows INVALID packets to be passed through
+    the normal rules chains by setting DROPINVALID=No.
+
+    If not specified or if specified as empty (e.g., DROPINVALID="")
+    then DROPINVALID=Yes is assumed.

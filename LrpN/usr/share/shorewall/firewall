@@ -1364,7 +1364,7 @@ disable_ipv6() {
 }
 
 disable_ipv6_1() {
-    local foo=$(ip -f inet6 addr ls 2> /dev/null)
+    local foo="$(ip -f inet6 addr ls 2> /dev/null)"
 
     if [ -n "$foo" ]; then
 	if qt which ip6tables; then
@@ -4905,7 +4905,7 @@ setup_masq()
     }
 
     setup_one() {
-	local add_snat_aliases=$ADD_SNAT_ALIASES, pre_nat= policy=
+	local add_snat_aliases=$ADD_SNAT_ALIASES, pre_nat= policy= destnets=
 
 	[ "x$ipsec" = x- ] && ipsec=
 
@@ -4946,7 +4946,6 @@ setup_masq()
 	    *:)
 		add_snat_aliases=
 	        fullinterface=${fullinterface%:}
-		destnets="0.0.0.0/0"
 		;;
 	    *:*)
 		# Alias name OR networks
@@ -4958,12 +4957,10 @@ setup_masq()
 			;;
 		    *)
 			#it's an alias name
-			destnets="0.0.0.0/0"
 			;;
 		esac
 		;;
 	    *)
-		destnets="0.0.0.0/0"
 		;;
 	esac
 
@@ -5003,7 +5000,7 @@ setup_masq()
 			if ! list_search $addr $aliases_to_add; then
 			    [ -n "$RETAIN_ALIASES" ] || save_command qt ip addr del $addr dev $interface 
 			    aliases_to_add="$aliases_to_add $addr $fullinterface"
-			    case $fullinterface in 
+			    case $fullinterface in
 				*:*)
 				    fullinterface=${fullinterface%:*}:$((${fullinterface#*:} + 1 ))
 				    ;;
@@ -5058,7 +5055,7 @@ setup_masq()
 	    [ -n "$ports" ] && fatal_error "Ports only allowed with UDP or TCP ($ports)"
 	fi	
 
-	destination=$destnets
+	destination=${destnets:=0.0.0.0/0}
 
 	[ -z "$pre_nat" ] && chain=$(masq_chain $interface) || chain=$(snat_chain $interface)
 

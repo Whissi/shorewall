@@ -1126,12 +1126,16 @@ setup_forwarding() {
 # Disable IPV6
 #
 disable_ipv6() {
-    if qt which ip6tables; then
-	ip6tables -P FORWARD DROP
-	ip6tables -P INPUT DROP
-	ip6tables -P OUTPUT DROP
-    else
-	error_message "WARNING: DISABLE_IPV6=Yes in shorewall.conf but this system does not appear to have ip6tables"
+    local foo=$(ip -f inet6 addr ls 2> /dev/null)
+
+    if [ -n "$foo" ]; then
+	if qt which ip6tables; then
+	    ip6tables -P FORWARD DROP && save_command ip6tables -P FORWARD DROP
+	    ip6tables -P INPUT DROP   && save_command ip6tables -P INPUT DROP
+	    ip6tables -P OUTPUT DROP  && save_command ip6tables -P OUTPUT DROP
+	else
+	    error_message "WARNING: DISABLE_IPV6=Yes in shorewall.conf but this system does not appear to have ip6tables"
+	fi
     fi
 }
 
@@ -3720,6 +3724,11 @@ loadmodule() # $1 = module name, $2 - * arguments
     local modulename=$1
     local modulefile
     local suffix
+    moduleloader=modprobe
+
+    if ! qt which modprobe; then 
+	moduleloader=insmod
+    fi
 
     if [ -z "$(lsmod | grep $modulename)" ]; then
 	shift
@@ -3728,7 +3737,15 @@ loadmodule() # $1 = module name, $2 - * arguments
 	    modulefile=$MODULESDIR/${modulename}.${suffix}
 
 	    if [ -f $modulefile ]; then
-		insmod $modulefile $*
+		case $moduleloader in
+		    insmod)
+			insmod $modulefile $*
+			;;
+		    *)
+			modprobe $modulename
+			;;
+		esac
+
 		return
 	    fi
 	done
@@ -5924,7 +5941,7 @@ do_initialize() {
     BLACKLISTNEWONLY=$(added_param_value_no BLACKLISTNEWONLY $BLACKLISTNEWONLY)
     DISABLE_IPV6=$(added_param_value_no DISABLE_IPV6 $DISABLE_IPV6)
     BRIDGING=$(added_param_value_no BRIDGING $BRIDGING)
-    [ -n "$MODULE_SUFFIX" ] || MODULE_SUFFIX="o gz ko o.gz"
+    [ -n "$MODULE_SUFFIX" ] || MODULE_SUFFIX="o gz ko o.gz ko.gz"
 
     #
     # Strip the files that we use often

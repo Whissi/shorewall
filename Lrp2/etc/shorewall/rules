@@ -323,4 +323,6 @@ ACCEPT          fw              net             icmp    8
 #
 ACCEPT          loc       fw            udp     53
 ACCEPT          loc       fw            tcp     80
+# allow loc to fw udp/67 and udp/68 for dnsmasq's dhcpd to work
+ACCEPT  loc  fw  udp  67,68
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

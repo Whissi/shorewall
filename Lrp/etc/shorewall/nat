@@ -1,0 +1,30 @@
+##############################################################################
+#
+# Shorewall 1.3  -- Network Address Translation Table
+#
+# /etc/shorewall/nat
+#
+#	This file is used to define static Network Address Translation (NAT).
+#
+# WARNING: If all you want to do is simple port forwarding, do NOT use this
+#          file. See http://www.shorewall.net/FAQ.htm#faq1. Also, in most
+#	   cases, Proxy ARP is a better solution that static NAT.
+#
+# Columns must be separated by white space and are:
+#
+#	EXTERNAL	External IP Address - this should NOT be the primary
+#			IP address of the interface named in the next
+#			column.
+#	INTERFACE	Interface that we want to EXTERNAL address to appear
+#                       on
+#	INTERNAL	Internal Address
+#       ALL INTERFACES  If Yes or yes (or left empty), NAT will be effective
+#                       from all hosts. If No or no then NAT will be effective
+#                       only through the interface named in the INTERFACE
+#                       column
+#       LOCAL           If Yes or yes and the ALL INTERFACES column contains
+#                       Yes or yes, NAT will be effective from the firewall
+#                       system
+##############################################################################
+#EXTERNAL	INTERFACE	INTERNAL        ALL INTERFACES          LOCAL
+#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE

@@ -803,7 +803,7 @@ validate_rule() {
     # Validate the Source Zone
     #
     if ! validate_zone $clientzone; then
-	startup_error "Error: Undefined Client Zone in rule \"$rule\""
+	[ "x$clientzone" = xall ] || startup_error "Error: Undefined Client Zone in rule \"$rule\""
     fi
 
     source=$clientzone
@@ -835,7 +835,7 @@ validate_rule() {
     # Validate the destination zone
     #
     if ! validate_zone $serverzone; then
-	startup_error "Error: Undefined Server Zone in rule \"$rule\""
+	[ "x$serverzone" = xall ] || startup_error "Error: Undefined Server Zone in rule \"$rule\""
     fi
 
     dest=$serverzone
@@ -1976,17 +1976,22 @@ add_a_rule()
 #
 # Process a record from the rules file
 #
-# The caller has loaded the column contents from the record into the following
-# variables:
-#
-#   target clients servers protocol ports cports address
-#
-# and has loaded a space-separated list of their values in "rule".
-#
-# The 'multioption' variable has also been loaded appropriately to reflect
-# the setting of the MULTIPORT option in /etc/shorewall/shorewall.conf
-#
-process_rule() {
+process_rule() # $1 = target
+               # $2 = clients
+               # $3 = servers
+               # $4 = protocol
+               # $5 = ports
+               # $6 = cports
+               # $7 = address 
+{
+    local target="$1"
+    local clients="$2"
+    local servers="$3"
+    local protocol="$4"
+    local ports="$5"
+    local cports="$6"
+    local address="$7"
+    local rule="`echo $target $clients $servers $protocol $ports $cports $address`"
 
     # Function Body -- isolate log level
  
@@ -2123,20 +2128,48 @@ process_rule() {
 #
 process_rules() # $1 = name of rules file
 {
+    process_wildcard_rule() {
+	for yclients in $xclients; do
+	    for yservers in $xservers; do
+		if [ "${yclients}" != "${yservers}" ] ; then
+		    process_rule $xtarget $yclients $yservers $xprotocol $xports $xcports $xaddress
+		elif havechain ${yclients}2${yservers} ; then
+		    process_rule $xtarget $yclients $yservers $xprotocol $xports $xcports $xaddress
+		fi
+	    done
+	done
+    }
+
     strip_file rules
 
-    while read target clients servers protocol ports cports address; do
-	case "$target" in
+    while read xtarget xclients xservers xprotocol xports xcports xaddress; do
+	case "$xtarget" in
 
-	ACCEPT*|DROP*|REJECT*|DNAT*|REDIRECT*)
-	    expandv clients servers protocol ports cports address
-	    rule="`echo $target $clients $servers $protocol $ports $cports $address`"
-	    process_rule
-	    ;;
-	*)
-	    rule="`echo $target $clients $servers $protocol $ports $cports $address`"
-	    fatal_error "Error: Invalid Target in rule \"$rule\""
-	    ;;
+	    ACCEPT*|DROP*|REJECT*|DNAT*|REDIRECT*)
+		expandv xclients xservers xprotocol xports xcports xaddress
+
+		if [ "x$xclients" = xall ]; then
+		    xclients="$zones $FW"
+		    if [ "x$xservers" = xall ]; then
+			xservers="$zones $FW"
+		    fi
+		    process_wildcard_rule
+		    continue
+		fi
+		
+		if [ "x$xservers" = xall ]; then
+		    xservers="$zones $FW"
+		    process_wildcard_rule
+		    continue
+		fi
+		
+		process_rule $xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress
+		;;
+	    *)
+		rule="`echo $xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress`"
+		fatal_error "Error: Invalid Target in rule \"$rule\""
+		;;
+	    
 	esac
     done < $TMP_DIR/rules
 }

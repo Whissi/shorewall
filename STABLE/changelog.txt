@@ -1,13 +1,13 @@
-Changes since 1.4.2
+Changes since 1.4.3a
 
-1. The 'add' and 'delete' commands no longer leave behind a temporary
-   directory in /tmp.
+1. Implement REDIRECT-.
 
-2. Added support for 6to4 tunnels.
+2. Change LOGMARKER to a printf mask and allow embedded spaces. Renamed
+   it LOGFORMAT to avoid confusion.
 
-3. Added $LOGMARKER for fireparse support
+3. DNAT and REDIRECT logging is moved from the filter table to the nat
+   table.
 
-4. Return more appropriate ICMP responses if the systems supports them.
+4. Don't include log rule number when LOGFORMAT doesn't include "%d".
 
-5. Silently drop UDP 135 in common.def.
 

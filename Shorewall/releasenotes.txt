@@ -11,8 +11,10 @@ New Features:
 
 2) The LOGMARKER variable has been renamed LOGFORMAT and has been
    changed to a 'printf' formatting template which accepts three
-   arguments (the chain name, logging rule number and the disposition).
-   To use LOGFORMAT with fireparse, set it as:
+   arguments (the chain name, logging rule number (optional) and the
+   disposition). The logging rule number is included if the LOGFORMAT
+   value contains '%d'. For example, to use LOGFORMAT with fireparse,
+   set it as:
 
        LOGFORMAT="fp=%s:%d a=%s "
 
@@ -28,3 +30,4 @@ New Features:
    logging now takes place in the nat table rather than in the filter
    table. This way, only those connections that actually undergo DNAT
    or redirection will be logged.
+

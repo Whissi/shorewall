@@ -4484,13 +4484,19 @@ do_initialize() {
     if [ -n "$LOGFORMAT" ]; then
 	if [ -n "`echo $LOGFORMAT | grep '%d'`" ]; then
 	    LOGRULENUMBERS=Yes
-	    if ! qt printf "$LOGFORMAT" foo 1 bar ; then
+	    temp=`printf "$LOGFORMAT" fooxx 1 barxx 2> /dev/null`
+	    if [ $? -ne 0 ]; then
 		startup_error "Invalid LOGFORMAT string: \"$LOGFORMAT\""
 	    fi
 	else
-	    if ! qt printf "$LOGFORMAT" foo bar ; then
+	    temp=`printf "$LOGFORMAT" fooxx barxx 2> /dev/null`
+	    if [ $? -ne 0 ]; then
 		startup_error "Invalid LOGFORMAT string: \"$LOGFORMAT\""
 	    fi
+	fi
+
+	if [ ${#temp} -gt 29 ]; then
+	    startup_error "LOGFORMAT string is too long: \"$LOGFORMAT\""
 	fi
     else
 	LOGFORMAT="Shorewall:%s:%s:"

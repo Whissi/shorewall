@@ -135,7 +135,9 @@ get_config() {
 
     [ -n "$FW" ] || FW=fw
 
-    [ -n "$LOGMARKER" ] || LOGMARKER="Shorewall:"
+    [ -n "LOGFORMAT" ] && LOGFORMAT="${LOGFORMAT%%%*}"
+
+    [ -n "$LOGFORMAT" ] || LOGFORMAT="Shorewall:"
 }
 
 #
@@ -261,9 +263,9 @@ packet_log() # $1 = number of messages
 
     [ -n "$realtail" ] && options="-n$1"
 
-    grep "${LOGMARKER}\|ipt_unclean" $LOGFILE | \
+    grep "${LOGFORMAT}\|ipt_unclean" $LOGFILE | \
 	 sed s/" kernel:"// | \
-	 sed s/" $host $LOGMARKER"/" "/ | \
+	 sed s/" $host $LOGFORMAT"/" "/ | \
 	 sed s/" $host kernel: ipt_unclean: "/" "/ | \
 	 sed 's/MAC=.*SRC=/SRC=/' | \
 	 tail $options
@@ -734,27 +736,27 @@ case "$1" in
 
 	timeout=30
 
-	if [ `grep -c "$LOGMARKER" $LOGFILE ` -gt 0 ] ; then
+	if [ `grep -c "$LOGFORMAT" $LOGFILE ` -gt 0 ] ; then
 	    echo "   HITS IP		  DATE"
 	    echo "   ---- --------------- ------"
-	    grep "$LOGMARKER" $LOGFILE | sed 's/\(.\{6\}\)\(.*SRC=\)\(.*\)\( DST=.*\)/\3	\1/' | sort | uniq -c | sort -rn
+	    grep "$LOGFORMAT" $LOGFILE | sed 's/\(.\{6\}\)\(.*SRC=\)\(.*\)\( DST=.*\)/\3	\1/' | sort | uniq -c | sort -rn
 	    echo ""
 
 	    echo "   HITS IP		  PORT"
 	    echo "   ---- --------------- -----"
-	    grep "$LOGMARKER" $LOGFILE | sed 's/\(.*SRC=\)\(.*\)\( DST=.*DPT=\)\([0-9]\{1,5\}\)\(.*\)/\2	\4/
+	    grep "$LOGFORMAT" $LOGFILE | sed 's/\(.*SRC=\)\(.*\)\( DST=.*DPT=\)\([0-9]\{1,5\}\)\(.*\)/\2	\4/
 						t
 						s/\(.*SRC=\)\(.*\)\( DST=.*\)/\2/' | sort | uniq -c | sort -rn
 	    echo ""
 
 	    echo "   HITS DATE"
 	    echo "   ---- ------"
-	    grep "$LOGMARKER" $LOGFILE | sed 's/\(.\{6\}\)\(.*\)/\1/' | sort | uniq -c | sort -rn
+	    grep "$LOGFORMAT" $LOGFILE | sed 's/\(.\{6\}\)\(.*\)/\1/' | sort | uniq -c | sort -rn
 	    echo ""
 
 	    echo "   HITS  PORT SERVICE(S)"
 	    echo "   ---- ----- ----------"
-	    grep '${LOGMARKER}.*DPT' $LOGFILE | sed 's/\(.*DPT=\)\([0-9]\{1,5\}\)\(.*\)/\2/' | sort | uniq -c | sort -rn | \
+	    grep '${LOGFORMAT}.*DPT' $LOGFILE | sed 's/\(.*DPT=\)\([0-9]\{1,5\}\)\(.*\)/\2/' | sort | uniq -c | sort -rn | \
 	    while read count port ; do
 		# List all services defined for the given port
 		srv=`grep "^[^#].*\\b$port/" /etc/services | cut -f 1 | sort -u`

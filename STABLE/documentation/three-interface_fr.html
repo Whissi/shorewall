@@ -1,1213 +1,1194 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-        
+            
   <meta http-equiv="Content-Language" content="en-us">
-        
+            
   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
-        
+            
   <meta name="ProgId" content="FrontPage.Editor.Document">
-        
+            
   <meta http-equiv="Content-Type"
  content="text/html; charset=windows-1252">
   <title>Three-Interface Firewall</title>
 </head>
   <body>
-    
+      
 <table border="0" cellpadding="0" cellspacing="0"
  style="border-collapse: collapse;" bordercolor="#111111" width="100%"
  id="AutoNumber5" bgcolor="#400169" height="90">
-     <tbody>
-       <tr>
-         <td width="100%">              
+      <tbody>
+        <tr>
+          <td width="100%">                     
       <h1 align="center"><font color="#ffffff">Three-Interface Firewall</font></h1>
-         </td>
-       </tr>
-        
-  </tbody>  
+          </td>
+        </tr>
+            
+  </tbody>   
 </table>
-    
+      
 <h2 align="center">Version 2.0.1 Française</h2>
-    
+      
 <p align="left"><small><i><u>Notes du traducteur</u> :<br>
-   Je ne prétends pas être un vrai traducteur dans le sens ou mon travail 
-n?est pas des plus précis (loin de là...). Je ne me suis pas attaché à une 
-traduction exacte du texte, mais plutôt à en faire une version française intelligible
-par tous (et par moi). Les termes techniques sont la plupart du temps conservés
-sous leur forme originale et mis entre parenthèses car vous pouvez les retrouver
-dans le reste des documentations ainsi que dans les fichiers de configuration.
-N?hésitez pas à me contacter afin d?améliorer ce document <a
- href="mailto:vetsel.patrice@wanadoo.fr">VETSEL Patrice</a> (merci à JMM
-pour sa relecture et ses commentaires pertinents, ainsi qu'à Tom EASTEP pour
-son formidable outil et sa disponibilité).</i></small></p>
-    
+    Je ne prétends pas être un vrai traducteur dans le sens ou mon travail
+ n?est pas des plus précis (loin de là...). Je ne me suis pas attaché à une
+ traduction exacte du texte, mais plutôt à en faire une version française
+intelligible par tous (et par moi). Les termes techniques sont la plupart
+du temps conservés sous leur forme originale et mis entre parenthèses car
+vous pouvez les retrouver dans le reste des documentations ainsi que dans
+les fichiers de configuration. N?hésitez pas à me contacter afin d?améliorer
+ce document <a href="mailto:vetsel.patrice@wanadoo.fr">VETSEL Patrice</a>
+(merci à JMM pour sa relecture et ses commentaires pertinents, ainsi qu'à
+Tom EASTEP pour son formidable outil et sa disponibilité).</i></small></p>
+      
 <p align="left"><br>
-   Mettre en place un système linux en tant que firewall pour un petit réseau
- contenant une DMZ est une chose assez simple à réaliser si vous comprenez
+    Mettre en place un système linux en tant que firewall pour un petit réseau 
+ contenant une DMZ est une chose assez simple à réaliser si vous comprenez 
  les bases et suivez cette documentation.</p>
-    
-<p>Ce guide ne prétend pas vous mettre au courant de toutes les possibilités
- de Shorewall. Il se focalise sur les besoins pour configurer Shorewall dans
+      
+<p>Ce guide ne prétend pas vous mettre au courant de toutes les possibilités 
+ de Shorewall. Il se focalise sur les besoins pour configurer Shorewall dans 
  une de ses utilisations les plus populaire :</p>
-    
+      
 <ul>
-     <li>Un système Linux utilisé en tant que firewall/routeur pour un petit
+      <li>Un système Linux utilisé en tant que firewall/routeur pour un petit 
  réseau local.</li>
-     <li>Une seule adresse IP publique.</li>
-     <li>Une DMZ connectée sur une interface Ethernet séparée.</li>
-     <li>Une connexion passant par l'ADSL, un Modem Câble, ISDN, Frame Relay,
+      <li>Une seule adresse IP publique.</li>
+      <li>Une DMZ connectée sur une interface Ethernet séparée.</li>
+      <li>Une connexion passant par l'ADSL, un Modem Câble, ISDN, Frame Relay, 
  RTC,     ...</li>
-    
+      
 </ul>
-    
+      
 <p align="left">Voici le schéma d'une installation typique.</p>
-    
+      
 <p align="center"> <img border="0" src="images/dmz1.png" width="692"
  height="635">
-   </p>
-    
-<p>Ce guide suppose que vous avez le paquet iproute/iproute2 d'installé.
-Vous pouvez voir si le paquet est installé en vérifiant la présence du programme
- ip sur votre système de firewall. Sous root, utilisez la commande 'which'
+    </p>
+      
+<p>Ce guide suppose que vous avez le paquet iproute/iproute2 d'installé. Vous
+pouvez voir si le paquet est installé en vérifiant la présence du programme 
+ ip sur votre système de firewall. Sous root, utilisez la commande 'which' 
  pour rechercher le programme :</p>
-    
+      
 <pre>     [root@gateway root]# which ip<br>     /sbin/ip<br>     [root@gateway root]#</pre>
-    
-<p>Je vous recommande dans un premier temps de parcourir tout le guide pour
- vous familiariser avec ce qu'il va se passer, et de revenir au début en
-effectuant  le changements dans votre configuration. Les points où, les changements
-dans  la configuration sont recommandées, sont signalés par une <img
+      
+<p>Je vous recommande dans un premier temps de parcourir tout le guide pour 
+ vous familiariser avec ce qu'il va se passer, et de revenir au début en effectuant
+ le changements dans votre configuration. Les points où, les changements dans
+ la configuration sont recommandées, sont signalés par une <img
  border="0" src="images/BD21298_.gif" width="13" height="13">
-   </p>
-    
+    </p>
+      
 <p><img border="0" src="images/j0213519.gif" width="60" height="60">
-   Si vous éditez vos fichiers de configuration sur un système Windows, vous
- devez les sauver comme des fichiers Unix si votre éditeur offre cette option
- sinon vous devez les faire passer par dos2unix avant d'essayer de les utiliser.
- De la même manière, si vous copiez un fichier de configuration depuis votre
- disque dur Windows vers une disquette, vous devez lancer dos2unix sur la
-copie avant de l'utiliser avec Shorewall.</p>
-    
+    Si vous éditez vos fichiers de configuration sur un système Windows,
+vous  devez les sauver comme des fichiers Unix si votre éditeur offre cette
+option  sinon vous devez les faire passer par dos2unix avant d'essayer de
+les utiliser.  De la même manière, si vous copiez un fichier de configuration
+depuis votre  disque dur Windows vers une disquette, vous devez lancer dos2unix
+sur la copie avant de l'utiliser avec Shorewall.</p>
+      
 <ul>
-     <li><a href="http://www.simtel.net/pub/pd/51438.html">Windows Version 
-of    dos2unix</a></li>
-     <li><a href="http://www.megaloman.com/%7Ehany/software/hd2u/">Linux
+      <li><a href="http://www.simtel.net/pub/pd/51438.html">Windows Version
+ of    dos2unix</a></li>
+      <li><a href="http://www.megaloman.com/%7Ehany/software/hd2u/">Linux 
 Version  of    dos2unix</a></li>
-    
+      
 </ul>
-    
+      
 <h2 align="left">Les Concepts de Shorewall</h2>
-    
+      
 <p> <img border="0" src="images/BD21298_.gif" width="13" height="13"
  alt="">
-   Les fichiers de configuration pour Shorewall sont situés dans le répertoire
-  /etc/shorewall -- pour de simples paramétrages, vous n'avez à faire qu'avec
+    Les fichiers de configuration pour Shorewall sont situés dans le répertoire 
+  /etc/shorewall -- pour de simples paramétrages, vous n'avez à faire qu'avec 
  quelques un d'entre eux comme décris dans ce guide. Après avoir <a
- href="Install.htm">installé Shorewall</a>, <b>téléchargez la configuration
- d'exemple <a href="http://www1.shorewall.net/pub/shorewall/Samples/">three-interface
- sample</a>, un-tarez la  (tar -zxvf three-interfaces.tgz) </b><b>et copiez
- les fichiers vers /etc/shorewall  (Ils remplaceront les fichiers de même
-nom déjà existant dans /etc/shorewall installés lors de l'installation de
+ href="Install.htm">installé Shorewall</a>, <b>téléchargez la configuration 
+ d'exemple <a href="http://www1.shorewall.net/pub/shorewall/Samples/">three-interface 
+ sample</a>, un-tarez la  (tar -zxvf three-interfaces.tgz) </b><b>et copiez 
+ les fichiers vers /etc/shorewall  (Ils remplaceront les fichiers de même 
+nom déjà existant dans /etc/shorewall installés lors de l'installation de 
 Shorewall)</b>.</p>
-    
-<p>En même temps que chacun des fichiers est présenté, je vous suggère de
- jeter un oeil à ceux qui se trouvent réellement sur votre système -- chacun
- des fichiers contient des instructions de configuration détaillées et des
+      
+<p>En même temps que chacun des fichiers est présenté, je vous suggère de 
+ jeter un oeil à ceux qui se trouvent réellement sur votre système -- chacun 
+ des fichiers contient des instructions de configuration détaillées et des 
  entrées par défaut.</p>
-    
-<p>Shorewall voit le réseau où il tourne comme composé par un ensemble de
- <i>zones.</i> Dans les fichiers de configuration fournis pour trois interfaces,
+      
+<p>Shorewall voit le réseau où il tourne comme composé par un ensemble de 
+ <i>zones.</i> Dans les fichiers de configuration fournis pour trois interfaces, 
  trois zones sont définies :</p>
-    
+      
 <table border="0" style="border-collapse: collapse;" cellpadding="3"
  cellspacing="0" id="AutoNumber2">
-     <tbody>
-       <tr>
-         <td><u><b>Name</b></u></td>
-         <td><u><b>Description</b></u></td>
-       </tr>
-       <tr>
-         <td><b>net</b></td>
-         <td><b>The Internet</b></td>
-       </tr>
-       <tr>
-         <td><b>loc</b></td>
-         <td><b>Votre réseau local</b></td>
-       </tr>
-       <tr>
-         <td><b>dmz</b></td>
-         <td><b>Zone </b><b>Demilitarisée</b></td>
-       </tr>
-        
-  </tbody>  
+      <tbody>
+        <tr>
+          <td><u><b>Name</b></u></td>
+          <td><u><b>Description</b></u></td>
+        </tr>
+        <tr>
+          <td><b>net</b></td>
+          <td><b>The Internet</b></td>
+        </tr>
+        <tr>
+          <td><b>loc</b></td>
+          <td><b>Votre réseau local</b></td>
+        </tr>
+        <tr>
+          <td><b>dmz</b></td>
+          <td><b>Zone </b><b>Demilitarisée</b></td>
+        </tr>
+            
+  </tbody>   
 </table>
-    
+      
 <p>Les noms de zone sont définis dans <a href="Documentation.htm#Zones">/etc/shorewall/zones</a>.</p>
-    
-<p>Shorewall reconnaît aussi le système de firewall comme sa propre zone
-- par défaut,    le firewall lui même est connu en tant que <b>fw</b>.</p>
-    
-<p>Les règles concernant le trafic à autoriser ou à interdire sont exprimées
+      
+<p>Shorewall reconnaît aussi le système de firewall comme sa propre zone -
+par défaut,    le firewall lui même est connu en tant que <b>fw</b>.</p>
+      
+<p>Les règles concernant le trafic à autoriser ou à interdire sont exprimées 
  en utilisant les termes de zones.</p>
-    
+      
 <ul>
-     <li>Vous exprimez les politiques par défaut pour les connexions d'une 
-zone à une autre dans le fichier<a href="Documentation.htm#Policy"> /etc/shorewall/policy
+      <li>Vous exprimez les politiques par défaut pour les connexions d'une
+ zone à une autre dans le fichier<a href="Documentation.htm#Policy"> /etc/shorewall/policy 
      </a>.</li>
-     <li>Vous définissez les exceptions à ces règles de politiques par défaut
+      <li>Vous définissez les exceptions à ces règles de politiques par défaut 
  dans le fichier <a href="Documentation.htm#Rules">/etc/shorewall/rules</a>.</li>
-    
+      
 </ul>
-    
-<p>Pour chacune des demandes de connexion entrantes dans le firewall, les
- demandes sont en premier lieu comparées par rapport au fichier /etc/shorewall/rules.
- Si aucune des règles dans ce fichier ne correspondent, alors la première
-politique dans /etc/shorewall/policy qui y correspond est appliquée. Si cette
-politique est REJECT ou DROP la requête est alors comparée par rapport aux
-règles contenues dans /etc/shorewall/common (l'archive d'exemple vous fournit
+      
+<p>Pour chacune des demandes de connexion entrantes dans le firewall, les 
+ demandes sont en premier lieu comparées par rapport au fichier /etc/shorewall/rules. 
+ Si aucune des règles dans ce fichier ne correspondent, alors la première 
+politique dans /etc/shorewall/policy qui y correspond est appliquée. Si cette 
+politique est REJECT ou DROP la requête est alors comparée par rapport aux 
+règles contenues dans /etc/shorewall/common (l'archive d'exemple vous fournit 
 ce fichier).</p>
-    
-<p>Le fichier /etc/shorewall/policy d'exemple contenu dans l'archive three-interface
+      
+<p>Le fichier /etc/shorewall/policy d'exemple contenu dans l'archive three-interface 
  sample a les politiques suivantes :</p>
-    
-<blockquote>      
+      
+<blockquote>         
   <table border="1" cellpadding="2" style="border-collapse: collapse;"
  id="AutoNumber3">
-       <tbody>
-         <tr>
-           <td><u><b>Source Zone</b></u></td>
-           <td><u><b>Destination Zone</b></u></td>
-           <td><u><b>Policy</b></u></td>
-           <td><u><b>Log Level</b></u></td>
-           <td><u><b>Limit:Burst</b></u></td>
-         </tr>
-         <tr>
-           <td>loc</td>
-           <td>net</td>
-           <td>ACCEPT</td>
-           <td> <br>
-           </td>
-           <td> <br>
-           </td>
-         </tr>
-         <tr>
-           <td>net</td>
-           <td>all</td>
-           <td>DROP</td>
-           <td>info</td>
-           <td> <br>
-           </td>
-         </tr>
-         <tr>
-           <td>all</td>
-           <td>all</td>
-           <td>REJECT</td>
-           <td>info</td>
-           <td> <br>
-           </td>
-         </tr>
-            
-    </tbody>      
+        <tbody>
+          <tr>
+            <td><u><b>Source Zone</b></u></td>
+            <td><u><b>Destination Zone</b></u></td>
+            <td><u><b>Policy</b></u></td>
+            <td><u><b>Log Level</b></u></td>
+            <td><u><b>Limit:Burst</b></u></td>
+          </tr>
+          <tr>
+            <td>loc</td>
+            <td>net</td>
+            <td>ACCEPT</td>
+            <td> <br>
+            </td>
+            <td> <br>
+            </td>
+          </tr>
+          <tr>
+            <td>net</td>
+            <td>all</td>
+            <td>DROP</td>
+            <td>info</td>
+            <td> <br>
+            </td>
+          </tr>
+          <tr>
+            <td>all</td>
+            <td>all</td>
+            <td>REJECT</td>
+            <td>info</td>
+            <td> <br>
+            </td>
+          </tr>
+                  
+    </tbody>         
   </table>
-   </blockquote>
-    
-<blockquote>      
-  <p>Dans l'archive three-interface, la ligne suivante est existante mais
- elle est commentée. Si vous souhaitez que votre système de firewall puisse
+    </blockquote>
+      
+<blockquote>         
+  <p>Dans l'archive three-interface, la ligne suivante est existante mais 
+ elle est commentée. Si vous souhaitez que votre système de firewall puisse 
  avoir un accès complet aux serveurs sur Internet, décommentez la.</p>
-        
+            
   <table border="1" cellpadding="2" style="border-collapse: collapse;"
  id="AutoNumber3">
-       <tbody>
-         <tr>
-           <td><u><b>Source Zone</b></u></td>
-           <td><u><b>Destination Zone</b></u></td>
-           <td><u><b>Policy</b></u></td>
-           <td><u><b>Log Level</b></u></td>
-           <td><u><b>Limit:Burst</b></u></td>
-         </tr>
-         <tr>
-           <td>fw</td>
-           <td>net</td>
-           <td>ACCEPT</td>
-           <td> <br>
-           </td>
-           <td> <br>
-           </td>
-         </tr>
-            
-    </tbody>      
+        <tbody>
+          <tr>
+            <td><u><b>Source Zone</b></u></td>
+            <td><u><b>Destination Zone</b></u></td>
+            <td><u><b>Policy</b></u></td>
+            <td><u><b>Log Level</b></u></td>
+            <td><u><b>Limit:Burst</b></u></td>
+          </tr>
+          <tr>
+            <td>fw</td>
+            <td>net</td>
+            <td>ACCEPT</td>
+            <td> <br>
+            </td>
+            <td> <br>
+            </td>
+          </tr>
+                  
+    </tbody>         
   </table>
-   </blockquote>
-    
+    </blockquote>
+      
 <p>Les politiques précédentes vont :</p>
-    
+      
 <ol>
-     <li>permettre toutes demandes de connexion depuis le firewall vers l'Internet</li>
-     <li>drop (ignorer) toutes les demandes de connexion depuis l'Internet 
-vers votre  firewall ou vers votre réseau local</li>
-     <li>Facultativement accepter toutes les demandes de connexion depuis 
-votre firewall et vers Internet (si vous decommentez la politique précédente)</li>
-     <li>reject (rejeter) toutes les autres demandes de connexion.</li>
-    
+      <li>permettre toutes demandes de connexion depuis le firewall vers
+l'Internet</li>
+      <li>drop (ignorer) toutes les demandes de connexion depuis l'Internet
+ vers votre  firewall ou vers votre réseau local</li>
+      <li>Facultativement accepter toutes les demandes de connexion depuis
+ votre firewall et vers Internet (si vous decommentez la politique précédente)</li>
+      <li>reject (rejeter) toutes les autres demandes de connexion.</li>
+      
 </ol>
-    
+      
 <p><img border="0" src="images/BD21298_1.gif" width="13" height="13">
-  A ce point, éditez votre /etc/shorewall/policy et faites y les changements
+   A ce point, éditez votre /etc/shorewall/policy et faites y les changements 
  que vous désire</p>
-    
+      
 <h2 align="left">Les Interfaces Réseau</h2>
-    
+      
 <p align="center"> <img border="0" src="images/dmz1.png" width="692"
  height="635">
-   </p>
-    
-<p align="left">Le firewall a trois interfaces de réseau. Lorsque la connexion
- Internet passe par le câble ou par un ROUTEUR (pas un simple modem) ADSL
-(non USB), l'interface vers l'extérieur (External Interface) sera l'adaptateur
- sur lequel est connecté le routeur (e.g., eth0)  à moins que vous ne vous
- connectiez par Point-to-PointProtocol overEthernet (PPPoE) ou par Point-to-PointTunneling
- Protocol (PPTP), dans ce cas l'interface extérieure sera une interface de
- type ppp (e.g., ppp0). Si vous vous connectez par un simple modem (RTC),
-votre interface extérieure sera aussi ppp0. Si votre connexion passe par
-Numéris (ISDN), votre interface extérieure sera ippp0<b>.</b></p>
-    
+    </p>
+      
+<p align="left">Le firewall a trois interfaces de réseau. Lorsque la connexion 
+ Internet passe par le câble ou par un ROUTEUR (pas un simple modem) ADSL 
+(non USB), l'interface vers l'extérieur (External Interface) sera l'adaptateur 
+ sur lequel est connecté le routeur (e.g., eth0)  à moins que vous ne vous 
+ connectiez par Point-to-PointProtocol overEthernet (PPPoE) ou par Point-to-PointTunneling 
+ Protocol (PPTP), dans ce cas l'interface extérieure sera une interface de 
+ type ppp (e.g., ppp0). Si vous vous connectez par un simple modem (RTC), 
+votre interface extérieure sera aussi ppp0. Si votre connexion passe par Numéris
+(ISDN), votre interface extérieure sera ippp0<b>.</b></p>
+      
 <p align="left"><img border="0" src="images/BD21298_1.gif" width="13"
  height="13">
-   Si votre interface vers l'extérieur est ppp0 ou ippp0 alors vous mettrez
+    Si votre interface vers l'extérieur est ppp0 ou ippp0 alors vous mettrez 
  CLAMPMSS=yes dans <a href="Documentation.htm#Conf"> /etc/shorewall/shorewall.conf.</a></p>
-    
-<p align="left">Votre <i>Interface locale</i> sera un adaptateur Ethernet
- (eth0,       eth1 ou eth2) et sera connecté à un hub ou un switch. Vos ordinateurs
- locaux seront connectés à ce même switch (note : si vous n'avez qu'un seul
- ordinateur en local, vous pouvez le connecter directement au firewall par
+      
+<p align="left">Votre <i>Interface locale</i> sera un adaptateur Ethernet 
+ (eth0,       eth1 ou eth2) et sera connecté à un hub ou un switch. Vos ordinateurs 
+ locaux seront connectés à ce même switch (note : si vous n'avez qu'un seul 
+ ordinateur en local, vous pouvez le connecter directement au firewall par 
  un <i>câble croisé</i>).</p>
-    
-<p align="left">Votre <i>interface DMZ</i> sera aussi un adaptateur Ethernet
- (eth0,  eth1 ou eth2) et sera connecté à un hub ou un switch. Vos ordinateurs
- appartenant à la DMZ seront connectés à ce même switch (note : si  vous
-n'avez  qu'un seul ordinateur dans la DMZ, vous pouvez le connecter directement
-au  firewall par un <i>câble croisé</i>).</p>
-    
+      
+<p align="left">Votre <i>interface DMZ</i> sera aussi un adaptateur Ethernet 
+ (eth0,  eth1 ou eth2) et sera connecté à un hub ou un switch. Vos ordinateurs 
+ appartenant à la DMZ seront connectés à ce même switch (note : si  vous n'avez
+ qu'un seul ordinateur dans la DMZ, vous pouvez le connecter directement au
+ firewall par un <i>câble croisé</i>).</p>
+      
 <p align="left"><u><b> <img border="0" src="images/j0213519.gif"
  width="60" height="60">
-  </b></u> Ne connectez pas l'interface interne et externe sur le même hub
- ou switch (même pour tester). Cela ne fonctionnera pas et ne croyez pas
-que  ce soit shorewall qui ne marche pas.</p>
-    
+   </b></u> Ne connectez pas l'interface interne et externe sur le même hub 
+ ou switch (même pour tester). Cela ne fonctionnera pas et ne croyez pas que
+ ce soit shorewall qui ne marche pas.</p>
+      
 <p align="left"><img border="0" src="images/BD21298_2.gif" width="13"
  height="13">
-   L'exemple de configuration de Shorewall pour trois interfaces suppose
-que  l'interface externe est <b>eth0, </b>l'interface locale est <b>eth1
-</b> et que la DMZ est sur l'interface <b>eth2</b>. Si votre configuration
-diffère,  vous devrez modifier le fichier d'exemple /etc/shorewall/interfaces
-en conséquence.  Tant que vous y êtes, vous pourriez parcourir la liste des
-options qui sont  spécifiées pour les interfaces. Quelques trucs :</p>
-    
+    L'exemple de configuration de Shorewall pour trois interfaces suppose 
+que  l'interface externe est <b>eth0, </b>l'interface locale est <b>eth1 </b>
+et que la DMZ est sur l'interface <b>eth2</b>. Si votre configuration diffère,
+ vous devrez modifier le fichier d'exemple /etc/shorewall/interfaces en conséquence.
+ Tant que vous y êtes, vous pourriez parcourir la liste des options qui sont
+ spécifiées pour les interfaces. Quelques trucs :</p>
+      
 <ul>
-     <li>          
-    <p align="left">Si votre interface externe est ppp0 ou ippp0, vous pouvez
+      <li>               
+    <p align="left">Si votre interface externe est ppp0 ou ippp0, vous pouvez 
  remplacer le "detect" dans la seconde colonne par un "-". </p>
-     </li>
-     <li>          
-    <p align="left">Si votre interface externe est ppp0 ou ippp0 ou bien
-si vous avez une adresse IP statique, vous pouvez enlever le "dhcp" de la
-liste d'option. </p>
-     </li>
-    
+      </li>
+      <li>               
+    <p align="left">Si votre interface externe est ppp0 ou ippp0 ou bien si
+vous avez une adresse IP statique, vous pouvez enlever le "dhcp" de la liste
+d'option. </p>
+      </li>
+      
 </ul>
-    
+      
 <h2 align="left">Adresses IP</h2>
-    
-<p align="left">Avant d'aller plus loin, nous devons dire quelques mots au
- sujet du Protocole d'adresse Internet (IP). Normalement, votre fournisseur
- Internet (ISP) vous assignera une seule adresse IP (single Public IP address).
- Cette adresse peut être assignée par le Dynamic Host Configuration Protocol
- (DHCP) ou lors de l'établissement de votre connexion lorsque vous vous connectez
- (modem standard) ou établissez votre connexion PPP. Dans de rares cas ,
-votre  provider peu vous assigner une adresse statique (staticIP address);
-cela signifie que vous configurez votre interface externe sur votre firewall
-afin d'utiliser cette adresse de manière permanente. Une fois votre adresse
-externe assignée, elle va être partagée par tout vos systèmes lors de l'accès
-à Internet. Vous devrez assigner vos propres adresses à votre réseau local
-(votre interface  interne sur le firewall  ainsi que les autres ordinateurs).
-La RFC 1918 réserve  plusieurs plages d'IP (Private IP address ranges) à
-cette fin :</p>
-    
-<div align="left">  
+      
+<p align="left">Avant d'aller plus loin, nous devons dire quelques mots au 
+ sujet du Protocole d'adresse Internet (IP). Normalement, votre fournisseur 
+ Internet (ISP) vous assignera une seule adresse IP (single Public IP address). 
+ Cette adresse peut être assignée par le Dynamic Host Configuration Protocol 
+ (DHCP) ou lors de l'établissement de votre connexion lorsque vous vous connectez 
+ (modem standard) ou établissez votre connexion PPP. Dans de rares cas , votre
+ provider peu vous assigner une adresse statique (staticIP address); cela
+signifie que vous configurez votre interface externe sur votre firewall afin
+d'utiliser cette adresse de manière permanente. Une fois votre adresse externe
+assignée, elle va être partagée par tout vos systèmes lors de l'accès à Internet.
+Vous devrez assigner vos propres adresses à votre réseau local (votre interface
+ interne sur le firewall  ainsi que les autres ordinateurs). La RFC 1918
+réserve  plusieurs plages d'IP (Private IP address ranges) à cette fin :</p>
+      
+<div align="left">   
 <pre>     10.0.0.0    - 10.255.255.255<br>     172.16.0.0  - 172.31.255.255<br>     192.168.0.0 - 192.168.255.255</pre>
-   </div>
-    
-<div align="left">  
+    </div>
+      
+<div align="left">   
 <p align="left"><img border="0" src="images/BD21298_.gif" width="13"
  height="13">
-   Avant de lancer Shorewall, vous devriez regarder l'adresse de votre interface
- externe et si elle est comprise dans une des plages précédentes, vous devriez
+    Avant de lancer Shorewall, vous devriez regarder l'adresse de votre interface 
+ externe et si elle est comprise dans une des plages précédentes, vous devriez 
  enlever l'option 'norfc1918' dans le fichier /etc/shorewall/interfaces.</p>
-   </div>
-    
-<div align="left">  
-<p align="left">Vous devrez assigner les adresses locales à un sous-réseau
- (<i>sub-network </i>ou <i>subnet)</i> et les adresse pour la DMZ à un autre
- sous-réseau. Pour ce faire, nous pouvons considérer qu'un sous-réseau consiste
- en une plage d'adresse x.y.z.0 à x.y.z.255. Chacun des sous-réseaux possèdera
- une masque (<i>Subnet   Mask)</i> de 255.255.255.0.  L'adresse x.y.z.0 est
- réservée comme l'adresse du sous-réseau (<i>Subnet     Address)</i> et x.y.z.255
-  est réservée en tant qu'adresse de broadcast du sous-réseau (<i>Subnet
-Broadcast</i>  <i>Address)</i>. Sous Shorewall,  un sous-réseau est décrit/désigné
-en utilisant  la notation <a href="shorewall_setup_guide.htm#Subnets"><i>Classless
-InterDomain  Routing</i>(CIDR)</a> qui consiste en l'adresse du sous-réseau
-suivie par  "/24". Le "24"  se réfère au nombre de bits "1" consécutifs dans
-la partie  gauche du masque de sous-réseau. </p>
-   </div>
-    
-<div align="left">  
+    </div>
+      
+<div align="left">   
+<p align="left">Vous devrez assigner les adresses locales à un sous-réseau 
+ (<i>sub-network </i>ou <i>subnet)</i> et les adresse pour la DMZ à un autre 
+ sous-réseau. Pour ce faire, nous pouvons considérer qu'un sous-réseau consiste 
+ en une plage d'adresse x.y.z.0 à x.y.z.255. Chacun des sous-réseaux possèdera 
+ une masque (<i>Subnet   Mask)</i> de 255.255.255.0.  L'adresse x.y.z.0 est 
+ réservée comme l'adresse du sous-réseau (<i>Subnet     Address)</i> et x.y.z.255 
+  est réservée en tant qu'adresse de broadcast du sous-réseau (<i>Subnet Broadcast</i>
+ <i>Address)</i>. Sous Shorewall,  un sous-réseau est décrit/désigné en utilisant
+ la notation <a href="shorewall_setup_guide.htm#Subnets"><i>Classless InterDomain
+ Routing</i>(CIDR)</a> qui consiste en l'adresse du sous-réseau suivie par
+ "/24". Le "24"  se réfère au nombre de bits "1" consécutifs dans la partie
+ gauche du masque de sous-réseau. </p>
+    </div>
+      
+<div align="left">   
 <p align="left">Exemple de sous-réseau (subnet) :</p>
-   </div>
-    
-<div align="left">  
-<blockquote>      
+    </div>
+      
+<div align="left">   
+<blockquote>         
   <table border="1" style="border-collapse: collapse;" id="AutoNumber1"
  cellpadding="2">
-       <tbody>
-         <tr>
-           <td><b>Plage:</b></td>
-           <td>10.10.10.0 - 10.10.10.255</td>
-         </tr>
-         <tr>
-           <td><b>Subnet Address:</b></td>
-           <td>10.10.10.0</td>
-         </tr>
-         <tr>
-           <td><b>Broadcast Address:</b></td>
-           <td>10.10.10.255</td>
-         </tr>
-         <tr>
-           <td><b>CIDR Notation:</b></td>
-           <td>10.10.10.0/24</td>
-         </tr>
-            
-    </tbody>      
+        <tbody>
+          <tr>
+            <td><b>Plage:</b></td>
+            <td>10.10.10.0 - 10.10.10.255</td>
+          </tr>
+          <tr>
+            <td><b>Subnet Address:</b></td>
+            <td>10.10.10.0</td>
+          </tr>
+          <tr>
+            <td><b>Broadcast Address:</b></td>
+            <td>10.10.10.255</td>
+          </tr>
+          <tr>
+            <td><b>CIDR Notation:</b></td>
+            <td>10.10.10.0/24</td>
+          </tr>
+                  
+    </tbody>         
   </table>
-   </blockquote>
-   </div>
-    
-<div align="left">  
-<p align="left">Il est de convention d'assigner à l'interface interne la
-première adresse utilisable dans le sous-réseau (10.10.10.1 dans l'exemple
-précédent)      ou la dernière utilisable (10.10.10.254).</p>
-   </div>
-    
-<div align="left">  
-<p align="left">L'un des buts d'un sous-réseau est de permettre à tous les
- ordinateurs dans le sous-réseau de savoir avec quels autres ordinateurs
-ils  peuvent communiquer directement. Pour communiquer avec des systèmes
-en dehors  du sous-réseau, les ordinateurs envoient des paquets à travers
-le gateway  (routeur).</p>
-   </div>
-    
-<div align="left">  
+    </blockquote>
+    </div>
+      
+<div align="left">   
+<p align="left">Il est de convention d'assigner à l'interface interne la première
+adresse utilisable dans le sous-réseau (10.10.10.1 dans l'exemple précédent)
+     ou la dernière utilisable (10.10.10.254).</p>
+    </div>
+      
+<div align="left">   
+<p align="left">L'un des buts d'un sous-réseau est de permettre à tous les 
+ ordinateurs dans le sous-réseau de savoir avec quels autres ordinateurs ils
+ peuvent communiquer directement. Pour communiquer avec des systèmes en dehors
+ du sous-réseau, les ordinateurs envoient des paquets à travers le gateway
+ (routeur).</p>
+    </div>
+      
+<div align="left">   
 <p align="left"><img border="0" src="images/BD21298_1.gif" width="13"
  height="13">
-   Vos ordinateurs locaux (ordinateur local 1 et 2) devraient être configurés
- avec leur passerelle par défaut (<i>default gateway)</i>pointant sur l'adresse
- IP de l'interface interne du firewall, et les ordinateurs de la DMZ devraient
- être configurés avec leur passerelle par défaut (<i>default gateway)</i>
+    Vos ordinateurs locaux (ordinateur local 1 et 2) devraient être configurés 
+ avec leur passerelle par défaut (<i>default gateway)</i>pointant sur l'adresse 
+ IP de l'interface interne du firewall, et les ordinateurs de la DMZ devraient 
+ être configurés avec leur passerelle par défaut (<i>default gateway)</i> 
 pointant sur l'adresse IP de l'interface DMZ du firewall. </p>
-   </div>
-    
-<p align="left">Cette courte description ne fait que survoler les concepts
- de routage et de sous-réseau. Si vous vous voulez en apprendre plus sur
-l'adressage  IP et le routage, je vous recommande chaudement <i>"IP Fundamentals:
-   What  Everyone  Needs to Know about Addressing &amp; Routing",</i> Thomas
+    </div>
+      
+<p align="left">Cette courte description ne fait que survoler les concepts 
+ de routage et de sous-réseau. Si vous vous voulez en apprendre plus sur l'adressage
+ IP et le routage, je vous recommande chaudement <i>"IP Fundamentals:   
+What  Everyone  Needs to Know about Addressing &amp; Routing",</i> Thomas 
     A.  Maufer, Prentice-Hall,  1999, ISBN 0-13-975483-0.</p>
-    
-<p align="left">Pour rappel, ce guide supposera que vous avez configuré votre
+      
+<p align="left">Pour rappel, ce guide supposera que vous avez configuré votre 
  réseau comme montrer ci-dessous :</p>
-    
+      
 <p align="center"> <img border="0" src="images/dmz2.png" width="721"
  height="635">
-   </p>
-    
-<p align="left">La passerelle par défaut (default gateway) pour les ordinateurs
- de la DMZ sera 10.10.11.254       et le passerelle par défaut pour les ordinateurs
+    </p>
+      
+<p align="left">La passerelle par défaut (default gateway) pour les ordinateurs 
+ de la DMZ sera 10.10.11.254       et le passerelle par défaut pour les ordinateurs 
  en local sera 10.10.10.254.</p>
-    
+      
 <h2 align="left">IP Masquerading (SNAT)</h2>
-    
-<p align="left">Les adresses réservées par la RFC 1918 sont parfois désignées
- comme non-routables car les routeurs Internet (backbone) ne font pas circuler
- les paquets qui ont une adresse de destination appartenant à la RFC-1918.
- Lorsqu'un de vos systèmes en local (supposons l'ordinateur1) demande une
-connexion à un serveur par Internet, le firewall doit appliquer un NAT (Network
-Address Translation). Le firewall ré écrit l'adresse source dans le paquet,
-et l'a remplace par l'adresse de l'interface externe du firewall; en d'autres
-mots, le firewall fait croire que c'est lui même qui initie la connexion.
-Ceci est nécessaire afin que l'hôte de destination soit capable de renvoyer
-les paquets au firewall (souvenez vous que les paquets qui ont pour adresse
-de destination, une adresse réservée par la RFC 1918 ne pourront pas être
-routés à travers Internet, donc l'hôte Internet ne pourra adresser sa réponse
-à l'ordinateur 1). Lorsque le firewall reçoit le paquet de réponse, il remet
- l'adresse de destination à 10.10.10.1 et fait passer le paquet vers l'ordinateur
+      
+<p align="left">Les adresses réservées par la RFC 1918 sont parfois désignées 
+ comme non-routables car les routeurs Internet (backbone) ne font pas circuler 
+ les paquets qui ont une adresse de destination appartenant à la RFC-1918. 
+ Lorsqu'un de vos systèmes en local (supposons l'ordinateur1) demande une 
+connexion à un serveur par Internet, le firewall doit appliquer un NAT (Network 
+Address Translation). Le firewall ré écrit l'adresse source dans le paquet, 
+et l'a remplace par l'adresse de l'interface externe du firewall; en d'autres 
+mots, le firewall fait croire que c'est lui même qui initie la connexion. 
+Ceci est nécessaire afin que l'hôte de destination soit capable de renvoyer 
+les paquets au firewall (souvenez vous que les paquets qui ont pour adresse 
+de destination, une adresse réservée par la RFC 1918 ne pourront pas être 
+routés à travers Internet, donc l'hôte Internet ne pourra adresser sa réponse 
+à l'ordinateur 1). Lorsque le firewall reçoit le paquet de réponse, il remet 
+ l'adresse de destination à 10.10.10.1 et fait passer le paquet vers l'ordinateur 
  1. </p>
-    
-<p align="left">Sur les systèmes Linux, ce procédé est souvent appelé de
-l'IP Masquerading mais vous verrez aussi le terme de Source Network Address
-Translation (SNAT) utilisé. Shorewall suit la convention utilisée avec Netfilter
-:</p>
-    
+      
+<p align="left">Sur les systèmes Linux, ce procédé est souvent appelé de l'IP
+Masquerading mais vous verrez aussi le terme de Source Network Address Translation
+(SNAT) utilisé. Shorewall suit la convention utilisée avec Netfilter :</p>
+      
 <ul>
-     <li>          
-    <p align="left">Masquerade désigne le cas ou vous laissez votre firewall
+      <li>               
+    <p align="left">Masquerade désigne le cas ou vous laissez votre firewall 
  détecter automatiquement l'adresse de l'interface externe. </p>
-     </li>
-     <li>          
-    <p align="left">SNAT désigne le cas où vous spécifiez explicitement l'adresse
+      </li>
+      <li>               
+    <p align="left">SNAT désigne le cas où vous spécifiez explicitement l'adresse 
  source des paquets sortant de votre réseau local. </p>
-     </li>
-    
+      </li>
+      
 </ul>
-    
-<p align="left">Sous Shorewall, autant le Masquerading que le SNAT sont configuré
+      
+<p align="left">Sous Shorewall, autant le Masquerading que le SNAT sont configuré 
  avec des entrés dans le fichier /etc/shorewall/masq.</p>
-    
+      
 <p align="left"><img border="0" src="images/BD21298_2.gif" width="13"
  height="13">
-   Si votre interface externe est <b>eth0</b>, votre interface locale <b>eth1</b>
- et votre interface pour la DMZ <b>eth2</b> vous n'avez pas besoin de modifier
- le fichier fourni avec l'exemple. Dans le cas contraire, éditez    /etc/shorewall/masq
+    Si votre interface externe est <b>eth0</b>, votre interface locale <b>eth1</b> 
+ et votre interface pour la DMZ <b>eth2</b> vous n'avez pas besoin de modifier 
+ le fichier fourni avec l'exemple. Dans le cas contraire, éditez    /etc/shorewall/masq 
    et changez le en conséquence.</p>
-    
+      
 <p align="left"><img border="0" src="images/BD21298_2.gif" width="13"
  height="13">
-   Si votre IP externe est statique, vous pouvez la mettre dans la troisième
- colonne dans /etc/shorewall/masq si vous le désirez, de toutes façons votre
- firewall fonctionnera bien si vous laissez cette colonne vide. Le fait de
- mettre votre IP statique dans la troisième colonne permet un traitement
-des  paquets sortant un peu plus efficace.<br>
-   </p>
-    
+    Si votre IP externe est statique, vous pouvez la mettre dans la troisième 
+ colonne dans /etc/shorewall/masq si vous le désirez, de toutes façons votre 
+ firewall fonctionnera bien si vous laissez cette colonne vide. Le fait de 
+ mettre votre IP statique dans la troisième colonne permet un traitement des
+ paquets sortant un peu plus efficace.<br>
+    </p>
+      
 <p align="left"><img border="0" src="images/BD21298_.gif" width="13"
  height="13" alt="">
-   Si vous utilisez les paquets Debian, vérifiez que votre fichier de configuration
- shorewall.conf contient bien les valeurs suivantes, si elles n'y sont pas
+    Si vous utilisez les paquets Debian, vérifiez que votre fichier de configuration 
+ shorewall.conf contient bien les valeurs suivantes, si elles n'y sont pas 
  faite les changements nécessaires :<br>
-   </p>
-    
+    </p>
+      
 <ul>
-     <li>NAT_ENABLED=Yes</li>
-     <li>IP_FORWARDING=On<br>
-     </li>
-    
+      <li>NAT_ENABLED=Yes</li>
+      <li>IP_FORWARDING=On<br>
+      </li>
+      
 </ul>
-    
+      
 <h2 align="left">Port Forwarding (DNAT)</h2>
-    
-<p align="left">Un de nos buts est de, peut être, faire tourner un ou plusieurs
- serveurs sur nos ordinateurs dans la DMZ. que ces ordinateurs on une adresse
- RFC-1918, il n'est pas possible pour les clients sur Internet de se connecter
- directement à eux. Il est nécessaire à ces clients d'adresser leurs demandes
- de connexion au firewall qui ré écrit l'adresse de destination de votre
-serveur,  et fait passer le paquet à celui-ci. Lorsque votre serveur répond,
-le firewall  applique automatiquement un SNAT pour ré écrire l'adresse source
-dans la réponse.</p>
-    
-<p align="left">Ce procédé est appelé Port Forwarding ou Destination Network
- Address Translation(DNAT). Vous configurez le port forwarding en utilisant
+      
+<p align="left">Un de nos buts est de, peut être, faire tourner un ou plusieurs 
+ serveurs sur nos ordinateurs dans la DMZ. que ces ordinateurs on une adresse 
+ RFC-1918, il n'est pas possible pour les clients sur Internet de se connecter 
+ directement à eux. Il est nécessaire à ces clients d'adresser leurs demandes 
+ de connexion au firewall qui ré écrit l'adresse de destination de votre serveur,
+ et fait passer le paquet à celui-ci. Lorsque votre serveur répond, le firewall
+ applique automatiquement un SNAT pour ré écrire l'adresse source dans la
+réponse.</p>
+      
+<p align="left">Ce procédé est appelé Port Forwarding ou Destination Network 
+ Address Translation(DNAT). Vous configurez le port forwarding en utilisant 
  les règles DNAT dans le fichier /etc/shorewall/rules.</p>
-    
-<p>La forme générale d'une simple règle de port forwarding dans /etc/shorewall/rules
+      
+<p>La forme générale d'une simple règle de port forwarding dans /etc/shorewall/rules 
  est :</p>
-    
-<blockquote>      
+      
+<blockquote>         
   <table border="1" cellpadding="2" style="border-collapse: collapse;"
  id="AutoNumber4">
-       <tbody>
-         <tr>
-           <td><u><b>ACTION</b></u></td>
-           <td><u><b>SOURCE</b></u></td>
-           <td><u><b>DESTINATION</b></u></td>
-           <td><u><b>PROTOCOL</b></u></td>
-           <td><u><b>PORT</b></u></td>
-           <td><u><b>SOURCE PORT</b></u></td>
-           <td><u><b>ORIGINAL ADDRESS</b></u></td>
-         </tr>
-         <tr>
-           <td>DNAT</td>
-           <td>net</td>
-           <td>dmz:<i>&lt;server local ip address&gt; </i>[:<i>&lt;server
+        <tbody>
+          <tr>
+            <td><u><b>ACTION</b></u></td>
+            <td><u><b>SOURCE</b></u></td>
+            <td><u><b>DESTINATION</b></u></td>
+            <td><u><b>PROTOCOL</b></u></td>
+            <td><u><b>PORT</b></u></td>
+            <td><u><b>SOURCE PORT</b></u></td>
+            <td><u><b>ORIGINAL ADDRESS</b></u></td>
+          </tr>
+          <tr>
+            <td>DNAT</td>
+            <td>net</td>
+            <td>dmz:<i>&lt;server local ip address&gt; </i>[:<i>&lt;server 
 port&gt;</i>]</td>
-           <td><i>&lt;protocol&gt;</i></td>
-           <td><i>&lt;port&gt;</i></td>
-           <td> <br>
-           </td>
-           <td> <br>
-           </td>
-         </tr>
-            
-    </tbody>      
+            <td><i>&lt;protocol&gt;</i></td>
+            <td><i>&lt;port&gt;</i></td>
+            <td> <br>
+            </td>
+            <td> <br>
+            </td>
+          </tr>
+                  
+    </tbody>         
   </table>
-   </blockquote>
-    
-<p>Si vous ne spécifiez pas le <i>&lt;server port&gt;</i>, il est supposé
+    </blockquote>
+      
+<p>Si vous ne spécifiez pas le <i>&lt;server port&gt;</i>, il est supposé 
  être le même que <i>&lt;port&gt;</i>.</p>
-    
-<p>Exemple - vous faites tourner un serveur Web dans votre DMZ (2) et vous
- voulez faire passer les paquets entrant en TCP sur le port 80 à ce système
+      
+<p>Exemple - vous faites tourner un serveur Web dans votre DMZ (2) et vous 
+ voulez faire passer les paquets entrant en TCP sur le port 80 à ce système 
  :</p>
-    
-<blockquote>      
+      
+<blockquote>         
   <table border="1" cellpadding="2" style="border-collapse: collapse;"
  id="AutoNumber4">
-       <tbody>
-         <tr>
-           <td><u><b>ACTION</b></u></td>
-           <td><u><b>SOURCE</b></u></td>
-           <td><u><b>DESTINATION</b></u></td>
-           <td><u><b>PROTOCOL</b></u></td>
-           <td><u><b>PORT</b></u></td>
-           <td><u><b>SOURCE PORT</b></u></td>
-           <td><u><b>ORIGINAL ADDRESS</b></u></td>
-         </tr>
-         <tr>
-           <td>DNAT</td>
-           <td>net</td>
-           <td>dmz:10.10.11.2</td>
-           <td>tcp</td>
-           <td>80</td>
-           <td># Fait suivre le port 80</td>
-           <td>depuis Internet</td>
-         </tr>
-         <tr>
-           <td>ACCEPT</td>
-           <td>loc</td>
-           <td>dmz:10.10.11.2</td>
-           <td>tcp</td>
-           <td>80</td>
-           <td>#Permet les connexions </td>
-           <td>depuis le réseau local</td>
-         </tr>
-            
-    </tbody>      
+        <tbody>
+          <tr>
+            <td><u><b>ACTION</b></u></td>
+            <td><u><b>SOURCE</b></u></td>
+            <td><u><b>DESTINATION</b></u></td>
+            <td><u><b>PROTOCOL</b></u></td>
+            <td><u><b>PORT</b></u></td>
+            <td><u><b>SOURCE PORT</b></u></td>
+            <td><u><b>ORIGINAL ADDRESS</b></u></td>
+          </tr>
+          <tr>
+            <td>DNAT</td>
+            <td>net</td>
+            <td>dmz:10.10.11.2</td>
+            <td>tcp</td>
+            <td>80</td>
+            <td># Fait suivre le port 80</td>
+            <td>depuis Internet</td>
+          </tr>
+          <tr>
+            <td>ACCEPT</td>
+            <td>loc</td>
+            <td>dmz:10.10.11.2</td>
+            <td>tcp</td>
+            <td>80</td>
+            <td>#Permet les connexions </td>
+            <td>depuis le réseau local</td>
+          </tr>
+                  
+    </tbody>         
   </table>
-   </blockquote>
-    
+    </blockquote>
+      
 <p>Deux points importants à garder en mémoire :</p>
-    
+      
 <ul>
-     <li>Lorsque vous vous connectez à votre serveur à partir de votre réseau
+      <li>Lorsque vous vous connectez à votre serveur à partir de votre réseau 
  local, vous devez utiliser l'adresse IP interne du serveur (10.10.11.2).</li>
-     <li>Quelques fournisseurs Internet (Provider/ISP) bloquent les requêtes
- de connexion entrantes sur le port 80. Si vous avez des problèmes pour vous
- connecter à votre serveur web, essayez la règle suivante et connectez vous
+      <li>Quelques fournisseurs Internet (Provider/ISP) bloquent les requêtes 
+ de connexion entrantes sur le port 80. Si vous avez des problèmes pour vous 
+ connecter à votre serveur web, essayez la règle suivante et connectez vous 
  sur le port 5000 (c.a.d., connectez vous à <a
- href="http://w.x.y.z:5000">  http://w.x.y.z:5000</a> où w.x.y.z est votre
+ href="http://w.x.y.z:5000">  http://w.x.y.z:5000</a> où w.x.y.z est votre 
 IP externe).</li>
-    
+      
 </ul>
-    
-<blockquote>      
+      
+<blockquote>         
   <table border="1" cellpadding="2" style="border-collapse: collapse;"
  id="AutoNumber4">
-       <tbody>
-         <tr>
-           <td><u><b>ACTION</b></u></td>
-           <td><u><b>SOURCE</b></u></td>
-           <td><u><b>DESTINATION</b></u></td>
-           <td><u><b>PROTOCOL</b></u></td>
-           <td><u><b>PORT</b></u></td>
-           <td><u><b>SOURCE PORT</b></u></td>
-           <td><u><b>ORIGINAL ADDRESS</b></u></td>
-         </tr>
-         <tr>
-           <td>DNAT</td>
-           <td>net</td>
-           <td>dmz:10.10.11.2:80</td>
-           <td>tcp</td>
-           <td>5000</td>
-           <td> <br>
-           </td>
-           <td> <br>
-           </td>
-         </tr>
-            
-    </tbody>      
+        <tbody>
+          <tr>
+            <td><u><b>ACTION</b></u></td>
+            <td><u><b>SOURCE</b></u></td>
+            <td><u><b>DESTINATION</b></u></td>
+            <td><u><b>PROTOCOL</b></u></td>
+            <td><u><b>PORT</b></u></td>
+            <td><u><b>SOURCE PORT</b></u></td>
+            <td><u><b>ORIGINAL ADDRESS</b></u></td>
+          </tr>
+          <tr>
+            <td>DNAT</td>
+            <td>net</td>
+            <td>dmz:10.10.11.2:80</td>
+            <td>tcp</td>
+            <td>5000</td>
+            <td> <br>
+            </td>
+            <td> <br>
+            </td>
+          </tr>
+                  
+    </tbody>         
   </table>
-   </blockquote>
-    
-<p>Si vous voulez avoir la possibilité de vous connecter à votre serveur
-depuis le réseau local en utilisant votre adresse externe, et si vous avez
-une adresse IP externe statique (fixe), vous pouvez remplacer la règle loc-&gt;dmz
-précédente par :</p>
-    
-<blockquote>      
+    </blockquote>
+      
+<p>Si vous voulez avoir la possibilité de vous connecter à votre serveur depuis
+le réseau local en utilisant votre adresse externe, et si vous avez une adresse
+IP externe statique (fixe), vous pouvez remplacer la règle loc-&gt;dmz précédente
+par :</p>
+      
+<blockquote>         
   <table border="1" cellpadding="2" style="border-collapse: collapse;"
  id="AutoNumber4">
-       <tbody>
-         <tr>
-           <td><u><b>ACTION</b></u></td>
-           <td><u><b>SOURCE</b></u></td>
-           <td><u><b>DESTINATION</b></u></td>
-           <td><u><b>PROTOCOL</b></u></td>
-           <td><u><b>PORT</b></u></td>
-           <td><u><b>SOURCE PORT</b></u></td>
-           <td><u><b>ORIGINAL ADDRESS</b></u></td>
-         </tr>
-         <tr>
-           <td>DNAT</td>
-           <td>net</td>
-           <td>dmz:10.10.11.2:80</td>
-           <td>tcp</td>
-           <td>80</td>
-           <td>-</td>
-           <td><i>&lt;external IP&gt;</i></td>
-         </tr>
-            
-    </tbody>      
+        <tbody>
+          <tr>
+            <td><u><b>ACTION</b></u></td>
+            <td><u><b>SOURCE</b></u></td>
+            <td><u><b>DESTINATION</b></u></td>
+            <td><u><b>PROTOCOL</b></u></td>
+            <td><u><b>PORT</b></u></td>
+            <td><u><b>SOURCE PORT</b></u></td>
+            <td><u><b>ORIGINAL ADDRESS</b></u></td>
+          </tr>
+          <tr>
+            <td>DNAT</td>
+            <td>net</td>
+            <td>dmz:10.10.11.2:80</td>
+            <td>tcp</td>
+            <td>80</td>
+            <td>-</td>
+            <td><i>&lt;external IP&gt;</i></td>
+          </tr>
+                  
+    </tbody>         
   </table>
-   </blockquote>
-    
-<p>Si vous avez une IP dynamique, alors vous devez vous assurer que votre
- interface externe est en route avant de lancer Shorewall et vous devez suivre
- les étapes suivantes (en supposant que votre interface externe est <b>eth0</b>)
+    </blockquote>
+      
+<p>Si vous avez une IP dynamique, alors vous devez vous assurer que votre 
+ interface externe est en route avant de lancer Shorewall et vous devez suivre 
+ les étapes suivantes (en supposant que votre interface externe est <b>eth0</b>) 
  :</p>
-    
+      
 <ol>
-     <li>Insérez ce qui suit dans /etc/shorewall/params :<br>
-       <br>
-   ETH0_IP=`find_interface_address eth0`<br>
-     </li>
-     <li>Faites votre règle loc-&gt;dmz :</li>
-    
+      <li>Insérez ce qui suit dans /etc/shorewall/params :<br>
+        <br>
+    ETH0_IP=`find_interface_address eth0`<br>
+      </li>
+      <li>Faites votre règle loc-&gt;dmz :</li>
+      
 </ol>
-    
-<blockquote>      
+      
+<blockquote>         
   <table border="1" cellpadding="2" style="border-collapse: collapse;"
  id="AutoNumber4">
-       <tbody>
-         <tr>
-           <td><u><b>ACTION</b></u></td>
-           <td><u><b>SOURCE</b></u></td>
-           <td><u><b>DESTINATION</b></u></td>
-           <td><u><b>PROTOCOL</b></u></td>
-           <td><u><b>PORT</b></u></td>
-           <td><u><b>SOURCE PORT</b></u></td>
-           <td><u><b>ORIGINAL ADDRESS</b></u></td>
-         </tr>
-         <tr>
-           <td>DNAT</td>
-           <td>loc<br>
-           </td>
-           <td>dmz:10.10.11.2:80</td>
-           <td>tcp</td>
-           <td>80</td>
-           <td>-</td>
-           <td>$ETH0_IP</td>
-         </tr>
-            
-    </tbody>      
+        <tbody>
+          <tr>
+            <td><u><b>ACTION</b></u></td>
+            <td><u><b>SOURCE</b></u></td>
+            <td><u><b>DESTINATION</b></u></td>
+            <td><u><b>PROTOCOL</b></u></td>
+            <td><u><b>PORT</b></u></td>
+            <td><u><b>SOURCE PORT</b></u></td>
+            <td><u><b>ORIGINAL ADDRESS</b></u></td>
+          </tr>
+          <tr>
+            <td>DNAT</td>
+            <td>loc<br>
+            </td>
+            <td>dmz:10.10.11.2:80</td>
+            <td>tcp</td>
+            <td>80</td>
+            <td>-</td>
+            <td>$ETH0_IP</td>
+          </tr>
+                  
+    </tbody>         
   </table>
-   </blockquote>
-    
-<p>Si vous voulez accéder à votre serveur dans la DMZ en utilisant votre
-adresse IP externe, regardez <a href="FAQ.htm#faq2a">FAQ 2a</a>.</p>
-    
+    </blockquote>
+      
+<p>Si vous voulez accéder à votre serveur dans la DMZ en utilisant votre adresse
+IP externe, regardez <a href="FAQ.htm#faq2a">FAQ 2a</a>.</p>
+      
 <p><img border="0" src="images/BD21298_2.gif" width="13" height="13">
-   A ce point, ajoutez les règles DNAT et ACCEPT pour vos serveurs..</p>
-    
+    A ce point, ajoutez les règles DNAT et ACCEPT pour vos serveurs..</p>
+      
 <h2 align="left">Domain Name Server (DNS)</h2>
-    
-<p align="left">Normalement, quand vous vous connectez à votre fournisseur
- (ISP), une partie consiste à obtenir votre adresse IP, votre DNS pour le
-firewall (Domain Name Service) est configuré automatiquement (c.a.d., le
-fichier /etc/resolv.conf a été écrit). Il arrive que votre provider vous
-donne une paire d'adresse IP pour les DNS (name servers) afin que vous configuriez
-manuellement votre serveur de nom primaire et secondaire. La manière dont
-le DNS est configuré sur votre firewall est de votre responsabilité. Vous
-pouvez procéder d'une de ses deux façons :</p>
-    
+      
+<p align="left">Normalement, quand vous vous connectez à votre fournisseur 
+ (ISP), une partie consiste à obtenir votre adresse IP, votre DNS pour le 
+firewall (Domain Name Service) est configuré automatiquement (c.a.d., le fichier
+/etc/resolv.conf a été écrit). Il arrive que votre provider vous donne une
+paire d'adresse IP pour les DNS (name servers) afin que vous configuriez manuellement
+votre serveur de nom primaire et secondaire. La manière dont le DNS est configuré
+sur votre firewall est de votre responsabilité. Vous pouvez procéder d'une
+de ses deux façons :</p>
+      
 <ul>
-     <li>          
-    <p align="left">Vous pouvez configurer votre système interne pour utiliser
- les noms de serveurs de votre provider. Si votre fournisseur vous donne
-les  adresses de leurs serveurs ou si ces adresses sont disponibles sur leur
-site  web, vous pouvez configurer votre système interne afin de les utiliser.
-Si  cette information n'est pas disponible, regardez dans /etc/resolv.conf
-sur  votre firewall -- les noms des serveurs sont donnés dans l'enregistrement
+      <li>               
+    <p align="left">Vous pouvez configurer votre système interne pour utiliser 
+ les noms de serveurs de votre provider. Si votre fournisseur vous donne les
+ adresses de leurs serveurs ou si ces adresses sont disponibles sur leur site
+ web, vous pouvez configurer votre système interne afin de les utiliser. Si
+ cette information n'est pas disponible, regardez dans /etc/resolv.conf sur
+ votre firewall -- les noms des serveurs sont donnés dans l'enregistrement 
  "nameserver" dans ce fichier. </p>
-     </li>
-     <li>          
+      </li>
+      <li>               
     <p align="left"><img border="0" src="images/BD21298_2.gif"
  width="13" height="13">
-   Vous pouvez installer/configurer un cache dns (Caching Name Server) sur
- votre firewall ou dans la DMZ.<i> </i>Red Hat a un RPM pour mettre en cache
- un serveur de nom (le RPM requis aussi le RPM 'bind') et pour les utilisateurs
- de Bering, il y a dnscache.lrp. Si vous adoptez cette approche, vous configurez
- votre système interne pour utiliser le firewall lui même comme étant le
-seul  serveur de nom primaire. Vous pouvez utiliser l'adresse IP interne
-du firewall  (10.10.10.254 dans l'exemple) pour l'adresse de serveur de nom
-si vous décidez  de faire tourner le serveur de nom sur votre firewall. Pour
-permettre à vos  systèmes locaux de discuter avec votre serveur cache de
-nom, vous devez ouvrir  le port 53 (UDP ET  TCP) sur le firewall vers le
-réseau local; vous ferez  ceci en ajoutant les règles suivantes dans /etc/shorewall/rules.
-    </p>
-     </li>
-    
+    Vous pouvez installer/configurer un cache dns (Caching Name Server) sur 
+ votre firewall ou dans la DMZ.<i> </i>Red Hat a un RPM pour mettre en cache 
+ un serveur de nom (le RPM requis aussi le RPM 'bind') et pour les utilisateurs 
+ de Bering, il y a dnscache.lrp. Si vous adoptez cette approche, vous configurez 
+ votre système interne pour utiliser le firewall lui même comme étant le seul
+ serveur de nom primaire. Vous pouvez utiliser l'adresse IP interne du firewall
+ (10.10.10.254 dans l'exemple) pour l'adresse de serveur de nom si vous décidez
+ de faire tourner le serveur de nom sur votre firewall. Pour permettre à
+vos  systèmes locaux de discuter avec votre serveur cache de nom, vous devez
+ouvrir  le port 53 (UDP ET  TCP) sur le firewall vers le réseau local; vous
+ferez  ceci en ajoutant les règles suivantes dans /etc/shorewall/rules. 
+   </p>
+      </li>
+      
 </ul>
-    
-<blockquote>      
-  <p align="left">Si vous faites tourner le serveur de nom sur le firewall
- :      
+      
+<blockquote>         
+  <p align="left">Si vous faites tourner le serveur de nom sur le firewall 
+ :         
   <table border="1" cellpadding="2" style="border-collapse: collapse;"
  id="AutoNumber4">
-       <tbody>
-         <tr>
-           <td><u><b>ACTION</b></u></td>
-           <td><u><b>SOURCE</b></u></td>
-           <td><u><b>DESTINATION</b></u></td>
-           <td><u><b>PROTOCOL</b></u></td>
-           <td><u><b>PORT</b></u></td>
-           <td><u><b>SOURCE PORT</b></u></td>
-           <td><u><b>ORIGINAL ADDRESS</b></u></td>
-         </tr>
-         <tr>
-           <td>ACCEPT</td>
-           <td>loc</td>
-           <td>fw</td>
-           <td>tcp</td>
-           <td>53</td>
-           <td> <br>
-           </td>
-           <td> <br>
-           </td>
-         </tr>
-         <tr>
-           <td>ACCEPT</td>
-           <td>loc</td>
-           <td>fw</td>
-           <td>udp</td>
-           <td>53</td>
-           <td> <br>
-           </td>
-           <td> <br>
-           </td>
-         </tr>
-         <tr>
-           <td>ACCEPT</td>
-           <td>dmz</td>
-           <td>fw</td>
-           <td>tcp</td>
-           <td>53</td>
-           <td> <br>
-           </td>
-           <td> <br>
-           </td>
-         </tr>
-         <tr>
-           <td>ACCEPT</td>
-           <td>dmz</td>
-           <td>fw</td>
-           <td>udp</td>
-           <td>53</td>
-           <td> <br>
-           </td>
-           <td> <br>
-           </td>
-         </tr>
-            
-    </tbody>      
+        <tbody>
+          <tr>
+            <td><u><b>ACTION</b></u></td>
+            <td><u><b>SOURCE</b></u></td>
+            <td><u><b>DESTINATION</b></u></td>
+            <td><u><b>PROTOCOL</b></u></td>
+            <td><u><b>PORT</b></u></td>
+            <td><u><b>SOURCE PORT</b></u></td>
+            <td><u><b>ORIGINAL ADDRESS</b></u></td>
+          </tr>
+          <tr>
+            <td>ACCEPT</td>
+            <td>loc</td>
+            <td>fw</td>
+            <td>tcp</td>
+            <td>53</td>
+            <td> <br>
+            </td>
+            <td> <br>
+            </td>
+          </tr>
+          <tr>
+            <td>ACCEPT</td>
+            <td>loc</td>
+            <td>fw</td>
+            <td>udp</td>
+            <td>53</td>
+            <td> <br>
+            </td>
+            <td> <br>
+            </td>
+          </tr>
+          <tr>
+            <td>ACCEPT</td>
+            <td>dmz</td>
+            <td>fw</td>
+            <td>tcp</td>
+            <td>53</td>
+            <td> <br>
+            </td>
+            <td> <br>
+            </td>
+          </tr>
+          <tr>
+            <td>ACCEPT</td>
+            <td>dmz</td>
+            <td>fw</td>
+            <td>udp</td>
+            <td>53</td>
+            <td> <br>
+            </td>
+            <td> <br>
+            </td>
+          </tr>
+                  
+    </tbody>         
   </table>
-     </p>
-   </blockquote>
-    
-<div align="left">  
-<blockquote>      
+      </p>
+    </blockquote>
+      
+<div align="left">   
+<blockquote>         
   <p>Le serveur de nom tourne sur l'ordinateur 1 de la DMZ</p>
-        
+            
   <table border="1" cellpadding="2" style="border-collapse: collapse;"
  id="AutoNumber4">
-       <tbody>
-         <tr>
-           <td><u><b>ACTION</b></u></td>
-           <td><u><b>SOURCE</b></u></td>
-           <td><u><b>DESTINATION</b></u></td>
-           <td><u><b>PROTOCOL</b></u></td>
-           <td><u><b>PORT</b></u></td>
-           <td><u><b>SOURCE PORT</b></u></td>
-           <td><u><b>ORIGINAL ADDRESS</b></u></td>
-         </tr>
-         <tr>
-           <td>ACCEPT</td>
-           <td>loc</td>
-           <td>dmz:10.10.11.1</td>
-           <td>tcp</td>
-           <td>53</td>
-           <td> <br>
-           </td>
-           <td> <br>
-           </td>
-         </tr>
-         <tr>
-           <td>ACCEPT</td>
-           <td>loc</td>
-           <td>dmz:10.10.11.1</td>
-           <td>udp</td>
-           <td>53</td>
-           <td> <br>
-           </td>
-           <td> <br>
-           </td>
-         </tr>
-         <tr>
-           <td>ACCEPT</td>
-           <td>fw</td>
-           <td>dmz:10.10.10.1</td>
-           <td>tcp</td>
-           <td>53</td>
-           <td> <br>
-           </td>
-           <td> <br>
-           </td>
-         </tr>
-         <tr>
-           <td>ACCEPT</td>
-           <td>fw</td>
-           <td>dmz:10.10.10.1</td>
-           <td>udp</td>
-           <td>53</td>
-           <td> <br>
-           </td>
-           <td> <br>
-           </td>
-         </tr>
-            
-    </tbody>      
+        <tbody>
+          <tr>
+            <td><u><b>ACTION</b></u></td>
+            <td><u><b>SOURCE</b></u></td>
+            <td><u><b>DESTINATION</b></u></td>
+            <td><u><b>PROTOCOL</b></u></td>
+            <td><u><b>PORT</b></u></td>
+            <td><u><b>SOURCE PORT</b></u></td>
+            <td><u><b>ORIGINAL ADDRESS</b></u></td>
+          </tr>
+          <tr>
+            <td>ACCEPT</td>
+            <td>loc</td>
+            <td>dmz:10.10.11.1</td>
+            <td>tcp</td>
+            <td>53</td>
+            <td> <br>
+            </td>
+            <td> <br>
+            </td>
+          </tr>
+          <tr>
+            <td>ACCEPT</td>
+            <td>loc</td>
+            <td>dmz:10.10.11.1</td>
+            <td>udp</td>
+            <td>53</td>
+            <td> <br>
+            </td>
+            <td> <br>
+            </td>
+          </tr>
+          <tr>
+            <td>ACCEPT</td>
+            <td>fw</td>
+            <td>dmz:10.10.10.1</td>
+            <td>tcp</td>
+            <td>53</td>
+            <td> <br>
+            </td>
+            <td> <br>
+            </td>
+          </tr>
+          <tr>
+            <td>ACCEPT</td>
+            <td>fw</td>
+            <td>dmz:10.10.10.1</td>
+            <td>udp</td>
+            <td>53</td>
+            <td> <br>
+            </td>
+            <td> <br>
+            </td>
+          </tr>
+                  
+    </tbody>         
   </table>
-   </blockquote>
-   </div>
-    
-<div align="left">  
+    </blockquote>
+    </div>
+      
+<div align="left">   
 <h2 align="left">Autres Connexions</h2>
-   </div>
-    
-<div align="left">  
-<p align="left">L'exemple pour trois interfaces contient les règles suivantes
+    </div>
+      
+<div align="left">   
+<p align="left">L'exemple pour trois interfaces contient les règles suivantes 
  :</p>
-   </div>
-    
-<div align="left">  
-<blockquote>      
+    </div>
+      
+<div align="left">   
+<blockquote>         
   <table border="1" cellpadding="2" style="border-collapse: collapse;"
  id="AutoNumber4">
-       <tbody>
-         <tr>
-           <td><u><b>ACTION</b></u></td>
-           <td><u><b>SOURCE</b></u></td>
-           <td><u><b>DESTINATION</b></u></td>
-           <td><u><b>PROTOCOL</b></u></td>
-           <td><u><b>PORT</b></u></td>
-           <td><u><b>SOURCE PORT</b></u></td>
-           <td><u><b>ORIGINAL ADDRESS</b></u></td>
-         </tr>
-         <tr>
-           <td>ACCEPT</td>
-           <td>fw</td>
-           <td>net</td>
-           <td>udp</td>
-           <td>53</td>
-           <td> <br>
-           </td>
-           <td> <br>
-           </td>
-         </tr>
-         <tr>
-           <td>ACCEPT</td>
-           <td>fw</td>
-           <td>net</td>
-           <td>tcp</td>
-           <td>53</td>
-           <td> <br>
-           </td>
-           <td> <br>
-           </td>
-         </tr>
-            
-    </tbody>      
+        <tbody>
+          <tr>
+            <td><u><b>ACTION</b></u></td>
+            <td><u><b>SOURCE</b></u></td>
+            <td><u><b>DESTINATION</b></u></td>
+            <td><u><b>PROTOCOL</b></u></td>
+            <td><u><b>PORT</b></u></td>
+            <td><u><b>SOURCE PORT</b></u></td>
+            <td><u><b>ORIGINAL ADDRESS</b></u></td>
+          </tr>
+          <tr>
+            <td>ACCEPT</td>
+            <td>fw</td>
+            <td>net</td>
+            <td>udp</td>
+            <td>53</td>
+            <td> <br>
+            </td>
+            <td> <br>
+            </td>
+          </tr>
+          <tr>
+            <td>ACCEPT</td>
+            <td>fw</td>
+            <td>net</td>
+            <td>tcp</td>
+            <td>53</td>
+            <td> <br>
+            </td>
+            <td> <br>
+            </td>
+          </tr>
+                  
+    </tbody>         
   </table>
-   </blockquote>
-   </div>
-    
-<div align="left">  
-<p align="left">Ces règles permettent l'accès DNS depuis votre firewall et
- peuvent être enlevées si vous avez décommenté la ligne dans /etc/shorewall/policy
+    </blockquote>
+    </div>
+      
+<div align="left">   
+<p align="left">Ces règles permettent l'accès DNS depuis votre firewall et 
+ peuvent être enlevées si vous avez décommenté la ligne dans /etc/shorewall/policy 
  autorisant toutes les connexions depuis votre firewall et vers Internet.</p>
-   </div>
-    
-<div align="left">  
+    </div>
+      
+<div align="left">   
 <p align="left">L'exemple contient aussi :</p>
-   </div>
-    
-<div align="left">  
-<blockquote>      
+    </div>
+      
+<div align="left">   
+<blockquote>         
   <table border="1" cellpadding="2" style="border-collapse: collapse;"
  id="AutoNumber4">
-       <tbody>
-         <tr>
-           <td><u><b>ACTION</b></u></td>
-           <td><u><b>SOURCE</b></u></td>
-           <td><u><b>DESTINATION</b></u></td>
-           <td><u><b>PROTOCOL</b></u></td>
-           <td><u><b>PORT</b></u></td>
-           <td><u><b>SOURCE PORT</b></u></td>
-           <td><u><b>ORIGINAL ADDRESS</b></u></td>
-         </tr>
-         <tr>
-           <td>ACCEPT</td>
-           <td>loc</td>
-           <td>fw</td>
-           <td>tcp</td>
-           <td>22</td>
-           <td> <br>
-           </td>
-           <td> <br>
-           </td>
-         </tr>
-         <tr>
-           <td>ACCEPT</td>
-           <td>loc</td>
-           <td>dmz</td>
-           <td>tcp</td>
-           <td>22</td>
-           <td> <br>
-           </td>
-           <td> <br>
-           </td>
-         </tr>
-            
-    </tbody>      
+        <tbody>
+          <tr>
+            <td><u><b>ACTION</b></u></td>
+            <td><u><b>SOURCE</b></u></td>
+            <td><u><b>DESTINATION</b></u></td>
+            <td><u><b>PROTOCOL</b></u></td>
+            <td><u><b>PORT</b></u></td>
+            <td><u><b>SOURCE PORT</b></u></td>
+            <td><u><b>ORIGINAL ADDRESS</b></u></td>
+          </tr>
+          <tr>
+            <td>ACCEPT</td>
+            <td>loc</td>
+            <td>fw</td>
+            <td>tcp</td>
+            <td>22</td>
+            <td> <br>
+            </td>
+            <td> <br>
+            </td>
+          </tr>
+          <tr>
+            <td>ACCEPT</td>
+            <td>loc</td>
+            <td>dmz</td>
+            <td>tcp</td>
+            <td>22</td>
+            <td> <br>
+            </td>
+            <td> <br>
+            </td>
+          </tr>
+                  
+    </tbody>         
   </table>
-   </blockquote>
-   </div>
-    
-<div align="left">  
-<p align="left">Cette règle permet de faire fonctionner une serveur SSH sur
- le firewall et sur tous les systèmes de la DMZ et d'y autoriser la connexion
+    </blockquote>
+    </div>
+      
+<div align="left">   
+<p align="left">Cette règle permet de faire fonctionner une serveur SSH sur 
+ le firewall et sur tous les systèmes de la DMZ et d'y autoriser la connexion 
  à partir de votre réseau local.</p>
-   </div>
-    
-<div align="left">  
-<p align="left">Si vous désirez permettre d'autres connexions entre vos systèmes,
+    </div>
+      
+<div align="left">   
+<p align="left">Si vous désirez permettre d'autres connexions entre vos systèmes, 
  la forme générale est :</p>
-   </div>
-    
-<div align="left">  
-<blockquote>      
+    </div>
+      
+<div align="left">   
+<blockquote>         
   <table border="1" cellpadding="2" style="border-collapse: collapse;"
  id="AutoNumber4">
-       <tbody>
-         <tr>
-           <td><u><b>ACTION</b></u></td>
-           <td><u><b>SOURCE</b></u></td>
-           <td><u><b>DESTINATION</b></u></td>
-           <td><u><b>PROTOCOL</b></u></td>
-           <td><u><b>PORT</b></u></td>
-           <td><u><b>SOURCE PORT</b></u></td>
-           <td><u><b>ORIGINAL ADDRESS</b></u></td>
-         </tr>
-         <tr>
-           <td>ACCEPT</td>
-           <td><i>&lt;source zone&gt;</i></td>
-           <td><i>&lt;destination zone&gt;</i></td>
-           <td><i>&lt;protocol&gt;</i></td>
-           <td><i>&lt;port&gt;</i></td>
-           <td> <br>
-           </td>
-           <td> <br>
-           </td>
-         </tr>
-            
-    </tbody>      
+        <tbody>
+          <tr>
+            <td><u><b>ACTION</b></u></td>
+            <td><u><b>SOURCE</b></u></td>
+            <td><u><b>DESTINATION</b></u></td>
+            <td><u><b>PROTOCOL</b></u></td>
+            <td><u><b>PORT</b></u></td>
+            <td><u><b>SOURCE PORT</b></u></td>
+            <td><u><b>ORIGINAL ADDRESS</b></u></td>
+          </tr>
+          <tr>
+            <td>ACCEPT</td>
+            <td><i>&lt;source zone&gt;</i></td>
+            <td><i>&lt;destination zone&gt;</i></td>
+            <td><i>&lt;protocol&gt;</i></td>
+            <td><i>&lt;port&gt;</i></td>
+            <td> <br>
+            </td>
+            <td> <br>
+            </td>
+          </tr>
+                  
+    </tbody>         
   </table>
-   </blockquote>
-   </div>
-    
-<div align="left">  
-<p align="left">Exemple - Vous voulez faire tourner un serveur DNS disponible
+    </blockquote>
+    </div>
+      
+<div align="left">   
+<p align="left">Exemple - Vous voulez faire tourner un serveur DNS disponible 
  pour le publique sur votre firewall :</p>
-   </div>
-    
-<div align="left">  
-<blockquote>      
+    </div>
+      
+<div align="left">   
+<blockquote>         
   <table border="1" cellpadding="2" style="border-collapse: collapse;"
  id="AutoNumber4">
-       <tbody>
-         <tr>
-           <td><u><b>ACTION</b></u></td>
-           <td><u><b>SOURCE</b></u></td>
-           <td><u><b>DESTINATION</b></u></td>
-           <td><u><b>PROTOCOL</b></u></td>
-           <td><u><b>PORT</b></u></td>
-           <td><u><b>SOURCE PORT</b></u></td>
-           <td><u><b>ORIGINAL ADDRESS</b></u></td>
-         </tr>
-         <tr>
-           <td>ACCEPT</td>
-           <td>net</td>
-           <td>fw</td>
-           <td>tcp</td>
-           <td>53</td>
-           <td>#permet les accès DNS</td>
-           <td>depuis Internet</td>
-         </tr>
-         <tr>
-           <td>ACCEPT</td>
-           <td>net</td>
-           <td>fw</td>
-           <td>tcp</td>
-           <td>53</td>
-           <td>#permet les accès DNS</td>
-           <td>depuis Internet</td>
-         </tr>
-            
-    </tbody>      
+        <tbody>
+          <tr>
+            <td><u><b>ACTION</b></u></td>
+            <td><u><b>SOURCE</b></u></td>
+            <td><u><b>DESTINATION</b></u></td>
+            <td><u><b>PROTOCOL</b></u></td>
+            <td><u><b>PORT</b></u></td>
+            <td><u><b>SOURCE PORT</b></u></td>
+            <td><u><b>ORIGINAL ADDRESS</b></u></td>
+          </tr>
+          <tr>
+            <td>ACCEPT</td>
+            <td>net</td>
+            <td>fw</td>
+            <td>tcp</td>
+            <td>53</td>
+            <td>#permet les accès DNS</td>
+            <td>depuis Internet</td>
+          </tr>
+          <tr>
+            <td>ACCEPT</td>
+            <td>net</td>
+            <td>fw</td>
+            <td>udp<br>
+        </td>
+            <td>53</td>
+            <td>#permet les accès DNS</td>
+            <td>depuis Internet</td>
+          </tr>
+                  
+    </tbody>         
   </table>
-   </blockquote>
-   </div>
-    
-<div align="left">  
-<p align="left">Ces deux règles seront, bien sur, ajoutées aux règles décrites
- dans "Vous pouvez installer/configurer un cache dns (Caching Name Server)
+    </blockquote>
+    </div>
+      
+<div align="left">   
+<p align="left">Ces deux règles seront, bien sur, ajoutées aux règles décrites 
+ dans "Vous pouvez installer/configurer un cache dns (Caching Name Server) 
  sur votre firewall ou dans la DMZ".</p>
-   </div>
-    
-<div align="left">  
-<p align="left">Si vous ne savez pas quel port ou protocole une application
+    </div>
+      
+<div align="left">   
+<p align="left">Si vous ne savez pas quel port ou protocole une application 
  particulière utilise, regardez <a href="ports.htm">ici</a>.</p>
-   </div>
-    
-<div align="left">  
-<p align="left">Important: Je ne vous recommande pas d'autoriser le telnet
- depuis ou vers l'Internet car il utilise du texte en clair (même pour le
-login et le mot de passe !). Si vous voulez avoir un accès au shell de votre
+    </div>
+      
+<div align="left">   
+<p align="left">Important: Je ne vous recommande pas d'autoriser le telnet 
+ depuis ou vers l'Internet car il utilise du texte en clair (même pour le 
+login et le mot de passe !). Si vous voulez avoir un accès au shell de votre 
 firewall depuis Internet, utilisez SSH :</p>
-   </div>
-    
-<div align="left">  
-<blockquote>      
+    </div>
+      
+<div align="left">   
+<blockquote>         
   <table border="1" cellpadding="2" style="border-collapse: collapse;"
  id="AutoNumber4">
-       <tbody>
-         <tr>
-           <td><u><b>ACTION</b></u></td>
-           <td><u><b>SOURCE</b></u></td>
-           <td><u><b>DESTINATION</b></u></td>
-           <td><u><b>PROTOCOL</b></u></td>
-           <td><u><b>PORT</b></u></td>
-           <td><u><b>SOURCE PORT</b></u></td>
-           <td><u><b>ORIGINAL ADDRESS</b></u></td>
-         </tr>
-         <tr>
-           <td>ACCEPT</td>
-           <td>net</td>
-           <td>fw</td>
-           <td>tcp</td>
-           <td>22</td>
-           <td> <br>
-           </td>
-           <td> <br>
-           </td>
-         </tr>
-            
-    </tbody>      
+        <tbody>
+          <tr>
+            <td><u><b>ACTION</b></u></td>
+            <td><u><b>SOURCE</b></u></td>
+            <td><u><b>DESTINATION</b></u></td>
+            <td><u><b>PROTOCOL</b></u></td>
+            <td><u><b>PORT</b></u></td>
+            <td><u><b>SOURCE PORT</b></u></td>
+            <td><u><b>ORIGINAL ADDRESS</b></u></td>
+          </tr>
+          <tr>
+            <td>ACCEPT</td>
+            <td>net</td>
+            <td>fw</td>
+            <td>tcp</td>
+            <td>22</td>
+            <td> <br>
+            </td>
+            <td> <br>
+            </td>
+          </tr>
+                  
+    </tbody>         
   </table>
-   </blockquote>
-   </div>
-    
-<div align="left">  
+    </blockquote>
+    </div>
+      
+<div align="left">   
 <p align="left"><img border="0" src="images/BD21298_2.gif" width="13"
  height="13">
-   Et maintenant, éditez /etc/shorewall/rules pour rajouter les autres connexions
+    Et maintenant, éditez /etc/shorewall/rules pour rajouter les autres connexions 
  désirées.</p>
-   </div>
-    
-<div align="left">  
+    </div>
+      
+<div align="left">   
 <h2 align="left">Lancer et Arrêter son Firewall</h2>
-   </div>
-    
-<div align="left">  
+    </div>
+      
+<div align="left">   
 <p align="left"> <img border="0" src="images/BD21298_2.gif" width="13"
  height="13" alt="Arrow">
-   La <a href="Install.htm">procédure d'installation</a> configure votre
-système  pour lancer Shorewall au boot du système, mais au début avec la
-version 1.3.9  de Shorewall le lancement est désactivé, n'essayer pas de
-lancer Shorewall  avec que la configuration soit finie. Une fois que vous
-en avez fini avec  la configuration du firewall, vous pouvez permettre le
-lancement de Shorewall  en supprimant le fichier /etc/shorewall/startup_disabled.<br>
-   </p>
-    
-<p align="left">IMPORTANT: Les utilisateurs des paquets .deb doivent éditer
+    La <a href="Install.htm">procédure d'installation</a> configure votre 
+système  pour lancer Shorewall au boot du système, mais au début avec la version
+1.3.9  de Shorewall le lancement est désactivé, n'essayer pas de lancer Shorewall
+ avec que la configuration soit finie. Une fois que vous en avez fini avec
+ la configuration du firewall, vous pouvez permettre le lancement de Shorewall
+ en supprimant le fichier /etc/shorewall/startup_disabled.<br>
+    </p>
+      
+<p align="left">IMPORTANT: Les utilisateurs des paquets .deb doivent éditer 
  /etc/default/shorewall et mettre 'startup=1'<font color="#ff0000">.</font><br>
-   </p>
-   </div>
-    
-<div align="left">  
-<p align="left">Le firewall est activé en utilisant la commande "shorewall
- start" et arrêté avec "shorewall stop". Lorsque le firewall est stoppé,
-le  routage est autorisé sur les hôtes qui possèdent une entrée dans <a
- href="Documentation.htm#Routestopped">/etc/shorewall/routestopped</a>. Un
- firewall qui tourne peut être relancé en utilisant la commande "shorewall
- restart". Si vous voulez enlever toutes traces de Shorewall sur votre configuration
+    </p>
+    </div>
+      
+<div align="left">   
+<p align="left">Le firewall est activé en utilisant la commande "shorewall 
+ start" et arrêté avec "shorewall stop". Lorsque le firewall est stoppé, le
+ routage est autorisé sur les hôtes qui possèdent une entrée dans <a
+ href="Documentation.htm#Routestopped">/etc/shorewall/routestopped</a>. Un 
+ firewall qui tourne peut être relancé en utilisant la commande "shorewall 
+ restart". Si vous voulez enlever toutes traces de Shorewall sur votre configuration 
  de Netfilter, utilisez "shorewall clear".</p>
-   </div>
-    
-<div align="left">  
+    </div>
+      
+<div align="left">   
 <p align="left"><img border="0" src="images/BD21298_2.gif" width="13"
  height="13">
-   L'exemple pour trois interfaces suppose que vous voulez permettre le routage
- depuis/vers <b>eth1 </b>(votre réseau local) et<b> eth2</b>(DMZ)   lorsque
- Shorewall    est arrêté.    Si ces deux interfaces ne sont pas connectées
- à votre réseau local et votre DMZ, ou si vous voulez permettre un ensemble
- d'hôtes différents, modifiez /etc/shorewall/routestopped en conséquence.</p>
-   </div>
-    
-<div align="left">  
-<p align="left">ATTENTION: Si vous êtes connecté à votre firewall depuis
-Internet, n'essayez pas une commande "shorewall stop" tant que vous n'avez
-pas ajouté une entrée pour votre adresse IP (celle à partir de laquelle vous
-êtes connectée) dans <a href="Documentation.htm#Routestopped">/etc/shorewall/routestopped</a>.
- De la même manière, je ne vous recommande pas d'utiliser "shorewall restart";
+    L'exemple pour trois interfaces suppose que vous voulez permettre le
+routage  depuis/vers <b>eth1 </b>(votre réseau local) et<b> eth2</b>(DMZ)
+  lorsque  Shorewall    est arrêté.    Si ces deux interfaces ne sont pas
+connectées  à votre réseau local et votre DMZ, ou si vous voulez permettre
+un ensemble  d'hôtes différents, modifiez /etc/shorewall/routestopped en
+conséquence.</p>
+    </div>
+      
+<div align="left">   
+<p align="left">ATTENTION: Si vous êtes connecté à votre firewall depuis Internet,
+n'essayez pas une commande "shorewall stop" tant que vous n'avez pas ajouté
+une entrée pour votre adresse IP (celle à partir de laquelle vous êtes connectée)
+dans <a href="Documentation.htm#Routestopped">/etc/shorewall/routestopped</a>. 
+ De la même manière, je ne vous recommande pas d'utiliser "shorewall restart"; 
  il est plus intéressant de créer une <i><a
  href="configuration_file_basics.htm#Configs">configuration </a></i><i><a
- href="configuration_file_basics.htm#Configs">alternative</a></i>et de la
+ href="configuration_file_basics.htm#Configs">alternative</a></i>et de la 
  tester en utilisant la commande <a
  href="starting_and_stopping_shorewall.htm">"shorewall   try"</a>.</p>
-   </div>
-    
-<p align="left"><font size="2">Last updated 12/20/2002 - <a
+    </div>
+      
+<p align="left"><font size="2">Last updated 05/19/2003 - <a
  href="support.htm">Tom Eastep</a></font></p>
-    
-<p align="left"><a href="copyright.htm"><font size="2">Copyright  2002 Thomas
- M. Eastep</font></a></p>
-   <br>
-   <br>
-   <br>
-   <br>
-   <br>
-   <br>
-   <br>
-   <br>
-   <br>
-   <br>
-   <br>
-   <br>
-   <br>
-   <br>
-   <br>
-   <br>
-   <br>
-   <br>
-   <br>
-  <br>
- <br>
+      
+<p align="left"><a href="copyright.htm"><font size="2">Copyright  2002, 2003
+Thomas  M. Eastep</font></a><br>
+</p>
 </body>
 </html>

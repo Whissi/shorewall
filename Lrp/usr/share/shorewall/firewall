@@ -905,6 +905,55 @@ run_user_exit() # $1 = file name
 }
 
 #
+# Add a logging rule.
+#
+log_rule() # $1 = log level, $2 = chain, $3 = disposition , $... = predicates for the rule
+{
+    local level=$1
+    local chain=$2
+    local disposition=$3
+    local rulenum=
+
+    shift;shift;shift
+
+    if [ -n "$LOGRULENUMBERS" ]; then
+	eval rulenum=\$${chain}_logrules
+
+	[ -z "$rulenum" ] && rulenum=1
+
+	case $level in
+	    ULOG)
+		eval iptables -A $chain $@ -j ULOG $LOGPARMS --ulog-prefix '"`printf "$LOGFORMAT" $chain $rulenum $disposition`"'
+		;;
+	    *)
+		eval iptables -A $chain $@ -j LOG $LOGPARMS --log-prefix '"`printf "$LOGFORMAT" $chain $rulenum $disposition`"'
+		;;
+	esac
+	
+	if [ $? -ne 0 ] ; then
+	    [ -z "$stopping" ] && { stop_firewall; exit 2; }
+	fi
+
+	rulenum=$(($rulenum + 1))
+
+	eval ${chain}_logrules=$rulenum
+    else
+	case $level in
+	    ULOG)
+		eval iptables -A $chain $@ -j ULOG $LOGPARMS --ulog-prefix '"`printf "$LOGFORMAT" $chain $disposition`"'
+		;;
+	    *)
+		eval iptables -A $chain $@ -j LOG $LOGPARMS --log-prefix '"`printf "$LOGFORMAT" $chain $disposition`"'
+		;;
+	esac
+	
+	if [ $? -ne 0 ] ; then
+	    [ -z "$stopping" ] && { stop_firewall; exit 2; }
+	fi
+    fi
+}
+
+#
 # Stop the Firewall
 #
 stop_firewall() {
@@ -1281,18 +1330,6 @@ setup_mac_lists() {
 	fi
     done < $TMP_DIR/maclist
     #
-    # Setup Logging variables
-    #
-    if [ -n "$MACLIST_LOG_LEVEL" ]; then
-	if [ "$MACLIST_LOG_LEVEL" = ULOG ]; then
-	    logpart="-j ULOG $LOGPARMS --ulog-prefix"
-	else
-	    logpart="-j LOG $LOGPARMS --log-level $MACLIST_LOG_LEVEL --log-prefix"
-	fi
-    else
-	logpart=
-    fi
-    #
     # Must take care of our own broadcasts and multicasts then terminate the verification
     # chains
     #
@@ -1322,8 +1359,9 @@ setup_mac_lists() {
 	    shift
 	done
 
-	[ -n "$logpart" ] && \
-	    run_iptables -A $chain $logpart "${LOGMARKER}$chain:$MACLIST_DISPOSITION:"
+	if [ -n "$MACLIST_LOG_LEVEL" ]; then
+	    log_rule $MACLIST_LOG_LEVEL $chain $MACLIST_DISPOSITION 
+	fi
 
 	run_iptables -A $chain -j $maclist_target
     done
@@ -1832,6 +1870,13 @@ add_nat_rule() {
 	    fi
 
 	    for adr in $addr; do
+		if [ -n "$loglevel" ]; then
+		    ensurenatchain $chain
+		    log_rule $loglevel $chain $logtarget -t nat \
+			`fix_bang $proto $cli $sports -d $adr $multiport $dports`
+		    loglevel=
+		fi
+
 		addnatrule $chain $proto $cli $sports \
 		    -d $adr $multiport $dports -j $target1
 	    done
@@ -2017,20 +2062,10 @@ add_a_rule()
 
 	    if [ -z "$dnat_only" -a $chain != ${FW}2${FW} ]; then
 		serv="${serv:+-d $serv}"
-
 		if [ -n "$loglevel" ]; then
-		    if [ "$loglevel" = ULOG ]; then
-			run_iptables2 -A $chain $proto $multiport \
-			    $state $cli $sports $serv $dports -j ULOG $LOGPARMS \
-			    --ulog-prefix "${LOGMARKER}$chain:$logtarget:"
-		    else
-			run_iptables2 -A $chain $proto $multiport \
-			    $state $cli $sports $serv $dports -j LOG $LOGPARMS \
-			    --log-prefix "${LOGMARKER}$chain:$logtarget:" \
-			    --log-level $loglevel
-		    fi
+		    log_rule $loglevel $chain $logtarget \
+			`fix_bang $proto $sports $multiport $state $cli $serv $dports`
 		fi
-
 
 		run_iptables2 -A $chain $proto $multiport $state $cli $sports \
 		    $serv $dports -j $target
@@ -2046,16 +2081,8 @@ add_a_rule()
 
 	if [ $command != check ]; then
 	    if [ -n "$loglevel" ]; then
-		if [ "$loglevel" = ULOG ]; then
-		    run_iptables2 -A $chain $proto $multiport \
-			$dest_interface $state $cli $sports $dports -j ULOG \
-			$LOGPARMS --ulog-prefix "${LOGMARKER}$chain:$logtarget:"
-		else
-		    run_iptables2 -A $chain $proto $multiport \
-			$dest_interface $state $cli $sports $dports -j LOG \
-			$LOGPARMS --log-prefix "${LOGMARKER}$chain:$logtarget:" \
-			--log-level $loglevel
-		fi
+		log_rule $loglevel $chain $logtarget \
+		    `fix_bang $proto $multiport $dest_interface $state $cli $sports $dports`
 	    fi
 
 	    if [ $logtarget != LOG ]; then
@@ -2116,6 +2143,17 @@ process_rule() # $1 = target
 	;;
     REDIRECT)
 	target=ACCEPT
+	address=${address:=all}
+	if [ "x-" = "x$servers" ]; then
+	    servers=$FW
+	else
+	    servers="$FW::$servers"
+	fi
+	;;
+    REDIRECT-)
+	target=ACCEPT
+	logtarget=REDIRECT
+	dnat_only=Yes
 	address=${address:=all}
 	if [ "x-" = "x$servers" ]; then
 	    servers=$FW
@@ -2263,7 +2301,7 @@ process_rules() # $1 = name of rules file
     while read xtarget xclients xservers xprotocol xports xcports xaddress; do
 	case "${xtarget%:*}" in
 
-	    ACCEPT|DROP|REJECT|DNAT|DNAT|DNAT-|REDIRECT|LOG|CONTINUE)
+	    ACCEPT|DROP|REJECT|DNAT|DNAT|DNAT-|REDIRECT|REDIRECT-|LOG|CONTINUE)
 		expandv xclients xservers xprotocol xports xcports xaddress
 
 		if [ "x$xclients" = xall ]; then
@@ -2556,13 +2594,7 @@ policy_rules() # $1 = chain to add rules to
     esac
 
     if [ $# -eq 3 -a "x${3}" != "x-" ]; then
-	if [ "$3" = ULOG ]; then
-	    run_iptables -A $1 -j ULOG $LOGPARMS \
-		--ulog-prefix "${LOGMARKER}${1}:${2}:"
-	else
-	    run_iptables -A $1 -j LOG $LOGPARMS \
-		--log-prefix "${LOGMARKER}${1}:${2}:" --log-level $3
-	fi
+	log_rule $3 $1 $2 
     fi
 
     [ -n "$target" ] && run_iptables -A $1 -j $target
@@ -2882,16 +2914,7 @@ setup_masq()
 #
 add_blacklist_rule() {
     if [ -n "$BLACKLIST_LOGLEVEL" ]; then
-	if [ "$BLACKLIST_LOGLEVEL" = ULOG ]; then
-	    run_iptables2 -A blacklst $source $proto $dport -j \
-		ULOG $LOGPARMS --ulog-prefix \
-		"${LOGMARKER}blacklst:$BLACKLIST_DISPOSITION:"
-	else
-	    run_iptables2 -A blacklst $source $proto $dport -j \
-		LOG $LOGPARMS --log-prefix \
-		"${LOGMARKER}blacklst:$BLACKLIST_DISPOSITION:" \
-		--log-level $BLACKLIST_LOGLEVEL
-	fi
+	log_rule $BLACKLIST_LOGLEVEL blacklst $BLACKLIST_DISPOSITION  `fix_bang $source $proto $dport`
     fi
 
     run_iptables2 -A blacklst $source $proto $dport -j $disposition
@@ -3227,13 +3250,7 @@ initialize_netfilter () {
 	createchain newnotsyn no
 	run_user_exit newnotsyn
 	if [ -n "$LOGNEWNOTSYN" ]; then
-	    if [ "$LOGNEWNOTSYN" = ULOG ]; then
-		run_iptables -A newnotsyn -j ULOG $LOGPARMS \
-		    --ulog-prefix "${LOGMARKER}newnotsyn:DROP:"
-	    else
-		run_iptables -A newnotsyn -j LOG $LOGPARMS \
-		    --log-prefix "${LOGMARKER}newnotsyn:DROP:" --log-level $LOGNEWNOTSYN
-	    fi
+	    log_rule $LOGNEWNOTSYN newnotsyn DROP
 	fi
 
 	run_iptables -A newnotsyn -j DROP
@@ -3304,14 +3321,7 @@ build_common_chain() {
 # Construct zone-independent rules
 #
 add_common_rules() {
-    logdisp() # $1 = Chain Name
-    {
-	if [ "$RFC1918_LOG_LEVEL" = ULOG ]; then
-	    echo "ULOG $LOGPARMS --ulog-prefix ${LOGMARKER}${1}:DROP:"
-	else
-	    echo "LOG $LOGPARMS --log-prefix ${LOGMARKER}${1}:DROP: --log-level $RFC1918_LOG_LEVEL"
-	fi
-    }
+    local savelogparms="$LOGPARMS"
     #
     # Reject Rules
     #
@@ -3336,16 +3346,16 @@ add_common_rules() {
 	createchain badpkt no
 
 	if [ -n "$LOGUNCLEAN" ]; then
-            if [ "$LOGUNCLEAN" = ULOG ]; then
-		logoptions="-j ULOG $LOGPARMS --ulog-prefix ${LOGMARKER}badpkt:DROP:"
-		logoptions="$logoptions --log-ip-options"
-	    else
-		logoptions="-j LOG $LOGPARMS --log-prefix ${LOGMARKER}badpkt:DROP:"
-		logoptions="$logoptions --log-level $LOGUNCLEAN --log-ip-options"
-	    fi
+	    
+	    LOGPARMS="$LOGPARMS --log-ip-options"
 
-	    run_iptables -A badpkt -p   tcp $logoptions --log-tcp-options
-	    run_iptables -A badpkt -p ! tcp $logoptions
+	    log_rule $LOGUNCLEAN badpkt DROP -p ! tcp 
+
+	    LOGPARMS="$LOGPARMS --log-tcp-options"
+
+	    log_rule $LOGUNCLEAN badpkt DROP -p tcp 
+
+	    LOGPARMS="$savelogparms"
 	fi
 
 	run_iptables -A badpkt -j DROP
@@ -3368,16 +3378,15 @@ add_common_rules() {
 
 	[ -z"$LOGUNCLEAN" ] && LOGUNCLEAN=info
 
-	if [ "$LOGUNCLEAN" = ULOG ]; then
-	    logoptions="-j ULOG $LOGPARMS --ulog-prefix ${LOGMARKER}logpkt:LOG:"
-	    logoptions="$logoptions --log-ip-options"
-	else
-	    logoptions="-j LOG $LOGPARMS --log-prefix ${LOGMARKER}logpkt:LOG:"
-	    logoptions="$logoptions --log-level $LOGUNCLEAN --log-ip-options"
-	fi
+	LOGPARMS="$LOGPARMS --log-ip-options"
 
-	run_iptables -A logpkt -p   tcp $logoptions --log-tcp-options
-	run_iptables -A logpkt -p ! tcp $logoptions
+	log_rule $LOGUNCLEAN logpkt DROP -p ! tcp 
+
+	LOGPARMS="$LOGPARMS --log-tcp-options"
+	
+	log_rule $LOGUNCLEAN logpkt DROP -p tcp 
+
+	LOGPARMS="$savelogparms"
 
 	echo "Mangled/Invalid Packet Logging enabled on:"
 
@@ -3414,7 +3423,9 @@ add_common_rules() {
 	createchain rfc1918 no
 
 	createchain logdrop no
-	run_iptables -A logdrop -j `logdisp rfc1918`
+	
+	log_rule $RFC1918_LOG_LEVEL logdrop DROP
+	
 	run_iptables -A logdrop -j DROP
 
 	if [ -n "$MANGLE_ENABLED" ]; then
@@ -3427,7 +3438,7 @@ add_common_rules() {
 	    #
 	    run_iptables -t mangle -N man1918
 	    run_iptables -t mangle -N logdrop
-	    run_iptables -t mangle -A logdrop -j `logdisp man1918`
+	    log_rule $RFC1918_LOG_LEVEL logdrop DROP -t mangle
 	    run_iptables -t mangle -A logdrop -j DROP
 	fi
 
@@ -3471,16 +3482,14 @@ add_common_rules() {
 	if [ -n "$TCP_FLAGS_LOG_LEVEL" ]; then
 	    createchain logflags no
 
-	    if [ "$TCP_FLAGS_LOG_LEVEL" = ULOG ]; then
-		run_iptables -A logflags -j ULOG  $LOGPARMS \
-		    --ulog-prefix "${LOGMARKER}logflags:$TCP_FLAGS_DISPOSITION:" \
-		    --log-tcp-options --log-ip-options
-	    else
-		run_iptables -A logflags -j LOG  $LOGPARMS \
-		    --log-level $TCP_FLAGS_LOG_LEVEL \
-		    --log-prefix "${LOGMARKER}logflags:$TCP_FLAGS_DISPOSITION:" \
-		    --log-tcp-options --log-ip-options
-	    fi
+	    savelogparms="$LOGPARMS"
+
+	    LOGPARMS="$LOGPARMS --log-ip-options"
+
+	    log_rule $TCP_FLAGS_LOG_LEVEL logflags $TCP_FLAGS_DISPOSITION 
+
+	    LOGPARMS="$savelogparms"
+	    
 	    case $TCP_FLAGS_DISPOSITION in
 		REJECT)
 		    run_iptables -A logflags -j REJECT --reject-with tcp-reset
@@ -4344,7 +4353,8 @@ do_initialize() {
     SHARED_DIR=/usr/share/shorewall
     FUNCTIONS=
     VERSION_FILE=
-    LOGMARKER=
+    LOGFORMAT=
+    LOGRULENUMBERS=
 
     stopping=
     have_mutex=
@@ -4470,9 +4480,27 @@ do_initialize() {
     else
 	CLEAR_TC=
     fi
+    
+    if [ -n "$LOGFORMAT" ]; then
+	if [ -n "`echo $LOGFORMAT | grep '%d'`" ]; then
+	    LOGRULENUMBERS=Yes
+	    temp=`printf "$LOGFORMAT" fooxx 1 barxx 2> /dev/null`
+	    if [ $? -ne 0 ]; then
+		startup_error "Invalid LOGFORMAT string: \"$LOGFORMAT\""
+	    fi
+	else
+	    temp=`printf "$LOGFORMAT" fooxx barxx 2> /dev/null`
+	    if [ $? -ne 0 ]; then
+		startup_error "Invalid LOGFORMAT string: \"$LOGFORMAT\""
+	    fi
+	fi
 
-    [ -n "$LOGMARKER" ] || LOGMARKER="Shorewall:"
-
+	if [ ${#temp} -gt 29 ]; then
+	    startup_error "LOGFORMAT string is too long: \"$LOGFORMAT\""
+	fi
+    else
+	LOGFORMAT="Shorewall:%s:%s:"
+    fi
     #
     # Strip the files that we use often
     #

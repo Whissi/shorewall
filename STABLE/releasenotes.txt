@@ -2,36 +2,32 @@ This is a minor release of Shorewall.
 
 Problems Corrected:
 
-1) There were several cases where Shorewall would fail to remove a
-   temporary directory from /tmp. These cases have been corrected.
-
-2) The rules for allowing all traffic via the loopback interface have
-   been moved to before the rule that drops status=INVALID
-   packets. This insures that all loopback traffic is allowed even if
-   Netfilter connection tracking is confused.
-
 New Features:
 
-1) IPV6-IPV4 (6to4) tunnels are now supported in the
-   /etc/shorewall/tunnels file.
+1) A REDIRECT- rule target has been added. This target behaves for
+   REDIRECT in the same was as DNAT- does for DNAT in that the
+   Netfilter nat table REDIRECT rule is added but not the companion
+   filter table ACCEPT rule.
 
-2) Shorewall can now be easily integrated with fireparse
-   (http://www.fireparse.com) by setting LOGMARKER="fp=" in
-   /etc/shorewall/shorewall.conf. Note: You may not use ULOG
-   with fireparse unless you modify fireparse. 
+2) The LOGMARKER variable has been renamed LOGFORMAT and has been
+   changed to a 'printf' formatting template which accepts three
+   arguments (the chain name, logging rule number (optional) and the
+   disposition). The logging rule number is included if the LOGFORMAT
+   value contains '%d'. For example, to use LOGFORMAT with fireparse,
+   set it as:
 
-3) If you are running iptables 1.2.7a and kernel 2.4.20, then
-   Shorewall will return reject replies as follows:
+       LOGFORMAT="fp=%s:%d a=%s "
 
-   a) tcp - RST
-   b) udp - ICMP port unreachable
-   c) icmp - ICMP host unreachable
-   d) Otherwise - ICMP host prohibited
 
-   If you are running earlier software, Shorewall will follow it's
-   traditional convention:
+   CAUTION: /sbin/shorewall uses the leading part of the LOGFORMAT
+   string (up to but not including the first '%') to find log messages
+   in the 'show log', 'status' and 'hits' commands. This part should
+   not be omitted (the LOGFORMAT should not begin with "%") and the
+   leading part should be sufficiently unique for /sbin/shorewall to
+   identify Shorewall messages.
 
-   a) tcp - RST
-   b) Otherwise - ICMP port unreachable
+3) When logging is specified on a DNAT[-] or REDIRECT[-] rule, the
+   logging now takes place in the nat table rather than in the filter
+   table. This way, only those connections that actually undergo DNAT
+   or redirection will be logged.
 
-4) UDP Port 135 is now silently dropped in the common.def chain.

@@ -67,6 +67,16 @@ REJECT (also applies to 2.4.21-RC1) <img src="new10.gif" alt="(New)"
 <hr>
 <h2 align="left"><a name="V1.4"></a>Problems in Version 1.4</h2>
 <h3></h3>
+<h3>1.4.8</h3>
+<ul>
+  <li>When a DNAT rules specifies SNAT (e.g., when &lt;original dest
+addr&gt;:&lt;SNAT addr&gt; is given in the ORIGINAL DEST column), the
+SNAT specification is effectively ignored in some cases.</li>
+</ul>
+This problem has been corrected in this <a
+ href="http://shorewall.net/pub/shorewall/errata/1.4.8/firewall">firewall
+script</a> which may be installed in /usr/share/shorewall/firewall as
+described above.<br>
 <h3>1.4.7</h3>
 <ul>
   <li>Using some versions of 'ash' (such as from RH8) as the
@@ -85,9 +95,11 @@ start.&nbsp;</li>
 LOGUNCLEAN=info was used.</li>
   <li>After the following error message, Shorewall was left in an
 inconsistent state:<br>
-    <br>
 Error: Unable to determine the routes through interface xxx<br>
   </li>
+  <li>When a DNAT rules specifies SNAT (e.g., when &lt;original dest
+addr&gt;:&lt;SNAT addr&gt; is given in the ORIGINAL DEST column), the
+SNAT specification is effectively ignored in some cases.</li>
 </ul>
 These problems have been corrected in this <a
  href="http://shorewall.net/pub/shorewall/errata/1.4.7/firewall">firewall
@@ -326,7 +338,7 @@ precompiled modules to fix this problem are available at <a
  href="ftp://ftp1.shorewall.net/pub/shorewall/errata/kernel"
  target="_top">ftp://ftp1.shorewall.net/pub/shorewall/errata/kernel</a>.<br>
 <hr>
-<p><font size="2"> Last updated 10/11/2003 - <a href="support.htm">Tom
+<p><font size="2"> Last updated 12/17/2003 - <a href="support.htm">Tom
 Eastep</a></font> </p>
 <p><a href="copyright.htm"><font size="2">Copyright</font> © <font
  size="2">2001, 2002, 2003 Thomas M. Eastep.</font></a><br>

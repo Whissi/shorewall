@@ -1226,7 +1226,7 @@ setup_forwarding() {
 # Disable IPV6
 #
 disable_ipv6() {
-    local foo=$(ip -f inet6 addr ls 2> /dev/null)
+    local foo="$(ip -f inet6 addr ls 2> /dev/null)"
 
     if [ -n "$foo" ]; then
 	if qt which ip6tables; then
@@ -1241,7 +1241,7 @@ disable_ipv6() {
 }
 
 disable_ipv6_1() {
-    local foo=$(ip -f inet6 addr ls 2> /dev/null)
+    local foo="$(ip -f inet6 addr ls 2> /dev/null)"
 
     if [ -n "$foo" ]; then
 	if qt which ip6tables; then
@@ -1844,8 +1844,9 @@ setup_mac_lists() {
 setup_syn_flood_chain ()
 	# $1 = policy chain
 	# $2 = synparams
+        # $3 = loglevel
 {
-    local chain=$1
+    local chain=@$1
     local limit=$2
     local limit_burst=
 
@@ -1856,9 +1857,11 @@ setup_syn_flood_chain ()
 	    ;;
     esac
 
-    run_iptables -N @$chain
-    run_iptables -A @$chain -m limit --limit $limit $limit_burst -j RETURN
-    run_iptables -A @$chain -j DROP
+    run_iptables -N $chain
+    run_iptables -A $chain -m limit --limit $limit $limit_burst -j RETURN
+    [ -n "$3" ] && \
+	log_rule_limit $3 $chain $chain DROP "-m limit --limit 5/min --limit-burst 5" "" ""
+    run_iptables -A $chain -j DROP
 }
 
 #
@@ -5248,7 +5251,7 @@ apply_policy_rules() {
 	eval loglevel=\$${chain}_loglevel
 	eval synparams=\$${chain}_synparams
 
-	[ -n "$synparams" ] && setup_syn_flood_chain $chain $synparams
+	[ -n "$synparams" ] && setup_syn_flood_chain $chain $synparams $loglevel
 
 	if havechain $chain; then
 	    [ -n "$synparams" ] && \

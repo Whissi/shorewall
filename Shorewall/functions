@@ -192,7 +192,7 @@ read_file() # $1 = file name, $2 = nest count
     while read first rest; do
 	if [ "x$first"  = "xINCLUDE" ]; then
 	    if [ $2 -lt 4 ]; then
-		read_file `find_file ${rest%#*}` $(($count + 1))
+		read_file `find_file ${rest%#*}` $(($2 + 1))
 	    else
 		echo "   WARNING: INCLUDE in $1 ignored (nested too deeply)" >&2
 	    fi

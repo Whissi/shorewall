@@ -54,7 +54,7 @@
 #        /etc/rc.d/rc.local file is modified to start the firewall.
 #
 
-VERSION=1.3.5
+VERSION=1.3.5a
 
 usage() # $1 = exit status
 {

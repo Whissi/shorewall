@@ -1,5 +1,18 @@
-Shorewall 2.2.2
+Shorewall 2.2.3
 
+-----------------------------------------------------------------------
+Problems corrected in version 2.2.3
+-----------------------------------------------------------------------
+New Features in version 2.2.3
+
+1) A new extension script "continue" has been added. This script is
+   invoked after Shorewall has set the built-in filter chains' 
+   policy to DROP, deleted any existing Netfilter rules and user
+   chains and has enabled existing connections.
+
+   It is useful for enabling certain communication while Shorewall is
+   being [re]started. Be sure to delete any rules that you add here in
+   your /etc/shorewall/start file.
 -----------------------------------------------------------------------
 Problems corrected in version 2.2.2
 

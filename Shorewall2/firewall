@@ -5678,7 +5678,7 @@ initialize_netfilter () {
     run_user_exit init
 
     #
-    # The some files might be large so strip them while the firewall is still running
+    # Some files might be large so strip them while the firewall is still running
     # (restart command). This reduces the length of time that the firewall isn't
     # accepting new connections.
     #
@@ -5721,6 +5721,8 @@ initialize_netfilter () {
     setcontinue INPUT
     setcontinue OUTPUT
 
+    run_user_exit continue
+
     [ -n "$DISABLE_IPV6" ] && disable_ipv6
 
     #
@@ -5728,10 +5730,6 @@ initialize_netfilter () {
     #
     run_iptables -A INPUT  -i lo -j ACCEPT
     run_iptables -A OUTPUT -o lo -j ACCEPT
-
-    accounting_file=$(find_file accounting)
-
-    [ -f $accounting_file ] && setup_accounting $accounting_file
 
     #
     # Allow DNS lookups during startup for FQDNs
@@ -5755,6 +5753,10 @@ initialize_netfilter () {
 
 	run_iptables -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS $option
     fi
+
+    accounting_file=$(find_file accounting)
+
+    [ -f $accounting_file ] && setup_accounting $accounting_file
 
     if [ -z "$NEWNOTSYN" ]; then
 	createchain newnotsyn no

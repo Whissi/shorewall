@@ -2099,6 +2099,12 @@ add_a_rule()
 
 	    if [ -z "$dnat_only" -a $chain != ${FW}2${FW} ]; then
 		serv="${serv:+-d $serv}"
+
+		if [ -n "$loglevel" -a -z "$natrule" ]; then
+		    log_rule $loglevel $chain $logtarget \
+			`fix_bang $proto $sports $multiport $state $cli $serv $dports`
+		fi
+
 		run_iptables2 -A $chain $proto $multiport $state $cli $sports \
 		    $serv $dports -j $target
 	    fi

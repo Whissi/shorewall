@@ -175,6 +175,11 @@ Problems corrected since 2.2.0 Beta 6:
    zone Z then traffic out of any firewall interface to 1.2.3.4 will
    obey the fw->Z policies and rules. This has been corrected.
 
+4) Shorewall uses the temporary chain 'fooX1234' to probe iptables for
+   detrmining which features are supported. Previously, if that chain
+   happened to exist when Shorewall was run, capabilities were
+   mis-detected.
+
 -----------------------------------------------------------------------
 Issues when migrating from Shorewall 2.0 to Shorewall 2.1:
 

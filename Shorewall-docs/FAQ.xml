@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2003-12-04</pubdate>
+    <pubdate>2003-12-09</pubdate>
 
     <copyright>
       <year>2001 - 2003</year>
@@ -24,6 +24,16 @@
     </copyright>
 
     <revhistory>
+      <revision>
+        <revnumber>1.2</revnumber>
+
+        <date>2003-12-09</date>
+
+        <authorinitials>TE</authorinitials>
+
+        <revremark>Added Copyright and legacy FAQ numbers</revremark>
+      </revision>
+
       <revision>
         <revnumber>1.1</revnumber>
 
@@ -55,9 +65,9 @@
     <title>Port Forwarding</title>
 
     <section id="faq1">
-      <title>I want to forward UDP port 7777 to my my personal PC with IP
-      address 192.168.1.5. I&#39;ve looked everywhere and can&#39;t find how
-      to do it.</title>
+      <title>(FAQ 1) I want to forward UDP port 7777 to my my personal PC with
+      IP address 192.168.1.5. I&#39;ve looked everywhere and can&#39;t find
+      how to do it.</title>
 
       <para><emphasis role="bold">Answer:</emphasis> The <ulink
       url="Documentation.htm#PortForward">first example</ulink> in the <ulink
@@ -196,7 +206,8 @@
       column specify the range as <emphasis>low-port:high-port</emphasis>.</para>
 
       <section id="faq1a">
-        <title>Ok -- I followed those instructions but it doesn&#39;t work</title>
+        <title>(FAQ 1a) Ok -- I followed those instructions but it doesn&#39;t
+        work</title>
 
         <para><emphasis role="bold">Answer:</emphasis> That is usually the
         result of one of three things:</para>
@@ -221,7 +232,7 @@
       </section>
 
       <section id="faq1b">
-        <title>I&#39;m still having problems with port forwarding</title>
+        <title>(FAQ 1b) I&#39;m still having problems with port forwarding</title>
 
         <para><emphasis role="bold">Answer:</emphasis> To further diagnose
         this problem:</para>
@@ -284,8 +295,8 @@
       </section>
 
       <section id="faq1c">
-        <title>From the internet, I want to connect to port 1022 on my
-        firewall and have the firewall forward the connection to port 22 on
+        <title>(FAQ 1c) From the internet, I want to connect to port 1022 on
+        my firewall and have the firewall forward the connection to port 22 on
         local system 192.168.1.3. How do I do that?</title>
 
         <para>In /etc/shorewall/rules:</para>
@@ -333,8 +344,8 @@
     </section>
 
     <section id="faq30">
-      <title>I&#39;m confused about when to use DNAT rules and when to use
-      ACCEPT rules.</title>
+      <title>(FAQ 30) I&#39;m confused about when to use DNAT rules and when
+      to use ACCEPT rules.</title>
 
       <para>It would be a good idea to review the <ulink
       url="shorewall_quickstart_guide.htm">QuickStart Guide</ulink>
@@ -353,7 +364,7 @@
     <title>DNS and Port Forwarding/NAT</title>
 
     <section id="faq2">
-      <title>I port forward www requests to www.mydomain.com (IP
+      <title>(FAQ 2) I port forward www requests to www.mydomain.com (IP
       130.151.100.69) to system 192.168.1.5 in my local network. External
       clients can browse http://www.mydomain.com but internal clients
       can&#39;t.</title>
@@ -527,10 +538,11 @@
       </itemizedlist>
 
       <section id="faq2a">
-        <title>I have a zone &#34;Z&#34; with an RFC1918 subnet and I use
-        one-to-one NAT to assign non-RFC1918 addresses to hosts in Z. Hosts in
-        Z cannot communicate with each other using their external (non-RFC1918
-        addresses) so they can&#39;t access each other using their DNS names.</title>
+        <title>(FAQ 2a) I have a zone &#34;Z&#34; with an RFC1918 subnet and I
+        use one-to-one NAT to assign non-RFC1918 addresses to hosts in Z.
+        Hosts in Z cannot communicate with each other using their external
+        (non-RFC1918 addresses) so they can&#39;t access each other using
+        their DNS names.</title>
 
         <note>
           <para>If the ALL INTERFACES column in /etc/shorewall/nat is empty or
@@ -685,8 +697,8 @@ Subnet: 192.168.2.0/24</literallayout>
     <title>Netmeeting/MSN</title>
 
     <section id="faq3">
-      <title>I want to use Netmeeting or MSN Instant Messenger with Shorewall.
-      What do I do?</title>
+      <title>(FAQ 3) I want to use Netmeeting or MSN Instant Messenger with
+      Shorewall. What do I do?</title>
 
       <para><emphasis role="bold">Answer:</emphasis> There is an <ulink
       url="http://www.kfki.hu/%7Ekadlec/sw/netfilter/newnat-suite/">H.323
@@ -702,8 +714,9 @@ Subnet: 192.168.2.0/24</literallayout>
     <title>Open Ports</title>
 
     <section id="faq4">
-      <title>I just used an online port scanner to check my firewall and it
-      shows some ports as &#39;closed&#39; rather than &#39;blocked&#39;. Why?</title>
+      <title>(FAQ 4) I just used an online port scanner to check my firewall
+      and it shows some ports as &#39;closed&#39; rather than
+      &#39;blocked&#39;. Why?</title>
 
       <para><emphasis role="bold">Answer:</emphasis> The common.def included
       with version 1.3.x always rejects connection requests on TCP port 113
@@ -721,8 +734,8 @@ Subnet: 192.168.2.0/24</literallayout>
       of your Service Agreement.</para>
 
       <section id="faq4a">
-        <title>I just ran an nmap UDP scan of my firewall and it showed 100s
-        of ports as open!!!!</title>
+        <title>(FAQ 4a) I just ran an nmap UDP scan of my firewall and it
+        showed 100s of ports as open!!!!</title>
 
         <para><emphasis role="bold">Answer:</emphasis> Take a deep breath and
         read the nmap man page section about UDP scans. If nmap gets <emphasis
@@ -733,8 +746,8 @@ Subnet: 192.168.2.0/24</literallayout>
       </section>
 
       <section id="faq4b">
-        <title>I have a port that I can&#39;t close no matter how I change my
-        rules.</title>
+        <title>(FAQ 4b) I have a port that I can&#39;t close no matter how I
+        change my rules.</title>
 
         <para>I had a rule that allowed telnet from my local network to my
         firewall; I removed that rule and restarted Shorewall but my telnet
@@ -748,7 +761,7 @@ Subnet: 192.168.2.0/24</literallayout>
       </section>
 
       <section id="faq4c">
-        <title>How to I use Shorewall with PortSentry?</title>
+        <title>(FAQ 4c) How to I use Shorewall with PortSentry?</title>
 
         <para><ulink
         url="http://www.shorewall.net/pub/shorewall/contrib/PortsentryHOWTO.txt">Here&#39;s
@@ -761,8 +774,8 @@ Subnet: 192.168.2.0/24</literallayout>
     <title>Connection Problems</title>
 
     <section id="faq5">
-      <title>I&#39;ve installed Shorewall and now I can&#39;t ping through the
-      firewall</title>
+      <title>(FAQ 5) I&#39;ve installed Shorewall and now I can&#39;t ping
+      through the firewall</title>
 
       <para><emphasis role="bold">Answer:</emphasis> If you want your firewall
       to be totally open for &#34;ping&#34;,</para>
@@ -789,7 +802,7 @@ Subnet: 192.168.2.0/24</literallayout>
     </section>
 
     <section id="faq15">
-      <title>My local systems can&#39;t see out to the net</title>
+      <title>(FAQ 15) My local systems can&#39;t see out to the net</title>
 
       <para><emphasis role="bold">Answer:</emphasis> Every time I read
       &#34;systems can&#39;t see out to the net&#34;, I wonder where the
@@ -817,7 +830,7 @@ Subnet: 192.168.2.0/24</literallayout>
     </section>
 
     <section id="faq29">
-      <title>FTP Doesn&#39;t Work</title>
+      <title>(FAQ 29) FTP Doesn&#39;t Work</title>
 
       <para>See the <ulink url="FTP.html">Shorewall and FTP page</ulink>.</para>
     </section>
@@ -827,8 +840,8 @@ Subnet: 192.168.2.0/24</literallayout>
     <title>Logging</title>
 
     <section id="faq6">
-      <title>Where are the log messages written and how do I change the
-      destination?</title>
+      <title>(FAQ 6) Where are the log messages written and how do I change
+      the destination?</title>
 
       <para><emphasis role="bold">Answer:</emphasis> NetFilter uses the
       kernel&#39;s equivalent of syslog (see &#34;man syslog&#34;) to log
@@ -853,7 +866,7 @@ LOGBURST=&#34;&#34;</programlisting>
       to a separate file</ulink>.</para>
 
       <section id="faq6a">
-        <title>Are there any log parsers that work with Shorewall?</title>
+        <title>(FAQ 6a) Are there any log parsers that work with Shorewall?</title>
 
         <para><emphasis role="bold">Answer:</emphasis> Here are several links
         that may be helpful:</para>
@@ -872,9 +885,9 @@ url="http://www.shorewall.net/pub/shorewall/parsefw/">http://www.shorewall.net/p
       </section>
 
       <section id="faq6b">
-        <title>DROP messages on port 10619 are flooding the logs with their
-        connect requests. Can i exclude these error messages for this port
-        temporarily from logging in Shorewall?</title>
+        <title>(FAQ 2b) DROP messages on port 10619 are flooding the logs with
+        their connect requests. Can i exclude these error messages for this
+        port temporarily from logging in Shorewall?</title>
 
         <para>Temporarily add the following rule:</para>
 
@@ -927,8 +940,8 @@ run_iptables -A common -p udp --sport 53 -mstate --state NEW -j DROP</programlis
       </section>
 
       <section id="faq6d">
-        <title>Why is the MAC address in Shorewall log messages so long? I
-        thought MAC addresses were only 6 bytes in length.</title>
+        <title>(FAQ 6c) Why is the MAC address in Shorewall log messages so
+        long? I thought MAC addresses were only 6 bytes in length.</title>
 
         <para>What is labeled as the MAC address in a Shorewall log message is
         actually the Ethernet frame header. IT contains:</para>
@@ -970,8 +983,8 @@ run_iptables -A common -p udp --sport 53 -mstate --state NEW -j DROP</programlis
     </section>
 
     <section id="faq16">
-      <title>Shorewall is writing log messages all over my console making it
-      unusable!</title>
+      <title>(FAQ 16) Shorewall is writing log messages all over my console
+      making it unusable!</title>
 
       <para><emphasis role="bold">Answer:</emphasis> If you are running
       Shorewall version 1.4.4 or 1.4.4a then check the <ulink url="errata.htm">errata</ulink>.
@@ -983,7 +996,7 @@ run_iptables -A common -p udp --sport 53 -mstate --state NEW -j DROP</programlis
     </section>
 
     <section id="faq17">
-      <title>How do I find out why this traffic is getting logged?</title>
+      <title>(FAQ 17) How do I find out why this traffic is getting logged?</title>
 
       <para><emphasis role="bold">Answer:</emphasis> Logging occurs out of a
       number of chains (as indicated in the log message) in Shorewall:</para>
@@ -1190,7 +1203,8 @@ PROTO=UDP SPT=1803 DPT=53 LEN=47</programlisting>
     </section>
 
     <section id="faq21">
-      <title>I see these strange log entries occasionally; what are they?</title>
+      <title>I (FAQ 21) see these strange log entries occasionally; what are
+      they?</title>
 
       <programlisting>Nov 25 18:58:52 linux kernel: Shorewall:net2all:DROP:IN=eth1 OUT= MAC=00:60:1d:f0:a6:f9:00:60:1d:f6:35:50:08:00
      SRC=206.124.146.179 DST=192.0.2.3 LEN=56 TOS=0x00 PREC=0x00 TTL=110 ID=18558 PROTO=ICMP TYPE=3 CODE=3 
@@ -1236,7 +1250,7 @@ PROTO=UDP SPT=1803 DPT=53 LEN=47</programlisting>
     <title>Routing</title>
 
     <section id="faq32">
-      <title>My firewall has two connections to the internet from two
+      <title>(FAQ 32) My firewall has two connections to the internet from two
       different ISPs. How do I set this up in Shorewall?</title>
 
       <para>Setting this up in Shorewall is easy; setting up the routing is a
@@ -1464,8 +1478,8 @@ nexthop via $P2 dev $IF2 weight 1</programlisting>
     <title>Starting and Stopping</title>
 
     <section id="faq7">
-      <title>When I stop Shorewall using &#39;shorewall stop&#39;, I can&#39;t
-      connect to anything. Why doesn&#39;t that command work?</title>
+      <title>(FAQ 7) When I stop Shorewall using &#39;shorewall stop&#39;, I
+      can&#39;t connect to anything. Why doesn&#39;t that command work?</title>
 
       <para>The &#39;stop&#39; command is intended to place your firewall into
       a safe state whereby only those hosts listed in
@@ -1475,8 +1489,8 @@ nexthop via $P2 dev $IF2 weight 1</programlisting>
     </section>
 
     <section id="faq8">
-      <title>When I try to start Shorewall on RedHat, I get messages about
-      insmod failing -- what&#39;s wrong?</title>
+      <title>(FAQ 8) When I try to start Shorewall on RedHat, I get messages
+      about insmod failing -- what&#39;s wrong?</title>
 
       <para><emphasis role="bold">Answer:</emphasis> The output you will see
       looks something like this:</para>
@@ -1509,7 +1523,8 @@ rmmod ipchains</programlisting>
     </section>
 
     <section id="faq9">
-      <title>Why can&#39;t Shorewall detect my interfaces properly at startup?</title>
+      <title>(FAQ 9) Why can&#39;t Shorewall detect my interfaces properly at
+      startup?</title>
 
       <para>I just installed Shorewall and when I issue the start command, I
       see the following:</para>
@@ -1539,8 +1554,8 @@ Creating input Chains...
     </section>
 
     <section id="faq22">
-      <title>I have some iptables commands that I want to run when Shorewall
-      starts. Which file do I put them in?</title>
+      <title>( FAQ 22) I have some iptables commands that I want to run when
+      Shorewall starts. Which file do I put them in?</title>
 
       <para>You can place these commands in one of the <ulink
       url="shorewall_extension_scripts.htm">Shorewall Extension Scripts</ulink>.
@@ -1559,21 +1574,21 @@ Creating input Chains...
     <title>About Shorewall</title>
 
     <section id="faq10">
-      <title>What Distributions does it work with?</title>
+      <title>(FAQ 10) What Distributions does it work with?</title>
 
       <para>Shorewall works with any GNU/Linux distribution that includes the
       <ulink url="shorewall_prerequisites.htm">proper prerequisites</ulink>.</para>
     </section>
 
     <section id="faq11">
-      <title>What Features does it have?</title>
+      <title>(FAQ 11) What Features does it have?</title>
 
       <para><emphasis role="bold">Answer:</emphasis> See the <ulink
       url="shorewall_features.htm">Shorewall Feature List</ulink>.</para>
     </section>
 
     <section id="faq12">
-      <title>Is there a GUI?</title>
+      <title>(FAQ 12) Is there a GUI?</title>
 
       <para><emphasis role="bold">Answer:</emphasis> Yes. Shorewall support is
       included in Webmin 1.060 and later versions. See <ulink
@@ -1581,7 +1596,7 @@ Creating input Chains...
     </section>
 
     <section id="faq13">
-      <title>Why do you call it &#34;Shorewall&#34;?</title>
+      <title>(FAQ 13) Why do you call it &#34;Shorewall&#34;?</title>
 
       <para><emphasis role="bold">Answer:</emphasis> Shorewall is a
       concatenation of &#34;<emphasis>Shore</emphasis>line&#34; (<ulink
@@ -1592,7 +1607,7 @@ Creating input Chains...
     </section>
 
     <section id="faq23">
-      <title>Why do you use such ugly fonts on your web site?</title>
+      <title>(FAQ 23) Why do you use such ugly fonts on your web site?</title>
 
       <para>The Shorewall web site is almost font neutral (it doesn&#39;t
       explicitly specify fonts except on a few pages) so the fonts you see are
@@ -1601,7 +1616,7 @@ Creating input Chains...
     </section>
 
     <section id="faq25">
-      <title>How to I tell which version of Shorewall I am running?</title>
+      <title>(FAQ 25) How to I tell which version of Shorewall I am running?</title>
 
       <para>At the shell prompt, type:</para>
 
@@ -1609,7 +1624,7 @@ Creating input Chains...
     </section>
 
     <section id="faq31">
-      <title>Does Shorewall provide protection against....</title>
+      <title>(FAQ 31) Does Shorewall provide protection against....</title>
 
       <variablelist>
         <varlistentry>
@@ -1672,10 +1687,10 @@ Creating input Chains...
     <title>RFC 1918</title>
 
     <section id="faq14">
-      <title>I&#39;m connected via a cable modem and it has an internal web
-      server that allows me to configure/monitor it but as expected if I
-      enable rfc1918 blocking for my eth0 interface (the internet one), it
-      also blocks the cable modems web server.</title>
+      <title>(FAQ 14) I&#39;m connected via a cable modem and it has an
+      internal web server that allows me to configure/monitor it but as
+      expected if I enable rfc1918 blocking for my eth0 interface (the
+      internet one), it also blocks the cable modems web server.</title>
 
       <para>Is there any way it can add a rule before the rfc1918 blocking
       that will let all traffic to and from the 192.168.100.1 address of the
@@ -1747,9 +1762,10 @@ Creating input Chains...
       </note>
 
       <section id="faq14a">
-        <title>Even though it assigns public IP addresses, my ISP&#39;s DHCP
-        server has an RFC 1918 address. If I enable RFC 1918 filtering on my
-        external interface, my DHCP client cannot renew its lease.</title>
+        <title>(FAQ 14a) Even though it assigns public IP addresses, my
+        ISP&#39;s DHCP server has an RFC 1918 address. If I enable RFC 1918
+        filtering on my external interface, my DHCP client cannot renew its
+        lease.</title>
 
         <para>The solution is the same as <xref linkend="faq14" /> above.
         Simply substitute the IP address of your ISPs DHCP server.</para>
@@ -1761,8 +1777,8 @@ Creating input Chains...
     <title>Alias IP Addresses/Virtual Interfaces</title>
 
     <section id="faq18">
-      <title>Is there any way to use aliased ip addresses with Shorewall, and
-      maintain separate rulesets for different IPs?</title>
+      <title>(FAQ 18) Is there any way to use aliased ip addresses with
+      Shorewall, and maintain separate rulesets for different IPs?</title>
 
       <para><emphasis role="bold">Answer:</emphasis> Yes. See <ulink
       url="Shorewall_and_Aliased_Interfaces.html">Shorewall and Aliased
@@ -1774,8 +1790,8 @@ Creating input Chains...
     <title>Miscellaneous</title>
 
     <section id="faq19">
-      <title>I have added entries to /etc/shorewall/tcrules but they don&#39;t
-      seem to do anything. Why?</title>
+      <title>(FAQ 19) I have added entries to /etc/shorewall/tcrules but they
+      don&#39;t seem to do anything. Why?</title>
 
       <para>You probably haven&#39;t set TC_ENABLED=Yes in
       /etc/shorewall/shorewall.conf so the contents of the tcrules file are
@@ -1783,8 +1799,8 @@ Creating input Chains...
     </section>
 
     <section id="faq20">
-      <title>I have just set up a server. Do I have to change Shorewall to
-      allow access to my server from the internet?</title>
+      <title>(FAQ 20) I have just set up a server. Do I have to change
+      Shorewall to allow access to my server from the internet?</title>
 
       <para>Yes. Consult the <ulink url="shorewall_quickstart_guide.htm">QuickStart
       guide</ulink> that you used during your initial setup for information
@@ -1792,8 +1808,8 @@ Creating input Chains...
     </section>
 
     <section id="faq24">
-      <title>How can I allow conections to let&#39;s say the ssh port only
-      from specific IP Addresses on the internet?</title>
+      <title>(FAQ 24) How can I allow conections to let&#39;s say the ssh port
+      only from specific IP Addresses on the internet?</title>
 
       <para>In the SOURCE column of the rule, follow &#34;net&#34; by a colon
       and a list of the host/subnet addresses as a comma-separated list.</para>
@@ -1808,18 +1824,18 @@ Creating input Chains...
     </section>
 
     <section id="faq26">
-      <title>When I try to use any of the SYN options in nmap on or behind the
-      firewall, I get &#34;operation not permitted&#34;. How can I use nmap
-      with Shorewall?&#34;</title>
+      <title>(FAQ 26) When I try to use any of the SYN options in nmap on or
+      behind the firewall, I get &#34;operation not permitted&#34;. How can I
+      use nmap with Shorewall?&#34;</title>
 
       <para>Edit /etc/shorewall/shorewall.conf and change
       &#34;NEWNOTSYN=No&#34; to &#34;NEWNOTSYN=Yes&#34; then restart
       Shorewall.</para>
 
       <section id="faq26a">
-        <title>When I try to use the &#34;-O&#34; option of nmap from the
-        firewall system, I get &#34;operation not permitted&#34;. How to I
-        allow this option?</title>
+        <title>(FAQ 26a) When I try to use the &#34;-O&#34; option of nmap
+        from the firewall system, I get &#34;operation not permitted&#34;. How
+        to I allow this option?</title>
 
         <para>Add this command to your /etc/shorewall/start file:</para>
 
@@ -1828,8 +1844,8 @@ Creating input Chains...
     </section>
 
     <section id="faq27">
-      <title>I&#39;m compiling a new kernel for my firewall. What should I
-      look out for?</title>
+      <title>(FAQ 27) I&#39;m compiling a new kernel for my firewall. What
+      should I look out for?</title>
 
       <para>First take a look at the <ulink url="kernel.htm">Shorewall kernel
       configuration page</ulink>. You probably also want to be sure that you
@@ -1840,7 +1856,7 @@ Creating input Chains...
     </section>
 
     <section id="faq28">
-      <title>How do I use Shorewall as a Bridging Firewall?</title>
+      <title>(FAQ 28) How do I use Shorewall as a Bridging Firewall?</title>
 
       <para>Basically, you don&#39;t. While there are kernel patches that
       allow you to route bridge traffic through Netfilter, the environment is

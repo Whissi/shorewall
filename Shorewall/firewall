@@ -1764,65 +1764,26 @@ delete_tc()
 }
 
 #
-# Add an accounting chain
-#
-add_accounting_chain() {
-    chain_error() {
-	error_message "Warning: Invalid CHAIN declaration" $source $dest $protocol $port $sport
-    }	
-	
-    if [ -n "${protocol}${port}${sport}" ] ; then
-	chain_error
-	return
-    fi
-
-    if [ -z "$source" ] ; then
-	chain_error
-	return
-    fi
-
-    if havechain $source; then
-	error_message "Warning: Chain $source already exists - CHAIN declaration $source $dest Ignored"
-	return
-    fi
-    
-    if createchain2 $source No; then
-	if [ -z "$dest" ]; then
-	    run_iptables -A $source -j RETURN
-	    echo "   Accounting chain $source" created
-	elif iptables -A $source -j $dest ; then
-	    echo "   Accounting chain $source with next chain $dest created"
-	else
-	    chain_error
-	fi
-    else
-	chain_error
-    fi
-}
-	
-#
 # Process a record from the accounting file
 #
 process_accounting_rule() {
     rule=
     rule2=
-    chain=
+    jumpchain=
 	
     accounting_error() {
-	error_message "Warning: Invalid Accounting rule" $action $source $dest $proto $port $sport
+	error_message "Warning: Invalid Accounting rule" $action $chain $source $dest $proto $port $sport
     }
 
     jump_to_chain() {
-	if ! havechain $chain; then
-	    if createchain2 $chain No; then
-		run_iptables -A $chain -j RETURN
-	    else
+	if ! havechain $jumpchain; then
+	    if ! createchain2 $jumpchain No; then
 		accounting_error
 		return 2
 	    fi
 	fi
 	
-	rule="$rule -j $chain"
+	rule="$rule -j $jumpchain"
     }
 
     case $source in
@@ -1883,22 +1844,29 @@ process_accounting_rule() {
 	DONE)
 	    rule="$rule -j RETURN"
 	    ;;
-	*:DONE)
-	    chain=${action%:*}
-	    rule2="$rule -j RETURN"
+	*:COUNT)
+	    rule2="$rule"
+	    jumpchain=${action%:*}
+	    jump_to_chain || return
+	    ;;
+	JUMP:*)
+	    jumpchain=${action#*:}
 	    jump_to_chain || return
 	    ;;
 	*)
-	    chain=$action
+	    jumpchain=$action
 	    jump_to_chain || return
 	    ;;
     esac
-		
-    havechain accounting || createchain accounting No
 
-    if iptables -A accounting $rule ; then
-	[ "x$rule2" != x ] && run_iptables -A accounting $rule2
-	echo "   Accounting rule" $action $source $dest $proto $port $sport Added
+    [ "x$chain" = "x-" ] && chain=accounting
+    [ -z "$chain" ] && chain=accounting
+		
+    havechain $chain || createchain $chain No
+
+    if iptables -A $chain $rule ; then
+	[ "x$rule2" != x ] && run_iptables -A $jumpchain $rule2
+	echo "   Accounting rule" $action $chain $source $dest $proto $port $sport Added
     else
 	accounting_error
     fi
@@ -1914,15 +1882,9 @@ setup_accounting() # $1 = Name of accounting file
 
     strip_file accounting $1
 
-    while read action source dest proto port sport ; do
-	case $action in
-	    CHAIN)
-		add_accounting_chain
-		;;
-	    *)
-		process_accounting_rule
-		;;
-	    esac
+    while read action chain source dest proto port sport ; do
+	expandv action chain source dest proto port sport
+	process_accounting_rule
     done < $TMP_DIR/accounting
 
     if havechain accounting; then

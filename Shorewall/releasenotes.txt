@@ -2,32 +2,30 @@ This is a major release of Shorewall.
 
 Function from 1.3 that has been omitted from this version includes:
 
-1) The 'check' command is no longer supported.
-
-2) The MERGE_HOSTS variable in shorewall.conf is no longer
+1) The MERGE_HOSTS variable in shorewall.conf is no longer
    supported. Shorewall 1.4 behavior is the same as 1.3 with
    MERGE_HOSTS=Yes.
 
-3) Interface names of the form <device>:<integer> in
+2) Interface names of the form <device>:<integer> in
    /etc/shorewall/interfaces now generate an error.
 
-4) Shorewall 1.4 implements behavior consistent with
+3) Shorewall 1.4 implements behavior consistent with
    OLD_PING_HANDLING=No. OLD_PING_HANDLING=Yes will generate an error
    at startup as will specification of the 'noping' or 'filterping'
    interface options.
 
-5) The 'routestopped' option in the /etc/shorewall/interfaces and
+4) The 'routestopped' option in the /etc/shorewall/interfaces and
    /etc/shorewall/hosts files is no longer supported and will generate
    an error at startup if specified.
 
-6) The Shorewall 1.2 syntax for DNAT and REDIRECT rules is no longer
+5) The Shorewall 1.2 syntax for DNAT and REDIRECT rules is no longer
    accepted.
 
-7) The ALLOWRELATED variable in shorewall.conf is no longer
+6) The ALLOWRELATED variable in shorewall.conf is no longer
    supported. Shorewall 1.4 behavior is the same as 1.3 with
    ALLOWRELATED=Yes.
 
-8) The 'multi' interface option is no longer supported. Shorewall will
+7) The 'multi' interface option is no longer supported. Shorewall will
    generate rules for sending packets back out the same interface
    that they arrived on in two cases:
 

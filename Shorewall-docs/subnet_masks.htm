@@ -1,0 +1,73 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Subnet Masks</title>
+<meta name="Microsoft Theme" content="boldstri 011, default">
+</head>
+
+<body>
+
+<h1 align="center">Subnet Masks/VLSM Notation</h1>
+<p align="left">IP addresses and subnet masks are 32-bit numbers. The notation 
+w.x.y.z refers to an address where the high-order byte has value &quot;w&quot;, the next 
+byte has value &quot;x&quot;, etc. If we take 255.255.255.0 and express it in 
+hexadecimal, 
+we get:</p>
+<blockquote>
+  <p align="left">FF.FF.FF.00</p>
+</blockquote>
+<p align="left">or looking at it as a 32-bit integer</p>
+<blockquote>
+  <p align="left">FFFFFF00</p>
+</blockquote>
+<p align="left">Each &quot;F&quot; represents the bit pattern &quot;1111&quot; so if we look at the 
+number in binary, we have:</p>
+<blockquote>
+  <p align="left">11111111111111111111111100000000</p>
+</blockquote>
+<p align="left">Counting the leading &quot;1&quot; bits, we see that there are 24 -- /24 
+in VLSM notation.</p>
+<p align="left">It is handy to remember that the size of the subnet can be 
+obtained by subtracting the number of consecutive leading &quot;1&quot; bits from 32 and 
+raising 2 to that power. In the above case, 32 - 24 = 8 and 2 ** 8 = 256 
+addresses. Remember that the number of usable addresses is two less than that 
+(254) because the first and last address in the subnet are reserved as the 
+sub-network and broadcast addresses respectively.</p>
+<p align="left">The size of a subnet can be any power of two so long as the 
+address of the subnet is a multiple of it's size. For example, if you want a 
+subnet of size 8, you could choose 192.168.12.8/29 (8 = 2 ** 3 and 32 - 3 = 29). 
+The subnet mask would be:</p>
+<blockquote>
+  <p align="left">11111111111111111111111111111000 = FFFFFFF8 = 255.255.255.248.</p>
+</blockquote>
+<p align="left">This subnet would have 6 usable addresses: 192.168.12.9 - 
+192.168.12.14.</p>
+<p align="left">You will still hear the terms &quot;Class A network&quot;, &quot;Class B 
+network&quot; and &quot;Class C network&quot;. In the early days of IP, sub-networks only came 
+in three sizes:</p>
+<blockquote>
+  <p align="left">Class A - Subnet mask 255.0.0.0, size = 2 ** 24</p>
+  <p align="left">Class B - Subnet mask 255.255.0.0, size = 2 ** 16</p>
+  <p align="left">Class C - Subnet mask 255.255.255.0, size = 256</p>
+</blockquote>
+<p align="left">The class of a network was determined by the value of the high 
+order byte of its address so you could look at an IP address and immediately 
+determine the associated subnet mask. </p>
+<p align="left">As the internet grew, it became clear that such a gross 
+partitioning of the 32-bit address space was going to be very limiting (early 
+on, large corporations and universities were assigned their own class A 
+network!). It was then that VLSM was devised -- today, any system that you are 
+likely to work with understands VLSM and Class-based subnetworking is largely a 
+thing of the past.</p>
+<p align="left"><font size="2">Last updated 
+7/15/2002 - <a href="support.htm">Tom
+Eastep</a></font></p>
+<p><a href="copyright.htm"><font size="2">Copyright  2002 Thomas M. Eastep</font></a></p>
+
+</body>
+
+</html>

@@ -1,0 +1,228 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Configuration File Basics</title>
+<meta name="Microsoft Theme" content="boldstri 011, default">
+</head>
+
+<body>
+
+<h1 align="center">Configuration Files</h1>
+      <p><b><font color="#FF0000">Warning: </font>If you copy or edit your 
+      configuration files on a system running Microsoft Windows, you <u>must</u> 
+      run them through <a href="http://www.megaloman.com/~hany/software/hd2u/">
+      dos2unix</a> before you use them with Shorewall.</b></p>
+            
+     
+      <h2>Files</h2>
+            
+     
+      <p>Shorewall's configuration files are in the directory /etc/shorewall.</p>
+            
+     
+      <ul>
+        <li>/etc/shorewall/shorewall.conf - used to set several firewall
+        parameters.</li>
+        <li>/etc/shorewall/params - use this file to set shell variables that you will
+    expand in other files.</li>
+        <li>/etc/shorewall/zones - partition the firewall's view of the world
+        into <i>zones.</i></li>
+        <li>/etc/shorewall/policy - establishes firewall high-level policy.</li>
+        <li>/etc/shorewall/interfaces - describes the interfaces on the
+        firewall system.</li>
+        <li>/etc/shorewall/hosts - allows defining zones in terms of individual
+        hosts and subnetworks.</li>
+        <li>/etc/shorewall/masq - directs the firewall where to use many-to-one 
+        (dynamic) Network Address Translation (a.k.a. Masquerading) and Source 
+        Network Address Translation (SNAT).</li>
+        <li>/etc/shorewall/modules - directs the firewall to load kernel modules.</li>
+        <li>/etc/shorewall/rules - defines rules that are exceptions to the
+        overall policies established in /etc/shorewall/policy.</li>
+        <li>/etc/shorewall/nat - defines static NAT rules.</li>
+        <li>/etc/shorewall/proxyarp - defines use of Proxy ARP.</li>
+        <li>/etc/shorewall/routestopped (Shorewall 1.3.4 and later) - defines hosts 
+  accessible when Shorewall is stopped.</li>
+        <li>/etc/shorewall/tcrules - defines marking of packets for later use by
+    traffic control/shaping or policy routing.</li>
+        <li>/etc/shorewall/tos - defines rules for setting the TOS field in packet
+        headers.</li>
+        <li>/etc/shorewall/tunnels - defines IPSEC, GRE and IPIP tunnels with end-points on
+        the firewall system.</li>
+        <li>/etc/shorewall/blacklist - lists blacklisted IP/subnet/MAC addresses.</li>
+</ul>
+      <h2>Comments</h2>
+            
+     
+      <p>You may place comments in configuration files by making the first non-whitespace
+      character a pound sign (&quot;#&quot;). You may also place comments at the end of any line, again by
+      delimiting the comment from the rest of the line with a pound sign.</p>
+            
+     
+      <p>Examples:</p>
+            
+     
+      <pre># This is a comment</pre><pre>ACCEPT	net	fw	tcp	www	#This is an end-of-line comment</pre>
+<h2>Line Continuation</h2>
+            
+     
+      <p>You may continue lines in the configuration files using the usual backslash (&quot;\&quot;) followed 
+      immediately by a new line character.</p>
+            
+     
+      <p>Example:</p>
+            
+     
+      <pre>ACCEPT	net	fw	tcp \
+smtp,www,pop3,imap  #Services running on the firewall</pre>
+<h2>Complementing an Address or Subnet</h2>
+       
+      <p>Where specifying an IP address, a subnet or an interface, you can 
+      precede the item with &quot;!&quot; to specify the complement of the item. For 
+      example, !192.168.1.4 means &quot;any host but 192.168.1.4&quot;.</p>
+       
+      <h2>Comma-separated Lists</h2>
+       
+      <p>Comma-separated lists are allowed in a number of contexts within the 
+      configuration files. A comma separated list:</p>
+       
+      <ul>
+        <li>Must not have any embedded white space.<br>
+        Valid: routestopped,dhcp,norfc1918<br>
+        Invalid: routestopped,&nbsp;&nbsp;&nbsp;&nbsp; dhcp,&nbsp;&nbsp;&nbsp;&nbsp; 
+        norfc1818</li>
+        <li>If you use line continuation to break a comma-separated list, the 
+        continuation line(s) must begin in column 1 (or there would be embedded 
+        white space)</li>
+        <li>Entries in a comma-separated list may appear in any order.</li>
+</ul>
+       
+      <h2>Port Numbers/Service Names</h2>
+       
+      <p>Unless otherwise specified, when giving a port number you can use 
+      either an integer or a service name from /etc/services. </p>
+       
+      <h2>Port Ranges</h2>
+       
+      <p>If you need to specify a range of ports, the proper syntax is &lt;<i>low 
+      port number</i>&gt;:&lt;<i>high port number</i>&gt;.</p>
+       
+      <h2>Using Shell Variables</h2>
+       
+      <p>You may use the file /etc/shorewall/params 
+   file to set shell variables that you can then use in some of the other 
+  configuration files.</p>
+                   
+      <p>It is suggested that variable names begin with an upper case letter<font size="1">
+     </font>to distinguish them from variables used internally within the 
+Shorewall    programs</p>
+                   
+      <p>Example:</p>
+                   
+      <blockquote>                       
+        <pre>NET_IF=eth0
+NET_BCAST=130.252.100.255
+NET_OPTIONS=noping,norfc1918</pre>
+     </blockquote>
+                       
+        <p><br>
+     Example (/etc/shorewall/interfaces record):</p>
+                       
+  <font face="Century Gothic, Arial, Helvetica">    
+       
+        <blockquote>                           
+          <pre><font face="Courier">net $NET_IF $NET_BCAST $NET_OPTIONS</font></pre>
+     </blockquote>
+                           
+           </font>                   
+                           
+          <p>The result will be the same as if the record had been written</p>
+                           
+  <font face="Century Gothic, Arial, Helvetica">    
+       
+          <blockquote>                               
+            <pre>net eth0 130.252.100.255 noping,norfc1918</pre>
+     </blockquote>
+                               
+           </font>                   
+                               
+            <p>Variables may be used anywhere in the 
+            other configuration files.</p>
+                               
+      <h2>Using MAC Addresses</h2>
+       
+      <p>Media Access Control (MAC) 
+      addresses can be used to specify packet source in several of the 
+      configuration files. To use this feature, your kernel must have MAC 
+      Address Match support (CONFIG_IP_NF_MATCH_MAC) included.</p>
+      <p>MAC addresses are 48 bits wide and each Ethernet Controller has a 
+      unique MAC address.<br>
+      <br>
+      In GNU/Linux, MAC addresses are usually written as a series of 6 hex numbers 
+      separated by colons. Example:<br>
+      <br>
+&nbsp;&nbsp;&nbsp;&nbsp; [root@gateway root]# ifconfig eth0<br>
+&nbsp;&nbsp;&nbsp;&nbsp; eth0 Link encap:Ethernet HWaddr <b><u>02:00:08:E3:FA:55</u></b><br>
+&nbsp;&nbsp;&nbsp;&nbsp; inet addr:206.124.146.176 Bcast:206.124.146.255 
+      Mask:255.255.255.0<br>
+&nbsp;&nbsp;&nbsp;&nbsp; UP BROADCAST RUNNING MULTICAST MTU:1500 Metric:1<br>
+&nbsp;&nbsp;&nbsp;&nbsp; RX packets:2398102 errors:0 dropped:0 overruns:0 
+      frame:0<br>
+&nbsp;&nbsp;&nbsp;&nbsp; TX packets:3044698 errors:0 dropped:0 overruns:0 
+      carrier:0<br>
+&nbsp;&nbsp;&nbsp;&nbsp; collisions:30394 txqueuelen:100<br>
+&nbsp;&nbsp;&nbsp;&nbsp; RX bytes:419871805 (400.4 Mb) TX bytes:1659782221 
+      (1582.8 Mb)<br>
+&nbsp;&nbsp;&nbsp;&nbsp; Interrupt:11 Base address:0x1800<br>
+      <br>
+      Because Shorewall uses colons as a separator for address fields, Shorewall requires 
+      MAC addresses to be written in another way. In Shorewall, MAC addresses 
+      begin with a tilde (&quot;~&quot;) and consist of 6 hex numbers separated by 
+      hyphens. In Shorewall, the MAC address in the example above would be 
+      written &quot;~02-00-08-E3-FA-55&quot;.</p>
+       
+      <h2>Shorewall Configurations</h2>
+      <p>
+ Shorewall allows you to have configuration 
+directories other than /etc/shorewall. The <a href="#Starting">shorewall start
+and restart</a>
+   commands allow you to specify an alternate configuration directory and 
+Shorewall will use the files in the alternate directory rather than the corresponding
+ files in /etc/shorewall. The alternate directory need not contain a complete
+ configuration; those files not in the alternate directory will be read from
+ /etc/shorewall.</p>
+      <p>
+ This facility permits you to easily create a test or temporary configuration 
+by:</p>
+      <ol>
+        <li>
+ copying the files that need modification from /etc/shorewall to a separate 
+    directory;</li>
+        <li>
+ modify those files in the separate directory; and</li>
+        <li>
+ specifying the separate directory in a shorewall start or shorewall    
+restart command (e.g., <i><b>shorewall -c /etc/testconfig restart</b></i>
+).</li>
+      </ol>
+                                                                        
+                                                                        
+                       
+                                                                                  <p><font size="2">
+  Updated 8/6/2002 - <a href="support.htm">Tom 
+Eastep</a>
+   </font></p>
+                                                                        
+                                                                        
+                       
+  <p><font face="Trebuchet MS"><a href="copyright.htm"><font size="2">Copyright</font> 
+  © <font size="2">2001, 2002 Thomas M. Eastep.</font></a></font></p>
+                                                                        
+                                                                        
+                       
+  </body>
+
+</html>

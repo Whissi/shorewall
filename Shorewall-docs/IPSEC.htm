@@ -1,0 +1,240 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+     
+  <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+  <title>Shorewall IPSec Tunneling</title>
+         
+  <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+     
+  <meta name="ProgId" content="FrontPage.Editor.Document">
+         
+   
+  <meta name="Microsoft Theme" content="boldstri 011, default">
+</head>
+ <body>
+ <h1 align="center">IPSEC Tunnels</h1>
+ <h2><font color="#660066">Configuring FreeS/Wan</font></h2>
+There is an excellent guide to configuring IPSEC tunnels at<a href="http://jixen.tripod.com">
+ http://jixen.tripod.com</a>
+. I highly recommend that you consult that site for information about confuring
+FreeS/Wan. <p><font color="#FF6633"><b>Warning: </b></font>Do not use Proxy ARP
+ and FreeS/Wan on the same system unless you are prepared to suffer the
+ consequences. If you start or restart Shorewall with an IPSEC tunnel active,
+ the proxied IP addresses are mistakenly assigned to the IPSEC tunnel device
+ (ipsecX) rather than to the interface that you specify in the INTERFACE column
+ of /etc/shorewall/proxyarp. I haven't had the time to debug this problem so I
+ can't say if it is a bug in the Kernel or in FreeS/Wan.&nbsp;</p>
+ <p>You <b>might</b> be able to work around this problem using the following (I
+ haven't tried it):</p>
+ <p>In /etc/shorewall/init, include:</p>
+ <p>&nbsp;&nbsp;&nbsp;&nbsp; qt service ipsec stop</p>
+ <p>In /etc/shorewall/start, include:</p>
+ <p>&nbsp;&nbsp;&nbsp; qt service ipsec start</p>
+ <h2>
+
+<font color="#660066">IPSec Gateway
+on the Firewall System
+  </font></h2>
+          
+ <p>Suppose that we have the following sutuation:</p>
+          
+<font color="#660066">
+          
+<p align="Center"><font face="Century Gothic, Arial, Helvetica">
+<img src="images/TwoNets1.png" width="745" height="427">
+       </font></p>
+          
+  </font>
+          
+<p align="Left">We want systems
+in the 192.168.1.0/24 sub-network to be able to communicate with systems
+in the 10.0.0.0/8 network.</p>
+          
+<p align="Left">To make this work, we need to do two things:</p>
+          
+<p align="Left">a) Open the firewall so that the IPSEC tunnel can be established 
+(allow the ESP and AH protocols and UDP Port 500). </p>
+          
+<p align="Left">b) Allow traffic through the tunnel.</p>
+          
+<p align="Left">Opening the firewall for the IPSEC tunnel is accomplished by 
+adding an entry to the /etc/shorewall/tunnels file.</p>
+          
+<p align="Left">In /etc/shorewall/tunnels 
+on system A, we need the following </p>
+          
+<blockquote> 
+  <table border="2" cellpadding="2" style="border-collapse: collapse">
+          <tbody>
+             <tr>
+              <td><strong>
+ TYPE</strong></td>
+              <td><strong>
+ ZONE</strong></td>
+              <td><strong>
+ GATEWAY</strong></td>
+              <td><strong>
+ GATEWAY ZONE</strong></td>
+          </tr>
+          <tr>
+              <td>ipsec</td>
+              <td>net</td>
+              <td>134.28.54.2</td>
+              <td>&nbsp;</td>
+          </tr>
+                 
+    </tbody>         
+  </table></blockquote>
+            
+  <p align="Left">In /etc/shorewall/tunnels
+on system B, we would have:</p>
+            
+  <blockquote> 
+    <table border="2" cellpadding="2" style="border-collapse: collapse">
+          <tbody>
+               <tr>
+              <td><strong>
+ TYPE</strong></td>
+              <td><strong>
+ ZONE</strong></td>
+              <td><strong>
+ GATEWAY</strong></td>
+              <td><strong>
+ GATEWAY ZONE</strong></td>
+          </tr>
+          <tr>
+              <td>ipsec</td>
+              <td>net</td>
+              <td>206.161.148.9</td>
+          <td>&nbsp;</td>
+          </tr>
+                   
+      </tbody>           
+    </table></blockquote>
+             
+    <p align="Left">At both
+systems, ipsec0 would be included in /etc/shorewall/interfaces as a "gw"
+interface:</p>
+              
+    <blockquote> 
+      <table border="2" cellpadding="2" style="border-collapse: collapse">
+          <tbody>
+                 <tr>
+              <td><strong>
+ ZONE</strong></td>
+              <td><strong>
+ INTERFACE</strong></td>
+              <td><strong>
+ BROADCAST</strong></td>
+              <td><strong>
+ OPTIONS</strong></td>
+          </tr>
+          <tr>
+              <td>gw</td>
+              <td>ipsec0</td>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+          </tr>
+                     
+        </tbody>             
+      </table></blockquote>
+                
+      <p align="Left"> You will need to allow traffic between the &quot;gw&quot; zone and 
+      the &quot;loc&quot; zone -- if you simply want to admit all traffic in both 
+      directions, you can use the policy file:</p>
+                
+      
+      <blockquote>
+        <table border="2" cellpadding="2" style="border-collapse: collapse">
+               <tr>
+              <td><strong>SOURCE</strong></td>
+              <td><strong>DEST</strong></td>
+              <td><strong>POLICY</strong></td>
+              <td><strong>LOG LEVEL</strong></td>
+          </tr>
+          <tr>
+              <td>loc</td>
+              <td>gw</td>
+              <td>ACCEPT</td>
+          <td>&nbsp;</td>
+          </tr>
+                   
+          <tr>
+              <td>gw</td>
+              <td>loc</td>
+              <td>ACCEPT</td>
+          <td>&nbsp;</td>
+          </tr>
+                   
+    </table>
+ </blockquote>
+                
+      <p align="Left"> Once
+you have these entries in place, restart Shorewall (type shorewall restart); 
+you are now ready to configure the tunnel in <a href="http://www.xs4all.nl/%7Efreeswan/">
+ FreeS/WAN</a>
+ .</p>
+                
+      
+      <h2><font color="#660066"><a name="RoadWarrior"></a>
+ Mobile System (Road Warrior)</font></h2>
+                
+      <p>Suppose that you have
+a laptop system (B) that you take with you when you travel and you want to
+be able to establish a secure connection back to your local network.</p>
+                
+      <p align="Center"><strong><font face="Century Gothic, Arial, Helvetica">
+      <img src="images/Mobile.png" width="677" height="426">
+             </font></strong></p>
+                
+      <p align="Left"> In this
+instance, the mobile system (B) has IP address 134.28.54.2 but that cannot
+be determined in advance. In the /etc/shorewall/tunnels file on system A,
+the following entry should be made:</p>
+                
+      <blockquote> 
+        <table border="2" cellpadding="2" style="border-collapse: collapse">
+          <tbody>
+                   <tr>
+              <td><strong>
+ TYPE</strong></td>
+              <td><strong>
+ ZONE</strong></td>
+              <td><strong>
+ GATEWAY</strong></td>
+              <td><strong>
+ GATEWAY ZONE</strong></td>
+          </tr>
+          <tr>
+              <td>ipsec</td>
+              <td>net</td>
+              <td>0.0.0.0/0</td>
+              <td>gw</td>
+          </tr>
+                       
+          </tbody>               
+        </table></blockquote>
+                  
+        <p>Note that the GATEWAY
+ZONE column contains the name of the zone corresponding to peer subnetworks
+(<i>gw</i> in the default /etc/shorewall/zones). This indicates that the
+gateway system itself comprises the peer subnetwork; in other words, the
+remote gateway is a standalone system.</p>
+                 
+        
+        <p>You will need to configure /etc/shorewall/interfaces and establish 
+        your &quot;through the tunnel&quot; policy as shown under the first example above.</p>
+                 
+        
+        <p><font size="2"> Last
+updated 5/18/2002 - </font><font size="2">
+        <a href="support.htm">Tom Eastep</a></font>
+ </p>
+                 
+        
+        <p><font face="Trebuchet MS"><a href="copyright.htm"><font size="2">
+        Copyright</font> © <font size="2">2001, 2002 Thomas M. Eastep.</font></a></font></p>
+  
+</body>
+        </html>

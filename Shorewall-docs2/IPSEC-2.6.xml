@@ -15,10 +15,12 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-12-26</pubdate>
+    <pubdate>2005-02-06</pubdate>
 
     <copyright>
       <year>2004</year>
+
+      <year>2005</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -325,6 +327,13 @@ spdadd 134.28.54.2/32   206.162.148.9/32 any -P in  ipsec esp/tunnel/134.28.54.2
 
     <para>The <filename>setkey.conf</filename> file on gateway B would be
     similar.</para>
+
+    <caution>
+      <para>If you are running kernel 2.6.10 or later, then you need
+      ipsec-tools (and racoon) 0.5 or later and you need to add <emphasis
+      role="bold">-P fwd</emphasis> rules -- see <ulink
+      url="http://www.ipsec-howto.org/x277.html">http://www.ipsec-howto.org/x277.html</ulink>.</para>
+    </caution>
 
     <para>A sample <filename>/etc/racoon/racoon.conf</filename> file using
     X.509 certificates might look like:</para>

@@ -2504,7 +2504,7 @@ check_config() {
     verify_os_version
 
     if [ -n "$BRIDGING" ]; then
-	[ -n "$PHYSDEV_MATCH" || startup_error "BRIDGING=Yes requires Physdev Match support in your Kernel and iptables"
+	[ -n "$PHYSDEV_MATCH" ] || startup_error "BRIDGING=Yes requires Physdev Match support in your Kernel and iptables"
     fi
 
     echo "Determining Zones..."

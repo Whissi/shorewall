@@ -44,5 +44,12 @@ Problems Corrected in version 2.0.7
 1) To improve supportability, the "shorewall status" command now
    includes the output from "ip rule ls" and "ip addr ls".
 
+2) The PKTTYPE option introduced in version 2.0.6 is now used when
+   generating rules to REJECT packets. Broadcast packets are silently
+   dropped rather than being rejected with an ICMP (which is a protocol
+   violation) and users whose kernels have broken packet type match
+   support are likely to see messages reporting this violation.
+   Setting PKTTYPE=No should cause these messages to cease. 
+
 
 

@@ -476,7 +476,7 @@ chmod 644 ${PREFIX}/usr/lib/shorewall/version
 if [ -z "$PREFIX" ]; then
     rm -f /etc/shorewall/firewall
     rm -f /var/lib/shorewall/firewall
-    [ -L /usr/lib/shorewall/firewall] && \
+    [ -L /usr/lib/shorewall/firewall ] && \
 	mv -f /usr/lib/shorewall/firewall /usr/lib/shorewall/firewall-${VERSION}.bkout
     rm -f /usr/lib/shorewall/init
     ln -s ${DEST}/${FIREWALL} /usr/lib/shorewall/init

@@ -3,6 +3,8 @@
 #
 # /etc/shorewall/policy
 #
+#	             THE ORDER OF ENTRIES IN THIS FILE IS IMPORTANT
+#
 #	This file determines what to do with a new connection request if we
 #	don't get a match from the /etc/shorewall/rules file or from the
 #	/etc/shorewall/common[.def] file. For each source/destination pair, the
@@ -69,8 +71,12 @@
 #	d) All other connection requests are rejected and logged at level
 #	   KERNEL.INFO.
 ###############################################################################
-#SOURCE		DEST		POLICY		LOG LEVEL	LIMIT:BURST
+#SOURCE		DEST		POLICY		LOG		LIMIT:BURST
+#						LEVEL
 loc		net		ACCEPT
 net		all		DROP		info
-all		all		REJECT		info
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE
+#
+# THE FOLLOWING POLICY MUST BE LAST
+#	
+all		all		REJECT		info 
+#LAST LINE -- DO NOT REMOVE

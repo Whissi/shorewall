@@ -1,66 +1,101 @@
-Changes since 1.4.5
+Changes since 1.4.6
 
-1) Worked around RH7.3 "service" anomaly.
+1) Added Smart Blacklisting.
 
-2) Implemented 'newnotsyn' interface option.
+2) Move determine_capabilities call to do_initialize to ensure that
+   MANGLE_ENABLED is set before it is tested.
 
-3) Document range in masq ADDRESS column and suppress ADD_SNAT_ALIASES
-   behavior in that case.
+3) Fixed MAC address handling in the SOURCE column of tcrules.
 
-4) Enable ADD_SNAT_ALIASES=Yes for SNAT ranges.
+4) Merged and corrected Steve Herber's command-specific help patch.
 
-5) Allow Shorewall to add aliases to other than the first subnet on an
-   interface.
+5) Removed some undocumented/braindead code from setup_masq()
 
-6) Add support for load-balancing.
+6) Don't allow 'stop' when startup is disabled
 
-7) Toned down the disclaimer for the 'check' command.
+7) Added ADMINISABSENTMINDED option.
 
-8) Implemented support for the Connection Tracking Match extension in
-   iptables 1.2.8/Kernel 2.4.21.
+8) Fixed adding addresses to ppp interfaces.
 
-9) Removed the NAT_ENABLED, MANGLE_ENABLED and MULTIPORT configuration
-   parameters and replaced them with code that detects these
-   capabilities.
+9) Added generic tunnel support.
 
-10) Added the SHOREWALL_SHELL configuraiton parameter.
+10) Added support for Address Range Lists in /etc/shorewall/masq.
 
-11) Fixed capability reporting (thanks to Simon Matter).
+11) Simplify ip_broadcast()
 
-12) Correct the implementation of destination IP list in DNAT[-] rules.
+12) Add 'arp_filter' interface option.
 
-13) Check for shells whose arithmetic support is broken.
+13) Added accounting file support
 
-14) Moved IP Address manipulation functions to
-    /usr/share/shorewall/functions.
+14) Fixed bug where an interface name alone appears in the DESTINATION
+    column of the accounting file.
 
-15. Added ipcalc command.
+15) Add ACTION column to accounting file.
 
-16. Fixed handling of destination DNS names containing a "-"
+16) Add CHAIN declarations to accounting file.
 
-17. Make ip_range() smarter.
+17) Replace calls to chain_exists with calls to havechain in
+    accounting code.
 
-18. Added /sbin/shorewall iprange command.
+18) Allow degenerate DONE and COUNT rules.
 
-19. Fixed handling of excluded zone processing in DNAT and REDIRECT
-    rules (re-added the protocol to the rule). Fixed parsing of exclude
-    zones.
+19) Interface-specific dynamic blacklisting chains are now displayed by
+    "shorewall monitor".
 
-20. Display policy chain along with policy in 'check' command.
+20) Bridge interfaces (br[0-9]) can now be used in /etc/shorewall/maclist.
 
-21. Support Linux 2.6 compressed modules.
+21) Rate-limited rules added.
 
-22. Don't display DHCP message when there are no DHCP interface.
+22) Make burst optional in rate limited rules and policies.
 
-23. Move determine_capabilities call to do_initialize to ensure that
-    MANGLE_ENABLED is set before it is tested.
+23) Allow display of multiple chains in one "shorewall show" command.
 
-24. Fixed MAC address handling in the SOURCE column of tcrules.
+24) Add "RATE LIMIT" column for those who prefer their config files to
+    be wide but normalized.
 
-25. Disabled 'stop' command when startup is disabled.
+25) Redesign the accounting facility to make it simpler and more
+    flexible.
 
-26. Fixed adding addresses to ppp interfaces.
+26) Add Henry Wang's fix for LOGRATE/LOGBURST and enhance to resolve
+    conflict between that facility and rate-limited logging rules.
 
-27. Corrected IP range in masq entry WRT ADD_SNAT_ALIASES
+27) Add User Set capability.
 
-28. Fix IPV6 address confusion.
+28) Deimplement Smart Blacklisting and fix problem with multiple
+    'drop'/'reject' commands for the same address.
+
+29) Update for 1.4.7 Beta 1.
+
+30) Fix ADD_SNAT_ALIASES interaction with ip ranges used for
+    load-balancing.
+
+31) Fix IPV6 address confusion.
+
+32) Add "o.gz" to the list of module extensions.
+
+33) Replace existing route to PROXY ARP host rather than adding another
+    one.
+
+34) Update of rfc1918 file.
+
+35) Correct rules file comment.
+
+36) Extend USER SET column in /etc/shorewall/rules to allow user:group.
+
+37) Reword error message to avoid the word 'illegal'.
+
+38) Avoid shell error when there is no policy corresponding to a rule.
+
+39) Fatal error if /etc/shorewall/common or /etc/shoreall/common.def do
+    not exist.
+
+40) Process blacklist before DHCP.
+
+41) Fix 'logunclean' log message disposition.
+
+42) Update rfc1918.
+
+43) Remove Conflict specification from shorewall.rpm to appease the
+    SuSE crowd.
+
+44) Removed a fly-speck at the beginning of the 'masq' file.

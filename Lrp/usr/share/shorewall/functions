@@ -269,6 +269,13 @@ encodeaddr() {
 # Enumerate the members of an IP range -- When using a shell supporting only
 # 32-bit signed arithmetic, the range cannot span 128.0.0.0.
 #
+# Comes in two flavors:
+#
+# ip_range() - produces a mimimal list of network/host addresses that spans 
+#              the range.
+#
+# ip_range_explicit() - explicitly enumerates the range.
+#
 ip_range() {
     local first last l x y z vlsm
 
@@ -308,6 +315,31 @@ ip_range() {
     done
 }
 
+ip_range_explicit() {
+    local first last
+
+    case $1 in 
+    [0-9]*.*.*.*-*.*.*.*)
+	;;
+    *)
+	echo $1
+	return
+	;;
+    esac
+
+    first=`decodeaddr ${1%-*}`
+    last=`decodeaddr ${1#*-}`
+
+    if [ $first -gt $last ]; then
+	fatal_error "Invalid IP address range: $1"
+    fi
+
+    while [ $first -le $last ]; do
+	echo `encodeaddr $first`
+	first=$(($first + 1))
+    done
+}
+
 #
 # Netmask from CIDR
 #
@@ -331,12 +363,11 @@ ip_network() {
 # The following hack is supplied to compensate for the fact that many of
 # the popular light-weight Bourne shell derivatives don't support XOR ("^").
 #
-# Note: 2147483647 = 0x7fffffff
 
 ip_broadcast() {
-    local x=$(( ${1#*/} - 1 ))
+    local x=$(( 32 - ${1#*/} ))
 
-    [ $x -eq -1 ] && echo -1 || echo $(( 2147483647 >> $x ))
+    [ $x -eq 0 ] && echo -1 || echo $(( $(( 1 $LEFTSHIFT $x )) - 1 ))
 }
 
 #
@@ -378,5 +409,110 @@ ip_vlsm() {
     else
 	echo $vlsm
     fi
+}
+
+
+#
+# Chain name base for an interface -- replace all periods with underscores in the passed name.
+#                                     The result is echoed (less "+" and anything following).
+#
+chain_base() #$1 = interface
+{
+    local c=${1%%+*}
+
+    while true; do
+	case $c in
+	    *.*)
+		c="${c%.*}_${c##*.}"
+		;;
+	    *)
+		echo ${c:=common}
+		return
+		;;
+	esac
+    done
+}
+
+#
+# Remove trailing digits from a name
+#
+strip_trailing_digits() {
+    echo $1 | sed s'/[0-9].*$//'
+}
+
+#
+# Loosly Match the name of an interface
+#
+
+if_match() # $1 = Name in interfaces file - may end in "+"
+           # $2 = Name from routing table
+{
+    local if_file=$1
+    local rt_table=$2
+
+    case $if_file in
+	*+)
+	    test "`strip_trailing_digits $rt_table`" = "${if_file%+}"
+	    ;;
+	*)
+	    test "$rt_table" = "$if_file"
+	    ;;
+    esac
+}
+
+#
+# Find the value 'dev' in the passed arguments then echo the next value
+#
+
+find_device() {
+    while [ $# -gt 1 ]; do
+	[ "x$1" = xdev ] && echo $2 && return
+	shift
+    done
+}
+    
+#
+# Find the interfaces that have a route to the passed address - the default
+# route is not used.
+#
+
+find_rt_interface() {
+    ip route ls | while read addr rest; do
+	case $addr in
+	    */*)
+		in_subnet ${1%/*} $addr && echo `find_device $rest`
+		;;
+	    default)
+		;;
+	    *)
+		if [ "$addr" = "$1" -o "$addr/32" = "$1" ]; then
+		    echo `find_device $rest`
+		fi
+		;;
+	esac
+    done
+}
+
+#
+# Find the default route's interface
+#
+find_default_interface() {
+    ip route ls | while read first rest; do
+	[ "$first" = default ] && echo `find_device $rest` && return
+    done
+}
+
+#
+# Echo the name of the interface(s) that will be used to send to the
+# passed address
+#
+
+find_interface_by_address() {
+    local dev="`find_rt_interface $1`"
+    local first rest
+
+    [ -z "$dev" ] && dev=`find_default_interface`
+
+    [ -n "$dev" ] && echo $dev
 }
 

@@ -241,6 +241,20 @@ createchain() # $1 = chain name, $2 = If "yes", create default rules
     eval ${1}_exists=Yes
 }
 
+createchain2() # $1 = chain name, $2 = If "yes", create default rules
+{
+    if iptables -N $1; then
+
+	if [ $2 = yes ]; then
+	    run_iptables -A $1 -m state --state ESTABLISHED,RELATED -j ACCEPT
+	    [ -z "$NEWNOTSYN" ] && \
+		run_iptables -A $1 -m state --state NEW -p tcp ! --syn -j newnotsyn
+	fi
+	
+	eval ${1}_exists=Yes
+    fi
+}
+
 #
 # Determine if a chain exists
 #
@@ -377,23 +391,6 @@ flushmangle() # $1 = name of chain
 }
 
 #
-# Chain name base for an interface
-#
-chain_base() #$1 = interface
-{
-    local c=${1%%+*}
-
-    case $c in
-        *.*)
-	    echo ${c%.*}_${c#*.}
-	    ;;
-	*)
-	    echo ${c:=common}
-	    ;;
-    esac
-}
-
-#
 # Find interfaces to a given zone
 #
 # Search the variables representing the contents of the interfaces file and
@@ -473,7 +470,7 @@ snat_chain() # $1 = zone
 #
 ecn_chain() # $1 = interface
 {
-   echo ${1}_ecn
+   echo `chain_base $1`_ecn
 }
 
 #
@@ -484,6 +481,29 @@ first_chains() #$1 = interface
    local c=`chain_base $1`
 
    echo ${c}_fwd ${c}_in
+}
+
+#
+# ACCEPT chain for a userset
+#
+accept_chain() # $1 = userset
+{
+    echo ${1}_acc
+}
+
+#
+# DROP chain for a userset
+#
+drop_chain() # $1 = userset
+{
+    echo ${1}_drp
+}
+#
+# REJECT chain for a userset
+#
+reject_chain() # $1 = userset
+{
+    echo ${1}_rej
 }
 
 #
@@ -614,9 +634,11 @@ validate_interfaces_file() {
 
 	for option in $options; do
 	    case $option in
-		dhcp|norfc1918|tcpflags|newnotsyn)
+		dhcp|norfc1918|tcpflags|newnotsyn|arp_filter|routefilter|blacklist|proxyarp|maclist|-)
 		    ;;
-		routefilter|dropunclean|logunclean|blacklist|proxyarp|maclist|-)
+		dropunclean|logunclean)
+		    error_message \
+			"Warning: The 'dropunclean' and 'logunclean' options will be removed in a future release"
 		    ;;
 		routeback)
 		    [ -n "$z" ] || startup_error "The routeback option may not be specified on a multi-zone interface"
@@ -828,7 +850,7 @@ find_interface_address() # $1 = interface
     #
     # get the line of output containing the first IP address
     #
-    addr=`ip addr show $1 2> /dev/null | grep inet | head -n1`
+    addr=`ip -f inet addr show $1 2> /dev/null | grep inet | head -n1`
     #
     # If there wasn't one, bail out now
     #
@@ -846,7 +868,7 @@ find_interface_address() # $1 = interface
 #
 find_interface_addresses() # $1 = interface
 {
-    ip addr show $1 | grep inet | sed 's/inet //;s/\/.*//;s/ peer.*//'
+    ip -f inet addr show $1 | grep inet | sed 's/inet //;s/\/.*//;s/ peer.*//'
 }
 
 #
@@ -932,14 +954,15 @@ run_user_exit() # $1 = file name
 #
 # Add a logging rule.
 #
-log_rule() # $1 = log level, $2 = chain, $3 = disposition , $... = predicates for the rule
+log_rule_limit() # $1 = log level, $2 = chain, $3 = disposition , $4 = rate limit $... = predicates for the rule
 {
     local level=$1
     local chain=$2
     local disposition=$3
     local rulenum=
+    local limit=${4:-$LOGLIMIT}
 
-    shift;shift;shift
+    shift;shift;shift;shift
 
     if [ -n "$LOGRULENUMBERS" ]; then
 	eval rulenum=\$${chain}_logrules
@@ -948,10 +971,10 @@ log_rule() # $1 = log level, $2 = chain, $3 = disposition , $... = predicates fo
 
 	case $level in
 	    ULOG)
-		eval iptables -A $chain $@ -j ULOG $LOGPARMS --ulog-prefix '"`printf "$LOGFORMAT" $chain $rulenum $disposition`"'
+		eval iptables -A $chain $@ $limit -j ULOG $LOGPARMS --ulog-prefix '"`printf "$LOGFORMAT" $chain $rulenum $disposition`"'
 		;;
 	    *)
-		eval iptables -A $chain $@ -j LOG $LOGPARMS --log-level $level --log-prefix '"`printf "$LOGFORMAT" $chain $rulenum $disposition`"'
+		eval iptables -A $chain $@ $limit -j LOG $LOGPARMS --log-level $level --log-prefix '"`printf "$LOGFORMAT" $chain $rulenum $disposition`"'
 		;;
 	esac
 	
@@ -965,10 +988,10 @@ log_rule() # $1 = log level, $2 = chain, $3 = disposition , $... = predicates fo
     else
 	case $level in
 	    ULOG)
-		eval iptables -A $chain $@ -j ULOG $LOGPARMS --ulog-prefix '"`printf "$LOGFORMAT" $chain $disposition`"'
+		eval iptables -A $chain $@ $limit -j ULOG $LOGPARMS --ulog-prefix '"`printf "$LOGFORMAT" $chain $disposition`"'
 		;;
 	    *)
-		eval iptables -A $chain $@ -j LOG $LOGPARMS --log-level $level --log-prefix '"`printf "$LOGFORMAT" $chain $disposition`"'
+		eval iptables -A $chain $@ $limit -j LOG $LOGPARMS --log-level $level --log-prefix '"`printf "$LOGFORMAT" $chain $disposition`"'
 		;;
 	esac
 	
@@ -976,6 +999,17 @@ log_rule() # $1 = log level, $2 = chain, $3 = disposition , $... = predicates fo
 	    [ -z "$stopping" ] && { stop_firewall; exit 2; }
 	fi
     fi
+}
+
+log_rule() # $1 = log level, $2 = chain, $3 = disposition , $... = predicates for the rule
+{
+    local level=$1
+    local chain=$2
+    local disposition=$3
+
+    shift;shift;shift
+
+    log_rule_limit $level $chain $disposition "$LOGLIMIT" $@
 }
 
 #
@@ -1013,11 +1047,25 @@ stop_firewall() {
     delete_proxy_arp
     [ -n "$CLEAR_TC" ] && delete_tc
 
-    setpolicy INPUT DROP
-    setpolicy OUTPUT DROP
-    setpolicy FORWARD DROP
+    if [ -z "$ADMINISABSENTMINDED" ]; then
+	for chain in INPUT OUTPUT FORWARD; do
+	    setpolicy $chain DROP
+	done
 
-    deleteallchains
+	deleteallchains
+    else
+	for chain in INPUT FORWARD; do
+	    setpolicy $chain DROP
+	done
+
+	setpolicy OUTPUT ACCEPT
+
+	deleteallchains
+
+	for chain in INPUT FORWARD; do
+	    setcontinue $chain
+	done
+    fi
 
     hosts=
 
@@ -1035,7 +1083,8 @@ stop_firewall() {
 	interface=${host%:*}
 	subnet=${host#*:}
 	iptables -A INPUT  -i $interface -s $subnet -j ACCEPT
-	iptables -A OUTPUT -o $interface -d $subnet -j ACCEPT
+	[ -z "$ADMINISABSENTMINDED" ] && \
+	    iptables -A OUTPUT -o $interface -d $subnet -j ACCEPT
 
 	for host1 in $hosts; do
 	    [ "$host" != "$host1" ] && \
@@ -1045,11 +1094,13 @@ stop_firewall() {
     done
 
     iptables -A INPUT  -i lo -j ACCEPT
-    iptables -A OUTPUT -o lo -j ACCEPT
+    [ -z "$ADMINISABSENTMINDED" ] && \
+	iptables -A OUTPUT -o lo -j ACCEPT
 
     for interface in `find_interfaces_by_option dhcp`; do
 	iptables -A INPUT  -p udp -i $interface --dport 67:68 -j ACCEPT
-	iptables -A OUTPUT -p udp -o $interface --dport 67:68 -j ACCEPT
+	[ -z "$ADMINISABSENTMINDED" ] && \
+	    iptables -A OUTPUT -p udp -o $interface --dport 67:68 -j ACCEPT
     done
 
     case "$IP_FORWARDING" in
@@ -1187,6 +1238,44 @@ setup_tunnels() # $1 = name of tunnels file
 	echo "   OPENVPN tunnel to $1:$p defined."
     }
 
+    setup_one_generic() # $1 = gateway, $2 = kind:protocol[:port], $3 = Gateway Zone
+    {
+	local procotol
+	local p=
+
+	case $2 in
+	    *:*:*)
+		p=${2##*:}
+		protocol=${2%:*}
+		protocol=${protocol#*:}
+		;;
+	    *:*)
+		protocol=${2#*:}
+		;;
+	    *)
+		protocol=udp
+		p=5000
+		;;
+	esac
+
+	p=${p:+--dport $p}
+
+	addrule $inchain  -p $protocol -s $1 $p -j ACCEPT
+	addrule $outchain -p $protocol -d $1 $p -j ACCEPT
+
+	for z in `separate_list $3`; do
+	    if validate_zone $z; then
+		addrule ${FW}2${z} -p $protocol $p -j ACCEPT
+		addrule ${z}2${FW} -p $protocol $p -j ACCEPT
+	    else
+		error_message "Warning: Invalid gateway zone ($z)" \
+		" -- Tunnel \"$tunnel\" may encounter problems"
+	    fi
+	done
+
+	echo "   GENERIC tunnel to $1:$p defined."
+    }
+
     strip_file tunnels $1
 
     while read kind z gateway z1; do
@@ -1219,6 +1308,9 @@ setup_tunnels() # $1 = name of tunnels file
 		    ;;
 		openvpn|OPENVPN|openvpn:*|OPENVPN:*)
 		    setup_one_openvpn $gateway $kind
+		    ;;
+		generic:*|GENERIC:*)
+		    setup_one_generic $gateway $kind $z1
 		    ;;
 		*)
 		    error_message "Tunnels of type $kind are not supported:" \
@@ -1257,7 +1349,7 @@ setup_proxy_arp() {
 	    ;;
 	esac
 
-	[ -z "$haveroute" ] && run_ip route add $address dev $interface
+	[ -z "$haveroute" ] && run_ip route replace $address dev $interface
 
 	run_arp -Ds $address $external pub
 
@@ -1322,7 +1414,7 @@ setup_mac_lists() {
     #
     for interface in $maclist_interfaces; do
 	case $interface in
-	    eth*|wlan*)
+	    eth*|wlan*|br[0-9])
 		;;
 	    *)
 		fatal_error "MAC verification is only supported on ethernet and 802.11b devices: $interface"
@@ -1360,7 +1452,7 @@ setup_mac_lists() {
     #
     for interface in $maclist_interfaces; do
 	chain=`mac_chain $interface`
-	blob=`ip addr show $interface 2> /dev/null | grep inet | sed 's/inet //; s/brd //; s/scope.*//;'`
+	blob=`ip -f inet addr show $interface 2> /dev/null | grep inet | sed 's/inet //; s/brd //; s/scope.*//;'`
 
 	[ -z "$blob" ] && \
 	    fatal_error "Interface $interface must be up before Shorewall can start"
@@ -1411,13 +1503,18 @@ setup_syn_flood_chain ()
 	# $2 = synparams
 {
     local chain=$1
-    local limit=${2%:*}
-    local limit_burst=${2#*:}
+    local limit=$2
+    local limit_burst=
+
+    case $limit in
+	*:*)
+	    limit_burst="--limit-burst ${limit#*:}"
+	    limit=${limit%:*}
+	    ;;
+    esac
 
     run_iptables -N @$chain
-    run_iptables -A @$chain \
-	-m limit --limit $limit --limit-burst $limit_burst \
-	-j RETURN
+    run_iptables -A @$chain -m limit --limit $limit $limit_burst -j RETURN
     run_iptables -A @$chain -j DROP
 }
 
@@ -1581,7 +1678,7 @@ process_tc_rule()
 		    r="-s $source "
 		    ;;
 		~*)
-		    r=`mac_match $source`
+		    r="`mac_match $source` "
 		    ;;
 		$FW)
 		    chain=tcout
@@ -1704,6 +1801,214 @@ delete_tc()
 }
 
 #
+# Process a record from the accounting file
+#
+process_accounting_rule() {
+    rule=
+    rule2=
+    jumpchain=
+	
+    accounting_error() {
+	error_message "Warning: Invalid Accounting rule" $action $chain $source $dest $proto $port $sport
+    }
+
+    jump_to_chain() {
+	if ! havechain $jumpchain; then
+	    if ! createchain2 $jumpchain No; then
+		accounting_error
+		return 2
+	    fi
+	fi
+	
+	rule="$rule -j $jumpchain"
+    }
+
+    case $source in
+	*:*)
+	    rule="-s ${source#*:} -i ${source%:*}"
+	    ;;
+	*.*.*.*)
+	    rule="-s $source"
+	    ;;
+	-|all|any)
+	    ;;
+	*)
+	    [ -n "$source" ] && rule="-i $source"
+	    ;;
+    esac
+
+    [ -n "$dest" ] && case $dest in
+	*:*)
+	    rule="$rule -d ${dest#*:} -o ${dest%:*}"
+	    ;;
+	*.*.*.*)
+	    rule="$rule -d $dest"
+	    ;;
+	-|all|any)
+	    ;;
+	*)
+	    rule="$rule -o $dest"
+	    ;;
+    esac
+
+    [ -n "$proto" ] && case $proto in
+	-|any|all)
+	    ;;
+	*)
+	    rule="$rule -p $proto"
+	    ;;
+    esac
+
+    [ -n "$port" ] && case $port in
+	-|any|all)
+	    ;;
+	*)
+	    rule="$rule --dport $port"
+	    ;;
+    esac
+
+    [ -n "$sport" ] && case $sport in
+	-|any|all)
+	    ;;
+	*)
+	    rule="$rule --sport $sport"
+	    ;;
+    esac
+
+    case $action in
+	COUNT)
+	    ;;
+	DONE)
+	    rule="$rule -j RETURN"
+	    ;;
+	*:COUNT)
+	    rule2="$rule"
+	    jumpchain=${action%:*}
+	    jump_to_chain || return
+	    ;;
+	JUMP:*)
+	    jumpchain=${action#*:}
+	    jump_to_chain || return
+	    ;;
+	*)
+	    jumpchain=$action
+	    jump_to_chain || return
+	    ;;
+    esac
+
+    [ "x$chain" = "x-" ] && chain=accounting
+    [ -z "$chain" ] && chain=accounting
+		
+    havechain $chain || createchain $chain No
+
+    if iptables -A $chain $rule ; then
+	[ "x$rule2" != x ] && run_iptables -A $jumpchain $rule2
+	echo "   Accounting rule" $action $chain $source $dest $proto $port $sport Added
+    else
+	accounting_error
+    fi
+}
+
+#
+# Set up Accounting
+#
+setup_accounting() # $1 = Name of accounting file
+{
+    
+    echo "Setting up Accounting..."
+
+    strip_file accounting $1
+
+    while read action chain source dest proto port sport ; do
+	expandv action chain source dest proto port sport
+	process_accounting_rule
+    done < $TMP_DIR/accounting
+
+    if havechain accounting; then
+	for chain in INPUT FORWARD OUTPUT; do
+	    run_iptables -A $chain -j accounting
+	done
+    fi
+
+}
+
+process_user_set_entry() {
+    local acceptchain=`accept_chain $userset`
+    local dropchain=`drop_chain $userset`
+    local rejectchain=`reject_chain $userset`
+
+    list_search $userset $usersets && \
+	fatal_error "Duplicate Uset Set: $userset"
+    usersets="$usersets $userset"
+
+    createchain $acceptchain No
+    createchain $dropchain No
+    createchain $rejectchain No
+
+    [ "x$reject" = "x-" ] && reject=""
+    eval ${userset}_reject="$reject"
+    [ "x$accept" = "x-" ] && accept=""
+    eval ${userset}_accept="$accept"
+    [ "x$drop" = "x-" ] && drop=""
+    eval ${userset}_drop="$drop"
+}
+    
+process_user_entry() {
+    local acceptchain=`accept_chain $userset`
+    local dropchain=`drop_chain $userset`
+    local rejectchain=`reject_chain $userset`
+    local rule="-m owner"
+    local level=
+    
+    list_search $userset $usersets || \
+	fatal_error "Unknown Uset Set: $userset"
+
+    [ "x$user" = "x-" ] && user=
+
+    [ -z "${user}${group}" ] && \
+	fatal_error "Either user or group must be specified for user set $userset"
+
+    [ -n "$user" ]  && rule="$rule --uid-owner $user"  || user='*'
+    [ -n "$group" ] && rule="$rule --gid-owner $group" || group='*'
+
+    eval level=\$${userset}_accept
+    [ -n "$level" ] && \
+	log_rule $level $acceptchain ACCEPT $rule
+    run_iptables -A $acceptchain $rule -j ACCEPT
+ 
+    eval level=\$${userset}_drop
+    [ -n "$level" ] && \
+	log_rule $level $dropchain DROP $rule
+    run_iptables -A $dropchain   $rule -j DROP
+    
+    eval level=\$${userset}_reject
+    [ -n "$level" ] && \
+	log_rule $level $rejectchain REJECT $rule
+    run_iptables -A $rejectchain $rule -j reject
+
+    echo "   User $user:$group added to user set $userset"
+}
+
+setup_usersets() # $1 = Name of usersets file
+{   
+    echo "Setting up User Sets..."
+
+    strip_file usersets $1
+
+    while read userset reject accept drop; do
+	expandv userset reject accept drop
+	process_user_set_entry
+    done < $TMP_DIR/usersets
+
+    strip_file users
+
+    while read userset user group ; do
+	expandv userset user group
+	process_user_entry
+    done < $TMP_DIR/users
+}
+
+#      
 # Check the configuration
 #
 check_config() {
@@ -1817,6 +2122,7 @@ refresh_tc() {
 #		      by this function
 #    cport	    = Source Port Specification
 #    multiport	    = String to invoke multiport match if appropriate
+#    ratelimit      = Optional rate limiting clause
 #
 add_nat_rule() {
     local chain
@@ -1900,15 +2206,15 @@ add_nat_rule() {
 		    log_rule $loglevel $chain $logtarget -t nat
 		fi
 
-		addnatrule $chain $proto -j $target1 # Protocol is necessary for port redirection
+		addnatrule $chain $ratelimit $proto -j $target1 # Protocol is necessary for port redirection
 	    else
 		for adr in `separate_list $addr`; do
 		    if [ -n "$loglevel" ]; then
-			log_rule $loglevel $OUTPUT $logtarget -t nat \
+			log_rule_limit $loglevel $OUTPUT $logtarget "$ratelimit" -t nat \
 			    `fix_bang $proto $cli $sports -d $adr $multiport $dports`
 		    fi
 
-		    run_iptables2 -t nat -A OUTPUT $proto $sports -d $adr $multiport $dports -j $target1
+		    run_iptables2 -t nat -A OUTPUT $ratelimit $proto $sports -d $adr $multiport $dports -j $target1
 		done
 	    fi
 	else
@@ -1935,19 +2241,19 @@ add_nat_rule() {
 		done
 
 		if [ -n "$loglevel" ]; then
-		    log_rule $loglevel $chain $logtarget -t nat
+		    log_rule_limit $loglevel $chain $logtarget "$ratelimit" -t nat
 		fi
 
-		addnatrule $chain $proto -j $target1 # Protocol is necessary for port redirection
+		addnatrule $chain $ratelimit $proto -j $target1 # Protocol is necessary for port redirection
 	    else
 		for adr in `separate_list $addr`; do
 		    if [ -n "$loglevel" ]; then
 			ensurenatchain $chain
-			log_rule $loglevel $chain $logtarget -t nat \
+			log_rule_limit $loglevel $chain $logtarget "$ratelimit" -t nat \
 			    `fix_bang $proto $cli $sports -d $adr $multiport $dports`
 		    fi
 		    
-		    addnatrule $chain $proto $cli $sports \
+		    addnatrule $chain $proto $ratelimit $cli $sports \
 			-d $adr $multiport $dports -j $target1
 		done
 	    fi
@@ -1982,7 +2288,8 @@ add_nat_rule() {
 	fi
     fi
 
-    [ "x$addr" = "x0.0.0.0/0" ] && addr= 
+    [ "x$addr" = "x0.0.0.0/0" ] && addr=
+    ratelimit=
 }
 
 #
@@ -2000,6 +2307,9 @@ add_nat_rule() {
 #    multioption = String to invoke multiport match if appropriate
 #    servport	 = Port the server listens on
 #    chain	 = The canonical chain for this rule
+#    ratelimit   = Optional rate limiting clause
+#    userandgroup= -m owner clause
+#    userset     = User set name
 #
 add_a_rule()
 {
@@ -2100,7 +2410,6 @@ add_a_rule()
 
     case "$logtarget" in
 	REJECT)
-	    target=reject
 	    [ -n "$servport" ] && \
 		fatal_error "Server port may not be specified in a REJECT rule;"\
                             "rule: \"$rule\""
@@ -2123,7 +2432,7 @@ add_a_rule()
 
     # Complain if the rule is really a policy
 
-    if [ -z "$proto" -a -z "$cli" -a -z "$serv" -a -z "$servport" -a "$logtarget" != LOG ]; then
+    if [ -z "$proto" -a -z "$cli" -a -z "$serv" -a -z "$servport" -a -z "$userset" -a "$logtarget" != LOG ]; then
 	error_message "Warning -- Rule \"$rule\" is a POLICY"
 	error_message "	       -- and should be moved to the policy file"
     fi
@@ -2146,32 +2455,32 @@ add_a_rule()
 			    if [ -n "$addr" -a -n "$CONNTRACK_MATCH" ]; then
 				for adr in `separate_list $addr`; do
 				    if [ -n "$loglevel" -a -z "$natrule" ]; then
-					log_rule $loglevel $chain $logtarget -m conntrack --ctorigdst $adr \
-					    `fix_bang $proto $sports $multiport $state $cli -d $srv $dports`
+					log_rule_limit $loglevel $chain $logtarget "$ratelimit" -m conntrack --ctorigdst $adr \
+					    $userandgroup `fix_bang $proto $sports $multiport $state $cli -d $srv $dports`
 				    fi
 
-				    run_iptables2 -A $chain $proto $multiport $state $cli $sports \
-					-d $srv $dports -m conntrack --ctorigdst $adr -j $target
+				    run_iptables2 -A $chain $proto $ratelimit $multiport $state $cli $sports \
+					-d $srv $dports -m conntrack --ctorigdst $adr $userandgroup -j $target
 				done
 			    else
 				if [ -n "$loglevel" -a -z "$natrule" ]; then
-				    log_rule $loglevel $chain $logtarget \
+				    log_rule_limit $loglevel $chain $logtarget "$ratelimit" $userandgroup \
 					`fix_bang $proto $sports $multiport $state $cli -d $srv $dports`
 				fi
 
 				run_iptables2 -A $chain $proto $multiport $state $cli $sports \
-				    -d $srv $dports -j $target
+				    -d $srv $dports $ratelimit $userandgroup -j $target
 			    fi
 			done
 		    done
 		else
 		    if [ -n "$loglevel" -a -z "$natrule" ]; then
-		        log_rule $loglevel $chain $logtarget \
+		        log_rule_limit $loglevel $chain $logtarget "$ratelimit" $userandgroup \
 			    `fix_bang $proto $sports $multiport $state $cli $dports`
 		    fi
 
 		    run_iptables2 -A $chain $proto $multiport $state $cli $sports \
-			$dports -j $target
+			$dports $ratelimit $userandgroup -j $target
 		fi
 	    fi
 	fi
@@ -2185,13 +2494,13 @@ add_a_rule()
 
 	if [ $command != check ]; then
 	    if [ -n "$loglevel" ]; then
-		log_rule $loglevel $chain $logtarget \
+		log_rule_limit $loglevel $chain $logtarget "$ratelimit" $userandgroup \
 		    `fix_bang $proto $multiport $dest_interface $state $cli $sports $dports`
 	    fi
 
 	    if [ $logtarget != LOG ]; then
 		run_iptables2 -A $chain $proto $multiport $dest_interface $state \
-		    $cli $sports $dports -j $target
+		    $cli $sports $dports $ratelimit $userandgroup -j $target
 	    fi
 	fi
     fi
@@ -2207,6 +2516,8 @@ process_rule() # $1 = target
                # $5 = ports
                # $6 = cports
                # $7 = address
+               # $8 = ratelimit
+               # $9 = userset
 {
     local target="$1"
     local clients="$2"
@@ -2215,9 +2526,37 @@ process_rule() # $1 = target
     local ports="$5"
     local cports="$6"
     local address="$7"
-    local rule="`echo $target $clients $servers $protocol $ports $cports $address`"
+    local ratelimit="$8"
+    local userset="$9"
+    local userandgroup=
+    local rule="`echo $target $clients $servers $protocol $ports $cports $address $ratelimit $userset`"
 
-    # Function Body -- isolate log level
+    # Function Body - isolate rate limit
+
+    if [ -z "$ratelimit" ]; then
+	if [ "$target" != "${target%<*}" ]; then
+	    ratelimit="${target#*<}"
+	    ratelimit="${ratelimit%>*}"
+	    target="${target%<*}${target#*>}"
+	    expandv ratelimit
+	fi
+    fi
+    
+    if [ -n "$ratelimit" ]; then
+	case $ratelimit in
+	    -)
+		ratelimit=
+		;;
+	    *:*)
+		ratelimit="-m limit --limit ${ratelimit%:*} --limit-burst ${ratelimit#*:}"
+		;;
+	    *)
+		ratelimit="-m limit --limit $ratelimit"
+		;;
+	esac
+    fi
+
+    # Isolate log level
 
     if [ "$target" = "${target%:*}" ]; then
 	loglevel=
@@ -2226,51 +2565,107 @@ process_rule() # $1 = target
 	target="${target%:*}"
 	expandv loglevel
     fi
-
+  
     logtarget="$target"
     dnat_only=
 
     # Tranform the rule:
     #
+    # - parse the user set specification
     # - set 'target' to the filter table target.
     # - make $FW the destination for REDIRECT
     # - remove '-' suffix from logtargets while setting 'dnat_only'
     # - clear 'address' if it has been set to '-'
 
+    [ "x$userset" = x- ]   && userset=
     [ "x$address" = "x-" ] && address=
 
-    case $target in
-    DNAT)
-	target=ACCEPT
-	address=${address:=detect}
-	;;
-    DNAT-)
-	target=ACCEPT
-	address=${address:=detect}
-	dnat_only=Yes
-	logtarget=DNAT
-	;;
-    REDIRECT)
-	target=ACCEPT
-	address=${address:=all}
-	if [ "x-" = "x$servers" ]; then
-	    servers=$FW
-	else
-	    servers="$FW::$servers"
-	fi
-	;;
-    REDIRECT-)
-	target=ACCEPT
-	logtarget=REDIRECT
-	dnat_only=Yes
-	address=${address:=all}
-	if [ "x-" = "x$servers" ]; then
-	    servers=$FW
-	else
-	    servers="$FW::$servers"
-	fi
-	;;
-    esac
+    if [ -n "$userset" ]; then
+	case "$userset" in
+	    *:*)
+		case $target in 
+		    ACCEPT|REJECT|DROP)
+			;;
+		    *)
+			fatal_error "<user>:<group> may only be specified in ACCEPT, REJECT and DROP rules: rule \"$rule\""
+			;;
+		esac
+			
+		if [ "$userset" != ":" ]; then
+		    userandgroup="-m owner"
+		    temp="${userset%:*}"
+		    [ -n "$temp" ] && userandgroup="$userandgroup --uid-owner $temp" 
+		    temp="${userset#*:}"
+		    [ -n "$temp" ] && userandgroup="$userandgroup --gid-owner $temp"
+		fi 
+		userset=
+		;;
+	    *)
+		if ! havechain `accept_chain $userset`; then
+		    fatal_error "Unknown user set $userset: rule \"$rule\""
+		fi
+		
+		case $target in
+		    ACCEPT)
+			target=`accept_chain $userset`
+			;;
+		    DROP)
+			target=`drop_chain $userset`
+			;;
+		    REJECT)
+			target=`reject_chain $userset`
+			;;
+		    *)
+			fatal_error "A user set may only be specified in ACCEPT, REJECT and DROP rules: rule \"$rule\""
+		esac
+		
+		[ -n "$loglevel" ] && \
+		    fatal_error "Logging may not be specified on a rule with a User Set: rule \"$rule\""
+		;;
+	esac
+    else
+	case $target in
+	    ACCEPT|LOG)
+		;;
+	    REJECT)
+		target=reject
+		;;
+	    DNAT)
+		target=ACCEPT
+		address=${address:=detect}
+		;;
+	    DNAT-)
+		target=ACCEPT
+		address=${address:=detect}
+		dnat_only=Yes
+		logtarget=DNAT
+		;;
+	    REDIRECT)
+		target=ACCEPT
+		address=${address:=all}
+		if [ "x-" = "x$servers" ]; then
+		    servers=$FW
+		else
+		    servers="$FW::$servers"
+		fi
+		;;
+	    REDIRECT-)
+		target=ACCEPT
+		logtarget=REDIRECT
+		dnat_only=Yes
+		address=${address:=all}
+		if [ "x-" = "x$servers" ]; then
+		    servers=$FW
+		else
+		    servers="$FW::$servers"
+		fi
+		;;
+	    *)
+		[ -n "$ratelimit" ] && fatal_error \
+		    "Rate Limiting only available with ACCEPT, DNAT[-], REDIRECT[-] and LOG"
+		;;
+	esac
+    fi
 
     # Parse and validate source
 
@@ -2300,7 +2695,11 @@ process_rule() # $1 = target
 
     source=$clientzone
 
-    [ $source = $FW ] && source_hosts= || eval source_hosts=\"\$${source}_hosts\"
+    if [ $source = $FW ]; then
+	source_hosts= || eval source_hosts=\"\$${source}_hosts\"
+    elif [ -n "$userset" ]; then
+	fatal_error "Invalid use of a user set: rule \"$rule\""
+    fi
 
     if [ "$servers" = "${servers%:*}" ] ; then
 	serverzone="$servers"
@@ -2332,6 +2731,9 @@ process_rule() # $1 = target
     chain=${source}2${dest}
 
     eval policy=\$${chain}_policy
+
+    [ -z "$policy" ] && \
+	fatal_error "No policy defined from zone $source to zone $dest"
 
     [ $policy = NONE ] && \
 	fatal_error "Rules may not override a NONE policy: rule \"$rule\""
@@ -2449,7 +2851,7 @@ process_rule() # $1 = target
 #
 # Process the rules file for the 'start', 'restart' or 'check' command.
 #
-process_rules() # $1 = name of rules file
+process_rules()
 {
     #
     # Process a rule where the source or destination is "all"
@@ -2458,17 +2860,17 @@ process_rules() # $1 = name of rules file
 	for yclients in $xclients; do
 	    for yservers in $xservers; do
 		if [ "${yclients}" != "${yservers}" ] ; then
-		    process_rule $xtarget $yclients $yservers $xprotocol $xports $xcports $xaddress
+		    process_rule $xtarget $yclients $yservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserset
 		fi
 	    done
 	done
     }
 
-    while read xtarget xclients xservers xprotocol xports xcports xaddress; do
-	case "${xtarget%:*}" in
-
+    while read xtarget xclients xservers xprotocol xports xcports xaddress xratelimit xuserset; do
+	temp="${xtarget%:*}"
+	case "${temp%<*}" in
 	    ACCEPT|DROP|REJECT|DNAT|DNAT-|REDIRECT|REDIRECT-|LOG|CONTINUE)
-		expandv xclients xservers xprotocol xports xcports xaddress
+		expandv xclients xservers xprotocol xports xcports xaddress xratelimit xuserset
 
 		if [ "x$xclients" = xall ]; then
 		    xclients="$zones $FW"
@@ -2485,10 +2887,10 @@ process_rules() # $1 = name of rules file
 		    continue
 		fi
 
-		process_rule $xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress
+		process_rule $xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserset
 		;;
 	    *)
-		rule="`echo $xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress`"
+		rule="`echo $xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserset`"
 		fatal_error "Invalid Action in rule \"$rule\""
 		;;
 
@@ -2694,7 +3096,7 @@ loadmodule() # $1 = module name, $2 - * arguments
     if [ -z "`lsmod | grep $modulename`" ]; then
 	shift
 	
-	for suffix in o gz ko ; do
+	for suffix in o gz ko o.gz ; do
 	    modulefile=$MODULESDIR/${modulename}.${suffix}
 
 	    if [ -f $modulefile ]; then
@@ -2977,22 +3379,11 @@ setup_masq()
 	fi
 
 	chain=`masq_chain $interface`
-	iface=
 
 	source="$subnet"
 
 	case $subnet in
 	*.*.*)
-	    ;;
-	-)
-	    #
-	    # Note: This only works if you have the LOCAL NAT patches in the
-	    #	    kernel and in the iptables utility
-	    #
-	    chain=OUTPUT
-	    subnet=
-	    source=$FW
-	    iface="-o $interface"
 	    ;;
 	*)
 	    subnets=`get_routed_subnets $subnet`
@@ -3001,16 +3392,18 @@ setup_masq()
 	    ;;
 	esac
 
-	if [ -n "$address" -a -n "$ADD_SNAT_ALIASES" ]; then
-	    for addr in `ip_range $address` ; do
-		if ! list_search $addr $aliases_to_add; then
-		    aliases_to_add="$aliases_to_add $addr $fullinterface"
-		    case $fullinterface in
-		    *:*)
-			fullinterface=${fullinterface%:*}:$((${fullinterface#*:} + 1 ))
-			;;
-		    esac
-		fi
+	if [ -n "$addresses" -a -n "$ADD_SNAT_ALIASES" ]; then
+	    for address in `separate_list $addresses`; do
+		for addr in `ip_range_explicit $address` ; do
+		    if ! list_search $addr $aliases_to_add; then
+			aliases_to_add="$aliases_to_add $addr $fullinterface"
+			case $fullinterface in
+			    *:*)
+				fullinterface=${fullinterface%:*}:$((${fullinterface#*:} + 1 ))
+				;;
+			esac
+		    fi
+		done
 	    done
 	fi
 
@@ -3022,16 +3415,15 @@ setup_masq()
 
 	    if [ -n "$subnet" ]; then
 		for s in $subnet; do
-		    addnatrule $chain -d $destnet $iface -s $s -j $newchain
+		    addnatrule $chain -d $destnet -s $s -j $newchain
 		done
 	    else
-		addnatrule $chain -d $destnet $iface -j $newchain
+		addnatrule $chain -d $destnet -j $newchain
 	    fi
 
 	    masq_seq=$(($masq_seq + 1))
 	    chain=$newchain
 	    subnet=
-	    iface=
 	    destnet=
 
 	    for addr in `separate_list $nomasq`; do
@@ -3043,21 +3435,28 @@ setup_masq()
 	    destnet="-d $destnet"
 	fi
 
+	if [ -n "$addresses" ]; then
+	    temp=
+	    for address in `separate_list $addresses`; do
+		temp="$temp --to-source $address"
+	    done
+	fi
+
 	if [ -n "$subnet" ]; then
 	    for s in $subnet; do
-		if [ -n "$address" ]; then
-		    addnatrule $chain -s $s $destnet $iface -j SNAT --to-source $address
-		    echo "   To $destination from $s through ${interface} using $address"
+		if [ -n "$addresses" ]; then
+		    addnatrule $chain -s $s $destnet -j SNAT $temp
+		    echo "   To $destination from $s through ${interface} using $addresses"
 		else
-		    addnatrule $chain -s $s $destnet $iface -j MASQUERADE
+		    addnatrule $chain -s $s $destnet -j MASQUERADE
 		    echo "   To $destination from $s through ${interface}"
 		fi
 	    done
 	elif [ -n "$address" ]; then
-	    addnatrule $chain $destnet $iface -j SNAT --to-source $address
-	    echo "   To $destination from $source through ${interface} using $address"
+	    addnatrule $chain $destnet -j SNAT $temp
+	    echo "   To $destination from $source through ${interface} using $addresses"
 	else
-	    addnatrule $chain $destnet $iface -j MASQUERADE
+	    addnatrule $chain $destnet -j MASQUERADE
 	    echo "   To $destination from $source through ${interface}"
 	fi
 
@@ -3067,8 +3466,8 @@ setup_masq()
 
     [ -n "$NAT_ENABLED" ] && echo "Masqueraded Subnets and Hosts:"
 
-    while read fullinterface subnet address; do
-	expandv fullinterface subnet address
+    while read fullinterface subnet addresses; do
+	expandv fullinterface subnet addresses
 	[ -n "$NAT_ENABLED" ] && setup_one || \
 	    error_message "Warning: NAT disabled; masq rule ignored"
     done < $TMP_DIR/masq
@@ -3258,10 +3657,14 @@ add_ip_aliases()
 	# Get all of the lines that contain inet addresses 
 	#
 	ip addr show $interface 2> /dev/null | grep 'inet' | while read inet cidr rest ; do
-	    if in_subnet $external $cidr; then
-		echo "/${cidr#*/} brd `broadcastaddress $cidr`"
-		break
-	    fi
+	    case $cidr in
+		*/*)
+		    if in_subnet $external $cidr; then
+			echo "/${cidr#*/} brd `broadcastaddress $cidr`"
+			break
+		    fi
+		    ;;
+	    esac
 	done
     }
 
@@ -3434,6 +3837,10 @@ initialize_netfilter () {
     run_iptables -A INPUT  -i lo -j ACCEPT
     run_iptables -A OUTPUT -o lo -j ACCEPT
 
+    accounting_file=`find_file accounting`
+
+    [ -f $accounting_file ] && setup_accounting $accounting_file
+
     #
     # Allow DNS lookups during startup for FQDNs and deep-six INVALID packets
     #
@@ -3472,18 +3879,24 @@ initialize_netfilter () {
     createchain reject	no
     createchain dynamic no
 
+    usersets_file=`find_file usersets`
+
+    [ -f $usersets_file ] && setup_usersets $usersets_file
+
     if [ -f /var/lib/shorewall/save ]; then
 	echo "Restoring dynamic rules..."
-
-	while read target ignore1 ignore2 address rest; do
-	    case $target in
-	    DROP|reject)
-		run_iptables2 -A dynamic -s $address -j $target
-		;;
-	    *)
-		;;
-	esac
-	done < /var/lib/shorewall/save
+	
+	if [ -f /var/lib/shorewall/save ]; then
+	    while read target ignore1 ignore2 address rest; do
+		case $target in
+		    DROP|reject)
+			run_iptables2 -A dynamic -s $address -j $target
+			;;
+		    *)
+			;;
+		esac
+	    done < /var/lib/shorewall/save
+	fi
     fi
 
     echo "Creating Interface Chains..."
@@ -3492,7 +3905,7 @@ initialize_netfilter () {
 	createchain `forward_chain $interface` no
 	run_iptables -A `forward_chain $interface` -j dynamic
 	createchain `input_chain $interface`   no
-	run_iptables -A `input_chain $interface`   -j dynamic
+	run_iptables -A `input_chain $interface` -j dynamic
     done
 }
 
@@ -3512,8 +3925,10 @@ build_common_chain() {
 
     if [ -f $common ]; then
 	. $common
+    elif [ -f /etc/shorewall/common.def ]; then
+	. /etc/shorewall/common.def
     else
-	. `find_file common.def`
+	fatal_error "/etc/shorewall/common.def does not exist"
     fi
     #
     # New Not Syn Stuff
@@ -3592,11 +4007,11 @@ add_common_rules() {
 
 	LOGPARMS="$LOGPARMS --log-ip-options"
 
-	log_rule $LOGUNCLEAN logpkt DROP -p ! tcp 
+	log_rule $LOGUNCLEAN logpkt LOG -p ! tcp 
 
 	LOGPARMS="$LOGPARMS --log-tcp-options"
 	
-	log_rule $LOGUNCLEAN logpkt DROP -p tcp 
+	log_rule $LOGUNCLEAN logpkt LOG -p tcp 
 
 	LOGPARMS="$savelogparms"
 
@@ -3611,6 +4026,11 @@ add_common_rules() {
     fi
 
     build_common_chain
+
+    #
+    # Process Black List
+    #
+    setup_blacklist
 
     #
     # DHCP
@@ -3664,7 +4084,7 @@ add_common_rules() {
 		logdrop|DROP|RETURN)
 		    ;;
 		*)
-		    fatal_error "Illegal target ($target) for $subnet"
+		    fatal_error "Invalid target ($target) for $subnet"
 		    ;;
 	    esac
 
@@ -3745,10 +4165,26 @@ add_common_rules() {
 	done
     fi
     #
-    # Process Black List
+    # ARP Filtering
     #
-    setup_blacklist
+    for f in /proc/sys/net/ipv4/conf/*/arp_filter; do
+	echo 0 > $f
+    done
 
+    interfaces=`find_interfaces_by_option arp_filter`
+
+    if [ -n "$interfaces" ]; then
+	echo "Setting up ARP Filtering..."
+	for interface in $interfaces; do
+	    file=/proc/sys/net/ipv4/conf/$interface/arp_filter
+	    if [ -f $file ]; then
+		echo 1 > $file
+	    else
+		error_message \
+		    "Warning: Cannot set ARP filtering on $interface"
+	    fi
+	done
+    fi
     #
     # Route Filtering
     #
@@ -3764,8 +4200,6 @@ add_common_rules() {
 	if [ -n "$ROUTE_FILTER" ]; then
 	    echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter
 	else
-	    echo 0 > /proc/sys/net/ipv4/conf/all/rp_filter
-
 	    for interface in $interfaces; do
 		file=/proc/sys/net/ipv4/conf/$interface/rp_filter
 		if [ -f $file ]; then
@@ -4007,10 +4441,9 @@ activate_rules()
 }
 
 #
-# Start/Restart the Firewall
+# Check for disabled startup
 #
-define_firewall() # $1 = Command (Start or Restart)
-{
+check_disabled_startup() {
     if [ -f /etc/shorewall/startup_disabled ]; then
 	echo "   Shorewall Startup is disabled -- to enable startup"
 	echo "   after you have completed Shorewall configuration,"
@@ -4020,6 +4453,14 @@ define_firewall() # $1 = Command (Start or Restart)
 	my_mutex_off
 	exit 2
     fi
+}
+
+#
+# Start/Restart the Firewall
+#
+define_firewall() # $1 = Command (Start or Restart)
+{
+    check_disabled_startup
 
     echo "${1}ing Shorewall..."
 
@@ -4058,7 +4499,7 @@ define_firewall() # $1 = Command (Start or Restart)
 
     echo "Processing $rules..."
 
-    process_rules $rules
+    process_rules
 
     policy=`find_file policy`
 
@@ -4553,6 +4994,7 @@ do_initialize() {
     LOGRATE=
     LOGBURST=
     LOGPARMS=
+    LOGLIMIT=
     ADD_IP_ALIASES=
     ADD_SNAT_ALIASES=
     TC_ENABLED=
@@ -4578,6 +5020,7 @@ do_initialize() {
     VERSION_FILE=
     LOGFORMAT=
     LOGRULENUMBERS=
+    ADMINISABSENTMINDED=
 
     stopping=
     have_mutex=
@@ -4616,6 +5059,10 @@ do_initialize() {
 	echo "$config does not exist!" >&2
 	exit 2
     fi
+    #
+    # Determine the capabilities of the installed iptables/netfilter
+    #
+    determine_capabilities
 
     [ -z "${STATEDIR}" ] && STATEDIR=/var/state/shorewall
 
@@ -4630,9 +5077,9 @@ do_initialize() {
     TC_ENABLED="`added_param_value_yes TC_ENABLED $TC_ENABLED`"
 
     if [ -n "${LOGRATE}${LOGBURST}" ]; then
-	LOGPARMS="--match limit"
-	[ -n "$LOGRATE" ]  && LOGPARMS="$LOGPARMS --limit $LOGRATE"
-	[ -n "$LOGBURST" ] && LOGPARMS="$LOGPARMS --limit-burst $LOGBURST"
+	LOGLIMIT="--match limit"
+	[ -n "$LOGRATE" ]  && LOGLIMIT="$LOGLIMIT --limit $LOGRATE"
+	[ -n "$LOGBURST" ] && LOGLIMIT="$LOGLIMIT --limit-burst $LOGBURST"
     fi
 
     if [ -n "$IP_FORWARDING" ]; then
@@ -4722,15 +5169,12 @@ do_initialize() {
     else
 	LOGFORMAT="Shorewall:%s:%s:"
     fi
+    ADMINISABSENTMINDED=`added_param_value_no ADMINISABSENTMINDED $ADMINISABSENTMINDED`
     #
     # Strip the files that we use often
     #
     strip_file interfaces
     strip_file hosts
-    #
-    # Determine the capabilities of the installed iptables/netfilter
-    #
-    determine_capabilities
     #
     # Check out the user's shell
     #
@@ -4771,6 +5215,10 @@ case "$command" in
 	[ $# -ne 1 ] && usage
 	do_initialize
 	my_mutex_on
+	#
+	# Don't want to do a 'stop' when startup is disabled
+	#
+	check_disabled_startup 
 	echo -n "Stopping Shorewall..."
 	stop_firewall
 	[ -n "$SUBSYSLOCK" ] && rm -f $SUBSYSLOCK

@@ -47,9 +47,28 @@
 #					    (those) zone(s).
 #				LOG      -- Simply log the packet and continue.
 #
-#			May optionally be followed by ":" and a syslog log
-#			level (e.g, REJECT:info). This causes the packet to be
+#			You may rate-limit the rule by optionally
+#			following ACCEPT, DNAT[-], REDIRECT[-] or LOG with
+# 
+#				< <rate>/<interval>[:<burst>] >
+#
+#			where <rate> is the number of connections per 
+#			<interval> ("sec" or "min") and <burst> is the
+#			largest burst permitted. If no <burst> is given,
+#			a value of 5 is assumed. There may be no
+#			no whitespace embedded in the specification.
+#
+#				Example: ACCEPT<10/sec:20>
+#
+#			The ACTION (and rate limit) may optionally be followed
+#			by ":" and a syslog log level (e.g, REJECT:info or
+#			DNAT<4/sec:8>:debugging). This causes the packet to be
 #			logged at the specified level.
+#
+#			NOTE: For those of you who prefer to place the
+#			rate limit in a separate column, see the RATE LIMIT
+#			column below. If you specify a value in that column,
+#			you must not include a rate limit in the ACTION column
 #
 #			You may also specify ULOG (must be in upper case) as a
 #			log level.This will log to the ULOG target for routing
@@ -193,6 +212,39 @@
 #			If no source IP address is given, the original source
 #			address is not altered.
 #
+#	RATE LIMIT	You may rate-limit the rule by placing a value in 
+#			this colume:
+# 
+#				<rate>/<interval>[:<burst>]
+#
+#			where <rate> is the number of connections per 
+#			<interval> ("sec" or "min") and <burst> is the
+#			largest burst permitted. If no <burst> is given,
+#			a value of 5 is assumed. There may be no
+#			no whitespace embedded in the specification.
+#
+#				Example: 10/sec:20
+#
+#			If you place a rate limit in this column, you may not
+#			place a similar limit in the ACTION column.
+#
+#	USER SET	This column may only be non-empty if the SOURCE is
+#			the firewall itself and the ACTION is ACCEPT, DROP or
+#			REJECT.
+#			
+#			The column may contain a user set name defined in the
+#			/etc/shorewall/usersets file or it may contain:
+#
+#			   [<user name or number>]:[<group name or number>]
+#
+#			When this column is non-empty, the rule applies only
+#			if the program generating the output is running under
+#			the effective <user>(s) and/or <group>(s) specified.
+#			When a user set name is given, a log level may not be
+#			present in the ACTION column; logging for such rules is
+#			controlled by the user set's entry in 
+#			/etc/shorewall/usersets.
+#
 #	Example: Accept SMTP requests from the DMZ to the internet
 #
 #	#ACTION SOURCE	DEST PROTO	DEST    SOURCE	ORIGINAL
@@ -205,6 +257,14 @@
 #	#ACTION SOURCE	DEST            PROTO	DEST    SOURCE	ORIGINAL
 #	#                                       PORT    PORT(S) DEST
 #	DNAT	net	loc:192.168.1.3 tcp	ssh,http
+#
+#	Example: Forward all http connection requests from the internet
+#		 to local system 192.168.1.3 with a limit of 3 per second and
+#		 a maximum burst of 10
+#
+#	#ACTION 	SOURCE	DEST            PROTO	DEST    SOURCE	ORIGINAL
+#	#                                       	PORT    PORT(S) DEST
+#	DNAT<3/sec:10>	net	loc:192.168.1.3 tcp	http
 #
 #	Example: Redirect all locally-originating www connection requests to
 #		 port 3128 on the firewall (Squid running on the firewall
@@ -226,9 +286,9 @@
 #
 #	#ACTION  SOURCE	DEST      	PROTO	DEST    SOURCE	ORIGINAL
 #	#                               	PORT    PORT(S) DEST
-#	ACCEPT	 net:130.252.100.69,130.252.100.70 \
+#	ACCEPT	 net:130.252.100.69,130.252.100.70 fw \
 #					tcp	22
-##############################################################################
-#ACTION  SOURCE		DEST      	PROTO	DEST    SOURCE	   ORIGINAL
-#                       	        	PORT    PORT(S)    DEST
+####################################################################################################
+#ACTION  SOURCE		DEST      	PROTO	DEST    SOURCE	   ORIGINAL	RATE		USER
+#                       	        	PORT    PORT(S)    DEST		LIMIT
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

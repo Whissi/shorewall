@@ -51,7 +51,7 @@
 #						   compensate for a change of
 #						   broadcast address on any "detect"
 #						   interface.
-#	   shorewall show <chain>		   Display the rules in a <chain>
+#	   shorewall show <chain> [ <chain> ... ]  Display the rules in each <chain> listed
 #	   shorewall show log			   Print the last 20 log messages
 #	   shorewall show connections		   Show the kernel's connection
 #						   tracking table
@@ -518,6 +518,15 @@ logwatch() # $1 = timeout -- if negative, prompt each time that
 }
 
 #
+# Help information
+#
+help()
+{
+    [ -x $HELP ] && { export version; exec $HELP $*; }
+    echo "Help subsystem is not installed at $HELP"
+}
+ 
+#
 # Give Usage Information
 #
 usage() # $1 = exit status
@@ -525,27 +534,28 @@ usage() # $1 = exit status
     echo "Usage: `basename $0` [debug] [nolock] [-c <directory>] <command>"
     echo "where <command> is one of:"
     echo "   add <interface>[:<host>] <zone>"
-    echo "   delete <interface>[:<host>] <zone>"
-    echo "   show [<chain>|classifiers|connections|log|nat|tc|tos]"
-    echo "   start"
-    echo "   stop"
-    echo "   reset"
-    echo "   restart"
-    echo "   status"
-    echo "   clear"
-    echo "   refresh"
-    echo "   hits"
-    echo "   monitor [<refresh interval>]"
-    echo "   version"
-    echo "   check"
-    echo "   try <directory> [ <timeout> ]"
-    echo "   logwatch [<refresh interval>]"
-    echo "   drop <address> ..."
-    echo "   reject <address> ..."
     echo "   allow <address> ..."
-    echo "   save"
+    echo "   check"
+    echo "   clear"
+    echo "   delete <interface>[:<host>] <zone>"
+    echo "   drop <address> ..."
+    echo "   help [ <command > | host | address ]"
+    echo "   hits"
     echo "   ipcalc [ <address>/<vlsm> | <address> <netmask> ]"
     echo "   iprange <address>-<address>"
+    echo "   logwatch [<refresh interval>]"
+    echo "   monitor [<refresh interval>]"
+    echo "   refresh"
+    echo "   reject <address> ..."
+    echo "   reset"
+    echo "   restart"
+    echo "   save"
+    echo "   show [<chain> [ <chain> ... ]|classifiers|connections|log|nat|tc|tos]"
+    echo "   start"
+    echo "   stop"
+    echo "   status"
+    echo "   try <directory> [ <timeout> ]"
+    echo "   version"
     exit $1
 }
 
@@ -611,12 +621,11 @@ fi
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 MUTEX_TIMEOUT=
 
-[ -z "${STATEDIR}" ] && STATEDIR=/var/state/shorewall
-
 SHARED_DIR=/usr/share/shorewall
 FIREWALL=$SHARED_DIR/firewall
 FUNCTIONS=$SHARED_DIR/functions
 VERSION_FILE=$SHARED_DIR/version
+HELP=$SHARED_DIR/help
 
 if [ -f $FUNCTIONS ]; then
     . $FUNCTIONS
@@ -633,6 +642,8 @@ else
     echo "$config does not exist!" >&2
     exit 2
 fi
+
+[ -z "${STATEDIR}" ] && STATEDIR=/var/state/shorewall
 
 if [ ! -f $FIREWALL ]; then
     echo "ERROR: Shorewall is not properly installed"
@@ -687,26 +698,29 @@ case "$1" in
 	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $1 $2 $3
 	;;
     show|list)
-	[ $# -gt 2 ] && usage 1
 	case "$2" in
 	connections)
+	    [ $# -gt 2 ] && usage 1
 	    echo "Shorewall-$version Connections at $HOSTNAME - `date`"
 	    echo
 	    cat /proc/net/ip_conntrack
 	    ;;
 	nat)
+	    [ $# -gt 2 ] && usage 1
 	    echo "Shorewall-$version NAT at $HOSTNAME - `date`"
 	    echo
 	    show_reset
 	    iptables -t nat -L -n -v
 	    ;;
 	tos|mangle)
+	    [ $# -gt 2 ] && usage 1
 	    echo "Shorewall-$version TOS at $HOSTNAME - `date`"
 	    echo
 	    show_reset
 	    iptables -t mangle -L -n -v
 	    ;;
 	log)
+	    [ $# -gt 2 ] && usage 1
 	    get_config
 	    echo "Shorewall-$version Log at $HOSTNAME - `date`"
 	    echo
@@ -715,20 +729,30 @@ case "$1" in
 	    packet_log 20
 	    ;;
 	tc)
+	    [ $# -gt 2 ] && usage 1
 	    echo "Shorewall-$version Traffic Control at $HOSTNAME - `date`"
 	    echo
 	    show_tc
 	    ;;
 	classifiers)
+	    [ $# -gt 2 ] && usage 1
 	    echo "Shorewall-$version Clasifiers at $HOSTNAME - `date`"
 	    echo
 	    show_classifiers
 	    ;;
 	*)
-	    echo "Shorewall-$version Chain $2 at $HOSTNAME - `date`"
+	    shift
+	    
+	    echo "Shorewall-$version `[ $# -gt 1 ] && echo Chains || echo Chain` $* at $HOSTNAME - `date`"
 	    echo
 	    show_reset
-	    iptables -L $2 -n -v
+	    if [ $# -gt 0 ]; then
+		for chain in $*; do
+		    iptables -L $chain -n -v
+		done
+	    else
+		iptables -L -n -v
+	    fi
 	    ;;
 	esac
 	;;
@@ -837,6 +861,8 @@ case "$1" in
 	mutex_on
 	while [ $# -gt 1 ]; do
 	    shift
+	    qt iptables -D dynamic -s $1 -j reject
+	    qt iptables -D dynamic -s $1 -j DROP
 	    iptables -A dynamic -s $1 -j DROP || break 1
 	    echo "$1 Dropped"
 	done
@@ -847,6 +873,8 @@ case "$1" in
 	mutex_on
 	while [ $# -gt 1 ]; do
 	    shift
+	    qt iptables -D dynamic -s $1 -j reject
+	    qt iptables -D dynamic -s $1 -j DROP
 	    iptables -A dynamic -s $1 -j reject || break 1
 	    echo "$1 Rejected"
 	done
@@ -857,13 +885,7 @@ case "$1" in
 	mutex_on
 	while [ $# -gt 1 ]; do
 	    shift
-	    if	qt iptables -D dynamic -s $1 -j reject; then
-		#
-		# Address was rejected -- silently remove any drop as well
-		#
-		qt iptables -D dynamic -s $1 -j DROP
-		echo "$1 Allowed"
-	    elif qt iptables -D dynamic -s $1 -j DROP; then
+	    if	qt iptables -D dynamic -s $1 -j reject || qt iptables -D dynamic -s $1 -j DROP; then
 		echo "$1 Allowed"
 	    else
 		echo "$1 Not Dropped or Rejected"
@@ -926,6 +948,11 @@ case "$1" in
 	#
 	shift;
 	$@
+	;;
+    help)
+	shift
+	[ $# -ne 1 ] && usage 1
+	help $@
 	;;
     *)
 	usage 1

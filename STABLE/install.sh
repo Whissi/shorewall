@@ -54,7 +54,7 @@
 #        /etc/rc.d/rc.local file is modified to start the firewall.
 #
 
-VERSION=1.4.6c
+VERSION=1.4.7
 
 usage() # $1 = exit status
 {
@@ -316,6 +316,14 @@ install_file_with_backup functions ${PREFIX}/usr/share/shorewall/functions 0444
 
 echo
 echo "Common functions installed in ${PREFIX}/usr/share/shorewall/functions"
+
+#
+# Install the Help file
+#
+install_file_with_backup help ${PREFIX}/usr/share/shorewall/help 0544
+
+echo
+echo "Help command executor installed in ${PREFIX}/usr/share/shorewall/help"
 #
 # Install the common.def file
 #
@@ -545,7 +553,37 @@ if [ -f ${PREFIX}/etc/shorewall/ecn ]; then
 else
     run_install -o $OWNER -g $GROUP -m 0600 ecn ${PREFIX}/etc/shorewall/ecn
     echo
-    echo "ECN  file installed as ${PREFIX}/etc/shorewall/ecn"
+    echo "ECN file installed as ${PREFIX}/etc/shorewall/ecn"
+fi
+#
+# Install the Accounting file
+#
+if [ -f ${PREFIX}/etc/shorewall/accounting ]; then
+    backup_file /etc/shorewall/accounting
+else
+    run_install -o $OWNER -g $GROUP -m 0600 accounting ${PREFIX}/etc/shorewall/accounting
+    echo
+    echo "Accounting file installed as ${PREFIX}/etc/shorewall/accounting"
+fi
+#
+# Install the User Sets file
+#
+if [ -f ${PREFIX}/etc/shorewall/usersets ]; then
+    backup_file /etc/shorewall/usersets
+else
+    run_install -o $OWNER -g $GROUP -m 0600 usersets ${PREFIX}/etc/shorewall/usersets
+    echo
+    echo "User Sets file installed as ${PREFIX}/etc/shorewall/usersets"
+fi
+#
+# Install the User file
+#
+if [ -f ${PREFIX}/etc/shorewall/users ]; then
+    backup_file /etc/shorewall/users
+else
+    run_install -o $OWNER -g $GROUP -m 0600 users ${PREFIX}/etc/shorewall/users
+    echo
+    echo "Users file installed as ${PREFIX}/etc/shorewall/users"
 fi
 #
 # Backup the version file

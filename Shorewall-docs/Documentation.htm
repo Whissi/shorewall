@@ -105,6 +105,10 @@ packets for <a href="traffic_shaping.htm">Traffic Shaping/Control</a>.</li>
 the firewall. This should be placed in /sbin or in /usr/sbin (the
 install.sh
 script and the rpm install this file in /sbin).</li>
+  <li><a href="Accounting.html"><span style="font-weight: bold;">accounting</span></a>
+-- a parameter file in /etc/shorewall used to define traffic accounting
+rules. This file was added in version 1.4.7.<br>
+  </li>
   <li><b> version</b> -- a file created in /etc/shorewall/
 (/var/lib/shorewall in version 1.3.2-1.3.8 and /usr/lib/shorewall
 beginning in version 1.3.9) that describes the version of Shorewall
@@ -676,7 +680,10 @@ which TCP connection requests will be accepted followed by a colon
 Example: <b> 10/sec:40</b> specifies that the maximum rate of TCP
 connection requests allowed will be
 10 per second and a burst of 40 connections will be tolerated.
-Connection requests in excess of these limits will be dropped.</li>
+Connection requests in excess of these limits will be dropped. See the <a
+ href="#Rules">rules file documentation</a> for an explaination of how
+rate limiting works.<br>
+  </li>
 </ol>
 <p> In the SOURCE and DEST columns, you can enter "all" to indicate all
 zones. </p>
@@ -940,6 +947,13 @@ PORT(S)</b></td>
 PORT(S)</b></td>
         <td><b>ORIGINAL<br>
 DEST</b></td>
+        <td style="vertical-align: top;"><span
+ style="font-weight: bold;">RATE<br>
+LIMIT<br>
+        </span></td>
+        <td style="vertical-align: top;"><span
+ style="font-weight: bold;">USER<br>
+SET</span></td>
       </tr>
       <tr>
         <td>...</td>
@@ -954,6 +968,10 @@ DEST</b></td>
         <td> <br>
         </td>
         <td> <br>
+        </td>
+        <td style="vertical-align: top;"><br>
+        </td>
+        <td style="vertical-align: top;"><br>
         </td>
       </tr>
       <tr>
@@ -965,6 +983,10 @@ DEST</b></td>
         <td>-</td>
         <td> <br>
         </td>
+        <td style="vertical-align: top;"><br>
+        </td>
+        <td style="vertical-align: top;"><br>
+        </td>
       </tr>
       <tr>
         <td>DNAT</td>
@@ -974,6 +996,10 @@ DEST</b></td>
         <td>www</td>
         <td>-</td>
         <td> <br>
+        </td>
+        <td style="vertical-align: top;"><br>
+        </td>
+        <td style="vertical-align: top;"><br>
         </td>
       </tr>
       <tr>
@@ -989,6 +1015,10 @@ DEST</b></td>
         <td> <br>
         </td>
         <td> <br>
+        </td>
+        <td style="vertical-align: top;"><br>
+        </td>
+        <td style="vertical-align: top;"><br>
         </td>
       </tr>
     </tbody>
@@ -1010,7 +1040,7 @@ requires two rules as follows:</p>
   <p> </p>
   <font face="Century Gothic, Arial, Helvetica"> </font><font
  face="Century Gothic, Arial, Helvetica"> </font>
-  <table border="1" cellpadding="2" style="border-collapse: collapse;">
+  <table style="border-collapse: collapse;" cellpadding="2" border="1">
     <tbody>
       <tr>
         <td><b>ACTION</b></td>
@@ -1023,6 +1053,13 @@ PORT(S)</b></td>
 PORT(S)</b></td>
         <td><b>ORIGINAL<br>
 DEST</b></td>
+        <td style="vertical-align: top;"><span
+ style="font-weight: bold;">RATE<br>
+LIMIT<br>
+        </span></td>
+        <td style="vertical-align: top;"><span
+ style="font-weight: bold;">USER<br>
+SET</span></td>
       </tr>
       <tr>
         <td> <br>
@@ -1038,6 +1075,10 @@ DEST</b></td>
         <td> <br>
         </td>
         <td> <br>
+        </td>
+        <td style="vertical-align: top;"><br>
+        </td>
+        <td style="vertical-align: top;"><br>
         </td>
       </tr>
       <tr>
@@ -1053,6 +1094,10 @@ DEST</b></td>
         <td> <br>
         </td>
         <td> <br>
+        </td>
+        <td style="vertical-align: top;"><br>
+        </td>
+        <td style="vertical-align: top;"><br>
         </td>
       </tr>
       <tr>
@@ -1064,6 +1109,10 @@ DEST</b></td>
         <td>-</td>
         <td> <br>
         </td>
+        <td style="vertical-align: top;"><br>
+        </td>
+        <td style="vertical-align: top;"><br>
+        </td>
       </tr>
       <tr>
         <td>DNAT</td>
@@ -1073,6 +1122,10 @@ DEST</b></td>
         <td>ssh</td>
         <td>-</td>
         <td> <br>
+        </td>
+        <td style="vertical-align: top;"><br>
+        </td>
+        <td style="vertical-align: top;"><br>
         </td>
       </tr>
       <tr>
@@ -1088,6 +1141,10 @@ DEST</b></td>
         <td> <br>
         </td>
         <td> <br>
+        </td>
+        <td style="vertical-align: top;"><br>
+        </td>
+        <td style="vertical-align: top;"><br>
         </td>
       </tr>
     </tbody>
@@ -1134,8 +1191,46 @@ header-rewriting rule.<br>
       <li>LOG - Log the packet -- requires
 a syslog level (see below).</li>
     </ul>
-    <p>The ACTION may optionally be followed by ":" and a <a
- href="shorewall_logging.html">syslog level</a> (example: REJECT:info).
+    <p>Beginning with Shorewall version 1.4.7, you may rate-limit the
+rule by optionally following ACCEPT, DNAT[-], REDIRECT[-] or LOG with<br>
+&nbsp;<br>
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&lt; &lt;rate&gt;/&lt;interval&gt;[:&lt;burst&gt;] &gt;<br>
+    <br>
+where<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;rate&gt; is the number of connections per <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;interval&gt; ("sec" or "min") and &lt;burst&gt; is the largest
+burst permitted. If no burst value is given, a value of 5 is assumed.<br>
+    <br>
+There may be no whitespace embedded in the
+specification.&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp; <br>
+    <br>
+Let's take an example:<br>
+    <br>
+&nbsp;&nbsp;&nbsp; &nbsp;ACCEPT&lt;2/sec:4&gt;&nbsp;&nbsp;&nbsp;
+net&nbsp;&nbsp;&nbsp; dmz&nbsp;&nbsp;&nbsp; tcp&nbsp;&nbsp;&nbsp; 80<br>
+&nbsp;&nbsp; <br>
+The first time this rule is reached, the packet will be accepted; in
+fact, since the burst is 4, the first four packets will be accepted.
+After this, it will be 500ms (1 second divided by the rate of 2) before
+a packet will be accepted from this rule, regardless of how many
+packets reach it. Also, every 500ms which passes without matching a
+packet, one of the bursts will be regained; if no packets hit the rule
+for 2 second, the burst will be fully recharged; back where we started.<br>
+    <br>
+    <span style="font-weight: bold;">Warning: </span>When rate
+limiting is specified on a rule with "all" in the SOURCE or DEST fields
+below, the limit will apply to each pair of zones individually rather
+than as a single limit for all pairs of zones covered by the rule.<br>
+    <br>
+Rate limiting may also be specified in the RATE LIMIT column below; in
+that case, it must not be specified as part of the ACTION column.<br>
+    <br>
+The ACTION (and rate limit) may optionally be followed by ":" and a <a
+ href="shorewall_logging.html">syslog level</a> (example: REJECT:info
+or ACCEPT&lt;2/sec:4&gt;:debugging).
 This
 causes the packet to be logged at the specified level prior to being
 processed according to the specified ACTION. Note: if the ACTION
@@ -1144,6 +1239,8 @@ is LOG then you MUST specify a syslog level.<br>
 The use of DNAT or REDIRECT requires that you have <a
  href="#NatEnabled">NAT enabled</a>.<br>
     </p>
+  </li>
+  <li> <br>
   </li>
   <li><b>SOURCE</b> - Describes the source hosts to which the rule
 applies.. The contents of this field must begin with the name of a zone
@@ -1269,12 +1366,63 @@ scope of a rule by incoming interface. <br>
     </b>If SNAT is not used (no ":" and second IP address), the
 original source address is used. If you want any destination address to
 match the rule but want to specify SNAT, simply use a colon followed by
-the SNAT address.</li>
+the SNAT address.<br>
+    <br>
+  </li>
+  <li><span style="font-weight: bold;">RATE LIMIT </span>- Beginning
+with Shorewall version 1.4.7, you may rate-limit ACCEPT, DNAT[-],
+REDIRECT[-] or LOG rules with an entry in this column. Entries have the
+form<br>
+&nbsp;<br>
+&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;
+&lt;rate&gt;/&lt;interval&gt;[:&lt;burst&gt;] <br>
+    <br>
+where<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;rate&gt; is the number of connections per <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;interval&gt; ("sec" or "min") and &lt;burst&gt; is the largest
+burst permitted. If no burst value is given, a value of 5 is assumed.<br>
+    <br>
+There may be no whitespace embedded in the
+specification.&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &nbsp;&nbsp; <br>
+    <br>
+Let's take an example:<br>
+    <br>
+&nbsp;&nbsp;&nbsp; &nbsp;ACCEPT&lt;2/sec:4&gt;&nbsp;&nbsp;&nbsp;
+net&nbsp;&nbsp;&nbsp; dmz&nbsp;&nbsp;&nbsp; tcp&nbsp;&nbsp;&nbsp; 80<br>
+&nbsp;&nbsp; <br>
+The first time this rule is reached, the packet will be accepted; in
+fact, since the burst is 4, the first four packets will be accepted.
+After this, it will be 500ms (1 second divided by the rate of 2) before
+a packet will be accepted from this rule, regardless of how many
+packets reach it. Also, every 500ms which passes without matching a
+packet, one of the bursts will be regained; if no packets hit the rule
+for 2 second, the burst will be fully recharged; back where we started.<br>
+    <br>
+    <span style="font-weight: bold;">Warning: </span>When rate
+limiting is specified on a rule with "all" in the SOURCE or DEST fields
+below, the limit will apply to each pair of zones individually rather
+than as a single limit for all pairs of zones covered by the rule.<br>
+    <br>
+Rate limiting may also be specified in the ACTION column above; in that
+case, it must not be specified as part of the RATE LIMIT column.<br>
+    <br>
+If you want to specify any following columns but no rate limit, place
+"-" in this column.<br>
+    <br>
+  </li>
+  <li><span style="font-weight: bold;">USER SET </span>- Beginning
+with Shorewall release 1.4.7, output rules from the firewall itself may
+be restricted to a particular set of users and/or user groups. See the <a
+ href="UserSets.html">User Set Documentation </a>for details.<br>
+  </li>
 </ul>
 <p><b> <font face="Century Gothic, Arial, Helvetica"> <a
  name="PortForward"></a> </font>Example 1. </b> You wish to forward
 all ssh connection requests from the internet to local system
-192.168.1.3. </p>
+192.168.1.3.&nbsp; You wish to limit the number of connections to
+4/minute with a burst of 8 (Shorewall 1.4.7 and later only): </p>
 <blockquote> <font face="Century Gothic, Arial, Helvetica"> </font>
   <table border="1" cellpadding="2" style="border-collapse: collapse;">
     <tbody>
@@ -1289,9 +1437,17 @@ PORT(S)</b></td>
 PORT(S)</b></td>
         <td><b>ORIGINAL<br>
 DEST</b></td>
+        <td style="vertical-align: top;"><span
+ style="font-weight: bold;">RATE<br>
+LIMIT<br>
+        </span></td>
+        <td style="vertical-align: top;"><span
+ style="font-weight: bold;">USER<br>
+SET<br>
+        </span></td>
       </tr>
       <tr>
-        <td>DNAT</td>
+        <td>DNAT&lt;4/min:8&gt;</td>
         <td>net</td>
         <td>loc:192.168.1.3</td>
         <td>tcp</td>
@@ -1299,6 +1455,10 @@ DEST</b></td>
         <td> <br>
         </td>
         <td> <br>
+        </td>
+        <td style="vertical-align: top;"><br>
+        </td>
+        <td style="vertical-align: top;"><br>
         </td>
       </tr>
     </tbody>
@@ -1326,6 +1486,14 @@ PORT(S)</b></td>
 PORT(S)</b></td>
         <td><b>ORIGINAL<br>
 DEST</b></td>
+        <td style="vertical-align: top;"><span
+ style="font-weight: bold;">RATE<br>
+LIMIT<br>
+        </span></td>
+        <td style="vertical-align: top;"><span
+ style="font-weight: bold;">USER<br>
+SET<br>
+        </span></td>
       </tr>
       <tr>
         <td>REDIRECT</td>
@@ -1336,6 +1504,10 @@ DEST</b></td>
         <td> -<br>
         </td>
         <td>!206.124.146.177</td>
+        <td style="vertical-align: top;"><br>
+        </td>
+        <td style="vertical-align: top;"><br>
+        </td>
       </tr>
       <tr>
         <td>ACCEPT</td>
@@ -1346,6 +1518,10 @@ DEST</b></td>
         <td> <br>
         </td>
         <td> <br>
+        </td>
+        <td style="vertical-align: top;"><br>
+        </td>
+        <td style="vertical-align: top;"><br>
         </td>
       </tr>
     </tbody>
@@ -1369,6 +1545,13 @@ PORT(S)</b></td>
 PORT(S)</b></td>
         <td><b>ORIGINAL<br>
 DEST</b></td>
+        <td style="vertical-align: top;"><span
+ style="font-weight: bold;">RATE<br>
+LIMIT<br>
+        </span></td>
+        <td style="vertical-align: top;"><span
+ style="font-weight: bold;">USER<br>
+SET</span></td>
       </tr>
       <tr>
         <td>ACCEPT</td>
@@ -1378,6 +1561,10 @@ DEST</b></td>
         <td>www</td>
         <td>-</td>
         <td> <br>
+        </td>
+        <td style="vertical-align: top;"><br>
+        </td>
+        <td style="vertical-align: top;"><br>
         </td>
       </tr>
       <tr>
@@ -1389,6 +1576,10 @@ DEST</b></td>
         <td> <br>
         </td>
         <td> <br>
+        </td>
+        <td style="vertical-align: top;"><br>
+        </td>
+        <td style="vertical-align: top;"><br>
         </td>
       </tr>
     </tbody>
@@ -1423,6 +1614,13 @@ PORT(S)</b></td>
 PORT(S)</b></td>
         <td><b>ORIGINAL<br>
 DEST</b></td>
+        <td style="vertical-align: top;"><span
+ style="font-weight: bold;">RATE<br>
+LIMIT<br>
+        </span></td>
+        <td style="vertical-align: top;"><span
+ style="font-weight: bold;">USER<br>
+SET</span></td>
       </tr>
       <tr>
         <td>DNAT</td>
@@ -1434,6 +1632,10 @@ DEST</b></td>
         </td>
         <td> <br>
         </td>
+        <td style="vertical-align: top;"><br>
+        </td>
+        <td style="vertical-align: top;"><br>
+        </td>
       </tr>
       <tr>
         <td>DNAT</td>
@@ -1443,6 +1645,10 @@ DEST</b></td>
         <td>ftp</td>
         <td>-</td>
         <td>155.186.235.151</td>
+        <td style="vertical-align: top;"><br>
+        </td>
+        <td style="vertical-align: top;"><br>
+        </td>
       </tr>
     </tbody>
   </table>
@@ -1475,6 +1681,13 @@ PORT(S)</b></td>
 PORT(S)</b></td>
         <td><b>ORIGINAL<br>
 DEST</b></td>
+        <td style="vertical-align: top;"><span
+ style="font-weight: bold;">RATE<br>
+LIMIT<br>
+        </span></td>
+        <td style="vertical-align: top;"><span
+ style="font-weight: bold;">USER<br>
+SET</span></td>
       </tr>
       <tr>
         <td>ACCEPT</td>
@@ -1486,6 +1699,10 @@ DEST</b></td>
         <td> <br>
         </td>
         <td> <br>
+        </td>
+        <td style="vertical-align: top;"><br>
+        </td>
+        <td style="vertical-align: top;"><br>
         </td>
       </tr>
     </tbody>
@@ -1511,9 +1728,16 @@ PORT(S)<br>
         <td valign="top"><b>SOURCE<br>
 PORT(S)<br>
         </b></td>
-        <td valign="top"><b>ORIGINAL<br>
+        <td style="vertical-align: top;"><b>ORIGINAL<br>
 DEST<br>
         </b></td>
+        <td style="vertical-align: top;"><span
+ style="font-weight: bold;">RATE<br>
+LIMIT<br>
+        </span></td>
+        <td style="vertical-align: top;"><span
+ style="font-weight: bold;">USER<br>
+SET</span></td>
       </tr>
       <tr>
         <td valign="top">ACCEPT<br>
@@ -1529,6 +1753,10 @@ DEST<br>
         <td valign="top"><br>
         </td>
         <td valign="top"><br>
+        </td>
+        <td style="vertical-align: top;"><br>
+        </td>
+        <td style="vertical-align: top;"><br>
         </td>
       </tr>
     </tbody>
@@ -1560,9 +1788,16 @@ PORT(S)<br>
         <td valign="top"><b>SOURCE<br>
 PORT(S)<br>
         </b></td>
-        <td valign="top"><b>ORIGINAL<br>
+        <td style="vertical-align: top;"><b>ORIGINAL<br>
 DEST<br>
         </b></td>
+        <td style="vertical-align: top;"><span
+ style="font-weight: bold;">RATE<br>
+LIMIT<br>
+        </span></td>
+        <td style="vertical-align: top;"><span
+ style="font-weight: bold;">USER<br>
+SET</span></td>
       </tr>
       <tr>
         <td valign="top">ACCEPT<br>
@@ -1578,6 +1813,10 @@ DEST<br>
         <td valign="top"><br>
         </td>
         <td valign="top"><br>
+        </td>
+        <td style="vertical-align: top;"><br>
+        </td>
+        <td style="vertical-align: top;"><br>
         </td>
       </tr>
     </tbody>
@@ -1606,9 +1845,16 @@ PORT(S)<br>
         <td valign="top"><b>SOURCE<br>
 PORT(S)<br>
         </b></td>
-        <td valign="top"><b>ORIGINAL<br>
+        <td style="vertical-align: top;"><b>ORIGINAL<br>
 DEST<br>
         </b></td>
+        <td style="vertical-align: top;"><span
+ style="font-weight: bold;">RATE<br>
+LIMIT<br>
+        </span></td>
+        <td style="vertical-align: top;"><span
+ style="font-weight: bold;">USER<br>
+SET</span></td>
       </tr>
       <tr>
         <td valign="top">DNAT-<br>
@@ -1624,6 +1870,10 @@ DEST<br>
         <td valign="top">0<br>
         </td>
         <td valign="top">192.0.2.178<br>
+        </td>
+        <td style="vertical-align: top;"><br>
+        </td>
+        <td style="vertical-align: top;"><br>
         </td>
       </tr>
       <tr>
@@ -1641,6 +1891,10 @@ DEST<br>
         </td>
         <td valign="top">192.0.2.179<br>
         </td>
+        <td style="vertical-align: top;"><br>
+        </td>
+        <td style="vertical-align: top;"><br>
+        </td>
       </tr>
       <tr>
         <td valign="top">ACCEPT<br>
@@ -1656,6 +1910,10 @@ DEST<br>
         <td valign="top"><br>
         </td>
         <td valign="top"><br>
+        </td>
+        <td style="vertical-align: top;"><br>
+        </td>
+        <td style="vertical-align: top;"><br>
         </td>
       </tr>
     </tbody>
@@ -1687,9 +1945,16 @@ PORT(S)<br>
         <td valign="top"><b>SOURCE<br>
 PORT(S)<br>
         </b></td>
-        <td valign="top"><b>ORIGINAL<br>
+        <td style="vertical-align: top;"><b>ORIGINAL<br>
 DEST<br>
         </b></td>
+        <td style="vertical-align: top;"><span
+ style="font-weight: bold;">RATE<br>
+LIMIT<br>
+        </span></td>
+        <td style="vertical-align: top;"><span
+ style="font-weight: bold;">USER<br>
+SET</span></td>
       </tr>
       <tr>
         <td valign="top">DNAT<br>
@@ -1705,6 +1970,10 @@ DEST<br>
         <td valign="top"><br>
         </td>
         <td valign="top"><br>
+        </td>
+        <td style="vertical-align: top;"><br>
+        </td>
+        <td style="vertical-align: top;"><br>
         </td>
       </tr>
     </tbody>
@@ -1765,9 +2034,15 @@ static IP on that interface, listing it here makes processing of output
 packets a little less expensive for the firewall. If you specify an
 address in this column, it must be an IP address configured on the
 INTERFACE or you must have
-ADD_SNAT_ALIASES enabled in <a href="#Conf">/etc/shorewall/shorewall.conf.</a></li>
+ADD_SNAT_ALIASES enabled in <a href="#Conf">/etc/shorewall/shorewall.conf.</a>
+Beginning with Shorewall version 1.4.6, you may include a range of IP
+addresses in this column to indicate that Netfilter should use the
+addresses in the range in round-robin fashion. Beginning with Shorewall
+version 1.4.7, you may include a list of ranges and/or addresses in
+this column; again, Netfilter will use all listed ranges/addresses in
+rounde-robin fashion.</li>
 </ul>
-<p><b> Example 1: </b> You have eth0 connected to a cable modem and
+<p><b>Example 1: </b> You have eth0 connected to a cable modem and
 eth1 connected to your local subnetwork 192.168.9.0/24. Your
 /etc/shorewall/masq file would look like: </p>
 <blockquote>
@@ -1861,6 +2136,26 @@ name eth0:0. You must have ADD_SNAT_ALIASES=Yes in <a href="#Conf">/etc/shorewal
         <td>eth0:0</td>
         <td>192.168.12.0/24</td>
         <td>206.124.146.177</td>
+      </tr>
+    </tbody>
+  </table>
+</blockquote>
+<span style="font-weight: bold;">Example 6 (Shorewall version &gt;=
+1.4.7): </span>You want to use both 206.124.146.177 and
+206.124.146.179 for SNAT of the subnet 192.168.12.0/24. Each address
+will be used on alternate outbound connections.<br>
+<blockquote>
+  <table border="1" cellpadding="2" style="border-collapse: collapse;">
+    <tbody>
+      <tr>
+        <td><b> INTERFACE</b></td>
+        <td><b> SUBNET</b></td>
+        <td><b>ADDRESS</b></td>
+      </tr>
+      <tr>
+        <td>eth0</td>
+        <td>192.168.12.0/24</td>
+        <td>206.124.146.177,206.124.146.179</td>
       </tr>
     </tbody>
   </table>
@@ -2009,8 +2304,10 @@ kernel compilation errors.</p>
 may be found here,</a></b> <b><a href="IPIP.htm">instructions for IPIP
 and GRE tunnels are here</a></b>, <b><a href="OPENVPN.html">instructions
 for OpenVPN tunnels are here</a></b>, <b><a href="PPTP.htm">instructions
-for PPTP tunnels are here</a> and <a href="6to4.htm">instructions for
-6to4 tunnels</a> are here.</b></p>
+for PPTP tunnels are here</a>, <a href="6to4.htm">instructions for
+6to4 tunnels are here</a> and <a href="GenericTunnels.html">instructions
+for integrating Shorewall with other types of tunnels are here</a>.<br>
+</b></p>
 <h2><a name="Conf"></a>/etc/shorewall/shorewall.conf</h2>
 <p> This file is used to set the following firewall parameters:</p>
 <ul>
@@ -2484,7 +2781,9 @@ blacklist capability.</a></p>
 <p><font color="#cc6666"><b>IMPORTANT: The Shorewall blacklist file is <u>NOT</u>
 designed to police your users' web browsing -- to do that, I suggest
 that you install and configure Squid (<a
- href="http://www.squid-cache.org">http://www.squid-cache.org</a>). </b></font></p>
+ href="http://www.squid-cache.org">http://www.squid-cache.org</a>) with
+SquidGuard (<a href="http://www.squidguard.org/">http://www.squidguard.org/</a>).
+</b></font></p>
 <h2><a name="rfc1918"></a>/etc/shorewall/rfc1918 (Added in Version
 1.3.1)</h2>
 <p>This file lists the subnets affected by the <a href="#Interfaces"><i>norfc1918</i>
@@ -2543,7 +2842,8 @@ Validation Documentation</a>.<br>
 <h2><a name="ECN"></a>/etc/shorewall/ecn (Added in Version 1.4.0)</h2>
 This file is described in the <a href="ECN.html">ECN Control
 Documentation</a>.<br>
-<p><font size="-1"> Updated 8/8/2003 - <a href="support.htm">Tom Eastep</a>
+<p><font size="-1"> Updated 8/21/2003 - <a href="support.htm">Tom
+Eastep</a>
 </font></p>
 <p><a href="copyright.htm"><font size="2">Copyright</font> © <font
  size="2">2001, 2002, 2003 Thomas M. Eastep.</font></a><br>

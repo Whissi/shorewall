@@ -1,409 +1,341 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-            
   <meta http-equiv="Content-Language" content="en-us">
-            
   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
-            
   <meta name="ProgId" content="FrontPage.Editor.Document">
-            
   <meta http-equiv="Content-Type"
  content="text/html; charset=windows-1252">
   <title>Configuration File Basics</title>
 </head>
-  <body>
-      
+<body>
 <table border="0" cellpadding="0" cellspacing="0"
  style="border-collapse: collapse;" bordercolor="#111111" width="100%"
  id="AutoNumber1" bgcolor="#3366ff" height="90">
-                       <tbody>
-                        <tr>
-                         <td width="100%">                       
+  <tbody>
+    <tr>
+      <td width="100%">
       <h1 align="center"><font color="#ffffff">Configuration Files</font></h1>
-                         </td>
-                       </tr>
-            
-  </tbody>   
+      </td>
+    </tr>
+  </tbody>
 </table>
-      
-<p><b><font color="#ff0000">Warning: </font>If you copy or edit your   configuration
- files on a system running Microsoft Windows, you <u>must</u>           
-    run them through <a
- href="http://www.megaloman.com/%7Ehany/software/hd2u/">       dos2unix</a> 
-         before you use them with Shorewall.</b></p>
-      
+<p><b><font color="#ff0000">Warning: </font>If you copy or edit your
+configuration files on a system running Microsoft Windows, you <u>must</u>
+run them through <a
+ href="http://www.megaloman.com/%7Ehany/software/hd2u/"> dos2unix</a>
+before you use them with Shorewall.</b></p>
 <h2><a name="Files"></a>Files</h2>
-      
 <p>Shorewall's configuration files are in the directory /etc/shorewall.</p>
-      
 <ul>
-                             <li>/etc/shorewall/shorewall.conf - used to
-set  several     firewall             parameters.</li>
-                             <li>/etc/shorewall/params - use this file to 
-set   shell    variables     that you will     expand in other files.</li>
-                             <li>/etc/shorewall/zones - partition the firewall's 
-   view   of  the   world         into <i>zones.</i></li>
-                             <li>/etc/shorewall/policy - establishes firewall 
-  high-level      policy.</li>
-                             <li>/etc/shorewall/interfaces - describes the
- interfaces      on  the          firewall system.</li>
-                             <li>/etc/shorewall/hosts - allows defining zones 
-  in  terms    of  individual           hosts and subnetworks.</li>
-                             <li>/etc/shorewall/masq - directs the firewall 
- where    to  use   many-to-one            (dynamic) Network Address Translation 
- (a.k.a.    Masquerading)   and  Source          Network Address Translation 
- (SNAT).</li>
-                             <li>/etc/shorewall/modules - directs the firewall 
-  to  load   kernel    modules.</li>
-                             <li>/etc/shorewall/rules - defines rules that
- are  exceptions      to  the         overall policies established in /etc/shorewall/policy.</li>
-                             <li>/etc/shorewall/nat - defines static NAT
+  <li>/etc/shorewall/shorewall.conf - used to
+set several firewall parameters.</li>
+  <li>/etc/shorewall/params - use this file to set shell variables that
+you will expand in other files.</li>
+  <li>/etc/shorewall/zones - partition the firewall's view of the world
+into <i>zones.</i></li>
+  <li>/etc/shorewall/policy - establishes firewall high-level policy.</li>
+  <li>/etc/shorewall/interfaces - describes the interfaces on the
+firewall system.</li>
+  <li>/etc/shorewall/hosts - allows defining zones in terms of
+individual hosts and subnetworks.</li>
+  <li>/etc/shorewall/masq - directs the firewall where to use
+many-to-one (dynamic) Network Address Translation (a.k.a. Masquerading)
+and Source Network Address Translation (SNAT).</li>
+  <li>/etc/shorewall/modules - directs the firewall to load kernel
+modules.</li>
+  <li>/etc/shorewall/rules - defines rules that are exceptions to the
+overall policies established in /etc/shorewall/policy.</li>
+  <li>/etc/shorewall/nat - defines static NAT
 rules.</li>
-                             <li>/etc/shorewall/proxyarp - defines use of 
-Proxy    ARP.</li>
-                             <li>/etc/shorewall/routestopped (Shorewall 1.3.4 
-  and   later)    -  defines  hosts    accessible when Shorewall is stopped.</li>
-                             <li>/etc/shorewall/tcrules - defines marking 
-of  packets     for   later   use by     traffic control/shaping or policy 
-routing.</li>
-                             <li>/etc/shorewall/tos - defines rules for setting 
-   the   TOS   field   in packet         headers.</li>
-                             <li>/etc/shorewall/tunnels - defines IPSEC,
-GRE  and   IPIP   tunnels    with end-points on         the firewall system.</li>
-                             <li>/etc/shorewall/blacklist - lists blacklisted 
-  IP/subnet/MAC        addresses.</li>
-          <li>/etc/shorewall/init - commands that you wish to execute at
-the  beginning   of a "shorewall start" or "shorewall restart".</li>
-          <li>/etc/shorewall/start - commands that you wish to execute at 
-the   completion  of a "shorewall start" or "shorewall restart"</li>
-          <li>/etc/shorewall/stop - commands that you wish to execute at
-the  beginning   of a "shorewall stop".</li>
-          <li>/etc/shorewall/stopped - commands that you wish to execute
-at  the   completion of a "shorewall stop".</li>
-     <li>/etc/shorewall/ecn - disable Explicit Congestion Notification (ECN 
- - RFC 3168) to remote hosts or networks.<br>
-     </li>
-      
+  <li>/etc/shorewall/proxyarp - defines use of Proxy ARP.</li>
+  <li>/etc/shorewall/routestopped (Shorewall 1.3.4 and later) - defines
+hosts accessible when Shorewall is stopped.</li>
+  <li>/etc/shorewall/tcrules - defines marking of packets for later use
+by traffic control/shaping or policy routing.</li>
+  <li>/etc/shorewall/tos - defines rules for setting the TOS field in
+packet headers.</li>
+  <li>/etc/shorewall/tunnels - defines IPSEC,
+GRE and IPIP tunnels with end-points on the firewall system.</li>
+  <li>/etc/shorewall/blacklist - lists blacklisted IP/subnet/MAC
+addresses.</li>
+  <li>/etc/shorewall/init - commands that you wish to execute at
+the beginning of a "shorewall start" or "shorewall restart".</li>
+  <li>/etc/shorewall/start - commands that you wish to execute at the
+completion of a "shorewall start" or "shorewall restart"</li>
+  <li>/etc/shorewall/stop - commands that you wish to execute at
+the beginning of a "shorewall stop".</li>
+  <li>/etc/shorewall/stopped - commands that you wish to execute
+at the completion of a "shorewall stop".</li>
+  <li>/etc/shorewall/ecn - disable Explicit Congestion Notification
+(ECN - RFC 3168) to remote hosts or networks.</li>
+  <li>/etc/shorewall/accounting - define IP traffic accounting rules</li>
+  <li>/etc/shorewall/usersets and /etc/shorewall/users - define sets of
+users/groups with
+similar access rights<br>
+  </li>
 </ul>
-      
-<h2><a name="Comments"></a>Comments</h2>
-      
-<p>You may place comments in configuration files by making the first non-whitespace 
-                character a pound sign ("#"). You may also place comments 
-at   the    end  of any line, again by       delimiting the comment from the
-rest  of   the line  with a pound sign.</p>
-      
+<h2>Comments</h2>
+<p>You may place comments in configuration files by making the first
+non-whitespace character a pound sign ("#"). You may also place
+comments at the end of any line, again by delimiting the comment from
+the
+rest of the line with a pound sign.</p>
 <p>Examples:</p>
-      
 <pre># This is a comment</pre>
-      
 <pre>ACCEPT	net	fw	tcp	www	#This is an end-of-line comment</pre>
-      
 <h2><a name="Continuation"></a>Line Continuation</h2>
-      
-<p>You may continue lines in the configuration files using the usual backslash 
-         ("\") followed        immediately by a new line character.</p>
-      
+<p>You may continue lines in the configuration files using the usual
+backslash ("\") followed immediately by a new line character.</p>
 <p>Example:</p>
-      
 <pre>ACCEPT	net	fw	tcp \<br>smtp,www,pop3,imap  #Services running on the firewall</pre>
-      
-<h2><a name="INCLUDE"></a>IN<small><small></small></small>CLUDE Directive</h2>
-   Beginning with Shorewall version 1.4.2, any file may contain INCLUDE directives.
- An INCLUDE directive   consists of the word INCLUDE followed by a file name
- and causes the contents   of the named file to be logically included into
- the file containing the INCLUDE.  File names given in an INCLUDE directive
- are assumed to reside in /etc/shorewall  or in an alternate configuration
- directory if one has been specified for the command.<br>
-  <br>
-  INCLUDE's may be nested to a level of 3 -- further nested INCLUDE directives 
-   are ignored with a warning message.<big><big><br>
-  <br>
-  </big></big> Examples:<big> </big>       <br>
-     
-<blockquote>         shorewall/params.mgmt:<br>
-           
-  <blockquote>         MGMT_SERVERS=1.1.1.1,2.2.2.2,3.3.3.3<br>
-            TIME_SERVERS=4.4.4.4<br>
-            BACKUP_SERVERS=5.5.5.5<br>
-     </blockquote>
-            ----- end params.mgmt -----<br>
-   </blockquote>
-     
-<blockquote>         shorewall/params:<br>
-   </blockquote>
-     
-<blockquote>         
-  <blockquote>         # Shorewall 1.3 /etc/shorewall/params<br>
-            [..]<br>
-            #######################################<br>
-          <br>
-            INCLUDE params.mgmt    <br>
-           <br>
-            # params unique to this host here<br>
-            #LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE<br>
-     </blockquote>
-   </blockquote>
-     
-<blockquote>         ----- end params -----<br>
-   </blockquote>
-     
-<blockquote>         shorewall/rules.mgmt:<br>
-   </blockquote>
-     
-<blockquote>         
-  <blockquote>         ACCEPT net:$MGMT_SERVERS          $FW    tcp    22<br>
-            ACCEPT $FW          net:$TIME_SERVERS    udp    123<br>
-            ACCEPT $FW          net:$BACKUP_SERVERS  tcp    22<br>
-     </blockquote>
-   </blockquote>
-     
-<blockquote>         ----- end rules.mgmt -----<br>
-   </blockquote>
-     
-<blockquote>         shorewall/rules:<br>
-   </blockquote>
-     
-<blockquote>         
-  <blockquote>         # Shorewall version 1.3 - Rules File<br>
-            [..]<br>
-            #######################################<br>
-          <br>
-            INCLUDE rules.mgmt     <br>
-           <br>
-            # rules unique to this host here<br>
-            #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE<br>
-     </blockquote>
-   </blockquote>
-     
-<blockquote>         ----- end rules -----<br>
-   </blockquote>
-   
+<h2><a name="INCLUDE"></a>IN<small><small></small></small>CLUDE
+Directive</h2>
+Beginning with Shorewall version 1.4.2, any file may contain INCLUDE
+directives. An INCLUDE directive consists of the word INCLUDE followed
+by a file name and causes the contents of the named file to be
+logically included into the file containing the INCLUDE. File names
+given in an INCLUDE directive are assumed to reside in /etc/shorewall
+or in an alternate configuration directory if one has been specified
+for the command.<br>
+<br>
+INCLUDE's may be nested to a level of 3 -- further nested INCLUDE
+directives are ignored with a warning message.<big><big><br>
+<br>
+</big></big> Examples:<big> </big> <br>
+<blockquote> &nbsp;&nbsp; shorewall/params.mgmt:<br>
+  <blockquote> &nbsp;&nbsp; MGMT_SERVERS=1.1.1.1,2.2.2.2,3.3.3.3<br>
+&nbsp;&nbsp; TIME_SERVERS=4.4.4.4<br>
+&nbsp;&nbsp; BACKUP_SERVERS=5.5.5.5<br>
+  </blockquote>
+&nbsp;&nbsp; ----- end params.mgmt -----<br>
+</blockquote>
+<blockquote> &nbsp;&nbsp; shorewall/params:<br>
+</blockquote>
+<blockquote>
+  <blockquote> &nbsp;&nbsp; # Shorewall 1.3 /etc/shorewall/params<br>
+&nbsp;&nbsp; [..]<br>
+&nbsp;&nbsp; #######################################<br>
+&nbsp;<br>
+&nbsp;&nbsp; INCLUDE params.mgmt&nbsp;&nbsp;&nbsp; <br>
+&nbsp; <br>
+&nbsp;&nbsp; # params unique to this host here<br>
+&nbsp;&nbsp; #LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT
+REMOVE<br>
+  </blockquote>
+</blockquote>
+<blockquote> &nbsp;&nbsp; ----- end params -----<br>
+</blockquote>
+<blockquote> &nbsp;&nbsp; shorewall/rules.mgmt:<br>
+</blockquote>
+<blockquote>
+  <blockquote> &nbsp;&nbsp; ACCEPT
+net:$MGMT_SERVERS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+$FW&nbsp;&nbsp;&nbsp; tcp&nbsp;&nbsp;&nbsp; 22<br>
+&nbsp;&nbsp; ACCEPT
+$FW&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+net:$TIME_SERVERS&nbsp;&nbsp;&nbsp; udp&nbsp;&nbsp;&nbsp; 123<br>
+&nbsp;&nbsp; ACCEPT
+$FW&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+net:$BACKUP_SERVERS&nbsp; tcp&nbsp;&nbsp;&nbsp; 22<br>
+  </blockquote>
+</blockquote>
+<blockquote> &nbsp;&nbsp; ----- end rules.mgmt -----<br>
+</blockquote>
+<blockquote> &nbsp;&nbsp; shorewall/rules:<br>
+</blockquote>
+<blockquote>
+  <blockquote> &nbsp;&nbsp; # Shorewall version 1.3 - Rules File<br>
+&nbsp;&nbsp; [..]<br>
+&nbsp;&nbsp; #######################################<br>
+&nbsp;<br>
+&nbsp;&nbsp; INCLUDE rules.mgmt&nbsp;&nbsp;&nbsp;&nbsp; <br>
+&nbsp; <br>
+&nbsp;&nbsp; # rules unique to this host here<br>
+&nbsp;&nbsp; #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT
+REMOVE<br>
+  </blockquote>
+</blockquote>
+<blockquote> &nbsp;&nbsp; ----- end rules -----<br>
+</blockquote>
 <h2><a name="dnsnames"></a>Using DNS Names</h2>
-      
-<p align="left">     </p>
-      
-<p align="left"><b>WARNING: I personally recommend strongly <u>against</u> 
-          using DNS names in Shorewall configuration files. If you use DNS 
- names      and   you are called out of bed at 2:00AM because Shorewall won't 
- start    as  a result  of DNS problems then don't say that you were not forewarned.
-     <br>
-                     </b></p>
-      
-<p align="left"><b>    -Tom<br>
-                     </b></p>
-      
-<p align="left">Beginning with Shorewall 1.3.9, Host addresses in Shorewall 
-         configuration files may be specified as either IP addresses or DNS 
-    Names.<br>
-                     <br>
-                    DNS names in iptables rules  aren't nearly as useful
-as  they   first    appear.    When a DNS name appears in a rule,  the iptables 
- utility   resolves    the name    to one or more IP addresses and inserts 
-  those addresses   into    the rule.  So  changes in the DNS-&gt;IP address 
- relationship  that   occur   after the firewall    has started have absolutely 
- no effect on the    firewall's   ruleset.    </p>
-      
-<p align="left">     If your firewall rules include DNS names then:</p>
-      
+<p align="left"> </p>
+<p align="left"><b>WARNING: I personally recommend strongly <u>against</u>
+using DNS names in Shorewall configuration files. If you use DNS names
+and you are called out of bed at 2:00AM because Shorewall won't start
+as a result of DNS problems then don't say that you were not
+forewarned. <br>
+</b></p>
+<p align="left"><b>&nbsp;&nbsp;&nbsp; -Tom<br>
+</b></p>
+<p align="left">Beginning with Shorewall 1.3.9, Host addresses in
+Shorewall configuration files may be specified as either IP addresses
+or DNS Names.<br>
+<br>
+DNS names in iptables rules aren't nearly as useful
+as they first appear. When a DNS name appears in a rule, the iptables
+utility resolves the name to one or more IP addresses and inserts those
+addresses into the rule. So changes in the DNS-&gt;IP address
+relationship that occur after the firewall has started have absolutely
+no effect on the firewall's ruleset. </p>
+<p align="left"> If your firewall rules include DNS names then:</p>
 <ul>
-                      <li>If your /etc/resolv.conf is wrong then your firewall 
-  won't        start.</li>
-                      <li>If your /etc/nsswitch.conf is wrong then your firewall 
-   won't        start.</li>
-                      <li>If your Name Server(s) is(are) down then your firewall 
-   won't        start.</li>
-                      <li>If your startup scripts try to start your firewall 
- before    starting     your DNS server then your firewall won't start.<br>
-                     </li>
-                      <li>Factors totally outside your control (your ISP's
- router    is      down   for example), can prevent your firewall from starting.</li>
-                     <li>You must bring up your network interfaces prior
-to  starting     your   firewall.<br>
-                     </li>
-      
+  <li>If your /etc/resolv.conf is wrong then your firewall won't start.</li>
+  <li>If your /etc/nsswitch.conf is wrong then your firewall won't
+start.</li>
+  <li>If your Name Server(s) is(are) down then your firewall won't
+start.</li>
+  <li>If your startup scripts try to start your firewall before
+starting your DNS server then your firewall won't start.<br>
+  </li>
+  <li>Factors totally outside your control (your ISP's router is down
+for example), can prevent your firewall from starting.</li>
+  <li>You must bring up your network interfaces prior
+to starting your firewall.<br>
+  </li>
 </ul>
-      
-<p align="left"> Each DNS name much be fully qualified and include a minumum 
-         of two periods (although one may be trailing). This restriction is
-  imposed       by Shorewall to insure backward compatibility with existing 
-  configuration       files.<br>
-                     <br>
-                     Examples of valid DNS names:<br>
-                     </p>
-      
+<p align="left"> Each DNS name much be fully qualified and include a
+minumum of two periods (although one may be trailing). This restriction
+is imposed by Shorewall to insure backward compatibility with existing
+configuration files.<br>
+<br>
+Examples of valid DNS names:<br>
+</p>
 <ul>
-                      <li>mail.shorewall.net</li>
-                      <li>shorewall.net. (note the trailing period).</li>
-      
+  <li>mail.shorewall.net</li>
+  <li>shorewall.net. (note the trailing period).</li>
 </ul>
-                     Examples of invalid DNS names:<br>
-      
+Examples of invalid DNS names:<br>
 <ul>
-                      <li>mail (not fully qualified)</li>
-                      <li>shorewall.net (only one period)</li>
-      
+  <li>mail (not fully qualified)</li>
+  <li>shorewall.net (only one period)</li>
 </ul>
-                     DNS names may not be used as:<br>
-      
+DNS names may not be used as:<br>
 <ul>
-                      <li>The server address in a DNAT rule (/etc/shorewall/rules 
-    file)</li>
-                      <li>In the ADDRESS column of an entry in /etc/shorewall/masq.</li>
-                      <li>In the /etc/shorewall/nat file.</li>
-      
+  <li>The server address in a DNAT rule (/etc/shorewall/rules file)</li>
+  <li>In the ADDRESS column of an entry in /etc/shorewall/masq.</li>
+  <li>In the /etc/shorewall/nat file.</li>
 </ul>
-                     These restrictions are not imposed by Shorewall simply 
- for   your inconvenience but are rather limitations of iptables.<br>
-      
+These restrictions are not imposed by Shorewall simply for your
+inconvenience but are rather limitations of iptables.<br>
 <h2><a name="Compliment"></a>Complementing an Address or Subnet</h2>
-      
-<p>Where specifying an IP address, a subnet or an interface, you can   precede
- the item with "!" to specify the complement of the item. For      example,
- !192.168.1.4 means "any host but 192.168.1.4". There must be no white space
- following the "!".</p>
-      
+<p>Where specifying an IP address, a subnet or an interface, you can
+precede the item with "!" to specify the complement of the item. For
+example, !192.168.1.4 means "any host but 192.168.1.4". There must be
+no white space following the "!".</p>
 <h2><a name="Lists"></a>Comma-separated Lists</h2>
-      
-<p>Comma-separated lists are allowed in a number of contexts within the 
-     configuration files. A comma separated list:</p>
-      
+<p>Comma-separated lists are allowed in a number of contexts within the
+configuration files. A comma separated list:</p>
 <ul>
-                             <li>Must not have any embedded white space.<br>
-                             Valid: routefilter,dhcp,norfc1918<br>
-                             Invalid: routefilter,     dhcp,            
- norfc1818</li>
-                             <li>If you use line continuation to break a
-comma-separated        list,   the          continuation line(s) must begin
-in column 1 (or   there     would  be embedded          white space)</li>
-                             <li>Entries in a comma-separated list may appear 
-  in  any   order.</li>
-      
+  <li>Must not have any embedded white space.<br>
+Valid: routefilter,dhcp,norfc1918<br>
+Invalid: routefilter,&nbsp;&nbsp;&nbsp;&nbsp;
+dhcp,&nbsp;&nbsp;&nbsp;&nbsp; norfc1818</li>
+  <li>If you use line continuation to break a
+comma-separated list, the continuation line(s) must begin
+in column 1 (or there would be embedded white space)</li>
+  <li>Entries in a comma-separated list may appear in any order.</li>
 </ul>
-      
 <h2><a name="Ports"></a>Port Numbers/Service Names</h2>
-      
-<p>Unless otherwise specified, when giving a port number you can use   either
- an integer or a service name from /etc/services. </p>
-      
+<p>Unless otherwise specified, when giving a port number you can use
+either an integer or a service name from /etc/services. </p>
 <h2><a name="Ranges"></a>Port Ranges</h2>
-      
-<p>If you need to specify a range of ports, the proper syntax is &lt;<i>low 
-                port number</i>&gt;:&lt;<i>high port number</i>&gt;. For example,
-        if you want to forward the range of tcp ports 4000 through 4100 to
- local      host 192.168.1.3, the entry in /etc/shorewall/rules is:<br>
-                  </p>
-      
+<p>If you need to specify a range of ports, the proper syntax is &lt;<i>low
+port number</i>&gt;:&lt;<i>high port number</i>&gt;. For example, if
+you want to forward the range of tcp ports 4000 through 4100 to local
+host 192.168.1.3, the entry in /etc/shorewall/rules is:<br>
+</p>
 <pre>     DNAT	net	loc:192.168.1.3	tcp	4000:4100<br></pre>
-     If you omit the low port number, a value of zero is assumed; if you
-omit   the high port number, a value of 65535 is assumed.<br>
-      
+If you omit the low port number, a value of zero is assumed; if you
+omit the high port number, a value of 65535 is assumed.<br>
 <h2><a name="Variables"></a>Using Shell Variables</h2>
-      
-<p>You may use the /etc/shorewall/params     file to set shell variables 
-that you can then use in some of the other    configuration files.</p>
-      
+<p>You may use the /etc/shorewall/params file to set shell variables
+that you can then use in some of the other configuration files.</p>
 <p>It is suggested that variable names begin with an upper case letter<font
- size="1">      </font>to distinguish them from variables used internally 
-         within the  Shorewall    programs</p>
-      
+ size="1"> </font>to distinguish them from variables used internally
+within the Shorewall programs</p>
 <p>Example:</p>
-      
-<blockquote>          
+<blockquote>
   <pre>NET_IF=eth0<br>NET_BCAST=130.252.100.255<br>NET_OPTIONS=routefilter,norfc1918</pre>
-                          </blockquote>
-      
+</blockquote>
 <p><br>
-                          Example (/etc/shorewall/interfaces record):</p>
-                                               <font
- face="Century Gothic, Arial, Helvetica">    
-<blockquote>          
+Example (/etc/shorewall/interfaces record):</p>
+<font face="Century Gothic, Arial, Helvetica">
+<blockquote>
   <pre><font face="Courier">net $NET_IF $NET_BCAST $NET_OPTIONS</font></pre>
-                          </blockquote>
-                                                            </font>    
+</blockquote>
+</font>
 <p>The result will be the same as if the record had been written</p>
-                                                   <font
- face="Century Gothic, Arial, Helvetica">    
-<blockquote>          
+<font face="Century Gothic, Arial, Helvetica">
+<blockquote>
   <pre>net eth0 130.252.100.255 routefilter,norfc1918</pre>
-                          </blockquote>
-                                                                </font> 
-   
-<p>Variables may be used anywhere in the              other configuration 
-         files.</p>
-      
+</blockquote>
+</font>
+<p>Variables may be used anywhere in the other configuration files.</p>
 <h2><a name="MAC"></a>Using MAC Addresses</h2>
-      
-<p>Media Access Control (MAC)        addresses can be used to specify packet 
-         source in several of the        configuration files. To use this
- feature,         your kernel must have MAC        Address Match support
-(CONFIG_IP_NF_MATCH_MAC)          included.</p>
-      
-<p>MAC addresses are 48 bits wide and each Ethernet Controller has a   unique
- MAC address.<br>
-                           <br>
-                           In GNU/Linux, MAC addresses are usually written
- as  a  series    of  6  hex numbers        separated by colons. Example:<br>
-                           <br>
-                          [root@gateway root]# ifconfig eth0<br>
-                          eth0 Link encap:Ethernet HWaddr <b><u>02:00:08:E3:FA:55</u></b><br>
-                          inet addr:206.124.146.176 Bcast:206.124.146.255 
-     Mask:255.255.255.0<br>
-                          UP BROADCAST RUNNING MULTICAST MTU:1500 Metric:1<br>
-                          RX packets:2398102 errors:0 dropped:0 overruns:0 
-      frame:0<br>
-                          TX packets:3044698 errors:0 dropped:0 overruns:0 
-      carrier:0<br>
-                          collisions:30394 txqueuelen:100<br>
-                          RX bytes:419871805 (400.4 Mb) TX bytes:1659782221 
-        (1582.8     Mb)<br>
-                          Interrupt:11 Base address:0x1800<br>
-                           <br>
-                           Because Shorewall uses colons as a separator for 
- address     fields,     Shorewall requires        MAC addresses to be written 
- in another     way. In   Shorewall, MAC addresses        begin with a tilde 
- ("~") and  consist   of 6  hex numbers separated by        hyphens. In Shorewall, 
- the  MAC address    in  the example above would be        written "~02-00-08-E3-FA-55".<br>
-                </p>
-      
-<p><b>Note: </b>It is not necessary to use the special Shorewall notation 
-       in the <a href="MAC_Validation.html">/etc/shorewall/maclist</a> file.<br>
-                </p>
-      
+<p>Media Access Control (MAC) addresses can be used to specify packet
+source in several of the configuration files. To use this feature, your
+kernel must have MAC Address Match support
+(CONFIG_IP_NF_MATCH_MAC) included.</p>
+<p>MAC addresses are 48 bits wide and each Ethernet Controller has a
+unique MAC address.<br>
+<br>
+In GNU/Linux, MAC addresses are usually written as a series of 6 hex
+numbers separated by colons. Example:<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp; [root@gateway root]# ifconfig eth0<br>
+&nbsp;&nbsp;&nbsp;&nbsp; eth0 Link encap:Ethernet HWaddr <b><u>02:00:08:E3:FA:55</u></b><br>
+&nbsp;&nbsp;&nbsp;&nbsp; inet addr:206.124.146.176
+Bcast:206.124.146.255 Mask:255.255.255.0<br>
+&nbsp;&nbsp;&nbsp;&nbsp; UP BROADCAST RUNNING MULTICAST MTU:1500
+Metric:1<br>
+&nbsp;&nbsp;&nbsp;&nbsp; RX packets:2398102 errors:0 dropped:0
+overruns:0 frame:0<br>
+&nbsp;&nbsp;&nbsp;&nbsp; TX packets:3044698 errors:0 dropped:0
+overruns:0 carrier:0<br>
+&nbsp;&nbsp;&nbsp;&nbsp; collisions:30394 txqueuelen:100<br>
+&nbsp;&nbsp;&nbsp;&nbsp; RX bytes:419871805 (400.4 Mb) TX
+bytes:1659782221 (1582.8 Mb)<br>
+&nbsp;&nbsp;&nbsp;&nbsp; Interrupt:11 Base address:0x1800<br>
+<br>
+Because Shorewall uses colons as a separator for address fields,
+Shorewall requires MAC addresses to be written in another way. In
+Shorewall, MAC addresses begin with a tilde ("~") and consist of 6 hex
+numbers separated by hyphens. In Shorewall, the MAC address in the
+example above would be written "~02-00-08-E3-FA-55".<br>
+</p>
+<p><b>Note: </b>It is not necessary to use the special Shorewall
+notation in the <a href="MAC_Validation.html">/etc/shorewall/maclist</a>
+file.<br>
+</p>
 <h2><a name="Levels"></a>Shorewall Configurations</h2>
-      
-<p>  Shorewall allows you to have configuration  directories other than /etc/shorewall. 
-         The <a href="starting_and_stopping_shorewall.htm">shorewall check, 
-start  and    restart</a>       commands allow you to specify an alternate 
-configuration      directory and    Shorewall will use the files in the alternate 
-directory     rather than the  corresponding  files in /etc/shorewall. The 
-alternate  directory    need not contain a complete  configuration; those 
-files not in the alternate    directory  will be read from  /etc/shorewall.</p>
-      
-<p>  This facility permits you to easily create a test or temporary configuration 
-          by:</p>
-      
+<p> Shorewall allows you to have configuration directories other than
+/etc/shorewall. The <a href="starting_and_stopping_shorewall.htm">shorewall
+check, start and restart</a> commands allow you to specify an alternate
+configuration directory and Shorewall will use the files in the
+alternate directory rather than the corresponding files in
+/etc/shorewall. The alternate directory need not contain a complete
+configuration; those files not in the alternate directory will be read
+from /etc/shorewall.</p>
+<p> This facility permits you to easily create a test or temporary
+configuration by:</p>
 <ol>
-                             <li>  copying the files that need modification 
- from   /etc/shorewall       to a separate      directory;</li>
-                             <li>  modify those files in the separate directory; 
-   and</li>
-                             <li>  specifying the separate directory in a 
-shorewall      start    or  shorewall     restart command (e.g., <i><b>shorewall 
--c /etc/testconfig        restart</b></i>  )</li>
-      
+  <li> copying the files that need modification from /etc/shorewall to
+a separate directory;</li>
+  <li> modify those files in the separate directory; and</li>
+  <li> specifying the separate directory in a shorewall start or
+shorewall restart command (e.g., <i><b>shorewall -c /etc/testconfig
+restart</b></i> )</li>
 </ol>
- The <a href="starting_and_stopping_shorewall.htm"><b>try</b> command</a> 
-allows you to attempt to restart using an alternate configuration and if an
+The <a href="starting_and_stopping_shorewall.htm"><b>try</b> command</a>
+allows you to attempt to restart using an alternate configuration and
+if an
 error occurs to automatically restart the standard configuration.<br>
-         
-<p><font size="2">   Updated 6/29/2003 - <a href="support.htm">Tom  Eastep</a> 
-             </font></p>
-        
-<p><font face="Trebuchet MS"><a href="copyright.htm"><font size="2">Copyright</font> 
-            © <font size="2">2001, 2002, 2003 Thomas M. Eastep.</font></a></font><br>
- </p>
- <br>
+<p><font size="2"> Updated 8/22/2003 - <a href="support.htm">Tom Eastep</a>
+</font></p>
+<p><font face="Trebuchet MS"><a href="copyright.htm"><font size="2">Copyright</font>
+© <font size="2">2001, 2002, 2003 Thomas M. Eastep.</font></a></font><br>
+</p>
+<br>
 </body>
 </html>

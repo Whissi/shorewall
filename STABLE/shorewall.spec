@@ -1,5 +1,5 @@
 %define name shorewall
-%define version 1.4.6c
+%define version 1.4.7
 %define release 1
 %define prefix /usr
 
@@ -16,7 +16,6 @@ URL: http://www.shorewall.net/
 BuildArch: noarch
 BuildRoot: %{_tmppath}/%{name}-%{version}-root
 Requires: iptables iproute
-Conflicts: kernel <= 2.2
 
 %description
 
@@ -98,19 +97,47 @@ fi
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/stop
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/stopped
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/ecn
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/accounting
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/usersets
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/users
 %attr(0544,root,root) /sbin/shorewall
 %attr(0444,root,root) /usr/share/shorewall/functions
 %attr(0544,root,root) /usr/share/shorewall/firewall
+%attr(0544,root,root) /usr/share/shorewall/help
 %doc documentation
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel
 
 %changelog
-* Wed Aug 27 2003 Tom Eastep <tom@shorewall.net>
-- Changed version to 1.4.6c-1
-* Fri Aug 01 2003 Tom Eastep <tom@shorewall.net>
-- Changed version to 1.4.6b-1
-* Tue Jul 22 2003 Tom Eastep <tom@shorewall.net>
-- Changed version to 1.4.6a-1
+* Sat Oct 04 2003 Tom Eastep <tom@shorewall.net>
+- Changed version to 1.4.7-1
+- Removed conflict with 2.2 Kernels
+* Mon Sep 22 2003 Tom Eastep <tom@shorewall.net>
+- Changed version to 1.4.7-0RC2
+* Thu Sep 18 2003 Tom Eastep <tom@shorewall.net>
+- Changed version to 1.4.7-0RC1
+* Mon Sep 15 2003 Tom Eastep <tom@shorewall.net>
+- Changed version to 1.4.7-0Beta2
+* Mon Aug 25 2003 Tom Eastep <tom@shorewall.net>
+- Changed version to 1.4.7-0Beta1
+* Sat Aug 23 2003 Tom Eastep <tom@shorewall.net>
+- Added /etc/shorewall/users
+- Changed version to 1.4.6_20030823-1
+* Thu Aug 21 2003 Tom Eastep <tom@shorewall.net>
+- Changed version to 1.4.6_20030821-1
+- Added /etc/shorewall/usersets
+* Wed Aug 13 2003 Tom Eastep <tom@shorewall.net>
+- Changed version to 1.4.6_20030813-1
+* Sat Aug 09 2003 Tom Eastep <tom@shorewall.net>
+- Added /etc/shorewall/accounting
+* Sat Aug 09 2003 Tom Eastep <tom@shorewall.net>
+- Changed version to 1.4.6_20030809-1
+* Thu Jul 31 2003 Tom Eastep <tom@shorewall.net>
+- Changed version to 1.4.6_20030731-1
+* Sun Jul 27 2003 Tom Eastep <tom@shorewall.net>
+- Added /usr/share/shorewall/help
+- Changed version to 1.4.6_20030727-1
+* Sat Jul 26 2003 Tom Eastep <tom@shorewall.net>
+- Changed version to 1.4.6_20030726-1
 * Sat Jul 19 2003 Tom Eastep <tom@shorewall.net>
 - Changed version to 1.4.6-1
 * Mon Jul 14 2003 Tom Eastep <tom@shorewall.net>

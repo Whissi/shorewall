@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-02-08</pubdate>
+    <pubdate>2004-02-22</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -47,15 +47,16 @@
 
     <caution>
       <para>The configuration shown here corresponds to Shorewall version
-      2.0.0-Beta1. It may use features not available in earlier Shorewall
+      2.0.0-Beta2. It may use features not available in earlier Shorewall
       releases.</para>
     </caution>
 
     <para>I have DSL service and have 5 static IP addresses
     (206.124.146.176-180). My DSL <quote>modem</quote> (Fujitsu Speedport) is
     connected to eth0. I have a local network connected to eth2 (subnet
-    192.168.1.0/24), a DMZ connected to eth1 (192.168.2.0/24) and a Wireless
-    network connected to eth3 (192.168.3.0/24).</para>
+    192.168.1.0/24), a DMZ connected to eth1 (206.124.146.176/32) and a
+    Wireless network connected to eth3 (192.168.3.0/24). Note that the IP
+    address of eth1 is a duplicate of one on eth0.</para>
 
     <para>I use:</para>
 
@@ -204,7 +205,7 @@ tx      Texas           Peer Network in Dallas
         <programlisting>#ZONE   INERFACE        BROADCAST       OPTIONS
 net     eth0            206.124.146.255 dhcp,norfc1918,routefilter,blacklist,tcpflags,nosmurfs
 loc     eth2            192.168.1.255   dhcp,detectnets
-dmz     eth1            192.168.2.255
+dmz     eth1            -
 WiFi    eth3            192.168.3.255   dhcp,maclist,detectnets
 -       texas           192.168.9.255
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
@@ -261,6 +262,7 @@ eth3            192.168.3.0/24
         <programlisting>#ADDRESS/SUBNET         PROTOCOL        PORT
 0.0.0.0/0               udp             1434
 0.0.0.0/0               tcp             1433
+0.0.0.0/0               tcp             3127
 0.0.0.0/0               tcp             8081
 0.0.0.0/0               tcp             57
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
@@ -292,7 +294,7 @@ all             all             REJECT          $LOG                      # Reje
       <blockquote>
         <para>Although most of our internal systems use one-to-one NAT, my
         wife&#39;s system (192.168.1.4) uses IP Masquerading (actually SNAT)
-        as does my SuSE system (192.168.1.3), our laptop (192.168.3.8) and
+        as do my SuSE system (192.168.1.3), our laptop (192.168.3.8) and
         visitors with laptops.</para>
 
         <programlisting>#INTERFACE              SUBNET          ADDRESS
@@ -346,18 +348,7 @@ gre                     net     $TEXAS
 
       <blockquote>
         <programlisting>#ACTION
-DropSMB             #Silently Drops Microsoft SMB Traffic
-RejectSMB           #Silently Reject Microsoft SMB Traffic
-DropUPnP            #Silently Drop UPnP Probes
-RejectAuth          #Silently Reject Auth
-DropPing            #Silently Drop Ping
-DropDNSrep          #Silently Drop DNS Replies
-AllowPing           #Accept Ping
-
 Mirrors             #Accept traffic from the Shorewall Mirror sites
-
-MyDrop:DROP         #My DROP common action
-MyReject:REJECT     #My REJECT common action
 #LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
       </blockquote>
     </section>
@@ -378,11 +369,11 @@ ACCEPT   $MIRRORS
     </section>
 
     <section>
-      <title>action.MyDrop</title>
+      <title>/etc/shorewall/action.Drop</title>
 
       <blockquote>
         <para>This is my common action for the DROP policy. It is like the
-        standard <emphasis role="bold">Reject</emphasis> action except that it
+        standard <emphasis role="bold">Drop</emphasis> action except that it
         allows <quote>Ping</quote>.</para>
 
         <programlisting>#TARGET  SOURCE     DEST          PROTO   DEST      SOURCE      RATE         USER/
@@ -398,12 +389,13 @@ DropDNSrep</programlisting>
     </section>
 
     <section>
-      <title>action.MyReject</title>
+      <title>/etc/shorewall/action.Reject</title>
 
       <blockquote>
         <para>This is my common action for the REJECT policy. It is like the
-        standard <emphasis role="bold">Drop</emphasis> action except that it
-        allows <quote>Ping</quote>.</para>
+        standard <emphasis role="bold">Reject</emphasis> action except that it
+        allows <quote>Ping</quote> and contains one rule that guards against
+        log flooding by broken software running in my local zone.</para>
 
         <programlisting>#TARGET  SOURCE     DEST          PROTO   DEST      SOURCE      RATE         USER/
 #                                         PORT(S)   PORT(S)     LIMIT        GROUP
@@ -437,15 +429,12 @@ REJECT:$LOG     loc                             net                     tcp     
 REJECT          loc                             net                     tcp     137,445
 REJECT          loc                             net                     udp     137:139
 #
-DROP            loc:!192.168.1.0/24             net
-
 QUEUE           loc                             net                     udp
 QUEUE           loc                             fw                      udp
 QUEUE           loc                             net                     tcp
 ###############################################################################################################################################################################
 # Local Network to Firewall
 #
-DROP            loc:!192.168.1.0/24             fw
 ACCEPT          loc                             fw                      tcp     ssh,time,10000,swat,137,139,445
 ACCEPT          loc                             fw                      udp     snmp,ntp,445
 ACCEPT          loc                             fw                      udp     137:139
@@ -453,7 +442,6 @@ ACCEPT          loc                             fw                      udp     
 ###############################################################################################################################################################################
 # Local Network to DMZ
 #
-DROP            loc:!192.168.1.0/24             dmz
 REJECT          loc                             dmz                     tcp     465
 ACCEPT          loc                             dmz                     udp     domain,xdmcp
 ACCEPT          loc                             dmz                     tcp     www,smtp,domain,ssh,imap,https,imaps,cvspserver,ftp,10000,8080,10027,pop3       -
@@ -509,33 +497,11 @@ ACCEPT          dmz                             fw                      tcp     
 ACCEPT          dmz                             fw                      udp     snmp
 REJECT          dmz                             fw                      tcp     auth
 ###############################################################################################################################################################################
-# DMZ to Internet
-#
-ACCEPT          dmz                             net                     tcp     smtp,domain,www,https,whois,echo,2702,21,2703,ssh,8080
-ACCEPT          dmz                             net                     udp     domain
-ACCEPT          dmz                             net:$POPSERVERS         tcp     pop3
-#ACCEPT         dmz                             net:206.191.151.2       tcp     pop3
-#ACCEPT         dmz                             net:66.216.26.115       tcp     pop3
-#
-# Something is wrong with the FTP connection tracking code or there is some client out there
-# that is sending a PORT command which that code doesn&#39;t understand. Either way,
-# the following works around the problem.
-#
-ACCEPT:$LOG     dmz                             net                     tcp     1024:                                   20
-###############################################################################################################################################################################
-# DMZ to Firewall -- ntp &#38; snmp, Silently reject Auth
-#
-ACCEPT          dmz                             fw                      udp     ntp                                     ntp
-ACCEPT          dmz                             fw                      tcp     snmp,ssh
-ACCEPT          dmz                             fw                      udp     snmp
-REJECT          dmz                             fw                      tcp     auth
-###############################################################################################################################################################################
-#
 # DMZ to Local Network
 #
 ACCEPT          dmz                             loc                     tcp     smtp,6001:6010
-ACCEPT          dmz                             loc                     tcp     111
-ACCEPT          dmz                             loc                     udp
+ACCEPT          dmz:206.124.146.177             loc:192.168.1.3         tcp     111
+ACCEPT          dmz:206.124.146.177             loc:192.168.1.3         udp
 ###############################################################################################################################################################################
 # Internet to Firewall
 #
@@ -598,7 +564,7 @@ ACCEPT          all                             all                     icmp    
       </blockquote>
     </section>
 
-    <section>
+    <section id="Interfaces">
       <title>/etc/network/interfaces</title>
 
       <blockquote>
@@ -611,10 +577,9 @@ ACCEPT          all                             all                     icmp    
         <programlisting>...
 auto eth1
 iface eth1 inet static
-        address 192.168.2.1
-        netmask 255.255.255.0
-        network 192.168.2.0
-        broadcast 192.168.2.255
+        address 206.124.146.176
+        netmask 255.255.255.255
+        broadcast 0.0.0.0
         <emphasis role="bold">up ip route add 206.124.146.177 dev eth1
 </emphasis>...</programlisting>
       </blockquote>

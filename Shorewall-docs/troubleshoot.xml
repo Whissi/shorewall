@@ -13,7 +13,7 @@
       <surname>Eastep</surname>
     </author>
 
-    <pubdate>2004-01-06</pubdate>
+    <pubdate>2004-02-02</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -117,6 +117,50 @@ iptables: No chain/target/match by that name
       the user had compiled his own kernel and had forgotten to include REJECT
       target support (see <ulink url="kernel.htm">kernel.htm</ulink>)</para>
     </example>
+  </section>
+
+  <section>
+    <title>Some Things to Keep in Mind</title>
+
+    <itemizedlist>
+      <listitem>
+        <para><emphasis role="bold">You cannot test your firewall from the
+        inside</emphasis>. Just because you send requests to your firewall
+        external IP address does not mean that the request will be associated
+        with the external interface or the <quote>net</quote> zone. Any
+        traffic that you generate from the local network will be associated
+        with your local interface and will be treated as loc-&#62;fw traffic.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">IP addresses are properties of systems,
+        not of interfaces</emphasis>. It is a mistake to believe that your
+        firewall is able to forward packets just because you can ping the IP
+        address of all of the firewall&#39;s interfaces from the local
+        network. The only conclusion you can draw from such pinging success is
+        that the link between the local system and the firewall works and that
+        you probably have the local system&#39;s default gateway set
+        correctly.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">Reply packets do NOT automatically follow
+        the reverse path of the one taken by the original request</emphasis>.
+        All packets are routed according to the routing table of the host at
+        each step of the way. This issue commonly comes up when people install
+        a Shorewall firewall parallel to an existing gateway and try to use
+        DNAT through Shorewall without changing the default gateway of the
+        system receiving the forwarded requests. Requests come in through the
+        Shorewall firewall where the destination IP address gets rewritten but
+        replies go out unmodified through the old gateway.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">Shorewall itself has no notion of inside
+        or outside</emphasis>. These concepts are embodied in how Shorewall is
+        configured. </para>
+      </listitem>
+    </itemizedlist>
   </section>
 
   <section>
@@ -355,7 +399,8 @@ DROP      net              fw                  icmp    echo-request</programlist
   <appendix>
     <title>Revision History</title>
 
-    <para><revhistory><revision><revnumber>1.6</revnumber><date>2005-01-06</date><authorinitials>TE</authorinitials><revremark>Add
+    <para><revhistory><revision><revnumber>1.7</revnumber><date>2005-02-02</date><authorinitials>TE</authorinitials><revremark>Add
+    hint about testing from inside the firewall.</revremark></revision><revision><revnumber>1.6</revnumber><date>2005-01-06</date><authorinitials>TE</authorinitials><revremark>Add
     pointer to Site and Mailing List Archives Searches.</revremark></revision><revision><revnumber>1.5</revnumber><date>2004-01-01</date><authorinitials>TE</authorinitials><revremark>Added
     information about eliminating ping-generated log messages.</revremark></revision><revision><revnumber>1.4</revnumber><date>2003-12-22</date><authorinitials>TE</authorinitials><revremark>Initial
     Docbook Conversion</revremark></revision></revhistory></para>

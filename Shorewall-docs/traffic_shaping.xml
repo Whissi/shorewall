@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-01-21</pubdate>
+    <pubdate>2004-02-11</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -46,8 +46,7 @@
     <itemizedlist>
       <listitem>
         <para>A new <emphasis role="bold">TC_ENABLED</emphasis> parameter in
-        /etc/shorewall.conf. Traffic Shaping also requires that you enable
-        packet mangling.</para>
+        /etc/shorewall.conf.</para>
       </listitem>
 
       <listitem>
@@ -229,12 +228,11 @@
         column may only be non-empty if the SOURCE is the firewall itself.
         When this column is non-empty, the rule applies only if the program
         generating the output is running under the effective user and/or
-        group. It may contain : </para>
+        group. It may contain :</para>
 
-        <para>[&#60;user name or number&#62;]:[&#60;group name or number&#62;]
-        </para>
+        <para>[&#60;user name or number&#62;]:[&#60;group name or number&#62;]</para>
 
-        <para>The colon is optionnal when specifying only a user. </para>
+        <para>The colon is optionnal when specifying only a user.</para>
 
         <para>Examples : john: / john / :users / john:users</para>
       </listitem>
@@ -247,63 +245,11 @@
       arriving on eth2 and eth3 should be marked with 2. All packets
       originating on the firewall itself should be marked with 3.</para>
 
-      <informaltable>
-        <tgroup cols="4">
-          <thead>
-            <row>
-              <entry align="center">MARK</entry>
-
-              <entry align="center">SOURCE</entry>
-
-              <entry align="center">DESTINATION</entry>
-
-              <entry align="center">PROTOCOL</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>1</entry>
-
-              <entry>eth1</entry>
-
-              <entry>0.0.0.0/0</entry>
-
-              <entry>all</entry>
-            </row>
-
-            <row>
-              <entry>2</entry>
-
-              <entry>eth2</entry>
-
-              <entry>0.0.0.0/0</entry>
-
-              <entry>all</entry>
-            </row>
-
-            <row>
-              <entry>2</entry>
-
-              <entry>eth3</entry>
-
-              <entry>0.0.0.0/0</entry>
-
-              <entry>all</entry>
-            </row>
-
-            <row>
-              <entry>3</entry>
-
-              <entry>fw</entry>
-
-              <entry>0.0.0.0/0</entry>
-
-              <entry>all</entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable>
+      <programlisting>#MARK   SOURCE    DESTINATION    PROTOCOL   USER/GROUP
+1       eth1      0.0.0.0/0      all
+2       eth2      0.0.0.0/0      all
+2       eth3      0.0.0.0/0      all
+3       fw        0.0.0.0/0      all</programlisting>
     </example>
 
     <example>
@@ -312,33 +258,8 @@
       <para>All GRE (protocol 47) packets not originating on the firewall and
       destined for 155.186.235.151 should be marked with 12.</para>
 
-      <informaltable>
-        <tgroup cols="4">
-          <thead>
-            <row>
-              <entry align="center">MARK</entry>
-
-              <entry align="center">SOURCE</entry>
-
-              <entry align="center">DESTINATION</entry>
-
-              <entry align="center">PROTOCOL</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>12</entry>
-
-              <entry>0.0.0.0/0</entry>
-
-              <entry>155.186.235.151</entry>
-
-              <entry>47</entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable>
+      <programlisting>#MARK   SOURCE    DESTINATION     PROTOCOL   USER/GROUP
+12      0.0.0.0/0 155.182.235.151 47</programlisting>
     </example>
 
     <example>
@@ -347,37 +268,8 @@
       <para>All SSH packets originating in 192.168.1.0/24 and destined for
       155.186.235.151 should be marked with 22.</para>
 
-      <informaltable>
-        <tgroup cols="5">
-          <thead>
-            <row>
-              <entry align="center">MARK</entry>
-
-              <entry align="center">SOURCE</entry>
-
-              <entry align="center">DESTINATION</entry>
-
-              <entry align="center">PROTOCOL</entry>
-
-              <entry align="center">PORT(S)</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>22</entry>
-
-              <entry>192.168.1.0/24</entry>
-
-              <entry>155.186.235.151</entry>
-
-              <entry>tcp</entry>
-
-              <entry>22</entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable>
+      <programlisting>#MARK   SOURCE         DESTINATION     PROTOCOL   USER/GROUP
+22      192.168.1.0/24 155.182.235.151 tcp        22</programlisting>
     </example>
   </section>
 

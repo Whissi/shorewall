@@ -17,7 +17,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-01-25</pubdate>
+    <pubdate>2004-03-04</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -529,6 +529,28 @@ eth2             192.168.2.0/24</programlisting>
 
       <para>See the <ulink url="FTP.html">Shorewall and FTP page</ulink>.</para>
     </section>
+
+    <section id="faq33">
+      <title>(FAQ 33) From clients behind the firewall, connections to some
+      sites fail. Connections to the same sites from the firewall itself work
+      fine. What&#39;s wrong.</title>
+
+      <para><emphasis role="bold">Answer</emphasis>: Most likely, you need to
+      set CLAMPMSS=Yes in <ulink url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>.</para>
+    </section>
+
+    <section id="faq35">
+      <title>(FAQ 35) I have two Ethernet interfaces to my local network which
+      I have bridged. When Shorewall is started, I&#39;m unable to pass
+      traffic through the bridge. I have defined the bridge interface (br0) as
+      the local interface in /etc/shorewall/interfaces; the bridged Ethernet
+      interfaces are not defined to Shorewall. How do I tell Shorewall to
+      allow traffic through the bridge?</title>
+
+      <para>Answer: Add the <firstterm>routeback</firstterm> option to
+      <filename class="devicefile">br0</filename> in <ulink
+      url="Documentation.htm#Interfaces">/etc/shorewall/interfaces</ulink>.</para>
+    </section>
   </section>
 
   <section>
@@ -576,7 +598,7 @@ url="http://www.shorewall.net/pub/shorewall/parsefw/">http://www.shorewall.net/p
 <ulink url="http://gege.org/iptables">http://gege.org/iptables</ulink>
 <ulink url="http://home.regit.org/ulogd-php.html">http://home.regit.org/ulogd-php.html</ulink></literallayout>
 
-        <para>I personnaly use Logwatch. It emails me a report each day from
+        <para>I personally use Logwatch. It emails me a report each day from
         my various systems with each report summarizing the logged activity on
         the corresponding system.</para>
       </section>
@@ -1254,6 +1276,15 @@ Creating input Chains...
       after that will be ignored. Check <quote>man iptables</quote> and look
       at the -I (--insert) command.</para>
     </section>
+
+    <section id="faq34">
+      <title>(FAQ 34) How can I speed up start (restart)?</title>
+
+      <para>Using a light-weight shell such as <command>ash</command> can
+      dramatically decrease the time required to <emphasis role="bold">start</emphasis>
+      or <emphasis role="bold">restart</emphasis> Shorewall. See the
+      SHOREWALL_SHELL variable in <ulink url="Documentation.htm#Conf"><filename>shorewall.conf</filename></ulink>.</para>
+    </section>
   </section>
 
   <section>
@@ -1542,19 +1573,19 @@ iptables: Invalid argument
     <section id="faq28">
       <title>(FAQ 28) How do I use Shorewall as a Bridging Firewall?</title>
 
-      <para>Basically, you don&#39;t. While there are kernel patches that
-      allow you to route bridge traffic through Netfilter, the environment is
-      so different from the Layer 3 firewalling environment that very little
-      of Shorewall works. In fact, so much of Shorewall doesn&#39;t work that
-      my official position is that <quote>Shorewall doesn&#39;t work with
-      Layer 2 Bridging</quote>.</para>
+      <para>Experimental Shorewall Bridging Firewall support is available —
+      <ulink url="2.0/bridge.html">check here for details</ulink>.</para>
     </section>
   </section>
 
   <appendix>
     <title>Revision History</title>
 
-    <para><revhistory><revision><revnumber>1.15</revnumber><date>2004-01-25</date><authorinitials>TE</authorinitials><revremark>Updated
+    <para><revhistory><revision><revnumber>1.19</revnumber><date>2004-03-05</date><authorinitials>TE</authorinitials><revremark>Added
+    link to Bridge.</revremark></revision><revision><revnumber>1.18</revnumber><date>2004-02-27</date><authorinitials>TE</authorinitials><revremark>Added
+    FAQ 35.</revremark></revision><revision><revnumber>1.17</revnumber><date>2004-02-15</date><authorinitials>TE</authorinitials><revremark>Added
+    FAQ 34.</revremark></revision><revision><revnumber>1.16</revnumber><date>2004-02-11</date><authorinitials>TE</authorinitials><revremark>Added
+    FAQ 33.</revremark></revision><revision><revnumber>1.15</revnumber><date>2004-01-25</date><authorinitials>TE</authorinitials><revremark>Updated
     FAQ 32 to mention masquerading. Remove tables.</revremark></revision><revision><revnumber>1.14</revnumber><date>2004-01-24</date><authorinitials>TE</authorinitials><revremark>Added
     FAQ 27a regarding kernel/iptables incompatibility.</revremark></revision><revision><revnumber>1.13</revnumber><date>2004-01-24</date><authorinitials>TE</authorinitials><revremark>Add
     a note about the <emphasis role="bold">detectnets</emphasis> interface

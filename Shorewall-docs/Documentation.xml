@@ -1232,12 +1232,39 @@ DNAT      net       loc:192.168.1.3 tcp      ssh
 
     <para>The <filename>/etc/shorewall/rules</filename> file defines
     exceptions to the policies established in the <filename>/etc/shorewall/policy</filename>
-    file. There is one entry in /etc/shorewall/rules for each of these rules.</para>
+    file. There is one entry in /etc/shorewall/rules for each of these rules.
+    Entries in this file only govern the establishment of new connections —
+    packets that are part of an existing connection or that establish a
+    connection that is related to an existing connection are automatically
+    accepted.</para>
 
     <para>Shorewall automatically enables firewall-&#62;firewall traffic over
     the loopback interface (lo) -- that traffic cannot be regulated using
     rules and any rule that tries to regulate such traffic will generate a
     warning and will be ignored.</para>
+
+    <para>Rules for each pair of zones (source zone, destination zone) are
+    evaluated in the order that they appear in the file — the first match
+    determines the disposition of the connection request with a couple of
+    caveats:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>LOG rules cause the connection request to be logged then
+        processing continues with the next rule in the file.</para>
+      </listitem>
+
+      <listitem>
+        <para>QUEUE rules cause the connection request to be passed to
+        user-space -- the user-space application can later insert them back
+        into the stream for further processing by following rules.</para>
+      </listitem>
+
+      <listitem>
+        <para>CONTINUE rules may cause the connection request to be
+        reprocessed using a different (source zone, destination zone) pair.</para>
+      </listitem>
+    </itemizedlist>
 
     <para>Entries in the file have the following columns:</para>
 
@@ -3115,7 +3142,8 @@ eth1                -</programlisting>
   <appendix>
     <title>Revision History</title>
 
-    <para><revhistory><revision><revnumber>1.12</revnumber><date>2004-01-21</date><authorinitials>TE</authorinitials><revremark>Add
+    <para><revhistory><revision><revnumber>1.13</revnumber><date>2004-02-13</date><authorinitials>TE</authorinitials><revremark>Add
+    information about the order of rules evalution.</revremark></revision><revision><revnumber>1.12</revnumber><date>2004-01-21</date><authorinitials>TE</authorinitials><revremark>Add
     masquerade destination list.</revremark></revision><revision><revnumber>1.12</revnumber><date>2004-01-18</date><authorinitials>TE</authorinitials><revremark>Correct
     typo.</revremark></revision><revision><revnumber>1.11</revnumber><date>2004-01-05</date><authorinitials>TE</authorinitials><revremark>Standards
     Compliance</revremark></revision><revision><revnumber>1.10</revnumber><date>2004-01-05</date><authorinitials>TE</authorinitials><revremark>Improved

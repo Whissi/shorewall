@@ -3848,10 +3848,10 @@ process_rule() # $1 = target
 	    expandv logtag
 	fi
 
-	if [ $loglevel = none ]; then
+	if [ "$loglevel" = none ]; then
+	    [ "$target" = LOG ] && return
 	    loglevel=
 	    logtag=
-	    [ $target = LOG ] && return
 	fi
 
 	loglevel=${loglevel%\!}	

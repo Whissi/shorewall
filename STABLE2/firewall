@@ -179,6 +179,16 @@ run_iptables2() {
 }
 
 #
+# Quietly run iptables
+#
+qt_iptables() {
+
+    [ -n "$BRIDGING" ]      && [ -f $TMP_DIR/physdev ] && rm -f $TMP_DIR/physdev
+
+    qt $IPTABLES $@
+}
+
+#
 # Run ip and if an error occurs, stop the firewall and quit
 #
 run_ip() {
@@ -5673,6 +5683,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 
     do_iptables() # $@ = command
     {
+	[ -n "$BRIDGING" ]      && [ -f $TMP_DIR/physdev ] && rm -f $TMP_DIR/physdev
 	if ! iptables $@ ; then
 	    startup_error "Can't add $1 to zone $2"
 	fi
@@ -5681,7 +5692,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
     #
     # Isolate interface and host parts
     #
-    interface=${1%:*}
+    interface=${1%%:*}
     host=${1#*:}
 
     [ -z "$host" ] && host="0.0.0.0/0"
@@ -5756,7 +5767,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
     chain=${zone}_dnat
 
     if nat_chain_exists $chain; then
-	do_iptables -t nat -A $(dynamic_in $interface) -s $host -j $chain
+	do_iptables -t nat -A $(dynamic_in $interface) $(match_source_hosts $host) -j $chain
     fi
     #
     # Insert new rules into the filter table for the passed interface
@@ -5764,7 +5775,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
     while read z1 z2 chain; do
 	if [ "$z1" = "$zone" ]; then
 	    if [ "$z2" = "$FW" ]; then
-		do_iptables -A $(dynamic_in $interface) -s $host -j $chain
+		do_iptables -A $(dynamic_in $interface) $(match_source_hosts $host) -j $chain
 	    else
 		source_chain=$(dynamic_fwd $interface)
 		eval dest_hosts=\"\$${z2}_hosts\"
@@ -5774,7 +5785,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		    hosts=${h#*:}
 
 		    if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
-			do_iptables -A $source_chain -s $host -o $iface $(match_dest_hosts $hosts) -j $chain
+			do_iptables -A $source_chain $(match_source_hosts $host) -o $iface $(match_dest_hosts $hosts) -j $chain
 		    fi
 		done
 	    fi
@@ -5783,7 +5794,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		#
 		# Add a rule to the dynamic out chain for the interface
 		#
-		do_iptables -A $(dynamic_out $interface) -d $host -j $chain
+		do_iptables -A $(dynamic_out $interface) $(match_destination_hosts $host) -j $chain
 	    else
 		eval source_hosts=\"\$${z1}_hosts\"
 
@@ -5792,7 +5803,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		    hosts=${h#*:}
 
 		    if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
-			do_iptables -A $(dynamic_fwd $iface) $rulenum $(match_source_hosts $hosts) -o $interface -d $host -j $chain
+			do_iptables -A $(dynamic_fwd $iface) $rulenum $(match_source_hosts $hosts) -o $interface $(match_dest_hosts $host) -j $chain
 		    fi
 		done
 	    fi
@@ -5838,7 +5849,7 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
     #
     # Isolate interface and host parts
     #
-    interface=${1%:*}
+    interface=${1%%:*}
     host=${1#*:}
 
     [ -z "$host" ] && host="0.0.0.0/0"
@@ -5887,14 +5898,14 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
     #
     # Delete any nat table entries for the host(s)
     #
-    qt iptables -t nat -D $(dynamic_in $interface) -s $host -j ${zone}_dnat
+    qt_iptables -t nat -D $(dynamic_in $interface) $(match_source_hosts $host) -j ${zone}_dnat
     #
     # Delete rules rules the input chains for the passed interface
     #
     while read z1 z2 chain; do
 	if [ "$z1" = "$zone" ]; then
 	    if [ "$z2" = "$FW" ]; then
-		qt iptables -D $(dynamic_in $interface) -s $host -j $chain
+		qt_iptables -D $(dynamic_in $interface) $(match_source_hosts $host) -j $chain
 	    else
 		source_chain=$(dynamic_fwd $interface)
 		eval dest_hosts=\"\$${z2}_hosts\"
@@ -5904,13 +5915,13 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		    hosts=${h#*:}
 
 		    if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
-			qt iptables -D $source_chain -s $host -o $iface $(match_dest_hosts $hosts) -j $chain
+			qt_iptables -D $source_chain $(match_source_hosts $host) -o $iface $(match_dest_hosts $hosts) -j $chain
 		    fi
 		done
 	    fi
 	elif [ "$z2" = "$zone" ]; then
 	    if [ "$z1" = "$FW" ]; then
-		qt iptables -D $(dynamic_out $interface) -d $host -j $chain
+		qt_iptables -D $(dynamic_out $interface) $(match_dest_hosts $host) -j $chain
 	    else
 		eval source_hosts=\"\$${z1}_hosts\"
 		
@@ -5919,7 +5930,7 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		    hosts=${h#*:}
 
 		    if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
-			qt iptables -D $(dynamic_fwd $iface) $(match_source_hosts $hosts) -o $interface -d $host -j $chain
+			qt_iptables -D $(dynamic_fwd $iface) $(match_source_hosts $hosts) -o $interface $(match_dest_hosts $host) -j $chain
 		    fi
 		done
 	    fi

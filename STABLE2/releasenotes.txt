@@ -1,4 +1,4 @@
-Shorewall 2.0.11
+Shorewall 2.0.12
 
 ----------------------------------------------------------------------
 Problems Corrected in version 2.0.4
@@ -188,7 +188,19 @@ install has been corrected.
 New Features in 2.0.11
 
 1) The AllowNNTP action now allows NNTP over SSL/TLS (NTTPS).
+
 -----------------------------------------------------------------------
 Problems corrected in 2.0.12
 
 1) A typo in shorewall.conf (NETNOTSYN) has been corrected.
+
+2) The "shorewall add" and "shorewall delete" commands now work in a
+   bridged environment. The syntax is:
+
+	   shorewall add <interface>[:<port>]:<address> <zone>
+	   shorewall delete <interface>[:<port>]:<address> <zone>
+
+   Examples:
+
+	   shorewall add br0:eth2:192.168.1.3 OK
+	   shorewall delete br0:eth2:192.168.1.3 OK

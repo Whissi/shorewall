@@ -4028,6 +4028,11 @@ add_common_rules() {
     build_common_chain
 
     #
+    # Process Black List
+    #
+    setup_blacklist
+
+    #
     # DHCP
     #
     interfaces=`find_interfaces_by_option dhcp`
@@ -4180,11 +4185,6 @@ add_common_rules() {
 	    fi
 	done
     fi
-    #
-    # Process Black List
-    #
-    setup_blacklist
-
     #
     # Route Filtering
     #

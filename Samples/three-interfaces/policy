@@ -22,7 +22,30 @@
 #			Shorewall will not start!
 #
 #	POLICY		Policy if no match from the rules file is found. Must
-#			be "ACCEPT", "DROP", "REJECT" or "CONTINUE"
+#			be "ACCEPT", "DROP", "REJECT", "CONTINUE" Or "NONE"
+#
+#			ACCEPT
+#				Accept the connection
+#			DROP
+#				Ignore the connection request.
+#			REJECT
+#				For TCP, send RST. For all other, send
+#				"port unreachable" ICMP.
+#			CONTINUE
+#				Pass the connection request past
+#				any other rules that it might also
+#				match (where the source or destination
+#				zone in those rules is a superset of
+#				the SOURCE or DEST in this policy)
+#			NONE
+#				Assume that there will never be any
+#				packets from this SOURCE to this
+#				DEST. Shorewall will not set up any
+#				infrastructure to handle such packets
+#				and you may not have any rules with
+#				this SOURCE and DEST in the /etc/shorewall/rules
+#				file. If such a packet is received the result
+#				is undefined.
 #
 #	LOG LEVEL	If supplied, each connection handled under the default
 #			POLICY is logged at that level. If not supplied, no

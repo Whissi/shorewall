@@ -15,7 +15,8 @@
 # Columns are:
 #
 #
-#	ACTION			ACCEPT, DROP, REJECT, DNAT, DNAT- or REDIRECT
+#	ACTION			ACCEPT, DROP, REJECT, DNAT, DNAT-, REDIRECT,
+#				CONTINUE or LOG.
 #
 #				ACCEPT
 #						Allow the connection request
@@ -46,6 +47,8 @@
 #						connection request will be passed
 #						to the rules defined for that
 #						(those) zones(s).
+#				LOG		
+#						Simply log the packet and continue.
 #
 #			May optionally be followed by ":" and a syslog log
 #			level (e.g, REJECT:info). This causes the packet to be
@@ -110,6 +113,8 @@
 #			2. 	In DNAT rules, only IP addresses are
 #				allowed; no FQDNs or subnet addresses
 #				are permitted.
+#			3.	You may not specify both an interface and
+#				an address.
 #
 #			The port that the server is listening on may be
 #			included and separated from the server's IP address by

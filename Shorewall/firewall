@@ -3343,12 +3343,14 @@ initialize_netfilter () {
     determine_interfaces
     determine_hosts
     
+    run_user_exit init
+
     #
     # The some files might be large so strip them while the firewall is still running
     # (restart command). This reduces the length of time that the firewall isn't
     # accepting new connections.
     #
-
+ 
     strip_file rules
     strip_file proxyarp
     strip_file maclist
@@ -3365,8 +3367,6 @@ initialize_netfilter () {
 	run_iptables -t mangle -X
 
     [ -n "$CLEAR_TC" ] && delete_tc
-
-    run_user_exit init
 
     echo "Deleting user chains..."
 

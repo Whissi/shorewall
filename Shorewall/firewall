@@ -144,11 +144,12 @@ expandv() # $* = list of variable names
 }
 
 #
-# Replace all "!' with "! " in the passed argument list
+# Replace all leading "!" with "! " in the passed argument list
 #
 
 fix_bang() {
     local i;
+
     for i in $@; do
 	case $i in
 	    !*)
@@ -165,6 +166,14 @@ fix_bang() {
 # Run iptables and if an error occurs, stop the firewall and quit
 #
 run_iptables() {
+
+    if [ "x${*%!*}" = "x$*" ]; then
+	if ! iptables $@ ; then
+	    [ -z "$stopping" ] && { stop_firewall; exit 2; }
+	fi
+	return
+    fi
+
     if ! iptables `fix_bang $@`; then
 	[ -z "$stopping" ] && { stop_firewall; exit 2; }
     fi

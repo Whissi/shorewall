@@ -60,7 +60,7 @@ remove_file() # $1 = file to restore
     fi
 }
 
-if [ -f /var/lib/shorewall/version ]; then
+if [ -f /usr/lib/shorewall/version ]; then
     INSTALLED_VERSION="`cat /var/lib/shorewall/version`"
     if [ "$INSTALLED_VERSION" != "$VERSION" ]; then
 	echo "WARNING: Shorewall Version $INSTALLED_VERSION is installed"

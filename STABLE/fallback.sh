@@ -49,8 +49,7 @@ restore_file() # $1 = file to restore
     fi	
 }
 
-if [ ! -f /var/lib/shorewall/version-${VERSION}.bkout -a \
-     ! -f /etc/shorewall/version-${VERSION}.bkout ]; then
+if [ ! -f /usr/lib/shorewall/version-${VERSION}.bkout ]; then
     echo "Shorewall Version $VERSION is not installed"
     exit 1
 fi

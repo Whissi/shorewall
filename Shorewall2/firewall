@@ -3357,7 +3357,7 @@ add_a_rule()
 	if [ $COMMAND != check ]; then
 	    if [ -n "$loglevel" ]; then
 		log_rule_limit $loglevel $chain $logtarget "$ratelimit" "$logtag" $userandgroup \
-		    $(fix_bang $proto $multiport $dest_interface $cli $sports $dports)
+		    $(fix_bang $proto $multiport $cli $dest_interface $sports $dports)
 	    fi
 
 	    if [ "$logtarget" != LOG ]; then
@@ -3366,8 +3366,8 @@ add_a_rule()
 		       $cli $sports $dports $ratelimit $userandgroup -j RETURN
 
 		[ "$logtarget" != NONAT ] && \
-		    run_iptables2 -A $chain $proto $multiport $dest_interface \
-			$cli $sports $dports $ratelimit $userandgroup -j $target
+		    run_iptables2 -A $chain $proto $multiport $cli $dest_interface \
+			$sports $dports $ratelimit $userandgroup -j $target
 	    fi
 	fi
     fi

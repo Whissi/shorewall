@@ -185,13 +185,17 @@ mutex_off()
 # Read a file and handle "INCLUDE" directives
 #
 
-read_file() # $1 = file name
+read_file() # $1 = file name, $2 = nest count
 {
     local first rest
 
     while read first rest; do
 	if [ "x$first"  = "xINCLUDE" ]; then
-	    read_file `find_file ${rest%#*}`
+	    if [ $2 -lt 4 ]; then
+		read_file `find_file ${rest%#*}` $(($count + 1))
+	    else
+		echo "   WARNING: INCLUDE in $1 ignored (nested too deeply)" >&2
+	    fi
 	else
 	    echo "$first $rest"
 	fi
@@ -216,7 +220,7 @@ strip_file() # $1 = Base Name of the file, $2 = Full Name of File (optional)
     [ $# = 1 ] && fname=`find_file $1` || fname=$2
 
     if [ -f $fname ]; then
-	read_file $fname | cut -d'#' -f1 | grep -v '^[[:space:]]*$' > $TMP_DIR/$1
+	read_file $fname 0 | cut -d'#' -f1 | grep -v '^[[:space:]]*$' > $TMP_DIR/$1
     else
 	> $TMP_DIR/$1
     fi

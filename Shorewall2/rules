@@ -208,7 +208,7 @@
 #			address is not altered.
 #
 #	RATE LIMIT	You may rate-limit the rule by placing a value in 
-#			this column:
+#			this colume:
 # 
 #				<rate>/<interval>[:<burst>]
 #
@@ -240,29 +240,6 @@
 #				!:kids  #program must not be run by a member
 #					#of the 'kids' group
 #
-#
-#	LOGPREFIX	You may add a specific log prefix to rules which are
-#			already logged (see the ACTIONS paragraph) by adding
-#			a word in this column. Spaces are not allowed, but 
-#			underscores are.
-#			
-#				Examples:
-#
-#				pingw  # print Shorewall:fw2lan:ACCEPT:pingw
-#				mailo  # print Shorewall:fw2lan:ACCEPT:mailo
-#				ma_ou  # print Shorewall:fw2lan:ACCEPT:ma_ou
-#
-#
-#			The default log format is LOGFORMAT="Shorewall:%s:%s:"
-#			You might want to reduce it to something shorter to
-#			allow you longer logprefixes. (in shorewall.conf :
-#			LOGFORMAT="Sw:%s:%s:" or something similar) 
-#			(the total lenght permitted by iptables is 29 chars.)
-# 			Shorewall:fw2lan:ACCEPT is already 23 chars.
-#					       
-#
-#
-#
 #	Example: Accept SMTP requests from the DMZ to the internet
 #
 #	#ACTION SOURCE	DEST PROTO	DEST    SOURCE	ORIGINAL
@@ -280,9 +257,9 @@
 #		 to local system 192.168.1.3 with a limit of 3 per second and
 #		 a maximum burst of 10
 #
-#	#ACTION 	SOURCE	DEST            PROTO	DEST    SOURCE	ORIGINAL RATE
-#	#                                       	PORT    PORT(S) DEST	 LIMIT
-#	DNAT          	net	loc:192.168.1.3 tcp	http    -       -        <3/sec:10>
+#	#ACTION 	SOURCE	DEST            PROTO	DEST    SOURCE	ORIGINAL
+#	#                                       	PORT    PORT(S) DEST
+#	DNAT<3/sec:10>	net	loc:192.168.1.3 tcp	http
 #
 #	Example: Redirect all locally-originating www connection requests to
 #		 port 3128 on the firewall (Squid running on the firewall
@@ -306,20 +283,7 @@
 #	#                               	PORT    PORT(S) DEST
 #	ACCEPT	 net:130.252.100.69,130.252.100.70 fw \
 #					tcp	22
-#
-#	Example: You want to explicitly log when a user named bob use https
-#	#ACTION 	SOURCE	DEST            PROTO	DEST    SOURCE	ORIGINAL RATE  USER/ LOG
-#	#                                       	PORT    PORT(S) DEST	 LIMIT GROUP PREFIX
-#	ACCEPT:debug    fw      lan             tcp     443     -        -       -     bob   hs_bob
-#
-#	Example: You want to explicitly log outgoing pings
-#	#ACTION 	SOURCE	DEST            PROTO	DEST    SOURCE	ORIGINAL RATE  USER/ LOG
-#	#                                       	PORT    PORT(S) DEST	 LIMIT GROUP PREFIX
-#	ACCEPT:debug    fw      lan             icmp    8       -        -       -     -     p_out
-
-
-
 ####################################################################################################
-#ACTION  SOURCE     DEST        PROTO   DEST    SOURCE     ORIGINAL RATE    USER/  LOG
-#                                       PORT    PORT(S)    DEST     LIMIT   GROUP  PREFIX
+#ACTION  SOURCE		DEST      	PROTO	DEST    SOURCE	   ORIGINAL	RATE		USER/
+#                       	        	PORT    PORT(S)    DEST		LIMIT		GROUP
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

@@ -1022,32 +1022,21 @@ log_rule_limit() # $1 = log level, $2 = chain, $3 = disposition , $4 = rate limi
     local disposition=$3
     local rulenum=
     local limit="${4:-$LOGLIMIT}"
-    local dx="";
-    local logprefix="${5:-$dx}"
-    logprefix="$logprefix "
 
-    shift;shift;shift;shift;shift
-
-
-   
+    shift;shift;shift;shift
 
     if [ -n "$LOGRULENUMBERS" ]; then
 	eval rulenum=\$${chain}_logrules
 
 	[ -z "$rulenum" ] && rulenum=1
-                     
-	logprefixtemp="$(printf "$LOGFORMAT" $chain $rulenum $disposition)$logprefix"
-	if [ ${#logprefixtemp} -gt 29 ]; then
-	    logprefixtemp="$(echo $logprefixtemp |cut -b -29)"
-	    echo "   Logprefix too LONG ! cutting it to 29 : $logprefixtemp"
-	fi
-	
+
 	case $level in
 	    ULOG)
-		eval iptables -A $chain $@ $limit -j ULOG $LOGPARMS --ulog-prefix '"$logprefixtemp"'
+		eval iptables -A $chain $@ $limit -j ULOG $LOGPARMS --ulog-prefix '"$(printf "$LOGFORMAT" $chain $rulenum $disposition)"'
 		;;
 	    *)
-		eval iptables -A $chain $@ $limit -j LOG $LOGPARMS --log-level $level  --log-prefix '"$logprefixtemp"' 
+		eval iptables -A $chain $@ $limit -j LOG $LOGPARMS --log-level $level \
+		    --log-prefix '"$(printf "$LOGFORMAT" $chain $rulenum $disposition)"'
 		;;
 	esac
 	
@@ -1059,21 +1048,13 @@ log_rule_limit() # $1 = log level, $2 = chain, $3 = disposition , $4 = rate limi
 
 	eval ${chain}_logrules=$rulenum
     else
-
-	logprefixtemp="$(printf "$LOGFORMAT" $chain $disposition)$logprefix"
-	if [ ${#logprefixtemp} -gt 29 ]; then
-	    logprefixtemp="$(echo $logprefixtemp |cut -b -29)"
-	    echo "   Logprefix too LONG ! cutting it to 29 : $logprefixtemp"
-	fi
-	
-
 	case $level in
 	    ULOG)
-		eval iptables -A $chain $@ $limit -j ULOG $LOGPARMS --ulog-prefix '"$logprefixtemp"'
+		eval iptables -A $chain $@ $limit -j ULOG $LOGPARMS --ulog-prefix '"$(printf "$LOGFORMAT" $chain $disposition)"'
 		;;
 	    *)
-		
-		eval iptables -A $chain $@ $limit -j LOG $LOGPARMS --log-level $level --log-prefix '"$logprefixtemp"'
+		eval iptables -A $chain $@ $limit -j LOG $LOGPARMS --log-level $level \
+		    --log-prefix '"$(printf "$LOGFORMAT" $chain $disposition)"'
 		;;
 	esac
 	
@@ -1091,7 +1072,7 @@ log_rule() # $1 = log level, $2 = chain, $3 = disposition , $... = predicates fo
 
     shift;shift;shift
 
-    log_rule_limit $level $chain $disposition "$LOGLIMIT" "$logprefix" $@
+    log_rule_limit $level $chain $disposition "$LOGLIMIT" $@
 }
 
 #
@@ -2360,7 +2341,7 @@ add_an_action()
 	    for serv1 in $(separate_list $serv); do
 		for srv in $(ip_range $serv1); do
 		    if [ -n "$loglevel" ]; then
-			log_rule_limit $loglevel $action $logtarget "$ratelimit"  "$logprefix" $userandgroup \
+			log_rule_limit $loglevel $action $logtarget "$ratelimit" $userandgroup \
 			    $(fix_bang $proto $sports $multiport $cli -d $srv $dports)
 		    fi
 		    
@@ -2370,7 +2351,7 @@ add_an_action()
 	    done
 	else
 	    if [ -n "$loglevel" ]; then
-		log_rule_limit $loglevel $action $logtarget "$ratelimit"  "$logprefix" $userandgroup \
+		log_rule_limit $loglevel $action $logtarget "$ratelimit" $userandgroup \
 		    $(fix_bang $proto $sports $multiport $cli $dports)
 	    fi
 		    
@@ -2402,8 +2383,7 @@ process_action() # $1 = action
     local cports="$7"
     local ratelimit="$8"
     local userspec="$9"
-    local logprefix="${10}"
-    local rule="$(echo $target $clients $servers $protocol $ports $cports $ratelimit $logprefix)"
+    local rule="$(echo $target $clients $servers $protocol $ports $cports $ratelimit)"
     local userandgroup=
 
     if [ -n "$ratelimit" ]; then
@@ -2609,7 +2589,7 @@ process_actions1() {
 		if [ -f $fn ]; then
 		    echo "   Pre-processing $fn..."
 		    strip_file $f $fn
-		    while read xtarget xclients xservers xprotocol xports xcports xratelimit $xuserspec xlogprefix; do
+		    while read xtarget xclients xservers xprotocol xports xcports xratelimit $xuserspec; do
 			expandv xtarget
 			temp="${xtarget%:*}"
 			case "${temp%<*}" in
@@ -2619,7 +2599,7 @@ process_actions1() {
 				if list_search $temp $ACTIONS; then
 				    eval requiredby_${xaction}=\"\$requiredby_${xaction} $temp\"
 				else
-				    rule="$(echo $xtarget $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec $xlogprefix)"
+				    rule="$(echo $xtarget $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec)"
 				    fatal_error "Invalid TARGET in rule \"$rule\""
 				fi
 				;;
@@ -2653,7 +2633,7 @@ process_actions2() {
 		if [ "${ysourcezone}" != "${ydestzone}" ] ; then
 		    eval ypolicy=\$${ysourcezone}2${ydestzone}_policy
 		    if [ "$ypolicy" != NONE ] ; then
-			process_action $xaction $xtarget $yclients $yservers $xprotocol $xports $xcports $xratelimit $xuserspec $xlogprefix
+			process_action $xaction $xtarget $yclients $yservers $xprotocol $xports $xcports $xratelimit $xuserspec
 		    fi
 		fi
 	    done
@@ -2661,7 +2641,7 @@ process_actions2() {
     }
 
     do_it() {
-	expandv xclients xservers xprotocol xports xcports xratelimit xuserspec xlogprefix
+	expandv xclients xservers xprotocol xports xcports xratelimit xuserspec
 
 	if [ "x$xclients" = xall ]; then
 	    xclients="$zones $FW"
@@ -2678,7 +2658,7 @@ process_actions2() {
 	    continue
 	fi
 
-	process_action $xaction $xtarget $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec $xlogprefix
+	process_action $xaction $xtarget $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec
 
     }
     #
@@ -2711,7 +2691,7 @@ process_actions2() {
 		fn=$(find_file $f)
 		
 		echo "Processing $fn..."
-		while read xtarget xclients xservers xprotocol xports xcports xratelimit $xuserspec xlogprefix; do
+		while read xtarget xclients xservers xprotocol xports xcports xratelimit $xuserspec; do
 		    do_it
 		done < $TMP_DIR/$f
 		;;
@@ -2817,14 +2797,14 @@ add_nat_rule() {
 		done
 
 		if [ -n "$loglevel" ]; then
-		    log_rule $loglevel $chain $logtarget "$logprefix" -t nat
+		    log_rule $loglevel $chain $logtarget -t nat
 		fi
 
 		addnatrule $chain $ratelimit $proto -j $target1 # Protocol is necessary for port redirection
 	    else
 		for adr in $(separate_list $addr); do
 		    if [ -n "$loglevel" ]; then
-			log_rule_limit $loglevel $OUTPUT $logtarget "$ratelimit" "$logprefix" -t nat \
+			log_rule_limit $loglevel $OUTPUT $logtarget "$ratelimit" -t nat \
 			    $(fix_bang $proto $cli $sports $userandgroup -d $adr $multiport $dports)
 		    fi
 
@@ -2855,7 +2835,7 @@ add_nat_rule() {
 		done
 
 		if [ -n "$loglevel" ]; then
-		    log_rule_limit $loglevel $chain $logtarget "$ratelimit"  "$logprefix" -t nat
+		    log_rule_limit $loglevel $chain $logtarget "$ratelimit" -t nat
 		fi
 
 		addnatrule $chain $ratelimit $proto -j $target1 # Protocol is necessary for port redirection
@@ -2863,7 +2843,7 @@ add_nat_rule() {
 		for adr in $(separate_list $addr); do
 		    if [ -n "$loglevel" ]; then
 			ensurenatchain $chain
-			log_rule_limit $loglevel $chain $logtarget "$ratelimit"  "$logprefix" -t nat \
+			log_rule_limit $loglevel $chain $logtarget "$ratelimit" -t nat \
 			    $(fix_bang $proto $cli $sports -d $adr $multiport $dports)
 		    fi
 		    
@@ -3071,7 +3051,7 @@ add_a_rule()
 			    if [ -n "$addr" -a -n "$CONNTRACK_MATCH" ]; then
 				for adr in $(separate_list $addr); do
 				    if [ -n "$loglevel" -a -z "$natrule" ]; then
-					log_rule_limit $loglevel $chain $logtarget "$ratelimit" "$logprefix" -m conntrack --ctorigdst $adr \
+					log_rule_limit $loglevel $chain $logtarget "$ratelimit" -m conntrack --ctorigdst $adr \
 					    $userandgroup $(fix_bang $proto $sports $multiport $cli -d $srv $dports)
 				    fi
 
@@ -3080,7 +3060,7 @@ add_a_rule()
 				done
 			    else
 				if [ -n "$loglevel" -a -z "$natrule" ]; then
-				    log_rule_limit $loglevel $chain $logtarget "$ratelimit" "$logprefix" $userandgroup \
+				    log_rule_limit $loglevel $chain $logtarget "$ratelimit" $userandgroup \
 					$(fix_bang $proto $sports $multiport $cli -d $srv $dports)
 				fi
 
@@ -3091,7 +3071,7 @@ add_a_rule()
 		    done
 		else
 		    if [ -n "$loglevel" -a -z "$natrule" ]; then
-		        log_rule_limit $loglevel $chain $logtarget "$ratelimit" "$logprefix" $userandgroup \
+		        log_rule_limit $loglevel $chain $logtarget "$ratelimit" $userandgroup \
 			    $(fix_bang $proto $sports $multiport $cli $dports)
 		    fi
 
@@ -3110,7 +3090,7 @@ add_a_rule()
 
 	if [ $COMMAND != check ]; then
 	    if [ -n "$loglevel" ]; then
-		log_rule_limit $loglevel $chain $logtarget "$ratelimit" "$logprefix" $userandgroup \
+		log_rule_limit $loglevel $chain $logtarget "$ratelimit" $userandgroup \
 		    $(fix_bang $proto $multiport $dest_interface $cli $sports $dports)
 	    fi
 
@@ -3144,9 +3124,8 @@ process_rule() # $1 = target
     local address="$7"
     local ratelimit="$8"
     local userspec="$9"
-    local logprefix="${10}"
     local userandgroup=
-    local rule="$(echo $target $clients $servers $protocol $ports $cports $address $ratelimit $userspec $logprefix)"
+    local rule="$(echo $target $clients $servers $protocol $ports $cports $address $ratelimit $userspec)"
 
     # Function Body - isolate rate limit
 
@@ -3437,7 +3416,7 @@ process_rules()
 		if [ "${ysourcezone}" != "${ydestzone}" ] ; then
 		    eval ypolicy=\$${ysourcezone}2${ydestzone}_policy
 		    if [ "$ypolicy" != NONE ] ; then
-			process_rule $xtarget $yclients $yservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec $xlogprefix
+			process_rule $xtarget $yclients $yservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec
 		    fi
 		fi
 	    done
@@ -3445,7 +3424,7 @@ process_rules()
     }
 
     do_it() {
-	expandv xclients xservers xprotocol xports xcports xaddress xratelimit xuserspec xlogprefix
+	expandv xclients xservers xprotocol xports xcports xaddress xratelimit xuserspec
 
 	if [ "x$xclients" = xall ]; then
 	    xclients="$zones $FW"
@@ -3462,10 +3441,10 @@ process_rules()
 	    continue
 	fi
 	
-	process_rule $xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec $xlogprefix
+	process_rule $xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec
     }
 
-    while read xtarget xclients xservers xprotocol xports xcports xaddress xratelimit xuserspec xlogprefix; do
+    while read xtarget xclients xservers xprotocol xports xcports xaddress xratelimit xuserspec; do
 	temp="${xtarget%:*}"
 	case "${temp%<*}" in
 	    ACCEPT|DROP|REJECT|DNAT|DNAT-|REDIRECT|REDIRECT-|LOG|CONTINUE|QUEUE)
@@ -3480,7 +3459,7 @@ process_rules()
 
 		    do_it
 		else
-		    rule="$(echo $xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec $xlogprefix)"
+		    rule="$(echo $xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec)"
 		    fatal_error "Invalid Action in rule \"$rule\""
 		fi
 		;;

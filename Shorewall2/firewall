@@ -3152,7 +3152,27 @@ process_action() # $1 = chain    (Chain to add the rules to)
 
     [ "x$protocol" = "x-" ] && protocol=all || protocol=${protocol:=all}
 
-    if [ -n "$MULTIPORT" ] && \
+    if [ -n "$XMULTIPORT" ] && \
+	! list_search $protocol "icmp" "ICMP" "1" && \
+	[ $(( $(list_count $ports)  + $(list_count1 $(split $ports ) ) ))  -le 16 -a \
+	  $(( $(list_count $cports) + $(list_count1 $(split $cports ) ) )) -le 16 ] 
+	then
+	#
+	# Extended MULTIPORT is enabled, and less than
+	# 16 ports are listed (port ranges count as two ports) - use multiport match.
+	#
+	multioption="-m multiport"
+	for client in $(separate_list ${clients:=-}); do
+	    for server in $(separate_list ${servers:=-}); do
+		#
+		# add_an_action() modifies these so we must set their values each time
+		#
+		port=${ports:=-}
+		cport=${cports:=-}
+		add_an_action
+	    done
+	done
+    elif [ -n "$MULTIPORT" ] && \
 	! list_search $protocol "icmp" "ICMP" "1" && \
 	[ "$ports" = "${ports%:*}" -a \
 	"$cports" = "${cports%:*}" -a \
@@ -4326,7 +4346,26 @@ process_rule() # $1 = target
 
     case $logtarget in
 	DNAT*)
-	    if [ -n "$MULTIPORT" ] && \
+	    if [ -n "$XMULTIPORT" ] && \
+	       ! list_search $protocol "icmp" "ICMP" "1" && \
+	       [ $(( $(list_count $ports)  + $(list_count1 $(split $ports ) ) ))  -le 16 -a \
+		 $(( $(list_count $cports) + $(list_count1 $(split $cports ) ) )) -le 16 ]
+		then
+	        #
+	        # Extended MULTIPORT is enabled, and less than
+	        # 16 ports are listed (port ranges count as two ports) - use multiport match.
+	        #
+		multioption="-m multiport"
+		for client in $(separate_list ${clients:=-}); do
+		    #
+		    # add_a_rule() modifies these so we must set their values each time
+		    #
+		    server=${servers:=-}
+		    port=${ports:=-}
+		    cport=${cports:=-}
+		    add_a_rule
+		done
+	    elif [ -n "$MULTIPORT" ] && \
 	       ! list_search $protocol "icmp" "ICMP" "1" && \
 	       [ "$ports" = "${ports%:*}" -a \
 		"$cports" = "${cports%:*}" -a \
@@ -4364,7 +4403,27 @@ process_rule() # $1 = target
 	    ;;
 	*)
 
-	    if [ -n "$MULTIPORT" ] && \
+	    if [ -n "$XMULTIPORT" ] && \
+	       ! list_search $protocol "icmp" "ICMP" "1" && \
+	       [ $(( $(list_count $ports)  + $(list_count1 $(split $ports ) ) ))  -le 16 -a \
+		 $(( $(list_count $cports) + $(list_count1 $(split $cports ) ) )) -le 16  ]
+		then
+	        #
+	        # Extended MULTIPORT is enabled, and less than
+	        # 16 ports are listed (port ranges count as two ports) - use multiport match.
+	        #
+		multioption="-m multiport"
+		for client in $(separate_list ${clients:=-}); do
+		    for server in $(separate_list ${servers:=-}); do
+		        #
+		        # add_a_rule() modifies these so we must set their values each time
+		        #
+			port=${ports:=-}
+			cport=${cports:=-}
+			add_a_rule
+		    done
+		done
+	    elif [ -n "$MULTIPORT" ] && \
 	       ! list_search $protocol "icmp" "ICMP" "1" && \
 	       [ "$ports" = "${ports%:*}" -a \
 		"$cports" = "${cports%:*}" -a \
@@ -5049,7 +5108,15 @@ setup_masq()
 			if [ $listcount -gt 1 ]; then
 			    case $ports in
 				*:*)
-				    fatal_error "Port Range not allowed in list ($ports)"
+				    if [ -n "$XMULTIPORT" ]; then
+					if [ $(($listcount + $(list_count1 $(split $ports) ) )) -le 16 ]; then
+					    ports="-m multiport --dports $ports"
+					else
+					    fatal_error "More than 15 entries in port list ($ports)"
+					fi
+				    else
+					fatal_error "Port Range not allowed in list ($ports)"
+				    fi
 				    ;;
 				*)
 				    if [ -n "$MULTIPORT" ]; then
@@ -5504,6 +5571,7 @@ determine_capabilities() {
 
     CONNTRACK_MATCH=
     MULTIPORT=
+    XMULTIPORT=
     POLICY_MATCH=
     PHYSDEV_MATCH=
     IPRANGE_MATCH=
@@ -5511,6 +5579,7 @@ determine_capabilities() {
     qt $IPTABLES -N fooX1234
     qt $IPTABLES -A fooX1234 -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT             && CONNTRACK_MATCH=Yes
     qt $IPTABLES -A fooX1234 -p tcp -m multiport --dports 21,22 -j ACCEPT               && MULTIPORT=Yes
+    qt $IPTABLES -A fooX1234 -p tcp -m multiport --dports 21:22 -j ACCEPT               && XMULTIPORT=Yes
     qt $IPTABLES -A fooX1234 -m policy --pol ipsec --dir in -j ACCEPT                   && POLICY_MATCH=Yes
     qt $IPTABLES -A fooX1234 -m physdev --physdev-in eth0 -j ACCEPT                     && PHYSDEV_MATCH=Yes
     qt $IPTABLES -A fooX1234 -m iprange --src-range 192.168.1.5-192.168.1.124 -j ACCEPT && IPRANGE_MATCH=Yes
@@ -5537,7 +5606,7 @@ report_capabilities() {
     echo "Shorewall has detected the following iptables/netfilter capabilities:"
     report_capability $NAT_ENABLED "NAT"
     report_capability $MANGLE_ENABLED "Packet Mangling"
-    report_capability $MULTIPORT "Multi-port Match"
+    [ -n "$XMULTIPORT" ] && report_capability $XMULTIPORT "Extended Multi-port Match" || report_capability $MULTIPORT "Multi-port Match"
     report_capability $CONNTRACK_MATCH "Connection Tracking Match"
     report_capability $PKTTYPE "Packet Type Match"
     report_capability $POLICY_MATCH "Policy Match"

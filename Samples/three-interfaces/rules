@@ -24,6 +24,10 @@
 #				DNAT     -- Forward the request to another
 #					    system (and optionally another
 #					    port).
+#				DNAT-    -- Advanced users only. 
+#					    Like DNAT but only generates the
+#					    DNAT iptables rule and not
+#					    the companion ACCEPT rule.
 #				REDIRECT -- Redirect the request to a local
 #					    port on the firewall.
 #
@@ -208,10 +212,12 @@ ACCEPT	dmz	  net			udp	53
 # Make ping work between the DMZ, net and local zone (assumes that the loc->
 # net policy is ACCEPT).
 #
+ACCEPT		net	  fw		icmp	8
+ACCEPT		loc	  fw		icmp	8
+ACCEPT		dmz	  fw		icmp	8
 ACCEPT		loc	  dmz           icmp    8
 ACCEPT		dmz	  loc		icmp	8
 ACCEPT		dmz	  net		icmp	8
 ACCEPT		net	  dmz		icmp	8 # Only with Proxy ARP and
 ACCEPT		net	  loc		icmp	8 # static NAT
-
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

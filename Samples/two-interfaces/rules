@@ -24,6 +24,10 @@
 #				DNAT     -- Forward the request to another
 #					    system (and optionally another
 #					    port).
+#				DNAT-    -- Advanced users only.
+#					    Like DNAT but only generates the
+#					    DNAT iptables rule and not
+#					    the companion ACCEPT rule.
 #				REDIRECT -- Redirect the request to a local
 #					    port on the firewall.
 #
@@ -198,5 +202,12 @@ ACCEPT		fw	  net		udp	53
 # Accept SSH connections from the local network for administration
 #
 ACCEPT		loc	  fw		tcp	22
-
+#
+# Accept Ping Ubiquitously
+#
+ACCEPT		loc	fw		icmp	8
+ACCEPT		net	fw		icmp	8
+#
+# All ICMP are accepted fw->all
+#
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

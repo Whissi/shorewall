@@ -5316,17 +5316,13 @@ determine_capabilities() {
 	qt iptables -A fooX1234 -m physdev --physdev-in eth0 -j ACCEPT                     && PHYSDEV_MATCH=Yes
 	qt iptables -A fooX1234 -m iprange --src-range 192.168.1.5-192.168.1.124 -j ACCEPT && IPRANGE_MATCH=Yes
 
+
+	if [ -n "$PKTTYPE" ]; then
+	    qt iptables -A fooX1234 -m pkttype --pkt-type broadcast -j ACCEPT || PKTTYPE=
+	fi
+	    
 	qt iptables -F fooX1234
 	qt iptables -X fooX1234
-    fi
-
-    if [ -n "$PKTTYPE" ]; then
-	if qt iptables -N fooX1234 ; then
-	    qt iptables -A fooX1234 -m pkttype --pkt-type broadcast -j ACCEPT || PKTTYPE=
-	    
-	    qt iptables -F fooX1234
-	    qt iptables -X fooX1234
-	fi
     fi
 }
 

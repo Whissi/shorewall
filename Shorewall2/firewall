@@ -3968,9 +3968,10 @@ add_a_rule()
 	    proto=
 	    ;;
 	ipp2p)
-	    sports="-m ipp2p --${port:-ipp2p}"
+	    dports="-m ipp2p --${port:-ipp2p}"
 	    port=
 	    proto=tcp
+	    do_ports
 	    ;;
 	*)
 	    [ -n "$port" ] && \

@@ -6,7 +6,13 @@
 #
 #    dropBcast          #Silently Drop Broadcast/multicast
 #    dropNonSyn         #Silently Drop Non-syn TCP packets
-#    rejectNonSyn       #Silently Reject Non-syn TCP packets
+#    rejNonSyn          #Silently Reject Non-syn TCP packets
+#    logNonSyn          #Log Non-syn TCP packets with disposition LOG
+#    dLogNonSyn         #Log Non-syn TCP packets with disposition DROP
+#    rLogNonSyn          #Log Non-syn TCP packets with disposition REJECT
+#
+# The NonSyn logging builtins log at the level specified by LOGNEWNOTSYN in
+# shorewall.conf. If that option isn't specified then 'info' is used.
 #
 #ACTION
 

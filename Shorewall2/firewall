@@ -2744,7 +2744,7 @@ createactionchain() # $1 = chain name
 
 process_actions1() {
 	
-    ACTIONS="dropBcast dropNonSyn dropNotSyn rejectNotSyn logNotSyn rLogNotSyn dLogNotSyn"
+    ACTIONS="dropBcast dropNonSyn dropNotSyn rejNotSyn logNotSyn rLogNotSyn dLogNotSyn"
     USEDACTIONS=
 
     strip_file actions
@@ -2906,7 +2906,7 @@ process_actions2() {
 	    dropNotSyn)
 		[ "$COMMAND" != check ] && run_iptables -A dropNotSyn -p tcp ! --syn -j DROP
 		;;
-	    rejectNotSyn)
+	    rejNotSyn)
 		[ "$COMMAND" != check ] && run_iptables -A rejectNotSyn -p tcp ! --syn -j REJECT --reject-with tcp-reset
 		;;
 	    logNotSyn)

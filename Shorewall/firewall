@@ -4273,15 +4273,15 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		    rulenum=2
 		fi
 
-		if ! list_search $interface $filterping_interfaces; then
+		if list_search $interface $filterping_interfaces; then
 		    rulenum=$(($rulenum + 1))
 		fi
 
-		if ! list_search $interface $maclist_interfaces; then
+		if list_search $interface $maclist_interfaces; then
 		    rulenum=$(($rulenum + 1))
 		fi
 
-		if ! list_search $interface $tcpflags_interfaces; then
+		if list_search $interface $tcpflags_interfaces; then
 		    rulenum=$(($rulenum + 1))
 		fi
 
@@ -4306,11 +4306,11 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 			rulenum=2
 		    fi
 
-		    if ! list_search $interface $maclist_interfaces; then
+		    if list_search $interface $maclist_interfaces; then
 			rulenum=$(($rulenum + 1))
 		    fi
 		    
-		    if ! list_search $interface $tcpflags_interfaces; then
+		    if list_search $interface $tcpflags_interfaces; then
 			rulenum=$(($rulenum + 1))
 		    fi
 		fi

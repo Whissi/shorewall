@@ -2,6 +2,8 @@
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
 "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
 <article id="IPIP">
+  <!--$Id$-->
+
   <articleinfo>
     <title>Shorewall Setup Guide</title>
 
@@ -26,8 +28,8 @@
       document under the terms of the GNU Free Documentation License, Version
       1.2 or any later version published by the Free Software Foundation; with
       no Invariant Sections, with no Front-Cover, and with no Back-Cover
-      Texts. A copy of the license is included in the section entitled &#34;<ulink
-      url="GnuCopyright.htm">GNU Free Documentation License</ulink>&#34;.</para>
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
 
@@ -42,8 +44,6 @@
     give you general guidelines and will point you to other resources as
     necessary.</para>
 
-    <para></para>
-
     <caution>
       <para>If you run LEAF Bering, your Shorewall configuration is NOT what I
       release -- I suggest that you consider installing a stock Shorewall lrp
@@ -51,8 +51,8 @@
       the iproute/iproute2 package be installed (on RedHat, the package is
       called iproute). You can tell if this package is installed by the
       presence of an <emphasis role="bold">ip</emphasis> program on your
-      firewall system. As root, you can use the &#39;which&#39; command to
-      check for this program:</para>
+      firewall system. As root, you can use the <quote>which</quote> command
+      to check for this program:</para>
 
       <programlisting>     [root@gateway root]# which ip
      /sbin/ip
@@ -146,8 +146,8 @@
     will be used. With the exception of <emphasis role="bold">fw</emphasis>,
     Shorewall attaches absolutely no meaning to zone names. Zones are entirely
     what YOU make of them. That means that you should not expect Shorewall to
-    do something special &#34;because this is the internet zone&#34; or
-    &#34;because that is the DMZ&#34;.</para>
+    do something special <quote>because this is the internet zone</quote> or
+    <quote>because that is the DMZ</quote>.</para>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" /> Edit the
     /etc/shorewall/zones file and make any changes necessary.</para>
@@ -329,9 +329,9 @@
     name (previously defined in /etc/shorewall/zones) with a network
     interface. This is done in the <ulink url="Documentation.htm#Interfaces">/etc/shorewall/interfaces</ulink>
     file. The firewall illustrated above has three network interfaces. Where
-    Internet connectivity is through a cable or DSL &#34;Modem&#34;, the
+    Internet connectivity is through a cable or DSL <quote>Modem</quote>, the
     <emphasis>External Interface</emphasis> will be the Ethernet adapter that
-    is connected to that &#34;Modem&#34; (e.g., <emphasis role="bold">eth0</emphasis>)
+    is connected to that <quote>Modem</quote> (e.g., <emphasis role="bold">eth0</emphasis>)
     unless you connect via Point-to-Point Protocol over Ethernet (PPPoE) or
     Point-to-Point Tunneling Protocol (PPTP) in which case the External
     Interface will be a ppp interface (e.g., <emphasis role="bold">ppp0</emphasis>).
@@ -512,8 +512,8 @@
 
     <para>The following discussion barely scratches the surface of addressing
     and routing. If you are interested in learning more about this subject, I
-    highly recommend &#34;<emphasis>IP Fundamentals: What Everyone Needs to
-    Know about Addressing &#38; Routing</emphasis>&#34;, Thomas A. Maufer,
+    highly recommend <quote><emphasis>IP Fundamentals: What Everyone Needs to
+    Know about Addressing &#38; Routing</emphasis></quote>, Thomas A. Maufer,
     Prentice-Hall, 1999, ISBN 0-13-975483-0.</para>
 
     <section id="Addresses">
@@ -521,8 +521,8 @@
 
       <para>IP version 4 (IPv4) addresses are 32-bit numbers. The notation
       w.x.y.z refers to an address where the high-order byte has value
-      &#34;w&#34;, the next byte has value &#34;x&#34;, etc. If we take the
-      address 192.0.2.14 and express it in hexadecimal, we get:</para>
+      <quote>w</quote>, the next byte has value <quote>x</quote>, etc. If we
+      take the address 192.0.2.14 and express it in hexadecimal, we get:</para>
 
       <para><programlisting>        C0.00.02.0E</programlisting>or looking at
       it as a 32-bit integer</para>
@@ -533,10 +533,10 @@
     <section id="Subnets">
       <title>Subnets</title>
 
-      <para>You will still hear the terms &#34;Class A network&#34;,
-      &#34;Class B network&#34; and &#34;Class C network&#34;. In the early
-      days of IP, networks only came in three sizes (there were also Class D
-      networks but they were used differently):</para>
+      <para>You will still hear the terms <quote>Class A network</quote>,
+      <quote>Class B network</quote> and <quote>Class C network</quote>. In
+      the early days of IP, networks only came in three sizes (there were also
+      Class D networks but they were used differently):</para>
 
       <simplelist>
         <member>Class A - netmask 255.0.0.0, size = 2 ** 24</member>
@@ -869,14 +869,14 @@
         </tgroup>
       </table>
 
-      <para>Notice that the VLSM is written with a slash (&#34;/&#34;) -- you
-      will often hear a subnet of size 64 referred to as a &#34;slash 26&#34;
-      subnet and one of size 8 referred to as a &#34;slash 29&#34;.</para>
+      <para>Notice that the VLSM is written with a slash (<quote>/</quote>) --
+      you will often hear a subnet of size 64 referred to as a <quote>slash 26</quote>
+      subnet and one of size 8 referred to as a <quote>slash 29</quote>.</para>
 
       <para>The subnet&#39;s mask (also referred to as its
       <emphasis>netmask</emphasis>) is simply a 32-bit number with the first
-      &#34;VLSM&#34; bits set to one and the remaining bits set to zero. For
-      example, for a subnet of size 64, the subnet mask has 26 leading one
+      <quote>VLSM</quote> bits set to one and the remaining bits set to zero.
+      For example, for a subnet of size 64, the subnet mask has 26 leading one
       bits:</para>
 
       <para><programlisting>        11111111111111111111111111000000 = FFFFFFC0 = FF.FF.FF.C0 = 255.255.255.192</programlisting>The
@@ -888,7 +888,7 @@
 
       <para>For a subnetwork whose address is <emphasis role="bold">a.b.c.d</emphasis>
       and whose Variable Length Subnet Mask is <emphasis role="bold">/v</emphasis>,
-      we denote the subnetwork as &#34;<emphasis role="bold">a.b.c.d/v</emphasis>&#34;
+      we denote the subnetwork as <quote><emphasis role="bold">a.b.c.d/v</emphasis></quote>
       using <emphasis>CIDR Notation</emphasis>. Example:</para>
 
       <table>
@@ -976,10 +976,10 @@
 
       <para role="bold">Later in this guide, you will see the notation
       <emphasis role="bold">a.b.c.d/v</emphasis> used to describe the ip
-      configuration of a network interface (the &#39;ip&#39; utility also uses
-      this syntax). This simply means that the interface is configured with ip
-      address <emphasis role="bold">a.b.c.d</emphasis> and with the netmask
-      that corresponds to VLSM /<emphasis role="bold">v</emphasis>.</para>
+      configuration of a network interface (the <quote>ip</quote> utility also
+      uses this syntax). This simply means that the interface is configured
+      with ip address <emphasis role="bold">a.b.c.d</emphasis> and with the
+      netmask that corresponds to VLSM /<emphasis role="bold">v</emphasis>.</para>
 
       <para>Example: 192.0.2.65/29<programlisting>    The interface is configured with IP address 192.0.2.65 and netmask 255.255.255.248.
 </programlisting>Beginning with Shorewall 1.4.6, /sbin/shorewall supports an
@@ -1023,12 +1023,12 @@
       site in the Dallas, Texas area.</para>
 
       <para>The first three routes are <emphasis>host routes</emphasis> since
-      they indicate how to get to a single host. In the &#39;netstat&#39;
-      output this can be seen by the &#34;Genmask&#34; (Subnet Mask) of
-      255.255.255.255 and the &#34;H&#34; in the Flags column. The remainder
-      are <emphasis>&#39;net&#39; routes</emphasis> since they tell the kernel
-      how to route packets to a subnetwork. The last route is the
-      <emphasis>default route </emphasis>and the gateway mentioned in that
+      they indicate how to get to a single host. In the <quote>netstat</quote>
+      output this can be seen by the <quote>Genmask</quote> (Subnet Mask) of
+      255.255.255.255 and the <quote>H</quote> in the Flags column. The
+      remainder are <emphasis><quote>net</quote> routes</emphasis> since they
+      tell the kernel how to route packets to a subnetwork. The last route is
+      the <emphasis>default route </emphasis>and the gateway mentioned in that
       route is called the <emphasis>default gateway</emphasis>.</para>
 
       <para>When the kernel is trying to send a packet to IP address <emphasis
@@ -1037,29 +1037,29 @@
       <itemizedlist>
         <listitem>
           <para><emphasis role="bold">A</emphasis> is logically ANDed with the
-          &#39;Genmask&#39; value in the table entry.</para>
+          <quote>Genmask</quote> value in the table entry.</para>
         </listitem>
 
         <listitem>
-          <para>The result is compared with the &#39;Destination&#39; value in
-          the table entry.</para>
+          <para>The result is compared with the <quote>Destination</quote>
+          value in the table entry.</para>
         </listitem>
 
         <listitem>
-          <para>If the result and the &#39;Destination&#39; value are the
+          <para>If the result and the <quote>Destination</quote> value are the
           same, then:</para>
 
           <itemizedlist>
             <listitem>
-              <para>If the &#39;Gateway&#39; column is non-zero, the packet is
-              sent to the gateway over the interface named in the
-              &#39;Iface&#39; column.</para>
+              <para>If the <quote>Gateway</quote> column is non-zero, the
+              packet is sent to the gateway over the interface named in the
+              <quote>Iface</quote> column.</para>
             </listitem>
 
             <listitem>
               <para>Otherwise, the packet is sent directly to <emphasis
               role="bold">A</emphasis> over the interface named in the
-              &#39;iface&#39; column.</para>
+              <quote>iface</quote> column.</para>
             </listitem>
           </itemizedlist>
         </listitem>
@@ -1101,7 +1101,7 @@
       Rather Ethernet addressing is based on <emphasis>Media Access Control</emphasis>
       (MAC) addresses. Each Ethernet device has it&#39;s own unique MAC
       address which is burned into a PROM on the device during manufacture.
-      You can obtain the MAC of an Ethernet device using the &#39;ip&#39;
+      You can obtain the MAC of an Ethernet device using the <quote>ip</quote>
       utility:</para>
 
       <programlisting>        [root@gateway root]# ip addr show eth0
@@ -1138,7 +1138,7 @@
       that an IP packet is to be sent, systems maintain an
       <emphasis>ARP cache</emphasis> of IP&#60;-&#62;MAC correspondences. You
       can see the ARP cache on your system (including your Windows system)
-      using the &#39;arp&#39; command:</para>
+      using the <quote>arp</quote> command:</para>
 
       <programlisting>        [root@gateway root]# arp -na
         ? (206.124.146.177) at 00:A0:C9:15:39:78 [ether] on eth1
@@ -1149,12 +1149,12 @@
 </programlisting>
 
       <para>The leading question marks are a result of my having specified the
-      &#39;n&#39; option (Windows &#39;arp&#39; doesn&#39;t allow that option)
-      which causes the &#39;arp&#39; program to forego IP-&#62;DNS name
-      translation. Had I not given that option, the question marks would have
-      been replaced with the FQDN corresponding to each IP address. Notice
-      that the last entry in the table records the information we saw using
-      tcpdump above.</para>
+      <quote>n</quote> option (Windows <quote>arp</quote> doesn&#39;t allow
+      that option) which causes the <quote>arp</quote> program to forego
+      IP-&#62;DNS name translation. Had I not given that option, the question
+      marks would have been replaced with the FQDN corresponding to each IP
+      address. Notice that the last entry in the table records the information
+      we saw using tcpdump above.</para>
     </section>
 
     <section id="RFC1918">
@@ -1205,7 +1205,7 @@
       addresses that you are going to use.</para>
 
       <note>
-        <para><emphasis role="bold">In this document, external &#34;real&#34;
+        <para><emphasis role="bold">In this document, external <quote>real</quote>
         IP addresses are of the form 192.0.2.x. 192.0.2.0/24 is reserved by
         RFC 3330 for use as public IP addresses in printed examples. These
         addresses are not to be confused with addresses in 192.168.0.0/16; as
@@ -1293,12 +1293,12 @@
         192.0.2.64       0.0.0.0         255.255.255.248 U     40  0         0 eth0
         0.0.0.0          192.0.2.66      0.0.0.0         UG    40  0         0 eth0</programlisting>
 
-      <para>This means that DMZ 1 will send an ARP &#34;who-has
-      192.0.2.65&#34; request and no device on the DMZ Ethernet segment has
-      that IP address. Oddly enough, the firewall will respond to the request
-      with the MAC address of its <emphasis role="underline">DMZ Interface</emphasis>!!
-      DMZ 1 can then send Ethernet frames addressed to that MAC address and
-      the frames will be received (correctly) by the firewall/router.</para>
+      <para>This means that DMZ 1 will send an ARP <quote>who-has 192.0.2.65</quote>
+      request and no device on the DMZ Ethernet segment has that IP address.
+      Oddly enough, the firewall will respond to the request with the MAC
+      address of its <emphasis role="underline">DMZ Interface</emphasis>!! DMZ
+      1 can then send Ethernet frames addressed to that MAC address and the
+      frames will be received (correctly) by the firewall/router.</para>
 
       <para>It is this rather unexpected ARP behavior on the part of the Linux
       Kernel that prompts the warning earlier in this guide regarding the
@@ -1306,7 +1306,7 @@
       switch. When an ARP request for one of the firewall/router&#39;s IP
       addresses is sent by another system connected to the hub/switch, all of
       the firewall&#39;s interfaces that connect to the hub/switch can
-      respond! It is then a race as to which &#34;here-is&#34; response
+      respond! It is then a race as to which <quote>here-is</quote> response
       reaches the sender first.</para>
     </section>
 
@@ -1315,7 +1315,7 @@
 
       <para>If you have the above situation but it is non-routed, you can
       configure your network exactly as described above with one additional
-      twist; simply specify the &#34;proxyarp&#34; option on all three
+      twist; simply specify the <quote>proxyarp</quote> option on all three
       firewall interfaces in the /etc/shorewall/interfaces file.</para>
 
       <para>Most of us don&#39;t have the luxury of having enough public IP
@@ -1431,9 +1431,9 @@
         selected connections from the internet.</para>
 
         <para><inlinegraphic fileref="images/BD21298_.gif" /> Suppose that
-        your daughter wants to run a web server on her system &#34;Local
-        3&#34;. You could allow connections to the internet to her server by
-        adding the following entry in <ulink url="Documentation.htm#Rules">/etc/shorewall/rules</ulink>:</para>
+        your daughter wants to run a web server on her system <quote>Local 3</quote>.
+        You could allow connections to the internet to her server by adding
+        the following entry in <ulink url="Documentation.htm#Rules">/etc/shorewall/rules</ulink>:</para>
 
         <informaltable>
           <tgroup cols="7">
@@ -1505,13 +1505,13 @@
           </listitem>
 
           <listitem>
-            <para>The firewall responds to ARP &#34;who has&#34; requests for
-            <emphasis role="bold">A</emphasis>.</para>
+            <para>The firewall responds to ARP <quote>who has</quote> requests
+            for <emphasis role="bold">A</emphasis>.</para>
           </listitem>
 
           <listitem>
             <para>When <emphasis role="bold">H</emphasis> <emphasis
-            role="bold">A </emphasis>andissues an ARP &#34;who has&#34;
+            role="bold">A </emphasis>andissues an ARP <quote>who has</quote>
             request for an address in the subnetwork defined by <emphasis
             role="bold">M</emphasis>, the firewall will respond (with the MAC
             if the firewall interface) to <emphasis role="bold">H</emphasis>.</para>
@@ -1597,29 +1597,30 @@
             TCP/IP Illustrated, Vol 1 reveals that a</para>
 
             <blockquote>
-              <para>&#34;gratuitous&#34; ARP packet should cause the ISP&#39;s
-              router to refresh their ARP cache (section 4.7). A gratuitous
-              ARP is simply a host requesting the MAC address for its own IP;
-              in addition to ensuring that the IP address isn&#39;t a
-              duplicate,...</para>
+              <para><quote>gratuitous</quote> ARP packet should cause the
+              ISP&#39;s router to refresh their ARP cache (section 4.7). A
+              gratuitous ARP is simply a host requesting the MAC address for
+              its own IP; in addition to ensuring that the IP address
+              isn&#39;t a duplicate,...</para>
 
-              <para>&#34;if the host sending the gratuitous ARP has just
+              <para><quote>if the host sending the gratuitous ARP has just
               changed its hardware address..., this packet causes any other
               host...that has an entry in its cache for the old hardware
-              address to update its ARP cache entry accordingly.&#34;</para>
+              address to update its ARP cache entry accordingly.</quote></para>
             </blockquote>
 
             <para>Which is, of course, exactly what you want to do when you
             switch a host from being exposed to the Internet to behind
             Shorewall using proxy ARP (or one-to-one NAT for that matter).
             Happily enough, recent versions of Redhat&#39;s iputils package
-            include &#34;arping&#34;, whose &#34;-U&#34; flag does just that:</para>
+            include <quote>arping</quote>, whose <quote>-U</quote> flag does
+            just that:</para>
 
             <para><programlisting>        arping -U -I &#60;net if&#62; &#60;newly proxied IP&#62;
         arping -U -I eth0 66.58.99.83 # for example</programlisting>Stevens
             goes on to mention that not all systems respond correctly to
-            gratuitous ARPs, but googling for &#34;arping -U&#34; seems to
-            support the idea that it works most of the time.</para>
+            gratuitous ARPs, but googling for <quote>arping -U</quote> seems
+            to support the idea that it works most of the time.</para>
           </listitem>
 
           <listitem>
@@ -1794,29 +1795,29 @@ role="underline">0:4:e2:20:20:33</emphasis> 0:0:77:95:dd:19 ip 98: 192.0.2.177 &
             TCP/IP Illustrated, Vol 1 reveals that a</para>
 
             <blockquote>
-              <para>&#34;gratuitous&#34; ARP packet should cause the ISP&#39;s
-              router to refresh their ARP cache (section 4.7). A gratuitous
-              ARP is simply a host requesting the MAC address for its own IP;
-              in addition to ensuring that the IP address isn&#39;t a
-              duplicate,...</para>
+              <para><quote>gratuitous</quote> ARP packet should cause the
+              ISP&#39;s router to refresh their ARP cache (section 4.7). A
+              gratuitous ARP is simply a host requesting the MAC address for
+              its own IP; in addition to ensuring that the IP address
+              isn&#39;t a duplicate,...</para>
 
-              <para>&#34;if the host sending the gratuitous ARP has just
+              <para><quote>if the host sending the gratuitous ARP has just
               changed its hardware address..., this packet causes any other
               host...that has an entry in its cache for the old hardware
-              address to update its ARP cache entry accordingly.&#34;</para>
+              address to update its ARP cache entry accordingly.</quote></para>
             </blockquote>
 
             <para>Which is, of course, exactly what you want to do when you
             switch a host from being exposed to the Internet to behind
             Shorewall using one-to-one NAT. Happily enough, recent versions of
-            Redhat&#39;s iputils package include &#34;arping&#34;, whose
-            &#34;-U&#34; flag does just that:</para>
+            Redhat&#39;s iputils package include <quote>arping</quote>, whose
+            <quote>-U</quote> flag does just that:</para>
 
             <para><programlisting>        arping -U -I &#60;net if&#62; &#60;newly proxied IP&#62;
         arping -U -I eth0 66.58.99.83 # for example</programlisting>Stevens
             goes on to mention that not all systems respond correctly to
-            gratuitous ARPs, but googling for &#34;arping -U&#34; seems to
-            support the idea that it works most of the time.</para>
+            gratuitous ARPs, but googling for <quote>arping -U</quote> seems
+            to support the idea that it works most of the time.</para>
           </listitem>
 
           <listitem>
@@ -2301,7 +2302,7 @@ role="underline">0:4:e2:20:20:33</emphasis> 0:0:77:95:dd:19 ip 98: 192.0.2.177 &
       set of configuration files for our sample network. Only those that were
       modified from the original installation are shown.</para>
 
-      <para>/etc/shorewall/interfaces (The &#34;options&#34; will be very
+      <para>/etc/shorewall/interfaces (The <quote>options</quote> will be very
       site-specific).</para>
 
       <informaltable>
@@ -2354,7 +2355,7 @@ role="underline">0:4:e2:20:20:33</emphasis> 0:0:77:95:dd:19 ip 98: 192.0.2.177 &
 
       <para>The setup described here requires that your network interfaces be
       brought up before Shorewall can start. This opens a short window during
-      which you have no firewall protection. If you replace &#39;detect&#39;
+      which you have no firewall protection. If you replace <quote>detect</quote>
       with the actual broadcast addresses in the entries above, you can bring
       up Shorewall before you bring up your network interfaces.</para>
 
@@ -3102,7 +3103,7 @@ view &#34;external&#34; {
 ; ############################################################
 ; Iverse Address Arpa Records (PTR&#39;s) 
 ; ############################################################
-178.2.0.192.in-addr.arpa. 86400 IN PTR mail.foobar.net.<optional></optional></programlisting>
+178.2.0.192.in-addr.arpa. 86400 IN PTR mail.foobar.net.</programlisting>
 
     <para>db.192.0.2.179 - Reverse zone for Daughter&#39;s public web server</para>
 
@@ -3286,13 +3287,13 @@ foobar.net.      86400   IN A    192.0.2.177
     <para>The <ulink url="Install.htm">Installation procedure</ulink>
     configures your system to start Shorewall at system boot.</para>
 
-    <para>The firewall is started using the &#34;shorewall start&#34; command
-    and stopped using &#34;shorewall stop&#34;. When the firewall is stopped,
-    routing is enabled on those hosts that have an entry in <ulink
+    <para>The firewall is started using the <quote>shorewall start</quote>
+    command and stopped using <quote>shorewall stop</quote>. When the firewall
+    is stopped, routing is enabled on those hosts that have an entry in <ulink
     url="Documentation.htm#Routestopped">/etc/shorewall/routestopped</ulink>.
-    A running firewall may be restarted using the &#34;shorewall restart&#34;
+    A running firewall may be restarted using the <quote>shorewall restart</quote>
     command. If you want to totally remove any trace of Shorewall from your
-    Netfilter configuration, use &#34;shorewall clear&#34;.</para>
+    Netfilter configuration, use <quote>shorewall clear</quote>.</para>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" /> Edit the <ulink
     url="Documentation.htm#Routestopped">/etc/shorewall/routestopped</ulink>
@@ -3301,13 +3302,13 @@ foobar.net.      86400   IN A    192.0.2.177
 
     <caution>
       <para>If you are connected to your firewall from the internet, do not
-      issue a &#34;shorewall stop&#34; command unless you have added an entry
-      for the IP address that you are connected from to <ulink
+      issue a <quote>shorewall stop</quote> command unless you have added an
+      entry for the IP address that you are connected from to <ulink
       url="Documentation.htm#Routestopped">/etc/shorewall/routestopped</ulink>.
-      Also, I don&#39;t recommend using &#34;shorewall restart&#34;; it is
-      better to create an <ulink url="starting_and_stopping_shorewall.htm"><emphasis>an
+      Also, I don&#39;t recommend using <quote>shorewall restart</quote>; it
+      is better to create an <ulink url="starting_and_stopping_shorewall.htm"><emphasis>an
       alternate configuration</emphasis></ulink>&#x00A0; and test it using the
-      &#34;<ulink url="starting_and_stopping_shorewall.htm">shorewall try</ulink>&#34;
+      <quote><ulink url="starting_and_stopping_shorewall.htm">shorewall try</ulink></quote>
       command.</para>
     </caution>
   </section>

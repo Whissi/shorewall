@@ -1015,6 +1015,12 @@ stop_firewall() {
 
     hosts="`find_hosts_by_option routestopped`"
 
+    strip_file routestopped 
+
+    while read interface host; do
+	hosts="$hosts $interface:${host:-0.0.0.0/0}"
+    done < $TMP_DIR/routestopped
+
     for host in $hosts; do
 	interface=${host%:*}
 	subnet=${host#*:}

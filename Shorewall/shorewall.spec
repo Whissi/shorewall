@@ -64,6 +64,7 @@ if [ $1 = 0 ]; then if [ -x /sbin/insserv ]; then /sbin/insserv -r /etc/init.d/s
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/nat
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/params
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/proxyarp
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/routestopped
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/masq
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/modules
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/tcrules
@@ -79,6 +80,8 @@ if [ $1 = 0 ]; then if [ -x /sbin/insserv ]; then /sbin/insserv -r /etc/init.d/s
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel
 
 %changelog
+* Web Jul 10 2002 Tom Eastep <tom@shorewall.net>
+- Added 'routestopped' configuration file.
 * Fri Jul 05 2002 Tom Eastep <tom@shorewall.net>
 - Changed version to 1.3.3
 * Sat Jun 15 2002 Tom Eastep <tom@shorewall.net>

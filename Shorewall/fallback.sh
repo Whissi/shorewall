@@ -91,6 +91,8 @@ restore_file /etc/shorewall/params
 
 restore_file /etc/shorewall/proxyarp
 
+restore_file /etc/shorewall/routestopped
+
 restore_file /etc/shorewall/masq
 
 restore_file /etc/shorewall/modules

@@ -360,6 +360,15 @@ else
     echo -e "\nProxy ARP file installed as ${PREFIX}/etc/shorewall/proxyarp"
 fi
 #
+# Install the Stopped Routing file
+#
+if [ -f ${PREFIX}/etc/shorewall/routestopped ]; then
+    backup_file /etc/shorewall/routestopped
+else
+    run_install -o $OWNER -g $GROUP -m 0600 routestopped ${PREFIX}/etc/shorewall/routestopped
+    echo -e "\nStopped Routing file installed as ${PREFIX}/etc/shorewall/routestopped"
+fi
+#
 # Install the Masq file
 #
 if [ -f ${PREFIX}/etc/shorewall/masq ]; then

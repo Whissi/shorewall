@@ -17,14 +17,10 @@
       </author>
     </authorgroup>
 
-    <pubdate>2003-12-18</pubdate>
+    <pubdate>2003-12-31</pubdate>
 
     <copyright>
-      <year>2001</year>
-
-      <year>2002</year>
-
-      <year>2003</year>
+      <year>2001-2003</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -192,7 +188,7 @@
       </informaltable>
 
       <para>Finally, if you need to forward a range of ports, in the PORT
-      column specify the range as <emphasis>low-port:high-port</emphasis>.</para>
+      column specify the range as <emphasis>&#60;low-port&#62;:&#60;high-port&#62;</emphasis>.</para>
 
       <section id="faq1a">
         <title>(FAQ 1a) Ok -- I followed those instructions but it doesn&#39;t
@@ -722,15 +718,27 @@
       rather than dropping them. This is necessary to prevent outgoing
       connection problems to services that use the <quote>Auth</quote>
       mechanism for identifying requesting users. Shorewall also rejects TCP
-      ports 135, 137 and 139 as well as UDP ports 137-139. These are ports
-      that are used by Windows (Windows <emphasis>can</emphasis> be configured
-      to use the DCE cell locator on port 135). Rejecting these connection
-      requests rather than dropping them cuts down slightly on the amount of
-      Windows chatter on LAN segments connected to the Firewall.</para>
+      ports 135, 137, 139 and 445 as well as UDP ports 137-139. These are
+      ports that are used by Windows (Windows <emphasis>can</emphasis> be
+      configured to use the DCE cell locator on port 135). Rejecting these
+      connection requests rather than dropping them cuts down slightly on the
+      amount of Windows chatter on LAN segments connected to the Firewall.</para>
 
       <para>If you are seeing port 80 being <quote>closed</quote>, that&#39;s
       probably your ISP preventing you from running a web server in violation
       of your Service Agreement.</para>
+
+      <tip>
+        <para>You can change the default behavior of Shorewall through use of
+        an /etc/shorewall/common file. See the <ulink
+        url="shorewall_extension_scripts.htm">Extension Script Section</ulink>.</para>
+      </tip>
+
+      <tip>
+        <para>Beginning with Shorewall 1.4.9, Shorewall no longer rejects the
+        Windows SMB ports (135-139 and 445) by default and silently drops them
+        instead.</para>
+      </tip>
 
       <section id="faq4a">
         <title>(FAQ 4a) I just ran an nmap UDP scan of my firewall and it
@@ -858,7 +866,7 @@
       through <ulink url="Documentation.htm#Conf">settings</ulink> in
       /etc/shorewall/shorewall.conf -- If you want to log all messages, set:</para>
 
-      <programlisting format="linespecific" xml:space="preserve">LOGLIMIT=&#34;&#34;
+      <programlisting>LOGLIMIT=&#34;&#34;
 LOGBURST=&#34;&#34;</programlisting>
 
       <para>Beginning with Shorewall version 1.3.12, you can <ulink
@@ -1867,7 +1875,8 @@ Creating input Chains...
   <appendix>
     <title>Revision History</title>
 
-    <para><revhistory><revision><revnumber>1.7</revnumber><date>2003-12-30</date><authorinitials>TE</authorinitials><revremark>Remove
+    <para><revhistory><revision><revnumber>1.8</revnumber><date>2003-12-31</date><authorinitials>TE</authorinitials><revremark>Additions
+    to FAQ 4.</revremark></revision><revision><revnumber>1.7</revnumber><date>2003-12-30</date><authorinitials>TE</authorinitials><revremark>Remove
     dead link from FAQ 1.</revremark></revision><revision><revnumber>1.6</revnumber><date>2003.12-18</date><authorinitials>TE</authorinitials><revremark>Add
     external link reference to FAQ 17.</revremark></revision><revision><revnumber>1.5</revnumber><date>2003-12-16</date><authorinitials>TE</authorinitials><revremark>Added
     a link to a Sys Admin article about multiple internet interfaces. Added

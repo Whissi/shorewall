@@ -129,23 +129,27 @@
   <section>
     <title>PPTP/ADSL</title>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" />If you
-    have an <acronym>ADSL</acronym> Modem and you use <acronym>PPTP</acronym>
-    to communicate with a server in that modem, you must make the changes
-    recommended here in addition to those detailed below. <acronym>ADSL</acronym>
-    with <acronym>PPTP</acronym> is most commonly found in Europe, notably in
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+
+    <para>If you have an <acronym>ADSL</acronym> Modem and you use
+    <acronym>PPTP</acronym> to communicate with a server in that modem, you
+    must make the changes recommended <ulink url="PPTP.htm#PPTP_ADSL">here</ulink>
+    in addition to those detailed below. <acronym>ADSL</acronym> with
+    <acronym>PPTP</acronym> is most commonly found in Europe, notably in
     Austria.</para>
   </section>
 
   <section>
     <title>Shorewall Concepts</title>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" />The
-    configuration files for Shorewall are contained in the directory <filename
-    class="directory">/etc/shorewall</filename> -- for simple setups, you will
-    only need to deal with a few of these as described in this guide.
-    <tip><para>After you have <ulink url="Install.htm">installed Shorewall</ulink>,
-    download the <ulink url="http://www1.shorewall.net/pub/shorewall/Samples/">two-interface
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+
+    <para>The configuration files for Shorewall are contained in the directory
+    <filename class="directory">/etc/shorewall</filename> -- for simple
+    setups, you will only need to deal with a few of these as described in
+    this guide. <tip><para>After you have <ulink url="Install.htm">installed
+    Shorewall</ulink>, download the <ulink
+    url="http://www1.shorewall.net/pub/shorewall/Samples/">two-interface
     sample</ulink>, un-tar it (<command>tar <option>-zxvf</option>
     <filename>two-interfaces.tgz</filename></command>) and and copy the files
     to <filename class="directory">/etc/shorewall</filename> <emphasis
@@ -222,8 +226,9 @@
     connection requests from the firewall to the internet (if you uncomment
     the additional policy)</para></listitem><listitem><para>reject all other
     connection requests.</para></listitem></itemizedlist> <inlinegraphic
-    fileref="images/BD21298_.gif" format="GIF" />At this point, edit your
-    <filename class="directory">/etc/shorewall/</filename><filename>policy</filename>
+    fileref="images/BD21298_.gif" format="GIF" /></para>
+
+    <para>At this point, edit your <filename class="directory">/etc/shorewall/</filename><filename>policy</filename>
     and make any changes that you wish.</para>
   </section>
 
@@ -250,9 +255,10 @@
     <acronym>ISDN</acronym>, your external interface will be <filename
     class="devicefile">ippp0</filename>.</para>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" />If your
-    external interface is <filename class="devicefile">ppp0</filename> or
-    <filename class="devicefile">ippp0</filename> then you will want to set
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+
+    <para>If your external interface is <filename class="devicefile">ppp0</filename>
+    or <filename class="devicefile">ippp0</filename> then you will want to set
     <varname>CLAMPMSS=yes</varname> in <filename class="directory">/etc/shorewall/</filename><filename>shorewall.conf</filename>.</para>
 
     <para>Your <emphasis>Internal Interface</emphasis> will be an ethernet
@@ -268,11 +274,13 @@
     <filename class="directory">/etc/shorewall/</filename><filename>interfaces</filename>
     for all interfaces connected to the common hub/switch. Using such a setup
     with a production firewall is strongly recommended against.</para></warning>
-    <inlinegraphic fileref="images/BD21298_.gif" format="GIF" />The Shorewall
-    two-interface sample configuration assumes that the external interface is
-    <filename class="devicefile">eth0</filename> and the internal interface is
-    <filename class="devicefile">eth1</filename>. If your configuration is
-    different, you will have to modify the sample <filename class="directory">/etc/shorewall/</filename><filename>interfaces</filename>
+    <inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+
+    <para>The Shorewall two-interface sample configuration assumes that the
+    external interface is <filename class="devicefile">eth0</filename> and the
+    internal interface is <filename class="devicefile">eth1</filename>. If
+    your configuration is different, you will have to modify the sample
+    <filename class="directory">/etc/shorewall/</filename><filename>interfaces</filename>
     file accordingly. While you are there, you may wish to review the list of
     options that are specified for the interfaces. Some hints: <itemizedlist
     spacing="compact"><listitem><para>If your external interface is <filename
@@ -306,10 +314,11 @@
 10.0.0.0    - 10.255.255.255
 172.16.0.0  - 172.31.255.255
 192.168.0.0 - 192.168.255.255
-		</programlisting> <inlinegraphic fileref="images/BD21298_.gif" format="GIF" />Before
-    starting Shorewall, you should look at the IP address of your external
-    interface and if it is one of the above ranges, you should remove the
-    &#39;norfc1918&#39; option from the external interface&#39;s entry in
+		</programlisting> <inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+
+    <para>Before starting Shorewall, you should look at the IP address of your
+    external interface and if it is one of the above ranges, you should remove
+    the &#39;norfc1918&#39; option from the external interface&#39;s entry in
     <filename class="directory">/etc/shorewall/</filename><filename>interfaces</filename>.</para>
 
     <para>You will want to assign your addresses from the same sub-network
@@ -345,10 +354,11 @@
     directly. To communicate with systems outside of the subnetwork, systems
     send packets through a gateway (router).</para>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" />Your
-    local computers (computer 1 and computer 2 in the above diagram) should be
-    configured with their default gateway to be the <acronym>IP</acronym>
-    address of the firewall&#39;s internal interface.</para>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+
+    <para>Your local computers (computer 1 and computer 2 in the above
+    diagram) should be configured with their default gateway to be the
+    <acronym>IP</acronym> address of the firewall&#39;s internal interface.</para>
 
     <para>The foregoing short discussion barely scratches the surface
     regarding subnetting and routing. If you are interested in learning more
@@ -405,24 +415,28 @@
     <acronym>IP</acronym> is dynamic and <acronym>SNAT</acronym> if the
     <acronym>IP</acronym> is static.</para>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" />If your
-    external firewall interface is <filename class="devicefile">eth0</filename>,
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+
+    <para>If your external firewall interface is <filename class="devicefile">eth0</filename>,
     you do not need to modify the file provided with the sample. Otherwise,
     edit <filename class="directory">/etc/shorewall/</filename><filename>masq</filename>
     and change the first column to the name of your external interface and the
     second column to the name of your internal interface.</para>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" />If your
-    external <acronym>IP</acronym> is static, you can enter it in the third
-    column in the <filename class="directory">/etc/shorewall/</filename><filename>masq</filename>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+
+    <para>If your external <acronym>IP</acronym> is static, you can enter it
+    in the third column in the <filename class="directory">/etc/shorewall/</filename><filename>masq</filename>
     entry if you like although your firewall will work fine if you leave that
     column empty. Entering your static <acronym>IP</acronym> in column 3 makes
     processing outgoing packets a little more efficient.</para>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" />If you
-    are using the Debian package, please check your <filename>shorewall.conf</filename>
-    file to ensure that the following are set correctly; if they are not,
-    change them appropriately: <itemizedlist spacing="compact"><listitem><para><varname>NAT_ENABLED=Yes</varname>
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+
+    <para>If you are using the Debian package, please check your
+    <filename>shorewall.conf</filename> file to ensure that the following are
+    set correctly; if they are not, change them appropriately: <itemizedlist
+    spacing="compact"><listitem><para><varname>NAT_ENABLED=Yes</varname>
     (Shorewall versions earlier than 1.4.6)</para></listitem><listitem><para><varname>IP_FORWARDING=On</varname></para></listitem></itemizedlist></para>
   </section>
 
@@ -448,9 +462,9 @@
     class="directory">/etc/shorewall/</filename><filename>rules</filename> is:
     <informaltable frame="all" label="rules" pgwide="0"><tgroup align="left"
     cols="7"><thead valign="middle"><row valign="middle"><entry align="left">ACTION</entry><entry
-    align="left">SOURCE</entry><entry align="left">DESTINATION</entry><entry
-    align="left">PROTOCOL</entry><entry align="left">PORT</entry><entry
-    align="left">SOURCE PORT</entry><entry align="left">ORIGINAL ADDRESS</entry></row></thead><tbody><row><entry
+    align="left">SOURCE</entry><entry align="left">DEST</entry><entry
+    align="left">PROTO</entry><entry align="left">DEST PORT(S)</entry><entry
+    align="left">CLIENT PORT(s)</entry><entry align="left">ORIGINAL DEST</entry></row></thead><tbody><row><entry
     align="left"><varname>DNAT</varname></entry><entry align="left"><varname>net</varname></entry><entry
     align="left"><varname>loc:&#60;server local ip address&#62; [:&#60;server
     port&#62;]</varname></entry><entry align="left"><varname>&#60;protocol&#62;</varname></entry><entry
@@ -460,9 +474,9 @@
     to that system: <informaltable frame="all" label="rules" pgwide="0"><tgroup
     align="left" cols="7"><thead valign="middle"><row valign="middle"><entry
     align="left">ACTION</entry><entry align="left">SOURCE</entry><entry
-    align="left">DESTINATION</entry><entry align="left">PROTOCOL</entry><entry
-    align="left">PORT</entry><entry align="left">SOURCE PORT</entry><entry
-    align="left">ORIGINAL ADDRESS</entry></row></thead><tbody><row><entry
+    align="left">DEST</entry><entry align="left">PROTO</entry><entry
+    align="left">DEST PORT(S)</entry><entry align="left">CLIENT PORT(S)</entry><entry
+    align="left">ORIGINAL DEST</entry></row></thead><tbody><row><entry
     align="left"><varname>DNAT</varname></entry><entry align="left"><varname>net</varname></entry><entry
     align="left"><varname>loc:10.10.10.2</varname></entry><entry align="left"><varname>tcp</varname></entry><entry
     align="left"><varname>80</varname></entry><entry></entry><entry></entry></row></tbody></tgroup></informaltable></para></example>
@@ -471,9 +485,9 @@
     incoming <acronym>TCP</acronym> port 21 to that system: <informaltable
     frame="all" label="rules" pgwide="0"><tgroup align="left" cols="7"><thead
     valign="middle"><row valign="middle"><entry align="left">ACTION</entry><entry
-    align="left">SOURCE</entry><entry align="left">DESTINATION</entry><entry
-    align="left">PROTOCOL</entry><entry align="left">PORT</entry><entry
-    align="left">SOURCE PORT</entry><entry align="left">ORIGINAL ADDRESS</entry></row></thead><tbody><row><entry
+    align="left">SOURCE</entry><entry align="left">DEST</entry><entry
+    align="left">PROTO</entry><entry align="left">DEST PORT(S)</entry><entry
+    align="left">CLIENT PORT(S)</entry><entry align="left">ORIGINAL DEST</entry></row></thead><tbody><row><entry
     align="left"><varname>DNAT</varname></entry><entry align="left"><varname>net</varname></entry><entry
     align="left"><varname>loc:10.10.10.1</varname></entry><entry align="left"><varname>tcp</varname></entry><entry
     align="left"><varname>21</varname></entry><entry></entry><entry></entry></row></tbody></tgroup></informaltable>
@@ -494,17 +508,18 @@
     url="FAQ.htm#faq2">Shorewall FAQ #2</ulink>.</para></listitem><listitem><para>Many
     <acronym>ISP</acronym>s block incoming connection requests to port 80. If
     you have problems connecting to your web server, try the following rule
-    and try connecting to port 5000. <informaltable frame="all" label="rules"
-    pgwide="0"><tgroup align="left" cols="7"><thead valign="middle"><row
-    valign="middle"><entry align="left">ACTION</entry><entry align="left">SOURCE</entry><entry
-    align="left">DESTINATION</entry><entry align="left">PROTOCOL</entry><entry
-    align="left">PORT</entry><entry align="left">SOURCE PORT</entry><entry
-    align="left">ORIGINAL ADDRESS</entry></row></thead><tbody><row><entry
+    and try connecting to port 5000. </para></listitem></itemizedlist><informaltable
+    frame="all" label="rules" pgwide="0"><tgroup align="left" cols="7"><thead
+    valign="middle"><row valign="middle"><entry align="left">ACTION</entry><entry
+    align="left">SOURCE</entry><entry align="left">DEST</entry><entry
+    align="left">PROTO</entry><entry align="left">DEST PORT(S)</entry><entry
+    align="left">CLIENT PORT(S)</entry><entry align="left">ORIGINAL DEST</entry></row></thead><tbody><row><entry
     align="left"><varname>DNAT</varname></entry><entry align="left"><varname>net</varname></entry><entry
     align="left"><varname>loc:10.10.10.2:80</varname></entry><entry
-    align="left"><varname>tcp</varname></entry><entry align="left"><varname>5000</varname></entry><entry></entry><entry></entry></row></tbody></tgroup></informaltable></para></listitem></itemizedlist>
-    <inlinegraphic fileref="images/BD21298_.gif" format="GIF" />At this point,
-    modify <filename class="directory">/etc/shorewall/</filename><filename>rules</filename>
+    align="left"><varname>tcp</varname></entry><entry align="left"><varname>5000</varname></entry><entry></entry><entry></entry></row></tbody></tgroup></informaltable>
+    <inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+
+    <para>At this point, modify <filename class="directory">/etc/shorewall/</filename><filename>rules</filename>
     to add any <acronym>DNAT</acronym> rules that you require.</para>
   </section>
 
@@ -543,9 +558,9 @@
     class="directory">/etc/shorewall/</filename><filename>rules</filename>.
     <informaltable frame="all" label="rules" pgwide="0"><tgroup align="left"
     cols="7"><thead valign="middle"><row valign="middle"><entry align="left">ACTION</entry><entry
-    align="left">SOURCE</entry><entry align="left">DESTINATION</entry><entry
-    align="left">PROTOCOL</entry><entry align="left">PORT</entry><entry
-    align="left">SOURCE PORT</entry><entry align="left">ORIGINAL ADDRESS</entry></row></thead><tbody><row><entry
+    align="left">SOURCE</entry><entry align="left">DEST</entry><entry
+    align="left">PROTO</entry><entry align="left">DEST PORT(S)</entry><entry
+    align="left">CLIENT PORT(S)</entry><entry align="left">ORIGINAL DEST</entry></row></thead><tbody><row><entry
     align="left"><varname>ACCEPT</varname></entry><entry align="left"><varname>loc</varname></entry><entry
     align="left"><varname>fw</varname></entry><entry align="left"><varname>tcp</varname></entry><entry
     align="left"><varname>53</varname></entry><entry></entry><entry></entry></row><row><entry
@@ -560,9 +575,9 @@
     <para>The two-interface sample includes the following rules:
     <informaltable frame="all" label="rules" pgwide="0"><tgroup align="left"
     cols="7"><thead valign="middle"><row valign="middle"><entry align="left">ACTION</entry><entry
-    align="left">SOURCE</entry><entry align="left">DESTINATION</entry><entry
-    align="left">PROTOCOL</entry><entry align="left">PORT</entry><entry
-    align="left">SOURCE PORT</entry><entry align="left">ORIGINAL ADDRESS</entry></row></thead><tbody><row><entry
+    align="left">SOURCE</entry><entry align="left">DEST</entry><entry
+    align="left">PROTO</entry><entry align="left">DEST PORT(S)</entry><entry
+    align="left">CLIENT PORT(S)</entry><entry align="left">ORIGINAL DEST</entry></row></thead><tbody><row><entry
     align="left"><varname>ACCEPT</varname></entry><entry align="left"><varname>fw</varname></entry><entry
     align="left"><varname>net</varname></entry><entry align="left"><varname>tcp</varname></entry><entry
     align="left"><varname>53</varname></entry><entry></entry><entry></entry></row><row><entry
@@ -576,9 +591,9 @@
     <para>The sample also includes: <informaltable frame="all" label="rules"
     pgwide="0"><tgroup align="left" cols="7"><thead valign="middle"><row
     valign="middle"><entry align="left">ACTION</entry><entry align="left">SOURCE</entry><entry
-    align="left">DESTINATION</entry><entry align="left">PROTOCOL</entry><entry
-    align="left">PORT</entry><entry align="left">SOURCE PORT</entry><entry
-    align="left">ORIGINAL ADDRESS</entry></row></thead><tbody><row><entry
+    align="left">DEST</entry><entry align="left">PROTO</entry><entry
+    align="left">DEST PORT(S)</entry><entry align="left">CLIENT PORT(S)</entry><entry
+    align="left">ORIGINAL DEST</entry></row></thead><tbody><row><entry
     align="left"><varname>ACCEPT</varname></entry><entry align="left"><varname>loc</varname></entry><entry
     align="left"><varname>fw</varname></entry><entry align="left"><varname>tcp</varname></entry><entry
     align="left"><varname>22</varname></entry><entry></entry><entry></entry></row></tbody></tgroup></informaltable>
@@ -589,9 +604,9 @@
     other systems, the general format is: <informaltable frame="all"
     label="rules" pgwide="0"><tgroup align="left" cols="7"><thead
     valign="middle"><row valign="middle"><entry align="left">ACTION</entry><entry
-    align="left">SOURCE</entry><entry align="left">DESTINATION</entry><entry
-    align="left">PROTOCOL</entry><entry align="left">PORT</entry><entry
-    align="left">SOURCE PORT</entry><entry align="left">ORIGINAL ADDRESS</entry></row></thead><tbody><row><entry
+    align="left">SOURCE</entry><entry align="left">DEST</entry><entry
+    align="left">PROTO</entry><entry align="left">DEST PORT(S)</entry><entry
+    align="left">CLIENT PORT(S)</entry><entry align="left">ORIGINAL DEST</entry></row></thead><tbody><row><entry
     align="left"><varname>ACCEPT</varname></entry><entry align="left"><varname>&#60;source
     zone&#62;</varname></entry><entry align="left"><varname>&#60;destination
     zone&#62;</varname></entry><entry align="left"><varname>&#60;protocol&#62;</varname></entry><entry
@@ -602,9 +617,9 @@
     colname="c2" /><colspec colname="c3" /><colspec colname="c4" /><colspec
     colname="c5" /><colspec colname="c6" /><colspec colname="c7" /><thead
     valign="middle"><row valign="middle"><entry align="left">ACTION</entry><entry
-    align="left">SOURCE</entry><entry align="left">DESTINATION</entry><entry
-    align="left">PROTOCOL</entry><entry align="left">PORT</entry><entry
-    align="left">SOURCE PORT</entry><entry align="left">ORIGINAL ADDRESS</entry></row></thead><tbody><row><entry
+    align="left">SOURCE</entry><entry align="left">DEST</entry><entry
+    align="left">PROTO</entry><entry align="left">DEST PORT(S)</entry><entry
+    align="left">CLIENT PORT(S)</entry><entry align="left">ORIGINAL DEST</entry></row></thead><tbody><row><entry
     align="left"><varname>ACCEPT</varname></entry><entry align="left"><varname>net</varname></entry><entry
     align="left"><varname>fw</varname></entry><entry align="left"><varname>tcp</varname></entry><entry
     align="left"><varname>80</varname></entry><entry nameend="c7" namest="c6">#Allow
@@ -619,15 +634,15 @@
     url="ports.htm">here</ulink>. <important><para>I don&#39;t recommend
     enabling <command>telnet</command> to/from the internet because it uses
     clear text (even for login!). If you want shell access to your firewall
-    from the internet, use <acronym>SSH</acronym>: <informaltable frame="all"
-    label="rules" pgwide="0"><tgroup align="left" cols="7"><thead
+    from the internet, use <acronym>SSH</acronym>: </para></important><informaltable
+    frame="all" label="rules" pgwide="0"><tgroup align="left" cols="7"><thead
     valign="middle"><row valign="middle"><entry align="left">ACTION</entry><entry
-    align="left">SOURCE</entry><entry align="left">DESTINATION</entry><entry
-    align="left">PROTOCOL</entry><entry align="left">PORT</entry><entry
-    align="left">SOURCE PORT</entry><entry align="left">ORIGINAL ADDRESS</entry></row></thead><tbody><row><entry
+    align="left">SOURCE</entry><entry align="left">DEST</entry><entry
+    align="left">PROTO</entry><entry align="left">DEST PORT(S)</entry><entry
+    align="left">CLIENT PORT(S)</entry><entry align="left">ORIGINAL DEST</entry></row></thead><tbody><row><entry
     align="left"><varname>ACCEPT</varname></entry><entry align="left"><varname>net</varname></entry><entry
     align="left"><varname>fw</varname></entry><entry align="left"><varname>tcp</varname></entry><entry
-    align="left"><varname>22</varname></entry><entry></entry><entry></entry></row></tbody></tgroup></informaltable></para></important>
+    align="left"><varname>22</varname></entry><entry></entry><entry></entry></row></tbody></tgroup></informaltable>
     <inlinegraphic fileref="images/leaflogo.gif" format="GIF" />Bering users
     will want to add the following two rules to be compatible with
     Jacques&#39;s Shorewall configuration. <informaltable frame="all"
@@ -636,9 +651,9 @@
     colname="c4" /><colspec colname="c5" /><colspec colname="c6" /><colspec
     colname="c7" /><thead valign="middle"><row valign="middle"><entry
     align="left">ACTION</entry><entry align="left">SOURCE</entry><entry
-    align="left">DESTINATION</entry><entry align="left">PROTOCOL</entry><entry
-    align="left">PORT</entry><entry align="left">SOURCE PORT</entry><entry
-    align="left">ORIGINAL ADDRESS</entry></row></thead><tbody><row><entry
+    align="left">DEST</entry><entry align="left">PROTO</entry><entry
+    align="left">DEST PORT(S)</entry><entry align="left">CLIENT PORT(S)</entry><entry
+    align="left">ORIGINAL DEST</entry></row></thead><tbody><row><entry
     align="left"><varname>ACCEPT</varname></entry><entry align="left"><varname>loc</varname></entry><entry
     align="left"><varname>fw</varname></entry><entry align="left"><varname>udp</varname></entry><entry
     align="left"><varname>53</varname></entry><entry nameend="c7" namest="c6">#Allow
@@ -646,21 +661,23 @@
     align="left"><varname>loc</varname></entry><entry align="left"><varname>fw</varname></entry><entry
     align="left"><varname>tcp</varname></entry><entry align="left"><varname>80</varname></entry><entry
     nameend="c7" namest="c6">#Allow weblet to work</entry></row></tbody></tgroup></informaltable>
-    <inlinegraphic fileref="images/BD21298_.gif" format="GIF" />Now edit your
-    <filename class="directory">/etc/shorewall/</filename><filename>rules</filename>
+    <inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+
+    <para>Now edit your <filename class="directory">/etc/shorewall/</filename><filename>rules</filename>
     file to add or delete other connections as required.</para>
   </section>
 
   <section>
     <title>Starting and Stopping Your Firewall</title>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" />The
-    <ulink url="Install.htm">installation procedure</ulink> configures your
-    system to start Shorewall at system boot but beginning with Shorewall
-    version 1.3.9 startup is disabled so that your system won&#39;t try to
-    start Shorewall before configuration is complete. Once you have completed
-    configuration of your firewall, you can enable Shorewall startup by
-    removing the file <filename class="directory">/etc/shorewall/</filename><filename>startup_disabled</filename>.
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+
+    <para>The <ulink url="Install.htm">installation procedure</ulink>
+    configures your system to start Shorewall at system boot but beginning
+    with Shorewall version 1.3.9 startup is disabled so that your system
+    won&#39;t try to start Shorewall before configuration is complete. Once
+    you have completed configuration of your firewall, you can enable
+    Shorewall startup by removing the file <filename class="directory">/etc/shorewall/</filename><filename>startup_disabled</filename>.
     <important><para>Users of the .deb package must edit <filename
     class="directory">/etc/default/</filename><filename>shorewall</filename>
     and set <varname>startup=1</varname>.</para></important> The firewall is
@@ -674,10 +691,11 @@
     of Shorewall from your Netfilter configuration, use <quote><command>shorewall
     clear</command></quote>.</para>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" />The
-    two-interface sample assumes that you want to enable routing to/from
-    <filename class="devicefile">eth1</filename> (the local network) when
-    Shorewall is stopped. If your local network isn&#39;t connected to
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+
+    <para>The two-interface sample assumes that you want to enable routing
+    to/from <filename class="devicefile">eth1</filename> (the local network)
+    when Shorewall is stopped. If your local network isn&#39;t connected to
     <filename class="devicefile">eth1</filename> or if you wish to enable
     access to/from other hosts, change <filename class="directory">/etc/shorewall/</filename><filename>routestopped</filename>
     accordingly. <warning><para>If you are connected to your firewall from the

@@ -37,15 +37,11 @@
     <title>Operating Shorewall</title>
 
     <para>If you have a permanent internet connection such as DSL or Cable, I
-    recommend that you start the firewall automatically at boot. Once you have
-    installed <quote>firewall</quote> in your init.d directory, simply type
-    <quote><command>chkconfig --add shorewall</command></quote> (<quote><command>insserv
-    -d shorewall</command></quote> if your distribution uses insserv to
-    install startup scripts). This will start the firewall in run levels 2-5
-    and stop it in run levels 1 and 6. If you want to configure your firewall
-    differently from this default, you can use the <quote>--level</quote>
-    option in chkconfig (see <quote>man chkconfig</quote>) or using your
-    favorite graphical run-level editor.</para>
+    recommend that you start the firewall automatically at boot. The <ulink
+    url="Install.htm">installation procedure</ulink> attempts to set up the
+    init scripts to start the firewall in run levels 2-5 and stop it in run
+    levels 1 and 6. If you want to configure your firewall differently from
+    this default, you can use your distribution&#39;s run-level editor.</para>
 
     <caution>
       <itemizedlist>
@@ -57,20 +53,27 @@
         </listitem>
 
         <listitem>
-          <para>If you use dialup, you may want to start the firewall in your
+          <para>If you use dialup or some flavor of PPP where your IP address
+          can change arbitrarily, you may want to start the firewall in your
           <command>/etc/ppp/ip-up.local</command> script. I recommend just
-          placing <quote>shorewall restart</quote> in that script.</para>
+          placing <quote><command>/sbin/shorewall restart</command></quote> in
+          that script.</para>
         </listitem>
       </itemizedlist>
     </caution>
 
     <para>You can manually start and stop Shoreline Firewall using the
-    <quote><quote>shorewall</quote></quote> shell program. Please refer to the
-    Shorewall State Diagram as shown at the bottom of this page.</para>
+    <quote><command>/sbin/shorewall</command></quote> shell program.</para>
 
     <itemizedlist>
       <listitem>
-        <para><command>shorewall start </command>- starts the firewall</para>
+        <para><command>shorewall start </command>- starts the firewall. It
+        important to understand that when the firewall is in the <emphasis
+        role="bold">Started</emphasis> state there is <emphasis>no Shorewall
+        Program</emphasis> running. It rather means that Netfilter has been
+        configured to handle traffic as described in your Shorewall
+        configuration files. Please refer to the <link linkend="State">Shorewall
+        State Diagram</link> as shown at the bottom of this page.</para>
       </listitem>
 
       <listitem>
@@ -341,17 +344,18 @@
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="State">
     <title>Shorewall State Diagram</title>
 
-    <para>The Shorewall State Diargram is depicted below.<graphic
-    align="center" fileref="images/State_Diagram.png" /></para>
+    <para>The Shorewall State Diargram is depicted below.</para>
+
+    <para><graphic align="center" fileref="images/State_Diagram.png" /></para>
 
     <para>You will note that the commands that result in state transitions use
     the word <quote>firewall</quote> rather than <quote>shorewall</quote>.
-    That is because the actual transitions are done by
-    /usr/share/shorewall/firewall; /sbin/shorewall runs <quote>firewall</quote>
-    according to the following table:</para>
+    That is because the actual transitions are done by <command>/usr/share/shorewall/firewall</command>;
+    <command>/sbin/shorewall</command> runs <quote>firewall</quote> according
+    to the following table:</para>
 
     <informaltable>
       <tgroup cols="3">
@@ -452,4 +456,12 @@
       </tgroup>
     </informaltable>
   </section>
+
+  <appendix>
+    <title>Revision History</title>
+
+    <para><revhistory><revision><revnumber>1.2</revnumber><date>2003-12-31</date><authorinitials>TE</authorinitials><revremark>Added
+    clarification about &#34;Started State&#34;</revremark></revision><revision><revnumber>1.1</revnumber><date>2003-12-29</date><authorinitials>TE</authorinitials><revremark>Initial
+    Docbook conversion</revremark></revision></revhistory></para>
+  </appendix>
 </article>

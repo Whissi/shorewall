@@ -652,18 +652,33 @@ case "$1" in
 	mutex_on
 	while [ $# -gt 1 ]; do
 	    shift
-	    if qt iptables -D dynamic -s $1 -j reject || qt iptables -D dynamic -s $1 -j DROP; then
-	       echo "$1 Allowed"
+	    if  qt iptables -D dynamic -s $1 -j reject then
+	        #
+	        # Address was rejected -- silently remove any drop as well
+		#
+		qt iptables -D dynamic -s $1 -j DROP
+		echo "$1 Allowed"
+	    elif qt iptables -D dynamic -s $1 -j DROP then
+	        echo "$1 Allowed"
 	    else
-	       echo "$1 Not Dropped or Rejected"
+		echo "$1 Not Dropped or Rejected"
 	    fi
 	done
 	mutex_off
 	;;
     save)
-        if iptables -L dynamic -n > /etc/shorewall/save; then
-	    echo "Dynamic Rules Saved"
+    	[ $# -ne 1 ] && usage 1
+        mutex_on
+	if qt iptables -L shorewall -n; then
+	    if iptables -L dynamic -n > /etc/shorewall/save; then
+		echo "Dynamic Rules Saved"
+	    else
+	        echo "Error Saving the Dynamic Rules"
+	    fi
+	else
+	    echo "Shorewall isn't started"
 	fi
+	mutex_off
 	;;
     *)
 	usage 1

@@ -229,6 +229,11 @@ ensurechain() # $1 = chain name
     havechain $1 || createchain $1 yes
 }
 
+ensurechain1() # $1 = chain name
+{
+    havechain $1 || createchain $1 no
+}
+
 #
 # Add a rule to a chain creating the chain if necessary
 #
@@ -1908,7 +1913,7 @@ process_accounting_rule() {
     [ "x$chain" = "x-" ] && chain=accounting
     [ -z "$chain" ] && chain=accounting
 		
-    havechain $chain || createchain $chain No
+    ensurechain1 $chain
 
     if iptables -A $chain $rule ; then
 	[ "x$rule2" != x ] && run_iptables -A $jumpchain $rule2
@@ -1990,15 +1995,19 @@ check_config() {
 
     validate_policy
 
-    echo "Validating Actions..."
+    echo "Pre-validating Actions..."
 
-    process_actions
+    process_actions1
 
     echo "Validating rules file..."
 
     rules=$(find_file rules)
     strip_file rules $rules
     process_rules
+
+    echo "Validating Actions..."
+
+    process_actions2
 
     rm -rf $TMP_DIR
 
@@ -2332,11 +2341,11 @@ process_action() # $1 = action
 }
 
 #
-# Read /etc/shorewall/actions and for each defined <action>, process 
+# Read /etc/shorewall/actions and for each defined <action>, pre-process 
 # /etc/shorewall/action.<action>
 #
 
-process_actions() {
+process_actions1() {
     #
     # Add the builtin actions
     #
@@ -2359,9 +2368,72 @@ process_actions() {
 	fi
 
 	ACTIONS="dropBcast dropNonSyn"
+	USEDACTIONS="dropBcast dropNonSyn"
 	
     }
 	
+    add_builtin_actions
+
+    strip_file actions
+
+    while read xaction rest; do
+	[ "x$rest" = x ] || fatal_error "Invalid Action: $xaction $rest"
+
+	case $xaction in
+	    *:*)
+		temp=${xaction#*:}
+		xaction=${xaction%:*}
+		case $temp in
+		    ACCEPT|REJECT|DROP)
+			eval ${temp}_common=$xaction
+			if ! list_search $xaction $USEDACTIONS; then
+			    USEDACTIONS="$USEDACTIONS $xaction"
+			    [ $command = check ] || createchain $xaction no
+			fi
+			;;
+		    *)
+			fatal_error "Common Actions are only allowed for ACCEPT, DROP and REJECT"
+			;;
+		esac
+	esac
+	
+	f=action.$xaction
+	fn=$(find_file $f)
+
+	eval requiredby_${action}=
+
+	if [ -f $fn ]; then
+	    echo "   Pre-processing $fn..."
+	    strip_file $f $fn
+	    while read xtarget xclients xservers xprotocol xports xcports xratelimit $xuserspec; do
+		expandv xtarget
+		temp="${xtarget%:*}"
+		case "${temp%<*}" in
+		    ACCEPT|DROP|REJECT|LOG|QUEUE)
+			;;
+		    *)
+			if list_search $temp $ACTIONS; then
+			    eval requiredby_${xaction}=\"\$requiredby_${xaction} $temp\"
+			else
+			    rule="$(echo $xtarget $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec)"
+			    fatal_error "Invalid TARGET in rule \"$rule\""
+			fi
+			;;
+		    
+		esac
+	    done < $TMP_DIR/$f
+	else
+	    fatal_error "Missing Action File: $f"
+	fi
+	
+	ACTIONS="$ACTIONS $xaction"
+    done < $TMP_DIR/actions
+}
+#
+# Generate the transitive closure of $USEDACTIONS (the actions directly referred to in rules and as common actions) then
+# process the associated action files.
+#
+process_actions2() {
     #
     # Process a rule where the source or destination is "all"
     #
@@ -2401,64 +2473,44 @@ process_actions() {
 	fi
 
 	process_action $xaction $xtarget $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec
+
     }
+    #
+    # Generate the transitive closure of $USEDACTIONS
+    #
+    changed=Yes
 
-    add_builtin_actions
-
-    strip_file actions
-
-    while read xaction rest; do
-	[ "x$rest" = x ] || fatal_error "Invalid Action: $xaction $rest"
-
+    while [ -n "$changed" ]; do
+	changed=
+	for xaction in $USEDACTIONS; do
+	    eval required=\"\$requiredby_${xaction}\"
+	    for action in $required; do
+		if ! list_search $action $USEDACTIONS; then
+		    USEDACTIONS="$USEDACTIONS $action"
+		    [ $command = check ] || createchain $action no
+		    changed=Yes
+		fi
+	    done
+	done
+    done
+    #
+    # Now process the relevant action files -- they were already stripped in process_actions1() above.
+    #
+    for xaction in $USEDACTIONS; do
 	case $xaction in
-	    *:*)
-		temp=${xaction#*:}
-		xaction=${xaction%:*}
-		case $temp in
-		    ACCEPT|REJECT|DROP)
-			eval ${temp}_common=$xaction
-			;;
-		    *)
-			fatal_error "Common Actions are only allowed for ACCEPT, DROP and REJECT"
-			;;
-		esac
+	    dropNonSyn|dropBcasts)
+		;;
+	    *)
+		f=action.$xaction
+		fn=$(find_file $f)
+		
+		echo "Processing $fn..."
+		while read xtarget xclients xservers xprotocol xports xcports xratelimit $xuserspec; do
+		    do_it
+		done < $TMP_DIR/$f
+		;;
 	esac
-	
-	if [ "$command" != check ]; then
-	    createchain $xaction No
-	    run_user_exit $xaction
-	fi
-
-	f=action.$xaction
-	fn=$(find_file $f)
-
-	if [ -f $fn ]; then
-	    echo "Processing $fn..."
-	    strip_file $f $fn
-	    while read xtarget xclients xservers xprotocol xports xcports xratelimit $xuserspec; do
-		expandv xtarget
-		temp="${xtarget%:*}"
-		case "${temp%<*}" in
-		    ACCEPT|DROP|REJECT|LOG|QUEUE)
-			do_it
-			;;
-		    *)
-			if list_search $temp $ACTIONS; then
-			    do_it
-			else
-			    rule="$(echo $xtarget $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec)"
-			    fatal_error "Invalid TARGET in rule \"$rule\""
-			fi
-			;;
-		    
-		esac
-	    done < $TMP_DIR/$f
-	else
-	    fatal_error "Missing Action File: $f"
-	fi
-	
-	ACTIONS="$ACTIONS $xaction"
-    done < $TMP_DIR/actions
+    done
 }
 	
 #
@@ -3234,6 +3286,11 @@ process_rules()
 		;;
 	    *)
 		if list_search $temp $ACTIONS; then
+		    if ! list_search $temp $USEDACTIONS; then
+			[ $command = check ] || createchain $temp no
+			USEDACTIONS="$USEDACTIONS $temp"
+		    fi
+
 		    do_it
 		else
 		    rule="$(echo $xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec)"
@@ -4845,13 +4902,17 @@ define_firewall() # $1 = Command (Start or Restart)
 
     rules=$(find_file rules)
 
-    echo "Processing Actions..."
+    echo "Pre-processing Actions..."
 
-    process_actions
+    process_actions1
 
     echo "Processing $rules..."
 
     process_rules
+
+    echo "Processing Actions..."
+
+    process_actions2
 
     policy=$(find_file policy)
 
@@ -5368,6 +5429,7 @@ do_initialize() {
     BLACKLISTNEWONLY=
     MODULE_SUFFIX=
     ACTIONS=
+    USEDACTIONS=
     SMURF_LOG_LEVEL=
 
     stopping=

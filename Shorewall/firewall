@@ -563,8 +563,9 @@ validate_interfaces_file() {
 	    validate_zone $z || startup_error "Invalid zone ($z) in record \"$r\""
 	fi
 
-	[ "x$interface" = "xlo" ] && \
-	    startup_error "The loopback interface (lo) may not be defined in /etc/shorewall/interfaces"
+	if [ -n "`ip link show $interface 2> /dev/null | grep LOOPBACK`" ]; then
+	    startup_error "The loopback interface ($interface) may not be defined in /etc/shorewall/interfaces"
+	fi
 
 	list_search $interface $all_interfaces && \
 	    startup_error "Duplicate Interface $interface"
@@ -3295,6 +3296,13 @@ load_kernel_modules() {
     fi
 }
 
+# Verify that the 'ip' program is installed
+
+verify_ip() {
+    qt which ip ||\
+	startup_error "Shorewall $version requires the iproute package ('ip' utility)"
+}
+
 #
 # Perform Initialization
 #	- Delete all old rules
@@ -3600,11 +3608,11 @@ add_common_rules() {
 	    
 	for interface in $norfc1918_interfaces; do
 	    for chain in `first_chains $interface`; do
-		run_iptables -A $chain -j rfc1918
+		run_iptables -A $chain -m state --state NEW -j rfc1918
 	    done
 	    
 	    [ -n "$MANGLE_ENABLED" ] && \
-		run_iptables -t mangle -A PREROUTING -i $interface -j man1918
+		run_iptables -t mangle -A PREROUTING -m state --state NEW -i $interface -j man1918
 	done
 
     fi
@@ -3942,6 +3950,8 @@ define_firewall() # $1 = Command (Start or Restart)
     echo "${1}ing Shorewall..."
 
     verify_os_version
+
+    verify_ip
 
     load_kernel_modules
 

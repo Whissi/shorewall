@@ -1070,7 +1070,9 @@ case "$1" in
 				cp -f /var/lib/shorewall/restore-base /var/lib/shorewall/restore-$$
 				if iptables-save >> /var/lib/shorewall/restore-$$ ; then
 				    echo __EOF__ >> /var/lib/shorewall/restore-$$
-				    mv -f /var/lib/shorewall/restore-$$ $RESTOREPATH
+				    [ -f /var/lib/shorewall/restore-tail ] && \
+					cat /var/lib/shorewall/restore-tail >> /var/lib/shorewall/restore-$$
+				    mv -f /var/lib/shorewall/restore-$$ $RESTOREPATH 
 				    chmod +x $RESTOREPATH
 				    echo "   Currently-running Configuration Saved to $RESTOREPATH"
 				else

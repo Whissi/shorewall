@@ -60,7 +60,7 @@ allow)
 	;;
 
 check)
-	echo "check: check [ -c <configuration-directory> ]
+	echo "check: check [ <configuration-directory> ]
    Performs a cursory validation of the zones, interfaces, hosts,
    rules and policy files.  Use this if you are unsure of any edits
    you have made to the shorewall configuration.  See the try command
@@ -187,7 +187,7 @@ reset)
 	;;
 
 restart)
-	echo "restart: restart [ -q ] [ -c <configuration-directory> ]
+	echo "restart: [ -q ] restart [ <configuration-directory> ]
     Restart is the same as a shorewall stop && shorewall start.
     Existing connections are maintained.
     If \"-q\" is specified, less detain is displayed making it easier to spot warnings"
@@ -240,13 +240,14 @@ show)
 	;;
 
 start)
-	echo "start: [ -q ] [ -f ] [ -c <configuration-directory> ] start
+	echo "start: [ -q ] [ -f ] start [ <configuration-directory> ]
     Start shorewall.  Existing connections through shorewall managed
     interfaces are untouched.  New connections will be allowed only
     if they are allowed by the firewall rules or policies.
     If \"-q\" is specified, less detail is displayed making it easier to spot warnings
     If \"-f\" is specified, the saved configuration specified by the RESTOREFILE option
-    in shorewall.conf will be restored if that saved configuration exists"
+    in shorewall.conf will be restored if that saved configuration exists. In that
+    case, a <configuration-directory> may not be specified".
 	;;
 
 stop)

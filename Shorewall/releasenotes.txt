@@ -2,22 +2,9 @@ This is a minor release of Shorewall.
 
 In this release:
 
-1. A new /etc/shorewall/routestopped file has been added. This file is 
-   intended to eventually replace the routestopped option in the 
-   /etc/shorewall/interface and /etc/ shorewall/hosts files. This new 
-   file makes remote firewall administration easier by allowing any IP 
-   or subnet to be enabled while Shorewall is stopped.
+1. Empty source and destination qualifiers are now detected in the
+   rules file.
 
-2. An /etc/shorewall/stopped extension script has been added. This 
-   script is invoked after Shorewall has stopped.
+2. Added MERGE_HOSTS variable in shorewall.conf to provide saner
+   behavior of the /etc/shorewall/hosts file.
 
-3. A DETECT_DNAT_ADDRS option has been added to 
-   /etc/shoreall/shorewall.conf. When this option is selected, DNAT 
-   rules only apply when the destination address is the external
-   interface's primary IP address.
-
-4. The QuickStart Guide has been broken into three guides and has been
-   almost entirely rewritten.
-
-5. The Samples have been updated to reflect the new capabilities in
-   this release.

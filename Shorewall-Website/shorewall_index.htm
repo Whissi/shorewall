@@ -1,24 +1,282 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
-
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
-<title>Shoreline Firewall</title>
-<meta name="GENERATOR" content="Microsoft FrontPage 4.0">
-<meta name="ProgId" content="FrontPage.Editor.Document">
-<meta name="Microsoft Border" content="none, default">
+  <meta content="HTML Tidy, see www.w3.org" name="generator">
+  <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+  <title>Shoreline Firewall (Shorewall) 2.0</title>
+  <base target="_self">
 </head>
-
-<frameset rows="90,*">
-  <frame name="banner" scrolling="no" noresize target="contents" src="Banner.html">
-  <frameset cols="262,*">
-    <frame name="contents" target="main" src="Shorewall_index_frame.htm">
-    <frame name="main" src="seattlefirewall_index.htm" target="_self">
-  </frameset>
-  <noframes>
-  <body>
-
-  <p>This page uses frames, but your browser doesn't support them.</body>
-  </noframes>
-</frameset>
-
+<body>
+<div>
+<table border="0" cellpadding="0" cellspacing="0" id="AutoNumber4"
+ style="border-collapse: collapse; width: 100%; height: 100%;">
+  <tbody>
+    <tr>
+      <td width="90%">
+      <h2>Introduction to Shorewall</h2>
+      <h3>This is the Shorewall 2.0 Web Site</h3>
+      <div style="margin-left: 40px;">The information on this site
+applies only to 2.0.x releases of
+Shorewall. For older versions:<br>
+      </div>
+      <ul>
+        <ul>
+          <li>The 1.4 site is <a href="http://www.shorewall.net/1.4"
+ target="_top">here.<br>
+            </a></li>
+          <li>The 1.3 site is <a href="http://www.shorewall.net/1.3"
+ target="_top">here.</a></li>
+          <li>The 1.2 site is <a href="http://shorewall.net/1.2/"
+ target="_top">here</a>.</li>
+        </ul>
+      </ul>
+      <h3>Glossary</h3>
+      <ul>
+        <li><a href="http://www.netfilter.org" target="_top">Netfilter</a>
+- the
+packet filter facility built into the 2.4 and later Linux kernels.</li>
+        <li>ipchains - the packet filter facility built into the 2.2
+Linux kernels. Also the name of the utility program used to configure
+and control that facility. Netfilter can be used in ipchains
+compatibility mode.</li>
+        <li>iptables - the utility program used to configure and
+control Netfilter. The term 'iptables' is often used to refer to the
+combination of iptables+Netfilter (with Netfilter not in ipchains
+compatibility mode).</li>
+      </ul>
+      <h3>What is Shorewall?</h3>
+      <div style="margin-left: 40px;">The Shoreline Firewall, more
+commonly known as "Shorewall", is
+high-level tool for configuring Netfilter. You describe your
+firewall/gateway requirements using entries in a set of configuration
+files. Shorewall reads those configuration files and with the help of
+the iptables utility, Shorewall configures Netfilter to match your
+requirements. Shorewall can be used on a dedicated firewall system, a
+multi-function gateway/router/server or on a standalone GNU/Linux
+system. Shorewall does not use Netfilter's ipchains compatibility mode
+and can thus take advantage of Netfilter's <a
+ href="http://www.cs.princeton.edu/%7Ejns/security/iptables/iptables_conntrack.html"
+ target="_top">connection
+state tracking
+capabilities</a>.<br>
+      <br>
+Shorewall is <span style="text-decoration: underline;">not</span> a
+daemon. Once Shorewall has configured Netfilter, it's job is complete.
+After that, there is no Shorewall code running although the <a
+ href="starting_and_stopping_shorewall.htm">/sbin/shorewall
+program can be used at any time to monitor the Netfilter firewall</a>.<br>
+      </div>
+      <h3>Getting Started with Shorewall</h3>
+      <div style="margin-left: 40px;">New to Shorewall? Start by
+selecting the <a href="shorewall_quickstart_guide.htm">QuickStart Guide</a>
+that most
+closely match your environment and follow the step by step instructions.<br>
+      </div>
+      <h3>Looking for Information?</h3>
+      <div style="margin-left: 40px;">The <a
+ href="Documentation_Index.html">Documentation
+Index</a> is a good place to start as is the Quick Search in the frame
+above. </div>
+      <h3>Running Shorewall on Mandrake® with a two-interface setup?</h3>
+      <div style="margin-left: 40px;">If so, the documentation on this
+site will not apply directly
+to your setup. If you want to use the documentation that you find here,
+you will want to consider uninstalling what you have and installing a
+setup that matches the documentation on this site. See the <a
+ href="two-interface.htm">Two-interface QuickStart Guide</a> for
+details.<br>
+      <br>
+      <span style="font-weight: bold;">Update: </span>I've been
+informed by Mandrake Development that this problem has been corrected
+in Mandrake 10.0 Final (the problem still exists in the 10.0 Community
+release).<br>
+      </div>
+      <h3>License</h3>
+      <div style="margin-left: 40px;">This program is free software;
+you can redistribute it and/or modify it
+under the terms of <a href="http://www.gnu.org/licenses/gpl.html">Version
+2 of the GNU General Public License</a> as published by the Free
+Software Foundation.<br>
+      </div>
+      <p style="margin-left: 40px;">This program is distributed in the
+hope that it will be
+useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+General Public License for more detail.</p>
+      <div style="margin-left: 40px;"> </div>
+      <p style="margin-left: 40px;">You should have received a copy of
+the GNU General Public
+License along with this program; if not, write to the Free Software
+Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA</p>
+      <div style="margin-left: 40px;">Permission is granted to copy,
+distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.2 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, with no Front-Cover, and with no Back-Cover Texts.
+A copy of the license is included in the section entitled <a>"GNU Free
+Documentation License"</a>. </div>
+      <p>Copyright © 2001-2004 Thomas M. Eastep </p>
+      <hr style="width: 100%; height: 2px;">
+      <h2>News</h2>
+      <p><b>4/5/2004 - Shorewall 2.0.1 </b><b> <img alt="(New)"
+ src="images/new10.gif"
+ style="border: 0px solid ; width: 28px; height: 12px;" title=""></b><br>
+      <b></b></p>
+Problems Corrected since 2.0.0<br>
+      <br>
+      <ol>
+        <li>Using actions in the manner recommended in the
+documentation results in a Warning that the rule is a policy.</li>
+        <li>When a zone on a single interface is defined using
+/etc/shorewall/hosts, superfluous rules are generated in the
+&lt;zone&gt;_frwd chain.</li>
+        <li>Thanks to Sean Mathews, a long-standing problem with Proxy
+ARP and IPSEC has been corrected. Thanks Sean!!!</li>
+        <li>The "shorewall show log" and "shorewall logwatch" commands
+incorrectly displayed type 3 ICMP packets.<br>
+        </li>
+      </ol>
+Issues when migrating from Shorewall 2.0.0 to Shorewall 2.0.1:<br>
+      <br>
+      <ol>
+        <li>The function of 'norfc1918' is now split between that
+option and a new 'nobogons' option.<br>
+          <br>
+The rfc1918 file released with Shorewall now contains entries for only
+those three address ranges reserved by RFC 1918. A 'nobogons' interface
+option has been added which handles bogon source addresses (those which
+are reserved by the IANA, those reserved for DHCP auto-configuration
+and the class C test-net reserved for testing and documentation
+examples). This will allow users to perform RFC 1918 filtering without
+having to deal with out of date data from IANA. Those who are willing
+to update their /usr/share/shorewall/bogons file regularly can specify
+the 'nobogons' option in addition to 'norfc1918'.<br>
+          <br>
+The level at which bogon packets are logged is specified in the new
+BOGON_LOG_LEVEL variable in shorewall.conf. If that option is not
+specified or is specified as empty (e.g, BOGON_LOG_LEVEL="") then bogon
+packets whose TARGET is 'logdrop' in /usr/share/shorewall/bogons are
+logged at the 'info' level.</li>
+      </ol>
+New Features:<br>
+      <br>
+      <ol>
+        <li>Support for Bridging Firewalls has been added. For details,
+see<br>
+          <br>
+          <a href="http://shorewall.net/bridge.html">http://shorewall.net/bridge.html</a><br>
+          <br>
+        </li>
+        <li>Support for NETMAP has been added. NETMAP allows NAT to be
+defined between two network:<br>
+          <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;
+a.b.c.1&nbsp;&nbsp;&nbsp; -&gt; x.y.z.1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+a.b.c.2&nbsp;&nbsp;&nbsp; -&gt; x.y.z.2<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+a.b.c.3&nbsp;&nbsp;&nbsp; -&gt; x.y.z.3<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ...<br>
+          <br>
+&nbsp; <a href="http://shorewall.net/netmap.htm">http://shorewall.net/netmap.htm</a><br>
+          <br>
+        </li>
+        <li>The /sbin/shorewall program now accepts a "-x" option to
+cause iptables to print out the actual packet and byte counts rather
+than abbreviated counts such as "13MB".<br>
+          <br>
+Commands affected by this are:<br>
+          <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+shorewall -x show [ &lt;chain&gt;[ &lt;chain&gt; ...] ]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+shorewall -x show tos|mangle<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+shorewall -x show nat<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+shorewall -x status<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+shorewall -x monitor [ &lt;interval&gt; ]<br>
+          <br>
+        </li>
+        <li>Shorewall now traps two common zone definition errors:<br>
+          <ul>
+            <li>Including the firewall zone in a /etc/shorewall/hosts
+record.</li>
+            <li>Defining an interface for a zone in both
+/etc/shorewall/interfaces and /etc/shorewall/hosts.<br>
+              <br>
+            </li>
+          </ul>
+        </li>
+        <li>In the second case, the following will appear during
+"shorewall [re]start" or "shorewall check":<br>
+          <br>
+&nbsp;&nbsp; Determining Hosts in Zones...<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ...<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Error: Invalid zone definition for zone
+&lt;name of zone&gt;<br>
+&nbsp;&nbsp; Terminated<br>
+          <br>
+        </li>
+        <li>To support bridging, the following options have been added
+to entries in /etc/shorewall/hosts:<br>
+          <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; norfc1918<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; nobogons<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; blacklist<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; tcpflags<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; nosmurfs<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; newnotsyn<br>
+          <br>
+With the exception of 'newnotsyn', these options are only useful when
+the entry refers to a bridge port.<br>
+          <br>
+&nbsp;&nbsp; Example:<br>
+          <br>
+&nbsp;&nbsp; #ZONE&nbsp;&nbsp; HOST(S)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+OPTIONS<br>
+&nbsp;&nbsp; net&nbsp;&nbsp;&nbsp;&nbsp;
+br0:eth0&nbsp;&nbsp;&nbsp;&nbsp;
+norfc1918,nobogons,blacklist,tcpflags,nosmurfs<br>
+          <br>
+        </li>
+      </ol>
+      <p><a href="News.htm">More News</a></p>
+      <hr style="width: 100%; height: 2px;">
+      <p><a href="http://leaf.sourceforge.net" target="_top"><img
+ alt="(Leaf Logo)"
+ style="border: 0px solid ; height: 36px; width: 49px;"
+ src="images/leaflogo.gif" title=""></a> LEAF is an open source project
+which provides a Firewall/router on a floppy, CD or CF. Several LEAF
+distributions including Bering and Bering-uCLib use Shorewall as their
+Netfilter configuration tool.<br>
+      </p>
+      <div>
+      <div style="text-align: center;"> </div>
+      </div>
+      <hr style="width: 100%; height: 2px;">
+      <h2><a name="Donations"></a>Donations<br>
+      </h2>
+      <p style="text-align: left;"> <big><a href="http://www.alz.org"
+ target="_top"><img src="images/alz_logo2.gif" title=""
+ alt="(Alzheimer's Association Logo)"
+ style="border: 0px solid ; width: 300px; height: 60px;" align="left"></a>Shorewall
+is free but
+if you
+try it and find it useful,
+please consider making a donation to the <a href="http://www.alz.org/"
+ target="_top">Alzheimer's Association</a>. Thanks!</big> </p>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;"> <br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p><font size="2">Updated 04/12/2004 - <a href="support.htm">Tom Eastep</a></font><br>
+</p>
+</body>
 </html>

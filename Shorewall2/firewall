@@ -6215,15 +6215,23 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 
     validate_zone $zone || startup_error "Unknown zone: $zone"
 
+    f=$(find_file ipsec)
+    if [ -f $f ]; then
+	progress_message "Processing $f..."
+	setup_ipsec $f
+    fi
+
     [ "$zone" = $FW ] && startup_error "Can't add $1 to firewall zone"
 
     eval is_ipsec=\$${zone}_is_ipsec
     eval options=\"\$${zone}_ipsec_options\"
+    eval in_options=\"\$${zone}_ipsec_in_options\"
+    eval out_options=\"\$${zone}_ipsec_out_options\"
 
     if [ -n "$is_ipsec" ]; then
 	[ -n "$POLICY_MATCH" ] || startup_error "Your kernel and/or iptables lacks policy match support"
-	policyin="-m policy --pol ipsec --dir in $options"
-	policyout="-m policy --pol ipsec --dir out $options"
+	policyin="-m policy --pol ipsec --dir in $options $in_options"
+	policyout="-m policy --pol ipsec --dir out $options $out_options"
     elif [ -n "$POLICY_MATCH" ]; then
  	policyin="-m policy --pol none --dir in"
 	policyout="-m policy --pol none --dir out"
@@ -6373,11 +6381,31 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
     #
     determine_zones
 
+    f=$(find_file ipsec)
+    if [ -f $f ]; then
+	progress_message "Processing $f..."
+	setup_ipsec $f
+    fi
+
     zone=$2
 
     validate_zone $zone || startup_error "Unknown zone: $zone"
 
     [ "$zone" = $FW ] && startup_error "Can't remove $1 from firewall zone"
+
+    eval is_ipsec=\$${zone}_is_ipsec
+    eval options=\"\$${zone}_ipsec_options\"
+    eval in_options=\"\$${zone}_ipsec_in_options\"
+    eval out_options=\"\$${zone}_ipsec_out_options\"
+
+    if [ -n "$is_ipsec" ]; then
+	[ -n "$POLICY_MATCH" ] || startup_error "Your kernel and/or iptables lacks policy match support"
+	policyin="-m policy --pol ipsec --dir in $options $in_options"
+	policyout="-m policy --pol ipsec --dir out $options $out_options"
+    elif [ -n "$POLICY_MATCH" ]; then
+ 	policyin="-m policy --pol none --dir in"
+	policyout="-m policy --pol none --dir out"
+    fi   
     #
     # Be sure that Shorewall has been restarted using a DZ-aware version of the code
     #
@@ -6413,14 +6441,14 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
     #
     # Delete any nat table entries for the host(s)
     #
-    qt iptables -t nat -D $(dynamic_in $interface) -s $host -j ${zone}_dnat
+    qt iptables -t nat -D $(dynamic_in $interface) -s $host $policyin -j ${zone}_dnat
     #
     # Delete rules rules the input chains for the passed interface
     #
     while read z1 z2 chain; do
 	if [ "$z1" = "$zone" ]; then
 	    if [ "$z2" = "$FW" ]; then
-		qt iptables -D $(dynamic_in $interface) -s $host -j $chain
+		qt iptables -D $(dynamic_in $interface) -s $host $policyin -j $chain
 	    else
 		source_chain=$(dynamic_fwd $interface)
 		eval dest_hosts=\"\$${z2}_hosts\"
@@ -6430,13 +6458,13 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		    hosts=${h#*:}
 
 		    if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
-			qt iptables -D $source_chain -s $host -o $iface $(match_dest_hosts $hosts) -j $chain
+			qt iptables -D $source_chain -s $host -o $iface $(match_dest_hosts $hosts) $policyout -j $chain
 		    fi
 		done
 	    fi
 	elif [ "$z2" = "$zone" ]; then
 	    if [ "$z1" = "$FW" ]; then
-		qt iptables -D $(dynamic_out $interface) -d $host -j $chain
+		qt iptables -D $(dynamic_out $interface) -d $host $policyout -j $chain
 	    else
 		eval source_hosts=\"\$${z1}_hosts\"
 		
@@ -6445,7 +6473,7 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		    hosts=${h#*:}
 
 		    if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
-			qt iptables -D $(dynamic_fwd $iface) $(match_source_hosts $hosts) -o $interface -d $host -j $chain
+			qt iptables -D $(dynamic_fwd $iface) $(match_source_hosts $hosts) -o $interface -d $host $policyout -j $chain
 		    fi
 		done
 	    fi

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article id="shorewall_prerequisites">
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>Shorewall Requirements</title>
+
+    <author>
+      <firstname>Tom</firstname>
+
+      <surname>Eastep</surname>
+    </author>
+
+    <pubdate>2004-05-31</pubdate>
+
+    <copyright>
+      <year>2001-2004</year>
+
+      <holder>Thomas M Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <section>
+    <title>Shorewall Requires:</title>
+
+    <itemizedlist>
+      <listitem>
+        <para>A kernel that supports netfilter. I&#39;ve tested with 2.4.2 -
+        2.6.6. With current releases of Shorewall, Traffic Shaping/Control
+        requires at least 2.4.18. Check <ulink url="kernel.htm">here</ulink>
+        for kernel configuration information. If you are looking for a
+        firewall for use with 2.2 kernels, see <ulink
+        url="http://seawall.sourceforge.net">the Seattle Firewall site</ulink>.</para>
+      </listitem>
+
+      <listitem>
+        <para>iptables 1.2 or later but beware version 1.2.3 -- see the <ulink
+        url="errata.htm">Errata</ulink>.</para>
+
+        <warning>
+          <para>The buggy iptables version 1.2.3 is included in RedHat 7.2 and
+          you should upgrade to iptables 1.2.4 prior to installing Shorewall.
+          Version 1.2.4 is available <ulink
+          url="http://www.redhat.com/support/errata/RHSA-2001-144.html">from
+          RedHat</ulink> and in the <ulink url="errata.htm">Shorewall Errata</ulink>.</para>
+        </warning>
+      </listitem>
+
+      <listitem>
+        <para>Iproute (<quote>ip</quote> utility). The iproute package is
+        included with most distributions but may not be installed by default.
+        The official download site is <ulink type="remote"
+        url="ftp://ftp.inr.ac.ru/ip-routing">ftp://ftp.inr.ac.ru/ip-routing</ulink>.</para>
+      </listitem>
+
+      <listitem>
+        <para>A Bourne shell or derivative such as bash or ash. This shell
+        must have correct support for variable expansion formats ${<emphasis>variable%pattern</emphasis>},
+        ${<emphasis>variable%%pattern</emphasis>}, ${<emphasis>variable#pattern</emphasis>}
+        and ${<emphasis>variable##pattern</emphasis>}.</para>
+      </listitem>
+
+      <listitem>
+        <para>Your shell must produce a sensible result when a number n (128
+        &#60;= n &#60;= 255) is left shifted by 24 bits. You can check this at
+        a shell prompt by:<itemizedlist><listitem><para>echo $((128 &#60;&#60;
+        24))</para></listitem><listitem><para>The result must be either
+        2147483648 or -2147483648.</para></listitem></itemizedlist></para>
+      </listitem>
+
+      <listitem>
+        <para>The firewall monitoring display is greatly improved if you have
+        awk (gawk) installed.</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+</article>

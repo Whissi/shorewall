@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article>
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>DHCP</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate>2004-05-24</pubdate>
+
+    <copyright>
+      <year>2001</year>
+
+      <year>2002</year>
+
+      <year>2004</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <note>
+    <para>For most operations, DHCP software interfaces to the Linux IP stack
+    at a level below Netfilter. Hence, Netfilter (and therefore Shorewall)
+    cannot be used effectively to police DHCP. The <quote>dhcp</quote>
+    interface option described in this article allows for Netfilter to stay
+    out of DHCP&#39;s way for those operations that can be controlled by
+    Netfilter and prevents unwanted logging of DHCP-related traffic by
+    Shorewall-generated Netfilter logging rules.</para>
+  </note>
+
+  <section>
+    <title>If you want to Run a DHCP Server on your firewall</title>
+
+    <itemizedlist>
+      <listitem>
+        <para>Specify the <quote>dhcp</quote> option on each interface to be
+        served by your server in the <filename><ulink
+        url="Documentation.htm#Interfaces">/etc/shorewall/interfaces</ulink></filename>
+        file. This will generate rules that will allow DHCP to and from your
+        firewall system.</para>
+      </listitem>
+
+      <listitem>
+        <para>When starting <quote>dhcpd</quote>, you need to list those
+        interfaces on the run line. On a RedHat system, this is done by
+        modifying <filename>/etc/sysconfig/dhcpd</filename>.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para></para>
+  </section>
+
+  <section>
+    <title>If a Firewall Interface gets its IP Address via DHCP</title>
+
+    <itemizedlist>
+      <listitem>
+        <para>Specify the <quote>dhcp</quote> option for this interface in the
+        <ulink url="Documentation.htm#Interfaces"><filename>/etc/shorewall/interfaces</filename></ulink>
+        file.&#x00A0;This will generate rules that will allow DHCP to and from
+        your firewall system.</para>
+      </listitem>
+
+      <listitem>
+        <para>If you know that the dynamic address is always going to be in
+        the same subnet, you can specify the subnet address in the
+        interface&#39;s entry in the <ulink url="Documentation.htm#Interfaces"><filename>/etc/shorewall/interfaces</filename></ulink>
+        file.</para>
+      </listitem>
+
+      <listitem>
+        <para>If you don&#39;t know the subnet address in advance, you should
+        specify <quote>detect</quote> for the interface&#39;s subnet address
+        in the <ulink url="Documentation.htm#Interfaces"><filename>/etc/shorewall/interfaces</filename></ulink>
+        file and start Shorewall after the interface has started.</para>
+      </listitem>
+
+      <listitem>
+        <para>In the event that the subnet address might change while
+        Shorewall is started, you need to arrange for a <quote>shorewall
+        refresh</quote> command to be executed when a new dynamic IP address
+        gets assigned to the interface. Check your DHCP client&#39;s
+        documentation.</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+</article>

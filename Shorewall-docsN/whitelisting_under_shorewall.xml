@@ -1,0 +1,386 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN" "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<!-- $Id$ -->
+<article id="whitelisting_under_shorewall">
+  <articleinfo>
+    <title>Whitelisting Under Shorewall</title>
+    <author>
+      <firstname>Tom</firstname>
+      <surname>Eastep</surname>
+    </author>
+    <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
+    <copyright>
+			<year>2002</year>
+      <year>2003</year>
+			<year>2004</year>
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+    <legalnotice>
+      <para>
+			Permission is granted to copy, distribute and/or modify this
+			document under the terms of the GNU Free Documentation License, Version
+			1.2 or any later version published by the Free Software Foundation; with
+			no Invariant Sections, with no Front-Cover, and with no Back-Cover
+			Texts. A copy of the license is included in the section entitled <quote><ulink url="copyright.htm" type="">GNU Free Documentation License</ulink></quote>.
+			</para>
+    </legalnotice>
+  </articleinfo>
+  <para>
+	For a brief time, the 1.2 version of Shorewall supported an <literal>/etc/shorewall/whitelist</literal> file. This file was intended to contain a
+	list of IP addresses of hosts whose POLICY to all zones was ACCEPT. The whitelist file was implemented as a stop-gap measure until the
+	facilities necessary for implementing white lists using zones was in place. As of Version <literal>1.3 RC1</literal>, those facilities were available.
+	</para>
+  <para>
+	White lists are most often used to give special privileges to a set of hosts within an organization. Let us suppose that we have the following environment:
+	</para>
+  <itemizedlist mark="bullet" spacing="compact">
+    <listitem>
+      <para>
+			A firewall with three interfaces -- one to the Internet, one to a local network and one to a <acronym>DMZ</acronym>.
+			</para>
+    </listitem>
+    <listitem>
+      <para>
+			The local network uses <acronym>SNAT</acronym> to the internet and is comprised of the Class B network <literal>10.10.0.0/16</literal> (Note: While this example uses an RFC 1918 local network, the technique described here in no way depends on that or on <acronym>SNAT</acronym>. It may be used with Proxy <acronym>ARP</acronym>, Subnet Routing, Static NAT, etc.).
+			</para>
+    </listitem>
+    <listitem>
+      <para>
+			The network operations staff have workstations with IP addresses in the Class C network <literal>10.10.10.0/24</literal>.
+			</para>
+    </listitem>
+    <listitem>
+      <para>
+			We want the network operations staff to have full access to all other hosts.
+			</para>
+    </listitem>
+    <listitem>
+      <para>
+			We want the network operations staff to bypass the transparent <acronym>HTTP</acronym> proxy running on our firewall.
+			</para>
+    </listitem>
+  </itemizedlist>
+  <para>
+	The basic approach will be that we will place the operations staff's class C in its own zone called ops. Here are the appropriate configuration files:
+	</para>
+<!-- Zone File -->
+  <bridgehead renderas="sect4">Zone File</bridgehead>
+  <informaltable colsep="1" pgwide="0">
+    <tgroup cols="3" align="left">
+      <thead valign="middle">
+        <row valign="middle">
+          <entry align="left">ZONE</entry>
+          <entry align="left">DISPLAY</entry>
+          <entry align="left">COMMENTS</entry>
+        </row>
+      </thead>
+      <tbody valign="middle">
+        <row valign="middle">
+          <entry align="left">
+            <literal>net</literal>
+          </entry>
+          <entry align="left">Net</entry>
+          <entry align="left">Internet</entry>
+        </row>
+        <row valign="middle">
+          <entry align="left">
+            <literal>ops</literal>
+          </entry>
+          <entry align="left">Operations</entry>
+          <entry align="left">Operations Staff's Class C</entry>
+        </row>
+        <row valign="middle">
+          <entry align="left">
+            <literal>loc</literal>
+          </entry>
+          <entry align="left">Local</entry>
+          <entry align="left">Local Class B</entry>
+        </row>
+        <row valign="middle">
+          <entry align="left">
+            <literal>dmz</literal>
+          </entry>
+          <entry align="left">DMZ</entry>
+          <entry align="left">Demilitarized zone</entry>
+        </row>
+      </tbody>
+    </tgroup>
+  </informaltable>
+  <para>
+		The <literal>ops</literal> zone has been added to the standard 3-zone zones
+		file -- since <literal>ops</literal> is a sub-zone of <literal>loc</literal>, we list it <emphasis>BEFORE</emphasis>
+		<literal>loc</literal>.
+		</para>
+<!-- Interfaces File -->
+  <bridgehead renderas="sect4">Interfaces File</bridgehead>
+  <informaltable colsep="1" pgwide="0">
+    <tgroup cols="4" align="left">
+      <thead valign="middle">
+        <row valign="middle">
+          <entry align="left">ZONE</entry>
+          <entry align="left">INTERFACE</entry>
+          <entry align="left">BROADCAST</entry>
+          <entry align="left">OPTIONS</entry>
+        </row>
+      </thead>
+      <tbody valign="middle">
+        <row valign="middle">
+          <entry align="left">
+            <literal>net</literal>
+          </entry>
+          <entry align="left">
+            <literal>eth0</literal>
+          </entry>
+          <entry align="left">&lt;whatever&gt;</entry>
+          <entry align="left">&lt;options&gt;</entry>
+        </row>
+        <row valign="middle">
+          <entry align="left">
+            <literal>dmz</literal>
+          </entry>
+          <entry align="left">
+            <literal>eth1</literal>
+          </entry>
+          <entry align="left">&lt;whatever&gt;</entry>
+          <entry align="left"/>
+        </row>
+        <row>
+          <entry align="left">
+            <literal>-</literal>
+          </entry>
+          <entry align="left">
+            <literal>eth2</literal>
+          </entry>
+          <entry align="left">
+            <literal>10.10.255.255</literal>
+          </entry>
+          <entry align="left"/>
+        </row>
+      </tbody>
+    </tgroup>
+  </informaltable>
+  <para>
+		Because <literal>eth2</literal> interfaces to two zones (<literal>ops</literal> and <literal>loc</literal>), we don't specify a zone for it here.
+		</para>
+<!-- Hosts File -->
+  <bridgehead renderas="sect4">Hosts File</bridgehead>
+  <informaltable colsep="1" pgwide="0">
+    <tgroup cols="3" align="left">
+      <thead valign="middle">
+        <row valign="middle">
+          <entry align="left">ZONE</entry>
+          <entry align="left">HOST(S)</entry>
+          <entry align="left">OPTIONS</entry>
+        </row>
+      </thead>
+      <tbody valign="middle">
+        <row valign="middle">
+          <entry align="left">
+            <literal>ops</literal>
+          </entry>
+          <entry align="left">
+            <literal>eth2:10.10.10.0/24</literal>
+          </entry>
+          <entry align="left"/>
+        </row>
+        <row valign="middle">
+          <entry align="left">
+            <literal>loc</literal>
+          </entry>
+          <entry align="left">
+            <literal>eth2:0.0.0.0/0</literal>
+          </entry>
+          <entry align="left"/>
+        </row>
+      </tbody>
+    </tgroup>
+  </informaltable>
+  <para>
+		Here we define the <literal>ops</literal> and <literal>loc</literal> zones. When Shorewall is stopped, only the hosts in the <literal>ops</literal> zone will be allowed to access the firewall and the <acronym>DMZ</acronym>. I use <literal>0.0.0.0/0</literal> to define the <literal>loc</literal> zone rather than <literal>10.10.0.0/16</literal> so that the limited broadcast address (<literal>255.255.255.255</literal>) falls into that zone. If I used <literal>10.10.0.0/16</literal> then I would have to have a separate entry for that special address.
+		</para>
+<!-- Policy File -->
+  <bridgehead renderas="sect4">Policy File</bridgehead>
+  <informaltable colsep="1" pgwide="0">
+    <tgroup align="left" cols="5">
+      <thead valign="middle">
+        <row valign="middle">
+          <entry align="left">SOURCE</entry>
+          <entry align="left">DEST</entry>
+          <entry align="left">POLICY</entry>
+          <entry align="left">LOG LEVEL</entry>
+          <entry align="left">LIMIT BURST</entry>
+        </row>
+      </thead>
+      <tbody>
+        <row valign="middle">
+          <entry align="left">
+<!-- To color the cell grey, uncomment the following 2 lines
+								<?dbhtml bgcolor="#EEEEEE" ?>
+								<?dbfo bgcolor="#EEEEEE" ?>
+								-->
+            <emphasis role="bold">
+              <literal>ops</literal>
+            </emphasis>
+          </entry>
+          <entry align="left">
+            <emphasis role="bold">
+              <literal>all</literal>
+            </emphasis>
+          </entry>
+          <entry align="left">
+            <emphasis role="bold">
+              <literal>ACCEPT</literal>
+            </emphasis>
+          </entry>
+          <entry align="left"/>
+          <entry align="left"/>
+        </row>
+        <row valign="middle">
+          <entry align="left">
+            <emphasis role="bold">
+              <literal>all</literal>
+            </emphasis>
+          </entry>
+          <entry align="left">
+            <emphasis role="bold">
+              <literal>ops</literal>
+            </emphasis>
+          </entry>
+          <entry align="left">
+            <emphasis role="bold">
+              <literal>CONTINUE</literal>
+            </emphasis>
+          </entry>
+          <entry align="left"/>
+          <entry align="left"/>
+        </row>
+        <row valign="middle">
+          <entry align="left">
+            <literal>loc</literal>
+          </entry>
+          <entry align="left">
+            <literal>net</literal>
+          </entry>
+          <entry align="left">
+            <literal>ACCEPT</literal>
+          </entry>
+          <entry align="left"/>
+          <entry align="left"/>
+        </row>
+        <row valign="middle">
+          <entry align="left">
+            <literal>net</literal>
+          </entry>
+          <entry align="left">
+            <literal>all</literal>
+          </entry>
+          <entry align="left">
+            <literal>DROP</literal>
+          </entry>
+          <entry align="left">
+            <literal>info</literal>
+          </entry>
+          <entry align="left"/>
+        </row>
+        <row valign="middle">
+          <entry align="left">
+            <literal>all</literal>
+          </entry>
+          <entry align="left">
+            <literal>all</literal>
+          </entry>
+          <entry align="left">
+            <literal>REJECT</literal>
+          </entry>
+          <entry align="left">
+            <literal>info</literal>
+          </entry>
+          <entry align="left"/>
+        </row>
+      </tbody>
+    </tgroup>
+  </informaltable>
+  <para>
+		Two entries for <literal>ops</literal> (in bold) have been added to the standard 3-zone policy file.
+		</para>
+<!-- Rules File -->
+  <bridgehead renderas="sect4">Rules File</bridgehead>
+  <informaltable colsep="1" pgwide="0">
+    <tgroup align="left" cols="7">
+      <thead valign="middle">
+        <row valign="middle">
+          <entry align="left">ACTION</entry>
+          <entry align="left">SOURCE</entry>
+          <entry align="left">DEST</entry>
+          <entry align="left">PROTO</entry>
+          <entry align="left">DEST PORT(S)</entry>
+          <entry align="left">SOURCE PORT(S)</entry>
+          <entry align="left">ORIGINAL DEST</entry>
+        </row>
+      </thead>
+      <tbody>
+        <row valign="middle">
+          <entry align="left">
+            <literal>REDIRECT</literal>
+          </entry>
+          <entry align="left">
+            <literal>loc!ops</literal>
+          </entry>
+          <entry align="left">
+            <literal>3128</literal>
+          </entry>
+          <entry align="left">
+            <literal>tcp</literal>
+          </entry>
+          <entry align="left">
+            <literal>http</literal>
+          </entry>
+          <entry align="left"/>
+          <entry align="left"/>
+        </row>
+        <row valign="middle">
+          <entry align="left">
+            <literal>...</literal>
+          </entry>
+          <entry align="left"/>
+          <entry align="left"/>
+          <entry align="left"/>
+          <entry align="left"/>
+          <entry align="left"/>
+          <entry align="left"/>
+        </row>
+      </tbody>
+    </tgroup>
+  </informaltable>
+  <para>
+		This is the rule that transparently redirects web traffic to the transparent proxy running on the firewall. The  <emphasis role="bold">SOURCE</emphasis> column explicitly excludes the <literal>ops</literal> zone from the rule.
+		</para>
+<!-- Routestopped File -->
+  <bridgehead renderas="sect4">Routestopped File</bridgehead>
+  <informaltable colsep="1" pgwide="0">
+    <tgroup align="left" cols="2">
+      <thead valign="middle">
+        <row valign="middle">
+          <entry align="left">INTERFACE</entry>
+          <entry align="left">HOST(S))</entry>
+        </row>
+      </thead>
+      <tbody>
+        <row valign="middle">
+          <entry align="left">
+            <literal>eth1</literal>
+          </entry>
+          <entry align="left"/>
+        </row>
+        <row valign="middle">
+          <entry align="left">
+            <literal>eth2</literal>
+          </entry>
+          <entry align="left">
+            <literal>10.10.10.0/24</literal>
+          </entry>
+        </row>
+      </tbody>
+    </tgroup>
+  </informaltable>
+</article>

@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article>
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>Network Mapping</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate>2004-05-28</pubdate>
+
+    <copyright>
+      <year>2004</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or mify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <section>
+    <title>Why use Network Mapping</title>
+
+    <para>Network Mapping is most often used to resolve IP address conflicts.
+    Suppose that two organizations, A and B, need to be linked and that both
+    organizations have allocated the 192.168.1.0/24 subnetwork. There is a
+    need to connect the two networks so that all systems in A can access the
+    192.168.1.0/24 network in B and vice versa without any re-addressing.</para>
+  </section>
+
+  <section>
+    <title>Solution</title>
+
+    <para>Shorewall NETMAP support is designed to supply a solution. The basic
+    situation is as shown in the following diagram.<graphic
+    fileref="images/netmap.png" /></para>
+
+    <para>While the link between the two firewalls is shown here as a VPN, it
+    could be any type of interconnection that allows routing of <ulink
+    url="shorewall_setup_guide.htm#RFC1918">RFC 1918</ulink> traffic.</para>
+
+    <para>The systems in the top cloud will access the 192.168.1.0/24 subnet
+    in the lower cloud using addresses in another unused /24. Similarly, the
+    systems in the bottom cloud will access the 192.168.1.0/24 subnet in the
+    upper cloud using a second unused /24.</para>
+
+    <para>In order to apply this solution:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>You must be running Shorewall 2.0.1 Beta 2 or later.</para>
+      </listitem>
+
+      <listitem>
+        <para>Your kernel must have NETMAP support. 2.6 Kernels have NETMAP
+        support without patching while 2.4 kernels must be patched using
+        Patch-O-Matic from <ulink url="http://www.netfilter.org">netfilter.org</ulink>.</para>
+      </listitem>
+
+      <listitem>
+        <para>NETMAP support must be enabled in your kernel
+        (CONFIG_IP_NF_TARGET_NETMAP=m or CONFIG_IP_NF_TARGET_NETMAP=y).</para>
+      </listitem>
+
+      <listitem>
+        <para>Your iptables must have NETMAP support. NETMAP support is
+        available in iptables 1.2.9 and later.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>Network mapping is defined using the <filename>/etc/shorewall/netmap</filename>
+    file. Columns in this file are:</para>
+
+    <variablelist>
+      <varlistentry>
+        <term>TYPE</term>
+
+        <listitem>
+          <para>Must be DNAT or SNAT.</para>
+
+          <para>If DNAT, traffic entering INTERFACE and addressed to NET1 has
+          it&#39;s destination address rewritten to the corresponding address
+          in NET2.</para>
+
+          <para>If SNAT, traffic leaving INTERFACE with a source address in
+          NET1 has it&#39;s source address rewritten to the corresponding
+          address in NET2.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>NET1</term>
+
+        <listitem>
+          <para>Must be expressed in CIDR format (e.g., 192.168.1.0/24).</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>INTERFACE</term>
+
+        <listitem>
+          <para>A firewall interface. This interface must have been defined in
+          <ulink url="Documentation.htm#Interfaces"><filename>/etc/shorewall/interfaces</filename></ulink>.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>NET2</term>
+
+        <listitem>
+          <para>A second network expressed in CIDR format.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+
+    <para>Referring to the figure above, lets suppose that systems in the top
+    cloud are going to access the 192.168.1.0/24 network in the bottom cloud
+    using addresses in 10.10.10.0/24 and that systems in the bottom could will
+    access 192.168.1.0/24 in the top could using addresses in 10.10.11.0.<important><para>You
+    must arrange for routing as follows:</para><itemizedlist><listitem><para>Traffic
+    from the top cloud to 10.10.10.0/24 must be routed to eth0 on firewall 1.</para></listitem><listitem><para>Firewall
+    1 must route traffic to 10.10.10.0/24 through firewall 2.</para></listitem><listitem><para>Traffic
+    from the bottom cloud to 10.10.11.0/24 must be routed to eth0 on firewall
+    2.</para></listitem><listitem><para>Firewall 2 must route traffic to
+    10.10.11.0/24 through firewall 1.</para></listitem></itemizedlist></important>
+    The entries in <filename><filename>/etc/shorewall/netmap</filename></filename>
+    in firewall1 would be as follows:</para>
+
+    <programlisting>#TYPE NET1           INTERFACE        NET2
+SNAT  192.168.1.0/24 vpn              10.10.11.0/24        #RULE 1A
+DNAT  10.10.11.0/24  vpn              192.168.1.0/24       #RULE 1B</programlisting>
+
+    <para>The entry in <filename>/etc/shorewall/netmap</filename> in firewall2
+    would be:</para>
+
+    <programlisting>#TYPE NET1           INTERFACE        NET2
+DNAT  10.10.10.0/24  vpn              192.168.1.0/24       #RULE 2A
+SNAT  192.168.1.0/24 vpn              10.10.10.0/24        #RULE 2B</programlisting>
+
+    <example>
+      <title>192.168.1.4 in the top cloud connects to 192.168.1.27 in the
+      bottom cloud</title>
+
+      <para>In order to make this connection, the client attempts a connection
+      to 10.10.10.27. The following table shows how the source and destination
+      IP addresses are modified as requests are sent and replies are returned.
+      The RULE column refers to the above <filename>/etc/shorewall/netmap</filename>
+      entries and gives the rule which transforms the source and destination
+      IP addresses to those shown on the next line.
+      <informaltable><tgroup cols="5"><thead><row><entry>FROM</entry><entry>TO</entry><entry>SOURCE
+      IP ADDRESS</entry><entry>DESTINATION IP ADDRESS</entry><entry>RULE</entry></row></thead><tbody><row><entry>192.168.1.4
+      in upper cloud</entry><entry>Firewall 1</entry><entry>192.168.1.4</entry><entry>10.10.10.27</entry><entry>1A</entry></row><row><entry>Firewall
+      1</entry><entry>Firewall 2</entry><entry>10.10.11.4</entry><entry>10.10.10.27</entry><entry>2A</entry></row><row><entry>Filrewall
+      2</entry><entry>192.168.1.27 in lower cloud</entry><entry>10.10.11.4</entry><entry>192.168.1.27</entry><entry></entry></row><row><entry>192.168.1.27
+      in the lower cloud</entry><entry>Firewall 2</entry><entry>192.168.1.27</entry><entry>10.10.11.4</entry><entry>2B</entry></row><row><entry>Firewall
+      2</entry><entry>Firewall 1</entry><entry>10.10.10.27</entry><entry>10.10.11.4</entry><entry>1B</entry></row><row><entry>Firewall
+      1</entry><entry>192.168.1.4 in upper cloud</entry><entry>10.10.10.27</entry><entry>192.168.1.4</entry><entry></entry></row></tbody></tgroup></informaltable></para>
+    </example>
+  </section>
+
+  <section>
+    <title>Author&#39;s Notes</title>
+
+    <para>This could all be made a bit simpler by eliminating the TYPE field
+    and have Shorewall generate both the SNAT and DNAT rules from a single
+    entry. I have chosen to include the TYPE in order to make the
+    implementation a bit more flexible. If you find cases where you can use an
+    SNAT or DNAT entry by itself, please let <ulink
+    url="mailto:webmaster@shorewall.net">me</ulink> know and I&#39;ll add the
+    example to this page.</para>
+
+    <para>In the previous section, the table in the example contains a bit of
+    a lie. Because of Netfilter&#39;s connection tracking, rules 2B and 1A
+    aren&#39;t needed to handle the replies. They ARE needed though for hosts
+    in the bottom cloud to be able to establish connections with the
+    192.168.1.0/24 network in the top cloud.</para>
+  </section>
+
+  <section>
+    <title>Can&#39;t I do this with one router? Why do I need two?</title>
+
+    <para>The single router would have to be able to route to two different
+    192.168.1.0/24 networks. In Netfilter parlance, that would mean that the
+    destination IP address would have to be rewritten after the packet had
+    been routed; Netfilter doesn&#39;t have that capability.</para>
+  </section>
+</article>

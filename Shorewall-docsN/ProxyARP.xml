@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article id="ProxyARP">
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>Proxy ARP</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate>2004-02-14</pubdate>
+
+    <copyright>
+      <year>2001-2004</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <para>Proxy ARP allows you to insert a firewall in front of a set of servers
+  without changing their IP addresses and without having to re-subnet. Before
+  you try to use this technique, I strongly recommend that you read the <ulink
+  url="shorewall_setup_guide.htm">Shorewall Setup Guide</ulink>.</para>
+
+  <section>
+    <title>Example</title>
+
+    <para>The following figure represents a Proxy ARP environment.</para>
+
+    <graphic fileref="images/proxyarp.png" />
+
+    <para>Proxy ARP can be used to make the systems with addresses
+    130.252.100.18 and 130.252.100.19 appear to be on the upper
+    (130.252.100.*) subnet. Assuming that the upper firewall interface is eth0
+    and the lower interface is eth1, this is accomplished using the following
+    entries in <filename>/etc/shorewall/proxyarp</filename>:</para>
+
+    <programlisting>#ADDRESS          INTERFACE   EXTERNAL  HAVEROUTE  PERSISTENT
+130.252.100.18    eth1        eth0      no         yes
+130.252.100.19    eth1        eth0      no         yes  </programlisting>
+
+    <para>Be sure that the internal systems (130.242.100.18 and 130.252.100.19
+    in the above example) are not included in any specification in
+    <filename>/etc/shorewall/masq</filename> or <filename>/etc/shorewall/nat</filename>.</para>
+
+    <note>
+      <para>I&#39;ve used an RFC1918 IP address for eth1 - that IP address is
+      largely irrelevant (see below).</para>
+    </note>
+
+    <para>The lower systems (130.252.100.18 and 130.252.100.19) should have
+    their subnet mask and default gateway configured exactly the same way that
+    the Firewall system&#39;s eth0 is configured. In other words, they should
+    be configured just like they would be if they were parallel to the
+    firewall rather than behind it.</para>
+
+    <warning>
+      <para>Do not add the Proxy ARP&#39;ed address(es) (130.252.100.18 and
+      130.252.100.19 in the above example) to the external interface (eth0 in
+      this example) of the firewall.</para>
+    </warning>
+
+    <para>While the address given to the firewall interface is largely
+    irrelevant, one approach you can take is to make that address the same as
+    the address of your external interface!</para>
+
+    <graphic align="center" fileref="images/proxyarp1.png" />
+
+    <para>It the diagram above, <filename class="devicefile">eth1</filename>
+    has been given the address 130.252.100.17, the same as
+    <filename>eth0</filename>. Note though that the VLSM is 32 so there is no
+    network associated with this address. This is the approach <ulink
+    url="myfiles.htm">that I take with my DMZ</ulink>.</para>
+
+    <warning>
+      <para>Your distribution&#39;s network configuration GUI may not be
+      capable of configuring a device in this way. It may complain about the
+      duplicate address or it may configure the address incorrectly. Here is
+      what the above configuration should look like when viewed using
+      <command>ip</command> (the part of the output that is in <emphasis
+      role="bold">bold text</emphasis> is relevant):</para>
+
+      <programlisting>gateway:~# <command>ip addr ls eth1</command>
+3: eth1: &#60;BROADCAST,MULTICAST,UP&#62; mtu 1500 qdisc pfifo_fast qlen 1000
+    link/ether 00:a0:cc:d1:db:12 brd ff:ff:ff:ff:ff:ff
+    <emphasis role="bold">inet 130.252.100.17/32 scope global eth1</emphasis>
+gateway:~#</programlisting>
+
+      <para>Note in particular that there is no broadcast address. <ulink
+      url="myfiles.htm#Interfaces">Here is how I configure a device in this
+      way under Debian</ulink>.</para>
+    </warning>
+  </section>
+
+  <section>
+    <title>ARP cache</title>
+
+    <para>A word of warning is in order here. ISPs typically configure their
+    routers with a long ARP cache timeout. If you move a system from parallel
+    to your firewall to behind your firewall with Proxy ARP, it will probably
+    be HOURS before that system can communicate with the internet. There are a
+    couple of things that you can try:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>A reading of <citetitle>TCP/IP Illustrated, Vol 1</citetitle> by
+        Stevens reveals<footnote><para>Courtesy of Bradey Honsinger</para></footnote>
+        that a <quote>gratuitous</quote> ARP packet should cause the ISP&#39;s
+        router to refresh their ARP cache (section 4.7). A gratuitous ARP is
+        simply a host requesting the MAC address for its own IP; in addition
+        to ensuring that the IP address isn&#39;t a duplicate...</para>
+
+        <blockquote>
+          <para>if the host sending the gratuitous ARP has just changed its
+          hardware address..., this packet causes any other host...that has an
+          entry in its cache for the old hardware address to update its ARP
+          cache entry accordingly.</para>
+        </blockquote>
+
+        <para>Which is, of course, exactly what you want to do when you switch
+        a host from being exposed to the Internet to behind Shorewall using
+        proxy ARP (or one-to-one NAT for that matter). Happily enough, recent
+        versions of Redhat&#39;s iputils package include <quote>arping</quote>,
+        whose <quote>-U</quote> flag does just that:</para>
+
+        <programlisting>arping -U -I &#60;<emphasis>net if</emphasis>&#62; &#60;<emphasis>newly proxied IP</emphasis>&#62;
+arping -U -I eth0 66.58.99.83             # for example</programlisting>
+
+        <para>Stevens goes on to mention that not all systems respond
+        correctly to gratuitous ARPs, but googling for <quote>arping -U</quote>
+        seems to support the idea that it works most of the time.</para>
+
+        <para>To use arping with Proxy ARP in the above example, you would
+        have to:</para>
+
+        <programlisting>shorewall clear
+ip addr add 130.252.100.18 dev eth0
+ip addr add 130.252.100.19 dev eth0
+arping -U -I eth0 130.252.100.18
+arping -U -I eth0 130.252.100.19
+ip addr del 130.252.100.18 dev eth0
+ip addr del 130.252.100.19 dev eth0
+shorewall start</programlisting>
+      </listitem>
+
+      <listitem>
+        <para>You can call your ISP and ask them to purge the stale ARP cache
+        entry but many either can&#39;t or won&#39;t purge individual entries.</para>
+      </listitem>
+    </orderedlist>
+
+    <para>You can determine if your ISP&#39;s gateway ARP cache is stale using
+    ping and tcpdump. Suppose that we suspect that the gateway router has a
+    stale ARP cache entry for 130.252.100.19. On the firewall, run tcpdump as
+    follows:</para>
+
+    <programlisting>tcpdump -nei eth0 icmp</programlisting>
+
+    <para>Now from 130.252.100.19, ping the ISP&#39;s gateway (which we will
+    assume is 130.252.100.254):</para>
+
+    <programlisting>ping 130.252.100.254</programlisting>
+
+    <para>We can now observe the tcpdump output:</para>
+
+    <programlisting>13:35:12.159321 0:4:e2:20:20:33 0:0:77:95:dd:19 ip 98: 130.252.100.19 &#62; 130.252.100.254: icmp: echo request (DF)
+13:35:12.207615 0:0:77:95:dd:19 0:c0:a8:50:b2:57 ip 98: 130.252.100.254 &#62; 130.252.100.177 : icmp: echo reply</programlisting>
+
+    <para>Notice that the source MAC address in the echo request is different
+    from the destination MAC address in the echo reply!! In this case
+    0:4:e2:20:20:33 was the MAC of the firewall&#39;s eth0 NIC while
+    0:c0:a8:50:b2:57 was the MAC address of the system on the lower left. In
+    other words, the gateway&#39;s ARP cache still associates 130.252.100.19
+    with the NIC in that system rather than with the firewall&#39;s eth0.</para>
+  </section>
+</article>

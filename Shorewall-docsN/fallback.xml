@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article>
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>Fallback and Uninstall</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate>2001-03-26</pubdate>
+
+    <copyright>
+      <year>2001</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <section>
+    <title>Falling Back to the Previous Version of Shorewall using the
+    Fallback Script</title>
+
+    <para>If you install Shorewall and discover that it doesn&#39;t work for
+    you, you can fall back to your previously installed version. To do that:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>cd to the distribution directory for the version of Seattle
+        Firewall that you are currently running (NOT the version that you want
+        to fall back to).</para>
+      </listitem>
+
+      <listitem>
+        <para>Type <quote>./fallback.sh</quote></para>
+      </listitem>
+    </itemizedlist>
+
+    <caution>
+      <para>The fallback script will replace /etc/shorewall/policy,
+      /etc/shorewall/rules, /etc/shorewall/interfaces, /etc/shorewall/nat,
+      /etc/shorewall/proxyarp and /etc/shorewall/masq with the version of
+      these files from before the current version was installed. Any changes
+      to any of these files will be lost.</para>
+    </caution>
+  </section>
+
+  <section>
+    <title>Falling Back to the Previous Version of Shorewall using rpm</title>
+
+    <para>If your previous version of Shorewall was installed using RPM, you
+    may fall back to that version by typing <quote>rpm -Uvh --force &#60;old
+    rpm&#62;</quote> at a root shell prompt (Example: <quote>rpm -Uvh --force
+    /downloads/shorewall-3.1=0noarch.rpm</quote> would fall back to the 3.1-0
+    version of Shorewall).</para>
+  </section>
+
+  <section>
+    <title>Uninstalling Shorewall</title>
+
+    <para>If you no longer wish to use Shorewall, you may remove it by:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>cd to the distribution directory for the version of Shorewall
+        that you have installed.</para>
+      </listitem>
+
+      <listitem>
+        <para>type <quote>./uninstall.sh</quote></para>
+      </listitem>
+    </itemizedlist>
+
+    <para>If you installed using an rpm, at a root shell prompt type
+    <quote>rpm -e shorewall</quote>.</para>
+  </section>
+</article>

@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article>
+  <!--$Id$-->
+
+  <title>Shorewall 1.4.9</title>
+
+  <section>
+    <title>Problems Corrected</title>
+
+    <para>These are the problems corrected since Shorewall 1.4.8</para>
+
+    <orderedlist>
+      <listitem>
+        <para>There has been a low continuing level of confusion over the
+        terms <quote>Source NAT</quote> (SNAT) and <quote>Static NAT</quote>.
+        To avoid future confusion, all instances of <quote>Static NAT</quote>
+        have been replaced with <quote>One-to-one NAT</quote> in the
+        documentation and configuration files.</para>
+      </listitem>
+
+      <listitem>
+        <para>The description of NEWNOTSYN in shorewall.conf has been reworded
+        for clarity.</para>
+      </listitem>
+
+      <listitem>
+        <para>Wild-card rules (those involving <quote>all</quote> as SOURCE or
+        DEST) will no longer produce an error if they attempt to add a rule
+        that would override a NONE policy. The logic for expanding these
+        wild-card rules now simply skips those (SOURCE,DEST) pairs that have a
+        NONE policy.</para>
+      </listitem>
+    </orderedlist>
+  </section>
+
+  <section>
+    <title>Migration Considerations</title>
+
+    <para>None.</para>
+  </section>
+
+  <section>
+    <title>New Features</title>
+
+    <para>These are the new features added since Shorewall 1.4.8</para>
+
+    <orderedlist>
+      <listitem>
+        <para>To cut down on the number of <quote>Why are these ports closed
+        rather than stealthed?</quote> questions, the SMB-related rules in
+        /etc/shorewall/common.def have been changed from <quote>reject</quote>
+        to <quote>DROP</quote>.</para>
+      </listitem>
+
+      <listitem>
+        <para>For easier identification, packets logged under the
+        <quote>norfc1918</quote> interface option are now logged out of chains
+        named <quote>rfc1918</quote>. Previously, such packets were logged
+        under chains named <quote>logdrop</quote>.</para>
+      </listitem>
+
+      <listitem>
+        <para>Distributors and developers seem to be regularly inventing new
+        naming conventions for kernel modules. To avoid the need to change
+        Shorewall code for each new convention, the MODULE_SUFFIX option has
+        been added to shorewall.conf. MODULE_SUFFIX may be set to the suffix
+        for module names in your particular distribution. If MODULE_SUFFIX is
+        not set in shorewall.conf, Shorewall will use the list <quote>o gz ko
+        o.gz</quote>. To see what suffix is used by your distribution:</para>
+
+        <programlisting>ls /lib/modules/$(uname -r)/kernel/net/ipv4/netfilter</programlisting>
+
+        <para>All of the files listed should have the same suffix (extension).
+        Set MODULE_SUFFIX to that suffix. Examples:</para>
+
+        <orderedlist>
+          <listitem>
+            <para>If all files end in <quote>.kzo</quote> then set
+            MODULE_SUFFIX=&#34;kzo&#34;</para>
+          </listitem>
+
+          <listitem>
+            <para>If all files end in <quote>.kz.o</quote> then set
+            MODULE_SUFFIX=&#34;kz.o&#34;</para>
+          </listitem>
+        </orderedlist>
+      </listitem>
+
+      <listitem>
+        <para>Support for user defined rule ACTIONS has been implemented
+        through two new files: <itemizedlist><listitem><para>/etc/shorewall/actions
+        - used to list the user-defined ACTIONS.</para></listitem><listitem><para>/etc/shorewall/action.template
+        - For each user defined &#60;action&#62;:</para><orderedlist><listitem><para>copy
+        this file to /etc/shorewall/action.&#60;action&#62;</para></listitem><listitem><para>Add
+        the appropriate rules in that file for the &#60;action&#62;.</para></listitem></orderedlist></listitem></itemizedlist>Once
+        an &#60;action&#62; has been defined, it may be used like any of the
+        builtin ACTIONS (ACCEPT, DROP, etc.) in /etc/shorewall/rules.</para>
+
+        <para>Example: You want an action that logs a packet at the
+        <quote>info</quote> level and accepts the connection.</para>
+
+        <para>In /etc/shorewall/actions, you would add:</para>
+
+        <simplelist>
+          <member>LogAndAccept</member>
+        </simplelist>
+
+        <para>You would then copy /etc/shorewall/action.template to
+        /etc/shorewall/action.LogAndAccept and in that file, you would add the
+        two rules:</para>
+
+        <simplelist>
+          <member>LOG:info</member>
+
+          <member>ACCEPT</member>
+        </simplelist>
+      </listitem>
+    </orderedlist>
+  </section>
+</article>

@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article id="IPIP">
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>Shorewall Support Guide</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate>2004-07-03</pubdate>
+
+    <copyright>
+      <year>2001-2004</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <section>
+    <title>Before Reporting a Problem or Asking a Question</title>
+
+    <para>There are a number of sources of Shorewall information. Please try
+    these before you post.</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>The two currently-supported Shorewall <ulink
+        url="ReleaseModel.html">major releases</ulink> are 1.4 and 2.0.</para>
+      </listitem>
+
+      <listitem>
+        <para>More than half of the questions posted on the support list have
+        answers directly accessible from the <ulink
+        url="Documentation_Index.html">Documentation Index</ulink></para>
+      </listitem>
+
+      <listitem>
+        <para>The <ulink url="FAQ.htm">FAQ</ulink> has solutions to more than
+        30 common problems.</para>
+      </listitem>
+
+      <listitem>
+        <para>The <ulink url="troubleshoot.htm">Troubleshooting Information</ulink>
+        contains a number of tips to help you solve common problems.</para>
+      </listitem>
+
+      <listitem>
+        <para>The <ulink url="errata.htm">Errata</ulink> has links to download
+        updated components.</para>
+      </listitem>
+
+      <listitem>
+        <para>The <ulink url="http://lists.shorewall.net/htdig/search.html">Site
+        and Mailing List Archives search facility</ulink> can locate documents
+        and posts about similar problems:</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Problem Reporting Guidelines</title>
+
+    <note>
+      <para>Shorewall versions earlier that 1.3.0 are no longer supported.</para>
+    </note>
+
+    <itemizedlist>
+      <listitem>
+        <para>Please remember we only know what is posted in your message. Do
+        not leave out any information that appears to be correct, or was
+        mentioned in a previous post. There have been countless posts by
+        people who were sure that some part of their configuration was correct
+        when it actually contained a small error. We tend to be skeptics where
+        detail is lacking.</para>
+      </listitem>
+
+      <listitem>
+        <para>Please keep in mind that you&#39;re asking for <emphasis
+        role="bold">free</emphasis> technical support. Any help we offer is an
+        act of generosity, not an obligation. Try to make it easy for us to
+        help you. Follow good, courteous practices in writing and formatting
+        your e-mail. Provide details that we need if you expect good answers.
+        Exact quoting of error messages, log entries, command output, and
+        other output is better than a paraphrase or summary.</para>
+      </listitem>
+
+      <listitem>
+        <para>Please don&#39;t describe your problem as <quote>Computer A
+        can&#39;t see Computer B</quote>. Of course it can&#39;t -- it
+        hasn&#39;t any eyes! If ping from A to B fails, say so (and see below
+        for information about reporting <quote>ping</quote> problems). If
+        Computer B doesn&#39;t show up in <quote>Network Neighborhood</quote>
+        then say so.</para>
+      </listitem>
+
+      <listitem>
+        <para>Please give details about what doesn&#39;t work. Reports that
+        say <quote>I followed the directions and it didn&#39;t work</quote>
+        will elicit sympathy but probably little in the way of help. Again --
+        if ping from A to B fails, say so (and see below for information about
+        reporting <quote>ping</quote> problems). If Computer B doesn&#39;t
+        show up in <quote>Network Neighborhood</quote> then say so. If access
+        by IP address works but by DNS names it doesn&#39;t then say so.</para>
+      </listitem>
+
+      <listitem>
+        <para>Please don&#39;t describe your environment and then ask us to
+        send you custom configuration files. We&#39;re here to answer your
+        questions but we can&#39;t do your job for you.</para>
+      </listitem>
+
+      <listitem>
+        <para>Please do NOT include the output of <command>iptables -L</command>
+        — the output of <emphasis role="bold">shorewall show</emphasis> or
+        <command>shorewall status</command> is much more useful.</para>
+      </listitem>
+
+      <listitem>
+        <para>When reporting a problem, <emphasis role="bold">ALWAYS</emphasis>
+        include this information:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>the exact version of Shorewall you are running.</para>
+
+            <programlisting><command>shorewall version</command></programlisting>
+          </listitem>
+
+          <listitem>
+            <para>the complete, exact output of</para>
+
+            <programlisting><command>ip addr show</command></programlisting>
+          </listitem>
+
+          <listitem>
+            <para>the complete, exact output of</para>
+
+            <programlisting><command>ip route show</command></programlisting>
+          </listitem>
+
+          <listitem>
+            <para><emphasis role="bold">THIS IS IMPORTANT!</emphasis> If your
+            problem is that some type of connection to/from or through your
+            firewall isn&#39;t working then please perform the following four
+            steps:</para>
+
+            <orderedlist>
+              <listitem>
+                <para>If Shorewall isn&#39;t started then <command>/sbin/shorewall/start</command>.
+                Otherwise <command>/sbin/shorewall reset</command>.</para>
+              </listitem>
+
+              <listitem>
+                <para>Try making the connection that is failing.</para>
+              </listitem>
+
+              <listitem>
+                <para><command>/sbin/shorewall status &#62; /tmp/status.txt</command></para>
+              </listitem>
+
+              <listitem>
+                <para>Post the <filename>/tmp/status.txt</filename> file as an
+                attachment (you may compress it if you like).</para>
+              </listitem>
+            </orderedlist>
+          </listitem>
+
+          <listitem>
+            <para>the exact wording of any ping failure responses</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis role="bold">If you installed Shorewall using one
+            of the QuickStart Guides, please indicate which one</emphasis>.</para>
+          </listitem>
+        </itemizedlist>
+      </listitem>
+
+      <listitem>
+        <para>As a general matter, <emphasis role="bold">please do not edit
+        the diagnostic information</emphasis> in an attempt to conceal your IP
+        address, netmask, nameserver addresses, domain name, etc. These
+        aren&#39;t secrets, and concealing them often misleads us (and 80% of
+        the time, a hacker could derive them anyway from information contained
+        in the SMTP headers of your post).</para>
+      </listitem>
+
+      <listitem>
+        <para>Do you see any <quote>Shorewall</quote> messages (<quote><command>/sbin/shorewall
+        show log</command></quote>) when you exercise the function that is
+        giving you problems? If so, include the message(s) in your post along
+        with a copy of your /etc/shorewall/interfaces file.</para>
+      </listitem>
+
+      <listitem>
+        <para>Please include any of the Shorewall configuration files
+        (especially the /etc/shorewall/hosts file if you have modified that
+        file) that you think are relevant. If you include
+        /etc/shorewall/rules, please include /etc/shorewall/policy as well
+        (rules are meaningless unless one also knows the policies).</para>
+      </listitem>
+
+      <listitem>
+        <para>If an error occurs when you try to <quote><command>shorewall
+        start</command></quote>, include a trace (See the <ulink
+        url="troubleshoot.htm">Troubleshooting section</ulink> for
+        instructions).</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">The list server limits posts to 120kb so
+        don&#39;t post graphics of your network layout, etc. to the Mailing
+        List -- your post will be rejected</emphasis>.</para>
+      </listitem>
+
+      <listitem>
+        <para>The author gratefully acknowleges that the above list was
+        heavily plagiarized from the excellent LEAF document by
+        <emphasis>Ray Olszewski</emphasis> found at <ulink
+        url="http://leaf-project.org/pub/doc/docmanager/docid_1891.html">http://leaf-project.org/pub/doc/docmanager/docid_1891.html</ulink>.</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>When using the mailing list, please post in plain text</title>
+
+    <para>A growing number of MTAs serving list subscribers are rejecting all
+    HTML traffic. At least one MTA has gone so far as to blacklist
+    shorewall.net <quote>for continuous abuse</quote> because it has been my
+    policy to allow HTML in list posts!!</para>
+
+    <para>I think that blocking all HTML is a Draconian way to control spam
+    and that the ultimate losers here are not the spammers but the list
+    subscribers whose MTAs are bouncing all shorewall.net mail. As one list
+    subscriber wrote to me privately <quote>These e-mail admin&#39;s need to
+    get a (expletive deleted) life instead of trying to rid the planet of HTML
+    based e-mail</quote>. Nevertheless, to allow subscribers to receive list
+    posts as must as possible, I have now configured the list server at
+    shorewall.net to convert all HTML to plain text. These converted posts are
+    difficult to read so all of us will appreciate it if you just post in
+    plain text to begin with.</para>
+  </section>
+
+  <section>
+    <title>Where to Send your Problem Report or to Ask for Help</title>
+
+    <para><emphasis role="bold">If you run the current development release</emphasis>
+    (see the <ulink url="ReleaseModel.html">Shorewall Release Model page</ulink>)
+    -- please post your question or problem to the <ulink
+    url="mailto:shorewall-devel@lists.shorewall.net">Shorewall Development
+    Mailing List</ulink>.</para>
+
+    <para><emphasis role="bold">If you run Shorewall under Bering </emphasis>--
+    please post your question or problem to <ulink
+    url="mailto:leaf-user@lists.sourceforge.net">the LEAF Users mailing list</ulink>.</para>
+
+    <para><emphasis role="bold">If you run Shorewall under MandrakeSoft Multi
+    Network Firewall (MNF) and you have not purchased an MNF license from
+    MandrakeSoft then you can post non MNF-specific Shorewall questions to the
+    <ulink url="mailto:shorewall-users@lists.shorewall.net">Shorewall users
+    mailing list</ulink>. Do not expect to get free MNF support on the list</emphasis>.</para>
+
+    <para>Otherwise, please post your question or problem to the <ulink
+    url="mailto:shorewall-users@lists.shorewall.net">Shorewall users mailing
+    list</ulink>. <emphasis role="bold">IMPORTANT</emphasis>: If you are not
+    subscribed to the list, please say so -- otherwise, you will not be
+    included in any replies.</para>
+  </section>
+
+  <section>
+    <title>Subscribing to the Users Mailing List</title>
+
+    <para>To Subscribe to the mailing list go to <ulink
+    url="https://lists.shorewall.net/mailman/listinfo/shorewall-users">https://lists.shorewall.net/mailman/listinfo/shorewall-users</ulink>.</para>
+  </section>
+
+  <section>
+    <title>Other Mailing Lists</title>
+
+    <para>For information on other Shorewall mailing lists, go to <ulink
+    url="http://lists.shorewall.net">http://lists.shorewall.net</ulink> .</para>
+  </section>
+
+  <appendix>
+    <title>Revision History</title>
+
+    <para><revhistory><revision><revnumber>1.6</revnumber><date>2003-07-03</date><authorinitials>TE</authorinitials><revremark>New
+    Release Model</revremark></revision><revision><revnumber>1.5</revnumber><date>2003-05-16</date><authorinitials>TE</authorinitials><revremark>Add
+    link to the troubleshooting section</revremark></revision><revision><revnumber>1.4</revnumber><date>2003-03-15</date><authorinitials>TE</authorinitials><revremark>Remove
+    Newbies Mailing List.</revremark></revision><revision><revnumber>1.3</revnumber><date>2003-02-19</date><authorinitials>TE</authorinitials><revremark>Admonish
+    against including &#34;iptables -L&#34; output.</revremark></revision><revision><revnumber>1.2</revnumber><date>2003-01-01</date><authorinitials>TE</authorinitials><revremark>Removed
+    .GIF and moved note about unsupported releases. Move Revision History to
+    this Appendix.</revremark></revision><revision><revnumber>1.1</revnumber><date>2003-12-19</date><authorinitials>TE</authorinitials><revremark>Corrected
+    URL for Newbies List</revremark></revision></revhistory></para>
+  </appendix>
+</article>

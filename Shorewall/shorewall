@@ -259,7 +259,8 @@ packet_log() # $1 = number of messages
     [ -n "$realtail" ] && options="-n$1"
 
     grep 'Shorewall:\|ipt_unclean' $LOGFILE | \
-	 sed s/" $host kernel: Shorewall:"/" "/ | \
+	 sed s/" kernel:"// | \
+	 sed s/" $host Shorewall:"/" "/ | \
 	 sed s/" $host kernel: ipt_unclean: "/" "/ | \
 	 sed 's/MAC=.*SRC=/SRC=/' | \
 	 tail $options

@@ -213,7 +213,7 @@ mktempfile() {
 		mktemp -p $1 shorewall.XXXXXX
 		;;
 	    None)
-		mkdir $1/shorewall-$$ && echo $1/shorewall-$$
+		> $1/shorewall-$$ && echo $1/shorewall-$$
 		;;
 	    *)
 		echo "   ERROR:Internal error in mktempfile"
@@ -247,14 +247,14 @@ mktempdir() {
     [ -z "$MKTEMP" ] && find_mktemp   
      
     case "$MKTEMP" in
-	BSD)
-	    mktemp -d /tmp/shorewall.XXXXXX
-	    ;;
 	STD)
 	    mktemp -td shorewall.XXXXXX
 	    ;;
-	None)
-	    mkdir /tmp/shorewall-$$ && echo /tmp/shorewall-$$
+	None|BSD)
+	    #
+	    # Not all versions of the BSD mktemp support the -d option under Linux
+	    #
+	    mkdir /tmp/shorewall-$$ && chmod 700 /tmp/shorewall-$$ && echo /tmp/shorewall-$$
 	    ;;
 	*)
 	    echo "   ERROR:Internal error in mktempdir"

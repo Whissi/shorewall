@@ -1,6 +1,13 @@
 This is a minor release of Shorewall.
 
-Problems Corrected:
+Problems Corrected since version 1.4.6:
+
+1) Corrected problem in 1.4.6 where the MANGLE_ENABLED variable was
+   being tested before it was set.
+
+2) Corrected handling of MAC addresses in the SOURCE column of the
+   tcrules file. Previously, these addresses resulted in an invalid
+   iptables command.
 
 None.
 
@@ -8,7 +15,11 @@ Migration Issues:
 
 1) Once you have installed this version of Shorewall, you must 
    restart Shorewall before you may use the 'drop', 'reject', 'allow'
-   or 'save' commands. 
+   or 'save' commands.
+
+2) To maintain strict compatibility with previous versions, current
+   uses of "shorewall drop" and "shorewall reject" should be replaced
+   with "shorewall dropall" and "shorewall rejectall". 
 
 New Features:
 
@@ -16,3 +27,8 @@ New Features:
    defined in /etc/shorewall/interfaces. The 'drop' and 'reject'
    commands use the routing table to determine which of these chains is
    to be used for blacklisting the specified IP address(es).
+
+   Two new commands ('dropall' and 'rejectall') have been introduced
+   that do what 'drop' and 'reject' used to do; namely, when an address
+   is blacklisted using these new commands, it will be blacklisted on
+   all of your firewall's interfaces.

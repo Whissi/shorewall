@@ -535,14 +535,14 @@ load_all_interfaces() {
 #
 save_dynamic_blacklist() {
 
-    [ -d /var/lib/shorewall ] || mkdir /var/lib/shorewall
+    [ -d /var/lib/shorewall ] || mkdir -p /var/lib/shorewall
 
     load_all_interfaces
 
-    > /var/lib/shorewall/save
+    > /var/lib/shorewall/savedyn
 
     for interface in $all_interfaces; do
-	if ! iptables -L `dynamic_chain $interface` >> /var/lib/shorewall/save; then
+	if ! iptables -L `dynamic_chain $interface` >> /var/lib/shorewall/savedyn; then
 	    echo "Error Saving the Dynamic Rules"
 	    return
 	fi

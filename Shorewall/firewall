@@ -996,9 +996,9 @@ stop_firewall() {
     delete_proxy_arp
     [ -n "$CLEAR_TC" ] && delete_tc
 
-    setpolicy INPUT DROP
-    setpolicy OUTPUT DROP
-    setpolicy FORWARD DROP
+    for chain in INPUT OUTPUT FORWARD; do
+	setpolicy $chain DROP
+    done
 
     deleteallchains
 
@@ -1564,7 +1564,7 @@ process_tc_rule()
 		    r="-s $source "
 		    ;;
 		~*)
-		    r=`mac_match $source`
+		    r="`mac_match $source` "
 		    ;;
 		$FW)
 		    chain=tcout
@@ -3463,22 +3463,36 @@ initialize_netfilter () {
 
     echo $all_interfaces > $STATEDIR/interfaces
 
-    if [ -f /var/lib/shorewall/save ]; then
+    if [ -f /var/lib/shorewall/save -o -f /var/lib/shorewall/savedyn ]; then
 	echo "Restoring dynamic rules..."
+	
+	if [ -f /var/lib/shorewall/savedyn ]; then
+	    while read target ignore1 ignore2 address rest; do
+		case $target in
+		    DROP|reject)
+			chains=`dynamic_chains_by_address $address`
+		    
+			for chain in ${chains:-dynamic}; do
+			    run_iptables2 -I $chain -s $address -j $target
+			done
+			;;
+		    *)
+			;;
+		esac
+	    done < /var/lib/shorewall/savedyn
+	fi
 
-	while read target ignore1 ignore2 address rest; do
-	    case $target in
-	    DROP|reject)
-		chains=`dynamic_chains_by_address $address`
-
-		for chain in ${chains:-dynamic}; do
-		    run_iptables2 -I $chain -s $address -j $target
-		done
-		;;
-	    *)
-		;;
-	esac
-	done < /var/lib/shorewall/save
+	if [ -f /var/lib/shorewall/save ]; then
+	    while read target ignore1 ignore2 address rest; do
+		case $target in
+		    DROP|reject)
+			run_iptables2 -A dynamic -s $address -j $target
+			;;
+		    *)
+			;;
+		esac
+	    done < /var/lib/shorewall/save
+	fi
     fi
 
     echo "Creating Interface Chains..."

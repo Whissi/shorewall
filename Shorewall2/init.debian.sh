@@ -36,7 +36,7 @@ not_configured () {
 	then
 		echo ""
 		echo "please configure it and then edit /etc/default/shorewall"
-		echo "and set the \"startup\"	variable to 1 in order to allow "
+		echo "and set the \"startup\" variable to 1 in order to allow "
 		echo "shorewall to start"
 	fi
 	echo "#################"

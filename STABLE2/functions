@@ -52,9 +52,9 @@ qt()
 #
 # Perform variable substitution on the passed argument and echo the result
 #
-expand() # $1 = contents of variable which may be the name of another variable
+expand() # $@ = contents of variable which may be the name of another variable
 {
-    eval echo \"$1\"
+    eval echo \"$@\"
 }
 
 #
@@ -104,7 +104,8 @@ ensure_config_path() {
 #
 # Find a File -- For relative file name, look first in $SHOREWALL_DIR then in /etc/shorewall
 #
-find_file()
+find_file
+()
 {
     local saveifs= directory
 
@@ -434,7 +435,7 @@ read_file() # $1 = file name, $2 = nest count
 	while read first rest; do
 	    if [ "x$first"  = "xINCLUDE" ]; then
 		if [ $2 -lt 4 ]; then
-		    read_file $(find_file ${rest%#*}) $(($2 + 1))
+		    read_file $(find_file $(expand ${rest%#*})) $(($2 + 1))
 		else
 		    echo "   WARNING: INCLUDE in $1 ignored (nested too deeply)" >&2
 		fi
@@ -452,7 +453,7 @@ read_file() # $1 = file name, $2 = nest count
 # Function for including one file into another
 #
 INCLUDE() {
-    . $(find_file $@)
+    . $(find_file $(expand $@))
 }
 
 #

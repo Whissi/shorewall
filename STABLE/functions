@@ -308,6 +308,33 @@ ip_range() {
     done
 }
 
+ip_range_explicit() {
+    local first last
+
+    case $1 in 
+    [0-9]*.*.*.*-*.*.*.*)
+	;;
+    *)
+	echo $1
+	return
+	;;
+    esac
+
+    first=`decodeaddr ${1%-*}`
+    last=`decodeaddr ${1#*-}`
+
+    if [ $first -gt $last ]; then
+	fatal_error "Invalid IP address range: $1"
+    fi
+
+    l=$(( $last + 1 ))
+
+    while [ $first -le $last ]; do
+	echo `encodeaddr $first`
+	first=$(($first + 1))
+    done
+}
+
 #
 # Netmask from CIDR
 #

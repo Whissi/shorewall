@@ -3002,15 +3002,17 @@ setup_masq()
 	esac
 
 	if [ -n "$address" -a -n "$ADD_SNAT_ALIASES" ]; then
-	    for addr in `ip_range $address` ; do
-		if ! list_search $addr $aliases_to_add; then
-		    aliases_to_add="$aliases_to_add $addr $fullinterface"
-		    case $fullinterface in
-		    *:*)
-			fullinterface=${fullinterface%:*}:$((${fullinterface#*:} + 1 ))
-			;;
-		    esac
-		fi
+	    for addr in `separate_list $address`; do
+		for addr1 in `ip_range_explicit $addr` ; do
+		    if ! list_search $addr1 $aliases_to_add; then
+			aliases_to_add="$aliases_to_add $addr1 $fullinterface"
+			case $fullinterface in
+			    *:*)
+				fullinterface=${fullinterface%:*}:$((${fullinterface#*:} + 1 ))
+				;;
+			esac
+		    fi
+		done
 	    done
 	fi
 

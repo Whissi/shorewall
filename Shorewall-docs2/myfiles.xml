@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-02-06</pubdate>
+    <pubdate>2005-02-08</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -250,7 +250,7 @@ loc     $INT_IF         detect          dhcp
 dmz     $DMZ_IF         -
 -       texas           -
 vpn     tun+            -
-Wifi    $WIFI_IF        -               maclist
+Wifi    $WIFI_IF        -               maclist,dhcp
 #LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
       </blockquote>
     </section>
@@ -496,6 +496,12 @@ DROP            loc:!192.168.0.0/22             net
 # SQUID
 #
 REDIRECT        loc                             3128                    tcp     80
+##########################################################################################################################################################################
+#####
+# Secure zone to Internet
+#
+# SQUID
+#
 REDIRECT        sec                             3128                    tcp     80
 ##########################################################################################################################################################################
 #####
@@ -999,7 +1005,7 @@ ACCEPT          net                     fw      tcp     4000:4100
 
       <blockquote>
         <programlisting>dev tun
-remote ursa.shorewall.net
+remote gateway.shorewall.net
 up /etc/openvpn/home.up
  
 tls-client

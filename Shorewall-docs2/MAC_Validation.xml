@@ -15,10 +15,10 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-04-05</pubdate>
+    <pubdate>2005-02-08</pubdate>
 
     <copyright>
-      <year>2001-2004</year>
+      <year>2001-2005</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -29,13 +29,15 @@
       1.2 or any later version published by the Free Software Foundation; with
       no Invariant Sections, with no Front-Cover, and with no Back-Cover
       Texts. A copy of the license is included in the section entitled
-      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
 
   <para>All traffic from an interface or from a subnet on an interface can be
   verified to originate from a defined set of MAC addresses. Furthermore, each
-  MAC address may be optionally associated with one or more IP addresses.</para>
+  MAC address may be optionally associated with one or more IP
+  addresses.</para>
 
   <important>
     <para><emphasis role="bold">MAC addresses are only visible within an
@@ -49,6 +51,11 @@
     (CONFIG_IP_NF_MATCH_MAC - module name ipt_mac.o).</emphasis></para>
   </important>
 
+  <important>
+    <para><emphasis role="bold">MAC verification is only applied to new
+    incoming connection requests. </emphasis></para>
+  </important>
+
   <section>
     <title>Components</title>
 
@@ -57,16 +64,17 @@
     <orderedlist>
       <listitem>
         <para>The <emphasis role="bold">maclist</emphasis> interface option in
-        <ulink url="Documentation.htm#Interfaces">/etc/shorewall/interfaces</ulink>.
-        When this option is specified, all traffic arriving on the interface
-        is subjet to MAC verification.</para>
+        <ulink
+        url="Documentation.htm#Interfaces">/etc/shorewall/interfaces</ulink>.
+        When this option is specified, all new connection requests arriving on
+        the interface are subject to MAC verification.</para>
       </listitem>
 
       <listitem>
         <para>The <emphasis role="bold">maclist</emphasis> option in <ulink
         url="Documentation.htm#Hosts">/etc/shorewall/hosts</ulink>. When this
-        option is specified for a subnet, all traffic from that subnet is
-        subject to MAC verification.</para>
+        option is specified for a subnet, all new connection requests from
+        that subnet are subject to MAC verification.</para>
       </listitem>
 
       <listitem>
@@ -83,8 +91,8 @@
         and determines the disposition of connection requests that fail MAC
         verification. The MACLIST_LOG_LEVEL variable gives the syslogd level
         at which connection requests that fail verification are to be logged.
-        If set the the empty value (e.g., MACLIST_LOG_LEVEL=&#34;&#34;) then
-        failing connection requests are not logged.</para>
+        If set the the empty value (e.g., MACLIST_LOG_LEVEL="") then failing
+        connection requests are not logged.</para>
       </listitem>
     </orderedlist>
   </section>
@@ -99,7 +107,8 @@
         <term>INTERFACE</term>
 
         <listitem>
-          <para>The name of an ethernet interface on the Shorewall system.</para>
+          <para>The name of an ethernet interface on the Shorewall
+          system.</para>
         </listitem>
       </varlistentry>
 
@@ -109,7 +118,8 @@
         <listitem>
           <para>The MAC address of a device on the ethernet segment connected
           by INTERFACE. It is not necessary to use the Shorewall MAC format in
-          this column although you may use that format if you so choose.</para>
+          this column although you may use that format if you so
+          choose.</para>
         </listitem>
       </varlistentry>
 
@@ -155,11 +165,13 @@ eth3                    00:0b:cd:C4:cc:97       192.168.3.8                 #TIP
 
       <para>As shown above, I use MAC Verification on my wireless zone.</para>
 
-      <para><note><para>While marketed as a wireless bridge, the WET11 behaves
-      like a wireless router with DHCP relay. When forwarding DHCP traffic, it
-      uses the MAC address of the host (TIPPER) but for other forwarded
-      traffic it uses it&#39;s own MAC address. Consequently, I list the IP
-      addresses of both devices in /etc/shorewall/maclist.</para></note></para>
+      <para><note>
+          <para>While marketed as a wireless bridge, the WET11 behaves like a
+          wireless router with DHCP relay. When forwarding DHCP traffic, it
+          uses the MAC address of the host (TIPPER) but for other forwarded
+          traffic it uses it's own MAC address. Consequently, I list the IP
+          addresses of both devices in /etc/shorewall/maclist.</para>
+        </note></para>
     </example>
 
     <example>
@@ -176,9 +188,9 @@ eth3                    00:0b:cd:C4:cc:97       192.168.3.8                 #TIP
       <para>This entry accomodates traffic from the router itself
       (192.168.3.253) and from the second wireless segment (192.168.4.0/24).
       Remember that all traffic being sent to my firewall from the
-      192.168.4.0/24 segment will be forwarded by the router so that
-      traffic&#39;s MAC address will be that of the router (00:06:43:45:C6:15)
-      and not that of the host sending the traffic.</para>
+      192.168.4.0/24 segment will be forwarded by the router so that traffic's
+      MAC address will be that of the router (00:06:43:45:C6:15) and not that
+      of the host sending the traffic.</para>
     </example>
   </section>
 </article>

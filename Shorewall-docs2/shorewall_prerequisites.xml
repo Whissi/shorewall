@@ -13,10 +13,10 @@
       <surname>Eastep</surname>
     </author>
 
-    <pubdate>2004-05-31</pubdate>
+    <pubdate>2005-02-07</pubdate>
 
     <copyright>
-      <year>2001-2004</year>
+      <year>2001-2005</year>
 
       <holder>Thomas M Eastep</holder>
     </copyright>
@@ -27,7 +27,8 @@
       1.2 or any later version published by the Free Software Foundation; with
       no Invariant Sections, with no Front-Cover, and with no Back-Cover
       Texts. A copy of the license is included in the section entitled
-      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
 
@@ -36,25 +37,15 @@
 
     <itemizedlist>
       <listitem>
-        <para>A kernel that supports netfilter. I&#39;ve tested with 2.4.2 -
-        2.6.6. With current releases of Shorewall, Traffic Shaping/Control
+        <para>A kernel that supports netfilter. I've tested with 2.4.2 -
+        2.6.10. With current releases of Shorewall, Traffic Shaping/Control
         requires at least 2.4.18. Check <ulink url="kernel.htm">here</ulink>
-        for kernel configuration information. If you are looking for a
-        firewall for use with 2.2 kernels, see <ulink
-        url="http://seawall.sourceforge.net">the Seattle Firewall site</ulink>.</para>
+        for kernel configuration information.</para>
       </listitem>
 
       <listitem>
-        <para>iptables 1.2 or later but beware version 1.2.3 -- see the <ulink
-        url="errata.htm">Errata</ulink>.</para>
-
-        <warning>
-          <para>The buggy iptables version 1.2.3 is included in RedHat 7.2 and
-          you should upgrade to iptables 1.2.4 prior to installing Shorewall.
-          Version 1.2.4 is available <ulink
-          url="http://www.redhat.com/support/errata/RHSA-2001-144.html">from
-          RedHat</ulink> and in the <ulink url="errata.htm">Shorewall Errata</ulink>.</para>
-        </warning>
+        <para>iptables 1.2 or later (but I recommend at least version
+        1.2.9)</para>
       </listitem>
 
       <listitem>
@@ -66,17 +57,26 @@
 
       <listitem>
         <para>A Bourne shell or derivative such as bash or ash. This shell
-        must have correct support for variable expansion formats ${<emphasis>variable%pattern</emphasis>},
-        ${<emphasis>variable%%pattern</emphasis>}, ${<emphasis>variable#pattern</emphasis>}
-        and ${<emphasis>variable##pattern</emphasis>}.</para>
+        must have correct support for variable expansion formats
+        ${<emphasis>variable%pattern</emphasis>},
+        ${<emphasis>variable%%pattern</emphasis>},
+        ${<emphasis>variable#pattern</emphasis>} and
+        ${<emphasis>variable##pattern</emphasis>}.</para>
       </listitem>
 
       <listitem>
         <para>Your shell must produce a sensible result when a number n (128
-        &#60;= n &#60;= 255) is left shifted by 24 bits. You can check this at
-        a shell prompt by:<itemizedlist><listitem><para>echo $((128 &#60;&#60;
-        24))</para></listitem><listitem><para>The result must be either
-        2147483648 or -2147483648.</para></listitem></itemizedlist></para>
+        &lt;= n &lt;= 255) is left shifted by 24 bits. You can check this at a
+        shell prompt by:<itemizedlist>
+            <listitem>
+              <para>echo $((128 &lt;&lt; 24))</para>
+            </listitem>
+
+            <listitem>
+              <para>The result must be either 2147483648 or
+              -2147483648.</para>
+            </listitem>
+          </itemizedlist></para>
       </listitem>
 
       <listitem>

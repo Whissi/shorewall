@@ -43,7 +43,11 @@ from the internet and from the DMZ and in       some cases, from each other.</li
  network hosts.</p>
  <p>While zones are normally disjoint (no two zones have a host in common), 
  there are cases where nested or overlapping zone definitions are appropriate.</p>
- <p>Packets entering the firewall first pass through the <i>mangle </i>table's 
+ <p>For a general picture of how packets traverse a Netfilter firewall, see
+ <a href="http://www.netfilter.org/documentation/tutorials/blueflux/iptables-tutorial.html#TRAVERSINGOFTABLES">
+ http://www.netfilter.org/documentation/tutorials/blueflux/iptables-tutorial.html#TRAVERSINGOFTABLES.</a><br>
+ <br>
+ Packets entering the firewall first pass through the <i>mangle </i>table's 
  PREROUTING chain (you can see the mangle table by typing &quot;shorewall show 
  mangle&quot;). If the packet entered through an interface that has the <b>norfc1918</b> 
  option, then the packet is sent down the <b>man1918</b>&nbsp; which will drop 
@@ -55,10 +59,25 @@ from the internet and from the DMZ and in       some cases, from each other.</li
  control.</p>
  <p>Next, if the packet isn't part of an established connection, it passes 
  through the<i> nat</i> table's PREROUTING chain (you can see the nat table by 
- typing &quot;shorewall show nat&quot;). </p>
+ typing &quot;shorewall show nat&quot;). If you are doing both static nat and 
+ port forwarding, the order in which chains are traversed is dependent on the 
+ setting of NAT_BEFORE_RULES in shorewall.conf. If NAT_BEFORE_RULES is on then 
+ packets will ender a chain called <i>interface_</i>in where <i>interface</i> is 
+ the name of the interface on which the packet entered. Here it's destination IP 
+ is compared to each of the <i>EXTERNAL</i> IP addresses from /etc/shorewall/nat 
+ that correspond to this interface; if there is a match, DNAT is applied and the 
+ packet header is modified to the IP in the <i>INTERNAL</i> column of the nat 
+ file record. If the destination address doesn't match any of the rules in the
+ <i>interface_</i>in chain then the packet enters a chain called <i>sourcezone</i>_dnat 
+ where <i>sourcezone</i> is the source zone of the packet. There it is compared 
+ for a match against each of the DNAT records in the rules file that specify <i>
+ sourcezone </i>as the source zone. If a match is found, the destination IP 
+ address (and possibly the destination port) is modified based on the rule 
+ matched. If NAT_BEFORE_RULES is off, then the order of traversal of the <i>
+ interface_</i>in and <i>sourcezone</i>_dnat is reversed.</p>
       <p>
- Traffic entering the 
- firewall is sent to an<i> input </i>chain. If the traffic is destined for the 
+ Traffic is next sent to an<i> input </i>chain in the mail Netfilter table 
+ (called 'filter'). If the traffic is destined for the 
  firewall itself, the name of the input chain is formed by appending &quot;_in&quot; to 
  the interface name. So traffic on eth0 destined for the firewall will enter a 
  chain called <i>eth0_in</i>. The input chain for traffic that will be routed to 
@@ -151,6 +170,6 @@ its own separate connection from   the firewall to zone B.</p>
 zone and you are having problems connecting from a local client to an   internet 
 server, <font color="#ff6633"><b><u> adding a rule won't help</u></b></font>
     (see point 3 above).</p>
-<p><font size="2">Last modified 7/26/2002 - <a href="support.htm">Tom
+<p><font size="2">Last modified 8/22/2002 - <a href="support.htm">Tom
 Eastep</a></font><p><font face="Trebuchet MS"><a href="copyright.htm">
 <font size="2">Copyright</font> © <font size="2">2001, 2002 Thomas M. Eastep.</font></a></font></body></html>

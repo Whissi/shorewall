@@ -2800,7 +2800,7 @@ add_a_rule()
 		fatal_error "Only DNAT and REDIRECT rules may specify destination mapping; rule \"$rule\""
 	    fi
 
-	    if [ -z "$dnat_only" -a $chain != ${FW}2${FW} ]; then
+	    if [ -z "$dnat_only" ]; then
 		if [ -n "$serv" ]; then
 		    for serv1 in $(separate_list $serv); do
 			for srv in $(ip_range $serv1); do
@@ -3793,10 +3793,10 @@ setup_masq()
 		;;
 	esac
 
+	addrlist=
 	if [ -n "$addresses" ]; then
-	    temp=
 	    for address in $(separate_list $addresses); do
-		temp="$temp --to-source $address"
+		addrlist="$addrlist --to-source $address"
 	    done
 	fi
 
@@ -3804,7 +3804,7 @@ setup_masq()
 	    for s in $subnet; do
 		if [ -n "$addresses" ]; then
 		    for destnet in $(separate_list $destnets); do
-			addnatrule $chain -s $s -d $destnet -j SNAT $temp
+			addnatrule $chain -s $s -d $destnet -j SNAT $addrlist
 		    done
 		    echo "   To $destination from $s through ${interface} using $addresses"
 		else
@@ -3814,9 +3814,9 @@ setup_masq()
 		    echo "   To $destination from $s through ${interface}"
 		fi
 	    done
-	elif [ -n "$address" ]; then
+	elif [ -n "$addresses" ]; then
 	    for destnet in $(separate_list $destnets); do
-		addnatrule $chain -d $destnet -j SNAT $temp
+		addnatrule $chain -d $destnet -j SNAT $addrlist
 	    done
 	    echo "   To $destination from $source through ${interface} using $addresses"
 	else

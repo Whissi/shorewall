@@ -135,8 +135,13 @@ Issues when migrating from Shorewall to Shorewall2:
 
       Mirrors         #Accept traffic from Shorewall Mirrors
 
-      Drop:DROP
-      Reject:REJECT
+      MyDrop:DROP
+      MyReject:REJECT
+
+   At any rate, if you have an existing /etc/shorewall/actions file,
+   then you MUST either add "INCLUDE /etc/shorewall/actions.std" to
+   that file or you must include the definitions similar to mine above
+   in your /etc/shorewall/actions file.
 
 5) The /etc/shorewall2 directory no longer contains a 'users' file or a
    'usersets' file. Similar functionality is now available using
@@ -150,14 +155,14 @@ Issues when migrating from Shorewall to Shorewall2:
    The last column in /etc/shorewall2/rules is now labeled USER/GROUP
    and may contain:
 
-       [!]<user id>[:]
+       [!]<user number>[:]
        [!]<user name>[:]
-       [!]:<group id>
        [!]:<group number>
-       [!]<user id>:<group id>
-       [!]<user number>:<group id>
-       [!]<user id>:<group number>
+       [!]:<group name>
        [!]<user number>:<group number>
+       [!]<user number>:<group name>
+       [!]<user name>:<group number>
+       [!]<user name>:<group name>
 
 6) It is no longer possible to specify rate limiting in the ACTION
    column of /etc/shorewall2/rules -- you must use the RATE LIMIT

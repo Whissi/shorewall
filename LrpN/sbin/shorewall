@@ -609,7 +609,7 @@ usage() # $1 = exit status
     echo "   restart [ <directory> ]"
     echo "   restore [ <file name> ]"
     echo "   save [ <file name> ]"
-    echo "   show [<chain> [ <chain> ... ]|classifiers|connections|log|nat|tc|tos]"
+    echo "   show [<chain> [ <chain> ... ]|classifiers|connections|log|nat|tc|tos|zones]"
     echo "   start [ <directory> ]"
     echo "   stop"
     echo "   status"
@@ -913,6 +913,24 @@ case "$1" in
 	    echo
 	    show_classifiers
 	    ;;
+	zones)
+	    [ $# -gt 2 ] && usage 1
+	    [ -z "${STATEDIR}" ] && STATEDIR=/var/state/shorewall
+	    if [ -f $STATEDIR/zones ]; then
+		echo "Shorewall-$version Zones at $HOSTNAME - $(date)"
+		echo
+		while read zone hosts; do
+		    echo $zone
+		    for host in $hosts; do
+			echo "   $host"
+		    done
+		done < $STATEDIR/zones
+		echo
+	    else
+		echo "   ERROR: $STATEDIR/zones does not exist" >&2
+		exit 1
+	    fi
+	    ;;
 	*)
 	    shift
 	    
@@ -964,6 +982,10 @@ case "$1" in
 	echo "IP Configuration"
 	echo
 	ip addr ls
+	echo
+	echo "IP Stats"
+	echo
+	ip -stat link ls
 	
 	if qt which brctl; then
 	    echo
@@ -1143,7 +1165,9 @@ case "$1" in
 				cp -f /var/lib/shorewall/restore-base /var/lib/shorewall/restore-$$
 				if iptables-save | iptablesbug >> /var/lib/shorewall/restore-$$ ; then
 				    echo __EOF__ >> /var/lib/shorewall/restore-$$
-				    mv -f /var/lib/shorewall/restore-$$ $RESTOREPATH
+				    [ -f /var/lib/shorewall/restore-tail ] && \
+					cat /var/lib/shorewall/restore-tail >> /var/lib/shorewall/restore-$$
+				    mv -f /var/lib/shorewall/restore-$$ $RESTOREPATH 
 				    chmod +x $RESTOREPATH
 				    echo "   Currently-running Configuration Saved to $RESTOREPATH"
 				else

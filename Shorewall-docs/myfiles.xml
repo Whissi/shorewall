@@ -157,7 +157,7 @@ ROUTE_FILTER=No
 NAT_BEFORE_RULES=No
 DETECT_DNAT_IPADDRS=Yes
 MUTEX_TIMEOUT=60
-NEWNOTSYN=No
+NEWNOTSYN=Yes
 BLACKLIST_DISPOSITION=DROP
 MACLIST_DISPOSITION=REJECT
 TCP_FLAGS_DISPOSITION=DROP
@@ -199,9 +199,9 @@ tx      Texas           Peer Network in Dallas
 
         <programlisting>#ZONE   INERFACE        BROADCAST       OPTIONS
 net     eth0            206.124.146.255 dhcp,norfc1918,routefilter,blacklist,tcpflags
-loc     eth2            192.168.1.255   dhcp,newnotsyn
-dmz     eth1            192.168.2.255   newnotsyn
-WiFi    eth3            192.168.3.255   dhcp,maclist,newnotsyn
+loc     eth2            192.168.1.255   dhcp
+dmz     eth1            192.168.2.255
+WiFi    eth3            192.168.3.255   dhcp,maclist
 -       texas           192.168.9.255
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
       </blockquote>
@@ -590,27 +590,6 @@ gre                     net     $TEXAS
       <title>Tcstart File</title>
 
       <para>My tcstart file is just the HTB version of WonderShaper.</para>
-    </section>
-
-    <section>
-      <title>Newnotsyn file (/etc/shorewall/newnotsyn):</title>
-
-      <blockquote>
-        <para>I prefer to allow FIN and RST packets unconditionally rather
-        than just on <quote>newnotsyn</quote> interfaces as is the case with
-        the standard Shorewall ruleset. This file deletes the
-        Shorewall-generated rules for these packets and creates my own.</para>
-
-        <programlisting>#!/bin/sh
- 
-for interface in `find_interfaces_by_option newnotsyn`; do
-    run_iptables -D newnotsyn -i $interface -p tcp --tcp-flags RST RST -j ACCEPT
-    run_iptables -D newnotsyn -i $interface -p tcp --tcp-flags FIN FIN -j ACCEPT
-done
-
-run_iptables -A newnotsyn -p tcp --tcp-flags RST RST -j ACCEPT
-run_iptables -A newnotsyn -p tcp --tcp-flags FIN FIN -j ACCEPT</programlisting>
-      </blockquote>
     </section>
 
     <section>

@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2003-12-28</pubdate>
+    <pubdate>2003-12-29</pubdate>
 
     <copyright>
       <year>2001-2003</year>
@@ -39,11 +39,13 @@
     <para>If you have a permanent internet connection such as DSL or Cable, I
     recommend that you start the firewall automatically at boot. Once you have
     installed <quote>firewall</quote> in your init.d directory, simply type
-    <quote><command>chkconfig --add firewall</command></quote>. This will
-    start the firewall in run levels 2-5 and stop it in run levels 1 and 6. If
-    you want to configure your firewall differently from this default, you can
-    use the <quote>--level</quote> option in chkconfig (see <quote>man
-    chkconfig</quote>) or using your favorite graphical run-level editor.</para>
+    <quote><command>chkconfig --add shorewall</command></quote> (<quote><command>insserv
+    -d shorewall</command></quote> if your distribution uses insserv to
+    install startup scripts). This will start the firewall in run levels 2-5
+    and stop it in run levels 1 and 6. If you want to configure your firewall
+    differently from this default, you can use the <quote>--level</quote>
+    option in chkconfig (see <quote>man chkconfig</quote>) or using your
+    favorite graphical run-level editor.</para>
 
     <caution>
       <itemizedlist>
@@ -120,11 +122,11 @@
       </listitem>
 
       <listitem>
-        <para><command>shorewall show chain1 [ chain2 ... ]</command> -
-        produce a verbose report about the listed chains (iptables -L chain -n
-        -v) Note: You may only list one chain in the show command when running
-        Shorewall version 1.4.6 and earlier. Version 1.4.7 and later allow you
-        to list multiple chains in one command.</para>
+        <para><command>shorewall show &#60;chain1&#62; [ &#60;chain2&#62; ...
+        ]</command> - produce a verbose report about the listed chains
+        (iptables -L chain -n -v) Note: You may only list one chain in the
+        show command when running Shorewall version 1.4.6 and earlier. Version
+        1.4.7 and later allow you to list multiple chains in one command.</para>
       </listitem>
 
       <listitem>
@@ -153,9 +155,11 @@
       </listitem>
 
       <listitem>
-        <para><command>shorewall monitor [ delay ]</command> - Continuously
-        display the firewall status, last 20 log entries and nat. When the log
-        entry display changes, an audible alarm is sounded.</para>
+        <para><command>shorewall monitor [ &#60;delay&#62; ]</command> -
+        Continuously display the firewall status, last 20 log entries and nat.
+        When the log entry display changes, an audible alarm is sounded. The
+        <emphasis>&#60;delay&#62;</emphasis> indicates the number of seconds
+        between updates with the default being 10 seconds.</para>
       </listitem>
 
       <listitem>
@@ -183,10 +187,11 @@
 
       <listitem>
         <para><command>shorewall try &#60;<errortype>configuration-directory</errortype>&#62;
-        [ timeout ]</command> - Restart shorewall using the specified
-        configuration and if an error occurs or if the timeout option is given
-        and the new configuration has been up for that many seconds then
-        shorewall is restarted using the standard configuration.</para>
+        [ &#60;timeout&#62; ]</command> - Restart shorewall using the
+        specified configuration and if an error occurs or if the
+        <emphasis>&#60;timeout&#62;</emphasis> option is given and the new
+        configuration has been up for that many seconds then shorewall is
+        restarted using the standard configuration.</para>
       </listitem>
 
       <listitem>
@@ -210,7 +215,7 @@
       <listitem>
         <para><command>shorewall iprange &#60;address1&#62;-&#60;address2&#62;</command>
         - Decomposes the specified range of IP addresses into the equivalent
-        list of network/host addresses.</para>
+        list of network/host addresses</para>
       </listitem>
     </itemizedlist>
 
@@ -267,21 +272,25 @@
      <command>shorewall delete ipsec0:192.0.2.24 vpn1</command> -- deletes the address 192.0.2.24 from interface ipsec0 from zone vpn1</programlisting></para>
       </listitem>
     </itemizedlist>
+  </section>
 
-    <para>The shorewall start, shorewall restart, shorewall check, and
-    shorewall try commands allow you to specify which Shorewall configuration
-    to use:</para>
+  <section>
+    <title>Alternate Configurations</title>
+
+    <para>The <command>shorewall start</command>, <command>shorewall restart</command>,
+    <command>shorewall check</command>, and <command>shorewall try </command>commands
+    allow you to specify which Shorewall configuration to use:</para>
 
     <programlisting>     <command>shorewall [ -c &#60;configuration-directory&#62; ] {start|restart|check}</command>
      <command>shorewall try &#60;configuration-directory&#62;</command></programlisting>
 
-    <para>If a <emphasis>configuration-directory</emphasis> is specified, each
-    time that Shorewall is going to use a file in /etc/shorewall it will first
-    look in the<emphasis> configuration-directory</emphasis> . If the file is
-    present in the <emphasis>configuration-directory,</emphasis> that file
-    will be used; otherwise, the file in /etc/shorewall will be used. When
-    changing the configuration of a production firewall, I recommend the
-    following:</para>
+    <para>If a <emphasis>&#60;configuration-directory</emphasis>&#62; is
+    specified, each time that Shorewall is going to use a file in
+    /etc/shorewall it will first look in the<emphasis>
+    &#60;configuration-directory&#62;</emphasis> . If the file is present in
+    the <emphasis>&#60;configuration-directory&#62;,</emphasis> that file will
+    be used; otherwise, the file in /etc/shorewall will be used. When changing
+    the configuration of a production firewall, I recommend the following:</para>
 
     <itemizedlist>
       <listitem>
@@ -298,7 +307,7 @@
       </listitem>
 
       <listitem>
-        <para><command>shorewall -c . check</command></para>
+        <para><command>shorewall -c ./ check</command></para>
       </listitem>
 
       <listitem>
@@ -330,6 +339,10 @@
         <para><command>rm -rf /etc/test</command></para>
       </listitem>
     </itemizedlist>
+  </section>
+
+  <section>
+    <title>Shorewall State Diagram</title>
 
     <para>The Shorewall State Diargram is depicted below.<graphic
     align="center" fileref="images/State_Diagram.png" /></para>

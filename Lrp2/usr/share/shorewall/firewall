@@ -464,6 +464,11 @@ mac_chain() # $1 = interface
    echo $(chain_base $1)_mac
 }
 
+macrecent_target() # $1 - interface
+{
+    [ -n "$MACLIST_TTL" ] && echo $(chain_base $1)_rec || echo RETURN
+}
+
 #
 # Functions for creating dynamic zone rules
 #
@@ -1095,7 +1100,7 @@ validate_policy()
 	esac
 
 	case $policy in
-	ACCEPT|REJECT|DROP|CONTINUE)
+	ACCEPT|REJECT|DROP|CONTINUE|QUEUE)
 	    ;;
 	NONE)
 	    [ "$client" = "$FW" -o "$server" = "$FW" ] && \
@@ -1391,6 +1396,58 @@ disable_ipv6_1() {
 }
 
 #
+# Process the routestopped file either adding or deleting rules
+#
+
+process_routestopped() # $1 = command
+{
+    local hosts= interface host host1 options networks
+
+    while read interface host options; do
+	expandv interface host options
+	[ "x$host" = "x-" -o -z "$host" ] && host=0.0.0.0/0
+	for h in $(separate_list $host); do
+	    hosts="$hosts $interface:$h"
+	done
+
+	routeback=
+
+	if [ -n "$options" ]; then
+	    for option in $(separate_list $options); do
+		case $option in
+		    routeback)
+			if [ -n "$routeback" ]; then
+			    error_message "Warning: Duplicate routestopped option ignored: routeback"
+			else
+			    routeback=Yes
+			    for h in $(separate_list $host); do
+				run_iptables $1 FORWARD -i $interface -o $interface $(both_ip_ranges $h $h) -j ACCEPT
+			    done
+			fi
+			;;
+		    *)
+			error_message "Warning: Unknown routestopped option ignored: $option"
+			;;
+		esac
+	    done
+	fi
+		    
+    done < $TMP_DIR/routestopped
+
+    for host in $hosts; do
+	interface=${host%:*}
+	networks=${host#*:}
+	$IPTABLES $1 INPUT  -i $interface $(source_ip_range $networks) -j ACCEPT
+	[ -z "$ADMINISABSENTMINDED" ] && \
+	    run_iptables $1 OUTPUT -o $interface $(dest_ip_range $networks) -j ACCEPT
+
+	for host1 in $hosts; do
+	    [ "$host" != "$host1" ] && run_iptables $1 FORWARD -i $interface -o ${host1%:*} $(both_ip_ranges $networks ${host1#*:}) -j ACCEPT
+	done
+    done
+}
+
+#
 # Stop the Firewall
 #
 stop_firewall() {
@@ -1465,50 +1522,9 @@ stop_firewall() {
 
     hosts=
 
-    strip_file routestopped
+    [ -f $TMP_DIR/routestopped ] || strip_file routestopped
 
-    while read interface host options; do
-	expandv interface host options
-	[ "x$host" = "x-" -o -z "$host" ] && host=0.0.0.0/0
-	for h in $(separate_list $host); do
-	    hosts="$hosts $interface:$h"
-	done
-
-	routeback=
-
-	if [ -n "$options" ]; then
-	    for option in $(separate_list $options); do
-		case $option in
-		    routeback)
-			if [ -n "$routeback" ]; then
-			    error_message "Warning: Duplicate option ignored: routeback"
-			else
-			    routeback=Yes
-			    for h in $(separate_list $host); do
-				$IPTABLES -A FORWARD -i $interface -o $interface $(both_ip_ranges $h $h) -j ACCEPT
-			    done
-			fi
-			;;
-		    *)
-			error_message "Warning: Unknown option ignored: $option"
-			;;
-		esac
-	    done
-	fi
-		    
-    done < $TMP_DIR/routestopped
-
-    for host in $hosts; do
-	interface=${host%:*}
-	networks=${host#*:}
-	$IPTABLES -A INPUT  -i $interface $(source_ip_range $networks) -j ACCEPT
-	[ -z "$ADMINISABSENTMINDED" ] && \
-	    $IPTABLES -A OUTPUT -o $interface $(dest_ip_range $networks) -j ACCEPT
-
-	for host1 in $hosts; do
-	    [ "$host" != "$host1" ] && $IPTABLES -A FORWARD -i $interface -o ${host1%:*} $(both_ip_ranges $networks ${host1#*:}) -j ACCEPT
-	done
-    done
+    process_routestopped -A
 
     $IPTABLES -A INPUT  -i lo -j ACCEPT
     [ -z "$ADMINISABSENTMINDED" ] && \
@@ -1989,6 +2005,7 @@ setup_mac_lists() {
     local addresses
     local address
     local chain
+    local chain1
     local macpart
     local blob
     local hosts
@@ -2013,10 +2030,19 @@ setup_mac_lists() {
 
     progress_message "Setting up MAC Verification on $maclist_interfaces..."
     #
-    # Be sure that they are all ethernet interfaces
+    # Create chains.
     #
     for interface in $maclist_interfaces; do
-	createchain $(mac_chain $interface) no
+	chain=$(mac_chain $interface)
+	createchain $chain no
+	
+	if [ -n "$MACLIST_TTL" ]; then
+	    chain1=$(macrecent_target $interface)
+	    createchain $chain1 no
+	    run_iptables -A $chain  -m recent --rcheck --seconds $MACLIST_TTL --name $chain -j $chain1
+	    run_iptables -A $chain1 -m recent --update                        --name $chain -j ACCEPT
+	    run_iptables -A $chain1 -m recent --set                           --name $chain -j ACCEPT
+	fi
     done
     #
     # Process the maclist file producing the verification rules
@@ -2036,6 +2062,7 @@ setup_mac_lists() {
 	fi
 
 	chain=$(mac_chain $interface)
+	chain1=$(macrecent_target $interface)
 
 	if ! havechain $chain ; then
 	    fatal_error "No hosts on $interface have the maclist option specified"
@@ -2044,10 +2071,10 @@ setup_mac_lists() {
 	macpart=$(mac_match $mac)
 
 	if [ -z "$addresses" ]; then
-	    run_iptables -A $chain $macpart $physdev_part -j RETURN
+	    run_iptables -A $chain $macpart $physdev_part -j $chain1
 	else
 	    for address in $(separate_list $addresses) ; do
-		run_iptables2 -A $chain $macpart -s $address $physdev_part -j RETURN
+		run_iptables2 -A $chain $macpart -s $address $physdev_part -j $chain1
 	    done
 	fi
     done < $TMP_DIR/maclist
@@ -2057,6 +2084,7 @@ setup_mac_lists() {
     #
     for interface in $maclist_interfaces; do
 	chain=$(mac_chain $interface)
+	chain1=$(macrecent_target $interface)
 
 	blob=$(ip link show $interface 2> /dev/null)
 
@@ -2065,11 +2093,11 @@ setup_mac_lists() {
 
 	ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet //; s/brd //; s/scope.*//;' | while read address broadcast; do
 	    if [ -n "$broadcast" ]; then
-		run_iptables -A $chain -s ${address%/*} -d $broadcast -j RETURN
+		run_iptables -A $chain -s ${address%/*} -d $broadcast -j $chain1
 	    fi
 
-	    run_iptables -A $chain -s $address -d 255.255.255.255 -j RETURN
-	    run_iptables -A $chain -s $address -d 224.0.0.0/4     -j RETURN
+	    run_iptables -A $chain -s $address -d 255.255.255.255 -j $chain1
+	    run_iptables -A $chain -s $address -d 224.0.0.0/4     -j $chain1
 	done
 
 	if [ -n "$MACLIST_LOG_LEVEL" ]; then
@@ -3462,14 +3490,14 @@ process_actions1() {
 		    [ ${#temp} -le 30 ] || fatal_error "Action Name Longer than 30 Characters: $temp"
 		    xaction=${xaction%:*}
 		    case $temp in
-			ACCEPT|REJECT|DROP)
+			ACCEPT|REJECT|DROP|QUEUE)
 			    eval ${temp}_common=$xaction
 			    if [ -n "$xaction" ] && ! list_search $xaction $USEDACTIONS; then
 				USEDACTIONS="$USEDACTIONS $xaction"
 			    fi
 			    ;;
 			*)
-			    startup_error "Common Actions are only allowed for ACCEPT, DROP and REJECT"
+			    startup_error "Common Actions are only allowed for ACCEPT, DROP, REJECT and QUEUE"
 			    ;;
 		    esac
 	    esac
@@ -4778,6 +4806,9 @@ policy_rules() # $1 = chain to add rules to
 	    [ -n "$REJECT_common" ] && run_iptables -A $1 -j $REJECT_common    
 	    target=reject
 	    ;;
+	QUEUE)
+	    [ -n "$QUEUE_common" ] && run_iptables -A $1 -j $QUEUE_common    
+	    ;;
 	CONTINUE)
 	    target=
 	    ;;
@@ -4843,7 +4874,7 @@ default_policy() # $1 = client $2 = server
 	    # depends on the policy
 	    #
 	    case $policy in
-	    ACCEPT)
+	    ACCEPT|QUEUE)
 		if [ -n "$synparams" ]; then
 		    #
 		    # To avoid double-counting SYN packets, enforce the policy
@@ -5589,6 +5620,7 @@ determine_capabilities() {
     POLICY_MATCH=
     PHYSDEV_MATCH=
     IPRANGE_MATCH=
+    RECENT_MATCH=
 
     qt $IPTABLES -N fooX1234
     qt $IPTABLES -A fooX1234 -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT             && CONNTRACK_MATCH=Yes
@@ -5597,7 +5629,7 @@ determine_capabilities() {
     qt $IPTABLES -A fooX1234 -m policy --pol ipsec --dir in -j ACCEPT                   && POLICY_MATCH=Yes
     qt $IPTABLES -A fooX1234 -m physdev --physdev-in eth0 -j ACCEPT                     && PHYSDEV_MATCH=Yes
     qt $IPTABLES -A fooX1234 -m iprange --src-range 192.168.1.5-192.168.1.124 -j ACCEPT && IPRANGE_MATCH=Yes
-
+    qt $IPTABLES -A fooX1234 -m recent --update -j ACCEPT                               && RECENT_MATCH=Yes
 
     if [ -n "$PKTTYPE" ]; then
 	qt $IPTABLES -A fooX1234 -m pkttype --pkt-type broadcast -j ACCEPT || PKTTYPE=
@@ -5627,6 +5659,7 @@ report_capabilities() {
     report_capability "Policy Match" $POLICY_MATCH
     report_capability "Physdev Match" $PHYSDEV_MATCH
     report_capability "IP range Match" $IPRANGE_MATCH
+    report_capability "Recent Match" $RECENT_MATCH
 }
 
 #
@@ -5678,7 +5711,7 @@ initialize_netfilter () {
     run_user_exit init
 
     #
-    # The some files might be large so strip them while the firewall is still running
+    # Some files might be large so strip them while the firewall is still running
     # (restart command). This reduces the length of time that the firewall isn't
     # accepting new connections.
     #
@@ -5721,6 +5754,16 @@ initialize_netfilter () {
     setcontinue INPUT
     setcontinue OUTPUT
 
+    run_user_exit continue
+
+    f=$(find_file routestopped)
+
+    echo "Processing $f ..."
+
+    strip_file routestopped $f
+
+    process_routestopped -A
+
     [ -n "$DISABLE_IPV6" ] && disable_ipv6
 
     #
@@ -5728,10 +5771,6 @@ initialize_netfilter () {
     #
     run_iptables -A INPUT  -i lo -j ACCEPT
     run_iptables -A OUTPUT -o lo -j ACCEPT
-
-    accounting_file=$(find_file accounting)
-
-    [ -f $accounting_file ] && setup_accounting $accounting_file
 
     #
     # Allow DNS lookups during startup for FQDNs
@@ -5755,6 +5794,10 @@ initialize_netfilter () {
 
 	run_iptables -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS $option
     fi
+
+    accounting_file=$(find_file accounting)
+
+    [ -f $accounting_file ] && setup_accounting $accounting_file
 
     if [ -z "$NEWNOTSYN" ]; then
 	createchain newnotsyn no
@@ -6332,7 +6375,7 @@ activate_rules()
 	shift
 
 	if havenatchain $destchain ; then
-	    run_iptables -t nat -A $sourcechain $@ -j $destchain
+	    run_iptables2 -t nat -A $sourcechain $@ -j $destchain
 	else
 	    [ -n "$BRIDGING" -a -f $TMP_DIR/physdev ]      && -rm -f $TMP_DIR/physdev
 	    [ -n "$IPRANGE_MATCH" -a -f $TMP_DIR/iprange ] && rm -f $TMP_DIR/iprange
@@ -6350,7 +6393,7 @@ activate_rules()
 	shift
 
 	if havenatchain $destchain; then
-	    eval run_iptables -t nat -I $sourcechain \
+	    eval run_iptables2 -t nat -I $sourcechain \
 		\$${sourcechain}_rule $@ -j $destchain
 	    eval ${sourcechain}_rule=\$\(\(\$${sourcechain}_rule + 1\)\)
 	else 
@@ -6358,7 +6401,7 @@ activate_rules()
 	    [ -n "$IPRANGE_MATCH" -a -f $TMP_DIR/iprange ] && rm -f $TMP_DIR/iprange
 
 	fi
-    }
+    }    
 
     #
     # Add jumps to early SNAT chains
@@ -6410,7 +6453,7 @@ activate_rules()
 		    interface=${host%%:*}
 		    networks=${host#*:}
 		    
-		    run_iptables -A $(forward_chain $interface) $(match_source_hosts $networks) $(match_ipsec_in $zone $host) -j $frwd_chain
+		    run_iptables2 -A $(forward_chain $interface) $(match_source_hosts $networks) $(match_ipsec_in $zone $host) -j $frwd_chain
 		done
 	    fi
 	fi
@@ -6439,7 +6482,7 @@ activate_rules()
 	    interface=${host%%:*}
 	    networks=${host#*:}
 
-	    run_iptables -A OUTPUT -o $interface $(match_dest_hosts $networks) $(match_ipsec_out $zone $host) -j $chain1
+	    run_iptables2 -A OUTPUT -o $interface $(match_dest_hosts $networks) $(match_ipsec_out $zone $host) -j $chain1
 
 	    #
 	    # Add jumps from the builtin chains for DNAT and SNAT rules
@@ -6447,10 +6490,10 @@ activate_rules()
 	    addrulejump PREROUTING  $(dnat_chain $zone) -i $interface $(match_source_hosts $networks) $(match_ipsec_in $zone $host)
 	    addrulejump POSTROUTING $(snat_chain $zone) -o $interface $(match_dest_hosts $networks) $(match_ipsec_out $zone $host)
 
-	    run_iptables -A $(input_chain $interface) $(match_source_hosts $networks) $(match_ipsec_in $zone $host) -j $chain2
+	    run_iptables2 -A $(input_chain $interface) $(match_source_hosts $networks) $(match_ipsec_in $zone $host) -j $chain2
 
 	    if [ -n "$complex" ] && ! is_ipsec_host $zone $host ; then
-                run_iptables -A $(forward_chain $interface) $(match_source_hosts $networks) $(match_ipsec_in $zone $host) -j $frwd_chain
+                run_iptables2 -A $(forward_chain $interface) $(match_source_hosts $networks) $(match_ipsec_in $zone $host) -j $frwd_chain
 	    fi
 
 	    case $networks in
@@ -6515,7 +6558,7 @@ activate_rules()
 		    # routeback was specified for this host group
 		    #
 		    if [ $zone != $zone1 -o $num_ifaces -gt 1 ] || list_search $host1 $routeback ; then
-			run_iptables -A $frwd_chain -o $interface1 $(match_dest_hosts $networks1) $(match_ipsec_out $zone1 $host1) -j $chain			
+			run_iptables2 -A $frwd_chain -o $interface1 $(match_dest_hosts $networks1) $(match_ipsec_out $zone1 $host1) -j $chain			
 		    fi
 		done
 	    else
@@ -6530,7 +6573,7 @@ activate_rules()
 			networks1=${host1#*:}
 
 			if [ "$host" != "$host1" ] || list_search $host $routeback; then
-			    run_iptables -A $chain1 $(match_source_hosts $networks) -o $interface1 $(match_dest_hosts $networks1) $(match_ipsec_out $zone1 $host1) -j $chain
+			    run_iptables2 -A $chain1 $(match_source_hosts $networks) -o $interface1 $(match_dest_hosts $networks1) $(match_ipsec_out $zone1 $host1) -j $chain
 			fi
 		    done
 		done
@@ -6577,7 +6620,9 @@ activate_rules()
 	run_iptables -D $chain -m state --state ESTABLISHED,RELATED -j ACCEPT
 	run_iptables -D $chain -p udp --dport 53 -j ACCEPT
     done
-    
+ 
+    process_routestopped -D
+
     if [ -n "$LOGALLNEW" ]; then
 	for table in mangle nat filter; do
 	    case $table in
@@ -7240,6 +7285,7 @@ do_initialize() {
     LOGALLNEW=
     DROPINVALID=
     RFC1918_STRICT=
+    MACLIST_TTL=
 
     RESTOREBASE=
     TMP_DIR=
@@ -7436,6 +7482,12 @@ do_initialize() {
     LOGTAGONLY=$(added_param_value_no LOGTAGONLY $LOGTAGONLY)
     DROPINVALID=$(added_param_value_yes DROPINVALID $DROPINVALID)
     RFC1918_STRICT=$(added_param_value_no RFC1918_STRICT $RFC1918_STRICT)
+
+    [ "$MACLIST_TTL" = "0" ] && MACLIST_TTL=
+
+    if [ -n "$MACLIST_TTL" -a -z "$RECENT_MATCH" ]; then
+	startup_error "MACLIST_TTL requires the Recent Match capability which is not present in your Kernel and/or iptables"
+    fi
     #
     # Strip the files that we use often
     #

@@ -2571,21 +2571,21 @@ add_an_action()
 	    for serv1 in $(separate_list $serv); do
 		for srv in $(ip_range $serv1); do
 		    if [ -n "$loglevel" ]; then
-			log_rule_limit $loglevel $action $action $logtarget "$ratelimit" "$logtag" $userandgroup \
+			log_rule_limit $loglevel $chain $action $logtarget "$ratelimit" "$logtag" $userandgroup \
 			    $(fix_bang $proto $sports $multiport $cli -d $srv $dports)
 		    fi
 		    
-		    run_iptables2 -A $action $proto $multiport $cli $sports \
+		    run_iptables2 -A $chain $proto $multiport $cli $sports \
 			-d $srv $dports $ratelimit $userandgroup -j $target
 		done
 	    done
 	else
 	    if [ -n "$loglevel" ]; then
-		log_rule_limit $loglevel $action $action $logtarget "$ratelimit" "$logtag" $userandgroup \
+		log_rule_limit $loglevel $chain $action $logtarget "$ratelimit" "$logtag" $userandgroup \
 		    $(fix_bang $proto $sports $multiport $cli $dest_interface $dports)
 	    fi
 		    
-	    run_iptables2 -A $action $proto $multiport $cli $dest_interface $sports \
+	    run_iptables2 -A $chain $proto $multiport $cli $dest_interface $sports \
 		$dports $ratelimit $userandgroup -j $target
 	fi
     fi
@@ -2594,25 +2594,27 @@ add_an_action()
 #
 # Process a record from an action file for the 'start', 'restart' or 'check' commands
 #
-process_action() # $1 = action
-                 # $2 = target
-                 # $3 = clients
-                 # $4 = servers
-                 # $5 = protocol
-                 # $6 = ports
-                 # $7 = cports
-                 # $8 = ratelimit
-                 # $9 = userspec
+process_action() # $1 = chain
+                 # $2 = action
+                 # $3 = target
+                 # $4 = clients
+                 # $5 = servers
+                 # $6 = protocol
+                 # $7 = ports
+                 # $8 = cports
+                 # $9 = ratelimit
+                 # $10 = userspec
 {
-    local action="$1"
-    local target="$2"
-    local clients="$3"
-    local servers="$4"
-    local protocol="$5"
-    local ports="$6"
-    local cports="$7"
-    local ratelimit="$8"
-    local userspec="$9"
+    local chain="$1"
+    local action="$2"
+    local target="$3"
+    local clients="$4"
+    local servers="$5"
+    local protocol="$6"
+    local ports="$7"
+    local cports="$8"
+    local ratelimit="$9"
+    local userspec="${10}"
     local userandgroup=
     local logtag=
 
@@ -2758,21 +2760,33 @@ process_action() # $1 = action
 # set CHAIN to the name of the iptables chain where rules are to be added.
 # Similarly, LEVEL and TAG contain the log level and log tag respectively.
 #
+# For each <action>, we maintain two variables:
+#
+#    <action>_actchain - The action chain number.
+#    <action>_chains   - List of ( level[:tag] , chainname ) pairs 
+#
 
 createlogactionchain() # $1 = Action Name, $2 = Log Level [: Log Tag ]
 {
-    local actchain= action=$1 level=$2
+    local actchain= action=$1 level=$2 
 
     eval actchain=\${${action}_actchain-1}
 
     case ${#action} in
-	11)
-	    CHAIN=$(echo $action | cut -b -10)${actchain}
+	10|11)
+	    CHAIN=$(echo $action | cut -b -9)
 	    ;;
 	*)
-	    CHAIN=${action}${actchain}
+	    CHAIN=${action}
 	    ;;
     esac
+
+    
+    [ "$COMMAND" != check ] && while chain_exists ${CHAIN}%${actchain}; do
+	actchain=$(($actchain + 1))
+    done
+
+    CHAIN=${CHAIN}%${actchain}
 
     eval ${action}_actchain=$(($actchain + 1))
 
@@ -2784,8 +2798,6 @@ createlogactionchain() # $1 = Action Name, $2 = Log Level [: Log Tag ]
     fi
 
     eval ${action}_chains=\"\$${action}_chains $level $CHAIN\"
-
-#   echo "   *** Action $1:$2 is $CHAIN ***"
 
 }
 
@@ -2843,9 +2855,7 @@ find_logactionchain() # $1 = Action, including log level and tag if any
 	shift;shift
     done
 
-    createlogactionchain $action $level
-
-    echo $CHAIN
+    fatal_error "Fatal error in find_logactionchain"
 
 }
 
@@ -3005,8 +3015,8 @@ process_actions2() {
 		if [ "${ysourcezone}" != "${ydestzone}" ] ; then
 		    eval ypolicy=\$${ysourcezone}2${ydestzone}_policy
 		    if [ "$ypolicy" != NONE ] ; then
-			rule="$(echo $origtarget $yclients $yservers $xprotocol $xports $xcports $xratelimit $xuserspec)"
-			process_action $xaction $xtarget $yclients $yservers $xprotocol $xports $xcports $xratelimit $xuserspec
+			rule="$(echo $xtarget $yclients $yservers $xprotocol $xports $xcports $xratelimit $xuserspec)"
+			process_action $xchain $xaction1 $xaction2 $yclients $yservers $xprotocol $xports $xcports $xratelimit $xuserspec
 		    fi
 		fi
 	    done
@@ -3031,8 +3041,8 @@ process_actions2() {
 	    continue
 	fi
 
-	rule="$(echo $origtarget $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec)"
-	process_action $xaction $xtarget $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec
+	rule="$(echo $xtarget $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec)"
+	process_action $xchain $xaction1 $xaction2 $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec
     }
 
     drop_broadcasts() {
@@ -3049,10 +3059,11 @@ process_actions2() {
 	    run_iptables -A $xchain -d $address -j DROP
 	done
     }
+    #
+    # B O D Y   S T A R T S   H E R E
+    #
+    progress_message "   Generating Transitive Closure of Used-action List..."
 
-    #
-    # Generate the transitive closure of $USEDACTIONS
-    #
     changed=Yes
 
     while [ -n "$changed" ]; do
@@ -3061,11 +3072,11 @@ process_actions2() {
 	    
 	    eval required=\"\$requiredby_${xaction%%:*}\"
 	    
-	    for action in $required; do
-		action1=$(evaluate_levels $xaction $action)
-		if ! list_search $action1 $USEDACTIONS; then
-		    USEDACTIONS="$USEDACTIONS $action1"
-		    createactionchain $action1
+	    for xaction1 in $required; do
+		xaction2=$(evaluate_levels $xaction $xaction1)
+		if ! list_search $xaction2 $USEDACTIONS; then
+		    USEDACTIONS="$USEDACTIONS $xaction2"
+		    createactionchain $xaction2
 		    changed=Yes
 		fi
 	    done
@@ -3074,15 +3085,23 @@ process_actions2() {
     #
     # Now process the relevant action files -- they were already stripped in process_actions1() above.
     #
-    for xaction1 in $USEDACTIONS; do
-	xchain=$(find_logactionchain $xaction1)
+    for xaction in $USEDACTIONS; do
+	#
+	# Find the chain associated with this action:level:tag
+	#
+	xchain=$(find_logactionchain $xaction)
+	#
+	# Split the action:level:tag
+	#
+        set -- $(split $xaction)
 
-        set -- $(split $xaction1)
-
+	xaction1=$1
 	xlevel=$2
 	xtag=$3
-
-	case ${xaction1%%:*} in
+	#
+	# Handle Builtin actions
+	#
+	case $xaction1 in
 	    dropBcast)
 		if [ "$COMMAND" != check ]; then
 		    if [ -n "$PKTTYPE" ]; then
@@ -3111,7 +3130,6 @@ process_actions2() {
 		if [ "$COMMAND" != check ]; then
 		    [ -n "$xlevel" ] && \
 			log_rule_limit ${xlevel%\!} $xchain dropBcast $2 "" "$xtag" -p tcp ! --syn
-		    
 		    run_iptables -A $xchain -p tcp ! --syn -j DROP
 		fi
 		;;
@@ -3120,41 +3138,51 @@ process_actions2() {
 		if [ "$COMMAND" != check ]; then
 		    [ -n "$xlevel" ] && \
 			log_rule_limit ${xlevel%\!} $xchain dropNotSyn $2 "" "$xtag" -p tcp ! --syn
-		    run_iptables -A dropNotSyn -p tcp ! --syn -j DROP
+		    run_iptables -A $xchain -p tcp ! --syn -j DROP
 		fi
 		;;
 	    rejNotSyn)
 		if [ "$COMMAND" != check ]; then
 		    [ -n "$xlevel" ] && \
 			log_rule_limit ${xlevel%\!} $xchain rejNotSyn $2 "" "$xtag" -p tcp ! --syn
-		    run_iptables -A rejectNotSyn -p tcp ! --syn -j REJECT --reject-with tcp-reset
+		    run_iptables -A $xchain -p tcp ! --syn -j REJECT --reject-with tcp-reset
 		fi
 		;;
 	    dropInvalid)
 		if [ "$COMMAND" != check ]; then
 		    [ -n "$xlevel" ] && \
 			log_rule_limit ${xlevel%\!} $xchain dropNotSyn $2 "" "$xtag" -m state --state INVALID
-		    run_iptables -A dropInvalid -m state --state INVALID -j DROP
+		    run_iptables -A $xchain -m state --state INVALID -j DROP
 		fi
 		;;
 	    *)
-		f=action.${xaction1%%:*}
+		#
+		# Not a buildin -- the following is so much noise just to report the correct file name
+		#
+		f=action.$xaction1
 		fn=$(find_file $f)
+				
+		echo "Processing $fn for Chain $xchain..."
 		
-		xaction=$(find_logactionchain $xaction1)
-		
-		echo "Processing $fn for Action $xaction..."
-		
-		while read origtarget xclients xservers xprotocol xports xcports xratelimit $xuserspec; do
-		    expandv origtarget
-		    xtarget=$(evaluate_levels $xaction1 $origtarget)
+		while read xtarget xclients xservers xprotocol xports xcports xratelimit $xuserspec; do
+		    expandv xtarget
+		    #
+		    # Generate the target:level:tag to pass to process_action()
+		    #
+		    xaction2=$(evaluate_levels $xaction $xtarget)
 
-		    case ${xtarget%%:*} in 
+		    case ${xaction2%%:*} in 
 			ACCEPT|DROP|REJECT|LOG|QUEUE|CONTINUE)
 			    ;;
 			*)
-			    origtarget=$xtarget
-			    xtarget=$(find_logactionchain $xtarget)
+			    #
+			    # Not a builtin target -- Replace the target from the file
+			    #                      -- with the one generated above
+			    xtarget=$xaction2
+			    #
+			    # And locate the chain for that action:level:tag
+			    #
+			    xaction2=$(find_logactionchain $xtarget)
 			    ;;
 		    esac
 

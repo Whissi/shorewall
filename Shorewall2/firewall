@@ -1248,9 +1248,12 @@ stop_firewall() {
 	    ;;
 	*)
 	    set +x
-	    if [ -f /var/lib/shorewall/restore ]; then
+
+	    [ -z "$RESTOREFILE" ] && RESTOREFILE=restore
+	    
+	    if [ -f /var/lib/shorewall/$RESTOREFILE ]; then
 		echo Restoring Shorewall...
-		. /var/lib/shorewall/restore
+		. /var/lib/shorewall/$RESTOREFILE
 		echo Shorewall restored
 		my_mutex_off
 		kill $$
@@ -6052,6 +6055,8 @@ do_initialize() {
     # We load the kernel modules here to acurately determine 
     # capabilities when module autoloading isn't enabled.
     #
+
+    [ -n "$MODULE_SUFFIX" ] || MODULE_SUFFIX="o gz ko o.gz ko.gz"
     load_kernel_modules
     determine_capabilities
 
@@ -6166,8 +6171,6 @@ do_initialize() {
     DISABLE_IPV6=$(added_param_value_no DISABLE_IPV6 $DISABLE_IPV6)
     BRIDGING=$(added_param_value_no BRIDGING $BRIDGING)
     DYNAMIC_ZONES=$(added_param_value_no DYNAMIC_ZONES $DYNAMIC_ZONES)
-
-    [ -n "$MODULE_SUFFIX" ] || MODULE_SUFFIX="o gz ko o.gz ko.gz"
 
     #
     # Strip the files that we use often

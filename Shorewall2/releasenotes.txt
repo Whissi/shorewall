@@ -28,6 +28,7 @@ Problems Corrected since 2.0.2
    capabilities will be misdetected.
 
 8) The 'newnotsyn' option in /etc/shorewall/hosts has no effect.
+
 -----------------------------------------------------------------------
 Issues when migrating from Shorewall 2.0.2 to Shorewall 2.0.3:
 
@@ -38,15 +39,51 @@ Issues when migrating from Shorewall 2.0.2 to Shorewall 2.0.3:
 -----------------------------------------------------------------------
 New Features:
 
-1) "!" is now allowed in accounting rules.
+1) Shorewall now supports multiple saved configurations.
 
-2) Interface names appearing within the configuration are now
+   a) The "save" command has been extended to be able to specify the
+      name of a saved configuration.
+
+	   shorewall save [ <file name> ]
+
+      The current state is saved to /var/lib/shorewall/<file name>. If
+      no <file name> is given, the configuration is saved to
+      /var/lib/shorewall/restore (current behavior).
+
+   b) The "restore" command has been extended to be able to specify 
+      the name of a saved configuration:
+
+	  shorewall restore [ <file name> ]
+
+      The firewall state is restored from /var/lib/shorewall/<file
+      name>. If no <file name> is given, the firewall state is
+      restored from /var/lib/shorewall/restore.
+
+   c) The "forget" command has changed. Previously, the command
+      unconditionally removed the /var/lib/shorewall/save file which
+      records the current dynamic blacklist. The "forget" command now
+      leaves that file alone.
+
+      Also, the "forget" command has been extended to be able to
+      specify the name of a saved configuration:
+
+	      shorewall forget [ <file name> ]
+
+      The file /var/lib/shorewall/<file name> is removed. If no <file
+      name> is given, the file /var/lib/shorewall/restore is removed.
+
+   d) The "shorewall -f start" command continues to restore the state
+      recorded in /var/lib/shorewall/restore.
+
+2) "!" is now allowed in accounting rules.
+
+3) Interface names appearing within the configuration are now
    verified. Interface names must match the name of an entry in
    /etc/shorewall/interfaces (or if bridging is enabled, they must
    match the name of an entry in /etc/shorewall/interfaces or the name
    of a bridge port appearing in /etc/shorewall/hosts).
 
-3) A new 'rejNonSyn' built-in standard action has been added. This
+4) A new 'rejNotSyn' built-in standard action has been added. This
    action responds to "New not SYN" packets with an RST.
 
    The 'dropNonSyn' action has been superceded by the new 'dropNotSyn'
@@ -84,12 +121,13 @@ New Features:
 
          dropNotSyn    net	  all	tcp
 
-4) Slackware users no longer have to modify the install.sh script
+5) Slackware users no longer have to modify the install.sh script
    before installation. Tuomo Soini has provided a change that allows
    the INIT and FIREWALL variables to be specified outside the script
    as in:
 
       DEST=/etc/rc.d INIT=rc.firewall ./install.sh
+
 
  
 

@@ -2869,11 +2869,11 @@ decodeaddr() {
 encodeaddr() {
     addr=$1
     local x
-    local y=$(($addr % 256))
+    local y=$(($addr & 255))
 
-    for (( x=3 ; $x ; x-- )); do
+    for x in 1 2 3 ; do
 	addr=$(($addr >> 8))
-	y=$(($addr % 256)).$y
+	y=$(($addr & 255)).$y
     done
 
     echo $y
@@ -2898,7 +2898,7 @@ ip_range() {
 # Netmask from CIDR
 #
 ip_netmask() {
-    echo $(( $(( 0xffffffff << $((32 - ${1#*/})) )) & 0xffffffff ))
+    echo $(( -1 << $((32 - ${1#*/})) ))
 }
 #
 # Network address from CIDR
@@ -2916,7 +2916,7 @@ broadcastaddress() {
     local decodedaddr=`decodeaddr ${1%/*}`
     local netmask=`ip_netmask $1`
 
-    echo `encodeaddr $(( $(($decodedaddr & $netmask)) | $(( $netmask ^ 0xffffffff )) ))`
+    echo `encodeaddr $(( $(($decodedaddr & $netmask)) | $(( $netmask ^ -1 )) ))`
 }
 #
 # Test for subnet membership

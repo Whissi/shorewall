@@ -779,12 +779,7 @@ find_broadcasts() {
     for interface in $all_interfaces; do
 	eval bcast=\$$(chain_base $interface)_broadcast
 	if [ "x$bcast" = "xdetect" ]; then
-	    addr="$(ip -f inet addr show $interface 2> /dev/null)"
-	    if [ -n "$(echo "$addr" | grep 'inet.*brd ')" ]; then
-		addr="$(echo "$addr" | \
-		grep "inet " | sed 's/^.* inet.*brd //;s/scope.*//')"
-		echo $addr | cut -d' ' -f 1
-	    fi
+	    ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet.*brd //; s/scope.*//;' | sort -u
 	elif [ "x${bcast}" != "x-" ]; then
 	    echo $(separate_list $bcast)
 	fi

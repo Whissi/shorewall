@@ -2878,10 +2878,14 @@ add_a_rule()
 
     # Complain if the rule is really a policy
 
-    if [ -z "$proto" -a -z "$cli" -a -z "$serv" -a -z "$servport" -a -z "$userspec" -a "$logtarget" != LOG ]; then
-	error_message "Warning -- Rule \"$rule\" is a POLICY"
-	error_message "	       -- and should be moved to the policy file"
-    fi
+    case $logtarget in
+	ACCEPT|DROP|REJECT)	
+	    if [ -z "$proto" -a -z "$cli" -a -z "$serv" -a -z "$servport" -a -z "$userspec" ] ; then
+		error_message "Warning -- Rule \"$rule\" is a POLICY"
+		error_message "	       -- and should be moved to the policy file"
+	    fi
+	    ;;
+    esac
 
     if [ -n "${serv}${servport}" ]; then
 	if [ $COMMAND != check ]; then

@@ -541,7 +541,7 @@ validate_hosts_file() {
 
 	    for option in `separate_list $options`; do
 		case $option in
-		    routestopped|-)
+		    routestopped|maclist|-)
 			;;
 		    *)
 			error_message "Warning: Invalid option ($option) in record \"$r\""
@@ -1304,50 +1304,118 @@ setup_proxy_arp() {
 # Set up MAC List Chains						      #
 ###############################################################################
 setup_mac_lists() {
+    local interface
+    local mac
+    local address
+    local chain
+    local logpart
+    local blob
+    local hosts
+    #
+    # Generate the list of interfaces having MAC verification
+    #
+    maclist_interfaces=
 
-    for interface in $maclist_interfaces; do
-	createchain ${interface}_mac no
+    for hosts in $maclist_hosts; do
+	interface=${hosts%:*}
+	if ! list_search $interface $maclist_interfaces; then\
+	    if [ -z "$maclist_interfaces" ]; then
+		maclist_interfaces=$interface
+	    else
+		maclist_interfaces="$maclist_interfaces $interface"
+	    fi
+	fi
     done
 
+    echo "Setting up MAC Verification on $maclist_interfaces..."
+    #
+    # Be sure that they are all ethernet interfaces
+    #
+    for interface in $maclist_interfaces; do
+	case $interface in
+	    eth*)
+		;;
+	    *)
+		fatal_error "Error: MAC verification is only supported on ethernet devices: $interface"
+		;;
+	esac
+
+	createchain ${interface}_mac no
+    done
+    #
+    # Process the maclist file producing the verification rules
+    #
     strip_file maclist
 
     while read interface mac address; do
+	expandv interface mac address
+
 	chain=${interface}_mac
 
 	if ! havechain $chain ; then
-	    error_message "Warning: $interface does not have the maclist option specified"
-	    continue
+	    fatal_error "Error: No hosts on $interface have the maclist option specified"
 	fi
 
 	[ -n "$address" ] && addr_match="-s $address" || addr_match=
 
 	run_iptables -A ${interface}_mac `mac_match $mac` $addr_match -j RETURN
     done < $TMP_DIR/maclist
-
+    #
+    # Setup Logging variables
+    #
     if [ -n "$MACLIST_LOG_LEVEL" ]; then
 	logpart="-j LOG $LOGPARMS --log-level $MACLIST_LOG_LEVEL --log-prefix"
     else
 	logpart=
     fi
-
+    #
+    # Must take care of our own broadcasts and multicasts then terminate the verification
+    # chains
+    #
     for interface in $maclist_interfaces; do
 	chain=${interface}_mac
-	#
-	# Must take care of our own broadcasts
-	#
-	source="-s `find_interface_address $interface`"
+	blob=`ip addr show $interface 2> /dev/null | grep inet | sed 's/inet //; s/brd //; s/scope.*//;'`
 
-	for address in `find_interface_broadcasts $interface` 255.255.255.255 ; do
-	    run_iptables -A $chain $source -d $address -j RETURN
+	[ -z "$blob" ] && \
+	    fatal_error "Error: Interface $interface must be up before Shorewall can start"
+
+	set -- $blob
+
+	while [ $# -gt 0 ]; do
+	    address=${1%/*}
+
+	    case $1 in
+		*/32)
+		    ;;
+		*)
+		    run_iptables -A $chain -s $address -d $2 -j RETURN
+		    shift
+		    ;;
+	    esac
+
+	    run_iptables -A $chain -s $address -d 255.255.255.255 -j RETURN
+	    run_iptables -A $chain -s $address -d 224.0.0.0/4     -j RETURN
+	    shift
 	done
 
 	[ -n "$logpart" ] && \
 	    run_iptables -A $chain $logpart "Shorewall:$chain:$MACLIST_DISPOSITION:"
 
 	run_iptables -A $chain -j $maclist_target
+    done
+    #
+    # Generate jumps from the input and forward chains
+    #
+    for blob in $maclist_hosts; do
+	chain=${blob%:*}_mac
+	hosts=${blob#*:}
+	#
+	# Evil reuse of 'blob'
+	#
+	blob="-s $hosts -m state --state NEW -j $chain"
 
-	run_iptables -A `input_chain $interface`   -m state --state NEW -j $chain
-	run_iptables -A `forward_chain $interface` -m state --state NEW -j $chain
+	run_iptables -A `input_chain $interface`   $blob
+	run_iptables -A `forward_chain $interface` $blob
     done
 }    
 	
@@ -3410,10 +3478,9 @@ define_firewall() # $1 = Command (Start or Restart)
     [ -f $tunnels ] && \
 	echo "Processing $tunnels..." && setup_tunnels $tunnels
 
-    maclist_interfaces=`find_interfaces_by_option maclist`
+    maclist_hosts=`find_hosts_by_option maclist`
 
-    if [ -n "$maclist_interfaces" ] ; then
-	echo "Setting up MAC Verification on $maclist_interfaces..."
+    if [ -n "$maclist_hosts" ] ; then
 	setup_mac_lists
     fi
 

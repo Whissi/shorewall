@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-11-26</pubdate>
+    <pubdate>2004-12-11</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -2579,6 +2579,35 @@ eth0                  eth1            206.124.146.176</programlisting>
           <para>(Added at version 2.2.0) - When set to Yes or yes, Shorewall
           may be started. Used as guard against Shorewall being accidentally
           started before it has been configured.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>DROPINVALID</term>
+
+        <listitem>
+          <para>(Added at version 2.2.0) — Recent 2.6 kernels include code
+          that evaluates TCP packets based on TCP Window analysis. This can
+          cause packets that were previously classified as NEW or ESTABLISHED
+          to be classified as INVALID.</para>
+
+          <para>The new kernel code can be disabled by including this command
+          in your <ulink
+          url="shorewall_extension_scripts.htm">/etc/shorewall/init</ulink>
+          file:</para>
+
+          <programlisting>echo 1 &gt; /proc/sys/net/ipv4/netfilter/ip_conntrack_tcp_be_liberal</programlisting>
+
+          <para>Additional kernel logging about INVALID TCP packets may be
+          obtained by adding this command to /etc/shorewall/init:</para>
+
+          <programlisting>echo 1 &gt; /proc/sys/net/ipv4/netfilter/ip_conntrack_log_invalid</programlisting>
+
+          <para>Traditionally, Shorewall has dropped INVALID TCP packets
+          early. The DROPINVALID option allows INVALID packets to be passed
+          through the normal rules chains by setting DROPINVALID=No. If not
+          specified or if specified as empty (e.g., DROPINVALID="") then
+          DROPINVALID=Yes is assumed.</para>
         </listitem>
       </varlistentry>
 

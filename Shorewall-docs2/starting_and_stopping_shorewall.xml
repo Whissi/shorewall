@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-11-27</pubdate>
+    <pubdate>2004-12-11</pubdate>
 
     <copyright>
       <year>2004</year>
@@ -367,11 +367,29 @@
         <term>add</term>
 
         <listitem>
-          <para><command>shorewall add &lt;interface&gt;[:&lt;bridge
-          port&gt;][:&lt;host&gt;] &lt;zone&gt;</command></para>
+          <para><command>shorewall add &lt;interface&gt;[:&lt;host-list&gt;] …
+          &lt;zone&gt;</command></para>
 
-          <para>Adds a host or subnet to a dynamic zone usually used with
-          VPN's.</para>
+          <para>A &lt;host-list&gt; is a comma-separated list whose entries
+          are:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>A host or network address</para>
+            </listitem>
+
+            <listitem>
+              <para>The name of a bridge port</para>
+            </listitem>
+
+            <listitem>
+              <para>The name of a bridge port followed by a colon (":") and a
+              host or network address.</para>
+            </listitem>
+          </itemizedlist>
+
+          <para>Adds an interface (and list of hosts if included) to a dynamic
+          zone usually used with VPN's.</para>
 
           <para>Note that there was no provision in the syntax for specifying
           a <ulink url="bridge.html">bridge</ulink> port prior to Shorewall
@@ -448,11 +466,30 @@
         <term>delete</term>
 
         <listitem>
-          <para><command>shorewall delete &lt;interface&gt;[:&lt;bridge
-          port&gt;][:&lt;host&gt;] &lt;zone&gt;</command></para>
+          <para><command>shorewall delete
+          &lt;interface&gt;[:&lt;host-list&gt;] …
+          &lt;zone&gt;</command></para>
 
-          <para>Deletes the specified interface (and host if included) from
-          the specified zone.</para>
+          <para>A &lt;host-list&gt; is a comma-separated list whose entries
+          are:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>A host or network address</para>
+            </listitem>
+
+            <listitem>
+              <para>The name of a bridge port</para>
+            </listitem>
+
+            <listitem>
+              <para>The name of a bridge port followed by a colon (":") and a
+              host or network address.</para>
+            </listitem>
+          </itemizedlist>
+
+          <para>Deletes the specified interface (and host list if included)
+          from the specified zone.</para>
 
           <para>Note that there was no provision in the syntax for specifying
           a <ulink url="bridge.html">bridge</ulink> port prior to Shorewall

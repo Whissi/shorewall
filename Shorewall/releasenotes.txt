@@ -2,21 +2,7 @@ This is a minor release of Shorewall that has a couple of new features.
 
 New features include:
 
-1) A 'tcpflags' option has been added to entries in
-   /etc/shorewall/interfaces. This option causes Shorewall to make a
-   set of sanity check on TCP packet header flags.
-
-2) It is now allowed to use 'all' in the SOURCE or DEST column in a
-   rule. When used, 'all' must appear by itself (in may not be
-   qualified) and it does not enable intra-zone traffic (e.g., the rule
-   "ACCEPT loc	  all	  tcp 80" does not enable http traffic from
-   'loc' to 'loc').
-
-3) Shorewall's use of the 'echo' command is now compatible with bash
-   clones such as ash and dash.
-
-4) fw->fw policies now generate a startup error. fw->fw rules generate
-   a warning and are ignored.
+1) "shorewall refresh" now reloads the traffic shaping rules.
 
 
 

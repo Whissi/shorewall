@@ -213,6 +213,22 @@ havechain() # $1 = name of chain
 }
 
 #
+# Query NetFilter about the existence of a filter chain
+#
+chain_exists() # $1 = chain name
+{
+    qt iptables -L $1 -n
+}
+	
+#
+# Query NetFilter about the existence of a mangle chain
+#
+mangle_chain_exists() # $1 = chain name
+{
+    qt iptables -t mangle -L $1 -n
+}
+	
+#
 # Ensure that a chain exists (create it if it doesn't)
 #
 ensurechain() # $1 = chain name
@@ -1639,10 +1655,7 @@ process_tc_rule()
 #
 # Setup queuing and classes
 #
-setup_tc() {
-
-    echo "Setting up Traffic Control Rules..."
-
+setup_tc1() {
     #
     # Create the TC mangle chains
     #
@@ -1668,6 +1681,13 @@ setup_tc() {
 
 }
 
+setup_tc() {
+
+    echo "Setting up Traffic Control Rules..."
+
+    setup_tc1
+}
+
 #
 # Clear Traffic Shaping
 #
@@ -1690,6 +1710,39 @@ delete_tc()
 	    ;;
 	esac
     done
+}
+
+#
+# Refresh queuing and classes
+#
+refresh_tc() {
+
+    echo "Refreshing Traffic Control Rules..."
+
+    delete_tc
+    
+    if mangle_chain_exists tcpre; then
+        #
+        # Flush the TC mangle chains
+        #
+        run_iptables -t mangle -F tcpre
+        run_iptables -t mangle -F tcout
+        #
+        # Process the TC Rules File
+        #
+        strip_file tcrules
+
+        while read mark sources dests proto ports sports; do
+	    expandv mark sources dests proto ports sports
+	    rule=`echo "$mark $sources $dests $proto $ports $sports"`
+	    process_tc_rule 
+        done < $TMP_DIR/tcrules
+
+	run_user_exit tcstart
+    else
+	setup_tc1
+    fi
+
 }
 
 #
@@ -3747,6 +3800,8 @@ refresh_firewall()
 
     determine_zones
 
+    validate_interfaces_file
+
     [ -z "$zones" ] && startup_error "ERROR: No Zones Defined"
 
     determine_interfaces
@@ -3764,19 +3819,16 @@ refresh_firewall()
     #
     refresh_blacklist
 
+    #
+    # Refresh Traffic Control
+    #
+    [ -n "$TC_ENABLED" ] && refresh_tc        
+
     report "Shorewall Refreshed"
 
     rm -rf $TMP_DIR
 }
 
-#
-# Query NetFilter about the existence of a filter chain
-#
-chain_exists() # $1 = chain name
-{
-    qt iptables -L $1 -n
-}
-	
 #
 # Add a host or subnet to a zone
 #

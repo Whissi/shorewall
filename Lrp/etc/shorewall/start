@@ -1,6 +1,10 @@
 ############################################################################
-# Shorewall 1.4 -- /etc/shorewall/start
+# Shorewall 2.0 -- /etc/shorewall/start
 #
 # Add commands below that you want to be executed after shorewall has
 # been started or restarted.
 #
+for file in /etc/shorewall/start.d/* ; do
+   run_user_exit $file
+done
+    

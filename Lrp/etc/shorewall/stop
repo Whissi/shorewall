@@ -1,6 +1,10 @@
 ############################################################################
-# Shorewall 1.4 -- /etc/shorewall/stop
+# Shorewall 2.0 -- /etc/shorewall/stop
 #
 # Add commands below that you want to be executed at the beginning of a
 # "shorewall stop" command.
 #
+for file in /etc/shorewall/stop.d/* ; do
+ run_user_exit $file
+done
+    

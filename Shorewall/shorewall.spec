@@ -1,5 +1,5 @@
 %define name shorewall
-%define version 1.4.0
+%define version 1.4.9
 %define release 0Beta1
 %define prefix /usr
 

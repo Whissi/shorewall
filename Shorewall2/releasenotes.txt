@@ -1,4 +1,4 @@
-Shorewall 2.0.3 RC1
+Shorewall 2.0.3 RC2
 
 ----------------------------------------------------------------------
 Problems Corrected since 2.0.2
@@ -38,6 +38,11 @@ Problems Corrected since 2.0.2
 11) Comments in the rules file have been added to advise users that
     "all" in the SOURCE or DEST column does not affect intra-zone
     traffic.
+
+12) With BLACKLISTNEWONLY=Yes, ICMP packets with state INVALID are now
+    passed through the blacklisting chains. Without this change, it is
+    not possible to blacklist hosts that are mounting certain types of
+    ICMP-based DOS attacks.
 
 -----------------------------------------------------------------------
 Issues when migrating from Shorewall 2.0.2 to Shorewall 2.0.3:

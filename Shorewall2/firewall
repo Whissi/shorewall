@@ -4496,7 +4496,7 @@ setup_blacklist() {
 
 	createchain blacklst no
 
-	[ -n "$BLACKLISTNEWONLY" ] && state="-m state --state NEW" || state=
+	[ -n "$BLACKLISTNEWONLY" ] && state="-m state --state NEW,INVALID" || state=
 	
 	for host in $hosts; do
 	    interface=${host%%:*}
@@ -4851,7 +4851,7 @@ initialize_netfilter () {
 	fi
     fi
 
-    [ -n "$BLACKLISTNEWONLY" ] && state="-m state --state NEW" || state=
+    [ -n "$BLACKLISTNEWONLY" ] && state="-m state --state NEW,INVALID" || state=
 
     echo "Creating Interface Chains..."
 

@@ -1,3 +1,4 @@
+#!/bin/sh
 #
 # Shorewall 1.3 -- /var/lib/shorewall/functions
 
@@ -118,30 +119,28 @@ get_statedir()
 mutex_on()
 {
     local try=0
-    local max=
-    local int=1
-
     local lockf=$STATEDIR/lock
 
     MUTEX_TIMEOUT=${MUTEX_TIMEOUT:-60}
 
-    max=${MUTEX_TIMEOUT}
+    if [ $MUTEX_TIMEOUT -gt 0 ]; then
 
-    [ -d $STATEDIR ] || mkdir -p $STATEDIR
+	[ -d $STATEDIR ] || mkdir -p $STATEDIR
 
-    if qt which lockfile; then
-	lockfile -${MUTEX_TIMEOUT} -r1 ${lockf}
-    else
-	while [ -f ${lockf} -a ${try} -lt ${max} ] ; do
-	    sleep ${int}
-	    try=$((${try} + 1))
+	if qt which lockfile; then
+	    lockfile -${MUTEX_TIMEOUT} -r1 ${lockf}
+	else
+	    while [ -f ${lockf} -a ${try} -lt ${MUTEX_TIMEOUT} ] ; do
+		sleep 1
+		try=$((${try} + 1))
 	    done
 
-	if  [ ${try} -lt ${max} ] ; then
-	    # Create the lockfile
-	    echo $$ > ${lockf}
-	else
-	    echo "Giving up on lock file ${lockf}" >&2
+	    if  [ ${try} -lt ${MUTEX_TIMEOUT} ] ; then
+	        # Create the lockfile
+		echo $$ > ${lockf}
+	    else
+		echo "Giving up on lock file ${lockf}" >&2
+	    fi
 	fi
     fi
 }

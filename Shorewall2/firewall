@@ -1071,52 +1071,44 @@ run_user_exit() # $1 = file name
 #
 # Add a logging rule.
 #
-log_rule_limit() # $1 = log level, $2 = chain, $3 = disposition , $4 = rate limit $... = predicates for the rule
+log_rule_limit() # $1 = log level, $2 = chain, $3 = disposition , $4 = rate limit $5=log tag $... = predicates for the rule
 {
     local level=$1
     local chain=$2
     local disposition=$3
     local rulenum=
     local limit="${4:-$LOGLIMIT}"
+    local tag=$5
+    local prefix
 
-    shift;shift;shift;shift
+    shift;shift;shift;shift;shift
 
     if [ -n "$LOGRULENUMBERS" ]; then
 	eval rulenum=\$${chain}_logrules
 
 	[ -z "$rulenum" ] && rulenum=1
 
-	case $level in
-	    ULOG)
-		eval iptables -A $chain $@ $limit -j ULOG $LOGPARMS --ulog-prefix '"$(printf "$LOGFORMAT" $chain $rulenum $disposition)"'
-		;;
-	    *)
-		eval iptables -A $chain $@ $limit -j LOG $LOGPARMS --log-level $level \
-		    --log-prefix '"$(printf "$LOGFORMAT" $chain $rulenum $disposition)"'
-		;;
-	esac
-	
-	if [ $? -ne 0 ] ; then
-	    [ -z "$stopping" ] && { stop_firewall; exit 2; }
-	fi
-
-	rulenum=$(($rulenum + 1))
-
-	eval ${chain}_logrules=$rulenum
+	prefix="$(printf "$LOGFORMAT" $chain $rulenum $disposition)${tag:+$tag }"
     else
-	case $level in
-	    ULOG)
-		eval iptables -A $chain $@ $limit -j ULOG $LOGPARMS --ulog-prefix '"$(printf "$LOGFORMAT" $chain $disposition)"'
-		;;
-	    *)
-		eval iptables -A $chain $@ $limit -j LOG $LOGPARMS --log-level $level \
-		    --log-prefix '"$(printf "$LOGFORMAT" $chain $disposition)"'
-		;;
-	esac
+	prefix="$(printf "$LOGFORMAT" $chain $disposition)${tag:+$tag }"
+    fi
+
+    if [ ${#prefix} -gt 29 ]; then
+	prefix="$(echo $prefix | cut -b -29)"
+	error_message "Warning: Log Prefix shortened to \"$prefix\""
+    fi
+
+    case $level in
+	ULOG)
+	    iptables -A $chain $@ $limit -j ULOG $LOGPARMS --ulog-prefix "$prefix"
+	    ;;
+	*)
+	    iptables -A $chain $@ $limit -j LOG $LOGPARMS --log-level $level --log-prefix "$prefix"
+	    ;;
+    esac
 	
-	if [ $? -ne 0 ] ; then
-	    [ -z "$stopping" ] && { stop_firewall; exit 2; }
-	fi
+    if [ $? -ne 0 ] ; then
+	[ -z "$stopping" ] && { stop_firewall; exit 2; }
     fi
 }
 
@@ -1128,7 +1120,7 @@ log_rule() # $1 = log level, $2 = chain, $3 = disposition , $... = predicates fo
 
     shift;shift;shift
 
-    log_rule_limit $level $chain $disposition "$LOGLIMIT" $@
+    log_rule_limit $level $chain $disposition "$LOGLIMIT" "" $@
 }
 
 #
@@ -2322,6 +2314,7 @@ refresh_tc() {
 #    action	  = The chain for this rule
 #    ratelimit    = Optional rate limiting clause
 #    userandgroup = owner match clause
+#    logtag       = Log tag
 #
 add_an_action()
 {
@@ -2428,7 +2421,7 @@ add_an_action()
 	    for serv1 in $(separate_list $serv); do
 		for srv in $(ip_range $serv1); do
 		    if [ -n "$loglevel" ]; then
-			log_rule_limit $loglevel $action $logtarget "$ratelimit" $userandgroup \
+			log_rule_limit $loglevel $action $logtarget "$ratelimit" "$logtag" $userandgroup \
 			    $(fix_bang $proto $sports $multiport $cli -d $srv $dports)
 		    fi
 		    
@@ -2438,7 +2431,7 @@ add_an_action()
 	    done
 	else
 	    if [ -n "$loglevel" ]; then
-		log_rule_limit $loglevel $action $logtarget "$ratelimit" $userandgroup \
+		log_rule_limit $loglevel $action $logtarget "$ratelimit" "$logtag" $userandgroup \
 		    $(fix_bang $proto $sports $multiport $cli $dports)
 	    fi
 		    
@@ -2472,6 +2465,7 @@ process_action() # $1 = action
     local userspec="$9"
     local rule="$(echo $target $clients $servers $protocol $ports $cports $ratelimit)"
     local userandgroup=
+    local logtag=
 
     if [ -n "$ratelimit" ]; then
 	case $ratelimit in
@@ -2525,10 +2519,16 @@ process_action() # $1 = action
 	loglevel=
     else
 	loglevel="${target#*:}"
-	target="${target%:*}"
+	target="${target%%:*}"
 	expandv loglevel
+	if [ "$loglevel" != "${loglevel%:*}" ]; then
+	    logtag="${loglevel#*:}"
+	    loglevel="${loglevel%:*}"
+	    expandv logtag
+	fi
+	
     fi
-  
+
     logtarget="$target"
 
     case $target in
@@ -2678,7 +2678,7 @@ process_actions1() {
 		    strip_file $f $fn
 		    while read xtarget xclients xservers xprotocol xports xcports xratelimit $xuserspec; do
 			expandv xtarget
-			temp="${xtarget%:*}"
+			temp="${xtarget%%:*}"
 			case "${temp%<*}" in
 			    ACCEPT|DROP|REJECT|LOG|QUEUE|CONTINUE)
 				;;
@@ -2804,6 +2804,7 @@ process_actions2() {
 #    multiport	    = String to invoke multiport match if appropriate
 #    ratelimit      = Optional rate limiting clause
 #    userandgroup   = -m owner match to limit the rule to a particular user and/or group
+#    logtag         = Log tag
 #
 add_nat_rule() {
     local chain
@@ -2891,7 +2892,7 @@ add_nat_rule() {
 	    else
 		for adr in $(separate_list $addr); do
 		    if [ -n "$loglevel" ]; then
-			log_rule_limit $loglevel $OUTPUT $logtarget "$ratelimit" -t nat \
+			log_rule_limit $loglevel $OUTPUT $logtarget "$ratelimit" "$logtag" -t nat \
 			    $(fix_bang $proto $cli $sports $userandgroup -d $adr $multiport $dports)
 		    fi
 
@@ -2930,7 +2931,7 @@ add_nat_rule() {
 		for adr in $(separate_list $addr); do
 		    if [ -n "$loglevel" ]; then
 			ensurenatchain $chain
-			log_rule_limit $loglevel $chain $logtarget "$ratelimit" -t nat \
+			log_rule_limit $loglevel $chain $logtarget "$ratelimit" "$logtag" -t nat \
 			    $(fix_bang $proto $cli $sports -d $adr $multiport $dports)
 		    fi
 		    
@@ -2990,7 +2991,8 @@ add_nat_rule() {
 #    chain	 = The canonical chain for this rule
 #    ratelimit   = Optional rate limiting clause
 #    userandgroup= -m owner clause
-#    userspec     = User name
+#    userspec    = User name
+#    logtag      = Log tag
 #
 add_a_rule()
 {
@@ -3138,7 +3140,7 @@ add_a_rule()
 			    if [ -n "$addr" -a -n "$CONNTRACK_MATCH" ]; then
 				for adr in $(separate_list $addr); do
 				    if [ -n "$loglevel" -a -z "$natrule" ]; then
-					log_rule_limit $loglevel $chain $logtarget "$ratelimit" -m conntrack --ctorigdst $adr \
+					log_rule_limit $loglevel $chain $logtarget "$ratelimit" "$logtag" -m conntrack --ctorigdst $adr \
 					    $userandgroup $(fix_bang $proto $sports $multiport $cli -d $srv $dports)
 				    fi
 
@@ -3147,7 +3149,7 @@ add_a_rule()
 				done
 			    else
 				if [ -n "$loglevel" -a -z "$natrule" ]; then
-				    log_rule_limit $loglevel $chain $logtarget "$ratelimit" $userandgroup \
+				    log_rule_limit $loglevel $chain $logtarget "$ratelimit" "$logtag" $userandgroup \
 					$(fix_bang $proto $sports $multiport $cli -d $srv $dports)
 				fi
 
@@ -3158,7 +3160,7 @@ add_a_rule()
 		    done
 		else
 		    if [ -n "$loglevel" -a -z "$natrule" ]; then
-		        log_rule_limit $loglevel $chain $logtarget "$ratelimit" $userandgroup \
+		        log_rule_limit $loglevel $chain $logtarget "$ratelimit" "$logtag" $userandgroup \
 			    $(fix_bang $proto $sports $multiport $cli $dports)
 		    fi
 
@@ -3177,7 +3179,7 @@ add_a_rule()
 
 	if [ $COMMAND != check ]; then
 	    if [ -n "$loglevel" ]; then
-		log_rule_limit $loglevel $chain $logtarget "$ratelimit" $userandgroup \
+		log_rule_limit $loglevel $chain $logtarget "$ratelimit" "$logtag" $userandgroup \
 		    $(fix_bang $proto $multiport $dest_interface $cli $sports $dports)
 	    fi
 
@@ -3213,6 +3215,7 @@ process_rule() # $1 = target
     local userspec="$9"
     local userandgroup=
     local rule="$(echo $target $clients $servers $protocol $ports $cports $address $ratelimit $userspec)"
+    local logtag=
 
     # Function Body - isolate rate limit
 
@@ -3235,8 +3238,14 @@ process_rule() # $1 = target
 	loglevel=
     else
 	loglevel="${target#*:}"
-	target="${target%:*}"
+	target="${target%%:*}"
 	expandv loglevel
+	if [ "$loglevel" != "${loglevel%:*}" ]; then
+	    logtag="${loglevel#*:}"
+	    loglevel="${loglevel%:*}"
+	    expandv logtag
+	fi
+	
     fi
     #
     # Save the original target in 'logtarget' for logging rules
@@ -3532,7 +3541,7 @@ process_rules()
     }
 
     while read xtarget xclients xservers xprotocol xports xcports xaddress xratelimit xuserspec; do
-	temp="${xtarget%:*}"
+	temp="${xtarget%%:*}"
 	case "${temp%<*}" in
 	    ACCEPT|DROP|REJECT|DNAT|DNAT-|REDIRECT|REDIRECT-|LOG|CONTINUE|QUEUE)
 		do_it

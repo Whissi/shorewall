@@ -3621,6 +3621,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
     dhcp_interfaces=`find_interfaces_by_option dhcp`
     blacklist_interfaces=`find_interfaces_by_option blacklist`
     filterping_interfaces=`find_interfaces_by_option filterping`
+    maclist_interfaces=`find_interfaces_by_maclist`
     #
     # Normalize the first argument to this function
     #
@@ -3667,8 +3668,8 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 	if [ "$z1" = "$zone" ]; then
 	    if [ "$z2" = "$FW" ]; then
 		#
-		# We will insert the rule right after the DHCP and 'ping' rules 
-		# (if any)
+		# We will insert the rule right after the DHCP, 'ping' and
+                # MAC rules (if any)
 		#
 		if list_search $interface $dhcp_interfaces; then
 		    rulenum=3
@@ -3680,12 +3681,16 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		    rulenum=$(($rulenum + 1))
 		fi
 
+		if ! list_search $interface $maclist_interfaces; then
+		    rulenum=$(($rulenum + 1))
+		fi
+
 		do_iptables -I `input_chain $interface` $rulenum -s $host -j $chain 
 	    else
 		#
 		# Insert rules into the passed interface's forward chain
 		#
-		# We insert them after any blacklist rules
+		# We insert them after any blacklist/MAC verification rules
 		#
 		source_chain=`forward_chain $interface`
 		eval dest_hosts=\"\$${z2}_hosts\"
@@ -3699,6 +3704,10 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 			rulenum=3
 		    else
 			rulenum=2
+		    fi
+
+		    if ! list_search $interface $maclist_interfaces; then
+			rulenum=$(($rulenum + 1))
 		    fi
 		fi
 		

@@ -4121,6 +4121,8 @@ setup_masq()
 	    ;;
 	esac
 
+	[ "x$addresses" = x- ] && addresses=
+
 	if [ -n "$addresses" -a -n "$ADD_SNAT_ALIASES" ]; then
 	    for address in $(separate_list $addresses); do
 		for addr in $(ip_range_explicit $address) ; do
@@ -4136,6 +4138,47 @@ setup_masq()
 		done
 	    done
 	fi
+
+	[ "x$proto" = x- ] && proto=
+	[ "x$ports" = x- ] && ports=
+
+	if [ -n "$proto" ]; then
+
+	    displayproto="($proto)"
+
+	    case $proto in
+		tcp|TCP|udp|UDP|6|17)
+		    if [ -n "$ports" ]; then
+			displayproto="($proto $ports)"
+
+			if [ $(list_count $ports) -gt 1 ]; then
+			    case $ports in
+				*:*)
+				    fatal_error "Port Range not allowed in list ($ports)"
+				    ;;
+				*)
+				    if [ -n "$MULTIPORT" ]; then
+					ports="-m multiport --dports $ports"
+				    else
+					fatal_error "Port Ranges require multiport match support in your kernel ($ports)"
+				    fi
+				    ;;
+			    esac
+			else
+			    ports="--dport $ports"
+			fi
+		    fi
+		    ;;
+		*)
+		    [ -n "$ports" ] && fatal_error "Ports only allowed with UDP or TCP ($ports)"
+		    ;;
+	    esac
+	    
+	    proto="-p $proto"
+	else
+	    displayproto="(all)"
+	    [ -n "$ports" ] && fatal_error "Ports only allowed with UDP or TCP ($ports)"
+	fi	
 
 	destination=$destnets
 
@@ -4153,7 +4196,7 @@ setup_masq()
 
 		if [ -n "$networks" ]; then
 		    for s in $networks; do
-			addnatrule $chain -s $s -j $newchain
+			addnatrule $chain -s $s $proto $ports -j $newchain
 		    done
 		    networks=
 		else
@@ -4163,6 +4206,8 @@ setup_masq()
 		masq_seq=$(($masq_seq + 1))
 		chain=$newchain
 		destnets=0.0.0.0/0
+		proto=
+		ports=
 
 		if [ -n "$nomasq" ]; then
 		    for addr in $(separate_list $nomasq); do
@@ -4179,12 +4224,12 @@ setup_masq()
 		    if [ -n "$networks" ]; then
 			for s in $networks; do
 			    for destnet in $(separate_list $destnets); do
-				addnatrule $chain -d $destnet -s $s -j $newchain
+				addnatrule $chain -d $destnet -s $s $proto $ports -j $newchain
 			    done
 			done
 		    else
 			for destnet in $(separate_list $destnets); do
-			    addnatrule $chain -d $destnet -j $newchain
+			    addnatrule $chain -d $destnet $proto $ports -j $newchain
 			done
 		    fi
 
@@ -4192,6 +4237,8 @@ setup_masq()
 		    chain=$newchain
 		    networks=
 		    destnets=0.0.0.0/0
+		    proto=
+		    ports=
 		    
 		    for addr in $(separate_list $nomasq); do
 			addnatrule $chain -s $addr -j RETURN
@@ -4203,6 +4250,7 @@ setup_masq()
 	esac
 
 	addrlist=
+
 	if [ -n "$addresses" ]; then
 	    for address in $(separate_list $addresses); do
 		addrlist="$addrlist --to-source $address"
@@ -4213,26 +4261,26 @@ setup_masq()
 	    for s in $networks; do
 		if [ -n "$addresses" ]; then
 		    for destnet in $(separate_list $destnets); do
-			addnatrule $chain -s $s -d $destnet -j SNAT $addrlist
+			addnatrule $chain -s $s -d $destnet $proto $ports -j SNAT $addrlist
 		    done
-		    progress_message "   To $destination from $s through ${interface} using $addresses"
+		    progress_message "   To $destination $displayproto from $s through ${interface} using $addresses"
 		else
 		    for destnet in $(separate_list $destnets); do
-			addnatrule $chain -s $s -d $destnet -j MASQUERADE
+			addnatrule $chain -s $s -d $destnet $proto $ports -j MASQUERADE
 		    done
-		    progress_message "   To $destination from $s through ${interface}"
+		    progress_message "   To $destination $displayproto from $s through ${interface}"
 		fi
 	    done
 	elif [ -n "$addresses" ]; then
 	    for destnet in $(separate_list $destnets); do
-		addnatrule $chain -d $destnet -j SNAT $addrlist
+		addnatrule $chain -d $destnet $proto $ports -j SNAT $addrlist
 	    done
-	    echo "   To $destination from $source through ${interface} using $addresses"
+	    echo "   To $destination $displayproto from $source through ${interface} using $addresses"
 	else
 	    for destnet in $(separate_list $destnets); do
-		addnatrule $chain -d $destnet -j MASQUERADE
+		addnatrule $chain -d $destnet $proto $ports -j MASQUERADE
 	    done
-	    progress_message "   To $destination from $source through ${interface}"
+	    progress_message "   To $destination $displayproto from $source through ${interface}"
 	fi
 
     }
@@ -4241,8 +4289,8 @@ setup_masq()
 
     [ -n "$NAT_ENABLED" ] && echo "Masqueraded Networks and Hosts:"
 
-    while read fullinterface networks addresses; do
-	expandv fullinterface networks addresses
+    while read fullinterface networks addresses proto ports; do
+	expandv fullinterface networks addresses proto ports
 	[ -n "$NAT_ENABLED" ] && setup_one || \
 	    error_message "Warning: NAT disabled; masq rule ignored"
     done < $TMP_DIR/masq

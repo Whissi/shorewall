@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-08-05</pubdate>
+    <pubdate>2004-09-30</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -181,6 +181,15 @@
     being used. Beginning with Shorewall 1.3.12, you can cause packet marking
     to occur in the FORWARD chain by using the MARK_IN_FORWARD_CHAIN option in
     shorewall.conf.</para>
+
+    <important>
+      <para>Unlike entries in <filename><ulink
+      url="Documentation.htm#Rules">/etc/shorewall/rules</ulink></filename>,
+      evaluation of entries in <filename>/etc/shorewall/tcrules</filename>
+      continues after a match. So the final mark assigned to each packet is
+      determined by the <emphasis role="bold">last</emphasis> matching entry
+      in the <filename>/etc/shorewall/tcrules</filename> file.</para>
+    </important>
 
     <para>Columns in the file are as follows:</para>
 

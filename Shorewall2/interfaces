@@ -46,10 +46,19 @@
 #	OPTIONS		A comma-separated list of options including the
 #			following:
 #
-#			dhcp	     - interface is managed by DHCP or used by
-#                                      a DHCP server running on the firewall or
-#				       you have a static IP but are on a LAN
-#				       segment with lots of Laptop DHCP clients.
+#			dhcp	     - Specify this option when any of
+#				       the following are true:
+#				       1. the interface gets its IP address
+#				          via DHCP 
+#				       2. the interface is used by
+#                                         a DHCP server running on the firewall
+#				       3. you have a static IP but are on a LAN
+#				          segment with lots of Laptop DHCP
+#					  clients.
+#				       4. the interface is a bridge with
+#				          a DHCP server on one port and DHCP
+#					  clients on another port.
+#
 #			norfc1918    - This interface should not receive
 #				       any packets whose source is in one
 #				       of the ranges reserved by RFC 1918
@@ -58,6 +67,7 @@
 #				       enabled in shorewall.conf, packets
 #				       whose destination addresses are
 #				       reserved by RFC 1918 are also rejected.
+#
 #			routefilter  - turn on kernel route filtering for this
 #				       interface (anti-spoofing measure). This
 #                                      option can also be enabled globally in
@@ -65,12 +75,14 @@
 #	.	.	blacklist    - Check packets arriving on this interface
 #				       against the /etc/shorewall/blacklist
 #				       file.
+#
 #			maclist	     - Connection requests from this interface
 #				       are compared against the contents of
 #				       /etc/shorewall/maclist. If this option
 #				       is specified, the interface must be
 #				       an ethernet NIC and must be up before
 #				       Shorewall is started.
+#
 #			tcpflags     - Packets arriving on this interface are
 #				       checked for certain illegal combinations
 #				       of TCP flags. Packets found to have
@@ -79,6 +91,7 @@
 #				       TCP_FLAGS_DISPOSITION after having been
 #				       logged according to the setting of
 #				       TCP_FLAGS_LOG_LEVEL.
+#
 #			proxyarp     -
 #				Sets
 #				/proc/sys/net/ipv4/conf/<interface>/proxy_arp.
@@ -127,7 +140,7 @@
 #				       hosts routed through the interface.
 #
 #		        WARNING: DO NOT SET THE detectnets OPTION ON YOUR
-#			         INTERNET INTERFACE!
+#			         INTERNET INTERFACE.
 #
 #			The order in which you list the options is not
 #			significant but the list should have no embedded white

@@ -87,6 +87,7 @@ startup_error() # $* = Error Message
     echo "   Error: $@" >&2
     my_mutex_off
     [ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
+    rm -f /var/lib/shorewall/restore-$$
     kill $$
     exit 2
 }
@@ -135,9 +136,9 @@ ensure_and_save_command()
 # Append a file to /var/lib/shorewall/restore-$$
 #
 append_file() {
-    save_command "cat > $STATEDIR/$1 << EOF"
+    save_command "cat > $STATEDIR/$1 << __EOF__"
     cat $STATEDIR/$1 >> /var/lib/shorewall/restore-$$
-    save_command EOF
+    save_command __EOF__
 }
 
 #
@@ -1177,6 +1178,9 @@ log_rule() # $1 = log level, $2 = chain, $3 = disposition , $... = predicates fo
 # Set /proc/sys/net/ipv4/ip_forward based on $IP_FORWARDING
 #
 setup_forwarding() {
+
+    save_command "echo Restoring IP Forwarding..."
+
     case "$IP_FORWARDING" in
     [Oo][Nn])
 	run_and_save_command "echo 1 > /proc/sys/net/ipv4/ip_forward"
@@ -1197,6 +1201,7 @@ disable_ipv6() {
 
     if [ -n "$foo" ]; then
 	if qt which ip6tables; then
+	    save_command "echo Disabling IPV6..."
 	    ip6tables -P FORWARD DROP && save_command ip6tables -P FORWARD DROP
 	    ip6tables -P INPUT DROP   && save_command ip6tables -P INPUT DROP
 	    ip6tables -P OUTPUT DROP  && save_command ip6tables -P OUTPUT DROP
@@ -1213,6 +1218,9 @@ stop_firewall() {
     #
     # Turn off trace unless we were tracing "stop" or "clear"
     #
+
+    rm -f /var/lib/shorewall/restore-$$
+
     case $COMMAND in
 	stop|clear)
 	    ;;
@@ -1222,8 +1230,6 @@ stop_firewall() {
 	    ;;
 	*)
 	    set +x
-	    rm -f /var/lib/shorewall/restore-$$
-
 	    if [ -f /var/lib/shorewall/restore ]; then
 		echo Restoring Shorewall...
 		. /var/lib/shorewall/restore
@@ -1638,6 +1644,8 @@ setup_proxy_arp() {
 
     > ${STATEDIR}/proxyarp
 
+    save_command "echo Restoring Proxy ARP..."
+
     while read address interface external haveroute persistent; do
 	expandv address interface external haveroute persistent
 	setup_one_proxy_arp
@@ -1837,6 +1845,8 @@ setup_nat() {
     # At this point, we're just interested in the network translation
     #
     > ${STATEDIR}/nat
+
+    save_command "echo Restoring one-to-one NAT..."
 
     while read external interface internal allints localnat; do
 	expandv external interface internal allints localnat
@@ -2093,6 +2103,8 @@ setup_tc1() {
     run_iptables -t mangle -A OUTPUT     -j tcout
 
     run_user_exit tcstart
+
+    save_command "echo Restoring Traffic Control..."
     save_command . $(find_file tcstart)
 
 }
@@ -2325,6 +2337,7 @@ check_config() {
     process_actions2
 
     rm -rf $TMP_DIR
+    rm -f /var/lib/shorewall/restore-$$
 
     echo "Configuration Validated"
 
@@ -3843,42 +3856,6 @@ process_tos() # $1 = name of tos file
 }
 
 #
-# Load a Kernel Module
-#
-loadmodule() # $1 = module name, $2 - * arguments
-{
-    local modulename=$1
-    local modulefile
-    local suffix
-    moduleloader=modprobe
-
-    if ! qt which modprobe; then 
-	moduleloader=insmod
-    fi
-
-    if [ -z "$(lsmod | grep $modulename)" ]; then
-	shift
-	
-	for suffix in $MODULE_SUFFIX ; do
-	    modulefile=$MODULESDIR/${modulename}.${suffix}
-
-	    if [ -f $modulefile ]; then
-		case $moduleloader in
-		    insmod)
-			insmod $modulefile $*
-			;;
-		    *)
-			modprobe $modulename
-			;;
-		esac
-
-		return
-	    fi
-	done
-    fi
-}
-
-#
 # Display elements of a list with leading white space
 #
 display_list() # $1 = List Title, rest of $* = list to display
@@ -4318,7 +4295,7 @@ setup_masq()
 
     strip_file masq $1
 
-    [ -n "$NAT_ENABLED" ] && echo "Masqueraded Networks and Hosts:"
+    [ -n "$NAT_ENABLED" ] && echo "Masqueraded Networks and Hosts:" && save_command "echo Restoring Masquerading/SNAT..."
 
     while read fullinterface networks addresses proto ports; do
 	expandv fullinterface networks addresses proto ports
@@ -4540,6 +4517,8 @@ add_ip_aliases()
 
     set -- $aliases_to_add
 
+    save_command "echo Restoring IP Addresses..."
+
     while [ $# -gt 0 ]; do
 	external=$1
 	interface=$2
@@ -4570,6 +4549,22 @@ load_kernel_modules() {
     if [ -f $modules -a -d $MODULESDIR ]; then
 	echo "Loading Modules..."
 	. $modules
+
+	if [ "$command" != check ]; then
+
+	    save_command "echo Loading kernel modules..."
+	    save_command "reload_kernel_modules <<__EOF__"
+
+	    while read command; do
+		case "$command" in
+		loadmodule*)
+		    save_command $command
+		    ;;
+		esac
+	    done < $modules
+	    
+	    save_command __EOF__
+	fi
     fi
 }
 
@@ -5033,6 +5028,8 @@ add_common_rules() {
     #
     # ARP Filtering
     #
+    save_command "echo Restoring ARP filtering..."
+
     for f in /proc/sys/net/ipv4/conf/*/arp_filter; do
 	run_and_save_command "echo 0 > $f"
     done
@@ -5059,6 +5056,8 @@ add_common_rules() {
 
     if [ -n "$interfaces" -o -n "$ROUTE_FILTER" ]; then
 	echo "Setting up Kernel Route Filtering..."
+
+	save_command "echo Restoring Route Filtering..."
 
 	for f in /proc/sys/net/ipv4/conf/*/rp_filter; do
 	    run_and_save_command "echo 0 > $f"
@@ -5420,6 +5419,14 @@ define_firewall() # $1 = Command (Start or Restart)
 
     verify_os_version
     verify_ip
+
+    echo '#bin/sh' > /var/lib/shorewall/restore-$$
+    save_command "# Restore base file generated $(date)"
+    save_command ". /usr/share/shorewall/functions"
+
+    save_command "MODULESDIR=\"$MODULESDIR\""
+    save_command "MODULE_SUFFIX=\"$MODULE_SUFFIX\""
+
     load_kernel_modules
 
     echo "Initializing...";                    initialize_netfilter
@@ -5472,7 +5479,9 @@ define_firewall() # $1 = Command (Start or Restart)
     
     save_command "date > $STATEDIR/restarted"
 
-    save_command 'iptables-restore << EOF'
+    save_command "echo Restoring Netfilter Configuration..."
+
+    save_command 'iptables-restore << __EOF__'
 
     # 'shorewall save' appends the iptables-save output and 'EOF'
 
@@ -6078,8 +6087,6 @@ do_initialize() {
 
     rm -f $TMP_DIR/physdev
 
-    echo '#bin/sh' > /var/lib/shorewall/restore-$$
-    echo ". /usr/share/shorewall/functions" >> /var/lib/shorewall/restore-$$
 }
 
 #

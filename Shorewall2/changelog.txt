@@ -1,61 +1,8 @@
-Changes since 2.0.1
+Changes since 2.0.2
 
-1) Reformat the code in define_firewall().
+1) Remove restore files; don't generate them for non-statechanging
+   commands.
 
-2) Reimplement dynamic zones.
+2) Restore file now loads kernel modules.
 
-3) Tweak new dynamic zone implementation.
-
-4) Implement CONFIG_PATH.
-
-5) Apply Stijn Jonker's fix for CONFIG_PATH.
-
-6) Restore logic to make 'find_file' check for SHOREWALL_DIR separately.
-
-7) Allow CONFIG_PATH to be inherited.
-
-8) Fix ensure_config_path call.
-
-9) Make LOCAL and ALL INTERFACES independent in the nat file.
-
-10) Add "ko.gz" to the vast list of module suffixes that distributions
-    have invented.
-
-11) Update the bogons file
-
-12) Added example for log rate limiting knobs in shorewall.conf.
-
-13) Fix init.debian.sh.
-
-14) Implement the -q option.
-
-15) Add saved configuration support (iptables-save/iptables-restore
-    integration).
-
-16) Use modprobe if it is available.
-
-17) Lots of fixes to 'save'
-
-18) 'shorewall forget'
-
-19) SNAT/MASQUERADE by proto/port(s)
-
-20) Shorewall 2.0.2 Beta 1 changes.
-
-21) Fix ALL INTERFACES column parsing.
-
-22) Correct "shorewall delete" processing.
-
-23) Apply Alex Wilms's patch for install.sh
-
-24) Add ACCEPT+ and NONAT targets.
-
-25) Added 'initialized' extension script.
-
-26) Renamed 'initialized' to 'initdone'
-
-27) Applied Stijn Jonker's fix for "shorewall add"
-
-28) Correct typo that broke "shorewall delete"
-
-29) Apply Stijn Jonker's -q fix.
+3) Minor tweaks to the restore mechanism.

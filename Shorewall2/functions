@@ -163,6 +163,55 @@ separate_list() {
 }
 
 #
+# Load a Kernel Module
+#
+loadmodule() # $1 = module name, $2 - * arguments
+{
+    local modulename=$1
+    local modulefile
+    local suffix
+    moduleloader=modprobe
+
+    if ! qt which modprobe; then 
+	moduleloader=insmod
+    fi
+
+    if [ -z "$(lsmod | grep $modulename)" ]; then
+	shift
+	
+	for suffix in $MODULE_SUFFIX ; do
+	    modulefile=$MODULESDIR/${modulename}.${suffix}
+
+	    if [ -f $modulefile ]; then
+		case $moduleloader in
+		    insmod)
+			insmod $modulefile $*
+			;;
+		    *)
+			modprobe $modulename $*
+			;;
+		esac
+
+		return
+	    fi
+	done
+    fi
+}
+
+#
+# Reload the Modules
+#
+reload_kernel_modules() {
+
+    [ -z "$MODULESDIR" ] && MODULESDIR=/lib/modules/$(uname -r)/kernel/net/ipv4/netfilter
+
+    while read command; do 
+	eval $command
+    done
+
+}
+
+#
 # Find the zones
 #
 find_zones() # $1 = name of the zone file

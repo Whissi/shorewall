@@ -2,8 +2,6 @@
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
 "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
 <article>
-  <!--$Id$-->
-
   <articleinfo>
     <title>Ports Required for Various Services/Applications</title>
 
@@ -15,10 +13,12 @@
       </author>
     </authorgroup>
 
-    <pubdate>2002-07-30</pubdate>
+    <pubdate>2004-01-03</pubdate>
 
     <copyright>
       <year>2001-2002</year>
+
+      <year>2004</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -40,20 +40,31 @@
     </abstract>
   </articleinfo>
 
+  <note>
+    <para>In the rules that are shown in this document, the ACTION is shown as
+    ACCEPT. You may need to use DNAT (see <ulink url="FAQ.htm#faq30">FAQ 30</ulink>)
+    or you may want DROP or REJECT if you are trying to block the application.</para>
+  </note>
+
   <section>
     <title>NTP (Network Time Protocol)</title>
 
-    <para>UDP Port 123</para>
+    <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
+ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    udp        123</programlisting>
   </section>
 
   <section>
     <title>rdate</title>
 
-    <para>TCP Port 37</para>
+    <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
+ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        37</programlisting>
   </section>
 
   <section>
     <title>Usenet (NNTP)</title>
+
+    <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
+ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        119</programlisting>
 
     <para>TCP Port 119</para>
   </section>
@@ -61,15 +72,17 @@
   <section>
     <title>DNS</title>
 
-    <para>UDP Port 53. If you are configuring a DNS client, you will probably
-    want to open TCP Port 53 as well. If you are configuring a server, only
-    open TCP Port 53 if you will return long replies to queries or if you need
-    to enable ZONE transfers. In the latter case, be sure that your server is
-    properly configured.</para>
+    <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
+ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    udp        53
+ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        53</programlisting>
   </section>
 
   <section>
     <title>ICQ</title>
+
+    <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
+ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    udp        4000
+ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        53</programlisting>
 
     <para>UDP Port 4000. You will also need to open a range of TCP ports which
     you can specify to your ICQ client. By default, clients use 4000-4100.</para>
@@ -78,73 +91,100 @@
   <section>
     <title>PPTP</title>
 
-    <para>Protocol 47 (NOT port 47) and TCP Port 1723 (Lots more information
-    <ulink url="PPTP.htm">here</ulink> and <ulink url="VPN.htm">here</ulink>).</para>
+    <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
+ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    47    
+ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        1723</programlisting>
+
+    <para>Lots more information <ulink url="PPTP.htm">here</ulink> and <ulink
+    url="VPN.htm">here</ulink>.</para>
   </section>
 
   <section>
     <title>IPSEC</title>
 
-    <para>Protocols 50 and 51 (NOT ports 50 and 51) and UDP Port 500. These
-    should be opened in both directions (Lots more information <ulink
-    url="IPSEC.htm">here</ulink> and <ulink url="VPN.htm">here</ulink>)</para>
+    <programlisting>#ACTION    SOURCE         DESTINATION      PROTO      DEST PORT(S)
+ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>     &#60;destination&#62;</emphasis>    50     
+ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>     &#60;destination&#62;</emphasis>    51
+ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>     &#60;destination&#62;</emphasis>    udp        500
+ACCEPT     <emphasis>&#60;destination&#62;</emphasis>  <emphasis>&#60;source&#62;</emphasis>         50     
+ACCEPT     <emphasis>&#60;destination&#62;</emphasis>  <emphasis>&#60;source&#62;</emphasis>         51
+ACCEPT     <emphasis>&#60;destination&#62;</emphasis>  <emphasis>&#60;source&#62;</emphasis>         udp        500</programlisting>
+
+    <para>Lots more information <ulink url="IPSEC.htm">here</ulink> and <ulink
+    url="VPN.htm">here</ulink>.</para>
   </section>
 
   <section>
-    <title>SMTP (email)</title>
+    <title>SMTP</title>
 
-    <para>TCP Port 25.</para>
+    <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
+ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        25</programlisting>
   </section>
 
   <section>
     <title>Pop3</title>
 
     <para>TCP Port 110 (Secure Pop3 is TCP Port 995)</para>
+
+    <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
+ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        110           #Unsecure Pop3
+ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        995           #Secure Pop3</programlisting>
   </section>
 
   <section>
     <title>IMAP</title>
 
-    <para>TCP Port 143 (Secure IMAP is TCP Port 993)</para>
+    <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
+ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        143           #Unsecure IMAP
+ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        993           #Secure IMAP</programlisting>
   </section>
 
   <section>
     <title>Telnet</title>
 
-    <para>TCP Port 23.</para>
+    <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
+ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        23</programlisting>
   </section>
 
   <section>
     <title>SSH</title>
 
-    <para>TCP Port 22.</para>
+    <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
+ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        22</programlisting>
   </section>
 
   <section>
     <title>Auth (identd)</title>
 
-    <para>TCP Port 113</para>
+    <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
+ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        113</programlisting>
   </section>
 
   <section>
     <title>Web Access</title>
 
-    <para>TCP Ports 80 and 443.</para>
+    <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
+ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        80       #Insecure HTTP
+ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        443      #Secure HTTP</programlisting>
   </section>
 
   <section>
     <title>FTP</title>
 
-    <para>TCP port 21 plus look <ulink url="FTP.html">here</ulink> for much
-    more information.</para>
+    <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
+ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        21</programlisting>
+
+    <para>Look <ulink url="FTP.html">here</ulink> for much more information.</para>
   </section>
 
   <section>
     <title>SMB/NMB (Samba/Windows Browsing/File Sharing)</title>
 
-    <para>TCP Ports 137, 139 and 445.</para>
-
-    <para>UDP Ports 137-139.</para>
+    <programlisting>#ACTION    SOURCE         DESTINATION      PROTO      DEST PORT(S)
+ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>     &#60;destination&#62;</emphasis>    tcp        137,139,445     
+ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>     &#60;destination&#62;</emphasis>    udp        137:139
+ACCEPT     <emphasis>&#60;destination&#62;</emphasis>  <emphasis>&#60;source&#62;</emphasis>         tcp        137,139,445
+ACCEPT     <emphasis>&#60;destination&#62;</emphasis>  <emphasis>&#60;source&#62;</emphasis>         udp        137:139</programlisting>
 
     <para>Also, see <ulink url="samba.htm">this page</ulink>.</para>
   </section>
@@ -152,9 +192,12 @@
   <section>
     <title>Traceroute</title>
 
-    <para>UDP ports 33434 through 33434+&#60;max number of hops&#62;-1</para>
+    <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
+ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    udp        33434:33443        #Good for 10 hops
+ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    icmp       8</programlisting>
 
-    <para>ICMP type 8 (<quote>ping</quote>)</para>
+    <para>UDP traceroute uses ports 33434 through 33434+&#60;max number of
+    hops&#62;-1</para>
   </section>
 
   <section>
@@ -163,99 +206,22 @@
     <para>I personally use the following rules for opening access from zone z1
     to a server with IP address a.b.c.d in zone z2:</para>
 
-    <informaltable>
-      <tgroup cols="7">
-        <thead>
-          <row>
-            <entry align="center">ACTION</entry>
-
-            <entry align="center">SOURCE</entry>
-
-            <entry align="center">DESTINATION</entry>
-
-            <entry align="center">PROTOCOL</entry>
-
-            <entry align="center">PORT(S)</entry>
-
-            <entry align="center">SOURCE PORT(S)</entry>
-
-            <entry align="center">ORIGINAL DEST</entry>
-          </row>
-        </thead>
-
-        <tbody>
-          <row>
-            <entry>ACCEPT</entry>
-
-            <entry>z1</entry>
-
-            <entry>z2:a.b.c.d</entry>
-
-            <entry>udp</entry>
-
-            <entry>111</entry>
-
-            <entry></entry>
-
-            <entry></entry>
-          </row>
-
-          <row>
-            <entry>ACCEPT</entry>
-
-            <entry>z1</entry>
-
-            <entry>z2:a.b.c.d</entry>
-
-            <entry>tcp</entry>
-
-            <entry>111</entry>
-
-            <entry></entry>
-
-            <entry></entry>
-          </row>
-
-          <row>
-            <entry>ACCEPT</entry>
-
-            <entry>z1</entry>
-
-            <entry>z2:a.b.c.d</entry>
-
-            <entry>udp</entry>
-
-            <entry>2049</entry>
-
-            <entry></entry>
-
-            <entry></entry>
-          </row>
-
-          <row>
-            <entry>ACCEPT</entry>
-
-            <entry>z1</entry>
-
-            <entry>z2:a.b.c.d</entry>
-
-            <entry>udp</entry>
-
-            <entry>32700:</entry>
-
-            <entry></entry>
-
-            <entry></entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </informaltable>
+    <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
+ACCEPT     <emphasis>&#60;z1&#62;</emphasis>  <emphasis>    &#60;z2&#62;</emphasis>:a.b.c.d     tcp        111
+ACCEPT     <emphasis>&#60;z1&#62;</emphasis>  <emphasis>    &#60;z2&#62;</emphasis>:a.b.c.d     udp        111
+ACCEPT     <emphasis>&#60;z1&#62;</emphasis>  <emphasis>    &#60;z2&#62;</emphasis>:a.b.c.d     udp        2049
+ACCEPT     <emphasis>&#60;z1&#62;</emphasis>  <emphasis>    &#60;z2&#62;</emphasis>:a.b.c.d     udp        32700:</programlisting>
   </section>
 
   <section>
     <title>VNC</title>
 
     <para>TCP port 5900 + &#60;display number&#62;.</para>
+
+    <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
+ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        5901               #Display Number 1
+ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        5902               #Display Number 2
+...</programlisting>
   </section>
 
   <section>
@@ -267,4 +233,12 @@
     <para>Still looking? Try <ulink
     url="http://www.networkice.com/advice/Exploits/Ports">http://www.networkice.com/advice/Exploits/Ports</ulink></para>
   </section>
+
+  <appendix>
+    <title>Revision History</title>
+
+    <para><revhistory><revision><revnumber>1.2</revnumber><date>2004-01-03</date><authorinitials>TE</authorinitials><revremark>Add
+    rules file entries.</revremark></revision><revision><revnumber>1.1</revnumber><date>2002-07-30</date><authorinitials>TE</authorinitials><revremark>Initial
+    version converted to Docbook XML</revremark></revision></revhistory></para>
+  </appendix>
 </article>

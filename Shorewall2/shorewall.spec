@@ -1,6 +1,6 @@
 %define name shorewall
 %define version 2.2.0
-%define release 0Beta7
+%define release 0Beta8
 %define prefix /usr
 
 Summary: Shoreline Firewall is an iptables-based firewall for Linux systems.
@@ -137,6 +137,8 @@ fi
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel
 
 %changelog
+* Sat Dec 11 2004 Tom Eastep tom@shorewall.net
+- Updated to 2.2.0-0Beta8
 * Mon Nov 29 2004 Tom Eastep tom@shorewall.net
 - Updated to 2.2.0-0Beta7
 * Fri Nov 26 2004 Tom Eastep tom@shorewall.net

@@ -1,5 +1,5 @@
 #	
-#	Shorewall 2.0 - Sample Masquerade file For Two Interfaces
+#	Shorewall 2.2 - Sample Masquerade file For Two Interfaces
 #
 #	etc/shorewall/masq
 #
@@ -21,6 +21,24 @@
 #			This may be qualified by adding the character
 #			":" followed by a destination host or subnet.
 #
+#			If you wish to inhibit the action of ADD_SNAT_ALIASES
+#			for this entry then include the ":" but omit the digit:
+#
+#                              eth0:
+#                              eth2::192.0.2.32/27
+#
+#			Normally Masq/SNAT rules are evaluated after those for
+#			one-to-one NAT (/etc/shorewall/nat file). If you want
+#			the rule to be applied before one-to-one NAT rules,
+#			prefix the interface name with "+":
+#
+#				+eth0
+#				+eth0:192.0.2.32/27
+#				+eth0:2
+#
+#			This feature should only be required if you need to
+#			insert rules in this file that preempt entries in
+#			/etc/shorewall/nat.
 #
 #	SUBNET
 #			Subnet that you wish to masquerade. You can specify this as
@@ -54,6 +72,57 @@
 #			Example: 206.124.146.177-206.124.146.180
 #
 #			This column may not contain DNS names.
+#
+#	PROTO -- (Optional)
+#			If you wish to restrict this entry to a
+#			particular protocol then enter the protocol
+#			name (from /etc/protocols) or number here.
+#
+#	PORT(S) -- (Optional)
+#			If the PROTO column specifies TCP (protocol 6)
+#			or UDP (protocol 17) then you may list one
+#			or more port numbers (or names from
+#			/etc/services) separated by commas or you
+#			may list a single port range
+#			(<low port>:<high port>).
+#
+#			Where a comma-separated list is given, your
+#			kernel and iptables must have multiport match
+#			support and a maximum of 15 ports may be listed.
+#
+#	IPSEC -- (Optional)
+#			If you specify a value other than "-" in this
+#			column, you must be running kernel 2.6 and
+#			your kernel and iptables must include policy
+#                       match support.
+#
+#			Comma-separated list of options from the following.
+#                       Only packets that will be encrypted via an SA that
+#                       matches these options will have their source address
+#                       changed.
+#
+#                                      reqid=<number> where <number> is specified
+#                                      using setkey(8) using the 'unique:<number>
+#                                      option for the SPD level.
+#
+#                                      spi=<number> where <number> is the SPI of
+#                                      the SA.
+#
+#                                      proto=ah|esp|ipcomp
+#
+#                                      mode=transport|tunnel
+#
+#                                      tunnel-src=<address>[/<mask>] (only
+#                                      available with mode=tunnel)
+#
+#                                      tunnel-dst=<address>[/<mask>] (only
+#                                      available with mode=tunnel)
+#
+#                                      strict  Means that packets must match all
+#                                              rules.
+#
+#                                      next    Separates rules; can only be used
+#                                              with strict..
 #
 #		Example 1:
 #
@@ -99,7 +168,21 @@
 #			#INTERFACE		SUBNET		ADDRESS
 #			eth0:0			192.168.1.0/24	206.124.146.176
 #
-##############################################################################
-#INTERFACE		SUBNET		ADDRESS
+#		Example 5:
+#
+#			You want all outgoing SMTP traffic entering the firewall
+#			on eth1 to be sent from eth0 with source IP address
+#			206.124.146.177. You want all other outgoing traffic
+#			from eth1 to be sent from eth0 with source IP address
+#			206.124.146.176.
+#
+#			INTERFACE  SUBNET  ADDRESS         PROTO    PORT(S)
+#			eth0       eth1    206.124.146.177 tcp      smtp
+#			eth0       eth1    206.124.146.176
+#
+#			THE ORDER OF THE ABOVE TWO RULES IS SIGNIFICANT!!!!!
+#
+#############################################################################
+#INTERFACE		SUBNET		ADDRESS		PROTO	PORT(S)	IPSEC
 eth0			eth1
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE

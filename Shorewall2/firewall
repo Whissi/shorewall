@@ -1900,7 +1900,7 @@ delete_proxy_arp() {
 # Setup Static Network Address Translation (NAT)
 #
 setup_nat() {
-    local external= interface= internal= allints= localnat= dnatonly=
+    local external= interface= internal= allints= localnat=
 
     validate_one() #1 = Variable Name, $2 = Column name, $3 = value 
     {
@@ -1936,14 +1936,13 @@ setup_nat() {
 
 	validate_one allints  "ALL INTERFACES" $allints
 	validate_one localnat "LOCAL"          $localnat
-	validate_one dnatonly "DNAT ONLY"      $dnatonly
 	
 	if [ -n "$allints" ]; then
 	    addnatrule nat_in  -d $external -j DNAT --to-destination $internal
-	    [ -n "$dnatonly" ] || addnatrule nat_out -s $internal -j SNAT --to-source $external
+	    addnatrule nat_out -s $internal -j SNAT --to-source $external
 	else
 	    addnatrule $(input_chain $iface) -d $external -j DNAT --to-destination $internal
-	    [ -n "$dnatonly" ] || addnatrule $(output_chain $iface) -s $internal -j SNAT --to-source $external
+	    addnatrule $(output_chain $iface) -s $internal -j SNAT --to-source $external
 	fi
 	
 	[ -n "$localnat" ] && \
@@ -1961,8 +1960,8 @@ setup_nat() {
 
     save_progress_message "Restoring one-to-one NAT..."
 
-    while read external interface internal allints localnat dnatonly; do
-	expandv external interface internal allints localnat dnatonly
+    while read external interface internal allints localnat; do
+	expandv external interface internal allints localnat
 	
 	do_one_nat
 
@@ -5714,7 +5713,7 @@ activate_rules()
 	    addrulejump PREROUTING  $(dnat_chain $zone) -i $interface $(match_source_hosts $networks) $(match_ipsec_in $zone $host)
 	    addrulejump POSTROUTING $(snat_chain $zone) -o $interface $(match_dest_hosts $networks) $(match_ipsec_out $zone $host)
 
-	    run_iptables -A $(input_chain $interface) $(match_source_hosts $networks) -j $chain2
+	    run_iptables -A $(input_chain $interface) $(match_source_hosts $networks) $(match_ipsec_in $zone $host) -j $chain2
 
 	    [ -n "$complex" ] && \
 		run_iptables -A $(forward_chain $interface) $(match_source_hosts $networks) $(match_ipsec_in $zone $host) -j $frwd_chain

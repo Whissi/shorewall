@@ -9,7 +9,15 @@
 # Columns are:
 #
 #	INTERFACE -- Outgoing interface. This is usually your internet
-#		     interface. This may be qualified by adding the character
+#		     interface. If ADD_SNAT_ALIASES=Yes in
+#		     /etc/shorewall/shorewall.conf, you may add ":" and
+#		     a digit to indicate that you want the alias added with
+#                    that name (e.g., eth0:0). This will allow the alias to
+#		     be displayed with ifconfig. THAT IS THE ONLY USE FOR 
+#		     THE ALIAS NAME AND IT MAY NOT APPEAR IN ANY OTHER 
+#		     PLACE IN YOUR SHOREWALL CONFIGURATION.
+#
+#		     This may be qualified by adding the character
 #                    ":" followed by a destination host or subnet.
 #
 #
@@ -74,13 +82,12 @@
 #	Example 4:
 #
 #		  You want all outgoing traffic from 192.168.1.0/24 through
-#		  eth0 to use source address 206.124.146.176.
+#		  eth0 to use source address 206.124.146.176 which is NOT the
+#		  primary address of eth0. You want 206.124.146.176 added to 
+#		  be added to eth0 with name eth0:0.
 #
-#			eth0	192.168.1.0/24	206.124.146.176
+#			eth0:0	192.168.1.0/24	206.124.146.176
 #
-#		  This would normally be done when you have a static external
-#		  IP address since it makes the processing of outgoing 
-#		  packets somewhat faster.
 ##############################################################################
 #INTERFACE	        SUBNET		ADDRESS
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE

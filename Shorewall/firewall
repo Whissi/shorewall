@@ -2921,12 +2921,32 @@ setup_masq()
     setup_one() {
 	local using
 
-	if [ "$interface" = "${interface%:*}" ]; then
-	    destnet="0.0.0.0/0"
-	else
-	    destnet="${interface#*:}"
-	    interface="${interface%:*}"
-	fi
+	case $fullinterface in
+	    *:*:*)
+		# Both alias name and subnet
+		destnet="${fullinterface##*:}"
+		fullinterface="${fullinterface%:*}"
+		;;
+	    *:*)
+		# Alias name OR subnet
+		case ${fullinterface#*:} in
+		    *.*)
+			# It's a subnet
+			destnet="${fullinterface#*:}"
+			fullinterface="${fullinterface%:*}"
+			;;
+		    *)
+			#it's an alias name
+			destnet="0.0.0.0/0"
+			;;
+		esac
+		;;
+	    *)
+		destnet="0.0.0.0/0"
+		;;
+	esac
+
+	interface=${fullinterface%:*}
 
 	if ! list_search $interface $all_interfaces; then
 	    fatal_error "Error: Unknown interface $interface"
@@ -2966,7 +2986,7 @@ setup_masq()
 
 	if [ -n "$address" -a -n "$ADD_SNAT_ALIASES" ]; then
 	    list_search $address $aliases_to_add || \
-		aliases_to_add="$aliases_to_add $address $interface" 
+		aliases_to_add="$aliases_to_add $address $fullinterface" 
 	fi
 
 	destination=$destnet
@@ -2998,23 +3018,19 @@ setup_masq()
 	    destnet="-d $destnet"
 	fi
 
-	if [ -n "$address" ]; then
-	    if [ -n "$subnet" ]; then
-		for s in $subnet; do
-		    addnatrule $chain -s $s $destnet $iface \
-			-j SNAT --to-source $address
-		    echo "   To $destination from $s through ${interface} using $address"
-		done
-	    else
-		addnatrule $chain $destnet $iface \
-			-j SNAT --to-source $address
-		echo "   To $destination from $source through ${interface} using $address"
-	    fi
-	elif [ -n "$subnet" ]; then
+	if [ -n "$subnet" ]; then
 	    for s in $subnet; do
-		addnatrule $chain -s $s $destnet $iface -j MASQUERADE
-		echo "   To $destination from $s through ${interface}"
+		if [ -n "$address" ]; then
+		    addnatrule $chain -s $s $destnet $iface -j SNAT --to-source $address
+		    echo "   To $destination from $s through ${interface} using $address"
+		else
+		    addnatrule $chain -s $s $destnet $iface -j MASQUERADE
+		    echo "   To $destination from $s through ${interface}"
+		fi
 	    done
+	elif [ -n "$address" ]; then
+	    addnatrule $chain $destnet $iface -j SNAT --to-source $address
+	    echo "   To $destination from $source through ${interface} using $address"
 	else
 	    addnatrule $chain $destnet $iface -j MASQUERADE
 	    echo "   To $destination from $source through ${interface}"
@@ -3026,8 +3042,8 @@ setup_masq()
 
     [ -n "$NAT_ENABLED" ] && echo "Masqueraded Subnets and Hosts:"
 
-    while read interface subnet address; do
-	expandv interface subnet address
+    while read fullinterface subnet address; do
+	expandv fullinterface subnet address
 	[ -n "$NAT_ENABLED" ] && setup_one || \
 	    error_message "Warning: NAT disabled; masq rule ignored"
     done < $TMP_DIR/masq

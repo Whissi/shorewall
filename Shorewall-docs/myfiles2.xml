@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-02-04</pubdate>
+    <pubdate>2004-02-08</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -47,7 +47,7 @@
 
     <caution>
       <para>The configuration shown here corresponds to Shorewall version
-      2.0.0-Alpha2. It may use features not available in earlier Shorewall
+      2.0.0-Beta1. It may use features not available in earlier Shorewall
       releases.</para>
     </caution>
 
@@ -341,16 +341,14 @@ gre                     net     $TEXAS
       </blockquote>
     </section>
 
-    <section>
+    <section id="Actions">
       <title>Actions File</title>
 
       <blockquote>
         <programlisting>#ACTION
-DropBcast           #Silently Drops Broadcast Traffic
 DropSMB             #Silently Drops Microsoft SMB Traffic
 RejectSMB           #Silently Reject Microsoft SMB Traffic
 DropUPnP            #Silently Drop UPnP Probes
-DropNonSyn          #Silently Drop Non-syn TCP packets
 RejectAuth          #Silently Reject Auth
 DropPing            #Silently Drop Ping
 DropDNSrep          #Silently Drop DNS Replies
@@ -391,10 +389,10 @@ ACCEPT   $MIRRORS
 #                                         PORT(S)   PORT(S)     LIMIT        GROUP
 RejectAuth
 AllowPing
-DropBcast
+dropBcast
 DropSMB
 DropUPnP
-DropNonSyn
+dropNonSyn
 DropDNSrep</programlisting>
       </blockquote>
     </section>
@@ -411,11 +409,14 @@ DropDNSrep</programlisting>
 #                                         PORT(S)   PORT(S)     LIMIT        GROUP
 RejectAuth
 AllowPing
-DropBcast
+dropBcast
 RejectSMB
 DropUPnP
-DropNonSyn
-DropDNSrep</programlisting>
+dropNonSyn
+DropDNSrep
+DROP      loc:eth2:!192.168.1.0/24       #So that my braindead Windows[tm] XP system doesn&#39;t flood my log
+                                         #with NTP requests with a source address in 16.0.0.0/8 (address of
+                                         #its PPTP tunnel to HP).</programlisting>
       </blockquote>
     </section>
 

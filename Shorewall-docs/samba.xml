@@ -15,10 +15,12 @@
       </author>
     </authorgroup>
 
-    <pubdate>2002-10-22</pubdate>
+    <pubdate>2004-02-08</pubdate>
 
     <copyright>
       <year>2002</year>
+
+      <year>2004</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -36,15 +38,25 @@
   <para>If you wish to run Samba on your firewall and access shares between
   the firewall and local hosts, you need the following rules:</para>
 
-  <para><emphasis role="bold">/etc/shorewall/rules:</emphasis><informaltable><tgroup
-  cols="7"><thead><row><entry>ACTION</entry><entry>SOURCE</entry><entry>DESTINATION</entry><entry>PROTOCOL</entry><entry>PORT(S)</entry><entry>SOURCE
-  PORT(S)</entry><entry>ORIGINAL DEST</entry></row></thead><tbody><row><entry>ACCEPT</entry><entry>fw</entry><entry>loc</entry><entry>udp</entry><entry>137:139</entry><entry></entry><entry></entry></row><row><entry>ACCEPT</entry><entry>fw</entry><entry>loc</entry><entry>tcp</entry><entry>137,139,445</entry><entry></entry><entry></entry></row><row><entry>ACCEPT</entry><entry>fw</entry><entry>loc</entry><entry>udp</entry><entry>1024:</entry><entry>137</entry><entry></entry></row><row><entry>ACCEPT</entry><entry>loc</entry><entry>fw</entry><entry>udp</entry><entry>137:139</entry><entry></entry><entry></entry></row><row><entry>ACCEPT</entry><entry>loc</entry><entry>fw</entry><entry>tcp</entry><entry>137,139,445</entry><entry></entry><entry></entry></row><row><entry>ACCEPT</entry><entry>loc</entry><entry>fw</entry><entry>udp</entry><entry>1024:</entry><entry>137</entry><entry></entry></row></tbody></tgroup></informaltable></para>
+  <para><emphasis role="bold">/etc/shorewall/rules:</emphasis><programlisting>#ACTION   SOURCE   DEST   PROTO    DEST PORT(S)   SOURCE
+#                                                 PORT(S)
+ACCEPT    fw       loc    udp      137:139
+ACCEPT    fw       loc    tcp      137,139,445
+ACCEPT    fw       loc    udp      1024:          137
+ACCEPT    loc      fw     udp      137:139
+ACCEPT    loc      fw     tcp      137,139,445
+ACCEPT    loc      fw     udp      1024:          137</programlisting></para>
 
   <para>To pass traffic SMB/Samba traffic between zones Z1 and Z2:</para>
 
-  <para><emphasis role="bold">/etc/shorewall/rules:</emphasis><informaltable><tgroup
-  cols="7"><thead><row><entry>ACTION</entry><entry>SOURCE</entry><entry>DESTINATION</entry><entry>PROTOCOL</entry><entry>PORT(S)</entry><entry>SOURCE
-  PORT(S)</entry><entry>ORIGINAL DEST</entry></row></thead><tbody><row><entry>ACCEPT</entry><entry>Z1</entry><entry>Z2</entry><entry>udp</entry><entry>137:139</entry><entry></entry><entry></entry></row><row><entry>ACCEPT</entry><entry>Z1</entry><entry>Z2</entry><entry>tcp</entry><entry>137,139,445</entry><entry></entry><entry></entry></row><row><entry>ACCEPT</entry><entry>Z1</entry><entry>Z2</entry><entry>udp</entry><entry>1024:</entry><entry>137</entry><entry></entry></row><row><entry>ACCEPT</entry><entry>Z2</entry><entry>Z1</entry><entry>udp</entry><entry>137:139</entry><entry></entry><entry></entry></row><row><entry>ACCEPT</entry><entry>Z2</entry><entry>Z1</entry><entry>tcp</entry><entry>137,139,445</entry><entry></entry><entry></entry></row><row><entry>ACCEPT</entry><entry>Z2</entry><entry>Z1</entry><entry>udp</entry><entry>1024:</entry><entry>137</entry><entry></entry></row></tbody></tgroup></informaltable></para>
+  <para><emphasis role="bold">/etc/shorewall/rules:</emphasis><programlisting>#ACTION   SOURCE   DEST   PROTO    DEST PORT(S)   SOURCE
+#                                                 PORT(S)
+ACCEPT    Z1       Z2     udp      137:139
+ACCEPT    Z1       Z2     tcp      137,139,445
+ACCEPT    Z1       Z2     udp      1024:          137
+ACCEPT    Z2       Z1     udp      137:139
+ACCEPT    Z2       Z1     tcp      137,139,445
+ACCEPT    Z1       Z1     udp      1024:          137</programlisting></para>
 
   <para>To make network browsing (<quote>Network Neighborhood</quote>) work
   properly between Z1 and Z2 requires a Windows Domain Controller and/or a

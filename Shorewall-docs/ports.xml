@@ -13,7 +13,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-01-26</pubdate>
+    <pubdate>2004-02-05</pubdate>
 
     <copyright>
       <year>2001-2002</year>
@@ -220,12 +220,18 @@ ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62
   <section>
     <title>VNC</title>
 
-    <para>TCP port 5900 + &#60;display number&#62;.</para>
+    <para>Vncviewer -&#62; Vncserver is TCP port 5900 + &#60;display
+    number&#62;.</para>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
 ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        5901               #Display Number 1
 ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        5902               #Display Number 2
 ...</programlisting>
+
+    <para>Vncserver to Vncviewer in listen mode is TCP port 5500.</para>
+
+    <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
+ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        5500</programlisting>
   </section>
 
   <section>
@@ -249,7 +255,8 @@ ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62
   <appendix>
     <title>Revision History</title>
 
-    <para><revhistory><revision><revnumber>1.4</revnumber><date>2004-01-26</date><authorinitials>TE</authorinitials><revremark>Correct
+    <para><revhistory><revision><revnumber>1.5</revnumber><date>2004-02-05</date><authorinitials>TE</authorinitials><revremark>Added
+    information about VNC viewers in listen mode.</revremark></revision><revision><revnumber>1.4</revnumber><date>2004-01-26</date><authorinitials>TE</authorinitials><revremark>Correct
     ICQ.</revremark></revision><revision><revnumber>1.3</revnumber><date>2004-01-04</date><authorinitials>TE</authorinitials><revremark>Alphabetize</revremark></revision><revision><revnumber>1.2</revnumber><date>2004-01-03</date><authorinitials>TE</authorinitials><revremark>Add
     rules file entries.</revremark></revision><revision><revnumber>1.1</revnumber><date>2002-07-30</date><authorinitials>TE</authorinitials><revremark>Initial
     version converted to Docbook XML</revremark></revision></revhistory></para>

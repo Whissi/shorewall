@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-01-19</pubdate>
+    <pubdate>2004-02-04</pubdate>
 
     <copyright>
       <year>2003-2004</year>
@@ -45,7 +45,8 @@
   your /etc/shorewall/rules file (before any ACCEPT rules whose source is the
   <quote>loc</quote> zone).</para>
 
-  <programlisting>        QUEUE   loc        net        tcp
+  <programlisting>        #ACTION SOURCE     DEST       PROTO
+        QUEUE   loc        net        tcp
         QUEUE   loc        net        udp
         QUEUE   loc        fw         udp</programlisting>
 
@@ -53,7 +54,8 @@
   and restart Shorewall.</para>
 
   <tip>
-    <para>There is an ftwall init script for use with <trademark>SuSE</trademark>
-    Linux at <ulink url="http://shorewall.net/pub/shorewall/contrib/ftwall">http://shorewall.net/pub/shorewall/contrib/ftwall</ulink>.</para>
+    <para>There are ftwall init scripts for use with <trademark>SuSE</trademark>
+    and <trademark>Debian</trademark> Linux at <ulink
+    url="http://shorewall.net/pub/shorewall/contrib/ftwall">http://shorewall.net/pub/shorewall/contrib/ftwall</ulink>.</para>
   </tip>
 </article>

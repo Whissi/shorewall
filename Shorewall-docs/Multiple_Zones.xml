@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-02-04</pubdate>
+    <pubdate>2004-02-07</pubdate>
 
     <copyright>
       <year>2003</year>
@@ -290,5 +290,41 @@ loc1                eth1:192.168.1.8/29</programlisting></para>
     <programlisting>#SOURCE             DEST                 POLICY
 loc                 loc1                 NONE
 loc1                loc                  NONE</programlisting>
+  </section>
+
+  <section id="OneArmed">
+    <title>One-armed Router</title>
+
+    <para>Nested zones may also be used to configure a <quote>one-armed</quote>
+    router (I don&#39;t call it a <quote>firewall</quote> because it is very
+    insecure. For example, if you connect to the internet via cable modem,
+    your next door neighbor has full access to your local systems as does
+    everyone else connected to the same cable modem head-end controller). Here
+    eth0 is configured with both a public IP address and an RFC 1918 address
+    (More on that topic may be found <ulink
+    url="Shorewall_and_Aliased_Interfaces.html">here</ulink>). Hosts in the
+    <quote>loc</quote> zone are configured with their default gateway set to
+    the Shorewall router&#39;s RFC1918 address.<graphic
+    fileref="images/MultiZone3.png" /></para>
+
+    <para><filename>/etc/shorewall/zones</filename></para>
+
+    <programlisting>#ZONE               DISPLAY             COMMENTS
+loc                 Local               Local Zone
+net                 Internet            The big bad Internet</programlisting>
+
+    <note>
+      <para>the sub-zone (loc) is defined first!</para>
+    </note>
+
+    <para><filename>/etc/shorewall/interfaces</filename></para>
+
+    <programlisting>#ZONE               INTERFACE           BROADCAST
+net                 eth0                detect</programlisting>
+
+    <para><filename>/etc/shorewall/hosts</filename></para>
+
+    <programlisting>#ZONE               HOSTS
+loc                 eth0:192.168.1.0/24</programlisting>
   </section>
 </article>

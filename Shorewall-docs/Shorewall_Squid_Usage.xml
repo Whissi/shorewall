@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-01-20</pubdate>
+    <pubdate>2004-02-04</pubdate>
 
     <copyright>
       <year>2003-2004</year>
@@ -50,8 +50,8 @@
 
       <itemizedlist>
         <listitem>
-          <para>In all cases, Squid should be configured to run as a
-          transparent proxy as described at
+          <para>In all cases, Squid should be configured to run as a transrent
+          proxy as described at
           http://tldp.org/HOWTO/mini/TransparentProxy.html.</para>
         </listitem>
 
@@ -90,11 +90,11 @@ MANGLE_ENABLED=Yes</programlisting>
     <para>Three different configurations are covered:</para>
 
     <simplelist>
-      <member><xref linkend="Firewall" /></member>
+      <member>Squid (transparent) Running on the Firewall</member>
 
-      <member><xref linkend="Local" /></member>
+      <member>Squid (transparent) Running in the local Network</member>
 
-      <member><xref linkend="DMZ" /></member>
+      <member>Squid (transparent) Running in a DMZ</member>
     </simplelist>
 
     <section id="Firewall">
@@ -105,65 +105,12 @@ MANGLE_ENABLED=Yes</programlisting>
       proxy running on the firewall and listening on port 3128. Squid will of
       course require access to remote web servers.</para>
 
-      <para>In /etc/shorewall/rules:</para>
+      <para>In <filename>/etc/shorewall/rules</filename>:</para>
 
-      <table>
-        <title>/etc/shorewall/rules</title>
-
-        <tgroup cols="7">
-          <thead>
-            <row>
-              <entry align="center">ACTION</entry>
-
-              <entry align="center">SOURCE</entry>
-
-              <entry align="center">DEST</entry>
-
-              <entry align="center">PROTO</entry>
-
-              <entry align="center">DEST PORT(S)</entry>
-
-              <entry align="center">SOURCE PORT(S)</entry>
-
-              <entry align="center">ORIGINAL DEST</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>REDIRECT</entry>
-
-              <entry>loc</entry>
-
-              <entry>3128</entry>
-
-              <entry>tcp</entry>
-
-              <entry>www</entry>
-
-              <entry>-</entry>
-
-              <entry>!206.124.146.177</entry>
-            </row>
-
-            <row>
-              <entry>ACCEPT</entry>
-
-              <entry>fw</entry>
-
-              <entry>net</entry>
-
-              <entry>tcp</entry>
-
-              <entry>www</entry>
-
-              <entry></entry>
-
-              <entry></entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </table>
+      <programlisting>#ACTION   SOURCE     DEST     PROTO    DEST PORT(S)     SOURCE     ORIGINAL
+#                                                       PORT(S)    DEST
+REDIRECT  loc        3228     tcp      www              -          !206.124.146.177
+ACCEPT    fw         net      tcp      www</programlisting>
 
       <para>There may be a requirement to exclude additional destination hosts
       or networks from being redirected. For example, you might also want
@@ -171,54 +118,16 @@ MANGLE_ENABLED=Yes</programlisting>
 
       <para>If you are running Shorewall version 1.4.5 or later, you may just
       add the additional hosts/networks to the ORIGINAL DEST column in your
-      REDIRECT rule:</para>
+      REDIRECT rule.</para>
 
-      <table>
-        <title>/etc/shorewall/rules</title>
-
-        <tgroup cols="7">
-          <thead>
-            <row>
-              <entry align="center">ACTION</entry>
-
-              <entry align="center">SOURCE</entry>
-
-              <entry align="center">DEST</entry>
-
-              <entry align="center">PROTO</entry>
-
-              <entry align="center">DEST PORT(S)</entry>
-
-              <entry align="center">SOURCE PORT(S)</entry>
-
-              <entry align="center">ORIGINAL DEST</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>REDIRECT</entry>
-
-              <entry>loc</entry>
-
-              <entry>3128</entry>
-
-              <entry>tcp</entry>
-
-              <entry>www</entry>
-
-              <entry>-</entry>
-
-              <entry>!206.124.146.177,130.252.100.0/24</entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </table>
+      <para><filename>/etc/shorewall/rules</filename>:<programlisting>#ACTION   SOURCE     DEST     PROTO    DEST PORT(S)     SOURCE     ORIGINAL
+#                                                       PORT(S)    DEST
+REDIRECT  loc        3228     tcp      www              -          !206.124.146.177,130.252.100.0/24</programlisting></para>
 
       <para>If you are running a Shorewall version earlier than 1.4.5, you
       must add a manual rule in /etc/shorewall/start:</para>
 
-      <programlisting>run_iptables -t nat -I loc_dnat -p tcp --dport www -d 130.252.100.0/24 -j RETURN</programlisting>
+      <programlisting><command>run_iptables -t nat -I loc_dnat -p tcp --dport www -d 130.252.100.0/24 -j RETURN</command></programlisting>
 
       <para>To exclude additional hosts or networks, just add additional
       similar rules.</para>
@@ -237,18 +146,18 @@ MANGLE_ENABLED=Yes</programlisting>
         <listitem>
           <para>* On your firewall system, issue the following command</para>
 
-          <programlisting>echo 202 www.out &#62;&#62; /etc/iproute2/rt_tables</programlisting>
+          <programlisting><command>echo 202 www.out &#62;&#62; /etc/iproute2/rt_tables</command></programlisting>
         </listitem>
 
         <listitem>
           <para>In /etc/shorewall/init, put:</para>
 
-          <programlisting>if [ -z &#34;`ip rule list | grep www.out`&#34; ] ; then
+          <programlisting><command>if [ -z &#34;`ip rule list | grep www.out`&#34; ] ; then
         ip rule add fwmark 202 table www.out
         ip route add default via 192.168.1.3 dev eth1 table www.out
         ip route flush cache
         echo 0 &#62; /proc/sys/net/ipv4/conf/eth1/send_redirects
-fi</programlisting>
+fi</command></programlisting>
         </listitem>
 
         <listitem>
@@ -258,144 +167,49 @@ fi</programlisting>
           </important>
 
           <para>If you are running Shorewall 1.4.2 or later, then in
-          /etc/shorewall/interfaces:</para>
+          <filename>/etc/shorewall/interfaces</filename>:</para>
 
-          <table>
-            <title>/etc/shorewall/interfaces</title>
-
-            <tgroup cols="4">
-              <thead>
-                <row>
-                  <entry align="center">ZONE</entry>
-
-                  <entry align="center">INTERFACE</entry>
-
-                  <entry align="center">BROADCAST</entry>
-
-                  <entry align="center">OPTIONS</entry>
-                </row>
-              </thead>
-
-              <tbody>
-                <row>
-                  <entry>loc</entry>
-
-                  <entry>eth1</entry>
-
-                  <entry>detect</entry>
-
-                  <entry><emphasis role="bold">routeback</emphasis></entry>
-                </row>
-              </tbody>
-            </tgroup>
-          </table>
+          <programlisting>#ZONE   INTERFACE    BROADCAST    OPTIONS
+loc     eth1         detect       <emphasis role="bold">routeback</emphasis>    </programlisting>
         </listitem>
 
         <listitem>
           <para>In /etc/shorewall/rules:</para>
 
-          <table>
-            <title>/etc/shorewall/rules</title>
-
-            <tgroup cols="7">
-              <thead>
-                <row>
-                  <entry align="center">ACTION</entry>
-
-                  <entry align="center">SOURCE</entry>
-
-                  <entry align="center">DEST</entry>
-
-                  <entry align="center">PROTO</entry>
-
-                  <entry align="center">DEST PORT(S)</entry>
-
-                  <entry align="center">SOURCE PORT(S)</entry>
-
-                  <entry align="center">ORIGINAL DEST</entry>
-                </row>
-              </thead>
-
-              <tbody>
-                <row>
-                  <entry>ACCEPT</entry>
-
-                  <entry>loc</entry>
-
-                  <entry>loc</entry>
-
-                  <entry>tcp</entry>
-
-                  <entry>www</entry>
-
-                  <entry></entry>
-
-                  <entry></entry>
-                </row>
-              </tbody>
-            </tgroup>
-          </table>
+          <programlisting>#ACTION   SOURCE    DEST     PROTO   DEST PORT(S)
+ACCEPT    loc       loc      tcp     www</programlisting>
 
           <orderedlist numeration="loweralpha">
             <listitem>
               <para>Alternativfely, if you are running Shorewall 1.4.0 you can
-              have the following policy in place of the above rule:</para>
+              have the following policy in place of the above rule.</para>
 
-              <table>
-                <title>/etc/shorewall/policy</title>
+              <para><filename>/etc/shorewall/policy</filename></para>
 
-                <tgroup cols="5">
-                  <thead>
-                    <row>
-                      <entry align="center">SOURCE</entry>
-
-                      <entry align="center">DESTINATION</entry>
-
-                      <entry align="center">POLICY</entry>
-
-                      <entry align="center">LOG LEVEL</entry>
-
-                      <entry align="center">BURST PARAMETERS</entry>
-                    </row>
-                  </thead>
-
-                  <tbody>
-                    <row>
-                      <entry>loc</entry>
-
-                      <entry>loc</entry>
-
-                      <entry>ACCEPT</entry>
-
-                      <entry></entry>
-
-                      <entry></entry>
-                    </row>
-                  </tbody>
-                </tgroup>
-              </table>
+              <programlisting>#SOURCE   DESTINATION   POLICY
+loc       loc           ACCEPT</programlisting>
             </listitem>
           </orderedlist>
         </listitem>
 
         <listitem>
-          <para>In /etc/shorewall/start add:</para>
+          <para>In <filename>/etc/shorewall/start</filename> add:</para>
 
-          <programlisting>iptables -t mangle -A PREROUTING -i eth1 -s ! 192.168.1.3 -p tcp --dport 80 -j MARK --set-mark 202</programlisting>
+          <programlisting><command>iptables -t mangle -A PREROUTING -i eth1 -s ! 192.168.1.3 -p tcp --dport 80 -j MARK --set-mark 202</command></programlisting>
         </listitem>
 
         <listitem>
           <para>On 192.168.1.3, arrange for the following command to be
           executed after networking has come up</para>
 
-          <programlisting>iptables -t nat -A PREROUTING -i eth0 -d ! 192.168.1.3 -p tcp --dport 80 -j REDIRECT --to-ports 3128</programlisting>
+          <programlisting><command>iptables -t nat -A PREROUTING -i eth0 -d ! 192.168.1.3 -p tcp --dport 80 -j REDIRECT --to-ports 3128</command></programlisting>
 
           <para>If you are running RedHat on the server, you can simply
           execute the following commands after you have typed the iptables
           command above:</para>
 
-          <programlisting>iptables-save &#62; /etc/sysconfig/iptables
-chkconfig --level 35 iptables on</programlisting>
+          <programlisting><command>iptables-save &#62; /etc/sysconfig/iptables
+chkconfig --level 35 iptables on</command></programlisting>
         </listitem>
       </orderedlist>
     </section>
@@ -411,17 +225,17 @@ chkconfig --level 35 iptables on</programlisting>
         <listitem>
           <para>On your firewall system, issue the following command</para>
 
-          <programlisting>echo 202 www.out &#62;&#62; /etc/iproute2/rt_tables</programlisting>
+          <programlisting><command>echo 202 www.out &#62;&#62; /etc/iproute2/rt_tables</command></programlisting>
         </listitem>
 
         <listitem>
           <para>In /etc/shorewall/init, put:</para>
 
-          <programlisting>if [ -z &#34;`ip rule list | grep www.out`&#34; ] ; then
+          <programlisting><command>if [ -z &#34;`ip rule list | grep www.out`&#34; ] ; then
         ip rule add fwmark 202 table www.out
         ip route add default via 192.0.2.177 dev eth1 table www.out
         ip route flush cache
-fi</programlisting>
+fi</command></programlisting>
         </listitem>
 
         <listitem>
@@ -429,174 +243,49 @@ fi</programlisting>
 
           <orderedlist numeration="loweralpha">
             <listitem>
-              <para>In /etc/shorewall/start add</para>
+              <para>In <filename>/etc/shorewall/start</filename> add</para>
 
-              <programlisting>iptables -t mangle -A PREROUTING -i eth2 -p tcp --dport 80 -j MARK --set-mark 202</programlisting>
+              <programlisting><command>iptables -t mangle -A PREROUTING -i eth2 -p tcp --dport 80 -j MARK --set-mark 202</command></programlisting>
             </listitem>
 
             <listitem>
-              <para>Set MARK_IN_FORWARD_CHAIN=No in
-              /etc/shorewall/shorewall.conf and add the following entry in
-              /etc/shorewall/tcrules:</para>
+              <para>Set MARK_IN_FORWARD_CHAIN=No in <filename>/etc/shorewall/shorewall.conf</filename>
+              and add the following entry in <filename>/etc/shorewall/tcrules</filename>:</para>
 
-              <table>
-                <title>/etc/shorewall/tcrules</title>
-
-                <tgroup cols="6">
-                  <thead>
-                    <row>
-                      <entry align="center">MARK</entry>
-
-                      <entry align="center">SOURCE</entry>
-
-                      <entry align="center">DESTINATION</entry>
-
-                      <entry align="center">PROTOCOL</entry>
-
-                      <entry align="center">PORT</entry>
-
-                      <entry align="center">CLIENT PORT</entry>
-                    </row>
-                  </thead>
-
-                  <tbody>
-                    <row>
-                      <entry>202</entry>
-
-                      <entry>eth2</entry>
-
-                      <entry>0.0.0.0/0</entry>
-
-                      <entry>tcp</entry>
-
-                      <entry>80</entry>
-
-                      <entry>-</entry>
-                    </row>
-                  </tbody>
-                </tgroup>
-              </table>
+              <programlisting>#MARK   SOURCE   DESTINATION    PROTOCOL    PORT
+202     eth2     0.0.0.0        tcp         80</programlisting>
             </listitem>
 
             <listitem>
               <para>Run Shorewall 1.3.14 or later and add the following entry
-              in /etc/shorewall/tcrules:</para>
+              in <filename>/etc/shorewall/tcrules</filename>:</para>
 
-              <table>
-                <title>/etc/shorewall/tcrules</title>
-
-                <tgroup cols="6">
-                  <thead>
-                    <row>
-                      <entry align="center">MARK</entry>
-
-                      <entry align="center">SOURCE</entry>
-
-                      <entry align="center">DESTINATION</entry>
-
-                      <entry align="center">PROTOCOL</entry>
-
-                      <entry align="center">PORT</entry>
-
-                      <entry align="center">CLIENT PORT</entry>
-                    </row>
-                  </thead>
-
-                  <tbody>
-                    <row>
-                      <entry>202:P</entry>
-
-                      <entry>eth2</entry>
-
-                      <entry>0.0.0.0/0</entry>
-
-                      <entry>tcp</entry>
-
-                      <entry>80</entry>
-
-                      <entry>-</entry>
-                    </row>
-                  </tbody>
-                </tgroup>
-              </table>
+              <programlisting>#MARK   SOURCE   DESTINATION    PROTOCOL    PORT
+202:P   eth2     0.0.0.0        tcp         80</programlisting>
             </listitem>
           </orderedlist>
         </listitem>
 
         <listitem>
-          <para>In /etc/shorewall/rules, you will need:</para>
+          <para>In <filename>/etc/shorewall/rules</filename>, you will need:</para>
 
-          <table>
-            <title>/etc/shorewall/rules</title>
-
-            <tgroup cols="7">
-              <thead>
-                <row>
-                  <entry align="center">ACTION</entry>
-
-                  <entry align="center">SOURCE</entry>
-
-                  <entry align="center">DEST</entry>
-
-                  <entry align="center">PROTO</entry>
-
-                  <entry align="center">DEST PORT(S)</entry>
-
-                  <entry align="center">CLIENT PORT(2)</entry>
-
-                  <entry align="center">ORIGINAL DEST</entry>
-                </row>
-              </thead>
-
-              <tbody>
-                <row>
-                  <entry>ACCEPT</entry>
-
-                  <entry>loc</entry>
-
-                  <entry>dmz</entry>
-
-                  <entry>tcp</entry>
-
-                  <entry>80</entry>
-
-                  <entry></entry>
-
-                  <entry></entry>
-                </row>
-
-                <row>
-                  <entry>ACCEPT</entry>
-
-                  <entry>dmz</entry>
-
-                  <entry>net</entry>
-
-                  <entry>tcp</entry>
-
-                  <entry>80</entry>
-
-                  <entry></entry>
-
-                  <entry></entry>
-                </row>
-              </tbody>
-            </tgroup>
-          </table>
+          <programlisting>#ACTION   SOURCE   DEST   PROTO   DEST PORT(S)
+ACCEPT    loc      dmz    tcp     80
+ACCEPT    dmz      net    tcp     80</programlisting>
         </listitem>
 
         <listitem>
           <para>On 192.0.2.177 (your Web/Squid server), arrange for the
           following command to be executed after networking has come up</para>
 
-          <programlisting>iptables -t nat -A PREROUTING -i eth0 -d ! 192.0.2.177 -p tcp --dport 80 -j REDIRECT --to-ports 3128</programlisting>
+          <programlisting><command>iptables -t nat -A PREROUTING -i eth0 -d ! 192.0.2.177 -p tcp --dport 80 -j REDIRECT --to-ports 3128</command></programlisting>
 
           <para>If you are running RedHat on the server, you can simply
           execute the following commands after you have typed the iptables
           command above:</para>
 
-          <programlisting>iptables-save &#62; /etc/sysconfig/iptables
-chkconfig --level 35 iptables on</programlisting>
+          <programlisting><command>iptables-save &#62; /etc/sysconfig/iptables
+chkconfig --level 35 iptables on</command></programlisting>
         </listitem>
       </orderedlist>
     </section>
@@ -608,75 +297,21 @@ chkconfig --level 35 iptables on</programlisting>
     <para>Assume that Squid is running in zone SZ and listening on port SP;
     all web sites that are to be accessed through Squid are in the
     <quote>net</quote> zone. Then for each zone Z that needs access to the
-    Squid server:</para>
+    Squid server.</para>
 
-    <table>
-      <title>/etc/shorewall/rules</title>
+    <para><filename>/etc/shorewall/rules</filename>:</para>
 
-      <tgroup cols="7">
-        <thead>
-          <row>
-            <entry align="center">ACTION</entry>
-
-            <entry align="center">SOURCE</entry>
-
-            <entry align="center">DEST</entry>
-
-            <entry align="center">PROTO</entry>
-
-            <entry align="center">DEST PORT(S)</entry>
-
-            <entry align="center">CLIENT PORT(2)</entry>
-
-            <entry align="center">ORIGINAL DEST</entry>
-          </row>
-        </thead>
-
-        <tbody>
-          <row>
-            <entry>ACCEPT</entry>
-
-            <entry>Z</entry>
-
-            <entry>SZ</entry>
-
-            <entry>tcp</entry>
-
-            <entry>SP</entry>
-
-            <entry></entry>
-
-            <entry></entry>
-          </row>
-
-          <row>
-            <entry>ACCEPT</entry>
-
-            <entry>SZ</entry>
-
-            <entry>net</entry>
-
-            <entry>tcp</entry>
-
-            <entry>80</entry>
-
-            <entry></entry>
-
-            <entry></entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
+    <programlisting>#ACTION   SOURCE   DEST   PROTO   DEST PORT(S)
+ACCEPT    Z        SZ     tcp     SP
+ACCEPT    SZ       net    tcp     80</programlisting>
 
     <example>
       <title>Squid on the firewall listening on port 8080 with access from the
       <quote>loc</quote> zone:</title>
 
-      <para><table><title>/etc/shorewall/rules</title><tgroup cols="7"><thead><row><entry
-      align="center">ACTION</entry><entry align="center">SOURCE</entry><entry
-      align="center">DEST</entry><entry align="center">PROTO</entry><entry
-      align="center">DEST PORT(S)</entry><entry align="center">CLIENT PORT(2)</entry><entry
-      align="center">ORIGINAL DEST</entry></row></thead><tbody><row><entry>ACCEPT</entry><entry>loc</entry><entry>$FW</entry><entry>tcp</entry><entry>8080</entry><entry></entry><entry></entry></row><row><entry>ACCEPT</entry><entry>$FW</entry><entry>net</entry><entry>tcp</entry><entry>80</entry><entry></entry><entry></entry></row></tbody></tgroup></table></para>
+      <para><filename>/etc/shorewall/rules:</filename><programlisting>#ACTION   SOURCE   DEST   PROTO    DEST PORT(S)
+ACCEPT    loc      fw     tcp      8080
+ACCEPT    fw       net    tcp      80</programlisting></para>
     </example>
   </section>
 </article>

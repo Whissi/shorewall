@@ -12,7 +12,7 @@
       <surname>Eastep</surname>
     </author>
 
-    <pubdate>2003-01-26</pubdate>
+    <pubdate>2003-02-08</pubdate>
 
     <copyright>
       <year>2002</year>
@@ -603,5 +603,84 @@ ACCEPT     loc       fw      tcp       80          #Allow Weblet to work</progra
     url="configuration_file_basics.htm">Common Configuration File Features
     page</ulink> -- it contains helpful tips about Shorewall features than
     make administering your firewall easier.</para>
+  </section>
+
+  <section>
+    <title>Adding a Wireless Segment to your Two-Interface Firewall</title>
+
+    <para>Once you have the two-interface setup working, the next logical step
+    is to add a Wireless Network. The first step involves adding an additional
+    network card to your firewall, either a Wireless card or an ethernet card
+    that is connected to a Wireless Access Point.<caution><para>When you add a
+    network card, it won&#39;t necessarily be detected as the next highest
+    ethernet interface. For example, if you have two ethernet cards in your
+    system (<filename class="devicefile">eth0</filename> and <filename
+    class="devicefile">eth1</filename>) and you add a third card that uses the
+    same driver as one of the other two, that third card won&#39;t necessarily
+    be detected as <filename class="devicefile">eth2</filename>; it could
+    rather be detected as <filename class="devicefile">eth0</filename> or
+    <filename class="devicefile">eth1</filename>! You can either live with
+    that or you can shuffle the cards around in the slots until the new card
+    is detected as <filename class="devicefile">eth2</filename>.</para></caution></para>
+
+    <para>Your new network will look similar to what is shown in the following
+    figure.<graphic fileref="images/basics2.png" /></para>
+
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+
+    <para>The first thing to note is that the computers in your wireless
+    network will be in a different subnet from those on your wired local LAN.
+    In the above example, we have chosen to use the network 10.10.11.0/24.
+    Computers 3 and 4 would be configured with a default gateway IP address of
+    10.10.11.254.</para>
+
+    <para>Second, we have chosen to include the wireless network as part of
+    the local zone. Since Shorewall allows intra-zone traffic by default,
+    traffic may flow freely between the local wired network and the wireless
+    network.</para>
+
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+
+    <para>There are only two changes that need to be made to the Shorewall
+    configuration:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>An entry needs to be added to <filename>/etc/shorewall/interfaces</filename>
+        for the wireless network interface. If the wireless interface is
+        <filename class="devicefile">wlan0</filename>, the entry might look
+        like:</para>
+
+        <programlisting>#ZONE     INTERFACE       BROADCAST          OPTIONS
+loc       wlan0           detect             maclist</programlisting>
+
+        <para>As shown in the above entry, I recommend using the <ulink
+        url="MAC_Validation.html">maclist option</ulink> for the wireless
+        segment. By adding entries for computers 3 and 4 in
+        <filename>/etc/shorewall/maclist</filename>, you help ensure that your
+        neighbors aren&#39;t getting a free ride on your internet connection.
+        Start by omitting that option; when you have everything working, then
+        add the option and configure your <filename>/etc/shorewall/maclist</filename>
+        file.</para>
+      </listitem>
+
+      <listitem>
+        <para>You need to add an entry to the <filename>/etc/shorewall/masq</filename>
+        file to masquerade traffic from the wireless network to the internet.
+        If your internet interface is <filename class="devicefile">eth0</filename>
+        and your wireless interface is <filename class="devicefile">wlan0</filename>,
+        the entry would be:</para>
+
+        <programlisting>#INTERFACE           SUBNET             ADDRESS
+eth0                 wlan0</programlisting>
+      </listitem>
+    </itemizedlist>
+
+    <para>One other thing to note. To get <trademark>Microsoft</trademark>
+    networking working between the wireless and wired networks, you will need
+    either a WINS server or a PDC. I personally use Samba configured as a WINS
+    server running on my firewall. Running a WINS server on your firewall
+    requires the rules listed in the <ulink url="samba.htm">Shorewall/Samba
+    documentation</ulink>. </para>
   </section>
 </article>

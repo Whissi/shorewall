@@ -15,10 +15,10 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-12-27</pubdate>
+    <pubdate>2005-03-04</pubdate>
 
     <copyright>
-      <year>2001 - 2004</year>
+      <year>2001 - 2005</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -220,17 +220,25 @@
       <para>You will need to change all instances of log levels (usually
       <quote>info</quote>) in your Shorewall configuration files to
       <quote>ULOG</quote> - this includes entries in the policy, rules and
-      shorewall.conf files. Here's what I have:</para>
+      shorewall.conf files. Here's what I had at one time:</para>
 
-      <programlisting>     [root@gateway shorewall]# grep LOG * | grep -v ^\#
-     params:LOG=ULOG
-     policy:loc fw  REJECT $LOG
-     policy:net all DROP   $LOG    10/sec:40
-     policy:all all REJECT $LOG
-     rules:REJECT:$LOG loc net tcp 6667
-     shorewall.conf:TCP_FLAGS_LOG_LEVEL=$LOG
-     shorewall.conf:RFC1918_LOG_LEVEL=$LOG
-     [root@gateway shorewall]#</programlisting>
+      <programlisting>gateway:/etc/shorewall# grep -v ^\# * | egrep '\$LOG|ULOG|LOGFILE'
+params:LOG=ULOG
+policy:loc              $FW             REJECT          $LOG
+policy:net              all             DROP            $LOG            10/sec:40
+policy:all              all             REJECT          $LOG
+rules:REJECT:$LOG       loc                             net                     tcp     25
+rules:REJECT:$LOG       loc                             net                     udp     1025:1031
+rules:REJECT:$LOG       dmz                             net                     udp     1025:1031
+rules:ACCEPT:$LOG       dmz                             net                     tcp     1024:                                   20
+rules:REJECT:$LOG       fw                              net                     udp     1025:1031
+shorewall.conf:LOGFILE=/var/log/shorewall
+shorewall.conf:LOGUNCLEAN=$LOG
+shorewall.conf:LOGNEWNOTSYN=$LOG
+shorewall.conf:MACLIST_LOG_LEVEL=$LOG
+shorewall.conf:TCP_FLAGS_LOG_LEVEL=$LOG
+shorewall.conf:RFC1918_LOG_LEVEL=$LOG
+gateway:/etc/shorewall#                                               </programlisting>
 
       <para>Finally edit /etc/shorewall/shorewall.conf and set
       LOGFILE=&lt;<emphasis>file that you wish to log to</emphasis>&gt;. This

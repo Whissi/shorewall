@@ -13,10 +13,10 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-01-03</pubdate>
+    <pubdate>2005-03-04</pubdate>
 
     <copyright>
-      <year>2001-2004</year>
+      <year>2001-2005</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -27,7 +27,8 @@
       1.2 or any later version published by the Free Software Foundation; with
       no Invariant Sections, with no Front-Cover, and with no Back-Cover
       Texts. A copy of the license is included in the section entitled
-      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
 
@@ -36,8 +37,8 @@
     the latest change coming in Shorewall version 1.4.0. To find out which
     version of Shorewall you are running, at a shell prompt type
     <quote><command>/sbin/shorewall version</command></quote>. If that command
-    gives you an error, it&#39;s time to upgrade since you have a very old
-    version of Shorewall installed (1.2.4 or earlier).</para>
+    gives you an error, it's time to upgrade since you have a very old version
+    of Shorewall installed (1.2.4 or earlier).</para>
   </note>
 
   <note>
@@ -47,14 +48,14 @@
   </note>
 
   <section>
-    <title>Shorewall Versions &#62;= 2.0.0</title>
+    <title>Shorewall Versions &gt;= 2.0.0</title>
 
-    <para>In Shoreall 1.4.0 and later version, ICMP echo-request&#39;s are
-    treated just like any other connection request.</para>
+    <para>In Shoreall 1.4.0 and later version, ICMP echo-request's are treated
+    just like any other connection request.</para>
 
     <para>In order to accept ping requests from zone z1 to zone z2 where the
     policy for z1 to z2 is not ACCEPT, you need a rule in
-    <filename>/etc/shoreall/rules</filename> of the form:</para>
+    <filename>/etc/shorewall/rules</filename> of the form:</para>
 
     <programlisting>#ACTION      SOURCE    DEST     PROTO    DEST PORT(S)
 AllowPing    z1        z2</programlisting>
@@ -69,8 +70,11 @@ AllowPing    loc       fw</programlisting>
     </example>
 
     <para>If you would like to accept <quote>ping</quote> by default even when
-    the relevant policy is DROP or REJECT, modify /etc/shorewall/action.Drop
-    or /etc/shorewall/action.Reject respectively and simply add the line:</para>
+    the relevant policy is DROP or REJECT, copy
+    <filename>/usr/share/shorewall/action.Drop</filename> or
+    <filename>/usr/share shorewall/action.Reject</filename> respectively to
+    <filename class="directory">/etc/shorewall</filename> and simply add this
+    line to the copy:</para>
 
     <programlisting>AllowPing</programlisting>
 
@@ -84,7 +88,7 @@ DropPing     z1        z2</programlisting>
       <title>Silently drop pings from the Internet</title>
 
       <para>To drop ping from the internet, you would need this rule in
-      /etc/shorewall/rules:</para>
+      <filename>/etc/shorewall/rules</filename>:</para>
 
       <programlisting>#ACTION   SOURCE    DEST     PROTO    DEST PORT(S)
 DropPing  net       fw</programlisting>
@@ -96,10 +100,10 @@ DropPing  net       fw</programlisting>
   </section>
 
   <section>
-    <title>Shorewall Versions &#62;= 1.4.0</title>
+    <title>Shorewall Versions &gt;= 1.4.0</title>
 
-    <para>In Shoreall 1.4.0 and later version, ICMP echo-request&#39;s are
-    treated just like any other connection request.</para>
+    <para>In Shoreall 1.4.0 and later version, ICMP echo-request's are treated
+    just like any other connection request.</para>
 
     <para>In order to accept ping requests from zone z1 to zone z2 where the
     policy for z1 to z2 is not ACCEPT, you need a rule in
@@ -119,7 +123,7 @@ ACCEPT    loc       fw       icmp     8</programlisting>
 
     <para>If you would like to accept <quote>ping</quote> by default even when
     the relevant policy is DROP or REJECT, create /etc/shorewall/icmpdef if it
-    doesn&#39;t already exist and in that file place the following command:</para>
+    doesn't already exist and in that file place the following command:</para>
 
     <programlisting>run_iptables -A icmpdef -p icmp --icmp-type 8 -j ACCEPT</programlisting>
 
@@ -145,7 +149,7 @@ DROP      net       fw       icmp     8</programlisting>
   </section>
 
   <section>
-    <title>Shorewall Versions &#62;= 1.3.14 and &#60; 1.4.0 with
+    <title>Shorewall Versions &gt;= 1.3.14 and &lt; 1.4.0 with
     OLD_PING_HANDLING=No in /etc/shorewall/shorewall.conf</title>
 
     <para>In 1.3.14, Ping handling was put under control of the rules and
@@ -167,7 +171,7 @@ ACCEPT    loc       fw       icmp     8</programlisting>
 
     <para>If you would like to accept <quote>ping</quote> by default even when
     the relevant policy is DROP or REJECT, create /etc/shorewall/icmpdef if it
-    doesn&#39;t already exist and in that file place the following command:</para>
+    doesn't already exist and in that file place the following command:</para>
 
     <programlisting>run_iptables -A icmpdef -p icmp --icmp-type 8 -j ACCEPT</programlisting>
 
@@ -199,10 +203,11 @@ DROP      net       fw       icmp     8</programlisting>
   </section>
 
   <section>
-    <title>Shorewall Versions &#60; 1.3.14 or with OLD_PING_HANDLING=Yes in
+    <title>Shorewall Versions &lt; 1.3.14 or with OLD_PING_HANDLING=Yes in
     /etc/shorewall/shorewall.conf</title>
 
-    <para>There are several aspects to the old Shorewall Ping management:</para>
+    <para>There are several aspects to the old Shorewall Ping
+    management:</para>
 
     <orderedlist>
       <listitem>
@@ -213,11 +218,13 @@ DROP      net       fw       icmp     8</programlisting>
 
       <listitem>
         <para>The <emphasis role="bold">FORWARDPING</emphasis> option in
-        <ulink url="Documentation.htm#Config">/etc/shorewall/shorewall.conf</ulink>.</para>
+        <ulink
+        url="Documentation.htm#Config">/etc/shorewall/shorewall.conf</ulink>.</para>
       </listitem>
 
       <listitem>
-        <para>Explicit rules in <ulink url="Documentation.htm#rules">/etc/shorewall/rules</ulink>.</para>
+        <para>Explicit rules in <ulink
+        url="Documentation.htm#rules">/etc/shorewall/rules</ulink>.</para>
       </listitem>
     </orderedlist>
 
@@ -268,15 +275,17 @@ DROP      net       fw       icmp     8</programlisting>
     <section>
       <title>Ping Requests Forwarded by the Firewall</title>
 
-      <para>These requests are always passed to rules/policy evaluation.</para>
+      <para>These requests are always passed to rules/policy
+      evaluation.</para>
 
       <section>
         <title>Rules Evaluation</title>
 
-        <para>Ping requests are ICMP type 8. So the general rule format is:</para>
+        <para>Ping requests are ICMP type 8. So the general rule format
+        is:</para>
 
         <programlisting>#ACTION   SOURCE    DEST          PROTO    DEST PORT(S)
-<emphasis>&#60;action&#62;</emphasis>  <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>          icmp     8</programlisting>
+<emphasis>&lt;action&gt;</emphasis>  <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>          icmp     8</programlisting>
 
         <example>
           <title>Allow ping from DMZ to Net</title>
@@ -327,8 +336,26 @@ DROP      net       fw       icmp     8</programlisting>
   <appendix>
     <title>Revision History</title>
 
-    <para><revhistory><revision><revnumber>1.2</revnumber><date>2004-01-03</date><authorinitials>TE</authorinitials><revremark>Add
-    traceroute reference</revremark></revision><revision><revnumber>1.1</revnumber><date>2003-08-23</date><authorinitials>TE</authorinitials><revremark>Initial
-    version converted to Docbook XML</revremark></revision></revhistory></para>
+    <para><revhistory>
+        <revision>
+          <revnumber>1.2</revnumber>
+
+          <date>2004-01-03</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Add traceroute reference</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.1</revnumber>
+
+          <date>2003-08-23</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Initial version converted to Docbook XML</revremark>
+        </revision>
+      </revhistory></para>
   </appendix>
 </article>

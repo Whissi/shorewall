@@ -1,5 +1,5 @@
 %define name shorewall
-%define version 2.0.2a
+%define version 2.0.2b
 %define release 1
 %define prefix /usr
 
@@ -141,6 +141,8 @@ fi
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel
 
 %changelog
+* Mon May 17 2004 Tom Eastep tom@shorewall.net
+- Updated for 2.0.2b-1
 * Sat May 15 2004 Tom Eastep tom@shorewall.net
 - Updated for 2.0.2a-1
 * Thu May 13 2004 Tom Eastep tom@shorewall.net

@@ -7,18 +7,6 @@
   <base target="_self">
 </head>
 <body>
-<table border="0" cellpadding="0" cellspacing="4"
- style="border-collapse: collapse;" width="100%" id="AutoNumber3"
- bgcolor="#3366ff">
-  <tbody>
-    <tr>
-      <td width="33%" height="90" valign="middle" align="center"><a
- href="http://www.cityofshoreline.com"> </a><img src="images/Logo1.png"
- alt="(Shorewall Logo)" width="430" height="90"> <br>
-      </td>
-    </tr>
-  </tbody>
-</table>
 <div align="center">
 <center>
 <table border="0" cellpadding="0" cellspacing="0"
@@ -26,6 +14,15 @@
   <tbody>
     <tr>
       <td width="90%">
+      <h2>Site Problem</h2>
+The server that normally hosts www.shorewall.net and ftp.shorewall.net
+is currently down. Until it is back up, a small server with very
+limited bandwidth is being used temporarly. You will likely experience
+better response time from the <a
+ href="http://shorewall.sourceforge.net" target="_top">Sourceforge site</a>
+or from one of the other <a href="shorewall_mirrors.htm">mirrors</a>.
+Sorry for the inconvenience.<br>
+      <br>
       <h2>Introduction<br>
       </h2>
       <ul>
@@ -37,14 +34,12 @@ and control that facility. Netfilter can be used in ipchains
 compatibility mode.<br>
         </li>
         <li>iptables - the utility program used to configure and
-control
-Netfilter. The term 'iptables' is often used to refer to the
-combination of iptables+Netfilter (with Netfilter not in
-ipchains compatibility mode).<br>
+control Netfilter. The term 'iptables' is often used to refer to the
+combination of iptables+Netfilter (with Netfilter not in ipchains
+compatibility mode).<br>
         </li>
       </ul>
-The
-Shoreline Firewall, more commonly known as "Shorewall", is
+The Shoreline Firewall, more commonly known as "Shorewall", is
 high-level tool for configuring Netfilter. You describe your
 firewall/gateway requirements using entries in a set of configuration
 files. Shorewall reads those configuration files and with the help of
@@ -56,14 +51,14 @@ and can thus take advantage of Netfilter's connection state tracking
 capabilities.
       <p>This program is free software; you can redistribute it and/or
 modify it under the terms of <a
- href="http://www.gnu.org/licenses/gpl.html">Version 2 of the
-GNU General Public License</a> as published by the Free Software
-Foundation.<br>
+ href="http://www.gnu.org/licenses/gpl.html">Version 2 of the GNU
+General Public License</a> as published by the Free Software Foundation.<br>
       <br>
 This program is distributed in the hope that it will be useful, but
 WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-General Public License for more details.<br>
+General
+Public License for more details.<br>
       <br>
 You should have received a copy of the GNU General Public License along
 with this program; if not, write to the Free Software Foundation, Inc.,
@@ -81,356 +76,205 @@ Shorewall. For older versions:<br>
         </li>
       </ul>
       <h2>Getting Started with Shorewall</h2>
-New to Shorewall? Start by
-selecting the <a href="shorewall_quickstart_guide.htm">QuickStart Guide</a>
-that most closely match your environment and
-follow the step by step instructions.<br>
+New to Shorewall? Start by selecting the <a
+ href="shorewall_quickstart_guide.htm">QuickStart Guide</a> that most
+closely match your environment and follow the step by step instructions.<br>
       <h2>Looking for Information?</h2>
 The <a href="shorewall_quickstart_guide.htm#Documentation">Documentation
-Index</a> is a good place to start as is the Quick Search to your
-right.
+Index</a> is a good place to start as is the Quick Search in the frame
+above.
       <h2>Running Shorewall on Mandrake with a two-interface setup?</h2>
 If so, the documentation<b> </b>on this site will not apply directly
-to your setup. If you want to
-use the documentation that you find here, you will want to consider
-uninstalling what you have and installing a setup that matches the
-documentation on this site. See the <a href="two-interface.htm">Two-interface
-QuickStart Guide</a> for
+to
+your setup. If you want to use the documentation that you find here,
+you will want to consider uninstalling what you have and installing a
+setup that matches the documentation on this site. See the <a
+ href="two-interface.htm">Two-interface QuickStart Guide</a> for
 details.
       <h2></h2>
       <h2><b>News</b></h2>
-      <b>10/06/2003 - Shorewall 1.4.7</b><b> <img
+      <p><b>11/01/2003 - Shorewall 1.4.8 RC2</b><b> <img
  style="border: 0px solid ; width: 28px; height: 12px;"
- src="images/new10.gif" alt="(New)" title=""></b><br>
-      <b><br>
-Problems Corrected since version 1.4.6 (Those in bold font
-were corrected since 1.4.7 RC2).</b><br>
-      <ol>
-        <li>Corrected problem in 1.4.6 where the MANGLE_ENABLED
-variable was being tested before it was set.</li>
-        <li>Corrected handling of MAC addresses in the SOURCE column of
-the tcrules file. Previously, these addresses resulted in an invalid
-iptables command.</li>
-        <li>The "shorewall stop" command is now disabled when
-/etc/shorewall/startup_disabled exists. This prevents people from
-shooting themselves in the foot prior to having configured Shorewall.</li>
-        <li>A change introduced in version 1.4.6 caused error messages
-during "shorewall [re]start" when ADD_IP_ALIASES=Yes and ip addresses
-were being added to a PPP interface; the addresses were successfully
-added in spite of the messages.<br>
-&nbsp;&nbsp;&nbsp; <br>
-The firewall script has been modified to eliminate the error messages</li>
-        <li>Interface-specific dynamic blacklisting chains are
-now displayed by "shorewall monitor" on the "Dynamic Chains" page
-(previously named "Dynamic Chain").</li>
-        <li>Thanks to Henry Yang, LOGRATE and LOGBURST now work again.</li>
-        <li value="7">The 'shorewall reject'
-and
-'shorewall drop' commands now delete any existing rules for the subject
-IP address before adding a new DROP or REJECT rule. Previously, there
-could be many rules for the same IP address in the dynamic chain so
-that multiple 'allow' commands were required to re-enable traffic
-to/from the address.</li>
-        <li>When ADD_SNAT_ALIASES=Yes in
-shorewall.conf, the following entry in /etc/shorewall/masq resulted in
-a startup error:<br>
-&nbsp;<br>
-&nbsp;&nbsp; eth0 eth1&nbsp;&nbsp;&nbsp;&nbsp;
-206.124.146.20-206.124.146.24<br>
-          <br>
-        </li>
-        <li>Shorewall previously choked over
-IPV6
-addresses configured on interfaces in contexts where Shorewall needed
-to detect something about the interface (such as when "detect" appears
-in the BROADCAST column of the /etc/shorewall/interfaces file).</li>
-        <li>Shorewall will now load
-module files that are formed from the module name by appending ".o.gz".</li>
-        <li>When Shorewall adds a route to a
-proxy
-ARP host and such a route already exists, two routes resulted
-previously. This has been corrected so that the existing route is
-replaced if it already exists.</li>
-        <li>The rfc1918 file has been
-updated to reflect recent allocations.</li>
-        <li>The documentation of the
-USER SET column in the rules file has been corrected.</li>
-        <li>If there is no policy
-defined for
-the zones specified in a rule, the firewall script previously
-encountered a shell syntax error:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-          <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [: NONE: unexpected operator<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-          <br>
-Now, the absence of a policy generates an error message and the
-firewall is stopped:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-          <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; No policy defined from zone
-&lt;source&gt; to zone &lt;dest&gt;<br>
-          <br>
-        </li>
-        <li>Previously, if neither
-/etc/shorewall/common nor /etc/shorewall/common.def existed, Shorewall
-would fail to start and would not remove the lock file. Failure to
-remove the lock file resulted in the following during subsequent
-attempts to start:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-          <br>
-&nbsp;&nbsp;&nbsp; Loading /usr/share/shorewall/functions...<br>
-&nbsp;&nbsp;&nbsp; Processing /etc/shorewall/params ...<br>
-&nbsp;&nbsp;&nbsp; Processing /etc/shorewall/shorewall.conf...<br>
-&nbsp;&nbsp;&nbsp; Giving up on lock file /var/lib/shorewall/lock<br>
-&nbsp;&nbsp;&nbsp; Shorewall Not Started<br>
-          <br>
-Shorewall now reports a fatal error if neither of these two files exist
-and correctly removes the lock fille.</li>
-        <li>The order of processing
-the
-various options has been changed such that blacklist entries now take
-precedence over the 'dhcp' interface setting.</li>
-        <li>The log message generated
-from the
-'logunclean' interface option has been changed to reflect a disposition
-of LOG rather than DROP.</li>
-        <li><span style="font-weight: bold;">When a user name and/or a
-group
-name was specified in the USER SET column and the destination zone was
-qualified with a IP address, the user and/or group name was not being
-used to qualify the rule.<br>
-&nbsp;<br>
-&nbsp;&nbsp;&nbsp; Example:<br>
-&nbsp;<br>
-&nbsp;&nbsp;&nbsp; ACCEPT fw&nbsp; net:192.0.2.12 tcp 23 - - - vladimir:<br>
-          <br>
-          </span></li>
-        <li><span style="font-weight: bold;">The /etc/shorewall/masq
-file has had the spurious "/" character at the front removed.</span></li>
-      </ol>
-      <b>Migration Issues:</b><br>
-      <ol>
-        <li>Shorewall IP Traffic Accounting has changed since snapshot
-20030813 -- see the <a href="Accounting.html">Accounting Page</a> for
-details.</li>
-        <li>The Uset Set capability introduced in SnapShot 20030821 has
-changed -- see the <a href="UserSets.html">User Set page</a> for
-details.</li>
-        <li>The
-per-interface Dynamic Blacklisting facility introduced in the first
-post-1.4.6 Snapshot has been removed. The facility had too many
-idiosyncrasies for dial-up users to be a viable part of Shorewall.<br>
-        </li>
-      </ol>
-      <b></b><b>New Features:</b><br>
-      <ol>
-        <li>Shorewall now creates a dynamic blacklisting chain for each
-interface defined in /etc/shorewall/interfaces. The 'drop' and 'reject'
-commands use the routing table to determine which of these chains is to
-be used for blacklisting the specified IP address(es).<br>
-          <br>
-Two new commands ('dropall' and 'rejectall') have been introduced that
-do what 'drop' and 'reject' used to do; namely, when an address is
-blacklisted using these new commands, it will be blacklisted on all of
-your firewall's interfaces.</li>
-        <li>Thanks to Steve Herber, the 'help' command can now give
-command-specific help (e.g., shorewall help &lt;command&gt;).</li>
-        <li>A new option "ADMINISABSENTMINDED" has been added to
-/etc/shorewall/shorewall.conf. This option has a default value of "No"
-for existing users which causes Shorewall's 'stopped' state &nbsp;to
-continue as it has been; namely, in the stopped state only traffic
-to/from hosts listed in /etc/shorewall/routestopped is accepted.<br>
-          <br>
-With ADMINISABSENTMINDED=Yes (the default for new installs), in
-addition to traffic to/from the hosts listed in
-/etc/shorewall/routestopped, Shorewall will allow:<br>
-          <br>
-&nbsp;&nbsp; a) All traffic originating from the firewall itself; and<br>
-&nbsp;&nbsp; b) All traffic that is part of or related to an
-already-existing connection.<br>
-          <br>
-&nbsp;In particular, with ADMINISABSENTMINDED=Yes, a "shorewall stop"
-entered through an ssh session will not kill the session.<br>
-          <br>
-&nbsp;Note though that even with ADMINISABSENTMINDED=Yes, it is still
-possible for people to shoot themselves in the foot.<br>
-          <br>
-&nbsp;Example:<br>
-          <br>
-&nbsp;/etc/shorewall/nat:<br>
-          <br>
-&nbsp; &nbsp; &nbsp;206.124.146.178&nbsp;&nbsp;&nbsp;
-eth0:0&nbsp;&nbsp;&nbsp; 192.168.1.5&nbsp;&nbsp;&nbsp; <br>
-          <br>
-&nbsp;/etc/shorewall/rules:<br>
-          <br>
-&nbsp;&nbsp; ACCEPT&nbsp;&nbsp;&nbsp; net&nbsp;&nbsp;&nbsp;
-loc:192.168.1.5&nbsp;&nbsp;&nbsp; tcp&nbsp;&nbsp;&nbsp; 22<br>
-&nbsp;&nbsp; ACCEPT&nbsp;&nbsp;&nbsp; loc&nbsp;&nbsp;&nbsp;
-fw&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; tcp&nbsp;&nbsp;&nbsp; 22<br>
-          <br>
-From a remote system, I ssh to 206.124.146.178 which establishes an SSH
-connection with local system 192.168.1.5. I then create a second SSH
-connection
-from that computer to the firewall and confidently type "shorewall
-stop".
-As part of its stop processing, Shorewall removes eth0:0 which kills my
-SSH
-connection to 192.168.1.5!!!</li>
-        <li>Given the wide range of VPN software, I can never hope to
-add specific support for all of it. I have therefore decided to add
-"generic" tunnel support.<br>
-&nbsp;<br>
-Generic tunnels work pretty much like any of the other tunnel types.
-You usually add a zone to represent the systems at the other end of the
-tunnel and you add the appropriate rules/policies to<br>
-implement your security policy regarding traffic to/from those systems.<br>
-&nbsp;<br>
-In the /etc/shorewall/tunnels file, you can have entries of the form:<br>
-          <br>
-generic:&lt;protocol&gt;[:&lt;port&gt;]&nbsp; &lt;zone&gt;&nbsp; &lt;ip
-address&gt;&nbsp;&nbsp;&nbsp; &lt;gateway zones&gt;<br>
-&nbsp;<br>
-where:<br>
-&nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;protocol&gt; is the protocol
-used by the tunnel<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;port&gt;&nbsp; if the protocol
-is 'udp' or 'tcp' then this is the destination port number used by the
-tunnel.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;zone&gt;&nbsp; is the zone of
-the remote tunnel gateway<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;ip address&gt; is the IP
-address of the remote tunnel gateway.<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;gateway zone&gt;&nbsp;&nbsp;
-Optional. A comma-separated list of zone names. If specified, the
-remote gateway is to be considered part of these zones.</li>
-        <li>An 'arp_filter' option has been added to the
-/etc/shorewall/interfaces file. This option causes
-/proc/sys/net/ipv4/conf/&lt;interface&gt;/arp_filter to be set with the
-result that this interface will only answer ARP 'who-has' requests from
-hosts that are routed out through that interface. Setting this option
-facilitates testing of your firewall where multiple firewall interfaces
-are connected to the same HUB/Switch (all interfaces connected to the
-single HUB/Switch should have this option specified). Note that using
-such a configuration in a production environment is strongly
-recommended against.</li>
-        <li>The ADDRESS column in /etc/shorewall/masq may now include a
-comma-separated list of addresses and/or address ranges. Netfilter will
-use all listed addresses/ranges in round-robin fashion. \</li>
-        <li>An /etc/shorewall/accounting file has been added to allow
-for traffic accounting.&nbsp; See the <a href="Accounting.html">accounting
-documentation</a> for a description of this facility.</li>
-        <li>Bridge interfaces (br[0-9]) may now be used in
-/etc/shorewall/maclist.</li>
-        <li>ACCEPT, DNAT[-], REDIRECT[-] and LOG rules defined in
-/etc/shorewall/rules may now be rate-limited. For DNAT and REDIRECT
-rules, rate limiting occurs in the nat table DNAT rule; the
-corresponding ACCEPT rule in the filter table is not rate limited. If
-you want to limit the filter table rule, you will need o create two
-rules; a DNAT- rule and an ACCEPT rule which can be rate-limited
-separately.<br>
-&nbsp;<br>
-          <span style="font-weight: bold;">Warning: </span>When rate
-limiting is specified on a rule with "all" in the SOURCE or DEST
-fields, the limit will apply to each pair of zones individually rather
-than as a single limit for all pairs of covered by the rule.<br>
-&nbsp;<br>
-To specify a rate limit, <br>
-          <br>
-a) Follow ACCEPT, DNAT[-], REDIRECT[-] or LOG with<br>
-&nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;
-&lt;rate&gt;/&lt;interval&gt;[:&lt;burst&gt;] &gt;<br>
-&nbsp;<br>
-&nbsp;
-where<br>
-&nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;rate&gt; is the sustained rate per
-&lt;interval&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;interval&gt; is "sec" or "min"<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &lt;burst&gt; is the largest burst
-accepted within an &lt;interval&gt;. If not given, the default of 5 is
-assumed.<br>
-&nbsp;<br>
-There may be no white space between the ACTION and "&lt;" nor there may
-be any white space within the burst specification. If you want to
-specify logging of a rate-limited rule, the ":" and log level comes
-after the "&gt;" (e.g., ACCEPT&lt;2/sec:4&gt;:info ).<br>
-          <br>
-b) A new RATE LIMIT column has been added to the /etc/shorewall/rules
-file. You may specify the rate limit there in the format:<br>
-          <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;rate&gt;/&lt;interval&gt;[:&lt;burst&gt;]<br>
-&nbsp;<br>
-Let's take an example:<br>
-&nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-ACCEPT&lt;2/sec:4&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-net&nbsp;&nbsp;&nbsp;&nbsp; dmz&nbsp;&nbsp;&nbsp;&nbsp;
-tcp&nbsp;&nbsp;&nbsp;&nbsp; 80<br>
-&nbsp;&nbsp;&nbsp; <br>
-The first time this rule is reached, the packet will be accepted; in
-fact, since the burst is 4, the first four packets will be accepted.
-After this, it will be 500ms (1 second divided by the rate<br>
-of 2) before a packet will be accepted from this rule, regardless of
-how many packets reach it. Also, every 500ms which passes without
-matching a packet, one of the bursts will be regained; if no packets
-hit the rule for 2 second, the burst will be fully recharged; back
-where we started.<br>
-        </li>
-        <li>Multiple chains may now be displayed in one "shorewall
-show" command (e.g., shorewall show INPUT FORWARD OUTPUT).</li>
-        <li>Output rules (those with $FW as the SOURCE) may now be
-limited to a set of local users and/or groups. See <a
- href="UserSets.html">http://shorewall.net/UserSets.html</a> for
-details.</li>
-      </ol>
-      <p><b>8/27/2003 - Shorewall Mirror in Australia&nbsp;</b></p>
-      <p>Thanks to Dave Kempe and Solutions First (<a
- href="http://www.solutionsfirst.com.au"><font size="3">http://www.solutionsfirst.com.au</font></a>),
-there is now a Shorewall Mirror in Australia:</p>
-      <div style="margin-left: 40px;"><a
- href="http://www.shorewall.com.au" target="_top"><font size="3">http://www.shorewall.com.au</font></a><br>
-      <font size="3"><a href="ftp://ftp.shorewall.com.au">ftp://ftp.shorewall.com.au</a></font></div>
-      <p><b>8/26/2003 - French Version of the Shorewall Setup
-Guide&nbsp;</b></p>
-Thanks to Fabien <font size="3">Demassieux, there is now a <a
- href="shorewall_setup_guide_fr.htm">French translation of the
-Shorewall Setup Guide</a>. Merci Beacoup, Fabien!</font> <b>9/15/2003
-- Shorewall 1.4.7 Beta 2</b><b> <img
- style="border: 0px solid ; width: 28px; height: 12px;"
- src="file:///vfat/Shorewall-docs/images/new10.gif" alt="(New)" title=""></b>
-      <p><b>8/5/2003 - Shorewall-1.4.6b</b><b> <img
- style="border: 0px solid ; width: 28px; height: 12px;"
- src="images/new10.gif" alt="(New)" title=""> <br>
+ src="file:///vfat/Shorewall-docs/images/new10.gif" alt="(New)" title=""></b><b>
       </b></p>
-      <b>Problems Corrected since version 1.4.6:</b><br>
+Given the small number of new features and the relatively few lines of
+code that were changed, there will be no Beta for 1.4.8.<br>
+      <p><b><a href="http://shorewall.net/pub/shorewall/Beta">http://shorewall.net/pub/shorewall/Beta</a><br>
+      <a href="ftp://shorewall.net/pub/shorewall/Beta" target="_top">ftp://shorewall.net/pub/shorewall/Beta</a><br>
+      <br>
+      </b>Problems Corrected since version 1.4.7:<br>
+      </p>
       <ol>
-        <li>Previously, if TC_ENABLED is set to yes in shorewall.conf
-then Shorewall would fail to start with the error "ERROR: &nbsp;Traffic
-Control requires Mangle"; that problem has been corrected.</li>
-        <li>Corrected handling of MAC addresses in the SOURCE column of
+        <li>Tuomo Soini has supplied a correction to a problem that
+occurs
+using some versions of 'ash'. The symptom is that "shorewall start"
+fails with:<br>
+&nbsp;<br>
+&nbsp;&nbsp; local: --limit: bad variable name<br>
+&nbsp;&nbsp; iptables v1.2.8: Couldn't load match
+`-j':/lib/iptables/libipt_-j.so:<br>
+&nbsp;&nbsp; cannot open shared object file: No such file or directory<br>
+&nbsp;&nbsp; Try `iptables -h' or 'iptables --help' for more
+information.</li>
+        <li>Andres Zhoglo has supplied a correction that avoids trying
+to use the multiport match iptables facility on ICMP rules.<br>
+&nbsp;<br>
+&nbsp;&nbsp; Example of rule that previously caused "shorewall start"
+to fail:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ACCEPT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; loc&nbsp; $FW&nbsp;
+icmp&nbsp;&nbsp;&nbsp; 0,8,11,12<br>
+          <br>
+        </li>
+        <li>Previously, if the following error message was issued,
+Shorewall was left in an inconsistent state.<br>
+&nbsp;<br>
+&nbsp;&nbsp; Error: Unable to determine the routes through interface xxx<br>
+          <br>
+        </li>
+        <li>Handling of the LOGUNCLEAN option in shorewall.conf has
+been corrected.</li>
+        <li>In Shorewall 1.4.2, an optimization was added. This
+optimization
+involved creating a chain named "&lt;zone&gt;_frwd" for most zones
+defined using the /etc/shorewall/hosts file. It has since been
+discovered that in many cases these new chains contain redundant rules
+and that the "optimization" turns out to be less than optimal. The
+implementation has now been corrected.</li>
+        <li>When the MARK value in a tcrules entry is followed by ":F"
+or
+":P", the ":F" or ":P" was previously only applied to the first
+Netfilter rule generated by the entry. It is now applied to all entries.</li>
+        <li>An incorrect comment concerning Debian's use of the
+SUBSYSLOCK option has been removed from shorewall.conf.</li>
+        <li>Previously, neither the 'routefilter' interface option nor
 the
-tcrules file. Previously, these addresses resulted in an invalid
-iptables
-command.</li>
-        <li>The "shorewall stop" command is now disabled when
-/etc/shorewall/startup_disabled
-exists. This prevents people from shooting themselves in the foot prior
-to
-having configured Shorewall.</li>
-        <li>A change introduced in version 1.4.6 caused error messages
-during
-"shorewall [re]start" when ADD_IP_ALIASES=Yes and ip addresses were
-being
-added to a PPP interface; the addresses were successfully added in
-spite
-of the messages.<br>
-&nbsp;&nbsp; <br>
-The firewall script has been modified to eliminate the error messages.</li>
+ROUTE_FILTER parameter were working properly. This has been corrected
+(thanks to Eric Bowles for his analysis and patch). The definition of
+the ROUTE_FILTER option has changed however. Previously,
+ROUTE_FILTER=Yes was documented as enabling route filtering on all
+interfaces (which didn't work). Beginning with this release, setting
+ROUTE_FILTER=Yes will enable route filtering of all interfaces brought
+up while Shorewall is started. As a consequence, ROUTE_FILTER=Yes can
+coexist with the use of the 'routefilter' option in the interfaces file.</li>
+        <li>If MAC verification was enabled on an interface with a /32
+address and
+a broadcast address then an error would occur during startup.</li>
+      </ol>
+Migration Issues:<br>
+      <ol>
+        <li>The definition of the ROUTE_FILTER option in shorewall.conf
+has changed as described in item 8) above.<br>
+        </li>
+      </ol>
+New Features:<br>
+      <ol>
+        <li>A new QUEUE action has been introduced for rules. QUEUE
+allows
+you to pass connection requests to a user-space filter such as ftwall
+(http://p2pwall.sourceforge.net). The ftwall program
+allows for effective filtering of p2p applications such as Kazaa. For
+example, to use ftwall to filter P2P clients in the 'loc' zone, you
+would add the following rules:<br>
+          <br>
+&nbsp;&nbsp; QUEUE&nbsp;&nbsp; loc&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp; net&nbsp;&nbsp;&nbsp; tcp<br>
+&nbsp;&nbsp; QUEUE&nbsp;&nbsp; loc&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp; net&nbsp;&nbsp;&nbsp; udp<br>
+&nbsp;&nbsp; QUEUE&nbsp;&nbsp; loc&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp; fw&nbsp;&nbsp;&nbsp;&nbsp; udp<br>
+          <br>
+You would normally want to place those three rules BEFORE any ACCEPT
+rules for loc-&gt;net udp or tcp.<br>
+          <br>
+Note: When the protocol specified is TCP ("tcp", "TCP" or "6"),
+Shorewall will only pass connection requests (SYN packets) to user
+space. This is for compatibility with ftwall.</li>
+        <li>A
+BLACKLISTNEWNONLY option has been added to shorewall.conf. When this
+option is set to "Yes", the blacklists (dynamic and static) are only
+consulted for new connection requests. When set to "No" (the default if
+the variable is not set), the blacklists are consulted on every packet.<br>
+          <br>
+Setting this option to "No" allows blacklisting to stop existing
+connections from a newly blacklisted host but is more expensive in
+terms of packet processing time. This is especially true if the
+blacklists contain a large number of entries.</li>
+        <li>Chain names used in the /etc/shorewall/accounting file may
+now begin with a digit ([0-9]) and may contain embedded dashes ("-").</li>
+      </ol>
+      <p><b>10/26/2003 - Shorewall 1.4.7a and 1.4.7b win brown paper
+bag awards </b><b><img
+ style="border: 0px solid ; width: 50px; height: 80px;"
+ src="images/j0233056.gif" align="middle" title="" alt="">Shorewall
+1.4.7c released.</b> </p>
+      <ol>
+        <li>The saga with "&lt;zone&gt;_frwd" chains continues. The
+1.4.7c script
+produces a ruleset that should work for everyone even if it is not
+quite optimal. My apologies for this ongoing mess.</li>
+      </ol>
+      <p><b>10/24/2003 - Shorewall 1.4.7b</b><b> <img
+ style="border: 0px solid ; width: 28px; height: 12px;"
+ src="images/new10.gif" alt="(New)" title=""></b></p>
+      <p>This is a bugfx rollup of the 1.4.7a fixes plus:<br>
+      </p>
+      <ol>
+        <li>The fix for problem 5 in 1.4.7a was wrong with the result
+that
+"&lt;zone&gt;_frwd" chains might contain too few rules. That wrong code
+is corrected in this release.<br>
+        </li>
+      </ol>
+      <p><b>10/21/2003 - Shorewall 1.4.7a</b></p>
+      <p>This is a bugfix rollup of the following problem corrections:<br>
+      </p>
+      <ol>
+        <li>Tuomo Soini has supplied a correction to a problem that
+occurs
+using some versions of 'ash'. The symptom is that "shorewall start"
+fails with:<br>
+&nbsp;<br>
+&nbsp;&nbsp; local: --limit: bad variable name<br>
+&nbsp;&nbsp; iptables v1.2.8: Couldn't load match
+`-j':/lib/iptables/libipt_-j.so:<br>
+&nbsp;&nbsp; cannot open shared object file: No such file or directory<br>
+&nbsp;&nbsp; Try `iptables -h' or 'iptables --help' for more
+information.<br>
+          <br>
+        </li>
+        <li>Andres Zhoglo has supplied a correction that avoids trying
+to use the multiport match iptables facility on ICMP rules.<br>
+&nbsp;<br>
+&nbsp;&nbsp; Example of rule that previously caused "shorewall start"
+to fail:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ACCEPT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; loc&nbsp; $FW&nbsp;
+icmp&nbsp;&nbsp;&nbsp; 0,8,11,12<br>
+          <br>
+        </li>
+        <li>Previously, if the following error message was issued,
+Shorewall was left in an inconsistent state.<br>
+&nbsp;<br>
+&nbsp;&nbsp; Error: Unable to determine the routes through
+interface xxx<br>
+          <br>
+        </li>
+        <li>Handling of the LOGUNCLEAN option in shorewall.conf has
+been corrected.</li>
+        <li>In Shorewall 1.4.2, an optimization was added. This
+optimization
+involved creating a chain named "&lt;zone&gt;_frwd" for most zones
+defined using the /etc/shorewall/hosts file. It has since been
+discovered that in many cases these new chains contain redundant rules
+and that the "optimization" turns out to be less than optimal. The
+implementation has now been corrected.</li>
+        <li>When the MARK value in a tcrules entry is followed by ":F"
+or
+":P", the ":F" or ":P" was previously only applied to the first
+Netfilter rule generated by the entry. It is now applied to all entries.</li>
       </ol>
       <p><b><a href="News.htm">More News</a></b></p>
       <b> </b>
@@ -453,44 +297,22 @@ Bering 1.2!!! </b><br>
       <h4><b> </b></h4>
       <b> </b>
       <h2><b>This site is hosted by the generous folks at <a
- href="http://www.sf.net">SourceForge.net</a> </b></h2>
-      <b> </b>
+ href="http://www.sf.net">SourceForge.net</a></b></h2>
+      <br>
+      <br>
       <h2><b><a name="Donations"></a>Donations</b></h2>
       <b> </b></td>
-      <td width="88" bgcolor="#3366ff" valign="top" align="center">
-      <form method="post"
- action="http://lists.shorewall.net/cgi-bin/htsearch">
-        <p><strong><br>
-        <font color="#ffffff"><b>Note: </b></font></strong> <font
- color="#ffffff">Search is unavailable Daily 0200-0330 GMT.</font><br>
-&nbsp;</p>
-        <p><font color="#ffffff"><strong>Quick Search</strong></font><br>
-        <font face="Arial" size="-1"> <input type="text" name="words"
- size="15"></font><font size="-1"> </font><font face="Arial" size="-1">
-        <input type="hidden" name="format" value="long"> <input
- type="hidden" name="method" value="and"> <input type="hidden"
- name="config" value="htdig"> <input type="submit" value="Search"></font>
-        </p>
-        <font face="Arial"> <input type="hidden" name="exclude"
- value="[http://lists.shorewall.net/pipermail/*]"> </font> </form>
-      <p><font color="#ffffff"><b> <a
- href="http://lists.shorewall.net/htdig/search.html"> <font
- color="#ffffff">Extended Search</font></a></b></font></p>
-      <a target="_top" href="1.3/index.html"><font color="#ffffff"> </font></a><a
- target="_top" href="http://www1.shorewall.net/1.2/index.htm"><font
- color="#ffffff"><small><small><small></small></small></small></font></a><br>
-      </td>
     </tr>
   </tbody>
 </table>
 </center>
 </div>
 <table border="0" cellpadding="5" cellspacing="0"
- style="border-collapse: collapse;" width="100%" id="AutoNumber2"
- bgcolor="#3366ff">
+ style="border-collapse: collapse; width: 100%; background-color: rgb(51, 102, 255);"
+ id="AutoNumber2">
   <tbody>
     <tr>
-      <td width="100%" style="margin-top: 1px;">
+      <td style="width: 100%; margin-top: 1px;">
       <p align="center"><a href="http://www.starlight.org"> <img
  border="4" src="images/newlog.gif" width="57" height="100" align="left"
  hspace="10"> </a></p>
@@ -503,7 +325,7 @@ Children's Foundation.</font></a> Thanks!</font></font></p>
     </tr>
   </tbody>
 </table>
-<p><font size="2">Updated 10/06/2003 - <a href="support.htm">Tom Eastep</a></font>
+<p><font size="2">Updated 11/17/2003 - <a href="support.htm">Tom Eastep</a></font>
 <br>
 </p>
 </body>

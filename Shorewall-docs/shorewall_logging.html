@@ -7,18 +7,37 @@
   <meta name="author" content="Tom Eastep">
 </head>
 <body>
-<table border="0" cellpadding="0" cellspacing="0"
- style="border-collapse: collapse;" bordercolor="#111111" width="100%"
- id="AutoNumber1" bgcolor="#3366ff" height="90">
-  <tbody>
-    <tr>
-      <td width="100%">
-      <h1 align="center"><font color="#ffffff">Logging</font></h1>
-      </td>
-    </tr>
-  </tbody>
-</table>
-<br>
+<h1 style="text-align: center;">Logging</h1>
+<h2>How to Log Traffic through a Shorewall Firewall</h2>
+The disposition of packets entering a Shorewall firewall&nbsp; is
+determined by one of a number of Shorewall facilities. Only some of
+these facilities permit logging.<br>
+<ol>
+  <li>The packet is part of an established connection. The packet is
+accepted and cannot be logged.</li>
+  <li>The packet represents a connection request that is related to an
+established connection (such as a <a href="FTP.html">data connection
+associated with an FTP control connection</a>).&nbsp; These packets
+also cannot be logged.</li>
+  <li>The packet is rejected because of an option in <a
+ href="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</a> or <a
+ href="Documentation.htm#Interfaces">/etc/shorewall/interfaces</a>.
+These packets can be logged by setting the appropriate logging-related
+option in <a href="Documentation.htm#Conf">/etc/shorewall/shorewall.conf.</a></li>
+  <li>The packet matches a rule in <a href="Documentation.htm#Rules">/etc/shorewall/rules</a>.
+By including a syslog level (see below) in the ACTION column of a rule
+(e.g., "ACCEPT<span
+ style="font-weight: bold; text-decoration: underline;">:info</span>
+net fw tcp 22"), the connection attempt will be logged at that level.</li>
+  <li>The packet doesn't match a rule so is handled by a policy defined
+in <a href="Documentation.htm#Policy">/etc/shorewall/policy</a>. These
+may be logged by specifying a syslog level in the LOG LEVEL column of
+the policy entry (e.g., "loc net ACCEPT <span
+ style="font-weight: bold; text-decoration: underline;">info</span>"<br>
+  </li>
+</ol>
+<h2>Where the Traffic is logged and how to Change the Destination<br>
+</h2>
 By default, Shorewall directs NetFilter to log using syslog (8). Syslog
 classifies log messages by a <i>facility</i> and a <i>priority</i>
 (using the notation <i>facility.priority</i>). <br>
@@ -149,7 +168,8 @@ and
 <a
  href="http://marc.theaimsgroup.com/?l=gentoo-security&amp;m=106040714910563&amp;w=2">Here</a>
 is a post describing configuring syslog-ng to work with Shorewall.<br>
-<p><font size="2"> Updated 9/29/2003 - <a href="support.htm">Tom Eastep</a>
+<p><font size="2"> Updated 10/30/2003 - <a href="support.htm">Tom
+Eastep</a>
 </font></p>
 <p><a href="copyright.htm"><font size="2">Copyright</font> &copy; <font
  size="2">2001, 2002, 2003 Thomas M. Eastep</font></a><br>

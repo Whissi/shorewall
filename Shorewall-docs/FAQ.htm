@@ -10,20 +10,11 @@
   <meta name="Microsoft Theme" content="none">
 </head>
 <body>
-<table border="0" cellpadding="0" cellspacing="0"
- style="border-collapse: collapse;" width="100%" id="AutoNumber4"
- bgcolor="#3366ff" height="90">
-  <tbody>
-    <tr>
-      <td width="100%">
-      <h1 align="center"><font color="#ffffff">Shorewall FAQs</font></h1>
-      </td>
-    </tr>
-  </tbody>
-</table>
-<h1>Looking for Step by Step Configuration Instructions? Check out the <a
- href="shorewall_quickstart_guide.htm">QuickStart Guides</a>. <br>
+<h1 style="text-align: center;">Shorewall FAQs<br>
 </h1>
+<h2>Looking for Step by Step Configuration Instructions? Check out the <a
+ href="shorewall_quickstart_guide.htm">QuickStart Guides</a>. <br>
+</h2>
 <h1>PORT FORWARDING<br>
 </h1>
 <p align="left"><b>1. </b><a href="#faq1"> I want to <b>forward</b>
@@ -41,8 +32,8 @@ connection
 to port 22 on local system 192.168.1.3</b>. How do I do that?</a><br>
 </p>
 <p align="left"><span style="font-weight: bold;">30.<a
- href="file:///vfat/Shorewall-docs/FAQ.htm#faq30"> </a></span><a
- href="#faq30">I'm confused about <span style="font-weight: bold;">when</span>
+ href="FAQ.htm#faq30"> </a></span><a href="FAQ.htm#faq30">I'm confused
+about <span style="font-weight: bold;">when</span>
 to use <span style="font-weight: bold;">DNAT</span> rules <span
  style="font-weight: bold;">and when</span> to use <span
  style="font-weight: bold;">ACCEPT</span> rules. </a> </p>
@@ -53,7 +44,7 @@ requests to www.mydomain.com (IP 130.151.100.69)
 to system 192.168.1.5 in my local network. <b>External clients can
 browse</b> http://www.mydomain.com but <b>internal clients can't</b>.</a></p>
 <p align="left"><b>2a. </b><a href="#faq2a">I have a zone "Z" with an
-RFC1918 subnet and I use <b>static NAT</b> to
+RFC1918 subnet and I use <b>one-to-one NAT</b> to
 assign non-RFC1918 addresses to hosts in Z.
 Hosts in Z cannot communicate with each other using their external
 (non-RFC1918 addresses) so they <b>can't access
@@ -109,6 +100,11 @@ getting <b>logged?</b></a><br>
 <b><br>
 21. </b><a href="#faq21">I see these <b>strange log entries </b>occasionally;
 what are they?</a><br>
+<h1>ROUTING</h1>
+<span style="font-weight: bold;">32. </span><a href="#faq32">My
+firewall has <span style="font-weight: bold;">two connections to the
+internet from two different ISPs</span>. How do I set this up in
+Shorewall?</a><br>
 <h1>STARTING AND STOPPING<br>
 </h1>
 <p align="left"><b>7. </b><a href="#faq7">When I stop Shorewall <b>using
@@ -140,6 +136,9 @@ your <b>web site</b>?</a><br>
 <b><br>
 25. </b><a href="#faq25">How to I tell <b>which version of Shorewall</b>
 I am <b>running</b>?</a><br>
+<br>
+<span style="font-weight: bold;">31. </span><a href="#faq31">Does
+Shorewall provide protection against...</a><br>
 <h1>RFC 1918<br>
 </h1>
 <p align="left"><b>14. </b><a href="#faq14">I'm connected via a cable
@@ -173,7 +172,15 @@ only<b> from specific IP Addresses</b> on the internet?</a><br>
 options in nmap</b> on or behind the firewall, I get "<b>operation not
 permitted</b>". How can I use nmap with Shorewall?"</a><br>
 <br>
-<b>27. </b><a href="#faq27">I am compiling a <b>new kernel</b> for my
+<b><span style="font-weight: bold;">26a.&nbsp; </span></b><a
+ href="#faq26a">When I try
+to use the <span style="font-weight: bold;">"-O" option of nmap</span>
+from the firewall system, I get "<span style="font-weight: bold;">operation
+not permitted". </span>How to I allow this option?</a><b><span
+ style="font-weight: bold;"><a href="#faq26a"> </a><br>
+<br>
+</span>27. </b><a href="#faq27">I am compiling a <b>new kernel</b>
+for my
 firewall<b>.</b> What should I look out for?</a><br>
 <br>
 <b>28. </b><a href="#faq28">How do I use Shorewall as a <b>Bridging
@@ -282,8 +289,9 @@ three things:</p>
 <ul>
   <li>You are trying to test from inside your firewall (no, that won't
 work -- see <a href="#faq2">FAQ #2</a>).</li>
-  <li>You have a more basic problem with your local system such as an
-incorrect default gateway configured (it should be set to the IP
+  <li>You have a more basic problem with your local system (the one
+that you are trying to forward to) such as an
+incorrect default gateway (it should be set to the IP
 address of your firewall's internal interface).</li>
   <li>Your ISP is blocking that particular port inbound.<br>
   </li>
@@ -306,8 +314,9 @@ packet count in the first column non-zero? If so, the connection
 request is reaching the firewall and is being redirected to the server.
 In this case, the problem is
 usually a missing or incorrect default gateway setting
-on the server (the server's default gateway should be the
-IP address of the firewall's interface to the server).</li>
+on the local system (the system you are trying to forward to -- its
+default gateway should be the
+IP address of the firewall's interface to that system).</li>
   <li>If the
 packet count is zero:</li>
   <ul>
@@ -328,6 +337,7 @@ ethereal to further diagnose the problem.<br>
 want to connect to port 1022 on my firewall and have the firewall
 forward the connection to port 22 on local system 192.168.1.3. How do I
 do that?</h4>
+In /etc/shorewall/rules:<br>
 <div align="left">
 <blockquote>
   <table border="1" cellpadding="2" style="border-collapse: collapse;"
@@ -377,7 +387,7 @@ Firewall, of course :-)</li>
 using a separate DNS server for local clients) such that
 www.mydomain.com resolves to 130.141.100.69 externally and 192.168.1.5
 internally. That's what I do here at shorewall.net for my local systems
-that use static NAT.</li>
+that use one-to-one NAT.</li>
 </ul>
 <p align="left">If you insist on an IP solution to the accessibility
 problem rather than a DNS solution, then assuming that your external
@@ -401,7 +411,7 @@ please upgrade to Shorewall 1.4.2 or later.<br>
   <li>In /etc/shorewall/interfaces:</li>
 </ul>
 <blockquote>
-  <table cellpadding="2" cellspacing="0" border="1">
+  <table cellpadding="2" border="1">
     <tbody>
       <tr>
         <td valign="top">ZONE<br>
@@ -507,7 +517,8 @@ DHCP/PPPoE client to automatically restart Shorewall each time that you
 get a new IP address.</p>
 </div>
 <h4 align="left"><a name="faq2a"></a>2a. I have a zone "Z" with an
-RFC1918 subnet and I use static NAT to assign non-RFC1918 addresses to
+RFC1918 subnet and I use one-to-one NAT to assign non-RFC1918 addresses
+to
 hosts in Z. Hosts in Z cannot communicate with each other using their
 external (non-RFC1918 addresses) so they can't access each other using
 their DNS names.</h4>
@@ -521,7 +532,7 @@ solved using Bind Version 9 "views". It allows
 both external and internal clients to access
 a NATed host using the host's DNS name.</p>
 <p align="left">Another good way to approach this problem is to switch
-from static NAT to Proxy ARP. That way, the
+from one-to-one NAT to Proxy ARP. That way, the
 hosts in Z have non-RFC1918 addresses and can
 be accessed externally and internally using the same address.</p>
 <p align="left">If you don't like those solutions and prefer routing
@@ -984,9 +995,44 @@ cause of packets being logged in the FORWARD chain.<br>
   </li>
   <li><b>logflags </b>- The packet is being logged because it failed
 the checks implemented by the <b>tcpflags </b><a
- href="Documentation.htm#Interfaces">interface option</a>.<br>
-  </li>
+ href="Documentation.htm#Interfaces">interface option</a>.</li>
 </ol>
+<p align="left">Here is an example:</p>
+<font face="Century Gothic, Arial, Helvetica">
+<p align="left"><font face="Courier">Jun 27 15:37:56 gateway kernel:
+Shorewall:<span style="text-decoration: underline;">all2all:REJECT</span>:<span
+ style="text-decoration: underline;">IN=eth2</span> <span
+ style="text-decoration: underline;">OUT=eth1</span> <span
+ style="text-decoration: underline;">SRC=192.168.2.2</span>
+<span style="text-decoration: underline;">DST=192.168.1.3</span> LEN=67
+TOS=0x00 PREC=0x00 TTL=63 ID=5805 DF <span
+ style="text-decoration: underline;">PROTO=UDP</span>
+SPT=1803 <span style="text-decoration: underline;">DPT=53</span> LEN=47</font></p>
+</font>
+<p align="left">Let's look at the important parts of this message:</p>
+<ul>
+  <li>all2all:REJECT - This packet was REJECTed out of the <span
+ style="font-weight: bold;">all2all</span> chain -- the packet
+was rejected under the "all"-&gt;"all"
+REJECT policy (number 3 above).</li>
+  <li>IN=eth2 - the packet entered the firewall via eth2. If you see
+"IN=" with no interface name, the packet originated on the firewall
+itself.<br>
+  </li>
+  <li>OUT=eth1 - if accepted, the packet would be sent on eth1. If you
+see "OUT=" with no interface name, the packet would be processed by the
+firewall itself.<br>
+  </li>
+  <li>SRC=192.168.2.2 - the packet was sent by 192.168.2.2</li>
+  <li>DST=192.168.1.3 - the packet is destined for 192.168.1.3</li>
+  <li>PROTO=UDP - UDP Protocol</li>
+  <li>DPT=53 - The destination port is 53 (DNS)<br>
+  </li>
+</ul>
+<p align="left">In this case, 192.168.2.2 was in the "dmz" zone and
+192.168.1.3 is in the "loc" zone. I was missing the rule:</p>
+&nbsp;&nbsp;&nbsp; ACCEPT&nbsp;&nbsp;&nbsp; dmz&nbsp;&nbsp;&nbsp;
+loc&nbsp;&nbsp;&nbsp; udp&nbsp;&nbsp;&nbsp; 53
 <h4><a name="faq18"></a>18. Is there any way to use <b>aliased ip
 addresses</b> with Shorewall, and maintain separate rulesets for
 different IPs?</h4>
@@ -1079,13 +1125,22 @@ Shorewall</b> I am <b>running</b>?<br>
 At the shell prompt, type:<br>
 <br>
 <font color="#009900"><b> /sbin/shorewall
-version</b></font><br>
+version<br>
+</b></font>
 <h4><a name="faq26"></a><b>26. </b>When I try to use any of the SYN
 options in nmap on or behind the firewall, I get "operation not
 permitted".
 How can I use nmap with Shorewall?"</h4>
 Edit /etc/shorewall/shorewall.conf and change "NEWNOTSYN=No" to
 "NEWNOTSYN=Yes" then restart Shorewall.<br>
+<br>
+<h4><a name="faq26a"></a><b><span style="font-weight: bold;">26a.&nbsp;
+</span></b>When I try to use the <span style="font-weight: bold;">"-O"
+option of nmap</span> from the firewall system, I get "<span
+ style="font-weight: bold;">operation not permitted". </span>How to I
+allow this option?</h4>
+Add this command to your /etc/shorewall/start file:<br>
+<pre style="margin-left: 40px;"><tt>run_iptables -D OUTPUT -p ! icmp -m state --state INVALID -j DROP</tt><br></pre>
 <h4><a name="faq27">27. I'm compiling a new kernel for my firewall.
 What
 should I look out for?</a></h4>
@@ -1118,8 +1173,208 @@ to allow connections from the internet to your local network. In all
 other cases, you use ACCEPT unless you need to hijack connections as
 they go through your firewall and handle them on the firewall box
 itself; in that case, you use a REDIRECT rule.<br>
+<h4><a name="faq31"></a>31. Does Shorewall provide protection
+against....</h4>
+<ol>
+  <li>IP Spoofing: Sending packets over the WAN interface using an
+internal LAP IP address as the source address? <span
+ style="font-weight: bold;">Answer: </span>Yes.</li>
+  <li>Tear Drop: Sending packets that contain overlapping fragments? <span
+ style="font-weight: bold;">Answer: </span>This is the responsibility
+of the IP stack, not the Netfilter-based firewall since fragment
+reassembly occurs before the stateful packet filter ever touches each
+packet.</li>
+  <li>Smurf and Fraggle: Sending packets that use the WAN or LAN
+broadcast address as the source address? <span
+ style="font-weight: bold;">Answer: </span>Shorewall can be configured
+to do that using the <a href="blacklisting_support.htm">blacklisting</a>
+facility.</li>
+  <li>Land Attack: Sending packets that use the same address as the
+source and destination address? <span style="font-weight: bold;">Answer:
+    </span>Yes, if the <a href="Documentation.htm#Interfaces">routefilter
+interface option</a> is selected.</li>
+  <li>DOS:<br>
+&nbsp;&nbsp; - SYN Dos<br>
+&nbsp;&nbsp; - ICMP Dos<br>
+&nbsp;&nbsp; - Per-host Dos protection<br>
+    <span style="font-weight: bold;">Answer: </span>Shorewall has
+facilities for limiting SYN and ICMP packets. Netfilter as included in
+standard Linux kernels doesn't support per-remote-host limiting except
+by explicit rule that specifies the host IP address; that form of
+limiting is supported by Shorewall.</li>
+</ol>
+<h4><a name="faq32"></a><span style="font-weight: bold;">32. </span>My
+firewall has two connections to the internet from two different ISPs.
+How do I set this up in Shorewall?</h4>
+Setting this up in Shorewall is easy; setting up the routing is a bit
+harder.<br>
 <br>
-<font size="2">Last updated 10/04/2003 - <a href="support.htm">Tom
+Assuming that eth0 and eth1 are the interfaces to the two ISPs then:<br>
+<br>
+/etc/shorewall/interfaces:<br>
+<blockquote>
+  <table border="1" cellpadding="2" style="border-collapse: collapse;"
+ id="AutoNumber2">
+    <tbody>
+      <tr>
+        <td><u><b>ZONE</b></u></td>
+        <td><u><b>INTERFACE</b></u></td>
+        <td><u><b>BROADCAST</b></u></td>
+        <td><u><b>OPTIONS</b></u></td>
+      </tr>
+      <tr>
+        <td>net<br>
+        </td>
+        <td>eth0</td>
+        <td>detect<br>
+        </td>
+        <td>...<br>
+        </td>
+      </tr>
+      <tr>
+        <td style="vertical-align: top;">net<br>
+        </td>
+        <td style="vertical-align: top;">eth1<br>
+        </td>
+        <td style="vertical-align: top;">detect<br>
+        </td>
+        <td style="vertical-align: top;">...<br>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</blockquote>
+/etc/shorewall/policy:<br>
+<blockquote>
+  <table border="1" cellpadding="2" style="border-collapse: collapse;"
+ id="AutoNumber3">
+    <tbody>
+      <tr>
+        <td><u><b>SOURCE </b></u></td>
+        <td><u><b>DESTINATION</b></u></td>
+        <td><u><b>POLICY</b></u></td>
+        <td><u><b>LIMIT:BURST</b></u></td>
+      </tr>
+      <tr>
+        <td>net<br>
+        </td>
+        <td>net<br>
+        </td>
+        <td>DROP<br>
+        </td>
+        <td> <br>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</blockquote>
+<hr style="width: 100%; height: 2px;">The following information
+regarding setting up routing for this
+configuration is reproduced from the <a href="http://www.lartc.org">LARTC
+HOWTO</a> and has not been verified by the author. If you have
+questions or problems with the instructions given below, please post to
+the <a href="http://www.lartc.org/#mailinglist">LARTC mailing list</a>.<br>
+<hr style="width: 100%; height: 2px;">A common configuration is the
+following, in which there are two providers
+that connect a local network (or even a single machine) to the big
+Internet.
+<pre class="SCREEN">                                                                 ________<br>                                          +------------+        /<br>                                          |            |       |<br>                            +-------------+ Provider 1 +-------<br>        __                  |             |            |     /<br>    ___/  \_         +------+-------+     +------------+    |<br>  _/        \__      |     if1      |                      /<br> /             \     |              |                      |<br>| Local network -----+ Linux router |                      |     Internet<br> \_           __/    |              |                      |<br>   \__     __/       |     if2      |                      \<br>      \___/          +------+-------+     +------------+    |<br>                            |             |            |     \<br>                            +-------------+ Provider 2 +-------<br>                                          |            |       |<br>                                          +------------+        \________</pre>
+<p>There are usually two questions given this setup.</p>
+<div class="SECT2">
+<h2 class="SECT2">Split access</h2>
+<p> The first is how to route answers to packets coming in over a
+particular provider, say Provider 1, back out again over that same
+provider. </p>
+<p> Let us first set some symbolical names. Let <b class="COMMAND">$IF1</b>
+be the name of the first interface (if1 in the picture above) and <b
+ class="COMMAND">$IF2</b> the name of the second interface. Then let <b
+ class="COMMAND">$IP1</b> be the IP address associated with <b
+ class="COMMAND">$IF1</b> and <b class="COMMAND">$IP2</b> the IP
+address associated with <b class="COMMAND">$IF2</b>. Next, let <b
+ class="COMMAND">$P1</b> be the IP address of the gateway at Provider
+1, and <b class="COMMAND">$P2</b> the IP address of the gateway at
+provider 2. Finally, let <b class="COMMAND">$P1_NET</b> be the IP
+network <b class="COMMAND">$P1</b> is in, and <b class="COMMAND">$P2_NET</b>
+the IP network <b class="COMMAND">$P2</b> is in. </p>
+<p> One creates two additional routing tables, say <b class="COMMAND">T1</b>
+and <b class="COMMAND">T2</b>. These are added in
+/etc/iproute2/rt_tables. Then you set up routing in these tables as
+follows: </p>
+<p> </p>
+<pre class="SCREEN">	  ip route add $P1_NET dev $IF1 src $IP1 table T1<br>	  ip route add default via $P1 table T1<br>	  ip route add $P2_NET dev $IF2 src $IP2 table T2<br>	  ip route add default via $P2 table T2<br>	</pre>
+Nothing spectacular, just build a route to the gateway and build a
+default route via that gateway, as you would do in the case of a single
+upstream provider, but put the routes in a separate table per provider.
+Note that the network route suffices, as it tells you how to find any
+host in that network, which includes the gateway, as specified above.
+<p> Next you set up the main routing table. It is a good idea to route
+things to the direct neighbour through the interface connected to that
+neighbour. Note the `src' arguments, they make sure the right outgoing
+IP address is chosen. </p>
+<pre class="SCREEN">	    ip route add $P1_NET dev $IF1 src $IP1<br>	    ip route add $P2_NET dev $IF2 src $IP2<br>	  </pre>
+Then, your preference for default route:
+<pre class="SCREEN">	    ip route add default via $P1<br>	  </pre>
+Next, you set up the routing rules. These actually choose what routing
+table to route with. You want to make sure that you route out a given
+interface if you already have the corresponding source address:
+<pre class="SCREEN">	    ip rule add from $IP1 table T1<br>	    ip rule add from $IP2 table T2<br>	  </pre>
+This set of commands makes sure all answers to traffic coming in on a
+particular interface get answered from that interface.
+<p> </p>
+<div class="WARNING">
+<table class="WARNING" width="100%" border="0">
+  <tbody>
+    <tr>
+      <td width="25" align="center" valign="top"><img
+ src="images/BD21298_.gif" hspace="5" alt="Warning" title=""
+ style="width: 13px; height: 13px;"></td>
+      <td align="left" valign="top">
+      <p>Reader Rod Roark notes: 'If $P0_NET is the local network and
+$IF0 is its interface,
+the following additional entries are desirable: </p>
+      <pre class="SCREEN">ip route add $P0_NET     dev $IF0 table T1<br>ip route add $P2_NET     dev $IF2 table T1<br>ip route add 127.0.0.0/8 dev lo   table T1<br>ip route add $P0_NET     dev $IF0 table T2<br>ip route add $P1_NET     dev $IF1 table T2<br>ip route add 127.0.0.0/8 dev lo   table T2                                      </pre>
+'</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p> Now, this is just the very basic setup. It will work for all
+processes running on the router itself, and for the local network, if
+it is masqueraded. If it is not, then you either have IP space from
+both providers or you are going to want to masquerade to one of the two
+providers. In both cases you will want to add rules selecting which
+provider to route out from based on the IP address of the machine in
+the local network. </p>
+</div>
+<div class="SECT2">
+<h2 class="SECT2">Load balancing</h2>
+<p> The second question is how to balance traffic going out over the
+two providers. This is actually not hard if you already have set up
+split access as above. </p>
+<p> Instead of choosing one of the two providers as your default route,
+you now set up the default route to be a multipath route. In the
+default kernel this will balance routes over the two providers. It is
+done as follows (once more building on the example in the section on
+split-access): </p>
+<pre class="SCREEN">	    ip route add default scope global nexthop via $P1 dev $IF1 weight 1 \<br>	    nexthop via $P2 dev $IF2 weight 1<br>	  </pre>
+This will balance the routes over both providers. The <b
+ class="COMMAND">weight</b> parameters can be tweaked to favor one
+provider over the other.
+<p> Note that balancing will not be perfect, as it is route based, and
+routes are cached. This means that routes to often-used sites will
+always be over the same provider. </p>
+<p> Furthermore, if you really want to do this, you probably also want
+to look at Julian Anastasov's patches at <a
+ href="http://www.ssi.bg/%7Eja/#routes" target="_top">http://www.ssi.bg/~ja/#routes
+</a>, Julian's route patch page. They will make things nicer to work
+with. </p>
+</div>
+<hr style="width: 100%; height: 2px;">End of information reproduced
+from the LARTC HOWTO. If you have
+questions or problems with the instructions given above, please post to
+the <a href="http://www.lartc.org/#mailinglist">LARTC mailing list</a>.
+<hr style="width: 100%; height: 2px;"><font size="2">Last updated
+11/20/2003 - <a href="support.htm">Tom
 Eastep</a></font>
 <p><a href="copyright.htm"><font size="2">Copyright</font> © <font
  size="2">2001, 2002, 2003 Thomas M. Eastep.</font></a><br>

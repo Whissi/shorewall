@@ -9,20 +9,11 @@
 <body>
 <small> </small><small> </small><small> </small><small> </small><small>
 </small> <small> </small>
-<table border="0" cellpadding="0" cellspacing="0"
- style="border-collapse: collapse;" width="100%" id="AutoNumber4"
- bgcolor="#3366ff" height="90">
-  <tbody>
-    <tr>
-      <td width="100%"><small> </small>
-      <h1 align="center"><small><font color="#ffffff">Some things that
-Shorewall <b>Cannot</b> Do</font></small></h1>
-      <small> </small></td>
-    </tr>
-  </tbody>
-</table>
 <small><br>
-</small>Shorewall cannot:<br>
+</small>
+<h1 style="text-align: center;">Some things that Shorewall Cannot Do<br>
+</h1>
+Shorewall cannot:<br>
 <ul>
   <li>Be used to filter traffic through a Layer 2 Bridge</li>
   <li>Act as a "Personal Firewall" that allows internet access by
@@ -30,18 +21,28 @@ application.</li>
   <li>Be used with an Operating System other than Linux (version &gt;=
 2.4.0)<br>
   </li>
-  <li>Do content filtering -- better to use <a
- href="Shorewall_Squid_Usage.html">Squid</a> for that.</li>
+  <li>Do content filtering:</li>
+  <ul>
+    <li>HTTP -- better to use <a href="Shorewall_Squid_Usage.html">Squid</a>
+for that.</li>
+    <li>Email -- Install something like <a
+ href="http://www.postfix.org">Postfix</a> on your firewall and
+integrate it with <a href="http://www.spamassassin.org">SpamAssassin</a>
+and <a href="http://www.ijs.si/software/amavisd/">Amavisd-new</a>.<br>
+    </li>
+  </ul>
 </ul>
 In addition:<br>
 <ul>
-  <li>Shorewall does not contain any support for Netfilter <span
- style="font-style: italic;">Patch-O-Matic</span> features -- Shorewall
+  <li>Shorewall does not contain any support for Netfilter <a
+ href="http://www.netfilter.org/documentation/pomlist/pom-summary.html"><span
+ style="font-style: italic;">Patch-O-Matic</span></a> features --
+Shorewall
 only supports features from released kernels.<br>
   </li>
 </ul>
 <br>
-<font size="2">Last updated 9/28/2003 - <a href="support.htm">Tom
+<font size="2">Last updated 10/07/2003 - <a href="support.htm">Tom
 Eastep</a></font>
 <p><a href="copyright.htm"><font size="2">Copyright</font> &copy; <font
  size="2">2001, 2002, 2003 Thomas M. Eastep.</font></a><br>

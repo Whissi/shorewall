@@ -9,17 +9,8 @@
   <title>Configuration File Basics</title>
 </head>
 <body>
-<table border="0" cellpadding="0" cellspacing="0"
- style="border-collapse: collapse;" bordercolor="#111111" width="100%"
- id="AutoNumber1" bgcolor="#3366ff" height="90">
-  <tbody>
-    <tr>
-      <td width="100%">
-      <h1 align="center"><font color="#ffffff">Configuration Files</font></h1>
-      </td>
-    </tr>
-  </tbody>
-</table>
+<h1 style="text-align: center;">Configuration Files<br>
+</h1>
 <p><b><font color="#ff0000">Warning: </font>If you copy or edit your
 configuration files on a system running Microsoft Windows, you <u>must</u>
 run them through <a
@@ -46,7 +37,7 @@ and Source Network Address Translation (SNAT).</li>
 modules.</li>
   <li>/etc/shorewall/rules - defines rules that are exceptions to the
 overall policies established in /etc/shorewall/policy.</li>
-  <li>/etc/shorewall/nat - defines static NAT
+  <li>/etc/shorewall/nat - defines one-to-one NAT
 rules.</li>
   <li>/etc/shorewall/proxyarp - defines use of Proxy ARP.</li>
   <li>/etc/shorewall/routestopped (Shorewall 1.3.4 and later) - defines
@@ -254,18 +245,21 @@ that you can then use in some of the other configuration files.</p>
 <p>It is suggested that variable names begin with an upper case letter<font
  size="1"> </font>to distinguish them from variables used internally
 within the Shorewall programs</p>
-<p>Example:</p>
+<p>Example:<br>
+</p>
+<p>&nbsp;&nbsp;&nbsp; /etc/shorewall/params<br>
+</p>
 <blockquote>
-  <pre>NET_IF=eth0<br>NET_BCAST=130.252.100.255<br>NET_OPTIONS=routefilter,norfc1918</pre>
+  <pre>NET_IF=eth0<br>NET_BCAST=130.252.100.255<br>NET_OPTIONS=routefilter,norfc1918<br></pre>
 </blockquote>
-<p><br>
-Example (/etc/shorewall/interfaces record):</p>
+<p>&nbsp;&nbsp;&nbsp; /etc/shorewall/interfaces record:</p>
 <font face="Century Gothic, Arial, Helvetica">
 <blockquote>
   <pre><font face="Courier">net $NET_IF $NET_BCAST $NET_OPTIONS</font></pre>
 </blockquote>
 </font>
-<p>The result will be the same as if the record had been written</p>
+<p>&nbsp;&nbsp;&nbsp; The result will be the same as if the record had
+been written</p>
 <font face="Century Gothic, Arial, Helvetica">
 <blockquote>
   <pre>net eth0 130.252.100.255 routefilter,norfc1918</pre>
@@ -331,7 +325,8 @@ The <a href="starting_and_stopping_shorewall.htm"><b>try</b> command</a>
 allows you to attempt to restart using an alternate configuration and
 if an
 error occurs to automatically restart the standard configuration.<br>
-<p><font size="2"> Updated 8/22/2003 - <a href="support.htm">Tom Eastep</a>
+<p><font size="2"> Updated 11/20/2003 - <a href="support.htm">Tom
+Eastep</a>
 </font></p>
 <p><font face="Trebuchet MS"><a href="copyright.htm"><font size="2">Copyright</font>
 © <font size="2">2001, 2002, 2003 Thomas M. Eastep.</font></a></font><br>

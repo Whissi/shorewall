@@ -9,18 +9,9 @@
   <meta name="Microsoft Theme" content="none">
 </head>
 <body>
-<table border="0" cellpadding="0" cellspacing="0"
- style="border-collapse: collapse;" width="100%" id="AutoNumber1"
- bgcolor="#3366ff" height="90">
-  <tbody>
-    <tr>
-      <td width="100%">
-      <h1 align="center"><font color="#ffffff">About My Network</font></h1>
-      </td>
-    </tr>
-  </tbody>
-</table>
 <blockquote> </blockquote>
+<h1 style="text-align: center;">About My Network<br>
+</h1>
 <a href="http://www.redhat.com"><img
  style="border: 0px solid ; width: 88px; height: 31px;"
  src="images/poweredby.png" title="" alt="(RedHat Logo)"> </a><a
@@ -51,7 +42,7 @@
 <h1> </h1>
 <blockquote>
   <p><big><font color="#ff0000"><b>Warning 1: </b></font><b><small>I</small></b></big><big><b><small>
-use a combination of Static NAT and Proxy ARP, neither of which are
+use a combination of One-to-one NAT and Proxy ARP, neither of which are
 relevant to a simple configuration with a single public IP address.</small></b></big><big><b><small>
 If you have just a single public IP address, most of what you see here
 won't apply to your setup so beware of copying parts of this
@@ -70,9 +61,10 @@ and a Wireless network connected to eth3 (192.168.3.0/24).</p>
   <p> I use:<br>
   </p>
   <ul>
-    <li>Static NAT for Ursa (my XP System) - Internal address
+    <li>One-to-one NAT for Ursa (my XP System) - Internal address
 192.168.1.5 and external address 206.124.146.178.</li>
-    <li>Static NAT for EastepLaptop (My work system). Internal address
+    <li>One-to-one NAT for EastepLaptop (My work system). Internal
+address
 192.168.1.7 and external address 206.124.146.180.<br>
     </li>
     <li>SNAT through the primary gateway address
@@ -181,7 +173,8 @@ my Ethernet interfaces. </p>
 </blockquote>
 <h3>Masq File: </h3>
 <blockquote>
-  <p> Although most of our internal systems use static NAT, my wife's
+  <p> Although most of our internal systems use one-to-one NAT, my
+wife's
 system (192.168.1.4) uses IP Masquerading (actually SNAT) as does my
 personal system (192.168.1.3), our laptop (192.168.3.8) and
 visitors with laptops.<br>
@@ -244,7 +237,7 @@ file.<br>
 </div>
 <pre style="margin-left: 40px;">#!/bin/sh<br><br>case $1 in<br>	eth1)<br>		ip route add 206.124.146.177 dev eth1<br>		;;<br>esac<br></pre>
 <pre style="margin-left: 40px;"><span style="font-family: sans-serif;"></span></pre>
-<p><font size="2">Last updated 10/03/2003 - <a href="support.htm">Tom
+<p><font size="2">Last updated 11/13/2003 - <a href="support.htm">Tom
 Eastep</a></font> </p>
 <a href="copyright.htm"><font size="2">Copyright</font> © <font
  size="2">2001, 2002, 2003 Thomas M. Eastep.</font></a><br>

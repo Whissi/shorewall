@@ -8,19 +8,37 @@
   <meta name="ProgId" content="FrontPage.Editor.Document">
 </head>
 <body>
-<table border="0" cellpadding="0" cellspacing="0"
- style="border-collapse: collapse;" bordercolor="#111111" width="100%"
- id="AutoNumber1" bgcolor="#3366ff" height="90">
-  <tbody>
-    <tr>
-      <td width="100%">
-      <h1 align="center"><font color="#ffffff">Shorewall and FTP</font></h1>
-      </td>
-    </tr>
-  </tbody>
-</table>
 <h2></h2>
 <blockquote> </blockquote>
+<h1 style="text-align: center;">Shorewall and FTP<br>
+</h1>
+<hr style="width: 100%; height: 2px;">
+<p><span style="font-weight: bold;">NOTICE: </span>If you are running
+Mandrake 9.1 or 9.2 and are having problems with FTP, you have three
+choices:</p>
+<ol>
+  <li>Edit /usr/share/shorewall/firewall and replace this line:<br>
+    <br>
+&nbsp;&nbsp; <tt>for suffix in o gz ko ; do<br>
+    </tt><br>
+with<br>
+    <br>
+&nbsp;&nbsp; <tt>for suffix in o gz ko <span
+ style="font-weight: bold;">o.gz </span>; do<br>
+    <br>
+    </tt>and at a root shell prompt:<br>
+    <br>
+    <tt>&nbsp;<span style="font-weight: bold; color: rgb(0, 153, 0);">shorewall
+restart</span><br style="font-weight: bold; color: rgb(0, 153, 0);">
+    <br>
+    </tt></li>
+  <li>Install the Mandrake "cooker" version of Shorewall.<br>
+    <br>
+  </li>
+  <li>Upgrade to Shorewall 1.4.7 or later.<br>
+  </li>
+</ol>
+<hr style="width: 100%; height: 2px;">
 <p>FTP transfers involve two TCP connections. The first <u>control</u>
 connection goes from the FTP client to port 21 on the FTP server. This
 connection is used for logon and to send commands and responses between
@@ -30,7 +48,8 @@ connection is dependent on the <u>mode</u>
 that the client is operating in:<br>
 </p>
 <ul>
-  <li>Passive Mode (default for web browsers) -- The client issues a
+  <li>Passive Mode (often the default for web browsers) -- The client
+issues a
 PASV command. Upon receipt of this command, the server listens on a
 dynamically-allocated port then sends a PASV reply to the client. The
 PASV reply gives the IP address
@@ -91,19 +110,29 @@ that the
 modules "ip_conntrack_ftp" and "ip_nat_ftp" need to be loaded.
 Shorewall automatically
 loads these "helper" modules from /lib/modules/&lt;<i>kernel-version&gt;</i>/kernel/net/ipv4/netfilter/
-and you can determine if they are loaded using the 'lsmod' command:<br>
+and you can determine if they are loaded using the 'lsmod' command. The
+&lt;<span style="font-style: italic;">kernel-version</span>&gt; may be
+obtained by typing<br>
 </p>
+<pre>	<span style="color: rgb(0, 153, 0);"><span
+ style="font-weight: bold;">uname -r</span></span>
+
+Example:<br></pre>
 <blockquote>
-  <p>Example:<br>
-  </p>
   <blockquote>
-    <pre>[root@lists etc]# lsmod<br>Module                  Size  Used by    Not tainted<br>autofs                 12148   0  (autoclean) (unused)<br>ipt_TOS                 1560  12  (autoclean)<br>ipt_LOG                 4120   5  (autoclean)<br>ipt_REDIRECT            1304   1  (autoclean)<br>ipt_REJECT              3736   4  (autoclean)<br>ipt_state               1048  13  (autoclean)<br>ip_nat_irc              3152   0  (unused)<br><b>ip_nat_ftp              3888   0  (unused)</b><br>ip_conntrack_irc        3984   1<br><b>ip_conntrack_ftp        5008   1</b><br>ipt_multiport           1144   2  (autoclean)<br>ipt_conntrack           1592   0  (autoclean)<br>iptable_filter          2316   1  (autoclean)<br>iptable_mangle          2680   1  (autoclean)<br>iptable_nat            20568   3  (autoclean) [ipt_REDIRECT ip_nat_irc ip_nat_ftp]<br>ip_conntrack           26088   5  (autoclean) [ipt_REDIRECT ipt_state ip_nat_irc ip_nat_ftp ip_conntrack_irc ip_conntrack_ftp ipt_conntrack iptable_nat]<br>ip_tables              14488  12  [ipt_TOS ipt_LOG ipt_REDIRECT ipt_REJECT ipt_state ipt_multiport ipt_conntrack iptable_filter iptable_mangle iptable_nat]<br>tulip                  42464   0  (unused)<br>e100                   50596   1<br>keybdev                 2752   0  (unused)<br>mousedev                5236   0  (unused)<br>hid                    20868   0  (unused)<br>input                   5632   0  [keybdev mousedev hid]<br>usb-uhci               24684   0  (unused)<br>usbcore                73280   1  [hid usb-uhci]<br>ext3                   64704   2<br>jbd                    47860   2  [ext3]<br>[root@lists etc]#<br></pre>
+    <pre>[root@lists etc]# lsmod<br>Module                  Size  Used by    Not tainted<br>autofs                 12148   0  (autoclean) (unused)<br>ipt_TOS                 1560  12  (autoclean)<br>ipt_LOG                 4120   5  (autoclean)<br>ipt_REDIRECT            1304   1  (autoclean)<br>ipt_REJECT              3736   4  (autoclean)<br>ipt_state               1048  13  (autoclean)<br>ip_nat_irc              3152   0  (unused)<br><b>ip_nat_ftp              3888   0  (unused)</b><br>ip_conntrack_irc        3984   1<br><b>ip_conntrack_ftp        5008   1</b><br>ipt_multiport           1144   2  (autoclean)<br>ipt_conntrack           1592   0  (autoclean)<br>iptable_filter          2316   1  (autoclean)<br>iptable_mangle          2680   1  (autoclean)<br>iptable_nat            20568   3  (autoclean) [ipt_REDIRECT ip_nat_irc ip_nat_ftp]<br>ip_conntrack           26088   5  (autoclean) [ipt_REDIRECT ipt_state ip_nat_irc<br>					      ip_nat_ftp ip_conntrack_irc ip_conntrack_ftp<br>                                              ipt_conntrack iptable_nat]<br>ip_tables              14488  12  [ipt_TOS ipt_LOG ipt_REDIRECT ipt_REJECT ipt_state<br>                                  ipt_multiport ipt_conntrack iptable_filter<br>                                  iptable_mangle iptable_nat]<br>tulip                  42464   0  (unused)<br>e100                   50596   1<br>keybdev                 2752   0  (unused)<br>mousedev                5236   0  (unused)<br>hid                    20868   0  (unused)<br>input                   5632   0  [keybdev mousedev hid]<br>usb-uhci               24684   0  (unused)<br>usbcore                73280   1  [hid usb-uhci]<br>ext3                   64704   2<br>jbd                    47860   2  [ext3]<br>[root@lists etc]#<br></pre>
   </blockquote>
 </blockquote>
 <blockquote> </blockquote>
 <p>If you want Shorewall to load these modules from an alternate
 directory, you need to set the MODULESDIR variable in
 /etc/shorewall/shorewall.conf to point to that directory.<br>
+</p>
+<p>If your FTP helper modules are compressed and have the names <span
+ style="font-style: italic;">ip_nat_ftp.o.gz </span>and <span
+ style="font-style: italic;">ip_conntrack_ftp.o.gz</span> then you will
+need Shorewall 1.4.7 or later if you want Shorewall to load them for
+you.<br>
 </p>
 <p>Server configuration is covered in <a href="Documentation.htm#Rules">the
 /etc/shorewall/rules documentation</a>,<br>
@@ -203,7 +232,7 @@ to the net.<br>
   <p> </p>
 </blockquote>
 <blockquote> </blockquote>
-<p><font size="2">Last updated 9/17/2003 - </font><font size="2"> <a
+<p><font size="2">Last updated 12/01/2003 - </font><font size="2"> <a
  href="support.htm">Tom Eastep</a></font> </p>
 <a href="copyright.htm"><font size="2">Copyright</font> © <font
  size="2">2003 Thomas M. Eastep.</font></a><br>

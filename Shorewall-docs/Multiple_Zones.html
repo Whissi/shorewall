@@ -1,0 +1,551 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=windows-1252">
+  <title>Multiple Zones per Interface</title>
+  <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+  <meta name="ProgId" content="FrontPage.Editor.Document">
+  <meta name="author" content="Tom Eastep">
+</head>
+<body>
+<h2></h2>
+<blockquote> </blockquote>
+<h1 style="text-align: center;">Multiple Zones per Interface<br>
+</h1>
+While most configurations can be handled with each of the firewall's
+network interfaces assigned to a single zone, there are cases where you
+will want to divide the hosts accessed through an interface between two
+or more zones.<br>
+<ol>
+  <li>The interface has multiple addresses on multiple subnetworks.
+This case is covered in the <a
+ href="Shorewall_and_Aliased_Interfaces.html">Aliased Interface
+documentation</a>.</li>
+  <li>You are using some form of NAT and want to access a server by its
+external IP address from the same LAN segment. This is covered in <a
+ href="FAQ.htm#faq2">FAQs 2 and 2a</a>.<br>
+  </li>
+  <li>There are routers accessible through the interface and you want
+to treat the networks accessed through that router as a separate zone.</li>
+  <li>Some of the hosts accessed through an interface have
+significantly different firewalling requirements from the others so you
+want to assign them to a different zone.</li>
+</ol>
+The key points to keep in mind when setting up multiple zones per
+interface are:<br>
+<ul>
+  <li>Shorewall generates rules for zones in the order that the zone
+declarations appear in /etc/shorewall/zones.</li>
+  <li>The order of entries in /etc/shorewall/hosts is immaterial as far
+as the generated ruleset is concerned.</li>
+</ul>
+<span style="font-weight: bold;">These examples use the local zone but
+the same technique works for any zone. </span>Remember that Shorewall
+doesn't have any conceptual knowledge of "Internet", "Local", or "DMZ"
+so all zones except the firewall itself ($FW) are the same as far as
+Shorewall is concerned.&nbsp; Also, the examples use private (RFC 1918)
+addresses but public IP addresses can be used in exactly the same way.<br>
+<h2>Router in the Local Zone<br>
+</h2>
+Here is an example of a router in the local zone.&nbsp; Note that <span
+ style="font-weight: bold;">the box called "Router" could be a VPN
+server</span> or other such device; from the point of view of this
+discussion, it makes no difference.<br>
+<br>
+<div style="text-align: center;"><img src="images/MultiZone1.png"
+ title="" alt="(Firewall connected to Internal Router)"
+ style="width: 556px; height: 335px;"><br>
+</div>
+<blockquote>
+  <p> </p>
+</blockquote>
+<blockquote> </blockquote>
+<h3>Can You Use the Standard Configuration?<br>
+</h3>
+In many cases, the <a href="two-interface.htm">standard two-interface
+Shorewall setup</a> will work fine in this configuration.&nbsp; It will
+work if:<br>
+<ul>
+  <li>The firewall requirements to/from the internet are the same for
+192.168.1.0/24 and 192.168.2.0/24.</li>
+  <li>The hosts in 192.168.1.0/24 know that the route to 192.168.2.0/24
+is through the <span style="font-weight: bold;">router.</span></li>
+</ul>
+All you have to do on the firewall is add a route to 192.168.2.0/24
+through the <span style="font-weight: bold;">router</span> and restart
+Shorewall.<br>
+<h3>Will One Zone be Enough?</h3>
+If the firewalling requirements for the two local networks is the same
+but the hosts in 192.168.1.0/24 don't know how to route to
+192.168.2.0/24 then you need to configure the firewall slightly
+differently. This type of configuration is rather stupid from an IP
+networking point of view but it is sometimes necessary because you
+simply don't want to have to reconfigure all of the hosts in
+192.168.1.0/24 to add a persistent route to 192.168.2.0/24. On the
+firewall:<br>
+<ul>
+  <li>Add a route to 192.168.2.0/24 through the <span
+ style="font-weight: bold;">Router.</span></li>
+  <li>Set the 'routeback' and 'newnotsyn' options for eth1 (the local
+firewall interface) in /etc/shorewall/interfaces.</li>
+  <li>Restart Shorewall.<br>
+  </li>
+</ul>
+<h3>I Need Separate Zones</h3>
+If you need to make 192.168.2.0/24 into it's own zone, you can do it
+one of two ways; Nested Zones or Parallel Zones.<br>
+<h4>Nested Zones:</h4>
+You can define one zone (called it 'loc') as being all hosts connectied
+to eth1 and a second zone 'loc1' (192.168.2.0/24) as a sub-zone.<br>
+<br>
+<div style="text-align: center;"><img src="images/MultiZone1A.png"
+ title="" alt="" style="width: 607px; height: 415px;"><br>
+</div>
+<br>
+The advantage of this approach is that the zone 'loc1' can use CONTINUE
+policies such that if a connection request doesn't match a 'loc1' rule,
+it will be matched against the 'loc' rules. For example, if your
+loc1-&gt;net policy is CONTINUE then if a connection request from loc1
+to the internet doesn't match any rules for loc1-&gt;net then it will
+be checked against the loc-&gt;net rules.<br>
+<br>
+/etc/shorewall/zones:<br>
+<br>
+<div style="margin-left: 40px;">
+<table cellpadding="2" border="1" style="text-align: left;">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top; font-weight: bold;">ZONE<br>
+      </td>
+      <td style="vertical-align: top; font-weight: bold;">DISPLAY<br>
+      </td>
+      <td style="vertical-align: top; font-weight: bold;">COMMENTS<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">loc1<br>
+      </td>
+      <td style="vertical-align: top;">Local2<br>
+      </td>
+      <td style="vertical-align: top;">Hosts access through internal
+router<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">loc<br>
+      </td>
+      <td style="vertical-align: top;">Local<br>
+      </td>
+      <td style="vertical-align: top;">All hosts accessed via eth1<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+Note that the sub-zone (loc1) is defined first!<br>
+<br>
+</div>
+/etc/shorewall/interfaces<br>
+<br>
+<div style="margin-left: 40px;">
+<table cellspacing="2" border="1" style="text-align: left;">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top; font-weight: bold;">ZONE<br>
+      </td>
+      <td style="vertical-align: top; font-weight: bold;">INTERFACE<br>
+      </td>
+      <td style="vertical-align: top; font-weight: bold;">BROADCAST<br>
+      </td>
+      <td style="vertical-align: top; font-weight: bold;">OPTIONS<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">loc<br>
+      </td>
+      <td style="vertical-align: top;">eth1<br>
+      </td>
+      <td style="vertical-align: top;">192.168.1.255<br>
+      </td>
+      <td style="vertical-align: top;">...<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+</div>
+/etc/shorewall/hosts<br>
+<br>
+<div style="margin-left: 40px;">
+<table cellpadding="2" border="1" style="text-align: left;">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top; font-weight: bold;">ZONE<br>
+      </td>
+      <td style="vertical-align: top; font-weight: bold;">HOSTS<br>
+      </td>
+      <td style="vertical-align: top; font-weight: bold;">OPTIONS<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">loc1<br>
+      </td>
+      <td style="vertical-align: top;">eth1:192.168.2.0/24<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<br>
+If you don't need Shorewall to set up infrastructure to route traffic
+between 'loc' and 'loc1', add these two policies:<br>
+<br>
+<div style="margin-left: 40px;">
+<table cellpadding="2" border="1" style="text-align: left;">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top; font-weight: bold;">SOURCE<br>
+      </td>
+      <td style="vertical-align: top; font-weight: bold;">DEST<br>
+      </td>
+      <td style="vertical-align: top; font-weight: bold;">POLICY<br>
+      </td>
+      <td style="vertical-align: top; font-weight: bold;">LOG<br>
+LEVEL<br>
+      </td>
+      <td style="vertical-align: top; font-weight: bold;">RATE:BURST<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">loc<br>
+      </td>
+      <td style="vertical-align: top;">loc1</td>
+      <td style="vertical-align: top;">NONE<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">loc1<br>
+      </td>
+      <td style="vertical-align: top;">loc<br>
+      </td>
+      <td style="vertical-align: top;">NONE<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"> <br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<h4>Parallel Zones:</h4>
+You define both zones in the /etc/shorewall/hosts file to create two
+disjoint zones.<br>
+<br>
+<div style="text-align: center;"><img src="images/MultiZone1B.png"
+ title="" alt="" style="width: 588px; height: 415px;"><br>
+</div>
+<br>
+/etc/shorewall/zones:<br>
+<br>
+<div style="margin-left: 40px;">
+<table cellpadding="2" border="1" style="text-align: left;">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top; font-weight: bold;">ZONE<br>
+      </td>
+      <td style="vertical-align: top; font-weight: bold;">DISPLAY<br>
+      </td>
+      <td style="vertical-align: top; font-weight: bold;">COMMENTS<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">loc1<br>
+      </td>
+      <td style="vertical-align: top;">Local1<br>
+      </td>
+      <td style="vertical-align: top;">Hosts accessed Directly from
+Firewall<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">loc2<br>
+      </td>
+      <td style="vertical-align: top;">Local2<br>
+      </td>
+      <td style="vertical-align: top;">Hosts accessed via internal
+Router<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+Here it doesn't matter which zone is defined first.<br>
+<br>
+</div>
+/etc/shorewall/interfaces<br>
+<br>
+<div style="margin-left: 40px;">
+<table cellspacing="2" border="1" style="text-align: left;">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top; font-weight: bold;">ZONE<br>
+      </td>
+      <td style="vertical-align: top; font-weight: bold;">INTERFACE<br>
+      </td>
+      <td style="vertical-align: top; font-weight: bold;">BROADCAST<br>
+      </td>
+      <td style="vertical-align: top; font-weight: bold;">OPTIONS<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">-<br>
+      </td>
+      <td style="vertical-align: top;">eth1<br>
+      </td>
+      <td style="vertical-align: top;">192.168.1.255<br>
+      </td>
+      <td style="vertical-align: top;">...<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+</div>
+/etc/shorewall/hosts<br>
+<br>
+<div style="margin-left: 40px;">
+<table cellpadding="2" border="1" style="text-align: left;">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top; font-weight: bold;">ZONE<br>
+      </td>
+      <td style="vertical-align: top; font-weight: bold;">HOSTS<br>
+      </td>
+      <td style="vertical-align: top; font-weight: bold;">OPTIONS<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">loc1<br>
+      </td>
+      <td style="vertical-align: top;">eth1:192.168.1.0/24<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">loc2<br>
+      </td>
+      <td style="vertical-align: top;">eth1:192.168.2.0/24<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<br>
+If you don't need Shorewall to set up infrastructure to route traffic
+between 'loc' and 'loc1', add these two policies:<br>
+<br>
+<div style="margin-left: 40px;">
+<table cellpadding="2" border="1" style="text-align: left;">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top; font-weight: bold;">SOURCE<br>
+      </td>
+      <td style="vertical-align: top; font-weight: bold;">DEST<br>
+      </td>
+      <td style="vertical-align: top; font-weight: bold;">POLICY<br>
+      </td>
+      <td style="vertical-align: top; font-weight: bold;">LOG<br>
+LEVEL<br>
+      </td>
+      <td style="vertical-align: top; font-weight: bold;">RATE:BURST<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">loc<br>
+      </td>
+      <td style="vertical-align: top;">loc1</td>
+      <td style="vertical-align: top;">NONE<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">loc1<br>
+      </td>
+      <td style="vertical-align: top;">loc<br>
+      </td>
+      <td style="vertical-align: top;">NONE<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"> <br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<h2>Some Hosts have Special Firewalling Requirements</h2>
+There are cases where a subset of the addresses associated with an
+interface need special handling.&nbsp; Here's an example.<br>
+<br>
+<div style="text-align: center;"><img src="images/MultiZone2.png"
+ title="" alt="" style="height: 252px; width: 631px;"><br>
+</div>
+<br>
+In this example, addresses 192.168.1.8 - 192.168.1.15 (192.168.1.8/29)
+are to be treated as their own zone (loc1).<br>
+<br>
+/etc/shorewall/zones:<br>
+<br>
+<div style="margin-left: 40px;">
+<table cellpadding="2" border="1" style="text-align: left;">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top; font-weight: bold;">ZONE<br>
+      </td>
+      <td style="vertical-align: top; font-weight: bold;">DISPLAY<br>
+      </td>
+      <td style="vertical-align: top; font-weight: bold;">COMMENTS<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">loc1<br>
+      </td>
+      <td style="vertical-align: top;">Local2<br>
+      </td>
+      <td style="vertical-align: top;">192.168.1.8 - 192.168.1.15<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">loc<br>
+      </td>
+      <td style="vertical-align: top;">Local<br>
+      </td>
+      <td style="vertical-align: top;">All hosts accessed via eth1<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+Note that the sub-zone (loc1) is defined first!<br>
+<br>
+</div>
+/etc/shorewall/interfaces<br>
+<br>
+<div style="margin-left: 40px;">
+<table cellspacing="2" border="1" style="text-align: left;">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top; font-weight: bold;">ZONE<br>
+      </td>
+      <td style="vertical-align: top; font-weight: bold;">INTERFACE<br>
+      </td>
+      <td style="vertical-align: top; font-weight: bold;">BROADCAST<br>
+      </td>
+      <td style="vertical-align: top; font-weight: bold;">OPTIONS<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">loc<br>
+      </td>
+      <td style="vertical-align: top;">eth1<br>
+      </td>
+      <td style="vertical-align: top;">192.168.1.255<br>
+      </td>
+      <td style="vertical-align: top;">...<br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+</div>
+/etc/shorewall/hosts<br>
+<br>
+<div style="margin-left: 40px;">
+<table cellpadding="2" border="1" style="text-align: left;">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top; font-weight: bold;">ZONE<br>
+      </td>
+      <td style="vertical-align: top; font-weight: bold;">HOSTS<br>
+      </td>
+      <td style="vertical-align: top; font-weight: bold;">OPTIONS<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">loc1<br>
+      </td>
+      <td style="vertical-align: top;">eth1:192.168.1.8/29<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<br>
+You probably don't want Shorewall to set up infrastructure to route
+traffic
+between 'loc' and 'loc1' so you should add these two policies:<br>
+<div style="margin-left: 40px;"><br>
+<table cellpadding="2" border="1" style="text-align: left;">
+  <tbody>
+    <tr>
+      <td style="vertical-align: top; font-weight: bold;">SOURCE<br>
+      </td>
+      <td style="vertical-align: top; font-weight: bold;">DEST<br>
+      </td>
+      <td style="vertical-align: top; font-weight: bold;">POLICY<br>
+      </td>
+      <td style="vertical-align: top; font-weight: bold;">LOG<br>
+LEVEL<br>
+      </td>
+      <td style="vertical-align: top; font-weight: bold;">RATE:BURST<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">loc<br>
+      </td>
+      <td style="vertical-align: top;">loc1</td>
+      <td style="vertical-align: top;">NONE<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top;">loc1<br>
+      </td>
+      <td style="vertical-align: top;">loc<br>
+      </td>
+      <td style="vertical-align: top;">NONE<br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+      <td style="vertical-align: top;"><br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+&nbsp;<br>
+</div>
+<p><font size="2">Last updated 11/21/2003 - </font><font size="2"> <a
+ href="support.htm">Tom Eastep</a></font> </p>
+<a href="copyright.htm"><font size="2">Copyright</font> © <font
+ size="2">2003 Thomas M. Eastep.</font></a><br>
+</body>
+</html>

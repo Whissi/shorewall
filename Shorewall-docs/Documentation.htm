@@ -12,17 +12,8 @@
   <meta name="author" content="Tom Eastep">
 </head>
 <body>
-<table border="0" cellpadding="0" cellspacing="0"
- style="border-collapse: collapse;" width="100%" id="AutoNumber4"
- bgcolor="#3366ff" height="90">
-  <tbody>
-    <tr>
-      <td width="100%">
-      <h1 align="center"><font color="#ffffff">Shorewall 1.4 Reference</font></h1>
-      </td>
-    </tr>
-  </tbody>
-</table>
+<h1 style="text-align: center;">Shorewall 1.4 Reference<br>
+</h1>
 <h2 align="center">This documentation is intended primarily for
 reference. Step-by-step instructions for configuring Shorewall in
 common setups may be found in the <a
@@ -66,7 +57,11 @@ field in packets is to be set.<br>
   <li><b><a href="#Scripts">common.def</a></b> -- a parameter file
 installed in in /etc/shorewall that defines firewall-wide rules that
 are applied before a DROP or REJECT policy is applied.</li>
-  <li><b> <a href="#Interfaces">interfaces</a> </b> -- a parameter
+  <li><span style="font-weight: bold;">init.sh </span>-- a shell
+script installed in /etc/init.d to automatically start Shorewall during
+boot.<br>
+    <b> </b></li>
+  <li><b><a href="#Interfaces">interfaces</a> </b> -- a parameter
 file installed in /etc/shorewall/ and used to describe the interfaces
 on the firewall system.</li>
   <li><a href="#Hosts"><b> hosts</b> </a>-- a parameter file installed
@@ -78,15 +73,12 @@ possibly also the IP address(es)) of devices.<br>
   </li>
   <li><b> <a href="#Masq">masq</a></b> - This file also describes IP
 masquerading under Shorewall and is installed in /etc/shorewall.</li>
-  <li><b><a href="shorewall_firewall_structure.htm">firewall</a></b> --
+  <li><b>firewall</b> --
 a shell program that reads the configuration files in /etc/shorewall
-and configures your firewall. This file is installed in your init.d
-directory (/etc/rc.d/init.d ) where it is renamed <i>shorewall.</i>
-/etc/shorewall/firewall (/var/lib/shorewall/firewall in versions
-1.3.2-1.3.8 and /usr/lib/shorewall/firewall in 1.3.9 and later) is a
-symbolic link to this program.</li>
+and configures your firewall. This file is installed in
+/usr/share/shorewall.</li>
   <li><b> <a href="#NAT">nat</a></b> -- a parameter file in
-/etc/shorewall used to define <a href="#NAT"> static NAT</a> .</li>
+/etc/shorewall used to define <a href="#NAT">one-to-one NAT</a> .</li>
   <li><b> <a href="#ProxyArp">proxyarp</a></b> -- a parameter file in
 /etc/shorewall used to define <a href="#ProxyArp"> Proxy Arp</a> .</li>
   <li><b><a href="#rfc1918">rfc1918</a></b> -- a parameter file in
@@ -1190,6 +1182,13 @@ header-rewriting rule.<br>
       </li>
       <li>LOG - Log the packet -- requires
 a syslog level (see below).</li>
+      <li>QUEUE - Forward the packet to a user-space application. This
+facility is provided to allow interfacing to <a
+ href="http://p2pwall.sourceforge.net">ftwall</a> for <a
+ href="Shorewall_and_Kazaa.html">Kazaa filtering</a>. Note: When the
+protocol specified in the PROTO column is TCP ("tcp", "TCP" or "6"),
+Shorewall will only pass connection requests (SYN packets) to user
+space. This is for compatibility with ftwall.</li>
     </ul>
     <p>Beginning with Shorewall version 1.4.7, you may rate-limit the
 rule by optionally following ACCEPT, DNAT[-], REDIRECT[-] or LOG with<br>
@@ -2253,16 +2252,20 @@ following (I haven't tried it):</p>
 <p>In /etc/shorewall/start, include:</p>
 <p> qt service ipsec start</p>
 <h2><font color="#660066"><b><a name="NAT"></a> </b></font>/etc/shorewall/nat</h2>
-<p>The /etc/shorewall/nat file is used to define static NAT. There is
-one entry in the file for each static NAT relationship that you wish to
+<p>The /etc/shorewall/nat file is used to define one-to-one NAT. There
+is
+one entry in the file for each one-to-one NAT relationship that you
+wish to
 define. In order to make use of this feature, you must have <a
  href="#NatEnabled">NAT enabled</a> .</p>
 <p> <font color="#ff0000"> <b>IMPORTANT: If all you want to do is
 forward ports to servers behind your firewall, you do NOT want to use
-static NAT. Port forwarding can be accomplished with simple entries in
+one-to-one NAT. Port forwarding can be accomplished with simple entries
+in
 the <a href="#Rules"> rules file</a>. Also, in most cases <a
- href="#ProxyArp"> Proxy ARP</a> provides a superior solution to static
-NAT because the internal systems are accessed using the same IP address
+ href="#ProxyArp"> Proxy ARP</a> provides a superior solution to
+one-to-one NAT because the internal systems are accessed using the same
+IP address
 internally and externally.</b></font></p>
 <p>Columns in an entry are:</p>
 <ul>
@@ -2465,7 +2468,8 @@ individual rule for each listed port or port range. </p>
   <li><b>NAT_BEFORE_RULES</b><br>
 If set to "No" or "no", port forwarding rules can override the contents
 of the <a href="#NAT">/etc/shorewall/nat</a> file. If set to "Yes" or
-"yes", port forwarding rules cannot override static NAT. If not set or
+"yes", port forwarding rules cannot override one-to-one NAT. If not set
+or
 set to an empty value,
 "Yes" is assumed.</li>
   <li><b>FW<br>
@@ -2515,7 +2519,7 @@ this parameter is now automatically detected by Shorewall)<br>
 This parameter determines whether Shorewall supports NAT operations.
 NAT operations include:<br>
     <br>
-Static NAT<br>
+One-to-one NAT<br>
 Port Forwarding<br>
 Port Redirection<br>
 Masquerading<br>
@@ -2842,7 +2846,7 @@ Validation Documentation</a>.<br>
 <h2><a name="ECN"></a>/etc/shorewall/ecn (Added in Version 1.4.0)</h2>
 This file is described in the <a href="ECN.html">ECN Control
 Documentation</a>.<br>
-<p><font size="-1"> Updated 8/21/2003 - <a href="support.htm">Tom
+<p><font size="-1"> Updated 11/15/2003 - <a href="support.htm">Tom
 Eastep</a>
 </font></p>
 <p><a href="copyright.htm"><font size="2">Copyright</font> © <font

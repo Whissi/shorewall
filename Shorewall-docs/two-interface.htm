@@ -10,18 +10,8 @@
   <meta name="Microsoft Theme" content="none">
 </head>
 <body>
-<table border="0" cellpadding="0" cellspacing="0"
- style="border-collapse: collapse;" width="100%" id="AutoNumber5"
- bgcolor="#3366ff" height="90">
-  <tbody>
-    <tr>
-      <td width="100%">
-      <h1 align="center"><font color="#ffffff">Basic Two-Interface
-Firewall</font></h1>
-      </td>
-    </tr>
-  </tbody>
-</table>
+<h1 style="text-align: center;">Basic Two-Interface Firewall<br>
+</h1>
 <p align="left">Setting up a Linux system as a firewall for a small
 network is a fairly straight-forward task if you understand the basics
 and follow the documentation.</p>
@@ -30,7 +20,10 @@ of Shorewall. It rather focuses on what is required to configure
 Shorewall in its most common configuration:</p>
 <ul>
   <li>Linux system used as a firewall/router for a small local network.</li>
-  <li>Single public IP address.</li>
+  <li style="font-weight: bold;">Single public IP address. If you have
+more than one public IP address, this is not the guide you want -- see
+the <a href="shorewall_setup_guide.htm">Shorewall Setup Guide</a>
+instead.</li>
   <li>Internet connection through cable modem, DSL, ISDN, Frame Relay,
 dial-up ...</li>
 </ul>
@@ -140,8 +133,8 @@ that file matches the connection request then the first policy
 in /etc/shorewall/policy that matches the request is applied.
 If that policy is REJECT or DROP&nbsp; the request is first checked
 against
-the rules in /etc/shorewall/common (the samples provide that file
-for you).</p>
+the rules in /etc/shorewall/common if that file exists; otherwise the
+rules in /etc/shorewall/common.def are checked.</p>
 <p>The /etc/shorewall/policy file included with the two-interface
 sample
 has the following policies:</p>
@@ -946,9 +939,15 @@ have added an entry for the IP address that you are connected from to <a
 Also, I don't recommend using "shorewall restart"; it is better
 to create an <i><a href="configuration_file_basics.htm#Configs">alternate
 configuration</a></i> and test it using the <a
- href="starting_and_stopping_shorewall.htm">"shorewall try" command</a>.</p>
+ href="starting_and_stopping_shorewall.htm">"shorewall try" command</a>.<br>
+</p>
+<h2>Additional Recommended Reading</h2>
+I highly recommend that you review the <a
+ href="configuration_file_basics.htm">Common Configuration File
+Features page</a> -- it contains helpful tips about Shorewall features
+than make administering your firewall easier.
 </div>
-<p align="left"><font size="2">Last updated 8/8/2003 - <a
+<p align="left"><font size="2">Last updated 11/15/2003 - <a
  href="support.htm">Tom Eastep</a></font></p>
 <p align="left"><a href="copyright.htm"><font size="2">Copyright 2002,
 2003 Thomas M. Eastep</font></a><br>

@@ -9,17 +9,8 @@
   <title>Standalone Firewall</title>
 </head>
 <body>
-<table border="0" cellpadding="0" cellspacing="0"
- style="border-collapse: collapse;" bordercolor="#111111" width="100%"
- id="AutoNumber6" bgcolor="#3366ff" height="90">
-  <tbody>
-    <tr>
-      <td width="100%">
-      <h1 align="center"><font color="#ffffff">Standalone Firewall</font></h1>
-      </td>
-    </tr>
-  </tbody>
-</table>
+<h1 style="text-align: center;">Standalone Firewall<br>
+</h1>
 <p align="left">Setting up Shorewall on a standalone Linux system is
 very easy if you understand the basics and follow the documentation.</p>
 <p>This guide doesn't attempt to acquaint you with all of the features
@@ -113,7 +104,9 @@ first checked against the /etc/shorewall/rules file. If no rule in that
 file matches the connection request then the first policy in
 /etc/shorewall/policy that matches the request is applied. If that
 policy is REJECT or DROP&nbsp; the request is first checked against the
-rules in /etc/shorewall/common (the samples provide that file for you).</p>
+rules in /etc/shorewall/common if that file exists; otherwise the rules
+in /etc/shorewall/common.def are checked.<br>
+</p>
 <p>The /etc/shorewall/policy file included with the one-interface
 sample
 has the following policies:</p>
@@ -365,9 +358,15 @@ to <a href="Documentation.htm#Routestopped">/etc/shorewall/routestopped</a>.
 Also, I don't recommend using "shorewall restart"; it is better to
 create an <i><a href="configuration_file_basics.htm#Configs">alternate
 configuration</a></i> and test it using the <a
- href="starting_and_stopping_shorewall.htm">"shorewall try" command</a>.</p>
+ href="starting_and_stopping_shorewall.htm">"shorewall try" command</a>.<br>
+</p>
+<h2>Additional Recommended Reading</h2>
+I highly recommend that you review the <a
+ href="configuration_file_basics.htm">Common Configuration File
+Features page</a> -- it contains helpful tips about Shorewall features
+than make administering your firewall easier.<br>
 </div>
-<p align="left"><font size="2">Last updated 2/08/2003 - <a
+<p align="left"><font size="2">Last updated 11/15/2003 - <a
  href="support.htm">Tom Eastep</a></font></p>
 <p align="left"><a href="copyright.htm"><font size="2">Copyright 2002,
 2003 Thomas M. Eastep</font></a></p>

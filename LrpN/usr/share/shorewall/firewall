@@ -1047,15 +1047,6 @@ find_interface_address() # $1 = interface
 }
 
 #
-# Find interface addresses--returns the set of addresses assigned to the passed
-# device
-#
-find_interface_addresses() # $1 = interface
-{
-    ip -f inet addr show $1 | grep inet | sed 's/inet //;s/\/.*//;s/ peer.*//'
-}
-
-#
 # Find interfaces that have the passed option specified
 #
 find_interfaces_by_option() # $1 = option
@@ -2775,7 +2766,7 @@ createactionchain() # $1 = chain name
 
 process_actions1() {
 	
-    ACTIONS="dropBcast dropNonSyn dropNotSyn rejNotSyn logNotSyn rLogNotSyn dLogNotSyn"
+    ACTIONS="dropBcast dropNonSyn dropNotSyn rejNotSyn logNotSyn rLogNotSyn dLogNotSyn dropInvalid"
     USEDACTIONS=
 
     strip_file actions
@@ -2949,6 +2940,9 @@ process_actions2() {
 	    dLogNotSyn)
 		log_action dLogNotSyn DROP		
 		;;
+	    dropInvalid)
+		[ "COMMAND" != check ] && run_iptables -A dropInvalid -m state --state INVALID -j DROP
+		;;
 	    *)
 		f=action.$xaction
 		fn=$(find_file $f)
@@ -3068,7 +3062,7 @@ add_nat_rule() {
 	    else
 		for adr in $(separate_list $addr); do
 		    if [ -n "$loglevel" ]; then
-			log_rule_limit $loglevel $OUTPUT $logtarget "$ratelimit" "$logtag" -t nat \
+			log_rule_limit $loglevel OUTPUT $logtarget "$ratelimit" "$logtag" -t nat \
 			    $(fix_bang $proto $cli $sports $userandgroup -d $adr $multiport $dports)
 		    fi
 
@@ -3099,7 +3093,7 @@ add_nat_rule() {
 		done
 
 		if [ -n "$loglevel" ]; then
-		    log_rule_limit $loglevel $chain $logtarget "$ratelimit" -t nat
+		    log_rule_limit $loglevel $chain $logtarget "$ratelimit" "$logtag" -t nat
 		fi
 
 		addnatrule $chain $ratelimit $proto -j $target1 # Protocol is necessary for port redirection

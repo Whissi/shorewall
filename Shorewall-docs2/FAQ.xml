@@ -17,7 +17,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-12-12</pubdate>
+    <pubdate>2004-12-22</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -484,10 +484,10 @@ to debug/develop the newnat interface.</programlisting></para>
       and later). The default Shorewall setup invokes the <emphasis
       role="bold">Drop</emphasis> action prior to enforcing a DROP policy and
       the default policy to all zone from the internet is DROP. The Drop
-      action is defined in <filename>/etc/shorewall/action.Drop</filename>
-      which in turn invokes the <emphasis role="bold">RejectAuth</emphasis>
-      action (defined in
-      <filename>/etc/shorewall/action.RejectAuth</filename>). This is
+      action is defined in
+      <filename>/usr/share/shorewall/action.Drop</filename> which in turn
+      invokes the <emphasis role="bold">RejectAuth</emphasis> action (defined
+      in <filename>/usr/share/shorewall/action.RejectAuth</filename>). This is
       necessary to prevent outgoing connection problems to services that use
       the <quote>Auth</quote> mechanism for identifying requesting users. That
       is the only service which the default setup rejects.</para>
@@ -2013,6 +2013,16 @@ Verifying Configuration...
     <title>Revision History</title>
 
     <para><revhistory>
+        <revision>
+          <revnumber>1.39</revnumber>
+
+          <date>2004-12-22</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Correct action directory name if FAQ 4.</revremark>
+        </revision>
+
         <revision>
           <revnumber>1.39</revnumber>
 

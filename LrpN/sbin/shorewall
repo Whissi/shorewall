@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-#     Shorewall Packet Filtering Firewall Control Program - V2.0 - 3/14/2004
+#     Shorewall Packet Filtering Firewall Control Program - V2.1
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
 #
@@ -881,6 +881,21 @@ case "$1" in
 	iptables -t mangle -L $IPT_OPTIONS
 	echo
 	cat /proc/net/ip_conntrack
+	echo
+	echo "IP Configuration"
+	echo
+	ip addr ls
+	echo
+	echo "Routing Rules"
+	echo
+	ip rule ls
+	ip rule ls | while read rule; do
+	    table=${rule##* }
+	    echo
+	    echo "Table $table:"
+	    echo
+	    ip route ls table $table
+	done
 	;;
     hits)
     	[ -n "$debugging" ] && set -x
@@ -1029,7 +1044,10 @@ case "$1" in
 			    echo "   Dynamic Rules Saved"
 			    if [ -f /var/lib/shorewall/restore-base ]; then
 				cp -f /var/lib/shorewall/restore-base /var/lib/shorewall/restore-$$
-				if iptables-save >> /var/lib/shorewall/restore-$$ ; then
+				#
+				# The 'awk' hack compensates for a bug in iptables-save (actually in libipt_policy.so) and can be removed when that bug is fixed.
+				#
+				if iptables-save | awk 'BEGIN {sline=""; }; /^-j/ { print sline $0; next }; /-m policy/ { sline=$0; next }; {print ; sline="" }' >> /var/lib/shorewall/restore-$$ ; then
 				    echo __EOF__ >> /var/lib/shorewall/restore-$$
 				    mv -f /var/lib/shorewall/restore-$$ $RESTOREPATH
 				    chmod +x $RESTOREPATH

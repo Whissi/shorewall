@@ -240,7 +240,7 @@ find_zones() # $1 = name of the zone file
 	    \#*)
 		;;
             $FW)
-	        echo "Reserved zone name \"$zone\" in zones file ignored" >&2
+	        echo "   Warning: Reserved zone name \"$zone\" in zones file ignored" >&2
 		;;
             *)
 		echo $zone
@@ -266,12 +266,16 @@ determine_zones()
     multi_display=Multi-zone
     strip_file zones $zonefile
     zones=$(find_zones $TMP_DIR/zones)
-    zones=$(echo $zones) # Remove extra trash
+    newzones=
     
     for zone in $zones; do
 	dsply=$(find_display $zone $TMP_DIR/zones)
+	[ ${#zone} -gt 5 ] && echo "   Warning: Zone name longer than 5 characters: $zone" >&2
 	eval ${zone}_display=\$dsply
+	newzones="$newzones $zone"
     done
+
+    zones=${newzones# }
 }
 
 #

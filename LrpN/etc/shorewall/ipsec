@@ -1,0 +1,42 @@
+#
+# Shorewall 2.1 - /etc/shorewall/ipsec
+#
+#	This file defines the attributes of zones with respect to
+#	IPSEC. To use this file, you must be running a 2.6 kernel and
+#       both your kernel and iptables must include Policy Match Support.
+#
+#	The columns are:
+#
+#		ZONE	The name of a zone defined in /etc/shorewall/zones. The
+#			$FW zone may not be listed.
+#
+#		IPSEC   Yes --  Communication with all zone hosts is encrypted
+#		ONLY	No  --  Communication with some zone hosts is encrypted. 
+#				Encrypted hosts are designated using the 'ipsec'
+#				option in /etc/shorewall/hosts. 				
+#
+#		OPTIONS	A comma-separated list of options as follows:
+#				reqid=<number> where <number> is specified
+#				using setkey(8) using the 'unique:<number>
+#				option for the SPD level.
+#
+#				spi=<number> where <number> is the SPI of
+#				the SA used to encrypt/decrypt packets.
+#
+#				proto=ah|esp|ipcomp 
+#
+#				mode=transport|tunnel
+#
+#				tunnel-src=<address>[/<mask>] (only
+#				available with mode=tunnel)
+#
+#				tunnel-dst=<address>[/<mask>] (only
+#				available with mode=tunnel)
+#
+#			Example:
+#				mode=transport,reqid=44
+################################################################################
+#ZONE	IPSEC	OPTIONS
+#	ONLY
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
+

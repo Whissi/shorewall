@@ -603,7 +603,7 @@ match_dest_dev()
 
 verify_interface()
 {
-    known_interface $1 || { [ -n $BRIDGING ] && list_search $1 $all_ports ; }
+    known_interface $1 || { [ -n "$BRIDGING" ] && list_search $1 $all_ports ; }
 }
 
 #
@@ -611,12 +611,14 @@ verify_interface()
 #
 match_ipsec_in() # $1 = zone, $2 = host
 {
+    eval local is_ipsec=\$${1}_is_ipsec
     eval local hosts=\"\$${1}_ipsec_hosts\"
+    eval local options=\"\$${1}_ipsec_options\"
 
-    if list_search $2 $hosts; then
-	echo "-m policy --pol ipsec --dir in"
+    if [ -n "$is_ipsec" ] || list_search $2 $hosts; then
+	echo "-m policy --pol ipsec --dir in $options"
     elif [ -n "$POLICY_MATCH" ]; then
-	echo "-m policy --pol none --dir in"
+	echo "-m policy --pol none --dir in $options"
     fi
 }
 
@@ -625,12 +627,14 @@ match_ipsec_in() # $1 = zone, $2 = host
 #
 match_ipsec_out() # $1 = zone, $2 = host
 {
+    eval local is_ipsec=\$${1}_is_ipsec
     eval local hosts=\"\$${1}_ipsec_hosts\"
+    eval local options=\"\$${1}_ipsec_options\"
 
-    if list_search $2 $hosts; then
-	echo "-m policy --pol ipsec --dir out"
+    if [ -n "$is_ipsec" ] || list_search $2 $hosts; then
+	echo "-m policy --pol ipsec --dir out $options"
     elif [ -n "$POLICY_MATCH" ]; then
-	echo "-m policy --pol none --dir out"
+	echo "-m policy --pol none --dir out $options"
     fi
 }
 
@@ -1099,23 +1103,25 @@ find_interfaces_by_option() # $1 = option
 #
 find_hosts_by_option() # $1 = option
 {
-    local ignore hosts interface address addresses options
+    local ignore hosts interface address addresses options ipsec= list
 
     while read ignore hosts options; do
 	expandv options
-	if list_search $1 $(separate_list $options); then
+	list=$(separate_list $options)
+	if list_search $1 $list; then
+	    list_search ipsec $list && ipsec=ipsec || ipsec=none
 	    expandv hosts
 	    interface=${hosts%%:*}
 	    addresses=${hosts#*:}
 	    for address in $(separate_list $addresses); do 
-		echo $interface:$address
+		echo ${ipsec}^$interface:$address
 	    done
 	fi
     done < $TMP_DIR/hosts
 
     for interface in $ALL_INTERFACES; do
 	interface_has_option $interface $1 && \
-	    echo ${interface}:0.0.0.0/0
+	    echo none^${interface}:0.0.0.0/0
     done
 }
 
@@ -1337,7 +1343,7 @@ stop_firewall() {
 
 	routeback=
 
-	if [ -n $options ]; then
+	if [ -n "$options" ]; then
 	    for option in $(separate_list $options); do
 		case $option in
 		    routeback)
@@ -1450,6 +1456,7 @@ setup_tunnels() # $1 = name of tunnels file
     local inchain
     local outchain
 
+
     setup_one_ipsec() # $1 = gateway $2 = Tunnel Kind $3 = gateway zones
     {
     	local kind=$2 noah=
@@ -1481,7 +1488,21 @@ setup_tunnels() # $1 = name of tunnels file
 	    run_iptables -A $inchain  -p udp -s $1 --dport 4500 $options
 	fi
 
-	for z in $(separate_list $3); do
+	for z in $3; do
+	    case $z in 
+		*:ipsec)
+		    z=${z%:*}
+		    eval ${z}_is_ipsec=Yes
+		    ;;
+	        *:ipsec\(*)
+                    do_options
+		    eval ${z}_is_ipsec=Yes
+		    ;;
+		*:mixed\(*)
+	            do_options
+		    ;;
+            esac	
+
 	    if validate_zone $z; then
 		addrule ${FW}2${z} -p udp --dport 500 $options
 		if [ $kind = ipsec ]; then
@@ -1491,8 +1512,7 @@ setup_tunnels() # $1 = name of tunnels file
 		    addrule ${z}2${FW} -p udp --dport 4500 $options
 		fi
 	    else
-		error_message "Warning: Invalid gateway zone ($z)" \
-		" -- Tunnel \"$tunnel\" may encounter keying problems"
+		fatal_error ": Invalid gateway zone ($z) -- Tunnel \"$tunnel\""
 	    fi
 	done
 
@@ -1628,6 +1648,71 @@ setup_tunnels() # $1 = name of tunnels file
     done < $TMP_DIR/tunnels
 }
 
+setup_ipsec() {
+
+    do_options() {
+	local option newoptions=
+
+	options=$(separate_list $options)
+
+	for option in $options; do
+	    case $option in
+		reqid=*)
+		    newoptions="$newoptions --reqid ${option#*=}"
+		    ;;
+		spi=*)
+		    newoptions="$newoptions --spi ${option#*=}"
+		    ;;
+		proto=*)
+		    newoptions="$newoptions --proto ${option#*=}"
+		    ;;
+		mode=*)
+		    newoptions="$newoptions --mode ${option#*=}"
+		    ;;
+		tunnel-src=*)
+		    newoptions="$newoptions --tunnel-src ${option#*=}"
+		    ;;
+		tunnel-dst=*)
+		    newoptions="$newoptions --tunnel-dst ${option#*=}"
+		    ;;
+		*)
+		    fatal_error "Invalid option \"$option\" for zone $zone"
+		    ;;
+	    esac
+	done
+	
+	if [ -n "$newoptions" ]; then
+	    eval ${zone}_is_complex=Yes
+	    eval ${zone}_ipsec_options=\"${newoptions# }\"
+	fi
+    }
+
+    strip_file ipsec $1
+    
+    while read zone ipsec options; do
+	expandv zone ipsec options
+
+	[ -n "$POLICY_MATCH" ] || fatal_error "Your kernel and/or iptables does not support policy match"
+
+	validate_zone1 $zone || fatal_error "Unknown zone: $zone"
+
+	case $ipsec in
+	    -|No|no)
+		;;
+	    Yes|yes)
+		eval ${zone}_is_ipsec=Yes
+		eval ${zone}_is_complex=Yes
+		;;
+	    *)
+		fatal_error "Invalid IPSEC column value: $ipsec"
+		;;
+	esac
+
+	do_options
+
+    done < $TMP_DIR/ipsec
+}	
+
 #
 # Setup Proxy ARP
 #
@@ -1727,12 +1812,15 @@ setup_mac_lists() {
     local macpart
     local blob
     local hosts
+    local ipsec
+    local policy=
     #
     # Generate the list of interfaces having MAC verification
     #
     maclist_interfaces=
 
     for hosts in $maclist_hosts; do
+	hosts=${hosts#*^}
 	interface=${hosts%%:*}
 	if ! list_search $interface $maclist_interfaces; then\
 	    if [ -z "$maclist_interfaces" ]; then
@@ -1823,11 +1911,14 @@ setup_mac_lists() {
     # Generate jumps from the input and forward chains
     #
     for hosts in $maclist_hosts; do
+	ipsec=${hosts%^*}
+	hosts=${hosts#*^}
+	[ -n "$POLICY_MATCH" ] && policy="-m policy --pol $ipsec --dir in" || policy=
 	interface=${hosts%%:*}
 	hosts=${hosts#*:}
 	for chain in $(first_chains $interface) ; do
 	    run_iptables -A $chain $(match_source_hosts $hosts) -m state --state NEW \
-		-j $(mac_chain $interface)
+		$policy -j $(mac_chain $interface)
 	done
     done
 }
@@ -2413,6 +2504,12 @@ check_config() {
     [ -z "$zones" ] && startup_error "ERROR: No Zones Defined"
 
     display_list "Zones:" $zones
+
+    ipsecfile=$(find_file ipsec)
+
+    [ -f $ipsecfile ] && \
+	echo "Validating ipsec file..." && \
+	setup_ipsec $ipsecfile
 
     echo "Validating interfaces file..."
 
@@ -4486,6 +4583,38 @@ get_routed_networks() # $1 = interface name
 #
 setup_masq()
 {
+    do_ipsec_options() {
+	local options=$(separate_list $ipsec) option 
+	policy ="-m policy --pol ipsec --dir out"
+
+	options=$(separate_list $options)
+	for option in $options; do
+	    case $option in
+		reqid=*)
+		    policy="$policy --reqid ${option#*=}"
+		    ;;
+		spi=*)
+		    policy="$policy --spi ${option#*=}"
+		    ;;
+		proto=*)
+		    policy="$policy --proto ${option#*=}"
+		    ;;
+		mode=*)
+		    policy="$policy --mode ${option#*=}"
+		    ;;
+		tunnel-src=*)
+		    policy="$policy --tunnel-src ${option#*=}"
+		    ;;
+		tunnel-dst=*)
+		    policy="$policy --tunnel-dst ${option#*=}"
+		    ;;
+		*)
+		    fatal_error "Invalid IPSEC option \"$option\""
+		    ;;
+	    esac
+	done
+    }
+
     setup_one() {
 	local add_snat_aliases=$ADD_SNAT_ALIASES, pre_nat= policy=
 
@@ -4503,9 +4632,7 @@ setup_masq()
 		policy="-m policy --pol none --dir out"
 		;;
 	    *)
-		[ -n "$ipsec" ] && \
-		    fatal_error "Invalid value in IPSEC column: $ipsec"
-		[ -n "$POLICY_MATCH" ] && policy="-m policy --pol none --dir out"
+		[ -n "$ipsec" ] && do_ipsec_options || [ -n "$POLICY_MATCH" ] && policy="-m policy --pol none --dir out"
 		;;
 	esac
 
@@ -4854,6 +4981,7 @@ setup_blacklist() {
     local hosts="$(find_hosts_by_option blacklist)"
     local f=$(find_file blacklist)
     local disposition=$BLACKLIST_DISPOSITION
+    local ipsec policy
 
     if [ -n "$hosts" -a -f $f ]; then
 	echo "Setting up Blacklisting..."
@@ -4865,11 +4993,14 @@ setup_blacklist() {
 	[ -n "$BLACKLISTNEWONLY" ] && state="-m state --state NEW,INVALID" || state=
 	
 	for host in $hosts; do
+	    ipsec=${host%^*}
+	    host=${host#*^}
+	    [ -n "$POLICY_MATCH" ] && policy="-m policy --pol $ipsec --dir in" || policy=
 	    interface=${host%%:*}
 	    network=${host#*:}
 
 	    for chain in $(first_chains $interface); do
-		run_iptables -A $chain $state $(match_source_hosts $network) -j blacklst
+		run_iptables -A $chain $state $(match_source_hosts $network) $policy -j blacklst
 	    done
 	    
 	    [ $network = 0/0.0.0.0 ] && network= || network=":$network"
@@ -5191,17 +5322,19 @@ initialize_netfilter () {
 	run_iptables -A FORWARD -p tcp \
 	    --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
 
-
     if [ -z "$NEWNOTSYN" ]; then
 	createchain newnotsyn no
 
 	for host in $(find_hosts_by_option newnotsyn); do
+	    ipsec=${host%^*}
+	    host=${host#*^}
+	    [ -n "$POLICY_MATCH" ] && policy="-m policy --pol $ipsec --dir in" || policy=
 	    interface=${host%%:*}
 	    network=${host#*:}
-	    run_iptables -A newnotsyn -i $interface $(match_source_hosts $network) -p tcp --tcp-flags ACK ACK -j ACCEPT
-	    run_iptables -A newnotsyn -i $interface $(match_source_hosts $network) -p tcp --tcp-flags RST RST -j ACCEPT
-	    run_iptables -A newnotsyn -i $interface $(match_source_hosts $network) -p tcp --tcp-flags FIN FIN -j ACCEPT
-	    run_iptables -A newnotsyn -i $interface $(match_source_hosts ${host#*:}) -j RETURN
+	    run_iptables -A newnotsyn -i $interface $(match_source_hosts $network) $policy -p tcp --tcp-flags ACK ACK -j ACCEPT
+	    run_iptables -A newnotsyn -i $interface $(match_source_hosts $network) $policy -p tcp --tcp-flags RST RST -j ACCEPT
+	    run_iptables -A newnotsyn -i $interface $(match_source_hosts $network) $policy -p tcp --tcp-flags FIN FIN -j ACCEPT
+	    run_iptables -A newnotsyn -i $interface $(match_source_hosts ${host#*:}) $policy -j RETURN
 	done
 
 	run_user_exit newnotsyn
@@ -5324,11 +5457,14 @@ add_common_rules() {
 	echo "Adding Anti-smurf Rules"
 
 	for host in $hosts; do
+	    ipsec=${host%^*}
+	    host=${host#*^}
+	    [ -n "$POLICY_MATCH" ] && policy="-m policy --pol $ipsec --dir in" || policy=
 	    interface=${host%%:*}
 	    network=${host#*:}
 
 	    for chain in $(first_chains $interface); do
-		run_iptables -A $chain  -m state --state NEW $(match_source_hosts $network) -j smurfs
+		run_iptables -A $chain  -m state --state NEW $(match_source_hosts $network) $policy -j smurfs
 	    done
 	done
     fi
@@ -5341,14 +5477,22 @@ add_common_rules() {
 
 	echo "Adding rules for DHCP"
 
+	if [ -n "$POLICY_MATCH" ]; then
+	    policyin="-m policy --dir in --pol none"
+	    policyout="-m policy --dir out --pol none"
+	else
+	    policyin=
+	    policyout=
+	fi
+
 	for interface in $interfaces; do
 	    if [ -n "$BRIDGING" ]; then
 		eval is_bridge=\$$(chain_base $interface)_ports
 		[ -n "$is_bridge" ] && \
-		    iptables -A $(forward_chain $interface) -p udp -o $interface --dport 67:68 -j ACCEPT
+		    iptables -A $(forward_chain $interface) -p udp -o $interface --dport 67:68 $policyin -j ACCEPT
             fi
-	    run_iptables -A $(input_chain $interface) -p udp --dport 67:68 -j ACCEPT
-	    run_iptables -A OUTPUT    -o $interface  -p udp --dport 67:68 -j ACCEPT
+	    run_iptables -A $(input_chain $interface) -p udp --dport 67:68 $policyin  -j ACCEPT
+	    run_iptables -A OUTPUT -o $interface      -p udp --dport 67:68 $policyout -j ACCEPT
 	done
     fi
     #
@@ -5413,11 +5557,14 @@ add_common_rules() {
 	done < $TMP_DIR/rfc1918
 
 	for host in $hosts; do
+	    ipsec=${host%^*}
+	    host=${host#*^}
+	    [ -n "$POLICY_MATCH" ] && policy="-m policy --pol $ipsec --dir in" || policy=
 	    interface=${host%%:*}
 	    networks=${host#*:}
 
 	    for chain in $(first_chains $interface); do
-		run_iptables -A $chain -m state --state NEW $(match_source_hosts $networks) -j norfc1918
+		run_iptables -A $chain -m state --state NEW $(match_source_hosts $networks) $policy -j norfc1918
 	    done
 
 	    [ -n "$MANGLE_ENABLED" -a -z "$CONNTRACK_MATCH" ] && \
@@ -5459,6 +5606,9 @@ add_common_rules() {
 	done < $TMP_DIR/bogons
 
 	for host in $hosts; do
+	    ipsec=${host%^*}
+	    host=${host#*^}
+	    [ -n "$POLICY_MATCH" ] && policy="-m policy --pol $ipsec --dir in" || policy=
 	    interface=${host%%:*}
 	    network=${host#*:}
 
@@ -5513,11 +5663,14 @@ add_common_rules() {
 	run_iptables -A tcpflags -p tcp --syn --sport 0             $disposition
 
 	for host in $hosts; do
+	    ipsec=${host%^*}
+	    host=${host#*^}
+	    [ -n "$POLICY_MATCH" ] && policy="-m policy --pol $ipsec --dir in" || policy=
 	    interface=${host%%:*}
 	    network=${host#*:}
 
 	    for chain in $(first_chains $interface); do
-		run_iptables -A $chain -p tcp $(match_source_hosts $network) -j tcpflags
+		run_iptables -A $chain -p tcp $(match_source_hosts $network) $policy -j tcpflags
 	    done
 	done
     fi
@@ -5949,6 +6102,10 @@ define_firewall() # $1 = Command (Start or Restart)
     [ -f $tunnels ] && \
 	echo "Processing $tunnels..." &&       setup_tunnels $tunnels
 
+    ipsecfile=$(find_file ipsec)
+    [ -f $ipsecfile ] && \
+	echo "Processing $ipsecfile..." &&     setup_ipsec $ipsecfile
+
     maclist_hosts=$(find_hosts_by_option maclist)
     [ -n "$maclist_hosts" ] &&                 setup_mac_lists
 
@@ -6043,7 +6200,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 {
     local base interface host newhost zone z h z1 z2 chain terminator
     local dhcp_interfaces blacklist_interfaces maclist_interfaces tcpflags_interfaces
-    local rulenum source_chain dest_hosts iface hosts
+    local rulenum source_chain dest_hosts iface hosts is_ipsec policyin= policyout=
 
     nat_chain_exists() # $1 = chain name
     {
@@ -6080,7 +6237,18 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
     validate_zone $zone || startup_error "Unknown zone: $zone"
 
     [ "$zone" = $FW ] && startup_error "Can't add $1 to firewall zone"
-    
+
+    eval is_ipsec=\$${zone}_is_ipsec
+    eval options=\"\$${zone}_ipsec_options\"
+
+    if [ -n "$is_ipsec" ]; then
+	[ -n "$POLICY_MATCH" ] || startup_error "Your kernel and/or iptables lacks policy match support"
+	policyin="-m policy --pol ipsec --dir in $options"
+	policyout="-m policy --pol ipsec --dir out $options"
+    elif [ -n "$POLICY_MATCH" ]; then
+ 	policyin="-m policy --pol none --dir in"
+	policyout="-m policy --pol none --dir out"
+    fi   
     #
     # Be sure that Shorewall has been restarted using a DZ-aware version of the code
     #
@@ -6135,7 +6303,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
     chain=${zone}_dnat
 
     if nat_chain_exists $chain; then
-	do_iptables -t nat -A $(dynamic_in $interface) -s $host -j $chain
+	do_iptables -t nat -A $(dynamic_in $interface) -s $host $policyin -j $chain
     fi
     #
     # Insert new rules into the filter table for the passed interface
@@ -6143,7 +6311,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
     while read z1 z2 chain; do
 	if [ "$z1" = "$zone" ]; then
 	    if [ "$z2" = "$FW" ]; then
-		do_iptables -A $(dynamic_in $interface) -s $host -j $chain
+		do_iptables -A $(dynamic_in $interface) -s $host $policyin -j $chain
 	    else
 		source_chain=$(dynamic_fwd $interface)
 		eval dest_hosts=\"\$${z2}_hosts\"
@@ -6153,7 +6321,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		    hosts=${h#*:}
 
 		    if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
-			do_iptables -A $source_chain -s $host -o $iface $(match_dest_hosts $hosts) -j $chain
+			do_iptables -A $source_chain -s $host -o $iface $(match_dest_hosts $hosts) $policyout -j $chain
 		    fi
 		done
 	    fi
@@ -6162,7 +6330,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		#
 		# Add a rule to the dynamic out chain for the interface
 		#
-		do_iptables -A $(dynamic_out $interface) -d $host -j $chain
+		do_iptables -A $(dynamic_out $interface) -d $host $policyout -j $chain
 	    else
 		eval source_hosts=\"\$${z1}_hosts\"
 
@@ -6171,7 +6339,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		    hosts=${h#*:}
 
 		    if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
-			do_iptables -A $(dynamic_fwd $iface) $rulenum $(match_source_hosts $hosts) -o $interface -d $host -j $chain
+			do_iptables -A $(dynamic_fwd $iface) $rulenum $(match_source_hosts $hosts) -o $interface -d $host $policyout -j $chain
 		    fi
 		done
 	    fi

@@ -518,6 +518,44 @@ logwatch() # $1 = timeout -- if negative, prompt each time that
 }
 
 #
+# Load list of interfaces into the 'all_interfaces' variable 
+#
+load_all_interfaces() {
+    if [ ! -f $STATEDIR/interfaces ] ; then
+	echo "ERROR: $STATEDIR/interfaces does not exist" >&2
+	mutex_off
+	exit 2
+    fi
+
+    read all_interfaces < $STATEDIR/interfaces
+}
+
+#
+# Save Dynamic Blacklist
+#
+save_dynamic_blacklist() {
+
+    [ -d /var/lib/shorewall ] || mkdir /var/lib/shorewall
+
+    load_all_interfaces
+
+    > /var/lib/shorewall/save
+
+    for interface in $all_interfaces; do
+	if ! iptables -L `dynamic_chain $interface` >> /var/lib/shorewall/save; then
+	    echo "Error Saving the Dynamic Rules"
+	    return
+	fi
+    done
+
+    if iptables -L dynamic -n >> /var/lib/shorewall/save; then
+	echo "Dynamic Rules Saved"
+    else
+	echo "Error Saving the Dynamic Rules"
+    fi
+
+}
+#
 # Give Usage Information
 #
 usage() # $1 = exit status
@@ -540,8 +578,8 @@ usage() # $1 = exit status
     echo "   check"
     echo "   try <directory> [ <timeout> ]"
     echo "   logwatch [<refresh interval>]"
-    echo "   drop <address> ..."
-    echo "   reject <address> ..."
+    echo "   drop|dropall <address> ..."
+    echo "   reject|rejectall <address> ..."
     echo "   allow <address> ..."
     echo "   save"
     echo "   ipcalc [ <address>/<vlsm> | <address> <netmask> ]"
@@ -611,8 +649,6 @@ fi
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 MUTEX_TIMEOUT=
 
-[ -z "${STATEDIR}" ] && STATEDIR=/var/state/shorewall
-
 SHARED_DIR=/usr/share/shorewall
 FIREWALL=$SHARED_DIR/firewall
 FUNCTIONS=$SHARED_DIR/functions
@@ -633,6 +669,8 @@ else
     echo "$config does not exist!" >&2
     exit 2
 fi
+
+[ -z "${STATEDIR}" ] && STATEDIR=/var/state/shorewall
 
 if [ ! -f $FIREWALL ]; then
     echo "ERROR: Shorewall is not properly installed"
@@ -835,6 +873,18 @@ case "$1" in
     drop)
 	[ $# -eq 1 ] && usage 1
 	mutex_on
+
+	load_all_interfaces
+	
+	while [ $# -gt 1 ]; do
+	    shift
+	    chains=`dynamic_chains_by_address $1`
+	    
+	    for chain in $chains; do
+		iptables -A $chain -s $1 -j DROP || break 1
+		echo "$1 Rejected in Chain $chain"
+	    done
+	done
 	while [ $# -gt 1 ]; do
 	    shift
 	    iptables -A dynamic -s $1 -j DROP || break 1
@@ -845,29 +895,66 @@ case "$1" in
     reject)
 	[ $# -eq 1 ] && usage 1
 	mutex_on
+
+	load_all_interfaces
+
 	while [ $# -gt 1 ]; do
 	    shift
-	    iptables -A dynamic -s $1 -j reject || break 1
-	    echo "$1 Rejected"
+	    chains=`dynamic_chains_by_address $1`
+	    
+	    for chain in $chains; do
+		iptables -A $chain -s $1 -j reject || break 1
+		echo "$1 Rejected in Chain $chain"
+	    done
 	done
+
 	mutex_off
 	;;
     allow)
 	[ $# -eq 1 ] && usage 1
 	mutex_on
+
+	load_all_interfaces
+
 	while [ $# -gt 1 ]; do
 	    shift
-	    if	qt iptables -D dynamic -s $1 -j reject; then
-		#
-		# Address was rejected -- silently remove any drop as well
-		#
-		qt iptables -D dynamic -s $1 -j DROP
-		echo "$1 Allowed"
-	    elif qt iptables -D dynamic -s $1 -j DROP; then
-		echo "$1 Allowed"
-	    else
-		echo "$1 Not Dropped or Rejected"
-	    fi
+
+	    chains=`dynamic_chains_by_address $1`
+
+	    for chain in $chains; do
+		if qt iptables -D $chain -s $1 -j reject; then
+		    #
+		    # Address was rejected -- silently remove any drop as well
+		    #
+		    qt iptables -D $chain -s $1 -j DROP
+		    echo "$1 Allowed in Chain $chain"
+		elif qt iptables -D $chain -s $1 -j DROP; then
+		    echo "$1 Allowed in Chain $chain"
+		else
+		    echo "$1 Not Dropped or Rejected in Chain $chain"
+		fi
+	    done
+	done
+
+	mutex_off
+	;;
+    dropall)
+	[ $# -eq 1 ] && usage 1
+	mutex_on
+	while [ $# -gt 1 ]; do
+	    shift
+	    iptables -A dynamic -s $1 -j DROP || break 1
+	    echo "$1 Dropped in Chain dynamic"
+	done
+	mutex_off
+	;;
+    rejectall)
+	[ $# -eq 1 ] && usage 1
+	mutex_on
+	while [ $# -gt 1 ]; do
+	    shift
+	    iptables -A dynamic -s $1 -j reject || break 1
+	    echo "$1 Rejected in Chain dynamic"
 	done
 	mutex_off
 	;;
@@ -875,13 +962,7 @@ case "$1" in
 	[ $# -ne 1 ] && usage 1
 	mutex_on
 	if qt iptables -L shorewall -n; then
-	    [ -d /var/lib/shorewall ] || mkdir /var/lib/shorewall
-
-	    if iptables -L dynamic -n > /var/lib/shorewall/save; then
-		echo "Dynamic Rules Saved"
-	    else
-		echo "Error Saving the Dynamic Rules"
-	    fi
+	    save_dynamic_blacklist
 	else
 	    echo "Shorewall isn't started"
 	fi

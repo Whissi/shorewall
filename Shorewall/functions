@@ -380,3 +380,129 @@ ip_vlsm() {
     fi
 }
 
+
+#
+# Chain name base for an interface
+#
+chain_base() #$1 = interface
+{
+    local c=${1%%+*}
+
+    case $c in
+        *.*)
+	    echo ${c%.*}_${c#*.}
+	    ;;
+	*)
+	    echo ${c:=common}
+	    ;;
+    esac
+}
+
+#
+# Dynamic Blacklisting Chain to an interface
+#
+dynamic_chain() # $1 = interface
+{
+   echo `chain_base $1`_dyn
+}
+
+#
+# Remove trailing digits from a name
+#
+strip_trailing_digits() {
+    echo $1 | sed s'/[0-9].*$//'
+}
+
+#
+# Loosly Match the name of an interface
+#
+
+if_match() # $1 = Name in interfaces file - may end in "+"
+           # $2 = Name from routing table
+{
+    local if_file=$1
+    local rt_table=$2
+
+    case $if_file in
+	*+)
+	    test "`strip_trailing_digits $rt_table`" = "${if_file%+}"
+	    ;;
+	*)
+	    test "$rt_table" = "$if_file"
+	    ;;
+    esac
+}
+
+#
+# Find the value 'dev' in the passed arguments then echo the next value
+#
+
+find_device() {
+    while [ $# -gt 1 ]; do
+	[ "x$1" = xdev ] && echo $2 && return
+	shift
+    done
+}
+    
+#
+# Find the interfaces that have a route to the passed address - the default
+# route is not used.
+#
+
+find_rt_interface() {
+    ip route ls | while read addr rest; do
+	case $addr in
+	    */*)
+		in_subnet ${1%/*} $addr && echo `find_device $rest`
+		;;
+	    default)
+		;;
+	    *)
+		if [ "$addr" = "$1" -o "$addr/32" = "$1" ]; then
+		    echo `find_device $rest`
+		fi
+		;;
+	esac
+    done
+}
+
+#
+# Find the default route's interface
+#
+find_default_interface() {
+    ip route ls | while read first rest; do
+	[ "$first" = default ] && echo `find_device $rest` && return
+    done
+}
+
+#
+# Echo the name of the interface(s) that will be used to send to the
+# passed address
+#
+
+find_interface_by_address() {
+    local dev="`find_rt_interface $1`"
+    local first rest
+
+    [ -z "$dev" ] && dev=`find_default_interface`
+
+    [ -n "$dev" ] && echo $dev
+}
+
+#
+# Expands to a list of dynamic chains for the passed address 
+#
+
+dynamic_chains_by_address()
+{
+    local interface iface
+
+    interface=`find_interface_by_address $1`
+
+    [ -z "$interface" ] && echo dynamic && return
+
+    for iface in $all_interfaces; do
+	if_match $iface $interface && echo `dynamic_chain $iface`
+    done
+}
+

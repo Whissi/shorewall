@@ -377,23 +377,6 @@ flushmangle() # $1 = name of chain
 }
 
 #
-# Chain name base for an interface
-#
-chain_base() #$1 = interface
-{
-    local c=${1%%+*}
-
-    case $c in
-        *.*)
-	    echo ${c%.*}_${c#*.}
-	    ;;
-	*)
-	    echo ${c:=common}
-	    ;;
-    esac
-}
-
-#
 # Find interfaces to a given zone
 #
 # Search the variables representing the contents of the interfaces file and
@@ -473,7 +456,7 @@ snat_chain() # $1 = zone
 #
 ecn_chain() # $1 = interface
 {
-   echo ${1}_ecn
+   echo `chain_base $1`_ecn
 }
 
 #
@@ -3472,13 +3455,25 @@ initialize_netfilter () {
     createchain reject	no
     createchain dynamic no
 
+    for interface in $all_interfaces; do
+	chain=`dynamic_chain $interface`
+	createchain $chain no
+	iptables -A $chain -j dynamic
+    done
+
+    echo $all_interfaces > $STATEDIR/interfaces
+
     if [ -f /var/lib/shorewall/save ]; then
 	echo "Restoring dynamic rules..."
 
 	while read target ignore1 ignore2 address rest; do
 	    case $target in
 	    DROP|reject)
-		run_iptables2 -A dynamic -s $address -j $target
+		chains=`dynamic_chains_by_address $address`
+
+		for chain in ${chains:-dynamic}; do
+		    run_iptables2 -I $chain -s $address -j $target
+		done
 		;;
 	    *)
 		;;
@@ -3490,9 +3485,9 @@ initialize_netfilter () {
 
     for interface in $all_interfaces; do
 	createchain `forward_chain $interface` no
-	run_iptables -A `forward_chain $interface` -j dynamic
+	run_iptables -A `forward_chain $interface` -j `dynamic_chain $interface`
 	createchain `input_chain $interface`   no
-	run_iptables -A `input_chain $interface`   -j dynamic
+	run_iptables -A `input_chain $interface`   -j `dynamic_chain $interface`
     done
 }
 

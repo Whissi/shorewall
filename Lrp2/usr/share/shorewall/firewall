@@ -87,6 +87,7 @@ startup_error() # $* = Error Message
     echo "   Error: $@" >&2
     my_mutex_off
     [ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
+    rm -f /var/lib/shorewall/restore-$$
     kill $$
     exit 2
 }
@@ -1213,6 +1214,9 @@ stop_firewall() {
     #
     # Turn off trace unless we were tracing "stop" or "clear"
     #
+
+    rm -f /var/lib/shorewall/restore-$$
+
     case $COMMAND in
 	stop|clear)
 	    ;;
@@ -1222,8 +1226,6 @@ stop_firewall() {
 	    ;;
 	*)
 	    set +x
-	    rm -f /var/lib/shorewall/restore-$$
-
 	    if [ -f /var/lib/shorewall/restore ]; then
 		echo Restoring Shorewall...
 		. /var/lib/shorewall/restore
@@ -2325,6 +2327,7 @@ check_config() {
     process_actions2
 
     rm -rf $TMP_DIR
+    rm -f /var/lib/shorewall/restore-$$
 
     echo "Configuration Validated"
 
@@ -2722,7 +2725,7 @@ process_actions1() {
 		    case $temp in
 			ACCEPT|REJECT|DROP)
 			    eval ${temp}_common=$xaction
-			    if ! list_search $xaction $USEDACTIONS; then
+			    if [ -n "$xaction" ] && ! list_search $xaction $USEDACTIONS; then
 				USEDACTIONS="$USEDACTIONS $xaction"
 				[ $COMMAND = check ] || createactionchain $xaction
 			    fi
@@ -3843,42 +3846,6 @@ process_tos() # $1 = name of tos file
 }
 
 #
-# Load a Kernel Module
-#
-loadmodule() # $1 = module name, $2 - * arguments
-{
-    local modulename=$1
-    local modulefile
-    local suffix
-    moduleloader=modprobe
-
-    if ! qt which modprobe; then 
-	moduleloader=insmod
-    fi
-
-    if [ -z "$(lsmod | grep $modulename)" ]; then
-	shift
-	
-	for suffix in $MODULE_SUFFIX ; do
-	    modulefile=$MODULESDIR/${modulename}.${suffix}
-
-	    if [ -f $modulefile ]; then
-		case $moduleloader in
-		    insmod)
-			insmod $modulefile $*
-			;;
-		    *)
-			modprobe $modulename
-			;;
-		esac
-
-		return
-	    fi
-	done
-    fi
-}
-
-#
 # Display elements of a list with leading white space
 #
 display_list() # $1 = List Title, rest of $* = list to display
@@ -4570,6 +4537,20 @@ load_kernel_modules() {
     if [ -f $modules -a -d $MODULESDIR ]; then
 	echo "Loading Modules..."
 	. $modules
+
+	if [ "$command" != check ]; then
+	    save_command "reload_kernel_modules <<EOF"
+
+	    while read command; do
+		case "$command" in
+		loadmodule*)
+		    save_command $command
+		    ;;
+		esac
+	    done < $modules
+	    
+	    save_command EOF
+	fi
     fi
 }
 
@@ -5420,6 +5401,15 @@ define_firewall() # $1 = Command (Start or Restart)
 
     verify_os_version
     verify_ip
+
+    [ -d /var/lib/shorewall ] || mkdir -p /var/lib/shorewall
+
+    echo '#bin/sh' > /var/lib/shorewall/restore-$$
+    echo ". /usr/share/shorewall/functions" >> /var/lib/shorewall/restore-$$
+
+    save_command "MODULESDIR=\"$MODULESDIR\""
+    save_command "MODULE_SUFFIX=\"$MODULE_SUFFIX\""
+
     load_kernel_modules
 
     echo "Initializing...";                    initialize_netfilter
@@ -6078,8 +6068,6 @@ do_initialize() {
 
     rm -f $TMP_DIR/physdev
 
-    echo '#bin/sh' > /var/lib/shorewall/restore-$$
-    echo ". /usr/share/shorewall/functions" >> /var/lib/shorewall/restore-$$
 }
 
 #

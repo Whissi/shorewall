@@ -5228,7 +5228,7 @@ add_common_rules() {
 
 	    run_iptables -A $(input_chain $interface)   -j $chain
 	    run_iptables -A $(forward_chain $interface) -j $(dynamic_fwd $interface)
-	    run_iptables -A OUTPUT                      -j $(dynamic_out $interface)
+	    run_iptables -A OUTPUT -o $interface        -j $(dynamic_out $interface)
 	done
     fi
 

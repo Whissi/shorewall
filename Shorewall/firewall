@@ -3634,7 +3634,7 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
 
     validate_zone $zone || startup_error "Error: Unknown zone: $zone"
 
-    [ "$zone" = $FW ] && startup_error "Error: Can't remove $1 to firewall zone"
+    [ "$zone" = $FW ] && startup_error "Error: Can't remove $1 from firewall zone"
 
     [ -f ${STATEDIR}/chains ] || startup_error "Error: ${STATEDIR}/chains -- file not found"
     [ -f ${STATEDIR}/zones ]  || startup_error "Error: ${STATEDIR}/zones -- file not found"

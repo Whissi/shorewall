@@ -1595,6 +1595,7 @@ setup_tunnels() # $1 = name of tunnels file
 	options="-m state --state NEW -j ACCEPT"
 	addrule2 $inchain	  -p 50	 $(source_ip_range $1) -j ACCEPT
 	addrule2 $outchain	  -p 50	 $(dest_ip_range $1)   -j ACCEPT
+
 	if [ -z "$noah" ]; then
 	    run_iptables -A $inchain  -p 51 $(source_ip_range $1) -j ACCEPT
 	    run_iptables -A $outchain -p 51 $(dest_ip_range $1)   -j ACCEPT
@@ -7122,7 +7123,6 @@ do_initialize() {
     LOGTAGONLY=
     LOGALLNEW=
     DROPINVALID=
-    OPENVPNPORT=
 
     RESTOREBASE=
     TMP_DIR=

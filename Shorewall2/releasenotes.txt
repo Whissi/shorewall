@@ -832,7 +832,12 @@ New Features:
     shorewall add eth1:1.2.3.4,2.3.4.5 z12
     shorewall delete eth1:1.2.3.4,2.3.4.5 z12
    
-37) TCP OpenVPN tunnels are now supported using the 'openvpn' tunnel
+37) The IANA has recently registered port 1194 for use by OpenVPN. In
+    previous versions of Shorewall (and OpenVPN), the default port was
+    5000 but has been changed to 1194 to conform to the new OpenVPN
+    default.
+
+38) TCP OpenVPN tunnels are now supported using the 'openvpn' tunnel
     type. OpenVPN entries in /etc/shorewall/tunnels have this format:
 
     openvpn[:{tcp|udp}][:<port>]	<zone>		<gateway>
@@ -843,7 +848,7 @@ New Features:
 	openvpn:3344		net	1.2.3.4 # UDP on port 3344
 	openvpn:tcp:4455	net	1.2.3.4	# TCP on port 4455
 
-38) A new 'ipsecvpn' script is included in the tarball and in the
+39) A new 'ipsecvpn' script is included in the tarball and in the
     RPM. The RPM installs the file in the Documentation directory
     (/usr/share/doc/packages/shorewall-2.2.0-0RC1).
 
@@ -857,7 +862,3 @@ New Features:
       gateway and each network listed in the NETWORKS setting at the
       front of the script, only one of these may be used at a time.
 
-39) The IANA has recently registered port 1194 for use by OpenVPN. In
-    previous versions of Shorewall (and OpenVPN), the default port was
-    5000 but has been changed to 1194 to conform to the new OpenVPN
-    default.

@@ -1155,6 +1155,7 @@ setup_tunnels() # $1 = name of tunnels file
 	if [ -n "$2" ]; then
 	    if validate_zone $2; then
 		addrule ${FW}2${2} -p udp --sport 500 --dport 500 $options
+		addrule ${2}2${FW} -p udp --sport 500 --dport 500 $options
 	    else
 		error_message "Warning: Invalid gateway zone ($2)" \
 		" -- Tunnel \"$tunnel\" may encounter keying problems"

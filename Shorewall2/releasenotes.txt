@@ -828,3 +828,13 @@ New Features:
     shorewall add eth1:1.2.3.4,2.3.4.5 z12
     shorewall delete eth1:1.2.3.4,2.3.4.5 z12
    
+37) TCP OpenVPN tunnels are now supported using the 'openvpn' tunnel
+    type. OpenVPN entries in /etc/shorewall/tunnels have this format:
+
+    openvpn[:{tcp|udp}][:<port>]	<zone>		<gateway>
+
+    Examples:
+
+	openvpn:tcp		net	1.2.3.4 # TCP tunnel on port 5000
+	openvpn:3344		net	1.2.3.4 # UDP on port 3344
+	openvpn:tcp:4455	net	1.2.3.4	# TCP on port 4455

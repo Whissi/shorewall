@@ -258,23 +258,33 @@ New Features:
    to create two rules; a DNAT- rule and an ACCEPT rule which can be
    rate-limited separately.
 
-   To specify a rate limit, follow ACCEPT, DNAT[-], REDIRECT[-] or LOG
-   with
+   To specify a rate limit, you can follow one of two approaches:
 
-      < <rate>/<interval>[:<burst>] >
+   a) You may follow ACCEPT, DNAT[-], REDIRECT[-] or LOG with
 
-   where
+	  < <rate>/<interval>[:<burst>] >
 
-      <rate> is the sustained rate per <interval>
-      <interval> is "sec" or "min"
-      <burst> is the largest burst accepted within an <interval>. If
-              not given, the default of 5 is assumed.
+	  where
 
-   There may be no white space between the ACTION and "<" nor there may
-   be any white space within the burst specification. If you want to
-   specify logging of a rate-limited rule, the ":" and log level comes
-   after the ">" (e.g., ACCEPT<2/sec:4>:info ).
+	  <rate> is the sustained rate per <interval>
+	  <interval> is "sec" or "min"
+	  <burst> is the largest burst accepted within an
+	          <interval>. If not given, the default of 5 is
+		  assumed.
 
+      There may be no white space between the ACTION and "<" nor there
+      may be any white space within the burst specification. If you want
+      to specify logging of a rate-limited rule, the ":" and log level
+      comes after the ">" (e.g., ACCEPT<2/sec:4>:info ).
+
+   b) There is a new RATE LIMIT column at the far right of the
+      file (beyond column 80). You may place the rate limit there in
+      the format:
+
+	  <rate>/<interval>[:<burst>]
+
+	  where <rate>, <interval> and <burst> are as above.
+   
    Let's take an example:
 
 	 ACCEPT<2/sec:4>	net	dmz	tcp	80
@@ -295,4 +305,3 @@ New Features:
 
 10) Multiple chains may now be displayed in one "shorewall show"
     command (e.g., shorewall show INPUT FORWARD OUTPUT).
-   

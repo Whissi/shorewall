@@ -2440,6 +2440,7 @@ process_rule() # $1 = target
                # $5 = ports
                # $6 = cports
                # $7 = address
+               # $8 = ratelimit
 {
     local target="$1"
     local clients="$2"
@@ -2448,17 +2449,21 @@ process_rule() # $1 = target
     local ports="$5"
     local cports="$6"
     local address="$7"
+    local ratelimit="$8"
     local rule="`echo $target $clients $servers $protocol $ports $cports $address`"
 
     # Function Body - isolate rate limit
 
-    if [ "$target" = "${target%<*}" ]; then
-	ratelimit=
-    else
-	ratelimit="${target#*<}"
-	ratelimit="${ratelimit%>*}"
-	target="${target%<*}${target#*>}"
-	expandv ratelimit
+    if [ -z "$ratelimit" ]; then
+	if [ "$target" != "${target%<*}" ]; then
+	    ratelimit="${target#*<}"
+	    ratelimit="${ratelimit%>*}"
+	    target="${target%<*}${target#*>}"
+	    expandv ratelimit
+	fi
+    fi
+    
+    if [ -n "$ratelimit" ]; then
 	case $ratelimit in
 	    *:*)
 		ratelimit="-m limit --limit ${ratelimit%:*} --limit-burst ${ratelimit#*:}"
@@ -2716,17 +2721,17 @@ process_rules() # $1 = name of rules file
 	for yclients in $xclients; do
 	    for yservers in $xservers; do
 		if [ "${yclients}" != "${yservers}" ] ; then
-		    process_rule $xtarget $yclients $yservers $xprotocol $xports $xcports $xaddress
+		    process_rule $xtarget $yclients $yservers $xprotocol $xports $xcports $xaddress $xratelimit
 		fi
 	    done
 	done
     }
 
-    while read xtarget xclients xservers xprotocol xports xcports xaddress; do
+    while read xtarget xclients xservers xprotocol xports xcports xaddress xratelimit; do
 	temp="${xtarget%:*}"
 	case "${temp%<*}" in
 	    ACCEPT|DROP|REJECT|DNAT|DNAT-|REDIRECT|REDIRECT-|LOG|CONTINUE)
-		expandv xclients xservers xprotocol xports xcports xaddress
+		expandv xclients xservers xprotocol xports xcports xaddress xratelimit
 
 		if [ "x$xclients" = xall ]; then
 		    xclients="$zones $FW"
@@ -2743,10 +2748,10 @@ process_rules() # $1 = name of rules file
 		    continue
 		fi
 
-		process_rule $xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress
+		process_rule $xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit
 		;;
 	    *)
-		rule="`echo $xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress`"
+		rule="`echo $xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit`"
 		fatal_error "Invalid Action in rule \"$rule\""
 		;;
 

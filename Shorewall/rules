@@ -50,11 +50,12 @@
 #			You may rate-limit the rule by optionally
 #			following ACCEPT, DNAT[-], REDIRECT[-] or LOG with
 # 
-#				< <rate>/<interval>:<burst> >
+#				< <rate>/<interval>[:<burst>] >
 #
 #			where <rate> is the number of connections per 
 #			<interval> ("sec" or "min") and <burst> is the
-#			largest burst permitted. There may be
+#			largest burst permitted. If no <burst> is given,
+#			a value of 5 is assumed. There may be no
 #			no whitespace embedded in the specification.
 #
 #				Example: ACCEPT<10/sec:20>
@@ -63,6 +64,11 @@
 #			by ":" and a syslog log level (e.g, REJECT:info or
 #			DNAT<4/sec:8>:debugging). This causes the packet to be
 #			logged at the specified level.
+#
+#			NOTE: For those of you who prefer to place the
+#			rate limit in a separate column, see the RATE LIMIT
+#			column below. If you specify a value in that column,
+#			you must not include a rate limit in the ACTION column
 #
 #			You may also specify ULOG (must be in upper case) as a
 #			log level.This will log to the ULOG target for routing
@@ -206,6 +212,22 @@
 #			If no source IP address is given, the original source
 #			address is not altered.
 #
+#	RATE LIMIT	You may rate-limit the rule by placing a value in 
+#			this colume:
+# 
+#				<rate>/<interval>[:<burst>]
+#
+#			where <rate> is the number of connections per 
+#			<interval> ("sec" or "min") and <burst> is the
+#			largest burst permitted. If no <burst> is given,
+#			a value of 5 is assumed. There may be no
+#			no whitespace embedded in the specification.
+#
+#				Example: 10/sec:20
+#
+#			If you place a rate limit in this column, you may not
+#			place a similar limit in the ACTION column.
+#
 #	Example: Accept SMTP requests from the DMZ to the internet
 #
 #	#ACTION SOURCE	DEST PROTO	DEST    SOURCE	ORIGINAL
@@ -249,7 +271,7 @@
 #	#                               	PORT    PORT(S) DEST
 #	ACCEPT	 net:130.252.100.69,130.252.100.70 \
 #					tcp	22
-##############################################################################
-#ACTION  SOURCE		DEST      	PROTO	DEST    SOURCE	   ORIGINAL
-#                       	        	PORT    PORT(S)    DEST
+#########################################################################################
+#ACTION  SOURCE		DEST      	PROTO	DEST    SOURCE	   ORIGINAL	RATE
+#                       	        	PORT    PORT(S)    DEST		LIMIT
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

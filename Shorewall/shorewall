@@ -786,9 +786,13 @@ case "$1" in
 	    echo "Shorewall-$version `[ $# -gt 1 ] && echo Chains || echo Chain` $* at $HOSTNAME - `date`"
 	    echo
 	    show_reset
-	    for chain in $*; do
-		iptables -L $chain -n -v
-	    done
+	    if [ $# -gt 0 ]; then
+		for chain in $*; do
+		    iptables -L $chain -n -v
+		done
+	    else
+		iptables -L -n -v
+	    fi
 	    ;;
 	esac
 	;;

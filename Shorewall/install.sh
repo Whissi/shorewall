@@ -479,8 +479,14 @@ if [ -z "$PREFIX" -a -n "$first_install" ]; then
 	fi
     elif [ -x /sbin/chkconfig -o -x /usr/sbin/chkconfig ]; then
 	if chkconfig --add $FIREWALL ; then
-	    echo -e "\nFirewall will automatically start in run levels as follows:"
+	    echo -e "\nFirewall will start automatically in run levels as follows:"
 	    chkconfig --list $FIREWALL
+	else
+	    cant_autostart
+	fi
+    elif [ -x /sbin/rc-update ]; then
+	if rc-update add shorewall default; then
+	    echo -e "\nFirewall will start automatically at boot"
 	else
 	    cant_autostart
 	fi

@@ -1757,7 +1757,7 @@ delete_nat() {
 
 #
 # Process a TC Rule - $marking_chain is assumed to contain the name of the 
-#                     marking chain
+#                     default marking chain
 #
 process_tc_rule()
 {
@@ -1778,13 +1778,34 @@ process_tc_rule()
 		    ;;
 		*)
 		    if ! list_search $source $all_interfaces; then
-			fatal_error "Error: Unknown interface $source"
+			fatal_error "Error: Unknown interface $source in rule \"$rule\""
 		    fi
 		    
 		    r="-i $source "
 		    ;;
 	    esac
 	fi
+
+	if [ "$mark" != "${mark%:*}" ]; then
+	    
+	    [ "$chain" = tcout ] && \
+		fatal_error "Chain designator not allowed when source is \$FW; rule \"$rule\""
+	    
+	    case "${mark#*:}" in
+		p|P)
+		    chain=tcpre
+		    ;;
+		f|F)
+		    chain=tcfor
+		    ;;
+		*)
+		    fatal_error "Invalid chain designator: (${mark#*:}) in rule \"$rule\""
+		    ;;
+	    esac
+
+	    mark="${mark%:*}"
+	fi
+  
 	[ "x$dest"   = "x-"  ] || r="${r}-d $dest "
 	[ "$proto"   = "all" ] || r="${r}-p $proto "
 	[ "x$port"   = "x-"  ] || r="${r}--dport $port "
@@ -1815,7 +1836,8 @@ setup_tc1() {
     # Create the TC mangle chains
     #
     
-    run_iptables -t mangle -N $marking_chain
+    run_iptables -t mangle -N tcpre
+    run_iptables -t mangle -N tcfor
     run_iptables -t mangle -N tcout
     #
     # Process the TC Rules File
@@ -1831,11 +1853,9 @@ setup_tc1() {
     # Link to the TC mangle chains from the main chains
     #
     
-    if [ $marking_chain = tcfor ]; then
-	run_iptables -t mangle -A FORWARD -j tcfor
-    else
-	run_iptables -t mangle -A PREROUTING -j tcpre
-    fi
+    run_iptables -t mangle -A FORWARD    -j tcfor
+    run_iptables -t mangle -A PREROUTING -j tcpre
+    run_iptables -t mangle -A OUTPUT     -j tcout
 
     run_user_exit tcstart
 

@@ -14,8 +14,13 @@
 #
 run_iptables -A common -p icmp -j icmpdef
 ############################################################################
+# Drop invalid state TCP packets
+#
+run_iptables -A common -m state -p tcp --state INVALID -j DROP
+############################################################################
 # accept ACKs and RSTs that aren't related to any session so that the 
-# protocol stack can handle them
+# protocol stack can handle them and so the ACKs can create connection 
+# tracking entries.
 #
 run_iptables -A common -p tcp --tcp-flags ACK ACK -j ACCEPT
 run_iptables -A common -p tcp --tcp-flags RST RST -j ACCEPT

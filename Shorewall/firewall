@@ -2707,7 +2707,7 @@ add_common_rules() {
     ############################################################################
     # Enable icmp output
     #
-    run_iptables -A OUTPUT -p icmp -j ACCEPT
+    run_iptables -A OUTPUT -m state --state ! INVALID -p icmp -j ACCEPT
 
     for f in /proc/sys/net/ipv4/conf/*/rp_filter; do
 	echo 0 > $f

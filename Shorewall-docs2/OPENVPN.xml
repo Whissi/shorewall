@@ -21,7 +21,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-12-23</pubdate>
+    <pubdate>2004-12-26</pubdate>
 
     <copyright>
       <year>2003</year>
@@ -54,10 +54,10 @@
 
   <warning>
     <para>The default port number for OpenVPN changed from 5000 to 1194 in
-    Shorewall version 2.2.0 RC2. This change reflected a change in OpenVPN
-    which also changed its default to 1194. In the text that follows, where
-    you see Port 5000 this can also refer to port 1194 depending on which
-    version of Shorewall and OpenVPN that you are using.</para>
+    Shorewall version 2.2.0 RC2. This change follows OpenVPN 2.0 which also
+    changed its default port to 1194. In the text that follows, where you see
+    Port 1194 this can also refer to port 5000 depending on which version of
+    Shorewall and OpenVPN that you are using.</para>
   </warning>
 
   <section>
@@ -117,20 +117,23 @@ openvpn       net            134.28.54.2</programlisting>
     </blockquote>
 
     <note>
+      <para>Shorewall versions prior to 2.2.0 Beta 1 enforced use of the same
+      port number for both the source and destination port.</para>
+
       <para>Some OpenVPN clients (notabley on <trademark>Windows</trademark>)
       do not use the same source and destination ports which can cause
       problems. If system B is a Windows system or if you find that Shorewall
-      is blocking the UDP port 5000 traffic from the remote gateway, then you
-      will want the following entry in
-      <filename>/etc/shorewall/tunnels</filename> instead of the one
-      above:</para>
+      is blocking the UDP port 1194 traffic from the remote gateway and you
+      are running a version of Shorewall prior to 2.2.0 Beta 1, then you will
+      want the following entry in <filename>/etc/shorewall/tunnels</filename>
+      instead of the one above:</para>
 
       <programlisting>#TYPE                  ZONE           GATEWAY        GATEWAY ZONE
-generic:udp:5000       net            134.28.54.2</programlisting>
+generic:udp:1194       net            134.28.54.2</programlisting>
     </note>
 
     <para>This entry in <filename>/etc/shorewall/tunnels</filename> opens the
-    firewall so that OpenVPN traffic on the default port 5000/udp will be
+    firewall so that OpenVPN traffic on the default port 1194/udp will be
     accepted to/from the remote gateway. If you change the port used by
     OpenVPN to 7777, you can define /etc/shorewall/tunnels like this:</para>
 
@@ -268,6 +271,8 @@ dh dh1024.pem
  
 ca /etc/certs/cacert.pem
  
+crl-verify /etc/certs/crl.pem
+ 
 cert /etc/certs/SystemA.pem
 key /etc/certs/SystemA_key.pem
  
@@ -337,7 +342,7 @@ tls-client
 pull
  
 ca /etc/certs/cacert.pem
- 
+
 cert /etc/certs/SystemB.pem
 key /etc/certs/SystemB_key.pem
  
@@ -356,5 +361,22 @@ persist-key
  
 verb 3</programlisting>
     </blockquote>
+
+    <para>If you want multiple remote clients to be able to communicate with
+    each other then you must:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>Include the <emphasis role="bold">client-to-client</emphasis>
+        directive in the server's OpenVPN configuration; and</para>
+      </listitem>
+
+      <listitem>
+        <para>Specify the <emphasis role="bold">routeback</emphasis> option on
+        the <filename class="devicefile">tun0</filename> device in <ulink
+        url="Documentation.htm#Interfaces">/etc/shorewall/interfaces</ulink>.
+        </para>
+      </listitem>
+    </orderedlist>
   </section>
 </article>

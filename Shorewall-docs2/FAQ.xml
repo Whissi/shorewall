@@ -17,7 +17,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-12-22</pubdate>
+    <pubdate>2004-12-26</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -1590,6 +1590,17 @@ alias ipt_pkttype off</programlisting>
       kernel, I also recommend upgrading to Shorewall 2.0.6 or later and then
       setting PKTTYPE=No in shorewall.conf.</para>
     </section>
+
+    <section>
+      <title>(FAQ 43) I just installed the Shorewall RPM and Shorewall doesn't
+      start at boot time.</title>
+
+      <para><emphasis role="bold">Answer</emphasis>: When you install using
+      the "rpm -U" command, Shorewall doesn't run your distribution's tool for
+      configuring Shorewall startup. You will need to run that tool (insserv,
+      chkconfig, run-level editor, …) to configure Shorewall to start in the
+      run-levels that you run your firewall system at.</para>
+    </section>
   </section>
 
   <section>
@@ -2014,7 +2025,17 @@ Verifying Configuration...
 
     <para><revhistory>
         <revision>
-          <revnumber>1.39</revnumber>
+          <revnumber>1.41</revnumber>
+
+          <date>2004-12-26</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Added FAQ 43.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.40</revnumber>
 
           <date>2004-12-22</date>
 

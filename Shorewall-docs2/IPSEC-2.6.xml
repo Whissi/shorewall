@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-12-18</pubdate>
+    <pubdate>2004-12-26</pubdate>
 
     <copyright>
       <year>2004</year>
@@ -347,7 +347,7 @@ remote 134.28.54.2
         verify_identifier on ;
         lifetime time 24 hour ;
         proposal {
-                encryption_algorithm 3des;
+                encryption_algorithm blowfish;
                 hash_algorithm sha1;
                 authentication_method rsasig ;
                 dh_group 2 ;
@@ -358,7 +358,7 @@ sainfo address 192.168.1.0/24 any address 10.0.0.0/8 any
 {
         pfs_group 2;
         lifetime time 12 hour ;
-        encryption_algorithm 3des, blowfish, des, rijndael ;
+        encryption_algorithm blowfish ;
         authentication_algorithm hmac_sha1, hmac_md5 ;
         compression_algorithm deflate ;
 }
@@ -367,7 +367,7 @@ sainfo address 206.162.148.9/32 any address 10.0.0.0/8 any
 {
         pfs_group 2;
         lifetime time 12 hour ;
-        encryption_algorithm 3des, blowfish, des, rijndael ;
+        encryption_algorithm blowfish ;
         authentication_algorithm hmac_sha1, hmac_md5 ;
         compression_algorithm deflate ;
 }
@@ -376,7 +376,7 @@ sainfo address 206.162.148.9/32 any address 134.28.54.2/32 any
 {
         pfs_group 2;
         lifetime time 12 hour ;
-        encryption_algorithm 3des, blowfish, des, rijndael ;
+        encryption_algorithm blowfish ;
         authentication_algorithm hmac_sha1, hmac_md5 ;
         compression_algorithm deflate ;
 }
@@ -385,7 +385,7 @@ sainfo address 192.168.1.0/24 any address 134.28.54.2/32 any
 {
         pfs_group 2;
         lifetime time 12 hour ;
-        encryption_algorithm 3des, blowfish, des, rijndael ;
+        encryption_algorithm blowfish ;
         authentication_algorithm hmac_sha1, hmac_md5 ;
         compression_algorithm deflate ;
 }</programlisting>
@@ -502,7 +502,7 @@ remote <emphasis role="bold">anonymous</emphasis>
         verify_identifier on ;
         lifetime time 24 hour ;
         proposal {
-                encryption_algorithm 3des;
+                encryption_algorithm blowfish ;
                 hash_algorithm sha1;
                 authentication_method rsasig ;
                 dh_group 2 ;
@@ -513,7 +513,7 @@ sainfo <emphasis role="bold">anonymous</emphasis>
 {
         pfs_group 2;
         lifetime time 12 hour ;
-        encryption_algorithm 3des, blowfish, des, rijndael ;
+        encryption_algorithm blowfish ;
         authentication_algorithm hmac_sha1, hmac_md5 ;
         compression_algorithm deflate ;
 }</programlisting>
@@ -609,7 +609,7 @@ remote anonymous
         my_identifier address ;
         lifetime time 24 hour ;
         proposal {
-                encryption_algorithm 3des;
+                encryption_algorithm blowfish ;
                 hash_algorithm sha1;
                 authentication_method pre_shared_key ;
                 dh_group 2 ;
@@ -620,7 +620,7 @@ sainfo anonymous
 {
         pfs_group 2;
         lifetime time 12 hour ;
-        encryption_algorithm 3des, blowfish, des, rijndael ;
+        encryption_algorithm blowfish ;
         authentication_algorithm hmac_sha1, hmac_md5 ;
         compression_algorithm deflate ;
 }

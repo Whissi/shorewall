@@ -1418,9 +1418,20 @@ setup_tunnels() # $1 = name of tunnels file
 
     setup_one_ipsec() # $1 = gateway $2 = Tunnel Kind $3 = gateway zones
     {
-    	local kind=$2 noah=
+    	local kind=$2 noah= markval=
+
+	case $kind in 
+	    *:*:*)
+		markval=${kind#*}
+		kind=${kind%%:*}
+		;;
+	esac
 
 	case $kind in
+	    *:[1-9]*)
+		markval=${kind#*}
+		kind=${kind%:*}
+		;;		
 	    *:*)
 	    	noah=${kind#*:}
 		[ $noah = noah -o $noah = NOAH ] || fatal_error "Invalid IPSEC modifier $noah in tunnel \"$tunnel\""
@@ -2118,9 +2129,9 @@ setup_tc1() {
     # Link to the TC mangle chains from the main chains
     #
 
-    run_iptables -t mangle -A FORWARD    -j tcfor
-    run_iptables -t mangle -A PREROUTING -j tcpre
-    run_iptables -t mangle -A OUTPUT     -j tcout
+    run_iptables -t mangle -A FORWARD -m mark --mark 0 -j tcfor
+    run_iptables -t mangle -A PREROUTING               -j tcpre
+    run_iptables -t mangle -A OUTPUT                   -j tcout
 
     run_user_exit tcstart
 
@@ -2330,8 +2341,6 @@ check_config() {
     echo "Verifying Configuration..."
 
     verify_os_version
-
-    load_kernel_modules check
 
     echo "Determining Zones..."
 
@@ -4623,8 +4632,9 @@ add_ip_aliases()
 #
 # Load kernel modules required for Shorewall
 #
-load_kernel_modules() #1 = command
+load_kernel_modules()
 {
+    save_modules_dir=$MODULESDIR
 
     [ -z "$MODULESDIR" ] && \
 	MODULESDIR=/lib/modules/$(uname -r)/kernel/net/ipv4/netfilter
@@ -4632,26 +4642,31 @@ load_kernel_modules() #1 = command
     modules=$(find_file modules)
 
     if [ -f $modules -a -d $MODULESDIR ]; then
- 	[ "$1" = silent ] || echo "Loading Modules..."
+ 	progress_message "Loading Modules..."
 	. $modules
+    fi
 
-	case $1 in
-	    start|restart)
-		save_progress_message "Loading kernel modules..."
-		save_command "reload_kernel_modules <<__EOF__"
+    MODULESDIR=$save_modules_dir
+}
 
-		while read command; do
-		    case "$command" in
-			loadmodule*)
-			    save_command $command
-			    ;;
-		    esac
-		done < $modules
-		
-		save_command __EOF__
+save_load_kernel_modules()
+{
+
+    modules=$(find_file modules)
+
+    save_progress_message "Loading kernel modules..."
+    save_command "reload_kernel_modules <<__EOF__"
+
+    while read command; do
+	case "$command" in
+	    loadmodule*)
+		save_command $command
 		;;
 	esac
-    fi
+    done < $modules
+    
+    save_command __EOF__
+
 }
 
 # Verify that the 'ip' program is installed
@@ -5519,7 +5534,7 @@ define_firewall() # $1 = Command (Start or Restart)
     save_command "MODULESDIR=\"$MODULESDIR\""
     save_command "MODULE_SUFFIX=\"$MODULE_SUFFIX\""
 
-    load_kernel_modules $command
+    save_load_kernel_modules
 
     echo "Initializing...";                    initialize_netfilter
     echo "Configuring Proxy ARP";              setup_proxy_arp
@@ -6045,9 +6060,10 @@ do_initialize() {
     ensure_config_path
     #
     # Determine the capabilities of the installed iptables/netfilter
-    # We silently load the modules
+    # We load the kernel modules here to acurately determine 
+    # capabilities when module autoloading isn't enabled.
     #
-    qt load_kernel_modules silent
+    load_kernel_modules
     determine_capabilities
 
     [ -z "${STATEDIR}" ] && STATEDIR=/var/state/shorewall

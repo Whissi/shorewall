@@ -672,6 +672,7 @@ validate_policy()
     print_policy() # $1 = source zone, $2 = destination zone
     {
 	[ $command != check ] || \
+	    [ $1 = $2 ]  || \
 	    [ $1 = all ] || \
 	    [ $2 = all ] || \
 	    echo "   Policy for $1 to $2 is $policy"
@@ -708,7 +709,7 @@ validate_policy()
 	esac
 
 	case $policy in
-	ACCEPT|REJECT|DROP|CONTINUE)
+	ACCEPT|REJECT|DROP|CONTINUE|NONE)
 	    ;;
 	*)
 	    startup_error "Invalid policy $policy"
@@ -717,8 +718,8 @@ validate_policy()
 
 	chain=${client}2${server}
 
-	[ "x$chain" = "x${FW}2${FW}" ] && \
-	    startup_error "fw->fw policy not allowed: $policy"
+	[ "$client" != "$server" ] || [ -n "$serverwild" ] || \
+	    startup_error "Intra-zone policies not allowed: $client $server $policy"
 
 	if is_policy_chain $chain ; then
 	    startup_error "Duplicate policy $policy"
@@ -728,7 +729,7 @@ validate_policy()
 
 	chain=${client}2${server}
 
-	all_policy_chains="$all_policy_chains $chain"
+	[ $policy = NONE ] || all_policy_chains="$all_policy_chains $chain"
 
 	eval ${chain}_is_policy=Yes
 	eval ${chain}_policy=$policy
@@ -743,6 +744,7 @@ validate_policy()
 
 			if [ -z "$pc" ]; then
 			    eval ${zone}2${zone1}_policychain=$chain
+			    eval ${zone}2${zone1}_policy=$policy
 			    print_policy $zone $zone1
 			fi
 		    done
@@ -753,6 +755,7 @@ validate_policy()
 
 		    if [ -z "$pc" ]; then
 			eval ${zone}2${server}_policychain=$chain
+			eval ${zone}2${server}_policy=$policy
 			print_policy $zone $server
 		    fi
 		done
@@ -763,6 +766,7 @@ validate_policy()
 
 		    if [ -z "$pc" ]; then
 			eval ${client}2${zone}_policychain=$chain
+			eval ${client}2${zone}_policy=$policy
 			print_policy $client $zone
 		    fi
 	    done
@@ -2151,7 +2155,7 @@ process_rule() # $1 = target
 	else
 	    serverport=
 	    [ -z "$serverzone" -o -z "$servers" ] && \
-	        startup_error "Empty destination zone or qualifier: rule \"$rule\""
+	        fatal_error "Empty destination zone or qualifier: rule \"$rule\""
 	fi
     fi
 
@@ -2165,6 +2169,11 @@ process_rule() # $1 = target
 
     chain=${source}2${dest}
 
+    eval policy=${chain}_policy
+
+    [ $policy = NONE ] && \
+	fatal_error "Rules may not override a NONE policy: rule \"$rule\""
+
     [ $command = check ] || ensurechain $chain
 
     if [ "x$chain" = x${FW}2${FW} ]; then
@@ -2176,6 +2185,8 @@ process_rule() # $1 = target
 		return
 		;;
 	esac
+    elif [ "$source" = "$dest" ]; then
+	fatal_error "Intra-zone rules are not allowed: rule \"$rule\""
     else
 	[ $command = check ] || ensurechain $chain
     fi
@@ -3670,41 +3681,34 @@ activate_rules()
 	done
 
 	for zone1 in $zones; do
+
+	    eval policy=\$${zone}2${zone1}_policy
+
+	    [ "$policy" = NONE ] && continue
+	    
 	    eval dest_hosts=\$${zone1}_hosts
 
-	    chain="`rules_chain $zone $zone1`"
+	    if [ $zone = $zone1 ]; then
+		chain=${zone}2${zone}
+		havechain $chain || chain=ACCEPT
+	    else
+		chain="`rules_chain $zone $zone1`"
+	    fi
+
+	    eval policy_chain=
 
 	    echo "$zone $zone1 $chain" >> ${STATEDIR}/chains
-
-	    if havechain ${zone}2${zone1} || havechain ${zone1}2${zone}; then
-		have_canonical=Yes
-	    else
-		have_canonical=
-	    fi
 
 	    for host in $source_hosts; do
 		interface=${host%:*}
 		subnet=${host#*:}
 		chain1=`forward_chain $interface`
 
-		if [ -n "$have_canonical" ]; then
-		    bounce=yes
-		else
-		    case $interface in
-			*+*)
-			    bounce=yes
-			    ;;
-			*)
-			    bounce=
-			    ;;
-		    esac
-		fi
-
 		for host1 in $dest_hosts; do
 		    interface1=${host1%:*}
 		    subnet1=${host1#*:}
 
-		    if [ $interface != $interface1 -o -n "$bounce" ]; then
+		    if [ "$host" != "$host1" ]; then
 			run_iptables -A $chain1 -s $subnet -o $interface1 -d $subnet1 -j $chain
 		    fi
 		done

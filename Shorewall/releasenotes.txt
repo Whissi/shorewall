@@ -1,94 +1,19 @@
-This is a major release of Shorewall.
+This is a minor release of Shorewall.
 
-Function from 1.3 that has been omitted from this version includes:
+This release introduces incompatibilities with prior releases. See
+http://www.shorewall.net/upgrade_issues.htm.
 
-1) The MERGE_HOSTS variable in shorewall.conf is no longer
-   supported. Shorewall 1.4 behavior is the same as 1.3 with
-   MERGE_HOSTS=Yes.
+Changes are:
 
-2) Interface names of the form <device>:<integer> in
-   /etc/shorewall/interfaces now generate an error.
+a) There is now a new NONE policy specifiable in
+/etc/shorewall/policy. This policy will cause Shorewall to assume that
+there will never be any traffic between the source and destination
+zones.
 
-3) Shorewall 1.4 implements behavior consistent with
-   OLD_PING_HANDLING=No. OLD_PING_HANDLING=Yes will generate an error
-   at startup as will specification of the 'noping' or 'filterping'
-   interface options.
+b) Shorewall no longer creates rules to govern traffic from an
+interface:subnet to itself.
 
-4) The 'routestopped' option in the /etc/shorewall/interfaces and
-   /etc/shorewall/hosts files is no longer supported and will generate
-   an error at startup if specified.
-
-5) The Shorewall 1.2 syntax for DNAT and REDIRECT rules is no longer
-   accepted.
-
-6) The ALLOWRELATED variable in shorewall.conf is no longer
-   supported. Shorewall 1.4 behavior is the same as 1.3 with
-   ALLOWRELATED=Yes.
-
-7) The 'multi' interface option is no longer supported. Shorewall will
-   generate rules for sending packets back out the same interface
-   that they arrived on in two cases:
-
-   a) There is an _explicit_ policy for the source zone to the
-   destination zone. An explicit policy names both zones and does not
-   use the 'all' reserved word.
-
-   b) There are one or more rules for traffic for the source zone to
-   or from the destination zone including rules that use the 'all'
-   reserved word. Exception: If the source and the destination are
-   the same zone then the rule must be explicit - it must name the zone
-   in both the SOURCE and DESTINATION columns.
-
-Changes for 1.4 include:
-
-1) shorewall.conf has been completely reorganized into logical
-   sections.
-
-2) LOG is now a valid action for a rule (/etc/shorewall/rules).
-
-3) The firewall script and version file are now installed in
-   /usr/share/shorewall.
-
-4. Late arriving DNS replies are now silently dropped in the common
-   chain by default.
-
-5) In addition to behaving like OLD_PING_HANDLING=No, Shorewall 1.4 no
-   longer unconditionally accepts outbound ICMP packets. So if you want
-   to 'ping' from the firewall, you will need the appropriate rule or
-   policy.
-
-6) CONTINUE is now a valid action for a rule (/etc/shorewall/rules).
-
-7) 802.11b devices with names of the form wlan<n> now support the
-   'maclist' option.
-
-8) IMPORTANT: Shorewall now REQUIRES the iproute package ('ip'
-   utility).
-
-9) Explicit Congestion Notification (ECN - RFC 3168) may now be turned
-   off on a host or network basis using the new /etc/shorewall/ecn
-   file. To use this facility:
-
-   a) You must be running kernel 2.4.20
-   b) You must have applied the patch in
-   http://www.shorewall/net/pub/shorewall/ecn/patch.
-   c) You must have iptables 1.2.7a installed.
-
-10) The /etc/shorewall/params file is now processed first so that
-    variables may be used in the /etc/shorewall/shorewall.conf file.
-
-11) Packets with state INVALID are now silently dropped.
-
-12) Shorewall now gives a more helpful diagnostic when the 'ipchains'
-    compatibility kernel module is loaded and a 'shorewall start'
-    command is issued.
-
-13) The SHARED_DIR variable has been removed from shorewall.conf. This
-    variable was for use by package maintainers and was not documented
-    for general use.
-
-14) Shorewall now ignores 'default' routes when detecting masq'd
-    networks.
-
+c) Intra-zone traffic is always accepted now (exception is (b)
+ above).. Intrazone policies and rules are no longer allowed.
 
 

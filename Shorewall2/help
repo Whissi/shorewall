@@ -185,6 +185,12 @@ restart)
     If \"-q\" is specified, less detain is displayed making it easier to spot warnings"
 	;;
 
+Restore)
+	echo "restore: restore
+    Restore Shorewall to it's last state saved using the 'save' command
+    Existing connections are maintained.
+	;;
+
 save)
 	echo "save: save
     The dynamic data is stored in /var/lib/shorewall/save
@@ -215,11 +221,12 @@ show)
 	;;
 
 start)
-	echo "start: [ -q ] [ -c <configuration-directory> ] start
+	echo "start: [ -q ] [ -f ] [ -c <configuration-directory> ] start
     Start shorewall.  Existing connections through shorewall managed
     interfaces are untouched.  New connections will be allowed only
     if they are allowed by the firewall rules or policies.
     If \"-q\" is specified, less detain is displayed making it easier to spot warnings"
+    If \"-f\" is specified, the last saved configuraton if any will be restored"
 	;;
 
 stop)

@@ -549,6 +549,7 @@ usage() # $1 = exit status
     echo "   reject <address> ..."
     echo "   reset"
     echo "   restart"
+    echo "   restore"
     echo "   save"
     echo "   show [<chain> [ <chain> ... ]|classifiers|connections|log|nat|tc|tos]"
     echo "   start"
@@ -588,6 +589,8 @@ fi
 SHOREWALL_DIR=
 QUIET=
 IPT_OPTIONS="-nv"
+FAST=
+
 done=0
 
 while [ $done -eq 0 ]; do
@@ -623,6 +626,10 @@ while [ $done -eq 0 ]; do
 		    q*)
 			QUIET=Yes
 			option=${option#q}
+			;;
+		    f*)
+			FAST=Yes
+			option=${option#f}
 			;;
 		    *)
 			usage 1
@@ -719,7 +726,18 @@ case $(echo -n "Testing") in
 esac
 
 case "$1" in
-    start|stop|restart|reset|clear|refresh|check)
+    start)
+	[ $# -ne 1 ] && usage 1
+	get_config
+	if [ -f /var/lib/shorewall/restore -a -f /var/lib/shorewall/iptsave ]; then
+	    echo Restoring Shorewall...
+	    . /var/lib/shorewall/restore
+            echo Shorewall restored
+	else
+	    exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock start
+	fi
+	;;
+    stop|restart|reset|clear|refresh|check)
 	[ $# -ne 1 ] && usage 1
 	get_config
 	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $1
@@ -937,11 +955,16 @@ case "$1" in
     	[ -n "$debugging" ] && set -x
 	[ $# -ne 1 ] && usage 1
 	mutex_on
+
 	if qt iptables -L shorewall -n; then
 	    [ -d /var/lib/shorewall ] || mkdir /var/lib/shorewall
 
 	    if iptables -L dynamic -n > /var/lib/shorewall/save; then
 		echo "Dynamic Rules Saved"
+		if iptables-save > /var/lib/shorewall/iptsave; then
+		    mv -f /var/lib/shorewall/restore-new /var/lib/shorewall/restore
+		    echo "Last Started Configuration Saved"
+		fi
 	    else
 		echo "Error Saving the Dynamic Rules"
 	    fi
@@ -985,6 +1008,16 @@ case "$1" in
 		;;
 	esac
 	;;
+    restore)
+	if [ -f /var/lib/shorewall/restore ]; then
+	    echo Restoring Shorewall...
+	    . /var/lib/shorewall/restore
+            echo Shorewall restored
+	else
+	    echo "File /var/lib/shorewall/restore: file not found"
+            exit 2
+        fi
+        ;;
     call) 
     	[ -n "$debugging" ] && set -x
 	#

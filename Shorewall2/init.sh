@@ -62,7 +62,12 @@ command="$1"
 
 case "$command" in
 
-    stop|start|restart|status)
+    start)
+	
+	exec /sbin/shorewall -f start
+	;;
+
+    stop|restart|status)
 
 	exec /sbin/shorewall $@
 	;;

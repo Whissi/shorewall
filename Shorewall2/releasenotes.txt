@@ -23,12 +23,40 @@ Issues when migrating from Shorewall 2.0.0 to Shorewall 2.0.1:
 
 New Features:
 
-1) The previous implementation of dynamic zones was difficult to
+1) Shorewall has now been integrated with
+   iptables-save/iptables-restore to provide very fast start and
+   restart. The elements of this integration are as follows:
+
+   a) The 'shorewall save' command now saved the current configuration
+      in addition to the current dynamic blacklist. If you have
+      dynamic zones, you will want to issue 'shorewall save' when the
+      zones are empty or the current contents of the zones will be
+      restored by the 'shorewall restore' and 'shorewall -f start'
+      commands.
+
+   b) The 'shorewall restore' command has been added. This command
+      restores the configuration at the time of the last 'save'.
+
+   c) The -f (fast) option has been added to 'shorewall start'. When
+      specified (e.g. 'shorewall -f start'), shorewall will perform a
+      'shorewall restore' if there is a saved configuration. If there
+      is no saved configuration, a normal 'shorewall start' is
+      performed.
+
+   d) The /etc/init.d/shorewall script now translates the 'start'
+      command into 'shorewall -f start' so that fast restart is
+      possible.
+
+   WARNING: iptables 1.2.9 is broken with respect to iptables-save;
+   you must patch iptables with the iptables patch availale from the
+   Shorewall errata page.
+
+2) The previous implementation of dynamic zones was difficult to
    maintain. I have changed the code to make dynamic zones optional
    under the control of the DYNAMIC_ZONES option in
    /etc/shorewall/shorewall.conf.
 
-2) In earlier Shorewall 2.0 releases, Shorewall searches in order the
+3) In earlier Shorewall 2.0 releases, Shorewall searches in order the
    following directories for configuration files.
 
    a) The directory specified in a 'try' command or specified using
@@ -60,19 +88,19 @@ New Features:
    /usr/share/shorewall/configpath. You can customize this file to
    have a default that differs from mine.
 
-3) Previously, in /etc/shorewall/nat a Yes (or yes) in the LOCAL column
+4) Previously, in /etc/shorewall/nat a Yes (or yes) in the LOCAL column
    would only take effect if the ALL INTERFACES column also contained
    Yes or yes. Now, the LOCAL columns contents are treated
    independently of the contents of the ALL INTERFACES column.
 
-4) The folks at Mandrake have created yet another kernel module
+5) The folks at Mandrake have created yet another kernel module
    naming convention (module names end in "ko.gz"). As a consequence,
    beginning with this release, if MODULE_PREFIX isn't specified in
    shorewall.conf, then the default value is "o gz ko o.gz ko.gz".
 
-5) An updated bogons file is included in this release.
+7) An updated bogons file is included in this release.
 
-6) In /etc/shorewall/rules and in action files generated from
+7) In /etc/shorewall/rules and in action files generated from
    /usr/share/shorewall/action.template, rules that perform logging can
    specify an optional "log tag". A log tag is a string of alphanumeric
    characters and is specified by following the log level with ":" and
@@ -90,7 +118,7 @@ New Features:
    characters; if a larger prefix is generated, Shorewall will issue a
    warning message and will truncate the prefix to 29 characters.
 
- 7) A new "-q" option has been added to /sbin/shorewall commands. It
+ 8) A new "-q" option has been added to /sbin/shorewall commands. It
     causes the start, restart, check and refresh commands to produce
     much less output so that warning messages are more visible (when
     testing this change, I discovered a bug where a bogus warning

@@ -100,6 +100,14 @@ report () { # $* = message
 }
 
 #
+# Write the passed args to /var/lib/shorewall/restore-$$
+#
+save_command() 
+{
+    echo "$@" >> /var/lib/shorewall/restore-$$
+}
+
+#
 # Run iptables and if an error occurs, stop the firewall and quit
 #
 run_iptables() {
@@ -509,6 +517,7 @@ match_dest_hosts()
 	echo -d $1
     fi
 }
+
 #
 # Similarly, the source or destination in a rule can be qualified by a device name. If 
 # the device is defined in /etc/shorewall/interfaces then a normal interface match is
@@ -1152,9 +1161,9 @@ setup_forwarding() {
 #
 disable_ipv6() {
     if qt which ip6tables; then
-	ip6tables -P FORWARD DROP
-	ip6tables -P INPUT DROP
-	ip6tables -P OUTPUT DROP
+	ip6tables -P FORWARD DROP && save_command ip6tables -P FORWARD DROP
+	ip6tables -P INPUT DROP   && save_command ip6tables -P INPUT DROP
+	ip6tables -P OUTPUT DROP  && save_command ip6tables -P OUTPUT DROP
     else
 	error_message "WARNING: DISABLE_IPV6=Yes in shorewall.conf but this system does not appear to have ip6tables"
     fi
@@ -1176,6 +1185,14 @@ stop_firewall() {
 	    ;;
 	*)
 	    set +x
+	    if [ -f /var/lib/shorewall/restore -a -f /var/lib/shorewall/iptsave ]; then
+		echo Restoring Shorewall...
+		. /var/lib/shorewall/restore
+		echo Shorewall restored
+		my_mutex_off
+		kill $$
+		exit 2
+	    fi
 	    ;;
     esac
 
@@ -1563,6 +1580,7 @@ setup_proxy_arp() {
 
 	if [ -z "$haveroute" ]; then
 	    run_ip route replace $address dev $interface
+	    save_command ip route replace $address dev $interface
 	    [ -n "$persistent" ] && haveroute=yes
 	fi
 
@@ -1570,6 +1588,10 @@ setup_proxy_arp() {
 
 	echo 1 > /proc/sys/net/ipv4/conf/$interface/proxy_arp
 	echo 0 > /proc/sys/net/ipv4/conf/$external/proxy_arp
+
+	save_command arp -i $external -Ds $address $external pub
+	eval save_command echo 1 '\>' /proc/sys/net/ipv4/conf/$interface/proxy_arp
+	eval save_command echo 0 '\>' /proc/sys/net/ipv4/conf/$external/proxy_arp
 
 	echo $address $interface $external $haveroute >> ${STATEDIR}/proxyarp
 
@@ -1784,6 +1806,7 @@ setup_nat() {
 
 	if [ -n "$ADD_IP_ALIASES" ]; then
 	    qt ip addr del $external dev $iface
+	    save_command qt ip addr del $external dev $iface
 	fi
 
 	if [ "x$allints" = "xYes" -o "$xallints" = "xyes" ]; then
@@ -4055,8 +4078,9 @@ setup_masq()
 	    for address in $(separate_list $addresses); do
 		for addr in $(ip_range_explicit $address) ; do
 		    if ! list_search $addr $aliases_to_add; then
+			save_command qt ip addr del $addr dev $interface 
 			aliases_to_add="$aliases_to_add $addr $fullinterface"
-			case $fullinterface in
+			case $fullinterface in 
 			    *:*)
 				fullinterface=${fullinterface%:*}:$((${fullinterface#*:} + 1 ))
 				;;
@@ -4383,6 +4407,7 @@ add_ip_aliases()
     {
 	val=$(address_details)
 	run_ip addr add ${external}${val} dev $interface $label
+	save_command ip addr add ${external}${val} dev $interface $label
 	echo "$external $interface" >> ${STATEDIR}/nat
 	[ -n "$label" ] && label="with $label"
 	progress_message "   IP Address $external added to interface $interface $label"
@@ -4925,6 +4950,7 @@ add_common_rules() {
 	echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter
 	[ -n "$ROUTE_FILTER" ] && echo 1 > /proc/sys/net/ipv4/conf/default/rp_filter
 	run_ip route flush cache
+	save_command ip route flush cache
     fi
 
     if [ -n "$DYNAMIC_ZONES" ]; then
@@ -5309,6 +5335,12 @@ define_firewall() # $1 = Command (Start or Restart)
     report "Shorewall ${1}ed"
 
     rm -rf $TMP_DIR
+
+    save_command "iptables-restore < /var/lib/shorewall/iptsave"
+    
+    mv -f /var/lib/shorewall/restore-$$ /var/lib/shorewall/restore-new
+
+    chmod +x /var/lib/shorewall/restore-new
 }
 
 #
@@ -5908,6 +5940,9 @@ do_initialize() {
     fi
 
     rm -f $TMP_DIR/physdev
+
+    echo '#bin/sh' > /var/lib/shorewall/restore-$$
+    echo ". /usr/share/shorewall/functions" >> /var/lib/shorewall/restore-$$
 }
 
 #

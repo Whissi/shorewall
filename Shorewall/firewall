@@ -2098,9 +2098,6 @@ complete_standard_chain() # $1 = chain, $2 = source zone, $3 = destination zone
 #									       #
 # If the canonical chain for this zone pair exists, echo it's name; otherwise  #
 # locate and echo the name of the appropriate policy chain                     #
-#                                                                              #
-# The routine skips policy chains that don't exist. These chains correspond    #
-# to wild-card CONTINUE policies.                                              #
 ################################################################################
 rules_chain() # $1 = source zone, $2 = destination zone
 {
@@ -2113,21 +2110,15 @@ rules_chain() # $1 = source zone, $2 = destination zone
 	case "$client" in
 	all|ALL)
 	    if [ "$server" = "$2" -o "$server" = "all" ]; then
-	        chain=all2${server}
-		if havechain $chain; then
-		    echo $chain
-		    return
-		fi
+	        echo all2${server}
+		return
 	    fi
 	    ;;
 	*)
 	    if  [ "$client" = "$1" ] && \
 		[ "$server" = "all" -o "$server" = "$2" ]; then
-		    chain=${client}2${server}
-		    if havechain $chain; then
-			echo $chain
-			return
-		    fi
+		    echo ${client}2${server}
+		    return
 	    fi
 	    ;;
 	esac
@@ -2540,6 +2531,8 @@ add_common_rules() {
 
     if [ -n "$norfc1918_interfaces" ]; then
 	echo "Enabling RFC1918 Filtering"
+	
+	strip_file rfc1918
 
 	disp="LOG --log-prefix "Shorewall:rfc1918:DROP:" --log-level info"
 	########################################################################
@@ -2549,8 +2542,6 @@ add_common_rules() {
 	# their Windows Networking config and end up with an autoconfiged IP.
 	#
 	createchain rfc1918 no
-	run_iptables -A rfc1918 -d 255.255.255.255 -j RETURN
-	run_iptables -A rfc1918 -s 169.254.0.0/16 -j DROP
 
 	createchain logdrop no
 	run_iptables -A logdrop -j $disp
@@ -2565,27 +2556,21 @@ add_common_rules() {
 	    # Also add a chain to log and drop any RFC1918 packets that we find
 	    #
 	    run_iptables -t mangle -N rfc1918
-	    run_iptables -t mangle -A rfc1918 -d 255.255.255.255 -j RETURN
-	    run_iptables -t mangle -A rfc1918 -d 169.254.0.0/16 -j DROP
 	    run_iptables -t mangle -N logdrop
 	    run_iptables -t mangle -A logdrop -j $disp
 	    run_iptables -t mangle -A logdrop -j DROP
 	fi
-	########################################################################
-	# 240.0.0.0/4 isn't mentioned in RFC 1918 but since it is reserved, we
-	# include it here. Same with 0.0.0.0/8, 127.0.0.0/8 and 192.0.2.0/24
-	#
-	for subnet in '0.0.0.0/8' '10.0.0.0/8' '127.0.0.0/8' '192.0.2.0/24' \
-		'192.168.0.0/16' '172.16.0.0/12' '240.0.0.0/4'; do
-	    run_iptables -A rfc1918 -s $subnet -j logdrop
+	
+	while read subnet target; do
+	    run_iptables -A rfc1918 -s $subnet -j $target
 	    ####################################################################
-	    # If packet mangling is enabled, log and drop packets with an
+	    # If packet mangling is enabled, trap packets with an
 	    # RFC1918 destination
 	    #
 	    if [ -n "$MANGLE_ENABLED" ]; then
-	 	run_iptables -t mangle -A rfc1918 -d $subnet -j logdrop
+	 	run_iptables -t mangle -A rfc1918 -d $subnet -j $target
 	    fi
-	done
+	done < $TMP_DIR/rfc1918
 	    
 	for interface in $norfc1918_interfaces; do
 	    for chain in `first_chains $interface`; do
@@ -2672,14 +2657,14 @@ apply_policy_rules() {
 	    # A wild-card rule. Create the chain and add policy
 	    # rules if the policy isn't CONTINUE
 	    #
+	    createchain $chain
+	    #
+	    # We must include the ESTABLISHED and RELATED state
+	    # rule here to account for replys and reverse
+	    # related sessions associated with sessions going
+	    # in the other direction
+	    #
 	    if [ "$policy" != CONTINUE ]; then
-		#
-		# We must include the ESTABLISHED and RELATED state
-		# rule here to account for replys and reverse
-		# related sessions associated with sessions going
-		# in the other direction
-		#
-		createchain $chain
 		policy_rules $chain $policy $loglevel
 
 		[ -n "$synparams" ] && \

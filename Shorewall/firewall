@@ -94,7 +94,7 @@ error_message() # $* = Error Message
 fatal_error() # $* = Error Message
 {
     echo "   Error: $@" >&2
-    stop_firewall
+    [ $command = check ] || stop_firewall
     exit 2
 }
 
@@ -668,6 +668,14 @@ validate_policy()
     local loglevel
     local synparams
 
+    print_policy() # $1 = source zone, $2 = destination zone
+    {
+	[ $command != check ] || \
+	    [ $1 = all ] || \
+	    [ $2 = all ] || \
+	    echo "   Policy for $1 to $2 is $policy"
+    }
+
     all_policy_chains=
 
     strip_file policy
@@ -734,6 +742,7 @@ validate_policy()
 
 			if [ -z "$pc" ]; then
 			    eval ${zone}2${zone1}_policychain=$chain
+			    print_policy $zone $zone1
 			fi
 		    done
 		done
@@ -743,6 +752,7 @@ validate_policy()
 
 		    if [ -z "$pc" ]; then
 			eval ${zone}2${server}_policychain=$chain
+			print_policy $zone $server
 		    fi
 		done
 	    fi
@@ -752,10 +762,12 @@ validate_policy()
 
 		    if [ -z "$pc" ]; then
 			eval ${client}2${zone}_policychain=$chain
+			print_policy $client $zone
 		    fi
 	    done
 	else
 	    eval ${chain}_policychain=${chain}
+	    print_policy $client $server
 	fi
 
     done < $TMP_DIR/policy
@@ -902,6 +914,10 @@ stop_firewall() {
     #
     case $command in
 	stop|clear)
+	    ;;
+	check)
+	    kill $$
+	    exit 2
 	    ;;
 	*)
 	    set +x
@@ -1623,6 +1639,66 @@ delete_tc()
 }
 
 #
+# Check the configuration
+#
+check_config() {
+
+    disclaimer() {
+	echo
+	echo "WARNING: THE 'check' COMMAND IS TOTALLY UNSUPPORTED AND PROBLEM"
+	echo "         REPORTS COMPLAINING ABOUT ERRORS THAT IT DIDN'T CATCH"
+	echo "         WILL NOT BE ACCEPTED"
+	echo
+    }
+
+    disclaimer
+    
+    echo "Verifying Configuration..."
+
+    verify_os_version
+	
+    load_kernel_modules
+    
+    echo "Determining Zones..."
+	
+    determine_zones
+	
+    [ -z "$zones" ] && startup_error "ERROR: No Zones Defined"
+	
+    display_list "Zones:" $zones
+	
+    echo "Validating interfaces file..."
+	
+    validate_interfaces_file
+	
+    echo "Validating hosts file..."
+	
+    validate_hosts_file
+		
+    echo "Determining Hosts in Zones..."
+
+    determine_interfaces
+    determine_hosts
+
+    echo "Validating rules file..."
+
+    rules=`find_file rules`
+    strip_file rules $rules
+    process_rules
+	
+    echo "Validating policy file..."
+	
+    validate_policy	
+	
+    rm -rf $TMP_DIR
+
+    echo "Configuration Validated"
+
+    disclaimer
+
+}
+
+#
 # Refresh queuing and classes
 #
 refresh_tc() {
@@ -1662,6 +1738,8 @@ refresh_tc() {
 # Add a NAT rule - Helper function for the rules file processor
 #
 # The caller has established the following variables:
+#    command        = The current command -- if 'check', we just go through
+#                     the motions.
 #    cli	    = Source IP, interface or MAC Specification
 #    serv	    = Destination IP Specification
 #    servport	    = Port the server is listening on
@@ -1728,32 +1806,34 @@ add_nat_rule() {
 
     # Generate nat table rules
 
-    if [ "$source" = "$FW" ]; then
-	run_iptables2 -t nat -A OUTPUT $proto $sports -d $addr \
-	    $multiport $dports -j $target1
-    else
-	chain=`dnat_chain $source`
+    if [ $command != check ]; then
+	if [ "$source" = "$FW" ]; then
+	    run_iptables2 -t nat -A OUTPUT $proto $sports -d $addr \
+		$multiport $dports -j $target1
+	else
+	    chain=`dnat_chain $source`
 
-	if [ -n "$excludezones" ]; then
-	    chain=nonat${nonat_seq}
-	    nonat_seq=$(($nonat_seq + 1))
-	    createnatchain $chain
-	    addnatrule `dnat_chain $source` -j $chain
-	    for z in $excludezones; do
-		eval hosts=\$${z}_hosts
-		for host in $hosts; do
-		    for adr in $addr; do
-			addnatrule $chain $proto -s ${host#*:} \
-			    $multiport $sports -d $adr $dports -j RETURN
+	    if [ -n "$excludezones" ]; then
+		chain=nonat${nonat_seq}
+		nonat_seq=$(($nonat_seq + 1))
+		createnatchain $chain
+		addnatrule `dnat_chain $source` -j $chain
+		for z in $excludezones; do
+		    eval hosts=\$${z}_hosts
+		    for host in $hosts; do
+			for adr in $addr; do
+			    addnatrule $chain $proto -s ${host#*:} \
+				$multiport $sports -d $adr $dports -j RETURN
+			done
 		    done
 		done
+	    fi
+
+	    for adr in $addr; do
+		addnatrule $chain $proto $cli $sports \
+		    -d $adr $multiport $dports -j $target1
 	    done
 	fi
-
-	for adr in $addr; do
-	    addnatrule $chain $proto $cli $sports \
-		-d $adr $multiport $dports -j $target1
-	done
     fi
 
     # Replace destination port by the new destination port
@@ -1770,14 +1850,14 @@ add_nat_rule() {
 
     if [ -n "$snat" ]; then
 	if [ -n "$cli" ]; then
-	    addnatrule `snat_chain $dest` $proto $cli $multiport \
+	    [ $command = check ] || addnatrule `snat_chain $dest` $proto $cli $multiport \
 		$sports -d $serv $dports -j SNAT --to-source $snat
 	else
 	    for source_host in $source_hosts; do
 		[ "x${source_host#*:}" = "x0.0.0.0/0" ] && \
 		    error_message "Warning: SNAT will occur on all connections to this server and port - rule \"$rule\""
 
-		addnatrule `snat_chain $dest` \
+		[ $command = check ] || addnatrule `snat_chain $dest` \
 		    -s ${source_host#*:} $proto $sports $multiport \
 		    -d $serv $dports -j SNAT --to-source $snat
 	    done
@@ -1789,6 +1869,8 @@ add_nat_rule() {
 # Add one Filter Rule -- Helper function for the rules file processor
 #
 # The caller has established the following variables:
+#    check       = current command. If 'check', we're executing a 'check'
+#                  which only goes through the motions.
 #    client	 = SOURCE IP or MAC
 #    server	 = DESTINATION IP or interface
 #    protocol	 = Protocol
@@ -1921,34 +2003,36 @@ add_a_rule()
     fi
 
     if [ -n "${serv}${servport}" ]; then
+	if [ $command != check ]; then
 
-	# A specific server or server port given
+	    # A specific server or server port given
 
-	if [ -n "$addr" -a "$addr" != "$serv" ]; then
-	    add_nat_rule
-	elif [ -n "$servport" -a "$servport" != "$port" ]; then
-	    add_nat_rule
-	fi
-
-	if [ -z "$dnat_only" -a $chain != ${FW}2${FW} ]; then
-	    serv="${serv:+-d $serv}"
-
-	    if [ -n "$loglevel" ]; then
-		if [ "$loglevel" = ULOG ]; then
-		    run_iptables2 -A $chain $proto $multiport \
-			$state $cli $sports $serv $dports -j ULOG $LOGPARMS \
-			--ulog-prefix "Shorewall:$chain:$logtarget:"
-		else
-		    run_iptables2 -A $chain $proto $multiport \
-			$state $cli $sports $serv $dports -j LOG $LOGPARMS \
-			--log-prefix "Shorewall:$chain:$logtarget:" \
-			--log-level $loglevel
-		fi
+	    if [ -n "$addr" -a "$addr" != "$serv" ]; then
+		add_nat_rule
+	    elif [ -n "$servport" -a "$servport" != "$port" ]; then
+		add_nat_rule
 	    fi
+	    
+	    if [ -z "$dnat_only" -a $chain != ${FW}2${FW} ]; then
+		serv="${serv:+-d $serv}"
+		
+		if [ -n "$loglevel" ]; then
+		    if [ "$loglevel" = ULOG ]; then
+			run_iptables2 -A $chain $proto $multiport \
+			    $state $cli $sports $serv $dports -j ULOG $LOGPARMS \
+			    --ulog-prefix "Shorewall:$chain:$logtarget:"
+		    else
+			run_iptables2 -A $chain $proto $multiport \
+			    $state $cli $sports $serv $dports -j LOG $LOGPARMS \
+			    --log-prefix "Shorewall:$chain:$logtarget:" \
+			    --log-level $loglevel
+		    fi
+		fi
+		
 
-
-	    run_iptables2 -A $chain $proto $multiport $state $cli $sports \
-		$serv $dports -j $target
+		run_iptables2 -A $chain $proto $multiport $state $cli $sports \
+		    $serv $dports -j $target
+	    fi
 	fi
     else
 
@@ -1958,28 +2042,30 @@ add_a_rule()
 	    "An ORIGINAL DESTINATION ($addr) is only allowed in" \
 	    " a DNAT or REDIRECT: \"$rule\""
 
-	if [ -n "$loglevel" ]; then
-	    if [ "$loglevel" = ULOG ]; then
-		run_iptables2 -A $chain $proto $multiport \
-		    $dest_interface $state $cli $sports $dports -j ULOG \
-		    $LOGPARMS --ulog-prefix "Shorewall:$chain:$logtarget:"
-	    else
-		run_iptables2 -A $chain $proto $multiport \
-		    $dest_interface $state $cli $sports $dports -j LOG \
-		    $LOGPARMS --log-prefix "Shorewall:$chain:$logtarget:" \
-		    --log-level $loglevel
+	if [ $command != check ]; then
+	    if [ -n "$loglevel" ]; then
+		if [ "$loglevel" = ULOG ]; then
+		    run_iptables2 -A $chain $proto $multiport \
+			$dest_interface $state $cli $sports $dports -j ULOG \
+			$LOGPARMS --ulog-prefix "Shorewall:$chain:$logtarget:"
+		else
+		    run_iptables2 -A $chain $proto $multiport \
+			$dest_interface $state $cli $sports $dports -j LOG \
+			$LOGPARMS --log-prefix "Shorewall:$chain:$logtarget:" \
+			--log-level $loglevel
+		fi
 	    fi
-	fi
 
-	if [ $logtarget != LOG ]; then
-	    run_iptables2 -A $chain $proto $multiport $dest_interface $state \
-		$cli $sports $dports -j $target
+	    if [ $logtarget != LOG ]; then
+		run_iptables2 -A $chain $proto $multiport $dest_interface $state \
+		    $cli $sports $dports -j $target
+	    fi
 	fi
     fi
 }
 
 #
-# Process a record from the rules file
+# Process a record from the rules file for the 'start', 'restart' or 'check' commands
 #
 process_rule() # $1 = target
                # $2 = clients
@@ -2098,7 +2184,7 @@ process_rule() # $1 = target
 
     chain=${source}2${dest}
 
-    ensurechain $chain
+    [ $command = check ] || ensurechain $chain
 
     if [ "x$chain" = x${FW}2${FW} ]; then
 	case $logtarget in
@@ -2110,7 +2196,7 @@ process_rule() # $1 = target
 		;;
 	esac
     else
-	ensurechain $chain
+	[ $command = check ] || ensurechain $chain
     fi
 
     # Generate Netfilter rule(s)
@@ -2142,11 +2228,15 @@ process_rule() # $1 = target
 	done
     fi
 
-    echo "   Rule \"$rule\" added."
+    if [ $command = check ]; then
+	echo "   Rule \"$rule\" checked."
+    else
+	echo "   Rule \"$rule\" added."
+    fi
 }
 
 #
-# Process the rules file
+# Process the rules file for the 'start', 'restart' or 'check' command.
 #
 process_rules() # $1 = name of rules file
 {
@@ -4476,6 +4566,12 @@ case "$command" in
 	my_mutex_off
 	;;
 
+    check)
+	[ $# -ne 1 ] && usage
+	do_initialize
+	check_config
+	;;
+    
     add)
 	[ $# -ne 3 ] && usage
 	do_initialize

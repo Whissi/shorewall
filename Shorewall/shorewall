@@ -60,6 +60,8 @@
 #	   shorewall show tc			   Display traffic control info
 #	   shorewall show classifiers		   Display classifiers
 #	   shorewall version			   Display the installed version id
+#	   shorewall check			   Verify the more heavily-used
+#						   configuration files.
 #	   shorewall try <directory> [ <timeout> ] Try a new configuration and if
 #						   it doesn't work, revert to the
 #						   standard one. If a timeout is supplied
@@ -499,6 +501,7 @@ usage() # $1 = exit status
     echo "   hits"
     echo "   monitor [<refresh interval>]"
     echo "   version"
+    echo "   check"
     echo "   try <directory> [ <timeout> ]"
     echo "   logwatch [<refresh interval>]"
     echo "   drop <address> ..."
@@ -639,7 +642,7 @@ case `echo -n "Testing"` in
 esac
 
 case "$1" in
-    start|stop|restart|reset|clear|refresh)
+    start|stop|restart|reset|clear|refresh|check)
 	[ $# -ne 1 ] && usage 1
 	exec $FIREWALL $debugging $nolock $1
 	;;

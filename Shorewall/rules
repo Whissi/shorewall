@@ -232,13 +232,18 @@
 #			the firewall itself and the ACTION is ACCEPT, DROP or
 #			REJECT.
 #			
-#			The colume may contain a user set name defined in the
-#			/etc/shorewall/usersets file.
-#			
+#			The column may contain a user set name defined in the
+#			/etc/shorewall/usersets file or it may contain:
+#
+#			   [<user name or number>]:[<group name or number>]
+#
 #			When this column is non-empty, the rule applies only
 #			if the program generating the output is running under
-#			the effective <user> and/or <group> specified. A log
-#			level may not be given in the ACTION column.
+#			the effective <user>(s) and/or <group>(s) specified.
+#			When a user set name is given, a log level may not be
+#			present in the ACTION column; logging for such rules is
+#			controlled by the user set's entry in 
+#			/etc/shorewall/usersets.
 #
 #	Example: Accept SMTP requests from the DMZ to the internet
 #

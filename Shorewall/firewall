@@ -2308,6 +2308,8 @@ add_nat_rule() {
 #    servport	 = Port the server listens on
 #    chain	 = The canonical chain for this rule
 #    ratelimit   = Optional rate limiting clause
+#    userandgroup= -m owner clause
+#    userset     = User set name
 #
 add_a_rule()
 {
@@ -2454,15 +2456,15 @@ add_a_rule()
 				for adr in `separate_list $addr`; do
 				    if [ -n "$loglevel" -a -z "$natrule" ]; then
 					log_rule_limit $loglevel $chain $logtarget "$ratelimit" -m conntrack --ctorigdst $adr \
-					    `fix_bang $proto $sports $multiport $state $cli -d $srv $dports`
+					    $userandgroup `fix_bang $proto $sports $multiport $state $cli -d $srv $dports`
 				    fi
 
 				    run_iptables2 -A $chain $proto $ratelimit $multiport $state $cli $sports \
-					-d $srv $dports -m conntrack --ctorigdst $adr -j $target
+					-d $srv $dports -m conntrack --ctorigdst $adr $userandgroup -j $target
 				done
 			    else
 				if [ -n "$loglevel" -a -z "$natrule" ]; then
-				    log_rule_limit $loglevel $chain $logtarget "$ratelimit" \
+				    log_rule_limit $loglevel $chain $logtarget "$ratelimit" $userandgroup \
 					`fix_bang $proto $sports $multiport $state $cli -d $srv $dports`
 				fi
 
@@ -2473,12 +2475,12 @@ add_a_rule()
 		    done
 		else
 		    if [ -n "$loglevel" -a -z "$natrule" ]; then
-		        log_rule_limit $loglevel $chain $logtarget "$ratelimit" \
+		        log_rule_limit $loglevel $chain $logtarget "$ratelimit" $userandgroup \
 			    `fix_bang $proto $sports $multiport $state $cli $dports`
 		    fi
 
 		    run_iptables2 -A $chain $proto $multiport $state $cli $sports \
-			$dports $ratelimit -j $target
+			$dports $ratelimit $userandgroup -j $target
 		fi
 	    fi
 	fi
@@ -2492,13 +2494,13 @@ add_a_rule()
 
 	if [ $command != check ]; then
 	    if [ -n "$loglevel" ]; then
-		log_rule_limit $loglevel $chain $logtarget "$ratelimit" \
+		log_rule_limit $loglevel $chain $logtarget "$ratelimit" $userandgroup \
 		    `fix_bang $proto $multiport $dest_interface $state $cli $sports $dports`
 	    fi
 
 	    if [ $logtarget != LOG ]; then
 		run_iptables2 -A $chain $proto $multiport $dest_interface $state \
-		    $cli $sports $dports $ratelimit -j $target
+		    $cli $sports $dports $ratelimit $userandgroup -j $target
 	    fi
 	fi
     fi
@@ -2526,6 +2528,7 @@ process_rule() # $1 = target
     local address="$7"
     local ratelimit="$8"
     local userset="$9"
+    local userandgroup=
     local rule="`echo $target $clients $servers $protocol $ports $cports $address $ratelimit $userset`"
 
     # Function Body - isolate rate limit
@@ -2578,27 +2581,48 @@ process_rule() # $1 = target
     [ "x$address" = "x-" ] && address=
 
     if [ -n "$userset" ]; then
-	if ! havechain `accept_chain $userset`; then
-	    fatal_error "Unknown user set $userset: rule \"$rule\""
-	fi
-
-	case $target in
-	    ACCEPT)
-		target=`accept_chain $userset`
-		;;
-	    DROP)
-		target=`drop_chain $userset`
-		;;
-	    REJECT)
-		target=`reject_chain $userset`
+	case "$userset" in
+	    *:*)
+		case $target in 
+		    ACCEPT|REJECT|DROP)
+			;;
+		    *)
+			fatal_error "<user>:<group> may only be specified in ACCEPT, REJECT and DROP rules: rule \"$rule\""
+			;;
+		esac
+			
+		if [ "$userset" != ":" ]; then
+		    userandgroup="-m owner"
+		    temp="${userset%:*}"
+		    [ -n "$temp" ] && userandgroup="$userandgroup --uid-owner $temp" 
+		    temp="${userset#*:}"
+		    [ -n "$temp" ] && userandgroup="$userandgroup --gid-owner $temp"
+		fi 
+		userset=
 		;;
 	    *)
-		[ -n "$userset" ] && \
-		    fatal_error "A user set may only be specified in ACCEPT, REJECT and DROP rules: rule \"$rule\""
+		if ! havechain `accept_chain $userset`; then
+		    fatal_error "Unknown user set $userset: rule \"$rule\""
+		fi
+		
+		case $target in
+		    ACCEPT)
+			target=`accept_chain $userset`
+			;;
+		    DROP)
+			target=`drop_chain $userset`
+			;;
+		    REJECT)
+			target=`reject_chain $userset`
+			;;
+		    *)
+			fatal_error "A user set may only be specified in ACCEPT, REJECT and DROP rules: rule \"$rule\""
+		esac
+		
+		[ -n "$loglevel" ] && \
+		    fatal_error "Logging may not be specified on a rule with a User Set: rule \"$rule\""
+		;;
 	esac
-
-	[ -n "$loglevel" ] && \
-	    fatal_error "Logging may not be specified on a rule with a User Set: rule \"$rule\""
     else
 	case $target in
 	    ACCEPT|LOG)

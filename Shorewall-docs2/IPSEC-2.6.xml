@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article id="IPSEC">
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>IPSEC using Linux Kernel 2.6</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate>2004-08-15</pubdate>
+
+    <copyright>
+      <year>2004</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <warning>
+    <para>To use this support, your kernel and iptables must include the
+    Netfilter+ipsec patches and policy match support and you must be running
+    Shorewall 2.1.4 or later.</para>
+  </warning>
+
+  <warning>
+    <para>As of this writing, the Netfilter+ipsec and policy match support are
+    broken when used with a bridge device. The problem has been reported to
+    the responsible Netfilter developer who has confirmed the problem.</para>
+  </warning>
+
+  <section>
+    <title>IPSec Gateway on the Firewall System</title>
+
+    <para>Suppose that we have the following sutuation:</para>
+
+    <graphic fileref="images/TwoNets1.png" />
+
+    <para>We want systems in the 192.168.1.0/24 sub-network to be able to
+    communicate with systems in the 10.0.0.0/8 network. We assume that on both
+    systems A and B, eth0 is the internet interface.</para>
+
+    <para>To make this work, we need to do two things:</para>
+
+    <orderedlist numeration="loweralpha">
+      <listitem>
+        <para>Open the firewall so that the IPSEC tunnel can be established
+        (allow the ESP and AH protocols and UDP Port 500).</para>
+      </listitem>
+
+      <listitem>
+        <para>Allow traffic through the tunnel.</para>
+      </listitem>
+    </orderedlist>
+
+    <para>Opening the firewall for the IPSEC tunnel is accomplished by adding
+    an entry to the <filename>/etc/shorewall/tunnels</filename> file.</para>
+
+    <para>In <filename>/etc/shorewall/tunnels</filename> on system A, we need
+    the following</para>
+
+    <blockquote>
+      <para><filename>/etc/shorewall/tunnels</filename> — System A:</para>
+
+      <programlisting>#TYPE         ZONE        GATEWAY             GATEWAY ZONE
+ipsec         net         134.28.54.2
+#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+
+      <para><filename>/etc/shorewall/tunnels</filename> — System B:</para>
+
+      <programlisting>#TYPE         ZONE        GATEWAY             GATEWAY ZONE
+ipsec         net         206.161.148.9
+#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+    </blockquote>
+
+    <note>
+      <para>If either of the endpoints is behind a NAT gateway then the
+      tunnels file entry on the <emphasis role="bold">other</emphasis>
+      endpoint should specify a tunnel type of ipsecnat rather than ipsec and
+      the GATEWAY address should specify the external address of the NAT
+      gateway.</para>
+    </note>
+
+    <para>You need to define a zone for the remote subnet or include it in
+    your local zone. In this example, we'll assume that you have created a
+    zone called <quote>vpn</quote> to represent the remote subnet.</para>
+
+    <blockquote>
+      <para><filename>/etc/shorewall/zones</filename> — Systems A and
+      B:</para>
+
+      <programlisting>#ZONE           DISPLAY         COMMENTS
+net             Internet        The big bad internet
+vpn             VPN             Virtual Private Network
+#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+    </blockquote>
+
+    <para>Remember the assumption that both systems A and B have eth0 as their
+    internet interface.</para>
+
+    <para>You must define the vpn zone using the
+    <filename>/etc/shorewall/hosts</filename> file.</para>
+
+    <blockquote>
+      <para>/etc/shorewall/hosts — System A</para>
+
+      <programlisting>#ZONE             HOSTS                  OPTIONS
+vpn               eth0:10.0.0.0/8        <emphasis role="bold">ipsec</emphasis>
+#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+
+      <para>/etc/shorewall/hosts — System B</para>
+
+      <programlisting>#ZONE             HOSTS                  OPTIONS
+vpn               eth0:192.168.1.0/24    <emphasis role="bold">ipsec</emphasis>
+#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+    </blockquote>
+
+    <para>Once you have these entries in place, restart Shorewall (type
+    shorewall restart); you are now ready to configure IPSEC.</para>
+  </section>
+
+  <section>
+    <title>Mobile System (Road Warrior)</title>
+
+    <para>Suppose that you have a laptop system (B) that you take with you
+    when you travel and you want to be able to establish a secure connection
+    back to your local network.</para>
+
+    <graphic fileref="images/Mobile.png" />
+
+    <example>
+      <title>Road Warrior VPN</title>
+
+      <para>You need to define a zone for the laptop or include it in your
+      local zone. In this example, we'll assume that you have created a zone
+      called <quote>vpn</quote> to represent the remote host.</para>
+
+      <blockquote>
+        <para>/etc/shorewall/zones — System A</para>
+
+        <programlisting>#ZONE           DISPLAY         COMMENTS
+net             Internet        The big bad internet
+vpn             VPN             Road Warriors
+#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+      </blockquote>
+
+      <para>In this instance, the mobile system (B) has IP address 134.28.54.2
+      but that cannot be determined in advance. In the
+      <filename>/etc/shorewall/tunnels</filename> file on system A, the
+      following entry should be made:<blockquote>
+          <programlisting>#TYPE         ZONE        GATEWAY             GATEWAY ZONE
+ipsec         net         0.0.0.0/0           vpn
+#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+        </blockquote></para>
+
+      <para><note>
+          <para>the GATEWAY ZONE column contains the name of the zone
+          corresponding to peer subnetworks. This indicates that the gateway
+          system itself comprises the peer subnetwork; in other words, the
+          remote gateway is a standalone system.</para>
+        </note></para>
+
+      <para>The VPN zone is defined using the /etc/shorewall/hosts
+      file:</para>
+
+      <blockquote>
+        <para>/etc/shorewall/hosts — System A:</para>
+
+        <programlisting>#ZONE             HOSTS                  OPTIONS
+vpn               eth0:0.0.0.0/0        <emphasis role="bold"> ipsec</emphasis>
+#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+      </blockquote>
+
+      <para>You will need to configure your <quote>through the tunnel</quote>
+      policy as shown under the first example above.</para>
+    </example>
+  </section>
+
+  <section>
+    <title>Transport Mode</title>
+
+    <para>In today's wireless world, it is often the case that individual
+    hosts in a network need to establish secure connections with the other
+    hosts in that network. In that case, IPSEC transport mode is an
+    appropriate solution.</para>
+
+    <para><graphic fileref="images/TransportMode.png" />Here's an example
+    using the ipsec-tools package. The files shown are from host
+    192.168.20.10; the configuration of the other nodes is similar.</para>
+
+    <blockquote>
+      <para><filename>/etc/racoon/racoon.conf</filename>:</para>
+
+      <programlisting>path pre_shared_key "/etc/racoon/psk.txt" ;
+
+remote anonymous
+{
+        exchange_mode aggressive ;
+        my_identifier user_fqdn "teastep@shorewall.net" ;
+        lifetime time 24 hour ;
+        proposal {
+                encryption_algorithm 3des;
+                hash_algorithm sha1;
+                authentication_method pre_shared_key ;
+                dh_group 2 ;
+        }
+}
+
+sainfo anonymous
+{
+        pfs_group 2;
+        lifetime time 12 hour ;
+        encryption_algorithm 3des, blowfish, des, rijndael ;
+        authentication_algorithm hmac_sha1, hmac_md5 ;
+        compression_algorithm deflate ;
+}
+</programlisting>
+
+      <para><filename>/etc/racoon/setkey.conf</filename>:</para>
+
+      <programlisting># First of all flush the SPD database
+spdflush;
+
+# Add some SPD rules
+
+spdadd 192.168.20.10/32 192.168.20.20/32 any -P out ipsec esp/transport/192.168.20.10-192.168.20.20/require;
+spdadd 192.168.20.20/32 192.168.20.10/32 any -P in  ipsec esp/transport/192.168.20.20-192.168.20.10/require;
+spdadd 192.168.20.10/32 192.168.20.30/32 any -P out ipsec esp/transport/192.168.20.10-192.168.20.30/require;
+spdadd 192.168.20.30/32 192.168.20.10/32 any -P in  ipsec esp/transport/192.168.20.30-192.168.20.10/require;
+spdadd 192.168.20.10/32 192.168.20.40/32 any -P out ipsec esp/transport/192.168.20.10-192.168.20.40/require;
+spdadd 192.168.20.40/32 192.168.20.10/32 any -P in  ipsec esp/transport/192.168.20.40-192.168.20.10/require;
+</programlisting>
+
+      <para>/etc/racoon/psk.txt:</para>
+
+      <programlisting>teastep@shorewall.net             &lt;key&gt;</programlisting>
+    </blockquote>
+
+    <para>Shorewall configuration goes as follows:</para>
+
+    <blockquote>
+      <para><filename>/etc/shorewall/zones</filename>:</para>
+
+      <programlisting>#ZONE   DISPLAY         COMMENTS
+loc     Local           Local Network
+net     Net             Internet
+#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+
+      <para><filename>/etc/shorewall/interfaces</filename>:</para>
+
+      <programlisting>#ZONE   INTERFACE       BROADCAST       OPTIONS
+net     eth0            detect          routefilter,dhcp,tcpflags
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+
+      <para><filename>/etc/shorewall/hosts</filename>:</para>
+
+      <programlisting>#ZONE           HOST(S)                         OPTIONS
+loc             eth0:192.168.20.0/24             ipsec
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS LINE -- DO NOT REMOVE</programlisting>
+
+      <para><filename>/etc/shorewall/policy</filename>:</para>
+
+      <programlisting>#SOURCE         DEST            POLICY          LOG LEVEL       LIMIT:BURST
+fw              all             ACCEPT
+loc             fw              ACCEPT
+net             loc             NONE
+loc             net             NONE
+net             all             DROP            info
+# The FOLLOWING POLICY MUST BE LAST
+all             all             REJECT          info
+#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+
+      <para>Since there are no cases where net&lt;-&gt;loc traffic should
+      occur, NONE policies are used.</para>
+    </blockquote>
+  </section>
+</article>

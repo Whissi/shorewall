@@ -31,7 +31,8 @@
       1.2 or any later version published by the Free Software Foundation; with
       no Invariant Sections, with no Front-Cover, and with no Back-Cover
       Texts. A copy of the license is included in the section entitled
-      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
 
@@ -53,11 +54,14 @@
       <para>If you install using the .deb, you will find that your <filename
       class="directory">/etc/shorewall</filename> directory is empty. This is
       intentional. The released configuration file skeletons may be found on
-      your system in the directory <filename class="directory">/usr/share/doc/shorewall/default-config</filename>.
+      your system in the directory <filename
+      class="directory">/usr/share/doc/shorewall/default-config</filename>.
       Simply copy the files you need from that directory to <filename
-      class="directory">/etc/shorewall</filename> and modify the copies.</para>
+      class="directory">/etc/shorewall</filename> and modify the
+      copies.</para>
 
-      <para>Note that you must copy <filename class="directory">/usr/share/doc/shorewall/default-config/shorewall.conf</filename>
+      <para>Note that you must copy <filename
+      class="directory">/usr/share/doc/shorewall/default-config/shorewall.conf</filename>
       and <filename>/usr/share/doc/shorewall/default-config/modules</filename>
       to <filename class="directory">/etc/shorewall</filename> even if you do
       not modify those files.</para>
@@ -69,8 +73,8 @@
 
     <section id="faq1">
       <title>(FAQ 1) I want to forward UDP port 7777 to my my personal PC with
-      IP address 192.168.1.5. I&#39;ve looked everywhere and can&#39;t find
-      how to do it.</title>
+      IP address 192.168.1.5. I've looked everywhere and can't find how to do
+      it.</title>
 
       <para><emphasis role="bold">Answer:</emphasis> The first example in the
       <ulink url="Documentation.htm#Rules">rules file documentation</ulink>
@@ -78,7 +82,7 @@
       port-forwarding rule to a local system is as follows:</para>
 
       <programlisting>#ACTION    SOURCE      DEST                                   PROTO        DEST PORT
-DNAT       net         loc:&#60;l<emphasis>ocal IP address</emphasis>&#62;[:&#60;<emphasis>local port</emphasis>&#62;]  &#60;<emphasis>protocol</emphasis>&#62;   &#60;<emphasis>port #</emphasis>&#62;</programlisting>
+DNAT       net         loc:&lt;l<emphasis>ocal IP address</emphasis>&gt;[:&lt;<emphasis>local port</emphasis>&gt;]  &lt;<emphasis>protocol</emphasis>&gt;   &lt;<emphasis>port #</emphasis>&gt;</programlisting>
 
       <para>So to forward UDP port 7777 to internal system 192.168.1.5, the
       rule is:</para>
@@ -87,18 +91,19 @@ DNAT       net         loc:&#60;l<emphasis>ocal IP address</emphasis>&#62;[:&#60
 DNAT       net      loc:192.168.1.5  udp      7777</programlisting>
 
       <para>If you want to forward requests directed to a particular address (
-      <emphasis>&#60;external IP&#62;</emphasis> ) on your firewall to an
+      <emphasis>&lt;external IP&gt;</emphasis> ) on your firewall to an
       internal system:</para>
 
       <programlisting>#ACTION SOURCE DEST                                   PROTO       DEST PORT  SOURCE  ORIGINAL
 #                                                                            PORT    DEST.
-DNAT    net    loc:&#60;l<emphasis>ocal IP address</emphasis>&#62;[:&#60;<emphasis>local port</emphasis>&#62;]  &#60;<emphasis>protocol</emphasis>&#62;  &#60;<emphasis>port #</emphasis>&#62;   -       &#60;<emphasis>external IP</emphasis>&#62;</programlisting>
+DNAT    net    loc:&lt;l<emphasis>ocal IP address</emphasis>&gt;[:&lt;<emphasis>local port</emphasis>&gt;]  &lt;<emphasis>protocol</emphasis>&gt;  &lt;<emphasis>port #</emphasis>&gt;   -       &lt;<emphasis>external IP</emphasis>&gt;</programlisting>
 
       <para>Finally, if you need to forward a range of ports, in the PORT
-      column specify the range as <emphasis>&#60;low-port&#62;:&#60;high-port&#62;</emphasis>.</para>
+      column specify the range as
+      <emphasis>&lt;low-port&gt;:&lt;high-port&gt;</emphasis>.</para>
 
       <section id="faq1a">
-        <title>(FAQ 1a) Ok -- I followed those instructions but it doesn&#39;t
+        <title>(FAQ 1a) Ok -- I followed those instructions but it doesn't
         work</title>
 
         <para><emphasis role="bold">Answer:</emphasis> That is usually the
@@ -107,14 +112,14 @@ DNAT    net    loc:&#60;l<emphasis>ocal IP address</emphasis>&#62;[:&#60;<emphas
         <itemizedlist>
           <listitem>
             <para>You are trying to test from inside your firewall (no, that
-            won&#39;t work -- see <xref linkend="faq2" />).</para>
+            won't work -- see <xref linkend="faq2" />).</para>
           </listitem>
 
           <listitem>
             <para>You have a more basic problem with your local system (the
             one that you are trying to forward to) such as an incorrect
             default gateway (it should be set to the IP address of your
-            firewall&#39;s internal interface).</para>
+            firewall's internal interface).</para>
           </listitem>
 
           <listitem>
@@ -124,40 +129,42 @@ DNAT    net    loc:&#60;l<emphasis>ocal IP address</emphasis>&#62;[:&#60;<emphas
           <listitem>
             <para>You are running Mandrake Linux and have configured Internet
             Connection Sharing. In that case, the name of your local zone is
-            &#39;masq&#39; rather than &#39;loc&#39; (change all instances of
-            &#39;loc&#39; to &#39;masq&#39; in your rules). You may want to
-            consider re-installing Shorewall in a configuration which matches
-            the Shorewall documentation. See the <ulink
-            url="two-interface.htm">two-interface QuickStart Guide</ulink> for
-            details.</para>
+            'masq' rather than 'loc' (change all instances of 'loc' to 'masq'
+            in your rules). You may want to consider re-installing Shorewall
+            in a configuration which matches the Shorewall documentation. See
+            the <ulink url="two-interface.htm">two-interface QuickStart
+            Guide</ulink> for details.</para>
           </listitem>
         </itemizedlist>
       </section>
 
       <section id="faq1b">
-        <title>(FAQ 1b) I&#39;m still having problems with port forwarding</title>
+        <title>(FAQ 1b) I'm still having problems with port forwarding</title>
 
         <para><emphasis role="bold">Answer:</emphasis> To further diagnose
         this problem:</para>
 
         <itemizedlist>
           <listitem>
-            <para>As root, type <quote><command>iptables -t nat -Z</command></quote>.
-            This clears the NetFilter counters in the nat table.</para>
+            <para>As root, type <quote><command>iptables -t nat
+            -Z</command></quote>. This clears the NetFilter counters in the
+            nat table.</para>
           </listitem>
 
           <listitem>
-            <para>Try to connect to the redirected port from an external host.</para>
+            <para>Try to connect to the redirected port from an external
+            host.</para>
           </listitem>
 
           <listitem>
-            <para>As root type <quote><command>shorewall show nat</command></quote></para>
+            <para>As root type <quote><command>shorewall show
+            nat</command></quote></para>
           </listitem>
 
           <listitem>
             <para>Locate the appropriate DNAT rule. It will be in a chain
-            called <emphasis>&#60;source zone&#62;</emphasis>_dnat (<quote>net_dnat</quote>
-            in the above examples).</para>
+            called <emphasis>&lt;source zone&gt;</emphasis>_dnat
+            (<quote>net_dnat</quote> in the above examples).</para>
           </listitem>
 
           <listitem>
@@ -166,7 +173,7 @@ DNAT    net    loc:&#60;l<emphasis>ocal IP address</emphasis>&#62;[:&#60;<emphas
             redirected to the server. In this case, the problem is usually a
             missing or incorrect default gateway setting on the local system
             (the system you are trying to forward to -- its default gateway
-            should be the IP address of the firewall&#39;s interface to that
+            should be the IP address of the firewall's interface to that
             system).</para>
           </listitem>
 
@@ -183,12 +190,13 @@ DNAT    net    loc:&#60;l<emphasis>ocal IP address</emphasis>&#62;[:&#60;<emphas
                 <para>you are trying to connect to a secondary IP address on
                 your firewall and your rule is only redirecting the primary IP
                 address (You need to specify the secondary IP address in the
-                <quote>ORIG. DEST.</quote> column in your DNAT rule); or</para>
+                <quote>ORIG. DEST.</quote> column in your DNAT rule);
+                or</para>
               </listitem>
 
               <listitem>
-                <para>your DNAT rule doesn&#39;t match the connection request
-                in some other way. In that case, you may have to use a packet
+                <para>your DNAT rule doesn't match the connection request in
+                some other way. In that case, you may have to use a packet
                 sniffer such as tcpdump or ethereal to further diagnose the
                 problem.</para>
               </listitem>
@@ -210,8 +218,8 @@ DNAT       net      loc:192.168.3:22  tcp      1022</programlisting>
     </section>
 
     <section id="faq30">
-      <title>(FAQ 30) I&#39;m confused about when to use DNAT rules and when
-      to use ACCEPT rules.</title>
+      <title>(FAQ 30) I'm confused about when to use DNAT rules and when to
+      use ACCEPT rules.</title>
 
       <para>It would be a good idea to review the <ulink
       url="shorewall_quickstart_guide.htm">QuickStart Guide</ulink>
@@ -229,7 +237,8 @@ DNAT       net      loc:192.168.3:22  tcp      1022</programlisting>
       <title>(FAQ 38) Where can I find more information about DNAT?</title>
 
       <para>Ian Allen has written a <ulink
-      url="http://ian.idallen.ca/dnat.txt">Paper about DNAT and Linux</ulink>.</para>
+      url="http://ian.idallen.ca/dnat.txt">Paper about DNAT and
+      Linux</ulink>.</para>
     </section>
   </section>
 
@@ -240,7 +249,7 @@ DNAT       net      loc:192.168.3:22  tcp      1022</programlisting>
       <title>(FAQ 2) I port forward www requests to www.mydomain.com (IP
       130.151.100.69) to system 192.168.1.5 in my local network. External
       clients can browse http://www.mydomain.com but internal clients
-      can&#39;t.</title>
+      can't.</title>
 
       <para><emphasis role="bold">Answer:</emphasis> I have two objections to
       this setup.</para>
@@ -249,7 +258,7 @@ DNAT       net      loc:192.168.3:22  tcp      1022</programlisting>
         <listitem>
           <para>Having an internet-accessible server in your local network is
           like raising foxes in the corner of your hen house. If the server is
-          compromised, there&#39;s nothing between that server and your other
+          compromised, there's nothing between that server and your other
           internal systems. For the cost of another NIC and a cross-over
           cable, you can put your server in a DMZ such that it is isolated
           from your local systems - assuming that the Server can be located
@@ -258,11 +267,11 @@ DNAT       net      loc:192.168.3:22  tcp      1022</programlisting>
 
         <listitem>
           <para>The accessibility problem is best solved using <ulink
-          url="shorewall_setup_guide.htm#DNS">Bind Version 9 <quote>views</quote></ulink>
-          (or using a separate DNS server for local clients) such that
-          www.mydomain.com resolves to 130.141.100.69 externally and
-          192.168.1.5 internally. That&#39;s what I do here at shorewall.net
-          for my local systems that use one-to-one NAT.</para>
+          url="shorewall_setup_guide.htm#DNS">Bind Version 9
+          <quote>views</quote></ulink> (or using a separate DNS server for
+          local clients) such that www.mydomain.com resolves to 130.141.100.69
+          externally and 192.168.1.5 internally. That's what I do here at
+          shorewall.net for my local systems that use one-to-one NAT.</para>
         </listitem>
       </itemizedlist>
 
@@ -278,9 +287,11 @@ DNAT       net      loc:192.168.3:22  tcp      1022</programlisting>
       <para>If you are running Shorewall 1.4.1 or Shorewall 1.4.1a, please
       upgrade to Shorewall 1.4.2 or later.</para>
 
-      <para>Otherwise:<warning><para>In this configuration, all loc-&#62;loc
-      traffic will look to the server as if it came from the firewall rather
-      than from the original client!</para></warning></para>
+      <para>Otherwise:<warning>
+          <para>In this configuration, all loc-&gt;loc traffic will look to
+          the server as if it came from the firewall rather than from the
+          original client!</para>
+        </warning></para>
 
       <itemizedlist>
         <listitem>
@@ -294,7 +305,7 @@ loc      eth1         detect       <emphasis role="bold">routeback</emphasis></p
           <para>In <filename>/etc/shorewall/masq</filename>:</para>
 
           <programlisting>#INTERFACE              SUBNET          ADDRESS         PROTO   PORT(S)
-eth1                    eth1            192.168.1.254   tcp     www</programlisting>
+eth1:192.168.1.5        eth1            192.168.1.254   tcp     www</programlisting>
         </listitem>
 
         <listitem>
@@ -306,7 +317,8 @@ DNAT       loc          loc:192.168.1.5    tcp      www         -         130.15
 
           <para>That rule only works of course if you have a static external
           IP address. If you have a dynamic IP address and are running
-          Shorewall 1.3.4 or later then include this in <filename>/etc/shorewall/init</filename>:</para>
+          Shorewall 1.3.4 or later then include this in
+          <filename>/etc/shorewall/init</filename>:</para>
 
           <programlisting><command>ETH0_IP=`find_interface_address eth0`</command></programlisting>
 
@@ -326,14 +338,14 @@ DNAT       loc           loc:192.168.1.5    tcp      www         -         $ETH0
         <title>(FAQ 2a) I have a zone <quote>Z</quote> with an RFC1918 subnet
         and I use one-to-one NAT to assign non-RFC1918 addresses to hosts in
         Z. Hosts in Z cannot communicate with each other using their external
-        (non-RFC1918 addresses) so they can&#39;t access each other using
-        their DNS names.</title>
+        (non-RFC1918 addresses) so they can't access each other using their
+        DNS names.</title>
 
         <note>
           <para>If the ALL INTERFACES column in /etc/shorewall/nat is empty or
           contains <quote>Yes</quote>, you will also see log messages like the
           following when trying to access a host in Z from another host in Z
-          using the destination hosts&#39;s public address:</para>
+          using the destination hosts's public address:</para>
 
           <programlisting>Oct 4 10:26:40 netgw kernel:
           Shorewall:FORWARD:REJECT:IN=eth1 OUT=eth1 SRC=192.168.118.200
@@ -344,19 +356,19 @@ DNAT       loc           loc:192.168.1.5    tcp      www         -         $ETH0
         <para><emphasis role="bold">Answer:</emphasis> This is another problem
         that is best solved using Bind Version 9 <quote>views</quote>. It
         allows both external and internal clients to access a NATed host using
-        the host&#39;s DNS name.</para>
+        the host's DNS name.</para>
 
         <para>Another good way to approach this problem is to switch from
         one-to-one NAT to Proxy ARP. That way, the hosts in Z have non-RFC1918
         addresses and can be accessed externally and internally using the same
         address.</para>
 
-        <para>If you don&#39;t like those solutions and prefer routing all
-        Z-&#62;Z traffic through your firewall then:</para>
+        <para>If you don't like those solutions and prefer routing all Z-&gt;Z
+        traffic through your firewall then:</para>
 
         <orderedlist>
           <listitem>
-            <para>Set the Z-&#62;Z policy to ACCEPT.</para>
+            <para>Set the Z-&gt;Z policy to ACCEPT.</para>
           </listitem>
 
           <listitem>
@@ -372,7 +384,7 @@ DNAT       loc           loc:192.168.1.5    tcp      www         -         $ETH0
             <quote>Yes</quote>.</para>
 
             <warning>
-              <para>In this configuration, all Z-&#62;Z traffic will look to
+              <para>In this configuration, all Z-&gt;Z traffic will look to
               the server as if it came from the firewall rather than from the
               original client! I DO NOT RECOMMEND THIS SETUP.</para>
             </warning>
@@ -420,13 +432,13 @@ eth2             192.168.2.0/24</programlisting>
       following:</para>
 
       <blockquote>
-        <para><programlisting>&#62; I know PoM -ng is going to address this issue, but till it is ready, and
-&#62; all the extras are ported to it, is there any way to use the h.323
-&#62; contrack module kernel patch with a 2.6 kernel?
-&#62; Running 2.6.1 - no 2.4 kernel stuff on the system, so downgrade is not
-&#62; an option... The module is not ported yet to 2.6, sorry.
-&#62; Do I have any options besides a gatekeeper app (does not work in my
-&#62; network) or a proxy (would prefer to avoid them)?
+        <para><programlisting>&gt; I know PoM -ng is going to address this issue, but till it is ready, and
+&gt; all the extras are ported to it, is there any way to use the h.323
+&gt; contrack module kernel patch with a 2.6 kernel?
+&gt; Running 2.6.1 - no 2.4 kernel stuff on the system, so downgrade is not
+&gt; an option... The module is not ported yet to 2.6, sorry.
+&gt; Do I have any options besides a gatekeeper app (does not work in my
+&gt; network) or a proxy (would prefer to avoid them)?
 
 I suggest everyone to setup a proxy (gatekeeper) instead: the module is
 really dumb and does not deserve to exist at all. It was an excellent tool
@@ -436,7 +448,8 @@ to debug/develop the newnat interface.</programlisting></para>
       <para>Look <ulink url="http://linux-igd.sourceforge.net">here</ulink>
       for a solution for MSN IM but be aware that there are significant
       security risks involved with this solution. Also check the Netfilter
-      mailing list archives at <ulink url="http://www.netfilter.org">http://www.netfilter.org</ulink>.</para>
+      mailing list archives at <ulink
+      url="http://www.netfilter.org">http://www.netfilter.org</ulink>.</para>
     </section>
   </section>
 
@@ -460,14 +473,15 @@ to debug/develop the newnat interface.</programlisting></para>
       cuts down slightly on the amount of Windows chatter on LAN segments
       connected to the Firewall.</para>
 
-      <para>If you are seeing port 80 being <quote>closed</quote>, that&#39;s
+      <para>If you are seeing port 80 being <quote>closed</quote>, that's
       probably your ISP preventing you from running a web server in violation
       of your Service Agreement.</para>
 
       <tip>
         <para>You can change the default behavior of Shorewall through use of
         an /etc/shorewall/common file. See the <ulink
-        url="shorewall_extension_scripts.htm">Extension Script Section</ulink>.</para>
+        url="shorewall_extension_scripts.htm">Extension Script
+        Section</ulink>.</para>
       </tip>
 
       <tip>
@@ -482,14 +496,16 @@ to debug/develop the newnat interface.</programlisting></para>
       the default policy to all zone from the internet is DROP. The Drop
       action is defined in <filename>/etc/shorewall/action.Drop</filename>
       which in turn invokes the <emphasis role="bold">RejectAuth</emphasis>
-      action (defined in <filename>/etc/shorewall/action.RejectAuth</filename>).
-      This is necessary to prevent outgoing connection problems to services
-      that use the <quote>Auth</quote> mechanism for identifying requesting
-      users. That is the only service which the default setup rejects.</para>
+      action (defined in
+      <filename>/etc/shorewall/action.RejectAuth</filename>). This is
+      necessary to prevent outgoing connection problems to services that use
+      the <quote>Auth</quote> mechanism for identifying requesting users. That
+      is the only service which the default setup rejects.</para>
 
       <para>If you are seeing closed TCP ports other than 113 (auth) then
       either you have added rules to REJECT those ports or a router outside of
-      your firewall is responding to connection requests on those ports.</para>
+      your firewall is responding to connection requests on those
+      ports.</para>
 
       <section id="faq4a">
         <title>(FAQ 4a) I just ran an nmap UDP scan of my firewall and it
@@ -499,12 +515,12 @@ to debug/develop the newnat interface.</programlisting></para>
         read the nmap man page section about UDP scans. If nmap gets <emphasis
         role="bold">nothing</emphasis> back from your firewall then it reports
         the port as open. If you want to see which UDP ports are really open,
-        temporarily change your net-&#62;all policy to REJECT, restart
+        temporarily change your net-&gt;all policy to REJECT, restart
         Shorewall and do the nmap UDP scan again.</para>
       </section>
 
       <section id="faq4b">
-        <title>(FAQ 4b) I have a port that I can&#39;t close no matter how I
+        <title>(FAQ 4b) I have a port that I can't close no matter how I
         change my rules.</title>
 
         <para>I had a rule that allowed telnet from my local network to my
@@ -522,8 +538,9 @@ to debug/develop the newnat interface.</programlisting></para>
         <title>(FAQ 4c) How to I use Shorewall with PortSentry?</title>
 
         <para><ulink
-        url="http://www.shorewall.net/pub/shorewall/contrib/PortsentryHOWTO.txt">Here&#39;s
-        a writeup</ulink> on a nice integration of Shorewall and PortSentry.</para>
+        url="http://www.shorewall.net/pub/shorewall/contrib/PortsentryHOWTO.txt">Here's
+        a writeup</ulink> on a nice integration of Shorewall and
+        PortSentry.</para>
       </section>
     </section>
   </section>
@@ -532,8 +549,8 @@ to debug/develop the newnat interface.</programlisting></para>
     <title>Connection Problems</title>
 
     <section id="faq5">
-      <title>(FAQ 5) I&#39;ve installed Shorewall and now I can&#39;t ping
-      through the firewall</title>
+      <title>(FAQ 5) I've installed Shorewall and now I can't ping through the
+      firewall</title>
 
       <para><emphasis role="bold">Answer:</emphasis> For a complete
       description of Shorewall <quote>ping</quote> management, see <ulink
@@ -541,18 +558,18 @@ to debug/develop the newnat interface.</programlisting></para>
     </section>
 
     <section id="faq15">
-      <title>(FAQ 15) My local systems can&#39;t see out to the net</title>
+      <title>(FAQ 15) My local systems can't see out to the net</title>
 
       <para><emphasis role="bold">Answer:</emphasis> Every time I read
-      <quote>systems can&#39;t see out to the net</quote>, I wonder where the
+      <quote>systems can't see out to the net</quote>, I wonder where the
       poster bought computers with eyes and what those computers will
       <quote>see</quote> when things are working properly. That aside, the
       most common causes of this problem are:</para>
 
       <orderedlist>
         <listitem>
-          <para>The default gateway on each local system isn&#39;t set to the
-          IP address of the local firewall interface.</para>
+          <para>The default gateway on each local system isn't set to the IP
+          address of the local firewall interface.</para>
         </listitem>
 
         <listitem>
@@ -562,32 +579,34 @@ to debug/develop the newnat interface.</programlisting></para>
 
         <listitem>
           <para>The DNS settings on the local systems are wrong or the user is
-          running a DNS server on the firewall and hasn&#39;t enabled UDP and
-          TCP port 53 from the firewall to the internet.</para>
+          running a DNS server on the firewall and hasn't enabled UDP and TCP
+          port 53 from the firewall to the internet.</para>
         </listitem>
       </orderedlist>
     </section>
 
     <section id="faq29">
-      <title>(FAQ 29) FTP Doesn&#39;t Work</title>
+      <title>(FAQ 29) FTP Doesn't Work</title>
 
-      <para>See the <ulink url="FTP.html">Shorewall and FTP page</ulink>.</para>
+      <para>See the <ulink url="FTP.html">Shorewall and FTP
+      page</ulink>.</para>
     </section>
 
     <section id="faq33">
       <title>(FAQ 33) From clients behind the firewall, connections to some
       sites fail. Connections to the same sites from the firewall itself work
-      fine. What&#39;s wrong.</title>
+      fine. What's wrong.</title>
 
       <para><emphasis role="bold">Answer</emphasis>: Most likely, you need to
-      set CLAMPMSS=Yes in <ulink url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>.</para>
+      set CLAMPMSS=Yes in <ulink
+      url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>.</para>
     </section>
 
     <section id="faq35">
       <title>(FAQ 35) I have two Ethernet interfaces to my local network which
-      I have bridged. When Shorewall is started, I&#39;m unable to pass
-      traffic through the bridge. I have defined the bridge interface (br0) as
-      the local interface in /etc/shorewall/interfaces; the bridged Ethernet
+      I have bridged. When Shorewall is started, I'm unable to pass traffic
+      through the bridge. I have defined the bridge interface (br0) as the
+      local interface in /etc/shorewall/interfaces; the bridged Ethernet
       interfaces are not defined to Shorewall. How do I tell Shorewall to
       allow traffic through the bridge?</title>
 
@@ -605,37 +624,39 @@ to debug/develop the newnat interface.</programlisting></para>
       the destination?</title>
 
       <para><emphasis role="bold">Answer:</emphasis> NetFilter uses the
-      kernel&#39;s equivalent of syslog (see <quote>man syslog</quote>) to log
-      messages. It always uses the LOG_KERN (kern) facility (see
-      <quote>man openlog</quote>) and you get to choose the log level (again,
-      see <quote>man syslog</quote>) in your <ulink
+      kernel's equivalent of syslog (see <quote>man syslog</quote>) to log
+      messages. It always uses the LOG_KERN (kern) facility (see <quote>man
+      openlog</quote>) and you get to choose the log level (again, see
+      <quote>man syslog</quote>) in your <ulink
       url="Documentation.htm#Policy">policies</ulink> and <ulink
       url="Documentation.htm#Rules">rules</ulink>. The destination for
-      messaged logged by syslog is controlled by <filename>/etc/syslog.conf</filename>
-      (see <quote>man syslog.conf</quote>). When you have changed
-      /etc/syslog.conf, be sure to restart syslogd (on a RedHat system,
-      <quote>service syslog restart</quote>).</para>
+      messaged logged by syslog is controlled by
+      <filename>/etc/syslog.conf</filename> (see <quote>man
+      syslog.conf</quote>). When you have changed /etc/syslog.conf, be sure to
+      restart syslogd (on a RedHat system, <quote>service syslog
+      restart</quote>).</para>
 
       <para>By default, older versions of Shorewall ratelimited log messages
       through <ulink url="Documentation.htm#Conf">settings</ulink> in
       <filename>/etc/shorewall/shorewall.conf</filename> -- If you want to log
       all messages, set:</para>
 
-      <programlisting>LOGLIMIT=&#34;&#34;
-LOGBURST=&#34;&#34;</programlisting>
+      <programlisting>LOGLIMIT=""
+LOGBURST=""</programlisting>
 
       <para>Beginning with Shorewall version 1.3.12, you can <ulink
       url="shorewall_logging.html">set up Shorewall to log all of its messages
       to a separate file</ulink>.</para>
 
       <section id="faq6a">
-        <title>(FAQ 6a) Are there any log parsers that work with Shorewall?</title>
+        <title>(FAQ 6a) Are there any log parsers that work with
+        Shorewall?</title>
 
         <para><emphasis role="bold">Answer:</emphasis> Here are several links
         that may be helpful:</para>
 
         <literallayout><ulink
-url="http://www.shorewall.net/pub/shorewall/parsefw/">http://www.shorewall.net/pub/shorewall/parsefw/</ulink>
+            url="http://www.shorewall.net/pub/shorewall/parsefw/">http://www.shorewall.net/pub/shorewall/parsefw/</ulink>
 <ulink url="http://www.fireparse.com">http://www.fireparse.com</ulink>
 <ulink url="http://cert.uni-stuttgart.de/projects/fwlogwatch">http://cert.uni-stuttgart.de/projects/fwlogwatch</ulink>
 <ulink url="http://www.logwatch.org">http://www.logwatch.org</ulink>
@@ -725,10 +746,23 @@ url="http://www.shorewall.net/pub/shorewall/parsefw/">http://www.shorewall.net/p
           </listitem>
         </itemizedlist>
 
-        <para><example><title>Example</title><para><programlisting>MAC=00:04:4c:dc:e2:28:00:b0:8e:cf:3c:4c:08:00</programlisting><itemizedlist><listitem><para>Destination
-        MAC address = 00:04:4c:dc:e2:28</para></listitem><listitem><para>Source
-        MAC address = 00:b0:8e:cf:3c:4c</para></listitem><listitem><para>Ethernet
-        Frame Type = 08:00 (IP Version 4)</para></listitem></itemizedlist></para></example></para>
+        <para><example>
+            <title>Example</title>
+
+            <para><programlisting>MAC=00:04:4c:dc:e2:28:00:b0:8e:cf:3c:4c:08:00</programlisting><itemizedlist>
+                <listitem>
+                  <para>Destination MAC address = 00:04:4c:dc:e2:28</para>
+                </listitem>
+
+                <listitem>
+                  <para>Source MAC address = 00:b0:8e:cf:3c:4c</para>
+                </listitem>
+
+                <listitem>
+                  <para>Ethernet Frame Type = 08:00 (IP Version 4)</para>
+                </listitem>
+              </itemizedlist></para>
+          </example></para>
       </section>
     </section>
 
@@ -737,22 +771,23 @@ url="http://www.shorewall.net/pub/shorewall/parsefw/">http://www.shorewall.net/p
       making it unusable!</title>
 
       <para><emphasis role="bold">Answer:</emphasis> If you are running
-      Shorewall version 1.4.4 or 1.4.4a then check the <ulink url="errata.htm">errata</ulink>.
-      Otherwise:</para>
+      Shorewall version 1.4.4 or 1.4.4a then check the <ulink
+      url="errata.htm">errata</ulink>. Otherwise:</para>
 
       <itemizedlist>
         <listitem>
           <para>Find where klogd is being started (it will be from one of the
           files in /etc/init.d -- sysklogd, klogd, ...). Modify that file or
           the appropriate configuration file so that klogd is started with
-          <quote>-c <emphasis>&#60;n&#62;</emphasis></quote> where
-          <emphasis>&#60;n&#62;</emphasis> is a log level of 5 or less; or</para>
+          <quote>-c <emphasis>&lt;n&gt;</emphasis></quote> where
+          <emphasis>&lt;n&gt;</emphasis> is a log level of 5 or less;
+          or</para>
         </listitem>
 
         <listitem>
-          <para>See the <quote>dmesg</quote> man page (<quote>man dmesg</quote>).
-          You must add a suitable <quote>dmesg</quote> command to your startup
-          scripts or place it in /etc/shorewall/start.</para>
+          <para>See the <quote>dmesg</quote> man page (<quote>man
+          dmesg</quote>). You must add a suitable <quote>dmesg</quote> command
+          to your startup scripts or place it in /etc/shorewall/start.</para>
         </listitem>
       </itemizedlist>
 
@@ -788,9 +823,10 @@ url="http://www.shorewall.net/pub/shorewall/parsefw/">http://www.shorewall.net/p
           <term>man1918 or logdrop</term>
 
           <listitem>
-            <para>The destination address is listed in <filename>/usr/share/shorewall/rfc1918</filename>
-            with a <emphasis role="bold">logdrop</emphasis> target -- see
-            <filename><ulink url="Documentation.htm#rfc1918">/usr/share/shorewall/rfc1918</ulink></filename>.</para>
+            <para>The destination address is listed in
+            <filename>/usr/share/shorewall/rfc1918</filename> with a <emphasis
+            role="bold">logdrop</emphasis> target -- see <filename><ulink
+            url="Documentation.htm#rfc1918">/usr/share/shorewall/rfc1918</ulink></filename>.</para>
           </listitem>
         </varlistentry>
 
@@ -806,23 +842,25 @@ url="http://www.shorewall.net/pub/shorewall/parsefw/">http://www.shorewall.net/p
         </varlistentry>
 
         <varlistentry id="all2all">
-          <term>all2&#60;zone&#62;, &#60;zone&#62;2all or all2all</term>
+          <term>all2&lt;zone&gt;, &lt;zone&gt;2all or all2all</term>
 
           <listitem>
-            <para>You have a <ulink url="Documentation.htm#Policy">policy</ulink>
-            that specifies a log level and this packet is being logged under
-            that policy. If you intend to ACCEPT this traffic then you need a
-            <ulink url="Documentation.htm#Rules">rule</ulink> to that effect.</para>
+            <para>You have a <ulink
+            url="Documentation.htm#Policy">policy</ulink> that specifies a log
+            level and this packet is being logged under that policy. If you
+            intend to ACCEPT this traffic then you need a <ulink
+            url="Documentation.htm#Rules">rule</ulink> to that effect.</para>
           </listitem>
         </varlistentry>
 
         <varlistentry>
-          <term>&#60;zone1&#62;2&#60;zone2&#62;</term>
+          <term>&lt;zone1&gt;2&lt;zone2&gt;</term>
 
           <listitem>
-            <para>Either you have a <ulink url="Documentation.htm#Policy">policy</ulink>
-            for <emphasis role="bold">&#60;zone1&#62;</emphasis> to <emphasis
-            role="bold">&#60;zone2&#62;</emphasis> that specifies a log level
+            <para>Either you have a <ulink
+            url="Documentation.htm#Policy">policy</ulink> for <emphasis
+            role="bold">&lt;zone1&gt;</emphasis> to <emphasis
+            role="bold">&lt;zone2&gt;</emphasis> that specifies a log level
             and this packet is being logged under that policy or this packet
             matches a <ulink url="Documentation.htm#Rules">rule</ulink> that
             includes a log level.</para>
@@ -830,11 +868,13 @@ url="http://www.shorewall.net/pub/shorewall/parsefw/">http://www.shorewall.net/p
         </varlistentry>
 
         <varlistentry>
-          <term>&#60;interface&#62;_mac</term>
+          <term>&lt;interface&gt;_mac</term>
 
           <listitem>
-            <para>The packet is being logged under the <emphasis role="bold">maclist</emphasis>
-            <ulink url="Documentation.htm#Interfaces">interface option</ulink>.</para>
+            <para>The packet is being logged under the <emphasis
+            role="bold">maclist</emphasis> <ulink
+            url="Documentation.htm#Interfaces">interface
+            option</ulink>.</para>
           </listitem>
         </varlistentry>
 
@@ -842,8 +882,10 @@ url="http://www.shorewall.net/pub/shorewall/parsefw/">http://www.shorewall.net/p
           <term>logpkt</term>
 
           <listitem>
-            <para>The packet is being logged under the <emphasis role="bold">logunclean</emphasis>
-            <ulink url="Documentation.htm#Interfaces">interface option</ulink>.</para>
+            <para>The packet is being logged under the <emphasis
+            role="bold">logunclean</emphasis> <ulink
+            url="Documentation.htm#Interfaces">interface
+            option</ulink>.</para>
           </listitem>
         </varlistentry>
 
@@ -851,10 +893,12 @@ url="http://www.shorewall.net/pub/shorewall/parsefw/">http://www.shorewall.net/p
           <term>badpkt</term>
 
           <listitem>
-            <para>The packet is being logged under the <emphasis role="bold">dropunclean</emphasis>
-            <ulink url="Documentation.htm#Interfaces">interface option</ulink>
-            as specified in the <emphasis role="bold">LOGUNCLEAN</emphasis>
-            setting in <ulink url="Documentation.htm#Conf"><filename>/etc/shorewall/shorewall.conf</filename></ulink>.</para>
+            <para>The packet is being logged under the <emphasis
+            role="bold">dropunclean</emphasis> <ulink
+            url="Documentation.htm#Interfaces">interface option</ulink> as
+            specified in the <emphasis role="bold">LOGUNCLEAN</emphasis>
+            setting in <ulink
+            url="Documentation.htm#Conf"><filename>/etc/shorewall/shorewall.conf</filename></ulink>.</para>
           </listitem>
         </varlistentry>
 
@@ -876,8 +920,9 @@ url="http://www.shorewall.net/pub/shorewall/parsefw/">http://www.shorewall.net/p
             <para>The packet is being logged because it is a TCP packet that
             is not part of any current connection yet it is not a syn packet.
             Options affecting the logging of such packets include <emphasis
-            role="bold">NEWNOTSYN</emphasis> and <emphasis role="bold">LOGNEWNOTSYN</emphasis>
-            in <ulink url="Documentation.htm#Conf"><filename>/etc/shorewall/shorewall.conf</filename></ulink>.</para>
+            role="bold">NEWNOTSYN</emphasis> and <emphasis
+            role="bold">LOGNEWNOTSYN</emphasis> in <ulink
+            url="Documentation.htm#Conf"><filename>/etc/shorewall/shorewall.conf</filename></ulink>.</para>
           </listitem>
         </varlistentry>
 
@@ -885,12 +930,12 @@ url="http://www.shorewall.net/pub/shorewall/parsefw/">http://www.shorewall.net/p
           <term>INPUT or FORWARD</term>
 
           <listitem>
-            <para>The packet has a source IP address that isn&#39;t in any of
-            your defined zones (<quote>shorewall check</quote> and look at the
+            <para>The packet has a source IP address that isn't in any of your
+            defined zones (<quote>shorewall check</quote> and look at the
             printed zone definitions) or the chain is FORWARD and the
-            destination IP isn&#39;t in any of your defined zones. Also see
-            <xref linkend="faq2a" /> for another cause of packets being logged
-            in the FORWARD chain.</para>
+            destination IP isn't in any of your defined zones. Also see <xref
+            linkend="faq2a" /> for another cause of packets being logged in
+            the FORWARD chain.</para>
           </listitem>
         </varlistentry>
 
@@ -900,7 +945,8 @@ url="http://www.shorewall.net/pub/shorewall/parsefw/">http://www.shorewall.net/p
           <listitem>
             <para>The packet is being logged because it failed the checks
             implemented by the <emphasis role="bold">tcpflags</emphasis>
-            <ulink url="Documentation.htm#Interfaces">interface option</ulink>.</para>
+            <ulink url="Documentation.htm#Interfaces">interface
+            option</ulink>.</para>
           </listitem>
         </varlistentry>
       </variablelist>
@@ -910,22 +956,23 @@ url="http://www.shorewall.net/pub/shorewall/parsefw/">http://www.shorewall.net/p
 
         <programlisting>Jun 27 15:37:56 gateway kernel:
         Shorewall:<emphasis role="bold">all2all:REJECT</emphasis>:<emphasis
-role="bold">IN=eth2</emphasis> <emphasis role="bold">OUT=eth1</emphasis> <emphasis
-role="bold">SRC=192.168.2.2</emphasis>
+            role="bold">IN=eth2</emphasis> <emphasis role="bold">OUT=eth1</emphasis> <emphasis
+            role="bold">SRC=192.168.2.2</emphasis>
         <emphasis role="bold">DST=192.168.1.3 </emphasis>LEN=67 TOS=0x00 PREC=0x00 TTL=63 ID=5805 DF <emphasis
-role="bold">PROTO=UDP</emphasis>
+            role="bold">PROTO=UDP</emphasis>
         SPT=1803 <emphasis role="bold">DPT=53</emphasis> LEN=47</programlisting>
 
-        <para>Let&#39;s look at the important parts of this message:</para>
+        <para>Let's look at the important parts of this message:</para>
 
         <variablelist>
           <varlistentry>
             <term>all2all:REJECT</term>
 
             <listitem>
-              <para>This packet was REJECTed out of the <emphasis role="bold">all2all</emphasis>
-              chain -- the packet was rejected under the <quote>all</quote>-&#62;<quote>all</quote>
-              REJECT policy (<xref linkend="all2all" /> above).</para>
+              <para>This packet was REJECTed out of the <emphasis
+              role="bold">all2all</emphasis> chain -- the packet was rejected
+              under the <quote>all</quote>-&gt;<quote>all</quote> REJECT
+              policy (<xref linkend="all2all" /> above).</para>
             </listitem>
           </varlistentry>
 
@@ -986,7 +1033,8 @@ role="bold">PROTO=UDP</emphasis>
         url="http://logi.cc/linux/netfilter-log-format.php3">http://logi.cc/linux/netfilter-log-format.php3</ulink>.</para>
 
         <para>In this case, 192.168.2.2 was in the <quote>dmz</quote> zone and
-        192.168.1.3 is in the <quote>loc</quote> zone. I was missing the rule:</para>
+        192.168.1.3 is in the <quote>loc</quote> zone. I was missing the
+        rule:</para>
 
         <programlisting>ACCEPT dmz loc udp 53</programlisting>
       </example>
@@ -1027,15 +1075,15 @@ role="bold">PROTO=UDP</emphasis>
       UDP port 2857. This causes a port unreachable (type 3, code 3) to be
       generated back to 192.0.2.3. As this packet is sent back through
       206.124.146.179, that box correctly changes the source address in the
-      packet to 206.124.146.179 but doesn&#39;t reset the DST IP in the
-      original DNS response similarly. When the ICMP reaches your firewall
-      (192.0.2.3), your firewall has no record of having sent a DNS reply to
-      172.16.1.10 so this ICMP doesn&#39;t appear to be related to anything
-      that was sent. The final result is that the packet gets logged and
-      dropped in the all2all chain. I have also seen cases where the source IP
-      in the ICMP itself isn&#39;t set back to the external IP of the remote
-      NAT gateway; that causes your firewall to log and drop the packet out of
-      the rfc1918 chain because the source IP is reserved by RFC 1918.</para>
+      packet to 206.124.146.179 but doesn't reset the DST IP in the original
+      DNS response similarly. When the ICMP reaches your firewall (192.0.2.3),
+      your firewall has no record of having sent a DNS reply to 172.16.1.10 so
+      this ICMP doesn't appear to be related to anything that was sent. The
+      final result is that the packet gets logged and dropped in the all2all
+      chain. I have also seen cases where the source IP in the ICMP itself
+      isn't set back to the external IP of the remote NAT gateway; that causes
+      your firewall to log and drop the packet out of the rfc1918 chain
+      because the source IP is reserved by RFC 1918.</para>
     </section>
   </section>
 
@@ -1082,7 +1130,8 @@ eth1             eth2</programlisting>
       url="http://www.lartc.org">LARTC HOWTO</ulink> and has not been verified
       by the author. If you have questions or problems with the instructions
       given below, please post to the <ulink
-      url="http://www.lartc.org/#mailinglist">LARTC mailing list</ulink>.</citetitle></para>
+      url="http://www.lartc.org/#mailinglist">LARTC mailing
+      list</ulink>.</citetitle></para>
 
       <sidebar>
         <para>A common configuration is the following, in which there are two
@@ -1118,15 +1167,17 @@ eth1             eth2</programlisting>
         <para>Let us first set some symbolical names. Let <emphasis
         role="bold">$IF1</emphasis> be the name of the first interface (if1 in
         the picture above) and <emphasis role="bold">$IF2</emphasis> the name
-        of the second interface. Then let <emphasis role="bold">$IP1</emphasis>
-        be the IP address associated with <emphasis role="bold">$IF1</emphasis>
-        and <emphasis role="bold">$IP2</emphasis> the IP address associated
-        with <emphasis role="bold">$IF2</emphasis>. Next, let <emphasis
+        of the second interface. Then let <emphasis
+        role="bold">$IP1</emphasis> be the IP address associated with
+        <emphasis role="bold">$IF1</emphasis> and <emphasis
+        role="bold">$IP2</emphasis> the IP address associated with <emphasis
+        role="bold">$IF2</emphasis>. Next, let <emphasis
         role="bold">$P1</emphasis> be the IP address of the gateway at
         Provider 1, and <emphasis role="bold">$P2</emphasis> the IP address of
-        the gateway at provider 2. Finally, let <emphasis role="bold">$P1_NET</emphasis>
-        be the IP network <emphasis role="bold">$P1</emphasis> is in, and
-        <emphasis role="bold">$P2_NET</emphasis> the IP network <emphasis
+        the gateway at provider 2. Finally, let <emphasis
+        role="bold">$P1_NET</emphasis> be the IP network <emphasis
+        role="bold">$P1</emphasis> is in, and <emphasis
+        role="bold">$P2_NET</emphasis> the IP network <emphasis
         role="bold">$P2</emphasis> is in.</para>
 
         <para>One creates two additional routing tables, say <emphasis
@@ -1148,8 +1199,8 @@ ip route add default via $P2 table T2</programlisting>
 
         <para>Next you set up the main routing table. It is a good idea to
         route things to the direct neighbour through the interface connected
-        to that neighbour. Note the `src&#39; arguments, they make sure the
-        right outgoing IP address is chosen.</para>
+        to that neighbour. Note the `src' arguments, they make sure the right
+        outgoing IP address is chosen.</para>
 
         <programlisting>ip route add $P1_NET dev $IF1 src $IP1
 ip route add $P2_NET dev $IF2 src $IP2</programlisting>
@@ -1170,8 +1221,8 @@ ip rule add from $IP2 table T2</programlisting>
         on a particular interface get answered from that interface.</para>
 
         <note>
-          <para>&#39;If $P0_NET is the local network and $IF0 is its
-          interface, the following additional entries are desirable:</para>
+          <para>'If $P0_NET is the local network and $IF0 is its interface,
+          the following additional entries are desirable:</para>
 
           <programlisting format="linespecific">ip route add $P0_NET dev $IF0 table T1
 ip route add $P2_NET dev $IF2 table T1
@@ -1215,9 +1266,9 @@ ip route add 127.0.0.0/8 dev lo table T2</programlisting>
         </note>
 
         <para>Furthermore, if you really want to do this, you probably also
-        want to look at Julian Anastasov&#39;s patches at <ulink
+        want to look at Julian Anastasov's patches at <ulink
         url="http://www.ssi.bg/%7Eja/#routes">http://www.ssi.bg/~ja/#routes</ulink>
-        , Julian&#39;s route patch page. They will make things nicer to work
+        , Julian's route patch page. They will make things nicer to work
         with.</para>
       </sidebar>
 
@@ -1242,7 +1293,8 @@ ip route add 127.0.0.0/8 dev lo table T2</programlisting>
         url="http://linux-ip.net/html/adv-multi-internet.html#adv-multi-internet-inbound"><citetitle>http://linux-ip.net/html/adv-multi-internet.html#adv-multi-internet-inbound</citetitle></ulink></para>
 
         <para>For the use of multiple outbound links to the Internet, there
-        are a number of different techniques. The simplest is identified here:</para>
+        are a number of different techniques. The simplest is identified
+        here:</para>
 
         <para><citetitle><ulink
         url="http://linux-ip.net/html/adv-multi-internet.html#adv-multi-internet-outbound">http://linux-ip.net/html/adv-multi-internet.html#adv-multi-internet-outbound</ulink></citetitle></para>
@@ -1250,7 +1302,8 @@ ip route add 127.0.0.0/8 dev lo table T2</programlisting>
         <para>Better (and more robust) techniques are available after a kernel
         routing patch by Julian Anastasov. See the famous nano-howto.</para>
 
-        <para><citetitle><ulink url="http://www.ssi.bg/~ja/">http://www.ssi.bg/~ja/</ulink></citetitle></para>
+        <para><citetitle><ulink
+        url="http://www.ssi.bg/~ja/">http://www.ssi.bg/~ja/</ulink></citetitle></para>
       </sidebar>
     </section>
   </section>
@@ -1259,19 +1312,20 @@ ip route add 127.0.0.0/8 dev lo table T2</programlisting>
     <title>Starting and Stopping</title>
 
     <section id="faq7">
-      <title>(FAQ 7) When I stop Shorewall using <quote>shorewall stop</quote>,
-      I can&#39;t connect to anything. Why doesn&#39;t that command work?</title>
+      <title>(FAQ 7) When I stop Shorewall using <quote>shorewall
+      stop</quote>, I can't connect to anything. Why doesn't that command
+      work?</title>
 
       <para>The <quote><command>stop</command></quote> command is intended to
       place your firewall into a safe state whereby only those hosts listed in
-      <filename>/etc/shorewall/routestopped</filename>&#39; are activated. If
-      you want to totally open up your firewall, you must use the
+      <filename>/etc/shorewall/routestopped</filename>' are activated. If you
+      want to totally open up your firewall, you must use the
       <quote><command>shorewall clear</command></quote> command.</para>
     </section>
 
     <section id="faq8">
       <title>(FAQ 8) When I try to start Shorewall on RedHat, I get messages
-      about insmod failing -- what&#39;s wrong?</title>
+      about insmod failing -- what's wrong?</title>
 
       <para><emphasis role="bold">Answer:</emphasis> The output you will see
       looks something like this:</para>
@@ -1281,7 +1335,7 @@ Hint: insmod errors can be caused by incorrect module parameters, including inva
 /lib/modules/2.4.17/kernel/net/ipv4/netfilter/ip_tables.o: insmod
 /lib/modules/2.4.17/kernel/net/ipv4/netfilter/ip_tables.o failed
 /lib/modules/2.4.17/kernel/net/ipv4/netfilter/ip_tables.o: insmod ip_tables failed
-iptables v1.2.3: can&#39;t initialize iptables table `nat&#39;: iptables who? (do you need to insmod?)
+iptables v1.2.3: can't initialize iptables table `nat': iptables who? (do you need to insmod?)
 Perhaps iptables or your kernel needs to be upgraded.</programlisting>
 
       <para>This problem is usually corrected through the following sequence
@@ -1300,12 +1354,13 @@ rmmod ipchains</command></programlisting>
         message referring me to FAQ #8</title>
 
         <para><emphasis role="bold">Answer:</emphasis> This is usually cured
-        by the sequence of commands shown above in <xref linkend="faq8" />.</para>
+        by the sequence of commands shown above in <xref
+        linkend="faq8" />.</para>
       </section>
     </section>
 
     <section id="faq9">
-      <title>(FAQ 9) Why can&#39;t Shorewall detect my interfaces properly at
+      <title>(FAQ 9) Why can't Shorewall detect my interfaces properly at
       startup?</title>
 
       <para>I just installed Shorewall and when I issue the start command, I
@@ -1327,18 +1382,18 @@ Deleting user chains...
 Creating input Chains...
 ...</programlisting>
 
-      <para>Why can&#39;t Shorewall detect my interfaces properly?</para>
+      <para>Why can't Shorewall detect my interfaces properly?</para>
 
       <para><emphasis role="bold">Answer:</emphasis> The above output is
       perfectly normal. The Net zone is defined as all hosts that are
       connected through eth0 and the local zone is defined as all hosts
       connected through <filename class="devicefile">eth1</filename>. If you
       are running Shorewall 1.4.10 or later, you can consider setting the
-      <ulink url="Documentation.htm#Interfaces"><emphasis role="bold">detectnets</emphasis>
-      interface option</ulink> on your local interface (<filename
-      class="devicefile">eth1</filename> in the above example). That will
-      cause Shorewall to restrict the local zone to only those networks routed
-      through that interface.</para>
+      <ulink url="Documentation.htm#Interfaces"><emphasis
+      role="bold">detectnets</emphasis> interface option</ulink> on your local
+      interface (<filename class="devicefile">eth1</filename> in the above
+      example). That will cause Shorewall to restrict the local zone to only
+      those networks routed through that interface.</para>
     </section>
 
     <section id="faq22">
@@ -1346,24 +1401,24 @@ Creating input Chains...
       Shorewall starts. Which file do I put them in?</title>
 
       <para>You can place these commands in one of the <ulink
-      url="shorewall_extension_scripts.htm">Shorewall Extension Scripts</ulink>.
-      Be sure that you look at the contents of the chain(s) that you will be
-      modifying with your commands to be sure that the commands will do what
-      they are intended. Many iptables commands published in HOWTOs and other
-      instructional material use the -A command which adds the rules to the
-      end of the chain. Most chains that Shorewall constructs end with an
-      unconditional DROP, ACCEPT or REJECT rule and any rules that you add
-      after that will be ignored. Check <quote>man iptables</quote> and look
-      at the -I (--insert) command.</para>
+      url="shorewall_extension_scripts.htm">Shorewall Extension
+      Scripts</ulink>. Be sure that you look at the contents of the chain(s)
+      that you will be modifying with your commands to be sure that the
+      commands will do what they are intended. Many iptables commands
+      published in HOWTOs and other instructional material use the -A command
+      which adds the rules to the end of the chain. Most chains that Shorewall
+      constructs end with an unconditional DROP, ACCEPT or REJECT rule and any
+      rules that you add after that will be ignored. Check <quote>man
+      iptables</quote> and look at the -I (--insert) command.</para>
     </section>
 
     <section id="faq34">
       <title>(FAQ 34) How can I speed up start (restart)?</title>
 
       <para>Using a light-weight shell such as <command>ash</command> can
-      dramatically decrease the time required to <emphasis role="bold">start</emphasis>
-      or <emphasis role="bold">restart</emphasis> Shorewall. See the
-      SHOREWALL_SHELL variable in <filename><ulink
+      dramatically decrease the time required to <emphasis
+      role="bold">start</emphasis> or <emphasis role="bold">restart</emphasis>
+      Shorewall. See the SHOREWALL_SHELL variable in <filename><ulink
       url="Documentation.htm#Conf">shorewall.conf</ulink></filename>.</para>
 
       <para>Beginning with Shorewall version 2.0.2 Beta 1, Shorewall supports
@@ -1380,8 +1435,9 @@ Creating input Chains...
         <listitem>
           <para>Use the <emphasis role="bold">-f </emphasis>option to the
           start command (e.g., <command>shorewall -f start</command>). This
-          causes Shorewall to look for the <filename>/var/lib/shorewall/restore</filename>
-          script and if that script exists, it is run. Running
+          causes Shorewall to look for the
+          <filename>/var/lib/shorewall/restore</filename> script and if that
+          script exists, it is run. Running
           <filename>/var/lib/shorewall/restore</filename> takes much less time
           than a full <command>shorewall start</command>.</para>
         </listitem>
@@ -1411,18 +1467,19 @@ Creating input Chains...
       <para>Likewise, if you change your Shorewall configuration then once you
       are satisfied that it is working properly, you must do another
       <command>shorewall save</command>. Otherwise at the next reboot, you
-      will revert to the old configuration stored in <filename>/var/lib/shorewall/restore</filename>.</para>
+      will revert to the old configuration stored in
+      <filename>/var/lib/shorewall/restore</filename>.</para>
 
       <section id="faq34a">
         <title>(FAQ 34a) I get errors about a host or network not found when I
         run<filename>/var/lib/shorewall/restore</filename>. The
-        <command>shorewall restore</command> and <command>shorewall -f start</command>
-        commands gives the same result.</title>
+        <command>shorewall restore</command> and <command>shorewall -f
+        start</command> commands gives the same result.</title>
 
         <para>Answer: iptables 1.2.9 is broken with respect to iptables-save
         and the connection tracking match extension. You must patch your
-        iptables using the patch available from the <ulink url="errata.htm">Shorewall
-        errata page</ulink>.</para>
+        iptables using the patch available from the <ulink
+        url="errata.htm">Shorewall errata page</ulink>.</para>
       </section>
     </section>
   </section>
@@ -1434,7 +1491,8 @@ Creating input Chains...
       <title>(FAQ 10) What Distributions does it work with?</title>
 
       <para>Shorewall works with any GNU/Linux distribution that includes the
-      <ulink url="shorewall_prerequisites.htm">proper prerequisites</ulink>.</para>
+      <ulink url="shorewall_prerequisites.htm">proper
+      prerequisites</ulink>.</para>
     </section>
 
     <section id="faq11">
@@ -1466,14 +1524,15 @@ Creating input Chains...
     <section id="faq23">
       <title>(FAQ 23) Why do you use such ugly fonts on your web site?</title>
 
-      <para>The Shorewall web site is almost font neutral (it doesn&#39;t
+      <para>The Shorewall web site is almost font neutral (it doesn't
       explicitly specify fonts except on a few pages) so the fonts you see are
-      largely the default fonts configured in your browser. If you don&#39;t
-      like them then reconfigure your browser.</para>
+      largely the default fonts configured in your browser. If you don't like
+      them then reconfigure your browser.</para>
     </section>
 
     <section id="faq25">
-      <title>(FAQ 25) How to I tell which version of Shorewall I am running?</title>
+      <title>(FAQ 25) How to I tell which version of Shorewall I am
+      running?</title>
 
       <para>At the shell prompt, type:</para>
 
@@ -1494,7 +1553,8 @@ Creating input Chains...
         </varlistentry>
 
         <varlistentry>
-          <term>Tear Drop: Sending packets that contain overlapping fragments?</term>
+          <term>Tear Drop: Sending packets that contain overlapping
+          fragments?</term>
 
           <listitem>
             <para>Answer: This is the responsibility of the IP stack, not the
@@ -1512,7 +1572,8 @@ Creating input Chains...
             <ulink url="blacklisting_support.htm">blacklisting</ulink>
             facility. Shorewall versions 2.0.0 and later filter these packets
             under the <firstterm>nosmurfs</firstterm> interface option in
-            <ulink url="Documentation.htm#Interfaces">/etc/shorewall/interfaces</ulink>.</para>
+            <ulink
+            url="Documentation.htm#Interfaces">/etc/shorewall/interfaces</ulink>.</para>
           </listitem>
         </varlistentry>
 
@@ -1522,8 +1583,8 @@ Creating input Chains...
 
           <listitem>
             <para>Answer: Yes, if the <ulink
-            url="Documentation.htm#Interfaces">routefilter interface option</ulink>
-            is selected.</para>
+            url="Documentation.htm#Interfaces">routefilter interface
+            option</ulink> is selected.</para>
           </listitem>
         </varlistentry>
 
@@ -1532,10 +1593,10 @@ Creating input Chains...
 
           <listitem>
             <para>Answer: Shorewall has facilities for limiting SYN and ICMP
-            packets. Netfilter as included in standard Linux kernels
-            doesn&#39;t support per-remote-host limiting except by explicit
-            rule that specifies the host IP address; that form of limiting is
-            supported by Shorewall.</para>
+            packets. Netfilter as included in standard Linux kernels doesn't
+            support per-remote-host limiting except by explicit rule that
+            specifies the host IP address; that form of limiting is supported
+            by Shorewall.</para>
           </listitem>
         </varlistentry>
       </variablelist>
@@ -1556,20 +1617,22 @@ Creating input Chains...
     <section id="faq36">
       <title>(FAQ 36) Does Shorewall Work with the 2.6 Linux Kernel?</title>
 
-      <para>Shorewall works with the 2.6 Kernels with a couple of caveats:</para>
+      <para>Shorewall works with the 2.6 Kernels with a couple of
+      caveats:</para>
 
       <itemizedlist>
         <listitem>
-          <para>Netfilter/iptables doesn&#39;t fully support IPSEC in the 2.6
+          <para>Netfilter/iptables doesn't fully support IPSEC in the 2.6
           Kernels -- there are interim instructions linked from the <ulink
           url="IPSEC.htm">Shorewall IPSEC page</ulink>.</para>
         </listitem>
 
         <listitem>
           <para>The 2.6 Kernels do not provide support for the logunclean and
-          dropunclean options in <filename>/etc/shorewall/interfaces</filename>.
-          Note that support for those options was also removed from Shorewall
-          in version 2.0.0.</para>
+          dropunclean options in
+          <filename>/etc/shorewall/interfaces</filename>. Note that support
+          for those options was also removed from Shorewall in version
+          2.0.0.</para>
         </listitem>
       </itemizedlist>
     </section>
@@ -1579,10 +1642,10 @@ Creating input Chains...
     <title>RFC 1918</title>
 
     <section id="faq14">
-      <title>(FAQ 14) I&#39;m connected via a cable modem and it has an
-      internal web server that allows me to configure/monitor it but as
-      expected if I enable rfc1918 blocking for my eth0 interface (the
-      internet one), it also blocks the cable modems web server.</title>
+      <title>(FAQ 14) I'm connected via a cable modem and it has an internal
+      web server that allows me to configure/monitor it but as expected if I
+      enable rfc1918 blocking for my eth0 interface (the internet one), it
+      also blocks the cable modems web server.</title>
 
       <para>Is there any way it can add a rule before the rfc1918 blocking
       that will let all traffic to and from the 192.168.100.1 address of the
@@ -1600,7 +1663,8 @@ Creating input Chains...
       first copy <filename>/usr/share/shorewall/rfc1918</filename> to
       <filename>/etc/shorewall/rfc1918</filename>):</para>
 
-      <para>Be sure that you add the entry ABOVE the entry for 192.168.0.0/16.</para>
+      <para>Be sure that you add the entry ABOVE the entry for
+      192.168.0.0/16.</para>
 
       <programlisting>#SUBNET        TARGET
 192.168.100.1  RETURN</programlisting>
@@ -1618,10 +1682,9 @@ Creating input Chains...
       </note>
 
       <section id="faq14a">
-        <title>(FAQ 14a) Even though it assigns public IP addresses, my
-        ISP&#39;s DHCP server has an RFC 1918 address. If I enable RFC 1918
-        filtering on my external interface, my DHCP client cannot renew its
-        lease.</title>
+        <title>(FAQ 14a) Even though it assigns public IP addresses, my ISP's
+        DHCP server has an RFC 1918 address. If I enable RFC 1918 filtering on
+        my external interface, my DHCP client cannot renew its lease.</title>
 
         <para>The solution is the same as <xref linkend="faq14" /> above.
         Simply substitute the IP address of your ISPs DHCP server.</para>
@@ -1647,9 +1710,9 @@ Creating input Chains...
 
     <section id="faq19">
       <title>(FAQ 19) I have added entries to /etc/shorewall/tcrules but they
-      don&#39;t seem to do anything. Why?</title>
+      don't seem to do anything. Why?</title>
 
-      <para>You probably haven&#39;t set TC_ENABLED=Yes in
+      <para>You probably haven't set TC_ENABLED=Yes in
       /etc/shorewall/shorewall.conf so the contents of the tcrules file are
       simply being ignored.</para>
     </section>
@@ -1658,19 +1721,21 @@ Creating input Chains...
       <title>(FAQ 20) I have just set up a server. Do I have to change
       Shorewall to allow access to my server from the internet?</title>
 
-      <para>Yes. Consult the <ulink url="shorewall_quickstart_guide.htm">QuickStart
-      guide</ulink> that you used during your initial setup for information
-      about how to set up rules for your server.</para>
+      <para>Yes. Consult the <ulink
+      url="shorewall_quickstart_guide.htm">QuickStart guide</ulink> that you
+      used during your initial setup for information about how to set up rules
+      for your server.</para>
     </section>
 
     <section id="faq24">
-      <title>(FAQ 24) How can I allow conections to let&#39;s say the ssh port
+      <title>(FAQ 24) How can I allow conections to let's say the ssh port
       only from specific IP Addresses on the internet?</title>
 
       <para>In the SOURCE column of the rule, follow <quote>net</quote> by a
-      colon and a list of the host/subnet addresses as a comma-separated list.</para>
+      colon and a list of the host/subnet addresses as a comma-separated
+      list.</para>
 
-      <programlisting>net:&#60;ip1&#62;,&#60;ip2&#62;,...</programlisting>
+      <programlisting>net:&lt;ip1&gt;,&lt;ip2&gt;,...</programlisting>
 
       <example>
         <title>Example:</title>
@@ -1682,15 +1747,16 @@ Creating input Chains...
     <section id="faq26">
       <title>(FAQ 26) When I try to use any of the SYN options in nmap on or
       behind the firewall, I get <quote>operation not permitted</quote>. How
-      can I use nmap with Shorewall?&#34;</title>
+      can I use nmap with Shorewall?"</title>
 
-      <para>Edit /etc/shorewall/shorewall.conf and change <quote>NEWNOTSYN=No</quote>
-      to <quote>NEWNOTSYN=Yes</quote> then restart Shorewall.</para>
+      <para>Edit /etc/shorewall/shorewall.conf and change
+      <quote>NEWNOTSYN=No</quote> to <quote>NEWNOTSYN=Yes</quote> then restart
+      Shorewall.</para>
 
       <section id="faq26a">
         <title>(FAQ 26a) When I try to use the <quote>-O</quote> option of
-        nmap from the firewall system, I get <quote>operation not permitted</quote>.
-        How do I allow this option?</title>
+        nmap from the firewall system, I get <quote>operation not
+        permitted</quote>. How do I allow this option?</title>
 
         <para>Add this command to your /etc/shorewall/start file:</para>
 
@@ -1699,34 +1765,35 @@ Creating input Chains...
     </section>
 
     <section id="faq27">
-      <title>(FAQ 27) I&#39;m compiling a new kernel for my firewall. What
-      should I look out for?</title>
+      <title>(FAQ 27) I'm compiling a new kernel for my firewall. What should
+      I look out for?</title>
 
       <para>First take a look at the <ulink url="kernel.htm">Shorewall kernel
       configuration page</ulink>. You probably also want to be sure that you
       have selected the <quote><emphasis role="bold">NAT of local connections
       (READ HELP)</emphasis></quote> on the Netfilter Configuration menu.
-      Otherwise, DNAT rules with your firewall as the source zone won&#39;t
-      work with your new kernel.</para>
+      Otherwise, DNAT rules with your firewall as the source zone won't work
+      with your new kernel.</para>
 
       <section id="faq27a">
         <title>(FAQ 27a) I just built and installed a new kernel and now
-        Shorewall won&#39;t start. I know that my kernel options are correct.</title>
+        Shorewall won't start. I know that my kernel options are
+        correct.</title>
 
         <para>The last few lines of <ulink url="troubleshoot.htm">a startup
         trace</ulink> are these:</para>
 
         <programlisting>+ run_iptables2 -t nat -A eth0_masq -s 192.168.2.0/24 -d 0.0.0.0/0 -j
 MASQUERADE
-+ &#39;[&#39; &#39;x-t nat -A eth0_masq -s 192.168.2.0/24 -d 0.0.0.0/0 -j
-MASQUERADE&#39; = &#39;x-t nat -A eth0_masq -s 192.168.2.0/24 -d 0.0.0.
-0/0 -j MASQUERADE&#39; &#39;]&#39;
++ '[' 'x-t nat -A eth0_masq -s 192.168.2.0/24 -d 0.0.0.0/0 -j
+MASQUERADE' = 'x-t nat -A eth0_masq -s 192.168.2.0/24 -d 0.0.0.
+0/0 -j MASQUERADE' ']'
 + run_iptables -t nat -A eth0_masq -s 192.168.2.0/24 -d 0.0.0.0/0 -j
 MASQUERADE
 + iptables -t nat -A eth0_masq -s 192.168.2.0/24 -d 0.0.0.0/0 -j
 MASQUERADE
 iptables: Invalid argument
-+ &#39;[&#39; -z &#39;&#39; &#39;]&#39;
++ '[' -z '' ']'
 + stop_firewall
 + set +x</programlisting>
 
@@ -1748,40 +1815,316 @@ iptables: Invalid argument
   <appendix>
     <title>Revision History</title>
 
-    <para><revhistory><revision><revnumber>1.28</revnumber><date>2004-07-14</date><authorinitials>TE</authorinitials><revremark>Insert
-    link to Ian Allen&#39;s DNAT paper (FAQ 38)</revremark></revision><revision><revnumber>1.27</revnumber><date>2004-06-18</date><authorinitials>TE</authorinitials><revremark>Correct
-    formatting in H323 quote.</revremark></revision><revision><revnumber>1.26</revnumber><date>2004-05-18</date><authorinitials>TE</authorinitials><revremark>Delete
-    obsolete ping information.</revremark></revision><revision><revnumber>1.25</revnumber><date>2004-05-18</date><authorinitials>TE</authorinitials><revremark>Empty
-    /etc/shorewall on Debian.</revremark></revision><revision><revnumber>1.25</revnumber><date>2004-05-08</date><authorinitials>TE</authorinitials><revremark>Update
-    for Shorewall 2.0.2</revremark></revision><revision><revnumber>1.24</revnumber><date>2004-04-25</date><authorinitials>TE</authorinitials><revremark>Add
-    MA Brown&#39;s notes on multi-ISP routing.</revremark></revision><revision><revnumber>1.23</revnumber><date>2004-04-22</date><authorinitials>TE</authorinitials><revremark>Refined
-    SNAT rule in FAQ #2.</revremark></revision><revision><revnumber>1.22</revnumber><date>2004-04-06</date><authorinitials>TE</authorinitials><revremark>Added
-    FAQ 36.</revremark></revision><revision><revnumber>1.21</revnumber><date>2004-03-05</date><authorinitials>TE</authorinitials><revremark>Added
-    Bridging link.</revremark></revision><revision><revnumber>1.20</revnumber><date>2004-02-27</date><authorinitials>TE</authorinitials><revremark>Added
-    FAQ 35.</revremark></revision><revision><revnumber>1.19</revnumber><date>2004-02-22</date><authorinitials>TE</authorinitials><revremark>Added
-    mention of nosmurfs option under FAQ 31.</revremark></revision><revision><revnumber>1.18</revnumber><date>2004-02-15</date><authorinitials>TE</authorinitials><revremark>Added
-    FAQ 34.</revremark></revision><revision><revnumber>1.17</revnumber><date>2004-02-11</date><authorinitials>TE</authorinitials><revremark>Added
-    FAQ 33.</revremark></revision><revision><revnumber>1.16</revnumber><date>2004-02-03</date><authorinitials>TE</authorinitials><revremark>Updated
-    for Shorewall 2.0.</revremark></revision><revision><revnumber>1.15</revnumber><date>2004-01-25</date><authorinitials>TE</authorinitials><revremark>Updated
-    FAQ 32 to mention masquerading. Remove tables.</revremark></revision><revision><revnumber>1.14</revnumber><date>2004-01-24</date><authorinitials>TE</authorinitials><revremark>Added
-    FAQ 27a regarding kernel/iptables incompatibility.</revremark></revision><revision><revnumber>1.13</revnumber><date>2004-01-24</date><authorinitials>TE</authorinitials><revremark>Add
-    a note about the <emphasis role="bold">detectnets</emphasis> interface
-    option in FAQ 9.</revremark></revision><revision><revnumber>1.12</revnumber><date>2004-01-20</date><authorinitials>TE</authorinitials><revremark>Improve
-    FAQ 16 answer.</revremark></revision><revision><revnumber>1.11</revnumber><date>2004-01-14</date><authorinitials>TE</authorinitials><revremark>Corrected
-    broken link</revremark></revision><revision><revnumber>1.10</revnumber><date>2004-01-09</date><authorinitials>TE</authorinitials><revremark>Added
-    a couple of more legacy FAQ numbers.</revremark></revision><revision><revnumber>1.9</revnumber><date>2004-01-08</date><authorinitials>TE</authorinitials><revremark>Corrected
-    typo in FAQ 26a. Added warning to FAQ 2 regarding source address of
-    redirected requests.</revremark></revision><revision><revnumber>1.8</revnumber><date>2003-12-31</date><authorinitials>TE</authorinitials><revremark>Additions
-    to FAQ 4.</revremark></revision><revision><revnumber>1.7</revnumber><date>2003-12-30</date><authorinitials>TE</authorinitials><revremark>Remove
-    dead link from FAQ 1.</revremark></revision><revision><revnumber>1.6</revnumber><date>2003.12-18</date><authorinitials>TE</authorinitials><revremark>Add
-    external link reference to FAQ 17.</revremark></revision><revision><revnumber>1.5</revnumber><date>2003-12-16</date><authorinitials>TE</authorinitials><revremark>Added
-    a link to a Sys Admin article about multiple internet interfaces. Added
-    Legal Notice. Moved &#34;abstract&#34; to the body of the document. Moved
-    Revision History to this Appendix.</revremark></revision><revision><revnumber>1.4</revnumber><date>2003-12-13</date><authorinitials>TE</authorinitials><revremark>Corrected
-    formatting problems</revremark></revision><revision><revnumber>1.3</revnumber><date>2003-12-10</date><authorinitials>TE</authorinitials><revremark>Changed
-    the title of FAQ 17</revremark></revision><revision><revnumber>1.2</revnumber><date>2003-12-09</date><authorinitials>TE</authorinitials><revremark>Added
-    Copyright and legacy FAQ numbers</revremark></revision><revision><revnumber>1.1</revnumber><date>2003-12-04</date><authorinitials>MN</authorinitials><revremark>Converted
-    to Simplified DocBook XML</revremark></revision><revision><revnumber>1.0</revnumber><date>2002-08-13</date><authorinitials>TE</authorinitials><revremark>Initial
-    revision</revremark></revision></revhistory></para>
+    <para><revhistory>
+        <revision>
+          <revnumber>1.28</revnumber>
+
+          <date>2004-07-14</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Insert link to Ian Allen's DNAT paper (FAQ
+          38)</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.27</revnumber>
+
+          <date>2004-06-18</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Correct formatting in H323 quote.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.26</revnumber>
+
+          <date>2004-05-18</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Delete obsolete ping information.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.25</revnumber>
+
+          <date>2004-05-18</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Empty /etc/shorewall on Debian.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.25</revnumber>
+
+          <date>2004-05-08</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Update for Shorewall 2.0.2</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.24</revnumber>
+
+          <date>2004-04-25</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Add MA Brown's notes on multi-ISP routing.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.23</revnumber>
+
+          <date>2004-04-22</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Refined SNAT rule in FAQ #2.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.22</revnumber>
+
+          <date>2004-04-06</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Added FAQ 36.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.21</revnumber>
+
+          <date>2004-03-05</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Added Bridging link.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.20</revnumber>
+
+          <date>2004-02-27</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Added FAQ 35.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.19</revnumber>
+
+          <date>2004-02-22</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Added mention of nosmurfs option under FAQ
+          31.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.18</revnumber>
+
+          <date>2004-02-15</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Added FAQ 34.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.17</revnumber>
+
+          <date>2004-02-11</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Added FAQ 33.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.16</revnumber>
+
+          <date>2004-02-03</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Updated for Shorewall 2.0.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.15</revnumber>
+
+          <date>2004-01-25</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Updated FAQ 32 to mention masquerading. Remove
+          tables.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.14</revnumber>
+
+          <date>2004-01-24</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Added FAQ 27a regarding kernel/iptables
+          incompatibility.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.13</revnumber>
+
+          <date>2004-01-24</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Add a note about the <emphasis
+          role="bold">detectnets</emphasis> interface option in FAQ
+          9.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.12</revnumber>
+
+          <date>2004-01-20</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Improve FAQ 16 answer.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.11</revnumber>
+
+          <date>2004-01-14</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Corrected broken link</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.10</revnumber>
+
+          <date>2004-01-09</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Added a couple of more legacy FAQ numbers.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.9</revnumber>
+
+          <date>2004-01-08</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Corrected typo in FAQ 26a. Added warning to FAQ 2
+          regarding source address of redirected requests.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.8</revnumber>
+
+          <date>2003-12-31</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Additions to FAQ 4.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.7</revnumber>
+
+          <date>2003-12-30</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Remove dead link from FAQ 1.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.6</revnumber>
+
+          <date>2003.12-18</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Add external link reference to FAQ 17.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.5</revnumber>
+
+          <date>2003-12-16</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Added a link to a Sys Admin article about multiple
+          internet interfaces. Added Legal Notice. Moved "abstract" to the
+          body of the document. Moved Revision History to this
+          Appendix.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.4</revnumber>
+
+          <date>2003-12-13</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Corrected formatting problems</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.3</revnumber>
+
+          <date>2003-12-10</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Changed the title of FAQ 17</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.2</revnumber>
+
+          <date>2003-12-09</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Added Copyright and legacy FAQ numbers</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.1</revnumber>
+
+          <date>2003-12-04</date>
+
+          <authorinitials>MN</authorinitials>
+
+          <revremark>Converted to Simplified DocBook XML</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.0</revnumber>
+
+          <date>2002-08-13</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Initial revision</revremark>
+        </revision>
+      </revhistory></para>
   </appendix>
 </article>

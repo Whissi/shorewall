@@ -708,7 +708,7 @@ validate_rule() {
 		serv=$server
 		;;
 	    ~*)
-		fatal_error "Error: Rule \"$rule\" - Server may not be specified by MAC Address"
+		startup_error "Error: Rule \"$rule\" - Destination may not be specified by MAC Address"
 		;;
 	    *)
 		dest_interface="-o $server"
@@ -2026,6 +2026,9 @@ add_a_rule()
 	;;
     *.*.*)
 	serv=$server
+	;;
+    ~*)
+	fatal_error "Error: Rule \"$rule\" - Destination may not be specified by MAC Address"
 	;;
     *)
 	dest_interface="-o $server"

@@ -573,7 +573,17 @@ if [ -f ${PREFIX}/etc/shorewall/usersets ]; then
 else
     run_install -o $OWNER -g $GROUP -m 0600 usersets ${PREFIX}/etc/shorewall/usersets
     echo
-    echo "User sets file installed as ${PREFIX}/etc/shorewall/usersets"
+    echo "User Sets file installed as ${PREFIX}/etc/shorewall/usersets"
+fi
+#
+# Install the User file
+#
+if [ -f ${PREFIX}/etc/shorewall/users ]; then
+    backup_file /etc/shorewall/users
+else
+    run_install -o $OWNER -g $GROUP -m 0600 users ${PREFIX}/etc/shorewall/users
+    echo
+    echo "Users file installed as ${PREFIX}/etc/shorewall/users"
 fi
 #
 # Backup the version file

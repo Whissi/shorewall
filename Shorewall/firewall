@@ -1934,13 +1934,32 @@ process_user_set_entry() {
     local acceptchain=`accept_chain $userset`
     local dropchain=`drop_chain $userset`
     local rejectchain=`reject_chain $userset`
-    local rule="-m owner"
+
+    list_search $userset $usersets && \
+	fatal_error "Duplicate Uset Set: $userset"
+    usersets="$usersets $userset"
+
+    createchain $acceptchain No
+    createchain $dropchain No
+    createchain $rejectchain No
+
+    [ "x$reject" = "x-" ] && reject=""
+    eval ${userset}_reject="$reject"
+    [ "x$accept" = "x-" ] && accept=""
+    eval ${userset}_accept="$accept"
+    [ "x$drop" = "x-" ] && drop=""
+    eval ${userset}_drop="$drop"
+}
     
-    if ! havechain $acceptchain; then
-	createchain $acceptchain No
-	createchain $dropchain No
-	createchain $rejectchain No
-    fi
+process_user_entry() {
+    local acceptchain=`accept_chain $userset`
+    local dropchain=`drop_chain $userset`
+    local rejectchain=`reject_chain $userset`
+    local rule="-m owner"
+    local level=
+    
+    list_search $userset $usersets || \
+	fatal_error "Unknown Uset Set: $userset"
 
     [ "x$user" = "x-" ] && user=
 
@@ -1950,24 +1969,41 @@ process_user_set_entry() {
     [ -n "$user" ]  && rule="$rule --uid-owner $user"  || user='*'
     [ -n "$group" ] && rule="$rule --gid-owner $group" || group='*'
 
+    eval level=\$${userset}_accept
+    [ -n "$level" ] && \
+	log_rule $level $acceptchain ACCEPT $rule
     run_iptables -A $acceptchain $rule -j ACCEPT
+ 
+    eval level=\$${userset}_drop
+    [ -n "$level" ] && \
+	log_rule $level $dropchain DROP $rule
     run_iptables -A $dropchain   $rule -j DROP
+    
+    eval level=\$${userset}_reject
+    [ -n "$level" ] && \
+	log_rule $level $rejectchain REJECT $rule
     run_iptables -A $rejectchain $rule -j reject
 
     echo "   User $user:$group added to user set $userset"
 }
 
 setup_usersets() # $1 = Name of usersets file
-{
-    
+{   
     echo "Setting up User Sets..."
 
     strip_file usersets $1
 
-    while read userset user group ; do
-	expandv userset user group
+    while read userset reject accept drop; do
+	expandv userset reject accept drop
 	process_user_set_entry
     done < $TMP_DIR/usersets
+
+    strip_file users
+
+    while read userset user group ; do
+	expandv userset user group
+	process_user_entry
+    done < $TMP_DIR/users
 }
 
 #      
@@ -2084,7 +2120,7 @@ refresh_tc() {
 #		      by this function
 #    cport	    = Source Port Specification
 #    multiport	    = String to invoke multiport match if appropriate
-#    ratelimit   = Optional rate limiting clause
+#    ratelimit      = Optional rate limiting clause
 #
 add_nat_rule() {
     local chain
@@ -2172,7 +2208,7 @@ add_nat_rule() {
 	    else
 		for adr in `separate_list $addr`; do
 		    if [ -n "$loglevel" ]; then
-			log_rule $loglevel $OUTPUT $logtarget -t nat \
+			log_rule_limit $loglevel $OUTPUT $logtarget "$ratelimit" -t nat \
 			    `fix_bang $proto $cli $sports -d $adr $multiport $dports`
 		    fi
 
@@ -2558,6 +2594,9 @@ process_rule() # $1 = target
 		[ -n "$userset" ] && \
 		    fatal_error "A user set may only be specified in ACCEPT, REJECT and DROP rules: rule \"$rule\""
 	esac
+
+	[ -n "$loglevel" ] && \
+	    fatal_error "Logging may not be specified on a rule with a User Set: rule \"$rule\""
     else
 	case $target in
 	    ACCEPT|LOG)

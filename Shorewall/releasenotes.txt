@@ -26,6 +26,8 @@ Problems Corrected since version 1.4.6:
     "shorewall monitor" on the "Dynamic Chains" page (previously named
     "Dynamic Chain").
 
+6) Thanks to Henry Yang, LOGRATE and LOGBURST now work again.
+
 Migration Issues:
 
 1) Once you have installed this version of Shorewall, you must 
@@ -34,7 +36,9 @@ Migration Issues:
 
 2) To maintain strict compatibility with previous versions, current
    uses of "shorewall drop" and "shorewall reject" should be replaced
-   with "shorewall dropall" and "shorewall rejectall". 
+   with "shorewall dropall" and "shorewall rejectall".
+
+3) IP Traffic Accounting is changed from Snapshot 20030813. 
 
 New Features:
 
@@ -135,38 +139,34 @@ New Features:
    will use all listed addresses/ranges in round-robin fashion.
 
 7) An /etc/shorewall/accounting file has been added to allow for 
-   traffic accounting. The file has two sections.
+   traffic accounting..
 
-   The first section of the file is optional and allows aggregation of
-   counter chains into other counter chains. It does this by allowing
-   you to create an accounting chain hierarchy. See
-   http://shorewall.net/Accounting.html for a description of this
-   section.
+   The accounting rules are placed in a chain called "accounting" and
+   can thus be displayed using "shorewall show accounting".
 
-   The second section of the file has the following columns:
+   The file has the following columns:
 
-	ACTION	      - What to do when a match is found.
+       ACTION	     -  What to do when a match is found. Possible
+		        values are:
 
-				COUNT	- Simply count the match and 
-					  continue trying to match the
-					  packet with the following
-					  accounting rules
-				DONE	- Count the match and don't
-					  attempt to match any
-					  following accounting rules.
-				<chain> - The name of a chain that is
-					  to be jumped to. Shorewall
-					  will create the chain
-					  automatically if it was not
-					  created by a CHAIN entry in
-					  the first section of the
-					  file. If the name of
-					  the chain is followed by
-					  ":DONE" then after control
-					  returns from the named chain,
-					  the packet will not be
-					  matched against any of the
-					  following accounting rules.
+			COUNT - Simply count the match and continue
+			        trying to match the packet with the
+			        following accounting rules.
+
+			DONE  - Count the match and don't attempt to
+				match any following accounting rules.
+
+			<chain> - The name of a chain to jump to.
+				  Shorewall will create the chain
+				  automatically. If the name of the
+				  chain is followed by ":COUNT" then
+				  a COUNT rule matching this rule
+				  will automatically be added to
+				  <chain>
+
+	CHAIN	      - The name of the chain where the accounting
+			rule is to be added. If empty or "-" then
+			the "accounting" chain is assumed.
 
 	SOURCE	      - Packet Source
 
@@ -193,8 +193,8 @@ New Features:
 			number. May only be specified if the protocol
 			is TCP or UDP (6 or 17).
 
-   In all columns except the first, the values "-","any" and "all" are
-   treated as wild-cards.
+   In all columns except ACTION and CHAIN, the values "-","any" and
+   "all" are treated as wild-cards.
 
    The accounting rules are evaluated in the Netfilter 'filter'
    table. This is the same environment where the 'rules' file rules are
@@ -202,51 +202,9 @@ New Features:
    inbound packets and SNAT has not yet occurred on outbound ones.
 
    The accounting rules are placed in a chain called "accounting" and
-   can thus be displayed using "shorewall show accounting". It should
-   be noted that where the ACTION is <chain>:DONE then the entry
-   generates two rules in "accounting"; the first is a jump to the
-   named chain and the second is a RETURN rule which causes the
-   accounting chain to be exited.
+   can thus be displayed using "shorewall show accounting".
 
-   Examples:
-
-	COUNT		eth0		eth1   # Count traffic going through the
-					       # router from eth0 to eth1
-	COUNT		eth0:206.124.146.177   # Count traffic from my
-					       # server arriving on
-					       # eth0
-	DONE		eth0		eth1:192.168.1.24
-					       # Count traffic entering
-					       # eth0 and going to host
-					       # 192.168.1.24 on
-					       # eth1. Don't check for
-					       # any more matches.
-   Example using CHAIN:
-
-        # This example shows how you can aggretate two counters. The
-        # counters being aggregated are input and output counters on
-        # the device 'ppp0'. The CHAIN declarations go in the first 
-	# section of the /etc/shorewall/accounting file.
-
-	CHAIN		tunnel		       # Create a chain called 'tunnel'
-	CHAIN		tunnelin	tunnel # Create a chain called
-					       # 'tunnelin' with all
-					       # traffic sent to
-					       # 'tunnelin' being sent
-					       # on to 'tunnel'
-	CHAIN		tunnelout	tunnel # Create a chain called
-					       # 'tunnelout' with all
-					       # traffic sent to
-					       # 'tunnelout' being sent
-					       # on to 'tunnel'
-					       # any more matches
-	tunnelin	ppp0		       # send all traffic from
-					       # ppp0 to the chain called
-					       # 'tunnelin'
-	tunnelout	any		ppp0   # send all traffic to 
-					       # ppp0 to the chain called
-					       # 'tunnelout'
-        
+   See http://shorewall.net/Accounting.html for examples.
  
 8) Bridge interfaces (br[0-9]) may now be used in /etc/shorewall/maclist.					       
 
@@ -285,6 +243,9 @@ New Features:
 
 	  where <rate>, <interval> and <burst> are as above.
    
+   You may not place a rate limit in both the ACTION and RATE LIMIT
+   columns.
+
    Let's take an example:
 
 	 ACCEPT<2/sec:4>	net	dmz	tcp	80
@@ -305,3 +266,7 @@ New Features:
 
 10) Multiple chains may now be displayed in one "shorewall show"
     command (e.g., shorewall show INPUT FORWARD OUTPUT).
+
+11) Output rules (those with $FW as the SOURCE) may now be limited to
+    a set of local users and/or groups. See
+    http://shorewall.net/UserSets.html for details.

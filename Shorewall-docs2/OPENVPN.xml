@@ -21,7 +21,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-09-29</pubdate>
+    <pubdate>2004-10-12</pubdate>
 
     <copyright>
       <year>2003</year>
@@ -104,8 +104,10 @@ openvpn       net            134.28.54.2</programlisting>
     <note>
       <para>Some OpenVPN clients (notabley on <trademark>Windows</trademark>)
       do not use the same source and destination ports which can cause
-      problems. If system B is a Windows system, then you will want the
-      following entry in /etc/shorewall/tunnels instead of the one
+      problems. If system B is a Windows system or if you find that Shorewall
+      is blocking the UDP port 5000 traffic from the remote gateway, then you
+      will want the following entry in
+      <filename>/etc/shorewall/tunnels</filename> instead of the one
       above:</para>
 
       <programlisting>#TYPE                  ZONE           GATEWAY        GATEWAY ZONE

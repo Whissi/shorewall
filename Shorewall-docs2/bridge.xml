@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-10-04</pubdate>
+    <pubdate>2004-10-14</pubdate>
 
     <copyright>
       <year>2004</year>
@@ -170,11 +170,9 @@
 
     <para>Unfortunately, Linux distributions don't have good bridge
     configuration tools and the network configuration GUIs don't detect the
-    presence of bridge devices. You may refer to <ulink url="myfiles.htm">my
-    configuration files</ulink> for an example of configuring a two-port
-    bridge at system boot under <trademark>SuSE</trademark>. Here is an
-    excerpt from a Debian <filename>/etc/network/interfaces</filename> file
-    for a two-port bridge with a static IP address:</para>
+    presence of bridge devices. Here is an excerpt from a Debian
+    <filename>/etc/network/interfaces</filename> file for a two-port bridge
+    with a static IP address:</para>
 
     <blockquote>
       <programlisting>auto br0
@@ -221,9 +219,97 @@ ONBOOT=yes</programlisting>
     </blockquote>
 
     <para>On both the SuSE and Mandrake systems, a separate script is required
-    to configure the bridge itself (again see <ulink url="myfiles.htm">my
-    configuration files</ulink> for an example -
-    <filename>/etc/init.d/bridge</filename>).</para>
+    to configure the bridge itself.</para>
+
+    <para>Here are scripts that I used on a <trademark>Suse</trademark> 9.1
+    system.</para>
+
+    <blockquote>
+      <para><filename>/etc/sysconfig/network/ifcfg-br0</filename></para>
+
+      <programlisting>BOOTPROTO='dhcp'
+REMOTE_IPADDR=''
+STARTMODE='onboot'
+UNIQUE='3hqH.MjuOqWfSZ+C'
+WIRELESS='no'
+MTU=''</programlisting>
+
+      <para><filename>/etc/init.d/bridge</filename><programlisting>#!/bin/sh
+
+################################################################################
+#   Script to create a bridge
+#
+#     (c) 2004 - Tom Eastep (teastep@shorewall.net)
+#
+#   Modify the following variables to match your configuration
+#
+#### BEGIN INIT INFO
+# Provides:       bridge
+# Required-Start: coldplug
+# Required-Stop:
+# Default-Start:  2 3 5
+# Default-Stop:   0 1 6
+# Description:    starts and stops a bridge
+### END INIT INFO
+#
+# chkconfig: 2345 05 89
+# description: GRE/IP Tunnel
+#
+################################################################################
+
+
+PATH=$PATH:/sbin:/usr/sbin:/usr/local/sbin
+
+INTERFACES="eth1 eth0"
+BRIDGE="br0"
+MODULES="tulip"
+
+do_stop() {
+    echo "Stopping Bridge $BRIDGE"
+    brctl delbr $BRIDGE
+    for interface in $INTERFACES; do
+        ip link set $interface down
+    done
+}
+
+do_start() {
+
+      echo "Starting Bridge $BRIDGE"
+      for module in $MODULES; do
+          modprobe $module
+      done
+
+      sleep 5
+
+      for interface in $INTERFACES; do
+          ip link set $interface up
+      done
+
+      brctl addbr $BRIDGE
+
+      for interface in $INTERFACES; do
+          brctl addif $BRIDGE $interface
+      done
+}
+
+case "$1" in
+  start)
+      do_start
+    ;;
+  stop)
+      do_stop
+    ;;
+  restart)
+      do_stop
+      sleep 1
+      do_start
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart}"
+    exit 1
+esac
+exit 0</programlisting></para>
+    </blockquote>
 
     <para>Axel Westerhold has contributed this example of configuring a bridge
     with a static IP address on a Fedora System (Core 1 and Core 2 Test 1).

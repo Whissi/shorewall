@@ -382,16 +382,6 @@ sainfo address 192.168.1.0/24 any address 134.28.54.2/32 any
         compression_algorithm deflate ;
 }</programlisting>
     </blockquote>
-
-    <para>The <filename>/etc/racoon/psk.txt file</filename> on gateway
-    A:</para>
-
-    <blockquote>
-      <programlisting>134.28.54.2            &lt;the key&gt;</programlisting>
-    </blockquote>
-
-    <para>Note that the <emphasis role="bold">same key </emphasis>must be used
-    in both directions.</para>
   </section>
 
   <section>
@@ -518,6 +508,9 @@ spdadd 192.168.20.40/32 192.168.20.10/32 any -P in  ipsec esp/transport/192.168.
       <programlisting>192.168.20.20             &lt;key for 192.168.20.10&lt;-&gt;192.168.20.20&gt;
 192.168.20.30             &lt;key for 192.168.20.10&lt;-&gt;192.168.20.30&gt;
 192.168.20.40             &lt;key for 192.168.20.10&lt;-&gt;192.168.20.40&gt;</programlisting>
+
+      <para>Note that the <emphasis role="bold">same key</emphasis>must be
+      used in both directions.</para>
     </blockquote>
 
     <para>Shorewall configuration goes as follows:</para>

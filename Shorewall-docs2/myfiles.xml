@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-10-09</pubdate>
+    <pubdate>2004-10-14</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -48,18 +48,18 @@
 
     <caution>
       <para>The configuration shown here corresponds to Shorewall version
-      2.1.7. My configuration uses features not available in earlier Shorewall
-      releases.</para>
+      2.1.11. My configuration uses features not available in earlier
+      Shorewall releases.</para>
     </caution>
 
     <para>I have DSL service and have 5 static IP addresses
     (206.124.146.176-180). My DSL <quote>modem</quote> (Westell 2200) is
-    connected to eth0 and has IP address 192.168.1.1 (factory default). The
+    connected to eth1 and has IP address 192.168.1.1 (factory default). The
     modem is configured in <quote>bridge</quote> mode so PPPoE is not
-    involved. I have a local network connected to eth2 (subnet 192.168.1.0/24)
-    and a DMZ connected to eth1 (206.124.146.176/32). Note that I configure
-    the same IP address on both <filename class="devicefile">eth0</filename>
-    and <filename class="devicefile">eth1</filename>.</para>
+    involved. I have a local network connected to eth0 (subnet 192.168.1.0/24)
+    and a DMZ connected to eth2 (206.124.146.176/32). Note that I configure
+    the same IP address on both <filename class="devicefile">eth1</filename>
+    and <filename class="devicefile">eth2</filename>.</para>
 
     <para>In this configuration:</para>
 
@@ -96,8 +96,8 @@
 
     <itemizedlist>
       <listitem>
-        <para>I have Ursa (193.168.1.5/206.124.146.178) configured as a 2-port
-        bridge.</para>
+        <para>I have Ursa (192.168.1.5/192.168.3.254/206.124.146.178)
+        configured as an IPSEC gateway for the Wireless network.</para>
       </listitem>
 
       <listitem>
@@ -108,15 +108,14 @@
 
     <para>The firewall runs on a 384MB K-6/II with SuSE 9.1.</para>
 
-    <para>Ursa runs Samba for file sharing with the Windows systems..</para>
+    <para>Ursa runs Samba for file sharing with the Windows systems and is
+    configured as a Wins server.</para>
 
-    <para>The wireless network connects to Ursa's eth0 via a LinkSys
+    <para>The wireless network connects to Ursa's eth1 via a LinkSys
     WAP11.&nbsp; In additional to using the rather weak WEP 40-bit encryption
     (64-bit with the 24-bit preamble), I use <ulink
-    url="MAC_Validation.html">MAC verification</ulink>. This is still a weak
-    combination and if I lived near a wireless <quote>hot spot</quote>, I
-    would probably add IPSEC or something similar to my WiFi-&gt;local
-    connections.</para>
+    url="MAC_Validation.html">MAC verification</ulink> and <ulink
+    url="IPSEC-2.6.html">Kernel 2.6 IPSEC</ulink>.</para>
 
     <para>The single system in the DMZ (address 206.124.146.177) runs postfix,
     Courier IMAP (imaps and pop3), DNS, a Web server (Apache) and an FTP
@@ -183,6 +182,7 @@ FW=fw
 IP_FORWARDING=On
 ADD_IP_ALIASES=Yes
 ADD_SNAT_ALIASES=Yes
+RETAIN_ALIASES=Yes
 TC_ENABLED=Yes
 CLEAR_TC=Yes
 MARK_IN_FORWARD_CHAIN=No
@@ -190,15 +190,16 @@ CLAMPMSS=Yes
 ROUTE_FILTER=No
 DETECT_DNAT_IPADDRS=Yes
 MUTEX_TIMEOUT=60
+
 NEWNOTSYN=Yes
 BLACKLISTNEWONLY=Yes
+DELAYBLACKLISTLOAD=Yes
 DYNAMIC_ZONES=No
 DISABLE_IPV6=Yes
 PKTTYPE=No
 BLACKLIST_DISPOSITION=DROP
 MACLIST_DISPOSITION=REJECT
-TCP_FLAGS_DISPOSITION=DROP
-</programlisting>
+TCP_FLAGS_DISPOSITION=DROP</programlisting>
       </blockquote>
     </section>
 
@@ -209,7 +210,7 @@ TCP_FLAGS_DISPOSITION=DROP
         <para><programlisting>MIRRORS=&lt;list of shorewall mirror ip addresses&gt;
 NTPSERVERS=&lt;list of the NTP servers I sync with&gt;
 TEXAS=&lt;ip address of gateway in Plano&gt;
-OMAK=&lt;ip address of tipper while we are at our second home&gt;
+OMAK=64.139.97.48
 LOG=info
 EXT_IF=eth1
 INT_IF=eth0
@@ -222,10 +223,10 @@ DMZ_IF=eth2</programlisting></para>
 
       <blockquote>
         <programlisting>#ZONE   DISPLAY         COMMENTS
-omak    Omak            Our Laptop at our second home
 net     Internet        Internet
 dmz     DMZ             Demilitarized zone
 loc     Local           Local networks
+omak    Omak            Our Laptop in Omak
 tx      Texas           Peer Network in Dallas
 #LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE
 </programlisting>
@@ -240,10 +241,10 @@ tx      Texas           Peer Network in Dallas
         up my Ethernet interfaces.</para>
 
         <programlisting>#ZONE   INTERFACE BROADCAST       OPTIONS
-net     $EXT_IF   206.124.146.255 dhcp,norfc1918,routefilter,blacklist,tcpflags,nosmurfs
-loc     $INT_IF   192.168.1.255   dhcp
-dmz     $DMZ_IF   -
--       texas     -
+net     $EXT_IF 206.124.146.255 dhcp,norfc1918,routefilter,logmartians,blacklist,tcpflags,nosmurfs
+loc     $INT_IF detect          dhcp
+dmz     $DMZ_IF -
+-       texas   -
 #LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
       </blockquote>
     </section>
@@ -323,7 +324,6 @@ $EXT_IF         $OMAK
         <programlisting>#SOURCE         DESTINATION     POLICY          LOG LEVEL       BURST:LIMIT
 fw              fw              ACCEPT
 loc             net             ACCEPT
-fw              sec             ACCEPT
 omak            fw              ACCEPT
 fw              omak            ACCEPT
 omak            loc             ACCEPT
@@ -334,7 +334,7 @@ omak            dmz             NONE
 dmz             omak            NONE
 omak            tx              NONE
 tx              omak            NONE
-$FW             loc             ACCEPT          #Firewall to Local
+$FW             loc             ACCEPT
 $FW             tx              ACCEPT
 loc             tx              ACCEPT
 loc             fw              REJECT          $LOG
@@ -362,8 +362,7 @@ all             all             REJECT          $LOG
         <programlisting>#INTERFACE              SUBNET          ADDRESS
 +$EXT_IF::192.168.1.1      0.0.0.0/0       192.168.1.254
 $EXT_IF:2                  eth2            206.124.146.179
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE
-</programlisting>
+#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
       </blockquote>
     </section>
 
@@ -434,26 +433,6 @@ ACCEPT   $MIRRORS
     </section>
 
     <section>
-      <title>/etc/shorewall/action.Drop</title>
-
-      <blockquote>
-        <para>This is my common action for the DROP policy. It is like the
-        standard <emphasis role="bold">Drop</emphasis> action except that it
-        allows <quote>Ping</quote>.</para>
-
-        <programlisting>#TARGET  SOURCE     DEST          PROTO   DEST      SOURCE      RATE         USER/
-#                                         PORT(S)   PORT(S)     LIMIT        GROUP
-RejectAuth
-AllowPing
-dropBcast
-DropSMB
-DropUPnP
-dropNotSyn
-DropDNSrep</programlisting>
-      </blockquote>
-    </section>
-
-    <section>
       <title>/etc/shorewall/action.Reject</title>
 
       <blockquote>
@@ -478,6 +457,74 @@ DROP      loc:eth2:!192.168.1.0/24       #So that my braindead Windows[tm] XP sy
     </section>
 
     <section>
+      <title>/etc/racoon/setkey.conf</title>
+
+      <blockquote>
+        <para>This defines the policies for encryption to/from our second
+        home.</para>
+
+        <programlisting>flush;
+spdflush;
+
+spdadd 192.168.1.0/24     64.139.97.48/32     any -P out ipsec esp/tunnel/206.124.146.176-64.139.97.48/require;
+spdadd 64.139.97.48/32    192.168.1.0/24      any -P in  ipsec esp/tunnel/64.139.97.48-206.124.146.176/require;
+spdadd 64.139.97.48/32    206.124.146.176/32  any -P in  ipsec esp/tunnel/64.139.97.48-206.124.146.176/require;
+spdadd 206.124.146.176/32 64.139.97.48/32     any -P out ipsec esp/tunnel/206.124.146.176-64.139.97.48/require;
+</programlisting>
+      </blockquote>
+    </section>
+
+    <section>
+      <title>/etc/racoon/racoon.conf</title>
+
+      <blockquote>
+        <para>SA parameters for communication with our second home.</para>
+
+        <programlisting> path certificate "/etc/certs" ;
+ listen
+ {
+         isakmp 206.124.146.176;
+ }
+ 
+remote 64.139.97.48
+{
+        exchange_mode main ;
+        certificate_type x509 "gateway.pem" "gateway_key.pem";
+        verify_cert on;
+        my_identifier asn1dn ;
+        peers_identifier asn1dn ;
+        verify_identifier on ;
+        lifetime time 24 hour ;
+        proposal {
+                encryption_algorithm 3des;
+                hash_algorithm sha1;
+                authentication_method rsasig ;
+                dh_group 2 ;
+        }
+}
+
+sainfo address 192.168.1.0/24 any address 64.139.97.48/32 any
+{
+        pfs_group 2;
+        lifetime time 12 hour ;
+        encryption_algorithm 3des, blowfish, des, rijndael ;
+        authentication_algorithm hmac_sha1, hmac_md5 ;
+        compression_algorithm deflate ;
+}
+
+sainfo address 206.124.146.176/32 any address 64.139.97.48/32 any
+{
+        pfs_group 2;
+        lifetime time 12 hour ;
+        encryption_algorithm 3des, blowfish, des, rijndael ;
+        authentication_algorithm hmac_sha1, hmac_md5 ;
+        compression_algorithm deflate ;
+}
+</programlisting>
+      </blockquote>
+    </section>
+
+    <section>
       <title>Rules File (The shell variables are set in
       /etc/shorewall/params)</title>
 
@@ -488,16 +535,17 @@ DROP      loc:eth2:!192.168.1.0/24       #So that my braindead Windows[tm] XP sy
 ###############################################################################################################################################################################
 # Local Network to Internet - Reject attempts by Trojans to call home, direct SMTP and MS Message Service
 #
-RejectSMTP      loc                             net                     tcp     25
 REJECT:$LOG     loc                             net                     tcp     6667,25
 REJECT:$LOG     loc                             net                     udp     1025:1031
 #
-# Stop NETBIOS crap since our policy is ACCEPT
+# Stop NETBIOS crap
 #
 REJECT          loc                             net                     tcp     137,445
 REJECT          loc                             net                     udp     137:139
 #
-DROP            loc:!192.168.1.0/24             net
+# Stop my idiotic XP box from sending to the net with an HP source IP address
+#
+DROP            loc:!192.168.0.0/22             net
 #
 # SQUID
 #
@@ -505,13 +553,13 @@ REDIRECT        loc                             3128                    tcp     
 ###############################################################################################################################################################################
 # Local Network to Firewall
 #
-DROP            loc:!192.168.1.0/24             fw
+DROP            loc:!192.168.0.0/22             fw                      # Silently drop traffic with an HP source IP from my XP box
 ACCEPT          loc                             fw                      tcp     ssh,time
 ACCEPT          loc                             fw                      udp     161,ntp
 ###############################################################################################################################################################################
 # Local Network to DMZ
 #
-DROP            loc:!192.168.1.0/24             dmz
+DROP            loc:!192.168.0.0/22             dmz
 ACCEPT          loc                             dmz                     udp     domain,xdmcp
 ACCEPT          loc                             dmz                     tcp     www,smtp,smtps,domain,ssh,imap,https,imaps,cvspserver,ftp,10027,pop3    -
 ###############################################################################################################################################################################
@@ -530,12 +578,12 @@ DropPing        net             loc
 ###############################################################################################################################################################################
 # Internet to DMZ
 #
-DNAT-           net                             dmz:206.124.146.177     tcp     smtp                                    -               206.124.146.179,206.124.146.1
-78
+DNAT-           net                             dmz:206.124.146.177     tcp     smtp                                    -               206.124.146.179,206.124.146.178
 ACCEPT          net                             dmz                     tcp     smtp,smtps,www,ftp,imaps,domain,https,cvspserver        -
 ACCEPT          net                             dmz                     udp     domain
 ACCEPT          net                             dmz                     udp     33434:33436
 Mirrors         net                             dmz                     tcp     rsync
+ACCEPT          net:$OMAK                       dmz                     tcp     22      #SSH from Omak
 AllowPing       net                             dmz
 ###############################################################################################################################################################################
 #
@@ -621,19 +669,16 @@ ACCEPT          tx                              loc:192.168.1.5         all
   </section>
 
   <section>
-    <title>Bridge (Ursa) Configuration</title>
+    <title>IPSEC Gateway (Ursa) Configuration</title>
 
-    <para>As mentioned above, Ursa acts as a bridge. It's view of the network
-    is diagrammed in the following figure.</para>
+    <para>As mentioned above, Ursa acts as an IPSEC gateway for the wireless
+    network. It's view of the network is diagrammed in the following
+    figure.</para>
 
-    <graphic fileref="images/network1.png" />
+    <graphic align="center" fileref="images/network1.png" valign="middle" />
 
     <para>I've included the files that I used to configure that system -- some
     of them are SuSE-specific.</para>
-
-    <para>The configuration on Wookie can be modified to test various bridging
-    features -- otherwise, it serves to isolate the Wireless network from the
-    rest of our systems.</para>
 
     <section>
       <title>shorewall.conf</title>
@@ -641,7 +686,7 @@ ACCEPT          tx                              loc:192.168.1.5         all
       <blockquote>
         <para>Only the changes from the defaults are shown.</para>
 
-        <programlisting>BRIDGING=Yes</programlisting>
+        <programlisting>CLAMPMSS=1400 # There is an MTU problem between Tipper and the IMAP server at work. This corrects the problem</programlisting>
       </blockquote>
     </section>
 
@@ -657,6 +702,7 @@ ACCEPT          tx                              loc:192.168.1.5         all
 loc     Local           Local networks
 net     Internet        The Big Bad Internet
 WiFi    Wireless        Wireless Network
+sec     Secure          Secure Wireless Network
 #LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE
 </programlisting>
       </blockquote>
@@ -669,17 +715,26 @@ WiFi    Wireless        Wireless Network
         <programlisting>#SOURCE         DEST            POLICY          LOG             LIMIT:BURST
 loc             fw              ACCEPT
 loc             net             NONE
-loc             WiFi            ACCEPT
+loc             sec             ACCEPT
 net             fw              ACCEPT
-net             WiFi            ACCEPT
 net             loc             NONE
+net             sec             ACCEPT
+sec             fw              ACCEPT
+sec             loc             ACCEPT
+sec             net             ACCEPT
+fw              loc             ACCEPT
+fw              net             ACCEPT
+fw              sec             ACCEPT
+fw              WiFi            ACCEPT
+sec             WiFi            NONE
+WiFi            sec             NONE
 WiFi            net             ACCEPT
-fw              all             ACCEPT
-#
-# THE FOLLOWING POLICY MUST BE LAST
-#
 all             all             REJECT          info
 #LAST LINE -- DO NOT REMOVE</programlisting>
+
+        <blockquote>
+          <para></para>
+        </blockquote>
       </blockquote>
     </section>
 
@@ -688,8 +743,21 @@ all             all             REJECT          info
 
       <blockquote>
         <programlisting>#ZONE    INTERFACE      BROADCAST       OPTIONS
--        br0            192.168.1.255   dhcp
+net     eth0            192.168.1.255   dhcp,nobogons,blacklist
+WiFi    eth1            192.168.3.255   nobogons,blacklist,maclist,routeback
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+      </blockquote>
+    </section>
+
+    <section>
+      <title>ipsec</title>
+
+      <blockquote>
+        <programlisting>#ZONE   IPSEC   OPTIONS                 IN                      OUT
+#       ONLY                            OPTIONS                 OPTIONS
+sec     yes     mode=tunnel             tunnel-src=192.168.3.8  tunnel-dst=192.168.3.8
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
+</programlisting>
       </blockquote>
     </section>
 
@@ -698,9 +766,8 @@ all             all             REJECT          info
 
       <blockquote>
         <programlisting>#ZONE           HOST(S)                         OPTIONS
-loc             br0:eth1:192.168.1.0/24
-net             br0:eth1
-WiFi            br0:eth0                        maclist
+sec             eth1:0.0.0.0/0                  routeback
+loc             eth0:192.168.1.0/24
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS LINE -- DO NOT REMOVE</programlisting>
       </blockquote>
     </section>
@@ -711,16 +778,6 @@ WiFi            br0:eth0                        maclist
       <blockquote>
         <programlisting>#ACTION    SOURCE          DEST            PROTO   DEST    SOURCE  ORIGINAL
 #                                          PORT            PORT(S) DEST
-ACCEPT          WiFi            loc                     udp     137:139
-ACCEPT          WiFi            loc                     tcp     22,80,137,139,445,631,901,3389
-ACCEPT          WiFi            loc                     udp     1024:                                   137
-ACCEPT          WiFi            loc                     udp     177,123
-ACCEPT          WiFi            loc:192.168.1.4         tcp     1723
-ACCEPT          WiFi            loc:192.168.1.4         47
-ACCEPT          WiFi            loc                     tcp     5900:5909
-
-ACCEPT          WiFi            fw                      tcp     ssh,80,111,137,139,445,9100:9104
-ACCEPT          WiFi            fw                      udp
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
       </blockquote>
     </section>
@@ -730,7 +787,7 @@ ACCEPT          WiFi            fw                      udp
 
       <blockquote>
         <programlisting>#INTERFACE      HOST(S)         OPTIONS
-br0             0.0.0.0/0       routeback
+eth0            0.0.0.0/0
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
       </blockquote>
     </section>
@@ -740,119 +797,258 @@ br0             0.0.0.0/0       routeback
 
       <blockquote>
         <programlisting>#INTERFACE              MAC                     IP ADDRESSES (Optional)
-br0:eth0                00:A0:1C:DB:0C:A0       192.168.1.7     #Work Laptop
-br0:eth0                00:04:59:0e:85:b9                       #WAP11
-br0:eth0                00:06:D5:45:33:3c                       #WET11
-br0:eth0                00:0b:c1:53:cc:97       192.168.1.8     #TIPPER
+eth1                    00:A0:1C:DB:0C:A0       192.168.3.7     #Work Laptop
+eth1                    00:04:59:0e:85:b9                       #WAP11
+eth1                    00:06:D5:45:33:3c                       #WET11
+eth1                    00:0b:c1:53:cc:97       192.168.3.8     #TIPPER
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
       </blockquote>
     </section>
 
     <section>
-      <title>/etc/init.d/bridge</title>
+      <title>/etc/racoon/setkey.conf</title>
 
       <blockquote>
-        <para>This file is SuSE-specific and creates the bridge device
-        <filename class="devicefile">br0</filename>. A script for other
-        distributions would be similar (see the <ulink
-        url="bridge.html">Shorewall Bridge documentation</ulink> for
-        examples).</para>
+        <para>This defines encryption policies to/from the wireless
+        network.</para>
 
-        <programlisting>#!/bin/sh
-################################################################################
-#   Script to create a bridge
-#
-#     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
-#
-#     (c) 2004 - Tom Eastep (teastep@shorewall.net)
-#
-#   Modify the following variables to match your configuration
-#
-#### BEGIN INIT INFO
-# Provides:       bridge
-# Required-Start: coldplug
-# Required-Stop:
-# Default-Start:  2 3 5
-# Default-Stop:   0 1 6
-# Description:    starts and stops a bridge
-### END INIT INFO
-#
-# chkconfig: 2345 05 89
-# description: Layer 2 Bridge
-#
-################################################################################
+        <programlisting>flush;
+spdflush;
 
-PATH=$PATH:/sbin:/usr/sbin:/usr/local/sbin
-
-INTERFACES="eth0 eth1"
-BRIDGE="br0"
-
-do_stop() {
-    echo "Stopping Bridge $BRIDGE"
-    brctl delbr $BRIDGE
-    for interface in $INTERFACES; do
-        ip link set $interface down
-    done
-}
-
-do_start() {
-
-      echo "Starting Bridge $BRIDGE"
-      for interface in $INTERFACES; do
-          ip link set $interface up
-      done
-
-      brctl addbr $BRIDGE
-
-      for interface in $INTERFACES; do
-          brctl addif $BRIDGE $interface
-      done
-}
-
-case "$1" in
-  start)
-      do_start
-    ;;
-  stop)
-      do_stop
-    ;;
-  restart)
-      do_stop
-      sleep 1
-      do_start
-    ;;
-  *)
-    echo "Usage: $0 {start|stop|restart}"
-    exit 1
-esac
-exit 0</programlisting>
+spdadd 0.0.0.0/0          192.168.3.8/32     any -P out  ipsec esp/tunnel/192.168.3.254-192.168.3.8/require;
+spdadd 192.168.3.8/32     0.0.0.0/0          any -P in   ipsec esp/tunnel/192.168.3.8-192.168.3.254/require;</programlisting>
       </blockquote>
     </section>
 
     <section>
-      <title>/etc/sysconfig/network/ifcfg-br0</title>
+      <title>/etc/racoon/racoon.conf</title>
 
       <blockquote>
-        <para>This file is SuSE-specific</para>
+        <para>SA parameters for communication with our wireless network
+        (Tipper is currently the only Wireless host).</para>
 
-        <programlisting>BOOTPROTO='dhcp'
-REMOTE_IPADDR=''
-STARTMODE='onboot'
-UNIQUE='3hqH.MjuOqWfSZ+C'
-WIRELESS='no'
-MTU=''</programlisting>
+        <programlisting>path certificate "/etc/certs";
+
+listen
+{
+        isakmp 192.168.3.254;
+}
+
+remote 192.168.3.8
+{
+        exchange_mode main ;
+        certificate_type x509 "ursa.pem" "ursa_key.pem";
+        verify_cert on;
+        my_identifier asn1dn ;
+        peers_identifier asn1dn ;
+        verify_identifier on ;
+        lifetime time 24 hour ;
+        proposal {
+                encryption_algorithm 3des;
+                hash_algorithm sha1;
+                authentication_method rsasig ;
+                dh_group 2 ;
+        }
+}
+
+sainfo address 0.0.0.0/0 any address 192.168.3.8/32 any
+{
+        pfs_group 2;
+        lifetime time 12 hour ;
+        encryption_algorithm 3des, blowfish, des, rijndael ;
+        authentication_algorithm hmac_sha1, hmac_md5 ;
+        compression_algorithm deflate ;
+}</programlisting>
+      </blockquote>
+    </section>
+  </section>
+
+  <section>
+    <title>Tipper Configuration</title>
+
+    <para>This laptop is either configured on our wireless network
+    (192.168.3.8) or as a standalone system in our second home (64.139.97.48).
+    The Shorewall and Racoon configurations are the same regardless of where
+    Tipper is connected -- only the IP configuration changes.</para>
+
+    <para>Tipper's view of the work is shown in the following diagram:</para>
+
+    <graphic align="center" fileref="images/network2.png" valign="middle" />
+
+    <para>The key configuration files are shown in the following
+    sections.</para>
+
+    <section>
+      <title>zones</title>
+
+      <blockquote>
+        <programlisting>#ZONE   DISPLAY         COMMENTS
+home    Home            Shorewall Network
+net     Net             Internet
+#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE
+</programlisting>
       </blockquote>
     </section>
 
     <section>
-      <title>/etc/sysconfig/network/routes</title>
+      <title>policy</title>
 
       <blockquote>
-        <para>This file is SuSE-specific</para>
+        <programlisting>#SOURCE         DEST            POLICY          LOG LEVEL       LIMIT:BURST
+fw              net             ACCEPT
+fw              home            ACCEPT
+home            fw              ACCEPT
+net             home            NONE
+home            net             NONE
+net             all             DROP            info
+# The FOLLOWING POLICY MUST BE LAST
+all             all             REJECT          info
+#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+      </blockquote>
+    </section>
 
-        <programlisting>192.168.1.0/24 dev br0  proto kernel  scope link  src 192.168.1.5
-127.0.0.0/8 dev lo  scope link
-default via 192.168.1.254 dev br0</programlisting>
+    <section>
+      <title>interfaces</title>
+
+      <blockquote>
+        <programlisting>#ZONE   INTERFACE       BROADCAST       OPTIONS
+net     eth0            detect          dhcp,tcpflags
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+      </blockquote>
+    </section>
+
+    <section>
+      <title>ipsec</title>
+
+      <blockquote>
+        <programlisting>#ZONE   IPSEC   OPTIONS                 IN                      OUT
+#       ONLY                            OPTIONS                 OPTIONS
+home    yes     mode=tunnel
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+      </blockquote>
+    </section>
+
+    <section>
+      <title>hosts</title>
+
+      <blockquote>
+        <programlisting>#ZONE           HOST(S)                         OPTIONS
+home            eth0:0.0.0.0/0
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS LINE -- DO NOT REMOVE</programlisting>
+      </blockquote>
+    </section>
+
+    <section>
+      <title>rules</title>
+
+      <blockquote>
+        <programlisting>#ACTION         SOURCE                  DEST    PROTO   DEST    SOURCE  ORIGINAL        RATE    USER/
+#                                                       PORT    PORT(S) DEST            LIMIT   GROUP
+ACCEPT          net                     fw      icmp    8
+ACCEPT          net                     fw      tcp     22
+ACCEPT          net                     fw      tcp     4000:4100
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+      </blockquote>
+    </section>
+
+    <section>
+      <title>/etc/racoon/setkey.conf</title>
+
+      <blockquote>
+        <programlisting>flush;
+spdflush;
+
+# Policies for while we are in Omak
+
+spdadd 64.139.97.48/32    206.124.146.176/32 any -P out ipsec esp/tunnel/64.139.97.48-206.124.146.176/require;
+spdadd 206.124.146.176/32 64.139.97.48/32    any -P in  ipsec esp/tunnel/206.124.146.176-64.139.97.48/require;
+spdadd 192.168.1.0/24     64.139.97.48/32    any -P in  ipsec esp/tunnel/206.124.146.176-64.139.97.48/require;
+spdadd 64.139.97.48/32    192.168.1.0/24     any -P out ipsec esp/tunnel/64.139.97.48-206.124.146.176/require;
+
+# Policies for while we're connected via Wireless at home
+
+spdadd 192.168.3.8/32     192.168.3.8/32     any -P in  none;
+spdadd 192.168.3.8/32     192.168.3.8/32     any -P out none;
+spdadd 127.0.0.0/8        127.0.0.0/8        any -P in  none;
+spdadd 127.0.0.0/8        127.0.0.0/8        any -P out none;
+spdadd 0.0.0.0/0          192.168.3.8/32     any -P in  ipsec esp/tunnel/192.168.3.254-192.168.3.8/require;
+spdadd 192.168.3.8/32     0.0.0.0/0          any -P out ipsec esp/tunnel/192.168.3.8-192.168.3.254/require;
+</programlisting>
+      </blockquote>
+    </section>
+
+    <section>
+      <title>/etc/racoon/racoon.conf</title>
+
+      <blockquote>
+        <programlisting>path certificate "/etc/certs";
+
+listen
+{
+        isakmp 64.139.97.48;
+        isakmp 192.168.3.8;
+}
+
+remote 206.124.146.176
+{
+        exchange_mode main ;
+        certificate_type x509 "tipper.pem" "tipper_key.pem";
+        verify_cert on;
+        my_identifier asn1dn ;
+        peers_identifier asn1dn ;
+        verify_identifier on ;
+        lifetime time 24 hour ;
+        proposal {
+                encryption_algorithm 3des;
+                hash_algorithm sha1;
+                authentication_method rsasig ;
+                dh_group 2 ;
+        }
+}
+
+remote 192.168.3.254
+{
+        exchange_mode main ;
+        certificate_type x509 "tipper.pem" "tipper_key.pem";
+        verify_cert on;
+        my_identifier asn1dn ;
+        peers_identifier asn1dn ;
+        verify_identifier on ;
+        lifetime time 24 hour ;
+        proposal {
+                encryption_algorithm 3des;
+                hash_algorithm sha1;
+                authentication_method rsasig ;
+                dh_group 2 ;
+        }
+}
+
+sainfo address 64.139.97.48/32 any address 192.168.1.0/24 any
+{
+        pfs_group 2;
+        lifetime time 12 hour ;
+        encryption_algorithm 3des, blowfish, des, rijndael ;
+        authentication_algorithm hmac_sha1, hmac_md5 ;
+        compression_algorithm deflate ;
+}
+
+sainfo address 64.139.97.48/32 any address 206.124.146.176/32 any
+{
+        pfs_group 2;
+        lifetime time 12 hour ;
+        encryption_algorithm 3des, blowfish, des, rijndael ;
+        authentication_algorithm hmac_sha1, hmac_md5 ;
+        compression_algorithm deflate ;
+}
+
+sainfo address 192.168.3.8/32 any address 0.0.0.0/0 any
+{
+        pfs_group 2;
+        lifetime time 12 hour ;
+        encryption_algorithm 3des, blowfish, des, rijndael ;
+        authentication_algorithm hmac_sha1, hmac_md5 ;
+        compression_algorithm deflate ;
+}</programlisting>
       </blockquote>
     </section>
   </section>

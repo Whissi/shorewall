@@ -861,6 +861,8 @@ case "$1" in
 	mutex_on
 	while [ $# -gt 1 ]; do
 	    shift
+	    qt iptables -D dynamic -s $1 -j reject
+	    qt iptables -D dynamic -s $1 -j DROP
 	    iptables -A dynamic -s $1 -j DROP || break 1
 	    echo "$1 Dropped"
 	done
@@ -871,6 +873,8 @@ case "$1" in
 	mutex_on
 	while [ $# -gt 1 ]; do
 	    shift
+	    qt iptables -D dynamic -s $1 -j reject
+	    qt iptables -D dynamic -s $1 -j DROP
 	    iptables -A dynamic -s $1 -j reject || break 1
 	    echo "$1 Rejected"
 	done
@@ -881,13 +885,7 @@ case "$1" in
 	mutex_on
 	while [ $# -gt 1 ]; do
 	    shift
-	    if	qt iptables -D dynamic -s $1 -j reject; then
-		#
-		# Address was rejected -- silently remove any drop as well
-		#
-		qt iptables -D dynamic -s $1 -j DROP
-		echo "$1 Allowed"
-	    elif qt iptables -D dynamic -s $1 -j DROP; then
+	    if	qt iptables -D dynamic -s $1 -j reject || qt iptables -D dynamic -s $1 -j DROP; then
 		echo "$1 Allowed"
 	    else
 		echo "$1 Not Dropped or Rejected"

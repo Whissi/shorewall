@@ -28,6 +28,12 @@ Problems Corrected since version 1.4.6:
 
 6) Thanks to Henry Yang, LOGRATE and LOGBURST now work again.
 
+7) The 'shorewall reject' and 'shorewall drop' commands now delete any
+   existing rules for the subject IP address before adding a new DROP
+   or REJECT rule. Previously, there could be many rules for the same
+   IP address in the dynamic chain so that multiple 'allow' commands
+   were required to re-enable traffic to/from the address.
+
 Migration Issues:
 
 1) IP Traffic Accounting is changed from Snapshot 20030813. 

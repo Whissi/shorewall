@@ -12,20 +12,24 @@
 #			of a zone defined in /etc/shorewall/zones.
 #
 #			If the interface serves multiple zones that will be
-#			defined in the /etc/shorewall/hosts file, you may
+#			defined in the /etc/shorewall/hosts file, you should
 #			place "-" in this column.
 #	
-#	INTERFACE	Name of interface
+#	INTERFACE	Name of interface. Each interface may be listed only
+#			once in this file.
 #
 #	BROADCAST	The broadcast address for the subnetwork to which the
 #			interface belongs. For P-T-P interfaces, this
-#			column is left black.
+#			column is left black.If the interface has multiple
+#			addresses on multiple subnets then list the broadcast
+#			addresses as a comma-separated list.
 #					    
 #			If you use the special value "detect", the firewall
 #			will detect the broadcast address for you. If you
 #			select this option, the interface must be up before
-#			the firewall is started and you must have iproute
-#			installed.
+#			the firewall is started, you must have iproute
+#			installed and the interface must only be associated
+#			with a single subnet.
 #			
 #			If you don't want to give a value for this column but
 #			you want to enter a value in the OPTIONS column, enter
@@ -119,7 +123,7 @@
 #
 #			net	ppp0	-		noping
 ##############################################################################
-#ZONE	INTERFACE	BROADCAST	OPTIONS
+#ZONE	 INTERFACE	BROADCAST	OPTIONS
 net	eth0		detect		dhcp,routefilter,norfc1918
 loc	eth1		detect		routestopped
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

@@ -2571,10 +2571,10 @@ add_an_action()
 	else
 	    if [ -n "$loglevel" ]; then
 		log_rule_limit $loglevel $action $logtarget "$ratelimit" "$logtag" $userandgroup \
-		    $(fix_bang $proto $sports $multiport $cli $dports)
+		    $(fix_bang $proto $sports $multiport $cli $dest_interface $dports)
 	    fi
 		    
-	    run_iptables2 -A $action $proto $multiport $cli $sports \
+	    run_iptables2 -A $action $proto $multiport $cli $dest_interface $sports \
 		$dports $ratelimit $userandgroup -j $target
 	fi
     fi

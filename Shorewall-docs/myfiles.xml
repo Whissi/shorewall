@@ -230,6 +230,27 @@ eth3            192.168.3.0/24
     </section>
 
     <section>
+      <title>RFC1918 File</title>
+
+      <blockquote>
+        <para>I use a stripped-down file which doesn&#39;t have to be updated
+        when the IANA allocates a block of IP addresses.</para>
+      </blockquote>
+
+      <blockquote>
+        <programlisting>#SUBNET                 TARGET
+169.254.0.0/16          DROP            # DHCP autoconfig
+172.16.0.0/12           logdrop         # RFC 1918
+192.0.2.0/24            logdrop         # Example addresses
+192.168.0.0/16          logdrop         # RFC 1918
+10.24.60.56             DROP            # Some idiot in my broadcast domain
+                                        # has a box configured with this
+                                        # address.
+10.0.0.0/8              logdrop         # Reserved (RFC 1918)</programlisting>
+      </blockquote>
+    </section>
+
+    <section>
       <title>Blacklist File (Partial)</title>
 
       <blockquote>
@@ -296,7 +317,7 @@ eth0                    eth3            206.124.146.179
       </blockquote>
     </section>
 
-    <section>
+    <section id="ProxyARP">
       <title>Proxy ARP File</title>
 
       <blockquote>
@@ -520,23 +541,12 @@ ACCEPT          all                             all                     icmp    
     </section>
 
     <section>
-      <title>Tcrules File</title>
-
-      <para>This file deals with redirecting html requests to Squid on the DMZ
-      server.</para>
-
-      <blockquote>
-        <programlisting>#TYPE                   ZONE    GATEWAY         GATEWAY ZONE    PORT
-gre                     net     $TEXAS
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
-      </blockquote>
-    </section>
-
-    <section>
       <title>Init File</title>
 
-      <para>This file deals with redirecting html requests to Squid on the DMZ
-      server.</para>
+      <blockquote>
+        <para>This file deals with redirecting html requests to <ulink
+        url="Shorewall_Squid_Usage.html#DMZ">Squid on the DMZ server</ulink>.</para>
+      </blockquote>
 
       <blockquote>
         <programlisting>#
@@ -554,8 +564,10 @@ fi</programlisting>
     <section>
       <title>/etc/iproute2/rt_tables</title>
 
-      <para>This file deals with redirecting html requests to Squid on the DMZ
-      server.</para>
+      <blockquote>
+        <para>This file deals with redirecting html requests to <ulink
+        url="Shorewall_Squid_Usage.html#DMZ">Squid on the DMZ server</ulink>.</para>
+      </blockquote>
 
       <blockquote>
         <programlisting>#
@@ -576,20 +588,26 @@ fi</programlisting>
     <section>
       <title>Tcrules File</title>
 
-      <para>This file deals with redirecting html requests to Squid on the DMZ
-      server.</para>
+      <blockquote>
+        <para>This file deals with redirecting html requests to <ulink
+        url="Shorewall_Squid_Usage.html#DMZ">Squid on the DMZ server</ulink>
+        -- in my setup, it is <emphasis role="bold">not</emphasis> used for
+        traffic shapping/control.</para>
+      </blockquote>
 
       <blockquote>
-        <programlisting>#TYPE                   ZONE    GATEWAY         GATEWAY ZONE    PORT
-gre                     net     $TEXAS
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+        <programlisting>#MARK           SOURCE          DEST            PROTO   PORT(S) CLIENT PORT(S)
+1:P             eth2,eth3       !192.168.0.0/16 tcp     80</programlisting>
       </blockquote>
     </section>
 
     <section>
       <title>Tcstart File</title>
 
-      <para>My tcstart file is just the HTB version of WonderShaper.</para>
+      <blockquote>
+        <para>My tcstart file is just the HTB version of <ulink
+        url="http://lartc.org/wondershaper/">The WonderShaper</ulink>.</para>
+      </blockquote>
     </section>
 
     <section>
@@ -598,7 +616,7 @@ gre                     net     $TEXAS
       <blockquote>
         <para>This file is Redhat specific and adds a route to my DMZ server
         when eth1 is brought up. It allows me to enter <quote>Yes</quote> in
-        the HAVEROUTE column of my Proxy ARP file.</para>
+        the HAVEROUTE column of <link linkend="ProxyARP">my Proxy ARP file</link>.</para>
 
         <programlisting>#!/bin/sh
 

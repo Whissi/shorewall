@@ -2823,7 +2823,7 @@ find_logactionchain() # $1 = Action Name, $2 = Log Level
 }
 
 #
-# Read /etc/shorewall/actions and for each defined <action>, pre-process 
+# Read /etc/shorewall/actions and /usr/share/shorewall/actions.std and for each defined <action>, pre-process 
 # /etc/shorewall/action.<action>
 #
 
@@ -2941,7 +2941,6 @@ process_actions2() {
 	fi
 
 	process_action $xaction $xtarget $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec
-
     }
 
     log_action() {

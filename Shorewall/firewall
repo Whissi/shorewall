@@ -4088,13 +4088,13 @@ add_common_rules() {
 
 	strip_file rfc1918
 
-	createchain rfc1918 no
+	createchain norfc1918 no
 
-	createchain logdrop no
+	createchain rfc1918 no
 	
-	log_rule $RFC1918_LOG_LEVEL logdrop DROP
+	log_rule $RFC1918_LOG_LEVEL rfc1918 DROP
 	
-	run_iptables -A logdrop -j DROP
+	run_iptables -A rfc1918 -j DROP
 
 	if [ -n "$MANGLE_ENABLED" -a -z "$CONNTRACK_MATCH" ]; then
 	    #
@@ -4106,27 +4106,30 @@ add_common_rules() {
 	    # Also add a chain to log and drop any RFC1918 packets that we find
 	    #
 	    run_iptables -t mangle -N man1918
-	    run_iptables -t mangle -N logdrop
-	    log_rule $RFC1918_LOG_LEVEL logdrop DROP -t mangle
-	    run_iptables -t mangle -A logdrop -j DROP
+	    run_iptables -t mangle -N rfc1918
+	    log_rule $RFC1918_LOG_LEVEL rfc1918 DROP -t mangle
+	    run_iptables -t mangle -A rfc1918 -j DROP
 	fi
 
 	while read subnet target; do
 	    case $target in
-		logdrop|DROP|RETURN)
+		logdrop)
+		    target=rfc1918
+		    ;;
+		DROP|RETURN)
 		    ;;
 		*)
 		    fatal_error "Invalid target ($target) for $subnet"
 		    ;;
 	    esac
 
-	    run_iptables2 -A rfc1918 -s $subnet -j $target
+	    run_iptables2 -A norfc1918 -s $subnet -j $target
 
 	    if [ -n "$CONNTRACK_MATCH" ]; then
 		#
 		# We have connection tracking match -- match on the original destination
 		#
-		run_iptables2 -A rfc1918 -m conntrack --ctorigdst $subnet -j $target
+		run_iptables2 -A norfc1918 -m conntrack --ctorigdst $subnet -j $target
 	    elif [ -n "$MANGLE_ENABLED" ]; then
 		#
 		# No connection tracking match but we have mangling -- add a rule to
@@ -4138,7 +4141,7 @@ add_common_rules() {
 
 	for interface in $norfc1918_interfaces; do
 	    for chain in `first_chains $interface`; do
-		run_iptables -A $chain -m state --state NEW -j rfc1918
+		run_iptables -A $chain -m state --state NEW -j norfc1918
 	    done
 
 	    [ -n "$MANGLE_ENABLED" -a -z "$CONNTRACK_MATCH" ] && \

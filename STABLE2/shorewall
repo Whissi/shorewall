@@ -1,10 +1,10 @@
 #!/bin/sh
 #
-#     Shorewall Packet Filtering Firewall Control Program - V2.0 - 3/14/2004
+#     Shorewall Packet Filtering Firewall Control Program - V2.2
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
 #
-#     (c) 1999,2000,2001,2002,2003,2004 - Tom Eastep (teastep@shorewall.net)
+#     (c) 1999,2000,2001,2002,2003,2004,2005 - Tom Eastep (teastep@shorewall.net)
 #
 #	This file should be placed in /sbin/shorewall.
 #
@@ -33,7 +33,7 @@
 #
 #          shorewall add <iface>[:<host>] zone     Adds a host or subnet to a zone
 #          shorewall delete <iface>[:<host>] zone  Deletes a host or subnet from a zone
-#	   shorewall start			   Starts the firewall
+#	   shorewall start 			   Starts the firewall
 #	   shorewall restart			   Restarts the firewall
 #	   shorewall stop			   Stops the firewall
 #	   shorewall monitor [ refresh-interval ]  Repeatedly Displays firewall status
@@ -135,6 +135,24 @@ showchain() # $1 = name of chain
 }
 
 #
+# The 'awk' hack that compensates for a bug in iptables-save (actually in libipt_policy.so) and can be removed when that bug is fixed.
+#
+
+iptablesbug()
+{
+    if qt which awk ; then
+	awk 'BEGIN           {sline=""; };\
+             /^-j/           { print sline $0; next };\
+             /-m policy.*-j/ { print $0; next };\
+             /-m policy/     { sline=$0; next };\
+                             {print ; sline="" }'
+    else
+	echo "   Warning: You don't have 'awk' on this system so the output of the save command may be unusable" >&2
+	cat
+    fi
+}
+
+#
 # Validate the value of RESTOREFILE
 #
 validate_restorefile() # $* = label
@@ -174,6 +192,19 @@ get_config() {
 
     [ -n "$LOGFORMAT" ] || LOGFORMAT="Shorewall:"
 
+    if [ -n "$IPTABLES" ]; then
+	if [ ! -e "$IPTABLES" ]; then
+	    echo "   ERROR: The program specified in IPTABLES does not exist or is not executable" >&2
+	    exit 2
+	fi
+    else
+	IPTABLES=$(which iptables 2> /dev/null)
+	if [ -z "$IPTABLES" ] ; then
+	    echo "   ERROR: Can't find iptables executable" >&2
+	    exit 2
+	fi
+    fi
+
     if [ -n "$SHOREWALL_SHELL" ]; then
 	if [ ! -e "$SHOREWALL_SHELL" ]; then
 	    echo "   ERROR: The program specified in SHOREWALL_SHELL does not exist or is not executable" >&2
@@ -205,7 +236,7 @@ display_chains()
 	TMPFILE=$(mktempfile)
 	[ -n "$TMPFILE" ] || { echo "   ERROR:Cannot create temporary file" >&2; exit 1; }
 
-	iptables -L $IPT_OPTIONS >> $TMPFILE
+	$IPTABLES -L $IPT_OPTIONS >> $TMPFILE
 
 	clear
 	echo "$banner $(date)"
@@ -288,7 +319,7 @@ display_chains()
 
 	qt rm -f $TMPFILE
     else
-	iptables -L -n -v
+	$IPTABLES -L -n -v
 	timed_read
     fi
     trap - 1 2 3 4 5 6 9
@@ -315,10 +346,9 @@ packet_log() # $1 = number of messages
 
     [ -n "$realtail" ] && options="-n$1"
 
-    grep "${LOGFORMAT}\|ipt_unclean" $LOGFILE | \
+    grep "${LOGFORMAT}" $LOGFILE | \
 	 sed s/" kernel:"// | \
 	 sed s/" $host $LOGFORMAT"/" "/ | \
-	 sed s/" $host kernel: ipt_unclean: "/" "/ | \
 	 sed 's/MAC=.* SRC=/SRC=/' | \
 	 tail $options
 }
@@ -388,9 +418,8 @@ monitor_firewall() # $1 = timeout -- if negative, prompt each time that
 		   #		     an 'interesting' packet count changes
 {
 
-    get_config
     host=$(echo $HOSTNAME | sed 's/\..*$//')
-    oldrejects=$(iptables -L -v -n | grep 'LOG')
+    oldrejects=$($IPTABLES -L -v -n | grep 'LOG')
 
     if [ $1 -lt 0 ]; then
 	let "timeout=- $1"
@@ -423,7 +452,7 @@ monitor_firewall() # $1 = timeout -- if negative, prompt each time that
 
 	show_reset
 
-	rejects=$(iptables -L -v -n | grep 'LOG')
+	rejects=$($IPTABLES -L -v -n | grep 'LOG')
 
 	if [ "$rejects" != "$oldrejects" ]; then
 	    oldrejects="$rejects"
@@ -450,7 +479,7 @@ monitor_firewall() # $1 = timeout -- if negative, prompt each time that
 	echo
 	echo "NAT Status"
 	echo
-	iptables -t nat -L $IPT_OPTIONS
+	$IPTABLES -t nat -L $IPT_OPTIONS
 	timed_read
 
 	clear
@@ -459,7 +488,7 @@ monitor_firewall() # $1 = timeout -- if negative, prompt each time that
 	echo
 	echo "TOS/MARK Status"
 	echo
-	iptables -t mangle -L $IPT_OPTIONS
+	$IPTABLES -t mangle -L $IPT_OPTIONS
 	timed_read
 
 	clear
@@ -498,9 +527,8 @@ logwatch() # $1 = timeout -- if negative, prompt each time that
 	   #		     an 'interesting' packet count changes
 {
 
-    get_config
     host=$(echo $HOSTNAME | sed 's/\..*$//')
-    oldrejects=$(iptables -L -v -n | grep 'LOG')
+    oldrejects=$($IPTABLES -L -v -n | grep 'LOG')
 
     if [ $1 -lt 0 ]; then
 	timeout=$((- $1))
@@ -522,7 +550,7 @@ logwatch() # $1 = timeout -- if negative, prompt each time that
 
 	show_reset
 
-	rejects=$(iptables -L -v -n | grep 'LOG')
+	rejects=$($IPTABLES -L -v -n | grep 'LOG')
 
 	if [ "$rejects" != "$oldrejects" ]; then
 	    oldrejects="$rejects"
@@ -562,11 +590,11 @@ usage() # $1 = exit status
 {
     echo "Usage: $(basename $0) [debug|trace] [nolock] [-c <directory>] [ -x ] [ -q ] [ -f ] <command>"
     echo "where <command> is one of:"
-    echo "   add <interface>[:<host>] <zone>"
+    echo "   add <interface>[:{<bridge-port>[:<host>]|<host>}[,...]] ... <zone>"
     echo "   allow <address> ..."
-    echo "   check"
+    echo "   check [ <directory> ]"
     echo "   clear"
-    echo "   delete <interface>[:<host>] <zone>"
+    echo "   delete <interface>[:{<bridge-port>[:<host>]|<host>}[,...]] ... <zone>"
     echo "   drop <address> ..."
     echo "   forget [ <file name> ]"
     echo "   help [ <command > | host | address ]"
@@ -578,15 +606,17 @@ usage() # $1 = exit status
     echo "   refresh"
     echo "   reject <address> ..."
     echo "   reset"
-    echo "   restart"
+    echo "   restart [ <directory> ]"
     echo "   restore [ <file name> ]"
     echo "   save [ <file name> ]"
-    echo "   show [<chain> [ <chain> ... ]|classifiers|connections|log|nat|tc|tos]"
-    echo "   start"
+    echo "   show [<chain> [ <chain> ... ]|classifiers|connections|log|nat|tc|tos|zones]"
+    echo "   start [ <directory> ]"
     echo "   stop"
     echo "   status"
     echo "   try <directory> [ <timeout> ]"
     echo "   version"
+    echo 
+    echo "The -c and -f options may not be specified with a <directory> in the start, restart and check commands"
     exit $1
 }
 
@@ -598,8 +628,11 @@ show_reset() {
 	echo "Counters reset $(cat $STATEDIR/restarted)" && \
 	echo
 }
-
-show_proc() {
+#
+# Display's the passed file name followed by "=" and the file's contents.
+#
+show_proc() # $1 = name of a file  
+{
     [ -f $1 ] && echo "   $1 = $(cat $1)"
 }
 
@@ -721,6 +754,8 @@ ensure_config_path
 
 export CONFIG_PATH
 
+get_config
+
 [ -z "${STATEDIR}" ] && STATEDIR=/var/state/shorewall
 
 if [ ! -f $FIREWALL ]; then
@@ -765,8 +800,28 @@ esac
 
 case "$1" in
     start)
-	[ $# -ne 1 ] && usage 1
-	get_config
+	case $# in
+	    1)
+		;;
+	    2)
+		[ -n "$SHOREWALL_DIR" -o -n "$FAST" ] && usage 2
+
+		if [ ! -d $2 ]; then
+		    if [ -e $2 ]; then
+			echo "$2 is not a directory" >&2 && exit 2
+		    else
+			echo "Directory $2 does not exist" >&2 && exit 2
+		    fi
+		fi
+			
+		SHOREWALL_DIR=$2
+		export SHOREWALL_DIR
+		;;
+	    *)
+		usage 1
+		;;
+	esac
+	
 	if [ -n "$FAST" ]; then
 	    
 	    RESTOREPATH=/var/lib/shorewall/$RESTOREFILE
@@ -783,15 +838,37 @@ case "$1" in
 	    exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock start
 	fi
 	;;
-    stop|restart|reset|clear|refresh|check)
+    stop|reset|clear|refresh)
 	[ $# -ne 1 ] && usage 1
-	get_config
+	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $1
+	;;
+    check|restart)
+	case $# in
+	    1)
+		;;
+	    2)
+		[ -n "$SHOREWALL_DIR" ] && usage 2
+
+		if [ ! -d $2 ]; then
+		    if [ -e $2 ]; then
+			echo "$2 is not a directory" >&2 && exit 2
+		    else
+			echo "Directory $2 does not exist" >&2 && exit 2
+		    fi
+		fi
+			
+		SHOREWALL_DIR=$2
+		export SHOREWALL_DIR
+		;;
+	    *)
+		usage 1
+		;;
+	esac
 	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $1
 	;;
     add|delete)
-	[ $# -ne 3 ] && usage 1
-	get_config
-	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $1 $2 $3
+	[ $# -lt 3 ] && usage 1
+	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $@
 	;;
     show|list)
     	[ -n "$debugging" ] && set -x
@@ -807,18 +884,17 @@ case "$1" in
 	    echo "Shorewall-$version NAT at $HOSTNAME - $(date)"
 	    echo
 	    show_reset
-	    iptables -t nat -L $IPT_OPTIONS
+	    $IPTABLES -t nat -L $IPT_OPTIONS
 	    ;;
 	tos|mangle)
 	    [ $# -gt 2 ] && usage 1
 	    echo "Shorewall-$version TOS at $HOSTNAME - $(date)"
 	    echo
 	    show_reset
-	    iptables -t mangle -L $IPT_OPTIONS
+	    $IPTABLES -t mangle -L $IPT_OPTIONS
 	    ;;
 	log)
 	    [ $# -gt 2 ] && usage 1
-	    get_config
 	    echo "Shorewall-$version Log at $HOSTNAME - $(date)"
 	    echo
 	    show_reset
@@ -837,6 +913,24 @@ case "$1" in
 	    echo
 	    show_classifiers
 	    ;;
+	zones)
+	    [ $# -gt 2 ] && usage 1
+	    [ -z "${STATEDIR}" ] && STATEDIR=/var/state/shorewall
+	    if [ -f $STATEDIR/zones ]; then
+		echo "Shorewall-$version Zones at $HOSTNAME - $(date)"
+		echo
+		while read zone hosts; do
+		    echo $zone
+		    for host in $hosts; do
+			echo "   $host"
+		    done
+		done < $STATEDIR/zones
+		echo
+	    else
+		echo "   ERROR: $STATEDIR/zones does not exist" >&2
+		exit 1
+	    fi
+	    ;;
 	*)
 	    shift
 	    
@@ -845,10 +939,10 @@ case "$1" in
 	    show_reset
 	    if [ $# -gt 0 ]; then
 		for chain in $*; do
-		    iptables -L $chain $IPT_OPTIONS
+		    $IPTABLES -L $chain $IPT_OPTIONS
 		done
 	    else
-		iptables -L $IPT_OPTIONS
+		$IPTABLES -L $IPT_OPTIONS
 	    fi
 	    ;;
 	esac
@@ -866,29 +960,32 @@ case "$1" in
     status)
     	[ -n "$debugging" ] && set -x
 	[ $# -eq 1 ] || usage 1
-	get_config
 	clear
 	echo "Shorewall-$version Status at $HOSTNAME - $(date)"
 	echo
 	show_reset
 	host=$(echo $HOSTNAME | sed 's/\..*$//')
-	iptables -L $IPT_OPTIONS
+	$IPTABLES -L $IPT_OPTIONS
 	echo
 	packet_log 20
 	echo
 	echo "NAT Table"
 	echo
-	iptables -t nat -L $IPT_OPTIONS
+	$IPTABLES -t nat -L $IPT_OPTIONS
 	echo
 	echo "Mangle Table"
 	echo
-	iptables -t mangle -L $IPT_OPTIONS
+	$IPTABLES -t mangle -L $IPT_OPTIONS
 	echo
 	cat /proc/net/ip_conntrack
 	echo
 	echo "IP Configuration"
 	echo
 	ip addr ls
+	echo
+	echo "IP Stats"
+	echo
+	ip -stat link ls
 	
 	if qt which brctl; then
 	    echo
@@ -902,9 +999,10 @@ case "$1" in
 	echo
 
 	show_proc /proc/sys/net/ipv4/ip_forward
+	show_proc /proc/sys/net/ipv4/icmp_echo_ignore_all
 
 	for directory in /proc/sys/net/ipv4/conf/*; do
-	    for file in proxy_arp arp_filter rp_filter; do
+	    for file in proxy_arp arp_filter rp_filter log_martians; do
 		show_proc $directory/$file
 	    done
 	done
@@ -920,11 +1018,17 @@ case "$1" in
 	    echo
 	    ip route ls table $table
 	done
+
+	if qt which lsmod; then
+	    echo
+	    echo "Modules"
+	    echo
+	    lsmod | grep -E '^ip_|^ipt_'
+	fi
 	;;
     hits)
     	[ -n "$debugging" ] && set -x
 	[ $# -eq 1 ] || usage 1
-	get_config
 	clear
 	echo "Shorewall-$version Hits at $HOSTNAME - $(date)"
 	echo
@@ -972,10 +1076,10 @@ case "$1" in
 	[ -n "$SHOREWALL_DIR" ] && startup_error "Error: -c option may not be used with \"try\""
 	[ $# -lt 2 -o $# -gt 3 ] && usage 1
 	if ! $0 $debugging -c $2 restart; then
-	    if ! iptables -L shorewall > /dev/null 2> /dev/null; then
+	    if ! $IPTABLES -L shorewall > /dev/null 2> /dev/null; then
 		$0 start
 	    fi
-	elif ! iptables -L shorewall > /dev/null 2> /dev/null; then
+	elif ! $IPTABLES -L shorewall > /dev/null 2> /dev/null; then
 	    $0 start
 	elif [ $# -eq 3 ]; then
 	    sleep $3
@@ -998,9 +1102,9 @@ case "$1" in
 	mutex_on
 	while [ $# -gt 1 ]; do
 	    shift
-	    qt iptables -D dynamic -s $1 -j reject
-	    qt iptables -D dynamic -s $1 -j DROP
-	    iptables -A dynamic -s $1 -j DROP || break 1
+	    qt $IPTABLES -D dynamic -s $1 -j reject
+	    qt $IPTABLES -D dynamic -s $1 -j DROP
+	    $IPTABLES -A dynamic -s $1 -j DROP || break 1
 	    echo "$1 Dropped"
 	done
 	mutex_off
@@ -1011,9 +1115,9 @@ case "$1" in
 	mutex_on
 	while [ $# -gt 1 ]; do
 	    shift
-	    qt iptables -D dynamic -s $1 -j reject
-	    qt iptables -D dynamic -s $1 -j DROP
-	    iptables -A dynamic -s $1 -j reject || break 1
+	    qt $IPTABLES -D dynamic -s $1 -j reject
+	    qt $IPTABLES -D dynamic -s $1 -j DROP
+	    $IPTABLES -A dynamic -s $1 -j reject || break 1
 	    echo "$1 Rejected"
 	done
 	mutex_off
@@ -1024,7 +1128,7 @@ case "$1" in
 	mutex_on
 	while [ $# -gt 1 ]; do
 	    shift
-	    if	qt iptables -D dynamic -s $1 -j reject || qt iptables -D dynamic -s $1 -j DROP; then
+	    if	qt $IPTABLES -D dynamic -s $1 -j reject || qt $IPTABLES -D dynamic -s $1 -j DROP; then
 		echo "$1 Allowed"
 	    else
 		echo "$1 Not Dropped or Rejected"
@@ -1034,8 +1138,6 @@ case "$1" in
 	;;
     save)
     	[ -n "$debugging" ] && set -x
-
-	get_config
 
 	case $# in
 	1)
@@ -1053,7 +1155,7 @@ case "$1" in
 
 	mutex_on
 
-	if qt iptables -L shorewall -n; then
+	if qt $IPTABLES -L shorewall -n; then
 	    [ -d /var/lib/shorewall ] || mkdir -p /var/lib/shorewall
 
 	    if [ -f $RESTOREPATH -a ! -x $RESTOREPATH ]; then
@@ -1064,11 +1166,11 @@ case "$1" in
 			echo "   ERROR: Reserved file name: $RESTOREFILE"
 			;;
 		    *)
-			if iptables -L dynamic -n > /var/lib/shorewall/save; then
+			if $IPTABLES -L dynamic -n > /var/lib/shorewall/save; then
 			    echo "   Dynamic Rules Saved"
 			    if [ -f /var/lib/shorewall/restore-base ]; then
 				cp -f /var/lib/shorewall/restore-base /var/lib/shorewall/restore-$$
-				if iptables-save >> /var/lib/shorewall/restore-$$ ; then
+				if iptables-save | iptablesbug >> /var/lib/shorewall/restore-$$ ; then
 				    echo __EOF__ >> /var/lib/shorewall/restore-$$
 				    [ -f /var/lib/shorewall/restore-tail ] && \
 					cat /var/lib/shorewall/restore-tail >> /var/lib/shorewall/restore-$$
@@ -1094,7 +1196,6 @@ case "$1" in
 	mutex_off
 	;;
     forget)
-	get_config
 	case $# in
 	1)
 	    ;;
@@ -1114,7 +1215,7 @@ case "$1" in
 	    rm -f $RESTOREPATH
 	    echo "    $RESTOREPATH removed"
 	elif [ -f $RESTOREPATH ]; then
-	    echo "   ERROR: $RESTOREPATH exists and is not a saved Shorewall configuration"
+	    echo "   $RESTOREPATH exists and is not a saved Shorewall configuration"
 	fi
 	;;
     ipcalc)
@@ -1153,7 +1254,6 @@ case "$1" in
 	esac
 	;;
     restore)
-	get_config
 	case $# in
 	1)
 	    ;;

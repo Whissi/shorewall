@@ -1,5 +1,5 @@
 #
-# Shorewall 2.0 - Masquerade file
+# Shorewall 2.2 - Masquerade file
 #
 # /etc/shorewall/masq
 #
@@ -20,6 +20,24 @@
 #		     This may be qualified by adding the character
 #                    ":" followed by a destination host or subnet.
 #
+#		     If you wish to inhibit the action of ADD_SNAT_ALIASES
+#		     for this entry then include the ":" but omit the digit:
+#
+#				eth0:
+#				eth2::192.0.2.32/27
+#
+#		     Normally Masq/SNAT rules are evaluated after those for
+#		     one-to-one NAT (/etc/shorewall/nat file). If you want
+#		     the rule to be applied before one-to-one NAT rules,
+#		     prefix the interface name with "+":
+#
+#			+eth0
+#			+eth0:192.0.2.32/27
+#			+eth0:2
+#
+#		     This feature should only be required if you need to 
+#		     insert rules in this file that preempt entries in
+#		     /etc/shorewall/nat.
 #
 #	SUBNET -- Subnet that you wish to masquerade. You can specify this as
 #		  a subnet or as an interface. If you give the name of an
@@ -42,13 +60,6 @@
 #				will automatically add this address to the
 #				INTERFACE named in the first column.
 #
-#				If you have set ADD_SNAT_ALIASES=Yes in
-#				/etc/shorewall/shorewall.conf then DO NOT
-#				PLACE YOUR EXTERNAL INTERFACE'S PRIMARY IP
-#				ADDRESS IN THIS COLUMN -- If you do so, you
-#				will loose your default route when Shorewall
-#				starts.
-#
 #				You may also specify a range of up to 256
 #				IP addresses if you want the SNAT address to
 #				be assigned from that range in a round-robin
@@ -59,8 +70,21 @@
 #
 #				Finally, you may also specify a comma-separated
 #				list of ranges and/or addresses in this column.
-#				
+#
 #				This column may not contain DNS Names.
+#
+#				Normally, Netfilter will attempt to retain
+#				the source port number. You may cause 
+#				netfilter to remap the source port by following
+#				an address or range (if any) by ":" and
+#				a port range with the format <low port>-
+#				<high port>. If this is done, you must 
+#				specify "tcp" or "udp" in the PROTO column.
+#				
+#				Examples:
+#
+#					192.0.2.4:5000-6000
+#					:4000-5000
 #
 #				If you want to leave this column empty
 #				but you need to specify the next column then
@@ -82,6 +106,42 @@
 #				support and a maximum of 15 ports may be 
 #				listed.
 #				
+#	IPSEC -- (Optional)	If you specify a value other than "-" in this
+#				column, you must be running kernel 2.6 and 
+#				your kernel and iptables must include policy
+#				match support.
+#
+#				Comma-separated list of options from the following.
+#				Only packets that will be encrypted via an SA that
+#				matches these options will have their source address
+#				changed.
+#
+#					Yes or yes -- must be the only option listed
+#					and matches all outbound traffic that will be
+#					encrypted.
+#
+#					reqid=<number> where <number> is specified
+#					using setkey(8) using the 'unique:<number>
+#					option for the SPD level.
+#
+#					spi=<number> where <number> is the SPI of
+#					the SA.
+#
+#					proto=ah|esp|ipcomp 
+#
+#					mode=transport|tunnel
+#
+#					tunnel-src=<address>[/<mask>] (only
+#					available with mode=tunnel)
+#
+#					tunnel-dst=<address>[/<mask>] (only
+#					available with mode=tunnel) 
+#
+#					strict  Means that packets must match all
+#						rules.
+#
+#					next    Separates rules; can only be used
+#						with strict..
 #
 #	Example 1:
 #
@@ -136,5 +196,5 @@
 #		THE ORDER OF THE ABOVE TWO RULES IS SIGNIFICANT!!!!!
 #
 ###############################################################################
-#INTERFACE	        SUBNET		ADDRESS		PROTO	PORT(S)
+#INTERFACE	        SUBNET		ADDRESS		PROTO	PORT(S)	IPSEC
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE

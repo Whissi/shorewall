@@ -1,11 +1,11 @@
 #!/bin/sh
 RCDLINKS="2,S41 3,S41 6,K41"
 #
-#     The Shoreline Firewall (Shorewall) Packet Filtering Firewall - V2.0 3/14/2003
+#     The Shoreline Firewall (Shorewall) Packet Filtering Firewall - V2.2
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
 #
-#     (c) 1999,2000,2001,2002,2003,2004 - Tom Eastep (teastep@shorewall.net)
+#     (c) 1999,2000,2001,2002,2003,2004,2005 - Tom Eastep (teastep@shorewall.net)
 #
 #	On most distributions, this file should be called /etc/init.d/shorewall.
 #

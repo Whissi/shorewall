@@ -4,7 +4,7 @@
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
 #
-#     (c) 2000,2001,2002,2003,2004 - Tom Eastep (teastep@shorewall.net)
+#     (c) 2000,2001,2002,2003,2004,2005 - Tom Eastep (teastep@shorewall.net)
 #
 #       Shorewall documentation is available at http://shorewall.sourceforge.net
 #
@@ -26,7 +26,7 @@
 #       You may only use this script to uninstall the version
 #       shown below. Simply run this script to remove Seattle Firewall
 
-VERSION=2.0.16
+VERSION=2.2.0
 
 usage() # $1 = exit status
 {

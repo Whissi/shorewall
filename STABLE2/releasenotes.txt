@@ -1,235 +1,600 @@
-Shorewall 2.0.16
-
-----------------------------------------------------------------------
-Problems Corrected in version 2.0.4
-
-1)  A DNAT rule with 'fw' as the source that specified logging caused
-    "shorewall start" to fail.
-
-----------------------------------------------------------------------
-Problems Corrected in version 2.0.5
-
-1) Eliminated "$RESTOREBASE: ambiguous redirect" messages during 
-   "shorewll stop" in the case where DISABLE_IPV6=Yes in 
-   shorewall.conf.
-
-2) An anachronistic reference to the mangle option was removed from
-   shorewall.conf.
-
-----------------------------------------------------------------------
-Problems Corrected in version 2.0.6
-
-1) Some users have reported the pkttype match option in iptables/
-   Netfilter failing to match certain broadcast packets. The result 
-   is that the firewall log shows a lot of broadcast packets.
-
-   Other users have complained of the following message when 
-   starting Shorewall:
-
-	    modprobe: cant locate module ipt_pkttype
-
-   Users experiencing either of these problems can use PKTTYPE=No in
-   shorewall.conf to cause Shorewall to use IP address filtering of 
-   broadcasts rather than packet type.
-
-2) The shorewall.conf and zones file are no longer given execute
-   permission by the installer script.
-
-3) ICMP packets that are in the INVALID state are now dropped by the
-   Reject and Drop default actions. They do so using the new 
-   'dropInvalid' builtin action.
------------------------------------------------------------------------
-Problems Corrected in version 2.0.7
-
-1) The PKTTYPE option introduced in version 2.0.6 is now used when
-   generating rules to REJECT packets. Broadcast packets are silently
-   dropped rather than being rejected with an ICMP (which is a protocol
-   violation) and users whose kernels have broken packet type match
-   support are likely to see messages reporting this violation.
-   Setting PKTTYPE=No should cause these messages to cease. 
-
-2) Multiple interfaces with the 'blacklist' option no longer result in
-   an error message at startup.
-
-3) The following has been added to /etc/shorewall/bogons:
-
-       0.0.0.0	 RETURN
-
-   This prevents the 'nobogons' option from logging DHCP 'DISCOVER'
-   broadcasts. 
------------------------------------------------------------------------
-New Features in version 2.0.7
-
-1) To improve supportability, the "shorewall status" command now
-   includes IP and Route configuration information.
-
-   Example:
-
-   IP Configuration
-
-   1: lo: <LOOPBACK,UP> mtu 16436 qdisc noqueue
-      link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
-      inet 127.0.0.1/8 brd 127.255.255.255 scope host lo
-      inet6 ::1/128 scope host
-   2: eth0: <BROADCAST,MULTICAST,PROMISC,UP> mtu 1500 qdisc pfifo_fast qlen 1000
-      link/ether 00:a0:c9:15:39:78 brd ff:ff:ff:ff:ff:ff
-      inet6 fe80::2a0:c9ff:fe15:3978/64 scope link
-   3: eth1: <BROADCAST,MULTICAST,PROMISC,UP> mtu 1500 qdisc pfifo_fast qlen 1000
-      link/ether 00:a0:c9:a7:d7:bf brd ff:ff:ff:ff:ff:ff
-      inet6 fe80::2a0:c9ff:fea7:d7bf/64 scope link
-   5: sit0@NONE: <NOARP> mtu 1480 qdisc noop
-      link/sit 0.0.0.0 brd 0.0.0.0
-   6: eth2: <BROADCAST,MULTICAST,PROMISC,UP> mtu 1500 qdisc pfifo_fast qlen 1000
-      link/ether 00:40:d0:07:3a:1b brd ff:ff:ff:ff:ff:ff
-      inet6 fe80::240:d0ff:fe07:3a1b/64 scope link
-   7: br0: <BROADCAST,MULTICAST,NOTRAILERS,UP> mtu 1500 qdisc noqueue
-      link/ether 00:40:d0:07:3a:1b brd ff:ff:ff:ff:ff:ff
-      inet 192.168.1.3/24 brd 192.168.1.255 scope global br0
-      inet6 fe80::240:d0ff:fe07:3a1b/64 scope link
-
-   Routing Rules
-
-   0:      from all lookup local	
-   32765:  from all fwmark       ca lookup www.out
-   32766:  from all lookup main
-   32767:  from all lookup default
-
-   Table local:
-
-   broadcast 192.168.1.0 dev br0  proto kernel  scope link  src 192.168.1.3
-   broadcast 127.255.255.255 dev lo  proto kernel  scope link  src 127.0.0.1
-   local 192.168.1.3 dev br0  proto kernel  scope host  src 192.168.1.3
-   broadcast 192.168.1.255 dev br0  proto kernel  scope link  src 192.168.1.3
-   broadcast 127.0.0.0 dev lo  proto kernel  scope link  src 127.0.0.1
-   local 127.0.0.1 dev lo  proto kernel  scope host  src 127.0.0.1
-   local 127.0.0.0/8 dev lo  proto kernel  scope host  src 127.0.0.1
-
-   Table www.out:
-
-   default via 192.168.1.3 dev br0
-
-   Table main:
-
-   192.168.1.0/24 dev br0  proto kernel  scope link  src 192.168.1.3
-   default via 192.168.1.254 dev br0
-
-   Table default:
------------------------------------------------------------------------
-Problems Corrected in version 2.0.8
-
-1) User/group restricted rules now work in actions.
+Shorewall 2.2.1
 
 -----------------------------------------------------------------------
-Problems Corrected in version 2.0.9
+Problems corrected in version 2.2.1
 
-1) Previously, an empty PROTO column or a value of "all" in that column
-   would cause errors when processing the /etc/shorewall/tcrules file.
+1) The /etc/shorewall/policy file contained a misleading comment and
+   both that file and the /etc/shorewall/zones file lacked examples.
 
-New Fewatures in version 2.0.9
-
-1) The "shorewall status" command now includes the output of "brctl
-   show" if the bridge tools are installed.
+2) Shorewall previously used root's default umask which could cause
+   files in /var/lib/shorewall to be world-readable. Shorewall now uses
+   umask 0177.
 -----------------------------------------------------------------------
-Problems corrected in version 2.0.10
+Issues when migrating from Shorewall 2.0 to Shorewall 2.2:
 
-1) The GATEWAY column was previously ignored in 'pptpserver' entries in
-   /etc/shorewall/tunnels.
+1)  Shorewall configuration files except shorewall.conf are now empty
+    (they contain only comments). If you wish to retain the defaults
+    in any of the following files, you should copy these files before
+    upgrading them then restore them after the upgrade:
 
-2) When log rule numbers are included in the LOGFORMAT, duplicate
-   rule numbers could previously be generated.
+    /etc/shorewall/zones
+    /etc/shorewall/policy
+    /etc/shorewall/tos
 
-3) The /etc/shorewall/tcrules file now includes a note to the effect
-   that rule evaluation continues after a match.
+2)  The following builtin actions have been removed and have been
+    replaced by the new action logging implementation described in the
+    new features below.
 
-4) The error message produced if Shorewall couldn't obtain the routes 
-   through an interface named in the SUBNET column of
-   /etc/shorewall/masq was less than helpful since it didn't include
-   the interface name.
------------------------------------------------------------------------
-New Features in 2.0.10
+	logNotSyn
+	rLogNotSyn
+	dLogNotSyn
 
-The "shorewall status" command has been enhanced to include the values
-of key /proc settings:
+3)  If shorewall.conf is upgraded to the latest version, it needs to be
+    modified to set STARTUP_ENABLED=Yes
 
-Example from a two-interface firewall:
+4)  The Leaf/Bering version of Shorewall was previously named:
 
-/proc
+	shorwall-<version>.lrp
 
-   /proc/sys/net/ipv4/ip_forward = 1
-   /proc/sys/net/ipv4/conf/all/proxy_arp = 0
-   /proc/sys/net/ipv4/conf/all/arp_filter = 0
-   /proc/sys/net/ipv4/conf/all/rp_filter = 0
-   /proc/sys/net/ipv4/conf/default/proxy_arp = 0
-   /proc/sys/net/ipv4/conf/default/arp_filter = 0
-   /proc/sys/net/ipv4/conf/default/rp_filter = 0
-   /proc/sys/net/ipv4/conf/eth0/proxy_arp = 0
-   /proc/sys/net/ipv4/conf/eth0/arp_filter = 0
-   /proc/sys/net/ipv4/conf/eth0/rp_filter = 0
-   /proc/sys/net/ipv4/conf/eth1/proxy_arp = 0
-   /proc/sys/net/ipv4/conf/eth1/arp_filter = 0
-   /proc/sys/net/ipv4/conf/eth1/rp_filter = 0
-   /proc/sys/net/ipv4/conf/lo/proxy_arp = 0
-   /proc/sys/net/ipv4/conf/lo/arp_filter = 0
-   /proc/sys/net/ipv4/conf/lo/rp_filter = 0
+    Beginning with 2.2, that file will now be named:
 
------------------------------------------------------------------------
-Problems corrected in 2.0.11
+	shorewall-lrp-<version>.tgz
 
-1) The INSTALL file now include special instructions for Slackware
-   users.
+    Simply rename that file to 'shorwall.lrp' when installing it on your
+    LEAF/Bering system.
 
-2) The bogons file has been updated.
+5)  The ORIGINAL DEST column of the /etc/shorewall/rules file may no
+    longer contain a second (SNAT) address. You must use an entry in
+    /etc/shorewall/masq instead.
 
-3) Service names are replaced by port numbers in /etc/shorewall/tos.
+    Example from Shorewall FAQ #1:
 
-4) A typo in the install.sh file that caused an error during a new
-install has been corrected.
------------------------------------------------------------------------
-New Features in 2.0.11
+    Prior to Shorewall 2.2:
 
-1) The AllowNNTP action now allows NNTP over SSL/TLS (NTTPS).
+	  /etc/shorewall/interfaces
 
------------------------------------------------------------------------
-Problems corrected in 2.0.12
+		loc	eth1	detect	routeback,...
 
-1) A typo in shorewall.conf (NETNOTSYN) has been corrected.
+	  /etc/shorewall/rules
 
-2) The "shorewall add" and "shorewall delete" commands now work in a
-   bridged environment. The syntax is:
+		DNAT	loc	loc:192.168.1.12	tcp	80 \
+			-	130.252.100.69:192.168.1.254
 
-	   shorewall add <interface>[:<port>]:<address> <zone>
-	   shorewall delete <interface>[:<port>]:<address> <zone>
+    Shorewall 2.2 and Later:
 
-   Examples:
+	  /etc/shorewall/interfaces
 
-	   shorewall add br0:eth2:192.168.1.3 OK
-	   shorewall delete br0:eth2:192.168.1.3 OK
+		loc	eth1	detect	routeback,...
 
-3) Previously, "shorewall save" created an out-of-sequence restore
-   script. The commands saved in the user's /etc/shorewall/start script
-   were executed prior to the Netfilter configuration being
-   restored. This has been corrected so that "shorewall save" now
-   places those commands at the end of the script. 
+	  /etc/shorewall/masq:
 
-   To accomplish this change, the "restore base" file
-   (/var/lib/shorewall/restore-base) has been split into two files:
+		eth1	eth1	192.168.1.254	tcp	80	
 
-   /var/lib/shorewall/restore-base -- commands to be executed before
-   Netfilter the configuration is restored.
+		
+	  /etc/shorewall/rules:
 
-   /var/lib/shorewall/restore-tail -- commands to be executed after the
-   Netfilter configuration is restored.
+		DNAT	loc	loc:192.168.1.12	tcp	80 \
+			-	130.252.100.69
 
-4) Previously, traffic from the firewall to a dynamic zone member host
-   did not need to match the interface specified when the host was
-   added to the zone. For example, if eth0:1.2.3.4 is added to dynamic
-   zone Z then traffic out of any firewall interface to 1.2.3.4 will
-   obey the fw->Z policies and rules. This has been corrected.
+6)  The 'logunclean' and 'dropunclean' options that were deprecated in
+    Shorewall 2.0 have now been removed completely.
+
+7)  A new IPTABLES variable has been added to shorewall.conf. This
+    variable names the iptables executable that Shorewall will use. The
+    variable is set to "/sbin/iptables". If you use the new
+    shorewall.conf, you may need to change this setting to maintain
+    compabibility with your current setup (if you use your existing
+    shorewall.conf that does not set IPTABLES then you should
+    experience no change in behavior).
+
+8)  The default port for OpenVPN tunnels has been changed from 5000 to
+    1194 to reflect the recent IANA allocation of that port for
+    OpenVPN.
 
 -----------------------------------------------------------------------
-New Features in 2.0.12
+New Features in Shorewall 2.2.0:
 
-1)  Variable expansion may now be used with the INCLUDE directive.
+1)  ICMP packets that are in the INVALID state are now dropped by the
+    Reject and Drop default actions. They do so using the new 
+    'dropInvalid' builtin action. An 'allowInvalid' builtin action is
+    also provided which accepts packets in that state.
+
+2)  The /etc/shorewall/masq file INTERFACE column now allows additional
+    options.
+
+    Normally MASQUERADE/SNAT rules are evaluated after one-to-one NAT 
+    rules defined in the /etc/shorewall/nat file. If you preceed the
+    interface name with a plus sign ("+") then the rule will be
+    evaluated before one-to-one NAT.
+
+    Examples:
+
+	+eth0
+	+eth1:192.0.2.32/27
+
+    Also, the effect of ADD_SNAT_ALIASES=Yes can be negated for an
+    entry by following the interface name by ":" but no digit. 
+
+    Examples:
+
+	eth0:
+	eth1::192.0.2.32/27
+	+eth3:
+
+3)  Similar to 2), the /etc/shorewall/nat file INTERFACE column now allows
+    you to override the setting of ADD_IP_ALIASES=Yes by following the
+    interface name with ":" but no digit.
+
+4)  All configuration files in the Shorewall distribution with the
+    exception of shorewall.conf are now empty. In particular, the
+    /etc/shorewall/zones, /etc/shorewall/policy and /etc/shorewall/tos
+    files now have no active entries. Hopefully this will stop the
+    questions on the support and development lists regarding why the
+    default entries are the way they are.
+
+5)  Previously, including a log level (and optionally a log tag) on a
+    rule that specified a user-defined (or Shorewall-defined) action
+    would log all traffic passed to the action. Beginning with this
+    release, specifying a log level in a rule that specifies a user-
+    or Shorewall-defined action will cause each rule in the action to
+    be logged with the specified level (and tag).
+
+    The extent to which logging of action rules occurs is goverend by
+    the following:
+
+    a) When you invoke an action and specify a log level, only those
+    rules in the action that have no log level will be changed to log
+    at the level specified at the action invocation.
+
+    Example:
+
+	/etc/shorewall/action.foo:
+
+		ACCEPT	-	-	tcp	22
+		bar:info	
+
+	/etc/shorewall/rules:
+
+		foo:debug	fw	net
+
+	Logging in the invoked 'foo' action will be:
+
+		ACCEPT:debug	-	-	tcp	22
+		bar:info	
+
+    b) If you follow the log level with "!" then logging will
+    be at that level for all rules recursively invoked by the action
+
+    Example:
+
+	/etc/shorewall/action.foo:
+
+		ACCEPT	-	-	tcp	22
+		bar:info	
+
+	/etc/shorewall/rules:
+
+		foo:debug!	fw	net
+
+	Logging in the invoke 'foo' action will be:
+
+		ACCEPT:debug	-	-	tcp	22
+		bar:debug!
+	
+    This change has an effect on extension scripts used with
+    user-defined actions. If you define an action 'acton' and you have
+    an /etc/shorewall/acton script then when that script is invoked,
+    the following three variables will be set for use by the script:
+
+	$CHAIN = the name of the chain where your rules are to be
+	placed. When logging is used on an action invocation,
+	Shorewall creates a chain with a slightly different name from
+	the action itself.
+
+	$LEVEL = Log level. If empty, no logging was specified.
+
+	$TAG   = Log Tag.
+
+    Example:
+
+    /etc/shorewall/rules:
+
+	acton:info:test
+
+    Your /etc/shorewall/acton file will be run with:
+
+	 $CHAIN="%acton1"
+	 $LEVEL="info"
+	 $TAG="test"
+
+6)  The /etc/shorewall/startup_disabled file is no longer created when 
+    Shorewall is first installed. Rather, the variable STARTUP_ENABLED
+    is set to 'No' in /etc/shorewall/shorewall.conf. In order to get 
+    Shorewall to start, that variable's value must be set to
+    'Yes'. This change accomplishes two things:
+
+    a) It prevents Shorewall from being started prematurely by the
+    user's initialization scripts.
+
+    b) It causes /etc/shorewall/shorewall.conf to be modified so that
+    it won't be replaced by upgrades using RPM.
+
+7)  Some additional support has been added for the 2.6 Kernel IPSEC
+    implementation. To use this support, you must have installed the
+    IPSEC policy match patch and the four IPSEC/Netfilter patches
+    from Patch-0-Matic-ng. The policy match patch affects both your
+    kernel and iptables.
+
+    There are two ways to specify that IPSEC is to be used when
+    communicating with a set of hosts; both methods involve the new
+    /etc/shorewall/ipsec file:
+
+    a) If encrypted communication is used with all hosts in a zone,
+    then you can designate the zone as an "ipsec" zone by placing
+    'Yes" in the IPSEC ONLY column in the /etc/shorewall/ipsec:
+
+	#ZONE		IPSEC	OPTIONS ...
+	#		ONLY
+	vpn		Yes
+
+    The hosts in the zone (if any) must be specified in
+    /etc/shorewall/hosts but you do not need to specify the 'ipsec'
+    option on the entries in that file (see below).
+
+    Dynamic zones involving IPSEC must use that technique.
+
+    Example:
+
+    Under 2.4 Kernel FreeS/Wan:
+
+	  /etc/shorewall/zones:
+
+	  net	Net	The big bad Internet
+	  vpn	VPN	Remote Network
+
+	  /etc/shorewall/interfaces:
+
+	  net	eth0	...
+	  vpn	ipsec0	...
+
+    Under 2.6 Kernel with this new support:
+    
+	/etc/shorewall/zones:
+
+	net		Net	The big bad Internet
+	vpn		VPN	Remote Network
+
+	/etc/shorewall/interfaces:
+
+	net	eth0	...
+    
+	/etc/shorewall/hosts:
+
+	vpn	eth0:0.0.0.0/0
+
+	/etc/shorewall/ipsec
+
+	vpn	Yes
+
+    b) If only part of the hosts in a zone require encrypted
+    communication, you may use of the new 'ipsec' option in
+    /etc/shorewall/hosts to designate those hosts.
+
+    Example:
+
+    Under 2.4 Kernel FreeS/Wan:
+
+	  /etc/shorewall/zones:
+
+	  net	Net	The big bad Internet
+	  loc	Local	Extended local zone
+
+	  /etc/shorewall/interfaces:
+
+	  net	eth0	...
+	  loc	eth1	...
+	  loc	ipsec0	...
+
+    Under 2.6 Kernel with this new support:
+    
+	/etc/shorewall/zones:
+
+	net		Net	The big bad Internet
+	vpn      	VPN	Remote Network
+
+	/etc/shorewall/interfaces:
+
+	net	eth0	...
+	loc	eth1	...
+    
+	/etc/shorewall/hosts:
+
+	vpn	eth0:0.0.0.0/0	ipsec,...
+
+    Regardless of which technique you choose, you can specify
+    additional SA options for the zone in the /etc/shorewall/ipsec
+    entry.
+
+    The OPTIONS, IN OPTIONS and OUT OPTIONS columns specify the
+    input-output, input and output characteristics of the security
+    associations to be used to decrypt (input) or encrypt (output) traffic
+    to/from the zone.
+
+    The available options are:
+
+	reqid[!]=<number> where <number> is specified using setkey(8) using
+	the 'unique:<number>' option for the SPD level.
+
+	 spi[!]=<number> where <number> is the SPI of the SA. Since
+	 different SAs are used to encrypt and decrypt traffic, this
+	 option should only be listed in the IN OPTIONS and OUT OPTIONS
+	 columns.
+
+	 proto[!]=ah|esp|ipcomp
+
+	 mss=<number> (sets the MSS value in TCP SYN packets and is not
+                       related to policy matching) 
+
+	 mode[!]=transport|tunnel
+
+	 tunnel-src[!]=<address>[/<mask>] (only available with mode=tunnel)
+
+	 tunnel-dst[!]=<address>[/<mask>] (only available with
+	 mode=tunnel). Because tunnel source and destination are
+	 dependent on the direction of the traffic, these options
+	 should only appear in the IN OPTIONS and OUT OPTIONS columns.
+
+	 strict  (if specified, packets must match all policies;
+	 policies are delimited by 'next').
+
+	 next    (only available with strict)
+
+    Examples:
+
+	#ZONE	IPSEC	OPTIONS			IN		OUT...
+	#	ONLY				OPTIONS		OPTIONS
+	vpn	Yes	mode=tunnel,proto=esp	spi=1000	spi=1001
+	loc	No	reqid=44,mode=transport
+
+    The /etc/shorewall/masq file has a new IPSEC column added. If you
+    specify Yes or yes in that column then the unencrypted packets will
+    have their source address changed. Otherwise, the unencrypted
+    packets will not have their source addresses changed. This column
+    may also contain a comma-separated list of the options specified
+    above in which case only those packets that will be encrypted
+    by an SA matching the given options will have their source address
+    changed.
+
+8)  To improve interoperability, tunnels of type 'ipsec' no longer
+    enforce the use of source port 500 for ISAKMP and OpenVPN 
+    tunnels no longer enforce use of the specified port as both the
+    source and destination ports.
+
+9)  A new 'allowBcast' builtin action has been added -- it silently
+    allows broadcasts and multicasts.
+
+10) The -c option in /sbin/shorewall commands is now deprecated. The
+    commands where -c was previously allowed now permit you to specify
+    a configuration directory after the command:
+
+      shorewall check   [ <configuration-directory> ]
+      shorewall restart [ <configuration-directory> ]
+      shorewall start   [ <configuration-directory> ]
+
+11) Normally, when SNAT or MASQUERADE is applied to a tcp or udp 
+    connection, Netfilter attempts to retain the source port 
+    number. If it has to change to port number to avoid 
+    <source address>,<source port> conflicts, it tries to do so
+    within port ranges ( < 512, 512-1023, and > 1023). You may
+    now specify an explicit range of source ports to be used 
+    by following the address or address range (if any) in the
+    ADDRESS column with ":" and a port range in the format
+    <low-port>-<high-port>. You must specify either "tcp" or
+    "udp" in the PROTO column.
+
+    Examples 1 -- MASQUERADE with tcp source ports 4000-5000:
+
+    #INTERFACE SUBNET		  ADDRESS		PROTO
+    eth0       192.168.1.0/24	  :4000-5000		tcp
+
+    Example 2 -- SNAT with udp source ports 7000-8000:
+
+    #INTERFACE SUBNET		  ADDRESS		PROTO
+    eth0       10.0.0.0/8	  192.0.2.44:7000-8000	udp
+
+12) You may now account by user/group ID for outbound traffic from the
+    firewall itself with entries in /etc/shorewall/accounting. Such
+    accounting rules must be placed in the OUTPUT chain.
+
+    See the comments at the top of /etc/shorewall/accounting for
+    details.
+
+13) Shorewall now verifies that your kernel and iptables have physdev
+    match support if BRIDGING=Yes in shorewall.conf.
+
+14) Beginning with this release, if your kernel and iptables have
+    iprange match support (see the output from "shorewall check"), then
+    with the exception of the /etc/shorewall/netmap file, anywhere that
+    a network address may appear an IP address range of the form <low
+    address>-<high address> may also appear.
+
+15) Support has been added for the iptables CLASSIFY target. That
+    target allows you to classify packets for traffic shaping directly
+    rather than indirectly through fwmark. Simply enter the
+    <major>:<minor> classification in the first column of
+    /etc/shorewall/tcrules:
+
+    Example:
+
+	#MARK/      SOURCE       DEST      PROTO     PORT(S)
+	#CLASSIFY
+	1:30	    -		 eth0	   tcp	     25
+
+    Note that when using this form of rule, it is acceptable to include
+    the name of an interface in the DEST column.
+
+    Marking using the CLASSIFY target always occurs in the POSTROUTING
+    chain of the mangle table and is not affected by the setting of
+    MARK_IN_FORWARD_CHAIN in shorewall.conf.
+
+16) During "shorewall start", IP addresses to be added as a consequence
+    of ADD_IP_ALIASES=Yes and ADD_SNAT_ALIASES=Yes are quietly deleted
+    when /etc/shorewall/nat and /etc/shorewall/masq are processed then
+    the are re-added later. This is done to help ensure that the
+    addresses can be added with the specified labels but can have
+    the undesirable side effect of causing routes to be quietly
+    deleted. A new RETAIN_ALIASES option has been added to
+    shorewall.conf; when this option is set to Yes, existing addresses
+    will not be deleted. Regardless of the setting of RETAIN_ALIASES,
+    addresses added during "shorewall start" are still deleted at a
+    subsequent "shorewall stop" or "shorewall restart".
+
+17) Users with a large black list (from /etc/shorewall/blacklist) may 
+    want to set the new DELAYBLACKLISTLOAD option in
+    shorewall.conf. When DELAYBLACKLISTLOAD=Yes, Shorewall will
+    enable new connections before loading the blacklist rules. While
+    this may allow connections from blacklisted hosts to slip by during
+    construction of the blacklist, it can substantially reduce the time
+    that all new connections are disabled during "shorewall [re]start".
+
+18) Using the default LOGFORMAT, chain names longer than 11 characters 
+    (such as in user-defined actions) may result in log prefix
+    truncation. A new shorewall.conf action  LOGTAGONLY has been added
+    to deal with this problem. When LOGTAGONLY=Yes, logging rules that
+    specify a log tag will substitute the tag for the chain name in the
+    log prefix.
+
+    Example -- file /etc/shorewall/action.thisisaverylogactionname:
+
+    Rule:
+
+	DROP:info:ftp	0.0.0.0/0	0.0.0.0/0	tcp	    21
+	
+    Log prefix with LOGTAGONLY=No:
+
+	Shorewall:thisisaverylongacti
+
+    Log prefix with LOGTAGONLY=Yes:
+
+	Shorewall:ftp:DROP
+
+19) Shorewall now resets the 'accept_source_route' flag for all
+    interfaces. If you wish to accept source routing on an interface,
+    you must specify the new 'sourceroute' interface option in
+    /etc/shorewall/interfaces.
+
+20) The default Drop and Reject actions now invoke the new standard
+    action 'AllowICMPs'. This new action accepts critical ICMP types:
+    
+	Type 3 code 4 (fragmentation needed)
+	Type 11       (TTL exceeded)
+
+21) Explicit control over the kernel's Martian logging is now provided
+    using the new 'logmartians' interface option. If you include
+    'logmartians' in the interface option list then logging of Martian
+    packets on will be enabled on the specified interface.
+    If you wish to globally enable martian logging, you can set
+    LOG_MARTIANS=Yes in shorewall.conf.
+
+22) You may now cause Shorewall to use the '--set-mss' option of the
+    TCPMSS target. In other words, you can cause Shorewall to set the
+    MSS field of SYN packets passing through the firewall to the value
+    you specify. This feature extends the existing CLAMPMSS option in
+    /etc/shorewall/shorewall.conf by allowing that option to have a
+    numeric value as well as the values "Yes" and "No".
+
+    Example:
+
+	CLAMPMSS=1400 
+
+23) Shorewall now includes support for the ipp2p match facility. This
+    is a departure from my usual policy in that the ipp2p match
+    facility is included in Patch-O-Matic-NG and is unlikely to ever be
+    included in the kernel.org source tree. Questions about how to
+    install the patch or how to build your kernel and/or iptables
+    should not be posted on the Shorewall mailing lists.
+
+    In the following files, the "PROTO" or "PROTOCOL" column may
+    contain "ipp2p":
+
+       /etc/shorewall/rules
+       /etc/shorewall/tcrules
+       /etc/shorewall/accounting
+
+    When the PROTO or PROTOCOL column contains "ipp2p" then the DEST
+    PORT(S) or PORT(S) column may contain a recognized ipp2p option;
+    for a list of the options and their meaning, at a root prompt:
+
+	iptables -m ipp2p --help
+
+    You must not include the leading "--" on the option; Shorewall will
+    supply those characters for you. If you do not include an option
+    then "ipp2p" is assumed (Shorewall will generate "-m ipp2p
+    --ipp2p").
+
+24) Shorewall now has support for the CONNMARK target from iptables.
+    See the /etc/shorewall/tcrules file for details.
+    
+25) A new debugging option LOGALLNEW has been added to
+    shorewall.conf. When set to a log level, this option causes
+    Shorewall to generaate a logging rule as the first rule in each
+    builtin chain.
+
+    - The table name is used as the chain name in the log prefix.
+    - The chain name is used as the target in the log prefix.
+
+    Example: Using the default LOGFORMAT, the log prefix for logging
+    from the nat table's PREROUTING chain is:
+
+	 Shorewall:nat:PREROUTING
+
+    IMPORTANT: There is no rate limiting on these logging rules so
+    use LOGALLNEW at your own risk; it may cause high CPU and disk
+    utilization and you may not be able to control your firewall after
+    you enable this option.
+
+    DANGER: DO NOT USE THIS OPTION IF THE RESULTING LOG MESSAGES WILL
+    BE SENT TO ANOTHER SYSTEM.
+
+26) The SUBNET column in /etc/shorewall/rfc1918 has been renamed
+    SUBNETS and it is now possible to specify a list of addresses in
+    that column.
+
+27) The AllowNNTP action now also allows NNTP over SSL/TLS (NNTPS).
+
+28) For consistency, the CLIENT PORT(S) column in the tcrules file has
+    been renamed SOURCE PORT(S).
+
+29) The contents of /proc/sys/net/ip4/icmp_echo_ignore_all is now shown
+    in the output of "shorewall status".
+
+30) A new IPTABLES option has been added to shorewall.conf. IPTABLES
+    can be used to designate the iptables executable to be used by
+    Shorewall. If not specified, the iptables executable determined by
+    the PATH setting is used.
+
+31) You can now use the "shorewall show zones" command to display the
+    current contents of the zones. This is particularly useful if you
+    use dynamic zones (DYNAMIC_ZONES=Yes in shorewall.conf).
+
+    Example:
+
+	ursa:/etc/shorewall # shorewall show zones
+	Shorewall-2.2.0-Beta7 Zones at ursa - Sat Nov 27 11:18:25 PST 2004
+ 
+	loc
+	   eth0:192.168.1.0/24
+	   eth1:1.2.3.4
+	net	   
+	   eth0:0.0.0.0/0
+	WiFi
+	   eth1:0.0.0.0/0
+	sec
+	   eth1:0.0.0.0/0
+ 
+	ursa:/etc/shorewall #
+
+32) Variable expansion may now be used with the INCLUDE directive.
 
     Example:
 
@@ -240,46 +605,18 @@ New Features in 2.0.12
         Any other config file:
 
 	    INCLUDE $FILE
------------------------------------------------------------------------
-Problems corrected in 2.0.13
 
-1) A typo in /usr/share/shorewall/firewall caused the following:
+33) The output of "shorewall status" now includes the results of "ip
+    -stat link ls". This helps diagnose performance problems caused by
+    link errors.
 
-   /usr/share/shorewall/firewall: line 1: match_destination_hosts: command 
-   not found
------------------------------------------------------------------------
-New Features in 2.0.14
-
-1)  Previously, when rate-limiting was specified in
+34) Previously, when rate-limiting was specified in
     /etc/shorewall/policy (LIMIT:BURST column), any traffic which
     exceeded the specified rate was silently dropped. Now, if a log
     level is given in the entry (LEVEL column) then drops are logged at
     that level at a rate of 5/min with a burst of 5.
------------------------------------------------------------------------
-Problems corrected in 2.0.14
 
-1)  A typo in the /etc/shorewall/interfaces file has been fixed.
-
-2)  "bad variable" error messages occurring during "shorewall stop" and
-    "shorewall clear" have been eliminated.
-
-3)  A misleading typo in /etc/shorewall/tunnels has been corrected.
------------------------------------------------------------------------
-Problems corrected in 2.0.15
-
-1)  The range of ports opened by the AllowTrcrt action has been
-    expanded to 33434:33524.
-
-2)  Code mis-ported from 2.2.0 caused the following error during
-    "shorewall start" where SYN rate-limiting is present in
-    /etc/shorewall/policy:
-
-      Bad argument `DROP'
-      Try `iptables -h' or 'iptables --help' for more information.
------------------------------------------------------------------------
-New Features in 2.0.16
-
-1)  Recent 2.6 kernels include code that evaluates TCP packets based on
+35) Recent 2.6 kernels include code that evaluates TCP packets based on
     TCP Window analysis. This can cause packets that were previously
     classified as NEW or ESTABLISHED to be classified as INVALID.
 
@@ -299,3 +636,52 @@ New Features in 2.0.16
 
     If not specified or if specified as empty (e.g., DROPINVALID="")
     then DROPINVALID=Yes is assumed.
+
+36) The "shorewall add" and "shorewall delete" commands now accept a
+    list of hosts to add or delete.
+
+    Examples:
+
+    shorewall add eth1:1.2.3.4 eth1:2.3.4.5 z12
+    shorewall delete eth1:1.2.3.4 eth1:2.3.4.5 z12
+
+    The above commands may also be written:
+
+    shorewall add eth1:1.2.3.4,2.3.4.5 z12
+    shorewall delete eth1:1.2.3.4,2.3.4.5 z12
+   
+37) TCP OpenVPN tunnels are now supported using the 'openvpn' tunnel
+    type. OpenVPN entries in /etc/shorewall/tunnels have this format:
+
+    openvpn[:{tcp|udp}][:<port>]	<zone>		<gateway>
+
+    Examples:
+
+	openvpn:tcp		net	1.2.3.4 # TCP tunnel on port 1194
+	openvpn:3344		net	1.2.3.4 # UDP on port 3344
+	openvpn:tcp:4455	net	1.2.3.4	# TCP on port 4455
+
+38) A new 'ipsecvpn' script is included in the tarball and in the
+    RPM. The RPM installs the file in the Documentation directory
+    (/usr/share/doc/packages/shorewall-2.2.0-0RC1).
+
+    This script is intended for use on Roadwarrior laptops for
+    establishing an IPSEC SA to/from remote networks. The script has
+    some limitations:
+
+    - Only one instance of the script may be used at a time.
+    - Only the first SPD accessed will be instantiated at the remote
+      gateway. So while the script creates SPDs to/from the remote
+      gateway and each network listed in the NETWORKS setting at the
+      front of the script, only one of these may be used at a time.
+
+39) The IANA has recently registered port 1194 for use by OpenVPN. In
+    previous versions of Shorewall (and OpenVPN), the default port was
+    5000 but has been changed to 1194 to conform to the new OpenVPN
+    default.
+
+40) The output of "shorewall status" now lists the loaded netfilter
+    kernel modules.
+
+41) The range of UDP ports opened by the AllowTrcrt action has been
+    increased to 33434:33524.

@@ -1,19 +1,17 @@
 #
-# Shorewall 2.0 /usr/share/shorewall/actions.std
+# Shorewall 2.2 /usr/share/shorewall/actions.std
 #
 #
 # Builtin Actions are:
 #
+#    allowBcast		#Silently Allow Broadcast/multicast
 #    dropBcast          #Silently Drop Broadcast/multicast
 #    dropNonSyn         #Silently Drop Non-syn TCP packets
 #    rejNonSyn          #Silently Reject Non-syn TCP packets
-#    logNonSyn          #Log Non-syn TCP packets with disposition LOG
-#    dLogNonSyn         #Log Non-syn TCP packets with disposition DROP
-#    rLogNonSyn         #Log Non-syn TCP packets with disposition REJECT
 #    dropInvalid	#Silently Drop packets that are in the INVALID
 #                       #conntrack state.
-#    allowInvalid       #Accept packets that are in the INVALID conntrack
-#                       #state
+#    allowInvalid	#Accept packets that are in the INVALID
+#			#conntrack state.
 #
 # The NonSyn logging builtins log at the level specified by LOGNEWNOTSYN in
 # shorewall.conf. If that option isn't specified then 'info' is used.
@@ -36,6 +34,7 @@ AllowSMB	#Allow MS Networking
 AllowAuth	#Allow Auth (identd)
 AllowSMTP	#Allow SMTP (Email)
 AllowPOP3	#Allow reading mail via POP3
+AllowICMPs	#Allows critical ICMP types
 AllowIMAP	#Allow reading mail via IMAP
 AllowTelnet	#Allow Telnet Access (not recommended for use over the
 		#Internet)

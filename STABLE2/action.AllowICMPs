@@ -1,10 +1,11 @@
 #
-# Shorewall 2.2 /usr/share/shorewall/action.AllowPing
+# Shorewall 2.2 /usr/share/shorewall/action.AllowICMPs
 #
-#	This action accepts 'ping' requests.
+#	ACCEPT needed ICMP types
 #
 ######################################################################################
 #TARGET  SOURCE		DEST      	PROTO	DEST    SOURCE	 	RATE	USER/
 #                       	        	PORT    PORT(S)		LIMIT	GROUP
-ACCEPT	 -	        -               icmp	8
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
+#
+ACCEPT	-		-		icmp	fragmentation-needed
+ACCEPT	-		-		icmp	time-exceeded

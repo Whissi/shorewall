@@ -1,121 +1,222 @@
-Changes in 2.0.4
+Changes in 2.2.1
 
-1) Fix DNAT logging with 'fw' as the source zone.
+1) Add examples to the zones and policy files.
 
-Change in 2.0.5
+2) Simon Matter's patch for umask.
 
-1) Eradicate more RESTOREBASE messages.
+Changes since 2.0.3
 
-2) Remove 'mangle' reference from shorewall.conf.
+1) Fix security vulnerability involving temporary files/directories.
 
-Change in 2.0.6
+2) Hack security fix so that it works under Slackware.
 
-1) Add PKTTYPE option.
+3) Correct mktempfile() for case where mktemp isn't installed.
 
-       shorewall.conf
-       firewall
+4) Implement 'dropInvalid' builtin action.
 
-2) Sanitized some correct but confusing code in determine_hosts().
+5) Fix logging nat rules.
 
-   There was a loop:
+6) Fix COMMAND typos.
 
-	 for networks in $networks
-	 ...
+7) Add PKTTYPE option.
 
-   It now reads:
+8) Enhancements to /etc/shorewall/masq
 
-	 for network in $networks
-	 ... 
+8) Allow overriding ADD_IP_ALIASES=Yes
 
+9) Fix syntax error in setup_nat()
 
-3) Don't give shorewall.conf and zones execute permission.
-  
-4) Backport 'dropInvalid' from 2.1
+10) Port "shorewall status" changes from 2.0.7.
 
-Changes in 2.0.7
+11) All config files are now empty.
 
-1) Include output of "ip rule ls" and "ip route ls" in "shorewall
-   status".
+12) Port blacklisting fix from 2.0.7
 
-2) Consult PKTTYPE when generating 'REJECT' rules.
+13) Pass rule chain and display chain separately to log_rule_limit.
+    Prep work for action logging.
 
-3) Enhance IP/Routing output in "shorewall status".
+14) Show the iptables/ip/tc command that failed when failure is fatal.
 
-4) Correct handling of multiple 'blacklist' interfaces.
+15) Implement STARTUP_ENABLED.
 
-5) Add "0.0.0.0 RETURN" to nobogons.
+16) Added DNAT ONLY column to /etc/shorewall/nat.
 
-Changes in 2.0.8
+17) Removed SNAT from ORIGINAL DESTINATION column.
 
-1) Removed dead code from process_actions2()
+18) Removed DNAT ONLY column.
 
-2) Corrected read command in process_actions2() (userspec)
+19) Added IPSEC column to /etc/shorewall/masq.
 
-Changes in 2.0.9
+20) No longer enforce source port 500 for ISAKMP.
 
-1) Corrected setup_tc1() handling of the PROTO column.
+21) Apply policy to interface/host options.
 
-2) Added warning about ADD_SNAT_ALIASES in the masq file.
+22) Fix policy and maclist.
 
-3) Added "brctl show" to the status command. 
+23) Implement additional IPSEC options for zones and masq entries.
 
-Changes in 2.0.10
+24) Deprecate the -c option in /sbin/shorewall.
 
-1) Corrected GATEWAY handling for 'pptpserver's
+25) Allow distinct input and output IPSEC parameters.
 
-2) Correct log rule number generation.
+26) Allow source port remapping in /etc/shorewall/masq.
 
-3) Add clarification to /etc/shorewall/tcrules.
+27) Include params file on 'restore'
 
-4) Apply part of Ian Allen's fix for down interface in the SUBNET
-   column of /etc/shorewall/masq.
+28) Apply Richard Musil's patch.
 
-5) Add key /proc settings to "shorewall status" output.
+29) Correct parsing of PROTO column in setup_tc1().
 
-Changes in 2.0.11
+30) Verify Physdev match if BRIDGING=Yes
 
-1) Add note for Slackware users to INSTALL.
+31) Don't NAT tunnel traffic.
 
-2) Correct bogons file.
+32) Fix shorewall.spec to run chkconfig/insserv after initial install.
 
-3) Replace service names by port numbers in /etc/shorewall/tos.
+33) Add iprange support.
 
-4) Added NNTPS to action.AllowNNTP.
+34) Add CLASSIFY support.
 
-5) Fix install.sh
+35) Fix iprange support so that ranges in both source and destination
+    work.
 
-Changes in 2.0.12
+36) Remove logunclean and dropunclean
 
-1) Correct typo in shorewall.conf.
+37) Fixed proxy arp flag setting for complex configurations.
 
-2) Fix "shorewall add" and "shorewall delete" with bridging.
+38) Added RETAIN_ALIASES option.
 
-3) Implement variable expansion in INCLUDE directives
+39) Relax OpenVPN source port restrictions.
 
-4) Split restore-base into two files.
+40) Implement DELAYBLACKLISTLOAD.
 
-5) Correct dynamic zone OUTPUT handling.
+41) Avoid double-setting proxy arp flags.
 
-Changes in 2.0.13
+42) Fix DELAYBLACKLISTLOAD=No.
 
-1) Correct typo in "shorewall add" code.
+43) Merge 'brctl show' change from 2.0.9.
 
-Changes in 2.0.14
+44) Implememt LOGTAGONLY.
 
-1)  Log drops due to policy rate limiting.
+45) Merge 'tcrules' clarification from 2.0.10.
 
-2)  Fix typo in interfaces file.
+46) Implement 'sourceroute' interface option.
 
-3)  Eliminate "bad variable" errors during stop/clear.
+47) Add 'AllowICMPs' action.
 
-4)  Fix typo in tunnels file.
+48) Changed 'activate_rules' such that traffic from IPSEC hosts gets
+    handled before traffic from non-IPSEC zones.
 
-Changes in 2.0.15
+49) Correct logmartians handling.
 
-1)  Increased port range for Traceroute.
+50) Add a clarification and fix a typo in the blacklist file.
 
-2)  Corrected port of rate-limit logging change.
+51) Allow setting a specify MSS value.
 
-Changes in 2.0.16
+52) Detect duplicate zone names.
 
-1)  Backport DROPINVALID from 2.2.0.
+53) Add mss=<number> option to the ipsec file.
+
+54) Added CONNMARK/ipp2p support.
+
+55) Added LOGALLNEW support.
+
+56) Fix typo in check_config()
+
+57) Allow outgoing NTP responses in action.AllowNTP.
+
+58) Clarification of the 'ipsec' hosts file option.
+
+59) Allow list in the SUBNET column of the rfc1918 file.
+
+60) Restore missing '#' in the rfc1918 file.
+
+61) Add note for Slackware users to INSTALL.
+
+62) Allow interface in DEST tcrules column.
+
+63) Remove 'ipt_unclean' from search expression in "log" commands.
+
+64) Remove nonsense from IPSEC description in masq file.
+
+65) Correct typo in rules file.
+
+66) Update bogons file.
+
+67) Add a rule for NNTPS to action.AllowNNTP
+
+68) Fix "shorewall add"
+
+69) Change CLIENT PORT(S) to SOURCE PORT(S) in tcrules file.
+
+70) Correct typo in shorewall.conf.
+
+71) Add the 'icmp_echo_ignore_all' file to the /proc display.
+
+72) Apply Tuomas Jormola's IPTABLES patch.
+
+73) Fixed some bugs in Tuomas's patch.
+
+74) Correct bug in "shorewall add"
+
+75) Correct bridge handling in "shorewall add" and "shorewall delete"
+
+76) Add "shorewall show zones"
+
+77) Remove dependency of "show zones" on dynamic zones.
+
+78) Implement variable expansion in INCLUDE directives
+
+79) More fixes for "shorewall delete" with bridging.
+
+80) Split restore-base into two files.
+
+81) Correct OUTPUT handling of dynamic zones.
+
+83) Add adapter statistics to the output of "shorewall status".
+
+84) Log drops due to policy rate limiting.
+
+85) Continue determining capabilities when fooX1234 already exists.
+
+86) Corrected typo in interfaces file.
+
+87) Add DROPINVALID option.
+
+88) Allow list of hosts in add and delete commands. Fix ipsec problem
+    with "add" and "delete"
+
+89) Clarify add/delete syntax in /sbin/shorewall usage summary.
+
+90) Implement OpenVPN TCP support.
+
+91) Simplify the absurdly over-engineered code that restores the
+    dynamic chain.
+
+92) Add OPENVPNPORT option.
+
+93) Remove OPENVPNPORT option and change default port to 1194.
+
+94) Avoid shell error during "shorewall stop/clear"
+
+95) Change encryption to blowfish in 'ipsecvpn' script.
+
+96) Correct rate limiting rule example.
+
+97) Fix <if>:: handling in setup_masq().
+
+98) Fix mis-leading typo in tunnels.
+
+99) Fix brain-dead ipsec option handling in setup_masq().
+
+100) Reconcile ipsec masq file implementation with the documentation.
+
+101) Add netfilter module display to status output.
+
+102) Add 'allowInvalid' builtin action.
+
+103) Expand range of Traceroute ports.
+
+102) Correct uninitialized variable in setup_ecn()
+
+103) Allow DHCP to be IPSEC-encrypted.

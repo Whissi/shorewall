@@ -22,7 +22,7 @@
 #       Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
 #
 
-VERSION=2.0.16
+VERSION=2.2.0
 
 usage() # $1 = exit status
 {
@@ -176,16 +176,16 @@ echo  "Shorewall script installed in ${PREFIX}${DEST}/$INIT"
 #
 # Create /etc/shorewall, /usr/share/shorewall and /var/shorewall if needed
 #
-mkdir -p ${PREFIX}/etc/shorewall         && chmod 700 ${PREFIX}/etc/shorewall
-mkdir -p ${PREFIX}/usr/share/shorewall   && chmod 700 ${PREFIX}/usr/share/shorewall
-mkdir -p ${PREFIX}/var/lib/shorewall     && chmod 700 ${PREFIX}/var/lib/shorewall
+mkdir -p ${PREFIX}/etc/shorewall
+mkdir -p ${PREFIX}/usr/share/shorewall
+mkdir -p ${PREFIX}/var/lib/shorewall
 #
 # Install the config file
 #
 if [ -f ${PREFIX}/etc/shorewall/shorewall.conf ]; then
    backup_file /etc/shorewall/shorewall.conf
 else
-   run_install -o $OWNER -g $GROUP -m 0600 shorewall.conf ${PREFIX}/etc/shorewall/shorewall.conf
+   run_install -o $OWNER -g $GROUP -m 0744 shorewall.conf ${PREFIX}/etc/shorewall/shorewall.conf
    echo
    echo "Config file installed as ${PREFIX}/etc/shorewall/shorewall.conf"
 fi
@@ -195,7 +195,7 @@ fi
 if [ -f ${PREFIX}/etc/shorewall/zones ]; then
     backup_file /etc/shorewall/zones
 else
-    run_install -o $OWNER -g $GROUP -m 0600 zones ${PREFIX}/etc/shorewall/zones
+    run_install -o $OWNER -g $GROUP -m 0744 zones ${PREFIX}/etc/shorewall/zones
     echo
     echo "Zones file installed as ${PREFIX}/etc/shorewall/zones"
 fi
@@ -245,6 +245,16 @@ else
     run_install -o $OWNER -g $GROUP -m 0600 interfaces ${PREFIX}/etc/shorewall/interfaces
     echo
     echo "Interfaces file installed as ${PREFIX}/etc/shorewall/interfaces"
+fi
+#
+# Install the ipsec file
+#
+if [ -f ${PREFIX}/etc/shorewall/ipsec ]; then
+    backup_file /etc/shorewall/ipsec
+else
+    run_install -o $OWNER -g $GROUP -m 0600 ipsec ${PREFIX}/etc/shorewall/ipsec
+    echo
+    echo "Ipsec file installed as ${PREFIX}/etc/shorewall/ipsec"
 fi
 #
 # Install the hosts file
@@ -539,53 +549,45 @@ fi
 #
 install_file_with_backup firewall ${PREFIX}/usr/share/shorewall/firewall 0544
 
-if [ -z "$PREFIX" ]; then
-    if [ -n "$first_install" ]; then
-	if [ -n "$DEBIAN" ]; then
-	    run_install -o $OWNER -g $GROUP -m 0644 default.debian /etc/default/shorewall
-	    ln -s ../init.d/shorewall /etc/rcS.d/S40shorewall
-	    echo
-	    echo "shorewall will start automatically at boot"
-	    echo "Set startup=1 in /etc/default/shorewall to enable"
-	else
-	    if [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
-		if insserv /etc/init.d/shorewall ; then
-		    echo
-		    echo "shorewall will start automatically at boot"
-		    echo "Remove /etc/shorewall/startup_disabled in /etc/default/shorewall to enable"
-		else
-		    cant_autostart
-		fi
-	    elif [ -x /sbin/chkconfig -o -x /usr/sbin/chkconfig ]; then
-		if chkconfig --add shorewall ; then
-		    echo
-		    echo "shorewall will start automatically in run levels as follows:"
-		    echo "Remove /etc/shorewall/startup_disabled in /etc/default/shorewall to enable"
-		    chkconfig --list shorewall
-		else
-		    cant_autostart
-		fi
-	    elif [ -x /sbin/rc-update ]; then
-		if rc-update add shorewall default; then
-		    echo
-		    echo "shorewall will start automatically at boot"
-		    echo "Remove /etc/shorewall/startup_disabled in /etc/default/shorewall to enable"
-		else
-		    cant_autostart
-		fi
-	    elif [ "$INIT" != rc.firewall ]; then #Slackware starts this automatically
+if [ -z "$PREFIX" -a -n "$first_install" ]; then
+    if [ -n "$DEBIAN" ]; then
+	run_install -o $OWNER -g $GROUP -m 0644 default.debian /etc/default/shorewall
+	ln -s ../init.d/shorewall /etc/rcS.d/S40shorewall
+	echo
+	echo "shorewall will start automatically at boot"
+	echo "Set startup=1 in /etc/default/shorewall to enable"
+    else
+	if [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
+	    if insserv /etc/init.d/shorewall ; then
+		echo
+		echo "shorewall will start automatically at boot"
+		echo "Set STARTUP_ENABLED=Yes in /etc/shorewall/shorewall.conf to enable"
+	    else
 		cant_autostart
 	    fi
-	    
-	    echo \
-"########################################################################
-#      REMOVE THIS FILE AFTER YOU HAVE CONFIGURED SHOREWALL            #
-########################################################################" > /etc/shorewall/startup_disabled
+	elif [ -x /sbin/chkconfig -o -x /usr/sbin/chkconfig ]; then
+	    if chkconfig --add shorewall ; then
+		echo
+		echo "shorewall will start automatically in run levels as follows:"
+		echo "Set STARTUP_ENABLED=Yes in /etc/shorewall/shorewall.conf to enable"
+		chkconfig --list shorewall
+	    else
+		cant_autostart
+	    fi
+	elif [ -x /sbin/rc-update ]; then
+	    if rc-update add shorewall default; then
+		echo
+		echo "shorewall will start automatically at boot"
+		echo "Set STARTUP_ENABLED=Yes in /etc/shorewall/shorewall.conf to enable"
+	    else
+		cant_autostart
+	    fi
+	elif [ "$INIT" != rc.firewall ]; then #Slackware starts this automatically
+	    cant_autostart
 	fi
-    elif [ -n "$DEBIAN" -a ! -f /etc/default/shorewall ]; then
- 	run_install -o $OWNER -g $GROUP -m 0644 default.debian /etc/default/shorewall
-    fi	
-fi	   
+    fi
+fi
+
 #
 #  Report Success
 #

@@ -1,5 +1,5 @@
 #
-# Shorewall version 2.0 - Rules File
+# Shorewall version 2.2 - Rules File
 #
 # /etc/shorewall/rules
 #
@@ -72,6 +72,20 @@
 #			DNAT:debug). This causes the packet to be
 #			logged at the specified level.
 #
+#			If the ACTION names an action defined in
+#			/etc/shorewall/actions or in
+#			/usr/share/shorewall/actions.std then:
+#
+#			- If the log level is followed by "!' then all rules
+#			  in the action are logged at the log level.
+#
+#			- If the log level is not followed by "!" then only
+#			  those rules in the action that do not specify 
+#			  logging are logged at the specified level.
+#
+#			- The special log level 'none!' suppresses logging
+#			  by the action.
+#
 #			You may also specify ULOG (must be in upper case) as a
 #			log level.This will log to the ULOG target for routing
 #			to a separate log through use of ulogd
@@ -104,6 +118,10 @@
 #			address; mac addresses must begin with "~" and must use
 #			"-" as a separator.
 #
+#			Hosts may be specified as an IP address range using the
+#			syntax <low address>-<high address>. This requires that
+#			your kernel and iptables contain iprange match support.
+#
 #			dmz:192.168.2.2		Host 192.168.2.2 in the DMZ
 #
 #			net:155.186.235.0/24	Subnet 155.186.235.0/24 on the
@@ -114,6 +132,10 @@
 #						192.168.1.2 in the local zone.
 #			loc:~00-A0-C9-15-39-78  Host in the local zone with
 #                                               MAC address 00:A0:C9:15:39:78.
+#
+#			net:192.0.2.11-192.0.2.17
+#						Hosts 192.0.2.11-192.0.2.17 in
+#						the net zone.
 #
 #			Alternatively, clients may be specified by interface
 #			by appending ":" to the zone name followed by the
@@ -145,7 +167,7 @@
 #				3. You may not specify both an interface and
 #				   an address.
 #
-#			Unlike in the SOURCE column, you may specify a range of
+#			Like in the SOURCE column, you may specify a range of
 #			up to 256 IP addresses using the syntax
 #			<first ip>-<last ip>. When the ACTION is DNAT or DNAT-,
 #			the connections will be assigned to addresses in the
@@ -166,13 +188,19 @@
 #			contain the port number on the firewall that the
 #			request should be redirected to.
 #
-#	PROTO		Protocol - Must be "tcp", "udp", "icmp", a number, or
-#			"all".
+#	PROTO		Protocol - Must be "tcp", "udp", "icmp", "ipp2p", 
+#			a number, or "all". "ipp2p" requires ipp2p match
+#			support in your kernel and iptables.
 #
 #	DEST PORT(S)    Destination Ports. A comma-separated list of Port
 #			names (from /etc/services), port numbers or port
 #			ranges; if the protocol is "icmp", this column is
 #			interpreted as the destination icmp-type(s).
+#
+#			If the protocol is ipp2p, this column is interpreted
+#			as an ipp2p option without the leading "--" (example "bit"
+#			for bit-torrent). If no port is given, "ipp2p" is
+#			assumed.
 #
 #			A port range is expressed as <low port>:<high port>.
 #
@@ -195,8 +223,8 @@
 #			ranges.
 #
 #			If you don't want to restrict client ports but need to
-#			specify an ORIGINAL DEST in the next column, then
-#			place "-" in this column.
+#			specify an ORIGINAL DEST in the next column, then place
+#			"-" in this column.
 #
 #			If your kernel contains multi-port match support, then
 #			only a single Netfilter rule will be generated if in
@@ -222,14 +250,6 @@
 #			the rule will be followed only if the original 
 #			destination address in the connection request does not
 #			match any of the addresses listed.
-#
-#			The address (list) may optionally be followed by
-#			a colon (":") and a second IP address. This causes
-#			Shorewall to use the second IP address as the source
-#			address in forwarded packets. See the Shorewall
-#			documentation for restrictions concerning this feature.
-#			If no source IP address is given, the original source
-#			address is not altered.
 #
 #	RATE LIMIT	You may rate-limit the rule by placing a value in 
 #			this colume:
@@ -281,9 +301,9 @@
 #		 to local system 192.168.1.3 with a limit of 3 per second and
 #		 a maximum burst of 10
 #
-#	#ACTION 	SOURCE	DEST            PROTO	DEST    SOURCE	ORIGINAL
-#	#                                       	PORT    PORT(S) DEST
-#	DNAT<3/sec:10>	net	loc:192.168.1.3 tcp	http
+#	#ACTION 	SOURCE	DEST            PROTO	DEST    SOURCE	ORIGINAL	RATE
+#	#                                       	PORT    PORT(S) DEST		LIMIT
+#	DNAT		net	loc:192.168.1.3 tcp	http	-	-		3/sec:10
 #
 #	Example: Redirect all locally-originating www connection requests to
 #		 port 3128 on the firewall (Squid running on the firewall

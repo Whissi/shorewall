@@ -1,6 +1,27 @@
 #!/bin/sh
 #
-# Shorewall 2.0 -- /usr/share/shorewall/functions
+# Shorewall 2.2 -- /usr/share/shorewall/functions
+
+# Function to truncate a string -- It uses 'cut -b -<n>'
+# rather than ${v:first:last} because light-weight shells like ash and
+# dash do not support that form of expansion.
+#
+
+truncate() # $1 = length
+{
+    cut -b -${1}
+}
+
+#
+# Split a colon-separated list into a space-separated list
+#
+split() {
+    local ifs=$IFS
+    IFS=:
+    set -- $1
+    echo $*
+    IFS=$ifs
+}
 
 #
 # Search a list looking for a match -- returns zero if a match found
@@ -229,7 +250,7 @@ find_zones() # $1 = name of the zone file
 	    \#*)
 		;;
             $FW)
-	        echo "Reserved zone name \"$zone\" in zones file ignored" >&2
+	        echo "   Warning: Reserved zone name \"$zone\" in zones file ignored" >&2
 		;;
             *)
 		echo $zone
@@ -255,12 +276,16 @@ determine_zones()
     multi_display=Multi-zone
     strip_file zones $zonefile
     zones=$(find_zones $TMP_DIR/zones)
-    zones=$(echo $zones) # Remove extra trash
+    newzones=
     
     for zone in $zones; do
 	dsply=$(find_display $zone $TMP_DIR/zones)
+	[ ${#zone} -gt 5 ] && echo "   Warning: Zone name longer than 5 characters: $zone" >&2
 	eval ${zone}_display=\$dsply
+	newzones="$newzones $zone"
     done
+
+    zones=${newzones# }
 }
 
 #
@@ -377,7 +402,7 @@ mktempfile() {
 		> $1/shorewall-$$ && echo $1/shorewall-$$
 		;;
 	    *)
-		echo "   ERROR:Internal error in mktempfile"
+		echo "   ERROR:Internal error in mktempfile" >&2
 		;;
 	esac
     else
@@ -393,7 +418,7 @@ mktempfile() {
 		> /tmp/shorewall-$$ && echo /tmp/shorewall-$$
 		;;
 	    *)
-		echo "   ERROR:Internal error in mktempfile"
+		echo "   ERROR:Internal error in mktempfile" >&2
 		;;
 	esac
     fi
@@ -417,10 +442,10 @@ mktempdir() {
 	    mkdir /tmp/shorewall-$$ && chmod 700 /tmp/shorewall-$$ && echo /tmp/shorewall-$$
 	    ;;
 	*)
-	    echo "   ERROR:Internal error in mktempdir"
+	    echo "   ERROR:Internal error in mktempdir" >&2
 	    ;;
 	esac
-}		
+}	
 
 #
 # Read a file and handle "INCLUDE" directives
@@ -531,13 +556,20 @@ encodeaddr() {
 ip_range() {
     local first last l x y z vlsm
 
-    case $1 in 
-    [0-9]*.*.*.*-*.*.*.*)
-	;;
-    *)
-	echo $1
-	return
-	;;
+    case $1 in
+	!*)
+	    #
+	    # Let iptables complain if it's a range
+	    #
+	    echo $1
+	    return
+	    ;;
+	[0-9]*.*.*.*-*.*.*.*)
+            ;;
+	*)
+	    echo $1
+	    return
+	    ;;
     esac
 
     first=$(decodeaddr ${1%-*})
@@ -680,6 +712,9 @@ chain_base() #$1 = interface
 	    *-*)
 		c="${c%-*}_${c##*-}"
 		;;
+	    *%*)
+		c="${c%\%*}_${c##*%}"
+		;;
 	    *)
 		echo ${c:=common}
 		return
@@ -699,11 +734,7 @@ if_match() # $1 = Name in interfaces file - may end in "+"
     
     case $1 in
 	*+)
-	    #
-	    # Can't use ${2:0:${#pattern}} because ash and dash don't support that flavor of
-	    # variable expansion :-(
-	    #
-	    test  "x$(echo $2 | cut -b -${#pattern} )" = "x${pattern}"
+	    test  "x$(echo $2 | truncate ${#pattern} )" = "x${pattern}"
 	    ;;
 	*)
 	    test "x$1" = "x$2"
@@ -767,3 +798,11 @@ find_interface_by_address() {
     [ -n "$dev" ] && echo $dev
 }
 
+#
+# Find interface addresses--returns the set of addresses assigned to the passed
+# device
+#
+find_interface_addresses() # $1 = interface
+{
+    ip -f inet addr show $1 | grep inet | sed 's/inet //;s/\/.*//;s/ peer.*//'
+}

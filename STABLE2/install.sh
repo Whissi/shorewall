@@ -176,9 +176,9 @@ echo  "Shorewall script installed in ${PREFIX}${DEST}/$INIT"
 #
 # Create /etc/shorewall, /usr/share/shorewall and /var/shorewall if needed
 #
-mkdir -p ${PREFIX}/etc/shorewall
-mkdir -p ${PREFIX}/usr/share/shorewall
-mkdir -p ${PREFIX}/var/lib/shorewall
+mkdir -p ${PREFIX}/etc/shorewall         && chmod 700 ${PREFIX}/etc/shorewall
+mkdir -p ${PREFIX}/usr/share/shorewall   && chmod 700 ${PREFIX}/usr/share/shorewall
+mkdir -p ${PREFIX}/var/lib/shorewall     && chmod 700 ${PREFIX}/var/lib/shorewall
 #
 # Install the config file
 #

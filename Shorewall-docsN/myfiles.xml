@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-06-25</pubdate>
+    <pubdate>2004-07-04</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -42,12 +42,12 @@
       address. If you have just a single public IP address, most of what you
       see here won&#39;t apply to your setup so beware of copying parts of
       this configuration and expecting them to work for you. What you copy may
-      or may not work in your configuration.</para>
+      or may not work for you.</para>
     </caution>
 
     <caution>
       <para>The configuration shown here corresponds to Shorewall version
-      2.0.1. My configuration uses features not available in earlier Shorewall
+      2.0.3. My configuration uses features not available in earlier Shorewall
       releases.</para>
     </caution>
 
@@ -69,7 +69,7 @@
 
       <listitem>
         <para>I use one-to-one NAT for EastepLaptop (My work system -- Windows
-        XP SP2). Internal address 192.168.1.7 and external address
+        XP SP1). Internal address 192.168.1.7 and external address
         206.124.146.180.</para>
       </listitem>
 
@@ -99,7 +99,7 @@
 
     <para>The firewall runs on a 256MB PII/233 with Debian Sarge (Testing).</para>
 
-    <para>Wookie and Ursa run Samba and the Wookie acts as a WINS server.</para>
+    <para>Wookie and Ursa run Samba and Wookie acts as a WINS server.</para>
 
     <para>The wireless network connects to Wookie&#39;s eth2 via a LinkSys
     WAP11.&#x00A0; In additional to using the rather weak WEP 40-bit
@@ -124,7 +124,7 @@
     desktop environment installed and that desktop environment is available
     via XDMCP from the local zone. For the most part though, X tunneled
     through SSH is used for server administration and the server runs at run
-    level 3 (multi-user console mode on RedHat).</para>
+    level 3 (multi-user console mode on Fedora).</para>
 
     <para>I run an SNMP server on my firewall to serve <ulink
     url="http://www.ee.ethz.ch/~oetiker/webtools/mrtg/">MRTG</ulink> running
@@ -190,7 +190,7 @@ TCP_FLAGS_DISPOSITION=DROP
       <blockquote>
         <para><programlisting>MIRRORS=&#60;list of shorewall mirror ip addresses&#62;
 NTPSERVERS=&#60;list of the NTP servers I sync with&#62;
-TEXAS=&#60;ip address of gateway in Dallas&#62;
+TEXAS=&#60;ip address of gateway in Plano&#62;
 LOG=info</programlisting></para>
       </blockquote>
     </section>
@@ -203,7 +203,7 @@ LOG=info</programlisting></para>
 net     Internet        Internet
 dmz     DMZ             Demilitarized zone
 loc     Local           Local networks
-tx      Texas           Peer Network in Dallas
+tx      Texas           Peer Network in Plano
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
       </blockquote>
     </section>

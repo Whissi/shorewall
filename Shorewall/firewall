@@ -1968,10 +1968,6 @@ add_a_rule()
 {
     local natrule=
 
-    rule_error() {
-	fatal_error "Only DNAT and REDIRECT rules may specify port mapping; rule \"$rule\""
-    }
-
     # Set source variables
 
     cli=
@@ -2099,9 +2095,9 @@ add_a_rule()
 	    # A specific server or server port given
 
 	    if [ -n "$natrule" ]; then
-		    add_nat_rule
+		add_nat_rule
 	    elif [ -n "$addr" -a "$addr" != "$serv" ] || [ -n "$servport" -a "$servport" != "$port" ]; then
-		rule_error
+		fatal_error "Only DNAT and REDIRECT rules may specify port mapping; rule \"$rule\""
 	    fi
 
 	    if [ -z "$dnat_only" -a $chain != ${FW}2${FW} ]; then

@@ -604,3 +604,23 @@ New Features:
 24) Shorewall now has support for the CONNMARK target from iptables.
     See the /etc/shorewall/tcrules file for details.
     
+25) A new debugging option LOGALLNEW has been added to
+    shorewall.conf. When set to a log level, this option causes
+    Shorewall to generaate a logging rule as the first rule in each
+    builtin chain.
+
+    - The table name is used as the chain name in the log prefix.
+    - The chain name is used as the target in the log prefix.
+
+    Example: Using the default LOGFORMAT, the log prefix for logging
+    from the nat table's PREROUTING chain is:
+
+	 Shorewall:nat:PREROUTING
+
+    IMPORTANT: There is no rate limiting on these logging rules so
+    use LOGALLNEW at your own risk; it may cause high CPU and disk
+    utilization and you may not be able to control your firewall after
+    you enable this option.
+
+    DANGER: DO NOT USE THIS OPTION IF THE RESULTING LOG MESSAGES WILL
+    BE SENT TO ANOTHER SYSTEM.

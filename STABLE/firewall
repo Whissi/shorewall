@@ -4101,6 +4101,8 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 	fi
     done < ${STATEDIR}/chains
 
+    rm -rf $TMP_DIR
+
     echo "$1 added to zone $2"
 }
 
@@ -4221,6 +4223,8 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
 	    fi
 	fi
     done < ${STATEDIR}/chains
+
+    rm -rf $TMP_DIR
 
     echo "$1 removed from zone $2"
 }

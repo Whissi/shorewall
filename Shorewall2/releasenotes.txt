@@ -1,4 +1,4 @@
-Shorewall 2.2.0-RC4
+Shorewall 2.2.0
 
 ----------------------------------------------------------------------
 Problems Corrected since 2.0.3
@@ -300,7 +300,8 @@ New Features:
 
 1)  ICMP packets that are in the INVALID state are now dropped by the
     Reject and Drop default actions. They do so using the new 
-    'dropInvalid' builtin action.
+    'dropInvalid' builtin action. An 'allowInvalid' builtin action is
+    also provided which accepts packets in that state.
 
 2)  The /etc/shorewall/masq file INTERFACE column now allows additional
     options.
@@ -885,3 +886,6 @@ New Features:
 
 40) The output of "shorewall status" now lists the loaded netfilter
     kernel modules.
+
+41) The range of UDP ports opened by the AllowTrcrt action has been
+    increased to 33434:33524.

@@ -14,6 +14,11 @@
 #	individual IP addresses. Most simple setups don't need to
 #	(should not) place anything in this file.
 #
+#	The order of entries in this file is not significant in
+#	determining zone composition. Rather, the order that the zones
+#	are defined in /etc/shorewall/zones determines the order in
+#	which the records in this file are interpreted. 
+#
 #	ZONE	- The name of a zone defined in /etc/shorewall/zones
 #
 #	HOST(S)	- The name of an interface  defined in the
@@ -49,10 +54,10 @@
 #				       an ethernet NIC and must be up before
 #				       Shorewall is started.
 #
-#			routeback    - Shorewall show set up the infrastructure
+#			routeback    - Shorewall should set up the infrastructure
 #				       to pass packets from this/these
 #				       address(es) back to themselves. This is
-#				       necessary of hosts in this group use the
+#				       necessary if hosts in this group use the
 #				       services of a transparent proxy that is
 #				       a member of the group or if DNAT is used
 #				       to send requests originating from this 

@@ -1,5 +1,5 @@
 %define name shorewall
-%define version 2.0.1
+%define version 2.0.2
 %define release 1
 %define prefix /usr
 
@@ -91,6 +91,7 @@ fi
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/hosts
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/blacklist
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/init
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/initdone
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/start
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/stop
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/stopped
@@ -135,10 +136,21 @@ fi
 %attr(0544,root,root) /usr/share/shorewall/help
 %attr(0600,root,root) /usr/share/shorewall/rfc1918
 %attr(0600,root,root) /usr/share/shorewall/bogons
+%attr(0600,root,root) /usr/share/shorewall/configpath
 
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel
 
 %changelog
+* Thu May 13 2004 Tom Eastep tom@shorewall.net
+- Updated for 2.0.2-1
+* Mon May 10 2004 Tom Eastep tom@shorewall.net
+- Add /etc/shorewall/initdone
+* Fri May 07 2004 Tom Eastep tom@shorewall.net
+- Shorewall 2.0.2-RC1
+* Tue May 04 2004 Tom Eastep tom@shorewall.net
+- Shorewall 2.0.2-Beta2
+* Tue Apr 13 2004 Tom Eastep tom@shorewall.net
+- Add /usr/share/shorewall/configpath
 * Mon Apr 05 2004 Tom Eastep tom@shorewall.net
 - Updated for 2.0.1-1
 * Thu Apr 02 2004 Tom Eastep tom@shorewall.net

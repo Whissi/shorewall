@@ -13,7 +13,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-04-24</pubdate>
+    <pubdate>2004-05-09</pubdate>
 
     <copyright>
       <year>2001-2002</year>
@@ -224,6 +224,22 @@ ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62
   </section>
 
   <section>
+    <title>TFTP</title>
+
+    <para>You must have TFTP connection tracking support in your kernel. If
+    modularized, the modules are <emphasis role="bold">ip_conntrack_tftp</emphasis>
+    (and <emphasis role="bold">ip_nat_tftp</emphasis> if any form of NAT is
+    involved) These modules may be loaded using entries in
+    <filename>/etc/shorewall/modules</filename>. The <emphasis role="bold">ip_conntrack_tftp</emphasis>
+    module must be loaded first. Note that the <filename>/etc/shorewall/modules</filename>
+    file released with recent Shorewall versions contains entries for these
+    modules.</para>
+
+    <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
+ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    udp        69</programlisting>
+  </section>
+
+  <section>
     <title>Traceroute</title>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
@@ -280,7 +296,8 @@ ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62
   <appendix>
     <title>Revision History</title>
 
-    <para><revhistory><revision><revnumber>1.8</revnumber><date>2004-04-24</date><authorinitials>TE</authorinitials><revremark>Revised
+    <para><revhistory><revision><revnumber>1.10</revnumber><date>2004-05-09</date><authorinitials>TE</authorinitials><revremark>Added
+    TFTP.</revremark></revision><revision><revnumber>1.9</revnumber><date>2004-04-24</date><authorinitials>TE</authorinitials><revremark>Revised
     ICQ/AIM.</revremark></revision><revision><revnumber>1.8</revnumber><date>2004-04-23</date><authorinitials>TE</authorinitials><revremark>Added
     SNMP.</revremark></revision><revision><revnumber>1.7</revnumber><date>2004-02-18</date><authorinitials>TE</authorinitials><revremark>Make
     NFS work for everyone.</revremark></revision><revision><revnumber>1.6</revnumber><date>2004-02-14</date><authorinitials>TE</authorinitials><revremark>Add

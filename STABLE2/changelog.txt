@@ -1,52 +1,61 @@
-Changes since 2.0.0
+Changes since 2.0.1
 
-1) Eliminate Warning about Policy as rule when using actions.
+1) Reformat the code in define_firewall().
 
-2) Add bridging Code.
+2) Reimplement dynamic zones.
 
-3) Cleanup Warning elimination.
+3) Tweak new dynamic zone implementation.
 
-4) Add 'nobogons'
+4) Implement CONFIG_PATH.
 
-5) Add 'netmap'
+5) Apply Stijn Jonker's fix for CONFIG_PATH.
 
-6) Fix another <zone>_frwd problem.
+6) Restore logic to make 'find_file' check for SHOREWALL_DIR separately.
 
-7) Add -x option to /sbin/shorewall.
+7) Allow CONFIG_PATH to be inherited.
 
-8) Implement Sean Mathews's fix fix Proxy ARP and IPSEC.
+8) Fix ensure_config_path call.
 
-9) Improve zone-definition checking.
+9) Make LOCAL and ALL INTERFACES independent in the nat file.
 
-10) Add additional options to hosts file
+10) Add "ko.gz" to the vast list of module suffixes that distributions
+    have invented.
 
-11) Replace 'subnet' with 'network' in the code
+11) Update the bogons file
 
-12) Fix item 10 above :-(
+12) Added example for log rate limiting knobs in shorewall.conf.
 
-13) Replace good code with crap to satisfy 'ash'.
+13) Fix init.debian.sh.
 
-14) Fix if_match to only do wild-card matches on patterns ending in
-    "+".
+14) Implement the -q option.
 
-15) Tighten edits on bridge port names.
+15) Add saved configuration support (iptables-save/iptables-restore
+    integration).
 
-16) Make 'routeback' on interfaces work again.
+16) Use modprobe if it is available.
 
-17) Reduce useless intra-zone rules on bridges.
+17) Lots of fixes to 'save'
 
-18) Make 'routeback' on hosts work again.
+18) 'shorewall forget'
 
-19) Fix display of ICMP packets.
+19) SNAT/MASQUERADE by proto/port(s)
 
-20) Fix init.debian.sh
+20) Shorewall 2.0.2 Beta 1 changes.
 
-21) Eliminate meaningless warning out of proxyarp processing.
+21) Fix ALL INTERFACES column parsing.
 
-22) Fix module loading on Mandrake.
+22) Correct "shorewall delete" processing.
 
-23) Eliminate confusing IPV6 warnings.
+23) Apply Alex Wilms's patch for install.sh
 
-24) Apply Stefan Engel's fix for "shorewall delete"
+24) Add ACCEPT+ and NONAT targets.
 
-25) Apply the install.sh fix from Alex Wilms
+25) Added 'initialized' extension script.
+
+26) Renamed 'initialized' to 'initdone'
+
+27) Applied Stijn Jonker's fix for "shorewall add"
+
+28) Correct typo that broke "shorewall delete"
+
+29) Apply Stijn Jonker's -q fix.

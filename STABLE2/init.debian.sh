@@ -83,7 +83,7 @@ wait_for_pppd () {
 shorewall_start () {
   echo -n "Starting \"Shorewall firewall\": "
   wait_for_pppd
-  $SRWL start >> $INITLOG 2>&1 && echo "done." || echo_notdone
+  $SRWL -f start >> $INITLOG 2>&1 && echo "done." || echo_notdone
   return 0
 }
 

@@ -22,7 +22,7 @@
 #       Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
 #
 
-VERSION=2.0.1
+VERSION=2.0.2
 
 usage() # $1 = exit status
 {
@@ -83,10 +83,12 @@ install_file_with_backup() # $1 = source $2 = target $3 = mode
 # Parse the run line
 #
 # DEST is the SysVInit script directory
+# INIT is the name of the script in the $DEST directory
 # RUNLEVELS is the chkconfig parmeters for firewall
 # ARGS is "yes" if we've already parsed an argument
 #
-DEST=""
+DEST="/etc/init.d"
+INIT="shorewall"
 RUNLEVELS=""
 ARGS=""
 
@@ -116,10 +118,6 @@ while [ $# -gt 0 ] ; do
 done
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
-
-if [ -z "$DEST" ]; then
-    DEST=/etc/init.d
-fi
 
 #
 # Determine where to install the firewall script
@@ -160,11 +158,11 @@ echo "shorewall control program installed in ${PREFIX}/sbin/shorewall"
 if [ -n "$DEBIAN" ]; then
     install_file_with_backup init.debian.sh /etc/init.d/shorewall 0544
 else
-    install_file_with_backup init.sh ${PREFIX}${DEST}/shorewall 0544
+    install_file_with_backup init.sh ${PREFIX}${DEST}/$INIT 0544
 fi
 
 echo
-echo  "Shorewall script installed in ${PREFIX}${DEST}/shorewall"
+echo  "Shorewall script installed in ${PREFIX}${DEST}/$INIT"
 
 #
 # Create /etc/shorewall, /usr/share/shorewall and /var/shorewall if needed
@@ -392,13 +390,19 @@ fi
 #
 install_file_with_backup rfc1918 ${PREFIX}/usr/share/shorewall/rfc1918 0600
 echo
-echo "RFC 1918 file installed as ${PREFIX}/etc/shorewall/rfc1918"
+echo "RFC 1918 file installed as ${PREFIX}/usr/share/shorewall/rfc1918"
 #
 # Install the bogons file
 #
 install_file_with_backup bogons ${PREFIX}/usr/share/shorewall/bogons 0600
 echo
-echo "Bogon file installed as ${PREFIX}/etc/shorewall/bogons"
+echo "Bogon file installed as ${PREFIX}/usr/share/shorewall/bogons"
+#
+# Install the default config path file
+#
+install_file_with_backup configpath ${PREFIX}/usr/share/shorewall/configpath 0600
+echo
+echo " Default config path file installed as ${PREFIX}/etc/shorewall/configpath"
 #
 # Install the init file
 #
@@ -408,6 +412,16 @@ else
     run_install -o $OWNER -g $GROUP -m 0600 init ${PREFIX}/etc/shorewall/init
     echo
     echo "Init file installed as ${PREFIX}/etc/shorewall/init"
+fi
+#
+# Install the initdone file
+#
+if [ -f ${PREFIX}/etc/shorewall/initdone ]; then
+    backup_file /etc/shorewall/initdone
+else
+    run_install -o $OWNER -g $GROUP -m 0600 initdone ${PREFIX}/etc/shorewall/initdone
+    echo
+    echo "Initdone file installed as ${PREFIX}/etc/shorewall/initdone"
 fi
 #
 # Install the start file
@@ -508,7 +522,7 @@ chmod 644 ${PREFIX}/usr/share/shorewall/version
 
 if [ -z "$PREFIX" ]; then
     rm -f /usr/share/shorewall/init
-    ln -s ${DEST}/shorewall /usr/share/shorewall/init
+    ln -s ${DEST}/${INIT} /usr/share/shorewall/init
 fi
 
 #
@@ -549,7 +563,7 @@ if [ -z "$PREFIX" -a -n "$first_install" ]; then
 	    else
 		cant_autostart
 	    fi
-	else
+	elif [ "$INIT" != rc.firewall ]; then #Slackware starts this automatically
 	    cant_autostart
 	fi
 

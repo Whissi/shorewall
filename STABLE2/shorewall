@@ -80,6 +80,10 @@
 #						   "dropped" addresses so that it will
 #						   be automatically reinstated the
 #						   next time that Shorewall starts.
+#                                                  Save the current state so that 'shorewall
+#                                                  restore' can be used.
+#
+#          shorewall forget                        Discard the data saved by 'shorewall save'
 #
 #          shorewall ipaddr [ <address>/<cidr> | <address> <netmask> ]
 #
@@ -160,6 +164,7 @@ get_config() {
 	    exit 2
 	fi
     fi
+
 }
 
 #
@@ -530,7 +535,7 @@ help()
 #
 usage() # $1 = exit status
 {
-    echo "Usage: $(basename $0) [debug|trace] [nolock] [-c <directory>] [ -x ] <command>"
+    echo "Usage: $(basename $0) [debug|trace] [nolock] [-c <directory>] [ -x ] [ -q ] <command>"
     echo "where <command> is one of:"
     echo "   add <interface>[:<host>] <zone>"
     echo "   allow <address> ..."
@@ -538,6 +543,7 @@ usage() # $1 = exit status
     echo "   clear"
     echo "   delete <interface>[:<host>] <zone>"
     echo "   drop <address> ..."
+    echo "   forget"
     echo "   help [ <command > | host | address ]"
     echo "   hits"
     echo "   ipcalc [ <address>/<vlsm> | <address> <netmask> ]"
@@ -548,6 +554,7 @@ usage() # $1 = exit status
     echo "   reject <address> ..."
     echo "   reset"
     echo "   restart"
+    echo "   restore"
     echo "   save"
     echo "   show [<chain> [ <chain> ... ]|classifiers|connections|log|nat|tc|tos]"
     echo "   start"
@@ -585,34 +592,60 @@ if [ $# -gt 0 ] && [ "$1" = "nolock" ]; then
 fi
 
 SHOREWALL_DIR=
+QUIET=
 IPT_OPTIONS="-nv"
+FAST=
+
 done=0
 
 while [ $done -eq 0 ]; do
     [ $# -eq 0 ] && usage 1
-    case $1 in
-    -c)
-	[ $# -eq 1 ] && usage 1
+    option=$1
+    case $option in
+	-*)
+	    option=${option#-}
 
-	if [ ! -d $2 ]; then
-	    if [ -e $2 ]; then
-		echo "$2 is not a directory" >&2 && exit 2
-	    else
-		echo "Directory $2 does not exist" >&2 && exit 2
-	    fi
-	fi
+	    [ -z "$option" ] && usage 1
+	    
+	    while [ -n "$option" ]; do
+		case $option in
+		    c)
+			[ $# -eq 1 ] && usage 1
 
-	SHOREWALL_DIR=$2
-	shift
-	shift
-	;;
-    -x)
-	IPT_OPTIONS="-xnv"
-	shift
-	;;
-    *)
-	done=1
-	;;
+			if [ ! -d $2 ]; then
+			    if [ -e $2 ]; then
+				echo "$2 is not a directory" >&2 && exit 2
+			    else
+				echo "Directory $2 does not exist" >&2 && exit 2
+			    fi
+			fi
+			
+			SHOREWALL_DIR=$2
+			option=
+			shift
+			;;
+		    x*)
+			IPT_OPTIONS="-xnv"
+			option=${option#x}
+			;;
+		    q*)
+			QUIET=Yes
+			option=${option#q}
+			;;
+		    f*)
+			FAST=Yes
+			option=${option#f}
+			;;
+		    *)
+			usage 1
+			;;
+		esac
+	    done
+	    shift
+	    ;;
+	*)
+	    done=1
+            ;;
     esac
 done
 
@@ -621,6 +654,7 @@ if [ $# -eq 0 ]; then
 fi
 
 [ -n "$SHOREWALL_DIR" ] && export SHOREWALL_DIR
+[ -n "$QUIET" ]         && export QUIET
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 MUTEX_TIMEOUT=
@@ -638,6 +672,8 @@ else
     exit 2
 fi
 
+ensure_config_path
+
 config=$(find_file shorewall.conf)
 
 if [ -f $config ]; then
@@ -646,6 +682,10 @@ else
     echo "$config does not exist!" >&2
     exit 2
 fi
+
+ensure_config_path
+
+export CONFIG_PATH
 
 [ -z "${STATEDIR}" ] && STATEDIR=/var/state/shorewall
 
@@ -691,7 +731,23 @@ case $(echo -n "Testing") in
 esac
 
 case "$1" in
-    start|stop|restart|reset|clear|refresh|check)
+    start)
+	[ $# -ne 1 ] && usage 1
+	get_config
+	if [ -n "$FAST" ]; then
+	    if [ -f /var/lib/shorewall/restore ]; then
+		echo Restoring Shorewall...
+		. /var/lib/shorewall/restore
+		date > $STATEDIR/restarted
+		echo Shorewall restored
+	    else
+		exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock start
+	    fi
+        else
+	    exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock start
+	fi
+	;;
+    stop|restart|reset|clear|refresh|check)
 	[ $# -ne 1 ] && usage 1
 	get_config
 	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $1
@@ -909,11 +965,24 @@ case "$1" in
     	[ -n "$debugging" ] && set -x
 	[ $# -ne 1 ] && usage 1
 	mutex_on
+
 	if qt iptables -L shorewall -n; then
 	    [ -d /var/lib/shorewall ] || mkdir /var/lib/shorewall
 
 	    if iptables -L dynamic -n > /var/lib/shorewall/save; then
-		echo "Dynamic Rules Saved"
+		echo "   Dynamic Rules Saved"
+		if [ -f /var/lib/shorewall/restore-base ]; then
+		    cp -f /var/lib/shorewall/restore-base /var/lib/shorewall/restore-$$
+		    if iptables-save >> /var/lib/shorewall/restore-$$ ; then
+			echo EOF >> /var/lib/shorewall/restore-$$
+			mv -f /var/lib/shorewall/restore-$$ /var/lib/shorewall/restore
+			chmod +x /var/lib/shorewall/restore
+			echo "   Currently-running Configuration Saved"
+                    else
+			rm -f /var/lib/shorewall/restore-$$
+			echo "   ERROR: Currently-running Configuration Not Saved"
+		    fi
+		fi
 	    else
 		echo "Error Saving the Dynamic Rules"
 	    fi
@@ -921,6 +990,11 @@ case "$1" in
 	    echo "Shorewall isn't started"
 	fi
 	mutex_off
+	;;
+    forget)
+	rm -f /var/lib/shorewall/restore
+	rm -f /var/lib/shorewall/save
+	echo "   Previously saved information discarded"
 	;;
     ipcalc)
     	[ -n "$debugging" ] && set -x
@@ -957,6 +1031,16 @@ case "$1" in
 		;;
 	esac
 	;;
+    restore)
+	if [ -f /var/lib/shorewall/restore ]; then
+	    echo Restoring Shorewall...
+	    . /var/lib/shorewall/restore
+            echo Shorewall restored
+	else
+	    echo "File /var/lib/shorewall/restore: file not found"
+            exit 2
+        fi
+        ;;
     call) 
     	[ -n "$debugging" ] && set -x
 	#

@@ -83,10 +83,23 @@ fix_bang() {
 }
 
 #
+# Set default config path
+#
+ensure_config_path() {
+    local F=/usr/share/shorewall/configpath
+    if [ -z "$CONFIG_PATH" ]; then
+	[ -f $F ] || { echo "   ERROR: $F does not exist"; exit 2; }
+	. $F
+    fi
+}
+   
+#
 # Find a File -- For relative file name, look first in $SHOREWALL_DIR then in /etc/shorewall
 #
 find_file()
 {
+    local saveifs= directory
+
     case $1 in
 	/*)
 	    echo $1
@@ -94,11 +107,19 @@ find_file()
 	*)
 	    if [ -n "$SHOREWALL_DIR" -a -f $SHOREWALL_DIR/$1 ]; then
 		echo $SHOREWALL_DIR/$1
-	    elif [ -f /etc/shorewall/$1 ]; then
-		echo /etc/shorewall/$1
-	    elif [ -f /usr/share/shorewall/$1 ]; then
-		echo /usr/share/shorewall/$1
 	    else
+		saveifs=$IFS
+		IFS=:
+		for directory in $CONFIG_PATH; do
+		    if [ -f $directory/$1 ]; then
+			echo $directory/$1
+			IFS=$saveifs
+			return
+		    fi
+		done
+		
+		IFS=$saveifs
+		
 		echo /etc/shorewall/$1
 	    fi
 	    ;;
@@ -485,14 +506,14 @@ in_network() # $1 = IP address, $2 = CIDR network
 ip_vlsm() {
     local mask=$(decodeaddr $1)
     local vlsm=0
-    local x=$(( 128 $LEFTSHIFT 24 ))
+    local x=$(( 128 $LEFTSHIFT 24 )) # 0x80000000
 
     while [ $(( $x & $mask )) -ne 0 ]; do
-	[ $mask -eq $x ] && mask=0 || mask=$(( $mask $LEFTSHIFT 1 )) # Don't Ask...
+	[ $mask -eq $x ] && mask=0 || mask=$(( $mask $LEFTSHIFT 1 )) # Not all shells shift 0x80000000 left properly.
 	vlsm=$(($vlsm + 1))
     done
 
-    if [ $(( $mask & 2147483647)) -ne 0 ]; then
+    if [ $(( $mask & 2147483647 )) -ne 0 ]; then # 2147483647 = 0x7fffffff
 	echo "Invalid net mask: $1" >&2
     else
 	echo $vlsm

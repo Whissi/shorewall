@@ -28,7 +28,7 @@
 #       shown below. Simply run this script to revert to your prior version of
 #       Shoreline Firewall.
 
-VERSION=2.0.1
+VERSION=2.0.2
 
 usage() # $1 = exit status
 {
@@ -120,7 +120,11 @@ restore_file /usr/share/shorewall/rfc1918
 
 restore_file /usr/share/shorewall/bogons
 
+restore_file /usr/share/shorewall/configpath
+
 restore_file /etc/shorewall/init
+
+restore_file /etc/shorewall/initdone
 
 restore_file /etc/shorewall/start
 

@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-05-04</pubdate>
+    <pubdate>2004-05-10</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -29,8 +29,7 @@
       1.2 or any later version published by the Free Software Foundation; with
       no Invariant Sections, with no Front-Cover, and with no Back-Cover
       Texts. A copy of the license is included in the section entitled
-      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
-      License</ulink></quote>.</para>
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
 
@@ -65,8 +64,13 @@
     </listitem>
 
     <listitem>
-      <para>start -- invoked after the firewall has been started or
-      restarted.</para>
+      <para>initdone (added in Shorewall 2.0.2 RC1) -- invoked after Shorewall
+      has flushed all existing rules but before any rules have been added to
+      the builtin chains.</para>
+    </listitem>
+
+    <listitem>
+      <para>start -- invoked after the firewall has been started or restarted.</para>
     </listitem>
 
     <listitem>
@@ -94,8 +98,8 @@
     </listitem>
   </itemizedlist>
 
-  <para><emphasis role="bold">If your version of Shorewall doesn't have the
-  file that you want to use from the above list, you can simply create the
+  <para><emphasis role="bold">If your version of Shorewall doesn&#39;t have
+  the file that you want to use from the above list, you can simply create the
   file yourself.</emphasis> You can also supply a script with the same name as
   any of the filter chains in the firewall and the script will be invoked
   after the /etc/shorewall/rules file has been processed but before the
@@ -110,10 +114,10 @@
       <command>run_iptables</command> instead. <command>run_iptables</command>
       will run the iptables utility passing the arguments to
       <command>run_iptables</command> and if the command fails, the firewall
-      will be stopped (Shorewall version &lt; 2.0.2 Beta 1 or there is no
+      will be stopped (Shorewall version &#60; 2.0.2 Beta 1 or there is no
       <filename>/var/lib/shorewall/restore</filename> file) or restored
-      (Shorewall version &gt;= 2.0.2 Beta 1 and
-      <filename>/var/lib/shorewall/restore</filename> exists).</para>
+      (Shorewall version &#62;= 2.0.2 Beta 1 and <filename>/var/lib/shorewall/restore</filename>
+      exists).</para>
     </listitem>
 
     <listitem>
@@ -121,13 +125,11 @@
       commands other than <command>iptables</command> that must be re-run in
       order to restore the firewall to its current state then you must save
       the commands to the <firstterm>restore file</firstterm>. The restore
-      file is a temporary file in <filename
-      class="directory">/var/lib/shorewall</filename> that will be renamed
-      <filename>/var/lib/shorewall/restore-base</filename> at the successful
-      completion of the Shorewall command. The <command>shorewall
-      save</command> command combines
-      <filename>/var/lib/shorewall/restore-base</filename> with the output of
-      <command>iptables-save</command> to produce the
+      file is a temporary file in <filename class="directory">/var/lib/shorewall</filename>
+      that will be renamed <filename>/var/lib/shorewall/restore-base</filename>
+      at the successful completion of the Shorewall command. The
+      <command>shorewall save</command> command combines <filename>/var/lib/shorewall/restore-base</filename>
+      with the output of <command>iptables-save</command> to produce the
       <filename>/var/lib/shorewall/restore</filename> script.</para>
 
       <para>Here are three functions that are useful when running commands
@@ -140,15 +142,15 @@
 
           <para>Example: <programlisting>save_command echo Operation Complete</programlisting></para>
 
-          <para>That command would simply write "echo Operation Complete" to
-          the restore file.</para>
+          <para>That command would simply write &#34;echo Operation
+          Complete&#34; to the restore file.</para>
         </listitem>
 
         <listitem>
           <para><emphasis role="bold">run_and_save_command()</emphasis> --
           saves the passed command to the restore file then executes it. The
           return value is the exit status of the command. Example:
-          <programlisting>run_and_save_command "echo 1 &gt; /proc/sys/net/ipv4/icmp_echo_ignore_all"</programlisting></para>
+          <programlisting>run_and_save_command &#34;echo 1 &#62; /proc/sys/net/ipv4/icmp_echo_ignore_all&#34;</programlisting></para>
 
           <para>Note that as in this example, when the command involves file
           redirection then the entire command must be enclosed in quotes. This
@@ -158,21 +160,21 @@
         <listitem>
           <para><emphasis role="bold">ensure_and_save_command()</emphasis> --
           runs the passed command. If the command fails, the firewall is
-          restored to it's prior saved state and the operation is terminated.
-          If the command succeeds, the command is written to the restore
-          file</para>
+          restored to it&#39;s prior saved state and the operation is
+          terminated. If the command succeeds, the command is written to the
+          restore file</para>
         </listitem>
       </orderedlist>
     </listitem>
   </itemizedlist>
 
-  <para>Beginning with Shorewall 2.0.0, you can also define a <emphasis>common
-  action</emphasis> to be performed immediately before a policy of ACCEPT,
-  DROP or REJECT is applied. Separate <ulink
+  <para>Beginning with Shorewall 2.0.0, you can also define a
+  <emphasis>common action</emphasis> to be performed immediately before a
+  policy of ACCEPT, DROP or REJECT is applied. Separate <ulink
   url="User_defined_Actions.html">actions</ulink> can be assigned to each
   policy type so for example you can have a different common action for DROP
   and REJECT policies. The most common usage of common actions is to silently
-  drop traffic that you don't wish to have logged by the policy.</para>
+  drop traffic that you don&#39;t wish to have logged by the policy.</para>
 
   <para>As released, Shorewall defines a number of actions which are cataloged
   in the <filename>/usr/share/shorewall/actions.std</filename> file. That file
@@ -195,10 +197,10 @@ Reject:REJECT</programlisting>
 
   <para>One final note. The chain created to perform an action has the same
   name as the action. You can use an extension script by that name to add
-  rules to the action's chain in the same way as you can any other chain. So
-  if you create the new action <quote>Dagger</quote> and define it in
+  rules to the action&#39;s chain in the same way as you can any other chain.
+  So if you create the new action <quote>Dagger</quote> and define it in
   <filename>/etc/shorewall/action.Dagger</filename>, you can also have an
   extension script named <filename>/etc/shorewall/Dagger</filename> that can
-  add rules to the <quote>Dagger</quote> chain that can't be created using
+  add rules to the <quote>Dagger</quote> chain that can&#39;t be created using
   <filename>/etc/shorewall/action.Dagger</filename>.</para>
 </article>

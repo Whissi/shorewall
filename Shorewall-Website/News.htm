@@ -18,10 +18,130 @@ Texts. A copy of the license is included in the section entitled “<span
  class="quote"><a href="GnuCopyright.htm" target="_self">GNU Free
 Documentation License</a></span>”.<br>
 </p>
-<p>2004-04-05<br>
+<p>2004-05-13<br>
 </p>
 <hr style="width: 100%; height: 2px;">
-<p><b>3/14/2004 - Shorewall 2.0.0b&nbsp;</b><b></b></p>
+<p><b> 4/5/2004 - Shorewall 2.0.1</b><b></b><br>
+</p>
+Problems Corrected since 2.0.0<br>
+<br>
+<ol>
+  <li>Using actions in the manner recommended in the
+documentation results in a Warning that the rule is a policy.</li>
+  <li>When a zone on a single interface is defined using
+/etc/shorewall/hosts, superfluous rules are generated in the
+&lt;zone&gt;_frwd chain.</li>
+  <li>Thanks to Sean Mathews, a long-standing problem with Proxy
+ARP and IPSEC has been corrected. Thanks Sean!!!</li>
+  <li>The "shorewall show log" and "shorewall logwatch" commands
+incorrectly displayed type 3 ICMP packets.<br>
+  </li>
+</ol>
+Issues when migrating from Shorewall 2.0.0 to Shorewall 2.0.1:<br>
+<br>
+<ol>
+  <li>The function of 'norfc1918' is now split between that
+option and a new 'nobogons' option.<br>
+    <br>
+The rfc1918 file released with Shorewall now contains entries for only
+those three address ranges reserved by RFC 1918. A 'nobogons' interface
+option has been added which handles bogon source addresses (those which
+are reserved by the IANA, those reserved for DHCP auto-configuration
+and the class C test-net reserved for testing and documentation
+examples). This will allow users to perform RFC 1918 filtering without
+having to deal with out of date data from IANA. Those who are willing
+to update their /usr/share/shorewall/bogons file regularly can specify
+the 'nobogons' option in addition to 'norfc1918'.<br>
+    <br>
+The level at which bogon packets are logged is specified in the new
+BOGON_LOG_LEVEL variable in shorewall.conf. If that option is not
+specified or is specified as empty (e.g, BOGON_LOG_LEVEL="") then bogon
+packets whose TARGET is 'logdrop' in /usr/share/shorewall/bogons are
+logged at the 'info' level.</li>
+</ol>
+New Features:<br>
+<br>
+<ol>
+  <li>Support for Bridging Firewalls has been added. For details,
+see<br>
+    <br>
+    <a href="http://shorewall.net/bridge.html">http://shorewall.net/bridge.html</a><br>
+    <br>
+  </li>
+  <li>Support for NETMAP has been added. NETMAP allows NAT to be
+defined between two network:<br>
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;
+a.b.c.1&nbsp;&nbsp;&nbsp; -&gt; x.y.z.1<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+a.b.c.2&nbsp;&nbsp;&nbsp; -&gt; x.y.z.2<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+a.b.c.3&nbsp;&nbsp;&nbsp; -&gt; x.y.z.3<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ...<br>
+    <br>
+&nbsp; <a href="http://shorewall.net/netmap.htm">http://shorewall.net/netmap.htm</a><br>
+    <br>
+  </li>
+  <li>The /sbin/shorewall program now accepts a "-x" option to
+cause iptables to print out the actual packet and byte counts rather
+than abbreviated counts such as "13MB".<br>
+    <br>
+Commands affected by this are:<br>
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+shorewall -x show [ &lt;chain&gt;[ &lt;chain&gt; ...] ]<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+shorewall -x show tos|mangle<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+shorewall -x show nat<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+shorewall -x status<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+shorewall -x monitor [ &lt;interval&gt; ]<br>
+    <br>
+  </li>
+  <li>Shorewall now traps two common zone definition errors:<br>
+    <ul>
+      <li>Including the firewall zone in a /etc/shorewall/hosts
+record.</li>
+      <li>Defining an interface for a zone in both
+/etc/shorewall/interfaces and /etc/shorewall/hosts.<br>
+        <br>
+      </li>
+    </ul>
+  </li>
+  <li>In the second case, the following will appear during
+"shorewall [re]start" or "shorewall check":<br>
+    <br>
+&nbsp;&nbsp; Determining Hosts in Zones...<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ...<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Error: Invalid zone definition for zone
+&lt;name of zone&gt;<br>
+&nbsp;&nbsp; Terminated<br>
+    <br>
+  </li>
+  <li>To support bridging, the following options have been added
+to entries in /etc/shorewall/hosts:<br>
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; norfc1918<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; nobogons<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; blacklist<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; tcpflags<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; nosmurfs<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; newnotsyn<br>
+    <br>
+With the exception of 'newnotsyn', these options are only useful when
+the entry refers to a bridge port.<br>
+    <br>
+&nbsp;&nbsp; Example:<br>
+    <br>
+&nbsp;&nbsp; #ZONE&nbsp;&nbsp; HOST(S)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+OPTIONS<br>
+&nbsp;&nbsp; net&nbsp;&nbsp;&nbsp;&nbsp;
+br0:eth0&nbsp;&nbsp;&nbsp;&nbsp;
+norfc1918,nobogons,blacklist,tcpflags,nosmurfs</li>
+</ol>
+<p><b>3/14/2004 - Shorewall 2.0.0b&nbsp;</b></p>
 Corrects two problems:<br>
 <ol>
   <li>Thanks to Sean Mathews, the long-standing problem with

@@ -1851,6 +1851,8 @@ process_accounting_rule() {
 	    ;;
     esac
 		
+    chain_exists accounting || createchain accounting No
+
     if iptables -A accounting $rule ; then
 	if [ "x$rule2" != x ]; then
 	    if ! iptables -A accounting $rule2 ; then
@@ -1873,15 +1875,16 @@ setup_accounting() # $1 = Name of accounting file
 
     strip_file accounting $1
 
-    createchain accounting No
-    
-    for chain in INPUT FORWARD OUTPUT; do
-	run_iptables -A $chain -j accounting
-    done
-
     while read action source dest proto port sport ; do
 	[ "x$source" != x ] && process_accounting_rule
     done < $TMP_DIR/accounting
+
+    if chain_exists accounting; then
+	for chain in INPUT FORWARD OUTPUT; do
+	    run_iptables -A $chain -j accounting
+	done
+    fi
+
 }
 
 #      

@@ -508,6 +508,36 @@ first_chains() #$1 = interface
 }
 
 #
+# Source IP range
+#
+source_ip_range() # $1 = Address or Address Range
+{
+    case $1 in
+	*.*.*.*-*.*.*.*)
+	    echo "-m iprange --src-range $1"
+	    ;;
+	*)
+	    echo "-s $1"
+	    ;;
+    esac
+}
+
+#
+# Destination IP range
+#
+dest_ip_range() # $1 = Address or Address Range
+{
+    case $1 in
+	*.*.*.*-*.*.*.*)
+	    echo "-m iprange --dst-range $1"
+	    ;;
+	*)
+	    echo "-d $1"
+	    ;;
+    esac
+}
+
+#
 # Horrible hack to work around an iptables bug
 #
 physdev_echo() 
@@ -529,17 +559,17 @@ match_source_hosts()
     if [ -n "$BRIDGING" ]; then
 	case $1 in
 	    *:*)
-		physdev_echo "--physdev-in ${1%:*} -s ${1#*:}"
+		physdev_echo "--physdev-in ${1%:*} $(source_ip_range ${1#*:})"
 		;;
 	    *.*.*.*)
-		echo -s $1
+		echo $(source_ip_range $1)
 		;;
 	    *)
 		physdev_echo "--physdev-in $1"
 		;;
 	esac
     else
-	echo -s $1
+	echo $(source_ip_range $1)
     fi
 }
 
@@ -548,17 +578,17 @@ match_dest_hosts()
     if [ -n "$BRIDGING" ]; then
 	case $1 in
 	    *:*)
-		physdev_echo "--physdev-out ${1%:*} -d ${1#*:}"
+		physdev_echo "--physdev-out ${1%:*} $(dest_ip_range ${1#*:})"
 		;;
 	    *.*.*.*)
-		echo -d $1
+		echo $(dest_ip_range $1)
 		;;
 	    *)
 		physdev_echo "--physdev-out $1"
 		;;
 	esac
     else
-	echo -d $1
+	echo $(dest_ip_range $1)
     fi
 }
 
@@ -636,6 +666,15 @@ match_ipsec_out() # $1 = zone, $2 = host
     elif [ -n "$POLICY_MATCH" ]; then
 	echo "-m policy --pol none --dir out"
     fi
+}
+
+#
+# Jacket for ip_range() that takes care of iprange match
+#
+
+firewall_ip_range() # $1 = IP address or range
+{
+    [ -n "$IPRANGE_MATCH" ] && echo $1 || ip_range $1
 }
 
 #
@@ -1352,7 +1391,7 @@ stop_firewall() {
 			else
 			    routeback=Yes
 			    for h in $(separate_list $host); do
-				iptables -A FORWARD -i $interface -s $h -o $interface -d $h -j ACCEPT
+				iptables -A FORWARD -i $interface -s $h -o $interface $(dest_ip_range $h) -j ACCEPT
 			    done
 			fi
 			;;
@@ -1370,10 +1409,10 @@ stop_firewall() {
 	networks=${host#*:}
 	iptables -A INPUT  -i $interface -s $networks -j ACCEPT
 	[ -z "$ADMINISABSENTMINDED" ] && \
-	    iptables -A OUTPUT -o $interface -d $networks -j ACCEPT
+	    iptables -A OUTPUT -o $interface $(dest_ip_range $networks) -j ACCEPT
 
 	for host1 in $hosts; do
-	    [ "$host" != "$host1" ] && iptables -A FORWARD -i $interface -s $networks -o ${host1%:*} -d ${host1#*:} -j ACCEPT
+	    [ "$host" != "$host1" ] && iptables -A FORWARD -i $interface -s $networks -o ${host1%:*} $(dest_ip_range ${host1#*:}) -j ACCEPT
 	done
     done
 
@@ -1472,11 +1511,11 @@ setup_tunnels() # $1 = name of tunnels file
 	[ $kind = IPSEC ] && kind=ipsec
 
 	options="-m state --state NEW -j ACCEPT"
-	addrule $inchain	  -p 50	 -s $1 -j ACCEPT
-	addrule $outchain	  -p 50	 -d $1 -j ACCEPT
+	addrule $inchain	  -p 50	 $(source_ip_range $1) -j ACCEPT
+	addrule $outchain	  -p 50	 $(dest_ip_range $1)   -j ACCEPT
 	if [ -z "$noah" ]; then
-	    run_iptables -A $inchain  -p 51	 -s $1 -j ACCEPT
-	    run_iptables -A $outchain -p 51	 -d $1 -j ACCEPT
+	    run_iptables -A $inchain  -p 51 $(source_ip_range $1) -j ACCEPT
+	    run_iptables -A $outchain -p 51 $(dest_ip_range $1)   -j ACCEPT
 	fi
 
 	run_iptables -A $outchain -p udp -d $1 --dport 500 $options
@@ -1507,17 +1546,17 @@ setup_tunnels() # $1 = name of tunnels file
 
     setup_one_other() # $1 = TYPE, $2 = gateway, $3 = protocol
     {
-	addrule $inchain  -p $3 -s $2 -j ACCEPT
-	addrule $outchain -p $3 -d $2 -j ACCEPT
+	addrule $inchain  -p $3 $(source_ip_range $2) -j ACCEPT
+	addrule $outchain -p $3 $(dest_ip_range $2) -j ACCEPT
 
 	progress_message "   $1 tunnel to $2 defined."
     }
 
     setup_pptp_client() # $1 = gateway
     {
-	addrule $outchain -p 47               -d $1 -j ACCEPT
-	addrule $inchain  -p 47               -j ACCEPT
-	addrule $outchain -p tcp --dport 1723 -d $1 -j ACCEPT
+	addrule $outchain -p 47               $(dest_ip_range $1) -j ACCEPT
+	addrule $inchain  -p 47                                   -j ACCEPT
+	addrule $outchain -p tcp --dport 1723 $(dest_ip_range $1) -j ACCEPT
 
 	progress_message "   PPTP tunnel to $1 defined."
     }
@@ -1542,8 +1581,8 @@ setup_tunnels() # $1 = name of tunnels file
 		;;
 	esac
 
-	addrule $inchain  -p udp -s $1 --sport $p --dport $p -j ACCEPT
-	addrule $outchain -p udp -d $1 --sport $p --dport $p -j ACCEPT
+	addrule $inchain  -p udp $(source_ip_range $1) --sport $p --dport $p -j ACCEPT
+	addrule $outchain -p udp $(dest_ip_range $1)   --sport $p --dport $p -j ACCEPT
 
 	progress_message "   OPENVPN tunnel to $1:$p defined."
     }
@@ -1570,8 +1609,8 @@ setup_tunnels() # $1 = name of tunnels file
 
 	p=${p:+--dport $p}
 
-	addrule $inchain  -p $protocol -s $1 $p -j ACCEPT
-	addrule $outchain -p $protocol -d $1 $p -j ACCEPT
+	addrule $inchain  -p $protocol $(source_ip_range $1) $p -j ACCEPT
+	addrule $outchain -p $protocol $(dest_ip_range $1)   $p -j ACCEPT
 
 	for z in $(separate_list $3); do
 	    if validate_zone $z; then
@@ -2129,7 +2168,7 @@ setup_ecn() # $1 = file name
 	for host in $hosts; do
 	    interface=${host%:*}
 	    h=${host#*:}
-	    run_iptables -t mangle -A $(ecn_chain $interface) -p tcp -d $h -j ECN --ecn-tcp-remove
+	    run_iptables -t mangle -A $(ecn_chain $interface) -p tcp $(dest_ip_range $h) -j ECN --ecn-tcp-remove
 	    progress_message "   ECN Disabled to $h through $interface"
 	done
     fi
@@ -2184,7 +2223,7 @@ process_tc_rule()
 	    esac
 	fi
 
-	[ "x$dest"   = "x-"  ] || r="${r}-d $dest "
+	[ "x$dest"   = "x-"  ] || r="${r}$(dest_ip_range $dest) "
 	[ "x$proto"  = "x-"  ] && proto=all
 	[ "x$proto"  = "x"   ] && proto=all
 	[ "$proto"   = "all" ] || r="${r}-p $proto "
@@ -2374,10 +2413,10 @@ process_accounting_rule() {
     [ -n "$dest" ] && case $dest in
 	*:*)
 	    accounting_interface_verify ${dest%:*}
-	    rule="$rule -d ${dest#*:} $(match_dest_dev ${dest%:*})"
+	    rule="$rule $(dest_ip_range ${dest#*:}) $(match_dest_dev ${dest%:*})"
 	    ;;
 	*.*.*.*)
-	    rule="$rule -d $dest"
+	    rule="$rule $(dest_ip_range $dest)"
 	    ;;
 	-|all|any)
 	    ;;
@@ -2741,14 +2780,14 @@ add_an_action()
     if [ $COMMAND != check ]; then
        if [ -n "${serv}" ]; then
 	    for serv1 in $(separate_list $serv); do
-		for srv in $(ip_range $serv1); do
+		for srv in $(firewall_ip_range $serv1); do
 		    if [ -n "$loglevel" ]; then
 			log_rule_limit $loglevel $chain $action $logtarget "$ratelimit" "$logtag" $userandgroup \
-			    $(fix_bang $proto $sports $multiport $cli -d $srv $dports)
+			    $(fix_bang $proto $sports $multiport $cli $(source_ip_range $srv) $dports)
 		    fi
 		    
 		    run_iptables2 -A $chain $proto $multiport $cli $sports \
-			-d $srv $dports $ratelimit $userandgroup -j $target
+			$(dest_ip_range $srv) $dports $ratelimit $userandgroup -j $target
 		done
 	    done
 	else
@@ -3476,11 +3515,11 @@ add_nat_rule() {
 		createnatchain $chain
 
 		for adr in $(separate_list $addr); do
-		    run_iptables2 -t nat -A OUTPUT $cli $proto $userandgroup $multiport $sports $dports -d $adr -j $chain
+		    run_iptables2 -t nat -A OUTPUT $cli $proto $userandgroup $multiport $sports $dports $(dest_ip_range $adr) -j $chain
 		done
 
 		for adr in $excludedests; do
-		    addnatrule $chain -d $adr -j RETURN
+		    addnatrule $chain $(dest_ip_range $adr) -j RETURN
 		done
 
 		if [ -n "$loglevel" ]; then
@@ -3492,10 +3531,10 @@ add_nat_rule() {
 		for adr in $(separate_list $addr); do
 		    if [ -n "$loglevel" ]; then
 			log_rule_limit $loglevel OUTPUT OUTPUT $logtarget "$ratelimit" "$logtag" -t nat \
-			    $(fix_bang $proto $cli $sports $userandgroup -d $adr $multiport $dports)
+			    $(fix_bang $proto $cli $sports $userandgroup $(dest_ip_range $adr) $multiport $dports)
 		    fi
 
-		    run_iptables2 -t nat -A OUTPUT $ratelimit $proto $sports $userandgroup -d $adr $multiport $dports -j $target1
+		    run_iptables2 -t nat -A OUTPUT $ratelimit $proto $sports $userandgroup $(dest_ip_range $adr) $multiport $dports -j $target1
 		done
 	    fi
 	else
@@ -3507,7 +3546,7 @@ add_nat_rule() {
 		createnatchain $chain
 
 		for adr in $(separate_list $addr); do
-		    addnatrule $(dnat_chain $source) $cli $proto $multiport $sports $dports -d $adr -j $chain
+		    addnatrule $(dnat_chain $source) $cli $proto $multiport $sports $dports $(dest_ip_range $adr) -j $chain
 		done
 
 		for z in $(separate_list $excludezones); do
@@ -3518,7 +3557,7 @@ add_nat_rule() {
 		done
 
 		for adr in $excludedests; do
-		    addnatrule $chain -d $adr -j RETURN
+		    addnatrule $chain $(dest_ip_range $adr) -j RETURN
 		done
 
 		if [ -n "$loglevel" ]; then
@@ -3531,7 +3570,7 @@ add_nat_rule() {
 		    if [ -n "$loglevel" ]; then
 			ensurenatchain $chain
 			log_rule_limit $loglevel $chain $chain $logtarget "$ratelimit" "$logtag" -t nat \
-			    $(fix_bang $proto $cli $sports -d $adr $multiport $dports)
+			    $(fix_bang $proto $cli $sports $(dest_ip_range $adr) $multiport $dports)
 		    fi
 		    
 		    addnatrule $chain $proto $ratelimit $cli $sports \
@@ -3618,10 +3657,10 @@ add_a_rule()
 	;;
     *:*)
 	rule_interface_verify ${client%:*}
-	cli="$(match_source_dev ${client%:*}) -s ${client#*:}"
+	cli="$(match_source_dev ${client%:*}) $(source_ip_range ${client#*:})"
 	;;
     *.*.*)
-	cli="-s $client"
+	cli="$(source_ip_range $client)"
 	;;
     ~*)
 	cli=$(mac_match $client)
@@ -3734,30 +3773,30 @@ add_a_rule()
 	    if [ -z "$dnat_only" ]; then
 		if [ -n "$serv" ]; then
 		    for serv1 in $(separate_list $serv); do
-			for srv in $(ip_range $serv1); do
+			for srv in $(firewall_ip_range $serv1); do
 			    if [ -n "$addr" -a -n "$CONNTRACK_MATCH" ]; then
 				for adr in $(separate_list $addr); do
 				    if [ -n "$loglevel" -a -z "$natrule" ]; then
 					log_rule_limit $loglevel $chain $chain $logtarget "$ratelimit" "$logtag" -m conntrack --ctorigdst $adr \
-					    $userandgroup $(fix_bang $proto $sports $multiport $cli -d $srv $dports)
+					    $userandgroup $(fix_bang $proto $sports $multiport $cli $(dest_ip_range $srv) $dports)
 				    fi
 
 				    run_iptables2 -A $chain $proto $ratelimit $multiport $cli $sports \
-					-d $srv $dports -m conntrack --ctorigdst $adr $userandgroup -j $target
+					$(dest_ip_range $srv) $dports -m conntrack --ctorigdst $adr $userandgroup -j $target
 				done
 			    else
 				if [ -n "$loglevel" -a -z "$natrule" ]; then
 				    log_rule_limit $loglevel $chain $chain $logtarget "$ratelimit" "$logtag" $userandgroup \
-					$(fix_bang $proto $sports $multiport $cli -d $srv $dports)
+					$(fix_bang $proto $sports $multiport $cli $(dest_ip_range $srv) $dports)
 				fi
 				
 				[ -n "$nonat" ] && \
 				    addnatrule $(dnat_chain $source) $proto $multiport \
-				        $cli $sports -d $srv $dports $ratelimit $userandgroup -j RETURN
+				        $cli $sports $(dest_ip_range $srv) $dports $ratelimit $userandgroup -j RETURN
 
 				[ "$logtarget" != NONAT ] && \
 				    run_iptables2 -A $chain $proto $multiport $cli $sports \
-					-d $srv $dports $ratelimit $userandgroup -j $target
+					$(dest_ip_range $srv) $dports $ratelimit $userandgroup -j $target
 			    fi
 			done
 		    done
@@ -4043,29 +4082,25 @@ process_rule() # $1 = target
 	        # 16 ports are listed - use multiport match.
 	        #
 		multioption="-m multiport"
-		for clientrange in $(separate_list ${clients:=-}); do
-		    for client in $(ip_range $clientrange); do
-		        #
-		        # add_a_rule() modifies these so we must set their values each time
-		        #
-			server=${servers:=-}
-			port=${ports:=-}
-			cport=${cports:=-}
-			add_a_rule
-		    done
+		for client in $(separate_list ${clients:=-}); do
+		    #
+		    # add_a_rule() modifies these so we must set their values each time
+		    #
+		    server=${servers:=-}
+		    port=${ports:=-}
+		    cport=${cports:=-}
+		    add_a_rule
 		done
 	    else
 	        #
 	        # MULTIPORT is disabled or the rule isn't compatible with multiport match
 	        #
 		multioption=
-		for clientrange in $(separate_list ${clients:=-}); do
-		    for client in $(ip_range $clientrange); do
-			for port in $(separate_list ${ports:=-}); do
-			    for cport in $(separate_list ${cports:=-}); do
-				server=${servers:=-}
-				add_a_rule
-			    done
+		for client in $(separate_list ${clients:=-}); do
+		    for port in $(separate_list ${ports:=-}); do
+			for cport in $(separate_list ${cports:=-}); do
+			    server=${servers:=-}
+			    add_a_rule
 			done
 		    done
 		done
@@ -4085,16 +4120,14 @@ process_rule() # $1 = target
 	        # 16 ports are listed - use multiport match.
 	        #
 		multioption="-m multiport"
-		for clientrange in $(separate_list ${clients:=-}); do
-		    for client in $(ip_range $clientrange); do
-			for server in $(separate_list ${servers:=-}); do
-		            #
-		            # add_a_rule() modifies these so we must set their values each time
-		            #
-			    port=${ports:=-}
-			    cport=${cports:=-}
-			    add_a_rule
-			done
+		for client in $(separate_list ${clients:=-}); do
+		    for server in $(separate_list ${servers:=-}); do
+		        #
+		        # add_a_rule() modifies these so we must set their values each time
+		        #
+			port=${ports:=-}
+			cport=${cports:=-}
+			add_a_rule
 		    done
 		done
 	    else
@@ -4102,13 +4135,11 @@ process_rule() # $1 = target
 	        # MULTIPORT is disabled or the rule isn't compatible with multiport match
 	        #
 		multioption=
-		for clientrange in $(separate_list ${clients:=-}); do
-		    for client in $(ip_range $clientrange); do
-			for server in $(separate_list ${servers:=-}); do
-			    for port in $(separate_list ${ports:=-}); do
-				for cport in $(separate_list ${cports:=-}); do
-				    add_a_rule
-				done
+		for client in $(separate_list ${clients:=-}); do
+		    for server in $(separate_list ${servers:=-}); do
+			for port in $(separate_list ${ports:=-}); do
+			    for cport in $(separate_list ${cports:=-}); do
+				add_a_rule
 			    done
 			done
 		    done
@@ -4238,7 +4269,7 @@ process_tos_rule() {
 	    #
 	    # IP Address or networks
 	    #
-	    src="-s $src"
+	    src="$(source_ip_range $src)"
 	    ;;
 	~*)
 	    src=$(mac_match $src)
@@ -4335,7 +4366,7 @@ process_tos_rule() {
     esac
 
     for dest in $dst; do
-	dest="-d $dest"
+	dest="$(dest_ip_range $dest)"
 
 	case $srczone in
 	$FW)
@@ -4797,12 +4828,12 @@ setup_masq()
 		destnets=${destnets#!}
 
 		for destnet in $(separate_list $destnets); do
-		    addnatrule $newchain -d $destnet -j RETURN
+		    addnatrule $newchain $(dest_ip_range $destnet) -j RETURN
 		done
 
 		if [ -n "$networks" ]; then
 		    for s in $networks; do
-			addnatrule $chain -s $s $proto $ports $policy -j $newchain
+			addnatrule $chain $(source_ip_range $s) $proto $ports $policy -j $newchain
 		    done
 		    networks=
 		else
@@ -4818,7 +4849,7 @@ setup_masq()
 
 		if [ -n "$nomasq" ]; then
 		    for addr in $(separate_list $nomasq); do
-			addnatrule $chain -s $addr -j RETURN
+			addnatrule $chain $(source_ip_range $addr) -j RETURN
 		    done
 		    source="$source except $nomasq"
 		fi
@@ -4831,12 +4862,12 @@ setup_masq()
 		    if [ -n "$networks" ]; then
 			for s in $networks; do
 			    for destnet in $(separate_list $destnets); do
-				addnatrule $chain -d $destnet -s $s $proto $ports -j $newchain
+				addnatrule $chain $(dest_ip_range $destnet) $(source_ip_range $s) $proto $ports -j $newchain
 			    done
 			done
 		    else
 			for destnet in $(separate_list $destnets); do
-			    addnatrule $chain -d $destnet $proto $ports $policy -j $newchain
+			    addnatrule $chain $(dest_ip_range $destnet) $proto $ports $policy -j $newchain
 			done
 		    fi
 
@@ -4849,7 +4880,7 @@ setup_masq()
 		    policy=
 
 		    for addr in $(separate_list $nomasq); do
-			addnatrule $chain -s $addr -j RETURN
+			addnatrule $chain $(source_ip_range $addr) -j RETURN
 		    done
 
 		    source="$source except $nomasq"
@@ -4877,7 +4908,7 @@ setup_masq()
 	if [ -n "$networks" ]; then
 	    for network in $networks; do
 		for destnet in $(separate_list $destnets); do
-		    addnatrule $chain -s $network -d $destnet $proto $ports $policy -j $target $addrlist
+		    addnatrule $chain $(source_ip_range $network) $(dest_ip_range $destnet) $proto $ports $policy -j $target $addrlist
 		done
 
 		if [ -n "$addresses" ]; then
@@ -4888,7 +4919,7 @@ setup_masq()
 	    done
 	else
 	    for destnet in $(separate_list $destnets); do
-		addnatrule $chain -d $destnet $proto $ports $policy -j $target $addrlist
+		addnatrule $chain $(dest_ip_range $destnet) $proto $ports $policy -j $target $addrlist
 	    done
 	    
 	    if [ -n "$addresses" ]; then
@@ -4946,7 +4977,7 @@ process_blacklist_rec() {
 	    source="--match mac --mac-source $addr"
 	    ;;
 	*)
-	    source="-s $addr"
+	    source="$(source_ip_range $addr)"
 	    ;;
 	esac
 
@@ -5205,13 +5236,14 @@ determine_capabilities() {
     MULTIPORT=
     POLICY_MATCH=
     PHYSDEV_MATCH=
+    IPRANGE_MATCH=
 
     if qt iptables -N fooX1234 ; then
-	qt iptables -A fooX1234 -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT && CONNTRACK_MATCH=Yes
-        qt iptables -A fooX1234 -p tcp -m multiport --dports 21,22 -j ACCEPT   && MULTIPORT=Yes
-	qt iptables -A fooX1234 -m policy --pol ipsec --dir in -j ACCEPT       && POLICY_MATCH=Yes
-	qt iptables -A fooX1234 -m physdev --physdev-in eth0 -j ACCEPT         && PHYSDEV_MATCH=Yes
-	
+	qt iptables -A fooX1234 -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT             && CONNTRACK_MATCH=Yes
+        qt iptables -A fooX1234 -p tcp -m multiport --dports 21,22 -j ACCEPT               && MULTIPORT=Yes
+	qt iptables -A fooX1234 -m policy --pol ipsec --dir in -j ACCEPT                   && POLICY_MATCH=Yes
+	qt iptables -A fooX1234 -m physdev --physdev-in eth0 -j ACCEPT                     && PHYSDEV_MATCH=Yes
+	qt iptables -A fooX1234 -m iprange --src-range 192.168.1.5-192.168.1.124 -j ACCEPT && IPRANGE_MATCH=Yes
 
 	qt iptables -F fooX1234
 	qt iptables -X fooX1234
@@ -5245,6 +5277,7 @@ report_capabilities() {
     report_capability $PKTTYPE "Packet Type Match"
     report_capability $POLICY_MATCH "Policy Match"
     report_capability $PHYSDEV_MATCH "Physdev Match"
+    report_capability $IPRANGE_MATCH "IP range Match"
 }
 
 #
@@ -5395,7 +5428,7 @@ initialize_netfilter () {
 	    while read target ignore1 ignore2 address rest; do
 		case $target in
 		    DROP|reject)
-			run_iptables2 -A dynamic -s $address -j $target
+			run_iptables2 -A dynamic $(source_ip_range $address) -j $target
 			;;
 		    *)
 			;;
@@ -5434,7 +5467,7 @@ add_common_rules() {
     #
     for address in $broadcasts ; do
 	[ -n "$SMURF_LOG_LEVEL" ] && log_rule $SMURF_LOG_LEVEL smurfs DROP -s $address
-	run_iptables -A smurfs -s $address -j DROP
+	run_iptables -A smurfs $(source_ip_range $address) -j DROP
     done
     #
     # Reject Rules -- Don't respond to broadcasts with an ICMP
@@ -5577,7 +5610,7 @@ add_common_rules() {
 		    ;;
 	    esac
 
-	    run_iptables2 -A norfc1918 -s $networks -j $target
+	    run_iptables2 -A norfc1918 $(source_ip_range $networks) -j $target
 
 	    if [ -n "$CONNTRACK_MATCH" ]; then
 		#
@@ -5589,7 +5622,7 @@ add_common_rules() {
 		# No connection tracking match but we have mangling -- add a rule to
 		# the mangle table
 		#
-		run_iptables2 -t mangle -A man1918 -d $networks -j $target
+		run_iptables2 -t mangle -A man1918 $(dest_ip_range $networks) -j $target
 	    fi
 	done < $TMP_DIR/rfc1918
 
@@ -5638,7 +5671,7 @@ add_common_rules() {
 		    ;;
 	    esac
 
-	    run_iptables2 -A nobogons -s $networks -j $target
+	    run_iptables2 -A nobogons $(source_ip_range $networks) -j $target
 
 	done < $TMP_DIR/bogons
 
@@ -6354,7 +6387,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
     chain=${zone}_dnat
 
     if nat_chain_exists $chain; then
-	do_iptables -t nat -A $(dynamic_in $interface) -s $host $policyin -j $chain
+	do_iptables -t nat -A $(dynamic_in $interface) $(source_ip_range $host) $policyin -j $chain
     fi
     #
     # Insert new rules into the filter table for the passed interface
@@ -6362,7 +6395,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
     while read z1 z2 chain; do
 	if [ "$z1" = "$zone" ]; then
 	    if [ "$z2" = "$FW" ]; then
-		do_iptables -A $(dynamic_in $interface) -s $host $policyin -j $chain
+		do_iptables -A $(dynamic_in $interface) $(source_ip_range $host) $policyin -j $chain
 	    else
 		source_chain=$(dynamic_fwd $interface)
 		eval dest_hosts=\"\$${z2}_hosts\"
@@ -6372,7 +6405,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		    hosts=${h#*:}
 
 		    if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
-			do_iptables -A $source_chain -s $host -o $iface $(match_dest_hosts $hosts) $policyout -j $chain
+			do_iptables -A $source_chain $(source_ip_range $host) -o $iface $(match_dest_hosts $hosts) $policyout -j $chain
 		    fi
 		done
 	    fi
@@ -6381,7 +6414,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		#
 		# Add a rule to the dynamic out chain for the interface
 		#
-		do_iptables -A $(dynamic_out $interface) -d $host $policyout -j $chain
+		do_iptables -A $(dynamic_out $interface) $(dest_ip_range $host) $policyout -j $chain
 	    else
 		eval source_hosts=\"\$${z1}_hosts\"
 
@@ -6390,7 +6423,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		    hosts=${h#*:}
 
 		    if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
-			do_iptables -A $(dynamic_fwd $iface) $rulenum $(match_source_hosts $hosts) -o $interface -d $host $policyout -j $chain
+			do_iptables -A $(dynamic_fwd $iface) $rulenum $(match_source_hosts $hosts) -o $interface $(dest_ip_range $host) $policyout -j $chain
 		    fi
 		done
 	    fi
@@ -6505,14 +6538,14 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
     #
     # Delete any nat table entries for the host(s)
     #
-    qt iptables -t nat -D $(dynamic_in $interface) -s $host $policyin -j ${zone}_dnat
+    qt iptables -t nat -D $(dynamic_in $interface) $(source_ip_range $host) $policyin -j ${zone}_dnat
     #
     # Delete rules rules the input chains for the passed interface
     #
     while read z1 z2 chain; do
 	if [ "$z1" = "$zone" ]; then
 	    if [ "$z2" = "$FW" ]; then
-		qt iptables -D $(dynamic_in $interface) -s $host $policyin -j $chain
+		qt iptables -D $(dynamic_in $interface) $(source_ip_range $host) $policyin -j $chain
 	    else
 		source_chain=$(dynamic_fwd $interface)
 		eval dest_hosts=\"\$${z2}_hosts\"
@@ -6522,13 +6555,13 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		    hosts=${h#*:}
 
 		    if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
-			qt iptables -D $source_chain -s $host -o $iface $(match_dest_hosts $hosts) $policyout -j $chain
+			qt iptables -D $source_chain $(source_ip_range $host) -o $iface $(match_dest_hosts $hosts) $policyout -j $chain
 		    fi
 		done
 	    fi
 	elif [ "$z2" = "$zone" ]; then
 	    if [ "$z1" = "$FW" ]; then
-		qt iptables -D $(dynamic_out $interface) -d $host $policyout -j $chain
+		qt iptables -D $(dynamic_out $interface) $(dest_ip_range $host) $policyout -j $chain
 	    else
 		eval source_hosts=\"\$${z1}_hosts\"
 		
@@ -6537,7 +6570,7 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		    hosts=${h#*:}
 
 		    if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
-			qt iptables -D $(dynamic_fwd $iface) $(match_source_hosts $hosts) -o $interface -d $host $policyout -j $chain
+			qt iptables -D $(dynamic_fwd $iface) $(match_source_hosts $hosts) -o $interface $(dest_ip_range $host) $policyout -j $chain
 		    fi
 		done
 	    fi

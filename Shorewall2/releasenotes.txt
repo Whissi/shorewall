@@ -432,10 +432,8 @@ New Features:
 13) Shorewall now verifies that your kernel and iptables have physdev
     match support if BRIDGING=Yes in shorewall.conf.
 
-14) IP address ranges are now allowed in the SOURCE column of the
-    /etc/shorewall/rules file.
-    
-    Example:
-
-	ACCEPT	net:192.0.2.9-192.9.2.17	fw	tcp	25
-
+14) Beginning with this release, if your kernel and iptables have
+    iprange match support (see the output from "shorewall check"), then
+    with the exception of the /etc/shorewall/netmap file, anywhere that
+    a network address may appear an IP address range of the form <low
+    address>-<high address> may also appear.

@@ -27,7 +27,9 @@
 #
 #	SOURCE 		Source of the packet. A comma-separated list of
 #			interface names, IP addresses, MAC addresses
-#			and/or subnets. Use $FW if the packet originates on
+#			and/or subnets. If your kernel and iptables include
+#			iprange match support, IP address ranges are also
+#			allowed. Use $FW if the packet originates on
 #			the firewall in which case the MARK column may NOT
 #			specify either ":P" or ":F" (marking always occurs
 #			in the OUTPUT chain).
@@ -38,7 +40,9 @@
 #			Example: ~00-A0-C9-15-39-78
 #
 #	DEST		Destination of the packet. Comma separated list of
-#			IP addresses and/or subnets.
+#			IP addresses and/or subnets. If your kernel and 
+#			iptables include iprange match support, IP address
+#			ranges are also allowed.
 #
 #	PROTO		Protocol - Must be "tcp", "udp", "icmp", a number,
 #			or "all".

@@ -63,8 +63,8 @@
 	The basic approach will be that we will place the operations staff's class C in its own zone called ops. Here are the appropriate configuration files:
 	</para>
 <!-- Zone File -->
-  <figure label="1">
-    <title>Zone File</title>
+
+    <bridgehead renderas="sect4">Zone File</bridgehead>
     <informaltable colsep="1" pgwide="0">
       <tgroup cols="3" align="left">
         <thead valign="middle">
@@ -111,10 +111,10 @@
 		file -- since <literal>ops</literal> is a sub-zone of <literal>loc</literal>, we list it <emphasis>BEFORE</emphasis>
 		<literal>loc</literal>.
 		</para>
-  </figure>
+
 <!-- Interfaces File -->
-  <figure label="2">
-    <title>Interfaces File</title>
+
+    <bridgehead renderas="sect4">Interfaces File</bridgehead>
     <informaltable colsep="1" pgwide="0">
       <tgroup cols="4" align="left">
         <thead valign="middle">
@@ -164,10 +164,10 @@
     <para>
 		Because <literal>eth2</literal> interfaces to two zones (<literal>ops</literal> and <literal>loc</literal>), we don't specify a zone for it here.
 		</para>
-  </figure>
+
 <!-- Hosts File -->
-  <figure>
-    <title>Hosts File</title>
+
+    <bridgehead renderas="sect4">Hosts File</bridgehead>
     <informaltable colsep="1" pgwide="0">
       <tgroup cols="3" align="left">
         <thead valign="middle">
@@ -202,10 +202,10 @@
     <para>
 		Here we define the <literal>ops</literal> and <literal>loc</literal> zones. When Shorewall is stopped, only the hosts in the <literal>ops</literal> zone will be allowed to access the firewall and the <acronym>DMZ</acronym>. I use <literal>0.0.0.0/0</literal> to define the <literal>loc</literal> zone rather than <literal>10.10.0.0/16</literal> so that the limited broadcast address (<literal>255.255.255.255</literal>) falls into that zone. If I used <literal>10.10.0.0/16</literal> then I would have to have a separate entry for that special address.
 		</para>
-  </figure>
+
 <!-- Policy File -->
-  <figure label="3">
-    <title>Policy File</title>
+
+    <bridgehead renderas="sect4">Policy File</bridgehead>
     <informaltable colsep="1" pgwide="0">
       <tgroup align="left" cols="5">
         <thead valign="middle">
@@ -309,10 +309,10 @@
     <para>
 		Two entries for <literal>ops</literal> (in bold) have been added to the standard 3-zone policy file.
 		</para>
-  </figure>
+
 <!-- Rules File -->
-  <figure label="4">
-    <title>Rules File</title>
+
+    <bridgehead renderas="sect4">Rules File</bridgehead>
     <informaltable colsep="1" pgwide="0">
       <tgroup align="left" cols="7">
         <thead valign="middle">
@@ -363,10 +363,10 @@
     <para>
 		This is the rule that transparently redirects web traffic to the transparent proxy running on the firewall. The  <emphasis role="bold">SOURCE</emphasis> column explicitly excludes the <literal>ops</literal> zone from the rule.
 		</para>
-  </figure>
+
 <!-- Routestopped File -->
-  <figure label="5">
-    <title>Routestopped File</title>
+
+    <bridgehead renderas="sect4">Routestopped File</bridgehead>
     <informaltable colsep="1" pgwide="0">
       <tgroup align="left" cols="2">
         <thead valign="middle">
@@ -393,14 +393,5 @@
         </tbody>
       </tgroup>
     </informaltable>
-  </figure>
-  <para>
-    <revhistory>
-      <revision>
-        <date>December 22, 2003</date>
-        <authorinitials>PAS</authorinitials>
-        <revremark>Initial conversion to DocBook XML from HTML.</revremark>
-      </revision>
-    </revhistory>
-  </para>
+
 </article>

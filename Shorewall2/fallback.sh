@@ -116,6 +116,8 @@ restore_file /etc/shorewall/whitelist
 restore_file /etc/shorewall/rfc1918
 restore_file /usr/share/shorewall/rfc1918
 
+restore_file /usr/share/shorewall/bogons
+
 restore_file /etc/shorewall/init
 
 restore_file /etc/shorewall/start

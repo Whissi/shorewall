@@ -659,7 +659,7 @@ validate_interfaces_file() {
 
 	for option in $options; do
 	    case $option in
-		dhcp|norfc1918|tcpflags|newnotsyn|arp_filter|routefilter|blacklist|proxyarp|maclist|nosmurfs|-)
+		dhcp|norfc1918|nobogons|tcpflags|newnotsyn|arp_filter|routefilter|blacklist|proxyarp|maclist|nosmurfs|-)
 		    ;;
 		dropunclean|logunclean)
 		    if [ -z "$found_obsolete_option" ]; then
@@ -4655,6 +4655,46 @@ add_common_rules() {
 	    [ -n "$MANGLE_ENABLED" -a -z "$CONNTRACK_MATCH" ] && \
 		run_iptables -t mangle -A PREROUTING -m state --state NEW -i $interface -j man1918
 	done
+    fi
+    #
+    # Bogons
+    #
+    nobogon_interfaces="$(find_interfaces_by_option norfc1918)"
+    
+    if [ -n "$nobogon_interfaces" ]; then
+	echo "Enabling Bogon Filtering"
+
+	strip_file bogons
+
+	createchain nobogons no
+
+	createchain bogons no
+	
+	log_rule $BOGON_LOG_LEVEL bogons DROP
+	
+	run_iptables -A bogons -j DROP
+
+	while read subnet target; do
+	    case $target in
+		logdrop)
+		    target=bogons
+		    ;;
+		DROP|RETURN)
+		    ;;
+		*)
+		    fatal_error "Invalid target ($target) for $subnet"
+		    ;;
+	    esac
+
+	    run_iptables2 -A nobogons -s $subnet -j $target
+
+	done < $TMP_DIR/bogons
+
+	for interface in $nobogon_interfaces; do
+	    for chain in $(first_chains $interface); do
+		run_iptables -A $chain -m state --state NEW -j nobogons
+	    done
+	done
 
     fi
 
@@ -5599,6 +5639,7 @@ do_initialize() {
     TCP_FLAGS_DISPOSITION=
     TCP_FLAGS_LOG_LEVEL=
     RFC1918_LOG_LEVEL=
+    BOGON_LOG_LEVEL=
     MARK_IN_FORWARD_CHAIN=
     SHARED_DIR=/usr/share/shorewall
     FUNCTIONS=
@@ -5732,6 +5773,8 @@ do_initialize() {
     fi
 
     [ -z "$RFC1918_LOG_LEVEL" ] && RFC1918_LOG_LEVEL=info
+    [ -z "$BOGON_LOG_LEVEL" ]   && BOGON_LOG_LEVEL=info
+
     MARK_IN_FORWARD_CHAIN=$(added_param_value_no MARK_IN_FORWARD_CHAIN $MARK_IN_FORWARD_CHAIN)
     [ -n "$MARK_IN_FORWARD_CHAIN" ] && marking_chain=tcfor || marking_chain=tcpre
     if [ -n "$TC_ENABLED" ]; then

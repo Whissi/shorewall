@@ -133,10 +133,13 @@ fi
 %attr(0544,root,root) /usr/share/shorewall/firewall
 %attr(0544,root,root) /usr/share/shorewall/help
 %attr(0600,root,root) /usr/share/shorewall/rfc1918
+%attr(0600,root,root) /usr/share/shorewall/bogons
 
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel
 
 %changelog
+* Web Mar 17 2004 Tom Eastep <tom@shorewall.net>
+- Add bogons file
 * Sat Mar 13 2004 Tom Eastep <tom@shorewall.net>
 - Update for 2.0.0 Final
 * Sat Mar 06 2004 Tom Eastep <tom@shorewall.net>

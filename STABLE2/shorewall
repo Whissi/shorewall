@@ -881,6 +881,16 @@ case "$1" in
 	iptables -t mangle -L $IPT_OPTIONS
 	echo
 	cat /proc/net/ip_conntrack
+	echo
+	echo "IP Configuration"
+	echo
+	ip addr ls
+	echo
+	echo "Routing"
+	echo
+	ip rule ls
+	echo
+	ip route ls
 	;;
     hits)
     	[ -n "$debugging" ] && set -x

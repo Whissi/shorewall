@@ -381,3 +381,26 @@ New Features:
       shorewall restart [ <configuration-directory> ]
       shorewall start   [ <configuration-directory> ]
 
+11) Normally, when SNAT or MASQUERADE is applied to a tcp or udp 
+    connection, Netfilter attempts to retain the source port 
+    number. If it has to change to port number to avoid 
+    <source address>,<source port> conflicts, it tries to do so
+    within port ranges ( < 512, 512-1023, and > 1023). You may
+    now specify an explicit range of source ports to be used 
+    by following the address or address range (if any) in the
+    ADDRESS column with ":" and a port range in the format
+    <low-port>-<high-port>. You must specify either "tcp" or
+    "udp" in the PROTO column.
+
+    Examples 1 -- MASQUERADE with tcp source ports 4000-5000:
+
+    #INTERFACE SUBNET		  ADDRESS		PROTO
+    eth0       192.168.1.0/24	  :4000-5000		tcp
+
+    Example 2 -- SNAT with udp source ports 7000-8000:
+
+    #INTERFACE SUBNET		  ADDRESS		PROTO
+    eth0       10.0.0.0/8	  192.0.2.44:7000-8000	udp
+
+    
+

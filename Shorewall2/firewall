@@ -2324,11 +2324,11 @@ process_accounting_rule() {
     jumpchain=
 	
     accounting_error() {
-	error_message "Warning: Invalid Accounting rule" $action $chain $source $dest $proto $port $sport
+	error_message "Warning: Invalid Accounting rule" $action $chain $source $dest $proto $port $sport $user
     }
 
     accounting_interface_error() {
-	error_message "Warning: Unknown interface $1 in " $action $chain $source $dest $proto $port $sport
+	error_message "Warning: Unknown interface $1 in " $action $chain $source $dest $proto $port $sport $user
     }
 
     accounting_interface_verify() {
@@ -2404,6 +2404,25 @@ process_accounting_rule() {
 	    ;;
     esac
 
+    [ -n "$user" ] && case $user in
+	-|any|all)
+	    ;;
+	*:*)
+	    [ "$chain" != OUTPUT ] && \
+		fatal_error "Invalid use of a user/group: chain is not OUTPUT but $chain"
+	    rule="$rule -m owner"
+	    temp="${user%:*}"
+	    [ -n "$temp" ] && rule="$rule --uid-owner $temp " 
+	    temp="${user#*:}"
+	    [ -n "$temp" ] && rule="$rule --gid-owner $temp "
+	    ;;
+	*)
+	    [ "$chain" != OUTPUT ] && \
+		fatal_error "Invalid use of a user/group: chain is not OUTPUT but $chain"
+	    rule="$rule -m owner --uid-owner $user "
+	    ;;
+    esac
+
     case $action in
 	COUNT)
 	    ;;
@@ -2432,7 +2451,7 @@ process_accounting_rule() {
 
     if iptables -A $chain $(fix_bang $rule) ; then
 	[ -n "$rule2" ] && run_iptables2 -A $jumpchain $rule2
-	progress_message "   Accounting rule" $action $chain $source $dest $proto $port $sport Added
+	progress_message "   Accounting rule" $action $chain $source $dest $proto $port $sport $user Added
     else
 	accounting_error
     fi
@@ -2448,8 +2467,8 @@ setup_accounting() # $1 = Name of accounting file
 
     strip_file accounting $1
 
-    while read action chain source dest proto port sport ; do
-	expandv action chain source dest proto port sport
+    while read action chain source dest proto port sport user ; do
+	expandv action chain source dest proto port sport user
 	process_accounting_rule
     done < $TMP_DIR/accounting
 
@@ -4687,17 +4706,20 @@ setup_masq()
 
 	if [ -n "$addresses" -a -n "$add_snat_aliases" ]; then
 	    for address in $(separate_list $addresses); do
-		for addr in $(ip_range_explicit $address) ; do
-		    if ! list_search $addr $aliases_to_add; then
-			save_command qt ip addr del $addr dev $interface 
-			aliases_to_add="$aliases_to_add $addr $fullinterface"
-			case $fullinterface in 
-			    *:*)
-				fullinterface=${fullinterface%:*}:$((${fullinterface#*:} + 1 ))
-				;;
-			esac
-		    fi
-		done
+		address=${address%:)}
+		if [ -n "$address" ]; then
+		    for addr in $(ip_range_explicit ${address%:*}) ; do
+			if ! list_search $addr $aliases_to_add; then
+			    save_command qt ip addr del $addr dev $interface 
+			    aliases_to_add="$aliases_to_add $addr $fullinterface"
+			    case $fullinterface in 
+				*:*)
+				    fullinterface=${fullinterface%:*}:$((${fullinterface#*:} + 1 ))
+				    ;;
+			    esac
+			fi
+		    done
+		fi
 	    done
 	fi
 
@@ -4817,37 +4839,44 @@ setup_masq()
 	esac
 
 	addrlist=
+	target=MASQUERADE
 
 	if [ -n "$addresses" ]; then
 	    for address in $(separate_list $addresses); do
-		addrlist="$addrlist --to-source $address"
+		case $address in
+		    *.*.*.*)
+			target=SNAT
+			addrlist="$addrlist --to-source $address"
+			;;
+		    *)
+			addrlist="$addrlist --to-ports ${address#:}"
+			;;
+		esac
 	    done
 	fi
 
 	if [ -n "$networks" ]; then
-	    for s in $networks; do
+	    for network in $networks; do
+		for destnet in $(separate_list $destnets); do
+		    addnatrule $chain -s $network -d $destnet $proto $ports $policy -j $target $addrlist
+		done
+
 		if [ -n "$addresses" ]; then
-		    for destnet in $(separate_list $destnets); do
-			addnatrule $chain -s $s -d $destnet $proto $ports $policy -j SNAT $addrlist
-		    done
-		    progress_message "   To $destination $displayproto from $s through ${interface} using $addresses"
+		    progress_message "   To $destination $displayproto from $network through ${interface} using $addresses"
 		else
-		    for destnet in $(separate_list $destnets); do
-			addnatrule $chain -s $s -d $destnet $proto $ports $policy -j MASQUERADE
-		    done
-		    progress_message "   To $destination $displayproto from $s through ${interface}"
+		    progress_message "   To $destination $displayproto from $network through ${interface}"
 		fi
 	    done
-	elif [ -n "$addresses" ]; then
-	    for destnet in $(separate_list $destnets); do
-		addnatrule $chain -d $destnet $proto $ports $policy -j SNAT $addrlist
-	    done
-	    echo "   To $destination $displayproto from $source through ${interface} using $addresses"
 	else
 	    for destnet in $(separate_list $destnets); do
-		addnatrule $chain -d $destnet $proto $ports $policy -j MASQUERADE
+		addnatrule $chain -d $destnet $proto $ports $policy -j $target $addrlist
 	    done
-	    progress_message "   To $destination $displayproto from $source through ${interface}"
+	    
+	    if [ -n "$addresses" ]; then
+		progress_message "   To $destination $displayproto from $source through ${interface} using $addresses"
+	    else
+		progress_message "   To $destination $displayproto from $source through ${interface}"
+	    fi
 	fi
 
     }
@@ -5266,6 +5295,9 @@ initialize_netfilter () {
 
     echo "Deleting user chains..."
 
+    exists_INPUT=Yes
+    exists_OUTPUT=Yes
+    exists_FORWARD=Yes
     setpolicy INPUT DROP
     setpolicy OUTPUT DROP
     setpolicy FORWARD DROP

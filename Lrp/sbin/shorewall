@@ -1,0 +1,706 @@
+#!/bin/sh
+#
+#     Shorewall Packet Filtering Firewall Control Program - V1.3 - 6/14/2002
+#
+#     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]	      
+#
+#     (c) 1999,2000,2001,2002 - Tom Eastep (teastep@shorewall.net)
+#
+#
+#	This file should be placed in /sbin/shorewall.
+#
+#	Shorewall documentation is available at http://shorewall.sourceforge.net
+#
+#	This program is free software; you can redistribute it and/or modify
+#	it under the terms of Version 2 of the GNU General Public License 
+#	as published by the Free Software Foundation.
+#
+#	This program is distributed in the hope that it will be useful,
+#	but WITHOUT ANY WARRANTY; without even the implied warranty of
+#	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#	GNU General Public License for more details.
+#
+#	You should have received a copy of the GNU General Public License
+#	along with this program; if not, write to the Free Software
+#	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
+#	
+#	If an error occurs while starting or restarting the firewall, the
+#	firewall is automatically stopped.
+#
+#	The firewall uses configuration files in /etc/shorewall/ - skeleton
+#	files is included with the firewall.
+#
+#	Commands are:
+#
+#	   shorewall start			   Starts the firewall 
+#	   shorewall restart			   Restarts the firewall
+#	   shorewall stop			   Stops the firewall
+#	   shorewall monitor [ refresh-interval ]  Repeatedly Displays firewall status
+#						   plus the last 20 "interesting"
+#						   packets
+#	   shorewall status			   Displays firewall status		 
+#	   shorewall reset			   Resets iptables packet and
+#						   byte counts
+#	   shorewall clear			   Open the floodgates by
+#						   removing all iptables rules
+#						   and setting the three permanent
+#						   chain policies to ACCEPT
+#	   shorewall refresh			   Rebuild the common chain to
+#						   compensate for a change of
+#						   broadcast address on any "detect"
+#						   interface.
+#	   shorewall show <chain>		   Display the rules in a <chain>
+#	   shorewall show log			   Print the last 20 log messages
+#	   shorewall show connections		   Show the kernel's connection
+#						   tracking table
+#	   shorewall show nat			   Display the rules in the nat table
+#	   shorewall show {mangle|tos}		   Display the rules in the mangle table
+#	   shorewall show tc			   Display traffic control info
+#	   shorewall version			   Display the installed version id
+#	   shorewall check			   Verify the more heavily-used
+#						   configuration files.
+#	   shorewall try <directory> [ <timeout> ] Try a new configuration and if
+#						   it doesn't work, revert to the
+#						   standard one. If a timeout is supplied
+#						   the command reverts back to the
+#						   standard configuration after that many
+#						   seconds have elapsed after successfully
+#						   starting the new configuration.
+#	   shorewall logwatch [ refresh-interval ] Monitor the local log for Shorewall
+#						   messages.
+#	   shorewall drop <address> ...		   Temporarily drop all packets from the
+#						   listed address(es)
+#	   shorewall reject <address> ...	   Temporarily reject all packets from the
+#						   listed address(es)
+#	   shorewall allow <address> ...	   Reenable address(es) previously 
+#						   disabled with "drop" or "reject"
+#	   shorewall save			   Save the list of "rejected" and
+#						   "dropped" addresses so that it will
+#						   be automatically reinstated the
+#						   next time that Shorewall starts.
+#
+# Display a chain if it exists
+#
+showfirstchain() # $1 = name of chain
+{
+    awk \
+    'BEGIN	 {prnt=0; rslt=1; }; \
+    /^$/	 { next; };\
+    /^Chain/	 {if ( prnt == 1 ) { rslt=0; exit 0; }; };\
+    /Chain '$1'/ { prnt=1; }; \
+		 { if (prnt == 1)  print; };\
+    END		 { exit rslt; }' /tmp/chains-$$
+}
+
+showchain() # $1 = name of chain
+{
+    if [ "$firstchain" = "Yes" ]; then
+	if showfirstchain $1; then
+	    firstchain=
+	fi
+    else
+	awk \
+	'BEGIN	     {prnt=0;};\
+	/^$|^ pkts/  { next; };\
+	/^Chain/     {if ( prnt == 1 ) exit; };\
+	/Chain '$1'/ { prnt=1; };\
+		     { if (prnt == 1)  print; }' /tmp/chains-$$
+    fi
+}
+
+#################################################################################
+# Set the configuration variables from shorewall.conf				#
+#################################################################################
+get_config() {
+    get_statedir
+
+    [ -z "$LOGFILE" ] && LOGFILE=/var/log/messages
+
+    if [ ! -f $LOGFILE ]; then
+	echo "LOGFILE ($LOGFILE) does not exist!" >&2
+	exit 2
+    fi
+    #
+    # See if we have a real version of "tail" -- use separate redirection so
+    # that ash (aka /bin/sh on LRP) doesn't crap
+    #
+    if ( tail -n5 $LOGFILE > /dev/null 2> /dev/null ) ; then
+	realtail="Yes"
+    else
+	realtail=""
+    fi
+
+    [ -n "$FW" ] || FW=fw
+}
+
+#################################################################################
+# Display IPTABLES rules -- we used to store them in a variable but ash		#
+# dies when trying to display large sets of rules				#
+#################################################################################
+display_chains()
+{
+    trap "rm -f /tmp/chains-$$; exit 1" 1 2 3 4 5 6 9
+    
+    if [ "$haveawk" = "Yes" ]; then
+	#
+	# Send the output to a temporary file since ash craps if we try to store
+	# the output in a variable.
+	#
+	iptables -L -n -v > /tmp/chains-$$
+
+	clear
+	echo -e "$banner `date`\\n"
+	echo -e "Standard Chains\\n"
+	firstchain="Yes"
+	showchain INPUT
+	showchain OUTPUT
+	showchain FORWARD
+
+	timed_read
+
+	clear
+	echo -e "$banner `date`\\n"
+	firstchain=Yes
+	echo -e "Input Chains\\n"
+
+	chains=`grep '^Chain.*_[in|fwd]' /tmp/chains-$$ | cut -d' ' -f 2`
+	
+	for chain in $chains; do
+	    showchain $chain
+	done
+	
+	timed_read
+
+	for zone in $zones; do
+
+	    if [ -n "`grep "^Chain \.*${zone}" /tmp/chains-$$`" ] ; then
+		clear
+		echo -e "$banner `date`\\n"
+		firstchain=Yes
+		eval display=\$${zone}_display
+		echo -e "$display Chains\\n"
+		for zone1 in $FW $zones; do
+		    showchain ${zone}2$zone1
+		    showchain @${zone}2$zone1
+		    [ "$zone" != "$zone1" ] && \
+			showchain ${zone1}2${zone} && \
+			showchain @${zone1}2${zone}
+		done
+
+		timed_read
+	    fi
+	done
+
+	clear
+	echo -e "$banner `date`\\n"
+	firstchain=Yes
+	echo -e "Policy Chains\\n"
+	showchain common
+	showchain badpkt
+	showchain icmpdef
+	showchain rfc1918
+	showchain blacklst
+	showchain reject
+	for zone in $zones all; do
+	    showchain ${zone}2all
+	    showchain @${zone}2all
+	    [ "$zone" = "all" ] || { showchain all2${zone}; showchain @all2${zone}; }
+	done
+
+	timed_read
+
+	clear
+	echo -e "$banner `date`\\n"
+	firstchain=Yes
+	echo -e "Dynamic Chain\\n"
+	showchain dynamic
+	timed_read
+
+	qt rm -f /tmp/chains-$$
+    else
+	iptables -L -n -v
+	timed_read
+    fi
+    trap - 1 2 3 4 5 6 9
+
+}
+
+#################################################################################
+# Delay $timeout seconds -- if we're running on a recent bash2 then allow	# 
+# <enter> to terminate the delay						#
+#################################################################################
+timed_read () 
+{
+    read -t $timeout foo 2> /dev/null
+
+    test $? -eq 2 && sleep $timeout
+}
+
+#################################################################################
+# Display the last $1 packets logged						#
+#################################################################################
+packet_log() # $1 = number of messages 
+{
+    local options
+
+    [ -n "$realtail" ] && options="-n$1"
+
+    grep 'Shorewall:\|ipt_unclean' $LOGFILE | \
+	 sed s/" $host kernel: Shorewall:"/" "/ | \
+	 sed s/" $host kernel: ipt_unclean: "/" "/ | \
+	 sed 's/MAC=.*SRC=/SRC=/' | \
+	 tail $options
+}
+
+#################################################################################
+# Show traffic control information						#
+#################################################################################
+show_tc() {
+
+    show_one_tc() {
+	local device=${1%@*}
+	qdisc=`tc qdisc list dev $device`
+
+	if [ -n "$qdisc" ]; then
+	    echo Device $device:
+	    tc -s -d qdisc show dev $device
+	    tc -s -d class show dev $device
+	    echo
+	fi
+    }
+
+    ip link list | \
+    while read inx interface details; do
+	case $inx in
+	[0-9]*)
+	    show_one_tc ${interface%:}
+	    ;;
+	*)
+	    ;;
+	esac
+    done
+
+}
+
+#################################################################################
+# Monitor the Firewall								#
+#################################################################################
+monitor_firewall() # $1 = timeout -- if negative, prompt each time that
+		   #		     an 'interesting' packet count changes
+{
+
+    get_config
+    host=`echo $HOSTNAME | sed 's/\..*$//'`
+    oldrejects=`iptables -L -v -n | grep 'LOG'`
+    
+    if [ $1 -lt 0 ]; then
+	let "timeout=- $1"
+	pause="Yes"
+    else
+	pause="No"
+	timeout=$1
+    fi
+
+    qt which awk && { haveawk=Yes; determine_zones; } || haveawk=
+
+    while true; do
+	display_chains
+	
+	clear
+	echo -e "$banner `date`\\n"
+
+	echo -e "Dropped/Rejected Packet Log\\n"
+
+	rejects=`iptables -L -v -n | grep 'LOG'`
+
+	if [ "$rejects" != "$oldrejects" ]; then
+	    oldrejects="$rejects"
+	    echo -e '\a'
+	    packet_log 20
+
+	    if [ "$pause" = "Yes" ]; then
+		echo -en '\nEnter any character to continue: '
+		read foo
+	    else
+		timed_read
+	    fi
+	else
+	    echo
+	    packet_log 20
+	    timed_read
+	fi
+
+	clear
+	echo -e "$banner `date`\\n"
+	echo -e "NAT Status\\n"
+	iptables -t nat -L -n -v
+	timed_read
+
+	clear
+	echo -e "$banner `date`\\n"
+	echo -e "\\nTOS/MARK Status\\n"
+	iptables -t mangle -L -n -v
+	timed_read
+
+	clear
+	echo -e "$banner `date`\\n"
+	echo -e "\\nTracked Connections\\n"
+	cat /proc/net/ip_conntrack
+	timed_read
+
+	clear
+	echo -e "$banner `date`\\n"
+	echo -e "\\nTraffic Shaping/Control\\n"
+	show_tc
+	timed_read
+    done
+}
+
+#################################################################################
+# Watch the Firewall Log							#
+#################################################################################
+logwatch() # $1 = timeout -- if negative, prompt each time that
+	   #		     an 'interesting' packet count changes
+{
+
+    get_config
+    host=`echo $HOSTNAME | sed 's/\..*$//'`
+    oldrejects=`iptables -L -v -n | grep 'LOG'`
+    
+    if [ $1 -lt 0 ]; then
+	timeout=$((- $1))
+	pause="Yes"
+    else
+	pause="No"
+	timeout=$1
+    fi
+
+    qt which awk && haveawk=Yes || haveawk=
+
+    while true; do
+	clear
+	echo -e "$banner `date`\\n"
+
+	echo -e "Dropped/Rejected Packet Log\\n"
+
+	rejects=`iptables -L -v -n | grep 'LOG'`
+
+	if [ "$rejects" != "$oldrejects" ]; then
+	    oldrejects="$rejects"
+	    echo -e '\a'
+	    packet_log 40
+
+	    if [ "$pause" = "Yes" ]; then
+		echo -en '\nEnter any character to continue: '
+		read foo
+	    else
+		timed_read
+	    fi
+	else
+	    echo
+	    packet_log 40
+	    timed_read
+	fi
+    done
+}
+
+#################################################################################
+# Give Usage Information							#
+#################################################################################
+usage() # $1 = exit status
+{
+    echo "Usage: `basename $0` [debug] [nolock] [-c <directory>] <command>"
+    echo "where <command> is one of:"
+    echo "   show [<chain>|connections|log|nat|tc|tos]"
+    echo "   start"
+    echo "   stop"
+    echo "   reset"
+    echo "   restart"
+    echo "   status"
+    echo "   clear"
+    echo "   refresh"
+    echo "   hits"
+    echo "   monitor [<refresh interval>]"
+    echo "   version"
+    echo "   check"
+    echo "   try <directory> [ <timeout> ]"
+    echo "   logwatch [<refresh interval>]"
+    echo "   drop <address> ..."
+    echo "   reject <address> ..."
+    echo "   allow <address> ..."
+    echo "   save"
+    exit $1
+}
+
+#################################################################################
+# Execution begins here								#
+#################################################################################
+debugging=
+
+if [ $# -gt 0 ] && [ "$1" = "debug" ]; then
+    debugging=debug
+    shift
+fi
+
+nolock=
+
+if [ $# -gt 0 ] && [ "$1" = "nolock" ]; then
+    nolock=nolock
+    shift
+fi
+
+SHOREWALL_DIR=
+done=0
+
+while [ $done -eq 0 ]; do
+    [ $# -eq 0 ] && usage 1
+    case $1 in
+    -c)
+	[ $# -eq 1 ] && usage 1
+
+	if [ ! -d $2 ]; then
+	    if [ -e $2 ]; then
+		echo "$2 is not a directory" >&2 && exit 2
+	    else
+		echo "Directory $2 does not exist" >&2 && exit 2
+	    fi
+	fi
+
+	SHOREWALL_DIR=$2
+	shift
+	shift
+	;;
+    *)
+	done=1
+	;;
+    esac
+done
+
+if [ $# -eq 0 ]; then
+    usage 1
+fi
+
+[ -n "$SHOREWALL_DIR" ] && export SHOREWALL_DIR
+
+functions=/var/lib/shorewall/functions
+
+if [ -f $functions ]; then
+    . $functions
+else
+    echo "$functions does not exist!" >&2
+    exit 2
+fi
+
+firewall=/var/lib/shorewall/firewall
+
+if [ ! -f $firewall ]; then
+    echo "ERROR: Shorewall is not properly installed"
+    if [ -L $firewall ]; then
+	echo "	     $firewall is a symbolic link to a"
+	echo "	     non-existant file"
+    else
+	echo "	     The file /var/lib/shorewall/firewall does not exist"
+    fi
+
+    exit 2
+fi
+
+PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
+
+version_file=/var/lib/shorewall/version
+
+if [ -f $version_file ]; then
+    version=`cat $version_file`
+else
+    echo "ERROR: Shorewall is not properly installed"
+    echo "	 The file /var/lib/shorewall/version does not exist"
+    exit 1
+fi
+
+banner="Shorewall-$version Status at $HOSTNAME -"
+
+case "$1" in
+    start|stop|restart|reset|clear|refresh|check)
+	[ $# -ne 1 ] && usage 1
+	exec $firewall $debugging $nolock $1
+	;;
+    show)
+	[ $# -gt 2 ] && usage 1
+	case "$2" in
+	connections)
+	    echo -e "Shorewall-$version Connections at $HOSTNAME - `date`\\n"
+	    cat /proc/net/ip_conntrack
+	    ;;
+	nat)
+	    echo -e "Shorewall-$version NAT at $HOSTNAME - `date`\\n"
+	    iptables -t nat -L -n -v
+	    ;;
+	tos|mangle)
+	    echo -e "Shorewall-$version TOS at $HOSTNAME - `date`\\n"
+	    iptables -t mangle -L -n -v
+	    ;;
+	log)
+	    get_config
+	    echo -e "Shorewall-$version Log at $HOSTNAME - `date`\\n"
+	    host=`echo $HOSTNAME | sed 's/\..*$//'`
+	    packet_log 20
+	    ;;
+	tc)
+	    echo -e "Shorewall-$version Traffic Control at $HOSTNAME - `date`\\n"
+	    show_tc
+	    ;;
+	*)
+	    echo -e "Shorewall-$version Chain $2 at $HOSTNAME - `date`\\n"
+	    iptables -L $2 -n -v
+	    ;;
+	esac
+	;;
+    monitor)
+	if [ $# -eq 2 ]; then
+	    monitor_firewall $2
+	elif [ $# -eq 1 ]; then
+	    monitor_firewall 30
+	else
+	    usage 1
+	fi
+	;;
+    status)
+	[ $# -eq 1 ] || usage 1
+	get_config
+	clear
+	echo -e "Shorewall-$version Status at $HOSTNAME - `date`\\n"
+	host=`echo $HOSTNAME | sed 's/\..*$//'`
+	iptables -L -n -v
+	echo
+	packet_log 20
+	echo
+	iptables -t nat -L -n -v
+	echo
+	iptables -t mangle -L -n -v
+	echo
+	cat /proc/net/ip_conntrack
+	;;
+    hits)
+	[ $# -eq 1 ] || usage 1
+	get_config
+	clear
+	echo -e "Shorewall-$version Hits at $HOSTNAME - `date`\\n"
+	timeout=30
+
+	if [ `grep -c "Shorewall:" $LOGFILE ` -gt 0 ] ; then
+	    echo "   HITS IP		  DATE"
+	    echo "   ---- --------------- ------"
+	    grep "Shorewall:" $LOGFILE | sed 's/\(.\{6\}\)\(.*SRC=\)\(.*\)\( DST=.*\)/\3	\1/' | sort | uniq -c | sort -rn
+	    echo ""
+
+	    echo "   HITS IP		  PORT"
+	    echo "   ---- --------------- -----"
+	    grep "Shorewall:" $LOGFILE | sed 's/\(.*SRC=\)\(.*\)\( DST=.*DPT=\)\([0-9]\{1,5\}\)\(.*\)/\2	\4/
+						t
+						s/\(.*SRC=\)\(.*\)\( DST=.*\)/\2/' | sort | uniq -c | sort -rn
+	    echo ""
+
+	    echo "   HITS DATE"
+	    echo "   ---- ------"
+	    grep "Shorewall:" $LOGFILE | sed 's/\(.\{6\}\)\(.*\)/\1/' | sort | uniq -c | sort -rn
+	    echo ""
+
+	    echo "   HITS  PORT SERVICE(S)"
+	    echo "   ---- ----- ----------" 
+	    grep 'Shorewall:.*DPT' $LOGFILE | sed 's/\(.*DPT=\)\([0-9]\{1,5\}\)\(.*\)/\2/' | sort | uniq -c | sort -rn | \
+	    while read count port ; do
+		# List all services defined for the given port
+		srv=`grep "^[^#].*\\b$port/" /etc/services | cut -f 1 | sort -u`
+		srv=`echo $srv | sed 's/ /,/g'`
+
+		if [ -n "$srv" ] ; then
+		    printf '%7d %5d %s\n' $count $port $srv
+		else
+		    printf '%7d %5d\n' $count $port
+		fi
+	    done
+	fi
+	;;
+    version)
+	echo $version
+	;;
+    try)
+	[ -n "$SHOREWALL_DIR" ] && startup_error "Error: -c option may not be used with \"try\""
+	[ $# -lt 2 -o $# -gt 3 ] && usage 1
+	if ! $0 -c $2 restart; then
+	    if ! iptables -L shorewall > /dev/null 2> /dev/null; then
+		$0 start
+	    fi
+	elif ! iptables -L shorewall > /dev/null 2> /dev/null; then
+	    $0 start
+	elif [ $# -eq 3 ]; then
+	    sleep $3
+	    $0 restart
+	fi
+	;;
+    logwatch)
+	if [ $# -eq 2 ]; then
+	    logwatch $2
+	elif [ $# -eq 1 ]; then
+	    logwatch 30
+	else
+	    usage 1
+	fi
+	;;
+    drop)
+	[ $# -eq 1 ] && usage 1
+	mutex_on
+	while [ $# -gt 1 ]; do
+	    shift
+	    iptables -A dynamic -s $1 -j DROP || break 1
+	    echo "$1 Dropped"
+	done
+	mutex_off
+	;;
+    reject)
+	[ $# -eq 1 ] && usage 1
+	mutex_on
+	while [ $# -gt 1 ]; do
+	    shift
+	    iptables -A dynamic -s $1 -j reject || break 1
+	    echo "$1 Rejected"
+	done
+	mutex_off
+	;;
+    allow)
+	[ $# -eq 1 ] && usage 1
+	mutex_on
+	while [ $# -gt 1 ]; do
+	    shift
+	    if	qt iptables -D dynamic -s $1 -j reject; then
+		#
+		# Address was rejected -- silently remove any drop as well
+		#
+		qt iptables -D dynamic -s $1 -j DROP
+		echo "$1 Allowed"
+	    elif qt iptables -D dynamic -s $1 -j DROP; then
+		echo "$1 Allowed"
+	    else
+		echo "$1 Not Dropped or Rejected"
+	    fi
+	done
+	mutex_off
+	;;
+    save)
+	[ $# -ne 1 ] && usage 1
+	mutex_on
+	if qt iptables -L shorewall -n; then
+	    if iptables -L dynamic -n > /var/lib/shorewall/save; then
+		echo "Dynamic Rules Saved"
+	    else
+		echo "Error Saving the Dynamic Rules"
+	    fi
+	else
+	    echo "Shorewall isn't started"
+	fi
+	mutex_off
+	;;
+    *)
+	usage 1
+	;;
+esac 

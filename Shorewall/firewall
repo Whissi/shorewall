@@ -3399,7 +3399,7 @@ setup_masq()
 	    ;;
 	*)
 	    subnets=`get_routed_subnets $subnet`
-	    [ -z "$subnets" ] && startup_error "Unable to determine the routes through interface $subnet"
+	    [ -z "$subnets" ] && fatal_error "Unable to determine the routes through interface $subnet"
 	    subnet="$subnets"
 	    ;;
 	esac

@@ -5616,7 +5616,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
     chain=${zone}_dnat
 
     if nat_chain_exists $chain; then
-	do_iptables -t nat -A $(dynamic_in) -s $host -j $chain
+	do_iptables -t nat -A $(dynamic_in $interface) -s $host -j $chain
     fi
     #
     # Insert new rules into the filter table for the passed interface

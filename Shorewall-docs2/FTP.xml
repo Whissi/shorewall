@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-05-19</pubdate>
+    <pubdate>2004-12-21</pubdate>
 
     <copyright>
       <year>2003</year>
@@ -342,6 +342,14 @@ options ip_nat_ftp ports=21,49</programlisting>
 
   <section id="Rules">
     <title>Rules</title>
+
+    <warning>
+      <para>If you run an FTP server behind your firewall and your server
+      offers a method of specifying the external IP address of your firewall,
+      DON'T USE THAT FEATURE OF YOUR SERVER. Using that option will defeat the
+      purpose of the ftp helper modules and can result in a server that
+      doesn't work.</para>
+    </warning>
 
     <para>If the policy from the source zone to the destination zone is ACCEPT
     and you don't need DNAT (see <ulink url="FAQ.htm#faq30">FAQ 30</ulink>)

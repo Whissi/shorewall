@@ -382,6 +382,15 @@ else
     echo -e "\nStopped Routing file installed as ${PREFIX}/etc/shorewall/routestopped"
 fi
 #
+# Install the Mac List file
+#
+if [ -f ${PREFIX}/etc/shorewall/maclist ]; then
+    backup_file /etc/shorewall/maclist
+else
+    run_install -o $OWNER -g $GROUP -m 0600 maclist ${PREFIX}/etc/shorewall/maclist
+    echo -e "\nMAC list file installed as ${PREFIX}/etc/shorewall/maclist"
+fi
+#
 # Install the Masq file
 #
 if [ -f ${PREFIX}/etc/shorewall/masq ]; then

@@ -85,6 +85,7 @@ fi
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/params
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/proxyarp
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/routestopped
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/maclist
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/masq
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/modules
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/tcrules
@@ -100,6 +101,8 @@ fi
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel
 
 %changelog
+* Tue Oct 22 2002 Tom Eastep <tom@shorewall.net>
+- Added maclist file
 * Tue Oct 15 2002 Tom Eastep <tom@shorewall.net>
 - Changed version to 1.3.10
 - Replaced symlink with real file

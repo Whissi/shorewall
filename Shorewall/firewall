@@ -511,7 +511,7 @@ validate_interfaces_file() {
 	    case $option in
 	    dhcp|noping|filterping|routestopped|norfc1918|multi)
                 ;;
-	    routefilter|dropunclean|logunclean|blacklist|proxyarp|-)
+	    routefilter|dropunclean|logunclean|blacklist|proxyarp|maclist|-)
 		;;
 	    *)
 		error_message "Warning: Invalid option ($option) in record \"$r\""
@@ -926,6 +926,30 @@ find_broadcasts() {
 }
 
 ################################################################################
+# Find interface broadcast addresses					       #
+################################################################################
+find_interface_broadcasts() # $1 = Interface name
+{
+    while read z interface bcast options; do
+	expandv interface bcast
+	if [ "$interface" = "$1" ]; then
+	    if [ "x$bcast" = "xdetect" ]; then
+		addr="`ip addr show $interface 2> /dev/null`"
+		if [ -n "`echo "$addr" | grep 'inet.*brd '`" ]; then
+		    addr="`echo "$addr" | \
+		grep "inet " | sed 's/^.* inet.*brd //;s/scope.*//'`"
+		    echo $addr | cut -d' ' -f 1
+		fi
+	    elif [ "x${bcast}" != "x-" ]; then
+		echo `separate_list $bcast`
+	    fi
+	    
+	    return
+	fi
+    done < $TMP_DIR/interfaces
+}
+
+################################################################################
 # Find interface address--returns the first IP address assigned to the passed  #
 # device								       #
 ################################################################################
@@ -1276,6 +1300,57 @@ setup_proxy_arp() {
     done
 }
 
+###############################################################################
+# Set up MAC List Chains						      #
+###############################################################################
+setup_mac_lists() {
+
+    for interface in $maclist_interfaces; do
+	createchain ${interface}_mac no
+    done
+
+    strip_file maclist
+
+    while read interface mac address; do
+	chain=${interface}_mac
+
+	if ! havechain $chain ; then
+	    error_message "Warning: $interface does not have the maclist option specified"
+	    continue
+	fi
+
+	[ -n "$address" ] && addr_match="-s $address" || addr_match=
+
+	run_iptables -A ${interface}_mac `mac_match $mac` $addr_match -j RETURN
+    done < $TMP_DIR/maclist
+
+    if [ -n "$MACLIST_LOG_LEVEL" ]; then
+	logpart="-j LOG $LOGPARMS --log-level $MACLIST_LOG_LEVEL --log-prefix"
+    else
+	logpart=
+    fi
+
+    for interface in $maclist_interfaces; do
+	chain=${interface}_mac
+	#
+	# Must take care of our own broadcasts
+	#
+	source="-s `find_interface_address $interface`"
+
+	for address in `find_interface_broadcasts $interface` 255.255.255.255 ; do
+	    run_iptables -A $chain $source -d $address -j RETURN
+	done
+
+	[ -n "$logpart" ] && \
+	    run_iptables -A $chain $logpart "Shorewall:$chain:$MACLIST_DISPOSITION:"
+
+	run_iptables -A $chain -j $maclist_target
+
+	run_iptables -A `input_chain $interface`   -m state --state NEW -j $chain
+	run_iptables -A `forward_chain $interface` -m state --state NEW -j $chain
+    done
+}    
+	
 ###############################################################################
 # Set up SYN flood protection						      #
 ###############################################################################
@@ -3335,6 +3410,13 @@ define_firewall() # $1 = Command (Start or Restart)
     [ -f $tunnels ] && \
 	echo "Processing $tunnels..." && setup_tunnels $tunnels
 
+    maclist_interfaces=`find_interfaces_by_option maclist`
+
+    if [ -n "$maclist_interfaces" ] ; then
+	echo "Setting up MAC Verification on $maclist_interfaces..."
+	setup_mac_lists
+    fi
+
     rules=`find_file rules`
 
     echo "Processing $rules..."
@@ -3882,6 +3964,8 @@ do_initialize() {
     NEWNOTSYN=
     LOGNEWNOTSYN=
     FORWARDPING=
+    MACLIST_DISPOSITION=
+    MACLIST_LOG_LEVEL=
     stopping=
     have_mutex=
     masq_seq=1
@@ -3961,6 +4045,24 @@ do_initialize() {
     MERGE_HOSTS=`added_param_value_no MERGE_HOSTS $MERGE_HOSTS`
     FORWARDPING=`added_param_value_no FORWARDPING $FORWARDPING`
     NEWNOTSYN=`added_param_value_yes NEWNOTSYN $NEWNOTSYN`
+
+    maclist_target=reject
+    
+    if [ -n "$MACLIST_DISPOSITION" ] ; then
+	case $MACLIST_DISPOSITION in
+	    REJECT)
+		;;
+	    ACCEPT|DROP)
+		maclist_target=$MACLIST_DISPOSITION
+		;;
+	    *)
+		startup_error "Invalid value ($MACLIST_DISPOSITION) for MACLIST_DISPOSITION"
+		;;
+	esac
+    else
+	MACLIST_DISPOSITION=REJECT
+    fi
+
 }
 
 ################################################################################

@@ -73,8 +73,15 @@
 #	.	.	blacklist    - Check packets arriving on this interface
 #				       against the /etc/shorewall/blacklist
 #				       file.
-#			proxyarp     - Sets
-#				/proc/sys/net/ipv4/conf/<interface>/proxy_arp
+#			proxyarp     - 
+#				Sets 
+#				/proc/sys/net/ipv4/conf/<interface>/proxy_arp.
+#				Do NOT use this option if you are
+#				employing Proxy ARP through entries in
+#				/etc/shorewall/proxyarp. This option is
+#				intended soley for use with Proxy ARP
+#				sub-networking as described at:
+#				http://www.tldp.org/HOWTO/mini/Proxy-ARP-Subnet
 #			
 #			The order in which you list the options is not
 #			significant but the list should have no embedded white

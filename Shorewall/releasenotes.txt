@@ -88,8 +88,13 @@ Problems Corrected since version 1.4.6:
 17) The log message generated from the 'logunclean' interface option
     has been changed to reflect a disposition of LOG rather than DROP.
 
-18) The RFC1918 file has been updated to reflect recent IANA
-    allocations.
+18) When a user name and/or a group name was specified in the USER SET
+    column and the destination zone was qualified with a IP address,
+    the user and/or group name was not being used to qualify the rule.
+
+    Example:
+
+    ACCEPT fw  net:192.0.2.12 tcp 23 - - - vladimir:
 
 Migration Issues:
 

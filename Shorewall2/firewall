@@ -700,7 +700,7 @@ verify_interface()
 # Generate a match for decrypted packets
 #
 
-ipsec_source() # $1 = zone, $2 = host
+ipsec_host() # $1 = zone, $2 = host
 {
     eval local is_ipsec=\$${1}_is_ipsec
     eval local hosts=\"\$${1}_ipsec_hosts\"
@@ -710,9 +710,8 @@ ipsec_source() # $1 = zone, $2 = host
 
 match_ipsec_in() # $1 = zone, $2 = host
 {
-    eval local options=\"\$${1}_ipsec_options \$${1}_ipsec_in_options\"
-
-    if ipsec_source $1 $2 ; then
+    if ipsec_host $1 $2 ; then
+	eval local options=\"\$${1}_ipsec_options \$${1}_ipsec_in_options\"
 	echo "-m policy --pol ipsec --dir in $options"
     elif [ -n "$POLICY_MATCH" ]; then
 	echo "-m policy --pol none --dir in"
@@ -724,11 +723,8 @@ match_ipsec_in() # $1 = zone, $2 = host
 #
 match_ipsec_out() # $1 = zone, $2 = host
 {
-    eval local is_ipsec=\$${1}_is_ipsec
-    eval local hosts=\"\$${1}_ipsec_hosts\"
-    eval local options=\"\$${1}_ipsec_options \$${1}_ipsec_out_options\"
-
-    if [ -n "$is_ipsec" ] || list_search $2 $hosts; then
+    if ipsec_host $1 $2 ; then
+	eval local options=\"\$${1}_ipsec_options \$${1}_ipsec_out_options\"
 	echo "-m policy --pol ipsec --dir out $options"
     elif [ -n "$POLICY_MATCH" ]; then
 	echo "-m policy --pol none --dir out"
@@ -6113,7 +6109,7 @@ activate_rules()
 		    interface=${host%%:*}
 		    networks=${host#*:}
 		    
-		    ipsec_source $zone $host && \
+		    ipsec_host $zone $host && \
 			run_iptables -A $(forward_chain $interface) $(match_source_hosts $networks) $(match_ipsec_in $zone $host) -j $frwd_chain
 		done
 	    fi
@@ -6150,7 +6146,7 @@ activate_rules()
 
 	    run_iptables -A $(input_chain $interface) $(match_source_hosts $networks) $(match_ipsec_in $zone $host) -j $chain2
 
-	    if [ -n "$complex" ] && ! ipsec_source $zone $host ; then
+	    if [ -n "$complex" ] && ! ipsec_host $zone $host ; then
                 run_iptables -A $(forward_chain $interface) $(match_source_hosts $networks) $(match_ipsec_in $zone $host) -j $frwd_chain
 	    fi
 

@@ -167,21 +167,26 @@ fix_bang() {
 #
 run_iptables() {
 
+    if ! iptables $@ ; then
+	[ -z "$stopping" ] && { stop_firewall; exit 2; }
+    fi
+}
+#
+# Version of 'run_iptables' that inserts white space after "!" in the arg list
+#
+run_iptables2() {
+
     if [ "x${*%!*}" = "x$*" ]; then
 	#
 	# No "!" in the command -- just execute it
 	#
-	if ! iptables $@ ; then
-	    [ -z "$stopping" ] && { stop_firewall; exit 2; }
-	fi
+	run_iptables $@
 	return
     fi
     #
     # Need to insert white space before each "!"
     #
-    if ! iptables `fix_bang $@`; then
-	[ -z "$stopping" ] && { stop_firewall; exit 2; }
-    fi
+    run_iptables `fix_bang $@`
 }
 
 #
@@ -318,7 +323,7 @@ ensurenatchain() # $1 = chain name
 addnatrule() # $1 = chain name, remainder of arguments specify the rule
 {
     ensurenatchain $1
-    run_iptables -t nat -A $@
+    run_iptables2 -t nat -A $@
 }
 
 #
@@ -1539,7 +1544,7 @@ setup_mac_lists() {
 	    run_iptables -A $chain $macpart -j RETURN
 	else
 	    for address in `separate_list $addresses` ; do
-		run_iptables -A $chain $macpart -s $address -j RETURN
+		run_iptables2 -A $chain $macpart -s $address -j RETURN
 	    done
 	fi
     done < $TMP_DIR/maclist
@@ -1951,7 +1956,7 @@ add_nat_rule() {
     # Generate nat table rules
 
     if [ "$source" = "$FW" ]; then
-	run_iptables -t nat -A OUTPUT $proto $sports -d $addr \
+	run_iptables2 -t nat -A OUTPUT $proto $sports -d $addr \
 	    $multiport $dports -j $target1
     else
 	chain=`dnat_chain $source`
@@ -2161,11 +2166,11 @@ add_a_rule()
 
 	    if [ -n "$loglevel" ]; then
 		if [ "$loglevel" = ULOG ]; then
-		    run_iptables -A $chain $proto $multiport \
+		    run_iptables2 -A $chain $proto $multiport \
 			$state $cli $sports $serv $dports -j ULOG $LOGPARMS \
 			--ulog-prefix "Shorewall:$chain:$logtarget:" \
 			else
-		    run_iptables -A $chain $proto $multiport \
+		    run_iptables2 -A $chain $proto $multiport \
 			$state $cli $sports $serv $dports -j LOG $LOGPARMS \
 			--log-prefix "Shorewall:$chain:$logtarget:" \
 			--log-level $loglevel
@@ -2173,7 +2178,7 @@ add_a_rule()
 	    fi
 
 
-	    run_iptables -A $chain $proto $multiport $state $cli $sports \
+	    run_iptables2 -A $chain $proto $multiport $state $cli $sports \
 		$serv $dports -j $target
 	fi
     else
@@ -2186,18 +2191,18 @@ add_a_rule()
 
 	if [ -n "$loglevel" ]; then
 	    if [ "$loglevel" = ULOG ]; then
-		run_iptables -A $chain $proto $multiport \
+		run_iptables2 -A $chain $proto $multiport \
 		    $dest_interface $state $cli $sports $dports -j ULOG \
 		    $LOGPARMS --ulog-prefix "Shorewall:$chain:$logtarget:"
 	    else
-		run_iptables -A $chain $proto $multiport \
+		run_iptables2 -A $chain $proto $multiport \
 		    $dest_interface $state $cli $sports $dports -j LOG \
 		    $LOGPARMS --log-prefix "Shorewall:$chain:$logtarget:" \
 		    --log-level $loglevel
 	    fi
 	fi
 
-	run_iptables -A $chain $proto $multiport $dest_interface $state \
+	run_iptables2 -A $chain $proto $multiport $dest_interface $state \
 	    $cli $sports $dports -j $target
     fi
 }
@@ -2548,24 +2553,24 @@ process_tos_rule() {
 
 	case $srczone in
 	$FW)
-	    run_iptables -t mangle -A outtos \
+	    run_iptables2 -t mangle -A outtos \
 		$protocol $dest $dports $sports $tos
 	    ;;
 	all|ALL)
-	    run_iptables -t mangle -A outtos \
+	    run_iptables2 -t mangle -A outtos \
 		$protocol $dest $dports $sports $tos
 	    run_iptables -t mangle -A pretos \
 		$protocol $dest $dports $sports $tos
 	    ;;
 	*)
 	    if [ -n "$src" ]; then
-		run_iptables -t mangle -A pretos $src \
+		run_iptables2 -t mangle -A pretos $src \
 		    $protocol $dest $dports $sports $tos
 	    else
 		eval interfaces=\$${srczone}_interfaces
 
 		for interface in $interfaces; do
-		    run_iptables -t mangle -A pretos -i $interface \
+		    run_iptables2 -t mangle -A pretos -i $interface \
 			$protocol $dest $dports $sports $tos
 		done
 	    fi
@@ -2964,17 +2969,17 @@ setup_intrazone() # $1 = zone
 #
 add_blacklist_rule() {
     if [ -n "$BLACKLIST_LOGLEVEL" ]; then
-	run_iptables -A blacklst $source $proto $dport -j \
+	run_iptables2 -A blacklst $source $proto $dport -j \
 	    ULOG $LOGPARMS --ulog-prefix \
 	    "Shorewall:blacklst:$BLACKLIST_DISPOSITION:"
     else
-	run_iptables -A blacklst $source $proto $dport -j \
+	run_iptables2 -A blacklst $source $proto $dport -j \
 	    LOG $LOGPARMS --log-prefix \
 	    "Shorewall:blacklst:$BLACKLIST_DISPOSITION:" \
 	    --log-level $BLACKLIST_LOGLEVEL
     fi
 
-    run_iptables -A blacklst $source $proto $dport -j $disposition
+    run_iptables2 -A blacklst $source $proto $dport -j $disposition
 }
 
 #
@@ -3291,7 +3296,7 @@ initialize_netfilter () {
 	while read target ignore1 ignore2 address rest; do
 	    case $target in
 	    DROP|reject)
-		run_iptables -A dynamic -s $address -j $target
+		run_iptables2 -A dynamic -s $address -j $target
 		;;
 	    *)
 		;;
@@ -3372,16 +3377,15 @@ add_common_rules() {
 
 	if [ -n "$LOGUNCLEAN" ]; then
             if [ "$LOGUNCLEAN" = ULOG ]; then
-		logoptions="$LOGPARAMS --ulog-prefix Shorewall:badpkt:DROP:"
+		logoptions="-j ULOG $LOGPARAMS --ulog-prefix Shorewall:badpkt:DROP:"
 		logoptions="$logoptions --log-ip-options"
-		run_iptables -A badpkt -p tcp -j ULOG $logoptions --log-tcp-options
-		run_iptables -A badpkt -p ! tcp -j ULOG $logoptions
 	    else
-		logoptions="$LOGPARAMS --log-prefix Shorewall:badpkt:DROP:"
+		logoptions="-j LOG $LOGPARAMS --log-prefix Shorewall:badpkt:DROP:"
 		logoptions="$logoptions --log-level $LOGUNCLEAN --log-ip-options"
-		run_iptables -A badpkt -p tcp -j LOG $logoptions --log-tcp-options
-		run_iptables -A badpkt -p ! tcp -j LOG $logoptions
 	    fi
+
+	    run_iptables -A badpkt -p   tcp $logoptions --log-tcp-options
+	    run_iptables -A badpkt -p ! tcp $logoptions
 	fi
 
 	run_iptables -A badpkt -j DROP
@@ -3403,17 +3407,17 @@ add_common_rules() {
 	createchain logpkt no
 
 	[ -z"$LOGUNCLEAN" ] && LOGUNCLEAN=info
+
 	if [ "$LOGUNCLEAN" = ULOG ]; then
-	    logoptions="$LOGPARAMS --ulog-prefix Shorewall:logpkt:LOG:"
+	    logoptions="-j ULOG $LOGPARAMS --ulog-prefix Shorewall:logpkt:LOG:"
 	    logoptions="$logoptions --log-ip-options"
-	    run_iptables -A logpkt -p tcp -j ULOG $logoptions --log-tcp-options
-	    run_iptables -A logpkt -p ! tcp -j ULOG $logoptions
 	else
-	    logoptions="$LOGPARAMS --log-prefix Shorewall:logpkt:LOG:"
+	    logoptions="-j LOG $LOGPARAMS --log-prefix Shorewall:logpkt:LOG:"
 	    logoptions="$logoptions --log-level $LOGUNCLEAN --log-ip-options"
-	    run_iptables -A logpkt -p tcp -j LOG $logoptions --log-tcp-options
-	    run_iptables -A logpkt -p ! tcp -j LOG $logoptions
 	fi
+
+	run_iptables -A logpkt -p   tcp $logoptions --log-tcp-options
+	run_iptables -A logpkt -p ! tcp $logoptions
 
 	echo "Mangled/Invalid Packet Logging enabled on:"
 
@@ -3476,13 +3480,13 @@ add_common_rules() {
 		    ;;
 	    esac
 
-	    run_iptables -A rfc1918 -s $subnet -j $target
+	    run_iptables2 -A rfc1918 -s $subnet -j $target
 	    #
 	    # If packet mangling is enabled, trap packets with an
 	    # RFC1918 destination
 	    #
 	    if [ -n "$MANGLE_ENABLED" ]; then
-		run_iptables -t mangle -A man1918 -d $subnet -j $target
+		run_iptables2 -t mangle -A man1918 -d $subnet -j $target
 	    fi
 	done < $TMP_DIR/rfc1918
 	    

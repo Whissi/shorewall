@@ -5,7 +5,7 @@ Problems Corrected since prior version.
 
 	 None - this is the initial release.
 -----------------------------------------------------------------------
-Issues when migrating from Shorewall to Shorewall:
+Issues when migrating from Shorewall 1.4.x to Shorewall 2.0.0:
 
 1) The 'dropunclean' and 'logunclean' interface options are no longer
    supported. If either option is specified in
@@ -18,11 +18,11 @@ Issues when migrating from Shorewall to Shorewall:
    now always take precidence over one-to-one NAT specifications.
 
 3) The default value for the ALL INTERFACES column in
-   /etc/shorewall/nat has changed. In Shorewall, if the column was
+   /etc/shorewall/nat has changed. In Shorewall 1.*, if the column was
    left empty, a value of "Yes" was assumed. This has been changed so
    that a value of "No" is now assumed.
 
-4) The following files don't exist in Shorewall:
+4) The following files don't exist in Shorewall 2.0:
 
        /etc/shorewall/common.def
        /etc/shorewall/common
@@ -152,7 +152,14 @@ New Features:
 
 4) There is a new PERSISTENT column in the proxyarp file. A value of
    "Yes" in this column means that the route added by Shorewall for
-   this host will remain after a "shorewall stop" or "shorewall clear". 
+   this host will remain after a "shorewall stop" or "shorewall clear".
+
+5) "trace" is now a synonym for "debug" in /sbin/shorewall commands.
+   So to trace the "start" command, you could enter:
+
+      shorewall trace start 2> /tmp/trace
+
+   The trace information would be written to the file /tmp/trace.
 
 
  

@@ -213,7 +213,7 @@ mktempfile() {
 		mktemp -p $1 shorewall.XXXXXX
 		;;
 	    None)
-		mkdir $1/shorewall-$$ && echo $1/shorewall-$$
+		> $1/shorewall-$$ && echo $1/shorewall-$$
 		;;
 	    *)
 		echo "   ERROR:Internal error in mktempfile"

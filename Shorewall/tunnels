@@ -1,16 +1,22 @@
 #
 # Shorewall 1.3 - /etc/shorewall/tunnels
 #
-#	This file defines IPSEC, GRE and IPIP tunnels.
+#	This file defines IPSEC, GRE, IPIP and OPENVPN tunnels.
 #
-#	IPIP and GRE tunnels must be configured on the firewall/gateway itself.
-#	IPSEC endpoints may be defined on the firewall/gateway or on an
-#	internal system.
+#	IPIP, GRE and OPENVPN tunnels must be configured on the
+#	firewall/gateway itself. IPSEC endpoints may be defined
+#	on the firewall/gateway or on an internal system.
 #
 #	The columns are:
 #
 #	TYPE	    --	must start in column 1 and be "ipsec", "ipsecnat","ip"
-#			"gre","pptpclient" or "pptpserver"
+#			"gre", "pptpclient", "pptpserver", "openvpn" or
+#			"openvpnnat"
+#
+#			If type is "openvpn" or "openvpnnam", it may optionally
+#			be followed by ":" and the port number used by the
+#			tunnel. If no ":" and port number are included, then
+#			the default port of 5000 will be used
 #
 #	ZONE	    --	The zone of the physical interface through which
 #			tunnel traffic passes. This is normally your internet
@@ -20,10 +26,12 @@
 #			remote getway has no fixed address (Road Warrior)
 #			then specify the gateway as 0.0.0.0/0.
 #
-#	GATEWAY ZONES --	Optional. If the gateway system specified in the third
+#	GATEWAY 
+#	ZONES --	Optional. If the gateway system specified in the third
 #			column is a standalone host then this column should
-#			contain a comma-separated list of the names of the zones that
-#			the host might be in. This column only applies to IPSEC tunnels.
+#			contain a comma-separated list of the names of the
+#			zones that the host might be in. This column only
+#			applies to IPSEC tunnels.
 #
 #		Example 1:
 #
@@ -71,5 +79,12 @@
 #
 #			pptpserver	net
 #
-# TYPE			ZONE	GATEWAY		GATEWAY ZONE
+#		Example 7:
+#
+#			OPENVPN tunnel. The remote gateway is 4.33.99.124 and
+#			openvpn uses port 7777.
+#
+#			openvpn:7777	net	4.33.99.124
+#
+# TYPE			ZONE	GATEWAY		GATEWAY ZONE	PORT
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

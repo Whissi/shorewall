@@ -13,7 +13,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-05-27</pubdate>
+    <pubdate>2004-05-29</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -100,6 +100,9 @@
         <listitem>
           <para>&#34;shorewall restore&#34; and &#34;shorewall -f start&#34;
           do not load kernel modules.</para>
+
+          <para><emphasis role="bold">The above two problems are corrected in
+          Shorewall 2.0.2a</emphasis></para>
         </listitem>
 
         <listitem>
@@ -110,11 +113,17 @@
         <listitem>
           <para>If <filename>/var/lib/shorewall</filename> does not exist,
           <command>shorewall start</command> fails.</para>
+
+          <para><emphasis role="bold">The above four problems are corrected in
+          Shorewall 2.0.2b</emphasis></para>
         </listitem>
 
         <listitem>
           <para>DNAT rules work incorrectly with dynamic zones in that the
           source interface is not included in the nat table DNAT rule.</para>
+
+          <para><emphasis role="bold">The above five problems are corrected in
+          Shorewall 2.0.2c</emphasis></para>
         </listitem>
 
         <listitem>
@@ -123,18 +132,26 @@
           autoloading is disabled, capabilities can be mis-detected during
           boot.</para>
         </listitem>
+
+        <listitem>
+          <para>The <emphasis>newnotsyn</emphasis> option in
+          <filename>/etc/shorewall/hosts</filename> has no effect.</para>
+
+          <para><emphasis role="bold">The above seven problems are corrected
+          in Shorewall 2.0.2d</emphasis></para>
+        </listitem>
+
+        <listitem>
+          <para>Use of the LOG target in an action results in two LOG or ULOG
+          rules.</para>
+        </listitem>
       </itemizedlist>
 
-      <para>These problems are corrected by the <filename>firewall</filename>
+      <para>These problems are all corrected by the <filename>firewall</filename>
       and <filename>functions</filename> files in <ulink
       url="http://shorewall.net/pub/shorewall/errata/2.0.2">this directory</ulink>.
-      Both files must be installed in <filename>/usr/share/shorewall/firewall</filename>
+      Both files must be installed in <filename>/usr/share/shorewall/</filename>
       as described above.</para>
-
-      <para>The first two problems are also corrected in Shorewall version
-      2.0.2a, the first four problems are corrected in 2.0.2b and the first
-      five problems are corrected in 2.0.2c. All problems are corrected in
-      Shorewall 2.0.2d.</para>
     </section>
 
     <section>

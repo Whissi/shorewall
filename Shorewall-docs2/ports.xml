@@ -13,7 +13,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-05-09</pubdate>
+    <pubdate>2004-05-28</pubdate>
 
     <copyright>
       <year>2001-2002</year>
@@ -47,9 +47,9 @@
       <para>Beginning with Shorewall 2.0.0, the Shorewall distribution
       contains a library of user-defined actions that allow for easily
       allowing or blocking a particular application. Check your
-      <filename>/etc/shorewall/actions.std</filename> file for a list of the
-      actions in your distribution. If you find what you need, you simply use
-      the action in a rule. For example, to allow DNS queries from the
+      <filename>/usr/share/shorewall/actions.std</filename> file for a list of
+      the actions in your distribution. If you find what you need, you simply
+      use the action in a rule. For example, to allow DNS queries from the
       <emphasis role="bold">dmz</emphasis> zone to the <emphasis role="bold">net</emphasis>
       zone:</para>
 
@@ -89,6 +89,26 @@ ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
 ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    udp        53
 ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        53</programlisting>
+
+    <para>Note that if you are setting up a DNS server that supports recursive
+    resolution, the server is the &#60;<emphasis>destination</emphasis>&#62;
+    for resolution requests (from clients) and is also the &#60;<emphasis>source</emphasis>&#62;
+    of recursive resolution requests (usually to other servers in the
+    &#39;net&#39; zone). So for example, if you have a public DNS server in
+    your DMZ that supports recursive resolution for local clients then you
+    would need:</para>
+
+    <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
+ACCEPT     all       dmz              udp        53
+ACCEPT     all       dmz              tcp        53
+ACCEPT     dmz       net              udp        53
+ACCEPT     dmz       net              tcp        53</programlisting>
+
+    <note>
+      <para>Recursive Resolution means that if the server itself can&#39;t
+      resolve the name presented to it, the server will attempt to resolve the
+      name with the help of other servers. </para>
+    </note>
   </section>
 
   <section>
@@ -296,7 +316,8 @@ ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62
   <appendix>
     <title>Revision History</title>
 
-    <para><revhistory><revision><revnumber>1.10</revnumber><date>2004-05-09</date><authorinitials>TE</authorinitials><revremark>Added
+    <para><revhistory><revision><revnumber>1.11</revnumber><date>2004-05-28</date><authorinitials>TE</authorinitials><revremark>Corrected
+    directory for actions.std and enhanced the DNS section.</revremark></revision><revision><revnumber>1.10</revnumber><date>2004-05-09</date><authorinitials>TE</authorinitials><revremark>Added
     TFTP.</revremark></revision><revision><revnumber>1.9</revnumber><date>2004-04-24</date><authorinitials>TE</authorinitials><revremark>Revised
     ICQ/AIM.</revremark></revision><revision><revnumber>1.8</revnumber><date>2004-04-23</date><authorinitials>TE</authorinitials><revremark>Added
     SNMP.</revremark></revision><revision><revnumber>1.7</revnumber><date>2004-02-18</date><authorinitials>TE</authorinitials><revremark>Make

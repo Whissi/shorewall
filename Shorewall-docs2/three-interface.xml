@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-04-22</pubdate>
+    <pubdate>2004-05-18</pubdate>
 
     <copyright>
       <year>2002-2004</year>
@@ -157,12 +157,23 @@
 
     <para>The configuration files for Shorewall are contained in the directory
     <filename>/etc/shorewall</filename> -- for simple setups, you will only
-    need to deal with a few of these as described in this guide. After you
-    have installed Shorewall, download the three-interface sample, un-tar it (<command>tar
-    <option>-zxvf</option> <filename>three-interfaces.tgz</filename></command>)
-    and and copy the files to <filename>/etc/shorewall</filename> (the files
-    will replace files with the same names that were placed in
-    <filename>/etc/shorewall</filename> when Shorewall was installed).</para>
+    need to deal with a few of these as described in this guide.<warning><para><emphasis
+    role="bold">Note to Debian Users</emphasis></para><para>If you install
+    using the .deb, you will find that your <filename class="directory">/etc/shorewall</filename>
+    directory is empty. This is intentional. The released configuration file
+    skeletons may be found on your system in the directory <filename
+    class="directory">/usr/share/doc/shorewall/default-config</filename>.
+    Simply copy the files you need from that directory to <filename
+    class="directory">/etc/shorewall</filename> and modify the copies.</para><para>Note
+    that you must copy <filename class="directory">/usr/share/doc/shorewall/default-config/shorewall.conf</filename>
+    to /etc/shorewall even if you do not modify it.</para></warning></para>
+
+    <para>After you have installed Shorewall, download the three-interface
+    sample, un-tar it (<command>tar <option>-zxvf</option>
+    <filename>three-interfaces.tgz</filename></command>) and and copy the
+    files to <filename>/etc/shorewall</filename> (the files will replace files
+    with the same names that were placed in <filename>/etc/shorewall</filename>
+    when Shorewall was installed).</para>
 
     <para>As each file is introduced, I suggest that you look through the
     actual file on your system -- each file contains detailed configuration

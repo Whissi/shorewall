@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-04-26</pubdate>
+    <pubdate>2004-05-19</pubdate>
 
     <copyright>
       <year>2003</year>
@@ -74,9 +74,9 @@
     <programlisting>MODULE_SUFFIX=&#34;o gz ko o.gz ko.gz&#34;</programlisting>
 
     <para>The version of <command>insmod</command> shipped with 10.0 also does
-    not comprehend these module files so you will also need to change
-    <filename>/usr/share/shorewall/firewall</filename> -- replace the line
-    that reads:</para>
+    not comprehend these module files so you will also need Shorewall 2.0.2 or
+    later OR you need to change <filename>/usr/share/shorewall/firewall</filename>
+    -- replace the line that reads:</para>
 
     <programlisting>     insmod $modulefile $*</programlisting>
 
@@ -278,22 +278,22 @@ jbd                    47860   2  [ext3]
     <para>If your FTP helper modules are compressed and have the names
     <emphasis>ip_nat_ftp.o.gz and ip_conntrack_ftp.o.gz</emphasis> then you
     will need Shorewall 1.4.7 or later if you want Shorewall to load them for
-    you.</para>
+    you. If your helper modules have names <emphasis>ip_nat_ftp.ko.gz and
+    ip_conntrack_ftp.ko.gz</emphasis> then you will need Shorewall 2.0.2 or
+    later if you want Shorewall to load them for you.</para>
+  </section>
 
-    <para>Server configuration is covered in the <ulink type=""
-    url="Documentation.htm#Rules">/etc/shorewall/rules documentation</ulink>,</para>
-
-    <para>For a client, you must open outbound TCP port 21.</para>
+  <section>
+    <title>FTP on Non-standard Ports</title>
 
     <para>The above discussion about commands and responses makes it clear
     that the FTP connection-tracking and NAT helpers must scan the traffic on
     the control connection looking for PASV and PORT commands as well as PASV
     responses. If you run an FTP server on a nonstandard port or you need to
     access such a server, you must therefore let the helpers know by
-    specifying the port in /etc/shorewall/modules entries for the helpers. For
-    example, if you run an FTP server that listens on port 49 or you need to
-    access a server on the internet that listens on that port then you would
-    have:</para>
+    specifying the port in /etc/shorewall/modules entries for the helpers.
+    <caution><para>You must have modularized FTP connection tracking support
+    in order to use FTP on a non-standard port.</para></caution></para>
 
     <example>
       <title>if you run an FTP server that listens on port 49 or you need to
@@ -317,54 +317,52 @@ options ip_nat_ftp ports=21,49</programlisting>
       /etc/shorewall/modules and/or /etc/modules.conf, you must either:</para><orderedlist><listitem><para>Unload
       the modules and restart shorewall:</para><programlisting><command>rmmod ip_nat_ftp; rmmod ip_conntrack_ftp; shorewall restart</command></programlisting></listitem><listitem><para>Reboot</para></listitem></orderedlist></important></para>
     </example>
+  </section>
 
-    <para>One problem that I see occasionally involves active mode and the FTP
-    server in my DMZ. I see the active data connection to <emphasis
-    role="bold">certain client IP addresses</emphasis> being continuously
-    rejected by my firewall. It is my conjecture that there is some broken
-    client out there that is sending a PORT command that is being either
-    missed or mis-interpreted by the FTP connection tracking helper yet it is
-    being accepted by my FTP server. My solution is to add the following rule:</para>
+  <section id="Rules">
+    <title>Rules</title>
 
-    <informaltable>
-      <tgroup cols="7">
-        <thead>
-          <row>
-            <entry align="center">ACTION</entry>
+    <para>If the policy from the source zone to the destination zone is ACCEPT
+    and you don&#39;t need DNAT (see <ulink url="FAQ.htm#faq30">FAQ 30</ulink>)
+    then <emphasis role="bold">you need no rule</emphasis>.</para>
 
-            <entry align="center">SOURCE</entry>
+    <para>Otherwise, for FTP you need exactly <emphasis role="bold">one</emphasis>
+    rule:</para>
 
-            <entry align="center">DESTINATION</entry>
+    <programlisting>#ACTION      SOURCE     DESTINATION    PROTO     PORT(S)    SOURCE      ORIGINAL
+#                                                           PORT(S)     DESTINATION
+ACCEPT or    &#60;<emphasis>source</emphasis>&#62;   &#60;<emphasis>destination</emphasis>&#62;  tcp       21                     &#60;external IP addr&#62; if
+DNAT                                                                    ACTION = DNAT</programlisting>
 
-            <entry align="center">PROTOCOL</entry>
+    <para>You need an entry in the ORIGINAL DESTINATION column only if the
+    ACTION is DNAT, you have multiple external IP addresses and you want a
+    specific IP address to be forwarded to your server.</para>
 
-            <entry align="center">PORT(S)</entry>
+    <para>Note that you do <emphasis role="bold">NOT </emphasis>need a rule
+    with 20 (ftp-data) in the PORT(S) column. If you post your rules on the
+    mailing list and they show 20 in the PORT(S) column, I will know that you
+    haven&#39;t read this article and I will either ignore your post or tell
+    you to RTFM.<example><title>Server running behind a Masquerading Gateway</title><para>Suppose
+    that you run an FTP server on 192.168.1.5 in your local zone using the
+    standard port (21). You need this rule: </para><programlisting>#ACTION      SOURCE     DESTINATION     PROTO     PORT(S)    SOURCE      ORIGINAL
+#                                                            PORT(S)     DESTINATION
+DNAT         net        loc:192.168.1.5 tcp       21</programlisting></example><example><title>Allow
+    your DMZ FTP access to the Internet</title><programlisting>#ACTION      SOURCE     DESTINATION     PROTO     PORT(S)    SOURCE      ORIGINAL
+#                                                            PORT(S)     DESTINATION
+ACCEPT       dmz        net             tcp       21</programlisting></example></para>
 
-            <entry align="center">SOURCE PORT(S)</entry>
+    <para>Note that the FTP connection tracking in the kernel cannot handle
+    cases where a PORT command (or PASV reply) is broken across two packets.
+    When such cases occur, you will see a console message similar to this one:</para>
 
-            <entry align="center">ORIGINAL DESTINATION</entry>
-          </row>
-        </thead>
+    <programlisting>Apr 28 23:55:09 gateway kernel: conntrack_ftp: partial PORT 715014972+1</programlisting>
 
-        <tbody>
-          <row>
-            <entry>ACCEPT:info</entry>
+    <para> I see this problem occasionally with the FTP server in my DMZ. My
+    solution is to add the following rule:</para>
 
-            <entry>dmz</entry>
-
-            <entry>net</entry>
-
-            <entry>tcp</entry>
-
-            <entry>-</entry>
-
-            <entry>20</entry>
-
-            <entry></entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </informaltable>
+    <programlisting>#ACTION      SOURCE     DESTINATION     PROTO     PORT(S)    SOURCE      ORIGINAL
+#                                                            PORT(S)     DESTINATION
+ACCEPT:info  dmz        net             tcp       -          20</programlisting>
 
     <para>The above rule accepts and logs all active mode connections from my
     DMZ to the net.</para>

@@ -13,7 +13,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-05-10</pubdate>
+    <pubdate>2004-05-17</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -86,6 +86,42 @@
 
   <section>
     <title>Problems in Version 2.0</title>
+
+    <section>
+      <title>Shorewall 2.0.2</title>
+
+      <itemizedlist>
+        <listitem>
+          <para>Temporary restore files with names of the form
+          <filename>restore-</filename><emphasis>nnnnn</emphasis> are left in
+          /var/lib/shorewall.</para>
+        </listitem>
+
+        <listitem>
+          <para>&#34;shorewall restore&#34; and &#34;shorewall -f start&#34;
+          do not load kernel modules.</para>
+        </listitem>
+
+        <listitem>
+          <para>Specifying a null common action in /etc/shorewall/actions
+          (e.g., :REJECT) results in a startup error.</para>
+        </listitem>
+
+        <listitem>
+          <para>If <filename>/var/lib/shorewall</filename> does not exist,
+          <command>shorewall start</command> fails.</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>These problems are corrected by the <filename>firewall</filename>
+      and <filename>functions</filename> files in <ulink
+      url="http://shorewall.net/pub/shorewall/errata/2.0.2">this directory</ulink>.
+      Both files must be installed in <filename>/usr/share/shorewall/firewall</filename>
+      as described above.</para>
+
+      <para>The first two problems are also corrected in Shorewall version
+      2.0.2a while all four problems are corrected in 2.0.2b.</para>
+    </section>
 
     <section>
       <title>Shorewall 2.0.1</title>
@@ -201,7 +237,9 @@
   <appendix>
     <title>Revision History</title>
 
-    <para><revhistory><revision><revnumber>1.14</revnumber><date>2004-05-10</date><authorinitials>TE</authorinitials><revremark>Add
+    <para><revhistory><revision><revnumber>1.16</revnumber><date>2004-05-17</date><authorinitials>TE</authorinitials><revremark>Added
+    null common action bug.</revremark></revision><revision><revnumber>1.15</revnumber><date>2004-05-16</date><authorinitials>TE</authorinitials><revremark>Added
+    2.0.2 bugs</revremark></revision><revision><revnumber>1.14</revnumber><date>2004-05-10</date><authorinitials>TE</authorinitials><revremark>Add
     link to Netfilter CVS</revremark></revision><revision><revnumber>1.13</revnumber><date>2004-05-04</date><authorinitials>TE</authorinitials><revremark>Add
     Alex Wilms&#39;s &#34;install.sh&#34; fix.</revremark></revision><revision><revnumber>1.12</revnumber><date>2004-05-03</date><authorinitials>TE</authorinitials><revremark>Add
     Stefan Engel&#39;s &#34;shorewall delete&#34; fix.</revremark></revision><revision><revnumber>1.11</revnumber><date>2004-04-28</date><authorinitials>TE</authorinitials><revremark>Add

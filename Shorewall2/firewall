@@ -699,13 +699,20 @@ verify_interface()
 #
 # Generate a match for decrypted packets
 #
-match_ipsec_in() # $1 = zone, $2 = host
+
+ipsec_source() # $1 = zone, $2 = host
 {
     eval local is_ipsec=\$${1}_is_ipsec
     eval local hosts=\"\$${1}_ipsec_hosts\"
+
+    test -n "$is_ipsec" || list_search $2 $hosts
+}
+
+match_ipsec_in() # $1 = zone, $2 = host
+{
     eval local options=\"\$${1}_ipsec_options \$${1}_ipsec_in_options\"
 
-    if [ -n "$is_ipsec" ] || list_search $2 $hosts; then
+    if ipsec_source $1 $2 ; then
 	echo "-m policy --pol ipsec --dir in $options"
     elif [ -n "$POLICY_MATCH" ]; then
 	echo "-m policy --pol none --dir in"
@@ -6088,6 +6095,30 @@ activate_rules()
 
     > ${STATEDIR}/chains
     > ${STATEDIR}/zones
+    #
+    # Create forwarding chains for complex zones and generate jumps for IPSEC hosts to that chain.
+    #
+    for zone in $zones; do
+
+	eval complex=\$${zone}_is_complex
+
+	if [ -n "$complex" ]; then
+	    frwd_chain=${zone}_frwd
+	    createchain $frwd_chain No
+
+	    if [ -n "$POLICY_MATCH" ]; then
+		eval source_hosts=\$${zone}_hosts
+	    
+		for host in $source_hosts; do
+		    interface=${host%%:*}
+		    networks=${host#*:}
+		    
+		    ipsec_source $zone $host && \
+			run_iptables -A $(forward_chain $interface) $(match_source_hosts $networks) $(match_ipsec_in $zone $host) -j $frwd_chain
+		done
+	    fi
+	fi
+    done
 
     for zone in $zones; do
 	eval source_hosts=\$${zone}_hosts
@@ -6096,11 +6127,6 @@ activate_rules()
 	chain2=$(rules_chain $zone $FW)
 
 	eval complex=\$${zone}_is_complex
-
-	if [ -n "$complex" ]; then
-	    frwd_chain=${zone}_frwd
-	    createchain $frwd_chain No
-	fi
 
 	if [ -n "$DYNAMIC_ZONES" ]; then
 	    echo $zone $source_hosts >> ${STATEDIR}/zones
@@ -6124,8 +6150,9 @@ activate_rules()
 
 	    run_iptables -A $(input_chain $interface) $(match_source_hosts $networks) $(match_ipsec_in $zone $host) -j $chain2
 
-	    [ -n "$complex" ] && \
-		run_iptables -A $(forward_chain $interface) $(match_source_hosts $networks) $(match_ipsec_in $zone $host) -j $frwd_chain
+	    if [ -n "$complex" ] && ! ipsec_source $zone $host ; then
+                run_iptables -A $(forward_chain $interface) $(match_source_hosts $networks) $(match_ipsec_in $zone $host) -j $frwd_chain
+	    fi
 
 	    case $networks in
 		*.*.*.*)
@@ -6137,7 +6164,6 @@ activate_rules()
 		    ;;
 	    esac
 	done
-
 
 	for interface in $need_broadcast ; do
 	    run_iptables -A OUTPUT -o $interface -d 255.255.255.255 -j $chain1

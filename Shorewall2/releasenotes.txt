@@ -1,4 +1,4 @@
-Shorewall 2.1.10
+Shorewall 2.1.11
 
 ----------------------------------------------------------------------
 Problems Corrected since 2.0.3
@@ -71,6 +71,11 @@ Problems corrected since 2.1.10
 
 1)  If TC_ENABLED=Yes but you have no /etc/shorewall/tcstart file then
     "shorewall restore" will no longer attempt to run the tcstart file.
+
+2)  Previously it was necessary to define ipsec zones (those with 
+    "Yes" in the IPSEC column in /etc/shorewall/ipsec or those having
+    an entry in /etc/shorewall/hosts having the "ipsec" option) before
+    other zones using the same interface. This has been corrected.
 
 -----------------------------------------------------------------------
 Issues when migrating from Shorewall 2.0 to Shorewall 2.1:

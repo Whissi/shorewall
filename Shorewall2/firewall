@@ -475,7 +475,6 @@ determine_hosts() {
 
 	for interface in $interfaces; do
 	    eval options=\$$(chain_base $interface)_options
-
 	    if list_search detectnets $options; then
 		subnets=$(get_routed_subnets $interface)
 	    else
@@ -488,6 +487,10 @@ determine_hosts() {
 		else
 		    hosts="$hosts $interface:$subnet"
 		fi
+
+		if list_search routeback $options; then
+		    eval ${zone}_routeback=\"$interface:$subnet \$${zone}_routeback\"
+		fi
 	    done
 	done
 
@@ -495,16 +498,15 @@ determine_hosts() {
 
 	for host in $hosts; do
 	    interface=${host%:*}
-	    if ! list_search $interface $interfaces; then
+	    if list_search $interface $interfaces; then
+		eval ${zone}_is_complex=Yes
+	    else
 		if [ -z "$interfaces" ]; then
 		    interfaces=$interface
 		else
 		    interfaces="$interfaces $interface"
 		fi
 	    fi
-
-	    [ "${host#*:}" = "0.0.0.0/0" ] || \
-		eval ${zone}_is_complex=Yes
 	done
 
 	eval ${zone}_interfaces="\$interfaces"
@@ -587,10 +589,9 @@ validate_interfaces_file() {
 		detectnets)
 		    [ -n "$wildcard" ] && \
 			startup_error "The \"detectnets\" option may not be used with a wild-card interface"
-		    ;;
+	    ;;
 		routeback)
 		    [ -n "$z" ] || startup_error "The routeback option may not be specified on a multi-zone interface"
-		    eval ${z}_routeback=\"$interface:0.0.0.0/0 \$${z}_routeback\"
 		    ;;
 		*)
 		    error_message "Warning: Invalid option ($option) in record \"$r\""
@@ -4835,6 +4836,7 @@ activate_rules()
 	    else
 		for host in $source_hosts; do
 		    interface=${host%:*}
+		    subnet=${host#*:}
 
 		    chain1=$(forward_chain $interface)
 
@@ -4843,7 +4845,7 @@ activate_rules()
 			subnet1=${host1#*:}
 
 			if [ "$host" != "$host1" ] || list_search $host $routeback; then
-			    run_iptables -A $chain1 -o $interface1 -d $subnet1 -j $chain
+			    run_iptables -A $chain1 -s $subnet -o $interface1 -d $subnet1 -j $chain
 			fi
 		    done
 		done

@@ -776,7 +776,7 @@ case "$1" in
     try)
 	[ -n "$SHOREWALL_DIR" ] && startup_error "Error: -c option may not be used with \"try\""
 	[ $# -lt 2 -o $# -gt 3 ] && usage 1
-	if ! $0 -c $2 restart; then
+	if ! $0 $debugging -c $2 restart; then
 	    if ! iptables -L shorewall > /dev/null 2> /dev/null; then
 		$0 start
 	    fi

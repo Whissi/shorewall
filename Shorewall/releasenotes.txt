@@ -2,32 +2,13 @@ This is a minor release of Shorewall.
 
 Problems Corrected:
 
+1) The command "shorewall debug try <directory>" now correctly traces
+   the attempt.
+
 New Features:
 
-1) A REDIRECT- rule target has been added. This target behaves for
-   REDIRECT in the same was as DNAT- does for DNAT in that the
-   Netfilter nat table REDIRECT rule is added but not the companion
-   filter table ACCEPT rule.
-
-2) The LOGMARKER variable has been renamed LOGFORMAT and has been
-   changed to a 'printf' formatting template which accepts three
-   arguments (the chain name, logging rule number (optional) and the
-   disposition). The logging rule number is included if the LOGFORMAT
-   value contains '%d'. For example, to use LOGFORMAT with fireparse,
-   set it as:
-
-       LOGFORMAT="fp=%s:%d a=%s "
-
-
-   CAUTION: /sbin/shorewall uses the leading part of the LOGFORMAT
-   string (up to but not including the first '%') to find log messages
-   in the 'show log', 'status' and 'hits' commands. This part should
-   not be omitted (the LOGFORMAT should not begin with "%") and the
-   leading part should be sufficiently unique for /sbin/shorewall to
-   identify Shorewall messages.
-
-3) When logging is specified on a DNAT[-] or REDIRECT[-] rule, the
-   logging now takes place in the nat table rather than in the filter
-   table. This way, only those connections that actually undergo DNAT
-   or redirection will be logged.
+1) The ORIGINAL DEST column in a DNAT[-] or REDIRECT[-] rule may now
+   contain a list of addresses. If the list begins with "!' then the
+   rule will take effect only if the original destination address in
+   the connection request does not match any of the addresses listed.
 

@@ -1793,19 +1793,13 @@ refresh_tc() {
 #
 add_nat_rule() {
     local chain
+    local excludedests=
 
     # Be sure we should and can NAT
 
-    case $logtarget in
-	DNAT|REDIRECT)
-	    if [ -z "$NAT_ENABLED" ]; then
-		fatal_error "Rule \"$rule\" requires NAT which is disabled"
-	    fi
-	    ;;
-	*)
-	    fatal_error "Only DNAT and REDIRECT rules may specify port mapping; rule \"$rule\""
-	    ;;
-    esac
+    if [ -z "$NAT_ENABLED" ]; then
+	fatal_error "Rule \"$rule\" requires NAT which is disabled"
+    fi
 
     # Parse SNAT address if any
 
@@ -1823,14 +1817,20 @@ add_nat_rule() {
 	    addr=
 	    ;;
 	detect)
-	   addr=
-           if [ -n "$DETECT_DNAT_IPADDRS" -a "$source" != "$FW" ]; then
-	       eval interfaces=\$${source}_interfaces
-	       for interface in $interfaces; do
-		   addr="`find_interface_address $interface` $addr"
-	       done
-	   fi
-	   ;;
+	    addr=
+	    if [ -n "$DETECT_DNAT_IPADDRS" -a "$source" != "$FW" ]; then
+		eval interfaces=\$${source}_interfaces
+		for interface in $interfaces; do
+		    addr="`find_interface_address $interface` $addr"
+		done
+	    fi
+	    ;;
+	!*)
+	    if [ `list_count $addr` -gt 1 ]; then
+		excludedests="`separate_list ${addr#\!}`"
+		addr=
+	    fi
+	    ;;
     esac
 
     addr=${addr:-0.0.0.0/0}
@@ -1853,36 +1853,51 @@ add_nat_rule() {
 	else
 	    chain=`dnat_chain $source`
 
-	    if [ -n "$excludezones" ]; then
+	    if [ -n "${excludezones}${excludedests}" ]; then
 		chain=nonat${nonat_seq}
 		nonat_seq=$(($nonat_seq + 1))
 		createnatchain $chain
-		addnatrule `dnat_chain $source` -j $chain
+		addnatrule `dnat_chain $source` $cli $proto $multiport $sports $dports -j $chain
 		for z in $excludezones; do
 		    eval hosts=\$${z}_hosts
 		    for host in $hosts; do
-			for adr in $addr; do
-			    addnatrule $chain $proto -s ${host#*:} \
-				$multiport $sports -d $adr $dports -j RETURN
+			for adr in `separate_list $addr`; do
+			    addnatrule $chain -s ${host#*:} -d $adr -j RETURN
 			done
 		    done
 		done
+
+		for adr in $excludedests; do
+		    addnatrule $chain -d $adr -j RETURN
+		done
+
+		for adr in `separate_list $addr`; do
+		    if [ -n "$loglevel" ]; then
+			ensurenatchain $chain
+			log_rule $loglevel $chain $logtarget -t nat -d `fix_bang $adr`
+		    fi
+
+		    addnatrule $chain -j $target1
+		done
+	    else
+		for adr in `separate_list $addr`; do
+		    if [ -n "$loglevel" ]; then
+			ensurenatchain $chain
+			log_rule $loglevel $chain $logtarget -t nat \
+			    `fix_bang $proto $cli $sports -d $adr $multiport $dports`
+		    fi
+		    
+		    addnatrule $chain $proto $cli $sports \
+			-d $adr $multiport $dports -j $target1
+		done
 	    fi
-
-	    for adr in $addr; do
-		if [ -n "$loglevel" ]; then
-		    ensurenatchain $chain
-		    log_rule $loglevel $chain $logtarget -t nat \
-			`fix_bang $proto $cli $sports -d $adr $multiport $dports`
-		    loglevel=
-		fi
-
-		addnatrule $chain $proto $cli $sports \
-		    -d $adr $multiport $dports -j $target1
-	    done
 	fi
     fi
 
+    # We do all logging here rather than in the filter table
+
+    loglevel=
+    
     # Replace destination port by the new destination port
 
     if [ -n "$servport" ]; then
@@ -1930,6 +1945,11 @@ add_nat_rule() {
 #
 add_a_rule()
 {
+
+    rule_error() {
+	fatal_error "Only DNAT and REDIRECT rules may specify port mapping; rule \"$rule\""
+    }
+
     # Set source variables
 
     cli=
@@ -2054,11 +2074,19 @@ add_a_rule()
 
 	    # A specific server or server port given
 
-	    if [ -n "$addr" -a "$addr" != "$serv" ]; then
-		add_nat_rule
-	    elif [ -n "$servport" -a "$servport" != "$port" ]; then
-		add_nat_rule
-	    fi
+	    case "$logtarget" in
+		REDIRECT|DNAT)
+		    add_nat_rule
+		    ;;
+		*)
+		    if [ -n "$addr" -a "$addr" != "$serv" ]; then
+			rule_error
+		    elif [ -n "$servport" -a "$servport" != "$port" ]; then
+			rule_error
+		    fi
+
+		;;
+		esac
 
 	    if [ -z "$dnat_only" -a $chain != ${FW}2${FW} ]; then
 		serv="${serv:+-d $serv}"

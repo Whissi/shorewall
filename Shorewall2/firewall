@@ -613,7 +613,11 @@ match_ipsec_in() # $1 = zone, $2 = host
 {
     eval local hosts=\"\$${1}_ipsec_hosts\"
 
-    list_search $2 $hosts && echo "-m policy --pol ipsec --dir in"
+    if list_search $2 $hosts; then
+	echo "-m policy --pol ipsec --dir in"
+    elif [ -n "$POLICY_MATCH" ]; then
+	echo "-m policy --pol none --dir in"
+    fi
 }
 
 #
@@ -623,26 +627,10 @@ match_ipsec_out() # $1 = zone, $2 = host
 {
     eval local hosts=\"\$${1}_ipsec_hosts\"
 
-   list_search $2 $hosts && echo "-m policy --pol ipsec --dir out"
-}
-
-#
-# Generate a match for packets that have been decrypted and that will be encrypted
-#
-match_ipsec_inout() # $1 =input zone, $2 = input host, $3 = output zone, $4 = output host"
-{
-    local result="-m policy --pol ipsec"
-    eval local input_hosts=\"\$${1}_ipsec_hosts\"
-    eval local output_hosts=\"\$${3}_ipsec_hosts\"
-
-    if list_search $2 $input_hosts; then
-	result="$result --dir in"
-        if list_search $4 $output_hosts; then
-	    result="$result --dir out"
-        fi
-	echo $result
-    elif list_search $4 $output_hosts; then
-	echo "$result --dir out"
+    if list_search $2 $hosts; then
+	echo "-m policy --pol ipsec --dir out"
+    elif [ -n "$POLICY_MATCH" ]; then
+	echo "-m policy --pol none --dir out"
     fi
 }
 
@@ -898,7 +886,10 @@ validate_hosts_file() {
 		    maclist|norfc1918|nobogons|blacklist|tcpflags|nosmurfs|newnotsyn|-)
 			;;
 		    ipsec)
+			[ -n "$POLICY_MATCH" ] || \
+			    startup_error "Your kernel and/or iptables does not not support policy match: ipsec"
 			eval ${z}_ipsec_hosts=\"\$${z}_ipsec_hosts $interface:$host\"
+			eval ${z}_is_complex=Yes
 			;;
 		    routeback)
 			[ -z "$ports" ] && \
@@ -4464,7 +4455,27 @@ get_routed_networks() # $1 = interface name
 setup_masq()
 {
     setup_one() {
-	local add_snat_aliases=$ADD_SNAT_ALIASES, pre_nat=
+	local add_snat_aliases=$ADD_SNAT_ALIASES, pre_nat= policy=
+
+	[ "x$ipsec" = x- ] && ipsec=
+
+	case $ipsec in
+	    Yes|yes)
+		[ -n "$POLICY_MATCH" ] || \
+		    fatal_error "IPSEC=Yes requires policy match support in your kernel and iptables"
+		policy="-m policy --pol ipsec --dir out"
+		;;
+	    No|no)
+		[ -n "$POLICY_MATCH" ] || \
+		    fatal_error "IPSEC=No requires policy match support in your kernel and iptables"
+		policy="-m policy --pol none --dir out"
+		;;
+	    *)
+		[ -n "$ipsec" ] && \
+		    fatal_error "Invalid value in IPSEC column: $ipsec"
+		[ -n "$POLICY_MATCH" ] && policy="-m policy --pol none --dir out"
+		;;
+	esac
 
 	case $fullinterface in
 	    +*)
@@ -4612,7 +4623,7 @@ setup_masq()
 
 		if [ -n "$networks" ]; then
 		    for s in $networks; do
-			addnatrule $chain -s $s $proto $ports -j $newchain
+			addnatrule $chain -s $s $proto $ports $policy -j $newchain
 		    done
 		    networks=
 		else
@@ -4624,6 +4635,7 @@ setup_masq()
 		destnets=0.0.0.0/0
 		proto=
 		ports=
+		policy=
 
 		if [ -n "$nomasq" ]; then
 		    for addr in $(separate_list $nomasq); do
@@ -4645,7 +4657,7 @@ setup_masq()
 			done
 		    else
 			for destnet in $(separate_list $destnets); do
-			    addnatrule $chain -d $destnet $proto $ports -j $newchain
+			    addnatrule $chain -d $destnet $proto $ports $policy -j $newchain
 			done
 		    fi
 
@@ -4655,7 +4667,8 @@ setup_masq()
 		    destnets=0.0.0.0/0
 		    proto=
 		    ports=
-		    
+		    policy=
+
 		    for addr in $(separate_list $nomasq); do
 			addnatrule $chain -s $addr -j RETURN
 		    done
@@ -4677,24 +4690,24 @@ setup_masq()
 	    for s in $networks; do
 		if [ -n "$addresses" ]; then
 		    for destnet in $(separate_list $destnets); do
-			addnatrule $chain -s $s -d $destnet $proto $ports -j SNAT $addrlist
+			addnatrule $chain -s $s -d $destnet $proto $ports $policy -j SNAT $addrlist
 		    done
 		    progress_message "   To $destination $displayproto from $s through ${interface} using $addresses"
 		else
 		    for destnet in $(separate_list $destnets); do
-			addnatrule $chain -s $s -d $destnet $proto $ports -j MASQUERADE
+			addnatrule $chain -s $s -d $destnet $proto $ports $policy -j MASQUERADE
 		    done
 		    progress_message "   To $destination $displayproto from $s through ${interface}"
 		fi
 	    done
 	elif [ -n "$addresses" ]; then
 	    for destnet in $(separate_list $destnets); do
-		addnatrule $chain -d $destnet $proto $ports -j SNAT $addrlist
+		addnatrule $chain -d $destnet $proto $ports $policy -j SNAT $addrlist
 	    done
 	    echo "   To $destination $displayproto from $source through ${interface} using $addresses"
 	else
 	    for destnet in $(separate_list $destnets); do
-		addnatrule $chain -d $destnet $proto $ports -j MASQUERADE
+		addnatrule $chain -d $destnet $proto $ports $policy -j MASQUERADE
 	    done
 	    progress_message "   To $destination $displayproto from $source through ${interface}"
 	fi
@@ -4705,8 +4718,8 @@ setup_masq()
 
     [ -n "$NAT_ENABLED" ] && echo "Masqueraded Networks and Hosts:" && save_progress_message "Restoring Masquerading/SNAT..."
 
-    while read fullinterface networks addresses proto ports; do
-	expandv fullinterface networks addresses proto ports
+    while read fullinterface networks addresses proto ports ipsec; do
+	expandv fullinterface networks addresses proto ports ipsec
 	[ -n "$NAT_ENABLED" ] && setup_one || \
 	    error_message "Warning: NAT disabled; masq rule ignored"
     done < $TMP_DIR/masq
@@ -5000,10 +5013,13 @@ determine_capabilities() {
 
     CONNTRACK_MATCH=
     MULTIPORT=
+    POLICY_MATCH=
 
     if qt iptables -N fooX1234 ; then
 	qt iptables -A fooX1234 -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT && CONNTRACK_MATCH=Yes
         qt iptables -A fooX1234 -p tcp -m multiport --dports 21,22 -j ACCEPT   && MULTIPORT=Yes
+	qt iptables -A fooX1234 -m policy --pol ipsec --dir in -j ACCEPT       && POLICY_MATCH=Yes
+	
 
 	qt iptables -F fooX1234
 	qt iptables -X fooX1234
@@ -5035,6 +5051,7 @@ report_capabilities() {
     report_capability $MULTIPORT "Multi-port Match"
     report_capability $CONNTRACK_MATCH "Connection Tracking Match"
     report_capability $PKTTYPE "Packet Type Match"
+    report_capability $POLICY_MATCH "Policy Match"
 }
 
 #
@@ -5796,7 +5813,7 @@ activate_rules()
 			networks1=${host1#*:}
 
 			if [ "$host" != "$host1" ] || list_search $host $routeback; then
-			    run_iptables -A $chain1 $(match_source_hosts $networks) -o $interface1 $(match_dest_hosts $networks1) $(match_ipsec_inout $zone $host $zone1 $host1) -j $chain
+			    run_iptables -A $chain1 $(match_source_hosts $networks) -o $interface1 $(match_dest_hosts $networks1) $(match_ipsec_out $zone1 $host1) -j $chain
 			fi
 		    done
 		done

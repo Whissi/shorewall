@@ -7097,11 +7097,6 @@ do_initialize() {
 
     [ -n "$MODULE_SUFFIX" ] || MODULE_SUFFIX="o gz ko o.gz ko.gz"
     load_kernel_modules
-    determine_capabilities
-
-    [ -z "${STATEDIR}" ] && STATEDIR=/var/state/shorewall
-   
-    [ -d $STATEDIR ] || mkdir -p $STATEDIR
 
     if [ -z "$IPTABLES" ]; then
 	IPTABLES=$(which iptables 2> /dev/null)
@@ -7110,6 +7105,12 @@ do_initialize() {
     else
 	[ -e "$IPTABLES" ] || startup_error "\$IPTABLES=$IPTABLES does not exist or is not executable"
     fi
+
+    determine_capabilities
+
+    [ -z "${STATEDIR}" ] && STATEDIR=/var/state/shorewall
+   
+    [ -d $STATEDIR ] || mkdir -p $STATEDIR
 
     [ -z "$FW" ] && FW=fw
 

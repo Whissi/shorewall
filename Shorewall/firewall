@@ -506,6 +506,15 @@ mac_match() # $1 = MAC address formated as described above
 ################################################################################
 validate_rule() {
     ############################################################################
+    # Ensure that the passed comma-separated list has 15 or fewer elements
+    #
+    validate_list() {
+    	local temp=`separate_list $1`
+	
+	[ `echo $temp | wc -w` -le 15 ]
+    }
+
+    ############################################################################
     # validate one rule
     #
     validate_a_rule() {
@@ -724,6 +733,16 @@ validate_rule() {
     fi
 
     dest=$serverzone
+    ############################################################################
+    # Check length of port lists if MULTIPORT set
+    #
+    if [ -n "$MULTIPORT" ]; then
+    	validate_list $ports ||
+	   error_message "Warning: Too many destination ports: Rule \"$rule\""
+	validate_list $cports ||
+	   error_message "Warning: Too many source ports: Rule \"$rule\""
+    fi
+
     ############################################################################
     # Iterate through the various lists validating individual rules
     #
@@ -1360,8 +1379,12 @@ delete_tc()
 #   target clients servers protocol ports cports address		       #
 #									       #
 # and has loaded a space-separated list of their values in "rule".	       #
+#									       #
+# The 'multioption' variable has also been loaded appropriately to reflect     #
+# the setting of the MULTIPORT option in /etc/shorewall/shorewall.conf 	       #
 ################################################################################
 process_rule() {
+
     ############################################################################
     # Add a NAT rule
     #
@@ -1481,24 +1504,30 @@ process_rule() {
 	################################################################
 	# Setup PROTOCOL, PORT and STATE variables
 	#
-	sports=""
-	dports=""
+	sports=
+	dports=
 	state="-m state --state NEW"
 	proto=$protocol
 	addr=$address
-        servport=$serverport
+	servport=$serverport
+	multiport=
 
         case $proto in
 	    tcp|udp|TCP|UDP|6|17)
-	    	[ -n "$port" ] && [ "x${port}" != "x-" ] && \
+	    	if [ -n "$port" -a "x${port}" != "x-" ]; then
 		    dports="--dport $port"
-		[ -n "$cport" ] && [ "x${cport}" != "x-" ] && \
+		    multiport="$multioption"
+	        fi
+
+		if [ -n "$cport" -a "x${cport}" != "x-" ]; then
 		    sports="--sport $cport"
+		    multiport="$multioption"
+		fi
 		;;
 	    icmp|ICMP|0)
 		[ -n "$port" ] && [ "x${port}" != "x-" ] && \
 		    dports="--icmp-type $port"
-		state=""
+		state=
 		;;
 	    all|ALL)
 		[ -n "$port" ] && [ "x${port}" != "x-" ] && \
@@ -1552,10 +1581,11 @@ process_rule() {
 
 	    serv="${serv:+-d $serv}"
 
-	    [ -n "$loglevel" ] && run_iptables -A $chain $proto $state \
-		$cli $sports $serv $dports -j LOG $LOGPARMS --log-prefix \
-		"Shorewall:$chain:$logtarget:" --log-level $loglevel
-	    run_iptables -A $chain $proto $state $cli $sports \
+	    [ -n "$loglevel" ] && run_iptables -A $chain $proto $multiport \
+	        $state $cli $sports $serv $dports -j LOG $LOGPARMS \
+		--log-prefix "Shorewall:$chain:$logtarget:" \
+		--log-level $loglevel
+	    run_iptables -A $chain $proto $multiport $state $cli $sports \
 		$serv $dports -j $target
 	else
 	    ####################################################################
@@ -1564,15 +1594,25 @@ process_rule() {
 	    [ -n "$addr" ] && fatal_error \
 	          "Error: An ADDRESS ($addr) is only allowed in" \
                   " a DNAT or REDIRECT: \"$rule\""
-	    
-	    [ -n "$loglevel" ] && run_iptables -A $chain $proto \
+
+	    [ -n "$loglevel" ] && run_iptables -A $chain $proto $multiport \
 		$dest_interface $state $cli $sports $dports -j LOG \
 		$LOGPARMS --log-prefix "Shorewall:$chain:$logtarget:" \
 		--log-level $loglevel
 
-	    run_iptables -A $chain $proto $dest_interface $state \
+	    run_iptables -A $chain $proto $multiport $dest_interface $state \
 		$cli $sports $dports -j $target
 	fi
+    }
+    
+    ############################################################################
+    # Return the number of elements in the passed comma-separated list
+    #
+    
+    list_count() {
+	local temp=`separate_list $1`
+	
+	echo $temp | wc -w
     }
     
     ############################################################################
@@ -1674,15 +1714,32 @@ process_rule() {
     ############################################################################
     # Iterate through the various lists creating individual rules
     #
-    for client in `separate_list ${clients:=-}`; do
-	for server in `separate_list ${servers:=-}`; do
-	    for port in `separate_list ${ports:=-}`; do
-		for cport in `separate_list ${cports:=-}`; do
-		    add_a_rule
+    if [ -n "$MULTIPORT" -a \
+        "$ports" = "${ports%:*}" -a \
+        "$cports" = "${cports%:*}" -a \
+   	`list_count $ports` -le 15 -a \
+	`list_count $cports` -le 15 ]
+    then
+        multioption="-m multiport"
+	for client in `separate_list ${clients:=-}`; do
+	    for server in `separate_list ${servers:=-}`; do
+		port=${ports:=-}
+		cport=${cports:=-}
+		add_a_rule
+	    done
+	done
+    else
+        multioption=
+	for client in `separate_list ${clients:=-}`; do
+	    for server in `separate_list ${servers:=-}`; do
+		for port in `separate_list ${ports:=-}`; do
+		    for cport in `separate_list ${cports:=-}`; do
+		        add_a_rule
+		    done
 		done
 	    done
 	done
-    done
+    fi
 
     echo "   Rule \"$rule\" added."
 }
@@ -1993,15 +2050,26 @@ default_policy() # $1 = client $2 = server
     local chain="${1}2${2}"
     local policy=
     local loglevel=
+    local chain1
+
+    jump_to_policy_chain() {
+        ########################################################################
+	# Add a jump to from the canonical chain to the policy chain. On return,
+	# $chain is set to the name of the policy chain
+	#
+        run_iptables -A $chain -j $chain1
+        chain=$chain1
+    }
 
     apply_default()
     {
 	########################################################################
+	# Add the appropriate rules to the canonical chain ($chain) to enforce
+	# the specified policy
+	#-----------------------------------------------------------------------
 	# Construct policy chain name
 	#
 	chain1=${client}2${server}
-
-	echo "   Policy $policy for $1 to $2 using chain $chain1"
 
 	if [ "$chain" = "$chain1" ]; then
 	    ####################################################################
@@ -2011,15 +2079,48 @@ default_policy() # $1 = client $2 = server
 	    policy_rules $chain $policy $loglevel
 	else
 	    ####################################################################
-	    # Policy chain is different; add a rule to jump from the canonical
-	    # chain to the policy chain (unless the policy is CONTINUE) and
-	    # optionally, insert a jump to the policy chain's syn flood chain.
+	    # The policy chain is different from the canonical chain -- approach
+	    # depends on the policy
 	    #
-	    run_iptables -A $chain -j $chain1
-
-	    [ -n "$synparams" ] && \
-	        enable_syn_flood_protection $chain $chain1
+	    case $policy in
+	    ACCEPT)
+	        if [ -n "$synparams" ]; then
+		    ############################################################
+		    # To avoid double-counting SYN packets, enforce the policy
+		    # in this chain.
+		    #
+	    	    enable_syn_flood_protection $chain $chain1
+	    	    policy_rules $chain $policy $loglevel
+		else
+		    ############################################################
+		    # No problem with double-counting so just jump to the
+		    # policy chain.
+		    #
+		    jump_to_policy_chain
+		fi
+		;;
+	    CONTINUE)
+	        ################################################################
+		# Silly to jump to the policy chain -- add any logging
+		# rules and enable SYN flood protection if requested
+		#
+		[ -n "$synparams" ] && \
+		    enable_syn_flood_protection $chain $chain1
+		policy_rules $chain $policy $loglevel
+		;;
+	    *)
+	        ################################################################
+		# DROP or REJECT policy -- enforce in the policy chain and
+		# enable SYN flood protection if requested.
+		#
+		[ -n "$synparams" ] && \
+		    enable_syn_flood_protection $chain $chain1
+	        jump_to_policy_chain
+		;;
+	    esac
 	fi
+
+	echo "   Policy $policy for $1 to $2 using chain $chain"
     }
 
     while read client server policy loglevel synparams; do
@@ -3003,6 +3104,7 @@ do_initialize() {
     CLAMPMSS=
     ROUTE_FILTER=
     NAT_BEFORE_RULES=
+    MULTIPORT=
     stopping=
     have_mutex=
     masq_seq=1
@@ -3078,6 +3180,7 @@ do_initialize() {
     ADD_SNAT_ALIASES=`added_param_value_no ADD_SNAT_ALIASES $ADD_SNAT_ALIASES`
     ROUTE_FILTER=`added_param_value_no ROUTE_FILTER $ROUTE_FILTER`
     NAT_BEFORE_RULES=`added_param_value_yes NAT_BEFORE_RULES $NAT_BEFORE_RULES`
+    MULTIPORT=`added_param_value_no MULTIPORT $MULTIPORT`
 }
 
 ################################################################################

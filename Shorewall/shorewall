@@ -218,13 +218,13 @@ timed_read ()
 }
 
 #################################################################################
-# Display the last 20 packets logged                                            #
+# Display the last $1 packets logged                                            #
 #################################################################################
-packet_log()
+packet_log() # $1 = number of messages 
 {
     local options
 
-    [ -n "$realtail" ] && options="-n20"
+    [ -n "$realtail" ] && options="-n$1"
 
     grep 'Shorewall:\|ipt_unclean' $LOGFILE | \
          sed s/" $host kernel: Shorewall:"/" "/ | \
@@ -297,23 +297,20 @@ monitor_firewall() # $1 = timeout -- if negative, prompt each time that
 	if [ "$rejects" != "$oldrejects" ]; then
 	    oldrejects="$rejects"
 	    echo -e '\a'
-	    packet_log
-	    
+	    packet_log 20
+
 	    if [ "$pause" = "Yes" ]; then
 		echo -en '\nEnter any character to continue: '
 		read foo
 	    else
-		timed_read 
+		timed_read
 	    fi
 	else
-	    if [ "$pause" != "Yes" ]; then
-		echo
-		packet_log
-	    fi
-		
+	    echo
+	    packet_log 20
 	    timed_read
 	fi
-	
+
 	clear
 	echo -e "$banner `date`\\n"
 	echo -e "NAT Status\\n"
@@ -337,6 +334,54 @@ monitor_firewall() # $1 = timeout -- if negative, prompt each time that
 }
 
 #################################################################################
+# Watch the Firewall Log							#
+#################################################################################
+logwatch() # $1 = timeout -- if negative, prompt each time that
+	   #                 an 'interesting' packet count changes
+{
+
+    get_config
+    host=`echo $HOSTNAME | sed 's/\..*$//'`
+    oldrejects=`iptables -L -v -n | grep 'LOG'`
+    
+    if [ $1 -lt 0 ]; then
+	timeout=$((- $1))
+	pause="Yes"
+    else
+	pause="No"
+	timeout=$1
+    fi
+
+    qt which awk && haveawk=Yes || haveawk=
+
+    while true; do
+	clear
+	echo -e "$banner `date`\\n"
+
+	echo -e "Dropped/Rejected Packet Log\\n"
+
+	rejects=`iptables -L -v -n | grep 'LOG'`
+
+	if [ "$rejects" != "$oldrejects" ]; then
+	    oldrejects="$rejects"
+	    echo -e '\a'
+	    packet_log 40
+
+	    if [ "$pause" = "Yes" ]; then
+		echo -en '\nEnter any character to continue: '
+		read foo
+	    else
+		timed_read
+	    fi
+	else
+	    echo
+	    packet_log 40
+	    timed_read
+	fi
+    done
+}
+
+#################################################################################
 # Give Usage Information							#
 #################################################################################
 usage() # $1 = exit status
@@ -356,6 +401,7 @@ usage() # $1 = exit status
     echo "   version"
     echo "   check"
     echo "   try <directory> [ <timeout> ]"
+    echo "   logwatch [<refresh interval>]"
     exit $1
 }
 
@@ -473,7 +519,7 @@ case "$1" in
             get_config
 	    echo -e "Shorewall-$version Log at $HOSTNAME - `date`\\n"
 	    host=`echo $HOSTNAME | sed 's/\..*$//'`
-	    packet_log
+	    packet_log 20
 	    ;;
 	tc)
 	    echo -e "Shorewall-$version Traffic Control at $HOSTNAME - `date`\\n"
@@ -559,6 +605,15 @@ case "$1" in
 	    $0 restart
         fi
 	;;
+    logwatch)
+	if [ $# -eq 2 ]; then
+	    logwatch $2
+	elif [ $# -eq 1 ]; then
+	    logwatch 30
+	else
+	    usage 1
+	fi
+        ;;
     *)
 	usage 1
 	;;

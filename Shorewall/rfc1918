@@ -5,6 +5,10 @@
 #
 # Lists the subnetworks that are blocked by the 'norfc1918' interface option.
 #
+# The default list includes those IP addresses listed in RFC 1918, those listed
+# as 'reserved' by the IANA, the DHCP Autoconfig class B, and the class C
+# reserved for use in documentation and examples.
+#
 # Columns are:
 #
 # 	SUBNET		The subnet (host addresses also allowed)
@@ -16,10 +20,29 @@
 ###############################################################################
 #SUBNET			TARGET
 255.255.255.255		RETURN		# We need to allow limited broadcast
-169.254.0.0/16		DROP		# DHCP autoconfig
 0.0.0.0/8		logdrop		# Reserved
+1.0.0.0/8		logdrop		# Reserved
+2.0.0.0/8		logdrop		# Reserved
+5.0.0.0/8		logdrop		# Reserved
+7.0.0.0/8		logdrop		# Reserved
 10.0.0.0/8		logdrop		# RFC 1918
-127.0.0.0/8		logdrop		# Loop Back
+23.0.0.0/8		logdrop		# Reserved
+27.0.0.0/8		logdrop		# Reserved
+31.0.0.0/8		logdrop		# Reserved
+36.0.0.0/7		logdrop		# Reserved
+39.0.0.0/8		logdrop		# Reserved
+41.0.0.0/8		logdrop		# Reserved
+42.0.0.0/8		logdrop		# Reserved
+58.0.0.0/7		logdrop		# Reserved
+60.0.0.0/8		logdrop		# Reserved
+69.0.0.0/8		logdrop		# Reserved
+70.0.0.0/7		logdrop		# Reserved
+72.0.0.0/5		logdrop		# Reserved
+82.0.0.0/7		logdrop		# Reserved
+84.0.0.0/6		logdrop		# Reserved
+88.0.0.0/5		logdrop		# Reserved
+96.0.0.0/3		logdrop		# Reserved
+169.254.0.0/16		DROP		# DHCP autoconfig
 192.0.2.0/24		logdrop		# Example addresses
 192.168.0.0/16		logdrop		# RFC 1918
 172.16.0.0/12		logdrop		# RFC 1918

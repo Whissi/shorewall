@@ -30,8 +30,8 @@
       document under the terms of the GNU Free Documentation License, Version
       1.2 or any later version published by the Free Software Foundation; with
       no Invariant Sections, with no Front-Cover, and with no Back-Cover
-      Texts. A copy of the license is included in the section entitled &#34;<ulink
-      url="GnuCopyright.htm">GNU Free Documentation License</ulink>&#34;.</para>
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
 
@@ -195,7 +195,7 @@ conn packetdefault
 
       <para>You need to define a zone for the remote subnet or include it in
       your local zone. In this example, we&#39;ll assume that you have created
-      a zone called &#34;vpn&#34; to represent the remote subnet.</para>
+      a zone called <quote>vpn</quote> to represent the remote subnet.</para>
 
       <para><table><title>/etc/shorewall/zones local</title><tgroup cols="3"><thead><row><entry
       align="center">ZONE</entry><entry align="center">DISPLAY</entry><entry
@@ -203,16 +203,16 @@ conn packetdefault
       Subnet</entry></row></tbody></tgroup></table></para>
 
       <para>At both systems, ipsec0 would be included in
-      /etc/shorewall/interfaces as a &#34;vpn&#34; interface:</para>
+      /etc/shorewall/interfaces as a <quote>vpn</quote> interface:</para>
 
       <para><table><title>/etc/shorewall/interfaces system local &#38; remote</title><tgroup
       cols="4"><thead><row><entry align="center">ZONE</entry><entry
       align="center">INTERFACE</entry><entry align="center">BROADCAST</entry><entry
       align="center">OPTIONS</entry></row></thead><tbody><row><entry>vpn</entry><entry>ipsec0</entry><entry></entry><entry></entry></row></tbody></tgroup></table></para>
 
-      <para>You will need to allow traffic between the &#34;vpn&#34; zone and
-      the &#34;loc&#34; zone -- if you simply want to admit all traffic in
-      both directions, you can use the policy file:</para>
+      <para>You will need to allow traffic between the <quote>vpn</quote> zone
+      and the <quote>loc</quote> zone -- if you simply want to admit all
+      traffic in both directions, you can use the policy file:</para>
 
       <para><table><title>/etc/shorewall/policy local &#38; remote</title><tgroup
       cols="4"><thead><row><entry align="center">SOURCE</entry><entry
@@ -511,10 +511,10 @@ conn packetdefault
     </table>
 
     <para>On systems A, you will need to allow traffic between the
-    &#34;vpn1&#34; zone and the &#34;loc&#34; zone as well as between
-    &#34;vpn2&#34; and the &#34;loc&#34; zone -- if you simply want to admit
-    all traffic in both directions, you can use the following policy file
-    entries on all three gateways:</para>
+    <quote>vpn1</quote> zone and the <quote>loc</quote> zone as well as
+    between <quote>vpn2</quote> and the <quote>loc</quote> zone -- if you
+    simply want to admit all traffic in both directions, you can use the
+    following policy file entries on all three gateways:</para>
 
     <table>
       <title>/etc/shorewall/policy system A</title>
@@ -577,9 +577,9 @@ conn packetdefault
     </table>
 
     <para>On systems B and C, you will need to allow traffic between the
-    &#34;vpn&#34; zone and the &#34;loc&#34; zone -- if you simply want to
-    admit all traffic in both directions, you can use the following policy
-    file entries on all three gateways:</para>
+    <quote>vpn</quote> zone and the <quote>loc</quote> zone -- if you simply
+    want to admit all traffic in both directions, you can use the following
+    policy file entries on all three gateways:</para>
 
     <table>
       <title>/etc/shorewall/policy system B &#38; C</title>
@@ -692,7 +692,7 @@ conn packetdefault
 
       <para>You need to define a zone for the laptop or include it in your
       local zone. In this example, we&#39;ll assume that you have created a
-      zone called &#34;vpn&#34; to represent the remote host.</para>
+      zone called <quote>vpn</quote> to represent the remote host.</para>
 
       <para><table><title>/etc/shorewall/zones local</title><tgroup cols="3"><thead><row><entry
       align="center">ZONE</entry><entry align="center">DISPLAY</entry><entry
@@ -714,7 +714,7 @@ conn packetdefault
       gateway is a standalone system.</para></note></para>
 
       <para>You will need to configure /etc/shorewall/interfaces and establish
-      your &#34;through the tunnel&#34; policy as shown under the first
+      your <quote>through the tunnel</quote> policy as shown under the first
       example above.</para>
     </example>
   </section>
@@ -808,7 +808,7 @@ conn packetdefault
     a different updown script that adds the remote station to the appropriate
     zone when the connection comes up and that deletes the remote station when
     the connection comes down. For example, when 134.28.54.2 connects for the
-    vpn2 zone the &#39;up&#39; part of the script will issue the command&#34;:</para>
+    vpn2 zone the &#39;up&#39; part of the script will issue the command:</para>
 
     <programlisting>/sbin/shorewall add ipsec0:134.28.54.2 vpn2</programlisting>
 

@@ -1665,16 +1665,16 @@ check_config() {
     determine_interfaces
     determine_hosts
 
+    echo "Validating policy file..."
+	
+    validate_policy	
+
     echo "Validating rules file..."
 
     rules=`find_file rules`
     strip_file rules $rules
     process_rules
-	
-    echo "Validating policy file..."
-	
-    validate_policy	
-	
+		
     rm -rf $TMP_DIR
 
     echo "Configuration Validated"

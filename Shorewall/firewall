@@ -1692,10 +1692,16 @@ add_a_rule()
     case "$logtarget" in
 	REJECT)
 	    target=reject
+	    [ -n "$servport" ] && \
+		fatal_error "Error: server port may not be specified in a REJECT rule;"\
+                            "rule: \"$rule\""
 	    ;;
 	REDIRECT)
 	    [ -n "$serv" ] && startup_error "Error: REDIRECT rules cannot"\
 		" specify a server IP; rule: \"$rule\""
+	    [ -n "$servport" ] && \
+		startup_error "Error: server port may not be specified in an ACCEPT rule;" \
+		              "rule: \"$rule\""
 	    servport=${servport:=$port}
 	    ;;
 	DNAT)
@@ -1804,6 +1810,8 @@ process_rule() {
     else
 	clientzone="${clients%:*}"
 	clients="${clients#*:}"
+	[ -z "$clientzone" -o -z "$clients" ] && \
+	   fatal_error "Error: Empty source zone or qualifier: rule \"$rule\""
     fi
     
     if [ "$clientzone" = "${clientzone%\!*}" ]; then
@@ -1836,8 +1844,12 @@ process_rule() {
 	if [ "$servers" != "${servers%:*}" ] ; then
 	    serverport="${servers#*:}"
 	    servers="${servers%:*}"
+	    [ -z "$serverzone" -o -z "$serverport" ] && \
+	        fatal_error "Error: Empty destination zone or server port: rule \"$rule\""
 	else
 	    serverport=
+	    [ -z "$serverzone" -o -z "$servers" ] && \
+	        startup_error "Error: Empty destination zone or qualifier: rule \"$rule\""
 	fi
     fi
 

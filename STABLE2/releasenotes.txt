@@ -269,3 +269,10 @@ Problems corrected in 2.0.15
 
 1)  The range of ports opened by the AllowTrcrt action has been
     expanded to 33434:33524.
+
+2)  Code mis-ported from 2.2.0 caused the following error during
+    "shorewall start" where SYN rate-limiting is present in
+    /etc/shorewall/policy:
+
+      Bad argument `DROP'
+      Try `iptables -h' or 'iptables --help' for more information.

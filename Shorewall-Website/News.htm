@@ -18,10 +18,319 @@ Texts. A copy of the license is included in the section entitled “<span
  class="quote"><a href="GnuCopyright.htm" target="_self">GNU Free
 Documentation License</a></span>”.<br>
 </p>
-<p>2004-05-13<br>
+<p>2004-06-23<br>
 </p>
 <hr style="width: 100%; height: 2px;">
-<p><b> 4/5/2004 - Shorewall 2.0.1</b><b></b><br>
+<p><b>6/3/2004 - Shorewall 2.0.2f<br>
+</b></p>
+<p>Fixes one problem:<br>
+</p>
+<ol>
+  <li>Versions 2.0.2d and 2.0.2e fail to load kernel modules unless
+MODULE_SUFFIX is set in shorewall.conf<br>
+  </li>
+</ol>
+<p><b>6/2/2004 - Shorewall 2.0.2e<br>
+</b></p>
+<p>One problem corrected:<br>
+</p>
+<ol>
+  <li>LOG rules within an action generate two Netfilter logging rules.<br>
+  </li>
+</ol>
+<p><b>5/28/2004 - Shorewall 2.0.2d<br>
+</b><br>
+One problem corrected:<br>
+</p>
+<ol>
+  <li>Shorewall was checking capabilities before loading kernel
+modules. Consequently, if kernel module autoloading was disabled, the
+capabilities were mis-detected.<br>
+  </li>
+</ol>
+<p><b>5/21/2004 - Shorewall 2.0.2c</b></p>
+One problem corrected:<br>
+<ol>
+  <li>&nbsp;DNAT rules with a dynamic source zone don't work
+properly. When used, these rules cause the rule to be checked against
+ALL input,&nbsp; not just input from the designated zone.<br>
+  </li>
+</ol>
+<p><b>5/18/2004 - Shorewall 2.0.2b</b><b>&nbsp;</b></p>
+<p>Corrects two problems:</p>
+<ol>
+  <li>Specifying a null common action in /etc/shorewall/actions
+(e.g., :REJECT) results in a startup error.<br>
+    <br>
+  </li>
+  <li>If /var/lib/shorewall does not exist, shorewall start fails.<br>
+  </li>
+</ol>
+<p><b>5/15/2004 - Shorewall 2.0.2a</b><b> </b><br>
+</p>
+<p>Corrects two problems:<br>
+</p>
+<ol>
+  <li>Temporary restore files were not being removed from
+/var/lib/shorewall. These files have names of the form
+'restore-nnnnn'.&nbsp;
+You can remove files that have accumulated with the command: <br>
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;rm -f /var/lib/shorewall/restore-[0-9]* <br>
+    <br>
+  </li>
+  <li>The restore script did not load kernel modules. The result
+was that after a cold load, applications like FTP and IRC DCC didn't
+work. <br>
+    <br>
+To correct: <br>
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;1) Install 2.0.2a <br>
+&nbsp;&nbsp;&nbsp;&nbsp;2) "shorewall restart" <br>
+&nbsp;&nbsp;&nbsp;&nbsp;3) "shorewall save" </li>
+</ol>
+<p><b>5/13/2004 - Shorewall 2.0.2</b><b>&nbsp;</b></p>
+<p>Problems Corrected since 2.0.1<br>
+</p>
+<ol>
+  <li>The /etc/init.d/shorewall script installed on Debian by
+install.sh failed silently due to a missing file
+(/usr/share/shorewall/wait4ifup). That file is not part of the normal
+Shorewall distribution and is provided by the Debian maintainer.</li>
+  <li>A meaningless warning message out of the proxyarp file
+processing has been eliminated.</li>
+  <li>The "shorewall delete" command now correctly removes all
+dynamic rules pertaining to the host(s) being deleted. Thanks to Stefan
+Engel for this correction.</li>
+</ol>
+Issues when migrating from Shorewall 2.0.1 to Shorewall 2.0.2:<br>
+<ol>
+  <li>Extension Scripts -- In order for extension scripts to work
+properly with the new iptables-save/restore integration (see New
+Feature 1 below), some change may be required to your extension
+scripts. If your extension scripts are executing commands other than
+iptables then those commands must also be written to the restore file
+(a temporary file in /var/lib/shorewall that is renamed
+/var/lib/shorewall/restore-base at the end of the operation).<br>
+    <br>
+The following functions should be of help:<br>
+    <br>
+A. save_command() -- saves the passed command to the restore file.<br>
+    <br>
+&nbsp;&nbsp;&nbsp; Example:<br>
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; save_command echo Operation
+Complete<br>
+    <br>
+&nbsp;&nbsp; That command would simply write "echo Operation Complete"
+to the restore file.<br>
+    <br>
+B. run_and_save_command() -- saves the passed command to the restore
+file then executes it. The return value is the exit status of the
+command.<br>
+    <br>
+&nbsp; &nbsp; Example:<br>
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; run_and_save_command "echo 1 &gt;
+/proc/sys/net/ipv4/icmp_echo_ignore_all"<br>
+    <br>
+&nbsp;&nbsp;&nbsp; Note that as in this example, when the command
+involves file redirection then the entire command must be enclosed in
+quotes. This applies to all of the functions described here.<br>
+    <br>
+C. ensure_and_save_command() -- runs the passed command. If the command
+fails, the firewall is restored to it's prior saved state and the
+operation is terminated. If the command succeeds, the command is
+written to the restore file.<br>
+    <br>
+  </li>
+  <li>Dynamic Zone support -- If you don't need to use the
+"shorewall add" and "shorewall delete commands, you should set
+DYNAMIC_ZONES=No in /etc/shorewall/shorewall.conf.</li>
+</ol>
+New Features:<br>
+<ol>
+  <li>Shorewall has now been integrated with
+iptables-save/iptables-restore to provide very fast start and restart.
+The elements of this integration are as follows:<br>
+    <br>
+a) The 'shorewall save' command now saves the current configuration in
+addition to the current dynamic blacklist. If you have dynamic zones,
+you will want to issue 'shorewall save' when the zones are empty or the
+current contents of the zones will be restored by the 'shorewall
+restore' and 'shorewall -f start' commands.<br>
+    <br>
+b) The 'shorewall restore' command has been added. This command
+restores the configuration at the time of the last 'save'.<br>
+    <br>
+c) The -f (fast) option has been added to 'shorewall start'. When
+specified (e.g. 'shorewall -f start'), shorewall will perform a
+'shorewall restore' if there is a saved configuration. If there is no
+saved configuration, a normal 'shorewall start' is performed.<br>
+    <br>
+d) The /etc/init.d/shorewall script now translates the 'start' command
+into 'shorewall -f start' so that fast restart is possible.<br>
+    <br>
+e) When a state-changing command encounters an error and there is
+current saved configuration, that configuration will be restored
+(currently, the firewall is placed in the 'stopped' state).<br>
+    <br>
+f) If you have previously saved the running configuration and want
+Shorewall to discard it, use the 'shorewall forget' command. WARNING:
+iptables 1.2.9 is broken with respect to iptables-save; if your kernel
+has connection tracking match support, you must patch iptables 1.2.9
+with the iptables patch availale from the Shorewall errata page.<br>
+    <br>
+  </li>
+  <li>The previous implementation of dynamic zones was difficult
+to maintain. I have changed the code to make dynamic zones optional
+under the control of the DYNAMIC_ZONES option in
+/etc/shorewall/shorewall.conf.<br>
+    <br>
+  </li>
+  <li>In earlier Shorewall 2.0 releases, Shorewall searches in
+order the following directories for configuration files.<br>
+    <br>
+a) The directory specified in a 'try' command or specified using the -c
+option.<br>
+b) /etc/shorewall<br>
+c) /usr/share/shorewall<br>
+    <br>
+In this release, the CONFIG_PATH option is added to shorewall.conf.
+CONFIG_PATH contains a list of directory names separated by colons
+(":"). If not set or set to a null value (e.g., CONFIG_PATH="") then
+"CONFIG_PATH=/etc/shorewall:/usr/share/shorewall" is assumed. Now
+Shorewall searches for shorewall.conf according to the old rules and
+for other configuration files as follows:<br>
+    <br>
+a) The directory specified in a 'try' command or specified using the -c
+option.<br>
+b) Each directory in $CONFIG_PATH is searched in sequence.<br>
+    <br>
+In case it is not obvious, your CONFIG_PATH should include
+/usr/share/shorewall and your shorewall.conf file must be in the
+directory specified via -c or in a try command, in /etc/shorewall or in
+/usr/share/shorewall.<br>
+    <br>
+For distribution packagers, the default CONFIG_PATH is set in
+/usr/share/shorewall/configpath. You can customize this file to have a
+default that differs from mine.<br>
+    <br>
+  </li>
+  <li>Previously, in /etc/shorewall/nat a Yes (or yes) in the
+LOCAL column would only take effect if the ALL INTERFACES column also
+contained Yes or yes. Now, the LOCAL columns contents are treated
+independently of the contents of the ALL INTERFACES column.<br>
+    <br>
+  </li>
+  <li>The folks at Mandrake have created yet another kernel
+module naming convention (module names end in "ko.gz"). As a
+consequence, beginning with this release, if MODULE_SUFFIX isn't
+specified in shorewall.conf, then the default value is "o gz ko o.gz
+ko.gz".<br>
+    <br>
+  </li>
+  <li>An updated bogons file is included in this release.<br>
+    <br>
+  </li>
+  <li>In /etc/shorewall/rules and in action files generated from
+/usr/share/shorewall/action.template, rules that perform logging can
+specify an optional "log tag". A log tag is a string of alphanumeric
+characters and is specified by following the log level with ":" and the
+log tag.<br>
+    <br>
+Example:<br>
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ACCEPT:info:ftp
+net&nbsp;&nbsp;&nbsp;&nbsp; dmz&nbsp;&nbsp;&nbsp;&nbsp;
+tcp&nbsp;&nbsp;&nbsp;&nbsp; 21<br>
+    <br>
+The log tag is appended to the log prefix generated by the LOGPREFIX
+variable in /etc/shorewall/conf. If "ACCEPT:info" generates the log
+prefix "Shorewall:net2dmz:ACCEPT:" then "ACCEPT:info:ftp" will generate
+"Shorewall:net2dmz:ACCEPT:ftp " (note the trailing blank). The maximum
+length of a log prefix supported by iptables is 29 characters; if a
+larger prefix is generated, Shorewall will issue a warning message and
+will truncate the prefix to 29 characters.<br>
+    <br>
+  </li>
+  <li>A new "-q" option has been added to /sbin/shorewall
+commands. It causes the start, restart, check and refresh commands to
+produce much less output so that warning messages are more visible
+(when testing this change, I discovered a bug where a bogus warning
+message was being generated).<br>
+    <br>
+  </li>
+  <li>Shorewall now uses 'modprobe' to load kernel modules if
+that utility is available in the PATH; otherwise, 'insmod' is used.<br>
+    <br>
+  </li>
+  <li>It is now possible to restrict entries in the
+/etc/shorewall/masq file to particular protocols and destination
+port(s). Two new columns (PROTO and PORT(S)) have been added to the
+file.<br>
+    <br>
+Example:<br>
+    <br>
+You want all outgoing SMTP traffic entering the firewall on eth1 to be
+sent from eth0 with source IP address 206.124.146.177. You want all
+other outgoing traffic from eth1 to be sent from eth0 with source IP
+address 206.124.146.176.<br>
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; eth0&nbsp;&nbsp;&nbsp;
+eth1&nbsp;&nbsp;&nbsp; 206.124.146.177 tcp&nbsp;&nbsp;&nbsp;&nbsp; 25<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; eth0&nbsp;&nbsp;&nbsp;
+eth1&nbsp;&nbsp;&nbsp; 206.124.146.176<br>
+    <br>
+THE ORDER OF THE ABOVE TWO RULES IS SIGNIFICANT!!!!!<br>
+    <br>
+Assuming that 10.0.0.0/8 is the only host/network connected to eth1,
+the progress message at "shorewall start" would be:<br>
+    <br>
+&nbsp;&nbsp;&nbsp; Masqueraded Networks and Hosts:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; To 0.0.0.0/0 (tcp 25) from
+10.0.0.0/8 through eth0 using 206.124.146.177<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; To 0.0.0.0/0 (all) from 10.0.0.0/8
+through eth0 using 206.124.146.176<br>
+    <br>
+  </li>
+  <li>Two new actions are available in the /etc/shorewall/rules
+file.<br>
+    <br>
+&nbsp;&nbsp;&nbsp; ACCEPT+&nbsp;&nbsp;&nbsp; -- Behaves like ACCEPT
+with the exception that it exempts matching connections from subsequent
+DNAT[-] and REDIRECT[-] rules.<br>
+&nbsp;&nbsp;&nbsp; NONAT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -- Exempts
+matching connections from subsequent DNAT[-] and REDIRECT[-] rules.<br>
+    <br>
+  </li>
+  <li>A new extension script 'initdone' has been added. This
+script is invoked at the same point as the 'common' script was
+previously and is useful for users who mis-used that script under
+Shorewall 1.x (the script was intended for adding rules to the 'common'
+chain but many users treated it as a script for adding rules before
+Shorewall's).<br>
+    <br>
+  </li>
+  <li>Installing/Upgrading Shorewall on Slackware has been
+improved. Slackware users must use the tarball and must modify settings
+in the install.sh script before running it as follows:<br>
+    <br>
+&nbsp;&nbsp;&nbsp; DEST="/etc/rc.d"<br>
+&nbsp;&nbsp;&nbsp; INIT="rc.firewall"<br>
+    <br>
+Thanks to Alex Wilms for helping with this change.</li>
+</ol>
+<p><b>4/17/2004 - Presentation at
+LinuxFest NW</b><b><br>
+</b></p>
+Today I gave a presentation at LinuxFest NW in Bellingham. The
+presentation was entitled "<a
+ href="http://lists.shorewall.net/Shorewall_and_the_Enterprise.htm"
+ target="_blank">Shorewall
+and the Enterprise</a>" and described the history of Shorewall and gave
+an overview of its features.
+<p><b> 4/5/2004 - Shorewall 2.0.1</b><br>
 </p>
 Problems Corrected since 2.0.0<br>
 <br>

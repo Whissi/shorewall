@@ -3303,6 +3303,11 @@ refresh_firewall()
     run_iptables -F common
 
     echo "Adding Common Rules"
+    ###########################################################################
+    # PING
+    #
+    [ -n "$FORWARDPING" ] && \
+	run_iptables -A common -p icmp --icmp-type echo-request -j ACCEPT
     ############################################################################
     # Common rules in each chain
     #

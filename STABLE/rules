@@ -15,7 +15,8 @@
 # Columns are:
 #
 #
-#	ACTION		ACCEPT, DROP, REJECT, DNAT or REDIRECT
+#	ACTION		ACCEPT, DROP, REJECT, DNAT, DNAT-, REDIRECT, CONTINUE
+#			or LOG.
 #
 #				ACCEPT   -- allow the connection request
 #				DROP     -- ignore the request
@@ -39,6 +40,7 @@
 #					    connection request will be passed
 #					    to the rules defined for that
 #					    (those) zone(s).
+#				LOG      -- Simply log the packet and continue.
 #
 #			May optionally be followed by ":" and a syslog log
 #			level (e.g, REJECT:info). This causes the packet to be

@@ -16,30 +16,30 @@
   <p align="left">&nbsp;</div>
 <h2 align="left">1.0 Tables</h2>
 
-<p align="left"><i>Chains</i> of <i>rules </i>are organized into <i>Tables.</i> 
+<p align="left"><i>Chains</i> of <i>rules </i>are organized into <i>Tables.</i>
 Netfilter currently has three tables.</p>
 
 <ol>
   <li>
-<p align="left">Mangle Table - This allows the contents of the packet to be 
-changed. Shorewall uses rules in this table to mark packets for traffic 
-shaping/control (/etc/shorewall/tcrules file) and for setting the Type of 
+<p align="left">Mangle Table - This allows the contents of the packet to be
+changed. Shorewall uses rules in this table to mark packets for traffic
+shaping/control (/etc/shorewall/tcrules file) and for setting the Type of
 Service (TOS) for the packet (/etc/shorewall/tos).</p>
 
   </li>
   <li>
-<p align="left">NAT Table - Allows modification of the source and destination IP 
+<p align="left">NAT Table - Allows modification of the source and destination IP
 and port.</p>
 
   </li>
   <li>
-<p align="left">Filter Table - This is where most ACCEPT/DROP/REJECT decisions 
+<p align="left">Filter Table - This is where most ACCEPT/DROP/REJECT decisions
 are made in Shorewall.</p>
 
   </li>
 </ol>
-<p align="left">Each table has a number of <i>pre-defined chains</i> as shown in 
-the table that follows. Packets flow through the chains in the order of that 
+<p align="left">Each table has a number of <i>pre-defined chains</i> as shown in
+the table that follows. Packets flow through the chains in the order of that
 table.</p>
 
 <blockquote>
@@ -74,8 +74,8 @@ table.</p>
         <li>Static NAT DNAT mapping</li>
       </ol>
       </td>
-      <td width="310">Only connection requests go here -- packets that are part of or 
-      related to an established connection use information from the connection 
+      <td width="310">Only connection requests go here -- packets that are part of or
+      related to an established connection use information from the connection
       tracking table.</td>
     </tr>
     <tr>
@@ -111,8 +111,8 @@ table.</p>
       <td width="51">NAT</td>
       <td width="112">OUTPUT</td>
       <td width="346">DNAT rules where the source zone is <b>fw</b></td>
-      <td width="310">Only connection requests go here -- packets that are part of or 
-      related to an established connection use information from the connection 
+      <td width="310">Only connection requests go here -- packets that are part of or
+      related to an established connection use information from the connection
       tracking table.</td>
     </tr>
     <tr>
@@ -126,13 +126,13 @@ table.</p>
         <li>Static NAT SNAT Mapping</li>
       </ol>
       </td>
-      <td width="310">Only connection requests go here -- packets that are part of or 
-      related to an established connection use information from the connection 
+      <td width="310">Only connection requests go here -- packets that are part of or
+      related to an established connection use information from the connection
       tracking table.</td>
     </tr>
   </table>
 </blockquote>
-<p align="left">The connection tracking table can be displayed using the 
+<p align="left">The connection tracking table can be displayed using the
 &quot;shorewall show connections&quot; command.</p>
 
 </body>

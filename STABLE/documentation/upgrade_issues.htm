@@ -1,309 +1,424 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-                                                     
+                                                                        
   <meta http-equiv="Content-Type"
  content="text/html; charset=windows-1252">
   <title>Upgrade Issues</title>
                                                                         
-                    
+                                                       
   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
-                                                     
+                                                                        
   <meta name="ProgId" content="FrontPage.Editor.Document">
-                                                             
+                                                                        
+       
   <meta name="Microsoft Theme" content="none">
 </head>
   <body>
-                        
+                                  
 <table border="0" cellpadding="0" cellspacing="0"
  style="border-collapse: collapse;" width="100%" id="AutoNumber1"
  bgcolor="#400169" height="90">
-               <tbody>
-               <tr>
-                 <td width="100%">                                      
-                                            
+                    <tbody>
+                    <tr>
+                      <td width="100%">                                 
+                                                                        
+           
       <h1 align="center"><font color="#ffffff">Upgrade Issues</font></h1>
-                 </td>
-               </tr>
-                                              
-  </tbody>           
-</table>
+                      </td>
+                    </tr>
                                                                   
+  </tbody>                
+</table>
+                                                                        
+   
 <p>For upgrade instructions see the                               <a
- href="Install.htm">Install/Upgrade page</a>.</p>
-                                                      
+ href="Install.htm">Install/Upgrade page</a>.<br>
+    </p>
+       
+<p>It is important that you read all of the sections on this page where the
+  version number mentioned in the section title is later than what you are
+ currently running. <br>
+    </p>
+                                                                
 <h3> </h3>
-     
-<h3>Version &gt;= 1.4.0</h3>
- <b>IMPORTANT: Shorewall &gt;=1.4.0 <u>REQUIRES</u></b> <b>the iproute package 
-('ip' utility).</b><br>
- <br>
- If you are upgrading from a version &lt; 1.4.0, then:<br>
+               
+<h3>Version &gt;= 1.4.1</h3>
+In the description that follows, the term <i>group </i>refers to a particular
+network or subnetwork (which may be 0.0.0.0/0 or it may be a host address)
+accessed through a particular interface. Examples:<br>
          
+<blockquote>eth0:0.0.0.0/0<br>
+ eth2:192.168.1.0/24<br>
+ eth3:192.0.2.123<br>
+         </blockquote>
+ You can use the "shorewall check" command to see the groups associated with 
+each of your zones.<br>
+<br>
+   
 <ul>
-      <li>The <b>noping </b>and <b>forwardping</b> interface options are
-no  longer supported nor is the <b>FORWARDPING </b>option in shorewall.conf. 
-ICMP echo-request (ping) packets are treated just like any other connection 
-request and are subject to rules and policies.</li>
-      <li>Interface names of the form &lt;device&gt;:&lt;integer&gt; in 
-/etc/shorewall/interfaces   now generate a Shorewall error at startup (they
-always have produced warnings   in iptables).</li>
-      <li>The MERGE_HOSTS variable has been removed from shorewall.conf.
-Shorewall  1.4 behaves like 1.3 did when MERGE_HOSTS=Yes; that is zone contents
-are  determined by BOTH the interfaces and hosts files when there are entries
-for the zone in both files.</li>
-      <li>The <b>routestopped</b> option in the interfaces and hosts file 
-has  been eliminated; use entries in the routestopped file instead.</li>
-      <li>The Shorewall 1.2 syntax for DNAT and REDIRECT rules is no longer 
-  accepted; you must convert to using the new syntax.</li>
-      <li value="6">The ALLOWRELATED variable in shorewall.conf is no longer
-  supported.  Shorewall 1.4 behavior is the same as 1.3 with ALLOWRELATED=Yes.</li>
-      <li value="6">Late-arriving DNS replies are not dropped by default; 
-there  is no need for your own /etc/shorewall/common file simply to avoid 
-logging  these packets.</li>
-      <li value="6">The 'firewall', 'functions' and 'version' file have been
-  moved to /usr/share/shorewall.</li>
-     <li value="6">The icmp.def file has been removed. If you include it
-from  /etc/shorewall/icmpdef, you will need to modify that file.</li>
-    <li value="8">The 'multi' interface option is no longer supported.  Shorewall 
- will generate rules for sending packets back out the same interface that 
-they arrived on in two cases:</li>
+    <li>Beginning with Version 1.4.1, traffic between groups in the same
+zone is accepted by default.  Previously, traffic from a zone to itself was
+treated just like any other  traffic; any matching rules were applied followed
+by enforcement of the appropriate  policy. With 1.4.1 and later versions,
+unless you have explicit rules for  traffic from Z to Z or you have an explicit
+Z to Z policy (where "Z" is some  zone) then traffic between the groups in
+zone Z will be accepted. If you do have one or more explicit rules for Z
+to Z or if you have an explicit Z to Z policy then the behavior is as it
+was in prior versions.</li>
    
 </ul>
-     
-<ul>
+   
+<blockquote>      
+  <ol>
+      <li>If you have a Z Z ACCEPT policy for a zone to allow traffic between
+ two interfaces to the same zone, that policy can be removed and traffic
+between  the interfaces will traverse fewer rules than previously.</li>
+      <li>If you have a Z Z DROP or Z Z REJECT policy or you have Z-&gt;Z 
+rules then your configuration should not require any change.</li>
+     <li>If you are currently relying on a implicit policy (one that has
+"all" in either the SOURCE or DESTINATION column) to prevent traffic between
+two interfaces to a zone Z and you have no rules for Z-&gt;Z then you should 
+add an explicit DROP or REJECT policy for Z to Z.<br>
+     </li>
        
+  </ol>
+  </blockquote>
+   
+<ul>
+    <li>Beginning with Version 1.4.1, Shorewall will never create rules to
+ deal with traffic from a given group back to itself.  The <i>multi</i> interface
+option is no longer available so if you want to route traffic between two
+subnetworks on the same interface then either:</li>
+   
+</ul>
+   
+<blockquote>      
+  <ol>
+      <li>The subnetworks must be in different zones; or</li>
+      <li>You must use the /etc/shorewall/hosts file to define the subnetworks
+ as two groups in a single zone.</li>
+       
+  </ol>
+  </blockquote>
+  Example 1 -- Two zones:<br>
+ 
+<blockquote>   
+  <pre>/etc/shorewall/zones<br><br>z1	Zone1	The first Zone<br>z2	Zone2	The secont Zone<br><br>/etc/shorewall/policy<br><br>z1	z2	ACCEPT<br>z2	z1	ACCEPT<br><br>/etc/shorewall/interfaces<br><br>-	eth1	192.168.1.255,192.168.2.255<br><br>/etc/shorewall/hosts<br><br>z1	eth1:192.168.1.0/24<br>z2	eth1:192.168.2.0/24<br></pre>
+ </blockquote>
+ Example 2 -- One zone: 
+<blockquote>   
+  <pre><br>/etc/shorewall/zones<br><br>z	Zone	The Zone<br><br>/etc/shorewall/interfaces<br><br>-	eth1	192.168.1.255,192.168.2.255<br><br>/etc/shorewall/hosts<br><br>z	eth1:192.168.1.0/24<br>z	eth1:192.168.2.0/24<br></pre>
+ </blockquote>
+ Note that in the second example, we don't need any policy since z-&gt;z
+traffic is accepted by default. The second technique is preferable if you
+want unlimited access between the two subnetworks.<br>
+ <br>
+ Sometimes, you want two separate zones on one interface but you don't want 
+Shorewall to set up any infrastructure to handle traffic between them. <br>
+ <br>
+ Example:<br>
+   
+<blockquote>      
+  <pre>/etc/shorewall/zones<br><br>z1	Zone1	The first Zone<br>z2	Zone2	The secont Zone<br><br>/etc/shorewall/interfaces<br><br>z2	eth1	192.168.1.255<br><br>/etc/shorewall/hosts<br><br>z1	eth1:192.168.1.3<br></pre>
+  </blockquote>
+ Here, zone z1 is nested in zone z2 and the firewall is not going to be involved 
+in any traffic between these two zones. Beginning with Shorewall 1.4.1, you 
+can prevent Shorewall from setting up any infrastructure to handle traffic 
+between z1 and z2 by using the new NONE policy:<br>
+ 
+<blockquote>   
+  <pre>/etc/shorewall/policy<br><pre>z1	z2	NONE<br>z2	z1	NONE</pre></pre>
+ </blockquote>
+ Note that NONE policies are generally used in pairs unless there is asymetric 
+routing where only the traffic on one direction flows through the firewall 
+and you are using a NONE polciy in the other direction.  
+<h3>Version &gt;= 1.4.0</h3>
+      <b>IMPORTANT: Shorewall &gt;=1.4.0 </b><b>requires</b> <b>the iproute 
+ package  ('ip' utility).</b><br>
+   <br>
+   <b>Note: </b>Unfortunately, some distributions call this package iproute2 
+ which will cause the upgrade of Shorewall to fail with the diagnostic:<br>
+      <br>
+         error: failed dependencies:iproute is needed by  shorewall-1.4.0-1 
+     <br>
+      <br>
+    This may be worked around by using the --nodeps option of rpm (rpm -Uvh 
+ --nodeps &lt;shorewall rpm&gt;).<br>
+      <br>
+      If you are upgrading from a version &lt; 1.4.0, then:<br>
+                   
+<ul>
+           <li>The <b>noping </b>and <b>forwardping</b> interface options 
+are   no  longer supported nor is the <b>FORWARDPING </b>option in shorewall.conf.
+   ICMP echo-request (ping) packets are treated just like any other connection
+   request and are subject to rules and policies.</li>
+           <li>Interface names of the form &lt;device&gt;:&lt;integer&gt; 
+in   /etc/shorewall/interfaces   now generate a Shorewall error at startup 
+(they   always have produced warnings   in iptables).</li>
+           <li>The MERGE_HOSTS variable has been removed from shorewall.conf. 
+  Shorewall  1.4 behaves like 1.3 did when MERGE_HOSTS=Yes; that is zone contents
+  are  determined by BOTH the interfaces and hosts files when there are entries
+  for the zone in both files.</li>
+           <li>The <b>routestopped</b> option in the interfaces and hosts 
+file   has  been eliminated; use entries in the routestopped file instead.</li>
+           <li>The Shorewall 1.2 syntax for DNAT and REDIRECT rules is no 
+longer     accepted; you must convert to using the new syntax.</li>
+           <li value="6">The ALLOWRELATED variable in shorewall.conf is no
+ longer    supported.  Shorewall 1.4 behavior is the same as 1.3 with ALLOWRELATED=Yes.</li>
+           <li value="6">Late-arriving DNS replies are now dropped by default;
+   there  is no need for your own /etc/shorewall/common file simply to avoid
+   logging  these packets.</li>
+           <li value="6">The 'firewall', 'functions' and 'version' file have
+  been   moved to /usr/share/shorewall.</li>
+          <li value="6">The icmp.def file has been removed. If you include
+ it  from  /etc/shorewall/icmpdef, you will need to modify that file.</li>
+               
+  <ul>
+                           
+  </ul>
+       <li>If you followed the advice in FAQ #2 and call find_interface_address 
+  in /etc/shorewall/params, that code should be moved to /etc/shorewall/init.<br>
+       </li>
+             
+</ul>
+             
+<ul>
+                 
+</ul>
+                 
+<h3>Version 1.4.0</h3>
+   
+<ul>
+    <li value="8">The 'multi' interface option is no longer supported.  Shorewall
+   will generate rules for sending packets back out the same interface that
+  they arrived on in two cases:</li>
+   
+</ul>
+   
+<blockquote>      
   <ul>
       <li>There is an <u>explicit</u> policy for the source zone to or from
- the destination zone. An explicit policy names both zones and does not use
- the 'all' reserved word.</li>
+   the destination zone. An explicit policy names both zones and does not
+use   the 'all' reserved word.</li>
        
   </ul>
        
   <ul>
       <li>There are one or more rules for traffic for the source zone to
-or  from the destination zone including rules that use the 'all' reserved
-word.  Exception: if the source zone and destination zone are the same then
-the rule must be explicit - it must name the zone in both the SOURCE and
+ or  from the destination zone including rules that use the 'all' reserved 
+ word.  Exception: if the source zone and destination zone are the same then 
+ the rule must be explicit - it must name the zone in both the SOURCE and 
 DESTINATION  columns.</li>
        
   </ul>
-  <li>If you followed the advice in FAQ #2 and call find_interface_address
-in /etc/shorewall/params, that code should be moved to /etc/shorewall/init.<br>
-  </li>
-   
-</ul>
-   
-<ul>
-       
-</ul>
-       
+  </blockquote>
+               
 <h3>Version &gt;= 1.3.14</h3>
-     <img src="images/BD21298_3.gif" alt="" width="13" height="13">
-          Beginning in version 1.3.14, Shorewall treats entries in <a
- href="Documentation.htm#Masq">/etc/shorewall/masq </a>differently. The change
-   involves entries with an <b>interface name</b> in the <b>SUBNET</b> (second)
-   <b>column</b>:<br>
-           
+          <img src="images/BD21298_3.gif" alt="" width="13" height="13">
+               Beginning in version 1.3.14, Shorewall treats entries in <a
+ href="Documentation.htm#Masq">/etc/shorewall/masq </a>differently. The change 
+     involves entries with an <b>interface name</b> in the <b>SUBNET</b> (second)
+     <b>column</b>:<br>
+                     
 <ul>
-        <li>Prior to 1.3.14, Shorewall would detect the FIRST subnet on the 
- interface  (as shown by "ip addr show <i>interface</i>") and would masquerade 
- traffic  from that subnet. Any other subnets that routed through eth1 needed 
- their  own entry in /etc/shorewall/masq to be masqueraded or to have SNAT 
- applied.</li>
-        <li>Beginning with Shorewall 1.3.14, Shorewall uses the firewall's
- routing   table to determine ALL subnets routed through the named interface.
- Traffic   originating in ANY of those subnets is masqueraded or has SNAT
-applied.</li>
-           
+             <li>Prior to 1.3.14, Shorewall would detect the FIRST subnet 
+on  the   interface  (as shown by "ip addr show <i>interface</i>") and would
+ masquerade   traffic  from that subnet. Any other subnets that routed through
+ eth1 needed   their  own entry in /etc/shorewall/masq to be masqueraded
+or  to have SNAT   applied.</li>
+             <li>Beginning with Shorewall 1.3.14, Shorewall uses the firewall's 
+   routing   table to determine ALL subnets routed through the named interface. 
+   Traffic   originating in ANY of those subnets is masqueraded or has SNAT 
+  applied.</li>
+                     
 </ul>
-      You will need to make a change to your configuration if:<br>
-           
+           You will need to make a change to your configuration if:<br>
+                     
 <ol>
-        <li>You have one or more entries in /etc/shorewall/masq with an interface
-   name in the SUBNET (second) column; and</li>
-        <li>That interface connects to more than one subnetwork.</li>
-           
-</ol>
-      Two examples:<br>
-      <br>
-       <b>Example 1</b> -- Suppose that your current config is as follows:<br>
-         <br>
-           
-<pre>	[root@gateway test]# cat /etc/shorewall/masq<br>	#INTERFACE              SUBNET                  ADDRESS<br>	eth0                    eth2                    206.124.146.176<br>	eth0                    192.168.10.0/24         206.124.146.176<br>	#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE<br>	[root@gateway test]# ip route show dev eth2<br>	192.168.1.0/24  scope link<br>	192.168.10.0/24  proto kernel  scope link  src 192.168.10.254<br>	[root@gateway test]#</pre>
-           
-<blockquote>In this case, the second entry in /etc/shorewall/masq is no longer
-   required.<br>
-      </blockquote>
-      <b>Example 2</b>-- What if your current configuration is like this?<br>
-           
-<pre>	[root@gateway test]# cat /etc/shorewall/masq	<br>	#INTERFACE              SUBNET                  ADDRESS	<br>	eth0                    eth2                    206.124.146.176<br>	#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE	<br>	[root@gateway test]# ip route show dev eth2	<br>	192.168.1.0/24  scope link<br>	192.168.10.0/24  proto kernel  scope link  src 192.168.10.254	<br>	[root@gateway test]#</pre>
-           
-<blockquote>In this case, you would want to change the entry in /etc/shorewall/masq
-   to:<br>
-      </blockquote>
-           
-<pre>	#INTERFACE              SUBNET                  ADDRESS	<br>	eth0                    192.168.1.0/24          206.124.146.176<br>	#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</pre>
-      <img src="images/BD21298_3.gif" alt="" width="13" height="13">
-         Version 1.3.14 also introduced simplified ICMP echo-request (ping) 
- handling.  The option OLD_PING_HANDLING=Yes in /etc/shorewall/shorewall.conf 
- is used  to specify that the old (pre-1.3.14) ping handling is to be used 
- (If the option is not set in your /etc/shorewall/shorewall.conf then OLD_PING_HANDLING=Yes 
-  is assumed). I don't plan on supporting the old handling indefinitely so 
- I urge current users to migrate to using the new handling as soon as possible. 
-  See the <a href="ping.html">'Ping' handling documentation</a> for details.<br>
-         
-<h3>Version 1.3.10</h3>
-       If you have installed the 1.3.10 Beta 1 RPM and are now upgrading
-to  version   1.3.10, you will need to use the '--force' option:<br>
-       <br>
-             
-<blockquote>                     
-  <pre>rpm -Uvh --force shorewall-1.3.10-1.noarch.rpm </pre>
-       </blockquote>
-             
-<h3>Version &gt;= 1.3.9</h3>
-         The 'functions' file has moved to /usr/lib/shorewall/functions.
-If  you   have  an application that uses functions from that file, your application 
-   will need to be changed to reflect this change of location.<br>
-                 
-<h3>Version &gt;= 1.3.8</h3>
-                                                      
-<p>If you have a pair of firewall systems configured for            failover 
-     or if you have asymmetric routing, you will need to modify          
-                     your firewall setup slightly under Shorewall       
-                        versions &gt;= 1.3.8. Beginning with version 1.3.8, 
-                                 you must set NEWNOTSYN=Yes in your      
-                         /etc/shorewall/shorewall.conf file.</p>
-                                                      
-<h3>Version &gt;= 1.3.7</h3>
-                                                      
-<p>Users specifying ALLOWRELATED=No in                                /etc/shorewall.conf 
-     will need to include the                                following rules 
-   in  their /etc/shorewall/icmpdef                                file (creating 
-     this file if necessary):</p>
-                                                      
-<pre>	run_iptables -A icmpdef -p ICMP --icmp-type echo-reply -j ACCEPT<br>	run_iptables -A icmpdef -p ICMP --icmp-type source-quench -j ACCEPT<br>	run_iptables -A icmpdef -p ICMP --icmp-type destination-unreachable -j ACCEPT<br>	run_iptables -A icmpdef -p ICMP --icmp-type time-exceeded -j ACCEPT<br>	run_iptables -A icmpdef -p ICMP --icmp-type parameter-problem -j ACCEPT</pre>
-                        
-<p>Users having an /etc/shorewall/icmpdef file may remove the ".   /etc/shorewall/icmp.def" 
-     command from that file since the icmp.def file is now   empty.</p>
-                        
-<h3><b><a name="Bering">Upgrading </a>Bering to                          
-     Shorewall &gt;= 1.3.3</b></h3>
-                                                      
-<p>To properly upgrade with Shorewall version                            
-   1.3.3 and later:</p>
-                                                      
-<ol>
-                                            <li>Be sure you have a backup 
---  you   will  need                                  to transcribe any Shorewall
-  configuration                                    changes that you have
-made   to the new                                  configuration.</li>
-                                            <li>Replace the shorwall.lrp
-package     provided  on                                  the Bering floppy
-with the    later one.  If you did                                  not obtain
-the later   version from Jacques's                                  site,
-see additional   instructions  below.</li>
-                                            <li>Edit the /var/lib/lrpkg/root.exclude.list 
-                                      file and remove the /var/lib/shorewall 
-   entry  if                                  present. Then do not forget 
-to   backup  root.lrp !</li>
-                           
-</ol>
-                        
-<p>The .lrp that I release isn't set up for a two-interface firewall like 
-       Jacques's. You need to follow the <a href="two-interface.htm">instructions 
-     for   setting up a two-interface firewall</a> plus you also need to add
-   the  following   two Bering-specific rules to /etc/shorewall/rules:</p>
-                        
-<blockquote>                                     
-  <pre># Bering specific rules:<br># allow loc to fw udp/53 for dnscache to work<br># allow loc to fw tcp/80 for weblet to work<br>#<br>ACCEPT loc fw udp 53<br>ACCEPT loc fw tcp 80</pre>
-             </blockquote>
-                                                  
-<h3 align="left">Version  1.3.6 and 1.3.7</h3>
-                                                  
-<p align="left">If you have a pair of firewall systems configured for    
-       failover or if you have asymmetric routing, you will need to modify 
-                your firewall setup slightly under Shorewall versions 1.3.6 
-  and   1.3.7</p>
-                                                  
-<ol>
-                        <li>                                            
-                                      
-    <p align="left">Create the file /etc/shorewall/newnotsyn and in it add 
-                the following rule<br>
-                      <br>
-                      <font face="Courier">run_iptables -A newnotsyn -j RETURN
-   #  So  that the            connection tracking table can be rebuilt<br>
-                                                           # from non-SYN 
-packets     after  takeover.<br>
-             </font>  </p>
-             </li>
-             <li>                                                       
-                           
-    <p align="left">Create /etc/shorewall/common (if you don't already   
-        have that file) and include the following:<br>
-                      <br>
-                      <font face="Courier">run_iptables -A common -p tcp
---tcp-flags                 ACK,FIN,RST ACK -j ACCEPT #Accept Acks to rebuild
-connection<br>
-                                                                                
-              #tracking table. <br>
-                      . /etc/shorewall/common.def</font> </p>
-             </li>
+             <li>You have one or more entries in /etc/shorewall/masq with 
+an  interface    name in the SUBNET (second) column; and</li>
+             <li>That interface connects to more than one subnetwork.</li>
                      
 </ol>
-                                                  
+           Two examples:<br>
+           <br>
+            <b>Example 1</b> -- Suppose that your current config is as follows:<br>
+              <br>
+                     
+<pre>	[root@gateway test]# cat /etc/shorewall/masq<br>	#INTERFACE              SUBNET                  ADDRESS<br>	eth0                    eth2                    206.124.146.176<br>	eth0                    192.168.10.0/24         206.124.146.176<br>	#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE<br>	[root@gateway test]# ip route show dev eth2<br>	192.168.1.0/24  scope link<br>	192.168.10.0/24  proto kernel  scope link  src 192.168.10.254<br>	[root@gateway test]#</pre>
+                     
+<blockquote>In this case, the second entry in /etc/shorewall/masq is no longer 
+     required.<br>
+           </blockquote>
+           <b>Example 2</b>-- What if your current configuration is like
+this?<br>
+                     
+<pre>	[root@gateway test]# cat /etc/shorewall/masq	<br>	#INTERFACE              SUBNET                  ADDRESS	<br>	eth0                    eth2                    206.124.146.176<br>	#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE	<br>	[root@gateway test]# ip route show dev eth2	<br>	192.168.1.0/24  scope link<br>	192.168.10.0/24  proto kernel  scope link  src 192.168.10.254	<br>	[root@gateway test]#</pre>
+                     
+<blockquote>In this case, you would want to change the entry in /etc/shorewall/masq 
+     to:<br>
+           </blockquote>
+                     
+<pre>	#INTERFACE              SUBNET                  ADDRESS	<br>	eth0                    192.168.1.0/24          206.124.146.176<br>	#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</pre>
+           <img src="images/BD21298_3.gif" alt="" width="13" height="13">
+              Version 1.3.14 also introduced simplified ICMP echo-request 
+(ping)    handling.  The option OLD_PING_HANDLING=Yes in /etc/shorewall/shorewall.conf
+    is used  to specify that the old (pre-1.3.14) ping handling is to be
+used     (If the option is not set in your /etc/shorewall/shorewall.conf
+then OLD_PING_HANDLING=Yes      is assumed). I don't plan on supporting the
+old handling indefinitely  so   I urge current users to migrate to using
+the new handling as soon as  possible.    See the <a href="ping.html">'Ping'
+handling documentation</a>  for details.<br>
+                   
+<h3>Version 1.3.10</h3>
+            If you have installed the 1.3.10 Beta 1 RPM and are now upgrading 
+  to  version   1.3.10, you will need to use the '--force' option:<br>
+            <br>
+                       
+<blockquote>                                    
+  <pre>rpm -Uvh --force shorewall-1.3.10-1.noarch.rpm </pre>
+            </blockquote>
+                       
+<h3>Version &gt;= 1.3.9</h3>
+              The 'functions' file has moved to /usr/lib/shorewall/functions. 
+  If  you   have  an application that uses functions from that file, your 
+application     will need to be changed to reflect this change of location.<br>
+                           
+<h3>Version &gt;= 1.3.8</h3>
+                                                                
+<p>If you have a pair of firewall systems configured for            failover
+        or if you have asymmetric routing, you will need to modify      
+                         your firewall setup slightly under Shorewall   
+                            versions &gt;= 1.3.8. Beginning with version
+1.3.8,                                     you must set NEWNOTSYN=Yes in
+your                                /etc/shorewall/shorewall.conf file.</p>
+                                                                
+<h3>Version &gt;= 1.3.7</h3>
+                                                                
+<p>Users specifying ALLOWRELATED=No in                                /etc/shorewall.conf
+        will need to include the                                following
+rules      in  their /etc/shorewall/icmpdef                             
+  file (creating       this file if necessary):</p>
+                                                                
+<pre>	run_iptables -A icmpdef -p ICMP --icmp-type echo-reply -j ACCEPT<br>	run_iptables -A icmpdef -p ICMP --icmp-type source-quench -j ACCEPT<br>	run_iptables -A icmpdef -p ICMP --icmp-type destination-unreachable -j ACCEPT<br>	run_iptables -A icmpdef -p ICMP --icmp-type time-exceeded -j ACCEPT<br>	run_iptables -A icmpdef -p ICMP --icmp-type parameter-problem -j ACCEPT</pre>
+                                  
+<p>Users having an /etc/shorewall/icmpdef file may remove the ".   /etc/shorewall/icmp.def"
+        command from that file since the icmp.def file is now   empty.</p>
+                                  
+<h3><b><a name="Bering">Upgrading </a>Bering to                         
+      Shorewall &gt;= 1.3.3</b></h3>
+                                                                
+<p>To properly upgrade with Shorewall version                           
+    1.3.3 and later:</p>
+                                                                
+<ol>
+                                                 <li>Be sure you have a backup
+   --  you   will  need                                  to transcribe any
+ Shorewall   configuration                                    changes that
+ you have made   to the new                                  configuration.</li>
+                                                 <li>Replace the shorwall.lrp 
+  package     provided  on                                  the Bering floppy 
+  with the    later one.  If you did                                  not 
+obtain  the later   version from Jacques's                               
+  site,  see additional   instructions  below.</li>
+                                                 <li>Edit the /var/lib/lrpkg/root.exclude.list
+                                         file and remove the /var/lib/shorewall
+      entry  if                                  present. Then do not forget
+   to   backup  root.lrp !</li>
+                                     
+</ol>
+                                  
+<p>The .lrp that I release isn't set up for a two-interface firewall like
+          Jacques's. You need to follow the <a href="two-interface.htm">instructions
+        for   setting up a two-interface firewall</a> plus you also need
+to   add    the  following   two Bering-specific rules to /etc/shorewall/rules:</p>
+                                  
+<blockquote>                                                    
+  <pre># Bering specific rules:<br># allow loc to fw udp/53 for dnscache to work<br># allow loc to fw tcp/80 for weblet to work<br>#<br>ACCEPT loc fw udp 53<br>ACCEPT loc fw tcp 80</pre>
+                  </blockquote>
+                                                            
+<h3 align="left">Version  1.3.6 and 1.3.7</h3>
+                                                            
+<p align="left">If you have a pair of firewall systems configured for   
+        failover or if you have asymmetric routing, you will need to modify
+                   your firewall setup slightly under Shorewall versions
+1.3.6      and   1.3.7</p>
+                                                            
+<ol>
+                             <li>                                       
+                                                                    
+    <p align="left">Create the file /etc/shorewall/newnotsyn and in it add
+                   the following rule<br>
+                           <br>
+                           <font face="Courier">run_iptables -A newnotsyn 
+-j  RETURN    #  So  that the            connection tracking table can be 
+rebuilt<br>
+                                                                # from non-SYN
+   packets     after  takeover.<br>
+                  </font>  </p>
+                  </li>
+                  <li>                                                  
+                                                         
+    <p align="left">Create /etc/shorewall/common (if you don't already  
+         have that file) and include the following:<br>
+                           <br>
+                           <font face="Courier">run_iptables -A common -p 
+tcp   --tcp-flags                 ACK,FIN,RST ACK -j ACCEPT #Accept Acks to
+rebuild   connection<br>
+                                                                                    
+                 #tracking table. <br>
+                           . /etc/shorewall/common.def</font> </p>
+                  </li>
+                               
+</ol>
+                                                            
 <h3 align="left">Versions &gt;= 1.3.5</h3>
-                                                  
-<p align="left">Some forms of pre-1.3.0 rules file syntax are no         
-  longer supported. </p>
-                                                  
+                                                            
+<p align="left">Some forms of pre-1.3.0 rules file syntax are no        
+   longer supported. </p>
+                                                            
 <p align="left">Example 1:</p>
-                                                  
-<div align="left">                        
+                                                            
+<div align="left">                             
 <pre>	ACCEPT    net    loc:192.168.1.12:22    tcp    11111    -    all</pre>
-             </div>
-                                                  
+                  </div>
+                                                            
 <p align="left">Must be replaced with:</p>
-                                                  
-<div align="left">                        
+                                                            
+<div align="left">                             
 <pre>	DNAT	net	loc:192.168.1.12:22	tcp	11111</pre>
-             </div>
-                        
-<div align="left">               
+                  </div>
+                                  
+<div align="left">                    
 <p align="left">Example 2:</p>
-           </div>
-                        
-<div align="left">               
+                </div>
+                                  
+<div align="left">                    
 <pre>	ACCEPT	loc	fw::3128	tcp	80	-	all</pre>
-             </div>
-                        
-<div align="left">               
+                  </div>
+                                  
+<div align="left">                    
 <p align="left">Must be replaced with:</p>
-           </div>
-                        
-<div align="left">               
+                </div>
+                                  
+<div align="left">                    
 <pre>	REDIRECT	loc	3128	tcp	80</pre>
-             </div>
-                                                  
+                  </div>
+                                                            
 <h3 align="left">Version &gt;= 1.3.2</h3>
-                                                  
-<p align="left">The functions and versions files together with the       
-    'firewall' symbolic link have moved from /etc/shorewall to /var/lib/shorewall. 
-                If you have applications that access these files, those applications 
-                should be modified accordingly.</p>
-                                         
-<p><font size="2">  Last updated 3/6/2003 -                              
-<a href="support.htm">Tom Eastep</a></font> </p>
-                         
-<p><font face="Trebuchet MS"><a href="copyright.htm"><font size="2">Copyright</font> 
-       © <font size="2">2001, 2002, 2003 Thomas M. Eastep.</font></a></font><br>
-       </p>
-       <br>
-      <br>
-     <br>
-    <br>
+                                                            
+<p align="left">The functions and versions files together with the      
+     'firewall' symbolic link have moved from /etc/shorewall to /var/lib/shorewall.
+                   If you have applications that access these files, those
+ applications                  should be modified accordingly.</p>
+                                                   
+<p><font size="2">  Last updated 3/18/2003 -                            
+  <a href="support.htm">Tom Eastep</a></font> </p>
+                                   
+<p><font face="Trebuchet MS"><a href="copyright.htm"><font size="2">Copyright</font>
+          © <font size="2">2001, 2002, 2003 Thomas M. Eastep.</font></a></font><br>
+   </p>
    <br>
   <br>
  <br>

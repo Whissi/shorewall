@@ -464,6 +464,11 @@ mac_chain() # $1 = interface
    echo $(chain_base $1)_mac
 }
 
+macrecent_target() # $1 - interface
+{
+    [ -n "$MACLIST_TTL" ] && echo $(chain_base $1)_rec || echo RETURN
+}
+
 #
 # Functions for creating dynamic zone rules
 #
@@ -2000,6 +2005,7 @@ setup_mac_lists() {
     local addresses
     local address
     local chain
+    local chain1
     local macpart
     local blob
     local hosts
@@ -2024,10 +2030,19 @@ setup_mac_lists() {
 
     progress_message "Setting up MAC Verification on $maclist_interfaces..."
     #
-    # Be sure that they are all ethernet interfaces
+    # Create chains.
     #
     for interface in $maclist_interfaces; do
-	createchain $(mac_chain $interface) no
+	chain=$(mac_chain $interface)
+	createchain $chain no
+	
+	if [ -n "$MACLIST_TTL" ]; then
+	    chain1=$(macrecent_target $interface)
+	    createchain $chain1 no
+	    run_iptables -A $chain  -m recent --rcheck --seconds $MACLIST_TTL --name $chain -j $chain1
+	    run_iptables -A $chain1 -m recent --update                        --name $chain -j ACCEPT
+	    run_iptables -A $chain1 -m recent --set                           --name $chain -j ACCEPT
+	fi
     done
     #
     # Process the maclist file producing the verification rules
@@ -2047,6 +2062,7 @@ setup_mac_lists() {
 	fi
 
 	chain=$(mac_chain $interface)
+	chain1=$(macrecent_target $interface)
 
 	if ! havechain $chain ; then
 	    fatal_error "No hosts on $interface have the maclist option specified"
@@ -2055,10 +2071,10 @@ setup_mac_lists() {
 	macpart=$(mac_match $mac)
 
 	if [ -z "$addresses" ]; then
-	    run_iptables -A $chain $macpart $physdev_part -j RETURN
+	    run_iptables -A $chain $macpart $physdev_part -j $chain1
 	else
 	    for address in $(separate_list $addresses) ; do
-		run_iptables2 -A $chain $macpart -s $address $physdev_part -j RETURN
+		run_iptables2 -A $chain $macpart -s $address $physdev_part -j $chain1
 	    done
 	fi
     done < $TMP_DIR/maclist
@@ -2068,6 +2084,7 @@ setup_mac_lists() {
     #
     for interface in $maclist_interfaces; do
 	chain=$(mac_chain $interface)
+	chain1=$(macrecent_target $interface)
 
 	blob=$(ip link show $interface 2> /dev/null)
 
@@ -2076,11 +2093,11 @@ setup_mac_lists() {
 
 	ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet //; s/brd //; s/scope.*//;' | while read address broadcast; do
 	    if [ -n "$broadcast" ]; then
-		run_iptables -A $chain -s ${address%/*} -d $broadcast -j RETURN
+		run_iptables -A $chain -s ${address%/*} -d $broadcast -j $chain1
 	    fi
 
-	    run_iptables -A $chain -s $address -d 255.255.255.255 -j RETURN
-	    run_iptables -A $chain -s $address -d 224.0.0.0/4     -j RETURN
+	    run_iptables -A $chain -s $address -d 255.255.255.255 -j $chain1
+	    run_iptables -A $chain -s $address -d 224.0.0.0/4     -j $chain1
 	done
 
 	if [ -n "$MACLIST_LOG_LEVEL" ]; then
@@ -5600,6 +5617,7 @@ determine_capabilities() {
     POLICY_MATCH=
     PHYSDEV_MATCH=
     IPRANGE_MATCH=
+    RECENT_MATCH=
 
     qt $IPTABLES -N fooX1234
     qt $IPTABLES -A fooX1234 -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT             && CONNTRACK_MATCH=Yes
@@ -5608,7 +5626,7 @@ determine_capabilities() {
     qt $IPTABLES -A fooX1234 -m policy --pol ipsec --dir in -j ACCEPT                   && POLICY_MATCH=Yes
     qt $IPTABLES -A fooX1234 -m physdev --physdev-in eth0 -j ACCEPT                     && PHYSDEV_MATCH=Yes
     qt $IPTABLES -A fooX1234 -m iprange --src-range 192.168.1.5-192.168.1.124 -j ACCEPT && IPRANGE_MATCH=Yes
-
+    qt $IPTABLES -A fooX1234 -m recent --update -j ACCEPT                               && RECENT_MATCH=Yes
 
     if [ -n "$PKTTYPE" ]; then
 	qt $IPTABLES -A fooX1234 -m pkttype --pkt-type broadcast -j ACCEPT || PKTTYPE=
@@ -5638,6 +5656,7 @@ report_capabilities() {
     report_capability "Policy Match" $POLICY_MATCH
     report_capability "Physdev Match" $PHYSDEV_MATCH
     report_capability "IP range Match" $IPRANGE_MATCH
+    report_capability "Recent Match" $RECENT_MATCH
 }
 
 #
@@ -7263,6 +7282,7 @@ do_initialize() {
     LOGALLNEW=
     DROPINVALID=
     RFC1918_STRICT=
+    MACLIST_TTL=
 
     RESTOREBASE=
     TMP_DIR=
@@ -7459,6 +7479,12 @@ do_initialize() {
     LOGTAGONLY=$(added_param_value_no LOGTAGONLY $LOGTAGONLY)
     DROPINVALID=$(added_param_value_yes DROPINVALID $DROPINVALID)
     RFC1918_STRICT=$(added_param_value_no RFC1918_STRICT $RFC1918_STRICT)
+
+    [ "$MACLIST_TTL" = "0" ] && MACLIST_TTL=
+
+    if [ -n "$MACLIST_TTL" -a -z "$RECENT_MATCH" ]; then
+	startup_error "MACLIST_TTL requires the Recent Match capability which is not present in your Kernel and/or iptables"
+    fi
     #
     # Strip the files that we use often
     #

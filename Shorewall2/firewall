@@ -1768,10 +1768,10 @@ setup_ipsec() {
 	    for z in $zones; do
 		case $2 in
 		    _in)
-			set_mss1 ${z}2${zone} $1
+			set_mss1 ${zone}2${z} $1
 			;;
 		    _out)			
-			set_mss1 ${zone}2${z} $1
+			set_mss1 ${z}2${zone} $1
 			;;
 		    *)
 			set_mss1 ${z}2${zone} $1

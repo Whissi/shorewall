@@ -16,7 +16,7 @@
 #
 #
 #	ACTION			ACCEPT, DROP, REJECT, DNAT, DNAT-, REDIRECT,
-#				CONTINUE or LOG.
+#				REDIRECT-, CONTINUE or LOG.
 #
 #				ACCEPT
 #						Allow the connection request
@@ -121,6 +121,12 @@
 #			3	You may not specify both an interface and 
 #				an address.
 #
+#			Unlike in the SOURCE column, you may specify a range of
+#			up to 256 IP addresses using the syntax
+#			<first ip>-<last ip>. When the ACTION is DNAT or DNAT-,
+#			the connections will be assigned to the addresses in the
+#			range in a round-robin fashion.
+#
 #			The port that the server is listening on may be
 #			included and separated from the server's IP address by
 #			":". If omitted, the firewall will not modifiy the
@@ -136,7 +142,7 @@
 #			contain the port number on the firewall that the
 #			request should be redirected to.
 #
-#	PROTO		Protocol - Must be "tcp", "udp", "icmp", a number,
+#	PROTO		Protocol - Must be "tcp", "udp", "icmp", a number or
 #			"all".
 #
 #	DEST PORT(S)	Destination Ports. A comma-separated list of Port
@@ -147,11 +153,11 @@
 #			A port range is expressed as <low port>:<high port>.
 #
 #			This column is ignored if PROTOCOL = all but must be
-#			entered if any of the following ields are supplied.
+#			entered if any of the following fields are supplied.
 #			In that case, it is suggested that this field contain
 #			 "-"
 #
-#			If MULTIPORT=Yes in /etc/shorewall/shorewall.conf, then
+#			If your kernel contains multi-port match support, then
 #			only a single Netfilter rule will be generated if in
 #			this list and the CLIENT PORT(S) list below:
 #			1. There are 15 or less ports listed.
@@ -168,7 +174,7 @@
 #			specify an ADDRESS in the next column, then place "-"
 #			in this column.
 #
-#			If MULTIPORT=Yes in /etc/shorewall/shorewall.conf, then
+#			If your kernel contains multi-port match support, then
 #			only a single Netfilter rule will be generated if in
 #			this list and the DEST PORT(S) list above:
 #			1. There are 15 or less ports listed.
@@ -182,6 +188,16 @@
 #			on some interface on the firewall and connections to
 #			that address will be forwarded to the IP and port
 #			specified in the DEST column.
+#
+#			A comma-separated list of addresses may also be used.
+#			This is usually most useful with the REDIRECT target
+#			where you want to redirect traffic destined for
+#			a particular set of hosts.
+#
+#			Finally, if the list of addresses begins with "!" then
+#			the rule will be followed only if the original
+#			destination address in the connection request does not
+#			match any of the addresses listed.
 #
 #			The address may optionally be followed by
 #			a colon (":") and a second IP address. This causes

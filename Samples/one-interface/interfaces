@@ -19,6 +19,10 @@
 #			once in this file. You may NOT specify the name of
 #			an alias (e.g., eth0:0) here; see
 #			http://www.shorewall.net/FAQ.htm#faq18
+#			
+#			You may specify wildcards here. For example, if you 
+#			want to make a entry that applies to all PPP
+#			interfaces, use 'ppp+'
 #
 #			DO NOT DEFINE THE LOOPBACK INTERFACE (lo) IN THIS FILE.
 #
@@ -94,6 +98,14 @@
 #					intended soley for use with Proxy ARP
 #					sub-networking as described at:
 #					http://www.tldp.org/HOWTO/mini/Proxy-ARP-Subnet
+#			newnotsyn
+#					TCP packets that don't have the SYN flag set and 
+#					which are not part of an established connection
+#					will be accepted from this interface, even if
+#					NEWNOTSYN=No has been specified in 
+#					/etc/shorewall/shorewall.conf.
+#
+#					This option has no effect if NEWNOTSYN=Yes
 #
 #			The order in which you list the options is not
 #			significant but the list should have no embedded white

@@ -1709,6 +1709,25 @@ process_tc_rule()
 	    esac
 	fi
 
+	if [ "x$user" != "x-" ]; then
+
+	    [ "$chain" != tcout ] && \
+		fatal_error "Invalid use of a user/group: rule \"$rule\""
+
+	    case "$user" in
+		*:*)
+		    r="$r-m owner"
+		    temp="${user%:*}"
+		    [ -n "$temp" ] && r="$r --uid-owner $temp " 
+		    temp="${user#*:}"
+		    [ -n "$temp" ] && r="$r --gid-owner $temp "
+		    ;;
+		*)
+		    r="$r-m owner --uid-owner $user "
+		    ;;
+	    esac
+	fi
+
 	[ "x$dest"   = "x-"  ] || r="${r}-d $dest "
 	[ "$proto"   = "all" ] || r="${r}-p $proto "
 	[ "x$port"   = "x-"  ] || r="${r}--dport $port "
@@ -1767,9 +1786,9 @@ setup_tc1() {
     #
     strip_file tcrules
 
-    while read mark sources dests proto ports sports; do
-	expandv mark sources dests proto ports sports
-	rule=`echo "$mark $sources $dests $proto $ports $sports"`
+    while read mark sources dests proto ports sports user; do
+	expandv mark sources dests proto ports sports user
+	rule=`echo "$mark $sources $dests $proto $ports $sports $user"`
 	process_tc_rule
     done < $TMP_DIR/tcrules
     #

@@ -20,3 +20,18 @@ New Features:
 
    If the list begins with "!" then SNAT will occur only if the
    destination IP address is NOT included in the list.
+
+2) Output traffic control rules (those with the firewall as the source)
+   may now be qualified by the effective userid and/or effective group
+   id of the program generating the output. This feature is courtesy of 
+   Frédéric LESPEZ.
+
+   A new USER column has been added to /etc/shorewall/tcrules.
+
+   It may contain :
+
+      [<user name or number>]:[<group name or number>]
+
+   The colon is optionnal when specifying only a user.
+
+       Examples : john: / john / :users / john:users	

@@ -115,4 +115,14 @@ New Features:
 			If specified, the remote gateway is to be
 			considered part of these zones.
 
+5) An 'arp_filter' option has been added to the
+   /etc/shorewall/interfaces file. This option causes
+   /proc/sys/net/ipv4/conf/<interface>/arp_filter to be set with the
+   result that this interface will only answer ARP 'who-has' requests
+   from hosts that are routed out of that interface. Setting this
+   option facilitates testing of your firewall where multiple firewall
+   interfaces are connected to the same HUB/Switch (all interfaces
+   connected to the single HUB/Switch should have this option
+   specified). Note that using such a configuration in a production
+   environment is strongly recommended against.
 

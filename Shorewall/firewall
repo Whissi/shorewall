@@ -597,7 +597,7 @@ validate_interfaces_file() {
 
 	for option in $options; do
 	    case $option in
-		dhcp|norfc1918|tcpflags|newnotsyn)
+		dhcp|norfc1918|tcpflags|newnotsyn|arp_filter)
 		    ;;
 		routefilter|dropunclean|logunclean|blacklist|proxyarp|maclist|-)
 		    ;;
@@ -3813,6 +3813,27 @@ add_common_rules() {
 	done
     fi
     #
+    # ARP Filtering
+    #
+    for f in /proc/sys/net/ipv4/conf/*/arp_filter; do
+	echo 0 > $f
+    done
+
+    interfaces=`find_interfaces_by_option arp_filter`
+
+    if [ -n "$interfaces" ]; then
+	echo "Setting up ARP Filtering..."
+	for interface in $interfaces; do
+	    file=/proc/sys/net/ipv4/conf/$interface/arp_filter
+	    if [ -f $file ]; then
+		echo 1 > $file
+	    else
+		error_message \
+		    "Warning: Cannot set ARP filtering on $interface"
+	    fi
+	done
+    fi
+    #
     # Process Black List
     #
     setup_blacklist
@@ -3832,8 +3853,6 @@ add_common_rules() {
 	if [ -n "$ROUTE_FILTER" ]; then
 	    echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter
 	else
-	    echo 0 > /proc/sys/net/ipv4/conf/all/rp_filter
-
 	    for interface in $interfaces; do
 		file=/proc/sys/net/ipv4/conf/$interface/rp_filter
 		if [ -f $file ]; then

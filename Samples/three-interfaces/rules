@@ -1,5 +1,5 @@
 #	
-# 	Shorewall version 1.4.8 - Sample Rules File For Three Interfaces
+# 	Shorewall version 1.4.8a -- Sample Rules File For Three Interfaces
 #
 # 	/etc/shorewall/rules
 #
@@ -323,8 +323,9 @@ ACCEPT		dmz		fw		icmp	8
 ACCEPT		loc		dmz		icmp	8
 ACCEPT		dmz		loc		icmp	8
 ACCEPT		dmz		net		icmp	8
-ACCEPT		fw		loc		icmp	8
-ACCEPT		fw		dmz		icmp	8
+ACCEPT		fw		net		icmp
+ACCEPT		fw		loc		icmp	
+ACCEPT		fw		dmz		icmp	
 ACCEPT		net		dmz		icmp	8	# Only with Proxy ARP and
 ACCEPT		net		loc		icmp	8 	# static NAT
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

@@ -63,17 +63,17 @@ dos2unix</a></u>
  </ol>
             
  <ul>
-   <li><b><a href="#Upgrade">Upgrade Issues</a></b></li>
+   <li><b><a href="upgrade_issues.htm">Upgrade Issues</a></b></li>
    <li>
-            
-          <b><font color="#660066">
- <a href="errata_1.htm">Problems in Version 1.1</a></font></b></li>
+                
+          <b><a href="#V1.3">Problems in Version 1.3</a></b></li>
    <li>
                 
           <b><a href="errata_2.htm">Problems in Version 1.2</a></b></li>
    <li>
                 
-          <b><a href="#V1.3">Problems in Version 1.3</a></b></li>
+          <b><font color="#660066">
+ <a href="errata_1.htm">Problems in Version 1.1</a></font></b></li>
    <li>
                 
           <b><font color="#660066"><a href="#iptables">
@@ -88,112 +88,66 @@ dos2unix</a></u>
  </ul>
  <hr>
             
-          <h2 align="Left"><a name="Upgrade"></a>Upgrade Issues</h2>
+          <h2 align="Left"><a name="V1.3"></a>Problems in Version 1.3</h2>
                 
-                              <h3>Version &gt;= 1.3.7</h3>
+                              <h3>Version 1.3.7b</h3>
 
-                              <p>Users specifying ALLOWRELATED=No in 
-                              /etc/shorewall.conf will need to include the 
-                              following rules in their /etc/shorewall/icmpdef 
-                              file (creating this file if necessary):</p>
+                              <p>DNAT rules where the source zone is 'fw' ($FW) 
+                              result in an error message. Installing
+                              <a href="http://www.shorewall.net/pub/shorewall/errata/1.3.7/firewall">
+                              this corrected firewall script</a> in /var/lib/shorewall/firewall 
+                              as described above corrects this problem.</p>
 
-                              <pre>	run_iptables -A icmpdef -p ICMP --icmp-type echo-reply -j ACCEPT
-	run_iptables -A icmpdef -p ICMP --icmp-type source-quench -j ACCEPT
-	run_iptables -A icmpdef -p ICMP --icmp-type destination-unreachable -j ACCEPT
-	run_iptables -A icmpdef -p ICMP --icmp-type time-exceeded -j ACCEPT
-	run_iptables -A icmpdef -p ICMP --icmp-type parameter-problem -j ACCEPT</pre>
- <p>Users having an /etc/shorewall/icmpdef file may remove the &quot;. 
- /etc/shorewall/icmp.def&quot; command from that file since the icmp.def file is now 
- empty.</p>
- <h3><b><a name="Bering">Upgrading </a>Bering to 
-                              Shorewall &gt;= 1.3.3</b></h3>
+                              <h3>Version 1.3.7a</h3>
 
-                              <p>To properly upgrade with Shorewall version 
-                              1.3.3 and later:</p>
+                              <p>&quot;shorewall refresh&quot; is not creating the proper 
+                              rule for FORWARDPING=Yes. Consequently, after 
+                              &quot;shorewall refresh&quot;, the firewall will not forward 
+                              icmp echo-request (ping) packets. Installing
+                              <a href="http://www.shorewall.net/pub/shorewall/errata/1.3.7/firewall">
+                              this corrected firewall script</a> in /var/lib/shorewall/firewall 
+                              as described above corrects this problem.</p>
+
+                              <h3>Version &lt;= 1.3.7a</h3>
+
+                              <p>If &quot;norfc1918&quot; and &quot;dhcp&quot; are both specified as 
+                              options on a given interface then RFC 1918 
+                              checking is occurring before DHCP checking. This 
+                              means that if a DHCP client broadcasts using an 
+                              RFC 1918 source address, then the firewall will 
+                              reject the broadcast (usually logging it). This 
+                              has two problems:</p>
 
                               <ol>
-                                <li>Be sure you have a backup -- you will need 
-                                to transcribe any Shorewall configuration 
-                                changes that you have made to the new 
-                                configuration.</li>
-                                <li>Replace the shorwall.lrp package provided on 
-                                the Bering floppy with the later one. If you did 
-                                not obtain the later version from Jacques's 
-                                site, see additional instructions below.</li>
-                                <li>Edit the /var/lib/lrpkg/root.exclude.list 
-                                file and remove the /var/lib/shorewall entry if 
-                                present. Then do not forget to backup root.lrp !</li>
+                                <li>If the firewall is running a DHCP server, 
+                                the client won't be able to obtain an IP address 
+                                lease from that server.</li>
+                                <li>With this order of checking, the &quot;dhcp&quot; 
+                                option cannot be used as a noise-reduction 
+                                measure where there are both dynamic and static 
+                                clients on a LAN segment.</li>
  </ol>
- <p>The .lrp that I release isn't set up for a two-interface firewall like 
- Jacques's. You need to follow the <a href="two-interface.htm">instructions for 
- setting up a two-interface firewall</a> plus you also need to add the following 
- two Bering-specific rules to /etc/shorewall/rules:</p>
- <blockquote>
-   <pre># Bering specific rules:
-# allow loc to fw udp/53 for dnscache to work
-# allow loc to fw tcp/80 for weblet to work
-#
-ACCEPT loc fw udp 53
-ACCEPT loc fw tcp 80</pre>
- </blockquote>
                 
-          <h3 align="Left">Version &gt;= 1.3.6</h3>
-                
-          <p align="Left">If you have a pair of firewall systems configured for 
-          failover, you will need to modify your firewall setup slightly under 
-          Shorewall versions &gt;= 1.3.6. </p>
-                
-          <ol>
-            <li>
-                
-          <p align="Left">Create the file /etc/shorewall/newnotsyn and in it add 
-          the following rule<br>
-          <br>
-          <font face="Courier">run_iptables -A newnotsyn -j RETURN # So that the 
-          connection tracking table can be rebuilt<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-          # from non-SYN packets after takeover.<br>
-&nbsp;</font></li>
- <li>
-                
-          <p align="Left">Create /etc/shorewall/common (if you don't already 
-          have that file) and include the following:<br>
-          <br>
-          <font face="Courier">run_iptables -A common -p tcp --tcp-flags 
-          ACK,FIN,RST ACK -j ACCEPT #Accept Acks to rebuild connection<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-          #tracking table. <br>
-          . /etc/shorewall/common.def</font></li>
-</ol>
-                
-          <h3 align="Left">Versions &gt;= 1.3.5</h3>
-                
-          <p align="Left">Some forms of pre-1.3.0 rules file syntax are no 
-          longer supported. </p>
-                
-          <p align="Left">Example 1:</p>
-                
-          <div align="left">
-            <pre>	ACCEPT    net    loc:192.168.1.12:22    tcp    11111    -    all</pre>
- </div>
-                
-          <p align="Left">Must be replaced with:</p>
-                
-          <div align="left">
-            <pre>	DNAT	net	loc:192.168.1.12:22	tcp	11111</pre>
- </div>
- <div align="left">
-   <p align="left">Example 2:</div>
- <div align="left">
-   <pre>	ACCEPT	loc	fw::3128	tcp	80	-	all</pre>
- </div>
- <div align="left">
-   <p align="left">Must be replaced with:</div>
- <div align="left">
-   <pre>	REDIRECT	loc	3128	tcp	80</pre>
- </div>
-                
-          <h2 align="Left"><a name="V1.3"></a>Problems in Version 1.3</h2>
+                              <p>
+                              <a href="http://www.shorewall.net/pub/shorewall/errata/1.3.7/firewall">
+                              This version of the 1.3.7a firewall script </a>
+                              corrects the problem. It must be installed in /var/lib/shorewall 
+                              as described above.</p>
+
+                              <h3>Version 1.3.7</h3>
+
+                              <p>Version 1.3.7 dead on arrival -- please use 
+                              version 1.3.7a and check your version against 
+                              these md5sums -- if there's a difference, please 
+                              download again.</p>
+
+                              <pre>	d2fffb7fb99bcc6cb047ea34db1df10 shorewall-1.3.7a.tgz
+	6a7fd284c8685b2b471a2f47b469fb94 shorewall-1.3.7a-1.noarch.rpm
+	3decd14296effcff16853106771f7035 shorwall-1.3.7a.lrp</pre>
+ <p>In other words, type &quot;md5sum &lt;<i>whatever package you downloaded</i>&gt; and 
+ compare the result with what you see above.</p>
+ <p>I'm embarrassed to report that 1.2.7 was also DOA -- maybe I'll skip the .7 
+ version in each sequence from now on.</p>
                 
           <h3 align="Left">Version 1.3.6</h3>
                 
@@ -353,6 +307,13 @@ ACCEPT loc fw tcp 80</pre>
           corrected version is here</a>.</li>
  </ul>
  <hr>
+            
+          <h2 align="Left"><a name="Upgrade"></a>Upgrade Issues</h2>
+                
+          <p align="Left">The upgrade issues have moved to
+          <a href="upgrade_issues.htm">a separate page</a>.</p>
+                
+ <hr>
                 
         <h3 align="Left"><a name="iptables"></a><font color="#660066">
  Problem with iptables version 1.2.3</font></h3>
@@ -435,9 +396,9 @@ Aborted (core dumped)
                               installed, simply use the &quot;--nodeps&quot; option to 
                               rpm.</p>
 
-                              <p>Installing: rpm -ivh <i>&lt;shorewall rpm&gt;</i></p>
+                              <p>Installing: rpm -ivh --nodeps <i>&lt;shorewall rpm&gt;</i></p>
 
-                              <p>Upgrading: rpm -Uvh <i>&lt;shorewall rpm&gt;</i></p>
+                              <p>Upgrading: rpm -Uvh --nodeps <i>&lt;shorewall rpm&gt;</i></p>
 
                               <h3><a name="Multiport"></a><b>Problems with 
                               iptables version 1.2.7 and MULTIPORT=Yes</b></h3>
@@ -445,7 +406,8 @@ Aborted (core dumped)
                               <p>The iptables 1.2.7 release of iptables has made 
                               an incompatible change to the syntax used to 
                               specify multiport match rules; as a consequence, 
-                              if you install iptables 1.2.7 you must</p>
+                              if you install iptables 1.2.7 you must be running 
+                              Shorewall 1.3.7a or later or:</p>
 
                               <ul>
                                 <li>set MULTIPORT=No in 
@@ -457,7 +419,7 @@ Aborted (core dumped)
                                 as described above.</li>
  </ul>
  <p><font size="2">
- Last updated 8/22/2002 -
+ Last updated 9/1/2002 -
                               <a href="support.htm">Tom Eastep</a></font> </p>
 
  <p><font face="Trebuchet MS"><a href="copyright.htm"><font size="2">Copyright</font> 

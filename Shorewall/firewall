@@ -529,7 +529,7 @@ validate_interfaces_file() {
 
 	for option in `separate_list $options`; do
 	    case $option in
-	    dhcp|noping|filterping|routestopped|norfc1918|multi)
+	    dhcp|noping|filterping|routestopped|norfc1918|multi|tcpflags)
                 ;;
 	    routefilter|dropunclean|logunclean|blacklist|proxyarp|maclist|-)
 		;;
@@ -3211,6 +3211,47 @@ add_common_rules() {
 	done
 
     fi
+    
+    interfaces=`find_interfaces_by_option tcpflags`
+
+    if [ -n "$interfaces" ]; then
+	echo "Setting up TCP Flags checking..."
+	
+	createchain tcpflags no
+
+	if [ -n "$TCP_FLAGS_LOG_LEVEL" ]; then
+	    createchain logflags no
+
+	    run_iptables -A logflags -j LOG  $LOGPARMS \
+		--log-level $TCP_FLAGS_LOG_LEVEL \
+		--log-prefix "Shorewall:logflags:$TCP_FLAGS_DISPOSITION:" \
+		--log-tcp-options --log-ip-options
+	    
+	    case $TCP_FLAGS_DISPOSITION in
+		REJECT)
+		    run_iptables -A logflags -j REJECT --reject-with tcp-reset
+		    ;;
+		*)
+		    run_iptables -A logflags -j $TCP_FLAGS_DISPOSITION
+		    ;;
+	    esac
+
+	    disposition="-j logflags"
+	else
+	    disposition="-j $TCP_FLAGS_DISPOSITION"
+	fi
+
+	run_iptables -A tcpflags -p tcp --tcp-flags ALL FIN,URG,PSH $disposition
+	run_iptables -A tcpflags -p tcp --tcp-flags ALL NONE        $disposition
+	run_iptables -A tcpflags -p tcp --tcp-flags SYN,RST SYN,RST $disposition
+	run_iptables -A tcpflags -p tcp --tcp-flags SYN,FIN SYN,FIN $disposition
+	
+	for interface in $interfaces; do
+	    for chain in `first_chains $interface`; do
+		run_iptables -A $chain -p tcp -j tcpflags
+	    done
+	done
+    fi
     #
     # Process Black List
     #
@@ -3723,6 +3764,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
     blacklist_interfaces=`find_interfaces_by_option blacklist`
     filterping_interfaces=`find_interfaces_by_option filterping`
     maclist_interfaces=`find_interfaces_by_maclist`
+    tcpflags_interfaces=`find_interfaces_by_option tcpflags`
     #
     # Normalize the first argument to this function
     #
@@ -3786,6 +3828,10 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		    rulenum=$(($rulenum + 1))
 		fi
 
+		if ! list_search $interface $tcpflags_interfaces; then
+		    rulenum=$(($rulenum + 1))
+		fi
+
 		do_iptables -I `input_chain $interface` $rulenum -s $host -j $chain 
 	    else
 		#
@@ -3808,6 +3854,10 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		    fi
 
 		    if ! list_search $interface $maclist_interfaces; then
+			rulenum=$(($rulenum + 1))
+		    fi
+		    
+		    if ! list_search $interface $tcpflags_interfaces; then
 			rulenum=$(($rulenum + 1))
 		    fi
 		fi
@@ -4076,6 +4126,8 @@ do_initialize() {
     FORWARDPING=
     MACLIST_DISPOSITION=
     MACLIST_LOG_LEVEL=
+    TCP_FLAGS_DISPOSITION=
+    TCP_FLAGS_LOG_LEVEL=
     stopping=
     have_mutex=
     masq_seq=1
@@ -4171,6 +4223,18 @@ do_initialize() {
 	esac
     else
 	MACLIST_DISPOSITION=REJECT
+    fi
+
+    if [ -n "$TCP_FLAGS_DISPOSITION" ] ; then
+	case $TCP_FLAGS_DISPOSITION in
+	    REJECT|ACCEPT|DROP)
+		;;
+	    *)
+		startup_error "Invalid value ($TCP_FLAGS_DISPOSITION) for TCP_FLAGS_DISPOSITION"
+		;;
+	esac
+    else
+	TCP_FLAGS_DISPOSITION=DROP
     fi
 
 }

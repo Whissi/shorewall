@@ -91,6 +91,8 @@ restore_file /etc/shorewall/rules
 
 restore_file /etc/shorewall/nat
 
+restore_file /etc/shorewall/netmap
+
 restore_file /etc/shorewall/params
 
 restore_file /etc/shorewall/proxyarp

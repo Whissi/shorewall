@@ -270,6 +270,16 @@ else
     echo "NAT file installed as ${PREFIX}/etc/shorewall/nat"
 fi
 #
+# Install the NETMAP file
+#
+if [ -f ${PREFIX}/etc/shorewall/netmap ]; then
+    backup_file /etc/shorewall/netmap
+else
+    run_install -o $OWNER -g $GROUP -m 0600 netmap ${PREFIX}/etc/shorewall/netmap
+    echo
+    echo "NETMAP file installed as ${PREFIX}/etc/shorewall/netmap"
+fi
+#
 # Install the Parameters file
 #
 if [ -f ${PREFIX}/etc/shorewall/params ]; then

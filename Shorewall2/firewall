@@ -1776,6 +1776,23 @@ delete_nat() {
 }
 
 #
+# Setup Network Mapping (NETMAP)
+#
+setup_netmap() {
+    local allints
+    
+    while read net1 interface net2 ; do
+	expandv net1 interface net2 
+	
+	addnatrule $(input_chain $interface)  -d $net1 -j NETMAP --to $net2
+	addnatrule $(output_chain $interface) -s $net2 -j NETMAP --to $net1
+
+	echo "   Network $net1 on $interface mapped to $net2"
+
+    done < $TMP_DIR/netmap
+}
+
+#
 # Setup ECN disabling rules
 #
 setup_ecn() # $1 = file name
@@ -4407,6 +4424,7 @@ initialize_netfilter () {
     strip_file proxyarp
     strip_file maclist
     strip_file nat
+    strip_file netmap
 
     terminator=fatal_error
 
@@ -5117,6 +5135,10 @@ define_firewall() # $1 = Command (Start or Restart)
     echo "Setting up NAT..."
 
     setup_nat
+
+    echo "Setting up NETMAP..."
+
+    setup_netmap
 
     echo "Adding Common Rules"
 

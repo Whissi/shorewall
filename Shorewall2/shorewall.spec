@@ -78,6 +78,7 @@ fi
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/interfaces
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/rules
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/nat
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/netmap
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/params
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/proxyarp
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/routestopped
@@ -138,9 +139,11 @@ fi
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel
 
 %changelog
-* Web Mar 17 2004 Tom Eastep <tom@shorewall.net>
+* Thu Mar 18 2004 Tom Eastep tom@shorewall.net
+- Added netmap file
+* Wed Mar 17 2004 Tom Eastep <tom@shorewall.net>
 - Update for 2.0.1 Beta 1
-* Web Mar 17 2004 Tom Eastep <tom@shorewall.net>
+* Wed Mar 17 2004 Tom Eastep <tom@shorewall.net>
 - Add bogons file
 * Sat Mar 13 2004 Tom Eastep <tom@shorewall.net>
 - Update for 2.0.0 Final

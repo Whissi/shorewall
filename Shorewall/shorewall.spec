@@ -20,13 +20,9 @@ Conflicts: kernel <= 2.2
 
 %description
 
-Shoreline Firewall is an iptables-based firewall for Linux systems. The firewall
-is designed to be used on:
-
-a) Single systems attached to the internet via dial-in POP or ISDN.
-b) Single systems attached full-time to the internet (ASDL, Cable, etc.)
-c) Linux system used as a Masquerading gateway for one or more client and/or
-server systems.
+The Shoreline Firewall, more commonly known as "Shorewall", is a Netfilter
+(iptables) based firewall that can be used on a dedicated firewall system,
+a multi-function gateway/ router/server or on a standalone GNU/Linux system.
 
 %prep
 

@@ -102,11 +102,12 @@
 #			specify an ADDRESS in the next column, then place "-"
 #			in this column.
 #
-#	DEST ADDRESS	(0ptional) If included and different from the IP
+#	ORIGINAL DEST	(0ptional -- only allowed if ACTION is DNAT or REDIRECT)
+#                       If included and different from the IP
 #			address given in the SERVER column, this is an address
 #			on some interface on the firewall and connections to
 #			that address will be forwarded to the IP and port
-#			specified in the SERVER column.
+#			specified in the DEST column.
 #
 #			The address may optionally be followed by
 #			a colon (":") and a second IP address. This causes
@@ -118,32 +119,32 @@
 #
 #	Example: Accept SMTP requests from the DMZ to the internet
 #
-#	#ACTION SOURCE	DEST PROTO	DEST    SOURCE	DEST
-#	#                               PORT    PORT(S) ADDRESS
+#	#ACTION SOURCE	DEST PROTO	DEST    SOURCE	ORIGINAL
+#	#                               PORT    PORT(S) DEST
 #	ACCEPT	dmz	net	  tcp	smtp
 #
 #	Example: Forward all ssh and http connection requests from the internet
 #		 to local system 192.168.1.3
 #
-#	#ACTION SOURCE	DEST            PROTO	DEST    SOURCE	DEST
-#	#                                       PORT    PORT(S) ADDRESS
+#	#ACTION SOURCE	DEST            PROTO	DEST    SOURCE	ORIGINAL
+#	#                                       PORT    PORT(S) DEST
 #	DNAT	net	loc:192.168.1.3 tcp	ssh,http
 #
 #	Example: Redirect all locally-originating www connection requests to
 #		 port 3128 on the firewall (Squid running on the firewall
 #		 system) except when the destination address is 192.168.2.2
 #
-#	#ACTION  SOURCE	DEST      PROTO	DEST    SOURCE	DEST
-#	#                               PORT    PORT(S) ADDRESS
+#	#ACTION  SOURCE	DEST      PROTO	DEST    SOURCE	ORIGINAL
+#	#                               PORT    PORT(S) DEST
 #	REDIRECT loc	3128      tcp	www	 -	!192.168.2.2
 #
 #	Example: All http requests from the internet to address
 #                130.252.100.69 are to be forwarded to 192.168.1.3
 #
-#	#ACTION  SOURCE	DEST      	PROTO	DEST    SOURCE	DEST
-#	#                               	PORT    PORT(S) ADDRESS
-#	DNAT      net	loc:192.168.1.3 tcp   80        -       130.252.100.69
+#	#ACTION  SOURCE	DEST      	PROTO	DEST    SOURCE	ORIGINAL
+#	#                               	PORT    PORT(S) DEST
+#	DNAT      net	loc:192.168.1.3 tcp     80      -       130.252.100.69
 ##############################################################################
-#ACTION  SOURCE		DEST      	PROTO	DEST    SOURCE	    DEST
-#                       	        	PORT    PORT(S)     ADDRESS
+#ACTION  SOURCE		DEST      	PROTO	DEST    SOURCE	   NAT
+#                       	        	PORT    PORT(S)    ADDRESS(ES)
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

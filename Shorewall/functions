@@ -270,11 +270,10 @@ encodeaddr() {
 # 32-bit signed arithmetic, the range cannot span 128.0.0.0.
 #
 ip_range() {
-    local first
-    local last
+    local first last l x y z vlsm
 
     case $1 in 
-    *.*.*.*-*.*.*.*)
+    [0-9]*.*.*.*-*.*.*.*)
 	;;
     *)
 	echo $1
@@ -285,13 +284,27 @@ ip_range() {
     first=`decodeaddr ${1%-*}`
     last=`decodeaddr ${1#*-}`
 
-    if [ $first -gt $last -o $(($last - $first)) -gt 256 ]; then
+    if [ $first -gt $last ]; then
 	fatal_error "Invalid IP address range: $1"
     fi
 
+    l=$(( $last + 1 ))
+
     while [ $first -le $last ]; do
-	echo `encodeaddr $first`
-	first=$(($first + 1))
+	vlsm=
+	x=31
+	y=2
+	z=1
+
+	while [ $(( $first % $y )) -eq 0 -a $(( $first + $y )) -le $l ]; do
+	    vlsm=$x
+	    x=$(( $x - 1 ))
+	    z=$y
+	    y=$(( $y * 2 ))
+	done
+
+	[ -n "$vlsm" ] && echo `encodeaddr $first`/$vlsm || echo `encodeaddr $first`
+	first=$(($first + $z))
     done
 }
 

@@ -86,6 +86,18 @@
 #
 #                                                  Displays information about the network
 #                                                  defined by the argument[s]
+#
+#          shorewall iprange <address>-<address>   Decomposes a range of IP addresses into
+#                                                  a list of network/host addresses.
+#
+# Fatal Error
+#
+fatal_error() # $@ = Message
+{
+    echo "   $@" >&2
+    exit 2
+}
+
 # Display a chain if it exists
 #
 
@@ -533,6 +545,7 @@ usage() # $1 = exit status
     echo "   allow <address> ..."
     echo "   save"
     echo "   ipcalc [ <address>/<vlsm> | <address> <netmask> ]"
+    echo "   iprange <address>-<address>"
     exit $1
 }
 
@@ -897,6 +910,16 @@ case "$1" in
 	temp=`broadcastaddress $address`; echo "   BROADCAST=$temp"
 	;;
 
+    iprange)
+	case $2 in
+	    *.*.*.*-*.*.*.*)
+		ip_range $2
+		;;
+	    *)
+		usage 1
+		;;
+	esac
+	;;
     call) 
 	#
 	# Undocumented way to call functions in /usr/share/shorewall/functions directly

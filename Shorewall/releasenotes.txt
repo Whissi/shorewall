@@ -28,19 +28,14 @@ New Features:
    one on an interface.
 
 4) DNAT[-] rules may now be used to load balance (round-robin) over a
-   set of servers. Up to 256 servers may be specified in a range of
-   addresses given as <first address>-<last address>.
+   set of servers. Any number of servers may be specified in a range of
+   addresses given as <first address>-<last address> and multiple
+   ranges or individual servers may be specified in a comma-separated
+   list.
 
    Example:
 
-	DNAT net loc:192.168.10.2-192.168.10.5 tcp 80
-
-   Note that this capability has previously been available using a
-   combination of a DNAT- rule and one or more ACCEPT rules. That
-   technique is still preferable for load-balancing over a large number
-   of servers (> 16) since specifying a range in the DNAT rule causes
-   one filter table ACCEPT rule to be generated for each IP address in
-   the range.
+	DNAT net loc:192.168.10.2-192.168.10.5,192.168.10.44 tcp 80
 
 5) The NAT_ENABLED, MANGLE_ENABLED and MULTIPORT configuration options
    have been removed and have been replaced by code that detects
@@ -113,3 +108,28 @@ New Features:
       dash), then the ipcalc command produces incorrect information for
       IP addresses 128.0.0.0-1 and for /1 networks. Bash should produce
       correct information for all valid IP addresses.
+
+9) An 'iprange' command has been added to /sbin/shorewall. 
+
+      iprange <address>-<address>
+
+   This command decomposes a range of IP addressses into a list of
+   network and host addresses. The command can be useful if you need to
+   construct an efficient set of rules that accept connections from a
+   range of network addresses.
+
+   Example:
+
+      [root@gateway root]# shorewall iprange 192.168.1.4-192.168.12.9
+      192.168.1.4/30
+      192.168.1.8/29
+      192.168.1.16/28
+      192.168.1.32/27
+      192.168.1.64/26
+      192.168.1.128/25
+      192.168.2.0/23
+      192.168.4.0/22
+      192.168.8.0/22
+      192.168.12.0/29
+      192.168.12.8/31
+      [root@gateway root]#

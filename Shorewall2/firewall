@@ -1787,22 +1787,25 @@ setup_nat() {
 	    qt ip addr del $external dev $iface
 	fi
 
-	if [ "$allints" = "Yes" -o "$allints" = "yes" ]; then
+	if [ "x$allints" = "xYes" -o "$xallints" = "xyes" ]; then
 	    addnatrule nat_in  -d $external -j DNAT --to-destination $internal
 	    addnatrule nat_out -s $internal -j SNAT --to-source $external
 
-	    if [ "$localnat" = "Yes" -o "$localnat" = "yes" ]; then
-		run_iptables2 -t nat -A OUTPUT -d $external \
-		    -j DNAT --to-destination $internal
-	    fi
-	elif [ -z "$allints" -o "$allints" = "No" -o "$allints" = "no" ]; then       
+	elif [ "x$allints" = "x" -o "x$allints" = "x-" -o "x$allints" = "xNo" -o "x$allints" = "xno" ]; then       
 	    addnatrule $(input_chain $iface) \
 		-d $external -j DNAT --to-destination $internal
 	    addnatrule $(output_chain $iface) \
 		-s $internal -j SNAT --to-source $external
 	else
-	    fatal_error "Invalid value ($allints) for ALL INTERFACES in entry \"$external $interface $internal $allints $localnet\""
+	    fatal_error "Invalid value ($allints) for ALL INTERFACES in entry \"$external $interface $internal $allints $localnat\""
 	fi
+
+	if [ "x$localnat" = "xYes" -o "x$localnat" = "xyes" ]; then
+	    run_iptables2 -t nat -A OUTPUT -d $external -j DNAT --to-destination $internal
+	elif [ "x$localnat" != "x-" -a "x$localnat" != "x" -a "x$localnat" != "xNo" -a "x$localnat" != "xno" ]; then
+	    fatal_error "Invalid value ($allints) for LOCAL in entry \"$external $interface $internal $allints $localnat\""	    
+	fi
+
 
 	if [ -n "$ADD_IP_ALIASES" ]; then
 	    list_search $external $aliases_to_add || \
@@ -5387,7 +5390,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
     fi
 
     if ! chain_exists $(dynamic_in $interface) ; then
-	startup_error "Interface $interface is not dynamic"
+	startup_error "At last Shorewall [re]start, DYNAMIC_ZONES=No in shorewall.conf"
     fi
     #
     # Normalize the first argument to this function
@@ -5453,7 +5456,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 	elif [ "$z2" = "$zone" ]; then
 	    if [ "$z1" = "$FW" ]; then
 		#
-		# Add a rule to the OUTPUT chain -- always after the icmp * ACCEPT rule
+		# Add a rule to the dynamic out chain for the interface
 		#
 		do_iptables -A $(dynamic_out $interface) -d $host -j $chain
 	    else

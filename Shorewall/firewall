@@ -300,8 +300,6 @@ find_interfaces() # $1 = interface zone
 {
     local zne=$1
 
-    [ $zne = multi ] && zne="-"
-
     while read z interface subnet options; do
 	[ "x`expand $z`" = "x$zne" ] && echo `expand $interface`
     done < $TMP_DIR/interfaces
@@ -365,7 +363,7 @@ find_hosts() # $1 = host zone
 # variable contains a space-separated list of interfaces to the zone	       #
 ################################################################################
 determine_interfaces() {
-    for zone in $zones multi; do
+    for zone in $zones; do
 	interfaces=`find_interfaces $zone`
 	interfaces=`echo $interfaces` # Remove extra trash
 	eval ${zone}_interfaces="\$interfaces"
@@ -389,7 +387,7 @@ determine_hosts() {
 	done
     }
 
-    for zone in $zones multi; do
+    for zone in $zones; do
 	hosts=`find_hosts $zone`
 	hosts=`echo $hosts` # Remove extra trash
 
@@ -406,7 +404,7 @@ determine_hosts() {
 	if [ -n "$hosts" ]; then
 	    eval display=\$${zone}_display
 	    display_list "$display Zone:" $hosts
-	elif [ "$zone" != "multi" ]; then
+	else
 	    error_message "   Warning: Zone $zone is empty"
 	fi 
     done
@@ -575,6 +573,15 @@ validate_rule() {
 	esac
 
 	proto="${proto:+-p $proto}"
+
+	case "$logtarget" in
+	REJECT)
+	    target=reject
+	    ;;
+	REDIRECT)
+	    servport=${servport:=$port}
+	    ;;
+	esac
 
 	if [ -z "$proto" -a -z "$cli" -a -z "$serv" -a -z "$servport" ]; then
 	    error_message "   Warning -- Rule \"$rule\" is a POLICY"
@@ -780,27 +787,20 @@ validate_policy()
 }
 
 ################################################################################
-# Find broadcast addresses corresponding to interfaces to a given zone	       #
+# Find broadcast addresses	       					       #
 ################################################################################
-find_broadcast() # $1 = zone
-{
-    local zne=$1
-
-    [ $zne = multi ] && zne="-"
-
+find_broadcasts() {
     while read z interface bcast options; do
-	expandv z interface bcast
-	if [ "x$z" = "x$zne" -a -n "$bcast" ]; then
-	    if [ "x$bcast" = "xdetect" ]; then
-		addr="`ip addr show $interface 2> /dev/null`"
-		if [ -n "`echo "$addr" | grep 'inet.*brd '`" ]; then
-		    addr="`echo "$addr" | \
-			grep "inet " | sed 's/^.* inet.*brd //;s/scope.*//'`"
-		    echo $addr | cut -d' ' -f 1
-		fi
-	    elif [ "x${bcast}" != "x-" ]; then
-		echo `separate_list $bcast`
+	expandv interface bcast
+	if [ "x$bcast" = "xdetect" ]; then
+	    addr="`ip addr show $interface 2> /dev/null`"
+	    if [ -n "`echo "$addr" | grep 'inet.*brd '`" ]; then
+		addr="`echo "$addr" | \
+		grep "inet " | sed 's/^.* inet.*brd //;s/scope.*//'`"
+		echo $addr | cut -d' ' -f 1
 	    fi
+	elif [ "x${bcast}" != "x-" ]; then
+	    echo `separate_list $bcast`
 	fi
     done < $TMP_DIR/interfaces
 }
@@ -847,8 +847,6 @@ find_hosts_by_option() # $1 = option
 have_interfaces_in_zone_with_option() # $1 = zone, $2 = option
 {
     local zne=$1
-
-    [ $zne = multi ] && zne="-"
 
     while read z interface broadcast options; do
 	[ "x`expand $z`" = "x$zne" ] && \
@@ -2312,7 +2310,7 @@ setup_blacklist() {
 
 	for interface in $interfaces; do
 	    for chain in `first_chains $interface`; do
-	    	run_iptables -A $chain -i $interface -j blacklst
+	    	run_iptables -A $chain -j blacklst
 	    done
 	    
 	    echo "   Blacklisting enabled on $interface"
@@ -2528,7 +2526,7 @@ add_common_rules() {
 
 	for interface in $interfaces; do
 	    for chain in `first_chains $interface`; do
-		run_iptables -A $chain -i $interface --match unclean -j badpkt
+		run_iptables -A $chain --match unclean -j badpkt
 	    done
 	    echo "   $interface"
 	done
@@ -2551,7 +2549,7 @@ add_common_rules() {
 
 	for interface in $interfaces; do
 	    for chain in `first_chains $interface`; do
-		run_iptables -A $chain -i $interface --match unclean -j logpkt
+		run_iptables -A $chain --match unclean -j logpkt
 	    done
 	    echo "   $interface"
 	done
@@ -2584,12 +2582,7 @@ add_common_rules() {
     ###########################################################################
     # BROADCASTS
     #
-    for zone in $zones multi; do
-	eval interfaces=\$${zone}_interfaces
-
-	[ -n "$interfaces" ] && drop_broadcasts `find_broadcast $zone`
-	setup_intrazone $zone
-    done
+    drop_broadcasts `find_broadcasts`
 
     norfc1918_interfaces="`find_interfaces_by_option norfc1918`"
 
@@ -2644,7 +2637,7 @@ add_common_rules() {
 	    
 	for interface in $norfc1918_interfaces; do
 	    for chain in `first_chains $interface`; do
-	        run_iptables -A $chain -i $interface -j rfc1918
+	        run_iptables -A $chain -j rfc1918
 	    done
 	    
 	    [ -n "$MANGLE_ENABLED" ] && \
@@ -2755,6 +2748,7 @@ apply_policy_rules() {
     done < $TMP_DIR/policy
 
     for zone in $FW $zones; do
+	setup_intrazone $zone
 	for zone1 in $FW $zones; do
 	    chain=${zone}2${zone1}
 	    if havechain $chain; then
@@ -2770,41 +2764,26 @@ apply_policy_rules() {
 ################################################################################
 activate_rules() {
 
-    for zone in multi $zones; do
+    for zone in $zones; do
 	eval source_hosts=\$${zone}_hosts
 
 	for host in $source_hosts; do
 	    interface=${host%:*}
 	    subnet=${host#*:}
-	    chain=`input_chain $interface`
-	    
-	    if [ "$zone" != "multi" ]; then
-		#
-		# If we have a 'multi2fw' chain and the current interface is
-		# in the 'multi' pseudo-zone, then we will add the rule to
-		# multi2fw rather than to INPUT
-		#
-	    	if havechain multi2fw; then
-	    	    for interface1 in $multi_interfaces; do
-	    	    	[ "$interface" = "$interface1" ] && \
-			    chain=multi2fw && break
-           	    done
-           	fi
 
-	    	run_iptables -A OUTPUT -o \
-	    	    $interface -d $subnet -j `rules_chain $FW $zone`
-		
-		if havenatchain $zone; then
-		   run_iptables -t nat -A PREROUTING \
-		      -i $interface -s $subnet -j $zone
-		fi
-            fi
+	    run_iptables -A OUTPUT -o \
+	        $interface -d $subnet -j `rules_chain $FW $zone`
 
-	    run_iptables -A $chain -i $interface -s $subnet \
+	    if havenatchain $zone; then
+		run_iptables -t nat -A PREROUTING \
+		    -i $interface -s $subnet -j $zone
+	    fi
+
+	    run_iptables -A `input_chain $interface` -s $subnet \
 		-j `rules_chain $zone $FW`
 	done
 
-	[ "$zone" != multi ] && for zone1 in $zones; do
+	for zone1 in $zones; do
 	    eval dest_hosts=\$${zone1}_hosts
 
 	    chain="`rules_chain $zone $zone1`"
@@ -2819,30 +2798,28 @@ activate_rules() {
 		    subnet1=${host1#*:}
 
 		    [ $interface = $interface1 -a "x$subnet" = "x$subnet1" ] ||\
-			run_iptables -A $chain1 -i $interface -s $subnet \
+			run_iptables -A $chain1 -s $subnet \
 			    -o $interface1 -d $subnet1 -j $chain
 		done
 		
 	    done
 	done
-	
+
     done
 
     while read zone interface broadcast options; do
-	[ "x`expand $zone`" = "x-" ] && zone=multi
-	for z in $zones; do
-	    [ "x$z" = "x$zone" ] && \
-		expandv interface options && \
-		for option in `separate_list $options`; do
-		    [ "$option" = "multi" ] && \
-			run_iptables -A `forward_chain $interface` \
-				-i $interface \
-		    		-o $interface -j ${zone}2${zone} && \
-			break 1
-        	done
-	done
+        expandv zone
+	if [ "x$zone" != "x-" ]; then
+	    expandv interface options
+	    for option in `separate_list $options`; do
+	        [ "$option" = "multi" ] && \
+		    run_iptables -A `forward_chain $interface` \
+			-o $interface -j ${zone}2${zone} && \
+		    break 1
+	    done
+	fi
     done < $TMP_DIR/interfaces
-    
+
     for interface in $all_interfaces; do
        run_iptables -A FORWARD -i $interface -j `forward_chain $interface`
        run_iptables -A INPUT   -i $interface -j `input_chain $interface`
@@ -2907,15 +2884,11 @@ define_firewall() # $1 = Command (Start or Restart)
 
     noping_interfaces="`find_interfaces_by_option noping`"
 
-    for zone in $zones multi; do
-	eval interfaces=\$${zone}_interfaces
-
-	for interface in $interfaces; do
-	    [ -n "`echo $noping_interfaces | grep $interface`" ] && \
-		target=DROP || target=ACCEPT
-	    addrule ${zone}2${FW} -i $interface \
-		-p icmp --icmp-type echo-request -j $target
-	done
+    for interface in $all_interfaces; do
+	[ -n "`echo $noping_interfaces | grep $interface`" ] && \
+	    target=DROP || target=ACCEPT
+	run_iptables -A `input_chain $interface` \
+	    -p icmp --icmp-type echo-request -j $target
     done
 
     [ -z "$NAT_BEFORE_RULES" ] && setup_nat
@@ -2937,6 +2910,7 @@ define_firewall() # $1 = Command (Start or Restart)
     [ -f $tos ] && [ -n "$MANGLE_ENABLED" ] && process_tos $tos
 
     [ -n "$TC_ENABLED" ] && setup_tc
+
 
     echo "Activating Rules..."
 
@@ -3031,11 +3005,7 @@ refresh_firewall()
     ###########################################################################
     # BROADCASTS
     #
-    for zone in $zones multi; do
-	eval interfaces=\"\$${zone}_interfaces\"
-
-	[ -n "$interfaces" ] && drop_broadcasts `find_broadcast $zone`
-    done
+    drop_broadcasts `find_broadcasts`
 
     ###########################################################################
     # Blacklist

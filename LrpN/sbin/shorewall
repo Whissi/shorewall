@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-#     Shorewall Packet Filtering Firewall Control Program - V2.1
+#     Shorewall Packet Filtering Firewall Control Program - V2.2
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
 #
@@ -333,10 +333,9 @@ packet_log() # $1 = number of messages
 
     [ -n "$realtail" ] && options="-n$1"
 
-    grep "${LOGFORMAT}\|ipt_unclean" $LOGFILE | \
+    grep "${LOGFORMAT}" $LOGFILE | \
 	 sed s/" kernel:"// | \
 	 sed s/" $host $LOGFORMAT"/" "/ | \
-	 sed s/" $host kernel: ipt_unclean: "/" "/ | \
 	 sed 's/MAC=.* SRC=/SRC=/' | \
 	 tail $options
 }
@@ -870,7 +869,7 @@ case "$1" in
 	    [ $# -gt 2 ] && usage 1
 	    echo "Shorewall-$version Connections at $HOSTNAME - $(date)"
 	    echo
-	    cat /pro/net/ip_conntrack
+	    cat /proc/net/ip_conntrack
 	    ;;
 	nat)
 	    [ $# -gt 2 ] && usage 1

@@ -2344,7 +2344,16 @@ process_tc_rule()
 
 	[ -n "$marktest" ] && r="${r}-m ${marktest}--mark $testval "
 
-	[ "x$dest"   = "x-"  ] || r="${r}$(dest_ip_range $dest) "
+	if [ "x$dest" != "x-"  ]; then
+	    case $dest in
+		*.*.*)
+		    r="${r}$(dest_ip_range $dest) "
+		    ;;
+		*)
+		    r="${r}$(match_dest_dev $dest) "
+		    ;;
+	    esac
+	fi
 
 	if [ "x$proto" = xipp2p ]; then
 	    [ "x$port" = "x-" ] && port="ipp2p"

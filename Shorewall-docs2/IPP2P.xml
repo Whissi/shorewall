@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article>
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>Shorewall and ipp2p</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate>2004-11-04</pubdate>
+
+    <copyright>
+      <year>2004</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <section>
+    <title>Introduction</title>
+
+    <para>Shorewall verions 2.2.0 and later include support for the ipp2p
+    match facility. This is a departure from my usual policy in that the ipp2p
+    match facility is included in Patch-O-Matic-NG and is unlikely to ever be
+    included in the kernel.org source tree. Questions about how to install the
+    patch or how to build your kernel and/or iptables should not be posted on
+    the Shorewall mailing lists but should rather be referred to the Netfilter
+    Mailing List.</para>
+  </section>
+
+  <section>
+    <title>Scope</title>
+
+    <para>In the following files, the "PROTO" or "PROTOCOL" column may contain
+    "ipp2p":</para>
+
+    <simplelist>
+      <member><ulink
+      url="Documentation.htm#Rules">/etc/shorewall/rules</ulink></member>
+
+      <member><ulink
+      url="traffic_shaping.htm">/etc/shorewall/tcrules</ulink></member>
+
+      <member><ulink
+      url="Accounting.html">/etc/shorewall/accounting</ulink></member>
+    </simplelist>
+
+    <para>When the PROTO or PROTOCOL column contains "ipp2p" then the DEST
+    PORT(S) or PORT(S) column may contain a recognized ipp2p option; for a
+    list of the options and their meaning, at a root prompt type:</para>
+
+    <programlisting><command>iptables -m ipp2p --help</command></programlisting>
+
+    <para>You must not include the leading "--" on the option; Shorewall will
+    supply those characters for you. If you do not include an option then
+    "ipp2p" is assumed (Shorewall will generate "-m ipp2p --ipp2p").</para>
+  </section>
+
+  <section>
+    <title>Example (assumes that you are running Shorewall 2.2.0 Beta 3 or
+    later):</title>
+
+    <para>Example 2 in the ipp2p documentation recommends the following
+    iptables rules:</para>
+
+    <programlisting>01# iptables -t mangle -A PREROUTING -p tcp -j CONNMARK --restore-mark
+02# iptables -t mangle -A PREROUTING -p tcp -m mark ! --mark 0 -j ACCEPT
+03# iptables -t mangle -A PREROUTING -p tcp -m ipp2p --ipp2p -j MARK --set-mark 1
+04# iptables -t mangle -A PREROUTING -p tcp -m mark --mark 1 -j CONNMARK --save-mark
+
+05# iptables -t mangle -A POSTROUTING -o eth0 -m mark --mark 1 -j CLASSIFY --set-class 1:12
+06# iptables -t mangle -A POSTROUTING -o eth1 -m mark --mark 1 -j CLASSIFY --set-class 2:12</programlisting>
+
+    <para>These are implemented in the /etc/shorewall/tcrules file as
+    follows:</para>
+
+    <programlisting>#MARK                SOURCE        DEST        PROTO        PORT(S)        CLIENT     USER    TEST
+#                                                                          PORT(S)
+RESTORE:P            -             -           tcp
+CONTINUE:P           -             -           tcp          -              -          -       !0
+1:P                  -             -           ipp2p        ipp2p
+SAVE:P               -             -           tcp          -              -          -       1
+1:12                 -             eth0        -            -              -          -       1
+2:12                 -             eth1        -            -              -          -       1    </programlisting>
+  </section>
+</article>

@@ -2496,8 +2496,9 @@ add_an_action()
 			    $(fix_bang $proto $sports $multiport $cli -d $srv $dports)
 		    fi
 		    
-		    run_iptables2 -A $action $proto $multiport $cli $sports \
-			-d $srv $dports $ratelimit $userandgroup -j $target
+		    [ "$logtarget" = LOG ] || \
+			run_iptables2 -A $action $proto $multiport $cli $sports \
+			    -d $srv $dports $ratelimit $userandgroup -j $target
 		done
 	    done
 	else
@@ -2506,8 +2507,9 @@ add_an_action()
 		    $(fix_bang $proto $sports $multiport $cli $dports)
 	    fi
 		    
-	    run_iptables2 -A $action $proto $multiport $cli $sports \
-		$dports $ratelimit $userandgroup -j $target
+	    [ "$logtarget" = LOG ] || \
+		run_iptables2 -A $action $proto $multiport $cli $sports \
+		    $dports $ratelimit $userandgroup -j $target
 	fi
     fi
 }

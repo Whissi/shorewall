@@ -28,8 +28,8 @@ to 2.x releases of Shorewall. For older versions:</p>
  target="_top">here</a>. </p>
   </li>
 </ul>
-<p>The current 2.0 Stable Release is 2.0.13 -- Here are the <a
- href="http://shorewall.net/pub/shorewall/2.0/shorewall-2.0.13/releasenotes.txt">release
+<p>The current 2.0 Stable Release is 2.0.14 -- Here are the <a
+ href="http://shorewall.net/pub/shorewall/2.0/shorewall-2.0.14/releasenotes.txt">release
 notes</a>.<br>
 The current Developement Release is 2.2.0 RC3 -- Here
 are the <a
@@ -43,7 +43,7 @@ problems</a>.<br>
  style="font-weight: bold;">Preparing for Shorewall 2.2 -- End of
 support life for Shorewall 1.4 is Near! </span></a><br>
 <br>
-Copyright © 2001-2004 Thomas M. Eastep</p>
+Copyright © 2001-2005 Thomas M. Eastep</p>
 <p>Permission is granted to copy, distribute and/or modify this
 document under the terms of the GNU Free Documentation License,
 Version 1.2 or any later version published by the Free Software
@@ -51,7 +51,7 @@ Foundation; with no Invariant Sections, with no Front-Cover, and with
 no Back-Cover Texts. A copy of the license is included in the section
 entitled “<a href="GnuCopyright.htm" target="_self">GNU
 Free Documentation License</a>”.</p>
-<p>2004-12-31</p>
+<p>2005-01-03</p>
 <hr>
 <h3>Table of Contents</h3>
 <p style="margin-left: 0.42in; margin-bottom: 0in;"><a href="#Intro">Introduction
@@ -66,31 +66,12 @@ Shorewall</a><br>
 Shorewall on Mandrake® with a two-interface setup?</a><br>
 <a href="#License">License</a></p>
 <p style="margin-bottom: 0in; margin-left: 40px;"><a href="#2_0_10">News</a></p>
-<p style="margin-left: 0.83in; margin-bottom: 0in;"><a
- href="#MandrakeRPMS">Mandrake-specific RPMs available</a><br>
+<p style="margin-left: 0.83in; margin-bottom: 0in;"><a href="#2_0_14">Shorewall
+2.0.14</a><br>
+<a href="#MandrakeRPMS">Mandrake-specific RPMs available</a><br>
 <a href="#Redhat_Fedora">Redhat/Fedora-specific RPMs available</a><br>
 <a href="#2_2_0_RC3">Shorewall
-2.2.0 RC3</a><br>
-<a href="#2_2_0_RC2">Shorewall
-2.2.0 RC2</a><br>
-<a href="#2_2_0_RC1">Shorewall
-2.2.0 RC1</a><br>
-<a href="#2_2_0_Beta8">Shorewall 2.2.0 Beta 8</a><br>
-<a href="#2_2_0_Beta7">Shorewall 2.2.0 Beta 7</a><br>
-<a href="#2_0_13">Shorewall
-2.0.13</a><br>
-<a href="#2_0_12">Shorewall
-2.0.12</a><br>
-<a href="shorewall_index.htm#2_2_0_Beta6">Shorewall 2.2.0 Beta 6</a><br>
-<a href="#2_2_0_Beta5">Shorewall 2.2.0 Beta 5</a><br>
-<a href="#2_0_11">Shorewall
-2.0.11</a><br>
-<a href="#2_2_0_Beta4">Shorewall 2.2.0 Beta 4</a><br>
-<a href="#2_2_0_Beta3">Shorewall 2.2.0 Beta 3</a><br>
-<a href="#2_2_0_Beta2">Shorewall 2.2.0 Beta 2</a><br>
-<a href="#2_0_10">Shorewall
-2.0.10</a><br>
-<a href="#2_2_0_Beta1">Shorewall 2.2.0 Beta 1</a><br>
+2.2.0 RC3</a><a href="#2_2_0_RC2"></a><br>
 <br>
 </p>
 <div style="margin-left: 40px;"><a href="#Leaf">Leaf</a><br>
@@ -182,6 +163,26 @@ of the license is included in the section entitled "GNU Free
 Documentation License". </p>
 <hr>
 <h2><a name="News"></a>News</h2>
+<span style="font-weight: bold;"><a name="2_0_14"></a>01/03/2005 -
+Shorewall 2.0.14<br>
+</span><br>
+New Features:<br>
+<ol>
+  <li>Previously, when rate-limiting was specified in
+/etc/shorewall/policy (LIMIT:BURST column), any traffic which exceeded
+the specified rate was silently dropped. Now, if a log level is given
+in the entry (LEVEL column) then drops are logged at that level at a
+rate of 5/min with a burst of 5.<br>
+  </li>
+</ol>
+Problems Corrected:<br>
+<ol>
+  <li>A typo in the /etc/shorewall/interfaces file has been fixed.</li>
+  <li>"bad variable" error messages occurring during "shorewall stop"
+and "shorewall clear" have been eliminated.</li>
+  <li>A misleading typo in /etc/shorewall/tunnels has been corrected.<br>
+  </li>
+</ol>
 <span style="font-weight: bold;"><a name="MandrakeRPMS"></a>12/31/2004
 - Mandrake-specific 2.2.0 RC3 RPMs available<br>
 <br>
@@ -219,464 +220,7 @@ message but would not generate an iptables rule.</li>
   <li>A misleading typo in /etc/shorewall/tunnels has been corrected.<br>
   </li>
 </ol>
-<span style="font-weight: bold;"><a name="2_2_0_RC2"></a>12/24/2004 -
-Shorewall 2.2.0 RC2<br>
-<br>
-</span>New Features:<br>
-<ol>
-  <li>By popular demand, the default port for Open VPN tunnels is now
-1194 (the IANA-reserved port number for Open VPN).</li>
-</ol>
-<span style="font-weight: bold;"><a name="2_2_0_RC1"></a>12/19/2004 -
-Shorewall 2.2.0 RC1<br>
-<br>
-</span>Problems Corrected:<br>
-<ol>
-  <li>The syntax of the add and delete command has been clarified in
-the help summary produced by /sbin/shorewall.</li>
-</ol>
-New Features:<br>
-<ol>
-  <li>TCP OpenVPN tunnels are now supported using the 'openvpn' tunnel
-type. OpenVPN entries in /etc/shorewall/tunnels have this format:<br>
-    <br>
-&nbsp;&nbsp;&nbsp; openvpn[:{tcp|udp}][:&lt;port&gt;]&nbsp;&nbsp;&nbsp;
-&lt;zone&gt;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; &lt;gateway&gt;<br>
-    <br>
-Examples:<br>
-    <pre>&nbsp;&nbsp;&nbsp; openvpn:tcp&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;  net&nbsp;&nbsp;&nbsp; 1.2.3.4    # TCP tunnel on port 5000<br>    openvpn:3344&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; net&nbsp;&nbsp;&nbsp; 1.2.3.4    # UDP on port 3344<br>    openvpn:tcp:4455&nbsp;&nbsp;&nbsp; net&nbsp;&nbsp;&nbsp; 1.2.3.4&nbsp;&nbsp;&nbsp; # TCP on port 4455</pre>
-  </li>
-  <li>A new 'ipsecvpn' script is included in the tarball and in the
-RPM. The RPM installs the file in the Documentation directory
-(/usr/share/doc/packages/shorewall-2.2.0-0RC1).<br>
-    <br>
-This script is intended for use on Roadwarrior laptops for establishing
-an IPSEC SA to/from remote networks. The script has some limitations:<br>
-    <br>
-&nbsp;&nbsp;&nbsp; - Only one instance of the script may be used at a
-time.<br>
-&nbsp;&nbsp;&nbsp; - Only the first SPD accessed will be instantiated
-at the remote gateway. So while the script creates SPDs to/from the
-remote gateway and each network listed in the NETWORKS setting at the
-front of the script, only one of these may be used at a time.<br>
-  </li>
-</ol>
-<span style="font-weight: bold;"><a name="2_2_0_Beta8"></a>12/11/2004 -
-Shorewall 2.2.0 Beta 8<br>
-<br>
-</span>Problems Corrected:<br>
-<ol>
-  <li>A typo in the /etc/shorewall/interfaces file has been corrected.</li>
-  <li>Previously, the "add" and "delete" commands were generating
-incorrect policy matches when policy match support was available.</li>
-</ol>
-New Features:<br>
-<ol>
-  <li>Recent 2.6 kernels include code that evaluates TCP packets based
-on TCP Window analysis. This can cause packets that were previously
-classified as NEW or ESTABLISHED to be classified as INVALID.<br>
-    <br>
-The new kernel code can be disabled by including this command in your
-/etc/shorewall/init file:<br>
-    <br>
-&nbsp;&nbsp;&nbsp; echo 1 &gt;
-/proc/sys/net/ipv4/netfilter/ip_conntrack_tcp_be_liberal<br>
-    <br>
-Additional kernel logging about INVALID TCP packets may be obtained by
-adding this command to /etc/shorewall/init:<br>
-    <br>
-&nbsp;&nbsp;&nbsp; echo 1 &gt;
-/proc/sys/net/ipv4/netfilter/ip_conntrack_log_invalid<br>
-    <br>
-Traditionally, Shorewall has dropped INVALID TCP packets early. The new
-DROPINVALID option allows INVALID packets to be passed through the
-normal rules chains by setting DROPINVALID=No.<br>
-    <br>
-If not specified or if specified as empty (e.g., DROPINVALID="") then
-DROPINVALID=Yes is assumed.<br>
-    <br>
-  </li>
-  <li>The "shorewall add" and "shorewall delete" commands now accept a
-list of hosts to add or delete.<br>
-    <br>
-Examples:<br>
-    <br>
-&nbsp;&nbsp;&nbsp; shorewall add eth1:1.2.3.4 eth1:2.3.4.5 z12<br>
-&nbsp;&nbsp;&nbsp; shorewall delete eth1:1.2.3.4 eth1:2.3.4.5 z12<br>
-    <br>
-The above commands may also be written:<br>
-    <br>
-&nbsp;&nbsp;&nbsp; shorewall add eth1:1.2.3.4,2.3.4.5 z12<br>
-&nbsp;&nbsp;&nbsp; shorewall delete eth1:1.2.3.4,2.3.4.5 z12<br>
-&nbsp;&nbsp; <br>
-  </li>
-</ol>
-<span style="font-weight: bold;"><a name="2_2_0_Beta7"></a>12/04/2004 -
-Shorewall 2.2.0 Beta 7<br>
-</span><br>
-Problems Corrected:<br>
-<ol>
-  <li>The "shorewall add" and "shorewall delete" commands now work in a
-bridged environment. The syntax is:<br>
-&nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; shorewall
-add &lt;interface&gt;[:&lt;port&gt;]:&lt;address&gt; &lt;zone&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; shorewall
-delete &lt;interface&gt;[:&lt;port&gt;]:&lt;address&gt; &lt;zone&gt;<br>
-&nbsp;<br>
-&nbsp;&nbsp; Examples:<br>
-&nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; shorewall
-add br0:eth2:192.168.1.3 OK<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; shorewall
-delete br0:eth2:192.168.1.3 OK<br>
-    <br>
-  </li>
-  <li>Previously, "shorewall save" created an out-of-sequence restore
-script. The commands saved in the user's /etc/shorewall/start script
-were executed prior to the Netfilter configuration being restored. This
-has been corrected so that "shorewall save" now places those commands
-at the end of the script.<br>
-    <br>
-To accomplish this change, the "restore base" file
-(/var/lib/shorewall/restore-base) has been split into two files:<br>
-&nbsp;<br>
-/var/lib/shorewall/restore-base -- commands to be executed before
-Netfilter the configuration is restored.<br>
-&nbsp;<br>
-/var/lib/shorewall/restore-tail -- commands to be executed after the
-Netfilter configuration is restored.<br>
-    <br>
-  </li>
-  <li>Previously, traffic from the firewall to a dynamic zone member
-host did not need to match the interface specified when the host was
-added to the zone. For example, if eth0:1.2.3.4 is added to dynamic
-zone Z then traffic out of any firewall interface to 1.2.3.4 will obey
-the fw-&gt;Z policies and rules. This has been corrected.</li>
-  <li>Shorewall uses the temporary chain 'fooX1234' to probe iptables
-for detrmining which features are supported. Previously, if that chain
-happened to exist when Shorewall was run, capabilities were
-mis-detected.</li>
-</ol>
-New Features:<br>
-<ol>
-  <li>You can now use the "shorewall show zones" command to display the
-current contents of the zones. This is particularly useful if you use
-dynamic zones (DYNAMIC_ZONES=Yes in shorewall.conf).<br>
-&nbsp;<br>
-&nbsp;&nbsp;&nbsp; Example:<br>
-&nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ursa:/etc/shorewall #
-shorewall show zones<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Shorewall-2.2.0-Beta7 Zones
-at ursa - Sat Nov 27 11:18:25 PST 2004<br>
-&nbsp; <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; loc<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-eth0:192.168.1.0/24<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-eth1:1.2.3.4<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; net<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-eth0:0.0.0.0/0<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; WiFi<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-eth1:0.0.0.0/0<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; sec<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-eth1:0.0.0.0/0<br>
-&nbsp; <br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ursa:/etc/shorewall #<br>
-    <br>
-  </li>
-  <li>Variable expansion may now be used with the INCLUDE directive.<br>
-&nbsp;<br>
-&nbsp;&nbsp;&nbsp; Example:<br>
-&nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /etc/shorewall/params<br>
-&nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-FILE=/etc/foo/bar<br>
-&nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Any other config file:<br>
-&nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-INCLUDE $FILE<br>
-    <br>
-  </li>
-  <li>The output of "shorewall status" now includes the results of "ip
--stat link ls". This helps diagnose performance problems caused by link
-errors.</li>
-  <li>Previously, when rate-limiting was specified in
-/etc/shorewall/policy (LIMIT:BURST column), any traffic which exceeded
-the specified rate was silently dropped. Now, if a log<br>
-level is given in the entry (LEVEL column) then drops are logged at
-that level at a rate of 5/min with a burst of 5.<br>
-  </li>
-</ol>
-<span style="font-weight: bold;"><a name="2_0_13"></a>12/02/2004 -
-Shorewall 2.0.13<br>
-<br>
-</span>Problems Corrected:<br>
-<ol>
-  <li>A typo in /usr/share/shorewall/firewall caused the "shorewall
-add" to issue an error message:<br>
-    <pre class="programlisting">/usr/share/shorewall/firewall: line 1: match_destination_hosts: command not found</pre>
-  </li>
-</ol>
-<span style="font-weight: bold;"><a name="2_0_12"></a>12/01/2004 -
-Shorewall 2.0.12<br>
-</span><br>
-Problems Corrected:<br>
-<ol>
-  <li>A typo in shorewall.conf (NETNOTSYN) has been corrected.</li>
-  <li>The "shorewall add" and "shorewall delete" commands now work in a
-bridged environment. The syntax is:<br>
-&nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; shorewall add
-&lt;interface&gt;[:&lt;bridge port&gt;][:&lt;address&gt;] &lt;zone&gt;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; shorewall delete
-&lt;interface&gt;[:&lt;bridge port&gt;][:&lt;address&gt;] &lt;zone&gt;<br>
-&nbsp;<br>
-Examples:<br>
-&nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; shorewall add br0:eth2:192.168.1.3 OK<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; shorewall delete br0:eth2:192.168.1.3 OK<br>
-    <br>
-  </li>
-  <li>Previously, "shorewall save" created an out-of-sequence restore
-script. The commands saved in the user's /etc/shorewall/start script
-were executed prior to the Netfilter configuration being restored. This
-has been corrected so that "shorewall save" now places those commands
-at the end of the script.<br>
-&nbsp;<br>
-To accomplish this change, the "restore base" file
-(/var/lib/shorewall/restore-base) has been split into two files:<br>
-&nbsp;<br>
-&nbsp;&nbsp; /var/lib/shorewall/restore-base -- commands to be executed
-before the Netfilter configuration is restored.<br>
-&nbsp;<br>
-&nbsp;&nbsp; /var/lib/shorewall/restore-tail -- commands to be executed
-after the Netfilter configuration is restored.<br>
-    <br>
-  </li>
-  <li>Previously, traffic from the firewall to a dynamic zone member
-host did not need to match the interface specified when the host was
-added to the zone. For example, if eth0:1.2.3.4 is added to dynamic
-zone Z then traffic out of any firewall interface to 1.2.3.4 will obey
-the fw-&gt;Z policies and rules. This has been corrected.</li>
-</ol>
-New Features:<br>
-<ol>
-  <li>Variable expansion may now be used with the INCLUDE directive.<br>
-&nbsp;<br>
-Example:<br>
-&nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /etc/shorewall/params<br>
-&nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-FILE=/etc/foo/bar<br>
-&nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Any other config file:<br>
-&nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-INCLUDE $FILE<br>
-  </li>
-</ol>
-<span style="font-weight: bold;"><a name="2_2_0_Beta6"></a>11/26/2004 -
-Shorewall 2.2.0 Beta 6<br>
-<br>
-</span>Beta 5 was more or less DOA. Here's Beta 6.<br>
-<br>
-Problems Corrected:<br>
-<ol>
-  <li>Fixed a number of problems associated with not having an IPTABLES
-value assigned in shorewall.conf</li>
-  <li>Corrected a 'duplicate chain' error on "shorewall add" when the
-'mss' option is present in /etc/shorewall/ipsec.<br>
-  </li>
-</ol>
-<span style="font-weight: bold;"><a name="2_2_0_Beta5"></a>11/26/2004 -
-Shorewall 2.2.0 Beta 5<br>
-</span><br>
-Problems corrected:<br>
-<ol>
-  <li>A typo in shorewall.conf (NETNOTSYN) has been corrected.</li>
-</ol>
-New Features:<br>
-<ol>
-  <li>For consistency, the CLIENT PORT(S) column in the tcrules file
-has been renamed SOURCE PORT(S).</li>
-  <li>The contents of /proc/sys/net/ip4/icmp_echo_ignore_all is now
-shown in the output of "shorewall status".</li>
-  <li>A new IPTABLES option has been added to shorewall.conf. IPTABLES
-can be used to designate the iptables executable to be used by
-Shorewall. If not specified, the iptables executable determined by the
-PATH setting is used.<br>
-  </li>
-</ol>
-<span style="font-weight: bold;"><a name="2_0_11"></a>11/23/2004 -
-Shorewall 2.0.11<br>
-</span><br>
-Problems corrected:<br>
-<ol>
-  <li>The INSTALL file now include special instructions for Slackware
-users.</li>
-  <li>The bogons file has been updated.</li>
-  <li>Service names are replaced by port numbers in /etc/shorewall/tos.</li>
-  <li>A typo in the install.sh file that caused an error during a new
-install has been corrected.</li>
-</ol>
-New Features:<br>
-<ol>
-  <li>The AllowNNTP action now allows NNTP over SSL/TLS (NTTPS).<br>
-  </li>
-</ol>
-<span style="font-weight: bold;"><a name="2_2_0_Beta4"></a>11/19/2004 -
-Shorewall 2.2.0 Beta 4<br>
-</span><br>
-Problems Corrected:<br>
-<ol>
-  <li>A cut and paste error resulted in some nonsense in the
-description of the IPSEC column in /etc/shorewall/masq.</li>
-  <li>A typo in /etc/shorewall/rules has been corrected.</li>
-  <li>The bogons file has been updated.</li>
-  <li>The "shorewall add" command previously reported success but did
-nothing -- now it works.</li>
-</ol>
-New Features:<br>
-<ol>
-  <li>The AllowNNTP action now allows NNTP over SSL/TLS (NNTPS).<br>
-  </li>
-</ol>
-<span style="font-weight: bold;"><a name="2_2_0_Beta3"></a>11/09/2004 -
-Shorewall 2.2.0 Beta 3<br>
-</span><br>
-Problems Corrected:<br>
-<ol>
-  <li>Missing '#' in the rfc1918 file has been corrected.</li>
-  <li>The INSTALL file now includes special instructions for Slackware
-users.</li>
-</ol>
-New Features:<br>
-<ol>
-  <li>In CLASSIFY rules (/etc/shorewall/tcrules), an interface name may
-now appear in the DEST column as in:<br>
-    <pre>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; #MARK/&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SOURCE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; DEST&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; PROTO&nbsp;&nbsp;&nbsp;&nbsp; PORT(S)<br>        #CLASSIFY<br>        1:30&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; eth0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; tcp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 25</pre>
-  </li>
-</ol>
-<span style="font-weight: bold;"><a name="2_2_0_Beta2"></a>11/02/2004 -
-Shorewall 2.2.0 Beta 2<br>
-<br>
-</span>Problems Corrected:<br>
-<ol>
-  <li>The "shorewall check" command results in the (harmless) error
-message:<br>
-&nbsp;<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-/usr/share/shorewall/firewall: line 2753:<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-check_dupliate_zones: command not found<br>
-    <br>
-  </li>
-  <li>The AllowNTP standard action now allows outgoing responses to
-broadcasts.</li>
-  <li>A clarification has been added to the hosts file's description of
-the 'ipsec' option pointing out that the option is redundent if the
-zone named in the ZONE column has been designated an IPSEC zone in the
-/etc/shorewall/ipsec file.<span style="font-weight: bold;"></span></li>
-</ol>
-New Features:<br>
-<ol>
-  <li>The SUBNET column in /etc/shorewall/rfc1918 has been renamed
-SUBNETS and it is now possible to specify a list of addresses in that
-column.<br>
-  </li>
-</ol>
-<span style="font-weight: bold;"><a name="2_0_10"></a>10/25/2004 -
-Shorewall 2.0.10<br>
-</span><br>
-Problems Corrected:<br>
-<ol>
-  <li>The GATEWAY column was previously ignored in 'pptpserver' entries
-in /etc/shorewall/tunnels.</li>
-  <li>When log rule numbers are included in the LOGFORMAT, duplicate
-rule numbers could previously be generated.</li>
-  <li>The /etc/shorewall/tcrules file now includes a note to the effect
-that rule evaluation continues after a match.</li>
-  <li>The error message produced if Shorewall couldn't obtain the
-routes
-through an interface named in the SUBNET column of /etc/shorewall/masq
-was less than helpful since it didn't include the interface name.<br>
-  </li>
-</ol>
-New Features:<br>
-<ol>
-  <li>The "shorewall status" command has been enhanced to include the
-values of key /proc settings:<br>
-    <br>
-Example from a two-interface firewall:<br>
-    <br>
-/proc<br>
-    <br>
-&nbsp;&nbsp; /proc/sys/net/ipv4/ip_forward = 1<br>
-&nbsp;&nbsp; /proc/sys/net/ipv4/conf/all/proxy_arp = 0<br>
-&nbsp;&nbsp; /proc/sys/net/ipv4/conf/all/arp_filter = 0<br>
-&nbsp;&nbsp; /proc/sys/net/ipv4/conf/all/rp_filter = 0<br>
-&nbsp;&nbsp; /proc/sys/net/ipv4/conf/default/proxy_arp = 0<br>
-&nbsp;&nbsp; /proc/sys/net/ipv4/conf/default/arp_filter = 0<br>
-&nbsp;&nbsp; /proc/sys/net/ipv4/conf/default/rp_filter = 0<br>
-&nbsp;&nbsp; /proc/sys/net/ipv4/conf/eth0/proxy_arp = 0<br>
-&nbsp;&nbsp; /proc/sys/net/ipv4/conf/eth0/arp_filter = 0<br>
-&nbsp;&nbsp; /proc/sys/net/ipv4/conf/eth0/rp_filter = 0<br>
-&nbsp;&nbsp; /proc/sys/net/ipv4/conf/eth1/proxy_arp = 0<br>
-&nbsp;&nbsp; /proc/sys/net/ipv4/conf/eth1/arp_filter = 0<br>
-&nbsp;&nbsp; /proc/sys/net/ipv4/conf/eth1/rp_filter = 0<br>
-&nbsp;&nbsp; /proc/sys/net/ipv4/conf/lo/proxy_arp = 0<br>
-&nbsp;&nbsp; /proc/sys/net/ipv4/conf/lo/arp_filter = 0<br>
-&nbsp;&nbsp; /proc/sys/net/ipv4/conf/lo/rp_filter = 0<br>
-  </li>
-</ol>
-<br>
-<span style="font-weight: bold;"><a name="2_2_0_Beta1"></a>10/24/2004 -
-Shorewall 2.2.0 Beta1<br>
-<br>
-</span>The first beta in the 2.2 series is now available. Download
-location is:<br>
-<br>
-<div style="margin-left: 40px;"><a
- href="http://shorewall.net/pub/shorewall/2.2-Beta/shorewall-2.2.0-Beta1">http://shorewall.net/pub/shorewall/2.2-Beta/shorewall-2.2.0-Beta1</a><br>
-<a target="_top"
- href="ftp://shorewall.net/pub/shorewall/2.2-Beta/shorewall-2.2.0-Beta1">ftp://shorewall.net/pub/shorewall/2.2-Beta/shorewall-2.2.0-Beta1</a><br>
-</div>
-<p>The features available in this release and the migration
-considerations are covered in the <a
- href="http://shorewall.net/pub/shorewall/2.2-Beta/shorewall-2.2.0-Beta1/releasenotes.txt">release
-notes</a>. Highlights include:<br>
-</p>
-<ol>
-  <li>The behavior produced by specifying a log level in an action
-invocation is now much more rational. Previously, all packets sent to
-the action were logged; now each rule within the invoked action behaves
-as if logging had been specified on it.</li>
-  <li>Support for the 2.6 Kernel's native IPSEC implementation is now
-available.</li>
-  <li>Support for ipp2p is included.</li>
-  <li>Support for the iptables CONNMARK facility is now included in
-Shorewall.</li>
-  <li>A new LOGALLNEW option facilitates problem analysis.</li>
-  <li>Users with a large static blacklist can now defer loading the
-blacklist until after the rest of the ruleset has been enabled. Doing
-so can decrease substantially the amount of time that connections are
-disabled during <span style="font-weight: bold;">shorewall [re]start</span>.</li>
-  <li>Support for the iptables 'iprange match' feature has been
-enabled. Users whose kernel and iptables contain this feature can use
-ip address ranges in most places in their Shorewall configuration where
-a CIDR netowrk can be used.</li>
-  <li>Accepting of source routing and martian logging may now be
-enabled/disabled on each interface.</li>
-  <li>Shorewall now supports the CLASSIFY iptable target.</li>
-</ol>
+<span style="font-weight: bold;"></span>
 <p><a href="News.htm">More News</a></p>
 <hr>
 <h2><a name="Leaf"></a>Leaf</h2>

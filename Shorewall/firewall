@@ -1367,12 +1367,18 @@ setup_tunnels() # $1 = name of tunnels file
 	    run_iptables -A $inchain  -p udp -s $1 --sport 500 --dport 500 $options
 	else
 	    run_iptables -A $inchain  -p udp -s $1 --dport 500 $options
+	    run_iptables -A $inchain  -p udp -s $1 --dport 4500 $options
 	fi
 
 	for z in `separate_list $3`; do
 	    if validate_zone $z; then
 		addrule ${FW}2${z} -p udp --sport 500 --dport 500 $options
-		addrule ${z}2${FW} -p udp --sport 500 --dport 500 $options
+		if [ $2 = ipsec ]; then
+		    addrule ${z}2${FW} -p udp --sport 500 --dport 500 $options
+		else
+		    addrule ${z}2${FW} -p udp --dport 500 $options
+		    addrule ${z}2${FW} -p udp --dport 4500 $options
+		fi
 	    else
 		error_message "Warning: Invalid gateway zone ($z)" \
 		" -- Tunnel \"$tunnel\" may encounter keying problems"
@@ -4494,7 +4500,6 @@ do_initialize() {
 	echo "$config does not exist!" >&2
 	exit 2
     fi
-
 
     FUNCTIONS=$SHARED_DIR/functions
 

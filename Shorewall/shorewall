@@ -569,44 +569,58 @@ fi
 
 [ -n "$SHOREWALL_DIR" ] && export SHOREWALL_DIR
 
-functions=/usr/lib/shorewall/functions
+PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
+SHARED_DIR=/usr/lib/shorewall
+MUTEX_TIMEOUT=
 
-if [ -f $functions ]; then
-    . $functions
+if [ -n "$SHOREWALL_DIR" -a -f $SHOREWALL_DIR/shorewall.conf ]; then
+    config=$SHOREWALL_DIR/shorewall.conf
 else
-    echo "$functions does not exist!" >&2
+    config=/etc/shorewall/shorewall.conf
+fi
+
+if [ -f $config ]; then
+    . $config
+else
+    echo "$config does not exist!" >&2
     exit 2
 fi
 
-firewall=/usr/lib/shorewall/firewall
+[ -z "${STATEDIR}" ] && STATEDIR=/var/state/shorewall
 
-if [ ! -f $firewall ]; then
+FIREWALL=$SHARED_DIR/firewall
+FUNCTIONS=$SHARED_DIR/functions
+VERSION_FILE=$SHARED_DIR/version
+
+if [ -f $FUNCTIONS ]; then
+    . $FUNCTIONS
+else
+    echo "$FUNCTIONS does not exist!" >&2
+    exit 2
+fi
+
+if [ ! -f $FIREWALL ]; then
     echo "ERROR: Shorewall is not properly installed"
-    if [ -L $firewall ]; then
-	echo "	     $firewall is a symbolic link to a"
+    if [ -L $FIREWALL ]; then
+	echo "	     $FIREWALL is a symbolic link to a"
 	echo "	     non-existant file"
     else
-	echo "	     The file /usr/lib/shorewall/firewall does not exist"
+	echo "	     The file $FIREWALL  does not exist"
     fi
 
     exit 2
 fi
 
-PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
-
-version_file=/usr/lib/shorewall/version
-
-if [ -f $version_file ]; then
-    version=`cat $version_file`
+if [ -f $VERSION_FILE ]; then
+    version=`cat $VERSION_FILE`
 else
     echo "ERROR: Shorewall is not properly installed"
-    echo "	 The file /usr/lib/shorewall/version does not exist"
+    echo "	 The file $VERSION_FILE does not exist"
     exit 1
 fi
 
 banner="Shorewall-$version Status at $HOSTNAME -"
 
-get_statedir
 
 case `echo -e` in
     -e*)
@@ -629,11 +643,11 @@ esac
 case "$1" in
     start|stop|restart|reset|clear|refresh|check)
 	[ $# -ne 1 ] && usage 1
-	exec $firewall $debugging $nolock $1
+	exec $FIREWALL $debugging $nolock $1
 	;;
     add|delete)
 	[ $# -ne 3 ] && usage 1
-	exec $firewall $debugging $nolock $1 $2 $3
+	exec $FIREWALL $debugging $nolock $1 $2 $3
 	;;
     show)
 	[ $# -gt 2 ] && usage 1

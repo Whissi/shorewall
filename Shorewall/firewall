@@ -70,7 +70,7 @@ list_count() {
 
 #
 # Mutual exclusion -- These functions are jackets for the mutual exclusion
-#		      routines in /usr/lib/shorewall/functions. They invoke
+#		      routines in $FUNCTIONS. They invoke
 #		      the corresponding function in that file if the user did
 #		      not specify "nolock" on the runline.
 #
@@ -4465,6 +4465,10 @@ do_initialize() {
     TCP_FLAGS_LOG_LEVEL=
     RFC1918_LOG_LEVEL=
     MARK_IN_FORWARD_CHAIN=
+    SHARED_DIR=/usr/lib/shorewall
+    FUNCTIONS=
+    VERSION_FILE=
+
     stopping=
     have_mutex=
     masq_seq=1
@@ -4478,30 +4482,35 @@ do_initialize() {
 
     trap "rm -rf $TMP_DIR; my_mutex_off; exit 2" 1 2 3 4 5 6 9
 
-    functions=/usr/lib/shorewall/functions
-
-    if [ -f $functions ]; then
-	. $functions
+    if [ -n "$SHOREWALL_DIR" -a -f $SHOREWALL_DIR/shorewall.conf ]; then
+	config=$SHOREWALL_DIR/shorewall.conf
     else
-	startup_error "$functions does not exist!"
+	config=/etc/shorewall/shorewall.conf
+    fi
+    
+    if [ -f $config ]; then
+	. $config
+    else
+	echo "$config does not exist!" >&2
+	exit 2
     fi
 
-    version_file=/usr/lib/shorewall/version
 
-    [ -f $version_file ] && version=`cat $version_file`
-    #
-    # Strip the files that we use often
-    #
-    strip_file interfaces
-    strip_file hosts
+    FUNCTIONS=$SHARED_DIR/functions
 
-    run_user_exit shorewall.conf
-    run_user_exit params
+    if [ -f $FUNCTIONS ]; then
+	. $FUNCTIONS
+    else
+	startup_error "$FUNCTIONS does not exist!"
+    fi
+
+    VERSION_FILE=$SHARED_DIR/version
+
+    [ -f $VERSION_FILE ] && version=`cat $VERSION_FILE`
 
     [ -z "${STATEDIR}" ] && STATEDIR=/var/state/shorewall
 
     [ -d $STATEDIR ] || mkdir -p $STATEDIR
-
 
     [ -z "$FW" ] && FW=fw
 
@@ -4582,6 +4591,15 @@ do_initialize() {
     else
 	CLEAR_TC=
     fi
+
+
+    run_user_exit params
+
+    #
+    # Strip the files that we use often
+    #
+    strip_file interfaces
+    strip_file hosts
 }
 
 #

@@ -570,3 +570,32 @@ New Features:
     Example:
 
 	CLAMPMSS=1400 
+
+23) Shorewall now includes support for the ipp2p match facility. This
+    is a departure from my usual policy in that the ipp2p match
+    facility is included in Patch-O-Matic-NG and is unlikely to ever be
+    included in the kernel.org source tree. Questions about how to
+    install the patch or how to build your kernel and/or iptables
+    should not be posted on the Shorewall mailing lists.
+
+    In the following files, the "PROTO" or "PROTOCOL" column may
+    contain "ipp2p":
+
+       /etc/shorewall/rules
+       /etc/shorewall/tcrules
+       /etc/shorewall/accounting
+
+    When the PROTO or PROTOCOL column contains "ipp2p" then the DEST
+    PORT(S) or PORT(S) column may contain a recognized ipp2p option;
+    for a list of the options and their meaning, at a root prompt:
+
+	iptables -m ipp2p --help
+
+    You must not include the leading "--" on the option; Shorewall will
+    supply those characters for you. If you do not include an option
+    then "ipp2p" is assumed (Shorewall will generate "-m ipp2p
+    --ipp2p").
+
+24) Shorewall now has support for the CONNMARK target from iptables.
+    See the /etc/shorewall/tcrules file for details.
+    

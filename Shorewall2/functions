@@ -6,24 +6,11 @@
 # Split a colon-separated list into a space-separated list
 #
 split() {
-    local ifs=$IFS
+    local ifs=$IFS result=
     IFS=:
     set -- $1
-    IFS=$ifs
     echo $*
-}
-
-#
-# Combine a space-separated list into a colon-separated list
-#
-combine() {
-    local result=$1
-
-    while [ $# -gt 1 ]; do
-	shift
-	result=$result:$1
-    done
-    echo $result
+    IFS=$ifs
 }
 
 #

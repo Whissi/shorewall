@@ -2594,9 +2594,9 @@ add_an_action()
 #
 # Process a record from an action file for the 'start', 'restart' or 'check' commands
 #
-process_action() # $1 = chain
-                 # $2 = action
-                 # $3 = target
+process_action() # $1 = chain    (Chain to add the rules to)
+                 # $2 = action   (The action name for logging purposes)
+                 # $3 = target   (The (possibly modified) contents of the TARGET column)
                  # $4 = clients
                  # $5 = servers
                  # $6 = protocol
@@ -2755,7 +2755,7 @@ process_action() # $1 = chain
 
 #
 # Create and record a log action chain -- in the functions that follow, 
-# the CHAIN, LEVEL and TAG variable serves as an arguments to the user's
+# the CHAIN, LEVEL and TAG variable serves as arguments to the user's
 # exit. We call the exit corresponding to the name of the action but we
 # set CHAIN to the name of the iptables chain where rules are to be added.
 # Similarly, LEVEL and TAG contain the log level and log tag respectively.
@@ -2770,7 +2770,7 @@ createlogactionchain() # $1 = Action Name, $2 = Log Level [: Log Tag ]
 {
     local actchain= action=$1 level=$2 
 
-    eval actchain=\${${action}_actchain-1}
+    eval actchain=\${${action}_actchain}
 
     case ${#action} in
 	10|11)
@@ -2782,11 +2782,13 @@ createlogactionchain() # $1 = Action Name, $2 = Log Level [: Log Tag ]
     esac
 
     
-    [ "$COMMAND" != check ] && while chain_exists ${CHAIN}%${actchain}; do
-	actchain=$(($actchain + 1))
-    done
+    [ "$COMMAND" != check ] && \
+	while havechain %${CHAIN}${actchain}; do
+	    actchain=$((${actchain-0} + 1))
+	    [ $actchain -eq 10 -a ${#CHAIN} -eq 9 ] && CHAIN=$(echo $CHAIN | cut -b -8)
+        done
 
-    CHAIN=${CHAIN}%${actchain}
+    CHAIN=%${CHAIN}${actchain}
 
     eval ${action}_actchain=$(($actchain + 1))
 
@@ -2828,6 +2830,10 @@ createactionchain() # $1 = Action, including log level and tag if any
     esac
 }
 
+#
+# Find the chain that handles the passed action. If the chain cannot be found,
+# a fatal error is generated and the function does not return.
+#
 find_logactionchain() # $1 = Action, including log level and tag if any
 {
     local fullaction=$1 action=${1%%:*} level= chains=
@@ -2838,7 +2844,7 @@ find_logactionchain() # $1 = Action, including log level and tag if any
 	    ;;
 	*)
 	    if [ $COMMAND != check ]; then
-		havechain $action || createactionchain $action
+		havechain $action ||  fatal_error "Fatal error in find_logactionchain"
 	    fi
 
 	    echo $action
@@ -2859,7 +2865,7 @@ find_logactionchain() # $1 = Action, including log level and tag if any
 
 }
 
-evaluate_levels() # $1=level at which superior action is called, $2=level at which the subordinate rule is called
+merge_levels() # $1=level at which superior action is called, $2=level at which the subordinate rule is called
 {
     local superior=$1 subordinate=$2
     
@@ -3073,8 +3079,17 @@ process_actions2() {
 	    eval required=\"\$requiredby_${xaction%%:*}\"
 	    
 	    for xaction1 in $required; do
-		xaction2=$(evaluate_levels $xaction $xaction1)
+		#
+		# Generate the action that will be passed to process_action by merging the
+		# logging specified when the action was invoked with the logging in the
+		# invocation of the subordinate action (usually no logging)
+		#
+		xaction2=$(merge_levels $xaction $xaction1)
+
 		if ! list_search $xaction2 $USEDACTIONS; then
+		    #
+		    # We haven't seen this one before -- create and record a chain to handle it
+		    #
 		    USEDACTIONS="$USEDACTIONS $xaction2"
 		    createactionchain $xaction2
 		    changed=Yes
@@ -3169,10 +3184,13 @@ process_actions2() {
 		    #
 		    # Generate the target:level:tag to pass to process_action()
 		    #
-		    xaction2=$(evaluate_levels $xaction $xtarget)
+		    xaction2=$(merge_levels $xaction $xtarget)
 
 		    case ${xaction2%%:*} in 
 			ACCEPT|DROP|REJECT|LOG|QUEUE|CONTINUE)
+			    #
+			    # Builtin target -- Nothing to do
+			    #
 			    ;;
 			*)
 			    #

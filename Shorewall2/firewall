@@ -5133,7 +5133,7 @@ setup_blacklist() {
 
 	[ "$disposition" = REJECT ] && disposition=reject
 
-	if [ -n "$DELAYBLACKLISTLOAD" ]; then
+	if [ -z "$DELAYBLACKLISTLOAD" ]; then
 	    while read networks protocol ports; do
 		expandv networks protocol ports
 		process_blacklist_rec

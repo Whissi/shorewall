@@ -166,6 +166,8 @@ while [ $# -gt 0 ] ; do
     shift
     ARGS="yes"
 done
+
+PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
     
 #
 # Determine where to install the firewall script
@@ -282,13 +284,18 @@ fi
 # Install the functions file
 #
 if [ -f ${PREFIX}/etc/shorewall/functions ]; then
+    backup_file ${PREFIX}/etc/shorewall/functions
+    rm -f  ${PREFIX}/etc/shorewall/functions
+fi
+    
+if [ -f ${PREFIX}/var/lib/shorewall/functions ]; then
     backup_file ${PREFIX}/var/lib/shorewall/functions
     rm -f  ${PREFIX}/var/lib/shorewall/functions
 fi
     
 install_file_with_backup functions ${PREFIX}/usr/lib/shorewall/functions 0444
 
-echo -e "\nCommon functions installed in ${PREFIX}/var/lib/shorewall/functions"
+echo -e "\nCommon functions installed in ${PREFIX}/usr/lib/shorewall/functions"
 #
 # Install the common.def file
 #

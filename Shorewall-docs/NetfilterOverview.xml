@@ -34,32 +34,34 @@
   <section>
     <title>Netfilter Overview</title>
 
-    <para>Netfilter consists of three tables: Filter, Nat and Mangle. Each
-    table has a number of build-in chains: PREROUTING, INPUT, FORWARD, OUTPUT
-    and POSTROUTING.</para>
+    <para>Netfilter consists of three tables: <emphasis role="bold">Filter</emphasis>,
+    <emphasis role="bold">Nat</emphasis> and <emphasis role="bold">Mangle</emphasis>.
+    Each table has a number of build-in chains: <emphasis role="bold">PREROUTING</emphasis>,
+    <emphasis role="bold">INPUT</emphasis>, <emphasis role="bold">FORWARD</emphasis>,
+    <emphasis role="bold">OUTPUT</emphasis> and <emphasis role="bold">POSTROUTING</emphasis>.</para>
 
     <para>Rules in the various tables are used as follows:</para>
 
     <variablelist>
       <varlistentry>
-        <term>* Filter:</term>
+        <term>Filter</term>
 
         <listitem>
-          <para># Packet filtering (rejecting, dropping or accepting packets)</para>
+          <para>Packet filtering (rejecting, dropping or accepting packets)</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term># Nat:</term>
+        <term>Nat</term>
 
         <listitem>
-          <para># Network Address Translation including DNAT, SNAT and
+          <para>Network Address Translation including DNAT, SNAT and
           Masquerading</para>
         </listitem>
       </varlistentry>
 
       <varlistentry>
-        <term># Mangle:</term>
+        <term>Mangle</term>
 
         <listitem>
           <para>General packet header modification such as setting the TOS
@@ -81,19 +83,22 @@
 
     <graphic fileref="images/Legend.png" />
 
-    <para>The above box gives the name of the built-in chain (INPUT) along
-    with the names of the tables (Mangle and Filter) that the chain exists in
-    and in the order that the chains are traversed. The above sample indicates
-    that packets go first through the INPUT chain of the Mangle table then
-    through the INPUT chain of the Filter table. When a chain is enclosed in
-    parentheses, Shorewall does not use the named chain (INPUT) in that table
-    (Mangle).</para>
+    <para>The above box gives the name of the built-in chain (<emphasis
+    role="bold">INPUT</emphasis>) along with the names of the tables (<emphasis
+    role="bold">Mangle</emphasis> and <emphasis role="bold">Filter</emphasis>)
+    that the chain exists in and in the order that the chains are traversed.
+    The above sample indicates that packets go first through the <emphasis
+    role="bold">INPUT</emphasis> chain of the <emphasis role="bold">Mangle</emphasis>
+    table then through the <emphasis role="bold">INPUT</emphasis> chain of the
+    <emphasis role="bold">Filter</emphasis> table. When a chain is enclosed in
+    parentheses, Shorewall does not use the named chain (<emphasis role="bold">INPUT</emphasis>)
+    in that table (<emphasis role="bold">Mangle</emphasis>).</para>
 
     <important>
-      <para>Keep in mind that chains in the Nat table are only traversed for
-      new connection requests (including those related to existing
-      connections) while the chains in the other tables are traversed on every
-      packet.</para>
+      <para>Keep in mind that chains in the <emphasis role="bold">Nat</emphasis>
+      table are <emphasis role="bold">only traversed for new connection
+      requests</emphasis> (including those related to existing connections)
+      while the chains in the other tables are traversed on every packet.</para>
     </important>
 
     <para>The above diagram should help you understand the output of
@@ -108,7 +113,8 @@ Shorewall-1.4.7 Status at lists.shorewall.net - Mon Oct 13 12:51:13 PDT 2003
                                                                                                                                                                                     
 Counters reset Sat Oct 11 08:12:57 PDT 2003</programlisting>
 
-    <para>The first table shown is the Filter table.</para>
+    <para>The first table shown is the <emphasis role="bold">Filter</emphasis>
+    table.</para>
 
     <programlisting>Chain INPUT (policy DROP 0 packets, 0 bytes)
  pkts bytes target     prot opt in     out     source               destination
@@ -154,7 +160,7 @@ Chain OUTPUT (policy DROP 1 packets, 60 bytes)
     <para>The &#34;dynamic&#34; chain above is where dynamic blacklisting is
     done.</para>
 
-    <para>Next comes the Nat table:</para>
+    <para>Next comes the <emphasis role="bold">Nat</emphasis> table:</para>
 
     <programlisting>NAT Table
  
@@ -173,7 +179,7 @@ Chain net_dnat (1 references)
   638 32968 REDIRECT   tcp  --  *      *       0.0.0.0/0           !206.124.146.177    tcp dpt:80 redir ports 3128
 </programlisting>
 
-    <para>And finally, the Mangle table:</para>
+    <para>And finally, the <emphasis role="bold">Mangle</emphasis> table:</para>
 
     <programlisting>Mangle Table
  

@@ -64,7 +64,7 @@ document under the terms of the GNU Free Documentation License, Version
 with no Invariant Sections, with no Front-Cover, and with no Back-Cover
 Texts. A copy of the license is included in the section entitled <a>"GNU
 Free Documentation License"</a>.</p>
-      <p>Copyright © 2001-2003 Thomas M. Eastep </p>
+      <p>Copyright © 2001-2004 Thomas M. Eastep </p>
       <h2>This is the Shorewall 1.4 Web Site</h2>
 The information on this site applies only to 1.4.x releases of
 Shorewall. For older versions:<br>
@@ -92,14 +92,10 @@ and installing a setup that matches the documentation on this site.
 See the <a href="two-interface.htm">Two-interface QuickStart
 Guide</a> for details.
       <h2><b>News</b></h2>
-      <p><b>12/29/2003 - Shorewall 1.4.9 Beta 2</b> <b><img
+      <p><b>1/13/2004 - Shorewall 1.4.9</b> <b><img
  style="border: 0px solid ; width: 28px; height: 12px;"
  src="images/new10.gif" alt="(New)" title=""><br>
       </b></p>
-      <div style="margin-left: 40px;"><a
- href="http://shorewall.net/pub/shorewall/Beta">http://shorewall.net/pub/shorewall/Beta</a><br>
-      <a href="ftp://shorewall.net/pub/shorewall/Beta" target="_top">ftp://shorewall.net/pub/shorewall/Beta</a><br>
-      </div>
       <p>Problems Corrected since version 1.4.8:<br>
       </p>
       <ol>
@@ -180,7 +176,8 @@ In /etc/shorewall/actions, you would add:<br>
 &nbsp;&nbsp;&nbsp;&nbsp; LogAndAccept<br>
           <br>
 You would then copy /etc/shorewall/action.template to
-/etc/shorewall/LogAndAccept and in that file, you would add the two
+/etc/shorewall/action.LogAndAccept and in that file, you would add the
+two
 rules:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; LOG:info<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ACCEPT</li>
@@ -198,6 +195,11 @@ b) The old default of NEWNOTSYN=No and LOGNEWNOTSYN=info resulted in
 lots of confusing messages when a connection got "stuck". While I could
 have changed the default value of LOGNEWNOTSYN to suppress logging, I
 dislike defaults that silently throw away packets.</li>
+        <li>The common.def file now contains an entry that silently
+drops ICMP
+packets with a null source address. Ad Koster reported a case where
+these were occuring frequently as a result of a broken system on his
+external network.</li>
       </ol>
       <p><b>12/28/2003 - www.shorewall.net/ftp.shorewall.net Back
 On-line</b> <b><img alt="(New)" src="images/new10.gif"
@@ -266,7 +268,7 @@ Children's Foundation.</font></a> Thanks!</font></font></p>
     </tr>
   </tbody>
 </table>
-<p><font size="2">Updated 12/29/2003 - <a href="support.htm">Tom
+<p><font size="2">Updated 01/13/2004 - <a href="support.htm">Tom
 Eastep</a></font><br>
 </p>
 </body>

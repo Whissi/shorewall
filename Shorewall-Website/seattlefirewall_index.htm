@@ -78,7 +78,7 @@ any later version published by the Free Software Foundation; with no
 Invariant Sections, with no Front-Cover, and with no Back-Cover Texts.
 A copy of the license is included in the section entitled <a>"GNU Free
 Documentation License"</a>.
-      <p>Copyright © 2001-2003 Thomas M. Eastep </p>
+      <p>Copyright © 2001-2004 Thomas M. Eastep </p>
       <h3>Running Shorewall on Mandrake with a two-interface setup?</h3>
 If so, the documentation <b></b>on this site will not apply directly
 to your setup. If you want to use the documentation that you find here,
@@ -87,14 +87,10 @@ setup that matches the documentation on this site. See the <a
  href="two-interface.htm">Two-interface QuickStart Guide</a> for
 details.<br>
       <h2>News</h2>
-      <p><b>12/29/2003 - Shorewall 1.4.9 Beta 2 </b><b><img alt="(New)"
+      <p><b>1/13/2004 - Shorewall 1.4.9 </b><b><img alt="(New)"
  src="images/new10.gif"
  style="border: 0px solid ; width: 28px; height: 12px;" title=""></b><b>
       </b></p>
-      <div style="margin-left: 40px;"><a
- href="http://shorewall.net/pub/shorewall/Beta">http://shorewall.net/pub/shorewall/Beta</a><br>
-      <a href="ftp://shorewall.net/pub/shorewall/Beta" target="_top">ftp://shorewall.net/pub/shorewall/Beta</a>
-      </div>
       <p>Problems Corrected since version 1.4.8:</p>
       <ol>
         <li>There has been a low continuing level of confusion over the
@@ -167,7 +163,8 @@ In /etc/shorewall/actions, you would add:<br>
 &nbsp;&nbsp;&nbsp;&nbsp; LogAndAccept<br>
           <br>
 You would then copy /etc/shorewall/action.template to
-/etc/shorewall/LogAndAccept and in that file, you would add the two
+/etc/shorewall/action.LogAndAccept and in that file, you would add the
+two
 rules:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; LOG:info<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ACCEPT<br>
@@ -184,7 +181,11 @@ dropping all of the retries.<br>
 b) The old default of NEWNOTSYN=No and LOGNEWNOTSYN=info resulted in
 lots of confusing messages when a connection got "stuck". While I could
 have changed the default value of LOGNEWNOTSYN to suppress logging, I
-dislike defaults that silently throw away packets.<br>
+dislike defaults that silently throw away packets.</li>
+        <li>The common.def file now contains an entry that silently
+drops ICMP packets with a null source address. Ad Koster reported a
+case where these were occuring frequently as a result of a broken
+system on his external network.<br>
           <br>
         </li>
       </ol>
@@ -233,7 +234,7 @@ Children's Foundation</a>. Thanks!</big><br>
   </tbody>
 </table>
 </div>
-<p><font size="2">Updated 12/29/2003 - <a href="support.htm">Tom Eastep</a></font><br>
+<p><font size="2">Updated 01/13/2004 - <a href="support.htm">Tom Eastep</a></font><br>
 </p>
 </body>
 </html>

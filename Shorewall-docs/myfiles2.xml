@@ -1,0 +1,622 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article>
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>About My Network</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate>2004-02-04</pubdate>
+
+    <copyright>
+      <year>2001-2004</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <section>
+    <title>My Current Network</title>
+
+    <caution>
+      <para>I use a combination of One-to-one NAT and Proxy ARP, neither of
+      which are relevant to a simple configuration with a single public IP
+      address. If you have just a single public IP address, most of what you
+      see here won&#39;t apply to your setup so beware of copying parts of
+      this configuration and expecting them to work for you. What you copy may
+      or may not work in your configuration.</para>
+    </caution>
+
+    <caution>
+      <para>The configuration shown here corresponds to Shorewall version
+      2.0.0-Alpha2. It may use features not available in earlier Shorewall
+      releases.</para>
+    </caution>
+
+    <para>I have DSL service and have 5 static IP addresses
+    (206.124.146.176-180). My DSL <quote>modem</quote> (Fujitsu Speedport) is
+    connected to eth0. I have a local network connected to eth2 (subnet
+    192.168.1.0/24), a DMZ connected to eth1 (192.168.2.0/24) and a Wireless
+    network connected to eth3 (192.168.3.0/24).</para>
+
+    <para>I use:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>One-to-one NAT for Ursa (my personal system that dual-boots
+        Mandrake 9.2 and Windows XP) - Internal address 192.168.1.5 and
+        external address 206.124.146.178.</para>
+      </listitem>
+
+      <listitem>
+        <para>One-to-one NAT for EastepLaptop (My work system -- Windows XP
+        SP2). Internal address 192.168.1.7 and external address
+        206.124.146.180.</para>
+      </listitem>
+
+      <listitem>
+        <para>SNAT through 206.124.146.179 for&#x00A0; my SuSE 9.0 Linux
+        system (Wookie), my Wife&#39;s Windows XP system (Tarry), and
+        our&#x00A0; Windows XP laptop (Tipper) which connects through the
+        Wireless Access Point (wap) via a Wireless Bridge (bridge).<note><para>While
+        the distance between the WAP and where I usually use the laptop
+        isn&#39;t very far (25 feet or so), using a WAC11 (CardBus wireless
+        card) has proved very unsatisfactory (lots of lost connections). By
+        replacing the WAC11 with the WET11 wireless bridge, I have virtually
+        eliminated these problems (Being an old radio tinkerer (K7JPV), I was
+        also able to eliminate the disconnects by hanging a piece of aluminum
+        foil on the family room wall. Needless to say, my wife Tarry rejected
+        that as a permanent solution :-).</para></note></para>
+      </listitem>
+    </itemizedlist>
+
+    <para>The firewall runs on a 256MB PII/233 with Debian Sarge (Testing).</para>
+
+    <para>Wookie, Ursa and the Firewall all run Samba and the Firewall acts as
+    a WINS server.</para>
+
+    <para>The wireless network connects to eth3 via a LinkSys WAP11.&#x00A0;
+    In additional to using the rather weak WEP 40-bit encryption (64-bit with
+    the 24-bit preamble), I use <ulink url="MAC_Validation.html">MAC
+    verification</ulink>. This is still a weak combination and if I lived near
+    a wireless <quote>hot spot</quote>, I would probably add IPSEC or
+    something similar to my WiFi-&#62;local connections.</para>
+
+    <para>The single system in the DMZ (address 206.124.146.177) runs postfix,
+    Courier IMAP (imaps and pop3), DNS, a Web server (Apache) and an FTP
+    server (Pure-ftpd) under RedHat 9.0. The system also runs fetchmail to
+    fetch our email from our old and current ISPs. That server is managed
+    through Proxy ARP.</para>
+
+    <para>The firewall system itself runs a DHCP server that serves the local
+    network.</para>
+
+    <para>All administration and publishing is done using ssh/scp. I have a
+    desktop environment installed on the firewall but I am not usually logged
+    in to it. X applications tunnel through SSH to Ursa. The server also has a
+    desktop environment installed and that desktop environment is available
+    via XDMCP from the local zone. For the most part though, X tunneled
+    through SSH is used for server administration and the server runs at run
+    level 3 (multi-user console mode on RedHat).</para>
+
+    <para>I run an SNMP server on my firewall to serve <ulink
+    url="http://www.ee.ethz.ch/~oetiker/webtools/mrtg/">MRTG</ulink> running
+    in the DMZ.<graphic align="center" fileref="images/network.png" />The
+    ethernet interface in the Server is configured with IP address
+    206.124.146.177, netmask 255.255.255.0. The server&#39;s default gateway
+    is 206.124.146.254 (Router at my ISP. This is the same default gateway
+    used by the firewall itself). On the firewall, an entry in my
+    /etc/network/interfaces file (see below) adds a host route to
+    206.124.146.177 through eth1 when that interface is brought up.</para>
+
+    <para>Ursa (192.168.1.5 A.K.A. 206.124.146.178) runs a PPTP server for
+    Road Warrior access.</para>
+
+    <section>
+      <title>Shorewall.conf</title>
+
+      <blockquote>
+        <programlisting>LOGFILE=/var/log/messages
+LOGRATE=
+LOGBURST=
+LOGUNCLEAN=$LOG
+BLACKLIST_LOGLEVEL=
+LOGNEWNOTSYN=$LOG
+MACLIST_LOG_LEVEL=$LOG
+TCP_FLAGS_LOG_LEVEL=$LOG
+RFC1918_LOG_LEVEL=$LOG
+SMURF_LOG_LEVEL=
+PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
+SHOREWALL_SHELL=/bin/ash
+SUBSYSLOCK=               #I run Debian which doesn&#39;t use service locks
+STATEDIR=/var/state/shorewall
+MODULESDIR=
+FW=fw
+IP_FORWARDING=On
+ADD_IP_ALIASES=Yes
+ADD_SNAT_ALIASES=Yes
+TC_ENABLED=Yes
+CLEAR_TC=No
+MARK_IN_FORWARD_CHAIN=No
+CLAMPMSS=Yes
+ROUTE_FILTER=No
+DETECT_DNAT_IPADDRS=Yes
+MUTEX_TIMEOUT=60
+NEWNOTSYN=Yes
+BLACKLISTNEWONLY=Yes
+BLACKLIST_DISPOSITION=DROP
+MACLIST_DISPOSITION=REJECT
+TCP_FLAGS_DISPOSITION=DROP
+</programlisting>
+      </blockquote>
+    </section>
+
+    <section>
+      <title>Params File (Edited)</title>
+
+      <blockquote>
+        <para><programlisting>MIRRORS=&#60;list of shorewall mirror ip addresses&#62;
+NTPSERVERS=&#60;list of the NTP servers I sync with&#62;
+TEXAS=&#60;ip address of gateway in Dallas&#62;
+LOG=info</programlisting></para>
+      </blockquote>
+    </section>
+
+    <section>
+      <title>Zones File</title>
+
+      <blockquote>
+        <programlisting>#ZONE   DISPLAY         COMMENTS
+net     Internet        Internet
+WiFi    Wireless        Wireless Network on eth3
+dmz     DMZ             Demilitarized zone
+loc     Local           Local networks
+tx      Texas           Peer Network in Dallas
+#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
+      </blockquote>
+    </section>
+
+    <section>
+      <title>Interfaces File</title>
+
+      <blockquote>
+        <para>This is set up so that I can start the firewall before bringing
+        up my Ethernet interfaces.</para>
+
+        <programlisting>#ZONE   INERFACE        BROADCAST       OPTIONS
+net     eth0            206.124.146.255 dhcp,norfc1918,routefilter,blacklist,tcpflags,nosmurfs
+loc     eth2            192.168.1.255   dhcp,detectnets
+dmz     eth1            192.168.2.255
+WiFi    eth3            192.168.3.255   dhcp,maclist,detectnets
+-       texas           192.168.9.255
+#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
+      </blockquote>
+    </section>
+
+    <section>
+      <title>Hosts File</title>
+
+      <blockquote>
+        <programlisting>#ZONE           HOST(S)                 OPTIONS
+tx&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0; texas:192.168.8.0/22
+#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
+      </blockquote>
+    </section>
+
+    <section>
+      <title>Routestopped File</title>
+
+      <blockquote>
+        <programlisting>#INTERFACE      HOST(S)
+eth1            206.124.146.177
+eth2            -
+eth3            192.168.3.0/24
+#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
+      </blockquote>
+    </section>
+
+    <section id="RFC1918">
+      <title>RFC1918 File</title>
+
+      <blockquote>
+        <para>I use a stripped-down file which doesn&#39;t have to be updated
+        when the IANA allocates a block of IP addresses.</para>
+      </blockquote>
+
+      <blockquote>
+        <programlisting>#SUBNET                 TARGET
+169.254.0.0/16          DROP            # DHCP autoconfig
+172.16.0.0/12           logdrop         # RFC 1918
+192.0.2.0/24            logdrop         # Example addresses
+192.168.0.0/16          logdrop         # RFC 1918
+10.24.60.56             DROP            # Some idiot in my broadcast domain
+                                        # has a box configured with this
+                                        # address.
+10.0.0.0/8              logdrop         # Reserved (RFC 1918)</programlisting>
+      </blockquote>
+    </section>
+
+    <section>
+      <title>Blacklist File (Partial)</title>
+
+      <blockquote>
+        <programlisting>#ADDRESS/SUBNET         PROTOCOL        PORT
+0.0.0.0/0               udp             1434
+0.0.0.0/0               tcp             1433
+0.0.0.0/0               tcp             8081
+0.0.0.0/0               tcp             57
+#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
+      </blockquote>
+    </section>
+
+    <section>
+      <title>Policy File</title>
+
+      <blockquote>
+        <programlisting>#SOURCE         DESTINATION     POLICY          LOG LEVEL       BURST:LIMIT
+fw              fw              ACCEPT                                    # For testing fw-&#62;fw rules
+loc             net             ACCEPT                                    # Allow all net traffic from local net
+$FW             loc             ACCEPT                                    # Allow local access from the firewall
+$FW             tx              ACCEPT                                    # Allow firewall access to texas
+loc             tx              ACCEPT                                    # Allow local net access to texas
+loc             fw              REJECT          $LOG                      # Reject loc-&#62;fw and log
+WiFi            net             ACCEPT                                    # Allow internet access from wirless
+net             all             DROP            $LOG            10/sec:40 # Rate limit and
+                                                                          # DROP net-&#62;all
+all             all             REJECT          $LOG                      # Reject and log the rest
+#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
+      </blockquote>
+    </section>
+
+    <section>
+      <title>Masq File</title>
+
+      <blockquote>
+        <para>Although most of our internal systems use one-to-one NAT, my
+        wife&#39;s system (192.168.1.4) uses IP Masquerading (actually SNAT)
+        as does my SuSE system (192.168.1.3), our laptop (192.168.3.8) and
+        visitors with laptops.</para>
+
+        <programlisting>#INTERFACE              SUBNET          ADDRESS
+eth0:2                  eth2            206.124.146.179
+eth0                    eth3            206.124.146.179
+#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE
+</programlisting>
+      </blockquote>
+    </section>
+
+    <section>
+      <title>NAT File</title>
+
+      <blockquote>
+        <programlisting>#EXTERNAL       INTERFACE       INTERNAL        ALL INTERFACES          LOCAL
+206.124.146.178 eth0:0          192.168.1.5     No                      No
+206.124.146.180 eth0:1          192.168.1.7     No                      No
+#
+# The following entry allows the server to be accessed through an address in
+# the local network. This is convenient when I&#39;m on the road and connected
+# to the PPTP server. By doing this, I don&#39;t need to set my client&#39;s default
+# gateway to route through the tunnel.
+#
+192.168.1.193   eth2:0          206.124.146.177 No                      No
+#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+      </blockquote>
+    </section>
+
+    <section id="ProxyARP">
+      <title>Proxy ARP File</title>
+
+      <blockquote>
+        <programlisting>#ADDRESS                INTERFACE       EXTERNAL        HAVEROUTE          PERSISTENT
+206.124.146.177         eth1            eth0            Yes
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+      </blockquote>
+    </section>
+
+    <section>
+      <title>Tunnels File (Shell variable TEXAS set in /etc/shorewall/params)</title>
+
+      <blockquote>
+        <programlisting>#TYPE                   ZONE    GATEWAY         GATEWAY ZONE    PORT
+gre                     net     $TEXAS
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+      </blockquote>
+    </section>
+
+    <section>
+      <title>Actions File</title>
+
+      <blockquote>
+        <programlisting>#ACTION
+DropBcast           #Silently Drops Broadcast Traffic
+DropSMB             #Silently Drops Microsoft SMB Traffic
+RejectSMB           #Silently Reject Microsoft SMB Traffic
+DropUPnP            #Silently Drop UPnP Probes
+DropNonSyn          #Silently Drop Non-syn TCP packets
+RejectAuth          #Silently Reject Auth
+DropPing            #Silently Drop Ping
+DropDNSrep          #Silently Drop DNS Replies
+AllowPing           #Accept Ping
+
+Mirrors             #Accept traffic from the Shorewall Mirror sites
+
+MyDrop:DROP         #My DROP common action
+MyReject:REJECT     #My REJECT common action
+#LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
+      </blockquote>
+    </section>
+
+    <section>
+      <title>action.Mirrors File</title>
+
+      <blockquote>
+        <para>The $MIRRORS variable expands to a list of approximately 10 IP
+        addresses. So moving these checks into a separate chain reduces the
+        number of rules that most net-&#62;dmz traffic needs to traverse.</para>
+
+        <programlisting>#TARGET  SOURCE         DEST            PROTO   DEST    SOURCE     ORIGINAL     RATE
+#                                               PORT    PORT(S)    DEST         LIMIT
+ACCEPT   $MIRRORS                      
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+      </blockquote>
+    </section>
+
+    <section>
+      <title>action.MyDrop</title>
+
+      <blockquote>
+        <para>This is my common action for the DROP policy. It is like the
+        standard <emphasis role="bold">Reject</emphasis> action except that it
+        allows <quote>Ping</quote>.</para>
+
+        <programlisting>#TARGET  SOURCE     DEST          PROTO   DEST      SOURCE      RATE         USER/
+#                                         PORT(S)   PORT(S)     LIMIT        GROUP
+RejectAuth
+AllowPing
+DropBcast
+DropSMB
+DropUPnP
+DropNonSyn
+DropDNSrep</programlisting>
+      </blockquote>
+    </section>
+
+    <section>
+      <title>action.MyReject</title>
+
+      <blockquote>
+        <para>This is my common action for the REJECT policy. It is like the
+        standard <emphasis role="bold">Drop</emphasis> action except that it
+        allows <quote>Ping</quote>.</para>
+
+        <programlisting>#TARGET  SOURCE     DEST          PROTO   DEST      SOURCE      RATE         USER/
+#                                         PORT(S)   PORT(S)     LIMIT        GROUP
+RejectAuth
+AllowPing
+DropBcast
+RejectSMB
+DropUPnP
+DropNonSyn
+DropDNSrep</programlisting>
+      </blockquote>
+    </section>
+
+    <section>
+      <title>Rules File (The shell variables are set in /etc/shorewall/params)</title>
+
+      <blockquote>
+        <programlisting>###############################################################################################################################################################################
+#RESULT         CLIENT(S)                       SERVER(S)               PROTO   PORT(S)                                 CLIENT          ORIGINAL        RATE    USER
+#                                                                                                                       PORT(S)         DEST:SNAT               SET
+###############################################################################################################################################################################
+# Local Network to Internet - Reject attempts by Trojans to call home
+#
+REJECT:$LOG     loc                             net                     tcp     6667
+#
+# Stop NETBIOS crap since our policy is ACCEPT
+#
+REJECT          loc                             net                     tcp     137,445
+REJECT          loc                             net                     udp     137:139
+#
+DROP            loc:!192.168.1.0/24             net
+
+QUEUE           loc                             net                     udp
+QUEUE           loc                             fw                      udp
+QUEUE           loc                             net                     tcp
+###############################################################################################################################################################################
+# Local Network to Firewall
+#
+DROP            loc:!192.168.1.0/24             fw
+ACCEPT          loc                             fw                      tcp     ssh,time,10000,swat,137,139,445
+ACCEPT          loc                             fw                      udp     snmp,ntp,445
+ACCEPT          loc                             fw                      udp     137:139
+ACCEPT          loc                             fw                      udp     1024:                                   137
+###############################################################################################################################################################################
+# Local Network to DMZ
+#
+DROP            loc:!192.168.1.0/24             dmz
+REJECT          loc                             dmz                     tcp     465
+ACCEPT          loc                             dmz                     udp     domain,xdmcp
+ACCEPT          loc                             dmz                     tcp     www,smtp,domain,ssh,imap,https,imaps,cvspserver,ftp,10000,8080,10027,pop3       -
+###############################################################################################################################################################################
+# Internet to DMZ
+#
+DNAT-           net                             dmz:206.124.146.177     tcp     smtp                                    -               206.124.146.179,206.124.146.178
+ACCEPT          net                             dmz                     tcp     smtp,www,ftp,imaps,domain,cvspserver,https      -
+ACCEPT          net                             dmz                     udp     domain
+ACCEPT          net                             dmz                     udp     33434:33436
+Mirrors         net                             dmz                     tcp     rsync
+#ACCEPT:$LOG    net                             dmz                     tcp     32768:61000                             20
+###############################################################################################################################################################################
+#
+# Net to Local
+#
+# When I&#39;m &#34;on the road&#34;, the following two rules allow me VPN access back home.
+#
+ACCEPT          net                             loc:192.168.1.5         tcp     1723
+ACCEPT          net                             loc:192.168.1.5         gre
+#
+# ICQ
+#
+ACCEPT          net                             loc:192.168.1.5         tcp     4000:4100
+#
+# Real Audio
+#
+ACCEPT          net                             loc:192.168.1.5         udp     6970:7170
+#
+# Overnet
+#
+#ACCEPT         net                             loc:192.168.1.5         tcp     4662
+#ACCEPT         net                             loc:192.168.1.5         udp     12112
+###############################################################################################################################################################################
+# DMZ to Internet
+#
+ACCEPT          dmz                             net                     tcp     smtp,domain,www,https,whois,echo,2702,21,2703,ssh,8080
+ACCEPT          dmz                             net                     udp     domain
+ACCEPT          dmz                             net:$POPSERVERS         tcp     pop3
+#ACCEPT         dmz                             net:206.191.151.2       tcp     pop3
+#ACCEPT         dmz                             net:66.216.26.115       tcp     pop3
+#
+# Something is wrong with the FTP connection tracking code or there is some client out there
+# that is sending a PORT command which that code doesn&#39;t understand. Either way,
+# the following works around the problem.
+#
+ACCEPT:$LOG     dmz                             net                     tcp     1024:                                   20
+###############################################################################################################################################################################
+# DMZ to Firewall -- ntp &#38; snmp, Silently reject Auth
+#
+ACCEPT          dmz                             fw                      udp     ntp                                     ntp
+ACCEPT          dmz                             fw                      tcp     snmp,ssh
+ACCEPT          dmz                             fw                      udp     snmp
+REJECT          dmz                             fw                      tcp     auth
+###############################################################################################################################################################################
+# DMZ to Internet
+#
+ACCEPT          dmz                             net                     tcp     smtp,domain,www,https,whois,echo,2702,21,2703,ssh,8080
+ACCEPT          dmz                             net                     udp     domain
+ACCEPT          dmz                             net:$POPSERVERS         tcp     pop3
+#ACCEPT         dmz                             net:206.191.151.2       tcp     pop3
+#ACCEPT         dmz                             net:66.216.26.115       tcp     pop3
+#
+# Something is wrong with the FTP connection tracking code or there is some client out there
+# that is sending a PORT command which that code doesn&#39;t understand. Either way,
+# the following works around the problem.
+#
+ACCEPT:$LOG     dmz                             net                     tcp     1024:                                   20
+###############################################################################################################################################################################
+# DMZ to Firewall -- ntp &#38; snmp, Silently reject Auth
+#
+ACCEPT          dmz                             fw                      udp     ntp                                     ntp
+ACCEPT          dmz                             fw                      tcp     snmp,ssh
+ACCEPT          dmz                             fw                      udp     snmp
+REJECT          dmz                             fw                      tcp     auth
+###############################################################################################################################################################################
+#
+# DMZ to Local Network
+#
+ACCEPT          dmz                             loc                     tcp     smtp,6001:6010
+ACCEPT          dmz                             loc                     tcp     111
+ACCEPT          dmz                             loc                     udp
+###############################################################################################################################################################################
+# Internet to Firewall
+#
+REJECT          net                             fw                      tcp     www
+ACCEPT          net                             dmz                     udp     33434:33435
+###############################################################################################################################################################################
+# WIFI to Firewall
+#
+ACCEPT          WiFi                            fw                      tcp     ssh,137,139,445
+ACCEPT          WiFi                            fw                      udp     137:139,445
+ACCEPT          WiFi                            fw                      udp     1024:                                   137
+ACCEPT          WiFi                            fw                      udp     ntp                                     ntp
+###############################################################################################################################################################################
+# Firewall to WIFI
+#
+ACCEPT          fw                              WiFi                    tcp     137,139,445
+ACCEPT          fw                              WiFi                    udp     137:139,445
+ACCEPT          fw                              WiFi                    udp     1024:                                   137
+ACCEPT          fw                              WiFi                    udp     ntp                                     ntp
+##############################################################################################################################################################################
+# WIFI to DMZ
+#
+DNAT-           WiFi                            dmz:206.124.146.177     all     -                                       -               192.168.1.193
+ACCEPT          WiFi                            dmz                     tcp     smtp,www,ftp,imaps,domain,https,ssh,8080        -
+ACCEPT          WiFi                            dmz                     udp     domain
+##############################################################################################################################################################################
+# WIFI to loc
+#
+ACCEPT          WiFi                            loc                     udp     137:139
+ACCEPT          WiFi                            loc                     tcp     22,80,137,139,445,901,3389
+ACCEPT          WiFi                            loc                     udp     1024:                                   137
+ACCEPT          WiFi                            loc                     udp     177
+##############################################################################################################################################################################
+# loc to WiFi
+#
+ACCEPT          loc                             WiFi                    udp     137:139
+ACCEPT          loc                             WiFi                    tcp     137,139,445
+ACCEPT          loc                             WiFi                    udp     1024:                                   137
+ACCEPT          loc                             WiFi                    tcp     6000:6010
+###############################################################################################################################################################################
+# Firewall to Internet
+#
+ACCEPT          fw                              net:$NTPSERVERS         udp     ntp                                     ntp
+#ACCEPT         fw                              net:$POPSERVERS         tcp     pop3
+ACCEPT          fw                              net                     udp     domain
+ACCEPT          fw                              net                     tcp     domain,www,https,ssh,1723,whois,1863,ftp,2702,2703,7
+ACCEPT          fw                              net                     udp     33435:33535
+ACCEPT          fw                              net                     icmp
+###############################################################################################################################################################################
+# Firewall to DMZ
+#
+ACCEPT          fw                              dmz                     tcp     www,ftp,ssh,smtp
+ACCEPT          fw                              dmz                     udp     domain
+REJECT          fw                              dmz                     udp     137:139
+###############################################################################################################################################################################
+# Ping
+#
+ACCEPT          all                             all                     icmp    8
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+      </blockquote>
+    </section>
+
+    <section>
+      <title>/etc/network/interfaces</title>
+
+      <blockquote>
+        <para>This file is Debian specific. My additional entry (which is
+        displayed in <emphasis role="bold">bold type</emphasis>) adds a route
+        to my DMZ server when eth1 is brought up. It allows me to enter
+        <quote>Yes</quote> in the HAVEROUTE column of <link linkend="ProxyARP">my
+        Proxy ARP file</link>.</para>
+
+        <programlisting>...
+auto eth1
+iface eth1 inet static
+        address 192.168.2.1
+        netmask 255.255.255.0
+        network 192.168.2.0
+        broadcast 192.168.2.255
+        <emphasis role="bold">up ip route add 206.124.146.177 dev eth1
+</emphasis>...</programlisting>
+      </blockquote>
+    </section>
+  </section>
+</article>

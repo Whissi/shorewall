@@ -5,7 +5,7 @@
   <!--$Id$-->
 
   <articleinfo>
-    <title>Multiple Zones per Interface</title>
+    <title>Routing on One Interface</title>
 
     <authorgroup>
       <author>
@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2003-11-21</pubdate>
+    <pubdate>2004-02-04</pubdate>
 
     <copyright>
       <year>2003</year>
@@ -181,149 +181,35 @@
         loc1 to the internet doesn&#39;t match any rules for loc1-&#62;net
         then it will be checked against the loc-&#62;net rules.</para>
 
-        <table>
-          <title>/etc/shorewall/zones</title>
+        <para><filename>/etc/shorewall/zones</filename></para>
 
-          <tgroup cols="3">
-            <thead>
-              <row>
-                <entry align="center">ZONE</entry>
-
-                <entry align="center">DISPLAY</entry>
-
-                <entry align="center">COMMENTS</entry>
-              </row>
-            </thead>
-
-            <tbody>
-              <row>
-                <entry>loc1</entry>
-
-                <entry>Local2</entry>
-
-                <entry>Hosts access through internal router</entry>
-              </row>
-
-              <row>
-                <entry>loc</entry>
-
-                <entry>Local</entry>
-
-                <entry>All hosts accessed via eth1</entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </table>
+        <programlisting>#ZONE               DISPLAY             COMMENTS
+loc1                Local1              Hosts accessed through internal router
+loc                 Local               All hosts accessed via eth1</programlisting>
 
         <note>
           <para>the sub-zone (loc1) is defined first!</para>
         </note>
 
-        <table>
-          <title>/etc/shorewall/interfaces</title>
+        <para><filename>/etc/shorewall/interfaces</filename></para>
 
-          <tgroup cols="4">
-            <thead>
-              <row>
-                <entry align="center">ZONE</entry>
+        <programlisting>#ZONE               INTERFACE           BROADCAST
+loc                 eth1                192.168.1.255</programlisting>
 
-                <entry align="center">INTERFACE</entry>
+        <para><filename>/etc/shorewall/hosts</filename></para>
 
-                <entry align="center">BROADCAST</entry>
-
-                <entry align="center">OPTIONS</entry>
-              </row>
-            </thead>
-
-            <tbody>
-              <row>
-                <entry>loc</entry>
-
-                <entry>eth1</entry>
-
-                <entry>192.168.1.255</entry>
-
-                <entry>...</entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </table>
-
-        <table>
-          <title>/etc/shorewall/hosts</title>
-
-          <tgroup cols="3">
-            <thead>
-              <row>
-                <entry align="center">ZONE</entry>
-
-                <entry align="center">HOSTS</entry>
-
-                <entry align="center">OPTIONS</entry>
-              </row>
-            </thead>
-
-            <tbody>
-              <row>
-                <entry>loc1</entry>
-
-                <entry>eth1:192.168.2.0/24</entry>
-
-                <entry></entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </table>
+        <programlisting>#ZONE               HOSTS
+loc1                eth1:192.168.2.0/24</programlisting>
 
         <para>If you don&#39;t need Shorewall to set up infrastructure to
         route traffic between <quote>loc</quote> and <quote>loc1</quote>, add
-        these two policies:</para>
+        these two policies.</para>
 
-        <table>
-          <title>/etc/shorewall/policy</title>
+        <para>/etc/shorewall/policy</para>
 
-          <tgroup cols="5">
-            <thead>
-              <row>
-                <entry align="center">SOURCE</entry>
-
-                <entry align="center">DEST</entry>
-
-                <entry align="center">POLICY</entry>
-
-                <entry align="center">LOG LEVEL</entry>
-
-                <entry align="center">RATE:BURST</entry>
-              </row>
-            </thead>
-
-            <tbody>
-              <row>
-                <entry>loc</entry>
-
-                <entry>loc1</entry>
-
-                <entry>NONE</entry>
-
-                <entry></entry>
-
-                <entry></entry>
-              </row>
-
-              <row>
-                <entry>loc1</entry>
-
-                <entry>loc</entry>
-
-                <entry>NONE</entry>
-
-                <entry></entry>
-
-                <entry></entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </table>
+        <programlisting>#SOURCE             DEST                 POLICY
+loc                 loc1                 NONE
+loc1                loc                  NONE</programlisting>
       </section>
 
       <section>
@@ -334,157 +220,34 @@
 
         <graphic fileref="images/MultiZone1B.png" />
 
-        <table>
-          <title>/etc/shorewall/zones</title>
+        <para><filename>/etc/shorewall/zones</filename></para>
 
-          <tgroup cols="3">
-            <thead>
-              <row>
-                <entry align="center">ZONE</entry>
-
-                <entry align="center">DISPLAY</entry>
-
-                <entry align="center">COMMENTS</entry>
-              </row>
-            </thead>
-
-            <tbody>
-              <row>
-                <entry>loc1</entry>
-
-                <entry>Local1</entry>
-
-                <entry>Hosts accessed Directly from Firewall</entry>
-              </row>
-
-              <row>
-                <entry>loc2</entry>
-
-                <entry>Local2</entry>
-
-                <entry>Hosts accessed via internal Router</entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </table>
+        <programlisting>#ZONE               DISPLAY             COMMENTS
+loc1                Local1              Hosts accessed Directly from Firewall
+loc2                Local2              Hosts accessed via the internal Router</programlisting>
 
         <note>
           <para>Here it doesn&#39;t matter which zone is defined first.</para>
         </note>
 
-        <table>
-          <title>/etc/shorewall/interfaces</title>
+        <para><filename>/etc/shorewall/interfaces</filename></para>
 
-          <tgroup cols="4">
-            <thead>
-              <row>
-                <entry align="center">ZONE</entry>
+        <programlisting>#ZONE               INTERFACE           BROADCAST
+-                   eth1                192.168.1.255</programlisting>
 
-                <entry align="center">INTERFACE</entry>
+        <para><filename>/etc/shorewall/hosts</filename></para>
 
-                <entry align="center">BROADCAST</entry>
+        <programlisting>#ZONE               HOSTS
+loc1                eth1:192.168.1.0/24
+loc2                eth1:192.168.2.0/24</programlisting>
 
-                <entry align="center">OPTIONS</entry>
-              </row>
-            </thead>
-
-            <tbody>
-              <row>
-                <entry>-</entry>
-
-                <entry>eth1</entry>
-
-                <entry>192.168.1.255</entry>
-
-                <entry>...</entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </table>
-
-        <table>
-          <title>/etc/shorewall/hosts</title>
-
-          <tgroup cols="3">
-            <thead>
-              <row>
-                <entry align="center">ZONE</entry>
-
-                <entry align="center">HOSTS</entry>
-
-                <entry align="center">OPTIONS</entry>
-              </row>
-            </thead>
-
-            <tbody>
-              <row>
-                <entry>loc1</entry>
-
-                <entry>eth1:192.168.1.0/24</entry>
-
-                <entry></entry>
-              </row>
-
-              <row>
-                <entry>loc2</entry>
-
-                <entry>eth1:192.168.2.0/24</entry>
-
-                <entry></entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </table>
-
-        <para>If you don&#39;t need Shorewall to set up infrastructure to
-        route traffic between <quote>loc</quote> and <quote>loc1</quote>, add
+        <para>You don&#39;t need Shorewall to set up infrastructure to route
+        traffic between <quote>loc</quote> and <quote>loc1</quote>, so add
         these two policies:</para>
 
-        <table>
-          <title>/etc/shorewall/policy</title>
-
-          <tgroup cols="5">
-            <thead>
-              <row>
-                <entry align="center">SOURCE</entry>
-
-                <entry align="center">DEST</entry>
-
-                <entry align="center">POLICY</entry>
-
-                <entry align="center">LOG LEVEL</entry>
-
-                <entry align="center">RATE:BURST</entry>
-              </row>
-            </thead>
-
-            <tbody>
-              <row>
-                <entry>loc</entry>
-
-                <entry>loc1</entry>
-
-                <entry>NONE</entry>
-
-                <entry></entry>
-
-                <entry></entry>
-              </row>
-
-              <row>
-                <entry>loc1</entry>
-
-                <entry>loc</entry>
-
-                <entry>NONE</entry>
-
-                <entry></entry>
-
-                <entry></entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </table>
+        <programlisting>#SOURCE             DEST                 POLICY
+loc1                loc2                 NONE
+loc2                loc1                 NONE</programlisting>
       </section>
     </section>
   </section>
@@ -500,148 +263,32 @@
     <para>In this example, addresses 192.168.1.8 - 192.168.1.15
     (192.168.1.8/29) are to be treated as their own zone (loc1).</para>
 
-    <table>
-      <title>/etc/shorewall/zones</title>
+    <para><filename>/etc/shorewall/zones</filename></para>
 
-      <tgroup cols="3">
-        <thead>
-          <row>
-            <entry align="center">ZONE</entry>
-
-            <entry align="center">DISPLAY</entry>
-
-            <entry align="center">COMMENTS</entry>
-          </row>
-        </thead>
-
-        <tbody>
-          <row>
-            <entry>loc1</entry>
-
-            <entry>Local2</entry>
-
-            <entry>192.168.1.8 - 192.168.1.15</entry>
-          </row>
-
-          <row>
-            <entry>loc</entry>
-
-            <entry>Local</entry>
-
-            <entry>All hosts accessed via eth1</entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
+    <programlisting>#ZONE               DISPLAY             COMMENTS
+loc1                Local1              192.168.1.8-192.168.1.15
+loc                 Local               All hosts accessed via eth1</programlisting>
 
     <note>
       <para>the sub-zone (loc1) is defined first!</para>
     </note>
 
-    <table>
-      <title>/etc/shorewall/interfaces</title>
+    <para><filename>/etc/shorewall/interfaces</filename></para>
 
-      <tgroup cols="4">
-        <thead>
-          <row>
-            <entry align="center">ZONE</entry>
+    <programlisting>#ZONE               INTERFACE           BROADCAST
+loc                 eth1                192.168.1.255</programlisting>
 
-            <entry align="center">INTERFACE</entry>
-
-            <entry align="center">BROADCAST</entry>
-
-            <entry align="center">OPTIONS</entry>
-          </row>
-        </thead>
-
-        <tbody>
-          <row>
-            <entry>loc</entry>
-
-            <entry>eth1</entry>
-
-            <entry>192.168.1.255</entry>
-
-            <entry>...</entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
-
-    <table>
-      <title>/etc/shorewall/hosts</title>
-
-      <tgroup cols="3">
-        <thead>
-          <row>
-            <entry align="center">ZONE</entry>
-
-            <entry align="center">HOSTS</entry>
-
-            <entry align="center">OPTIONS</entry>
-          </row>
-        </thead>
-
-        <tbody>
-          <row>
-            <entry>loc1</entry>
-
-            <entry>eth1:192.168.2.0/24</entry>
-
-            <entry></entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
+    <para><filename>/etc/shorewall/hosts</filename><programlisting>#ZONE               HOSTS
+loc1                eth1:192.168.1.8/29</programlisting></para>
 
     <para>You probably don&#39;t want Shorewall to set up infrastructure to
     route traffic between <quote>loc</quote> and <quote>loc1</quote> so you
-    should add these two policies:</para>
+    should add these two policies.</para>
 
-    <table>
-      <title>/etc/shorewall/policy</title>
+    <para><filename>/etc/shorewall/policy</filename></para>
 
-      <tgroup cols="5">
-        <thead>
-          <row>
-            <entry align="center">SOURCE</entry>
-
-            <entry align="center">DEST</entry>
-
-            <entry align="center">POLICY</entry>
-
-            <entry align="center">LOG LEVEL</entry>
-
-            <entry align="center">RATE:BURST</entry>
-          </row>
-        </thead>
-
-        <tbody>
-          <row>
-            <entry>loc</entry>
-
-            <entry>loc1</entry>
-
-            <entry>NONE</entry>
-
-            <entry></entry>
-
-            <entry></entry>
-          </row>
-
-          <row>
-            <entry>loc1</entry>
-
-            <entry>loc</entry>
-
-            <entry>NONE</entry>
-
-            <entry></entry>
-
-            <entry></entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
+    <programlisting>#SOURCE             DEST                 POLICY
+loc                 loc1                 NONE
+loc1                loc                  NONE</programlisting>
   </section>
 </article>

@@ -1,10 +1,17 @@
 #
 # Shorewall 1.4 - /etc/shorewall/hosts
 #
-#    WARNING: 90% of Shorewall users don't need to add entries to this
-#             file and 80% of those who try to add such entries get it
-#	      wrong. Unless you are ABSOLUTELY SURE that you need entries
-#	      in this file, don't touch it!
+#	THERE ARE TWO CASES WHERE YOU NEED THIS FILE:
+#
+#	1) YOU HAVE MULTIPLE NETWORKS IN THE SAME ZONE CONNECTED TO
+#	   A SINGLE INTERFACE AND YOU WANT THE SHOREWALL BOX TO ROUTE
+#	   BETWEEN THESE NETWORKS.
+#
+#	2) YOU HAVE MORE THAN ONE ZONE CONNECTED THROUGH A SINGLE
+#	   INTERFACE.
+#
+#	IF YOU DON'T HAVE EITHER OF THESE SITUATIONS THEN DON'T TOUCH
+#	THIS FILE.
 #
 #	This file is used to define zones in terms of subnets and/or
 #	individual IP addresses. Most simple setups don't need to

@@ -1018,6 +1018,8 @@ stop_firewall() {
     strip_file routestopped 
 
     while read interface host; do
+	expandv interface host
+	[ "x$host" = "x-" ] && host=
 	hosts="$hosts $interface:${host:-0.0.0.0/0}"
     done < $TMP_DIR/routestopped
 
@@ -1051,6 +1053,8 @@ stop_firewall() {
 	echo 0 > /proc/sys/net/ipv4/ip_forward
 	;;
     esac
+
+    run_user_exit stopped
 
     logger "Shorewall Stopped"
 

@@ -726,6 +726,7 @@ validate_policy()
     print_policy() # $1 = source zone, $2 = destination zone
     {
 	[ $command != check ] || \
+	    [ $1 = $2 ]  || \
 	    [ $1 = all ] || \
 	    [ $2 = all ] || \
 	    echo "   Policy for $1 to $2 is $policy using chain $chain"
@@ -4432,10 +4433,9 @@ activate_rules()
 		for host1 in $dest_hosts; do
 		    interface1=${host1%:*}
 		    subnet1=${host1#*:}
-
-		    if list_search $host1 $source_hosts && ! list_search $host1 $routeback; then
-			if [ `list_count1 $source_hosts` -gt 1 ]; then
-			    run_iptables -A $frwd_chain -s ! $subnet1 -o $interface1 -d $subnet1 -j $chain
+		    if [ `list_count1 $source_hosts` -eq 1 -a "$source_hosts" = "$host1" ]; then
+			if list_search $host1 $routeback; then
+			    run_iptables -A $frwd_chain -o $interface1 -d $subnet1 -j $chain
 			fi
 		    else
 			run_iptables -A $frwd_chain -o $interface1 -d $subnet1 -j $chain

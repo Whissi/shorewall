@@ -18,7 +18,12 @@
 #		     PLACE IN YOUR SHOREWALL CONFIGURATION.
 #
 #		     This may be qualified by adding the character
-#                    ":" followed by a destination host or subnet.
+#                    ":" followed by a comma-separed list of
+#                    destination hosts or subnets. If this list begins with
+#		     "!" then masquerading will occur if and only if the
+#		     connection destination is NOT included in the list. 
+#		     Otherwise, the masquerading will occur if and only if
+#		     the destination IS included in the list.
 #
 #
 #	SUBNET -- Subnet that you wish to masquerade. You can specify this as

@@ -57,7 +57,22 @@
 #			any source port is acceptable. Specified as a comma-
 #			separated list of port names, port numbers or port
 #			ranges.
+#
+#	USER		This column may only be non-empty if the SOURCE is
+#			the firewall itself.
+#
+#			When this column is non-empty, the rule applies only
+#			if the program generating the output is running under
+#			the effective user and/or group.
+#
+#			It may contain :
+#
+#			   [<user name or number>]:[<group name or number>]
+#
+#			The colon is optionnal when specifying only a user.
+#			Examples : john: / john / :users / john:users	
+#
 ##############################################################################
-#MARK		SOURCE 		DEST		PROTO	PORT(S)	CLIENT
+#MARK		SOURCE 		DEST		PROTO	PORT(S)	CLIENT	USER
 #								PORT(S)
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

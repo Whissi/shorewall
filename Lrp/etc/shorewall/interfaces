@@ -103,6 +103,11 @@
 #				       This option has no effect if 
 #				       NEWNOTSYN=Yes.
 #
+#			routeback    - If specified, indicates that Shorewall
+#				       should include rules that allow filtering
+#				       traffic arriving on this interface back
+#				       out that same interface.
+#
 #			arp_filter   - If specified, this interface will only
 #				       respond to ARP who-has requests for IP
 #				       addresses configured on the interface.
@@ -111,6 +116,13 @@
 #				       IP addresses on any of the firewall's
 #                                      interface. The interface must be up
 #				       when Shorewall is started.
+#
+#			detectnets   - Automatically taylors the zone named
+#				       in the ZONE column to include only those
+#				       hosts routed through the interface.
+#
+#		        WARNING: DO NOT SET THE detectnets OPTION ON YOUR
+#			         INTERNET INTERFACE!
 #
 #			The order in which you list the options is not
 #			significant but the list should have no embedded white

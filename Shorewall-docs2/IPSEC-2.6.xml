@@ -49,6 +49,10 @@
   <section>
     <title>Shorewall 2.1 and Kernel 2.6 IPSEC</title>
 
+    <para>This is <emphasis role="bold">not</emphasis> a HOWTO for Kernel 2.6
+    IPSEC -- for that, please see <ulink
+    url="http://www.ipsec-howto.org/">http://www.ipsec-howto.org/</ulink>.</para>
+
     <para>The 2.6 Linux Kernel introduces new facilities for defining
     encrypted communication between hosts in a network. The network
     administrator defines a set of Security Policies which are stored in the
@@ -109,9 +113,10 @@
       </listitem>
 
       <listitem>
-        <para>A <filename>new /etc/shorewall/ipsec</filename> file allows you
-        to associate zones with traffic that will be encrypted or that has
-        been decrypted.</para>
+        <para>A <filename>new </filename><ulink
+        url="Documentation.htm#Ipsec"><filename>/etc/shorewall/ipsec</filename></ulink>
+        file allows you to associate zones with traffic that will be encrypted
+        or that has been decrypted.</para>
       </listitem>
     </orderedlist>
 
@@ -128,7 +133,7 @@
 
         <para>The value <emphasis role="bold">Yes</emphasis> is placed in the
         IPSEC column of the <filename>/etc/shorewall/ipsec</filename> entry
-        for the zone. </para>
+        for the zone.</para>
       </listitem>
 
       <listitem>
@@ -150,7 +155,8 @@
 
     <para>Finally, the OPTIONS, IN OPTIONS and OUT OPTIONS columns in
     /etc/shorewall/ipsec can be used to match the zone to a particular (set
-    of) SA(s) used to encrypt and decrypt traffic to/from the zone.</para>
+    of) SA(s) used to encrypt and decrypt traffic to/from the zone and the
+    security policies that select which traffic to encrypt/decrypt.</para>
   </section>
 
   <section>

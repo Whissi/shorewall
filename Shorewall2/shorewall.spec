@@ -1,5 +1,5 @@
 %define name shorewall
-%define version 2.1.5
+%define version 2.1.6
 %define release 1
 %define prefix /usr
 
@@ -128,6 +128,8 @@ fi
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel
 
 %changelog
+* Fri Aug 20 2004 Tom Eastep tom@shorewall.net
+- Updated to 2.1.6-1
 * Wed Aug 18 2004 Tom Eastep tom@shorewall.net
 - Updated to 2.1.5-1
 - Add /etc/shorewall/ipsec

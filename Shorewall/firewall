@@ -1459,7 +1459,7 @@ setup_mac_lists() {
     #
     for interface in $maclist_interfaces; do
 	case $interface in
-	    eth*|wlan*|br[0-9])
+	    eth*|wlan*|br[0-9]|ath[0-9])
 		;;
 	    *)
 		fatal_error "MAC verification is only supported on ethernet and 802.11b devices: $interface"

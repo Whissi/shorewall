@@ -331,12 +331,11 @@ ip_network() {
 # The following hack is supplied to compensate for the fact that many of
 # the popular light-weight Bourne shell derivatives don't support XOR ("^").
 #
-# Note: 2147483647 = 0x7fffffff
 
 ip_broadcast() {
-    local x=$(( ${1#*/} - 1 ))
+    local x=$(( 32 - ${1#*/} ))
 
-    [ $x -eq -1 ] && echo -1 || echo $(( 2147483647 >> $x ))
+    [ $x -eq 0 ] && echo -1 || echo $(( $(( 1 $LEFTSHIFT $x )) - 1 ))
 }
 
 #

@@ -4443,23 +4443,27 @@ build_common_chain() {
 #
 add_common_rules() {
     local savelogparms="$LOGPARMS"
+    local broadcasts="$(find_broadcasts) 255.255.255.255 224.0.0.0/4"
     #
-    # Reject Rules
-    #
-    run_iptables -A reject -p tcp  -j REJECT --reject-with tcp-reset
-    #
-    # Don't respond to broadcasts with an ICMP
+    # Reject Rules -- Don't respond to broadcasts with an ICMP
     #
     qt iptables -A reject -m pkttype --pkt-type broadcast -j DROP
     if ! qt iptables -A reject -m pkttype --pkt-type multicast -j DROP; then
-	run_iptables -A reject -d 255.255.255.255 -j DROP
-	run_iptables -A reject -d 224.0.0.0/4     -j DROP
-    
-	for address in $(find_broadcasts) ; do
+	#
+	# No pkttype support -- do it the hard way
+	#
+	for address in $broadcasts ; do
 	    run_iptables -A reject -d $address -j DROP
 	done
     fi
-
+    #
+    # Don't feed the smurfs
+    #
+    for address in $broadcasts ; do
+	run_iptables -A reject -s $address -j DROP
+    done
+    
+    run_iptables -A reject -p tcp  -j REJECT --reject-with tcp-reset
     run_iptables -A reject -p udp  -j REJECT
     #
     # Not all versions of iptables support these so don't complain if they don't work

@@ -42,19 +42,21 @@ rm -rf $RPM_BUILD_ROOT
 %post
 
 if [ $1 -eq 1 ]; then
-    echo \
+    	echo \
 "########################################################################
 #      REMOVE THIS FILE AFTER YOU HAVE CONFIGURED SHOREWALL            #
-########################################################################" > /etc/shorewall/startup_disabled
-fi
+########################################################################" \
+	> /etc/shorewall/startup_disabled
 
-if [ -x /sbin/insserv ]; then 
-	/sbin/insserv /etc/rc.d/shorewall
-elif [ -x /sbin/chkconfig ]; then
-	/sbin/chkconfig --add shorewall; 
+	if [ -x /sbin/insserv ]; then 
+		/sbin/insserv /etc/rc.d/shorewall
+	elif [ -x /sbin/chkconfig ]; then
+		/sbin/chkconfig --add shorewall; 
+	fi
 fi
 
 %preun
+
 if [ $1 = 0 ]; then
 	if [ -x /sbin/insserv ]; then
 		/sbin/insserv -r /etc/init.d/shorewall

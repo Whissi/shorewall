@@ -139,7 +139,9 @@ New Features:
 
    The first section of the file is optional and allows aggregation of
    counter chains into other counter chains. It does this by allowing
-   you to create an accounting chain hierarchy.
+   you to create an accounting chain hierarchy. See
+   http://shorewall.net/Accounting.html for a description of this
+   section.
 
    The second section of the file has the following columns:
 
@@ -223,7 +225,8 @@ New Features:
 
         # This example shows how you can aggretate two counters. The
         # counters being aggregated are input and output counters on
-        # the device 'ppp0'
+        # the device 'ppp0'. The CHAIN declarations go in the first 
+	# section of the /etc/shorewall/accounting file.
 
 	CHAIN		tunnel		       # Create a chain called 'tunnel'
 	CHAIN		tunnelin	tunnel # Create a chain called
@@ -245,4 +248,4 @@ New Features:
 					       # 'tunnelout'
         
  
-					       
+8) Bridge interfaces (br[0-9]) may now be used in /etc/shorewall/maclist.					       

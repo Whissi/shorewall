@@ -14,7 +14,11 @@
 #	indicate that the rule matches all addresses except the address/subnet
 #	given. Notice that no white space is permitted between "!" and the
 #	address/subnet.
-#
+#------------------------------------------------------------------------------
+# WARNING: If you masquerade or use SNAT from a local system to the internet, 
+#          you cannot use an ACCEPT rule to allow traffic from the internet to
+#	   that system. You *must* use a DNAT rule instead.
+#-------------------------------------------------------------------------------#
 # Columns are:
 #
 #	ACTION		ACCEPT, DROP, REJECT, DNAT, DNAT-, REDIRECT, CONTINUE,

@@ -1,5 +1,5 @@
 %define name shorewall
-%define version 2.0.0
+%define version 1.4.0
 %define release 0Alpha1
 %define prefix /usr
 
@@ -105,7 +105,7 @@ fi
 
 %changelog
 * Thu Feb 06 2003 Tom Eastep <tom@shorewall.net>
-- Changes version to 2.0.0Alpha1
+- Changes version to 1.4.0Alpha1
 - Delete icmp.def
 - Move firewall and version to /usr/share/shorewall
 * Tue Feb 04 2003 Tom Eastep <tom@shorewall.net>

@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-06-11</pubdate>
+    <pubdate>2004-07-31</pubdate>
 
     <copyright>
       <year>2004</year>
@@ -159,12 +159,11 @@
 
     <para>Unfortunately, Linux distributions don&#39;t have good bridge
     configuration tools and the network configuration GUIs don&#39;t detect
-    the presence of bridge devices. You may refer to <ulink
-    url="http://shorewall.net/2.0/myfiles.htm">my configuration files</ulink>
-    for an example of configuring a three-port bridge at system boot under
-    <trademark>SuSE</trademark>. Here is an excerpt from a Debian
-    <filename>/etc/network/interfaces</filename> file for a two-port bridge
-    with a static IP address:</para>
+    the presence of bridge devices. You may refer to <ulink url="myfiles.htm">my
+    configuration files</ulink> for an example of configuring a three-port
+    bridge at system boot under <trademark>SuSE</trademark>. Here is an
+    excerpt from a Debian <filename>/etc/network/interfaces</filename> file
+    for a two-port bridge with a static IP address:</para>
 
     <blockquote>
       <programlisting>auto br0
@@ -292,6 +291,36 @@ exit 0</programlisting>
 
       <programlisting>BRIDGE_INTERFACE=br0          #The name of your Bridge
 INTERFACES=&#34;eth0 eth1&#34;        #The physical interfaces to be bridged</programlisting>
+    </blockquote>
+
+    <para>Andrzej Szelachowski contributed the following.</para>
+
+    <blockquote>
+      <programlisting>Here is how I configured bridge in Slackware:
+
+1) I had to compile bridge-utils (It&#39;s not in the standard distribution)
+2) I&#39;ve created rc.bridge in /etc/rc.d:
+
+#########################
+#! /bin/sh
+
+ifconfig eth0 0.0.0.0
+ifconfig eth1 0.0.0.0
+#ifconfig lo 127.0.0.1 #this line should be uncommented if you don&#39;t use rc.inet1
+
+brctl addbr most
+
+brctl addif most eth0
+brctl addif most eth1
+
+ifconfig most 192.168.1.31 netmask 255.255.255.0 up 
+#route add default gw 192.168.1.1 metric 1 #this line should be uncommented if
+                                           #you don&#39;t use rc.inet1
+#########################
+
+3) I made rc.brige executable and added the following line to /etc/rc.d/rc.local
+
+/etc/rc.d/rc.bridge </programlisting>
     </blockquote>
 
     <para>Users who successfully configure bridges on other distributions,

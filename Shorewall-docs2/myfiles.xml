@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-07-13</pubdate>
+    <pubdate>2004-08-05</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -29,7 +29,8 @@
       1.2 or any later version published by the Free Software Foundation; with
       no Invariant Sections, with no Front-Cover, and with no Back-Cover
       Texts. A copy of the license is included in the section entitled
-      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
 
@@ -40,9 +41,9 @@
       <para>I use a combination of One-to-one NAT and Proxy ARP, neither of
       which are relevant to a simple configuration with a single public IP
       address. If you have just a single public IP address, most of what you
-      see here won&#39;t apply to your setup so beware of copying parts of
-      this configuration and expecting them to work for you. What you copy may
-      or may not work for you.</para>
+      see here won't apply to your setup so beware of copying parts of this
+      configuration and expecting them to work for you. What you copy may or
+      may not work for you.</para>
     </caution>
 
     <caution>
@@ -75,19 +76,21 @@
       </listitem>
 
       <listitem>
-        <para>I use SNAT through 206.124.146.179 for&#x00A0; my SuSE 9.0 Linux
-        system <quote>Wookie</quote>, my Wife&#39;s Windows XP system
-        <quote>Tarry</quote>, and our&#x00A0; dual-booting (Windows
-        XP/Mandrake 10.0 Official) laptop <quote>Tipper</quote> which connects
-        through the Wireless Access Point (wap) via a Wireless Bridge (wet).<note><para>While
-        the distance between the WAP and where I usually use the laptop
-        isn&#39;t very far (25 feet or so), using a WAC11 (CardBus wireless
-        card) has proved very unsatisfactory (lots of lost connections). By
-        replacing the WAC11 with the WET11 wireless bridge, I have virtually
-        eliminated these problems (Being an old radio tinkerer (K7JPV), I was
-        also able to eliminate the disconnects by hanging a piece of aluminum
-        foil on the family room wall. Needless to say, my wife Tarry rejected
-        that as a permanent solution :-).</para></note></para>
+        <para>I use SNAT through 206.124.146.179 for&nbsp; my SuSE 9.0 Linux
+        system <quote>Wookie</quote>, my Wife's Windows XP system
+        <quote>Tarry</quote>, and our&nbsp; dual-booting (Windows XP/SuSE 9.1)
+        laptop <quote>Tipper</quote> which connects through the Wireless
+        Access Point (wap) via a Wireless Bridge (wet).<note>
+            <para>While the distance between the WAP and where I usually use
+            the laptop isn't very far (25 feet or so), using a WAC11 (CardBus
+            wireless card) has proved very unsatisfactory (lots of lost
+            connections). By replacing the WAC11 with the WET11 wireless
+            bridge, I have virtually eliminated these problems (Being an old
+            radio tinkerer (K7JPV), I was also able to eliminate the
+            disconnects by hanging a piece of aluminum foil on the family room
+            wall. Needless to say, my wife Tarry rejected that as a permanent
+            solution :-).</para>
+          </note></para>
       </listitem>
     </itemizedlist>
 
@@ -98,16 +101,17 @@
       </listitem>
     </itemizedlist>
 
-    <para>The firewall runs on a 256MB PII/233 with Debian Sarge (Testing).</para>
+    <para>The firewall runs on a 256MB PII/233 with Debian Sarge
+    (Testing).</para>
 
     <para>Wookie and Ursa run Samba and Wookie acts as a WINS server.</para>
 
-    <para>The wireless network connects to Wookie&#39;s eth2 via a LinkSys
-    WAP11.&#x00A0; In additional to using the rather weak WEP 40-bit
-    encryption (64-bit with the 24-bit preamble), I use <ulink
+    <para>The wireless network connects to Wookie's eth2 via a LinkSys
+    WAP11.&nbsp; In additional to using the rather weak WEP 40-bit encryption
+    (64-bit with the 24-bit preamble), I use <ulink
     url="MAC_Validation.html">MAC verification</ulink>. This is still a weak
     combination and if I lived near a wireless <quote>hot spot</quote>, I
-    would probably add IPSEC or something similar to my WiFi-&#62;local
+    would probably add IPSEC or something similar to my WiFi-&gt;local
     connections.</para>
 
     <para>The single system in the DMZ (address 206.124.146.177) runs postfix,
@@ -132,13 +136,14 @@
     in the DMZ.</para>
 
     <para>The ethernet interface in the Server is configured with IP address
-    206.124.146.177, netmask 255.255.255.0. The server&#39;s default gateway
-    is 206.124.146.254 (Router at my ISP. This is the same default gateway
-    used by the firewall itself). On the firewall, an entry in my
+    206.124.146.177, netmask 255.255.255.0. The server's default gateway is
+    206.124.146.254 (Router at my ISP. This is the same default gateway used
+    by the firewall itself). On the firewall, an entry in my
     /etc/network/interfaces file (see below) adds a host route to
     206.124.146.177 through eth1 when that interface is brought up.</para>
 
-    <para>Tarry (192.168.1.4) runs a PPTP server for Road Warrior access.</para>
+    <para>Tarry (192.168.1.4) runs a PPTP server for Road Warrior
+    access.</para>
 
     <para><graphic align="center" fileref="images/network.png" /></para>
   </section>
@@ -162,7 +167,7 @@ RFC1918_LOG_LEVEL=$LOG
 SMURF_LOG_LEVEL=
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 SHOREWALL_SHELL=/bin/ash
-SUBSYSLOCK=               #I run Debian which doesn&#39;t use service locks
+SUBSYSLOCK=               #I run Debian which doesn't use service locks
 STATEDIR=/var/state/shorewall
 MODULESDIR=
 FW=fw
@@ -189,9 +194,9 @@ TCP_FLAGS_DISPOSITION=DROP
       <title>Params File (Edited)</title>
 
       <blockquote>
-        <para><programlisting>MIRRORS=&#60;list of shorewall mirror ip addresses&#62;
-NTPSERVERS=&#60;list of the NTP servers I sync with&#62;
-TEXAS=&#60;ip address of gateway in Plano&#62;
+        <para><programlisting>MIRRORS=&lt;list of shorewall mirror ip addresses&gt;
+NTPSERVERS=&lt;list of the NTP servers I sync with&gt;
+TEXAS=&lt;ip address of gateway in Plano&gt;
 LOG=info</programlisting></para>
       </blockquote>
     </section>
@@ -230,7 +235,7 @@ dmz     eth1            -
 
       <blockquote>
         <programlisting>#ZONE           HOST(S)                 OPTIONS
-tx&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0; texas:192.168.8.0/22
+tx&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; texas:192.168.8.0/22
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
       </blockquote>
     </section>
@@ -284,14 +289,14 @@ eth2            -
 
       <blockquote>
         <programlisting>#SOURCE         DESTINATION     POLICY          LOG LEVEL       BURST:LIMIT
-fw              fw              ACCEPT                                    # For testing fw-&#62;fw rules
+fw              fw              ACCEPT                                    # For testing fw-&gt;fw rules
 loc             net             ACCEPT                                    # Allow all net traffic from local net
 $FW             loc             ACCEPT                                    # Allow local access from the firewall
 $FW             tx              ACCEPT                                    # Allow firewall access to texas
 loc             tx              ACCEPT                                    # Allow local net access to texas
-loc             fw              REJECT          $LOG                      # Reject loc-&#62;fw and log
+loc             fw              REJECT          $LOG                      # Reject loc-&gt;fw and log
 net             all             DROP            $LOG            10/sec:40 # Rate limit and
-                                                                          # DROP net-&#62;all
+                                                                          # DROP net-&gt;all
 all             all             REJECT          $LOG                      # Reject and log the rest
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
       </blockquote>
@@ -302,16 +307,15 @@ all             all             REJECT          $LOG                      # Reje
 
       <blockquote>
         <para>Although most of our internal systems use one-to-one NAT, my
-        wife&#39;s system (192.168.1.4) uses IP Masquerading (actually SNAT)
-        as do my SuSE system (192.168.1.3), our laptop (192.168.3.8) and
-        visitors with laptops.</para>
+        wife's system (192.168.1.4) uses IP Masquerading (actually SNAT) as do
+        my SuSE system (192.168.1.3), our laptop (192.168.3.8) and visitors
+        with laptops.</para>
 
         <para>The first entry allows access to the DSL modem and uses features
-        introduced in Shorewall 2.1.1. The leading plus sign (&#34;+_&#34;)
-        causes the rule to be placed before rules generated by the
-        /etc/shorewall/nat file below. The double colons (&#34;::&#34;) causes
-        the entry to be exempt from ADD_SNAT_ALIASES=Yes in my shorewall.conf
-        file above.</para>
+        introduced in Shorewall 2.1.1. The leading plus sign ("+_") causes the
+        rule to be placed before rules generated by the /etc/shorewall/nat
+        file below. The double colons ("::") causes the entry to be exempt
+        from ADD_SNAT_ALIASES=Yes in my shorewall.conf file above.</para>
 
         <programlisting>#INTERFACE              SUBNET          ADDRESS
 +eth0::192.168.1.1      0.0.0.0/0       192.168.1.254
@@ -344,7 +348,8 @@ eth0:2                  eth2            206.124.146.179
     </section>
 
     <section>
-      <title>Tunnels File (Shell variable TEXAS set in /etc/shorewall/params)</title>
+      <title>Tunnels File (Shell variable TEXAS set in
+      /etc/shorewall/params)</title>
 
       <blockquote>
         <programlisting>#TYPE                   ZONE    GATEWAY         GATEWAY ZONE    PORT
@@ -369,7 +374,8 @@ Mirrors             #Accept traffic from the Shorewall Mirror sites
       <blockquote>
         <para>The $MIRRORS variable expands to a list of approximately 10 IP
         addresses. So moving these checks into a separate chain reduces the
-        number of rules that most net-&#62;dmz traffic needs to traverse.</para>
+        number of rules that most net-&gt;dmz traffic needs to
+        traverse.</para>
 
         <programlisting>#TARGET  SOURCE         DEST            PROTO   DEST    SOURCE     ORIGINAL     RATE
 #                                               PORT    PORT(S)    DEST         LIMIT
@@ -416,14 +422,15 @@ RejectSMB
 DropUPnP
 dropNotSyn
 DropDNSrep
-DROP      loc:eth2:!192.168.1.0/24       #So that my braindead Windows[tm] XP system doesn&#39;t flood my log
+DROP      loc:eth2:!192.168.1.0/24       #So that my braindead Windows[tm] XP system doesn't flood my log
                                          #with NTP requests with a source address in 16.0.0.0/8 (address of
                                          #its PPTP tunnel to HP).</programlisting>
       </blockquote>
     </section>
 
     <section>
-      <title>Rules File (The shell variables are set in /etc/shorewall/params)</title>
+      <title>Rules File (The shell variables are set in
+      /etc/shorewall/params)</title>
 
       <blockquote>
         <programlisting>###############################################################################################################################################################################
@@ -477,7 +484,7 @@ Mirrors		net				dmz			tcp	rsync
 #
 # Net to Local
 #
-# When I&#39;m &#34;on the road&#34;, the following two rules allow me VPN access back home.
+# When I'm "on the road", the following two rules allow me VPN access back home.
 #
 DNAT		net				loc:192.168.1.4		tcp	1723	-
 DNAT		net:!4.3.113.178		loc:192.168.1.4		gre	-
@@ -510,12 +517,12 @@ ACCEPT		dmz				net:$POPSERVERS		tcp	pop3
 #ACCEPT		dmz				net:66.216.26.115	tcp	pop3
 #
 # Something is wrong with the FTP connection tracking code or there is some client out there
-# that is sending a PORT command which that code doesn&#39;t understand. Either way,
+# that is sending a PORT command which that code doesn't understand. Either way,
 # the following works around the problem.
 #
 ACCEPT:$LOG	dmz				net			tcp	1024:					20
 ###############################################################################################################################################################################
-# DMZ to Firewall -- ntp &#38; snmp, Silently reject Auth
+# DMZ to Firewall -- ntp &amp; snmp, Silently reject Auth
 #
 ACCEPT		dmz				fw			udp	ntp					ntp
 ACCEPT		dmz				fw			tcp	161,ssh
@@ -568,7 +575,8 @@ ACCEPT		tx				loc:192.168.1.5		all
         displayed in <emphasis role="bold">bold type</emphasis>) add a route
         to my DSL modem when eth0 is brought up and a route to my DMZ server
         when eth1 is brought up. It allows me to enter <quote>Yes</quote> in
-        the HAVEROUTE column of <link linkend="ProxyARP">my Proxy ARP file</link>.</para>
+        the HAVEROUTE column of <link linkend="ProxyARP">my Proxy ARP
+        file</link>.</para>
 
         <programlisting>...
 auto auto eth0
@@ -594,13 +602,13 @@ iface eth1 inet static
   <section>
     <title>Bridge (Wookie) Configuration</title>
 
-    <para>As mentioned above, Wookie acts as a bridge. It&#39;s view of the
+    <para>As mentioned above, Wookie acts as a bridge. It's view of the
     network is diagrammed in the following figure.</para>
 
     <graphic fileref="images/network1.png" />
 
-    <para>I&#39;ve included the files that I used to configure that system --
-    some of them are SuSE-specific.</para>
+    <para>I've included the files that I used to configure that system -- some
+    of them are SuSE-specific.</para>
 
     <para>The configuration on Wookie can be modified to test various bridging
     features -- otherwise, it serves to isolate the Wireless network from the
@@ -681,10 +689,9 @@ WiFi            br0:eth2                        maclist
         my bridge/firewall. Squid listens on port 3128.</para>
 
         <para>The remaining rules protect the local systems and bridge from
-        the WiFi network. Note that we don&#39;t restrict WiFi→net traffic
-        since the only directly-accessible system in the net zone is the
-        firewall (Wookie and the Firewall are connected by a cross-over
-        cable).</para>
+        the WiFi network. Note that we don't restrict WiFi→net traffic since
+        the only directly-accessible system in the net zone is the firewall
+        (Wookie and the Firewall are connected by a cross-over cable).</para>
 
         <programlisting>#ACTION    SOURCE          DEST            PROTO   DEST    SOURCE  ORIGINAL
 #                                          PORT            PORT(S) DEST
@@ -758,7 +765,7 @@ br0:eth2                00:0b:c1:53:cc:97       192.168.1.8     #TIPPER
 PATH=$PATH:/sbin:/usr/sbin:/usr/local/sbin
 
 do_stop() {
-    echo &#34;Stopping Bridge&#34;
+    echo "Stopping Bridge"
     brctl delbr br0
     ip link set eth0 down
     ip link set eth1 down
@@ -767,7 +774,7 @@ do_stop() {
 
 do_start() {
 
-      echo &#34;Starting Bridge&#34;
+      echo "Starting Bridge"
       ip link set eth0 up
       ip link set eth1 up
       ip link set eth2 up
@@ -777,7 +784,7 @@ do_start() {
       brctl addif br0 eth2
 }
 
-case &#34;$1&#34; in
+case "$1" in
   start)
       do_start
     ;;
@@ -790,7 +797,7 @@ case &#34;$1&#34; in
       do_start
     ;;
   *)
-    echo &#34;Usage: $0 {start|stop|restart}&#34;
+    echo "Usage: $0 {start|stop|restart}"
     exit 1
 esac
 exit 0</programlisting>
@@ -803,16 +810,16 @@ exit 0</programlisting>
       <blockquote>
         <para>This file is SuSE-specific</para>
 
-        <programlisting>BOOTPROTO=&#39;static&#39;
-BROADCAST=&#39;192.168.1.255&#39;
-IPADDR=&#39;192.168.1.3&#39;
-NETWORK=&#39;192.168.1.0&#39;
-NETMASK=&#39;255.255.255.0&#39;
-REMOTE_IPADDR=&#39;&#39;
-STARTMODE=&#39;onboot&#39;
-UNIQUE=&#39;3hqH.MjuOqWfSZ+C&#39;
-WIRELESS=&#39;no&#39;
-MTU=&#39;&#39;</programlisting>
+        <programlisting>BOOTPROTO='static'
+BROADCAST='192.168.1.255'
+IPADDR='192.168.1.3'
+NETWORK='192.168.1.0'
+NETMASK='255.255.255.0'
+REMOTE_IPADDR=''
+STARTMODE='onboot'
+UNIQUE='3hqH.MjuOqWfSZ+C'
+WIRELESS='no'
+MTU=''</programlisting>
       </blockquote>
     </section>
 

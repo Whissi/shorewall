@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-07-22</pubdate>
+    <pubdate>2004-07-31</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -232,7 +232,7 @@
 
     <programlisting>#SOURCE ZONE     DESTINATION ZONE    POLICY     LOG     LIMIT:BURST
 #                                               LEVEL
-fw               net                 ACCEPT
+loc              net                 ACCEPT
 net              all                 DROP       info
 all              all                 REJECT     info</programlisting>
 
@@ -2170,12 +2170,14 @@ localhost 86400   IN A    127.0.0.1
 firewall       86400   IN A    192.0.2.176
 www            86400   IN A    192.0.2.177
 ns1            86400   IN A    192.0.2.177
-www            86400   IN A    192.0.2.177
+mail           86400   IN A    192.0.2.178 
 
-gateway              86400   IN A    192.168.201.1
-winken               86400   IN A    192.168.201.2
-blinken              86400   IN A    192.168.201.3
-nod                  86400   IN A    192.168.201.4</programlisting>
+gateway        86400   IN A    192.168.201.1
+winken         86400   IN A    192.168.201.2
+blinken        86400   IN A    192.168.201.3
+nod            86400   IN A    192.168.201.4
+
+dmz            86400   IN A    192.168.202.1</programlisting>
 
     <para><filename>ext/db.foobar </filename>- Forward zone for external
     clients.</para>

@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-07-14</pubdate>
+    <pubdate>2004-07-31</pubdate>
 
     <copyright>
       <year>2002-2004</year>
@@ -169,12 +169,12 @@
     and /usr/share/doc/shorewall/default-config/modules to /etc/shorewall even
     if you do not modify those files.</para></warning></para>
 
-    <para>After you have installed Shorewall, download the three-interface
-    sample, un-tar it (<command>tar <option>-zxvf</option>
-    <filename>three-interfaces.tgz</filename></command>) and and copy the
-    files to <filename>/etc/shorewall</filename> (the files will replace files
-    with the same names that were placed in <filename>/etc/shorewall</filename>
-    when Shorewall was installed).</para>
+    <para>After you have installed Shorewall, download the <ulink
+    url="http://shorewall.net/pub/shorewall/Samples">three-interface sample</ulink>,
+    un-tar it (<command>tar <option>-zxvf</option> <filename>three-interfaces.tgz</filename></command>)
+    and and copy the files to <filename>/etc/shorewall</filename> (the files
+    will replace files with the same names that were placed in
+    <filename>/etc/shorewall</filename> when Shorewall was installed).</para>
 
     <para>As each file is introduced, I suggest that you look through the
     actual file on your system -- each file contains detailed configuration
@@ -372,13 +372,10 @@ fw         net         ACCEPT</programlisting>
     </tip>
 
     <tip>
-      <para>If you specify <emphasis>norfc1918</emphasis> for your external
+      <para>If you specify <emphasis>nobogons</emphasis> for your external
       interface, you will want to check the <ulink url="errata.htm">Shorewall
-      Errata</ulink> periodically for updates to the <filename>/usr/share/shorewall/rfc1918
-      file</filename>. Alternatively, you can copy <filename>/usr/share/shorewall/rfc1918</filename>
-      to <filename>/etc/shorewall/rfc1918</filename> then <ulink
-      url="myfiles.htm#RFC1918">strip down your <filename>/etc/shorewall/rfc1918</filename>
-      file as I do</ulink>.</para>
+      Errata</ulink> periodically for updates to the <filename>/usr/share/shorewall/bogons
+      file</filename>.</para>
     </tip>
   </section>
 

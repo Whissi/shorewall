@@ -13,7 +13,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-05-28</pubdate>
+    <pubdate>2004-07-31</pubdate>
 
     <copyright>
       <year>2001-2002</year>
@@ -54,7 +54,7 @@
       zone:</para>
 
       <programlisting>#ACTION         SOURCE        DESTINATION
-AllowDNS       dmz           net</programlisting>
+AllowDNS        dmz           net</programlisting>
     </note>
 
     <note>
@@ -107,7 +107,7 @@ ACCEPT     dmz       net              tcp        53</programlisting>
     <note>
       <para>Recursive Resolution means that if the server itself can&#39;t
       resolve the name presented to it, the server will attempt to resolve the
-      name with the help of other servers. </para>
+      name with the help of other servers.</para>
     </note>
   </section>
 
@@ -301,6 +301,17 @@ ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
 ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        80       #Insecure HTTP
 ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        443      #Secure HTTP</programlisting>
+  </section>
+
+  <section>
+    <title>X/XDMCP</title>
+
+    <para>Assume that the Choser and/or X Server are running at &#60;<emphasis>chooser</emphasis>&#62;
+    and the Display Manager/X applications are running at &#60;<emphasis>apps</emphasis>&#62;.</para>
+
+    <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
+ACCEPT     &#60;<emphasis>chooser</emphasis>&#62; &#60;<emphasis>apps</emphasis>&#62;           udp        177         #XDMCP
+ACCEPT     &#60;<emphasis>apps</emphasis>&#62;    &#60;<emphasis>chooser</emphasis>&#62;        tcp        6000:6009   #X Displays 0-9</programlisting>
   </section>
 
   <section>

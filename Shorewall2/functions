@@ -470,9 +470,9 @@ broadcastaddress() {
 }
 
 #
-# Test for subnet membership
+# Test for network membership
 #
-in_subnet() # $1 = IP address, $2 = CIDR network
+in_network() # $1 = IP address, $2 = CIDR network
 {
     local netmask=$(ip_netmask $2)
 
@@ -571,7 +571,7 @@ find_rt_interface() {
     ip route ls | while read addr rest; do
 	case $addr in
 	    */*)
-		in_subnet ${1%/*} $addr && echo $(find_device $rest)
+		in_network ${1%/*} $addr && echo $(find_device $rest)
 		;;
 	    default)
 		;;

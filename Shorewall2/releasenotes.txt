@@ -27,7 +27,7 @@ New Features:
    iptables-save/iptables-restore to provide very fast start and
    restart. The elements of this integration are as follows:
 
-   a) The 'shorewall save' command now saved the current configuration
+   a) The 'shorewall save' command now saves the current configuration
       in addition to the current dynamic blacklist. If you have
       dynamic zones, you will want to issue 'shorewall save' when the
       zones are empty or the current contents of the zones will be
@@ -49,7 +49,10 @@ New Features:
 
    e) When a state-changing command encounters an error and there is a
       current saved configuration, that configuration will be restored
-      (currently, the firewall is placed in the 'stopped' state). 
+      (currently, the firewall is placed in the 'stopped' state).
+
+   f) If you have previously saved the running configuration and want
+      Shorewall to discard it, simply 'rm /var/lib/shorewall/restore'.
 
    WARNING: iptables 1.2.9 is broken with respect to iptables-save;
    you must patch iptables 1.2.9 with the iptables patch availale from

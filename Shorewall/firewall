@@ -2569,15 +2569,15 @@ process_rule() # $1 = target
     logtarget="$target"
     dnat_only=
 
-    [ "x$userset" = x- ] && userset=
-
     # Tranform the rule:
     #
+    # - parse the user set specification
     # - set 'target' to the filter table target.
     # - make $FW the destination for REDIRECT
     # - remove '-' suffix from logtargets while setting 'dnat_only'
     # - clear 'address' if it has been set to '-'
 
+    [ "x$userset" = x- ]   && userset=
     [ "x$address" = "x-" ] && address=
 
     if [ -n "$userset" ]; then
@@ -4074,7 +4074,7 @@ add_common_rules() {
 		logdrop|DROP|RETURN)
 		    ;;
 		*)
-		    fatal_error "Illegal target ($target) for $subnet"
+		    fatal_error "Invalid target ($target) for $subnet"
 		    ;;
 	    esac
 

@@ -297,13 +297,13 @@ ip_range() {
 	z=1
 
 	while [ $(( $first % $y )) -eq 0 -a $(( $first + $y )) -le $l ]; do
-	    vlsm=$x
+	    vlsm=/$x
 	    x=$(( $x - 1 ))
 	    z=$y
 	    y=$(( $y * 2 ))
 	done
 
-	[ -n "$vlsm" ] && echo `encodeaddr $first`/$vlsm || echo `encodeaddr $first`
+	echo `encodeaddr $first`$vlsm
 	first=$(($first + $z))
     done
 }

@@ -319,8 +319,9 @@
   <section id="Variables" xreflabel="/etc/shorewall/params">
     <title>/etc/shorewall/params</title>
 
-    <para>You may use the file /etc/shorewall/params file to set shell
-    variables that you can then use in some of the other configuration files.</para>
+    <para>You may use the file <filename>/etc/shorewall/params</filename> file
+    to set shell variables that you can then use in some of the other
+    configuration files.</para>
 
     <para>It is suggested that variable names begin with an upper case letter
     to distinguish them from variables used internally within the Shorewall
@@ -330,7 +331,7 @@
       <title>shell variables</title>
 
       <programlisting>NET_IF=eth0 NET_BCAST=130.252.100.255
-      NET_OPTIONS=blacklist,norfc1918</programlisting>
+NET_OPTIONS=blacklist,norfc1918</programlisting>
     </example>
 
     <example>
@@ -350,7 +351,8 @@
     <title>/etc/shorewall/zones</title>
 
     <para>This file is used to define the network zones. There is one entry in
-    /etc/shorewall/zones for each zone; Columns in an entry are:</para>
+    <filename>/etc/shorewall/zones</filename> for each zone; Columns in an
+    entry are:</para>
 
     <variablelist>
       <varlistentry>
@@ -388,60 +390,23 @@
       </varlistentry>
     </variablelist>
 
-    <table>
-      <title>/etc/shorewall/zones file released with Shorewall</title>
+    <programlisting>#ZONE      DISPLAY        COMMENTS
+net        Net            Internet
+loc        Local          Local networks
+dmz        DMZ            Demilitarized zone</programlisting>
 
-      <tgroup cols="3">
-        <thead>
-          <row>
-            <entry align="center">ZONE</entry>
-
-            <entry align="center">DISPLAY</entry>
-
-            <entry align="center">COMMENTS</entry>
-          </row>
-        </thead>
-
-        <tbody>
-          <row>
-            <entry>net</entry>
-
-            <entry>Net</entry>
-
-            <entry>Internet</entry>
-          </row>
-
-          <row>
-            <entry>loc</entry>
-
-            <entry>Local</entry>
-
-            <entry>Local networks</entry>
-          </row>
-
-          <row>
-            <entry>dmz</entry>
-
-            <entry>DMZ</entry>
-
-            <entry>Demilitarized zone</entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
-
-    <para>You may add, delete and modify entries in the /etc/shorewall/zones
+    <para>You may add, delete and modify entries in the <filename>/etc/shorewall/zones</filename>
     file as desired so long as you have at least one zone defined.</para>
 
     <warning>
-      <para>If you rename or delete a zone, you should perform <quote>shorewall
-      stop; shorewall start</quote> to install the change rather than
-      <quote>shorewall restart</quote>.</para>
+      <para>If you rename or delete a zone, you should perform <quote><command>shorewall
+      stop; shorewall start</command></quote> to install the change rather
+      than <quote><command>shorewall restart</command></quote>.</para>
     </warning>
 
     <warning>
-      <para>The order of entries in the /etc/shorewall/zones file is
-      significant <link linkend="Nested">in some cases</link>.</para>
+      <para>The order of entries in the <filename>/etc/shorewall/zones</filename>
+      file is significant <link linkend="Nested">in some cases</link>.</para>
     </warning>
   </section>
 
@@ -516,15 +481,15 @@
 
               <listitem>
                 <para>(Added in version 1.4.7) - This option causes
-                /proc/sys/net/ipv4/conf/&#60;interface&#62;/arp_filter to be
-                set with the result that this interface will only answer ARP
-                <quote>who-has</quote> requests from hosts that are routed out
-                of that interface. Setting this option facilitates testing of
-                your firewall where multiple firewall interfaces are connected
-                to the same HUB/Switch (all interface connected to the single
-                HUB/Switch should have this option specified). Note that using
-                such a configuration in a production environment is strongly
-                recommended against.</para>
+                <filename>/proc/sys/net/ipv4/conf/&#60;interface&#62;/arp_filter</filename>
+                to be set with the result that this interface will only answer
+                ARP <quote>who-has</quote> requests from hosts that are routed
+                out of that interface. Setting this option facilitates testing
+                of your firewall where multiple firewall interfaces are
+                connected to the same HUB/Switch (all interface connected to
+                the single HUB/Switch should have this option specified). Note
+                that using such a configuration in a production environment is
+                strongly recommended against.</para>
               </listitem>
             </varlistentry>
 
@@ -598,9 +563,10 @@
                 source address that is reserved in RFC 1918 or in other RFCs
                 will be dropped after being optionally logged. If <link
                 linkend="Conf">packet mangling is enabled in
-                /etc/shorewall/shorewall.conf</link> , then packets arriving
-                on this interface that have a destination address that is
-                reserved by one of these RFCs will also be logged and dropped.</para>
+                <filename>/etc/shorewall/shorewall.conf</filename></link> ,
+                then packets arriving on this interface that have a
+                destination address that is reserved by one of these RFCs will
+                also be logged and dropped.</para>
 
                 <para>Addresses blocked by the standard <link
                 linkend="rfc1918">rfc1918 file</link> include those addresses
@@ -751,109 +717,24 @@
       from the internet against the <link linkend="Blacklist">black list</link>.
       Your /etc/shorewall/interfaces file would be as follows:</title>
 
-      <informaltable>
-        <tgroup cols="4">
-          <thead>
-            <row>
-              <entry align="center">ZONE</entry>
-
-              <entry align="center">INTERFACE</entry>
-
-              <entry align="center">BROADCAST</entry>
-
-              <entry align="center">OPTIONS</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>net</entry>
-
-              <entry>eth0</entry>
-
-              <entry>detect</entry>
-
-              <entry>dhcp,norfc1918,blacklist</entry>
-            </row>
-
-            <row>
-              <entry>loc</entry>
-
-              <entry>eth1</entry>
-
-              <entry>detect</entry>
-
-              <entry></entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable>
+      <programlisting>#ZONE    INTERFACE    BROADCAST    OPTIONS
+net      eth0         detect       dhcp,norfc1918,blacklist</programlisting>
     </example>
 
     <example>
       <title>You have a standalone dialup GNU/Linux System. Your
       /etc/shorewall/interfaces file would be:</title>
 
-      <informaltable>
-        <tgroup cols="4">
-          <thead>
-            <row>
-              <entry align="center">ZONE</entry>
-
-              <entry align="center">INTERFACE</entry>
-
-              <entry align="center">BROADCAST</entry>
-
-              <entry align="center">OPTIONS</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>net</entry>
-
-              <entry>ppp0</entry>
-
-              <entry></entry>
-
-              <entry></entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable>
+      <programlisting>#ZONE    INTERFACE    BROADCAST    OPTIONS
+net      ppp0</programlisting>
     </example>
 
     <example>
       <title>You have local interface eth1 with two IP addresses -
       192.168.1.1/24 and 192.168.12.1/24</title>
 
-      <informaltable>
-        <tgroup cols="4">
-          <thead>
-            <row>
-              <entry align="center">ZONE</entry>
-
-              <entry align="center">INTERFACE</entry>
-
-              <entry align="center">BROADCAST</entry>
-
-              <entry align="center">OPTIONS</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>loc</entry>
-
-              <entry>eth1</entry>
-
-              <entry>192.168.1.255,192.168.12.255</entry>
-
-              <entry></entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable>
+      <programlisting>#ZONE    INTERFACE    BROADCAST                    OPTIONS
+loc      eth1         192.168.1.255,192.168.12.255</programlisting>
     </example>
   </section>
 
@@ -863,21 +744,23 @@
     <para>For most applications, specifying zones entirely in terms of network
     interfaces is sufficient. There may be times though where you need to
     define a zone to be a more general collection of hosts. This is the
-    purpose of the /etc/shorewall/hosts file.</para>
+    purpose of the <filename>/etc/shorewall/hosts</filename> file.</para>
 
     <warning>
-      <para>The only times that you need entries in /etc/shorewall/hosts are:</para>
+      <para>The only times that you need entries in <filename>/etc/shorewall/hosts</filename>
+      are:</para>
 
       <orderedlist>
         <listitem>
-          <para>You have more than one zone connecting through a single
-          interface; or</para>
+          <para>You have <ulink url="Multiple_Zones.html">more than one zone
+          connecting through a single interface</ulink>; or</para>
         </listitem>
 
         <listitem>
-          <para>You have a zone that has multiple subnetworks that connect
-          through a single interface and you want the Shorewall box to route
-          traffic between those subnetworks.</para>
+          <para>You have a <ulink url="Shorewall_and_Aliased_Interfaces.html">zone
+          that has multiple subnetworks that connect through a single
+          interface</ulink> and you want the Shorewall box to route traffic
+          between those subnetworks.</para>
         </listitem>
       </orderedlist>
 
@@ -914,12 +797,12 @@
           </orderedlist>
 
           <para>The interface name much match an entry in
-          /etc/shorewall/interfaces.</para>
+          <filename>/etc/shorewall/interfaces</filename>.</para>
 
           <warning>
             <para>If you are running a version of Shorewall earlier than
             1.4.6, only a single host/subnet address may be specified in an
-            entry in /etc/shorewall/hosts.</para>
+            entry in <filename>/etc/shorewall/hosts</filename>.</para>
           </warning>
         </listitem>
       </varlistentry>
@@ -970,203 +853,57 @@
       <title>Your local interface is eth1 and you have two groups of local
       hosts that you want to make into separate zones:</title>
 
-      <programlisting>192.168.1.0/25 192.168.1.128/</programlisting>
+      <programlisting>192.168.1.0/25 192.168.1.128/25</programlisting>
 
       <para>Your /etc/shorewall/interfaces file might look like:</para>
 
-      <informaltable>
-        <tgroup cols="4">
-          <thead>
-            <row>
-              <entry align="center">ZONE</entry>
-
-              <entry align="center">INTERFACE</entry>
-
-              <entry align="center">BROADCAST</entry>
-
-              <entry align="center">OPTIONS</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>net</entry>
-
-              <entry>eth0</entry>
-
-              <entry>detect</entry>
-
-              <entry>dhcp,norfc1918</entry>
-            </row>
-
-            <row>
-              <entry>-</entry>
-
-              <entry>eth1</entry>
-
-              <entry>192.168.1.127,192.168.1.255</entry>
-
-              <entry></entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable>
+      <programlisting>#ZONE    INTERFACE    BROADCAST    OPTIONS
+net      eth0         detect       dhcp,norfc1918
+-        eth1         192.168.1.127,192.168.1.255</programlisting>
 
       <para>The <quote>-</quote> in the ZONE column for eth1 tells Shorewall
       that eth1 interfaces to multiple zones.</para>
 
-      <informaltable>
-        <tgroup cols="3">
-          <thead>
-            <row>
-              <entry align="center">ZONE</entry>
-
-              <entry align="center">HOST(S)</entry>
-
-              <entry align="center">OPTIONS</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>loc1</entry>
-
-              <entry>eth1:192.168.1.0/25</entry>
-
-              <entry></entry>
-            </row>
-
-            <row>
-              <entry>loc2</entry>
-
-              <entry>eth1:192.168.1.128/25</entry>
-
-              <entry></entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable>
+      <programlisting>#ZONE       HOST(S)               OPTIONS
+loc1        eth1:192.168.1.0/25
+loc2        eth1:192.168.1.128/25</programlisting>
     </example>
 
     <example>
       <title>You have local interface eth1 with two IP addresses -
       192.168.1.1/24 and 192.168.12.1/24</title>
 
-      <programlisting>192.168.1.0/25 192.168.1.128/25</programlisting>
-
       <para>Your /etc/shorewall/interfaces file might look like:</para>
 
-      <informaltable>
-        <tgroup cols="4">
-          <thead>
-            <row>
-              <entry align="center">ZONE</entry>
-
-              <entry align="center">INTERFACE</entry>
-
-              <entry align="center">BROADCAST</entry>
-
-              <entry align="center">OPTIONS</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>net</entry>
-
-              <entry>eth0</entry>
-
-              <entry>detect</entry>
-
-              <entry>dhcp,norfc1918</entry>
-            </row>
-
-            <row>
-              <entry>loc</entry>
-
-              <entry>eth1</entry>
-
-              <entry>192.168.1.127,192.168.1.255</entry>
-
-              <entry></entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable>
+      <programlisting>#ZONE    INTERFACE    BROADCAST    OPTIONS
+net      eth0         detect       dhcp,norfc1918
+-        eth1         192.168.1.255,192.168.12.255</programlisting>
 
       <para>Your /etc/shorewall/hosts file might look like:</para>
 
-      <informaltable>
-        <tgroup cols="3">
-          <thead>
-            <row>
-              <entry align="center">ZONE</entry>
-
-              <entry align="center">HOST(S)</entry>
-
-              <entry align="center">OPTIONS</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>loc</entry>
-
-              <entry>eth1:192.168.1.0/25</entry>
-
-              <entry></entry>
-            </row>
-
-            <row>
-              <entry>loc</entry>
-
-              <entry>eth1:192.168.1.128/25</entry>
-
-              <entry></entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable>
+      <programlisting>#ZONE       HOST(S)               OPTIONS
+loc         eth1:192.168.1.0/24
+loc         eth1:192.168.12.0/24</programlisting>
 
       <para>If you are running Shorewall 1.4.6 or later, your hosts file may
       look like:</para>
 
-      <informaltable>
-        <tgroup cols="3">
-          <thead>
-            <row>
-              <entry align="center">ZONE</entry>
-
-              <entry align="center">HOST(S)</entry>
-
-              <entry align="center">OPTIONS</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>loc</entry>
-
-              <entry>eth1:192.168.1.0/25,192.168.1.128/25</entry>
-
-              <entry></entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable>
+      <programlisting>#ZONE       HOST(S)               OPTIONS
+loc         eth1:192.168.1.0/24,192.168.12.0/24</programlisting>
     </example>
 
     <section id="Nested">
       <title>Nested and Overlapping Zones</title>
 
-      <para>The /etc/shorewall/interfaces and /etc/shorewall/hosts file allow
-      you to define nested or overlapping zones. Such overlapping/nested zones
-      are allowed and Shorewall processes zones in the order that they appear
-      in the /etc/shorewall/zones file. So if you have nested zones, you want
-      the sub-zone to appear before the super-zone and in the case of
-      overlapping zones, the rules that will apply to hosts that belong to
-      both zones is determined by which zone appears first in
-      /etc/shorewall/zones.</para>
+      <para>The <filename>/etc/shorewall/interfaces</filename> and
+      <filename>/etc/shorewall/hosts</filename> file allow you to define
+      nested or overlapping zones. Such overlapping/nested zones are allowed
+      and Shorewall processes zones in the order that they appear in the
+      <filename>/etc/shorewall/zones</filename> file. So if you have nested
+      zones, you want the sub-zone to appear before the super-zone and in the
+      case of overlapping zones, the rules that will apply to hosts that
+      belong to both zones is determined by which zone appears first in
+      <filename>/etc/shorewall/zones</filename>.</para>
 
       <para>Hosts that belong to more than one zone may be managed by the
       rules of all of those zones. This is done through use of the special
@@ -1181,13 +918,13 @@
     establishment of connections. Connection establishment is described in
     terms of <emphasis>clients</emphasis> who initiate connections and
     <emphasis>servers</emphasis> who receive those connection requests.
-    Policies defined in /etc/shorewall/policy describe which zones are allowed
-    to establish connections with other zones.</para>
+    Policies defined in <filename>/etc/shorewall/policy </filename>describe
+    which zones are allowed to establish connections with other zones.</para>
 
-    <para>Policies established in /etc/shorewall/policy can be viewed as
-    default policies. If no rule in /etc/shorewall/rules applies to a
-    particular connection request then the policy from /etc/shorewall/policy
-    is applied.</para>
+    <para>Policies established in <filename>/etc/shorewall/policy </filename>can
+    be viewed as default policies. If no rule in /etc/shorewall/rules applies
+    to a particular connection request then the policy from
+    <filename>/etc/shorewall/policy</filename> is applied.</para>
 
     <para>Four policies are defined:</para>
 
@@ -1313,63 +1050,13 @@
     <para>In the SOURCE and DEST columns, you can enter <quote>all</quote> to
     indicate all zones.</para>
 
-    <table>
-      <title>policy file installed by default</title>
+    <para>The default <filename>/etc/shorewall/policy</filename> file is as
+    follows.</para>
 
-      <tgroup cols="5">
-        <thead>
-          <row>
-            <entry align="center">SOURCE</entry>
-
-            <entry align="center">DEST</entry>
-
-            <entry align="center">POLICY</entry>
-
-            <entry align="center">LOG LEVEL</entry>
-
-            <entry align="center">LIMIT:BURST</entry>
-          </row>
-        </thead>
-
-        <tbody>
-          <row>
-            <entry>loc</entry>
-
-            <entry>net</entry>
-
-            <entry>ACCEPT</entry>
-
-            <entry></entry>
-
-            <entry></entry>
-          </row>
-
-          <row>
-            <entry>net</entry>
-
-            <entry>all</entry>
-
-            <entry>DROP</entry>
-
-            <entry>info</entry>
-
-            <entry></entry>
-          </row>
-
-          <row>
-            <entry>all</entry>
-
-            <entry>all</entry>
-
-            <entry>REJECT</entry>
-
-            <entry>info</entry>
-
-            <entry></entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
+    <programlisting>#SOURCE    DEST      POLICY    LOG LEVEL    LIMIT:BURST
+loc        net       ACCEPT
+net        all       DROP      info
+all        all       REJECT    info</programlisting>
 
     <para>This table may be interpreted as follows:</para>
 
@@ -1390,67 +1077,17 @@
     </itemizedlist>
 
     <warning>
-      <para>The firewall script processes the /etc/shorewall/policy file from
-      top to bottom and <emphasis role="bold">uses the first applicable policy
-      that it finds</emphasis>. For example, in the following policy file, the
-      policy for (loc, loc) connections would be ACCEPT as specified in the
-      first entry even though the third entry in the file specifies REJECT.</para>
+      <para>The firewall script processes the <filename>/etc/shorewall/policy</filename>
+      file from top to bottom and <emphasis role="bold">uses the first
+      applicable policy that it finds</emphasis>. For example, in the
+      following policy file, the policy for (loc, loc) connections would be
+      ACCEPT as specified in the first entry even though the third entry in
+      the file specifies REJECT.</para>
 
-      <informaltable>
-        <tgroup cols="5">
-          <thead>
-            <row>
-              <entry align="center">SOURCE</entry>
-
-              <entry align="center">DEST</entry>
-
-              <entry align="center">POLICY</entry>
-
-              <entry align="center">LOG LEVEL</entry>
-
-              <entry align="center">LIMIT:BURST</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>loc</entry>
-
-              <entry>all</entry>
-
-              <entry>ACCEPT</entry>
-
-              <entry></entry>
-
-              <entry></entry>
-            </row>
-
-            <row>
-              <entry>net</entry>
-
-              <entry>all</entry>
-
-              <entry>DROP</entry>
-
-              <entry>info</entry>
-
-              <entry></entry>
-            </row>
-
-            <row>
-              <entry>loc</entry>
-
-              <entry>loc</entry>
-
-              <entry>REJECT</entry>
-
-              <entry>info</entry>
-
-              <entry></entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable>
+      <programlisting>#SOURCE    DEST      POLICY    LOG LEVEL    LIMIT:BURST
+loc        all       ACCEPT
+net        all       DROP      info
+loc        loc       REJECT    info</programlisting>
     </warning>
 
     <section>
@@ -1494,189 +1131,40 @@
       managed under the rules of all of these zones. Let&#39;s look at an
       example:</para>
 
-      <table>
-        <title>/etc/shorewall/zones</title>
+      <para><filename>/etc/shorewall/zones</filename>:</para>
 
-        <tgroup cols="3">
-          <thead>
-            <row>
-              <entry align="center">ZONE</entry>
+      <programlisting>#ZONE    DISPLAY     COMMENTS
+sam      Sam         Sam&#39;s system at home
+net      Internet    The Internet
+loc      Local       Local Network</programlisting>
 
-              <entry align="center">DISPLAY</entry>
+      <para><filename>/etc/shorewall/interfaces</filename>:</para>
 
-              <entry align="center">COMMENTS</entry>
-            </row>
-          </thead>
+      <programlisting>#ZONE     INTERFACE     BROADCAST     OPTIONS
+-         eth0          detect        dhcp,norfc1918
+loc       eth1          detect</programlisting>
 
-          <tbody>
-            <row>
-              <entry>sam</entry>
+      <para><filename>/etc/shorewall/hosts</filename>:</para>
 
-              <entry>Sam</entry>
-
-              <entry>Sam&#39;s system at home</entry>
-            </row>
-
-            <row>
-              <entry>net</entry>
-
-              <entry>Internet</entry>
-
-              <entry>The Internet</entry>
-            </row>
-
-            <row>
-              <entry>loc</entry>
-
-              <entry>Loc</entry>
-
-              <entry>Local Network</entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </table>
-
-      <table>
-        <title>/etc/shorewall/interfaces</title>
-
-        <tgroup cols="4">
-          <thead>
-            <row>
-              <entry align="center">ZONE</entry>
-
-              <entry align="center">INTERFACE</entry>
-
-              <entry align="center">BROADCAST</entry>
-
-              <entry align="center">OPTIONS</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>-</entry>
-
-              <entry>eth0</entry>
-
-              <entry>detect</entry>
-
-              <entry>dhcp,norfc1918</entry>
-            </row>
-
-            <row>
-              <entry>loc</entry>
-
-              <entry>eth1</entry>
-
-              <entry>detect</entry>
-
-              <entry></entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </table>
-
-      <table>
-        <title>/etc/shorewall/hosts</title>
-
-        <tgroup cols="3">
-          <thead>
-            <row>
-              <entry align="center">ZONE</entry>
-
-              <entry align="center">HOST(S)</entry>
-
-              <entry align="center">OPTIONS</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>net</entry>
-
-              <entry>eth0:0.0.0.0/0</entry>
-
-              <entry></entry>
-            </row>
-
-            <row>
-              <entry>sam</entry>
-
-              <entry>eth0:206.191.149.197</entry>
-
-              <entry></entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </table>
+      <programlisting>#ZONE     HOST(S)                     OPTIONS
+net       eth0:0.0.0.0/0
+sam       eth0:206.191.149.197</programlisting>
 
       <note>
         <para>Sam&#39;s home system is a member of both the <emphasis
         role="bold">sam</emphasis> zone and the <emphasis role="bold">net</emphasis>
         zone and <link linkend="Nested">as described above</link> , that means
         that <emphasis role="bold">sam</emphasis> must be listed before
-        <emphasis role="bold">net</emphasis> in /etc/shorewall/zones.</para>
+        <emphasis role="bold">net</emphasis> in <filename>/etc/shorewall/zones</filename>.</para>
       </note>
 
-      <table>
-        <title>/etc/shorewall/policy</title>
+      <para><filename>/etc/shorewall/policy</filename>:</para>
 
-        <tgroup cols="4">
-          <thead>
-            <row>
-              <entry align="center">SOURCE</entry>
-
-              <entry align="center">DEST</entry>
-
-              <entry align="center">POLICY</entry>
-
-              <entry align="center">LOG LEVEL</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>loc</entry>
-
-              <entry>net</entry>
-
-              <entry>ACCEPT</entry>
-
-              <entry></entry>
-            </row>
-
-            <row>
-              <entry>sam</entry>
-
-              <entry>all</entry>
-
-              <entry>CONTINUE</entry>
-
-              <entry></entry>
-            </row>
-
-            <row>
-              <entry>net</entry>
-
-              <entry>all</entry>
-
-              <entry>DROP</entry>
-
-              <entry>info</entry>
-            </row>
-
-            <row>
-              <entry>all</entry>
-
-              <entry>all</entry>
-
-              <entry>REJECT</entry>
-
-              <entry>info</entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </table>
+      <programlisting>#SOURCE      DEST        POLICY       LOG LEVEL
+loc          net         ACCEPT
+sam          all         CONTINUE
+net          all         DROP         info
+all          all         REJECT       info</programlisting>
 
       <para>The second entry above says that when Sam is the client,
       connection requests should first be process under rules where the source
@@ -1686,115 +1174,13 @@
       that this policy be listed BEFORE the next policy (<emphasis role="bold">net</emphasis>
       to <emphasis role="bold">all</emphasis>).</para>
 
-      <table>
-        <title>Partial /etc/shorewall/rules</title>
+      <para>Partial <filename>/etc/shorewall/rules</filename>:</para>
 
-        <tgroup cols="9">
-          <thead>
-            <row>
-              <entry align="center">ACTION</entry>
-
-              <entry align="center">SOURCE</entry>
-
-              <entry align="center">DEST</entry>
-
-              <entry align="center">PROTO</entry>
-
-              <entry align="center">DEST PORT(S)</entry>
-
-              <entry align="center">SOURCE PORT(S)</entry>
-
-              <entry align="center">ORIGINAL DEST</entry>
-
-              <entry align="center">RATE LIMIT</entry>
-
-              <entry align="center">USER SET</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>...</entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-            </row>
-
-            <row>
-              <entry>DNAT</entry>
-
-              <entry>sam</entry>
-
-              <entry>loc:192.168.1.3</entry>
-
-              <entry>tcp</entry>
-
-              <entry>ssh</entry>
-
-              <entry>-</entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-            </row>
-
-            <row>
-              <entry>DNAT</entry>
-
-              <entry>net</entry>
-
-              <entry>loc:192.168.1.5</entry>
-
-              <entry>tcp</entry>
-
-              <entry>www</entry>
-
-              <entry>-</entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-            </row>
-
-            <row>
-              <entry>...</entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </table>
+      <programlisting>#ACTION   SOURCE    DEST            PROTO    DEST PORT(S)
+...
+DNAT      sam       loc:192.168.1.3 tcp      ssh
+DNAT      net       loc:192.168.1.5 tcp      www
+...</programlisting>
 
       <para>Given these two rules, Sam can connect to the firewall&#39;s
       internet interface with ssh and the connection request will be forwarded
@@ -1810,113 +1196,11 @@
       firewall itself. Because of the way that Netfilter is constructed, this
       requires two rules as follows:</para>
 
-      <informaltable>
-        <tgroup cols="9">
-          <thead>
-            <row>
-              <entry align="center">ACTION</entry>
-
-              <entry align="center">SOURCE</entry>
-
-              <entry align="center">DEST</entry>
-
-              <entry align="center">PROTO</entry>
-
-              <entry align="center">DEST PORT(S)</entry>
-
-              <entry align="center">SOURCE PORT(S)</entry>
-
-              <entry align="center">ORIGINAL DEST</entry>
-
-              <entry align="center">RATE LIMIT</entry>
-
-              <entry align="center">USER SET</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>...</entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-            </row>
-
-            <row>
-              <entry>DNAT</entry>
-
-              <entry>sam</entry>
-
-              <entry>fw</entry>
-
-              <entry>tcp</entry>
-
-              <entry>ssh</entry>
-
-              <entry>-</entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-            </row>
-
-            <row>
-              <entry>DNAT</entry>
-
-              <entry>net!sam</entry>
-
-              <entry>loc:192.168.1.3</entry>
-
-              <entry>tcp</entry>
-
-              <entry>ssh</entry>
-
-              <entry>-</entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-            </row>
-
-            <row>
-              <entry>...</entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable>
+      <programlisting>#ACTION   SOURCE    DEST            PROTO    DEST PORT(S)
+...
+DNAT      sam       fw              tcp      ssh
+DNAT      net       loc:192.168.1.3 tcp      ssh
+...</programlisting>
 
       <para>The first rule allows Sam SSH access to the firewall. The second
       rule says that any clients from the net zone with the exception of those
@@ -1931,9 +1215,9 @@
   <section id="Rules" xreflabel="/etc/shorewall/rules">
     <title>/etc/shorewall/rules</title>
 
-    <para>The /etc/shorewall/rules file defines exceptions to the policies
-    established in the /etc/shorewall/policy file. There is one entry in
-    /etc/shorewall/rules for each of these rules.</para>
+    <para>The <filename>/etc/shorewall/rules</filename> file defines
+    exceptions to the policies established in the <filename>/etc/shorewall/policy</filename>
+    file. There is one entry in /etc/shorewall/rules for each of these rules.</para>
 
     <para>Shorewall automatically enables firewall-&#62;firewall traffic over
     the loopback interface (lo) -- that traffic cannot be regulated using
@@ -2065,13 +1349,13 @@
           rule by optionally following ACCEPT, DNAT[-], REDIRECT[-] or LOG
           with</para>
 
-          <programlisting>&#60;
-          &#60;rate&#62;/&#60;interval&#62;[:&#60;burst&#62;] &#62;</programlisting>
+          <programlisting>      &#60; <emphasis>&#60;rate&#62;</emphasis>/<emphasis>&#60;interval&#62;</emphasis>[:<emphasis>&#60;burst&#62;</emphasis>] &#62;</programlisting>
 
-          <para>where &#60;rate&#62; is the number of connections per
-          &#60;interval&#62; (<quote>sec</quote> or <quote>min</quote>) and
-          &#60;burst&#62; is the largest burst permitted. If no burst value is
-          given, a value of 5 is assumed.</para>
+          <para>where <emphasis>&#60;rate&#62;</emphasis> is the number of
+          connections per <emphasis>&#60;interval&#62;</emphasis> (<quote>sec</quote>
+          or <quote>min</quote>) and <emphasis>&#60;burst&#62;</emphasis> is
+          the largest burst permitted. If no burst value is given, a value of
+          5 is assumed.</para>
 
           <para>There may be no whitespace embedded in the specification.</para>
 
@@ -2306,8 +1590,9 @@
             <example>
               <title></title>
 
-              <programlisting>DNAT loc:<emphasis role="bold">192.168.1.0/24</emphasis>
-              loc:192.168.1.3 tcp www - 206.124.146.179:192.168.1.3</programlisting>
+              <programlisting>#ACTION SOURCE             DEST            PROTO  DEST    SOURCE  ORIGINAL
+#                                                 PORT(S) PORT(S) DEST
+DNAT    loc:<emphasis role="bold">192.168.1.0/24</emphasis> loc:192.168.1.3 tcp    www     -       206.124.146.179:192.168.1.3</programlisting>
             </example>
           </note>
 
@@ -2382,53 +1667,8 @@
       to local system 192.168.1.3. You wish to limit the number of connections
       to 4/minute with a burst of 8 (Shorewall 1.4.7 and later only):</title>
 
-      <informaltable>
-        <tgroup cols="9">
-          <thead>
-            <row>
-              <entry align="center">ACTION</entry>
-
-              <entry align="center">SOURCE</entry>
-
-              <entry align="center">DEST</entry>
-
-              <entry align="center">PROTO</entry>
-
-              <entry align="center">DEST PORT(S)</entry>
-
-              <entry align="center">SOURCE PORT(S)</entry>
-
-              <entry align="center">ORIGINAL DEST</entry>
-
-              <entry align="center">RATE LIMIT</entry>
-
-              <entry align="center">USER SET</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>DNAT&#60;4/min:8&#62;</entry>
-
-              <entry>net</entry>
-
-              <entry>loc:192.168.1.3</entry>
-
-              <entry>tcp</entry>
-
-              <entry>ssh</entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable>
+      <programlisting>#ACTION        SOURCE      DEST             PROTO      DEST PORT(S)
+DNAT&#60;4/min:8&#62;  net         loc:192.168.1.3  tcp        ssh</programlisting>
     </example>
 
     <example>
@@ -2440,73 +1680,10 @@
       were NOT (notice the <quote>!</quote>) originally destined to
       206.124.146.177 are redirected to local port 3128.</title>
 
-      <informaltable>
-        <tgroup cols="9">
-          <thead>
-            <row>
-              <entry align="center">ACTION</entry>
-
-              <entry align="center">SOURCE</entry>
-
-              <entry align="center">DEST</entry>
-
-              <entry align="center">PROTO</entry>
-
-              <entry align="center">DEST PORT(S)</entry>
-
-              <entry align="center">SOURCE PORT(S)</entry>
-
-              <entry align="center">ORIGINAL DEST</entry>
-
-              <entry align="center">RATE LIMIT</entry>
-
-              <entry align="center">USER SET</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>REDIRECT</entry>
-
-              <entry>loc</entry>
-
-              <entry>3128</entry>
-
-              <entry>tcp</entry>
-
-              <entry>www</entry>
-
-              <entry>-</entry>
-
-              <entry>!206.124.146.177</entry>
-
-              <entry></entry>
-
-              <entry></entry>
-            </row>
-
-            <row>
-              <entry>ACCEPT</entry>
-
-              <entry>fw</entry>
-
-              <entry>net</entry>
-
-              <entry>tcp</entry>
-
-              <entry>www</entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable>
+      <programlisting>#ACTION  SOURCE  DEST   PROTO   DEST PORT(S)   SOURCE   ORIGINAL
+#                                              PORT(S)  DEST
+REDIRECT loc     3128   tcp     www            -        !206.124.146.177
+ACCEPT   fw      net    tcp     www</programlisting>
     </example>
 
     <example>
@@ -2514,73 +1691,9 @@
       have it accessible remotely and locally. the DMZ is managed by Proxy ARP
       or by classical sub-netting.</title>
 
-      <informaltable>
-        <tgroup cols="9">
-          <thead>
-            <row>
-              <entry align="center">ACTION</entry>
-
-              <entry align="center">SOURCE</entry>
-
-              <entry align="center">DEST</entry>
-
-              <entry align="center">PROTO</entry>
-
-              <entry align="center">DEST PORT(S)</entry>
-
-              <entry align="center">SOURCE PORT(S)</entry>
-
-              <entry align="center">ORIGINAL DEST</entry>
-
-              <entry align="center">RATE LIMIT</entry>
-
-              <entry align="center">USER SET</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>ACCEPT</entry>
-
-              <entry>net</entry>
-
-              <entry>dmz:155.186.235.222</entry>
-
-              <entry>tcp</entry>
-
-              <entry>www</entry>
-
-              <entry>-</entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-            </row>
-
-            <row>
-              <entry>ACCEPT</entry>
-
-              <entry>loc</entry>
-
-              <entry>dmz:155.186.235.222</entry>
-
-              <entry>tcp</entry>
-
-              <entry>www</entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable>
+      <programlisting>#ACTION        SOURCE      DEST                PROTO      DEST PORT(S)
+ACCEPT         net         dmz:155.186.235.222 tcp        www
+ACCEPT         loc         dmz:155.186.235.222 tcp        www</programlisting>
     </example>
 
     <example>
@@ -2599,73 +1712,10 @@
       the site that the user was trying to connect to. That is clearly not
       what you want.</para></note></para>
 
-      <informaltable>
-        <tgroup cols="9">
-          <thead>
-            <row>
-              <entry align="center">ACTION</entry>
-
-              <entry align="center">SOURCE</entry>
-
-              <entry align="center">DEST</entry>
-
-              <entry align="center">PROTO</entry>
-
-              <entry align="center">DEST PORT(S)</entry>
-
-              <entry align="center">SOURCE PORT(S)</entry>
-
-              <entry align="center">ORIGINAL DEST</entry>
-
-              <entry align="center">RATE LIMIT</entry>
-
-              <entry align="center">USER SET</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>DNAT</entry>
-
-              <entry>net</entry>
-
-              <entry>dmz:192.168.2.2</entry>
-
-              <entry>tcp</entry>
-
-              <entry>ftp</entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-            </row>
-
-            <row>
-              <entry>DNAT</entry>
-
-              <entry>loc:192.168.1.0/24</entry>
-
-              <entry>dmz:192.168.2.2</entry>
-
-              <entry>tcp</entry>
-
-              <entry>ftp</entry>
-
-              <entry>-</entry>
-
-              <entry>155.186.235.151</entry>
-
-              <entry></entry>
-
-              <entry></entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable>
+      <programlisting>#ACTION  SOURCE             DEST             PROTO  DEST PORT(S)   SOURCE   ORIGINAL
+#                                                                  PORT(S)  DEST
+DNAT     net                dmz:192.168.2.2  tcp    ftp
+DNAT     loc:192.168.1.0/24 dmz:192.168.2.2  tcp    ftp            -        155.186.235.151</programlisting>
 
       <para>If you are running wu-ftpd, you should restrict the range of
       passive in your /etc/ftpaccess file. I only need a few simultaneous FTP
@@ -2686,106 +1736,16 @@
       <title>You wish to allow unlimited DMZ access to the host with MAC
       address 02:00:08:E3:FA:55.</title>
 
-      <informaltable>
-        <tgroup cols="9">
-          <thead>
-            <row>
-              <entry align="center">ACTION</entry>
-
-              <entry align="center">SOURCE</entry>
-
-              <entry align="center">DEST</entry>
-
-              <entry align="center">PROTO</entry>
-
-              <entry align="center">DEST PORT(S)</entry>
-
-              <entry align="center">SOURCE PORT(S)</entry>
-
-              <entry align="center">ORIGINAL DEST</entry>
-
-              <entry align="center">RATE LIMIT</entry>
-
-              <entry align="center">USER SET</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>ACCEPT</entry>
-
-              <entry>loc:~02-00-08-E3-FA-55</entry>
-
-              <entry>dmz</entry>
-
-              <entry>all</entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable>
+      <programlisting>#ACTION  SOURCE                  DEST PROTO DEST PORT(S)
+ACCEPT   loc:~02-00-08-E3-FA-55  dmz  all</programlisting>
     </example>
 
     <example>
       <title>You wish to allow access to the SMTP server in your DMZ from all
       zones.</title>
 
-      <informaltable>
-        <tgroup cols="9">
-          <thead>
-            <row>
-              <entry align="center">ACTION</entry>
-
-              <entry align="center">SOURCE</entry>
-
-              <entry align="center">DEST</entry>
-
-              <entry align="center">PROTO</entry>
-
-              <entry align="center">DEST PORT(S)</entry>
-
-              <entry align="center">SOURCE PORT(S)</entry>
-
-              <entry align="center">ORIGINAL DEST</entry>
-
-              <entry align="center">RATE LIMIT</entry>
-
-              <entry align="center">USER SET</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>ACCEPT</entry>
-
-              <entry>all</entry>
-
-              <entry>dmz</entry>
-
-              <entry>tcp</entry>
-
-              <entry>25</entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable>
+      <programlisting>#ACTION  SOURCE   DEST PROTO DEST PORT(S)
+ACCEPT   all      dmz  tcp   25</programlisting>
 
       <para><note><para>When <quote>all</quote> is used as a source or
       destination, intra-zone traffic is not affected. In this example, if
@@ -2797,53 +1757,8 @@
       <title>Your firewall&#39;s external interface has several IP addresses
       but you only want to accept SSH connections on address 206.124.146.176.</title>
 
-      <informaltable>
-        <tgroup cols="9">
-          <thead>
-            <row>
-              <entry align="center">ACTION</entry>
-
-              <entry align="center">SOURCE</entry>
-
-              <entry align="center">DEST</entry>
-
-              <entry align="center">PROTO</entry>
-
-              <entry align="center">DEST PORT(S)</entry>
-
-              <entry align="center">SOURCE PORT(S)</entry>
-
-              <entry align="center">ORIGINAL DEST</entry>
-
-              <entry align="center">RATE LIMIT</entry>
-
-              <entry align="center">USER SET</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>ACCEPT</entry>
-
-              <entry>net</entry>
-
-              <entry>fw:206.124.146.176</entry>
-
-              <entry>tcp</entry>
-
-              <entry>22</entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable>
+      <programlisting>#ACTION  SOURCE   DEST               PROTO DEST PORT(S)
+ACCEPT   net      fw:206.124.146.176 tcp   22</programlisting>
     </example>
 
     <example>
@@ -2853,93 +1768,11 @@
       want to allow access from the internet directly to tcp port 25 on
       192.0.2.177.</title>
 
-      <informaltable>
-        <tgroup cols="9">
-          <thead>
-            <row>
-              <entry align="center">ACTION</entry>
-
-              <entry align="center">SOURCE</entry>
-
-              <entry align="center">DEST</entry>
-
-              <entry align="center">PROTO</entry>
-
-              <entry align="center">DEST PORT(S)</entry>
-
-              <entry align="center">SOURCE PORT(S)</entry>
-
-              <entry align="center">ORIGINAL DEST</entry>
-
-              <entry align="center">RATE LIMIT</entry>
-
-              <entry align="center">USER SET</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>DNAT-</entry>
-
-              <entry>net</entry>
-
-              <entry>dmz:192.0.2.177</entry>
-
-              <entry>tcp</entry>
-
-              <entry>25</entry>
-
-              <entry>0</entry>
-
-              <entry>192.0.2.178</entry>
-
-              <entry></entry>
-
-              <entry></entry>
-            </row>
-
-            <row>
-              <entry>DNAT-</entry>
-
-              <entry>net</entry>
-
-              <entry>dmz:192.0.2.177</entry>
-
-              <entry>tcp</entry>
-
-              <entry>25</entry>
-
-              <entry>0</entry>
-
-              <entry>192.0.2.179</entry>
-
-              <entry></entry>
-
-              <entry></entry>
-            </row>
-
-            <row>
-              <entry>ACCEPT</entry>
-
-              <entry>net</entry>
-
-              <entry>dmz:192.0.2.177</entry>
-
-              <entry>tcp</entry>
-
-              <entry>25</entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable>
+      <programlisting>#ACTION  SOURCE   DEST             PROTO  DEST PORT(S)   SOURCE   ORIGINAL
+#                                                        PORT(S)  DEST
+DNAT-    net      dmz:192.0.2.177  tcp    25             -        192.0.2.178
+DNAT-    net      dmz:192.0.2.177  tcp    25             -        192.0.2.179
+ACCEPT   net      dmz:192.0.2.177  tcp    25</programlisting>
 
       <para>Using <quote>DNAT-</quote> rather than <quote>DNAT</quote> avoids
       two extra copies of the third rule from being generated.</para>
@@ -2951,53 +1784,8 @@
       distributed among your servers. The servers are
       192.168.1.101-192.168.1.109.</title>
 
-      <informaltable>
-        <tgroup cols="9">
-          <thead>
-            <row>
-              <entry align="center">ACTION</entry>
-
-              <entry align="center">SOURCE</entry>
-
-              <entry align="center">DEST</entry>
-
-              <entry align="center">PROTO</entry>
-
-              <entry align="center">DEST PORT(S)</entry>
-
-              <entry align="center">SOURCE PORT(S)</entry>
-
-              <entry align="center">ORIGINAL DEST</entry>
-
-              <entry align="center">RATE LIMIT</entry>
-
-              <entry align="center">USER SET</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>DNAT</entry>
-
-              <entry>net</entry>
-
-              <entry>loc:192.168.1.101-192.168.1.109</entry>
-
-              <entry>tcp</entry>
-
-              <entry>80</entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-
-              <entry></entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable>
+      <programlisting>#ACTION  SOURCE   DEST                            PROTO DEST PORT(S)
+DNAT     net      loc:192.168.1.101-192.168.1.109 tcp   80</programlisting>
     </example>
 
     <para><ulink url="ports.htm">Look here for information on other services.</ulink></para>
@@ -3007,15 +1795,16 @@
     <title>/etc/shorewall/common</title>
 
     <para>Shorewall allows definition of rules that apply between all zones.
-    By default, these rules are defined in the file /etc/shorewall/common.def
+    By default, these rules are defined in the file <filename>/etc/shorewall/common.def</filename>
     but may be modified to suit individual requirements. Rather than modify
-    /etc/shorewall/common.def, you should copy that file to
-    /etc/shorewall/common and modify that file.</para>
+    <filename>/etc/shorewall/common.def</filename>, you should copy that file
+    to <filename>/etc/shorewall/common</filename> and modify that file.</para>
 
-    <para>The /etc/shorewall/common file is expected to contain iptables
-    commands; rather than running iptables directly, you should run it
-    indirectly using the Shorewall function <quote>run_iptables</quote>. That
-    way, if iptables encounters an error, the firewall will be safely stopped.</para>
+    <para>The <filename>/etc/shorewall/common</filename> file is expected to
+    contain iptables commands; rather than running iptables directly, you
+    should run it indirectly using the Shorewall function <quote><command>run_iptables</command></quote>.
+    That way, if iptables encounters an error, the firewall will be safely
+    stopped.</para>
   </section>
 
   <section id="Masq" xreflabel="/etc/shorewall/masq">
@@ -3103,29 +1892,8 @@
       your local subnetwork 192.168.9.0/24. Your /etc/shorewall/masq file
       would look like:</title>
 
-      <informaltable>
-        <tgroup cols="3">
-          <thead>
-            <row>
-              <entry align="center">INTERFACE</entry>
-
-              <entry align="center">SUBNET</entry>
-
-              <entry align="center">ADDRESS</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>eth0</entry>
-
-              <entry>192.168.9.0/24</entry>
-
-              <entry></entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable>
+      <programlisting>#INTERFACE          SUBNET           ADDRESS
+eth0                192.168.9.0/24</programlisting>
     </example>
 
     <example>
@@ -3133,29 +1901,8 @@
       masquerade traffic from your 192.168.9.0/24 subnet to the remote subnet
       10.1.0.0/16 only.</title>
 
-      <informaltable>
-        <tgroup cols="3">
-          <thead>
-            <row>
-              <entry align="center">INTERFACE</entry>
-
-              <entry align="center">SUBNET</entry>
-
-              <entry align="center">ADDRESS</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>ipsec0:10.1.0.0/16</entry>
-
-              <entry>192.168.9.0/24</entry>
-
-              <entry></entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable>
+      <programlisting>#INTERFACE          SUBNET           ADDRESS
+ipsec0:10.1.0.0/16  192.168.9.0/24</programlisting>
     </example>
 
     <example>
@@ -3163,58 +1910,16 @@
       (192.168.10.0/24) connected to eth1. You want all local-&#62;net
       connections to use source address 206.124.146.176.</title>
 
-      <informaltable>
-        <tgroup cols="3">
-          <thead>
-            <row>
-              <entry align="center">INTERFACE</entry>
-
-              <entry align="center">SUBNET</entry>
-
-              <entry align="center">ADDRESS</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>eth0</entry>
-
-              <entry>192.168.10.0/24</entry>
-
-              <entry>206.124.146.176</entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable>
+      <programlisting>#INTERFACE          SUBNET           ADDRESS
+eth0                192.168.10.0/24  206.124.146.176</programlisting>
     </example>
 
     <example>
       <title>Same as example 3 except that you wish to exclude 192.168.10.44
       and 192.168.10.45 from the SNAT rule.</title>
 
-      <informaltable>
-        <tgroup cols="3">
-          <thead>
-            <row>
-              <entry align="center">INTERFACE</entry>
-
-              <entry align="center">SUBNET</entry>
-
-              <entry align="center">ADDRESS</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>eth0</entry>
-
-              <entry>192.168.10.0/24!192.168.10.44,192.168.10.45</entry>
-
-              <entry>206.124.146.176</entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable>
+      <programlisting>#INTERFACE SUBNET                                      ADDRESS
+eth0       192.168.10.0/24!192.168.10.44,192.168.10.45 206.124.146.176</programlisting>
     </example>
 
     <example>
@@ -3224,29 +1929,8 @@
       address the name eth0:0. You must have ADD_SNAT_ALIASES=Yes in <xref
       linkend="Conf" />.</title>
 
-      <informaltable>
-        <tgroup cols="3">
-          <thead>
-            <row>
-              <entry align="center">INTERFACE</entry>
-
-              <entry align="center">SUBNET</entry>
-
-              <entry align="center">ADDRESS</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>eth0:0</entry>
-
-              <entry>192.168.12.0/24</entry>
-
-              <entry>206.124.146.177</entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable>
+      <programlisting>#INTERFACE           SUBNET           ADDRESS
+eth0:0               192.168.12.0/24  206.124.146.177</programlisting>
     </example>
 
     <example>
@@ -3255,29 +1939,8 @@
       subnet 192.168.12.0/24. Each address will be used on alternate outbound
       connections.</title>
 
-      <informaltable>
-        <tgroup cols="3">
-          <thead>
-            <row>
-              <entry align="center">INTERFACE</entry>
-
-              <entry align="center">SUBNET</entry>
-
-              <entry align="center">ADDRESS</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>eth0</entry>
-
-              <entry>192.168.12.0/24</entry>
-
-              <entry>206.124.146.177,206.124.146.179</entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable>
+      <programlisting>#INTERFACE            SUBNET          ADDRESS
+eth0                  192.168.12.0/24 206.124.146.177,206.124.146.179</programlisting>
     </example>
   </section>
 
@@ -3288,17 +1951,16 @@
     that you look at the <ulink
     url="http://www.tldp.org/HOWTO/mini/Proxy-ARP-Subnet/">Proxy ARP Subnet
     Mini HOWTO</ulink>. If you decide to use the technique described in that
-    HOWTO, you can set the proxy_arp flag for an interface
-    (/proc/sys/net/ipv4/conf/&#60;<emphasis>interface</emphasis>&#62;/proxy_arp)
+    HOWTO, you can set the proxy_arp flag for an interface (<filename>/proc/sys/net/ipv4/conf/</filename>&#60;<emphasis>interface</emphasis>&#62;<filename>/proxy_arp</filename>)
     by including the <emphasis role="bold">proxyarp</emphasis> option in the
     interface&#39;s record in <xref linkend="Interfaces" />. When using Proxy
     ARP sub-netting, you do <emphasis role="bold">NOT</emphasis> include any
     entries in /etc/shorewall/proxyarp.</para>
 
-    <para>The /etc/shorewall/proxyarp file is used to define <ulink
-    url="ProxyARP.htm">Proxy ARP</ulink>. The file is typically used for
-    enabling Proxy ARP on a small set of systems since you need one entry in
-    this file for each system using proxy ARP. Columns are:</para>
+    <para>The <filename>/etc/shorewall/proxyarp </filename>file is used to
+    define <ulink url="ProxyARP.htm">Proxy ARP</ulink>. The file is typically
+    used for enabling Proxy ARP on a small set of systems since you need one
+    entry in this file for each system using proxy ARP. Columns are:</para>
 
     <variablelist>
       <varlistentry>
@@ -3367,35 +2029,11 @@
       <para>In your DMZ, you want to install a Web/FTP server with public
       address 155.186.235.4. On the Web server, you subnet just like the
       firewall&#39;s eth0 and you configure 155.186.235.1 as the default
-      gateway. In your /etc/shorewall/proxyarp file, you will have:</para>
+      gateway. In your <filename>/etc/shorewall/proxyarp</filename> file, you
+      will have:</para>
 
-      <informaltable>
-        <tgroup cols="4">
-          <thead>
-            <row>
-              <entry align="center">ADDRESS</entry>
-
-              <entry align="center">INTERFACE</entry>
-
-              <entry align="center">EXTERNAL</entry>
-
-              <entry align="center">HAVEROUTE</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>155.186.235.4</entry>
-
-              <entry>eth2</entry>
-
-              <entry>eth0</entry>
-
-              <entry>No</entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable>
+      <programlisting>#ADDRESS       INTERFACE        EXTERNAL          HAVEROUTE
+155.186.235.4  eth2             eth0              NO</programlisting>
 
       <para><tip><para>You may want to configure the servers in your DMZ with
       a subnet that is smaller than the subnet of your internet interface. See
@@ -3410,29 +2048,30 @@
       Shorewall with an IPSEC tunnel active, the proxied IP addresses are
       mistakenly assigned to the IPSEC tunnel device (ipsecX) rather than to
       the interface that you specify in the INTERFACE column of
-      /etc/shorewall/proxyarp. I haven&#39;t had the time to debug this
-      problem so I can&#39;t say if it is a bug in the Kernel or in FreeS/Wan.</para>
+      <filename>/etc/shorewall/proxyarp</filename>. I haven&#39;t had the time
+      to debug this problem so I can&#39;t say if it is a bug in the Kernel or
+      in FreeS/Wan.</para>
 
       <para>You <emphasis role="bold">might</emphasis> be able to work around
       this problem using the following (I haven&#39;t tried it):</para>
 
-      <para>In /etc/shorewall/init, include:</para>
+      <para>In <filename>/etc/shorewall/init</filename>, include:</para>
 
-      <programlisting>qt service ipsec stop</programlisting>
+      <programlisting><command>qt /etc/init.d/ipsec stop</command></programlisting>
 
-      <para>In /etc/shorewall/start, include:</para>
+      <para>In <filename>/etc/shorewall/start</filename>, include:</para>
 
-      <programlisting>qt service ipsec start</programlisting>
+      <programlisting><command>qt /etc/init.d/ipsec start</command></programlisting>
     </warning>
   </section>
 
   <section id="NAT" xreflabel="/etc/shorewall/nat">
     <title>/etc/shorewall/nat</title>
 
-    <para>The /etc/shorewall/nat file is used to define one-to-one NAT. There
-    is one entry in the file for each one-to-one NAT relationship that you
-    wish to define. In order to make use of this feature, you must have NAT
-    enabled.</para>
+    <para>The <filename>/etc/shorewall/nat</filename> file is used to define
+    one-to-one NAT. There is one entry in the file for each one-to-one NAT
+    relationship that you wish to define. In order to make use of this
+    feature, you must have NAT enabled.</para>
 
     <important>
       <para>If all you want to do is forward ports to servers behind your
@@ -3546,6 +2185,17 @@
 
     <variablelist>
       <varlistentry>
+        <term>MODULE_SUFFIX</term>
+
+        <listitem>
+          <para>(Added at version 1.4.9) - The value of this variable
+          determines the possible file extensions of kernel modules. The
+          default value is &#34;o gz ko and o.gz&#34;. See <xref
+          linkend="modules" /> for more details.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term>ADMINISABSENTMINDED</term>
 
         <listitem>
@@ -3594,13 +2244,14 @@
           assumed.</para>
 
           <caution>
-            <para>/sbin/shorewall uses the leading part of the LOGFORMAT
-            string (up to but not including the first <quote>%</quote>) to
-            find log messages in the <quote>show log</quote>, <quote>status</quote>
-            and <quote>hits</quote> commands. This part should not be omitted
-            (the LOGFORMAT should not begin with <quote>%</quote>) and the
-            leading part should be sufficiently unique for /sbin/shorewall to
-            identify Shorewall messages.</para>
+            <para><command>/sbin/shorewall</command> uses the leading part of
+            the LOGFORMAT string (up to but not including the first
+            <quote>%</quote>) to find log messages in the <quote>show log</quote>,
+            <quote>status</quote> and <quote>hits</quote> commands. This part
+            should not be omitted (the LOGFORMAT should not begin with
+            <quote>%</quote>) and the leading part should be sufficiently
+            unique for <command>/sbin/shorewall</command> to identify
+            Shorewall messages.</para>
           </caution>
         </listitem>
       </varlistentry>
@@ -3615,10 +2266,10 @@
           people that prefer to configure traffic shaping when the network
           interfaces come up rather than when the firewall is started. If that
           is what you want to do, set TC_ENABLED=Yes and CLEAR_TC=No and do
-          not supply an /etc/shorewall/tcstart file. That way, your traffic
-          shaping rules can still use the <quote>fwmark</quote> classifier
-          based on packet marking defined in /etc/shorewall/tcrules. If not
-          specified, CLEAR_TC=Yes is assumed.</para>
+          not supply an <filename>/etc/shorewall/tcstart</filename> file. That
+          way, your traffic shaping rules can still use the <quote>fwmark</quote>
+          classifier based on packet marking defined in
+          /etc/shorewall/tcrules. If not specified, CLEAR_TC=Yes is assumed.</para>
         </listitem>
       </varlistentry>
 
@@ -3633,10 +2284,10 @@
           that chain rather than in the PREROUTING chain. This permits you to
           mark inbound traffic based on its destination address when SNAT or
           Masquerading are in use. To determine if your kernel has a FORWARD
-          chain in the mangle table, use the <quote>/sbin/shorewall show
-          mangle</quote> command; if a FORWARD chain is displayed then your
-          kernel will support this option. If this option is not specified or
-          if it is given the empty value (e.g.,
+          chain in the mangle table, use the <quote><command>/sbin/shorewall
+          show mangle</command></quote> command; if a FORWARD chain is
+          displayed then your kernel will support this option. If this option
+          is not specified or if it is given the empty value (e.g.,
           MARK_IN_FORWARD_CHAIN=&#34;&#34;) then MARK_IN_FORWARD_CHAIN=No is
           assumed.</para>
         </listitem>
@@ -4086,19 +2737,18 @@
   <section id="modules" xreflabel="/etc/shorewall/modules">
     <title>/etc/shorewall/modules Configuration</title>
 
-    <para>The file /etc/shorewall/modules contains commands for loading the
-    kernel modules required by Shorewall-defined firewall rules. Shorewall
-    will source this file during start/restart provided that it exists and
-    that the directory specified by the MODULESDIR parameter exists (see <xref
-    linkend="Conf" /> above).</para>
+    <para>The file <filename>/etc/shorewall/modules</filename> contains
+    commands for loading the kernel modules required by Shorewall-defined
+    firewall rules. Shorewall will source this file during start/restart
+    provided that it exists and that the directory specified by the MODULESDIR
+    parameter exists (see <xref linkend="Conf" /> above).</para>
 
     <para>The file that is released with Shorewall calls the Shorewall
     function <quote>loadmodule</quote> for the set of modules that I load.</para>
 
     <para>The <emphasis>loadmodule</emphasis> function is called as follows:</para>
 
-    <programlisting>loadmodule &#60;<emphasis>modulename</emphasis>&#62; [
-    &#60;<emphasis>module parameters</emphasis>&#62; ]</programlisting>
+    <programlisting>loadmodule &#60;<emphasis>modulename</emphasis>&#62; [ &#60;<emphasis>module parameters</emphasis>&#62; ]</programlisting>
 
     <para>where</para>
 
@@ -4124,11 +2774,10 @@
     <para>The function determines if the module named by &#60;<emphasis>modulename</emphasis>&#62;
     is already loaded and if not then the function determines if the
     <quote>.o</quote> file corresponding to the module exists in the
-    <emphasis>moduledirectory</emphasis>; if so, then the following command is
-    executed:</para>
+    <emphasis>&#60;moduledirectory&#62;</emphasis>; if so, then the following
+    command is executed:</para>
 
-    <programlisting>insmod <emphasis>moduledirectory</emphasis>/&#60;<emphasis>modulename</emphasis>&#62;.o
-    &#60;<emphasis>module parameters</emphasis>&#62;</programlisting>
+    <programlisting>insmod <emphasis>&#60;moduledirectory</emphasis>&#62;/&#60;<emphasis>modulename</emphasis>&#62;.o &#60;<emphasis>module parameters</emphasis>&#62;</programlisting>
 
     <para>If the file doesn&#39;t exist, the function determines of the
     <quote>.o.gz</quote> file corresponding to the module exists in the
@@ -4136,17 +2785,26 @@
     that the running configuration supports compressed modules and execute the
     following command:</para>
 
-    <programlisting>insmod <emphasis>moduledirectory</emphasis>/&#60;<emphasis>modulename</emphasis>&#62;.o.gz
-    &#60;<emphasis>module parameters</emphasis>&#62;</programlisting>
+    <programlisting>insmod <emphasis>&#60;moduledirectory</emphasis>&#62;/&#60;<emphasis>modulename</emphasis>&#62;.o.gz &#60;<emphasis>module parameters</emphasis>&#62;</programlisting>
+
+    <para>Beginning with the 1.4.9 Shorewall release, the value of the
+    MODULE_SUFFIX option in determines which files the loadmodule function
+    looks for if the named module doesn&#39;t exist. For each file
+    <emphasis>&#60;extension&#62;</emphasis> listed in MODULE_SUFFIX (default
+    &#34;o gz ko o.gz&#34;), the function will append a period (&#34;.&#34;)
+    and the extension and if the resulting file exists then the following
+    command will be executed:</para>
+
+    <programlisting>insmod <emphasis>moduledirectory</emphasis>/&#60;<emphasis>modulename</emphasis>&#62;.<emphasis>&#60;extension&#62;</emphasis> &#60;<emphasis>module parameters</emphasis>&#62;</programlisting>
   </section>
 
   <section id="TOS" xreflabel="/etc/shorewall/tos">
     <title>/etc/shorewall/tos Configuration</title>
 
-    <para>The /etc/shorewall/tos file allows you to set the Type of Service
-    field in packet headers based on packet source, packet destination,
-    protocol, source port and destination port. In order for this file to be
-    processed by Shorewall, you must have mangle support enabled.</para>
+    <para>The <filename>/etc/shorewall/tos</filename> file allows you to set
+    the Type of Service field in packet headers based on packet source, packet
+    destination, protocol, source port and destination port. In order for this
+    file to be processed by Shorewall, you must have mangle support enabled.</para>
 
     <para>Entries in the file have the following columns:</para>
 
@@ -4181,8 +2839,8 @@
         <term>PROTOCOL</term>
 
         <listitem>
-          <para>The name of a protocol in /etc/protocols or the protocol&#39;s
-          number.</para>
+          <para>The name of a protocol in <filename>/etc/protocols </filename>or
+          the protocol&#39;s number.</para>
         </listitem>
       </varlistentry>
 
@@ -4225,130 +2883,35 @@
       </varlistentry>
     </variablelist>
 
-    <table>
-      <title>/etc/shorewall/tos file that is included with Shorewall</title>
+    <para><filename>/etc/shorewall/tos</filename> file that is included with
+    Shorewall</para>
 
-      <tgroup cols="6">
-        <thead>
-          <row>
-            <entry align="center">SOURCE</entry>
-
-            <entry align="center">DEST</entry>
-
-            <entry align="center">PROTOCOL</entry>
-
-            <entry align="center">SOURCE PORT(S)</entry>
-
-            <entry align="center">DEST PORT(S)</entry>
-
-            <entry align="center">TOS</entry>
-          </row>
-        </thead>
-
-        <tbody>
-          <row>
-            <entry>all</entry>
-
-            <entry>all</entry>
-
-            <entry>tcp</entry>
-
-            <entry>-</entry>
-
-            <entry>ssh</entry>
-
-            <entry>16</entry>
-          </row>
-
-          <row>
-            <entry>all</entry>
-
-            <entry>all</entry>
-
-            <entry>tcp</entry>
-
-            <entry>ssh</entry>
-
-            <entry>-</entry>
-
-            <entry>16</entry>
-          </row>
-
-          <row>
-            <entry>all</entry>
-
-            <entry>all</entry>
-
-            <entry>tcp</entry>
-
-            <entry>-</entry>
-
-            <entry>ftp</entry>
-
-            <entry>16</entry>
-          </row>
-
-          <row>
-            <entry>all</entry>
-
-            <entry>all</entry>
-
-            <entry>tcp</entry>
-
-            <entry>ftp</entry>
-
-            <entry>-</entry>
-
-            <entry>16</entry>
-          </row>
-
-          <row>
-            <entry>all</entry>
-
-            <entry>all</entry>
-
-            <entry>tcp</entry>
-
-            <entry>-</entry>
-
-            <entry>ftp-data</entry>
-
-            <entry>8</entry>
-          </row>
-
-          <row>
-            <entry>all</entry>
-
-            <entry>all</entry>
-
-            <entry>tcp</entry>
-
-            <entry>ftp-data</entry>
-
-            <entry>-</entry>
-
-            <entry>8</entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
+    <programlisting>#SOURCE  DEST    PROTOCOL    SOURCE PORTS(S)   DEST PORTS(S)   TOS
+all      all     tcp         -                 ssh             16
+all      all     tcp         ssh               -               16
+all      all     tcp         -                 ftp             16
+all      all     tcp         ftp               -               16
+all      all     tcp         -                 ftp-data        8
+all      all     tcp         ftp-data          -               8</programlisting>
 
     <warning>
       <para>Users have reported that odd routing problems result from adding
-      the ESP and AH protocols to the /etc/shorewall/tos file.</para>
+      the ESP and AH protocols to the <filename>/etc/shorewall/tos</filename>
+      file.</para>
     </warning>
   </section>
 
   <section id="Blacklist" xreflabel="/etc/shorewall/blacklist">
     <title>/etc/shorewall/blacklist</title>
 
-    <para>Each line in /etc/shorewall/blacklist contains an IP address, a MAC
-    address in Shorewall Format or subnet address.</para>
+    <para>Each line in <filename>/etc/shorewall/blacklist</filename> contains
+    an IP address, a MAC address in Shorewall Format or subnet address.</para>
 
     <example>
       <title></title>
 
-      <programlisting>130.252.100.69 206.124.146.0/24</programlisting>
+      <programlisting>130.252.100.69
+206.124.146.0/24</programlisting>
     </example>
 
     <para>Packets <emphasis role="bold">from</emphasis> hosts listed in the
@@ -4356,9 +2919,10 @@
     <link linkend="Conf">BLACKLIST_DISPOSITION</link> and <link linkend="Conf">BLACKLIST_LOGLEVEL</link>
     variables in /etc/shorewall/shorewall.conf. Only packets arriving on
     interfaces that have the <quote><link linkend="Interfaces">blacklist</link></quote>
-    option in /etc/shorewall/interfaces are checked against the blacklist. The
-    black list is designed to prevent listed hosts/subnets from accessing
-    services on <emphasis role="bold">your</emphasis> network.</para>
+    option in <filename>/etc/shorewall/interfaces</filename> are checked
+    against the blacklist. The black list is designed to prevent listed
+    hosts/subnets from accessing services on <emphasis role="bold">your</emphasis>
+    network.</para>
 
     <para>Beginning with Shorewall 1.3.8, the blacklist file has three
     columns:</para>
@@ -4490,31 +3054,9 @@
       from local hosts 192.168.1.0/24 and from your DMZ. Your DMZ interfaces
       through eth1 and your local hosts through eth2.</title>
 
-      <informaltable>
-        <tgroup cols="2">
-          <thead>
-            <row>
-              <entry align="center">INTERFACE</entry>
-
-              <entry align="center">HOST(S)</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>eth2</entry>
-
-              <entry>192.168.1.0/24</entry>
-            </row>
-
-            <row>
-              <entry>eth1</entry>
-
-              <entry>-</entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable>
+      <programlisting>#INTERFACE          HOST(S)
+eth2                192.168.1.0/24
+eth1                -</programlisting>
     </example>
   </section>
 
@@ -4549,7 +3091,8 @@
   <appendix>
     <title>Revision History</title>
 
-    <para><revhistory><revision><revnumber>1.10</revnumber><date>2004-01-05</date><authorinitials>TE</authorinitials><revremark>Improved
+    <para><revhistory><revision><revnumber>1.11</revnumber><date>2005-01-05</date><authorinitials>TE</authorinitials><revremark>Standards
+    Compliance</revremark></revision><revision><revnumber>1.10</revnumber><date>2004-01-05</date><authorinitials>TE</authorinitials><revremark>Improved
     formatting of DNAT- and REDIRECT- for clarity</revremark></revision><revision><revnumber>1.9</revnumber><date>2003-12-25</date><authorinitials>MN</authorinitials><revremark>Initial
     Docbook Conversion Complete</revremark></revision></revhistory></para>
   </appendix>

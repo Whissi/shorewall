@@ -4246,9 +4246,20 @@ case "$command" in
 
     reset)
 	[ $# -ne 1 ] && usage
-	iptables -L -n -Z -v
+	do_initialize
+	my_mutex_on
+	if ! qt iptables -L shorewall -n ; then
+	    echo "Shorewall Not Started"
+	    [ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
+	    my_mutex_off
+	    exit 2;
+	fi
+	iptables -Z
+	iptables -t nat -Z
+	iptables -t mangle -Z
 	report "Shorewall Counters Reset"
 	date > $STATEDIR/restarted
+	my_mutex_off
 	;;
 
     refresh)

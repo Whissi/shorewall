@@ -718,9 +718,6 @@ validate_policy()
 
 	chain=${client}2${server}
 
-	[ "$client" != "$server" ] || [ -n "$serverwild" ] || \
-	    startup_error "Intra-zone policies not allowed: $client $server $policy"
-
 	if is_policy_chain $chain ; then
 	    startup_error "Duplicate policy $policy"
 	fi
@@ -2185,8 +2182,6 @@ process_rule() # $1 = target
 		return
 		;;
 	esac
-    elif [ "$source" = "$dest" ]; then
-	fatal_error "Intra-zone rules are not allowed: rule \"$rule\""
     else
 	[ $command = check ] || ensurechain $chain
     fi
@@ -2692,9 +2687,9 @@ rules_chain() # $1 = source zone, $2 = destination zone
 {
     local chain=${1}2${2}
 
-    [ "$1" = "$2" ] && { echo ACCEPT; return; }
-
     havechain $chain && { echo $chain; return; }
+
+    [ "$1" = "$2" ] && { echo ACCEPT; return; }
 
     eval chain=\$${chain}_policychain
 

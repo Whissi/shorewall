@@ -96,6 +96,7 @@ if [ -n "$FIREWALL" ]; then
     fi
 
     remove_file $FIREWALL
+    rm -f ${FIREWALL}-*.bkout
 fi
 
 remove_file /sbin/shorewall

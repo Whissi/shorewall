@@ -1855,7 +1855,8 @@ setup_proxy_arp() {
     done < $TMP_DIR/proxyarp
 
     for interface in $resetlist; do
-	run_and_save_command "echo 0 > /proc/sys/net/ipv4/conf/$interface/proxy_arp"
+	list_search $interface $setlist || \
+	    run_and_save_command "echo 0 > /proc/sys/net/ipv4/conf/$interface/proxy_arp"
     done
 
     for interface in $setlist; do

@@ -2042,6 +2042,7 @@ refresh_tc() {
 #		      by this function
 #    cport	    = Source Port Specification
 #    multiport	    = String to invoke multiport match if appropriate
+#    ratelimit   = Optional rate limiting clause
 #
 add_nat_rule() {
     local chain
@@ -2125,7 +2126,7 @@ add_nat_rule() {
 		    log_rule $loglevel $chain $logtarget -t nat
 		fi
 
-		addnatrule $chain $proto -j $target1 # Protocol is necessary for port redirection
+		addnatrule $chain $ratelimit $proto -j $target1 # Protocol is necessary for port redirection
 	    else
 		for adr in `separate_list $addr`; do
 		    if [ -n "$loglevel" ]; then
@@ -2133,7 +2134,7 @@ add_nat_rule() {
 			    `fix_bang $proto $cli $sports -d $adr $multiport $dports`
 		    fi
 
-		    run_iptables2 -t nat -A OUTPUT $proto $sports -d $adr $multiport $dports -j $target1
+		    run_iptables2 -t nat -A OUTPUT $ratelimit $proto $sports -d $adr $multiport $dports -j $target1
 		done
 	    fi
 	else
@@ -2160,19 +2161,19 @@ add_nat_rule() {
 		done
 
 		if [ -n "$loglevel" ]; then
-		    log_rule $loglevel $chain $logtarget -t nat
+		    log_rule $loglevel $chain $logtarget $ratelimit -t nat
 		fi
 
-		addnatrule $chain $proto -j $target1 # Protocol is necessary for port redirection
+		addnatrule $chain $ratelimit $proto -j $target1 # Protocol is necessary for port redirection
 	    else
 		for adr in `separate_list $addr`; do
 		    if [ -n "$loglevel" ]; then
 			ensurenatchain $chain
-			log_rule $loglevel $chain $logtarget -t nat \
+			log_rule $loglevel $chain $logtarget $ratelimit -t nat \
 			    `fix_bang $proto $cli $sports -d $adr $multiport $dports`
 		    fi
 		    
-		    addnatrule $chain $proto $cli $sports \
+		    addnatrule $chain $proto $ratelimit $cli $sports \
 			-d $adr $multiport $dports -j $target1
 		done
 	    fi
@@ -2207,7 +2208,8 @@ add_nat_rule() {
 	fi
     fi
 
-    [ "x$addr" = "x0.0.0.0/0" ] && addr= 
+    [ "x$addr" = "x0.0.0.0/0" ] && addr=
+    ratelimit=
 }
 
 #
@@ -2225,6 +2227,7 @@ add_nat_rule() {
 #    multioption = String to invoke multiport match if appropriate
 #    servport	 = Port the server listens on
 #    chain	 = The canonical chain for this rule
+#    ratelimit   = Optional rate limiting clause
 #
 add_a_rule()
 {
@@ -2371,32 +2374,32 @@ add_a_rule()
 			    if [ -n "$addr" -a -n "$CONNTRACK_MATCH" ]; then
 				for adr in `separate_list $addr`; do
 				    if [ -n "$loglevel" -a -z "$natrule" ]; then
-					log_rule $loglevel $chain $logtarget -m conntrack --ctorigdst $adr \
+					log_rule $loglevel $chain $logtarget $ratelimit -m conntrack --ctorigdst $adr \
 					    `fix_bang $proto $sports $multiport $state $cli -d $srv $dports`
 				    fi
 
-				    run_iptables2 -A $chain $proto $multiport $state $cli $sports \
+				    run_iptables2 -A $chain $proto $ratelimit $multiport $state $cli $sports \
 					-d $srv $dports -m conntrack --ctorigdst $adr -j $target
 				done
 			    else
 				if [ -n "$loglevel" -a -z "$natrule" ]; then
-				    log_rule $loglevel $chain $logtarget \
+				    log_rule $loglevel $chain $logtarget $ratelimit \
 					`fix_bang $proto $sports $multiport $state $cli -d $srv $dports`
 				fi
 
 				run_iptables2 -A $chain $proto $multiport $state $cli $sports \
-				    -d $srv $dports -j $target
+				    -d $srv $dports $ratelimit -j $target
 			    fi
 			done
 		    done
 		else
 		    if [ -n "$loglevel" -a -z "$natrule" ]; then
-		        log_rule $loglevel $chain $logtarget \
+		        log_rule $loglevel $chain $logtarget $ratelimit \
 			    `fix_bang $proto $sports $multiport $state $cli $dports`
 		    fi
 
 		    run_iptables2 -A $chain $proto $multiport $state $cli $sports \
-			$dports -j $target
+			$dports $ratelimit -j $target
 		fi
 	    fi
 	fi
@@ -2410,13 +2413,13 @@ add_a_rule()
 
 	if [ $command != check ]; then
 	    if [ -n "$loglevel" ]; then
-		log_rule $loglevel $chain $logtarget \
+		log_rule $loglevel $chain $logtarget $ratelimit \
 		    `fix_bang $proto $multiport $dest_interface $state $cli $sports $dports`
 	    fi
 
 	    if [ $logtarget != LOG ]; then
 		run_iptables2 -A $chain $proto $multiport $dest_interface $state \
-		    $cli $sports $dports -j $target
+		    $cli $sports $dports $ratelimit -j $target
 	    fi
 	fi
     fi
@@ -2442,7 +2445,19 @@ process_rule() # $1 = target
     local address="$7"
     local rule="`echo $target $clients $servers $protocol $ports $cports $address`"
 
-    # Function Body -- isolate log level
+    # Function Body - isolate rate limit
+
+    if [ "$target" = "${target%<*}" ]; then
+	ratelimit=
+    else
+	ratelimit="${target#*<}"
+	ratelimit="${ratelimit%>*}"
+	target="${target%<*}${target#*>}"
+	expandv ratelimit
+	ratelimit="-m limit --limit ${ratelimit%:*} --limit-burst ${ratelimit#*:}"
+    fi
+
+    # Isolate log level
 
     if [ "$target" = "${target%:*}" ]; then
 	loglevel=
@@ -2451,7 +2466,7 @@ process_rule() # $1 = target
 	target="${target%:*}"
 	expandv loglevel
     fi
-
+  
     logtarget="$target"
     dnat_only=
 
@@ -2465,36 +2480,42 @@ process_rule() # $1 = target
     [ "x$address" = "x-" ] && address=
 
     case $target in
-    DNAT)
-	target=ACCEPT
-	address=${address:=detect}
-	;;
-    DNAT-)
-	target=ACCEPT
-	address=${address:=detect}
-	dnat_only=Yes
-	logtarget=DNAT
-	;;
-    REDIRECT)
-	target=ACCEPT
-	address=${address:=all}
-	if [ "x-" = "x$servers" ]; then
-	    servers=$FW
-	else
-	    servers="$FW::$servers"
-	fi
-	;;
-    REDIRECT-)
-	target=ACCEPT
-	logtarget=REDIRECT
-	dnat_only=Yes
-	address=${address:=all}
-	if [ "x-" = "x$servers" ]; then
-	    servers=$FW
-	else
-	    servers="$FW::$servers"
-	fi
-	;;
+	DNAT)
+	    target=ACCEPT
+	    address=${address:=detect}
+	    ;;
+	DNAT-)
+	    target=ACCEPT
+	    address=${address:=detect}
+	    dnat_only=Yes
+	    logtarget=DNAT
+	    ;;
+	REDIRECT)
+	    target=ACCEPT
+	    address=${address:=all}
+	    if [ "x-" = "x$servers" ]; then
+		servers=$FW
+	    else
+		servers="$FW::$servers"
+	    fi
+	    ;;
+	REDIRECT-)
+	    target=ACCEPT
+	    logtarget=REDIRECT
+	    dnat_only=Yes
+	    address=${address:=all}
+	    if [ "x-" = "x$servers" ]; then
+		servers=$FW
+	    else
+		servers="$FW::$servers"
+	    fi
+	    ;;
+	ACCEPT)
+	    ;;
+	*)
+	    [ -n "$ratelimit" ] && fatal_error \
+		"Rate Limiting only available with ACCEPT, DNAT[-] and REDIRECT[-]"
+	    ;;
     esac
 
     # Parse and validate source
@@ -2690,8 +2711,8 @@ process_rules() # $1 = name of rules file
     }
 
     while read xtarget xclients xservers xprotocol xports xcports xaddress; do
-	case "${xtarget%:*}" in
-
+	temp="${xtarget%:*}"
+	case "${temp%<*}" in
 	    ACCEPT|DROP|REJECT|DNAT|DNAT-|REDIRECT|REDIRECT-|LOG|CONTINUE)
 		expandv xclients xservers xprotocol xports xcports xaddress
 

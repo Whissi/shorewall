@@ -56,6 +56,19 @@
 #			to a separate log through use of ulogd
 #			(http://www.gnumonks.org/projects/ulogd).
 #
+#			Finally, you may rate-limit the rule by optionally
+#			ending the ACTION with
+# 
+#				< <rate>/<interval>:<burst> >
+#
+#			where <rate> is the number of connections per 
+#			<interval> ("sec" or "min") and <burst> is the
+#			largest burst permitted. Rate limiting may only be
+#			used with ACCEPT, DNAT and REDIRECT and there may be
+#			no whitespace embedded in the specification.
+#
+#				Example: <10/sec:20>
+#
 #	SOURCE		Source hosts to which the rule applies. May be a zone
 #                       defined in /etc/shorewall/zones, $FW to indicate the
 #			firewall itself, or "all" If the ACTION is DNAT or

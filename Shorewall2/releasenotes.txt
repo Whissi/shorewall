@@ -78,3 +78,53 @@ New Features:
     questions on the support and development lists regarding why the
     default entries are the way they are.
 
+5)  Previously, specifying a log level (and optionally a log tag) on a
+    rule that specified a user-defined (or Shorewall-defined) action
+    would log all traffic passed to the action. Beginning with this
+    release, specifying a log level in a rule that specifies a user-
+    or Shorewall-defined action will cause each rule in the action to
+    be logged with the specified level (and tag).
+
+    The extent to which logging of action rules occurs is goverend by
+    the following:
+
+    a) When you invoke an action and specify a log level, only those
+    rules in the action that have no log level will be changed to log
+    at the level specified at the action invocation.
+
+    Example:
+
+	/etc/shorewall/action.foo:
+
+		ACCEPT	-	-	tcp	22
+		bar:info	
+
+	/etc/shorewall/rules:
+
+		foo:debug	fw	net
+
+	Logging in the invoke 'foo' action will be:
+
+		ACCEPT:debug	-	-	tcp	22
+		bar:info	
+
+    b) If you follow the log level with "!" then logging will
+    be at that level for all rules recursively invoked by the action
+
+    Example:
+
+	/etc/shorewall/action.foo:
+
+		ACCEPT	-	-	tcp	22
+		bar:info	
+
+	/etc/shorewall/rules:
+
+		foo:debug!	fw	net
+
+	Logging in the invoke 'foo' action will be:
+
+		ACCEPT:debug	-	-	tcp	22
+		bar:debug!
+	
+

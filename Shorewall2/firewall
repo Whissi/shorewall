@@ -2708,7 +2708,16 @@ process_action() # $1 = action
 	    loglevel="${loglevel%:*}"
 	    expandv logtag
 	fi
-	
+
+	case $loglevel in
+	    none*)
+		loglevel=
+		logtag=
+		[ $target = LOG ] && return
+		;;
+	esac
+
+	loglevel=${loglevel%\!}
     fi
 
     logtarget="$target"
@@ -2776,17 +2785,10 @@ process_action() # $1 = action
 }
 
 #
-# Create an action chain and run it's associated user exit
+# Create and record a log action chain
 #
 
-createactionchain() # $1 = chain name
-{
-    createchain $1 no
-    CHAIN=$1
-    run_user_exit $CHAIN
-}
-
-createlogactionchain() # $1 = Action Name, $2 = Log Level
+createlogactionchain() # $1 = Action Name, $2 = Log Level [: Log Tag ]
 {
     local actchain= action=$1 level=$2
 
@@ -2799,22 +2801,63 @@ createlogactionchain() # $1 = Action Name, $2 = Log Level
 	    CHAIN=$(echo $action | cut -b -10)${actchain}
 	    ;;
 	*)
-	    chain=${action}${actchain}
+	    CHAIN=${action}${actchain}
 	    ;;
     esac
 
-    eval ${chain}_actchain=$(($actchain + 1))
+    eval ${action}_actchain=$(($actchain + 1))
 
-    createchain $CHAIN
-    run_user_exit $1
+    if [ $COMMAND != check ]; then
+	createchain $CHAIN No
+	run_user_exit $1
+    fi
 
-    eval ${action}_chains=\"\$${action}_chains $2 $CHAIN\"
+    eval ${action}_chains=\"\$${action}_chains $level $CHAIN\"
 
 }
 
-find_logactionchain() # $1 = Action Name, $2 = Log Level
+#
+# Create an action chain and run it's associated user exit
+#
+
+createactionchain() # $1 = Action, including log level and tag if any
 {
-    local action=$1 level=$2 chains=
+    case $1 in
+	*:*:*)
+	    set -- $(split $1)
+	    createlogactionchain $1 $2:$3
+	    ;;
+	*:*)
+	    set -- $(split $1)
+	    createlogactionchain $1 $2
+	    ;;
+	*)
+	    CHAIN=$1
+	    if [ $COMMAND != check ]; then
+		createchain $CHAIN no
+		run_user_exit $CHAIN
+	    fi
+	    ;;
+    esac
+}
+
+find_logactionchain() # $1 = Action, including log level and tag if any
+{
+    local fullaction=$1 action=${1%%:*} level= chains=
+
+    case $fullaction in
+	*:*)
+	    level=${fullaction#*:}
+	    ;;
+	*)
+	    if [ $COMMAND != check ]; then
+		havechain $action || createactionchain $action
+	    fi
+
+	    echo $action
+	    return
+	    ;;
+    esac
 
     eval chains="\$${action}_chains"
 
@@ -2825,12 +2868,74 @@ find_logactionchain() # $1 = Action Name, $2 = Log Level
 	shift;shift
     done
 
-    createlogactionchain $action $level
+    createlogctionchain $action $level
 
     echo $CHAIN
 
 }
 
+evaluate_levels() # $1=level at which superior action is called, $2=level at which the subordinate rule is called
+{
+    local superior=$1 subordinate=$2
+    
+    set -- $(split $1)
+    
+    case $superior in
+	*:*:*)
+	    case $2 in
+		'none!')
+		    echo ${subordinate%%:*}:'none!'
+		    return
+		    ;;
+		*'!')
+                    echo ${subordinate%%:*}:$2:$3
+		    return
+		    ;;
+		*)
+		    case $subordinate in
+			*:*)
+			    echo $subordinate
+			    return
+			    ;;
+			*)
+			    echo ${subordinate%%:*}:$2:$3
+			    return
+			    ;;
+		    esac
+		    ;;
+	    esac
+	    ;;
+	*:*)
+	    case $2 in
+		'none!')
+		    echo ${subordinate%%:*}:'none!'
+		    return
+		    ;;
+		*'!')
+                    echo ${subordinate%%:*}:$2
+		    return
+		    ;;
+		*)
+		    case $subordinate in
+			*:*)
+			    echo $subordinate
+			    return
+			    ;;
+			*)
+			    echo ${subordinate%%:*}:$2
+			    return
+			    ;;
+		    esac
+		    ;;
+	    esac
+	    ;;
+	*)
+	    echo $subordinate
+	    ;;
+    esac
+}
+	    
+	    
 #
 # Read /etc/shorewall/actions and /usr/share/shorewall/actions.std and for each defined <action>, pre-process 
 # /etc/shorewall/action.<action>
@@ -2838,7 +2943,7 @@ find_logactionchain() # $1 = Action Name, $2 = Log Level
 
 process_actions1() {
 	
-    ACTIONS="dropBcast dropNonSyn dropNotSyn rejNotSyn logNotSyn rLogNotSyn dLogNotSyn dropInvalid"
+    ACTIONS="dropBcast dropNonSyn dropNotSyn rejNotSyn dropInvalid"
     USEDACTIONS=
 
     strip_file actions
@@ -2883,12 +2988,12 @@ process_actions1() {
 		    while read xtarget xclients xservers xprotocol xports xcports xratelimit $xuserspec; do
 			expandv xtarget
 			temp="${xtarget%%:*}"
-			case "${temp%<*}" in
+			case "$temp" in
 			    ACCEPT|DROP|REJECT|LOG|QUEUE|CONTINUE)
 				;;
 			    *)
 				if list_search $temp $ACTIONS; then
-				    eval requiredby_${xaction}=\"\$requiredby_${xaction} $temp\"
+				    eval requiredby_${xaction}=\"\$requiredby_${xaction} $xtarget\"
 				else
 				    rule="$(echo $xtarget $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec)"
 				    fatal_error "Invalid TARGET in rule \"$rule\""
@@ -2952,13 +3057,18 @@ process_actions2() {
 	process_action $xaction $xtarget $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec
     }
 
-    log_action() {
-	[ "$COMMAND" != check ] && log_rule ${LOGNEWNOTSYN:-info} $1 $2 "" "" -p tcp ! --syn
-    }
-
     drop_broadcasts() {
 	for address in $(find_broadcasts) 255.255.255.255 224.0.0.0/4 ; do
-	    run_iptables -A dropBcast -d $address -j DROP
+	    case $xlevel in
+		none\!)
+		    ;;
+		*)
+		    [ -n "$xlevel" ] && \
+			log_rule_limit ${xlevel%\!} $xchain dropBcast $2 "" "$xtag" -d $address
+		    ;;
+	    esac
+			
+	    run_iptables -A $xchain -d $address -j DROP
 	done
     }
 
@@ -2970,11 +3080,13 @@ process_actions2() {
     while [ -n "$changed" ]; do
 	changed=
 	for xaction in $USEDACTIONS; do
-	    eval required=\"\$requiredby_${xaction}\"
+	    
+	    eval required=\"\$requiredby_${xaction#*:}\"
+	    
 	    for action in $required; do
 		if ! list_search $action $USEDACTIONS; then
 		    USEDACTIONS="$USEDACTIONS $action"
-		    [ $COMMAND = check ] || createactionchain $action
+		    createactionchain $action
 		    changed=Yes
 		fi
 	    done
@@ -2984,51 +3096,76 @@ process_actions2() {
     # Now process the relevant action files -- they were already stripped in process_actions1() above.
     #
     for xaction in $USEDACTIONS; do
-	case $xaction in
+	xchain=$(find_logactionchain $xaction)
+
+        set -- $(split $xaction)
+
+	xlevel=$2
+	xtag=$3
+
+	case ${xaction%%:*} in
 	    dropBcast)
 		if [ "$COMMAND" != check ]; then
 		    if [ -n "$PKTTYPE" ]; then
-			qt iptables -A dropBcast -m pkttype --pkt-type broadcast -j DROP
-			if ! qt iptables -A dropBcast -m pkttype --pkt-type multicast -j DROP; then
-			    #
-			    # No pkttype support -- do it the hard way
-			    #
-			    drop_broadcasts
-			fi
-		    else
-			drop_broadcasts
+			case $xlevel in
+			    none'!')
+	                        ;;
+			    *)
+			        if [ -n "$xlevel" ]; then
+				    log_rule_limit ${xlevel%\!} $xchain dropBcast $2 "" "$xtag" -m pkttype --pkt-type broadcast
+				    log_rule_limit ${xlevel%\!} $xchain dropBcast $2 "" "$xtag" -m pkttype --pkt-type multicast
+				fi
+				;;
+			esac
+			
+			run_iptables -A dropBcast -m pkttype --pkt-type broadcast -j DROP
+			run_iptables -A dropBcast -m pkttype --pkt-type multicast -j DROP
 		    fi
+		else
+		    drop_broadcasts
 		fi
-		;;		
+		;;
+		
 	    dropNonSyn)
 		error_message "WARNING: \"dropNonSyn\" has been replaced by \"dropNotSyn\""
-		[ "$COMMAND" != check ] && run_iptables -A dropNonSyn -p tcp ! --syn -j DROP
+		
+		if [ "$COMMAND" != check ]; then
+		    [ -n "$xlevel" ] && \
+			log_rule_limit ${xlevel%\!} $xchain dropBcast $2 "" "$xtag" -p tcp ! -- syn
+		    
+		    run_iptables -A $xchain -p tcp ! --syn -j DROP
+		fi
 		;;
 
 	    dropNotSyn)
-		[ "$COMMAND" != check ] && run_iptables -A dropNotSyn -p tcp ! --syn -j DROP
+		if [ "$COMMAND" != check ]; then
+		    [ -n "$xlevel" ] && \
+			log_rule_limit ${xlevel%\!} $xchain dropNotSyn $2 "" "$xtag" -p tcp ! -- syn
+		    run_iptables -A dropNotSyn -p tcp ! --syn -j DROP
+		fi
 		;;
 	    rejNotSyn)
-		[ "$COMMAND" != check ] && run_iptables -A rejectNotSyn -p tcp ! --syn -j REJECT --reject-with tcp-reset
-		;;
-	    logNotSyn)
-		log_action logNotSyn LOG
-		;;
-	    rLogNotSyn)
-		log_action rLogNotSyn REJECT
-		;;
-	    dLogNotSyn)
-		log_action dLogNotSyn DROP		
+		if [ "$COMMAND" != check ]; then
+		    [ -n "$xlevel" ] && \
+			log_rule_limit ${xlevel%\!} $xchain rejNotSyn $2 "" "$xtag" -p tcp ! -- syn
+		    run_iptables -A rejectNotSyn -p tcp ! --syn -j REJECT --reject-with tcp-reset
+		fi
 		;;
 	    dropInvalid)
-		[ "$COMMAND" != check ] && run_iptables -A dropInvalid -m state --state INVALID -j DROP
+		if [ "$COMMAND" != check ]; then
+		    [ -n "$xlevel" ] && \
+			log_rule_limit ${xlevel%\!} $xchain dropNotSyn $2 "" "$xtag" -m state --state INVALID
+		    run_iptables -A dropInvalid -m state --state INVALID -j DROP
+		fi
 		;;
 	    *)
-		f=action.$xaction
+		f=action.${xaction%%:*}
 		fn=$(find_file $f)
 		
 		echo "Processing $fn..."
 		while read xtarget xclients xservers xprotocol xports xcports xratelimit $xuserspec; do
+		    xtarget=$(evaluate_levels $xaction $xtarget)
+		    xaction=$(find_logactionchain $xaction)
 		    do_it
 		done < $TMP_DIR/$f
 		;;
@@ -3828,21 +3965,23 @@ process_rules()
     }
 
     while read xtarget xclients xservers xprotocol xports xcports xaddress xratelimit xuserspec; do
-	temp="${xtarget%%:*}"
-	case "${temp%<*}" in
+	rule="$(echo $xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec)"
+	expandv xtarget
+
+	case "${xtarget%%:*}" in
 	    ACCEPT|ACCEPT+|NONAT|DROP|REJECT|DNAT|DNAT-|REDIRECT|REDIRECT-|LOG|CONTINUE|QUEUE)
 		do_it
 		;;
 	    *)
-		if list_search $temp $ACTIONS; then
-		    if ! list_search $temp $USEDACTIONS; then
-			[ $COMMAND = check ] || createactionchain $temp
-			USEDACTIONS="$USEDACTIONS $temp"
+		if list_search ${xtarget%%:*} $ACTIONS; then
+		    if ! list_search $xtarget $USEDACTIONS; then
+			createactionchain $xtarget
+			USEDACTIONS="$USEDACTIONS $xtarget"
 		    fi
 
-		    do_it
+		    xtarget=$(find_logactionchain $xtarget)
+		    do_it    
 		else
-		    rule="$(echo $xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec)"
 		    fatal_error "Invalid Action in rule \"$rule\""
 		fi
 		;;
@@ -4805,6 +4944,15 @@ determine_capabilities() {
 	qt iptables -F fooX1234
 	qt iptables -X fooX1234
     fi
+
+    if [ -n "$PKTTYPE" ]; then
+	if qt iptables -N fooX1234 ; then
+	    qt iptables -A fooX1234 -m pkttype --pkt-type broadcast -j ACCEPT || PKTTYPE=
+	    
+	    qt iptables -F fooX1234
+	    qt iptables -X fooX1234
+	fi
+    fi
 }
 
 report_capability() # $1 = Capability Name, $2 Capability Setting (if any)
@@ -4822,6 +4970,7 @@ report_capabilities() {
     report_capability $MANGLE_ENABLED "Packet Mangling"
     report_capability $MULTIPORT "Multi-port Match"
     report_capability $CONNTRACK_MATCH "Connection Tracking Match"
+    report_capability $PKTTYPE "Packet Type Match"
 }
 
 #

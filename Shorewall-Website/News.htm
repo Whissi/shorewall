@@ -18,11 +18,131 @@ Texts. A copy of the license is included in the section entitled “<span
  class="quote"><a href="GnuCopyright.htm" target="_self">GNU Free
 Documentation License</a></span>”.<br>
 </p>
-<p>2005-01-04<br>
+<p>2005-02-01<br>
 </p>
 <hr style="width: 100%; height: 2px;">
 <p><span style="font-weight: bold;"><br>
-</span><span style="font-weight: bold;">12/24/2004 -
+</span><span style="font-weight: bold;">01/17/2005 -
+Shorewall 2.2.0 RC5<br>
+<br>
+</span>Problems Corrected:<br>
+</p>
+<ol>
+  <li>The AllowTrcrt action has been changed to allow up to 30 hops
+(same as default for 'traceroute'). Previously, the action was
+documented as allowing 20 hops but actually only allowed for 6 hops.<br>
+  </li>
+  <li>Using some lightweight shells, valid entries in
+/etc/shorewall/ecn produce startup errors.</li>
+</ol>
+New Features:<br>
+<ol>
+  <li>A new AllowInvalid standard built-in action has been added. This
+action accepts packets that are in the INVALID connection-tracking
+state.</li>
+</ol>
+<span style="font-weight: bold;"><a name="Mirrors"></a>01/16/2005 - New
+Shorewall Mirrors<br>
+<br>
+</span>Thanks to Lorenzo Martignoni and Nick Slikey, there are now
+Shorewall <a href="shorewall_mirrors.htm">mirrors</a> in Milan Italy
+and in Austin Texas. Thanks Lorenzo
+and Nick!<br>
+<span style="font-weight: bold;"><br>
+<a name="2_0_15"></a>01/12/2005 -
+Shorewall 2.0.15<br>
+</span><br>
+Problems Corrected:<br>
+<ol>
+  <li>The range of ports opened by the AllowTrcrt action has been
+expanded to 33434:33524 to allow for a maximum of 30 hops.</li>
+  <li>Code mis-ported from 2.2.0 in release 2.0.14 caused the following
+error during "shorewall start" where SYN rate-limiting is present in
+/etc/shorewall/policy:<br>
+&nbsp;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Bad argument `DROP'<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Try `iptables -h' or 'iptables --help'
+for more information.<br>
+  </li>
+</ol>
+<span style="font-weight: bold;"><a name="2_2_0_RC4"></a>01/06/2005 -
+Shorewall 2.2.0 RC4<br>
+</span><br>
+New Features:<br>
+<ol>
+  <li>A listing of loaded iptables kernel modules is now included in
+the output of "shorewall status".<br>
+  </li>
+</ol>
+Problems Corrected.<br>
+<ol>
+  <li>Several problems associated with processing the IPSEC colummn in
+/etc/shorewall/masq have been corrected.<br>
+  </li>
+</ol>
+<span style="font-weight: bold;"><a name="2_0_14"></a>01/03/2005 -
+Shorewall 2.0.14<br>
+</span><br>
+New Features:<br>
+<ol>
+  <li>Previously, when rate-limiting was specified in
+/etc/shorewall/policy (LIMIT:BURST column), any traffic which exceeded
+the specified rate was silently dropped. Now, if a log level is given
+in the entry (LEVEL column) then drops are logged at that level at a
+rate of 5/min with a burst of 5.<br>
+  </li>
+</ol>
+Problems Corrected:<br>
+<ol>
+  <li>A typo in the /etc/shorewall/interfaces file has been fixed.</li>
+  <li>"bad variable" error messages occurring during "shorewall stop"
+and "shorewall clear" have been eliminated.</li>
+  <li>A misleading typo in /etc/shorewall/tunnels has been corrected.
+The TYPE column for an IPIP tunnel should contain "ipip" rather than
+"ip".<br>
+  </li>
+</ol>
+<span style="font-weight: bold;"><a name="MandrakeRPMS"></a>12/31/2004
+- Mandrake-specific RPMs available<br>
+<br>
+</span>Jack Coates has generously volunteered to provide Shorewall RPMs
+for use under Mandrake. You can download Jack's RPMs from <a
+ target="_top" href="http://www.monkeynoodle.org/tmp/">http://www.monkeynoodle.org/tmp/</a><br>
+<br>
+<span style="font-weight: bold;"><a name="Redhat_Fedora"></a>12/31/2004
+- Redhat/Fedora-specific RPMs available<br>
+</span><br>
+Simon Matter has graciously volunteered to provide RPMs taylored for
+Redhat and Fedora. You can download Simon's RPMs from <a target="_top"
+ href="http://www.invoca.ch/pub/packages/shorewall/">http://www.invoca.ch/pub/packages/shorewall/</a><br>
+<br>
+Thanks, Simon!<br>
+<br>
+<span style="font-weight: bold;"><a name="2_2_0_RC3"></a>12/30/2004 -
+Shorewall 2.2.0 RC3<br>
+</span><br>
+Problems Corrected:<br>
+<ol>
+  <li>The following error message could appear during "shorewall stop"
+or "shorewall clear":<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+local: lo:: bad variable name<br>
+    <br>
+  </li>
+  <li>The rate limiting example in /etc/shorewall/rules has been
+changed to use the RATE LIMIT column.</li>
+  <li>Entries in /etc/shorewall/masq with the INTERFACE column
+containing &lt;ifname&gt;:: (e.g., "eth0::") would generate a progress
+message but would not generate an iptables rule.</li>
+  <li>A misleading typo in /etc/shorewall/tunnels has been corrected.<br>
+  </li>
+</ol>
+<span style="font-weight: bold;"></span>
+<p><br>
+</p>
+<p><span style="font-weight: bold;">12/24/2004 -
 Shorewall 2.2.0 RC2<br>
 <br>
 </span>New Features:<br>

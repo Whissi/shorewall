@@ -3735,7 +3735,7 @@ setup_masq()
 	case $fullinterface in
 	    *:*:*)
 		# Both alias name and subnet
-		destnet="${fullinterface##*:}"
+		destnets="${fullinterface##*:}"
 		fullinterface="${fullinterface%:*}"
 		;;
 	    *:*)
@@ -3743,17 +3743,17 @@ setup_masq()
 		case ${fullinterface#*:} in
 		    *.*)
 			# It's a subnet
-			destnet="${fullinterface#*:}"
+			destnets="${fullinterface#*:}"
 			fullinterface="${fullinterface%:*}"
 			;;
 		    *)
 			#it's an alias name
-			destnet="0.0.0.0/0"
+			destnets="0.0.0.0/0"
 			;;
 		esac
 		;;
 	    *)
-		destnet="0.0.0.0/0"
+		destnets="0.0.0.0/0"
 		;;
 	esac
 
@@ -3770,7 +3770,6 @@ setup_masq()
 	    subnet="${subnet%!*}"
 	fi
 
-	chain=`masq_chain $interface`
 
 	source="$subnet"
 
@@ -3799,33 +3798,68 @@ setup_masq()
 	    done
 	fi
 
-	destination=$destnet
+	destination=$destnets
 
-	if [ -n "$nomasq" ]; then
-	    newchain=masq${masq_seq}
-	    createnatchain $newchain
+	chain=`masq_chain $interface`
 
-	    if [ -n "$subnet" ]; then
-		for s in $subnet; do
-		    addnatrule $chain -d $destnet -s $s -j $newchain
+	case $destnets in
+	    !*)
+		newchain=masq${masq_seq}
+		createnatchain $newchain
+		destnets=${destnets#!}
+
+		for destnet in $(separate_list $destnets); do
+		    addnatrule $newchain -d $destnet -j RETURN
 		done
-	    else
-		addnatrule $chain -d $destnet -j $newchain
-	    fi
 
-	    masq_seq=$(($masq_seq + 1))
-	    chain=$newchain
-	    subnet=
-	    destnet=
+		if [ -n "$subnet" ]; then
+		    for s in $subnet; do
+			addnatrule $chain -s $s -j $newchain
+		    done
+		    subnet=
+		else
+		    addnatrule $chain -j $newchain
+		fi
 
-	    for addr in `separate_list $nomasq`; do
-		addnatrule $chain -s $addr -j RETURN
-	    done
+		masq_seq=$(($masq_seq + 1))
+		chain=$newchain
+		destnets=0.0.0.0/0
 
-	    source="$source except $nomasq"
-	else
-	    destnet="-d $destnet"
-	fi
+		for addr in `separate_list $nomasq`; do
+		    addnatrule $chain -s $addr -j RETURN
+		done
+		;;
+	    *)
+
+		if [ -n "$nomasq" ]; then
+		    newchain=masq${masq_seq}
+		    createnatchain $newchain
+
+		    if [ -n "$subnet" ]; then
+			for s in $subnet; do
+			    for destnet in $(separate_list $destnets); do
+				addnatrule $chain -d $destnet -s $s -j $newchain
+			    done
+			done
+		    else
+			for destnet in $(separate_list $destnets); do
+			    addnatrule $chain -d $destnet -j $newchain
+			done
+		    fi
+
+		    masq_seq=$(($masq_seq + 1))
+		    chain=$newchain
+		    subnet=
+		    destnets=0.0.0.0/0
+		    
+		    for addr in `separate_list $nomasq`; do
+			addnatrule $chain -s $addr -j RETURN
+		    done
+
+		    source="$source except $nomasq"
+		fi
+		;;
+	esac
 
 	if [ -n "$addresses" ]; then
 	    temp=
@@ -3836,20 +3870,26 @@ setup_masq()
 
 	if [ -n "$subnet" ]; then
 	    for s in $subnet; do
-		if [ -n "$addresses" ]; then
-		    addnatrule $chain -s $s $destnet -j SNAT $temp
-		    echo "   To $destination from $s through ${interface} using $addresses"
-		else
-		    addnatrule $chain -s $s $destnet -j MASQUERADE
-		    echo "   To $destination from $s through ${interface}"
-		fi
+		for destnet in $(separate_list $destnets); do
+		    if [ -n "$addresses" ]; then
+			addnatrule $chain -s $s -d $destnet -j SNAT $temp
+			echo "   To $destination from $s through ${interface} using $addresses"
+		    else
+			addnatrule $chain -s $s -d $destnet -j MASQUERADE
+			echo "   To $destination from $s through ${interface}"
+		    fi
+		done
 	    done
 	elif [ -n "$address" ]; then
-	    addnatrule $chain $destnet -j SNAT $temp
-	    echo "   To $destination from $source through ${interface} using $addresses"
+	    for destnet in $(separate_list $destnets); do
+		addnatrule $chain -d $destnet -j SNAT $temp
+		echo "   To $destination from $source through ${interface} using $addresses"
+	    done
 	else
-	    addnatrule $chain $destnet -j MASQUERADE
-	    echo "   To $destination from $source through ${interface}"
+	    for destnet in $(separate_list $destnets); do
+		addnatrule $chain -d $destnet -j MASQUERADE
+		echo "   To $destination from $source through ${interface}"
+	    done
 	fi
 
     }

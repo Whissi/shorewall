@@ -1,24 +1,8 @@
 This is a minor release of Shorewall.
 
-Problems Corrected since version 1.4.8:
+Problems Corrected since version 1.4.9:
 
-1) There has been a low continuing level of confusion over the terms
-   "Source NAT" (SNAT) and "Static NAT". To avoid future confusion, all
-   instances of "Static NAT" have been replaced with "One-to-one NAT"
-   in the documentation and configuration files.
-
-2) The description of NEWNOTSYN in shorewall.conf has been reworded for
-   clarity.
-
-3) Wild-card rules (those involving "all" as SOURCE or DEST) will no
-   longer produce an error if they attempt to add a rule that would
-   override a NONE policy. The logic for expanding these wild-card
-   rules now simply skips those (SOURCE,DEST) pairs that have a NONE
-   policy.
-
-4) DNAT rules that also specified SNAT now work reliably. Previously,
-   there were cases where the SNAT specification was effectively
-   ignored. 
+None.
 
 Migration Issues:
 
@@ -26,79 +10,13 @@ None.
 
 New Features:
 
-1) The documentation has been completely rebased to Docbook XML. The
-   documentation is now released as separate HTML and XML packages.
+1) The INTERFACE column in the /etc/shorewall/masq file may now
+   specify a destination list. 
 
-2) To cut down on the number of "Why are these ports closed rather than
-   stealthed?" questions, the SMB-related rules in
-   /etc/shorewall/common.def have been changed from 'reject' to 'DROP'.
+   Example:
 
-3) For easier identification, packets logged under the 'norfc1918'
-   interface option are now logged out of chains named
-   'rfc1918'. Previously, such packets were logged under chains named
-   'logdrop'.
+	#INTERFACE			SUBNET		ADDRESS
+	eth0:192.0.2.3,192.0.2.16/28	eth1
 
-4) Distributors and developers seem to be regularly inventing new
-   naming conventions for kernel modules. To avoid the need to change
-   Shorewall code for each new convention, the MODULE_SUFFIX option has
-   been added to shorewall.conf. MODULE_SUFFIX may be set to the suffix
-   for module names in your particular distribution. If MODULE_SUFFIX
-   is not set in shorewall.conf, Shorewall will use the list "o gz ko
-   o.gz".
-
-   To see what suffix is used by your distribution:
-
-      ls /lib/modules/$(uname -r)/kernel/net/ipv4/netfilter
-
-   All of the files listed should have the same suffix (extension). Set
-   MODULE_SUFFIX to that suffix.
-
-   Examples: 
-
-	    If all files end in ".kzo" then set MODULE_SUFFIX="kzo"
-	    If all files end in ".kz.o" then set MODULE_SUFFIX="kz.o"
-
-5) Support for user defined rule ACTIONS has been implemented through
-   two new files:
-
-   /etc/shorewall/actions         - used to list the user-defined ACTIONS.
-   /etc/shorewall/action.template - For each user defined <action>, copy
-				    this file to
-				    /etc/shorewall/action.<action> and
-				    add the appropriate rules for that
-				    <action>.
-   Once an <action> has been defined, it may be used like any of the
-   builtin ACTIONS (ACCEPT, DROP, etc.) in /etc/shorewall/rules.
-
-   Example: You want an action that logs a packet at the 'info' level
-   and accepts the connection.
-
-   In /etc/shorewall/actions, you would add:
-
-      LogAndAccept
-
-   You would then copy /etc/shorewall/action.template to
-   /etc/shorewall/action.LogAndAccept and in that file, you would add the two
-   rules:
-
-	LOG:info
-	ACCEPT
-
-6) The default value for NEWNOTSYN in shorewall.conf is now "Yes"
-   (non-syn TCP packets that are not part of an existing connection are
-   filtered according to the rules and policies rather than being
-   dropped). I have made this change for two reasons:
-
-   a) NEWNOTSYN=No tends to result in lots of "stuck" connections since
-   any timeout during TCP session tear down results in the firewall
-   dropping all of the retries.
-
-   b) The old default of NEWNOTSYN=No and LOGNEWNOTSYN=info resulted in
-   lots of confusing messages when a connection got "stuck". While I
-   could have changed the default value of LOGNEWNOTSYN to suppress
-   logging, I dislike defaults that silently throw away packets.
-
-7) The common.def file now contains an entry that silently drops ICMP
-   packets with a null source address. Ad Koster reported a case where
-   these were occuring frequently as a result of a broken system on his
-   external network.    
+   If the list begins with "!" then SNAT will occur only if the
+   destination IP address is NOT included in the list.

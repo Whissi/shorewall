@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2002-02-07</pubdate>
+    <pubdate>2005-03-17</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -123,6 +123,17 @@ esac</programlisting>
     <para>RedHat systems also allow adding such aliases from the network
     administration GUI (which only works well if you have a graphical
     environment on your firewall).</para>
+
+    <para>On Debian and LEAF/Bering systems, it is as simple as adding the
+    command to the interface definition as follows:</para>
+
+    <programlisting># Internet interface
+auto eth0
+iface eth0 inet static
+        address 206.124.146.176
+        netmask 255.255.255.0
+        gateway 206.124.146.254
+        <command>up ip addr add 206.124.146.178/24 brd 206.124.146.255 dev eth0 label eth0:0</command></programlisting>
   </section>
 
   <section>

@@ -3892,6 +3892,19 @@ all      all     tcp         ftp-data          -               8</programlisting
 eth2                192.168.1.0/24
 eth1                -</programlisting>
     </example>
+
+    <para></para>
+
+    <note>
+      <para>Prior to Shorewall version 2.2.3, the contents of the
+      <filename>/etc/shorewall/routestopped</filename> file did NOT affect
+      connection attempts occuring during the processing of the
+      <command>shorewall start</command> and <command>shorewall
+      restart</command> commands. Beginning with version 2.2.3, Shorewall
+      allows connections defined by the contents of
+      <filename>/etc/shorewall/routestopped</filename> during the potentially
+      lengthy processing of those commands.</para>
+    </note>
   </section>
 
   <section id="Maclist" xreflabel="/etc/shorewall/maclist">
@@ -4020,6 +4033,17 @@ eth1                -</programlisting>
     <title>Revision History</title>
 
     <para><revhistory>
+        <revision>
+          <revnumber>1.24</revnumber>
+
+          <date>2005-03-15</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Update for use of /etc/shorewall/routestopped during
+          [re]start.</revremark>
+        </revision>
+
         <revision>
           <revnumber>1.23</revnumber>
 

@@ -28,10 +28,14 @@
 </table>
 <br>
 This page covers Shorewall configuration to use with <a
- href="http://www.squid-cache.org/">Squid </a>running as a <u><b>Transparent
-Proxy</b></u>. If you are running Shorewall 1.3, please see <a
- href="1.3/Shorewall_Squid_Usage.html">this documentation</a>.<br>
+ href="http://www.squid-cache.org/">Squid </a>running as a <a
+ href="#Transparent">Transparent
+Proxy</a> or as a <a href="#Manual">Manual Proxy</a>.<br>
 <br>
+If you are running Shorewall 1.3, please see <a
+ href="1.3/Shorewall_Squid_Usage.html">this documentation</a>.<br>
+<h1><a name="Transparent"></a>Squid as a Transparent Proxy<br>
+</h1>
 <img border="0" src="images/j0213519.gif" width="60" height="60"
  alt="Caution" align="middle"> &nbsp;&nbsp;&nbsp; Please observe the
 following general requirements:<br>
@@ -71,7 +75,7 @@ running on the Firewall.</a></li>
 local network</a></li>
   <li><a href="Shorewall_Squid_Usage.html#DMZ">Squid running in the DMZ</a></li>
 </ol>
-<h2><a name="Firewall"></a>Squid Running on the Firewall</h2>
+<h2><a name="Firewall"></a>Squid (transparent) Running on the Firewall</h2>
 You want to redirect all local www connection requests
 EXCEPT those to your own http server (206.124.146.177) to a Squid
 transparent proxy running on the firewall
@@ -123,15 +127,49 @@ DEST</b></td>
 There may be a requirement to exclude additional destination
 hosts or networks from being redirected. For example, you might also
 want
-requests destined for 130.252.100.0/24 to not be routed to Squid. In
-that
-case, you must add a manual rule in /etc/shorewall/start:<br>
+requests destined for 130.252.100.0/24 to not be routed to Squid.<br>
+<br>
+If you are running Shorewall version 1.4.5 or later, you may just add
+the additional hosts/networks to the ORIGINAL DEST column in your
+REDIRECT rule:<br>
+<br>
+<div style="margin-left: 40px;">
+<table border="1" cellpadding="2" style="border-collapse: collapse;">
+  <tbody>
+    <tr>
+      <td><b>ACTION</b></td>
+      <td><b>SOURCE</b></td>
+      <td><b>DEST</b></td>
+      <td><b> PROTO</b></td>
+      <td><b>DEST<br>
+PORT(S)</b></td>
+      <td><b>SOURCE<br>
+PORT(S)</b></td>
+      <td><b>ORIGINAL<br>
+DEST</b></td>
+    </tr>
+    <tr>
+      <td>REDIRECT</td>
+      <td>loc</td>
+      <td>3128</td>
+      <td>tcp</td>
+      <td>www</td>
+      <td> -<br>
+      </td>
+      <td>!206.124.146.177,130.252.100.0/24</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<br>
+If you are running a Shorewall version earlier than 1.4.5, you must add
+a manual rule in /etc/shorewall/start:<br>
 <blockquote>
   <pre>run_iptables -t nat -I loc_dnat -p tcp --dport www -d 130.252.100.0/24 -j RETURN<br></pre>
 </blockquote>
 &nbsp;To exclude additional hosts or networks, just add additional
 similar rules.<br>
-<h2><a name="Local"></a>Squid Running in the local network</h2>
+<h2><a name="Local"></a>Squid (transparent) Running in the local network</h2>
 You want to redirect all local www connection requests to a Squid
 transparent proxy running in your local zone at 192.168.1.3 and
 listening
@@ -273,7 +311,8 @@ command above:<br>
  color="#009900"><b><br>chkconfig --level 35 iptables on<br></b></font></pre>
 </blockquote>
 <blockquote> </blockquote>
-<h2><a name="DMZ"></a>Squid Running in the DMZ (This is what I do)</h2>
+<h2><a name="DMZ"></a>Squid (transparent) Running in the DMZ (This is
+what I do)</h2>
 You have a single Linux system in your DMZ with IP address 192.0.2.177.
 You want to run both a web server and Squid on that system. Your DMZ
 interface is eth1 and your local interface is eth2.<br>
@@ -455,7 +494,133 @@ command above:<br>
  color="#009900"><b><br>chkconfig --level 35 iptables on<br></b></font></pre>
 </blockquote>
 <blockquote> </blockquote>
-<p><font size="-1"> Updated 8/9/2003 - <a href="support.htm">Tom Eastep</a>
+<h1><a name="Manual"></a>Squid as a Manual Proxy</h1>
+Assume that Squid is running in zone SZ and listening on port SP; all
+web sites that are to be accessed through Squid are in the 'net' zone.
+Then for each zone Z that needs access to the Squid server:<br>
+<br>
+<div style="margin-left: 40px;">
+<table cellpadding="2" border="1" cellspacing="0">
+  <tbody>
+    <tr>
+      <td valign="top">ACTION<br>
+      </td>
+      <td valign="top">SOURCE<br>
+      </td>
+      <td valign="top">DEST<br>
+      </td>
+      <td valign="top">PROTO<br>
+      </td>
+      <td valign="top">DEST<br>
+PORT(S)<br>
+      </td>
+      <td valign="top">CLIENT<br>
+PORT(2)<br>
+      </td>
+      <td valign="top">ORIGINAL<br>
+DEST<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">ACCEPT<br>
+      </td>
+      <td valign="top">Z<br>
+      </td>
+      <td valign="top">SZ<br>
+      </td>
+      <td valign="top">tcp<br>
+      </td>
+      <td valign="top">SP<br>
+      </td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top"><br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">ACCEPT<br>
+      </td>
+      <td valign="top">SZ<br>
+      </td>
+      <td valign="top">net<br>
+      </td>
+      <td valign="top">tcp<br>
+      </td>
+      <td valign="top">80<br>
+      </td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top"><br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<br>
+Example:<br>
+<br>
+<div style="margin-left: 40px;">Squid on the firewall listening on port
+8080 with access from the 'loc' zone:<br>
+<br>
+<table cellpadding="2" border="1" cellspacing="0">
+  <tbody>
+    <tr>
+      <td valign="top">ACTION<br>
+      </td>
+      <td valign="top">SOURCE<br>
+      </td>
+      <td valign="top">DEST<br>
+      </td>
+      <td valign="top">PROTO<br>
+      </td>
+      <td valign="top">DEST<br>
+PORT(S)<br>
+      </td>
+      <td valign="top">CLIENT<br>
+PORT(2)<br>
+      </td>
+      <td valign="top">ORIGINAL<br>
+DEST<br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">ACCEPT<br>
+      </td>
+      <td valign="top">loc<br>
+      </td>
+      <td valign="top">$FW<br>
+      </td>
+      <td valign="top">tcp<br>
+      </td>
+      <td valign="top">8080<br>
+      </td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top"><br>
+      </td>
+    </tr>
+    <tr>
+      <td valign="top">ACCEPT<br>
+      </td>
+      <td valign="top">$FW<br>
+      </td>
+      <td valign="top">net<br>
+      </td>
+      <td valign="top">tcp<br>
+      </td>
+      <td valign="top">80<br>
+      </td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top"><br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<br>
+</div>
+<p><font size="-1">Updated 1017/2003 - <a href="support.htm">Tom
+Eastep</a>
 </font></p>
 <a href="copyright.htm"><font size="2">Copyright</font> &copy; <font
  size="2">2003 Thomas M. Eastep.</font></a><br>

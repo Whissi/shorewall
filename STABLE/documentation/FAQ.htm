@@ -173,7 +173,15 @@ only<b> from specific IP Addresses</b> on the internet?</a><br>
 options in nmap</b> on or behind the firewall, I get "<b>operation not
 permitted</b>". How can I use nmap with Shorewall?"</a><br>
 <br>
-<b>27. </b><a href="#faq27">I am compiling a <b>new kernel</b> for my
+<b><span style="font-weight: bold;">26a.&nbsp; </span></b><a
+ href="#faq26a">When I try
+to use the <span style="font-weight: bold;">"-O" option of nmap</span>
+from the firewall system, I get "<span style="font-weight: bold;">operation
+not permitted". </span>How to I allow this option?</a><b><span
+ style="font-weight: bold;"><a href="#faq26a"> </a><br>
+<br>
+</span>27. </b><a href="#faq27">I am compiling a <b>new kernel</b>
+for my
 firewall<b>.</b> What should I look out for?</a><br>
 <br>
 <b>28. </b><a href="#faq28">How do I use Shorewall as a <b>Bridging
@@ -1079,13 +1087,22 @@ Shorewall</b> I am <b>running</b>?<br>
 At the shell prompt, type:<br>
 <br>
 <font color="#009900"><b> /sbin/shorewall
-version</b></font><br>
+version<br>
+</b></font>
 <h4><a name="faq26"></a><b>26. </b>When I try to use any of the SYN
 options in nmap on or behind the firewall, I get "operation not
 permitted".
 How can I use nmap with Shorewall?"</h4>
 Edit /etc/shorewall/shorewall.conf and change "NEWNOTSYN=No" to
 "NEWNOTSYN=Yes" then restart Shorewall.<br>
+<br>
+<h4><a name="faq26a"></a><b><span style="font-weight: bold;">26a.&nbsp;
+</span></b>When I try to use the <span style="font-weight: bold;">"-O"
+option of nmap</span> from the firewall system, I get "<span
+ style="font-weight: bold;">operation not permitted". </span>How to I
+allow this option?</h4>
+Add this command to your /etc/shorewall/start file:<br>
+<pre style="margin-left: 40px;"><tt>run_iptables -D OUTPUT -p ! icmp -m state --state INVALID -j DROP</tt><br></pre>
 <h4><a name="faq27">27. I'm compiling a new kernel for my firewall.
 What
 should I look out for?</a></h4>

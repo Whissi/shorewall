@@ -1,341 +1,315 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-    
   <meta http-equiv="Content-Language" content="en-us">
-    
   <meta http-equiv="Content-Type"
  content="text/html; charset=windows-1252">
-    
   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
-    
   <meta name="ProgId" content="FrontPage.Editor.Document">
   <title>Traffic Shaping</title>
 </head>
-  <body>
-  
+<body>
 <table border="0" cellpadding="0" cellspacing="0"
  style="border-collapse: collapse;" bordercolor="#111111" width="100%"
  id="AutoNumber1" bgcolor="#3366ff" height="90">
-                    <tbody>
-                     <tr>
-                      <td width="100%">         
+  <tbody>
+    <tr>
+      <td width="100%">
       <h1 align="center"><font color="#ffffff">Traffic Shaping/Control</font></h1>
-                      </td>
-                    </tr>
-    
-  </tbody> 
+      </td>
+    </tr>
+  </tbody>
 </table>
-  
-<p align="left">Shorewall has limited support       for traffic shaping/control. 
- In order to use traffic shaping under Shorewall,       it is essential that 
- you get a copy of the <a href="http://ds9a.nl/lartc">Linux Advanced Routing 
- and Shaping HOWTO</a>,       version 0.3.0 or later. It is also necessary 
-to be running Linux Kernel 2.4.18 or later.</p>
-  
-<p align="left">Shorewall traffic shaping support consists of the following:</p>
-  
+<p align="left">Shorewall has limited support for traffic
+shaping/control. In order to use traffic shaping under Shorewall, it is
+essential that you get a copy of the <a href="http://ds9a.nl/lartc">Linux
+Advanced Routing and Shaping HOWTO</a>, version 0.3.0 or later. It is
+also necessary to be running Linux Kernel 2.4.18 or later.</p>
+<p align="left">Shorewall traffic shaping support consists of the
+following:</p>
 <ul>
-                    <li>A new <b>TC_ENABLED</b> parameter in /etc/shorewall.conf. 
-    Traffic     Shaping  also requires that you enable packet mangling.</li>
-          <li>A new <b>CLEAR_TC </b>parameter in /etc/shorewall.conf (Added 
- in  Shorewall  1.3.13). When Traffic Shaping is enabled (TC_ENABLED=Yes), 
- the  setting of  this variable determines whether Shorewall clears the traffic 
-  shaping configuration  during Shorewall [re]start and Shorewall stop. <br>
-          </li>
-                    <li><b>/etc/shorewall/tcrules</b> - A file where you
-can  specify       firewall     marking of packets. The firewall mark value
-may  be used  to classify     packets  for traffic shaping/control.<br>
-                    </li>
-                    <li><b>/etc/shorewall/tcstart </b>- A user-supplied file 
- that   is     sourced     by Shorewall during "shorewall start" and which 
- you can       use to define     your traffic shaping disciplines and classes. 
-  I have   provided     a <a
- href="ftp://ftp.shorewall.net/pub/shorewall/cbq">sample</a>   that does 
-   table-driven CBQ shaping but if you read the traffic shaping   sections 
-  of     the     HOWTO mentioned above, you can probably code your   own faster
-  than     you can     learn how to use my sample. I personally  use    
-    <a href="http://luxik.cdi.cz/%7Edevik/qos/htb/">HTB</a>      (see  below). 
- HTB         support may eventually become an integral part of Shorewall 
-since  HTB   is a     lot simpler and better-documented than CBQ. As of 2.4.20,
- HTB is a standard     part of the kernel but iproute2 must be patched  in
- order  to     use it.<br>
-                      <br>
-                      In tcstart, when you want to run the 'tc' utility,
-use  the   run_tc    function      supplied by shorewall if you want tc errors 
- to stop   the firewall.<br>
-                <br>
-            You can generally use off-the-shelf traffic shaping scripts by 
-simply    copying  them to /etc/shorewall/tcstart. I use <a
- href="http://lartc.org/wondershaper/">The Wonder Shaper</a> (HTB version) 
-    that  way (i.e., I just copied wshaper.htb to /etc/shorewall/tcstart
-and    modified  it according to the Wonder Shaper README). <b>WARNING: </b>If 
- you  use use Masquerading or SNAT (i.e., you only have one external IP address) 
-   then listing internal hosts in the NOPRIOHOSTSRC variable in the wshaper[.htb] 
-   script won't work. Traffic shaping occurs after SNAT has already been
-applied    so when traffic shaping happens, all outbound traffic will have
-as a source     address the IP addresss of your firewall's external interface.<br>
-              </li>
-                    <li><b>/etc/shorewall/tcclear</b> - A user-supplied file 
- that   is     sourced     by Shorewall when it is clearing traffic shaping. 
- This   file is     normally     not required as Shorewall's method of clearing 
-  qdisc  and filter     definitions     is pretty general.</li>
-  
-</ul>
-        Shorewall allows you to start traffic shaping when Shorewall itself 
- starts   or it allows you to bring up traffic shaping when you bring up your
- interfaces.<br>
-        <br>
-        To start traffic shaping when Shorewall starts:<br>
-  
-<ol>
-          <li>Set TC_ENABLED=Yes and CLEAR_TC=Yes</li>
-          <li>Supply an /etc/shorewall/tcstart script to configure your traffic 
-   shaping rules.</li>
-          <li>Optionally supply an /etc/shorewall/tcclear script to stop
-traffic    shaping. That is usually unnecessary.</li>
-          <li>If your tcstart script uses the 'fwmark' classifier, you can 
-mark   packets using entries in /etc/shorewall/tcrules.</li>
-  
-</ol>
-        To start traffic shaping when you bring up your network interfaces, 
- you   will have to arrange for your traffic shaping configuration script 
-to be  run at that time. How you do that is distribution dependent and will 
-not be covered here. You then should:<br>
-  
-<ol>
-          <li>Set TC_ENABLED=Yes and CLEAR_TC=No</li>
-          <li>Do not supply /etc/shorewall/tcstart or /etc/shorewall/tcclear 
- scripts.</li>
-          <li value="4">If your tcstart script uses the 'fwmark' classifier, 
- you   can mark packets using entries in /etc/shorewall/tcrules.</li>
-  
-</ol>
-  
-<h3 align="left">Kernel Configuration</h3>
-  
-<p align="left">This screen shot show how I've configured QoS in my Kernel:</p>
-  
-<p align="center"><img border="0" src="images/QoS.png" width="590"
- height="764">
-                 </p>
-  
-<h3 align="left"><a name="tcrules"></a>/etc/shorewall/tcrules</h3>
-  
-<p align="left">The fwmark classifier provides a convenient way to classify 
-        packets for traffic shaping. The /etc/shorewall/tcrules file provides 
-    a  means  for specifying these marks in a tabular fashion.<br>
-          </p>
-  
-<p align="left">Normally, packet marking occurs in the PREROUTING chain before 
-    any address rewriting takes place. This makes it impossible to mark inbound 
-    packets based on their destination address when SNAT or Masquerading
-are    being used. Beginning with Shorewall 1.3.12, you can cause packet
-marking    to occur in the FORWARD chain by using the MARK_IN_FORWARD_CHAIN
-option  in  <a href="Documentation.htm#Conf">shorewall.conf</a>.<br>
-          </p>
-  
-<p align="left">Columns in the file are as follows:</p>
-  
-<ul>
-                    <li>MARK - Specifies the mark value is to be assigned 
-in  case   of      a match. This is an integer in the range 1-255. Beginning 
-with Shorewall  version 1.3.14, this value may be optionally followed by
-":" and either 'F'  or 'P' to designate that the marking will occur in the
-FORWARD or PREROUTING  chains respectively. If this additional specification
-is omitted, the chain  used to mark packets will be determined by the setting
-of the MARK_IN_FORWARD_CHAIN  option in <a href="Documentation.htm#Conf">shorewall.conf</a>.<br>
-                      <br>
-                      Example - 5<br>
-                    </li>
-                    <li>SOURCE - The source of the packet. If the packet
-originates          on  the firewall, place "fw" in this column. Otherwise,
-this is a      comma-separated   list of interface names, IP addresses, MAC
-addresses   in    <a href="Documentation.htm#MAC">Shorewall Format</a> and/or
-Subnets.<br>
-                      <br>
-                      Examples<br>
-                          eth0<br>
-                          192.168.2.4,192.168.1.0/24<br>
-                    </li>
-                    <li>DEST -- Destination of the packet. Comma-separated 
-list   of      IP  addresses and/or subnets.<br>
-                    </li>
-                    <li>PROTO - Protocol - Must be the name of a protocol 
-from       /etc/protocol,    a number or "all"<br>
-                    </li>
-                    <li>PORT(S) - Destination Ports. A comma-separated list 
- of  Port       names  (from /etc/services), port numbers or port ranges (e.g.,
-  21:22);     if     the  protocol is "icmp", this column is interpreted as
-  the     destination    icmp  type(s).<br>
-                    </li>
-                    <li>CLIENT PORT(S) - (Optional) Port(s) used by the client. 
-   If      omitted,  any source port is acceptable. Specified as a comma-separate 
-     list      of port names, port numbers or port ranges.</li>
-  
-</ul>
-  
-<p align="left">Example 1 - All packets arriving on eth1 should be marked 
-        with 1. All packets arriving on eth2 and eth3 should be marked with 
-  2.   All packets   originating on the firewall itself should be marked with
-  3.</p>
-  
-<table border="2" cellpadding="2" style="border-collapse: collapse;">
-                    <tbody>
-                     <tr>
-                      <td><b>MARK</b></td>
-                      <td><b>SOURCE</b></td>
-                      <td><b>DEST</b></td>
-                      <td><b>PROTO</b></td>
-                      <td><b>PORT(S)</b></td>
-                      <td><b>CLIENT PORT(S)</b></td>
-                    </tr>
-                    <tr>
-                      <td>1</td>
-                      <td>eth1</td>
-                      <td>0.0.0.0/0</td>
-                      <td>all</td>
-                      <td> </td>
-                      <td> </td>
-                    </tr>
-                    <tr>
-                      <td>2</td>
-                      <td>eth2</td>
-                      <td>0.0.0.0/0</td>
-                      <td>all</td>
-                      <td> </td>
-                      <td> </td>
-                    </tr>
-                    <tr>
-                   <td valign="top">2<br>
-                   </td>
-                   <td valign="top">eth3<br>
-                   </td>
-                   <td valign="top">0.0.0.0/0<br>
-                   </td>
-                   <td valign="top">all<br>
-                   </td>
-                   <td valign="top"><br>
-                   </td>
-                   <td valign="top"><br>
-                   </td>
-                 </tr>
-                 <tr>
-                      <td>3</td>
-                      <td>fw</td>
-                      <td>0.0.0.0/0</td>
-                      <td>all</td>
-                      <td> </td>
-                      <td> </td>
-                    </tr>
-    
-  </tbody> 
-</table>
-  
-<p align="left">Example 2 - All GRE (protocol 47) packets not originating 
-        on the firewall and destined for 155.186.235.151 should be marked 
-with     12.</p>
-  
-<table border="2" cellpadding="2" style="border-collapse: collapse;">
-                    <tbody>
-                     <tr>
-                      <td><b>MARK</b></td>
-                      <td><b>SOURCE</b></td>
-                      <td><b>DEST</b></td>
-                      <td><b>PROTO</b></td>
-                      <td><b>PORT(S)</b></td>
-                      <td><b>CLIENT PORT(S)</b></td>
-                    </tr>
-                    <tr>
-                      <td>12</td>
-                      <td>0.0.0.0/0</td>
-                      <td>155.186.235.151</td>
-                      <td>47</td>
-                      <td> </td>
-                      <td> </td>
-                    </tr>
-    
-  </tbody> 
-</table>
-  
-<p align="left">Example 3 - All SSH packets originating in 192.168.1.0/24 
-        and destined for 155.186.235.151 should be marked with 22.</p>
-  
-<table border="2" cellpadding="2" style="border-collapse: collapse;">
-                    <tbody>
-                     <tr>
-                      <td><b>MARK</b></td>
-                      <td><b>SOURCE</b></td>
-                      <td><b>DEST</b></td>
-                      <td><b>PROTO</b></td>
-                      <td><b>PORT(S)</b></td>
-                      <td><b>CLIENT PORT(S)</b></td>
-                    </tr>
-                    <tr>
-                      <td>22</td>
-                      <td>192.168.1.0/24</td>
-                      <td>155.186.235.151</td>
-                      <td>tcp</td>
-                      <td>22</td>
-                      <td> </td>
-                    </tr>
-    
-  </tbody> 
-</table>
-  
-<h3>My Setup<br>
-            </h3>
-  
-<p>While I am currently using the HTB version of <a
- href="http://lartc.org/wondershaper/">The Wonder Shaper</a> (I just copied 
-    wshaper.htb  to <b>/etc/shorewall/tcstart</b> and modified it as shown 
- in  the Wondershaper README),  I have also run with the following set of 
-hand-crafted  rules in my <b>/etc/shorewall/tcstart</b>  file:<br>
-            </p>
-  
-<blockquote>   
-  <pre>run_tc qdisc add dev eth0 root handle 1: htb default 30<br><br>run_tc class add dev eth0 parent 1: classid 1:1 htb rate 384kbit burst 15k<br><br>echo "   Added Top Level Class -- rate 384kbit"</pre>
-    
-  <pre>run_tc class add dev eth0 parent 1:1 classid 1:10 htb rate 140kbit ceil 384kbit burst 15k prio 1<br>run_tc class add dev eth0 parent 1:1 classid 1:20 htb rate 224kbit ceil 384kbit burst 15k prio 0<br>run_tc class add dev eth0 parent 1:1 classid 1:30 htb rate 20kbit  ceil 384kbit burst 15k quantum 1500 prio 1</pre>
-    
-  <pre>echo "   Added Second Level Classes -- rates 140kbit, 224kbit, 20kbit"</pre>
-    
-  <pre>run_tc qdisc add dev eth0 parent 1:10 pfifo limit 5<br>run_tc qdisc add dev eth0 parent 1:20 pfifo limit 10<br>run_tc qdisc add dev eth0 parent 1:30 pfifo limit 5</pre>
-    
-  <pre>echo "   Enabled PFIFO on Second Level Classes"</pre>
-    
-  <pre>run_tc filter add dev eth0 protocol ip parent 1:0 prio 1 handle 1 fw classid 1:10<br>run_tc filter add dev eth0 protocol ip parent 1:0 prio 0 handle 2 fw classid 1:20<br>run_tc filter add dev eth0 protocol ip parent 1:0 prio 1 handle 3 fw classid 1:30</pre>
-    
-  <pre>echo "   Defined fwmark filters"<br></pre>
-                            </blockquote>
-  
-<p>My tcrules file that went with this tcstart file is shown in Example 1 
-     above. You can look at <a href="myfiles.htm">my configuration</a> to 
-see why I wanted shaping of this type.<br>
-             </p>
-  
-<ol>
-               <li>I wanted to allow up to 140kbits/second for traffic outbound 
-   from   my DMZ (note that the ceiling is set to 384kbit so outbound DMZ 
-traffic   can  use all available bandwidth if there is no traffic from the 
-local systems     or from my laptop or firewall).</li>
-               <li>My laptop and local systems could use up to 224kbits/second.</li>
-               <li>My firewall could use up to 20kbits/second.</li>
-  
-</ol>
-   You see <a href="myfiles.htm">the rest of my Shorewall configuration</a> 
- to see how this fit in. <br>
-  
-<p><font size="2">Last Updated 3/19/2003 - <a href="support.htm">Tom Eastep</a></font></p>
-  
-<p><font face="Trebuchet MS"><a href="copyright.htm"><font size="2">Copyright</font> 
-         © <font size="2">2001, 2002, 2003 Thomas M. Eastep.</font></a></font><br>
-      </p>
-      <br>
-     <br>
+  <li>A new <b>TC_ENABLED</b> parameter in /etc/shorewall.conf.
+Traffic Shaping also requires that you enable packet mangling.</li>
+  <li>A new <b>CLEAR_TC </b>parameter in /etc/shorewall.conf (Added
+in Shorewall 1.3.13). When Traffic Shaping is enabled (TC_ENABLED=Yes),
+the setting of this variable determines whether Shorewall clears the
+traffic shaping configuration during Shorewall [re]start and Shorewall
+stop. <br>
+  </li>
+  <li><b>/etc/shorewall/tcrules</b> - A file where you
+can specify firewall marking of packets. The firewall mark value
+may be used to classify packets for traffic shaping/control.<br>
+  </li>
+  <li><b>/etc/shorewall/tcstart </b>- A user-supplied file that is
+sourced by Shorewall during "shorewall start" and which you can use to
+define your traffic shaping disciplines and classes. I have provided a <a
+ href="ftp://ftp.shorewall.net/pub/shorewall/cbq">sample</a> that does
+table-driven CBQ shaping but if you read the traffic shaping sections
+of the HOWTO mentioned above, you can probably code your own faster
+than you can learn how to use my sample. I personally use <a
+ href="http://luxik.cdi.cz/%7Edevik/qos/htb/">HTB</a> (see below). HTB
+support may eventually become an integral part of Shorewall since HTB
+is a lot simpler and better-documented than CBQ. As of 2.4.20, HTB is a
+standard part of the kernel but iproute2 must be patched in order to
+use it.<br>
     <br>
-   <br>
-  <br>
- <br>
+In tcstart, when you want to run the 'tc' utility,
+use the run_tc function supplied by shorewall if you want tc errors to
+stop the firewall.<br>
+    <br>
+You can generally use off-the-shelf traffic shaping scripts by simply
+copying them to /etc/shorewall/tcstart. I use <a
+ href="http://lartc.org/wondershaper/">The Wonder Shaper</a> (HTB
+version) that way (i.e., I just copied wshaper.htb to
+/etc/shorewall/tcstart
+and modified it according to the Wonder Shaper README). <b>WARNING: </b>If
+you use use Masquerading or SNAT (i.e., you only have one external IP
+address) then listing internal hosts in the NOPRIOHOSTSRC variable in
+the wshaper[.htb] script won't work. Traffic shaping occurs after SNAT
+has already been
+applied so when traffic shaping happens, all outbound traffic will have
+as a source address the IP addresss of your firewall's external
+interface.<br>
+  </li>
+  <li><b>/etc/shorewall/tcclear</b> - A user-supplied file that is
+sourced by Shorewall when it is clearing traffic shaping. This file is
+normally not required as Shorewall's method of clearing qdisc and
+filter definitions is pretty general.</li>
+</ul>
+Shorewall allows you to start traffic shaping when Shorewall itself
+starts or it allows you to bring up traffic shaping when you bring up
+your interfaces.<br>
+<br>
+To start traffic shaping when Shorewall starts:<br>
+<ol>
+  <li>Set TC_ENABLED=Yes and CLEAR_TC=Yes</li>
+  <li>Supply an /etc/shorewall/tcstart script to configure your traffic
+shaping rules.</li>
+  <li>Optionally supply an /etc/shorewall/tcclear script to stop
+traffic shaping. That is usually unnecessary.</li>
+  <li>If your tcstart script uses the 'fwmark' classifier, you can mark
+packets using entries in /etc/shorewall/tcrules.</li>
+</ol>
+To start traffic shaping when you bring up your network interfaces, you
+will have to arrange for your traffic shaping configuration script to
+be run at that time. How you do that is distribution dependent and will
+not be covered here. You then should:<br>
+<ol>
+  <li>Set TC_ENABLED=Yes and CLEAR_TC=No</li>
+  <li>Do not supply /etc/shorewall/tcstart or /etc/shorewall/tcclear
+scripts.</li>
+  <li value="4">If your tcstart script uses the 'fwmark' classifier,
+you can mark packets using entries in /etc/shorewall/tcrules.</li>
+</ol>
+<h3 align="left">Kernel Configuration</h3>
+<p align="left">This screen shot show how I've configured QoS in my
+Kernel:</p>
+<p align="center"><img border="0" src="images/QoS.png" width="590"
+ height="764"> </p>
+<h3 align="left"><a name="tcrules"></a>/etc/shorewall/tcrules</h3>
+<p align="left">The fwmark classifier provides a convenient way to
+classify packets for traffic shaping. The /etc/shorewall/tcrules file
+provides a means for specifying these marks in a tabular fashion.<br>
+</p>
+<p align="left">Normally, packet marking occurs in the PREROUTING chain
+before any address rewriting takes place. This makes it impossible to
+mark inbound packets based on their destination address when SNAT or
+Masquerading
+are being used. Beginning with Shorewall 1.3.12, you can cause packet
+marking to occur in the FORWARD chain by using the
+MARK_IN_FORWARD_CHAIN
+option in <a href="Documentation.htm#Conf">shorewall.conf</a>.<br>
+</p>
+<p align="left">Columns in the file are as follows:</p>
+<ul>
+  <li>MARK - Specifies the mark value is to be assigned in case of a
+match. This is an integer in the range 1-255. Beginning with Shorewall
+version 1.3.14, this value may be optionally followed by
+":" and either 'F' or 'P' to designate that the marking will occur in
+the
+FORWARD or PREROUTING chains respectively. If this additional
+specification
+is omitted, the chain used to mark packets will be determined by the
+setting
+of the MARK_IN_FORWARD_CHAIN option in <a href="Documentation.htm#Conf">shorewall.conf</a>.<br>
+    <br>
+Example - 5<br>
+  </li>
+  <li>SOURCE - The source of the packet. If the packet
+originates on the firewall, place "fw" in this column. Otherwise,
+this is a comma-separated list of interface names, IP addresses, MAC
+addresses in <a href="Documentation.htm#MAC">Shorewall Format</a>
+and/or
+Subnets.<br>
+    <br>
+Examples<br>
+&nbsp;&nbsp;&nbsp; eth0<br>
+&nbsp;&nbsp;&nbsp; 192.168.2.4,192.168.1.0/24<br>
+  </li>
+  <li>DEST -- Destination of the packet. Comma-separated list of IP
+addresses and/or subnets.<br>
+  </li>
+  <li>PROTO - Protocol - Must be the name of a protocol from
+/etc/protocol, a number or "all"<br>
+  </li>
+  <li>PORT(S) - Destination Ports. A comma-separated list of Port names
+(from /etc/services), port numbers or port ranges (e.g., 21:22); if the
+protocol is "icmp", this column is interpreted as the destination icmp
+type(s).<br>
+  </li>
+  <li>CLIENT PORT(S) - (Optional) Port(s) used by the client. If
+omitted, any source port is acceptable. Specified as a comma-separate
+list of port names, port numbers or port ranges.</li>
+</ul>
+<p align="left">Example 1 - All packets arriving on eth1 should be
+marked with 1. All packets arriving on eth2 and eth3 should be marked
+with 2. All packets originating on the firewall itself should be marked
+with 3.</p>
+<table border="2" cellpadding="2" style="border-collapse: collapse;">
+  <tbody>
+    <tr>
+      <td><b>MARK</b></td>
+      <td><b>SOURCE</b></td>
+      <td><b>DEST</b></td>
+      <td><b>PROTO</b></td>
+      <td><b>PORT(S)</b></td>
+      <td><b>CLIENT PORT(S)</b></td>
+    </tr>
+    <tr>
+      <td>1</td>
+      <td>eth1</td>
+      <td>0.0.0.0/0</td>
+      <td>all</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>eth2</td>
+      <td>0.0.0.0/0</td>
+      <td>all</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <td valign="top">2<br>
+      </td>
+      <td valign="top">eth3<br>
+      </td>
+      <td valign="top">0.0.0.0/0<br>
+      </td>
+      <td valign="top">all<br>
+      </td>
+      <td valign="top"><br>
+      </td>
+      <td valign="top"><br>
+      </td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>fw</td>
+      <td>0.0.0.0/0</td>
+      <td>all</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+    </tr>
+  </tbody>
+</table>
+<p align="left">Example 2 - All GRE (protocol 47) packets not
+originating on the firewall and destined for 155.186.235.151 should be
+marked with 12.</p>
+<table border="2" cellpadding="2" style="border-collapse: collapse;">
+  <tbody>
+    <tr>
+      <td><b>MARK</b></td>
+      <td><b>SOURCE</b></td>
+      <td><b>DEST</b></td>
+      <td><b>PROTO</b></td>
+      <td><b>PORT(S)</b></td>
+      <td><b>CLIENT PORT(S)</b></td>
+    </tr>
+    <tr>
+      <td>12</td>
+      <td>0.0.0.0/0</td>
+      <td>155.186.235.151</td>
+      <td>47</td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+    </tr>
+  </tbody>
+</table>
+<p align="left">Example 3 - All SSH packets originating in
+192.168.1.0/24 and destined for 155.186.235.151 should be marked with
+22.</p>
+<table border="2" cellpadding="2" style="border-collapse: collapse;">
+  <tbody>
+    <tr>
+      <td><b>MARK</b></td>
+      <td><b>SOURCE</b></td>
+      <td><b>DEST</b></td>
+      <td><b>PROTO</b></td>
+      <td><b>PORT(S)</b></td>
+      <td><b>CLIENT PORT(S)</b></td>
+    </tr>
+    <tr>
+      <td>22</td>
+      <td>192.168.1.0/24</td>
+      <td>155.186.235.151</td>
+      <td>tcp</td>
+      <td>22</td>
+      <td>&nbsp;</td>
+    </tr>
+  </tbody>
+</table>
+<h3>My Current Setup<br>
+</h3>
+<p>I am currently using the HTB version of <a
+ href="http://lartc.org/wondershaper/">The Wonder Shaper</a> (I just
+copied wshaper.htb to <b>/etc/shorewall/tcstart</b> and modified it as
+shown in the Wondershaper README).<span style="font-weight: bold;"> </span>WonderShaper
+DOES NOT USE THE
+/etc/shorewall/tcrules file. While I currently have entries in
+/etc/shorewall/tcrules, I do so for <a
+ href="Shorewall_Squid_Usage.html">policy routing for Squid</a> and not
+for Traffic Shaping.</p>
+<h3>My Old Setup<br>
+</h3>
+<p>I have also run with the following set of hand-crafted rules in my <b>/etc/shorewall/tcstart</b>
+file.<br>
+</p>
+<blockquote>
+  <pre>run_tc qdisc add dev eth0 root handle 1: htb default 30<br><br>run_tc class add dev eth0 parent 1: classid 1:1 htb rate 384kbit burst 15k<br><br>echo "&nbsp;&nbsp; Added Top Level Class -- rate 384kbit"</pre>
+  <pre>run_tc class add dev eth0 parent 1:1 classid 1:10 htb rate 140kbit ceil 384kbit burst 15k prio 1<br>run_tc class add dev eth0 parent 1:1 classid 1:20 htb rate 224kbit ceil 384kbit burst 15k prio 0<br>run_tc class add dev eth0 parent 1:1 classid 1:30 htb rate 20kbit&nbsp; ceil 384kbit burst 15k quantum 1500 prio 1</pre>
+  <pre>echo "&nbsp;&nbsp; Added Second Level Classes -- rates 140kbit, 224kbit, 20kbit"</pre>
+  <pre>run_tc qdisc add dev eth0 parent 1:10 pfifo limit 5<br>run_tc qdisc add dev eth0 parent 1:20 pfifo limit 10<br>run_tc qdisc add dev eth0 parent 1:30 pfifo limit 5</pre>
+  <pre>echo "&nbsp;&nbsp; Enabled PFIFO on Second Level Classes"</pre>
+  <pre>run_tc filter add dev eth0 protocol ip parent 1:0 prio 1 handle 1 fw classid 1:10<br>run_tc filter add dev eth0 protocol ip parent 1:0 prio 0 handle 2 fw classid 1:20<br>run_tc filter add dev eth0 protocol ip parent 1:0 prio 1 handle 3 fw classid 1:30</pre>
+  <pre>echo "&nbsp;&nbsp; Defined fwmark filters"<br></pre>
+</blockquote>
+<p>My tcrules file that went with this tcstart file is shown in Example
+1 above. When I was using these rules:<br>
+</p>
+<ol>
+  <li>I wanted to allow up to 140kbits/second for traffic outbound from
+my DMZ (eth1 -- note that the ceiling is set to 384kbit so outbound DMZ
+traffic can use all available bandwidth if there is no traffic from the
+local systems or from my laptop or firewall).</li>
+  <li>My laptop (which at that time connected via eth3) and local
+systems (eth2) could use up to 224kbits/second.</li>
+  <li>My firewall could use up to 20kbits/second.</li>
+</ol>
+Once www.shorewall.net was moved off-site, I no longer needed these
+shaping rules and The Wonder Shaper does all that I now require.<br>
+<p><font size="2">Last Updated 10/21/2003 - <a href="support.htm">Tom
+Eastep</a></font></p>
+<p><font face="Trebuchet MS"><a href="copyright.htm"><font size="2">Copyright</font>
+© <font size="2">2001, 2002, 2003 Thomas M. Eastep.</font></a></font><br>
+</p>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
 </body>
 </html>

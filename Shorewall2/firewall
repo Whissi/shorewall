@@ -2238,8 +2238,8 @@ process_accounting_rule() {
 		
     ensurechain1 $chain
 
-    if iptables -A $chain $rule ; then
-	[ "x$rule2" != x ] && run_iptables -A $jumpchain $rule2
+    if iptables -A $chain $(fix_bang $rule) ; then
+	[ -n "$rule2" ] && run_iptables2 -A $jumpchain $rule2
 	progress_message "   Accounting rule" $action $chain $source $dest $proto $port $sport Added
     else
 	accounting_error
@@ -2730,7 +2730,7 @@ process_actions1() {
 		    case $temp in
 			ACCEPT|REJECT|DROP)
 			    eval ${temp}_common=$xaction
-			    if ! list_search $xaction $USEDACTIONS; then
+			    if [ -n "$xaction" ] && ! list_search $xaction $USEDACTIONS; then
 				USEDACTIONS="$USEDACTIONS $xaction"
 				[ $COMMAND = check ] || createactionchain $xaction
 			    fi
@@ -5415,6 +5415,8 @@ define_firewall() # $1 = Command (Start or Restart)
     verify_os_version
     verify_ip
 
+    [ -d /var/lib/shorewall ] || mkdir -p /var/lib/shorewall
+
     echo '#bin/sh' > /var/lib/shorewall/restore-$$
     save_command "# Restore base file generated $(date)"
     save_command ". /usr/share/shorewall/functions"
@@ -5952,7 +5954,7 @@ do_initialize() {
     determine_capabilities
 
     [ -z "${STATEDIR}" ] && STATEDIR=/var/state/shorewall
-
+   
     [ -d $STATEDIR ] || mkdir -p $STATEDIR
 
     [ -z "$FW" ] && FW=fw

@@ -4422,14 +4422,7 @@ activate_rules()
 		for host1 in $dest_hosts; do
 		    interface1=${host1%:*}
 		    subnet1=${host1#*:}
-
-		    if list_search $host1 $source_hosts && ! list_search $host1 $routeback; then
-			if [ `list_count1 $source_hosts` -gt 1 ]; then
-			    run_iptables -A $frwd_chain -s ! $subnet1 -o $interface1 -d $subnet1 -j $chain
-			fi
-		    else
-			run_iptables -A $frwd_chain -o $interface1 -d $subnet1 -j $chain
-		    fi
+		    run_iptables -A $frwd_chain -o $interface1 -d $subnet1 -j $chain
 		done
 	    else
 		for host in $source_hosts; do

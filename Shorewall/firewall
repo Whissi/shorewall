@@ -81,7 +81,7 @@ list_count() {
 
 ###############################################################################
 # Mutual exclusion -- These functions are jackets for the mutual exclusion    #
-#		      routines in /var/lib/shorewall/functions. They invoke   #
+#		      routines in /usr/lib/shorewall/functions. They invoke   #
 #		      the corresponding function in that file if the user did #
 #		      not specify "nolock" on the runline.		      #
 ###############################################################################
@@ -3353,7 +3353,7 @@ define_firewall() # $1 = Command (Start or Restart)
 
     createchain shorewall no
 
-    date > /var/lib/shorewall/restarted
+    date > $STATEDIR/restarted
 
     report "Shorewall ${1}ed"
 
@@ -3560,6 +3560,7 @@ do_initialize() {
 
     [ -d $STATEDIR ] || mkdir -p $STATEDIR
 
+
     [ -z "$FW" ] && FW=fw
 
     ALLOWRELATED="`added_param_value_yes ALLOWRELATED $ALLOWRELATED`"
@@ -3676,7 +3677,7 @@ case "$command" in
     reset)
 	iptables -L -n -Z -v
 	report "Shorewall Counters Reset"
-	date > /var/lib/shorewall/restarted
+	date > $STATEDIR/restarted
 	;;
 
     refresh)

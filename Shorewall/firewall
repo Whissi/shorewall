@@ -3307,11 +3307,15 @@ initialize_netfilter () {
     if [ -z "$NEWNOTSYN" ]; then
 	createchain newnotsyn no
 
-	for interface in `find_interfaces_by_option newnotsyn`; do
-	    #
-	    # Packets arriving on this interface are submitted to the rules
-	    #
-	    run_iptables -A newnotsyn -i $interface                            -j RETURN
+	interfaces=`find_interfaces_by_option newnotsyn`
+
+	for interface in $interfaces; do
+	    for interface1 in $interfaces; do
+		run_iptables -A newnotsyn -i $interface -o $interface1 -p tcp --tcp-flags ACK ACK -j ACCEPT
+		run_iptables -A newnotsyn -i $interface -o $interface1 -p tcp --tcp-flags RST RST -j ACCEPT
+	    done
+	    
+	    run_iptables -A newnotsyn -i $interface -j RETURN
 	done
 
 	run_user_exit newnotsyn
@@ -3377,15 +3381,6 @@ build_common_chain() {
     if [ -n "$NEWNOTSYN" ]; then
 	run_iptables -A common -p tcp --tcp-flags ACK ACK -j ACCEPT
 	run_iptables -A common -p tcp --tcp-flags RST RST -j ACCEPT
-    else
-	interfaces=`find_interfaces_by_option newnotsyn`
-
-	for interface in $interfaces; do
-	    for interface1 in $interfaces; do
-		run_iptables -A common -i $interface -o $interface1 -p tcp --tcp-flags ACK ACK -j ACCEPT
-		run_iptables -A common -i $interface -o $interface1 -p tcp --tcp-flags RST RST -j ACCEPT
-	    done
-	done
     fi
     #
     # BROADCASTS

@@ -226,13 +226,17 @@ for each of your interfaces. Columns in an entry   are:</p>
   INTERFACE</b> - the name of the interface (examples: eth0, ppp0, ipsec+)</li>
    <li><b>
   BROADCAST</b> - the broadcast address(es) for the sub-network(s) attached to the 
-     interface. This should be left empty for P-T-P interfaces (ppp*, ippp*);
- if you need to       specify options for such an interface, enter "-" in
-this column.       If you supply the special value "detect" in this column,
-the       firewall will automatically determine the broadcast address. Note
-that to       use this feature, you must have iproute installed, the interface
- must       be up before you start your firewall and it must only be attached to 
-   a single sub-network.&nbsp;</li>
+     interface. This should be left empty for P-T-P interfaces (ppp*, ippp*); if 
+   you need to specify options for such an interface, enter &quot;-&quot; in this column. 
+   If you supply the special value &quot;detect&quot; in this column, the firewall will 
+   automatically determine the broadcast address. In order to use &quot;detect&quot;:<ul>
+   <li>you must have iproute installed</li>
+   <li>the interface must be up before you start your firewall</li>
+   <li>the interface must only be attached to 
+   a single sub-network (i.e., there must have a single broadcast address).&nbsp;</li>
+ </ul>
+                                     
+                  </li>
    <li><b>
   OPTIONS</b> - a comma-separated list of options. Possible options       include:                         
                         <p>
@@ -2685,7 +2689,7 @@ by   Shorewall, you must have <a href="#MangleEnabled">mangle support enabled</a
                                                                         
                      
                                                                                   <p><font size="2">
-  Updated 8/13/2002 - <a href="support.htm">Tom 
+  Updated 8/14/2002 - <a href="support.htm">Tom 
 Eastep</a>
    </font></p>
                                                                         

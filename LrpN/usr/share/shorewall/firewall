@@ -613,12 +613,12 @@ match_ipsec_in() # $1 = zone, $2 = host
 {
     eval local is_ipsec=\$${1}_is_ipsec
     eval local hosts=\"\$${1}_ipsec_hosts\"
-    eval local options=\"\$${1}_ipsec_options\"
+    eval local options=\"\$${1}_ipsec_options \$${1}_ipsec_in_options\"
 
     if [ -n "$is_ipsec" ] || list_search $2 $hosts; then
 	echo "-m policy --pol ipsec --dir in $options"
     elif [ -n "$POLICY_MATCH" ]; then
-	echo "-m policy --pol none --dir in $options"
+	echo "-m policy --pol none --dir in"
     fi
 }
 
@@ -629,12 +629,12 @@ match_ipsec_out() # $1 = zone, $2 = host
 {
     eval local is_ipsec=\$${1}_is_ipsec
     eval local hosts=\"\$${1}_ipsec_hosts\"
-    eval local options=\"\$${1}_ipsec_options\"
+    eval local options=\"\$${1}_ipsec_options \$${1}_ipsec_out_options\"
 
     if [ -n "$is_ipsec" ] || list_search $2 $hosts; then
 	echo "-m policy --pol ipsec --dir out $options"
     elif [ -n "$POLICY_MATCH" ]; then
-	echo "-m policy --pol none --dir out $options"
+	echo "-m policy --pol none --dir out"
     fi
 }
 
@@ -1636,47 +1636,36 @@ setup_tunnels() # $1 = name of tunnels file
 
 setup_ipsec() {
 
-    do_options() {
-	local option newoptions=
+    do_options() # $1 = _in, _out or "" - $2 = option list
+    {
+	local option opts newoptions=
 
-	options=$(separate_list $options)
+	[ x${2} = x- ] && return
 
-	for option in $options; do
+	opts=$(separate_list $2)
+
+	for option in $opts; do
 	    case $option in
-		reqid=*)
-		    newoptions="$newoptions --reqid ${option#*=}"
-		    ;;
-		spi=*)
-		    newoptions="$newoptions --spi ${option#*=}"
-		    ;;
-		proto=*)
-		    newoptions="$newoptions --proto ${option#*=}"
-		    ;;
-		mode=*)
-		    newoptions="$newoptions --mode ${option#*=}"
-		    ;;
-		tunnel-src=*)
-		    newoptions="$newoptions --tunnel-src ${option#*=}"
-		    ;;
-		tunnel-dst=*)
-		    newoptions="$newoptions --tunnel-dst ${option#*=}"
-		    ;;
-		*)
-		    fatal_error "Invalid option \"$option\" for zone $zone"
-		    ;;
+		reqid=*)      newoptions="$newoptions --reqid ${option#*=}" ;;
+		spi=*)        newoptions="$newoptions --spi ${option#*=}" ;;
+		proto=*)      newoptions="$newoptions --proto ${option#*=}" ;;
+		mode=*)       newoptions="$newoptions --mode ${option#*=}" ;;
+		tunnel-src=*) newoptions="$newoptions --tunnel-src ${option#*=}" ;;
+		tunnel-dst=*) newoptions="$newoptions --tunnel-dst ${option#*=}" ;;
+		*)            fatal_error "Invalid option \"$option\" for zone $zone" ;;
 	    esac
 	done
-	
+
 	if [ -n "$newoptions" ]; then
 	    eval ${zone}_is_complex=Yes
-	    eval ${zone}_ipsec_options=\"${newoptions# }\"
+	    eval ${zone}_ipsec${1}_options=\"${newoptions# }\"
 	fi
     }
 
     strip_file ipsec $1
     
-    while read zone ipsec options; do
-	expandv zone ipsec options
+    while read zone ipsec options in_options out_options; do
+	expandv zone ipsec options in_options out_options
 
 	[ -n "$POLICY_MATCH" ] || fatal_error "Your kernel and/or iptables does not support policy match"
 
@@ -1694,7 +1683,9 @@ setup_ipsec() {
 		;;
 	esac
 
-	do_options
+	do_options ""     $options
+	do_options "_in"  $in_options
+	do_options "_out" $out_options
 
     done < $TMP_DIR/ipsec
 }	

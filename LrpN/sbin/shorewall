@@ -33,7 +33,7 @@
 #
 #          shorewall add <iface>[:<host>] zone     Adds a host or subnet to a zone
 #          shorewall delete <iface>[:<host>] zone  Deletes a host or subnet from a zone
-#	   shorewall start			   Starts the firewall
+#	   shorewall start 			   Starts the firewall
 #	   shorewall restart			   Restarts the firewall
 #	   shorewall stop			   Stops the firewall
 #	   shorewall monitor [ refresh-interval ]  Repeatedly Displays firewall status
@@ -564,7 +564,7 @@ usage() # $1 = exit status
     echo "where <command> is one of:"
     echo "   add <interface>[:<host>] <zone>"
     echo "   allow <address> ..."
-    echo "   check"
+    echo "   check [ <directory> ]"
     echo "   clear"
     echo "   delete <interface>[:<host>] <zone>"
     echo "   drop <address> ..."
@@ -578,15 +578,17 @@ usage() # $1 = exit status
     echo "   refresh"
     echo "   reject <address> ..."
     echo "   reset"
-    echo "   restart"
+    echo "   restart [ <directory> ]"
     echo "   restore [ <file name> ]"
     echo "   save [ <file name> ]"
     echo "   show [<chain> [ <chain> ... ]|classifiers|connections|log|nat|tc|tos]"
-    echo "   start"
+    echo "   start [ <directory> ]"
     echo "   stop"
     echo "   status"
     echo "   try <directory> [ <timeout> ]"
     echo "   version"
+    echo 
+    echo "The -c and -f options may not be specified with a <directory> in the start, restart and check commands"
     exit $1
 }
 
@@ -761,8 +763,30 @@ esac
 
 case "$1" in
     start)
-	[ $# -ne 1 ] && usage 1
+	case $# in
+	    1)
+		;;
+	    2)
+		[ -n "$SHOREWALL_DIR" -o -n "$FAST" ] && usage 2
+
+		if [ ! -d $2 ]; then
+		    if [ -e $2 ]; then
+			echo "$2 is not a directory" >&2 && exit 2
+		    else
+			echo "Directory $2 does not exist" >&2 && exit 2
+		    fi
+		fi
+			
+		SHOREWALL_DIR=$2
+		export SHOREWALL_DIR
+		;;
+	    *)
+		usage 1
+		;;
+	esac
+	
 	get_config
+	
 	if [ -n "$FAST" ]; then
 	    
 	    RESTOREPATH=/var/lib/shorewall/$RESTOREFILE
@@ -779,8 +803,33 @@ case "$1" in
 	    exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock start
 	fi
 	;;
-    stop|restart|reset|clear|refresh|check)
+    stop|reset|clear|refresh)
 	[ $# -ne 1 ] && usage 1
+	get_config
+	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $1
+	;;
+    check|restart)
+	case $# in
+	    1)
+		;;
+	    2)
+		[ -n "$SHOREWALL_DIR" ] && usage 2
+
+		if [ ! -d $2 ]; then
+		    if [ -e $2 ]; then
+			echo "$2 is not a directory" >&2 && exit 2
+		    else
+			echo "Directory $2 does not exist" >&2 && exit 2
+		    fi
+		fi
+			
+		SHOREWALL_DIR=$2
+		export SHOREWALL_DIR
+		;;
+	    *)
+		usage 1
+		;;
+	esac
 	get_config
 	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $1
 	;;

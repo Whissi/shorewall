@@ -15,9 +15,9 @@
 #				Encrypted hosts are designated using the 'ipsec'
 #				option in /etc/shorewall/hosts. 				
 #
-#		OPTIONS	A comma-separated list of options as follows:
-#				reqid=<number> where <number> is specified
-#				using setkey(8) using the 'unique:<number>
+#		OPTIONS,        A comma-separated list of options as follows:
+#		IN OPTIONS,	reqid=<number> where <number> is specified
+#		OUT OPTIONS	using setkey(8) using the 'unique:<number>
 #				option for the SPD level.
 #
 #				spi=<number> where <number> is the SPI of
@@ -35,8 +35,16 @@
 #
 #			Example:
 #				mode=transport,reqid=44
+#
+#		The options in the OPTIONS column are applied to both incoming
+#		and outgoing traffic. The IN OPTIONS are applied to incoming
+#		traffic (in addition to OPTIONS) and the OUT OPTIONS are 
+#		applied to outgoing traffic.
+#
+#		If you wish to leave a column empty but need to make an entry
+#		in a following column, use "-".
 ################################################################################
-#ZONE	IPSEC	OPTIONS
-#	ONLY
+#ZONE	IPSEC	OPTIONS			IN			OUT
+#	ONLY				OPTIONS			OPTIONS
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
 

@@ -632,7 +632,6 @@ FUNCTIONS=$SHARED_DIR/functions
 VERSION_FILE=$SHARED_DIR/version
 HELP=$SHARED_DIR/help
 CONFIG_PATH=/etc/shorewall:/usr/share/shorewall
-[ -n "$SHOREWALL_DIR" ] && CONFIG_PATH=$SHOREWALL_DIR:$CONFIG_PATH
 
 if [ -f $FUNCTIONS ]; then
     . $FUNCTIONS
@@ -650,10 +649,7 @@ else
     exit 2
 fi
 
-if [ -z "$CONFIG_PATH" ]; then
-    CONFIG_PATH=/etc/shorewall:/usr/share/shorewall
-    [ -n "$SHOREWALL_DIR" ] && CONFIG_PATH=$SHOREWALL_DIR:$CONFIG_PATH
-fi
+[ -z "$CONFIG_PATH" ] && CONFIG_PATH=/etc/shorewall:/usr/share/shorewall
 
 [ -z "${STATEDIR}" ] && STATEDIR=/var/state/shorewall
 

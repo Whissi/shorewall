@@ -5740,8 +5740,6 @@ do_initialize() {
 
     run_user_exit params
 
-    [ -n "$SHOREWALL_DIR" ] && CONFIG_PATH=$SHOREWALL_DIR:$CONFIG_PATH
-
     config=$(find_file shorewall.conf)
 
     if [ -f $config ]; then
@@ -5755,7 +5753,6 @@ do_initialize() {
     # Restore CONFIG_PATH if the shorewall.conf file cleared it
     #
     [ -n "$CONFIG_PATH" ] || CONFIG_PATH=/etc/shorewall:/usr/share/shorewall
-    [ -n "$SHOREWALL_DIR" ] && CONFIG_PATH=$SHOREWALL_DIR:$CONFIG_PATH
     #
     # Determine the capabilities of the installed iptables/netfilter
     #

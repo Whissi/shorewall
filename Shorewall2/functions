@@ -94,19 +94,23 @@ find_file()
 	    echo $1
 	    ;;
 	*)
-	    saveifs=$IFS
-	    IFS=:
-	    for directory in $CONFIG_PATH; do
-	        if [ -f $directory/$1 ]; then
-		    echo $directory/$1
-		    IFS=$saveifs
-		    return
-		fi
-	    done
+	    if [ -n "$SHOREWALL_DIR" -a -f $SHOREWALL_DIR/$1 ]; then
+		echo $SHOREWALL_DIR/$1
+	    else
+		saveifs=$IFS
+		IFS=:
+		for directory in $CONFIG_PATH; do
+		    if [ -f $directory/$1 ]; then
+			echo $directory/$1
+			IFS=$saveifs
+			return
+		    fi
+		done
 		
-	    IFS=$saveifs
-			
-	    echo /etc/shorewall/$1
+		IFS=$saveifs
+		
+		echo /etc/shorewall/$1
+	    fi
 	    ;;
     esac
 }

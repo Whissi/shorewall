@@ -4,18 +4,30 @@
 # /etc/shorewall/blacklist
 #
 # This file contains a list of IP addresses, MAC addresses and/or subnetworks.
+#
+# Columns are:
+#
+#	ADDRESS/SUBNET 	- Host address, subnetwork or MAC address
+#
+# 			  MAC addresses must be prefixed with "~" and use "-" 
+#			  as a separator.
+#
+# 			  Example: ~00-A0-C9-15-39-78
+#
+#	PROTOCOL	- Optional. If specified, must be a protocol number
+#			  or a protocol name from /etc/protocols.
+#
+#	PORTS		- Optional. May only be specified if the protocol
+#			  is TCP (6) or UDP (17). A comma-separated list
+#			  of port numbers or service names from /etc/services.
+#
 # When a packet arrives on in interface that has the 'blacklist' option
 # specified, its source IP address is checked against this file and disposed of
 # according to the BLACKLIST_DISPOSITION and BLACKLIST_LOGLEVEL variables in
 # /etc/shorewall/shorewall.conf
 #
-# MAC addresses must be prefixed with "~" and use "-" as a separator.
-#
-# Example: ~00-A0-C9-15-39-78
-#
-# Each ADDRESS/SUBNET may be optionally followed by a protocol name or number
-# and an optional port number. If these are supplied, only packets matching
-# the protocol and the port (if supplied) are blocked.
+# If PROTOCOL or PROTOCOL and PORTS are supplied, only packets matching
+# the protocol (and one of the ports if PORTS supplied) are blocked. 
 #
 # Example:
 #
@@ -23,6 +35,7 @@
 #
 # ADDRESS/SUBNET	PROTOCOL	PORT
 # 192.0.2.126		udp		53
+#
 ###############################################################################
 #ADDRESS/SUBNET		PROTOCOL	PORT
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

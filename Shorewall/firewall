@@ -70,6 +70,14 @@ list_search() # $1 = element to search for , $2-$n = list
 
     return 1
 }
+###############################################################################
+# Function to count list elements                                             #
+###############################################################################
+list_count() {
+    local temp=`separate_list $1`
+    
+    echo $temp | wc -w
+}
 
 ###############################################################################
 # Mutual exclusion -- These functions are jackets for the mutual exclusion    #
@@ -1772,14 +1780,6 @@ add_a_rule()
 ################################################################################
 process_rule() {
 
-    # Function to count list elements
-
-    list_count() {
-	local temp=`separate_list $1`
-	
-	echo $temp | wc -w
-    }
-
     # Function Body -- isolate log level
  
    if [ "$target" = "${target%:*}" ]; then
@@ -2501,6 +2501,21 @@ setup_intrazone() # $1 = zone
 	ensurechain ${1}2${1}
     fi
 }
+###############################################################################
+# Add a record to the blacklst chain                                          #
+#                                                                             #
+#   $source      = address match                                              #
+#   $proto       = protocol selector                                          #
+#   $dport       = destination port selector                                  #
+###############################################################################
+add_blacklist_rule() {
+    [ -n "$BLACKLIST_LOGLEVEL" ] && \
+	run_iptables -A blacklst $source $proto $dport -j \
+	LOG $LOGPARMS --log-prefix \
+	"Shorewall:blacklst:$BLACKLIST_DISPOSITION:" \
+	--log-level $BLACKLIST_LOGLEVEL
+    run_iptables -A blacklst $source $proto $dport -j $disposition
+}
 
 ###############################################################################
 # Process a record from the blacklist file				      #
@@ -2512,7 +2527,7 @@ setup_intrazone() # $1 = zone
 process_blacklist_rec() {
     local source
     local addr
-    local proto=
+    local proto
     local dport
 
     for addr in `separate_list $subnet`; do
@@ -2528,19 +2543,47 @@ process_blacklist_rec() {
 	
 	if [ -n "$protocol" ]; then
 	    proto=" -p $protocol "
-	    
-	    [ -n "$port" ] && dport="--dport $port"
+
+	    case $protocol in
+		tcp|TCP|6|udp|UDP|17)
+		    if [ -n "$ports" ]; then 
+			if [ -n "$MULTIPORT" -a \
+			    "$ports" != "${ports%,*}" -a \
+			    "$ports" = "${ports%:*}" -a \
+			    `list_count $ports` -le 15 ]
+			then
+			    dport="-m multiport --dports $ports"
+			    add_blacklist_rule
+			else
+			    for dport in `separate_list $ports`; do
+				dport="--dport $dport"
+				add_blacklist_rule
+			    done
+			fi
+		    else
+			add_blacklist_rule
+		    fi
+		    ;;
+		icmp|ICMP|0)
+		    if [ -n "$ports" ]; then
+			for dport in `separate_list $ports`; do
+			    dport="--icmp-type $dport"
+			    add_blacklist_rule
+			done
+		    else
+			add_blacklist_rule
+		    fi
+		    ;;
+		*)
+		    add_blacklist_rule
+		    ;;
+	    esac
+	else
+	    add_blacklist_rule
 	fi
 
-	[ -n "$BLACKLIST_LOGLEVEL" ] && \
-	    run_iptables -A blacklst $source $proto $dport -j \
-	    LOG $LOGPARMS --log-prefix \
-	    "Shorewall:blacklst:$BLACKLIST_DISPOSITION:" \
-	    --log-level $BLACKLIST_LOGLEVEL
-	run_iptables -A blacklst $source $proto $dport -j $disposition
-
-	if [ -n "$port" ]; then
-	    addr="$addr $protocol $port"
+	if [ -n "$ports" ]; then
+	    addr="$addr $protocol $ports"
 	elif [ -n "$protocol" ]; then
 	    addr="$addr $protocol"
 	fi
@@ -2574,8 +2617,8 @@ setup_blacklist() {
 
 	[ "$disposition" = REJECT ] && disposition=reject
 
-	while read subnet protocol port; do
-	    expandv subnet protocol port
+	while read subnet protocol ports; do
+	    expandv subnet protocol ports
 	    process_blacklist_rec
 	done < $TMP_DIR/blacklist
 
@@ -2598,8 +2641,8 @@ refresh_blacklist() {
 
 	run_iptables -F blacklst
 
-	while read subnet protocol port; do
-	    expandv subnet protocol port
+	while read subnet protocol ports; do
+	    expandv subnet protocol ports
 	    process_blacklist_rec
 	done < $TMP_DIR/blacklist
     fi

@@ -4482,10 +4482,16 @@ do_initialize() {
     fi
     
     if [ -n "$LOGFORMAT" ]; then
-	if ! qt printf "$LOGFORMAT" foo 1 bar ; then
-	    startup_error "Invalid LOGFORMAT string: \"$LOGFORMAT\""
+	if [ -n "`echo $LOGFORMAT | grep '%d'`" ]; then
+	    LOGRULENUMBERS=Yes
+	    if ! qt printf "$LOGFORMAT" foo 1 bar ; then
+		startup_error "Invalid LOGFORMAT string: \"$LOGFORMAT\""
+	    fi
+	else
+	    if ! qt printf "$LOGFORMAT" foo bar ; then
+		startup_error "Invalid LOGFORMAT string: \"$LOGFORMAT\""
+	    fi
 	fi
-	[ -n "`echo $LOGFORMAT | grep '%d'`" ] && LOGRULENUMBERS=Yes
     else
 	LOGFORMAT="Shorewall:%s:%s:"
     fi

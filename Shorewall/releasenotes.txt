@@ -19,3 +19,10 @@ New Features:
 3) Shorewall can now add IP addresses to subnets on an interface other
    than the first one.
 
+4) DNAT[-] rules may now be used to round-robin over a set of
+   servers. Up to 256 servers may be specified in a range of addresses
+   given as <first address>-<last address>.
+
+   Example:
+
+	DNAT net loc:192.168.10.2-192.168.10.5 tcp 80

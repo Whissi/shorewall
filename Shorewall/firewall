@@ -832,6 +832,15 @@ find_interface_address() # $1 = interface
 }
 
 #
+# Find interface addresses--returns the set of addresses assigned to the passed
+# device
+#
+find_interface_addresses() # $1 = interface
+{
+    ip addr show $1 | grep inet | sed 's/inet //;s/\/.*//;s/ peer.*//'
+}
+
+#
 # Find interfaces that have the passed option specified
 #
 find_interfaces_by_option() # $1 = option
@@ -2097,15 +2106,25 @@ add_a_rule()
 	    fi
 
 	    if [ -z "$dnat_only" -a $chain != ${FW}2${FW} ]; then
-		serv="${serv:+-d $serv}"
+		if [ -n "$serv" ]; then
+		    for srv in `ip_range $serv`; do
+			if [ -n "$loglevel" -a -z "$natrule" ]; then
+			    log_rule $loglevel $chain $logtarget \
+				`fix_bang $proto $sports $multiport $state $cli -d $srv $dports`
+			fi
 
-		if [ -n "$loglevel" -a -z "$natrule" ]; then
-		    log_rule $loglevel $chain $logtarget \
-			`fix_bang $proto $sports $multiport $state $cli $serv $dports`
+			run_iptables2 -A $chain $proto $multiport $state $cli $sports \
+			    -d $srv $dports -j $target
+		    done
+		else
+		    if [ -n "$loglevel" -a -z "$natrule" ]; then
+		        log_rule $loglevel $chain $logtarget \
+			    `fix_bang $proto $sports $multiport $state $cli $dports`
+		    fi
+
+		    run_iptables2 -A $chain $proto $multiport $state $cli $sports \
+			$dports -j $target
 		fi
-
-		run_iptables2 -A $chain $proto $multiport $state $cli $sports \
-		    $serv $dports -j $target
 	    fi
 	fi
     else
@@ -3204,7 +3223,7 @@ verify_os_version() {
 #
 add_ip_aliases()
 {
-    local external interface inet cidr brd bcast rest
+    local addresses external interface inet cidr brd bcast rest
 
     do_one()
     {
@@ -3221,10 +3240,6 @@ add_ip_aliases()
 
 	ip addr show $interface 2> /dev/null | grep 'inet.*brd ' | while read inet cidr brd bcast rest ; do
 	    if in_subnet $external $cidr; then
-		if [ $external = ${cidr%/*} ]; then
-		    return
-		fi
-		
 		val="/${cidr#*/} brd $bcast"
 		break
 	    fi
@@ -3250,7 +3265,8 @@ add_ip_aliases()
 	fi
 
 	shift;shift
-	do_one
+
+	list_search $external `find_interface_addresses $interface` || do_one
     done
 }
 

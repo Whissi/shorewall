@@ -107,6 +107,12 @@
 #				3. You may not specify both an interface and
 #				   an address.
 #
+#			Unlike in the SOURCE column, you may specify a range of
+#			up to 256 IP addresses using the syntax
+#			<first ip>-<last ip>. When the ACTION is DNAT or DNAT-,
+#			the connections will be assigned to addresses in the
+#			range in a round-robin fashion.
+#
 #			The port that the server is listening on may be
 #			included and separated from the server's IP address by
 #			":". If omitted, the firewall will not modifiy the

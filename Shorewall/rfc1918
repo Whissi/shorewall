@@ -20,11 +20,20 @@
 ###############################################################################
 #SUBNET			TARGET
 255.255.255.255		RETURN		# We need to allow limited broadcast
+169.254.0.0/16		DROP		# DHCP autoconfig
+172.16.0.0/12		logdrop		# RFC 1918
+192.0.2.0/24		logdrop		# Example addresses
+192.168.0.0/16		logdrop		# RFC 1918
+#
+# The following are generated using the Python program found at:
+#
+#	http://www.shorewall.net/pub/shorewall/contrib/iana_reserved/
+#
 0.0.0.0/7		logdrop		# Reserved
 2.0.0.0/8		logdrop		# Reserved
 5.0.0.0/8		logdrop		# Reserved
 7.0.0.0/8		logdrop		# Reserved
-10.0.0.0/8		logdrop		# RFC 1918
+10.0.0.0/8		logdrop		# Reserved
 23.0.0.0/8		logdrop		# Reserved
 27.0.0.0/8		logdrop		# Reserved
 31.0.0.0/8		logdrop		# Reserved
@@ -41,11 +50,11 @@
 84.0.0.0/6		logdrop		# Reserved
 88.0.0.0/5		logdrop		# Reserved
 96.0.0.0/3		logdrop		# Reserved
-169.254.0.0/16		DROP		# DHCP autoconfig
-192.0.2.0/24		logdrop		# Example addresses
-192.168.0.0/16		logdrop		# RFC 1918
-172.16.0.0/12		logdrop		# RFC 1918
+197.0.0.0/8		logdrop		# Reserved
 221.0.0.0/8		logdrop		# Reserved
 222.0.0.0/7		logdrop		# Reserved
 240.0.0.0/4		logdrop		# Reserved
+#
+# End of generated entries
+#
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

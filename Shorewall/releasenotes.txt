@@ -23,6 +23,9 @@ Problems Corrected since version 1.4.6:
 
    Error: Unable to determine the routes routes through interface xxx
 
+4) Handling of the LOGUNCLEAN option in shorewall.conf has been
+   corrected.
+
 Migration Issues:
 
 None.
@@ -46,6 +49,17 @@ New Features:
    Note: When the protocol specified is TCP ("tcp", "TCP" or "6"),
    Shorewall will only pass connection requests (SYN packets) to user
    space. This is for compatibility with p2pwall.
+
+2. A BLACKLISTNEWNONLY option has been added to shorewall.conf. When
+   this variable is set to "Yes", the blacklists (dynamic and static)
+   are only consulted for new connection requests. When set to "No"
+   (the default if the variable is not set), the blacklists are
+   consulted on every packet.
+
+   Setting this variable to "No" allows blacklisting to stop existing
+   connections from a newly blacklisted host but is more expensive in
+   terms of packet processing time. This is especially true if the
+   blacklists contain a large number of entries.
 
 
 

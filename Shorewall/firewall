@@ -3590,9 +3590,11 @@ setup_blacklist() {
 
 	createchain blacklst no
 
+	[ -n "$BLACKLISTNEWONLY" ] && state="-m state --state NEW" || state=
+	
 	for interface in $interfaces; do
 	    for chain in `first_chains $interface`; do
-		run_iptables -A $chain -j blacklst
+		run_iptables -A $chain $state -j blacklst
 	    done
 
 	    echo "   Blacklisting enabled on $interface"
@@ -3911,13 +3913,15 @@ initialize_netfilter () {
 	fi
     fi
 
+    [ -n "$BLACKLISTNEWONLY" ] && state="-m state --state NEW" || state=
+
     echo "Creating Interface Chains..."
 
     for interface in $all_interfaces; do
 	createchain `forward_chain $interface` no
-	run_iptables -A `forward_chain $interface` -j dynamic
+	run_iptables -A `forward_chain $interface` $state -j dynamic
 	createchain `input_chain $interface`   no
-	run_iptables -A `input_chain $interface` -j dynamic
+	run_iptables -A `input_chain $interface` $state -j dynamic
     done
 }
 
@@ -4015,7 +4019,7 @@ add_common_rules() {
     if [ -n "$interfaces" ]; then
 	createchain logpkt no
 
-	[ -z"$LOGUNCLEAN" ] && LOGUNCLEAN=info
+	[ -z "$LOGUNCLEAN" ] && LOGUNCLEAN=info
 
 	LOGPARMS="$LOGPARMS --log-ip-options"
 
@@ -5033,6 +5037,7 @@ do_initialize() {
     LOGFORMAT=
     LOGRULENUMBERS=
     ADMINISABSENTMINDED=
+    BLACKLISTNEWONLY=
 
     stopping=
     have_mutex=
@@ -5182,6 +5187,7 @@ do_initialize() {
 	LOGFORMAT="Shorewall:%s:%s:"
     fi
     ADMINISABSENTMINDED=`added_param_value_no ADMINISABSENTMINDED $ADMINISABSENTMINDED`
+    BLACKLISTNEWONLY=`added_param_value_no BLACKLISTNEWONLY $BLACKLISTNEWONLY`
     #
     # Strip the files that we use often
     #

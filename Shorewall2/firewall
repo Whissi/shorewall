@@ -2397,6 +2397,7 @@ check_config() {
     echo "Validating Actions..."
 
     process_actions2
+    process_actions3
 
     rm -rf $TMP_DIR
     [ -n "$RESTOREBASE" ] && rm -f $RESTOREBASE
@@ -2942,7 +2943,7 @@ merge_levels() # $1=level at which superior action is called, $2=level at which 
 }
 
 #
-# The next two functions implement the two phases of action processing.
+# The next three functions implement the three phases of action processing.
 #
 # The first phase (process_actions1) occurs before the rules file is processed. /usr/share/shorewall/actions.std
 # and /etc/shorewall/actions are scanned (in that order) and for each action:
@@ -2953,7 +2954,7 @@ merge_levels() # $1=level at which superior action is called, $2=level at which 
 #         action[:level[:tag]] of each action invoked by <action>.
 #      d) All actions are listed in the global variable ACTIONS.	    
 #      e) Common actions are recorded (in variables of the name <policy>_common) and are added to the global
-#         USEDACTIONS list and their action chain is created.
+#         USEDACTIONS
 #
 # As the rules file is scanned, each action[:level[:tag]] is merged onto the USEDACTIONS list. When an <action> 
 # is merged onto this list, its action chain is created. Where logging is specified, a chain with the name
@@ -2963,9 +2964,9 @@ merge_levels() # $1=level at which superior action is called, $2=level at which 
 # The second phase (process_actions2) occurs after the rules file is scanned. The transitive closure of 
 # USEDACTIONS is generated; again, as new actions are merged onto this list, their action chains are created.
 #
-# The final step is to traverse the USEDACTIONS list populating each chain appropriately by reading the
-# action definition files and creating rules. Note that a given action definition file is processed once for
-# each unique [:level[:tag]] applied to an invocation of the action.
+# The final phase (process_actions3) is to traverse the USEDACTIONS list populating each chain appropriately
+# by reading the action definition files and creating rules. Note that a given action definition file is
+# processed once for each unique [:level[:tag]] applied to an invocation of the action.
 #
 process_actions1() {
 	
@@ -2990,18 +2991,17 @@ process_actions1() {
 			    eval ${temp}_common=$xaction
 			    if [ -n "$xaction" ] && ! list_search $xaction $USEDACTIONS; then
 				USEDACTIONS="$USEDACTIONS $xaction"
-				[ $COMMAND = check ] || createactionchain $xaction
 			    fi
 			    ;;
 			*)
-			    fatal_error "Common Actions are only allowed for ACCEPT, DROP and REJECT"
+			    startup_error "Common Actions are only allowed for ACCEPT, DROP and REJECT"
 			    ;;
 		    esac
 	    esac
 
 	    [ -z "$xaction" ] && continue
 	    
-	    [ "$xaction" = "$(chain_base $xaction)" ] || fatal_error "Invalid Action Name: $xaction"
+	    [ "$xaction" = "$(chain_base $xaction)" ] || startup_error "Invalid Action Name: $xaction"
 
 	    if ! list_search $xaction $ACTIONS; then
 		f=action.$xaction
@@ -3023,14 +3023,14 @@ process_actions1() {
 				    eval requiredby_${xaction}=\"\$requiredby_${xaction} $xtarget\"
 				else
 				    rule="$(echo $xtarget $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec)"
-				    fatal_error "Invalid TARGET in rule \"$rule\""
+				    startup_error "Invalid TARGET in rule \"$rule\""
 				fi
 				;;
 			    
 			esac
 		    done < $TMP_DIR/$f
 		else
-		    fatal_error "Missing Action File: $f"
+		    startup_error "Missing Action File: $f"
 		fi
 		
 		ACTIONS="$ACTIONS $xaction"
@@ -3041,21 +3041,6 @@ process_actions1() {
 
 process_actions2() {
 
-    drop_broadcasts() {
-	for address in $(find_broadcasts) 255.255.255.255 224.0.0.0/4 ; do
-	    case $xlevel in
-		none*)
-		    ;;
-		*)
-		    [ -n "$xlevel" ] && \
-			log_rule_limit ${xlevel%\!} $xchain dropBcast $2 "" "$xtag" -d $address
-		    ;;
-	    esac
-			
-	    run_iptables -A $xchain -d $address -j DROP
-	done
-    }
-    
     progress_message "   Generating Transitive Closure of Used-action List..."
 
     changed=Yes
@@ -3085,9 +3070,10 @@ process_actions2() {
 	    done
 	done
     done
-    #
-    # Now process the relevant action files -- they were already stripped in process_actions1() above.
-    #
+}
+
+process_actions3() {
+    
     for xaction in $USEDACTIONS; do
 	#
 	# Find the chain associated with this action:level:tag
@@ -3122,11 +3108,21 @@ process_actions2() {
 			run_iptables -A dropBcast -m pkttype --pkt-type broadcast -j DROP
 			run_iptables -A dropBcast -m pkttype --pkt-type multicast -j DROP
 		    else
-			drop_broadcasts
+			for address in $(find_broadcasts) 255.255.255.255 224.0.0.0/4 ; do
+			    case $xlevel in
+				none*)
+				    ;;
+				*)
+				    [ -n "$xlevel" ] && \
+					log_rule_limit ${xlevel%\!} $xchain dropBcast $2 "" "$xtag" -d $address
+				    ;;
+			    esac
+			    
+			    run_iptables -A $xchain -d $address -j DROP
+			done
 		    fi
 		fi
 		;;
-		
 	    dropNonSyn)
 		error_message "WARNING: \"dropNonSyn\" has been replaced by \"dropNotSyn\""
 		
@@ -3136,7 +3132,6 @@ process_actions2() {
 		    run_iptables -A $xchain -p tcp ! --syn -j DROP
 		fi
 		;;
-
 	    dropNotSyn)
 		if [ "$COMMAND" != check ]; then
 		    [ -n "$xlevel" ] && \
@@ -3160,12 +3155,11 @@ process_actions2() {
 		;;
 	    *)
 		#
-		# Not a builtin -- the following is so much noise just to report the correct file name
+		# Not a builtin
 		#
 		f=action.$xaction1
-		fn=$(find_file $f)
 				
-		echo "Processing $fn for Chain $xchain..."
+		echo "Processing $(find_file $f) for Chain $xchain..."
 		
 		while read xtarget xclients xservers xprotocol xports xcports xratelimit xuserspec; do
 		    expandv xtarget
@@ -5060,6 +5054,9 @@ initialize_netfilter () {
     strip_file nat
     strip_file netmap
 
+    echo "Pre-processing Actions..."
+    process_actions1
+
     terminator=fatal_error
 
     deletechain shorewall
@@ -5219,6 +5216,13 @@ add_common_rules() {
 	#
 	run_iptables -A reject -j REJECT
     fi
+
+    #
+    # Create common action chains
+    #
+    for action in $USEDACTIONS; do
+	createactionchain $action
+    done
 
     run_user_exit initdone
 
@@ -5865,9 +5869,9 @@ define_firewall() # $1 = Command (Start or Restart)
     maclist_hosts=$(find_hosts_by_option maclist)
     [ -n "$maclist_hosts" ] &&                 setup_mac_lists
 
-    echo "Pre-processing Actions...";          process_actions1
     echo "Processing $(find_file rules)...";   process_rules
     echo "Processing Actions...";              process_actions2
+                                               process_actions3
     echo "Processing $(find_file policy)...";  apply_policy_rules
 
     masq=$(find_file masq)

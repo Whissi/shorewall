@@ -4,3 +4,7 @@
 # Add commands below that you want to be executed after shorewall has
 # been started or restarted.
 #
+for file in /etc/shorewall/start.d/* ; do
+   run_user_exit $file
+done
+    

@@ -697,15 +697,23 @@ verify_interface()
 }
 
 #
+# Determine if communication to/from a host is encrypted using IPSEC
+#
+is_ipsec_host() # $1 = zone, $2 = host
+{
+    eval local is_ipsec=\$${1}_is_ipsec
+    eval local hosts=\"\$${1}_ipsec_hosts\"
+
+    test -n "$is_ipsec" || list_search $2 $hosts
+}
+
+#
 # Generate a match for decrypted packets
 #
 match_ipsec_in() # $1 = zone, $2 = host
 {
-    eval local is_ipsec=\$${1}_is_ipsec
-    eval local hosts=\"\$${1}_ipsec_hosts\"
-    eval local options=\"\$${1}_ipsec_options \$${1}_ipsec_in_options\"
-
-    if [ -n "$is_ipsec" ] || list_search $2 $hosts; then
+    if is_ipsec_host $1 $2 ; then
+	eval local options=\"\$${1}_ipsec_options \$${1}_ipsec_in_options\"
 	echo "-m policy --pol ipsec --dir in $options"
     elif [ -n "$POLICY_MATCH" ]; then
 	echo "-m policy --pol none --dir in"
@@ -717,11 +725,8 @@ match_ipsec_in() # $1 = zone, $2 = host
 #
 match_ipsec_out() # $1 = zone, $2 = host
 {
-    eval local is_ipsec=\$${1}_is_ipsec
-    eval local hosts=\"\$${1}_ipsec_hosts\"
-    eval local options=\"\$${1}_ipsec_options \$${1}_ipsec_out_options\"
-
-    if [ -n "$is_ipsec" ] || list_search $2 $hosts; then
+    if is_ipsec_host $1 $2 ; then
+	eval local options=\"\$${1}_ipsec_options \$${1}_ipsec_out_options\"
 	echo "-m policy --pol ipsec --dir out $options"
     elif [ -n "$POLICY_MATCH" ]; then
 	echo "-m policy --pol none --dir out"
@@ -920,7 +925,7 @@ validate_interfaces_file() {
 	    esac
 	done
 
-    [ -z "$ALL_INTERFACES" ] && startup_error "No Interfaces Defined"
+	[ -z "$ALL_INTERFACES" ] && startup_error "No Interfaces Defined"
 
     done < $TMP_DIR/interfaces
 }
@@ -938,68 +943,69 @@ validate_hosts_file() {
        list_search $1 $all_ports || all_ports="$all_ports $1"
    }
 
-    while read z hosts options; do
-	expandv z hosts options
-	r="$z $hosts $options"
-	validate_zone1 $z || startup_error "Invalid zone ($z) in record \"$r\""
+   while read z hosts options; do
+       expandv z hosts options
+       r="$z $hosts $options"
+       validate_zone1 $z || startup_error "Invalid zone ($z) in record \"$r\""
 
-	interface=${hosts%%:*}
-	iface=$(chain_base $interface)
+       interface=${hosts%%:*}
+       iface=$(chain_base $interface)
 
-	list_search  $interface $ALL_INTERFACES || \
-	    startup_error "Unknown interface ($interface) in record \"$r\""
+       list_search  $interface $ALL_INTERFACES || \
+	   startup_error "Unknown interface ($interface) in record \"$r\""
 
-	hosts=${hosts#*:}
+       hosts=${hosts#*:}
 
-	eval ports=\$${iface}_ports
-	eval zports=\$${z}_ports
+       eval ports=\$${iface}_ports
+       eval zports=\$${z}_ports
 		
-	for host in $(separate_list $hosts); do
+       for host in $(separate_list $hosts); do
+	   if [ -n "$BRIDGING" ]; then
+	       case $host in
+		   *:*)
+		       known_interface ${host%:*} && \
+			   startup_error "Bridged interfaces may not be defined in /etc/shorewall/interfaces: $host"
+		       check_bridge_port ${host%%:*}
+		       ;;
+		   *.*.*.*)
+		       ;;
+		   *)
+		       known_interface $host && \
+			   startup_error "Bridged interfaces may not be defined in /etc/shorewall/interfaces: $host"
+		       check_bridge_port $host
+		       ;;
+	       esac
+	   fi
 
-	    [ -n "$BRIDGING" ] && case $host in
-		*:*)
-		    known_interface ${host%:*} && \
-			startup_error "Bridged interfaces may not be defined in /etc/shorewall/interfaces: $host"
-		    check_bridge_port ${host%%:*}
-		    ;;
-		*.*.*.*)
-		    ;;
-		*)
-		    known_interface $host && \
-			startup_error "Bridged interfaces may not be defined in /etc/shorewall/interfaces: $host"
-		    check_bridge_port $host
-		    ;;
-	    esac
+	   for option in $(separate_list $options) ; do
+	       case $option in
+		   maclist|norfc1918|nobogons|blacklist|tcpflags|nosmurfs|newnotsyn|-)
+		       ;;
+		   ipsec)
+		       [ -n "$POLICY_MATCH" ] || \
+			   startup_error "Your kernel and/or iptables does not support policy match: ipsec"
+		       eval ${z}_ipsec_hosts=\"\$${z}_ipsec_hosts $interface:$host\"
+		       eval ${z}_is_complex=Yes
+		       ;;
+		   routeback)
+		       [ -z "$ports" ] && \
+			   eval ${z}_routeback=\"$interface:$host \$${z}_routeback\"
+		       ;;
+		   *)
+		       error_message "Warning: Invalid option ($option) in record \"$r\""
+		       ;;
+	       esac
+	   done
+       done
 
-	    for option in $(separate_list $options) ; do
-		case $option in
-		    maclist|norfc1918|nobogons|blacklist|tcpflags|nosmurfs|newnotsyn|-)
-			;;
-		    ipsec)
-			[ -n "$POLICY_MATCH" ] || \
-			    startup_error "Your kernel and/or iptables does not support policy match: ipsec"
-			eval ${z}_ipsec_hosts=\"\$${z}_ipsec_hosts $interface:$host\"
-			eval ${z}_is_complex=Yes
-			;;
-		    routeback)
-			[ -z "$ports" ] && \
-			    eval ${z}_routeback=\"$interface:$host \$${z}_routeback\"
-			;;
-		    *)
-			error_message "Warning: Invalid option ($option) in record \"$r\""
-			;;
-		esac
-	    done
-	done
+       if [ -n "$ports" ]; then
+	   eval ${iface}_ports=\"$ports\"
+	   eval ${z}_ports=\"$zports\"
+       fi
+       
+   done < $TMP_DIR/hosts
 
-	if [ -n "$ports" ]; then
-	    eval ${iface}_ports=\"$ports\"
-	    eval ${z}_ports=\"$zports\"
-	fi
-
-    done < $TMP_DIR/hosts
-
-    [ -n "$all_ports" ] && echo "   Bridge ports are: $all_ports"
+   [ -n "$all_ports" ] && echo "   Bridge ports are: $all_ports"
 }
 
 #
@@ -1268,7 +1274,7 @@ log_rule_limit() # $1 = log level, $2 = chain, $3 = display Chain $4 = dispositi
     fi
 
     if [ ${#prefix} -gt 29 ]; then
-	prefix="$(echo $prefix | cut -b -29)"
+	prefix="$(echo $prefix | truncate 29)"
 	error_message "Warning: Log Prefix shortened to \"$prefix\""
     fi
 
@@ -2363,11 +2369,15 @@ setup_tc1() {
     run_iptables -t mangle -A OUTPUT      -j tcout
     run_iptables -t mangle -A POSTROUTING -j tcpost
 
-    run_user_exit tcstart
+    f=$(find_file tcstart)
 
-    save_progress_message "Restoring Traffic Control..."
-    save_command . $(find_file tcstart)
+    if [ -f $f ]; then
 
+	run_user_exit tcstart
+
+	save_progress_message "Restoring Traffic Control..."
+	save_command . $(find_file tcstart)
+    fi
 }
 
 setup_tc() {
@@ -3032,7 +3042,9 @@ process_action() # $1 = chain    (Chain to add the rules to)
 }
 
 #
-# Create and record a log action chain -- in the functions that follow, 
+# Create and record a log action chain -- Log action chains have names
+# that are formed from the action name by prepending a "%" and appending
+# a 1- or 2-digit sequence number. In the functions that follow, 
 # the CHAIN, LEVEL and TAG variable serves as arguments to the user's
 # exit. We call the exit corresponding to the name of the action but we
 # set CHAIN to the name of the iptables chain where rules are to be added.
@@ -3043,6 +3055,10 @@ process_action() # $1 = chain    (Chain to add the rules to)
 #    <action>_actchain - The action chain number.
 #    <action>_chains   - List of ( level[:tag] , chainname ) pairs 
 #
+# The maximum length of a chain name is 30 characters -- since the log 
+# action chain name is 2-3 characters longer than the base chain name, 
+# this function truncates the original chain name where necessary before 
+# it adds the leading "%" and trailing sequence number.
 
 createlogactionchain() # $1 = Action Name, $2 = Log Level [: Log Tag ]
 {
@@ -3051,19 +3067,18 @@ createlogactionchain() # $1 = Action Name, $2 = Log Level [: Log Tag ]
     eval actchain=\${${action}_actchain}
 
     case ${#action} in
-	10|11)
-	    CHAIN=$(echo $action | cut -b -9)
+	29|30)
+	    CHAIN=$(echo $action | truncate 28) # %...n makes 30
 	    ;;
 	*)
 	    CHAIN=${action}
 	    ;;
     esac
-
     
     [ "$COMMAND" != check ] && \
 	while havechain %${CHAIN}${actchain}; do
 	    actchain=$(($actchain + 1))
-	    [ $actchain -eq 10 -a ${#CHAIN} -eq 9 ] && CHAIN=$(echo $CHAIN | cut -b -8)
+	    [ $actchain -eq 10 -a ${#CHAIN} -eq 28 ] && CHAIN=$(echo $CHAIN | truncate 27) # %...nn makes 30
         done
 
     CHAIN=%${CHAIN}${actchain}
@@ -3224,7 +3239,7 @@ merge_levels() # $1=level at which superior action is called, $2=level at which 
 # As the rules file is scanned, each action[:level[:tag]] is merged onto the USEDACTIONS list. When an <action> 
 # is merged onto this list, its action chain is created. Where logging is specified, a chain with the name
 # %<action>n is used where the <action> name is truncated on the right where necessary to ensure that the total
-# length of the chain name does not exceed 11 characters.
+# length of the chain name does not exceed 30 characters.
 #
 # The second phase (process_actions2) occurs after the rules file is scanned. The transitive closure of 
 # USEDACTIONS is generated; again, as new actions are merged onto this list, their action chains are created.
@@ -3803,26 +3818,25 @@ add_a_rule()
 
     case "$logtarget" in
 	ACCEPT|DROP|REJECT|CONTINUE)	
-	    [ "$logtarget" = REJECT -a -n "$servport" ] && \
-		fatal_error "Server port may not be specified in a REJECT rule; rule: \"$rule\""
 	    if [ -z "$proto" -a -z "$cli" -a -z "$serv" -a -z "$servport" -a -z "$userspec" ] ; then
 		error_message "Warning -- Rule \"$rule\" is a POLICY"
 		error_message "	       -- and should be moved to the policy file"
 	    fi
 	    ;;
 	REDIRECT)
-	    [ -n "$serv" ] && startup_error "REDIRECT rules cannot"\
-		" specify a server IP; rule: \"$rule\""
+	    [ -n "$serv" ] && \
+		fatal_error "REDIRECT rules cannot  specify a server IP; rule: \"$rule\""
 	    servport=${servport:=$port}
 	    natrule=Yes
 	    ;;
 	DNAT)
-	    [ -n "$serv" ] || fatal_error "DNAT rules require a" \
-		" server address; rule: \"$rule\""
+	    [ -n "$serv" ] || \
+		fatal_error "DNAT rules require a server address; rule: \"$rule\""
 	    natrule=Yes
 	    ;;
 	LOG)
-	    [ -z "$loglevel" ] && fatal_error "LOG requires log level"
+	    [ -z "$loglevel" ] && \
+		fatal_error "LOG requires log level"
 	    ;;
     esac
 
@@ -5462,9 +5476,18 @@ initialize_netfilter () {
 	run_iptables -A $chain -p ! icmp -m state --state INVALID -j DROP
     done
 
-    [ -n "$CLAMPMSS" ] && \
-	run_iptables -A FORWARD -p tcp \
-	    --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
+    if [ -n "$CLAMPMSS" ]; then
+	case $CLAMPMSS in
+	    Yes)
+		option="--clamp-mss-to-pmtu"
+		;;
+	    *)
+		option="--set-mss $CLAMPMSS"
+		;;
+	esac
+
+	run_iptables -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS $option
+    fi
 
     if [ -z "$NEWNOTSYN" ]; then
 	createchain newnotsyn no
@@ -5478,7 +5501,7 @@ initialize_netfilter () {
 	    run_iptables -A newnotsyn -i $interface $(match_source_hosts $network) $policy -p tcp --tcp-flags ACK ACK -j ACCEPT
 	    run_iptables -A newnotsyn -i $interface $(match_source_hosts $network) $policy -p tcp --tcp-flags RST RST -j ACCEPT
 	    run_iptables -A newnotsyn -i $interface $(match_source_hosts $network) $policy -p tcp --tcp-flags FIN FIN -j ACCEPT
-	    run_iptables -A newnotsyn -i $interface $(match_source_hosts ${host#*:}) $policy -j RETURN
+	    run_iptables -A newnotsyn -i $interface $(match_source_hosts $network) $policy -j RETURN
 	done
 
 	run_user_exit newnotsyn
@@ -5891,7 +5914,7 @@ add_common_rules() {
 	done
 
 	for interface in $interfaces; do
-	    file=proc/sys/net/ipv4/conf/$interface/log_martians
+	    file=/proc/sys/net/ipv4/conf/$interface/log_martians
 	    if [ -f $file ]; then
 		run_and_save_command "echo 1 > $file"
 	    else
@@ -6085,6 +6108,27 @@ activate_rules()
 
     > ${STATEDIR}/chains
     > ${STATEDIR}/zones
+    #
+    # Create forwarding chains for complex zones and generate jumps for IPSEC source hosts to that chain.
+    #
+    for zone in $zones; do
+	if eval test -n \$${zone}_is_complex ; then
+	    frwd_chain=${zone}_frwd
+	    createchain $frwd_chain No
+
+	    if [ -n "$POLICY_MATCH" ]; then
+		eval source_hosts=\$${zone}_hosts
+	    
+		for host in $source_hosts; do
+		    interface=${host%%:*}
+		    networks=${host#*:}
+		    
+		    is_ipsec_host $zone $host && \
+			run_iptables -A $(forward_chain $interface) $(match_source_hosts $networks) $(match_ipsec_in $zone $host) -j $frwd_chain
+		done
+	    fi
+	fi
+    done
 
     for zone in $zones; do
 	eval source_hosts=\$${zone}_hosts
@@ -6093,11 +6137,6 @@ activate_rules()
 	chain2=$(rules_chain $zone $FW)
 
 	eval complex=\$${zone}_is_complex
-
-	if [ -n "$complex" ]; then
-	    frwd_chain=${zone}_frwd
-	    createchain $frwd_chain No
-	fi
 
 	if [ -n "$DYNAMIC_ZONES" ]; then
 	    echo $zone $source_hosts >> ${STATEDIR}/zones
@@ -6121,8 +6160,9 @@ activate_rules()
 
 	    run_iptables -A $(input_chain $interface) $(match_source_hosts $networks) $(match_ipsec_in $zone $host) -j $chain2
 
-	    [ -n "$complex" ] && \
-		run_iptables -A $(forward_chain $interface) $(match_source_hosts $networks) $(match_ipsec_in $zone $host) -j $frwd_chain
+	    if [ -n "$complex" ] && ! is_ipsec_host $zone $host ; then
+                run_iptables -A $(forward_chain $interface) $(match_source_hosts $networks) $(match_ipsec_in $zone $host) -j $frwd_chain
+	    fi
 
 	    case $networks in
 		*.*.*.*)
@@ -6134,7 +6174,6 @@ activate_rules()
 		    ;;
 	    esac
 	done
-
 
 	for interface in $need_broadcast ; do
 	    run_iptables -A OUTPUT -o $interface -d 255.255.255.255 -j $chain1
@@ -6928,8 +6967,15 @@ do_initialize() {
     fi
 
     [ -z "$BLACKLIST_DISPOSITION" ] && BLACKLIST_DISPOSITION=DROP
-
-    CLAMPMSS=$(added_param_value_no CLAMPMSS $CLAMPMSS)
+    
+    case "$CLAMPMSS" in
+	[0-9]*)
+	    ;;
+	*)
+	    CLAMPMSS=$(added_param_value_no CLAMPMSS $CLAMPMSS)
+	    ;;
+    esac
+    
     ADD_SNAT_ALIASES=$(added_param_value_no ADD_SNAT_ALIASES $ADD_SNAT_ALIASES)
     ROUTE_FILTER=$(added_param_value_no ROUTE_FILTER $ROUTE_FILTER)
     LOG_MARTIANS=$(added_param_value_no LOG_MARTIANS $LOG_MARTIANS)

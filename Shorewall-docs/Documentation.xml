@@ -2572,16 +2572,17 @@ NET_OPTIONS=blacklist,norfc1918</programlisting>
       <title>You want to run wu-ftpd on 192.168.2.2 in your masqueraded DMZ.
       Your internet interface address is 155.186.235.151 and you want the FTP
       server to be accessible from the internet in addition to the local
-      192.168.1.0/24 and dmz 192.168.2.0/24 subnetworks. Note that since the
-      server is in the 192.168.2.0/24 subnetwork, we can assume that access to
-      the server from that subnet will not involve the firewall (<ulink
-      url="FAQ.htm#faq2">but see FAQ 2</ulink>). Note that unless you have
-      more than one external IP address, you can leave the ORIGINAL DEST
-      column blank in the first rule. You cannot leave it blank in the second
-      rule though because then <emphasis role="bold">all ftp connections</emphasis>
-      originating in the local subnet 192.168.1.0/24 would be sent to
-      192.168.2.2 <emphasis role="bold">regardless of the site that the user
-      was trying to connect to</emphasis>. That is clearly not what you want.</title>
+      192.168.1.0/24 and dmz 192.168.2.0/24 subnetworks.</title>
+
+      <para><note><para>since the server is in the 192.168.2.0/24 subnetwork,
+      we can assume that access to the server from that subnet will not
+      involve the firewall (<ulink url="FAQ.htm#faq2">but see FAQ 2</ulink>)</para></note><note><para>unless
+      you have more than one external IP address, you can leave the ORIGINAL
+      DEST column blank in the first rule. You cannot leave it blank in the
+      second rule though because then all ftp connections originating in the
+      local subnet 192.168.1.0/24 would be sent to 192.168.2.2 regardless of
+      the site that the user was trying to connect to. That is clearly not
+      what you want.</para></note></para>
 
       <informaltable>
         <tgroup cols="9">

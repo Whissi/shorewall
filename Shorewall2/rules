@@ -72,6 +72,20 @@
 #			DNAT:debug). This causes the packet to be
 #			logged at the specified level.
 #
+#			If the ACTION names an action devined in
+#			/etc/shorewall/actions or in
+#			/usr/share/shorewall/actions.std then:
+#
+#			- If the log level is followed by "!' then all rules
+#			  in the action are logged at the log level.
+#
+#			- If the log level is not followed by "!" then only
+#			  those rules in the action that do not specify 
+#			  logging are logged at the specified level.
+#
+#			- The special log level 'none!' suppresses logging
+#			  by the action.
+#
 #			You may also specify ULOG (must be in upper case) as a
 #			log level.This will log to the ULOG target for routing
 #			to a separate log through use of ulogd

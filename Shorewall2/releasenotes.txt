@@ -15,7 +15,46 @@ Problems Corrected since 2.0.1
 -----------------------------------------------------------------------
 Issues when migrating from Shorewall 2.0.0 to Shorewall 2.0.1:
 
-1) Dynamic Zone support.
+1) Extension Scripts
+
+   In order for extension scripts to work properly with the new
+   iptables-save/restore integration (see New Feature 1 below), some
+   change may be required to your extension scripts.
+
+   If your extension scripts are executing commands other than iptables
+   then those commands must also be written to the restore file (a
+   temporary file in /var/lib/shorewall that is renamed
+   /var/lib/shorewall/restore-base at the end of the operation).
+
+   The following functions should be of help:
+
+   A. save_command() -- saves the passed command to the restore file.
+
+   Example:
+
+      save_command echo Operation Complete
+
+   That command would simple write "echo Operation Complete" to the
+   restore file.
+
+   B. run_and_save_command() -- saves the passed command to the restore
+   file then executes it. The return value is the exit status of the
+   command.
+
+   Example: 
+
+      run_and_save "echo 1 > /proc/sys/net/ipv4/icmp_echo_ignore_all"
+
+   Note that as in this example, when the command involves file
+   redirection then the entire command must be enclosed in quotes. This
+   applies to all of the functions described here.
+
+   C. ensure_and_save_command() -- runs the passed command. If the
+   command fails, the firewall is restored to it's prior saved state
+   and the operation is terminated. If the command succeeds, the
+   command is written to the restore file.
+
+2) Dynamic Zone support.
 
    If you don't need to use the "shorewall add" and "shorewall delete"
    commands, you should set DYNAMIC_ZONES=No in

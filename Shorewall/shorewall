@@ -315,15 +315,6 @@ monitor_firewall() # $1 = timeout -- if negative, prompt each time that
 
     qt which awk && { haveawk=Yes; determine_zones; } || haveawk=
 
-    case `echo -e` in
-	-e*)
-	    ring_bell="echo \'\a\'"
-	    ;;
-	*)
-	    ring_bell="echo -e \'\a\'"
-	    ;;
-    esac
-
     while true; do
 	display_chains
 	
@@ -341,13 +332,13 @@ monitor_firewall() # $1 = timeout -- if negative, prompt each time that
 	if [ "$rejects" != "$oldrejects" ]; then
 	    oldrejects="$rejects"
 	    
-	    $ring_bell
+	    $RING_BELL
 
 	    packet_log 20
 
 	    if [ "$pause" = "Yes" ]; then
 		echo
-		echo -n 'Enter any character to continue: '
+		echo $ECHO_N 'Enter any character to continue: '
 		read foo
 	    else
 		timed_read
@@ -416,15 +407,6 @@ logwatch() # $1 = timeout -- if negative, prompt each time that
 
     qt which awk && haveawk=Yes || haveawk=
 
-    case `echo -e` in
-	-e*)
-	    ring_bell="echo \'\a\'"
-	    ;;
-	*)
-	    ring_bell="echo -e \'\a\'"
-	    ;;
-    esac
-
     while true; do
 	clear
 	echo "$banner `date`"
@@ -440,13 +422,13 @@ logwatch() # $1 = timeout -- if negative, prompt each time that
 	if [ "$rejects" != "$oldrejects" ]; then
 	    oldrejects="$rejects"
 
-	    $ring_bell
+	    $RING_BELL
 
 	    packet_log 40
 
 	    if [ "$pause" = "Yes" ]; then
 		echo
-		echo -n 'Enter any character to continue: '
+		echo $ECHO_N 'Enter any character to continue: '
 		read foo
 	    else
 		timed_read
@@ -586,6 +568,24 @@ fi
 banner="Shorewall-$version Status at $HOSTNAME -"
 
 get_statedir
+
+case `echo -e` in
+    -e*)
+	RING_BELL="echo \'\a\'"
+	;;
+    *)
+	RING_BELL="echo -e \'\a\'"
+	;;
+esac
+
+case `echo -n "Testing"` in
+    -n*)
+	ECHO_N=
+	;;
+    *)
+	ECHO_N=-n
+	;;
+esac
 
 case "$1" in
     start|stop|restart|reset|clear|refresh|check)

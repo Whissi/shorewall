@@ -6,7 +6,7 @@
 <meta name="ProgId" content="FrontPage.Editor.Document">
 <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
 <title>Shorewall Setup Guide</title>
-<meta name="Microsoft Theme" content="boldstri 011, default">
+<meta name="Microsoft Theme" content="none">
 </head>
 
 <body>
@@ -46,6 +46,10 @@ know more about Shorewall than is contained in the
 guides</a>. Because the 
 range of possible applications is so broad, the Guide will give you general 
 guidelines and will point you to other resources as necessary.</p>
+<p><img border="0" src="images/j0213519.gif" width="60" height="60">&nbsp;&nbsp;&nbsp; 
+If you run LEAF Bering, your Shorewall configuration is NOT what I release -- I 
+suggest that you consider installing a stock Shorewall lrp from the 
+shorewall.net site before you proceed.</p>
 <p>This guide assumes that you have the iproute/iproute2 package installed (on 
 RedHat, the package is called <i>iproute</i>)<i>. </i>You can tell if this 
 package is installed by the presence of an <b>ip</b> program on your firewall 
@@ -730,6 +734,13 @@ table but if we logically and that address with 255.255.255.0, the result is
     <pre>192.168.1.0     0.0.0.0 	255.255.255.0 	U     40  0         0 eth2</pre>
   </blockquote>
   <p>So to route a packet to 192.168.1.5, the packet is sent directly over eth2.</div>
+<p align="left">One more thing needs to be emphasized -- all outgoing packet are 
+sent using the routing table and reply packets are not a special case. There 
+seems to be a common mis-conception whereby people think that request packets 
+are like salmon and contain a genetic code that is magically transferred to 
+reply packets so that the replies follow the reverse route taken by the request. 
+That isn't the case; the replies may take a totally different route back to the 
+client than was taken by the requests -- they are totally independent.</p>
 <h3 align="left"><a name="ARP"></a>4.4 Address Resolution Protocol</h3>
 <p align="left">When sending packets over Ethernet, IP addresses aren't used. 
 Rather Ethernet addressing is based on <i>Media Access Control</i> (MAC) 
@@ -1123,7 +1134,7 @@ Destination 	Gateway 	Genmask 	Flags MSS Window irtt Iface
   host routes thru eth2 to 192.0.2.177 and 192.0.2.178.</div>
 <div align="left">
   <p align="left">A word of warning is in order here. ISPs typically configure 
-  there routers with a long ARP cache timeout. If you move a system from 
+  their routers with a long ARP cache timeout. If you move a system from 
   parallel to your firewall to behind your firewall with Proxy ARP, it will 
   probably be HOURS before that system can communicate with the internet. You 
   can call your ISP and ask them to purge the stale ARP cache entry but many 
@@ -2347,7 +2358,7 @@ foobar.net.	86400	IN A	192.0.2.177
   test it using the <a href="Documentation.htm#Starting">&quot;shorewall try&quot; command</a>.</div>
 
 <p align="left"><font size="2">Last updated 
-8/10/2002 - <a href="support.htm">Tom
+8/18/2002 - <a href="support.htm">Tom
 Eastep</a></font></p>
 
 <p align="left"><a href="copyright.htm"><font size="2">Copyright  2002 Thomas M. Eastep</font></a></p>

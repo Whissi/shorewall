@@ -6,79 +6,86 @@
 <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
 <meta name="ProgId" content="FrontPage.Editor.Document">
 <title>Shorewall FAQ</title>
-<meta name="Microsoft Theme" content="boldstri 011, default">
+<meta name="Microsoft Theme" content="none">
 </head>
 
 <body>
 
-<h1 align="center">Shorewall FAQs</h1>
-<h2 align="left">About Shorewall</h2>
-<blockquote>
-<p align="left"><a href="#faq13">Why do you call it &quot;Shorewall&quot;?</a></p>
-<p align="left"><a href="#faq10">What distributions does it work with?</a></p>
-<p align="left"><a href="shorewall_features.htm">What features does it support?</a></p>
-<p align="left"><a href="#faq12">Why isn't there a GUI?</a></p>
-</blockquote>
-<h2 align="left">Filtering</h2>
-<blockquote>
-<p align="left"><a href="#faq14">I'm connected via a cable modem and it has an 
-internel web server that allows me to configure/monitor it but as expected if I 
-enable rfc1918 blocking for my eth0 interface, it also blocks the cable modems 
-web server</a>.</p>
-<p align="left"><a href="#faq14a">Even though it assigns public IP addresses, my 
-ISP's DHCP server has an RFC 1918 address. If I enable RFC 1918 filtering on my 
-external interface, my DHCP client cannot renew its lease.</a></p>
-<p align="left"><a href="#faq4">I just used an online port scanner to check my 
-firewall and it shows some ports as 'closed' rather than 'blocked'. Why?</a></p>
-<p align="left"><a href="#faq4a">I just ran an nmap UDP scan of my firewall and 
-it showed 100s of ports as open!!!!</a></p>
-</blockquote>
-<h2 align="left">Port Forwarding</h2>
-<blockquote>
-<p align="left"><a href="#faq1">I want to forward UDP port 7777 to my my personal PC with IP
-address 192.168.1.5. I've looked everywhere and can't find how to do it.</a></p>
-<p align="left"><a href="#faq1a">Ok -- I followed those instructions but it 
-doesn't work.</a></p>
-<p align="left"><a href="#faq2">I port forward www requests to www.mydomain.com (IP
-130.151.100.69) to system 192.168.1.5 in my local network. External clients can browse
-http://www.mydomain.com but internal clients can't.</a></p>
-<p align="left"><a href="#faq3">I have a zone &quot;Z&quot; with an RFC1918 subnet and I
-use static NAT to assign non-RFC1918 addresses to hosts in Z. Hosts in Z cannot
-communicate with each other using their external (non-RFC1918 addresses) so they
-can't access each other using their DNS names.</a></p>
-</blockquote>
-<h2 align="left">Applications</h2>
-<blockquote>
-<p align="left"><a href="#faq3">I want to use Netmeeting with Shorewall. What do I do?</a></p>
-</blockquote>
-<h2 align="left">Connection Problems</h2>
-<blockquote>
-<p align="left"><a href="#faq5">I've installed Shorewall and now I can't ping through the
-firewall</a></p>
-<p align="left"><a href="#faq15">My local systems can't see out to the net</a></p>
-</blockquote>
-<h2 align="left">Logging</h2>
-<blockquote>
-<p align="left"><a href="#faq6">Where are the log messages written and&nbsp;
-how do I change the destination?</a></p>
-<p align="left"><a href="#faq16">Shorewall is writing log messages all over my 
-console making it unusable!</a></p>
-<p align="left"><a href="#faq6a">Are there any log parsers that work with
-Shorewall?</a></p>
-</blockquote>
-<h2 align="left">Starting and stopping the firewall</h2>
-<blockquote>
-<p align="left"><a href="#faq7">When I stop Shorewall using 'shorewall stop',
-I can't connect to anything. Why doesn't that command work?</a></p>
-<p align="left"><a href="#faq8">When I try to start Shorewall on RedHat 7.x, I
+<table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" width="100%" id="AutoNumber4" bgcolor="#400169" height="90">
+  <tr>
+    <td width="100%">
+    <h1 align="center"><font color="#FFFFFF">Shorewall FAQs</font></h1>
+    </td>
+  </tr>
+</table>
+
+<p align="left"><b>1. </b><a href="#faq1">&nbsp;I want to <b>forward</b> UDP <b>
+port</b> 7777 to my my personal PC with IP address 192.168.1.5. I've looked 
+everywhere and can't find <b>how to do it</b>.</a></p>
+<p align="left"><b>1a. </b><a href="#faq1a">Ok -- I followed those instructions 
+but it doesn't work.</a></p>
+<p align="left"><b>2.</b> <a href="#faq2">I <b>port forward</b> www requests to www.mydomain.com (IP
+130.151.100.69) to system 192.168.1.5 in my local network. <b>External clients can browse</b>
+http://www.mydomain.com but <b>internal clients can't</b>.</a></p>
+<p align="left"><b>2a. </b><a href="#faq3">I have a zone &quot;Z&quot; with an RFC1918 
+subnet and I use <b>static NAT</b> to assign non-RFC1918 addresses to hosts in 
+Z. Hosts in Z cannot communicate with each other using their external 
+(non-RFC1918 addresses) so they <b>can't access each other using their DNS 
+names.</b></a></p>
+
+<p align="left"><b>3. </b><a href="#faq3">I want to use <b>Netmeeting </b>with 
+Shorewall. What do I do?</a></p>
+<p align="left"><b>4. </b><a href="#faq4">I just used an online port scanner to 
+check my firewall and it shows <b>some ports as 'closed' rather than 'blocked'.</b> 
+Why?</a></p>
+<p align="left"><b>4a. </b><a href="#faq4a">I just ran an <b>nmap UDP scan</b> 
+of my firewall and it showed 100s of ports as open!!!!</a></p>
+<p align="left"><b>5. </b><a href="#faq5">I've installed Shorewall and now I <b>
+can't ping</b> through the firewall</a></p>
+
+<p align="left"><b>6. </b><a href="#faq6">Where are the <b>log messages</b> 
+written and&nbsp; how do I <b>change the destination</b>?</a></p>
+
+<p align="left"><b>6a. </b><a href="#faq6a">Are there any <b>log parsers</b> 
+that work with Shorewall?</a></p>
+
+<p align="left"><b>7. </b><a href="#faq7">When I stop Shorewall <b>using 
+'shorewall stop', I can't connect to anything</b>. Why doesn't that command 
+work?</a></p>
+
+<p align="left"><b>8. </b><a href="#faq8">When I try to <b>start Shorewall on RedHat 7.x</b>, I
 get messages about insmod failing -- what's wrong?</a></p>
-<p align="left"><a href="#faq17">Why can't Shorewall detect my interfaces 
-properly?</a></p>
-</blockquote>
-<h2 align="left">Design</h2>
-<blockquote>
-<p align="left"><a href="#faq9">Why does Shorewall only accept IP addresses as
+
+<p align="left"><b>9. </b><a href="#faq9"><b>Why </b>does Shorewall <b>only accept IP addresses</b> as
 opposed to FQDNs?</a></p>
+
+<p align="left"><b>10. </b><a href="#faq10">What <b>distributions</b> does it 
+work with?</a></p>
+
+<p align="left"><b>11. </b><a href="#faq18">What <b>features</b> does it 
+support?</a></p>
+
+<p align="left"><b>12. </b><a href="#faq12">Why isn't there a <b>GUI</b></a></p>
+
+<p align="left"><b>13. </b><a href="#faq13">Why do you call it <b>&quot;Shorewall&quot;?</b></a></p>
+<p align="left"><b>14. </b><a href="#faq14">I'm connected via a cable modem and it has an internel 
+web server that allows me to configure/monitor it but as expected if I enable <b>
+rfc1918 blocking</b> for my eth0 interface, it also blocks the <b>cable modems 
+web server</b></a>.</p>
+<p align="left"><b>14a. </b><a href="#faq14a">Even though it assigns public IP 
+addresses, my ISP's DHCP server has an RFC 1918 address. If I enable RFC 1918 
+filtering on my external interface, <b>my DHCP client cannot renew its lease</b>.</a></p>
+
+<p align="left"><b>15. </b><a href="#faq15"><b>My local systems can't see out to 
+the net</b></a></p>
+
+<p align="left"><b>16. </b><a href="#faq16">Shorewall is writing <b>log messages 
+all over my console</b> making it unusable!</a></p>
+
+<p align="left"><b>17. </b><a href="#faq17">Why can't Shorewall <b>detect my 
+interfaces </b>properly?</a></p>
+<blockquote>
+<p align="left">&nbsp;</p>
 </blockquote>
 <hr>
 <h4 align="left"><a name="faq1"></a>1. I want to forward UDP port 7777 to my my personal PC with IP
@@ -556,11 +563,10 @@ over my console making it unusable!</h4>
 <div align="left">
   <p align="left"><b>Answer: </b>The above output is perfectly normal. The Net 
   zone is defined as all hosts that are connected through eth0 and the local 
-  zone is defined as all hosts connected through eth1.
-</div>
+  zone is defined as all hosts connected through eth1.</div>
 
 <p align="left"><font size="2">Last updated 
-7/31/2002 - <a href="support.htm">Tom
+8/15/2002 - <a href="support.htm">Tom
 Eastep</a></font></p>
 
 <p><font face="Trebuchet MS"><a href="copyright.htm"><font size="2">Copyright</font> 

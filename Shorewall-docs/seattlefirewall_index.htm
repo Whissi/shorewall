@@ -11,7 +11,7 @@
                                  
    
       <base target="_self">
-  <meta name="Microsoft Theme" content="boldstri 011, default">
+  <meta name="Microsoft Theme" content="none">
 </head>
  <body>                                      
       <table border="0" cellpadding="0" cellspacing="4" style="border-collapse: collapse" width="100%" id="AutoNumber3" bgcolor="#4B017C">
@@ -63,29 +63,53 @@
                       
       <h2>News</h2>
                               
+ <p><b>8/22/2002 - Shorewall 1.3.7 Released 8/13/2002
+ <img border="0" src="images/new10.gif" width="28" height="12"> </b></p>
+                              
+ <p>Features in this release include:</p>
+                              
+      <ul>
+        <li>The 'icmp.def' file is now empty! The rules in that file were 
+        required in ipchains firewalls but are not required in Shorewall. Users 
+        who have ALLOWRELATED=No in <a href="Documentation.htm#Conf">
+        shorewall.conf</a> should see the <a href="errata.htm#Upgrade">Upgrade 
+        Issues</a>.</li>
+        <li>A 'FORWARDPING' option has been added to
+        <a href="Documentation.htm#Conf">shorewall.conf</a>. The effect of 
+        setting this variable to Yes is the same as the effect of adding an 
+        ACCEPT rule for ICMP echo-request in
+        <a href="shorewall_extension_scripts.htm">/etc/shorewall/icmpdef</a>. 
+        Users who have such a rule in icmpdef are encouraged to switch to 
+        FORWARDPING=Yes.</li>
+        <li>The loopback CLASS A Network (127.0.0.0/8) has been added to the 
+        rfc1918 file.</li>
+        <li>Shorewall now works with iptables 1.2.7.</li>
+        <li>The documentation and Web site no longer use FrontPage themes.</li>
+      </ul>
+                              
+ <p>I would like to thank John Distler for his valuable input regarding TCP SYN 
+ and ICMP treatment in Shorewall. That input has led to marked improvement in 
+ Shorewall in the last two releases.</p>
+                              
  <p><b>8/13/2002 - Documentation in the <a target="_top" href="http://www.shorewall.net/cgi-bin/cvs/cvsweb.cgi">
- CVS Repository</a>
- <img border="0" src="images/new10.gif" width="28" height="12"></b></p>
+ CVS Repository</a></b></p>
                               
  <p>The Shorewall-docs project now contains just the HTML and image files - the 
  Frontpage files have been removed.</p>
                               
  <p><b>8/7/2002 - <i>STABLE</i></b> <b>branch added to <a target="_top" href="http://www.shorewall.net/cgi-bin/cvs/cvsweb.cgi">
- CVS Repository</a>
- <img border="0" src="images/new10.gif" width="28" height="12"></b></p>
+ CVS Repository</a></b></p>
                               
  <p>This branch will only be updated after I release a new version of Shorewall 
  so you can always update from this branch to get the latest stable tree.</p>
                               
  <p><b>8/7/2002 - <a href="errata.htm#Upgrade">Upgrade Issues</a> section added 
- to the <a href="errata.htm">Errata Page</a>
- <img border="0" src="images/new10.gif" width="28" height="12"></b></p>
+ to the <a href="errata.htm">Errata Page</a></b></p>
                               
  <p>Now there is one place to go to look for issues involved with upgrading to 
  recent versions of Shorewall.</p>
                               
- <p><b>8/7/2002 - Shorewall 1.3.6
- <img border="0" src="images/new10.gif" width="28" height="12"></b></p>
+ <p><b>8/7/2002 - Shorewall 1.3.6</b></p>
                               
  <p>This is primarily a bug-fix rollup with a couple of new features:</p>
                               
@@ -126,7 +150,7 @@
  </table>
                       
       <p><font size="2">Updated
-      8/13/2002 - <a href="support.htm">Tom Eastep</a>
+      8/22/2002 - <a href="support.htm">Tom Eastep</a>
      </font>
                                   
                       

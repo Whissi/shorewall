@@ -6,12 +6,17 @@
 <meta name="ProgId" content="FrontPage.Editor.Document">
 <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
 <title>Shorewall Extension Scripts</title>
-<meta name="Microsoft Theme" content="boldstri 011, default">
 </head>
 
 <body>
 
-                                                                                  <h1 align="center">Extension Scripts</h1>
+                                                                                  <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%" id="AutoNumber1" bgcolor="#400169" height="90">
+                                                                                    <tr>
+                                                                                      <td width="100%">
+                                                                                      <h1 align="center"><font color="#FFFFFF">Extension Scripts</font></h1>
+                                                                                      </td>
+                                                                                    </tr>
+                                                                                  </table>
                                       
                                                                                   <p>
  Extension scripts are   user-provided
@@ -41,20 +46,10 @@ been  processed.</p>
                                                                         
                                                                         
                          
-                                                                                  <p>The following two   files receive 
-special treatment:</p>
-                                                                        
- <ul>
-   <li>/etc/shorewall/common -- If this file is present, the rules that it   
+                                                                                  <p>The /etc/shorewall/common file receives special treatment. If this file is present, the rules that it   
    defines will totally replace the default rules in the common chain. These 
        default rules are contained in the file /etc/shorewall/common.def which
-       may be used as a starting point for making your own customized file.</li>
-   <li>/etc/shorewall/icmpdef -- If this file is present, the rules that it  
-    defines will totally replace the default rules in the icmpdef chain.
-These        default rules are contained in the file /etc/shorewall/icmp.def
-which  may       be used as a starting point for making your own customized
-file.</li>
-</ul>
+       may be used as a starting point for making your own customized file.</p>
                                                                         
                                                                         
                          
@@ -68,9 +63,8 @@ processing of the command.</p>
                                                                         
                         
                                                                                   <p>
-  If you decide to create /etc/shorewall/common or /etc/shorewall/icmp.def, it 
-  is a good idea to use the following technique (common file shown but the same 
-  technique applies to icmpdef).</p>
+  If you decide to create /etc/shorewall/common it is a good idea to use the 
+  following technique</p>
                                                                         
                                                                         
                         
@@ -80,25 +74,36 @@ processing of the command.</p>
                                                                         
                         
                                                                                   <blockquote>
-                                                                                    <pre>source /etc/shorewall/common.def
+                                                                                    <pre>. /etc/shorewall/common.def
 &lt;add your rules here&gt;</pre>
  </blockquote>
  <p>If you need to supercede a rule in the released common.def file, you can add 
- the superceding rule before the 'source' command. Using this technique allows 
+ the superceding rule before the '.' command. Using this technique allows 
  you to add new rules while still getting the benefit of the latest common.def 
  file.</p>
                                                                         
                                                                         
                         
- <p>Remember that /etc/shorewall/common and /etc/shorewall/icmpdef define rules 
+ <p>Remember that /etc/shorewall/common defines rules 
  that are only applied if the applicable policy is DROP or REJECT. These rules 
- are NOT applied if the policy is ACCEPT or CONTINUE.<br>
-</p>
+ are NOT applied if the policy is ACCEPT or CONTINUE.</p>
                                                                         
                                                                         
                         
-<p align="left"><font size="2">Last updated 
-8/5/2002 - <a href="support.htm">Tom
+ <p>If you set ALLOWRELATED=No in shorewall.conf, then most ICMP packets will be 
+ rejected by the firewall. It is recommended with this setting that you create 
+ the file /etc/shorewall/icmpdef and in it place the following commands:</p>
+                                                                        
+                                                                        
+                        
+                                                                                  <pre>	run_iptables -A icmpdef -p ICMP --icmp-type echo-reply -j ACCEPT
+	run_iptables -A icmpdef -p ICMP --icmp-type source-quench -j ACCEPT
+	run_iptables -A icmpdef -p ICMP --icmp-type destination-unreachable -j ACCEPT
+	run_iptables -A icmpdef -p ICMP --icmp-type time-exceeded -j ACCEPT
+	run_iptables -A icmpdef -p ICMP --icmp-type parameter-problem -j ACCEPT
+</pre>
+                                                                                  <p align="left"><font size="2">Last updated 
+8/22/2002 - <a href="support.htm">Tom
 Eastep</a></font></p>
 
 <p align="left"><a href="copyright.htm"><font size="2">Copyright  2002 Thomas M. Eastep</font></a></p>

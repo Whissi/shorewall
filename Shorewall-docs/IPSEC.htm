@@ -10,10 +10,15 @@
   <meta name="ProgId" content="FrontPage.Editor.Document">
          
    
-  <meta name="Microsoft Theme" content="boldstri 011, default">
-</head>
+  </head>
  <body>
- <h1 align="center">IPSEC Tunnels</h1>
+ <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" bordercolor="#111111" width="100%" id="AutoNumber1" bgcolor="#400169" height="90">
+   <tr>
+     <td width="100%">
+     <h1 align="center"><font color="#FFFFFF">IPSEC Tunnels</font></h1>
+     </td>
+   </tr>
+ </table>
  <h2><font color="#660066">Configuring FreeS/Wan</font></h2>
 There is an excellent guide to configuring IPSEC tunnels at<a href="http://jixen.tripod.com">
  http://jixen.tripod.com</a>
@@ -113,8 +118,28 @@ on system B, we would have:</p>
       </tbody>           
     </table></blockquote>
              
+    <p align="Left">You need to define a zone for the remote subnet or include 
+    it in your local zone. In this example, we'll assume that you have created a 
+    zone called &quot;vpn&quot; to represent the remote subnet.</p>
+              
+    <blockquote>
+    <table border="2" cellpadding="2" style="border-collapse: collapse">
+               <tr>
+              <td><strong>ZONE</strong></td>
+              <td><strong>DISPLAY</strong></td>
+              <td><strong>COMMENTS</strong></td>
+          </tr>
+          <tr>
+              <td>vpn</td>
+              <td>VPN</td>
+              <td>Remote Subnet</td>
+          </tr>
+                   
+    </table>
+ </blockquote>
+             
     <p align="Left">At both
-systems, ipsec0 would be included in /etc/shorewall/interfaces as a "gw"
+systems, ipsec0 would be included in /etc/shorewall/interfaces as a "vpn"
 interface:</p>
               
     <blockquote> 
@@ -131,7 +156,7 @@ interface:</p>
  OPTIONS</strong></td>
           </tr>
           <tr>
-              <td>gw</td>
+              <td>vpn</td>
               <td>ipsec0</td>
               <td>&nbsp;</td>
               <td>&nbsp;</td>
@@ -140,7 +165,7 @@ interface:</p>
         </tbody>             
       </table></blockquote>
                 
-      <p align="Left"> You will need to allow traffic between the &quot;gw&quot; zone and 
+      <p align="Left"> You will need to allow traffic between the &quot;vpn&quot; zone and 
       the &quot;loc&quot; zone -- if you simply want to admit all traffic in both 
       directions, you can use the policy file:</p>
                 
@@ -155,13 +180,13 @@ interface:</p>
           </tr>
           <tr>
               <td>loc</td>
-              <td>gw</td>
+              <td>vpn</td>
               <td>ACCEPT</td>
           <td>&nbsp;</td>
           </tr>
                    
           <tr>
-              <td>gw</td>
+              <td>vpn</td>
               <td>loc</td>
               <td>ACCEPT</td>
           <td>&nbsp;</td>
@@ -188,6 +213,26 @@ be able to establish a secure connection back to your local network.</p>
       <img src="images/Mobile.png" width="677" height="426">
              </font></strong></p>
                 
+    <p align="Left">You need to define a zone for the laptop or include it in 
+    your local zone. In this example, we'll assume that you have created a zone 
+    called &quot;vpn&quot; to represent the remote host.</p>
+              
+    <blockquote>
+    <table border="2" cellpadding="2" style="border-collapse: collapse">
+               <tr>
+              <td><strong>ZONE</strong></td>
+              <td><strong>DISPLAY</strong></td>
+              <td><strong>COMMENTS</strong></td>
+          </tr>
+          <tr>
+              <td>vpn</td>
+              <td>VPN</td>
+              <td>Remote Subnet</td>
+          </tr>
+                   
+    </table>
+ </blockquote>
+                
       <p align="Left"> In this
 instance, the mobile system (B) has IP address 134.28.54.2 but that cannot
 be determined in advance. In the /etc/shorewall/tunnels file on system A,
@@ -210,15 +255,14 @@ the following entry should be made:</p>
               <td>ipsec</td>
               <td>net</td>
               <td>0.0.0.0/0</td>
-              <td>gw</td>
+              <td>vpn</td>
           </tr>
                        
           </tbody>               
         </table></blockquote>
                   
         <p>Note that the GATEWAY
-ZONE column contains the name of the zone corresponding to peer subnetworks
-(<i>gw</i> in the default /etc/shorewall/zones). This indicates that the
+ZONE column contains the name of the zone corresponding to peer subnetworks. This indicates that the
 gateway system itself comprises the peer subnetwork; in other words, the
 remote gateway is a standalone system.</p>
                  
@@ -228,7 +272,7 @@ remote gateway is a standalone system.</p>
                  
         
         <p><font size="2"> Last
-updated 5/18/2002 - </font><font size="2">
+updated 8/20/2002 - </font><font size="2">
         <a href="support.htm">Tom Eastep</a></font>
  </p>
                  

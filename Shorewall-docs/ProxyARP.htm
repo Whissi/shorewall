@@ -5,27 +5,37 @@
 <title>Shorewall Proxy ARP</title>
 <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
 <meta name="ProgId" content="FrontPage.Editor.Document">
-<meta name="Microsoft Theme" content="boldstri 011, default">
+<meta name="Microsoft Theme" content="none">
 </head>
 
 <body>
 
-<blockquote>
-    <h1 align="center">Proxy ARP</h1>
-    <p>&nbsp;</p>
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse" width="100%" id="AutoNumber1" bgcolor="#400169" height="90">
+      <tr>
+        <td width="100%">
+        <h1 align="center"><font color="#FFFFFF">Proxy ARP</font></h1>
+        </td>
+      </tr>
+    </table>
     <p>Proxy ARP allows you to insert a firewall in front of a set of servers 
     without changing their IP addresses and without having to re-subnet.</p>
     <p>The following figure represents a Proxy ARP
     environment.</p>
+
+<blockquote>
     <p align="center"><strong>
-    <img src="images/proxyarp.png" width="444" height="397"></strong></p>
+    <img src="images/proxyarp.png" width="519" height="397"></strong></p>
     <blockquote>
     </blockquote>
+</blockquote>
+
     <p align="left">Proxy ARP can be used to make the systems with addresses 
     130.252.100.18 and 130.252.100.19 appear to be on the upper (130.252.100.*) 
     subnet.&nbsp; Assuming that the upper firewall interface is eth0 and the 
     lower interface is eth1, this is accomplished using the following entries in 
     /etc/shorewall/proxyarp:</p>
+
+<blockquote>
     <table border="2" cellpadding="2" style="border-collapse: collapse">
       <tr>
         <td><b>ADDRESS</b></td>
@@ -46,6 +56,8 @@
         <td>no</td>
       </tr>
     </table>
+</blockquote>
+
     <p>Be sure that the internal systems (130.242.100.18 and 130.252.100.19&nbsp; 
     in the above example) are not included in any specification in 
     /etc/shorewall/masq or /etc/shorewall/nat.</p>
@@ -56,7 +68,7 @@
     Firewall system's eth0 is configured.</p>
 <div align="left">
   <p align="left">A word of warning is in order here. ISPs typically configure 
-  there routers with a long ARP cache timeout. If you move a system from 
+  their routers with a long ARP cache timeout. If you move a system from 
   parallel to your firewall to behind your firewall with Proxy ARP, it will 
   probably be HOURS before that system can communicate with the internet. You 
   can call your ISP and ask them to purge the stale ARP cache entry but many 
@@ -86,9 +98,8 @@
   was the MAC address of the system on the lower left. In other words, the gateway's ARP cache still 
   associates 130.252.100.19 with the NIC in that system rather than with the firewall's 
   eth0.</div>
-</blockquote>
 
-<p><font size="2">Last updated 8/11/2002 - </font><font size="2">
+<p><font size="2">Last updated 8/17/2002 - </font><font size="2">
 <a href="support.htm">Tom
 Eastep</a></font> </p>
 <font face="Trebuchet MS"><a href="copyright.htm"><font size="2">Copyright</font> 

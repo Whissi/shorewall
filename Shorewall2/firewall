@@ -5475,9 +5475,16 @@ initialize_netfilter () {
 	run_iptables -A $chain -p ! icmp -m state --state INVALID -j DROP
     done
 
-    [ -n "$CLAMPMSS" ] && \
-	run_iptables -A FORWARD -p tcp \
-	    --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
+    if [ -n "$CLAMPMSS" ]; then
+	case $CLAMPMSS in
+	    Yes)
+		run_iptables -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
+		;;
+	    *)
+		run_iptables -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss $CLAMPMSS
+		;;
+	esac
+    fi
 
     if [ -z "$NEWNOTSYN" ]; then
 	createchain newnotsyn no
@@ -6957,8 +6964,15 @@ do_initialize() {
     fi
 
     [ -z "$BLACKLIST_DISPOSITION" ] && BLACKLIST_DISPOSITION=DROP
-
-    CLAMPMSS=$(added_param_value_no CLAMPMSS $CLAMPMSS)
+    
+    case "$CLAMPMSS" in
+	[0-9]*)
+	    ;;
+	*)
+	    CLAMPMSS=$(added_param_value_no CLAMPMSS $CLAMPMSS)
+	    ;;
+    esac
+    
     ADD_SNAT_ALIASES=$(added_param_value_no ADD_SNAT_ALIASES $ADD_SNAT_ALIASES)
     ROUTE_FILTER=$(added_param_value_no ROUTE_FILTER $ROUTE_FILTER)
     LOG_MARTIANS=$(added_param_value_no LOG_MARTIANS $LOG_MARTIANS)

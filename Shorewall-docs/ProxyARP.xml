@@ -2,6 +2,8 @@
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
 "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
 <article id="ProxyARP">
+  <!--$Id$-->
+
   <articleinfo>
     <title>Proxy ARP</title>
 
@@ -30,8 +32,8 @@
       document under the terms of the GNU Free Documentation License, Version
       1.2 or any later version published by the Free Software Foundation; with
       no Invariant Sections, with no Front-Cover, and with no Back-Cover
-      Texts. A copy of the license is included in the section entitled &#34;<ulink
-      url="GnuCopyright.htm">GNU Free Documentation License</ulink>&#34;.</para>
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
 
@@ -99,7 +101,7 @@
 
     <note>
       <para>I&#39;ve used an RFC1918 IP address for eth1 - that IP address is
-      irrelevant. </para>
+      irrelevant.</para>
     </note>
 
     <para>The lower systems (130.252.100.18 and 130.252.100.19) should have
@@ -128,7 +130,7 @@
       <listitem>
         <para>A reading of <citetitle>TCP/IP Illustrated, Vol 1</citetitle> by
         Stevens reveals<footnote><para>Courtesy of Bradey Honsinger</para></footnote>
-        that a &#34;gratuitous&#34; ARP packet should cause the ISP&#39;s
+        that a <quote>gratuitous</quote> ARP packet should cause the ISP&#39;s
         router to refresh their ARP cache (section 4.7). A gratuitous ARP is
         simply a host requesting the MAC address for its own IP; in addition
         to ensuring that the IP address isn&#39;t a duplicate...</para>
@@ -143,14 +145,14 @@
         <para>Which is, of course, exactly what you want to do when you switch
         a host from being exposed to the Internet to behind Shorewall using
         proxy ARP (or one-to-one NAT for that matter). Happily enough, recent
-        versions of Redhat&#39;s iputils package include &#34;arping&#34;,
-        whose &#34;-U&#34; flag does just that:</para>
+        versions of Redhat&#39;s iputils package include <quote>arping</quote>,
+        whose <quote>-U</quote> flag does just that:</para>
 
         <programlisting>arping -U -I &#60;<emphasis>net if</emphasis>&#62; &#60;<emphasis>newly proxied IP</emphasis>&#62;
 arping -U -I eth0 66.58.99.83             # for example</programlisting>
 
         <para>Stevens goes on to mention that not all systems respond
-        correctly to gratuitous ARPs, but googling for &#34;arping -U&#34;
+        correctly to gratuitous ARPs, but googling for <quote>arping -U</quote>
         seems to support the idea that it works most of the time.</para>
 
         <para>To use arping with Proxy ARP in the above example, you would

@@ -1930,7 +1930,7 @@ add_nat_rule() {
 			log_rule $loglevel $chain $logtarget -t nat -d `fix_bang $adr`
 		    fi
 
-		    addnatrule $chain $proto -d $adr -j $target1
+		    addnatrule $chain $proto -d `fix_bang $adr` -j $target1
 		done
 	    else
 		for adr in `separate_list $addr`; do

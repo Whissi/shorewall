@@ -17,7 +17,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-10-12</pubdate>
+    <pubdate>2004-10-30</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -1526,6 +1526,54 @@ Creating input Chains...
         url="errata.htm">Shorewall errata page</ulink>.</para>
       </section>
     </section>
+
+    <section id="faq41">
+      <title>(FAQ 41) Why do I get modprobe failure messages when I start
+      Shorewall?</title>
+
+      <para>When I start shorewall I got the following errors.</para>
+
+      <programlisting>Oct 30 11:13:12 fwr modprobe: modprobe: Can't locate module ipt_conntrack
+Oct 30 11:13:17 fwr modprobe: modprobe: Can't locate module ipt_pkttype
+Oct 30 11:13:18 fwr modprobe: modprobe: Can't locate module ipt_pkttype
+Oct 30 11:13:57 fwr last message repeated 2 times
+Oct 30 11:14:06 fwr root: Shorewall Restarted</programlisting>
+
+      <para>The "shorewall status" output seems complying with my rules set.
+      Should I worry ? and is there any way to get rid of these errors
+      ?</para>
+
+      <para><emphasis role="bold">Answer</emphasis>: You are seeing two
+      different things:</para>
+
+      <orderedlist>
+        <listitem>
+          <para>The normal checking that Shorewall does when it starts.
+          Shorewall tries to determine the the capabilities of your 'iptables'
+          and kernel and then taylors the ruleset accordingly.</para>
+        </listitem>
+
+        <listitem>
+          <para>A problem in Shorewall 2.0.3a through 2.0.5 whereby Shorewall
+          tried to use the <emphasis>pkttype match</emphasis> feature each
+          time that it wanted to generate a rule involving broadcast or
+          multicast packets.</para>
+        </listitem>
+      </orderedlist>
+
+      <para>You can suppress the messages by aliasing the modules mentioned in
+      the error messages to off in /etc/modules.conf. Just be sure to review
+      these aliases each time that you do a kernel upgrade to be sure that you
+      are not disabling a feature in your new kernel that you want to
+      use.</para>
+
+      <programlisting>alias ipt_conntrack off
+alias ipt_pkttype off</programlisting>
+
+      <para>For users who don't have the pkttype match feature in their
+      kernel, I also recommend upgrading to Shorewall 2.0.6 or later and then
+      setting PKTTYPE=No in shorewall.conf.</para>
+    </section>
   </section>
 
   <section>
@@ -1917,6 +1965,16 @@ REJECT    fw            net:216.239.39.99    all</programlisting>Given that
     <title>Revision History</title>
 
     <para><revhistory>
+        <revision>
+          <revnumber>1.35</revnumber>
+
+          <date>2004-10-30</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Add FAQ 41.</revremark>
+        </revision>
+
         <revision>
           <revnumber>1.34</revnumber>
 

@@ -2455,7 +2455,7 @@ setup_masq()
 	    iface="-o $interface"
 	    ;;
 	*)
-	    ipaddr="`run_ip addr show $subnet | grep 'inet '`"
+	    ipaddr="`ip addr show $subnet 2> /dev/null | grep 'inet '`"
 	    source="$subnet"
 	    if [ -z "$ipaddr" ]; then
 		fatal_error \

@@ -2342,27 +2342,6 @@ process_tc_rule()
 	    esac
 	fi
 
-	case $testval in
-	    -)
-		;;
-	    !*:C)
-		marktest="connmark ! "
-		testval=${testval%:*}
-		testval=${testval#!}
-		;;
-	    *:C)
-		marktest="connmark "
-		testval=${testval%:*}
-		;;
-	    !*)
-		marktest="mark ! "
-		testval=${testval#!}
-		;;
-	    *)
-		[ -n "$testval" ] && marktest="mark "
-		;;
-	esac
-
 	[ -n "$marktest" ] && r="${r}-m ${marktest}--mark $testval "
 
 	[ "x$dest"   = "x-"  ] || r="${r}$(dest_ip_range $dest) "
@@ -2436,6 +2415,27 @@ process_tc_rule()
 	CONTINUE)
 	    target=RETURN
 	    mark=
+	    ;;
+    esac
+
+    case $testval in
+	-)
+	    ;;
+	!*:C)
+	    marktest="connmark ! "
+	    testval=${testval%:*}
+	    testval=${testval#!}
+	    ;;
+	*:C)
+	    marktest="connmark "
+	    testval=${testval%:*}
+	    ;;
+	!*)
+	    marktest="mark ! "
+	    testval=${testval#!}
+	    ;;
+	*)
+	    [ -n "$testval" ] && marktest="mark "
 	    ;;
     esac
 

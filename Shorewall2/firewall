@@ -3246,7 +3246,11 @@ createlogactionchain() # $1 = Action Name, $2 = Log Level [: Log Tag ]
     if [ $COMMAND != check ]; then
 	createchain $CHAIN No
 	LEVEL=${level%:*}
-	TAG=${level#*:}
+	if [ "$LEVEL" != "$level" ]; then
+	    TAG=${level#*:}
+	else
+	    TAG=
+	fi
 	run_user_exit $1
     fi
 
@@ -4427,6 +4431,7 @@ process_rules()
 		if [ "${ysourcezone}" != "${ydestzone}" ] ; then
 		    eval ypolicy=\$${ysourcezone}2${ydestzone}_policy
 		    if [ "$ypolicy" != NONE ] ; then
+			rule="$(echo $xtarget $yclients $yservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec)"
 			process_rule $xtarget $yclients $yservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec
 		    fi
 		fi
@@ -4452,11 +4457,11 @@ process_rules()
 	    continue
 	fi
 	
+	rule="$(echo $xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec)"
 	process_rule $xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec
     }
 
     while read xtarget xclients xservers xprotocol xports xcports xaddress xratelimit xuserspec; do
-	rule="$(echo $xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec)"
 	expandv xtarget
 
 	case "${xtarget%%:*}" in
@@ -4473,6 +4478,7 @@ process_rules()
 		    xtarget=$(find_logactionchain $xtarget)
 		    do_it    
 		else
+		    rule="$(echo $xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec)"
 		    fatal_error "Invalid Action in rule \"$rule\""
 		fi
 		;;

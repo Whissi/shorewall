@@ -12,7 +12,19 @@ New Features:
 2) The LOGMARKER variable has been renamed LOGFORMAT and has been
    changed to a 'printf' formatting template which accepts three
    arguments (the chain name, logging rule number and the disposition).
-   To use LOGFORMAT with ULOG, set it as:
+   To use LOGFORMAT with fireparse, set it as:
 
-       LOGFORMAT="fp=%s:%d a=%s"
+       LOGFORMAT="fp=%s:%d a=%s "
 
+
+   CAUTION: /sbin/shorewall uses the leading part of the LOGFORMAT
+   string (up to but not including the first '%') to find log messages
+   in the 'show log', 'status' and 'hits' commands. This part should
+   not be omitted (the LOGFORMAT should not begin with "%") and the
+   leading part should be sufficiently unique for /sbin/shorewall to
+   identify Shorewall messages.
+
+3) When logging is specified on a DNAT[-] or REDIRECT[-] rule, the
+   logging now takes place in the nat table rather than in the filter
+   table. This way, only those connections that actually undergo DNAT
+   or redirection will be logged.

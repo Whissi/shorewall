@@ -1855,6 +1855,13 @@ add_nat_rule() {
 	    fi
 
 	    for adr in $addr; do
+		if [ -n "$loglevel" ]; then
+		    ensurenatchain $chain
+		    log_rule $loglevel $chain $logtarget -t nat \
+			`fix_bang $proto $cli $sports -d $adr $multiport $dports`
+		    loglevel=
+		fi
+
 		addnatrule $chain $proto $cli $sports \
 		    -d $adr $multiport $dports -j $target1
 	    done
@@ -3299,7 +3306,7 @@ build_common_chain() {
 # Construct zone-independent rules
 #
 add_common_rules() {
-    local savelogparms=
+    local savelogparms="$LOGPARMS"
     #
     # Reject Rules
     #
@@ -3324,8 +3331,7 @@ add_common_rules() {
 	createchain badpkt no
 
 	if [ -n "$LOGUNCLEAN" ]; then
-	    savelogparms="$LOGPARMS"
-
+	    
 	    LOGPARMS="$LOGPARMS --log-ip-options"
 
 	    log_rule $LOGUNCLEAN badpkt DROP -p ! tcp 
@@ -3357,8 +3363,6 @@ add_common_rules() {
 
 	[ -z"$LOGUNCLEAN" ] && LOGUNCLEAN=info
 
-	savelogparms="$LOGPARMS"
-	    
 	LOGPARMS="$LOGPARMS --log-ip-options"
 
 	log_rule $LOGUNCLEAN logpkt DROP -p ! tcp 
@@ -4461,8 +4465,13 @@ do_initialize() {
 	CLEAR_TC=
     fi
 
-    [ -n "$LOGFORMAT" ] || LOGFORMAT="Shorewall:%s:%d:%s:"
-
+    if [ -n "$LOGFORMAT" ]; then
+	if ! qt printf "$LOGFORMAT" foo 1 bar ; then
+	    startup_error "Invalid LOGFORMAT string: \"$LOGFORMAT\""
+	fi
+    else
+	LOGFORMAT="Shorewall:%s:%d:%s:"
+    fi
     #
     # Strip the files that we use often
     #

@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-02-01</pubdate>
+    <pubdate>2005-02-28</pubdate>
 
     <copyright>
       <year>2003-2005</year>
@@ -38,8 +38,10 @@
   url="http://www.squid-cache.org">Squid</ulink> running as a Transparent
   Proxy or as a Manual Proxy.</para>
 
-  <para>If you are running Shorewall 1.3, please see <ulink
-  url="1.3/Shorewall_Squid_Usage.html">this documentation</ulink>.</para>
+  <warning>
+    <para>This documentation assumes that you are running Shorewall 2.0.0 or
+    later.</para>
+  </warning>
 
   <section>
     <title>Squid as a Transparent Proxy</title>
@@ -110,14 +112,6 @@
         <listitem>
           <para>You must have iptables installed on your Squid server.</para>
         </listitem>
-
-        <listitem>
-          <para>If you run a Shorewall version earlier than 1.4.6, you must
-          have NAT and MANGLE enabled in your /etc/shorewall/conf file</para>
-
-          <programlisting>NAT_ENABLED=Yes
-MANGLE_ENABLED=Yes</programlisting>
-        </listitem>
       </itemizedlist>
     </caution>
 
@@ -162,21 +156,12 @@ ACCEPT    fw         net      tcp      www</programlisting>
       or networks from being redirected. For example, you might also want
       requests destined for 130.252.100.0/24 to not be routed to Squid.</para>
 
-      <para>If you are running Shorewall version 1.4.5 or later, you may just
-      add the additional hosts/networks to the ORIGINAL DEST column in your
-      REDIRECT rule.</para>
+      <para>If needed, you may just add the additional hosts/networks to the
+      ORIGINAL DEST column in your REDIRECT rule.</para>
 
       <para><filename>/etc/shorewall/rules</filename>:<programlisting>#ACTION   SOURCE     DEST     PROTO    DEST PORT(S)     SOURCE     ORIGINAL
 #                                                       PORT(S)    DEST
 REDIRECT  loc        3128     tcp      www              -          !206.124.146.177,130.252.100.0/24</programlisting></para>
-
-      <para>If you are running a Shorewall version earlier than 1.4.5, you
-      must add a manual rule in /etc/shorewall/start:</para>
-
-      <programlisting><command>run_iptables -t nat -I loc_dnat -p tcp --dport www -d 130.252.100.0/24 -j RETURN</command></programlisting>
-
-      <para>To exclude additional hosts or networks, just add additional
-      similar rules.</para>
     </section>
 
     <section id="Local">
@@ -207,13 +192,7 @@ fi</command></programlisting>
         </listitem>
 
         <listitem>
-          <important>
-            <para>If you are running Shorewall 1.4.1 or Shorewall 1.4.1a,
-            please upgrade to Shorewall 1.4.2 or later.</para>
-          </important>
-
-          <para>If you are running Shorewall 1.4.2 or later, then in
-          <filename>/etc/shorewall/interfaces</filename>:</para>
+          <para>In <filename>/etc/shorewall/interfaces</filename>:</para>
 
           <programlisting>#ZONE   INTERFACE    BROADCAST    OPTIONS
 loc     eth1         detect       <emphasis role="bold">routeback</emphasis>    </programlisting>
@@ -227,8 +206,8 @@ ACCEPT    loc       loc      tcp     www</programlisting>
 
           <orderedlist numeration="loweralpha">
             <listitem>
-              <para>Alternativfely, if you are running Shorewall 1.4.0 you can
-              have the following policy in place of the above rule.</para>
+              <para>Alternativfely, you can have the following policy in place
+              of the above rule.</para>
 
               <para><filename>/etc/shorewall/policy</filename></para>
 
@@ -306,8 +285,8 @@ fi</command></programlisting>
             </listitem>
 
             <listitem>
-              <para>Run Shorewall 1.3.14 or later and add the following entry
-              in <filename>/etc/shorewall/tcrules</filename>:</para>
+              <para>Add the following entry in
+              <filename>/etc/shorewall/tcrules</filename>:</para>
 
               <programlisting>#MARK   SOURCE   DESTINATION    PROTOCOL    PORT
 202:P   eth2     0.0.0.0/0      tcp         80</programlisting>

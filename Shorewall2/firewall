@@ -976,6 +976,19 @@ setup_forwarding() {
 }
 
 #
+# Disable IPV6
+#
+disable_ipv6() {
+    if qt which ip6tables; then
+	ip6tables -P FORWARD DROP
+	ip6tables -P INPUT DROP
+	ip6tables -P OUTPUT DROP
+    else
+	error_message "WARNING: DISABLE_IPV6=Yes in shorewall.conf but this system has no ip6tables"
+    fi
+}
+
+#
 # Stop the Firewall
 #
 stop_firewall() {
@@ -1010,11 +1023,7 @@ stop_firewall() {
     delete_proxy_arp
     [ -n "$CLEAR_TC" ] && delete_tc
 
-    if [ -n "$DISABLE_IPV6" ]; then
-	ip6tables -P FORWARD DROP
-	ip6tables -P INPUT DROP
-	ip6tables -P OUTPUT DROP
-    fi
+    [ -n "$DISABLE_IPV6" ] && disable_ipv6
 
     if [ -z "$ADMINISABSENTMINDED" ]; then
 	for chain in INPUT OUTPUT FORWARD; do
@@ -4274,11 +4283,7 @@ initialize_netfilter () {
     setcontinue INPUT
     setcontinue OUTPUT
 
-    if [ -n "$DISABLE_IPV6" ]; then
-	ip6tables -P FORWARD DROP
-	ip6tables -P INPUT DROP
-	ip6tables -P OUTPUT DROP
-    fi
+    [ -n "$DISABLE_IPV6" ] && disable_ipv6
 
     #
     # Enable the Loopback interface for now

@@ -30,8 +30,8 @@
       document under the terms of the GNU Free Documentation License, Version
       1.2 or any later version published by the Free Software Foundation; with
       no Invariant Sections, with no Front-Cover, and with no Back-Cover
-      Texts. A copy of the license is included in the section entitled &#34;<ulink
-      url="GnuCopyright.htm">GNU Free Documentation License</ulink>&#34;.</para>
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
     </legalnotice>
 
     <abstract>
@@ -71,7 +71,7 @@
 
         <listitem>
           <para>a parameter file installed in /etc/shorewall that defines a
-          network partitioning into &#34;zones&#34;</para>
+          network partitioning into <quote>zones</quote></para>
         </listitem>
       </varlistentry>
 
@@ -366,8 +366,8 @@
           is reserved for use by Shorewall itself. Note that the output
           produced by iptables is much easier to read if you select short
           names that are three characters or less in length. The name
-          &#34;all&#34; may not be used as a zone name nor may the zone name
-          assigned to the firewall itself via the FW variable in <xref
+          <quote>all</quote> may not be used as a zone name nor may the zone
+          name assigned to the firewall itself via the FW variable in <xref
           linkend="Conf" />.</para>
         </listitem>
       </varlistentry>
@@ -436,9 +436,9 @@
     file as desired so long as you have at least one zone defined.</para>
 
     <warning>
-      <para>If you rename or delete a zone, you should perform &#34;shorewall
-      stop; shorewall start&#34; to install the change rather than
-      &#34;shorewall restart&#34;.</para>
+      <para>If you rename or delete a zone, you should perform <quote>shorewall
+      stop; shorewall start</quote> to install the change rather than
+      <quote>shorewall restart</quote>.</para>
     </warning>
 
     <warning>
@@ -461,8 +461,8 @@
 
         <listitem>
           <para>A zone defined in the <xref linkend="Zones" /> file or
-          &#34;-&#34;. If you specify &#34;-&#34;, you must use the <xref
-          linkend="Hosts" /> file to define the zones accessed via this
+          <quote>-</quote>. If you specify <quote>-</quote>, you must use the
+          <xref linkend="Hosts" /> file to define the zones accessed via this
           interface.</para>
         </listitem>
       </varlistentry>
@@ -488,9 +488,10 @@
           <para>the broadcast address(es) for the sub-network(s) attached to
           the interface. This should be left empty for P-T-P interfaces (ppp*,
           ippp*); if you need to specify options for such an interface, enter
-          &#34;-&#34; in this column. If you supply the special value
-          &#34;detect&#34; in this column, the firewall will automatically
-          determine the broadcast address. In order to use &#34;detect&#34;:</para>
+          <quote>-</quote> in this column. If you supply the special value
+          <quote>detect</quote> in this column, the firewall will
+          automatically determine the broadcast address. In order to use
+          <quote>detect</quote>:</para>
 
           <itemizedlist>
             <listitem>
@@ -548,7 +549,7 @@
                 <para>(Added in version 1.4.2) - This option causes Shorewall
                 to set up handling for routing packets that arrive on this
                 interface back out the same interface. If this option is
-                specified, the ZONE column may not contain &#34;-&#34;.</para>
+                specified, the ZONE column may not contain <quote>-</quote>.</para>
               </listitem>
             </varlistentry>
 
@@ -560,7 +561,7 @@
                 to make sanity checks on the header flags in TCP packets
                 arriving on this interface. Checks include Null flags,
                 SYN+FIN, SYN+RST and FIN+URG+PSH; these flag combinations are
-                typically used for &#34;silent&#34; port scans. Packets
+                typically used for <quote>silent</quote> port scans. Packets
                 failing these checks are logged according to the
                 TCP_FLAGS_LOG_LEVEL option in <xref linkend="Conf" /> and are
                 disposed of according to the TCP_FLAGS_DISPOSITION option.</para>
@@ -611,9 +612,9 @@
                 <para>Beware that as IPv4 addresses become in increasingly
                 short supply, ISPs are beginning to use RFC 1918 addresses
                 within their own infrastructure. Also, many cable and DSL
-                &#34;modems&#34; have an RFC 1918 address that can be used
-                through a web browser for management and monitoring functions.
-                If you want to specify <emphasis role="bold">norfc1918</emphasis>
+                <quote>modems</quote> have an RFC 1918 address that can be
+                used through a web browser for management and monitoring
+                functions. If you want to specify <emphasis role="bold">norfc1918</emphasis>
                 on your external interface but need to allow access to certain
                 addresses from the above list, see <ulink url="FAQ.htm#faq14">FAQ
                 14</ulink>.</para>
@@ -683,7 +684,8 @@
                 &#39;unclean&#39; match target in iptables are logged
                 <emphasis>but not dropped</emphasis>. The level at which the
                 packets are logged is determined by the setting of LOGUNCLEAN
-                and if LOGUNCLEAN has not been set, &#34;info&#34; is assumed.</para>
+                and if LOGUNCLEAN has not been set, <quote>info</quote> is
+                assumed.</para>
               </listitem>
             </varlistentry>
 
@@ -900,8 +902,8 @@
         <term>HOST(S)</term>
 
         <listitem>
-          <para>The name of a network interface followed by a colon
-          (&#34;:&#34;) followed by a comma-separated list either:</para>
+          <para>The name of a network interface followed by a colon (<quote>:</quote>)
+          followed by a comma-separated list either:</para>
 
           <orderedlist>
             <listitem>
@@ -1254,7 +1256,7 @@
         <listitem>
           <para>The name of a client zone (a zone defined in the <xref
           linkend="Zones" /> file , the <link linkend="Conf">name of the
-          firewall zone</link> or &#34;all&#34;).</para>
+          firewall zone</link> or <quote>all</quote>).</para>
         </listitem>
       </varlistentry>
 
@@ -1264,7 +1266,7 @@
         <listitem>
           <para>The name of a destination zone (a zone defined in the <xref
           linkend="Zones" /> file , the <link linkend="Conf">name of the
-          firewall zone</link> or &#34;all&#34;). Shorewall automatically
+          firewall zone</link> or <quote>all</quote>). Shorewall automatically
           allows all traffic from the firewall to itself so the <link
           linkend="Conf">name of the firewall zone</link> cannot appear in
           both the SOURCE and DEST columns.</para>
@@ -1299,8 +1301,8 @@
           role="bold">SOURCE</emphasis> zone to the <emphasis role="bold">DEST</emphasis>
           zone will not be rate-limited. Otherwise, this column specifies the
           maximum rate at which TCP connection requests will be accepted
-          followed by a colon (&#34;:&#34;) followed by the maximum burst size
-          that will be tolerated. Example: <emphasis role="bold">10/sec:40</emphasis>
+          followed by a colon (<quote>:</quote>) followed by the maximum burst
+          size that will be tolerated. Example: <emphasis role="bold">10/sec:40</emphasis>
           specifies that the maximum rate of TCP connection requests allowed
           will be 10 per second and a burst of 40 connections will be
           tolerated. Connection requests in excess of these limits will be
@@ -1310,7 +1312,7 @@
       </varlistentry>
     </variablelist>
 
-    <para>In the SOURCE and DEST columns, you can enter &#34;all&#34; to
+    <para>In the SOURCE and DEST columns, you can enter <quote>all</quote> to
     indicate all zones.</para>
 
     <table>
@@ -1461,7 +1463,7 @@
       interface. Beginning with Shorewall 1.4.1, Shorewall will ACCEPT all
       traffic from a zone to itself provided that there is no explicit policy
       governing traffic from that zone to itself (an explicit policy does not
-      specify &#34;all&#34; in either the SOURCE or DEST column) and that
+      specify <quote>all</quote> in either the SOURCE or DEST column) and that
       there are no rules concerning connections from that zone to itself. If
       there is an explicit policy or if there are one or more rules, then
       traffic within the zone is handled just like traffic between zones is.</para>
@@ -1962,9 +1964,9 @@
               <listitem>
                 <para>Causes the connection request to be forwarded to the
                 system specified in the DEST column (port forwarding).
-                &#34;DNAT&#34; stands for &#34;<emphasis role="bold">D</emphasis>estination
+                <quote>DNAT</quote> stands for <quote><emphasis role="bold">D</emphasis>estination
                 <emphasis role="bold">N</emphasis>etwork <emphasis role="bold">A</emphasis>ddress
-                <emphasis role="bold">T</emphasis>ranslation&#34;</para>
+                <emphasis role="bold">T</emphasis>ranslation</quote></para>
               </listitem>
             </varlistentry>
 
@@ -2039,9 +2041,9 @@
 
                 <note>
                   <para>When the protocol specified in the PROTO column is TCP
-                  (&#34;tcp&#34;, &#34;TCP&#34; or &#34;6&#34;), Shorewall
-                  will only pass connection requests (SYN packets) to user
-                  space. This is for compatibility with ftwall.</para>
+                  (<quote>tcp</quote>, <quote>TCP</quote> or <quote>6</quote>),
+                  Shorewall will only pass connection requests (SYN packets)
+                  to user space. This is for compatibility with ftwall.</para>
                 </note>
               </listitem>
             </varlistentry>
@@ -2064,7 +2066,7 @@
           &#60;rate&#62;/&#60;interval&#62;[:&#60;burst&#62;] &#62;</programlisting>
 
           <para>where &#60;rate&#62; is the number of connections per
-          &#60;interval&#62; (&#34;sec&#34; or &#34;min&#34;) and
+          &#60;interval&#62; (<quote>sec</quote> or <quote>min</quote>) and
           &#60;burst&#62; is the largest burst permitted. If no burst value is
           given, a value of 5 is assumed.</para>
 
@@ -2086,10 +2088,10 @@
           </example>
 
           <warning>
-            <para>When rate limiting is specified on a rule with &#34;all&#34;
-            in the SOURCE or DEST fields below, the limit will apply to each
-            pair of zones individually rather than as a single limit for all
-            pairs of zones covered by the rule.</para>
+            <para>When rate limiting is specified on a rule with
+            <quote>all</quote> in the SOURCE or DEST fields below, the limit
+            will apply to each pair of zones individually rather than as a
+            single limit for all pairs of zones covered by the rule.</para>
           </warning>
 
           <para>Rate limiting may also be specified in the RATE LIMIT column
@@ -2097,11 +2099,12 @@
           column.</para>
 
           <para>The ACTION (and rate limit) may optionally be followed by
-          &#34;:&#34; and a <ulink url="shorewall_logging.html">syslog level</ulink>
-          (example: REJECT:info or ACCEPT&#60;2/sec:4&#62;:debugging). This
-          causes the packet to be logged at the specified level prior to being
-          processed according to the specified ACTION. Note: if the ACTION is
-          LOG then you MUST specify a syslog level.</para>
+          <quote>:</quote> and a <ulink url="shorewall_logging.html">syslog
+          level</ulink> (example: REJECT:info or
+          ACCEPT&#60;2/sec:4&#62;:debugging). This causes the packet to be
+          logged at the specified level prior to being processed according to
+          the specified ACTION. Note: if the ACTION is LOG then you MUST
+          specify a syslog level.</para>
 
           <para>The use of DNAT or REDIRECT requires that you have NAT
           enabled.</para>
@@ -2114,15 +2117,15 @@
         <listitem>
           <para>Describes the source hosts to which the rule applies.. The
           contents of this field must begin with the name of a zone defined in
-          /etc/shorewall/zones, $FW or &#34;all&#34;. If the ACTION is DNAT or
-          REDIRECT, sub-zones may be excluded from the rule by following the
-          initial zone name with &#34;!&#39; and a comma-separated list of
-          those sub-zones to be excluded. There is an <link linkend="Exclude">example</link>
-          above.</para>
+          /etc/shorewall/zones, $FW or <quote>all</quote>. If the ACTION is
+          DNAT or REDIRECT, sub-zones may be excluded from the rule by
+          following the initial zone name with <quote>!</quote> and a
+          comma-separated list of those sub-zones to be excluded. There is an
+          <link linkend="Exclude">example</link> above.</para>
 
           <para>If the source is not &#39;all&#39; then the source may be
-          further restricted by adding a colon (&#34;:&#34;) followed by a
-          comma-separated list of qualifiers. Qualifiers are may include:</para>
+          further restricted by adding a colon (<quote>:</quote>) followed by
+          a comma-separated list of qualifiers. Qualifiers are may include:</para>
 
           <variablelist>
             <varlistentry>
@@ -2132,7 +2135,7 @@
                 <para>refers to any connection requests arriving on the
                 specified interface (example loc:eth4). Beginning with
                 Shorwall 1.3.9, the interface name may optionally be followed
-                by a colon (&#34;:&#34;) and an IP address or subnet
+                by a colon (<quote>:</quote>) and an IP address or subnet
                 (examples: loc:eth4:192.168.4.22, net:eth0:192.0.2.0/24).</para>
               </listitem>
             </varlistentry>
@@ -2226,8 +2229,8 @@
 
         <listitem>
           <para>Protocol. Must be a protocol name from /etc/protocols, a
-          number or &#34;all&#34;. Specifies the protocol of the connection
-          request.</para>
+          number or <quote>all</quote>. Specifies the protocol of the
+          connection request.</para>
         </listitem>
       </varlistentry>
 
@@ -2240,9 +2243,9 @@
           udp or icmp. For icmp, this column&#39;s contents are interpreted as
           an icmp type. If you don&#39;t want to specify DEST PORT(S) but need
           to include information in one of the columns to the right, enter
-          &#34;-&#34; in this column. You may give a list of ports and/or port
-          ranges separated by commas. Port numbers may be either integers or
-          service names from /etc/services.</para>
+          <quote>-</quote> in this column. You may give a list of ports and/or
+          port ranges separated by commas. Port numbers may be either integers
+          or service names from /etc/services.</para>
         </listitem>
       </varlistentry>
 
@@ -2254,10 +2257,10 @@
           or port range (a port range is specified as &#60;low port
           number&#62;:&#60;high port number&#62;). If you don&#39;t want to
           restrict client ports but want to specify something in the next
-          column, enter &#34;-&#34; in this column. If you wish to specify a
-          list of port number or ranges, separate the list elements with
-          commas (with no embedded white space). Port numbers may be either
-          integers or service names from /etc/services.</para>
+          column, enter <quote>-</quote> in this column. If you wish to
+          specify a list of port number or ranges, separate the list elements
+          with commas (with no embedded white space). Port numbers may be
+          either integers or service names from /etc/services.</para>
         </listitem>
       </varlistentry>
 
@@ -2280,13 +2283,13 @@
           addresses are specified in the ORIGINAL DEST column as a
           comma-separated list.</para>
 
-          <para>The IP address(es) may be optionally followed by &#34;:&#34;
-          and a second IP address. This latter address, if present, is used as
-          the source address for packets forwarded to the server (This is
-          called &#34;Source NAT&#34; or SNAT.</para>
+          <para>The IP address(es) may be optionally followed by
+          <quote>:</quote> and a second IP address. This latter address, if
+          present, is used as the source address for packets forwarded to the
+          server (This is called <quote>Source NAT</quote> or SNAT.</para>
 
-          <para>If this list begins with &#34;!&#34; then the rule will only
-          apply if the original destination address matches none of the
+          <para>If this list begins with <quote>!</quote> then the rule will
+          only apply if the original destination address matches none of the
           addresses listed.</para>
 
           <note>
@@ -2305,10 +2308,10 @@
             </example>
           </note>
 
-          <para>If SNAT is not used (no &#34;:&#34; and second IP address),
-          the original source address is used. If you want any destination
-          address to match the rule but want to specify SNAT, simply use a
-          colon followed by the SNAT address.</para>
+          <para>If SNAT is not used (no <quote>:</quote> and second IP
+          address), the original source address is used. If you want any
+          destination address to match the rule but want to specify SNAT,
+          simply use a colon followed by the SNAT address.</para>
         </listitem>
       </varlistentry>
 
@@ -2323,7 +2326,7 @@
           <programlisting>&#60;rate&#62;/&#60;interval&#62;[:&#60;burst&#62;]</programlisting>
 
           <para>where &#60;rate&#62; is the number of connections per
-          &#60;interval&#62; (&#34;sec&#34; or &#34;min&#34;) and
+          &#60;interval&#62; (<quote>sec</quote> or <quote>min</quote>) and
           &#60;burst&#62; is the largest burst permitted. If no burst value is
           given, a value of 5 is assumed.</para>
 
@@ -2345,10 +2348,10 @@
           </example>
 
           <warning>
-            <para>When rate limiting is specified on a rule with &#34;all&#34;
-            in the SOURCE or DEST fields below, the limit will apply to each
-            pair of zones individually rather than as a single limit for all
-            pairs of zones covered by the rule.</para>
+            <para>When rate limiting is specified on a rule with
+            <quote>all</quote> in the SOURCE or DEST fields below, the limit
+            will apply to each pair of zones individually rather than as a
+            single limit for all pairs of zones covered by the rule.</para>
           </warning>
 
           <para>Rate limiting may also be specified in the ACTION column
@@ -2356,7 +2359,7 @@
           LIMIT column.</para>
 
           <para>If you want to specify any following columns but no rate
-          limit, place &#34;-&#34; in this column.</para>
+          limit, place <quote>-</quote> in this column.</para>
         </listitem>
       </varlistentry>
 
@@ -2431,8 +2434,8 @@
       proxy running on the firewall and listening on port 3128. Squid will of
       course require access to remote web servers. This example shows yet
       another use for the ORIGINAL DEST column; here, connection requests that
-      were NOT (notice the &#34;!&#34;) originally destined to 206.124.146.177
-      are redirected to local port 3128.</title>
+      were NOT (notice the <quote>!</quote>) originally destined to
+      206.124.146.177 are redirected to local port 3128.</title>
 
       <informaltable>
         <tgroup cols="9">
@@ -2668,8 +2671,8 @@
 
       <programlisting>passive ports 0.0.0.0/0 65500 65534</programlisting>
 
-      <para>If you are running pure-ftpd, you would include &#34;-p
-      65500:65534&#34; on the pure-ftpd runline.</para>
+      <para>If you are running pure-ftpd, you would include <quote>-p
+      65500:65534</quote> on the pure-ftpd runline.</para>
 
       <para>The important point here is to ensure that the port range used for
       FTP passive connections is unique and will not overlap with any usage on
@@ -2935,8 +2938,8 @@
         </tgroup>
       </informaltable>
 
-      <para>Using &#34;DNAT-&#34; rather than &#34;DNAT&#34; avoids two extra
-      copies of the third rule from being generated.</para>
+      <para>Using <quote>DNAT-</quote> rather than <quote>DNAT</quote> avoids
+      two extra copies of the third rule from being generated.</para>
     </example>
 
     <example>
@@ -3029,8 +3032,8 @@
         <listitem>
           <para>The interface that will masquerade the subnet; this is
           normally your internet interface. This interface name can be
-          optionally qualified by adding &#34;:&#34; and a subnet or host IP.
-          When this qualification is added, only packets addressed to that
+          optionally qualified by adding <quote>:</quote> and a subnet or host
+          IP. When this qualification is added, only packets addressed to that
           host or subnet will be masqueraded. Beginning with Shorewall version
           1.3.14, if you have set ADD_SNAT_ALIASES=Yes in <xref linkend="Conf" />,
           you can cause Shorewall to create an alias <emphasis>label</emphasis>
@@ -3065,8 +3068,8 @@
             named interface.</para>
           </caution>
 
-          <para>The subnet may be optionally followed by &#34;!&#39; and a
-          comma-separated list of addresses and/or subnets that are to be
+          <para>The subnet may be optionally followed by <quote>!</quote> and
+          a comma-separated list of addresses and/or subnets that are to be
           excluded from masquerading.</para>
         </listitem>
       </varlistentry>
@@ -3308,7 +3311,7 @@
 
         <listitem>
           <para>the interface that connects to the system. If the interface is
-          obvious from the subnetting, you may enter &#34;-&#34; in this
+          obvious from the subnetting, you may enter <quote>-</quote> in this
           column.</para>
         </listitem>
       </varlistentry>
@@ -3327,9 +3330,9 @@
 
         <listitem>
           <para>If you already have a route through INTERFACE to ADDRESS, this
-          column should contain &#34;Yes&#34; or &#34;yes&#34;. If you want
-          Shorewall to add the route, the column should contain &#34;No&#34;
-          or &#34;no&#34;.</para>
+          column should contain <quote>Yes</quote> or <quote>yes</quote>. If
+          you want Shorewall to add the route, the column should contain
+          <quote>No</quote> or <quote>no</quote>.</para>
         </listitem>
       </varlistentry>
     </variablelist>
@@ -3343,10 +3346,10 @@
       changed, you may need to flush the ARP cache on host A as well.</para>
 
       <para>ISPs typically have ARP configured with long TTL (hours!) so if
-      your ISPs router has a stale cache entry (as seen using &#34;tcpdump
-      -nei &#60;external interface&#62; host &#60;IP addr&#62;&#34;), it may
-      take a long while to time out. I personally have had to contact my ISP
-      and ask them to delete a stale entry in order to restore a system to
+      your ISPs router has a stale cache entry (as seen using <quote>tcpdump
+      -nei &#60;external interface&#62; host &#60;IP addr&#62;</quote>), it
+      may take a long while to time out. I personally have had to contact my
+      ISP and ask them to delete a stale entry in order to restore a system to
       working order after changing my proxy ARP settings.</para>
     </note>
 
@@ -3395,7 +3398,7 @@
       a subnet that is smaller than the subnet of your internet interface. See
       the <ulink url="http://www.tldp.org/HOWTO/mini/Proxy-ARP-Subnet/">Proxy
       ARP Subnet Mini HOWTO</ulink> for details. In this case you will want to
-      place &#34;Yes&#34; in the HAVEROUTE column.</para></tip></para>
+      place <quote>Yes</quote> in the HAVEROUTE column.</para></tip></para>
     </example>
 
     <warning>
@@ -3578,21 +3581,22 @@
           disposition). To use LOGFORMAT with <ulink
           url="http://www.fireparse.com">fireparse</ulink>, set it as:</para>
 
-          <programlisting>LOGFORMAT=&#34;fp=%s:%d a=%s &#34;</programlisting>
+          <programlisting>LOGFORMAT=<quote>fp=%s:%d a=%s </quote></programlisting>
 
           <para>If the LOGFORMAT value contains the substring &#39;%d&#39;
           then the logging rule number is calculated and formatted in that
           position; if that substring is not included then the rule number is
           not included. If not supplied or supplied as empty
-          (LOGFORMAT=&#34;&#34;) then &#34;Shorewall:%s:%s:&#34; is assumed.</para>
+          (LOGFORMAT=&#34;&#34;) then <quote>Shorewall:%s:%s:</quote> is
+          assumed.</para>
 
           <caution>
             <para>/sbin/shorewall uses the leading part of the LOGFORMAT
             string (up to but not including the first &#39;%&#39;) to find log
             messages in the &#39;show log&#39;, &#39;status&#39; and
             &#39;hits&#39; commands. This part should not be omitted (the
-            LOGFORMAT should not begin with &#34;%&#34;) and the leading part
-            should be sufficiently unique for /sbin/shorewall to identify
+            LOGFORMAT should not begin with <quote>%</quote>) and the leading
+            part should be sufficiently unique for /sbin/shorewall to identify
             Shorewall messages.</para>
           </caution>
         </listitem>
@@ -3626,8 +3630,8 @@
           that chain rather than in the PREROUTING chain. This permits you to
           mark inbound traffic based on its destination address when SNAT or
           Masquerading are in use. To determine if your kernel has a FORWARD
-          chain in the mangle table, use the &#34;/sbin/shorewall show
-          mangle&#34; command; if a FORWARD chain is displayed then your
+          chain in the mangle table, use the <quote>/sbin/shorewall show
+          mangle</quote> command; if a FORWARD chain is displayed then your
           kernel will support this option. If this option is not specified or
           if it is given the empty value (e.g.,
           MARK_IN_FORWARD_CHAIN=&#34;&#34;) then MARK_IN_FORWARD_CHAIN=No is
@@ -3707,12 +3711,12 @@
         <term>NEWNOTSYN</term>
 
         <listitem>
-          <para>(Added in Version 1.3.8) - When set to &#34;Yes&#34; or
-          &#34;yes&#34;, Shorewall will filter TCP packets that are not part
-          of an established connention and that are not SYN packets (SYN flag
-          on - ACK flag off). If set to &#34;No&#34;, Shorewall will silently
-          drop such packets. If not set or set to the empty value (e.g.,
-          &#34;NEWNOTSYN=&#34;), NEWNOTSYN=No is assumed.</para>
+          <para>(Added in Version 1.3.8) - When set to <quote>Yes</quote> or
+          <quote>yes</quote>, Shorewall will filter TCP packets that are not
+          part of an established connention and that are not SYN packets (SYN
+          flag on - ACK flag off). If set to <quote>No</quote>, Shorewall will
+          silently drop such packets. If not set or set to the empty value
+          (e.g., <quote>NEWNOTSYN=</quote>), NEWNOTSYN=No is assumed.</para>
 
           <para>If you have a HA setup with failover to another firewall, you
           should have NEWNOTSYN=Yes on both firewalls. You should also select
@@ -3742,13 +3746,14 @@
         <term>DETECT_DNAT_ADDRS</term>
 
         <listitem>
-          <para>(Added in Version 1.3.4) - If set to &#34;Yes&#34; or
-          &#34;yes&#34;, Shorewall will detect the first IP address of the
-          interface to the source zone and will include this address in DNAT
-          rules as the original destination IP address. If set to &#34;No&#34;
-          or &#34;no&#34;, Shorewall will not detect this address and any
-          destination IP address will match the DNAT rule. If not specified or
-          empty, &#34;DETECT_DNAT_ADDRS=Yes&#34; is assumed.</para>
+          <para>(Added in Version 1.3.4) - If set to <quote>Yes</quote> or
+          <quote>yes</quote>, Shorewall will detect the first IP address of
+          the interface to the source zone and will include this address in
+          DNAT rules as the original destination IP address. If set to
+          <quote>No</quote> or <quote>no</quote>, Shorewall will not detect
+          this address and any destination IP address will match the DNAT
+          rule. If not specified or empty, <quote>DETECT_DNAT_ADDRS=Yes</quote>
+          is assumed.</para>
         </listitem>
       </varlistentry>
 
@@ -3761,9 +3766,9 @@
             now automatically detected by Shorewall</para>
           </note>
 
-          <para>If set to &#34;Yes&#34; or &#34;yes&#34;, Shorewall will use
-          the Netfilter multiport facility. In order to use this facility,
-          your kernel must have multiport support
+          <para>If set to <quote>Yes</quote> or <quote>yes</quote>, Shorewall
+          will use the Netfilter multiport facility. In order to use this
+          facility, your kernel must have multiport support
           (CONFIG_IP_NF_MATCH_MULTIPORT). When this support is used, Shorewall
           will generate a single rule from each record in the
           /etc/shorewall/rules file that meets these criteria:</para>
@@ -3787,11 +3792,12 @@
         <term>NAT_BEFORE_RULES</term>
 
         <listitem>
-          <para>If set to &#34;No&#34; or &#34;no&#34;, port forwarding rules
-          can override the contents of the <xref linkend="NAT" /> file. If set
-          to &#34;Yes&#34; or &#34;yes&#34;, port forwarding rules cannot
-          override one-to-one NAT. If not set or set to an empty value,
-          &#34;Yes&#34; is assumed.</para>
+          <para>If set to <quote>No</quote> or <quote>no</quote>, port
+          forwarding rules can override the contents of the <xref
+          linkend="NAT" /> file. If set to <quote>Yes</quote> or
+          <quote>yes</quote>, port forwarding rules cannot override one-to-one
+          NAT. If not set or set to an empty value, <quote>Yes</quote> is
+          assumed.</para>
         </listitem>
       </varlistentry>
 
@@ -3800,7 +3806,8 @@
 
         <listitem>
           <para>This parameter specifies the name of the firewall zone. If not
-          set or if set to an empty string, the value &#34;fw&#34; is assumed.</para>
+          set or if set to an empty string, the value <quote>fw</quote> is
+          assumed.</para>
         </listitem>
       </varlistentry>
 
@@ -3869,10 +3876,10 @@
 
         <listitem>
           <para>This parameter tells the /sbin/shorewall program where to look
-          for Shorewall messages when processing the &#34;show log&#34;,
-          &#34;monitor&#34;, &#34;status&#34; and &#34;hits&#34; commands. If
-          not assigned or if assigned an empty value, /var/log/messages is
-          assumed.</para>
+          for Shorewall messages when processing the <quote>show log</quote>,
+          <quote>monitor</quote>, <quote>status</quote> and <quote>hits</quote>
+          commands. If not assigned or if assigned an empty value,
+          /var/log/messages is assumed.</para>
         </listitem>
       </varlistentry>
 
@@ -3898,9 +3905,10 @@
             <member>Masquerading</member>
           </simplelist>
 
-          <para>If the parameter has no value or has a value of &#34;Yes&#34;
-          or &#34;yes&#34; then NAT is enabled. If the parameter has a value
-          of &#34;no&#34; or &#34;No&#34; then NAT is disabled.</para>
+          <para>If the parameter has no value or has a value of
+          <quote>Yes</quote> or <quote>yes</quote> then NAT is enabled. If the
+          parameter has a value of <quote>no</quote> or <quote>No</quote> then
+          NAT is disabled.</para>
         </listitem>
       </varlistentry>
 
@@ -3914,11 +3922,11 @@
           </note>
 
           <para>This parameter determines if packet mangling is enabled. If
-          the parameter has no value or has a value of &#34;Yes&#34; or
-          &#34;yes&#34; than packet mangling is enabled. If the parameter has
-          a value of &#34;no&#34; or &#34;No&#34; then packet mangling is
-          disabled. If packet mangling is disabled, the /etc/shorewall/tos
-          file is ignored.</para>
+          the parameter has no value or has a value of <quote>Yes</quote> or
+          <quote>yes</quote> than packet mangling is enabled. If the parameter
+          has a value of <quote>no</quote> or <quote>No</quote> then packet
+          mangling is disabled. If packet mangling is disabled, the
+          /etc/shorewall/tos file is ignored.</para>
         </listitem>
       </varlistentry>
 
@@ -3968,10 +3976,10 @@
         <listitem>
           <para>This parameter determines whether Shorewall automatically adds
           the <emphasis>external</emphasis> address(es) in <xref linkend="NAT" />.
-          If the variable is set to &#34;Yes&#34; or &#34;yes&#34; then
-          Shorewall automatically adds these aliases. If it is set to
-          &#34;No&#34; or &#34;no&#34;, you must add these aliases yourself
-          using your distribution&#39;s network configuration tools.</para>
+          If the variable is set to <quote>Yes</quote> or <quote>yes</quote>
+          then Shorewall automatically adds these aliases. If it is set to
+          <quote>No</quote> or <quote>no</quote>, you must add these aliases
+          yourself using your distribution&#39;s network configuration tools.</para>
 
           <important>
             <para>Shorewall versions before 1.4.6 can only add addresses to
@@ -3989,10 +3997,10 @@
         <listitem>
           <para>This parameter determines whether Shorewall automatically adds
           the SNAT <emphasis>ADDRESS</emphasis> in <xref linkend="Masq" />. If
-          the variable is set to &#34;Yes&#34; or &#34;yes&#34; then Shorewall
-          automatically adds these addresses. If it is set to &#34;No&#34; or
-          &#34;no&#34;, you must add these addresses yourself using your
-          distribution&#39;s network configuration tools.</para>
+          the variable is set to <quote>Yes</quote> or <quote>yes</quote> then
+          Shorewall automatically adds these addresses. If it is set to
+          <quote>No</quote> or <quote>no</quote>, you must add these addresses
+          yourself using your distribution&#39;s network configuration tools.</para>
 
           <important>
             <para>Shorewall versions before 1.4.6 can only add addresses to
@@ -4049,9 +4057,9 @@
         <listitem>
           <para>This parameter enables the TCP Clamp MSS to PMTU feature of
           Netfilter and is usually required when your internet connection is
-          through PPPoE or PPTP. If set to &#34;Yes&#34; or &#34;yes&#34;, the
-          feature is enabled. If left blank or set to &#34;No&#34; or
-          &#34;no&#34;, the feature is not enabled.</para>
+          through PPPoE or PPTP. If set to <quote>Yes</quote> or
+          <quote>yes</quote>, the feature is enabled. If left blank or set to
+          <quote>No</quote> or <quote>no</quote>, the feature is not enabled.</para>
 
           <note>
             <para>This option requires CONFIG_IP_NF_TARGET_TCPMSS <ulink
@@ -4064,9 +4072,9 @@
         <term>ROUTE_FILTER</term>
 
         <listitem>
-          <para>If this parameter is given the value &#34;Yes&#34; or
-          &#34;yes&#34; then route filtering (anti-spoofing) is enabled on all
-          network interfaces. The default value is &#34;no&#34;.</para>
+          <para>If this parameter is given the value <quote>Yes</quote> or
+          <quote>yes</quote> then route filtering (anti-spoofing) is enabled
+          on all network interfaces. The default value is <quote>no</quote>.</para>
         </listitem>
       </varlistentry>
     </variablelist>
@@ -4082,7 +4090,7 @@
     linkend="Conf" /> above).</para>
 
     <para>The file that is released with Shorewall calls the Shorewall
-    function &#34;loadmodule&#34; for the set of modules that I load.</para>
+    function <quote>loadmodule</quote> for the set of modules that I load.</para>
 
     <para>The <emphasis>loadmodule</emphasis> function is called as follows:</para>
 
@@ -4096,8 +4104,8 @@
         <term>&#60;<emphasis>modulename</emphasis>&#62;</term>
 
         <listitem>
-          <para>is the name of the modules without the trailing &#34;.o&#34;
-          (example ip_conntrack).</para>
+          <para>is the name of the modules without the trailing
+          <quote>.o</quote> (example ip_conntrack).</para>
         </listitem>
       </varlistentry>
 
@@ -4112,7 +4120,7 @@
 
     <para>The function determines if the module named by &#60;<emphasis>modulename</emphasis>&#62;
     is already loaded and if not then the function determines if the
-    &#34;.o&#34; file corresponding to the module exists in the
+    <quote>.o</quote> file corresponding to the module exists in the
     <emphasis>moduledirectory</emphasis>; if so, then the following command is
     executed:</para>
 
@@ -4120,7 +4128,7 @@
     &#60;<emphasis>module parameters</emphasis>&#62;</programlisting>
 
     <para>If the file doesn&#39;t exist, the function determines of the
-    &#34;.o.gz&#34; file corresponding to the module exists in the
+    <quote>.o.gz</quote> file corresponding to the module exists in the
     <emphasis>moduledirectory</emphasis>. If it does, the function assumes
     that the running configuration supports compressed modules and execute the
     following command:</para>
@@ -4145,12 +4153,12 @@
 
         <listitem>
           <para>The source zone. May be qualified by following the zone name
-          with a colon (&#34;:&#34;) and either an IP address, an IP subnet, a
-          MAC address <ulink url="configuration_file_basics.htm#MAC">in
+          with a colon (<quote>:</quote>) and either an IP address, an IP
+          subnet, a MAC address <ulink url="configuration_file_basics.htm#MAC">in
           Shorewall Format</ulink> or the name of an interface. This column
           may also contain the name of the firewall zone to indicate packets
-          originating on the firewall itself or &#34;all&#34; to indicate any
-          source.</para>
+          originating on the firewall itself or <quote>all</quote> to indicate
+          any source.</para>
         </listitem>
       </varlistentry>
 
@@ -4159,10 +4167,10 @@
 
         <listitem>
           <para>The destination zone. May be qualified by following the zone
-          name with a colon (&#34;:&#34;) and either an IP address or an IP
-          subnet. Because packets are marked prior to routing, you may not
+          name with a colon (<quote>:</quote>) and either an IP address or an
+          IP subnet. Because packets are marked prior to routing, you may not
           specify the name of an interface. This column may also contain
-          &#34;all&#34; to indicate any destination.</para>
+          <quote>all</quote> to indicate any destination.</para>
         </listitem>
       </varlistentry>
 
@@ -4180,7 +4188,7 @@
 
         <listitem>
           <para>The source port or a port range. For all ports, place a hyphen
-          (&#34;-&#34;) in this column.</para>
+          (<quote>-</quote>) in this column.</para>
         </listitem>
       </varlistentry>
 
@@ -4189,7 +4197,7 @@
 
         <listitem>
           <para>The destination port or a port range. To indicate all ports,
-          place a hyphen (&#34;-&#34;) in this column.</para>
+          place a hyphen (<quote>-</quote>) in this column.</para>
         </listitem>
       </varlistentry>
 
@@ -4379,7 +4387,7 @@
           (from /etc/services). If present, only packets destined for the
           specified protocol and one of the listed ports are blocked. When the
           PROTOCOL is icmp, the PORTS column contains a comma-separated list
-          of ICMP type numbers or names (see &#34;iptables -h icmp&#34;).</para>
+          of ICMP type numbers or names (see <quote>iptables -h icmp</quote>).</para>
         </listitem>
       </varlistentry>
     </variablelist>
@@ -4469,7 +4477,7 @@
 
         <listitem>
           <para>A comma-separated list of IP/Subnet addresses. If not supplied
-          or supplied as &#34;-&#34; then 0.0.0.0/0 is assumed.</para>
+          or supplied as <quote>-</quote> then 0.0.0.0/0 is assumed.</para>
         </listitem>
       </varlistentry>
     </variablelist>

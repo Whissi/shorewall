@@ -51,6 +51,13 @@ Problems Corrected in version 2.0.7
 2) Multiple interfaces with the 'blacklist' option no longer result in
    an error message at startup.
 
+3) The following has been added to /etc/shorewall/bogons:
+
+       0.0.0.0	 RETURN
+
+   This prevents the 'nobogons' option from logging DHCP 'DISCOVER'
+   broadcasts. 
+
 New Features in version 2.0.7
 
 1) To improve supportability, the "shorewall status" command now

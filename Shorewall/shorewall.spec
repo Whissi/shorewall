@@ -79,7 +79,7 @@ if [ $1 = 0 ]; then if [ -x /sbin/insserv ]; then /sbin/insserv -r /etc/init.d/s
 
 %changelog
 * Sun Jun 02 2002 Tom Eastep <tom@shorewall.net>
-- Changed version to 1.3.1
+- Changed version to 1.3.2
 * Fri May 31 2002 Tom Eastep <tom@shorewall.net>
 - Changed version to 1.3.1
 - Added the rfc1918 file

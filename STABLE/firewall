@@ -1396,7 +1396,7 @@ setup_proxy_arp() {
 
 	[ -z "$haveroute" ] && run_ip route replace $address dev $interface
 
-	run_arp -Ds $address $external pub
+	run_arp -i $external -Ds $address $external pub
 
 	echo 1 > /proc/sys/net/ipv4/conf/$interface/proxy_arp
 	echo 0 > /proc/sys/net/ipv4/conf/$external/proxy_arp
@@ -1730,7 +1730,7 @@ process_tc_rule()
 	    esac
 	fi
 
-	if [ "x$user" != "x-" ]; then
+	if [ "x${user:--}" != "x-" ]; then
 
 	    [ "$chain" != tcout ] && \
 		fatal_error "Invalid use of a user/group: rule \"$rule\""
@@ -2632,7 +2632,7 @@ add_nat_rule() {
 		    addnatrule `dnat_chain $source` $cli $proto $multiport $sports $dports -d $adr -j $chain
 		done
 
-		for z in $excludezones; do
+		for z in $(separate_list $excludezones); do
 		    eval hosts=\$${z}_hosts
 		    for host in $hosts; do
 			addnatrule $chain -s ${host#*:} -j RETURN
@@ -2843,11 +2843,15 @@ add_a_rule()
 
     # Complain if the rule is really a policy
 
-    if [ -z "$proto" -a -z "$cli" -a -z "$serv" -a -z "$servport" -a -z "$userset" -a "$logtarget" != LOG ]; then
-	error_message "Warning -- Rule \"$rule\" is a POLICY"
-	error_message "	       -- and should be moved to the policy file"
-    fi
-
+    case $logtarget in
+	ACCEPT|DROP|REJECT)	
+	    if [ -z "$proto" -a -z "$cli" -a -z "$serv" -a -z "$servport" -a -z "$userspec" ] ; then
+		error_message "Warning -- Rule \"$rule\" is a POLICY"
+		error_message "	       -- and should be moved to the policy file"
+	    fi
+	    ;;
+    esac
+    
     if [ -n "${serv}${servport}" ]; then
 	if [ $command != check ]; then
 

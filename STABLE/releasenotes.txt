@@ -31,6 +31,22 @@ Problems Corrected since version 1.4.9:
 
    the !10.1.0.0/16 is ignored.
 
+9. A startup error occurs if the USER/GROUP column of the tcrules file
+   is empty.
+
+10. The following syntax previously produced a startup error:
+
+    DNAT z1!z2,z3	    z4:...
+
+    That has been corrected so that multiple excluded zones may now be
+    listed in a DNAT or REDIRECT rule.
+
+11. Use of user-defined actions frequently resulted in a WARNING that
+    the rule was a policy.
+
+12. Thanks to Sean Mathews, a long-standing problem with proxy ARP and
+    IPSEC has been corrected!!
+
 Migration Issues:
 
 None.

@@ -512,7 +512,9 @@ validate_interfaces_file() {
 
 	for option in `separate_list $options`; do
 	    case $option in
-	    dhcp|noping|filterping|routestopped|norfc1918|multi|routefilter|dropunclean|logunclean|blacklist|-)
+	    dhcp|noping|filterping|routestopped|norfc1918|multi)
+                ;;
+	    routefilter|dropunclean|logunclean|blacklist|proxyarp|-)
 		;;
 	    *)
 		error_message "Warning: Invalid option ($option) in record \"$r\""
@@ -1228,6 +1230,16 @@ setup_proxy_arp() {
 	expandv address interface external haveroute
 	setup_one_proxy_arp
     done < $TMP_DIR/proxyarp
+
+    interfaces=`find_interfaces_by_option proxyarp`
+
+    for interface in $interfaces; do
+	if qt echo 1 > /proc/sys/net/ipv4/conf/$interface/proxy_arp; then
+	    echo "   Enabled proxy ARP on $interface"
+        else
+	    error_message "Warning: Unable to enable proxy ARP on $interface"
+        fi
+    done
 }
 
 ###############################################################################
@@ -1268,15 +1280,16 @@ delete_proxy_arp() {
 	while read address interface external haveroute; do
 	    qt arp -i $external -d $address pub
 	    [ -z "$haveroute" ] && qt ip route del $address dev $interface
-
-	    echo 0 > /proc/sys/net/ipv4/conf/$external/proxy_arp
-	    echo 0 > /proc/sys/net/ipv4/conf/$interface/proxy_arp
 	done < ${STATEDIR}/proxyarp
 
 	rm -f ${STATEDIR}/proxyarp
     fi
 
     [ -d ${STATEDIR} ] && touch ${STATEDIR}/proxyarp
+
+    for f in `ls /proc/sys/net/ipv4/conf/*/proxy_arp`; do
+	echo 0 > $f
+    done
 }
 
 ################################################################################

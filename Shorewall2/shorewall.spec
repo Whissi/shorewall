@@ -68,7 +68,7 @@ if [ $1 = 0 ]; then
 fi
 
 %files
-/etc/init.d/shorewall
+%attr(0544,root,root) /etc/init.d/shorewall
 %attr(0700,root,root) %dir /etc/shorewall
 %attr(0700,root,root) %dir /usr/share/shorewall
 %attr(0700,root,root) %dir /var/lib/shorewall
@@ -141,6 +141,8 @@ fi
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel
 
 %changelog
+* Mon Jun 14 2004 Tom Eastep tom@shorewall.net
+- Added %attr spec for /etc/init.d/shorewall
 * Sat May 15 2004 Tom Eastep tom@shorewall.net
 - Updated for 2.0.2a-1
 * Thu May 13 2004 Tom Eastep tom@shorewall.net

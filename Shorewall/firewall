@@ -2787,7 +2787,7 @@ add_common_rules() {
 	    logoptions="$LOGPARAMS --log-prefix Shorewall:badpkt:DROP:"
 	    logoptions="$logoptions --log-level $LOGUNCLEAN --log-ip-options"
 	    run_iptables -A badpkt -p tcp -j LOG $logoptions --log-tcp-options
-	    run_iptables -A logpkt -p tcp -j DROP # Workaround for iptables 1.2.7
+	    run_iptables -A badpkt -p tcp -j DROP # Workaround for iptables 1.2.7
 	    run_iptables -A badpkt -j LOG $logoptions
 	fi
 

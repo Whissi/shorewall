@@ -438,6 +438,14 @@ masq_chain() # $1 = interface
 }
 
 #
+# SNAT Chain for an interface
+#
+snat_chain() # $1 = interface
+{
+   echo $(chain_base $1)_snat
+}
+
+#
 # MAC Verification Chain for an interface
 #
 mac_chain() # $1 = interface
@@ -4190,6 +4198,7 @@ get_routed_networks() # $1 = interface name
     ip route show dev $1 2> /dev/null |
 	while read address rest; do
 	    if [ "x$address" = xdefault ]; then
+//*-+9
 		error_message "Warning: default route ignored on interface $1"
 	    else
 		[ "$address" = "${address%/*}" ] && address="${address}/32"
@@ -4204,13 +4213,30 @@ get_routed_networks() # $1 = interface name
 setup_masq()
 {
     setup_one() {
-	local using
+	local add_snat_aliases=$ADD_SNAT_ALIASES, pre_nat=
 
 	case $fullinterface in
+	    +*)
+		pre_nat=Yes
+		fullinterface=${fullinterface#+}
+		;;
+	esac
+
+	case $fullinterface in
+	    *::*)
+		add_snat_aliases=
+		destnets="${fullinterface##*:}"
+		fullinterface="${fullinterface%:*}"
+		;;		
 	    *:*:*)
 		# Both alias name and networks
 		destnets="${fullinterface##*:}"
 		fullinterface="${fullinterface%:*}"
+		;;
+	    *:)
+		add_snat_aliases=
+	        funninterface=${fullinterface%:}
+		destnets="0.0.0.0/0"
 		;;
 	    *:*)
 		# Alias name OR networks
@@ -4259,7 +4285,7 @@ setup_masq()
 
 	[ "x$addresses" = x- ] && addresses=
 
-	if [ -n "$addresses" -a -n "$ADD_SNAT_ALIASES" ]; then
+	if [ -n "$addresses" -a -n "$add_snat_aliases" ]; then
 	    for address in $(separate_list $addresses); do
 		for addr in $(ip_range_explicit $address) ; do
 		    if ! list_search $addr $aliases_to_add; then
@@ -4321,7 +4347,7 @@ setup_masq()
 
 	destination=$destnets
 
-	chain=$(masq_chain $interface)
+	[ -z "$pre_nat" ] && chain=$(masq_chain $interface) || chain=$(snat_chain $interface)
 
 	case $destnets in
 	    !*)
@@ -5348,6 +5374,12 @@ activate_rules()
 	    rm -f $TMP_DIR/physdev        
 	fi
     }
+    #
+    # Add early SNAT jumps
+    #
+    for interface in $all_interfaces; do
+	addrulejump POSTROUTING $(snat_chain $interface) -o $interface 
+    done
 
     #
     # Add jumps for dynamic nat chains

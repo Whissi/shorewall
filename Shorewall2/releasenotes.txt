@@ -37,3 +37,27 @@ New Features:
 1)  ICMP packets that are in the INVALID state are now dropped by the
     Reject and Drop default actions. They do so using the new 
     'dropInvalid' builtin action.
+
+2)  The /etc/shorewall/masq file INTERFACE column now allows additional
+    options.
+
+    Normally MASQUERADE/SNAT rules are evaluated after one-to-one NAT 
+    rules defined in the /etc/shorewall/nat file. If you preceed the
+    interface name with a plus sign ("+") then the rule will be
+    evaluated before one-to-one NAT.
+
+    Examples:
+
+	+eth0
+	+eth1:192.0.2.32/27
+
+    Also, the effect of ADD_SNAT_ALIASES=Yes can be negated for an
+    entry by following the interface name by ":" but no digit. 
+
+    Examples:
+
+	eth0:
+	eth1::192.0.2.32/27
+	+eth3:
+
+

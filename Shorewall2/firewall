@@ -402,7 +402,7 @@ find_interfaces() # $1 = interface zone
     local z
     local interface
 
-    for interface in $all_interfaces; do
+    for interface in $ALL_INTERFACES; do
 	eval z=\$$(chain_base $interface)_zone
 	[ "x${z}" = x${zne} ] && echo $interface
     done
@@ -574,7 +574,7 @@ known_interface() # $1 = interface name
 {
     local iface
 
-    for iface in $all_interfaces ; do
+    for iface in $ALL_INTERFACES ; do
 	if if_match $iface $1 ; then
 	    return 0
 	fi
@@ -750,7 +750,7 @@ validate_interfaces_file() {
 	    validate_zone $z || startup_error "Invalid zone ($z) in record \"$r\""
 	fi
 
-	list_search $interface $all_interfaces && \
+	list_search $interface $ALL_INTERFACES && \
 	    startup_error "Duplicate Interface $interface"
 
 	wildcard=
@@ -764,7 +764,7 @@ validate_interfaces_file() {
 		;;
 	esac
 
-	all_interfaces="$all_interfaces $interface"
+	ALL_INTERFACES="$ALL_INTERFACES $interface"
 	options=$(separate_list $options)
 	iface=$(chain_base $interface)
 
@@ -802,7 +802,7 @@ validate_interfaces_file() {
 	    esac
 	done
 
-    [ -z "$all_interfaces" ] && startup_error "No Interfaces Defined"
+    [ -z "$ALL_INTERFACES" ] && startup_error "No Interfaces Defined"
 
     done < $TMP_DIR/interfaces
 }
@@ -828,7 +828,7 @@ validate_hosts_file() {
 	interface=${hosts%%:*}
 	iface=$(chain_base $interface)
 
-	list_search  $interface $all_interfaces || \
+	list_search  $interface $ALL_INTERFACES || \
 	    startup_error "Unknown interface ($interface) in record \"$r\""
 
 	hosts=${hosts#*:}
@@ -855,7 +855,7 @@ validate_hosts_file() {
 
 	    for option in $(separate_list $options) ; do
 		case $option in
-		    maclist|norfc1918|nobogons|blacklist|tcpflags|nosmurfs|newnotsyn|-)
+		    maclist|norfc1918|nobogons|blacklist|tcpflags|nosmurfs|newnotsyn|ipsec|-)
 			;;
 		    routeback)
 			[ -z "$ports" ] && \
@@ -1018,7 +1018,7 @@ validate_policy()
 # Find broadcast addresses
 #
 find_broadcasts() {
-    for interface in $all_interfaces; do
+    for interface in $ALL_INTERFACES; do
 	eval bcast=\$$(chain_base $interface)_broadcast
 	if [ "x$bcast" = "xdetect" ]; then
 	    ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet.*brd //; s/scope.*//;' | sort -u
@@ -1054,7 +1054,7 @@ find_first_interface_address() # $1 = interface
 #
 find_interfaces_by_option() # $1 = option
 {
-    for interface in $all_interfaces; do
+    for interface in $ALL_INTERFACES; do
 	eval options=\$$(chain_base $interface)_options
 	list_search $1 $options && echo $interface
     done
@@ -1079,7 +1079,7 @@ find_hosts_by_option() # $1 = option
 	fi
     done < $TMP_DIR/hosts
 
-    for interface in $all_interfaces; do
+    for interface in $ALL_INTERFACES; do
 	interface_has_option $interface $1 && \
 	    echo ${interface}:0.0.0.0/0
     done
@@ -1939,7 +1939,7 @@ setup_netmap() {
     while read type net1 interface net2 ; do
 	expandv type net1 interface net2
 
-	list_search $interface $all_interfaces || \
+	list_search $interface $ALL_INTERFACES || \
 	    fatal_error "Unknown interface $interface in entry \"$type $net1 $interface $net2\""
 
 	case $type in
@@ -1974,7 +1974,7 @@ setup_ecn() # $1 = file name
 
     while read interface host; do
 	expandv interface host
-	list_search  $interface $all_interfaces || \
+	list_search  $interface $ALL_INTERFACES || \
 	    startup_error "Unknown interface $interface"
 	list_search $interface $interfaces || \
 	    interfaces="$interfaces $interface"
@@ -4476,7 +4476,7 @@ setup_masq()
 
 	interface=${fullinterface%:*}
 
-	if ! list_search $interface $all_interfaces; then
+	if ! list_search $interface $ALL_INTERFACES; then
 	    fatal_error "Unknown interface $interface"
 	fi
 
@@ -5155,7 +5155,7 @@ initialize_netfilter () {
 
     echo "Creating Interface Chains..."
 
-    for interface in $all_interfaces; do
+    for interface in $ALL_INTERFACES; do
 	createchain $(forward_chain $interface) no
 	run_iptables -A $(forward_chain $interface) $state -j dynamic
 	createchain $(input_chain $interface)   no
@@ -5498,7 +5498,7 @@ add_common_rules() {
     if [ -n "$DYNAMIC_ZONES" ]; then
 	echo "Setting up Dynamic Zone Chains..."
 
-	for interface in $all_interfaces; do
+	for interface in $ALL_INTERFACES; do
 	    for chain in $(dynamic_chains $interface); do
 		createchain $chain no
 	    done
@@ -5623,13 +5623,13 @@ activate_rules()
     #
     # Add jumps to early SNAT chains
     #
-    for interface in $all_interfaces; do
+    for interface in $ALL_INTERFACES; do
 	addnatjump POSTROUTING $(snat_chain $interface) -o $interface
     done
     #
     # Add jumps for dynamic nat chains
     #
-    [ -n "$DYNAMIC_ZONES" ] && for interface in $all_interfaces ; do
+    [ -n "$DYNAMIC_ZONES" ] && for interface in $ALL_INTERFACES ; do
 	addrulejump PREROUTING $(dynamic_in $interface) -i $interface
     done
     #
@@ -5638,7 +5638,7 @@ activate_rules()
     addnatjump PREROUTING  nat_in
     addnatjump POSTROUTING nat_out
 
-    for interface in $all_interfaces; do
+    for interface in $ALL_INTERFACES; do
 	addnatjump PREROUTING  $(input_chain $interface)  -i $interface
 	addnatjump POSTROUTING $(output_chain $interface) -o $interface
     done
@@ -5770,7 +5770,7 @@ activate_rules()
 	done
     done
     
-    for interface in $all_interfaces ; do
+    for interface in $ALL_INTERFACES ; do
 	run_iptables -A FORWARD -i $interface -j $(forward_chain $interface)
 	run_iptables -A INPUT   -i $interface -j $(input_chain $interface)
 	addnatjump POSTROUTING $(masq_chain $interface) -o $interface

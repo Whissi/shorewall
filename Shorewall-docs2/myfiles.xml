@@ -29,7 +29,8 @@
       1.2 or any later version published by the Free Software Foundation; with
       no Invariant Sections, with no Front-Cover, and with no Back-Cover
       Texts. A copy of the license is included in the section entitled
-      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
 
@@ -40,9 +41,9 @@
       <para>I use a combination of One-to-one NAT and Proxy ARP, neither of
       which are relevant to a simple configuration with a single public IP
       address. If you have just a single public IP address, most of what you
-      see here won&#39;t apply to your setup so beware of copying parts of
-      this configuration and expecting them to work for you. What you copy may
-      or may not work for you.</para>
+      see here won't apply to your setup so beware of copying parts of this
+      configuration and expecting them to work for you. What you copy may or
+      may not work for you.</para>
     </caution>
 
     <caution>
@@ -57,8 +58,9 @@
     (factory default). The modem is configured in <quote>bridge</quote> mode
     so PPPoE is not involved. I have a local network connected to eth0 (subnet
     192.168.1.0/24) and a DMZ connected to eth2 (206.124.146.176/32). Note
-    that I configure the same IP address on both <filename class="devicefile">eth1</filename>
-    and <filename class="devicefile">eth2</filename>.</para>
+    that I configure the same IP address on both <filename
+    class="devicefile">eth1</filename> and <filename
+    class="devicefile">eth2</filename>.</para>
 
     <para>In this configuration:</para>
 
@@ -76,18 +78,20 @@
       </listitem>
 
       <listitem>
-        <para>I use SNAT through 206.124.146.176 for&#x00A0;my Wife&#39;s
-        Windows XP system <quote>Tarry</quote>, and our&#x00A0; dual-booting
-        (SuSE 9.2/Windows XP) laptop <quote>Tipper</quote> which connects
-        through the Wireless Access Point (wap) via a Wireless Bridge (wet).<note><para>While
-        the distance between the WAP and where I usually use the laptop
-        isn&#39;t very far (50 feet or so), using a WAC11 (CardBus wireless
-        card) has proved very unsatisfactory (lots of lost connections). By
-        replacing the WAC11 with the WET11 wireless bridge, I have virtually
-        eliminated these problems (Being an old radio tinkerer (K7JPV), I was
-        also able to eliminate the disconnects by hanging a piece of aluminum
-        foil on the family room wall. Needless to say, my wife Tarry rejected
-        that as a permanent solution :-).</para></note></para>
+        <para>I use SNAT through 206.124.146.176 for&nbsp;my Wife's Windows XP
+        system <quote>Tarry</quote>, and our&nbsp; dual-booting (SuSE
+        9.2/Windows XP) laptop <quote>Tipper</quote> which connects through
+        the Wireless Access Point (wap) via a Wireless Bridge (wet).<note>
+            <para>While the distance between the WAP and where I usually use
+            the laptop isn't very far (50 feet or so), using a WAC11 (CardBus
+            wireless card) has proved very unsatisfactory (lots of lost
+            connections). By replacing the WAC11 with the WET11 wireless
+            bridge, I have virtually eliminated these problems (Being an old
+            radio tinkerer (K7JPV), I was also able to eliminate the
+            disconnects by hanging a piece of aluminum foil on the family room
+            wall. Needless to say, my wife Tarry rejected that as a permanent
+            solution :-).</para>
+          </note></para>
       </listitem>
     </itemizedlist>
 
@@ -108,9 +112,9 @@
     <para>Ursa runs Samba for file sharing with the Windows systems and is
     configured as a Wins server.</para>
 
-    <para>The wireless network connects to Ursa&#39;s eth1 via a LinkSys
-    WAP11.&#x00A0; In additional to using the rather weak WEP 40-bit
-    encryption (64-bit with the 24-bit preamble), I use <ulink
+    <para>The wireless network connects to Ursa's eth1 via a LinkSys
+    WAP11.&nbsp; In additional to using the rather weak WEP 40-bit encryption
+    (64-bit with the 24-bit preamble), I use <ulink
     url="MAC_Validation.html">MAC verification</ulink> and <ulink
     url="IPSEC-2.6.html">Kernel 2.6 IPSEC</ulink>.</para>
 
@@ -141,9 +145,9 @@
     in the DMZ.</para>
 
     <para>The ethernet interface in the Server is configured with IP address
-    206.124.146.177, netmask 255.255.255.0. The server&#39;s default gateway
-    is 206.124.146.254 (Router at my ISP. This is the same default gateway
-    used by the firewall itself). On the firewall, an entry in my
+    206.124.146.177, netmask 255.255.255.0. The server's default gateway is
+    206.124.146.254 (Router at my ISP. This is the same default gateway used
+    by the firewall itself). On the firewall, an entry in my
     /etc/network/interfaces file (see below) adds a host route to
     206.124.146.177 through eth1 when that interface is brought up.</para>
 
@@ -163,7 +167,7 @@
 
       <blockquote>
         <programlisting>LOGFILE=/var/log/messages
-LOGFORMAT=&#34;Shorewall:%s:%s &#34;
+LOGFORMAT="Shorewall:%s:%s "
 LOGRATE=
 LOGBURST=
 LOGUNCLEAN=$LOG
@@ -209,9 +213,9 @@ TCP_FLAGS_DISPOSITION=DROP</programlisting>
       <title>Params File (Edited)</title>
 
       <blockquote>
-        <para><programlisting>MIRRORS=&#60;list of shorewall mirror ip addresses&#62;
-NTPSERVERS=&#60;list of the NTP servers I sync with&#62;
-TEXAS=&#60;ip address of gateway in Plano&#62;
+        <para><programlisting>MIRRORS=&lt;list of shorewall mirror ip addresses&gt;
+NTPSERVERS=&lt;list of the NTP servers I sync with&gt;
+TEXAS=&lt;ip address of gateway in Plano&gt;
 LOG=info
 EXT_IF=eth1
 INT_IF=eth2
@@ -331,15 +335,14 @@ all             all             REJECT          $LOG
 
       <blockquote>
         <para>Although most of our internal systems use one-to-one NAT, my
-        wife&#39;s system (192.168.1.4) uses IP Masquerading (actually SNAT)
-        as does our laptop (192.168.1.8) and visitors with laptops.</para>
+        wife's system (192.168.1.4) uses IP Masquerading (actually SNAT) as
+        does our laptop (192.168.1.8) and visitors with laptops.</para>
 
         <para>The first entry allows access to the DSL modem and uses features
-        introduced in Shorewall 2.1.1. The leading plus sign (&#34;+_&#34;)
-        causes the rule to be placed before rules generated by the
-        /etc/shorewall/nat file below. The double colons (&#34;::&#34;) causes
-        the entry to be exempt from ADD_SNAT_ALIASES=Yes in my shorewall.conf
-        file above.</para>
+        introduced in Shorewall 2.1.1. The leading plus sign ("+_") causes the
+        rule to be placed before rules generated by the /etc/shorewall/nat
+        file below. The double colons ("::") causes the entry to be exempt
+        from ADD_SNAT_ALIASES=Yes in my shorewall.conf file above.</para>
 
         <programlisting>#INTERFACE              SUBNET          ADDRESS
 +$EXT_IF::192.168.1.1      0.0.0.0/0       192.168.1.254
@@ -377,7 +380,8 @@ $EXT_IF:2                  eth2            206.124.146.176
     </section>
 
     <section>
-      <title>Tunnels File (Shell variable TEXAS set in /etc/shorewall/params)</title>
+      <title>Tunnels File (Shell variable TEXAS set in
+      /etc/shorewall/params)</title>
 
       <blockquote>
         <programlisting>#TYPE                   ZONE    GATEWAY         GATEWAY ZONE    PORT
@@ -403,7 +407,8 @@ Mirrors             #Accept traffic from the Shorewall Mirror sites
       <blockquote>
         <para>The $MIRRORS variable expands to a list of approximately 10 IP
         addresses. So moving these checks into a separate chain reduces the
-        number of rules that most net-&#62;dmz traffic needs to traverse.</para>
+        number of rules that most net-&gt;dmz traffic needs to
+        traverse.</para>
 
         <programlisting>#TARGET  SOURCE         DEST            PROTO   DEST    SOURCE     ORIGINAL     RATE
 #                                               PORT    PORT(S)    DEST         LIMIT
@@ -430,7 +435,7 @@ RejectSMB
 DropUPnP
 dropNotSyn
 DropDNSrep
-DROP      loc:eth2:!192.168.1.0/24       #So that my braindead Windows[tm] XP system doesn&#39;t flood my log
+DROP      loc:eth2:!192.168.1.0/24       #So that my braindead Windows[tm] XP system doesn't flood my log
                                          #with NTP requests with a source address in 16.0.0.0/8 (address of
                                          #its PPTP tunnel to HP).</programlisting>
       </blockquote>
@@ -460,7 +465,7 @@ spdadd 206.124.146.176/32 64.139.97.48/32     any -P out ipsec esp/tunnel/206.12
       <blockquote>
         <para>SA parameters for communication with our second home.</para>
 
-        <programlisting> path certificate &#34;/etc/certs&#34; ;
+        <programlisting> path certificate "/etc/certs" ;
  listen
  {
          isakmp 206.124.146.176;
@@ -469,7 +474,7 @@ spdadd 206.124.146.176/32 64.139.97.48/32     any -P out ipsec esp/tunnel/206.12
 remote 64.139.97.48
 {
         exchange_mode main ;
-        certificate_type x509 &#34;gateway.pem&#34; &#34;gateway_key.pem&#34;;
+        certificate_type x509 "gateway.pem" "gateway_key.pem";
         verify_cert on;
         my_identifier asn1dn ;
         peers_identifier asn1dn ;
@@ -505,7 +510,8 @@ sainfo address 206.124.146.176/32 any address 64.139.97.48/32 any
     </section>
 
     <section>
-      <title>Rules File (The shell variables are set in /etc/shorewall/params)</title>
+      <title>Rules File (The shell variables are set in
+      /etc/shorewall/params)</title>
 
       <blockquote>
         <programlisting>###############################################################################################################################################################################
@@ -568,7 +574,7 @@ AllowPing       net                             dmz
 #
 # Net to Local
 #
-# When I&#39;m &#34;on the road&#34;, the following two rules allow me VPN access back home.
+# When I'm "on the road", the following two rules allow me VPN access back home.
 #
 DNAT            net                             loc:192.168.1.4         tcp     1723    -
 DNAT            net:!$TEXAS                     loc:192.168.1.4         gre     -
@@ -599,12 +605,12 @@ REJECT:$LOG     dmz                             net                     udp     
 ACCEPT          dmz                             net:$POPSERVERS         tcp     pop3
 #
 # Something is wrong with the FTP connection tracking code or there is some client out there
-# that is sending a PORT command which that code doesn&#39;t understand. Either way,
+# that is sending a PORT command which that code doesn't understand. Either way,
 # the following works around the problem.
 #
 ACCEPT:$LOG     dmz                             net                     tcp     1024:                                   20
 ###############################################################################################################################################################################
-# DMZ to Firewall -- ntp &#38; snmp, Silently reject Auth
+# DMZ to Firewall -- ntp &amp; snmp, Silently reject Auth
 #
 ACCEPT          dmz                             fw                      udp     ntp                                     ntp
 ACCEPT          dmz                             fw                      tcp     161,ssh
@@ -691,7 +697,7 @@ verb 3</programlisting>
 auto lo
 iface lo inet loopback
 
-# DMZ interface -- after the interface is up, add a host route to the server. This allows &#39;Yes&#39; in the
+# DMZ interface -- after the interface is up, add a host route to the server. This allows 'Yes' in the
 #                  HAVEROUTE column of the /etc/shorewall/proxyarp file. Note that the DMZ interface has
 #                  the same IP address as the Internet interface but has no broadcast address or network.
 
@@ -702,7 +708,7 @@ iface eth0 inet static
 	broadcast 0.0.0.0
 	up ip route add 206.124.146.177 dev eth0
 
-# Internet interface -- after the interface is up, add a host route to the DSL &#39;Modem&#39; (Westell 2200).
+# Internet interface -- after the interface is up, add a host route to the DSL 'Modem' (Westell 2200).
 
 auto eth1
 iface eth1 inet static
@@ -711,7 +717,7 @@ iface eth1 inet static
 	gateway 206.124.146.254
 	up ip route add 192.168.1.1 dev eth1
 
-# Local LAN interface -- after the interface is up, add a net route to the Wireless network through &#39;Ursa&#39;.
+# Local LAN interface -- after the interface is up, add a net route to the Wireless network through 'Ursa'.
 
 auto eth2
 iface eth2 inet static
@@ -727,20 +733,20 @@ iface eth2 inet static
     <title>Wireless IPSEC Gateway (Ursa) Configuration</title>
 
     <para>As mentioned above, Ursa acts as an IPSEC gateway for the wireless
-    network. It&#39;s view of the network is diagrammed in the following
+    network. It's view of the network is diagrammed in the following
     figure.</para>
 
     <graphic align="center" fileref="images/network1.png" valign="middle" />
 
-    <para>I&#39;ve included the files that I used to configure that system.</para>
+    <para>I've included the files that I used to configure that system.</para>
 
     <section>
       <title>zones</title>
 
       <blockquote>
         <para>Because <emphasis role="bold">loc</emphasis> is a sub-zone of
-        <emphasis role="bold">net</emphasis>, <emphasis role="bold">loc</emphasis>
-        must be defined first.</para>
+        <emphasis role="bold">net</emphasis>, <emphasis
+        role="bold">loc</emphasis> must be defined first.</para>
 
         <programlisting>#ZONE   DISPLAY         COMMENTS
 loc     Local           Local networks
@@ -796,17 +802,17 @@ WiFi    eth1            192.168.3.255   nobogons,blacklist,maclist,routeback
       <title>ipsec</title>
 
       <blockquote>
-        <para>The mss=1400 in the OUT OPTIONS of the &#39;net&#39; zone uses a
-        feature added in 2.1.12 and sets the MSS field in TCP SYN packets
-        forwarded to the &#39;net&#39; zone to 1400. This works around a
-        problem whereby ICMP fragmentation-needed packets are being dropped
-        somewhere between my main firewall and the IMAP server at my work.</para>
+        <para>The mss=1400 in the OUT OPTIONS of the 'net' zone uses a feature
+        added in 2.1.12 and sets the MSS field in TCP SYN packets forwarded to
+        the 'net' zone to 1400. This works around a problem whereby ICMP
+        fragmentation-needed packets are being dropped somewhere between my
+        main firewall and the IMAP server at my work.</para>
 
         <programlisting>#ZONE   IPSEC   OPTIONS                 IN                      OUT
 #       ONLY                            OPTIONS                 OPTIONS
 sec     yes     mode=tunnel             
 net     no      -                       -                       <emphasis
-role="bold">mss=1400</emphasis>
+            role="bold">mss=1400</emphasis>
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
 </programlisting>
       </blockquote>
@@ -860,7 +866,8 @@ eth1                    00:0b:c1:53:cc:97       192.168.3.8     #TIPPER
       <title>/etc/racoon/setkey.conf</title>
 
       <blockquote>
-        <para>This defines encryption policies to/from the wireless network.</para>
+        <para>This defines encryption policies to/from the wireless
+        network.</para>
 
         <programlisting>flush;
 spdflush;
@@ -877,7 +884,7 @@ spdadd 192.168.3.8/32     0.0.0.0/0          any -P in   ipsec esp/tunnel/192.16
         <para>SA parameters for communication with our wireless network
         (Tipper is currently the only Wireless host).</para>
 
-        <programlisting>path certificate &#34;/etc/certs&#34;;
+        <programlisting>path certificate "/etc/certs";
 
 listen
 {
@@ -887,7 +894,7 @@ listen
 remote 192.168.3.8
 {
         exchange_mode main ;
-        certificate_type x509 &#34;ursa.pem&#34; &#34;ursa_key.pem&#34;;
+        certificate_type x509 "ursa.pem" "ursa_key.pem";
         verify_cert on;
         my_identifier asn1dn ;
         peers_identifier asn1dn ;
@@ -921,11 +928,12 @@ sainfo address 0.0.0.0/0 any address 192.168.3.8/32 any
     connected via our wireless network, it uses IPSEC tunnel mode for all
     access.</para>
 
-    <para>Tipper&#39;s view of the world is shown in the following diagram:</para>
+    <para>Tipper's view of the world is shown in the following diagram:</para>
 
     <graphic align="center" fileref="images/network2.png" valign="middle" />
 
-    <para>The key configuration files are shown in the following sections.</para>
+    <para>The key configuration files are shown in the following
+    sections.</para>
 
     <section>
       <title>zones</title>
@@ -1007,7 +1015,7 @@ ACCEPT          net                     fw      tcp     4000:4100
         <programlisting>flush;
 spdflush;
 
-# Policies for while we&#39;re connected via Wireless at home
+# Policies for while we're connected via Wireless at home
 
 spdadd 192.168.3.8/32     192.168.3.8/32     any -P in  none;
 spdadd 192.168.3.8/32     192.168.3.8/32     any -P out none;
@@ -1023,7 +1031,7 @@ spdadd 192.168.3.8/32     0.0.0.0/0          any -P out ipsec esp/tunnel/192.168
       <title>/etc/racoon/racoon.conf</title>
 
       <blockquote>
-        <programlisting>path certificate &#34;/etc/certs&#34;;
+        <programlisting>path certificate "/etc/certs";
 
 listen
 {
@@ -1033,7 +1041,7 @@ listen
 remote 192.168.3.254
 {
         exchange_mode main ;
-        certificate_type x509 &#34;tipper.pem&#34; &#34;tipper_key.pem&#34;;
+        certificate_type x509 "tipper.pem" "tipper_key.pem";
         verify_cert on;
         my_identifier asn1dn ;
         peers_identifier asn1dn ;
@@ -1062,8 +1070,8 @@ sainfo address 192.168.3.8/32 any address 0.0.0.0/0 any
   <section>
     <title>Tipper Configuration on the Road</title>
 
-    <para>When Tipper is on the road, it&#39;s world view is the same as in
-    the diagram above.</para>
+    <para>When Tipper is on the road, it's world view is the same as in the
+    diagram above.</para>
 
     <section>
       <title>zones</title>
@@ -1121,12 +1129,46 @@ ACCEPT          net                     fw      tcp     4000:4100
     <section>
       <title>/etc/openvpn/home.conf</title>
 
-      <para></para>
+      <blockquote>
+        <programlisting>dev tun
+remote gateway.shorewall.net
+up /etc/openvpn/home.up
+ 
+tls-client
+pull
+ 
+ca /etc/certs/cacert.pem
+ 
+cert /etc/certs/tipper.pem
+key /etc/certs/tipper_key.pem
+ 
+port 1194
+ 
+user nobody
+group nogroup
+ 
+comp-lzo
+ 
+ping 15
+ping-restart 45
+ping-timer-rem
+persist-tun
+persist-key
+ 
+verb 3</programlisting>
+      </blockquote>
+    </section>
+
+    <section>
+      <title>/etc/openvpn/home.up</title>
 
       <blockquote>
-        <para></para>
-
-        <programlisting></programlisting>
+        <programlisting>#!/bin/bash
+ 
+ip route add 192.168.1.0/24 via $5     #Access to Home Network
+ip route add 206.124.146.177/32 via $5 #So that DNS names will resolve in my
+                                       #Internal zone because the source IP will
+                                       #be in 192.168.2.0/24</programlisting>
       </blockquote>
     </section>
   </section>

@@ -21,7 +21,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-10-12</pubdate>
+    <pubdate>2004-12-20</pubdate>
 
     <copyright>
       <year>2003</year>
@@ -51,6 +51,14 @@
   url="http://openvpn.sourceforge.net/">http://openvpn.sourceforge.net/</ulink>.</para>
 
   <para>OpenVPN support was added to Shorewall in version 1.3.14.</para>
+
+  <warning>
+    <para>The default port number for OpenVPN changed from 5000 to 1194 in
+    Shorewall version 2.2.0 RC2. This change reflected a change in OpenVPN
+    which also changed its default to 1194. In the text that follows, where
+    you see Port 5000 this can also refer to port 1194 depending on which
+    version of Shorewall and OpenVPN that you are using.</para>
+  </warning>
 
   <section>
     <title>Bridging two Masqueraded Networks</title>
@@ -193,5 +201,153 @@ vpn            loc           ACCEPT</programlisting>
 
     <para>On both systems, restart Shorewall and start OpenVPN. The systems in
     the two masqueraded subnetworks can now talk to each other.</para>
+  </section>
+
+  <section>
+    <title>Roadwarrior</title>
+
+    <para>OpenVPN 2.0 provides excellent support for roadwarriors. Consider
+    the setup in the following diagram:</para>
+
+    <graphic fileref="images/Mobile.png" />
+
+    <para>On the gateway system (System A), we need a zone to represent the
+    remote clients — we'll call that zone <quote>road</quote>.</para>
+
+    <blockquote>
+      <para><filename>/etc/shorewall/zones</filename> — System A:</para>
+
+      <programlisting>#ZONE           DISPLAY           COMMENTS
+road            Roadwarriors      Remote clients</programlisting>
+    </blockquote>
+
+    <para>On system A, the remote clients will comprise the <emphasis
+    role="bold">road</emphasis> zone.</para>
+
+    <blockquote>
+      <para>In <filename>/etc/shorewall/interfaces</filename> on system
+      A:</para>
+
+      <programlisting>#ZONE      INTERFACE        BROADCAST     OPTIONS
+road       tun+</programlisting>
+    </blockquote>
+
+    <para>In <filename>/etc/shorewall/tunnels</filename> on system A, we need
+    the following:</para>
+
+    <blockquote>
+      <programlisting>#TYPE         ZONE           GATEWAY        GATEWAY ZONE
+openvpn:1194  net            0.0.0.0/0</programlisting>
+    </blockquote>
+
+    <para>We want the remote systems to have access to the local LAN — we do
+    that with an entry in <filename>/etc/shorewall/policy</filename> (assume
+    that the local LAN comprises the zone <quote>loc</quote>).</para>
+
+    <blockquote>
+      <programlisting>#SOURCE      DESTINATION        POLICY
+road         loc                ACCEPT</programlisting>
+    </blockquote>
+
+    <para>The OpenVPN configuration file on system A is something like the
+    following:</para>
+
+    <blockquote>
+      <programlisting>dev tun
+
+server 192.168.2.0 255.255.255.0
+ 
+dh dh1024.pem
+ 
+ca /etc/certs/cacert.pem
+ 
+cert /etc/certs/SystemA.pem
+key /etc/certs/SystemA_key.pem
+ 
+port 1194
+ 
+comp-lzo
+ 
+user nobody
+ 
+group nogroup
+ 
+ping 15
+ping-restart 45
+ping-timer-rem
+persist-tun
+persist-key
+ 
+verb 3</programlisting>
+    </blockquote>
+
+    <para>Configuration on the remote clients follows a similar line. We
+    define a zone to represent the remote LAN:</para>
+
+    <blockquote>
+      <para><filename>/etc/shorewall/zones</filename> — System B:</para>
+
+      <programlisting>#ZONE           DISPLAY           COMMENTS
+home            Home              Home LAN</programlisting>
+    </blockquote>
+
+    <para>On system A, the hosts accessible through the tunnel will comprise
+    the <emphasis role="bold">home</emphasis> zone.</para>
+
+    <blockquote>
+      <para>In <filename>/etc/shorewall/interfaces</filename> on system
+      B:</para>
+
+      <programlisting>#ZONE      INTERFACE        BROADCAST     OPTIONS
+home       tun0</programlisting>
+    </blockquote>
+
+    <para>In <filename>/etc/shorewall/tunnels</filename> on system B, we need
+    the following:</para>
+
+    <blockquote>
+      <programlisting>#TYPE         ZONE           GATEWAY        GATEWAY ZONE
+openvpn:1194  net            206.162.148.9</programlisting>
+    </blockquote>
+
+    <para>We want the remote clien to have access to the local LAN — we do
+    that with an entry in <filename>/etc/shorewall/policy</filename>.</para>
+
+    <blockquote>
+      <programlisting>#SOURCE      DESTINATION        POLICY
+$FW          home               ACCEPT</programlisting>
+    </blockquote>
+
+    <para>The OpenVPN configuration on the remote clients is along the
+    following line:</para>
+
+    <blockquote>
+      <programlisting>dev tun
+remote 206.162.148.9
+up /etc/openvpn/home.up
+ 
+tls-client
+pull
+ 
+ca /etc/certs/cacert.pem
+ 
+cert /etc/certs/SystemB.pem
+key /etc/certs/SystemB_key.pem
+ 
+port 1194
+ 
+user nobody
+group nogroup
+ 
+comp-lzo
+ 
+ping 15
+ping-restart 45
+ping-timer-rem
+persist-tun
+persist-key
+ 
+verb 3</programlisting>
+    </blockquote>
   </section>
 </article>

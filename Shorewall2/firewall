@@ -108,6 +108,15 @@ save_command()
 }
 
 #
+# Append a file to /var/lib/shorewall/restore-$$
+#
+append_file() {
+    save_command "cat > $STATEDIR/$1 << EOF"
+    cat $STATEDIR/$1 >> /var/lib/shorewall/restore-$$
+    save_command EOF
+}
+
+#
 # Run iptables and if an error occurs, stop the firewall and quit
 #
 run_iptables() {
@@ -5332,11 +5341,17 @@ define_firewall() # $1 = Command (Start or Restart)
 
     date > $STATEDIR/restarted
 
+    save_command "date > $STATEDIR/restarted"
+
     report "Shorewall ${1}ed"
 
     rm -rf $TMP_DIR
 
     save_command "iptables-restore < /var/lib/shorewall/iptsave"
+
+    for file in chains nat proxyarp zones; do
+	append_file $file
+    done
     
     mv -f /var/lib/shorewall/restore-$$ /var/lib/shorewall/restore-new
 

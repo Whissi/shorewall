@@ -729,11 +729,16 @@ case "$1" in
     start)
 	[ $# -ne 1 ] && usage 1
 	get_config
-	if [ -f /var/lib/shorewall/restore -a -f /var/lib/shorewall/iptsave ]; then
-	    echo Restoring Shorewall...
-	    . /var/lib/shorewall/restore
-            echo Shorewall restored
-	else
+	if [ -n "$FAST" ]; then
+	    if [ -f /var/lib/shorewall/restore -a -f /var/lib/shorewall/iptsave ]; then
+		echo Restoring Shorewall...
+		. /var/lib/shorewall/restore
+		date > $STATEDIR/restarted
+		echo Shorewall restored
+	    else
+		exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock start
+	    fi
+        else
 	    exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock start
 	fi
 	;;

@@ -90,22 +90,17 @@ determine_zones()
 
     multi_display=Multi-zone
 
-    if [ -f $zonefile ]; then
-	zones=`find_zones $zonefile`
-	zones=`echo $zones` # Remove extra trash
+    [ -z "$TMP_DIR" ] && TMP_DIR=/tmp
+    strip_file zones $zonefile
+    zones=`find_zones $TMP_DIR/zones`
+    zones=`echo $zones` # Remove extra trash
+    
+    for zone in $zones; do
+	dsply=`find_display $zone $TMP_DIR/zones`
+	eval ${zone}_display=\$dsply
+    done
 
-	for zone in $zones; do
-	    dsply=`find_display $zone $zonefile`
-	    eval ${zone}_display=\$dsply
-        done
-    else
-	zones="net local dmz gw"
-	net_display=Net
-	local_display=Local
-	dmz_display=DMZ
-	gw_display=Gateway
-    fi
-
+    rm -f $TMP_DIR/zones
 }
 
 #

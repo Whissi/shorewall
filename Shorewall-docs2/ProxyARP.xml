@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-07-22</pubdate>
+    <pubdate>2004-08-10</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -68,7 +68,7 @@
   pass ARP requests and other network packets in both directions between the
   server machine and the PUBNET network, making the server machine appear to
   be connected to the PUBNET network even though it is on the PRIVNET network
-  hidden behind the router. </para>
+  hidden behind the router.</para>
 
   <para>Before you try to use this technique, I strongly recommend that you
   read the <ulink url="shorewall_setup_guide.htm">Shorewall Setup Guide</ulink>.</para>
@@ -92,7 +92,8 @@
 
     <para>Be sure that the internal systems (130.242.100.18 and 130.252.100.19
     in the above example) are not included in any specification in
-    <filename>/etc/shorewall/masq</filename> or <filename>/etc/shorewall/nat</filename>.</para>
+    <filename>/etc/shorewall/masq</filename> or <filename>/etc/shorewall/nat</filename>.
+    </para>
 
     <note>
       <para>I&#39;ve used an RFC1918 IP address for eth1 - that IP address is
@@ -103,13 +104,20 @@
     their subnet mask and default gateway configured exactly the same way that
     the Firewall system&#39;s eth0 is configured. In other words, they should
     be configured just like they would be if they were parallel to the
-    firewall rather than behind it.</para>
+    firewall rather than behind it. </para>
 
     <warning>
       <para>Do not add the Proxy ARP&#39;ed address(es) (130.252.100.18 and
       130.252.100.19 in the above example) to the external interface (eth0 in
       this example) of the firewall.</para>
     </warning>
+
+    <note>
+      <para>It should be stressed that entries in the proxyarp file do not
+      automatically enable traffic between the external network and the
+      internal host(s) — such traffic is still subject to your policies and
+      rules.</para>
+    </note>
 
     <para>While the address given to the firewall interface is largely
     irrelevant, one approach you can take is to make that address the same as

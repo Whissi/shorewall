@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-02-04</pubdate>
+    <pubdate>2004-08-10</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -56,9 +56,13 @@
     <para>One-to-one NAT can be used to make the systems with the 10.1.1.*
     addresses appear to be on the upper (130.252.100.*) subnet. If we assume
     that the interface to the upper subnet is eth0, then the following
-    /etc/shorewall/NAT file would make the lower left-hand system appear to
-    have IP address 130.252.100.18 and the right-hand one to have IP address
-    130.252.100.19.</para>
+    <filename>/etc/shorewall/nat</filename> file would make the lower
+    left-hand system appear to have IP address 130.252.100.18 and the
+    right-hand one to have IP address 130.252.100.19. It should be stressed
+    that these entries in the <filename>/etc/shorewall/nat</filename> file do
+    not automatically enable traffic between the external network and the
+    internal host(s) — such traffic is still subject to your policies and
+    rules.</para>
 
     <para><filename>/etc/shorewall/nat</filename><programlisting>#EXTERNAL       INTERFACE         INTERNAL      ALL INTERFACES     LOCAL
 130.252.100.18  eth0              10.1.1.2      no                 no
@@ -66,7 +70,7 @@
 
     <para>Be sure that the internal system(s) (10.1.1.2 and 10.1.1.3 in the
     above example) is (are) not included in any specification in
-    /etc/shorewall/masq or /etc/shorewall/proxyarp.</para>
+    <filename>/etc/shorewall/masq</filename> or <filename>/etc/shorewall/proxyarp</filename>.</para>
 
     <note>
       <para>The <quote>ALL INTERFACES</quote> column is used to specify
@@ -86,9 +90,9 @@
       <para>Shorewall will automatically add the external address to the
       specified interface unless you specify <ulink
       url="Documentation.htm#Aliases">ADD_IP_ALIASES</ulink>=<quote>no</quote>
-      (or <quote>No</quote>) in /etc/shorewall/shorewall.conf; If you do not
-      set ADD_IP_ALIASES or if you set it to <quote>Yes</quote> or
-      <quote>yes</quote> then you must NOT configure your own alias(es).</para>
+      (or <quote>No</quote>) in <filename>/etc/shorewall/shorewall.conf</filename>;
+      If you do not set ADD_IP_ALIASES or if you set it to <quote>Yes</quote>
+      or <quote>yes</quote> then you must NOT configure your own alias(es).</para>
 
       <para><important><para>Shorewall versions earlier than 1.4.6 can only
       add external addresses to an interface that is configured with a single

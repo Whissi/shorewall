@@ -17,7 +17,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-08-01</pubdate>
+    <pubdate>2004-08-10</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -291,12 +291,18 @@ loc      eth1         detect       <emphasis role="bold">routeback</emphasis></p
         </listitem>
 
         <listitem>
-          <para>In <filename>/etc/shorewall/rules</filename> (Assuming that
-          your local network is 192.168.1.0/24):</para>
+          <para>In <filename>/etc/shorewall/masq</filename>:</para>
 
-          <programlisting>#ACTION    SOURCE                 DEST               PROTO    DEST PORT   SOURCE    ORIGINAL
-#                                                                         PORT      DEST.
-DNAT       loc:192.168.1.0/24     loc:192.168.1.5    tcp      www         -         130.151.100.69:192.168.1.254</programlisting>
+          <programlisting>#INTERFACE              SUBNET          ADDRESS         PROTO   PORT(S)
+eth1                    eth1            192.168.1.254   tcp     www</programlisting>
+        </listitem>
+
+        <listitem>
+          <para>In <filename>/etc/shorewall/rules</filename>:</para>
+
+          <programlisting>#ACTION    SOURCE       DEST               PROTO    DEST PORT   SOURCE    ORIGINAL
+#                                                               PORT      DEST.
+DNAT       loc          loc:192.168.1.5    tcp      www         -         130.151.100.69</programlisting>
 
           <para>That rule only works of course if you have a static external
           IP address. If you have a dynamic IP address and are running
@@ -306,9 +312,9 @@ DNAT       loc:192.168.1.0/24     loc:192.168.1.5    tcp      www         -     
 
           <para>and make your DNAT rule:</para>
 
-          <programlisting>#ACTION    SOURCE                 DEST               PROTO    DEST PORT   SOURCE    ORIGINAL
-#                                                                         PORT      DEST.
-DNAT       loc:192.168.1.0/24     loc:192.168.1.5    tcp      www         -         $ETH0_IP:192.168.1.254</programlisting>
+          <programlisting>#ACTION    SOURCE        DEST               PROTO    DEST PORT   SOURCE    ORIGINAL
+#                                                                PORT      DEST.
+DNAT       loc           loc:192.168.1.5    tcp      www         -         $ETH0_IP</programlisting>
 
           <para>Using this technique, you will want to configure your
           DHCP/PPPoE client to automatically restart Shorewall each time that

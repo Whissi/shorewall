@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-06-12</pubdate>
+    <pubdate>2004-08-10</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -1657,14 +1657,23 @@ ACCEPT<emphasis role="bold">:info</emphasis>   -              -               tc
           addresses are specified in the ORIGINAL DEST column as a
           comma-separated list.</para>
 
+          <para>If this list begins with <quote>!</quote> then the rule will
+          only apply if the original destination address matches none of the
+          addresses listed.</para>
+
           <para>The IP address(es) may be optionally followed by
           <quote>:</quote> and a second IP address. This latter address, if
           present, is used as the source address for packets forwarded to the
           server (This is called <quote>Source NAT</quote> or SNAT.</para>
 
-          <para>If this list begins with <quote>!</quote> then the rule will
-          only apply if the original destination address matches none of the
-          addresses listed.</para>
+          <warning>
+            <para>Specifying SNAT in a DNAT rule is deprecated and this
+            feature will be removed from Shorewall in version 2.1.0. An entry
+            in <link linkend="Masq">/etc/shorewall/masq</link> can serve the
+            same purpose and is the preferred method of performing SNAT with
+            Shorewall. See <ulink url="FAQ.htm#faq2">FAQ 2</ulink> for an
+            example.</para>
+          </warning>
 
           <note>
             <para>When using SNAT, it is a good idea to qualify the source
@@ -2410,7 +2419,7 @@ eth0                  eth1            206.124.146.176</programlisting>
         <listitem>
           <para>(Added at Version 2.0.6) - Normally Shorewall attempts to use
           the iptables packet type match extension to determine broadcast and
-          multicast packets. </para>
+          multicast packets.</para>
 
           <orderedlist>
             <listitem>
@@ -2429,7 +2438,7 @@ eth0                  eth1            206.124.146.176</programlisting>
           <para>If you are experiencing either of these problems, setting
           PKTTYPE=No will prevent Shorewall from trying to use the packet type
           match extension and to use IP address matching to determine which
-          packets are broadcasts or multicasts. </para>
+          packets are broadcasts or multicasts.</para>
         </listitem>
       </varlistentry>
 

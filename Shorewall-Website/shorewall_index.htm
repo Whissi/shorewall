@@ -1,333 +1,345 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html>
 <head>
-  <meta content="HTML Tidy, see www.w3.org" name="generator">
-  <meta content="text/html; charset=UTF-8" http-equiv="Content-Type">
+  <meta http-equiv="CONTENT-TYPE" content="text/html; charset=utf-8">
   <title>Shoreline Firewall (Shorewall) 2.0</title>
   <base target="_self">
+  <meta name="GENERATOR" content="OpenOffice.org 1.1.1  (Linux)">
+  <meta name="CREATED" content="20040920;15031500">
+  <meta name="CHANGED" content="20040920;15183300">
 </head>
-<body>
-<div>
+<body dir="ltr" lang="en-US">
 <h1>Shorewall 2.0</h1>
-<span style="font-weight: bold;">Tom Eastep</span><br>
+<p><b>Tom Eastep</b><br>
 <br>
-The information on this site
-applies only to 2.0.x releases of
-Shorewall. For older versions:<br>
+The information on this site applies only
+to 2.0.x releases of Shorewall. For older versions:</p>
 <ul>
-  <li>The 1.4 site is <a href="http://www.shorewall.net/1.4"
- target="_top">here.<br>
-    </a></li>
-  <li>The 1.3 site is <a href="http://www.shorewall.net/1.3"
- target="_top">here.</a></li>
-  <li>The 1.2 site is <a href="http://shorewall.net/1.2/" target="_top">here</a>.</li>
+  <li>
+    <p style="margin-bottom: 0in;">The 1.4 site is <a
+ href="http://www.shorewall.net/1.4" target="_top">here.</a></p>
+  </li>
+  <li>
+    <p style="margin-bottom: 0in;">The 1.3 site is <a
+ href="http://www.shorewall.net/1.3" target="_top">here.</a> </p>
+  </li>
+  <li>
+    <p>The 1.2 site is <a href="http://shorewall.net/1.2/"
+ target="_top">here</a>. </p>
+  </li>
 </ul>
-The current 2.0 Stable Release is 2.0.8 -- Here are the <a
+<p>The current 2.0 Stable Release is 2.0.8 -- Here are the <a
  href="http://shorewall.net/pub/shorewall/2.0/shorewall-2.0.8/releasenotes.txt">release
 notes</a>.<br>
-The current 2.1 Developement Release is 2.1.8 -- Here are the <a
- href="http://shorewall.net/pub/shorewall/2.1/shorewall-2.1.8/releasenotes.txt">release
+The current 2.1 Developement Release is 2.1.9 -- Here
+are the <a
+ href="http://shorewall.net/pub/shorewall/2.1/shorewall-2.1.9/releasenotes.txt">release
 notes</a>.<br>
 <br>
-Copyright © 2001-2004 Thomas M. Eastep<br>
-<div>
-<div class="legalnotice">
+Copyright © 2001-2004 Thomas M. Eastep</p>
 <p>Permission is granted to copy, distribute and/or modify this
-document under the terms of the GNU Free Documentation License, Version
-1.2 or any later version published by the Free Software Foundation;
-with no Invariant Sections, with no Front-Cover, and with no Back-Cover
-Texts. A copy of the license is included in the section entitled “<span
- class="quote"><a
- href="file:///vfat/Ursa/Shorewall/Shorewall-Website/GnuCopyright.htm"
- target="_self">GNU Free
-Documentation License</a></span>”.</p>
-</div>
-</div>
-<div>
-<p class="pubdate">2004-08-29<br>
-</p>
-<hr style="width: 100%; height: 2px;"></div>
+document under the terms of the GNU Free Documentation License,
+Version 1.2 or any later version published by the Free Software
+Foundation; with no Invariant Sections, with no Front-Cover, and with
+no Back-Cover Texts. A copy of the license is included in the section
+entitled “<a
+ href="../../../../vfat/Ursa/Shorewall/Shorewall-Website/GnuCopyright.htm"
+ target="_self">GNU
+Free Documentation License</a>”.</p>
+<p>2004-09-23</p>
+<hr>
 <h3>Table of Contents</h3>
-<div style="margin-left: 40px;"><a href="#Intro">Introduction to
+<p style="margin-left: 0.42in; margin-bottom: 0in;"><a href="#Intro">Introduction
+to Shorewall</a></p>
+<p style="margin-left: 0.83in; margin-bottom: 0in;"><a href="#Glossary">Glossary</a><br>
+<a href="#WhatIs">What
+is Shorewall?</a><br>
+<a href="#GettingStarted">Getting Started with
 Shorewall</a><br>
-<div style="margin-left: 40px;"><a href="#Glossary">Glossary</a><br>
-<a href="#WhatIs">What is Shorewall?</a><br>
-<a href="#GettingStarted">Getting Started with Shorewall</a><br>
 <a href="#Info">Looking for Information?</a><br>
-<a href="#Mandrake">Running Shorewall on Mandrake® with a
-two-interface setup?</a><br>
-<a href="#License">License</a><br>
-</div>
-<a href="#News">News</a><a href="#2_0_7"><br>
-</a>
-<div style="margin-left: 40px;"><a href="#2_0_8">Shorewall 2.0.8</a><br>
+<a href="#Mandrake">Running
+Shorewall on Mandrake® with a two-interface setup?</a><br>
+<a href="#License">License</a></p>
+<p style="margin-bottom: 0in; margin-left: 40px;"><a href="#News">News</a></p>
+<p style="margin-left: 0.83in; margin-bottom: 0in;"><a href="#2_0_9">Shorewall
+2.0.9</a><br>
+<a href="#SupportChange">Change
+in Shorewall Support</a><br>
+<a href="#2_0_8">Shorewall
+2.0.8</a><br>
 <a href="#2_0_7">Shorewall 2.0.7</a><br>
-<a href="#2_0_6">Shorewall 2.0.6</a><br>
+<a href="#2_0_6">Shorewall
+2.0.6</a><br>
 <a href="#2_0_5">Shorewall 2.0.5</a><br>
-<a href="#2_0_4">Shorewall 2.0.4</a><br>
-<a href="#Release_Model">New Release
-Model</a><br>
-<a href="#2_0_3c">Shorewall 2.0.3c</a><br>
+<a href="#2_0_4">Shorewall
+2.0.4</a><br>
+<a href="#Release_Model">New Release Model</a><br>
+<a href="#2_0_3c">Shorewall
+2.0.3c</a><br>
 <a href="#2_0_3b">Shorewall 2.0.3b</a><br>
-<a href="#2_0_3a">Shorewall 2.0.3a</a><br>
-<a href="#2_0_3">Shorewall
-2.0.3</a><br>
+<a href="#2_0_3a">Shorewall
+2.0.3a</a><br>
+<a href="#2_0_3">Shorewall 2.0.3</a><br>
+<br>
+</p>
+<div style="margin-left: 40px;"><a href="#Leaf">Leaf</a><br>
 </div>
-<a href="#Leaf">Leaf</a><br>
-<a href="#Donations">Donations</a><br>
-</div>
+<p style="margin-left: 40px;"><a href="#Donations">Donations</a></p>
 <h2><a name="Intro"></a>Introduction to Shorewall</h2>
 <h3><a name="Glossary"></a>Glossary</h3>
 <ul>
-  <li><a href="http://www.netfilter.org" target="_top">Netfilter</a>
-- the
-packet filter facility built into the 2.4 and later Linux kernels.</li>
-  <li>ipchains - the packet filter facility built into the 2.2
-Linux kernels. Also the name of the utility program used to configure
-and control that facility. Netfilter can be used in ipchains
-compatibility mode.</li>
-  <li>iptables - the utility program used to configure and
-control Netfilter. The term 'iptables' is often used to refer to the
+  <li>
+    <p style="margin-bottom: 0in;"><a href="http://www.netfilter.org/"
+ target="_top">Netfilter</a> - the packet filter facility built into
+the 2.4 and later Linux kernels. </p>
+  </li>
+  <li>
+    <p style="margin-bottom: 0in;">ipchains - the packet filter
+facility built into the 2.2 Linux kernels. Also the name of the utility
+program used to configure and control that facility. Netfilter can be
+used in ipchains compatibility mode. </p>
+  </li>
+  <li>
+    <p>iptables - the utility program used to configure and control
+Netfilter. The term 'iptables' is often used to refer to the
 combination of iptables+Netfilter (with Netfilter not in ipchains
-compatibility mode).</li>
+compatibility mode). </p>
+  </li>
 </ul>
 <h3><a name="WhatIs"></a>What is Shorewall?</h3>
-<div style="margin-left: 40px;">The Shoreline Firewall, more
-commonly known as "Shorewall", is
-a high-level tool for configuring Netfilter. You describe your
-firewall/gateway requirements using entries in a set of configuration
-files. Shorewall reads those configuration files and with the help of
-the iptables utility, Shorewall configures Netfilter to match your
-requirements. Shorewall can be used on a dedicated firewall system, a
-multi-function gateway/router/server or on a standalone GNU/Linux
-system. Shorewall does not use Netfilter's ipchains compatibility mode
-and can thus take advantage of Netfilter's <a
+<p style="margin-left: 0.42in;">The Shoreline Firewall, more commonly
+known as "Shorewall", is a high-level tool for configuring
+Netfilter. You describe your firewall/gateway requirements using
+entries in a set of configuration files. Shorewall reads those
+configuration files and with the help of the iptables utility,
+Shorewall configures Netfilter to match your requirements. Shorewall
+can be used on a dedicated firewall system, a multi-function
+gateway/router/server or on a standalone GNU/Linux system. Shorewall
+does not use Netfilter's ipchains compatibility mode and can thus
+take advantage of Netfilter's <a
  href="http://www.cs.princeton.edu/%7Ejns/security/iptables/iptables_conntrack.html"
  target="_top">connection
-state tracking
-capabilities</a>.<br>
+state tracking capabilities</a>.<br>
 <br>
-Shorewall is <span style="text-decoration: underline;">not</span> a
-daemon. Once Shorewall has configured Netfilter, it's job is complete.
-After that, there is no Shorewall code running although the <a
- href="starting_and_stopping_shorewall.htm">/sbin/shorewall
-program can be used at any time to monitor the Netfilter firewall</a>.<br>
-</div>
+Shorewall is <u>not</u> a
+daemon. Once Shorewall has configured Netfilter, it's job is
+complete. After that, there is no Shorewall code running although the
+<a href="starting_and_stopping_shorewall.htm">/sbin/shorewall program
+can be used at any time to monitor the Netfilter firewall</a>.</p>
 <h3><a name="GettingStarted"></a>Getting Started with Shorewall</h3>
-<div style="margin-left: 40px;">New to Shorewall? Start by
-selecting the <a href="shorewall_quickstart_guide.htm">QuickStart Guide</a>
-that most
-closely matches your environment and follow the step by step
-instructions.<br>
-</div>
+<p style="margin-left: 0.42in;">New to Shorewall? Start by selecting
+the <a href="shorewall_quickstart_guide.htm">QuickStart Guide</a>
+that most closely matches your environment and follow the step by
+step instructions.</p>
 <h3><a name="Info"></a>Looking for Information?</h3>
-<div style="margin-left: 40px;">The <a href="Documentation_Index.html">Documentation
-Index</a> is a good place to start as is the Quick Search in the frame
-above. </div>
+<p style="margin-left: 0.42in;">The <a href="Documentation_Index.html">Documentation
+Index</a> is a good place to start as is the Quick Search in the
+frame above. </p>
 <h3><a name="Mandrake"></a>Running Shorewall on Mandrake® with a
 two-interface setup?</h3>
-<div style="margin-left: 40px;">If so, the documentation on this
-site will not apply directly
-to your setup. If you want to use the documentation that you find here,
-you will want to consider uninstalling what you have and installing a
-setup that matches the documentation on this site. See the <a
- href="two-interface.htm">Two-interface QuickStart Guide</a> for
-details.<br>
+<p style="margin-left: 0.42in;">If so, the documentation on this site
+will not apply directly to your setup. If you want to use the
+documentation that you find here, you will want to consider
+uninstalling what you have and installing a setup that matches the
+documentation on this site. See the <a href="two-interface.htm">Two-interface
+QuickStart Guide</a> for details.<br>
 <br>
-<span style="font-weight: bold;">Update: </span>I've been
+<b>Update: </b>I've been
 informed by Mandrake Development that this problem has been corrected
-in Mandrake 10.0 Final (the problem still exists in the 10.0 Community
-release).<br>
-</div>
+in Mandrake 10.0 Final (the problem still exists in the 10.0
+Community release).</p>
 <h3><a name="License"></a>License</h3>
-<div style="margin-left: 40px;">This program is free software;
-you can redistribute it and/or modify it
-under the terms of <a href="http://www.gnu.org/licenses/gpl.html">Version
+<p style="margin-left: 0.42in;">This program is free software; you can
+redistribute it and/or modify it under the terms of <a
+ href="http://www.gnu.org/licenses/gpl.html">Version
 2 of the GNU General Public License</a> as published by the Free
-Software Foundation.<br>
-</div>
-<p style="margin-left: 40px;">This program is distributed in the
-hope that it will be
-useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
-General Public License for more detail.</p>
-<div style="margin-left: 40px;"> </div>
-<p style="margin-left: 40px;">You should have received a copy of
-the GNU General Public
-License along with this program; if not, write to the Free Software
-Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA</p>
-<div style="margin-left: 40px;">Permission is granted to copy,
-distribute and/or modify this document
-under the terms of the GNU Free Documentation License, Version 1.2 or
-any later version published by the Free Software Foundation; with no
-Invariant Sections, with no Front-Cover, and with no Back-Cover Texts.
-A copy of the license is included in the section entitled <a>"GNU Free
-Documentation License"</a>. </div>
-<p> </p>
-<hr style="width: 100%; height: 2px;">
+Software Foundation.</p>
+<p style="margin-left: 0.42in;">This program is distributed in the
+hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+PURPOSE. See the GNU General Public License for more detail.</p>
+<p style="margin-left: 0.42in;">You should have received a copy of the
+GNU General Public License along with this program; if not, write to
+the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA
+02139, USA</p>
+<p style="margin-left: 0.42in;">Permission is granted to copy,
+distribute and/or modify this document under the terms of the GNU
+Free Documentation License, Version 1.2 or any later version
+published by the Free Software Foundation; with no Invariant
+Sections, with no Front-Cover, and with no Back-Cover Texts. A copy
+of the license is included in the section entitled "GNU Free
+Documentation License". </p>
+<hr>
 <h2><a name="News"></a>News</h2>
-<span style="font-weight: bold;"><a name="2_0_8"></a>8/22/2004 -
-Shorewall 2.0.8<br>
+<span style="font-weight: bold;"><a name="2_0_9"></a>9/23/2004 -
+Shorewall 2.0.9<br>
 </span><br>
 Problems Corrected:<br>
 <ol>
-  <li>Entries in the USER/GROUP column of an action file (made from
-action.template) may be ignored or cause odd errors.</li>
+  <li>Previously, an empty PROTO column or a value of "all" in that
+column would cause errors when processing the /etc/shorewall/tcrules
+file.</li>
 </ol>
-<span style="font-weight: bold;"><a name="2_0_7"></a>7/29/2004 -
-Shorewall 2.0.7<br>
-<br>
-</span>Problems Corrected:<br>
+New Features:<br>
 <ol>
-  <li>The PKTTYPE option introduced in version 2.0.6 is now used when
-generating rules to REJECT packets. Broadcast packets are silently
-dropped rather than being rejected with an ICMP (which is a protocol
-violation) and users whose kernels have broken packet type match
-support are likely to see messages reporting this violation. Setting
-PKTTYPE=No should cause these messages to cease.</li>
-  <li>Multiple interfaces with the 'blacklist' option no longer result
-in an error message at startup.</li>
-  <li>The following has been added to /etc/shorewall/bogons:<br>
+  <li>The "shorewall status" command now includes the output of "brctl
+show" if the bridge tools are installed.<br>
+  </li>
+</ol>
+<p><a name="SupportChange"><b>9/20/2004 – Change in Shorewall Support</b></a></p>
+<p style="">Friends,</p>
+<p style="">The demands that my job and my
+personal life are currently placing on me are such that supporing
+Shorewall to the extent that I have been doing is just not possible
+any more.</p>
+<p style="">I will continue to be active on the
+development list and will continue to develop Shorewall if at all
+possible.</p>
+<p style="">I will also continue to read the
+user's list and will help with problems that interest me. But I am no
+longer going to hop on every problem as soon as I see it.</p>
+<p style="">This change means that I'm going to
+have to depend on you folks to help each other; I'm confident that we
+can make this work.</p>
+<p><a name="2_0_8"></a><b>8/22/2004 -
+Shorewall 2.0.8<br>
+</b><br>
+Problems Corrected:</p>
+<ol>
+  <li>
+    <p>Entries in the USER/GROUP column of an action file (made from
+action.template) may be ignored or cause odd errors. </p>
+  </li>
+</ol>
+<p><a name="2_0_7"></a><b>7/29/2004 - Shorewall 2.0.7<br>
+<br>
+</b>Problems
+Corrected:</p>
+<ol>
+  <li>
+    <p style="margin-bottom: 0in;">The PKTTYPE option introduced in
+version 2.0.6 is now used when generating rules to REJECT packets.
+Broadcast packets are silently dropped rather than being rejected with
+an ICMP (which is a protocol violation) and users whose kernels have
+broken packet type match support are likely to see messages reporting
+this violation. Setting PKTTYPE=No should cause these messages to
+cease. </p>
+  </li>
+  <li>
+    <p style="margin-bottom: 0in;">Multiple interfaces with the
+'blacklist' option no longer result in an error message at startup. </p>
+  </li>
+  <li>
+    <p>The following has been added to /etc/shorewall/bogons:<br>
     <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 0.0.0.0&nbsp;&nbsp; RETURN<br>
     <br>
 This prevents the 'nobogons' option from logging DHCP 'DISCOVER'
-broadcasts.<br>
+broadcasts.</p>
   </li>
 </ol>
-New Features:<br>
-<br>
+<p>New Features:</p>
 <ol>
-  <li>To improve supportability, the "shorewall status" command now
+  <li>
+    <p>To improve supportability, the "shorewall status" command now
 includes IP and Route configuration information.<br>
     <br>
 &nbsp;&nbsp; Example:<br>
-    <br style="font-family: monospace;">
-    <span style="font-family: monospace;">&nbsp;&nbsp; IP Configuration</span><br
- style="font-family: monospace;">
-    <br style="font-family: monospace;">
-    <span style="font-family: monospace;">&nbsp;&nbsp; 1: lo:
-&lt;LOOPBACK,UP&gt; mtu 16436 qdisc noqueue</span><br
- style="font-family: monospace;">
-    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00</span><br
- style="font-family: monospace;">
-    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-inet 127.0.0.1/8 brd 127.255.255.255 scope host lo</span><br
- style="font-family: monospace;">
-    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-inet6 ::1/128 scope host</span><br style="font-family: monospace;">
-    <span style="font-family: monospace;">&nbsp;&nbsp; 2: eth0:
+    <br>
+&nbsp;&nbsp; <font face="monospace">IP Configuration</font><br>
+    <br>
+&nbsp;&nbsp; <font face="monospace">1: lo: &lt;LOOPBACK,UP&gt; mtu
+16436 qdisc noqueue</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font face="monospace">link/loopback
+00:00:00:00:00:00 brd 00:00:00:00:00:00</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font face="monospace">inet 127.0.0.1/8
+brd 127.255.255.255 scope host lo</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font face="monospace">inet6 ::1/128
+scope host</font><br>
+&nbsp;&nbsp; <font face="monospace">2: eth0:
 &lt;BROADCAST,MULTICAST,PROMISC,UP&gt; mtu 1500 qdisc pfifo_fast qlen
-1000</span><br style="font-family: monospace;">
-    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-link/ether 00:a0:c9:15:39:78 brd ff:ff:ff:ff:ff:ff</span><br
- style="font-family: monospace;">
-    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-inet6 fe80::2a0:c9ff:fe15:3978/64 scope link</span><br
- style="font-family: monospace;">
-    <span style="font-family: monospace;">&nbsp;&nbsp; 3: eth1:
+1000</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font face="monospace">link/ether
+00:a0:c9:15:39:78 brd ff:ff:ff:ff:ff:ff</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font face="monospace">inet6
+fe80::2a0:c9ff:fe15:3978/64 scope link</font><br>
+&nbsp;&nbsp; <font face="monospace">3: eth1:
 &lt;BROADCAST,MULTICAST,PROMISC,UP&gt; mtu 1500 qdisc pfifo_fast qlen
-1000</span><br style="font-family: monospace;">
-    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-link/ether 00:a0:c9:a7:d7:bf brd ff:ff:ff:ff:ff:ff</span><br
- style="font-family: monospace;">
-    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-inet6 fe80::2a0:c9ff:fea7:d7bf/64 scope link</span><br
- style="font-family: monospace;">
-    <span style="font-family: monospace;">&nbsp;&nbsp; 5: sit0@NONE:
-&lt;NOARP&gt; mtu 1480 qdisc noop</span><br
- style="font-family: monospace;">
-    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-link/sit 0.0.0.0 brd 0.0.0.0</span><br style="font-family: monospace;">
-    <span style="font-family: monospace;">&nbsp;&nbsp; 6: eth2:
+1000</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font face="monospace">link/ether
+00:a0:c9:a7:d7:bf brd ff:ff:ff:ff:ff:ff</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font face="monospace">inet6
+fe80::2a0:c9ff:fea7:d7bf/64 scope link</font><br>
+&nbsp;&nbsp; <font face="monospace">5: sit0@NONE: &lt;NOARP&gt; mtu
+1480 qdisc noop</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font face="monospace">link/sit 0.0.0.0
+brd 0.0.0.0</font><br>
+&nbsp;&nbsp; <font face="monospace">6: eth2:
 &lt;BROADCAST,MULTICAST,PROMISC,UP&gt; mtu 1500 qdisc pfifo_fast qlen
-1000</span><br style="font-family: monospace;">
-    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-link/ether 00:40:d0:07:3a:1b brd ff:ff:ff:ff:ff:ff</span><br
- style="font-family: monospace;">
-    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-inet6 fe80::240:d0ff:fe07:3a1b/64 scope link</span><br
- style="font-family: monospace;">
-    <span style="font-family: monospace;">&nbsp;&nbsp; 7: br0:
-&lt;BROADCAST,MULTICAST,NOTRAILERS,UP&gt; mtu 1500 qdisc noqueue</span><br
- style="font-family: monospace;">
-    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-link/ether 00:40:d0:07:3a:1b brd ff:ff:ff:ff:ff:ff</span><br
- style="font-family: monospace;">
-    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-inet 192.168.1.3/24 brd 192.168.1.255 scope global br0</span><br
- style="font-family: monospace;">
-    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-inet6 fe80::240:d0ff:fe07:3a1b/64 scope link</span><br
- style="font-family: monospace;">
-    <br style="font-family: monospace;">
-    <span style="font-family: monospace;">&nbsp;&nbsp; Routing Rules</span><br
- style="font-family: monospace;">
-    <br style="font-family: monospace;">
-    <span style="font-family: monospace;">&nbsp;&nbsp;
-0:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; from all lookup local</span><br
- style="font-family: monospace;">
-    <span style="font-family: monospace;">&nbsp;&nbsp; 32765:&nbsp;
-from all fwmark&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ca lookup www.out</span><br
- style="font-family: monospace;">
-    <span style="font-family: monospace;">&nbsp;&nbsp; 32766:&nbsp;
-from all lookup main</span><br style="font-family: monospace;">
-    <span style="font-family: monospace;">&nbsp;&nbsp; 32767:&nbsp;
-from all lookup default</span><br style="font-family: monospace;">
-    <br style="font-family: monospace;">
-    <span style="font-family: monospace;">&nbsp;&nbsp; Table local:</span><br
- style="font-family: monospace;">
-    <br style="font-family: monospace;">
-    <span style="font-family: monospace;">&nbsp;&nbsp; broadcast
-192.168.1.0 dev br0&nbsp; proto kernel&nbsp; scope link&nbsp; src
-192.168.1.3</span><br style="font-family: monospace;">
-    <span style="font-family: monospace;">&nbsp;&nbsp; broadcast
-127.255.255.255 dev lo&nbsp; proto kernel&nbsp; scope link&nbsp; src
-127.0.0.1</span><br style="font-family: monospace;">
-    <span style="font-family: monospace;">&nbsp;&nbsp; local
-192.168.1.3 dev br0&nbsp; proto kernel&nbsp; scope host&nbsp; src
-192.168.1.3</span><br style="font-family: monospace;">
-    <span style="font-family: monospace;">&nbsp;&nbsp; broadcast
-192.168.1.255 dev br0&nbsp; proto kernel&nbsp; scope link&nbsp; src
-192.168.1.3</span><br style="font-family: monospace;">
-    <span style="font-family: monospace;">&nbsp;&nbsp; broadcast
-127.0.0.0 dev lo&nbsp; proto kernel&nbsp; scope link&nbsp; src 127.0.0.1</span><br
- style="font-family: monospace;">
-    <span style="font-family: monospace;">&nbsp;&nbsp; local 127.0.0.1
-dev lo&nbsp; proto kernel&nbsp; scope host&nbsp; src 127.0.0.1</span><br
- style="font-family: monospace;">
-    <span style="font-family: monospace;">&nbsp;&nbsp; local
-127.0.0.0/8 dev lo&nbsp; proto kernel&nbsp; scope host&nbsp; src
-127.0.0.1</span><br style="font-family: monospace;">
-    <br style="font-family: monospace;">
-    <span style="font-family: monospace;">&nbsp;&nbsp; Table www.out:</span><br
- style="font-family: monospace;">
-    <br style="font-family: monospace;">
-    <span style="font-family: monospace;">&nbsp;&nbsp; default via
-192.168.1.3 dev br0</span><br style="font-family: monospace;">
-    <br style="font-family: monospace;">
-    <span style="font-family: monospace;">&nbsp;&nbsp; Table main:</span><br
- style="font-family: monospace;">
-    <br style="font-family: monospace;">
-    <span style="font-family: monospace;">&nbsp;&nbsp; 192.168.1.0/24
-dev br0&nbsp; proto kernel&nbsp; scope link&nbsp; src 192.168.1.3</span><br
- style="font-family: monospace;">
-    <span style="font-family: monospace;">&nbsp;&nbsp; default via
-192.168.1.254 dev br0</span><br style="font-family: monospace;">
-    <br style="font-family: monospace;">
-    <span style="font-family: monospace;">&nbsp;&nbsp; Table default:</span><br
- style="font-family: monospace;">
+1000</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font face="monospace">link/ether
+00:40:d0:07:3a:1b brd ff:ff:ff:ff:ff:ff</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font face="monospace">inet6
+fe80::240:d0ff:fe07:3a1b/64 scope link</font><br>
+&nbsp;&nbsp; <font face="monospace">7: br0:
+&lt;BROADCAST,MULTICAST,NOTRAILERS,UP&gt; mtu 1500 qdisc noqueue</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font face="monospace">link/ether
+00:40:d0:07:3a:1b brd ff:ff:ff:ff:ff:ff</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font face="monospace">inet
+192.168.1.3/24 brd 192.168.1.255 scope global br0</font><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <font face="monospace">inet6
+fe80::240:d0ff:fe07:3a1b/64 scope link</font><br>
+    <br>
+&nbsp;&nbsp; <font face="monospace">Routing Rules</font><br>
+    <br>
+&nbsp;&nbsp; <font face="monospace">0:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+from all lookup local</font><br>
+&nbsp;&nbsp; <font face="monospace">32765:&nbsp; from all
+fwmark&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ca lookup www.out</font><br>
+&nbsp;&nbsp; <font face="monospace">32766:&nbsp; from all lookup main</font><br>
+&nbsp;&nbsp; <font face="monospace">32767:&nbsp; from all lookup
+default</font><br>
+    <br>
+&nbsp;&nbsp; <font face="monospace">Table local:</font><br>
+    <br>
+&nbsp;&nbsp; <font face="monospace">broadcast 192.168.1.0 dev
+br0&nbsp; proto kernel&nbsp; scope link&nbsp; src 192.168.1.3</font><br>
+&nbsp;&nbsp; <font face="monospace">broadcast 127.255.255.255 dev
+lo&nbsp; proto kernel&nbsp; scope link&nbsp; src 127.0.0.1</font><br>
+&nbsp;&nbsp; <font face="monospace">local 192.168.1.3 dev br0&nbsp;
+proto kernel&nbsp; scope host&nbsp; src 192.168.1.3</font><br>
+&nbsp;&nbsp; <font face="monospace">broadcast 192.168.1.255 dev
+br0&nbsp; proto kernel&nbsp; scope link&nbsp; src 192.168.1.3</font><br>
+&nbsp;&nbsp; <font face="monospace">broadcast 127.0.0.0 dev lo&nbsp;
+proto kernel&nbsp; scope link&nbsp; src 127.0.0.1</font><br>
+&nbsp;&nbsp; <font face="monospace">local 127.0.0.1 dev lo&nbsp; proto
+kernel&nbsp; scope host&nbsp; src 127.0.0.1</font><br>
+&nbsp;&nbsp; <font face="monospace">local 127.0.0.0/8 dev lo&nbsp;
+proto kernel&nbsp; scope host&nbsp; src 127.0.0.1</font><br>
+    <br>
+&nbsp;&nbsp; <font face="monospace">Table www.out:</font><br>
+    <br>
+&nbsp;&nbsp; <font face="monospace">default via 192.168.1.3 dev br0</font><br>
+    <br>
+&nbsp;&nbsp; <font face="monospace">Table main:</font><br>
+    <br>
+&nbsp;&nbsp; <font face="monospace">192.168.1.0/24 dev br0&nbsp; proto
+kernel&nbsp; scope link&nbsp; src 192.168.1.3</font><br>
+&nbsp;&nbsp; <font face="monospace">default via 192.168.1.254 dev br0</font><br>
+    <br>
+&nbsp;&nbsp; <font face="monospace">Table default:</font></p>
   </li>
 </ol>
-<span style="font-weight: bold;"><a name="2_0_6"></a>7/16/2004 -
-Shorewall 2.0.6<br>
+<p><a name="2_0_6"></a><b>7/16/2004 - Shorewall 2.0.6<br>
 <br>
-</span>Problems Corrected:<br>
+</b>Problems
+Corrected:</p>
 <ul>
-  <li>Some users have reported the packet type match option in
-iptables/Netfilter failing to match certain broadcast packets. The
-result is that the firewall log shows a lot of broadcast packets.<br>
+  <li>
+    <p style="margin-bottom: 0in;">Some users have reported the packet
+type match option in iptables/Netfilter failing to match certain
+broadcast packets. The result is that the firewall log shows a lot of
+broadcast packets.<br>
     <br>
 Other users have complained of the following message when starting
 Shorewall:<br>
@@ -337,257 +349,337 @@ modprobe: cant locate module ipt_pkttype<br>
     <br>
 Users experiencing either of these problems can use PKTTYPE=No in
 shorewall.conf to cause Shorewall to use IP address filtering of
-broadcasts rather than packet type.</li>
-  <li>The shorewall.conf and zones file are no longer given execute
-permission by the installer script.</li>
-  <li>ICMP packets that are in the INVALID state are now dropped by the
-Reject and Drop default actions. They do so using the new 'dropInvalid'
-builtin action.<br>
+broadcasts rather than packet type. </p>
+  </li>
+  <li>
+    <p style="margin-bottom: 0in;">The shorewall.conf and zones file
+are no longer given execute permission by the installer script. </p>
+  </li>
+  <li>
+    <p>ICMP packets that are in the INVALID state are now dropped by
+the Reject and Drop default actions. They do so using the new
+'dropInvalid' builtin action.</p>
   </li>
 </ul>
-<span style="font-weight: bold;"><a name="2_0_5"></a>7/10/2004 -
-Shorewall 2.0.5<br>
-</span><br>
-Problems Corrected:<br>
+<p><a name="2_0_5"></a><b>7/10/2004 - Shorewall 2.0.5<br>
+</b><br>
+Problems
+Corrected:</p>
 <ul>
-  <li>If DISABLE_IPV6=Yes in shorewall.conf then harmless error
-messages referring to $RESTOREBASE are generated during <span
- style="font-weight: bold;">shorewall stop</span>.</li>
-  <li>An anachronistic comment concerning a mangle option has been
-removed from shorewall.conf.<br>
+  <li>
+    <p style="margin-bottom: 0in;">If DISABLE_IPV6=Yes in
+shorewall.conf then harmless error messages referring to $RESTOREBASE
+are generated during <b>shorewall stop</b>. </p>
+  </li>
+  <li>
+    <p>An anachronistic comment concerning a mangle option has been
+removed from shorewall.conf.</p>
   </li>
 </ul>
-<a name="2_0_4"></a><span style="font-weight: bold;">7/06/2004 -
-Shorewall 2.0.4<br>
-</span><br>
-Problems Corrected:<br>
+<p><a name="2_0_4"></a><b>7/06/2004 - Shorewall 2.0.4<br>
+</b><br>
+Problems
+Corrected:</p>
 <ul>
-  <li>Rules with $FW as the source zone and that specify logging can
-cause "shorewall start" to fail.<br>
+  <li>
+    <p>Rules with $FW as the source zone and that specify logging can
+cause "shorewall start" to fail.</p>
   </li>
 </ul>
-<a name="Release_Model"></a><span style="font-weight: bold;">7/03/2004
-- New Shorewall Release Model<br>
+<p><a name="Release_Model"></a><b>7/03/2004 - New Shorewall Release
+Model<br>
 <br>
-</span>Effective today, Shorewall is adopting a new release model which
-takes ideas from the one used in the Linux Kernel and from the release
-model for Postfix.<br>
+</b>Effective today, Shorewall is adopting a new release
+model which takes ideas from the one used in the Linux Kernel and
+from the release model for Postfix.</p>
 <ol>
-  <li>Releases continue to have a three-level identification <span
- style="font-style: italic;">x.y.z</span> (e.g., 2.0.3).<br>
+  <li>
+    <p style="margin-bottom: 0in;">Releases continue to have a
+three-level identification <i>x.y.z</i> (e.g., 2.0.3).</p>
   </li>
-  <li>The first two levels (<span style="font-style: italic;">x.y)</span>
-designate the <span style="font-style: italic;">Major Release Number</span>
-(e.g., 2.0)</li>
-  <li>The third level (<span style="font-style: italic;">z</span>)
-designates the <span style="font-style: italic;">Minor Release Number</span>.</li>
-  <li>Even numbered major releases (e.g., <span
- style="font-style: italic;">1.4, 2.0, 2.2, ...)</span> are <span
- style="font-style: italic;">Stable Releases</span>. No new features
-are added to stable releases and new minor releases of a stable release
+  <li>
+    <p style="margin-bottom: 0in;">The first two levels (<i>x.y)</i>
+designate the <i>Major Release Number</i> (e.g., 2.0) </p>
+  </li>
+  <li>
+    <p style="margin-bottom: 0in;">The third level (<i>z</i>)
+designates the <i>Minor Release Number</i>. </p>
+  </li>
+  <li>
+    <p style="margin-bottom: 0in;">Even numbered major releases (e.g., <i>1.4,
+2.0, 2.2, ...)</i> are <i>Stable Releases</i>. No new features are
+added to stable releases and new minor releases of a stable release
 will only contain bug fixes. Installing a new minor release for the
 major release that you are currently running involves no migration
 issues (for example, if you are running 1.4.10 and I release 1.4.11,
-your current configuration is 100% compatible with the new release).</li>
-  <li>Support is available through the <a
- href="http://lists.shorewall.net">Mailing List </a>for the two most
-recent Stable Releases.<br>
+your current configuration is 100% compatible with the new release). </p>
   </li>
-  <li>Odd numbered major releases (e.g., 2.1, 2.3, ...) are <span
- style="font-style: italic;">Development Releases</span>. Development
-releases are where new functionality is introduced. Documentation for
-new features will be available but it may not be up to the standards of
-the stable release documentation. Sites running Development Releases
-should be prepared to play an active role in testing new features. Bug
-fixes and problem resolution for the development release take a back
-seat to support of the stable releases. Problem reports for the current
+  <li>
+    <p style="margin-bottom: 0in;">Support is available through the <a
+ href="http://lists.shorewall.net/">Mailing List </a>for the two most
+recent Stable Releases.</p>
+  </li>
+  <li>
+    <p style="margin-bottom: 0in;">Odd numbered major releases (e.g.,
+2.1, 2.3, ...) are <i>Development Releases</i>. Development releases
+are where new functionality is introduced. Documentation for new
+features will be available but it may not be up to the standards of the
+stable release documentation. Sites running Development Releases should
+be prepared to play an active role in testing new features. Bug fixes
+and problem resolution for the development release take a back seat to
+support of the stable releases. Problem reports for the current
 development release should be sent to the <a
  href="mailto:shorewall-devel@lists.shorewall.net">Shorewall
-Development Mailing List</a>.<br>
+Development Mailing List</a>.</p>
   </li>
-  <li>When the level of functionality of the current development
-release is judged adaquate, the Beta period for a new Stable release
-will begin. Beta releases have identifications of the form <span
- style="font-style: italic;">x.y.0-BetaN</span> where <span
- style="font-style: italic;">x.y</span> is the number of the next
-Stable Release and <span style="font-style: italic;">N</span>=1,2,3...
-. Betas are expected to occur rougly once per year. Beta releases may
-contain new functionality not present in the previous beta release
-(e.g., 2.2.0-Beta4 may contain functionality not present in
-2.2.0-Beta3). When I'm confident that the current Beta release is
-stable, I will release the first <span style="font-style: italic;">Release
-Candidate. </span>Release candidates have identifications of the form <span
- style="font-style: italic;">x.y.0-RCn </span>where<span
- style="font-style: italic;"> <span style="font-style: italic;">x.y</span>
-    </span>is the number of the next Stable Release and<span
- style="font-style: italic;"> <span style="font-style: italic;">n</span></span>=1,2,3...
-. Release candidates contain no new functionailty -- they only contain
-bug fixes. When the stability of the current release candidate is
-judged to be sufficient then that release candidate will be released as
-the new stable release (e.g., 2.2.0). At that time, the new stable
-release and the prior stable release are those that are supported.</li>
-  <li>What does it mean for a major release to be <span
- style="font-style: italic;">supported?</span> It means that I will
-answer questions about the release and that if a bug is found, I will
-fix the bug and include the fix in the next minor release.</li>
-  <li>Between minor releases, bug fixes will continue to be made
-available through the Errata page for each major release.<br>
+  <li>
+    <p style="margin-bottom: 0in;">When the level of functionality of
+the current development release is judged adaquate, the Beta period for
+a new Stable release will begin. Beta releases have identifications of
+the form <i>x.y.0-BetaN</i> where <i>x.y</i> is the number of the
+next Stable Release and <i>N</i>=1,2,3... . Betas are expected to
+occur rougly once per year. Beta releases may contain new functionality
+not present in the previous beta release (e.g., 2.2.0-Beta4 may contain
+functionality not present in 2.2.0-Beta3). When I'm confident that the
+current Beta release is stable, I will release the first <i>Release
+Candidate. </i>Release candidates have identifications of the form <i>x.y.0-RCn
+    </i>where <i>x.y </i>is the number of the next Stable Release and
+    <i>n</i>=1,2,3... . Release candidates contain no new functionailty
+-- they only contain bug fixes. When the stability of the current
+release candidate is judged to be sufficient then that release
+candidate will be released as the new stable release (e.g., 2.2.0). At
+that time, the new stable release and the prior stable release are
+those that are supported. </p>
+  </li>
+  <li>
+    <p style="margin-bottom: 0in;">What does it mean for a major
+release to be <i>supported?</i> It means that I will answer questions
+about the release and that if a bug is found, I will fix the bug and
+include the fix in the next minor release. </p>
+  </li>
+  <li>
+    <p>Between minor releases, bug fixes will continue to be made
+available through the Errata page for each major release.</p>
   </li>
 </ol>
-The immediate implications of this change are as follows:<br>
+<p>The immediate implications of this change are as follows:</p>
 <ol>
-  <li>The functionality of the 2.0 major release is frozen at the level
-of minor release 2.0.3.</li>
-  <li>The two major releases currently supported are 1.4 and 2.0.</li>
-  <li>I will be opening the 2.1 development release shortly with the
-release of 2.1.0.</li>
-  <li>Bug-fix releases with identifications of the form <span
- style="font-style: italic;">x.y.zX </span>where X=a,b,c,... (e.g.,
-2.0.3c) will not be seen in the future.<br>
+  <li>
+    <p style="margin-bottom: 0in;">The functionality of the 2.0 major
+release is frozen at the level of minor release 2.0.3. </p>
+  </li>
+  <li>
+    <p style="margin-bottom: 0in;">The two major releases currently
+supported are 1.4 and 2.0. </p>
+  </li>
+  <li>
+    <p style="margin-bottom: 0in;">I will be opening the 2.1
+development release shortly with the release of 2.1.0. </p>
+  </li>
+  <li>
+    <p>Bug-fix releases with identifications of the form <i>x.y.zX </i>where
+X=a,b,c,... (e.g., 2.0.3c) will not be seen in the future.</p>
   </li>
 </ol>
-<span style="font-weight: bold;"></span><span style="font-weight: bold;"><a
- name="2_0_3c"><span style="font-weight: bold;">7/02/2004 -
-Shorewall 2.0.3c<br>
+<p><a name="2_0_3c"></a><b>7/02/2004 - Shorewall 2.0.3c<br>
 <br>
-</span></a></span>Problems Corrected<span style="font-weight: bold;">:<br>
-</span>
+</b>Problems
+Corrected<b>:</b></p>
 <ol>
-  <li> Error messages regarding $RESTOREBASE occur during <span
- class="bold"><b>shorewall stop</b></span> </li>
-  <li> If CLEAR_TC=Yes in <tt class="filename">shorewall.conf</tt>, <span
- class="bold"><b>shorewall stop</b></span> fails without removing the
-lock file. </li>
-</ol>
-<span style="font-weight: bold;"><br>
-</span><span style="font-weight: bold;"><a name="2_0_3b"></a>6/30/2004
--
-Shorewall 2.0.3b and Shorewall 1.4.10g<br>
-<br>
-</span>Problems Corrected:<br>
-<ol>
-  <li>The security vulnerability fix released in Shorewall 2.0.3a
-failed under Slackware 9.1.</li>
-  <li>The security vulnerability fix released in Shorewall 2.0.3a
-failed if mktemp was not installed.<br>
+  <li>
+    <p style="margin-bottom: 0in;">Error messages regarding
+$RESTOREBASE occur during <b>shorewall stop</b> </p>
+  </li>
+  <li>
+    <p>If CLEAR_TC=Yes in <tt>shorewall.conf</tt>, <b>shorewall stop</b>
+fails without removing the lock file. </p>
   </li>
 </ol>
-<a name="2_0_3a"></a><span style="font-weight: bold;">6/28/2004 -
-Shorewall 2.0.3a and Shorewall 1.4.10f<br>
+<p><a name="2_0_3b"></a><b><br>
+6/30/2004 - Shorewall 2.0.3b and
+Shorewall 1.4.10g<br>
 <br>
-</span>Problems Corrected:<br>
+</b>Problems Corrected:</p>
 <ol>
-  <li>Javier Fernández-Sanguino Peña has discovered an exploitable
-vulnerability in the way that Shorewall handles temporary files and
-directories. The vulnerability can allow a non-root user to cause
-arbitrary files on the system to be overwritten. LEAF Bering and Bering
-uClibc users are generally not at risk due to the fact that LEAF boxes
-do not typically allow logins by non-root users. <br>
+  <li>
+    <p style="margin-bottom: 0in;">The security vulnerability fix
+released in Shorewall 2.0.3a failed under Slackware 9.1. </p>
   </li>
-  <li>(2.0.3a only) A non-empty DEST entry in /etc/shorewall/tcrules
-will generate an error and Shorewall fails to start.</li>
+  <li>
+    <p>The security vulnerability fix released in Shorewall 2.0.3a
+failed if mktemp was not installed.</p>
+  </li>
 </ol>
-<div style="margin-left: 40px;">Note:: Slackware users may need the
+<p><a name="2_0_3a"></a><b>6/28/2004 - Shorewall 2.0.3a and Shorewall
+1.4.10f<br>
+<br>
+</b>Problems Corrected:</p>
+<ol>
+  <li>
+    <p style="margin-bottom: 0in;">Javier Fernández-Sanguino Peña has
+discovered an exploitable vulnerability in the way that Shorewall
+handles temporary files and directories. The vulnerability can allow a
+non-root user to cause arbitrary files on the system to be overwritten.
+LEAF Bering and Bering uClibc users are generally not at risk due to
+the fact that LEAF boxes do not typically allow logins by non-root
+users. </p>
+  </li>
+  <li>
+    <p>(2.0.3a only) A non-empty DEST entry in /etc/shorewall/tcrules
+will generate an error and Shorewall fails to start. </p>
+  </li>
+</ol>
+<p style="margin-left: 0.42in;">Note:: Slackware users may need the
 'functions' file from CVS (STABLE/ project for 1.4.10f and STABLE2/
 project for 2.0.3a) to prevent startup errors with these versions
-installed. These updatged files are also available from the Errata (<a
- href="errata.htm">2.0,</a> <a href="1.4/errata.htm">1.4</a>).<br>
+installed. These updatged files are also available from the Errata
+(<a href="errata.htm">2.0,</a> <a href="1.4/errata.htm">1.4</a>).</p>
+<p><a name="2_0_3"></a><b>6/23/2004 - Shorewall 2.0.3<br>
 <br>
-</div>
-<a name="2_0_3"></a><span style="font-weight: bold;">6/23/2004 -
-Shorewall 2.0.3<br>
-<br>
-</span>Problems Corrected:<br>
+</b>Problems
+Corrected:</p>
 <ol>
-  <li>The 'firewall' script is not purging temporary restore files in
-/var/lib/shorewall. These files have names of the form "restore-nnnnn".</li>
-  <li>The /var/lib/shorewall/restore script did not load the kernel
-modules specified in /etc/shorewall/modules.</li>
-  <li>Specifying a null common action in /etc/shorewall/actions (e.g.,
-:REJECT) results in a startup error.</li>
-  <li>If /var/lib/shorewall does not exist, shorewall start fails.</li>
-  <li>DNAT rules with a dynamic source zone don't work properly. When
-used, these rules cause the rule to be checked against ALL input, not
-just input from the designated zone.</li>
-  <li>The install.sh script reported installing some files in
-/etc/shorewall when the files were actually installed in
-/usr/share/shorewall.</li>
-  <li>Shorewall checks netfilter capabilities before loading kernel
-modules. Hence if kernel module autoloading isn't enabled, the
-capabilities will be misdetected.</li>
-  <li>The 'newnotsyn' option in /etc/shorewall/hosts has no effect.</li>
-  <li>The file /etc/init.d/shorewall now gets proper ownership when the
-RPM is built by a non-root user.</li>
-  <li>Rules that specify bridge ports in both the SOURCE and DEST
-columns no longer cause "shorewall start" to fail.</li>
-  <li>Comments in the rules file have been added to advise users that
-"all" in the SOURCE or DEST column does not affect intra-zone traffic.</li>
-  <li>With BLACKLISTNEWONLY=Yes, ICMP packets with state INVALID are
+  <li>
+    <p style="margin-bottom: 0in;">The 'firewall' script is not purging
+temporary restore files in /var/lib/shorewall. These files have names
+of the form "restore-nnnnn". </p>
+  </li>
+  <li>
+    <p style="margin-bottom: 0in;">The /var/lib/shorewall/restore
+script did not load the kernel modules specified in
+/etc/shorewall/modules. </p>
+  </li>
+  <li>
+    <p style="margin-bottom: 0in;">Specifying a null common action in
+/etc/shorewall/actions (e.g., :REJECT) results in a startup error. </p>
+  </li>
+  <li>
+    <p style="margin-bottom: 0in;">If /var/lib/shorewall does not
+exist, shorewall start fails. </p>
+  </li>
+  <li>
+    <p style="margin-bottom: 0in;">DNAT rules with a dynamic source
+zone don't work properly. When used, these rules cause the rule to be
+checked against ALL input, not just input from the designated zone. </p>
+  </li>
+  <li>
+    <p style="margin-bottom: 0in;">The install.sh script reported
+installing some files in /etc/shorewall when the files were actually
+installed in /usr/share/shorewall. </p>
+  </li>
+  <li>
+    <p style="margin-bottom: 0in;">Shorewall checks netfilter
+capabilities before loading kernel modules. Hence if kernel module
+autoloading isn't enabled, the capabilities will be misdetected. </p>
+  </li>
+  <li>
+    <p style="margin-bottom: 0in;">The 'newnotsyn' option in
+/etc/shorewall/hosts has no effect. </p>
+  </li>
+  <li>
+    <p style="margin-bottom: 0in;">The file /etc/init.d/shorewall now
+gets proper ownership when the RPM is built by a non-root user. </p>
+  </li>
+  <li>
+    <p style="margin-bottom: 0in;">Rules that specify bridge ports in
+both the SOURCE and DEST columns no longer cause "shorewall start" to
+fail. </p>
+  </li>
+  <li>
+    <p style="margin-bottom: 0in;">Comments in the rules file have been
+added to advise users that "all" in the SOURCE or DEST column does not
+affect intra-zone traffic. </p>
+  </li>
+  <li>
+    <p>With BLACKLISTNEWONLY=Yes, ICMP packets with state INVALID are
 now passed through the blacklisting chains. Without this change, it is
 not possible to blacklist hosts that are mounting certain types of
-ICMP-based DOS attacks.</li>
+ICMP-based DOS attacks. </p>
+  </li>
 </ol>
-Issues when migrating from Shorewall 2.0.2 to Shorewall 2.0.3:<br>
+<p>Issues when migrating from Shorewall 2.0.2 to Shorewall 2.0.3:</p>
 <ol>
-  <li>The 'dropNonSyn' standard builtin action has been replaced with
+  <li>
+    <p>The 'dropNonSyn' standard builtin action has been replaced with
 the 'dropNotSyn' standard builtin action. The old name can still be
-used but will generate a warning.</li>
+used but will generate a warning. </p>
+  </li>
 </ol>
-New Features:<br>
+<p>New Features:</p>
 <ol>
-  <li>Shorewall now supports multiple saved configurations.</li>
-  <ol>
-    <li>The default saved configuration (restore script) in
-/var/lib/shorewall is now specified using the RESTOREFILE option in
-shorewall.conf. If this variable isn't set then to maintain backward
-compatibility, 'restore' is assumed.<br>
-      <br>
+  <li>
+    <p style="margin-bottom: 0in;">Shorewall now supports multiple
+saved configurations. </p>
+    <ol>
+      <li>
+        <p style="margin-bottom: 0in;">The default saved configuration
+(restore script) in /var/lib/shorewall is now specified using the
+RESTOREFILE option in shorewall.conf. If this variable isn't set then
+to maintain backward compatibility, 'restore' is assumed.<br>
+        <br>
 The value of RESTOREFILE must be a simple file name; no slashes ("/")
-may be included.<br>
-    </li>
-    <li>The "save" command has been extended to be able to specify the
-name of a saved configuration.<br>
-      <br>
+may be included.</p>
+      </li>
+      <li>
+        <p style="margin-bottom: 0in;">The "save" command has been
+extended to be able to specify the name of a saved configuration.<br>
+        <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; shorewall
 save [ &lt;file name&gt; ]<br>
-      <br>
+        <br>
 The current state is saved to /var/lib/shorewall/&lt;file name&gt;. If
 no &lt;file name&gt; is given, the configuration is saved to the file
-determined by the RESTOREFILE setting.</li>
-    <li>The "restore" command has been extended to be able to specify
-the name of a saved configuration:<br>
-      <br>
+determined by the RESTOREFILE setting. </p>
+      </li>
+      <li>
+        <p style="margin-bottom: 0in;">The "restore" command has been
+extended to be able to specify the name of a saved configuration:<br>
+        <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; shorewall
 restore [ &lt;file name&gt; ]<br>
-      <br>
+        <br>
 The firewall state is restored from /var/lib/shorewall/&lt;file
 name&gt;. If no &lt;file name&gt; is given, the firewall state is
-restored from the file determined by the RESTOREFILE setting.</li>
-    <li>The "forget" command has changed. Previously, the command
-unconditionally removed the /var/lib/shorewall/save file which records
-the current dynamic blacklist. The "forget" command now leaves that
-file alone.<br>
-      <br>
+restored from the file determined by the RESTOREFILE setting. </p>
+      </li>
+      <li>
+        <p style="margin-bottom: 0in;">The "forget" command has
+changed. Previously, the command unconditionally removed the
+/var/lib/shorewall/save file which records the current dynamic
+blacklist. The "forget" command now leaves that file alone.<br>
+        <br>
 Also, the "forget" command has been extended to be able to specify the
 name of a saved configuration:<br>
-      <br>
+        <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 shorewall forget [ &lt;file name&gt; ]<br>
-      <br>
+        <br>
 The file /var/lib/shorewall/&lt;file name&gt; is removed. If no
 &lt;file name&gt; is given, the file determined by the RESTOREFILE
-setting is removed.</li>
-    <li>The "shorewall -f start" command restores the state from the
-file determined by the RESTOREFILE setting.</li>
-  </ol>
-  <li>"!" is now allowed in accounting rules.</li>
-  <li>Interface names appearing within the configuration are now
-verified. Interface names must match the name of an entry in
-/etc/shorewall/interfaces (or if bridging is enabled, they must match
-the name of an entry in /etc/shorewall/interfaces or the name of a
-bridge port appearing in /etc/shorewall/hosts).</li>
-  <li>A new 'rejNotSyn' built-in standard action has been added. This
-action responds to "New not SYN" packets with an RST.<br>
+setting is removed. </p>
+      </li>
+      <li>
+        <p style="margin-bottom: 0in;">The "shorewall -f start" command
+restores the state from the file determined by the RESTOREFILE setting.
+        </p>
+      </li>
+    </ol>
+  </li>
+  <li>
+    <p style="margin-bottom: 0in;">"!" is now allowed in accounting
+rules. </p>
+  </li>
+  <li>
+    <p style="margin-bottom: 0in;">Interface names appearing within the
+configuration are now verified. Interface names must match the name of
+an entry in /etc/shorewall/interfaces (or if bridging is enabled, they
+must match the name of an entry in /etc/shorewall/interfaces or the
+name of a bridge port appearing in /etc/shorewall/hosts). </p>
+  </li>
+  <li>
+    <p style="margin-bottom: 0in;">A new 'rejNotSyn' built-in standard
+action has been added. This action responds to "New not SYN" packets
+with an RST.<br>
     <br>
 The 'dropNonSyn' action has been superceded by the new 'dropNotSyn'
 action. The old name will be accepted until the next major release of
@@ -607,88 +699,82 @@ The packets are logged at the log level specified in the LOGNEWNOTSYN
 option in shorewall.conf. If than option is empty or not specified,
 then 'info' is assumed.<br>
     <br>
-Examples (In all cases, set NEWNOTSYN=Yes in shorewall.conf):</li>
-  <ol>
-    <li>To simulate the behavior of NEWNOTSYN=No:
-      <ol>
-        <li>Add 'NoNewNotSyn' to /etc/shorewall/actions.</li>
-        <li>Create /etc/shorewall/action.NoNewNotSyn containing:<br>
-          <br>
+Examples (In all cases, set NEWNOTSYN=Yes in shorewall.conf): </p>
+    <ol>
+      <li>
+        <p style="margin-bottom: 0in;">To simulate the behavior of
+NEWNOTSYN=No: </p>
+        <ol>
+          <li>
+            <p style="margin-bottom: 0in;">Add 'NoNewNotSyn' to
+/etc/shorewall/actions. </p>
+          </li>
+          <li>
+            <p>Create /etc/shorewall/action.NoNewNotSyn containing:<br>
+            <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 dLogNotSyn<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-dropNotSyn<br>
-          <br>
-        </li>
-        <li>Early in your rules file, place:<br>
-          <br>
+dropNotSyn</p>
+          </li>
+          <li>
+            <p>Early in your rules file, place:<br>
+            <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-NoNewNotSyn&nbsp;&nbsp; all&nbsp;&nbsp; all&nbsp;&nbsp;&nbsp;&nbsp; tcp<br>
-          <br>
-        </li>
-      </ol>
-    </li>
-    <li>Drop 'New not SYN' packets from the net only. Don't log them:</li>
-    <ol>
-      <li>Early in your rules file, place:<br>
-        <br>
+NoNewNotSyn&nbsp;&nbsp; all&nbsp;&nbsp; all&nbsp;&nbsp;&nbsp;&nbsp; tcp</p>
+          </li>
+        </ol>
+      </li>
+      <li>
+        <p style="margin-bottom: 0in;">Drop 'New not SYN' packets from
+the net only. Don't log them: </p>
+        <ol>
+          <li>
+            <p>Early in your rules file, place:<br>
+            <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 dropNotSyn&nbsp;&nbsp;&nbsp;
-net&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; all&nbsp;&nbsp; tcp<br>
-        <br>
+net&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; all&nbsp;&nbsp; tcp</p>
+          </li>
+        </ol>
       </li>
     </ol>
-  </ol>
-  <li>Slackware users no longer have to modify the install.sh script
+  </li>
+  <li>
+    <p>Slackware users no longer have to modify the install.sh script
 before installation. Tuomo Soini has provided a change that allows the
 INIT and FIREWALL variables to be specified outside the script as in:<br>
     <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; DEST=/etc/rc.d INIT=rc.firewall
-./install.sh<br>
+./install.sh</p>
   </li>
 </ol>
-<ol>
-</ol>
 <p><a href="News.htm">More News</a></p>
-<hr style="width: 100%; height: 2px;">
-<h2><a name="Leaf"></a>Leaf<br>
-</h2>
-<p><a href="http://leaf.sourceforge.net" target="_top"><img
- alt="(Leaf Logo)"
- style="border: 0px solid ; height: 36px; width: 49px;"
- src="images/leaflogo.gif" title=""></a> LEAF is an open source project
-which provides a Firewall/router on a floppy, CD or CF. Several LEAF
-distributions including Bering and Bering-uClibc use Shorewall as their
-Netfilter configuration tool.<br>
-</p>
-<div>
-<div style="text-align: center;"> </div>
-</div>
-<hr style="width: 100%; height: 2px;">
+<hr>
+<h2><a name="Leaf"></a>Leaf</h2>
+<p><a href="http://leaf.sourceforge.net/" target="_top"><font
+ color="#000000"><img src="images/leaflogo.gif" name="Graphic1"
+ alt="(Leaf Logo)" align="bottom" border="1" height="39" width="52"></font></a>
+LEAF is an open source project which provides a Firewall/router on a
+floppy, CD or CF. Several LEAF distributions including Bering and
+Bering-uClibc use Shorewall as their Netfilter configuration tool.</p>
+<hr>
 <h2><a name="Donations"></a>Donations</h2>
-<p style="text-align: left;"><big><a href="http://www.alz.org"
- target="_top"><img src="images/alz_logo2.gif"
- alt="(Alzheimer's Association Logo)"
- style="border: 0px solid ; width: 300px; height: 60px;" align="right"></a></big></p>
-<h2></h2>
-<p style="text-align: left;"> </p>
-<h2><big><a href="http://www.starlight.org" target="_top"><img
- src="images/newlog.gif" title="" alt="(Starlight Foundation Logo)"
- style="border: 0px solid ; width: 59px; height: 102px;" align="right"></a></big></h2>
-<p style="text-align: left;"><big>Shorewall
-is free but
-if you
-try it and find it useful,
-please consider making a donation to the <a href="http://www.alz.org/"
- target="_top">Alzheimer's Association</a> or to the <a
- href="http://www.starlight.org" target="_top">Starlight Children's
-Foundation</a>.<br>
-</big></p>
-<p style="text-align: left;"><big>Thanks<br>
+<p align="left"><a href="http://www.alz.org/" target="_top"><font
+ color="#000000"><img src="images/alz_logo2.gif" name="Graphic2"
+ alt="(Alzheimer's Association Logo)" align="right" border="1"
+ height="63" width="303"></font></a><a href="http://www.starlight.org/"
+ target="_top"><font color="#000000"><img src="images/newlog.gif"
+ name="Graphic3" alt="(Starlight Foundation Logo)" align="right"
+ border="1" height="105" width="62"></font></a><font size="4">Shorewall
+is free but if you try it and find it useful, please consider making
+a donation to the <a href="http://www.alz.org/" target="_top">Alzheimer's
+Association</a> or to the <a href="http://www.starlight.org/"
+ target="_top">Starlight
+Children's Foundation</a>.</font></p>
+<p align="left"><font size="4">Thanks</font></p>
+<p align="left"><br>
 <br>
-</big></p>
-<p style="text-align: left;"><big><br>
-</big> </p>
-</div>
+</p>
 </body>
 </html>

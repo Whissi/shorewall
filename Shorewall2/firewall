@@ -1959,7 +1959,7 @@ delete_proxy_arp() {
     [ -d ${STATEDIR} ] && touch ${STATEDIR}/proxyarp
 
     for f in /proc/sys/net/ipv4/conf/*; do
-	[ -f $f/proxy_arp] && echo 0 > $f/proxy_arp
+	[ -f $f/proxy_arp ] && echo 0 > $f/proxy_arp
     done
 }
 

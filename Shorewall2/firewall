@@ -1342,22 +1342,72 @@ setup_tunnels() # $1 = name of tunnels file
 #
 setup_proxy_arp() {
 
+    print_error() {
+	error_message "Invalid value for HAVEROUTE - ($haveroute)"
+	error_message "Entry \"$address $interface $external $haveroute\" ignored"
+    }
+
+    print_error1() {
+	error_message "Invalid value for PERSISTENT - ($persistent)"
+	error_message "Entry \"$address $interface $external $haveroute $persistent\" ignored"
+    }
+
+    print_warning() {
+	error_message "PERSISTENT setting ignored - ($persistent)"
+	error_message "Entry \"$address $interface $external $haveroute $persistent\""
+    }
+
     setup_one_proxy_arp() {
+
+	case $haveroute in
+	[Nn][Oo])
+	    haveroute=
+	    ;;
+	[Yy][Ee][Ss])
+	    ;;
+	*)
+	    if [ -n "$haveroute" ]; then
+		print_error
+		return
+	    fi
+	    ;;
+	esac
+
+	case $persistent in
+	[Nn][Oo])
+	    persistent=
+	    ;;
+	[Yy][Ee][Ss])
+	    ;;
+	*)
+	    if [ -n "$persistent" ]; then
+		print_error1
+		return
+	    fi
+
+	    [ -z "$haveroute" ] || print_warning
+	    ;;
+	esac
+
+	if [ -z "$haveroute" ]; then
+	    run_ip route replace $address dev $interface
+	    [ -n "$persistent" ] && haveroute=yes
+	fi
 
 	run_arp -Ds $address $external pub
 
 	echo 1 > /proc/sys/net/ipv4/conf/$interface/proxy_arp
 	echo 0 > /proc/sys/net/ipv4/conf/$external/proxy_arp
 
-	echo $address $interface $external yes >> ${STATEDIR}/proxyarp
+	echo $address $interface $external $haveroute >> ${STATEDIR}/proxyarp
 
 	echo "   Host $address connected to $interface added to ARP on $external"
     }
 
     > ${STATEDIR}/proxyarp
 
-    while read address interface external; do
-	expandv address interface external
+    while read address interface external haveroute persistent; do
+	expandv address interface external haveroute persistent
 	setup_one_proxy_arp
     done < $TMP_DIR/proxyarp
 
@@ -1521,10 +1571,6 @@ delete_proxy_arp() {
     if [ -f ${STATEDIR}/proxyarp ]; then
 	while read address interface external haveroute; do
 	    qt arp -i $external -d $address pub
-	    #
-	    # 1.x Shorewall included a mechanism for automatically
-	    # adding routes
-	    #
 	    [ -z "$haveroute" ] && qt ip route del $address dev $interface
 	done < ${STATEDIR}/proxyarp
 

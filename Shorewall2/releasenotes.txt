@@ -1,7 +1,7 @@
-Shorewall 2.0.0-Alpha1
+Shorewall 2.0.0-Alpha2
 
 This is a major release of Shorewall. During the Alpha and Beta stages,
-the product name is changed to "Shoreall2" so that Shorewall version 1
+the product name is changed to "Shorewall2" so that Shorewall version 1
 and Shorewall version 2 may coexist on a system.
 
 The following name changes have occured:
@@ -21,11 +21,11 @@ To switch from shorewall version 1 to shorewall version 2:
 
 To switch back:
 
-   shoewall restart
+   shorewall restart
 
 In the first release candidate, the product name will return to
 "Shorewall". The installer (install.sh) will only be able to upgrade
-to Shoreall 2.0 from Shorewall version 1.4.0 or later.
+to Shorewall 2.0 from Shorewall version 1.4.0 or later.
 
 During the Alpha and Beta periods, there will be no RPMs nor will there
 be any documentation tarballs. Note that the installer does NOT attempt
@@ -50,17 +50,12 @@ Issues when migrating from Shorewall to Shorewall2:
    NAT_BEFORE_RULES=No had been specified. In other words, DNAT rules
    now always take precidence over one-to-one NAT specifications.
 
-3) The HAVEROUTE column has been removed from
-   /etc/shorewall2/proxyarp. Shorewall2 will no longer automatically add
-   routes for Proxy ARP hosts. Use your distribution's static route
-   capability to add these routes instead.
-
-4) The default value for the ALL INTERFACES column in
+3) The default value for the ALL INTERFACES column in
    /etc/shorewall2/nat has changed. In Shorewall, if the column was
    left empty, a value of "Yes" was assumed. This has been changed so
    that a value of "No" is now assumed.
 
-5) The following files don't exist in Shorewall2:
+4) The following files don't exist in Shorewall2:
 
        /etc/shorewall2/common.def
        /etc/shorewall2/common
@@ -142,7 +137,7 @@ Issues when migrating from Shorewall to Shorewall2:
       Drop:DROP
       Reject:REJECT
 
-6) The /etc/shorewall2 directory no longer contains a 'users' file or a
+5) The /etc/shorewall2 directory no longer contains a 'users' file or a
    'usersets' file. Similar functionality is now available using
    user-defined actions.
 
@@ -160,10 +155,10 @@ Issues when migrating from Shorewall to Shorewall2:
        [!]:<group number>
        [!]<user id>:<group id>
        [!]<user number>:<group id>
-       [!]<user number>:<group id>
+       [!]<user id>:<group number>
        [!]<user number>:<group number>
 
-7) It is no longer possible to specify rate limiting in the ACTION
+6) It is no longer possible to specify rate limiting in the ACTION
    column of /etc/shorewall2/rules -- you must use the RATE LIMIT
    column.
 
@@ -181,6 +176,10 @@ New Features:
    to define the loopback interface in /etc/shorewall2/interfaces; you
    simply add a fw->fw policy and fw->fw rules. If you have neither a
    fw->fw policy nor fw->fw rules, all fw->fw traffic is allowed.
+
+4) There is a new PERSISTENT column in the proxyarp file. A value of
+   "Yes" in this column means that the route added by Shorewall for
+   this host will remain after a "shorewall stop" or "shorewall clear". 
 
 
  

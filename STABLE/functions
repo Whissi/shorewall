@@ -238,6 +238,31 @@ mktempfile() {
     fi
 }
 
+
+#
+# create a temporary directory
+#
+mktempdir() {
+
+    [ -z "$MKTEMP" ] && find_mktemp   
+     
+    case "$MKTEMP" in
+	BSD)
+	    mktemp -d /tmp/shorewall.XXXXXX
+	    ;;
+	STD)
+	    mktemp -td shorewall.XXXXXX
+	    ;;
+	None)
+	    mkdir /tmp/shorewall-$$ && echo /tmp/shorewall-$$
+	    ;;
+	*)
+	    echo "   ERROR:Internal error in mktempdir"
+	    ;;
+	esac
+}	
+
+
 #
 # Read a file and handle "INCLUDE" directives
 #

@@ -1,5 +1,5 @@
 %define name shorewall
-%define version 1.3.13
+%define version 1.3.14
 %define release 1
 %define prefix /usr
 
@@ -105,6 +105,14 @@ fi
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel
 
 %changelog
+* Fri Feb 07 2003 Tom Eastep <tom@shorewall.net>
+- Changes version to 1.3.14-1
+* Tue Feb 04 2003 Tom Eastep <tom@shorewall.net>
+- Changes version to 1.3.14-0RC1
+* Tue Jan 28 2003 Tom Eastep <tom@shorewall.net>
+- Changes version to 1.3.14-0Beta2
+* Sat Jan 25 2003 Tom Eastep <tom@shorewall.net>
+- Changes version to 1.3.14-0Beta1
 * Mon Jan 13 2003 Tom Eastep <tom@shorewall.net>
 - Changes version to 1.3.13
 * Fri Dec 27 2002 Tom Eastep <tom@shorewall.net>

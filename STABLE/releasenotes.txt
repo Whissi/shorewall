@@ -2,48 +2,104 @@ This is a minor release of Shorewall that has a couple of new features.
 
 New features include:
 
-1) A new 'DNAT-' action has been added for entries in the
-   /etc/shorewall/rules file. DNAT- is intended for advanced users who
-   wish to minimize the number of rules that connection requests must
-   traverse.
+1) An OLD_PING_HANDLING option has been added to shorewall.conf. When
+   set to Yes, Shorewall ping handling is as it has always been (see
+   http://www.shorewall.net/ping.html).
+
+   When OLD_PING_HANDLING=No, icmp echo (ping) is handled via rules and
+   policies just like any other connection request. The FORWARDPING
+   option in shorewall.conf is ignored and the 'noping' and
+   'filterping' options in /etc/shorewall/interfaces will generate an
+   error.
+
+2) It is now possible to direct Shorewall to create a "label" such as
+   "eth0:0" for IP addresses that it creates under ADD_IP_ALIASES=Yes
+   and ADD_SNAT_ALIASES=Yes. This is done by specifying the label
+   instead of just the interface name:
+
+   a) In the INTERFACE column of /etc/shorewall/masq
+   b) In the INTERFACE column of /etc/shorewall/nat
+
+3) The ability to name your VLAN interfaces using the $dev.$vid
+   convention (e.g., "eth0.0") has been restored. This capability was
+   inadvertently broken in version 1.3.12.
+
+4) Support has been added for defining OpenVPN tunnels in the
+   /etc/shorewall/tunnels file.
+
+5) When an interface name is entered in the SUBNET column of the
+   /etc/shorewall/masq file, Shorewall previously masqueraded traffic
+   from only the first subnet defined on that interface. It did not
+   masquerade traffic from:
+
+   a) The subnets associated with other addresses on the interface.
+   b) Subnets accessed through local routers.
+
+   Beginning with Shorewall 1.3.14, if you enter an interface name in
+   the SUBNET column, shorewall will use the firewall's routing table
+   to construct the masquerading/SNAT rules.
+
+   Example 1 -- This is how it works in 1.3.14.
    
-   A Shorewall DNAT rule actually generates two iptables rules: a
-   header rewriting rule in the 'nat' table and an ACCEPT rule in the
-   'filter' table. A DNAT- rule only generates the first of these
-   rules. This is handy when you have several DNAT rules that would
-   generate the same ACCEPT rule.
-
-   Here are three rules from my previous rules file:
+   [root@gateway test]# cat /etc/shorewall/masq
+   #INTERFACE              SUBNET                  ADDRESS
+   eth0                    eth2                    206.124.146.176
+   #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE
    
-	DNAT   net  dmz:206.124.146.177 tcp smtp - 206.124.146.178
-	DNAT   net  dmz:206.124.146.177 tcp smtp - 206.124.146.179
-	ACCEPT net  dmz:206.124.146.177 tcp www,smtp,ftp,...
+   [root@gateway test]# ip route show dev eth2
+   192.168.1.0/24  scope link
+   192.168.10.0/24  proto kernel  scope link  src 192.168.10.254
+   
+   [root@gateway test]# ip route show dev eth2
+   192.168.1.0/24  scope link
+   192.168.10.0/24  proto kernel  scope link  src 192.168.10.254
+   [root@gateway test]# shorewall start
+   ...
+   Masqueraded Subnets and Hosts:
+       To 0.0.0.0/0 from 192.168.1.0/24 through eth0 using 206.124.146.176
+       To 0.0.0.0/0 from 192.168.10.0/24 through eth0 using 206.124.146.176
+   Processing /etc/shorewall/tos...
 
-   These three rules ended up generating _three_ copies of 
+   When upgrading to Shorewall 1.3.14, if you have multiple local
+   subnets connected to an interface that is specified in the SUBNET
+   column of an /etc/shorewall/masq entry, your /etc/shorewall/masq
+   file will need changing. In most cases, you will simply be able to
+   remove redundant entries. In some cases though, you might want to change
+   from using the interface name to listing specific subnetworks if the
+   change described above will cause masquerading to occur on
+   subnetworks that you don't wish to masquerade.
 
-	 ACCEPT net  dmz:206.124.146.177 tcp smtp
+   Example 2 -- Suppose that your current config is as follows:
+   
+   [root@gateway test]# cat /etc/shorewall/masq
+   #INTERFACE              SUBNET                  ADDRESS
+   eth0                    eth2                    206.124.146.176
+   eth0			   192.168.10.0/24	   206.124.146.176
+   #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE
+   
+   [root@gateway test]# ip route show dev eth2
+   192.168.1.0/24  scope link
+   192.168.10.0/24  proto kernel  scope link  src 192.168.10.254
+   [root@gateway test]#
 
-   By writing the rules this way, I end up with only one copy of the
-   ACCEPT rule.
+   In this case, the second entry in /etc/shorewall/masq is no longer
+   required.
 
-	DNAT-  net  dmz:206.124.146.177 tcp smtp -  206.124.146.178
-	DNAT-  net  dmz:206.124.146.177 tcp smtp -  206.124.146.179
-	ACCEPT net  dmz:206.124.146.177 tcp www,smtp,ftp,...
+   Example 3 -- What if your current configuration is like this?
 
-2) The 'shorewall check' command now prints out the applicable policy
-   between each pair of zones.
+   [root@gateway test]# cat /etc/shorewall/masq
+   #INTERFACE              SUBNET                  ADDRESS
+   eth0                    eth2                    206.124.146.176
+   #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE
+   
+   [root@gateway test]# ip route show dev eth2
+   192.168.1.0/24  scope link
+   192.168.10.0/24  proto kernel  scope link  src 192.168.10.254
+   [root@gateway test]#
 
-3. A new CLEAR_TC option has been added to shorewall.conf. If this
-   option is set to 'No' then Shorewall won't clear the current
-   traffic control rules during [re]start. This setting is intended
-   for use by people that prefer to configure traffic shaping when
-   the network interfaces come up rather than when the firewall
-   is started. If that is what you want to do, set TC_ENABLED=Yes and
-   CLEAR_TC=No and do not supply an /etc/shorewall/tcstart file. That
-   way, your traffic shaping rules can still use the 'fwmark'
-   classifier based on packet marking defined in /etc/shorewall/tcrules.
+   In this case, you would want to change the entry in
+   /etc/shorewall/masq to:
 
-4. A new SHARED_DIR variable has been added that allows distribution
-   packagers to easily move the shared directory (default
-   /usr/lib/shorewall). Users should never have a need to change the
-   value of this shorewall.conf setting.
+   #INTERFACE              SUBNET                  ADDRESS
+   eth0                    192.168.1.0/24          206.124.146.176
+   #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE

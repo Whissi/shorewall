@@ -17,10 +17,20 @@
 #	MARK		The mark value which is an
 #			integer in the range 1-255
 #
+#			May optionally be followed by ":P" or ":F"
+#			where ":P" indicates that marking should occur in
+#			the PREROUTING chain and ":F" indicates that marking
+#			should occur in the FORWARD chain. If neither
+#			":P" nor ":F" follow the mark value then the chain is
+#			determined by the setting of MARK_IN_FORWARD_CHAIN in
+#			/etc/shorewall/shorewall.conf.
+#
 #	SOURCE 		Source of the packet. A comma-separated list of
 #			interface names, IP addresses, MAC addresses 
 #			and/or subnets. Use $FW if the packet originates on
-#			the firewall.
+#			the firewall in which case the MARK column may NOT
+#			specify either ":P" or ":F" (marking always occurs 
+#			in the OUTPUT chain).
 #
 #			MAC addresses must be prefixed with "~" and use
 #			"-" as a separator.

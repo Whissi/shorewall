@@ -5,7 +5,7 @@
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]         
 #
-#     (c) 2001,2002 - Tom Eastep (teastep@shorewall.net)
+#     (c) 2001,2002,2003 - Tom Eastep (teastep@shorewall.net)
 #
 #       Shorewall documentation is available at http://seattlefirewall.dyndns.org
 #
@@ -28,7 +28,7 @@
 #       shown below. Simply run this script to revert to your prior version of 
 #       Shoreline Firewall.
 
-VERSION=1.3.13
+VERSION=1.3.14
 
 usage() # $1 = exit status
 {

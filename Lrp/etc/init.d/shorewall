@@ -4,7 +4,7 @@
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]	      
 #
-#     (c) 1999,2000,2001,2002 - Tom Eastep (teastep@shorewall.net)
+#     (c) 1999,2000,2001,2002,2003 - Tom Eastep (teastep@shorewall.net)
 #
 #	On most distributions, this file should be called:
 #	/etc/rc.d/init.d/shorewall or /etc/init.d/shorewall
@@ -374,7 +374,14 @@ chain_base() #$1 = interface
 {
     local c=${1%%+*}
 
-    echo ${c:=common}
+    case $c in 
+        *.*)
+	    echo ${c%.*}_${c#*.}
+	    ;;
+	*)
+	    echo ${c:=common}
+	    ;;
+    esac
 }
 
 #
@@ -599,13 +606,17 @@ validate_interfaces_file() {
 
 	for option in $options; do
 	    case $option in
-	    dhcp|noping|filterping|routestopped|norfc1918|multi|tcpflags)
-                ;;
-	    routefilter|dropunclean|logunclean|blacklist|proxyarp|maclist|-)
-		;;
-	    *)
-		error_message "Warning: Invalid option ($option) in record \"$r\""
-		;;
+		dhcp|routestopped|norfc1918|multi|tcpflags)
+		    ;;
+		routefilter|dropunclean|logunclean|blacklist|proxyarp|maclist|-)
+		    ;;
+		noping|filterping)
+		    [ -n "$OLD_PING_HANDLING" ] || \
+			startup_error "Option $option only allowed with old ping handling"
+		    ;;
+		*)
+		    error_message "Warning: Invalid option ($option) in record \"$r\""
+		    ;;
 	    esac
 	done
 	
@@ -1102,8 +1113,7 @@ validate_policy()
 #
 find_broadcasts() {
     for interface in $all_interfaces; do
-	interface=`chain_base $interface`
-	eval bcast=\$${interface}_broadcast
+	eval bcast=\$`chain_base $interface`_broadcast
 	if [ "x$bcast" = "xdetect" ]; then
 	    addr="`ip addr show $interface 2> /dev/null`"
 	    if [ -n "`echo "$addr" | grep 'inet.*brd '`" ]; then
@@ -1122,7 +1132,7 @@ find_broadcasts() {
 #
 find_interface_broadcasts() # $1 = Interface name
 {
-    eval bcast=\$${1}_broadcast
+    eval bcast=\$`chain_base ${1}`_broadcast
     
     if [ "x$bcast" = "xdetect" ]; then
 	addr="`ip addr show $interface 2> /dev/null`"
@@ -1414,6 +1424,23 @@ setup_tunnels() # $1 = name of tunnels file
 	echo "   PPTP server defined."
     }
 
+    setup_one_openvpn() # $1 = gateway, $2 = kind[:port]
+    {
+	case $2 in
+	    *:*)
+		p=${2#*:}
+		;;
+	    *)
+		p=5000
+		;;
+	esac
+
+	addrule $inchain  -p udp -s $1 --sport $p --dport $p -j ACCEPT
+	addrule $outchain -p udp -d $1 --sport $p --dport $p -j ACCEPT
+
+	echo "   OPENVPN tunnel to $1:$p defined."
+    }
+
     strip_file tunnels $1
 
     while read kind z gateway z1; do
@@ -1440,6 +1467,9 @@ setup_tunnels() # $1 = name of tunnels file
 		    ;;
 		pptpserver|PPTPSERVER)
 		    setup_pptp_server
+		    ;;
+		openvpn|OPENVPN|openvpn:*|OPENVPN:*)
+		    setup_one_openvpn $gateway $kind
 		    ;;
 		*)
 		    error_message "Tunnels of type $kind are not supported:" \
@@ -1704,8 +1734,11 @@ setup_nat() {
 
     while read external interface internal allints localnat; do
 	expandv external interface internal allints localnat
+	
+	iface=${interface%:*}
+
 	if [ -n "$ADD_IP_ALIASES" ]; then
-	    qt ip addr del $external dev $interface
+	    qt ip addr del $external dev $iface
 	fi
 
 	if [ -z "$allints" -o "$allints" = "Yes" -o "$allints" = "yes" ]
@@ -1718,9 +1751,9 @@ setup_nat() {
 		    -j DNAT --to-destination $internal
 	    fi
 	else
-	    addnatrule `input_chain $interface` \
+	    addnatrule `input_chain $iface` \
 		-d $external -j DNAT --to-destination $internal
-	    addnatrule `output_chain $interface` \
+	    addnatrule `output_chain $iface` \
 		-s $internal -j SNAT --to-source $external
 	fi
 
@@ -1753,7 +1786,7 @@ delete_nat() {
 
 #
 # Process a TC Rule - $marking_chain is assumed to contain the name of the 
-#                     marking chain
+#                     default marking chain
 #
 process_tc_rule()
 {
@@ -1774,13 +1807,34 @@ process_tc_rule()
 		    ;;
 		*)
 		    if ! list_search $source $all_interfaces; then
-			fatal_error "Error: Unknown interface $source"
+			fatal_error "Error: Unknown interface $source in rule \"$rule\""
 		    fi
 		    
 		    r="-i $source "
 		    ;;
 	    esac
 	fi
+
+	if [ "$mark" != "${mark%:*}" ]; then
+	    
+	    [ "$chain" = tcout ] && \
+		fatal_error "Chain designator not allowed when source is \$FW; rule \"$rule\""
+	    
+	    case "${mark#*:}" in
+		p|P)
+		    chain=tcpre
+		    ;;
+		f|F)
+		    chain=tcfor
+		    ;;
+		*)
+		    fatal_error "Invalid chain designator: (${mark#*:}) in rule \"$rule\""
+		    ;;
+	    esac
+
+	    mark="${mark%:*}"
+	fi
+  
 	[ "x$dest"   = "x-"  ] || r="${r}-d $dest "
 	[ "$proto"   = "all" ] || r="${r}-p $proto "
 	[ "x$port"   = "x-"  ] || r="${r}--dport $port "
@@ -1811,7 +1865,8 @@ setup_tc1() {
     # Create the TC mangle chains
     #
     
-    run_iptables -t mangle -N $marking_chain
+    run_iptables -t mangle -N tcpre
+    run_iptables -t mangle -N tcfor
     run_iptables -t mangle -N tcout
     #
     # Process the TC Rules File
@@ -1827,11 +1882,9 @@ setup_tc1() {
     # Link to the TC mangle chains from the main chains
     #
     
-    if [ $marking_chain = tcfor ]; then
-	run_iptables -t mangle -A FORWARD -j tcfor
-    else
-	run_iptables -t mangle -A PREROUTING -j tcpre
-    fi
+    run_iptables -t mangle -A FORWARD    -j tcfor
+    run_iptables -t mangle -A PREROUTING -j tcpre
+    run_iptables -t mangle -A OUTPUT     -j tcout
 
     run_user_exit tcstart
 
@@ -2872,6 +2925,21 @@ rules_chain() # $1 = source zone, $2 = destination zone
 }
 
 #
+#  echo the list of subnets routed out of a given interface
+#
+get_routed_subnets() # $1 = interface name
+{
+    local address
+    local rest
+
+    ip route show dev $1 2> /dev/null |
+	while read address rest; do
+	    [ "$address" = "${address%/*}" ] && address="${address}/32"
+	    echo $address
+        done
+}
+
+#
 # Set up Source NAT (including masquerading)
 #
 setup_masq()
@@ -2879,12 +2947,32 @@ setup_masq()
     setup_one() {
 	local using
 
-	if [ "$interface" = "${interface%:*}" ]; then
-	    destnet="0.0.0.0/0"
-	else
-	    destnet="${interface#*:}"
-	    interface="${interface%:*}"
-	fi
+	case $fullinterface in
+	    *:*:*)
+		# Both alias name and subnet
+		destnet="${fullinterface##*:}"
+		fullinterface="${fullinterface%:*}"
+		;;
+	    *:*)
+		# Alias name OR subnet
+		case ${fullinterface#*:} in
+		    *.*)
+			# It's a subnet
+			destnet="${fullinterface#*:}"
+			fullinterface="${fullinterface%:*}"
+			;;
+		    *)
+			#it's an alias name
+			destnet="0.0.0.0/0"
+			;;
+		esac
+		;;
+	    *)
+		destnet="0.0.0.0/0"
+		;;
+	esac
+
+	interface=${fullinterface%:*}
 
 	if ! list_search $interface $all_interfaces; then
 	    fatal_error "Error: Unknown interface $interface"
@@ -2900,10 +2988,10 @@ setup_masq()
 	chain=`masq_chain $interface`
 	iface=
 
+	source="$subnet"
+	
 	case $subnet in
 	*.*.*)
-	    source="$subnet"
-	    subnet="-s $subnet"
 	    ;;
 	-)
 	    #
@@ -2916,22 +3004,15 @@ setup_masq()
 	    iface="-o $interface"
 	    ;;
 	*)
-	    ipaddr="`ip addr show $subnet 2> /dev/null | grep 'inet '`"
-	    source="$subnet"
-	    if [ -z "$ipaddr" ]; then
-		fatal_error \
-		  "Interface $subnet must be up before Shorewall starts"
-	    fi
-
-	    subnet="`echo $ipaddr | sed s/"    "// | cut -d' ' -f2`"
-	    [ -z "`echo "$subnet" | grep '/'`" ] && subnet="${subnet}/32"
-	    subnet="-s $subnet"	    
+	    subnets=`get_routed_subnets $subnet`
+	    [ -z "$subnets" ] && startup_error "Unable to determine the routes through interface $subnet"
+	    subnet="$subnets"
 	    ;;
 	esac
 
 	if [ -n "$address" -a -n "$ADD_SNAT_ALIASES" ]; then
 	    list_search $address $aliases_to_add || \
-		aliases_to_add="$aliases_to_add $address $interface" 
+		aliases_to_add="$aliases_to_add $address $fullinterface" 
 	fi
 
 	destination=$destnet
@@ -2939,7 +3020,15 @@ setup_masq()
 	if [ -n "$nomasq" ]; then
 	    newchain=masq${masq_seq}
 	    createnatchain $newchain
-	    addnatrule $chain -d $destnet $iface $subnet -j $newchain
+	    
+	    if [ -n "$subnet" ]; then
+		for s in $subnet; do
+		    addnatrule $chain -d $destnet $iface -s $s -j $newchain
+		done
+	    else
+		addnatrule $chain -d $destnet $iface -j $newchain
+	    fi
+
 	    masq_seq=$(($masq_seq + 1))
 	    chain=$newchain
 	    subnet=
@@ -2949,29 +3038,38 @@ setup_masq()
 	    for addr in `separate_list $nomasq`; do
 		addnatrule $chain -s $addr -j RETURN
 	    done
+	
+	    source="$source except $nomasq"
 	else
 	    destnet="-d $destnet"
 	fi
 
-	if [ -n "$address" ]; then
-	    addnatrule $chain $subnet $destnet $iface \
-		-j SNAT --to-source $address
-	    using=" using $address"
+	if [ -n "$subnet" ]; then
+	    for s in $subnet; do
+		if [ -n "$address" ]; then
+		    addnatrule $chain -s $s $destnet $iface -j SNAT --to-source $address
+		    echo "   To $destination from $s through ${interface} using $address"
+		else
+		    addnatrule $chain -s $s $destnet $iface -j MASQUERADE
+		    echo "   To $destination from $s through ${interface}"
+		fi
+	    done
+	elif [ -n "$address" ]; then
+	    addnatrule $chain $destnet $iface -j SNAT --to-source $address
+	    echo "   To $destination from $source through ${interface} using $address"
 	else
-	    addnatrule $chain $subnet $destnet $iface -j MASQUERADE
-	    using=
+	    addnatrule $chain $destnet $iface -j MASQUERADE
+	    echo "   To $destination from $source through ${interface}"
 	fi
 
-	[ -n "$nomasq" ] && source="$source except $nomasq"
-	echo "   To $destination from $source through ${interface}${using}"
     }
 
     strip_file masq $1
 
     [ -n "$NAT_ENABLED" ] && echo "Masqueraded Subnets and Hosts:"
 
-    while read interface subnet address; do
-	expandv interface subnet address
+    while read fullinterface subnet address; do
+	expandv fullinterface subnet address
 	[ -n "$NAT_ENABLED" ] && setup_one || \
 	    error_message "Warning: NAT disabled; masq rule ignored"
     done < $TMP_DIR/masq
@@ -3195,9 +3293,10 @@ add_ip_aliases()
 	    val=${val%% scope*}
 	fi
 
-	run_ip addr add ${external}${val} dev $interface
+	run_ip addr add ${external}${val} dev $interface $label
 	echo "$external $interface" >> ${STATEDIR}/nat
-	echo "   IP Address $external added to interface $interface"
+	[ -n "$label" ] && label="with $label"
+	echo "   IP Address $external added to interface $interface $label"
     }
 
     set -- $aliases_to_add
@@ -3205,6 +3304,14 @@ add_ip_aliases()
     while [ $# -gt 0 ]; do
 	external=$1
 	interface=$2
+	label=
+
+	if [ "$interface" != "${interface%:*}" ]; then
+	    label="${interface#*:}"
+	    interface="${interface%:*}"
+	    label="label $interface:$label"
+	fi
+	    
 	primary=`find_interface_address $interface`
 	shift;shift
 	[ "x${primary}" = "x${external}" ] || do_one
@@ -3350,11 +3457,14 @@ initialize_netfilter () {
 # Build the common chain -- called during [re]start and refresh
 #
 build_common_chain() {
-    #
-    # PING
-    #
-    [ -n "$FORWARDPING" ] && \
-	run_iptables -A icmpdef -p icmp --icmp-type echo-request -j ACCEPT
+    
+    if [ -n "$OLD_PING_HANDLING" ]; then
+        #
+        # PING
+        #
+	[ -n "$FORWARDPING" ] && \
+	    run_iptables -A icmpdef -p icmp --icmp-type echo-request -j ACCEPT
+    fi
     #
     # Common ICMP rules
     #
@@ -3907,23 +4017,25 @@ define_firewall() # $1 = Command (Start or Restart)
 
     process_rules $rules
 
-    echo "Setting up ICMP Echo handling..."
+    if [ -n "$OLD_PING_HANDLING" ]; then
+	echo "Setting up ICMP Echo handling..."
 
-    filterping_interfaces="`find_interfaces_by_option filterping`"
-    noping_interfaces="`find_interfaces_by_option noping`"
+	filterping_interfaces="`find_interfaces_by_option filterping`"
+	noping_interfaces="`find_interfaces_by_option noping`"
 
-    for interface in $all_interfaces; do
-	if ! list_search $interface $filterping_interfaces; then
-	    if list_search $interface $noping_interfaces; then
-		target=DROP
-	    else
-		target=ACCEPT
+	for interface in $all_interfaces; do
+	    if ! list_search $interface $filterping_interfaces; then
+		if list_search $interface $noping_interfaces; then
+		    target=DROP
+		else
+		    target=ACCEPT
+		fi
+		
+		run_iptables -A `input_chain $interface` \
+		    -p icmp --icmp-type echo-request -j $target
 	    fi
-	    
-	    run_iptables -A `input_chain $interface` \
-		-p icmp --icmp-type echo-request -j $target
-	fi
-    done
+	done
+    fi
 
     policy=`find_file policy`
 
@@ -4104,7 +4216,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
     dhcp_interfaces=`find_interfaces_by_option dhcp`
     blacklist_interfaces=`find_interfaces_by_option blacklist`
     filterping_interfaces=`find_interfaces_by_option filterping`
-    maclist_interfaces=`find_interfaces_by_maclist`
+    maclist_interfaces=`find_interfaces_by_option maclist`
     tcpflags_interfaces=`find_interfaces_by_option tcpflags`
     #
     # Normalize the first argument to this function
@@ -4161,15 +4273,15 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		    rulenum=2
 		fi
 
-		if ! list_search $interface $filterping_interfaces; then
+		if list_search $interface $filterping_interfaces; then
 		    rulenum=$(($rulenum + 1))
 		fi
 
-		if ! list_search $interface $maclist_interfaces; then
+		if list_search $interface $maclist_interfaces; then
 		    rulenum=$(($rulenum + 1))
 		fi
 
-		if ! list_search $interface $tcpflags_interfaces; then
+		if list_search $interface $tcpflags_interfaces; then
 		    rulenum=$(($rulenum + 1))
 		fi
 
@@ -4194,11 +4306,11 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 			rulenum=2
 		    fi
 
-		    if ! list_search $interface $maclist_interfaces; then
+		    if list_search $interface $maclist_interfaces; then
 			rulenum=$(($rulenum + 1))
 		    fi
 		    
-		    if ! list_search $interface $tcpflags_interfaces; then
+		    if list_search $interface $tcpflags_interfaces; then
 			rulenum=$(($rulenum + 1))
 		    fi
 		fi
@@ -4344,7 +4456,7 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
     while read z1 z2 chain; do
 	if [ "$z1" = "$zone" ]; then
 	    if [ "$z2" = "$FW" ]; then
-		qt iptables -D `input_chain $interface` -i $interface -s $host -j $chain 
+		qt iptables -D `input_chain $interface` -s $host -j $chain 
 	    else
 		source_chain=`forward_chain $interface`
 		eval dest_hosts=\"\$${z2}_hosts\"
@@ -4471,6 +4583,7 @@ do_initialize() {
     TCP_FLAGS_LOG_LEVEL=
     RFC1918_LOG_LEVEL=
     MARK_IN_FORWARD_CHAIN=
+    OLD_PING_HANDLING=
     SHARED_DIR=/usr/lib/shorewall
     FUNCTIONS=
     VERSION_FILE=
@@ -4596,7 +4709,10 @@ do_initialize() {
     else
 	CLEAR_TC=
     fi
+    OLD_PING_HANDLING=`added_param_value_yes OLD_PING_HANDLING $OLD_PING_HANDLING`
 
+    [ -z "$OLD_PING_HANDLING" -a -n "$FORWARDPING" ] && \
+	startup_error "FORWARDPING=Yes is incompatible with OLD_PING_HANDLING=No"
 
     run_user_exit params
 

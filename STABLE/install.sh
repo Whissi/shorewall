@@ -4,7 +4,7 @@
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]         
 #
-#     (c) 2000,2001,2002 - Tom Eastep (teastep@shorewall.net)
+#     (c) 2000,2001,2002,2003 - Tom Eastep (teastep@shorewall.net)
 #
 #       Seawall documentation is available at http://seawall.sourceforge.net
 #
@@ -54,7 +54,7 @@
 #        /etc/rc.d/rc.local file is modified to start the firewall.
 #
 
-VERSION=1.3.13
+VERSION=1.3.14
 
 usage() # $1 = exit status
 {

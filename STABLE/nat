@@ -16,7 +16,13 @@
 #			IP address of the interface named in the next
 #			column and must not be a DNS Name.
 #	INTERFACE	Interface that we want to EXTERNAL address to appear
-#                       on
+#                       on. If ADD_IP_ALIASES=Yes in shorewall.conf, you may
+#			follow the interface name with ":" and a digit to 
+#			indicate that you want Shorewall to add the alias
+#			with this name (e.g., "eth0:0"). That allows you to
+#			see the alias with ifconfig. THAT IS THE ONLY THING
+#			THAT THIS NAME IS GOOD FOR -- YOU CANNOT USE IT
+#			ANYWHERE ELSE IN YOUR SHORWALL CONFIGURATION.
 #	INTERNAL	Internal Address (must not be a DNS Name).
 #       ALL INTERFACES  If Yes or yes (or left empty), NAT will be effective
 #                       from all hosts. If No or no then NAT will be effective
@@ -26,5 +32,5 @@
 #                       Yes or yes, NAT will be effective from the firewall
 #                       system
 ##############################################################################
-#EXTERNAL	INTERFACE	INTERNAL        ALL INTERFACES          LOCAL
+#EXTERNAL	INTERFACE	INTERNAL	ALL INTERFACES 		LOCAL
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE

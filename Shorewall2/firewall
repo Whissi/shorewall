@@ -2998,10 +2998,14 @@ add_a_rule()
     # Some misc. setup
 
     case "$logtarget" in
-	REJECT)
-	    [ -n "$servport" ] && \
-		fatal_error "Server port may not be specified in a REJECT rule;"\
-                            "rule: \"$rule\""
+	ACCEPT|DROP|REJECT|CONTINUE)	
+	
+	    [ "$logtarget" = REJECT -a -n "$servport" ] && \
+		fatal_error "Server port may not be specified in a REJECT rule; rule: \"$rule\""
+	    if [ -z "$proto" -a -z "$cli" -a -z "$serv" -a -z "$servport" -a -z "$userspec" ] ; then
+		error_message "Warning -- Rule \"$rule\" is a POLICY"
+		error_message "	       -- and should be moved to the policy file"
+	    fi
 	    ;;
 	REDIRECT)
 	    [ -n "$serv" ] && startup_error "REDIRECT rules cannot"\
@@ -3016,17 +3020,6 @@ add_a_rule()
 	    ;;
 	LOG)
 	    [ -z "$loglevel" ] && fatal_error "LOG requires log level"
-	    ;;
-    esac
-
-    # Complain if the rule is really a policy
-
-    case $logtarget in
-	ACCEPT|DROP|REJECT|CONTINUE)	
-	    if [ -z "$proto" -a -z "$cli" -a -z "$serv" -a -z "$servport" -a -z "$userspec" ] ; then
-		error_message "Warning -- Rule \"$rule\" is a POLICY"
-		error_message "	       -- and should be moved to the policy file"
-	    fi
 	    ;;
     esac
 

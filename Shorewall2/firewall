@@ -5130,7 +5130,6 @@ activate_rules()
     done
     
     for interface in $all_interfaces ; do
-	
 	run_iptables -A FORWARD -i $interface -j $(forward_chain $interface)
 	run_iptables -A INPUT   -i $interface -j $(input_chain $interface)
 	addnatjump POSTROUTING $(masq_chain $interface) -o $interface
@@ -5196,83 +5195,42 @@ define_firewall() # $1 = Command (Start or Restart)
     echo "${1}ing Shorewall..."
 
     verify_os_version
-
     verify_ip
-
     load_kernel_modules
 
-    echo "Initializing..."
-
-    initialize_netfilter
-
-    echo "Configuring Proxy ARP"
-
-    setup_proxy_arp
-
-    echo "Setting up NAT..."
-
-    setup_nat
-
-    echo "Setting up NETMAP..."
-
-    setup_netmap
-
-    echo "Adding Common Rules"
-
-    add_common_rules
+    echo "Initializing...";                    initialize_netfilter
+    echo "Configuring Proxy ARP";              setup_proxy_arp
+    echo "Setting up NAT...";                  setup_nat
+    echo "Setting up NETMAP...";               setup_netmap
+    echo "Adding Common Rules";                add_common_rules
 
     tunnels=$(find_file tunnels)
-
     [ -f $tunnels ] && \
-	echo "Processing $tunnels..." && setup_tunnels $tunnels
+	echo "Processing $tunnels..." &&       setup_tunnels $tunnels
 
     maclist_hosts=$(find_hosts_by_option maclist)
+    [ -n "$maclist_hosts" ] &&                 setup_mac_lists
 
-    if [ -n "$maclist_hosts" ] ; then
-	setup_mac_lists
-    fi
-
-    rules=$(find_file rules)
-
-    echo "Pre-processing Actions..."
-
-    process_actions1
-
-    echo "Processing $rules..."
-
-    process_rules
-
-    echo "Processing Actions..."
-
-    process_actions2
-
-    policy=$(find_file policy)
-
-    echo "Processing $policy..."
-
-    apply_policy_rules
+    echo "Pre-processing Actions...";          process_actions1
+    echo "Processing $rules...";               process_rules
+    echo "Processing Actions...";              process_actions2
+    echo "Processing $policy...";              apply_policy_rules
 
     masq=$(find_file masq)
-
-    [ -f $masq ] && setup_masq $masq
+    [ -f $masq ] &&                            setup_masq $masq
 
     tos=$(find_file tos)
-
     [ -f $tos ] && [ -n "$MANGLE_ENABLED" ] && process_tos $tos
 
     ecn=$(find_file ecn)
-
     [ -f $ecn ] && [ -n "$MANGLE_ENABLED" ] && setup_ecn $ecn
 
-    [ -n "$TC_ENABLED" ] && setup_tc
+    [ -n "$TC_ENABLED" ] &&                    setup_tc
 
-    echo "Activating Rules..."
-
-    activate_rules
+    echo "Activating Rules...";                activate_rules
 
     [ -n "$aliases_to_add" ] && \
-	echo "Adding IP Addresses..." && \
-	add_ip_aliases
+	echo "Adding IP Addresses..." &&       add_ip_aliases
 
     run_user_exit start
 

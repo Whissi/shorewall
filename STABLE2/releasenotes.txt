@@ -1,4 +1,43 @@
-Shorewall 2.2.1
+Shorewall 2.2.2
+
+-----------------------------------------------------------------------
+Problems corrected in version 2.2.2
+
+1) The SOURCE column in the /etc/shorewall/tcrules file now allows IP
+   ranges (assuming that your iptables and kernel support ranges).
+
+2) If A is a user-defined action and you have file /etc/shorewall/A
+   then when that file is invoked, the $TAG value may be incorrect.
+
+3) Previously, if an iptables command generating a logging rule
+   failed, the Shorewall [re]start was still successful. This error
+   is now considered fatal and Shorewall will be either restored from
+   the last save (if any) or it will be stopped.
+
+-----------------------------------------------------------------------
+New Features in version 2.2.2
+
+1) The SOURCE column in the /etc/shorewall/tcrules file now allows $FW
+   to be optionally followed by ":" and a host/network address or
+   address range.
+
+2) Shorewall now clears the output device only if it is a
+   terminal. This avoids ugly control sequences being placed in files
+   when /sbin/shorewall output is redirected.
+
+3) The output from 'arp -na' has been added to the 'shorewall status'
+   display.
+
+4) The 2.6.11 Linux kernel and iptables 1.3.0 now allow port ranges
+   to appear in port lists handled by "multiport match". If Shorewall
+   detects this capability, it will use "multiport match" for port
+   lists containing port ranges. Be cautioned that each port range
+   counts for TWO ports and a port list handled with "multiport match"
+   can still specify a maximum of 15 ports.
+
+   As always, if a port list in /etc/shorewall/rules is incompatible
+   with "multiport match", a separate iptables rule will be generated
+   for each element in the list.
 
 -----------------------------------------------------------------------
 Problems corrected in version 2.2.1

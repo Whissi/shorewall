@@ -4,7 +4,7 @@
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
 #
-#     (c) 1999,2000,2001,2002,2003,2004 - Tom Eastep (teastep@shorewall.net)
+#     (c) 1999,2000,2001,2002,2003,2004,2005 - Tom Eastep (teastep@shorewall.net)
 #
 #	This file should be placed in /sbin/shorewall.
 #
@@ -221,6 +221,13 @@ get_config() {
 }
 
 #
+# Clear descriptor 1 if it is a terminal
+#
+clear_term() {
+    [ -t 1 ] && clear
+}
+
+#
 # Display IPTABLES rules -- we used to store them in a variable but ash
 # dies when trying to display large sets of rules
 #
@@ -238,7 +245,7 @@ display_chains()
 
 	$IPTABLES -L $IPT_OPTIONS >> $TMPFILE
 
-	clear
+	clear_term
 	echo "$banner $(date)"
 	echo
 	echo "Standard Chains"
@@ -250,7 +257,7 @@ display_chains()
 
 	timed_read
 
-	clear
+	clear_term
 	echo "$banner $(date)"
 	echo
 	firstchain=Yes
@@ -268,7 +275,7 @@ display_chains()
 	for zone in $zones; do
 
 	    if [ -n "$(grep "^Chain \.*${zone}" $TMPFILE)" ] ; then
-		clear
+		clear_term
 		echo "$banner $(date)"
 		echo
 		firstchain=Yes
@@ -287,7 +294,7 @@ display_chains()
 	    fi
 	done
 
-	clear
+	clear_term
 	echo "$banner $(date)"
 	echo
 	firstchain=Yes
@@ -308,7 +315,7 @@ display_chains()
 
 	timed_read
 
-	clear
+	clear_term
 	echo "$banner $(date)"
 	echo
 	firstchain=Yes
@@ -443,7 +450,7 @@ monitor_firewall() # $1 = timeout -- if negative, prompt each time that
     while true; do
 	display_chains
 
-	clear
+	clear_term
 	echo "$banner $(date)"
 	echo
 
@@ -474,7 +481,7 @@ monitor_firewall() # $1 = timeout -- if negative, prompt each time that
 	    timed_read
 	fi
 
-	clear
+	clear_term
 	echo "$banner $(date)"
 	echo
 	echo "NAT Status"
@@ -482,7 +489,7 @@ monitor_firewall() # $1 = timeout -- if negative, prompt each time that
 	$IPTABLES -t nat -L $IPT_OPTIONS
 	timed_read
 
-	clear
+	clear_term
 	echo "$banner $(date)"
 	echo
 	echo
@@ -491,7 +498,7 @@ monitor_firewall() # $1 = timeout -- if negative, prompt each time that
 	$IPTABLES -t mangle -L $IPT_OPTIONS
 	timed_read
 
-	clear
+	clear_term
 	echo "$banner $(date)"
 	echo
 	echo
@@ -500,7 +507,7 @@ monitor_firewall() # $1 = timeout -- if negative, prompt each time that
 	cat /proc/net/ip_conntrack
 	timed_read
 
-	clear
+	clear_term
 	echo "$banner $(date)"
 	echo
 	echo
@@ -509,7 +516,7 @@ monitor_firewall() # $1 = timeout -- if negative, prompt each time that
 	show_tc
 	timed_read
 
-	clear
+	clear_term
 	echo "$banner $(date)"
 	echo
 	echo
@@ -541,7 +548,7 @@ logwatch() # $1 = timeout -- if negative, prompt each time that
     qt which awk && haveawk=Yes || haveawk=
 
     while true; do
-	clear
+	clear_term
 	echo "$banner $(date)"
 	echo
 
@@ -960,7 +967,7 @@ case "$1" in
     status)
     	[ -n "$debugging" ] && set -x
 	[ $# -eq 1 ] || usage 1
-	clear
+	clear_term
 	echo "Shorewall-$version Status at $HOSTNAME - $(date)"
 	echo
 	show_reset
@@ -1019,6 +1026,11 @@ case "$1" in
 	    ip route ls table $table
 	done
 
+	echo
+	echo "ARP"
+	echo
+	arp -na
+	
 	if qt which lsmod; then
 	    echo
 	    echo "Modules"
@@ -1029,7 +1041,7 @@ case "$1" in
     hits)
     	[ -n "$debugging" ] && set -x
 	[ $# -eq 1 ] || usage 1
-	clear
+	clear_term
 	echo "Shorewall-$version Hits at $HOSTNAME - $(date)"
 	echo
 

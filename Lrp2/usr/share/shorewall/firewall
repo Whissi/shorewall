@@ -30,7 +30,7 @@
 #	   shorewall restart			  Restarts the firewall
 #	   shorewall stop			  Stops the firewall
 #	   shorewall status			  Displays firewall status
-#	   shorewall reset			  Resets iptabless packet and
+#	   shorewall reset			  Resets iptables packet and
 #						  byte counts
 #	   shorewall clear			  Remove all Shorewall chains
 #						  and rules/policies.
@@ -1303,10 +1303,10 @@ log_rule_limit() # $1 = log level, $2 = chain, $3 = display Chain $4 = dispositi
 
     case $level in
 	ULOG)
-	    $IPTABLES $command $chain $@ $limit -j ULOG $LOGPARMS --ulog-prefix "$prefix"
+	    run_iptables $command $chain $@ $limit -j ULOG $LOGPARMS --ulog-prefix "$prefix"
 	    ;;
 	*)
-	    $IPTABLES $command $chain $@ $limit -j LOG $LOGPARMS --log-level $level --log-prefix "$prefix"
+	    run_iptables $command $chain $@ $limit -j LOG $LOGPARMS --log-level $level --log-prefix "$prefix"
 	    ;;
     esac
 	
@@ -2333,16 +2333,19 @@ process_tc_rule()
 	if [ "x$source" != "x-"	 ]; then
 	    case $source in
 		*.*.*)
-		    r="-s $source "
+		    r="$(source_ip_range $source) "
 		    ;;
 		~*)
 		    r="$(mac_match $source) "
 		    ;;
+		$FW:*)
+		    chain=tcout
+		    r="$(source_ip_range ${source%:*}) " 
+		    ;;
 		$FW)
 		    chain=tcout
 		    ;;
-		*)
-		    
+		*)		    
 		    verify_interface $source || fatal_error "Unknown interface $source in rule \"$rule\""
 		    r="$(match_source_dev) $source "
 		    ;;
@@ -2763,13 +2766,14 @@ check_config() {
 
     disclaimer() {
 	echo
-	echo "Notice:  The 'check' command is unsupported and problem"
-	echo "         reports complaining about errors that it didn't catch"
-	echo "         will not be accepted"
+	echo "Notice:  The 'check' command is provided to catch"
+	echo "         obvious errors in a Shorewall configuration."
+	echo "         It is not designed to catch all possible errors"
+	echo "         so please don't submit problem reports about"
+	echo "         error conditions that 'check' doesn't find"
 	echo
     }
 
-    disclaimer
 
     report_capabilities
 
@@ -3148,7 +3152,27 @@ process_action() # $1 = chain    (Chain to add the rules to)
 
     [ "x$protocol" = "x-" ] && protocol=all || protocol=${protocol:=all}
 
-    if [ -n "$MULTIPORT" ] && \
+    if [ -n "$XMULTIPORT" ] && \
+	! list_search $protocol "icmp" "ICMP" "1" && \
+	[ $(( $(list_count $ports)  + $(list_count1 $(split $ports ) ) ))  -le 16 -a \
+	  $(( $(list_count $cports) + $(list_count1 $(split $cports ) ) )) -le 16 ] 
+	then
+	#
+	# Extended MULTIPORT is enabled, and less than
+	# 16 ports are listed (port ranges count as two ports) - use multiport match.
+	#
+	multioption="-m multiport"
+	for client in $(separate_list ${clients:=-}); do
+	    for server in $(separate_list ${servers:=-}); do
+		#
+		# add_an_action() modifies these so we must set their values each time
+		#
+		port=${ports:=-}
+		cport=${cports:=-}
+		add_an_action
+	    done
+	done
+    elif [ -n "$MULTIPORT" ] && \
 	! list_search $protocol "icmp" "ICMP" "1" && \
 	[ "$ports" = "${ports%:*}" -a \
 	"$cports" = "${cports%:*}" -a \
@@ -3242,7 +3266,11 @@ createlogactionchain() # $1 = Action Name, $2 = Log Level [: Log Tag ]
     if [ $COMMAND != check ]; then
 	createchain $CHAIN No
 	LEVEL=${level%:*}
-	TAG=${level#*:}
+	if [ "$LEVEL" != "$level" ]; then
+	    TAG=${level#*:}
+	else
+	    TAG=
+	fi
 	run_user_exit $1
     fi
 
@@ -4318,7 +4346,26 @@ process_rule() # $1 = target
 
     case $logtarget in
 	DNAT*)
-	    if [ -n "$MULTIPORT" ] && \
+	    if [ -n "$XMULTIPORT" ] && \
+	       ! list_search $protocol "icmp" "ICMP" "1" && \
+	       [ $(( $(list_count $ports)  + $(list_count1 $(split $ports ) ) ))  -le 16 -a \
+		 $(( $(list_count $cports) + $(list_count1 $(split $cports ) ) )) -le 16 ]
+		then
+	        #
+	        # Extended MULTIPORT is enabled, and less than
+	        # 16 ports are listed (port ranges count as two ports) - use multiport match.
+	        #
+		multioption="-m multiport"
+		for client in $(separate_list ${clients:=-}); do
+		    #
+		    # add_a_rule() modifies these so we must set their values each time
+		    #
+		    server=${servers:=-}
+		    port=${ports:=-}
+		    cport=${cports:=-}
+		    add_a_rule
+		done
+	    elif [ -n "$MULTIPORT" ] && \
 	       ! list_search $protocol "icmp" "ICMP" "1" && \
 	       [ "$ports" = "${ports%:*}" -a \
 		"$cports" = "${cports%:*}" -a \
@@ -4356,7 +4403,27 @@ process_rule() # $1 = target
 	    ;;
 	*)
 
-	    if [ -n "$MULTIPORT" ] && \
+	    if [ -n "$XMULTIPORT" ] && \
+	       ! list_search $protocol "icmp" "ICMP" "1" && \
+	       [ $(( $(list_count $ports)  + $(list_count1 $(split $ports ) ) ))  -le 16 -a \
+		 $(( $(list_count $cports) + $(list_count1 $(split $cports ) ) )) -le 16  ]
+		then
+	        #
+	        # Extended MULTIPORT is enabled, and less than
+	        # 16 ports are listed (port ranges count as two ports) - use multiport match.
+	        #
+		multioption="-m multiport"
+		for client in $(separate_list ${clients:=-}); do
+		    for server in $(separate_list ${servers:=-}); do
+		        #
+		        # add_a_rule() modifies these so we must set their values each time
+		        #
+			port=${ports:=-}
+			cport=${cports:=-}
+			add_a_rule
+		    done
+		done
+	    elif [ -n "$MULTIPORT" ] && \
 	       ! list_search $protocol "icmp" "ICMP" "1" && \
 	       [ "$ports" = "${ports%:*}" -a \
 		"$cports" = "${cports%:*}" -a \
@@ -4423,6 +4490,7 @@ process_rules()
 		if [ "${ysourcezone}" != "${ydestzone}" ] ; then
 		    eval ypolicy=\$${ysourcezone}2${ydestzone}_policy
 		    if [ "$ypolicy" != NONE ] ; then
+			rule="$(echo $xtarget $yclients $yservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec)"
 			process_rule $xtarget $yclients $yservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec
 		    fi
 		fi
@@ -4448,11 +4516,11 @@ process_rules()
 	    continue
 	fi
 	
+	rule="$(echo $xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec)"
 	process_rule $xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec
     }
 
     while read xtarget xclients xservers xprotocol xports xcports xaddress xratelimit xuserspec; do
-	rule="$(echo $xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec)"
 	expandv xtarget
 
 	case "${xtarget%%:*}" in
@@ -4469,6 +4537,7 @@ process_rules()
 		    xtarget=$(find_logactionchain $xtarget)
 		    do_it    
 		else
+		    rule="$(echo $xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec)"
 		    fatal_error "Invalid Action in rule \"$rule\""
 		fi
 		;;
@@ -5039,7 +5108,15 @@ setup_masq()
 			if [ $listcount -gt 1 ]; then
 			    case $ports in
 				*:*)
-				    fatal_error "Port Range not allowed in list ($ports)"
+				    if [ -n "$XMULTIPORT" ]; then
+					if [ $(($listcount + $(list_count1 $(split $ports) ) )) -le 16 ]; then
+					    ports="-m multiport --dports $ports"
+					else
+					    fatal_error "More than 15 entries in port list ($ports)"
+					fi
+				    else
+					fatal_error "Port Range not allowed in list ($ports)"
+				    fi
 				    ;;
 				*)
 				    if [ -n "$MULTIPORT" ]; then
@@ -5475,6 +5552,7 @@ save_load_kernel_modules()
     done < $modules
     
     save_command __EOF__
+    save_command ""
 
 }
 
@@ -5494,6 +5572,7 @@ determine_capabilities() {
 
     CONNTRACK_MATCH=
     MULTIPORT=
+    XMULTIPORT=
     POLICY_MATCH=
     PHYSDEV_MATCH=
     IPRANGE_MATCH=
@@ -5501,6 +5580,7 @@ determine_capabilities() {
     qt $IPTABLES -N fooX1234
     qt $IPTABLES -A fooX1234 -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT             && CONNTRACK_MATCH=Yes
     qt $IPTABLES -A fooX1234 -p tcp -m multiport --dports 21,22 -j ACCEPT               && MULTIPORT=Yes
+    qt $IPTABLES -A fooX1234 -p tcp -m multiport --dports 21:22 -j ACCEPT               && XMULTIPORT=Yes
     qt $IPTABLES -A fooX1234 -m policy --pol ipsec --dir in -j ACCEPT                   && POLICY_MATCH=Yes
     qt $IPTABLES -A fooX1234 -m physdev --physdev-in eth0 -j ACCEPT                     && PHYSDEV_MATCH=Yes
     qt $IPTABLES -A fooX1234 -m iprange --src-range 192.168.1.5-192.168.1.124 -j ACCEPT && IPRANGE_MATCH=Yes
@@ -5514,25 +5594,26 @@ determine_capabilities() {
     qt $IPTABLES -X fooX1234
 }
 
-report_capability() # $1 = Capability Name, $2 Capability Setting (if any)
+report_capability() # $1 = Capability Description , $2 Capability Setting (if any)
 {
     local setting=
 
-    [ "x$1" = "xYes" ] && { setting="Available"; shift; } || setting="Not available"
+    [ "x$2" = "xYes" ] && setting="Available" || setting="Not available"
 
-    echo "  " $@: $setting
+    echo "  " $1: $setting
 }
 
 report_capabilities() {
     echo "Shorewall has detected the following iptables/netfilter capabilities:"
-    report_capability $NAT_ENABLED "NAT"
-    report_capability $MANGLE_ENABLED "Packet Mangling"
-    report_capability $MULTIPORT "Multi-port Match"
-    report_capability $CONNTRACK_MATCH "Connection Tracking Match"
-    report_capability $PKTTYPE "Packet Type Match"
-    report_capability $POLICY_MATCH "Policy Match"
-    report_capability $PHYSDEV_MATCH "Physdev Match"
-    report_capability $IPRANGE_MATCH "IP range Match"
+    report_capability "NAT" $NAT_ENABLED
+    report_capability "Packet Mangling" $MANGLE_ENABLED
+    report_capability "Multi-port Match" $MULTIPORT
+    [ -n "$MULTIPORT" ] && report_capability "Extended Multi-port Match" $XMULTIPORT
+    report_capability "Connection Tracking Match" $CONNTRACK_MATCH
+    report_capability "Packet Type Match" $PKTTYPE
+    report_capability "Policy Match" $POLICY_MATCH
+    report_capability "Physdev Match" $PHYSDEV_MATCH
+    report_capability "IP range Match" $IPRANGE_MATCH
 }
 
 #

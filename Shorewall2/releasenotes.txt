@@ -60,6 +60,39 @@ Issues when migrating from Shorewall 2.0 to Shorewall 2.1:
     Simply rename that file to 'shorwall.lrp' when installing it on your
     LEAF/Bering system.
 
+5)  The ORIGINAL DEST column of the /etc/shorewall/rules file may no
+    longer contain a second (SNAT) address. You must use an entry in
+    /etc/shorewall/masq instead.
+
+    Example from Shorewall FAQ #1:
+
+    Prior to Shorewall 2.1:
+
+	  /etc/shorewall/interfaces
+
+		loc	eth1	detect	routeback,...
+
+	  /etc/shorewall/rules
+
+		DNAT	loc	loc:192.168.1.12	tcp	80 \
+			-	130.252.100.69:192.168.1.254
+
+    Shorewall 2.1 and Later:
+
+	  /etc/shorewall/interfaces
+
+		loc	eth1	detect	routeback,...
+
+	  /etc/shorewall/masq:
+
+		eth1	eth1	192.168.1.254	tcp	80	
+
+		
+	  /etc/shorewall/rules:
+
+		DNAT	loc	loc:192.168.1.12	tcp	80 \
+			-	130.252.100.69
+
 -----------------------------------------------------------------------
 New Features:
 

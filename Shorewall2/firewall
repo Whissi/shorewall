@@ -3287,10 +3287,7 @@ add_nat_rule() {
     # Parse SNAT address if any
 
     if [ "$addr" != "${addr%:*}" ]; then
-	snat="${addr#*:}"
-	addr="${addr%:*}"
-    else
-	snat=""
+	fatal_error "SNAT may no longer be specified in a DNAT rule; use /etc/shorewall/masq instead"
     fi
 
     # Set original destination address
@@ -3417,24 +3414,6 @@ add_nat_rule() {
 	    dports="--dport ${servport#*:}"
 	else
 	    dports="--dports ${servport#*:}"
-	fi
-    fi
-
-    # Handle SNAT
-
-    if [ -n "$snat" ]; then
-	if [ -n "$cli" ]; then
-	    [ $COMMAND = check ] || addnatrule $(snat_chain $dest) $proto $cli $multiport \
-		$sports -d $serv $dports -j SNAT --to-source $snat
-	else
-	    for source_host in $source_hosts; do
-		[ "x${source_host#*:}" = "x0.0.0.0/0" ] && \
-		    error_message "Warning: SNAT will occur on all connections to this server and port - rule \"$rule\""
-
-		[ $COMMAND = check ] || addnatrule $(snat_chain $dest) \
-		    $(match_source_hosts ${source_host#*:}) $proto $sports $multiport \
-		    -d $serv $dports -j SNAT --to-source $snat
-	    done
 	fi
     fi
 
@@ -4472,7 +4451,6 @@ get_routed_networks() # $1 = interface name
     ip route show dev $1 2> /dev/null |
 	while read address rest; do
 	    if [ "x$address" = xdefault ]; then
-//*-+9
 		error_message "Warning: default route ignored on interface $1"
 	    else
 		[ "$address" = "${address%/*}" ] && address="${address}/32"

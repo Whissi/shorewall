@@ -1044,6 +1044,9 @@ case "$1" in
 			    echo "   Dynamic Rules Saved"
 			    if [ -f /var/lib/shorewall/restore-base ]; then
 				cp -f /var/lib/shorewall/restore-base /var/lib/shorewall/restore-$$
+				#
+				# The 'awk' hack compensates for a bug in iptables-save (actually in libipt_policy.so) and can be removed when that bug is fixed.
+				#
 				if iptables-save | awk 'BEGIN {sline=""; }; /^-j/ { print sline $0; next }; /-m policy/ { sline=$0; next }; {print ; sline="" }' >> /var/lib/shorewall/restore-$$ ; then
 				    echo __EOF__ >> /var/lib/shorewall/restore-$$
 				    mv -f /var/lib/shorewall/restore-$$ $RESTOREPATH

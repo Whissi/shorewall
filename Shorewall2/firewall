@@ -527,7 +527,14 @@ source_ip_range() # $1 = Address or Address Range
 {
     case $1 in
 	*.*.*.*-*.*.*.*)
-	    iprange_echo "--src-range $1"
+	    case $1 in
+		!*)
+		    iprange_echo "! --src-range ${1#!}"
+		    ;;
+		*)
+		    iprange_echo "--src-range $1"
+		    ;;
+	    esac
 	    ;;
 	*)
 	    echo "-s $1"
@@ -542,7 +549,14 @@ dest_ip_range() # $1 = Address or Address Range
 {
     case $1 in
 	*.*.*.*-*.*.*.*)
-	    iprange_echo "--dst-range $1"
+	    case $1 in
+		!*)
+		    iprange_echo "! --dst-range ${1#!}"
+		    ;;
+		*)
+		    iprange_echo "--dst-range $1"
+		    ;;
+	    esac
 	    ;;
 	*)
 	    echo "-d $1"
@@ -1608,8 +1622,8 @@ setup_tunnels() # $1 = name of tunnels file
 		;;
 	esac
 
-	addrule $inchain  -p udp $(source_ip_range $1) --sport $p --dport $p -j ACCEPT
-	addrule $outchain -p udp $(dest_ip_range $1)   --sport $p --dport $p -j ACCEPT
+	addrule $inchain  -p udp $(source_ip_range $1) --dport $p -j ACCEPT
+	addrule $outchain -p udp $(dest_ip_range $1)   --dport $p -j ACCEPT
 
 	progress_message "   OPENVPN tunnel to $1:$p defined."
     }

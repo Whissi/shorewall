@@ -240,7 +240,7 @@ find_zones() # $1 = name of the zone file
 	    \#*)
 		;;
             $FW)
-	        echo "Reserved zone name \"$zone\" in zones file ignored" >&2
+	        echo "   Warning: Reserved zone name \"$zone\" in zones file ignored" >&2
 		;;
             *)
 		echo $zone
@@ -277,6 +277,8 @@ determine_zones()
 		;;
 	    *)
 	esac
+	
+	[ ${#zone} -gt 5 ] && echo "   Warning: Zone name longer than 5 characters: $zone" 2> /tmp/trace
 	eval ${zone}_display=\$dsply
 	newzones="$newzones $zone"
     done

@@ -1887,7 +1887,10 @@ add_nat_rule() {
 		chain=nonat${nonat_seq}
 		nonat_seq=$(($nonat_seq + 1))
 		createnatchain $chain
-		run_iptables -t nat -A OUTPUT $cli $proto $multiport $sports $dports -j $chain
+
+		for adr in `separate_list $addr`; do
+		    run_iptables -t nat -A OUTPUT $cli $proto $multiport $sports $dports -d `fix_bang $adr` -j $chain
+		done
 
 		for adr in $excludedests; do
 		    addnatrule $chain -d $adr -j RETURN
@@ -1900,7 +1903,7 @@ add_nat_rule() {
 		addnatrule $chain $proto -j $target1
 	    else
 		for adr in `separate_list $addr`; do
-		    run_iptables2 -t nat -A OUTPUT $proto $sports -d $adr \
+		    run_iptables2 -t nat -A OUTPUT $proto $sports -d `fix_bang $adr` \
 			$multiport $dports -j $target1
 		done
 	    fi
@@ -1911,13 +1914,15 @@ add_nat_rule() {
 		chain=nonat${nonat_seq}
 		nonat_seq=$(($nonat_seq + 1))
 		createnatchain $chain
-		addnatrule `dnat_chain $source` $cli $proto $multiport $sports $dports -j $chain
+
+		for adr in `separate_list $addr`; do
+		    addnatrule `dnat_chain $source` $cli $proto $multiport $sports $dports -d `fix_bang $adr` -j $chain
+		done
+
 		for z in $excludezones; do
 		    eval hosts=\$${z}_hosts
 		    for host in $hosts; do
-			for adr in `separate_list $addr`; do
-			    addnatrule $chain -s ${host#*:} -d $adr -j RETURN
-			done
+			addnatrule $chain -s ${host#*:} -j RETURN
 		    done
 		done
 
@@ -1925,13 +1930,11 @@ add_nat_rule() {
 		    addnatrule $chain -d $adr -j RETURN
 		done
 
-		for adr in `separate_list $addr`; do
-		    if [ -n "$loglevel" ]; then
-			log_rule $loglevel $chain $logtarget -t nat -d `fix_bang $adr`
-		    fi
+		if [ -n "$loglevel" ]; then
+		    log_rule $loglevel $chain $logtarget -t nat
+		fi
 
-		    addnatrule $chain $proto -d `fix_bang $adr` -j $target1
-		done
+		addnatrule $chain $proto -j $target1
 	    else
 		for adr in `separate_list $addr`; do
 		    if [ -n "$loglevel" ]; then
@@ -2137,7 +2140,7 @@ add_a_rule()
 		    for serv1 in `separate_list $serv`; do
 			for srv in `ip_range $serv1`; do
 			    if [ -n "$addr" -a -n "$CONNTRACK_MATCH" ]; then
-				for adr in $addr; do
+				for adr in `separate_list $addr`; do
 				    if [ -n "$loglevel" -a -z "$natrule" ]; then
 					log_rule $loglevel $chain $logtarget -m conntrack --ctorigdst $adr \
 					    `fix_bang $proto $sports $multiport $state $cli -d $srv $dports`

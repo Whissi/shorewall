@@ -564,6 +564,9 @@ validate_interfaces_file() {
 	r="$z $interface $subnet $options"
 	[ "x$z" = "x-" ] || validate_zone $z || startup_error "Invalid zone ($z) in record \"$r\""
 
+	[ "x$interface" = "xlo" ] && \
+	    startup_error "Error: The loopback interface (lo) may not be defined in /etc/shorewall/interfaces"
+
 	list_search $interface $all_interfaces && \
 	    startup_error "Error: Duplicate Interface $interface"
 	

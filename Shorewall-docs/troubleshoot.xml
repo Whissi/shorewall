@@ -3,6 +3,8 @@
 "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
 <!-- $Id$ -->
 <article id="usefull_links">
+  <!--$Id$-->
+
   <articleinfo>
     <title>Shorewall Troubleshooting Guide</title>
 
@@ -32,9 +34,9 @@
 
   <graphic align="center" fileref="images/obrasinf.gif" />
 
-  <para><emphasis role="bold">&#34;If you think you can you can; if you think
-  you can&#39;t you&#39;re right. If you don&#39;t believe that you can, why
-  should someone else?&#34; -- Gunnar Tapper</emphasis> </para>
+  <para><emphasis role="bold"><quote>If you think you can you can; if you
+  think you can&#39;t you&#39;re right. If you don&#39;t believe that you can,
+  why should someone else?</quote> -- Gunnar Tapper</emphasis></para>
 
   <section>
     <title>First Steps</title>
@@ -59,15 +61,15 @@
   </section>
 
   <section>
-    <title>&#34;shorewall start&#34; and &#34;shorewall restart&#34; Errors</title>
+    <title><quote>shorewall start</quote> and <quote>shorewall restart</quote>
+    Errors</title>
 
     <para>If you receive an error message when starting or restarting the
-    firewall and you can&#39;t determine the cause, then do the following:
-    </para>
+    firewall and you can&#39;t determine the cause, then do the following:</para>
 
     <itemizedlist>
       <listitem>
-        <para>Make a note of the error message that you see. </para>
+        <para>Make a note of the error message that you see.</para>
       </listitem>
 
       <listitem>
@@ -96,8 +98,8 @@
         iptables: No chain/target/match by that name
         Terminated</programlisting>
 
-      <para>A search through the trace for &#34;No chain/target/match by that
-      name&#34; turned up the following:</para>
+      <para>A search through the trace for <quote>No chain/target/match by
+      that name</quote> turned up the following:</para>
 
       <programlisting>        + echo &#39;Adding Common Rules&#39;
         + add_common_rules
@@ -108,10 +110,10 @@
         iptables: No chain/target/match by that name
 </programlisting>
 
-      <para>The command that failed was: &#34;iptables -A reject -p tcp -j
-      REJECT --reject-with tcp-reset&#34;. In this case, the user had compiled
-      his own kernel and had forgotten to include REJECT target support (see
-      <ulink url="kernel.htm">kernel.htm</ulink>) </para>
+      <para>The command that failed was: <quote>iptables -A reject -p tcp -j
+      REJECT --reject-with tcp-reset</quote>. In this case, the user had
+      compiled his own kernel and had forgotten to include REJECT target
+      support (see <ulink url="kernel.htm">kernel.htm</ulink>)</para>
     </example>
   </section>
 
@@ -119,8 +121,7 @@
     <title>Your Network Environment</title>
 
     <para>Many times when people have problems with Shorewall, the problem is
-    actually an ill-conceived network setup. Here are several popular snafus:
-    </para>
+    actually an ill-conceived network setup. Here are several popular snafus:</para>
 
     <itemizedlist>
       <listitem>
@@ -131,12 +132,12 @@
       <listitem>
         <para>Changing the IP address of a local system to be in the external
         subnet, thinking that Shorewall will suddenly believe that the system
-        is in the &#39;net&#39; zone.</para>
+        is in the <quote>net</quote> zone.</para>
       </listitem>
 
       <listitem>
         <para>Multiple interfaces connected to the same HUB or Switch. Given
-        the way that the Linux kernel respond to ARP &#34;who-has&#34;
+        the way that the Linux kernel respond to ARP <quote>who-has</quote>
         requests, this type of setup does NOT work the way that you expect it
         to. If you are running Shorewall version 1.4.7 or later, you can test
         using this kind of configuration if you specify the <emphasis
@@ -159,11 +160,11 @@
 
     <para>I also recommend against setting all of your policies to ACCEPT in
     an effort to make something work. That robs you of one of your best
-    diagnostic tools - the &#34;Shorewall&#34; messages that Netfilter will
-    generate when you try to connect in a way that isn&#39;t permitted by your
-    rule set.</para>
+    diagnostic tools - the <quote>Shorewall</quote> messages that Netfilter
+    will generate when you try to connect in a way that isn&#39;t permitted by
+    your rule set.</para>
 
-    <para>Check your log (&#34;/sbin/shorewall show log&#34;). If you
+    <para>Check your log (<quote>/sbin/shorewall show log</quote>). If you
     don&#39;t see Shorewall messages, then your problem is probably NOT a
     Shorewall problem. If you DO see packet messages, it may be an indication
     that you are missing one or more rules -- see <ulink url="FAQ.htm#faq17">FAQ
@@ -188,9 +189,8 @@
       <itemizedlist>
         <listitem>
           <para>all2all:REJECT - This packet was REJECTed out of the all2all
-          chain -- the packet was rejected under the
-          &#34;all&#34;-&#62;&#34;all&#34; REJECT policy (see <ulink
-          url="FAQ.htm#faq17">FAQ 17</ulink>).</para>
+          chain -- the packet was rejected under the <quote>all</quote>-&#62;<quote>all</quote>
+          REJECT policy (see <ulink url="FAQ.htm#faq17">FAQ 17</ulink>).</para>
         </listitem>
 
         <listitem>
@@ -218,8 +218,8 @@
         </listitem>
       </itemizedlist>
 
-      <para>In this case, 192.168.2.2 was in the &#34;dmz&#34; zone and
-      192.168.1.3 is in the &#34;loc&#34; zone. I was missing the rule:</para>
+      <para>In this case, 192.168.2.2 was in the <quote>dmz</quote> zone and
+      192.168.1.3 is in the <quote>loc</quote> zone. I was missing the rule:</para>
 
       <programlisting>ACCEPT    dmz    loc    udp    53</programlisting>
     </example>
@@ -228,9 +228,9 @@
   <section>
     <title>Ping Problems</title>
 
-    <para> Either can&#39;t ping when you think you should be able to or are
+    <para>Either can&#39;t ping when you think you should be able to or are
     able to ping when you think that you shouldn&#39;t be allowed?
-    Shorewall&#39;s &#39;Ping&#39; Management is <ulink url="ping.html">described
+    Shorewall&#39;s <quote>Ping</quote> Management is <ulink url="ping.html">described
     here</ulink>.</para>
   </section>
 
@@ -240,7 +240,7 @@
     <itemizedlist>
       <listitem>
         <para>Seeing rejected/dropped packets logged out of the INPUT or
-        FORWARD chains? This means that: </para>
+        FORWARD chains? This means that:</para>
 
         <orderedlist>
           <listitem>
@@ -262,12 +262,12 @@
 
       <listitem>
         <para>Remember that Shorewall doesn&#39;t automatically allow ICMP
-        type 8 (&#34;ping&#34;) requests to be sent between zones. If you want
-        pings to be allowed between zones, you need a rule of the form:</para>
+        type 8 (<quote>ping</quote>) requests to be sent between zones. If you
+        want pings to be allowed between zones, you need a rule of the form:</para>
 
         <programlisting>&#x00A0;&#x00A0;&#x00A0; ACCEPT&#x00A0;&#x00A0;&#x00A0; <emphasis>&#60;source zone&#62;</emphasis>&#x00A0;&#x00A0;&#x00A0; <emphasis>&#60;destination zone&#62;</emphasis>&#x00A0;&#x00A0;&#x00A0; icmp&#x00A0;&#x00A0;&#x00A0; echo-request</programlisting>
 
-        <para> The ramifications of this can be subtle. For example, if you
+        <para>The ramifications of this can be subtle. For example, if you
         have the following in <ulink url="NAT.htm">/etc/shorewall/nat</ulink>:</para>
 
         <programlisting>&#x00A0;&#x00A0;&#x00A0; 10.1.1.2&#x00A0;&#x00A0;&#x00A0; eth0&#x00A0;&#x00A0;&#x00A0; 130.252.100.18</programlisting>
@@ -278,7 +278,7 @@
       </listitem>
 
       <listitem>
-        <para>If you specify &#34;routefilter&#34; for an interface, that
+        <para>If you specify <quote>routefilter</quote> for an interface, that
         interface must be up prior to starting the firewall.</para>
       </listitem>
 
@@ -298,21 +298,20 @@
         <para>Some versions of LRP (EigerStein2Beta for example) have a shell
         with broken variable expansion. You can get a corrected shell from the
         <ulink url="ftp://ftp.shorewall.net/pub/shorewall/ash.gz">Shorewall
-        Errata download site</ulink>. </para>
+        Errata download site</ulink>.</para>
       </listitem>
 
       <listitem>
         <para>Do you have your kernel properly configured? <ulink
-        url="kernel.htm">Click here to see my kernel configuration</ulink>.
-        </para>
+        url="kernel.htm">Click here to see my kernel configuration</ulink>.</para>
       </listitem>
 
       <listitem>
-        <para>Shorewall requires the &#34;ip&#34; program. That program is
-        generally included in the &#34;iproute&#34; package which should be
-        included with your distribution (though many distributions don&#39;t
-        install iproute by default). You may also download the latest source
-        tarball from <ulink url="ftp://ftp.inr.ac.ru/ip-routing">ftp://ftp.inr.ac.ru/ip-routing</ulink>
+        <para>Shorewall requires the <quote>ip</quote> program. That program
+        is generally included in the <quote>iproute</quote> package which
+        should be included with your distribution (though many distributions
+        don&#39;t install iproute by default). You may also download the
+        latest source tarball from <ulink url="ftp://ftp.inr.ac.ru/ip-routing">ftp://ftp.inr.ac.ru/ip-routing</ulink>
         .</para>
       </listitem>
 

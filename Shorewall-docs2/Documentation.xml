@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-11-18</pubdate>
+    <pubdate>2004-11-26</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -1245,7 +1245,7 @@ loc        loc       REJECT    info</programlisting>
       <para>UNLESS the user defines the zone badly so that intra-zone rules
       are required. In that case, Shorewall will not try to guess what the
       user's intentions are and will treat traffic within the affected zone(s)
-      just like any other traffic. </para>
+      just like any other traffic.</para>
 
       <para>Any time that you have multiple interfaces associated with a
       single zone, you should ask yourself if you really want traffic routed
@@ -2772,6 +2772,17 @@ eth0                  eth1            206.124.146.176</programlisting>
       </varlistentry>
 
       <varlistentry>
+        <term>IPTABLES</term>
+
+        <listitem>
+          <para>(Added at version 2.2.0) — This parameter names the iptables
+          executable to be used by Shorewall. If not specified or if specified
+          as a null value, then the iptables executable located usint the PATH
+          option is used.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term>LOGFORMAT</term>
 
         <listitem>
@@ -2938,6 +2949,22 @@ eth0                  eth1            206.124.146.176</programlisting>
           <para>If you have a HA setup with failover to another firewall, you
           should have NEWNOTSYN=Yes on both firewalls. You should also select
           NEWNOTSYN=Yes if you have asymmetric routing.</para>
+
+          <note>
+            <para>I find that NEWNOTSYN=No tends to result in lots of "stuck"
+            connections because any network timeout during TCP session tear
+            down results in retries being dropped (Netfilter has removed the
+            connection from the conntrack table but the end-points haven't
+            completed shutting down the connection). I therefore have chosen
+            NEWNOTSYN=Yes as the default value and I advise caution in using
+            NEWNOTSYN=Yes.</para>
+
+            <para>If you are looking for a way to defeat "stealth TCP scans"
+            then I recommend the <emphasis role="bold">tcpflags</emphasis>
+            interface option in <link
+            linkend="Interfaces">/etc/shorewall/interfaces</link> rather than
+            NEWNOTSYN=No.</para>
+          </note>
         </listitem>
       </varlistentry>
 
@@ -2953,9 +2980,9 @@ eth0                  eth1            206.124.146.176</programlisting>
           LOGNEWNOTSYN=ULOG|</para>
 
           <note>
-            <para>Packets logged under this option are usually the result of
-            broken remote IP stacks rather than the result of any sort of
-            attempt to breach your firewall.</para>
+            <para>Packets logged under this option are usually the result of a
+            "stuck" connection rather than as the result of an attempt to
+            breach your firewall.</para>
           </note>
         </listitem>
       </varlistentry>

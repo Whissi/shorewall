@@ -97,8 +97,8 @@
       </listitem>
 
       <listitem>
-        <para> If shorewall.conf is upgraded to the latest version, it needs
-        to be modified to set STARTUP_ENABLED=Yes.</para>
+        <para>If shorewall.conf is upgraded to the latest version, it needs to
+        be modified to set STARTUP_ENABLED=Yes.</para>
       </listitem>
 
       <listitem>
@@ -122,7 +122,7 @@
       <listitem>
         <para>The ORIGINAL DEST column of the /etc/shorewall/rules file may no
         longer contain a second (SNAT) address. You must use an entry in
-        /etc/shorewall/masq instead. </para>
+        /etc/shorewall/masq instead.</para>
 
         <para>Example from Shorewall FAQ #1:</para>
 
@@ -140,7 +140,7 @@ loc       eth1           detect        routeback</programlisting>
 #                                                      PORT    DEST
 DNAT     loc      loc:192.168.1.12 tcp     80          -       130.252.100.69:192.168.1.254  </programlisting>
 
-          <para> Shorewall 2.1 and Later:</para>
+          <para>Shorewall 2.1 and Later:</para>
 
           <para>/etc/shorewall/interfaces</para>
 
@@ -385,6 +385,24 @@ DNAT     loc      loc:192.168.1.12 tcp     80          -       130.252.100.69</p
         you will probably want to set DISABLE_IPV6=Yes in <ulink
         url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>.
         You must have ipv6tables installed.</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Version &gt;= 1.4.9</title>
+
+    <itemizedlist>
+      <listitem>
+        <para>The default value of NEWNOTSYN set in <ulink
+        url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink> has
+        been changed from 'No' to 'Yes'. I find that NEWNOTSYN=No tends to
+        result in lots of "stuck" connections because any network timeout
+        during TCP session tear down results in retries being dropped
+        (Netfilter has removed the connection from the conntrack table but the
+        end-points haven't completed shutting down the connection). I
+        therefore have chosen NEWNOTSYN=Yes as the default value and I advise
+        caution in using NEWNOTSYN=Yes.</para>
       </listitem>
     </itemizedlist>
   </section>

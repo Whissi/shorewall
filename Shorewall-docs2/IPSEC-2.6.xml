@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-02-08</pubdate>
+    <pubdate>2005-02-13</pubdate>
 
     <copyright>
       <year>2004</year>
@@ -727,5 +727,64 @@ all             all             REJECT          info
       <para>Since there are no cases where net&lt;-&gt;loc traffic should
       occur, NONE policies are used.</para>
     </blockquote>
+  </section>
+
+  <section>
+    <title>IPSEC and <trademark>Windows</trademark> XP</title>
+
+    <para>I have successfully configured my work laptop to use IPSEC for
+    wireless IP communication when it is undocked at home. I looked at dozens
+    of sites and the one I found most helpful was <ulink
+    url="http://ipsec.math.ucla.edu/services/ipsec-windows.html">http://ipsec.math.ucla.edu/services/ipsec-windows.html</ulink>.
+    The instructions on that site are directed to students at UCLA but they
+    worked fine for me (once I followed them very carefully).</para>
+
+    <warning>
+      <para>The instructions found on the UCLA site are complex and do not
+      include any information on the generation of X.509 certificates. There
+      are lots of sites however that can tell you how to generate
+      certificates, including <ulink
+      url="http://www.ipsec-howto.org/">http://www.ipsec-howto.org/</ulink>.</para>
+
+      <para>One piece of information that may not be so easy to find is "How
+      to I generate a PKCS#12 certificate to import into Windows?". Here's the
+      openssl command I used:</para>
+
+      <programlisting><command>openssl pkcs12 -export -in eastepnc6000.pem -inkey eastepnc6000_key.pem -out eastepnc6000.pfx -name "IPSEC Cert for Home Wireless"</command> </programlisting>
+
+      <para>I was prompted for a password to associate with the certificate.
+      This password is entered on the Windows system during import.</para>
+
+      <para>In the above command:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>eastepnc6000.pem was the laptop's certificate in PEM
+          format.</para>
+        </listitem>
+
+        <listitem>
+          <para>eastepnc6000_key.pem was the laptop's private key (actually,
+          it's the original signing request which includes the private
+          key).</para>
+        </listitem>
+
+        <listitem>
+          <para>eastepnc6000.pfx is the PKCS#12 output file.</para>
+        </listitem>
+
+        <listitem>
+          <para>"IPSEC Cert for Home Wireless" is the friendly name for the
+          certificate.I</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>I started to write an article about how to do this, complete with
+      graphics captured from my laptop. I gave up. I had captured 12 images
+      and hadn't really started yet. The Windows interface for configuring
+      IPSEC is the worst GUI that I have ever used. What can be displayed on
+      one split Emacs screen (racoon.conf plus setkey.conf) takes 20+
+      different dialog boxes on Windows XP!!!</para>
+    </warning>
   </section>
 </article>

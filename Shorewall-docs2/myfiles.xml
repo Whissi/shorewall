@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-02-08</pubdate>
+    <pubdate>2005-02-15</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -122,19 +122,19 @@
     through Proxy ARP.</para>
 
     <para>The firewall system itself runs a DHCP server that serves the local
-    network.</para>
+    and wireless networks.</para>
 
     <para>I have one system (Remote, 206.124.146.179) outside the firewall.
     This system, which runs Debian Sarge (testing) is used for roadwarrior VPN
     testing and for checking my firewall "from the outside".</para>
 
     <para>All administration and publishing is done using ssh/scp. I have a
-    desktop environment installed on the firewall but I am not usually logged
-    in to it. X applications tunnel through SSH to Ursa. The server also has a
-    desktop environment installed and that desktop environment is available
-    via XDMCP from the local zone. For the most part though, X tunneled
-    through SSH is used for server administration and the server runs at run
-    level 3 (multi-user console mode on Fedora).</para>
+    desktop environment installed on the firewall but I usually don't start
+    it. X applications tunnel through SSH to Ursa or one of the laptops. The
+    server also has a desktop environment installed but it is seldom started
+    either. For the most part, X tunneled through SSH is used for server
+    administration and the server runs at run level 3 (multi-user console mode
+    on Fedora).</para>
 
     <para>I run an SNMP server on my firewall to serve <ulink
     url="http://www.ee.ethz.ch/~oetiker/webtools/mrtg/">MRTG</ulink> running
@@ -150,7 +150,10 @@
     <para>The firewall is configured with OpenVPN for VPN access from our
     second home in <ulink url="http://www.omakchamber.com/">Omak,
     Washington</ulink> or when we are otherwise out of town. Secure remote
-    access via IPSEC is also available.</para>
+    access via IPSEC is also available. We typically use IPSEC for wireless
+    security around the house and OpenVPN for roadwarrior access but the
+    Firewall is set up to access either tunnel type from either
+    location.</para>
 
     <para><graphic align="center" fileref="images/network.png" /></para>
   </section>
@@ -733,41 +736,90 @@ syslogsync 1</programlisting>
       <title>/etc/racoon/racoon.conf</title>
 
       <blockquote>
-        <programlisting>        path certificate "/etc/certs" ;
-
-        listen
-        {
-                isakmp 206.124.146.176;
-                isakmp 192.168.3.254;
+        <programlisting> 
+listen
+{
+        isakmp 206.124.146.176 ;
+        isakmp 192.168.3.254 ;
+        adminsock "/usr/local/var/racoon/racoon.sock" "root" "operator" 0660 ;
+}
+#
+# Tipper at Home
+#
+remote 192.168.3.8
+{
+        exchange_mode main ;
+        dpd_delay 20 ;
+        certificate_type x509 "gateway.pem" "gateway_key.pem" ;
+        verify_cert on ;
+        my_identifier asn1dn ;
+        peers_identifier asn1dn ;
+        verify_identifier on ;
+        lifetime time 1 hour ;
+        proposal {
+                encryption_algorithm blowfish ;
+                hash_algorithm sha1 ;
+                authentication_method rsasig ;
+                dh_group 2 ;
         }
+}
 
-        remote anonymous
-        {
-                exchange_mode main ;
-                generate_policy on ;
-                passive on ;
-                certificate_type x509 "gateway.pem" "gateway_key.pem";
-                verify_cert on;
-                my_identifier asn1dn ;
-                peers_identifier asn1dn ;
-                verify_identifier on ;
-                lifetime time 24 hour ;
-                proposal {
-                        encryption_algorithm blowfish;
-                        hash_algorithm sha1;
-                        authentication_method rsasig ;
-                        dh_group 2 ;
-                }
+sainfo address 0.0.0.0/0 any address 192.168.3.8 any
+{
+        pfs_group 2 ;
+        lifetime time 1 hour ;
+        encryption_algorithm blowfish ;
+        authentication_algorithm hmac_sha1, hmac_md5 ;
+        compression_algorithm deflate ;
+}
+#
+# Work Laptop at Home -- it doesn't like getting proposals from us
+#                        so we let it initiate the tunnel.
+#
+#                        Windows XP doesn't support blowfish or rijndal
+#                        so we're stuck with 3des :-(
+#
+remote 192.168.3.6 inherit 192.168.3.8
+{
+        proposal_check obey ;
+        passive on ;
+        generate_policy on ;
+        proposal {
+                encryption_algorithm 3des ;
+                hash_algorithm sha1 ;
+                authentication_method rsasig ;
+                dh_group 2 ;
         }
+}
 
-        sainfo anonymous
-        {
-                pfs_group 2;
-                lifetime time 12 hour ;
-                encryption_algorithm blowfish, 3des;
-                authentication_algorithm hmac_sha1, hmac_md5 ;
-                compression_algorithm deflate ;
-        }</programlisting>
+sainfo address 0.0.0.0/0 any address 192.168.3.6 any
+{
+        pfs_group 2 ;
+        lifetime time 1 hour ;
+        encryption_algorithm 3des ;
+        authentication_algorithm hmac_sha1, hmac_md5 ;
+        compression_algorithm deflate ;
+}
+#
+# Both systems on the road -- We use 3des for phase I to accomodate XP.
+#                             Since we don't know the IP address of the
+#                             remote host ahead of time, we must use
+#                             "anonymous".
+#
+remote anonymous inherit 192.168.3.6
+{
+        nat_traversal on ;
+        ike_frag on;
+}
+
+sainfo anonymous
+{
+        pfs_group 2;
+        lifetime time 12 hour ;
+        encryption_algorithm blowfish, 3des;
+        authentication_algorithm hmac_sha1, hmac_md5 ;
+        compression_algorithm deflate ;
+}</programlisting>
       </blockquote>
     </section>
 
@@ -780,7 +832,8 @@ syslogsync 1</programlisting>
 flush;
 spdflush;
 
-# Add some SPD rules
+# We only define policies for 'tipper'. The XP box seems to work better when it initiates the
+# negotiation so we essentially run it like a roadwarrior even around the house.
 
 spdadd 0.0.0.0/0          192.168.3.8/32     any -P out ipsec esp/tunnel/192.168.3.254-192.168.3.8/require;
 spdadd 192.168.3.8/32     0.0.0.0/0          any -P in  ipsec esp/tunnel/192.168.3.8-192.168.3.254/require;</programlisting>

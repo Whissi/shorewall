@@ -51,11 +51,6 @@ my_mutex_off() {
     [ -n "$have_mutex" ] && { mutex_off; have_mutex=; }
 }
 
-progress_message() # $* = Message
-{
-    [ -n "$QUIET" ] || echo "$@"
-}
-
 #
 # Message to stderr
 #
@@ -1179,7 +1174,7 @@ log_rule() # $1 = log level, $2 = chain, $3 = disposition , $... = predicates fo
 #
 setup_forwarding() {
 
-    save_command "echo Restoring IP Forwarding..."
+    save_command "progress_message Restoring IP Forwarding..."
 
     case "$IP_FORWARDING" in
     [Oo][Nn])
@@ -1201,7 +1196,7 @@ disable_ipv6() {
 
     if [ -n "$foo" ]; then
 	if qt which ip6tables; then
-	    save_command "echo Disabling IPV6..."
+	    save_command "progress_message Disabling IPV6..."
 	    ip6tables -P FORWARD DROP && save_command ip6tables -P FORWARD DROP
 	    ip6tables -P INPUT DROP   && save_command ip6tables -P INPUT DROP
 	    ip6tables -P OUTPUT DROP  && save_command ip6tables -P OUTPUT DROP
@@ -1644,7 +1639,7 @@ setup_proxy_arp() {
 
     > ${STATEDIR}/proxyarp
 
-    save_command "echo Restoring Proxy ARP..."
+    save_command "progress_message Restoring Proxy ARP..."
 
     while read address interface external haveroute persistent; do
 	expandv address interface external haveroute persistent
@@ -1846,7 +1841,7 @@ setup_nat() {
     #
     > ${STATEDIR}/nat
 
-    save_command "echo Restoring one-to-one NAT..."
+    save_command "progress_message Restoring one-to-one NAT..."
 
     while read external interface internal allints localnat; do
 	expandv external interface internal allints localnat
@@ -2104,7 +2099,7 @@ setup_tc1() {
 
     run_user_exit tcstart
 
-    save_command "echo Restoring Traffic Control..."
+    save_command "progress_message Restoring Traffic Control..."
     save_command . $(find_file tcstart)
 
 }
@@ -4295,7 +4290,7 @@ setup_masq()
 
     strip_file masq $1
 
-    [ -n "$NAT_ENABLED" ] && echo "Masqueraded Networks and Hosts:" && save_command "echo Restoring Masquerading/SNAT..."
+    [ -n "$NAT_ENABLED" ] && echo "Masqueraded Networks and Hosts:" && save_command "progress_message Restoring Masquerading/SNAT..."
 
     while read fullinterface networks addresses proto ports; do
 	expandv fullinterface networks addresses proto ports
@@ -4517,7 +4512,7 @@ add_ip_aliases()
 
     set -- $aliases_to_add
 
-    save_command "echo Restoring IP Addresses..."
+    save_command "progress_message Restoring IP Addresses..."
 
     while [ $# -gt 0 ]; do
 	external=$1
@@ -4552,7 +4547,7 @@ load_kernel_modules() {
 
 	if [ "$command" != check ]; then
 
-	    save_command "echo Loading kernel modules..."
+	    save_command "progress_message Loading kernel modules..."
 	    save_command "reload_kernel_modules <<__EOF__"
 
 	    while read command; do
@@ -5028,7 +5023,7 @@ add_common_rules() {
     #
     # ARP Filtering
     #
-    save_command "echo Restoring ARP filtering..."
+    save_command "progress_message Restoring ARP filtering..."
 
     for f in /proc/sys/net/ipv4/conf/*/arp_filter; do
 	run_and_save_command "echo 0 > $f"
@@ -5057,7 +5052,7 @@ add_common_rules() {
     if [ -n "$interfaces" -o -n "$ROUTE_FILTER" ]; then
 	echo "Setting up Kernel Route Filtering..."
 
-	save_command "echo Restoring Route Filtering..."
+	save_command "progress_message Restoring Route Filtering..."
 
 	for f in /proc/sys/net/ipv4/conf/*/rp_filter; do
 	    run_and_save_command "echo 0 > $f"
@@ -5479,7 +5474,7 @@ define_firewall() # $1 = Command (Start or Restart)
     
     save_command "date > $STATEDIR/restarted"
 
-    save_command "echo Restoring Netfilter Configuration..."
+    save_command "progress_message Restoring Netfilter Configuration..."
 
     save_command 'iptables-restore << __EOF__'
 

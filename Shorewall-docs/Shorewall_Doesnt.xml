@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article>
+  <articleinfo>
+    <title>Some Things that Shorewall Cannot Do</title>
+
+    <author>
+      <firstname>Tom</firstname>
+
+      <surname>Eastep</surname>
+    </author>
+
+    <copyright>
+      <year>2003</year>
+
+      <holder>Thomas M Eastep</holder>
+    </copyright>
+
+    <pubdate>2003-10-07</pubdate>
+  </articleinfo>
+
+  <sect1>
+    <title>Shorewall Cannot:</title>
+
+    <itemizedlist>
+      <listitem>
+        <para>Be used to filter traffic through a Layer 2 Bridge </para>
+      </listitem>
+
+      <listitem>
+        <para>Act as a &#34;Personal Firewall&#34; that allows internet access
+        by application. </para>
+      </listitem>
+
+      <listitem>
+        <para>Be used with an Operating System other than Linux (version
+        &#62;= 2.4.0) </para>
+      </listitem>
+
+      <listitem>
+        <para>Do content filtering: </para>
+
+        <itemizedlist>
+          <listitem>
+            <para>HTTP - better to use <ulink url="Shorewall_Squid_Usage.html">Squid</ulink>
+            for that.</para>
+          </listitem>
+
+          <listitem>
+            <para>Email -- Install something like <ulink
+            url="http://www.postfix.org">Postfix</ulink> on your firewall and
+            integrate it with <ulink url="http://www.spamassassin.org/">SpamAssassin</ulink>
+            and <ulink url="http://www.ijs.si/software/amavisd/">Amavisd-new</ulink>.
+            </para>
+          </listitem>
+        </itemizedlist>
+      </listitem>
+    </itemizedlist>
+  </sect1>
+
+  <sect1>
+    <title>In Addition:</title>
+
+    <itemizedlist>
+      <listitem>
+        <para>Shorewall does not contain any support for Netfilter <ulink
+        url="http://www.netfilter.org/documentation/pomlist/pom-summary.html">Patch-O-Matic</ulink>
+        features -- Shorewall only supports features from released kernels.
+        </para>
+      </listitem>
+    </itemizedlist>
+  </sect1>
+</article>

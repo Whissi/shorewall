@@ -65,7 +65,7 @@
 
     <itemizedlist>
       <listitem>
-        <para> The &#39;dropunclean&#39; and &#39;logunclean&#39; interface
+        <para>The &#39;dropunclean&#39; and &#39;logunclean&#39; interface
         options are no longer supported. If either option is specified in
         <filename>/etc/shorewall/interfaces</filename>, a threatening message
         will be generated.</para>
@@ -73,27 +73,30 @@
 
       <listitem>
         <para>The NAT_BEFORE_RULES option has been removed from
-        <filename>shorewall.conf</filename>. The behavior of Shorewall 2 is as
-        if NAT_BEFORE_RULES=No had been specified. In other words, DNAT rules
-        now always take precidence over one-to-one NAT specifications.</para>
+        <filename>shorewall.conf</filename>. The behavior of Shorewall 2.0 is
+        as if NAT_BEFORE_RULES=No had been specified. In other words, DNAT
+        rules now always take precidence over one-to-one NAT specifications.</para>
       </listitem>
 
       <listitem>
         <para>The default value for the ALL INTERFACES column in
-        /etc/shorewall/nat has changed. In Shorewall 1, if the column was left
-        empty, a value of &#34;Yes&#34; was assumed. This has been changed so
-        that a value of &#34;No&#34; is now assumed.</para>
+        <filename>/etc/shorewall/nat</filename> has changed. In Shorewall 1.*,
+        if the column was left empty, a value of &#34;Yes&#34; was assumed.
+        This has been changed so that a value of &#34;No&#34; is now assumed.</para>
       </listitem>
 
       <listitem>
-        <para> The following files don&#39;t exist in Shorewall 2: </para>
+        <para>The following files don&#39;t exist in Shorewall 2.0:</para>
 
         <simplelist>
-          <member><filename>/etc/shorewall2/common.def</filename></member>
+          <member><filename>/etc/shorewall/common.def</filename></member>
 
-          <member><filename>/etc/shorewall2/common</filename></member>
+          <member><filename>/etc/shorewall/common</filename></member>
 
-          <member><filename>/etc/shorewall2/icmpdef</filename></member>
+          <member><filename>/etc/shorewall/icmpdef</filename></member>
+
+          <member><filename>/etc/shorewall/action.template</filename> (moved
+          to <filename>/usr/share/shorewall/action.template</filename>)</member>
         </simplelist>
 
         <para>The <filename>/etc/shorewall/action</filename> file now allows
@@ -101,9 +104,9 @@
         particular policy type by following the action name with &#34;:&#34;
         and the policy (DROP, REJECT or ACCEPT).</para>
 
-        <para>The file /etc/shorewall/actions.std has been added to define
-        those actions that are released as part of Shorewall 2. In that file
-        are two actions as follows:</para>
+        <para>The file /usr/share/shorewall/actions.std has been added to
+        define those actions that are released as part of Shorewall 2.0 In
+        that file are two actions as follows:</para>
 
         <simplelist>
           <member>Drop:DROP</member>
@@ -119,15 +122,12 @@
         that &#34;Reject&#34; REJECTs SMB traffic while &#34;Drop&#34;
         silently drops such traffic.</para>
 
-        <para>As described above, Shorewall2 allows a common action for ACCEPT
+        <para>As described above, Shorewall allows a common action for ACCEPT
         policies but does not specify such an action in the default
         configuration.</para>
 
-        <para><emphasis role="bold">If you have an existing
-        /etc/shorewall/actions file then you MUST add &#34;INCLUDE
-        /etc/shorewall/actions.std&#34; to that file or you must create your
-        own common actions for DROP and REJECT <ulink
-        url="myfiles.html#Actions">as I have done in my own setup.</ulink></emphasis></para>
+        <para>For more information see the <ulink
+        url="User_defined_Actions.html">User-defined Action Page</ulink>.</para>
       </listitem>
 
       <listitem>
@@ -136,7 +136,7 @@
         file. Similar functionality is now available using user-defined
         actions.</para>
 
-        <para>Now, action files created by copying <filename>/etc/shorewall/action.template</filename>
+        <para>Now, action files created by copying <filename>/usr/share/shorewall/action.template</filename>
         may now specify a USER and or GROUP name/id in the final column just
         like in the rules file (see below). It is thus possible to create
         actions that control traffic from a list of users and/or groups.</para>

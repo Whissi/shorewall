@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-02-08</pubdate>
+    <pubdate>2004-02-14</pubdate>
 
     <copyright>
       <year>2003-2004</year>
@@ -65,9 +65,9 @@
 
     <listitem>
       <para>Once you have defined your new action name (ActionName), then copy
-      /etc/shorewall/action.template to <filename>/etc/shorewall/action.ActionName</filename>
+      /usr/share/shorewall/action.template to <filename>/etc/shorewall/action.ActionName</filename>
       (for example, if your new action name is <quote>Foo</quote> then copy
-      <filename>/etc/shorewall/action.template</filename> to
+      <filename>/usr/share/shorewall/action.template</filename> to
       <filename>/etc/shorewall/action.Foo</filename>).</para>
     </listitem>
 
@@ -227,12 +227,23 @@
      ACCEPT</programlisting></para>
 
   <para>Beginning with Shorewall 2.0.0-Beta1, Shorewall includes a number of
-  defined actions. These defined actions are listed in <filename>/etc/shorewall/actions.std</filename>.
-  To ensure that all of these actions are included in the configuration, the
-  <filename>/etc/shorewall/actions</filename> file released with Shorewall
-  contains <quote><command>INCLUDE /etc/shorewall/actions.std</command></quote>.</para>
+  defined actions. These defined actions are listed in <filename>/usr/share/shorewall/actions.std</filename>.</para>
 
-  <para>The <filename>/etc/shorewall/actions.std</filename> file includes the
-  common actions <quote>Drop</quote> for DROP policies and <quote>Reject</quote>
-  for REJECT policies.</para>
+  <para>The <filename>/usr/share/shorewall/actions.std</filename> file
+  includes the common actions <quote>Drop</quote> for DROP policies and
+  <quote>Reject</quote> for REJECT policies.</para>
+
+  <para><filename>/usr/share/shorewall/actions.std</filename> is processed
+  before <filename>/etc/shorewall/actions</filename> and if you have any
+  actions defined with the same name as one in <filename>/usr/share/shorewall/actions.std</filename>,
+  your version in <filename class="directory">/etc/shorewall</filename> will
+  be the one used. So if you wish to modify a standard action, simply copy the
+  associated action file from <filename class="directory">/usr/share/shorewall
+  </filename>to <filename class="directory">/etc/shorewall and modify</filename>
+  it to suit your needs. The next <command>shorewall restart</command> will
+  cause your action to be installed in place of the standard one. In
+  particular, if you want to modify the common actions <quote>Drop</quote> or
+  <quote>Reject</quote>, simply copy <filename>action.Drop</filename> or
+  <filename>Action.Reject</filename> to <filename class="directory">/etc/shorewall</filename>
+  and modify that copy as desired.</para>
 </article>

@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-02-04</pubdate>
+    <pubdate>2004-02-15</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -238,37 +238,24 @@ ACCEPT     net        loc:192.168.1.3   tcp       22</programlisting></para>
       <example>
         <title>Local interface eth1 interfaces to 192.168.1.0/24 and
         192.168.20.0/24. The primary IP address of eth1 is 192.168.1.254 and
-        eth1:0 is 192.168.20.254. You want to simply route all requests
-        between the two subnetworks.</title>
+        eth1:0 is 192.168.20.254. You simply want your firewall to route
+        between these two subnetworks.</title>
 
-        <variablelist>
-          <varlistentry>
-            <term>If you are running Shorewall 1.4.1 or Later</term>
+        <para>This example applies to Shorewall 1.4.2 and later.</para>
 
-            <listitem>
-              <para>In <filename>/etc/shorewall/interfaces</filename>:</para>
+        <para>In <filename>/etc/shorewall/zones</filename>:</para>
 
-              <programlisting>#ZONE  INTERFACE   BROADCAST                     OPTIONS
--      eth1        192.168.1.255,192.168.20.255</programlisting>
+        <programlisting>#ZONE        DISPLAY              DESCRIPTION
+loc          Local                Local Zone
+</programlisting>
 
-              <para>In /etc<filename>/shorewall/hosts</filename>:</para>
+        <para>In <filename>/etc/shorewall/interfaces</filename>:</para>
 
-              <note>
-                <para>You do NOT need any entry in /etc/shorewall/policy as
-                Shorewall 1.4.1 and later releases default to allowing
-                intra-zone traffic.</para>
-              </note>
-            </listitem>
-          </varlistentry>
+        <programlisting>#ZONE       INTERFACE  BROADCAST                      OPTIONS
+log         eth1       192.168.1.255,192.168.20.255   <emphasis role="bold">routeback</emphasis>   </programlisting>
 
-          <varlistentry>
-            <term>If you are running Shorewall 1.4.0 or earlier</term>
-
-            <listitem>
-              <para>See the Shorewall 1.4 documentation.</para>
-            </listitem>
-          </varlistentry>
-        </variablelist>
+        <para>In <filename>/etc/shorewall/rules</filename>, simply specify
+        ACCEPT rules for the traffic that you want to permit.</para>
       </example>
 
       <example>
@@ -278,20 +265,18 @@ ACCEPT     net        loc:192.168.1.3   tcp       22</programlisting></para>
         separate zones and control the access between them (the users of the
         systems do not have administrative privileges).</title>
 
+        <para>This example applies to Shorewall 1.4.2 and later.</para>
+
         <para>In <filename>/etc/shorewall/zones</filename>:</para>
 
         <programlisting>#ZONE        DISPLAY              DESCRIPTION
 loc          Local                Local Zone 1
 loc2         Local2               Local Zone 2</programlisting>
 
-        <para>In <filename>/etc/shorewall/interfaces</filename>:<note
-        id="multiple_subnets-ex2-n1"><para>If you are running Shorewall 1.3.10
-        or earlier then you must specify the <emphasis role="bold">multi</emphasis>
-        option.</para></note></para>
+        <para>In <filename>/etc/shorewall/interfaces</filename>:</para>
 
         <programlisting>#ZONE       INTERFACE  BROADCAST                      OPTIONS
--           eth1       192.168.1.255,192.168.20.255   <xref
-linkend="multiple_subnets-ex2-n1" /></programlisting>
+-           eth1       192.168.1.255,192.168.20.255   </programlisting>
 
         <para>In <filename>/etc/shorewall/hosts</filename>:</para>
 

@@ -47,7 +47,7 @@
 
     <caution>
       <para>The configuration shown here corresponds to Shorewall version
-      2.0.0-Beta1. It may use features not available in earlier Shorewall
+      2.0.0-Beta2. It may use features not available in earlier Shorewall
       releases.</para>
     </caution>
 
@@ -347,18 +347,7 @@ gre                     net     $TEXAS
 
       <blockquote>
         <programlisting>#ACTION
-DropSMB             #Silently Drops Microsoft SMB Traffic
-RejectSMB           #Silently Reject Microsoft SMB Traffic
-DropUPnP            #Silently Drop UPnP Probes
-RejectAuth          #Silently Reject Auth
-DropPing            #Silently Drop Ping
-DropDNSrep          #Silently Drop DNS Replies
-AllowPing           #Accept Ping
-
 Mirrors             #Accept traffic from the Shorewall Mirror sites
-
-MyDrop:DROP         #My DROP common action
-MyReject:REJECT     #My REJECT common action
 #LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
       </blockquote>
     </section>
@@ -379,11 +368,11 @@ ACCEPT   $MIRRORS
     </section>
 
     <section>
-      <title>action.MyDrop</title>
+      <title>/etc/shorewall/action.Drop</title>
 
       <blockquote>
         <para>This is my common action for the DROP policy. It is like the
-        standard <emphasis role="bold">Reject</emphasis> action except that it
+        standard <emphasis role="bold">Drop</emphasis> action except that it
         allows <quote>Ping</quote>.</para>
 
         <programlisting>#TARGET  SOURCE     DEST          PROTO   DEST      SOURCE      RATE         USER/
@@ -399,12 +388,13 @@ DropDNSrep</programlisting>
     </section>
 
     <section>
-      <title>action.MyReject</title>
+      <title>/etc/shorewall/action.Reject</title>
 
       <blockquote>
         <para>This is my common action for the REJECT policy. It is like the
-        standard <emphasis role="bold">Drop</emphasis> action except that it
-        allows <quote>Ping</quote>.</para>
+        standard <emphasis role="bold">Reject</emphasis> action except that it
+        allows <quote>Ping</quote> and contains one rule that guards against
+        log flooding by broken software running in my local zone.</para>
 
         <programlisting>#TARGET  SOURCE     DEST          PROTO   DEST      SOURCE      RATE         USER/
 #                                         PORT(S)   PORT(S)     LIMIT        GROUP

@@ -1,4 +1,4 @@
-This is a snapshot release of Shorewall.
+This is a minor release of Shorewall.
 
 Problems Corrected:
 
@@ -6,30 +6,10 @@ Problems Corrected:
    errors when started using the "service" mechanism has been worked
    around.
 
-2) A problem introduced in earlier snapshots has been corrected. This
-   problem caused incorrect netfilter rules to be created when the
-   destination zone in a rule was qualified by an address in CIDR
-   format.
- 
-   Example:
-
-   ACCEPT  fw  net:206.124.146.0/24   tcp   pop3
-
-3) A problem introduced in Snapshot 20030629 has been corrected whereby
-   the output of the capabilities report was corrupted in the case
-   where the capability was not available.
-
-4) Where a list of IP addresses appears in the DEST column of a DNAT[-]
+2) Where a list of IP addresses appears in the DEST column of a DNAT[-]
    rule, Shorewall incorrectly created multiple DNAT rules in the nat
    table (one for each element in the list). Shorewall now correctly
    creates a single DNAT rule with multiple "--to-destination" clauses.
-
-Migration Considerations:
-
-   This version of Shorewall uses shell features that aren't available
-   in all shells. Before you upgrade to this version of Shorewall, you
-   should download and run the 'shellcheck.sh' script from
-   http://shorewall.net/pub/shorewall/misc.
 
 New Features:
 

@@ -2060,7 +2060,7 @@ add_a_rule()
 	    ;;
 	all|ALL)
 	    [ -n "$port" ] && \
-		fatal_error "Port number not allowed with \"all\"; rule: \"$rule\""
+		fatal_error "Port number not allowed with protocol \"all\"; rule: \"$rule\""
 	    proto=
 	    ;;
 	*)
@@ -2982,7 +2982,7 @@ ip_range() {
 # Netmask from CIDR
 #
 ip_netmask() {
-    echo $(( -1 $LEFTSHIFT $((32 - ${1#*/})) ))
+    echo $(( -1 $LEFTSHIFT $(( 32 - ${1#*/} )) ))
 }
 
 #
@@ -2994,15 +2994,30 @@ networkaddress() {
 
     echo `encodeaddr $(($decodedaddr & $netmask))`
 }
+
+#
+# The following hack is supplied to compensate for the fact that many of
+# the popular light-weight Bourne shell derivatives don't support XOR ("^").
+#
+# Note: 2147483647 = 0x7fffffff
+
+ip_broadcast() {
+    local x=$(( ${1#*/} - 1 ))
+
+    [ $x -eq -1 ] && echo -1 || echo $(( 2147483647 >> $x ))
+}
+
 #
 # Calculate broadcast address from CIDR
 #
 broadcastaddress() {
     local decodedaddr=`decodeaddr ${1%/*}`
     local netmask=`ip_netmask $1`
+    local broadcast=`ip_broadcast $1`
 
-    echo `encodeaddr $(( $(($decodedaddr & $netmask)) | $(( $netmask ^ -1 )) ))`
+    echo `encodeaddr $(( $(($decodedaddr & $netmask)) | $broadcast ))`
 }
+
 #
 # Test for subnet membership
 #
@@ -3012,6 +3027,7 @@ in_subnet() # $1 = IP address, $2 = CIDR network
 
     test $(( `decodeaddr $1` & $netmask)) -eq $(( `decodeaddr ${2%/*}` & $netmask ))
 }
+
 #
 # Set up Source NAT (including masquerading)
 #
@@ -4608,18 +4624,7 @@ added_param_value_no() # $1 = Parameter Name, $2 = Parameter value
 # Initialize this program
 #
 do_initialize() {
-    #
-    # Code to determine if shell can support xor
-    #
-    check_xor() {
-	echo $(( 256 ^ -1 ))
-    }
     
-    check_xor1() {
-	local x=`check_xor 2> /dev/null`
-	[ -n "$x" ] && echo $x || echo 0
-    }
-
     # Run all utility programs using the C locale
     #
     # Thanks to Vincent Planchenault for this tip #
@@ -4829,7 +4834,7 @@ do_initialize() {
     [ -n "$SHOREWALL_SHELL" ] || SHOREWALL_SHELL=/bin/sh
 
     temp=`decodeaddr 192.168.1.1` 
-    if [ `encodeaddr $temp` != 192.168.1.1 -o `check_xor1` -ne -257 ]; then
+    if [ `encodeaddr $temp` != 192.168.1.1 ]; then
 	startup_error "Shell $SHOREWALL_SHELL is broken and may not be used with Shorewall"
     fi
 }

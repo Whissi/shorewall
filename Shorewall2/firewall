@@ -6938,17 +6938,17 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
         #
         # Delete any nat table entries for the host(s)
         #
-	qt_iptables -t nat -D $(dynamic_in $interface) $(match_source_hosts $host) $(match_ipsec_in $zone $newhost) -j ${zone}_dnat
+	qt_iptables -t nat -D $(dynamic_in $interface) $(match_source_hosts $host) $(match_ipsec_in $zone $delhost) -j ${zone}_dnat
         #
         # Delete rules rules the input chains for the passed interface
         #
 	while read z1 z2 chain; do
 	    if [ "$z1" = "$zone" ]; then
 		if [ "$z2" = "$FW" ]; then
-		    qt_iptables -D $(dynamic_in $interface) $(match_source_hosts $host) $(match_ipsec_in $z1 $newhost) -j $chain
+		    qt_iptables -D $(dynamic_in $interface) $(match_source_hosts $host) $(match_ipsec_in $z1 $delhost) -j $chain
 		else
 		    source_chain=$(dynamic_fwd $interface)
-		    if is_ipsec_host $z1 $newhost ; then
+		    if is_ipsec_host $z1 $delhost ; then
 			do_iptables -D $source_chain $(match_source_hosts $host) $(match_ipsec_in $z1 $newhost) -j ${z1}_frwd
 		    else
 			eval dest_hosts=\"\$${z2}_hosts\"

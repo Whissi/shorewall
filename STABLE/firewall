@@ -5568,13 +5568,6 @@ do_initialize() {
     nonat_seq=1
     aliases_to_add=
 
-    TMP_DIR=/tmp/shorewall-$$
-    rm -rf $TMP_DIR
-    mkdir -p $TMP_DIR && chmod 700 $TMP_DIR || \
-       startup_error "Can't create $TMP_DIR"
-
-    trap "rm -rf $TMP_DIR; my_mutex_off; exit 2" 1 2 3 4 5 6 9
-
     FUNCTIONS=$SHARED_DIR/functions
 
     if [ -f $FUNCTIONS ]; then
@@ -5583,6 +5576,13 @@ do_initialize() {
     else
 	startup_error "$FUNCTIONS does not exist!"
     fi
+
+    TMP_DIR=$(mktempdir)
+
+    [ -n "$TMP_DIR" ] && chmod 700 $TMP_DIR || \
+       startup_error "Can't create a temporary directory"
+
+    trap "rm -rf $TMP_DIR; my_mutex_off; exit 2" 1 2 3 4 5 6 9
 
     VERSION_FILE=$SHARED_DIR/version
 

@@ -13,6 +13,10 @@
 #			"gre", "6to4", "pptpclient", "pptpserver", "openvpn" or 
 #			"generic"
 #
+#			If the type is "ipsec" or "ipsecnat", it may be followed
+#			by ":noah" to indicate that the Authentication Header
+#			protocol (51) is not used by the tunnel.
+#
 #			If type is "openvpn", it may optionally be followed
 #			by ":" and the port number used by the tunnel. if no
 #			":" and port number are included, then the default port
@@ -42,9 +46,10 @@
 #		Example 1:
 #
 #			IPSec tunnel. The remote gateway is 4.33.99.124 and
-#			the remote subnet is 192.168.9.0/24
+#			the remote subnet is 192.168.9.0/24. The tunnel does
+#			not use the AH protocol
 #
-#			ipsec	net	4.33.99.124
+#			ipsec:noah	net	4.33.99.124
 #
 #		Example 2:
 #

@@ -153,7 +153,8 @@ append_file() # $1 = File Name
 #
 run_iptables() {
 
-    [ -n "$BRIDGING" ] && [ -f $TMP_DIR/physdev ] && rm -f $TMP_DIR/physdev
+    [ -n "$BRIDGING" ]      && [ -f $TMP_DIR/physdev ] && rm -f $TMP_DIR/physdev
+    [ -n "$IPRANGE_MATCH" ] && [ -f $TMP_DIR/iprange ] && rm -f $TMP_DIR/iprange
 
     if ! iptables $@ ; then
 	if [ -z "$stopping" ]; then
@@ -169,17 +170,15 @@ run_iptables() {
 #
 run_iptables2() {
 
-    if [ "x${*%!*}" = "x$*" ]; then
-	#
-	# No "!" in the command -- just execute it
-	#
-	run_iptables $@
-	return
-    fi
-    #
-    # Need to insert white space before each "!"
-    #
-    run_iptables $(fix_bang $@)
+    case "$@" in
+	*!*)
+	    run_iptables $(fix_bang $@)
+	    ;;
+	*)
+	    run_iptables $@
+	    ;;
+    esac
+
 }
 
 #
@@ -484,7 +483,7 @@ dnat_chain() # $1 = zone
 #
 # SNAT Chain to a zone or from an interface
 #
-snat_chain() # $1 = zone
+snat_chain() # $1 = zone or interface
 {
    echo $(chain_base $1)_snat
 }
@@ -508,13 +507,34 @@ first_chains() #$1 = interface
 }
 
 #
+# Horrible hack to work around an iptables limitation
+#
+iprange_echo() 
+{
+    if [ -f $TMP_DIR/iprange ]; then
+	echo $@
+    else
+	echo "-m iprange $@"
+	> $TMP_DIR/iprange
+    fi
+}
+
+
+#
 # Source IP range
 #
 source_ip_range() # $1 = Address or Address Range
 {
     case $1 in
 	*.*.*.*-*.*.*.*)
-	    echo "-m iprange --src-range $1"
+	    case $1 in
+		!*)
+		    iprange_echo "! --src-range ${1#!}"
+		    ;;
+		*)
+		    iprange_echo "--src-range $1"
+		    ;;
+	    esac
 	    ;;
 	*)
 	    echo "-s $1"
@@ -529,7 +549,14 @@ dest_ip_range() # $1 = Address or Address Range
 {
     case $1 in
 	*.*.*.*-*.*.*.*)
-	    echo "-m iprange --dst-range $1"
+	    case $1 in
+		!*)
+		    iprange_echo "! --dst-range ${1#!}"
+		    ;;
+		*)
+		    iprange_echo "--dst-range $1"
+		    ;;
+	    esac
 	    ;;
 	*)
 	    echo "-d $1"
@@ -537,8 +564,35 @@ dest_ip_range() # $1 = Address or Address Range
     esac
 }
 
+both_ip_ranges() # $1 = Source address or range, $2 = dest address or range
+{
+    local prefix= match=
+
+    case $1 in 
+	*.*.*.*-*.*.*.*)
+	    prefix="-m iprange"
+	    match="--src-range $1"
+	    ;;
+	*)
+	    match="-s $1"
+	    ;;
+    esac
+
+    case $2 in 
+	*.*.*.*-*.*.*.*)
+	    prefix="-m iprange"
+	    match="$match --dst-range $2"
+	    ;;
+	*)
+	    match="$match -d $2"
+	    ;;
+    esac
+
+    echo "$prefix $match"
+}    
+
 #
-# Horrible hack to work around an iptables bug
+# Horrible hack to work around an iptables limitation
 #
 physdev_echo() 
 {
@@ -846,19 +900,6 @@ validate_interfaces_file() {
 	for option in $options; do
 	    case $option in
 		dhcp|norfc1918|nobogons|tcpflags|newnotsyn|arp_filter|routefilter|blacklist|proxyarp|maclist|nosmurfs|-)
-		    ;;
-		dropunclean|logunclean)
-		    if [ -z "$found_obsolete_option" ]; then
-			found_obsolete_option=yes
-			error_message \
-			    "WARNING: The 'dropunclean' and 'logunclean' options are not supported by Shorewall 2.0"
-			error_message \
-			    "         PLEASE STAND BY WHILE SHOREWALL REFORMATS YOUR HARD DRIVE TO REMOVE THESE OPTIONS..."
-			sleep 5
-			error_message "GOTCHA!!!! :-)"
-			error_message \
-			    "         Now please remove these options from your interfaces file -- Thanks"
-		    fi
 		    ;;
 		detectnets)
 		    [ -n "$wildcard" ] && \
@@ -1391,7 +1432,7 @@ stop_firewall() {
 			else
 			    routeback=Yes
 			    for h in $(separate_list $host); do
-				iptables -A FORWARD -i $interface -s $h -o $interface $(dest_ip_range $h) -j ACCEPT
+				iptables -A FORWARD -i $interface -o $interface $(both_ip_ranges $h $h) -j ACCEPT
 			    done
 			fi
 			;;
@@ -1407,12 +1448,12 @@ stop_firewall() {
     for host in $hosts; do
 	interface=${host%:*}
 	networks=${host#*:}
-	iptables -A INPUT  -i $interface -s $networks -j ACCEPT
+	iptables -A INPUT  -i $interface $(source_ip_range $networks) -j ACCEPT
 	[ -z "$ADMINISABSENTMINDED" ] && \
 	    iptables -A OUTPUT -o $interface $(dest_ip_range $networks) -j ACCEPT
 
 	for host1 in $hosts; do
-	    [ "$host" != "$host1" ] && iptables -A FORWARD -i $interface -s $networks -o ${host1%:*} $(dest_ip_range ${host1#*:}) -j ACCEPT
+	    [ "$host" != "$host1" ] && iptables -A FORWARD -i $interface -o ${host1%:*} $(both_ip_ranges $networks ${host1#*:}) -j ACCEPT
 	done
     done
 
@@ -1518,13 +1559,13 @@ setup_tunnels() # $1 = name of tunnels file
 	    run_iptables -A $outchain -p 51 $(dest_ip_range $1)   -j ACCEPT
 	fi
 
-	run_iptables -A $outchain -p udp -d $1 --dport 500 $options
+	run_iptables -A $outchain -p udp $(dest_ip_range $1) --dport 500 $options
 
 	if [ $kind = ipsec ]; then
-	    run_iptables -A $inchain  -p udp -s $1 --dport 500 $options
+	    run_iptables -A $inchain  -p udp $(source_ip_range $1) --dport 500 $options
 	else
-	    run_iptables -A $inchain  -p udp -s $1 --dport 500 $options
-	    run_iptables -A $inchain  -p udp -s $1 --dport 4500 $options
+	    run_iptables -A $inchain  -p udp $(source_ip_range $1) --dport 500 $options
+	    run_iptables -A $inchain  -p udp $(source_ip_range $1) --dport 4500 $options
 	fi
 
 	for z in $(separate_list $3); do
@@ -1581,8 +1622,8 @@ setup_tunnels() # $1 = name of tunnels file
 		;;
 	esac
 
-	addrule $inchain  -p udp $(source_ip_range $1) --sport $p --dport $p -j ACCEPT
-	addrule $outchain -p udp $(dest_ip_range $1)   --sport $p --dport $p -j ACCEPT
+	addrule $inchain  -p udp $(source_ip_range $1) --dport $p -j ACCEPT
+	addrule $outchain -p udp $(dest_ip_range $1)   --dport $p -j ACCEPT
 
 	progress_message "   OPENVPN tunnel to $1:$p defined."
     }
@@ -1742,6 +1783,8 @@ setup_ipsec() {
 #
 setup_proxy_arp() {
 
+    local setlist= resetlist=
+
     print_error() {
 	error_message "Invalid value for HAVEROUTE - ($haveroute)"
 	error_message "Entry \"$address $interface $external $haveroute\" ignored"
@@ -1795,9 +1838,6 @@ setup_proxy_arp() {
 
 	ensure_and_save_command arp -i $external -Ds $address $external pub
 
-	run_and_save_command "echo 1 > /proc/sys/net/ipv4/conf/$interface/proxy_arp"
-	run_and_save_command "echo 0 > /proc/sys/net/ipv4/conf/$external/proxy_arp"
-
 	echo $address $interface $external $haveroute >> ${STATEDIR}/proxyarp
 
 	progress_message "   Host $address connected to $interface added to ARP on $external"
@@ -1809,8 +1849,18 @@ setup_proxy_arp() {
 
     while read address interface external haveroute persistent; do
 	expandv address interface external haveroute persistent
+	list_search $interface $setlist   || setlist="$setlist $interface"
+	list_search $external  $resetlist || list_search $external $setlist || resetlist="$resetlist $external"
 	setup_one_proxy_arp
     done < $TMP_DIR/proxyarp
+
+    for interface in $resetlist; do
+	run_and_save_command "echo 0 > /proc/sys/net/ipv4/conf/$interface/proxy_arp"
+    done
+
+    for interface in $setlist; do
+	run_and_save_command "echo 1 > /proc/sys/net/ipv4/conf/$interface/proxy_arp"
+    done
 
     interfaces=$(find_interfaces_by_option proxyarp)
 
@@ -2033,7 +2083,7 @@ setup_nat() {
 		    add_ip_aliases=
 		    ;;
 		*)
-		    run_and_save_command qt ip addr del $external dev $iface
+		    [ -n "$RETAIN_ALIASES" ] || run_and_save_command qt ip addr del $external dev $iface
 		    ;;
 	    esac
 	else
@@ -2069,7 +2119,7 @@ setup_nat() {
 	policyout="-m policy --pol none --dir out"
     fi
 
-    save_progress_message "Restoring one-to-one NAT..."
+    [ -n "$RETAIN_ALIASES" ] || save_progress_message "Restoring one-to-one NAT..."
 
     while read external interface internal allints localnat; do
 	expandv external interface internal allints localnat
@@ -2712,7 +2762,7 @@ add_an_action()
 	;;
     *:*)
 	action_interface_verify ${client%:*}
-	cli="$(match_source_dev ${client%:*}) -s ${client#*:}"
+	cli="$(match_source_dev ${client%:*}) $(source_ip_range ${client#*:})"
 	;;
     *.*.*)
 	cli="-s $client"
@@ -4771,7 +4821,7 @@ setup_masq()
 		if [ -n "$address" ]; then
 		    for addr in $(ip_range_explicit ${address%:*}) ; do
 			if ! list_search $addr $aliases_to_add; then
-			    save_command qt ip addr del $addr dev $interface 
+			    [ -n "$RETAIN_ALIASES" ] || save_command qt ip addr del $addr dev $interface 
 			    aliases_to_add="$aliases_to_add $addr $fullinterface"
 			    case $fullinterface in 
 				*:*)
@@ -4873,7 +4923,7 @@ setup_masq()
 		    if [ -n "$networks" ]; then
 			for s in $networks; do
 			    for destnet in $(separate_list $destnets); do
-				addnatrule $chain $(dest_ip_range $destnet) $(source_ip_range $s) $proto $ports -j $newchain
+				addnatrule $chain $(both_ip_ranges $s $destnet) $proto $ports -j $newchain
 			    done
 			done
 		    else
@@ -4919,7 +4969,7 @@ setup_masq()
 	if [ -n "$networks" ]; then
 	    for network in $networks; do
 		for destnet in $(separate_list $destnets); do
-		    addnatrule $chain $(source_ip_range $network) $(dest_ip_range $destnet) $proto $ports $policy -j $target $addrlist
+		    addnatrule $chain $(both_ip_ranges $network $destnet) $proto $ports $policy -j $target $addrlist
 		done
 
 		if [ -n "$addresses" ]; then
@@ -4944,7 +4994,10 @@ setup_masq()
 
     strip_file masq $1
 
-    [ -n "$NAT_ENABLED" ] && echo "Masqueraded Networks and Hosts:" && save_progress_message "Restoring Masquerading/SNAT..."
+    if [ -n "$NAT_ENABLED" ]; then
+	echo "Masqueraded Networks and Hosts:"
+	[ -n "$RETAIN_ALIASES" ] || save_progress_message "Restoring Masquerading/SNAT..."
+    fi
 
     while read fullinterface networks addresses proto ports ipsec; do
 	expandv fullinterface networks addresses proto ports ipsec
@@ -5079,11 +5132,12 @@ setup_blacklist() {
 
 	[ "$disposition" = REJECT ] && disposition=reject
 
-	while read networks protocol ports; do
-	    expandv networks protocol ports
-	    process_blacklist_rec
-	done < $TMP_DIR/blacklist
-
+	if [ -n "$DELAYBLACKLISTLOAD" ]; then
+	    while read networks protocol ports; do
+		expandv networks protocol ports
+		process_blacklist_rec
+	    done < $TMP_DIR/blacklist
+	fi
     fi
 }
 
@@ -5095,7 +5149,7 @@ refresh_blacklist() {
     local disposition=$BLACKLIST_DISPOSITION
 
     if qt iptables -L blacklst -n ; then
-	echo "Refreshing Black List..."
+	echo "Loading Black List..."
 
 	strip_file blacklist $f
 
@@ -5162,7 +5216,14 @@ add_ip_aliases()
     do_one()
     {
 	val=$(address_details)
-	ensure_and_save_command ip addr add ${external}${val} dev $interface $label
+
+	if [ -n "$RETAIN_ALIASES" ]; then
+	    run_ip addr add ${external}${val} dev $interface $label
+	    save_command qt ip addr add ${external}${val} dev $interface $label
+	else
+	    ensure_and_save_command ip addr add ${external}${val} dev $interface $label
+	fi
+
 	echo "$external $interface" >> ${STATEDIR}/nat
 	[ -n "$label" ] && label="with $label"
 	progress_message "   IP Address $external added to interface $interface $label"
@@ -5256,17 +5317,13 @@ determine_capabilities() {
 	qt iptables -A fooX1234 -m physdev --physdev-in eth0 -j ACCEPT                     && PHYSDEV_MATCH=Yes
 	qt iptables -A fooX1234 -m iprange --src-range 192.168.1.5-192.168.1.124 -j ACCEPT && IPRANGE_MATCH=Yes
 
+
+	if [ -n "$PKTTYPE" ]; then
+	    qt iptables -A fooX1234 -m pkttype --pkt-type broadcast -j ACCEPT || PKTTYPE=
+	fi
+	    
 	qt iptables -F fooX1234
 	qt iptables -X fooX1234
-    fi
-
-    if [ -n "$PKTTYPE" ]; then
-	if qt iptables -N fooX1234 ; then
-	    qt iptables -A fooX1234 -m pkttype --pkt-type broadcast -j ACCEPT || PKTTYPE=
-	    
-	    qt iptables -F fooX1234
-	    qt iptables -X fooX1234
-	fi
     fi
 }
 
@@ -5914,8 +5971,9 @@ activate_rules()
 
 	if havenatchain $destchain ; then
 	    run_iptables -t nat -A $sourcechain $@ -j $destchain
-	elif [ -n "$BRIDGING" -a -f $TMP_DIR/physdev ]; then
-	    rm -f $TMP_DIR/physdev
+	else
+	    [ -n "$BRIDGING" -a -f $TMP_DIR/physdev ]      && -rm -f $TMP_DIR/physdev
+	    [ -n "$IPRANGE_MATCH" -a -f $TMP_DIR/iprange ] && rm -f $TMP_DIR/iprange
 	fi
     }
 
@@ -5933,8 +5991,10 @@ activate_rules()
 	    eval run_iptables -t nat -I $sourcechain \
 		\$${sourcechain}_rule $@ -j $destchain
 	    eval ${sourcechain}_rule=\$\(\(\$${sourcechain}_rule + 1\)\)
-	elif [ -n "$BRIDGING" -a -f $TMP_DIR/physdev ]; then
-	    rm -f $TMP_DIR/physdev
+	else 
+	    [ -n "$BRIDGING" -a -f $TMP_DIR/physdev ]      && rm -f $TMP_DIR/physdev
+	    [ -n "$IPRANGE_MATCH" -a -f $TMP_DIR/iprange ] && rm -f $TMP_DIR/iprange
+
 	fi
     }
     #
@@ -6218,6 +6278,8 @@ define_firewall() # $1 = Command (Start or Restart)
 	echo "Adding IP Addresses..." &&       add_ip_aliases
 
     run_user_exit start
+
+    [ -n "$DELAYBLACKLISTLOAD" ] &&          refresh_blacklist
 
     createchain shorewall no
 
@@ -6701,9 +6763,11 @@ do_initialize() {
     BRIDGING=
     DYNAMIC_ZONES=
     PKTTYPE=
+    RETAIN_ALIASES=
+    DELAYBLACKLISTLOAD=
+
     RESTOREBASE=
     TMP_DIR=
-
     ALL_INTERFACES=
 
     stopping=
@@ -6875,7 +6939,8 @@ do_initialize() {
     DYNAMIC_ZONES=$(added_param_value_no DYNAMIC_ZONES $DYNAMIC_ZONES)
     PKTTYPE=$(added_param_value_no PKTTYPE $PKTTYPE)
     STARTUP_ENABLED=$(added_param_value_yes STARTUP_ENABLED $STARTUP_ENABLED)
-
+    RETAIN_ALIASES=$(added_param_value_no RETAIN_ALIASES $RETAIN_ALIASES)
+    DELAYBLACKLISTLOAD=$(added_param_value_no DELAYBLACKLISTLOAD $DELAYBLACKLISTLOAD)
     #
     # Strip the files that we use often
     #
@@ -6892,6 +6957,7 @@ do_initialize() {
     fi
 
     rm -f $TMP_DIR/physdev
+    rm -f $TMP_DIR/iprange
 }
 
 #

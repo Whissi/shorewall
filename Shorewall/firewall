@@ -1028,6 +1028,22 @@ log_rule() # $1 = log level, $2 = chain, $3 = disposition , $... = predicates fo
 }
 
 #
+# Set /proc/sys/net/ipv4/ip_forward based on $IP_FORWARDING
+#
+setup_forwarding() {
+    case "$IP_FORWARDING" in
+    [Oo][Nn])
+	echo 1 > /proc/sys/net/ipv4/ip_forward
+	echo "IP Forwarding Enabled"
+	;;
+    [Oo][Ff][Ff])
+	echo 0 > /proc/sys/net/ipv4/ip_forward
+	echo "IP Forwarding Disabled!"
+	;;
+    esac
+}
+
+#
 # Stop the Firewall
 #
 stop_firewall() {
@@ -1118,14 +1134,7 @@ stop_firewall() {
 	    iptables -A OUTPUT -p udp -o $interface --dport 67:68 -j ACCEPT
     done
 
-    case "$IP_FORWARDING" in
-    [Oo][Nn])
-	echo 1 > /proc/sys/net/ipv4/ip_forward
-	;;
-    [Oo][Ff][Ff])
-	echo 0 > /proc/sys/net/ipv4/ip_forward
-	;;
-    esac
+    setup_forwarding
 
     run_user_exit stopped
 
@@ -4235,19 +4244,8 @@ add_common_rules() {
 	[ -n "$ROUTE_FILTER" ] && echo 1 > /proc/sys/net/ipv4/conf/default/rp_filter
 	run_ip route flush cache
     fi
-    #
-    # IP Forwarding
-    #
-    case "$IP_FORWARDING" in
-    [Oo][Nn])
-	echo 1 > /proc/sys/net/ipv4/ip_forward
-	echo "IP Forwarding Enabled"
-	;;
-    [Oo][Ff][Ff])
-	echo 0 > /proc/sys/net/ipv4/ip_forward
-	echo "IP Forwarding Disabled!"
-	;;
-    esac
+
+    setup_forwarding
 }
 
 #
@@ -4473,6 +4471,7 @@ activate_rules()
 	run_iptables -D $chain -m state --state ESTABLISHED,RELATED -j ACCEPT
 	run_iptables -D $chain -p udp --dport 53 -j ACCEPT
     done
+
 }
 
 #

@@ -730,7 +730,7 @@ case "$1" in
 	[ $# -ne 1 ] && usage 1
 	get_config
 	if [ -n "$FAST" ]; then
-	    if [ -f /var/lib/shorewall/restore -a -f /var/lib/shorewall/iptsave ]; then
+	    if [ -f /var/lib/shorewall/restore ]; then
 		echo Restoring Shorewall...
 		. /var/lib/shorewall/restore
 		date > $STATEDIR/restarted
@@ -965,10 +965,16 @@ case "$1" in
 	    [ -d /var/lib/shorewall ] || mkdir /var/lib/shorewall
 
 	    if iptables -L dynamic -n > /var/lib/shorewall/save; then
-		echo "Dynamic Rules Saved"
-		if iptables-save > /var/lib/shorewall/iptsave; then
+		echo "   Dynamic Rules Saved"
+		if [ -f /var/lib/shorewall/restore-new ]; then
 		    mv -f /var/lib/shorewall/restore-new /var/lib/shorewall/restore
-		    echo "Last Started Configuration Saved"
+		    if iptables-save >> /var/lib/shorewall/restore ; then
+			echo EOF >> /var/lib/shorewall/restore
+			echo "   Currently-running Configuration Saved"
+                    else
+			rm -f /var/lib/shorewall/restore
+			echo "   ERROR: Currently-running Configuration Not Saved"
+		    fi
 		fi
 	    else
 		echo "Error Saving the Dynamic Rules"

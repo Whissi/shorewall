@@ -1194,7 +1194,7 @@ stop_firewall() {
 	    ;;
 	*)
 	    set +x
-	    if [ -f /var/lib/shorewall/restore -a -f /var/lib/shorewall/iptsave ]; then
+	    if [ -f /var/lib/shorewall/restore ]; then
 		echo Restoring Shorewall...
 		. /var/lib/shorewall/restore
 		echo Shorewall restored
@@ -5341,21 +5341,22 @@ define_firewall() # $1 = Command (Start or Restart)
 
     date > $STATEDIR/restarted
 
-    save_command "date > $STATEDIR/restarted"
-
     report "Shorewall ${1}ed"
 
     rm -rf $TMP_DIR
-
-    save_command "iptables-restore < /var/lib/shorewall/iptsave"
 
     for file in chains nat proxyarp zones; do
 	append_file $file
     done
     
+    save_command "date > $STATEDIR/restarted"
+
+    save_command 'iptables-restore << EOF'
+
     mv -f /var/lib/shorewall/restore-$$ /var/lib/shorewall/restore-new
 
     chmod +x /var/lib/shorewall/restore-new
+
 }
 
 #

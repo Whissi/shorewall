@@ -458,6 +458,9 @@ determine_hosts() {
 	hosts=`echo $hosts` # Remove extra trash
 
 	if [ -n "MERGE_HOSTS" ]; then
+	    ####################################################################
+	    # Zone will be the union of its host and interface definitions
+	    #
 	    do_a_zone
 	    recalculate_interfaces
 	elif [ -n "$hosts" ]; then
@@ -3176,6 +3179,8 @@ define_firewall() # $1 = Command (Start or Restart)
 
     createchain shorewall no
 
+    date > /var/lib/shorewall/restarted
+
     report "Shorewall ${1}ed"
 
     rm -rf $TMP_DIR
@@ -3500,6 +3505,7 @@ case "$command" in
     reset)
 	iptables -L -n -Z -v
 	report "Shorewall Counters Reset"
+	date > /var/lib/shorewall/restarted
 	;;
 
     refresh)

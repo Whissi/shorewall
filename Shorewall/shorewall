@@ -433,6 +433,14 @@ usage() # $1 = exit status
 }
 
 #################################################################################
+# Display the time that the counters were last reset                            #
+#################################################################################
+show_reset() {
+    [ -f /var/lib/shorewall/restarted ] && \
+	echo -e "Counters reset `cat /var/lib/shorewall/restarted`\\n"
+}
+
+#################################################################################
 # Execution begins here								#
 #################################################################################
 debugging=
@@ -533,10 +541,12 @@ case "$1" in
 	    ;;
 	nat)
 	    echo -e "Shorewall-$version NAT at $HOSTNAME - `date`\\n"
+	    show_reset
 	    iptables -t nat -L -n -v
 	    ;;
 	tos|mangle)
 	    echo -e "Shorewall-$version TOS at $HOSTNAME - `date`\\n"
+	    show_reset
 	    iptables -t mangle -L -n -v
 	    ;;
 	log)
@@ -551,6 +561,7 @@ case "$1" in
 	    ;;
 	*)
 	    echo -e "Shorewall-$version Chain $2 at $HOSTNAME - `date`\\n"
+	    show_reset
 	    iptables -L $2 -n -v
 	    ;;
 	esac
@@ -569,6 +580,7 @@ case "$1" in
 	get_config
 	clear
 	echo -e "Shorewall-$version Status at $HOSTNAME - `date`\\n"
+	show_reset
 	host=`echo $HOSTNAME | sed 's/\..*$//'`
 	iptables -L -n -v
 	echo

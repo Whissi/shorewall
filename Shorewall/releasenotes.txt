@@ -2,9 +2,15 @@ This is a minor release of Shorewall.
 
 In this release:
 
-1. Empty source and destination qualifiers are now detected in the
-   rules file.
+1. Empty and invalid source and destination qualifiers are now detected
+   in the rules file. It is a good idea to use the 'shorewall check'
+   command before you issue a 'shorewall restart' command be be sure
+   that you don't have any configuration problems that will prevent a
+   successful restart.
 
 2. Added MERGE_HOSTS variable in shorewall.conf to provide saner
    behavior of the /etc/shorewall/hosts file.
+
+3. The time that the counters were last reset is now displayed in the
+   heading of the 'status' and 'show' commands.
 

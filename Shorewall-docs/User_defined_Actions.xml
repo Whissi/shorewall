@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article>
+  <!---->
+
+  <articleinfo>
+    <title>User-defined Actions</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate>2003-12-09</pubdate>
+
+    <copyright>
+      <year>2001</year>
+
+      <year>2002</year>
+
+      <year>2003</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <para>Prior to Shorewall version 1.4.9, rules in /etc/shorewall/rules were
+  limited to those defined by Netfilter (ACCEPT, DROP, REJECT, etc.).
+  Beginning with Shorewall version 1.4.9, users may use sequences of these
+  elementary operations to define more complex actions.</para>
+
+  <para>To define a new action:</para>
+
+  <orderedlist>
+    <listitem>
+      <para>Add a line to /etc/shorewall/actions that names your new action.
+      Action names must be valid shell variable names as well as valid
+      Netfilter chain names. It is recommended that the name you select for a
+      new action begins with with a capital letter; that way, the name
+      won&#39;t conflict with a Shorewall-defined chain name.</para>
+    </listitem>
+
+    <listitem>
+      <para>Once you have defined your new action name (ActionName), then copy
+      /etc/shorewall/action.template to /etc/shorewall/action.ActionName (for
+      example, if your new action name is &#34;Foo&#34; then copy
+      /etc/shorewall/action.template to /etc/shorewall/action.foo). </para>
+    </listitem>
+
+    <listitem>
+      <para>Now modify the new file to define the new action.</para>
+    </listitem>
+  </orderedlist>
+
+  <para>Columns in the action.template file are as follows:</para>
+
+  <itemizedlist>
+    <listitem>
+      <para>TARGET - Must be ACCEPT, DROP, REJECT, LOG, QUEUE or
+      &#60;action&#62; where &#60;action&#62; is a previously-defined action.
+      The TARGET may optionally be followed by a colon (&#34;:&#34;) and a
+      syslog log level (e.g, REJECT:info or ACCEPT:debugging). This causes the
+      packet to be logged at the specified level. You may also specify ULOG
+      (must be in upper case) as a log level.This will log to the ULOG target
+      for routing to a separate log through use of ulogd
+      (http://www.gnumonks.org/projects/ulogd).</para>
+    </listitem>
+
+    <listitem>
+      <para>SOURCE - Source hosts to which the rule applies. A comma-separated
+      list of subnets and/or hosts. Hosts may be specified by IP or MAC
+      address; mac addresses must begin with &#34;~&#34; and must use
+      &#34;-&#34; as a separator.</para>
+
+      <para>Alternatively, clients may be specified by interface name. For
+      example, eth1 specifies a client that communicates with the firewall
+      system through eth1. This may be optionally followed by another colon
+      (&#34;:&#34;) and an IP/MAC/subnet address as described above (e.g.,
+      eth1:192.168.1.5).</para>
+    </listitem>
+
+    <listitem>
+      <para>DEST - Location of Server. Same as above with the exception that
+      MAC addresses are not allowed.</para>
+
+      <para>Unlike in the SOURCE column, you may specify a range of up to 256
+      IP addresses using the syntax &#60;first ip&#62;-&#60;last ip&#62;.
+      </para>
+    </listitem>
+
+    <listitem>
+      <para>PROTO - Protocol - Must be &#34;tcp&#34;, &#34;udp&#34;,
+      &#34;icmp&#34;, a number, or &#34;all&#34;.</para>
+    </listitem>
+
+    <listitem>
+      <para>DEST PORT(S) - Destination Ports. A comma-separated list of Port
+      names (from /etc/services), port numbers or port ranges; if the protocol
+      is &#34;icmp&#34;, this column is interpreted as the destination
+      icmp-type(s).</para>
+
+      <para>A port range is expressed as &#60;low port&#62;:&#60;high
+      port&#62;.</para>
+
+      <para>This column is ignored if PROTOCOL = all but must be entered if
+      any of the following ields are supplied. In that case, it is suggested
+      that this field contain &#34;-&#34;.</para>
+
+      <para>If your kernel contains multi-port match support, then only a
+      single Netfilter rule will be generated if in this list and the CLIENT
+      PORT(S) list below:</para>
+
+      <orderedlist>
+        <listitem>
+          <para>There are 15 or less ports listed.</para>
+        </listitem>
+
+        <listitem>
+          <para>No port ranges are included.</para>
+        </listitem>
+      </orderedlist>
+
+      <para>Otherwise, a separate rule will be generated for each port.</para>
+    </listitem>
+
+    <listitem>
+      <para>RATE LIMIT - You may rate-limit the rule by placing a value in
+      this column:</para>
+
+      <para><programlisting>     &#60;rate&#62;/&#60;interval&#62;[:&#60;burst&#62;]</programlisting>where
+      &#60;rate&#62; is the number of connections per &#60;interval&#62;
+      (&#34;sec&#34; or &#34;min&#34;) and &#60;burst&#62; is the largest
+      burst permitted. If no &#60;burst&#62; is given, a value of 5 is
+      assumed. There may be no whitespace embedded in the specification.</para>
+
+      <para><programlisting>     Example: 10/sec:20</programlisting></para>
+    </listitem>
+  </itemizedlist>
+
+  <para>Example:</para>
+
+  <para><emphasis role="bold">/etc/shorewall/actions:</emphasis></para>
+
+  <para><programlisting>     LogAndAccept</programlisting><emphasis
+  role="bold">/etc/shorewall/action.LogAndAccept</emphasis><programlisting>     LOG:info
+     ACCEPT</programlisting></para>
+
+  <para> </para>
+</article>

@@ -418,7 +418,6 @@ monitor_firewall() # $1 = timeout -- if negative, prompt each time that
 		   #		     an 'interesting' packet count changes
 {
 
-    get_config
     host=$(echo $HOSTNAME | sed 's/\..*$//')
     oldrejects=$($IPTABLES -L -v -n | grep 'LOG')
 
@@ -528,7 +527,6 @@ logwatch() # $1 = timeout -- if negative, prompt each time that
 	   #		     an 'interesting' packet count changes
 {
 
-    get_config
     host=$(echo $HOSTNAME | sed 's/\..*$//')
     oldrejects=$($IPTABLES -L -v -n | grep 'LOG')
 
@@ -756,6 +754,8 @@ ensure_config_path
 
 export CONFIG_PATH
 
+get_config
+
 [ -z "${STATEDIR}" ] && STATEDIR=/var/state/shorewall
 
 if [ ! -f $FIREWALL ]; then
@@ -822,8 +822,6 @@ case "$1" in
 		;;
 	esac
 	
-	get_config
-	
 	if [ -n "$FAST" ]; then
 	    
 	    RESTOREPATH=/var/lib/shorewall/$RESTOREFILE
@@ -842,7 +840,6 @@ case "$1" in
 	;;
     stop|reset|clear|refresh)
 	[ $# -ne 1 ] && usage 1
-	get_config
 	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $1
 	;;
     check|restart)
@@ -867,12 +864,10 @@ case "$1" in
 		usage 1
 		;;
 	esac
-	get_config
 	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $1
 	;;
     add|delete)
 	[ $# -ne 3 ] && usage 1
-	get_config
 	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $1 $2 $3
 	;;
     show|list)
@@ -900,7 +895,6 @@ case "$1" in
 	    ;;
 	log)
 	    [ $# -gt 2 ] && usage 1
-	    get_config
 	    echo "Shorewall-$version Log at $HOSTNAME - $(date)"
 	    echo
 	    show_reset
@@ -948,7 +942,6 @@ case "$1" in
     status)
     	[ -n "$debugging" ] && set -x
 	[ $# -eq 1 ] || usage 1
-	get_config
 	clear
 	echo "Shorewall-$version Status at $HOSTNAME - $(date)"
 	echo
@@ -1007,7 +1000,6 @@ case "$1" in
     hits)
     	[ -n "$debugging" ] && set -x
 	[ $# -eq 1 ] || usage 1
-	get_config
 	clear
 	echo "Shorewall-$version Hits at $HOSTNAME - $(date)"
 	echo
@@ -1118,8 +1110,6 @@ case "$1" in
     save)
     	[ -n "$debugging" ] && set -x
 
-	get_config
-
 	case $# in
 	1)
 	    ;;
@@ -1175,7 +1165,6 @@ case "$1" in
 	mutex_off
 	;;
     forget)
-	get_config
 	case $# in
 	1)
 	    ;;
@@ -1234,7 +1223,6 @@ case "$1" in
 	esac
 	;;
     restore)
-	get_config
 	case $# in
 	1)
 	    ;;

@@ -1,5 +1,5 @@
 #	
-# 	Shorewall version 1.4.7 - Sample Rules File For Three Interfaces
+# 	Shorewall version 1.4.8 - Sample Rules File For Three Interfaces
 #
 # 	/etc/shorewall/rules
 #
@@ -16,12 +16,12 @@
 #
 #
 #	ACTION			ACCEPT, DROP, REJECT, DNAT, DNAT-, REDIRECT,
-#				REDIRECT-, CONTINUE or LOG.
+#				REDIRECT-, CONTINUE, LOG Or QUEUE.
 #
 #				ACCEPT
-#						Allow the connection request
+#						Allow the connection request.
 #				DROP
-#						Ignore the request
+#						Ignore the request.
 #				REJECT
 #						Disallow the request and return an
 #						icmp-unreachable or an RST packet.
@@ -54,6 +54,9 @@
 #						(those) zones(s).
 #				LOG		
 #						Simply log the packet and continue.
+#				QUEUE
+#						Queue the packet to a user-space
+#						application such as p2pwall.
 #
 #			You may rate-limit the rule by optionally following 
 #			ACCEPT, DNAT[-], REDIRECT[-] or LOG with

@@ -44,9 +44,20 @@ Problems Corrected since version 1.4.7:
 8) An incorrect comment concerning Debian's use of the SYBSYSLOCK
    option has been removed from shorewall.conf.
 
+9) Previously, neither the 'routefilter' interface option nor the
+   ROUTE_FILTER parameter were working properly. This has been
+   corrected. The definition of the ROUTE_FILTER option has changed
+   however. Previously, ROUTE_FILTER=Yes was documented as enabling
+   route filtering on all interfaces (which didn't work). Beginning
+   with this release, setting ROUTE_FILTER=Yes will enable route
+   filtering of all interfaces brought up while Shorewall is
+   started. As a consequence, ROUTE_FILTER=Yes can coexist with the use
+   of the 'routefilter' option in the interfaces file.
+
 Migration Issues:
 
-None.
+1. The definition of the ROUTE_FILTER option in shorewall.conf has
+   changed as described in item 9) above.
 
 New Features:
 
@@ -81,6 +92,7 @@ New Features:
 
 3. Chain names used in the /etc/shorewall/accounting file may now begin
    with a digit ([0-9]) and may contain embedded dashes ("-").
+
 
 
 

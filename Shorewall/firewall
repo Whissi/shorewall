@@ -229,7 +229,7 @@ run_tc() {
 #
 # If the chain isn't one of the common chains then add a rule to the chain
 # allowing packets that are part of an established connection. Create a
-# variable ${1}_exists and set its value to Yes to indicate that the chain now
+# variable exists_${1} and set its value to Yes to indicate that the chain now
 # exists.
 #
 createchain() # $1 = chain name, $2 = If "yes", create default rules
@@ -244,7 +244,7 @@ createchain() # $1 = chain name, $2 = If "yes", create default rules
 	    run_iptables -A $1 -m state --state NEW -p tcp ! --syn -j newnotsyn
     fi
 
-    eval ${c}_exists=Yes
+    eval exists_${c}=Yes
 }
 
 createchain2() # $1 = chain name, $2 = If "yes", create default rules
@@ -259,22 +259,22 @@ createchain2() # $1 = chain name, $2 = If "yes", create default rules
 		run_iptables -A $1 -m state --state NEW -p tcp ! --syn -j newnotsyn
 	fi
 	
-	eval ${c}_exists=Yes
+	eval exists_${c}=Yes
     fi
 }
 
 #
 # Determine if a chain exists
 #
-# When we create a chain "chain", we create a variable named chain_exists and
-# set its value to Yes. This function tests for the "_exists" variable
+# When we create a chain "chain", we create a variable named exists_chain and
+# set its value to Yes. This function tests for the "exists_" variable
 # corresponding to the passed chain having the value of "Yes".
 #
 havechain() # $1 = name of chain
 {
     local c=`chain_base $1`
 
-    eval test \"\$${c}_exists\" = Yes
+    eval test \"\$exists_${c}\" = Yes
 }
 
 #
@@ -313,26 +313,26 @@ addrule() # $1 = chain name, remainder of arguments specify the rule
 #
 # Create a nat chain
 #
-# Create a variable ${1}_nat_exists and set its value to Yes to indicate that
+# Create a variable exists_nat_${1} and set its value to Yes to indicate that
 # the chain now exists.
 #
 createnatchain() # $1 = chain name
 {
     run_iptables -t nat -N $1
 
-    eval ${1}_nat_exists=Yes
+    eval exists_nat_${1}=Yes
 }
 
 #
 # Determine if a nat chain exists
 #
-# When we create a chain "chain", we create a variable named chain_nat_exists
-# and set its value to Yes. This function tests for the "_exists" variable
+# When we create a chain "chain", we create a variable named exists_nat_chain
+# and set its value to Yes. This function tests for the "exists_" variable
 # corresponding to the passed chain having the value of "Yes".
 #
 havenatchain() # $1 = name of chain
 {
-    eval test \"\$${1}_nat_exists\" = Yes
+    eval test \"\$exists_nat_${1}\" = Yes
 }
 
 #
@@ -4202,6 +4202,7 @@ add_common_rules() {
 
     if [ -n "$interfaces" ]; then
 	echo "Setting up ARP Filtering..."
+	
 	for interface in $interfaces; do
 	    file=/proc/sys/net/ipv4/conf/$interface/arp_filter
 	    if [ -f $file ]; then
@@ -4215,28 +4216,28 @@ add_common_rules() {
     #
     # Route Filtering
     #
-    for f in /proc/sys/net/ipv4/conf/*/rp_filter; do
-	echo 0 > $f
-    done
-
     interfaces="`find_interfaces_by_option routefilter`"
 
     if [ -n "$interfaces" -o -n "$ROUTE_FILTER" ]; then
 	echo "Setting up Kernel Route Filtering..."
 
-	if [ -n "$ROUTE_FILTER" ]; then
-	    echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter
-	else
-	    for interface in $interfaces; do
-		file=/proc/sys/net/ipv4/conf/$interface/rp_filter
-		if [ -f $file ]; then
-		    echo 1 > $file
-		else
-		    error_message \
-			"Warning: Cannot set route filtering on $interface"
-		fi
-	    done
-	fi
+	for f in /proc/sys/net/ipv4/conf/*/rp_filter; do
+	    echo 0 > $f
+	done
+
+	for interface in $interfaces; do
+	    file=/proc/sys/net/ipv4/conf/$interface/rp_filter
+	    if [ -f $file ]; then
+		echo 1 > $file
+	    else
+		error_message \
+		    "Warning: Cannot set route filtering on $interface"
+	    fi
+	done
+	
+	echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter
+	[ -n "$ROUTE_FILTER" ] && echo 1 > /proc/sys/net/ipv4/conf/default/rp_filter
+	run_ip route flush cache
     fi
     #
     # IP Forwarding

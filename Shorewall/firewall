@@ -187,8 +187,6 @@ run_tc() {
 #
 createchain() # $1 = chain name, $2 = If non-null, don't create default rules
 {
-    local target
-
     run_iptables -N $1
 
     if [ $# -eq 1 ]; then
@@ -280,6 +278,14 @@ deletechain() # $1 = name of chain
 {
     qt iptables -L $1 -n && qt iptables -F $1 && qt iptables -X $1
 }
+
+#
+# Determine if a chain is a policy chain
+#
+is_policy_chain() # $1 = name of chain
+{
+    eval test \"\$${1}_is_policy\" = Yes
+}    
 
 #
 # Set a standard chain's policy
@@ -930,6 +936,17 @@ validate_policy()
 	    startup_error "Error: Invalid policy $policy"
 	    ;;
 	esac
+
+	chain=${client}2${server}
+
+	[ "x$chain" = "x${FW}2${FW}" ] && \
+	    startup_error "Error: fw->fw policy not allowed: $policy"
+	
+	if is_policy_chain $chain ; then
+	    startup_error "Error: Duplicate policy $policy"
+	fi
+
+	eval ${client}2${server}_is_policy=Yes
 
     done < $TMP_DIR/policy
 }
@@ -1995,7 +2012,7 @@ process_rule() # $1 = target
 
     # Function Body -- isolate log level
  
-   if [ "$target" = "${target%:*}" ]; then
+    if [ "$target" = "${target%:*}" ]; then
 	loglevel=
     else
 	loglevel="${target#*:}"
@@ -2128,6 +2145,9 @@ process_rule() # $1 = target
 #
 process_rules() # $1 = name of rules file
 {
+    #
+    # Process a rule where the source or destination is "all"
+    #
     process_wildcard_rule() {
 	for yclients in $xclients; do
 	    for yservers in $xservers; do
@@ -2138,12 +2158,12 @@ process_rules() # $1 = name of rules file
 	done
     }
 
-    strip_file rules
+    strip_file rules $1
 
     while read xtarget xclients xservers xprotocol xports xcports xaddress; do
 	case "$xtarget" in
 
-	    ACCEPT*|DROP*|REJECT*|DNAT*|REDIRECT*)
+	    ACCEPT|ACCEPT:*|DROP|DROP:*|REJECT|REJECT:*|DNAT|DNAT:*|REDIRECT|REDIRECT:*)
 		expandv xclients xservers xprotocol xports xcports xaddress
 
 		if [ "x$xclients" = xall ]; then

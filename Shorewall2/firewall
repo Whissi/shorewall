@@ -2503,6 +2503,10 @@ check_config() {
 
     verify_os_version
 
+    if [ -n "$BRIDGING" ]; then
+	[ -n "$PHYSDEV_MATCH" || startup_error "BRIDGING=Yes requires Physdev Match support in your Kernel and iptables"
+    fi
+
     echo "Determining Zones..."
 
     determine_zones
@@ -5187,11 +5191,13 @@ determine_capabilities() {
     CONNTRACK_MATCH=
     MULTIPORT=
     POLICY_MATCH=
+    PHYSDEV_MATCH=
 
     if qt iptables -N fooX1234 ; then
 	qt iptables -A fooX1234 -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT && CONNTRACK_MATCH=Yes
         qt iptables -A fooX1234 -p tcp -m multiport --dports 21,22 -j ACCEPT   && MULTIPORT=Yes
 	qt iptables -A fooX1234 -m policy --pol ipsec --dir in -j ACCEPT       && POLICY_MATCH=Yes
+	qt iptables -A fooX1234 -m physdev --physdev-in eth0 -j ACCEPT         && PHYSDEV_MATCH=Yes
 	
 
 	qt iptables -F fooX1234
@@ -5225,6 +5231,7 @@ report_capabilities() {
     report_capability $CONNTRACK_MATCH "Connection Tracking Match"
     report_capability $PKTTYPE "Packet Type Match"
     report_capability $POLICY_MATCH "Policy Match"
+    report_capability $PHYSDEV_MATCH "Physdev Match"
 }
 
 #
@@ -5238,6 +5245,10 @@ report_capabilities() {
 initialize_netfilter () {
 
     report_capabilities
+
+    if [ -n "$BRIDGING" ]; then
+	[ -n "$PHYSDEV_MATCH" || startup_error "BRIDGING=Yes requires Physdev Match support in your Kernel and iptables"
+    fi
 
     echo "Determining Zones..."
 

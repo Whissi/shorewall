@@ -3364,7 +3364,7 @@ report_capability() # $1 = Capability Name, $2 Capability Setting (if any)
 {
     local setting=
 
-    [ $1 = "Yes" ] && { setting="Available"; shift; } || setting="Not available"
+    [ x$1 = "xYes" ] && { setting="Available"; shift; } || setting="Not available"
 
     echo "  " $@: $setting
 }

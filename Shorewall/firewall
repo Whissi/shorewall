@@ -2257,9 +2257,6 @@ add_an_action()
     [ x$cport = x- ] && cport=
 
     case $proto in
-	all|-)
-	    proto=
-	    ;;
 	tcp|TCP|6)
 	    do_ports
 	    [ "$target" = QUEUE ] && proto="$proto --syn"
@@ -2378,7 +2375,7 @@ process_action() # $1 = action
 
     # Generate Netfilter rule(s)
 
-    protocol=${protocol:=all}
+    [ "x$protocol"="x-" ] && protocol=all || protocol=${protocol:=all}
 
     if [ -n "$MULTIPORT" ] && \
 	! list_search $protocol "icmp" "ICMP" "1" && \

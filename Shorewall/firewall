@@ -1857,12 +1857,13 @@ add_nat_rule() {
 		nonat_seq=$(($nonat_seq + 1))
 		createnatchain $chain
 		run_iptables -t nat -A OUTPUT $cli $proto $multiport $sports $dports -j $chain
+
 		for adr in $excludedests; do
 		    addnatrule $chain -d $adr -j RETURN
 		done
 
 		if [ -n "$loglevel" ]; then
-		    log_rule $loglevel OUTPUT $logtarget -t nat
+		    log_rule $loglevel $chain $logtarget -t nat
 		fi
 
 		addnatrule $chain -j $target1
@@ -1915,10 +1916,6 @@ add_nat_rule() {
 	fi
     fi
 
-    # We do all logging here rather than in the filter table
-
-    loglevel=
-    
     # Replace destination port by the new destination port
 
     if [ -n "$servport" ]; then
@@ -1968,7 +1965,7 @@ add_a_rule()
 {
     local natrule=
 
-    # Set source variables
+    # Set source variables. The 'cli' variable will hold the client match predicate(s).
 
     cli=
 
@@ -1989,7 +1986,7 @@ add_a_rule()
 	;;
     esac
 
-    # Set destination variables
+    # Set destination variables - 'serv' and 'dest_interface' hold the server match predicate(s).
 
     dest_interface=
     serv=
@@ -2102,11 +2099,6 @@ add_a_rule()
 
 	    if [ -z "$dnat_only" -a $chain != ${FW}2${FW} ]; then
 		serv="${serv:+-d $serv}"
-		if [ -n "$loglevel" ]; then
-		    log_rule $loglevel $chain $logtarget \
-			`fix_bang $proto $sports $multiport $state $cli $serv $dports`
-		fi
-
 		run_iptables2 -A $chain $proto $multiport $state $cli $sports \
 		    $serv $dports -j $target
 	    fi
@@ -2166,7 +2158,12 @@ process_rule() # $1 = target
     logtarget="$target"
     dnat_only=
 
-    # Convert 1.3 Rule formats to 1.2 format
+    # Tranform the rule:
+    #
+    # - set 'target' to the filter table target.
+    # - make $FW the destination for REDIRECT
+    # - remove '-' suffix from logtargets while setting 'dnat_only'
+    # - clear 'address' if it has been set to '-'
 
     [ "x$address" = "x-" ] && address=
 
@@ -2225,9 +2222,7 @@ process_rule() # $1 = target
 	    fatal_error "Exclude list only allowed with DNAT or REDIRECT"
     fi
 
-    if ! validate_zone $clientzone; then
-	fatal_error "Undefined Client Zone in rule \"$rule\""
-    fi
+    validate_zone $clientzone || fatal_error "Undefined Client Zone in rule \"$rule\""
 
     # Parse and validate destination
 
@@ -2260,7 +2255,7 @@ process_rule() # $1 = target
 
     dest=$serverzone
 
-    # Create canonical chain if necessary
+    # Ensure that this rule doesn't apply to a NONE policy pair of zones
 
     chain=${source}2${dest}
 
@@ -2269,7 +2264,7 @@ process_rule() # $1 = target
     [ $policy = NONE ] && \
 	fatal_error "Rules may not override a NONE policy: rule \"$rule\""
 
-    [ $command = check ] || ensurechain $chain
+    # Be sure that this isn't a fw->fw rule.
 
     if [ "x$chain" = x${FW}2${FW} ]; then
 	case $logtarget in
@@ -2282,6 +2277,10 @@ process_rule() # $1 = target
 	esac
     fi
 
+    # Create the canonical chain if it doesn't already exist
+    
+    [ $command = check ] || ensurechain $chain
+
     # Generate Netfilter rule(s)
 
     if [ -n "$MULTIPORT" -a \
@@ -2290,15 +2289,25 @@ process_rule() # $1 = target
 	 `list_count $ports` -le 15 -a \
 	 `list_count $cports` -le 15 ]
     then
+	#
+	# MULTIPORT is enabled, there are no port ranges in the rule and less than
+	# 16 ports are listed - use multiport match.
+	#
 	multioption="-m multiport"
 	for client in `separate_list ${clients:=-}`; do
 	    for server in `separate_list ${servers:=-}`; do
+		#
+		# add_a_rule() modifies these so we must set their values each time
+		#
 		port=${ports:=-}
 		cport=${cports:=-}
 		add_a_rule
 	    done
 	done
     else
+	#
+	# MULTIPORT is disabled or the rule isn't compatible with multiport match
+	#
 	multioption=
 	for client in `separate_list ${clients:=-}`; do
 	    for server in `separate_list ${servers:=-}`; do
@@ -2310,7 +2319,9 @@ process_rule() # $1 = target
 	    done
 	done
     fi
-
+    #
+    # Report Result
+    #
     if [ $command = check ]; then
 	echo "   Rule \"$rule\" checked."
     else

@@ -2725,7 +2725,7 @@ process_actions1() {
 		    case $temp in
 			ACCEPT|REJECT|DROP)
 			    eval ${temp}_common=$xaction
-			    if ! list_search $xaction $USEDACTIONS; then
+			    if [ -n "$xaction" ] && ! list_search $xaction $USEDACTIONS; then
 				USEDACTIONS="$USEDACTIONS $xaction"
 				[ $COMMAND = check ] || createactionchain $xaction
 			    fi
@@ -5401,6 +5401,8 @@ define_firewall() # $1 = Command (Start or Restart)
 
     verify_os_version
     verify_ip
+
+    [ -d /var/lib/shorewall ] || mkdir -p /var/lib/shorewall
 
     echo '#bin/sh' > /var/lib/shorewall/restore-$$
     echo ". /usr/share/shorewall/functions" >> /var/lib/shorewall/restore-$$

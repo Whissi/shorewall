@@ -3879,7 +3879,7 @@ setup_masq()
 		chain=$newchain
 		destnets=0.0.0.0/0
 
-		if [ -n "$nonmasq" ]; then
+		if [ -n "$nomasq" ]; then
 		    for addr in `separate_list $nomasq`; do
 			addnatrule $chain -s $addr -j RETURN
 		    done

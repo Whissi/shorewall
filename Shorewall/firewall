@@ -1096,7 +1096,7 @@ setup_nat() {
 		#
 		# Now get the VLSM, "brd" and the broadcast address
 		#
-		val=`echo $val | cut -d' ' -f1,2,3`
+		val=${val%% scope*}
 	    fi
 
 	    run_ip addr add ${external}${val} dev $interface
@@ -2006,7 +2006,7 @@ setup_masq()
 	    val=`ip addr show $interface | grep 'inet.*brd '` 2> /dev/null
 	    if [ -n "$val" ] ; then
 		val="/${val#*/}"
-		val=`echo $val | cut -d' ' -f1,2,3`
+		val=${val%% scope*}
 	    fi
 	    run_ip addr add ${address}${val} dev $interface
 

@@ -1187,6 +1187,34 @@ setup_tunnels() # $1 = name of tunnels file
 	echo "   OPENVPN tunnel to $1:$p defined."
     }
 
+    setup_one_generic() # $1 = gateway, $2 = kind:protocol[:port]
+    {
+	local procotol
+	local p=
+
+	case $2 in
+	    *:*:*)
+		p=${2##*:}
+		protocol=${2%:*}
+		protocol=${2#*:}
+		;;
+	    *:*)
+		protocol=${2#*:}
+		;;
+	    *)
+		protocol=udp
+		p=5000
+		;;
+	esac
+
+	p=${p+=--dport $p}
+
+	addrule $inchain  -p $protocol -s $1 $p -j ACCEPT
+	addrule $outchain -p $protocol -d $1 $p -j ACCEPT
+
+	echo "   GENERIC tunnel to $1:$p defined."
+    }
+
     strip_file tunnels $1
 
     while read kind z gateway z1; do
@@ -1219,6 +1247,9 @@ setup_tunnels() # $1 = name of tunnels file
 		    ;;
 		openvpn|OPENVPN|openvpn:*|OPENVPN:*)
 		    setup_one_openvpn $gateway $kind
+		    ;;
+		generic:*|GENERIC:*)
+		    setup_one_generic $gateway $kind
 		    ;;
 		*)
 		    error_message "Tunnels of type $kind are not supported:" \

@@ -86,3 +86,30 @@ New Features:
    stop". As part of stopping, Shorewall removes eth0:0 which kills my
    SSH connection to 192.168.1.5!!!
 
+4) Given the wide range of VPN software, I can never hope to add
+   specific support for all of it. I have therefore decided to add
+   "generic" tunnel support.
+
+   Generic tunnels work pretty much like any of the other tunnel
+   types. You usually add a zone to represent the systems at the other
+   end of the tunnel and you add the appropriate rules/policies to
+   implement your security policy regarding traffic to/from those
+   systems.
+
+   In the /etc/shorewall/tunnels file, you can have entries of the
+   form:
+
+   # TYPE			ZONE	GATEWAY		GATEWAY ZONE
+   generic:<protocol>[:<port>]	<zone>	<ip address>
+
+   where:
+
+       <protocol>	is the protocol used by the tunnel
+       <port>		if the protocol is 'udp' or 'tcp' then this
+			is the destination port number used by the
+			tunnel.
+       <zone>		is the zone of the remote tunnel gateway
+       <ip address>	is the IP address of the remote tunnel
+			gateway.
+
+

@@ -302,4 +302,25 @@
 ####################################################################################################
 #ACTION  SOURCE		DEST      	PROTO	DEST    SOURCE	   ORIGINAL	RATE		USER/
 #                       	        	PORT    PORT(S)    DEST		LIMIT		GROUP
+#                                               PORT    PORT(S)    DEST         LIMIT
+#      Accept DNS connections from the firewall to the network
+#
+ACCEPT          fw              net             tcp     53
+ACCEPT          fw              net             udp     53
+#       Accept SSH connections from the local network for administration
+#
+ACCEPT          loc             fw              tcp     22
+#       Allow Ping To And From Firewall
+#
+ACCEPT          loc             fw              icmp    8
+ACCEPT          net             fw              icmp    8
+ACCEPT          fw              loc             icmp    8
+ACCEPT          fw              net             icmp    8
+#
+# Bering specific rules:
+# allow loc to fw udp/53 for dnscache to work
+# allow loc to fw tcp/80 for weblet to work
+#
+ACCEPT          loc       fw            udp     53
+ACCEPT          loc       fw            tcp     80
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

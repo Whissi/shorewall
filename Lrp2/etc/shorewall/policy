@@ -77,9 +77,13 @@
 #SOURCE		DEST		POLICY		LOG		LIMIT:BURST
 #						LEVEL
 loc		net		ACCEPT
-net		all		DROP		info
+net		all		DROP		ULOG
+# If you want open access to the Internet from your Firewall
+# remove the comment from the following line.
+#fw             net             ACCEPT
+
 #
 # THE FOLLOWING POLICY MUST BE LAST
 #	
-all		all		REJECT		info 
+all		all		REJECT		ULOG
 #LAST LINE -- DO NOT REMOVE

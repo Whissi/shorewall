@@ -5685,7 +5685,7 @@ initialize_netfilter () {
 	    while read target ignore1 ignore2 address rest; do
 		case $target in
 		    DROP|reject)
-			run_iptables2 -A dynamic $(source_ip_range $address) -j $target
+			run_iptables -A dynamic -s $address -j $target
 			;;
 		    *)
 			;;

@@ -1565,7 +1565,13 @@ add_nat_rule() {
 
     # Replace destination port by the new destination port
 
-    [ -n "$servport" ] && dports="--dport ${servport#*:}"
+    if [ -n "$servport" ]; then
+	if [ -z "$multiport" ]; then
+	    dports="--dport ${servport#*:}"
+	else
+	    dports="--dports ${servport#*:}"
+	fi
+    fi
 
     # Handle SNAT
 
@@ -1650,18 +1656,29 @@ add_a_rule()
     case $proto in
 	tcp|udp|TCP|UDP|6|17)
 	    if [ -n "$port" -a "x${port}" != "x-" ]; then
-		[ -n "$multioption" ] && \
-		    [ "$port" != "${port%,*}" ] && \
-		    multiport="$multioption"
-		dports="--dport $port"
+		if [ -n "$multioption" ]; then 
+		    if [ "$port" != "${port%,*}" ]; then
+			multiport="$multioption"
+			dports="--dports $port"
+		    else
+			dports="--dport $port"
+		    fi
+		else
+		    dports="--dport $port"
+		fi
 	    fi
 
 	    if [ -n "$cport" -a "x${cport}" != "x-" ]; then
-		[ -n "$multioption" ] && \
-		    [ -z "$multiport" ] && \
-		    [ "$cport" != "${cport%,*}" ] && \
-		    multiport="$multioption"
-		sports="--sport $cport"
+		if [ -n "$multioption" ]; then
+		    if [ "$cport" != "${cport%,*}" ]; then
+			multiport="$multioption"
+			sports="--sports $cport"
+		    else
+			sports="--sport $cport"
+		    fi
+		else
+		    sports="--sport $cport"
+		fi
 	    fi
 		;;
 	icmp|ICMP|1)

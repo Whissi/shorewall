@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2003-03-28</pubdate>
+    <pubdate>2005-01-17</pubdate>
 
     <copyright>
       <year>2001</year>
@@ -23,6 +23,8 @@
       <year>2002</year>
 
       <year>2003</year>
+
+      <year>2005</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -33,17 +35,24 @@
       1.2 or any later version published by the Free Software Foundation; with
       no Invariant Sections, with no Front-Cover, and with no Back-Cover
       Texts. A copy of the license is included in the section entitled
-      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
+
+  <warning>
+    <para>2006-01-17. The ECN Netfilter target in recent 2.6 Linux Kernels is
+    broken. Symptoms are that you will be unable to establish a TCP connection
+    to hosts defined in the /etc/shorewall/ecn file.</para>
+  </warning>
 
   <section>
     <title>Explicit Congestion Notification (ECN)</title>
 
     <para>Explicit Congestion Notification (ECN) is described in RFC 3168 and
     is a proposed internet standard. Unfortunately, not all sites support ECN
-    and when a TCP connection offering ECN is sent to sites that don&#39;t
-    support it, the result is often that the connection request is ignored.</para>
+    and when a TCP connection offering ECN is sent to sites that don't support
+    it, the result is often that the connection request is ignored.</para>
 
     <para>To allow ECN to be used, Shorewall allows you to enable ECN on your
     Linux systems then disable it in your firewall when the destination
@@ -51,7 +60,7 @@
 
     <para>You enable ECN by</para>
 
-    <programlisting>echo 1 &#62; /proc/sys/net/ipv4/tcp_ecn</programlisting>
+    <programlisting>echo 1 &gt; /proc/sys/net/ipv4/tcp_ecn</programlisting>
 
     <para>You must arrange for that command to be executed at system boot.
     Most distributions have a method for doing that -- on RedHat, you make an
@@ -85,8 +94,29 @@
       <title>Your external interface is eth0 and you want to disable ECN for
       tcp connections to 192.0.2.0/24:</title>
 
-      <para><table><title>/etc/shorewall/ecn</title><tgroup cols="2"><thead><row><entry
-      align="center">INTERFACE</entry><entry align="center">HOST(S)</entry></row></thead><tbody><row><entry>eth0</entry><entry>192.0.2.0/24</entry></row></tbody></tgroup></table></para>
+      <para><table>
+          <title>/etc/shorewall/ecn</title>
+
+          <tgroup cols="2">
+            <thead>
+              <row>
+                <entry align="center">INTERFACE</entry>
+
+                <entry align="center">HOST(S)</entry>
+              </row>
+            </thead>
+
+            <tbody>
+              <row>
+                <entry>eth0</entry>
+
+                <entry>192.0.2.0/24</entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </table></para>
     </example>
   </section>
+
+  <lot></lot>
 </article>

@@ -5866,6 +5866,7 @@ add_common_rules() {
 
 	if [ -n "$ROUTE_FILTER" ]; then
 	    run_and_save_command "echo 1 > /proc/sys/net/ipv4/conf/default/rp_filter"
+	    run_and_save_command "echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter"
 	fi
 
 	run_and_save_command ip route flush cache
@@ -5886,7 +5887,7 @@ add_common_rules() {
 	done
 
 	for interface in $interfaces; do
-	    file=/proc/sys/net/ipv4/conf/$interface/log_martians
+	    file/=proc/sys/net/ipv4/conf/$interface/log_martians
 	    if [ -f $file ]; then
 		run_and_save_command "echo 1 > $file"
 	    else
@@ -5895,9 +5896,9 @@ add_common_rules() {
 	    fi
 	done
 
-	if [ -n "$ROUTE_FILTER" ]; then
-	    run_and_save_command "echo 1 > /proc/sys/net/ipv4/conf/default/rp_filter"
-	    run_and_save_command "echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter"
+	if [ -n "$LOG_MARTIANS" ]; then
+	    run_and_save_command "echo 1 > /proc/sys/net/ipv4/conf/default/log_martians"
+	    run_and_save_command "echo 1 > /proc/sys/net/ipv4/conf/all/log_martians"
 	fi
 
     fi

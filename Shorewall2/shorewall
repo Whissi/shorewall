@@ -619,6 +619,10 @@ show_reset() {
 	echo
 }
 
+show_proc() {
+    echo "   $1 = $(cat $1)"
+}
+
 #
 # Execution begins here
 #
@@ -863,7 +867,7 @@ case "$1" in
 	    [ $# -gt 2 ] && usage 1
 	    echo "Shorewall-$version Connections at $HOSTNAME - $(date)"
 	    echo
-	    cat /proc/net/ip_conntrack
+	    cat /pro/net/ip_conntrack
 	    ;;
 	nat)
 	    [ $# -gt 2 ] && usage 1
@@ -959,6 +963,18 @@ case "$1" in
 	    echo
 	    brctl show
 	fi
+
+	echo
+	echo "/proc"
+	echo
+
+	show_proc /proc/sys/net/ipv4/ip_forward
+
+	for directory in /proc/sys/net/ipv4/conf/*; do
+	    for file in proxy_arp arp_filter rp_filter; do
+		show_proc $directory/$file
+	    done
+	done
 
 	echo
 	echo "Routing Rules"

@@ -3938,7 +3938,7 @@ setup_masq()
 		    echo "   To $destination from $s through ${interface}"
 		fi
 	    done
-	elif [ -n "$address" ]; then
+	elif [ -n "$addresses" ]; then
 	    for destnet in $(separate_list $destnets); do
 		addnatrule $chain -d $destnet -j SNAT $temp
 	    done

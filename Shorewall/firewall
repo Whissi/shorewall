@@ -4353,7 +4353,7 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
     while read z1 z2 chain; do
 	if [ "$z1" = "$zone" ]; then
 	    if [ "$z2" = "$FW" ]; then
-		qt iptables -D `input_chain $interface` -i $interface -s $host -j $chain 
+		qt iptables -D `input_chain $interface` -s $host -j $chain 
 	    else
 		source_chain=`forward_chain $interface`
 		eval dest_hosts=\"\$${z2}_hosts\"
@@ -4607,6 +4607,9 @@ do_initialize() {
 	CLEAR_TC=
     fi
     OLD_PING_HANDLING=`added_param_value_yes OLD_PING_HANDLING $OLD_PING_HANDLING`
+
+    [ -z "$OLD_PING_HANDLING" -a -n "$FORWARDPING" ] && \
+	startup_error "FORWARDPING=Yes is incompatible with OLD_PING_HANDLING=No"
 
     run_user_exit params
 

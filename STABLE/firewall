@@ -5323,7 +5323,7 @@ activate_rules()
 	shift
 
 	if havenatchain $destchain ; then
-	    run_iptables -t nat -A $sourcechain $@ -j $destchain
+	    run_iptables2 -t nat -A $sourcechain $@ -j $destchain
 	elif [ -n "$BRIDGING" -a -f $TMP_DIR/physdev ]; then
 	    rm -f #TMP_DIR/physdev
 	fi
@@ -5340,7 +5340,7 @@ activate_rules()
 	shift
 
 	if havenatchain $destchain; then
-	    eval run_iptables -t nat -I $sourcechain \
+	    eval run_iptables2 -t nat -I $sourcechain \
 		\$${sourcechain}_rule $@ -j $destchain
 	    eval ${sourcechain}_rule=\$\(\(\$${sourcechain}_rule + 1\)\)
 	elif [ -n "$BRIDGING" -a -f $TMP_DIR/physdev ]; then
@@ -5393,7 +5393,7 @@ activate_rules()
 	    interface=${host%%:*}
 	    networks=${host#*:}
 
-	    run_iptables -A OUTPUT -o $interface $(match_dest_hosts $networks) -j $chain1
+	    run_iptables2 -A OUTPUT -o $interface $(match_dest_hosts $networks) -j $chain1
 
 	    #
 	    # Add jumps from the builtin chains for DNAT and SNAT rules
@@ -5401,10 +5401,10 @@ activate_rules()
 	    addrulejump PREROUTING  $(dnat_chain $zone) -i $interface $(match_source_hosts $networks)
 	    addrulejump POSTROUTING $(snat_chain $zone) -o $interface $(match_dest_hosts $networks)
 
-	    run_iptables -A $(input_chain $interface) $(match_source_hosts $networks) -j $chain2
+	    run_iptables2 -A $(input_chain $interface) $(match_source_hosts $networks) -j $chain2
 
 	    [ -n "$complex" ] && \
-		run_iptables -A $(forward_chain $interface) $(match_source_hosts $networks) -j $frwd_chain
+		run_iptables2 -A $(forward_chain $interface) $(match_source_hosts $networks) -j $frwd_chain
 
 	    case $networks in
 		*.*.*.*)
@@ -5469,7 +5469,7 @@ activate_rules()
 		    # routeback was specified for this host group
 		    #
 		    if [ $zone != $zone1 -o $num_ifaces -gt 1 ] || list_search $host1 $routeback ; then
-			run_iptables -A $frwd_chain -o $interface1 $(match_dest_hosts $networks1) -j $chain			
+			run_iptables2 -A $frwd_chain -o $interface1 $(match_dest_hosts $networks1) -j $chain			
 		    fi
 		done
 	    else
@@ -5484,7 +5484,7 @@ activate_rules()
 			networks1=${host1#*:}
 
 			if [ "$host" != "$host1" ] || list_search $host $routeback; then
-			    run_iptables -A $chain1 $(match_source_hosts $networks) -o $interface1 $(match_dest_hosts $networks1) -j $chain
+			    run_iptables2 -A $chain1 $(match_source_hosts $networks) -o $interface1 $(match_dest_hosts $networks1) -j $chain
 			fi
 		    done
 		done

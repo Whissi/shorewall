@@ -1378,7 +1378,7 @@ delete_tc()
 #    dports         = Destination Port Specification. 'dports' may be changed  #
 #                     by this function                                         #
 #    cport          = Source Port Specification                                #
-#    multioption    = String to invoke multiport match if appropriate          #  
+#    multiport      = String to invoke multiport match if appropriate          #  
 ################################################################################
 add_nat_rule() {
     local chain
@@ -1423,7 +1423,7 @@ add_nat_rule() {
 
     if [ "$source" = "$FW" ]; then
 	run_iptables -t nat -A OUTPUT $proto $sports $addr \
-	    $dports -j $target1
+	    $multiport $dports -j $target1
     else
 	chain=$source
 	    
@@ -1436,13 +1436,13 @@ add_nat_rule() {
 		eval hosts=\$${z}_hosts
 		for host in $hosts; do
 		    addnatrule $chain $proto -s ${host#*:} \
-			$sports $addr $dports -j RETURN
+			$multiport $sports $addr $dports -j RETURN
 		done
 	    done
 	fi
 
 	addnatrule $chain $proto $cli $sports \
-	    $addr $dports -j $target1
+	    $multiport $addr $dports -j $target1
     fi
 
     # Replace destination port by the new destination port
@@ -1453,12 +1453,12 @@ add_nat_rule() {
 
     if [ -n "$snat" ]; then
 	if [ -n "$cli" ]; then
-	    run_iptables -t nat -A POSTROUTING $proto $cli \
+	    run_iptables -t nat -A POSTROUTING $proto $cli $multiport \
 		$sports -d $serv $dports -j SNAT --to-source $snat
 	else
 	    for source_host in $source_hosts; do
 		run_iptables -t nat -A POSTROUTING \
-		    -s ${source_host#*:} $proto $sports \
+		    -s ${source_host#*:} $proto $sports $multiport \
 		    -d $serv $dports -j SNAT --to-source $snat
 	    done
 	fi
@@ -1735,10 +1735,10 @@ process_rule() {
     # Generate Netfilter rule(s)
 
     if [ -n "$MULTIPORT" -a \
-        "$ports" = "${ports%:*}" -a \
-        "$cports" = "${cports%:*}" -a \
-   	`list_count $ports` -le 15 -a \
-	`list_count $cports` -le 15 ]
+         "$ports" = "${ports%:*}" -a \
+         "$cports" = "${cports%:*}" -a \
+   	 `list_count $ports` -le 15 -a \
+	 `list_count $cports` -le 15 ]
     then
         multioption="-m multiport"
 	for client in `separate_list ${clients:=-}`; do

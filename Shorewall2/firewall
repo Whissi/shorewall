@@ -5711,8 +5711,6 @@ do_initialize() {
     BRIDGING=
     DYNAMIC_ZONES=
 
-    ensure_config_path
-
     stopping=
     have_mutex=
     masq_seq=1
@@ -5734,6 +5732,8 @@ do_initialize() {
     else
 	startup_error "$FUNCTIONS does not exist!"
     fi
+
+    ensure_config_path
 
     VERSION_FILE=$SHARED_DIR/version
 

@@ -10,6 +10,12 @@ Problems Corrected since version 1.4.8:
 2) The description of NEWNOTSYN in shorewall.conf has been reworded for
    clarity.
 
+3) Wild-card rules (those involving "all" as SOURCE or DEST) will no
+   longer produce an error if they attempt to add a rule that would
+   override a NONE policy. The logic for expanding these wild-card
+   rules now simply skips those (SOURCE,DEST) pairs that have a NONE
+   policy.
+
 Migration Issues:
 
 None.

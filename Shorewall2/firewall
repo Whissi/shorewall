@@ -1364,7 +1364,7 @@ disable_ipv6() {
 }
 
 disable_ipv6_1() {
-    local foo=$(ip -f inet6 addr ls 2> /dev/null)
+    local foo="$(ip -f inet6 addr ls 2> /dev/null)"
 
     if [ -n "$foo" ]; then
 	if qt which ip6tables; then

@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-09-04</pubdate>
+    <pubdate>2004-09-06</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -54,11 +54,12 @@
 
     <para>I have DSL service and have 5 static IP addresses
     (206.124.146.176-180). My DSL <quote>modem</quote> (Westell 2200) is
-    connected to eth0 and has IP address 192.168.1.1 (factory default). I have
-    a local network connected to eth2 (subnet 192.168.1.0/24) and a DMZ
-    connected to eth1 (206.124.146.176/32). Note that I configure the same IP
-    address on both <filename class="devicefile">eth0</filename> and <filename
-    class="devicefile">eth1</filename>.</para>
+    connected to eth0 and has IP address 192.168.1.1 (factory default). The
+    modem is configured in <quote>bridge</quote> mode so PPPoE is not
+    involved. I have a local network connected to eth2 (subnet 192.168.1.0/24)
+    and a DMZ connected to eth1 (206.124.146.176/32). Note that I configure
+    the same IP address on both <filename class="devicefile">eth0</filename>
+    and <filename class="devicefile">eth1</filename>.</para>
 
     <para>In this configuration:</para>
 
@@ -382,6 +383,12 @@ $EXT_IF:2                  eth2            206.124.146.179
       <title>Proxy ARP File</title>
 
       <blockquote>
+        <para>I configure the host route to 206.124.146.177 on <filename
+        class="devicefile">eth1</filename> using the Yast2 Network Interface
+        tool; the <quote>Gateway</quote> is specified as 0.0.0.0 which
+        indicates that the host is directly attached to the LAN on that
+        interface.</para>
+
         <programlisting>#ADDRESS                INTERFACE       EXTERNAL        HAVEROUTE          PERSISTENT
 206.124.146.177         eth1            eth0            Yes
 192.168.1.1             eth0            eth2            yes # Allow access to DSL modem from the local zone
@@ -615,37 +622,6 @@ ACCEPT          tx                              loc:192.168.1.5         all
 </programlisting>
       </blockquote>
     </section>
-
-    <section id="Interfaces">
-      <title>/etc/network/interfaces</title>
-
-      <blockquote>
-        <para>This file is Debian specific. My additional entries(which is
-        displayed in <emphasis role="bold">bold type</emphasis>) add a route
-        to my DSL modem when eth0 is brought up and a route to my DMZ server
-        when eth1 is brought up. It allows me to enter <quote>Yes</quote> in
-        the HAVEROUTE column of <link linkend="ProxyARP">my Proxy ARP
-        file</link>.</para>
-
-        <programlisting>...
-auto auto eth0
-iface eth0 inet static
-	address 206.124.146.176
-	netmask 255.255.255.0
-	network 206.124.146.0
-	broadcast 206.124.146.255
-	gateway 206.124.146.254
-	<emphasis role="bold">up ip route add 192.168.1.1 dev eth0</emphasis>
-
-eth1
-iface eth1 inet static
-        address 206.124.146.176
-        netmask 255.255.255.255
-        broadcast 0.0.0.0
-        <emphasis role="bold">up ip route add 206.124.146.177 dev eth1
-</emphasis>...</programlisting>
-      </blockquote>
-    </section>
   </section>
 
   <section>
@@ -693,13 +669,12 @@ WiFi    Wireless        Wireless Network
         <programlisting>#SOURCE         DEST            POLICY          LOG             LIMIT:BURST
 loc             fw              ACCEPT
 loc             net             NONE
-loc             WiFi            NONE
+loc             WiFi            ACCEPT
 net             fw              ACCEPT
 net             WiFi            ACCEPT
 net             loc             NONE
 WiFi            net             ACCEPT
-fw              loc             ACCEPT
-fw              net             ACCEPT
+fw              all             ACCEPT
 #
 # THE FOLLOWING POLICY MUST BE LAST
 #

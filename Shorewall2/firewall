@@ -188,15 +188,6 @@ run_ip() {
 }
 
 #
-# Run arp and if an error occurs, stop the firewall and quit
-#
-run_arp() {
-    if ! arp $@ ; then
-	[ -z "$stopping" ] && { stop_firewall; exit 2; }
-    fi
-}
-
-#
 # Run tc and if an error occurs, stop the firewall and quit
 #
 run_tc() {
@@ -1029,7 +1020,7 @@ find_broadcasts() {
 # Find interface address--returns the first IP address assigned to the passed
 # device
 #
-find_interface_address() # $1 = interface
+find_first_interface_address() # $1 = interface
 {
     #
     # get the line of output containing the first IP address
@@ -1080,28 +1071,6 @@ find_hosts_by_option() # $1 = option
 	interface_has_option $interface $1 && \
 	    echo ${interface}:0.0.0.0/0
     done
-}
-
-#
-# Determine if there are interfaces of the given zone and option
-#
-# Returns zero if any such interfaces are found and returns one otherwise.
-#
-have_interfaces_in_zone_with_option() # $1 = zone, $2 = option
-{
-    local zne=$1
-    local z
-    local interface
-
-    for interface in $all_interfaces; do
-	eval z=\$$(chain_base $interface)_zone
-
-	[ "x$z" = "x$zne" ] && \
-	    list_search $1 $options && \
-	    return 0
-    done
-
-    return 1
 }
 
 #
@@ -1709,7 +1678,6 @@ setup_mac_lists() {
     local addresses
     local address
     local chain
-    local logpart
     local macpart
     local blob
     local hosts
@@ -2785,16 +2753,18 @@ process_action() # $1 = action
 }
 
 #
-# Create and record a log action chain
+# Create and record a log action chain -- in the functions that follow, 
+# the CHAIN, LEVEL and TAG variable serves as an arguments to the user's
+# exit. We call the exit corresponding to the name of the action but we
+# set CHAIN to the name of the iptables chain where rules are to be added.
+# Similarly, LEVEL and TAG contain the log level and log tag respectively.
 #
 
 createlogactionchain() # $1 = Action Name, $2 = Log Level [: Log Tag ]
 {
     local actchain= action=$1 level=$2
 
-    eval actchain=\$${action}_actchain
-
-    [ -n "$actchain" ] || actchain=1
+    eval actchain=\${${action}_actchain-1}
 
     case ${#action} in
 	11)
@@ -2809,6 +2779,8 @@ createlogactionchain() # $1 = Action Name, $2 = Log Level [: Log Tag ]
 
     if [ $COMMAND != check ]; then
 	createchain $CHAIN No
+	LEVEL=${level%:*}
+	TAG=${level#*:}
 	run_user_exit $1
     fi
 
@@ -2834,6 +2806,8 @@ createactionchain() # $1 = Action, including log level and tag if any
 	*)
 	    CHAIN=$1
 	    if [ $COMMAND != check ]; then
+		LEVEL=
+		TAG=
 		createchain $CHAIN no
 		run_user_exit $CHAIN
 	    fi
@@ -3223,7 +3197,7 @@ add_nat_rule() {
 	    if [ -n "$DETECT_DNAT_IPADDRS" -a "$source" != "$FW" ]; then
 		eval interfaces=\$${source}_interfaces
 		for interface in $interfaces; do
-		    addr=${addr:+$addr,}$(find_interface_address $interface)
+		    addr=${addr:+$addr,}$(find_first_interface_address $interface)
 		done
 	    fi
 	    ;;
@@ -4422,7 +4396,7 @@ setup_masq()
 		;;
 	    *:)
 		add_snat_aliases=
-	        funninterface=${fullinterface%:}
+	        fullinterface=${fullinterface%:}
 		destnets="0.0.0.0/0"
 		;;
 	    *:*)

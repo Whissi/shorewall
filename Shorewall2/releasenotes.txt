@@ -38,6 +38,14 @@ Issues when migrating from Shorewall 2.0 to Shorewall 2.1:
     /etc/shorewall/policy
     /etc/shorewall/tos
 
+2)  The following builtin actions have been removed and have been
+    replaced by the new action logging implementation described in the
+    new features below.
+
+	logNotSyn
+	rLogNotSyn
+	dLogNotSyn
+
 -----------------------------------------------------------------------
 New Features:
 
@@ -127,4 +135,29 @@ New Features:
 		ACCEPT:debug	-	-	tcp	22
 		bar:debug!
 	
+    This change has an effect on extension scripts used with
+    user-defined actions. If you define an action 'acton' and you have
+    a /etc/shorewall/acton script then when that script is invoked,
+    the following three variables will be set for use by the script:
+
+	$CHAIN = the name of the chain where your rules are to be
+	placed. When logging is used on an action invocation,
+	Shorewall creates a chain with a slightly different name from
+	the action itself.
+
+	$LEVEL = Log level. If empty, no logging was specified.
+
+	$TAG   = Log Tag.
+
+    Example:
+
+    /etc/shorewall/rules:
+
+	acton:info:test
+
+    Your /etc/shorewall/acton file will be run with:
+
+	 $CHAIN="acton1"
+	 $LEVEL="info"
+	 $TAG="test"
 

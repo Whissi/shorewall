@@ -1,86 +1,56 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-                
   <meta http-equiv="Content-Language" content="en-us">
-                
   <meta http-equiv="Content-Type"
  content="text/html; charset=windows-1252">
-                
   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
-                
   <meta name="ProgId" content="FrontPage.Editor.Document">
   <title>Shorewall Prerequisites</title>
 </head>
-  <body>
-        
-<table border="0" cellpadding="0" cellspacing="0"
- style="border-collapse: collapse;" bordercolor="#111111" width="100%"
- id="AutoNumber1" bgcolor="#3366ff" height="90">
-           <tbody>
-            <tr>
-             <td width="100%">                            
-      <h1 align="center"><font color="#ffffff">Shorewall Requirements</font></h1>
-             </td>
-           </tr>
-                
-  </tbody>    
-</table>
-          <br>
-      Shorewall Requires:<br>
-        
+<body>
+<h1 style="text-align: center;">Shorewall Requirements</h1>
+Shorewall Requires:<br>
 <ul>
-           <li>A kernel that supports netfilter. I've tested with 2.4.2 - 
-2.4.20.  With current releases of Shorewall, Traffic Shaping/Control requires 
-at least  2.4.18.        <a href="kernel.htm">     Check here for kernel configuration
-       information.</a>       If you are looking for a firewall for use with
- 2.2 kernels, <a href="http://seawall.sf.net">     see       the Seattle
-Firewall   site</a>     .</li>
-           <li>iptables 1.2 or later  but beware version 1.2.3 -- see the 
-    <a href="errata.htm">Errata</a>.   <font color="#ff0000"><b>WARNING: 
-   </b></font>The    buggy iptables version 1.2.3    is included in RedHat 
-7.2 and you should   upgrade to iptables 1.2.4 prior to    installing Shorewall. 
-Version 1.2.4   is available   <a
- href="http://www.redhat.com/support/errata/RHSA-2001-144.html">from RedHat</a>
-      and in the <a href="errata.htm">Shorewall Errata</a>.   </li>
-           <li>Iproute ("ip" utility). The iproute package  is     included 
- with most distributions but may not be installed by default.  The     official
-  download site is <a href="ftp://ftp.inr.ac.ru/ip-routing"
- target="_blank">   <font face="Century Gothic, Arial, Helvetica">f</font>tp://ftp.inr.ac.ru/ip-routing</a>.
-      </li>
-           <li>A Bourne shell or derivative such as bash or ash. This shell 
- must  have correct       support for variable expansion formats ${<i>variable</i>%<i>pattern</i>
-       },        ${<i>variable</i>%%<i>pattern</i>}, ${<i>variable</i>#<i>pattern</i>
-        } and       ${<i>variable</i>##<i>pattern</i>}.</li>
-    <li>Your shell must produce a sensible result when a number n (128 &lt;= 
-n &lt;= 255)  is left shifted by 24 bits. You can check this at a shell prompt 
-by:</li>
-           
+  <li>A kernel that supports netfilter. I've tested with 2.4.2 -
+2.4.20. With current releases of Shorewall, Traffic Shaping/Control
+requires at least 2.4.18.&nbsp; <a href="kernel.htm"> Check here for
+kernel configuration information.</a> If you are looking for a firewall
+for use with 2.2 kernels, <a href="http://seawall.sf.net"> see the
+Seattle
+Firewall site</a> .</li>
+  <li>iptables 1.2 or later but beware version 1.2.3 -- see the <a
+ href="errata.htm">Errata</a>. <font color="#ff0000"><b>WARNING: </b></font>The
+buggy iptables version 1.2.3 is included in RedHat 7.2 and you should
+upgrade to iptables 1.2.4 prior to installing Shorewall. Version 1.2.4
+is available <a
+ href="http://www.redhat.com/support/errata/RHSA-2001-144.html">from
+RedHat</a> and in the <a href="errata.htm">Shorewall Errata</a>. </li>
+  <li>Iproute ("ip" utility). The iproute package is included with most
+distributions but may not be installed by default. The official
+download site is <a href="ftp://ftp.inr.ac.ru/ip-routing"
+ target="_blank"> <font face="Century Gothic, Arial, Helvetica">f</font>tp://ftp.inr.ac.ru/ip-routing</a>.
+  </li>
+  <li>A Bourne shell or derivative such as bash or ash. This shell must
+have correct support for variable expansion formats ${<i>variable</i>%<i>pattern</i>
+}, ${<i>variable</i>%%<i>pattern</i>}, ${<i>variable</i>#<i>pattern</i>
+} and ${<i>variable</i>##<i>pattern</i>}.</li>
+  <li>Your shell must produce a sensible result when a number n (128
+&lt;= n &lt;= 255) is left shifted by 24 bits. You can check this at a
+shell prompt by:</li>
   <ul>
-       <li>echo $((128 &lt;&lt; 24))<br>
-      </li>
-       <li>The result must be either 2147483648 or -2147483648.<br>
-      </li>
-                     
+    <li>echo $((128 &lt;&lt; 24))<br>
+    </li>
+    <li>The result must be either 2147483648 or -2147483648.<br>
+    </li>
   </ul>
-           <li>The firewall monitoring display is greatly improved if you 
-have   awk        (gawk) installed.</li>
-        
+  <li>The firewall monitoring display is greatly improved if you have
+awk (gawk) installed.</li>
 </ul>
-        
 <p align="left"><font size="2">Last updated 7/8/2003 - <a
  href="support.htm">Tom Eastep</a></font></p>
-        
 <p align="left"><font face="Trebuchet MS"><a href="copyright.htm"> <font
- size="2">Copyright</font> © <font size="2">2001, 2002, 2003 Thomas M. Eastep.</font></a></font></p>
-          <br>
-        <br>
-       <br>
-      <br>
-     <br>
-    <br>
-   <br>
-  <br>
- <br>
+ size="2">Copyright</font> © <font size="2">2001, 2002, 2003 Thomas M.
+Eastep.</font></a></font></p>
 </body>
 </html>

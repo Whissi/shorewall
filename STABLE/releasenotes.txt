@@ -1,6 +1,6 @@
-This is a bugfix release of Shorewall.
+This is a minor release of Shorewall.
 
-Problems Corrected since version 1.4.6:
+Problems Corrected since version 1.4.7:
 
 1) Tuomo Soini has supplied a correction to a problem that occurs using
    some versions of 'ash'. The symptom is that "shorewall start" fails
@@ -39,12 +39,77 @@ Problems Corrected since version 1.4.6:
 
 7) The original fix for item 5) above contained a bug which caused the
    "<zone>_frwd" chain to have too few rules. That has been corrected
-   (twice).
+   (twice).  
+
+8) An incorrect comment concerning Debian's use of the SYBSYSLOCK
+   option has been removed from shorewall.conf.
+
+9) Previously, neither the 'routefilter' interface option nor the
+   ROUTE_FILTER parameter were working properly. This has been
+   corrected (thanks to Eric Bowles for his patch). The definition
+   of the ROUTE_FILTER option has changed however. Previously,
+   ROUTE_FILTER=Yes was documented as enabling route filtering on all
+   interfaces (which didn't work). Beginning with this release, setting
+   ROUTE_FILTER=Yes will enable route filtering of all interfaces
+   brought up while Shorewall is started. As a consequence,
+   ROUTE_FILTER=Yes can coexist with the use of the 'routefilter'
+   option in the interfaces file.
+
+10) If MAC verification was enabled on an interface that had a /32
+    address with a broadcast address then an error would occur during
+    startup.
+
+11) The NONE policy's intended use is to suppress the generating of
+    rules that can't possibly be traversed. This means that a policy of
+    NONE is inappropriate where the source or destination zone is
+    $FW. Shorewall now generates an error message if such a policy is
+    given in /etc/shorewall/policy. Previously such a policy caused
+    "shorewall start" to fail.
+
+12) The 'routeback' option was broken for wildcard interfaces (e.g.,
+    "tun+"). This has been corrected so that 'routeback' now works as
+    expected in this case.
 
 Migration Issues:
 
-None.
+1. The definition of the ROUTE_FILTER option in shorewall.conf has
+   changed as described in item 9) above.
 
 New Features:
 
-None.
+1. A new QUEUE action has been introduced for rules. QUEUE allows you
+   to pass connection requests to a user-space filter such as ftwall
+   (http://p2pwall.sourceforge.net). The ftwall program allows for
+   effective filtering of p2p applications such as Kazaa.
+
+   For example, to use ftwall to filter P2P clients in your 'loc' zone,
+   you would add the following rules:
+
+   QUEUE   loc	     net	tcp
+   QUEUE   loc	     net	udp
+   QUEUE   loc	     fw		udp
+
+   You would normally want to place those three rules BEFORE any ACCEPT
+   rules for loc->net or loc->fw udp or tcp.
+
+   Note: When the protocol specified is TCP ("tcp", "TCP" or "6"),
+   Shorewall will only pass connection requests (SYN packets) to user
+   space. This is for compatibility with ftwall.
+
+2. A BLACKLISTNEWNONLY option has been added to shorewall.conf. When
+   this option is set to "Yes", the blacklists (dynamic and static)
+   are only consulted for new connection requests. When set to "No"
+   (the default if the variable is not set), the blacklists are
+   consulted on every packet.
+
+   Setting this option to "No" allows blacklisting to stop existing
+   connections from a newly blacklisted host but is more expensive in
+   terms of packet processing time. This is especially true if the
+   blacklists contain a large number of entries.
+
+3. Chain names used in the /etc/shorewall/accounting file may now begin
+   with a digit ([0-9]) and may contain embedded dashes ("-").
+
+
+
+

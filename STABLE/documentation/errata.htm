@@ -10,25 +10,17 @@
   <meta name="author" content="Tom Eastep">
 </head>
 <body>
-<table border="0" cellpadding="0" cellspacing="0"
- style="border-collapse: collapse;" width="100%" id="AutoNumber1"
- bgcolor="#3366ff" height="90">
-  <tbody>
-    <tr>
-      <td width="100%">
-      <h1 align="center"><font color="#ffffff">Shorewall Errata/Upgrade
-Issues</font></h1>
-      </td>
-    </tr>
-  </tbody>
-</table>
-<p align="center"> <b><u>IMPORTANT</u></b></p>
+<p align="center"> </p>
+<h1 style="text-align: center;">Shorewall Errata<br>
+</h1>
+<p align="center"><b><u>IMPORTANT</u></b></p>
 <ol>
   <li>
     <p align="left"> <b><u>I</u>f you use a Windows system to download
 a corrected script, be sure to run the script through <u> <a
  href="http://www.megaloman.com/%7Ehany/software/hd2u/"
- style="text-decoration: none;"> dos2unix</a></u> after you have moved it
+ style="text-decoration: none;"> dos2unix</a></u> after you have moved
+it
 to your Linux system.</b></p>
   </li>
   <li>
@@ -45,7 +37,8 @@ rename the existing file before copying in the new file.</b></p>
   <li>
     <p align="left"><b><font color="#ff0000">DO NOT INSTALL CORRECTED
 COMPONENTS ON A RELEASE EARLIER THAN THE ONE THAT THEY ARE LISTED UNDER
-BELOW. For example, do NOT install the 1.3.9a firewall script if you are
+BELOW. For example, do NOT install the 1.3.9a firewall script if you
+are
 running 1.3.7c.</font></b><br>
     </p>
   </li>
@@ -79,13 +72,15 @@ REJECT (also applies to 2.4.21-RC1) <img src="images/new10.gif"
   <li>Using some versions of 'ash' (such as from RH8) as the
 SHOREWALL_SHELL causes "shorewall [re]start" to fail with:<br>
     <br>
-   local: --limit: bad variable name<br>
-   iptables v1.2.8: Couldn't load match
+&nbsp;&nbsp; local: --limit: bad variable name<br>
+&nbsp;&nbsp; iptables v1.2.8: Couldn't load match
 `-j':/lib/iptables/libipt_-j.so: <br>
-   cannot open shared object file: No such file or directory<br>
-   Try `iptables -h' or 'iptables --help' for more information.</li>
+&nbsp;&nbsp; cannot open shared object file: No such file or directory<br>
+&nbsp;&nbsp; Try `iptables -h' or 'iptables --help' for more
+information.</li>
   <li>When more than one ICMP type is listed in a rule and your kernel
-includes multiport match support,  the firewall fails to start. </li>
+includes multiport match support,&nbsp; the firewall fails to
+start.&nbsp;</li>
   <li>Regardless of the setting of LOGUNCLEAN, the value
 LOGUNCLEAN=info was used.</li>
   <li>After the following error message, Shorewall was left in an
@@ -101,7 +96,8 @@ described above.<br>
 <h3>1.4.6</h3>
 <ul>
   <li>If TC_ENABLED is set to yes in shorewall.conf then Shorewall
-would fail to start with the error "ERROR:  Traffic Control requires
+would fail to start with the error "ERROR:&nbsp; Traffic Control
+requires
 Mangle"; that problem has been corrected in <a
  href="http://shorewall.net/pub/shorewall/errata/1.4.6/firewall">this
 firewall script</a> which may be installed in
@@ -111,7 +107,7 @@ corrected in bugfix release 1.4.6a.</li>
 If a MAC address is used in the SOURCE column, an error occurs as
 follows:<br>
     <br>
-     <font size="3"><tt>iptables v1.2.8: Bad mac adress
+&nbsp; &nbsp; &nbsp;<font size="3"><tt>iptables v1.2.8: Bad mac adress
 `00:08:B5:35:52:E7-d`</tt></font><br>
     <br>
 For Shorewall 1.4.6 and 1.4.6a users, this problem has been corrected
@@ -122,11 +118,13 @@ versions, you will have to edit your 'firewall' script (in versions
 1.4.*, it is located in /usr/share/shorewall/firewall). Locate the
 function add_tcrule_() and in that function, replace this line:<br>
     <br>
-    <span style="font-family: monospace;">r=`mac_match $source` </span><br>
+&nbsp; &nbsp; <span style="font-family: monospace;">r=`mac_match
+$source`&nbsp;</span><br>
     <br>
 with<br>
     <br>
-     <span style="font-family: monospace;">r="`mac_match $source` "</span><br>
+&nbsp; &nbsp; &nbsp;<span style="font-family: monospace;">r="`mac_match
+$source` "</span><br>
     <br>
 Note that there must be a space before the ending quote!<br>
   </li>
@@ -137,7 +135,8 @@ Note that there must be a space before the ending quote!<br>
 have an empty second column (HOSTS). This problem may be corrected by
 installing <a
  href="ftp://ftp1.shorewall.net/pub/shorewall/errata/1.4.4b/firewall"
- target="_top">this firewall script</a> in /usr/share/shorewall/firewall
+ target="_top">this firewall script</a> in
+/usr/share/shorewall/firewall
 as described above.</li>
   <li>The INCLUDE directive doesn't work when placed in the
 /etc/shorewall/zones file. This problem may be corrected by installing <a
@@ -153,7 +152,8 @@ though the log level for the console is set properly according to <a
  href="FAQ.htm#faq16">FAQ 16</a>. This problem may be corrected by
 installing <a
  href="ftp://ftp1.shorewall.net/pub/shorewall/errata/1.4.4a/firewall"
- target="_top">this firewall script</a> in /usr/share/shorewall/firewall
+ target="_top">this firewall script</a> in
+/usr/share/shorewall/firewall
 as described above.<br>
   </li>
 </ul>
@@ -162,7 +162,8 @@ as described above.<br>
 <ul>
   <li> If you have zone names that are 5 characters long, you may
 experience problems starting Shorewall because the --log-prefix in a
-logging rule is too long. Upgrade to Version 1.4.4a to fix this problem..</li>
+logging rule is too long. Upgrade to Version 1.4.4a to fix this
+problem..</li>
 </ul>
 <h3>1.4.3</h3>
 <ul>
@@ -171,7 +172,8 @@ to allow integration of Shorewall with Fireparse
 (http://www.firewparse.com). Unfortunately, LOGMARKER only solved part
 of the integration problem. I have implimented a new LOGFORMAT variable
 which will replace LOGMARKER which has completely solved this problem
-and is currently in production with fireparse here at shorewall.net. The
+and is currently in production with fireparse here at shorewall.net.
+The
 updated files may be found at <a
  href="ftp://ftp1.shorewall.net/pub/shorewall/errata/1.4.3/fireparse/"
  target="_top">ftp://ftp1.shorewall.net/pub/shorewall/errata/1.4.3/fireparse/</a>.
@@ -184,7 +186,8 @@ See the 0README.txt file for details.<br>
 directory created in /tmp is not being removed. This problem may be
 corrected by installing <a
  href="ftp://ftp.shorewall.net/pub/shorewall/errata/1.4.2/firewall"
- target="_top">this firewall script</a> in /usr/share/shorewall/firewall
+ target="_top">this firewall script</a> in
+/usr/share/shorewall/firewall
 as described above. <br>
   </li>
 </ul>
@@ -203,7 +206,8 @@ in /etc/shorewall/common.def.<br>
   <li>When a "shorewall check" command is executed, each "rule"
 produces the harmless additional message:<br>
     <br>
-     /usr/share/shorewall/firewall: line 2174: [: =: unary operator
+&nbsp; &nbsp; &nbsp;/usr/share/shorewall/firewall: line 2174: [: =:
+unary operator
 expected<br>
     <br>
 You may correct the problem by installing <a
@@ -231,14 +235,17 @@ with iptables version 1.2.3</font></h3>
 <blockquote>
   <p align="left">There are a couple of serious bugs in iptables 1.2.3
 that prevent it from working with Shorewall. Regrettably, RedHat
-released this buggy iptables in RedHat 7.2. </p>
+released this buggy iptables in RedHat 7.2.&nbsp;</p>
   <p align="left"> I have built a <a
  href="ftp://ftp.shorewall.net/pub/shorewall/errata/iptables-1.2.3-3.i386.rpm">
-corrected 1.2.3 rpm which you can download here</a>  and I have also
+corrected 1.2.3 rpm which you can download here</a>&nbsp; and I have
+also
 built an <a
  href="ftp://ftp.shorewall.net/pub/shorewall/iptables-1.2.4-1.i386.rpm">
-iptables-1.2.4 rpm which you can download here</a>. If you are currently
-running RedHat 7.1, you can install either of these RPMs <b><u>before</u> </b>you
+iptables-1.2.4 rpm which you can download here</a>. If you are
+currently
+running RedHat 7.1, you can install either of these RPMs <b><u>before</u>
+  </b>you
 upgrade to RedHat 7.2.</p>
   <p align="left"><font color="#ff6633"><b>Update 11/9/2001: </b></font>RedHat
 has released an iptables-1.2.4 RPM of their own which you can download
@@ -251,7 +258,7 @@ the patches are available for download. This <a
 which corrects a problem with parsing of the --log-level specification
 while this <a
  href="ftp://ftp.shorewall.net/pub/shorewall/errata/iptables-1.2.3/tos.patch">patch</a>
-corrects a problem in handling the  TOS target.</p>
+corrects a problem in handling the&nbsp; TOS target.</p>
   <p align="left">To install one of the above patches:</p>
   <ul>
     <li>cd iptables-1.2.3/extensions</li>
@@ -268,7 +275,8 @@ iptables</h3>
   </blockquote>
   <p>The RedHat iptables RPM is compiled with debugging enabled but the
 user-space debugging code was not updated to reflect recent changes in
-the Netfilter 'mangle' table. You can correct the problem by installing <a
+the Netfilter 'mangle' table. You can correct the problem by installing
+  <a
  href="http://www.shorewall.net/pub/shorewall/iptables-1.2.5-1.i386.rpm">
 this iptables RPM</a>. If you are already running a 1.2.5 version of
 iptables, you will need to specify the --oldpackage option to rpm
@@ -284,7 +292,8 @@ option to rpm.</p>
 MULTIPORT=Yes</b></h3>
 <p>The iptables 1.2.7 release of iptables has made an incompatible
 change to the syntax used to specify multiport match rules; as a
-consequence, if you install iptables 1.2.7 you must be running Shorewall
+consequence, if you install iptables 1.2.7 you must be running
+Shorewall
 1.3.7a or later or:</p>
 <ul>
   <li>set MULTIPORT=No in /etc/shorewall/shorewall.conf; or </li>
@@ -298,7 +307,7 @@ above.</li>
 /etc/shorewall/nat entries of the following form will result in
 Shorewall being unable to start:<br>
 <br>
-<pre>#EXTERNAL       INTERFACE       INTERNAL        ALL INTERFACES          LOCAL<br>192.0.2.22      eth0            192.168.9.22    yes                     yes<br>#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</pre>
+<pre>#EXTERNAL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; INTERFACE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; INTERNAL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ALL INTERFACES&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; LOCAL<br>192.0.2.22&nbsp;&nbsp;&nbsp;   eth0&nbsp;&nbsp;&nbsp;         192.168.9.22&nbsp;&nbsp;  yes&nbsp;&nbsp;&nbsp;&nbsp;                 yes<br>#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</pre>
 Error message is:<br>
 <pre>Setting up NAT...<br>iptables: Invalid argument<br>Terminated<br><br></pre>
 The solution is to put "no" in the LOCAL column. Kernel support for
@@ -306,11 +315,13 @@ LOCAL=yes has never worked properly and 2.4.18-10 has disabled it. The
 2.4.19 kernel contains corrected support under a new kernel
 configuraiton option; see <a href="Documentation.htm#NAT">http://www.shorewall.net/Documentation.htm#NAT</a><br>
 <br>
-<h3><a name="REJECT"></a><b> Problems with RH Kernels after 2.4.20-9 and
+<h3><a name="REJECT"></a><b> Problems with RH Kernels after 2.4.20-9
+and
 REJECT (also applies to 2.4.21-RC1)</b></h3>
 Beginning with errata kernel 2.4.20-13.9, "REJECT --reject-with
 tcp-reset" is broken. The symptom most commonly seen is that REJECT
-rules act just like DROP rules when dealing with TCP. A kernel patch and
+rules act just like DROP rules when dealing with TCP. A kernel patch
+and
 precompiled modules to fix this problem are available at <a
  href="ftp://ftp1.shorewall.net/pub/shorewall/errata/kernel"
  target="_top">ftp://ftp1.shorewall.net/pub/shorewall/errata/kernel</a>.<br>

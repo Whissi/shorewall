@@ -12,17 +12,8 @@
   <meta name="author" content="Tom Eastep">
 </head>
 <body>
-<table border="0" cellpadding="0" cellspacing="0"
- style="border-collapse: collapse;" width="100%" id="AutoNumber4"
- bgcolor="#3366ff" height="90">
-  <tbody>
-    <tr>
-      <td width="100%">
-      <h1 align="center"><font color="#ffffff">Shorewall 1.4 Reference</font></h1>
-      </td>
-    </tr>
-  </tbody>
-</table>
+<h1 style="text-align: center;">Shorewall 1.4 Reference<br>
+</h1>
 <h2 align="center">This documentation is intended primarily for
 reference. Step-by-step instructions for configuring Shorewall in
 common setups may be found in the <a
@@ -1190,6 +1181,13 @@ header-rewriting rule.<br>
       </li>
       <li>LOG - Log the packet -- requires
 a syslog level (see below).</li>
+      <li>QUEUE - Forward the packet to a user-space application. This
+facility is provided to allow interfacing to <a
+ href="http://p2pwall.sourceforge.net">ftwall</a> for <a
+ href="Shorewall_and_Kazaa.html">Kazaa filtering</a>. Note: When the
+protocol specified in the PROTO column is TCP ("tcp", "TCP" or "6"),
+Shorewall will only pass connection requests (SYN packets) to user
+space. This is for compatibility with ftwall.</li>
     </ul>
     <p>Beginning with Shorewall version 1.4.7, you may rate-limit the
 rule by optionally following ACCEPT, DNAT[-], REDIRECT[-] or LOG with<br>
@@ -2842,7 +2840,7 @@ Validation Documentation</a>.<br>
 <h2><a name="ECN"></a>/etc/shorewall/ecn (Added in Version 1.4.0)</h2>
 This file is described in the <a href="ECN.html">ECN Control
 Documentation</a>.<br>
-<p><font size="-1"> Updated 8/21/2003 - <a href="support.htm">Tom
+<p><font size="-1"> Updated 8/30/2003 - <a href="support.htm">Tom
 Eastep</a>
 </font></p>
 <p><a href="copyright.htm"><font size="2">Copyright</font> © <font

@@ -58,17 +58,17 @@ list_search() # $1 = element to search for , $2-$n = list
 
 #
 # Functions to count list elements
+# - - - - - - - - - - - - - - - -
+# Whitespace-separated list
 #
-list_count() {
-    arg_count() {
-	echo $#
-    }
-
-    arg_count `separate_list $@`
-}
-
 list_count1() {
     echo $#
+}
+#
+# Comma-separated list
+#
+list_count() {
+    list_count1 `separate_list $1`
 }
 
 #
@@ -229,11 +229,13 @@ run_tc() {
 #
 # If the chain isn't one of the common chains then add a rule to the chain
 # allowing packets that are part of an established connection. Create a
-# variable ${1}_exists and set its value to Yes to indicate that the chain now
+# variable exists_${1} and set its value to Yes to indicate that the chain now
 # exists.
 #
 createchain() # $1 = chain name, $2 = If "yes", create default rules
 {
+    local c=`chain_base $1`
+
     run_iptables -N $1
 
     if [ $2 = yes ]; then
@@ -242,11 +244,13 @@ createchain() # $1 = chain name, $2 = If "yes", create default rules
 	    run_iptables -A $1 -m state --state NEW -p tcp ! --syn -j newnotsyn
     fi
 
-    eval ${1}_exists=Yes
+    eval exists_${c}=Yes
 }
 
 createchain2() # $1 = chain name, $2 = If "yes", create default rules
 {
+    local c=`chain_base $1`
+
     if iptables -N $1; then
 
 	if [ $2 = yes ]; then
@@ -255,20 +259,22 @@ createchain2() # $1 = chain name, $2 = If "yes", create default rules
 		run_iptables -A $1 -m state --state NEW -p tcp ! --syn -j newnotsyn
 	fi
 	
-	eval ${1}_exists=Yes
+	eval exists_${c}=Yes
     fi
 }
 
 #
 # Determine if a chain exists
 #
-# When we create a chain "chain", we create a variable named chain_exists and
-# set its value to Yes. This function tests for the "_exists" variable
+# When we create a chain "chain", we create a variable named exists_chain and
+# set its value to Yes. This function tests for the "exists_" variable
 # corresponding to the passed chain having the value of "Yes".
 #
 havechain() # $1 = name of chain
 {
-    eval test \"\$${1}_exists\" = Yes
+    local c=`chain_base $1`
+
+    eval test \"\$exists_${c}\" = Yes
 }
 
 #
@@ -307,26 +313,26 @@ addrule() # $1 = chain name, remainder of arguments specify the rule
 #
 # Create a nat chain
 #
-# Create a variable ${1}_nat_exists and set its value to Yes to indicate that
+# Create a variable exists_nat_${1} and set its value to Yes to indicate that
 # the chain now exists.
 #
 createnatchain() # $1 = chain name
 {
     run_iptables -t nat -N $1
 
-    eval ${1}_nat_exists=Yes
+    eval exists_nat_${1}=Yes
 }
 
 #
 # Determine if a nat chain exists
 #
-# When we create a chain "chain", we create a variable named chain_nat_exists
-# and set its value to Yes. This function tests for the "_exists" variable
+# When we create a chain "chain", we create a variable named exists_nat_chain
+# and set its value to Yes. This function tests for the "exists_" variable
 # corresponding to the passed chain having the value of "Yes".
 #
 havenatchain() # $1 = name of chain
 {
-    eval test \"\$${1}_nat_exists\" = Yes
+    eval test \"\$exists_nat_${1}\" = Yes
 }
 
 #
@@ -630,11 +636,11 @@ validate_interfaces_file() {
 
 	all_interfaces="$all_interfaces $interface"
 	options=`separate_list $options`
-	interface=`chain_base $interface`
+	iface=`chain_base $interface`
 
-	eval ${interface}_broadcast="$subnet"
-	eval ${interface}_zone="$z"
-	eval ${interface}_options=\"$options\"
+	eval ${iface}_broadcast="$subnet"
+	eval ${iface}_zone="$z"
+	eval ${iface}_options=\"$options\"
 
 	for option in $options; do
 	    case $option in
@@ -757,7 +763,14 @@ validate_policy()
 	esac
 
 	case $policy in
-	ACCEPT|REJECT|DROP|CONTINUE|NONE)
+	ACCEPT|REJECT|DROP|CONTINUE)
+	    ;;
+	NONE)
+	    [ "$client" = "$FW" -o "$server" = "$FW" ] && \
+		startup_error " $client $server $policy $loglevel $synparams: NONE policy not allowed to/from the $FW zone"
+
+	    [ -n "$clientwild" -o -n "$serverwild" ] && \
+		startup_error " $client $server $policy $loglevel $synparams: NONE policy not allowed with \"all\""
 	    ;;
 	*)
 	    startup_error "Invalid policy $policy"
@@ -774,8 +787,6 @@ validate_policy()
 	fi
 
 	[ "x$loglevel" = "x-" ] && loglevel=
-
-	chain=${client}2${server}
 
 	[ $policy = NONE ] || all_policy_chains="$all_policy_chains $chain"
 
@@ -1456,28 +1467,19 @@ setup_mac_lists() {
     #
     for interface in $maclist_interfaces; do
 	chain=`mac_chain $interface`
-	blob=`ip -f inet addr show $interface 2> /dev/null | grep inet | sed 's/inet //; s/brd //; s/scope.*//;'`
+
+	blob=`ip link show $interface 2> /dev/null`
 
 	[ -z "$blob" ] && \
 	    fatal_error "Interface $interface must be up before Shorewall can start"
 
-	set -- $blob
-
-	while [ $# -gt 0 ]; do
-	    address=${1%/*}
-
-	    case $1 in
-		*/32)
-		    ;;
-		*)
-		    run_iptables -A $chain -s $address -d $2 -j RETURN
-		    shift
-		    ;;
-	    esac
+	ip -f inet addr show $interface 2> /dev/null | grep inet | sed 's/inet //; s/brd //; s/scope.*//;' | while read address broadcast; do
+	    if [ -n "$broadcast" ]; then
+		run_iptables -A $chain -s ${address%/*} -d $broadcast -j RETURN
+	    fi
 
 	    run_iptables -A $chain -s $address -d 255.255.255.255 -j RETURN
 	    run_iptables -A $chain -s $address -d 224.0.0.0/4     -j RETURN
-	    shift
 	done
 
 	if [ -n "$MACLIST_LOG_LEVEL" ]; then
@@ -2396,6 +2398,7 @@ add_a_rule()
     case $proto in
 	tcp|TCP|6)
 	    do_ports
+	    [ "$target" = QUEUE ] && proto="$proto --syn"
 	    ;;
 	udp|UDP|17)
 	    do_ports
@@ -2885,7 +2888,7 @@ process_rules()
     while read xtarget xclients xservers xprotocol xports xcports xaddress xratelimit xuserset; do
 	temp="${xtarget%:*}"
 	case "${temp%<*}" in
-	    ACCEPT|DROP|REJECT|DNAT|DNAT-|REDIRECT|REDIRECT-|LOG|CONTINUE)
+	    ACCEPT|DROP|REJECT|DNAT|DNAT-|REDIRECT|REDIRECT-|LOG|CONTINUE|QUEUE)
 		expandv xclients xservers xprotocol xports xcports xaddress xratelimit xuserset
 
 		if [ "x$xclients" = xall ]; then
@@ -3594,9 +3597,11 @@ setup_blacklist() {
 
 	createchain blacklst no
 
+	[ -n "$BLACKLISTNEWONLY" ] && state="-m state --state NEW" || state=
+	
 	for interface in $interfaces; do
 	    for chain in `first_chains $interface`; do
-		run_iptables -A $chain -j blacklst
+		run_iptables -A $chain $state -j blacklst
 	    done
 
 	    echo "   Blacklisting enabled on $interface"
@@ -3915,13 +3920,15 @@ initialize_netfilter () {
 	fi
     fi
 
+    [ -n "$BLACKLISTNEWONLY" ] && state="-m state --state NEW" || state=
+
     echo "Creating Interface Chains..."
 
     for interface in $all_interfaces; do
 	createchain `forward_chain $interface` no
-	run_iptables -A `forward_chain $interface` -j dynamic
+	run_iptables -A `forward_chain $interface` $state -j dynamic
 	createchain `input_chain $interface`   no
-	run_iptables -A `input_chain $interface` -j dynamic
+	run_iptables -A `input_chain $interface` $state -j dynamic
     done
 }
 
@@ -4191,6 +4198,7 @@ add_common_rules() {
 
     if [ -n "$interfaces" ]; then
 	echo "Setting up ARP Filtering..."
+	
 	for interface in $interfaces; do
 	    file=/proc/sys/net/ipv4/conf/$interface/arp_filter
 	    if [ -f $file ]; then
@@ -4204,28 +4212,28 @@ add_common_rules() {
     #
     # Route Filtering
     #
-    for f in /proc/sys/net/ipv4/conf/*/rp_filter; do
-	echo 0 > $f
-    done
-
     interfaces="`find_interfaces_by_option routefilter`"
 
     if [ -n "$interfaces" -o -n "$ROUTE_FILTER" ]; then
 	echo "Setting up Kernel Route Filtering..."
 
-	if [ -n "$ROUTE_FILTER" ]; then
-	    echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter
-	else
-	    for interface in $interfaces; do
-		file=/proc/sys/net/ipv4/conf/$interface/rp_filter
-		if [ -f $file ]; then
-		    echo 1 > $file
-		else
-		    error_message \
-			"Warning: Cannot set route filtering on $interface"
-		fi
-	    done
-	fi
+	for f in /proc/sys/net/ipv4/conf/*/rp_filter; do
+	    echo 0 > $f
+	done
+
+	for interface in $interfaces; do
+	    file=/proc/sys/net/ipv4/conf/$interface/rp_filter
+	    if [ -f $file ]; then
+		echo 1 > $file
+	    else
+		error_message \
+		    "Warning: Cannot set route filtering on $interface"
+	    fi
+	done
+	
+	echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter
+	[ -n "$ROUTE_FILTER" ] && echo 1 > /proc/sys/net/ipv4/conf/default/rp_filter
+	run_ip route flush cache
     fi
     #
     # IP Forwarding
@@ -4422,7 +4430,13 @@ activate_rules()
 		for host1 in $dest_hosts; do
 		    interface1=${host1%:*}
 		    subnet1=${host1#*:}
-		    run_iptables -A $frwd_chain -o $interface1 -d $subnet1 -j $chain
+		    if [ `list_count1 $source_hosts` -eq 1 -a "$source_hosts" = "$host1" ]; then
+			if list_search $host1 $routeback; then
+			    run_iptables -A $frwd_chain -o $interface1 -d $subnet1 -j $chain
+			fi
+		    else
+			run_iptables -A $frwd_chain -o $interface1 -d $subnet1 -j $chain
+		    fi
 		done
 	    else
 		for host in $source_hosts; do
@@ -5042,6 +5056,7 @@ do_initialize() {
     LOGFORMAT=
     LOGRULENUMBERS=
     ADMINISABSENTMINDED=
+    BLACKLISTNEWONLY=
 
     stopping=
     have_mutex=
@@ -5191,6 +5206,7 @@ do_initialize() {
 	LOGFORMAT="Shorewall:%s:%s:"
     fi
     ADMINISABSENTMINDED=`added_param_value_no ADMINISABSENTMINDED $ADMINISABSENTMINDED`
+    BLACKLISTNEWONLY=`added_param_value_no BLACKLISTNEWONLY $BLACKLISTNEWONLY`
     #
     # Strip the files that we use often
     #

@@ -9,17 +9,8 @@
   <title>Samba</title>
 </head>
 <body>
-<table border="0" cellpadding="0" cellspacing="0"
- style="border-collapse: collapse;" bordercolor="#111111" width="100%"
- id="AutoNumber1" bgcolor="#3366ff" height="90">
-  <tbody>
-    <tr>
-      <td width="100%">
-      <h1 align="center"><font color="#ffffff">Samba</font></h1>
-      </td>
-    </tr>
-  </tbody>
-</table>
+<h1 style="text-align: center;">Samba/SMB<br>
+</h1>
 <p>If you wish to run Samba on your firewall and access shares between
 the firewall and local hosts, you need the following rules:</p>
 <h4>/etc/shorewall/rules:</h4>
@@ -95,7 +86,98 @@ DEST</b></td>
     </tbody>
   </table>
 </blockquote>
-<p><font size="2">Last modified 8/17/2002 - <a href="support.htm">Tom
+<p>To pass traffic SMB/Samba traffic between zones Z1 and Z2:</p>
+<h4>/etc/shorewall/rules:</h4>
+<blockquote> <font face="Century Gothic, Arial, Helvetica"> </font>
+  <table border="2" cellpadding="2" style="border-collapse: collapse;">
+    <tbody>
+      <tr>
+        <td><b>ACTION</b></td>
+        <td><b>SOURCE</b></td>
+        <td><b>DEST</b></td>
+        <td><b> PROTO</b></td>
+        <td><b>DEST<br>
+PORT(S)</b></td>
+        <td><b>SOURCE<br>
+PORT(S)</b></td>
+        <td><b>ORIGINAL<br>
+DEST</b></td>
+      </tr>
+      <tr>
+        <td>ACCEPT</td>
+        <td>Z1<br>
+        </td>
+        <td>Z2<br>
+        </td>
+        <td>udp</td>
+        <td>137:139</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+      </tr>
+      <tr>
+        <td>ACCEPT</td>
+        <td>Z1<br>
+        </td>
+        <td>Z2<br>
+        </td>
+        <td>tcp</td>
+        <td>137,139,445</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+      </tr>
+      <tr>
+        <td>ACCEPT</td>
+        <td>Z1<br>
+        </td>
+        <td>Z2<br>
+        </td>
+        <td>udp</td>
+        <td>1024:</td>
+        <td>137</td>
+        <td>&nbsp;</td>
+      </tr>
+      <tr>
+        <td>ACCEPT</td>
+        <td>Z2<br>
+        </td>
+        <td>Z1<br>
+        </td>
+        <td>udp</td>
+        <td>137:139</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+      </tr>
+      <tr>
+        <td>ACCEPT</td>
+        <td>Z2<br>
+        </td>
+        <td>Z1<br>
+        </td>
+        <td>tcp</td>
+        <td>137,139,445</td>
+        <td>&nbsp;</td>
+        <td>&nbsp;</td>
+      </tr>
+      <tr>
+        <td>ACCEPT</td>
+        <td>Z2<br>
+        </td>
+        <td>Z1<br>
+        </td>
+        <td>udp</td>
+        <td>1024:</td>
+        <td>137</td>
+        <td>&nbsp;</td>
+      </tr>
+    </tbody>
+  </table>
+</blockquote>
+<br>
+To make network browsing ("Network Neighborhood") work properly between
+Z1 and Z2 requires a Windows Domain Controller and/or a WINS server. I
+run Samba on my firewall to handle browsing between two zones connected
+to my firewall. Details are <a href="myfiles.htm">here</a>.<br>
+<p><font size="2">Last modified 10/22/2002 - <a href="support.htm">Tom
 Eastep</a></font></p>
 <p><font face="Trebuchet MS"><a href="copyright.htm"> <font size="2">Copyright</font>
 © <font size="2">2002 Thomas M. Eastep.</font></a></font></p>

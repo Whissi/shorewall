@@ -10,18 +10,8 @@
   <meta name="author" content="Tom Eastep">
 </head>
 <body>
-<table border="0" cellpadding="0" cellspacing="0"
- style="border-collapse: collapse;" bordercolor="#111111" width="100%"
- id="AutoNumber1" bgcolor="#3366ff" height="90">
-  <tbody>
-    <tr>
-      <td width="100%">
-      <h1 align="center"><font color="#ffffff">Shorewall and Traffic
-Accounting</font></h1>
-      </td>
-    </tr>
-  </tbody>
-</table>
+<h1 style="text-align: center;">Shorewall and Traffic Accounting<br>
+</h1>
 Shorewall Traffic Accounting support was added in Shorewall release
 1.4.7.<br>
 <br>
@@ -38,10 +28,12 @@ accounting chain.<br>
 <br>
 The columns in the accounting file are as follows:<br>
 <ul>
-  <li><span style="font-weight: bold;">ACTION</span> - What to do when a
+  <li><span style="font-weight: bold;">ACTION</span> - What to do when
+a
 match is found. Possible values are:</li>
   <ul>
-    <li>COUNT- Simply count the match and  continue trying to match the
+    <li>COUNT- Simply count the match and&nbsp; continue trying to
+match the
 packet with the following accounting rules</li>
     <li>DONE- Count the match and don't attempt to match any following
 accounting rules.</li>
@@ -49,11 +41,16 @@ accounting rules.</li>
 name of a chain to jump to. Shorewall will create the chain
 automatically. If the name of the chain is followed by ":COUNT" then a
 COUNT rule matching this rule will automatically be added to &lt;<span
- style="font-style: italic;">chain</span>&gt;<br>
+ style="font-style: italic;">chain</span>&gt;. Chain names must start
+with a letter, must be composed of letters and digits, and may contain
+underscores ("_") and periods ("."). Beginning with Shorewall version
+1.4.8, chain names man also contain embedded dashes ("-") and are not
+required to start with a letter.<br>
     </li>
   </ul>
   <li><span style="font-weight: bold;">CHAIN </span>- The name of the
-chain where the accounting rule is to be added. If empty or "-" then the
+chain where the accounting rule is to be added. If empty or "-" then
+the
 "accounting" chain is assumed.<br>
   </li>
   <li><span style="font-weight: bold;">SOURCE</span> - Packet Source.
@@ -61,10 +58,12 @@ The name of an interface, an address (host or net) or an interface name
 followed by ":" and a host or net address.</li>
   <li><span style="font-weight: bold;">DESTINATION</span> - Packet
 Destination Format the same as the SOURCE column.</li>
-  <li><span style="font-weight: bold;">PROTOCOL</span> - A protocol name
+  <li><span style="font-weight: bold;">PROTOCOL</span> - A protocol
+name
 (from /etc/protocols) or a protocol number.</li>
   <li><span style="font-weight: bold;">DEST PORT</span> - Destination
-Port number. Service name from /etc/services or port number. May only be
+Port number. Service name from /etc/services or port number. May only
+be
 specified if the protocol is TCP or UDP (6 or 17).</li>
   <li><span style="font-weight: bold;">SOURCE PORT</span>- Source Port
 number. Service name from /etc/services or port number. May only be
@@ -73,16 +72,16 @@ specified if the protocol is TCP or UDP (6 or 17).<br>
 </ul>
 In all columns except ACTION and CHAIN, the values "-","any" and "all"
 are treated as wild-cards.<br>
- <br>
+&nbsp;<br>
 The accounting rules are evaluated in the Netfilter 'filter' table.
 This is the same environment where the 'rules' file rules are evaluated
 and in this environment, DNAT has already occurred in inbound packets
 and SNAT has not yet occurred on outbound ones.<br>
- <br>
+&nbsp;<br>
 Accounting rules are not stateful -- each rule only handles traffic in
 one direction. For example, if eth0 is your internet interface and you
 have a web server in your DMZ connected to eth1 then to count HTTP
-traffic in both directions requires two rules: <br>
+traffic in both directions requires two rules:&nbsp;<br>
 <pre>	#ACTION	CHAIN	SOURCE	DESTINATION	PROTOCOL	DEST		SOURCE<br>	#							PORT		PORT<br>	DONE	-	eth0	eth1		tcp		80<br>	DONE	-	eth1	eth0		tcp		-		80</pre>
 Associating a counter with a chain allows for nice reporting. For
 example:<br>
@@ -105,7 +104,7 @@ the DESTINATION (for output rules) is specified in each rule.<br>
 <br>
 Here's the output:<br>
 <pre style="margin-left: 40px;">[root@mail shorewall]# shorewall show accounting web <br>Shorewall-1.4.7 Chains accounting web at mail.shorewall.net - Sun Oct 12 10:27:21 PDT 2003<br> <br>Counters reset Sat Oct 11 08:12:57 PDT 2003<br> <br>Chain accounting (3 references)<br> pkts bytes target     prot opt in     out     source               destination<br> 8767  727K web        tcp  --  eth0   *       0.0.0.0/0            0.0.0.0/0          tcp dpt:80<br>    0     0 web        tcp  --  eth0   *       0.0.0.0/0            0.0.0.0/0          tcp dpt:443<br>11506   13M web        tcp  --  *      eth0    0.0.0.0/0            0.0.0.0/0          tcp spt:80<br>    0     0 web        tcp  --  *      eth0    0.0.0.0/0            0.0.0.0/0          tcp spt:443<br>Chain web (4 references)<br> pkts bytes target     prot opt in     out     source               destination<br> 8767  727K            all  --  eth0   *       0.0.0.0/0            0.0.0.0/0<br>11506   13M            all  --  *      eth0    0.0.0.0/0            0.0.0.0/0<br>[root@mail shorewall]#<br></pre>
-<p align="left"><font size="2">Last updated 10/12/2003 - <a
+<p align="left"><font size="2">Last updated 10/30/2003 - <a
  href="support.htm">Tom Eastep</a></font></p>
 <p><font face="Trebuchet MS"><a href="copyright.htm"><font size="2">Copyright</font>
 © <font size="2">2003 Thomas M. Eastep.</font></a></font></p>

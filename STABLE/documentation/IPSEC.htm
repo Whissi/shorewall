@@ -8,17 +8,8 @@
   <meta name="ProgId" content="FrontPage.Editor.Document">
 </head>
 <body>
-<table border="0" cellpadding="0" cellspacing="0"
- style="border-collapse: collapse;" bordercolor="#111111" width="100%"
- id="AutoNumber1" bgcolor="#3366ff" height="90">
-  <tbody>
-    <tr>
-      <td width="100%">
-      <h1 align="center"><font color="#ffffff">IPSEC Tunnels</font></h1>
-      </td>
-    </tr>
-  </tbody>
-</table>
+<h1 style="text-align: center;">IPSEC Tunnels<br>
+</h1>
 <h2><font color="#660066">Configuring FreeS/Wan</font></h2>
 There is an excellent guide to configuring IPSEC tunnels at<a
  href="http://www.geocities.com/jixen66/">
@@ -34,10 +25,40 @@ to debug this problem so I can't say if it is a bug in the Kernel or in
 FreeS/Wan.&nbsp;</p>
 <p>You <b>might</b> be able to work around this problem using the
 following (I haven't tried it):</p>
-<p>In /etc/shorewall/init, include:</p>
-<p>&nbsp;&nbsp;&nbsp;&nbsp; qt service ipsec stop</p>
-<p>In /etc/shorewall/start, include:</p>
-<p>&nbsp;&nbsp;&nbsp; qt service ipsec start</p>
+<p style="margin-left: 40px;">In /etc/shorewall/init, include:</p>
+<div style="margin-left: 40px;"></div>
+<p style="margin-left: 40px;">&nbsp;&nbsp;&nbsp;&nbsp; qt service ipsec
+stop</p>
+<div style="margin-left: 40px;"></div>
+<p style="margin-left: 40px;">In /etc/shorewall/start, include:</p>
+<div style="margin-left: 40px;"></div>
+<p style="margin-left: 40px;">&nbsp;&nbsp;&nbsp; qt service ipsec start<br>
+</p>
+<p>Also, the documentation below assumes that you have disabled
+opportunistic encryption feature in FreeS/Wan 2.0 using the following
+additional entries in ipsec.conf:<br>
+</p>
+<p style="margin-left: 40px;"><tt>conn block<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; auto=ignore<br>
+<br>
+conn private<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; auto=ignore<br>
+<br>
+conn private-or-clear<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; auto=ignore<br>
+<br>
+conn clear-or-private<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; auto=ignore<br>
+<br>
+conn clear<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; auto=ignore<br>
+<br>
+conn packetdefault<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; auto=ignore<br>
+</tt></p>
+For further information see <a
+ href="http://www.freeswan.org/freeswan_trees/freeswan-2.03/doc/policygroups.html">http://www.freeswan.org/freeswan_trees/freeswan-2.03/doc/policygroups.html</a>.<tt><br>
+</tt>
 <h2> <font color="#660066">IPSec Gateway on the Firewall System </font></h2>
 <p>Suppose that we have the following sutuation:</p>
 <font color="#660066">
@@ -631,7 +652,7 @@ issue the command":<br>
 <blockquote>/sbin/shorewall add ipsec0:134.28.54.2 vpn2<br>
 </blockquote>
 and the 'down' part will:<br>
-<blockquote>/sbin/shorewall delete ipsec0:134.28.54.2 vpn<br>
+<blockquote>/sbin/shorewall delete ipsec0:134.28.54.2 vpn2<br>
   <br>
 </blockquote>
 <h3>Limitations of Dynamic Zones</h3>
@@ -664,7 +685,7 @@ DESTINATION<br>
       <tr>
         <td valign="top">DNAT<br>
         </td>
-        <td valign="top">z:dyn<br>
+        <td valign="top">z!dyn<br>
         </td>
         <td valign="top">loc:192.168.1.3<br>
         </td>
@@ -682,7 +703,7 @@ DESTINATION<br>
 </blockquote>
 Dynamic changes to the zone <b>dyn</b> will have no effect on the
 above rule.
-<p><font size="2">Last updated 8/12//2003 - </font><font size="2"> <a
+<p><font size="2">Last updated 10/292003 - </font><font size="2"> <a
  href="support.htm">Tom Eastep</a></font> </p>
 <p><a href="copyright.htm"><font size="2"> Copyright</font> © <font
  size="2">2001, 2002, 2003 Thomas M. Eastep.</font></a><br>

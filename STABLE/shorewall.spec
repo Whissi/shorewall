@@ -1,5 +1,5 @@
 %define name shorewall
-%define version 1.4.7b
+%define version 1.4.8
 %define release 1
 %define prefix /usr
 
@@ -108,10 +108,12 @@ fi
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel
 
 %changelog
-* Fri Oct 24 2003 Tom Eastep <tom@shorewall.net>
-- Changed version to 1.4.7b-1
-* Tue Oct 21 2003 Tom Eastep <tom@shorewall.net>
-- Changed version to 1.4.7a-1
+* Fri Nov 07 2003 Tom Eastep <tom@shorewall.net>
+- Changed version to 1.4.8
+* Sat Nov 01 2003 Tom Eastep <tom@shorewall.net>
+- Changed version to 1.4.8-0RC2
+* Thu Oct 30 2003 Tom Eastep <tom@shorewall.net>
+- Changed version to 1.4.8-0RC1
 * Sat Oct 04 2003 Tom Eastep <tom@shorewall.net>
 - Changed version to 1.4.7-1
 - Removed conflict with 2.2 Kernels

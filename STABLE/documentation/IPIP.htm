@@ -1,98 +1,71 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-    
   <meta http-equiv="Content-Type"
  content="text/html; charset=windows-1252">
   <title>GRE/IPIP Tunnels</title>
-       
   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
-    
   <meta name="ProgId" content="FrontPage.Editor.Document">
 </head>
-  <body>
-  
-<table border="0" cellpadding="0" cellspacing="0"
- style="border-collapse: collapse;" bordercolor="#111111" width="100%"
- id="AutoNumber1" bgcolor="#3366ff" height="90">
-    <tbody>
-     <tr>
-      <td width="100%">       
-      <h1 align="center"><font color="#ffffff">GRE and IPIP Tunnels</font></h1>
-      </td>
-    </tr>
-    
-  </tbody> 
-</table>
-  
-<h3><font color="#ff6633">Warning: </font>GRE and IPIP Tunnels are insecure 
-when used over the internet; use them at your own risk</h3>
-  
-<p>GRE and IPIP tunneling with Shorewall can be used to bridge two masqueraded 
-networks.</p>
-  
-<p>The simple scripts described in the <a href="http://ds9a.nl/lartc">Linux 
-Advanced Routing and Shaping HOWTO</a> work fine with Shorewall. Shorewall 
-also includes a tunnel script for automating tunnel configuration. If you 
-have installed the RPM, the tunnel script may be found in the Shorewall documentation 
-directory (usually /usr/share/doc/shorewall-&lt;version&gt;/).</p>
-  
+<body>
+<h1 style="text-align: center;">GRE and IPIP Tunnels<br>
+</h1>
+<h3><font color="#ff6633">Warning: </font>GRE and IPIP Tunnels are
+insecure when used over the internet; use them at your own risk</h3>
+<p>GRE and IPIP tunneling with Shorewall can be used to bridge two
+masqueraded networks.</p>
+<p>The simple scripts described in the <a href="http://ds9a.nl/lartc">Linux
+Advanced Routing and Shaping HOWTO</a> work fine with Shorewall.
+Shorewall also includes a tunnel script for automating tunnel
+configuration. If you have installed the RPM, the tunnel script may be
+found in the Shorewall documentation directory (usually
+/usr/share/doc/shorewall-&lt;version&gt;/).</p>
 <h2>Bridging two Masqueraded Networks</h2>
-  
 <p>Suppose that we have the following situation:</p>
-  
-<p align="center"> <img border="0" src="images/TwoNets1.png" width="745"
- height="427">
- </p>
-  
-<p align="left">We want systems in the 192.168.1.0/24 subnetwork to be able 
-to communicate with the systems in the 10.0.0.0/8 network. This is accomplished 
-through use of the /etc/shorewall/tunnels file, the /etc/shorewall/policy 
-file and the /etc/shorewall/tunnel script that is included with Shorewall.</p>
-  
-<p align="left">The 'tunnel' script is not installed in /etc/shorewall by 
-default -- If you install using the tarball, the script is included in the 
-tarball; if you install using the RPM, the file is in your Shorewall documentation 
-directory (normally /usr/share/doc/shorewall-&lt;version&gt;).</p>
-  
-<p align="left">In the /etc/shorewall/tunnel script, set the 'tunnel_type' 
-parameter to the type of tunnel that you want to create.</p>
-  
+<p align="center"> <img border="0" src="images/TwoNets1.png"
+ width="745" height="427"> </p>
+<p align="left">We want systems in the 192.168.1.0/24 subnetwork to be
+able to communicate with the systems in the 10.0.0.0/8 network. This is
+accomplished through use of the /etc/shorewall/tunnels file, the
+/etc/shorewall/policy file and the /etc/shorewall/tunnel script that is
+included with Shorewall.</p>
+<p align="left">The 'tunnel' script is not installed in /etc/shorewall
+by default -- If you install using the tarball, the script is included
+in the tarball; if you install using the RPM, the file is in your
+Shorewall documentation directory (normally
+/usr/share/doc/shorewall-&lt;version&gt;).</p>
+<p align="left">In the /etc/shorewall/tunnel script, set the
+'tunnel_type' parameter to the type of tunnel that you want to create.</p>
 <p align="left">Example:</p>
-  
-<blockquote>   
+<blockquote>
   <p align="left">tunnel_type=gre</p>
-  </blockquote>
-  
-<p align="left">On each firewall, you will need to declare a zone to represent 
- the remote subnet. We'll assume that this zone is called 'vpn' and declare 
-it in  /etc/shorewall/zones on both systems as follows.</p>
-  
-<blockquote>   
+</blockquote>
+<p align="left">On each firewall, you will need to declare a zone to
+represent the remote subnet. We'll assume that this zone is called
+'vpn' and declare it in /etc/shorewall/zones on both systems as follows.</p>
+<blockquote>
   <table border="2" cellpadding="2" style="border-collapse: collapse;">
-                 <tbody>
-       <tr>
-                <td><strong>ZONE</strong></td>
-                <td><strong>DISPLAY</strong></td>
-                <td><strong>COMMENTS</strong></td>
-            </tr>
-            <tr>
-                <td>vpn</td>
-                <td>VPN</td>
-                <td>Remote Subnet</td>
-            </tr>
-      
-    </tbody>   
+    <tbody>
+      <tr>
+        <td><strong>ZONE</strong></td>
+        <td><strong>DISPLAY</strong></td>
+        <td><strong>COMMENTS</strong></td>
+      </tr>
+      <tr>
+        <td>vpn</td>
+        <td>VPN</td>
+        <td>Remote Subnet</td>
+      </tr>
+    </tbody>
   </table>
-   </blockquote>
-  
-<p align="left">On system A, the 10.0.0.0/8 will comprise the <b>vpn</b> zone.
+</blockquote>
+<p align="left">On system A, the 10.0.0.0/8 will comprise the <b>vpn</b>
+zone.
 In /etc/shorewall/interfaces:</p>
-  
-<blockquote>   
+<blockquote>
   <table border="2" cellpadding="2" style="border-collapse: collapse;">
-      <tbody>
-       <tr>
+    <tbody>
+      <tr>
         <td><b>ZONE</b></td>
         <td><b>INTERFACE</b></td>
         <td><b>BROADCAST</b></td>
@@ -102,19 +75,17 @@ In /etc/shorewall/interfaces:</p>
         <td>vpn</td>
         <td>tosysb</td>
         <td>10.255.255.255</td>
-        <td> </td>
+        <td>&nbsp;</td>
       </tr>
-      
-    </tbody>   
+    </tbody>
   </table>
-  </blockquote>
-  
-<p align="left">In /etc/shorewall/tunnels on system A, we need the following:</p>
-  
-<blockquote>   
+</blockquote>
+<p align="left">In /etc/shorewall/tunnels on system A, we need the
+following:</p>
+<blockquote>
   <table border="2" cellpadding="2" style="border-collapse: collapse;">
-      <tbody>
-       <tr>
+    <tbody>
+      <tr>
         <td><b>TYPE</b></td>
         <td><b>ZONE</b></td>
         <td><b>GATEWAY</b></td>
@@ -124,34 +95,29 @@ In /etc/shorewall/interfaces:</p>
         <td>ipip</td>
         <td>net</td>
         <td>134.28.54.2</td>
-        <td> </td>
+        <td>&nbsp;</td>
       </tr>
-      
-    </tbody>   
+    </tbody>
   </table>
-  </blockquote>
-  
-<p>This entry in /etc/shorewall/tunnels, opens the firewall so that the IP 
- encapsulation protocol (4) will be accepted to/from the remote gateway.</p>
-  
+</blockquote>
+<p>This entry in /etc/shorewall/tunnels, opens the firewall so that the
+IP encapsulation protocol (4) will be accepted to/from the remote
+gateway.</p>
 <p>In the tunnel script on system A:</p>
-  
-<blockquote>   
+<blockquote>
   <p>tunnel=tosysb<br>
-    myrealip=206.161.148.9 (for GRE tunnel only)<br>
-    myip=192.168.1.1<br>
-    hisip=10.0.0.1<br>
-    gateway=134.28.54.2<br>
-    subnet=10.0.0.0/8</p>
-  </blockquote>
-  
-<p>Similarly, On system B the 192.168.1.0/24 subnet will comprise the <b>vpn</b> 
+myrealip=206.161.148.9 (for GRE tunnel only)<br>
+myip=192.168.1.1<br>
+hisip=10.0.0.1<br>
+gateway=134.28.54.2<br>
+subnet=10.0.0.0/8</p>
+</blockquote>
+<p>Similarly, On system B the 192.168.1.0/24 subnet will comprise the <b>vpn</b>
 zone. In /etc/shorewall/interfaces:</p>
-  
-<blockquote>   
+<blockquote>
   <table border="2" cellpadding="2" style="border-collapse: collapse;">
-      <tbody>
-       <tr>
+    <tbody>
+      <tr>
         <td><b>ZONE</b></td>
         <td><b>INTERFACE</b></td>
         <td><b>BROADCAST</b></td>
@@ -161,19 +127,16 @@ zone. In /etc/shorewall/interfaces:</p>
         <td>vpn</td>
         <td>tosysa</td>
         <td>192.168.1.255</td>
-        <td> </td>
+        <td>&nbsp;</td>
       </tr>
-      
-    </tbody>   
+    </tbody>
   </table>
-  </blockquote>
-  
+</blockquote>
 <p>In /etc/shorewall/tunnels on system B, we have:</p>
-  
-<blockquote>   
+<blockquote>
   <table border="2" cellpadding="2" style="border-collapse: collapse;">
-      <tbody>
-       <tr>
+    <tbody>
+      <tr>
         <td><b>TYPE</b></td>
         <td><b>ZONE</b></td>
         <td><b>GATEWAY</b></td>
@@ -183,67 +146,59 @@ zone. In /etc/shorewall/interfaces:</p>
         <td>ipip</td>
         <td>net</td>
         <td>206.191.148.9</td>
-        <td> </td>
+        <td>&nbsp;</td>
       </tr>
-      
-    </tbody>   
+    </tbody>
   </table>
-  </blockquote>
-  
+</blockquote>
 <p>And in the tunnel script on system B:</p>
-  
-<blockquote>   
+<blockquote>
   <p>tunnel=tosysa<br>
-    myrealip=134.28.54.2 (for GRE tunnel only)<br>
-    myip=10.0.0.1<br>
-    hisip=192.168.1.1<br>
-    gateway=206.191.148.9<br>
-    subnet=192.168.1.0/24</p>
-  </blockquote>
-  
-<p>You can rename the modified tunnel scripts if you like; be sure that they 
-are secured so that root can execute them.  </p>
-  
-<p align="left"> You will need to allow traffic between the "vpn" zone and 
-       the "loc" zone on both systems -- if you simply want to admit all traffic
-       in both directions, you can use the policy file:</p>
-  
-<blockquote>   
+myrealip=134.28.54.2 (for GRE tunnel only)<br>
+myip=10.0.0.1<br>
+hisip=192.168.1.1<br>
+gateway=206.191.148.9<br>
+subnet=192.168.1.0/24</p>
+</blockquote>
+<p>You can rename the modified tunnel scripts if you like; be sure that
+they are secured so that root can execute them. </p>
+<p align="left"> You will need to allow traffic between the "vpn" zone
+and the "loc" zone on both systems -- if you simply want to admit all
+traffic in both directions, you can use the policy file:</p>
+<blockquote>
   <table border="2" cellpadding="2" style="border-collapse: collapse;">
-                 <tbody>
-       <tr>
-                <td><strong>SOURCE</strong></td>
-                <td><strong>DEST</strong></td>
-                <td><strong>POLICY</strong></td>
-                <td><strong>LOG LEVEL</strong></td>
-            </tr>
-            <tr>
-                <td>loc</td>
-                <td>vpn</td>
-                <td>ACCEPT</td>
-            <td> </td>
-            </tr>
-                                <tr>
-                <td>vpn</td>
-                <td>loc</td>
-                <td>ACCEPT</td>
-            <td> </td>
-            </tr>
-      
-    </tbody>   
+    <tbody>
+      <tr>
+        <td><strong>SOURCE</strong></td>
+        <td><strong>DEST</strong></td>
+        <td><strong>POLICY</strong></td>
+        <td><strong>LOG LEVEL</strong></td>
+      </tr>
+      <tr>
+        <td>loc</td>
+        <td>vpn</td>
+        <td>ACCEPT</td>
+        <td>&nbsp;</td>
+      </tr>
+      <tr>
+        <td>vpn</td>
+        <td>loc</td>
+        <td>ACCEPT</td>
+        <td>&nbsp;</td>
+      </tr>
+    </tbody>
   </table>
-  </blockquote>
-  
-<p>On both systems, restart Shorewall and run the modified tunnel script with
-the "start" argument on each system. The systems in the two masqueraded subnetworks
+</blockquote>
+<p>On both systems, restart Shorewall and run the modified tunnel
+script with
+the "start" argument on each system. The systems in the two masqueraded
+subnetworks
 can now talk to each other</p>
-  
-<p><font size="2">Updated 2/22/2003 - <a href="support.htm">Tom Eastep</a> 
+<p><font size="2">Updated 2/22/2003 - <a href="support.htm">Tom Eastep</a>
 </font></p>
-  
-<p><a href="copyright.htm"><font size="2">Copyright</font>  © <font
+<p><a href="copyright.htm"><font size="2">Copyright</font> © <font
  size="2">2001, 2002, 2003Thomas M. Eastep.</font></a></p>
-   <br>
- <br>
+<br>
+<br>
 </body>
 </html>

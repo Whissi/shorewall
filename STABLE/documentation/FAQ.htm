@@ -10,20 +10,11 @@
   <meta name="Microsoft Theme" content="none">
 </head>
 <body>
-<table border="0" cellpadding="0" cellspacing="0"
- style="border-collapse: collapse;" width="100%" id="AutoNumber4"
- bgcolor="#3366ff" height="90">
-  <tbody>
-    <tr>
-      <td width="100%">
-      <h1 align="center"><font color="#ffffff">Shorewall FAQs</font></h1>
-      </td>
-    </tr>
-  </tbody>
-</table>
-<h1>Looking for Step by Step Configuration Instructions? Check out the <a
- href="shorewall_quickstart_guide.htm">QuickStart Guides</a>. <br>
+<h1 style="text-align: center;">Shorewall FAQs<br>
 </h1>
+<h2>Looking for Step by Step Configuration Instructions? Check out the <a
+ href="shorewall_quickstart_guide.htm">QuickStart Guides</a>. <br>
+</h2>
 <h1>PORT FORWARDING<br>
 </h1>
 <p align="left"><b>1. </b><a href="#faq1"> I want to <b>forward</b>
@@ -140,6 +131,9 @@ your <b>web site</b>?</a><br>
 <b><br>
 25. </b><a href="#faq25">How to I tell <b>which version of Shorewall</b>
 I am <b>running</b>?</a><br>
+<br>
+<span style="font-weight: bold;">31. </span><a href="#faq31">Does
+Shorewall provide protection against...</a><br>
 <h1>RFC 1918<br>
 </h1>
 <p align="left"><b>14. </b><a href="#faq14">I'm connected via a cable
@@ -992,9 +986,46 @@ cause of packets being logged in the FORWARD chain.<br>
   </li>
   <li><b>logflags </b>- The packet is being logged because it failed
 the checks implemented by the <b>tcpflags </b><a
- href="Documentation.htm#Interfaces">interface option</a>.<br>
-  </li>
+ href="Documentation.htm#Interfaces">interface option</a>.</li>
 </ol>
+<p align="left">Here is an example:</p>
+<font face="Century Gothic, Arial, Helvetica">
+<p align="left"><font face="Courier">Jun 27 15:37:56 gateway kernel:
+Shorewall:<span style="text-decoration: underline;">all2all:REJECT</span>:<span
+ style="text-decoration: underline;">IN=eth2</span> <span
+ style="text-decoration: underline;">OUT=eth1</span> <span
+ style="text-decoration: underline;">SRC=192.168.2.2</span>
+<span style="text-decoration: underline;">DST=192.168.1.3</span> LEN=67
+TOS=0x00 PREC=0x00 TTL=63 ID=5805 DF <span
+ style="text-decoration: underline;">PROTO=UDP</span>
+SPT=1803 <span style="text-decoration: underline;">DPT=53</span> LEN=47</font></p>
+</font>
+<p align="left">Let's look at the important parts of this message:</p>
+<ul>
+  <li>all2all:REJECT - This packet was REJECTed out of the <span
+ style="font-weight: bold;">all2all</span> chain -- the packet
+was rejected under the "all"-&gt;"all"
+REJECT policy (number 3 above).<a
+ href="file:///vfat/Shorewall-docs/FAQ.htm#faq17"><br>
+    </a></li>
+  <li>IN=eth2 - the packet entered the firewall via eth2. If you see
+"IN=" with no interface name, the packet originated on the firewall
+itself.<br>
+  </li>
+  <li>OUT=eth1 - if accepted, the packet would be sent on eth1. If you
+see "OUT=" with no interface name, the packet would be processed by the
+firewall itself.<br>
+  </li>
+  <li>SRC=192.168.2.2 - the packet was sent by 192.168.2.2</li>
+  <li>DST=192.168.1.3 - the packet is destined for 192.168.1.3</li>
+  <li>PROTO=UDP - UDP Protocol</li>
+  <li>DPT=53 - The destination port is 53 (DNS)<br>
+  </li>
+</ul>
+<p align="left">In this case, 192.168.2.2 was in the "dmz" zone and
+192.168.1.3 is in the "loc" zone. I was missing the rule:</p>
+&nbsp;&nbsp;&nbsp; ACCEPT&nbsp;&nbsp;&nbsp; dmz&nbsp;&nbsp;&nbsp;
+loc&nbsp;&nbsp;&nbsp; udp&nbsp;&nbsp;&nbsp; 53
 <h4><a name="faq18"></a>18. Is there any way to use <b>aliased ip
 addresses</b> with Shorewall, and maintain separate rulesets for
 different IPs?</h4>
@@ -1135,8 +1166,38 @@ to allow connections from the internet to your local network. In all
 other cases, you use ACCEPT unless you need to hijack connections as
 they go through your firewall and handle them on the firewall box
 itself; in that case, you use a REDIRECT rule.<br>
-<br>
-<font size="2">Last updated 10/04/2003 - <a href="support.htm">Tom
+<h4><a name="faq31"></a>31. Does Shorewall provide protection
+against....</h4>
+<ol>
+  <li>IP Spoofing: Sending packets over the WAN interface using an
+internal LAP IP address as the source address? <span
+ style="font-weight: bold;">Answer: </span>Yes.</li>
+  <li>Tear Drop: Sending packets that contain overlapping fragments? <span
+ style="font-weight: bold;">Answer: </span>This is the responsibility
+of the IP stack, not the Netfilter-based firewall since fragment
+reassembly occurs before the stateful packet filter ever touches each
+packet.</li>
+  <li>Smurf and Fraggle: Sending packets that use the WAN or LAN
+broadcast address as the source address? <span
+ style="font-weight: bold;">Answer: </span>Shorewall can be configured
+to do that using the <a href="blacklisting_support.htm">blacklisting</a>
+facility.</li>
+  <li>Land Attack: Sending packets that use the same address as the
+source and destination address? <span style="font-weight: bold;">Answer:
+    </span>Yes, if the <a href="Documentation.htm#Interfaces">routefilter
+interface option</a> is selected.</li>
+  <li>DOS:<br>
+&nbsp;&nbsp; - SYN Dos<br>
+&nbsp;&nbsp; - ICMP Dos<br>
+&nbsp;&nbsp; - Per-host Dos protection<br>
+    <span style="font-weight: bold;">Answer: </span>Shorewall has
+facilities for limiting SYN and ICMP packets. Netfilter as included in
+standard Linux kernels doesn't support per-remote-host limiting except
+by explicit rule that specifies the host IP address; that form of
+limiting is supported by Shorewall.<br>
+  </li>
+</ol>
+<font size="2">Last updated 10/28/2003 - <a href="support.htm">Tom
 Eastep</a></font>
 <p><a href="copyright.htm"><font size="2">Copyright</font> © <font
  size="2">2001, 2002, 2003 Thomas M. Eastep.</font></a><br>

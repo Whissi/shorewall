@@ -6,13 +6,35 @@ Changes since 1.4.7
 2) Applied Andrew Zhoglo's patch that avoids using multiport match for
    ICMP.
 
-3) Fix error handling after "Unable to determine the routes..."
+3) Added support for QUEUE target.
 
-4) Corrected handling of LOGUNCLEAN.
+4) Fix error handling after "Unable to determine the routes..."
 
-5) Corrected handling of "complex" zones.
+5) Fix handling of LOGUNCLEAN
 
-6) Fix tcrules processing.
+6) Added BLACKLISTNEWONLY support.
 
-7) Correct correction for handling of complex zones (twice).
+7) Correct optimization for 'complex' zones.
 
+8) Fix tcrules processing.
+
+9) Liberalize chain names used in the accounting file.
+
+10) Fix the fix for 'complex' zones (twice).
+
+11) Remove incorrect comment from shorewall.conf regarding Debian
+    lockfiles.
+
+12) Change "_exists" suffix (including _nat_exists) to an "exists_"
+    prefix to allow chain names beginning with a digit without
+    lengthening the variable name.
+
+13) Applied and improved Eric Bowles's fix for route filtering.
+
+14) Corrected handling of /32 addresses with broadcast in maclist
+    processing.
+
+15) Generate error for NONE policy where source or destination zone is
+    the firewall itself.
+
+16) Fix 'routeback' for wildcard interfaces.

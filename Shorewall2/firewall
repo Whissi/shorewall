@@ -899,7 +899,7 @@ validate_interfaces_file() {
 
 	for option in $options; do
 	    case $option in
-		dhcp|norfc1918|nobogons|tcpflags|newnotsyn|arp_filter|routefilter|blacklist|proxyarp|maclist|nosmurfs|-)
+		dhcp|norfc1918|nobogons|tcpflags|newnotsyn|arp_filter|routefilter|logmartians|blacklist|proxyarp|maclist|nosmurfs|-)
 		    ;;
 		detectnets)
 		    [ -n "$wildcard" ] && \
@@ -5848,7 +5848,7 @@ add_common_rules() {
 	save_progress_message "Restoring Route Filtering..."
 
 	for f in /proc/sys/net/ipv4/conf/*; do
-	    run_and_save_command "[ -f $f/rp_filter ] && echo 0 > $f/rp_filter"
+	    run_and_save_command "[ -f $f/rp_filter ]    && echo 0 > $f/rp_filter"
 	done
 
 	for interface in $interfaces; do
@@ -5868,6 +5868,31 @@ add_common_rules() {
 	fi
 
 	run_and_save_command ip route flush cache
+    fi
+
+    #
+    # Martian Logging
+    #
+    interfaces="$(find_interfaces_by_option logmartians)"
+
+    if [ -n "$interfaces" -o -n "$LOG_MARTIANS" ]; then
+	echo "Setting up Martian Logging..."
+
+	save_progress_message "Restoring Martian Logging..."
+
+	for f in /proc/sys/net/ipv4/conf/*; do
+	    run_and_save_command "[ -f $f/log_martians ]    && echo 0 > $f/log_martians"
+	done
+
+	for interface in $interfaces; do
+	    file=/proc/sys/net/ipv4/conf/$interface/log_martians
+	    if [ -f $file ]; then
+		run_and_save_command "echo 1 > $file"
+	    else
+		error_message \
+		    "Warning: Cannot set Martian logging on $interface"
+	    fi
+	done
     fi
 
     if [ -n "$DYNAMIC_ZONES" ]; then
@@ -6737,6 +6762,7 @@ do_initialize() {
     BLACKLIST_LOGLEVEL=
     CLAMPMSS=
     ROUTE_FILTER=
+    LOG_MARTIANS=
     DETECT_DNAT_IPADDRS=
     MUTEX_TIMEOUT=
     NEWNOTSYN=
@@ -6868,6 +6894,7 @@ do_initialize() {
     CLAMPMSS=$(added_param_value_no CLAMPMSS $CLAMPMSS)
     ADD_SNAT_ALIASES=$(added_param_value_no ADD_SNAT_ALIASES $ADD_SNAT_ALIASES)
     ROUTE_FILTER=$(added_param_value_no ROUTE_FILTER $ROUTE_FILTER)
+    LOG_MARTIANS=$(added_param_value_no LOG_MARTIANS $LOG_MARTIANS)
     DETECT_DNAT_IPADDRS=$(added_param_value_no DETECT_DNAT_IPADDRS $DETECT_DNAT_IPADDRS)
     FORWARDPING=$(added_param_value_no FORWARDPING $FORWARDPING)
     [ -n "$FORWARDPING" ] && \

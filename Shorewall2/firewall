@@ -1099,23 +1099,25 @@ find_interfaces_by_option() # $1 = option
 #
 find_hosts_by_option() # $1 = option
 {
-    local ignore hosts interface address addresses options
+    local ignore hosts interface address addresses options ipsec= list
 
     while read ignore hosts options; do
 	expandv options
-	if list_search $1 $(separate_list $options); then
+	list=$(separate_list $options)
+	if list_search $1 $list; then
+	    list_search ipsec $list && ipsec=ipsec || ipsec=none
 	    expandv hosts
 	    interface=${hosts%%:*}
 	    addresses=${hosts#*:}
 	    for address in $(separate_list $addresses); do 
-		echo $interface:$address
+		echo ${ipsec}^$interface:$address
 	    done
 	fi
     done < $TMP_DIR/hosts
 
     for interface in $ALL_INTERFACES; do
 	interface_has_option $interface $1 && \
-	    echo ${interface}:0.0.0.0/0
+	    echo none^${interface}:0.0.0.0/0
     done
 }
 
@@ -1727,12 +1729,15 @@ setup_mac_lists() {
     local macpart
     local blob
     local hosts
+    local ipsec
+    local policy=
     #
     # Generate the list of interfaces having MAC verification
     #
     maclist_interfaces=
 
     for hosts in $maclist_hosts; do
+	hosts=${hosts#*^}
 	interface=${hosts%%:*}
 	if ! list_search $interface $maclist_interfaces; then\
 	    if [ -z "$maclist_interfaces" ]; then
@@ -1823,6 +1828,9 @@ setup_mac_lists() {
     # Generate jumps from the input and forward chains
     #
     for hosts in $maclist_hosts; do
+	ipsec=${hosst%^*}
+	hosts=${hosts#*^}
+	[ -n $POLICY_MATCH ] && policy="-m policy --pol $ipsec --dir in" || policy=
 	interface=${hosts%%:*}
 	hosts=${hosts#*:}
 	for chain in $(first_chains $interface) ; do
@@ -4854,6 +4862,7 @@ setup_blacklist() {
     local hosts="$(find_hosts_by_option blacklist)"
     local f=$(find_file blacklist)
     local disposition=$BLACKLIST_DISPOSITION
+    local ipsec policy
 
     if [ -n "$hosts" -a -f $f ]; then
 	echo "Setting up Blacklisting..."
@@ -4865,11 +4874,14 @@ setup_blacklist() {
 	[ -n "$BLACKLISTNEWONLY" ] && state="-m state --state NEW,INVALID" || state=
 	
 	for host in $hosts; do
+	    ipsec=${host%^*}
+	    host=${host#*^}
+	    [ -n $POLICY_MATCH ] && policy="-m policy --pol $ipsec --dir in" || policy=
 	    interface=${host%%:*}
 	    network=${host#*:}
 
 	    for chain in $(first_chains $interface); do
-		run_iptables -A $chain $state $(match_source_hosts $network) -j blacklst
+		run_iptables -A $chain $state $(match_source_hosts $network) $policy -j blacklst
 	    done
 	    
 	    [ $network = 0/0.0.0.0 ] && network= || network=":$network"
@@ -5191,17 +5203,19 @@ initialize_netfilter () {
 	run_iptables -A FORWARD -p tcp \
 	    --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
 
-
     if [ -z "$NEWNOTSYN" ]; then
 	createchain newnotsyn no
 
 	for host in $(find_hosts_by_option newnotsyn); do
+	    ipsec=${host%^*}
+	    host=${host#*^}
+	    [ -n $POLICY_MATCH ] && policy="-m policy --pol $ipsec --dir in" || policy=
 	    interface=${host%%:*}
 	    network=${host#*:}
-	    run_iptables -A newnotsyn -i $interface $(match_source_hosts $network) -p tcp --tcp-flags ACK ACK -j ACCEPT
-	    run_iptables -A newnotsyn -i $interface $(match_source_hosts $network) -p tcp --tcp-flags RST RST -j ACCEPT
-	    run_iptables -A newnotsyn -i $interface $(match_source_hosts $network) -p tcp --tcp-flags FIN FIN -j ACCEPT
-	    run_iptables -A newnotsyn -i $interface $(match_source_hosts ${host#*:}) -j RETURN
+	    run_iptables -A newnotsyn -i $interface $(match_source_hosts $network) $policy -p tcp --tcp-flags ACK ACK -j ACCEPT
+	    run_iptables -A newnotsyn -i $interface $(match_source_hosts $network) $policy -p tcp --tcp-flags RST RST -j ACCEPT
+	    run_iptables -A newnotsyn -i $interface $(match_source_hosts $network) $policy -p tcp --tcp-flags FIN FIN -j ACCEPT
+	    run_iptables -A newnotsyn -i $interface $(match_source_hosts ${host#*:}) $policy -j RETURN
 	done
 
 	run_user_exit newnotsyn
@@ -5324,11 +5338,14 @@ add_common_rules() {
 	echo "Adding Anti-smurf Rules"
 
 	for host in $hosts; do
+	    ipsec=${host%^*}
+	    host=${host#*^}
+	    [ -n $POLICY_MATCH ] && policy="-m policy --pol $ipsec --dir in" || policy=
 	    interface=${host%%:*}
 	    network=${host#*:}
 
 	    for chain in $(first_chains $interface); do
-		run_iptables -A $chain  -m state --state NEW $(match_source_hosts $network) -j smurfs
+		run_iptables -A $chain  -m state --state NEW $(match_source_hosts $network) $policy -j smurfs
 	    done
 	done
     fi
@@ -5341,14 +5358,22 @@ add_common_rules() {
 
 	echo "Adding rules for DHCP"
 
+	if [ -n "$POLICY_MATCH" ]; then
+	    policyin="-m policy --dir in --pol none"
+	    policyout="-m policy --dir out --pol none"
+	else
+	    policyin=
+	    policyout=
+	fi
+
 	for interface in $interfaces; do
 	    if [ -n "$BRIDGING" ]; then
 		eval is_bridge=\$$(chain_base $interface)_ports
 		[ -n "$is_bridge" ] && \
-		    iptables -A $(forward_chain $interface) -p udp -o $interface --dport 67:68 -j ACCEPT
+		    iptables -A $(forward_chain $interface) -p udp -o $interface --dport 67:68 $policyin -j ACCEPT
             fi
-	    run_iptables -A $(input_chain $interface) -p udp --dport 67:68 -j ACCEPT
-	    run_iptables -A OUTPUT    -o $interface  -p udp --dport 67:68 -j ACCEPT
+	    run_iptables -A $(input_chain $interface) -p udp --dport 67:68 $policyin  -j ACCEPT
+	    run_iptables -A OUTPUT -o $interface      -p udp --dport 67:68 $policyout -j ACCEPT
 	done
     fi
     #
@@ -5413,11 +5438,14 @@ add_common_rules() {
 	done < $TMP_DIR/rfc1918
 
 	for host in $hosts; do
+	    ipsec=${host%^*}
+	    host=${host#*^}
+	    [ -n $POLICY_MATCH ] && policy="-m policy --pol $ipsec --dir in" || policy=
 	    interface=${host%%:*}
 	    networks=${host#*:}
 
 	    for chain in $(first_chains $interface); do
-		run_iptables -A $chain -m state --state NEW $(match_source_hosts $networks) -j norfc1918
+		run_iptables -A $chain -m state --state NEW $(match_source_hosts $networks) $policy -j norfc1918
 	    done
 
 	    [ -n "$MANGLE_ENABLED" -a -z "$CONNTRACK_MATCH" ] && \
@@ -5459,6 +5487,9 @@ add_common_rules() {
 	done < $TMP_DIR/bogons
 
 	for host in $hosts; do
+	    ipsec=${host%^*}
+	    host=${host#*^}
+	    [ -n $POLICY_MATCH ] && policy="-m policy --pol $ipsec --dir in" || policy=
 	    interface=${host%%:*}
 	    network=${host#*:}
 
@@ -5513,11 +5544,14 @@ add_common_rules() {
 	run_iptables -A tcpflags -p tcp --syn --sport 0             $disposition
 
 	for host in $hosts; do
+	    ipsec=${host%^*}
+	    host=${host#*^}
+	    [ -n $POLICY_MATCH ] && policy="-m policy --pol $ipsec --dir in" || policy=
 	    interface=${host%%:*}
 	    network=${host#*:}
 
 	    for chain in $(first_chains $interface); do
-		run_iptables -A $chain -p tcp $(match_source_hosts $network) -j tcpflags
+		run_iptables -A $chain -p tcp $(match_source_hosts $network) $policy -j tcpflags
 	    done
 	done
     fi

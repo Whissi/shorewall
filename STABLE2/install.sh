@@ -514,13 +514,9 @@ fi
 # Install the Action files
 #
 for f in action.* ; do
-    if [ -f ${PREFIX}/usr/share/shorewall/$f ]; then
-	backup_file /usr/share/shorewall/$f
-    else
-	run_install -o $OWNER -g $GROUP -m 0600 $f ${PREFIX}/usr/share/shorewall/$f
-	echo
-	echo "Action ${f#*.} file installed as ${PREFIX}/usr/share/shorewall/$f"
-    fi
+    install_file_with_backup $f ${PREFIX}/usr/share/shorewall/$f 0600
+    echo
+    echo "Action ${f#*.} file installed as ${PREFIX}/usr/share/shorewall/$f"
 done
 #
 # Backup the version file

@@ -54,7 +54,7 @@
 #        /etc/rc.d/rc.local file is modified to start the firewall.
 #
 
-VERSION=2.0.0-Beta2
+VERSION=2.0.0-Beta3
 
 usage() # $1 = exit status
 {
@@ -432,13 +432,9 @@ fi
 #
 # Install the rfc1918 file
 #
-if [ -f ${PREFIX}/etc/shorewall/rfc1918 ]; then
-    backup_file /etc/shorewall/rfc1918
-else
-    run_install -o $OWNER -g $GROUP -m 0600 rfc1918 ${PREFIX}/etc/shorewall/rfc1918
-    echo
-    echo "RFC 1918 file installed as ${PREFIX}/etc/shorewall/rfc1918"
-fi
+install_file_with_backup rfc1918 ${PREFIX}/usr/share/shorewall/rfc1918 0600
+echo
+echo "RFC 1918 file installed as ${PREFIX}/etc/shorewall/rfc1918"
 #
 # Install the init file
 #

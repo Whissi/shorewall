@@ -1,6 +1,6 @@
 %define name shorewall
 %define version 2.0.0
-%define release 0Beta2
+%define release 0Beta3
 %define prefix /usr
 
 Summary: Shoreline Firewall is an iptables-based firewall for Linux systems.
@@ -89,7 +89,6 @@ fi
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/tunnels
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/hosts
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/blacklist
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/rfc1918
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/init
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/start
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/stop
@@ -133,10 +132,14 @@ fi
 %attr(0444,root,root) /usr/share/shorewall/functions
 %attr(0544,root,root) /usr/share/shorewall/firewall
 %attr(0544,root,root) /usr/share/shorewall/help
+%attr(0600,root,root) /usr/share/shorewall/rfc1918
 
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel
 
 %changelog
+* Mon Feb 16 2004 Tom Eastep <tom@shorewall.net>
+- Moved rfc1918 to /usr/share/shorewall
+- Update for Beta 3
 * Sat Feb 14 2004 Tom Eastep <tom@shorewall.net>
 - Removed common.def
 - Unconditionally replace actions.std

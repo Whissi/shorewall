@@ -533,6 +533,7 @@ validate_zone() # $1 = zone
 validate_interfaces_file() {
     local wildcard
     local found_obsolete_option=
+    local z interface subnet options r iface option
 
     while read z interface subnet options; do
 	expandv z interface subnet options
@@ -606,6 +607,8 @@ validate_interfaces_file() {
 # Validate the zone names and options in the hosts file
 #
 validate_hosts_file() {
+   local z hosts options r interface host option 
+
     while read z hosts options; do
 	expandv z hosts options
 	r="$z $hosts $options"
@@ -1698,7 +1701,7 @@ process_tc_rule()
 	    esac
 	fi
 
-	if [ "x$user" != "x-" ]; then
+	if [ "x${user:--}" != "x-" ]; then
 
 	    [ "$chain" != tcout ] && \
 		fatal_error "Invalid use of a user/group: rule \"$rule\""
@@ -2423,6 +2426,8 @@ process_actions1() {
 		    esac
 	    esac
 	    
+	    [ "$xaction" = "$(chain_base $xaction)" ] || fatal_error "Invalid Action Name: $xaction"
+
 	    if ! list_search $xaction $ACTIONS; then
 		f=action.$xaction
 		fn=$(find_file $f)
@@ -4854,7 +4859,7 @@ activate_rules()
 	#
 	# There is a fw->fw chain. Send loopback output through that chain
 	#
-	run_ip link ls | fgrep LOOPBACK | while read ordinal interface rest ; do
+	run_ip link ls | grep LOOPBACK | while read ordinal interface rest ; do
 	    run_iptables -A OUTPUT -o ${interface%:*} -j $chain
 	done
 	#
@@ -5026,7 +5031,9 @@ refresh_firewall()
 #
 add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 {
-    local base
+    local base interface host newhost zone z h z1 z2 chain terminator
+    local dhcp_interfaces blacklist_interfaces maclist_interfaces tcpflags_interfaces
+    local rulenum source_chain dest_hosts iface hosts
 
     nat_chain_exists() # $1 = chain name
     {
@@ -5056,6 +5063,10 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
     # Load $zones
     #
     determine_zones
+    #
+    # Validate Interfaces File
+    #
+    validate_interfaces_file
     #
     # Validate Zone
     #

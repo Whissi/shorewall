@@ -1,7 +1,7 @@
+#	
+# 	Shorewall 1.4 -- Sample Interface File For One Interface
 #
-# Shorewall 1.3 -- Interfaces File
-#
-# /etc/shorewall/interfaces
+# 	/etc/shorewall/interfaces
 #
 #	You must add an entry in this file for each network interface on your
 #	firewall system.
@@ -24,7 +24,7 @@
 #
 #	BROADCAST	The broadcast address for the subnetwork to which the
 #			interface belongs. For P-T-P interfaces, this
-#			column is left black.If the interface has multiple
+#			column is left blank.If the interface has multiple
 #			addresses on multiple subnets then list the broadcast
 #			addresses as a comma-separated list.
 #					    
@@ -34,7 +34,7 @@
 #			the firewall is started, you must have iproute
 #			installed and the interface must only be associated
 #			with a single subnet.
-#			
+#
 #			If you don't want to give a value for this column but
 #			you want to enter a value in the OPTIONS column, enter
 #			"-" in this column.
@@ -42,92 +42,86 @@
 #	OPTIONS		A comma-separated list of options including the
 #			following:
 #
-#			dhcp	     - interface is managed by DHCP or used by
-#                                      a DHCP server running on the firewall or
-#				       you have a static IP but are on a LAN
-#				       segment with lots of Laptop DHCP clients.
-#			routestopped - (Deprecated -- use 
-#				       /etc/shorewall/routestopped)
-#				       When the firewall is stopped, allow
-#				       and route traffic to and from this
-#				       interface.
-#			norfc1918    - This interface should not receive
-#				       any packets whose source is in one
-#				       of the ranges reserved by RFC 1918
-#				       (i.e., private or "non-routable"
-#				       addresses. If packet mangling is
-#				       enabled in shorewall.conf, packets
-#				       whose destination addresses are
-#				       reserved by RFC 1918 are also rejected.
-#			multi	     - This interface has multiple IP
-#				       addresses and you want to be able to
-#				       route between them.
-#			routefilter  - turn on kernel route filtering for this
-#				       interface (anti-spoofing measure). This
-#                                      option can also be enabled globally in
-#				       the /etc/shorewall/shorewall.conf file.
-#			dropunclean  - Logs and drops mangled/invalid packets
+#			dhcp
+#					Interface is managed by DHCP or used by
+#					a DHCP server running on the firewall or
+#					you have a static IP but are on a LAN
+#					segment with lots of Laptop DHCP clients.
+#			norfc1918
+#					This interface should not receive
+#					any packets whose source is in one
+#					of the ranges reserved by RFC 1918
+#					(i.e., private or "non-routable"
+#					addresses. If packet mangling is
+#					enabled in shorewall.conf, packets
+#					whose destination addresses are
+#					reserved by RFC 1918 are also rejected.
+#			routefilter
+#					Turn on kernel route filtering for this
+#					interface (anti-spoofing measure). This
+#					option can also be enabled globally in
+#					the /etc/shorewall/shorewall.conf file.
+#			dropunclean
+#					Logs and drops mangled/invalid packets
+#			logunclean
+#					Logs mangled/invalid packets but does
+#					not drop them.
+#			blacklist
+#					Check packets arriving on this interface
+#					against the /etc/shorewall/blacklist
+#					file.
+#			maclist
+#					Connection requests from this interface
+#					are compared against the contents of
+#					/etc/shorewall/maclist. If this option
+#					is specified, the interface must be
+#					an ethernet NIC and must be up before
+#					Shorewall is started.
+#			tcpflags
+#					Packets arriving on this interface are
+#					checked for certain illegal combinations
+#					of TCP flags. Packets found to have
+#					such a combination of flags are handled
+#					according to the setting of
+#					TCP_FLAGS_DISPOSITION after having been
+#					logged according to the setting of
+#					TCP_FLAGS_LOG_LEVEL.
+#			proxyarp
+#					Sets /proc/sys/net/ipv4/conf/<interface>/proxy_arp.
+#					Do NOT use this option if you are
+#					employing Proxy ARP through entries in
+#					/etc/shorewall/proxyarp. This option is
+#					intended soley for use with Proxy ARP
+#					sub-networking as described at:
+#					http://www.tldp.org/HOWTO/mini/Proxy-ARP-Subnet
 #
-#			logunclean   - Logs mangled/invalid packets but does
-#				       not drop them.
-#			blacklist    - Check packets arriving on this interface
-#				       against the /etc/shorewall/blacklist
-#				       file.
-#			maclist	     - Connection requests from this interface
-#				       are compared against the contents of
-#				       /etc/shorewall/maclist. If this option
-#				       is specified, the interface must be
-#				       an ethernet NIC and must be up before
-#				       Shorewall is started.
-#			tcpflags     - Packets arriving on this interface are
-#				       checked for certain illegal combinations
-#				       of TCP flags. Packets found to have
-#				       such a combination of flags are handled
-#				       according to the setting of
-#				       TCP_FLAGS_DISPOSITION after having been
-#				       logged according to the setting of
-#				       TCP_FLAGS_LOG_LEVEL.
-#			proxyarp     - 
-#				Sets 
-#				/proc/sys/net/ipv4/conf/<interface>/proxy_arp.
-#				Do NOT use this option if you are
-#				employing Proxy ARP through entries in
-#				/etc/shorewall/proxyarp. This option is
-#				intended soley for use with Proxy ARP
-#				sub-networking as described at:
-#				http://www.tldp.org/HOWTO/mini/Proxy-ARP-Subnet
-#			
 #			The order in which you list the options is not
 #			significant but the list should have no embedded white
 #			space.
 #
-#	Example 1:	Suppose you have eth0 connected to a DSL modem and
-#			eth1 connected to your local network and that your
-#			local subnet is 192.168.1.0/24. The interface gets
-#			it's IP address via DHCP from subnet
-#			206.191.149.192/27. You have a DMZ with subnet
-#			192.168.2.0/24 using eth2. You want to be able to
-#			access the firewall from the local network when the
-#			firewall is stopped.
+#	Example 1:
+#			Suppose you have eth0 connected to a DSL modem
+#			that gets it's IP address via DHCP from subnet
+#			206.191.149.192/27.
 #
 #			Your entries for this setup would look like:
 #
-#			net	eth0	206.191.149.223	dhcp
-#			local	eth1	192.168.1.255	routestopped
-#			dmz	eth2	192.168.2.255
+#			#ZONE	INTERFACE	BROADCAST	OPTIONS
+#			net	eth0		206.191.149.223	dhcp
 #
-#	Example 2:	The same configuration without specifying broadcast
+#	Example 2:
+#			The same configuration without specifying broadcast
 #			addresses is:
 #
-#			net	eth0	detect		dhcp
-#			loc	eth1	detect		routestopped
-#			dmz	eth2	detect
+#			#ZONE	INTERFACE	BROADCAST	OPTIONS
+#			net	eth0		detect		dhcp
 #
-#	Example 3:	You have a simple dial-in system with no ethernet
+#	Example 3:
+#			You have a simple dial-in system with no ethernet
 #			connections.
-#
-#			net	ppp0	-
+#			#ZONE	INTERFACE	BROADCAST	OPTIONS
+#			net	ppp0		-
 ##############################################################################
-#ZONE	 INTERFACE	BROADCAST	OPTIONS
+#ZONE	INTERFACE	BROADCAST	OPTIONS
 net	eth0		detect		norfc1918,routefilter,dhcp
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

@@ -1220,6 +1220,21 @@ disable_ipv6() {
     fi
 }
 
+disable_ipv6_1() {
+    local foo=$(ip -f inet6 addr ls 2> /dev/null)
+
+    if [ -n "$foo" ]; then
+	if qt which ip6tables; then
+	    progress_message "Disabling IPV6..."
+	    ip6tables -P FORWARD DROP
+	    ip6tables -P INPUT DROP
+	    ip6tables -P OUTPUT DROP
+	else
+	    error_message "WARNING: DISABLE_IPV6=Yes in shorewall.conf but this system does not appear to have ip6tables"
+	fi
+    fi
+}
+
 #
 # Stop the Firewall
 #
@@ -1271,7 +1286,7 @@ stop_firewall() {
     delete_proxy_arp
     [ -n "$CLEAR_TC" ] && delete_tc1
 
-    [ -n "$DISABLE_IPV6" ] && disable_ipv6
+    [ -n "$DISABLE_IPV6" ] && disable_ipv6_1
 
     if [ -z "$ADMINISABSENTMINDED" ]; then
 	for chain in INPUT OUTPUT FORWARD; do
@@ -2441,7 +2456,7 @@ refresh_tc() {
 # Add one Filter Rule from an action -- Helper function for the action file processor
 #
 # The caller has established the following variables:
-#    check        = current command. If 'check', we're executing a 'check'
+#    COMMAND      = current command. If 'check', we're executing a 'check'
 #                   which only goes through the motions.
 #    client	  = SOURCE IP or MAC
 #    server	  = DESTINATION IP or interface
@@ -2941,7 +2956,7 @@ process_actions2() {
 		log_action dLogNotSyn DROP		
 		;;
 	    dropInvalid)
-		[ "COMMAND" != check ] && run_iptables -A dropInvalid -m state --state INVALID -j DROP
+		[ "$COMMAND" != check ] && run_iptables -A dropInvalid -m state --state INVALID -j DROP
 		;;
 	    *)
 		f=action.$xaction
@@ -2960,7 +2975,7 @@ process_actions2() {
 # Add a NAT rule - Helper function for the rules file processor
 #
 # The caller has established the following variables:
-#    command        = The current command -- if 'check', we just go through
+#    COMMAND        = The current command -- if 'check', we just go through
 #                     the motions.
 #    cli	    = Source IP, interface or MAC Specification
 #    serv	    = Destination IP Specification
@@ -3148,7 +3163,7 @@ add_nat_rule() {
 # Add one Filter Rule -- Helper function for the rules file processor
 #
 # The caller has established the following variables:
-#    command     = current command. If 'check', we're executing a 'check'
+#    COMMAND     = current command. If 'check', we're executing a 'check'
 #                  which only goes through the motions.
 #    client	 = SOURCE IP or MAC
 #    server	 = DESTINATION IP or interface

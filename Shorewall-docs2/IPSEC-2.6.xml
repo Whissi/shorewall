@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-08-18</pubdate>
+    <pubdate>2004-08-19</pubdate>
 
     <copyright>
       <year>2004</year>
@@ -37,7 +37,7 @@
   <warning>
     <para>To use this support, your kernel and iptables must include the
     Netfilter+ipsec patches and policy match support and you must be running
-    Shorewall 2.1.4 or later.</para>
+    Shorewall 2.1.5 or later.</para>
   </warning>
 
   <warning>
@@ -97,7 +97,60 @@
     that is going to be encrypted and incoming traffic that has been decrypted
     must be matched against policies in the SPD.</para>
 
-    <para></para>
+    <para>Shorewall provides support for policy matching in two ways:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>In <filename>/etc/shorewall/masq</filename>, traffic that will
+        later be encrypted is exempted from MASQUERADE/SNAT using existing
+        entries. If you want to MASQUERADE/SNAT outgoing traffic that will
+        later be encrypted, you must include an entry in the new IPSEC column
+        in that file.</para>
+      </listitem>
+
+      <listitem>
+        <para>A <filename>new /etc/shorewall/ipsec</filename> file allows you
+        to associate zones with traffic that will be encrypted or that has
+        been decrypted.</para>
+      </listitem>
+    </orderedlist>
+
+    <para>In summary, Shorewall 2.1.5 and later versions provide the
+    facilities to replace the use of ipsec pseudo-interfaces in zone and
+    MASQUERADE/SNAT definition.</para>
+
+    <para>There are two cases to consider:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>Encrypted communication is used to/from all hosts in a
+        zone.</para>
+
+        <para>The value <emphasis role="bold">Yes</emphasis> is placed in the
+        IPSEC column of the <filename>/etc/shorewall/ipsec</filename> entry
+        for the zone. </para>
+      </listitem>
+
+      <listitem>
+        <para>Encrypted communication is used to/from only part of the hosts
+        in a zone.</para>
+
+        <para>The value <emphasis role="bold">No</emphasis> is placed in the
+        IPSEC column of the <filename>/etc/shorewall/ipsec</filename> entry
+        for the zone and the new <emphasis role="bold">ipsec</emphasis> option
+        is specified in <filename>/etc/shorewall/hosts</filename> for those
+        hosts requiring secure communication.</para>
+      </listitem>
+    </orderedlist>
+
+    <note>
+      <para>For simple zones such as are shown in the following examples, the
+      two techniques are equivalent and are used interchangably.</para>
+    </note>
+
+    <para>Finally, the OPTIONS, IN OPTIONS and OUT OPTIONS columns in
+    /etc/shorewall/ipsec can be used to match the zone to a particular (set
+    of) SA(s) used to encrypt and decrypt traffic to/from the zone.</para>
   </section>
 
   <section>
@@ -186,6 +239,16 @@ vpn               eth0:192.168.1.0/24    <emphasis role="bold">ipsec</emphasis>
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
     </blockquote>
 
+    <para>Assuming that you want to give each local network free access to the
+    remote network and vice versa, you would need the following
+    <filename>/etc/shorewall/policy</filename> entries on each system:</para>
+
+    <blockquote>
+      <programlisting>#SOURCE          DESTINATION            POLICY          LEVEL       BURST:LIMIT
+loc              vpn                    ACCEPT
+vpn              loc                    ACCEPT</programlisting>
+    </blockquote>
+
     <para>Once you have these entries in place, restart Shorewall (type
     shorewall restart); you are now ready to configure IPSEC.</para>
   </section>
@@ -212,6 +275,7 @@ vpn               eth0:192.168.1.0/24    <emphasis role="bold">ipsec</emphasis>
         <programlisting>#ZONE           DISPLAY         COMMENTS
 net             Internet        The big bad internet
 vpn             VPN             Road Warriors
+loc             local           Local Network (192.168.1.0/24)
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
       </blockquote>
 
@@ -313,8 +377,8 @@ spdadd 192.168.20.40/32 192.168.20.10/32 any -P in  ipsec esp/transport/192.168.
       <para><filename>/etc/shorewall/zones</filename>:</para>
 
       <programlisting>#ZONE   DISPLAY         COMMENTS
-loc     Local           Local Network
 net     Net             Internet
+loc     Local           Local Network
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
 
       <para><filename>/etc/shorewall/interfaces</filename>:</para>
@@ -323,11 +387,29 @@ net     Net             Internet
 net     eth0            detect          routefilter,dhcp,tcpflags
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
 
+      <para>/etc/shorewall/tunnels:</para>
+
+      <programlisting>#TYPE          ZONE             GATEWAY         GATEWAY
+#                                               ZONE
+ipsec:noah     net              192.168.20.0/24 loc</programlisting>
+
+      <para>/etc/shorewall/ipsec:</para>
+
+      <programlisting>#ZONE          IPSEC            OPTIONS             IN           OUT
+#              ONLY                                 OPTIONS      OPTIONS
+loc            Yes              mode=transport</programlisting>
+
       <para><filename>/etc/shorewall/hosts</filename>:</para>
 
       <programlisting>#ZONE           HOST(S)                         OPTIONS
-loc             eth0:192.168.20.0/24             ipsec
+loc             eth0:192.168.20.0/24  
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS LINE -- DO NOT REMOVE</programlisting>
+
+      <para>It is worth noting that although <emphasis>loc</emphasis> is a
+      sub-zone of <emphasis>net</emphasis>, because <emphasis>loc</emphasis>
+      is an IPSEC-only zone it does not need to be defined before
+      <emphasis>net</emphasis> in
+      <emphasis>/etc/shorewall/zones</emphasis>.</para>
 
       <para><filename>/etc/shorewall/policy</filename>:</para>
 

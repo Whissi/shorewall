@@ -29,7 +29,8 @@
       1.2 or any later version published by the Free Software Foundation; with
       no Invariant Sections, with no Front-Cover, and with no Back-Cover
       Texts. A copy of the license is included in the section entitled
-      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
 
@@ -41,8 +42,8 @@
 
     <itemizedlist>
       <listitem>
-        <para><filename>/sbin/shorewall</filename> ̶ The program that you use
-        to interact with Shorewall. Normally the root user&#39;s PATH includes
+        <para><filename>/sbin/shorewall</filename> — The program that you use
+        to interact with Shorewall. Normally the root user's PATH includes
         <filename>/sbin</filename> and the program can be run from a shell
         prompt by simply typing <command>shorewall</command> followed by a
         command. To see a list of supported commands, use the
@@ -59,16 +60,17 @@
       <listitem>
         <para><filename>/etc/shorewall</filename> — The default directory
         where Shorewall looks for configuration files. See the section
-        entitled <link linkend="AltConfig">Alternate Configuration Directories</link>
-        for information about how you can direct Shorewall to look in other
-        directories.</para>
+        entitled <link linkend="AltConfig">Alternate Configuration
+        Directories</link> for information about how you can direct Shorewall
+        to look in other directories.</para>
       </listitem>
 
       <listitem>
-        <para><filename>/etc/init.d/shorewall</filename> (<filename>/etc/rc.d/firewall.rc</filename>
-        on Slackware) — The script run by <command>init</command> (the program
-        responsible for startup and shutdown of your system) to start
-        Shorewall at boot time and to stop Shorewall at shutdown.</para>
+        <para><filename>/etc/init.d/shorewall</filename>
+        (<filename>/etc/rc.d/firewall.rc</filename> on Slackware) — The script
+        run by <command>init</command> (the program responsible for startup
+        and shutdown of your system) to start Shorewall at boot time and to
+        stop Shorewall at shutdown.</para>
       </listitem>
 
       <listitem>
@@ -79,8 +81,9 @@
 
       <listitem>
         <para><filename>/usr/share/shorewall/functions</filename> — A library
-        of Bourne Shell functions used by both<filename> /sbin/shorewall</filename>
-        and <filename>/usr/share/shorewall/firewall</filename>.</para>
+        of Bourne Shell functions used by both<filename>
+        /sbin/shorewall</filename> and
+        <filename>/usr/share/shorewall/firewall</filename>.</para>
       </listitem>
     </itemizedlist>
   </section>
@@ -88,21 +91,23 @@
   <section>
     <title>Starting, Stopping and Clearing</title>
 
-    <para>As explained in the <ulink url="Introduction.html">Introduction</ulink>,
-    Shorewall is not something that runs all of the time in your system.
-    Nevertheless, for integrating Shorewall into your initialization scripts
-    it is useful to speak of <firstterm>starting</firstterm> Shorewall and
+    <para>As explained in the <ulink
+    url="Introduction.html">Introduction</ulink>, Shorewall is not something
+    that runs all of the time in your system. Nevertheless, for integrating
+    Shorewall into your initialization scripts it is useful to speak of
+    <firstterm>starting</firstterm> Shorewall and
     <emphasis>stopping</emphasis> Shorewall.</para>
 
     <itemizedlist>
       <listitem>
-        <para>Shorewall is started using the <command>shorewall start</command>
-        command. Once the start command completes successfully, Netfilter is
-        configured as described in your Shorewall configuration files. If
-        there is an error during <command>shorewall start</command>, then if
-        you have a <firstterm>saved configuration</firstterm> then that
-        configuration is restored. Otherwise, an implicit <command>shorewall
-        stop</command> is executed.</para>
+        <para>Shorewall is started using the <command>shorewall
+        start</command> command. Once the start command completes
+        successfully, Netfilter is configured as described in your Shorewall
+        configuration files. If there is an error during <command>shorewall
+        start</command>, then if you have a <firstterm>saved
+        configuration</firstterm> then that configuration is restored.
+        Otherwise, an implicit <command>shorewall stop</command> is
+        executed.</para>
       </listitem>
 
       <listitem>
@@ -113,7 +118,8 @@
           <para>The <command>shorewall stop</command> command does not remove
           all netfilter rules and open your firewall for all traffic to pass.
           It rather places your firewall in a safe state defined by the
-          contents of your <ulink url="Documentation.htm#Routestopped">/etc/shorewall/routestopped</ulink>
+          contents of your <ulink
+          url="Documentation.htm#Routestopped">/etc/shorewall/routestopped</ulink>
           file and the setting of ADMINISABSENTMINDED in <ulink
           url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>.</para>
         </important>
@@ -139,16 +145,17 @@
     <title>Tracing Command Execution</title>
 
     <para>If you include the word <emphasis role="bold">trace</emphasis> as
-    the first parameter to <filename>an /sbin/shorewall</filename> command
-    that transfers control to <filename>/usr/share/shorewall/firewall</filename>,
-    execution of the latter program will be traced to STDERR.</para>
+    the first parameter to an <filename>/sbin/shorewall</filename> command
+    that transfers control to
+    <filename>/usr/share/shorewall/firewall</filename>, execution of the
+    latter program will be traced to STDERR.</para>
 
     <example>
       <title>Tracing <command>shorewall start</command></title>
 
       <para>To trace the execution of <command>shorewall start</command> and
       write the trace to the file <filename>/tmp/trace</filename>, you would
-      enter:<programlisting><command>shorewall trace start 2&#62; /tmp/trace</command></programlisting></para>
+      enter:<programlisting><command>shorewall trace start 2&gt; /tmp/trace</command></programlisting></para>
     </example>
   </section>
 
@@ -159,26 +166,38 @@
     that Shorewall will start automatically at boot time. If you are using the
     <command>install.sh </command>script from the .tgz and it cannot determine
     how to configure automatic startup, a message to that effect will be
-    displayed. You will need to consult your distribution&#39;s documentation
-    to see how to integrate the <filename>/etc/init.d/shorewall</filename>
-    script into the distribution&#39;s startup mechanism.<caution><itemizedlist><listitem><para>Shorewall
-    startup is disabled by default. Once you have configured your firewall,
-    you can enable startup by removing the file <filename>/etc/shorewall/startup_disabled</filename>.
-    Note: Users of the .deb package must edit <filename>/etc/default/shorewall</filename>
-    and set <quote>startup=1</quote>.</para></listitem><listitem><para>If you
-    use dialup or some flavor of PPP where your IP address can change
-    arbitrarily, you may want to start the firewall in your
-    <command>/etc/ppp/ip-up.local</command> script. I recommend just placing
-    <quote><command>/sbin/shorewall restart</command></quote> in that script.</para></listitem></itemizedlist></caution></para>
+    displayed. You will need to consult your distribution's documentation to
+    see how to integrate the <filename>/etc/init.d/shorewall</filename> script
+    into the distribution's startup mechanism.<caution>
+        <itemizedlist>
+          <listitem>
+            <para>Shorewall startup is disabled by default. Once you have
+            configured your firewall, you can enable startup by removing the
+            file <filename>/etc/shorewall/startup_disabled</filename>. Note:
+            Users of the .deb package must edit
+            <filename>/etc/default/shorewall</filename> and set
+            <quote>startup=1</quote>.</para>
+          </listitem>
+
+          <listitem>
+            <para>If you use dialup or some flavor of PPP where your IP
+            address can change arbitrarily, you may want to start the firewall
+            in your <command>/etc/ppp/ip-up.local</command> script. I
+            recommend just placing <quote><command>/sbin/shorewall
+            restart</command></quote> in that script.</para>
+          </listitem>
+        </itemizedlist>
+      </caution></para>
   </section>
 
   <section>
-    <title>Saving a Working Configuration for Error Recovery and Fast Startup</title>
+    <title>Saving a Working Configuration for Error Recovery and Fast
+    Startup</title>
 
     <para>Once you have Shorewall working the way that you want it to, you can
     use <command>shorewall save</command> to <firstterm>save</firstterm> the
-    commands necessary to recreate that configuration in a
-    <firstterm>restore script</firstterm>.</para>
+    commands necessary to recreate that configuration in a <firstterm>restore
+    script</firstterm>.</para>
 
     <para>In its simplest form, the save command is just:</para>
 
@@ -191,9 +210,9 @@
     different file name may also be specified in the <command>save</command>
     command:</para>
 
-    <programlisting><command>shorewall save &#60;filename&#62;</command></programlisting>
+    <programlisting><command>shorewall save &lt;filename&gt;</command></programlisting>
 
-    <para>Where &#60;<emphasis>filename</emphasis>&#62; is a simple file name
+    <para>Where &lt;<emphasis>filename</emphasis>&gt; is a simple file name
     (no slashes).</para>
 
     <para>Once created, the default restore script serves several useful
@@ -211,8 +230,9 @@
         <command>shorewall -f start</command>) causes Shorewall to look for
         the default restore script and if it exists, the script is run. This
         is much faster than starting Shorewall using the normal mechanism of
-        reading the configuration files and running <command>iptables</command>
-        dozens or even hundreds of times. <filename>/etc/init.d/shorewall</filename>
+        reading the configuration files and running
+        <command>iptables</command> dozens or even hundreds of times.
+        <filename>/etc/init.d/shorewall</filename>
         (<filename>/etc/rc.d/firewall.rc</filename>) uses the -f option when
         it is processing a request to start Shorewall.</para>
       </listitem>
@@ -221,11 +241,12 @@
         <para>The <command>shorewall restore</command> command can be used at
         any time to quickly configure the firewall.</para>
 
-        <programlisting><command>shorewall restore [ &#60;filename&#62; ]</command></programlisting>
+        <programlisting><command>shorewall restore [ &lt;filename&gt; ]</command></programlisting>
 
-        <para>If no &#60;<emphasis>filename</emphasis>&#62; is given, the
+        <para>If no &lt;<emphasis>filename</emphasis>&gt; is given, the
         default restore script is used. Otherwise, the script
-        <filename>/var/lib/shorewall/&#60;filename&#62;</filename> is used.</para>
+        <filename>/var/lib/shorewall/&lt;filename&gt;</filename> is
+        used.</para>
       </listitem>
     </itemizedlist>
 
@@ -233,15 +254,16 @@
     different Shorewall firewall configurations and switch between them
     quickly using the <command>restore</command> command.</para>
 
-    <para>Restore scripts may be removed using the <command>shorewall forget</command>
-    command:</para>
+    <para>Restore scripts may be removed using the <command>shorewall
+    forget</command> command:</para>
 
-    <programlisting><command>shorewall forget [ &#60;filename&#62; ]</command></programlisting>
+    <programlisting><command>shorewall forget [ &lt;filename&gt; ]</command></programlisting>
 
-    <para>If no &#60;<emphasis>filename</emphasis>&#62; is given, the default
-    restore script is removed. Otherwise, <filename>/var/lib/shorewall/&#60;filename&#62;</filename>
-    is removed (of course, you can also use the Linux <command>rm</command>
-    command from the shell prompt to remove these files).</para>
+    <para>If no &lt;<emphasis>filename</emphasis>&gt; is given, the default
+    restore script is removed. Otherwise,
+    <filename>/var/lib/shorewall/&lt;filename&gt;</filename> is removed (of
+    course, you can also use the Linux <command>rm</command> command from the
+    shell prompt to remove these files).</para>
   </section>
 
   <section>
@@ -249,27 +271,29 @@
 
     <para>As explained above, Shorewall normally looks for configuration files
     in the directory <filename class="directory">/etc/shorewall</filename>.
-    The <command>shorewall start</command>, <command>shorewall restart</command>,
-    <command>shorewall check</command>, and <command>shorewall try </command>commands
-    allow you to specify a different directory for Shorewall to check before
-    looking in <filename class="directory">/etc/shorewall</filename>:</para>
+    The <command>shorewall start</command>, <command>shorewall
+    restart</command>, <command>shorewall check</command>, and
+    <command>shorewall try </command>commands allow you to specify a different
+    directory for Shorewall to check before looking in <filename
+    class="directory">/etc/shorewall</filename>:</para>
 
-    <programlisting>     <command>shorewall [ -c &#60;configuration-directory&#62; ] {start|restart|check}</command>
-     <command>shorewall try &#60;configuration-directory&#62; [ &#60;timeout&#62; ]</command></programlisting>
+    <programlisting>     <command>shorewall [ -c &lt;configuration-directory&gt; ] {start|restart|check}</command>
+     <command>shorewall try &lt;configuration-directory&gt; [ &lt;timeout&gt; ]</command></programlisting>
 
-    <para>If a <emphasis>&#60;configuration-directory</emphasis>&#62; is
+    <para>If a <emphasis>&lt;configuration-directory</emphasis>&gt; is
     specified, each time that Shorewall is going to use a file in <filename
-    class="directory">/etc/shorewall</filename> it will first look in the<emphasis>
-    &#60;configuration-directory&#62;</emphasis> . If the file is present in
-    the <emphasis>&#60;configuration-directory&#62;,</emphasis> that file will
-    be used; otherwise, the file in <filename class="directory">/etc/shorewall</filename>
-    will be used. When changing the configuration of a production firewall, I
-    recommend the following:</para>
+    class="directory">/etc/shorewall</filename> it will first look in
+    the<emphasis> &lt;configuration-directory&gt;</emphasis> . If the file is
+    present in the <emphasis>&lt;configuration-directory&gt;,</emphasis> that
+    file will be used; otherwise, the file in <filename
+    class="directory">/etc/shorewall</filename> will be used. When changing
+    the configuration of a production firewall, I recommend the
+    following:</para>
 
     <itemizedlist>
       <listitem>
-        <para>If you haven&#39;t saved the current working configuration, do
-        so using <command>shorewall save</command>.</para>
+        <para>If you haven't saved the current working configuration, do so
+        using <command>shorewall save</command>.</para>
       </listitem>
 
       <listitem>
@@ -281,8 +305,8 @@
       </listitem>
 
       <listitem>
-        <para>&#60;copy any files that you need to change from /etc/shorewall
-        to . and change them here&#62;</para>
+        <para>&lt;copy any files that you need to change from /etc/shorewall
+        to . and change them here&gt;</para>
       </listitem>
 
       <listitem>
@@ -290,7 +314,7 @@
       </listitem>
 
       <listitem>
-        <para>&#60;correct any errors found by check and check again&#62;</para>
+        <para>&lt;correct any errors found by check and check again&gt;</para>
       </listitem>
 
       <listitem>
@@ -298,10 +322,10 @@
       </listitem>
     </itemizedlist>
 
-    <para>If the configuration starts but doesn&#39;t work, just
-    <quote>shorewall restart</quote> to restore the old configuration. If the
-    new configuration fails to start, the <quote>try</quote> command will
-    automatically restore your configuration.</para>
+    <para>If the configuration starts but doesn't work, just <quote>shorewall
+    restart</quote> to restore the old configuration. If the new configuration
+    fails to start, the <quote>try</quote> command will automatically restore
+    your configuration.</para>
 
     <para>When the new configuration works then just:</para>
 
@@ -332,13 +356,14 @@
         <term>add</term>
 
         <listitem>
-          <para><command>shorewall add &#60;interface&#62;[:&#60;host&#62;]
-          &#60;zone&#62;</command></para>
+          <para><command>shorewall add &lt;interface&gt;[:&lt;host&gt;]
+          &lt;zone&gt;</command></para>
 
           <para>Adds a host or subnet to a dynamic zone usually used with
-          VPN&#39;s.</para>
+          VPN's.</para>
 
-          <para>Example: <command>shorewall add ipsec0:192.0.2.24 vpn1</command></para>
+          <para>Example: <command>shorewall add ipsec0:192.0.2.24
+          vpn1</command></para>
 
           <para>adds the address 192.0.2.24 from interface ipsec0 to the zone
           vpn1.</para>
@@ -349,7 +374,7 @@
         <term>allow</term>
 
         <listitem>
-          <para><command>shorewall allow &#60;address&#62; ...</command></para>
+          <para><command>shorewall allow &lt;address&gt; ...</command></para>
 
           <para>Re-enables receipt of packets from hosts previously
           blacklisted by a drop or reject command.</para>
@@ -363,7 +388,7 @@
         <term>check</term>
 
         <listitem>
-          <para><command>shorewall [ -c &#60;configuration-directory&#62; ]
+          <para><command>shorewall [ -c &lt;configuration-directory&gt; ]
           check</command></para>
 
           <para>Performs a cursory validation of the zones, interfaces, hosts,
@@ -391,15 +416,16 @@
         <term>delete</term>
 
         <listitem>
-          <para><command>shorewall delete &#60;interface&#62;[:&#60;host&#62;]
-          &#60;zone&#62;</command></para>
+          <para><command>shorewall delete &lt;interface&gt;[:&lt;host&gt;]
+          &lt;zone&gt;</command></para>
 
           <para>Deletes the specified interface (and host if included) from
           the specified zone.</para>
 
           <para>Example:</para>
 
-          <para><command>shorewall delete ipsec0:192.0.2.24 vpn1</command></para>
+          <para><command>shorewall delete ipsec0:192.0.2.24
+          vpn1</command></para>
 
           <para>deletes the address 192.0.2.24 from interface ipsec0 from zone
           vpn1</para>
@@ -410,10 +436,10 @@
         <term>drop</term>
 
         <listitem>
-          <para><command>shorewall drop &#60;address&#62; ...</command></para>
+          <para><command>shorewall drop &lt;address&gt; ...</command></para>
 
-          <para>Causes packets from the specified &#60;<emphasis>address</emphasis>&#62;
-          to be ignored</para>
+          <para>Causes packets from the specified
+          &lt;<emphasis>address</emphasis>&gt; to be ignored</para>
         </listitem>
       </varlistentry>
 
@@ -421,11 +447,14 @@
         <term>forget</term>
 
         <listitem>
-          <para><command>shorewall forget [ &#60;filename&#62; ]</command></para>
+          <para><command>shorewall forget [ &lt;filename&gt;
+          ]</command></para>
 
-          <para>Deletes<filename> /var/lib/shorewall/&#60;filename&#62;</filename>.
-          If no &#60;<emphasis>filename</emphasis>&#62; is given then the file
-          specified by RESTOREFILE in <ulink url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>
+          <para>Deletes<filename>
+          /var/lib/shorewall/&lt;filename&gt;</filename>. If no
+          &lt;<emphasis>filename</emphasis>&gt; is given then the file
+          specified by RESTOREFILE in <ulink
+          url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>
           is removed.</para>
         </listitem>
       </varlistentry>
@@ -434,9 +463,11 @@
         <term>help</term>
 
         <listitem>
-          <para><command>shorewall help [&#60;command&#62; | host | address ]</command></para>
+          <para><command>shorewall help [&lt;command&gt; | host | address
+          ]</command></para>
 
-          <para>Display helpful information about the shorewall commands.</para>
+          <para>Display helpful information about the shorewall
+          commands.</para>
         </listitem>
       </varlistentry>
 
@@ -448,7 +479,8 @@
 
           <para>Produces several reports about the Shorewall packet log
           messages in the current log file specified by the LOGFILE option in
-          <ulink url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>.</para>
+          <ulink
+          url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>.</para>
         </listitem>
       </varlistentry>
 
@@ -456,11 +488,12 @@
         <term>ipcalc</term>
 
         <listitem>
-          <para><command>shorewall ipcalc [ &#60;address&#62; &#60;mask&#62; |
-          &#60;address&#62;/&#60;vlsm&#62; ]</command></para>
+          <para><command>shorewall ipcalc [ &lt;address&gt; &lt;mask&gt; |
+          &lt;address&gt;/&lt;vlsm&gt; ]</command></para>
 
           <para>Ipcalc displays the network address, broadcast address,
-          network in CIDR notation and netmask corresponding to the input[s].</para>
+          network in CIDR notation and netmask corresponding to the
+          input[s].</para>
 
           <para>Example:</para>
 
@@ -473,7 +506,7 @@
 
         <listitem>
           <para><command>shorewall iprange
-          &#60;address1&#62;-&#60;address2&#62;</command></para>
+          &lt;address1&gt;-&lt;address2&gt;</command></para>
 
           <para>Iprange decomposes the specified range of IP addresses into
           the equivalent list of network/host addresses.</para>
@@ -484,7 +517,8 @@
         <term>logwatch</term>
 
         <listitem>
-          <para><command>shorewall logwatch [&#60;refresh interval&#62;]</command></para>
+          <para><command>shorewall logwatch [&lt;refresh
+          interval&gt;]</command></para>
 
           <para>Monitors the log file specified by theLOGFILE option in <ulink
           url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>
@@ -497,7 +531,8 @@
         <term>monitor</term>
 
         <listitem>
-          <para><command>shorewall [-x] monitor [&#60;refresh_interval&#62;]</command></para>
+          <para><command>shorewall [-x] monitor
+          [&lt;refresh_interval&gt;]</command></para>
 
           <para>Continuously display the firewall status, last 20 log entries
           and nat. When the log entry display changes, an audible alarm is
@@ -527,10 +562,10 @@
         <term>reject</term>
 
         <listitem>
-          <para><command>shorewall reject &#60;address&#62; ...</command></para>
+          <para><command>shorewall reject &lt;address&gt; ...</command></para>
 
-          <para>Causes packets from the specified &#60;<emphasis>address</emphasis>&#62;s
-          to be rejected</para>
+          <para>Causes packets from the specified
+          &lt;<emphasis>address</emphasis>&gt;s to be rejected</para>
         </listitem>
       </varlistentry>
 
@@ -540,7 +575,8 @@
         <listitem>
           <para><command>shorewall reset</command></para>
 
-          <para>All the packet and byte counters in the firewall are reset.</para>
+          <para>All the packet and byte counters in the firewall are
+          reset.</para>
         </listitem>
       </varlistentry>
 
@@ -548,8 +584,8 @@
         <term>restart</term>
 
         <listitem>
-          <para><command>shorewall [ -q ] [ -c
-          &#60;configuration-directory&#62; ] restart</command></para>
+          <para><command>shorewall [ -q ] [ -c &lt;configuration-directory&gt;
+          ] restart</command></para>
 
           <para>Restart is similar to <command>shorewall stop</command>
           followed by <command>shorewall start</command>. Existing connections
@@ -562,15 +598,19 @@
         <term>restore</term>
 
         <listitem>
-          <para><command>shorewall [ -q ] restore [ &#60;filename&#62; ]</command></para>
+          <para><command>shorewall [ -q ] restore [ &lt;filename&gt;
+          ]</command></para>
 
           <para>Restore Shorewall to a state saved using the
           <command>shorewall save</command> command Existing connections are
-          maintained. The &#60;<emphasis>filename</emphasis>&#62; names a
-          restore file in <filename class="directory">/var/lib/shorewall</filename>
-          created using <command>shorewall save</command>; if no &#60;<emphasis>filename</emphasis>&#62;
-          is given then Shorewall will be restored from the file specified by
-          the RESTOREFILE option in <ulink url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>.</para>
+          maintained. The &lt;<emphasis>filename</emphasis>&gt; names a
+          restore file in <filename
+          class="directory">/var/lib/shorewall</filename> created using
+          <command>shorewall save</command>; if no
+          &lt;<emphasis>filename</emphasis>&gt; is given then Shorewall will
+          be restored from the file specified by the RESTOREFILE option in
+          <ulink
+          url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>.</para>
         </listitem>
       </varlistentry>
 
@@ -578,14 +618,16 @@
         <term>save</term>
 
         <listitem>
-          <para><command>shorewall save [ &#60;filename&#62; ]</command></para>
+          <para><command>shorewall save [ &lt;filename&gt; ]</command></para>
 
           <para>The dynamic data is stored in /var/lib/shorewall/save. The
-          state of the firewall is stored in <filename>/var/lib/shorewall/&#60;filename&#62;</filename>
-          for use by the <command>shorewall restore</command> and
-          <command>shorewall -f start</command> commands. If &#60;<emphasis>filename</emphasis>&#62;
+          state of the firewall is stored in
+          <filename>/var/lib/shorewall/&lt;filename&gt;</filename> for use by
+          the <command>shorewall restore</command> and <command>shorewall -f
+          start</command> commands. If &lt;<emphasis>filename</emphasis>&gt;
           is not given then the state is saved in the file specified by the
-          RESTOREFILE option in <ulink url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>.</para>
+          RESTOREFILE option in <ulink
+          url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>.</para>
         </listitem>
       </varlistentry>
 
@@ -593,12 +635,12 @@
         <term>show</term>
 
         <listitem>
-          <para><command>shorewall [ -x ] show [ &#60;chain&#62; [
-          &#60;chain&#62; ...] |classifiers|connections|log|nat|tc|tos]</command></para>
+          <para><command>shorewall [ -x ] show [ &lt;chain&gt; [ &lt;chain&gt;
+          ...] |classifiers|connections|log|nat|tc|tos]</command></para>
 
-          <para><command>shorewall [ -x ] show &#60;chain&#62; [
-          &#60;chain&#62; ... ] </command> - produce a verbose report about
-          the Netfilter chain(s). (<command>iptables -L chain -n -v</command>)</para>
+          <para><command>shorewall [ -x ] show &lt;chain&gt; [ &lt;chain&gt;
+          ... ] </command> - produce a verbose report about the Netfilter
+          chain(s). (<command>iptables -L chain -n -v</command>)</para>
 
           <para><command>shorewall [ -x ] show nat</command> - produce a
           verbose report about the nat table. (<command>iptables -t nat -L -n
@@ -630,14 +672,15 @@
 
         <listitem>
           <para><command>shorewall [ -q ] [ -f ] [ -c
-          &#60;configuration-directory&#62; ] start</command></para>
+          &lt;configuration-directory&gt; ] start</command></para>
 
           <para>Start shorewall. Existing connections through shorewall
           managed interfaces are untouched. New connections will be allowed
           only if they are allowed by the firewall rules or policies. If -q is
           specified, less detail is displayed making it easier to spot
           warnings If -f is specified, the saved configuration specified by
-          the RESTOREFILE option in <ulink url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>
+          the RESTOREFILE option in <ulink
+          url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>
           will be restored if that saved configuration exists</para>
         </listitem>
       </varlistentry>
@@ -649,12 +692,14 @@
           <para><command>shorewall stop</command></para>
 
           <para>Stops the firewall. All existing connections, except those
-          listed in <filename><ulink url="Documentation.htm#Routestopped">/etc/shorewall/routestopped</ulink></filename>
+          listed in <filename><ulink
+          url="Documentation.htm#Routestopped">/etc/shorewall/routestopped</ulink></filename>
           or permitted by the ADMINISABSENTMINDED option in <ulink
           url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>,
           are taken down. The only new traffic permitted through the firewall
-          is from systems listed in <filename>/etc/shorewall/routestopped</filename>
-          or by ADMINISABSENTMINDED.</para>
+          is from systems listed in
+          <filename>/etc/shorewall/routestopped</filename> or by
+          ADMINISABSENTMINDED.</para>
         </listitem>
       </varlistentry>
 
@@ -675,8 +720,8 @@
         <term>try</term>
 
         <listitem>
-          <para><command>shorewall try &#60;configuration-directory&#62; [
-          &#60;timeout&#62; ]</command></para>
+          <para><command>shorewall try &lt;configuration-directory&gt; [
+          &lt;timeout&gt; ]</command></para>
 
           <para>Restart shorewall using the specified configuration. If an
           error occurs during the restart, then another shorewall restart is
@@ -686,7 +731,8 @@
 
           <para>When restarting using the default configuration, if the
           default restore script (as specified by the RESTOREFILE setting in
-          <ulink url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>)
+          <ulink
+          url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>)
           exists. then that script is used.</para>
         </listitem>
       </varlistentry>
@@ -712,7 +758,8 @@
 
     <para>You will note that the commands that result in state transitions use
     the word <quote>firewall</quote> rather than <quote>shorewall</quote>.
-    That is because the actual transitions are done by <command>/usr/share/shorewall/firewall</command>;
+    That is because the actual transitions are done by
+    <command>/usr/share/shorewall/firewall</command>;
     <command>/sbin/shorewall</command> runs <quote>firewall</quote> according
     to the following table:</para>
 
@@ -757,7 +804,8 @@
 
             <entry>firewall restart</entry>
 
-            <entry>Logically equivalent to <quote>firewall stop;firewall start</quote></entry>
+            <entry>Logically equivalent to <quote>firewall stop;firewall
+            start</quote></entry>
           </row>
 
           <row>
@@ -805,7 +853,7 @@
           <row>
             <entry>shorewall try</entry>
 
-            <entry>firewall -c &#60;new configuration&#62; restart If
+            <entry>firewall -c &lt;new configuration&gt; restart If
             unsuccessful then firewall start (standard configuration) If
             timeout then firewall restart (standard configuration)</entry>
 

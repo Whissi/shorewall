@@ -636,11 +636,11 @@ validate_interfaces_file() {
 
 	all_interfaces="$all_interfaces $interface"
 	options=`separate_list $options`
-	interface=`chain_base $interface`
+	iface=`chain_base $interface`
 
-	eval ${interface}_broadcast="$subnet"
-	eval ${interface}_zone="$z"
-	eval ${interface}_options=\"$options\"
+	eval ${iface}_broadcast="$subnet"
+	eval ${iface}_zone="$z"
+	eval ${iface}_options=\"$options\"
 
 	for option in $options; do
 	    case $option in
@@ -763,7 +763,14 @@ validate_policy()
 	esac
 
 	case $policy in
-	ACCEPT|REJECT|DROP|CONTINUE|NONE)
+	ACCEPT|REJECT|DROP|CONTINUE)
+	    ;;
+	NONE)
+	    [ "$client" = "$FW" -o "$server" = "$FW" ] && \
+		startup_error " $client $server $policy $loglevel $synparams: NONE policy not allowed to/from the $FW zone"
+
+	    [ -n "$clientwild" -o -n "$serverwild" ] && \
+		startup_error " $client $server $policy $loglevel $synparams: NONE policy not allowed with \"all\""
 	    ;;
 	*)
 	    startup_error "Invalid policy $policy"
@@ -780,8 +787,6 @@ validate_policy()
 	fi
 
 	[ "x$loglevel" = "x-" ] && loglevel=
-
-	chain=${client}2${server}
 
 	[ $policy = NONE ] || all_policy_chains="$all_policy_chains $chain"
 

@@ -59,6 +59,17 @@ Problems Corrected since version 1.4.7:
     address with a broadcast address then an error would occur during
     startup.
 
+11) The NONE policy's intended use is to suppress the generating of
+    rules that can't possibly be traversed. This means that a policy of
+    NONE is inappropriate where the source or destination zone is
+    $FW. Shorewall now generates an error message if such a policy is
+    given in /etc/shorewall/policy. Previously such a policy caused
+    "shorewall start" to fail.
+
+12) The 'routeback' option was broken for wildcard interfaces (e.g.,
+    "tun+"). This has been corrected so that 'routeback' now works as
+    expected in this case.
+
 Migration Issues:
 
 1. The definition of the ROUTE_FILTER option in shorewall.conf has

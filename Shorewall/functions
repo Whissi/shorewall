@@ -341,10 +341,10 @@ in_subnet() # $1 = IP address, $2 = CIDR network
 }
 
 #
-# Address Netmask to CIDR
+# Netmask to CIDR
 #
 ip_cidr() {
-    local mask=`decodeaddr $2`
+    local mask=`decodeaddr $1`
     local cidr=0
     local x=$(( 128 $LEFTSHIFT 24 ))
 
@@ -354,9 +354,9 @@ ip_cidr() {
     done
 
     if [ $(( $mask & 2147483647)) -ne 0 ]; then
-	echo "Invalid net mask: $2" >&2
+	echo "Invalid net mask: $1" >&2
     else
-	echo $1/$cidr
+	echo $cidr
     fi
 }
 	

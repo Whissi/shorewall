@@ -1231,7 +1231,7 @@ setup_forwarding() {
 # Disable IPV6
 #
 disable_ipv6() {
-    local foo=$(ip -f inet6 addr ls 2> /dev/null)
+    local foo="$(ip -f inet6 addr ls 2> /dev/null)"
 
     if [ -n "$foo" ]; then
 	if qt which ip6tables; then
@@ -1900,7 +1900,22 @@ delete_proxy_arp() {
 # Setup Static Network Address Translation (NAT)
 #
 setup_nat() {
-    local external= interface= internal= allints= localnat=
+    local external= interface= internal= allints= localnat= dnatonly=
+
+    validate_one() #1 = Variable Name, $2 = Column name, $3 = value 
+    {
+	case $3 in
+	    Yes|yes)
+                ;;
+	    No|no)
+		eval ${1}=
+		;;
+	    *)
+		[ -n "$3" ] && \
+		    fatal_error "Invalid value ($3) for $2 in entry \"$external $interface $internal $allints $localnat\""
+		;;
+	esac
+    }
 
     do_one_nat() {
 	local add_ip_aliases=$ADD_IP_ALIASES, iface=${interface%:*}
@@ -1918,22 +1933,21 @@ setup_nat() {
 	else
 	    interface=${interface%:}
 	fi
+
+	validate_one allints  "ALL INTERFACES" $allints
+	validate_one localnat "LOCAL"          $localnat
+	validate_one dnatonly "DNAT ONLY"      $dnatonly
 	
-	if [ "x$allints" = "xYes" -o "x$allints" = "xyes" ]; then
+	if [ -n "$allints" ]; then
 	    addnatrule nat_in  -d $external -j DNAT --to-destination $internal
-	    addnatrule nat_out -s $internal -j SNAT --to-source $external
-	elif [ -z "$allints" -o "x$allints" = "x-" -o "x$allints" = "xNo" -o "x$allints" = "xno" ]; then       
-	    addnatrule $(input_chain $iface) -d $external -j DNAT --to-destination $internal
-	    addnatrule $(output_chain $iface) -s $internal -j SNAT --to-source $external
+	    [ -n "$dnatonly" ] || addnatrule nat_out -s $internal -j SNAT --to-source $external
 	else
-	    fatal_error "Invalid value ($allints) for ALL INTERFACES in entry \"$external $interface $internal $allints $localnat\""
+	    addnatrule $(input_chain $iface) -d $external -j DNAT --to-destination $internal
+	    [ -n "$dnatonly" ] || addnatrule $(output_chain $iface) -s $internal -j SNAT --to-source $external
 	fi
 	
-	if [ "x$localnat" = "xYes" -o "x$localnat" = "xyes" ]; then
+	[ -n "$localnat" ] && \
 	    run_iptables2 -t nat -A OUTPUT -d $external -j DNAT --to-destination $internal
-	elif [ "x$localnat" != "x-" -a -n "$localnat" -a "x$localnat" != "xNo" -a "x$localnat" != "xno" ]; then
-	    fatal_error "Invalid value ($allints) for LOCAL in entry \"$external $interface $internal $allints $localnat\""	    
-	fi
 
 	if [ -n "$add_ip_aliases" ]; then
 	    list_search $external $aliases_to_add || \
@@ -1947,8 +1961,8 @@ setup_nat() {
 
     save_progress_message "Restoring one-to-one NAT..."
 
-    while read external interface internal allints localnat; do
-	expandv external interface internal allints localnat
+    while read external interface internal allints localnat dnatonly; do
+	expandv external interface internal allints localnat dnatonly
 	
 	do_one_nat
 

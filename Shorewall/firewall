@@ -3917,8 +3917,8 @@ setup_masq()
 		;;
 	esac
 
+	temp=
 	if [ -n "$addresses" ]; then
-	    temp=
 	    for address in `separate_list $addresses`; do
 		temp="$temp --to-source $address"
 	    done

@@ -5740,7 +5740,7 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		    hosts=${h#*:}
 
 		    if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
-			qt iptables -D $source_chain -s $host -o $iface $(match_source_hosts $hosts) -j $chain
+			qt iptables -D $source_chain -s $host -o $iface $(match_dest_hosts $hosts) -j $chain
 		    fi
 		done
 	    fi

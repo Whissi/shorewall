@@ -3452,17 +3452,20 @@ refresh_firewall()
 }
 
 ################################################################################
+# Query NetFilter about the existence of a filter chain                        #
+################################################################################
+chain_exists() # $1 = chain name
+{
+    qt iptables -L $1 -n
+}
+	
+################################################################################
 # Add a host or subnet to a zone                                               #
 ################################################################################
 add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 {
     local base
 
-    chain_exists() # $1 = chain name
-    {
-	qt iptables -L $1 -n
-    }
-	
     nat_chain_exists() # $1 = chain name
     {
 	qt iptables -t nat -L $1 -n
@@ -3620,11 +3623,6 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 ################################################################################
 delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
 {
-    chain_exists() # $1 = chain name
-    {
-	qt iptables -L $1 -n
-    }
-	
     delete_from_zones_file()
     {
 	> ${STATEDIR}/zones_$$
@@ -3671,7 +3669,8 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
 
     delhost="$interface:$host"
 
-    [ -z "`delete_from_zones_file`" ] && startup_error "Error: $1 not in zone $2"
+    [ -z "`delete_from_zones_file`" ] && \
+	error_message "Warning: $1 does not appear to be in zone $2"
 
     while read z hosts; do
 	eval ${z}_hosts=\"$hosts\"

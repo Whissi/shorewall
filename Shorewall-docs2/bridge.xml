@@ -265,7 +265,7 @@ do_start() {
    brctl addbr br0
    for i in $INTERFACES ; do
         ip link set $i up
-brctl addif br0 $i 
+        brctl addif br0 $i 
    done
    ifup $BRIDGE_INTERFACE 
 }
@@ -288,7 +288,7 @@ case &#34;$1&#34; in
 esac
 exit 0</programlisting>
 
-      <para>The <filename>/etc/sysconfig/bridge</filename>:</para>
+      <para>The <filename>/etc/sysconfig/bridge file</filename>:</para>
 
       <programlisting>BRIDGE_INTERFACE=br0          #The name of your Bridge
 INTERFACES=&#34;eth0 eth1&#34;        #The physical interfaces to be bridged</programlisting>

@@ -249,3 +249,40 @@ New Features:
         
  
 8) Bridge interfaces (br[0-9]) may now be used in /etc/shorewall/maclist.					       
+
+9) ACCEPT, DNAT[-], REDIRECT[-] and LOG rules defined in
+   /etc/shorewall/rules may now be rate-limited. For DNAT and
+   REDIRECT rules, rate limiting occurs in the nat table DNAT rule; the
+   corresponding ACCEPT rule in the filter table is not rate
+   limited. If you want to limit the filter table rule, you will need
+   to create two rules; a DNAT- rule and an ACCEPT rule which can be
+   rate-limited separately.
+
+   To specify a rate limit, follow ACCEPT, DNAT[-], REDIRECT[-] or LOG
+   with
+
+      < <rate>/<interval>:<burst> >
+
+   where
+
+      <rate> is the sustained rate per <interval>
+      <interval> is "sec" or "min"
+      <burst> is the largest burst accepted within an <interval>
+
+   There may be no white space between the ACTION and "<" nor there may
+   be any white space within the burst specification. If you want to
+   specify logging of a rate-limited rule, the ":" and log level comes
+   after the ">" (e.g., ACCEPT<2/sec:4>:info ).
+
+   Let's take an example:
+
+	 ACCEPT<2/sec:4>	net	dmz	tcp	80
+   
+   The first time this rule is reached, the packet will be accepted; in
+   fact, since the burst is 4, the first four packets will be
+   accepted. After this, it will be 500ms (1 second divided by the rate
+   of 2) before a packet will be accepted from this rule, regardless of
+   how many packets reach it. Also, every 500ms which passes without
+   matching a packet, one of the bursts will be regained; if no packets
+   hit the rule for 2 second, the burst will be fully recharged;
+   back where we started.

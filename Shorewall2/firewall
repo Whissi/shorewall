@@ -483,11 +483,27 @@ match_dest_hosts()
 # Similarly, the source or destination in a rule can be qualified by a device name. If 
 # the device is defined in /etc/shorewall/interfaces then a normal interface match is
 # generated (-i or -o); otherwise, a physdev match is generated.
+#-------------------------------------------------------------------------------------
 #
+# loosely match the passed interface with those in /etc/shorewall/interfaces.
+#
+known_interface() # $1 = interface name
+{
+    local iface
+
+    for iface in $all_interfaces ; do
+	if if_match $iface $1 ; then
+	    return 0
+	fi
+    done
+
+    return 1
+}
+
 match_source_dev()
 {
     if [ -n "$BRIDGING" ]; then
-	list_search $1 $all_interfaces && echo -i $1 || physdev_echo "--physdev-in $1"
+	known_interface $1 && echo -i $1 || physdev_echo "--physdev-in $1"
     else
 	echo -i $1
     fi
@@ -496,7 +512,7 @@ match_source_dev()
 match_dest_dev()
 {
     if [ -n "$BRIDGING" ]; then
-	list_search $1 $all_interfaces && echo -o $1 || physdev_echo "--physdev-out $1"
+	known_interface $1 && echo -o $1 || physdev_echo "--physdev-out $1"
     else
 	echo -o $1
     fi
@@ -652,10 +668,10 @@ validate_interfaces_file() {
 	wildcard=
 
 	case $interface in
-	    *:*)
+	    *:*|+)
 		startup_error "Invalid Interface Name: $interface"
 		;;
-	    *+*)
+	    *+)
 		wildcard=Yes
 		;;
 	esac

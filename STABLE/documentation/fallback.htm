@@ -1,0 +1,67 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Shorewall Fallback and Uninstall</title>
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta name="Microsoft Theme" content="radial 011">
+</head>
+
+<body background="_themes/radial/radbkgnd.gif" bgcolor="#FFFFFF" text="#000000" link="#6666FF" vlink="#993333" alink="#66CCCC"><!--mstheme--><font face="arial, Arial, Helvetica">
+
+<h1 align="center"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">Fallback and Uninstall<!--mstheme--></font></h1>
+
+<p><strong>Shorewall includes
+a </strong><a href="#fallback"><strong>fallback script</strong></a><strong>
+and an </strong><a href="#uninstall"><strong>uninstall script</strong></a><strong>.</strong></p>
+
+<h2><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666"><a name="fallback"></a>Falling Back to the Previous Version of Shorewall
+using the Fallback Script<!--mstheme--></font></h2>
+
+<p>If you install Shorewall and discover that
+it doesn't work for you, you can fall back to your previously
+installed version. To do that:</p>
+
+<!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
+  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">cd to the distribution directory for the version
+        of Seattle Firewall <u>that you are
+        currently running </u>(NOT the version
+        that you want to fall back to).<!--mstheme--></font><!--msthemelist--></td></tr>
+  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">Type &quot;./fallback.sh&quot;<!--mstheme--></font><!--msthemelist--></td></tr>
+<!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+
+<h3><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666"><strong><u>Warning:</u> The fallback script
+will replace /etc/shorewall/policy, /etc/shorewall/rules, /etc/shorewall/interfaces,
+/etc/shorewall/nat, /etc/shorewall/proxyarp and /etc/shorewall/masq with the version of
+these files from before the current version was installed. Any
+changes to any of these files will be lost.</strong><!--mstheme--></font></h3>
+
+<h2><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666"><a name="rpm"></a>Falling Back to the Previous Version of Shorewall using
+rpm<!--mstheme--></font></h2>
+
+<p>If your previous version of Shorewall was
+installed using RPM, you may fall back to that version by typing
+&quot;rpm -Uvh --force &lt;old rpm&gt;&quot; at a root shell
+prompt (Example: &quot;rpm -Uvh --force /downloads/shorewall-3.1=0noarch.rpm&quot; would fall back to the 3.1-0
+version of Shorewall).</p>
+
+<h2><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666"><a name="uninstall"></a>Uninstalling Shorewall<!--mstheme--></font></h2>
+
+<p>If you no longer wish to use Shorewall, you
+may remove it by:</p>
+
+<!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
+  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">cd to the distribution directory for the version
+        of Shorewall that you have installed.<!--mstheme--></font><!--msthemelist--></td></tr>
+  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">type &quot;./uninstall.sh&quot;<!--mstheme--></font><!--msthemelist--></td></tr>
+<!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+
+<p>If you installed using an rpm, at a root shell prompt
+type &quot;rpm -e shorewall&quot;.</p>
+
+<p><font size="2">Last updated 3/26/2001 - </font><font size="2">
+<a href="support.htm">Tom
+Eastep</a></font> </p>
+<font face="Trebuchet MS"><a href="copyright.htm"><font size="2">Copyright</font> 
+© <font size="2">2001, 2002 Thomas M. Eastep.</font></a></font><!--mstheme--></font></body></html>

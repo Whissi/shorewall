@@ -1,0 +1,240 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+     
+  <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+  <title>Shorewall IPSec Tunneling</title>
+         
+  <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+     
+  <meta name="ProgId" content="FrontPage.Editor.Document">
+         
+   
+  <meta name="Microsoft Theme" content="radial 011">
+</head>
+ <body background="_themes/radial/radbkgnd.gif" bgcolor="#FFFFFF" text="#000000" link="#6666FF" vlink="#993333" alink="#66CCCC"><!--mstheme--><font face="arial, Arial, Helvetica">
+ <h1 align="center"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">IPSEC Tunnels<!--mstheme--></font></h1>
+ <h2><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666"><font color="#660066">Configuring FreeS/Wan</font><!--mstheme--></font></h2>
+There is an excellent guide to configuring IPSEC tunnels at<a href="http://jixen.tripod.com">
+ http://jixen.tripod.com</a>
+. I highly recommend that you consult that site for information about confuring
+FreeS/Wan. <p><font color="#FF6633"><b>Warning: </b></font>Do not use Proxy ARP
+ and FreeS/Wan on the same system unless you are prepared to suffer the
+ consequences. If you start or restart Shorewall with an IPSEC tunnel active,
+ the proxied IP addresses are mistakenly assigned to the IPSEC tunnel device
+ (ipsecX) rather than to the interface that you specify in the INTERFACE column
+ of /etc/shorewall/proxyarp. I haven't had the time to debug this problem so I
+ can't say if it is a bug in the Kernel or in FreeS/Wan.&nbsp;</p>
+ <p>You <b>might</b> be able to work around this problem using the following (I
+ haven't tried it):</p>
+ <p>In /etc/shorewall/init, include:</p>
+ <p>&nbsp;&nbsp;&nbsp;&nbsp; qt service ipsec stop</p>
+ <p>In /etc/shorewall/start, include:</p>
+ <p>&nbsp;&nbsp;&nbsp; qt service ipsec start</p>
+ <h2><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">
+
+<font color="#660066">IPSec Gateway
+on the Firewall System
+  </font><!--mstheme--></font></h2>
+          
+ <p>Suppose that we have the following sutuation:</p>
+          
+<font color="#660066">
+          
+<p align="Center"><font face="Century Gothic, Arial, Helvetica">
+<img src="images/TwoNets1.jpg" width="651" height="394">
+       </font></p>
+          
+  </font>
+          
+<p align="Left">We want systems
+in the 192.168.1.0/24 sub-network to be able to communicate with systems
+in the 10.0.0.0/8 network.</p>
+          
+<p align="Left">To make this work, we need to do two things:</p>
+          
+<p align="Left">a) Open the firewall so that the IPSEC tunnel can be established 
+(allow the ESP and AH protocols and UDP Port 500). </p>
+          
+<p align="Left">b) Allow traffic through the tunnel.</p>
+          
+<p align="Left">Opening the firewall for the IPSEC tunnel is accomplished by 
+adding an entry to the /etc/shorewall/tunnels file.</p>
+          
+<p align="Left">In /etc/shorewall/tunnels 
+on system A, we need the following </p>
+          
+<blockquote> 
+  <!--mstheme--></font><table border="2" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+          <tbody>
+             <tr>
+              <td><!--mstheme--><font face="arial, Arial, Helvetica"><strong>
+ TYPE</strong><!--mstheme--></font></td>
+              <td><!--mstheme--><font face="arial, Arial, Helvetica"><strong>
+ ZONE</strong><!--mstheme--></font></td>
+              <td><!--mstheme--><font face="arial, Arial, Helvetica"><strong>
+ GATEWAY</strong><!--mstheme--></font></td>
+              <td><!--mstheme--><font face="arial, Arial, Helvetica"><strong>
+ GATEWAY ZONE</strong><!--mstheme--></font></td>
+          </tr>
+          <tr>
+              <td><!--mstheme--><font face="arial, Arial, Helvetica">ipsec<!--mstheme--></font></td>
+              <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
+              <td><!--mstheme--><font face="arial, Arial, Helvetica">134.28.54.2<!--mstheme--></font></td>
+              <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+          </tr>
+                 
+    </tbody>         
+  </table><!--mstheme--><font face="arial, Arial, Helvetica"></blockquote>
+            
+  <p align="Left">In /etc/shorewall/tunnels
+on system B, we would have:</p>
+            
+  <blockquote> 
+    <!--mstheme--></font><table border="2" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+          <tbody>
+               <tr>
+              <td><!--mstheme--><font face="arial, Arial, Helvetica"><strong>
+ TYPE</strong><!--mstheme--></font></td>
+              <td><!--mstheme--><font face="arial, Arial, Helvetica"><strong>
+ ZONE</strong><!--mstheme--></font></td>
+              <td><!--mstheme--><font face="arial, Arial, Helvetica"><strong>
+ GATEWAY</strong><!--mstheme--></font></td>
+              <td><!--mstheme--><font face="arial, Arial, Helvetica"><strong>
+ GATEWAY ZONE</strong><!--mstheme--></font></td>
+          </tr>
+          <tr>
+              <td><!--mstheme--><font face="arial, Arial, Helvetica">ipsec<!--mstheme--></font></td>
+              <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
+              <td><!--mstheme--><font face="arial, Arial, Helvetica">206.161.148.9<!--mstheme--></font></td>
+          <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+          </tr>
+                   
+      </tbody>           
+    </table><!--mstheme--><font face="arial, Arial, Helvetica"></blockquote>
+             
+    <p align="Left">At both
+systems, ipsec0 would be included in /etc/shorewall/interfaces as a "gw"
+interface:</p>
+              
+    <blockquote> 
+      <!--mstheme--></font><table border="2" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+          <tbody>
+                 <tr>
+              <td><!--mstheme--><font face="arial, Arial, Helvetica"><strong>
+ ZONE</strong><!--mstheme--></font></td>
+              <td><!--mstheme--><font face="arial, Arial, Helvetica"><strong>
+ INTERFACE</strong><!--mstheme--></font></td>
+              <td><!--mstheme--><font face="arial, Arial, Helvetica"><strong>
+ BROADCAST</strong><!--mstheme--></font></td>
+              <td><!--mstheme--><font face="arial, Arial, Helvetica"><strong>
+ OPTIONS</strong><!--mstheme--></font></td>
+          </tr>
+          <tr>
+              <td><!--mstheme--><font face="arial, Arial, Helvetica">gw<!--mstheme--></font></td>
+              <td><!--mstheme--><font face="arial, Arial, Helvetica">ipsec0<!--mstheme--></font></td>
+              <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+              <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+          </tr>
+                     
+        </tbody>             
+      </table><!--mstheme--><font face="arial, Arial, Helvetica"></blockquote>
+                
+      <p align="Left"> You will need to allow traffic between the &quot;gw&quot; zone and 
+      the &quot;loc&quot; zone -- if you simply want to admit all traffic in both 
+      directions, you can use the policy file:</p>
+                
+      
+      <blockquote>
+        <!--mstheme--></font><table border="2" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+               <tr>
+              <td><!--mstheme--><font face="arial, Arial, Helvetica"><strong>SOURCE</strong><!--mstheme--></font></td>
+              <td><!--mstheme--><font face="arial, Arial, Helvetica"><strong>DEST</strong><!--mstheme--></font></td>
+              <td><!--mstheme--><font face="arial, Arial, Helvetica"><strong>POLICY</strong><!--mstheme--></font></td>
+              <td><!--mstheme--><font face="arial, Arial, Helvetica"><strong>LOG LEVEL</strong><!--mstheme--></font></td>
+          </tr>
+          <tr>
+              <td><!--mstheme--><font face="arial, Arial, Helvetica">loc<!--mstheme--></font></td>
+              <td><!--mstheme--><font face="arial, Arial, Helvetica">gw<!--mstheme--></font></td>
+              <td><!--mstheme--><font face="arial, Arial, Helvetica">ACCEPT<!--mstheme--></font></td>
+          <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+          </tr>
+                   
+          <tr>
+              <td><!--mstheme--><font face="arial, Arial, Helvetica">gw<!--mstheme--></font></td>
+              <td><!--mstheme--><font face="arial, Arial, Helvetica">loc<!--mstheme--></font></td>
+              <td><!--mstheme--><font face="arial, Arial, Helvetica">ACCEPT<!--mstheme--></font></td>
+          <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+          </tr>
+                   
+    </table><!--mstheme--><font face="arial, Arial, Helvetica">
+ </blockquote>
+                
+      <p align="Left"> Once
+you have these entries in place, restart Shorewall (type shorewall restart); 
+you are now ready to configure the tunnel in <a href="http://www.xs4all.nl/%7Efreeswan/">
+ FreeS/WAN</a>
+ .</p>
+                
+      
+      <h2><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666"><font color="#660066"><a name="RoadWarrior"></a>
+ Mobile System (Road Warrior)</font><!--mstheme--></font></h2>
+                
+      <p>Suppose that you have
+a laptop system (B) that you take with you when you travel and you want to
+be able to establish a secure connection back to your local network.</p>
+                
+      <p align="Center"><strong><font face="Century Gothic, Arial, Helvetica">
+      <img src="images/Mobile.jpg" width="535" height="402">
+             </font></strong></p>
+                
+      <p align="Left"> In this
+instance, the mobile system (B) has IP address 134.28.54.2 but that cannot
+be determined in advance. In the /etc/shorewall/tunnels file on system A,
+the following entry should be made:</p>
+                
+      <blockquote> 
+        <!--mstheme--></font><table border="2" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+          <tbody>
+                   <tr>
+              <td><!--mstheme--><font face="arial, Arial, Helvetica"><strong>
+ TYPE</strong><!--mstheme--></font></td>
+              <td><!--mstheme--><font face="arial, Arial, Helvetica"><strong>
+ ZONE</strong><!--mstheme--></font></td>
+              <td><!--mstheme--><font face="arial, Arial, Helvetica"><strong>
+ GATEWAY</strong><!--mstheme--></font></td>
+              <td><!--mstheme--><font face="arial, Arial, Helvetica"><strong>
+ GATEWAY ZONE</strong><!--mstheme--></font></td>
+          </tr>
+          <tr>
+              <td><!--mstheme--><font face="arial, Arial, Helvetica">ipsec<!--mstheme--></font></td>
+              <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
+              <td><!--mstheme--><font face="arial, Arial, Helvetica">0.0.0.0/0<!--mstheme--></font></td>
+              <td><!--mstheme--><font face="arial, Arial, Helvetica">gw<!--mstheme--></font></td>
+          </tr>
+                       
+          </tbody>               
+        </table><!--mstheme--><font face="arial, Arial, Helvetica"></blockquote>
+                  
+        <p>Note that the GATEWAY
+ZONE column contains the name of the zone corresponding to peer subnetworks
+(<i>gw</i> in the default /etc/shorewall/zones). This indicates that the
+gateway system itself comprises the peer subnetwork; in other words, the
+remote gateway is a standalone system.</p>
+                 
+        
+        <p>You will need to configure /etc/shorewall/interfaces and establish 
+        your &quot;through the tunnel&quot; policy as shown under the first example above.</p>
+                 
+        
+        <p><font size="2"> Last
+updated 5/18/2002 - </font><font size="2">
+        <a href="support.htm">Tom Eastep</a></font>
+ </p>
+                 
+        
+        <p><font face="Trebuchet MS"><a href="copyright.htm"><font size="2">
+        Copyright</font> © <font size="2">2001, 2002 Thomas M. Eastep.</font></a></font></p>
+  
+<!--mstheme--></font></body>
+        </html>

@@ -1,0 +1,41 @@
+#
+# Shorewall 1.3 - /etc/shorewall/hosts
+#
+#    WARNING: 90% of Shorewall users don't need to add entries to this
+#             file and 80% of those who try to add such entries get it
+#	      wrong. Unless you are ABSOLUTELY SURE that you need entries
+#	      in this file, don't touch it!
+#
+#	This file is used to define zones in terms of subnets and/or
+#	individual IP addresses. Most simple setups don't need to
+#	(should not) place anything in this file.
+#
+#	ZONE	- The name of a zone defined in /etc/shorewall/zones
+#
+#	HOST(S)	- The name of an interface followed by a colon (":") and
+#		  either:
+#
+#			a) The IP address of a host
+#			b) A subnetwork in the form
+#			   <subnet-address>/<mask width>
+#		  
+#		  The interface must be defined in the
+#		  /etc/shorewall/interfaces file.
+#
+#		  Examples:
+#
+#			eth1:192.168.1.3
+#			eth2:192.168.2.0/24	
+#
+#	OPTIONS - A comma-separated list of options. Currently-defined
+#		  options are:
+#
+#			routestopped - (Deprecated -- use
+#				       /etc/shorewall/routestopped)
+#				       route messages to and from this
+#				       member when the firewall is in the
+#				       stopped state
+#
+#
+#ZONE		HOST(S)		OPTIONS
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS LINE -- DO NOT REMOVE

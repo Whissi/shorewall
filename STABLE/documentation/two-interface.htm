@@ -1,0 +1,683 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Two-Interface Firewall</title>
+<meta name="Microsoft Theme" content="radial 011, default">
+</head>
+
+<body background="_themes/radial/radbkgnd.gif" bgcolor="#FFFFFF" text="#000000" link="#6666FF" vlink="#993333" alink="#66CCCC"><!--mstheme--><font face="arial, Arial, Helvetica">
+
+<h1 align="center"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">Basic Two-Interface Firewall<!--mstheme--></font></h1>
+<p align="left">Setting up a Linux system as a firewall for a small network is a 
+fairly straight-forward task if you understand the basics and follow the 
+documentation.</p>
+<p>This guide doesn't attempt to acquaint you with all of the features of 
+Shorewall. It rather focuses on what is required to configure Shorewall in its 
+most common configuration:</p>
+<!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
+  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">Linux system used as a firewall/router for a small local network.<!--mstheme--></font><!--msthemelist--></td></tr>
+  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">Single external IP address.<!--mstheme--></font><!--msthemelist--></td></tr>
+  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">Internet connection through cable modem, DSL, ISDN, Frame Relay, dial-up 
+  ...<!--mstheme--></font><!--msthemelist--></td></tr>
+<!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+<p align="left">Here is a schematic of a typical installation.</p>
+<p align="center"><img border="0" src="images/basics.jpg" width="592" height="394"></p>
+<p>This guide assumes that you have the iproute/iproute2 package installed (on 
+RedHat, the package is called <i>iproute</i>)<i>. </i>You can tell if this 
+package is installed by the presence of an <b>ip</b> program on your firewall 
+system. As root, you can use the 'which' command to check for this program:</p>
+<!--mstheme--></font><pre>     [root@gateway root]# which ip
+     /sbin/ip
+     [root@gateway root]#</pre><!--mstheme--><font face="arial, Arial, Helvetica"><p>I recommend that you first read through the 
+guide to familiarize yourself with what's involved then go back through it again 
+making your configuration changes. Points at which configuration changes are 
+recommended are flagged with <img border="0" src="images/BD21298_.gif" width="13" height="13">.</p>
+<p><img border="0" src="images/j0213519.gif" width="60" height="60">&nbsp;&nbsp;&nbsp; 
+If you edit your configuration files on a Windows system, you must save them as 
+Unix files if your editor supports that option or you must run them through 
+dos2unix before trying to use them. Similarly, if you copy a configuration file 
+from your Windows hard drive to a floppy disk, you must run dos2unix against the 
+copy before using it with Shorewall.</p>
+<!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
+  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><a href="http://www.simtel.net/pub/pd/51438.html">Windows Version of 
+  dos2unix</a><!--mstheme--></font><!--msthemelist--></td></tr>
+  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica"><a href="http://www.megaloman.com/~hany/software/hd2u/">Linux Version of 
+  dos2unix</a><!--mstheme--></font><!--msthemelist--></td></tr>
+<!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+<h2 align="left"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">Shorewall Concepts<!--mstheme--></font></h2>
+<p>The configuration files for Shorewall are contained in the directory 
+/etc/shorewall -- for simple setups, you will only need to deal with a few of 
+these as described in this guide.  After you have <a href="Install.htm">installed Shorewall</a>, 
+download the <a href="/pub/shorewall/LATEST.samples/two-interfaces.tgz">
+two-interface sample</a>, un-tar it (tar -zxvf two-interfaces.tgz) and and copy the files to /etc/shorewall 
+(these files will replace files with the same name).</p>
+<p>As each file is introduced, I suggest that you 
+look through the actual file on your system -- each file contains detailed 
+configuration instructions and default entries.</p>
+<p>Shorewall views the network where it is running as being composed of a set of 
+<i>zones.</i> In the two-interface sample configuration, the following zone names are used:</p>
+<!--mstheme--></font><table border="0" style="border-collapse: collapse" cellpadding="3" cellspacing="0" id="AutoNumber2">
+  <tr>
+    <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>Name</b></u><!--mstheme--></font></td>
+    <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>Description</b></u><!--mstheme--></font></td>
+  </tr>
+  <tr>
+    <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>net</b><!--mstheme--></font></td>
+    <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>The Internet</b><!--mstheme--></font></td>
+  </tr>
+  <tr>
+    <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>loc</b><!--mstheme--></font></td>
+    <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>Your Local Network</b><!--mstheme--></font></td>
+  </tr>
+  </table><!--mstheme--><font face="arial, Arial, Helvetica">
+<p>Zones are defined in the <a href="Documentation.htm#Zones">
+/etc/shorewall/zones</a> file.</p>
+<p>Shorewall also recognizes the firewall system as its own zone - by default, 
+the firewall itself is known as <b>fw.</b></p>
+<p>Rules about what traffic to allow and what traffic to deny are expressed in 
+terms of zones.</p>
+<!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
+  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">You express your default policy for connections from one zone to another 
+  zone in the<a href="Documentation.htm#Policy"> /etc/shorewall/policy </a>file.<!--mstheme--></font><!--msthemelist--></td></tr>
+  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">You define exceptions to those default policies in the
+  <a href="Documentation.htm#Rules">/etc/shorewall/rules </a>file.<!--mstheme--></font><!--msthemelist--></td></tr>
+<!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+<p>For each connection request entering the firewall, the request is first checked against the 
+/etc/shorewall/rules file. If no rule in that file matches the connection 
+request then the first policy in /etc/shorewall/policy that matches the 
+ 
+request is applied. If that policy is REJECT or DROP&nbsp; the request is first 
+checked against the rules in /etc/shorewall/common (the samples provide that 
+file for you).</p>
+<p>The /etc/shorewall/policy file included with the two-interface sample has the 
+following policies:</p>
+<blockquote>
+  <!--mstheme--></font><table border="1" cellpadding="2" style="border-collapse: collapse" id="AutoNumber3" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+    <tr>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>Source Zone</b></u><!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>Destination Zone</b></u><!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>Policy</b></u><!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>Log Level</b></u><!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>Limit:Burst</b></u><!--mstheme--></font></td>
+    </tr>
+    <tr>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">loc<!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">ACCEPT<!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+    </tr>
+    <tr>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">all<!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">DROP<!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">info<!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+    </tr>
+    <tr>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">all<!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">all<!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">REJECT<!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">info<!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+    </tr>
+  </table><!--mstheme--><font face="arial, Arial, Helvetica">
+</blockquote>
+<blockquote>
+<p>In the two-interface sample, the line below is included but commented out. If 
+you want your firewall system to have full access to servers on the internet, 
+uncomment that line.</p>
+<!--mstheme--></font><table border="1" cellpadding="2" style="border-collapse: collapse" id="AutoNumber3" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+    <tr>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>Source Zone</b></u><!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>Destination Zone</b></u><!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>Policy</b></u><!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>Log Level</b></u><!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>Limit:Burst</b></u><!--mstheme--></font></td>
+    </tr>
+    <tr>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">fw<!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">ACCEPT<!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+    </tr>
+  </table><!--mstheme--><font face="arial, Arial, Helvetica">
+</blockquote>
+<p>The above policy will:</p>
+<ol>
+  <li>allow all connection requests from your local network to the internet</li>
+  <li>drop (ignore) all connection requests from the internet to your firewall 
+  or local network</li>
+  <li>optionally accept all connection requests from the firewall to the 
+  internet (if you uncomment the additional policy)</li>
+  <li>reject all other connection requests.</li>
+</ol>
+<p><img border="0" src="images/BD21298_.gif" width="13" height="13">&nbsp;&nbsp;&nbsp; At this point, edit your /etc/shorewall/policy and make any changes that you 
+wish.</p>
+<h2 align="left"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">Network Interfaces<!--mstheme--></font></h2>
+<p align="center"><img border="0" src="images/basics.jpg" width="592" height="394"></p>
+<p align="left">The firewall has two network interfaces. Where Internet 
+connectivity is through a cable or DSL &quot;Modem&quot;, the <i>External Interface</i> 
+will be the ethernet adapter that is connected to that &quot;Modem&quot; (e.g., <b>eth0</b>)&nbsp;
+<u>unless</u> you connect via <i><u>P</u>oint-to-<u>P</u>oint <u>P</u>rotocol 
+over <u>E</u>thernet</i> (PPPoE) or <i><u>P</u>oint-to-<u>P</u>oint <u>T</u>unneling
+<u>P</u>rotocol </i>(PPTP) in which case the External Interface will be a ppp 
+interface (e.g., <b>ppp0</b>). If you connect via a regular modem, your External 
+Interface will also be <b>ppp0</b>. If you connect via ISDN, your external 
+interface will be <b>ippp0.</b></p>
+<p align="left"><img border="0" src="images/BD21298_1.gif" width="13" height="13">&nbsp;&nbsp;&nbsp; If your external interface is <b>ppp0</b> 
+or<b> ippp0</b>&nbsp; then you will want to 
+set CLAMPMSS=yes in <a href="Documentation.htm#Conf">
+/etc/shorewall/shorewall.conf.</a></p>
+<p align="left">Your <i>Internal Interface</i> will be an ethernet adapter (eth1 
+or eth0) and will be connected to a hub or switch. Your other computers will be 
+connected to the same hub/switch (note: If you have only a single internal system, 
+you can connect the firewall directly to the computer using a <i>cross-over </i>
+cable).</p>
+<p align="left"><u><b>
+<img border="0" src="images/j0213519.gif" width="60" height="60"></b></u>Do not connect the internal and external interface 
+to the same hub or switch (even for testing). It won't work the way that you think that it will and you will end up confused and 
+believing that Shorewall doesn't work at all.</p>
+<p align="left"><img border="0" src="images/BD21298_.gif" align="left" width="13" height="13">&nbsp;&nbsp;&nbsp; The Shorewall two-interface sample configuration assumes that 
+the external interface is <b>eth0</b> and the internal interface is <b>eth1</b>. 
+If your configuration is different, you will have to modify the sample 
+<a href="Documentation.htm#Interfaces">/etc/shorewall/interfaces</a> file accordingly. While you are there, you may wish to 
+review the list of options that are specified for the interfaces. Some hints:</p>
+<!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
+  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">
+  <p align="left">If your external interface is <b>ppp0</b> or <b>ippp0</b>, you can replace the 
+  &quot;detect&quot; in the second column with &quot;-&quot;.<!--mstheme--></font><!--msthemelist--></td></tr>
+  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">
+  <p align="left">If your external interface is <b>ppp0</b> or <b>ippp0</b> or if you have a static IP 
+  address, you can remove &quot;dhcp&quot; from the option list.<!--mstheme--></font><!--msthemelist--></td></tr>
+<!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+<h2 align="left"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">IP Addresses<!--mstheme--></font></h2>
+<p align="left">Before going further, we should say a few words about Internet 
+Protocol (IP) <i>addresses</i>. Normally, your ISP will assign you a single <i>
+Public</i> IP address. This address may be assigned via the<i> Dynamic Host 
+Configuration Protocol</i> (DHCP) or as part of establishing your connection 
+when you dial in (standard modem) or establish your PPP connection. In rare 
+cases, your ISP may assign you a<i> static</i> IP address; that means that you 
+configure your firewall's external interface to use that address permanently.<i>
+</i>However your external address is assigned, it will be shared by all of your systems when you access the 
+Internet. You will have to assign your own addresses in your 
+internal network (the Internal Interface on your firewall plus your other 
+computers). RFC 1918 reserves several <i>Private </i>IP address ranges for this 
+purpose:</p>
+<div align="left">
+  <!--mstheme--></font><pre>     10.0.0.0    - 10.255.255.255
+     172.16.0.0  - 172.31.255.255
+     192.168.0.0 - 192.168.255.255</pre><!--mstheme--><font face="arial, Arial, Helvetica">
+</div>
+<div align="left">
+  <p align="left"><img border="0" src="images/BD21298_.gif" width="13" height="13">&nbsp;&nbsp;&nbsp; 
+  Before starting Shorewall, you should look at the IP address of your external 
+  interface and if it is one of the above ranges, you should remove the 
+  'norfc1918' option from the external interface's entry in 
+  /etc/shorewall/interfaces.</div>
+<div align="left">
+  <p align="left">You will want to assign your addresses from the same <i>
+  sub-network </i>(<i>subnet)</i>.&nbsp; For our purposes, we can consider a subnet 
+  to consists of a range of addresses x.y.z.0 - x.y.z.255. Such a subnet will 
+  have a <i>Subnet Mask </i>of 255.255.255.0. The address x.y.z.0 is reserved as 
+  the <i>Subnet Address</i> and x.y.z.255 is reserved as the <i>Subnet Broadcast</i>
+  <i>Address</i>. In Shorewall, a subnet is described using
+  <a href="subnet_masks.htm"> <i>Variable-Length 
+  Subnet Mask </i>(VLSM) notation</a> with consists of the subnet address followed 
+  by &quot;/24&quot;. The &quot;24&quot; refers to the number of 
+  consecutive leading &quot;1&quot; bits from the left of the subnet mask.
+</div>
+<div align="left">
+  <p align="left">Example sub-network:</div>
+<div align="left">
+  <blockquote>
+    <!--mstheme--></font><table border="1" style="border-collapse: collapse" id="AutoNumber1" cellpadding="2" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+      <tr>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>Range:</b><!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">10.10.10.0 - 10.10.10.255<!--mstheme--></font></td>
+      </tr>
+      <tr>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>Subnet Address:</b><!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">10.10.10.0<!--mstheme--></font></td>
+      </tr>
+      <tr>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>Broadcast Address:</b><!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">10.10.10.255<!--mstheme--></font></td>
+      </tr>
+      <tr>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>VLSM Notation:</b><!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">10.10.10.0/24<!--mstheme--></font></td>
+      </tr>
+    </table><!--mstheme--><font face="arial, Arial, Helvetica">
+  </blockquote>
+</div>
+<div align="left">
+  <p align="left">It is conventional to assign the internal interface either the 
+  first usable address in the subnet (10.10.10.1 in the above example) or the 
+  last usable address (10.10.10.254).</div>
+<div align="left">
+  <p align="left">One of the purposes of subnetting is to allow all computers in the 
+  subnet to understand which other computers can be communicated with directly. 
+  To communicate with systems outside of the subnetwork, systems send packets 
+  through a<i>&nbsp; gateway</i>&nbsp; (router).</div>
+<div align="left">
+  <p align="left"><img border="0" src="images/BD21298_1.gif" width="13" height="13">&nbsp;&nbsp;&nbsp; Your local computers (computer 
+  1 and computer 2 in the above diagram) should be configured with their<i> 
+  default gateway</i> to be the IP address of the firewall's internal 
+  interface.<i>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </i>
+</div>
+<p align="left">The foregoing short discussion barely scratches the surface 
+regarding subnetting and routing. If you are interested in learning more about 
+IP addressing and routing, I highly recommend <i>&quot;IP Fundamentals: What Everyone 
+Needs to Know about Addressing &amp; Routing&quot;,</i> Thomas A. Maufer, Prentice-Hall, 
+1999, ISBN 0-13-975483-0.</p>
+<p align="left">The remainder of this quide will assume that you have configured 
+your network as shown here:</p>
+<p align="center"><img border="0" src="images/basics1.jpg" width="592" height="394"></p>
+<p align="left">The default gateway for computer's 1 &amp; 2 would be 10.10.10.254.</p>
+<h2 align="left"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">IP Masquerading (SNAT)<!--mstheme--></font></h2>
+<p align="left">The addresses reserved by RFC 1918 are sometimes referred to as
+<i>non-routable</i> because the Internet backbone routers don't forward packets 
+which have an RFC-1918 destination address. When one of your local systems 
+(let's assume computer 1) sends a connection request to an internet host, the 
+firewall must perform <i>Network Address Translation </i>(NAT). The firewall 
+rewrites the source address in the packet to be the address of the firewall's 
+external interface; in other words, the firewall makes it look as if the firewall 
+itself is initiating the connection.&nbsp; This is necessary so that the 
+destination host will be able to route return packets back to the firewall 
+(remember that packets whose destination address is reserved by RFC 1918 can't 
+be routed across the internet so the remote host can't address its response to 
+computer 1). When the firewall receives a return packet, it 
+rewrites the destination address  back to 10.10.10.1 and 
+forwards the packet on to computer 1. </p>
+<p align="left">On Linux systems, the above process is often referred to as<i> 
+IP Masquerading</i> but you will also see the term <i>Source Network Address 
+Translation </i>(SNAT) used. Shorewall follows the convention used with 
+Netfilter:</p>
+<!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
+  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">
+  <p align="left"><i>Masquerade</i> describes the case where you let your 
+  firewall system automatically detect the external interface address.<!--mstheme--></font><!--msthemelist--></td></tr>
+  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">
+  <p align="left"><i>SNAT</i> refers to the case when you explicitly specify the 
+  source address that you want outbound packets from your local network to use.
+  <!--mstheme--></font><!--msthemelist--></td></tr>
+<!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+<p align="left">In Shorewall, both Masquerading and SNAT are configured with 
+entries in the /etc/shorewall/masq file. You will normally use Masquerading if 
+your external IP is dynamic and SNAT if the IP is static.</p>
+<p align="left"><img border="0" src="images/BD21298_.gif" width="13" height="13">&nbsp;&nbsp;&nbsp; If your external firewall interface is <b>eth0</b>, you do not 
+need to modify the file provided with the sample. Otherwise, edit 
+/etc/shorewall/masq and change the first column to the name of your external 
+interface and the second column to the name of your internal interface.</p>
+<p align="left"><img border="0" src="images/BD21298_.gif" width="13" height="13">&nbsp;&nbsp;&nbsp; If your external IP is 
+static, you can enter it in the third column in the /etc/shorewall/masq entry if 
+you like although your firewall will work fine if you leave that column empty. 
+Entering your static IP in column 3 makes processing outgoing packets a little 
+more efficient. </p>
+<h2 align="left"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">Port Forwarding (DNAT)<!--mstheme--></font></h2>
+<p align="left">One of your goals may be to run one or more servers on your 
+local computers. Because these computers have RFC-1918 addresses, it is not 
+possible for clients on the internet to connect directly to them. It is rather 
+necessary for those clients to address their connection requests to the firewall 
+who rewrites the destination address to the address of your server and forwards 
+the packet to that server. When your server responds, the firewall automatically 
+performs SNAT to rewrite the source address in the response.</p>
+<p align="left">The above process is called<i> Port Forwarding</i> or <i>
+Destination Network Address Translation</i> (DNAT). You configure port 
+forwarding using DNAT rules in the /etc/shorewall/rules file.</p>
+<p>The general  form of a simple port forwarding rule in 
+/etc/shorewall/rules is:</p>
+<blockquote>
+  <!--mstheme--></font><table border="1" cellpadding="2" style="border-collapse: collapse" bordercolor="#111111" id="AutoNumber4" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+    <tr>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>ACTION</b></u><!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>SOURCE</b></u><!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>DESTINATION</b></u><!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>PROTOCOL</b></u><!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>PORT</b></u><!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>SOURCE PORT</b></u><!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>ORIGINAL ADDRESS</b></u><!--mstheme--></font></td>
+    </tr>
+    <tr>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">DNAT<!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">loc:<i>&lt;server local ip address&gt; </i>[:<i>&lt;server port&gt;</i>]<!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica"><i>&lt;protocol&gt;</i><!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica"><i>&lt;port&gt;</i><!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+    </tr>
+  </table><!--mstheme--><font face="arial, Arial, Helvetica">
+</blockquote>
+<p>Example - you run a Web Server on computer 2 and you want to forward incoming 
+TCP port 80 to that system:</p>
+<blockquote>
+  <!--mstheme--></font><table border="1" cellpadding="2" style="border-collapse: collapse" bordercolor="#111111" id="AutoNumber4" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+    <tr>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>ACTION</b></u><!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>SOURCE</b></u><!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>DESTINATION</b></u><!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>PROTOCOL</b></u><!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>PORT</b></u><!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>SOURCE PORT</b></u><!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>ORIGINAL ADDRESS</b></u><!--mstheme--></font></td>
+    </tr>
+    <tr>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">DNAT<!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">loc:10.10.10.2<!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">tcp<!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">80<!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+    </tr>
+  </table><!--mstheme--><font face="arial, Arial, Helvetica">
+</blockquote>
+<p>A couple of important points 
+to keep in mind:</p>
+<!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
+  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">You must test the above rule from a client outside of your local network 
+  (i.e., don't test from a browser running on computers 1 or 2 or on the 
+  firewall). If you want to be able to access your web server using the IP 
+  address of your external interface, see <a href="FAQ.htm#faq2">Shorewall FAQ 
+  #2</a>.<!--mstheme--></font><!--msthemelist--></td></tr>
+  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">Many ISPs block incoming connection requests to port 80. If you have 
+  problems connecting to your web server, try the following rule and try 
+  connecting to port 5000.<!--mstheme--></font><!--msthemelist--></td></tr>
+<!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+<blockquote>
+  <!--mstheme--></font><table border="1" cellpadding="2" style="border-collapse: collapse" bordercolor="#111111" id="AutoNumber4" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+    <tr>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>ACTION</b></u><!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>SOURCE</b></u><!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>DESTINATION</b></u><!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>PROTOCOL</b></u><!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>PORT</b></u><!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>SOURCE PORT</b></u><!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>ORIGINAL ADDRESS</b></u><!--mstheme--></font></td>
+    </tr>
+    <tr>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">DNAT<!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">loc:10.10.10.2:80<!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">tcp<!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">5000<!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+    </tr>
+  </table><!--mstheme--><font face="arial, Arial, Helvetica">
+</blockquote>
+<p>
+<img border="0" src="images/BD21298_.gif" width="13" height="13">&nbsp;&nbsp;&nbsp; At this point, modify 
+/etc/shorewall/rules to add any DNAT rules that you require.</p>
+<h2 align="left"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">Domain Name Server (DNS)<!--mstheme--></font></h2>
+<p align="left">Normally, when you connect to your ISP, as part of getting an IP 
+address your firewall's <i>Domain Name Service </i>(DNS) resolver will be 
+automatically configured (e.g., the /etc/resolv.conf file will be written). 
+Alternatively, your ISP may have given you the IP address of a pair of DNS <i>
+name servers</i> for you to manually configure as your primary and secondary 
+name servers. Regardless of how DNS gets configured on your firewall, it is <u>your</u> responsibility to configure the resolver in your 
+internal systems. You can take one of two approaches:</p>
+<!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
+  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">
+  <p align="left">You can configure your internal systems to use your ISP's name 
+  servers. If you ISP gave you the addresses of their servers or if those 
+  addresses are available on their web site, you can configure your internal 
+  systems to use those addresses. If that information isn't available, look in 
+  /etc/resolv.conf on your firewall system -- the name servers are given in 
+  &quot;nameserver&quot; records in that file.<!--mstheme--></font><!--msthemelist--></td></tr>
+  <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">
+  <p align="left"><img border="0" src="images/BD21298_.gif" width="13" height="13">&nbsp;&nbsp;&nbsp; You can configure a<i> Caching Name Server </i>on your 
+  firewall.<i> </i>Red Hat has an RPM for a caching name server (the RPM also 
+  requires the 'bind' RPM) and for Bering users, there is dnscache.lrp. If you 
+  take this approach, you configure your internal systems to use the firewall 
+  itself as their primary (and only) name server. You use the internal IP 
+  address of the firewall (10.10.10.254 in the example above) for the name 
+  server address. To allow your local systems to talk to your caching name 
+  server, you must open port 53 (both UDP and TCP) from the local network to the 
+  firewall; you do that by adding the following rules in /etc/shorewall/rules.<!--mstheme--></font><!--msthemelist--></td></tr>
+<!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+<blockquote>
+  <!--mstheme--></font><table border="1" cellpadding="2" style="border-collapse: collapse" bordercolor="#111111" id="AutoNumber4" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+    <tr>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>ACTION</b></u><!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>SOURCE</b></u><!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>DESTINATION</b></u><!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>PROTOCOL</b></u><!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>PORT</b></u><!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>SOURCE PORT</b></u><!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>ORIGINAL ADDRESS</b></u><!--mstheme--></font></td>
+    </tr>
+    <tr>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">ACCEPT<!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">loc<!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">fw<!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">tcp<!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">53<!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+    </tr>
+    <tr>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">ACCEPT<!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">loc<!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">fw<!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">udp<!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">53<!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+      <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+    </tr>
+  </table><!--mstheme--><font face="arial, Arial, Helvetica">
+</blockquote>
+<div align="left">
+  <h2 align="left"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">Other Connections<!--mstheme--></font></h2>
+</div>
+<div align="left">
+  <p align="left">The two-interface sample includes the following rules:</div>
+<div align="left">
+  <blockquote>
+    <!--mstheme--></font><table border="1" cellpadding="2" style="border-collapse: collapse" bordercolor="#111111" id="AutoNumber4" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+      <tr>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>ACTION</b></u><!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>SOURCE</b></u><!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>DESTINATION</b></u><!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>PROTOCOL</b></u><!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>PORT</b></u><!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>SOURCE PORT</b></u><!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>ORIGINAL ADDRESS</b></u><!--mstheme--></font></td>
+      </tr>
+      <tr>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">ACCEPT<!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">fw<!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">tcp<!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">53<!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+      </tr>
+      <tr>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">ACCEPT<!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">fw<!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">udp<!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">53<!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+      </tr>
+    </table><!--mstheme--><font face="arial, Arial, Helvetica">
+  </blockquote>
+</div>
+<div align="left">
+  <p align="left">Those rules allow DNS access from your firewall and may be 
+  removed if you commented out the line in /etc/shorewall/policy allowing all 
+  connections from the firewall to the internet.</div>
+<div align="left">
+  <p align="left">The sample also includes:</div>
+<div align="left">
+  <blockquote>
+    <!--mstheme--></font><table border="1" cellpadding="2" style="border-collapse: collapse" bordercolor="#111111" id="AutoNumber4" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+      <tr>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>ACTION</b></u><!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>SOURCE</b></u><!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>DESTINATION</b></u><!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>PROTOCOL</b></u><!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>PORT</b></u><!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>SOURCE PORT</b></u><!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>ORIGINAL ADDRESS</b></u><!--mstheme--></font></td>
+      </tr>
+      <tr>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">ACCEPT<!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">loc<!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">fw<!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">tcp<!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">22<!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+      </tr>
+    </table><!--mstheme--><font face="arial, Arial, Helvetica">
+  </blockquote>
+</div>
+<div align="left">
+  <p align="left">That rule allows you to run an SSH server on your firewall and 
+  connect to that server from your local systems.</div>
+<div align="left">
+  <p align="left">If you wish to enable other connections between your firewall 
+  and other systems, the general format is:</div>
+<div align="left">
+  <blockquote>
+    <!--mstheme--></font><table border="1" cellpadding="2" style="border-collapse: collapse" bordercolor="#111111" id="AutoNumber4" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+      <tr>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>ACTION</b></u><!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>SOURCE</b></u><!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>DESTINATION</b></u><!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>PROTOCOL</b></u><!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>PORT</b></u><!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>SOURCE PORT</b></u><!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>ORIGINAL ADDRESS</b></u><!--mstheme--></font></td>
+      </tr>
+      <tr>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">ACCEPT<!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><i>&lt;source zone&gt;</i><!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><i>&lt;destination zone&gt;</i><!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><i>&lt;protocol&gt;</i><!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><i>&lt;port&gt;</i><!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+      </tr>
+    </table><!--mstheme--><font face="arial, Arial, Helvetica">
+  </blockquote>
+</div>
+<div align="left">
+  <p align="left">Example - You want to run a Web Server on your firewall 
+  system:</div>
+<div align="left">
+  <blockquote>
+    <!--mstheme--></font><table border="1" cellpadding="2" style="border-collapse: collapse" bordercolor="#111111" id="AutoNumber4" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+      <tr>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>ACTION</b></u><!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>SOURCE</b></u><!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>DESTINATION</b></u><!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>PROTOCOL</b></u><!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>PORT</b></u><!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>SOURCE PORT</b></u><!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>ORIGINAL ADDRESS</b></u><!--mstheme--></font></td>
+      </tr>
+      <tr>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">ACCEPT<!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">fw<!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">tcp<!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">80<!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">#Allow web access<!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">from the internet<!--mstheme--></font></td>
+      </tr>
+      <tr>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">ACCEPT<!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">loc<!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">fw<!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">tcp<!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">80<!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">#Allow web access<!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">from the local network<!--mstheme--></font></td>
+      </tr>
+    </table><!--mstheme--><font face="arial, Arial, Helvetica">
+  </blockquote>
+</div>
+<div align="left">
+  <p align="left">Those two rules would of course be in addition to the rules 
+  listed above under &quot;You can configure a Caching Name Server on your firewall&quot;</div>
+<div align="left">
+  <p align="left">If you don't know what port and protocol a particular 
+  application uses, look <a href="ports.htm">here</a>.</div>
+<div align="left">
+  <p align="left"><b>Important: </b>I don't recommend enabling telnet to/from 
+  the internet because it uses clear text (even for login!). If you want shell 
+  access to your firewall from the internet, use SSH:</div>
+<div align="left">
+  <blockquote>
+    <!--mstheme--></font><table border="1" cellpadding="2" style="border-collapse: collapse" bordercolor="#111111" id="AutoNumber4" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+      <tr>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>ACTION</b></u><!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>SOURCE</b></u><!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>DESTINATION</b></u><!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>PROTOCOL</b></u><!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>PORT</b></u><!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>SOURCE PORT</b></u><!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><u><b>ORIGINAL ADDRESS</b></u><!--mstheme--></font></td>
+      </tr>
+      <tr>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">ACCEPT<!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">net<!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">fw<!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">tcp<!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">22<!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">&nbsp;<!--mstheme--></font></td>
+      </tr>
+    </table><!--mstheme--><font face="arial, Arial, Helvetica">
+  </blockquote>
+</div>
+<div align="left">
+  <p align="left"><img border="0" src="images/BD21298_.gif" width="13" height="13">&nbsp;&nbsp;&nbsp; Now edit your 
+  /etc/shorewall/rules file to add or delete other connections as required.</div>
+<div align="left">
+  <h2 align="left"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">Starting and Stopping Your Firewall<!--mstheme--></font></h2>
+</div>
+<div align="left">
+  <p align="left">The <a href="Install.htm">installation procedure </a>
+  configures your system to start Shorewall at system boot.</div>
+<div align="left">
+  <p align="left">The firewall is started using the &quot;shorewall start&quot; command 
+  and stopped using &quot;shorewall stop&quot;. When the firewall is stopped, routing is 
+  enabled on those hosts that have an entry in
+  <a href="Documentation.htm#Routestopped">/etc/shorewall/routestopped</a>. A 
+  running firewall may be restarted using the &quot;shorewall restart&quot; command. If 
+  you want to totally remove any trace of Shorewall from your Netfilter 
+  configuration, use &quot;shorewall clear&quot;.</div>
+<div align="left">
+  <p align="left"><img border="0" src="images/BD21298_.gif" width="13" height="13">&nbsp;&nbsp;&nbsp; The two-interface sample assumes that you want to enable 
+  routing to/from <b>eth1 </b>(the local network) when Shorewall is stopped. If 
+  your local network isn't connected to <b>eth1</b> or if you wish to enable 
+  access to/from other hosts, change /etc/shorewall/routestopped accordingly.</div>
+<div align="left">
+  <p align="left"><b>WARNING: </b>If you are connected to your firewall from the 
+  internet, do not issue a &quot;shorewall stop&quot; command unless you have added an 
+  entry for the IP address that you are connected from to
+  <a href="Documentation.htm#Routestopped">/etc/shorewall/routestopped</a>. 
+  Also, I don't recommend using &quot;shorewall restart&quot;; it is better to create an
+  <i><a href="Documentation.htm#Configs">alternate configuration</a></i> and 
+  test it using the <a href="Documentation.htm#Starting">&quot;shorewall try&quot; command</a>.</div>
+<p align="left"><font size="2">Last updated 
+7/26/2002 - <a href="support.htm">Tom
+Eastep</a></font></p>
+
+<p align="left"><a href="copyright.htm"><font size="2">Copyright  2002 Thomas M. Eastep</font></a></p>
+
+<!--mstheme--></font></body>
+
+</html>

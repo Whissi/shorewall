@@ -1,0 +1,65 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Shorewall Proxy ARP</title>
+<meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+<meta name="ProgId" content="FrontPage.Editor.Document">
+<meta name="Microsoft Theme" content="radial 011">
+</head>
+
+<body background="_themes/radial/radbkgnd.gif" bgcolor="#FFFFFF" text="#000000" link="#6666FF" vlink="#993333" alink="#66CCCC"><!--mstheme--><font face="arial, Arial, Helvetica">
+
+<blockquote>
+    <h1 align="center"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">Proxy ARP<!--mstheme--></font></h1>
+    <p>&nbsp;</p>
+    <p>Proxy ARP allows you to insert a firewall in front of a set of servers 
+    without changing their IP addresses and without having to re-subnet.</p>
+    <p>The following figure represents a Proxy ARP
+    environment.</p>
+    <p align="center"><strong><img src="images/proxyarp.jpg" width="595" height="455"></strong></p>
+    <blockquote>
+    </blockquote>
+    <p align="left">Proxy ARP can be used to make the systems with addresses 
+    130.252.100.18 and 130.252.100.19 appear to be on the upper (130.252.100.*) 
+    subnet.&nbsp; Assuming that the upper firewall interface is eth0 and the 
+    lower interface is eth1, this is accomplished using the following entries in 
+    /etc/shorewall/proxyarp:</p>
+    <!--mstheme--></font><table border="2" cellpadding="2" style="border-collapse: collapse" bordercolordark="#666666" bordercolorlight="#CCCCCC">
+      <tr>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>ADDRESS</b><!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>INTERFACE</b><!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>EXTERNAL</b><!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica"><b>HAVEROUTE</b><!--mstheme--></font></td>
+      </tr>
+      <tr>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">130.252.100.18<!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">eth1<!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">eth0<!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">no<!--mstheme--></font></td>
+      </tr>
+      <tr>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">130.252.100.19<!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">eth1<!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">eth0<!--mstheme--></font></td>
+        <td><!--mstheme--><font face="arial, Arial, Helvetica">no<!--mstheme--></font></td>
+      </tr>
+    </table><!--mstheme--><font face="arial, Arial, Helvetica">
+    <p>Be sure that the internal systems (130.242.100.18 and 130.252.100.19&nbsp; 
+    in the above example) are not included in any specification in 
+    /etc/shorewall/masq or /etc/shorewall/nat.</p>
+    <p>Note that I've used an RFC1918 IP address for eth1 - that IP address is 
+    irrelevant. </p>
+    <p>The lower systems (130.252.100.18 and 130.252.100.19) should have their 
+    subnet mask and default gateway configured exactly the same way that the 
+    Firewall system's eth0 is configured.</p>
+</blockquote>
+
+<blockquote>
+</blockquote>
+
+<p><font size="2">Last updated 5/16/2002 - </font><font size="2">
+<a href="support.htm">Tom
+Eastep</a></font> </p>
+<font face="Trebuchet MS"><a href="copyright.htm"><font size="2">Copyright</font> 
+© <font size="2">2001, 2002 Thomas M. Eastep.</font></a></font><!--mstheme--></font></body></html>

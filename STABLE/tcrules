@@ -1,0 +1,47 @@
+#
+# Shorewall version 1.3 - Traffic Control Rules File
+#
+# /etc/shorewall/tcrules
+#
+#	Entries in this file cause packets to be marked as a means of
+#	classifying them for traffic control or policy routing.
+#
+# Columns are:
+#
+#
+#	MARK		The mark value which is an
+#			integer in the range 1-255
+#
+#	SOURCE 		Source of the packet. A comma-separated list of
+#			interface names, IP addresses, MAC addresses 
+#			and/or subnets. Use $FW if the packet originates on
+#			the firewall.
+#
+#			MAC addresses must be prefixed with "~" and use
+#			"-" as a separator.
+#
+#			Example: ~00-A0-C9-15-39-78
+#
+#	DEST		Destination of the packet. Comma separated list of
+#			IP addresses and/or subnets.
+#
+#	PROTO		Protocol - Must be "tcp", "udp", "icmp", a number,
+#			or "all".
+#
+#	PORT(S)		Destination Ports. A comma-separated list of Port
+#			names (from /etc/services), port numbers or port
+#			ranges; if the protocol is "icmp", this column is
+#			interpreted as the destination icmp-type(s).
+#
+#			This column is ignored if PROTOCOL = all but must be
+#			entered if any of the following field is supplied.
+#			In that case, it is suggested that this field contain
+#			 "-"
+#
+#	CLIENT PORT(S)	(Optional) Port(s) used by the client. If omitted,
+#			any source port is acceptable. Specified as a comma-
+#			separated list of port names, port numbers or port
+#			ranges.
+##############################################################################
+#MARK		SOURCE 		DEST		PROTO	PORT(S)	CLIENT PORT(S)
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

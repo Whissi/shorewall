@@ -1,0 +1,30 @@
+##############################################################################
+#
+# Shorewall 1.3 -- Proxy ARP
+#
+# /etc/shorewall/proxyarp
+#
+#	This file is used to define Proxy ARP. 
+#
+# Columns must be separated by white space and are:
+#
+#	ADDRESS		IP Address
+#	INTERFACE	Local interface where system is connected. If the
+#			local interface is obvious from the subnetting,
+#			you may enter "-" in this column.
+#	EXTERNAL	External Interface to be used to access this system
+#
+#	HAVEROUTE	If there is already a route from the firewall to
+#			the host whose address is given, enter "Yes" or "yes"
+#			in this column. Otherwise, entry "no", "No" or leave
+#			the column empty.
+#
+#			Example: Host with IP 155.186.235.6 is connected to
+#			interface eth1 and we want hosts attached via eth0
+#			to be able to access it using that address.
+#
+#			#ADDRESS	INTERFACE	EXTERNAL   HAVEROUTE
+#			155.186.235.6	eth1		eth0       No
+##############################################################################
+#ADDRESS		INTERFACE	EXTERNAL        HAVEROUTE
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

@@ -1,0 +1,205 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+                 
+  <meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+  <title>Shoreline Firewall (Shorewall) 1.3</title>
+                              
+  <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+                 
+  <meta name="ProgId" content="FrontPage.Editor.Document">
+                                 
+   
+      <base target="_self">
+<meta name="Microsoft Theme" content="radial 011">
+</head>
+ <body background="_themes/radial/radbkgnd.gif" bgcolor="#FFFFFF" text="#000000" link="#6666FF" vlink="#993333" alink="#66CCCC"><!--mstheme--><font face="arial, Arial, Helvetica">
+                                      
+ <h1 align="center"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">Shorewall 1.3 - <font size="4">&quot;<i>iptables made easy&quot;</i></font><a href="http://www.cityofshoreline.com"><img border="0" src="images/washington.jpg" width="100" height="82" align="right"></a><!--mstheme--></font></h1>
+                                      
+ <p align="center"><b>Shorewall 1.2 Site is
+ <a target="_top" href="/1.2/index.htm">Here</a></b></p>
+                                      
+ <p align="center">&nbsp;</p>
+                                      
+      <h2 align="Left"><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">What is it?<!--mstheme--></font></h2>
+                                      
+      <p>The Shoreline Firewall, more commonly known as &quot;Shorewall&quot;,&nbsp; is a
+      <a href="http://www.netfilter.org">Netfilter</a> (iptables) 
+      based firewall that can be used on a dedicated firewall system, a 
+      multi-function gateway/router/server or on a standalone GNU/Linux system.</p>
+                                     
+      <p>This program is free software; you can redistribute it and/or modify
+      it under the terms of <a href="http://www.gnu.org/licenses/gpl.html">Version 2 of the GNU General Public License</a> 
+   as published by the Free Software Foundation.<br>
+         <br>
+          This program is distributed in the hope that it will be useful, 
+    but WITHOUT ANY WARRANTY; without even the implied warranty of     MERCHANTABILITY
+  or FITNESS FOR A PARTICULAR PURPOSE. See the     GNU General Public License
+  for more details.<br>
+         <br>
+          You should have received a copy of the GNU General Public License 
+     along with this program; if not, write to the Free Software     Foundation,
+  Inc., 675 Mass Ave, Cambridge, MA 02139, USA</p>
+                                     
+      <p><a href="copyright.htm">Copyright 2001, 2002 Thomas M. Eastep</a></p>
+                                  
+                      
+      <h2><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">Want a Copy of this Site?<!--mstheme--></font></h2>
+                              
+      <p>The Shorewall .tgz and .rpm files contain a copy of this site --
+      <a href="download.htm">download Shorewall</a> and you get a copy of the 
+      Shorewall portion of this site for the same low price (Free!).</p>
+                              
+                      
+      <h2><!--mstheme--><font face="times new roman, Times New Roman, Times" color="#666666">News<!--mstheme--></font></h2>
+                              
+ <p><b>8/7/2002 - Shorewall 1.3.6
+ <img border="0" src="images/new10.gif" width="28" height="12"></b></p>
+                              
+ <p>This is primarily a bug-fix rollup with a couple of new features:</p>
+                              
+ <!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
+   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">The latest <a href="shorewall_quickstart_guide.htm">QuickStart Guides </a>
+   including the <a href="shorewall_setup_guide.htm">Shorewall Setup Guide.</a><!--mstheme--></font><!--msthemelist--></td></tr>
+   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">Shorewall will now DROP TCP packets that are not part of or 
+   related to an existing connection and that are not SYN packets. These &quot;New 
+   not SYN&quot; packets may be optionally logged by setting the LOGNEWNOTSYN option 
+   in <a href="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</a>.<!--mstheme--></font><!--msthemelist--></td></tr>
+   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">The processing of &quot;New not SYN&quot; packets may be extended by command in the 
+   new <a href="shorewall_extension_scripts.htm">newnotsyn extension script</a>.<!--mstheme--></font><!--msthemelist--></td></tr>
+ <!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+                              
+ <p><b>7/30/2002 - Shorewall 1.3.5b Released</b></p>
+                              
+ <p>This interim release:</p>
+                              
+ <!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
+   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">Causes the firewall script to remove the lock file if it is killed.<!--mstheme--></font><!--msthemelist--></td></tr>
+   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">Once again allows lists in the second column of the
+   <a href="Documentation.htm#Hosts">/etc/shorewall/hosts</a> file.<!--mstheme--></font><!--msthemelist--></td></tr>
+   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">Includes the latest <a href="shorewall_quickstart_guide.htm">QuickStart 
+   Guides</a>.<!--mstheme--></font><!--msthemelist--></td></tr>
+ <!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+                              
+ <p><b>7/29/2002 - New Shorewall Setup Guide Available</b></p>
+                              
+ <p>The first draft of this guide is available at
+ <a href="http://www.shorewall.net/shorewall_setup_guide.htm">
+ http://www.shorewall.net/shorewall_setup_guide.htm</a>. The guide is intended 
+ for use by people who are setting up Shorewall to manage multiple public IP 
+ addresses and by people who want to learn more about Shorewall than is 
+ described in the single-address guides. Feedback on the new guide is welcome.</p>
+                              
+ <p><b>7/28/2002 - Shorewall 1.3.5 Debian Package Available</b></p>
+                              
+ <p>Lorenzo Martignoni reports that the packages are version 1.3.5a and are available at <a href="http://security.dsi.unimi.it/~lorenzo/debian.html">http://security.dsi.unimi.it/~lorenzo/debian.html</a>.</p>
+                              
+ <p><b>7/27/2002 - Shorewall 1.3.5a Released</b></p>
+                              
+ <p>This interim release restores correct handling of REDIRECT rules. </p>
+                              
+ <p><b>7/26/2002 - Shorewall 1.3.5 Released</b></p>
+                              
+ <p>This will be the last Shorewall release for a while. I'm going to be 
+ focusing on rewriting a lot of the documentation.</p>
+                              
+ <p><b>&nbsp;</b>In this version:</p>
+                              
+ <!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
+   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">Empty and invalid source and destination qualifiers are now detected in 
+   the rules file. It is a good idea to use the 'shorewall check' command before 
+   you issue a 'shorewall restart' command be be sure that you don't have any 
+   configuration problems that will prevent a successful restart.<!--mstheme--></font><!--msthemelist--></td></tr>
+   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">Added <b>MERGE_HOSTS</b> variable in <a href="Documentation.htm#Conf">shorewall.conf</a> to provide saner behavior of 
+   the <a href="Documentation.htm#Hosts">/etc/shorewall/hosts</a> file.<!--mstheme--></font><!--msthemelist--></td></tr>
+   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">The time that the counters were last reset is now displayed in the 
+   heading of the 'status' and 'show' commands.<!--mstheme--></font><!--msthemelist--></td></tr>
+   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">A <b>proxyarp </b>option has been added for entries in
+   <a href="Documentation.htm#Interfaces">/etc/shorewall/interfaces</a>. This 
+   option facilitates Proxy ARP sub-netting as described in the Proxy ARP 
+   subnetting mini-HOWTO (<a href="http://www.tldp.org/HOWTO/mini/Proxy-ARP-Subnet/">http://www.tldp.org/HOWTO/mini/Proxy-ARP-Subnet/</a>). 
+   Specifying the proxyarp option for an interface causes Shorewall to set 
+   /proc/sys/net/ipv4/conf/&lt;interface&gt;/proxy_arp.<!--mstheme--></font><!--msthemelist--></td></tr>
+   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">The Samples have been updated to reflect the new capabilities in this 
+   release. <!--mstheme--></font><!--msthemelist--></td></tr>
+ <!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+                              
+ <p><b>7/16/2002 - New Mirror in Argentina</b></p>
+                              
+ <p>Thanks to Arturo &quot;Buanzo&quot; Busleiman, there is now a Shorewall
+ <a href="http://shorewall.correofuego.com.ar">mirror in Argentina</a>. Thanks Buanzo!!!</p>
+                              
+ <p><b>7/16/2002 - Shorewall 1.3.4 Released</b></p>
+                              
+ <p>In this version:</p>
+                              
+ <!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
+   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">A new <a href="Documentation.htm#Routestopped">
+   /etc/shorewall/routestopped</a> file has been added. This file is intended to 
+   eventually replace the <b>routestopped</b> option in the 
+   /etc/shorewall/interface and /etc/shorewall/hosts files. This new file makes 
+   remote firewall administration easier by allowing any IP or subnet to be 
+   enabled while Shorewall is stopped.<!--mstheme--></font><!--msthemelist--></td></tr>
+   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">An /etc/shorewall/stopped <a href="Documentation.htm#Scripts">extension 
+   script</a> has been added. This script is invoked after Shorewall has 
+   stopped.<!--mstheme--></font><!--msthemelist--></td></tr>
+   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">A <b>DETECT_DNAT_ADDRS </b>option has been added to
+   <a href="Documentation.htm#Conf">/etc/shoreall/shorewall.conf</a>. When this 
+   option is selected, DNAT rules only apply when the destination address is the 
+   external interface's primary IP address.<!--mstheme--></font><!--msthemelist--></td></tr>
+   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">The <a href="shorewall_quickstart_guide.htm">QuickStart Guide</a> has 
+   been broken into three guides and has been almost entirely rewritten.<!--mstheme--></font><!--msthemelist--></td></tr>
+   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">The <a href="/pub/shorewall/LATEST.samples">Samples</a> have been updated 
+   to reflect the new capabilities in this release.&nbsp; <!--mstheme--></font><!--msthemelist--></td></tr>
+ <!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+                              
+ <p><b>7/8/2002 - Shorewall 1.3.3 Debian Package Available</b></p>
+                              
+ <p>Lorenzo Martignoni reports that the packages are available at <a href="http://security.dsi.unimi.it/~lorenzo/debian.html">http://security.dsi.unimi.it/~lorenzo/debian.html</a>.</p>
+                              
+ <p><b>7/6/2002 - Shorewall 1.3.3 Released</b></p>
+                              
+ <p>In this version:</p>
+                              
+ <!--mstheme--></font><!--msthemelist--><table border="0" cellpadding="0" cellspacing="0" width="100%">
+   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">Entries in /etc/shorewall/interface that use the wildcard character (&quot;+&quot;) 
+   now have the &quot;multi&quot; option assumed.<!--mstheme--></font><!--msthemelist--></td></tr>
+   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">The 'rfc1918' chain in the mangle table has been renamed 'man1918' to 
+   make log messages generated from that chain distinguishable from those 
+   generated by the 'rfc1918' chain in the filter table.<!--mstheme--></font><!--msthemelist--></td></tr>
+   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">Interface names appearing in the hosts file are now validated against the 
+   interfaces file.<!--mstheme--></font><!--msthemelist--></td></tr>
+   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">The TARGET column in the rfc1918 file is now checked for correctness.<!--mstheme--></font><!--msthemelist--></td></tr>
+   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">The chain structure in the nat table has been changed to reduce the 
+   number of rules that a packet must traverse and to correct problems with 
+   NAT_BEFORE_RULES=No.<!--mstheme--></font><!--msthemelist--></td></tr>
+   <!--msthemelist--><tr><td valign="baseline" width="42"><img src="_themes/radial/aradbul1.gif" width="15" height="15" hspace="13" alt="bullet"></td><td valign="top" width="100%"><!--mstheme--><font face="arial, Arial, Helvetica">The 'hits' command has been enhanced.<!--mstheme--></font><!--msthemelist--></td></tr>
+ <!--msthemelist--></table><!--mstheme--><font face="arial, Arial, Helvetica">
+                              
+                      
+      <p><a href="News.htm">More News</a></p>
+                                  
+                      
+      <p><a href="http://sourceforge.net" target="_top"><img src="http://sourceforge.net/sflogo.php?group_id=22587" alt="SourceForge Logo"></a>The 
+      Shorewall Project uses facilities provided by SourceForge.</p>
+                                  
+                      
+      <p><a href="http://leaf.sourceforge.net" target="_top">
+      <img border="0" src="images/leaflogo.gif" width="49" height="36"></a>
+  Jacques Nilo and Eric Wolzak have a LEAF distribution called <i>Bering</i> 
+  that features Shorewall-1.3.3 and Kernel-2.4.18. You can find their work at:
+  <a href="http://leaf.sourceforge.net/devel/jnilo">http://leaf.sourceforge.net/devel/jnilo</a></p>
+                                  
+                      
+      <p><font face="Century Gothic, Arial, Helvetica"><font size="2">Updated
+      7/29/2002 - <a href="support.htm">Tom Eastep</a>
+     </font>
+                                  
+                      
+ </font>
+          </p>
+                                  
+                      
+ <!--mstheme--></font></body>
+  </html>

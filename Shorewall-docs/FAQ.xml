@@ -25,6 +25,16 @@
 
     <revhistory>
       <revision>
+        <revnumber>1.3</revnumber>
+
+        <date>2003-12-10</date>
+
+        <authorinitials>TE</authorinitials>
+
+        <revremark>Changed the title of FAQ 17</revremark>
+      </revision>
+
+      <revision>
         <revnumber>1.2</revnumber>
 
         <date>2003-12-09</date>
@@ -550,9 +560,10 @@
           following when trying to access a host in Z from another host in Z
           using the destination hosts&#39;s public address:</para>
 
-          <programlisting>Oct  4 10:26:40 netgw kernel: Shorewall:FORWARD:REJECT:IN=eth1 OUT=eth1
-                SRC=192.168.118.200 DST=192.168.118.210 LEN=48 TOS=0x00 PREC=0x00 TTL=127
-                ID=1342 DF PROTO=TCP SPT=1494 DPT=1491 WINDOW=17472 RES=0x00 ACK SYN URGP=0</programlisting>
+          <programlisting>Oct 4 10:26:40 netgw kernel:
+          Shorewall:FORWARD:REJECT:IN=eth1 OUT=eth1 SRC=192.168.118.200
+          DST=192.168.118.210 LEN=48 TOS=0x00 PREC=0x00 TTL=127 ID=1342 DF
+          PROTO=TCP SPT=1494 DPT=1491 WINDOW=17472 RES=0x00 ACK SYN URGP=0</programlisting>
         </note>
 
         <para><emphasis role="bold">Answer:</emphasis> This is another problem
@@ -596,9 +607,7 @@
         <example>
           <title>Example:</title>
 
-          <literallayout>Zone: dmz
-Interface: eth2
-Subnet: 192.168.2.0/24</literallayout>
+          <literallayout>Zone: dmz Interface: eth2 Subnet: 192.168.2.0/24</literallayout>
 
           <para>In /etc/shorewall/interfaces:</para>
 
@@ -793,7 +802,8 @@ Subnet: 192.168.2.0/24</literallayout>
         <listitem>
           <para>Add the following to /etc/shorewall/common</para>
 
-          <programlisting>run_iptables -A icmpdef -p ICMP --icmp-type echo-request -j ACCEPT</programlisting>
+          <programlisting>run_iptables -A icmpdef -p ICMP --icmp-type
+          echo-request -j ACCEPT</programlisting>
         </listitem>
       </orderedlist>
 
@@ -858,8 +868,7 @@ Subnet: 192.168.2.0/24</literallayout>
       through <ulink url="Documentation.htm#Conf">settings</ulink> in
       /etc/shorewall/shorewall.conf -- If you want to log all messages, set:</para>
 
-      <programlisting>LOGLIMIT=&#34;&#34;
-LOGBURST=&#34;&#34;</programlisting>
+      <programlisting>LOGLIMIT=&#34;&#34; LOGBURST=&#34;&#34;</programlisting>
 
       <para>Beginning with Shorewall version 1.3.12, you can <ulink
       url="shorewall_logging.html">set up Shorewall to log all of its messages
@@ -872,12 +881,12 @@ LOGBURST=&#34;&#34;</programlisting>
         that may be helpful:</para>
 
         <literallayout><ulink
-url="http://www.shorewall.net/pub/shorewall/parsefw/">http://www.shorewall.net/pub/shorewall/parsefw/</ulink>
-<ulink url="http://www.fireparse.com">http://www.fireparse.com</ulink>
-<ulink url="http://cert.uni-stuttgart.de/projects/fwlogwatch">http://cert.uni-stuttgart.de/projects/fwlogwatch</ulink>
-<ulink url="http://www.logwatch.org">http://www.logwatch.org</ulink>
-<ulink url="http://gege.org/iptables">http://gege.org/iptables</ulink>
-<ulink url="http://home.regit.org/ulogd-php.html">http://home.regit.org/ulogd-php.html</ulink></literallayout>
+        url="http://www.shorewall.net/pub/shorewall/parsefw/">http://www.shorewall.net/pub/shorewall/parsefw/</ulink>
+        <ulink url="http://www.fireparse.com">http://www.fireparse.com</ulink>
+        <ulink url="http://cert.uni-stuttgart.de/projects/fwlogwatch">http://cert.uni-stuttgart.de/projects/fwlogwatch</ulink>
+        <ulink url="http://www.logwatch.org">http://www.logwatch.org</ulink>
+        <ulink url="http://gege.org/iptables">http://gege.org/iptables</ulink>
+        <ulink url="http://home.regit.org/ulogd-php.html">http://home.regit.org/ulogd-php.html</ulink></literallayout>
 
         <para>I personnaly use Logwatch. It emails me a report each day from
         my various systems with each report summarizing the logged activity on
@@ -891,7 +900,7 @@ url="http://www.shorewall.net/pub/shorewall/parsefw/">http://www.shorewall.net/p
 
         <para>Temporarily add the following rule:</para>
 
-        <programlisting>DROP    net    fw    udp    10619</programlisting>
+        <programlisting>DROP net fw udp 10619</programlisting>
       </section>
 
       <section id="faq6c">
@@ -899,9 +908,11 @@ url="http://www.shorewall.net/pub/shorewall/parsefw/">http://www.shorewall.net/p
         port 53 to some high numbered port. They get dropped, but what the
         heck are they?</title>
 
-        <programlisting>Jan  8 15:50:48 norcomix kernel: Shorewall:net2all:DROP:IN=eth0 OUT= MAC=00:40:c7:2e:09:c0:00:01:64:4a:70:00:08:00
-                                                        SRC=208.138.130.16 DST=24.237.22.45 LEN=53 TOS=0x00 PREC=0x00
-                                                        TTL=251 ID=8288 DF PROTO=UDP SPT=53 DPT=40275 LEN=33</programlisting>
+        <programlisting>Jan 8 15:50:48 norcomix kernel:
+        Shorewall:net2all:DROP:IN=eth0 OUT=
+        MAC=00:40:c7:2e:09:c0:00:01:64:4a:70:00:08:00 SRC=208.138.130.16
+        DST=24.237.22.45 LEN=53 TOS=0x00 PREC=0x00 TTL=251 ID=8288 DF
+        PROTO=UDP SPT=53 DPT=40275 LEN=33</programlisting>
 
         <para><emphasis role="bold">Answer:</emphasis> There are two
         possibilities:</para>
@@ -923,15 +934,10 @@ url="http://www.shorewall.net/pub/shorewall/parsefw/">http://www.shorewall.net/p
         logged twice, they are corrupted. I solve this problem by using an
         /etc/shorewall/common file like this:</para>
 
-        <programlisting>#
-# Include the standard common.def file
-#
-. /etc/shorewall/common.def
-#
-# The following rule is non-standard and compensates for tardy
-# DNS replies
-#
-run_iptables -A common -p udp --sport 53 -mstate --state NEW -j DROP</programlisting>
+        <programlisting># # Include the standard common.def file # .
+        /etc/shorewall/common.def # # The following rule is non-standard and
+        compensates for tardy # DNS replies # run_iptables -A common -p udp
+        --sport 53 -mstate --state NEW -j DROP</programlisting>
 
         <para>The above file is also include in all of my sample
         configurations available in the <ulink
@@ -996,7 +1002,7 @@ run_iptables -A common -p udp --sport 53 -mstate --state NEW -j DROP</programlis
     </section>
 
     <section id="faq17">
-      <title>(FAQ 17) How do I find out why this traffic is getting logged?</title>
+      <title>(FAQ 17) What does this log message mean?</title>
 
       <para><emphasis role="bold">Answer:</emphasis> Logging occurs out of a
       number of chains (as indicated in the log message) in Shorewall:</para>
@@ -1124,9 +1130,10 @@ run_iptables -A common -p udp --sport 53 -mstate --state NEW -j DROP</programlis
       <example>
         <title>Here is an example:</title>
 
-        <programlisting>Jun 27 15:37:56 gateway kernel: Shorewall:all2all:REJECT:IN=eth2 OUT=eth1
-SRC=192.168.2.2 DST=192.168.1.3 LEN=67 TOS=0x00 PREC=0x00 TTL=63 ID=5805 DF
-PROTO=UDP SPT=1803 DPT=53 LEN=47</programlisting>
+        <programlisting>Jun 27 15:37:56 gateway kernel:
+        Shorewall:all2all:REJECT:IN=eth2 OUT=eth1 SRC=192.168.2.2
+        DST=192.168.1.3 LEN=67 TOS=0x00 PREC=0x00 TTL=63 ID=5805 DF PROTO=UDP
+        SPT=1803 DPT=53 LEN=47</programlisting>
 
         <para>Let&#39;s look at the important parts of this message:</para>
 
@@ -1198,17 +1205,20 @@ PROTO=UDP SPT=1803 DPT=53 LEN=47</programlisting>
         <para>In this case, 192.168.2.2 was in the &#34;dmz&#34; zone and
         192.168.1.3 is in the &#34;loc&#34; zone. I was missing the rule:</para>
 
-        <programlisting>ACCEPT    dmz    loc    udp    53</programlisting>
+        <programlisting>ACCEPT dmz loc udp 53</programlisting>
       </example>
     </section>
 
     <section id="faq21">
-      <title>I (FAQ 21) see these strange log entries occasionally; what are
+      <title>(FAQ 21) I see these strange log entries occasionally; what are
       they?</title>
 
-      <programlisting>Nov 25 18:58:52 linux kernel: Shorewall:net2all:DROP:IN=eth1 OUT= MAC=00:60:1d:f0:a6:f9:00:60:1d:f6:35:50:08:00
-     SRC=206.124.146.179 DST=192.0.2.3 LEN=56 TOS=0x00 PREC=0x00 TTL=110 ID=18558 PROTO=ICMP TYPE=3 CODE=3 
-     [SRC=192.0.2.3 DST=172.16.1.10 LEN=128 TOS=0x00 PREC=0x00 TTL=47 ID=0 DF PROTO=UDP SPT=53 DPT=2857 LEN=108 ]</programlisting>
+      <programlisting>Nov 25 18:58:52 linux kernel:
+      Shorewall:net2all:DROP:IN=eth1 OUT=
+      MAC=00:60:1d:f0:a6:f9:00:60:1d:f6:35:50:08:00 SRC=206.124.146.179
+      DST=192.0.2.3 LEN=56 TOS=0x00 PREC=0x00 TTL=110 ID=18558 PROTO=ICMP
+      TYPE=3 CODE=3 [SRC=192.0.2.3 DST=172.16.1.10 LEN=128 TOS=0x00 PREC=0x00
+      TTL=47 ID=0 DF PROTO=UDP SPT=53 DPT=2857 LEN=108 ]</programlisting>
 
       <para>192.0.2.3 is external on my firewall... 172.16.0.0/24 is my
       internal LAN</para>
@@ -1341,22 +1351,12 @@ PROTO=UDP SPT=1803 DPT=53 LEN=47</programlisting>
         providers that connect a local network (or even a single machine) to
         the big Internet.</para>
 
-        <programlisting>                                                                 ________
-                                          +------------+        /
-                                          |            |       |
-                            +-------------+ Provider 1 +-------
-        __                  |             |            |     /
-    ___/  \_         +------+-------+     +------------+    |
-  _/        \__      |     if1      |                      /
- /             \     |              |                      |
-| Local network -----+ Linux router |                      |     Internet
- \_           __/    |              |                      |
-   \__     __/       |     if2      |                      \
-      \___/          +------+-------+     +------------+    |
-                            |             |            |     \
-                            +-------------+ Provider 2 +-------
-                                          |            |       |
-                                          +------------+        \________</programlisting>
+        <programlisting>________ +------------+ / | | | +-------------+
+        Provider 1 +------- __ | | | / ___/ \_ +------+-------+ +------------+
+        | _/ \__ | if1 | / / \ | | | | Local network -----+ Linux router | |
+        Internet \_ __/ | | | \__ __/ | if2 | \ \___/ +------+-------+
+        +------------+ | | | | \ +-------------+ Provider 2 +------- | | |
+        +------------+ \________</programlisting>
 
         <para>There are usually two questions given this setup.</para>
 
@@ -1385,10 +1385,9 @@ PROTO=UDP SPT=1803 DPT=53 LEN=47</programlisting>
         These are added in /etc/iproute2/rt_tables. Then you set up routing in
         these tables as follows:</para>
 
-        <programlisting>ip route add $P1_NET dev $IF1 src $IP1 table T1
-ip route add default via $P1 table T1
-ip route add $P2_NET dev $IF2 src $IP2 table T2
-ip route add default via $P2 table T2</programlisting>
+        <programlisting>ip route add $P1_NET dev $IF1 src $IP1 table T1 ip
+        route add default via $P1 table T1 ip route add $P2_NET dev $IF2 src
+        $IP2 table T2 ip route add default via $P2 table T2</programlisting>
 
         <para>Nothing spectacular, just build a route to the gateway and build
         a default route via that gateway, as you would do in the case of a
@@ -1402,8 +1401,8 @@ ip route add default via $P2 table T2</programlisting>
         to that neighbour. Note the `src&#39; arguments, they make sure the
         right outgoing IP address is chosen.</para>
 
-        <programlisting>ip route add $P1_NET dev $IF1 src $IP1
-ip route add $P2_NET dev $IF2 src $IP2</programlisting>
+        <programlisting>ip route add $P1_NET dev $IF1 src $IP1 ip route add
+        $P2_NET dev $IF2 src $IP2</programlisting>
 
         <para>Then, your preference for default route:</para>
 
@@ -1414,8 +1413,8 @@ ip route add $P2_NET dev $IF2 src $IP2</programlisting>
         a given interface if you already have the corresponding source
         address:</para>
 
-        <programlisting>ip rule add from $IP1 table T1
-ip rule add from $IP2 table T2</programlisting>
+        <programlisting>ip rule add from $IP1 table T1 ip rule add from $IP2
+        table T2</programlisting>
 
         <para>This set of commands makes sure all answers to traffic coming in
         on a particular interface get answered from that interface.</para>
@@ -1424,12 +1423,10 @@ ip rule add from $IP2 table T2</programlisting>
           <para>&#39;If $P0_NET is the local network and $IF0 is its
           interface, the following additional entries are desirable:</para>
 
-          <programlisting>ip route add $P0_NET     dev $IF0 table T1
-ip route add $P2_NET     dev $IF2 table T1
-ip route add 127.0.0.0/8 dev lo   table T1
-ip route add $P0_NET     dev $IF0 table T2
-ip route add $P1_NET     dev $IF1 table T2
-ip route add 127.0.0.0/8 dev lo   table T2</programlisting>
+          <programlisting>ip route add $P0_NET dev $IF0 table T1 ip route add
+          $P2_NET dev $IF2 table T1 ip route add 127.0.0.0/8 dev lo table T1
+          ip route add $P0_NET dev $IF0 table T2 ip route add $P1_NET dev $IF1
+          table T2 ip route add 127.0.0.0/8 dev lo table T2</programlisting>
         </note>
 
         <para>Now, this is just the very basic setup. It will work for all
@@ -1452,8 +1449,8 @@ ip route add 127.0.0.0/8 dev lo   table T2</programlisting>
         is done as follows (once more building on the example in the section
         on split-access):</para>
 
-        <programlisting>ip route add default scope global nexthop via $P1 dev $IF1 weight 1 \
-nexthop via $P2 dev $IF2 weight 1</programlisting>
+        <programlisting>ip route add default scope global nexthop via $P1 dev
+        $IF1 weight 1 \ nexthop via $P2 dev $IF2 weight 1</programlisting>
 
         <para>This will balance the routes over both providers. The <emphasis
         role="bold">weight</emphasis> parameters can be tweaked to favor one
@@ -1495,19 +1492,20 @@ nexthop via $P2 dev $IF2 weight 1</programlisting>
       <para><emphasis role="bold">Answer:</emphasis> The output you will see
       looks something like this:</para>
 
-      <programlisting>/lib/modules/2.4.17/kernel/net/ipv4/netfilter/ip_tables.o: init_module: Device or resource busy
-Hint: insmod errors can be caused by incorrect module parameters, including invalid IO or IRQ parameters
-/lib/modules/2.4.17/kernel/net/ipv4/netfilter/ip_tables.o: insmod
-/lib/modules/2.4.17/kernel/net/ipv4/netfilter/ip_tables.o failed
-/lib/modules/2.4.17/kernel/net/ipv4/netfilter/ip_tables.o: insmod ip_tables failed
-iptables v1.2.3: can&#39;t initialize iptables table `nat&#39;: iptables who? (do you need to insmod?)
-Perhaps iptables or your kernel needs to be upgraded.</programlisting>
+      <programlisting>/lib/modules/2.4.17/kernel/net/ipv4/netfilter/ip_tables.o:
+      init_module: Device or resource busy Hint: insmod errors can be caused
+      by incorrect module parameters, including invalid IO or IRQ parameters
+      /lib/modules/2.4.17/kernel/net/ipv4/netfilter/ip_tables.o: insmod
+      /lib/modules/2.4.17/kernel/net/ipv4/netfilter/ip_tables.o failed
+      /lib/modules/2.4.17/kernel/net/ipv4/netfilter/ip_tables.o: insmod
+      ip_tables failed iptables v1.2.3: can&#39;t initialize iptables table
+      `nat&#39;: iptables who? (do you need to insmod?) Perhaps iptables or
+      your kernel needs to be upgraded.</programlisting>
 
       <para>This is usually cured by the following sequence of commands:</para>
 
-      <programlisting>service ipchains stop
-chkconfig --delete ipchains
-rmmod ipchains</programlisting>
+      <programlisting>service ipchains stop chkconfig --delete ipchains rmmod
+      ipchains</programlisting>
 
       <para>Also, be sure to check the <ulink url="errata.htm">errata</ulink>
       for problems concerning the version of iptables (v1.2.3) shipped with
@@ -1529,21 +1527,13 @@ rmmod ipchains</programlisting>
       <para>I just installed Shorewall and when I issue the start command, I
       see the following:</para>
 
-      <programlisting>Processing /etc/shorewall/params ...
-Processing /etc/shorewall/shorewall.conf ...
-Starting Shorewall...
-Loading Modules...
-Initializing...
-Determining Zones...
-Zones: net loc
-Validating interfaces file...
-Validating hosts file...
-Determining Hosts in Zones...
-<emphasis role="bold">Net Zone: eth0:0.0.0.0/0</emphasis>
-<emphasis role="bold">Local Zone: eth1:0.0.0.0/0</emphasis>
-Deleting user chains...
-Creating input Chains...
-...</programlisting>
+      <programlisting>Processing /etc/shorewall/params ... Processing
+      /etc/shorewall/shorewall.conf ... Starting Shorewall... Loading
+      Modules... Initializing... Determining Zones... Zones: net loc
+      Validating interfaces file... Validating hosts file... Determining Hosts
+      in Zones... <emphasis role="bold">Net Zone: eth0:0.0.0.0/0</emphasis>
+      <emphasis role="bold">Local Zone: eth1:0.0.0.0/0</emphasis> Deleting
+      user chains... Creating input Chains... ...</programlisting>
 
       <para>Why can&#39;t Shorewall detect my interfaces properly?</para>
 
@@ -1554,7 +1544,7 @@ Creating input Chains...
     </section>
 
     <section id="faq22">
-      <title>( FAQ 22) I have some iptables commands that I want to run when
+      <title>(FAQ 22) I have some iptables commands that I want to run when
       Shorewall starts. Which file do I put them in?</title>
 
       <para>You can place these commands in one of the <ulink
@@ -1819,7 +1809,7 @@ Creating input Chains...
       <example>
         <title>Example:</title>
 
-        <programlisting>ACCEPT    net:192.0.2.16/28,192.0.2.44    fw    tcp    22</programlisting>
+        <programlisting>ACCEPT net:192.0.2.16/28,192.0.2.44 fw tcp 22</programlisting>
       </example>
     </section>
 
@@ -1839,7 +1829,8 @@ Creating input Chains...
 
         <para>Add this command to your /etc/shorewall/start file:</para>
 
-        <programlisting>run_iptables -D OUTPUT -p ! icmp -m state --state INVALID -j DROP</programlisting>
+        <programlisting>run_iptables -D OUTPUT -p ! icmp -m state --state
+        INVALID -j DROP</programlisting>
       </section>
     </section>
 

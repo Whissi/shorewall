@@ -28,12 +28,12 @@ to 2.x releases of Shorewall. For older versions:</p>
  target="_top">here</a>. </p>
   </li>
 </ul>
-<p>The current 2.0 Stable Release is 2.0.10 -- Here are the <a
- href="http://shorewall.net/pub/shorewall/2.0/shorewall-2.0.10/releasenotes.txt">release
+<p>The current 2.0 Stable Release is 2.0.11 -- Here are the <a
+ href="http://shorewall.net/pub/shorewall/2.0/shorewall-2.0.11/releasenotes.txt">release
 notes</a>.<br>
-The current Developement Release is 2.2.0 Beta 4 -- Here
+The current Developement Release is 2.2.0 Beta 6 -- Here
 are the <a
- href="http://shorewall.net/pub/shorewall/2.2-Beta/shorewall-2.2.0-Beta4/releasenotes.txt">release
+ href="http://shorewall.net/pub/shorewall/2.2-Beta/shorewall-2.2.0-Beta6/releasenotes.txt">release
 notes</a>.<br>
 <br>
 Copyright © 2001-2004 Thomas M. Eastep</p>
@@ -44,7 +44,7 @@ Foundation; with no Invariant Sections, with no Front-Cover, and with
 no Back-Cover Texts. A copy of the license is included in the section
 entitled “<a href="GnuCopyright.htm" target="_self">GNU
 Free Documentation License</a>”.</p>
-<p>2004-11-19</p>
+<p>2004-11-26</p>
 <hr>
 <h3>Table of Contents</h3>
 <p style="margin-left: 0.42in; margin-bottom: 0in;"><a href="#Intro">Introduction
@@ -60,7 +60,11 @@ Shorewall on Mandrake® with a two-interface setup?</a><br>
 <a href="#License">License</a></p>
 <p style="margin-bottom: 0in; margin-left: 40px;"><a href="#2_0_10">News</a></p>
 <p style="margin-left: 0.83in; margin-bottom: 0in;"><a
- href="#2_2_0_Beta4">Shorewall 2.2.0 Beta 4</a><br>
+ href="shorewall_index.htm#2_2_0_Beta6">Shorewall 2.2.0 Beta 6</a><br>
+<a href="#2_2_0_Beta5">Shorewall 2.2.0 Beta 5</a><br>
+<a href="#2_0_11">Shorewall
+2.0.11</a><br>
+<a href="#2_2_0_Beta4">Shorewall 2.2.0 Beta 4</a><br>
 <a href="#2_2_0_Beta3">Shorewall 2.2.0 Beta 3</a><br>
 <a href="#2_2_0_Beta2">Shorewall 2.2.0 Beta 2</a><br>
 <a href="#2_0_10">Shorewall
@@ -157,6 +161,55 @@ of the license is included in the section entitled "GNU Free
 Documentation License". </p>
 <hr>
 <h2><a name="News"></a>News</h2>
+<span style="font-weight: bold;"><a name="2_2_0_Beta6"></a>11/26/2004 -
+Shorewall 2.2.0 Beta 6<br>
+<br>
+</span>Beta 5 was more or less DOA. Here's Beta 6.<br>
+<br>
+Problems Corrected:<br>
+<ol>
+  <li>Fixed a number of problems associated with not having an IPTABLES
+value assigned in shorewall.conf</li>
+  <li>Corrected a 'duplicate chain' error on "shorewall add" when the
+'mss' option is present in /etc/shorewall/ipsec.<br>
+  </li>
+</ol>
+<span style="font-weight: bold;"><a name="2_2_0_Beta5"></a>11/26/2004 -
+Shorewall 2.2.0 Beta 5<br>
+</span><br>
+Problems corrected:<br>
+<ol>
+  <li>A typo in shorewall.conf (NETNOTSYN) has been corrected.</li>
+</ol>
+New Features:<br>
+<ol>
+  <li>For consistency, the CLIENT PORT(S) column in the tcrules file
+has been renamed SOURCE PORT(S).</li>
+  <li>The contents of /proc/sys/net/ip4/icmp_echo_ignore_all is now
+shown in the output of "shorewall status".</li>
+  <li>A new IPTABLES option has been added to shorewall.conf. IPTABLES
+can be used to designate the iptables executable to be used by
+Shorewall. If not specified, the iptables executable determined by the
+PATH setting is used.<br>
+  </li>
+</ol>
+<span style="font-weight: bold;"><a name="2_0_11"></a>11/23/2004 -
+Shorweall 2.0.11<br>
+</span><br>
+Problems corrected:<br>
+<ol>
+  <li>The INSTALL file now include special instructions for Slackware
+users.</li>
+  <li>The bogons file has been updated.</li>
+  <li>Service names are replaced by port numbers in /etc/shorewall/tos.</li>
+  <li>A typo in the install.sh file that caused an error during a new
+install has been corrected.</li>
+</ol>
+New Features:<br>
+<ol>
+  <li>The AllowNNTP action now allows NNTP over SSL/TLS (NTTPS).<br>
+  </li>
+</ol>
 <span style="font-weight: bold;"><a name="2_2_0_Beta4"></a>11/19/2004 -
 Shorewall 2.2.0 Beta 4<br>
 </span><br>

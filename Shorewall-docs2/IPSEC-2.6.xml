@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-08-25</pubdate>
+    <pubdate>2004-10-01</pubdate>
 
     <copyright>
       <year>2004</year>
@@ -37,7 +37,9 @@
   <warning>
     <para>To use this support, your kernel and iptables must include the
     Netfilter+ipsec patches and policy match support and you must be running
-    Shorewall 2.1.5 or later.</para>
+    Shorewall 2.1.5 or later. The Netfilter patches are available from
+    Netfilter Patch-O-Matic-NG and are also included in some commercial
+    distributions (most notably <trademark>SuSE</trademark> 9.1).</para>
   </warning>
 
   <warning>
@@ -266,6 +268,65 @@ vpn              loc                    ACCEPT</programlisting>
 
     <para>Once you have these entries in place, restart Shorewall (type
     shorewall restart); you are now ready to configure IPSEC.</para>
+
+    <para>For full encrypted connectivity in this configuration (between the
+    subnets, between each subnet and the opposite gateway, and between the
+    gateways), you will need six policies in
+    <filename>/etc/racoon/setkey.conf</filename>. For example, on gateway
+    A:</para>
+
+    <blockquote>
+      <programlisting># First of all flush the SPD database
+spdflush;
+
+# Add some SPD rules
+
+spdadd 192.168.1.0/24   10.0.0.0/8       any -P out ipsec esp/tunnel/206.161.148.9-134.28.54.2/require;
+spdadd 192.168.1.0/24   134.28.54.2/32   any -P out ipsec esp/tunnel/206.161.148.9-134.28.54.2/require;
+spdadd 206.161.148.9/32 134.28.54.2/32   any -P out ipsec esp/tunnel/206.161.148.9-134.28.54.2/require;
+spdadd 10.0.0.0/8       192.168.1.0/24   any -P in  ipsec esp/tunnel/134.28.54.2-206.161.148.9/require;
+spdadd 10.0.0.0/8       206.161.148.9/32 any -P in  ipsec esp/tunnel/134.28.54.2-206.161.148.9/require;
+spdadd 134.28.54.2/32   192.168.1.0/24   any -P in  ipsec esp/tunnel/134.28.54.2-206.161.148.9/require;</programlisting>
+    </blockquote>
+
+    <para>The <filename>setkey.conf</filename> file on gateway B would be
+    similar.</para>
+
+    <para>A sample <filename>/etc/racoon/racoon.conf</filename> file using
+    pre-shared keys might look like:</para>
+
+    <blockquote>
+      <programlisting>path pre_shared_key "/etc/racoon/psk.txt" ;
+
+remote anonymous
+{
+        exchange_mode main ;
+        my_identifier address ;
+        lifetime time 24 hour ;
+        proposal {
+                encryption_algorithm 3des;
+                hash_algorithm sha1;
+                authentication_method pre_shared_key ;
+                dh_group 2 ;
+        }
+}
+
+sainfo anonymous
+{
+        pfs_group 2;
+        lifetime time 12 hour ;
+        encryption_algorithm 3des, blowfish, des, rijndael ;
+        authentication_algorithm hmac_sha1, hmac_md5 ;
+        compression_algorithm deflate ;
+}</programlisting>
+    </blockquote>
+
+    <para>The <filename>/etc/racoon/psk.txt file</filename> on gateway
+    A:</para>
+
+    <blockquote>
+      <programlisting>134.28.54.2            &lt;the key&gt;</programlisting>
+    </blockquote>
   </section>
 
   <section>

@@ -17,7 +17,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-09-23</pubdate>
+    <pubdate>2004-10-01</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -1824,12 +1824,79 @@ iptables: Invalid argument
       <para>Experimental Shorewall Bridging Firewall support is available —
       <ulink url="bridge.html">check here for details</ulink>.</para>
     </section>
+
+    <section id="faq39">
+      <title>(FAQ 39) How do I block connections to a particular domain
+      name?</title>
+
+      <para>I tried this rule to block Google's Adsense that you'll find on
+      everyone's site. Adsense is a Javascript that people add to their Web
+      pages. So I entered the rule:</para>
+
+      <programlisting>#ACTION   SOURCE        DEST                                 PROTO
+REJECT    fw            net:pagead2.googlesyndication.com    all</programlisting>
+
+      <para>However, this also sometimes restricts access to "google.com". Why
+      is that? Using dig, I found these IPs for domain
+      googlesyndication.com:<programlisting>216.239.37.99
+216.239.39.99</programlisting>And this for google.com:<programlisting>216.239.37.99
+216.239.39.99
+216.239.57.99</programlisting>So my guess is that you are not actually
+      blocking the domain, but rather the IP being called. So how in the world
+      do you block an actual domain name?</para>
+
+      <para><emphasis role="bold">Answer:</emphasis> Packet filters like
+      Netfilter base their decisions on the contents of the various protocol
+      headers at the front of each packet. Stateful packet filters (of which
+      Netfilter is an example) use a combination of header contents and state
+      created when the packet filter processed earlier packets. Netfilter (and
+      Shorewall's use of netfilter) also consider the network interface(s)
+      where each packet entered and/or where the packet will leave the
+      firewall/router.</para>
+
+      <para>When you specify <ulink
+      url="configuration_file_basics.htm#dnsnames">a domain name in a
+      Shorewall rule</ulink>, the iptables program resolves that name to one
+      or more IP addresses and the actual netfilter rules that are created are
+      expressed in terms of those IP addresses. So the rule that you entered
+      was equivalent to:</para>
+
+      <para><programlisting>#ACTION   SOURCE        DEST                 PROTO
+REJECT    fw            net:216.239.37.99    all
+REJECT    fw            net:216.239.39.99    all</programlisting>Given that
+      name-based multiple hosting is a common practice (another example:
+      lists.shorewall.net and www1.shorewall.net are both hosted on the same
+      system with a single IP address), it is not possible to filter
+      connections to a particular name by examiniation of protocol headers
+      alone. While some protocols such as <ulink url="FTP.html">FTP</ulink>
+      require the firewall to examine and possibly modify packet payload,
+      parsing the payload of individual packets doesn't always work because
+      the application-level data stream can be split across packets in
+      arbitrary ways. This is one of the weaknesses of the 'string match'
+      Netfilter extension available in Patch-O-Matic. The only sure way to
+      filter on packet content is to proxy the connections in question -- in
+      the case of HTTP, this means running something like <ulink
+      url="Shorewall_Squid_Usage.html">Squid</ulink>. Proxying allows the
+      proxy process to assemble complete application-level messages which can
+      then be accurately parsed and decisions can be made based on the
+      result.</para>
+    </section>
   </section>
 
   <appendix>
     <title>Revision History</title>
 
     <para><revhistory>
+        <revision>
+          <revnumber>1.33</revnumber>
+
+          <date>2004-10-01</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Add FAQ 39.</revremark>
+        </revision>
+
         <revision>
           <revnumber>1.32</revnumber>
 

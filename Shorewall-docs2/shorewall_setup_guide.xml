@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-11-19</pubdate>
+    <pubdate>2004-12-27</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -219,11 +219,11 @@ dmz     DMZ             Demilitarized zone</programlisting>
 
     <orderedlist>
       <listitem>
-        <para>Identify the source zone.</para>
+        <para>Identify the source (client) zone.</para>
       </listitem>
 
       <listitem>
-        <para>Identify destination zone.</para>
+        <para>Identify destination (server) zone.</para>
       </listitem>
 
       <listitem>
@@ -251,12 +251,12 @@ dmz     DMZ             Demilitarized zone</programlisting>
     first checked against the <filename>/etc/shorewall/rules</filename> file.
     If no rule in that file matches the connection request then the first
     policy in <filename>/etc/shorewall/policy</filename> that matches the
-    request is applied. If that policy is REJECT or DROP the request is first
-    checked against the rules in
-    <filename>/etc/shorewall/common.def</filename>.</para>
+    request is applied after the request is passed to the appropriate <ulink
+    url="User_defined_Actions.html">common action</ulink> (if any). </para>
 
-    <para>The default <filename>/etc/shorewall/policy</filename> file has the
-    following policies:</para>
+    <para>Prior to Shorewall 2.2.0, the default
+    <filename>/etc/shorewall/policy</filename> file had the following
+    policies:</para>
 
     <programlisting>#SOURCE ZONE     DESTINATION ZONE    POLICY     LOG     LIMIT:BURST
 #                                               LEVEL
@@ -264,7 +264,13 @@ loc              net                 ACCEPT
 net              all                 DROP       info
 all              all                 REJECT     info</programlisting>
 
-    <para>The above policy will:</para>
+    <important>
+      <para>Beginning with Shorewall 2.2.0, the released policy file is empty.
+      You can copy and paste the above entries to create a starting point from
+      which to customize your policies.</para>
+    </important>
+
+    <para>The above policies will:</para>
 
     <orderedlist>
       <listitem>
@@ -291,12 +297,6 @@ all              all                 REJECT     info</programlisting>
 
     <para>At this point, edit your <filename>/etc/shorewall/policy
     </filename>and make any changes that you wish.</para>
-
-    <important>
-      <para>Beginning with Shorewall 2.2.0, the released policy file is empty.
-      You can copy and paste the above entries to create a starting point from
-      which to customize your policies.</para>
-    </important>
   </section>
 
   <section id="Interfaces">
@@ -329,9 +329,9 @@ all              all                 REJECT     info</programlisting>
 
     <graphic align="center" fileref="images/dmz3.png" />
 
-    <para>The simplest way to define zones is to simply associate the zone
-    name (previously defined in /etc/shorewall/zones) with a network
-    interface. This is done in the <ulink
+    <para>The simplest way to define zones is to associate the zone name
+    (previously defined in /etc/shorewall/zones) with a network interface.
+    This is done in the <ulink
     url="Documentation.htm#Interfaces">/etc/shorewall/interfaces</ulink> file.
     The firewall illustrated above has three network interfaces. Where
     Internet connectivity is through a cable or DSL <quote>Modem</quote>, the
@@ -431,7 +431,10 @@ loc      eth2           detect</programlisting>
 
     <para>You may define more complicated zones using the<filename> <ulink
     url="Documentation.htm#Hosts">/etc/shorewall/hosts</ulink></filename> file
-    but in most cases, that isn't necessary.</para>
+    but in most cases, that isn't necessary. See <ulink
+    url="Shorewall_and_Aliased_Interfaces.html">Shorewall_and_Aliased_Interfaces.html</ulink>
+    and <ulink url="Multiple_Zones.html">Multiple_Zones.html</ulink> for
+    examples.</para>
   </section>
 
   <section id="Addressing">
@@ -534,8 +537,8 @@ loc      eth2           detect</programlisting>
       ones.</para>
 
       <para>Since n is a power of two, we can easily calculate the
-      <emphasis>Natural Logarithm</emphasis> (log2) of n. For the more common
-      subnet sizes, the size and its natural logarithm are given in the
+      <emphasis>Base-2 Logarithm</emphasis> (log2) of n. For the more common
+      subnet sizes, the size and its base-2 logarithm are given in the
       following table:</para>
 
       <table>
@@ -1112,8 +1115,7 @@ tcpdump: listening on eth2
 ? (192.168.1.3) at 00:A0:CC:63:66:89 [ether] on eth2
 ? (192.168.1.5) at 00:A0:CC:DB:31:C4 [ether] on eth2
 ? (206.124.146.254) at 00:03:6C:8A:18:38 [ether] on eth0
-? (192.168.1.19) at 00:06:25:AA:8A:F0 [ether] on eth2
-</programlisting>
+? (192.168.1.19) at 00:06:25:AA:8A:F0 [ether] on eth2</programlisting>
 
       <para>The leading question marks are a result of my having specified the
       <quote>n</quote> option (Windows <quote>arp</quote> doesn't allow that
@@ -1145,10 +1147,15 @@ tcpdump: listening on eth2
 192.168.0.0 - 192.168.255.255</programlisting>
 
       <para>The addresses reserved by RFC 1918 are sometimes referred to as
-      non-routable because the Internet backbone routers don't forward packets
-      which have an RFC-1918 destination address. This is understandable given
-      that anyone can select any of these addresses for their private
-      use.</para>
+      <firstterm>non-routable</firstterm> because the Internet backbone
+      routers don't forward packets which have an RFC-1918 destination
+      address. This is understandable given that anyone can select any of
+      these addresses for their private use but the term non-routable is
+      somewhat unfortunate because it leads people to the erroneous conclusion
+      that traffic destined for one of these addresses can't be sent through a
+      router. This is definitely not true; private routers (including your
+      Shorewall-based firewall) can forward RFC 1918 addresed traffic just
+      fine.</para>
 
       <para>When selecting addresses from these ranges, there's a couple of
       things to keep in mind:</para>
@@ -1171,14 +1178,15 @@ tcpdump: listening on eth2
       using (or are planning to use) private addresses before you decide the
       addresses that you are going to use.</para>
 
-      <note>
+      <warning>
         <para><emphasis role="bold">In this document, external
         <quote>real</quote> IP addresses are of the form 192.0.2.x.
         192.0.2.0/24 is reserved by RFC 3330 for use as public IP addresses in
-        printed examples. These addresses are not to be confused with
-        addresses in 192.168.0.0/16; as described above, these addresses are
-        reserved by RFC 1918 for private use.</emphasis></para>
-      </note>
+        printed examples and test networks. These "real" addresses are not to
+        be confused with addresses in 192.168.0.0/16; as described above,
+        those addresses are reserved by RFC 1918 for private
+        use.</emphasis></para>
+      </warning>
     </section>
   </section>
 
@@ -1406,8 +1414,9 @@ DNAT     net     loc:192.168.201.4  tcp    www</programlisting>
         role="bold">A</emphasis>.</para>
 
         <para>This example used the firewall's external IP address for DNAT.
-        You can use another of your public IP addresses but Shorewall will not
-        add that address to the firewall's external interface for you.</para>
+        You can use another of your public IP addresses (place it in the
+        ORIGINAL DEST column in the rule above) but Shorewall will not add
+        that address to the firewall's external interface for you.</para>
       </section>
 
       <section id="ProxyARP">
@@ -1436,7 +1445,8 @@ DNAT     net     loc:192.168.201.4  tcp    www</programlisting>
             the network defined by <emphasis role="bold">M</emphasis> where
             the target machine is outside of the firewall, the firewall will
             respond to <emphasis role="bold">H</emphasis> (with the MAC of the
-            firewall interface).</para>
+            firewall interface that <emphasis role="bold">H</emphasis> is
+            connected to).</para>
           </listitem>
         </itemizedlist>
 
@@ -1676,12 +1686,13 @@ ACCEPT   net     loc:192.168.201.4  tcp    www</programlisting>
 
       <para><inlinegraphic fileref="images/BD21298_.gif" /></para>
 
-      <para>With the default policies, your local systems (Local 1-3) can
-      access any servers on the internet and the DMZ can't access any other
-      host (including the firewall). With the exception of DNAT rules which
-      cause address translation and allow the translated connection request to
-      pass through the firewall, the way to allow connection requests through
-      your firewall is to use ACCEPT rules.</para>
+      <para>With the default policies described earlier in this document, your
+      local systems (Local 1-3) can access any server on the internet and the
+      DMZ can't access any other host (including the firewall). With the
+      exception of DNAT rules which cause address translation and allow the
+      translated connection request to pass through the firewall, the way to
+      allow connection requests through your firewall is to use ACCEPT
+      rules.</para>
 
       <note>
         <para>Since the SOURCE PORT(S) and ORIG. DEST. Columns aren't used in

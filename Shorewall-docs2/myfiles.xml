@@ -166,7 +166,7 @@
       <title>Shorewall.conf</title>
 
       <blockquote>
-        <programlisting>LOGFILE=/var/log/messages
+        <programlisting>LOGFILE=/var/log/ulog/syslogemu.log
 LOGFORMAT="Shorewall:%s:%s "
 LOGRATE=
 LOGBURST=
@@ -216,7 +216,7 @@ TCP_FLAGS_DISPOSITION=DROP</programlisting>
         <para><programlisting>MIRRORS=&lt;list of shorewall mirror ip addresses&gt;
 NTPSERVERS=&lt;list of the NTP servers I sync with&gt;
 TEXAS=&lt;ip address of gateway in Plano&gt;
-LOG=info
+LOG=ULOGD
 EXT_IF=eth1
 INT_IF=eth2
 DMZ_IF=eth0</programlisting></para>
@@ -665,6 +665,20 @@ iface eth2 inet static
 </programlisting>
       </blockquote>
     </section>
+
+    <section>
+      <title>/etc/ulogd.conf</title>
+
+      <para>This is the default /etc/ulogd.conf from the Debian package. Only
+      the relevant entries are shown.</para>
+
+      <blockquote>
+        <programlisting># where to write to
+syslogfile /var/log/ulog/syslogemu.log
+# do we want to fflush() the file after each write?
+syslogsync 1</programlisting>
+      </blockquote>
+    </section>
   </section>
 
   <section>
@@ -839,7 +853,7 @@ remote 192.168.3.8
         verify_identifier on ;
         lifetime time 24 hour ;
         proposal {
-                encryption_algorithm 3des;
+                encryption_algorithm blowfish ;
                 hash_algorithm sha1;
                 authentication_method rsasig ;
                 dh_group 2 ;
@@ -850,7 +864,7 @@ sainfo address 0.0.0.0/0 any address 192.168.3.8/32 any
 {
         pfs_group 2;
         lifetime time 12 hour ;
-        encryption_algorithm 3des, blowfish, des, rijndael ;
+        encryption_algorithm blowfish ;
         authentication_algorithm hmac_sha1, hmac_md5 ;
         compression_algorithm deflate ;
 }</programlisting>
@@ -986,7 +1000,7 @@ remote 192.168.3.254
         verify_identifier on ;
         lifetime time 24 hour ;
         proposal {
-                encryption_algorithm 3des;
+                encryption_algorithm blowfish ;
                 hash_algorithm sha1;
                 authentication_method rsasig ;
                 dh_group 2 ;
@@ -997,7 +1011,7 @@ sainfo address 192.168.3.8/32 any address 0.0.0.0/0 any
 {
         pfs_group 2;
         lifetime time 12 hour ;
-        encryption_algorithm 3des, blowfish, des, rijndael ;
+        encryption_algorithm blowfish ;
         authentication_algorithm hmac_sha1, hmac_md5 ;
         compression_algorithm deflate ;
 }</programlisting>

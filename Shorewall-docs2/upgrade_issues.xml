@@ -62,7 +62,7 @@
   </section>
 
   <section>
-    <title>Version &gt;= 2.2.0 Beta 1</title>
+    <title>Version &gt;= 2.2.0</title>
 
     <para></para>
 
@@ -163,6 +163,22 @@ DNAT     loc      loc:192.168.1.12 tcp     80          -       130.252.100.69</p
       <listitem>
         <para>The 'logunclean' and 'dropunclean' options that were deprecated
         in Shorewall 2.0 have now been removed completely.</para>
+      </listitem>
+
+      <listitem>
+        <para>The default port for 'openvpn' tunnels (/etc/shorewall/tunnels)
+        has been changed to 1194 to match a similar change in the OpenVPN
+        product. The IANA has registered port 1194 for use by OpenVPN.</para>
+      </listitem>
+
+      <listitem>
+        <para> A new IPTABLES variable has been added to shorewall.conf. This
+        variable names the iptables executable that Shorewall will use. The
+        variable is set to "/sbin/iptables". If you use the new
+        shorewall.conf, you may need to change this setting to maintain
+        compabibility with your current setup (if you use your existing
+        shorewall.conf that does not set IPTABLES then you should experience
+        no change in behavior).</para>
       </listitem>
     </orderedlist>
   </section>

@@ -1724,14 +1724,14 @@ delete_nat() {
 }
 
 #
-# Process a TC Rule - $chain is assumed to contain the name of the 
+# Process a TC Rule - $marking_chain is assumed to contain the name of the 
 #                     marking chain
 #
 process_tc_rule()
 {
     add_a_tc_rule() {
 	r=
-	chain1=$chain
+	chain=$marking_chain
 
 	if [ "x$source" != "x-"	 ]; then
 	    case $source in
@@ -1742,7 +1742,7 @@ process_tc_rule()
 		    r=`mac_match $source`
 		    ;;
 		$FW)
-		    chain1=tcout
+		    chain=tcout
 		    ;;
 		*)
 		    if ! list_search $source $all_interfaces; then
@@ -1758,7 +1758,7 @@ process_tc_rule()
 	[ "x$port"   = "x-"  ] || r="${r}--dport $port "
 	[ "x$sport"  = "x-"  ] || r="${r}--sport $sport "
 
-	run_iptables2 -t mangle -A $chain1 $r -j MARK --set-mark $mark
+	run_iptables2 -t mangle -A $chain $r -j MARK --set-mark $mark
 
     }
 
@@ -1782,10 +1782,8 @@ setup_tc1() {
     #
     # Create the TC mangle chains
     #
-    [ -n "$MARK_IN_FORWARD_CHAIN" ] && chain=tcfor || chain=tcpre
     
-    run_iptables -t mangle -N $chain
-
+    run_iptables -t mangle -N $marking_chain
     run_iptables -t mangle -N tcout
     #
     # Process the TC Rules File
@@ -1801,7 +1799,7 @@ setup_tc1() {
     # Link to the TC mangle chains from the main chains
     #
     
-    if [ $chain = tcfor ]; then
+    if [ $marking_chain = tcfor ]; then
 	run_iptables -t mangle -A FORWARD -j tcfor
     else
 	run_iptables -t mangle -A PREROUTING -j tcpre
@@ -4544,6 +4542,7 @@ do_initialize() {
 
     [ -z "$RFC1918_LOG_LEVEL" ] && RFC1918_LOG_LEVEL=info
     MARK_IN_FORWARD_CHAIN=`added_param_value_no MARK_IN_FORWARD_CHAIN $MARK_IN_FORWARD_CHAIN`
+    [ -n "$MARK_IN_FORWARD_CHAIN" ] && marking_chain=tcfor || marking_chain=tcpre
 
 }
 

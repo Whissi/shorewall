@@ -1,0 +1,273 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta name="generator" content="HTML Tidy, see www.w3.org">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>Shoreline Firewall (Shorewall) 1.4</title>
+  <base target="_self">
+</head>
+<body>
+<div align="center">
+<center>
+<table border="0" cellpadding="0" cellspacing="0"
+ style="border-collapse: collapse;" width="100%" id="AutoNumber4">
+  <tbody>
+    <tr>
+      <td width="90%">
+      <h2>Introduction<br>
+      </h2>
+      <ul>
+        <li><a href="http://www.netfilter.org">Netfilter</a> - the
+packet
+filter facility built into the 2.4 and later Linux kernels.</li>
+        <li>ipchains - the packet filter facility built into the 2.2
+Linux
+kernels. Also the name of the utility program used to configure and
+control that facility. Netfilter can be used in ipchains
+compatibility mode.<br>
+        </li>
+        <li>iptables - the utility program used to configure and
+control
+Netfilter. The term 'iptables' is often used to refer to the
+combination of iptables+Netfilter (with Netfilter not in ipchains
+compatibility mode).<br>
+        </li>
+      </ul>
+The Shoreline Firewall, more commonly known as "Shorewall", is
+high-level tool for configuring Netfilter. You describe your
+firewall/gateway requirements using entries in a set of
+configuration files. Shorewall reads those configuration files and
+with the help of the iptables utility, Shorewall configures
+Netfilter to match your requirements. Shorewall can be used on a
+dedicated firewall system, a multi-function gateway/router/server
+or on a standalone GNU/Linux system. Shorewall does not use
+Netfilter's ipchains compatibility mode and can thus take advantage
+of Netfilter's connection state tracking capabilities.
+      <p>This program is free software; you can redistribute it and/or
+modify it under the terms of <a
+ href="http://www.gnu.org/licenses/gpl.html">Version 2 of the GNU
+General
+Public License</a> as published by the Free Software
+Foundation.<br>
+      <br>
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+General Public License for more details.<br>
+      <br>
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA</p>
+      <p> Permission is granted to copy, distribute and/or modify this
+document under the terms of the GNU Free Documentation License, Version
+1.2 or any later version published by the Free Software Foundation;
+with no Invariant Sections, with no Front-Cover, and with no Back-Cover
+Texts. A copy of the license is included in the section entitled <a>"GNU
+Free Documentation License"</a>.</p>
+      <p>Copyright © 2001-2003 Thomas M. Eastep </p>
+      <h2>This is the Shorewall 1.4 Web Site</h2>
+The information on this site applies only to 1.4.x releases of
+Shorewall. For older versions:<br>
+      <ul>
+        <li>The 1.3 site is <a href="http://www.shorewall.net/1.3"
+ target="_top">here.</a></li>
+        <li>The 1.2 site is <a href="http://shorewall.net/1.2/"
+ target="_top">here</a>.<br>
+        </li>
+      </ul>
+      <h2>Getting Started with Shorewall</h2>
+New to Shorewall? Start by selecting the <a
+ href="shorewall_quickstart_guide.htm">QuickStart Guide</a> that most
+closely match your environment and follow the step by step
+instructions.<br>
+      <h2>Looking for Information?</h2>
+The <a href="Documentation_Index.html">Documentation
+Index</a> is a good place to start as is the Quick Search in the
+frame above.
+      <h2>Running Shorewall on Mandrake with a two-interface setup?</h2>
+If so, the documentation <b></b>on this site will not apply
+directly to your setup. If you want to use the documentation that
+you find here, you will want to consider uninstalling what you have
+and installing a setup that matches the documentation on this site.
+See the <a href="two-interface.htm">Two-interface QuickStart
+Guide</a> for details.
+      <h2><b>News</b></h2>
+      <p><b>12/29/2003 - Shorewall 1.4.9 Beta 2</b> <b><img
+ style="border: 0px solid ; width: 28px; height: 12px;"
+ src="images/new10.gif" alt="(New)" title=""><br>
+      </b></p>
+      <div style="margin-left: 40px;"><a
+ href="http://shorewall.net/pub/shorewall/Beta">http://shorewall.net/pub/shorewall/Beta</a><br>
+      <a href="ftp://shorewall.net/pub/shorewall/Beta" target="_top">ftp://shorewall.net/pub/shorewall/Beta</a><br>
+      </div>
+      <p>Problems Corrected since version 1.4.8:<br>
+      </p>
+      <ol>
+        <li>There has been a low continuing level of confusion over the
+terms "Source NAT" (SNAT) and "Static NAT". To avoid future
+confusion, all instances of "Static NAT" have been replaced with
+"One-to-one NAT" in the documentation and configuration files.</li>
+        <li>The description of NEWNOTSYN in shorewall.conf has been
+reworded for clarity.</li>
+        <li>Wild-card rules (those involving "all" as SOURCE or DEST)
+will
+no longer produce an error if they attempt to add a rule that would
+override a NONE policy. The logic for expanding these wild-card
+rules now simply skips those (SOURCE,DEST) pairs that have a NONE
+policy.</li>
+        <li>DNAT rules that also specified SNAT now work reliably.
+Previously,
+there were cases where the SNAT specification was effectively ignored.</li>
+      </ol>
+      <p>Migration Issues:<br>
+      <br>
+&nbsp;&nbsp;&nbsp; None.<br>
+      <br>
+New Features:<br>
+      </p>
+      <ol>
+        <li>The documentation has been completely rebased to Docbook
+XML. The
+documentation is now released as separate HTML and XML packages.</li>
+        <li>To cut down on the number of "Why are these ports closed
+rather
+than stealthed?" questions, the SMB-related rules in
+/etc/shorewall/common.def have been changed from 'reject' to
+'DROP'.</li>
+        <li>For easier identification, packets logged under the
+'norfc1918'
+interface option are now logged out of chains named 'rfc1918'.
+Previously, such packets were logged under chains named
+'logdrop'.</li>
+        <li>Distributors and developers seem to be regularly inventing
+new
+naming conventions for kernel modules. To avoid the need to change
+Shorewall code for each new convention, the MODULE_SUFFIX option
+has been added to shorewall.conf. MODULE_SUFFIX may be set to the
+suffix for module names in your particular distribution. If
+MODULE_SUFFIX is not set in shorewall.conf, Shorewall will use the
+list "o gz ko o.gz".<br>
+          <br>
+To see what suffix is used by your distribution:<br>
+          <br>
+ls /lib/modules/$(uname -r)/kernel/net/ipv4/netfilter<br>
+          <br>
+All of the files listed should have the same suffix (extension).
+Set MODULE_SUFFIX to that suffix.<br>
+          <br>
+Examples:<br>
+          <br>
+&nbsp;&nbsp;&nbsp;&nbsp; If all files end in ".kzo" then set
+MODULE_SUFFIX="kzo"<br>
+&nbsp;&nbsp;&nbsp;&nbsp; If all files end in ".kz.o" then set
+MODULE_SUFFIX="kz.o"</li>
+        <li>Support for user defined rule ACTIONS has been implemented
+through two new files:<br>
+          <br>
+/etc/shorewall/actions - used to list the user-defined ACTIONS.<br>
+/etc/shorewall/action.template - For each user defined
+&lt;action&gt;, copy this file to
+/etc/shorewall/action.&lt;action&gt; and add the appropriate rules
+for that &lt;action&gt;. Once an &lt;action&gt; has been defined,
+it may be used like any of the builtin ACTIONS (ACCEPT, DROP, etc.)
+in /etc/shorewall/rules.<br>
+          <br>
+Example: You want an action that logs a packet at the 'info' level
+and accepts the connection.<br>
+          <br>
+In /etc/shorewall/actions, you would add:<br>
+          <br>
+&nbsp;&nbsp;&nbsp;&nbsp; LogAndAccept<br>
+          <br>
+You would then copy /etc/shorewall/action.template to
+/etc/shorewall/LogAndAccept and in that file, you would add the two
+rules:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; LOG:info<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ACCEPT</li>
+        <li>The default value for NEWNOTSYN in shorewall.conf is now
+"Yes" (non-syn
+TCP packets that are not part of an existing connection are filtered
+according to the rules and policies rather than being dropped). I have
+made this change for two reasons:<br>
+          <br>
+a) NEWNOTSYN=No tends to result in lots of "stuck" connections since
+any timeout during TCP session tear down results in the firewall
+dropping all of the retries.<br>
+          <br>
+b) The old default of NEWNOTSYN=No and LOGNEWNOTSYN=info resulted in
+lots of confusing messages when a connection got "stuck". While I could
+have changed the default value of LOGNEWNOTSYN to suppress logging, I
+dislike defaults that silently throw away packets.</li>
+      </ol>
+      <p><b>12/28/2003 - www.shorewall.net/ftp.shorewall.net Back
+On-line</b> <b><img alt="(New)" src="images/new10.gif"
+ style="border: 0px solid ; width: 28px; height: 12px;" title=""> <br>
+      </b></p>
+      <p>Our high-capacity server has been restored to service --
+please let <a href="mailto:webmaster@shorewall.net">us</a> know if you
+find any problems.</p>
+      <p><b>12/03/2003 - Support Torch Passed</b> <b><img
+ style="border: 0px solid ; width: 28px; height: 12px;"
+ src="images/new10.gif" alt="(New)" title=""></b></p>
+Effective today, I am reducing my participation in the day-to-day
+support of Shorewall. As part of this shift to community-based
+Shorewall support a new <a
+ href="https://lists.shorewall.net/mailman/listinfo/shorewall-newbies">Shorewall
+Newbies mailing list</a> has been established to field questions
+and problems from new users. I will not monitor that list
+personally. I will continue my active development of Shorewall and
+will be available via the development list to handle development
+issues -- Tom.
+      <p><b><a href="News.htm">More News</a></b></p>
+      <b></b>
+      <h2><b></b></h2>
+      <b></b>
+      <p><a href="http://leaf.sourceforge.net" target="_top"><img
+ border="0" src="images/leaflogo.gif" width="49" height="36"
+ alt="(Leaf Logo)"></a> Jacques Nilo and Eric Wolzak have a LEAF
+(router/firewall/gateway on a floppy, CD or compact flash)
+distribution called <i>Bering</i> that features Shorewall-1.4.2 and
+Kernel-2.4.20. You can find their work at: <a
+ href="http://leaf.sourceforge.net/devel/jnilo">http://leaf.sourceforge.net/devel/jnilo</a></p>
+      <b>Congratulations to Jacques and Eric on the recent release of
+Bering 1.2!!!</b> <br>
+      <h1 align="center"><b><a href="http://www.sf.net"><img
+ align="left" alt="SourceForge Logo"
+ src="http://sourceforge.net/sflogo.php?group_id=22587&amp;type=3"></a></b></h1>
+      <b></b>
+      <h4><b></b></h4>
+      <b></b>
+      <h2><b>This site is hosted by the generous folks at <a
+ href="http://www.sf.net">SourceForge.net</a></b></h2>
+      <br>
+      <br>
+      <h2><b><a name="Donations"></a>Donations</b></h2>
+      <b></b></td>
+    </tr>
+  </tbody>
+</table>
+</center>
+</div>
+<table border="0" cellpadding="5" cellspacing="0"
+ style="border-collapse: collapse; width: 100%; background-color: rgb(51, 102, 255);"
+ id="AutoNumber2">
+  <tbody>
+    <tr>
+      <td style="width: 100%; margin-top: 1px;">
+      <p align="center"><a href="http://www.starlight.org"><img
+ border="4" src="images/newlog.gif" width="57" height="100" align="left"
+ hspace="10" alt="Starlight Foundation Logo"></a></p>
+      <p align="center"><font size="4" color="#ffffff"><br>
+      <font size="+2">Shorewall is free but if you try it and find it
+useful, please consider making a donation to <a
+ href="http://www.starlight.org"><font color="#ffffff">Starlight
+Children's Foundation.</font></a> Thanks!</font></font></p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<p><font size="2">Updated 12/29/2003 - <a href="support.htm">Tom
+Eastep</a></font><br>
+</p>
+</body>
+</html>

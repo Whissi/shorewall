@@ -1032,8 +1032,8 @@ validate_policy()
 
 	if [ -n "${clientwild}" ]; then
 	    if [ -n "${serverwild}" ]; then
-		for zone in $zones $FW; do
-		    for zone1 in $zones $FW; do
+		for zone in $zones $FW all; do
+		    for zone1 in $zones $FW all; do
 			eval pc=\$${zone}2${zone1}_policychain
 
 			[ -n "$pc" ] || \
@@ -1041,7 +1041,7 @@ validate_policy()
 		    done
 		done
 	    else
-		for zone in $zones $FW; do
+		for zone in $zones $FW all; do
 		    eval pc=\$${zone}2${server}_policychain
 		    
 		    [ -n "$pc" ] || \
@@ -1049,7 +1049,7 @@ validate_policy()
 		done
 	    fi
 	elif [ -n "$serverwild" ]; then
-	    for zone in $zones $FW; do
+	    for zone in $zones $FW all; do
 		eval pc=\$${client}2${zone}_policychain
 		    
 		    [ -n "$pc" ] || \
@@ -1541,7 +1541,11 @@ setup_mac_lists() {
     # Setup Logging variables
     #
     if [ -n "$MACLIST_LOG_LEVEL" ]; then
-	logpart="-j LOG $LOGPARMS --log-level $MACLIST_LOG_LEVEL --log-prefix"
+	if [ "$MACLIST_LOG_LEVEL" = ULOG ]; then
+	    logpart="-j ULOG $LOGPARMS --ulog-prefix"
+	else
+	    logpart="-j LOG $LOGPARMS --log-level $MACLIST_LOG_LEVEL --log-prefix"
+	fi
     else
 	logpart=
     fi
@@ -2130,10 +2134,19 @@ add_a_rule()
 
 	serv="${serv:+-d $serv}"
 
-	[ -n "$loglevel" ] && run_iptables -A $chain $proto $multiport \
-	    $state $cli $sports $serv $dports -j LOG $LOGPARMS \
-	    --log-prefix "Shorewall:$chain:$logtarget:" \
-	    --log-level $loglevel
+	if [ -n "$loglevel" ]; then
+	    if [ "$loglevel" = ULOG ]; then
+		run_iptables -A $chain $proto $multiport \
+		    $state $cli $sports $serv $dports -j ULOG $LOGPARMS \
+		    --ulog-prefix "Shorewall:$chain:$logtarget:" \
+	    else
+		run_iptables -A $chain $proto $multiport \
+		    $state $cli $sports $serv $dports -j LOG $LOGPARMS \
+		    --log-prefix "Shorewall:$chain:$logtarget:" \
+		    --log-level $loglevel
+	    fi
+	fi
+
 	run_iptables -A $chain $proto $multiport $state $cli $sports \
 	    $serv $dports -j $target
     else
@@ -2144,11 +2157,19 @@ add_a_rule()
 	    "Error: An ORIGINAL DESTINATION ($addr) is only allowed in" \
 	    " a DNAT or REDIRECT: \"$rule\""
 
-	[ -n "$loglevel" ] && run_iptables -A $chain $proto $multiport \
-	    $dest_interface $state $cli $sports $dports -j LOG \
-	    $LOGPARMS --log-prefix "Shorewall:$chain:$logtarget:" \
-	    --log-level $loglevel
-	
+	if [ -n "$loglevel" ]; then
+	    if [ "$loglevel" = ULOG ]; then
+		run_iptables -A $chain $proto $multiport \
+		    $dest_interface $state $cli $sports $dports -j ULOG \
+		    $LOGPARMS --ulog-prefix "Shorewall:$chain:$logtarget:"
+	    else
+		run_iptables -A $chain $proto $multiport \
+		    $dest_interface $state $cli $sports $dports -j LOG \
+		    $LOGPARMS --log-prefix "Shorewall:$chain:$logtarget:" \
+		    --log-level $loglevel
+	    fi
+	fi
+
 	run_iptables -A $chain $proto $multiport $dest_interface $state \
 	    $cli $sports $dports -j $target
     fi
@@ -2619,8 +2640,16 @@ policy_rules() # $1 = chain to add rules to
 
     esac
 
-    [ $# -eq 3 ] && [ "x${3}" != "x-" ] && run_iptables -A $1 -j LOG $LOGPARMS \
-	--log-prefix "Shorewall:${1}:${2}:" --log-level $3
+    if [ $# -eq 3 -a "x${3}" != "x-" ]; then
+	if [ "$3" = ULOG ]; then
+	    run_iptables -A $1 -j ULOG $LOGPARMS \
+		--ulog-prefix "Shorewall:${1}:${2}:"
+	else
+	    run_iptables -A $1 -j LOG $LOGPARMS \
+		--log-prefix "Shorewall:${1}:${2}:" --log-level $3
+	fi
+    fi
+
     [ -n "$target" ] && run_iptables -A $1 -j $target
 }
 
@@ -2899,11 +2928,17 @@ setup_intrazone() # $1 = zone
 #   $dport       = destination port selector
 #
 add_blacklist_rule() {
-    [ -n "$BLACKLIST_LOGLEVEL" ] && \
+    if [ -n "$BLACKLIST_LOGLEVEL" ]; then
 	run_iptables -A blacklst $source $proto $dport -j \
-	LOG $LOGPARMS --log-prefix \
-	"Shorewall:blacklst:$BLACKLIST_DISPOSITION:" \
-	--log-level $BLACKLIST_LOGLEVEL
+	    ULOG $LOGPARMS --ulog-prefix \
+	    "Shorewall:blacklst:$BLACKLIST_DISPOSITION:"
+    else
+	run_iptables -A blacklst $source $proto $dport -j \
+	    LOG $LOGPARMS --log-prefix \
+	    "Shorewall:blacklst:$BLACKLIST_DISPOSITION:" \
+	    --log-level $BLACKLIST_LOGLEVEL
+    fi
+
     run_iptables -A blacklst $source $proto $dport -j $disposition
 }
 
@@ -3197,9 +3232,16 @@ initialize_netfilter () {
     if [ -z "$NEWNOTSYN" ]; then
 	createchain newnotsyn no
 	run_user_exit newnotsyn
-	[ -n "$LOGNEWNOTSYN" ] && \
-	    run_iptables -A newnotsyn -j LOG \
-	    --log-prefix "Shorewall:newnotsyn:DROP:" --log-level $LOGNEWNOTSYN
+	if [ -n "$LOGNEWNOTSYN" ]; then
+	    if [ "$LOGNEWNOTSYN" = ULOG ]; then
+		run_iptables -A newnotsyn -j ULOG \
+		    --ulog-prefix "Shorewall:newnotsyn:DROP:"
+	    else
+		run_iptables -A newnotsyn -j LOG \
+		    --log-prefix "Shorewall:newnotsyn:DROP:" --log-level $LOGNEWNOTSYN
+	    fi
+	fi
+
 	run_iptables -A newnotsyn -j DROP
     fi	
 
@@ -3274,7 +3316,11 @@ build_common_chain() {
 add_common_rules() {
     logdisp() # $1 = Chain Name
     {
-	echo "LOG --log-prefix "Shorewall:${1}:DROP:" --log-level info"
+	if [ "$RFC1918_LOG_LEVEL" = ULOG ]; then
+	    echo "ULOG --ulog-prefix Shorewall:${1}:DROP:"
+	else
+	    echo "LOG --log-prefix Shorewall:${1}:DROP: --log-level info"
+	fi
     }
     #
     # Reject Rules
@@ -3290,10 +3336,17 @@ add_common_rules() {
 	createchain badpkt no
 
 	if [ -n "$LOGUNCLEAN" ]; then
-	    logoptions="$LOGPARAMS --log-prefix Shorewall:badpkt:DROP:"
-	    logoptions="$logoptions --log-level $LOGUNCLEAN --log-ip-options"
-	    run_iptables -A badpkt -p tcp -j LOG $logoptions --log-tcp-options
-	    run_iptables -A badpkt -p ! tcp -j LOG $logoptions
+            if [ "$LOGUNCLEAN" = ULOG ]; then
+		logoptions="$LOGPARAMS --ulog-prefix Shorewall:badpkt:DROP:"
+		logoptions="$logoptions --log-ip-options"
+		run_iptables -A badpkt -p tcp -j ULOG $logoptions --log-tcp-options
+		run_iptables -A badpkt -p ! tcp -j ULOG $logoptions
+	    else
+		logoptions="$LOGPARAMS --log-prefix Shorewall:badpkt:DROP:"
+		logoptions="$logoptions --log-level $LOGUNCLEAN --log-ip-options"
+		run_iptables -A badpkt -p tcp -j LOG $logoptions --log-tcp-options
+		run_iptables -A badpkt -p ! tcp -j LOG $logoptions
+	    fi
 	fi
 
 	run_iptables -A badpkt -j DROP
@@ -3315,10 +3368,17 @@ add_common_rules() {
 	createchain logpkt no
 
 	[ -z"$LOGUNCLEAN" ] && LOGUNCLEAN=info
-	logoptions="$LOGPARAMS --log-prefix Shorewall:logpkt:LOG:"
-	logoptions="$logoptions --log-level $LOGUNCLEAN --log-ip-options"
-	run_iptables -A logpkt -p tcp -j LOG $logoptions --log-tcp-options
-	run_iptables -A logpkt -p ! tcp -j LOG $logoptions
+	if [ "$LOGUNCLEAN" = ULOG ]; then
+	    logoptions="$LOGPARAMS --ulog-prefix Shorewall:logpkt:LOG:"
+	    logoptions="$logoptions --log-ip-options"
+	    run_iptables -A logpkt -p tcp -j ULOG $logoptions --log-tcp-options
+	    run_iptables -A logpkt -p ! tcp -j ULOG $logoptions
+	else
+	    logoptions="$LOGPARAMS --log-prefix Shorewall:logpkt:LOG:"
+	    logoptions="$logoptions --log-level $LOGUNCLEAN --log-ip-options"
+	    run_iptables -A logpkt -p tcp -j LOG $logoptions --log-tcp-options
+	    run_iptables -A logpkt -p ! tcp -j LOG $logoptions
+	fi
 
 	echo "Mangled/Invalid Packet Logging enabled on:"
 
@@ -3412,11 +3472,16 @@ add_common_rules() {
 	if [ -n "$TCP_FLAGS_LOG_LEVEL" ]; then
 	    createchain logflags no
 
-	    run_iptables -A logflags -j LOG  $LOGPARMS \
-		--log-level $TCP_FLAGS_LOG_LEVEL \
-		--log-prefix "Shorewall:logflags:$TCP_FLAGS_DISPOSITION:" \
-		--log-tcp-options --log-ip-options
-	    
+	    if [ "$TCP_FLAGS_LOG_LEVEL" = ULOG ]; then
+		run_iptables -A logflags -j ULOG  $LOGPARMS \
+		    --ulog-prefix "Shorewall:logflags:$TCP_FLAGS_DISPOSITION:" \
+		    --log-tcp-options --log-ip-options
+	    else
+		run_iptables -A logflags -j LOG  $LOGPARMS \
+		    --log-level $TCP_FLAGS_LOG_LEVEL \
+		    --log-prefix "Shorewall:logflags:$TCP_FLAGS_DISPOSITION:" \
+		    --log-tcp-options --log-ip-options
+	    fi
 	    case $TCP_FLAGS_DISPOSITION in
 		REJECT)
 		    run_iptables -A logflags -j REJECT --reject-with tcp-reset
@@ -4327,6 +4392,7 @@ do_initialize() {
     MACLIST_LOG_LEVEL=
     TCP_FLAGS_DISPOSITION=
     TCP_FLAGS_LOG_LEVEL=
+    RFC1918_LOG_LEVEL=
     stopping=
     have_mutex=
     masq_seq=1
@@ -4435,6 +4501,8 @@ do_initialize() {
     else
 	TCP_FLAGS_DISPOSITION=DROP
     fi
+
+    [ -z "$RFC1918_LOG_LEVEL" ] && RFC1918_LOG_LEVEL=info
 
 }
 

@@ -1349,7 +1349,7 @@ setup_proxy_arp() {
 	    ;;
 	esac
 
-	[ -z "$haveroute" ] && run_ip route add $address dev $interface
+	[ -z "$haveroute" ] && run_ip route replace $address dev $interface
 
 	run_arp -Ds $address $external pub
 
@@ -3069,7 +3069,7 @@ loadmodule() # $1 = module name, $2 - * arguments
     if [ -z "`lsmod | grep $modulename`" ]; then
 	shift
 	
-	for suffix in o gz ko ; do
+	for suffix in o gz ko o.gz ; do
 	    modulefile=$MODULESDIR/${modulename}.${suffix}
 
 	    if [ -f $modulefile ]; then

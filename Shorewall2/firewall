@@ -6244,14 +6244,13 @@ activate_rules()
 	    createchain $frwd_chain No
 
 	    if [ -n "$POLICY_MATCH" ]; then
-		eval source_hosts=\$${zone}_hosts
+		eval source_hosts=\$${zone}_ipsec_hosts
 	    
 		for host in $source_hosts; do
 		    interface=${host%%:*}
 		    networks=${host#*:}
 		    
-		    is_ipsec_host $zone $host && \
-			run_iptables -A $(forward_chain $interface) $(match_source_hosts $networks) $(match_ipsec_in $zone $host) -j $frwd_chain
+		    run_iptables -A $(forward_chain $interface) $(match_source_hosts $networks) $(match_ipsec_in $zone $host) -j $frwd_chain
 		done
 	    fi
 	fi

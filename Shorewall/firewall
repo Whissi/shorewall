@@ -865,10 +865,18 @@ find_interfaces_by_option() # $1 = option
 #
 find_hosts_by_option() # $1 = option
 {
+    local hosts interface address addresses options
+
     while read ignore hosts options; do
 	expandv options
-	list_search $1 `separate_list $options` && \
-	    echo `expand $hosts`
+	if list_search $1 `separate_list $options`; then
+	    expandv hosts
+	    interface=${hosts%:*}
+	    addresses=${hosts#*:}
+	    for address in `separate_list $addresses`; do 
+		echo $interface:$address
+	    done
+	fi
     done < $TMP_DIR/hosts
 
     for interface in $all_interfaces; do

@@ -2700,8 +2700,12 @@ get_routed_subnets() # $1 = interface name
 
     ip route show dev $1 2> /dev/null |
 	while read address rest; do
-	    [ "$address" = "${address%/*}" ] && address="${address}/32"
-	    echo $address
+	    if [ "x$address" = xdefault ]; then
+		error_message "Warning: default route ignored on interface $1"
+	    else
+		[ "$address" = "${address%/*}" ] && address="${address}/32"
+		echo $address
+	    fi
         done
 }
 
@@ -3010,6 +3014,9 @@ verify_os_version() {
 	startup_error "Shorewall version $version does not work with kernel version $osversion"
 	;;
     esac
+
+    [ -n "`lsmod 2> /dev/null | grep '^ipchains'`" ] && \
+	startup_error "Shorewall can't start with the ipchains kernel module loaded - see FAQ #8"
 }
 
 #

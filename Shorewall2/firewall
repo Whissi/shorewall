@@ -2345,9 +2345,8 @@ process_tc_rule()
 	[ "x$dest"   = "x-"  ] || r="${r}$(dest_ip_range $dest) "
 
 	if [ "x$proto" = xipp2p ]; then
-	    r="${r} -p tcp -m ipp2p"
 	    [ "x$port" = "x-" ] && port="ipp2p"
-	    r="${r} --${port}"
+	    r="${r} -p tcp -m ipp2p --${port}"
 	else
 	    [ "x$proto"  = "x-"  ] && proto=all
 	    [ "x$proto"  = "x"   ] && proto=all

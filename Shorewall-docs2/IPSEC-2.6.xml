@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-08-21</pubdate>
+    <pubdate>2004-08-25</pubdate>
 
     <copyright>
       <year>2004</year>
@@ -55,11 +55,19 @@
 
     <para>The 2.6 Linux Kernel introduces new facilities for defining
     encrypted communication between hosts in a network. The network
-    administrator defines a set of Security Policies which are stored in the
-    kernel as a Security Policy Database (SPD). Outgoing traffic is encrypted
-    according to the contents of the SPD and incoming traffic is verified
-    against the SPD to ensure that no unencrypted traffic is accepted in
-    violation of the administrator's policies.</para>
+    administrator defines a set of <firstterm>Security Policies</firstterm>
+    which are stored in the kernel as a <firstterm>Security Policy
+    Database</firstterm> (SPD). Security policies determine which traffic is
+    subject to encryption. <firstterm>Security Associations</firstterm> are
+    created between pairs of hosts in the network (one SA for traffic in each
+    direction); these SAs define how traffic is to be encrypted. Outgoing
+    traffic that is to be encrypted according to the contents of the SPD
+    requires an appropriate SA to exist. SAs may be created manually using
+    <command>setkey</command>(8) but most often, they are created by a
+    cooperative process involving the ISAKMP protocol and daemons such
+    as<command> racoon</command> or <command>isakmpd</command>. Incoming
+    traffic is verified against the SPD to ensure that no unencrypted traffic
+    is accepted in violation of the administrator's policies.</para>
 
     <para>There are three ways in which IPSEC traffic can interact with
     Shorewall policies and rules:</para>
@@ -99,7 +107,8 @@
     class="devicefile">ipsecn</filename> device. The 2.6 kernel-based
     implementation does away with these pseudo-interfaces. Outgoing traffic
     that is going to be encrypted and incoming traffic that has been decrypted
-    must be matched against policies in the SPD.</para>
+    must be matched against policies in the SPD and/or the appropriate
+    SA.</para>
 
     <para>Shorewall provides support for policy matching in two ways:</para>
 
@@ -108,8 +117,8 @@
         <para>In <filename>/etc/shorewall/masq</filename>, traffic that will
         later be encrypted is exempted from MASQUERADE/SNAT using existing
         entries. If you want to MASQUERADE/SNAT outgoing traffic that will
-        later be encrypted, you must include an entry in the new IPSEC column
-        in that file.</para>
+        later be encrypted, you must include the appropriate indication in the
+        new IPSEC column in that file.</para>
       </listitem>
 
       <listitem>

@@ -17,7 +17,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-08-19</pubdate>
+    <pubdate>2004-08-31</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -98,7 +98,7 @@ DNAT       net      loc:192.168.1.5  udp      7777</programlisting>
 #                                                                            PORT    DEST.
 DNAT    net    loc:&lt;l<emphasis>ocal IP address</emphasis>&gt;[:&lt;<emphasis>local port</emphasis>&gt;]  &lt;<emphasis>protocol</emphasis>&gt;  &lt;<emphasis>port #</emphasis>&gt;   -       &lt;<emphasis>external IP</emphasis>&gt;</programlisting>
 
-      <para>Finally, if you need to forward a range of ports, in the PORT
+      <para>Finally, if you need to forward a range of ports, in the DEST PORT
       column specify the range as
       <emphasis>&lt;low-port&gt;:&lt;high-port&gt;</emphasis>.</para>
 
@@ -212,8 +212,8 @@ DNAT    net    loc:&lt;l<emphasis>ocal IP address</emphasis>&gt;[:&lt;<emphasis>
 
         <para>In /<filename>etc/shorewall/rules</filename>:</para>
 
-        <programlisting>#ACTION    SOURCE   DEST              PROTO    DEST PORT
-DNAT       net      loc:192.168.3:22  tcp      1022</programlisting>
+        <programlisting>#ACTION    SOURCE   DEST                PROTO    DEST PORT
+DNAT       net      loc:192.168.1.3:22  tcp      1022</programlisting>
       </section>
     </section>
 
@@ -317,10 +317,14 @@ DNAT       loc          loc:192.168.1.5    tcp      www         -         130.15
 
           <para>That rule only works of course if you have a static external
           IP address. If you have a dynamic IP address and are running
-          Shorewall 1.3.4 or later then include this in
+          Shorewall 1.3.4 through Shorewall 2.0.* then include this in
           <filename>/etc/shorewall/init</filename>:</para>
 
           <programlisting><command>ETH0_IP=`find_interface_address eth0`</command></programlisting>
+
+          <para>For users of Shorewall 2.1.0 and later:</para>
+
+          <programlisting><command>ETH0_IP=`find_first_interface_address eth0`</command></programlisting>
 
           <para>and make your DNAT rule:</para>
 
@@ -1816,6 +1820,17 @@ iptables: Invalid argument
     <title>Revision History</title>
 
     <para><revhistory>
+        <revision>
+          <revnumber>1.30</revnumber>
+
+          <date>2004-08-26</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Update FAQ 2 with information about Shorewall
+          2.1.</revremark>
+        </revision>
+
         <revision>
           <revnumber>1.29</revnumber>
 

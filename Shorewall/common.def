@@ -43,6 +43,7 @@ run_iptables -A common -p udp --sport 53 -mstate --state NEW -j DROP
 # ICMP -- Silently drop null-address ICMPs
 #
 run_iptables -A common -p icmp -s 0.0.0.0 -j DROP
+run_iptables -A common -p icmp -d 0.0.0.0 -j DROP
 
 
 

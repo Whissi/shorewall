@@ -13,7 +13,11 @@ Problems Corrected since 2.0.1
    has been eliminated.
 
 3) The "shorewall delete" command now correctly removes all dynamic 
-   rules pertaining to the host(s) being deleted.
+   rules pertaining to the host(s) being deleted. Thanks to Stefan 
+   Engel for this correction.
+
+4) The install.sh script now works correctly on SuSE. Thanks to Alex
+   Wilms for this correction.
 
 Problems Corrected since 2.0.2 Beta 1
 
@@ -40,9 +44,9 @@ Issues when migrating from Shorewall 2.0.0 to Shorewall 2.0.1:
 
    Example:
 
-      save_command echo Operation Complete
+    save_command echo Operation Complete
 
-   That command would simple write "echo Operation Complete" to the
+   That command would simply write "echo Operation Complete" to the
    restore file.
 
    B. run_and_save_command() -- saves the passed command to the restore
@@ -51,7 +55,7 @@ Issues when migrating from Shorewall 2.0.0 to Shorewall 2.0.1:
 
    Example: 
 
-      run_and_save "echo 1 > /proc/sys/net/ipv4/icmp_echo_ignore_all"
+     run_and_save_command "echo 1 > /proc/sys/net/ipv4/icmp_echo_ignore_all"
 
    Note that as in this example, when the command involves file
    redirection then the entire command must be enclosed in quotes. This

@@ -531,7 +531,7 @@ if [ -z "$PREFIX" -a -n "$first_install" ]; then
 	echo "Set startup=1 in /etc/default/shorewall to enable"
     else
 	if [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
-	    if insserv /etc/init.d/shorewalls ; then
+	    if insserv /etc/init.d/shorewall ; then
 		echo
 		echo "shorewall will start automatically at boot"
 		echo "Remove /etc/shorewall/startup_disabled in /etc/default/shorewall to enable"

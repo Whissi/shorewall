@@ -1744,8 +1744,13 @@ setup_tunnels() # $1 = name of tunnels file
     done < $TMP_DIR/tunnels
 }
 
+#
+# Process the ipsec file
+#
 setup_ipsec() {
-
+    #
+    # Add a --set-mss rule to the passed chain
+    #
     set_mss1() # $1 = chain, $2 = MSS
     {
 	eval local policy=\$${1}_policy
@@ -1754,7 +1759,9 @@ setup_ipsec() {
 	    run_iptables -I $1 -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss $2
 	fi
     }
-
+    #
+    # Set up rules to set MSS to and/or from zone "$zone"
+    #
     set_mss() # $1 = MSS value, $2 = _in, _out or ""
     {
 	if [ $COMMAND != check ]; then
@@ -1777,29 +1784,31 @@ setup_ipsec() {
 
     do_options() # $1 = _in, _out or "" - $2 = option list
     {
-	local option opts newoptions=
+	local option opts newoptions= val
 
 	[ x${2} = x- ] && return
 
 	opts=$(separate_list $2)
 
 	for option in $opts; do
+	    val=${option#*=}
+
 	    case $option in
+		mss=[0-9]*)    set_mss $val $1 ;;					   
 		strict)        newoptions="$newoptions --strict" ;;
 		next)          newoptions="$newoptions --next" ;;
-		reqid=*)       newoptions="$newoptions --reqid ${option#*=}" ;;
-		spi=*)         newoptions="$newoptions --spi ${option#*=}" ;;
-		proto=*)       newoptions="$newoptions --proto ${option#*=}" ;;
-		mode=*)        newoptions="$newoptions --mode ${option#*=}" ;;
-		tunnel-src=*)  newoptions="$newoptions --tunnel-src ${option#*=}" ;;
-		tunnel-dst=*)  newoptions="$newoptions --tunnel-dst ${option#*=}" ;;
-		reqid!=*)      newoptions="$newoptions ! --reqid ${option#*=}" ;;
-		spi!=*)        newoptions="$newoptions ! --spi ${option#*=}" ;;
-		proto!=*)      newoptions="$newoptions ! --proto ${option#*=}" ;;
-		mode!=*)       newoptions="$newoptions ! --mode ${option#*=}" ;;
-		tunnel-src!=*) newoptions="$newoptions ! --tunnel-src ${option#*=}" ;;
-		tunnel-dst!=*) newoptions="$newoptions ! --tunnel-dst ${option#*=}" ;;
-		mss=[0-9]*)    set_mss ${option#*=} $1 ;;					   
+		reqid=*)       newoptions="$newoptions --reqid $val" ;;
+		spi=*)         newoptions="$newoptions --spi $val" ;;
+		proto=*)       newoptions="$newoptions --proto $val" ;;
+		mode=*)        newoptions="$newoptions --mode $val" ;;
+		tunnel-src=*)  newoptions="$newoptions --tunnel-src $val" ;;
+		tunnel-dst=*)  newoptions="$newoptions --tunnel-dst $val" ;;
+		reqid!=*)      newoptions="$newoptions ! --reqid $val" ;;
+		spi!=*)        newoptions="$newoptions ! --spi $val" ;;
+		proto!=*)      newoptions="$newoptions ! --proto $val" ;;
+		mode!=*)       newoptions="$newoptions ! --mode $val" ;;
+		tunnel-src!=*) newoptions="$newoptions ! --tunnel-src $val" ;;
+		tunnel-dst!=*) newoptions="$newoptions ! --tunnel-dst $val" ;;
 		*)             fatal_error "Invalid option \"$option\" for zone $zone" ;;
 	    esac
 	done

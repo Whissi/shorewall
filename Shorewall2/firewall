@@ -1569,8 +1569,6 @@ setup_nat() {
     #
     > ${STATEDIR}/nat
 
-    echo "Setting up NAT..."
-
     while read external interface internal allints localnat; do
 	expandv external interface internal allints localnat
 
@@ -2152,7 +2150,6 @@ add_an_action()
 
     sports=
     dports=
-    state="-m state --state NEW"
     proto=$protocol
     servport=$serverport
     multiport=
@@ -2170,10 +2167,8 @@ add_an_action()
 	    ;;
 	icmp|ICMP|1)
 	    [ -n "$port" ]  && 	dports="--icmp-type $port"
-	    state=
 	    ;;
 	*)
-	    state=
 	    [ -n "$port" ] && \
 		fatal_error "Port number not allowed with protocol \"$proto\"; rule: \"$rule\""
 	    ;;
@@ -2195,20 +2190,20 @@ add_an_action()
 		for srv in $(ip_range $serv1); do
 		    if [ -n "$loglevel" ]; then
 			log_rule_limit $loglevel $action $logtarget "$ratelimit" $userandgroup \
-			    $(fix_bang $proto $sports $multiport $state $cli -d $srv $dports)
+			    $(fix_bang $proto $sports $multiport $cli -d $srv $dports)
 		    fi
 		    
-		    run_iptables2 -A $action $proto $multiport $state $cli $sports \
+		    run_iptables2 -A $action $proto $multiport $cli $sports \
 			-d $srv $dports $ratelimit $userandgroup -j $target
 		done
 	    done
 	else
 	    if [ -n "$loglevel" ]; then
 		log_rule_limit $loglevel $action $logtarget "$ratelimit" $userandgroup \
-		    $(fix_bang $proto $sports $multiport $state $cli $dports)
+		    $(fix_bang $proto $sports $multiport $cli $dports)
 	    fi
 		    
-	    run_iptables2 -A $action $proto $multiport $state $cli $sports \
+	    run_iptables2 -A $action $proto $multiport $cli $sports \
 		$dports $ratelimit $userandgroup -j $target
 	fi
     fi
@@ -2826,7 +2821,6 @@ add_a_rule()
 
     sports=
     dports=
-    state="-m state --state NEW"
     proto=$protocol
     addr=$address
     servport=$serverport
@@ -2845,7 +2839,6 @@ add_a_rule()
 	    ;;
 	icmp|ICMP|1)
 	    [ -n "$port" ]  && 	dports="--icmp-type $port"
-	    state=
 	    ;;
 	all|ALL)
 	    [ -n "$port" ] && \
@@ -2853,7 +2846,6 @@ add_a_rule()
 	    proto=
 	    ;;
 	*)
-	    state=
 	    [ -n "$port" ] && \
 		fatal_error "Port number not allowed with protocol \"$proto\"; rule: \"$rule\""
 	    ;;
@@ -2911,19 +2903,19 @@ add_a_rule()
 				for adr in $(separate_list $addr); do
 				    if [ -n "$loglevel" -a -z "$natrule" ]; then
 					log_rule_limit $loglevel $chain $logtarget "$ratelimit" -m conntrack --ctorigdst $adr \
-					    $userandgroup $(fix_bang $proto $sports $multiport $state $cli -d $srv $dports)
+					    $userandgroup $(fix_bang $proto $sports $multiport $cli -d $srv $dports)
 				    fi
 
-				    run_iptables2 -A $chain $proto $ratelimit $multiport $state $cli $sports \
+				    run_iptables2 -A $chain $proto $ratelimit $multiport $cli $sports \
 					-d $srv $dports -m conntrack --ctorigdst $adr $userandgroup -j $target
 				done
 			    else
 				if [ -n "$loglevel" -a -z "$natrule" ]; then
 				    log_rule_limit $loglevel $chain $logtarget "$ratelimit" $userandgroup \
-					$(fix_bang $proto $sports $multiport $state $cli -d $srv $dports)
+					$(fix_bang $proto $sports $multiport $cli -d $srv $dports)
 				fi
 
-				run_iptables2 -A $chain $proto $multiport $state $cli $sports \
+				run_iptables2 -A $chain $proto $multiport $cli $sports \
 				    -d $srv $dports $ratelimit $userandgroup -j $target
 			    fi
 			done
@@ -2931,10 +2923,10 @@ add_a_rule()
 		else
 		    if [ -n "$loglevel" -a -z "$natrule" ]; then
 		        log_rule_limit $loglevel $chain $logtarget "$ratelimit" $userandgroup \
-			    $(fix_bang $proto $sports $multiport $state $cli $dports)
+			    $(fix_bang $proto $sports $multiport $cli $dports)
 		    fi
 
-		    run_iptables2 -A $chain $proto $multiport $state $cli $sports \
+		    run_iptables2 -A $chain $proto $multiport $cli $sports \
 			$dports $ratelimit $userandgroup -j $target
 		fi
 	    fi
@@ -2950,11 +2942,11 @@ add_a_rule()
 	if [ $command != check ]; then
 	    if [ -n "$loglevel" ]; then
 		log_rule_limit $loglevel $chain $logtarget "$ratelimit" $userandgroup \
-		    $(fix_bang $proto $multiport $dest_interface $state $cli $sports $dports)
+		    $(fix_bang $proto $multiport $dest_interface $cli $sports $dports)
 	    fi
 
 	    if [ $logtarget != LOG ]; then
-		run_iptables2 -A $chain $proto $multiport $dest_interface $state \
+		run_iptables2 -A $chain $proto $multiport $dest_interface \
 		    $cli $sports $dports $ratelimit $userandgroup -j $target
 	    fi
 	fi
@@ -4924,6 +4916,8 @@ define_firewall() # $1 = Command (Start or Restart)
     echo "Configuring Proxy ARP"
 
     setup_proxy_arp
+
+    echo "Setting up NAT..."
 
     setup_nat
 

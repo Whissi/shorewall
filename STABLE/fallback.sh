@@ -28,7 +28,7 @@
 #       shown below. Simply run this script to revert to your prior version of 
 #       Shoreline Firewall.
 
-VERSION=1.3.8
+VERSION=1.3.9a
 
 usage() # $1 = exit status
 {
@@ -57,7 +57,10 @@ fi
 
 echo "Backing Out Installation of Shorewall $VERSION"
 
-if [ -L /var/lib/shorewall/firewall ]; then
+if [ -L /usr/lib/shorewall/firewall ]; then
+    FIREWALL=`ls -l /usr/lib/shorewall/firewall | sed 's/^.*> //'`
+    restore_file $FIREWALL
+elif [ -L /var/lib/shorewall/firewall ]; then
     FIREWALL=`ls -l /var/lib/shorewall/firewall | sed 's/^.*> //'`
     restore_file $FIREWALL
 fi
@@ -69,6 +72,7 @@ restore_file /sbin/shorewall
 restore_file /etc/shorewall/shorewall.conf
     
 restore_file /etc/shorewall/functions
+restore_file /usr/lib/shorewall/functions
 restore_file /var/lib/shorewall/functions
 
 restore_file /etc/shorewall/common.def
@@ -109,8 +113,11 @@ restore_file /etc/shorewall/whitelist
 
 restore_file /etc/shorewall/rfc1918
 
-if [ -f /var/lib/shorewall/version-${VERSION}.bkout ]; then
-    restore_file /var/shorewall/version
+if [ -f /usr/lib/shorewall/version-${VERSION}.bkout ]; then
+    restore_file /usr/lib/shorewall/version
+    oldversion="`cat /usr/lib/shorewall/version`"
+elif [ -f /var/lib/shorewall/version-${VERSION}.bkout ]; then
+    restore_file /var/lib/shorewall/version
     oldversion="`cat /var/lib/shorewall/version`"
 else
     restore_file /etc/shorewall/version

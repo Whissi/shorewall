@@ -74,14 +74,14 @@ list_search() # $1 = element to search for , $2-$n = list
 # Function to count list elements                                             #
 ###############################################################################
 list_count() {
-    local temp=`separate_list $1`
+    local temp="`separate_list $1`"
     
     echo $temp | wc -w
 }
 
 ###############################################################################
 # Mutual exclusion -- These functions are jackets for the mutual exclusion    #
-#		      routines in /var/lib/shorewall/functions. They invoke   #
+#		      routines in /usr/lib/shorewall/functions. They invoke   #
 #		      the corresponding function in that file if the user did #
 #		      not specify "nolock" on the runline.		      #
 ###############################################################################
@@ -592,7 +592,7 @@ validate_rule() {
     # Ensure that the passed comma-separated list has 15 or fewer elements
     #
     validate_list() {
-	local temp=`separate_list $1`
+	local temp="`separate_list $1`"
 	
 	[ `echo $temp | wc -w` -le 15 ]
     }
@@ -609,10 +609,13 @@ validate_rule() {
 	[ -n "$client" ] && case "$client" in
 	    -)
 		;;
+            *:*)
+		cli="-i ${client%:*} -s ${client#*:}"
+		;;
 	    ~*)
 		cli=`mac_match $client`
 		;;
-	    [0-9]*|![0-9]*)
+	    *.*.*)
 		#
 		# IP Address, address or subnet
 		#
@@ -632,7 +635,7 @@ validate_rule() {
 	    -)
 		serv=
 		;;
-	    [0-9]*|![0-9]*)
+	    *.*.*)
 		serv=$server
 		;;
 	    ~*)
@@ -669,6 +672,7 @@ validate_rule() {
 		state="-m state --state RELATED"
 		;;
 	    *)
+		state=
 		[ -n "$port" ] && [ "x${port}" != "x-" ] && \
 		    startup_error "Port number not allowed with protocol " \
 				  "\"$proto\"; rule: \"$rule\""
@@ -775,7 +779,7 @@ validate_rule() {
 	clientzone="$clients"
 	clients=
     else
-	clientzone="${clients%:*}"
+	clientzone="${clients%%:*}"
 	clients="${clients#*:}"
 	[ -z "$clientzone" -o -z "$clients" ] && \
 	   startup_error "Error: Empty source zone or qualifier: rule \"$rule\""
@@ -1141,10 +1145,10 @@ setup_tunnels() # $1 = name of tunnels file
     setup_one_ipsec() # $1 = gateway $2 = gateway zone
     {
 	options="-m state --state NEW -j ACCEPT"
-	addrule $inchain	  -p 50	 -s $1 $options
-	addrule $outchain	  -p 50	 -d $1 $options
-	run_iptables -A $inchain  -p 51	 -s $1 $options
-	run_iptables -A $outchain -p 51	 -d $1 $options
+	addrule $inchain	  -p 50	 -s $1 -j ACCEPT
+	addrule $outchain	  -p 50	 -d $1 -j ACCEPT
+	run_iptables -A $inchain  -p 51	 -s $1 -j ACCEPT
+	run_iptables -A $outchain -p 51	 -d $1 -j ACCEPT
 	run_iptables -A $inchain  -p udp -s $1 --sport 500 --dport 500 $options
 	run_iptables -A $outchain -p udp -d $1 --dport 500 --sport 500 $options
 
@@ -1162,9 +1166,8 @@ setup_tunnels() # $1 = name of tunnels file
 
     setup_one_other() # $1 = TYPE, $2 = gateway, $3 = protocol
     {
-	options="-m state --state NEW -j ACCEPT"
-	addrule $inchain  -p $3 -s $2 $options
-	addrule $outchain -p $3 -d $2 $options
+	addrule $inchain  -p $3 -s $2 -j ACCEPT
+	addrule $outchain -p $3 -d $2 -j ACCEPT
 
 	echo "   $1 tunnel to $gateway defined."
     }
@@ -1381,7 +1384,7 @@ process_tc_rule()
 
 	if [ "x$source" != "x-"	 ]; then
 	    case $source in
-	    [0-9]*)
+	    *.*.*)
 		r="-s $source "
 		;;
 	    ~*)
@@ -1624,7 +1627,10 @@ add_a_rule()
     [ -n "$client" ] && case "$client" in
     -)
 	;;
-    [0-9]*|![0-9]*)
+    *:*)
+	cli="-i ${client%:*} -s ${client#*:}"
+	;;
+    *.*.*)
 	cli="-s $client"
 	;;
     ~*)
@@ -1643,7 +1649,7 @@ add_a_rule()
     -)
 	serv=
 	;;
-    [0-9]*|![0-9]*)
+    *.*.*)
 	serv=$server
 	;;
     *)
@@ -1698,6 +1704,7 @@ add_a_rule()
 	    state="-m state --state RELATED"
 	    ;;
 	*)
+	    state=
 	    [ -n "$port" ] && [ "x${port}" != "x-" ] && \
 		fatal_error "Port number not allowed with protocol " \
 		"\"$proto\"; rule: \"$rule\""
@@ -1820,7 +1827,7 @@ process_rule() {
 	clientzone="$clients"
 	clients=
     else
-	clientzone="${clients%:*}"
+	clientzone="${clients%%:*}"
 	clients="${clients#*:}"
 	[ -z "$clientzone" -o -z "$clients" ] && \
 	   fatal_error "Error: Empty source zone or qualifier: rule \"$rule\""
@@ -1967,7 +1974,7 @@ process_tos_rule() {
     fi
 
     [ -n "$src" ] && case "$src" in
-	[0-9]*|![0-9]*)
+	*.*.*)
 	    #
 	    # IP Address or subnet
 	    #
@@ -2010,7 +2017,7 @@ process_tos_rule() {
     fi
 
     [ -n "$dst" ] && case "$dst" in
-	[0-9]*|![0-9]*)
+	*.*.*)
 	    #
 	    # IP Address or subnet
 	    #
@@ -2416,7 +2423,7 @@ setup_masq()
 	iface=
 
 	case $subnet in
-	[0-9]*|![0-9]*)
+	*.*.*)
 	    source="$subnet"
 	    subnet="-s $subnet"
 	    ;;
@@ -2783,12 +2790,17 @@ initialize_netfilter () {
     setpolicy INPUT DROP
     setpolicy OUTPUT DROP
     setpolicy FORWARD DROP
-
+    
     deleteallchains
 
     setcontinue FORWARD
     setcontinue INPUT
     setcontinue OUTPUT
+    #
+    # Allow DNS lookups during startup for FQDNs
+    #
+    run_iptables -A OUTPUT  -p udp --dport 53 -j ACCEPT
+    run_iptables -A FORWARD -p udp --dport 53 -j ACCEPT
 
     [ -n "$CLAMPMSS" ] && \
 	run_iptables -A FORWARD -p tcp \
@@ -3245,6 +3257,9 @@ activate_rules()
     run_iptables -D INPUT 1
     run_iptables -D OUTPUT 1
     run_iptables -D FORWARD 1
+
+    run_iptables -D OUTPUT  -p udp --dport 53 -j ACCEPT
+    run_iptables -D FORWARD -p udp --dport 53 -j ACCEPT
 }
 
 ################################################################################
@@ -3252,6 +3267,16 @@ activate_rules()
 ################################################################################
 define_firewall() # $1 = Command (Start or Restart)
 {
+    if [ -f /etc/shorewall/startup_disabled ]; then
+	echo "   Shorewall Startup is disabled -- to enable startup"
+	echo "   after you have completed Shorewall configuration,"
+	echo "   remove the file /etc/shorewall/startup_disabled"
+
+	[ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
+	my_mutex_off
+	exit 2
+    fi
+
     echo "${1}ing Shorewall..."
 
     verify_os_version
@@ -3329,7 +3354,7 @@ define_firewall() # $1 = Command (Start or Restart)
 
     createchain shorewall no
 
-    date > /var/lib/shorewall/restarted
+    date > $STATEDIR/restarted
 
     report "Shorewall ${1}ed"
 
@@ -3512,7 +3537,7 @@ do_initialize() {
 
     trap "rm -rf $TMP_DIR; my_mutex_off; exit 2" 1 2 3 4 5 6 9
 
-    functions=/var/lib/shorewall/functions
+    functions=/usr/lib/shorewall/functions
 
     if [ -f $functions ]; then
 	. $functions
@@ -3520,7 +3545,7 @@ do_initialize() {
 	startup_error "$functions does not exist!"
     fi
 
-    version_file=/var/lib/shorewall/version
+    version_file=/usr/lib/shorewall/version
 
     [ -f $version_file ] && version=`cat $version_file`
     #
@@ -3535,6 +3560,7 @@ do_initialize() {
     [ -z "${STATEDIR}" ] && STATEDIR=/var/state/shorewall
 
     [ -d $STATEDIR ] || mkdir -p $STATEDIR
+
 
     [ -z "$FW" ] && FW=fw
 
@@ -3623,6 +3649,7 @@ case "$command" in
 	if qt iptables -L shorewall -n ; then
 	    [ -n "$SUBSYSLOCK" ] && touch $SUBSYSLOCK
 	    echo "Shorewall Already Started"
+	    [ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
 	    my_mutex_off
 	    exit 0;
 	fi
@@ -3652,7 +3679,7 @@ case "$command" in
     reset)
 	iptables -L -n -Z -v
 	report "Shorewall Counters Reset"
-	date > /var/lib/shorewall/restarted
+	date > $STATEDIR/restarted
 	;;
 
     refresh)
@@ -3660,6 +3687,7 @@ case "$command" in
 	my_mutex_on
 	if ! qt iptables -L shorewall -n ; then
 	    echo "Shorewall Not Started"
+	    [ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
 	    my_mutex_off
 	    exit 2;
 	fi

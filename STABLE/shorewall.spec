@@ -1,5 +1,5 @@
 %define name shorewall
-%define version 1.3.8
+%define version 1.3.9a
 %define release 1
 %define prefix /usr
 
@@ -40,16 +40,40 @@ export GROUP=`id -n -g` ;\
 rm -rf $RPM_BUILD_ROOT
 
 %post
-if [ -x /sbin/insserv ]; then /sbin/insserv /etc/rc.d/shorewall; elif [ -x /sbin/chkconfig ]; then /sbin/chkconfig --add shorewall;  fi
+
+if [ $1 -eq 1 ]; then
+    	echo \
+"########################################################################
+#      REMOVE THIS FILE AFTER YOU HAVE CONFIGURED SHOREWALL            #
+########################################################################" \
+	> /etc/shorewall/startup_disabled
+
+	if [ -x /sbin/insserv ]; then 
+		/sbin/insserv /etc/rc.d/shorewall
+	elif [ -x /sbin/chkconfig ]; then
+		/sbin/chkconfig --add shorewall; 
+	fi
+fi
 
 %preun
-if [ $1 = 0 ]; then if [ -x /sbin/insserv ]; then /sbin/insserv -r /etc/init.d/shorewall ; elif [ -x /sbin/chkconfig ]; then /sbin/chkconfig --del shorewall; fi ; fi
+
+if [ $1 = 0 ]; then
+	if [ -x /sbin/insserv ]; then
+		/sbin/insserv -r /etc/init.d/shorewall
+	elif [ -x /sbin/chkconfig ]; then
+		/sbin/chkconfig --del shorewall
+	fi
+
+	rm -f /etc/shorewall/startup_disabled
+
+fi
 
 %files 
 /etc/init.d/shorewall
 %attr(0700,root,root) %dir /etc/shorewall
+%attr(0700,root,root) %dir /usr/lib/shorewall
 %attr(0700,root,root) %dir /var/lib/shorewall
-%attr(0600,root,root) /var/lib/shorewall/version
+%attr(0600,root,root) /usr/lib/shorewall/version
 %attr(0600,root,root) /etc/shorewall/common.def
 %attr(0600,root,root) /etc/shorewall/icmp.def
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/shorewall.conf
@@ -70,12 +94,16 @@ if [ $1 = 0 ]; then if [ -x /sbin/insserv ]; then /sbin/insserv -r /etc/init.d/s
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/blacklist
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/rfc1918
 %attr(0544,root,root) /sbin/shorewall
-%attr(0444,root,root) /var/lib/shorewall/functions
-/var/lib/shorewall/firewall
+%attr(0444,root,root) /usr/lib/shorewall/functions
+/usr/lib/shorewall/firewall
 %doc documentation
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel
 
 %changelog
+* Mon Sep 30 2002 Tom Eastep <tom@shorewall.net>
+- Changed version to 1.3.9a
+* Thu Sep 18 2002 Tom Eastep <tom@shorewall.net>
+- Changed version to 1.3.8
 * Mon Sep 16 2002 Tom Eastep <tom@shorewall.net>
 - Changed version to 1.3.8
 * Mon Sep 02 2002 Tom Eastep <tom@shorewall.net>

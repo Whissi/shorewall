@@ -3,20 +3,14 @@ fixes.
 
 New features include:
 
-1. A NEWNOTSYN option has been added to shorewall.conf. This option
-   determines whether Shorewall accepts TCP packets which are not part
-   of an established connection and that are not 'SYN' packets (SYN
-   flag on and ACK flag off).
+1. DNS Names are now allowed in Shorewall config files.
 
+2. The connection SOURCE may now be qualified by both interface
+   and IP address in a Shorewall rule.
 
-2. The need for the 'multi' option to communicate between zones za and
-   zb on the same interface is removed in the case where the chain
-   'za2zb' and/or 'zb2za' exists. 'za2zb' will exist if:
+3. Shorewall startup is now disabled after initial installation until
+   the file /etc/shorewall/startup_disabled is removed.
 
-   a. There is a policy for za to zb.
-   b. There is at least one rule for za to zb.
-
-3. The /etc/shorewall/blacklist file now contains three columns. In
-   addition to the SUBNET/ADDRESS column, there are optional PROTOCOL
-   and PORT columns to block only certain applications from the
-   blacklisted addresses.
+4. The 'functions' and 'version' files and the 'firewall' symbolic link
+   have been moved from /var/lib/shorewall to /usr/lib/shorewall to
+   appease the LFS police at Debian.

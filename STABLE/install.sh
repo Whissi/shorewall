@@ -54,7 +54,7 @@
 #        /etc/rc.d/rc.local file is modified to start the firewall.
 #
 
-VERSION=1.3.8
+VERSION=1.3.9a
 
 usage() # $1 = exit status
 {
@@ -254,9 +254,10 @@ fi
 echo -e "\nShorewall script installed in ${PREFIX}${DEST}/$FIREWALL"
 
 #
-# Create /etc/shorewall and /var/shorewall if needed
+# Create /etc/shorewall, /usr/lib/shorewall and /var/shorewall if needed
 #
 mkdir -p ${PREFIX}/etc/shorewall
+mkdir -p ${PREFIX}/usr/lib/shorewall
 mkdir -p ${PREFIX}/var/lib/shorewall
 #
 # Install the config file
@@ -280,7 +281,12 @@ fi
 #
 # Install the functions file
 #
-install_file_with_backup functions ${PREFIX}/var/lib/shorewall/functions 0444
+if [ -f ${PREFIX}/etc/shorewall/functions ]; then
+    backup_file ${PREFIX}/var/lib/shorewall/functions
+    rm -f  ${PREFIX}/var/lib/shorewall/functions
+fi
+    
+install_file_with_backup functions ${PREFIX}/usr/lib/shorewall/functions 0444
 
 echo -e "\nCommon functions installed in ${PREFIX}/var/lib/shorewall/functions"
 #
@@ -443,19 +449,19 @@ fi
 # Backup the version file
 #
 if [ -z "$PREFIX" ]; then
-    if [ -f /var/lib/shorewall/version ]; then
-	backup_file /var/lib/shorewall/version
+    if [ -f /usr/lib/shorewall/version ]; then
+	backup_file /usr/lib/shorewall/version
     elif [ -n "$oldversion" ]; then
-	echo $oldversion > /var/lib/shorewall/version-${VERSION}.bkout
+	echo $oldversion > /usr/lib/shorewall/version-${VERSION}.bkout
     else
-	echo "Unknown" > /var/lib/shorewall/version-${VERSION}.bkout
+	echo "Unknown" > /usr/lib/shorewall/version-${VERSION}.bkout
     fi
 fi
 #
 # Create the version file
 #
-echo "$VERSION" > ${PREFIX}/var/lib/shorewall/version
-chmod 644 ${PREFIX}/var/lib/shorewall/version
+echo "$VERSION" > ${PREFIX}/usr/lib/shorewall/version
+chmod 644 ${PREFIX}/usr/lib/shorewall/version
 #
 # Remove and create the symbolic link to the firewall script
 #
@@ -463,12 +469,13 @@ chmod 644 ${PREFIX}/var/lib/shorewall/version
 if [ -z "$PREFIX" ]; then
     rm -f /etc/shorewall/firewall
     rm -f /var/lib/shorewall/firewall
-    ln -s ${DEST}/${FIREWALL} /var/lib/shorewall/firewall
+    rm -f /usr/lib/shorewall/firewall
+    ln -s ${DEST}/${FIREWALL} /usr/lib/shorewall/firewall
 else
-    pushd ${PREFIX}/var/lib/shorewall/ >> /dev/null && ln -s ../../..${DEST}/${FIREWALL} firewall && popd >> /dev/null
+    pushd ${PREFIX}/usr/lib/shorewall/ >> /dev/null && ln -s ../../..${DEST}/${FIREWALL} firewall && popd >> /dev/null
 fi
 
-echo -e "\n${PREFIX}/var/lib/shorewall/firewall linked to ${PREFIX}$DEST/$FIREWALL"
+echo -e "\n${PREFIX}/usr/lib/shorewall/firewall linked to ${PREFIX}$DEST/$FIREWALL"
 
 if [ -z "$PREFIX" -a -n "$first_install" ]; then
     if [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
@@ -493,7 +500,13 @@ if [ -z "$PREFIX" -a -n "$first_install" ]; then
     else
        modify_rclocal
     fi
+
+    echo \
+"########################################################################
+#      REMOVE THIS FILE AFTER YOU HAVE CONFIGURED SHOREWALL            #
+########################################################################" > /etc/shorewall/startup_disabled
 fi
+
 #
 #  Report Success
 #

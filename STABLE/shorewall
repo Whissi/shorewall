@@ -312,6 +312,8 @@ monitor_firewall() # $1 = timeout -- if negative, prompt each time that
 
 	echo -e "Dropped/Rejected Packet Log\\n"
 
+	show_reset
+
 	rejects=`iptables -L -v -n | grep 'LOG'`
 
 	if [ "$rejects" != "$oldrejects" ]; then
@@ -384,6 +386,8 @@ logwatch() # $1 = timeout -- if negative, prompt each time that
 
 	echo -e "Dropped/Rejected Packet Log\\n"
 
+	show_reset
+
 	rejects=`iptables -L -v -n | grep 'LOG'`
 
 	if [ "$rejects" != "$oldrejects" ]; then
@@ -437,8 +441,8 @@ usage() # $1 = exit status
 # Display the time that the counters were last reset                            #
 #################################################################################
 show_reset() {
-    [ -f /var/lib/shorewall/restarted ] && \
-	echo -e "Counters reset `cat /var/lib/shorewall/restarted`\\n"
+    [ -f $STATEDIR/restarted ] && \
+	echo -e "Counters reset `cat $STATEDIR/restarted`\\n"
 }
 
 #################################################################################
@@ -491,7 +495,7 @@ fi
 
 [ -n "$SHOREWALL_DIR" ] && export SHOREWALL_DIR
 
-functions=/var/lib/shorewall/functions
+functions=/usr/lib/shorewall/functions
 
 if [ -f $functions ]; then
     . $functions
@@ -500,7 +504,7 @@ else
     exit 2
 fi
 
-firewall=/var/lib/shorewall/firewall
+firewall=/usr/lib/shorewall/firewall
 
 if [ ! -f $firewall ]; then
     echo "ERROR: Shorewall is not properly installed"
@@ -508,7 +512,7 @@ if [ ! -f $firewall ]; then
 	echo "	     $firewall is a symbolic link to a"
 	echo "	     non-existant file"
     else
-	echo "	     The file /var/lib/shorewall/firewall does not exist"
+	echo "	     The file /usr/lib/shorewall/firewall does not exist"
     fi
 
     exit 2
@@ -516,13 +520,13 @@ fi
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 
-version_file=/var/lib/shorewall/version
+version_file=/usr/lib/shorewall/version
 
 if [ -f $version_file ]; then
     version=`cat $version_file`
 else
     echo "ERROR: Shorewall is not properly installed"
-    echo "	 The file /var/lib/shorewall/version does not exist"
+    echo "	 The file /usr/lib/shorewall/version does not exist"
     exit 1
 fi
 
@@ -546,6 +550,7 @@ case "$1" in
 	    iptables -t nat -L -n -v
 	    ;;
 	tos|mangle)
+	    get_config
 	    echo -e "Shorewall-$version TOS at $HOSTNAME - `date`\\n"
 	    show_reset
 	    iptables -t mangle -L -n -v
@@ -553,6 +558,7 @@ case "$1" in
 	log)
 	    get_config
 	    echo -e "Shorewall-$version Log at $HOSTNAME - `date`\\n"
+	    show_reset
 	    host=`echo $HOSTNAME | sed 's/\..*$//'`
 	    packet_log 20
 	    ;;
@@ -561,6 +567,7 @@ case "$1" in
 	    show_tc
 	    ;;
 	*)
+	    get_config
 	    echo -e "Shorewall-$version Chain $2 at $HOSTNAME - `date`\\n"
 	    show_reset
 	    iptables -L $2 -n -v

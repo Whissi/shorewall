@@ -5194,7 +5194,7 @@ activate_rules()
     # Add jumps for dynamic nat chains
     #
     [ -n "$DYNAMIC_ZONES" ] && for interface in $all_interfaces ; do
-	addrulejump PREROUTING $(dynamic_in $interface)
+	addrulejump PREROUTING $(dynamic_in $interface) -i $interface
     done
     #
     # Add jumps from the builtin chains to the nat chains

@@ -2,7 +2,7 @@
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
 "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
 <article>
-  <!---->
+  <!--$Id$-->
 
   <articleinfo>
     <title>Shorewall Errata</title>
@@ -45,8 +45,8 @@
       <listitem>
         <para>If you are installing Shorewall for the first time and plan to
         use the .tgz and install.sh script, you can untar the archive, replace
-        the &#39;firewall&#39; script in the untarred directory with the one
-        you downloaded below, and then run install.sh.</para>
+        the <quote>firewall</quote> script in the untarred directory with the
+        one you downloaded below, and then run install.sh.</para>
       </listitem>
 
       <listitem>
@@ -90,8 +90,9 @@
 
       <itemizedlist>
         <listitem>
-          <para>Using some versions of &#39;ash&#39; (such as from RH8) as the
-          SHOREWALL_SHELL causes &#34;shorewall [re]start&#34; to fail with:<programlisting> &#x00A0;&#x00A0; local: --limit: bad variable name
+          <para>Using some versions of <quote>ash</quote> (such as from RH8)
+          as the SHOREWALL_SHELL causes <quote>shorewall [re]start</quote> to
+          fail with:<programlisting> &#x00A0;&#x00A0; local: --limit: bad variable name
  &#x00A0;&#x00A0; iptables v1.2.8: Couldn&#39;t load match `-j&#39;:/lib/iptables/libipt_-j.so: 
  &#x00A0;&#x00A0; cannot open shared object file: No such file or directory
  &#x00A0;&#x00A0; Try `iptables -h&#39; or &#39;iptables --help&#39; for more information.</programlisting></para>
@@ -133,8 +134,8 @@
       <itemizedlist>
         <listitem>
           <para>If TC_ENABLED is set to yes in shorewall.conf then Shorewall
-          would fail to start with the error &#34;ERROR:&#x00A0; Traffic
-          Control requires Mangle&#34;; that problem has been corrected in
+          would fail to start with the error <quote>ERROR:&#x00A0; Traffic
+          Control requires Mangle</quote>; that problem has been corrected in
           <ulink
           url="http://shorewall.net/pub/shorewall/errata/1.4.6/firewall">this
           firewall script</ulink> which may be installed in
@@ -153,8 +154,8 @@
           url="http://shorewall.net/pub/shorewall/errata/1.4.6/firewall">this
           firewall script</ulink> which may be installed in
           /usr/share/shorewall/firewall as described above. For all other
-          versions, you will have to edit your &#39;firewall&#39; script (in
-          versions 1.4.*, it is located in /usr/share/shorewall/firewall).
+          versions, you will have to edit your <quote>firewall</quote> script
+          (in versions 1.4.*, it is located in /usr/share/shorewall/firewall).
           Locate the function add_tcrule_() and in that function, replace this
           line:<programlisting> &#x00A0; r=`mac_match $source`&#x00A0;</programlisting>with<programlisting> &#x00A0; &#x00A0; &#x00A0;r=&#34;`mac_match $source` &#34;</programlisting>Note
           that there must be a space before the ending quote!</para>
@@ -235,9 +236,9 @@
 
       <itemizedlist>
         <listitem>
-          <para>When an &#39;add&#39; or &#39;delete&#39; command is executed,
-          a temporary directory created in /tmp is not being removed. This
-          problem may be corrected by installing <ulink
+          <para>When an <quote>add</quote> or <quote>delete</quote> command is
+          executed, a temporary directory created in /tmp is not being
+          removed. This problem may be corrected by installing <ulink
           url="ftp://ftp.shorewall.net/pub/shorewall/errata/1.4.2/firewall">this
           firewall script</ulink> in /usr/share/shorewall/firewall as
           described above.</para>
@@ -250,8 +251,8 @@
 
       <itemizedlist>
         <listitem>
-          <para>Some TCP requests are rejected in the &#39;common&#39; chain
-          with an ICMP port-unreachable response rather than the more
+          <para>Some TCP requests are rejected in the <quote>common</quote>
+          chain with an ICMP port-unreachable response rather than the more
           appropriate TCP RST response. This problem is corrected in <ulink
           url="ftp://ftp.shorewall.net/pub/shorewall/errata/1.4.1a/common.def">this
           updated common.def file</ulink> which may be installed in
@@ -265,8 +266,8 @@
 
       <itemizedlist>
         <listitem>
-          <para>When a &#34;shorewall check&#34; command is executed, each
-          &#34;rule&#34; produces the harmless additional message:<programlisting>&#x00A0; &#x00A0; &#x00A0;/usr/share/shorewall/firewall: line 2174: [: =: unary operator expected</programlisting>You
+          <para>When a <quote>shorewall check</quote> command is executed,
+          each <quote>rule</quote> produces the harmless additional message:<programlisting>&#x00A0; &#x00A0; &#x00A0;/usr/share/shorewall/firewall: line 2174: [: =: unary operator expected</programlisting>You
           may correct the problem by installing <ulink
           url="ftp://ftp.shorewall.net/pub/shorewall/errata/1.4.1/firewall">this
           corrected script</ulink> in /usr/share/shorewall/firewall as
@@ -360,12 +361,12 @@ Aborted (core dumped)</programlisting>
 
     <para>The RedHat iptables RPM is compiled with debugging enabled but the
     user-space debugging code was not updated to reflect recent changes in the
-    Netfilter &#39;mangle&#39; table. You can correct the problem by
+    Netfilter <quote>mangle</quote> table. You can correct the problem by
     installing <ulink
     url="http://www.shorewall.net/pub/shorewall/iptables-1.2.5-1.i386.rpm">this
     iptables RPM</ulink>. If you are already running a 1.2.5 version of
     iptables, you will need to specify the --oldpackage option to rpm (e.g.,
-    &#34;iptables -Uvh --oldpackage iptables-1.2.5-1.i386.rpm&#34;).</para>
+    <quote>iptables -Uvh --oldpackage iptables-1.2.5-1.i386.rpm</quote>).</para>
   </section>
 
   <section>
@@ -400,13 +401,13 @@ Aborted (core dumped)</programlisting>
      192.0.2.22&#x00A0;&#x00A0;&#x00A0;   eth0&#x00A0;&#x00A0;&#x00A0;         192.168.9.22&#x00A0;&#x00A0;  yes&#x00A0;&#x00A0;&#x00A0;&#x00A0;                 yes
      #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
 
-    <para> Error message is:</para>
+    <para>Error message is:</para>
 
     <programlisting>     Setting up NAT...
      iptables: Invalid argument
      Terminated</programlisting>
 
-    <para>The solution is to put &#34;no&#34; in the LOCAL column. Kernel
+    <para>The solution is to put <quote>no</quote> in the LOCAL column. Kernel
     support for LOCAL=yes has never worked properly and 2.4.18-10 has disabled
     it. The 2.4.19 kernel contains corrected support under a new kernel
     configuraiton option; see <ulink
@@ -417,10 +418,10 @@ Aborted (core dumped)</programlisting>
     <title>Problems with RH Kernels after 2.4.20-9 and REJECT (also applies to
     2.4.21-RC1)</title>
 
-    <para> Beginning with errata kernel 2.4.20-13.9, &#34;REJECT --reject-with
-    tcp-reset&#34; is broken. The symptom most commonly seen is that REJECT
-    rules act just like DROP rules when dealing with TCP. A kernel patch and
-    precompiled modules to fix this problem are available at <ulink
-    url="ftp://ftp1.shorewall.net/pub/shorewall/errata/kernel">ftp://ftp1.shorewall.net/pub/shorewall/errata/kernel</ulink>.</para>
+    <para>Beginning with errata kernel 2.4.20-13.9, <quote>REJECT
+    --reject-with tcp-reset</quote> is broken. The symptom most commonly seen
+    is that REJECT rules act just like DROP rules when dealing with TCP. A
+    kernel patch and precompiled modules to fix this problem are available at
+    <ulink url="ftp://ftp1.shorewall.net/pub/shorewall/errata/kernel">ftp://ftp1.shorewall.net/pub/shorewall/errata/kernel</ulink>.</para>
   </section>
 </article>

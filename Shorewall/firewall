@@ -2722,7 +2722,7 @@ initialize_netfilter () {
     [ -n "$LOGNEWNOTSYN" ] && \
 	run_iptables -A newnotsyn -j LOG \
 	--log-prefix "Shorewall:newnotsyn:DROP:" --log-level $LOGNEWNOTSYN
-    run_iptables -A newnotsyn -p tcp -j DROP
+    run_iptables -A newnotsyn -j DROP	
 
     createchain icmpdef no
     createchain common	no

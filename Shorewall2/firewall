@@ -30,7 +30,7 @@
 #	   shorewall restart			  Restarts the firewall
 #	   shorewall stop			  Stops the firewall
 #	   shorewall status			  Displays firewall status
-#	   shorewall reset			  Resets iptabless packet and
+#	   shorewall reset			  Resets iptables packet and
 #						  byte counts
 #	   shorewall clear			  Remove all Shorewall chains
 #						  and rules/policies.
@@ -1303,10 +1303,10 @@ log_rule_limit() # $1 = log level, $2 = chain, $3 = display Chain $4 = dispositi
 
     case $level in
 	ULOG)
-	    $IPTABLES $command $chain $@ $limit -j ULOG $LOGPARMS --ulog-prefix "$prefix"
+	    run_iptables $command $chain $@ $limit -j ULOG $LOGPARMS --ulog-prefix "$prefix"
 	    ;;
 	*)
-	    $IPTABLES $command $chain $@ $limit -j LOG $LOGPARMS --log-level $level --log-prefix "$prefix"
+	    run_iptables $command $chain $@ $limit -j LOG $LOGPARMS --log-level $level --log-prefix "$prefix"
 	    ;;
     esac
 	

@@ -494,10 +494,17 @@ first_chains() #$1 = interface
 #
 find_hosts() # $1 = host zone
 {
-    local hosts
+    local hosts interface address addresses
 
     while read z hosts options; do
-	[ "x`expand $z`" = "x$1" ] && expandv hosts && echo `separate_list $hosts`
+	if [ "x`expand $z`" = "x$1" ]; then
+	    expandv hosts
+	    interface=${hosts%:*}
+	    addresses=${hosts#*:}
+	    for address in `separate_list $addresses`; do 
+		echo $interface:$address
+	    done
+	fi
     done < $TMP_DIR/hosts
 }
 
@@ -635,18 +642,20 @@ validate_hosts_file() {
 	r="$z $hosts $options"
 	validate_zone $z || startup_error "Invalid zone ($z) in record \"$r\""
 
+	interface=${hosts%:*}
+
+	list_search  $interface $all_interfaces || \
+	    startup_error "Unknown interface ($interface) in record \"$r\""
+
+	hosts=${hosts#*:}
+
 	for host in `separate_list $hosts`; do
-	    interface=${host%:*}
-
-	    list_search  $interface $all_interfaces || \
-		startup_error "Unknown interface ($interface) in record \"$r\""
-
 	    for option in `separate_list $options`; do
 		case $option in
 		    maclist|-)
 			;;
 		    routeback)
-			eval ${z}_routeback=\"$host \$${z}_routeback\"
+			eval ${z}_routeback=\"$interface:$host \$${z}_routeback\"
 			;;
 		    *)
 			error_message "Warning: Invalid option ($option) in record \"$r\""

@@ -14,6 +14,22 @@ Problems Corrected:
 3) Corrected a problem in Beta 1 where DNS names containing a "-" were
    mis-handled when they appeared in the DEST column of a rule.
 
+Migration Issues:
+
+1) In earlier versions, an undocumented feature allowed entries in
+   the host file as follows:
+
+      z    eth1:192.168.1.0/24,eth2:192.168.2.0/24
+
+   This capability was never documented and has been removed in 1.4.6
+   to allow entries of the following format:
+
+      z   eth1:192.168.1.0/24,192.168.2.0/24
+
+2) The NAT_ENABLED, MANGLE_ENABLED and MULTIPORT options have been
+   removed from /etc/shorewall/shorewall.conf. These capabilities are
+   now automatically detected by Shorewall (see below).
+
 New Features:
 
 1) A 'newnotsyn' interface option has been added. This option may be
@@ -118,6 +134,9 @@ New Features:
    construct an efficient set of rules that accept connections from a
    range of network addresses.
 
+   Note: If your shell only supports 32-bit signed arithmetic (ash or
+   dash) then the range may not span 128.0.0.0.
+
    Example:
 
       [root@gateway root]# shorewall iprange 192.168.1.4-192.168.12.9
@@ -133,3 +152,10 @@ New Features:
       192.168.12.0/29
       192.168.12.8/31
       [root@gateway root]#
+
+10) A list of host/net addresses is now allowed in an entry in
+    /etc/shorewall/hosts.
+
+    Example:
+
+	foo	eth1:192.168.1.0/24,192.168.2.0/24

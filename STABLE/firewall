@@ -3500,9 +3500,9 @@ add_common_rules() {
     logdisp() # $1 = Chain Name
     {
 	if [ "$RFC1918_LOG_LEVEL" = ULOG ]; then
-	    echo "ULOG --ulog-prefix Shorewall:${1}:DROP:"
+	    echo "ULOG $LOGPARMS --ulog-prefix Shorewall:${1}:DROP:"
 	else
-	    echo "LOG --log-prefix Shorewall:${1}:DROP: --log-level $RFC1918_LOG_LEVEL"
+	    echo "LOG $LOGPARMS --log-prefix Shorewall:${1}:DROP: --log-level $RFC1918_LOG_LEVEL"
 	fi
     }
     #

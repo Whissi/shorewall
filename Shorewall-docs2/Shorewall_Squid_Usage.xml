@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-07-20</pubdate>
+    <pubdate>2004-10-17</pubdate>
 
     <copyright>
       <year>2003-2004</year>
@@ -29,7 +29,8 @@
       1.2 or any later version published by the Free Software Foundation; with
       no Invariant Sections, with no Front-Cover, and with no Back-Cover
       Texts. A copy of the license is included in the section entitled
-      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
 
@@ -43,6 +44,13 @@
   <section>
     <title>Squid as a Transparent Proxy</title>
 
+    <important>
+      <para>This section gives instructions for transparent proxying of HTTP.
+      HTTPS (normally TCP port 443) <emphasis role="bold">cannot</emphasis> be
+      proxied transparently (stop and think about it for a minute; if HTTPS
+      could be transparently proxied, then how secure would it be?).</para>
+    </important>
+
     <caution>
       <para>Please observe the following general requirements:</para>
 
@@ -55,8 +63,8 @@
 
         <listitem>
           <para>The following instructions mention the files
-          /etc/shorewall/start and /etc/shorewall/init -- if you don&#39;t
-          have those files, siimply create them.</para>
+          /etc/shorewall/start and /etc/shorewall/init -- if you don't have
+          those files, siimply create them.</para>
         </listitem>
 
         <listitem>
@@ -84,8 +92,9 @@ MANGLE_ENABLED=Yes</programlisting>
     <caution>
       <para>In the instructions below, only TCP Port 80 is opened from the
       system running Squid to the internet. If your users require browsing
-      sites that use a port other than 80 (e.g., http://www.domain.tld:<emphasis
-      role="bold">8080</emphasis>) then you must open those ports as well.</para>
+      sites that use a port other than 80 (e.g.,
+      http://www.domain.tld:<emphasis role="bold">8080</emphasis>) then you
+      must open those ports as well.</para>
     </caution>
   </section>
 
@@ -151,17 +160,17 @@ REDIRECT  loc        3128     tcp      www              -          !206.124.146.
         <listitem>
           <para>* On your firewall system, issue the following command</para>
 
-          <programlisting><command>echo 202 www.out &#62;&#62; /etc/iproute2/rt_tables</command></programlisting>
+          <programlisting><command>echo 202 www.out &gt;&gt; /etc/iproute2/rt_tables</command></programlisting>
         </listitem>
 
         <listitem>
           <para>In /etc/shorewall/init, put:</para>
 
-          <programlisting><command>if [ -z &#34;`ip rule list | grep www.out`&#34; ] ; then
+          <programlisting><command>if [ -z "`ip rule list | grep www.out`" ] ; then
         ip rule add fwmark CA table www.out # Note 0xCA = 202
         ip route add default via 192.168.1.3 dev eth1 table www.out
         ip route flush cache
-        echo 0 &#62; /proc/sys/net/ipv4/conf/eth1/send_redirects
+        echo 0 &gt; /proc/sys/net/ipv4/conf/eth1/send_redirects
 fi</command></programlisting>
         </listitem>
 
@@ -213,7 +222,7 @@ loc       loc           ACCEPT</programlisting>
           execute the following commands after you have typed the iptables
           command above:</para>
 
-          <programlisting><command>iptables-save &#62; /etc/sysconfig/iptables
+          <programlisting><command>iptables-save &gt; /etc/sysconfig/iptables
 chkconfig --level 35 iptables on</command></programlisting>
         </listitem>
       </orderedlist>
@@ -230,13 +239,13 @@ chkconfig --level 35 iptables on</command></programlisting>
         <listitem>
           <para>On your firewall system, issue the following command</para>
 
-          <programlisting><command>echo 202 www.out &#62;&#62; /etc/iproute2/rt_tables</command></programlisting>
+          <programlisting><command>echo 202 www.out &gt;&gt; /etc/iproute2/rt_tables</command></programlisting>
         </listitem>
 
         <listitem>
           <para>In /etc/shorewall/init, put:</para>
 
-          <programlisting><command>if [ -z &#34;`ip rule list | grep www.out`&#34; ] ; then
+          <programlisting><command>if [ -z "`ip rule list | grep www.out`" ] ; then
         ip rule add fwmark CA table www.out # Note 0xCA = 202
         ip route add default via 192.0.2.177 dev eth1 table www.out
         ip route flush cache
@@ -244,7 +253,8 @@ fi</command></programlisting>
         </listitem>
 
         <listitem>
-          <para>Do <emphasis role="bold">one</emphasis> of the following:</para>
+          <para>Do <emphasis role="bold">one</emphasis> of the
+          following:</para>
 
           <orderedlist numeration="loweralpha">
             <listitem>
@@ -254,8 +264,10 @@ fi</command></programlisting>
             </listitem>
 
             <listitem>
-              <para>Set MARK_IN_FORWARD_CHAIN=No in <filename>/etc/shorewall/shorewall.conf</filename>
-              and add the following entry in <filename>/etc/shorewall/tcrules</filename>:</para>
+              <para>Set MARK_IN_FORWARD_CHAIN=No in
+              <filename>/etc/shorewall/shorewall.conf</filename> and add the
+              following entry in
+              <filename>/etc/shorewall/tcrules</filename>:</para>
 
               <programlisting>#MARK   SOURCE   DESTINATION    PROTOCOL    PORT
 202     eth2     0.0.0.0/0      tcp         80</programlisting>
@@ -272,7 +284,8 @@ fi</command></programlisting>
         </listitem>
 
         <listitem>
-          <para>In <filename>/etc/shorewall/rules</filename>, you will need:</para>
+          <para>In <filename>/etc/shorewall/rules</filename>, you will
+          need:</para>
 
           <programlisting>#ACTION   SOURCE   DEST   PROTO   DEST PORT(S)
 ACCEPT    loc      dmz    tcp     80
@@ -289,7 +302,7 @@ ACCEPT    dmz      net    tcp     80</programlisting>
           execute the following commands after you have typed the iptables
           command above:</para>
 
-          <programlisting><command>iptables-save &#62; /etc/sysconfig/iptables
+          <programlisting><command>iptables-save &gt; /etc/sysconfig/iptables
 chkconfig --level 35 iptables on</command></programlisting>
         </listitem>
       </orderedlist>

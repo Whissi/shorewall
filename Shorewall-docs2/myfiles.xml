@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-10-14</pubdate>
+    <pubdate>2004-10-16</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -48,7 +48,7 @@
 
     <caution>
       <para>The configuration shown here corresponds to Shorewall version
-      2.1.11. My configuration uses features not available in earlier
+      2.1.12. My configuration uses features not available in earlier
       Shorewall releases.</para>
     </caution>
 
@@ -669,7 +669,7 @@ ACCEPT          tx                              loc:192.168.1.5         all
   </section>
 
   <section>
-    <title>IPSEC Gateway (Ursa) Configuration</title>
+    <title>Wireless IPSEC Gateway (Ursa) Configuration</title>
 
     <para>As mentioned above, Ursa acts as an IPSEC gateway for the wireless
     network. It's view of the network is diagrammed in the following
@@ -677,18 +677,7 @@ ACCEPT          tx                              loc:192.168.1.5         all
 
     <graphic align="center" fileref="images/network1.png" valign="middle" />
 
-    <para>I've included the files that I used to configure that system -- some
-    of them are SuSE-specific.</para>
-
-    <section>
-      <title>shorewall.conf</title>
-
-      <blockquote>
-        <para>Only the changes from the defaults are shown.</para>
-
-        <programlisting>CLAMPMSS=1400 # There is an MTU problem between Tipper and the IMAP server at work. This corrects the problem</programlisting>
-      </blockquote>
-    </section>
+    <para>I've included the files that I used to configure that system.</para>
 
     <section>
       <title>zones</title>
@@ -728,7 +717,6 @@ fw              sec             ACCEPT
 fw              WiFi            ACCEPT
 sec             WiFi            NONE
 WiFi            sec             NONE
-WiFi            net             ACCEPT
 all             all             REJECT          info
 #LAST LINE -- DO NOT REMOVE</programlisting>
 
@@ -753,9 +741,16 @@ WiFi    eth1            192.168.3.255   nobogons,blacklist,maclist,routeback
       <title>ipsec</title>
 
       <blockquote>
+        <para>The mss=1400 in the OUT OPTIONS uses a feature added in 2.1.12
+        and sets the MSS field in forwarded TCP SYN packets from the 'sec'
+        zone to 1400. This works around a problem whereby ICMP
+        fragmentation-needed packets are being dropped somewhere between my
+        main firewall and the IMAP server at my work.</para>
+
         <programlisting>#ZONE   IPSEC   OPTIONS                 IN                      OUT
 #       ONLY                            OPTIONS                 OPTIONS
-sec     yes     mode=tunnel             tunnel-src=192.168.3.8  tunnel-dst=192.168.3.8
+sec     yes     mode=tunnel             -                       <emphasis
+            role="bold">mss=1400</emphasis>
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
 </programlisting>
       </blockquote>

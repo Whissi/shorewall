@@ -1577,10 +1577,10 @@ setup_mac_lists() {
     #
     for interface in $maclist_interfaces; do
 	case $interface in
-	    eth*)
+	    eth*|wlan*)
 		;;
 	    *)
-		fatal_error "Error: MAC verification is only supported on ethernet devices: $interface"
+		fatal_error "Error: MAC verification is only supported on ethernet and 802.11b devices: $interface"
 		;;
 	esac
 
@@ -3084,12 +3084,11 @@ setup_intrazone() # $1 = zone
 {
     eval hosts=\$${1}_hosts
 
-    if [ "$hosts" != "${hosts% *}" ] || \
-	have_interfaces_in_zone_with_option $1 multi
-    then
+    if have_interfaces_in_zone_with_option $1 multi; then
 	ensurechain ${1}2${1}
     fi
 }
+
 #
 # Add a record to the blacklst chain
 #
@@ -3521,10 +3520,10 @@ add_common_rules() {
 
 	if [ -n "$LOGUNCLEAN" ]; then
             if [ "$LOGUNCLEAN" = ULOG ]; then
-		logoptions="-j ULOG $LOGPARAMS --ulog-prefix Shorewall:badpkt:DROP:"
+		logoptions="-j ULOG $LOGPARMS --ulog-prefix Shorewall:badpkt:DROP:"
 		logoptions="$logoptions --log-ip-options"
 	    else
-		logoptions="-j LOG $LOGPARAMS --log-prefix Shorewall:badpkt:DROP:"
+		logoptions="-j LOG $LOGPARMS --log-prefix Shorewall:badpkt:DROP:"
 		logoptions="$logoptions --log-level $LOGUNCLEAN --log-ip-options"
 	    fi
 
@@ -3553,10 +3552,10 @@ add_common_rules() {
 	[ -z"$LOGUNCLEAN" ] && LOGUNCLEAN=info
 
 	if [ "$LOGUNCLEAN" = ULOG ]; then
-	    logoptions="-j ULOG $LOGPARAMS --ulog-prefix Shorewall:logpkt:LOG:"
+	    logoptions="-j ULOG $LOGPARMS --ulog-prefix Shorewall:logpkt:LOG:"
 	    logoptions="$logoptions --log-ip-options"
 	else
-	    logoptions="-j LOG $LOGPARAMS --log-prefix Shorewall:logpkt:LOG:"
+	    logoptions="-j LOG $LOGPARMS --log-prefix Shorewall:logpkt:LOG:"
 	    logoptions="$logoptions --log-level $LOGUNCLEAN --log-ip-options"
 	fi
 

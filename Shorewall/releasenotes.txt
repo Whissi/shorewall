@@ -135,10 +135,13 @@ New Features:
    will use all listed addresses/ranges in round-robin fashion.
 
 7) An /etc/shorewall/accounting file has been added to allow for 
-   traffic accounting. The file has two sections which will be
-   described in reverse order.
+   traffic accounting. The file has two sections.
 
-   The second seciton of the file has the following columns:
+   The first section of the file is optional and allows aggregation of
+   counter chains into other counter chains. It does this by allowing
+   you to create an accounting chain hierarchy.
+
+   The second section of the file has the following columns:
 
 	ACTION	      - What to do when a match is found.
 
@@ -149,9 +152,13 @@ New Features:
 				DONE	- Count the match and don't
 					  attempt to match any
 					  following accounting rules.
-				<chain> - The name of a chain. Shorewall
+				<chain> - The name of a chain that is
+					  to be jumped to. Shorewall
 					  will create the chain
-					  automatically. If the name of
+					  automatically if it was not
+					  created by a CHAIN entry in
+					  the first section of the
+					  file. If the name of
 					  the chain is followed by
 					  ":DONE" then after control
 					  returns from the named chain,
@@ -199,7 +206,43 @@ New Features:
    named chain and the second is a RETURN rule which causes the
    accounting chain to be exited.
 
-   The first section of the file allows aggregation of counters in
-   chains in other chains. It does this by allowing you to create an
-   accounting chain hierarchy. This facility is described with an
-   example at http://shorewall.net/Accounting.html.
+   Examples:
+
+	COUNT		eth0		eth1   # Count traffic going through the
+					       # router from eth0 to eth1
+	COUNT		eth0:206.124.146.177   # Count traffic from my
+					       # server arriving on
+					       # eth0
+	DONE		eth0		eth1:192.168.1.24
+					       # Count traffic entering
+					       # eth0 and going to host
+					       # 192.168.1.24 on
+					       # eth1. Don't check for
+					       # any more matches.
+   Example using CHAIN:
+
+        # This example shows how you can aggretate two counters. The
+        # counters being aggregated are input and output counters on
+        # the device 'ppp0'
+
+	CHAIN		tunnel		       # Create a chain called 'tunnel'
+	CHAIN		tunnelin	tunnel # Create a chain called
+					       # 'tunnelin' with all
+					       # traffic sent to
+					       # 'tunnelin' being sent
+					       # on to 'tunnel'
+	CHAIN		tunnelout	tunnel # Create a chain called
+					       # 'tunnelout' with all
+					       # traffic sent to
+					       # 'tunnelout' being sent
+					       # on to 'tunnel'
+					       # any more matches
+	tunnelin	ppp0		       # send all traffic from
+					       # ppp0 to the chain called
+					       # 'tunnelin'
+	tunnelout	any		ppp0   # send all traffic to 
+					       # ppp0 to the chain called
+					       # 'tunnelout'
+        
+ 
+					       

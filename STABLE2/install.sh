@@ -185,7 +185,7 @@ mkdir -p ${PREFIX}/var/lib/shorewall     && chmod 700 ${PREFIX}/var/lib/shorewal
 if [ -f ${PREFIX}/etc/shorewall/shorewall.conf ]; then
    backup_file /etc/shorewall/shorewall.conf
 else
-   run_install -o $OWNER -g $GROUP -m 0744 shorewall.conf ${PREFIX}/etc/shorewall/shorewall.conf
+   run_install -o $OWNER -g $GROUP -m 0600 shorewall.conf ${PREFIX}/etc/shorewall/shorewall.conf
    echo
    echo "Config file installed as ${PREFIX}/etc/shorewall/shorewall.conf"
 fi
@@ -195,7 +195,7 @@ fi
 if [ -f ${PREFIX}/etc/shorewall/zones ]; then
     backup_file /etc/shorewall/zones
 else
-    run_install -o $OWNER -g $GROUP -m 0744 zones ${PREFIX}/etc/shorewall/zones
+    run_install -o $OWNER -g $GROUP -m 0600 zones ${PREFIX}/etc/shorewall/zones
     echo
     echo "Zones file installed as ${PREFIX}/etc/shorewall/zones"
 fi

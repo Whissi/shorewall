@@ -670,15 +670,15 @@ determine_hosts() {
 		networks=0.0.0.0/0
 	    fi
 
-	    for networks in $networks; do
+	    for network in $networks; do
 		if [ -z "$hosts" ]; then
-		    hosts=$interface:$networks
+		    hosts=$interface:$network
 		else
-		    hosts="$hosts $interface:$networks"
+		    hosts="$hosts $interface:$network"
 		fi
 
 		if interface_has_option $interface routeback; then
-		    eval ${zone}_routeback=\"$interface:$networks \$${zone}_routeback\"
+		    eval ${zone}_routeback=\"$interface:$network \$${zone}_routeback\"
 		fi
 	    done
 	done

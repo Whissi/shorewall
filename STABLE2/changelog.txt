@@ -14,3 +14,20 @@ Change in 2.0.6
 
        shorewall.conf
        firewall
+
+2) Sanitized some correct but confusing code in determine_hosts().
+
+   There was a loop:
+
+	 for networks in $networks
+	 ...
+
+   It now reads:
+
+	 for network in $networks
+	 ... 
+
+
+3) Don't give shorewall.conf and zones execute permission.
+
+  

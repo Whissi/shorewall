@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-03-16</pubdate>
+    <pubdate>2004-04-03</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -135,8 +135,7 @@
     /etc/network/interfaces file (see below) adds a host route to
     206.124.146.177 through eth1 when that interface is brought up.</para>
 
-    <para>Ursa (192.168.1.5 A.K.A. 206.124.146.178) runs a PPTP server for
-    Road Warrior access.</para>
+    <para>Tarry (192.168.1.4) runs a PPTP server for Road Warrior access.</para>
   </section>
 
   <section>
@@ -464,8 +463,8 @@ Mirrors         net                             dmz                     tcp     
 #
 # When I&#39;m &#34;on the road&#34;, the following two rules allow me VPN access back home.
 #
-ACCEPT          net                             loc:192.168.1.5         tcp     1723
-ACCEPT          net                             loc:192.168.1.5         gre
+DNAT            net                             loc:192.168.1.4         tcp     1723
+DNAT            net                             loc:192.168.1.4         gre
 #
 # ICQ
 #

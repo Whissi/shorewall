@@ -13,7 +13,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-02-18</pubdate>
+    <pubdate>2004-03-27</pubdate>
 
     <copyright>
       <year>2001-2002</year>
@@ -40,35 +40,41 @@
     </abstract>
   </articleinfo>
 
-  <note>
-    <para>Beginning with Shorewall 2.0.0, the Shorewall distribution contains
-    a library of user-defined actions that allow for easily allowing or
-    blocking a particular application. Check your <filename>/etc/shorewall/actions.std</filename>
-    file for a list of the actions in your distribution. If you find what you
-    need, you simply use the action in a rule. For example, to allow DNS
-    queries from the <emphasis role="bold">dmz</emphasis> zone to the
-    <emphasis role="bold">net</emphasis> zone:</para>
+  <section>
+    <title>Important Notes</title>
 
-    <programlisting>#ACTION         SOURCE        DESTINATION
-AllowPing       dmz           net</programlisting>
-  </note>
+    <note>
+      <para>Beginning with Shorewall 2.0.0, the Shorewall distribution
+      contains a library of user-defined actions that allow for easily
+      allowing or blocking a particular application. Check your
+      <filename>/etc/shorewall/actions.std</filename> file for a list of the
+      actions in your distribution. If you find what you need, you simply use
+      the action in a rule. For example, to allow DNS queries from the
+      <emphasis role="bold">dmz</emphasis> zone to the <emphasis role="bold">net</emphasis>
+      zone:</para>
 
-  <note>
-    <para>In the rules that are shown in this document, the ACTION is shown as
-    ACCEPT. You may need to use DNAT (see <ulink url="FAQ.htm#faq30">FAQ 30</ulink>)
-    or you may want DROP or REJECT if you are trying to block the application.</para>
+      <programlisting>#ACTION         SOURCE        DESTINATION
+AllowDNS       dmz           net</programlisting>
+    </note>
 
-    <para>Example: You want to port forward FTP from the net to your server at
-    192.168.1.4 in your DMZ. The FTP section below gives you:</para>
+    <note>
+      <para>In the rules that are shown in this document, the ACTION is shown
+      as ACCEPT. You may need to use DNAT (see <ulink url="FAQ.htm#faq30">FAQ
+      30</ulink>) or you may want DROP or REJECT if you are trying to block
+      the application.</para>
 
-    <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
+      <para>Example: You want to port forward FTP from the net to your server
+      at 192.168.1.4 in your DMZ. The FTP section below gives you:</para>
+
+      <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
 ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        21</programlisting>
 
-    <para>You would code your rule as follows:</para>
+      <para>You would code your rule as follows:</para>
 
-    <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
+      <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
 DNAT       net       dmz:192.168.1.4  tcp        21</programlisting>
-  </note>
+    </note>
+  </section>
 
   <section>
     <title>Auth (identd)</title>

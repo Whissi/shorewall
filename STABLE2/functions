@@ -470,9 +470,9 @@ broadcastaddress() {
 }
 
 #
-# Test for subnet membership
+# Test for network membership
 #
-in_subnet() # $1 = IP address, $2 = CIDR network
+in_network() # $1 = IP address, $2 = CIDR network
 {
     local netmask=$(ip_netmask $2)
 
@@ -502,11 +502,11 @@ ip_vlsm() {
 
 #
 # Chain name base for an interface -- replace all periods with underscores in the passed name.
-#                                     The result is echoed (less "+" and anything following).
+#                                     The result is echoed (less trailing "+").
 #
 chain_base() #$1 = interface
 {
-    local c=${1%%+*}
+    local c=${1%%+}
 
     while true; do
 	case $c in
@@ -525,28 +525,24 @@ chain_base() #$1 = interface
 }
 
 #
-# Remove trailing digits from a name
-#
-strip_trailing_digits() {
-    echo $1 | sed s'/[0-9].*$//'
-}
-
-#
 # Loosly Match the name of an interface
 #
 
 if_match() # $1 = Name in interfaces file - may end in "+"
-           # $2 = Name from routing table
+           # $2 = Full interface name - may also end in "+"
 {
-    local if_file=$1
-    local rt_table=$2
-
-    case $if_file in
+    local pattern=${1%+}
+    
+    case $1 in
 	*+)
-	    test "$(strip_trailing_digits $rt_table)" = "${if_file%+}"
+	    #
+	    # Can't use ${2:0:${#pattern}} because ash and dash don't support that flavor of
+	    # variable expansion :-(
+	    #
+	    test  "x$(echo $2 | cut -b -${#pattern} )" = "x${pattern}"
 	    ;;
 	*)
-	    test "$rt_table" = "$if_file"
+	    test "x$1" = "x$2"
 	    ;;
     esac
 }
@@ -571,7 +567,7 @@ find_rt_interface() {
     ip route ls | while read addr rest; do
 	case $addr in
 	    */*)
-		in_subnet ${1%/*} $addr && echo $(find_device $rest)
+		in_network ${1%/*} $addr && echo $(find_device $rest)
 		;;
 	    default)
 		;;

@@ -1,5 +1,5 @@
 %define name shorewall
-%define version 2.0.0b
+%define version 2.0.1
 %define release 1
 %define prefix /usr
 
@@ -78,6 +78,7 @@ fi
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/interfaces
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/rules
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/nat
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/netmap
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/params
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/proxyarp
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/routestopped
@@ -133,14 +134,31 @@ fi
 %attr(0544,root,root) /usr/share/shorewall/firewall
 %attr(0544,root,root) /usr/share/shorewall/help
 %attr(0600,root,root) /usr/share/shorewall/rfc1918
+%attr(0600,root,root) /usr/share/shorewall/bogons
 
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel
 
 %changelog
-* Sat Mar 20 2004 Tom Eastep <tom@shorewall.net>
-- Update for 2.0.0b
+* Mon Apr 05 2004 Tom Eastep tom@shorewall.net
+- Updated for 2.0.1-1
+* Thu Apr 02 2004 Tom Eastep tom@shorewall.net
+- Updated for 2.0.1 RC5
+* Thu Apr 01 2004 Tom Eastep tom@shorewall.net
+- Updated for 2.0.1 RC4
+* Sun Mar 28 2004 Tom Eastep tom@shorewall.net
+- Updated for 2.0.1 RC3
+* Thu Mar 25 2004 Tom Eastep tom@shorewall.net
+- Updated for 2.0.1 RC2
+* Wed Mar 24 2004 Tom Eastep tom@shorewall.net
+- Updated for 2.0.1 RC1
+* Fri Mar 19 2004 Tom Eastep tom@shorewall.net
+- Updated for 2.0.1 Beta 2
+* Thu Mar 18 2004 Tom Eastep tom@shorewall.net
+- Added netmap file
 * Wed Mar 17 2004 Tom Eastep <tom@shorewall.net>
-- Update for 2.0.0a
+- Update for 2.0.1 Beta 1
+* Wed Mar 17 2004 Tom Eastep <tom@shorewall.net>
+- Add bogons file
 * Sat Mar 13 2004 Tom Eastep <tom@shorewall.net>
 - Update for 2.0.0 Final
 * Sat Mar 06 2004 Tom Eastep <tom@shorewall.net>

@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-03-06</pubdate>
+    <pubdate>2004-04-05</pubdate>
 
     <copyright>
       <year>2004</year>
@@ -68,20 +68,19 @@
   <section>
     <title>Requirements</title>
 
-    <para>In order to use Shorewall with a bridging firewall, your kernel must
-    meet the following requirements:</para>
+    <para>In order to use Shorewall with a bridging firewall:</para>
 
     <itemizedlist>
       <listitem>
-        <para>It must contain bridge support (CONFIG_BRIDGE=m or
+        <para>Your kernel must contain bridge support (CONFIG_BRIDGE=m or
         CONFIG_BRIDGE=y).</para>
       </listitem>
 
       <listitem>
-        <para>It must contain Netfilter physdev match support
+        <para>Your kernel must contain Netfilter physdev match support
         (CONFIG_IP_NF_MATCH_PHYSDEV=m or CONFIG_IP_NF_MATCH_PHYSDEV=y).
-        Physdev match is available in the 2.6 kernel series but must be
-        patched into the 2.4 kernels (see <ulink url="http://bridge.sf.net">http://bridge.sf.net</ulink>).</para>
+        Physdev match is standard in the 2.6 kernel series but must be patched
+        into the 2.4 kernels (see <ulink url="http://bridge.sf.net">http://bridge.sf.net</ulink>).</para>
       </listitem>
 
       <listitem>
@@ -93,11 +92,11 @@
         <para>You must have the bridge utilities (bridge-utils) package
         installed.</para>
       </listitem>
-    </itemizedlist>
 
-    <para>You must also be running Shorewall 2.0.1 or later (users running
-    Shorewall 2.0.0-RC* or Shorewall-2.0.0 may find the necessary updated
-    files at <ulink url="http://shorewall.net/pub/shorewall/Bridging">http://shorewall.net/pub/shorewall/Bridging</ulink>).</para>
+      <listitem>
+        <para>You must be running Shorewall 2.0.1 Beta 1 or later.</para>
+      </listitem>
+    </itemizedlist>
   </section>
 
   <section>
@@ -145,7 +144,9 @@
     <para>There are other possibilities here -- there could be a hub or switch
     between the router and the Bridge/Firewall and there could be other
     systems connected to that switch. All of the systems on the local side of
-    the router would still be configured with IP addresses in 192.168.1.0/24.</para>
+    the <emphasis role="bold">router</emphasis> would still be configured with
+    IP addresses in 192.168.1.0/24 as shown below.<graphic
+    fileref="images/bridge3.png" /></para>
   </section>
 
   <section>
@@ -160,11 +161,13 @@
     configuration tools and the network configuration GUIs don&#39;t detect
     the presence of bridge devices. You may refer to <ulink
     url="http://shorewall.net/2.0/myfiles.htm">my configuration files</ulink>
-    for an example of configuring a bridge at system boot under
+    for an example of configuring a three-port bridge at system boot under
     <trademark>SuSE</trademark>. Here is an excerpt from a Debian
-    <filename>/etc/network/interfaces</filename> file for a bridge:</para>
+    <filename>/etc/network/interfaces</filename> file for a two-port bridge
+    with a static IP address:</para>
 
-    <programlisting>auto br0
+    <blockquote>
+      <programlisting>auto br0
 iface br0 inet static
         address 192.168.1.253
         netmask 255.255.255.0
@@ -174,14 +177,68 @@ iface br0 inet static
         pre-up /sbin/ip link set eth1 up
         pre-up /usr/sbin/brctl addbr br0
         pre-up /usr/sbin/brctl addif br0 eth0
-        pre-up /usr/sbin/brctl addif br0 eth1
-gateway:/etc/network#</programlisting>
+        pre-up /usr/sbin/brctl addif br0 eth1</programlisting>
+    </blockquote>
 
     <para>While it is not a requirement to give the bridge an IP address,
     doing so allows the bridge/firewall to access other systems and allows the
-    bridge/firewall to be managed remotely. I have not tested Shorewall with a
-    bridge configured without an IP address so if you try it and it
-    doesn&#39;t work do not be surprised.</para>
+    bridge/firewall to be managed remotely. The bridge must also have an IP
+    address for REJECT rules and policies to work correctly — otherwise REJECT
+    behaves the same as DROP.</para>
+
+    <para>The bridge may have its IP address assigned via DHCP. Here&#39;s an
+    example of an /etc/sysconfig/network/ifcfg-br0 file from a
+    <trademark>SuSE</trademark> system:</para>
+
+    <blockquote>
+      <programlisting>BOOTPROTO=&#39;dhcp&#39;
+REMOTE_IPADDR=&#39;&#39;
+STARTMODE=&#39;onboot&#39;
+UNIQUE=&#39;3hqH.MjuOqWfSZ+C&#39;
+WIRELESS=&#39;no&#39;
+MTU=&#39;&#39;</programlisting>
+    </blockquote>
+
+    <para>Here&#39;s an /etc/sysconfig/network-scripts/ifcfg-br0 file for a
+    <trademark>Mandrake</trademark> system:</para>
+
+    <blockquote>
+      <programlisting>DEVICE=br0
+BOOTPROTO=dhcp
+ONBOOT=yes</programlisting>
+    </blockquote>
+
+    <para>On both the SuSE and Mandrake systems, a separate script is required
+    to configure the bridge itself (again see <ulink url="myfiles.htm">my
+    configuration files</ulink> for an example - <filename>/etc/init.d/bridge</filename>).</para>
+
+    <para>Axel Westerhold has contributed this example of configuring a bridge
+    with a static IP address on a Fedora System (Core 1 and Core 2 Test 1).
+    Note that these files also configure the bridge itself so there is no need
+    for a separate bridge config script.</para>
+
+    <blockquote>
+      <para><filename>/etc/sysconfig/network-scripts/ifcfg-br0:</filename></para>
+
+      <programlisting>DEVICE=br0
+TYPE=Bridge
+IPADDR=192.168.50.14
+NETMASK=255.255.255.0
+ONBOOT=yes</programlisting>
+
+      <para><filename>/etc/sysconfig/network-scripts/ifcfg-eth0:</filename><programlisting>DEVICE=eth0
+TYPE=ETHER
+BRIDGE=br0
+ONBOOT=yes</programlisting><filename>/etc/sysconfig/network-scripts/ifcfg-eth1:</filename><programlisting>DEVICE=eth1
+TYPE=ETHER
+BRIDGE=br0
+ONBOOT=yes</programlisting></para>
+    </blockquote>
+
+    <para>Users who successfully configure bridges on other distributions,
+    with static or dynamic IP addresses, are encouraged to send <ulink
+    url="mailto:webmaster@shorewall.net">me</ulink> their configuration so I
+    can post it here.</para>
   </section>
 
   <section>
@@ -260,7 +317,7 @@ br0             192.168.1.0/24  routeback
       <listitem>
         <para>The <filename>/etc/shorewall/interfaces</filename> file is as
         follows:<programlisting>#ZONE    INTERFACE      BROADCAST     OPTIONS
--        br0            detect        rfc1918,routefilter
+-        br0            detect        routefilter
 loc      eth1           detect</programlisting></para>
       </listitem>
 
@@ -277,7 +334,7 @@ dmz      br0:eth2</programlisting>
   <section>
     <title>Limitations</title>
 
-    <para>Bridging doesn&#39; t work with some wireless cards — see <ulink
+    <para>Bridging doesn&#39; t work with wireless cards — see <ulink
     url="http://bridge.sf.net">http://bridge.sf.net</ulink>.</para>
   </section>
 </article>

@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-02-15</pubdate>
+    <pubdate>2004-03-28</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -224,6 +224,16 @@
           <para>a parameter file in <filename class="directory">/usr/share/shorewall</filename>
           used to define the treatment of packets under the <link
           linkend="Interfaces">norfc1918 interface option</link>.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><link linkend="Bogons">bogons</link></term>
+
+        <listitem>
+          <para>a parameter file in <filename class="directory">/usr/share/shorewall</filename>
+          used to define the treatment of packets under the <link
+          linkend="Interfaces">nobogons interface option</link>.</para>
         </listitem>
       </varlistentry>
 
@@ -554,18 +564,15 @@ dmz        DMZ            Demilitarized zone</programlisting>
 
               <listitem>
                 <para>Packets arriving on this interface and that have a
-                source address that is reserved in RFC 1918 or in other RFCs
-                will be dropped after being optionally logged. If <link
-                linkend="Conf">packet mangling is enabled in
-                <filename>/etc/shorewall/shorewall.conf</filename></link> ,
-                then packets arriving on this interface that have a
-                destination address that is reserved by one of these RFCs will
-                also be logged and dropped.</para>
+                source or destination address that is reserved in RFC 1918
+                will be dropped after being optionally logged.</para>
 
-                <para>Addresses blocked by the standard <link
-                linkend="rfc1918">rfc1918 file</link> include those addresses
-                reserved by RFC1918 plus other ranges reserved by the IANA or
-                by other RFCs.</para>
+                <para>Prior to Shorewall 2.0.1, addresses blocked by the
+                standard <link linkend="rfc1918">rfc1918 file</link> include
+                those addresses reserved by RFC1918 plus other ranges reserved
+                by the IANA or by other RFCs. Beginning with Shorewall 2.0.1,
+                these additional addresses are covered by the <emphasis
+                role="bold">nobogons</emphasis> option below.</para>
 
                 <para>Beware that as IPv4 addresses become in increasingly
                 short supply, ISPs are beginning to use RFC 1918 addresses
@@ -576,6 +583,17 @@ dmz        DMZ            Demilitarized zone</programlisting>
                 on your external interface but need to allow access to certain
                 addresses from the above list, see <ulink url="FAQ.htm#faq14">FAQ
                 14</ulink>.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>nobogons (Added in Shorewall 2.0.1)</term>
+
+              <listitem>
+                <para>Packets arriving on this interface that have a source
+                address reserved by the IANA or by other RFCs (other than
+                1918) are dropped after being optionally logged. See the
+                /etc/shorewall/bogons file documentation below.</para>
               </listitem>
             </varlistentry>
 
@@ -731,21 +749,31 @@ loc      eth1         192.168.1.255,192.168.12.255</programlisting>
         <term>HOST(S)</term>
 
         <listitem>
-          <para>The name of a network interface followed by a colon (<quote>:</quote>)
-          followed by a comma-separated list either:</para>
+          <para>The name of an interface defined in the <link
+          linkend="Interfaces">/etc/shorewall/interfaces</link> file followed
+          by a colon (&#34;:&#34;) and a comma-separated list whose elements
+          are either:</para>
 
           <orderedlist>
             <listitem>
-              <para>An IP address (example - eth1:192.168.1.3)</para>
+              <para>The IP address of a host</para>
             </listitem>
 
             <listitem>
-              <para>A subnet in CIDR notation (example - eth2:192.168.2.0/24)</para>
+              <para>A subnetwork in the form &#60;<emphasis>subnet-address</emphasis>&#62;/&#60;<emphasis>mask
+              width</emphasis>&#62;</para>
+            </listitem>
+
+            <listitem>
+              <para>A physical port name (Shorewall version 2.0.1 and later);
+              only allowed when the interface names a bridge created by the
+              <command>brctl addbr </command>command. This port must not be
+              defined in <filename>/etc/shorewall/interfaces</filename> and
+              may optionally followed by a colon (&#34;:&#34;) and a host or
+              network IP. See the <ulink url="bridge.html">bridging
+              documentation</ulink> for details.</para>
             </listitem>
           </orderedlist>
-
-          <para>The interface name much match an entry in
-          <filename>/etc/shorewall/interfaces</filename>.</para>
 
           <warning>
             <para>If you are running a version of Shorewall earlier than
@@ -780,6 +808,69 @@ loc      eth1         192.168.1.255,192.168.12.255</programlisting>
                 requests from the hosts specified in this entry are subject to
                 <ulink url="MAC_Validation.html">MAC Verification</ulink>.
                 This option is only valid for ethernet interfaces.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>tcpflags (Added in Shorewall 2.0.1)</term>
+
+              <listitem>
+                <para>(added in version 1.3.11) - This option causes Shorewall
+                to make sanity checks on the header flags in TCP packets
+                arriving from these hosts. Checks include Null flags, SYN+FIN,
+                SYN+RST and FIN+URG+PSH; these flag combinations are typically
+                used for <quote>silent</quote> port scans. Packets failing
+                these checks are logged according to the TCP_FLAGS_LOG_LEVEL
+                option in <xref linkend="Conf" /> and are disposed of
+                according to the TCP_FLAGS_DISPOSITION option.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>blacklist (Added in Shorewall 2.0.1 -- only makes sense
+              for bridge ports)</term>
+
+              <listitem>
+                <para>This option causes incoming packets on this port to be
+                checked against the <link linkend="Blacklist">blacklist</link>.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>norfc1918 (Added in Shorewall 2.0.1 -- only makes sense
+              for bridge ports)</term>
+
+              <listitem>
+                <para>Packets arriving on this port and that have a source
+                address that is reserved in RFC 1918 will be dropped after
+                being optionally logged as specified in the settion of
+                RFC1918_LOG_LEVEL in shorewall.conf.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>nobogons (Added in Shorewall 2.0.1 -- only makes sense for
+              bridge ports)</term>
+
+              <listitem>
+                <para>Packets arriving on this port that have a source address
+                reserved by the IANA or by other RFCs (other than 1918) are
+                dropped after being optionally logged. See the
+                /etc/shorewall/bogons file documentation below.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>nosmurfs (Added in Shorewall 2.0.1 -- only makes sense for
+              bridge ports)</term>
+
+              <listitem>
+                <para>If this option is specified, incoming connection
+                requests will be checked to ensure that they do not have a
+                broadcast or multicast address as their source. Any such
+                packets will be dropped after being optionally logged
+                according to the setting of SMURF_LOG_LEVEL in <link
+                linkend="Conf">/etc/shorewall/shorewall.conf</link>.</para>
               </listitem>
             </varlistentry>
           </variablelist>
@@ -2139,6 +2230,15 @@ eth0                  192.168.12.0/24 206.124.146.177,206.124.146.179</programli
 
     <variablelist>
       <varlistentry>
+        <term>BRIDGING</term>
+
+        <listitem>
+          <para>(Added at version 2.0.1) - When set to Yes or yes, enables
+          <ulink url="bridge.html">Shorewall Bridging support</ulink>.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term>SMURF_LOG_LEVEL</term>
 
         <listitem>
@@ -2269,6 +2369,18 @@ eth0                  192.168.12.0/24 206.124.146.177,206.124.146.179</programli
           url="shorewall_logging.html">syslog level</ulink> and if no level is
           given, then info is assumed. Prior to Shorewall version 1.3.12,
           these packets are always logged at the info level.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>BOGON_LOG_LEVEL</term>
+
+        <listitem>
+          <para>(Added at version 2.0.1) - This parameter determines the level
+          at which packets logged under the <link linkend="rfc1918"><quote>nobogons</quote>
+          mechanism</link> are logged. The value must be a valid <ulink
+          url="shorewall_logging.html">syslog level</ulink> and if no level is
+          given, then info is assumed.</para>
         </listitem>
       </varlistentry>
 
@@ -2455,7 +2567,17 @@ eth0                  192.168.12.0/24 206.124.146.177,206.124.146.179</programli
           <example>
             <title></title>
 
-            <programlisting>LOGRATE=10/minute LOGBURST=5</programlisting>
+            <programlisting>LOGRATE=10/minute
+LOGBURST=5</programlisting>
+
+            <para>For each logging rule, the first time the rule is reached,
+            the packet will be logged; in fact, since the burst is 5, the
+            first five packets will be logged. After this, it will be 6
+            seconds (1 minute divided by the rate of 10) before a message will
+            be logged from the rule, regardless of how many packets reach it.
+            Also, every 6 seconds which passes without matching a packet, one
+            of the bursts will be regained; if no packets hit the rule for 30
+            seconds, the burst will be fully recharged; back where we started.</para>
           </example>
         </listitem>
       </varlistentry>
@@ -2907,6 +3029,116 @@ all      all     tcp         ftp-data          -               8</programlisting
     modify the copy.</para>
   </section>
 
+  <section id="Bogons" xreflabel="/etc/shorewall/rfc1918">
+    <title>/usr/share//shorewall/bogons — Added in Version 2.0.1</title>
+
+    <para>This file lists the subnets affected by the <link
+    linkend="Interfaces">nobogons interface option</link> and <link
+    linkend="Hosts">nobogons hosts option</link>. Columns in the file are:</para>
+
+    <variablelist>
+      <varlistentry>
+        <term>SUBNET</term>
+
+        <listitem>
+          <para>The subnet using VLSM notation (e.g., 192.168.0.0/16).</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>TARGET</term>
+
+        <listitem>
+          <para>What to do with packets to/from the SUBNET:</para>
+
+          <variablelist>
+            <varlistentry>
+              <term>RETURN</term>
+
+              <listitem>
+                <para>Process the packet normally thru the rules and policies.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>DROP</term>
+
+              <listitem>
+                <para>Silently drop the packet.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>logdrop</term>
+
+              <listitem>
+                <para>Log then drop the packet -- see the <link linkend="Conf">BOGONS_LOG_LEVEL</link>
+                parameter above.</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+
+    <para>If you want to modify this file, DO NOT MODIFY <filename>/usr/share/shorewall/bogons</filename>.
+    Rather copy that file to <filename>/etc/shorewall/bogons </filename>and
+    modify the copy.</para>
+  </section>
+
+  <section id="Netmap">
+    <title>/etc/shorewall/netmap (Added in Version 2.0.1)</title>
+
+    <para>Network mapping is defined using the <filename>/etc/shorewall/netmap</filename>
+    file. Columns in this file are:</para>
+
+    <variablelist>
+      <varlistentry>
+        <term>TYPE</term>
+
+        <listitem>
+          <para>Must be DNAT or SNAT.</para>
+
+          <para>If DNAT, traffic entering INTERFACE and addressed to NET1 has
+          it&#39;s destination address rewritten to the corresponding address
+          in NET2.</para>
+
+          <para>If SNAT, traffic leaving INTERFACE with a source address in
+          NET1 has it&#39;s source address rewritten to the corresponding
+          address in NET2.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>NET1</term>
+
+        <listitem>
+          <para>Must be expressed in CIDR format (e.g., 192.168.1.0/24).</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>INTERFACE</term>
+
+        <listitem>
+          <para>A firewall interface. This interface must have been defined in
+          <ulink url="Documentation.htm#Interfaces"><filename>/etc/shorewall/interfaces</filename></ulink>.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>NET2</term>
+
+        <listitem>
+          <para>A second network expressed in CIDR format.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+
+    <para>For more information, see the <ulink url="netmap.html">Network
+    Mapping documentation</ulink>.</para>
+  </section>
+
   <section id="Routestopped" xreflabel="/etc/shorewall/routestopped">
     <title>/etc/shorewall/routestopped (Added in Version 1.3.4)</title>
 
@@ -2968,7 +3200,8 @@ eth1                -</programlisting>
   <appendix>
     <title>Revision History</title>
 
-    <para><revhistory><revision><revnumber>1.15</revnumber><date>2004-02-16</date><authorinitials>TE</authorinitials><revremark>Move
+    <para><revhistory><revision><revnumber>1.16</revnumber><date>2004-03-17</date><authorinitials>TE</authorinitials><revremark>Clarified
+    LOGBURST and LOGLIMIT.</revremark></revision><revision><revnumber>1.15</revnumber><date>2004-02-16</date><authorinitials>TE</authorinitials><revremark>Move
     the rfc1918 file to /usr/share/shorewall.</revremark></revision><revision><revnumber>1.14</revnumber><date>2004-02-13</date><authorinitials>TE</authorinitials><revremark>Add
     a note about the order of rules.</revremark></revision><revision><revnumber>1.13</revnumber><date>2004-02-03</date><authorinitials>TE</authorinitials><revremark>Update
     for Shorewall 2.0.</revremark></revision><revision><revnumber>1.12</revnumber><date>2004-01-21</date><authorinitials>TE</authorinitials><revremark>Add

@@ -22,7 +22,7 @@
 #       Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
 #
 
-VERSION=2.0.0b
+VERSION=2.0.1
 
 usage() # $1 = exit status
 {
@@ -270,6 +270,16 @@ else
     echo "NAT file installed as ${PREFIX}/etc/shorewall/nat"
 fi
 #
+# Install the NETMAP file
+#
+if [ -f ${PREFIX}/etc/shorewall/netmap ]; then
+    backup_file /etc/shorewall/netmap
+else
+    run_install -o $OWNER -g $GROUP -m 0600 netmap ${PREFIX}/etc/shorewall/netmap
+    echo
+    echo "NETMAP file installed as ${PREFIX}/etc/shorewall/netmap"
+fi
+#
 # Install the Parameters file
 #
 if [ -f ${PREFIX}/etc/shorewall/params ]; then
@@ -383,6 +393,12 @@ fi
 install_file_with_backup rfc1918 ${PREFIX}/usr/share/shorewall/rfc1918 0600
 echo
 echo "RFC 1918 file installed as ${PREFIX}/etc/shorewall/rfc1918"
+#
+# Install the bogons file
+#
+install_file_with_backup bogons ${PREFIX}/usr/share/shorewall/bogons 0600
+echo
+echo "Bogon file installed as ${PREFIX}/etc/shorewall/bogons"
 #
 # Install the init file
 #

@@ -42,7 +42,9 @@ Netfilter to match your requirements. Shorewall can be used on a
 dedicated firewall system, a multi-function gateway/router/server
 or on a standalone GNU/Linux system. Shorewall does not use
 Netfilter's ipchains compatibility mode and can thus take advantage
-of Netfilter's connection state tracking capabilities.
+of Netfilter's <a
+ href="http://www.cs.princeton.edu/%7Ejns/security/iptables/iptables_conntrack.html">connection
+state tracking capabilities</a>.
       <p>This program is free software; you can redistribute it and/or
 modify it under the terms of <a
  href="http://www.gnu.org/licenses/gpl.html">Version 2 of the GNU
@@ -75,6 +77,16 @@ Shorewall. For older versions:<br>
  target="_top">here</a>.<br>
         </li>
       </ul>
+      <h2>Read about</h2>
+You can <a
+ href="http://lists.shorewall.net/pipermail/shorewall-users/2004-February/011163.html">prepare
+for 2.0</a> while you are still running Shorewall 1.4.<br>
+      <br>
+The <a href="http://shorewall.net/pub/shorewall/Beta">Shorewall 2.0.0
+RC2</a> is available!<br>
+      <br>
+Here's the <a href="http://shorewall.net/2.0/Documentation_Index.html">Shorewall
+2.0.0 Documentation</a>.<br>
       <h2>Getting Started with Shorewall</h2>
 New to Shorewall? Start by selecting the <a
  href="shorewall_quickstart_guide.htm">QuickStart Guide</a> that most
@@ -85,16 +97,43 @@ The <a href="Documentation_Index.html">Documentation
 Index</a> is a good place to start as is the Quick Search in the
 frame above.
       <h2>Running Shorewall on Mandrake with a two-interface setup?</h2>
-If so, the documentation <b></b>on this site will not apply
+If so, the documentation on this site will not apply
 directly to your setup. If you want to use the documentation that
 you find here, you will want to consider uninstalling what you have
 and installing a setup that matches the documentation on this site.
 See the <a href="two-interface.htm">Two-interface QuickStart
 Guide</a> for details.
       <h2><b>News</b></h2>
-      <p><b>1/30/2004 - Shorewall 1.4.10</b><b> <img alt="(New)"
+      <p><b>2/15/2004 - Shorewall 1.4.10c </b><b> <img alt="(New)"
  src="images/new10.gif"
  style="border: 0px solid ; width: 28px; height: 12px;" title=""></b></p>
+      <p>Corrects one problem:<br>
+      </p>
+Entries in /etc/shorewall/tcrules with an empty USER/GROUP column would
+cause a startup error.
+      <p><b>2/12/2004 - Shorewall 1.4.10b </b><b> <img alt="(New)"
+ src="images/new10.gif"
+ style="border: 0px solid ; width: 28px; height: 12px;" title=""></b></p>
+      <p>Corrects one problem:<br>
+      </p>
+      <ul>
+        <li>In the /etc/shorewall/masq entry “<span class="quote">eth0:!10.1.1.150
+&nbsp; &nbsp;0.0.0.0/0!10.1.0.0/16 &nbsp; &nbsp; 10.1.2.16</span>”, the
+“<span class="quote">!10.1.0.0/16</span>” is ignored.</li>
+      </ul>
+      <p><b>2/8/2004 - Shorewall 1.4.10a </b><b> <img alt="(New)"
+ src="images/new10.gif"
+ style="border: 0px solid ; width: 28px; height: 12px;" title=""></b></p>
+      <p>Corrects two problems:<br>
+      </p>
+      <ul>
+        <li>A problem which can cause [re]start to fail inexplicably
+while processing /etc/shorewall/masq.</li>
+        <li>Interfaces using the Atheros WiFi card to use the 'maclist'
+option.<br>
+        </li>
+      </ul>
+      <p><b>1/30/2004 - Shorewall 1.4.10</b></p>
       <p>Problems Corrected since version 1.4.9</p>
       <ol>
         <li>The column descriptions in the action.template file did not
@@ -143,7 +182,7 @@ contain :<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [&lt;user name or number&gt;]:[&lt;group
 name or number&gt;]<br>
           <br>
-The colon is optionnal when specifying only a user.<br>
+The colon is optional when specifying only a user.<br>
           <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Examples : john: / john / :users /
 john:users<br>
@@ -160,7 +199,7 @@ column. The named interface must be UP when Shorewall is [re]started.<br>
 &nbsp;WARNING: DO NOT SET THIS OPTION ON YOUR INTERNET INTERFACE!
 &nbsp;&nbsp; </li>
       </ol>
-      <p><b>1/17/2004 - FAQ Wiki Available&nbsp;</b><b></b></p>
+      <p><b>1/17/2004 - FAQ Wiki Available&nbsp;</b></p>
 It has been asserted that the use of CVS for maintaining the
 Shorewall documentation has been a barrier to community participation.
 To test this theory, Alex Martin <a
@@ -275,9 +314,6 @@ these were occuring frequently as a result of a broken system on his
 external network.</li>
       </ol>
       <p><b><a href="News.htm">More News</a></b></p>
-      <b></b>
-      <h2><b></b></h2>
-      <b></b>
       <p><a href="http://leaf.sourceforge.net" target="_top"><img
  border="0" src="images/leaflogo.gif" width="49" height="36"
  alt="(Leaf Logo)"></a> Jacques Nilo and Eric Wolzak have a LEAF
@@ -290,39 +326,27 @@ Bering 1.2!!!</b> <br>
       <h1 align="center"><b><a href="http://www.sf.net"><img
  align="left" alt="SourceForge Logo"
  src="http://sourceforge.net/sflogo.php?group_id=22587&amp;type=3"></a></b></h1>
-      <b></b>
-      <h4><b></b></h4>
-      <b></b>
       <h2><b>This site is hosted by the generous folks at <a
  href="http://www.sf.net">SourceForge.net</a></b></h2>
       <br>
       <br>
       <h2><b><a name="Donations"></a>Donations</b></h2>
-      <b></b></td>
+      <big><img
+ src="file:///vfat/Ursa/Shorewall/Shorewall-Website/images/alz_logo2.gif"
+ title="" alt="(Alzheimer's Association Logo)"
+ style="height: 60px; width: 300px;" align="left"></big><big>Shorewall
+is free but
+if you try it and find it useful,
+please consider making a donation to the <a href="http://www.alz.org/"
+ target="_top">Alzheimer's Association</a>. Thanks!</big><br>
+      <br>
+      </td>
     </tr>
   </tbody>
 </table>
 </center>
 </div>
-<table border="0" cellpadding="5" cellspacing="0"
- style="border-collapse: collapse; width: 100%; background-color: rgb(51, 102, 255);"
- id="AutoNumber2">
-  <tbody>
-    <tr>
-      <td style="width: 100%; margin-top: 1px;">
-      <p align="center"><a href="http://www.starlight.org"><img
- border="4" src="images/newlog.gif" width="57" height="100" align="left"
- hspace="10" alt="Starlight Foundation Logo"></a></p>
-      <p align="center"><font size="4" color="#ffffff"><br>
-      <font size="+2">Shorewall is free but if you try it and find it
-useful, please consider making a donation to <a
- href="http://www.starlight.org"><font color="#ffffff">Starlight
-Children's Foundation.</font></a> Thanks!</font></font></p>
-      </td>
-    </tr>
-  </tbody>
-</table>
-<p><font size="2">Updated 01/30/2004 - <a href="support.htm">Tom
+<p><font size="2">Updated 03/08/2004 - <a href="support.htm">Tom
 Eastep</a></font><br>
 </p>
 </body>

@@ -13,7 +13,7 @@
       <surname>Eastep</surname>
     </author>
 
-    <pubdate>2004-02-02</pubdate>
+    <pubdate>2004-04-03</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -144,6 +144,17 @@ iptables: No chain/target/match by that name
       </listitem>
 
       <listitem>
+        <para><emphasis role="bold">All IP addresses configured on firewall
+        interfaces are in the $FW (fw) zone</emphasis>. If 192.168.1.254 is
+        the IP address of your internal interface then you can write
+        <quote><emphasis role="bold">$FW:192.168.1.254</emphasis></quote> in a
+        rule but you may not write <quote><emphasis role="bold">loc:192.168.1.254</emphasis></quote>.
+        Similarly, it is nonsensical to add 192.168.1.254 to the <emphasis
+        role="bold">loc</emphasis> zone using an entry in
+        <filename>/etc/shorewall/hosts</filename>.</para>
+      </listitem>
+
+      <listitem>
         <para><emphasis role="bold">Reply packets do NOT automatically follow
         the reverse path of the one taken by the original request</emphasis>.
         All packets are routed according to the routing table of the host at
@@ -158,7 +169,7 @@ iptables: No chain/target/match by that name
       <listitem>
         <para><emphasis role="bold">Shorewall itself has no notion of inside
         or outside</emphasis>. These concepts are embodied in how Shorewall is
-        configured. </para>
+        configured.</para>
       </listitem>
     </itemizedlist>
   </section>
@@ -399,7 +410,8 @@ DROP      net              fw                  icmp    echo-request</programlist
   <appendix>
     <title>Revision History</title>
 
-    <para><revhistory><revision><revnumber>1.7</revnumber><date>2005-02-02</date><authorinitials>TE</authorinitials><revremark>Add
+    <para><revhistory><revision><revnumber>1.8</revnumber><date>2005-04-03</date><authorinitials>TE</authorinitials><revremark>Point
+    out that firewall addresses are in the $FW zone.</revremark></revision><revision><revnumber>1.7</revnumber><date>2005-02-02</date><authorinitials>TE</authorinitials><revremark>Add
     hint about testing from inside the firewall.</revremark></revision><revision><revnumber>1.6</revnumber><date>2005-01-06</date><authorinitials>TE</authorinitials><revremark>Add
     pointer to Site and Mailing List Archives Searches.</revremark></revision><revision><revnumber>1.5</revnumber><date>2004-01-01</date><authorinitials>TE</authorinitials><revremark>Added
     information about eliminating ping-generated log messages.</revremark></revision><revision><revnumber>1.4</revnumber><date>2003-12-22</date><authorinitials>TE</authorinitials><revremark>Initial

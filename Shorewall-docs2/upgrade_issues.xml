@@ -61,6 +61,32 @@
   </section>
 
   <section>
+    <title>Version &#62;= 2.0.1</title>
+
+    <itemizedlist>
+      <listitem>
+        <para>The function of &#39;norfc1918&#39; is now split between that
+        option and a new &#39;nobogons&#39; option. The rfc1918 file released
+        with Shorewall now contains entries for only those three address
+        ranges reserved by RFC 1918. A &#39;nobogons&#39; interface option has
+        been added which handles bogon source addresses (those which are
+        reserved by the IANA, those reserved for DHCP auto-configuration and
+        the class C test-net reserved for testing and documentation examples).
+        This will allow users to perform RFC 1918 filtering without having to
+        deal with out of date data from IANA. Those who are willing to update
+        their <filename>/usr/share/shorewall/bogons</filename> file regularly
+        can specify the &#39;nobogons&#39; option in addition to
+        &#39;norfc1918&#39;. The level at which bogon packets are logged is
+        specified in the new BOGON_LOG_LEVEL variable in shorewall.conf. If
+        that option is not specified or is specified as empty (e.g,
+        BOGON_LOG_LEVEL=&#34;&#34;) then bogon packets whose TARGET is
+        &#39;logdrop&#39; in <filename>/usr/share/shorewall/bogons</filename>
+        are logged at the &#39;info&#39; level.</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
     <title>VERSION &#62;= 2.0.0-Beta1</title>
 
     <itemizedlist>

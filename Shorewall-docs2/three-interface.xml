@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-02-12</pubdate>
+    <pubdate>2004-04-03</pubdate>
 
     <copyright>
       <year>2002-2004</year>
@@ -633,7 +633,7 @@ DNAT      loc       dmz:10.10.11.2   tcp     80            -        $ETH0_IP</pr
     your primary and secondary name servers. It is your responsibility to
     configure the resolver in your internal systems. You can take one of two
     approaches: <itemizedlist><listitem><para>You can configure your internal
-    systems to use your ISP&#39;s name servers. If you ISP gave you the
+    systems to use your ISP&#39;s name servers. If your ISP gave you the
     addresses of their servers or if those addresses are available on their
     web site, you can configure your internal systems to use those addresses.
     If that information isn&#39;t available, look in <filename>/etc/resolv.conf</filename>
@@ -752,6 +752,61 @@ ACCEPT    net       fw                  tcp        80       </programlisting><it
   </section>
 
   <section>
+    <title>Some Things to Keep in Mind</title>
+
+    <itemizedlist>
+      <listitem>
+        <para><emphasis role="bold">You cannot test your firewall from the
+        inside</emphasis>. Just because you send requests to your firewall
+        external IP address does not mean that the request will be associated
+        with the external interface or the <quote>net</quote> zone. Any
+        traffic that you generate from the local network will be associated
+        with your local interface and will be treated as loc-&#62;fw traffic.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">IP addresses are properties of systems,
+        not of interfaces</emphasis>. It is a mistake to believe that your
+        firewall is able to forward packets just because you can ping the IP
+        address of all of the firewall&#39;s interfaces from the local
+        network. The only conclusion you can draw from such pinging success is
+        that the link between the local system and the firewall works and that
+        you probably have the local system&#39;s default gateway set
+        correctly.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">All IP addresses configured on firewall
+        interfaces are in the $FW (fw) zone</emphasis>. If 192.168.1.254 is
+        the IP address of your internal interface then you can write
+        <quote><emphasis role="bold">$FW:192.168.1.254</emphasis></quote> in a
+        rule but you may not write <quote><emphasis role="bold">loc:192.168.1.254</emphasis></quote>.
+        Similarly, it is nonsensical to add 192.168.1.254 to the <emphasis
+        role="bold">loc</emphasis> zone using an entry in
+        <filename>/etc/shorewall/hosts</filename>.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">Reply packets do NOT automatically follow
+        the reverse path of the one taken by the original request</emphasis>.
+        All packets are routed according to the routing table of the host at
+        each step of the way. This issue commonly comes up when people install
+        a Shorewall firewall parallel to an existing gateway and try to use
+        DNAT through Shorewall without changing the default gateway of the
+        system receiving the forwarded requests. Requests come in through the
+        Shorewall firewall where the destination IP address gets rewritten but
+        replies go out unmodified through the old gateway.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">Shorewall itself has no notion of inside
+        or outside</emphasis>. These concepts are embodied in how Shorewall is
+        configured.</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
     <title>Starting and Stopping Your Firewall</title>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
@@ -763,11 +818,11 @@ ACCEPT    net       fw                  tcp        80       </programlisting><it
     you have completed configuration of your firewall, you can enable
     Shorewall startup by removing the file <filename>/etc/shorewall/startup_disabled</filename>.
     <important><para>Users of the <filename>.deb</filename> package must edit
-    <filename>/etc/default/shorewall</filename> and set <varname>startup=1</varname>.</para></important>
-    The firewall is started using the <command>shorewall start</command>
-    command and stopped using <command>shorewall stop</command>. When the
-    firewall is stopped, routing is enabled on those hosts that have an entry
-    in <ulink url="Documentation.htm#Routestopped"><filename>/etc/shorewall/routestopped</filename></ulink>.
+    <filename>/etc/default/shorewall</filename> and set <varname>startup=1</varname>.</para></important>The
+    firewall is started using the <command>shorewall start</command> command
+    and stopped using <command>shorewall stop</command>. When the firewall is
+    stopped, routing is enabled on those hosts that have an entry in <ulink
+    url="Documentation.htm#Routestopped"><filename>/etc/shorewall/routestopped</filename></ulink>.
     A running firewall may be restarted using the <command>shorewall restart</command>
     command. If you want to totally remove any trace of Shorewall from your
     Netfilter configuration, use <command>shorewall clear</command>.</para>

@@ -13,7 +13,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-03-15</pubdate>
+    <pubdate>2004-03-20</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -67,7 +67,12 @@
 
     <para><ulink url="http://shorewall.net/pub/shorewall/errata/1.4.8/rfc1918">Here</ulink>
     is the most up to date version of the <ulink
-    url="Documentation.htm#rfc1918">rfc1918 file</ulink>.</para>
+    url="Documentation.htm#rfc1918">rfc1918 file</ulink>. This file only
+    applies to Shorewall version 2.0.0 and its bugfix updates. In Shorewall
+    2.0.1 and later releases, the <filename>bogons</filename> file lists IP
+    ranges that are reserved by the IANA and the <filename>rfc1918</filename>
+    file only lists those three ranges that are reserved by <ulink
+    url="shorewall_setup_guide.htm#RFC1918">RFC 1918</ulink>.</para>
   </section>
 
   <section>
@@ -81,12 +86,20 @@
           <para>When using an Action in the ACTIONS column of a rule, you may
           receive a warning message about the rule being a policy. While this
           warning may be safely ignored, it can be eliminated by installing
-          <ulink
-          url="http://shorewall.net/pub/shorewall/errata/2.0.0/firewall">this
-          corrected firewall script</ulink> in /usr/share/shorewall as
-          described above.</para>
+          the script from the link below.</para>
+        </listitem>
+
+        <listitem>
+          <para>Thanks to Sean Mathews, a long-standing problem with Proxy ARP
+          and IPSEC has been corrected.</para>
         </listitem>
       </itemizedlist>
+
+      <para>The first problem has been corrected in Shorewall update 2.0.0a.</para>
+
+      <para>All of these problems may be corrected by installing <ulink
+      url="http://shorewall.net/pub/shorewall/errata/2.0.0/firewall">this
+      firewall script</ulink> in /usr/share/shorewall as described above.</para>
     </section>
   </section>
 
@@ -230,7 +243,9 @@ Aborted (core dumped)</programlisting>
   <appendix>
     <title>Revision History4</title>
 
-    <para><revhistory><revision><revnumber>1.5</revnumber><date>2004-02-03</date><authorinitials>TE</authorinitials><revremark>Update
+    <para><revhistory><revision><revnumber>1.6</revnumber><date>2004-03-20</date><authorinitials>TE</authorinitials><revremark>Proxy
+    ARP/IPSEC fix.</revremark></revision><revision><revnumber>1.6</revnumber><date>2004-03-17</date><authorinitials>TE</authorinitials><revremark>Action
+    rules are reported as policies.</revremark></revision><revision><revnumber>1.5</revnumber><date>2004-02-03</date><authorinitials>TE</authorinitials><revremark>Update
     for Shorewall 2.0.0.</revremark></revision><revision><revnumber>1.4</revnumber><date>2004-01-19</date><authorinitials>TE</authorinitials><revremark>IPV6
     address problems. Make RFC1918 file section more prominent.</revremark></revision><revision><revnumber>1.3</revnumber><date>2004-01-14</date><authorinitials>TE</authorinitials><revremark>Confusing
     template file in 1.4.9</revremark></revision><revision><revnumber>1.3</revnumber><date>2004-01-03</date><authorinitials>TE</authorinitials><revremark>Added

@@ -99,6 +99,8 @@ report () { # $* = message
 #
 run_iptables() {
 
+    [ -n "$BRIDGING" ] && [ -f $TMP_DIR/physdev ] && rm -f $TMP_DIR/physdev
+
     if ! iptables $@ ; then
 	[ -z "$stopping" ] && { stop_firewall; exit 2; }
     fi
@@ -424,6 +426,100 @@ first_chains() #$1 = interface
 }
 
 #
+# Horrible hack to work around an iptables bug
+#
+physdev_echo() 
+{
+    if [ -f $TMP_DIR/physdev ]; then
+	echo $@
+    else
+	echo -m physdev $@
+	> $TMP_DIR/physdev
+    fi
+}
+
+#
+# We allow hosts to be specified by IP address or by physdev. These two functions
+# are used to produce the proper match in a netfilter rule.
+#
+match_source_hosts()
+{
+    if [ -n "$BRIDGING" ]; then
+	case $1 in
+	    *:*)
+		physdev_echo "--physdev-in ${1%:*} -s ${1#*:}"
+		;;
+	    *.*.*.*)
+		echo -s $1
+		;;
+	    *)
+		physdev_echo "--physdev-in $1"
+		;;
+	esac
+    else
+	echo -s $1
+    fi
+}
+
+match_dest_hosts()
+{
+    if [ -n "$BRIDGING" ]; then
+	case $1 in
+	    *:*)
+		physdev_echo "--physdev-out ${1%:*} -d ${1#*:}"
+		;;
+	    *.*.*.*)
+		echo -d $1
+		;;
+	    *)
+		physdev_echo "--physdev-out $1"
+		;;
+	esac
+    else
+	echo -d $1
+    fi
+}
+#
+# Similarly, the source or destination in a rule can be qualified by a device name. If 
+# the device is defined in /etc/shorewall/interfaces then a normal interface match is
+# generated (-i or -o); otherwise, a physdev match is generated.
+#-------------------------------------------------------------------------------------
+#
+# loosely match the passed interface with those in /etc/shorewall/interfaces.
+#
+known_interface() # $1 = interface name
+{
+    local iface
+
+    for iface in $all_interfaces ; do
+	if if_match $iface $1 ; then
+	    return 0
+	fi
+    done
+
+    return 1
+}
+
+match_source_dev()
+{
+    if [ -n "$BRIDGING" ]; then
+	known_interface $1 && echo -i $1 || physdev_echo "--physdev-in $1"
+    else
+	echo -i $1
+    fi
+}
+
+match_dest_dev()
+{
+    if [ -n "$BRIDGING" ]; then
+	known_interface $1 && echo -o $1 || physdev_echo "--physdev-out $1"
+    else
+	echo -o $1
+    fi
+}
+
+#
+#
 # Find hosts in a given zone
 #
 # Read hosts file and for each record matching the passed ZONE,
@@ -436,7 +532,7 @@ find_hosts() # $1 = host zone
     while read z hosts options; do
 	if [ "x$(expand $z)" = "x$1" ]; then
 	    expandv hosts
-	    interface=${hosts%:*}
+	    interface=${hosts%%:*}
 	    addresses=${hosts#*:}
 	    for address in $(separate_list $addresses); do 
 		echo $interface:$address
@@ -460,6 +556,18 @@ determine_interfaces() {
 }
 
 #
+# Determine if an interface has a given option
+#
+interface_has_option() # $1 = interface, #2 = option
+{
+    local options
+
+    eval options=\$$(chain_base $1)_options
+
+    list_search $2 $options
+}
+
+#
 # Determine the defined hosts in each zone and generate report
 #
 determine_hosts() {
@@ -471,22 +579,21 @@ determine_hosts() {
 	eval interfaces=\$${zone}_interfaces
 
 	for interface in $interfaces; do
-	    eval options=\$$(chain_base $interface)_options
-	    if list_search detectnets $options; then
-		subnets=$(get_routed_subnets $interface)
+	    if interface_has_option $interface detectnets; then
+		networks=$(get_routed_networks $interface)
 	    else
-		subnets=0.0.0.0/0
+		networks=0.0.0.0/0
 	    fi
 
-	    for subnet in $subnets; do
+	    for networks in $networks; do
 		if [ -z "$hosts" ]; then
-		    hosts=$interface:$subnet
+		    hosts=$interface:$networks
 		else
-		    hosts="$hosts $interface:$subnet"
+		    hosts="$hosts $interface:$networks"
 		fi
 
-		if list_search routeback $options; then
-		    eval ${zone}_routeback=\"$interface:$subnet \$${zone}_routeback\"
+		if interface_has_option $interface routeback; then
+		    eval ${zone}_routeback=\"$interface:$networks \$${zone}_routeback\"
 		fi
 	    done
 	done
@@ -496,6 +603,10 @@ determine_hosts() {
 	for host in $hosts; do
 	    interface=${host%:*}
 	    if list_search $interface $interfaces; then
+		list_search $interface:0.0.0.0/0 $hosts && \
+		    startup_error "Invalid zone definition for zone $zone"
+		list_search $interface:0/0 $hosts && \
+		    startup_error "Invalid zone definition for zone $zone"
 		eval ${zone}_is_complex=Yes
 	    else
 		if [ -z "$interfaces" ]; then
@@ -525,6 +636,13 @@ validate_zone() # $1 = zone
 {
     list_search $1 $zones $FW
 }
+#
+# Ensure that the passed zone is defined in the zones file.
+#
+validate_zone1() # $1 = zone
+{
+    list_search $1 $zones
+}
 
 #
 # Validate the zone names and options in the interfaces file
@@ -532,11 +650,11 @@ validate_zone() # $1 = zone
 validate_interfaces_file() {
     local wildcard
     local found_obsolete_option=
-    local z interface subnet options r iface option
+    local z interface networks options r iface option
 
-    while read z interface subnet options; do
-	expandv z interface subnet options
-	r="$z $interface $subnet $options"
+    while read z interface networks options; do
+	expandv z interface networks options
+	r="$z $interface $networks $options"
 
 	[ "x$z" = "x-" ] && z=
 
@@ -550,10 +668,10 @@ validate_interfaces_file() {
 	wildcard=
 
 	case $interface in
-	    *:*)
+	    *:*|+)
 		startup_error "Invalid Interface Name: $interface"
 		;;
-	    *+*)
+	    *+)
 		wildcard=Yes
 		;;
 	esac
@@ -562,13 +680,13 @@ validate_interfaces_file() {
 	options=$(separate_list $options)
 	iface=$(chain_base $interface)
 
-	eval ${iface}_broadcast="$subnet"
+	eval ${iface}_broadcast="$networks"
 	eval ${iface}_zone="$z"
 	eval ${iface}_options=\"$options\"
 
 	for option in $options; do
 	    case $option in
-		dhcp|norfc1918|tcpflags|newnotsyn|arp_filter|routefilter|blacklist|proxyarp|maclist|nosmurfs|-)
+		dhcp|norfc1918|nobogons|tcpflags|newnotsyn|arp_filter|routefilter|blacklist|proxyarp|maclist|nosmurfs|-)
 		    ;;
 		dropunclean|logunclean)
 		    if [ -z "$found_obsolete_option" ]; then
@@ -605,27 +723,51 @@ validate_interfaces_file() {
 # Validate the zone names and options in the hosts file
 #
 validate_hosts_file() {
-   local z hosts options r interface host option 
+   local z hosts options r interface host option port ports
 
     while read z hosts options; do
 	expandv z hosts options
 	r="$z $hosts $options"
-	validate_zone $z || startup_error "Invalid zone ($z) in record \"$r\""
+	validate_zone1 $z || startup_error "Invalid zone ($z) in record \"$r\""
 
-	interface=${hosts%:*}
+	interface=${hosts%%:*}
+	iface=$(chain_base $interface)
 
 	list_search  $interface $all_interfaces || \
 	    startup_error "Unknown interface ($interface) in record \"$r\""
 
 	hosts=${hosts#*:}
 
+	eval ports=\$${iface}_ports
+	eval zports=\$${z}_ports
+		
 	for host in $(separate_list $hosts); do
-	    for option in $(separate_list $options); do
+
+	    [ -n "$BRIDGING" ] && case $host in
+		*:*)
+		    known_interface ${host%:*} && \
+			startup_error "Bridged interfaces may not be defined in /etc/shorewall/interfaces: $host"
+		    port=${host%%:*}
+		    list_search $port $ports || ports="$ports $port"
+		    list_search ${interface}:${port} $zports || zports="$zports ${interface}:${port}"
+		    ;;
+		*.*.*.*)
+		    ;;
+		*)
+		    known_interface $host && \
+			startup_error "Bridged interfaces may not be defined in /etc/shorewall/interfaces: $host"
+		    list_search $host $ports || ports="$ports $host"
+		    list_search ${interface}:${host} $zports || zports="$zports ${interface}:${host}"
+		    ;;
+	    esac
+
+	    for option in $(separate_list $options) ; do
 		case $option in
-		    maclist|-)
+		    maclist|norfc1918|nobogons|blacklist|tcpflags|nosmurfs|newnotsyn|-)
 			;;
 		    routeback)
-			eval ${z}_routeback=\"$interface:$host \$${z}_routeback\"
+			[ -z "$ports" ] && \
+			    eval ${z}_routeback=\"$interface:$host \$${z}_routeback\"
 			;;
 		    *)
 			error_message "Warning: Invalid option ($option) in record \"$r\""
@@ -633,6 +775,12 @@ validate_hosts_file() {
 		esac
 	    done
 	done
+
+	if [ -n "$ports" ]; then
+	    eval ${iface}_ports=\"$ports\"
+	    eval ${z}_ports=\"$zports\"
+	fi
+
     done < $TMP_DIR/hosts
 }
 
@@ -838,7 +986,7 @@ find_hosts_by_option() # $1 = option
 	expandv options
 	if list_search $1 $(separate_list $options); then
 	    expandv hosts
-	    interface=${hosts%:*}
+	    interface=${hosts%%:*}
 	    addresses=${hosts#*:}
 	    for address in $(separate_list $addresses); do 
 		echo $interface:$address
@@ -847,8 +995,7 @@ find_hosts_by_option() # $1 = option
     done < $TMP_DIR/hosts
 
     for interface in $all_interfaces; do
-	eval options=\$$(chain_base $interface)_options
-	list_search $1 $options && \
+	interface_has_option $interface $1 && \
 	    echo ${interface}:0.0.0.0/0
     done
 }
@@ -984,7 +1131,7 @@ disable_ipv6() {
 	ip6tables -P INPUT DROP
 	ip6tables -P OUTPUT DROP
     else
-	error_message "WARNING: DISABLE_IPV6=Yes in shorewall.conf but this system has no ip6tables"
+	error_message "WARNING: DISABLE_IPV6=Yes in shorewall.conf but this system does not appear to have ip6tables"
     fi
 }
 
@@ -1049,23 +1196,46 @@ stop_firewall() {
 
     strip_file routestopped
 
-    while read interface host; do
-	expandv interface host
+    while read interface host options; do
+	expandv interface host options
 	[ "x$host" = "x-" -o -z "$host" ] && host=0.0.0.0/0
 	for h in $(separate_list $host); do
 	    hosts="$hosts $interface:$h"
 	done
+
+	routeback=
+
+	if [ -n $options ]; then
+	    for option in $(separate_list $options); do
+		case $option in
+		    routeback)
+			if [ -n "$routeback" ]; then
+			    error_message "Warning: Duplicate option ignored: routeback"
+			else
+			    routeback=Yes
+			    for h in $(separate_list $host); do
+				iptables -A FORWARD -i $interface -s $h -o $interface -d $h -j ACCEPT
+			    done
+			fi
+			;;
+		    *)
+			error_message "Warning: Unknown option ignored: $option"
+			;;
+		esac
+	    done
+	fi
+		    
     done < $TMP_DIR/routestopped
 
     for host in $hosts; do
 	interface=${host%:*}
-	subnet=${host#*:}
-	iptables -A INPUT  -i $interface -s $subnet -j ACCEPT
+	networks=${host#*:}
+	iptables -A INPUT  -i $interface -s $networks -j ACCEPT
 	[ -z "$ADMINISABSENTMINDED" ] && \
-	    iptables -A OUTPUT -o $interface -d $subnet -j ACCEPT
+	    iptables -A OUTPUT -o $interface -d $networks -j ACCEPT
 
 	for host1 in $hosts; do
-	    iptables -A FORWARD -i $interface -s $subnet -o ${host1%:*} -d ${host1#*:} -j ACCEPT
+	    [ "$host" != "$host1" ] && iptables -A FORWARD -i $interface -s $networks -o ${host1%:*} -d ${host1#*:} -j ACCEPT
 	done
     done
 
@@ -1077,6 +1247,10 @@ stop_firewall() {
 	iptables -A INPUT  -p udp -i $interface --dport 67:68 -j ACCEPT
 	[ -z "$ADMINISABSENTMINDED" ] && \
 	    iptables -A OUTPUT -p udp -o $interface --dport 67:68 -j ACCEPT
+	#
+	# This might be a bridge
+	#
+	iptables -A FORWARD -p udp -i $interface -o $interface --dport 67:68 -j ACCEPT
     done
 
     setup_forwarding
@@ -1415,7 +1589,7 @@ setup_mac_lists() {
     maclist_interfaces=
 
     for hosts in $maclist_hosts; do
-	interface=${hosts%:*}
+	interface=${hosts%%:*}
 	if ! list_search $interface $maclist_interfaces; then\
 	    if [ -z "$maclist_interfaces" ]; then
 		maclist_interfaces=$interface
@@ -1447,6 +1621,17 @@ setup_mac_lists() {
     while read interface mac addresses; do
 	expandv interface mac addresses
 
+	physdev_part=
+
+	if [ -n "$BRIDGING" ]; then
+	    case $interface in
+		*:*)
+		    physdev_part="-m physdev --physdev-in ${interface#*:}"
+		    interface=${interface%:*}
+		    ;;
+	    esac
+	fi
+
 	chain=$(mac_chain $interface)
 
 	if ! havechain $chain ; then
@@ -1456,10 +1641,10 @@ setup_mac_lists() {
 	macpart=$(mac_match $mac)
 
 	if [ -z "$addresses" ]; then
-	    run_iptables -A $chain $macpart -j RETURN
+	    run_iptables -A $chain $macpart $physdev_part -j RETURN
 	else
 	    for address in $(separate_list $addresses) ; do
-		run_iptables2 -A $chain $macpart -s $address -j RETURN
+		run_iptables2 -A $chain $macpart -s $address $physdev_part -j RETURN
 	    done
 	fi
     done < $TMP_DIR/maclist
@@ -1494,10 +1679,10 @@ setup_mac_lists() {
     # Generate jumps from the input and forward chains
     #
     for hosts in $maclist_hosts; do
-	interface=${hosts%:*}
+	interface=${hosts%%:*}
 	hosts=${hosts#*:}
 	for chain in $(first_chains $interface) ; do
-	    run_iptables -A $chain -s $hosts -m state --state NEW \
+	    run_iptables -A $chain $(match_source_hosts $hosts) -m state --state NEW \
 		-j $(mac_chain $interface)
 	done
     done
@@ -1585,7 +1770,7 @@ setup_nat() {
 		run_iptables2 -t nat -A OUTPUT -d $external \
 		    -j DNAT --to-destination $internal
 	    fi
-	elif [ -z "$allints" -o "$allints" = "No" -o "$allints" = "no" ]; then        
+	elif [ -z "$allints" -o "$allints" = "No" -o "$allints" = "no" ]; then       
 	    addnatrule $(input_chain $iface) \
 		-d $external -j DNAT --to-destination $internal
 	    addnatrule $(output_chain $iface) \
@@ -1619,6 +1804,34 @@ delete_nat() {
     fi
 
     [ -d ${STATEDIR} ] && touch ${STATEDIR}/nat
+}
+
+#
+# Setup Network Mapping (NETMAP)
+#
+setup_netmap() {
+    
+    while read type net1 interface net2 ; do
+	expandv type net1 interface net2
+
+	list_search $interface $all_interfaces || \
+	    fatal_error "Unknown interface $interface in entry \"$type $net1 $interface $net2\""
+
+	case $type in
+	    DNAT)
+		addnatrule $(input_chain $interface)  -d $net1 -j NETMAP --to $net2
+		;;
+	    SNAT)
+		addnatrule $(output_chain $interface) -s $net1 -j NETMAP --to $net2
+		;;
+	    *)
+		fatal_error "Invalid type $type in entry \"$type $net1 $interface $net2\""
+		;;
+	esac
+
+	echo "   Network $net1 on $interface mapped to $net2 ($type)"
+
+    done < $TMP_DIR/netmap
 }
 
 #
@@ -1692,11 +1905,11 @@ process_tc_rule()
 		    chain=tcout
 		    ;;
 		*)
-		    if ! list_search $source $all_interfaces; then
+		    if [ -z "$BRIDGING" ] && ! list_search $source $all_interfaces; then
 			fatal_error "Unknown interface $source in rule \"$rule\""
 		    fi
 
-		    r="-i $source "
+		    r="$(match_source_dev) $source "
 		    ;;
 	    esac
 	fi
@@ -1852,7 +2065,7 @@ process_accounting_rule() {
 
     case $source in
 	*:*)
-	    rule="-s ${source#*:} -i ${source%:*}"
+	    rule="-s ${source#*:} $(match_source_dev ${source%:*})"
 	    ;;
 	*.*.*.*)
 	    rule="-s $source"
@@ -1860,13 +2073,13 @@ process_accounting_rule() {
 	-|all|any)
 	    ;;
 	*)
-	    [ -n "$source" ] && rule="-i $source"
+	    [ -n "$source" ] && rule="$(match_source_dev $source)"
 	    ;;
     esac
 
     [ -n "$dest" ] && case $dest in
 	*:*)
-	    rule="$rule -d ${dest#*:} -o ${dest%:*}"
+	    rule="$rule -d ${dest#*:} $(match_dest_dev ${dest%:*})"
 	    ;;
 	*.*.*.*)
 	    rule="$rule -d $dest"
@@ -1874,7 +2087,7 @@ process_accounting_rule() {
 	-|all|any)
 	    ;;
 	*)
-	    rule="$rule -o $dest"
+	    rule="$rule $(match_dest_dev $dest)"
 	    ;;
     esac
 
@@ -1958,7 +2171,6 @@ setup_accounting() # $1 = Name of accounting file
     fi
 
 }
-
 
 #      
 # Check the configuration
@@ -2113,7 +2325,7 @@ add_an_action()
     -)
 	;;
     *:*)
-	cli="-i ${client%:*} -s ${client#*:}"
+	cli="$(match_source_dev ${client%:*}) -s ${client#*:}"
 	;;
     *.*.*)
 	cli="-s $client"
@@ -2122,7 +2334,7 @@ add_an_action()
 	cli=$(mac_match $client)
 	;;
     *)
-	[ -n "$client" ] && cli="-i $client"
+	[ -n "$client" ] && cli="$(match_source_dev $client)"
 	;;
     esac
 
@@ -2141,7 +2353,7 @@ add_an_action()
 	fatal_error "Rule \"$rule\" - Destination may not be specified by MAC Address"
 	;;
     *)
-	[ -n "$server" ] && dest_interface="-o $server"
+	[ -n "$server" ] && dest_interface="$(match_dest_dev $server)"
 	;;
     esac
 
@@ -2321,7 +2533,7 @@ process_action() # $1 = action
 	for client in $(separate_list ${clients:=-}); do
 	    for server in $(separate_list ${servers:=-}); do
 		#
-		# add_a_rule() modifies these so we must set their values each time
+		# add_an_action() modifies these so we must set their values each time
 		#
 		port=${ports:=-}
 		cport=${cports:=-}
@@ -2673,7 +2885,7 @@ add_nat_rule() {
 		for z in $(separate_list $excludezones); do
 		    eval hosts=\$${z}_hosts
 		    for host in $hosts; do
-			addnatrule $chain -s ${host#*:} -j RETURN
+			addnatrule $chain $(match_source_hosts ${host#*:}) -j RETURN
 		    done
 		done
 
@@ -2723,7 +2935,7 @@ add_nat_rule() {
 		    error_message "Warning: SNAT will occur on all connections to this server and port - rule \"$rule\""
 
 		[ $COMMAND = check ] || addnatrule $(snat_chain $dest) \
-		    -s ${source_host#*:} $proto $sports $multiport \
+		    $(match_source_hosts ${source_host#*:}) $proto $sports $multiport \
 		    -d $serv $dports -j SNAT --to-source $snat
 	    done
 	fi
@@ -2784,7 +2996,7 @@ add_a_rule()
     -)
 	;;
     *:*)
-	cli="-i ${client%:*} -s ${client#*:}"
+	cli="$(match_source_dev ${client%:*}) -s ${client#*:}"
 	;;
     *.*.*)
 	cli="-s $client"
@@ -2793,7 +3005,7 @@ add_a_rule()
 	cli=$(mac_match $client)
 	;;
     *)
-	[ -n "$client" ] && cli="-i $client"
+	[ -n "$client" ] && cli="$(match_source_dev $client)"
 	;;
     esac
 
@@ -2812,7 +3024,7 @@ add_a_rule()
 	fatal_error "Rule \"$rule\" - Destination may not be specified by MAC Address"
 	;;
     *)
-	[ -n "$server" ] && dest_interface="-o $server"
+	[ -n "$server" ] && dest_interface="$(match_dest_dev $server)"
 	;;
     esac
 
@@ -2855,10 +3067,14 @@ add_a_rule()
     # Some misc. setup
 
     case "$logtarget" in
-	REJECT)
-	    [ -n "$servport" ] && \
-		fatal_error "Server port may not be specified in a REJECT rule;"\
-                            "rule: \"$rule\""
+	ACCEPT|DROP|REJECT|CONTINUE)	
+	
+	    [ "$logtarget" = REJECT -a -n "$servport" ] && \
+		fatal_error "Server port may not be specified in a REJECT rule; rule: \"$rule\""
+	    if [ -z "$proto" -a -z "$cli" -a -z "$serv" -a -z "$servport" -a -z "$userspec" ] ; then
+		error_message "Warning -- Rule \"$rule\" is a POLICY"
+		error_message "	       -- and should be moved to the policy file"
+	    fi
 	    ;;
 	REDIRECT)
 	    [ -n "$serv" ] && startup_error "REDIRECT rules cannot"\
@@ -2873,17 +3089,6 @@ add_a_rule()
 	    ;;
 	LOG)
 	    [ -z "$loglevel" ] && fatal_error "LOG requires log level"
-	    ;;
-    esac
-
-    # Complain if the rule is really a policy
-
-    case $logtarget in
-	ACCEPT|DROP|REJECT)	
-	    if [ -z "$proto" -a -z "$cli" -a -z "$serv" -a -z "$servport" -a -z "$userspec" ] ; then
-		error_message "Warning -- Rule \"$rule\" is a POLICY"
-		error_message "	       -- and should be moved to the policy file"
-	    fi
 	    ;;
     esac
 
@@ -3360,7 +3565,7 @@ process_tos_rule() {
     [ -n "$src" ] && case "$src" in
 	*.*.*)
 	    #
-	    # IP Address or subnet
+	    # IP Address or networks
 	    #
 	    src="-s $src"
 	    ;;
@@ -3371,7 +3576,7 @@ process_tos_rule() {
 	    #
 	    # Assume that this is a device name
 	    #
-	    src="-i $src"
+	    src="$(match_source_dev $src)"
 	    ;;
     esac
 
@@ -3403,7 +3608,7 @@ process_tos_rule() {
     [ -n "$dst" ] && case "$dst" in
 	*.*.*)
 	    #
-	    # IP Address or subnet
+	    # IP Address or networks
 	    #
 	    ;;
 	*)
@@ -3725,9 +3930,9 @@ rules_chain() # $1 = source zone, $2 = destination zone
 }
 
 #
-#  echo the list of subnets routed out of a given interface
+#  echo the list of networks routed out of a given interface
 #
-get_routed_subnets() # $1 = interface name
+get_routed_networks() # $1 = interface name
 {
     local address
     local rest
@@ -3753,15 +3958,15 @@ setup_masq()
 
 	case $fullinterface in
 	    *:*:*)
-		# Both alias name and subnet
+		# Both alias name and networks
 		destnets="${fullinterface##*:}"
 		fullinterface="${fullinterface%:*}"
 		;;
 	    *:*)
-		# Alias name OR subnet
+		# Alias name OR networks
 		case ${fullinterface#*:} in
 		    *.*)
-			# It's a subnet
+			# It's a networks
 			destnets="${fullinterface#*:}"
 			fullinterface="${fullinterface%:*}"
 			;;
@@ -3782,23 +3987,23 @@ setup_masq()
 	    fatal_error "Unknown interface $interface"
 	fi
 
-	if [ "$subnet" = "${subnet%!*}" ]; then
+	if [ "$networks" = "${networks%!*}" ]; then
 	    nomasq=
 	else
-	    nomasq="${subnet#*!}"
-	    subnet="${subnet%!*}"
+	    nomasq="${networks#*!}"
+	    networks="${networks%!*}"
 	fi
 
 
-	source="$subnet"
+	source="$networks"
 
-	case $subnet in
+	case $networks in
 	*.*.*)
 	    ;;
 	*)
-	    subnets=$(get_routed_subnets $subnet)
-	    [ -z "$subnets" ] && fatal_error "Unable to determine the routes through interface $subnet"
-	    subnet="$subnets"
+	    networks=$(get_routed_networks $networks)
+	    [ -z "$networks" ] && fatal_error "Unable to determine the routes through interface $networks"
+	    networks="$networks"
 	    ;;
 	esac
 
@@ -3831,11 +4036,11 @@ setup_masq()
 		    addnatrule $newchain -d $destnet -j RETURN
 		done
 
-		if [ -n "$subnet" ]; then
-		    for s in $subnet; do
+		if [ -n "$networks" ]; then
+		    for s in $networks; do
 			addnatrule $chain -s $s -j $newchain
 		    done
-		    subnet=
+		    networks=
 		else
 		    addnatrule $chain -j $newchain
 		fi
@@ -3856,8 +4061,8 @@ setup_masq()
 		    newchain=masq${masq_seq}
 		    createnatchain $newchain
 
-		    if [ -n "$subnet" ]; then
-			for s in $subnet; do
+		    if [ -n "$networks" ]; then
+			for s in $networks; do
 			    for destnet in $(separate_list $destnets); do
 				addnatrule $chain -d $destnet -s $s -j $newchain
 			    done
@@ -3870,7 +4075,7 @@ setup_masq()
 
 		    masq_seq=$(($masq_seq + 1))
 		    chain=$newchain
-		    subnet=
+		    networks=
 		    destnets=0.0.0.0/0
 		    
 		    for addr in $(separate_list $nomasq); do
@@ -3889,8 +4094,8 @@ setup_masq()
 	    done
 	fi
 
-	if [ -n "$subnet" ]; then
-	    for s in $subnet; do
+	if [ -n "$networks" ]; then
+	    for s in $networks; do
 		if [ -n "$addresses" ]; then
 		    for destnet in $(separate_list $destnets); do
 			addnatrule $chain -s $s -d $destnet -j SNAT $addrlist
@@ -3919,10 +4124,10 @@ setup_masq()
 
     strip_file masq $1
 
-    [ -n "$NAT_ENABLED" ] && echo "Masqueraded Subnets and Hosts:"
+    [ -n "$NAT_ENABLED" ] && echo "Masqueraded Networks and Hosts:"
 
-    while read fullinterface subnet addresses; do
-	expandv fullinterface subnet addresses
+    while read fullinterface networks addresses; do
+	expandv fullinterface networks addresses
 	[ -n "$NAT_ENABLED" ] && setup_one || \
 	    error_message "Warning: NAT disabled; masq rule ignored"
     done < $TMP_DIR/masq
@@ -3946,7 +4151,7 @@ add_blacklist_rule() {
 #
 # Process a record from the blacklist file
 #
-#   $subnet	 = address/subnet
+#   $networks	 = address/networks
 #   $protocol    = Protocol Number/Name
 #   $port        = Port Number/Name
 #
@@ -3956,7 +4161,7 @@ process_blacklist_rec() {
     local proto
     local dport
 
-    for addr in $(separate_list $subnet); do
+    for addr in $(separate_list $networks); do
 	case $addr in
 	~*)
 	    addr=$(echo $addr | sed 's/~//;s/-/:/g')
@@ -4022,11 +4227,11 @@ process_blacklist_rec() {
 # Setup the Black List
 #
 setup_blacklist() {
-    local interfaces=$(find_interfaces_by_option blacklist)
+    local hosts=$(find_hosts_by_option blacklist)
     local f=$(find_file blacklist)
     local disposition=$BLACKLIST_DISPOSITION
 
-    if [ -n "$interfaces" -a -f $f ]; then
+    if [ -n "$hosts" -a -f $f ]; then
 	echo "Setting up Blacklisting..."
 
 	strip_file blacklist $f
@@ -4035,18 +4240,23 @@ setup_blacklist() {
 
 	[ -n "$BLACKLISTNEWONLY" ] && state="-m state --state NEW" || state=
 	
-	for interface in $interfaces; do
-	    for chain in $(first_chains $interface); do
-		run_iptables -A $chain $state -j blacklst
-	    done
+	for host in $hosts; do
+	    interface=${host%%:*}
+	    network=${host#*:}
 
-	    echo "   Blacklisting enabled on $interface"
+	    for chain in $(first_chains $interface); do
+		run_iptables -A $chain $state $(match_source_hosts $network) -j blacklst
+	    done
+	    
+	    [ $network = 0/0.0.0.0 ] && network= || network=":$network"
+
+	    echo "   Blacklisting enabled on ${interface}${network}"
 	done
 
 	[ "$disposition" = REJECT ] && disposition=reject
 
-	while read subnet protocol ports; do
-	    expandv subnet protocol ports
+	while read networks protocol ports; do
+	    expandv networks protocol ports
 	    process_blacklist_rec
 	done < $TMP_DIR/blacklist
 
@@ -4069,8 +4279,8 @@ refresh_blacklist() {
 
 	run_iptables -F blacklst
 
-	while read subnet protocol ports; do
-	    expandv subnet protocol ports
+	while read networks protocol ports; do
+	    expandv networks protocol ports
 	    process_blacklist_rec
 	done < $TMP_DIR/blacklist
     fi
@@ -4109,14 +4319,14 @@ add_ip_aliases()
 	# decoration on these IP addresses that they see when their
 	# distro's net config tool adds them. In an attempt to reduce
 	# the anxiety level, we have the following code which sets
-	# the VLSM and BRD from an existing address in the same subnet
+	# the VLSM and BRD from an existing address in the same networks
 	#
-	# Get all of the lines that contain inet addresses 
+	# Get all of the lines that contain inet addresses with broadcast 
 	#
-	ip -f inet addr show $interface 2> /dev/null | grep 'inet' | while read inet cidr rest ; do
+	ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | while read inet cidr rest ; do
 	    case $cidr in
 		*/*)
-		    if in_subnet $external $cidr; then
+		    if in_network $external $cidr; then
 			echo "/${cidr#*/} brd $(broadcastaddress $cidr)"
 			break
 		    fi
@@ -4261,6 +4471,7 @@ initialize_netfilter () {
     strip_file proxyarp
     strip_file maclist
     strip_file nat
+    strip_file netmap
 
     terminator=fatal_error
 
@@ -4419,15 +4630,18 @@ add_common_rules() {
     #
     # SMURFS
     #
-    interfaces=$(find_interfaces_by_option nosmurfs)
+    hosts=$(find_hosts_by_option nosmurfs)
 
-    if [ -n "$interfaces" ]; then
+    if [ -n "$hosts" ]; then
 	
 	echo "Adding Anti-smurf Rules"
 
-	for interface in $interfaces; do
+	for host in $hosts; do
+	    interface=${host%%:*}
+	    network=${host#*:}
+
 	    for chain in $(first_chains $interface); do
-		run_iptables -A $chain  -m state --state NEW -j smurfs
+		run_iptables -A $chain  -m state --state NEW $(match_source_hosts $network) -j smurfs
 	    done
 	done
     fi
@@ -4441,6 +4655,11 @@ add_common_rules() {
 	echo "Adding rules for DHCP"
 
 	for interface in $interfaces; do
+	    if [ -n "$BRIDGING" ]; then
+		eval is_bridge=\$$(chain_base $interface)_ports
+		[ -n "$is_bridge" ] && \
+		    iptables -A $(forward_chain $interface) -p udp -o $interface --dport 67:68 -j ACCEPT
+            fi
 	    run_iptables -A $(input_chain $interface) -p udp --dport 67:68 -j ACCEPT
 	    run_iptables -A OUTPUT    -o $interface  -p udp --dport 67:68 -j ACCEPT
 	done
@@ -4448,9 +4667,9 @@ add_common_rules() {
     #
     # RFC 1918
     #
-    norfc1918_interfaces="$(find_interfaces_by_option norfc1918)"
+    hosts="$(find_hosts_by_option norfc1918)"
 
-    if [ -n "$norfc1918_interfaces" ]; then
+    if [ -n "$hosts" ]; then
 	echo "Enabling RFC1918 Filtering"
 
 	strip_file rfc1918
@@ -4478,7 +4697,7 @@ add_common_rules() {
 	    run_iptables -t mangle -A rfc1918 -j DROP
 	fi
 
-	while read subnet target; do
+	while read networks target; do
 	    case $target in
 		logdrop)
 		    target=rfc1918
@@ -4486,40 +4705,86 @@ add_common_rules() {
 		DROP|RETURN)
 		    ;;
 		*)
-		    fatal_error "Invalid target ($target) for $subnet"
+		    fatal_error "Invalid target ($target) for $networks"
 		    ;;
 	    esac
 
-	    run_iptables2 -A norfc1918 -s $subnet -j $target
+	    run_iptables2 -A norfc1918 -s $networks -j $target
 
 	    if [ -n "$CONNTRACK_MATCH" ]; then
 		#
 		# We have connection tracking match -- match on the original destination
 		#
-		run_iptables2 -A norfc1918 -m conntrack --ctorigdst $subnet -j $target
+		run_iptables2 -A norfc1918 -m conntrack --ctorigdst $networks -j $target
 	    elif [ -n "$MANGLE_ENABLED" ]; then
 		#
 		# No connection tracking match but we have mangling -- add a rule to
 		# the mangle table
 		#
-		run_iptables2 -t mangle -A man1918 -d $subnet -j $target
+		run_iptables2 -t mangle -A man1918 -d $networks -j $target
 	    fi
 	done < $TMP_DIR/rfc1918
 
-	for interface in $norfc1918_interfaces; do
+	for host in $hosts; do
+	    interface=${host%%:*}
+	    networks=${host#*:}
+
 	    for chain in $(first_chains $interface); do
-		run_iptables -A $chain -m state --state NEW -j norfc1918
+		run_iptables -A $chain -m state --state NEW $(match_source_hosts $networks) -j norfc1918
 	    done
 
 	    [ -n "$MANGLE_ENABLED" -a -z "$CONNTRACK_MATCH" ] && \
-		run_iptables -t mangle -A PREROUTING -m state --state NEW -i $interface -j man1918
+		run_iptables -t mangle -A PREROUTING -m state --state NEW -i $interface $(match_source_hosts $networks) -j man1918
+	done
+    fi
+    #
+    # Bogons
+    #
+    hosts="$(find_hosts_by_option nobogons)"
+    
+    if [ -n "$hosts" ]; then
+	echo "Enabling Bogon Filtering"
+
+	strip_file bogons
+
+	createchain nobogons no
+
+	createchain bogons no
+	
+	log_rule $BOGON_LOG_LEVEL bogons DROP
+	
+	run_iptables -A bogons -j DROP
+
+	while read networks target; do
+	    case $target in
+		logdrop)
+		    target=bogons
+		    ;;
+		DROP|RETURN)
+		    ;;
+		*)
+		    fatal_error "Invalid target ($target) for $networks"
+		    ;;
+	    esac
+
+	    run_iptables2 -A nobogons -s $networks -j $target
+
+	done < $TMP_DIR/bogons
+
+	for host in $hosts; do
+	    interface=${host%%:*}
+	    network=${host#*:}
+
+	    for chain in $(first_chains $interface); do
+		run_iptables -A $chain -m state --state NEW $(match_source_hosts $network) -j nobogons
+	    done
 	done
 
     fi
 
-    interfaces=$(find_interfaces_by_option tcpflags)
+    hosts=$(find_hosts_by_option tcpflags)
 
-    if [ -n "$interfaces" ]; then
+    if [ -n "$hosts" ]; then
 	echo "Setting up TCP Flags checking..."
 
 	createchain tcpflags no
@@ -4560,9 +4825,12 @@ add_common_rules() {
 	#
 	run_iptables -A tcpflags -p tcp --syn --sport 0             $disposition
 
-	for interface in $interfaces; do
+	for host in $hosts; do
+	    interface=${host%%:*}
+	    network=${host#*:}
+
 	    for chain in $(first_chains $interface); do
-		run_iptables -A $chain -p tcp -j tcpflags
+		run_iptables -A $chain -p tcp $(match_source_hosts $network) -j tcpflags
 	    done
 	done
     fi
@@ -4698,8 +4966,11 @@ activate_rules()
 	shift
 	shift
 
-	havenatchain $destchain && \
+	if havenatchain $destchain ; then
 	    run_iptables -t nat -A $sourcechain $@ -j $destchain
+	elif [ -n "$BRIDGING" -a -f $TMP_DIR/physdev ]; then
+	    rm -f #TMP_DIR/physdev
+	fi
     }
 
     #
@@ -4716,6 +4987,8 @@ activate_rules()
 	    eval run_iptables -t nat -I $sourcechain \
 		\$${sourcechain}_rule $@ -j $destchain
 	    eval ${sourcechain}_rule=\$\(\(\$${sourcechain}_rule + 1\)\)
+	elif [ -n "$BRIDGING" -a -f $TMP_DIR/physdev ]; then
+	    rm -f $TMP_DIR/physdev        
 	fi
     }
 
@@ -4726,7 +4999,7 @@ activate_rules()
     addnatjump POSTROUTING nat_out
 
     for interface in $all_interfaces; do
-	addnatjump PREROUTING  $(input_chain $interface)	 -i $interface
+	addnatjump PREROUTING  $(input_chain $interface)  -i $interface
 	addnatjump POSTROUTING $(output_chain $interface) -o $interface
     done
 
@@ -4754,28 +5027,31 @@ activate_rules()
 	need_broadcast=
 
 	for host in $source_hosts; do
-	    interface=${host%:*}
-	    subnet=${host#*:}
+	    interface=${host%%:*}
+	    networks=${host#*:}
 
-	    run_iptables -A OUTPUT -o $interface -d $subnet -j $chain1
+	    run_iptables -A OUTPUT -o $interface $(match_dest_hosts $networks) -j $chain1
 
 	    #
 	    # Add jumps from the builtin chains for DNAT and SNAT rules
 	    #
-	    addrulejump PREROUTING  $(dnat_chain $zone) -i $interface -s $subnet
-	    addrulejump POSTROUTING $(snat_chain $zone) -o $interface -d $subnet
+	    addrulejump PREROUTING  $(dnat_chain $zone) -i $interface $(match_source_hosts $networks)
+	    addrulejump POSTROUTING $(snat_chain $zone) -o $interface $(match_dest_hosts $networks)
 
-	    run_iptables -A $(input_chain $interface) -s $subnet -j $chain2
+	    run_iptables -A $(input_chain $interface) $(match_source_hosts $networks) -j $chain2
 
 	    [ -n "$complex" ] && \
-		run_iptables -A $(forward_chain $interface) -s $subnet -j $frwd_chain
+		run_iptables -A $(forward_chain $interface) $(match_source_hosts $networks) -j $frwd_chain
 
-	    if [ "$subnet" != 0.0.0.0/0 ]; then
-		if ! list_search $interface $need_broadcast ; then
-		    eval options=\$$(chain_base $interface)_options
-		    list_search detectnets $options && need_broadcast="$need_broadcast $interface"
-		fi
-	    fi
+	    case $networks in
+		*.*.*.*)
+		    if [ "$networks" != 0.0.0.0/0 ]; then
+			if ! list_search $interface $need_broadcast ; then
+			    interface_has_option $interface detectnets && need_broadcast="$need_broadcast $interface"
+			fi
+		    fi
+		    ;;
+	    esac
 	done
 
 
@@ -4797,47 +5073,75 @@ activate_rules()
 	    echo "$zone $zone1 $chain" >> ${STATEDIR}/chains
 
 	    if [ $zone = $zone1 ]; then
+		#
+		# Try not to generate superfluous intra-zone rules
+		#
 		eval routeback=\"\$${zone}_routeback\"
+		eval interfaces=\"\$${zone}_interfaces\"
+		eval ports="\$${zone}_ports"
+
+		num_ifaces=$(list_count1 $interfaces)
+		#
+		# If the zone has a single interface then what matters is how many ports it has
+		#
+		[ $num_ifaces -eq 1 -a -n "$ports" ] && num_ifaces=$(list_count1 $ports)
+		#
+		# If we don't need to route back and if we have only one interface or one port to
+		# the zone then assume that hosts in the zone can communicate directly.
+		#
+		if [ $num_ifaces -lt 2 -a -z "$routeback" ] ; then
+		    continue
+		fi
 	    else
 		routeback=
+		num_ifaces=0
 	    fi
 	    
 	    if [ -n "$complex" ]; then
 		for host1 in $dest_hosts; do
-		    interface1=${host1%:*}
-		    subnet1=${host1#*:}
-		    if [ $(list_count1 $source_hosts) -eq 1 -a "$source_hosts" = "$host1" ]; then
-			if list_search $host1 $routeback; then
-			    run_iptables -A $frwd_chain -o $interface1 -d $subnet1 -j $chain
-			fi
-		    else
-			run_iptables -A $frwd_chain -o $interface1 -d $subnet1 -j $chain
+		    interface1=${host1%%:*}
+		    networks1=${host1#*:}
+		    #
+		    # Only generate an intrazone rule if the zone has more than one interface (port) or if
+		    # routeback was specified for this host group
+		    #
+		    if [ $zone != $zone1 -o $num_ifaces -gt 1 ] || list_search $host1 $routeback ; then
+			run_iptables -A $frwd_chain -o $interface1 $(match_dest_hosts $networks1) -j $chain			
 		    fi
 		done
 	    else
 		for host in $source_hosts; do
-		    interface=${host%:*}
-		    subnet=${host#*:}
+		    interface=${host%%:*}
+		    networks=${host#*:}
 
 		    chain1=$(forward_chain $interface)
 
 		    for host1 in $dest_hosts; do
-			interface1=${host1%:*}
-			subnet1=${host1#*:}
+			interface1=${host1%%:*}
+			networks1=${host1#*:}
 
 			if [ "$host" != "$host1" ] || list_search $host $routeback; then
-			    run_iptables -A $chain1 -s $subnet -o $interface1 -d $subnet1 -j $chain
+			    run_iptables -A $chain1 $(match_source_hosts $networks) -o $interface1 $(match_dest_hosts $networks1) -j $chain
 			fi
 		    done
 		done
 	    fi
 	done
     done
-
-    for interface in $all_interfaces; do
-       run_iptables -A FORWARD -i $interface -j $(forward_chain $interface)
-       run_iptables -A INPUT   -i $interface -j $(input_chain $interface)
-       addnatjump POSTROUTING $(masq_chain $interface) -o $interface
+    
+    for interface in $all_interfaces ; do
+	
+	run_iptables -A FORWARD -i $interface -j $(forward_chain $interface)
+	run_iptables -A INPUT   -i $interface -j $(input_chain $interface)
+	addnatjump POSTROUTING $(masq_chain $interface) -o $interface
+	#
+        # Bridges under the 2.4 kernel have the wierd property that REJECTS have the physdev-in and physdev-out set to the input physdev.
+        # To accomodate this feature/bug, we effectively set 'routeback' on bridge ports.
+	#
+	eval ports=\$$(chain_base $interface)_ports
+	for port in $ports; do
+	    run_iptables -A $(forward_chain $interface) -o $interface -m physdev --physdev-in $port --physdev-out $port -j ACCEPT
+	done
     done
 
     chain=${FW}2${FW}
@@ -4865,7 +5169,6 @@ activate_rules()
 	run_iptables -D $chain -m state --state ESTABLISHED,RELATED -j ACCEPT
 	run_iptables -D $chain -p udp --dport 53 -j ACCEPT
     done
-
 }
 
 #
@@ -4909,6 +5212,10 @@ define_firewall() # $1 = Command (Start or Restart)
     echo "Setting up NAT..."
 
     setup_nat
+
+    echo "Setting up NETMAP..."
+
+    setup_netmap
 
     echo "Adding Common Rules"
 
@@ -5016,7 +5323,7 @@ refresh_firewall()
 }
 
 #
-# Add a host or subnet to a zone
+# Add a host or networks to a zone
 #
 add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 {
@@ -5178,11 +5485,11 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		fi
 
 		for h in $dest_hosts; do
-		    iface=${h%:*}
+		    iface=${h%%:*}
 		    hosts=${h#*:}
 
 		    if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
-			do_iptables -I $source_chain $rulenum -s $host -o $iface -d $hosts -j $chain
+			do_iptables -I $source_chain $rulenum -s $host -o $iface $(match_dest_hosts $hosts) -j $chain
 			rulenum=$(($rulenum + 1))
 		    fi
 		done
@@ -5205,7 +5512,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		eval source_hosts=\"\$${z1}_hosts\"
 
 		for h in $source_hosts; do
-		    iface=${h%:*}
+		    iface=${h%%:*}
 		    hosts=${h#*:}
 
 		    base=$(chain_base $iface)
@@ -5221,7 +5528,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		    fi
 
 		    if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
-			do_iptables -I $(forward_chain $iface) $rulenum -s $hosts -o $interface -d $host -j $chain
+			do_iptables -I $(forward_chain $iface) $rulenum $(match_source_hosts $hosts) -o $interface -d $host -j $chain
 			rulenum=$(($rulenum + 1))
 		    fi
 
@@ -5237,12 +5544,12 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 }
 
 #
-# Delete a host or subnet from a zone
+# Delete a host or networks from a zone
 #
 delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
 {
     #
-    # Delete the subnect host(s) from the zone state file
+    # Delete the subject host(s) from the zone state file
     #
     delete_from_zones_file()
     {
@@ -5328,11 +5635,11 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		eval dest_hosts=\"\$${z2}_hosts\"
 
 		for h in $dest_hosts $delhost; do
-		    iface=${h%:*}
+		    iface=${h%%:*}
 		    hosts=${h#*:}
 
 		    if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
-			qt iptables -D $source_chain -s $host -o $iface -d $hosts -j $chain
+			qt iptables -D $source_chain -s $host -o $iface $(match_source_hosts $hosts) -j $chain
 		    fi
 		done
 	    fi
@@ -5343,11 +5650,11 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		eval source_hosts=\"\$${z1}_hosts\"
 		
 		for h in $source_hosts; do
-		    iface=${h%:*}
+		    iface=${h%%:*}
 		    hosts=${h#*:}
 
 		    if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
-			qt iptables -D $(forward_chain $iface) -s $hosts -o $interface -d $host -j $chain
+			qt iptables -D $(forward_chain $iface) $(match_source_hosts $hosts) -o $interface -d $host -j $chain
 		    fi
 		done
 	    fi
@@ -5450,6 +5757,7 @@ do_initialize() {
     TCP_FLAGS_DISPOSITION=
     TCP_FLAGS_LOG_LEVEL=
     RFC1918_LOG_LEVEL=
+    BOGON_LOG_LEVEL=
     MARK_IN_FORWARD_CHAIN=
     SHARED_DIR=/usr/share/shorewall
     FUNCTIONS=
@@ -5463,6 +5771,7 @@ do_initialize() {
     USEDACTIONS=
     SMURF_LOG_LEVEL=
     DISABLE_IPV6=
+    BRIDGING=
 
     stopping=
     have_mutex=
@@ -5582,6 +5891,8 @@ do_initialize() {
     fi
 
     [ -z "$RFC1918_LOG_LEVEL" ] && RFC1918_LOG_LEVEL=info
+    [ -z "$BOGON_LOG_LEVEL" ]   && BOGON_LOG_LEVEL=info
+
     MARK_IN_FORWARD_CHAIN=$(added_param_value_no MARK_IN_FORWARD_CHAIN $MARK_IN_FORWARD_CHAIN)
     [ -n "$MARK_IN_FORWARD_CHAIN" ] && marking_chain=tcfor || marking_chain=tcpre
     if [ -n "$TC_ENABLED" ]; then
@@ -5613,6 +5924,7 @@ do_initialize() {
     ADMINISABSENTMINDED=$(added_param_value_no ADMINISABSENTMINDED $ADMINISABSENTMINDED)
     BLACKLISTNEWONLY=$(added_param_value_no BLACKLISTNEWONLY $BLACKLISTNEWONLY)
     DISABLE_IPV6=$(added_param_value_no DISABLE_IPV6 $DISABLE_IPV6)
+    BRIDGING=$(added_param_value_no BRIDGING $BRIDGING)
     [ -n "$MODULE_SUFFIX" ] || MODULE_SUFFIX="o gz ko o.gz"
 
     #
@@ -5629,6 +5941,8 @@ do_initialize() {
     if [ $(encodeaddr $temp) != 192.168.1.1 ]; then
 	startup_error "Shell $SHOREWALL_SHELL is broken and may not be used with Shorewall"
     fi
+
+    rm -f $TMP_DIR/physdev
 }
 
 #

@@ -18,9 +18,235 @@ Texts. A copy of the license is included in the section entitled “<span
  class="quote"><a href="GnuCopyright.htm" target="_self">GNU Free
 Documentation License</a></span>”.<br>
 </p>
-<p>2004-01-30<br>
+<p>2004-04-05<br>
 </p>
 <hr style="width: 100%; height: 2px;">
+<p><b>3/14/2004 - Shorewall 2.0.0b&nbsp;</b><b></b></p>
+Corrects two problems:<br>
+<ol>
+  <li>Thanks to Sean Mathews, the long-standing problem with
+Proxy ARP and IPSEC has been eliminated!</li>
+  <li>The default value of the ALL INTERFACES column in
+/etc/shorewall/nat is documented as 'No' but the default continued to
+be 'Yes' as it was in Shorewall 1.4.<br>
+  </li>
+</ol>
+<p><b>3/14/2004 - Shorewall 2.0.0a&nbsp;</b><b></b></p>
+<p>Corrects one problem:<br>
+</p>
+<ul>
+  <li>Rules of the form:<br>
+    <br>
+&lt;action&gt;&nbsp;&nbsp;&nbsp;&nbsp;
+zone1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; zone2<br>
+    <br>
+generated a warning stating that the rule was a policy.<br>
+  </li>
+</ul>
+<p><b>3/14/2004 - Shorewall 2.0.0 </b><b><br>
+</b></p>
+<p>Dedicated to Agnes Van Slyke Eastep: March 14, 1910 - February
+23, 2004<br>
+</p>
+<p>Problems Corrected since 1.4.10<br>
+</p>
+<ol>
+  <li>A blank USER/GROUP column in /etc/shorewall/tcrules no
+longer causes a [re]start error.</li>
+  <li>The 'fgrep' utility is no longer required (caused startup
+problems on LEAF/Bering).</li>
+  <li>The "shorewall add" command no longer inserts rules before
+checking of the blacklist.</li>
+  <li>The 'detectnets' and 'routeback' options may now be used
+together with the intended effect.</li>
+  <li>The following syntax previously produced an error:<br>
+    <br>
+DNAT&nbsp; z1!z2,z3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; z4...<br>
+  </li>
+</ol>
+<p>Problems Corrected since RC2<br>
+<br>
+</p>
+<ol>
+  <li>CONTINUE rules now work again.</li>
+  <li>A comment in the rules file has been corrected.<br>
+  </li>
+</ol>
+<p>Issues when migrating from Shorewall 1.4.x to Shorewall 2.0.0:<br>
+</p>
+<ol>
+  <li>The 'dropunclean' and 'logunclean' interface options are no
+longer supported. If either option is specified in
+/etc/shorewall/interfaces, an threatening message will be generated.</li>
+  <li>The NAT_BEFORE_RULES option has been removed from
+shorewall.conf. The behavior of Shorewall is as if NAT_BEFORE_RULES=No
+had been specified. In other words, DNAT rules now always take
+precidence over one-to-one NAT specifications.</li>
+  <li>The default value for the ALL INTERFACES column in
+/etc/shorewall/nat has changed. In Shorewall 1.*, if the column was
+left empty, a value of "Yes" was assumed. This has been changed so that
+a value of "No" is now assumed.</li>
+  <li>The following files don't exist in Shorewall 2.0:<br>
+/etc/shorewall/common.def<br>
+/etc/shorewall/common<br>
+/etc/shorewall/icmpdef<br>
+/etc/shorewall/action.template (Moved to /usr/share/shorewall)<br>
+/etc/shorewall/rfc1918 (Moved to /usr/share/shorewall).<br>
+    <br>
+The /etc/shorewall/action file now allows an action to be designated as
+the "common" action for a particular policy type by following the
+action name with ":" and the policy (DROP, REJECT or ACCEPT).<br>
+    <br>
+The file /usr/share/shorewall/actions.std has been added to define
+those actions that are released as part of Shorewall. In that file are
+two actions as follows:<br>
+    <br>
+&nbsp;&nbsp;&nbsp; Drop:DROP<br>
+&nbsp;&nbsp; Reject:REJECT<br>
+    <br>
+The "Drop" action is the common action for DROP policies while the
+"Reject" action is the default action for "REJECT" policies. These
+actions will be performed on packets prior to applying the DROP or
+REJECT policy respectively. In the first release, the difference
+between "Reject" and "Drop" is that "Reject" REJECTs SMB traffic while
+"Drop" silently drops such traffic.<br>
+    <br>
+As described above, Shorewall allows a common action for ACCEPT
+policies but does not specify such an action in the default
+configuration.<br>
+    <br>
+If for some reason, you don't wish to have a common DROP or REJECT
+action, just include :DROP or :REJECT respectively in your
+/etc/shorewall/actions file.<br>
+    <br>
+The file /usr/share/shorewall/actions.std catalogs the standard actions
+and is processed prior to /etc/shorewall/actions. This causes a large
+number of actions to be defined. The files which define these aactions
+are also located in /usr/share/shorewall as is the he action template
+file (action.template).<br>
+    <br>
+These actions may be used in the ACTION column of the rules column. So
+for example, to allow FTP from your loc zone to your firewall, you
+would place this rule in /etc/shorewall/rules:<br>
+    <br>
+&nbsp; #ACTION&nbsp;&nbsp;&nbsp;&nbsp;
+SOURCE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; DEST<br>
+&nbsp; AllowFTP&nbsp;&nbsp;&nbsp;&nbsp;
+loc&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp; fw<br>
+    <br>
+If you want to redefine any of the Shorewall-defined actions, simply
+copy the appropriate action file from /usr/share/shorewall to
+/etc/shorewall and modify the copy as desired. Your modified copy will
+be used rather than the original one in /usr/share/shorewall.<br>
+    <br>
+Note: The 'dropBcast' and 'dropNonSyn' actions are built into Shorewall
+and may not be changed.<br>
+    <br>
+Beginning with version 2.0.0-Beta2, Shorewall will only create a chain
+for those actions that are actually used.<br>
+    <br>
+  </li>
+  <li>The /etc/shorewall directory no longer contains a 'users'
+file or a 'usersets' file. Similar functionality is now available using
+user-defined actions.<br>
+    <br>
+Now, action files created by copying
+/usr/share/shorewall/action.template may specify a USER and or GROUP
+name/id in the final column just like in the rules file (see below). It
+is thus possible to create actions that control traffic from a list of
+users and/or groups.<br>
+    <br>
+The last column in /etc/shorewall/rules is now labeled USER/GROUP and
+may contain:<br>
+    <br>
+&nbsp;&nbsp;&nbsp; [!]&lt;user number&gt;[:]<br>
+&nbsp;&nbsp;&nbsp; [!]&lt;user name&gt;[:]<br>
+&nbsp;&nbsp;&nbsp; [!]:&lt;group number&gt;<br>
+&nbsp;&nbsp;&nbsp; [!]:&lt;group name&gt;<br>
+&nbsp;&nbsp;&nbsp; [!]&lt;user number&gt;:&lt;group number&gt;<br>
+&nbsp;&nbsp;&nbsp; [!]&lt;user number&gt;:&lt;group name&gt;<br>
+&nbsp;&nbsp;&nbsp; [!]&lt;user name&gt;:&lt;group number&gt;<br>
+&nbsp;&nbsp;&nbsp; [!]&lt;user name&gt;:&lt;group name&gt;<br>
+&nbsp;<br>
+  </li>
+  <li>It is no longer possible to specify rate limiting in the
+ACTION column of /etc/shorewall/rules -- you must use the RATE LIMIT
+column.<br>
+    <br>
+  </li>
+  <li>Depending on which method you use to upgrade, if you have
+your own version of /etc/shorewall/rfc1918, you may have to take
+special action to restore it after the upgrade. Look for
+/etc/shorewall/rfc1918*, locate the proper file and rename it back to
+/etc/shorewall/rfc1918. The contents of that file will supercede the
+contents of /usr/share/shorewall/rfc1918.</li>
+</ol>
+<p>New Features:<br>
+</p>
+<ol>
+  <li>The INCLUDE directive now allows absolute file names.</li>
+  <li>A 'nosmurfs' interface option has been added to
+/etc/shorewall/interfaces. When specified for an interface, this option
+causes smurfs (packets with a broadcast address as their source) to be
+dropped and optionally logged (based on the setting of a new
+SMURF_LOG_LEVEL option in shorewall.conf).</li>
+  <li>fw-&gt;fw traffic may now be controlled by Shorewall. There
+is no need to define the loopback interface in
+/etc/shorewall/interfaces; you simply add a fw-&gt;fw policy and
+fw-&gt;fw rules. If you have neither a fw-&gt;fw policy nor fw-&gt;fw
+rules, all fw-&gt;fw traffic is allowed.</li>
+  <li>There is a new PERSISTENT column in the proxyarp file. A
+value of "Yes" in this column means that the route added by Shorewall
+for this host will remain after a "shorewall stop" or "shorewall clear".</li>
+  <li>"trace" is now a synonym for "debug" in /sbin/shorewall
+commands. So to trace the "start" command, you could enter:<br>
+    <br>
+shorewall trace start 2&gt; /tmp/trace<br>
+    <br>
+The trace information would be written to the file /tmp/trace.<br>
+    <br>
+  </li>
+  <li>When defining an ipsec tunnel in /etc/shorewall/tunnels, if
+you follow the tunnel type ("ipsec" or "ipsecnet") with ":noah" (e.g.,
+"ipsec:noah"), then Shorewall will only create rules for ESP (protocol
+50) and will not create rules for AH (protocol 51).</li>
+  <li>A new DISABLE_IPV6 option has been added to shorewall.conf.
+When this option is set to "Yes", Shorewall will set the policy for the
+IPv6 INPUT, OUTPUT and FORWARD chains to DROP during "shorewall
+[re]start" and "shorewall stop". Regardless of the setting of this
+variable, "shorewall clear" will silently attempt to set these policies
+to ACCEPT.<br>
+    <br>
+If this option is not set in your existing shorewall.conf then a
+setting of DISABLE_IPV6=No is assumed in which case, Shorewall will not
+touch any IPv6 settings except during "shorewall clear".</li>
+  <li>The CONTINUE target is now available in action definitions.
+CONTINUE terminates processing of the current action and returns to the
+point where that action was invoked.</li>
+</ol>
+<p><b>2/15/2004 - Shorewall 1.4.10c&nbsp;</b></p>
+<p>Corrects one problem:<br>
+</p>
+Entries in /etc/shorewall/tcrules with an empty USER/GROUP column would
+cause a startup error.
+<p><b>2/12/2004 - Shorewall 1.4.10b&nbsp;</b><b></b></p>
+<p>Corrects one problem:<br>
+</p>
+<ul>
+  <li>In the /etc/shorewall/masq entry “<span class="quote">eth0:!10.1.1.150
+&nbsp; &nbsp;0.0.0.0/0!10.1.0.0/16 &nbsp; &nbsp; 10.1.2.16</span>”, the
+“<span class="quote">!10.1.0.0/16</span>” is ignored.</li>
+</ul>
+<p><b>2/8/2004 - Shorewall 1.4.10a&nbsp;</b><b></b></p>
+<p>Corrects two problems:<br>
+</p>
+<ul>
+  <li>A problem which can cause [re]start to fail inexplicably
+while processing /etc/shorewall/masq.</li>
+  <li>Interfaces using the Atheros WiFi card to use the 'maclist'
+option.</li>
+</ul>
 <p><b>1/30/2004 - Shorewall 1.4.10</b></p>
 <p>Problems Corrected since version 1.4.9</p>
 <ol>

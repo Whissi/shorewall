@@ -147,8 +147,13 @@ logwatch)
 
 monitor)
 	echo "monitor: monitor [<refresh_interval>]
+
+    shorewall [-x] monitor [<refresh_interval>]
+
     Continuously display the firewall status, last 20 log entries and nat.
-    When the log entry display changes, an audible alarm is sounded."
+    When the log entry display changes, an audible alarm is sounded.
+
+    When -x is given, that option is also passed to iptables to display actual packet and byte counts."
 	;;
 
 refresh)
@@ -185,14 +190,15 @@ save)
 	;;
 
 show)
-	echo "show: show [<chain> [ <chain> ...] |classifiers|connections|log|nat|tc|tos]
-    shorewall show <chain> [ <chain> ... ]  - produce a verbose report about the IPtable chain(s).
+	echo "show: show [ <chain> [ <chain> ...] |classifiers|connections|log|nat|tc|tos]
+
+    shorewall [-x] show <chain> [ <chain> ... ]  - produce a verbose report about the IPtable chain(s).
     (iptables -L chain -n -v)
 
-    shorewall show nat - produce a verbose report about the nat table.
+    shorewall [-x] show nat - produce a verbose report about the nat table.
     (iptables -t nat -L -n -v)
 
-    shorewall show tos - produce a verbose report about the mangle table.
+    shorewall [-x] show tos - produce a verbose report about the mangle table.
     (iptables -t mangle -L -n -v)
 
     shorewall show log - display the last 20 packet log entries.
@@ -201,7 +207,9 @@ show)
 	being tracked by the firewall.
 
     shorewall show tc - displays information about the traffic
-	control/shaping configuration."
+	control/shaping configuration.
+
+    When -x is given, that option is also passed to iptables to display actual packet and byte counts."
 	;;
 
 start)
@@ -221,9 +229,14 @@ stop)
 
 status)
 	echo "status: status
+
+    shorewall [-x] status
+
     Produce a verbose report about the firewall.
    
-    (iptables -L -n -v)"
+    (iptables -L -n -)
+
+    When -x is given, that option is also passed to iptables to display actual packet and byte counts."
 	;;
 
 trace)

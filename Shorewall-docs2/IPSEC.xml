@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-01-22</pubdate>
+    <pubdate>2004-03-20</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -52,24 +52,9 @@
     configuring FreeS/Wan.</para>
 
     <warning>
-      <para>Do not use Proxy ARP and FreeS/Wan on the same system unless you
-      are prepared to suffer the consequences. If you start or restart
-      Shorewall with an IPSEC tunnel active, the proxied IP addresses are
-      mistakenly assigned to the IPSEC tunnel device (ipsecX) rather than to
-      the interface that you specify in the INTERFACE column of
-      /etc/shorewall/proxyarp. I haven&#39;t had the time to debug this
-      problem so I can&#39;t say if it is a bug in the Kernel or in FreeS/Wan.</para>
-
-      <para>You <emphasis role="bold">might</emphasis> be able to work around
-      this problem using the following (I haven&#39;t tried it):</para>
-
-      <para>In /etc/shorewall/init, include:</para>
-
-      <programlisting>qt service ipsec stop</programlisting>
-
-      <para>In /etc/shorewall/start, include:</para>
-
-      <programlisting>qt service ipsec start</programlisting>
+      <para>IPSEC and Proxy ARP do not work unless you are running Shorewall
+      2.0.1 Beta 3 or later or unless you have installed the fix to Shorewall
+      2.0.0 available from the <ulink url="errata.htm">Errata Page</ulink>.</para>
     </warning>
 
     <important>

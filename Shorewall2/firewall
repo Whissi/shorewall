@@ -6264,6 +6264,8 @@ activate_rules()
 
 	eval complex=\$${zone}_is_complex
 
+	[ -n "$complex" ] && frwd_chain=${zone}_frwd
+
 	if [ -n "$DYNAMIC_ZONES" ]; then
 	    echo $zone $source_hosts >> ${STATEDIR}/zones
 	    echo "$FW $zone $chain1" >> ${STATEDIR}/chains

@@ -17,7 +17,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-12-04</pubdate>
+    <pubdate>2004-12-12</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -50,6 +50,16 @@
     <section id="faq37">
       <title>(FAQ 37) I just installed Shorewall on Debian and the
       /etc/shorewall directory is empty!!!</title>
+
+      <important>
+        <para>Once you have installed the .deb package and before you attempt
+        to configure Shorewall, please heed the advice of Lorenzo Martignoni,
+        the Shorewall Debian Maintainer:</para>
+
+        <para><quote>For more information about Shorewall usage on Debian
+        system please look at /usr/share/doc/shorewall/README.Debian provided
+        by [the] shorewall Debian package.</quote></para>
+      </important>
 
       <para>If you install using the .deb, you will find that your <filename
       class="directory">/etc/shorewall</filename> directory is empty. This is
@@ -372,26 +382,12 @@ DNAT       loc           loc:192.168.1.5    tcp      www         -         $ETH0
 
         <orderedlist>
           <listitem>
-            <para>Set the Z-&gt;Z policy to ACCEPT.</para>
-          </listitem>
-
-          <listitem>
-            <para>Masquerade Z to itself.</para>
-          </listitem>
-
-          <listitem>
             <para>Set the routeback option on the interface to Z.</para>
           </listitem>
 
           <listitem>
             <para>Set the ALL INTERFACES column in the nat file to
             <quote>Yes</quote>.</para>
-
-            <warning>
-              <para>In this configuration, all Z-&gt;Z traffic will look to
-              the server as if it came from the firewall rather than from the
-              original client! I DO NOT RECOMMEND THIS SETUP.</para>
-            </warning>
           </listitem>
         </orderedlist>
 
@@ -403,17 +399,7 @@ DNAT       loc           loc:192.168.1.5    tcp      www         -         $ETH0
           <para>In <filename>/etc/shorewall/interfaces</filename>:</para>
 
           <programlisting>#ZONE    INTERFACE    BROADCAST       OPTIONS
-loc      eth2         192.168.2.255   <emphasis role="bold">routeback</emphasis></programlisting>
-
-          <para>In <filename>/etc/shorewall/policy</filename>:</para>
-
-          <programlisting>#SOURCE    DESTINATION    POLICY     LIMIT:BURST
-dmz        dmz            ACCEPT</programlisting>
-
-          <para>In <filename>/etc/shorewall/masq</filename>:</para>
-
-          <programlisting>#INTERFACE       SUBNET            ADDRESS
-eth2             192.168.2.0/24</programlisting>
+dmz      eth2         192.168.2.255   <emphasis role="bold">routeback</emphasis></programlisting>
 
           <para>In <filename>/etc/shorewall/na</filename>t, be sure that you
           have <quote>Yes</quote> in the ALL INTERFACES column.</para>
@@ -651,6 +637,11 @@ SPT=33120 DPT=5000 LEN=22</programlisting>
       <programlisting># TYPE                  ZONE    GATEWAY         GATEWAY
 #                                               ZONE
 generic:udp:5000        net     69.145.71.133</programlisting>
+
+      <caution>
+        <para>You must be running Shorewall 1.4.6 or later to apply this
+        solution.</para>
+      </caution>
     </section>
   </section>
 
@@ -2022,6 +2013,17 @@ Verifying Configuration...
     <title>Revision History</title>
 
     <para><revhistory>
+        <revision>
+          <revnumber>1.39</revnumber>
+
+          <date>2004-12-12</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Updated Debian information. Revised the answer to FAQ
+          2a.</revremark>
+        </revision>
+
         <revision>
           <revnumber>1.38</revnumber>
 

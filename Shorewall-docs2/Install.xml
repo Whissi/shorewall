@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-10-31</pubdate>
+    <pubdate>2004-12-12</pubdate>
 
     <copyright>
       <year>2001</year>
@@ -40,33 +40,20 @@
     </legalnotice>
   </articleinfo>
 
-  <warning>
-    <para><emphasis role="bold">Note to Debian Users</emphasis></para>
+  <important>
+    <para>Before attempting installation, I strongly urge you to read and
+    print a copy of the <ulink url="shorewall_quickstart_guide.htm">Shorewall
+    QuickStart</ulink> Guide for the configuration that most closely matches
+    your own.</para>
+  </important>
 
-    <para>If you install using the .deb, you will find that your <filename
-    class="directory">/etc/shorewall</filename> directory is empty. This is
-    intentional. The released configuration file skeletons may be found on
-    your system in the directory <filename
-    class="directory">/usr/share/doc/shorewall/default-config</filename>.
-    Simply copy the files you need from that directory to <filename
-    class="directory">/etc/shorewall</filename> and modify the copies.</para>
-
-    <para>Note that you must copy <filename
-    class="directory">/usr/share/doc/shorewall/default-config/shorewall.conf</filename>
-    and /usr/share/doc/shorewall/default-config/modules to <filename
-    class="directory">/etc/shorewall</filename> even if you do not modify
-    those files.</para>
-  </warning>
+  <important>
+    <para>Before upgrading, be sure to review the <ulink
+    url="upgrade_issues.htm">Upgrade Issues</ulink>.</para>
+  </important>
 
   <section id="Install_RPM">
     <title>Install using RPM</title>
-
-    <important>
-      <para>Before attempting installation, I strongly urge you to read and
-      print a copy of the <ulink
-      url="shorewall_quickstart_guide.htm">Shorewall QuickStart</ulink> Guide
-      for the configuration that most closely matches your own.</para>
-    </important>
 
     <para>To install Shorewall using the RPM:</para>
 
@@ -133,13 +120,6 @@
 
   <section id="Install_Tarball">
     <title>Install using tarball</title>
-
-    <important>
-      <para>Before attempting installation, I strongly urge you to read and
-      print a copy of the <ulink
-      url="shorewall_quickstart_guide.htm">Shorewall QuickStart</ulink> Guide
-      for the configuration that most closely matches your own.</para>
-    </important>
 
     <para>To install Shorewall using the tarball and install script:</para>
 
@@ -226,13 +206,6 @@ INIT="rc.firewall"</programlisting>
   <section id="LRP">
     <title>Install the .lrp</title>
 
-    <important>
-      <para>Before attempting installation, I strongly urge you to read and
-      print a copy of the <ulink
-      url="shorewall_quickstart_guide.htm">Shorewall QuickStart</ulink> Guide
-      for the configuration that most closely matches your own.</para>
-    </important>
-
     <para>To install my version of Shorewall on a fresh Bering disk, simply
     replace the <quote>shorwall.lrp</quote> file on the image with the file
     that you downloaded. See the <ulink url="two-interface.htm">two-interface
@@ -240,13 +213,36 @@ INIT="rc.firewall"</programlisting>
     required.</para>
   </section>
 
-  <section id="Upgrade_RPM">
-    <title>Upgrade using RPM</title>
+  <section>
+    <title>Install the .deb</title>
 
     <important>
-      <para>Before upgrading, be sure to review the <ulink
-      url="upgrade_issues.htm">Upgrade Issues</ulink>.</para>
+      <para>Once you have installed the .deb package and before you attempt to
+      configure Shorewall, please heed the advice of Lorenzo Martignoni, the
+      Shorewall Debian Maintainer:</para>
+
+      <para><quote>For more information about Shorewall usage on Debian system
+      please look at /usr/share/doc/shorewall/README.Debian provided by [the]
+      shorewall Debian package.</quote></para>
     </important>
+
+    <para>The easiest way to install Shorewall on Debian, is to use
+    apt-get:</para>
+
+    <para><command>apt-get install shorewall</command></para>
+
+    <para>To ensure that you are installing the latest version of Shorewall,
+    please modify your <filename>/etc/apt/sources.list</filename> file as
+    described <ulink
+    url="http://idea.sec.dico.unimi.it/%7Elorenzo/index.html#Debian">here</ulink>.</para>
+
+    <para>Once you have completed configuring Shorewall, you can enable
+    startup at boot time by setting startup=1 in
+    <filename>/etc/default/shorewall</filename>.</para>
+  </section>
+
+  <section id="Upgrade_RPM">
+    <title>Upgrade using RPM</title>
 
     <para>If you already have the Shorewall RPM installed and are upgrading to
     a new version:</para>
@@ -309,11 +305,6 @@ INIT="rc.firewall"</programlisting>
 
   <section id="Upgrade_Tarball">
     <title>Upgrade using tarball</title>
-
-    <important>
-      <para>Before upgrading, be sure to review the <ulink
-      url="upgrade_issues.htm">Upgrade Issues</ulink>.</para>
-    </important>
 
     <para>If you already have Shorewall installed and are upgrading to a new
     version using the tarball:</para>
@@ -392,11 +383,6 @@ INIT="rc.firewall"</programlisting>
 
   <section id="LRP_Upgrade">
     <title>Upgrade the .lrp</title>
-
-    <important>
-      <para>Before upgrading, be sure to review the <ulink
-      url="upgrade_issues.htm">Upgrade Issues</ulink>.</para>
-    </important>
 
     <para>The following was contributed by Charles Steinkuehler on the Leaf
     mailing list:</para>

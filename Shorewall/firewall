@@ -1068,7 +1068,28 @@ setup_nat() {
 	fi
 
 	if [ -n "$ADD_IP_ALIASES" ]; then
-	    run_ip addr add $external dev $interface
+	    #
+	    # Folks begin to panic if they don't see all of the same
+	    # decoration on these IP addresses that they see when their
+	    # distro's net config tool adds them. In an attempt to cut
+	    # down on their anxiety, we'll introduce the following (no doubt
+	    # buggy) code to set the VLSM and BRD just like the primary
+	    # address
+	    #
+	    # Get all of the lines that contain inet addresses with broadcast
+	    #
+	    val=`ip addr show $interface | grep 'inet.*brd '` 2> /dev/null
+	    #
+	    # Hack off the leading 'inet <ip addr>' (actually cut off the
+	    # "/" as well but add it back in.
+	    #
+	    val="/${val#*/}"
+	    #
+	    # Now get the VLSM, "brd" and the broadcast address
+	    #
+	    val=`echo $val | cut -d' ' -f1,2,3`
+
+	    run_ip addr add ${external}${val} dev $interface
 	    echo "$external $interface" >> ${STATEDIR}/nat
 	fi
 

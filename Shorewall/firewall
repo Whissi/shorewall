@@ -1966,6 +1966,7 @@ add_nat_rule() {
 #
 add_a_rule()
 {
+    local natrule=
 
     rule_error() {
 	fatal_error "Only DNAT and REDIRECT rules may specify port mapping; rule \"$rule\""
@@ -1975,7 +1976,7 @@ add_a_rule()
 
     cli=
 
-    [ -n "$client" ] && case "$client" in
+    case "$client" in
     -)
 	;;
     *:*)
@@ -1988,7 +1989,7 @@ add_a_rule()
 	cli=`mac_match $client`
 	;;
     *)
-	cli="-i $client"
+	[ -n "$client" ] && cli="-i $client"
 	;;
     esac
 
@@ -1997,7 +1998,7 @@ add_a_rule()
     dest_interface=
     serv=
 
-    [ -n "$server" ] && case "$server" in
+    case "$server" in
     -)
 	;;
     *.*.*)
@@ -2007,7 +2008,7 @@ add_a_rule()
 	fatal_error "Rule \"$rule\" - Destination may not be specified by MAC Address"
 	;;
     *)
-	dest_interface="-o $server"
+	[ -n "$server" ] && dest_interface="-o $server"
 	;;
     esac
 
@@ -2073,10 +2074,12 @@ add_a_rule()
 	    [ -n "$serv" ] && startup_error "REDIRECT rules cannot"\
 		" specify a server IP; rule: \"$rule\""
 	    servport=${servport:=$port}
+	    natrule=Yes
 	    ;;
 	DNAT)
 	    [ -n "$serv" ] || fatal_error "DNAT rules require a" \
 		" server address; rule: \"$rule\""
+	    natrule=Yes
 	    ;;
 	LOG)
 	    [ -z "$loglevel" ] && fatal_error "LOG requires log level"
@@ -2095,19 +2098,11 @@ add_a_rule()
 
 	    # A specific server or server port given
 
-	    case "$logtarget" in
-		REDIRECT|DNAT)
+	    if [ -n "$natrule" ]; then
 		    add_nat_rule
-		    ;;
-		*)
-		    if [ -n "$addr" -a "$addr" != "$serv" ]; then
-			rule_error
-		    elif [ -n "$servport" -a "$servport" != "$port" ]; then
-			rule_error
-		    fi
-
-		;;
-		esac
+	    elif [ -n "$addr" -a "$addr" != "$serv" ] || [ -n "$servport" -a "$servport" != "$port" ]; then
+		rule_error
+	    fi
 
 	    if [ -z "$dnat_only" -a $chain != ${FW}2${FW} ]; then
 		serv="${serv:+-d $serv}"
@@ -2289,8 +2284,6 @@ process_rule() # $1 = target
 		return
 		;;
 	esac
-    else
-	[ $command = check ] || ensurechain $chain
     fi
 
     # Generate Netfilter rule(s)

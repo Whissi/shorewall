@@ -12,6 +12,15 @@
 #
 # Columns are:
 #
+#	ACTION	      - What to do when a match is found.
+#
+#				COUNT	- Simply count the match and continue
+#					  with the next rule
+#				DONE	- Count the match and don't attempt
+#					  to match any other accounting rules.
+#				<chain> - The name of a chain. Shoreall will 
+#					  create the chain automatically.
+#
 #	SOURCE	      - Packet Source
 #
 #			The name of an interface, an address (host or net) or
@@ -37,4 +46,4 @@
 #			only be specified if the protocol is TCP or UDP (6
 #			or 17).
 #
-#SOURCE		DESTINATION	PROTOCOL	DEST PORT   SOURCE PORT
+#ACTION	SOURCE		DESTINATION	PROTOCOL	DEST PORT   SOURCE PORT

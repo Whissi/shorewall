@@ -131,7 +131,66 @@ New Features:
    will use all listed addresses/ranges in round-robin fashion.
 
 7) An /etc/shorewall/accounting file has been added to allow for 
-   traffic accounting. This is a very crude and high-overhead 
-   facility but it is enough to allow you to isolate the cause of
-   unexpected increases in traffic volume. You may find documentation
-   of the file's format in the file itself and in the documentation.
+   traffic accounting.
+
+   The file has the following columns:
+
+	ACTION	      - What to do when a match is found.
+
+				COUNT	- Simply count the match and 
+					  continue trying to match the
+					  packet with the following
+					  accounting rules
+				DONE	- Count the match and don't
+					  attempt to match any
+					  following accounting rules.
+				<chain> - The name of a chain. Shorewall
+					  will create the chain
+					  automatically. If the name of
+					  the chain is followed by
+					  ":DONE" then after control
+					  returns from the named chain,
+					  the packet will not be
+					  matched against any of the
+					  following accounting rules.
+
+	SOURCE	      - Packet Source
+
+			The name of an interface, an address (host or
+			net) or an interface name followed by ":"
+			and a host or net address. 
+
+	DESTINATION   - Packet Destination
+
+			Format the same as the SOURCE column.
+
+	PROTOCOL	A protocol name (from /etc/protocols), a
+			protocol number.
+
+	DEST PORT	Destination Port number
+
+			Service name from /etc/services or port
+			number. May only be specified if the protocol
+			is TCP or UDP (6 or 17). 
+
+	SOURCE PORT	Source Port number
+
+			Service name from /etc/services or port
+			number. May only be specified if the protocol
+			is TCP or UDP (6 or 17).
+
+   In all columns except the first, the values "-","any" and "all" are
+   treated as wild-cards.
+
+   The accounting rules are evaluated in the Netfilter 'filter'
+   table. This is the same environment where the 'rules' file rules are
+   evaluated and in this environment, DNAT has already occurred in
+   inbound packets and SNAT has not yet occurred on outbound ones.
+
+   The accounting rules are placed in a chain called "accounting" and
+   can thus be displayed using "shorewall show accounting". It should
+   be noted that where the ACTION is <chain>:DONE then the entry
+   generates two rules in "accounting"; the first is a jump to the
+   named chain and the second is a RETURN rule which causes the
+   accounting chain to be exited.
+

@@ -241,6 +241,20 @@ createchain() # $1 = chain name, $2 = If "yes", create default rules
     eval ${1}_exists=Yes
 }
 
+createchain2() # $1 = chain name, $2 = If "yes", create default rules
+{
+    if iptables -N $1; then
+
+	if [ $2 = yes ]; then
+	    run_iptables -A $1 -m state --state ESTABLISHED,RELATED -j ACCEPT
+	    [ -z "$NEWNOTSYN" ] && \
+		run_iptables -A $1 -m state --state NEW -p tcp ! --syn -j newnotsyn
+	fi
+	
+	eval ${1}_exists=Yes
+    fi
+}
+
 #
 # Determine if a chain exists
 #
@@ -1749,6 +1763,24 @@ delete_tc()
 #
 process_accounting_rule() {
     rule=
+    chain=
+	
+    accounting_error() {
+	error_message "Warning: Invalid Accounting rule" $action $source $dest $proto $port $sport
+    }
+
+    jump_to_chain() {
+	if ! chain_exists $chain; then
+	    if createchain2 $chain No; then
+		run_iptables -A $chain -j RETURN
+	    else
+		accounting_error
+		return 2
+	    fi
+	fi
+	
+	rule="$rule -j $chain"
+    }
 
     case $source in
 	*:*)
@@ -1802,10 +1834,32 @@ process_accounting_rule() {
 	    ;;
     esac
 
+    case $action in
+	COUNT)
+	    ;;
+	DONE)
+	    rule="$rule -j RETURN"
+	    ;;
+	*:DONE)
+	    chain=${action%:*}
+	    rule2="$rule -j RETURN"
+	    jump_to_chain || return
+	    ;;
+	*)
+	    chain=$action
+	    jump_to_chain || return
+	    ;;
+    esac
+		
     if iptables -A accounting $rule ; then
-	echo "   Accounting rule" $source $dest $proto $port $sport Added
+	if [ "x$rule2" != x ]; then
+	    if ! iptables -A accounting $rule2 ; then
+		return;
+	    fi
+	echo "   Accounting rule" $action $source $dest $proto $port $sport Added
+	fi
     else
-	error_message "Warning: Invalid Accounting rule" $source $dest $proto $port $sport
+	accounting_error
     fi
 }
 
@@ -1825,7 +1879,7 @@ setup_accounting() # $1 = Name of accounting file
 	run_iptables -A $chain -j accounting
     done
 
-    while read source dest proto port sport ; do
+    while read action source dest proto port sport ; do
 	[ "x$source" != x ] && process_accounting_rule
     done < $TMP_DIR/accounting
 }

@@ -67,6 +67,20 @@ Problems Corrected since version 1.4.6:
 
         No policy defined from zone <source> to zone <dest>
 
+15) Previously, if neither /etc/shorewall/common nor
+    /etc/shorewall/common.def existed, Shorewall would fail to start
+    and would not remove the lock file. Failure to remove the lock file
+    resulted in the following during subsequent attempts to start:
+
+    Loading /usr/share/shorewall/functions...
+    Processing /etc/shorewall/params ...
+    Processing /etc/shorewall/shorewall.conf...
+    Giving up on lock file /var/lib/shorewall/lock
+    Shorewall Not Started
+
+    Shorewall now reports a fatal error if neither of these two files
+    exist and correctly removes the lock file.
+
 Migration Issues:
 
 1) IP Traffic Accounting is changed from Snapshot 20030813. 

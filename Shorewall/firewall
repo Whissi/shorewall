@@ -2851,7 +2851,7 @@ process_rule() # $1 = target
 #
 # Process the rules file for the 'start', 'restart' or 'check' command.
 #
-process_rules() # $1 = name of rules file
+process_rules()
 {
     #
     # Process a rule where the source or destination is "all"
@@ -3925,8 +3925,10 @@ build_common_chain() {
 
     if [ -f $common ]; then
 	. $common
+    elif [ -f /etc/shorewall/common.def ]; then
+	. /etc/shorewall/common.def
     else
-	. `find_file common.def`
+	fatal_error "/etc/shorewall/common.def does not exist"
     fi
     #
     # New Not Syn Stuff
@@ -4497,7 +4499,7 @@ define_firewall() # $1 = Command (Start or Restart)
 
     echo "Processing $rules..."
 
-    process_rules $rules
+    process_rules
 
     policy=`find_file policy`
 

@@ -51,6 +51,11 @@ my_mutex_off() {
     [ -n "$have_mutex" ] && { mutex_off; have_mutex=; }
 }
 
+progress_message() # $* = Message
+{
+    [ -n "$QUIET" ] || echo "$@"
+}
+
 #
 # Message to stderr
 #
@@ -131,9 +136,9 @@ ensure_and_save_command()
 # Append a file to /var/lib/shorewall/restore-$$
 #
 append_file() {
-    save_command "cat > $STATEDIR/$1 << __EOF__"
+    save_command "cat > $STATEDIR/$1 << EOF"
     cat $STATEDIR/$1 >> /var/lib/shorewall/restore-$$
-    save_command __EOF__
+    save_command EOF
 }
 
 #
@@ -571,7 +576,7 @@ known_interface() # $1 = interface name
 match_source_dev()
 {
     if [ -n "$BRIDGING" ]; then
-	list_search $1 $all_ports && physdev_echo "--physdev-in $1" || echo -i $1
+	known_interface $1 && echo -i $1 || physdev_echo "--physdev-in $1"
     else
 	echo -i $1
     fi
@@ -580,15 +585,10 @@ match_source_dev()
 match_dest_dev()
 {
     if [ -n "$BRIDGING" ]; then
-	list_search $1 $all_ports && physdev_echo "--physdev-out $1" || echo -o $1
+	known_interface $1 && echo -o $1 || physdev_echo "--physdev-out $1"
     else
 	echo -o $1
     fi
-}
-
-verify_interface()
-{
-    known_interface $1 || { [ -n $BRIDGING ] && list_search $1 $all_ports ; }
 }
 
 #
@@ -798,13 +798,6 @@ validate_interfaces_file() {
 validate_hosts_file() {
    local z hosts options r interface host option port ports
 
-   check_bridge_port() 
-   {
-       list_search $1 $ports || ports="$ports $1"
-       list_search ${interface}:${1} $zports || zports="$zports ${interface}:${1}"
-       list_search $1 $all_ports || all_ports="$all_ports $1"
-   }
-
     while read z hosts options; do
 	expandv z hosts options
 	r="$z $hosts $options"
@@ -827,14 +820,17 @@ validate_hosts_file() {
 		*:*)
 		    known_interface ${host%:*} && \
 			startup_error "Bridged interfaces may not be defined in /etc/shorewall/interfaces: $host"
-		    check_bridge_port ${host%%:*}
+		    port=${host%%:*}
+		    list_search $port $ports || ports="$ports $port"
+		    list_search ${interface}:${port} $zports || zports="$zports ${interface}:${port}"
 		    ;;
 		*.*.*.*)
 		    ;;
 		*)
 		    known_interface $host && \
 			startup_error "Bridged interfaces may not be defined in /etc/shorewall/interfaces: $host"
-		    check_bridge_port $host
+		    list_search $host $ports || ports="$ports $host"
+		    list_search ${interface}:${host} $zports || zports="$zports ${interface}:${host}"
 		    ;;
 	    esac
 
@@ -859,8 +855,6 @@ validate_hosts_file() {
 	fi
 
     done < $TMP_DIR/hosts
-
-    [ -n "$all_ports" ] && echo "   Bridge ports are: $all_ports"
 }
 
 #
@@ -1184,9 +1178,6 @@ log_rule() # $1 = log level, $2 = chain, $3 = disposition , $... = predicates fo
 # Set /proc/sys/net/ipv4/ip_forward based on $IP_FORWARDING
 #
 setup_forwarding() {
-
-    save_command "progress_message Restoring IP Forwarding..."
-
     case "$IP_FORWARDING" in
     [Oo][Nn])
 	run_and_save_command "echo 1 > /proc/sys/net/ipv4/ip_forward"
@@ -1207,7 +1198,6 @@ disable_ipv6() {
 
     if [ -n "$foo" ]; then
 	if qt which ip6tables; then
-	    save_command "progress_message Disabling IPV6..."
 	    ip6tables -P FORWARD DROP && save_command ip6tables -P FORWARD DROP
 	    ip6tables -P INPUT DROP   && save_command ip6tables -P INPUT DROP
 	    ip6tables -P OUTPUT DROP  && save_command ip6tables -P OUTPUT DROP
@@ -1650,8 +1640,6 @@ setup_proxy_arp() {
 
     > ${STATEDIR}/proxyarp
 
-    save_command "progress_message Restoring Proxy ARP..."
-
     while read address interface external haveroute persistent; do
 	expandv address interface external haveroute persistent
 	setup_one_proxy_arp
@@ -1852,8 +1840,6 @@ setup_nat() {
     #
     > ${STATEDIR}/nat
 
-    save_command "progress_message Restoring one-to-one NAT..."
-
     while read external interface internal allints localnat; do
 	expandv external interface internal allints localnat
 
@@ -2009,8 +1995,10 @@ process_tc_rule()
 		    chain=tcout
 		    ;;
 		*)
-		    
-		    verify_interface $source || fatal_error "Unknown interface $source in rule \"$rule\""
+		    if [ -z "$BRIDGING" ] && ! list_search $source $all_interfaces; then
+			fatal_error "Unknown interface $source in rule \"$rule\""
+		    fi
+
 		    r="$(match_source_dev) $source "
 		    ;;
 	    esac
@@ -2035,11 +2023,7 @@ process_tc_rule()
 	    esac
 	fi
 
-	if [ "x$dest" != "x-"  ]; then
-	    verify_interface $dest || fatal_error "Unknown interface $dest in rule \"$rule\""
-	    r="${r}$(match_dest_dev $dest) "
-	fi
-
+	[ "x$dest"   = "x-"  ] || r="${r}-d $dest "
 	[ "$proto"   = "all" ] || r="${r}-p $proto "
 	[ "x$port"   = "x-"  ] || r="${r}--dport $port "
 	[ "x$sport"  = "x-"  ] || r="${r}--sport $sport "
@@ -2111,8 +2095,6 @@ setup_tc1() {
     run_iptables -t mangle -A OUTPUT     -j tcout
 
     run_user_exit tcstart
-
-    save_command "progress_message Restoring Traffic Control..."
     save_command . $(find_file tcstart)
 
 }
@@ -2162,14 +2144,6 @@ process_accounting_rule() {
 	error_message "Warning: Invalid Accounting rule" $action $chain $source $dest $proto $port $sport
     }
 
-    accounting_interface_error() {
-	error_message "Warning: Unknown interface $1 in " $action $chain $source $dest $proto $port $sport
-    }
-
-    accounting_interface_verify() {
-	verify_interface $1 || accounting_interface_error $1
-    }
-
     jump_to_chain() {
 	if ! havechain $jumpchain; then
 	    if ! createchain2 $jumpchain No; then
@@ -2183,7 +2157,6 @@ process_accounting_rule() {
 
     case $source in
 	*:*)
-	    accounting_interface_verify ${source%:*}
 	    rule="-s ${source#*:} $(match_source_dev ${source%:*})"
 	    ;;
 	*.*.*.*)
@@ -2192,16 +2165,12 @@ process_accounting_rule() {
 	-|all|any)
 	    ;;
 	*)
-	    if [ -n "$source" ]; then
-		accounting_interface_verify $source
-		rule="$(match_source_dev $source)"
-	    fi
+	    [ -n "$source" ] && rule="$(match_source_dev $source)"
 	    ;;
     esac
 
     [ -n "$dest" ] && case $dest in
 	*:*)
-	    accounting_interface_verify ${dest%:*}
 	    rule="$rule -d ${dest#*:} $(match_dest_dev ${dest%:*})"
 	    ;;
 	*.*.*.*)
@@ -2210,7 +2179,6 @@ process_accounting_rule() {
 	-|all|any)
 	    ;;
 	*)
-	    accounting_interface_verify $dest
 	    rule="$rule $(match_dest_dev $dest)"
 	    ;;
     esac
@@ -2265,8 +2233,8 @@ process_accounting_rule() {
 		
     ensurechain1 $chain
 
-    if iptables -A $chain $(fix_bang $rule) ; then
-	[ -n "$rule2" ] && run_iptables2 -A $jumpchain $rule2
+    if iptables -A $chain $rule ; then
+	[ "x$rule2" != x ] && run_iptables -A $jumpchain $rule2
 	progress_message "   Accounting rule" $action $chain $source $dest $proto $port $sport Added
     else
 	accounting_error
@@ -2443,16 +2411,6 @@ add_an_action()
 	fi
     }
 
-    interface_error()
-    {
-	fatal_error "Unknown interface $1 in rule: \"$rule\""
-    }
-
-    action_interface_verify()
-    {
-	verify_interface $1 || interface_error $1
-    }
-
     # Set source variables. The 'cli' variable will hold the client match predicate(s).
 
     cli=
@@ -2461,7 +2419,6 @@ add_an_action()
     -)
 	;;
     *:*)
-	action_interface_verify ${client%:*}
 	cli="$(match_source_dev ${client%:*}) -s ${client#*:}"
 	;;
     *.*.*)
@@ -2471,10 +2428,7 @@ add_an_action()
 	cli=$(mac_match $client)
 	;;
     *)
-	if [ -n "$client" ]; then
-	    action_interface_verify $client
-	    cli="$(match_source_dev $client)"
-	fi
+	[ -n "$client" ] && cli="$(match_source_dev $client)"
 	;;
     esac
 
@@ -2493,10 +2447,7 @@ add_an_action()
 	fatal_error "Rule \"$rule\" - Destination may not be specified by MAC Address"
 	;;
     *)
-	if [ -n "$server" ]; then
-	    action_interface_verify $server
-	    dest_interface="$(match_dest_dev $server)"
-	fi
+	[ -n "$server" ] && dest_interface="$(match_dest_dev $server)"
 	;;
     esac
 
@@ -3140,16 +3091,6 @@ add_a_rule()
 	fi
     }
 
-    interface_error()
-    {
-	fatal_error "Unknown interface $1 in rule: \"$rule\""
-    }
-
-    rule_interface_verify()
-    {
-	verify_interface $1 || interface_error $1
-    }
-
     # Set source variables. The 'cli' variable will hold the client match predicate(s).
 
     cli=
@@ -3158,7 +3099,6 @@ add_a_rule()
     -)
 	;;
     *:*)
-	rule_interface_verify ${client%:*}
 	cli="$(match_source_dev ${client%:*}) -s ${client#*:}"
 	;;
     *.*.*)
@@ -3168,10 +3108,7 @@ add_a_rule()
 	cli=$(mac_match $client)
 	;;
     *)
-	if [ -n "$client" ]; then
-	    rule_interface_verify $client
-	    cli="$(match_source_dev $client)"
-	fi
+	[ -n "$client" ] && cli="$(match_source_dev $client)"
 	;;
     esac
 
@@ -3191,8 +3128,7 @@ add_a_rule()
 	;;
     *)
 	if [ -n "$server" ]; then
-	    [ -n "$nonat" ] && fatal_error "Destination interface not allowed with $logtarget"
-	    rule_interface_verify $server
+	    [ -n "$nonat" ] && fatal_error "Destination interface not allowe with $logtarget"
 	    dest_interface="$(match_dest_dev $server)"
 	fi
 	;;
@@ -3772,11 +3708,6 @@ process_tos_rule() {
 	    #
 	    # Assume that this is a device name
 	    #
-	    if ! verify_interface $src ; then
-		error_message "Warning: Unknown Interface in rule \"$rule\" ignored"
-		return
-	    fi
-
 	    src="$(match_source_dev $src)"
 	    ;;
     esac
@@ -4354,7 +4285,7 @@ setup_masq()
 
     strip_file masq $1
 
-    [ -n "$NAT_ENABLED" ] && echo "Masqueraded Networks and Hosts:" && save_command "progress_message Restoring Masquerading/SNAT..."
+    [ -n "$NAT_ENABLED" ] && echo "Masqueraded Networks and Hosts:"
 
     while read fullinterface networks addresses proto ports; do
 	expandv fullinterface networks addresses proto ports
@@ -4576,8 +4507,6 @@ add_ip_aliases()
 
     set -- $aliases_to_add
 
-    save_command "progress_message Restoring IP Addresses..."
-
     while [ $# -gt 0 ]; do
 	external=$1
 	interface=$2
@@ -4610,9 +4539,7 @@ load_kernel_modules() {
 	. $modules
 
 	if [ "$command" != check ]; then
-
-	    save_command "progress_message Loading kernel modules..."
-	    save_command "reload_kernel_modules <<__EOF__"
+	    save_command "reload_kernel_modules <<EOF"
 
 	    while read command; do
 		case "$command" in
@@ -4622,7 +4549,7 @@ load_kernel_modules() {
 		esac
 	    done < $modules
 	    
-	    save_command __EOF__
+	    save_command EOF
 	fi
     fi
 }
@@ -5087,8 +5014,6 @@ add_common_rules() {
     #
     # ARP Filtering
     #
-    save_command "progress_message Restoring ARP filtering..."
-
     for f in /proc/sys/net/ipv4/conf/*/arp_filter; do
 	run_and_save_command "echo 0 > $f"
     done
@@ -5115,8 +5040,6 @@ add_common_rules() {
 
     if [ -n "$interfaces" -o -n "$ROUTE_FILTER" ]; then
 	echo "Setting up Kernel Route Filtering..."
-
-	save_command "progress_message Restoring Route Filtering..."
 
 	for f in /proc/sys/net/ipv4/conf/*/rp_filter; do
 	    run_and_save_command "echo 0 > $f"
@@ -5482,8 +5405,7 @@ define_firewall() # $1 = Command (Start or Restart)
     [ -d /var/lib/shorewall ] || mkdir -p /var/lib/shorewall
 
     echo '#bin/sh' > /var/lib/shorewall/restore-$$
-    save_command "# Restore base file generated $(date)"
-    save_command ". /usr/share/shorewall/functions"
+    echo ". /usr/share/shorewall/functions" >> /var/lib/shorewall/restore-$$
 
     save_command "MODULESDIR=\"$MODULESDIR\""
     save_command "MODULE_SUFFIX=\"$MODULE_SUFFIX\""
@@ -5540,9 +5462,7 @@ define_firewall() # $1 = Command (Start or Restart)
     
     save_command "date > $STATEDIR/restarted"
 
-    save_command "progress_message Restoring Netfilter Configuration..."
-
-    save_command 'iptables-restore << __EOF__'
+    save_command 'iptables-restore << EOF'
 
     # 'shorewall save' appends the iptables-save output and 'EOF'
 
@@ -6018,7 +5938,7 @@ do_initialize() {
     determine_capabilities
 
     [ -z "${STATEDIR}" ] && STATEDIR=/var/state/shorewall
-   
+
     [ -d $STATEDIR ] || mkdir -p $STATEDIR
 
     [ -z "$FW" ] && FW=fw

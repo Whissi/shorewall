@@ -1,5 +1,4 @@
 #!/bin/sh
-RCDLINKS="2,S41 3,S41 6,K41"
 #
 #     The Shoreline Firewall (Shorewall) Packet Filtering Firewall - V1.3 6/14/2002
 #
@@ -41,20 +40,6 @@ RCDLINKS="2,S41 3,S41 6,K41"
 #	   shorewall refresh	.		  Rebuild the common chain
 #	   shorewall check			  Verify the more heavily-used
 #						  configuration files.
-
-#### BEGIN INIT INFO
-# Provides:	  shorewall
-# Required-Start: $network
-# Required-Stop:
-# Default-Start:  2 3 5
-# Default-Stop:	  0 1 6
-# Description:	  starts and stops the shorewall firewall
-### END INIT INFO
-
-# chkconfig: 2345 25 90
-# description: Packet filtering firewall
-#
-
 ###############################################################################
 # Search a list looking for a match -- returns zero if a match found	      #
 # 1 otherwise								      #
@@ -1161,6 +1146,7 @@ setup_tunnels() # $1 = name of tunnels file
 	for z in `separate_list $3`; do
 	    if validate_zone $z; then
 		addrule ${FW}2${z} -p udp --sport 500 --dport 500 $options
+		addrule ${z}2${FW} -p udp --sport 500 --dport 500 $options
 	    else
 		error_message "Warning: Invalid gateway zone ($z)" \
 		" -- Tunnel \"$tunnel\" may encounter keying problems"

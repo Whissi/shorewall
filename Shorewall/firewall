@@ -4888,14 +4888,17 @@ activate_rules()
 	    [ -n "$complex" ] && \
 		run_iptables -A `forward_chain $interface` -s $subnet -j $frwd_chain
 
-	    if ! list_search $interface $need_broadcast ; then
-		eval options=\$`chain_base ${interface}`_options
-		list_search detectnets $options && need_broadcast="$need_broadcast $interface"
+	    if [ "$subnet" != 0.0.0.0/0 ]; then
+		if ! list_search $interface $need_broadcast ; then
+		    eval options=\$`chain_base ${interface}`_options
+		    list_search detectnets $options && need_broadcast="$need_broadcast $interface"
+		fi
 	    fi
 	done
 
 	for interface in $need_broadcast ; do
 	    run_iptables -A OUTPUT -o $interface -d 255.255.255.255 -j $chain1
+	    run_iptables -A OUTPUT -o $interface -d 224.0.0.0/4     -j $chain1
 	done
    
 	for zone1 in $zones; do

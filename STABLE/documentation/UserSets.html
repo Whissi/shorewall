@@ -1,0 +1,141 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta http-equiv="Content-Language" content="en-us">
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=windows-1252">
+  <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+  <meta name="ProgId" content="FrontPage.Editor.Document">
+  <title>Controlling Traffic by UID/GID</title>
+  <meta name="author" content="Tom Eastep">
+</head>
+<body>
+<table border="0" cellpadding="0" cellspacing="0"
+ style="border-collapse: collapse;" bordercolor="#111111" width="100%"
+ id="AutoNumber1" bgcolor="#3366ff" height="90">
+  <tbody>
+    <tr>
+      <td width="100%">
+      <h1 align="center"><font color="#ffffff">Controlling Output
+Traffic by UID/GID<br>
+      </font></h1>
+      </td>
+    </tr>
+  </tbody>
+</table>
+This capability was added in Shorewall release
+1.4.7.<br>
+<br>
+Netfilter provides the capability to filter packets generated on the
+firewall system by User Id and/or Group Id. Shorewall provides two
+separate but related ways to use this Netfilter capability:<br>
+<ol>
+  <li>Shorewall allows you to
+define collections of users called "<a href="#UserSet">User Sets</a>"
+and then to restrict
+certain rules in /etc/shorewall/rules to a given User Set.</li>
+  <li>Shorewall also allows you to restrict a given <a href="#Rule">rule
+    </a>to a particular user and/or group.<br>
+  </li>
+</ol>
+Since only packets created by programs running on the Shorewall box
+itself, only rules whose SOURCE is the firewall ($FW) may be restricted
+using either of the facilities.<br>
+<h2><a name="UserSet"></a>User Sets<br>
+</h2>
+Given the way that this facility is implemented in Shorewall, it is not
+possible to control logging of individual rules using a User Set and
+logging is rather specified on the User Set itself.<br>
+<br>
+User Sets are defined in the /etc/shorewall/usersets file. Columns in
+that file include:<br>
+<br>
+<div style="margin-left: 40px;">USERSET&nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The name of a User Set. Must be a legal
+shell
+identifier of no more than six (6) characters in length.<br>
+REJECT&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+Log level for connections rejected for this User Set.<br>
+ACCEPT&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp; Log
+level for connections accepted for this User Set.<br>
+DROP &nbsp;&nbsp; &nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; Log level for connections dropped for this User Set.<br>
+</div>
+<br>
+In the REJECT and ACCEPT columns, if you don't want to specify a value
+in the column but you want to specify a value in a following column,
+you may enter "-".<br>
+<br>
+Users and/or groups are added to User Sets using the
+/etc/shorewall/users file. Columns in that file are:<br>
+<br>
+<div style="margin-left: 40px;">USERSET&nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; &nbsp;&nbsp; The name of a User Set defined in
+/etc/shorewall/usersets.<br>
+USER&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+&nbsp;&nbsp; The name of a user defined on the system or a user number.<br>
+GROUP&nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp; &nbsp;&nbsp;
+The name of a group defined on the system or a number.<br>
+</div>
+<p align="left">Only one of the USER and GROUP
+column needs to be non-empty. If you wish to specify a GROUP but not a
+USER, enter "-" in the user column.<br>
+</p>
+<p align="left">If both USER and GROUP are
+specified then only programs running under that USER:GROUP pair will
+match rules specifying the User Set named in the USERSET column.<br>
+</p>
+<p align="left">Once a user set has been defined, its name may be
+placed in the USER SET column of the /etc/shorewall/rules file. <span
+ style="color: rgb(255, 0, 0);"><span style="font-weight: bold;">IMPORTANT:
+</span></span>When
+the name of a user set is given in the USER SET column, you may not
+include a log level in the ACTION column; logging of such rules is
+governed solely by the user set's definition in the
+/etc/shorewall/userset file.
+</p>
+<p align="left">Example: You want members of the
+'admin' group and 'root' to be able to use ssh on the firewall to
+connect to local systems. You want to log all connections accepted for
+these users using syslog at the 'info' level.<br>
+</p>
+<div style="margin-left: 40px;"></div>
+<p align="left" style="margin-left: 40px;">/etc/shorewall/usersets</p>
+<div style="margin-left: 40px;"></div>
+<pre style="margin-left: 80px;">#USERSET	REJECT	ACCEPT	DROP<br>admins		-	info<br></pre>
+<div style="margin-left: 40px;"></div>
+<p align="left" style="margin-left: 40px;">/etc/shorewall/users<br>
+</p>
+<div style="margin-left: 40px;"></div>
+<pre style="margin-left: 80px;">#USERSET	USER		GROUP<br>admins		-		admin<br>admins		root<br></pre>
+<div style="margin-left: 40px;">/etc/shorewall/rules<br>
+</div>
+<pre style="margin-left: 80px;">#ACTION	SOURCE	DESTINATION	PROTO	PORT	SOURCE	ORIGINAL	RATE	USER<br>#						PORT(S)	DESTINATION		SET<br><br>ACCEPT	$FW	loc		tcp	22	-	-		-	admins<br></pre>
+<h2><a name="Rule"></a>Restricting a rule to a particular user and/or
+group<br>
+</h2>
+In cases where you may want to restrict a rule to a particular user
+and/or group, the USER SET column in the rules file may be specified as:<br>
+<br>
+<div style="margin-left: 40px;">[ &lt;<span style="font-style: italic;">user
+name or number</span>&gt; ] : [ &lt;<span style="font-style: italic;">group
+name or number</span>&gt; ]<br>
+<div style="text-align: left;"><br>
+</div>
+</div>
+When a user and/or group name is given in the USER SET column, it is OK
+to specify a log level in the ACTION column. <br>
+<br>
+Example: You want user <span style="font-style: italic;">mail </span>to
+be able to send email from the firewall to the local net zone<br>
+<br>
+<div style="margin-left: 40px;">/etc/shorewall/rules (be sure to note
+the ":" in the USER SET column entry).<br>
+<pre>#ACTION	SOURCE	DESTINATION	PROTO	PORT	SOURCE	ORIGINAL	RATE	USER<br>#						PORT(S)	DESTINATION		SET<br><br>ACCEPT	$FW	loc		tcp	25	-	-		-	mail:</pre>
+</div>
+<p align="left"><font size="2">Last updated 9/19/2003 - <a
+ href="support.htm">Tom Eastep</a></font></p>
+<p><font face="Trebuchet MS"><a href="copyright.htm"><font size="2">Copyright</font>
+© <font size="2">2003 Thomas M. Eastep.</font></a></font></p>
+</body>
+</html>

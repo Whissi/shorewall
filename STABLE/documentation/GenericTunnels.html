@@ -1,0 +1,203 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=windows-1252">
+  <title>Generic Tunnels</title>
+  <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+  <meta name="ProgId" content="FrontPage.Editor.Document">
+</head>
+<body>
+<table border="0" cellpadding="0" cellspacing="0"
+ style="border-collapse: collapse;" bordercolor="#111111" width="100%"
+ id="AutoNumber1" bgcolor="#3366ff" height="90">
+  <tbody>
+    <tr>
+      <td width="100%">
+      <h1 align="center"><font color="#ffffff">Generic Tunnels</font></h1>
+      </td>
+    </tr>
+  </tbody>
+</table>
+Shorewall includes built-in support for a wide range of VPN solutions.
+If you have need for a tunnel type that does not have explicit support,
+you can generally describe the tunneling software using "generic
+tunnels"<br>
+<h2>Bridging two Masqueraded Networks</h2>
+<p>Suppose that we have the following situation:</p>
+<p align="center"> <img border="0" src="images/TwoNets1.png"
+ width="745" height="427"> </p>
+<p align="left">We want systems in the 192.168.1.0/24 subnetwork to be
+able to communicate with the systems in the 10.0.0.0/8 network. This is
+accomplished through use of the /etc/shorewall/tunnels file, the
+/etc/shorewall/policy file and the /etc/shorewall/tunnel script that is
+included with Shorewall.<br>
+</p>
+<p align="left">Suppose that you have tunneling software that uses two
+different protocols:<br>
+</p>
+<p align="left">a) TCP port 1071<br>
+b) GRE (Protocol 47)<br>
+c) The tunnel interface on system A is "tun0" and the tunnel interface
+on system B is also "tun0".<br>
+</p>
+<p align="left">On each firewall, you will need to declare a zone to
+represent the remote subnet. We'll assume that this zone is called
+'vpn' and declare it in /etc/shorewall/zones on both systems as follows.</p>
+<blockquote>
+  <table border="2" cellpadding="2" style="border-collapse: collapse;">
+    <tbody>
+      <tr>
+        <td><strong>ZONE</strong></td>
+        <td><strong>DISPLAY</strong></td>
+        <td><strong>COMMENTS</strong></td>
+      </tr>
+      <tr>
+        <td>vpn</td>
+        <td>VPN</td>
+        <td>Remote Subnet</td>
+      </tr>
+    </tbody>
+  </table>
+</blockquote>
+<p align="left">On system A, the 10.0.0.0/8 will comprise the <b>vpn</b>
+zone.
+In /etc/shorewall/interfaces:</p>
+<blockquote>
+  <table border="2" cellpadding="2" style="border-collapse: collapse;">
+    <tbody>
+      <tr>
+        <td><b>ZONE</b></td>
+        <td><b>INTERFACE</b></td>
+        <td><b>BROADCAST</b></td>
+        <td><b>OPTIONS</b></td>
+      </tr>
+      <tr>
+        <td>vpn</td>
+        <td>tun0</td>
+        <td>10.255.255.255</td>
+        <td>&nbsp;</td>
+      </tr>
+    </tbody>
+  </table>
+</blockquote>
+<p align="left">In /etc/shorewall/tunnels on system A, we need the
+following:</p>
+<blockquote>
+  <table border="2" cellpadding="2" style="border-collapse: collapse;">
+    <tbody>
+      <tr>
+        <td><b>TYPE</b></td>
+        <td><b>ZONE</b></td>
+        <td><b>GATEWAY</b></td>
+        <td><b>GATEWAY ZONE</b></td>
+      </tr>
+      <tr>
+        <td>generic:tcp:1071<br>
+        </td>
+        <td>net</td>
+        <td>134.28.54.2</td>
+        <td>&nbsp;</td>
+      </tr>
+      <tr>
+        <td style="vertical-align: top;">generic:47<br>
+        </td>
+        <td style="vertical-align: top;">net<br>
+        </td>
+        <td style="vertical-align: top;">134.28.54.2<br>
+        </td>
+        <td style="vertical-align: top;"><br>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</blockquote>
+<p>These entries in /etc/shorewall/tunnels, opens the firewall so that
+TCP port 1071 and the Generalized Routing Encapsulation Protocol (47)
+will be accepted to/from the remote gateway.</p>
+<blockquote>
+  <table border="2" cellpadding="2" style="border-collapse: collapse;">
+    <tbody>
+      <tr>
+        <td><b>ZONE</b></td>
+        <td><b>INTERFACE</b></td>
+        <td><b>BROADCAST</b></td>
+        <td><b>OPTIONS</b></td>
+      </tr>
+      <tr>
+        <td>vpn</td>
+        <td>tun0</td>
+        <td>192.168.1.255</td>
+        <td>&nbsp;</td>
+      </tr>
+    </tbody>
+  </table>
+</blockquote>
+<p>In /etc/shorewall/tunnels on system B, we have:</p>
+<blockquote>
+  <table border="2" cellpadding="2" style="border-collapse: collapse;">
+    <tbody>
+      <tr>
+        <td><b>TYPE</b></td>
+        <td><b>ZONE</b></td>
+        <td><b>GATEWAY</b></td>
+        <td><b>GATEWAY ZONE</b></td>
+      </tr>
+      <tr>
+        <td>generic:tcp:1071<br>
+        </td>
+        <td>net</td>
+        <td>206.191.148.9</td>
+        <td>&nbsp;</td>
+      </tr>
+      <tr>
+        <td style="vertical-align: top;">generic:47<br>
+        </td>
+        <td style="vertical-align: top;">net<br>
+        </td>
+        <td style="vertical-align: top;">134.28.54.2<br>
+        </td>
+        <td style="vertical-align: top;"><br>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</blockquote>
+<p align="left"> You will need to allow traffic between the "vpn" zone
+and the "loc" zone on both systems -- if you simply want to admit all
+traffic in both directions, you can use the policy file:</p>
+<blockquote>
+  <table border="2" cellpadding="2" style="border-collapse: collapse;">
+    <tbody>
+      <tr>
+        <td><strong>SOURCE</strong></td>
+        <td><strong>DEST</strong></td>
+        <td><strong>POLICY</strong></td>
+        <td><strong>LOG LEVEL</strong></td>
+      </tr>
+      <tr>
+        <td>loc</td>
+        <td>vpn</td>
+        <td>ACCEPT</td>
+        <td>&nbsp;</td>
+      </tr>
+      <tr>
+        <td>vpn</td>
+        <td>loc</td>
+        <td>ACCEPT</td>
+        <td>&nbsp;</td>
+      </tr>
+    </tbody>
+  </table>
+</blockquote>
+<p>On both systems, restart Shorewall and start your VPN software on
+each system. The systems in the two masqueraded subnetworks
+can now talk to each other</p>
+<p><font size="2">Updated 8/9/2003 - <a href="support.htm">Tom Eastep</a>
+</font></p>
+<p><a href="copyright.htm"><font size="2">Copyright</font> © <font
+ size="2">2001, 2002, 2003Thomas M. Eastep.</font></a></p>
+<br>
+<br>
+</body>
+</html>

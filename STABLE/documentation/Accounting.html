@@ -1,0 +1,114 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta http-equiv="Content-Language" content="en-us">
+  <meta http-equiv="Content-Type"
+ content="text/html; charset=windows-1252">
+  <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
+  <meta name="ProgId" content="FrontPage.Editor.Document">
+  <title>Shorewall Accounting</title>
+  <meta name="author" content="Tom Eastep">
+</head>
+<body>
+<table border="0" cellpadding="0" cellspacing="0"
+ style="border-collapse: collapse;" bordercolor="#111111" width="100%"
+ id="AutoNumber1" bgcolor="#3366ff" height="90">
+  <tbody>
+    <tr>
+      <td width="100%">
+      <h1 align="center"><font color="#ffffff">Shorewall and Traffic
+Accounting</font></h1>
+      </td>
+    </tr>
+  </tbody>
+</table>
+Shorewall Traffic Accounting support was added in Shorewall release
+1.4.7.<br>
+<br>
+Shorewall accounting rules are described in the file
+/etc/shorewall/accounting. By default, the accounting rules are placed
+in a chain called "accounting" and can
+thus be displayed using "shorewall show accounting". All traffic
+passing into, out of or through the firewall traverses the accounting
+chain including traffic that will later be rejected by <a
+ href="Documentation.htm#Interfaces">interface options</a> such as
+"tcpflags" and "maclist". If your kernel doesn't support the connection
+tracking match extension (Kernel 2.4.21) then some traffic rejected
+under 'norfc1918' will not traverse the accounting chain.<br>
+<br>
+The columns in the accounting file are as follows:<br>
+<ul>
+  <li><span style="font-weight: bold;">ACTION</span> - What to do when
+a match is found. Possible values are:</li>
+  <ul>
+    <li>COUNT- Simply count the match and&nbsp; continue trying to
+match the packet with the following accounting rules</li>
+    <li>DONE- Count the match and don't attempt to match any following
+accounting rules.</li>
+    <li>&lt;<span style="font-style: italic;">chain</span>&gt; - The
+name of a chain to jump to. Shorewall will create the chain
+automatically. If the
+name of the chain is followed by ":COUNT" then a COUNT rule matching
+this rule will automatically be added to &lt;<span
+ style="font-style: italic;">chain</span>&gt;<br>
+    </li>
+  </ul>
+  <li><span style="font-weight: bold;">CHAIN </span>- The name of the
+chain where the accounting rule is to be added. If empty or "-" then
+the "accounting" chain is assumed.<br>
+  </li>
+  <li><span style="font-weight: bold;">SOURCE</span> - Packet Source.
+The name of an interface, an address
+(host or net) or an interface name followed by ":" and a host or net
+address.</li>
+  <li><span style="font-weight: bold;">DESTINATION</span> - Packet
+Destination Format the same as the SOURCE
+column.</li>
+  <li><span style="font-weight: bold;">PROTOCOL</span> - A protocol
+name (from /etc/protocols) or a protocol
+number.</li>
+  <li><span style="font-weight: bold;">DEST PORT</span> - Destination
+Port number. Service name from
+/etc/services or port number. May only be specified if the protocol is
+TCP or UDP (6 or 17).</li>
+  <li><span style="font-weight: bold;">SOURCE PORT</span>- Source Port
+number. Service name from /etc/services
+or port number. May only be specified if the protocol is TCP or UDP (6
+or 17).<br>
+  </li>
+</ul>
+In all columns except ACTION and CHAIN, the values "-","any" and
+"all" are treated as wild-cards.<br>
+&nbsp;<br>
+The accounting rules are evaluated in the Netfilter 'filter' table.
+This is the same environment where the 'rules' file rules are evaluated
+and in this environment, DNAT has already occurred in inbound packets
+and SNAT has not yet occurred on outbound ones.<br>
+&nbsp;<br>
+Accounting rules are not stateful -- each rule only handles traffic in
+one direction. For example, if eth0 is your internet interface and you
+have a web
+server in your DMZ connected to eth1 then to count HTTP traffic in
+both directions requires two rules:&nbsp;<br>
+<pre>	#ACTION	CHAIN	SOURCE	DESTINATION	PROTOCOL	DEST		SOURCE<br>	#							PORT		PORT<br>	DONE	-	eth0	eth1		tcp		80<br>	DONE	-	eth1	eth0		tcp		-		80</pre>
+Associating a counter with a chain allows for nice reporting. For
+example:<br>
+<pre>	#ACTION		CHAIN	SOURCE	DESTINATION	PROTOCOL	DEST		SOURCE<br>	#								PORT		PORT<br>	web:COUNT	-	eth0	eth1		tcp		80<br>	web:COUNT	-	eth1	eth0		tcp		-		80<br>	web:COUNT	-	eth0	eth1		tcp		443<br>	web:COUNT	-	eth1	eth0		tcp		-		443<br>	DONE		web<br></pre>
+Now "shorewall show web" will give you a breakdown of your web traffic:<br>
+<div style="margin-left: 40px;">
+<pre>[root@gateway shorewall]# shorewall show web<br>Shorewall-1.4.6-20030821 Chain web at gateway.shorewall.net - Wed Aug 20 09:48:56 PDT 2003<br> <br>Counters reset Wed Aug 20 09:48:00 PDT 2003<br> <br>Chain web (4 references)<br> pkts bytes target     prot opt in     out     source               destination<br>   11  1335            tcp  --  eth0   eth1    0.0.0.0/0            0.0.0.0/0          tcp dpt:80<br>   18  1962            tcp  --  eth1   eth0    0.0.0.0/0            0.0.0.0/0          tcp spt:80<br>    0     0            tcp  --  eth0   eth1    0.0.0.0/0            0.0.0.0/0          tcp dpt:443<br>    0     0            tcp  --  eth1   eth0    0.0.0.0/0            0.0.0.0/0          tcp spt:443<br>   29  3297 RETURN     all  --  *      *       0.0.0.0/0            0.0.0.0/0<br>[root@gateway shorewall]#</pre>
+</div>
+Here's a slightly different example:<br>
+<pre>	#ACTION		CHAIN	SOURCE	DESTINATION	PROTOCOL	DEST		SOURCE<br>	#								PORT		PORT<br>	web		-	eth0	eth1		tcp		80<br>	web		-	eth1	eth0		tcp		-		80<br>	web		-	eth0	eth1		tcp		443<br>	web		-	eth1	eth0		tcp		-		443<br><br>	COUNT		web	eth0	eth1<br>	COUNT		web	eth1	eth0<br></pre>
+Now "shorewall show web" simply gives you a breakdown by input and
+output:<br>
+<br>
+<pre style="margin-left: 40px;">[root@gateway shorewall]# shorewall show accounting web <br>Shorewall-1.4.6-20030821 Chains accounting web at gateway.shorewall.net - Wed Aug 20 10:27:21 PDT 2003<br> <br>Counters reset Wed Aug 20 10:24:33 PDT 2003<br> <br>Chain accounting (3 references)<br> pkts bytes target     prot opt in     out     source               destination<br> 8767  727K web        tcp  --  eth0   eth1    0.0.0.0/0            0.0.0.0/0          tcp dpt:80<br>    0     0 web        tcp  --  eth0   eth1    0.0.0.0/0            0.0.0.0/0          tcp dpt:443<br>11506   13M web        tcp  --  eth1   eth0    0.0.0.0/0            0.0.0.0/0          tcp spt:80<br>    0     0 web        tcp  --  eth1   eth0    0.0.0.0/0            0.0.0.0/0          tcp spt:443<br>Chain web (4 references)<br> pkts bytes target     prot opt in     out     source               destination<br> 8767  727K            all  --  eth0   eth1    0.0.0.0/0            0.0.0.0/0<br>11506   13M            all  --  eth1   eth0    0.0.0.0/0            0.0.0.0/0<br>[root@gateway shorewall]#<br><br></pre>
+<p align="left"><font size="2">Last updated 8/20/2003 - <a
+ href="support.htm">Tom Eastep</a></font></p>
+<p><font face="Trebuchet MS"><a href="copyright.htm"><font size="2">Copyright</font>
+© <font size="2">2003 Thomas M. Eastep.</font></a></font></p>
+<br>
+<br>
+</body>
+</html>

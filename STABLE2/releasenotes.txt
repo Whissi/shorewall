@@ -23,9 +23,20 @@ Problems Corrected in version 2.0.6
    Netfilter failing to match certain broadcast packets. The result 
    is that the firewall log shows a lot of broadcast packets.
 
-   Users experiencing this problem can use PKTTYPE=No in
+   Other users have complained of the following message when 
+   starting Shorewall:
+
+	    modprobe: cant locate module ipt_pkttype
+
+   Users experiencing either of these problems can use PKTTYPE=No in
    shorewall.conf to cause Shorewall to use IP address filtering of 
    broadcasts rather than packet type.
 
 2) The shorewall.conf and zones file are no longer given execute
    permission by the installer script.
+
+3) ICMP packets that are in the INVALID state are now dropped by the
+   Reject and Drop default actions. They do so using the new 
+   'dropInvalid' builtin action.
+
+

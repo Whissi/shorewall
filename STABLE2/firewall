@@ -2790,7 +2790,7 @@ createactionchain() # $1 = chain name
 
 process_actions1() {
 	
-    ACTIONS="dropBcast dropNonSyn dropNotSyn rejNotSyn logNotSyn rLogNotSyn dLogNotSyn"
+    ACTIONS="dropBcast dropNonSyn dropNotSyn rejNotSyn logNotSyn rLogNotSyn dLogNotSyn dropInvalid"
     USEDACTIONS=
 
     strip_file actions
@@ -2972,6 +2972,9 @@ process_actions2() {
 		;;
 	    dLogNotSyn)
 		log_action dLogNotSyn DROP		
+		;;
+	    dropInvalid)
+		[ "$COMMAND" != check ] && run_iptables -A dropInvalid -m state --state INVALID -j DROP
 		;;
 	    *)
 		f=action.$xaction

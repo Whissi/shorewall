@@ -1224,6 +1224,29 @@ loc        loc       REJECT    info</programlisting>
       traffic within the zone is handled just like traffic between zones
       is.</para>
 
+      <para>The idea is this:</para>
+
+      <orderedlist>
+        <listitem>
+          <para>A zone should be homogenous with respect to security
+          requirements.</para>
+        </listitem>
+
+        <listitem>
+          <para>Traffic within a zone should not require rules or
+          policies.</para>
+        </listitem>
+
+        <listitem>
+          <para>Shorewall will not restrict traffic within a zone.</para>
+        </listitem>
+      </orderedlist>
+
+      <para>UNLESS the user defines the zone badly so that intra-zone rules
+      are required. In that case, Shorewall will not try to guess what the
+      user's intentions are and will treat traffic within the affected zone(s)
+      just like any other traffic. </para>
+
       <para>Any time that you have multiple interfaces associated with a
       single zone, you should ask yourself if you really want traffic routed
       between those interfaces. Cases where you might not want that behavior

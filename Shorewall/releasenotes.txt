@@ -162,3 +162,17 @@ New Features:
     Example:
 
 	foo	eth1:192.168.1.0/24,192.168.2.0/24
+
+11) The "shorewall check" command now includes the chain name when
+    printing the applicable policy for each pair of zones. 
+
+    Example:
+
+	Policy for dmz to net is REJECT using chain all2all
+
+    This means that the policy for connections from the dmz to the
+    internet is REJECT and the applicable entry in the
+    /etc/shorewall/policy was the all->all policy.
+
+12) Support for the 2.6 Kernel series has been added.
+

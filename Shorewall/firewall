@@ -697,7 +697,7 @@ validate_policy()
 	    [ $1 = $2 ]  || \
 	    [ $1 = all ] || \
 	    [ $2 = all ] || \
-	    echo "   Policy for $1 to $2 is $policy"
+	    echo "   Policy for $1 to $2 is $policy using chain $chain"
     }
 
     all_policy_chains=
@@ -2703,6 +2703,12 @@ loadmodule() # $1 = module name, $2 - * arguments
 	# assume that insmod can load them
 	#
 	modulefile=${modulefile}.gz
+
+	if [ -f $modulefile ]; then
+	    insmod $modulefile $*
+	fi
+
+	modulefile=${modulefile}.ko
 
 	if [ -f $modulefile ]; then
 	    insmod $modulefile $*

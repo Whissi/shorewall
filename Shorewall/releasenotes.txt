@@ -38,7 +38,7 @@ New features include:
    traffic control rules during [re]start. This setting is intended
    for use by people that prefer to configure traffic shaping when
    the network interfaces come up rather than when the firewall
-   is started. By setting TC_ENABLED=Yes and CLEAR_TC=No and by
-   not supplying an /etc/shorewall/tcstart file, your traffic 
-   shaping rules can still use the 'fw' classifier based on packet
-   marking defined in /etc/shorewall/tcrules.
+   is started. If that is what you want to do, set TC_ENABLED=Yes and
+   CLEAR_TC=No and do not supply an /etc/shorewall/tcstart file. That
+   way, your traffic shaping rules can still use the 'fwmark'
+   classifier based on packet marking defined in /etc/shorewall/tcrules.

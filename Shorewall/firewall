@@ -1209,8 +1209,8 @@ setup_tunnels() # $1 = name of tunnels file
 	case $2 in
 	    *:*:*)
 		p=${2##*:}
-		protocol=${2%:*}
-		protocol=${2#*:}
+		temp=${2%:*}
+		protocol=${temp#*:}
 		;;
 	    *:*)
 		protocol=${2#*:}

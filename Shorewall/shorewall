@@ -702,7 +702,11 @@ case "$1" in
 	echo
 	packet_log 20
 	echo
+	echo "NAT Table"
+	echo
 	iptables -t nat -L -n -v
+	echo
+	echo "Mangle Table"
 	echo
 	iptables -t mangle -L -n -v
 	echo

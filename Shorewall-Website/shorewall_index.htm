@@ -28,12 +28,12 @@ to 2.x releases of Shorewall. For older versions:</p>
  target="_top">here</a>. </p>
   </li>
 </ul>
-<p>The current 2.2 Stable Release is 2.2.1 -- Here are the <a
- href="http://shorewall.net/pub/shorewall/2.2/shorewall-2.2.1/releasenotes.txt">release
+<p>The current 2.2 Stable Release is 2.2.2 -- Here are the <a
+ href="http://shorewall.net/pub/shorewall/2.2/shorewall-2.2.2/releasenotes.txt">release
 notes</a> and here are the <a
- href="http://shorewall.net/pub/shorewall/2.2/shorewall-2.2.1/known_problems.txt">known
+ href="http://shorewall.net/pub/shorewall/2.2/shorewall-2.2.2/known_problems.txt">known
 problems</a> and <a
- href="http://shorewall.net/pub/shorewall/2.2/shorewall-2.2.1/errata/">updates</a>.<br>
+ href="http://shorewall.net/pub/shorewall/2.2/shorewall-2.2.2/errata/">updates</a>.<br>
 </p>
 <p><a
  href="http://lists.shorewall.net/pipermail/shorewall-announce/2004-December/000451.html"><span
@@ -48,7 +48,7 @@ Foundation; with no Invariant Sections, with no Front-Cover, and with
 no Back-Cover Texts. A copy of the license is included in the section
 entitled “<a href="GnuCopyright.htm" target="_self">GNU
 Free Documentation License</a>”.</p>
-<p>2005-02-15</p>
+<p>2005-03-12</p>
 <hr>
 <h3>Table of Contents</h3>
 <p style="margin-left: 0.42in; margin-bottom: 0in;"><a href="#Intro">Introduction
@@ -64,7 +64,9 @@ Shorewall on Mandrake® with a two-interface setup?</a><br>
 <a href="#License">License</a></p>
 <p style="margin-bottom: 0in; margin-left: 40px;"><a href="#2_0_10">News</a></p>
 <p style="margin-left: 0.83in; margin-bottom: 0in;"><span
- style="text-decoration: underline;"></span><a href="#2_2_1">Shorewall
+ style="text-decoration: underline;"></span><a href="#2_2_2">Shorewall
+2.2.2</a><br>
+<a href="#2_2_1">Shorewall
 2.2.1</a><a href="#End_of_Support"><br>
 </a><a href="#End_of_Support">End of Support for Shorewall 1.4</a><br>
 <a href="#2_0_16">Shorewall
@@ -126,7 +128,7 @@ that most closely matches your environment and follow the step by
 step instructions.</p>
 <h3><a name="Info"></a>Looking for Information?</h3>
 <p style="margin-left: 0.42in;">The <a href="Documentation_Index.html">Documentation
-Index</a> is a good place to start as is the Quick Search in the
+Index</a> is a good place to start as is the Site Search in the
 frame above. </p>
 <h3><a name="Mandrake"></a>Running Shorewall on Mandrake® with a
 two-interface setup?</h3>
@@ -137,7 +139,7 @@ uninstalling what you have and installing a setup that matches the
 documentation on this site. See the <a href="two-interface.htm">Two-interface
 QuickStart Guide</a> for details.<br>
 <br>
-<b>Update: </b>I've been
+<b>Update: </b>I have been
 informed by Mandrake Development that this problem has been corrected
 in Mandrake 10.0 Final (the problem still exists in the 10.0
 Community release).</p>
@@ -164,6 +166,81 @@ of the license is included in the section entitled "GNU Free
 Documentation License". </p>
 <hr>
 <h2><a name="News"></a>News</h2>
+<span style="font-weight: bold;"><a name="2_2_2"></a>03/12/2005
+Shorewall 2.2.2<br>
+</span><br>
+Problems Corrected:<br>
+<ol>
+  <li>The SOURCE column in the /etc/shorewall/tcrules file now
+correctly allows IP ranges (assuming that your iptables and kernel
+support ranges).<br>
+  </li>
+  <li>If A is a user-defined action and you have file /etc/shorewall/A
+then when that file is invoked by Shorewall during [re]start, the $TAG
+value may be incorrect.</li>
+  <li>Previously, if an iptables command generating a logging rule
+failed, the Shorewall [re]start was still successful. This error is now
+considered fatal and Shorewall will be either restored from the last
+save (if any) or it will be stopped.</li>
+  <li>The port numbers for UDP and TCP were previously reversed in the
+/usr/share/shorewall/action.AllowPCA file.</li>
+  <li>Previously, the 'install.sh' script did not update the
+/usr/share/shorewall/action.* files.</li>
+  <li>Previously, when an interface name appeared in the DEST column of
+/etc/shorewall/tcrules, the name was not validated against the set of
+defined interfaces and bridge ports.<br>
+  </li>
+</ol>
+New Features:<br>
+<ol>
+  <li>The SOURCE column in the /etc/shorewall/tcrules file now allows
+$FW to be optionally followed by ":" and a host/network address or
+address range.</li>
+  <li>Shorewall now clears the output device only if it is a terminal.
+This avoids ugly control sequences being placed in files when
+/sbin/shorewall output is redirected.</li>
+  <li>The output from 'arp -na' has been added to the 'shorewall
+status' display.</li>
+  <li>The 2.6.11 Linux kernel and iptables 1.3.0 now allow port ranges
+to appear in port lists handled by "multiport match". If Shorewall
+detects this capability, it will use "multiport match" for port lists
+containing port ranges. Be cautioned that each port range counts for
+TWO ports and a port list handled with "multiport match" can still
+specify a maximum of 15 ports.<br>
+    <br>
+As always, if a port list in /etc/shorewall/rules is incompatible with
+"multiport match", a separate iptables rule will be generated for each
+element in the list.</li>
+  <li>Traditionally, the RETURN target in the 'rfc1918' file has caused
+'norfc1918' processing to cease for a packet if the packet's source IP
+address matches the rule. Thus, if you have:<br>
+    <br>
+    <span style="font-family: monospace;">&nbsp;&nbsp;
+SUBNETS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; TARGET</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;
+192.168.1.0/24&nbsp;&nbsp; RETURN</span><br>
+    <br>
+then traffic from 192.168.1.4 to 10.0.3.9 will be accepted even though
+you also have:<br>
+    <br>
+    <span style="font-family: monospace;">&nbsp;&nbsp;
+SUBNETS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; TARGET</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;
+10.0.0.0/8&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; logdrop</span><br>
+    <br>
+Setting RFC1918_STRICT=Yes in shorewall.conf will cause such traffic to
+be logged and dropped since while the packet's source matches the
+RETURN rule, the packet's destination matches the 'logdrop' rule.<br>
+    <br>
+If not specified or specified as empty (e.g., RFC1918_STRICT="") then
+RFC1918_STRICT=No is assumed.<br>
+    <br>
+WARNING: RFC1918_STRICT=Yes requires that your kernel and iptables
+support 'Connection Tracking' match.<br>
+  </li>
+</ol>
 <span style="font-weight: bold;"><a name="2_2_1"></a>02/15/2005
 Shorewall 2.2.1<br>
 <br>
@@ -317,6 +394,10 @@ that level for all rules recursively invoked by the action<br>
       <br>
 Example: /etc/shorewall/action.foo:<br>
       <br>
+      <b>Update: </b>I've been
+informed by Mandrake Development that this problem has been corrected
+in Mandrake 10.0 Final (the problem still exists in the 10.0
+Community release).<br>
 ACCEPT&nbsp;&nbsp;&nbsp; -&nbsp;&nbsp;&nbsp; -&nbsp;&nbsp;&nbsp;
 tcp&nbsp;&nbsp;&nbsp; 22<br>
 bar:info<br>

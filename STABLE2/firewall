@@ -5802,7 +5802,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		#
 		# Add a rule to the dynamic out chain for the interface
 		#
-		do_iptables -A $(dynamic_out $interface) $(match_destination_hosts $host) -j $chain
+		do_iptables -A $(dynamic_out $interface) $(match_dest_hosts $host) -j $chain
 	    else
 		eval source_hosts=\"\$${z1}_hosts\"
 

@@ -1462,28 +1462,19 @@ setup_mac_lists() {
     #
     for interface in $maclist_interfaces; do
 	chain=`mac_chain $interface`
-	blob=`ip -f inet addr show $interface 2> /dev/null | grep inet | sed 's/inet //; s/brd //; s/scope.*//;'`
+
+	blob=`ip link show $interface 2> /dev/null`
 
 	[ -z "$blob" ] && \
 	    fatal_error "Interface $interface must be up before Shorewall can start"
 
-	set -- $blob
-
-	while [ $# -gt 0 ]; do
-	    address=${1%/*}
-
-	    case $1 in
-		*/32)
-		    ;;
-		*)
-		    run_iptables -A $chain -s $address -d $2 -j RETURN
-		    shift
-		    ;;
-	    esac
+	ip -f inet addr show $interface 2> /dev/null | grep inet | sed 's/inet //; s/brd //; s/scope.*//;' | while read address broadcast; do
+	    if [ -n "$broadcast" ]; then
+		run_iptables -A $chain -s ${address%/*} -d $broadcast -j RETURN
+	    fi
 
 	    run_iptables -A $chain -s $address -d 255.255.255.255 -j RETURN
 	    run_iptables -A $chain -s $address -d 224.0.0.0/4     -j RETURN
-	    shift
 	done
 
 	if [ -n "$MACLIST_LOG_LEVEL" ]; then

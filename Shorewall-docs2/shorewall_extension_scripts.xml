@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-02-04</pubdate>
+    <pubdate>2004-05-04</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -29,7 +29,8 @@
       1.2 or any later version published by the Free Software Foundation; with
       no Invariant Sections, with no Front-Cover, and with no Back-Cover
       Texts. A copy of the license is included in the section entitled
-      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
 
@@ -64,7 +65,8 @@
     </listitem>
 
     <listitem>
-      <para>start -- invoked after the firewall has been started or restarted.</para>
+      <para>start -- invoked after the firewall has been started or
+      restarted.</para>
     </listitem>
 
     <listitem>
@@ -92,27 +94,90 @@
     </listitem>
   </itemizedlist>
 
-  <para><emphasis role="bold">If your version of Shorewall doesn&#39;t have
-  the file that you want to use from the above list, you can simply create the
+  <para><emphasis role="bold">If your version of Shorewall doesn't have the
+  file that you want to use from the above list, you can simply create the
   file yourself.</emphasis> You can also supply a script with the same name as
   any of the filter chains in the firewall and the script will be invoked
   after the /etc/shorewall/rules file has been processed but before the
   /etc/shorewall/policy file has been processed.</para>
 
-  <para>Beginning with Shorewall 2.0.0, you can also define a
-  <emphasis>common action</emphasis> to be performed immediately before a
-  policy of ACCEPT, DROP or REJECT is applied. Separate actions can be
-  assigned to each policy type so for example you can have a different common
-  action for DROP and REJECT policies. The most common usage of common actions
-  is to silently drop traffic that you don&#39;t wish to have logged by the
-  policy.</para>
+  <para>There are a couple of special considerations for commands in extension
+  scripts:</para>
+
+  <itemizedlist>
+    <listitem>
+      <para>When you want to run <command>iptables</command>, use the command
+      <command>run_iptables</command> instead. <command>run_iptables</command>
+      will run the iptables utility passing the arguments to
+      <command>run_iptables</command> and if the command fails, the firewall
+      will be stopped (Shorewall version &lt; 2.0.2 Beta 1 or there is no
+      <filename>/var/lib/shorewall/restore</filename> file) or restored
+      (Shorewall version &gt;= 2.0.2 Beta 1 and
+      <filename>/var/lib/shorewall/restore</filename> exists).</para>
+    </listitem>
+
+    <listitem>
+      <para>With Shorewall 2.0.2 Beta 1 and later versions, if you run
+      commands other than <command>iptables</command> that must be re-run in
+      order to restore the firewall to its current state then you must save
+      the commands to the <firstterm>restore file</firstterm>. The restore
+      file is a temporary file in <filename
+      class="directory">/var/lib/shorewall</filename> that will be renamed
+      <filename>/var/lib/shorewall/restore-base</filename> at the successful
+      completion of the Shorewall command. The <command>shorewall
+      save</command> command combines
+      <filename>/var/lib/shorewall/restore-base</filename> with the output of
+      <command>iptables-save</command> to produce the
+      <filename>/var/lib/shorewall/restore</filename> script.</para>
+
+      <para>Here are three functions that are useful when running commands
+      other than <command>iptables</command>:</para>
+
+      <orderedlist>
+        <listitem>
+          <para><emphasis role="bold">save_command() </emphasis>-- saves the
+          passed command to the restore file.</para>
+
+          <para>Example: <programlisting>save_command echo Operation Complete</programlisting></para>
+
+          <para>That command would simply write "echo Operation Complete" to
+          the restore file.</para>
+        </listitem>
+
+        <listitem>
+          <para><emphasis role="bold">run_and_save_command()</emphasis> --
+          saves the passed command to the restore file then executes it. The
+          return value is the exit status of the command. Example:
+          <programlisting>run_and_save_command "echo 1 &gt; /proc/sys/net/ipv4/icmp_echo_ignore_all"</programlisting></para>
+
+          <para>Note that as in this example, when the command involves file
+          redirection then the entire command must be enclosed in quotes. This
+          applies to all of the functions described here.</para>
+        </listitem>
+
+        <listitem>
+          <para><emphasis role="bold">ensure_and_save_command()</emphasis> --
+          runs the passed command. If the command fails, the firewall is
+          restored to it's prior saved state and the operation is terminated.
+          If the command succeeds, the command is written to the restore
+          file</para>
+        </listitem>
+      </orderedlist>
+    </listitem>
+  </itemizedlist>
+
+  <para>Beginning with Shorewall 2.0.0, you can also define a <emphasis>common
+  action</emphasis> to be performed immediately before a policy of ACCEPT,
+  DROP or REJECT is applied. Separate <ulink
+  url="User_defined_Actions.html">actions</ulink> can be assigned to each
+  policy type so for example you can have a different common action for DROP
+  and REJECT policies. The most common usage of common actions is to silently
+  drop traffic that you don't wish to have logged by the policy.</para>
 
   <para>As released, Shorewall defines a number of actions which are cataloged
-  in the <filename>/etc/shorewall/actions.std</filename> file. The default
-  <filename>/etc/shorewall/actions</filename> file contains <quote>INCLUDE
-  /etc/shorewall/actions.std</quote> so that the Shorewall-defined actions are
-  included by default. Among the entries in <filename>/etc/shorewall/actions.std</filename>
-  are:</para>
+  in the <filename>/usr/share/shorewall/actions.std</filename> file. That file
+  is processed before /etc/shorewall/actions. Among the entries in
+  <filename>/usr/share/shorewall/actions.std</filename> are:</para>
 
   <programlisting>Drop:DROP
 Reject:REJECT</programlisting>
@@ -120,21 +185,20 @@ Reject:REJECT</programlisting>
   <para>So the action named <quote>Drop</quote> is performed immediately
   before DROP policies are applied and the action called <quote>Reject</quote>
   is performed before REJECT policies are applied. These actions are defined
-  in the files <filename>/etc/shorewall/action.Drop</filename> and
-  <filename>/etc/shorewall/action.Reject</filename> respectively.</para>
+  in the files <filename>/usr/share/shorewall/action.Drop</filename> and
+  <filename>/usr/share/shorewall/action.Reject</filename> respectively.</para>
 
   <para>You can override these defaults with entries in your
   /etc/shorewall/actions file. For example, if that file were to contain
   <quote>MyDrop:DROP</quote> then the common action for DROP policies would
-  become <quote>MyDrop</quote>. For an example, see <ulink url="myfiles.htm">my
-  configuration files</ulink>.</para>
+  become <quote>MyDrop</quote>.</para>
 
   <para>One final note. The chain created to perform an action has the same
   name as the action. You can use an extension script by that name to add
-  rules to the action&#39;s chain in the same way as you can any other chain.
-  So if you create the new action <quote>Dagger</quote> and define it in
+  rules to the action's chain in the same way as you can any other chain. So
+  if you create the new action <quote>Dagger</quote> and define it in
   <filename>/etc/shorewall/action.Dagger</filename>, you can also have an
   extension script named <filename>/etc/shorewall/Dagger</filename> that can
-  add rules to the <quote>Dagger</quote> chain that can&#39;t be created using
+  add rules to the <quote>Dagger</quote> chain that can't be created using
   <filename>/etc/shorewall/action.Dagger</filename>.</para>
 </article>

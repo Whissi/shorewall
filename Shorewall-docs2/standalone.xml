@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-02-16</pubdate>
+    <pubdate>2004-04-22</pubdate>
 
     <copyright>
       <year>2002-2004</year>
@@ -187,10 +187,11 @@
     first checked against the <filename><filename>/etc/shorewall/rules</filename></filename>
     file. If no rule in that file matches the connection request then the
     first policy in <filename>/etc/shorewall/policy</filename> that matches
-    the request is applied. If that policy is REJECT or DROP the request is
-    first checked against the rules in /etc/shorewall/common if that file
-    exists; otherwise the rules in <filename>/etc/shorewall/common.def</filename>
-    are checked.</para>
+    the request is applied. If there is a <ulink
+    url="shorewall_extension_scripts.htm">comon action</ulink> defined for the
+    policy in <filename>/etc/shorewall/actions</filename> or
+    <filename>/usr/share/shorewall/actions.std</filename> then that action is
+    peformed before the action is applied.</para>
 
     <para>The <filename>/etc/shorewall/policy</filename> file included with
     the one-interface sample has the following policies:</para>

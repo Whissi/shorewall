@@ -13,7 +13,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-03-20</pubdate>
+    <pubdate>2004-05-03</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -27,7 +27,8 @@
       1.2 or any later version published by the Free Software Foundation; with
       no Invariant Sections, with no Front-Cover, and with no Back-Cover
       Texts. A copy of the license is included in the section entitled
-      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
 
@@ -55,9 +56,9 @@
 
       <listitem>
         <para><emphasis role="bold">DO NOT INSTALL CORRECTED COMPONENTS ON A
-        RELEASE EARLIER THAN THE ONE THAT THEY ARE LISTED UNDER BELOW.</emphasis>
-        For example, do NOT install the 1.3.9a firewall script if you are
-        running 1.3.7c.</para>
+        RELEASE EARLIER THAN THE ONE THAT THEY ARE LISTED UNDER
+        BELOW.</emphasis> For example, do NOT install the 1.3.9a firewall
+        script if you are running 1.3.7c.</para>
       </listitem>
     </itemizedlist>
   </caution>
@@ -65,7 +66,8 @@
   <section>
     <title>RFC1918 File</title>
 
-    <para><ulink url="http://shorewall.net/pub/shorewall/errata/1.4.8/rfc1918">Here</ulink>
+    <para><ulink
+    url="http://shorewall.net/pub/shorewall/errata/1.4.10/rfc1918">Here</ulink>
     is the most up to date version of the <ulink
     url="Documentation.htm#rfc1918">rfc1918 file</ulink>. This file only
     applies to Shorewall version 2.0.0 and its bugfix updates. In Shorewall
@@ -76,7 +78,73 @@
   </section>
 
   <section>
+    <title>Bogons File</title>
+
+    <para><ulink
+    url="http://shorewall.net/pub/shorewall/errata/2.0.1/bogons">Here</ulink>
+    is the most up to date version of the <ulink
+    url="Documentation.htm#Bogons">bogons file</ulink>.</para>
+  </section>
+
+  <section>
     <title>Problems in Version 2.0</title>
+
+    <section>
+      <title>Shorewall 2.0.1</title>
+
+      <itemizedlist>
+        <listitem>
+          <para>Confusing message mentioning IPV6 occur at startup.</para>
+        </listitem>
+
+        <listitem>
+          <para>Modules listed in /etc/shorewall/modules don't load or produce
+          errors on Mandrake 10.0 Final.</para>
+        </listitem>
+
+        <listitem>
+          <para>The <command>shorewall delete</command> command does not
+          remove all dynamic rules pertaining to the host(s) being
+          deleted.</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>These problems are corrected in <ulink
+      url="http://shorewall.net/pub/shorewall/errata/2.0.1/firewall">this
+      firewall script</ulink> which may be installed in
+      <filename>/usr/share/shorewall/firewall</filename> as described
+      above.</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>When run on a SuSE system, the install.sh script fails to
+          configure Shorewall to start at boot time. That problem is corrected
+          in <ulink
+          url="http://shorewall.net/pub/shorewall/errata/2.0.1/install.sh">this
+          version of the script</ulink>.</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section>
+      <title>Shorewall 2.0.1/2.0.0</title>
+
+      <itemizedlist>
+        <listitem>
+          <para>On Debian systems, an install using the tarball results in an
+          inability to start Shorewall at system boot. If you already have
+          this problem, install <ulink
+          url="http://shorewall.net/pub/shorewall/errata/2.0.1/init.debian.sh">this
+          file</ulink> as /etc/init.d/shorewall (replacing the existing file
+          with that name). If you are just installing or upgrading to
+          Shorewall 2.0.0 or 2.0.1, then replace the
+          <filename>init.debian.sh</filename> file in the Shorewall
+          distribution directory (shorewall-2.0.x) with the updated file
+          before running <command>install.sh</command> from that
+          directory.</para>
+        </listitem>
+      </itemizedlist>
+    </section>
 
     <section>
       <title>Shorewall 2.0.0</title>
@@ -95,11 +163,13 @@
         </listitem>
       </itemizedlist>
 
-      <para>The first problem has been corrected in Shorewall update 2.0.0a.</para>
+      <para>The first problem has been corrected in Shorewall update
+      2.0.0a.</para>
 
       <para>All of these problems may be corrected by installing <ulink
       url="http://shorewall.net/pub/shorewall/errata/2.0.0/firewall">this
-      firewall script</ulink> in /usr/share/shorewall as described above.</para>
+      firewall script</ulink> in /usr/share/shorewall as described
+      above.</para>
     </section>
   </section>
 
@@ -111,118 +181,12 @@
   </section>
 
   <section>
-    <title>Problem with iptables version 1.2.3</title>
+    <title>Problem with iptables 1.2.9</title>
 
-    <para>There are a couple of serious bugs in iptables 1.2.3 that prevent it
-    from working with Shorewall. Regrettably, RedHat released this buggy
-    iptables in RedHat 7.2.&#x00A0;</para>
-
-    <para>I have built a <ulink
-    url="ftp://ftp.shorewall.net/pub/shorewall/errata/iptables-1.2.3-3.i386.rpm">corrected
-    1.2.3 rpm which you can download here</ulink>&#x00A0; and I have also
-    built an <ulink
-    url="ftp://ftp.shorewall.net/pub/shorewall/iptables-1.2.4-1.i386.rpm">iptables-1.2.4
-    rpm which you can download here</ulink>. If you are currently running
-    RedHat 7.1, you can install either of these RPMs before you upgrade to
-    RedHat 7.2.</para>
-
-    <para><emphasis role="bold">Update 11/9/2001:</emphasis> RedHat has
-    released an iptables-1.2.4 RPM of their own which you can download from
-    <ulink url="http://www.redhat.com/support/errata/RHSA-2001-144.html.">http://www.redhat.com/support/errata/RHSA-2001-144.html</ulink>.I
-    have installed this RPM on my firewall and it works fine.</para>
-
-    <para>If you would like to patch iptables 1.2.3 yourself, the patches are
-    available for download. This <ulink
-    url="ftp://ftp.shorewall.net/pub/shorewall/errata/iptables-1.2.3/loglevel.patch">patch</ulink>
-    which corrects a problem with parsing of the --log-level specification
-    while this <ulink
-    url="ftp://ftp.shorewall.net/pub/shorewall/errata/iptables-1.2.3/tos.patch">patch</ulink>
-    corrects a problem in handling the&#x00A0; TOS target.</para>
-
-    <para>To install one of the above patches:<programlisting>     cd iptables-1.2.3/extensions
-     patch -p0 &#60; the-patch-file</programlisting></para>
-  </section>
-
-  <section>
-    <title>Problems with kernels &#62;= 2.4.18 and RedHat iptables</title>
-
-    <para>Users who use RedHat iptables RPMs and who upgrade to kernel
-    2.4.18/19 may experience the following:</para>
-
-    <blockquote>
-      <programlisting># shorewall start
-Processing /etc/shorewall/shorewall.conf ...
-Processing /etc/shorewall/params ...
-Starting Shorewall...
-Loading Modules...
-Initializing...
-Determining Zones...
-Zones: net
-Validating interfaces file...
-Validating hosts file...
-Determining Hosts in Zones...
-Net Zone: eth0:0.0.0.0/0
-iptables: libiptc/libip4tc.c:380: do_check: Assertion
-`h-&#62;info.valid_hooks == (1 &#60;&#60; 0 | 1 &#60;&#60; 3)&#39; failed.
-Aborted (core dumped)
-iptables: libiptc/libip4tc.c:380: do_check: Assertion
-`h-&#62;info.valid_hooks == (1 &#60;&#60; 0 | 1 &#60;&#60; 3)&#39; failed.
-Aborted (core dumped)</programlisting>
-    </blockquote>
-
-    <para>The RedHat iptables RPM is compiled with debugging enabled but the
-    user-space debugging code was not updated to reflect recent changes in the
-    Netfilter <quote>mangle</quote> table. You can correct the problem by
-    installing <ulink
-    url="http://www.shorewall.net/pub/shorewall/iptables-1.2.5-1.i386.rpm">this
-    iptables RPM</ulink>. If you are already running a 1.2.5 version of
-    iptables, you will need to specify the --oldpackage option to rpm (e.g.,
-    <quote>iptables -Uvh --oldpackage iptables-1.2.5-1.i386.rpm</quote>).</para>
-  </section>
-
-  <section>
-    <title>Problems with iptables version 1.2.7 and MULTIPORT=Yes</title>
-
-    <para>The iptables 1.2.7 release of iptables has made an incompatible
-    change to the syntax used to specify multiport match rules; as a
-    consequence, if you install iptables 1.2.7 you must be running Shorewall
-    1.3.7a or later or:</para>
-
-    <itemizedlist>
-      <listitem>
-        <para>set MULTIPORT=No in /etc/shorewall/shorewall.conf; or</para>
-      </listitem>
-
-      <listitem>
-        <para>If you are running Shorewall 1.3.6 you may install <ulink
-        url="http://www.shorewall.net/pub/shorewall/errata/1.3.6/firewall">this
-        firewall script</ulink> in /usr/lib/shorewall/firewall as described
-        above.</para>
-      </listitem>
-    </itemizedlist>
-  </section>
-
-  <section>
-    <title>Problems with RH Kernel 2.4.18-10 and NAT</title>
-
-    <para>/etc/shorewall/nat entries of the following form will result in
-    Shorewall being unable to start:</para>
-
-    <programlisting>     #EXTERNAL&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0; INTERFACE&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0; INTERNAL&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0; ALL INTERFACES&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0; LOCAL
-     192.0.2.22&#x00A0;&#x00A0;&#x00A0;   eth0&#x00A0;&#x00A0;&#x00A0;         192.168.9.22&#x00A0;&#x00A0;  yes&#x00A0;&#x00A0;&#x00A0;&#x00A0;                 yes
-     #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
-
-    <para>Error message is:</para>
-
-    <programlisting>     Setting up NAT...
-     iptables: Invalid argument
-     Terminated</programlisting>
-
-    <para>The solution is to put <quote>no</quote> in the LOCAL column. Kernel
-    support for LOCAL=yes has never worked properly and 2.4.18-10 has disabled
-    it. The 2.4.19 kernel contains corrected support under a new kernel
-    configuraiton option; see <ulink
-    url="http://www.shorewall.net/Documentation.htm#NAT">http://www.shorewall.net/Documentation.htm#NAT</ulink>.</para>
+    <para>If you want to use the new features in Shorewall 2.0.2 (Betas, RCs,
+    Final) or later then you need to patch your iptables 1.2.9 with <ulink
+    url="http://shorewall.net/pub/shorewall/errata/iptables-1.2.9.diff">this
+    patch</ulink>.</para>
   </section>
 
   <section>
@@ -233,24 +197,151 @@ Aborted (core dumped)</programlisting>
     --reject-with tcp-reset</quote> is broken. The symptom most commonly seen
     is that REJECT rules act just like DROP rules when dealing with TCP. A
     kernel patch and precompiled modules to fix this problem are available at
-    <ulink url="ftp://ftp1.shorewall.net/pub/shorewall/errata/kernel">ftp://ftp1.shorewall.net/pub/shorewall/errata/kernel</ulink></para>
+    <ulink
+    url="ftp://ftp1.shorewall.net/pub/shorewall/errata/kernel">ftp://ftp1.shorewall.net/pub/shorewall/errata/kernel</ulink></para>
 
     <note>
-      <para>RedHat have corrected this problem in their 2.4.20-27.x kernels.</para>
+      <para>RedHat have corrected this problem in their 2.4.20-27.x
+      kernels.</para>
     </note>
   </section>
 
   <appendix>
-    <title>Revision History4</title>
+    <title>Revision History</title>
 
-    <para><revhistory><revision><revnumber>1.6</revnumber><date>2004-03-20</date><authorinitials>TE</authorinitials><revremark>Proxy
-    ARP/IPSEC fix.</revremark></revision><revision><revnumber>1.6</revnumber><date>2004-03-17</date><authorinitials>TE</authorinitials><revremark>Action
-    rules are reported as policies.</revremark></revision><revision><revnumber>1.5</revnumber><date>2004-02-03</date><authorinitials>TE</authorinitials><revremark>Update
-    for Shorewall 2.0.0.</revremark></revision><revision><revnumber>1.4</revnumber><date>2004-01-19</date><authorinitials>TE</authorinitials><revremark>IPV6
-    address problems. Make RFC1918 file section more prominent.</revremark></revision><revision><revnumber>1.3</revnumber><date>2004-01-14</date><authorinitials>TE</authorinitials><revremark>Confusing
-    template file in 1.4.9</revremark></revision><revision><revnumber>1.3</revnumber><date>2004-01-03</date><authorinitials>TE</authorinitials><revremark>Added
-    note about REJECT RedHat Kernal problem being corrected.</revremark></revision><revision><revnumber>1.2</revnumber><date>2003-12-29</date><authorinitials>TE</authorinitials><revremark>Updated
-    RFC1918 file</revremark></revision><revision><revnumber>1.1</revnumber><date>2003-12-17</date><authorinitials>TE</authorinitials><revremark>Initial
-    Conversion to Docbook XML</revremark></revision></revhistory></para>
+    <para><revhistory>
+        <revision>
+          <revnumber>1.12</revnumber>
+
+          <date>2004-05-04</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Add Alex Wilms's "install.sh" fix.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.11</revnumber>
+
+          <date>2004-05-03</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Add Stefan Engel's "shorewall delete" fix.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.10</revnumber>
+
+          <date>2004-04-28</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Add iptables 1.2.9 iptables-save bug notice.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.9</revnumber>
+
+          <date>2004-04-21</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Debian initialization script problem. Deleted obsolete
+          sections.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.8</revnumber>
+
+          <date>2004-04-20</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Updated RFC1918 and BOGONS files.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.7</revnumber>
+
+          <date>2004-03-20</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Proxy ARP/IPSEC fix.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.6</revnumber>
+
+          <date>2004-03-17</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Action rules are reported as policies.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.5</revnumber>
+
+          <date>2004-02-03</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Update for Shorewall 2.0.0.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.4</revnumber>
+
+          <date>2004-01-19</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>IPV6 address problems. Make RFC1918 file section more
+          prominent.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.3</revnumber>
+
+          <date>2004-01-14</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Confusing template file in 1.4.9</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.3</revnumber>
+
+          <date>2004-01-03</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Added note about REJECT RedHat Kernal problem being
+          corrected.</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.2</revnumber>
+
+          <date>2003-12-29</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Updated RFC1918 file</revremark>
+        </revision>
+
+        <revision>
+          <revnumber>1.1</revnumber>
+
+          <date>2003-12-17</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Initial Conversion to Docbook XML</revremark>
+        </revision>
+      </revhistory></para>
   </appendix>
 </article>

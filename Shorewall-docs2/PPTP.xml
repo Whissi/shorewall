@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2003-12-23</pubdate>
+    <pubdate>2004-04-15</pubdate>
 
     <copyright>
       <year>2001</year>
@@ -23,6 +23,8 @@
       <year>2002</year>
 
       <year>2003</year>
+
+      <year>2004</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -37,6 +39,16 @@
     </legalnotice>
 
     <revhistory>
+      <revision>
+        <revnumber>1.2</revnumber>
+
+        <date>2004-04-15</date>
+
+        <authorinitials>TE</authorinitials>
+
+        <revremark>Revised instructions regarding PPTP conntrack patch.</revremark>
+      </revision>
+
       <revision>
         <revnumber>1.1</revnumber>
 
@@ -909,14 +921,16 @@ esac</programlisting>
 
     <para>You shouldn&#39;t have to take any special action for this case
     unless you wish to connect multiple clients to the same external server.
-    In that case, you will need to follow the instructions at <ulink
-    url="http://www.impsec.org/linux/masquerade/ip_masq_vpn.html">http://www.impsec.org/linux/masquerade/ip_masq_vpn.html</ulink>.
-    I recommend that you also add these three lines to your
+    In that case, you must install the PPTP connection/tracking and NAT patch
+    from <ulink url="http://www.netfilter.org">Netfilter Patch-O-Mati</ulink>c
+    (some distributions are now shipping with this patch installed). I
+    recommend that you also add these four lines to your
     /etc/shorewall/modules file:</para>
 
     <programlisting>loadmodule ip_conntrack_proto_gre
 loadmodule ip_conntrack_pptp
-loadmodule ip_nat_pptp</programlisting>
+loadmodule ip_nat_pptp
+loadmodule ip_nat_proto_gre</programlisting>
 
     <para>For LEAF/Bering users, the 2.4.20 kernel as already been patched as
     described at the URL above and the three modules are included in the

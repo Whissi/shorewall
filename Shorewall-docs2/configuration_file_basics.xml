@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-04-03</pubdate>
+    <pubdate>2004-04-20</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -91,6 +91,16 @@
     <filename>/etc/shorewall/interfaces</filename>. <emphasis role="bold">If
     you need to change this file, copy it to <filename>/etc/shorewall</filename>
     and modify the copy</emphasis>.</para></listitem></itemizedlist></para>
+  </section>
+
+  <section>
+    <title>Special Note about /etc/shorewall/shorewall.conf</title>
+
+    <para>It is a good idea to modify your /etc/shorewall/shorewall.conf file,
+    even if you just add a comment that says &#34;I modified this file&#34;.
+    That way, your package manager won&#39;t overwrite the file with future
+    updated versions. Such overwrites can cause unwanted changes in the
+    behavior of Shorewall.</para>
   </section>
 
   <section id="Comments">
@@ -381,9 +391,12 @@ DNAT       net        loc:192.168.1.3 tcp       4000:4100</programlisting>
     <title>Using MAC Addresses</title>
 
     <para>Media Access Control (MAC) addresses can be used to specify packet
-    source in several of the configuration files. To use this feature, your
-    kernel must have MAC Address Match support (CONFIG_IP_NF_MATCH_MAC)
-    included.</para>
+    source in several of the configuration files. In order to control traffic
+    to/from a host by its MAC address, the host must be on the same network as
+    the firewall.</para>
+
+    <para>To use this feature, your kernel must have MAC Address Match support
+    (CONFIG_IP_NF_MATCH_MAC) included.</para>
 
     <para>MAC addresses are 48 bits wide and each Ethernet Controller has a
     unique MAC address.</para>

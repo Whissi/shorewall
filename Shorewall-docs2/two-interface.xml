@@ -12,7 +12,7 @@
       <surname>Eastep</surname>
     </author>
 
-    <pubdate>2003-04-03</pubdate>
+    <pubdate>2003-04-22</pubdate>
 
     <copyright>
       <year>2002</year>
@@ -184,11 +184,11 @@
     class="directory">/etc/shorewall/</filename><filename>rules</filename>
     file. If no rule in that file matches the connection request then the
     first policy in <filename class="directory">/etc/shorewall/</filename><filename>policy</filename>
-    that matches the request is applied. If that policy is <varname>REJECT</varname>
-    or <varname>DROP</varname> the request is first checked against the rules
-    in <filename class="directory">/etc/shorewall/</filename><filename>common</filename>
-    if that file exists; otherwise the rules in <filename class="directory">/etc/shorewall/</filename><filename>common.def</filename>
-    are checked.</para>
+    that matches the request is applied. If there is a <ulink
+    url="shorewall_extension_scripts.htm">comon action</ulink> defined for the
+    policy in <filename>/etc/shorewall/actions</filename> or
+    <filename>/usr/share/shorewall/actions.std</filename> then that action is
+    peformed before the action is applied.</para>
 
     <para>The <filename class="directory">/etc/shorewall/</filename><filename>policy</filename>
     file included with the two-interface sample has the following policies:

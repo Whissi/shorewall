@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-04-03</pubdate>
+    <pubdate>2004-04-27</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -47,16 +47,16 @@
 
     <caution>
       <para>The configuration shown here corresponds to Shorewall version
-      2.0.1 (that&#39;s right -- I am running a version of Shorewall that is
-      not yet released). My configuration uses features not available in
-      earlier Shorewall releases.</para>
+      2.0.1. My configuration uses features not available in earlier Shorewall
+      releases.</para>
     </caution>
 
     <para>I have DSL service and have 5 static IP addresses
     (206.124.146.176-180). My DSL <quote>modem</quote> (Fujitsu Speedport) is
     connected to eth0. I have a local network connected to eth2 (subnet
     192.168.1.0/24) and a DMZ connected to eth1 (206.124.146.176/32). Note
-    that the IP address of eth1 is a duplicate of one on eth0.</para>
+    that I configure the same IP address on both <filename class="devicefile">eth0</filename>
+    and <filename class="devicefile">eth1</filename>.</para>
 
     <para>In this configuration:</para>
 
@@ -127,8 +127,9 @@
 
     <para>I run an SNMP server on my firewall to serve <ulink
     url="http://www.ee.ethz.ch/~oetiker/webtools/mrtg/">MRTG</ulink> running
-    in the DMZ.<graphic align="center" fileref="images/network.png" />The
-    ethernet interface in the Server is configured with IP address
+    in the DMZ.</para>
+
+    <para>The ethernet interface in the Server is configured with IP address
     206.124.146.177, netmask 255.255.255.0. The server&#39;s default gateway
     is 206.124.146.254 (Router at my ISP. This is the same default gateway
     used by the firewall itself). On the firewall, an entry in my
@@ -136,6 +137,8 @@
     206.124.146.177 through eth1 when that interface is brought up.</para>
 
     <para>Tarry (192.168.1.4) runs a PPTP server for Road Warrior access.</para>
+
+    <para><graphic align="center" fileref="images/network.png" /></para>
   </section>
 
   <section>
@@ -238,27 +241,6 @@ tx&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A
 eth1            206.124.146.177
 eth2            -
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
-      </blockquote>
-    </section>
-
-    <section id="RFC1918">
-      <title>RFC1918 File</title>
-
-      <blockquote>
-        <para>I use a stripped-down file which doesn&#39;t have to be updated
-        when the IANA allocates a block of IP addresses.</para>
-      </blockquote>
-
-      <blockquote>
-        <programlisting>#SUBNET                 TARGET
-169.254.0.0/16          DROP            # DHCP autoconfig
-172.16.0.0/12           logdrop         # RFC 1918
-192.0.2.0/24            logdrop         # Example addresses
-192.168.0.0/16          logdrop         # RFC 1918
-10.24.60.56             DROP            # Some idiot in my broadcast domain
-                                        # has a box configured with this
-                                        # address.
-10.0.0.0/8              logdrop         # Reserved (RFC 1918)</programlisting>
       </blockquote>
     </section>
 
@@ -552,90 +534,6 @@ iface eth1 inet static
         broadcast 0.0.0.0
         <emphasis role="bold">up ip route add 206.124.146.177 dev eth1
 </emphasis>...</programlisting>
-      </blockquote>
-    </section>
-
-    <section id="Dhcpd">
-      <title>/etc/dhcpd.conf (MAC Addresses Omitted)</title>
-
-      <blockquote>
-        <para>While this is a little off-topic, I&#39;ve included it to show
-        how to set up DHCP on two interfaces.<programlisting>default-lease-time 67200; max-lease-time 67200;
-get-lease-hostnames on;
-
-group {
-        option subnet-mask 255.255.255.0;
-        option broadcast-address 192.168.1.255;
-        option routers 192.168.1.254;
-        option ntp-servers 192.168.1.254;
-        option domain-name-servers 192.168.1.193;
-        option netbios-name-servers 192.168.1.254;
-        option domain-name &#34;shorewall.net&#34;;
-        option netbios-dd-server 192.168.1.254;
-        option netbios-node-type 8;
-        option netbios-scope &#34;&#34;;
-
-        subnet 192.168.1.0 netmask 255.255.255.0 {
-                range 192.168.1.11 192.168.1.20;
-        }
-
-         host ursa.shorewall.net {
-                hardware ethernet …;
-                fixed-address 192.168.1.5;
-        }
-
-        host eastept1 {
-                hardware ethernet …;
-                fixed-address 192.168.1.7;
-        }
-
-        host tarry {
-                hardware ethernet …;
-                fixed-address 192.168.1.4;
-        }
-
-        host wookie.shorewall.net {
-                hardware ethernet  …;
-                fixed-address 192.168.1.3;
-        }
-
-        host testws.shorewall.net {
-                hardware ethernet …;
-                fixed-address 192.168.1.6;
-        }
-
-        host printer.shorewall.net {
-                hardware ethernet …;
-                fixed-address 192.168.1.10;
-        }
-
-}
-
-group {
-        option subnet-mask 255.255.255.0;
-        option broadcast-address 192.168.3.255;
-        option routers 192.168.3.254;
-        option ntp-servers 192.168.3.254;
-        option domain-name-servers 206.124.146.177;
-        option netbios-name-servers 192.168.3.254;
-        option domain-name &#34;shorewall.net&#34;;
-        option netbios-dd-server 192.168.3.254;
-        option netbios-node-type 8;
-        option netbios-scope &#34;&#34;;
-
-        subnet 192.168.3.0 netmask 255.255.255.0 {
-                range 192.168.3.11 192.168.3.20;
-        }
-
-        host easteplaptop {
-                hardware ethernet …;
-                fixed-address 192.168.3.7;
-        }
-
-        host tipper.shorewall.net {
-                hardware ethernet …;
-                fixed-address 192.168.3.8;
-        }</programlisting></para>
       </blockquote>
     </section>
   </section>

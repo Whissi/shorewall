@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-01-05</pubdate>
+    <pubdate>2004-04-19</pubdate>
 
     <copyright>
       <year>2003-2004</year>
@@ -193,9 +193,13 @@
      [root@gateway shorewall]#</programlisting>
 
   <para>Here&#39;s how the same example would be constructed on an HTTP server
-  (READ THAT FOLKS -- IT SAYS <emphasis role="underline">SERVER</emphasis>. If
-  you want to account for web browsing, you have to reverse the rules below)
-  with only one interface (eth0):</para>
+  with only one interface (eth0).</para>
+
+  <caution>
+    <para>READ THE ABOVE CAREFULLY -- IT SAYS <emphasis role="bold">SERVER</emphasis>.
+    If you want to account for web browsing, you have to reverse the rules
+    below.</para>
+  </caution>
 
   <programlisting>        #ACTION         CHAIN   SOURCE  DESTINATION     PROTOCOL        DEST            SOURCE
         #                                                               PORT            PORT
@@ -228,4 +232,7 @@
       8767  727K            all  --  eth0   *       0.0.0.0/0            0.0.0.0/0
      11506   13M            all  --  *      eth0    0.0.0.0/0            0.0.0.0/0
      [root@mail shorewall]#</programlisting>
+
+  <para>For an example of integrating Shorewall Accounting with MRTG, see
+  <ulink url="http://www.nightbrawler.com/code/shorewall-stats/">http://www.nightbrawler.com/code/shorewall-stats/</ulink>.</para>
 </article>

@@ -13,7 +13,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-03-27</pubdate>
+    <pubdate>2004-04-24</pubdate>
 
     <copyright>
       <year>2001-2002</year>
@@ -101,14 +101,10 @@ ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62
   </section>
 
   <section>
-    <title>ICQ</title>
+    <title>ICQ/AIM</title>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    udp        4000
-ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        4000:4100</programlisting>
-
-    <para>UDP Port 4000. You will also need to open a range of TCP ports which
-    you can specify to your ICQ client. By default, clients use 4000-4100.</para>
+ACCEPT     <emphasis>&#60;source&#62;</emphasis>  net              tcp        5190</programlisting>
   </section>
 
   <section>
@@ -208,7 +204,16 @@ ACCEPT     <emphasis>&#60;destination&#62;</emphasis>  <emphasis>&#60;source&#62
     <title>SMTP</title>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        25</programlisting>
+ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        25     #Insecure SMTP
+ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        465    #SMTP over SSL (TLS)</programlisting>
+  </section>
+
+  <section>
+    <title>SNMP</title>
+
+    <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
+ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    udp        161:162
+ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62;</emphasis>    tcp        161</programlisting>
   </section>
 
   <section>
@@ -275,7 +280,9 @@ ACCEPT     <emphasis>&#60;source&#62;</emphasis>  <emphasis>&#60;destination&#62
   <appendix>
     <title>Revision History</title>
 
-    <para><revhistory><revision><revnumber>1.7</revnumber><date>2004-02-18</date><authorinitials>TE</authorinitials><revremark>Make
+    <para><revhistory><revision><revnumber>1.8</revnumber><date>2004-04-24</date><authorinitials>TE</authorinitials><revremark>Revised
+    ICQ/AIM.</revremark></revision><revision><revnumber>1.8</revnumber><date>2004-04-23</date><authorinitials>TE</authorinitials><revremark>Added
+    SNMP.</revremark></revision><revision><revnumber>1.7</revnumber><date>2004-02-18</date><authorinitials>TE</authorinitials><revremark>Make
     NFS work for everyone.</revremark></revision><revision><revnumber>1.6</revnumber><date>2004-02-14</date><authorinitials>TE</authorinitials><revremark>Add
     PCAnywhere.</revremark></revision><revision><revnumber>1.5</revnumber><date>2004-02-05</date><authorinitials>TE</authorinitials><revremark>Added
     information about VNC viewers in listen mode.</revremark></revision><revision><revnumber>1.4</revnumber><date>2004-01-26</date><authorinitials>TE</authorinitials><revremark>Correct

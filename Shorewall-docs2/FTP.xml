@@ -15,10 +15,12 @@
       </author>
     </authorgroup>
 
-    <pubdate>2003-12-01</pubdate>
+    <pubdate>2004-04-26</pubdate>
 
     <copyright>
       <year>2003</year>
+
+      <year>2004</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -60,6 +62,27 @@
         <para>Upgrade to Shorewall 1.4.7 or later.</para>
       </listitem>
     </orderedlist>
+  </important>
+
+  <important>
+    <para><trademark>Mandrake</trademark> have done it again with their 10.0
+    release. This time, they have decided that kernel modules should have
+    &#34;ko.gz&#34; for their suffix. If you are having problems with Mandrake
+    10.0 and FTP, change your <filename>/etc/shorewall/conf</filename> file
+    definition of MODULE_SUFFIX as follows:</para>
+
+    <programlisting>MODULE_SUFFIX=&#34;o gz ko o.gz ko.gz&#34;</programlisting>
+
+    <para>The version of <command>insmod</command> shipped with 10.0 also does
+    not comprehend these module files so you will also need to change
+    <filename>/usr/share/shorewall/firewall</filename> -- replace the line
+    that reads:</para>
+
+    <programlisting>     insmod $modulefile $*</programlisting>
+
+    <para>with:</para>
+
+    <programlisting>     modprobe $modulename $*</programlisting>
   </important>
 
   <section>

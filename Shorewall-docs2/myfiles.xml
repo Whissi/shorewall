@@ -232,6 +232,7 @@ loc     Local           Local networks
 tx      Texas           Peer Network in Dallas
 Wifi    Wireless        Wirewall Network
 sec     Secure          Secure Wireless Zone
+vpn     OpenVPN         Open VPN Clients
 #LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE
 </programlisting>
       </blockquote>
@@ -261,7 +262,8 @@ Wifi    $WIFI_IF        -               maclist
       <blockquote>
         <programlisting>#ZONE           HOST(S)                 OPTIONS
 tx              texas:192.168.8.0/22
-sec             eth0:192.168.3.0/24
+sec             $WIFI_IF:192.168.3.0/24
+sec             $EXT_IF:0.0.0.0/0
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
       </blockquote>
     </section>
@@ -272,7 +274,7 @@ sec             eth0:192.168.3.0/24
       <para><blockquote>
           <programlisting>#ZONE   IPSEC   OPTIONS                 IN                      OUT
 #       ONLY                            OPTIONS                 OPTIONS
-sec     yes     mode=tunnel             mss=1400
+sec     Yes     mode=tunnel             mss=1400
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
 </programlisting>
         </blockquote></para>
@@ -285,6 +287,7 @@ sec     yes     mode=tunnel             mss=1400
         <programlisting>#INTERFACE      HOST(S)
 $DMZ_IF         206.124.146.177
 $INT_IF         -
+$WIFI_IF        192.168.3.0/24
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
       </blockquote>
     </section>

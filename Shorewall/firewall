@@ -672,6 +672,7 @@ validate_rule() {
 		state="-m state --state RELATED"
 		;;
 	    *)
+		state=
 		[ -n "$port" ] && [ "x${port}" != "x-" ] && \
 		    startup_error "Port number not allowed with protocol " \
 				  "\"$proto\"; rule: \"$rule\""

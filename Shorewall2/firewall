@@ -5915,7 +5915,7 @@ do_initialize() {
     FUNCTIONS=$SHARED_DIR/functions
 
     if [ -f $FUNCTIONS ]; then
-	echo "Loading $FUNCTIONS..."
+	[ -n "$QUIET" ] || echo "Loading $FUNCTIONS..."
 	. $FUNCTIONS
     else
 	startup_error "$FUNCTIONS does not exist!"
@@ -5932,7 +5932,7 @@ do_initialize() {
     config=$(find_file shorewall.conf)
 
     if [ -f $config ]; then
-	echo "Processing $config..."
+	[ -n "$QUIET" ] || echo "Processing $config..."
 	. $config
     else
 	echo "$config does not exist!" >&2

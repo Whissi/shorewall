@@ -697,9 +697,8 @@ verify_interface()
 }
 
 #
-# Generate a match for decrypted packets
+# Determine of communication to/from a host is encrypted using IPSEC
 #
-
 ipsec_host() # $1 = zone, $2 = host
 {
     eval local is_ipsec=\$${1}_is_ipsec
@@ -708,6 +707,9 @@ ipsec_host() # $1 = zone, $2 = host
     test -n "$is_ipsec" || list_search $2 $hosts
 }
 
+#
+# Generate a match for decrypted packets
+#
 match_ipsec_in() # $1 = zone, $2 = host
 {
     if ipsec_host $1 $2 ; then

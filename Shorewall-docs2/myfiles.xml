@@ -81,7 +81,8 @@
         <para>I use SNAT through 206.124.146.176 for&nbsp;my Wife's Windows XP
         system <quote>Tarry</quote>, and our&nbsp; dual-booting (SuSE
         9.2/Windows XP) laptop <quote>Tipper</quote> which connects through
-        the Wireless Access Point (wap) via a Wireless Bridge (wet).<note>
+        the Wireless Access Point (wap) via a Wireless Bridge (wet), and my
+        work laptop when it is not docked in my office.<note>
             <para>While the distance between the WAP and where I usually use
             the laptop isn't very far (50 feet or so), using a WAC11 (CardBus
             wireless card) has proved very unsatisfactory (lots of lost
@@ -111,7 +112,8 @@
     WAP11.&nbsp; In additional to using the rather weak WEP 40-bit encryption
     (64-bit with the 24-bit preamble), I use <ulink
     url="MAC_Validation.html">MAC verification</ulink> and <ulink
-    url="IPSEC-2.6.html">Kernel 2.6 IPSEC</ulink>.</para>
+    url="IPSEC-2.6.html">Kernel 2.6 IPSEC</ulink> or <ulink
+    url="OPENVPN.html">OpenVPN</ulink>.</para>
 
     <para>The single system in the DMZ (address 206.124.146.177) runs postfix,
     Courier IMAP (imaps and pop3), DNS, a Web server (Apache) and an FTP
@@ -148,7 +150,8 @@
 
     <para>The firewall is configured with OpenVPN for VPN access from our
     second home in <ulink url="http://www.omakchamber.com/">Omak,
-    Washington</ulink> or when we are otherwise out of town.</para>
+    Washington</ulink> or when we are otherwise out of town. Secure remote
+    access via IPSEC is also available.</para>
 
     <para><graphic align="center" fileref="images/network.png" /></para>
   </section>
@@ -246,7 +249,7 @@ net     $EXT_IF         206.124.146.255 dhcp,norfc1918,routefilter,logmartians,b
 loc     $INT_IF         detect          dhcp
 dmz     $DMZ_IF         -
 -       texas           -
-road    tun+            -
+vpn     tun+            -
 Wifi    $WIFI_IF        -               maclist
 #LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
       </blockquote>
@@ -269,7 +272,7 @@ sec             eth0:192.168.3.0/24
       <para><blockquote>
           <programlisting>#ZONE   IPSEC   OPTIONS                 IN                      OUT
 #       ONLY                            OPTIONS                 OPTIONS
-sec     yes     mode=tunnel
+sec     yes     mode=tunnel             mss=1400
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
 </programlisting>
         </blockquote></para>
@@ -326,17 +329,19 @@ $INT_IF         -
         <programlisting>#SOURCE         DESTINATION     POLICY          LOG LEVEL       BURST:LIMIT
 fw              fw              ACCEPT
 loc             net             ACCEPT
-$FW             road            ACCEPT
-road            net             ACCEPT
-road            loc             ACCEPT
-sec             road            ACCEPT
-road            sec             ACCEPT
+$FW             vpn             ACCEPT
+vpn             net             ACCEPT
+vpn             loc             ACCEPT
+sec             vpn             ACCEPT
+vpn             sec             ACCEPT
 sec             loc             ACCEPT
 loc             sec             ACCEPT
 fw              sec             ACCEPT
 sec             net             ACCEPT
+Wifi            sec             NONE
+sec             Wifi            NONE
 fw              Wifi            ACCEPT
-loc             road            ACCEPT
+loc             vpn             ACCEPT
 $FW             loc             ACCEPT
 $FW             tx              ACCEPT
 loc             tx              ACCEPT
@@ -509,8 +514,8 @@ DROP            sec                             fw                      tcp     
 #####
 # Roadwarriors to Firewall 
 #
-ACCEPT          road                            fw                      tcp     ssh,time,631,8080
-ACCEPT          road                            fw                      udp     161,ntp,631
+ACCEPT          vpn                             fw                      tcp     ssh,time,631,8080
+ACCEPT          vpn                             fw                      udp     161,ntp,631
 ##########################################################################################################################################################################
 #####
 # Local Network to DMZ
@@ -535,8 +540,8 @@ ACCEPT          sec                             dmz                     tcp     
 #####
 # Road Warriors to DMZ
 #
-ACCEPT          road                            dmz                     udp     domain
-ACCEPT          road                            dmz                     tcp     www,smtp,smtps,domain,ssh,imap,https,imaps,cvspserver,ftp,10023,pop3    -
+ACCEPT          vpn                             dmz                     udp     domain
+ACCEPT          vpn                             dmz                     tcp     www,smtp,smtps,domain,ssh,imap,https,imaps,cvspserver,ftp,10023,pop3    -
 ##########################################################################################################################################################################
 #####
 # Internet to ALL -- drop NewNotSyn packets
@@ -652,8 +657,7 @@ REJECT          fw                              dmz                     udp     
 ##########################################################################################################################################################################
 #####
 ACCEPT          tx                              loc:192.168.1.5         all
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
-</programlisting>
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
       </blockquote>
     </section>
 
@@ -668,7 +672,9 @@ ACCEPT          tx                              loc:192.168.1.5         all
 auto lo
 iface lo inet loopback
 
-# DMZ interface
+# DMZ interface -- After the interface is up, add a route to the server. This allows the 'Yes' setting
+#                  in the HAVEROUTE column of /etc/shorewall/proxyarp above.
+
 auto eth1
 iface eth1 inet static
         address 206.124.146.176
@@ -676,7 +682,8 @@ iface eth1 inet static
         broadcast 0.0.0.0
         up ip route add 206.124.146.177 dev eth1
 
-# Internet interface
+# Internet interface -- After the interface is up, add a route to the Westell 2200 DSL "Modem"
+
 auto eth2
 iface eth2 inet static
         address 206.124.146.176
@@ -685,17 +692,18 @@ iface eth2 inet static
         up ip route add 192.168.1.1 dev eth2
 
 # Wireless interface
+
 auto eth0
 iface eth0 inet static
         address 192.168.3.254
         netmask 255.255.255.0
 
 # LAN interface
+
 auto eth3
 iface eth3 inet static
         address 192.168.1.254
-        netmask 255.255.255.0
-</programlisting>
+        netmask 255.255.255.0</programlisting>
       </blockquote>
     </section>
 
@@ -710,6 +718,64 @@ iface eth3 inet static
 syslogfile /var/log/ulog/syslogemu.log
 # do we want to fflush() the file after each write?
 syslogsync 1</programlisting>
+      </blockquote>
+    </section>
+
+    <section>
+      <title>/etc/racoon/racoon.conf</title>
+
+      <blockquote>
+        <programlisting>        path certificate "/etc/certs" ;
+
+        listen
+        {
+                isakmp 206.124.146.176;
+                isakmp 192.168.3.254;
+        }
+
+        remote anonymous
+        {
+                exchange_mode main ;
+                generate_policy on ;
+                passive on ;
+                certificate_type x509 "gateway.pem" "gateway_key.pem";
+                verify_cert on;
+                my_identifier asn1dn ;
+                peers_identifier asn1dn ;
+                verify_identifier on ;
+                lifetime time 24 hour ;
+                proposal {
+                        encryption_algorithm blowfish;
+                        hash_algorithm sha1;
+                        authentication_method rsasig ;
+                        dh_group 2 ;
+                }
+        }
+
+        sainfo anonymous
+        {
+                pfs_group 2;
+                lifetime time 12 hour ;
+                encryption_algorithm blowfish, 3des;
+                authentication_algorithm hmac_sha1, hmac_md5 ;
+                compression_algorithm deflate ;
+        }</programlisting>
+      </blockquote>
+    </section>
+
+    <section>
+      <title>/etc/racoon/setkey.conf</title>
+
+      <blockquote>
+        <programlisting># First of all flush the SAD and SPD databases
+
+flush;
+spdflush;
+
+# Add some SPD rules
+
+spdadd 0.0.0.0/0          192.168.3.8/32     any -P out ipsec esp/tunnel/192.168.3.254-192.168.3.8/require;
+spdadd 192.168.3.8/32     0.0.0.0/0          any -P in  ipsec esp/tunnel/192.168.3.8-192.168.3.254/require;</programlisting>
       </blockquote>
     </section>
   </section>

@@ -17,7 +17,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-01-20</pubdate>
+    <pubdate>2004-01-24</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -1590,7 +1590,12 @@ Creating input Chains...
       <para><emphasis role="bold">Answer:</emphasis> The above output is
       perfectly normal. The Net zone is defined as all hosts that are
       connected through eth0 and the local zone is defined as all hosts
-      connected through eth1</para>
+      connected through eth1. If you are running Shorewall 1.4.10 or later,
+      you can consider setting the <ulink url="Documentation.htm#Interfaces"><emphasis
+      role="bold">detectnets</emphasis> interface option</ulink> on your local
+      interface (eth1 in the above example). That will cause Shorewall to
+      restrict the local zone to only those networks routed through that
+      interface.</para>
     </section>
 
     <section id="faq22">
@@ -1909,7 +1914,9 @@ Creating input Chains...
   <appendix>
     <title>Revision History</title>
 
-    <para><revhistory><revision><revnumber>1.12</revnumber><date>2004-01-20</date><authorinitials>TE</authorinitials><revremark>Improve
+    <para><revhistory><revision><revnumber>1.13</revnumber><date>2004-01-24</date><authorinitials>TE</authorinitials><revremark>Add
+    a note about the <emphasis role="bold">detectnets</emphasis> interface
+    option in FAQ 9.</revremark></revision><revision><revnumber>1.12</revnumber><date>2004-01-20</date><authorinitials>TE</authorinitials><revremark>Improve
     FAQ 16 answer.</revremark></revision><revision><revnumber>1.11</revnumber><date>2004-01-14</date><authorinitials>TE</authorinitials><revremark>Corrected
     broken link</revremark></revision><revision><revnumber>1.10</revnumber><date>2004-01-09</date><authorinitials>TE</authorinitials><revremark>Added
     a couple of more legacy FAQ numbers.</revremark></revision><revision><revnumber>1.9</revnumber><date>2004-01-08</date><authorinitials>TE</authorinitials><revremark>Corrected

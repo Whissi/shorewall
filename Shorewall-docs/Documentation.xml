@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-01-05</pubdate>
+    <pubdate>2004-01-22</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -680,6 +680,21 @@ dmz        DMZ            Demilitarized zone</programlisting>
             </varlistentry>
           </variablelist>
 
+          <variablelist>
+            <varlistentry>
+              <term>detectnets</term>
+
+              <listitem>
+                <para>(Added in version 1.4.10) - If this option is specified,
+                the zone named in the ZONE column will contain only the hosts
+                routed through the interface named in the INTERFACE column.
+                <emphasis role="bold">Do not set this option on your external
+                (Internet) interface!</emphasis> The interface must be in the
+                UP state when Shorewall is [re]started.</para>
+              </listitem>
+            </varlistentry>
+          </variablelist>
+
           <para>My recommendations concerning options:</para>
 
           <itemizedlist>
@@ -688,7 +703,7 @@ dmz        DMZ            Demilitarized zone</programlisting>
             </listitem>
 
             <listitem>
-              <para>Wireless Interface -- <emphasis role="bold">maclist,routefilter,tcpflags</emphasis></para>
+              <para>Wireless Interface -- <emphasis role="bold">maclist,routefilter,tcpflags,detectnets</emphasis></para>
             </listitem>
 
             <listitem>
@@ -926,7 +941,7 @@ loc         eth1:192.168.1.0/24,192.168.12.0/24</programlisting>
     to a particular connection request then the policy from
     <filename>/etc/shorewall/policy</filename> is applied.</para>
 
-    <para>Four policies are defined:</para>
+    <para>Five policies are defined:</para>
 
     <variablelist>
       <varlistentry>
@@ -1827,14 +1842,23 @@ DNAT     net      loc:192.168.1.101-192.168.1.109 tcp   80</programlisting>
           optionally qualified by adding <quote>:</quote> and a subnet or host
           IP. When this qualification is added, only packets addressed to that
           host or subnet will be masqueraded. Beginning with Shorewall version
-          1.3.14, if you have set ADD_SNAT_ALIASES=Yes in <xref linkend="Conf" />,
-          you can cause Shorewall to create an alias <emphasis>label</emphasis>
-          of the form <emphasis>interfacename:digit</emphasis> (e.g., eth0:0)
-          by placing that label in this column. See example 5 below. Alias
-          labels created in this way allow the alias to be visible to the
-          ipconfig utility. <emphasis role="bold">THAT IS THE ONLY THING THAT
-          THIS LABEL IS GOOD FOR AND IT MAY NOT APPEAR ANYWHERE ELSE IN YOUR
-          SHOREWALL CONFIGURATION.</emphasis></para>
+          1.4.10, the interface name can be qualified with &#34;:&#34;
+          followed by a comma separated list of hosts and/or subnets. If this
+          list begins with <quote>!</quote> (e.g., <quote>eth0:!192.0.2.8/29,192.0.2.32/29</quote>)
+          then only packets addressed to destinations <emphasis role="bold">not</emphasis>
+          listed will be masqueraded; otherwise (e.g., <quote>eth0:192.0.2.8/29,192.0.2.32/29</quote>),
+          traffic will be masqueraded if it <emphasis role="bold">does</emphasis>
+          match one of the listed addresses.</para>
+
+          <para>Beginning with Shorewall version 1.3.14, if you have set
+          ADD_SNAT_ALIASES=Yes in <xref linkend="Conf" />, you can cause
+          Shorewall to create an alias <emphasis>label</emphasis> of the form
+          <emphasis>interfacename:digit</emphasis> (e.g., eth0:0) by placing
+          that label in this column. See example 5 below. Alias labels created
+          in this way allow the alias to be visible to the ipconfig utility.
+          <emphasis role="bold">THAT IS THE ONLY THING THAT THIS LABEL IS GOOD
+          FOR AND IT MAY NOT APPEAR ANYWHERE ELSE IN YOUR SHOREWALL
+          CONFIGURATION.</emphasis></para>
         </listitem>
       </varlistentry>
 
@@ -3091,7 +3115,9 @@ eth1                -</programlisting>
   <appendix>
     <title>Revision History</title>
 
-    <para><revhistory><revision><revnumber>1.11</revnumber><date>2005-01-05</date><authorinitials>TE</authorinitials><revremark>Standards
+    <para><revhistory><revision><revnumber>1.12</revnumber><date>2004-01-21</date><authorinitials>TE</authorinitials><revremark>Add
+    masquerade destination list.</revremark></revision><revision><revnumber>1.12</revnumber><date>2004-01-18</date><authorinitials>TE</authorinitials><revremark>Correct
+    typo.</revremark></revision><revision><revnumber>1.11</revnumber><date>2004-01-05</date><authorinitials>TE</authorinitials><revremark>Standards
     Compliance</revremark></revision><revision><revnumber>1.10</revnumber><date>2004-01-05</date><authorinitials>TE</authorinitials><revremark>Improved
     formatting of DNAT- and REDIRECT- for clarity</revremark></revision><revision><revnumber>1.9</revnumber><date>2003-12-25</date><authorinitials>MN</authorinitials><revremark>Initial
     Docbook Conversion Complete</revremark></revision></revhistory></para>

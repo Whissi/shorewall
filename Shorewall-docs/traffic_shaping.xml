@@ -15,10 +15,10 @@
       </author>
     </authorgroup>
 
-    <pubdate>2003-10-21</pubdate>
+    <pubdate>2004-01-21</pubdate>
 
     <copyright>
-      <year>2001-2003</year>
+      <year>2001-2004</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -223,6 +223,21 @@
         omitted, any source port is acceptable. Specified as a comma-separate
         list of port names, port numbers or port ranges.</para>
       </listitem>
+
+      <listitem>
+        <para>USER (Added in Shorewall version 1.4.10) - (Optional) This
+        column may only be non-empty if the SOURCE is the firewall itself.
+        When this column is non-empty, the rule applies only if the program
+        generating the output is running under the effective user and/or
+        group. It may contain : </para>
+
+        <para>[&#60;user name or number&#62;]:[&#60;group name or number&#62;]
+        </para>
+
+        <para>The colon is optionnal when specifying only a user. </para>
+
+        <para>Examples : john: / john / :users / john:users</para>
+      </listitem>
     </itemizedlist>
 
     <example>
@@ -233,7 +248,7 @@
       originating on the firewall itself should be marked with 3.</para>
 
       <informaltable>
-        <tgroup cols="6">
+        <tgroup cols="4">
           <thead>
             <row>
               <entry align="center">MARK</entry>
@@ -243,10 +258,6 @@
               <entry align="center">DESTINATION</entry>
 
               <entry align="center">PROTOCOL</entry>
-
-              <entry align="center">PORT(S)</entry>
-
-              <entry align="center">CLIENT PORT(S)</entry>
             </row>
           </thead>
 
@@ -259,10 +270,6 @@
               <entry>0.0.0.0/0</entry>
 
               <entry>all</entry>
-
-              <entry></entry>
-
-              <entry></entry>
             </row>
 
             <row>
@@ -273,10 +280,6 @@
               <entry>0.0.0.0/0</entry>
 
               <entry>all</entry>
-
-              <entry></entry>
-
-              <entry></entry>
             </row>
 
             <row>
@@ -287,10 +290,6 @@
               <entry>0.0.0.0/0</entry>
 
               <entry>all</entry>
-
-              <entry></entry>
-
-              <entry></entry>
             </row>
 
             <row>
@@ -301,10 +300,6 @@
               <entry>0.0.0.0/0</entry>
 
               <entry>all</entry>
-
-              <entry></entry>
-
-              <entry></entry>
             </row>
           </tbody>
         </tgroup>
@@ -318,7 +313,7 @@
       destined for 155.186.235.151 should be marked with 12.</para>
 
       <informaltable>
-        <tgroup cols="6">
+        <tgroup cols="4">
           <thead>
             <row>
               <entry align="center">MARK</entry>
@@ -328,10 +323,6 @@
               <entry align="center">DESTINATION</entry>
 
               <entry align="center">PROTOCOL</entry>
-
-              <entry align="center">PORT(S)</entry>
-
-              <entry align="center">CLIENT PORT(S)</entry>
             </row>
           </thead>
 
@@ -344,10 +335,6 @@
               <entry>155.186.235.151</entry>
 
               <entry>47</entry>
-
-              <entry></entry>
-
-              <entry></entry>
             </row>
           </tbody>
         </tgroup>
@@ -361,7 +348,7 @@
       155.186.235.151 should be marked with 22.</para>
 
       <informaltable>
-        <tgroup cols="6">
+        <tgroup cols="5">
           <thead>
             <row>
               <entry align="center">MARK</entry>
@@ -373,8 +360,6 @@
               <entry align="center">PROTOCOL</entry>
 
               <entry align="center">PORT(S)</entry>
-
-              <entry align="center">CLIENT PORT(S)</entry>
             </row>
           </thead>
 
@@ -389,8 +374,6 @@
               <entry>tcp</entry>
 
               <entry>22</entry>
-
-              <entry></entry>
             </row>
           </tbody>
         </tgroup>
@@ -405,10 +388,7 @@
     url="http://lartc.org/wondershaper/">The Wonder Shaper </ulink>(I just
     copied wshaper.htb to /etc/shorewall/tcstart and modified it as shown in
     the Wondershaper README). WonderShaper DOES NOT USE THE
-    /etc/shorewall/tcrules file. While I currently have entries in
-    /etc/shorewall/tcrules, I do so for <ulink
-    url="Shorewall_Squid_Usage.html">policy routing for Squid</ulink> and not
-    for Traffic Shaping.</para>
+    /etc/shorewall/tcrules file.</para>
   </section>
 
   <section>

@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-01-08</pubdate>
+    <pubdate>2004-01-20</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -66,8 +66,9 @@
       </listitem>
 
       <listitem>
-        <para>One-to-one NAT for EastepLaptop (My work system). Internal
-        address 192.168.1.7 and external address 206.124.146.180.</para>
+        <para>One-to-one NAT for EastepLaptop (My work system -- Windows XP
+        SP2). Internal address 192.168.1.7 and external address
+        206.124.146.180.</para>
       </listitem>
 
       <listitem>
@@ -86,7 +87,7 @@
       </listitem>
     </itemizedlist>
 
-    <para>The firewall runs on a 256MB PII/233 with RH9.0.</para>
+    <para>The firewall runs on a 256MB PII/233 with Debian Sarge (Testing).</para>
 
     <para>Wookie, Ursa and the Firewall all run Samba and the Firewall acts as
     a WINS server.</para>
@@ -100,19 +101,20 @@
 
     <para>The single system in the DMZ (address 206.124.146.177) runs postfix,
     Courier IMAP (imaps and pop3), DNS, a Web server (Apache) and an FTP
-    server (Pure-ftpd). The system also runs fetchmail to fetch our email from
-    our old and current ISPs. That server is managed through Proxy ARP.</para>
+    server (Pure-ftpd) under RedHat 9.0. The system also runs fetchmail to
+    fetch our email from our old and current ISPs. That server is managed
+    through Proxy ARP.</para>
 
     <para>The firewall system itself runs a DHCP server that serves the local
     network.</para>
 
-    <para>All administration and publishing is done using ssh/scp. I have X
-    installed on the firewall but no X server or desktop is installed. X
-    applications tunnel through SSH to XWin.exe running on Ursa. The server
-    does have a desktop environment installed and that desktop environment is
-    available via XDMCP from the local zone. For the most part though, X
-    tunneled through SSH is used for server administration and the server runs
-    at run level 3 (multi-user console mode on RedHat).</para>
+    <para>All administration and publishing is done using ssh/scp. I have a
+    desktop environment installed on the firewall but I am not usually logged
+    in to it. X applications tunnel through SSH to Ursa. The server also has a
+    desktop environment installed and that desktop environment is available
+    via XDMCP from the local zone. For the most part though, X tunneled
+    through SSH is used for server administration and the server runs at run
+    level 3 (multi-user console mode on RedHat).</para>
 
     <para>I run an SNMP server on my firewall to serve <ulink
     url="http://www.ee.ethz.ch/~oetiker/webtools/mrtg/">MRTG</ulink> running
@@ -120,9 +122,9 @@
     ethernet interface in the Server is configured with IP address
     206.124.146.177, netmask 255.255.255.0. The server&#39;s default gateway
     is 206.124.146.254 (Router at my ISP. This is the same default gateway
-    used by the firewall itself). On the firewall, my /sbin/ifup-local script
-    (see below) adds a host route to 206.124.146.177 through eth1 when that
-    interface is brought up.</para>
+    used by the firewall itself). On the firewall, an entry in my
+    /etc/network/interfaces file (see below) adds a host route to
+    206.124.146.177 through eth1 when that interface is brought up.</para>
 
     <para>Ursa (192.168.1.5 A.K.A. 206.124.146.178) runs a PPTP server for
     Road Warrior access.</para>
@@ -541,90 +543,24 @@ ACCEPT          all                             all                     icmp    
     </section>
 
     <section>
-      <title>Init File</title>
+      <title>/etc/network/interfaces</title>
 
       <blockquote>
-        <para>This file deals with redirecting html requests to <ulink
-        url="Shorewall_Squid_Usage.html#DMZ">Squid on the DMZ server</ulink>.</para>
-      </blockquote>
+        <para>This file is Debian specific. My additional entry (which is
+        displayed in <emphasis role="bold">bold type</emphasis>) adds a route
+        to my DMZ server when eth1 is brought up. It allows me to enter
+        <quote>Yes</quote> in the HAVEROUTE column of <link linkend="ProxyARP">my
+        Proxy ARP file</link>.</para>
 
-      <blockquote>
-        <programlisting>#
-# Add a second routing table with my server as the default gateway
-# Use this routing table with all packets marked with value 1
-# 
-if [ -z &#34;`ip route list table 202 2&#62; /dev/null`&#34; ] ; then
-    run_ip rule add fwmark 1 table www.out
-    run_ip route add default via 206.124.146.177 dev eth1 table www.out
-    run_ip route flush cache
-fi</programlisting>
-      </blockquote>
-    </section>
-
-    <section>
-      <title>/etc/iproute2/rt_tables</title>
-
-      <blockquote>
-        <para>This file deals with redirecting html requests to <ulink
-        url="Shorewall_Squid_Usage.html#DMZ">Squid on the DMZ server</ulink>.</para>
-      </blockquote>
-
-      <blockquote>
-        <programlisting>#
-# reserved values
-#
-#255    local
-#254    main
-#253    default
-#0      unspec
- 
-#
-# local -- I added the entry below
-#
-202 www.out</programlisting>
-      </blockquote>
-    </section>
-
-    <section>
-      <title>Tcrules File</title>
-
-      <blockquote>
-        <para>This file deals with redirecting html requests to <ulink
-        url="Shorewall_Squid_Usage.html#DMZ">Squid on the DMZ server</ulink>
-        -- in my setup, it is <emphasis role="bold">not</emphasis> used for
-        traffic shapping/control.</para>
-      </blockquote>
-
-      <blockquote>
-        <programlisting>#MARK           SOURCE          DEST            PROTO   PORT(S) CLIENT PORT(S)
-1:P             eth2,eth3       !192.168.0.0/16 tcp     80</programlisting>
-      </blockquote>
-    </section>
-
-    <section>
-      <title>Tcstart File</title>
-
-      <blockquote>
-        <para>My tcstart file is just the HTB version of <ulink
-        url="http://lartc.org/wondershaper/">The WonderShaper</ulink>.</para>
-      </blockquote>
-    </section>
-
-    <section>
-      <title>/sbin/ifup-local</title>
-
-      <blockquote>
-        <para>This file is Redhat specific and adds a route to my DMZ server
-        when eth1 is brought up. It allows me to enter <quote>Yes</quote> in
-        the HAVEROUTE column of <link linkend="ProxyARP">my Proxy ARP file</link>.</para>
-
-        <programlisting>#!/bin/sh
-
-case $1 in
-     eth1)
-           ip route add 206.124.146.177 dev eth1
-           ;;
-esac</programlisting>
+        <programlisting>...
+auto eth1
+iface eth1 inet static
+        address 192.168.2.1
+        netmask 255.255.255.0
+        network 192.168.2.0
+        broadcast 192.168.2.255
+        <emphasis role="bold">up ip route add 206.124.146.177 dev eth1
+</emphasis>...</programlisting>
       </blockquote>
     </section>
   </section>

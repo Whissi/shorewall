@@ -115,7 +115,7 @@ showfirstchain() # $1 = name of chain
     /^Chain/	 {if ( prnt == 1 ) { rslt=0; exit 0; }; };\
     /Chain '$1'/ { prnt=1; }; \
 		 { if (prnt == 1)  print; };\
-    END		 { exit rslt; }' /tmp/chains-$$
+    END		 { exit rslt; }' $TMPFILE
 }
 
 showchain() # $1 = name of chain
@@ -130,7 +130,7 @@ showchain() # $1 = name of chain
 	/^$|^ pkts/  { next; };\
 	/^Chain/     {if ( prnt == 1 ) exit; };\
 	/Chain '$1'/ { prnt=1; };\
-		     { if (prnt == 1)  print; }' /tmp/chains-$$
+		     { if (prnt == 1)  print; }' $TMPFILE
     fi
 }
 
@@ -202,7 +202,10 @@ display_chains()
 	# Send the output to a temporary file since ash craps if we try to store
 	# the output in a variable.
 	#
-	iptables -L $IPT_OPTIONS > /tmp/chains-$$
+	TMPFILE=$(mktempfile)
+	[ -n "$TMPFILE" ] || { echo "   ERROR:Cannot create temporary file" >&2; exit 1; }
+
+	iptables -L $IPT_OPTIONS >> $TMPFILE
 
 	clear
 	echo "$banner $(date)"
@@ -223,7 +226,7 @@ display_chains()
 	echo "Input Chains"
 	echo
 
-	chains=$(grep '^Chain.*_[in|fwd]' /tmp/chains-$$ | cut -d' ' -f 2)
+	chains=$(grep '^Chain.*_[in|fwd]' $TMPFILE | cut -d' ' -f 2)
 
 	for chain in $chains; do
 	    showchain $chain
@@ -233,7 +236,7 @@ display_chains()
 
 	for zone in $zones; do
 
-	    if [ -n "$(grep "^Chain \.*${zone}" /tmp/chains-$$)" ] ; then
+	    if [ -n "$(grep "^Chain \.*${zone}" $TMPFILE)" ] ; then
 		clear
 		echo "$banner $(date)"
 		echo
@@ -283,7 +286,7 @@ display_chains()
 	showchain dynamic
 	timed_read
 
-	qt rm -f /tmp/chains-$$
+	qt rm -f $TMPFILE
     else
 	iptables -L -n -v
 	timed_read
@@ -399,8 +402,8 @@ monitor_firewall() # $1 = timeout -- if negative, prompt each time that
 
 
     if qt which awk; then
-	TMP_DIR=/tmp/shorewall-$$
-	mkdir $TMP_DIR
+	TMP_DIR=$(mktempdir)
+	[ -n "$TMP_DIR" ] || { echo "   ERROR:Cannot create temporary directory" >&2; exit 1; }
 	haveawk=Yes
 	determine_zones
 	rm -rf $TMP_DIR
@@ -699,7 +702,12 @@ ensure_config_path
 config=$(find_file shorewall.conf)
 
 if [ -f $config ]; then
-    . $config
+    if [ -r $config ]; then
+	. $config
+    else
+	echo "Cannot read $config! (Hint: Are you root?)" >&2
+	exit 1
+    fi
 else
     echo "$config does not exist!" >&2
     exit 2
@@ -732,7 +740,6 @@ else
 fi
 
 banner="Shorewall-$version Status at $HOSTNAME -"
-
 
 case $(echo -e) in
     -e*)

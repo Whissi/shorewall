@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-10-25</pubdate>
+    <pubdate>2004-12-04</pubdate>
 
     <copyright>
       <year>2004</year>
@@ -232,7 +232,7 @@ ipsec         net         134.28.54.2
       <para><filename>/etc/shorewall/tunnels</filename> — System B:</para>
 
       <programlisting>#TYPE         ZONE        GATEWAY             GATEWAY ZONE
-ipsec         net         206.161.148.9
+ipsec         net         206.162.148.9
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
     </blockquote>
 
@@ -283,7 +283,7 @@ vpn               eth0:10.0.0.0/8,134.28.54.2        <emphasis role="bold">  ips
       <para>/etc/shorewall/hosts — System B</para>
 
       <programlisting>#ZONE             HOSTS                                OPTIONS
-vpn               eth0:192.168.1.0/24,206.161.148.9    <emphasis role="bold">ipsec</emphasis>
+vpn               eth0:192.168.1.0/24,206.162.148.9    <emphasis role="bold">ipsec</emphasis>
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
     </blockquote>
 
@@ -313,14 +313,14 @@ flush;
 
 # Add some SPD rules
 
-spdadd 192.168.1.0/24   10.0.0.0/8       any -P out ipsec esp/tunnel/206.161.148.9-134.28.54.2/require;
-spdadd 192.168.1.0/24   134.28.54.2/32   any -P out ipsec esp/tunnel/206.161.148.9-134.28.54.2/require;
-spdadd 206.161.148.9/32 134.28.54.2/32   any -P out ipsec esp/tunnel/206.161.148.9-134.28.54.2/require;
-spdadd 206.161.148.9/32 10.0.0.0/8       any -P out ipsec esp/tunnel/206.161.148.9-134.28.54.2/require;
-spdadd 10.0.0.0/8       192.168.1.0/24   any -P in  ipsec esp/tunnel/134.28.54.2-206.161.148.9/require;
-spdadd 10.0.0.0/8       206.161.148.9/32 any -P in  ipsec esp/tunnel/134.28.54.2-206.161.148.9/require;
-spdadd 134.28.54.2/32   192.168.1.0/24   any -P in  ipsec esp/tunnel/134.28.54.2-206.161.148.9/require;
-spdadd 134.28.54.2/32   206.161.148.9/32 any -P in  ipsec esp/tunnel/134.28.54.2-206.161.148.9/require;</programlisting>
+spdadd 192.168.1.0/24   10.0.0.0/8       any -P out ipsec esp/tunnel/206.162.148.9-134.28.54.2/require;
+spdadd 192.168.1.0/24   134.28.54.2/32   any -P out ipsec esp/tunnel/206.162.148.9-134.28.54.2/require;
+spdadd 206.162.148.9/32 134.28.54.2/32   any -P out ipsec esp/tunnel/206.162.148.9-134.28.54.2/require;
+spdadd 206.162.148.9/32 10.0.0.0/8       any -P out ipsec esp/tunnel/206.162.148.9-134.28.54.2/require;
+spdadd 10.0.0.0/8       192.168.1.0/24   any -P in  ipsec esp/tunnel/134.28.54.2-206.162.148.9/require;
+spdadd 10.0.0.0/8       206.162.148.9/32 any -P in  ipsec esp/tunnel/134.28.54.2-206.162.148.9/require;
+spdadd 134.28.54.2/32   192.168.1.0/24   any -P in  ipsec esp/tunnel/134.28.54.2-206.162.148.9/require;
+spdadd 134.28.54.2/32   206.162.148.9/32 any -P in  ipsec esp/tunnel/134.28.54.2-206.162.148.9/require;</programlisting>
     </blockquote>
 
     <para>The <filename>setkey.conf</filename> file on gateway B would be
@@ -334,7 +334,7 @@ spdadd 134.28.54.2/32   206.161.148.9/32 any -P in  ipsec esp/tunnel/134.28.54.2
 
 listen 
 {
-        isakmp 206.161.148.9;
+        isakmp 206.162.148.9;
 }
 
 remote 134.28.54.2
@@ -363,7 +363,7 @@ sainfo address 192.168.1.0/24 any address 10.0.0.0/8 any
         compression_algorithm deflate ;
 }
 
-sainfo address 206.161.148.9/32 any address 10.0.0.0/8 any
+sainfo address 206.162.148.9/32 any address 10.0.0.0/8 any
 {
         pfs_group 2;
         lifetime time 12 hour ;
@@ -372,7 +372,7 @@ sainfo address 206.161.148.9/32 any address 10.0.0.0/8 any
         compression_algorithm deflate ;
 }
 
-sainfo address 206.161.148.9/32 any address 134.28.54.2/32 any
+sainfo address 206.162.148.9/32 any address 134.28.54.2/32 any
 {
         pfs_group 2;
         lifetime time 12 hour ;

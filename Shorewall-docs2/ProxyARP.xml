@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-11-16</pubdate>
+    <pubdate>2004-12-16</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -223,8 +223,8 @@ arping -U -I eth0 66.58.99.83             # for example</programlisting>
         <programlisting>shorewall clear
 ip addr add 130.252.100.18 dev eth0
 ip addr add 130.252.100.19 dev eth0
-arping -U -I eth0 130.252.100.18
-arping -U -I eth0 130.252.100.19
+arping -U -c 10 -I eth0 130.252.100.18
+arping -U -c 10 -I eth0 130.252.100.19
 ip addr del 130.252.100.18 dev eth0
 ip addr del 130.252.100.19 dev eth0
 shorewall start</programlisting>
@@ -235,6 +235,26 @@ shorewall start</programlisting>
         entry but many either can't or won't purge individual entries.</para>
       </listitem>
     </orderedlist>
+
+    <warning>
+      <para>There are two distinct versions of <command>arping</command>
+      available:</para>
+
+      <orderedlist>
+        <listitem>
+          <para><command>arping</command> by Thomas Habets (Debian package
+          <emphasis>arping</emphasis>).</para>
+        </listitem>
+
+        <listitem>
+          <para><command>arping</command> as part of the iputils package by
+          Alexey Kuznetsov (Debian package
+          <emphasis>iputils-arping</emphasis>).</para>
+        </listitem>
+      </orderedlist>
+
+      <para>You want the second one by Alexey Kuznetsov.</para>
+    </warning>
 
     <para>You can determine if your ISP's gateway ARP cache is stale using
     ping and tcpdump. Suppose that we suspect that the gateway router has a

@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-01-03</pubdate>
+    <pubdate>2005-01-06</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -152,9 +152,12 @@
     206.124.146.177 through eth1 when that interface is brought up.</para>
 
     <para>Tarry (192.168.1.4) runs a PPTP server for Road Warrior access from
-    my work laptop and the Firewall is configured with OpenVPN for VPN access
-    from our second home in <ulink url="http://www.omakchamber.com/">Omak,
-    Washington</ulink> or when we are otherwise out of town.</para>
+    my work laptop and Ursa (206.124.146.178/192.168.1.5) is configured with
+    OpenVPN for VPN access from our second home in <ulink
+    url="http://www.omakchamber.com/">Omak, Washington</ulink> or when we are
+    otherwise out of town. I have a new work laptop that is not yet in
+    service; when it is, I will install OpenVPN on it as well and use OpenVPN
+    exclusively for remote access.</para>
 
     <para><graphic align="center" fileref="images/network.png" /></para>
   </section>
@@ -216,7 +219,7 @@ TCP_FLAGS_DISPOSITION=DROP</programlisting>
         <para><programlisting>MIRRORS=&lt;list of shorewall mirror ip addresses&gt;
 NTPSERVERS=&lt;list of the NTP servers I sync with&gt;
 TEXAS=&lt;ip address of gateway in Plano&gt;
-LOG=ULOGD
+LOG=ULOG
 EXT_IF=eth1
 INT_IF=eth2
 DMZ_IF=eth0</programlisting></para>
@@ -231,7 +234,6 @@ DMZ_IF=eth0</programlisting></para>
 net     Internet        Internet
 dmz     DMZ             Demilitarized zone
 loc     Local           Local networks
-road    Roadwarrior     Our Laptop on the Road
 tx      Texas           Peer Network in Dallas
 #LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE
 </programlisting>
@@ -250,7 +252,6 @@ net     $EXT_IF   206.124.146.255 dhcp,norfc1918,routefilter,logmartians,blackli
 loc     $INT_IF   detect          dhcp
 dmz     $DMZ_IF   -
 -       texas     -
-road    tun+      -               routeback
 #LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
       </blockquote>
     </section>
@@ -316,9 +317,6 @@ $INT_IF         -
         <programlisting>#SOURCE         DESTINATION     POLICY          LOG LEVEL       BURST:LIMIT
 fw              fw              ACCEPT
 loc             net             ACCEPT
-fw              road            ACCEPT
-road            loc             ACCEPT
-loc             road            ACCEPT
 $FW             loc             ACCEPT
 $FW             tx              ACCEPT
 loc             tx              ACCEPT
@@ -384,7 +382,6 @@ $EXT_IF::                  eth2            206.124.146.176
       <blockquote>
         <programlisting>#TYPE                   ZONE    GATEWAY         GATEWAY ZONE    PORT
 gre                     net     $TEXAS
-openvpn:1194            net     0.0.0.0/0
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
       </blockquote>
     </section>
@@ -504,7 +501,7 @@ AllowPing       net                             dmz
 #
 # Net to Local
 #
-# When I'm "on the road", the following two rules allow me VPN access back home.
+# When I'm "on the road", the following two rules allow me VPN access back home via PPTP.
 #
 DNAT            net                             loc:192.168.1.4         tcp     1723    -
 DNAT            net:!$TEXAS                     loc:192.168.1.4         gre     -
@@ -581,46 +578,6 @@ ACCEPT          tx                              loc:192.168.1.5         all
       </blockquote>
     </section>
 
-    <section>
-      <title>/etc/openvpn/server.conf</title>
-
-      <para>This is my OpenVPN server configuration file:</para>
-
-      <blockquote>
-        <programlisting>ddev tun
- 
-server 192.168.2.0 255.255.255.0
- 
-dh dh1024.pem
- 
-ca /etc/certs/cacert.pem
- 
-crl-verify /etc/certs/crl.pem
- 
-cert /etc/certs/gateway.pem
-key /etc/certs/gateway_key.pem
- 
-port 1194
- 
-comp-lzo
- 
-user nobody
-group nogroup
- 
-ping 15
-ping-restart 45
-ping-timer-rem
-persist-tun
-persist-key
- 
-client-config-dir /etc/openvpn/clients
-ccd-exclusive
-client-to-client
- 
-verb 3</programlisting>
-      </blockquote>
-    </section>
-
     <section id="debian_interfaces">
       <title>/etc/network/interfaces</title>
 
@@ -680,11 +637,12 @@ syslogsync 1</programlisting>
   </section>
 
   <section>
-    <title>Wireless IPSEC Gateway (Ursa) Configuration</title>
+    <title>Wireless IPSEC/OpenVPN Gateway (Ursa) Configuration</title>
 
     <para>As mentioned above, Ursa acts as an IPSEC gateway for the wireless
-    network. It's view of the network is diagrammed in the following
-    figure.</para>
+    network and as an OpenVPN gateway for roadwarrior access from Tipper and
+    my new work laptop. It's view of the network is diagrammed in the
+    following figure.</para>
 
     <graphic align="center" fileref="images/network1.png" valign="middle" />
 
@@ -703,6 +661,7 @@ loc     Local           Local networks
 net     Internet        The Big Bad Internet
 WiFi    Wireless        Wireless Network
 sec     Secure          Secure Wireless Network
+road    Roadwarriors    Roadwarriors
 #LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE
 </programlisting>
       </blockquote>
@@ -716,16 +675,22 @@ sec     Secure          Secure Wireless Network
 loc             fw              ACCEPT
 loc             net             NONE
 loc             sec             ACCEPT
+loc             road            ACCEPT
 net             fw              ACCEPT
 net             loc             NONE
 net             sec             ACCEPT
 sec             fw              ACCEPT
 sec             loc             ACCEPT
 sec             net             ACCEPT
+road            sec             ACCEPT
+road            loc             ACCEPT
+road            net             ACCEPT
+road            fw              ACCEPT
 fw              loc             ACCEPT
 fw              net             ACCEPT
 fw              sec             ACCEPT
 fw              WiFi            ACCEPT
+fw              Road            ACCEPT
 sec             WiFi            NONE
 WiFi            sec             NONE
 all             all             REJECT          info
@@ -744,6 +709,7 @@ all             all             REJECT          info
         <programlisting>#ZONE    INTERFACE      BROADCAST       OPTIONS
 net     eth0            192.168.1.255   dhcp,nobogons,blacklist
 WiFi    eth1            192.168.3.255   nobogons,blacklist,maclist,routeback
+road    tun0            -
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
       </blockquote>
     </section>
@@ -780,11 +746,25 @@ loc             eth0:192.168.1.0/24
     </section>
 
     <section>
+      <title>tunnels</title>
+
+      <blockquote>
+        <programlisting># TYPE                  ZONE    GATEWAY         GATEWAY
+#                                               ZONE
+ipsec:noah              WiFi    192.168.3.8
+openvpn:1194            net     0.0.0.0/0
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
+</programlisting>
+      </blockquote>
+    </section>
+
+    <section>
       <title>rules</title>
 
       <blockquote>
         <programlisting>#ACTION    SOURCE          DEST            PROTO   DEST    SOURCE  ORIGINAL
 #                                          PORT            PORT(S) DEST
+allowBcast WiFi            fw
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
       </blockquote>
     </section>
@@ -794,7 +774,7 @@ loc             eth0:192.168.1.0/24
 
       <blockquote>
         <programlisting>#INTERFACE      HOST(S)         OPTIONS
-eth0            0.0.0.0/0
+eth1            0.0.0.0/0
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
       </blockquote>
     </section>
@@ -868,6 +848,46 @@ sainfo address 0.0.0.0/0 any address 192.168.3.8/32 any
 }</programlisting>
       </blockquote>
     </section>
+
+    <section>
+      <title>/etc/openvpn/server.conf</title>
+
+      <para>This is my OpenVPN server configuration file:</para>
+
+      <blockquote>
+        <programlisting>dev tun
+ 
+server 192.168.2.0 255.255.255.0
+ 
+dh dh1024.pem
+ 
+ca /etc/certs/cacert.pem
+ 
+crl-verify /etc/certs/crl.pem
+ 
+cert /etc/certs/ursa.pem
+key /etc/certs/ursa_key.pem
+ 
+port 1194
+ 
+comp-lzo
+ 
+user nobody
+group nogroup
+ 
+ping 15
+ping-restart 45
+ping-timer-rem
+persist-tun
+persist-key
+ 
+client-config-dir /etc/openvpn/clients
+ccd-exclusive
+client-to-client
+ 
+verb 3</programlisting>
+      </blockquote>
+    </section>
   </section>
 
   <section>
@@ -877,6 +897,12 @@ sainfo address 0.0.0.0/0 any address 192.168.3.8/32 any
     (192.168.3.8) or as a standalone system on the road. While this system is
     connected via our wireless network, it uses IPSEC tunnel mode for all
     access.</para>
+
+    <note>
+      <para>Given that I use OpenVPN for remote access, it would be more
+      convenient to also use it for wireless access at home. I use IPSEC just
+      so that I always have a working IPSEC testbed.</para>
+    </note>
 
     <para>Tipper's view of the world is shown in the following diagram:</para>
 
@@ -1081,7 +1107,7 @@ ACCEPT          net                     fw      tcp     4000:4100
 
       <blockquote>
         <programlisting>dev tun
-remote gateway.shorewall.net
+remote ursa.shorewall.net
 up /etc/openvpn/home.up
  
 tls-client

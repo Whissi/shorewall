@@ -1799,8 +1799,8 @@ setup_ecn() # $1 = file name
 	    startup_error "Unknown interface $interface"	
 	list_search $interface $interfaces || \
 	    interfaces="$interfaces $interface"
-	[ "x$host" = "x-" ] && host=0.0.0.0/0
-	for h in `separate_list $host`; do
+	[ "x$host" = "x-" ] && host=
+	for h in `separate_list ${host:-0.0.0.0/0}`; do
 	    hosts="$hosts $interface:$h"
 	done
     done < $TMP_DIR/ecn

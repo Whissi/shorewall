@@ -2989,6 +2989,9 @@ initialize_netfilter () {
     #
     # Allow DNS lookups during startup for FQDNs
     #
+    run_iptables -A INPUT   -p udp --dport 53 -j ACCEPT # I suppose that there
+                                                        # is an idiot somewhere
+                                                        # who needs this
     run_iptables -A OUTPUT  -p udp --dport 53 -j ACCEPT
     run_iptables -A FORWARD -p udp --dport 53 -j ACCEPT
 
@@ -3456,10 +3459,11 @@ activate_rules()
     complete_standard_chain OUTPUT $FW all
     complete_standard_chain FORWARD all all
 
-    run_iptables -D INPUT 1
-    run_iptables -D OUTPUT 1
-    run_iptables -D FORWARD 1
+    run_iptables -D INPUT   -m state --state ESTABLISHED -j ACCEPT
+    run_iptables -D OUTPUT  -m state --state ESTABLISHED -j ACCEPT
+    run_iptables -D FORWARD -m state --state ESTABLISHED -j ACCEPT
 
+    run_iptables -D INPUT   -p udp --dport 53 -j ACCEPT
     run_iptables -D OUTPUT  -p udp --dport 53 -j ACCEPT
     run_iptables -D FORWARD -p udp --dport 53 -j ACCEPT
 }

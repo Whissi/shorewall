@@ -4,10 +4,12 @@ New features include:
 
 1) "shorewall refresh" now reloads the traffic shaping rules (tcrules
    and tcstart).
+
 2) "shorewall debug [re]start" now turns off debugging after an error
    occurs. This places the point of the failure near the end of the
    trace rather than up in the middle of it.
-3) "shorewall [re]start" has been speeded up by approximately 40% with
+
+3) "shorewall [re]start" has been speeded up by more than 40% with
    my configuration. Your milage may vary. 
 
 4) A "shorewall show classifiers" command has been added which shows
@@ -19,3 +21,15 @@ New features include:
    than the LOG target. This allows you to run ulogd (available from
    www.gnumonks.org/projects/ulogd) and log all Shorewall messages to
    a separate log file.
+
+6) If you are running a kernel that has a FORWARD chain in the mangle
+   table ("shorewall show mangle" will show you the chains in the
+   mangle table), you can set MARK_IN_FORWARD=Yes in
+   shorewall.conf. This allows for marking input packets based on their
+   destination even when you are using Masquerading or SNAT.
+
+7) Since adding commands to files that don't already exist seems to be a
+   challenging notion for some users, I have cluttered up the
+   /etc/shorewall directory with empty 'init', 'start', 'stop' and
+   'stopped' files. If you already have a file with one of these names,
+   don't worry -- the upgrade process won't overwrite your file.

@@ -234,7 +234,7 @@ createchain() # $1 = chain name, $2 = If non-null, don't create default rules
 	[ -n "$ALLOWRELATED" ] && state="$state,RELATED"
 	run_iptables -A $1 -m state --state $state -j ACCEPT
 	[ -z "$NEWNOTSYN" ] && \
-	    run_iptables -A $1 -m state --state NEW -p tcp !--syn -j newnotsyn
+	    run_iptables -A $1 -m state --state NEW -p tcp ! --syn -j newnotsyn
     fi
 
     eval ${1}_exists=Yes

@@ -1156,10 +1156,12 @@ setup_forwarding() {
     case "$IP_FORWARDING" in
     [Oo][Nn])
 	echo 1 > /proc/sys/net/ipv4/ip_forward
+	save_command "echo 1 > /proc/sys/net/ipv4/ip_forward"
 	echo "IP Forwarding Enabled"
 	;;
     [Oo][Ff][Ff])
 	echo 0 > /proc/sys/net/ipv4/ip_forward
+	save_command "echo 0 > /proc/sys/net/ipv4/ip_forward"
 	echo "IP Forwarding Disabled!"
 	;;
     esac
@@ -4935,6 +4937,7 @@ add_common_rules() {
     #
     for f in /proc/sys/net/ipv4/conf/*/arp_filter; do
 	echo 0 > $f
+	save_command "echo 0 > $f"
     done
 
     interfaces=$(find_interfaces_by_option arp_filter)
@@ -4946,6 +4949,7 @@ add_common_rules() {
 	    file=/proc/sys/net/ipv4/conf/$interface/arp_filter
 	    if [ -f $file ]; then
 		echo 1 > $file
+		save_command "echo 1 > $file"
 	    else
 		error_message \
 		    "Warning: Cannot set ARP filtering on $interface"
@@ -4962,12 +4966,14 @@ add_common_rules() {
 
 	for f in /proc/sys/net/ipv4/conf/*/rp_filter; do
 	    echo 0 > $f
+	    save_command "echo 0 > $f"
 	done
 
 	for interface in $interfaces; do
 	    file=/proc/sys/net/ipv4/conf/$interface/rp_filter
 	    if [ -f $file ]; then
 		echo 1 > $file
+		save_command "echo 1 > $file"
 	    else
 		error_message \
 		    "Warning: Cannot set route filtering on $interface"
@@ -4975,7 +4981,13 @@ add_common_rules() {
 	done
 	
 	echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter
-	[ -n "$ROUTE_FILTER" ] && echo 1 > /proc/sys/net/ipv4/conf/default/rp_filter
+	save_command "echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter"
+
+	if [ -n "$ROUTE_FILTER" ]; then
+	    echo 1 > /proc/sys/net/ipv4/conf/default/rp_filter
+	    save_command "echo 1 > /proc/sys/net/ipv4/conf/default/rp_filter"
+	fi
+
 	run_ip route flush cache
 	save_command ip route flush cache
     fi

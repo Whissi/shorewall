@@ -1056,9 +1056,7 @@ stop_firewall() {
 	    iptables -A OUTPUT -o $interface -d $subnet -j ACCEPT
 
 	for host1 in $hosts; do
-	    [ "$host" != "$host1" ] && \
-		iptables -A FORWARD -i $interface -s $subnet \
-		    -o ${host1%:*} -d ${host1#*:} -j ACCEPT
+	    iptables -A FORWARD -i $interface -s $subnet -o ${host1%:*} -d ${host1#*:} -j ACCEPT
 	done
     done
 

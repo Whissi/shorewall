@@ -15,10 +15,11 @@ Problems Corrected since 1.4.10
 4) The 'detectnets' and 'routeback' options may now be used together
    with the intended effect.
 
-Problems Corrected since Beta 3
+Problems Corrected since RC1
 
-1) The REJECT target now works correctly for TCP (sends an RST).
-   Previously, an ICMP reply was generated.
+1) After a "shorewall stop", traffic routed back to networks in
+   the /etc/shorewall/routestopped file is accepted. This is required
+   to allow traffic through a bridge while shorewall is stopped.
 -----------------------------------------------------------------------
 Issues when migrating from Shorewall 1.4.x to Shorewall 2.0.0:
 

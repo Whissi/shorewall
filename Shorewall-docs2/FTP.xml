@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-01-03</pubdate>
+    <pubdate>2005-03-03</pubdate>
 
     <copyright>
       <year>2003</year>
@@ -257,7 +257,7 @@ jbd                    47860   2  [ext3]
       have:</title>
 
       <programlisting>loadmodule ip_conntrack_ftp ports=21,49
-loadmodule ip_nat_ftp ports=21,49</programlisting>
+loadmodule ip_nat_ftp ports=21,49           # NOTE: This is not necessary with kernel 2.6.11 and later!</programlisting>
 
       <para><note>
           <para>you MUST include port 21 in the ports list or you may have
@@ -269,7 +269,7 @@ loadmodule ip_nat_ftp ports=21,49</programlisting>
       /etc/modules.conf:</para>
 
       <programlisting>options ip_conntrack_ftp ports=21,49
-options ip_nat_ftp ports=21,49</programlisting>
+options ip_nat_ftp ports=21,49           # NOTE: This is not necessary with kernel 2.6.11 and later!</programlisting>
 
       <para><important>
           <para>Once you have made these changes to /etc/shorewall/modules

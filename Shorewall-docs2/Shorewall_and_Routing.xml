@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-02-19</pubdate>
+    <pubdate>2005-03-03</pubdate>
 
     <copyright>
       <year>2005</year>
@@ -66,11 +66,15 @@
 
     <graphic fileref="images/Netfilter.png" />
 
-    <para>The light blue boxes indicate where routing decisions are made. The
-    green boxes show where Netfilter processing takes place (as directed by
-    Shorewall). You will notice that there are two different paths through
-    this maze, depending on where the packet originates. We will look at each
-    of these separately.</para>
+    <para>The light blue boxes indicate where routing decisions are made. Upon
+    exit from one of these boxes, if the packet is being sent to another
+    system then the interface and the next hop have been uniquely
+    determined.</para>
+
+    <para>The green boxes show where Netfilter processing takes place (as
+    directed by Shorewall). You will notice that there are two different paths
+    through this maze, depending on where the packet originates. We will look
+    at each of these separately.</para>
 
     <section>
       <title>Packets Entering the Firewall from Outside</title>
@@ -89,6 +93,14 @@
           <firstterm>alternate routing table</firstterm>; see the <ulink
           url="Shorewall_Squid_Usage.html">Shorewall Squid
           documentation</ulink> for examples.</para>
+
+          <caution>
+            <para>Marking packets then using the <emphasis>fwmark</emphasis>
+            selector in your "<emphasis role="bold">ip rule add</emphasis>"
+            commands should NOT be your first choice. In most cases, you can
+            use the <emphasis>from</emphasis> or <emphasis>dev</emphasis>
+            selector instead.</para>
+          </caution>
         </listitem>
 
         <listitem>
@@ -165,6 +177,6 @@
     the Shorewall init script (<filename>/etc/init.d/shorewall</filename>) to
     configure your alternate routing table at boot time and that <emphasis
     role="bold">other than as described in the previous section, there is no
-    connection between Shorewall and routing</emphasis>. </para>
+    connection between Shorewall and routing</emphasis>.</para>
   </section>
 </article>

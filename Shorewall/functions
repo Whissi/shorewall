@@ -381,23 +381,23 @@ ip_vlsm() {
 
 
 #
-# Chain name base for an interface
+# Chain name base for an interface -- remove all periods from the passed name.
 #
 chain_base() #$1 = interface
 {
     local c=${1%%+*}
 
-    case $c in
-	*.*.*.*)
-	    echo $c | sed 's/\./_/g'
-	    ;;
-        *.*)
-	    echo ${c%.*}_${c#*.}
-	    ;;
-	*)
-	    echo ${c:=common}
-	    ;;
-    esac
+    while true; do
+	case $c in
+	    *.*)
+		c="${c%.*}_${c##*.}"
+		;;
+	    *)
+		echo ${c:=common}
+		return
+		;;
+	esac
+    done
 }
 
 #

@@ -3222,9 +3222,23 @@ add_a_rule()
 				    log_rule_limit $loglevel $chain $logtarget "$ratelimit" "$logtag" $userandgroup \
 					$(fix_bang $proto $sports $multiport $cli -d $srv $dports)
 				fi
-
-				run_iptables2 -A $chain $proto $multiport $cli $sports \
-				    -d $srv $dports $ratelimit $userandgroup -j $target
+				
+				case $logtarget in
+				    NONAT)
+					addnatrule $(dnat_chain $source) $proto $multiport \
+					    $cli $sports -d $srv $dports $ratelimit $userandgroup -j RETURN
+					;;
+				    ACCEPT+)
+					addnatrule $(dnat_chain $source) $proto $multiport \
+					    $cli $sports -d $srv $dports $ratelimit $userandgroup -j RETURN
+					run_iptables2 -A $chain $proto $multiport $cli $sports \
+					    -d $srv $dports $ratelimit $userandgroup -j $target
+					;;
+				    *)
+					run_iptables2 -A $chain $proto $multiport $cli $sports \
+					    -d $srv $dports $ratelimit $userandgroup -j $target
+					;;
+				    esac
 			    fi
 			done
 		    done
@@ -3234,8 +3248,22 @@ add_a_rule()
 			    $(fix_bang $proto $sports $multiport $cli $dports)
 		    fi
 
-		    run_iptables2 -A $chain $proto $multiport $cli $sports \
-			$dports $ratelimit $userandgroup -j $target
+		    case $logtarget in
+			NONAT)
+			    addnatrule $(dnat_chain $source) $proto $multiport \
+				$cli $sports $dports $ratelimit $userandgroup -j RETURN
+                            ;;
+			ACCEPT+)
+			    addnatrule $(dnat_chain $source) $proto $multiport \
+				$cli $sports $dports $ratelimit $userandgroup -j RETURN
+			    run_iptables2 -A $chain $proto $multiport $cli $sports \
+				$dports $ratelimit $userandgroup -j $target
+			    ;;
+			*)
+			    run_iptables2 -A $chain $proto $multiport $cli $sports \
+				$dports $ratelimit $userandgroup -j $target
+			    ;;
+		    esac
 		fi
 	    fi
 	fi
@@ -3253,10 +3281,24 @@ add_a_rule()
 		    $(fix_bang $proto $multiport $dest_interface $cli $sports $dports)
 	    fi
 
-	    if [ $logtarget != LOG ]; then
-		run_iptables2 -A $chain $proto $multiport $dest_interface \
-		    $cli $sports $dports $ratelimit $userandgroup -j $target
-	    fi
+	    case $logtarget in
+		LOG)
+		    ;;
+		NONAT)
+		    addnatrule $(dnat_chain $source) $proto $multiport \
+		       $cli $sports $dports $ratelimit $userandgroup -j RETURN
+		    ;;
+		ACCEPT+)
+		    addnatrule $(dnat_chain $source) $proto $multiport \
+		       $cli $sports $dports $ratelimit $userandgroup -j RETURN
+		    run_iptables2 -A $chain $proto $multiport $dest_interface \
+			$cli $sports $dports $ratelimit $userandgroup -j $target
+		    ;;
+		*)
+		    run_iptables2 -A $chain $proto $multiport $dest_interface \
+			$cli $sports $dports $ratelimit $userandgroup -j $target
+		    ;;
+		esac
 	fi
     fi
 }
@@ -3368,7 +3410,10 @@ process_rule() # $1 = target
     fi
 
     case $target in
-	ACCEPT|LOG)
+	ACCEPT+)
+	    target=ACCEPT
+	    ;;
+	ACCEPT|LOG|NONAT)
 	    ;;
 	DROP)
 	    [ -n "$ratelimit" ] && fatal_error "Rate Limiting not available with DROP"
@@ -3613,7 +3658,7 @@ process_rules()
     while read xtarget xclients xservers xprotocol xports xcports xaddress xratelimit xuserspec; do
 	temp="${xtarget%%:*}"
 	case "${temp%<*}" in
-	    ACCEPT|DROP|REJECT|DNAT|DNAT-|REDIRECT|REDIRECT-|LOG|CONTINUE|QUEUE)
+	    ACCEPT|ACCEPT+|NONAT|DROP|REJECT|DNAT|DNAT-|REDIRECT|REDIRECT-|LOG|CONTINUE|QUEUE)
 		do_it
 		;;
 	    *)

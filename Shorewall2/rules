@@ -25,6 +25,13 @@
 #			LOG, QUEUE or an <action>.
 #
 #				ACCEPT   -- allow the connection request
+#				ACCEPT+  -- like ACCEPT but also excludes the
+#					    connection from any subsequent
+#					    DNAT[-] or REDIRECT[-] rules
+#				NONAT    -- Excludes the connection from any
+#					    subsequent DNAT[-] or REDIRECT[-]
+					    rules but doesn't generate a rule
+#					    to accept the traffic.
 #				DROP     -- ignore the request
 #				REJECT   -- disallow the request and return an
 #					    icmp-unreachable or an RST packet.

@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-02-08</pubdate>
+    <pubdate>2005-03-11</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -148,20 +148,23 @@ MACLIST_LOG_LEVEL=info</programlisting>
 
       <para>/etc/shorewall/interfaces:</para>
 
-      <programlisting>#ZONE   INTERFACE        BROADCAST       OPTIONS
-net     eth0            206.124.146.255 dhcp,norfc1918,routefilter,blacklist,tcpflags
-loc     eth2            192.168.1.255   dhcp
-dmz     eth1            192.168.2.255
-WiFi    eth3            192.168.3.255   dhcp,maclist
--       texas           192.168.9.255</programlisting>
+      <programlisting>#ZONE   INTERFACE       BROADCAST       OPTIONS
+net     $EXT_IF         206.124.146.255 dhcp,norfc1918,routefilter,logmartians,blacklist,tcpflags,nosmurfs
+loc     $INT_IF         192.168.1.255   dhcp
+dmz     $DMZ_IF         -
+vpn     tun+            -
+Wifi    $WIFI_IF        -               maclist,dhcp
+#LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
 
       <para>/etc/shorewall/maclist:</para>
 
       <programlisting>#INTERFACE              MAC                     IP ADDRESSES (Optional)
-eth3                    00:A0:CC:A2:0C:A0       192.168.3.7                 #Work Laptop
-eth3                    00:04:5a:fe:85:b9       192.168.3.250               #WAP11
-eth3                    00:06:25:56:33:3c       192.168.3.225,192.168.3.8   #WET11
-eth3                    00:0b:cd:C4:cc:97       192.168.3.8                 #TIPPER</programlisting>
+$WIFI_IF                00:04:5e:3f:85:b9                       #WAP11
+$WIFI_IF                00:06:25:95:33:3c                       #WET11
+$WIFI_IF                00:0b:4d:53:cc:97       192.168.3.8     #TIPPER
+$WIFI_IF                00:1f:79:cd:fe:2e       192.168.3.6     #Work Laptop
+#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE
+</programlisting>
 
       <para>As shown above, I use MAC Verification on my wireless zone.</para>
 
@@ -183,7 +186,7 @@ eth3                    00:0b:cd:C4:cc:97       192.168.3.8                 #TIP
       segment have IP addresses in the subnet 192.168.4.0/24. I would add the
       following entry to my /etc/shorewall/maclist file:</para>
 
-      <programlisting>eth3                     00:06:43:45:C6:15       192.168.3.253,192.168.4.0/24</programlisting>
+      <programlisting> $WIFI_IF                    00:06:43:45:C6:15       192.168.3.253,192.168.4.0/24</programlisting>
 
       <para>This entry accomodates traffic from the router itself
       (192.168.3.253) and from the second wireless segment (192.168.4.0/24).

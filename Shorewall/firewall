@@ -1225,8 +1225,8 @@ setup_nat() {
 	    # Folks feel uneasy if they don't see all of the same
 	    # decoration on these IP addresses that they see when their
 	    # distro's net config tool adds them. In an attempt to reduce
-	    # the anxiety level, we'll introduce the following code to set
-	    # the VLSM and BRD just like the primary address
+	    # the anxiety level, we have the following code which sets
+	    # the VLSM and BRD from the primary address
 	    #
 	    # Get all of the lines that contain inet addresses with broadcast
 	    #
@@ -1374,6 +1374,262 @@ delete_tc()
 }
 
 ################################################################################
+# Add a NAT rule - Helper function for the rules file processor                #
+#------------------------------------------------------------------------------#
+# The caller has established the following variables:                          #
+#    cli            = Source IP, interface or MAC Specification                #
+#    serv           = Destination IP Specification                             #
+#    dest_interface = Destination Interface Specification                      #
+#    proto          = Protocol Specification                                   #
+#    addr           = Original Destination Address                             #
+#    dports         = Destination Port Specification                           #
+#    cport          = Source Port Specification                                #
+#    multioption    = String to invoke multiport match if appropriate          #  
+################################################################################
+add_nat_rule() {
+    local chain
+
+    # Be sure NAT is enabled
+
+    if [ -z "$NAT_ENABLED" ]; then
+	fatal_error \
+	    "Error - Rule \"$rule\" requires NAT which is disabled"
+    fi
+
+    # Onle ACCEPT (plus DNAT and REDIRECT) may result in NAT
+
+    if [ "$target" != "ACCEPT" ]; then
+	fatal_error "Error - Only DNAT and REDIRECT rules may specify " \
+	    "port mapping; rule \"$rule\""
+    fi
+
+    # Parse SNAT address if any
+
+    if [ "$addr" != "${addr%:*}" ]; then
+	snat="${addr#*:}"
+	addr="${addr%:*}"
+    else
+	snat=""
+    fi
+
+    # Set original destination address
+
+    [ "$addr" = "all" ] && addr= || addr=${addr:+-d $addr}
+
+    # Select target
+
+    if [ -n "$serv" ]; then
+	servport="${servport:+:$servport}"
+	target1="DNAT --to-destination ${serv}${servport}"
+    else
+	target1="REDIRECT --to-port $servport"
+    fi
+
+    # Generate nat table rules
+
+    if [ "$source" = "$FW" ]; then
+	run_iptables -t nat -A OUTPUT $proto $sports $addr \
+	    $dports -j $target1
+    else
+	chain=$source
+	    
+	if [ -n "$excludezones" ]; then
+	    chain=nonat${nonat_seq}
+	    nonat_seq=$(($nonat_seq + 1))
+	    createnatchain $chain
+	    addnatrule $source -j $chain
+	    for z in $excludezones; do
+		eval hosts=\$${z}_hosts
+		for host in $hosts; do
+		    addnatrule $chain $proto -s ${host#*:} \
+			$sports $addr $dports -j RETURN
+		done
+	    done
+	fi
+
+	addnatrule $chain $proto $cli $sports \
+	    $addr $dports -j $target1
+    fi
+
+    # Replace destination port by the new destination port
+
+    [ -n "$servport" ] && dports="--dport ${servport#*:}"
+
+    # Handle SNAT
+
+    if [ -n "$snat" ]; then
+	if [ -n "$cli" ]; then
+	    run_iptables -t nat -A POSTROUTING $proto $cli \
+		$sports -d $serv $dports -j SNAT --to-source $snat
+	else
+	    for source_host in $source_hosts; do
+		run_iptables -t nat -A POSTROUTING \
+		    -s ${source_host#*:} $proto $sports \
+		    -d $serv $dports -j SNAT --to-source $snat
+	    done
+	fi
+    fi
+}
+
+################################################################################
+# Add one Filter Rule -- Helper function for the rules file processor          #
+#------------------------------------------------------------------------------#
+# The caller has established the following variables:                          #
+#    client      = SOURCE IP or MAC                                            #
+#    server      = DESTINATION IP or interface                                 #
+#    protocol    = Protocol                                                    #
+#    address     = Original Destination Address                                #
+#    port        = Destination Port                                            #
+#    cport       = Source Port                                                 #
+#    multioption = String to invoke multiport match if appropriate             #
+#    servport    = Port the server listens on                                  #
+#    chain       = The canonical chain for this rule                           #
+################################################################################
+add_a_rule()
+{
+    # Set source variables
+
+    cli=
+
+    [ -n "$client" ] && case "$client" in
+    -)
+	;;
+    [0-9]*|![0-9]*)
+        cli="-s $client"
+	;;
+    ~*)
+	cli=`mac_match $client`
+	;;
+    *)
+        cli="-i $client"
+	;;
+    esac
+
+    # Set destination variables
+
+    dest_interface=
+
+    [ -n "$server" ] && case "$server" in
+    -)
+	serv=
+	;;
+    [0-9]*|![0-9]*)
+        serv=$server
+	;;
+    *)
+	dest_interface="-o $server"
+	serv=
+	;;
+    esac
+
+    # Setup protocol and port variables
+
+    sports=
+    dports=
+    state="-m state --state NEW"
+    proto=$protocol
+    addr=$address
+    servport=$serverport
+    multiport=
+
+    case $proto in
+	tcp|udp|TCP|UDP|6|17)
+	    if [ -n "$port" -a "x${port}" != "x-" ]; then
+		[ -n "$multioption" ] && \
+		    [ "$port" != "${port%,*}" ] && \
+		    multiport="$multioption"
+		dports="--dport $port"
+	    fi
+
+	    if [ -n "$cport" -a "x${cport}" != "x-" ]; then
+		[ -n "$multioption" ] && \
+		    [ -z "$multiport" ] && \
+		    [ "$cport" != "${cport%,*}" ] && \
+		    multiport="$multioption"
+		sports="--sport $cport"
+	    fi
+		;;
+	icmp|ICMP|0)
+	    [ -n "$port" ] && [ "x${port}" != "x-" ] && \
+		dports="--icmp-type $port"
+	    state=
+	    ;;
+	all|ALL)
+	    [ -n "$port" ] && [ "x${port}" != "x-" ] && \
+		fatal_error "Port number not allowed with \"all\";" \
+		                " rule: \"$rule\""
+	    proto=
+	    ;;
+	related|RELATED)
+	    proto=
+	    state="-m state --state RELATED"
+	    ;;
+	*)
+	    [ -n "$port" ] && [ "x${port}" != "x-" ] && \
+		fatal_error "Port number not allowed with protocol " \
+		"\"$proto\"; rule: \"$rule\""
+	    ;;
+    esac
+
+    proto="${proto:+-p $proto}"
+
+    # Some misc. setup
+    
+    case "$logtarget" in
+	REJECT)
+	    target=reject
+	    ;;
+	REDIRECT)
+	    [ -n "$serv" ] && startup_error "Error: REDIRECT rules cannot"\
+		" specify a server IP; rule: \"$rule\""
+	    servport=${servport:=$port}
+	    ;;
+	DNAT)
+	    [ -n "$serv" ] || fatal_error "Error: DNAT rules require a" \
+		" server address; rule: \"$rule\""
+	    ;;
+    esac
+
+    # Complain if the rule is really a policy
+    
+    if [ -z "$proto" -a -z "$cli" -a -z "$serv" -a -z "$servport" ]; then
+	error_message "Warning -- Rule \"$rule\" is a POLICY"
+	error_message "        -- and should be moved to the policy file"
+    fi
+
+    if [ -n "${serv}${servport}" ]; then
+
+	# A specific server or server port given
+
+	[ -n "$addr" -a "$addr" != "$serv" ] && add_nat_rule
+
+	serv="${serv:+-d $serv}"
+
+	[ -n "$loglevel" ] && run_iptables -A $chain $proto $multiport \
+	    $state $cli $sports $serv $dports -j LOG $LOGPARMS \
+	    --log-prefix "Shorewall:$chain:$logtarget:" \
+	    --log-level $loglevel
+	run_iptables -A $chain $proto $multiport $state $cli $sports \
+	    $serv $dports -j $target
+    else
+
+	# Destination is a simple zone
+
+	[ -n "$addr" ] && fatal_error \
+	    "Error: An ADDRESS ($addr) is only allowed in" \
+	    " a DNAT or REDIRECT: \"$rule\""
+
+	[ -n "$loglevel" ] && run_iptables -A $chain $proto $multiport \
+	    $dest_interface $state $cli $sports $dports -j LOG \
+	    $LOGPARMS --log-prefix "Shorewall:$chain:$logtarget:" \
+	    --log-level $loglevel
+	
+	run_iptables -A $chain $proto $multiport $dest_interface $state \
+	    $cli $sports $dports -j $target
+    fi
+}
+
+################################################################################
 # Process a record from the rules file					       #
 #									       #
 # The caller has loaded the column contents from the record into the following #
@@ -1388,247 +1644,17 @@ delete_tc()
 ################################################################################
 process_rule() {
 
-    ############################################################################
-    # Add a NAT rule
-    #
-    add_nat_rule() {
-        local chain
+    # Function to count list elements
 
-	if [ -z "$NAT_ENABLED" ]; then
-	    fatal_error \
-                "Error - Rule \"$rule\" requires NAT which is disabled"
-	fi
-
-	if [ "$target" != "ACCEPT" ]; then
-	    fatal_error "Error - Only DNAT and REDIRECT rules may specify " \
-		"port mapping; rule \"$rule\""
-	fi
-
-	if [ "$addr" != "${addr%:*}" ]; then
-	    snat="${addr#*:}"
-	    addr="${addr%:*}"
-	else
-	    snat=""
-	fi
-
-	[ "$addr" = "all" ] && addr= || addr=${addr:+-d $addr}
-
-	if [ -n "$serv" ]; then
-	    servport="${servport:+:$servport}"
-	    target1="DNAT --to-destination ${serv}${servport}"
-	else
-	    target1="REDIRECT --to-port $servport"
-	fi
-
-	if [ "$source" = "$FW" ]; then
-	    run_iptables -t nat -A OUTPUT $proto $sports $addr \
-		$dports -j $target1
-	else
-	    chain=$source
-	    
-	    if [ -n "$excludezones" ]; then
-		chain=nonat${nonat_seq}
-		nonat_seq=$(($nonat_seq + 1))
-		createnatchain $chain
-		addnatrule $source -j $chain
-		for z in $excludezones; do
-		   eval hosts=\$${z}_hosts
-		   for host in $hosts; do
-		      addnatrule $chain $proto -s ${host#*:} \
-		          $sports $addr $dports -j RETURN
-		   done
-		done
-	    fi
-
-	    addnatrule $chain $proto $cli $sports \
-		$addr $dports -j $target1
-	fi
-
-	[ -n "$servport" ] && dports="--dport ${servport#*:}"
-
-	if [ -n "$snat" ]; then
-	    if [ -n "$cli" ]; then
-		run_iptables -t nat -A POSTROUTING $proto $cli \
-		    $sports -d $serv $dports -j SNAT --to-source $snat
-	    else
-		for source_host in $source_hosts; do
-		    run_iptables -t nat -A POSTROUTING \
-		        -s ${source_host#*:} $proto $sports \
-		        -d $serv $dports -j SNAT --to-source $snat
-		done
-	    fi
-	fi
-    }
-
-    ############################################################################
-    # Add one rule
-    #
-    
-    add_a_rule() {
-        ########################################################################
-	# Determine the format of the client
-	#
-	cli=
-
-	[ -n "$client" ] && case "$client" in
-	    -)
-		;;
-	    [0-9]*|![0-9]*)
-		#
-		# IP Address or subnet
-		#
-		cli="-s $client"
-		;;
-            ~*)
-		cli=`mac_match $client`
-		;;
-	    *)
-		#
-		# Assume that this is a device name
-		#
-		cli="-i $client"
-		;;
-        esac
-
-    	dest_interface=
-
-	[ -n "$server" ] && case "$server" in
-	    -)
-	    	serv=
-		;;
-	    [0-9]*|![0-9]*)
-	    	serv=$server
-		;;
-	    *)
-		dest_interface="-o $server"
-		serv=
-		;;
-	esac
-	################################################################
-	# Setup PROTOCOL, PORT and STATE variables
-	#
-	sports=
-	dports=
-	state="-m state --state NEW"
-	proto=$protocol
-	addr=$address
-	servport=$serverport
-	multiport=
-
-        case $proto in
-	    tcp|udp|TCP|UDP|6|17)
-	    	if [ -n "$port" -a "x${port}" != "x-" ]; then
-		    [ -n "$multioption" ] && \
-		    [ "$port" != "${port%,*}" ] && \
-			multiport="$multioption"
-		    dports="--dport $port"
-	        fi
-
-		if [ -n "$cport" -a "x${cport}" != "x-" ]; then
-		    [ -n "$multioption" ] && \
-		    [ -z "$multiport" ] && \
-		    [ "$cport" != "${cport%,*}" ] && \
-			multiport="$multioption"
-		    sports="--sport $cport"
-		fi
-		;;
-	    icmp|ICMP|0)
-		[ -n "$port" ] && [ "x${port}" != "x-" ] && \
-		    dports="--icmp-type $port"
-		state=
-		;;
-	    all|ALL)
-		[ -n "$port" ] && [ "x${port}" != "x-" ] && \
-		    fatal_error "Port number not allowed with \"all\";" \
-		                " rule: \"$rule\""
-		proto=
-		;;
-	    related|RELATED)
-		proto=
-		state="-m state --state RELATED"
-		;;
-	    *)
-		[ -n "$port" ] && [ "x${port}" != "x-" ] && \
-		    fatal_error "Port number not allowed with protocol " \
-		                "\"$proto\"; rule: \"$rule\""
-		;;
-	esac
-
-	proto="${proto:+-p $proto}"
-	
-	case "$logtarget" in
-	REJECT)
-	    target=reject
-	    ;;
-	REDIRECT)
-	    [ -n "$serv" ] && startup_error "Error: REDIRECT rules cannot"\
-		" specify a server IP; rule: \"$rule\""
-	    servport=${servport:=$port}
-	    ;;
-	DNAT)
-	    [ -n "$serv" ] || fatal_error "Error: DNAT rules require a" \
-	    				  " server address; rule: \"$rule\""
-	    ;;
-	esac
-
-	if [ -z "$proto" -a -z "$cli" -a -z "$serv" -a -z "$servport" ]; then
-	    error_message "Warning -- Rule \"$rule\" is a POLICY"
-            error_message "        -- and should be moved to the policy file"
-        fi
-
-	if [ -n "${serv}${servport}" ]; then
-	    ##################################################################
-	    # Destination is a Specific Server or we're redirecting a port
-	    #
-	    if [ -n "$addr" -a "$addr" != "$serv" ]; then
-		##############################################################
- 		# Must use Prerouting DNAT or REDIRECT
-		#
-		add_nat_rule
-	    fi
-
-	    serv="${serv:+-d $serv}"
-
-	    [ -n "$loglevel" ] && run_iptables -A $chain $proto $multiport \
-	        $state $cli $sports $serv $dports -j LOG $LOGPARMS \
-		--log-prefix "Shorewall:$chain:$logtarget:" \
-		--log-level $loglevel
-	    run_iptables -A $chain $proto $multiport $state $cli $sports \
-		$serv $dports -j $target
-	else
-	    ####################################################################
-	    # Destination is just a zone or an interface
-	    #
-	    [ -n "$addr" ] && fatal_error \
-	          "Error: An ADDRESS ($addr) is only allowed in" \
-                  " a DNAT or REDIRECT: \"$rule\""
-
-	    [ -n "$loglevel" ] && run_iptables -A $chain $proto $multiport \
-		$dest_interface $state $cli $sports $dports -j LOG \
-		$LOGPARMS --log-prefix "Shorewall:$chain:$logtarget:" \
-		--log-level $loglevel
-
-	    run_iptables -A $chain $proto $multiport $dest_interface $state \
-		$cli $sports $dports -j $target
-	fi
-    }
-    
-    ############################################################################
-    # Return the number of elements in the passed comma-separated list
-    #
-    
     list_count() {
 	local temp=`separate_list $1`
 	
 	echo $temp | wc -w
     }
-    
-    ############################################################################
-    # P r o c e s s _ R u l e    S t a r t s    H e r e
-    ############################################################################
-    # Parse the Target and Clients columns
-    #
-    if [ "$target" = "${target%:*}" ]; then
+
+    # Function Body -- isolate log level
+ 
+   if [ "$target" = "${target%:*}" ]; then
 	loglevel=
     else
 	loglevel="${target#*:}"
@@ -1637,13 +1663,9 @@ process_rule() {
     fi
 
     logtarget="$target"
-    #
-    # DNAT and REDIRECT targets were implemented in version 1.3 to replace
-    # an older syntax. We simply map the new syntax into the old and proceed;
-    # that way, people who have files with the old syntax don't need to
-    # convert right away.
-    #
-    
+
+    # Convert 1.3 Rule formats to 1.2 format
+
     case $target in
     DNAT)
         target=ACCEPT
@@ -1659,6 +1681,8 @@ process_rule() {
 	fi
 	;;
     esac
+
+    # Parse and validate source
 
     if [ "$clients" = "${clients%:*}" ]; then
 	clientzone="$clients"
@@ -1678,20 +1702,16 @@ process_rule() {
 	    fatal_error "Error: Exclude list only allowed with DNAT or REDIRECT"
     fi
 
-    ############################################################################
-    # Validate the Source Zone
-
     if ! validate_zone $clientzone; then
 	fatal_error "Error: Undefined Client Zone in rule \"$rule\""
     fi
+
+    # Parse and validate destination
 
     source=$clientzone
 
     [ $source = $FW ] && source_hosts= || eval source_hosts=\"\$${source}_hosts\"
 
-    ############################################################################
-    # Parse the servers column
-    #
     if [ "$servers" = "${servers%:*}" ] ; then
 	serverzone="$servers"
 	servers=
@@ -1706,22 +1726,20 @@ process_rule() {
 	    serverport=
 	fi
     fi
-    ############################################################################
-    # Validate the destination zone
-    #
+
     if ! validate_zone $serverzone; then
 	fatal_error "Error: Undefined Server Zone in rule \"$rule\""
     fi
 
     dest=$serverzone
-    ############################################################################
-    # Create the canonical chain if it doesn't exist
-    #
+
+    # Create canonical chain if necessary
+
     chain=${source}2${dest}
     ensurechain $chain
-    ############################################################################
-    # Iterate through the various lists creating individual rules
-    #
+
+    # Generate Netfilter rule(s)
+
     if [ -n "$MULTIPORT" -a \
         "$ports" = "${ports%:*}" -a \
         "$cports" = "${cports%:*}" -a \
@@ -2645,7 +2663,10 @@ add_common_rules() {
     # BROADCASTS
     #
     drop_broadcasts `find_broadcasts`
-
+    
+    ###########################################################################
+    # RFC 1918
+    #
     norfc1918_interfaces="`find_interfaces_by_option norfc1918`"
 
     if [ -n "$norfc1918_interfaces" ]; then
@@ -2710,7 +2731,9 @@ add_common_rules() {
     # Enable icmp output
     #
     run_iptables -A OUTPUT -m state --state ! INVALID -p icmp -j ACCEPT
-
+    ############################################################################
+    # Route Filtering
+    #
     for f in /proc/sys/net/ipv4/conf/*/rp_filter; do
 	echo 0 > $f
     done
@@ -2736,7 +2759,9 @@ add_common_rules() {
 	    done
 	fi
     fi
-
+    ############################################################################
+    # IP Forwarding
+    #
     case "$IP_FORWARDING" in
     [Oo][Nn])
 	echo 1 > /proc/sys/net/ipv4/ip_forward
@@ -2754,7 +2779,9 @@ add_common_rules() {
 # Add the appropriate policy rule(s) to the end of each canonical chain	       #
 ################################################################################
 apply_policy_rules() {
-
+    ############################################################################
+    # Create policy chains
+    #
     while read client server policy loglevel synparams; do
     	expandv client server policy loglevel synparams
     	validate_zone $client
@@ -2788,7 +2815,9 @@ apply_policy_rules() {
 	fi
 
     done < $TMP_DIR/policy
-
+    ############################################################################
+    # Add policy rules to canonical chains
+    #
     for zone in $FW $zones; do
 	setup_intrazone $zone
 	for zone1 in $FW $zones; do

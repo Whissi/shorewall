@@ -3367,7 +3367,7 @@ setup_masq()
 
 	if [ -n "$addresses" -a -n "$ADD_SNAT_ALIASES" ]; then
 	    for address in `separate_list $addresses`; do
-		for addr in `ip_range $address` ; do
+		for addr in `ip_range_explicit $address` ; do
 		    if ! list_search $addr $aliases_to_add; then
 			aliases_to_add="$aliases_to_add $addr $fullinterface"
 			case $fullinterface in

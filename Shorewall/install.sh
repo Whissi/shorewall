@@ -542,8 +542,8 @@ fi
 #
 # Create the version file
 #
-echo "$VERSION" > ${PREFIX}/usr/share/shorewall/version
-chmod 644 ${PREFIX}/usr/share/shorewall/version
+echo "$VERSION" > ${PREFIX}/usr/lib/shorewall/version
+chmod 644 ${PREFIX}/usr/lib/shorewall/version
 #
 # Remove and create the symbolic link to the firewall script
 #

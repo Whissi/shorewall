@@ -907,8 +907,14 @@ validate_rule() {
     chain=${source}2${dest}
 
     if [ "x$chain" = x${FW}2${FW} ]; then
-	error_message "WARNING: fw -> fw rules are not supported; rule \"$rule\" ignored"
-	return
+	case $logtarget in
+	    REDIRECT)
+		;;
+	    *)
+		error_message "WARNING: fw -> fw rules are not supported; rule \"$rule\" ignored"
+		return
+		;;
+	esac
     fi
 
     #
@@ -2132,23 +2138,26 @@ add_a_rule()
 	    add_nat_rule
 	fi
 
-	serv="${serv:+-d $serv}"
+	if [ $chain != ${FW}2${FW} ]; then
+	    serv="${serv:+-d $serv}"
 
-	if [ -n "$loglevel" ]; then
-	    if [ "$loglevel" = ULOG ]; then
-		run_iptables -A $chain $proto $multiport \
-		    $state $cli $sports $serv $dports -j ULOG $LOGPARMS \
-		    --ulog-prefix "Shorewall:$chain:$logtarget:" \
-	    else
-		run_iptables -A $chain $proto $multiport \
-		    $state $cli $sports $serv $dports -j LOG $LOGPARMS \
-		    --log-prefix "Shorewall:$chain:$logtarget:" \
-		    --log-level $loglevel
+	    if [ -n "$loglevel" ]; then
+		if [ "$loglevel" = ULOG ]; then
+		    run_iptables -A $chain $proto $multiport \
+			$state $cli $sports $serv $dports -j ULOG $LOGPARMS \
+			--ulog-prefix "Shorewall:$chain:$logtarget:" \
+			else
+		    run_iptables -A $chain $proto $multiport \
+			$state $cli $sports $serv $dports -j LOG $LOGPARMS \
+			--log-prefix "Shorewall:$chain:$logtarget:" \
+			--log-level $loglevel
+		fi
 	    fi
-	fi
 
-	run_iptables -A $chain $proto $multiport $state $cli $sports \
-	    $serv $dports -j $target
+
+	    run_iptables -A $chain $proto $multiport $state $cli $sports \
+		$serv $dports -j $target
+	fi
     else
 
 	# Destination is a simple zone
@@ -2286,12 +2295,20 @@ process_rule() # $1 = target
 
     chain=${source}2${dest}
 
-    if [ "x$chain" = x${FW}2${FW} ]; then
-	error_message "WARNING: fw -> fw rules are not supported; rule \"$rule\" ignored"
-	return
-    fi
-
     ensurechain $chain
+
+    if [ "x$chain" = x${FW}2${FW} ]; then
+	case $logtarget in
+	    REDIRECT)
+		;;
+	    *)
+		error_message "WARNING: fw -> fw rules are not supported; rule \"$rule\" ignored"
+		return
+		;;
+	esac
+    else
+	ensurechain $chain
+    fi
 
     # Generate Netfilter rule(s)
 
@@ -3500,6 +3517,12 @@ add_common_rules() {
 	run_iptables -A tcpflags -p tcp --tcp-flags ALL NONE        $disposition
 	run_iptables -A tcpflags -p tcp --tcp-flags SYN,RST SYN,RST $disposition
 	run_iptables -A tcpflags -p tcp --tcp-flags SYN,FIN SYN,FIN $disposition
+	#
+	# A Shorewall user reported seeing outgoing SYN ACK packets with DPT=0
+	# That prompted me to add the following which will stop an incoming
+	# SYN with SPT=0
+	#
+	run_iptables -A tcpflags -p tcp --syn --sport 0             $disposition
 	
 	for interface in $interfaces; do
 	    for chain in `first_chains $interface`; do

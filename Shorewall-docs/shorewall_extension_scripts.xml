@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article>
+  <!---->
+
+  <articleinfo>
+    <title>Extension Scripts</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate>2003-06-30</pubdate>
+
+    <copyright>
+      <year>2001</year>
+
+      <year>2002</year>
+
+      <year>2003</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <para>Extension scripts are user-provided scripts that are invoked at
+  various points during firewall start, restart, stop and clear. The scripts
+  are placed in /etc/shorewall and are processed using the Bourne shell
+  &#34;source&#34; mechanism.</para>
+
+  <caution>
+    <orderedlist>
+      <listitem>
+        <para>Be sure that you actually need to use an extension script to do
+        what you want. Shorewall has a wide range of features that cover most
+        requirements. </para>
+      </listitem>
+
+      <listitem>
+        <para>DO NOT SIMPLY COPY RULES THAT YOU FIND ON THE NET INTO AN
+        EXTENSION SCRIPT AND EXPECT THEM TO WORK AND TO NOT BREAK SHOREWALL.
+        TO USE SHOREWALL EXTENSION SCRIPTS YOU MUST KNOW WHAT YOU ARE DOING
+        WITH RESPECT TO iptables/Netfilter </para>
+      </listitem>
+    </orderedlist>
+  </caution>
+
+  <para>The following scripts can be supplied:</para>
+
+  <itemizedlist>
+    <listitem>
+      <para>init -- invoked early in &#34;shorewall start&#34; and
+      &#34;shorewall restart&#34; </para>
+    </listitem>
+
+    <listitem>
+      <para>start -- invoked after the firewall has been started or restarted.
+      </para>
+    </listitem>
+
+    <listitem>
+      <para>stop -- invoked as a first step when the firewall is being
+      stopped.</para>
+    </listitem>
+
+    <listitem>
+      <para>stopped -- invoked after the firewall has been stopped. </para>
+    </listitem>
+
+    <listitem>
+      <para>clear -- invoked after the firewall has been cleared. </para>
+    </listitem>
+
+    <listitem>
+      <para>refresh -- invoked while the firewall is being refreshed but
+      before the common and/or blacklst chains have been rebuilt. </para>
+    </listitem>
+
+    <listitem>
+      <para>newnotsyn (added in version 1.3.6) -- invoked after the
+      &#39;newnotsyn&#39; chain has been created but before any rules have
+      been added to it. </para>
+    </listitem>
+  </itemizedlist>
+
+  <para><emphasis role="bold">If your version of Shorewall doesn&#39;t have
+  the file that you want to use from the above list, you can simply create the
+  file yourself.</emphasis> You can also supply a script with the same name as
+  any of the filter chains in the firewall and the script will be invoked
+  after the /etc/shorewall/rules file has been processed but before the
+  /etc/shorewall/policy file has been processed. The /etc/shorewall/common
+  file receives special treatment. If this file is present, the rules that it
+  defines will totally replace the default rules in the common chain. These
+  default rules are contained in the file /etc/shorewall/common.def which may
+  be used as a starting point for making your own customized file. Rather than
+  running iptables directly, you should run it using the function
+  run_iptables. Similarly, rather than running &#34;ip&#34; directly, you
+  should use run_ip. These functions accept the same arguments as the
+  underlying command but cause the firewall to be stopped if an error occurs
+  during processing of the command. If you decide to create
+  /etc/shorewall/common it is a good idea to use the following technique.</para>
+
+  <para>/etc/shorewall/common:</para>
+
+  <programlisting>     . /etc/shorewall/common.def
+     &#60;add your rules here&#62;
+</programlisting>
+
+  <para>If you need to supercede a rule in the released common.def file, you
+  can add the superceding rule before the &#39;.&#39; command. Using this
+  technique allows you to add new rules while still getting the benefit of the
+  latest common.def file. Remember that /etc/shorewall/common defines rules
+  that are only applied if the applicable policy is DROP or REJECT. These
+  rules are NOT applied if the policy is ACCEPT or CONTINUE</para>
+</article>

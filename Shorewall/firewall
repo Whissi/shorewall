@@ -1447,6 +1447,8 @@ setup_ecn() # $1 = file name
 
     strip_file ecn $1
 
+    echo "Processing $1..."
+
     while read interface host; do
 	expandv interface host
 	list_search  $interface $all_interfaces || \

@@ -3017,7 +3017,7 @@ merge_levels() # $1=level at which superior action is called, $2=level at which 
 #
 process_actions1() {
 	
-    ACTIONS="dropBcast dropNonSyn dropNotSyn rejNotSyn dropInvalid"
+    ACTIONS="dropBcast allowBcast dropNonSyn dropNotSyn rejNotSyn dropInvalid"
     USEDACTIONS=
 
     strip_file actions
@@ -3170,12 +3170,44 @@ process_actions3() {
 		    fi
 		fi
 		;;
+	    allowBcast)
+		if [ "$COMMAND" != check ]; then
+		    if [ -n "$PKTTYPE" ]; then
+			case $xlevel in
+			    none'!')
+	                        ;;
+			    *)
+			        if [ -n "$xlevel" ]; then
+				    log_rule_limit ${xlevel%\!} $xchain allowBcast $2 "" "$xtag" -m pkttype --pkt-type broadcast
+				    log_rule_limit ${xlevel%\!} $xchain allowBcast $2 "" "$xtag" -m pkttype --pkt-type multicast
+				fi
+				;;
+			esac
+			
+			run_iptables -A allowBcast -m pkttype --pkt-type broadcast -j ACCEPT
+			run_iptables -A allowBcast -m pkttype --pkt-type multicast -j ACCEPT
+		    else
+			for address in $(find_broadcasts) 255.255.255.255 224.0.0.0/4 ; do
+			    case $xlevel in
+				none*)
+				    ;;
+				*)
+				    [ -n "$xlevel" ] && \
+					log_rule_limit ${xlevel%\!} $xchain allowBcast $2 "" "$xtag" -d $address
+				    ;;
+			    esac
+			    
+			    run_iptables -A $xchain -d $address -j ACCEPT
+			done
+		    fi
+		fi
+		;;
 	    dropNonSyn)
 		error_message "WARNING: \"dropNonSyn\" has been replaced by \"dropNotSyn\""
 		
 		if [ "$COMMAND" != check ]; then
 		    [ -n "$xlevel" ] && \
-			log_rule_limit ${xlevel%\!} $xchain dropBcast $2 "" "$xtag" -p tcp ! --syn
+			log_rule_limit ${xlevel%\!} $xchain dropNonSyn $2 "" "$xtag" -p tcp ! --syn
 		    run_iptables -A $xchain -p tcp ! --syn -j DROP
 		fi
 		;;

@@ -26,7 +26,7 @@
 #       You may only use this script to uninstall the version
 #       shown below. Simply run this script to remove Seattle Firewall
 
-VERSION=1.3.12-Beta3
+VERSION=1.3.12
 
 usage() # $1 = exit status
 {

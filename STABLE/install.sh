@@ -54,7 +54,7 @@
 #        /etc/rc.d/rc.local file is modified to start the firewall.
 #
 
-VERSION=1.3.11a
+VERSION=1.3.12
 
 usage() # $1 = exit status
 {
@@ -486,6 +486,46 @@ else
     run_install -o $OWNER -g $GROUP -m 0600 rfc1918 ${PREFIX}/etc/shorewall/rfc1918
     echo
     echo "RFC 1918 file installed as ${PREFIX}/etc/shorewall/rfc1918"
+fi
+#
+# Install the init file
+#
+if [ -f ${PREFIX}/etc/shorewall/init ]; then
+    backup_file /etc/shorewall/init
+else
+    run_install -o $OWNER -g $GROUP -m 0600 init ${PREFIX}/etc/shorewall/init
+    echo
+    echo "Init file installed as ${PREFIX}/etc/shorewall/init"
+fi
+#
+# Install the start file
+#
+if [ -f ${PREFIX}/etc/shorewall/start ]; then
+    backup_file /etc/shorewall/start
+else
+    run_install -o $OWNER -g $GROUP -m 0600 start ${PREFIX}/etc/shorewall/start
+    echo
+    echo "Start file installed as ${PREFIX}/etc/shorewall/start"
+fi
+#
+# Install the stop file
+#
+if [ -f ${PREFIX}/etc/shorewall/stop ]; then
+    backup_file /etc/shorewall/stop
+else
+    run_install -o $OWNER -g $GROUP -m 0600 stop ${PREFIX}/etc/shorewall/stop
+    echo
+    echo "Stop file installed as ${PREFIX}/etc/shorewall/stop"
+fi
+#
+# Install the stopped file
+#
+if [ -f ${PREFIX}/etc/shorewall/stopped ]; then
+    backup_file /etc/shorewall/stopped
+else
+    run_install -o $OWNER -g $GROUP -m 0600 stopped ${PREFIX}/etc/shorewall/stopped
+    echo
+    echo "Stopped file installed as ${PREFIX}/etc/shorewall/stopped"
 fi
 #
 # Backup the version file

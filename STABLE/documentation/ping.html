@@ -1,0 +1,90 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <title>ICMP Echo-request (Ping)</title>
+  <meta http-equiv="content-type"
+ content="text/html; charset=ISO-8859-1">
+  <meta name="author" content="Tom Eastep">
+</head>
+<body>
+<table border="0" cellpadding="0" cellspacing="0"
+ style="border-collapse: collapse;" bordercolor="#111111" width="100%"
+ id="AutoNumber1" bgcolor="#400169" height="90">
+   <tbody>
+    <tr>
+     <td width="100%">     
+      <h1 align="center"><font color="#ffffff">ICMP Echo-request (Ping)</font></h1>
+     </td>
+   </tr>
+ 
+  </tbody>
+</table>
+<br>
+Shorewall 'Ping' management has evolved over time in a less than consistant
+way. This page describes how it now works.<br>
+<br>
+There are several aspects to Shorewall Ping management:<br>
+<ol>
+  <li>The <b>noping</b> and <b>filterping </b>interface options in <a
+ href="file:///home/teastep/Shorewall-docs/Documentation.htm#Interfaces">/etc/shorewall/interfaces</a>.</li>
+  <li>The <b>FORWARDPING</b> option in<a
+ href="file:///home/teastep/Shorewall-docs/Documentation.htm#Conf"> /etc/shorewall/shorewall.conf</a>.</li>
+  <li>Explicit rules in <a
+ href="file:///home/teastep/Shorewall-docs/Documentation.htm#Rules">/etc/shorewall/rules</a>.</li>
+</ol>
+There are two cases to consider:<br>
+<ol>
+  <li>Ping requests addressed to the firewall itself; and</li>
+  <li>Ping requests being forwarded to another system. Included here are
+all cases of packet forwarding including NAT, DNAT rule, Proxy ARP and simple
+routing.</li>
+</ol>
+These cases will be covered separately.<br>
+<h2>Ping Requests Addressed to the Firewall Itself</h2>
+For ping requests addressed to the firewall, the sequence is as follows:<br>
+<ol>
+  <li>If neither <b>noping</b> nor <b>filterping </b>are specified for the
+interface that receives the ping request then the request will be responded
+to with an ICMP echo-reply.</li>
+  <li>If <b>noping</b> is specified for the interface that receives the ping
+request then the request is ignored.</li>
+  <li>If <b>filterping </b>is specified for the interface then the request
+is passed to the rules/policy evaluation.</li>
+</ol>
+<h2>Ping Requests Forwarded by the Firewall</h2>
+These requests are <b>always</b> passed to rules/policy evaluation.<br>
+<h2>Rules Evaluation</h2>
+Ping requests are ICMP type 8. So the general rule format is:<br>
+<br>
+&nbsp;&nbsp;&nbsp; <i>Target&nbsp;&nbsp;&nbsp; Source&nbsp;&nbsp;&nbsp; Destination&nbsp;&nbsp;&nbsp;
+</i>icmp&nbsp;&nbsp;&nbsp; 8<br>
+<br>
+Example 1. Accept pings from the net to the dmz (pings are responded to with
+an ICMP echo-reply):<br>
+<br>
+&nbsp;&nbsp;&nbsp; ACCEPT&nbsp;&nbsp;&nbsp; net&nbsp;&nbsp;&nbsp; dmz&nbsp;&nbsp;&nbsp;
+icmp&nbsp;&nbsp;&nbsp; 8<br>
+<br>
+Example 2. Drop pings from the net to the firewall<br>
+<br>
+&nbsp;&nbsp;&nbsp; DROP&nbsp;&nbsp;&nbsp; net&nbsp;&nbsp;&nbsp; fw&nbsp;&nbsp;&nbsp;
+icmp&nbsp;&nbsp;&nbsp; 8<br>
+<h2>Policy Evaluation</h2>
+If no applicable rule is found, then the policy for the source to the destination
+is applied.<br>
+<ol>
+  <li>If the relevant policy is ACCEPT then the request is responded to with
+an ICMP echo-reply.</li>
+  <li>If <b>FORWARDPING</b> is set to Yes in /etc/shorewall/shorewall.conf
+then the request is responded to with an ICMP echo-reply.</li>
+  <li>Otherwise, the relevant REJECT or DROP policy is used and the request
+is either rejected or simply ignored.</li>
+</ol>
+<p><font size="2">Updated 12/13/2002 - <a
+ href="file:///home/teastep/Shorewall-docs/support.htm">Tom Eastep</a> </font></p>
+ 
+<p><font face="Trebuchet MS"><a href="copyright.htm"><font size="2">Copyright</font>
+ &copy; <font size="2">2001, 2002 Thomas M. Eastep.</font></a></font></p>
+ <br>
+</body>
+</html>

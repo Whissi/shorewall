@@ -58,6 +58,7 @@
 #	   shorewall show nat			   Display the rules in the nat table
 #	   shorewall show {mangle|tos}		   Display the rules in the mangle table
 #	   shorewall show tc			   Display traffic control info
+#	   shorewall show classifiers		   Display classifiers
 #	   shorewall version			   Display the installed version id
 #	   shorewall check			   Verify the more heavily-used
 #						   configuration files.
@@ -258,7 +259,8 @@ packet_log() # $1 = number of messages
     [ -n "$realtail" ] && options="-n$1"
 
     grep 'Shorewall:\|ipt_unclean' $LOGFILE | \
-	 sed s/" $host kernel: Shorewall:"/" "/ | \
+	 sed s/" kernel:"// | \
+	 sed s/" $host Shorewall:"/" "/ | \
 	 sed s/" $host kernel: ipt_unclean: "/" "/ | \
 	 sed 's/MAC=.*SRC=/SRC=/' | \
 	 tail $options
@@ -294,6 +296,34 @@ show_tc() {
 
 }
 
+#
+# Show classifier information
+#
+show_classifiers() {
+
+    show_one_classifier() {
+	local device=${1%@*}
+	qdisc=`tc qdisc list dev $device`
+
+	if [ -n "$qdisc" ]; then
+	    echo Device $device:
+	    tc -s filter ls dev $device
+	    echo
+	fi
+    }
+
+    ip link list | \
+    while read inx interface details; do
+	case $inx in
+	[0-9]*)
+	    show_one_classifier ${interface%:}
+	    ;;
+	*)
+	    ;;
+	esac
+    done
+
+}
 #
 # Monitor the Firewall
 #
@@ -383,6 +413,15 @@ monitor_firewall() # $1 = timeout -- if negative, prompt each time that
 	echo
 	show_tc
 	timed_read
+
+	clear
+	echo "$banner `date`"
+	echo
+	echo
+	echo "Packet Classifiers"
+	echo
+	show_classifiers
+	timed_read
     done
 }
 
@@ -450,7 +489,7 @@ usage() # $1 = exit status
     echo "where <command> is one of:"
     echo "   add <interface>[:<host>] <zone>"
     echo "   delete <interface>[:<host>] <zone>"
-    echo "   show [<chain>|connections|log|nat|tc|tos]"
+    echo "   show [<chain>|classifiers|connections|log|nat|tc|tos]"
     echo "   start"
     echo "   stop"
     echo "   reset"
@@ -629,6 +668,11 @@ case "$1" in
 	    echo
 	    show_tc
 	    ;;
+	classifiers)
+	    echo "Shorewall-$version Clasifiers at $HOSTNAME - `date`"
+	    echo
+	    show_classifiers
+	    ;;
 	*)
 	    echo "Shorewall-$version Chain $2 at $HOSTNAME - `date`"
 	    echo
@@ -658,7 +702,11 @@ case "$1" in
 	echo
 	packet_log 20
 	echo
+	echo "NAT Table"
+	echo
 	iptables -t nat -L -n -v
+	echo
+	echo "Mangle Table"
 	echo
 	iptables -t mangle -L -n -v
 	echo

@@ -25,9 +25,22 @@ find_file()
 #
 # Replace commas with spaces and echo the result
 #
-separate_list()
-{
-    echo $1 | sed 's/,/ /g'
+separate_list() { 
+    local list
+    local part
+    local newlist
+
+    list="$@"
+    part="${list%%,*}"
+    newlist="$part"
+    
+    while [ "x$part" != "x$list" ]; do
+	list="${list#*,}";
+	part="${list%%,*}";
+	newlist="$newlist $part";
+    done
+
+    echo "$newlist"
 }
 
 #

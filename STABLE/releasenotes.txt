@@ -2,22 +2,39 @@ This is a minor release of Shorewall that has a couple of new features.
 
 New features include:
 
-1) A 'tcpflags' option has been added to entries in
-   /etc/shorewall/interfaces. This option causes Shorewall to make a
-   set of sanity check on TCP packet header flags.
+1) "shorewall refresh" now reloads the traffic shaping rules (tcrules
+   and tcstart).
 
-2) It is now allowed to use 'all' in the SOURCE or DEST column in a
-   rule. When used, 'all' must appear by itself (in may not be
-   qualified) and it does not enable intra-zone traffic (e.g., the rule
-   "ACCEPT loc	  all	  tcp 80" does not enable http traffic from
-   'loc' to 'loc').
+2) "shorewall debug [re]start" now turns off debugging after an error
+   occurs. This places the point of the failure near the end of the
+   trace rather than up in the middle of it.
 
-3) Shorewall's use of the 'echo' command is now compatible with bash
-   clones such as ash and dash.
+3) "shorewall [re]start" has been speeded up by more than 40% with
+   my configuration. Your milage may vary. 
 
-4) fw->fw policies now generate a startup error. fw->fw rules generate
-   a warning and are ignored.
+4) A "shorewall show classifiers" command has been added which shows
+   the current packet classification filters. The output from this
+   command is also added as a separate page in "shorewall monitor"
 
+5) ULOG (must be all caps) is now accepted as a valid syslog level and
+   causes the subject packets to be logged using the ULOG target rather
+   than the LOG target. This allows you to run ulogd (available from
+   www.gnumonks.org/projects/ulogd) and log all Shorewall messages to
+   a separate log file.
 
+6) If you are running a kernel that has a FORWARD chain in the mangle
+   table ("shorewall show mangle" will show you the chains in the
+   mangle table), you can set MARK_IN_FORWARD=Yes in
+   shorewall.conf. This allows for marking inbound packets based on
+   their destination even when you are using Masquerading or SNAT.
 
+7) I have cluttered up the /etc/shorewall directory with empty 'init',
+   'start', 'stop' and 'stopped' files. If you already have a file with
+   one of these names, don't worry -- the upgrade process won't
+   overwrite your file.
 
+8) I have added a new RFC1918_LOG_LEVEL variable to
+   shorewall.conf. This variable specifies the syslog level at which
+   packets are logged as a result of entries in the
+   /etc/shorewall/rfc1918 file. Previously, these packets were always
+   logged at the 'info' level.

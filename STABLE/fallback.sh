@@ -28,7 +28,7 @@
 #       shown below. Simply run this script to revert to your prior version of 
 #       Shoreline Firewall.
 
-VERSION=1.3.11a
+VERSION=1.3.12
 
 usage() # $1 = exit status
 {
@@ -118,6 +118,14 @@ restore_file /etc/shorewall/blacklist
 restore_file /etc/shorewall/whitelist
 
 restore_file /etc/shorewall/rfc1918
+
+restore_file /etc/shorewall/init
+
+restore_file /etc/shorewall/start
+
+restore_file /etc/shorewall/stop
+
+restore_file /etc/shorewall/stopped
 
 if [ -f /usr/lib/shorewall/version-${VERSION}.bkout ]; then
     restore_file /usr/lib/shorewall/version

@@ -58,6 +58,7 @@
 #	   shorewall show nat			   Display the rules in the nat table
 #	   shorewall show {mangle|tos}		   Display the rules in the mangle table
 #	   shorewall show tc			   Display traffic control info
+#	   shorewall show classifiers		   Display classifiers
 #	   shorewall version			   Display the installed version id
 #	   shorewall check			   Verify the more heavily-used
 #						   configuration files.
@@ -150,8 +151,10 @@ display_chains()
 	iptables -L -n -v > /tmp/chains-$$
 
 	clear
-	echo -e "$banner `date`\\n"
-	echo -e "Standard Chains\\n"
+	echo "$banner `date`"
+	echo
+	echo "Standard Chains"
+	echo
 	firstchain="Yes"
 	showchain INPUT
 	showchain OUTPUT
@@ -160,9 +163,11 @@ display_chains()
 	timed_read
 
 	clear
-	echo -e "$banner `date`\\n"
+	echo "$banner `date`"
+	echo
 	firstchain=Yes
-	echo -e "Input Chains\\n"
+	echo "Input Chains"
+	echo
 
 	chains=`grep '^Chain.*_[in|fwd]' /tmp/chains-$$ | cut -d' ' -f 2`
 	
@@ -176,10 +181,12 @@ display_chains()
 
 	    if [ -n "`grep "^Chain \.*${zone}" /tmp/chains-$$`" ] ; then
 		clear
-		echo -e "$banner `date`\\n"
+		echo "$banner `date`"
+		echo
 		firstchain=Yes
 		eval display=\$${zone}_display
-		echo -e "$display Chains\\n"
+		echo "$display Chains"
+		echo
 		for zone1 in $FW $zones; do
 		    showchain ${zone}2$zone1
 		    showchain @${zone}2$zone1
@@ -193,9 +200,11 @@ display_chains()
 	done
 
 	clear
-	echo -e "$banner `date`\\n"
+	echo "$banner `date`"
+	echo
 	firstchain=Yes
-	echo -e "Policy Chains\\n"
+	echo "Policy Chains"
+	echo
 	showchain common
 	showchain badpkt
 	showchain icmpdef
@@ -212,9 +221,11 @@ display_chains()
 	timed_read
 
 	clear
-	echo -e "$banner `date`\\n"
+	echo "$banner `date`"
+	echo
 	firstchain=Yes
-	echo -e "Dynamic Chain\\n"
+	echo "Dynamic Chain"
+	echo
 	showchain dynamic
 	timed_read
 
@@ -248,7 +259,8 @@ packet_log() # $1 = number of messages
     [ -n "$realtail" ] && options="-n$1"
 
     grep 'Shorewall:\|ipt_unclean' $LOGFILE | \
-	 sed s/" $host kernel: Shorewall:"/" "/ | \
+	 sed s/" kernel:"// | \
+	 sed s/" $host Shorewall:"/" "/ | \
 	 sed s/" $host kernel: ipt_unclean: "/" "/ | \
 	 sed 's/MAC=.*SRC=/SRC=/' | \
 	 tail $options
@@ -285,6 +297,34 @@ show_tc() {
 }
 
 #
+# Show classifier information
+#
+show_classifiers() {
+
+    show_one_classifier() {
+	local device=${1%@*}
+	qdisc=`tc qdisc list dev $device`
+
+	if [ -n "$qdisc" ]; then
+	    echo Device $device:
+	    tc -s filter ls dev $device
+	    echo
+	fi
+    }
+
+    ip link list | \
+    while read inx interface details; do
+	case $inx in
+	[0-9]*)
+	    show_one_classifier ${interface%:}
+	    ;;
+	*)
+	    ;;
+	esac
+    done
+
+}
+#
 # Monitor the Firewall
 #
 monitor_firewall() # $1 = timeout -- if negative, prompt each time that
@@ -309,9 +349,11 @@ monitor_firewall() # $1 = timeout -- if negative, prompt each time that
 	display_chains
 	
 	clear
-	echo -e "$banner `date`\\n"
+	echo "$banner `date`"
+	echo
 
-	echo -e "Dropped/Rejected Packet Log\\n"
+	echo "Dropped/Rejected Packet Log"
+	echo
 
 	show_reset
 
@@ -319,11 +361,14 @@ monitor_firewall() # $1 = timeout -- if negative, prompt each time that
 
 	if [ "$rejects" != "$oldrejects" ]; then
 	    oldrejects="$rejects"
-	    echo -e '\a'
+	    
+	    $RING_BELL
+
 	    packet_log 20
 
 	    if [ "$pause" = "Yes" ]; then
-		echo -en '\nEnter any character to continue: '
+		echo
+		echo $ECHO_N 'Enter any character to continue: '
 		read foo
 	    else
 		timed_read
@@ -335,27 +380,47 @@ monitor_firewall() # $1 = timeout -- if negative, prompt each time that
 	fi
 
 	clear
-	echo -e "$banner `date`\\n"
-	echo -e "NAT Status\\n"
+	echo "$banner `date`"
+	echo
+	echo "NAT Status"
+	echo
 	iptables -t nat -L -n -v
 	timed_read
 
 	clear
-	echo -e "$banner `date`\\n"
-	echo -e "\\nTOS/MARK Status\\n"
+	echo "$banner `date`"
+	echo
+	echo
+	echo "TOS/MARK Status"
+	echo
 	iptables -t mangle -L -n -v
 	timed_read
 
 	clear
-	echo -e "$banner `date`\\n"
-	echo -e "\\nTracked Connections\\n"
+	echo "$banner `date`"
+	echo
+	echo
+	echo "Tracked Connections"
+	echo
 	cat /proc/net/ip_conntrack
 	timed_read
 
 	clear
-	echo -e "$banner `date`\\n"
-	echo -e "\\nTraffic Shaping/Control\\n"
+	echo "$banner `date`"
+	echo
+	echo
+	echo "Traffic Shaping/Control"
+	echo
 	show_tc
+	timed_read
+
+	clear
+	echo "$banner `date`"
+	echo
+	echo
+	echo "Packet Classifiers"
+	echo
+	show_classifiers
 	timed_read
     done
 }
@@ -383,9 +448,11 @@ logwatch() # $1 = timeout -- if negative, prompt each time that
 
     while true; do
 	clear
-	echo -e "$banner `date`\\n"
+	echo "$banner `date`"
+	echo
 
-	echo -e "Dropped/Rejected Packet Log\\n"
+	echo "Dropped/Rejected Packet Log"
+	echo
 
 	show_reset
 
@@ -393,11 +460,14 @@ logwatch() # $1 = timeout -- if negative, prompt each time that
 
 	if [ "$rejects" != "$oldrejects" ]; then
 	    oldrejects="$rejects"
-	    echo -e '\a'
+
+	    $RING_BELL
+
 	    packet_log 40
 
 	    if [ "$pause" = "Yes" ]; then
-		echo -en '\nEnter any character to continue: '
+		echo
+		echo $ECHO_N 'Enter any character to continue: '
 		read foo
 	    else
 		timed_read
@@ -419,7 +489,7 @@ usage() # $1 = exit status
     echo "where <command> is one of:"
     echo "   add <interface>[:<host>] <zone>"
     echo "   delete <interface>[:<host>] <zone>"
-    echo "   show [<chain>|connections|log|nat|tc|tos]"
+    echo "   show [<chain>|classifiers|connections|log|nat|tc|tos]"
     echo "   start"
     echo "   stop"
     echo "   reset"
@@ -445,7 +515,8 @@ usage() # $1 = exit status
 #
 show_reset() {
     [ -f $STATEDIR/restarted ] && \
-	echo -e "Counters reset `cat $STATEDIR/restarted`\\n"
+	echo "Counters reset `cat $STATEDIR/restarted`" && \
+	echo
 }
 
 #
@@ -537,6 +608,24 @@ banner="Shorewall-$version Status at $HOSTNAME -"
 
 get_statedir
 
+case `echo -e` in
+    -e*)
+	RING_BELL="echo \'\a\'"
+	;;
+    *)
+	RING_BELL="echo -e \'\a\'"
+	;;
+esac
+
+case `echo -n "Testing"` in
+    -n*)
+	ECHO_N=
+	;;
+    *)
+	ECHO_N=-n
+	;;
+esac
+
 case "$1" in
     start|stop|restart|reset|clear|refresh|check)
 	[ $# -ne 1 ] && usage 1
@@ -550,32 +639,43 @@ case "$1" in
 	[ $# -gt 2 ] && usage 1
 	case "$2" in
 	connections)
-	    echo -e "Shorewall-$version Connections at $HOSTNAME - `date`\\n"
+	    echo "Shorewall-$version Connections at $HOSTNAME - `date`"
+	    echo
 	    cat /proc/net/ip_conntrack
 	    ;;
 	nat)
-	    echo -e "Shorewall-$version NAT at $HOSTNAME - `date`\\n"
+	    echo "Shorewall-$version NAT at $HOSTNAME - `date`"
+	    echo
 	    show_reset
 	    iptables -t nat -L -n -v
 	    ;;
 	tos|mangle)
-	    echo -e "Shorewall-$version TOS at $HOSTNAME - `date`\\n"
+	    echo "Shorewall-$version TOS at $HOSTNAME - `date`"
+	    echo
 	    show_reset
 	    iptables -t mangle -L -n -v
 	    ;;
 	log)
 	    get_config
-	    echo -e "Shorewall-$version Log at $HOSTNAME - `date`\\n"
+	    echo "Shorewall-$version Log at $HOSTNAME - `date`"
+	    echo
 	    show_reset
 	    host=`echo $HOSTNAME | sed 's/\..*$//'`
 	    packet_log 20
 	    ;;
 	tc)
-	    echo -e "Shorewall-$version Traffic Control at $HOSTNAME - `date`\\n"
+	    echo "Shorewall-$version Traffic Control at $HOSTNAME - `date`"
+	    echo
 	    show_tc
 	    ;;
+	classifiers)
+	    echo "Shorewall-$version Clasifiers at $HOSTNAME - `date`"
+	    echo
+	    show_classifiers
+	    ;;
 	*)
-	    echo -e "Shorewall-$version Chain $2 at $HOSTNAME - `date`\\n"
+	    echo "Shorewall-$version Chain $2 at $HOSTNAME - `date`"
+	    echo
 	    show_reset
 	    iptables -L $2 -n -v
 	    ;;
@@ -594,14 +694,19 @@ case "$1" in
 	[ $# -eq 1 ] || usage 1
 	get_config
 	clear
-	echo -e "Shorewall-$version Status at $HOSTNAME - `date`\\n"
+	echo "Shorewall-$version Status at $HOSTNAME - `date`"
+	echo
 	show_reset
 	host=`echo $HOSTNAME | sed 's/\..*$//'`
 	iptables -L -n -v
 	echo
 	packet_log 20
 	echo
+	echo "NAT Table"
+	echo
 	iptables -t nat -L -n -v
+	echo
+	echo "Mangle Table"
 	echo
 	iptables -t mangle -L -n -v
 	echo
@@ -611,7 +716,9 @@ case "$1" in
 	[ $# -eq 1 ] || usage 1
 	get_config
 	clear
-	echo -e "Shorewall-$version Hits at $HOSTNAME - `date`\\n"
+	echo "Shorewall-$version Hits at $HOSTNAME - `date`"
+	echo
+
 	timeout=30
 
 	if [ `grep -c "Shorewall:" $LOGFILE ` -gt 0 ] ; then

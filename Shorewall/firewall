@@ -544,7 +544,7 @@ determine_hosts() {
 	    fi
 
 	    [ "${host#*:}" = "0.0.0.0/0" ] || \
-		eval ${zone}_is_constrained=Yes
+		eval ${zone}_is_complex=Yes
 	done
 
 	eval ${zone}_interfaces="\$interfaces"
@@ -3664,9 +3664,9 @@ activate_rules()
 	chain1=`rules_chain $FW $zone`
 	chain2=`rules_chain $zone $FW`
 
-	eval constrained=\$${zone}_is_constrained
+	eval complex=\$${zone}_is_complex
 
-	if [ -n "$constrained" ]; then
+	if [ -n "$complex" ]; then
 	    frwd_chain=${zone}_frwd
 	    createchain $frwd_chain No
 	fi
@@ -3688,7 +3688,7 @@ activate_rules()
 
 	    run_iptables -A `input_chain $interface` -s $subnet -j $chain2
 
-	    [ -n "$constrained" ] && \
+	    [ -n "$complex" ] && \
 		run_iptables -A `forward_chain $interface` -s $subnet -j $frwd_chain
 	done
 
@@ -3707,7 +3707,7 @@ activate_rules()
 	    for host in $source_hosts; do
 		interface=${host%:*}
 
-		if [ -n "$constrained" ]; then
+		if [ -n "$complex" ]; then
 		    chain1=$frwd_chain
 		    subnet=
 		else

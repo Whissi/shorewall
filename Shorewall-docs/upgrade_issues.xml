@@ -89,11 +89,10 @@
       <listitem>
         <para>An undocumented feature previously allowed entries in the host
         file as follows: <synopsis>
-zone	eth1:192.168.1.0/24,eth2:192.168.2.0/24
-				</synopsis> This capability was never documented and has been removed in
-        1.4.6 to allow entries of the following format: <synopsis>
-zone	eth1:192.168.1.0/24,192.168.2.0/24
-				</synopsis></para>
+zone    eth1:192.168.1.0/24,eth2:192.168.2.0/24</synopsis> This capability was
+        never documented and has been removed in 1.4.6 to allow entries of the
+        following format: <synopsis>
+zone    eth1:192.168.1.0/24,192.168.2.0/24</synopsis></para>
       </listitem>
     </itemizedlist>
   </section>
@@ -140,9 +139,9 @@ zone	eth1:192.168.1.0/24,192.168.2.0/24
         was treated just like any other traffic; any matching rules were
         applied followed by enforcement of the appropriate policy. With 1.4.1
         and later versions, unless you have explicit rules for traffic from Z
-        to Z or you have an explicit Z to Z policy (where &#34;Z&#34; is some
-        zone) then traffic between the groups in zone Z will be accepted. If
-        you do have one or more explicit rules for Z to Z or if you have an
+        to Z or you have an explicit Z to Z policy (where <quote>Z</quote> is
+        some zone) then traffic between the groups in zone Z will be accepted.
+        If you do have one or more explicit rules for Z to Z or if you have an
         explicit Z to Z policy then the behavior is as it was in prior
         versions.</para>
 
@@ -162,10 +161,10 @@ zone	eth1:192.168.1.0/24,192.168.2.0/24
 
           <listitem>
             <para>If you are currently relying on a implicit policy (one that
-            has &#34;all&#34; in either the SOURCE or DESTINATION column) to
-            prevent traffic between two interfaces to a zone Z and you have no
-            rules for Z-&#62;Z then you should add an explicit DROP or REJECT
-            policy for Z to Z.</para>
+            has <quote>all</quote> in either the SOURCE or DESTINATION column)
+            to prevent traffic between two interfaces to a zone Z and you have
+            no rules for Z-&#62;Z then you should add an explicit DROP or
+            REJECT policy for Z to Z.</para>
           </listitem>
         </orderedlist>
       </listitem>
@@ -177,27 +176,25 @@ zone	eth1:192.168.1.0/24,192.168.2.0/24
         <filename>interfaces</filename> and, <filename>hosts</filename> file
         contents</title><programlisting>
 <filename class="directory">/etc/shorewall/</filename><filename>zones</filename>
-z1	Zone1	The first Zone
-z2	Zone2	The second Zone
+z1    Zone1    The first Zone
+z2    Zone2    The second Zone
 
 <filename class="directory">/etc/shorewall/</filename><filename>interfaces</filename>
-z2	eth1	192.168.1.255
+z2    eth1    192.168.1.255
 
 <filename class="directory">/etc/shorewall/</filename><filename>hosts</filename>
-z1	eth1:192.168.1.3
-					</programlisting></example> Here, zone z1 is nested in zone z2 and the
-        firewall is not going to be involved in any traffic between these two
-        zones. Beginning with Shorewall 1.4.1, you can prevent Shorewall from
-        setting up any infrastructure to handle traffic between z1 and z2 by
-        using the new NONE policy: <example><title>The contents of
-        <filename>policy</filename></title><programlisting>
+z1    eth1:192.168.1.3</programlisting></example> Here, zone z1 is nested in
+        zone z2 and the firewall is not going to be involved in any traffic
+        between these two zones. Beginning with Shorewall 1.4.1, you can
+        prevent Shorewall from setting up any infrastructure to handle traffic
+        between z1 and z2 by using the new NONE policy: <example><title>The
+        contents of <filename>policy</filename></title><programlisting>
 <filename class="directory">/etc/shorewall/</filename><filename>policy</filename>
-z1	z2	NONE
-z2	z1	NONE
-					</programlisting></example> Note that NONE policies are generally used in
-        pairs unless there is asymetric routing where only the traffic on one
-        direction flows through the firewall and you are using a NONE polciy
-        in the other direction.</para>
+z1    z2    NONE
+z2    z1    NONE</programlisting></example> Note that NONE policies are
+        generally used in pairs unless there is asymetric routing where only
+        the traffic on one direction flows through the firewall and you are
+        using a NONE polciy in the other direction.</para>
       </listitem>
     </itemizedlist>
   </section>
@@ -222,16 +219,16 @@ z2	z1	NONE
 
     <important>
       <para>Shorewall &#62;=1.4.0 requires the <command>iproute</command>
-      package (&#39;<literal>ip</literal>&#39; utility).</para>
+      package (<quote><literal>ip</literal></quote> utility).</para>
     </important>
 
     <note>
       <para>Unfortunately, some distributions call this package
       <command>iproute2</command> which will cause the upgrade of Shorewall to
       fail with the diagnostic: <synopsis>
-error: failed dependencies:iproute is needed by shorewall-1.4.0-1
-				</synopsis> This may be worked around by using the <option>--nodeps</option>
-      option of <command>rpm</command> (<command>rpm -Uvh --nodeps
+error: failed dependencies:iproute is needed by shorewall-1.4.0-1</synopsis>
+      This may be worked around by using the <option>--nodeps</option> option
+      of <command>rpm</command> (<command>rpm -Uvh --nodeps
       <filename>your_shorewall_rpm.rpm</filename></command>).</para>
     </note>
 
@@ -318,8 +315,7 @@ error: failed dependencies:iproute is needed by shorewall-1.4.0-1
     and</para></listitem><listitem><para>That interface connects to more than
     one subnetwork.</para></listitem></orderedlist> Two examples: <example
     label="1"><title>Suppose that your current config is as follows:</title><programlisting>
-				<!-- I added a space below the end of the config file for clarity -->
-[root@gateway test]# cat /etc/shorewall/masq
+<!--I added a space below the end of the config file for clarity-->[root@gateway test]# cat /etc/shorewall/masq
 #INTERFACE              SUBNET                  ADDRESS
 eth0                    eth2                    206.124.146.176
 eth0                    192.168.10.0/24         206.124.146.176
@@ -328,12 +324,10 @@ eth0                    192.168.10.0/24         206.124.146.176
 [root@gateway test]# ip route show dev eth2
 192.168.1.0/24  scope link
 192.168.10.0/24  proto kernel  scope link  src 192.168.10.254
-[root@gateway test]#
-				</programlisting></example> In this case, the second entry in <filename
-    class="directory">/etc/shorewall/</filename><filename>masq</filename> is
-    no longer required. <example label="2"><title>What if your current
-    configuration is like this?</title><programlisting>
-[root@gateway test]# cat /etc/shorewall/masq
+[root@gateway test]#</programlisting></example> In this case, the second entry
+    in <filename class="directory">/etc/shorewall/</filename><filename>masq</filename>
+    is no longer required. <example label="2"><title>What if your current
+    configuration is like this?</title><programlisting>[root@gateway test]# cat /etc/shorewall/masq
 #INTERFACE              SUBNET                  ADDRESS
 eth0                    eth2                    206.124.146.176
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE
@@ -341,21 +335,20 @@ eth0                    eth2                    206.124.146.176
 [root@gateway test]# ip route show dev eth2
 192.168.1.0/24  scope link
 192.168.10.0/24  proto kernel  scope link  src 192.168.10.254
-[root@gateway test]#
-				</programlisting></example> In this case, you would want to change the
-    entry in /etc/shorewall/masq to: <programlisting>
-#INTERFACE              SUBNET                  ADDRESS
+[root@gateway test]#</programlisting></example> In this case, you would want
+    to change the entry in /etc/shorewall/masq to:
+    <programlisting>#INTERFACE              SUBNET                  ADDRESS
 eth0                    192.168.1.0/24          206.124.146.176
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE
-			</programlisting> Version 1.3.14 also introduced simplified ICMP
-    echo-request (ping) handling. The option <varname>OLD_PING_HANDLING=Yes</varname>
-    in <filename class="directory">/etc/shorewall/</filename><filename>shorewall.conf</filename>
+#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+    Version 1.3.14 also introduced simplified ICMP echo-request (ping)
+    handling. The option <varname>OLD_PING_HANDLING=Yes</varname> in <filename
+    class="directory">/etc/shorewall/</filename><filename>shorewall.conf</filename>
     is used to specify that the old (pre-1.3.14) ping handling is to be used
     (If the option is not set in your <filename class="directory">/etc/shorewall/</filename>shorewall.conf
     then <varname>OLD_PING_HANDLING=Yes</varname> is assumed). I don&#39;t
     plan on supporting the old handling indefinitely so I urge current users
     to migrate to using the new handling as soon as possible. See the
-    &#39;Ping&#39; handling documentation for details.</para>
+    <quote>Ping</quote> handling documentation for details.</para>
   </section>
 
   <section>
@@ -365,9 +358,7 @@ eth0                    192.168.1.0/24          206.124.146.176
       <listitem>
         <para>If you have installed the 1.3.10 Beta 1 RPM and are now
         upgrading to version 1.3.10, you will need to use the
-        <option>--force</option> option: <programlisting>
-rpm -Uvh --force shorewall-1.3.10-1.noarch.rpm
-						</programlisting></para>
+        <option>--force</option> option: <programlisting>rpm -Uvh --force shorewall-1.3.10-1.noarch.rpm</programlisting></para>
       </listitem>
     </itemizedlist>
   </section>
@@ -411,13 +402,12 @@ rpm -Uvh --force shorewall-1.3.10-1.noarch.rpm
         will need to include the following rules in their <filename
         class="directory">/etc/shorewall/</filename><filename>icmpdef</filename>
         file (creating this file if necessary):
-        <programlisting>
-run_iptables -A icmpdef -p ICMP --icmp-type echo-reply -j ACCEPT
+        <programlisting>run_iptables -A icmpdef -p ICMP --icmp-type echo-reply -j ACCEPT
 run_iptables -A icmpdef -p ICMP --icmp-type source-quench -j ACCEPT
 run_iptables -A icmpdef -p ICMP --icmp-type destination-unreachable -j ACCEPT
 run_iptables -A icmpdef -p ICMP --icmp-type time-exceeded -j ACCEPT
-run_iptables -A icmpdef -p ICMP --icmp-type parameter-problem -j ACCEPT
-					</programlisting> Users having an <filename class="directory">/etc/shorewall/</filename><filename>icmpdef</filename>
+run_iptables -A icmpdef -p ICMP --icmp-type parameter-problem -j ACCEPT</programlisting>
+        Users having an <filename class="directory">/etc/shorewall/</filename><filename>icmpdef</filename>
         file may remove the <command>./etc/shorewall/icmp.def</command>
         command from that file since the <filename>icmp.def</filename> file is
         now empty.</para>
@@ -444,14 +434,12 @@ run_iptables -A icmpdef -p ICMP --icmp-type parameter-problem -j ACCEPT
         like Jacques&#39;s. You need to follow the instructions for setting up
         a two-interface firewall plus you also need to add the following two
         Bering-specific rules to <filename class="directory">/etc/shorewall/</filename><filename>rules</filename>:
-        <programlisting>
-# Bering specific rules:
+        <programlisting># Bering specific rules:
 # allow loc to fw udp/53 for dnscache to work
 # allow loc to fw tcp/80 for weblet to work
 #
 ACCEPT loc fw udp 53
-ACCEPT loc fw tcp 80
-					</programlisting></para>
+ACCEPT loc fw tcp 80</programlisting></para>
       </listitem>
     </itemizedlist>
   </section>
@@ -467,19 +455,15 @@ ACCEPT loc fw tcp 80
         <orderedlist><listitem><para>Create the file <filename
         class="directory">/etc/shorewall/</filename><filename>newnotsyn</filename>
         and in it add the following rule: <!-- The following code wraps off of the document. I have added the comment above the command. -->
-        <programlisting>
-# So that the connection tracking table can be rebuilt
+        <programlisting># So that the connection tracking table can be rebuilt
 # from non-SYN packets after takeover.
-run_iptables -A newnotsyn -j RETURN
- 							</programlisting></para></listitem><listitem><para>Create <filename
-        class="directory">/etc/shorewall/</filename><filename>common</filename>
+run_iptables -A newnotsyn -j RETURN</programlisting></para></listitem><listitem><para>Create
+        <filename class="directory">/etc/shorewall/</filename><filename>common</filename>
         (if you don&#39;t already have that file) and include the following:
-        <programlisting>
-#Accept Acks to rebuild connection tracking table.
+        <programlisting>#Accept Acks to rebuild connection tracking table.
 run_iptables -A common -p tcp --tcp-flags ACK,FIN,RST ACK -j ACCEPT
 
-./etc/shorewall/common.def
-							</programlisting></para></listitem></orderedlist></para>
+./etc/shorewall/common.def</programlisting></para></listitem></orderedlist></para>
       </listitem>
     </itemizedlist>
   </section>
@@ -490,17 +474,10 @@ run_iptables -A common -p tcp --tcp-flags ACK,FIN,RST ACK -j ACCEPT
     <itemizedlist>
       <listitem>
         <para>Some forms of pre-1.3.0 rules file syntax are no longer
-        supported. <example label="1"><title></title><programlisting>
-ACCEPT    net    loc:192.168.1.12:22    tcp    11111    -    all
-						</programlisting></example> Must be replaced with:
-        <programlisting>
-DNAT	net	loc:192.168.1.12:22	tcp	11111
-					</programlisting> <example label="2"><title></title><programlisting>
-ACCEPT	loc	fw::3128	tcp	80	-	all
-						</programlisting></example> Must be replaced with:
-        <programlisting>
-REDIRECT	loc	3128	tcp	80
-						</programlisting></para>
+        supported. <example label="1"><title></title><programlisting>ACCEPT    net    loc:192.168.1.12:22    tcp    11111    -    all</programlisting></example>
+        Must be replaced with: <programlisting>DNAT    net    loc:192.168.1.12:22    tcp    11111</programlisting>
+        <example label="2"><title></title><programlisting>ACCEPT    loc    fw::3128    tcp    80    -    all</programlisting></example>
+        Must be replaced with: <programlisting>REDIRECT    loc    3128    tcp    80</programlisting></para>
       </listitem>
     </itemizedlist>
   </section>

@@ -87,10 +87,19 @@ install_file_with_backup() # $1 = source $2 = target $3 = mode
 # RUNLEVELS is the chkconfig parmeters for firewall
 # ARGS is "yes" if we've already parsed an argument
 #
-DEST="/etc/init.d"
-INIT="shorewall"
-RUNLEVELS=""
 ARGS=""
+
+if [ -z "$DEST" ] ; then
+	DEST="/etc/init.d"
+fi
+
+if [ -z "$INIT" ] ; then
+	INIT="shorewall"
+fi
+
+if [ -z "$RUNLEVELS" ] ; then
+	RUNLEVELS=""
+fi
 
 if [ -z "$OWNER" ] ; then
 	OWNER=root

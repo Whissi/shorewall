@@ -5,7 +5,7 @@
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
 #
-#     (c) 2001,2002,2003,2004 - Tom Eastep (teastep@shorewall.net)
+#     (c) 2001,2002,2003,2004,2005 - Tom Eastep (teastep@shorewall.net)
 #
 #       Shorewall documentation is available at http://seattlefirewall.dyndns.org
 #

@@ -2765,7 +2765,7 @@ process_actions1() {
 	    createchain dropNonSyn no
 	    run_iptables -A dropNonSyn -p tcp ! --syn -j DROP
 
-	    createchain RejectNonSyn no
+	    createchain rejectNonSyn no
 	    run_iptables -A rejectNonSyn -p tcp ! --syn -j REJECT --reject-with tcp-reset
 
 	fi

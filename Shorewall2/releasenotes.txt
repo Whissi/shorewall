@@ -47,9 +47,13 @@ New Features:
       command into 'shorewall -f start' so that fast restart is
       possible.
 
+   e) When a state-changing command encounters an error and there is a
+      current saved configuration, that configuration will be restored
+      (currently, the firewall is placed in the 'stopped' state). 
+
    WARNING: iptables 1.2.9 is broken with respect to iptables-save;
-   you must patch iptables with the iptables patch availale from the
-   Shorewall errata page.
+   you must patch iptables 1.2.9 with the iptables patch availale from
+   the Shorewall errata page.
 
 2) The previous implementation of dynamic zones was difficult to
    maintain. I have changed the code to make dynamic zones optional
@@ -98,7 +102,7 @@ New Features:
    beginning with this release, if MODULE_PREFIX isn't specified in
    shorewall.conf, then the default value is "o gz ko o.gz ko.gz".
 
-7) An updated bogons file is included in this release.
+6) An updated bogons file is included in this release.
 
 7) In /etc/shorewall/rules and in action files generated from
    /usr/share/shorewall/action.template, rules that perform logging can

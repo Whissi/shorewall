@@ -1424,7 +1424,7 @@ setup_tunnels() # $1 = name of tunnels file
 	echo "   PPTP server defined."
     }
 
-    setup_one_openvpn() # $1 = gateway, $2 = kind
+    setup_one_openvpn() # $1 = gateway, $2 = kind[:port]
     {
 	case $2 in
 	    *:*)
@@ -1435,14 +1435,8 @@ setup_tunnels() # $1 = name of tunnels file
 		;;
 	esac
 
-	if [ $3 = openvpn ]; then
-	    sport="--sport $p"
-	else
-	    sport=
-	fi
-
-	addrule $inchain  -p udp -s $1 $sport --dport $p -j ACCEPT
-	addrule $outchain -p udp -d $1 $sport --dport $p -j ACCEPT
+	addrule $inchain  -p udp -s $1 --sport $p --dport $p -j ACCEPT
+	addrule $outchain -p udp -d $1 --sport $p --dport $p -j ACCEPT
 
 	echo "   OPENVPN tunnel to $1:$p defined."
     }
@@ -1474,11 +1468,8 @@ setup_tunnels() # $1 = name of tunnels file
 		pptpserver|PPTPSERVER)
 		    setup_pptp_server
 		    ;;
-		openvpn*|OPENVPN*)
-		    setup_one_openvpn $gateway $kind openvpn
-		    ;;
-		openvpnnat*|OPENVPNNAT*)
-		    setup_one_openvpn $gateway $kind openvpnnat
+		openvpn|OPENVPN|openvpn:*|OPENVPN:*)
+		    setup_one_openvpn $gateway $kind
 		    ;;
 		*)
 		    error_message "Tunnels of type $kind are not supported:" \

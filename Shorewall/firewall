@@ -3188,6 +3188,12 @@ initialize_netfilter () {
     setcontinue FORWARD
     setcontinue INPUT
     setcontinue OUTPUT
+
+    #
+    # Make 'traceroute -I' work
+    #
+    run_iptables -I OUTPUT -p icmp --icmp-type time-exceeded -j ACCEPT
+
     #
     # Allow DNS lookups during startup for FQDNs and deep-six INVALID packets
     #

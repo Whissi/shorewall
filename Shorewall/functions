@@ -182,6 +182,30 @@ mutex_off()
 }
 
 #
+# Read a file and handle "INCLUDE" directives
+#
+
+read_file() # $1 = file name
+{
+    local first rest
+
+    while read first rest; do
+	if [ "x$first"  = "xINCLUDE" ]; then
+	    read_file `find_file ${rest%#*}`
+	else
+	    echo "$first $rest"
+	fi
+    done < $1
+}
+
+#
+# Function for including one file into another
+#
+INCLUDE() {
+    . `find_file $@`
+}
+
+#
 # Strip comments and blank lines from a file and place the result in the
 # temporary directory
 #
@@ -192,7 +216,7 @@ strip_file() # $1 = Base Name of the file, $2 = Full Name of File (optional)
     [ $# = 1 ] && fname=`find_file $1` || fname=$2
 
     if [ -f $fname ]; then
-	cut -d'#' -f1 $fname | grep -v '^[[:space:]]*$' > $TMP_DIR/$1
+	read_file $fname | cut -d'#' -f1 | grep -v '^[[:space:]]*$' > $TMP_DIR/$1
     else
 	> $TMP_DIR/$1
     fi

@@ -2891,6 +2891,12 @@ rules_chain() # $1 = source zone, $2 = destination zone
 }
 
 #
+#  Note: The following set of IP address manipulation functions have anomalous
+#        behavior when the shell only supports 32-bit signed arithmatic and
+#        the IP address is 128.0.0.0 or 128.0.0.1.
+#
+
+#
 #  echo the list of subnets routed out of a given interface
 #
 get_routed_subnets() # $1 = interface name
@@ -2909,7 +2915,7 @@ get_routed_subnets() # $1 = interface name
         done
 }
 #
-# Convert an IP address in quad format to an integer
+# Convert an IP address in dot quad format to an integer
 #
 decodeaddr() {
     local x
@@ -2927,7 +2933,7 @@ decodeaddr() {
     IFS=$ifs
 }
 #
-# convert an integer to quad format
+# convert an integer to dot quad format
 #
 encodeaddr() {
     addr=$1
@@ -2942,7 +2948,8 @@ encodeaddr() {
     echo $y
 }
 #
-# Enumerate the members of an IP range
+# Enumerate the members of an IP range -- When using a shell supporting only
+# 32-bit signed arithmetic, the range cannot span 128.0.0.0.
 #
 ip_range() {
     local first
@@ -3559,7 +3566,7 @@ initialize_netfilter () {
 	done < /var/lib/shorewall/save
     fi
 
-    echo "Creating input Chains..."
+    echo "Creating Interface Chains..."
 
     for interface in $all_interfaces; do
 	createchain `forward_chain $interface` no
@@ -4600,7 +4607,7 @@ added_param_value_no() # $1 = Parameter Name, $2 = Parameter value
 #
 do_initialize() {
     #
-    # Code to see if shell can support xor
+    # Code to determine if shell can support xor
     #
     check_xor() {
 	echo $(( 256 ^ -1 ))
@@ -4622,10 +4629,6 @@ do_initialize() {
     # Establish termination function
     #
     terminator=startup_error
-    #
-    # So that emacs doesn't get lost
-    #
-    LEFTSHIFT='<<'
     #
     # Clear all configuration variables
     #
@@ -4810,6 +4813,10 @@ do_initialize() {
     #
     strip_file interfaces
     strip_file hosts
+    #
+    # So that emacs doesn't get lost, we use $LEFTSHIFT rather than <<
+    #
+    LEFTSHIFT='<<'
     #
     # Determine the capabilities of the installed iptables/netfilter
     #

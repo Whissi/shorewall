@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-07-10</pubdate>
+    <pubdate>2004-07-13</pubdate>
 
     <copyright>
       <year>2004</year>
@@ -142,9 +142,9 @@
           </listitem>
         </itemizedlist>
 
-        <para>then the packet is ACCEPTed in the filter table&#39;s <emphasis
-        role="bold"><emphasis>interface</emphasis>_in</emphasis> chain (for
-        example, eth0_in).</para>
+        <para>then the packet is ACCEPTed in the <emphasis>filter</emphasis>
+        table&#39;s <emphasis role="bold"><emphasis>interface</emphasis>_in</emphasis>
+        chain (for example, eth0_in).</para>
       </listitem>
 
       <listitem>
@@ -153,7 +153,8 @@
         <filename>/etc/shorewall/interfaces</filename>, then the packet is
         processed against your rfc1918 file (normally <filename>/usr/share/shorewall/rfc1918</filename>
         but that file may be copied to <filename>/etc/shorewall/rfc1918</filename>
-        and modified). This happens in the filter table&#39;s rfc1918 chain.</para>
+        and modified). This happens in the <emphasis>filter</emphasis>
+        table&#39;s <emphasis role="bold">norfc1918</emphasis> chain.</para>
       </listitem>
 
       <listitem>
@@ -170,7 +171,8 @@
         the <emphasis>tcpflags</emphasis> option specified in
         <filename>/etc/shorewall/interfaces</filename> and the packet&#39;s
         protocol is TCP then the TCP flags are checked by the <emphasis
-        role="bold">tcpflags</emphasis> chain (filter table).</para>
+        role="bold">tcpflags</emphasis> chain (<emphasis>filter</emphasis>
+        table).</para>
       </listitem>
     </itemizedlist>
   </section>
@@ -203,7 +205,7 @@
       <listitem>
         <para>If the packet is part of an established connection or is part of
         a related connection then no further processing takes place in the
-        filter table (<emphasis>z</emphasis><emphasis role="bold"><emphasis>one1</emphasis>2<emphasis>zone2</emphasis></emphasis>
+        filter table (<emphasis><emphasis>zone1</emphasis>2<emphasis>zone2</emphasis></emphasis>
         chain where <emphasis>zone1</emphasis> is the source zone and
         <emphasis>zone2</emphasis> is the destination zone).</para>
       </listitem>
@@ -216,8 +218,7 @@
 
       <listitem>
         <para>The packet is processed according to your <filename>/etc/shorewall/rules</filename>
-        file. This happens in chains named <emphasis>z</emphasis><emphasis
-        role="bold"><emphasis>one1</emphasis>2<emphasis>zone2</emphasis></emphasis>
+        file. This happens in chains named <emphasis><emphasis role="bold"><emphasis>zone1</emphasis>2<emphasis>zone2</emphasis></emphasis></emphasis>
         chain where <emphasis>zone1</emphasis> is the source zone and
         <emphasis>zone2</emphasis> is the destination zone. Note that in the
         presence of <ulink url="Documentation.htm#Nested">nested or
@@ -242,6 +243,29 @@
       <listitem>
         <para>The policy is applied (the packet is accepted, dropped or
         rejected).</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Packets Originating on the Firewall</title>
+
+    <para>Packets that originate on the firewall itself undergo additional
+    processing.</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>The TOS field in the packet is conditionally altered based on
+        the contents of your <filename>/etc/shorewall/tos</filename> file.
+        This occurs in the <emphasis role="bold">outtos</emphasis> chain of
+        the <emphasis>mangle</emphasis> table.</para>
+      </listitem>
+
+      <listitem>
+        <para>Packets are marked based on the contents of your
+        <filename>/etc/shorewall/tcrules</filename> file. This occurs in the
+        <emphasis role="bold">tcout</emphasis> chain of the
+        <emphasis>mangle</emphasis> table.</para>
       </listitem>
     </itemizedlist>
   </section>
@@ -287,29 +311,6 @@
         packet will be sent. For packets that are part of an already
         established connection, the destination rewriting takes place without
         any involvement of a Netfilter rule.</para>
-      </listitem>
-    </itemizedlist>
-  </section>
-
-  <section>
-    <title>Packets Originating on the Firewall</title>
-
-    <para>Just before being sent, packets that originated on the firewall
-    itself undergo additional processing.</para>
-
-    <itemizedlist>
-      <listitem>
-        <para>The TOS field in the packet is conditionally altered based on
-        the contents of your <filename>/etc/shorewall/tos</filename> file.
-        This occurs in the <emphasis role="bold">outtos</emphasis> chain of
-        the <emphasis>mangle</emphasis> table.</para>
-      </listitem>
-
-      <listitem>
-        <para>Packets are marked based on the contents of your
-        <filename>/etc/shorewall/tcrules</filename> file. This occurs in the
-        <emphasis role="bold">tcout</emphasis> chain of the
-        <emphasis>mangle</emphasis> table.</para>
       </listitem>
     </itemizedlist>
   </section>

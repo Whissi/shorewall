@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-04-19</pubdate>
+    <pubdate>2004-07-13</pubdate>
 
     <copyright>
       <year>2003-2004</year>
@@ -32,8 +32,6 @@
       <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
-
-  <para></para>
 
   <para>This page covers Shorewall configuration to use with <ulink
   url="http://www.squid-cache.org">Squid</ulink> running as a Transparent
@@ -109,7 +107,7 @@ MANGLE_ENABLED=Yes</programlisting>
 
       <programlisting>#ACTION   SOURCE     DEST     PROTO    DEST PORT(S)     SOURCE     ORIGINAL
 #                                                       PORT(S)    DEST
-REDIRECT  loc        3228     tcp      www              -          !206.124.146.177
+REDIRECT  loc        3128     tcp      www              -          !206.124.146.177
 ACCEPT    fw         net      tcp      www</programlisting>
 
       <para>There may be a requirement to exclude additional destination hosts
@@ -122,7 +120,7 @@ ACCEPT    fw         net      tcp      www</programlisting>
 
       <para><filename>/etc/shorewall/rules</filename>:<programlisting>#ACTION   SOURCE     DEST     PROTO    DEST PORT(S)     SOURCE     ORIGINAL
 #                                                       PORT(S)    DEST
-REDIRECT  loc        3228     tcp      www              -          !206.124.146.177,130.252.100.0/24</programlisting></para>
+REDIRECT  loc        3128     tcp      www              -          !206.124.146.177,130.252.100.0/24</programlisting></para>
 
       <para>If you are running a Shorewall version earlier than 1.4.5, you
       must add a manual rule in /etc/shorewall/start:</para>

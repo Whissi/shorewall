@@ -2964,44 +2964,44 @@ define_firewall() # $1 = Command (Start or Restart)
 # Check the configuration                                                      #
 ################################################################################
 check_config() {
-	echo "Verifying Configuration..."
+    echo "Verifying Configuration..."
 	
-	verify_os_version
+    verify_os_version
 	
-	load_kernel_modules
+    load_kernel_modules
+    
+    echo "Determining Zones..."
 	
-	echo "Determining Zones..."
+    determine_zones
 	
-	determine_zones
+    [ -z "$zones" ] && startup_error "ERROR: No Zones Defined"
 	
-	[ -z "$zones" ] && startup_error "ERROR: No Zones Defined"
+    display_list "Zones:" $zones
 	
-	display_list "Zones:" $zones
+    echo "Validating interfaces file..."
 	
-	echo "Validating interfaces file..."
+    validate_interfaces_file
 	
-	validate_interfaces_file
+    echo "Validating hosts file..."
 	
-	echo "Validating hosts file..."
-	
-	validate_hosts_file
+    validate_hosts_file
 		
-	echo "Determining Hosts in Zones..."
+    echo "Determining Hosts in Zones..."
 
-	determine_interfaces
-	determine_hosts
+    determine_interfaces
+    determine_hosts
 
-	echo "Validating rules file..."
+    echo "Validating rules file..."
 
-	validate_rules
+    validate_rules
 	
-	echo "Validating policy file..."
+    echo "Validating policy file..."
 	
-	validate_policy	
+    validate_policy	
 	
-	rm -rf $TMP_DIR
+    rm -rf $TMP_DIR
 
-	echo "Configuration Validated"
+    echo "Configuration Validated"
 }
 
 ################################################################################

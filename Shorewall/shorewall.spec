@@ -48,10 +48,10 @@ if [ $1 -eq 1 ]; then
 ########################################################################" \
 	> /etc/shorewall/startup_disabled
 
-	if [ -x /sbin/insserv ]; then 
+	if [ -x /sbin/insserv ]; then
 		/sbin/insserv /etc/rc.d/shorewall
 	elif [ -x /sbin/chkconfig ]; then
-		/sbin/chkconfig --add shorewall; 
+		/sbin/chkconfig --add shorewall;
 	fi
 fi
 
@@ -68,7 +68,7 @@ if [ $1 = 0 ]; then
 
 fi
 
-%files 
+%files
 /etc/init.d/shorewall
 %attr(0700,root,root) %dir /etc/shorewall
 %attr(0700,root,root) %dir /usr/share/shorewall
@@ -279,7 +279,7 @@ fi
 - Changed the release to 4
 - Added Zones and Functions files
 * Mon Mar 12 2001 Tom Eastep <teastep@seattlefirewall.dyndns.org>
-- Change ipchains dependency to an iptables dependency and 
+- Change ipchains dependency to an iptables dependency and
   changed the release to 3
 * Fri Mar 9 2001 Tom Eastep <teastep@seattlefirewall.dyndns.org>
 - Add additional files.

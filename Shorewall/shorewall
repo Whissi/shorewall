@@ -2,7 +2,7 @@
 #
 #     Shorewall Packet Filtering Firewall Control Program - V1.4 - 3/14/2003
 #
-#     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]	      
+#     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
 #
 #     (c) 1999,2000,2001,2002,2003 - Tom Eastep (teastep@shorewall.net)
 #
@@ -12,7 +12,7 @@
 #	Shorewall documentation is available at http://shorewall.sourceforge.net
 #
 #	This program is free software; you can redistribute it and/or modify
-#	it under the terms of Version 2 of the GNU General Public License 
+#	it under the terms of Version 2 of the GNU General Public License
 #	as published by the Free Software Foundation.
 #
 #	This program is distributed in the hope that it will be useful,
@@ -23,7 +23,7 @@
 #	You should have received a copy of the GNU General Public License
 #	along with this program; if not, write to the Free Software
 #	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
-#	
+#
 #	If an error occurs while starting or restarting the firewall, the
 #	firewall is automatically stopped.
 #
@@ -34,13 +34,13 @@
 #
 #          shorewall add <iface>[:<host>] zone     Adds a host or subnet to a zone
 #          shorewall delete <iface>[:<host>] zone  Deletes a host or subnet from a zone
-#	   shorewall start			   Starts the firewall 
+#	   shorewall start			   Starts the firewall
 #	   shorewall restart			   Restarts the firewall
 #	   shorewall stop			   Stops the firewall
 #	   shorewall monitor [ refresh-interval ]  Repeatedly Displays firewall status
 #						   plus the last 20 "interesting"
 #						   packets
-#	   shorewall status			   Displays firewall status		 
+#	   shorewall status			   Displays firewall status
 #	   shorewall reset			   Resets iptables packet and
 #						   byte counts
 #	   shorewall clear			   Open the floodgates by
@@ -75,7 +75,7 @@
 #						   listed address(es)
 #	   shorewall reject <address> ...	   Temporarily reject all packets from the
 #						   listed address(es)
-#	   shorewall allow <address> ...	   Reenable address(es) previously 
+#	   shorewall allow <address> ...	   Reenable address(es) previously
 #						   disabled with "drop" or "reject"
 #	   shorewall save			   Save the list of "rejected" and
 #						   "dropped" addresses so that it will
@@ -142,7 +142,7 @@ get_config() {
 display_chains()
 {
     trap "rm -f /tmp/chains-$$; exit 1" 1 2 3 4 5 6 9
-    
+
     if [ "$haveawk" = "Yes" ]; then
 	#
 	# Send the output to a temporary file since ash craps if we try to store
@@ -170,11 +170,11 @@ display_chains()
 	echo
 
 	chains=`grep '^Chain.*_[in|fwd]' /tmp/chains-$$ | cut -d' ' -f 2`
-	
+
 	for chain in $chains; do
 	    showchain $chain
 	done
-	
+
 	timed_read
 
 	for zone in $zones; do
@@ -242,7 +242,7 @@ display_chains()
 # Delay $timeout seconds -- if we're running on a recent bash2 then allow
 # <enter> to terminate the delay
 #
-timed_read () 
+timed_read ()
 {
     read -t $timeout foo 2> /dev/null
 
@@ -252,7 +252,7 @@ timed_read ()
 #
 # Display the last $1 packets logged
 #
-packet_log() # $1 = number of messages 
+packet_log() # $1 = number of messages
 {
     local options
 
@@ -334,7 +334,7 @@ monitor_firewall() # $1 = timeout -- if negative, prompt each time that
     get_config
     host=`echo $HOSTNAME | sed 's/\..*$//'`
     oldrejects=`iptables -L -v -n | grep 'LOG'`
-    
+
     if [ $1 -lt 0 ]; then
 	let "timeout=- $1"
 	pause="Yes"
@@ -347,7 +347,7 @@ monitor_firewall() # $1 = timeout -- if negative, prompt each time that
 
     while true; do
 	display_chains
-	
+
 	clear
 	echo "$banner `date`"
 	echo
@@ -361,7 +361,7 @@ monitor_firewall() # $1 = timeout -- if negative, prompt each time that
 
 	if [ "$rejects" != "$oldrejects" ]; then
 	    oldrejects="$rejects"
-	    
+
 	    $RING_BELL
 
 	    packet_log 20
@@ -435,7 +435,7 @@ logwatch() # $1 = timeout -- if negative, prompt each time that
     get_config
     host=`echo $HOSTNAME | sed 's/\..*$//'`
     oldrejects=`iptables -L -v -n | grep 'LOG'`
-    
+
     if [ $1 -lt 0 ]; then
 	timeout=$((- $1))
 	pause="Yes"
@@ -754,7 +754,7 @@ case "$1" in
 	    echo ""
 
 	    echo "   HITS  PORT SERVICE(S)"
-	    echo "   ---- ----- ----------" 
+	    echo "   ---- ----- ----------"
 	    grep 'Shorewall:.*DPT' $LOGFILE | sed 's/\(.*DPT=\)\([0-9]\{1,5\}\)\(.*\)/\2/' | sort | uniq -c | sort -rn | \
 	    while read count port ; do
 		# List all services defined for the given port
@@ -853,4 +853,4 @@ case "$1" in
     *)
 	usage 1
 	;;
-esac 
+esac

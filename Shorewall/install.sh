@@ -2,14 +2,14 @@
 #
 # Script to install Shoreline Firewall
 #
-#     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]         
+#     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
 #
 #     (c) 2000,2001,2002,2003 - Tom Eastep (teastep@shorewall.net)
 #
 #       Seawall documentation is available at http://seawall.sourceforge.net
 #
 #       This program is free software; you can redistribute it and/or modify
-#       it under the terms of Version 2 of the GNU General Public License 
+#       it under the terms of Version 2 of the GNU General Public License
 #       as published by the Free Software Foundation.
 #
 #       This program is distributed in the hope that it will be useful,
@@ -24,7 +24,7 @@
 #    Usage:
 #
 #        If you are running a distribution that has a directory called /etc/rc.d/init.d or one
-#        called /etc/init.d or you are running Slackware then simply cd to the directory 
+#        called /etc/init.d or you are running Slackware then simply cd to the directory
 #        containing this script and run it.
 #
 #            ./install.sh
@@ -35,7 +35,7 @@
 #            ./install.sh /etc/rc.d/scripts
 #
 #        The default is that the firewall will be started in run levels 2-5 starting at
-#        position 15 and stopping at position 90. This is correct RedHat/Mandrake, Debian, 
+#        position 15 and stopping at position 90. This is correct RedHat/Mandrake, Debian,
 #        Caldera and Corel.
 #
 #        If you wish to change that, you can pass -r "<levels startpos stoppos>".
@@ -45,7 +45,7 @@
 #
 #            ./install.sh -r "23 15 90"
 #
-#       Example 2: You wish to start your firewall only in run level 3, start at position 5 
+#       Example 2: You wish to start your firewall only in run level 3, start at position 5
 #                  and stop at position 95.
 #
 #            ./install.sh -r "3 5 95" /etc/rc.d/scripts
@@ -103,7 +103,7 @@ delete_file() # $1 = file to delete
 	    exit 1
         fi
     fi
-}    
+}
 
 modify_rclocal()
 {
@@ -116,11 +116,11 @@ modify_rclocal()
 	fi
     else
 	cant_autostart
-    fi	
+    fi
 }
 
 install_file_with_backup() # $1 = source $2 = target $3 = mode
-{    
+{
     backup_file $2
     run_install -o $OWNER -g $GROUP -m $3 $1 ${2}
 }
@@ -182,7 +182,7 @@ while [ $# -gt 0 ] ; do
 done
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
-    
+
 #
 # Determine where to install the firewall script
 #
@@ -224,7 +224,7 @@ fi
 # Change to the directory containing this script
 #
 cd "`dirname $0`"
-    
+
 echo "Installing Shorewall Version $VERSION"
 
 #
@@ -263,12 +263,12 @@ if [ -n "$RUNLEVELS" ]; then
     fi
 
     install_file_with_backup init.temp ${PREFIX}${DEST}/$FIREWALL 0544
-    
+
     rm -f init.temp awk.tmp
 else
     install_file_with_backup init.sh ${PREFIX}${DEST}/$FIREWALL 0544
 fi
-    
+
 echo
 echo  "Shorewall script installed in ${PREFIX}${DEST}/$FIREWALL"
 
@@ -306,12 +306,12 @@ if [ -f ${PREFIX}/etc/shorewall/functions ]; then
     backup_file ${PREFIX}/etc/shorewall/functions
     rm -f  ${PREFIX}/etc/shorewall/functions
 fi
-    
+
 if [ -f ${PREFIX}/var/lib/shorewall/functions ]; then
     backup_file ${PREFIX}/var/lib/shorewall/functions
     rm -f  ${PREFIX}/var/lib/shorewall/functions
 fi
-    
+
 install_file_with_backup functions ${PREFIX}/usr/share/shorewall/functions 0444
 
 echo
@@ -379,13 +379,13 @@ else
     echo
     echo "NAT file installed as ${PREFIX}/etc/shorewall/nat"
 fi
-# 
+#
 # Install the Parameters file
 #
 if [ -f ${PREFIX}/etc/shorewall/params ]; then
     backup_file /etc/shorewall/params
 else
-    run_install -o $OWNER -g $GROUP -m 0600 params ${PREFIX}/etc/shorewall/params   
+    run_install -o $OWNER -g $GROUP -m 0600 params ${PREFIX}/etc/shorewall/params
     echo
     echo "Parameter file installed as ${PREFIX}/etc/shorewall/params"
 fi

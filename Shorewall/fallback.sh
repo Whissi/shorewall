@@ -1,16 +1,16 @@
 #!/bin/sh
 #
-# Script to back out the installation of Shoreline Firewall and to restore the previous version of 
+# Script to back out the installation of Shoreline Firewall and to restore the previous version of
 # the program
 #
-#     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]         
+#     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
 #
 #     (c) 2001,2002,2003 - Tom Eastep (teastep@shorewall.net)
 #
 #       Shorewall documentation is available at http://seattlefirewall.dyndns.org
 #
 #       This program is free software; you can redistribute it and/or modify
-#       it under the terms of Version 2 of the GNU General Public License 
+#       it under the terms of Version 2 of the GNU General Public License
 #       as published by the Free Software Foundation.
 #
 #       This program is distributed in the hope that it will be useful,
@@ -25,7 +25,7 @@
 #    Usage:
 #
 #       You may only use this script to back out the installation of the version
-#       shown below. Simply run this script to revert to your prior version of 
+#       shown below. Simply run this script to revert to your prior version of
 #       Shoreline Firewall.
 
 VERSION=1.4.0-Beta1
@@ -46,7 +46,7 @@ restore_file() # $1 = file to restore
 	    echo "ERROR: Could not restore $1"
 	    exit 1
         fi
-    fi	
+    fi
 }
 
 if [ ! -f /usr/share/shorewall/version-${VERSION}.bkout ]; then
@@ -77,7 +77,7 @@ restore_file /sbin/shorewall
 [ -f /etc/shorewall.conf.$VERSION ] && rm -f /etc/shorewall.conf.$VERSION
 
 restore_file /etc/shorewall/shorewall.conf
-    
+
 restore_file /etc/shorewall/functions
 restore_file /usr/lib/shorewall/functions
 restore_file /var/lib/shorewall/functions
@@ -92,7 +92,7 @@ restore_file /etc/shorewall/zones
 restore_file /etc/shorewall/policy
 
 restore_file /etc/shorewall/interfaces
-    
+
 restore_file /etc/shorewall/hosts
 
 restore_file /etc/shorewall/rules

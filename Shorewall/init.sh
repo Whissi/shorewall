@@ -3,7 +3,7 @@ RCDLINKS="2,S41 3,S41 6,K41"
 #
 #     The Shoreline Firewall (Shorewall) Packet Filtering Firewall - V1.4 3/14/2003
 #
-#     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]	      
+#     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
 #
 #     (c) 1999,2000,2001,2002,2003 - Tom Eastep (teastep@shorewall.net)
 #
@@ -13,7 +13,7 @@ RCDLINKS="2,S41 3,S41 6,K41"
 #	Complete documentation is available at http://shorewall.net
 #
 #	This program is free software; you can redistribute it and/or modify
-#	it under the terms of Version 2 of the GNU General Public License 
+#	it under the terms of Version 2 of the GNU General Public License
 #	as published by the Free Software Foundation.
 #
 #	This program is distributed in the hope that it will be useful,
@@ -30,7 +30,7 @@ RCDLINKS="2,S41 3,S41 6,K41"
 #
 #	Commands are:
 #
-#	   shorewall start			  Starts the firewall 
+#	   shorewall start			  Starts the firewall
 #	   shorewall restart			  Restarts the firewall
 #	   shorewall stop			  Stops the firewall
 #	   shorewall status			  Displays firewall status
@@ -62,7 +62,7 @@ usage() {
 command="$1"
 
 case "$command" in
-    
+
     stop|start|restart|status)
 
 	exec /sbin/shorewall $@

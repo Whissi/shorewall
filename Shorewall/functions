@@ -4,9 +4,9 @@
 
 #
 # Suppress all output for a command
-#    
-qt()  
-{ 
+#
+qt()
+{
     "$@" >/dev/null 2>&1
 }
 
@@ -25,15 +25,30 @@ find_file()
 #
 # Replace commas with spaces and echo the result
 #
-separate_list() { 
+separate_list() {
     local list
     local part
     local newlist
+    #
+    # There's been whining about us not catching embedded white space in
+    # comma-separated lists. This is an attempt to snag some of the cases.
+    #
+    # The 'terminator' function will be set by the 'firewall' script to
+    # either 'startup_error' or 'fatal_error' depending on the command and
+    # command phase
+    #
+    case "$@" in
+	*,|,*|*,,*)
+            [ -n "$terminator" ] && \
+		$terminator "Invalid comma-separated list \"$@\""
+            echo "Warning -- invalid comma-separated list \"$@\"" >&2
+	    ;;
+    esac
 
     list="$@"
     part="${list%%,*}"
     newlist="$part"
-    
+
     while [ "x$part" != "x$list" ]; do
 	list="${list#*,}";
 	part="${list%%,*}";
@@ -69,7 +84,7 @@ find_display() # $1 = zone, $2 = name of the zone file
     done
 }
 
-determine_zones() 
+determine_zones()
 {
     local zonefile=`find_file zones`
 

@@ -2576,7 +2576,7 @@ initialize_netfilter () {
 add_common_rules() {
     logdisp() # $1 = Chain Name
     {
-	echo "LOG --log-prefix "Shorewall:$1{1}:DROP:" --log-level info"
+	echo "LOG --log-prefix "Shorewall:${1}:DROP:" --log-level info"
     }
     ############################################################################
     # Reject Rules
@@ -2669,7 +2669,7 @@ add_common_rules() {
 	createchain rfc1918 no
 
 	createchain logdrop no
-	run_iptables -A logdrop -j `logdisp rfc1818`
+	run_iptables -A logdrop -j `logdisp rfc1918`
 	run_iptables -A logdrop -j DROP
 
 	if [ -n "$MANGLE_ENABLED" ]; then

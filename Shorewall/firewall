@@ -2732,6 +2732,9 @@ process_rule() # $1 = target
 
     eval policy=\$${chain}_policy
 
+    [ -z "$policy" ] && \
+	fatal_error "No policy defined from zone $source to zone $dest"
+
     [ $policy = NONE ] && \
 	fatal_error "Rules may not override a NONE policy: rule \"$rule\""
 

@@ -57,6 +57,16 @@ Problems Corrected since version 1.4.6:
 13) The documentation of the USERSETS column in the rules file has been
     corrected.
 
+14) If there is no policy defined for the zones specified in a rule,
+    the firewall script previously encountered a shell syntax error:
+
+	[: NONE: unexpected operator
+
+    Now, the absence of a policy generates an error message and the
+    firewall is stopped:
+
+        No policy defined from zone <source> to zone <dest>
+
 Migration Issues:
 
 1) IP Traffic Accounting is changed from Snapshot 20030813. 

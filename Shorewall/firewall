@@ -2830,6 +2830,42 @@ initialize_netfilter () {
 }
 
 ################################################################################
+# Build the common chain -- called during [re]start and refresh                #
+################################################################################
+build_common_chain() {
+    ###########################################################################
+    # PING
+    #
+    [ -n "$FORWARDPING" ] && \
+	run_iptables -A icmpdef -p icmp --icmp-type echo-request -j ACCEPT
+    ############################################################################
+    # Common ICMP rules
+    #
+    run_user_exit icmpdef
+    ############################################################################
+    # Common rules in each chain
+    #
+    common=`find_file common`
+
+    if [ -f $common ]; then
+	. $common
+    else
+	. `find_file common.def`
+    fi
+    ###########################################################################
+    # New Not Syn Stuff
+    #
+    if [ -n "$NEWNOTSYN" ]; then
+	run_iptables -A common -p tcp --tcp-flags ACK ACK -j ACCEPT
+	run_iptables -A common -p tcp --tcp-flags RST RST -j ACCEPT
+    fi	
+    ###########################################################################
+    # BROADCASTS
+    #
+    drop_broadcasts `find_broadcasts`
+}
+
+################################################################################
 # Construct zone-independent rules					       #
 ################################################################################
 add_common_rules() {
@@ -2892,29 +2928,9 @@ add_common_rules() {
 	    echo "   $interface"
 	done
     fi
-    ###########################################################################
-    # PING
-    #
-    [ -n "$FORWARDPING" ] && \
-	run_iptables -A icmpdef -p icmp --icmp-type echo-request -j ACCEPT
-    ############################################################################
-    # Common ICMP rules
-    #
-    run_user_exit icmpdef
-    ############################################################################
-    # Common rules in each chain
-    #
-    common=`find_file common`
 
-    if [ -f $common ]; then
-	. $common
-    else
-	. `find_file common.def`
-    fi
-    ###########################################################################
-    # BROADCASTS
-    #
-    drop_broadcasts `find_broadcasts`
+    build_common_chain
+
     ###########################################################################
     # DHCP
     #
@@ -3380,20 +3396,8 @@ refresh_firewall()
     run_iptables -F common
 
     echo "Adding Common Rules"
-    ############################################################################
-    # Common rules in each chain
-    #
-    common=`find_file common`
 
-    if [ -f $common ]; then
-	. $common
-    else
-	. `find_file common.def`
-    fi
-    ###########################################################################
-    # BROADCASTS
-    #
-    drop_broadcasts `find_broadcasts`
+    build_common_chain
 
     ###########################################################################
     # Blacklist

@@ -1206,7 +1206,7 @@ setup_nat() {
 		    -j DNAT --to-destination $internal
 	    fi
 	else
-	    run_iptables -t nat -A PREROUTING -i $interface \
+	    addnatrule `input_chain $interface` \
 		-d $external -j DNAT --to-destination $internal
 	    run_iptables -t nat -A POSTROUTING -o $interface \
 		-s $internal -j SNAT --to-source $external
@@ -2842,6 +2842,13 @@ activate_rules() {
     local nat=1
 
     multi_interfaces=`find_interfaces_by_option multi`
+
+    for interface in $all_interfaces; do
+	chain=`input_chain $interface`
+
+	havenatchain $chain && \
+	    run_iptables -t nat -A PREROUTING -i $interface -j $chain
+    done
 
     for zone in $zones; do
 	eval source_hosts=\$${zone}_hosts

@@ -1488,21 +1488,7 @@ setup_tunnels() # $1 = name of tunnels file
 	    run_iptables -A $inchain  -p udp -s $1 --dport 4500 $options
 	fi
 
-	for z in $3; do
-	    case $z in 
-		*:ipsec)
-		    z=${z%:*}
-		    eval ${z}_is_ipsec=Yes
-		    ;;
-	        *:ipsec\(*)
-                    do_options
-		    eval ${z}_is_ipsec=Yes
-		    ;;
-		*:mixed\(*)
-	            do_options
-		    ;;
-            esac	
-
+	for z in $(separate_list $3); do
 	    if validate_zone $z; then
 		addrule ${FW}2${z} -p udp --dport 500 $options
 		if [ $kind = ipsec ]; then

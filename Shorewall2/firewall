@@ -2295,6 +2295,9 @@ process_action() # $1 = action
 	REJECT)
 	    target=reject
 	    ;;
+	CONTINUE)
+	    target=RETURN
+	    ;;
 	*)
 	    ;;
 	esac
@@ -2433,7 +2436,7 @@ process_actions1() {
 			expandv xtarget
 			temp="${xtarget%:*}"
 			case "${temp%<*}" in
-			    ACCEPT|DROP|REJECT|LOG|QUEUE)
+			    ACCEPT|DROP|REJECT|LOG|QUEUE|CONTINUE)
 				;;
 			    *)
 				if list_search $temp $ACTIONS; then

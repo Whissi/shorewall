@@ -9,8 +9,8 @@ Problems corrected in version 2.2.2
 2) If A is a user-defined action and you have file /etc/shorewall/A
    then when that file is invoked, the $TAG value may be incorrect.
 
-3) If an iptables command that generates a logging rule failed
-   previously, the Shorewall [re]start was still successful. This error
+3) Previously, if an iptables command generating a logging rule
+   failed, the Shorewall [re]start was still successful. This error
    is now considered fatal and Shorewall will be either restored from
    the last save (if any) or it will be stopped.
 
@@ -29,10 +29,15 @@ New Features in version 2.2.2
    display.
 
 4) The 2.6.11 Linux kernel and iptables 1.3.0 now allow port ranges
-   to appear in port lists. If Shorewall detects this capability, it
-   will allow port ranges to appear in port lists. Be cautioned that
-   each port range counts for TWO ports and a port list can still
-   specify a maximum of 15 ports.
+   to appear in port lists handled by "multiport match". If Shorewall
+   detects this capability, it will use "multiport match" for port
+   lists containing port ranges. Be cautioned that each port range
+   counts for TWO ports and a port list handled with "multiport match"
+   can still specify a maximum of 15 ports.
+
+   As always, if a port list in /etc/shorewall/rules is incompatible
+   with "multiport match", a separate iptables rule will be generated
+   for each element in the list.
 
 -----------------------------------------------------------------------
 Problems corrected in version 2.2.1

@@ -5952,6 +5952,7 @@ do_initialize() {
     # accurately detected when kernel module autoloading is not
     # enabled.
     #
+    [ -n "$MODULE_SUFFIX" ] || MODULE_SUFFIX="o gz ko o.gz ko.gz"
     load_kernel_modules
     determine_capabilities
 
@@ -6066,8 +6067,6 @@ do_initialize() {
     DISABLE_IPV6=$(added_param_value_no DISABLE_IPV6 $DISABLE_IPV6)
     BRIDGING=$(added_param_value_no BRIDGING $BRIDGING)
     DYNAMIC_ZONES=$(added_param_value_no DYNAMIC_ZONES $DYNAMIC_ZONES)
-
-    [ -n "$MODULE_SUFFIX" ] || MODULE_SUFFIX="o gz ko o.gz ko.gz"
 
     #
     # Strip the files that we use often

@@ -13,10 +13,10 @@
       <surname>Eastep</surname>
     </author>
 
-    <pubdate>2003/12/22</pubdate>
+    <pubdate>2004-01-01</pubdate>
 
     <copyright>
-      <year>2003</year>
+      <year>2001-2004</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -30,12 +30,6 @@
       <quote><ulink type="" url="Copyright.htm">GNU Free Documentation License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
-
-  <graphic align="center" fileref="images/obrasinf.gif" />
-
-  <para><emphasis role="bold"><quote>If you think you can you can; if you
-  think you can&#39;t you&#39;re right. If you don&#39;t believe that you can,
-  why should someone else?</quote> -- Gunnar Tapper</emphasis></para>
 
   <section>
     <title>First Steps</title>
@@ -72,14 +66,15 @@
       </listitem>
 
       <listitem>
-        <para>shorewall debug start 2&#62; /tmp/trace</para>
+        <para><command>shorewall debug start 2&#62; /tmp/trace</command></para>
       </listitem>
 
       <listitem>
-        <para>Look at the /tmp/trace file and see if that helps you determine
-        what the problem is. Be sure you find the place in the log where the
-        error message you saw is generated -- If you are using Shorewall 1.4.0
-        or later, you should find the message near the end of the log.</para>
+        <para>Look at the <filename>/tmp/trace</filename> file and see if that
+        helps you determine what the problem is. Be sure you find the place in
+        the log where the error message you saw is generated -- If you are
+        using Shorewall 1.4.0 or later, you should find the message near the
+        end of the log.</para>
       </listitem>
 
       <listitem>
@@ -93,26 +88,26 @@
 
       <para>During startup, a user sees the following:</para>
 
-      <programlisting>        Adding Common Rules
-        iptables: No chain/target/match by that name
-        Terminated</programlisting>
+      <programlisting>Adding Common Rules
+iptables: No chain/target/match by that name
+Terminated</programlisting>
 
       <para>A search through the trace for <quote>No chain/target/match by
       that name</quote> turned up the following:</para>
 
-      <programlisting>        + echo &#39;Adding Common Rules&#39;
-        + add_common_rules
-        + run_iptables -A reject -p tcp -j REJECT --reject-with tcp-reset
-        ++ echo -A reject -p tcp -j REJECT --reject-with tcp-reset
-        ++ sed &#39;s/!/! /g&#39;
-        + iptables -A reject -p tcp -j REJECT --reject-with tcp-reset
-        iptables: No chain/target/match by that name
+      <programlisting>+ echo &#39;Adding Common Rules&#39;
++ add_common_rules
++ run_iptables -A reject -p tcp -j REJECT --reject-with tcp-reset
+++ echo -A reject -p tcp -j REJECT --reject-with tcp-reset
+++ sed &#39;s/!/! /g&#39;
++ iptables -A reject -p tcp -j REJECT --reject-with tcp-reset
+iptables: No chain/target/match by that name
 </programlisting>
 
-      <para>The command that failed was: <quote>iptables -A reject -p tcp -j
-      REJECT --reject-with tcp-reset</quote>. In this case, the user had
-      compiled his own kernel and had forgotten to include REJECT target
-      support (see <ulink url="kernel.htm">kernel.htm</ulink>)</para>
+      <para>The command that failed was: <quote><command>iptables -A reject -p
+      tcp -j REJECT --reject-with tcp-reset</command></quote>. In this case,
+      the user had compiled his own kernel and had forgotten to include REJECT
+      target support (see <ulink url="kernel.htm">kernel.htm</ulink>)</para>
     </example>
   </section>
 
@@ -140,8 +135,8 @@
         requests, this type of setup does NOT work the way that you expect it
         to. If you are running Shorewall version 1.4.7 or later, you can test
         using this kind of configuration if you specify the <emphasis
-        role="bold">arp_filter</emphasis> option in <ulink
-        url="Documentation.htm#Interfaces">/etc/shorewall/interfaces</ulink>
+        role="bold">arp_filter</emphasis> option in <filename><ulink
+        url="Documentation.htm#Interfaces">/etc/shorewall/interfaces</ulink></filename>
         for all interfaces connected to the common hub/switch. Using such a
         setup with a production firewall is strongly recommended against.</para>
       </listitem>
@@ -163,25 +158,28 @@
     will generate when you try to connect in a way that isn&#39;t permitted by
     your rule set.</para>
 
-    <para>Check your log (<quote>/sbin/shorewall show log</quote>). If you
-    don&#39;t see Shorewall messages, then your problem is probably NOT a
-    Shorewall problem. If you DO see packet messages, it may be an indication
-    that you are missing one or more rules -- see <ulink url="FAQ.htm#faq17">FAQ
-    17</ulink>.</para>
+    <para>Check your log (<quote><command>/sbin/shorewall show log</command></quote>).
+    If you don&#39;t see Shorewall messages, then your problem is probably NOT
+    a Shorewall problem. If you DO see packet messages, it may be an
+    indication that you are missing one or more rules -- see <ulink
+    url="FAQ.htm#faq17">FAQ 17</ulink>.</para>
 
     <para>While you are troubleshooting, it is a good idea to clear two
-    variables in /etc/shorewall/shorewall.conf:</para>
+    variables in <filename><filename>/etc/shorewall/shorewall.conf</filename></filename>:</para>
 
-    <para><programlisting>     LOGRATE=&#34;&#34;
-     LOGBURST=&#34;&#34;</programlisting>This way, you will see all of the log
+    <para><programlisting>LOGRATE=
+LOGBURST=&#34;&#34;</programlisting>This way, you will see all of the log
     messages being generated (be sure to restart shorewall after clearing
     these variables).</para>
 
     <example>
       <title>Log Message</title>
 
-      <programlisting>Jun 27 15:37:56 gateway kernel: Shorewall:all2all:REJECT:IN=eth2 OUT=eth1 SRC=192.168.2.2 DST=192.168.1.3
-                                LEN=67 TOS=0x00 PREC=0x00 TTL=63 ID=5805 DF PROTO=UDP SPT=1803 DPT=53 LEN=47</programlisting>
+      <programlisting>Jun 27 15:37:56 gateway kernel: Shorewall:all2all:REJECT:IN=eth2
+                                OUT=eth1 SRC=192.168.2.2
+                                DST=192.168.1.3 LEN=67 TOS=0x00
+                                PREC=0x00 TTL=63 ID=5805 DF
+                                PROTO=UDP SPT=1803 DPT=53 LEN=47</programlisting>
 
       <para>Let&#39;s look at the important parts of this message:</para>
 
@@ -220,7 +218,9 @@
       <para>In this case, 192.168.2.2 was in the <quote>dmz</quote> zone and
       192.168.1.3 is in the <quote>loc</quote> zone. I was missing the rule:</para>
 
-      <programlisting>ACCEPT    dmz    loc    udp    53</programlisting>
+      <programlisting>#ACTION   SOURCE           DEST                  PROTO   DEST
+#                                                        PORT(S)
+ACCEPT    dmz              loc                   udp     53</programlisting>
     </example>
   </section>
 
@@ -230,7 +230,39 @@
     <para>Either can&#39;t ping when you think you should be able to or are
     able to ping when you think that you shouldn&#39;t be allowed?
     Shorewall&#39;s <quote>Ping</quote> Management is <ulink url="ping.html">described
-    here</ulink>.</para>
+    here</ulink>. Here are a couple of tips:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Remember that Shorewall doesn&#39;t automatically allow ICMP
+        type 8 (<quote>ping</quote>) requests to be sent between zones. If you
+        want pings to be allowed between zones, you need a rule of the form:</para>
+
+        <programlisting>#ACTION  SOURCE          DEST                  PROTO   DEST
+#                                                      PORT(S)
+ACCEPT&#x00A0;&#x00A0; <emphasis>&#60;source zone&#62;</emphasis>&#x00A0;&#x00A0; <emphasis>&#60;destination zone&#62;</emphasis>&#x00A0;&#x00A0;&#x00A0; icmp&#x00A0;&#x00A0;&#x00A0; echo-request</programlisting>
+
+        <para>The ramifications of this can be subtle. For example, if you
+        have the following in <filename><ulink url="NAT.htm">/etc/shorewall/nat</ulink></filename>:</para>
+
+        <programlisting>#EXTERNAL   INTERFACE  INTERNAL
+10.1.1.2&#x00A0;&#x00A0;&#x00A0; eth0&#x00A0;&#x00A0;&#x00A0;    130.252.100.18</programlisting>
+
+        <para>and you ping 130.252.100.18, unless you have allowed icmp type 8
+        between the zone containing the system you are pinging from and the
+        zone containing 10.1.1.2, the ping requests will be dropped.</para>
+      </listitem>
+
+      <listitem>
+        <para>Similarly, since Shorewall gives no special treatment to
+        <quote>ping</quote>packets, these packets are subject to logging
+        specifications in policies. This allows people pinging your firewall
+        to create large number of messages in your log. These messages can be
+        eliminated by the following rule:<programlisting>#ACTION   SOURCE           DEST                PROTO   DEST
+#                                                      PORT(S)
+DROP      net              fw                  icmp    echo-request</programlisting></para>
+      </listitem>
+    </itemizedlist>
   </section>
 
   <section>
@@ -245,7 +277,7 @@
           <listitem>
             <para>your zone definitions are screwed up and the host that is
             sending the packets or the destination host isn&#39;t in any zone
-            (using an <ulink url="Documentation.htm#Hosts">/etc/shorewall/hosts</ulink>
+            (using an <ulink url="Documentation.htm#Hosts"><filename>/etc/shorewall/hosts</filename></ulink>
             file are you?); or</para>
           </listitem>
 
@@ -254,26 +286,9 @@
             same interface and you don&#39;t have a policy or rule for the
             source zone to or from the destination zone or you haven&#39;t set
             the <emphasis role="bold">routeback</emphasis> option for the
-            interface in <ulink url="Documentation.htm#Interfaces">/etc/shorewall/interfaces</ulink>.</para>
+            interface in <ulink url="Documentation.htm#Interfaces"><filename>/etc/shorewall/interfaces</filename></ulink>.</para>
           </listitem>
         </orderedlist>
-      </listitem>
-
-      <listitem>
-        <para>Remember that Shorewall doesn&#39;t automatically allow ICMP
-        type 8 (<quote>ping</quote>) requests to be sent between zones. If you
-        want pings to be allowed between zones, you need a rule of the form:</para>
-
-        <programlisting>&#x00A0;&#x00A0;&#x00A0; ACCEPT&#x00A0;&#x00A0;&#x00A0; <emphasis>&#60;source zone&#62;</emphasis>&#x00A0;&#x00A0;&#x00A0; <emphasis>&#60;destination zone&#62;</emphasis>&#x00A0;&#x00A0;&#x00A0; icmp&#x00A0;&#x00A0;&#x00A0; echo-request</programlisting>
-
-        <para>The ramifications of this can be subtle. For example, if you
-        have the following in <ulink url="NAT.htm">/etc/shorewall/nat</ulink>:</para>
-
-        <programlisting>&#x00A0;&#x00A0;&#x00A0; 10.1.1.2&#x00A0;&#x00A0;&#x00A0; eth0&#x00A0;&#x00A0;&#x00A0; 130.252.100.18</programlisting>
-
-        <para>and you ping 130.252.100.18, unless you have allowed icmp type 8
-        between the zone containing the system you are pinging from and the
-        zone containing 10.1.1.2, the ping requests will be dropped.</para>
       </listitem>
 
       <listitem>
@@ -286,11 +301,11 @@
         need to be configured with their default gateway set to the IP address
         of their nearest firewall interface. One often overlooked aspect of
         routing is that in order for two hosts to communicate, the routing
-        between them must be set up <emphasis role="underline">in both
-        directions</emphasis>. So when setting up routing between <emphasis
-        role="bold">A</emphasis> and <emphasis role="bold">B</emphasis>, be
-        sure to verify that the route from <emphasis role="bold">B</emphasis>
-        back to <emphasis role="bold">A</emphasis> is defined.</para>
+        between them must be set up <emphasis role="bold">in both directions</emphasis>.
+        So when setting up routing between <emphasis role="bold">A</emphasis>
+        and <emphasis role="bold">B</emphasis>, be sure to verify that the
+        route from <emphasis role="bold">B</emphasis> back to <emphasis
+        role="bold">A</emphasis> is defined.</para>
       </listitem>
 
       <listitem>
@@ -318,7 +333,7 @@
         <para>Problems with NAT? Be sure that you let Shorewall add all
         external addresses to be use with NAT unless you have set <ulink
         url="Shorewall_and_Aliased_Interfaces.html">ADD_IP_ALIASES</ulink> =No
-        in /etc/shorewall/shorewall.conf.</para>
+        in <filename>/etc/shorewall/shorewall.conf</filename>.</para>
       </listitem>
     </itemizedlist>
   </section>
@@ -328,4 +343,12 @@
 
     <para>See the <ulink url="support.htm">Shorewall Support Page</ulink>.</para>
   </section>
+
+  <appendix>
+    <title>Revision History</title>
+
+    <para><revhistory><revision><revnumber>1.2</revnumber><date>2004-01-01</date><authorinitials>TE</authorinitials><revremark>Added
+    information about eliminating ping-generated log messages.</revremark></revision><revision><revnumber>1.1</revnumber><date>2003-12-22</date><authorinitials>TE</authorinitials><revremark>Initial
+    Docbook Conversion</revremark></revision></revhistory></para>
+  </appendix>
 </article>

@@ -15,10 +15,10 @@
       </author>
     </authorgroup>
 
-    <pubdate>2003-12-18</pubdate>
+    <pubdate>2003-01-01</pubdate>
 
     <copyright>
-      <year>2001-2003</year>
+      <year>2001-2004</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -31,21 +31,7 @@
       Texts. A copy of the license is included in the section entitled
       <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
     </legalnotice>
-
-    <revhistory>
-      <revision>
-        <revnumber>1.1</revnumber>
-
-        <date>2003-12-19</date>
-
-        <authorinitials>TE</authorinitials>
-
-        <revremark>Corrected URL for Newbies List</revremark>
-      </revision>
-    </revhistory>
   </articleinfo>
-
-  <graphic fileref="images/obrasinf.gif" format="GIF" valign="middle" />
 
   <section>
     <title>Before Reporting a Problem or Asking a Question</title>
@@ -54,10 +40,6 @@
     these before you post.</para>
 
     <itemizedlist>
-      <listitem>
-        <para>Shorewall versions earlier that 1.3.0 are no longer supported.</para>
-      </listitem>
-
       <listitem>
         <para>More than half of the questions posted on the support list have
         answers directly accessible from the <ulink
@@ -91,9 +73,7 @@
     <title>Problem Reporting Guidelines</title>
 
     <note>
-      <para>In this section, commands that are to be entered to a root shell
-      on your firewall system are underlined or are shown in a box with a
-      colored background.</para>
+      <para>Shorewall versions earlier that 1.3.0 are no longer supported.</para>
     </note>
 
     <itemizedlist>
@@ -149,19 +129,19 @@
           <listitem>
             <para>the exact version of Shorewall you are running.</para>
 
-            <programlisting>shorewall version</programlisting>
+            <programlisting><command>shorewall version</command></programlisting>
           </listitem>
 
           <listitem>
             <para>the complete, exact output of</para>
 
-            <programlisting>ip addr show</programlisting>
+            <programlisting><command>ip addr show</command></programlisting>
           </listitem>
 
           <listitem>
             <para>the complete, exact output of</para>
 
-            <programlisting>ip route show</programlisting>
+            <programlisting><command>ip route show</command></programlisting>
           </listitem>
 
           <listitem>
@@ -172,10 +152,8 @@
 
             <orderedlist>
               <listitem>
-                <para><emphasis role="bold">If shorewall isn&#39;t running</emphasis>
-                then <emphasis role="underline">/sbin/shorewall/start</emphasis>.
-                <emphasis role="bold">Otherwise</emphasis> <emphasis
-                role="underline">/sbin/shorewall reset</emphasis>.</para>
+                <para>If Shorewall isn&#39;t started then <command>/sbin/shorewall/start</command>.
+                Otherwise <command>/sbin/shorewall reset</command>.</para>
               </listitem>
 
               <listitem>
@@ -183,13 +161,12 @@
               </listitem>
 
               <listitem>
-                <para><emphasis role="underline">/sbin/shorewall status &#62;
-                /tmp/status.txt</emphasis></para>
+                <para><command>/sbin/shorewall status &#62; /tmp/status.txt</command></para>
               </listitem>
 
               <listitem>
-                <para>Post the /tmp/status.txt file as an attachment (you may
-                compress it if you like).</para>
+                <para>Post the <filename>/tmp/status.txt</filename> file as an
+                attachment (you may compress it if you like).</para>
               </listitem>
             </orderedlist>
           </listitem>
@@ -215,11 +192,10 @@
       </listitem>
 
       <listitem>
-        <para>Do you see any <quote>Shorewall</quote> messages (<quote><emphasis
-        role="underline">/sbin/shorewall show log</emphasis></quote>) when you
-        exercise the function that is giving you problems? If so, include the
-        message(s) in your post along with a copy of your
-        /etc/shorewall/interfaces file.</para>
+        <para>Do you see any <quote>Shorewall</quote> messages (<quote><command>/sbin/shorewall
+        show log</command></quote>) when you exercise the function that is
+        giving you problems? If so, include the message(s) in your post along
+        with a copy of your /etc/shorewall/interfaces file.</para>
       </listitem>
 
       <listitem>
@@ -231,15 +207,15 @@
       </listitem>
 
       <listitem>
-        <para>If an error occurs when you try to <quote><emphasis
-        role="underline">shorewall start</emphasis></quote>, include a trace
-        (See the Troubleshooting section for instructions).</para>
+        <para>If an error occurs when you try to <quote><command>shorewall
+        start</command></quote>, include a trace (See the Troubleshooting
+        section for instructions).</para>
       </listitem>
 
       <listitem>
         <para><emphasis role="bold">The list server limits posts to 120kb so
-        don&#39;t post GIFs of your network layout, etc. to the Mailing List
-        -- your post will be rejected</emphasis>.</para>
+        don&#39;t post graphics of your network layout, etc. to the Mailing
+        List -- your post will be rejected</emphasis>.</para>
       </listitem>
 
       <listitem>
@@ -316,4 +292,13 @@
     <para>For information on other Shorewall mailing lists, go to <ulink
     url="http://lists.shorewall.net">http://lists.shorewall.net</ulink> .</para>
   </section>
+
+  <appendix>
+    <title>Revision History</title>
+
+    <para><revhistory><revision><revnumber>1.2</revnumber><date>2003-01-01</date><authorinitials>TE</authorinitials><revremark>Removed
+    .GIF and moved note about unsupported releases. Move Revision History to
+    this Appendix.</revremark></revision><revision><revnumber>1.1</revnumber><date>2003-12-19</date><authorinitials>TE</authorinitials><revremark>Corrected
+    URL for Newbies List</revremark></revision></revhistory></para>
+  </appendix>
 </article>

@@ -221,6 +221,11 @@ strip_file() # $1 = Base Name of the file, $2 = Full Name of File (optional)
 }
 
 #
+#  Note: The following set of IP address manipulation functions have anomalous
+#        behavior when the shell only supports 32-bit signed arithmatic and
+#        the IP address is 128.0.0.0 or 128.0.0.1.
+#
+#
 # So that emacs doesn't get lost, we use $LEFTSHIFT rather than <<
 #
 LEFTSHIFT='<<'
@@ -294,7 +299,9 @@ ip_range() {
 # Netmask from CIDR
 #
 ip_netmask() {
-    echo $(( -1 $LEFTSHIFT $(( 32 - ${1#*/} )) ))
+    local vlsm=${1#*/}
+
+    [ $vlsm -eq 0 ] && echo 0 || echo $(( -1 $LEFTSHIFT $(( 32 - $vlsm )) ))
 }
 
 #

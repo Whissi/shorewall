@@ -4,33 +4,35 @@
 #
 # /etc/shorewall/netmap
 #
-#	This file is used to map a network on one interface to another
-#	different interface. For a /24 network, it is like having 256 entries
-#	in the /etc/shorewall/nat file.
+#	This file is used to map addresses in one network to corresponding
+#	addresses in a second network.
 #
 #	WARNING: To use this file, your kernel and iptables must have
 #		 NETMAP support included.
 #
 # Columns must be separated by white space and are:
 #
-#	NET1		Network 1 in CIDR format (e.g., 192.168.1.0/24)
+#	TYPE	        Must be DNAT or SNAT.
 #
-#	INTERFACE	The network interface to NET1. The interface must
+#			If DNAT, traffic entering INTERFACE and addressed to
+#			NET1 has it's destination address rewritten to the
+#			corresponding address in NET2.
+#
+#			If SNAT, traffic leaving INTERFACE with a source
+#			address in NET1 has it's source address rewritten to
+#			the corresponding address in NET2.
+#			
+#	NET1		Network in CIDR format (e.g., 192.168.1.0/24)
+#
+#	INTERFACE	The name of a network interface. The interface must
 #			be defined in /etc/shorewall/interfaces.
 #
-#	NET2		Network 2 in CIDR format
+#	NET2		Network in CIDR format
 #
-# Example:
+# See http://shorewall.net/netmap.html for an example and usage
+# information.
 #
-#	NET1		INTERFACE 	NET2
-#	192.168.1.0/24	eth0		10.1.1.0/24
-#
-#	Packets entering on eth0 with destination address 192.168.1.n will
-#	be modified to have destination IP address 10.1.1.n.
-#
-#	Packets leaving on eth0 with source IP address 10.1.1.n will be
-#	modified to have source IP address 192.168.1.n.
 ##############################################################################
-#NET1			INTERFACE	NET2
+#TYPE	NET1			INTERFACE	NET2
 #
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE

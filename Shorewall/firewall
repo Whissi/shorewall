@@ -1897,7 +1897,7 @@ add_nat_rule() {
 		    log_rule $loglevel $chain $logtarget -t nat
 		fi
 
-		addnatrule $chain -j $target1
+		addnatrule $chain $proto -j $target1
 	    else
 		for adr in `separate_list $addr`; do
 		    run_iptables2 -t nat -A OUTPUT $proto $sports -d $adr \
@@ -1930,7 +1930,7 @@ add_nat_rule() {
 			log_rule $loglevel $chain $logtarget -t nat -d `fix_bang $adr`
 		    fi
 
-		    addnatrule $chain -d $adr -j $target1
+		    addnatrule $chain $proto -d $adr -j $target1
 		done
 	    else
 		for adr in `separate_list $addr`; do
@@ -2277,11 +2277,11 @@ process_rule() # $1 = target
 	   fatal_error "Empty source zone or qualifier: rule \"$rule\""
     fi
 
-    if [ "$clientzone" = "${clientzone%\!*}" ]; then
+    if [ "$clientzone" = "${clientzone%!*}" ]; then
 	excludezones=
     else
-	excludezones="${clientzone#*\!}"
-	clientzone="${clientzone%\!*}"
+	excludezones="${clientzone#*!}"
+	clientzone="${clientzone%!*}"
 
 	[ "$logtarget" = DNAT ] || [ "$logtarget" = REDIRECT ] ||\
 	    fatal_error "Exclude list only allowed with DNAT or REDIRECT"

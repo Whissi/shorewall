@@ -22,7 +22,8 @@
 #				REJECT   -- disallow the request and return an
 #					    icmp-unreachable or an RST packet.
 #				DNAT     -- Forward the request to another
-#					    system (and optionally another port).
+#					    system (and optionally another
+#					    port).
 #				REDIRECT -- Redirect the request to a local
 #					    port on the firewall.
 #
@@ -75,8 +76,8 @@
 #			and not as a name from /etc/services.
 #
 #			if the RESULT is REDIRECT, this column needs only to
-#			contain the port number on the firewall that the request
-#			should be redirected to.
+#			contain the port number on the firewall that the
+#			request should be redirected to.
 #
 #	PROTO		Protocol - Must be "tcp", "udp", "icmp", a number,
 #			"all" or "related". If "related", the remainder of the
@@ -102,8 +103,8 @@
 #			specify an ADDRESS in the next column, then place "-"
 #			in this column.
 #
-#	ORIGINAL DEST	(0ptional -- only allowed if ACTION is DNAT or REDIRECT)
-#                       If included and different from the IP
+#	ORIGINAL DEST	(0ptional -- only allowed if ACTION is DNAT or 
+#                       REDIRECT) If included and different from the IP
 #			address given in the SERVER column, this is an address
 #			on some interface on the firewall and connections to
 #			that address will be forwarded to the IP and port

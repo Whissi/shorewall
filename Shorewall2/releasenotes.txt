@@ -1,4 +1,4 @@
-Shorewall 2.0.0-RC2
+Shorewall 2.0.0
 
 ----------------------------------------------------------------------
 Problems Corrected since 1.4.10
@@ -22,6 +22,8 @@ Problems Corrected since 1.4.10
 Problems Corrected since RC2
 
 1) CONTINUE rules now work again.
+
+2) A comment in the rules file has been corrected.
 
 -----------------------------------------------------------------------
 Issues when migrating from Shorewall 1.4.x to Shorewall 2.0.0:
@@ -117,6 +119,13 @@ Issues when migrating from Shorewall 1.4.x to Shorewall 2.0.0:
 
       Drop:DROP       #Common rules for DROP policy
       Reject:REJECT   #Common Action for Reject policy
+
+   These actions may be used in the ACTION column of the rules
+   column. So for example, to allow FTP from your loc zone to your firewall,
+   you would place this rule in /etc/shorewall/rules:
+
+   #ACTION     SOURCE       DEST
+   AllowFTP    loc	    fw
 
    if you want to redefine any of the Shorewall-defined actions, 
    simply copy the appropriate action file from /usr/share/shorewall

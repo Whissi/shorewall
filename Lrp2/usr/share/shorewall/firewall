@@ -2807,7 +2807,7 @@ createactionchain() # $1 = chain name
 
 process_actions1() {
 	
-    ACTIONS="dropBcast dropNonSyn dropNotSyn rejNotSyn logNotSyn rLogNotSyn dLogNotSyn dropInvalid"
+    ACTIONS="dropBcast dropNonSyn dropNotSyn rejNotSyn logNotSyn rLogNotSyn dLogNotSyn dropInvalid allowInvalid"
     USEDACTIONS=
 
     strip_file actions
@@ -2951,6 +2951,9 @@ process_actions2() {
 		;;
 	    dropInvalid)
 		[ "$COMMAND" != check ] && run_iptables -A dropInvalid -m state --state INVALID -j DROP
+		;;
+	    allowInvalid)
+		[ "$COMMAND" != check ] && run_iptables -A dropInvalid -m state --state INVALID -j ACCEPT
 		;;
 	    *)
 		f=action.$xaction
@@ -4831,7 +4834,8 @@ initialize_netfilter () {
 
     for chain in INPUT OUTPUT FORWARD; do
 	run_iptables -A $chain -p udp --dport 53 -j ACCEPT
-	run_iptables -A $chain -p ! icmp -m state --state INVALID -j DROP
+	[ -n "$DROPINVALID" ] && \
+	    run_iptables -A $chain -p ! icmp -m state --state INVALID -j DROP
     done
 
     [ -n "$CLAMPMSS" ] && \
@@ -6061,6 +6065,7 @@ do_initialize() {
     BRIDGING=
     DYNAMIC_ZONES=
     PKTTYPE=
+    DROPINVALID=
     RESTOREBASE=
     TMP_DIR=
 
@@ -6234,7 +6239,7 @@ do_initialize() {
     BRIDGING=$(added_param_value_no BRIDGING $BRIDGING)
     DYNAMIC_ZONES=$(added_param_value_no DYNAMIC_ZONES $DYNAMIC_ZONES)
     PKTTYPE=$(added_param_value_yes PKTTYPE $PKTTYPE)
-
+    DROPINVALID=$(added_param_value_yes DROPINVALID $DROPINVALID)
     #
     # Strip the files that we use often
     #

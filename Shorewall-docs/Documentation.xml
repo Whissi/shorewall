@@ -14,11 +14,7 @@
     </authorgroup>
 
     <copyright>
-      <year>2001</year>
-
-      <year>2002</year>
-
-      <year>2003</year>
+      <year>2001-2003</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -268,7 +264,7 @@
       </varlistentry>
 
       <varlistentry>
-        <term>accounting</term>
+        <term><ulink url="Accounting.html">accounting</ulink></term>
 
         <listitem>
           <para>a parameter file in /etc/shorewall used to define traffic
@@ -298,7 +294,8 @@
       </varlistentry>
 
       <varlistentry>
-        <term>actions and action.template</term>
+        <term><ulink url="User_defined_Actions.html">actions and
+        action.template</ulink></term>
 
         <listitem>
           <para>files in /etc/shorewall that allow you to define your own
@@ -321,9 +318,8 @@
     <example>
       <title>shell variables</title>
 
-      <programlisting>NET_IF=eth0
-NET_BCAST=130.252.100.255
-NET_OPTIONS=blacklist,norfc1918</programlisting>
+      <programlisting>NET_IF=eth0 NET_BCAST=130.252.100.255
+      NET_OPTIONS=blacklist,norfc1918</programlisting>
     </example>
 
     <example>
@@ -961,8 +957,7 @@ NET_OPTIONS=blacklist,norfc1918</programlisting>
       <title>Your local interface is eth1 and you have two groups of local
       hosts that you want to make into separate zones:</title>
 
-      <programlisting>192.168.1.0/25
-192.168.1.128/</programlisting>
+      <programlisting>192.168.1.0/25 192.168.1.128/</programlisting>
 
       <para>Your /etc/shorewall/interfaces file might look like:</para>
 
@@ -1044,8 +1039,7 @@ NET_OPTIONS=blacklist,norfc1918</programlisting>
       <title>You have local interface eth1 with two IP addresses -
       192.168.1.1/24 and 192.168.12.1/24</title>
 
-      <programlisting>192.168.1.0/25
-192.168.1.128/25</programlisting>
+      <programlisting>192.168.1.0/25 192.168.1.128/25</programlisting>
 
       <para>Your /etc/shorewall/interfaces file might look like:</para>
 
@@ -2053,7 +2047,8 @@ NET_OPTIONS=blacklist,norfc1918</programlisting>
           rule by optionally following ACCEPT, DNAT[-], REDIRECT[-] or LOG
           with</para>
 
-          <programlisting>&#60; &#60;rate&#62;/&#60;interval&#62;[:&#60;burst&#62;] &#62;</programlisting>
+          <programlisting>&#60;
+          &#60;rate&#62;/&#60;interval&#62;[:&#60;burst&#62;] &#62;</programlisting>
 
           <para>where &#60;rate&#62; is the number of connections per
           &#60;interval&#62; (&#34;sec&#34; or &#34;min&#34;) and
@@ -2065,7 +2060,7 @@ NET_OPTIONS=blacklist,norfc1918</programlisting>
           <example>
             <title>rate-limit</title>
 
-            <programlisting>ACCEPT&#60;2/sec:4&#62;    net    dmz    tcp    80</programlisting>
+            <programlisting>ACCEPT&#60;2/sec:4&#62; net dmz tcp 80</programlisting>
 
             <para>The first time this rule is reached, the packet will be
             accepted; in fact, since the burst is 4, the first four packets
@@ -2292,7 +2287,8 @@ NET_OPTIONS=blacklist,norfc1918</programlisting>
             <example>
               <title></title>
 
-              <programlisting>DNAT loc:<emphasis role="bold">192.168.1.0/24</emphasis> loc:192.168.1.3 tcp www - 206.124.146.179:192.168.1.3</programlisting>
+              <programlisting>DNAT loc:<emphasis role="bold">192.168.1.0/24</emphasis>
+              loc:192.168.1.3 tcp www - 206.124.146.179:192.168.1.3</programlisting>
             </example>
           </note>
 
@@ -2323,7 +2319,7 @@ NET_OPTIONS=blacklist,norfc1918</programlisting>
           <example>
             <title>Let&#39;s take</title>
 
-            <programlisting>ACCEPT&#60;2/sec:4&#62;    net    dmz    tcp    80</programlisting>
+            <programlisting>ACCEPT&#60;2/sec:4&#62; net dmz tcp 80</programlisting>
 
             <para>The first time this rule is reached, the packet will be
             accepted; in fact, since the burst is 4, the first four packets
@@ -2988,7 +2984,7 @@ NET_OPTIONS=blacklist,norfc1918</programlisting>
     <para><ulink url="ports.htm">Look here for information on other services.</ulink></para>
   </section>
 
-  <section>
+  <section id="Common" xreflabel="/etc/shorewall/common">
     <title>/etc/shorewall/common</title>
 
     <para>Shorewall allows definition of rules that apply between all zones.
@@ -3345,9 +3341,9 @@ NET_OPTIONS=blacklist,norfc1918</programlisting>
       <title>You have public IP addresses 155.182.235.0/28. You configure your
       firewall as follows:</title>
 
-      <programlisting>eth0 - 155.186.235.1 (internet connection)
-eth1 - 192.168.9.0/24 (masqueraded local systems)
-eth2 - 192.168.10.1 (interface to your DMZ)</programlisting>
+      <programlisting>eth0 - 155.186.235.1 (internet connection) eth1 -
+      192.168.9.0/24 (masqueraded local systems) eth2 - 192.168.10.1
+      (interface to your DMZ)</programlisting>
 
       <para>In your DMZ, you want to install a Web/FTP server with public
       address 155.186.235.4. On the Web server, you subnet just like the
@@ -3850,8 +3846,7 @@ eth2 - 192.168.10.1 (interface to your DMZ)</programlisting>
           <example>
             <title></title>
 
-            <programlisting>LOGRATE=10/minute
-LOGBURST=5</programlisting>
+            <programlisting>LOGRATE=10/minute LOGBURST=5</programlisting>
           </example>
         </listitem>
       </varlistentry>
@@ -4078,7 +4073,8 @@ LOGBURST=5</programlisting>
 
     <para>The <emphasis>loadmodule</emphasis> function is called as follows:</para>
 
-    <programlisting>loadmodule &#60;<emphasis>modulename</emphasis>&#62; [ &#60;<emphasis>module parameters</emphasis>&#62; ]</programlisting>
+    <programlisting>loadmodule &#60;<emphasis>modulename</emphasis>&#62; [
+    &#60;<emphasis>module parameters</emphasis>&#62; ]</programlisting>
 
     <para>where</para>
 
@@ -4107,7 +4103,8 @@ LOGBURST=5</programlisting>
     <emphasis>moduledirectory</emphasis>; if so, then the following command is
     executed:</para>
 
-    <programlisting>insmod <emphasis>moduledirectory</emphasis>/&#60;<emphasis>modulename</emphasis>&#62;.o &#60;<emphasis>module parameters</emphasis>&#62;</programlisting>
+    <programlisting>insmod <emphasis>moduledirectory</emphasis>/&#60;<emphasis>modulename</emphasis>&#62;.o
+    &#60;<emphasis>module parameters</emphasis>&#62;</programlisting>
 
     <para>If the file doesn&#39;t exist, the function determines of the
     &#34;.o.gz&#34; file corresponding to the module exists in the
@@ -4115,7 +4112,8 @@ LOGBURST=5</programlisting>
     that the running configuration supports compressed modules and execute the
     following command:</para>
 
-    <programlisting>insmod <emphasis>moduledirectory</emphasis>/&#60;<emphasis>modulename</emphasis>&#62;.o.gz &#60;<emphasis>module parameters</emphasis>&#62;</programlisting>
+    <programlisting>insmod <emphasis>moduledirectory</emphasis>/&#60;<emphasis>modulename</emphasis>&#62;.o.gz
+    &#60;<emphasis>module parameters</emphasis>&#62;</programlisting>
   </section>
 
   <section id="TOS" xreflabel="/etc/shorewall/tos">
@@ -4326,8 +4324,7 @@ LOGBURST=5</programlisting>
     <example>
       <title></title>
 
-      <programlisting>130.252.100.69
-206.124.146.0/24</programlisting>
+      <programlisting>130.252.100.69 206.124.146.0/24</programlisting>
     </example>
 
     <para>Packets <emphasis role="bold">from</emphasis> hosts listed in the
@@ -4509,5 +4506,19 @@ LOGBURST=5</programlisting>
 
     <para>This file is described in the <ulink url="ECN.html">ECN Control
     Documentation</ulink>.</para>
+  </section>
+
+  <section id="UserSets" xreflabel="/usr/shorewall/Users">
+    <title>/etc/shorewall/users and /etc/shorewall/usersets</title>
+
+    <para>These files are described in the<ulink url="UserSets.html">UID/GID-based
+    Rules Documentation</ulink> .</para>
+  </section>
+
+  <section id="Accounting" xreflabel="/usr/shorewall/accounting">
+    <title>/etc/shorewall/accounting</title>
+
+    <para>This file is described in the <ulink url="Accounting.html">Traffic
+    Accounting Documentation</ulink>.</para>
   </section>
 </article>

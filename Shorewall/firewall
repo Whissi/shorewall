@@ -4007,11 +4007,11 @@ add_common_rules() {
 
 	LOGPARMS="$LOGPARMS --log-ip-options"
 
-	log_rule $LOGUNCLEAN logpkt DROP -p ! tcp 
+	log_rule $LOGUNCLEAN logpkt LOG -p ! tcp 
 
 	LOGPARMS="$LOGPARMS --log-tcp-options"
 	
-	log_rule $LOGUNCLEAN logpkt DROP -p tcp 
+	log_rule $LOGUNCLEAN logpkt LOG -p tcp 
 
 	LOGPARMS="$savelogparms"
 

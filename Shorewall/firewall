@@ -2133,8 +2133,6 @@ process_rules() # $1 = name of rules file
 	    for yservers in $xservers; do
 		if [ "${yclients}" != "${yservers}" ] ; then
 		    process_rule $xtarget $yclients $yservers $xprotocol $xports $xcports $xaddress
-		elif havechain ${yclients}2${yservers} ; then
-		    process_rule $xtarget $yclients $yservers $xprotocol $xports $xcports $xaddress
 		fi
 	    done
 	done

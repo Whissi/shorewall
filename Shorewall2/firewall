@@ -4948,12 +4948,12 @@ setup_masq()
 
 	source="$networks"
 
-	case $networks in
+	case $source in
 	*.*.*)
 	    ;;
 	*)
 	    networks=$(get_routed_networks $networks)
-	    [ -z "$networks" ] && fatal_error "Unable to determine the routes through interface $networks"
+	    [ -z "$networks" ] && fatal_error "Unable to determine the routes through interface \"$source\""
 	    networks="$networks"
 	    ;;
 	esac

@@ -1,0 +1,26 @@
+#
+# Shorewall 2.0-- RFC1918 File
+#
+# /etc/shorewall/rfc1918
+#
+# Lists the subnetworks that are blocked by the 'norfc1918' interface option.
+#
+# The default list includes those IP addresses listed in RFC 1918.
+#
+#	DO NOT MODIFY THIS FILE. IF YOU NEED TO MAKE CHANGES, COPY THE FILE
+#	TO /etc/shorewall AND MODIFY THE COPY.
+#
+# Columns are:
+#
+# 	SUBNET		The subnet (host addresses also allowed)
+#	TARGET		Where to send packets to/from this subnet
+#			RETURN	- let the packet be processed normally
+#			DROP	- silently drop the packet
+#			logdrop - log then drop
+#
+###############################################################################
+#SUBNET			TARGET
+172.16.0.0/12		logdrop		# RFC 1918
+192.168.0.0/16		logdrop		# RFC 1918
+10.0.0.0/8		logdrop		# RFC 1918
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

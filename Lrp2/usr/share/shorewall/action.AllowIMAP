@@ -1,0 +1,11 @@
+#
+# Shorewall 2.0 /etc/shorewall/action.AllowIMAP
+#
+#	This action accepts IMAP traffic (secure and insecure):
+#
+######################################################################################
+#TARGET  SOURCE		DEST      	PROTO	DEST    SOURCE	 	RATE	USER/
+#                       	        	PORT    PORT(S)		LIMIT	GROUP
+ACCEPT	 -		-		tcp	143	#Unsecure IMAP	
+ACCEPT	 -		-		tcp	993	#Secure IMAP
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

@@ -38,7 +38,7 @@ separate_list() {
     # command phase
     #
     case "$@" in
-	*,|,*|*,,*)
+	*,|,*|*,,*|*[[:space:]]*)
             [ -n "$terminator" ] && \
 		$terminator "Invalid comma-separated list \"$@\""
             echo "Warning -- invalid comma-separated list \"$@\"" >&2

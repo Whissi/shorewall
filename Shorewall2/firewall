@@ -6098,6 +6098,12 @@ define_firewall() # $1 = Command (Start or Restart)
     save_command "#"
     save_command ". /usr/share/shorewall/functions"
 
+    f=$(find_file params)
+
+    [ -f $f ] && \
+	save_command ". $f"
+
+    save_command "#"
     save_command "MODULESDIR=\"$MODULESDIR\""
     save_command "MODULE_SUFFIX=\"$MODULE_SUFFIX\""
 

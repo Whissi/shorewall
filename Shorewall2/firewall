@@ -977,7 +977,7 @@ validate_hosts_file() {
 			;;
 		    ipsec)
 			[ -n "$POLICY_MATCH" ] || \
-			    startup_error "Your kernel and/or iptables does not not support policy match: ipsec"
+			    startup_error "Your kernel and/or iptables does not support policy match: ipsec"
 			eval ${z}_ipsec_hosts=\"\$${z}_ipsec_hosts $interface:$host\"
 			eval ${z}_is_complex=Yes
 			;;
@@ -1590,7 +1590,7 @@ setup_tunnels() # $1 = name of tunnels file
 		    addrule ${z}2${FW} -p udp --dport 4500 $options
 		fi
 	    else
-		fatal_error ": Invalid gateway zone ($z) -- Tunnel \"$tunnel\""
+		fatal_error "Invalid gateway zone ($z) -- Tunnel \"$tunnel\""
 	    fi
 	done
 
@@ -1924,14 +1924,6 @@ setup_mac_lists() {
     # Be sure that they are all ethernet interfaces
     #
     for interface in $maclist_interfaces; do
-	case $interface in
-	    eth*|wlan*|br[0-9]|ath[0-9])
-		;;
-	    *)
-		fatal_error "MAC verification is only supported on ethernet and 802.11b devices: $interface"
-		;;
-	esac
-
 	createchain $(mac_chain $interface) no
     done
     #
@@ -3257,7 +3249,7 @@ process_actions1() {
 	    case $xaction in
 		*:*)
 		    temp=${xaction#*:}
-		    [ ${#temp} -le 11 ] || fatal_error "Action Name Longer than 11 Characters: $temp"
+		    [ ${#temp} -le 30 ] || fatal_error "Action Name Longer than 30 Characters: $temp"
 		    xaction=${xaction%:*}
 		    case $temp in
 			ACCEPT|REJECT|DROP)

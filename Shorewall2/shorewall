@@ -1131,7 +1131,7 @@ case "$1" in
 	    else
 		case $RESTOREFILE in
 		    save|restore-base)
-			echo "   ERROR: Reserved file name: save"
+			echo "   ERROR: Reserved file name: $RESTOREFILE"
 			;;
 		    *)
 			if iptables -L dynamic -n > /var/lib/shorewall/save; then
@@ -1182,7 +1182,7 @@ case "$1" in
 	    rm -f $RESTOREPATH
 	    echo "    $RESTOREPATH removed"
 	elif [ -f $RESTOREPATH ]; then
-	    echo "   ERROR: $RESTOREPATH is not a restore script"
+	    echo "   $RESTOREPATH exists and is not a saved Shorewall configuration"
 	fi
 	;;
     ipcalc)

@@ -17,6 +17,15 @@ New Features:
 
    http://shorewall.net/bridge.html
 
-2) 
+2) The rfc1918 file released with Shorewall now contains entries for
+   only those three address ranges reserved by RFC 1918. A new
+   'nobogons' interface option has been added which handles bogon
+   source addresses (those which are reserved by the IANA, those
+   reserved for DHCP auto-configuration and the class C test-net
+   reserved for testing and documentation examples). This will allow
+   users to perform RFC 1918 filtering without having to deal with out
+   of date data from IANA. Those who are willing to update their
+   /usr/share/shorewall/bogons file regularly can specify the
+   'nobogons' option in addition to 'norfc1918'.
 
  

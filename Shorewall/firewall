@@ -608,6 +608,10 @@ validate_interfaces_file() {
 		    ;;
 		routefilter|dropunclean|logunclean|blacklist|proxyarp|maclist|-)
 		    ;;
+		routeback)
+		    [ -n "$z" ] || startup_error "The routeback option may not be specified on a multi-zone interface"
+		    eval ${z}_routeback=\"$interface:0.0.0.0/0 \$${z}_routeback\"
+		    ;;
 		*)
 		    error_message "Warning: Invalid option ($option) in record \"$r\""
 		    ;;
@@ -637,6 +641,9 @@ validate_hosts_file() {
 	    for option in `separate_list $options`; do
 		case $option in
 		    maclist|-)
+			;;
+		    routeback)
+			eval ${z}_routeback=\"$host \$${z}_routeback\"
 			;;
 		    *)
 			error_message "Warning: Invalid option ($option) in record \"$r\""
@@ -3710,6 +3717,12 @@ activate_rules()
 
 	    echo "$zone $zone1 $chain" >> ${STATEDIR}/chains
 
+	    if [ $zone = $zone1 ]; then
+		eval routeback=\"\$${zone}_routeback\"
+	    else
+		routeback=
+	    fi
+	    
 	    for host in $source_hosts; do
 		interface=${host%:*}
 
@@ -3723,7 +3736,7 @@ activate_rules()
 		    interface1=${host1%:*}
 		    subnet1=${host1#*:}
 
-		    if [ "$host" != "$host1" ]; then
+		    if [ "$host" != "$host1" ] || list_search $host $routeback; then
 			run_iptables -A $chain1 -o $interface1 -d $subnet1 -j $chain
 		    fi
 		done

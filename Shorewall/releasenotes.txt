@@ -64,5 +64,27 @@ New Features:
    INCLUDE's may be nested to a level of 3 -- further nested INCLUDE
    directives are ignored.
 
+3) Routing traffic from an interface back out that interface continues
+   to be a problem. While I firmly believe that this should never
+   happen, people continue to want to do it. To limit the damage that
+   such nonsense produces, I have added a new 'routeback' option in
+   /etc/shorewall/interfaces and /etc/shorewall/hosts. When used in
+   /etc/shorewall/interfaces, the 'ZONE' column may not contain '-'; in
+   other words, 'routeback' can't be used as an option for a multi-zone
+   interface. The 'routeback' option CAN be specified however on
+   individual group entries in /etc/shorewall/hosts.
+
+   The 'routeback' option is similar to the old 'multi' option with two
+   exceptions:
+
+   a) The option pertains to a particular zone,interface,address tuple.
+
+   b) The option only created infrastructure to pass traffic from
+   (zone,interface,address) tuples back to themselves (the 'multi'
+   option affected all (zone,interface,address) tuples associated with
+   the given 'interface').
+
+   See the 'Upgrade Issues' for information about how this new option
+   may affect your configuration.
 
 

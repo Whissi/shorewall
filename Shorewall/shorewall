@@ -114,7 +114,6 @@ showchain() # $1 = name of chain
 # Set the configuration variables from shorewall.conf				#
 #################################################################################
 get_config() {
-    get_statedir
 
     [ -z "$LOGFILE" ] && LOGFILE=/var/log/messages
 
@@ -536,6 +535,8 @@ fi
 
 banner="Shorewall-$version Status at $HOSTNAME -"
 
+get_statedir
+
 case "$1" in
     start|stop|restart|reset|clear|refresh|check)
 	[ $# -ne 1 ] && usage 1
@@ -558,7 +559,6 @@ case "$1" in
 	    iptables -t nat -L -n -v
 	    ;;
 	tos|mangle)
-	    get_config
 	    echo -e "Shorewall-$version TOS at $HOSTNAME - `date`\\n"
 	    show_reset
 	    iptables -t mangle -L -n -v
@@ -575,7 +575,6 @@ case "$1" in
 	    show_tc
 	    ;;
 	*)
-	    get_config
 	    echo -e "Shorewall-$version Chain $2 at $HOSTNAME - `date`\\n"
 	    show_reset
 	    iptables -L $2 -n -v

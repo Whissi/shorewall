@@ -747,6 +747,8 @@ validate_rule() {
     else
 	clientzone="${clients%:*}"
 	clients="${clients#*:}"
+	[ -z "$clientzone" -o -z "$clients" ] && \
+	   startup_error "Error: Empty source zone or qualifier: rule \"$rule\""
     fi
     
     if [ "$clientzone" = "${clientzone%\!*}" ]; then
@@ -782,8 +784,12 @@ validate_rule() {
 	if [ "$servers" != "${servers%:*}" ] ; then
 	    serverport="${servers#*:}"
 	    servers="${servers%:*}"
+	    [ -z "$serverzone" -o -z "$serverport" ] && \
+	        startup_error "Error: Empty destination zone or server port: rule \"$rule\""
 	else
 	    serverport=
+	    [ -z "$serverzone" -o -z "$servers" ] && \
+	        startup_error "Error: Empty destination zone or qualifier: rule \"$rule\""
 	fi
     fi
     ############################################################################

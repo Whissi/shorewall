@@ -718,6 +718,9 @@ validate_policy()
 
 	chain=${client}2${server}
 
+	[ "x$chain" = "x${FW}2${FW}" ] && \
+	    startup_error "fw->fw policy not allowed: $policy"
+
 	if is_policy_chain $chain ; then
 	    startup_error "Duplicate policy $policy"
 	fi

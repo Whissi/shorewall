@@ -1,0 +1,426 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article>
+  <!---->
+
+  <articleinfo>
+    <title>Shorewall Errata</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate>2003-12-17</pubdate>
+
+    <copyright>
+      <year>2001-2003</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <caution>
+    <itemizedlist>
+      <listitem>
+        <para>If you use a Windows system to download a corrected script, be
+        sure to run the script through <ulink
+        url="http://www.megaloman.com/~hany/software/hd2u/">dos2unix</ulink>
+        after you have moved it to your Linux system.</para>
+      </listitem>
+
+      <listitem>
+        <para>If you are installing Shorewall for the first time and plan to
+        use the .tgz and install.sh script, you can untar the archive, replace
+        the &#39;firewall&#39; script in the untarred directory with the one
+        you downloaded below, and then run install.sh.</para>
+      </listitem>
+
+      <listitem>
+        <para>When the instructions say to install a corrected firewall script
+        in /usr/share/shorewall/firewall, you may rename the existing file
+        before copying in the new file.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">DO NOT INSTALL CORRECTED COMPONENTS ON A
+        RELEASE EARLIER THAN THE ONE THAT THEY ARE LISTED UNDER BELOW.</emphasis>
+        For example, do NOT install the 1.3.9a firewall script if you are
+        running 1.3.7c.</para>
+      </listitem>
+    </itemizedlist>
+  </caution>
+
+  <section>
+    <title>Problems in Version 1.4</title>
+
+    <section>
+      <title>Shorewall 1.4.8</title>
+
+      <itemizedlist>
+        <listitem>
+          <para>When a DNAT rules specifies SNAT (e.g., when &#60;original
+          dest addr&#62;:&#60;SNAT addr&#62; is given in the ORIGINAL DEST
+          column), the SNAT specification is effectively ignored in some
+          cases.</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>This problem has been corrected in <ulink
+      url="http://shorewall.net/pub/shorewall/errata/1.4.8/firewall">this
+      firewall script</ulink> which may be installed in
+      /usr/share/shorewall/firewall as described above.</para>
+    </section>
+
+    <section>
+      <title>Shorewall 1.4.7</title>
+
+      <itemizedlist>
+        <listitem>
+          <para>Using some versions of &#39;ash&#39; (such as from RH8) as the
+          SHOREWALL_SHELL causes &#34;shorewall [re]start&#34; to fail with:<programlisting> &#x00A0;&#x00A0; local: --limit: bad variable name
+ &#x00A0;&#x00A0; iptables v1.2.8: Couldn&#39;t load match `-j&#39;:/lib/iptables/libipt_-j.so: 
+ &#x00A0;&#x00A0; cannot open shared object file: No such file or directory
+ &#x00A0;&#x00A0; Try `iptables -h&#39; or &#39;iptables --help&#39; for more information.</programlisting></para>
+        </listitem>
+
+        <listitem>
+          <para>When more than one ICMP type is listed in a rule and your
+          kernel includes multiport match support,&#x00A0; the firewall fails
+          to start.</para>
+        </listitem>
+
+        <listitem>
+          <para>Regardless of the setting of LOGUNCLEAN, the value
+          LOGUNCLEAN=info was used.</para>
+        </listitem>
+
+        <listitem>
+          <para>After the following error message, Shorewall was left in an
+          inconsistent state:<programlisting>     Error: Unable to determine the routes through interface xxx</programlisting></para>
+        </listitem>
+
+        <listitem>
+          <para>When a DNAT rules specifies SNAT (e.g., when &#60;original
+          dest addr&#62;:&#60;SNAT addr&#62; is given in the ORIGINAL DEST
+          column), the SNAT specification is effectively ignored in some
+          cases.</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>These problems have been corrected in <ulink
+      url="http://shorewall.net/pub/shorewall/errata/1.4.7/firewall">this
+      firewall script</ulink> which may be installed in
+      /usr/share/shorewall/firewall as described above.</para>
+    </section>
+
+    <section>
+      <title>Shorewall 1.4.6</title>
+
+      <itemizedlist>
+        <listitem>
+          <para>If TC_ENABLED is set to yes in shorewall.conf then Shorewall
+          would fail to start with the error &#34;ERROR:&#x00A0; Traffic
+          Control requires Mangle&#34;; that problem has been corrected in
+          <ulink
+          url="http://shorewall.net/pub/shorewall/errata/1.4.6/firewall">this
+          firewall script</ulink> which may be installed in
+          /use/share/shorewall/firewall as described above. This problem is
+          also corrected in bugfix release 1.4.6a.</para>
+        </listitem>
+
+        <listitem>
+          <para>This problem occurs in all versions supporting traffic
+          control. If a MAC address is used in the SOURCE column, an error
+          occurs as follows:</para>
+
+          <para><programlisting>    iptables v1.2.8: Bad mac adress `00:08:B5:35:52:E7-d`</programlisting>For
+          Shorewall 1.4.6 and 1.4.6a users, this problem has been corrected in
+          <ulink
+          url="http://shorewall.net/pub/shorewall/errata/1.4.6/firewall">this
+          firewall script</ulink> which may be installed in
+          /usr/share/shorewall/firewall as described above. For all other
+          versions, you will have to edit your &#39;firewall&#39; script (in
+          versions 1.4.*, it is located in /usr/share/shorewall/firewall).
+          Locate the function add_tcrule_() and in that function, replace this
+          line:<programlisting> &#x00A0; r=`mac_match $source`&#x00A0;</programlisting>with<programlisting> &#x00A0; &#x00A0; &#x00A0;r=&#34;`mac_match $source` &#34;</programlisting>Note
+          that there must be a space before the ending quote!</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section>
+      <title>Shorewall 1.4.4b</title>
+
+      <itemizedlist>
+        <listitem>
+          <para>Shorewall is ignoring records in /etc/shorewall/routestopped
+          that have an empty second column (HOSTS). This problem may be
+          corrected by installing <ulink
+          url="ftp://ftp1.shorewall.net/pub/shorewall/errata/1.4.4b/firewall">this
+          firewall script</ulink> in /usr/share/shorewall/firewall as
+          described above.</para>
+        </listitem>
+
+        <listitem>
+          <para>The INCLUDE directive doesn&#39;t work when placed in the
+          /etc/shorewall/zones file. This problem may be corrected by
+          installing <ulink
+          url="ftp://ftp1.shorewall.net/pub/shorewall/errata/1.4.4b/functions">this
+          functions script</ulink> in /usr/share/shorewall/functions.</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section>
+      <title>Shorewall 1.4.4-1.4.4a</title>
+
+      <itemizedlist>
+        <listitem>
+          <para>Log messages are being displayed on the system console even
+          though the log level for the console is set properly according to
+          FAQ 16. This problem may be corrected by installing <ulink url="???">this
+          firewall script</ulink> in /usr/share/shorewall/firewall as
+          described above.</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section>
+      <title>Shorewall 1.4.4</title>
+
+      <itemizedlist>
+        <listitem>
+          <para>If you have zone names that are 5 characters long, you may
+          experience problems starting Shorewall because the --log-prefix in a
+          logging rule is too long. Upgrade to Version 1.4.4a to fix this
+          problem..</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section>
+      <title>Shorewall 1.4.3</title>
+
+      <itemizedlist>
+        <listitem>
+          <para>The LOGMARKER variable introduced in version 1.4.3 was
+          intended to allow integration of Shorewall with Fireparse
+          (http://www.firewparse.com). Unfortunately, LOGMARKER only solved
+          part of the integration problem. I have implimented a new LOGFORMAT
+          variable which will replace LOGMARKER which has completely solved
+          this problem and is currently in production with fireparse here at
+          shorewall.net. The updated files may be found at <ulink
+          url="ftp://ftp1.shorewall.net/pub/shorewall/errata/1.4.3/fireparse/">ftp://ftp1.shorewall.net/pub/shorewall/errata/1.4.3/fireparse/</ulink>.
+          See the 0README.txt file for details.</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section>
+      <title>Shorewall 1.4.2</title>
+
+      <itemizedlist>
+        <listitem>
+          <para>When an &#39;add&#39; or &#39;delete&#39; command is executed,
+          a temporary directory created in /tmp is not being removed. This
+          problem may be corrected by installing <ulink
+          url="ftp://ftp.shorewall.net/pub/shorewall/errata/1.4.2/firewall">this
+          firewall script</ulink> in /usr/share/shorewall/firewall as
+          described above.</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section>
+      <title>Shorewall 1.4.1a, 1.4.1 and 1.4.0</title>
+
+      <itemizedlist>
+        <listitem>
+          <para>Some TCP requests are rejected in the &#39;common&#39; chain
+          with an ICMP port-unreachable response rather than the more
+          appropriate TCP RST response. This problem is corrected in <ulink
+          url="ftp://ftp.shorewall.net/pub/shorewall/errata/1.4.1a/common.def">this
+          updated common.def file</ulink> which may be installed in
+          /etc/shorewall/common.def.</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section>
+      <title>Shorewall 1.4.1</title>
+
+      <itemizedlist>
+        <listitem>
+          <para>When a &#34;shorewall check&#34; command is executed, each
+          &#34;rule&#34; produces the harmless additional message:<programlisting>&#x00A0; &#x00A0; &#x00A0;/usr/share/shorewall/firewall: line 2174: [: =: unary operator expected</programlisting>You
+          may correct the problem by installing <ulink
+          url="ftp://ftp.shorewall.net/pub/shorewall/errata/1.4.1/firewall">this
+          corrected script</ulink> in /usr/share/shorewall/firewall as
+          described above.</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section>
+      <title>Shorewall 1.4.0</title>
+
+      <itemizedlist>
+        <listitem>
+          <para>When running under certain shells Shorewall will attempt to
+          create ECN rules even when /etc/shorewall/ecn is empty. You may
+          either just remove /etc/shorewall/ecn or you can install <ulink
+          url="http://www.shorewall.net/pub/shorewall/errata/1.4.0/firewall">this
+          correct script</ulink> in /usr/share/shorewall/firewall as described
+          above.</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+  </section>
+
+  <section>
+    <title>Upgrade Issues</title>
+
+    <para>The upgrade issues have moved to <ulink url="upgrade_issues.htm">a
+    separate page</ulink>.</para>
+  </section>
+
+  <section>
+    <title>Problem with iptables version 1.2.3</title>
+
+    <para>There are a couple of serious bugs in iptables 1.2.3 that prevent it
+    from working with Shorewall. Regrettably, RedHat released this buggy
+    iptables in RedHat 7.2.&#x00A0;</para>
+
+    <para>I have built a <ulink
+    url="ftp://ftp.shorewall.net/pub/shorewall/errata/iptables-1.2.3-3.i386.rpm">corrected
+    1.2.3 rpm which you can download here</ulink>&#x00A0; and I have also
+    built an <ulink
+    url="ftp://ftp.shorewall.net/pub/shorewall/iptables-1.2.4-1.i386.rpm">iptables-1.2.4
+    rpm which you can download here</ulink>. If you are currently running
+    RedHat 7.1, you can install either of these RPMs before you upgrade to
+    RedHat 7.2.</para>
+
+    <para><emphasis role="bold">Update 11/9/2001:</emphasis> RedHat has
+    released an iptables-1.2.4 RPM of their own which you can download from
+    <ulink url="http://www.redhat.com/support/errata/RHSA-2001-144.html.">http://www.redhat.com/support/errata/RHSA-2001-144.html</ulink>.I
+    have installed this RPM on my firewall and it works fine.</para>
+
+    <para>If you would like to patch iptables 1.2.3 yourself, the patches are
+    available for download. This <ulink
+    url="ftp://ftp.shorewall.net/pub/shorewall/errata/iptables-1.2.3/loglevel.patch">patch</ulink>
+    which corrects a problem with parsing of the --log-level specification
+    while this <ulink
+    url="ftp://ftp.shorewall.net/pub/shorewall/errata/iptables-1.2.3/tos.patch">patch</ulink>
+    corrects a problem in handling the&#x00A0; TOS target.</para>
+
+    <para>To install one of the above patches:<programlisting>     cd iptables-1.2.3/extensions
+     patch -p0 &#60; the-patch-file</programlisting></para>
+  </section>
+
+  <section>
+    <title>Problems with kernels &#62;= 2.4.18 and RedHat iptables</title>
+
+    <para>Users who use RedHat iptables RPMs and who upgrade to kernel
+    2.4.18/19 may experience the following:</para>
+
+    <blockquote>
+      <programlisting># shorewall start
+Processing /etc/shorewall/shorewall.conf ...
+Processing /etc/shorewall/params ...
+Starting Shorewall...
+Loading Modules...
+Initializing...
+Determining Zones...
+Zones: net
+Validating interfaces file...
+Validating hosts file...
+Determining Hosts in Zones...
+Net Zone: eth0:0.0.0.0/0
+iptables: libiptc/libip4tc.c:380: do_check: Assertion
+`h-&#62;info.valid_hooks == (1 &#60;&#60; 0 | 1 &#60;&#60; 3)&#39; failed.
+Aborted (core dumped)
+iptables: libiptc/libip4tc.c:380: do_check: Assertion
+`h-&#62;info.valid_hooks == (1 &#60;&#60; 0 | 1 &#60;&#60; 3)&#39; failed.
+Aborted (core dumped)</programlisting>
+    </blockquote>
+
+    <para>The RedHat iptables RPM is compiled with debugging enabled but the
+    user-space debugging code was not updated to reflect recent changes in the
+    Netfilter &#39;mangle&#39; table. You can correct the problem by
+    installing <ulink
+    url="http://www.shorewall.net/pub/shorewall/iptables-1.2.5-1.i386.rpm">this
+    iptables RPM</ulink>. If you are already running a 1.2.5 version of
+    iptables, you will need to specify the --oldpackage option to rpm (e.g.,
+    &#34;iptables -Uvh --oldpackage iptables-1.2.5-1.i386.rpm&#34;).</para>
+  </section>
+
+  <section>
+    <title>Problems with iptables version 1.2.7 and MULTIPORT=Yes</title>
+
+    <para>The iptables 1.2.7 release of iptables has made an incompatible
+    change to the syntax used to specify multiport match rules; as a
+    consequence, if you install iptables 1.2.7 you must be running Shorewall
+    1.3.7a or later or:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>set MULTIPORT=No in /etc/shorewall/shorewall.conf; or</para>
+      </listitem>
+
+      <listitem>
+        <para>If you are running Shorewall 1.3.6 you may install <ulink
+        url="http://www.shorewall.net/pub/shorewall/errata/1.3.6/firewall">this
+        firewall script</ulink> in /usr/lib/shorewall/firewall as described
+        above.</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Problems with RH Kernel 2.4.18-10 and NAT</title>
+
+    <para>/etc/shorewall/nat entries of the following form will result in
+    Shorewall being unable to start:</para>
+
+    <programlisting>     #EXTERNAL&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0; INTERFACE&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0; INTERNAL&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0; ALL INTERFACES&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0;&#x00A0; LOCAL
+     192.0.2.22&#x00A0;&#x00A0;&#x00A0;   eth0&#x00A0;&#x00A0;&#x00A0;         192.168.9.22&#x00A0;&#x00A0;  yes&#x00A0;&#x00A0;&#x00A0;&#x00A0;                 yes
+     #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+
+    <para> Error message is:</para>
+
+    <programlisting>     Setting up NAT...
+     iptables: Invalid argument
+     Terminated</programlisting>
+
+    <para>The solution is to put &#34;no&#34; in the LOCAL column. Kernel
+    support for LOCAL=yes has never worked properly and 2.4.18-10 has disabled
+    it. The 2.4.19 kernel contains corrected support under a new kernel
+    configuraiton option; see <ulink
+    url="http://www.shorewall.net/Documentation.htm#NAT">http://www.shorewall.net/Documentation.htm#NAT</ulink>.</para>
+  </section>
+
+  <section>
+    <title>Problems with RH Kernels after 2.4.20-9 and REJECT (also applies to
+    2.4.21-RC1)</title>
+
+    <para> Beginning with errata kernel 2.4.20-13.9, &#34;REJECT --reject-with
+    tcp-reset&#34; is broken. The symptom most commonly seen is that REJECT
+    rules act just like DROP rules when dealing with TCP. A kernel patch and
+    precompiled modules to fix this problem are available at <ulink
+    url="ftp://ftp1.shorewall.net/pub/shorewall/errata/kernel">ftp://ftp1.shorewall.net/pub/shorewall/errata/kernel</ulink>.</para>
+  </section>
+</article>

@@ -1776,7 +1776,7 @@ add_accounting_chain() {
 	return
     fi
 
-    if chain_exists $source; then
+    if havechain $source; then
 	error_message "Warning: Chain $source already exists - CHAIN declaration $source $dest Ignored"
 	return
     fi
@@ -1808,7 +1808,7 @@ process_accounting_rule() {
     }
 
     jump_to_chain() {
-	if ! chain_exists $chain; then
+	if ! havechain $chain; then
 	    if createchain2 $chain No; then
 		run_iptables -A $chain -j RETURN
 	    else
@@ -1830,12 +1830,7 @@ process_accounting_rule() {
 	-|all|any)
 	    ;;
 	*)
-	    if [ -n "$source" ]; then
-		rule="-i $source"
-	    else
-		accounting_error
-		return
-	    fi
+	    [ -n "$source" ] && rule="-i $source"
 	    ;;
     esac
 
@@ -1894,7 +1889,7 @@ process_accounting_rule() {
 	    ;;
     esac
 		
-    chain_exists accounting || createchain accounting No
+    havechain accounting || createchain accounting No
 
     if iptables -A accounting $rule ; then
 	[ "x$rule2" != x ] && run_iptables -A accounting $rule2
@@ -1925,7 +1920,7 @@ setup_accounting() # $1 = Name of accounting file
 	    esac
     done < $TMP_DIR/accounting
 
-    if chain_exists accounting; then
+    if havechain accounting; then
 	for chain in INPUT FORWARD OUTPUT; do
 	    run_iptables -A $chain -j accounting
 	done

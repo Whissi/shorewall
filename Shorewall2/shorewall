@@ -1014,17 +1014,24 @@ case "$1" in
 	    done
 	done
 
-	echo
-	echo "Routing Rules"
-	echo
-	ip rule ls
-	ip rule ls | while read rule; do
-	    table=${rule##* }
+	if [ -n "$(ip rule ls)" ]; then
 	    echo
-	    echo "Table $table:"
+	    echo "Routing Rules"
 	    echo
-	    ip route ls table $table
-	done
+	    ip rule ls
+	    ip rule ls | while read rule; do
+		table=${rule##* }
+		echo
+		echo "Table $table:"
+		echo
+		ip route ls table $table
+	    done
+	else
+	    echo
+	    echo "Routing Table"
+	    echo
+	    ip route ls
+	fi
 
 	echo
 	echo "ARP"

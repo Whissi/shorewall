@@ -83,29 +83,23 @@ find_display() # $1 = zone, $2 = name of the zone file
 	[ "x$1" = "x$z" ] && echo $display
     done
 }
-
+#
+# This function assumes that the TMP_DIR variable is set and that
+# its value named an existing directory.
+#
 determine_zones()
 {
     local zonefile=`find_file zones`
 
     multi_display=Multi-zone
-
-    if [ -f $zonefile ]; then
-	zones=`find_zones $zonefile`
-	zones=`echo $zones` # Remove extra trash
-
-	for zone in $zones; do
-	    dsply=`find_display $zone $zonefile`
-	    eval ${zone}_display=\$dsply
-        done
-    else
-	zones="net local dmz gw"
-	net_display=Net
-	local_display=Local
-	dmz_display=DMZ
-	gw_display=Gateway
-    fi
-
+    strip_file zones $zonefile
+    zones=`find_zones $TMP_DIR/zones`
+    zones=`echo $zones` # Remove extra trash
+    
+    for zone in $zones; do
+	dsply=`find_display $zone $TMP_DIR/zones`
+	eval ${zone}_display=\$dsply
+    done
 }
 
 #

@@ -354,11 +354,11 @@ setpolicy() # $1 = name of chain, $2 = policy
 }
 
 #
-# Set a standard chain to enable established connections
+# Set a standard chain to enable established and related connections
 #
 setcontinue() # $1 = name of chain
 {
-    run_iptables -A $1 -m state --state ESTABLISHED -j ACCEPT
+    run_iptables -A $1 -m state --state ESTABLISHED,RELATED -j ACCEPT
 }
 
 #
@@ -1000,7 +1000,7 @@ stop_firewall() {
 
     while read interface host; do
 	expandv interface host
-	[ "x$host" = "x-" -o -z "$hosts" ] && host=0.0.0.0/0
+	[ "x$host" = "x-" -o -z "$host" ] && host=0.0.0.0/0
 	for h in `separate_list $host`; do
 	    hosts="$hosts $interface:$h"
 	done
@@ -1793,19 +1793,13 @@ refresh_tc() {
 #
 add_nat_rule() {
     local chain
+    local excludedests=
 
-    # Be sure we should and can NAT
+    # Be sure we can NAT
 
-    case $logtarget in
-	DNAT|REDIRECT)
-	    if [ -z "$NAT_ENABLED" ]; then
-		fatal_error "Rule \"$rule\" requires NAT which is disabled"
-	    fi
-	    ;;
-	*)
-	    fatal_error "Only DNAT and REDIRECT rules may specify port mapping; rule \"$rule\""
-	    ;;
-    esac
+    if [ -z "$NAT_ENABLED" ]; then
+	fatal_error "Rule \"$rule\" requires NAT which is disabled"
+    fi
 
     # Parse SNAT address if any
 
@@ -1823,14 +1817,20 @@ add_nat_rule() {
 	    addr=
 	    ;;
 	detect)
-	   addr=
-           if [ -n "$DETECT_DNAT_IPADDRS" -a "$source" != "$FW" ]; then
-	       eval interfaces=\$${source}_interfaces
-	       for interface in $interfaces; do
-		   addr="`find_interface_address $interface` $addr"
-	       done
-	   fi
-	   ;;
+	    addr=
+	    if [ -n "$DETECT_DNAT_IPADDRS" -a "$source" != "$FW" ]; then
+		eval interfaces=\$${source}_interfaces
+		for interface in $interfaces; do
+		    addr=${addr:+$addr,}`find_interface_address $interface`
+		done
+	    fi
+	    ;;
+	!*)
+	    if [ `list_count $addr` -gt 1 ]; then
+		excludedests="`separate_list ${addr#\!}`"
+		addr=
+	    fi
+	    ;;
     esac
 
     addr=${addr:-0.0.0.0/0}
@@ -1844,42 +1844,75 @@ add_nat_rule() {
 	target1="REDIRECT --to-port $servport"
     fi
 
+    if [ $source = $FW ]; then
+	[ -n "$excludezones" ] && fatal_error "Invalid Source in rule \"$rule\""
+    fi
+
     # Generate nat table rules
 
     if [ $command != check ]; then
 	if [ "$source" = "$FW" ]; then
-	    run_iptables2 -t nat -A OUTPUT $proto $sports -d $addr \
-		$multiport $dports -j $target1
-	else
-	    chain=`dnat_chain $source`
-
-	    if [ -n "$excludezones" ]; then
+	    if [ -n "$excludedests" ]; then
 		chain=nonat${nonat_seq}
 		nonat_seq=$(($nonat_seq + 1))
 		createnatchain $chain
-		addnatrule `dnat_chain $source` -j $chain
+		run_iptables -t nat -A OUTPUT $cli $proto $multiport $sports $dports -j $chain
+
+		for adr in $excludedests; do
+		    addnatrule $chain -d $adr -j RETURN
+		done
+
+		if [ -n "$loglevel" ]; then
+		    log_rule $loglevel $chain $logtarget -t nat
+		fi
+
+		addnatrule $chain -j $target1
+	    else
+		for adr in `separate_list $addr`; do
+		    run_iptables2 -t nat -A OUTPUT $proto $sports -d $adr \
+			$multiport $dports -j $target1
+		done
+	    fi
+	else
+	    chain=`dnat_chain $source`
+
+	    if [ -n "${excludezones}${excludedests}" ]; then
+		chain=nonat${nonat_seq}
+		nonat_seq=$(($nonat_seq + 1))
+		createnatchain $chain
+		addnatrule `dnat_chain $source` $cli $proto $multiport $sports $dports -j $chain
 		for z in $excludezones; do
 		    eval hosts=\$${z}_hosts
 		    for host in $hosts; do
-			for adr in $addr; do
-			    addnatrule $chain $proto -s ${host#*:} \
-				$multiport $sports -d $adr $dports -j RETURN
+			for adr in `separate_list $addr`; do
+			    addnatrule $chain -s ${host#*:} -d $adr -j RETURN
 			done
 		    done
 		done
+
+		for adr in $excludedests; do
+		    addnatrule $chain -d $adr -j RETURN
+		done
+
+		for adr in `separate_list $addr`; do
+		    if [ -n "$loglevel" ]; then
+			log_rule $loglevel $chain $logtarget -t nat -d `fix_bang $adr`
+		    fi
+
+		    addnatrule $chain -d $adr -j $target1
+		done
+	    else
+		for adr in `separate_list $addr`; do
+		    if [ -n "$loglevel" ]; then
+			ensurenatchain $chain
+			log_rule $loglevel $chain $logtarget -t nat \
+			    `fix_bang $proto $cli $sports -d $adr $multiport $dports`
+		    fi
+		    
+		    addnatrule $chain $proto $cli $sports \
+			-d $adr $multiport $dports -j $target1
+		done
 	    fi
-
-	    for adr in $addr; do
-		if [ -n "$loglevel" ]; then
-		    ensurenatchain $chain
-		    log_rule $loglevel $chain $logtarget -t nat \
-			`fix_bang $proto $cli $sports -d $adr $multiport $dports`
-		    loglevel=
-		fi
-
-		addnatrule $chain $proto $cli $sports \
-		    -d $adr $multiport $dports -j $target1
-	    done
 	fi
     fi
 
@@ -1930,11 +1963,13 @@ add_nat_rule() {
 #
 add_a_rule()
 {
-    # Set source variables
+    local natrule=
+
+    # Set source variables. The 'cli' variable will hold the client match predicate(s).
 
     cli=
 
-    [ -n "$client" ] && case "$client" in
+    case "$client" in
     -)
 	;;
     *:*)
@@ -1947,16 +1982,16 @@ add_a_rule()
 	cli=`mac_match $client`
 	;;
     *)
-	cli="-i $client"
+	[ -n "$client" ] && cli="-i $client"
 	;;
     esac
 
-    # Set destination variables
+    # Set destination variables - 'serv' and 'dest_interface' hold the server match predicate(s).
 
     dest_interface=
     serv=
 
-    [ -n "$server" ] && case "$server" in
+    case "$server" in
     -)
 	;;
     *.*.*)
@@ -1966,7 +2001,7 @@ add_a_rule()
 	fatal_error "Rule \"$rule\" - Destination may not be specified by MAC Address"
 	;;
     *)
-	dest_interface="-o $server"
+	[ -n "$server" ] && dest_interface="-o $server"
 	;;
     esac
 
@@ -2032,10 +2067,12 @@ add_a_rule()
 	    [ -n "$serv" ] && startup_error "REDIRECT rules cannot"\
 		" specify a server IP; rule: \"$rule\""
 	    servport=${servport:=$port}
+	    natrule=Yes
 	    ;;
 	DNAT)
 	    [ -n "$serv" ] || fatal_error "DNAT rules require a" \
 		" server address; rule: \"$rule\""
+	    natrule=Yes
 	    ;;
 	LOG)
 	    [ -z "$loglevel" ] && fatal_error "LOG requires log level"
@@ -2044,7 +2081,7 @@ add_a_rule()
 
     # Complain if the rule is really a policy
 
-    if [ -z "$proto" -a -z "$cli" -a -z "$serv" -a -z "$servport" ]; then
+    if [ -z "$proto" -a -z "$cli" -a -z "$serv" -a -z "$servport" -a "$logtarget" != LOG ]; then
 	error_message "Warning -- Rule \"$rule\" is a POLICY"
 	error_message "	       -- and should be moved to the policy file"
     fi
@@ -2054,15 +2091,16 @@ add_a_rule()
 
 	    # A specific server or server port given
 
-	    if [ -n "$addr" -a "$addr" != "$serv" ]; then
+	    if [ -n "$natrule" ]; then
 		add_nat_rule
-	    elif [ -n "$servport" -a "$servport" != "$port" ]; then
-		add_nat_rule
+	    elif [ -n "$addr" -a "$addr" != "$serv" ] || [ -n "$servport" -a "$servport" != "$port" ]; then
+		fatal_error "Only DNAT and REDIRECT rules may specify destination mapping; rule \"$rule\""
 	    fi
 
 	    if [ -z "$dnat_only" -a $chain != ${FW}2${FW} ]; then
 		serv="${serv:+-d $serv}"
-		if [ -n "$loglevel" ]; then
+
+		if [ -n "$loglevel" -a -z "$natrule" ]; then
 		    log_rule $loglevel $chain $logtarget \
 			`fix_bang $proto $sports $multiport $state $cli $serv $dports`
 		fi
@@ -2126,7 +2164,12 @@ process_rule() # $1 = target
     logtarget="$target"
     dnat_only=
 
-    # Convert 1.3 Rule formats to 1.2 format
+    # Tranform the rule:
+    #
+    # - set 'target' to the filter table target.
+    # - make $FW the destination for REDIRECT
+    # - remove '-' suffix from logtargets while setting 'dnat_only'
+    # - clear 'address' if it has been set to '-'
 
     [ "x$address" = "x-" ] && address=
 
@@ -2185,9 +2228,7 @@ process_rule() # $1 = target
 	    fatal_error "Exclude list only allowed with DNAT or REDIRECT"
     fi
 
-    if ! validate_zone $clientzone; then
-	fatal_error "Undefined Client Zone in rule \"$rule\""
-    fi
+    validate_zone $clientzone || fatal_error "Undefined Client Zone in rule \"$rule\""
 
     # Parse and validate destination
 
@@ -2220,7 +2261,7 @@ process_rule() # $1 = target
 
     dest=$serverzone
 
-    # Create canonical chain if necessary
+    # Ensure that this rule doesn't apply to a NONE policy pair of zones
 
     chain=${source}2${dest}
 
@@ -2229,11 +2270,14 @@ process_rule() # $1 = target
     [ $policy = NONE ] && \
 	fatal_error "Rules may not override a NONE policy: rule \"$rule\""
 
-    [ $command = check ] || ensurechain $chain
+    # Be sure that this isn't a fw->fw rule.
 
     if [ "x$chain" = x${FW}2${FW} ]; then
 	case $logtarget in
-	    REDIRECT)
+	    REDIRECT|DNAT)
+		#
+		# Redirect rules that have the firewall as the source are fw->fw rules
+		#
 		;;
 	    *)
 		error_message "WARNING: fw -> fw rules are not supported; rule \"$rule\" ignored"
@@ -2241,6 +2285,9 @@ process_rule() # $1 = target
 		;;
 	esac
     else
+
+	# Create the canonical chain if it doesn't already exist
+    
 	[ $command = check ] || ensurechain $chain
     fi
 
@@ -2252,15 +2299,25 @@ process_rule() # $1 = target
 	 `list_count $ports` -le 15 -a \
 	 `list_count $cports` -le 15 ]
     then
+	#
+	# MULTIPORT is enabled, there are no port ranges in the rule and less than
+	# 16 ports are listed - use multiport match.
+	#
 	multioption="-m multiport"
 	for client in `separate_list ${clients:=-}`; do
 	    for server in `separate_list ${servers:=-}`; do
+		#
+		# add_a_rule() modifies these so we must set their values each time
+		#
 		port=${ports:=-}
 		cport=${cports:=-}
 		add_a_rule
 	    done
 	done
     else
+	#
+	# MULTIPORT is disabled or the rule isn't compatible with multiport match
+	#
 	multioption=
 	for client in `separate_list ${clients:=-}`; do
 	    for server in `separate_list ${servers:=-}`; do
@@ -2272,7 +2329,9 @@ process_rule() # $1 = target
 	    done
 	done
     fi
-
+    #
+    # Report Result
+    #
     if [ $command = check ]; then
 	echo "   Rule \"$rule\" checked."
     else
@@ -3774,9 +3833,11 @@ activate_rules()
     complete_standard_chain INPUT all $FW
     complete_standard_chain OUTPUT $FW all
     complete_standard_chain FORWARD all all
-
+    #
+    # Remove rules added to keep the firewall alive during [re]start"
+    #
     for chain in INPUT OUTPUT FORWARD; do
-	run_iptables -D $chain -m state --state ESTABLISHED -j ACCEPT
+	run_iptables -D $chain -m state --state ESTABLISHED,RELATED -j ACCEPT
 	run_iptables -D $chain -p udp --dport 53 -j ACCEPT
     done
 }

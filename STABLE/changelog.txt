@@ -1,15 +1,15 @@
-Changes since 1.4.3a
+Changes since 1.4.4b
 
-1. Implement REDIRECT-.
+1) The command "shorewall debug try <directory>" now correctly traces
+   the attempt.
 
-2. Change LOGMARKER to a printf mask and allow embedded spaces. Renamed
-   it LOGFORMAT to avoid confusion.
+2) The ORIGINAL DEST column in a DNAT[-] or REDIRECT[-] rule may now
+   contain a list of addresses. If the list begins with "!' then the
+   rule will take effect only if the original destination address in
+   the connection request does not match any of the addresses listed.
 
-3. DNAT and REDIRECT logging is moved from the filter table to the nat
-   table.
-
-4. Don't include log rule number when LOGFORMAT doesn't include "%d".
-
-5. Add --log-level to LOG rules.
-
+3) Enhanced processing of the zones file to allow the INCLUDE
+   directive.
+ 
+4) Fix processing of the routestopped file's second column.
 

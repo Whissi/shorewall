@@ -2333,16 +2333,19 @@ process_tc_rule()
 	if [ "x$source" != "x-"	 ]; then
 	    case $source in
 		*.*.*)
-		    r="-s $source "
+		    r="$(source_ip_range $source) "
 		    ;;
 		~*)
 		    r="$(mac_match $source) "
 		    ;;
+		$FW:*)
+		    chain=tcout
+		    r="$(source_ip_range ${source%:*}) " 
+		    ;;
 		$FW)
 		    chain=tcout
 		    ;;
-		*)
-		    
+		*)		    
 		    verify_interface $source || fatal_error "Unknown interface $source in rule \"$rule\""
 		    r="$(match_source_dev) $source "
 		    ;;

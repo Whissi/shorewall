@@ -100,7 +100,7 @@ fi
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel
 
 %changelog
-* Wed OCT 09 2002 Tom Eastep <tom@shorewall.net>
+* Wed Oct 09 2002 Tom Eastep <tom@shorewall.net>
 - Changed version to 1.3.9b
 * Mon Sep 30 2002 Tom Eastep <tom@shorewall.net>
 - Changed version to 1.3.9a

@@ -1142,19 +1142,29 @@ setup_tunnels() # $1 = name of tunnels file
     local inchain
     local outchain
 
-    setup_one_ipsec() # $1 = gateway $2 = gateway zones
+    setup_one_ipsec() # $1 = gateway $2 = Tunnel Kind $3 = gateway zones
     {
 	options="-m state --state NEW -j ACCEPT"
 	addrule $inchain	  -p 50	 -s $1 -j ACCEPT
 	addrule $outchain	  -p 50	 -d $1 -j ACCEPT
 	run_iptables -A $inchain  -p 51	 -s $1 -j ACCEPT
 	run_iptables -A $outchain -p 51	 -d $1 -j ACCEPT
-	run_iptables -A $inchain  -p udp -s $1 --sport 500 --dport 500 $options
-	run_iptables -A $outchain -p udp -d $1 --dport 500 --sport 500 $options
 
-	for z in `separate_list $2`; do
+	if [ $2 = ipsec ]; then
+	    run_iptables -A $inchain  -p udp -s $1 --sport 500 --dport 500 $options
+	    run_iptables -A $outchain -p udp -d $1 --dport 500 --sport 500 $options
+	else
+	    run_iptables -A $inchain  -p udp -s $1 --dport 500 $options
+	    run_iptables -A $outchain -p udp -d $1 --sport 500 $options
+	fi
+
+	for z in `separate_list $3`; do
 	    if validate_zone $z; then
-		addrule ${FW}2${z} -p udp --sport 500 --dport 500 $options
+		if [ $2 = ipsec ]; then
+		    addrule ${FW}2${z} -p udp --sport 500 --dport 500 $options
+		else
+		    addrule ${FW}2${z} -p udp --sport 500 $options
+		fi
 	    else
 		error_message "Warning: Invalid gateway zone ($z)" \
 		" -- Tunnel \"$tunnel\" may encounter keying problems"
@@ -1182,7 +1192,10 @@ setup_tunnels() # $1 = name of tunnels file
 	    outchain=${FW}2${z}
 	    case $kind in
 		ipsec|IPSEC)
-		    setup_one_ipsec $gateway $z1
+		    setup_one_ipsec $gateway ipsec $z1
+		    ;;
+		ipsecnat|IPSECNAT)
+		    setup_one_ipsec $gateway ipsecnat $z1
 		    ;;
 		ipip|IPIP)
 		    setup_one_other IPIP $gateway 4

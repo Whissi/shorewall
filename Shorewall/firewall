@@ -599,12 +599,16 @@ validate_interfaces_file() {
 
 	for option in $options; do
 	    case $option in
-	    dhcp|noping|filterping|routestopped|norfc1918|multi|tcpflags)
-                ;;
-	    routefilter|dropunclean|logunclean|blacklist|proxyarp|maclist|-)
-		;;
-	    *)
-		error_message "Warning: Invalid option ($option) in record \"$r\""
+		dhcp|routestopped|norfc1918|multi|tcpflags)
+		    ;;
+		routefilter|dropunclean|logunclean|blacklist|proxyarp|maclist|-)
+		    ;;
+		noping|filterping)
+		    [ -n "$OLD_PING_HANDLING" ] || \
+			startup_error "Option $option only allowed with old ping handling"
+		    ;;
+		*)
+		    error_message "Warning: Invalid option ($option) in record \"$r\""
 		;;
 	    esac
 	done
@@ -3350,11 +3354,14 @@ initialize_netfilter () {
 # Build the common chain -- called during [re]start and refresh
 #
 build_common_chain() {
-    #
-    # PING
-    #
-    [ -n "$FORWARDPING" ] && \
-	run_iptables -A icmpdef -p icmp --icmp-type echo-request -j ACCEPT
+    
+    if [ -n "$OLD_PING_HANDLING" ]; then
+        #
+        # PING
+        #
+	[ -n "$FORWARDPING" ] && \
+	    run_iptables -A icmpdef -p icmp --icmp-type echo-request -j ACCEPT
+    fi
     #
     # Common ICMP rules
     #
@@ -3907,23 +3914,25 @@ define_firewall() # $1 = Command (Start or Restart)
 
     process_rules $rules
 
-    echo "Setting up ICMP Echo handling..."
+    if [ -n "$OLD_PING_HANDLING" ]; then
+	echo "Setting up ICMP Echo handling..."
 
-    filterping_interfaces="`find_interfaces_by_option filterping`"
-    noping_interfaces="`find_interfaces_by_option noping`"
+	filterping_interfaces="`find_interfaces_by_option filterping`"
+	noping_interfaces="`find_interfaces_by_option noping`"
 
-    for interface in $all_interfaces; do
-	if ! list_search $interface $filterping_interfaces; then
-	    if list_search $interface $noping_interfaces; then
-		target=DROP
-	    else
-		target=ACCEPT
+	for interface in $all_interfaces; do
+	    if ! list_search $interface $filterping_interfaces; then
+		if list_search $interface $noping_interfaces; then
+		    target=DROP
+		else
+		    target=ACCEPT
+		fi
+		
+		run_iptables -A `input_chain $interface` \
+		    -p icmp --icmp-type echo-request -j $target
 	    fi
-	    
-	    run_iptables -A `input_chain $interface` \
-		-p icmp --icmp-type echo-request -j $target
-	fi
-    done
+	done
+    fi
 
     policy=`find_file policy`
 
@@ -4471,6 +4480,7 @@ do_initialize() {
     TCP_FLAGS_LOG_LEVEL=
     RFC1918_LOG_LEVEL=
     MARK_IN_FORWARD_CHAIN=
+    OLD_PING_HANDLING=
     SHARED_DIR=/usr/lib/shorewall
     FUNCTIONS=
     VERSION_FILE=
@@ -4596,7 +4606,7 @@ do_initialize() {
     else
 	CLEAR_TC=
     fi
-
+    OLD_PING_HANDLING=`added_param_value_yes OLD_PING_HANDLING $OLD_PING_HANDLING`
 
     run_user_exit params
 

@@ -2,48 +2,14 @@ This is a minor release of Shorewall that has a couple of new features.
 
 New features include:
 
-1) A new 'DNAT-' action has been added for entries in the
-   /etc/shorewall/rules file. DNAT- is intended for advanced users who
-   wish to minimize the number of rules that connection requests must
-   traverse.
-   
-   A Shorewall DNAT rule actually generates two iptables rules: a
-   header rewriting rule in the 'nat' table and an ACCEPT rule in the
-   'filter' table. A DNAT- rule only generates the first of these
-   rules. This is handy when you have several DNAT rules that would
-   generate the same ACCEPT rule.
+1) An OLD_PING_HANDLING option has been added to shorewall.conf. When
+   set to Yes, Shorewall ping handling is as it has always been (see
+   http://www.shorewall.net/ping.html).
 
-   Here are three rules from my previous rules file:
-   
-	DNAT   net  dmz:206.124.146.177 tcp smtp - 206.124.146.178
-	DNAT   net  dmz:206.124.146.177 tcp smtp - 206.124.146.179
-	ACCEPT net  dmz:206.124.146.177 tcp www,smtp,ftp,...
+   When OLD_PING_HANDLING=No, icmp echo (ping) is handled via rules and
+   policies just like any other connection request. The FORWARDPING
+   option in shorewall.conf is ignored and the 'noping' and
+   'filterping' options in /etc/shorewall/interfaces will generate an
+   error.
 
-   These three rules ended up generating _three_ copies of 
 
-	 ACCEPT net  dmz:206.124.146.177 tcp smtp
-
-   By writing the rules this way, I end up with only one copy of the
-   ACCEPT rule.
-
-	DNAT-  net  dmz:206.124.146.177 tcp smtp -  206.124.146.178
-	DNAT-  net  dmz:206.124.146.177 tcp smtp -  206.124.146.179
-	ACCEPT net  dmz:206.124.146.177 tcp www,smtp,ftp,...
-
-2) The 'shorewall check' command now prints out the applicable policy
-   between each pair of zones.
-
-3. A new CLEAR_TC option has been added to shorewall.conf. If this
-   option is set to 'No' then Shorewall won't clear the current
-   traffic control rules during [re]start. This setting is intended
-   for use by people that prefer to configure traffic shaping when
-   the network interfaces come up rather than when the firewall
-   is started. If that is what you want to do, set TC_ENABLED=Yes and
-   CLEAR_TC=No and do not supply an /etc/shorewall/tcstart file. That
-   way, your traffic shaping rules can still use the 'fwmark'
-   classifier based on packet marking defined in /etc/shorewall/tcrules.
-
-4. A new SHARED_DIR variable has been added that allows distribution
-   packagers to easily move the shared directory (default
-   /usr/lib/shorewall). Users should never have a need to change the
-   value of this shorewall.conf setting.

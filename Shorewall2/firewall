@@ -438,14 +438,6 @@ masq_chain() # $1 = interface
 }
 
 #
-# SNAT Chain for an interface
-#
-snat_chain() # $1 = interface
-{
-   echo $(chain_base $1)_snat
-}
-
-#
 # MAC Verification Chain for an interface
 #
 mac_chain() # $1 = interface
@@ -487,7 +479,7 @@ dnat_chain() # $1 = zone
 }
 
 #
-# SNAT Chain to a zone
+# SNAT Chain to a zone or from an interface
 #
 snat_chain() # $1 = zone
 {
@@ -1884,7 +1876,46 @@ delete_proxy_arp() {
 # Setup Static Network Address Translation (NAT)
 #
 setup_nat() {
-    local allints
+    local external, interface, internal, allints, localnat
+
+    do_one_nat() {
+	local add_ip_aliases=$ADD_IP_ALIASES, iface=${interface%:*}
+	
+	if [ -n "$add_ip_aliases" ]; then
+	    case $interface in
+		*:)
+		    interface=${interface%:}
+		    add_ip_aliases=
+		    ;;
+		*)
+		    run_and_save_command qt ip addr del $external dev $iface
+		    ;;
+	    esac
+	else
+	    interface=${interface%:}
+	fi
+	
+	if [ "x$allints" = "xYes" -o "x$allints" = "xyes" ]; then
+	    addnatrule nat_in  -d $external -j DNAT --to-destination $internal
+	    addnatrule nat_out -s $internal -j SNAT --to-source $external
+	elif [ -z "$allints" -o "x$allints" = "x-" -o "x$allints" = "xNo" -o "x$allints" = "xno" ]; then       
+	    addnatrule $(input_chain $iface) -d $external -j DNAT --to-destination $internal
+	    addnatrule $(output_chain $iface) -s $internal -j SNAT --to-source $external
+	else
+	    fatal_error "Invalid value ($allints) for ALL INTERFACES in entry \"$external $interface $internal $allints $localnat\""
+	fi
+	
+	if [ "x$localnat" = "xYes" -o "x$localnat" = "xyes" ]; then
+	    run_iptables2 -t nat -A OUTPUT -d $external -j DNAT --to-destination $internal
+	elif [ "x$localnat" != "x-" -a -n "$localnat" -a "x$localnat" != "xNo" -a "x$localnat" != "xno" ]; then
+	    fatal_error "Invalid value ($allints) for LOCAL in entry \"$external $interface $internal $allints $localnat\""	    
+	fi
+
+	if [ -n "$add_ip_aliases" ]; then
+	    list_search $external $aliases_to_add || \
+		aliases_to_add="$aliases_to_add $external $interface"
+	fi
+    }
     #
     # At this point, we're just interested in the network translation
     #
@@ -1894,37 +1925,8 @@ setup_nat() {
 
     while read external interface internal allints localnat; do
 	expandv external interface internal allints localnat
-
-	iface=${interface%:*}
-
-	if [ -n "$ADD_IP_ALIASES" ]; then
-	    run_and_save_command qt ip addr del $external dev $iface
-	fi
-
-	if [ "x$allints" = "xYes" -o "x$allints" = "xyes" ]; then
-	    addnatrule nat_in  -d $external -j DNAT --to-destination $internal
-	    addnatrule nat_out -s $internal -j SNAT --to-source $external
-
-	elif [ -z "$allints" -o "x$allints" = "x-" -o "x$allints" = "xNo" -o "x$allints" = "xno" ]; then       
-	    addnatrule $(input_chain $iface) \
-		-d $external -j DNAT --to-destination $internal
-	    addnatrule $(output_chain $iface) \
-		-s $internal -j SNAT --to-source $external
-	else
-	    fatal_error "Invalid value ($allints) for ALL INTERFACES in entry \"$external $interface $internal $allints $localnat\""
-	fi
-
-	if [ "x$localnat" = "xYes" -o "x$localnat" = "xyes" ]; then
-	    run_iptables2 -t nat -A OUTPUT -d $external -j DNAT --to-destination $internal
-	elif [ "x$localnat" != "x-" -a -n "$localnat" -a "x$localnat" != "xNo" -a "x$localnat" != "xno" ]; then
-	    fatal_error "Invalid value ($allints) for LOCAL in entry \"$external $interface $internal $allints $localnat\""	    
-	fi
-
-
-	if [ -n "$ADD_IP_ALIASES" ]; then
-	    list_search $external $aliases_to_add || \
-		aliases_to_add="$aliases_to_add $external $interface"
-	fi
+	
+	do_one_nat
 
 	progress_message "   Host $internal NAT $external on $interface"
     done < $TMP_DIR/nat
@@ -5358,7 +5360,7 @@ activate_rules()
 
     #
     # Jump to a RULES chain from one of the builtin nat chains. These jumps are
-    # are inserted before jumps to static NAT chains.
+    # are inserted before jumps to one-to-one NAT chains.
     #
     addrulejump() # $1 = BUILTIN chain, $2 = user chain, $3 - * other arguments
     {
@@ -5375,12 +5377,11 @@ activate_rules()
 	fi
     }
     #
-    # Add early SNAT jumps
+    # Add jumps to early SNAT chains
     #
     for interface in $all_interfaces; do
-	addrulejump POSTROUTING $(snat_chain $interface) -o $interface 
+	addnatjump POSTROUTING $(snat_chain $interface) -o $interface
     done
-
     #
     # Add jumps for dynamic nat chains
     #

@@ -36,8 +36,18 @@
 #
 #			dhcp	     - interface is managed by DHCP or used by
 #                                      a DHCP server running on the firewall.
-#			noping	     - icmp echo-request (ping) packets should
+#			noping	     - icmp echo-request (ping) packets
+#				       addressed to the firewall should
 #				       be ignored on this interface
+#			filterping   - icmp echo-request (ping) packets 
+#				       addressed to the firewall should
+#				       be controlled by the rules file and
+#				       applicable policy. If neither 'noping'
+#				       nor 'filterping' are specified then
+#				       the firewall will respond to 'ping'
+#				       requests. 'filterping' takes 
+#				       precedence over 'noping' if both are
+#				       given.
 #			routestopped - When the firewall is stopped, allow
 #				       and route traffic to and from this
 #				       interface.
@@ -90,6 +100,6 @@
 #
 #			net	ppp0	-		noping
 ##############################################################################
-#ZONE	INTERFACE	BROADCAST	OPTIONS
+#ZONE	 INTERFACE	BROADCAST	OPTIONS
 net	eth0		detect		norfc1918,routefilter,dhcp
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

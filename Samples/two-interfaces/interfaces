@@ -26,7 +26,7 @@
 #			select this option, the interface must be up before
 #			the firewall is started and you must have iproute
 #			installed.
-#
+#			
 #			If you don't want to give a value for this column but
 #			you want to enter a value in the OPTIONS column, enter
 #			"-" in this column.
@@ -36,8 +36,18 @@
 #
 #			dhcp	     - interface is managed by DHCP or used by
 #                                      a DHCP server running on the firewall.
-#			noping	     - icmp echo-request (ping) packets should
+#			noping	     - icmp echo-request (ping) packets
+#				       addressed to the firewall should
 #				       be ignored on this interface
+#			filterping   - icmp echo-request (ping) packets 
+#				       addressed to the firewall should
+#				       be controlled by the rules file and
+#				       applicable policy. If neither 'noping'
+#				       nor 'filterping' are specified then
+#				       the firewall will respond to 'ping'
+#				       requests. 'filterping' takes 
+#				       precedence over 'noping' if both are
+#				       given.
 #			routestopped - When the firewall is stopped, allow
 #				       and route traffic to and from this
 #				       interface.

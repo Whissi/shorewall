@@ -97,6 +97,14 @@
 #			In that case, it is suggested that this field contain
 #			 "-"
 #
+#			If MULTIPORT=Yes in /etc/shorewall/shorewall.conf, then
+#			only a single Netfilter rule will be generated if in
+#			this list and the CLIENT PORT(S) list below:
+#			1. There are 15 or less ports listed.
+#			2. No port ranges are included.
+#			Otherwise, a separate rule will be generated for each
+#			port.
+#
 #	CLIENT PORT(S)	(Optional) Port(s) used by the client. If omitted,
 #			any source port is acceptable. Specified as a comma-
 #			separated list of port names, port numbers or port
@@ -106,7 +114,15 @@
 #			specify an ADDRESS in the next column, then place "-"
 #			in this column.
 #
-#	ORIGINAL DEST	(0ptional -- only allowed if ACTION is DNAT or
+#			If MULTIPORT=Yes in /etc/shorewall/shorewall.conf, then
+#			only a single Netfilter rule will be generated if in
+#			this list and the DEST PORT(S) list above:
+#			1. There are 15 or less ports listed.
+#			2. No port ranges are included.
+#			Otherwise, a separate rule will be generated for each
+#			port.
+#
+#	ORIGINAL DEST	(0ptional -- only allowed if ACTION is DNAT or 
 #                       REDIRECT) If included and different from the IP
 #			address given in the SERVER column, this is an address
 #			on some interface on the firewall and connections to

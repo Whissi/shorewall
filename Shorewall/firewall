@@ -3685,10 +3685,6 @@ add_common_rules() {
     run_iptables -A OUTPUT  -o lo -j ACCEPT
     
     #
-    # Enable icmp output
-    #
-    run_iptables -A OUTPUT -p icmp -j ACCEPT
-    #
     # Route Filtering
     #
     for f in /proc/sys/net/ipv4/conf/*/rp_filter; do

@@ -842,7 +842,7 @@ validate_rule() {
 
     chain=${source}2${dest}
 
-    if [ "x$chain" = xfw2fw ]; then
+    if [ "x$chain" = x${FW}2${FW} ]; then
 	error_message "WARNING: fw -> fw rules are not supported; rule \"$rule\" ignored"
 	return
     fi
@@ -2079,7 +2079,7 @@ process_rule() {
 
     chain=${source}2${dest}
 
-    if [ "x$chain" = xfw2fw ]; then
+    if [ "x$chain" = x${FW}2${FW} ]; then
 	error_message "WARNING: fw -> fw rules are not supported; rule \"$rule\" ignored"
 	return
     fi

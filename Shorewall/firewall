@@ -3476,11 +3476,9 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
     }
 
     output_rule_num() {
-	local num=`iptables -L OUTPUT -n --line-numbers | grep common | cut -d' ' -f1 | tail -n1`
-
-	[ -z "$num" ] && num=`iptables -L OUTPUT -n --line-numbers | grep ACCEPT | cut -d' ' -f1 | tail -n1`
+	local num=`iptables -L OUTPUT -n --line-numbers | grep icmp | cut -d' ' -f1 | head -n1`
 	
-	echo $num
+	[ -n "$num" ] && echo $(($num+1))
     }
 	
     interface=${1%:*}
@@ -3489,6 +3487,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
     [ -z "$host" ] && host="0.0.0.0/0"
 
     determine_zones
+    
 
     zone=$2
 
@@ -3502,6 +3501,11 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
     if ! chain_exists `input_chain $interface` ; then
 	startup_error "Error: Unknown interface $interface"
     fi
+
+    
+    dhcp_interfaces=`find_interfaces_by_option dhcp`
+    blacklist_interfaces=`find_interfaces_by_option blacklist`
+    filterping_interfaces=`find_interfaces_by_option filterping`
 
     newhost="$interface:$host"
 
@@ -3535,7 +3539,17 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
     while read z1 z2 chain; do
 	if [ "$z1" = "$zone" ]; then
 	    if [ "$z2" = "$FW" ]; then
-		do_iptables -I `input_chain $interface` 2 -i $interface -s $host -j $chain 
+		if list_search $interface $dhcp_interfaces; then
+		    rulenum=3
+		else
+		    rulenum=2
+		fi
+
+		if ! list_search $interface $filterping_interfaces; then
+		    rulenum=$(($rulenum + 1))
+		fi
+
+		do_iptables -I `input_chain $interface` $rulenum -s $host -j $chain 
 	    else
 		source_chain=`forward_chain $interface`
 		eval dest_hosts=\"\$${z2}_hosts\"
@@ -3544,7 +3558,13 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 
 		eval rulenum=\$${base}_rulenum
 		
-		[ -z "$rulenum" ] && rulenum=2
+		if [ -z "$rulenum" ]; then
+		    if list_search $interface $blacklist_interfaces; then
+			rulenum=3
+		    else
+			rulenum=2
+		    fi
+		fi
 		
 		for h in $dest_hosts; do
 		    iface=${h%:*}
@@ -3573,7 +3593,13 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 
 		    eval rulenum=\$${base}_rulenum
 		    
-		    [ -z "$rulenum" ] && rulenum=2
+		    if [ -z "$rulenum" ]; then
+			if list_search $iface $blacklist_interfaces; then
+			    rulenum=3
+			else
+			    rulenum=2
+			fi
+		    fi
 
 		    if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
 			do_iptables -I `forward_chain $iface` $rulenum -s $hosts -o $interface -d $host -j $chain

@@ -3224,15 +3224,14 @@ add_a_rule()
 				fi
 				
 				case $logtarget in
-				    NONAT)
+				    NONAT|ACCEPT+)
 					addnatrule $(dnat_chain $source) $proto $multiport \
 					    $cli $sports -d $srv $dports $ratelimit $userandgroup -j RETURN
 					;;
-				    ACCEPT+)
-					addnatrule $(dnat_chain $source) $proto $multiport \
-					    $cli $sports -d $srv $dports $ratelimit $userandgroup -j RETURN
-					run_iptables2 -A $chain $proto $multiport $cli $sports \
-					    -d $srv $dports $ratelimit $userandgroup -j $target
+				esac
+
+				case $logtarget in
+				    NONAT)
 					;;
 				    *)
 					run_iptables2 -A $chain $proto $multiport $cli $sports \
@@ -3249,15 +3248,14 @@ add_a_rule()
 		    fi
 
 		    case $logtarget in
-			NONAT)
+			NONAT|ACCEPT+)
 			    addnatrule $(dnat_chain $source) $proto $multiport \
 				$cli $sports $dports $ratelimit $userandgroup -j RETURN
                             ;;
-			ACCEPT+)
-			    addnatrule $(dnat_chain $source) $proto $multiport \
-				$cli $sports $dports $ratelimit $userandgroup -j RETURN
-			    run_iptables2 -A $chain $proto $multiport $cli $sports \
-				$dports $ratelimit $userandgroup -j $target
+                    esac
+
+		    case $logtarget in
+			NONAT)
 			    ;;
 			*)
 			    run_iptables2 -A $chain $proto $multiport $cli $sports \
@@ -3284,15 +3282,14 @@ add_a_rule()
 	    case $logtarget in
 		LOG)
 		    ;;
-		NONAT)
+		NONAT|ACCEPT+)
 		    addnatrule $(dnat_chain $source) $proto $multiport \
 		       $cli $sports $dports $ratelimit $userandgroup -j RETURN
 		    ;;
-		ACCEPT+)
-		    addnatrule $(dnat_chain $source) $proto $multiport \
-		       $cli $sports $dports $ratelimit $userandgroup -j RETURN
-		    run_iptables2 -A $chain $proto $multiport $dest_interface \
-			$cli $sports $dports $ratelimit $userandgroup -j $target
+		esac
+
+	    case $logtarget in
+		LOG|NONAT)
 		    ;;
 		*)
 		    run_iptables2 -A $chain $proto $multiport $dest_interface \

@@ -115,10 +115,20 @@
 #				       established connection will be accepted
 #				       from this interface, even if 
 #				       NEWNOTSYN=No has been specified in
-#				       /etc/shorewall/shorewall.conf.
+#				       /etc/shorewall/shorewall.conf. In other
+#				       words, packets coming in on this interface
+#				       are processed as if NEWNOTSYN=Yes had been
+#				       specified in /etc/shorewall/shorewall.conf.
 #
 #				       This option has no effect if 
 #				       NEWNOTSYN=Yes.
+#
+#				       It is the opinion of the author that
+#			  	       NEWNOTSYN=No creates more problems than
+#				       it solves and I recommend against using 
+#				       that setting in shorewall.conf (hence 
+#				       making the use of the 'newnotsyn'
+#				       interface option unnecessary).
 #
 #			routeback    - If specified, indicates that Shorewall
 #				       should include rules that allow filtering

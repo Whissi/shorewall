@@ -905,7 +905,7 @@ validate_interfaces_file() {
 
 	for option in $options; do
 	    case $option in
-		dhcp|norfc1918|nobogons|tcpflags|newnotsyn|arp_filter|routefilter|logmartians|blacklist|proxyarp|maclist|nosmurfs|-)
+		dhcp|norfc1918|nobogons|tcpflags|newnotsyn|arp_filter|routefilter|logmartians|sourceroute|blacklist|proxyarp|maclist|nosmurfs|-)
 		    ;;
 		detectnets)
 		    [ -n "$wildcard" ] && \
@@ -5913,6 +5913,31 @@ add_common_rules() {
 	    run_and_save_command "echo 1 > /proc/sys/net/ipv4/conf/all/log_martians"
 	fi
 
+    fi
+
+    #
+    # Source Routing
+    #
+    save_progress_message "Restoring Accept Source Routing..."
+
+    for f in /proc/sys/net/ipv4/conf/*; do
+	run_and_save_command "[ -f $f/accept_source_route ] && echo 0 > $f/accept_source_route"
+    done
+
+    interfaces=$(find_interfaces_by_option sourceroute)
+
+    if [ -n "$interfaces" ]; then
+	echo "Setting up Accept Source Routing..."
+	
+	for interface in $interfaces; do
+	    file=/proc/sys/net/ipv4/conf/$interface/accept_source_route
+	    if [ -f $file ]; then
+		run_and_save_command "echo 1 > $file"
+	    else
+		error_message \
+		    "Warning: Cannot set Accept Source Routing on $interface"
+	    fi
+	done
     fi
 
     if [ -n "$DYNAMIC_ZONES" ]; then

@@ -32,8 +32,8 @@
       document under the terms of the GNU Free Documentation License, Version
       1.2 or any later version published by the Free Software Foundation; with
       no Invariant Sections, with no Front-Cover, and with no Back-Cover
-      Texts. A copy of the license is included in the section entitled &#34;<ulink
-      url="GnuCopyright.htm">GNU Free Documentation License</ulink>&#34;.</para>
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
 
@@ -227,8 +227,8 @@
 
         <itemizedlist>
           <listitem>
-            <para>As root, type &#34;iptables -t nat -Z&#34;. This clears the
-            NetFilter counters in the nat table.</para>
+            <para>As root, type <quote>iptables -t nat -Z</quote>. This clears
+            the NetFilter counters in the nat table.</para>
           </listitem>
 
           <listitem>
@@ -236,7 +236,7 @@
           </listitem>
 
           <listitem>
-            <para>As root type &#34;shorewall show nat&#34;</para>
+            <para>As root type <quote>shorewall show nat</quote></para>
           </listitem>
 
           <listitem>
@@ -268,7 +268,7 @@
                 <para>you are trying to connect to a secondary IP address on
                 your firewall and your rule is only redirecting the primary IP
                 address (You need to specify the secondary IP address in the
-                &#34;ORIG. DEST.&#34; column in your DNAT rule); or</para>
+                <quote>ORIG. DEST.</quote> column in your DNAT rule); or</para>
               </listitem>
 
               <listitem>
@@ -373,7 +373,7 @@
 
         <listitem>
           <para>The accessibility problem is best solved using <ulink
-          url="shorewall_setup_guide.htm#DNS">Bind Version 9 &#34;views&#34;</ulink>
+          url="shorewall_setup_guide.htm#DNS">Bind Version 9 <quote>views</quote></ulink>
           (or using a separate DNS server for local clients) such that
           www.mydomain.com resolves to 130.141.100.69 externally and
           192.168.1.5 internally. That&#39;s what I do here at shorewall.net
@@ -526,15 +526,15 @@
       </itemizedlist>
 
       <section id="faq2a">
-        <title>(FAQ 2a) I have a zone &#34;Z&#34; with an RFC1918 subnet and I
-        use one-to-one NAT to assign non-RFC1918 addresses to hosts in Z.
-        Hosts in Z cannot communicate with each other using their external
+        <title>(FAQ 2a) I have a zone <quote>Z</quote> with an RFC1918 subnet
+        and I use one-to-one NAT to assign non-RFC1918 addresses to hosts in
+        Z. Hosts in Z cannot communicate with each other using their external
         (non-RFC1918 addresses) so they can&#39;t access each other using
         their DNS names.</title>
 
         <note>
           <para>If the ALL INTERFACES column in /etc/shorewall/nat is empty or
-          contains &#34;Yes&#34;, you will also see log messages like the
+          contains <quote>Yes</quote>, you will also see log messages like the
           following when trying to access a host in Z from another host in Z
           using the destination hosts&#39;s public address:</para>
 
@@ -545,9 +545,9 @@
         </note>
 
         <para><emphasis role="bold">Answer:</emphasis> This is another problem
-        that is best solved using Bind Version 9 &#34;views&#34;. It allows
-        both external and internal clients to access a NATed host using the
-        host&#39;s DNS name.</para>
+        that is best solved using Bind Version 9 <quote>views</quote>. It
+        allows both external and internal clients to access a NATed host using
+        the host&#39;s DNS name.</para>
 
         <para>Another good way to approach this problem is to switch from
         one-to-one NAT to Proxy ARP. That way, the hosts in Z have non-RFC1918
@@ -572,7 +572,7 @@
 
           <listitem>
             <para>Set the ALL INTERFACES column in the nat file to
-            &#34;Yes&#34;.</para>
+            <quote>Yes</quote>.</para>
 
             <warning>
               <para>In this configuration, all Z-&#62;Z traffic will look to
@@ -673,8 +673,8 @@
             </tgroup>
           </informaltable>
 
-          <para>In /etc/shorewall/nat, be sure that you have &#34;Yes&#34; in
-          the ALL INTERFACES column.</para>
+          <para>In /etc/shorewall/nat, be sure that you have <quote>Yes</quote>
+          in the ALL INTERFACES column.</para>
         </example>
       </section>
     </section>
@@ -765,7 +765,7 @@
       through the firewall</title>
 
       <para><emphasis role="bold">Answer:</emphasis> If you want your firewall
-      to be totally open for &#34;ping&#34;,</para>
+      to be totally open for <quote>ping</quote>,</para>
 
       <orderedlist>
         <listitem>
@@ -773,8 +773,8 @@
         </listitem>
 
         <listitem>
-          <para>Be sure that the first command in the file is &#34;.
-          /etc/shorewall/common.def&#34;</para>
+          <para>Be sure that the first command in the file is <quote>.
+          /etc/shorewall/common.def</quote></para>
         </listitem>
 
         <listitem>
@@ -792,10 +792,10 @@
       <title>(FAQ 15) My local systems can&#39;t see out to the net</title>
 
       <para><emphasis role="bold">Answer:</emphasis> Every time I read
-      &#34;systems can&#39;t see out to the net&#34;, I wonder where the
+      <quote>systems can&#39;t see out to the net</quote>, I wonder where the
       poster bought computers with eyes and what those computers will
-      &#34;see&#34; when things are working properly. That aside, the most
-      common causes of this problem are:</para>
+      <quote>see</quote> when things are working properly. That aside, the
+      most common causes of this problem are:</para>
 
       <orderedlist>
         <listitem>
@@ -831,15 +831,16 @@
       the destination?</title>
 
       <para><emphasis role="bold">Answer:</emphasis> NetFilter uses the
-      kernel&#39;s equivalent of syslog (see &#34;man syslog&#34;) to log
-      messages. It always uses the LOG_KERN (kern) facility (see &#34;man
-      openlog&#34;) and you get to choose the log level (again, see &#34;man
-      syslog&#34;) in your <ulink url="Documentation.htm#Policy">policies</ulink>
-      and <ulink url="Documentation.htm#Rules">rules</ulink>. The destination
-      for messaged logged by syslog is controlled by /etc/syslog.conf (see
-      &#34;man syslog.conf&#34;). When you have changed /etc/syslog.conf, be
-      sure to restart syslogd (on a RedHat system, &#34;service syslog
-      restart&#34;).</para>
+      kernel&#39;s equivalent of syslog (see <quote>man syslog</quote>) to log
+      messages. It always uses the LOG_KERN (kern) facility (see
+      <quote>man openlog</quote>) and you get to choose the log level (again,
+      see <quote>man syslog</quote>) in your <ulink
+      url="Documentation.htm#Policy">policies</ulink> and <ulink
+      url="Documentation.htm#Rules">rules</ulink>. The destination for
+      messaged logged by syslog is controlled by /etc/syslog.conf (see
+      <quote>man syslog.conf</quote>). When you have changed /etc/syslog.conf,
+      be sure to restart syslogd (on a RedHat system, <quote>service syslog
+      restart</quote>).</para>
 
       <para>By default, older versions of Shorewall ratelimited log messages
       through <ulink url="Documentation.htm#Conf">settings</ulink> in
@@ -961,10 +962,10 @@ run_iptables -A common -p udp --sport 53 -mstate --state NEW -j DROP</programlis
 
       <para><emphasis role="bold">Answer:</emphasis> If you are running
       Shorewall version 1.4.4 or 1.4.4a then check the <ulink url="errata.htm">errata</ulink>.
-      Otherwise, see the &#39;dmesg&#39; man page (&#34;man dmesg&#34;). You
-      must add a suitable &#39;dmesg&#39; command to your startup scripts or
-      place it in /etc/shorewall/start. Under RedHat, the max log level that
-      is sent to the console is specified in /etc/sysconfig/init in the
+      Otherwise, see the &#39;dmesg&#39; man page (<quote>man dmesg</quote>).
+      You must add a suitable &#39;dmesg&#39; command to your startup scripts
+      or place it in /etc/shorewall/start. Under RedHat, the max log level
+      that is sent to the console is specified in /etc/sysconfig/init in the
       LOGLEVEL variable.</para>
     </section>
 
@@ -1075,7 +1076,7 @@ run_iptables -A common -p udp --sport 53 -mstate --state NEW -j DROP</programlis
 
           <listitem>
             <para>The packet has a source IP address that isn&#39;t in any of
-            your defined zones (&#34;shorewall check&#34; and look at the
+            your defined zones (<quote>shorewall check</quote> and look at the
             printed zone definitions) or the chain is FORWARD and the
             destination IP isn&#39;t in any of your defined zones. Also see
             <xref linkend="faq2a" /> for another cause of packets being logged
@@ -1110,9 +1111,8 @@ run_iptables -A common -p udp --sport 53 -mstate --state NEW -j DROP</programlis
 
             <listitem>
               <para>This packet was REJECTed out of the <emphasis role="bold">all2all</emphasis>
-              chain -- the packet was rejected under the
-              &#34;all&#34;-&#62;&#34;all&#34; REJECT policy (<xref
-              linkend="all2all" /> above).</para>
+              chain -- the packet was rejected under the <quote>all</quote>-&#62;<quote>all</quote>
+              REJECT policy (<xref linkend="all2all" /> above).</para>
             </listitem>
           </varlistentry>
 
@@ -1121,8 +1121,8 @@ run_iptables -A common -p udp --sport 53 -mstate --state NEW -j DROP</programlis
 
             <listitem>
               <para>the packet entered the firewall via eth2. If you see
-              &#34;IN=&#34; with no interface name, the packet originated on
-              the firewall itself.</para>
+              <quote>IN=</quote> with no interface name, the packet originated
+              on the firewall itself.</para>
             </listitem>
           </varlistentry>
 
@@ -1131,7 +1131,7 @@ run_iptables -A common -p udp --sport 53 -mstate --state NEW -j DROP</programlis
 
             <listitem>
               <para>if accepted, the packet would be sent on eth1. If you see
-              &#34;OUT=&#34; with no interface name, the packet would be
+              <quote>OUT=</quote> with no interface name, the packet would be
               processed by the firewall itself.</para>
             </listitem>
           </varlistentry>
@@ -1172,8 +1172,8 @@ run_iptables -A common -p udp --sport 53 -mstate --state NEW -j DROP</programlis
         <para>For additional information about the log message, see <ulink
         url="http://logi.cc/linux/netfilter-log-format.php3">http://logi.cc/linux/netfilter-log-format.php3</ulink>.</para>
 
-        <para>In this case, 192.168.2.2 was in the &#34;dmz&#34; zone and
-        192.168.1.3 is in the &#34;loc&#34; zone. I was missing the rule:</para>
+        <para>In this case, 192.168.2.2 was in the <quote>dmz</quote> zone and
+        192.168.1.3 is in the <quote>loc</quote> zone. I was missing the rule:</para>
 
         <programlisting>ACCEPT dmz loc udp 53</programlisting>
       </example>
@@ -1486,8 +1486,7 @@ Hint: insmod errors can be caused by incorrect module parameters, including inva
 /lib/modules/2.4.17/kernel/net/ipv4/netfilter/ip_tables.o failed
 /lib/modules/2.4.17/kernel/net/ipv4/netfilter/ip_tables.o: insmod ip_tables failed
 iptables v1.2.3: can&#39;t initialize iptables table `nat&#39;: iptables who? (do you need to insmod?)
-Perhaps iptables or your kernel needs to be upgraded.
-</programlisting>
+Perhaps iptables or your kernel needs to be upgraded.</programlisting>
 
       <para>This problem is usually corrected through the following sequence
       of commands</para>
@@ -1552,8 +1551,8 @@ Creating input Chains...
       instructional material use the -A command which adds the rules to the
       end of the chain. Most chains that Shorewall constructs end with an
       unconditional DROP, ACCEPT or REJECT rule and any rules that you add
-      after that will be ignored. Check &#34;man iptables&#34; and look at the
-      -I (--insert) command.</para>
+      after that will be ignored. Check <quote>man iptables</quote> and look
+      at the -I (--insert) command.</para>
     </section>
   </section>
 
@@ -1583,14 +1582,14 @@ Creating input Chains...
     </section>
 
     <section id="faq13">
-      <title>(FAQ 13) Why do you call it &#34;Shorewall&#34;?</title>
+      <title>(FAQ 13) Why do you call it <quote>Shorewall</quote>?</title>
 
       <para><emphasis role="bold">Answer:</emphasis> Shorewall is a
-      concatenation of &#34;<emphasis>Shore</emphasis>line&#34; (<ulink
+      concatenation of <quote><emphasis>Shore</emphasis>line</quote> (<ulink
       url="http://www.cityofshoreline.com">the city where I live</ulink>) and
-      &#34;Fire<emphasis>wall</emphasis>&#34;. The full name of the product is
-      actually &#34;Shoreline Firewall&#34; but &#34;Shorewall&#34; is must
-      more commonly used.</para>
+      <quote>Fire<emphasis>wall</emphasis></quote>. The full name of the
+      product is actually <quote>Shoreline Firewall</quote> but
+      <quote>Shorewall</quote> is must more commonly used.</para>
     </section>
 
     <section id="faq23">
@@ -1798,8 +1797,8 @@ Creating input Chains...
       <title>(FAQ 24) How can I allow conections to let&#39;s say the ssh port
       only from specific IP Addresses on the internet?</title>
 
-      <para>In the SOURCE column of the rule, follow &#34;net&#34; by a colon
-      and a list of the host/subnet addresses as a comma-separated list.</para>
+      <para>In the SOURCE column of the rule, follow <quote>net</quote> by a
+      colon and a list of the host/subnet addresses as a comma-separated list.</para>
 
       <programlisting>net:&#60;ip1&#62;,&#60;ip2&#62;,...</programlisting>
 
@@ -1812,17 +1811,16 @@ Creating input Chains...
 
     <section id="faq26">
       <title>(FAQ 26) When I try to use any of the SYN options in nmap on or
-      behind the firewall, I get &#34;operation not permitted&#34;. How can I
-      use nmap with Shorewall?&#34;</title>
+      behind the firewall, I get <quote>operation not permitted</quote>. How
+      can I use nmap with Shorewall?&#34;</title>
 
-      <para>Edit /etc/shorewall/shorewall.conf and change
-      &#34;NEWNOTSYN=No&#34; to &#34;NEWNOTSYN=Yes&#34; then restart
-      Shorewall.</para>
+      <para>Edit /etc/shorewall/shorewall.conf and change <quote>NEWNOTSYN=No</quote>
+      to <quote>NEWNOTSYN=Yes</quote> then restart Shorewall.</para>
 
       <section id="faq26a">
-        <title>(FAQ 26a) When I try to use the &#34;-O&#34; option of nmap
-        from the firewall system, I get &#34;operation not permitted&#34;. How
-        to I allow this option?</title>
+        <title>(FAQ 26a) When I try to use the <quote>-O</quote> option of
+        nmap from the firewall system, I get <quote>operation not permitted</quote>.
+        How to I allow this option?</title>
 
         <para>Add this command to your /etc/shorewall/start file:</para>
 
@@ -1836,8 +1834,8 @@ Creating input Chains...
 
       <para>First take a look at the <ulink url="kernel.htm">Shorewall kernel
       configuration page</ulink>. You probably also want to be sure that you
-      have selected the &#34;<emphasis role="bold">NAT of local connections
-      (READ HELP)</emphasis>&#34; on the Netfilter Configuration menu.
+      have selected the <quote><emphasis role="bold">NAT of local connections
+      (READ HELP)</emphasis></quote> on the Netfilter Configuration menu.
       Otherwise, DNAT rules with your firewall as the source zone won&#39;t
       work with your new kernel.</para>
     </section>
@@ -1849,8 +1847,8 @@ Creating input Chains...
       allow you to route bridge traffic through Netfilter, the environment is
       so different from the Layer 3 firewalling environment that very little
       of Shorewall works. In fact, so much of Shorewall doesn&#39;t work that
-      my official position is that &#34;Shorewall doesn&#39;t work with Layer
-      2 Bridging&#34;.</para>
+      my official position is that <quote>Shorewall doesn&#39;t work with
+      Layer 2 Bridging</quote>.</para>
     </section>
   </section>
 

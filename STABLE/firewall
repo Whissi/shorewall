@@ -1737,7 +1737,11 @@ add_a_rule()
 
 	# A specific server or server port given
 
-	[ -n "$addr" -a "$addr" != "$serv" ] && add_nat_rule
+	if [ -n "$addr" -a "$addr" != "$serv" ]; then
+	    add_nat_rule
+	elif [ -n "$servport" -a "$servport" != "$port" ]; then
+	    add_nat_rule
+	fi
 
 	serv="${serv:+-d $serv}"
 

@@ -5479,12 +5479,14 @@ initialize_netfilter () {
     if [ -n "$CLAMPMSS" ]; then
 	case $CLAMPMSS in
 	    Yes)
-		run_iptables -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
+		option="--clamp-mss-to-pmtu"
 		;;
 	    *)
-		run_iptables -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss $CLAMPMSS
+		option="--set-mss $CLAMPMSS"
 		;;
 	esac
+
+	run_iptables -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS $option
     fi
 
     if [ -z "$NEWNOTSYN" ]; then
@@ -5499,7 +5501,7 @@ initialize_netfilter () {
 	    run_iptables -A newnotsyn -i $interface $(match_source_hosts $network) $policy -p tcp --tcp-flags ACK ACK -j ACCEPT
 	    run_iptables -A newnotsyn -i $interface $(match_source_hosts $network) $policy -p tcp --tcp-flags RST RST -j ACCEPT
 	    run_iptables -A newnotsyn -i $interface $(match_source_hosts $network) $policy -p tcp --tcp-flags FIN FIN -j ACCEPT
-	    run_iptables -A newnotsyn -i $interface $(match_source_hosts ${host#*:}) $policy -j RETURN
+	    run_iptables -A newnotsyn -i $interface $(match_source_hosts $network) $policy -j RETURN
 	done
 
 	run_user_exit newnotsyn

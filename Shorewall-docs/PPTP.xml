@@ -13,7 +13,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2003-11-22</pubdate>
+    <pubdate>2003-12-23</pubdate>
 
     <copyright>
       <year>2001</year>
@@ -33,6 +33,18 @@
       Texts. A copy of the license is included in the section entitled &#34;<ulink
       url="GnuCopyright.htm">GNU Free Documentation License</ulink>&#34;.</para>
     </legalnotice>
+
+    <revhistory>
+      <revision>
+        <revnumber>1.1</revnumber>
+
+        <date>2003-12-23</date>
+
+        <authorinitials>TE</authorinitials>
+
+        <revremark>Added note about PPTP module support in Bering 1.2</revremark>
+      </revision>
+    </revhistory>
 
     <abstract>
       <para>Shorewall easily supports PPTP in a number of configurations.</para>
@@ -379,7 +391,7 @@ esac</programlisting>
 
                 <entry align="center">GATEWAY</entry>
 
-                <entry align="center"> GATEWAY ZONE</entry>
+                <entry align="center">GATEWAY ZONE</entry>
               </row>
             </thead>
 
@@ -450,7 +462,7 @@ esac</programlisting>
 
                 <entry align="center">GATEWAY</entry>
 
-                <entry align="center"> GATEWAY ZONE</entry>
+                <entry align="center">GATEWAY ZONE</entry>
               </row>
             </thead>
 
@@ -588,7 +600,7 @@ esac</programlisting>
 
                 <entry align="center">GATEWAY</entry>
 
-                <entry align="center"> GATEWAY ZONE</entry>
+                <entry align="center">GATEWAY ZONE</entry>
               </row>
             </thead>
 
@@ -896,11 +908,16 @@ esac</programlisting>
     unless you wish to connect multiple clients to the same external server.
     In that case, you will need to follow the instructions at <ulink
     url="http://www.impsec.org/linux/masquerade/ip_masq_vpn.html">http://www.impsec.org/linux/masquerade/ip_masq_vpn.html</ulink>.
-    I recommend that you also add these two lines to your
+    I recommend that you also add these three lines to your
     /etc/shorewall/modules file:</para>
 
-    <programlisting>loadmodule ip_conntrack_pptp
+    <programlisting>loadmodule ip_conntrack_proto_gre
+loadmodule ip_conntrack_pptp
 loadmodule ip_nat_pptp</programlisting>
+
+    <para>For LEAF/Bering users, the 2.4.20 kernel as already been patched as
+    described at the URL above and the three modules are included in the
+    Bering 1.2 modules tarball.</para>
   </section>
 
   <section id="ClientFW">

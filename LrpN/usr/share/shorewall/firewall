@@ -766,6 +766,17 @@ find_hosts() # $1 = host zone
 }
 
 #
+# Check for duplicate zone definitions
+#
+check_duplicate_zones() {
+    local localzones=
+
+    for zone in $zones; do
+	list_search $zone $localzones && startup_error "Zone $zone is defined more than once"
+	localzones="$localzones $zone"
+    done
+}
+#
 # Determine the interfaces on the firewall
 #
 # For each zone, create a variable called ${zone}_interfaces. This
@@ -1241,7 +1252,7 @@ run_user_exit() # $1 = file name
 #
 # Add a logging rule.
 #
-log_rule_limit() # $1 = log level, $2 = chain, $3 = display Chain $4 = disposition , $5 = rate limit $6=log tag $... = predicates for the rule
+log_rule_limit() # $1 = log level, $2 = chain, $3 = display Chain $4 = disposition , $5 = rate limit $6=log tag $7=command $... = predicates for the rule
 {
     local level=$1
     local chain=$2
@@ -1250,10 +1261,11 @@ log_rule_limit() # $1 = log level, $2 = chain, $3 = display Chain $4 = dispositi
     local rulenum=
     local limit="${5:-$LOGLIMIT}"
     local tag=${6:+$6 }
+    local command=${7:--A}
     local prefix
     local base=$(chain_base $displayChain)
 
-    shift;shift;shift;shift;shift
+    shift;shift;shift;shift;shift;shift;shift
 
     if [ -n "$tag" -a -n "$LOGTAGONLY" ]; then
 	displayChain=$tag
@@ -1280,10 +1292,10 @@ log_rule_limit() # $1 = log level, $2 = chain, $3 = display Chain $4 = dispositi
 
     case $level in
 	ULOG)
-	    iptables -A $chain $@ $limit -j ULOG $LOGPARMS --ulog-prefix "$prefix"
+	    iptables $command $chain $@ $limit -j ULOG $LOGPARMS --ulog-prefix "$prefix"
 	    ;;
 	*)
-	    iptables -A $chain $@ $limit -j LOG $LOGPARMS --log-level $level --log-prefix "$prefix"
+	    iptables $command $chain $@ $limit -j LOG $LOGPARMS --log-level $level --log-prefix "$prefix"
 	    ;;
     esac
 	
@@ -1300,7 +1312,7 @@ log_rule() # $1 = log level, $2 = chain, $3 = disposition , $... = predicates fo
 
     shift;shift;shift
 
-    log_rule_limit $level $chain $chain $disposition "$LOGLIMIT" "" $@
+    log_rule_limit $level $chain $chain $disposition "$LOGLIMIT" "" -A $@
 }
 
 #
@@ -1733,32 +1745,71 @@ setup_tunnels() # $1 = name of tunnels file
     done < $TMP_DIR/tunnels
 }
 
+#
+# Process the ipsec file
+#
 setup_ipsec() {
+    #
+    # Add a --set-mss rule to the passed chain
+    #
+    set_mss1() # $1 = chain, $2 = MSS
+    {
+	eval local policy=\$${1}_policy
+	if [ "$policy" != NONE ]; then
+	    ensurechain $1
+	    run_iptables -I $1 -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss $2
+	fi
+    }
+    #
+    # Set up rules to set MSS to and/or from zone "$zone"
+    #
+    set_mss() # $1 = MSS value, $2 = _in, _out or ""
+    {
+	if [ $COMMAND != check ]; then
+	    for z in $zones; do
+		case $2 in
+		    _in)
+			set_mss1 ${zone}2${z} $1
+			;;
+		    _out)			
+			set_mss1 ${z}2${zone} $1
+			;;
+		    *)
+			set_mss1 ${z}2${zone} $1
+			set_mss1 ${zone}2${z} $1
+			;;
+		esac
+	    done
+	fi
+    }
 
     do_options() # $1 = _in, _out or "" - $2 = option list
     {
-	local option opts newoptions=
+	local option opts newoptions= val
 
 	[ x${2} = x- ] && return
 
 	opts=$(separate_list $2)
 
 	for option in $opts; do
+	    val=${option#*=}
+
 	    case $option in
+		mss=[0-9]*)    set_mss $val $1 ;;					   
 		strict)        newoptions="$newoptions --strict" ;;
 		next)          newoptions="$newoptions --next" ;;
-		reqid=*)       newoptions="$newoptions --reqid ${option#*=}" ;;
-		spi=*)         newoptions="$newoptions --spi ${option#*=}" ;;
-		proto=*)       newoptions="$newoptions --proto ${option#*=}" ;;
-		mode=*)        newoptions="$newoptions --mode ${option#*=}" ;;
-		tunnel-src=*)  newoptions="$newoptions --tunnel-src ${option#*=}" ;;
-		tunnel-dst=*)  newoptions="$newoptions --tunnel-dst ${option#*=}" ;;
-		reqid!=*)      newoptions="$newoptions ! --reqid ${option#*=}" ;;
-		spi!=*)        newoptions="$newoptions ! --spi ${option#*=}" ;;
-		proto!=*)      newoptions="$newoptions ! --proto ${option#*=}" ;;
-		mode!=*)       newoptions="$newoptions ! --mode ${option#*=}" ;;
-		tunnel-src!=*) newoptions="$newoptions ! --tunnel-src ${option#*=}" ;;
-		tunnel-dst!=*) newoptions="$newoptions ! --tunnel-dst ${option#*=}" ;;
+		reqid=*)       newoptions="$newoptions --reqid $val" ;;
+		spi=*)         newoptions="$newoptions --spi $val" ;;
+		proto=*)       newoptions="$newoptions --proto $val" ;;
+		mode=*)        newoptions="$newoptions --mode $val" ;;
+		tunnel-src=*)  newoptions="$newoptions --tunnel-src $val" ;;
+		tunnel-dst=*)  newoptions="$newoptions --tunnel-dst $val" ;;
+		reqid!=*)      newoptions="$newoptions ! --reqid $val" ;;
+		spi!=*)        newoptions="$newoptions ! --spi $val" ;;
+		proto!=*)      newoptions="$newoptions ! --proto $val" ;;
+		mode!=*)       newoptions="$newoptions ! --mode $val" ;;
+		tunnel-src!=*) newoptions="$newoptions ! --tunnel-src $val" ;;
+		tunnel-dst!=*) newoptions="$newoptions ! --tunnel-dst $val" ;;
 		*)             fatal_error "Invalid option \"$option\" for zone $zone" ;;
 	    esac
 	done
@@ -1771,8 +1822,8 @@ setup_ipsec() {
 
     strip_file ipsec $1
     
-    while read zone ipsec options in_options out_options; do
-	expandv zone ipsec options in_options out_options
+    while read zone ipsec options in_options out_options mss; do
+	expandv zone ipsec options in_options out_options mss
 
 	[ -n "$POLICY_MATCH" ] || fatal_error "Your kernel and/or iptables does not support policy match"
 
@@ -1793,7 +1844,7 @@ setup_ipsec() {
 	do_options ""     $options
 	do_options "_in"  $in_options
 	do_options "_out" $out_options
-
+	    
     done < $TMP_DIR/ipsec
 }	
 
@@ -2242,7 +2293,7 @@ setup_ecn() # $1 = file name
 #
 process_tc_rule()
 {
-    chain=$MARKING_CHAIN
+    chain=$MARKING_CHAIN target="MARK --set-mark" marktest=
 
     verify_designator() {
 	[ "$chain" = tcout ] && \
@@ -2292,11 +2343,20 @@ process_tc_rule()
 	    esac
 	fi
 
+	[ -n "$marktest" ] && r="${r}-m ${marktest}--mark $testval "
+
 	[ "x$dest"   = "x-"  ] || r="${r}$(dest_ip_range $dest) "
-	[ "x$proto"  = "x-"  ] && proto=all
-	[ "x$proto"  = "x"   ] && proto=all
-	[ "$proto"   = "all" ] || r="${r}-p $proto "
-	[ "x$port"   = "x-"  ] || r="${r}--dport $port "
+
+	if [ "x$proto" = xipp2p ]; then
+	    [ "x$port" = "x-" ] && port="ipp2p"
+	    r="${r}-p tcp -m ipp2p --${port} "
+	else
+	    [ "x$proto"  = "x-"  ] && proto=all
+	    [ "x$proto"  = "x"   ] && proto=all
+	    [ "$proto"   = "all" ] || r="${r}-p $proto "
+	    [ "x$port"   = "x-"  ] || r="${r}--dport $port "
+	fi
+
 	[ "x$sport"  = "x-"  ] || r="${r}--sport $sport "
 
 	case $chain in
@@ -2304,7 +2364,7 @@ process_tc_rule()
 		run_iptables2 -t mangle -A tcpost $r -j CLASSIFY --set-class $mark
 		;;
 	    *)
-		run_iptables2 -t mangle -A $chain $r -j MARK --set-mark $mark
+		run_iptables2 -t mangle -A $chain $r -j $target $mark
 		;;
 	esac
 
@@ -2315,15 +2375,70 @@ process_tc_rule()
 	    p|P)
 		verify_designator tcpre
 		;;
+	    cp|CP)
+		verify_designator tcpre
+		target="CONNMARK --set-mark"
+		;;
 	    f|F)
 		verify_designator tcfor
+		;;
+	    cf|CF)
+		verify_designator tcfor
+		target="CONNMARK --set-mark"
+		;;
+	    c|C)
+		target="CONNMARK --set-mark"
+		mark=${mark%:*}
 		;;
 	    *)
 		chain=tcpost
 		;;
 	esac
-
     fi
+
+    case $mark in
+	SAVE)
+	    target="CONNMARK --save-mark"
+	    mark=
+	    ;;
+	SAVE/*)
+	    target="CONNMARK --save-mark --mask"
+	    mark=${mark#*/}
+	    ;;
+	RESTORE)
+	    target="CONNMARK --restore-mark"
+	    mark=
+	    ;;
+	RESTORE/*)
+	    target="CONNMARK --restore-mark --mask"
+	    mark=${mark#*/}
+	    ;;
+	CONTINUE)
+	    target=RETURN
+	    mark=
+	    ;;
+    esac
+
+    case $testval in
+	-)
+	    ;;
+	!*:C)
+	    marktest="connmark ! "
+	    testval=${testval%:*}
+	    testval=${testval#!}
+	    ;;
+	*:C)
+	    marktest="connmark "
+	    testval=${testval%:*}
+	    ;;
+	!*)
+	    marktest="mark ! "
+	    testval=${testval#!}
+	    ;;
+	*)
+	    [ -n "$testval" ] && marktest="mark "
+	    ;;
+    esac
 
     for source in $(separate_list ${sources:=-}); do
 	for dest in $(separate_list ${dests:=-}); do
@@ -2355,9 +2470,9 @@ setup_tc1() {
     #
     strip_file tcrules
 
-    while read mark sources dests proto ports sports user; do
-	expandv mark sources dests proto ports sports user
-	rule=$(echo "$mark $sources $dests $proto $ports $sports $user")
+    while read mark sources dests proto ports sports user testval; do
+	expandv mark sources dests proto ports sports user testval
+	rule=$(echo "$mark $sources $dests $proto $ports $sports $user $testval")
 	process_tc_rule
     done < $TMP_DIR/tcrules
     #
@@ -2506,6 +2621,10 @@ process_accounting_rule() {
     [ -n "$proto" ] && case $proto in
 	-|any|all)
 	    ;;
+	ipp2p)
+	    rule="$rule -p tcp -m ipp2p --${port:-ipp2p}"
+	    port=
+	    ;;
 	*)
 	    rule="$rule -p $proto"
 	    ;;
@@ -2631,6 +2750,7 @@ check_config() {
     echo "Determining Zones..."
 
     determine_zones
+    check_dupliate_zones
 
     [ -z "$zones" ] && startup_error "ERROR: No Zones Defined"
 
@@ -2859,7 +2979,7 @@ add_an_action()
 	    for serv1 in $(separate_list $serv); do
 		for srv in $(firewall_ip_range $serv1); do
 		    if [ -n "$loglevel" ]; then
-			log_rule_limit $loglevel $chain $action $logtarget "$ratelimit" "$logtag" $userandgroup \
+			log_rule_limit $loglevel $chain $action $logtarget "$ratelimit" "$logtag" -A $userandgroup \
 			    $(fix_bang $proto $sports $multiport $cli $(source_ip_range $srv) $dports)
 		    fi
 		    
@@ -2869,7 +2989,7 @@ add_an_action()
 	    done
 	else
 	    if [ -n "$loglevel" ]; then
-		log_rule_limit $loglevel $chain $action $logtarget "$ratelimit" "$logtag" $userandgroup \
+		log_rule_limit $loglevel $chain $action $logtarget "$ratelimit" "$logtag" -A $userandgroup \
 		    $(fix_bang $proto $sports $multiport $cli $dest_interface $dports)
 	    fi
 		    
@@ -3379,8 +3499,8 @@ process_actions3() {
 	                        ;;
 			    *)
 			        if [ -n "$xlevel" ]; then
-				    log_rule_limit ${xlevel%\!} $xchain dropBcast $2 "" "$xtag" -m pkttype --pkt-type broadcast
-				    log_rule_limit ${xlevel%\!} $xchain dropBcast $2 "" "$xtag" -m pkttype --pkt-type multicast
+				    log_rule_limit ${xlevel%\!} $xchain dropBcast $2 "" "$xtag" -A -m pkttype --pkt-type broadcast
+				    log_rule_limit ${xlevel%\!} $xchain dropBcast $2 "" "$xtag" -A -m pkttype --pkt-type multicast
 				fi
 				;;
 			esac
@@ -3394,7 +3514,7 @@ process_actions3() {
 				    ;;
 				*)
 				    [ -n "$xlevel" ] && \
-					log_rule_limit ${xlevel%\!} $xchain dropBcast $2 "" "$xtag" -d $address
+					log_rule_limit ${xlevel%\!} $xchain dropBcast $2 "" "$xtag" -A -d $address
 				    ;;
 			    esac
 			    
@@ -3411,8 +3531,8 @@ process_actions3() {
 	                        ;;
 			    *)
 			        if [ -n "$xlevel" ]; then
-				    log_rule_limit ${xlevel%\!} $xchain allowBcast $2 "" "$xtag" -m pkttype --pkt-type broadcast
-				    log_rule_limit ${xlevel%\!} $xchain allowBcast $2 "" "$xtag" -m pkttype --pkt-type multicast
+				    log_rule_limit ${xlevel%\!} $xchain allowBcast $2 "" "$xtag" -A -m pkttype --pkt-type broadcast
+				    log_rule_limit ${xlevel%\!} $xchain allowBcast $2 "" "$xtag" -A -m pkttype --pkt-type multicast
 				fi
 				;;
 			esac
@@ -3426,7 +3546,7 @@ process_actions3() {
 				    ;;
 				*)
 				    [ -n "$xlevel" ] && \
-					log_rule_limit ${xlevel%\!} $xchain allowBcast $2 "" "$xtag" -d $address
+					log_rule_limit ${xlevel%\!} $xchain allowBcast $2 "" "$xtag" -A -d $address
 				    ;;
 			    esac
 			    
@@ -3440,28 +3560,28 @@ process_actions3() {
 		
 		if [ "$COMMAND" != check ]; then
 		    [ -n "$xlevel" ] && \
-			log_rule_limit ${xlevel%\!} $xchain dropNonSyn $2 "" "$xtag" -p tcp ! --syn
+			log_rule_limit ${xlevel%\!} $xchain dropNonSyn $2 "" "$xtag" -A -p tcp ! --syn
 		    run_iptables -A $xchain -p tcp ! --syn -j DROP
 		fi
 		;;
 	    dropNotSyn)
 		if [ "$COMMAND" != check ]; then
 		    [ -n "$xlevel" ] && \
-			log_rule_limit ${xlevel%\!} $xchain dropNotSyn $2 "" "$xtag" -p tcp ! --syn
+			log_rule_limit ${xlevel%\!} $xchain dropNotSyn $2 "" "$xtag" -A -p tcp ! --syn
 		    run_iptables -A $xchain -p tcp ! --syn -j DROP
 		fi
 		;;
 	    rejNotSyn)
 		if [ "$COMMAND" != check ]; then
 		    [ -n "$xlevel" ] && \
-			log_rule_limit ${xlevel%\!} $xchain rejNotSyn $2 "" "$xtag" -p tcp ! --syn
+			log_rule_limit ${xlevel%\!} $xchain rejNotSyn $2 "" "$xtag" -A -p tcp ! --syn
 		    run_iptables -A $xchain -p tcp ! --syn -j REJECT --reject-with tcp-reset
 		fi
 		;;
 	    dropInvalid)
 		if [ "$COMMAND" != check ]; then
 		    [ -n "$xlevel" ] && \
-			log_rule_limit ${xlevel%\!} $xchain dropNotSyn $2 "" "$xtag" -m state --state INVALID
+			log_rule_limit ${xlevel%\!} $xchain dropNotSyn $2 "" "$xtag" -A -m state --state INVALID
 		    run_iptables -A $xchain -m state --state INVALID -j DROP
 		fi
 		;;
@@ -3612,7 +3732,7 @@ add_nat_rule() {
 	    else
 		for adr in $(separate_list $addr); do
 		    if [ -n "$loglevel" ]; then
-			log_rule_limit $loglevel OUTPUT OUTPUT $logtarget "$ratelimit" "$logtag" -t nat \
+			log_rule_limit $loglevel OUTPUT OUTPUT $logtarget "$ratelimit" "$logtag" -A -t nat \
 			    $(fix_bang $proto $cli $sports $userandgroup $(dest_ip_range $adr) $multiport $dports)
 		    fi
 
@@ -3643,7 +3763,7 @@ add_nat_rule() {
 		done
 
 		if [ -n "$loglevel" ]; then
-		    log_rule_limit $loglevel $chain $chain $logtarget "$ratelimit" "$logtag" -t nat
+		    log_rule_limit $loglevel $chain $chain $logtarget "$ratelimit" "$logtag" -A -t nat
 		fi
 
 		addnatrule $chain $ratelimit $proto -j $target1 # Protocol is necessary for port redirection
@@ -3651,7 +3771,7 @@ add_nat_rule() {
 		for adr in $(separate_list $addr); do
 		    if [ -n "$loglevel" ]; then
 			ensurenatchain $chain
-			log_rule_limit $loglevel $chain $chain $logtarget "$ratelimit" "$logtag" -t nat \
+			log_rule_limit $loglevel $chain $chain $logtarget "$ratelimit" "$logtag" -A -t nat \
 			    $(fix_bang $proto $cli $sports $(dest_ip_range $adr) $multiport $dports)
 		    fi
 		    
@@ -3806,6 +3926,12 @@ add_a_rule()
 		fatal_error "Port number not allowed with protocol \"all\"; rule: \"$rule\""
 	    proto=
 	    ;;
+	ipp2p)
+	    sport="-m ipp2p --${port:-ipp2p}"
+	    port=
+	    proto=tcp
+	    do_ports
+	    ;;
 	*)
 	    [ -n "$port" ] && \
 		fatal_error "Port number not allowed with protocol \"$proto\"; rule: \"$rule\""
@@ -3858,7 +3984,7 @@ add_a_rule()
 			    if [ -n "$addr" -a -n "$CONNTRACK_MATCH" ]; then
 				for adr in $(separate_list $addr); do
 				    if [ -n "$loglevel" -a -z "$natrule" ]; then
-					log_rule_limit $loglevel $chain $chain $logtarget "$ratelimit" "$logtag" -m conntrack --ctorigdst $adr \
+					log_rule_limit $loglevel $chain $chain $logtarget "$ratelimit" "$logtag" -A -m conntrack --ctorigdst $adr \
 					    $userandgroup $(fix_bang $proto $sports $multiport $cli $(dest_ip_range $srv) $dports)
 				    fi
 
@@ -3867,7 +3993,7 @@ add_a_rule()
 				done
 			    else
 				if [ -n "$loglevel" -a -z "$natrule" ]; then
-				    log_rule_limit $loglevel $chain $chain $logtarget "$ratelimit" "$logtag" $userandgroup \
+				    log_rule_limit $loglevel $chain $chain $logtarget "$ratelimit" "$logtag" -A $userandgroup \
 					$(fix_bang $proto $sports $multiport $cli $(dest_ip_range $srv) $dports)
 				fi
 				
@@ -3883,7 +4009,7 @@ add_a_rule()
 		    done
 		else
 		    if [ -n "$loglevel" -a -z "$natrule" ]; then
-		        log_rule_limit $loglevel $chain $chain $logtarget "$ratelimit" "$logtag" $userandgroup \
+		        log_rule_limit $loglevel $chain $chain $logtarget "$ratelimit" "$logtag" -A $userandgroup \
 			    $(fix_bang $proto $sports $multiport $cli $dports)
 		    fi
 
@@ -3907,7 +4033,7 @@ add_a_rule()
 
 	if [ $COMMAND != check ]; then
 	    if [ -n "$loglevel" ]; then
-		log_rule_limit $loglevel $chain $chain $logtarget "$ratelimit" "$logtag" $userandgroup \
+		log_rule_limit $loglevel $chain $chain $logtarget "$ratelimit" "$logtag" -A $userandgroup \
 		    $(fix_bang $proto $multiport $cli $dest_interface $sports $dports)
 	    fi
 
@@ -4823,12 +4949,12 @@ setup_masq()
 
 	source="$networks"
 
-	case $networks in
+	case $source in
 	*.*.*)
 	    ;;
 	*)
 	    networks=$(get_routed_networks $networks)
-	    [ -z "$networks" ] && fatal_error "Unable to determine the routes through interface $networks"
+	    [ -z "$networks" ] && fatal_error "Unable to determine the routes through interface \"$source\""
 	    networks="$networks"
 	    ;;
 	esac
@@ -5387,6 +5513,7 @@ initialize_netfilter () {
     echo "Determining Zones..."
 
     determine_zones
+    check_duplicate_zones
 
     [ -z "$zones" ] && startup_error "No Zones Defined"
 
@@ -6083,6 +6210,7 @@ activate_rules()
 
 	fi
     }
+
     #
     # Add jumps to early SNAT chains
     #
@@ -6112,19 +6240,20 @@ activate_rules()
     # Create forwarding chains for complex zones and generate jumps for IPSEC source hosts to that chain.
     #
     for zone in $zones; do
-	if eval test -n \$${zone}_is_complex ; then
+	if eval test -n \"\$${zone}_is_complex\" ; then
 	    frwd_chain=${zone}_frwd
 	    createchain $frwd_chain No
 
 	    if [ -n "$POLICY_MATCH" ]; then
-		eval source_hosts=\$${zone}_hosts
+	        eval is_ipsec=\$${zone}_is_ipsec
+
+		[ -n "$is_ipsec" ] && eval source_hosts=\$${zone}_hosts || eval source_hosts=\$${zone}_ipsec_hosts
 	    
 		for host in $source_hosts; do
 		    interface=${host%%:*}
 		    networks=${host#*:}
 		    
-		    is_ipsec_host $zone $host && \
-			run_iptables -A $(forward_chain $interface) $(match_source_hosts $networks) $(match_ipsec_in $zone $host) -j $frwd_chain
+		    run_iptables -A $(forward_chain $interface) $(match_source_hosts $networks) $(match_ipsec_in $zone $host) -j $frwd_chain
 		done
 	    fi
 	fi
@@ -6137,6 +6266,8 @@ activate_rules()
 	chain2=$(rules_chain $zone $FW)
 
 	eval complex=\$${zone}_is_complex
+
+	[ -n "$complex" ] && frwd_chain=${zone}_frwd
 
 	if [ -n "$DYNAMIC_ZONES" ]; then
 	    echo $zone $source_hosts >> ${STATEDIR}/zones
@@ -6288,6 +6419,26 @@ activate_rules()
 	run_iptables -D $chain -m state --state ESTABLISHED,RELATED -j ACCEPT
 	run_iptables -D $chain -p udp --dport 53 -j ACCEPT
     done
+    
+    if [ -n "$LOGALLNEW" ]; then
+	for table in mangle nat filter; do
+	    case $table in
+		mangle)
+		    chains="PREROUTING INPUT FORWARD POSTROUTING"
+		    ;;
+		nat)
+		    chains="PREROUTING POSTROUTING OUTPUT"
+		    ;;
+		*)
+		    chains="INPUT FORWARD OUTPUT"
+		    ;;
+	    esac
+
+	    for chain in $chains; do
+		log_rule_limit $LOGALLNEW $chain $table $chain "" "" -I -m state --state NEW -t $table
+	    done
+	done
+    fi
 }
 
 #
@@ -6869,6 +7020,7 @@ do_initialize() {
     RETAIN_ALIASES=
     DELAYBLACKLISTLOAD=
     LOGTAGONLY=
+    LOGALLNEW=
 
     RESTOREBASE=
     TMP_DIR=

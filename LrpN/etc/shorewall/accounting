@@ -47,9 +47,12 @@
 #			Format the same as the SOURCE column.
 #
 #	PROTOCOL	A protocol name (from /etc/protocols), a protocol
-#			number.
+#			number, or "ipp2p"
 #
-#	DEST PORT	Destination Port number
+#	DEST PORT	Destination Port number. If the PROTOCOL is "ipp2p" then
+#			this column must contain an ipp2p option ("iptables -m 
+#			ipp2p --help") without the leading "--". If no option
+#			is given in this column, "ipp2p" is assumed.
 #
 #			Service name from /etc/services or port number. May
 #			only be specified if the protocol is TCP or UDP (6

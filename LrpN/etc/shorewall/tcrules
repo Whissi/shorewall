@@ -29,6 +29,22 @@
 #			   determined by the setting of MARK_IN_FORWARD_CHAIN in
 #			   /etc/shorewall/shorewall.conf.
 #
+#			   If your kernel and iptables include CONNMARK support
+#			   then you can also mark the connection rather than
+#			   the packet.
+#
+#			   The mark value may be optionally followed by "/" 
+#		           and a mask value (used to determine those bits of
+#                          the connection mark to actually be set). The
+#                          mark and optional mask are then followed by one of:
+#
+#				C - Mark the connection in the chain determined
+#                                   by the setting of MARK_IN_FORWARD_CHAIN
+#
+#			        CF: Mark the conneciton in the FORWARD chain
+#
+#				CP: Mark the connection in the PREROUTING chain.
+#
 #			b) A classification of the form <major>:<minor> where
 #		    	   <major> and <minor> are integers. Corresponds to 
 #			   the 'class' specification in these traffic shaping
@@ -41,7 +57,21 @@
 #				- htb
 #				- prio
 #
-#			   Marking always occurs in the POSTROUTING chain.
+#			   Classify always occurs in the POSTROUTING chain.
+#
+#			c) RESTORE[/mask] -- restore the packet's mark from the
+#			   connection's mark using the supplied mask if any.
+#			   Your kernel and iptables must  include CONNMARK support.
+#			   As in a) above, may be followed by ":P" or ":F
+#
+#			c) SAVE[/mask] -- save the packet's mark to the
+#			   connection's mark using the supplied mask if any.
+#			   Your kernel and iptables must  include CONNMARK support.
+#			   As in a) above, may be followed by ":P" or ":F
+#
+#			d) CONTINUE -- don't process any more marking rules in
+#			   the table. As in a) above, may be followed by ":P" or
+#			   ":F".
 #
 #	SOURCE 		Source of the packet. A comma-separated list of
 #			interface names, IP addresses, MAC addresses
@@ -62,13 +92,19 @@
 #			iptables include iprange match support, IP address
 #			ranges are also allowed.
 #
-#	PROTO		Protocol - Must be "tcp", "udp", "icmp", a number,
-#			or "all".
+#	PROTO		Protocol - Must be "tcp", "udp", "icmp", "ipp2p", 
+#			a number, or "all". "ipp2p" requires ipp2p match
+#			support in your kernel and iptables.
 #
 #	PORT(S)		Destination Ports. A comma-separated list of Port
 #			names (from /etc/services), port numbers or port
 #			ranges; if the protocol is "icmp", this column is
 #			interpreted as the destination icmp-type(s).
+#
+#			If the protocol is ipp2p, this column is interpreted
+#			as an ipp2p option without the leading "--" (example "bit"
+#			for bit-torrent). If no PORT is given, "ipp2p" is
+#			assumed.
 #
 #			This column is ignored if PROTOCOL = all but must be
 #			entered if any of the following field is supplied.
@@ -92,9 +128,21 @@
 #			   [<user name or number>]:[<group name or number>]
 #
 #			The colon is optionnal when specifying only a user.
-#			Examples : john: / john / :users / john:users	
+#			Examples : john: / john / :users / john:users
 #
+#	TEST		Defines a test on the existing packet or connection mark. 
+#			The rule will match only if the test returns true. Tests
+#			have the format [!]<value>[/<mask>][:C]
+#
+#			Where:
+#
+#				!	Inverts the test (not equal)
+#				<value> Value of the packet or connection mark.
+#				<mask>  A mask to be applied to the mark before
+#					testing 
+#				:C	Designates a connection mark. If omitted,
+#					the packet mark's value is tested.
 ##############################################################################
-#MARK		SOURCE 		DEST		PROTO	PORT(S)	CLIENT	USER
+#MARK		SOURCE 		DEST		PROTO	PORT(S)	CLIENT	USER	TEST
 #								PORT(S)
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

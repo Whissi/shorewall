@@ -52,10 +52,9 @@ address|host)
 allow)
 	echo "allow: allow <address> ...
     Re-enables receipt of packets from hosts previously blacklisted
-    by a drop, dropall, reject or rejectall command.
+    by a drop or reject command.
 
-    Shorewall allow, drop, dropall, reject, rejectall, and save implement
-    dynamic blacklisting.
+    Shorewall allow, drop, rejct and save implement dynamic blacklisting.
 
     See also \"help address\""
 	;;
@@ -106,16 +105,11 @@ delete)
     See also \"help host\""
 	;;
 
-drop|dropall)
+drop)
 	echo "$1: $1 <address> ...
     Causes packets from the specified <address> to be ignored
 
-    Shorewall allow, drop, dropall, reject, rejectall, and save implement
-    dynamic blacklisting.
-
-    'dropall' causes all interfaces to be monitored for packets from the
-    given address while 'drop' causes only those interfaces with a route
-    to the address to be monitored.
+    Shorewall allow, drop, rejct and save implement dynamic blacklisting.
 
     See also \"help address\""
 	;;
@@ -162,16 +156,11 @@ refresh)
     to reflect any changes made.  Existing connections are untouched"
 	;;
 
-reject|rejectall)
+reject)
 	echo "$1: $1 <address> ...
     Causes packets from the specified <address> to be rejected
 
-    Shorewall allow, drop, dropall, reject, rejectall, and save implement
-    dynamic blacklisting.
-
-    'rejectall' causes all interfaces to be monitored for packets from the
-    given address while 'reject' causes only those interfaces with a route
-    to the address to be monitored.
+    Shorewall allow, drop, rejct and save implement dynamic blacklisting.
 
     See also \"help address\""
 	;;
@@ -190,8 +179,7 @@ restart)
 save)
 	echo "save: save
     The dynamic data is stored in /var/lib/shorewall/save
-    Shorewall allow, drop, dropall, reject, rejectall, and save implement
-    dynamic blacklisting."
+    Shorewall allow, drop, rejct and save implement dynamic blacklisting."
 	;;
 
 show)

@@ -402,14 +402,6 @@ chain_base() #$1 = interface
 }
 
 #
-# Dynamic Blacklisting Chain to an interface
-#
-dynamic_chain() # $1 = interface
-{
-   echo `chain_base $1`_dyn
-}
-
-#
 # Remove trailing digits from a name
 #
 strip_trailing_digits() {
@@ -490,22 +482,5 @@ find_interface_by_address() {
     [ -z "$dev" ] && dev=`find_default_interface`
 
     [ -n "$dev" ] && echo $dev
-}
-
-#
-# Expands to a list of dynamic chains for the passed address 
-#
-
-dynamic_chains_by_address()
-{
-    local interface iface
-
-    interface=`find_interface_by_address $1`
-
-    [ -z "$interface" ] && echo dynamic && return
-
-    for iface in $all_interfaces; do
-	if_match $iface $interface && echo `dynamic_chain $iface`
-    done
 }
 

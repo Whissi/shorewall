@@ -634,9 +634,11 @@ validate_interfaces_file() {
 
 	for option in $options; do
 	    case $option in
-		dhcp|norfc1918|tcpflags|newnotsyn|arp_filter)
+		dhcp|norfc1918|tcpflags|newnotsyn|arp_filter|routefilter|blacklist|proxyarp|maclist|-)
 		    ;;
-		routefilter|dropunclean|logunclean|blacklist|proxyarp|maclist|-)
+		dropunclean|logunclean)
+		    error_message \
+			"Warning: The 'dropunclean' and 'logunclean' options will be removed in a future release"
 		    ;;
 		routeback)
 		    [ -n "$z" ] || startup_error "The routeback option may not be specified on a multi-zone interface"
@@ -3854,33 +3856,9 @@ initialize_netfilter () {
 
     [ -f $usersets_file ] && setup_usersets $usersets_file
 
-    for interface in $all_interfaces; do
-	chain=`dynamic_chain $interface`
-	createchain $chain no
-	iptables -A $chain -j dynamic
-    done
-
-    echo $all_interfaces > $STATEDIR/interfaces
-
-    if [ -f /var/lib/shorewall/save -o -f /var/lib/shorewall/savedyn ]; then
+    if [ -f /var/lib/shorewall/save ]; then
 	echo "Restoring dynamic rules..."
 	
-	if [ -f /var/lib/shorewall/savedyn ]; then
-	    while read target ignore1 ignore2 address rest; do
-		case $target in
-		    DROP|reject)
-			chains=`dynamic_chains_by_address $address`
-		    
-			for chain in ${chains:-dynamic}; do
-			    run_iptables2 -I $chain -s $address -j $target
-			done
-			;;
-		    *)
-			;;
-		esac
-	    done < /var/lib/shorewall/savedyn
-	fi
-
 	if [ -f /var/lib/shorewall/save ]; then
 	    while read target ignore1 ignore2 address rest; do
 		case $target in
@@ -3898,9 +3876,7 @@ initialize_netfilter () {
 
     for interface in $all_interfaces; do
 	createchain `forward_chain $interface` no
-	run_iptables -A `forward_chain $interface` -j `dynamic_chain $interface`
 	createchain `input_chain $interface`   no
-	run_iptables -A `input_chain $interface`   -j `dynamic_chain $interface`
     done
 }
 

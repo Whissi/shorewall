@@ -252,10 +252,9 @@ display_chains()
 	echo "$banner `date`"
 	echo
 	firstchain=Yes
-	echo "Dynamic Chains"
+	echo "Dynamic Chain"
 	echo
 	showchain dynamic
-	showchain '.*_dyn'
 	timed_read
 
 	qt rm -f /tmp/chains-$$
@@ -519,45 +518,6 @@ logwatch() # $1 = timeout -- if negative, prompt each time that
 }
 
 #
-# Load list of interfaces into the 'all_interfaces' variable 
-#
-load_all_interfaces() {
-    if [ ! -f $STATEDIR/interfaces ] ; then
-	echo "ERROR: $STATEDIR/interfaces does not exist" >&2
-	mutex_off
-	exit 2
-    fi
-
-    read all_interfaces < $STATEDIR/interfaces
-}
-
-#
-# Save Dynamic Blacklist
-#
-save_dynamic_blacklist() {
-
-    [ -d /var/lib/shorewall ] || mkdir -p /var/lib/shorewall
-
-    load_all_interfaces
-
-    > /var/lib/shorewall/savedyn
-
-    for interface in $all_interfaces; do
-	if ! iptables -L `dynamic_chain $interface` >> /var/lib/shorewall/savedyn; then
-	    echo "Error Saving the Dynamic Rules"
-	    return
-	fi
-    done
-
-    if iptables -L dynamic -n >> /var/lib/shorewall/save; then
-	echo "Dynamic Rules Saved"
-    else
-	echo "Error Saving the Dynamic Rules"
-    fi
-
-}
-
-#
 # Help information
 #
 help()
@@ -578,7 +538,7 @@ usage() # $1 = exit status
     echo "   check"
     echo "   clear"
     echo "   delete <interface>[:<host>] <zone>"
-    echo "   drop|dropall <address> ..."
+    echo "   drop <address> ..."
     echo "   help [ <command > | host | address ]"
     echo "   hits"
     echo "   ipcalc [ <address>/<vlsm> | <address> <netmask> ]"
@@ -586,7 +546,7 @@ usage() # $1 = exit status
     echo "   logwatch [<refresh interval>]"
     echo "   monitor [<refresh interval>]"
     echo "   refresh"
-    echo "   reject|rejectall <address> ..."
+    echo "   reject <address> ..."
     echo "   reset"
     echo "   restart"
     echo "   save"
@@ -899,18 +859,6 @@ case "$1" in
     drop)
 	[ $# -eq 1 ] && usage 1
 	mutex_on
-
-	load_all_interfaces
-	
-	while [ $# -gt 1 ]; do
-	    shift
-	    chains=`dynamic_chains_by_address $1`
-	    
-	    for chain in $chains; do
-		iptables -A $chain -s $1 -j DROP || break 1
-		echo "$1 Rejected in Chain $chain"
-	    done
-	done
 	while [ $# -gt 1 ]; do
 	    shift
 	    iptables -A dynamic -s $1 -j DROP || break 1
@@ -921,66 +869,29 @@ case "$1" in
     reject)
 	[ $# -eq 1 ] && usage 1
 	mutex_on
-
-	load_all_interfaces
-
 	while [ $# -gt 1 ]; do
 	    shift
-	    chains=`dynamic_chains_by_address $1`
-	    
-	    for chain in $chains; do
-		iptables -A $chain -s $1 -j reject || break 1
-		echo "$1 Rejected in Chain $chain"
-	    done
+	    iptables -A dynamic -s $1 -j reject || break 1
+	    echo "$1 Rejected"
 	done
-
 	mutex_off
 	;;
     allow)
 	[ $# -eq 1 ] && usage 1
 	mutex_on
-
-	load_all_interfaces
-
 	while [ $# -gt 1 ]; do
 	    shift
-
-	    chains=`dynamic_chains_by_address $1`
-
-	    for chain in $chains; do
-		if qt iptables -D $chain -s $1 -j reject; then
-		    #
-		    # Address was rejected -- silently remove any drop as well
-		    #
-		    qt iptables -D $chain -s $1 -j DROP
-		    echo "$1 Allowed in Chain $chain"
-		elif qt iptables -D $chain -s $1 -j DROP; then
-		    echo "$1 Allowed in Chain $chain"
-		else
-		    echo "$1 Not Dropped or Rejected in Chain $chain"
-		fi
-	    done
-	done
-
-	mutex_off
-	;;
-    dropall)
-	[ $# -eq 1 ] && usage 1
-	mutex_on
-	while [ $# -gt 1 ]; do
-	    shift
-	    iptables -A dynamic -s $1 -j DROP || break 1
-	    echo "$1 Dropped in Chain dynamic"
-	done
-	mutex_off
-	;;
-    rejectall)
-	[ $# -eq 1 ] && usage 1
-	mutex_on
-	while [ $# -gt 1 ]; do
-	    shift
-	    iptables -A dynamic -s $1 -j reject || break 1
-	    echo "$1 Rejected in Chain dynamic"
+	    if	qt iptables -D dynamic -s $1 -j reject; then
+		#
+		# Address was rejected -- silently remove any drop as well
+		#
+		qt iptables -D dynamic -s $1 -j DROP
+		echo "$1 Allowed"
+	    elif qt iptables -D dynamic -s $1 -j DROP; then
+		echo "$1 Allowed"
+	    else
+		echo "$1 Not Dropped or Rejected"
+	    fi
 	done
 	mutex_off
 	;;
@@ -988,7 +899,13 @@ case "$1" in
 	[ $# -ne 1 ] && usage 1
 	mutex_on
 	if qt iptables -L shorewall -n; then
-	    save_dynamic_blacklist
+	    [ -d /var/lib/shorewall ] || mkdir /var/lib/shorewall
+
+	    if iptables -L dynamic -n > /var/lib/shorewall/save; then
+		echo "Dynamic Rules Saved"
+	    else
+		echo "Error Saving the Dynamic Rules"
+	    fi
 	else
 	    echo "Shorewall isn't started"
 	fi

@@ -30,30 +30,25 @@ Problems Corrected since version 1.4.6:
 
 Migration Issues:
 
-1) Once you have installed this version of Shorewall, you must 
-   restart Shorewall before you may use the 'drop', 'reject', 'allow'
-   or 'save' commands.
+1) IP Traffic Accounting is changed from Snapshot 20030813. 
 
-2) To maintain strict compatibility with previous versions, current
-   uses of "shorewall drop" and "shorewall reject" should be replaced
-   with "shorewall dropall" and "shorewall rejectall".
-
-3) IP Traffic Accounting is changed from Snapshot 20030813. 
-
-4) The Uset Set capability introduced in SnapShot 20030821 has
+2) The Uset Set capability introduced in SnapShot 20030821 has
    changed -- see the User Set page for details.
+
+3) The per-interface dynamic blacklisting facility from previous 1.4.6
+   Snapshots has been removed. The implications of the facility for 
+   users with dial-up internet connections were too complicated to
+   document adaquately. My apologies for unleashing this half-baked
+   idea on the user base.
 
 New Features:
 
-1) Shorewall now creates a dynamic blacklisting chain for each interface
-   defined in /etc/shorewall/interfaces. The 'drop' and 'reject'
-   commands use the routing table to determine which of these chains is
-   to be used for blacklisting the specified IP address(es).
-
-   Two new commands ('dropall' and 'rejectall') have been introduced
-   that do what 'drop' and 'reject' used to do; namely, when an address
-   is blacklisted using these new commands, it will be blacklisted on
-   all of your firewall's interfaces.
+1) The 2.6 series of Linux kernels will not support the 'unclean'
+   match extension except in Patch-O-Matic. In keeping with the
+   Shorewall policy of not supporting netfilter extensions that are
+   only available in Patch-O-Matic, the 'dropunclean' and
+   'logunclean' interface options will be removed in a future
+   release. In the 1.4.7 release, they are flagged with a warning.
 
 2) Thanks to Steve Herber, the help command can now give
    command-specific help.
@@ -273,3 +268,4 @@ New Features:
 11) Output rules (those with $FW as the SOURCE) may now be limited to
     a set of local users and/or groups. See
     http://shorewall.net/UserSets.html for details.
+

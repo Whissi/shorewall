@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-09-30</pubdate>
+    <pubdate>2004-10-25</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -203,6 +203,77 @@
         chains respectively. If this additional specification is omitted, the
         chain used to mark packets will be determined by the setting of the
         MARK_IN_FORWARD_CHAIN option in shorewall.conf.</para>
+
+        <para>This possible values in this field were expanded in Shorewall
+        version 2.2.0:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>If your kernel and iptables include CONNMARK support then
+            you can also mark the connection rather than the packet</para>
+
+            <itemizedlist>
+              <listitem>
+                <para>The mark value may be optionally followed by "/" and a
+                mask value (used to determine those bits of the connection
+                mark to actually be set).</para>
+              </listitem>
+
+              <listitem>
+                <para>The mark and optional mask are then followed by one
+                of:<simplelist>
+                    <member>C: Mark the connection in the chain determined by
+                    the setting of MARK_IN_FORWARD_CHAIN</member>
+
+                    <member>CF: Mark the conneciton in the FORWARD
+                    chain</member>
+
+                    <member>CP: Mark the connection in the PREROUTING
+                    chain.</member>
+                  </simplelist></para>
+              </listitem>
+            </itemizedlist>
+          </listitem>
+
+          <listitem>
+            <para>A classification of the form &lt;major&gt;:&lt;minor&gt;
+            where &lt;major&gt; and &lt;minor&gt; are integers. Corresponds to
+            the 'class' specification in these traffic shaping
+            modules:<simplelist>
+                <member>- atm</member>
+
+                <member>- cbq</member>
+
+                <member>- dsmark</member>
+
+                <member>- pfifo_fast</member>
+
+                <member>- htb</member>
+
+                <member>- prio</member>
+              </simplelist>Classification always occurs in the POSTROUTING
+            chain.</para>
+          </listitem>
+
+          <listitem>
+            <para>RESTORE[/mask] -- restore the packet's mark from the
+            connection's mark using the supplied mask if any. Your kernel and
+            iptables must include CONNMARK support. As iabove, may be followed
+            by ":P" or ":F</para>
+          </listitem>
+
+          <listitem>
+            <para>SAVE[/mask] -- save the packet's mark to the connection's
+            mark using the supplied mask if any. Your kernel and iptables must
+            include CONNMARK support. As above, may be followed by ":P" or
+            ":F</para>
+          </listitem>
+
+          <listitem>
+            <para>CONTINUE -- don't process any more marking rules in the
+            table. As above, may be followed by ":P" or ":F".</para>
+          </listitem>
+        </itemizedlist>
       </listitem>
 
       <listitem>
@@ -222,14 +293,20 @@
 
       <listitem>
         <para>PROTO - Protocol - Must be the name of a protocol from
-        /etc/protocol, a number or <quote>all</quote></para>
+        /etc/protocol, "ipp2p", a number or "all". For "ipp2p", your kernel
+        and iptables must have ipp2p match support from <ulink
+        url="http://www.netfilter.org">Netfilter
+        Patch_o_matic_ng</ulink>.</para>
       </listitem>
 
       <listitem>
         <para>PORT(S) - Destination Ports. A comma-separated list of Port
         names (from /etc/services), port numbers or port ranges (e.g., 21:22);
         if the protocol is <quote>icmp</quote>, this column is interpreted as
-        the destination icmp type(s).</para>
+        the destination icmp type(s). If the protocol is "ipp2p", then this
+        column is interpreted as an ipp2p option (default "ipp2p"). For a list
+        of value ipp2p options, as root type <command>iptables -m ipp2p
+        --help</command>.</para>
       </listitem>
 
       <listitem>
@@ -252,6 +329,29 @@
 
         <para>Examples : john: / john / :users / john:users</para>
       </listitem>
+
+      <listitem>
+        <para>TEST (added in Shorewall version 2.2.0). Defines a test on the
+        existing packet or connection mark. The rule will match only if the
+        test returns true. Tests have the format </para>
+
+        <programlisting>[!]&lt;value&gt;[/&lt;mask&gt;][:C]</programlisting>
+
+        <para>where</para>
+
+        <simplelist>
+          <member>! Inverts the test (not equal)</member>
+
+          <member>&lt;<emphasis>value</emphasis>&gt; Value of the packet or
+          connection mark.</member>
+
+          <member>&lt;<emphasis>mask</emphasis>&gt; A mask to be applied to
+          the mark before testing</member>
+
+          <member>:C Designates a connection mark. If omitted, the packet
+          mark's value is tested.</member>
+        </simplelist>
+      </listitem>
     </itemizedlist>
 
     <example>
@@ -261,7 +361,7 @@
       arriving on eth2 and eth3 should be marked with 2. All packets
       originating on the firewall itself should be marked with 3.</para>
 
-      <programlisting>#MARK   SOURCE    DESTINATION    PROTOCOL   USER/GROUP
+      <programlisting>#MARK   SOURCE    DESTINATION    PROTOCOL   USER/GROUP    TEST
 1       eth1      0.0.0.0/0      all
 2       eth2      0.0.0.0/0      all
 2       eth3      0.0.0.0/0      all
@@ -274,7 +374,7 @@
       <para>All GRE (protocol 47) packets not originating on the firewall and
       destined for 155.186.235.151 should be marked with 12.</para>
 
-      <programlisting>#MARK   SOURCE    DESTINATION     PROTOCOL   USER/GROUP
+      <programlisting>#MARK   SOURCE    DESTINATION     PROTOCOL   USER/GROUP    TEST
 12      0.0.0.0/0 155.182.235.151 47</programlisting>
     </example>
 
@@ -284,7 +384,7 @@
       <para>All SSH packets originating in 192.168.1.0/24 and destined for
       155.186.235.151 should be marked with 22.</para>
 
-      <programlisting>#MARK   SOURCE         DESTINATION     PROTOCOL   USER/GROUP
+      <programlisting>#MARK   SOURCE         DESTINATION     PROTOCOL   USER/GROUP    TEST
 22      192.168.1.0/24 155.182.235.151 tcp        22</programlisting>
     </example>
   </section>

@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-09-12</pubdate>
+    <pubdate>2004-10-25</pubdate>
 
     <copyright>
       <year>2004</year>
@@ -278,9 +278,17 @@
     restart</command>, <command>shorewall check</command>, and
     <command>shorewall try </command>commands allow you to specify a different
     directory for Shorewall to check before looking in <filename
-    class="directory">/etc/shorewall</filename>:</para>
+    class="directory">/etc/shorewall</filename>.</para>
+
+    <para>Shorewall versions before Shorewall 2.2.0:</para>
 
     <programlisting>     <command>shorewall [ -c &lt;configuration-directory&gt; ] {start|restart|check}</command>
+     <command>shorewall try &lt;configuration-directory&gt; [ &lt;timeout&gt; ]</command></programlisting>
+
+    <para>Shorewall versions 2.2.0 and later the -c option is
+    deprecated:</para>
+
+    <programlisting>     <command>shorewall {start|restart|check} &lt;configuration-directory&gt;</command>
      <command>shorewall try &lt;configuration-directory&gt; [ &lt;timeout&gt; ]</command></programlisting>
 
     <para>If a <emphasis>&lt;configuration-directory</emphasis>&gt; is
@@ -313,7 +321,7 @@
       </listitem>
 
       <listitem>
-        <para><command>shorewall -c ./ check</command></para>
+        <para><command>shorewall check ./</command></para>
       </listitem>
 
       <listitem>
@@ -388,11 +396,26 @@
       </varlistentry>
 
       <varlistentry>
-        <term>check</term>
+        <term>check (Shorewall versions prior to 2.2.0)</term>
 
         <listitem>
           <para><command>shorewall [ -c &lt;configuration-directory&gt; ]
           check</command></para>
+
+          <para>Performs a cursory validation of the zones, interfaces, hosts,
+          rules and policy files. Use this if you are unsure of any edits you
+          have made to the shorewall configuration. See <link
+          linkend="AltConfig">above</link> for a recommended way to make
+          changes.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>check (Shorewall 2.2.0 and later)</term>
+
+        <listitem>
+          <para><command>shorewall [-q] check [
+          &lt;configuration-directory&gt; ]</command></para>
 
           <para>Performs a cursory validation of the zones, interfaces, hosts,
           rules and policy files. Use this if you are unsure of any edits you
@@ -584,11 +607,25 @@
       </varlistentry>
 
       <varlistentry>
-        <term>restart</term>
+        <term>restart (Prior to Shorewall version 2.2.0)</term>
 
         <listitem>
           <para><command>shorewall [ -q ] [ -c &lt;configuration-directory&gt;
           ] restart</command></para>
+
+          <para>Restart is similar to <command>shorewall stop</command>
+          followed by <command>shorewall start</command>. Existing connections
+          are maintained. If -q is specified, less detail is displayed making
+          it easier to spot warnings</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>restart (Shorewall version 2.2.0 and later)</term>
+
+        <listitem>
+          <para><command>shorewall [ -q ] restart
+          &lt;configuration-directory&gt;</command></para>
 
           <para>Restart is similar to <command>shorewall stop</command>
           followed by <command>shorewall start</command>. Existing connections
@@ -671,11 +708,29 @@
       </varlistentry>
 
       <varlistentry>
-        <term>start</term>
+        <term>start (Shorewall versions prior to 2.2.0)</term>
 
         <listitem>
           <para><command>shorewall [ -q ] [ -f ] [ -c
           &lt;configuration-directory&gt; ] start</command></para>
+
+          <para>Start shorewall. Existing connections through shorewall
+          managed interfaces are untouched. New connections will be allowed
+          only if they are allowed by the firewall rules or policies. If -q is
+          specified, less detail is displayed making it easier to spot
+          warnings If -f is specified, the saved configuration specified by
+          the RESTOREFILE option in <ulink
+          url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>
+          will be restored if that saved configuration exists</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>start (Shorewall 2.2.0 and later)</term>
+
+        <listitem>
+          <para><command>shorewall [ -q ] [ -f ] start [
+          &lt;configuration-directory&gt; ]</command></para>
 
           <para>Start shorewall. Existing connections through shorewall
           managed interfaces are untouched. New connections will be allowed

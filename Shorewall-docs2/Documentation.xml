@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-09-10</pubdate>
+    <pubdate>2004-10-25</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -703,6 +703,31 @@ dmz        DMZ            Demilitarized zone</programlisting>
                 linkend="Conf">/etc/shorewall/shorewall.conf</link>.</para>
               </listitem>
             </varlistentry>
+
+            <varlistentry>
+              <term>logmartians</term>
+
+              <listitem>
+                <para>(Added in version 2.2.0) - If this option is specified,
+                the kernel's martian logging facility will be enabled on this
+                interface
+                (/proc/sys/net/ipv4/conf/&lt;<emphasis>interface</emphasis>&gt;/log_martians
+                will be set to 1). See also the LOG_MARTIANS option in <link
+                linkend="Conf">shorewall.conf</link>.</para>
+              </listitem>
+            </varlistentry>
+
+            <varlistentry>
+              <term>sourceroute</term>
+
+              <listitem>
+                <para>(Added in version 2.2.0) - If this option is not
+                specified for an interface, then source-routed packets will
+                not be accepted from that interface (sets
+                <filename>/proc/sys/net/ipv4/conf/&lt;interface&gt;</filename>
+                to 1).</para>
+              </listitem>
+            </varlistentry>
           </variablelist>
 
           <para>My recommendations concerning options:</para>
@@ -710,7 +735,7 @@ dmz        DMZ            Demilitarized zone</programlisting>
           <itemizedlist>
             <listitem>
               <para>External Interface -- <emphasis
-              role="bold">tcpflags,blacklist,norfc1918,routefilter,nosmurfs</emphasis></para>
+              role="bold">tcpflags,blacklist,norfc1918,routefilter,nosmurfs,logmartians</emphasis></para>
             </listitem>
 
             <listitem>
@@ -1666,8 +1691,11 @@ ACCEPT<emphasis role="bold">:info</emphasis>   -              -               tc
 
         <listitem>
           <para>Protocol. Must be a protocol name from /etc/protocols, a
-          number or <quote>all</quote>. Specifies the protocol of the
-          connection request.</para>
+          number, "ipp2p" or <quote>all</quote>. Specifies the protocol of the
+          connection request. If "ipp2p" then your kernel and iptables must
+          have ipp2p match support from <ulink
+          url="http://www.netfilter.org">Netfilter
+          Patch-o-matic-ng</ulink>.</para>
         </listitem>
       </varlistentry>
 
@@ -1678,11 +1706,14 @@ ACCEPT<emphasis role="bold">:info</emphasis>   -              -               tc
           <para>Port or port range (&lt;low port&gt;:&lt;high port&gt;) being
           connected to. May only be specified if the protocol is tcp, udp or
           icmp. For icmp, this column's contents are interpreted as an icmp
-          type. If you don't want to specify DEST PORT(S) but need to include
-          information in one of the columns to the right, enter
-          <quote>-</quote> in this column. You may give a list of ports and/or
-          port ranges separated by commas. Port numbers may be either integers
-          or service names from /etc/services.</para>
+          type. For ipp2p, this column must contain an ipp2p option without
+          the leading "--" (default "ipp2p" -- for a list of valid options, as
+          root type <command>iptables -m ipp2p --help</command>). If you don't
+          want to specify DEST PORT(S) but need to include information in one
+          of the columns to the right, enter <quote>-</quote> in this column.
+          You may give a list of ports and/or port ranges separated by commas.
+          Port numbers may be either integers or service names from
+          /etc/services.</para>
         </listitem>
       </varlistentry>
 
@@ -2097,6 +2128,20 @@ eth1::192.0.2.32/27
           fashion. Beginning with Shorewall version 1.4.7, you may include a
           list of ranges and/or addresses in this column; again, Netfilter
           will use all listed ranges/addresses in rounde-robin fashion.</para>
+
+          <para>Beginning with Shorewall 2.2.0, you may also specify the
+          source port range to be used (the PROTO column must specify tcp or
+          udp) by following the address or address range if any with ":" and
+          the port range (in the format &lt;<emphasis>low
+          port</emphasis>&gt;-&lt;<emphasis>high port</emphasis>&gt;).</para>
+
+          <para>Examples:</para>
+
+          <programlisting>#INTERFACE SUBNET          ADDRESS                PROTO
+eth0       10.0.0.0/8      192.0.2.44:7000-8000   udp</programlisting>
+
+          <programlisting>#INTERFACE SUBNET          ADDRESS                PROTO
+eth0       192.168.1.0/24  :4000-5000             tcp</programlisting>
         </listitem>
       </varlistentry>
 
@@ -2501,10 +2546,42 @@ eth0                  eth1            206.124.146.176</programlisting>
       </varlistentry>
 
       <varlistentry>
-        <term></term>
+        <term>LOGALLNEW</term>
 
         <listitem>
-          <para></para>
+          <para>(Aded at version 2.2.0)- When set to a log level, this option
+          causes Shorewall to generaate a logging rule as the first rule in
+          each builtin chain.</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>The table name is used as the chain name in the log
+              prefix.</para>
+            </listitem>
+
+            <listitem>
+              <para>The chain name is used as the target in the log
+              pref</para>
+            </listitem>
+          </itemizedlist>
+
+          <para>Example: Using the default LOGFORMAT, the log prefix for
+          logging from the nat table's PREROUTING chain is: </para>
+
+          <programlisting>Shorewall:nat:PREROUTING</programlisting>
+
+          <important>
+            <para>There is no rate limiting on these logging rules so use
+            LOGALLNEW at your own risk; it may cause high CPU and disk
+            utilization and you may not be able to control your firewall after
+            you enable this option.</para>
+          </important>
+
+          <caution>
+            <para><emphasis role="bold">DO NOT USE THIS OPTION IF THE
+            RESULTING LOG MESSAGES WILL BE SENT TO ANOTHER
+            SYSTEM.</emphasis></para>
+          </caution>
         </listitem>
       </varlistentry>
 
@@ -2847,6 +2924,21 @@ eth0                  eth1            206.124.146.176</programlisting>
       </varlistentry>
 
       <varlistentry>
+        <term>LOG_MARTIANS</term>
+
+        <listitem>
+          <para>(Added in Version 2.2.0) - If set to Yes or yes, sets
+          <filename>/proc/sys/net/ipv4/conf/all/log_martians</filename> and
+          <filename>/proc/sys/net/ipv4/conf/default/log_martians</filename> to
+          1. Default is which sets both of the above to zero. If you do not
+          enable martian logging for all interfaces, you may still enable it
+          for individual interfaces using the <emphasis
+          role="bold">logmartians</emphasis> interface option in <link
+          linkend="Interfaces">/etc/shorewall/interfaces</link>. </para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term>DETECT_DNAT_ADDRS</term>
 
         <listitem>
@@ -3100,6 +3192,21 @@ LOGBURST=5</programlisting>
       </varlistentry>
 
       <varlistentry>
+        <term>DELAYBLACKLISTLOAD</term>
+
+        <listitem>
+          <para>(Added in Shorewall 2.2.0) - Users with a large static black
+          list (<filename>/etc/shorewall/blacklist</filename>) may want to set
+          the DELAYBLACKLISTLOAD option to Yes. When DELAYBLACKLISTLOAD=Yes,
+          Shorewall will enable new connections before loading the blacklist
+          rules. While this may allow connections from blacklisted hosts to
+          slip by during construction of the blacklist, it can substantially
+          reduce the time that all new connections are disabled during
+          <command>shorewall [re]start</command>.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term>CLAMPMSS</term>
 
         <listitem>
@@ -3114,6 +3221,11 @@ LOGBURST=5</programlisting>
             <para>This option requires CONFIG_IP_NF_TARGET_TCPMSS <ulink
             url="kernel.htm">in your kernel</ulink>.</para>
           </note>
+
+          <para>Beginning with Shorewall version 2.2.0, you may also set
+          CLAMPMSS to a numeric value (e.g., CLAMPMSS=1400). This will set the
+          MSS field in TCP SYN packets going through the firewall to the value
+          that you specify.</para>
         </listitem>
       </varlistentry>
 
@@ -3713,7 +3825,7 @@ eth1                -</programlisting>
         <revision>
           <revnumber>1.20</revnumber>
 
-          <date>2004-10-22</date>
+          <date>2004-10-25</date>
 
           <authorinitials>TE</authorinitials>
 

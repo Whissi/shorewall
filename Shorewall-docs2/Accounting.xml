@@ -29,7 +29,8 @@
       1.2 or any later version published by the Free Software Foundation; with
       no Invariant Sections, with no Front-Cover, and with no Back-Cover
       Texts. A copy of the license is included in the section entitled
-      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
 
@@ -41,11 +42,11 @@
   chain called <quote>accounting</quote> and can thus be displayed using
   <quote>shorewall show accounting</quote>. All traffic passing into, out of
   or through the firewall traverses the accounting chain including traffic
-  that will later be rejected by interface options such as <quote>tcpflags</quote>
-  and <quote>maclist</quote>. If your kernel doesn&#39;t support the
-  connection tracking match extension (Kernel 2.4.21) then some traffic
-  rejected under <quote>norfc1918</quote> will not traverse the accounting
-  chain.</para>
+  that will later be rejected by interface options such as
+  <quote>tcpflags</quote> and <quote>maclist</quote>. If your kernel doesn't
+  support the connection tracking match extension (Kernel 2.4.21) then some
+  traffic rejected under <quote>norfc1918</quote> will not traverse the
+  accounting chain.</para>
 
   <para>The columns in the accounting file are as follows:</para>
 
@@ -61,15 +62,15 @@
         </listitem>
 
         <listitem>
-          <para>DONE- Count the match and don&#39;t attempt to match any
-          following accounting rules.</para>
+          <para>DONE- Count the match and don't attempt to match any following
+          accounting rules.</para>
         </listitem>
 
         <listitem>
-          <para><emphasis>&#60;chain&#62;</emphasis> - The name of a chain to
+          <para><emphasis>&lt;chain&gt;</emphasis> - The name of a chain to
           jump to. Shorewall will create the chain automatically. If the name
           of the chain is followed by <quote>:COUNT</quote> then a COUNT rule
-          matching this rule will automatically be added to &#60;chain&#62;.
+          matching this rule will automatically be added to &lt;chain&gt;.
           Chain names must start with a letter, must be composed of letters
           and digits, and may contain underscores (<quote>_</quote>) and
           periods (<quote>.</quote>). Beginning with Shorewall version 1.4.8,
@@ -98,13 +99,20 @@
 
     <listitem>
       <para><emphasis role="bold">PROTOCOL</emphasis> - A protocol name (from
-      <filename>/etc/protocols</filename>) or a protocol number.</para>
+      <filename>/etc/protocols</filename>), a protocol number or "ipp2p". For
+      "ipp2p", your kernel and iptables must have ipp2p match support from
+      <ulink url="http://www.netfilter.org">Netfilter
+      Patch_o_matic_ng</ulink>.</para>
     </listitem>
 
     <listitem>
       <para><emphasis role="bold">DEST PORT</emphasis> - Destination Port
       number. Service name from <filename>/etc/services</filename> or port
-      number. May only be specified if the protocol is TCP or UDP (6 or 17).</para>
+      number. May only be specified if the protocol is TCP or UDP (6 or 17).
+      If the PROTOCOL is "ipp2p", then this column is interpreted as an ipp2p
+      option without the leading "--" (default "ipp2p"). For a list of value
+      ipp2p options, as root type <command>iptables -m ipp2p
+      --help</command>.</para>
     </listitem>
 
     <listitem>
@@ -112,15 +120,42 @@
       Service name from /etc/services or port number. May only be specified if
       the protocol is TCP or UDP (6 or 17).</para>
     </listitem>
+
+    <listitem>
+      <para><emphasis role="bold">USER/GROUP</emphasis> (Added in Shorewall
+      2.2.0) - This column may only be non-empty if the CHAIN is OUTPUT. The
+      column may contain:</para>
+
+      <programlisting> [!][&lt;user name or number&gt;][:&lt;group name or number&gt;]</programlisting>
+
+      <para>When this column is non-empty, the rule applies only if the
+      program generating the output is running under the effective
+      &lt;user&gt; and/or &lt;group&gt; specified (or is NOT running under
+      that id if "!" is given).</para>
+
+      <para>Examples:</para>
+
+      <simplelist>
+        <member>joe #program must be run by joe</member>
+
+        <member>:kids #program must be run by a member of the 'kids'
+        group.</member>
+
+        <member>!:kids #program must not be run by a member of the 'kids'
+        group</member>
+      </simplelist>
+    </listitem>
   </itemizedlist>
 
-  <para>In all columns except ACTION and CHAIN, the values <quote>-</quote>,<quote>any</quote>
-  and <quote>all</quote> are treated as wild-cards.</para>
+  <para>In all columns except ACTION and CHAIN, the values
+  <quote>-</quote>,<quote>any</quote> and <quote>all</quote> are treated as
+  wild-cards.</para>
 
-  <para>The accounting rules are evaluated in the Netfilter <quote>filter</quote>
-  table. This is the same environment where the <quote>rules</quote> file
-  rules are evaluated and in this environment, DNAT has already occurred in
-  inbound packets and SNAT has not yet occurred on outbound ones.</para>
+  <para>The accounting rules are evaluated in the Netfilter
+  <quote>filter</quote> table. This is the same environment where the
+  <quote>rules</quote> file rules are evaluated and in this environment, DNAT
+  has already occurred in inbound packets and SNAT has not yet occurred on
+  outbound ones.</para>
 
   <para>Accounting rules are not stateful -- each rule only handles traffic in
   one direction. For example, if eth0 is your internet interface and you have
@@ -192,13 +227,13 @@
         11506   13M            all  --  eth1   eth0    0.0.0.0/0            0.0.0.0/0
      [root@gateway shorewall]#</programlisting>
 
-  <para>Here&#39;s how the same example would be constructed on an HTTP server
+  <para>Here's how the same example would be constructed on an HTTP server
   with only one interface (eth0).</para>
 
   <caution>
-    <para>READ THE ABOVE CAREFULLY -- IT SAYS <emphasis role="bold">SERVER</emphasis>.
-    If you want to account for web browsing, you have to reverse the rules
-    below.</para>
+    <para>READ THE ABOVE CAREFULLY -- IT SAYS <emphasis
+    role="bold">SERVER</emphasis>. If you want to account for web browsing,
+    you have to reverse the rules below.</para>
   </caution>
 
   <programlisting>        #ACTION         CHAIN   SOURCE  DESTINATION     PROTOCOL        DEST            SOURCE
@@ -213,7 +248,7 @@
   <para>Note that with only one interface, only the SOURCE (for input rules)
   or the DESTINATION (for output rules) is specified in each rule.</para>
 
-  <para>Here&#39;s the output:</para>
+  <para>Here's the output:</para>
 
   <programlisting>     [root@mail shorewall]# shorewall show accounting web Shorewall-1.4.7
      Chains accounting web at mail.shorewall.net - Sun Oct 12 10:27:21 PDT 2003
@@ -234,5 +269,6 @@
      [root@mail shorewall]#</programlisting>
 
   <para>For an example of integrating Shorewall Accounting with MRTG, see
-  <ulink url="http://www.nightbrawler.com/code/shorewall-stats/">http://www.nightbrawler.com/code/shorewall-stats/</ulink>.</para>
+  <ulink
+  url="http://www.nightbrawler.com/code/shorewall-stats/">http://www.nightbrawler.com/code/shorewall-stats/</ulink>.</para>
 </article>

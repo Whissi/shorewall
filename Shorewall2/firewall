@@ -611,9 +611,10 @@ verify_interface()
 #
 match_ipsec_in() # $1 = zone, $2 = host
 {
+    eval local is_ipsec=\$${1}_is_ipsec
     eval local hosts=\"\$${1}_ipsec_hosts\"
 
-    if list_search $2 $hosts; then
+    if [ -n "$is_ipsec" ] || list_search $2 $hosts; then
 	echo "-m policy --pol ipsec --dir in"
     elif [ -n "$POLICY_MATCH" ]; then
 	echo "-m policy --pol none --dir in"
@@ -625,9 +626,10 @@ match_ipsec_in() # $1 = zone, $2 = host
 #
 match_ipsec_out() # $1 = zone, $2 = host
 {
+    eval local is_ipsec=\$${1}_is_ipsec
     eval local hosts=\"\$${1}_ipsec_hosts\"
 
-    if list_search $2 $hosts; then
+    if [ -n "$is_ipsec" ] || list_search $2 $hosts; then
 	echo "-m policy --pol ipsec --dir out"
     elif [ -n "$POLICY_MATCH" ]; then
 	echo "-m policy --pol none --dir out"
@@ -1830,7 +1832,7 @@ setup_mac_lists() {
     for hosts in $maclist_hosts; do
 	ipsec=${hosts%^*}
 	hosts=${hosts#*^}
-	[ -n $POLICY_MATCH ] && policy="-m policy --pol $ipsec --dir in" || policy=
+	[ -n "$POLICY_MATCH" ] && policy="-m policy --pol $ipsec --dir in" || policy=
 	interface=${hosts%%:*}
 	hosts=${hosts#*:}
 	for chain in $(first_chains $interface) ; do
@@ -4876,7 +4878,7 @@ setup_blacklist() {
 	for host in $hosts; do
 	    ipsec=${host%^*}
 	    host=${host#*^}
-	    [ -n $POLICY_MATCH ] && policy="-m policy --pol $ipsec --dir in" || policy=
+	    [ -n "$POLICY_MATCH" ] && policy="-m policy --pol $ipsec --dir in" || policy=
 	    interface=${host%%:*}
 	    network=${host#*:}
 
@@ -5209,7 +5211,7 @@ initialize_netfilter () {
 	for host in $(find_hosts_by_option newnotsyn); do
 	    ipsec=${host%^*}
 	    host=${host#*^}
-	    [ -n $POLICY_MATCH ] && policy="-m policy --pol $ipsec --dir in" || policy=
+	    [ -n "$POLICY_MATCH" ] && policy="-m policy --pol $ipsec --dir in" || policy=
 	    interface=${host%%:*}
 	    network=${host#*:}
 	    run_iptables -A newnotsyn -i $interface $(match_source_hosts $network) $policy -p tcp --tcp-flags ACK ACK -j ACCEPT
@@ -5340,7 +5342,7 @@ add_common_rules() {
 	for host in $hosts; do
 	    ipsec=${host%^*}
 	    host=${host#*^}
-	    [ -n $POLICY_MATCH ] && policy="-m policy --pol $ipsec --dir in" || policy=
+	    [ -n "$POLICY_MATCH" ] && policy="-m policy --pol $ipsec --dir in" || policy=
 	    interface=${host%%:*}
 	    network=${host#*:}
 
@@ -5440,7 +5442,7 @@ add_common_rules() {
 	for host in $hosts; do
 	    ipsec=${host%^*}
 	    host=${host#*^}
-	    [ -n $POLICY_MATCH ] && policy="-m policy --pol $ipsec --dir in" || policy=
+	    [ -n "$POLICY_MATCH" ] && policy="-m policy --pol $ipsec --dir in" || policy=
 	    interface=${host%%:*}
 	    networks=${host#*:}
 
@@ -5489,7 +5491,7 @@ add_common_rules() {
 	for host in $hosts; do
 	    ipsec=${host%^*}
 	    host=${host#*^}
-	    [ -n $POLICY_MATCH ] && policy="-m policy --pol $ipsec --dir in" || policy=
+	    [ -n "$POLICY_MATCH" ] && policy="-m policy --pol $ipsec --dir in" || policy=
 	    interface=${host%%:*}
 	    network=${host#*:}
 
@@ -5546,7 +5548,7 @@ add_common_rules() {
 	for host in $hosts; do
 	    ipsec=${host%^*}
 	    host=${host#*^}
-	    [ -n $POLICY_MATCH ] && policy="-m policy --pol $ipsec --dir in" || policy=
+	    [ -n "$POLICY_MATCH" ] && policy="-m policy --pol $ipsec --dir in" || policy=
 	    interface=${host%%:*}
 	    network=${host#*:}
 
@@ -6077,7 +6079,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 {
     local base interface host newhost zone z h z1 z2 chain terminator
     local dhcp_interfaces blacklist_interfaces maclist_interfaces tcpflags_interfaces
-    local rulenum source_chain dest_hosts iface hosts
+    local rulenum source_chain dest_hosts iface hosts is_ipsec policyin= policyout=
 
     nat_chain_exists() # $1 = chain name
     {
@@ -6114,7 +6116,17 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
     validate_zone $zone || startup_error "Unknown zone: $zone"
 
     [ "$zone" = $FW ] && startup_error "Can't add $1 to firewall zone"
-    
+
+    eval is_ipsec=\$${zone}_is_ipsec
+
+    if [ -n "$is_ipsec" ]; then
+	[ -n "$POLICY_MATCH" ] || startup_error "Your kernel and/or iptables lacks policy match support"
+	policyin="-m policy --pol ipsec --dir in"
+	policyout="-m policy --pol ipsec --dir out"
+    elif [ -n "$POLICY_MATCH" ]; then
+ 	policyin="-m policy --pol none --dir in"
+	policyout="-m policy --pol none --dir out"
+    fi   
     #
     # Be sure that Shorewall has been restarted using a DZ-aware version of the code
     #
@@ -6169,7 +6181,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
     chain=${zone}_dnat
 
     if nat_chain_exists $chain; then
-	do_iptables -t nat -A $(dynamic_in $interface) -s $host -j $chain
+	do_iptables -t nat -A $(dynamic_in $interface) -s $host $policyin -j $chain
     fi
     #
     # Insert new rules into the filter table for the passed interface
@@ -6177,7 +6189,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
     while read z1 z2 chain; do
 	if [ "$z1" = "$zone" ]; then
 	    if [ "$z2" = "$FW" ]; then
-		do_iptables -A $(dynamic_in $interface) -s $host -j $chain
+		do_iptables -A $(dynamic_in $interface) -s $host $policyin -j $chain
 	    else
 		source_chain=$(dynamic_fwd $interface)
 		eval dest_hosts=\"\$${z2}_hosts\"
@@ -6187,7 +6199,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		    hosts=${h#*:}
 
 		    if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
-			do_iptables -A $source_chain -s $host -o $iface $(match_dest_hosts $hosts) -j $chain
+			do_iptables -A $source_chain -s $host -o $iface $(match_dest_hosts $hosts) $policyout -j $chain
 		    fi
 		done
 	    fi
@@ -6196,7 +6208,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		#
 		# Add a rule to the dynamic out chain for the interface
 		#
-		do_iptables -A $(dynamic_out $interface) -d $host -j $chain
+		do_iptables -A $(dynamic_out $interface) -d $host $policyout -j $chain
 	    else
 		eval source_hosts=\"\$${z1}_hosts\"
 
@@ -6205,7 +6217,7 @@ add_to_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		    hosts=${h#*:}
 
 		    if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
-			do_iptables -A $(dynamic_fwd $iface) $rulenum $(match_source_hosts $hosts) -o $interface -d $host -j $chain
+			do_iptables -A $(dynamic_fwd $iface) $rulenum $(match_source_hosts $hosts) -o $interface -d $host $policyout -j $chain
 		    fi
 		done
 	    fi

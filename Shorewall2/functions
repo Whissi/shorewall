@@ -266,12 +266,22 @@ determine_zones()
     multi_display=Multi-zone
     strip_file zones $zonefile
     zones=$(find_zones $TMP_DIR/zones)
-    zones=$(echo $zones) # Remove extra trash
+    newzones=
     
     for zone in $zones; do
 	dsply=$(find_display $zone $TMP_DIR/zones)
+	case $zone in 
+	    *:ipsec)
+		zone=${zone%:*}
+		eval ${zone}_is_ipsec=Yes
+		;;
+	    *)
+	esac
 	eval ${zone}_display=\$dsply
+	newzones="$newzones $zone"
     done
+
+    zones=${newzones# }
 }
 
 #

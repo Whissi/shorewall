@@ -13,7 +13,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-06-28</pubdate>
+    <pubdate>2004-06-30</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -88,17 +88,35 @@
     <title>Problems in Version 2.0</title>
 
     <section>
+      <title>Shorewall 2.0.3a</title>
+
+      <itemizedlist>
+        <listitem>
+          <para>Slackware users find that version 2.0.3a fails to start
+          because their <command>mktemp</command> utility does not support the
+          -d option. This may be corrected by installing <ulink
+          url="http://shorewall.net/pub/shorewall/errata/2.0.3/functions">this
+          corrected <filename>functions</filename> file</ulink> in <filename
+          class="directory">/var/lib/shorewall/functions</filename>.</para>
+        </listitem>
+
+        <listitem>
+          <para>Shorewall fails to start if there is no <command>mktemp</command>
+          utility.</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>These problems are corrected in Shorewall version 2.0.3b.</para>
+    </section>
+
+    <section>
       <title>Shorewall 2.0.3</title>
 
       <itemizedlist>
         <listitem>
           <para>A non-empty entry in the DEST column of /etc/shorewall/tcrules
           will result in an error message and Shorewall fails to start. This
-          problem may be corrected by installing <ulink
-          url="http://shorewall.net/pub/shorewall/errata/2.0.3/firewall">this
-          firewall script</ulink> in /usr/share/shorewall/firewall as
-          described above. This problem is also fixed in Shorewall version
-          2.0.3a.</para>
+          problem is fixed in Shorewall version 2.0.3a.</para>
         </listitem>
 
         <listitem>

@@ -1,220 +1,229 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-    
+        
   <meta http-equiv="Content-Type"
  content="text/html; charset=windows-1252">
   <title>My Shorewall Configuration</title>
-        
+               
   <meta name="GENERATOR" content="Microsoft FrontPage 5.0">
-    
+        
   <meta name="ProgId" content="FrontPage.Editor.Document">
-    
+        
   <meta name="Microsoft Theme" content="none">
 </head>
   <body>
-  
+    
 <table border="0" cellpadding="0" cellspacing="0"
  style="border-collapse: collapse;" width="100%" id="AutoNumber1"
  bgcolor="#400169" height="90">
-                     <tbody>
-                <tr>
-                       <td width="100%">        
+                      <tbody>
+                 <tr>
+                        <td width="100%">               
       <h1 align="center"><font color="#ffffff">About My Network</font></h1>
-                       </td>
-                     </tr>
-    
-  </tbody> 
+                        </td>
+                      </tr>
+        
+  </tbody>  
 </table>
-  
+    
 <blockquote> </blockquote>
-  
+    
 <h1>My Current Network </h1>
-  
-<blockquote>   
-  <p><big><font color="#ff0000"><b>Warning 1: </b></font><b><small>I</small></b></big><big><b><small> 
-  use a combination of Static NAT and Proxy ARP, neither of which are relevant 
-  to a simple configuration with a single public IP address.</small></b></big><big><b><small> 
-  If you have just a single public IP address, most of what you see here won't
-  apply to your setup so beware of copying parts of this configuration and
- expecting them to work for you. What you copy may or may not work in your
-configuration.<br>
-   </small></b></big></p>
-   
-  <p><big><b><small><big><font color="#ff0000">Warning 2:</font></big> </small></b></big><b>My 
-configuration uses features introduced in Shorewall version 1.4.1.</b><br>
-       </p>
     
-  <p> I have DSL service and have 5 static IP addresses (206.124.146.176-180). 
-      My DSL   "modem" (<a href="http://www.fujitsu.com">Fujitsu</a> Speedport) 
-     is connected to eth0. I have a local network connected to eth2 (subnet 
-  192.168.1.0/24)     and a DMZ connected to eth1 (192.168.2.0/24). </p>
-    
+<blockquote>      
+  <p><big><font color="#ff0000"><b>Warning 1: </b></font><b><small>I</small></b></big><big><b><small>
+   use a combination of Static NAT and Proxy ARP, neither of which are relevant
+   to a simple configuration with a single public IP address.</small></b></big><big><b><small>
+   If you have just a single public IP address, most of what you see here
+won't   apply to your setup so beware of copying parts of this configuration
+and  expecting them to work for you. What you copy may or may not work in
+your configuration.<br>
+    </small></b></big></p>
+       
+  <p><big><b><small><big><font color="#ff0000">Warning 2:</font></big> </small></b></big><b>My
+ configuration uses features introduced in Shorewall version 1.4.1.</b><br>
+        </p>
+        
+  <p> I have DSL service and have 5 static IP addresses (206.124.146.176-180).
+       My DSL   "modem" (<a href="http://www.fujitsu.com">Fujitsu</a> Speedport)
+      is connected to eth0. I have a local network connected to eth2 (subnet
+   192.168.1.0/24)     and a DMZ connected to eth1 (192.168.2.0/24). </p>
+        
   <p> I use:<br>
-              </p>
-    
+               </p>
+        
   <ul>
-                <li>Static NAT for Ursa (my XP System) - Internal address 
-192.168.1.5      and external address 206.124.146.178.</li>
-                <li>Static NAT for Wookie (my Linux System). Internal address 
- 192.168.1.3 and external address 206.124.146.179.</li>
-                <li>SNAT through the primary gateway address (206.124.146.176) 
-  for    my Wife's system (Tarry) and our  laptop (Tipper) which connects
-through the Wireless Access Point (wap)</li>
-    
+                 <li>Static NAT for Ursa (my XP System) - Internal address
+ 192.168.1.5      and external address 206.124.146.178.</li>
+                 <li>Static NAT for Wookie (my Linux System). Internal address
+  192.168.1.3 and external address 206.124.146.179.</li>
+                 <li>SNAT through the primary gateway address (206.124.146.176)
+   for    my Wife's system (Tarry) and our  laptop (Tipper) which connects 
+through the Wireless Access Point (wap) via a Wireless Bridge (bridge). <b><br>
+      <br>
+Note:</b> While the distance between the WAP and where I usually use the
+laptop isn't very far (25 feet or so), using a WAC11 (CardBus wireless card)
+has proved very unsatisfactory (lots of lost connections). By replacing the
+WAC11 with the WET11 wireless bridge, I have virtually eliminated these problems
+(I was also able to eliminate them by hanging a piece of aluminum foil on
+the family room wall but Tarry rejected that as a permanent solution :-).</li>
+        
   </ul>
-    
+        
   <p> The firewall runs on a 256MB PII/233 with RH8.0.</p>
-    
-  <p> Wookie  runs Samba and acts as the a WINS server.  Wookie is in its 
-     own 'whitelist' zone  called 'me'.</p>
-    
-  <p> My laptop (eastept1) is connected to eth3 using a cross-over cable. 
-     It runs its own <a href="http://www.sygate.com"> Sygate</a> firewall 
-software     and is managed by Proxy ARP. It connects to the  local network 
-through a PPTP server running on Ursa. </p>
-    
-  <p> The single system in the DMZ (address 206.124.146.177) runs postfix, 
-     Courier  IMAP (imaps and pop3), DNS, a Web server (Apache) and an FTP 
- server    (Pure-ftpd). The system   also runs fetchmail to fetch our email 
- from our    old and current ISPs. That server is managed through Proxy ARP.</p>
-    
-  <p> The firewall system itself runs a DHCP server that serves the local 
-       network.</p>
-    
-  <p> All administration and publishing is done using ssh/scp. I have X installed 
- on both the firewall and the server but no X server or desktop is installed. 
- X applications tunnel through SSH to XWin.exe running on Ursa.</p>
-    
+        
+  <p> Wookie  runs Samba and acts as the a WINS server.  Wookie is in its
+      own 'whitelist' zone  called 'me'.</p>
+        
+  <p> My work laptop (easteplaptop) is connected to eth3 using a cross-over
+cable.       It runs its own <a href="http://www.sygate.com"> Sygate</a>
+firewall  software     and is managed by Proxy ARP. It connects to the  local
+network  through a PPTP server. running on Ursa. </p>
+        
+  <p> The single system in the DMZ (address 206.124.146.177) runs postfix,
+      Courier  IMAP (imaps and pop3), DNS, a Web server (Apache) and an FTP
+  server    (Pure-ftpd). The system   also runs fetchmail to fetch our email
+  from our    old and current ISPs. That server is managed through Proxy
+ARP.</p>
+        
+  <p> The firewall system itself runs a DHCP server that serves the local
+        network.</p>
+        
+  <p> All administration and publishing is done using ssh/scp. I have X installed
+  on both the firewall and the server but no X server or desktop is installed.
+  X applications tunnel through SSH to XWin.exe running on Ursa.</p>
+        
   <p> I run an SNMP server on my firewall to serve <a
- href="http://www.ee.ethz.ch/%7Eoetiker/webtools/mrtg/"> MRTG</a> running 
-     in the DMZ.</p>
-    
+ href="http://www.ee.ethz.ch/%7Eoetiker/webtools/mrtg/"> MRTG</a> running
+      in the DMZ.</p>
+        
   <p align="center">                           <img border="0"
  src="images/network.png" width="764" height="846">
-              </p>
-    
+               </p>
+        
   <p> </p>
-    
-  <p>The ethernet interface in the Server is configured         with IP address
-206.124.146.177, netmask    255.255.255.0. The server's default gateway is 
-    206.124.146.254 (Router at my ISP. This is the same           default
-gateway used by the firewall itself). On the firewall,                  
-              Shorewall automatically adds a host route to              
-              206.124.146.177 through eth1 (192.168.2.1) because     of 
-                         the entry in /etc/shorewall/proxyarp (see  below).</p>
-    
-  <p>A similar setup is used on eth3 (192.168.3.1) which           interfaces
+        
+  <p>The ethernet interface in the Server is configured         with IP address 
+206.124.146.177, netmask    255.255.255.0. The server's default gateway is
+     206.124.146.254 (Router at my ISP. This is the same           default 
+gateway used by the firewall itself). On the firewall,                   
+             Shorewall automatically adds a host route to               
+             206.124.146.177 through eth1 (192.168.2.1) because     of  
+                        the entry in /etc/shorewall/proxyarp (see  below).</p>
+        
+  <p>A similar setup is used on eth3 (192.168.3.1) which           interfaces 
 to my laptop (206.124.146.180).<br>
-         </p>
-    
-  <p>Ursa (192.168.1.5 AKA 206.124.146.178) runs a PPTP server for Road Warrior 
-   access.<br>
-         </p>
-    
+          </p>
+        
+  <p>Ursa (192.168.1.5 AKA 206.124.146.178) runs a PPTP server for Road Warrior
+    access.<br>
+          </p>
+        
   <p><font color="#ff0000" size="5"></font></p>
-       </blockquote>
-  
+        </blockquote>
+    
 <h3>Shorewall.conf</h3>
-  
-<blockquote>   
+    
+<blockquote>      
   <pre>SHARED_DIR=/usr/share/shorewall<br>LOGFILE=/var/log/firewall<br>LOGRATE=<br>LOGBURST=<br>LOGUNCLEAN=info<br>BLACKLIST_LOGLEVEL=<br>LOGNEWNOTSYN=<br>MACLIST_LOG_LEVEL=$LOG<br>TCP_FLAGS_LOG_LEVEL=$LOG<br>RFC1918_LOG_LEVEL=$LOG<br>PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin<br>SUBSYSLOCK=/var/lock/subsys/shorewall<br>STATEDIR=/var/state/shorewall<br>MODULESDIR=<br>FW=fw<br>NAT_ENABLED=Yes<br>MANGLE_ENABLED=Yes<br>IP_FORWARDING=On<br>ADD_IP_ALIASES=Yes<br>ADD_SNAT_ALIASES=Yes<br>TC_ENABLED=Yes<br>CLEAR_TC=No<br>MARK_IN_FORWARD_CHAIN=No<br>CLAMPMSS=Yes<br>ROUTE_FILTER=No<br>NAT_BEFORE_RULES=No<br>MULTIPORT=Yes<br>DETECT_DNAT_IPADDRS=Yes<br>MUTEX_TIMEOUT=60<br>NEWNOTSYN=Yes<br>BLACKLIST_DISPOSITION=DROP<br>MACLIST_DISPOSITION=REJECT<br>TCP_FLAGS_DISPOSITION=DROP</pre>
-   </blockquote>
-  
+    </blockquote>
+    
 <h4> </h4>
-  
+    
 <h3>Params File (Edited):</h3>
-  
-<blockquote>
+    
+<blockquote>   
   <pre>MIRRORS=<i>&lt;list of shorewall mirror ip addresses&gt;</i><br>NTPSERVERS=<i>&lt;list of the NTP servers I sync with&gt;</i>
 TEXAS=<i>&lt;ip address of gateway in Dallas&gt;<br></i>LOG=ULOG<br></pre>
-</blockquote>
-  
+ </blockquote>
+    
 <h3>Zones File</h3>
-  
-<blockquote>   
+    
+<blockquote>      
   <pre>#ZONE	DISPLAY		COMMENTS<br>net     Internet        Internet<br>me      Wookie          My Linux Workstation<br>dmz     DMZ             Demilitarized zone<br>loc     Local           Local networks<br>tx      Texas           Peer Network in Dallas<br>#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE<font
  face="Courier" size="2"><br></font></pre>
-   </blockquote>
-  
+    </blockquote>
+    
 <h3>Interfaces File: </h3>
-  
-<blockquote>    
-  <p> This is set up so that I can start the firewall before bringing up
-my Ethernet  interfaces. </p>
-                 </blockquote>
-  
-<blockquote>   
+    
+<blockquote>       
+  <p> This is set up so that I can start the firewall before bringing up my
+Ethernet  interfaces. </p>
+                  </blockquote>
+    
+<blockquote>      
   <pre>#ZONE	INERFACE	BROADCAST	OPTIONS<br>net     eth0            206.124.146.255 dhcp,norfc1918,routefilter,blacklist,tcpflags<br>loc     eth2            192.168.1.255   dhcp,maclist<br>dmz     eth1            192.168.2.255<br>net     eth3            206.124.146.255<br>-       texas           192.168.9.255<br>#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE<font
  face="Courier" size="2"><br></font>                </pre>
-   </blockquote>
-  
+    </blockquote>
+    
 <h3>Hosts File: </h3>
-  
-<blockquote>   
+    
+<blockquote>      
   <pre>#ZONE		HOST(S)			OPTIONS<br>me              eth2:192.168.1.3<br>tx              texas:192.168.8.0/22<br>#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</pre>
-   </blockquote>
-  
+    </blockquote>
+    
 <h3>Routestopped File:</h3>
-  
-<blockquote>   
+    
+<blockquote>      
   <pre>#INTERFACQ	HOST(S)<br>eth1            206.124.146.177<br>eth2            -<br>eth3            206.124.146.180<br>#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE<font
  face="Courier" size="2">	</font></pre>
-   </blockquote>
-  
+    </blockquote>
+    
 <h3>Policy File:</h3>
-  
-<blockquote>   
+    
+<blockquote>      
   <pre>#SOURCE		DESTINATION	POLICY		LOG LEVEL	BURST:LIMIT<br>me		loc		NONE<br>loc		me		NONE<br>me              all             ACCEPT<br>tx              me              ACCEPT<br>all             me              CONTINUE        -               2/sec:5<br>loc             net             ACCEPT<br>$FW             loc             ACCEPT<br>$FW             tx              ACCEPT<br>loc             tx              ACCEPT<br>loc             fw              REJECT          $LOG<br>net             all             DROP            $LOG            10/sec:40<br>all             all             REJECT          $LOG<br>#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE<br></pre>
-   </blockquote>
-  
+    </blockquote>
+    
 <h3>Masq File: </h3>
-  
-<blockquote>    
-  <p> Although most of our internal systems use static NAT, my wife's system 
-      (192.168.1.4) uses IP Masquerading (actually SNAT) as do visitors with 
-   laptops. Also, I masquerade wookie to the peer subnet in Texas.</p>
-              </blockquote>
-  
-<blockquote>   
+    
+<blockquote>       
+  <p> Although most of our internal systems use static NAT, my wife's system
+       (192.168.1.4) uses IP Masquerading (actually SNAT) as do visitors
+with     laptops. Also, I masquerade wookie to the peer subnet in Texas.</p>
+               </blockquote>
+    
+<blockquote>      
   <pre>#INTERFACE              SUBNET          ADDRESS<br>eth0:0.0.0.0/0          eth2            206.124.146.176<br>#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE<br><font
  size="2" face="Courier">	</font></pre>
-   </blockquote>
-  
+    </blockquote>
+    
 <h3>NAT File: </h3>
-  
-<blockquote>   
+    
+<blockquote>      
   <pre>#EXTERNAL       INTERFACE       INTERNAL        ALL INTERFACES          LOCAL<br>206.124.146.178 eth0:0          192.168.1.5     No                      No<br>206.124.146.179 eth0:1          192.168.1.3     No                      No<br>192.168.1.193   eth2:0          206.124.146.177 No                      No<br>#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE<font
  size="2" face="Courier"></font></pre>
-   </blockquote>
-  
+    </blockquote>
+    
 <h3>Proxy ARP File:</h3>
-  
-<blockquote>   
+    
+<blockquote>      
   <pre>#ADDRESS                INTERFACE       EXTERNAL        HAVEROUTE<br>206.124.146.177         eth1            eth0            No<br>206.124.146.180         eth3            eth0            No<br>#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE<font
  face="Courier" size="2">     	</font></pre>
-   </blockquote>
-  
+    </blockquote>
+    
 <h3>Tunnels File (Shell variable TEXAS set in /etc/shorewall/params):</h3>
-  
-<blockquote>   
+    
+<blockquote>      
   <pre>#TYPE			ZONE    GATEWAY         GATEWAY ZONE    PORT<br>gre                     net     $TEXAS<br>#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE<br><small>	</small></pre>
-   </blockquote>
-  
+    </blockquote>
+    
 <h3>Common File:</h3>
-  
-<blockquote>   
+    
+<blockquote>      
   <pre>. /etc/shorewall/common.def<br>run_iptables -A common -p tcp --dport auth -j REJECT<br></pre>
-   </blockquote>
-  
+    </blockquote>
+    
 <h3>Rules File (The shell variables      are set in /etc/shorewall/params):</h3>
-  
-<blockquote>   
+    
+<blockquote>      
   <pre>################################################################################################################################################################<br>#RESULT         CLIENT(S)                       SERVER(S)               PROTO   PORT(S)                                 CLIENT          ORIGINAL DEST:SNAT<br>################################################################################################################################################################<br># Local Network to Internet - Reject attempts by Trojans to call home<br>#<br>REJECT:$LOG     loc                             net                     tcp     6667<br>#<br># Stop NETBIOS crap since our policy is ACCEPT<br>#<br>REJECT          loc                             net                     tcp     137,445<br>REJECT          loc                             net                     udp     137:139<br>LOG:$LOG        loc                             net                     tcp     137:139<br>################################################################################################################################################################<br># Local Network to Firewall<br>#<br>ACCEPT          loc                             fw                      tcp     ssh,time,10000<br>ACCEPT          loc                             fw                      udp     snmp<br>ACCEPT          loc                             fw                      udp     ntp<br>################################################################################################################################################################<br># Local Network to DMZ (10027 is our SMTP backdoor that bypasses virus/spam filtering)<br>#<br>ACCEPT          loc                             dmz                     udp     domain<br>ACCEPT          loc                             dmz                     tcp     smtp,domain,ssh,imap,https,imaps,cvspserver,www,ftp,10027,10000,8080    -<br>################################################################################################################################################################<br># Internet to DMZ<br>#<br>ACCEPT          net                             dmz                     tcp     www,smtp,ftp,imaps,domain,cvspserver,https,imap -<br>ACCEPT          net                             dmz                     udp     domain<br>ACCEPT          net:$MIRRORS                    dmz                     tcp     rsync<br>ACCEPT:$LOG     net                             dmz                     tcp     32768:61000                             20<br>DROP            net                             dmz                     tcp     1433<br>################################################################################################################################################################<br>#<br># Net to Local<br>#<br># My laptop isn't NATTED when in its docking station. To allow access to the local lan, I need a VPN to Ursa which is enabled by the following "half"-rules.<br>#<br>DNAT-           net                             loc:192.168.1.5         tcp     1723                                    -               206.124.146.178<br>DNAT-           net                             loc:192.168.1.5         gre     -                                       -               206.124.146.178<br>#<br># When I'm "on the road", the following two rules allow me VPN access back home.<br>#<br>ACCEPT          net                             loc:192.168.1.5         tcp     1723<br>ACCEPT          net                             loc:192.168.1.5         gre<br>#<br># ICQ to Ursa<br>#<br>ACCEPT          net                             loc:192.168.1.5         tcp     4000:4100<br>################################################################################################################################################################<br># Net to me<br>#<br>ACCEPT          net                             me:192.168.1.3          tcp     4000:4100<br>################################################################################################################################################################<br># DMZ to Internet<br>#<br>ACCEPT          dmz                             net                     tcp     smtp,domain,www,https,whois,echo,2702,21,2703,ssh<br>ACCEPT          dmz                             net                     udp     domain<br>ACCEPT          dmz                             net:206.124.128.8       tcp     pop3<br>ACCEPT          dmz                             net:66.216.26.115       tcp     pop3<br>#<br># Something is wrong with the FTP connection tracking code or there is some client out there<br># that is sending a PORT command which that code doesn't understand. Either way,<br># the following works around the problem.<br>#<br>ACCEPT:$LOG     dmz                             net                     tcp     1024:                                   20<br>################################################################################################################################################################<br># DMZ to Firewall -- ntp &amp; snmp<br>#<br>ACCEPT          dmz                             fw                      udp     ntp                                     ntp<br>ACCEPT          dmz                             fw                      tcp     snmp<br>ACCEPT          dmz                             fw                      udp     snmp<br>################################################################################################################################################################<br>#<br># DMZ to Local Network<br>#<br>ACCEPT          dmz                             loc                     tcp     smtp<br>################################################################################################################################################################<br>#<br># DMZ to Me -- NFS<br>#<br>ACCEPT          dmz                             me                      tcp     111<br>ACCEPT          dmz                             me                      udp     111<br>ACCEPT          dmz                             me                      udp     2049<br>ACCEPT          dmz                             me                      udp     32700:<br>################################################################################################################################################################<br># Internet to Firewall<br>#<br>ACCEPT          net:eth3:206.124.146.180        fw                      udp     ntp                                     ntp<br>REJECT          net                             fw                      tcp     www<br>DROP            net                             fw                      tcp     1433<br>DROP            net:eth3:!206.124.146.180       fw                      all<br>################################################################################################################################################################<br># Firewall to Internet<br>#<br>ACCEPT          fw                              net:$NTPSERVERS         udp     ntp                                     ntp<br>ACCEPT          fw                              net                     udp     domain<br>ACCEPT          fw                              net                     tcp     domain,www,https,ssh,1723,whois,1863<br>ACCEPT          fw                              net                     udp     33435:33535<br>ACCEPT          fw                              net                     icmp    8<br>################################################################################################################################################################<br># Firewall to DMZ<br>#<br>ACCEPT          fw                              dmz                     tcp     www,ftp,ssh,smtp<br>ACCEPT          fw                              dmz                     udp     domain<br>ACCEPT          fw                              dmz                     icmp    8<br>REJECT          fw                              dmz                     udp     137:139<br>#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE<br></pre>
-   </blockquote>
-  
+    </blockquote>
+    
 <p><font size="2"><a href="support.htm">Tom Eastep</a></font>        </p>
-               <a href="copyright.htm"><font size="2">Copyright</font>  
-©  <font size="2">2001, 2002, 2003 Thomas M. Eastep.</font></a><br>
+                <a href="copyright.htm"><font size="2">Copyright</font> 
+ ©  <font size="2">2001, 2002, 2003 Thomas M. Eastep.</font></a><br>
+ <br>
 </body>
 </html>

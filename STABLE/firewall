@@ -926,7 +926,7 @@ log_rule() # $1 = log level, $2 = chain, $3 = disposition , $... = predicates fo
 		eval iptables -A $chain $@ -j ULOG $LOGPARMS --ulog-prefix '"`printf "$LOGFORMAT" $chain $rulenum $disposition`"'
 		;;
 	    *)
-		eval iptables -A $chain $@ -j LOG $LOGPARMS --log-prefix '"`printf "$LOGFORMAT" $chain $rulenum $disposition`"'
+		eval iptables -A $chain $@ -j LOG $LOGPARMS --log-level $level --log-prefix '"`printf "$LOGFORMAT" $chain $rulenum $disposition`"'
 		;;
 	esac
 	
@@ -943,7 +943,7 @@ log_rule() # $1 = log level, $2 = chain, $3 = disposition , $... = predicates fo
 		eval iptables -A $chain $@ -j ULOG $LOGPARMS --ulog-prefix '"`printf "$LOGFORMAT" $chain $disposition`"'
 		;;
 	    *)
-		eval iptables -A $chain $@ -j LOG $LOGPARMS --log-prefix '"`printf "$LOGFORMAT" $chain $disposition`"'
+		eval iptables -A $chain $@ -j LOG $LOGPARMS --log-level $level --log-prefix '"`printf "$LOGFORMAT" $chain $disposition`"'
 		;;
 	esac
 	

@@ -120,20 +120,24 @@
 
     <orderedlist>
       <listitem>
-        <para>Local-host-to-remote-host — same as Local-host-to-local-gateway
+        <para><emphasis role="bold">Local-host-to-remote-host</emphasis> —
+        same as <emphasis role="bold">Local-host-to-local-gateway</emphasis>
         above.</para>
       </listitem>
 
       <listitem>
-        <para>Local-gateway-to-remote-gateway.</para>
+        <para><emphasis
+        role="bold">Local-gateway-to-remote-gateway</emphasis>.</para>
       </listitem>
 
       <listitem>
-        <para>Remote-gateway-to-local-gateway.</para>
+        <para><emphasis
+        role="bold">Remote-gateway-to-local-gateway</emphasis>.</para>
       </listitem>
 
       <listitem>
-        <para>Remote-host-to-local-host — same as Local-gateway-to-local-host
+        <para><emphasis role="bold">Remote-host-to-local-host</emphasis> —
+        same as <emphasis role="bold">Local-gateway-to-local-host</emphasis>
         above.</para>
       </listitem>
     </orderedlist>
@@ -176,25 +180,96 @@
   </section>
 
   <section>
+    <title>Defining Remote Zones</title>
+
+    <para>Most VPN types are implemented using a virtual network device such
+    as pppN (e.g., ppp0), tunN (e.g., tun0), etc. This means that in most
+    cases, remote zone definition is similar to zones that you have already
+    defined.</para>
+
+    <para><filename>/etc/shorewall/zones</filename>: </para>
+
+    <programlisting>#ZONE           DISPLAY              COMMENT
+net             Internet             The big bad net
+loc             Local                Local LAN
+<emphasis role="bold">rem           Remote             Remote LAN</emphasis></programlisting>
+
+    <para><filename>/etc/shorewall/interfaces</filename>:</para>
+
+    <programlisting>#ZONE           INTERFACE          BROADCAST          OPTION
+net             eth0               detect             norft1918,routefilter
+loc             eth1               detect
+<emphasis role="bold">rem           tun0             192.168.10.0/24</emphasis></programlisting>
+
+    <para>The /etc/shorewall/hosts file comes into play when:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>You have a number of remote networks.</para>
+      </listitem>
+
+      <listitem>
+        <para>The remote networks have different firewall requirements and you
+        want to divide them into multiple zones.</para>
+      </listitem>
+
+      <listitem>
+        <para>There is no fixed relationship between the remote networks and
+        virtual network devices (for example, the VPN uses PPTP and remote
+        gateways connect on demand).</para>
+      </listitem>
+    </orderedlist>
+
+    <para>In this case, your configuration takes the following
+    approach:</para>
+
+    <para><filename>etc/shorewall/zones</filename>:</para>
+
+    <programlisting>#ZONE           DISPLAY              COMMENT
+net             Internet             The big bad net
+loc             Local                Local LAN
+<emphasis role="bold">rem1          Remote1            Remote LAN 1
+rem2          Remote2            Remote LAN 2</emphasis></programlisting>
+
+    <para><filename>/etc/shorewall/interfaces</filename>:</para>
+
+    <programlisting>#ZONE           INTERFACE          BROADCAST          OPTION
+net             eth0               detect             norft1918,routefilter
+loc             eth1               detect
+<emphasis role="bold">-             tun+             -</emphasis></programlisting>
+
+    <para>/etc/shorewall/hosts:</para>
+
+    <programlisting>#ZONE           HOST(S)            OPTIONS
+<emphasis role="bold">rem1          tun+:10.0.0.0/24
+rem2          tun+:10.0.1.0/24</emphasis></programlisting>
+
+    <para>The <filename>/etc/shorewall/hosts</filename> file is also used with
+    <ulink url="IPSEC-2.6.html">kernel 2.6 native IPSEC</ulink>. </para>
+  </section>
+
+  <section>
     <title>Eliminating the /etc/shorewall/tunnels file</title>
 
-    <para>The /etc/shorewall/tunnels file provides no functionality that could
-    not be implemented using entries in /etc/shorewall/rules and I have
-    elimination of the /etc/shorewall/tunnels file as a long-term goal. The
-    following sections show how entries in /etc/shorewall/tunnels can be
-    replaced by rules for some common tunnel types.</para>
+    <para>The <filename>/etc/shorewall/tunnels</filename> file provides no
+    functionality that could not be implemented using entries in
+    <filename>/etc/shorewall/rules</filename> and I have elimination of the
+    <filename>/etc/shorewall/tunnels</filename> file as a long-term goal. The
+    following sections show how entries in
+    <filename>/etc/shorewall/tunnels</filename> can be replaced by rules for
+    some common tunnel types.</para>
 
     <section>
       <title>IPSEC</title>
 
-      <para>/etc/shorewall/tunnels:</para>
+      <para>/<filename>etc/shorewall/tunnels</filename>:</para>
 
       <blockquote>
         <programlisting>#TYPE           ZONE          GATEWAY          GATEWAY ZONE
 ipsec           Z1            1.2.3.4          Z2</programlisting>
       </blockquote>
 
-      <para>/etc/shorewall/rules:</para>
+      <para><filename>/etc/shorewall/rules</filename>:</para>
 
       <blockquote>
         <programlisting>#ACTION  SOURCE         DEST            PROTO   DEST    SOURCE 
@@ -218,14 +293,14 @@ ACCEPT   Z2:1.2.3.4     $FW             udp     500</programlisting>
     <section>
       <title>PPTP</title>
 
-      <para>/etc/shorewall/tunnels:</para>
+      <para><filename>/etc/shorewall/tunnels</filename>:</para>
 
       <blockquote>
         <programlisting>#TYPE           ZONE          GATEWAY          GATEWAY ZONE
 pptpserver      Z1            1.2.3.4</programlisting>
       </blockquote>
 
-      <para>/etc/shorewall/rules:</para>
+      <para>/<filename>etc/shorewall/rules</filename>:</para>
 
       <blockquote>
         <programlisting>#ACTION  SOURCE         DEST            PROTO   DEST    SOURCE 
@@ -243,14 +318,14 @@ ACCEPT   Z1:1.2.3.4     $FW             47</programlisting>
     <section>
       <title>OpenVPN</title>
 
-      <para>/etc/shorewall/tunnels:</para>
+      <para><filename>/etc/shorewall/tunnels</filename>:</para>
 
       <blockquote>
         <programlisting>#TYPE           ZONE          GATEWAY          GATEWAY ZONE
 openvpn:P       Z1            1.2.3.4</programlisting>
       </blockquote>
 
-      <para>/etc/shorewall/rules:</para>
+      <para><filename>/etc/shorewall/rules</filename>:</para>
 
       <blockquote>
         <programlisting>#ACTION  SOURCE         DEST            PROTO   DEST    SOURCE 

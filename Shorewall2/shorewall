@@ -985,24 +985,37 @@ case "$1" in
 	mutex_on
 
 	if qt iptables -L shorewall -n; then
-	    [ -d /var/lib/shorewall ] || mkdir /var/lib/shorewall
+	    [ -d /var/lib/shorewall ] || mkdir -p /var/lib/shorewall
 
-	    if iptables -L dynamic -n > /var/lib/shorewall/save; then
-		echo "   Dynamic Rules Saved"
-		if [ -f /var/lib/shorewall/restore-base ]; then
-		    cp -f /var/lib/shorewall/restore-base /var/lib/shorewall/restore-$$
-		    if iptables-save >> /var/lib/shorewall/restore-$$ ; then
-			echo __EOF__ >> /var/lib/shorewall/restore-$$
-			mv -f /var/lib/shorewall/restore-$$ /var/lib/shorewall/$RESTOREFILE
-			chmod +x /var/lib/shorewall/$RESTOREFILE
-			echo "   Currently-running Configuration Saved to /var/lib/shorewall/$RESTOREFILE"
-                    else
-			rm -f /var/lib/shorewall/restore-$$
-			echo "   ERROR: Currently-running Configuration Not Saved"
-		    fi
-		fi
+	    if [ -f /var/lib/shorewall/$RESTOREFILE -a ! -x /var/lib/shorewall/$RESTOREFILE ]; then
+		echo "   ERROR: /var/lib/shorewall/$RESTOREFILE exists and is not a saved Shorewall configuration"
 	    else
-		echo "Error Saving the Dynamic Rules"
+		case $RESTOREFILE in
+		    save|restore-base)
+			echo "   ERROR: Reserved file name: save"
+			;;
+		    *)
+			if iptables -L dynamic -n > /var/lib/shorewall/save; then
+			    echo "   Dynamic Rules Saved"
+			    if [ -f /var/lib/shorewall/restore-base ]; then
+				cp -f /var/lib/shorewall/restore-base /var/lib/shorewall/restore-$$
+				if iptables-save >> /var/lib/shorewall/restore-$$ ; then
+				    echo __EOF__ >> /var/lib/shorewall/restore-$$
+				    mv -f /var/lib/shorewall/restore-$$ /var/lib/shorewall/$RESTOREFILE
+				    chmod +x /var/lib/shorewall/$RESTOREFILE
+				    echo "   Currently-running Configuration Saved to /var/lib/shorewall/$RESTOREFILE"
+				else
+				    rm -f /var/lib/shorewall/restore-$$
+				    echo "   ERROR: Currently-running Configuration Not Saved"
+				fi
+			    else
+				echo "   ERROR: /var/lib/shorewall/restore-base does not exist"
+			    fi
+			else
+			    echo "Error Saving the Dynamic Rules"
+			fi
+			;;
+		esac
 	    fi
 	else
 	    echo "Shorewall isn't started"

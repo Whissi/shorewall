@@ -8,13 +8,8 @@ New features include:
    addresses and for users who what to learn a bit more abound
    Shorewall than is described in the single-address guides.
 
-2) A new 'newnotsyn' extension script has been provided for the benefit
-   of those users who are experimenting with treatment of TCP packets
-   that are not part of or related to an existing connection and that
-   do not have the SYN flag set and the ACK flag reset. 
+2) Shorewall now drops non-SYN tcp packets that are not part of an
+   established connection. These packets can be optionally logged by
+   setting the new LOGNEWNOTSYN variable in shorewall.conf.
 
-
-3) The 'init' extension script is now called AFTER all existing user
-   chains have been deleted. Previously, this script was called just
-   before the chains were deleted.
 

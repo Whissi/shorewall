@@ -192,16 +192,16 @@ run_tc() {
 ################################################################################
 createchain() # $1 = chain name, $2 = If non-null, don't create default rules
 {
+    local target
+
     run_iptables -N $1
 
     if [ $# -eq 1 ]; then
 	state="ESTABLISHED"
 	[ -n "$ALLOWRELATED" ] && state="$state,RELATED"
 	run_iptables -A $1 -m state --state $state -j ACCEPT
-	if [ -n "$NEWNOTSYN" ]; then
-	    CHAIN=$1
-	    . $NEWNOTSYN
-        fi
+	[ -n "$LOGNEWNOTSYN" ] && target=newnotsyn || target=DROP
+	run_iptables -A $1 -m state --state NEW -p tcp !--syn -j $target
     fi
 
     eval ${1}_exists=Yes
@@ -2699,6 +2699,8 @@ initialize_netfilter () {
 
     [ -n "$TC_ENABLED" ] && delete_tc
 
+    run_user_exit init
+
     echo "Deleting user chains..."
 
     setpolicy INPUT DROP
@@ -2711,11 +2713,27 @@ initialize_netfilter () {
     setcontinue INPUT
     setcontinue OUTPUT
 
-    run_user_exit init
-
     [ -n "$CLAMPMSS" ] && \
 	run_iptables -A FORWARD -p tcp \
 	    --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
+
+    
+    if [ -n "$LOGNEWNOTSYN" ]; then
+	createchain newnotsyn no
+        #
+        # Don't bother the world with these
+        #
+	run_iptables -A newnotsyn -p tcp --tcp-flags ACK,FIN ACK,FIN -j DROP
+        #
+        # Log
+        #
+	run_iptables -A newnotsyn -j LOG \
+	    --log-prefix "Shorewall:newnotsyn:DROP:" --log-level $LOGNEWNOTSYN
+        #
+        # DROP
+        #
+	run_iptables -A newnotsyn -p tcp -j DROP
+    fi
 
     createchain icmpdef no
     createchain common	no
@@ -3392,6 +3410,7 @@ do_initialize() {
     DETECT_DNAT_IPADDRS=
     MERGE_HOSTS=
     MUTEX_TIMEOUT=
+    LOGNEWNOTSYN=
     stopping=
     have_mutex=
     masq_seq=1
@@ -3468,10 +3487,6 @@ do_initialize() {
     MULTIPORT=`added_param_value_no MULTIPORT $MULTIPORT`
     DETECT_DNAT_IPADDRS=`added_param_value_no DETECT_DNAT_IPADDRS $DETECT_DNAT_IPADDRS`
     MERGE_HOSTS=`added_param_value_no MERGE_HOSTS $MERGE_HOSTS`
-
-    NEWNOTSYN=`find_file newnotsyn`
-
-    [ -f $NEWNOTSYN ] || NEWNOTSYN=
 }
 
 ################################################################################

@@ -62,9 +62,31 @@
         </listitem>
 
         <listitem>
-          <para>Other Squid configuration is required (particularly, you need
-          to modify the original squid security settings) -- see <ulink
-          url="http://www.squid-cache.org/">http://www.squid-cache.org/</ulink>.</para>
+          <para>Other Squid configuration are usually required required. These
+          changes typically consist of:</para>
+
+          <orderedlist>
+            <listitem>
+              <para>Adding an ACL that represents the clients on your local
+              network.</para>
+
+              <para>Example:</para>
+
+              <programlisting>ACL my_networks src 192.168.1.0/24 192.168.2.0/24</programlisting>
+            </listitem>
+
+            <listitem>
+              <para>Allowing HTTP access to that ACL.</para>
+
+              <para>Example:</para>
+
+              <programlisting>http_access allow my_networks</programlisting>
+            </listitem>
+          </orderedlist>
+
+          <para>See your distribution's Squid documenation and <ulink
+          url="http://www.squid-cache.org/">http://www.squid-cache.org/</ulink>
+          for details.</para>
         </listitem>
 
         <listitem>

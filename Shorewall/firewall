@@ -2094,8 +2094,8 @@ default_policy() # $1 = client $2 = server
 		    # To avoid double-counting SYN packets, enforce the policy
 		    # in this chain.
 		    #
-	    	    enable_syn_flood_protection $chain $chain1
-	    	    policy_rules $chain $policy $loglevel
+		    enable_syn_flood_protection $chain $chain1
+		    policy_rules $chain $policy $loglevel
 		else
 		    ############################################################
 		    # No problem with double-counting so just jump to the

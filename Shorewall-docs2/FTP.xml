@@ -15,12 +15,14 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-12-21</pubdate>
+    <pubdate>2005-01-03</pubdate>
 
     <copyright>
       <year>2003</year>
 
       <year>2004</year>
+
+      <year>2005</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -35,58 +37,6 @@
       License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
-
-  <important>
-    <para>If you are running Mandrake 9.1 or 9.2 and are having problems with
-    FTP, you have three choices:</para>
-
-    <orderedlist>
-      <listitem>
-        <para>Edit /usr/share/shorewall/firewall and replace this line:</para>
-
-        <programlisting>for suffix in o gz ko ; do</programlisting>
-
-        <para>with</para>
-
-        <programlisting>for suffix in o gz ko o.gz ; do</programlisting>
-
-        <para>and at a root shell prompt:</para>
-
-        <programlisting><command>shorewall restart</command></programlisting>
-      </listitem>
-
-      <listitem>
-        <para>Install the Mandrake <quote>cooker</quote> version of
-        Shorewall.</para>
-      </listitem>
-
-      <listitem>
-        <para>Upgrade to Shorewall 1.4.7 or later.</para>
-      </listitem>
-    </orderedlist>
-  </important>
-
-  <important>
-    <para><trademark>Mandrake</trademark> have done it again with their 10.0
-    release. This time, they have decided that kernel modules should have
-    "ko.gz" for their suffix. If you are having problems with Mandrake 10.0
-    and FTP, change your <filename>/etc/shorewall/conf</filename> file
-    definition of MODULE_SUFFIX as follows:</para>
-
-    <programlisting>MODULE_SUFFIX="o gz ko o.gz ko.gz"</programlisting>
-
-    <para>The version of <command>insmod</command> shipped with 10.0 also does
-    not comprehend these module files so you will also need Shorewall 2.0.2 or
-    later OR you need to change
-    <filename>/usr/share/shorewall/firewall</filename> -- replace the line
-    that reads:</para>
-
-    <programlisting>     insmod $modulefile $*</programlisting>
-
-    <para>with:</para>
-
-    <programlisting>     modprobe $modulename $*</programlisting>
-  </important>
 
   <section>
     <title>FTP Protocol</title>
@@ -360,7 +310,7 @@ options ip_nat_ftp ports=21,49</programlisting>
 
     <programlisting>#ACTION      SOURCE     DESTINATION    PROTO     PORT(S)    SOURCE      ORIGINAL
 #                                                           PORT(S)     DESTINATION
-ACCEPT or    &lt;<emphasis>source</emphasis>&gt;   &lt;<emphasis>destination</emphasis>&gt;  tcp       21                     &lt;external IP addr&gt; if
+ACCEPT or    &lt;<emphasis>source</emphasis>&gt;   &lt;<emphasis>destination</emphasis>&gt;  tcp       21         -           &lt;external IP addr&gt; if
 DNAT                                                                    ACTION = DNAT</programlisting>
 
     <para>You need an entry in the ORIGINAL DESTINATION column only if the

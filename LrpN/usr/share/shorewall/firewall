@@ -1654,19 +1654,24 @@ setup_tunnels() # $1 = name of tunnels file
 
     setup_one_openvpn() # $1 = gateway, $2 = kind[:port]
     {
+	local protocol=udp
+	local p=5000
+
 	case $2 in
+	    *:*:*)
+		protocol=${2%:*}
+		protocol=${protocol#*:}
+		p=${2##*:}
+		;;
 	    *:*)
 		p=${2#*:}
 		;;
-	    *)
-		p=5000
-		;;
 	esac
 
-	addrule2 $inchain  -p udp $(source_ip_range $1) --dport $p -j ACCEPT
-	addrule2 $outchain -p udp $(dest_ip_range $1)   --dport $p -j ACCEPT
+	addrule2 $inchain  -p $protocol $(source_ip_range $1) --dport $p -j ACCEPT
+	addrule2 $outchain -p $protocol $(dest_ip_range $1)   --dport $p -j ACCEPT
 
-	progress_message "   OPENVPN tunnel to $1:$p defined."
+	progress_message "   OPENVPN tunnel to $1:$protocol:$p defined."
     }
 
     setup_one_generic() # $1 = gateway, $2 = kind:protocol[:port], $3 = Gateway Zone
@@ -5680,7 +5685,7 @@ initialize_netfilter () {
 	    while read target ignore1 ignore2 address rest; do
 		case $target in
 		    DROP|reject)
-			run_iptables2 -A dynamic $(source_ip_range $address) -j $target
+			run_iptables -A dynamic -s $address -j $target
 			;;
 		    *)
 			;;
@@ -7172,7 +7177,7 @@ do_initialize() {
     ensure_config_path
     #
     # Determine the capabilities of the installed iptables/netfilter
-    # We load the kernel modules here to acuray determine 
+    # We load the kernel modules here to accurately determine 
     # capabilities when module autoloading isn't enabled.
     #
 

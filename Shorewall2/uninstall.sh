@@ -26,7 +26,7 @@
 #       You may only use this script to uninstall the version
 #       shown below. Simply run this script to remove Seattle Firewall
 
-VERSION=2.2.0-Beta8
+VERSION=2.2.0-RC1
 
 usage() # $1 = exit status
 {

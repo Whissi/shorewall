@@ -838,3 +838,18 @@ New Features:
 	openvpn:tcp		net	1.2.3.4 # TCP tunnel on port 5000
 	openvpn:3344		net	1.2.3.4 # UDP on port 3344
 	openvpn:tcp:4455	net	1.2.3.4	# TCP on port 4455
+
+38) A new 'ipsecvpn' script is included in the tarball and in the
+    RPM. The RPM installs the file in the Documentation directory
+    (/usr/share/doc/packages/shorewall-2.2.0-0RC1).
+
+    This script is intended for use on Roadwarrior laptops for
+    establishing an IPSEC SA to/from remote networks. The script has
+    some limitations:
+
+    - Only one instance of the script may be used at a time.
+    - Only the first SPD accessed will be instantiated at the remote
+      gateway. So while the script creates SPDs to/from the remote
+      gateway and each network listed in the NETWORKS setting at the
+      front of the script, only one of these may be used at a time.
+

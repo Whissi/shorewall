@@ -590,11 +590,11 @@ usage() # $1 = exit status
 {
     echo "Usage: $(basename $0) [debug|trace] [nolock] [-c <directory>] [ -x ] [ -q ] [ -f ] <command>"
     echo "where <command> is one of:"
-    echo "   add <interface>[:<host>] <zone>"
+    echo "   add <interface>[:{<bridge-port>[:<host>]|<host>}[,...]] ... <zone>"
     echo "   allow <address> ..."
     echo "   check [ <directory> ]"
     echo "   clear"
-    echo "   delete <interface>[:<host>] <zone>"
+    echo "   delete <interface>[:{<bridge-port>[:<host>]|<host>}[,...]] ... <zone>"
     echo "   drop <address> ..."
     echo "   forget [ <file name> ]"
     echo "   help [ <command > | host | address ]"

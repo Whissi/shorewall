@@ -265,13 +265,6 @@ install_file_with_backup help ${PREFIX}/usr/share/shorewall/help 0544
 
 echo
 echo "Help command executor installed in ${PREFIX}/usr/share/shorewall/help"
-#
-# Install the common.def file
-#
-install_file_with_backup common.def ${PREFIX}/etc/shorewall/common.def 0444
-
-echo
-echo "Common rules installed in ${PREFIX}/etc/shorewall/common.def"
 
 #
 # Delete the icmp.def file
@@ -510,13 +503,10 @@ fi
 #
 # Install the Standard Actions file
 #
-if [ -f ${PREFIX}/etc/shorewall/actions.std ]; then
-    backup_file /etc/shorewall/actions.std
-else
-    run_install -o $OWNER -g $GROUP -m 0600 actions.std ${PREFIX}/etc/shorewall/actions.std
-    echo
-    echo "Standard actions file installed as ${PREFIX}/etc/shorewall/actions.std"
-fi
+install_file_with_backup actions.std ${PREFIX}/etc/shorewall/actions.std 0600
+echo
+echo "Standard actions file installed as ${PREFIX}/etc/shorewall/actions.std"
+
 #
 # Install the Actions file
 #

@@ -1,6 +1,6 @@
 %define name shorewall
 %define version 2.0.0
-%define release 0Beta1
+%define release 0Beta2
 %define prefix /usr
 
 Summary: Shoreline Firewall is an iptables-based firewall for Linux systems.
@@ -73,7 +73,7 @@ fi
 %attr(0700,root,root) %dir /usr/share/shorewall
 %attr(0700,root,root) %dir /var/lib/shorewall
 %attr(0600,root,root) /usr/share/shorewall/version
-%attr(0600,root,root) /etc/shorewall/common.def
+%attr(0600,root,root) /etc/shorewall/actions.std
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/shorewall.conf
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/zones
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/policy
@@ -127,7 +127,6 @@ fi
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/action.RejectSMB
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/action.template
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/actions
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/actions.std
 
 %attr(0544,root,root) /sbin/shorewall
 %attr(0444,root,root) /usr/share/shorewall/functions
@@ -136,6 +135,10 @@ fi
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel
 
 %changelog
+* Sat Feb 14 2004 Tom Eastep <tom@shorewall.net>
+- Removed common.def
+- Unconditionally replace actions.std
+- Update for Beta 2
 * Thu Feb 12 2004 Tom Eastep <tom@shorewall.net>
 - Added action.AllowPCA
 * Sun Feb 08 2004 Tom Eastep <tom@shorewall.net>

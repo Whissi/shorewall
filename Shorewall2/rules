@@ -39,7 +39,6 @@
 #					    Like REDIRET but only generates the
 #					    REDIRECT iptables rule and not
 #					    the companion ACCEPT rule.
-#
 #				CONTINUE -- (For experts only). Do not process
 #					    any of the following rules for this
 #					    (source zone,destination zone). If
@@ -51,15 +50,32 @@
 #					    (those) zone(s).
 #				LOG      -- Simply log the packet and continue.
 #				QUEUE	 -- Queue the packet to a user-space
-#					    application such as ftwall
-#					    (http://p2pwall.sf.net).
+#					    application such as p2pwall.
 #				<action> -- The name of an action defined in
 #					    /etc/shorewall/actions.
 #
-#			The ACTION may optionally be followed
+#			You may rate-limit the rule by optionally
+#			following ACCEPT, DNAT[-], REDIRECT[-] or LOG with
+# 
+#				< <rate>/<interval>[:<burst>] >
+#
+#			where <rate> is the number of connections per 
+#			<interval> ("sec" or "min") and <burst> is the
+#			largest burst permitted. If no <burst> is given,
+#			a value of 5 is assumed. There may be no
+#			no whitespace embedded in the specification.
+#
+#				Example: ACCEPT<10/sec:20>
+#
+#			The ACTION (and rate limit) may optionally be followed
 #			by ":" and a syslog log level (e.g, REJECT:info or
-#			DNAT:debug). This causes the packet to be
+#			DNAT<4/sec:8>:debugging). This causes the packet to be
 #			logged at the specified level.
+#
+#			NOTE: For those of you who prefer to place the
+#			rate limit in a separate column, see the RATE LIMIT
+#			column below. If you specify a value in that column,
+#			you must not include a rate limit in the ACTION column
 #
 #			You may also specify ULOG (must be in upper case) as a
 #			log level.This will log to the ULOG target for routing
@@ -215,6 +231,9 @@
 #			no whitespace embedded in the specification.
 #
 #				Example: 10/sec:20
+#
+#			If you place a rate limit in this column, you may not
+#			place a similar limit in the ACTION column.
 #
 #	USER/GROUP	This column may only be non-empty if the SOURCE is
 #			the firewall itself.

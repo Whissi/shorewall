@@ -2,6 +2,8 @@
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
 "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
 <article id="PPTP">
+  <!--$Id$-->
+
   <articleinfo>
     <title>PPTP</title>
 
@@ -30,8 +32,8 @@
       document under the terms of the GNU Free Documentation License, Version
       1.2 or any later version published by the Free Software Foundation; with
       no Invariant Sections, with no Front-Cover, and with no Back-Cover
-      Texts. A copy of the license is included in the section entitled &#34;<ulink
-      url="GnuCopyright.htm">GNU Free Documentation License</ulink>&#34;.</para>
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
     </legalnotice>
 
     <revhistory>
@@ -81,15 +83,15 @@
         <term><ulink url="http://www.poptop.org">http://www.poptop.org</ulink></term>
 
         <listitem>
-          <para>The &#39;kernelmod&#39; package can be used to quickly install
-          MPPE into your kernel without rebooting.</para>
+          <para>The <quote>kernelmod</quote> package can be used to quickly
+          install MPPE into your kernel without rebooting.</para>
         </listitem>
       </varlistentry>
     </variablelist>
 
     <para>I am leaving the instructions for building MPPE-enabled kernels and
     pppd in the text below for those who may wish to obtain the relevant
-    current patches and &#34;roll their own&#34;.</para>
+    current patches and <quote>roll their own</quote>.</para>
   </section>
 
   <section id="ServerFW">
@@ -164,8 +166,8 @@ patch -p1 &#60; ../ppp-2.4.1-MSCHAPv2-fix.patch
 make</programlisting>
 
       <para>You will need to install the resulting binary on your firewall
-      system. To do that, I NFS mount my source filesystem and use &#34;make
-      install&#34; from the ppp-2.4.1 directory.</para>
+      system. To do that, I NFS mount my source filesystem and use
+      <quote>make install</quote> from the ppp-2.4.1 directory.</para>
     </section>
 
     <section id="PatchKernel">
@@ -257,7 +259,7 @@ require-mppe-stateless</programlisting>
         <itemizedlist>
           <listitem>
             <para>System 192.168.1.3 acts as a WINS server so I have included
-            that IP as the &#39;ms-wins&#39; value.</para>
+            that IP as the <quote>ms-wins</quote> value.</para>
           </listitem>
 
           <listitem>
@@ -267,7 +269,8 @@ require-mppe-stateless</programlisting>
 
           <listitem>
             <para>I am requiring 128-bit stateless compression (my kernel is
-            built with the &#39;require-mppe.diff&#39; patch mentioned above.</para>
+            built with the <quote>require-mppe.diff</quote> patch mentioned
+            above.</para>
           </listitem>
         </itemizedlist>
       </note>
@@ -319,7 +322,7 @@ remoteip 192.168.1.33-38</programlisting>
 
           <listitem>
             <para>I have assigned a remote IP range that overlaps my local
-            network. This, together with &#39;proxyarp&#39; in my
+            network. This, together with <quote>proxyarp</quote> in my
             /etc/ppp/options.poptop file make the remote hosts look like they
             are part of the local subnetwork.</para>
           </listitem>
@@ -1125,9 +1128,9 @@ loadmodule ip_nat_pptp</programlisting>
     </table>
 
     <para>I use the combination of interface and hosts file to define the
-    &#39;cpq&#39; zone because I also run a PPTP server on my firewall (see
-    above). Using this technique allows me to distinguish clients of my own
-    PPTP server from arbitrary hosts at Compaq; I assign addresses in
+    <quote>cpq</quote> zone because I also run a PPTP server on my firewall
+    (see above). Using this technique allows me to distinguish clients of my
+    own PPTP server from arbitrary hosts at Compaq; I assign addresses in
     192.168.1.0/24 to my PPTP clients and Compaq doesn&#39;t use that RFC1918
     Class C subnet.</para>
 
@@ -1285,11 +1288,11 @@ restart_pptp &#62; /dev/null 2&#62;&#38;1 &#38;</programlisting>
     Modem</title>
 
     <para>Some ADSL systems in Europe (most notably in Austria) feature a PPTP
-    server built into an ADSL &#34;Modem&#34;. In this setup, an ethernet
+    server built into an ADSL <quote>Modem</quote>. In this setup, an ethernet
     interface is dedicated to supporting the PPTP tunnel between the firewall
-    and the &#34;Modem&#34; while the actual internet access is through PPTP
-    (interface ppp0). If you have this type of setup, you need to modify the
-    sample configuration that you downloaded as described in this section.
+    and the <quote>Modem</quote> while the actual internet access is through
+    PPTP (interface ppp0). If you have this type of setup, you need to modify
+    the sample configuration that you downloaded as described in this section.
     <emphasis role="bold">These changes are in addition to those described in
     the <ulink url="shorewall_quickstart_guide.htm">QuickStart Guides</ulink>.</emphasis></para>
 
@@ -1341,8 +1344,8 @@ restart_pptp &#62; /dev/null 2&#62;&#38;1 &#38;</programlisting>
           </tgroup>
         </table>
 
-        <para>That entry defines a new zone called &#39;modem&#39; which will
-        contain only your ADSL modem.</para>
+        <para>That entry defines a new zone called <quote>modem</quote> which
+        will contain only your ADSL modem.</para>
       </listitem>
 
       <listitem>
@@ -1378,9 +1381,10 @@ restart_pptp &#62; /dev/null 2&#62;&#38;1 &#38;</programlisting>
           </tgroup>
         </table>
 
-        <para>You will of course modify the &#39;net&#39; entry in
-        /etc/shorewall/interfaces to specify &#39;ppp0&#39; as the interface
-        as described in the QuickStart Guide corresponding to your setup.</para>
+        <para>You will of course modify the <quote>net</quote> entry in
+        /etc/shorewall/interfaces to specify <quote>ppp0</quote> as the
+        interface as described in the QuickStart Guide corresponding to your
+        setup.</para>
       </listitem>
 
       <listitem>

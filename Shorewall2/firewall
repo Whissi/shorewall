@@ -1128,14 +1128,15 @@ run_user_exit() # $1 = file name
 #
 # Add a logging rule.
 #
-log_rule_limit() # $1 = log level, $2 = chain, $3 = disposition , $4 = rate limit $5=log tag $... = predicates for the rule
+log_rule_limit() # $1 = log level, $2 = chain, $3 = display Chain $4 = disposition , $5 = rate limit $6=log tag $... = predicates for the rule
 {
     local level=$1
     local chain=$2
-    local disposition=$3
+    local displayChain=$3
+    local disposition=$4
     local rulenum=
-    local limit="${4:-$LOGLIMIT}"
-    local tag=${5:+$5 }
+    local limit="${5:-$LOGLIMIT}"
+    local tag=${6:+$6 }
     local prefix
 
     shift;shift;shift;shift;shift
@@ -1145,12 +1146,12 @@ log_rule_limit() # $1 = log level, $2 = chain, $3 = disposition , $4 = rate limi
 
 	[ -z "$rulenum" ] && rulenum=1
 
-	prefix="$(printf "$LOGFORMAT" $chain $rulenum $disposition)${tag}"
+	prefix="$(printf "$LOGFORMAT" $displayChain $rulenum $disposition)${tag}"
 
 	rulenum=$(($rulenum + 1))
 	eval ${chain}_logrules=$rulenum
     else
-	prefix="$(printf "$LOGFORMAT" $chain $disposition)${tag}"
+	prefix="$(printf "$LOGFORMAT" $displayChain $disposition)${tag}"
     fi
 
     if [ ${#prefix} -gt 29 ]; then
@@ -1180,7 +1181,7 @@ log_rule() # $1 = log level, $2 = chain, $3 = disposition , $... = predicates fo
 
     shift;shift;shift
 
-    log_rule_limit $level $chain $disposition "$LOGLIMIT" "" $@
+    log_rule_limit $level $chain $chain $disposition "$LOGLIMIT" "" $@
 }
 
 #
@@ -2602,7 +2603,7 @@ add_an_action()
 	    for serv1 in $(separate_list $serv); do
 		for srv in $(ip_range $serv1); do
 		    if [ -n "$loglevel" ]; then
-			log_rule_limit $loglevel $action $logtarget "$ratelimit" "$logtag" $userandgroup \
+			log_rule_limit $loglevel $action $action $logtarget "$ratelimit" "$logtag" $userandgroup \
 			    $(fix_bang $proto $sports $multiport $cli -d $srv $dports)
 		    fi
 		    
@@ -2612,7 +2613,7 @@ add_an_action()
 	    done
 	else
 	    if [ -n "$loglevel" ]; then
-		log_rule_limit $loglevel $action $logtarget "$ratelimit" "$logtag" $userandgroup \
+		log_rule_limit $loglevel $action $action $logtarget "$ratelimit" "$logtag" $userandgroup \
 		    $(fix_bang $proto $sports $multiport $cli $dest_interface $dports)
 	    fi
 		    
@@ -2787,18 +2788,28 @@ createactionchain() # $1 = chain name
 
 createlogactionchain() # $1 = Action Name, $2 = Log Level
 {
-    local actchain=
+    local actchain= action=$1 level=$2
 
-    eval actchain=\$${1}_actchain
+    eval actchain=\$${action}_actchain
 
     [ -n "$actchain" ] || actchain=1
 
-    CHAIN=${1}${actchain}
+    case ${#action} in
+	11)
+	    CHAIN=$(echo $action | cut -b -10)${actchain}
+	    ;;
+	*)
+	    chain=${action}${actchain}
+	    ;;
+    esac
 
-    eval ${1}_actchain=$(($actchain + 1))
+    eval ${chain}_actchain=$(($actchain + 1))
 
     createchain $CHAIN
     run_user_exit $1
+
+    eval ${action}_chains=\"\$${action}_chains $2 $CHAIN\"
+
 }
 
 find_logactionchain() # $1 = Action Name, $2 = Log Level
@@ -2817,8 +2828,6 @@ find_logactionchain() # $1 = Action Name, $2 = Log Level
     createlogactionchain $action $level
 
     echo $CHAIN
-
-    eval ${action}_chains=\"\$${action}_chains $level $CHAIN\"
 
 }
 
@@ -3133,7 +3142,7 @@ add_nat_rule() {
 	    else
 		for adr in $(separate_list $addr); do
 		    if [ -n "$loglevel" ]; then
-			log_rule_limit $loglevel OUTPUT $logtarget "$ratelimit" "$logtag" -t nat \
+			log_rule_limit $loglevel OUTPUT OUTPUT $logtarget "$ratelimit" "$logtag" -t nat \
 			    $(fix_bang $proto $cli $sports $userandgroup -d $adr $multiport $dports)
 		    fi
 
@@ -3164,7 +3173,7 @@ add_nat_rule() {
 		done
 
 		if [ -n "$loglevel" ]; then
-		    log_rule_limit $loglevel $chain $logtarget "$ratelimit" "$logtag" -t nat
+		    log_rule_limit $loglevel $chain $chain $logtarget "$ratelimit" "$logtag" -t nat
 		fi
 
 		addnatrule $chain $ratelimit $proto -j $target1 # Protocol is necessary for port redirection
@@ -3172,7 +3181,7 @@ add_nat_rule() {
 		for adr in $(separate_list $addr); do
 		    if [ -n "$loglevel" ]; then
 			ensurenatchain $chain
-			log_rule_limit $loglevel $chain $logtarget "$ratelimit" "$logtag" -t nat \
+			log_rule_limit $loglevel $chain $chain $logtarget "$ratelimit" "$logtag" -t nat \
 			    $(fix_bang $proto $cli $sports -d $adr $multiport $dports)
 		    fi
 		    
@@ -3398,7 +3407,7 @@ add_a_rule()
 			    if [ -n "$addr" -a -n "$CONNTRACK_MATCH" ]; then
 				for adr in $(separate_list $addr); do
 				    if [ -n "$loglevel" -a -z "$natrule" ]; then
-					log_rule_limit $loglevel $chain $logtarget "$ratelimit" "$logtag" -m conntrack --ctorigdst $adr \
+					log_rule_limit $loglevel $chain $chain $logtarget "$ratelimit" "$logtag" -m conntrack --ctorigdst $adr \
 					    $userandgroup $(fix_bang $proto $sports $multiport $cli -d $srv $dports)
 				    fi
 
@@ -3407,7 +3416,7 @@ add_a_rule()
 				done
 			    else
 				if [ -n "$loglevel" -a -z "$natrule" ]; then
-				    log_rule_limit $loglevel $chain $logtarget "$ratelimit" "$logtag" $userandgroup \
+				    log_rule_limit $loglevel $chain $chain $logtarget "$ratelimit" "$logtag" $userandgroup \
 					$(fix_bang $proto $sports $multiport $cli -d $srv $dports)
 				fi
 				
@@ -3423,7 +3432,7 @@ add_a_rule()
 		    done
 		else
 		    if [ -n "$loglevel" -a -z "$natrule" ]; then
-		        log_rule_limit $loglevel $chain $logtarget "$ratelimit" "$logtag" $userandgroup \
+		        log_rule_limit $loglevel $chain $chain $logtarget "$ratelimit" "$logtag" $userandgroup \
 			    $(fix_bang $proto $sports $multiport $cli $dports)
 		    fi
 
@@ -3447,7 +3456,7 @@ add_a_rule()
 
 	if [ $COMMAND != check ]; then
 	    if [ -n "$loglevel" ]; then
-		log_rule_limit $loglevel $chain $logtarget "$ratelimit" "$logtag" $userandgroup \
+		log_rule_limit $loglevel $chain $chain $logtarget "$ratelimit" "$logtag" $userandgroup \
 		    $(fix_bang $proto $multiport $cli $dest_interface $sports $dports)
 	    fi
 

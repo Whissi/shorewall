@@ -744,7 +744,7 @@ validate_hosts_file() {
 
 	    [ -n "$BRIDGING" ] && case $host in
 		*:*)
-		    list_search ${host%:*} $all_interfaces && \
+		    known_interface ${host%:*} && \
 			startup_error "Bridged interfaces may not be defined in /etc/shorewall/interfaces: $host"
 		    port=${host%%:*}
 		    list_search $port $ports || ports="$ports $port"
@@ -752,7 +752,7 @@ validate_hosts_file() {
 		*.*.*.*)
 		    ;;
 		*)
-		    list_search $host $all_interfaces && \
+		    known_interface $host && \
 			startup_error "Bridged interfaces may not be defined in /etc/shorewall/interfaces: $host"
 		    list_search $host $ports || ports="$ports $host"
 		    ;;

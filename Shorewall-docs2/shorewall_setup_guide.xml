@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-07-15</pubdate>
+    <pubdate>2004-07-22</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -1365,17 +1365,22 @@ DNAT     net     loc:192.168.201.4  tcp    www</programlisting>
 
           <listitem>
             <para>The firewall responds to ARP <quote>who has</quote> requests
-            for <emphasis role="bold">A</emphasis>.</para>
+            for <emphasis role="bold">A</emphasis> from machines outside of
+            the firewall.</para>
           </listitem>
 
           <listitem>
-            <para>When <emphasis role="bold">H</emphasis> <emphasis
-            role="bold">A </emphasis>andissues an ARP <quote>who has</quote>
-            request for an address in the subnetwork defined by <emphasis
-            role="bold">M</emphasis>, the firewall will respond (with the MAC
-            if the firewall interface) to <emphasis role="bold">H</emphasis>.</para>
+            <para>When <emphasis role="bold">H</emphasis> issues an ARP
+            <quote>who has</quote> request for a machine with an address in
+            the network defined by <emphasis role="bold">M</emphasis> where
+            the target machine is outside of the firewall, the firewall will
+            respond to <emphasis role="bold">H</emphasis> (with the MAC of the
+            firewall interface).</para>
           </listitem>
         </itemizedlist>
+
+        <para>For a more complete description of how Proxy ARP works, please
+        see the <ulink url="ProxyARP.htm">Shorewall Proxy Documentation</ulink>.</para>
 
         <para>Let us suppose that we decide to use Proxy ARP on the DMZ in our
         example network.</para>

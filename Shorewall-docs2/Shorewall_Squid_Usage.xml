@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-07-16</pubdate>
+    <pubdate>2004-07-20</pubdate>
 
     <copyright>
       <year>2003-2004</year>
@@ -79,6 +79,13 @@
 MANGLE_ENABLED=Yes</programlisting>
         </listitem>
       </itemizedlist>
+    </caution>
+
+    <caution>
+      <para>In the instructions below, only TCP Port 80 is opened from the
+      system running Squid to the internet. If your users require browsing
+      sites that use a port other than 80 (e.g., http://www.domain.tld:<emphasis
+      role="bold">8080</emphasis>) then you must open those ports as well.</para>
     </caution>
   </section>
 
@@ -301,7 +308,7 @@ chkconfig --level 35 iptables on</command></programlisting>
 
     <programlisting>#ACTION   SOURCE   DEST   PROTO   DEST PORT(S)
 ACCEPT    Z        SZ     tcp     SP
-ACCEPT    SZ       net    tcp     80</programlisting>
+ACCEPT    SZ       net    tcp     80,443</programlisting>
 
     <example>
       <title>Squid on the firewall listening on port 8080 with access from the
@@ -309,7 +316,7 @@ ACCEPT    SZ       net    tcp     80</programlisting>
 
       <para><filename>/etc/shorewall/rules:</filename><programlisting>#ACTION   SOURCE   DEST   PROTO    DEST PORT(S)
 ACCEPT    loc      fw     tcp      8080
-ACCEPT    fw       net    tcp      80</programlisting></para>
+ACCEPT    fw       net    tcp      80,443</programlisting></para>
     </example>
   </section>
 </article>

@@ -966,13 +966,14 @@ case "$1" in
 
 	    if iptables -L dynamic -n > /var/lib/shorewall/save; then
 		echo "   Dynamic Rules Saved"
-		if [ -f /var/lib/shorewall/restore-new ]; then
-		    mv -f /var/lib/shorewall/restore-new /var/lib/shorewall/restore
-		    if iptables-save >> /var/lib/shorewall/restore ; then
-			echo EOF >> /var/lib/shorewall/restore
+		if [ -f /var/lib/shorewall/restore-base ]; then
+		    cp -f /var/lib/shorewall/restore-base /var/lib/shorewall/restore-$$
+		    if iptables-save >> /var/lib/shorewall/restore-$$ ; then
+			echo EOF >> /var/lib/shorewall/restore-$$
+			mv -f /var/lib/shorewall/restore-$$ /var/lib/shorewall/restore
 			echo "   Currently-running Configuration Saved"
                     else
-			rm -f /var/lib/shorewall/restore
+			rm -f /var/lib/shorewall/restore-$$
 			echo "   ERROR: Currently-running Configuration Not Saved"
 		    fi
 		fi

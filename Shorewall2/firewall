@@ -5353,9 +5353,9 @@ define_firewall() # $1 = Command (Start or Restart)
 
     save_command 'iptables-restore << EOF'
 
-    mv -f /var/lib/shorewall/restore-$$ /var/lib/shorewall/restore-new
+    mv -f /var/lib/shorewall/restore-$$ /var/lib/shorewall/restore-base
 
-    chmod +x /var/lib/shorewall/restore-new
+    chmod +x /var/lib/shorewall/restore-base
 
 }
 

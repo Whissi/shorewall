@@ -37,6 +37,11 @@
 #				REDIRECT
 #						Redirect the request to a local
 #					    	port on the firewall.
+#				REDIRECT-
+#						Advanced users only.
+#						Like REDIRECT but only generates the
+#						REDIRECT iptables rule and not the
+#						companion ACCEPT rule.
 #				CONTINUE
 #						(For experts only). Do Not Process
 #						any of the following rules for this
@@ -171,8 +176,8 @@
 #			Otherwise, a separate rule will be generated for each
 #			port.
 #
-#	ORIGINAL DEST	(0ptional -- only allowed if ACTION is DNAT or 
-#			REDIRECT) If included and different from the IP
+#	ORIGINAL DEST	(0ptional -- only allowed if ACTION is DNAT[-] or 
+#			REDIRECT[-]) If included and different from the IP
 #			address given in the SERVER column, this is an address
 #			on some interface on the firewall and connections to
 #			that address will be forwarded to the IP and port

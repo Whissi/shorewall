@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-09-07</pubdate>
+    <pubdate>2004-10-02</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -213,8 +213,7 @@ OMAK=&lt;ip address of tipper while we are at our second home&gt;
 LOG=info
 EXT_IF=eth1
 INT_IF=eth0
-DMZ_IF=eth2
-</programlisting></para>
+DMZ_IF=eth2</programlisting></para>
       </blockquote>
     </section>
 
@@ -223,10 +222,10 @@ DMZ_IF=eth2
 
       <blockquote>
         <programlisting>#ZONE   DISPLAY         COMMENTS
+omak    Omak            Our Laptop at our second home
 net     Internet        Internet
 dmz     DMZ             Demilitarized zone
 loc     Local           Local networks
-omak    Omak            Our Laptop at our second home
 tx      Texas           Peer Network in Dallas
 #LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE
 </programlisting>
@@ -242,7 +241,7 @@ tx      Texas           Peer Network in Dallas
 
         <programlisting>#ZONE   INTERFACE BROADCAST       OPTIONS
 net     $EXT_IF   206.124.146.255 dhcp,norfc1918,routefilter,blacklist,tcpflags,nosmurfs
-loc     $INT_IF   detect          dhcp
+loc     $INT_IF   192.168.1.255   dhcp
 dmz     $DMZ_IF   -
 -       texas     -
 #LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
@@ -351,9 +350,8 @@ all             all             REJECT          $LOG
 
       <blockquote>
         <para>Although most of our internal systems use one-to-one NAT, my
-        wife's system (192.168.1.4) uses IP Masquerading (actually SNAT) as do
-        my SuSE system (192.168.1.3), our laptop (192.168.3.8) and visitors
-        with laptops.</para>
+        wife's system (192.168.1.4) uses IP Masquerading (actually SNAT) as
+        does our laptop (192.168.3.8) and visitors with laptops.</para>
 
         <para>The first entry allows access to the DSL modem and uses features
         introduced in Shorewall 2.1.1. The leading plus sign ("+_") causes the

@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-03-25</pubdate>
+    <pubdate>2004-09-17</pubdate>
 
     <copyright>
       <year>2003</year>
@@ -31,28 +31,33 @@
       1.2 or any later version published by the Free Software Foundation; with
       no Invariant Sections, with no Front-Cover, and with no Back-Cover
       Texts. A copy of the license is included in the section entitled
-      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
 
   <section>
     <title>Creating a New Action</title>
 
-    <para>Prior to Shorewall version 1.4.9, rules in <filename>/etc/shorewall/rules</filename>
-    were limited to those defined by Netfilter (ACCEPT, DROP, REJECT, etc.).
-    Beginning with Shorewall version 1.4.9, users may use sequences of these
-    elementary operations to define more complex actions.</para>
+    <para>Prior to Shorewall version 1.4.9, rules in
+    <filename>/etc/shorewall/rules</filename> were limited to those defined by
+    Netfilter (ACCEPT, DROP, REJECT, etc.). Beginning with Shorewall version
+    1.4.9, users may use sequences of these elementary operations to define
+    more complex actions.</para>
 
     <para>To define a new action:</para>
 
     <orderedlist>
       <listitem>
-        <para>Add a line to <filename><filename>/etc/shorewall/actions</filename></filename>
-        that names your new action. Action names must be valid shell variable
-        names as well as valid Netfilter chain names. It is recommended that
-        the name you select for a new action begins with with a capital
-        letter; that way, the name won&#39;t conflict with a Shorewall-defined
-        chain name.</para>
+        <para>Add a line to
+        <filename><filename>/etc/shorewall/actions</filename></filename> that
+        names your new action. Action names must be valid shell variable names
+        ((must begin with a letter and be composed of letters, digits and
+        underscore characters) as well as valid Netfilter chain names. If you
+        intend to log from the action, the name must have a maximum of 11
+        characters. It is recommended that the name you select for a new
+        action begins with with a capital letter; that way, the name won't
+        conflict with a Shorewall-defined chain name.</para>
 
         <para>Beginning with Shorewall-2.0.0-Beta1, the name of the action may
         be optionally followed by a colon (<quote>:</quote>) and ACCEPT, DROP
@@ -71,8 +76,9 @@
 
       <listitem>
         <para>Once you have defined your new action name (ActionName), then
-        copy /usr/share/shorewall/action.template to <filename>/etc/shorewall/action.ActionName</filename>
-        (for example, if your new action name is <quote>Foo</quote> then copy
+        copy /usr/share/shorewall/action.template to
+        <filename>/etc/shorewall/action.ActionName</filename> (for example, if
+        your new action name is <quote>Foo</quote> then copy
         <filename>/usr/share/shorewall/action.template</filename> to
         <filename>/etc/shorewall/action.Foo</filename>).</para>
       </listitem>
@@ -87,10 +93,11 @@
     <itemizedlist>
       <listitem>
         <para>TARGET - Must be ACCEPT, DROP, REJECT, LOG, CONTINUE, QUEUE or
-        &#60;<emphasis>action</emphasis>&#62; where &#60;<emphasis>action</emphasis>&#62;
-        is a previously-defined action (that is, it must precede the action
-        being defined in this file in your <filename>/etc/shorewall/actions</filename>
-        file). These actions have the same meaning as they do in the
+        &lt;<emphasis>action</emphasis>&gt; where
+        &lt;<emphasis>action</emphasis>&gt; is a previously-defined action
+        (that is, it must precede the action being defined in this file in
+        your <filename>/etc/shorewall/actions</filename> file). These actions
+        have the same meaning as they do in the
         <filename>/etc/shorewall/rules</filename> file (CONTINUE terminates
         processing of the current action and returns to the point where that
         action was invoked). The TARGET may optionally be followed by a colon
@@ -120,13 +127,14 @@
         MAC addresses are not allowed.</para>
 
         <para>Unlike in the SOURCE column, you may specify a range of up to
-        256 IP addresses using the syntax &#60;<emphasis>first ip</emphasis>&#62;-&#60;<emphasis>last
-        ip</emphasis>&#62;.</para>
+        256 IP addresses using the syntax &lt;<emphasis>first
+        ip</emphasis>&gt;-&lt;<emphasis>last ip</emphasis>&gt;.</para>
       </listitem>
 
       <listitem>
-        <para>PROTO - Protocol - Must be <quote>tcp</quote>, <quote>udp</quote>,
-        <quote>icmp</quote>, a number, or <quote>all</quote>.</para>
+        <para>PROTO - Protocol - Must be <quote>tcp</quote>,
+        <quote>udp</quote>, <quote>icmp</quote>, a number, or
+        <quote>all</quote>.</para>
       </listitem>
 
       <listitem>
@@ -135,8 +143,8 @@
         ranges; if the protocol is <quote>icmp</quote>, this column is
         interpreted as the destination icmp-type(s).</para>
 
-        <para>A port range is expressed as &#60;<emphasis>low port</emphasis>&#62;:&#60;<emphasis>high
-        port</emphasis>&#62;.</para>
+        <para>A port range is expressed as &lt;<emphasis>low
+        port</emphasis>&gt;:&lt;<emphasis>high port</emphasis>&gt;.</para>
 
         <para>This column is ignored if PROTOCOL = all but must be entered if
         any of the following ields are supplied. In that case, it is suggested
@@ -156,7 +164,8 @@
           </listitem>
         </orderedlist>
 
-        <para>Otherwise, a separate rule will be generated for each port.</para>
+        <para>Otherwise, a separate rule will be generated for each
+        port.</para>
       </listitem>
 
       <listitem>
@@ -164,9 +173,8 @@
         source port is acceptable. Specified as a comma-separated list of port
         names, port numbers or port ranges.</para>
 
-        <para>If you don&#39;t want to restrict client ports but need to
-        specify an ADDRESS in the next column, then place &#34;-&#34; in this
-        column.</para>
+        <para>If you don't want to restrict client ports but need to specify
+        an ADDRESS in the next column, then place "-" in this column.</para>
 
         <para>If your kernel contains multi-port match support, then only a
         single Netfilter rule will be generated if in this list and in the
@@ -182,18 +190,19 @@
           </listitem>
         </orderedlist>
 
-        <para>Otherwise, a separate rule will be generated for each port.</para>
+        <para>Otherwise, a separate rule will be generated for each
+        port.</para>
       </listitem>
 
       <listitem>
         <para>RATE LIMIT - You may rate-limit the rule by placing a value in
         this column:</para>
 
-        <para><programlisting>     &#60;<emphasis>rate</emphasis>&#62;/&#60;<emphasis>interval</emphasis>&#62;[:&#60;<emphasis>burst</emphasis>&#62;]</programlisting>where
-        &#60;<emphasis>rate</emphasis>&#62; is the number of connections per
-        &#60;<emphasis>interval</emphasis>&#62; (<quote>sec</quote> or
-        <quote>min</quote>) and &#60;<emphasis>burst</emphasis>&#62; is the
-        largest burst permitted. If no &#60;<emphasis>burst</emphasis>&#62; is
+        <para><programlisting>     &lt;<emphasis>rate</emphasis>&gt;/&lt;<emphasis>interval</emphasis>&gt;[:&lt;<emphasis>burst</emphasis>&gt;]</programlisting>where
+        &lt;<emphasis>rate</emphasis>&gt; is the number of connections per
+        &lt;<emphasis>interval</emphasis>&gt; (<quote>sec</quote> or
+        <quote>min</quote>) and &lt;<emphasis>burst</emphasis>&gt; is the
+        largest burst permitted. If no &lt;<emphasis>burst</emphasis>&gt; is
         given, a value of 5 is assumed. There may be no whitespace embedded in
         the specification.</para>
 
@@ -207,30 +216,33 @@
         any of the following:</para>
 
         <simplelist>
-          <member>[!]&#60;<emphasis>user number</emphasis>&#62;[:]</member>
+          <member>[!]&lt;<emphasis>user number</emphasis>&gt;[:]</member>
 
-          <member>[!]&#60;<emphasis>user name</emphasis>&#62;[:]</member>
+          <member>[!]&lt;<emphasis>user name</emphasis>&gt;[:]</member>
 
-          <member>[!]:&#60;<emphasis>group number</emphasis>&#62;</member>
+          <member>[!]:&lt;<emphasis>group number</emphasis>&gt;</member>
 
-          <member>[!]:&#60;<emphasis>group name</emphasis>&#62;</member>
+          <member>[!]:&lt;<emphasis>group name</emphasis>&gt;</member>
 
-          <member>[!]&#60;<emphasis>user number</emphasis>&#62;:&#60;<emphasis>group
-          number</emphasis>&#62;</member>
+          <member>[!]&lt;<emphasis>user
+          number</emphasis>&gt;:&lt;<emphasis>group
+          number</emphasis>&gt;</member>
 
-          <member>[!]&#60;<emphasis>user name</emphasis>&#62;:&#60;<emphasis>group
-          number</emphasis>&#62;</member>
+          <member>[!]&lt;<emphasis>user
+          name</emphasis>&gt;:&lt;<emphasis>group
+          number</emphasis>&gt;</member>
 
-          <member>[!]&#60;<emphasis>user inumber</emphasis>&#62;:&#60;<emphasis>group
-          name</emphasis>&#62;</member>
+          <member>[!]&lt;<emphasis>user
+          inumber</emphasis>&gt;:&lt;<emphasis>group
+          name</emphasis>&gt;</member>
 
-          <member>[!]&#60;<emphasis>user name</emphasis>&#62;:&#60;<emphasis>group
-          name</emphasis>&#62;</member>
+          <member>[!]&lt;<emphasis>user
+          name</emphasis>&gt;:&lt;<emphasis>group name</emphasis>&gt;</member>
         </simplelist>
       </listitem>
     </itemizedlist>
 
-    <para>Omitted column entries should be entered using a dash (&#34;-:).</para>
+    <para>Omitted column entries should be entered using a dash ("-:).</para>
 
     <para>Example:</para>
 
@@ -244,13 +256,123 @@
 
     <programlisting>#ACTION      SOURCE      DEST        PROTO    DEST PORT(S)
 LogAndAccept loc         fw          tcp      22</programlisting>
+
+    <para>Prior to Shorewall 2.1.2, specifying a log level (and optionally a
+    log tag) on a rule that specified a user-defined (or Shorewall-defined)
+    action would log all traffic passed to the action. Beginning with
+    Shorewall 2.1.2, specifying a log level in a rule that specifies a user-
+    or Shorewall-defined action will cause each rule in the action to be
+    logged with the specified level (and tag).</para>
+
+    <para>The extent to which logging of action rules occur is goverend by the
+    following:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>When you invoke an action and specify a log level, only those
+        rules in the action that have no log level will be changed to log at
+        the level specified at the action invocation.</para>
+
+        <para>Example:</para>
+
+        <para>/etc/shorewall/action.foo</para>
+
+        <programlisting>#TARGET      SOURCE     DEST     PROTO    DEST PORT(S)
+ACCEPT       -          -        tcp      22
+bar:info</programlisting>
+
+        <para>/etc/shorewall/rules:</para>
+
+        <programlisting>#ACTION      SOURCE     DEST     PROTO    DEST PORT(S)
+foo:debug    fw         net</programlisting>
+
+        <para>Logging in the invoke 'foo' action will be as if foo had been
+        defined as:</para>
+
+        <programlisting>#TARGET      SOURCE     DEST     PROTO    DEST PORT(S)
+ACCEPT:debug -          -        tcp      22
+bar:info</programlisting>
+      </listitem>
+
+      <listitem>
+        <para>If you follow the log level with "!" then logging will be at
+        that level for all rules recursively invoked by the action.</para>
+
+        <para>Example:</para>
+
+        <para>/etc/shorewall/action.foo</para>
+
+        <programlisting>#TARGET      SOURCE     DEST     PROTO    DEST PORT(S)
+ACCEPT       -          -        tcp      22
+bar:info</programlisting>
+
+        <para>/etc/shorewall/rules:</para>
+
+        <programlisting>#ACTION      SOURCE     DEST     PROTO    DEST PORT(S)
+foo:debug!    fw         net</programlisting>
+
+        <para>Logging in the invoke 'foo' action will be as if foo had been
+        defined as:</para>
+
+        <programlisting>#TARGET      SOURCE     DEST     PROTO    DEST PORT(S)
+ACCEPT:debug -          -        tcp      22
+bar:debug</programlisting>
+      </listitem>
+    </orderedlist>
+
+    <para>The change in Shorewall 2.1.2 has an effect on extension scripts
+    used with user-defined actions. If you define an action 'acton' and you
+    have an <filename>/etc/shorewall/acton</filename> script then when that
+    script is invoked, the following three variables will be set for use by
+    the script:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>$CHAIN = the name of the chain where your rules are to be
+        placed. When logging is used on an action invocation, Shorewall
+        creates a chain with a slightly different name from the action
+        itself.</para>
+      </listitem>
+
+      <listitem>
+        <para>$LEVEL = Log level. If empty, no logging was specified.</para>
+      </listitem>
+
+      <listitem>
+        <para>$TAG = Log Tag.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>Example:</para>
+
+    <para><filename>/etc/shorewall/rules</filename>:</para>
+
+    <programlisting>#ACTION          SOURCE           DEST
+acton:info:test  fw               net</programlisting>
+
+    <para>Your /etc/shorewall/acton file will be run with:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>$CHAIN="%acton1"</para>
+      </listitem>
+
+      <listitem>
+        <para>$LEVEL="info"</para>
+      </listitem>
+
+      <listitem>
+        <para>$TAG="test"</para>
+      </listitem>
+    </itemizedlist>
   </section>
 
   <section>
     <title>Standard Actions In Shorewall 2.0</title>
 
     <para>Beginning with Shorewall 2.0.0-Beta1, Shorewall includes a number of
-    defined actions. These defined actions are listed in <filename>/usr/share/shorewall/actions.std</filename>.</para>
+    defined actions. These defined actions are listed in
+    <filename>/usr/share/shorewall/actions.std</filename>.</para>
 
     <para>The <filename>/usr/share/shorewall/actions.std</filename> file
     includes the common actions <quote>Drop</quote> for DROP policies and
@@ -268,27 +390,32 @@ AllowFTP  loc         fw</programlisting>
 
     <para><filename>/usr/share/shorewall/actions.std</filename> is processed
     before <filename>/etc/shorewall/actions</filename> and if you have any
-    actions defined with the same name as one in <filename>/usr/share/shorewall/actions.std</filename>,
-    your version in <filename class="directory">/etc/shorewall</filename> will
-    be the one used. So if you wish to modify a standard action, simply copy
-    the associated action file from <filename class="directory">/usr/share/shorewall
-    </filename>to <filename class="directory">/etc/shorewall and modify</filename>
-    it to suit your needs. The next <command>shorewall restart</command> will
-    cause your action to be installed in place of the standard one. In
-    particular, if you want to modify the common actions <quote>Drop</quote>
-    or <quote>Reject</quote>, simply copy <filename>action.Drop</filename> or
-    <filename>Action.Reject</filename> to <filename class="directory">/etc/shorewall</filename>
-    and modify that copy as desired.</para>
+    actions defined with the same name as one in
+    <filename>/usr/share/shorewall/actions.std</filename>, your version in
+    <filename class="directory">/etc/shorewall</filename> will be the one
+    used. So if you wish to modify a standard action, simply copy the
+    associated action file from <filename
+    class="directory">/usr/share/shorewall </filename>to <filename
+    class="directory">/etc/shorewall and modify</filename> it to suit your
+    needs. The next <command>shorewall restart</command> will cause your
+    action to be installed in place of the standard one. In particular, if you
+    want to modify the common actions <quote>Drop</quote> or
+    <quote>Reject</quote>, simply copy <filename>action.Drop</filename> or
+    <filename>Action.Reject</filename> to <filename
+    class="directory">/etc/shorewall</filename> and modify that copy as
+    desired.</para>
   </section>
 
   <section>
     <title>Creating an Action using an Extension Script</title>
 
     <para>There may be cases where you wish to create a chain with rules that
-    can&#39;t be constructed using the tools defined in the action.template.
-    In that case, you can use an extension script.<note><para>If you actually
-    need an action to drop broadcast packets, use the <command>dropBcast</command>
-    standard action rather than create one like this.</para></note></para>
+    can't be constructed using the tools defined in the action.template. In
+    that case, you can use an extension script.<note>
+        <para>If you actually need an action to drop broadcast packets, use
+        the <command>dropBcast</command> standard action rather than create
+        one like this.</para>
+      </note></para>
 
     <example>
       <title>An action to drop all broadcast packets</title>

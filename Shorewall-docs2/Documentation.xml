@@ -2027,6 +2027,28 @@ ACCEPT   fw      net    tcp     www</programlisting>
           <emphasis role="bold">THAT IS THE ONLY THING THAT THIS LABEL IS GOOD
           FOR AND IT MAY NOT APPEAR ANYWHERE ELSE IN YOUR SHOREWALL
           CONFIGURATION.</emphasis></para>
+
+          <para>Normally MASQUERADE/SNAT rules are evaluated after one-to-one
+          NAT rules defined in the <link
+          linkend="NAT"><filename>/etc/shorewall/nat</filename></link> file.
+          Beginning with Shorewall 2.1.1, if you preceed the interface name
+          with a plus sign ("+") then the rule will be evaluated before
+          one-to-one NAT.</para>
+
+          <para>Examples:</para>
+
+          <programlisting>+eth0
++eth1:192.0.2.32/27</programlisting>
+
+          <para>Also new in the Shorewall 2.1 series, the effect of
+          ADD_SNAT_ALIASES=Yes can be negated for an entry by following the
+          interface name by ":" but no digit. </para>
+
+          <para>Examples:</para>
+
+          <programlisting>eth0:
+eth1::192.0.2.32/27
++eth3</programlisting>
         </listitem>
       </varlistentry>
 
@@ -2382,6 +2404,14 @@ eth0                  eth1            206.124.146.176</programlisting>
           the ipconfig utility. <emphasis role="bold">THAT IS THE ONLY THING
           THAT THIS LABEL IS GOOD FOR AND IT MAY NOT APPEAR ANYWHERE ELSE IN
           YOUR SHOREWALL CONFIGURATION.</emphasis></para>
+
+          <para>Beginning with Shorewall 2.1.1, the effect of
+          ADD_IP_ALIASES=Yes can be negated for an entry by following the
+          interface name by ":" but no digit. </para>
+
+          <para>Example:</para>
+
+          <programlisting>eth0:</programlisting>
         </listitem>
       </varlistentry>
 
@@ -3627,6 +3657,16 @@ eth1                -</programlisting>
     <title>Revision History</title>
 
     <para><revhistory>
+        <revision>
+          <revnumber>1.19</revnumber>
+
+          <date>2004-09012</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Changes for Shorewall 2.1.</revremark>
+        </revision>
+
         <revision>
           <revnumber>1.18</revnumber>
 

@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-06-25</pubdate>
+    <pubdate>2004-09-12</pubdate>
 
     <copyright>
       <year>2001</year>
@@ -35,7 +35,8 @@
       1.2 or any later version published by the Free Software Foundation; with
       no Invariant Sections, with no Front-Cover, and with no Back-Cover
       Texts. A copy of the license is included in the section entitled
-      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
 
@@ -45,11 +46,13 @@
     <para>If you install using the .deb, you will find that your <filename
     class="directory">/etc/shorewall</filename> directory is empty. This is
     intentional. The released configuration file skeletons may be found on
-    your system in the directory <filename class="directory">/usr/share/doc/shorewall/default-config</filename>.
+    your system in the directory <filename
+    class="directory">/usr/share/doc/shorewall/default-config</filename>.
     Simply copy the files you need from that directory to <filename
     class="directory">/etc/shorewall</filename> and modify the copies.</para>
 
-    <para>Note that you must copy <filename class="directory">/usr/share/doc/shorewall/default-config/shorewall.conf</filename>
+    <para>Note that you must copy <filename
+    class="directory">/usr/share/doc/shorewall/default-config/shorewall.conf</filename>
     and /usr/share/doc/shorewall/default-config/modules to <filename
     class="directory">/etc/shorewall</filename> even if you do not modify
     those files.</para>
@@ -60,9 +63,9 @@
 
     <important>
       <para>Before attempting installation, I strongly urge you to read and
-      print a copy of the <ulink url="shorewall_quickstart_guide.htm">Shorewall
-      QuickStart</ulink> Guide for the configuration that most closely matches
-      your own.</para>
+      print a copy of the <ulink
+      url="shorewall_quickstart_guide.htm">Shorewall QuickStart</ulink> Guide
+      for the configuration that most closely matches your own.</para>
     </important>
 
     <para>To install Shorewall using the RPM:</para>
@@ -71,14 +74,15 @@
       <listitem>
         <para>Install the RPM</para>
 
-        <programlisting><command>rpm -ivh &#60;shorewall rpm&#62;</command></programlisting>
+        <programlisting><command>rpm -ivh &lt;shorewall rpm&gt;</command></programlisting>
 
         <note>
           <para>Some SuSE users have encountered a problem whereby rpm reports
-          a conflict with kernel &#60;= 2.2 even though a 2.4 kernel is
-          installed. If this happens, simply use the --nodeps option to rpm.</para>
+          a conflict with kernel &lt;= 2.2 even though a 2.4 kernel is
+          installed. If this happens, simply use the --nodeps option to
+          rpm.</para>
 
-          <programlisting><filename><command>rpm -ivh --nodeps &#60;shorewall rpm&#62;</command></filename></programlisting>
+          <programlisting><filename><command>rpm -ivh --nodeps &lt;shorewall rpm&gt;</command></filename></programlisting>
         </note>
 
         <note>
@@ -89,9 +93,10 @@
 
           <programlisting>error: failed dependencies:iproute is needed by shorewall-1.4.x-1</programlisting>
 
-          <para>This may be worked around by using the --nodeps option of rpm.</para>
+          <para>This may be worked around by using the --nodeps option of
+          rpm.</para>
 
-          <programlisting><command>rpm -ivh --nodeps &#60;shorewall rpm&#62;</command></programlisting>
+          <programlisting><command>rpm -ivh --nodeps &lt;shorewall rpm&gt;</command></programlisting>
         </note>
       </listitem>
 
@@ -111,6 +116,14 @@
       </listitem>
 
       <listitem>
+        <para>Enable startup by removing
+        <filename>/etc/shorewall/startup_disabled</filename> (If you are
+        running Shorewall 2.1.3 or later, edit
+        /<filename>etc/shorewall/shorewall.conf</filename> and set
+        STARTUP_ENABLED to Yes).</para>
+      </listitem>
+
+      <listitem>
         <para>Start the firewall by typing</para>
 
         <programlisting><command>shorewall start</command></programlisting>
@@ -123,9 +136,9 @@
 
     <important>
       <para>Before attempting installation, I strongly urge you to read and
-      print a copy of the <ulink url="shorewall_quickstart_guide.htm">Shorewall
-      QuickStart</ulink> Guide for the configuration that most closely matches
-      your own.</para>
+      print a copy of the <ulink
+      url="shorewall_quickstart_guide.htm">Shorewall QuickStart</ulink> Guide
+      for the configuration that most closely matches your own.</para>
     </important>
 
     <para>To install Shorewall using the tarball and install script:</para>
@@ -141,18 +154,19 @@
       </listitem>
 
       <listitem>
-        <para>If you are running <ulink url="http://www.slackware.com">Slackware</ulink>,
-        you need Shorewall 2.0.2 RC1 or later. If you are installing a
-        Shorewall version earlier than 2.0.3 Beta 1 then you must also edit
-        the install.sh file and change the lines</para>
+        <para>If you are running <ulink
+        url="http://www.slackware.com">Slackware</ulink>, you need Shorewall
+        2.0.2 RC1 or later. If you are installing a Shorewall version earlier
+        than 2.0.3 Beta 1 then you must also edit the install.sh file and
+        change the lines</para>
 
-        <programlisting>DEST=&#34;/etc/init.d&#34;
-INIT=&#34;shorewall&#34;</programlisting>
+        <programlisting>DEST="/etc/init.d"
+INIT="shorewall"</programlisting>
 
         <para>to</para>
 
-        <programlisting>DEST=&#34;/etc/rc.d&#34;
-INIT=&#34;rc.firewall&#34;</programlisting>
+        <programlisting>DEST="/etc/rc.d"
+INIT="rc.firewall"</programlisting>
       </listitem>
 
       <listitem>
@@ -172,9 +186,26 @@ INIT=&#34;rc.firewall&#34;</programlisting>
       </listitem>
 
       <listitem>
-        <para>Enable Startup by removing <filename>/etc/shorewall/startup_disabled</filename>
-        (Debian users will edit <filename>/etc/default/shorewall</filename>
-        and set startup=1).</para>
+        <para>Enable Startup:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>Users running Shorewall 2.1.3 or later, edit
+            <filename>/etc/shorewall/shorewall.conf</filename> and set
+            STARTUP_ENABLED=Yes.</para>
+          </listitem>
+
+          <listitem>
+            <para>Users running Shorewall 2.1.2 or earlier and using the .deb
+            should edit <filename>/etc/default/shorewall</filename> and set
+            startup=1.</para>
+          </listitem>
+
+          <listitem>
+            <para>All other users, remove the file
+            <filename>/etc/shorewall/startup_disabled</filename></para>
+          </listitem>
+        </itemizedlist>
       </listitem>
 
       <listitem>
@@ -186,7 +217,8 @@ INIT=&#34;rc.firewall&#34;</programlisting>
       <listitem>
         <para>If the install script was unable to configure Shorewall to be
         started automatically at boot, see <ulink
-        url="starting_and_stopping_shorewall.htm">these instructions</ulink>.</para>
+        url="starting_and_stopping_shorewall.htm">these
+        instructions</ulink>.</para>
       </listitem>
     </orderedlist>
   </section>
@@ -196,15 +228,16 @@ INIT=&#34;rc.firewall&#34;</programlisting>
 
     <important>
       <para>Before attempting installation, I strongly urge you to read and
-      print a copy of the <ulink url="shorewall_quickstart_guide.htm">Shorewall
-      QuickStart</ulink> Guide for the configuration that most closely matches
-      your own.</para>
+      print a copy of the <ulink
+      url="shorewall_quickstart_guide.htm">Shorewall QuickStart</ulink> Guide
+      for the configuration that most closely matches your own.</para>
     </important>
 
     <para>To install my version of Shorewall on a fresh Bering disk, simply
     replace the <quote>shorwall.lrp</quote> file on the image with the file
     that you downloaded. See the <ulink url="two-interface.htm">two-interface
-    QuickStart Guide</ulink> for information about further steps required.</para>
+    QuickStart Guide</ulink> for information about further steps
+    required.</para>
   </section>
 
   <section id="Upgrade_RPM">
@@ -224,22 +257,23 @@ INIT=&#34;rc.firewall&#34;</programlisting>
       please check your /etc/shorewall/interfaces file to be sure that it
       contains an entry for each interface mentioned in the hosts file. Also,
       there are certain 1.2 rule forms that are no longer supported under 1.4
-      (you must use the new 1.4 syntax). See <ulink url="errata.htm#Upgrade">the
-      upgrade issues</ulink> for details.</para>
+      (you must use the new 1.4 syntax). See <ulink
+      url="errata.htm#Upgrade">the upgrade issues</ulink> for details.</para>
     </important>
 
     <orderedlist>
       <listitem>
         <para>Upgrade the RPM</para>
 
-        <programlisting><command>rpm -Uvh &#60;shorewall rpm file&#62;</command></programlisting>
+        <programlisting><command>rpm -Uvh &lt;shorewall rpm file&gt;</command></programlisting>
 
         <note>
           <para>Some SuSE users have encountered a problem whereby rpm reports
-          a conflict with kernel &#60;= 2.2 even though a 2.4 kernel is
-          installed. If this happens, simply use the --nodeps option to rpm.</para>
+          a conflict with kernel &lt;= 2.2 even though a 2.4 kernel is
+          installed. If this happens, simply use the --nodeps option to
+          rpm.</para>
 
-          <programlisting><command>rpm -Uvh --nodeps &#60;shorewall rpm&#62;</command></programlisting>
+          <programlisting><command>rpm -Uvh --nodeps &lt;shorewall rpm&gt;</command></programlisting>
         </note>
 
         <note>
@@ -250,15 +284,17 @@ INIT=&#34;rc.firewall&#34;</programlisting>
 
           <programlisting>error: failed dependencies:iproute is needed by shorewall-1.4.0-1</programlisting>
 
-          <para>This may be worked around by using the --nodeps option of rpm.</para>
+          <para>This may be worked around by using the --nodeps option of
+          rpm.</para>
 
-          <programlisting><command>rpm -Uvh --nodeps &#60;shorewall rpm&#62;</command></programlisting>
+          <programlisting><command>rpm -Uvh --nodeps &lt;shorewall rpm&gt;</command></programlisting>
         </note>
       </listitem>
 
       <listitem>
         <para>See if there are any incompatibilities between your
-        configuration and the new Shorewall version and correct as necessary.</para>
+        configuration and the new Shorewall version and correct as
+        necessary.</para>
 
         <programlisting><command>shorewall check</command></programlisting>
       </listitem>
@@ -288,8 +324,8 @@ INIT=&#34;rc.firewall&#34;</programlisting>
       please check your /etc/shorewall/interfaces file to be sure that it
       contains an entry for each interface mentioned in the hosts file. Also,
       there are certain 1.2 rule forms that are no longer supported under 1.4
-      (you must use the new 1.4 syntax). See <ulink url="errata.htm#Upgrade">the
-      upgrade issues</ulink> for details.</para>
+      (you must use the new 1.4 syntax). See <ulink
+      url="errata.htm#Upgrade">the upgrade issues</ulink> for details.</para>
     </important>
 
     <orderedlist>
@@ -305,18 +341,19 @@ INIT=&#34;rc.firewall&#34;</programlisting>
       </listitem>
 
       <listitem>
-        <para>If you are running <ulink url="http://www.slackware.com">Slackware</ulink>,
-        you should use Shorewall 2.0.2 RC1 or later. If you are installing a
-        Shorewall version earlier than 2.0.3 Beta 1 then you must also edit
-        the install.sh file and change the lines</para>
+        <para>If you are running <ulink
+        url="http://www.slackware.com">Slackware</ulink>, you should use
+        Shorewall 2.0.2 RC1 or later. If you are installing a Shorewall
+        version earlier than 2.0.3 Beta 1 then you must also edit the
+        install.sh file and change the lines</para>
 
-        <programlisting>DEST=&#34;/etc/init.d&#34;
-INIT=&#34;shorewall&#34;</programlisting>
+        <programlisting>DEST="/etc/init.d"
+INIT="shorewall"</programlisting>
 
         <para>to</para>
 
-        <programlisting>DEST=&#34;/etc/rc.d&#34;
-INIT=&#34;rc.firewall&#34;</programlisting>
+        <programlisting>DEST="/etc/rc.d"
+INIT="rc.firewall"</programlisting>
       </listitem>
 
       <listitem>
@@ -332,7 +369,8 @@ INIT=&#34;rc.firewall&#34;</programlisting>
 
       <listitem>
         <para>See if there are any incompatibilities between your
-        configuration and the new Shorewall version and correct as necessary.</para>
+        configuration and the new Shorewall version and correct as
+        necessary.</para>
 
         <programlisting><command>shorewall check</command></programlisting>
       </listitem>
@@ -346,7 +384,8 @@ INIT=&#34;rc.firewall&#34;</programlisting>
       <listitem>
         <para>If the install script was unable to configure Shorewall to be
         started automatically at boot, see <ulink
-        url="starting_and_stopping_shorewall.htm">these instructions</ulink>.</para>
+        url="starting_and_stopping_shorewall.htm">these
+        instructions</ulink>.</para>
       </listitem>
     </orderedlist>
   </section>
@@ -375,6 +414,7 @@ INIT=&#34;rc.firewall&#34;</programlisting>
   <section>
     <title>Uninstall/Fallback</title>
 
-    <para>See <quote><ulink url="fallback.htm">Fallback and Uninstall</ulink></quote>.</para>
+    <para>See <quote><ulink url="fallback.htm">Fallback and
+    Uninstall</ulink></quote>.</para>
   </section>
 </article>

@@ -42,7 +42,7 @@
     give you general guidelines and will point you to other resources as
     necessary.</para>
 
-    <para> </para>
+    <para></para>
 
     <caution>
       <para>If you run LEAF Bering, your Shorewall configuration is NOT what I
@@ -63,7 +63,7 @@
       yourself with what&#39;s involved then go back through it again making
       your configuration changes. Points at which configuration changes are
       recommended are flagged with <inlinegraphic
-      fileref="images/BD21298_.gif" />. </para>
+      fileref="images/BD21298_.gif" />.</para>
     </caution>
 
     <caution>
@@ -140,14 +140,14 @@
     <para>Zones are defined in the file <ulink url="Documentation.htm#Zones">/etc/shorewall/zones</ulink>.</para>
 
     <para>Shorewall also recognizes the firewall system as its own zone - by
-    default, the firewall itself is known as fw but that may be changed in the
-    <ulink url="Documentation.htm#Config">/etc/shorewall/shorewall.conf</ulink>
-    file. In this guide, the default name (fw) will be used. With the
-    exception of <emphasis role="bold">fw</emphasis>, Shorewall attaches
-    absolutely no meaning to zone names. Zones are entirely what YOU make of
-    them. That means that you should not expect Shorewall to do something
-    special &#34;because this is the internet zone&#34; or &#34;because that
-    is the DMZ&#34;.</para>
+    default, the firewall itself is known as <emphasis role="bold">fw</emphasis>
+    but that may be changed in the <ulink url="Documentation.htm#Config">/etc/shorewall/shorewall.conf</ulink>
+    file. In this guide, the default name (<emphasis role="bold">fw</emphasis>)
+    will be used. With the exception of <emphasis role="bold">fw</emphasis>,
+    Shorewall attaches absolutely no meaning to zone names. Zones are entirely
+    what YOU make of them. That means that you should not expect Shorewall to
+    do something special &#34;because this is the internet zone&#34; or
+    &#34;because that is the DMZ&#34;.</para>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" /> Edit the
     /etc/shorewall/zones file and make any changes necessary.</para>
@@ -168,7 +168,7 @@
       </listitem>
     </itemizedlist>
 
-    <para> Shorewall is built on top of the <ulink
+    <para>Shorewall is built on top of the <ulink
     url="http://www.netfilter.org">Netfilter</ulink> kernel facility.
     Netfilter implements a <ulink
     url="http://www.cs.princeton.edu/~jns/security/iptables/iptables_conntrack.html">connection
@@ -187,13 +187,13 @@
       </listitem>
 
       <listitem>
-        <para> If the POLICY from the client&#39;s zone to the server&#39;s
+        <para>If the POLICY from the client&#39;s zone to the server&#39;s
         zone is what you want for this client/server pair, you need do nothing
         further.</para>
       </listitem>
 
       <listitem>
-        <para> If the POLICY is not what you want, then you must add a rule.
+        <para>If the POLICY is not what you want, then you must add a rule.
         That rule is expressed in terms of the client&#39;s zone and the
         server&#39;s zone.</para>
       </listitem>
@@ -1066,7 +1066,7 @@
 
         <listitem>
           <para>Otherwise, the above steps are repeated on the next entry in
-          the table. </para>
+          the table.</para>
         </listitem>
       </itemizedlist>
 
@@ -1118,7 +1118,7 @@
       the card itself. Because IP uses IP addresses and Ethernet uses MAC
       addresses, a mechanism is required to translate an IP address into a MAC
       address; that is the purpose of the <emphasis>Address Resolution
-      Protocol </emphasis>(ARP). Here is ARP in action: </para>
+      Protocol </emphasis>(ARP). Here is ARP in action:</para>
 
       <programlisting>        [root@gateway root]# tcpdump -nei eth2 arp
         tcpdump: listening on eth2
@@ -1184,7 +1184,7 @@
       their private use.</para>
 
       <para>When selecting addresses from these ranges, there&#39;s a couple
-      of things to keep in mind: </para>
+      of things to keep in mind:</para>
 
       <itemizedlist>
         <listitem>
@@ -1286,7 +1286,7 @@
       <para>The astute reader may have noticed that the Firewall/Router&#39;s
       external interface is actually part of the DMZ subnet (192.0.2.64/29).
       What if DMZ 1 (192.0.2.67) tries to communicate with 192.0.2.65? The
-      routing table on DMZ 1 will look like this: </para>
+      routing table on DMZ 1 will look like this:</para>
 
       <programlisting>        Kernel IP routing table
         Destination      Gateway         Genmask         Flags MSS Window irtt Iface
@@ -1329,7 +1329,7 @@
       <para>Clearly, that set of addresses doesn&#39;t comprise a subnetwork
       and there aren&#39;t enough addresses for all of the network interfaces.
       There are four different techniques that can be used to work around this
-      problem. </para>
+      problem.</para>
 
       <itemizedlist>
         <listitem>
@@ -2302,7 +2302,7 @@ role="underline">0:4:e2:20:20:33</emphasis> 0:0:77:95:dd:19 ip 98: 192.0.2.177 &
       modified from the original installation are shown.</para>
 
       <para>/etc/shorewall/interfaces (The &#34;options&#34; will be very
-      site-specific). </para>
+      site-specific).</para>
 
       <informaltable>
         <tgroup cols="4">
@@ -2871,7 +2871,7 @@ role="underline">0:4:e2:20:20:33</emphasis> 0:0:77:95:dd:19 ip 98: 192.0.2.177 &
     Let&#39;s have the DNS server on 192.0.2.177 which will also be known by
     the name ns1.foobar.net.</para>
 
-    <para>The /etc/named.conf file would look like this: </para>
+    <para>The /etc/named.conf file would look like this:</para>
 
     <programlisting>
 

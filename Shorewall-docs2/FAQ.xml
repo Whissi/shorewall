@@ -17,7 +17,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-11-24</pubdate>
+    <pubdate>2004-12-04</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -904,6 +904,21 @@ LOGBURST=""</programlisting>
             and this packet is being logged under that policy or this packet
             matches a <ulink url="Documentation.htm#Rules">rule</ulink> that
             includes a log level.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>@&lt;source&gt;2&lt;dest&gt;</term>
+
+          <listitem>
+            <para>You have a policy for traffic from &lt;<emphasis
+            role="bold">source</emphasis>&gt; to &lt;<emphasis
+            role="bold">dest</emphasis>&gt; that specifies TCP connection rate
+            limiting (value in the LIMIT:BURST column). The logged packet
+            exceeds that limit and was dropped. Note that these log messages
+            themselves are severely rate-limited so that a syn-flood won't
+            generate a secondary DOS because of excessive log message. These
+            log messages were added in Shorewall 2.2.0 Beta 7.</para>
           </listitem>
         </varlistentry>
 

@@ -13,7 +13,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-11-12</pubdate>
+    <pubdate>2004-12-02</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -89,6 +89,28 @@
 
   <section>
     <title>Problems in Version 2.0</title>
+
+    <section>
+      <title>Shorewall 2.0.12</title>
+
+      <itemizedlist>
+        <listitem>
+          <para>The "shorewall add" command produces the error message:</para>
+
+          <programlisting>/usr/share/shorewall/firewall: line 1: match_destination_hosts: command not found</programlisting>
+
+          <para>You can correct the problem yourself by editing
+          /usr/share/shorewall/firewall and on line 5805, replace <emphasis
+          role="bold">match_destination_hosts</emphasis> with <emphasis
+          role="bold">match_dest_hosts</emphasis>.</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>Corrected in <ulink
+      url="http://shorewall.net/pub/shorewall/errata/2.0.12/firewall">this
+      firewall script</ulink> which may be installed in
+      /usr/share/shorewall/firewall as described above.</para>
+    </section>
 
     <section>
       <title>Shorewall 2.0.10</title>

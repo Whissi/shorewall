@@ -603,7 +603,7 @@ match_dest_dev()
 
 verify_interface()
 {
-    known_interface $1 || { [ -n $BRIDGING ] && list_search $1 $all_ports ; }
+    known_interface $1 || { [ -n "$BRIDGING" ] && list_search $1 $all_ports ; }
 }
 
 #
@@ -1341,7 +1341,7 @@ stop_firewall() {
 
 	routeback=
 
-	if [ -n $options ]; then
+	if [ -n "$options" ]; then
 	    for option in $(separate_list $options); do
 		case $option in
 		    routeback)

@@ -1,0 +1,316 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article>
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>Packet Handling</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate>2004-07-10</pubdate>
+
+    <copyright>
+      <year>2004</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <section>
+    <title>Introduction</title>
+
+    <para>This article will try to help you understand how packets pass
+    through a firewall configured by Shorewall. You may find it useful to have
+    a copy of the <ulink url="NetfilterOverview.html">Netfilter Overview</ulink>
+    handy to refer to.</para>
+
+    <para>The discussion that follows assumes that you are running a current
+    kernel (2.4.2n or 2.6.m) with the <ulink url="kernel.htm">recommended
+    options </ulink>included. Otherwise processing may be somewhat different
+    from described below depending on the features supported by your kernel.</para>
+
+    <para>Where a packet is covered by steps in more than one of the following
+    sections, processing occurs in the order in which the sections appear.</para>
+  </section>
+
+  <section>
+    <title>Packets Entering the Firewall from Outside</title>
+
+    <para>Certain processing occurs on packets entering the firewall from the
+    outside that don&#39;t occur for packets that originate on the firewall
+    itself.</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>The TOS field in the packet is conditionally altered based on
+        the contents of your <filename>/etc/shorewall/tos</filename> file.
+        This occurs in the <emphasis role="bold">pretos</emphasis> chain of
+        the <emphasis>mangle</emphasis> table.</para>
+      </listitem>
+
+      <listitem>
+        <para>Packets are marked based on the contents of your
+        <filename>/etc/shorewall/tcrules</filename> file and the setting of
+        MARK_IN_FORWARD_CHAIN in <filename>/etc/shorewall/shorewall.conf</filename>.
+        This occurs in the <emphasis role="bold">tcpre</emphasis> chain of the
+        <emphasis>mangle</emphasis> table.</para>
+      </listitem>
+
+      <listitem>
+        <para>The destination IP address and/or port number are rewritten
+        according to DNAT[-] and REDIRECT[-] rules in <filename>/etc/shorewall/rules</filename>.
+        For new connection requests, this occurs in a chain in the
+        <emphasis>nat</emphasis> table called <emphasis role="bold"><emphasis>zone</emphasis>_dnat</emphasis>
+        where <emphasis>zone</emphasis> is the zone where the request
+        originated. For packets that are part of an already established
+        connection, the destination rewriting takes place without any
+        involvement of a netfilter rule.</para>
+      </listitem>
+
+      <listitem>
+        <para>If the destination was not rewritten in the previous step then
+        it may be rewritten based on entries in /etc/shorewall/nat. For new
+        connection requests, this occurs in a <emphasis>nat</emphasis> table
+        chain called <emphasis role="bold"><emphasis>interface</emphasis>_in</emphasis>
+        where <emphasis>interface</emphasis> is the interface on which the
+        packet entered the firewall. For packets that are part of an already
+        established connection, the destination rewriting takes place without
+        any involvement of a Netfilter rule.</para>
+      </listitem>
+
+      <listitem>
+        <para>The packet passes through the accounting rules defined in
+        <filename>/etc/shorewall/accounting</filename>.</para>
+      </listitem>
+
+      <listitem>
+        <para>If Netfilter doesn&#39;t know what to do with the packet
+        (connection state INVALID) and the protocol is not ICMP then the
+        packet is silently dropped.</para>
+      </listitem>
+
+      <listitem>
+        <para>The packet is processed according to your <ulink
+        url="blacklisting_support.htm">Blacklisting configuration</ulink>
+        (dynamic blacklist first). If BLACKLISTNEWONLY=Yes in
+        <filename>/etc/shorewall/shorewall.conf</filename> then only new
+        connection requests are processed. Processing occurs in the dynamic
+        and blacklst</para>
+      </listitem>
+
+      <listitem>
+        <para>If the interface on which the packet entered the firewall has
+        the <emphasis>nosmurfs</emphasis> option specified in
+        <filename>/etc/shorewall/interfaces</filename>, then if the packet is
+        a new connection request is checked for being a smurf in the
+        <emphasis>filter</emphasis> table&#39;s <emphasis role="bold">smurfs</emphasis>
+        chain.</para>
+      </listitem>
+
+      <listitem>
+        <para>If:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>the packet will be processed by the firewall itself</para>
+          </listitem>
+
+          <listitem>
+            <para>the interface on which the packet arrived has the
+            <emphasis>dhcp</emphasis> option in <filename>/etc/shorewall/interfaces</filename>.</para>
+          </listitem>
+
+          <listitem>
+            <para>packet&#39;s protocol is UDP with destination port 67 or 68.</para>
+          </listitem>
+        </itemizedlist>
+
+        <para>then the packet is ACCEPTed in the filter table&#39;s <emphasis
+        role="bold"><emphasis>interface</emphasis>_in</emphasis> chain (for
+        example, eth0_in).</para>
+      </listitem>
+
+      <listitem>
+        <para>If the interface on which the packet entered the firewall has
+        the <emphasis>norfc1918</emphasis> option specified in
+        <filename>/etc/shorewall/interfaces</filename>, then the packet is
+        processed against your rfc1918 file (normally <filename>/usr/share/shorewall/rfc1918</filename>
+        but that file may be copied to <filename>/etc/shorewall/rfc1918</filename>
+        and modified). This happens in the filter table&#39;s rfc1918 chain.</para>
+      </listitem>
+
+      <listitem>
+        <para>If the interface on which the packet entered the firewall has
+        the <emphasis>nobogons</emphasis> option specified in
+        <filename>/etc/shorewall/interfaces</filename>, then the packet is
+        processed against your bogons file (normally <filename>/usr/share/shorewall/bogons</filename>
+        but that file may be copied to <filename>/etc/shorewall/bogons</filename>
+        and modified).</para>
+      </listitem>
+
+      <listitem>
+        <para>If the interface on which the packet entered the firewall has
+        the <emphasis>tcpflags</emphasis> option specified in
+        <filename>/etc/shorewall/interfaces</filename> and the packet&#39;s
+        protocol is TCP then the TCP flags are checked by the <emphasis
+        role="bold">tcpflags</emphasis> chain (filter table).</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>All Packets</title>
+
+    <para>Regardless of whether the packet originated on the firewall or came
+    from outside, certain processing steps are common.</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Packets are marked based on the contents of your
+        <filename>/etc/shorewall/tcrules</filename> file and the setting of
+        MARK_IN_FORWARD_CHAIN in <filename>/etc/shorewall/shorewall.conf</filename>.
+        This occurs in the <emphasis role="bold">tcfor</emphasis> chain of the
+        <emphasis>mangle</emphasis> table.</para>
+
+        <para>The remaining processing in this list occurs in the
+        <emphasis>filter</emphasis> table.</para>
+      </listitem>
+
+      <listitem>
+        <para>If either the host sending the packet or the host to which the
+        packet is addressed is not in any defined zone then the all-&#62;all
+        policy is applied to the packet (including logging). This can occur in
+        the INPUT, FORWARD or OUTPUT chains.</para>
+      </listitem>
+
+      <listitem>
+        <para>If the packet is part of an established connection or is part of
+        a related connection then no further processing takes place in the
+        filter table (<emphasis>z</emphasis><emphasis role="bold"><emphasis>one1</emphasis>2<emphasis>zone2</emphasis></emphasis>
+        chain where <emphasis>zone1</emphasis> is the source zone and
+        <emphasis>zone2</emphasis> is the destination zone).</para>
+      </listitem>
+
+      <listitem>
+        <para>If NEWNOTSYN=Yes in /etc/shorewall/shorewall.conf then If the
+        packet&#39;s protocol is TCP and is not a syn packet then the packet
+        is processed by the <emphasis role="bold">newnotsyn</emphasis> chain.</para>
+      </listitem>
+
+      <listitem>
+        <para>The packet is processed according to your <filename>/etc/shorewall/rules</filename>
+        file. This happens in chains named <emphasis>z</emphasis><emphasis
+        role="bold"><emphasis>one1</emphasis>2<emphasis>zone2</emphasis></emphasis>
+        chain where <emphasis>zone1</emphasis> is the source zone and
+        <emphasis>zone2</emphasis> is the destination zone. Note that in the
+        presence of <ulink url="Documentation.htm#Nested">nested or
+        overlapping zones</ulink> and CONTINUE policies, a packet may go
+        through more than one of these chains.</para>
+      </listitem>
+
+      <listitem>
+        <para>Note: If the packet gets to this step, it did not match any
+        rule.</para>
+
+        <para>If the applicable policy has a <ulink
+        url="User_defined_Actions.html">common action</ulink> then that action
+        is applied (chain has the same name as the action).</para>
+      </listitem>
+
+      <listitem>
+        <para>If the applicable policy has logging specified, the packet is
+        logged.</para>
+      </listitem>
+
+      <listitem>
+        <para>The policy is applied (the packet is accepted, dropped or
+        rejected).</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Packets Leaving the Firewall</title>
+
+    <para>Packets being sent to another host undergo additional processing.</para>
+
+    <note>
+      <para>The source IP address only gets rewritten by the first matching
+      rule below.</para>
+    </note>
+
+    <itemizedlist>
+      <listitem>
+        <para>The source IP address may be rewritten according to DNAT rules
+        that specify SNAT. If this is a new connection request, then the
+        rewriting occurs in a <emphasis>nat</emphasis> table chain called
+        <emphasis role="bold"><emphasis>zone</emphasis>_snat</emphasis> where
+        <emphasis>zone</emphasis> is the destination zone. For packets that
+        are part of an already established connection, the destination
+        rewriting takes place without any involvement of a Netfilter rule.</para>
+      </listitem>
+
+      <listitem>
+        <para>The source IP address may be rewritten according to an entry in
+        the <filename>/etc/shorewall/nat</filename> file. If this is a new
+        connection request, then the rewriting occurs in a
+        <emphasis>nat</emphasis> table chain called <emphasis role="bold"><emphasis>interface</emphasis>_snat</emphasis>
+        where <emphasis>interface</emphasis> is the interface on which the
+        packet will be sent. For packets that are part of an already
+        established connection, the destination rewriting takes place without
+        any involvement of a Netfilter rule.</para>
+      </listitem>
+
+      <listitem>
+        <para>The source IP address may be rewritten according to an entry in
+        the <filename>/etc/shorewall/masq</filename> file. If this is a new
+        connection request, then the rewriting occurs in a
+        <emphasis>nat</emphasis> table chain called <emphasis role="bold"><emphasis>interface</emphasis>_masq</emphasis>
+        where <emphasis>interface</emphasis> is the interface on which the
+        packet will be sent. For packets that are part of an already
+        established connection, the destination rewriting takes place without
+        any involvement of a Netfilter rule.</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Packets Originating on the Firewall</title>
+
+    <para>Just before being sent, packets that originated on the firewall
+    itself undergo additional processing.</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>The TOS field in the packet is conditionally altered based on
+        the contents of your <filename>/etc/shorewall/tos</filename> file.
+        This occurs in the <emphasis role="bold">outtos</emphasis> chain of
+        the <emphasis>mangle</emphasis> table.</para>
+      </listitem>
+
+      <listitem>
+        <para>Packets are marked based on the contents of your
+        <filename>/etc/shorewall/tcrules</filename> file. This occurs in the
+        <emphasis role="bold">tcout</emphasis> chain of the
+        <emphasis>mangle</emphasis> table.</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+</article>

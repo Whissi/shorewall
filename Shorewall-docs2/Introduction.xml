@@ -13,7 +13,7 @@
       <surname>Eastep</surname>
     </author>
 
-    <pubdate>2004-02-17</pubdate>
+    <pubdate>2004-07-10</pubdate>
 
     <copyright>
       <year>2003-2004</year>
@@ -77,24 +77,10 @@
       tracking capabilities.</para>
 
       <para>Shorewall is not a daemon. Once Shorewall has configured
-      Netfilter, it&#39;s job is complete although the <ulink
+      Netfilter, it&#39;s job is complete and there is no <quote>Shorewall
+      process</quote> left running in your system. The <ulink
       url="starting_and_stopping_shorewall.htm">/sbin/shorewall program can be
       used at any time to monitor the Netfilter firewall</ulink>.</para>
-    </section>
-
-    <section>
-      <title>Getting Started with Shorewall</title>
-
-      <para>New to Shorewall? Start by selecting the <ulink
-      url="shorewall_quickstart_guide.htm">QuickStart Guide</ulink> that most
-      closely match your environment and follow the step by step instructions.</para>
-    </section>
-
-    <section>
-      <title>Looking for Information?</title>
-
-      <para>The <ulink url="Documentation_Index.html">Documentation Index</ulink>
-      is a good place to start.</para>
     </section>
   </section>
 
@@ -135,9 +121,14 @@
     conventional to log DROP and REJECT policies.</para></listitem><listitem><para>You
     define exceptions to those default policies in the <ulink
     url="Documentation.htm#Rules"><filename class="directory">/etc/shorewall/</filename><filename>rules</filename></ulink>
-    file.</para></listitem></itemizedlist>For each connection request entering
-    the firewall, the request is first checked against the <filename
-    class="directory">/etc/shorewall/</filename><filename>rules</filename>
+    file.</para></listitem><listitem><para>You only need concern yourself with
+    connection requests. You don&#39;t need to define rules for how traffic
+    that is part of an established connection is handled and in most cases you
+    don&#39;t have to worry about how related connections are handled (ICMP
+    error packets and <ulink url="FTP.html">related TCP connection requests
+    such as used by FTP</ulink>).</para></listitem></itemizedlist>For each
+    connection request entering the firewall, the request is first checked
+    against the <filename class="directory">/etc/shorewall/</filename><filename>rules</filename>
     file. If no rule in that file matches the connection request then the
     first policy in <filename class="directory">/etc/shorewall/</filename><filename>policy</filename>
     that matches the request is applied. If there is a common action defined
@@ -181,6 +172,42 @@ dmz        eth2          detect</programlisting>
     <para>The above file defines the net zone as all hosts interfacing to the
     firewall through eth0, the loc zone as all hosts interfacing through eth1
     and the dmz as all hosts interfacing through eth2.</para>
+
+    <para>To illustrate how rules provide exceptions to policies, suppose that
+    you have the polcies listed above but you want to be able to connect to
+    your firewall from the internet using Secure Shell (SSH). Recall that SSH
+    connects uses TCP port 22.</para>
+
+    <programlisting>#ACTION    SOURCE        DEST      PROTO      DEST
+#                                             PORT(S)
+ACCEPT     net           fw        tcp        22</programlisting>
+
+    <para>So although you have a policy of ignoring all connection attempts
+    from the net zone (from the internet), the above exception to that policy
+    allows you to connect to the SSH server running on your firewall.</para>
+
+    <para>Because Shorewall makes no assumptions about what traffic you want
+    accepted, there are certain rules (exceptions) that need to be added to
+    almost any configuration.</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>The <ulink url="shorewall_quickstart_guide.htm">QuickStart
+        guildes</ulink> provide links to download pre-populated files for use
+        in common setups and the <ulink url="shorewall_setup_guide.htm">Shorewall
+        Setup Guide</ulink> shows you examples for use with other more complex
+        setups.</para>
+      </listitem>
+
+      <listitem>
+        <para>To keep your <ulink url="shorewall_logging.html">firewall log</ulink>
+        from filling up with useless noise, Shorewall provides <ulink
+        url="User_defined_Actions.html">common actions</ulink> that silently
+        discard or reject such noise before it can be logged. As with
+        everything in Shorewall, you can alter the behavior of these common
+        actions (or do away with them entirely) as you see fit.</para>
+      </listitem>
+    </itemizedlist>
   </section>
 
   <section>

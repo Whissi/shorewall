@@ -20,12 +20,19 @@
 #			If your kernel and iptables include iprange match
 #			support, IP address ranges are also allowed.
 #
+#	OPTIONS         (Optional) A comma-separated list of
+#			options. The currently-supported options are:
+#
+#			routeback - Set up a rule to ACCEPT traffic from
+#			these hosts back to themselves. 
+#
 # Example:
 #
-#	INTERFACE	HOST(S)
+#	INTERFACE	HOST(S)			OPTIONS
 #	eth1		-	
 #	eth1		192.168.1.0/24
 #	eth1		192.0.2.44
+#	br0		-			routeback
 ##############################################################################
 #INTERFACE	HOST(S)
 eth1		-

@@ -1000,7 +1000,7 @@ stop_firewall() {
 
     while read interface host; do
 	expandv interface host
-	[ "x$host" = "x-" ] && host=0.0.0.0/0
+	[ "x$host" = "x-" -o -z "$host" ] && host=0.0.0.0/0
 	for h in `separate_list $host`; do
 	    hosts="$hosts $interface:$h"
 	done
@@ -1795,7 +1795,7 @@ add_nat_rule() {
     local chain
     local excludedests=
 
-    # Be sure we should and can NAT
+    # Be sure we can NAT
 
     if [ -z "$NAT_ENABLED" ]; then
 	fatal_error "Rule \"$rule\" requires NAT which is disabled"
@@ -1821,7 +1821,7 @@ add_nat_rule() {
 	    if [ -n "$DETECT_DNAT_IPADDRS" -a "$source" != "$FW" ]; then
 		eval interfaces=\$${source}_interfaces
 		for interface in $interfaces; do
-		    addr="`find_interface_address $interface` $addr"
+		    addr=${addr:+$addr,}`find_interface_address $interface`
 		done
 	    fi
 	    ;;

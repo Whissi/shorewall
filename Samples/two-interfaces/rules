@@ -1,10 +1,13 @@
 #	
-# 	Shorewall version 1.4.8 - Sample Rules File For Two Interfaces
+# 	Shorewall version 2.0 - Sample Rules File For Two Interfaces
 #
 # 	/etc/shorewall/rules
 #
 #	Rules in this file govern connection establishment. Requests and
-#	responses are automatically allowed using connection tracking.
+#	responses are automatically allowed using connection tracking. For any
+#	particular (source,dest) pair of zones, the rules are evaluated in the
+#	order in which they appear in the file and the first match is the one
+#	that determines the disposition of the request.
 #
 #	In most places where an IP address or subnet is allowed, you
 #	can preceed the address/subnet with "!" (e.g., !192.168.1.0/24) to
@@ -12,11 +15,15 @@
 #	given. Notice that no white space is permitted between "!" and the
 #	address/subnet.
 #
+#	WARNING: If you masquerade or use SNAT from a local system to the internet
+#		you cannot use a ACCEPT rule to allow traffic from the internet to
+#		that system. You "must" use a DNAT rule instead.
+#
 # Columns are:
 #
 #
 #	ACTION			ACCEPT, DROP, REJECT, DNAT, DNAT-, REDIRECT,
-#				REDIRECT-, CONTINUE, LOG Or QUEUE.
+#				REDIRECT-, CONTINUE, LOG, QUEUE or an <action>.
 #
 #				ACCEPT
 #						Allow the connection request
@@ -56,29 +63,16 @@
 #						Simply log the packet and continue.
 #				QUEUE   
 #						Queue the packet to a user-space
-#						application such as p2pwall.
+#						application such as ftwall.
+#						(http://p2pwall.sf.net).
+#				<action>	
+#						The name of an action defined in
+#						/etc/shorewall/actions or in
+#						/usr/share/shorewall/actions.std.
 #
-#			You may rate-limit the rule by optionally following 
-#			ACCEPT, DNAT[-], REDIRECT[-] or LOG with
-#
-#				< <rate>/<interval>[:<burst>] >
-#
-#			Where <rate> is the number of connections per 
-#			<interval> ("sec" or "min") and <burst> is the largest
-#			burst permitted. If no <burst> is given, a value of 5 
-#			is assumed. There may be no whitespace embedded in the
-#			specification.
-#
-#		Example:
-#				ACCEPT<10/sec:20>
-#
-#			The ACTION (and rate limit) may optionally be followed by ":"
-#			and a syslog log level (e.g, REJECT:info or DNAT<4/sec:8>:debugging)
-#			This causes the packet to be logged at the specified level.
-#
-#	NOTE: For those of you who prefer to place the rate limit in a separate column, 
-#	see the RATE LIMIT column below. If you specify a value in that column you must include
-#	a rate limit in the action column.
+#			The ACTION may optionally be followed by ":" and a syslog
+#			log level (e.g, REJECT:info or DNAT:debug). This causes the
+#			packet to be logged at the specified level.
 #
 #			You may also specify ULOG (must be in upper case) as a 
 #			log level. This will log to the ULOG target for routing
@@ -243,60 +237,60 @@
 #			If you place a rate limit in this column, you may not place
 #			a similiar limit in the ACTION column.
 #
-#	USER SET	This Column may only be non-empty if the SOURCE is the firewall
-#			itself and the ACTION is ACCEPT, DROP or REJECT.
+#	USER/GROUP	This column may only be non-empty if the SOURCE is the firewall itself.
+#		
+#			The column may contain:
 #
-#			The column may contain a user set name defined in the 
-#			/etc/shorewall/usersets file or it may contain:
+#			[!][<user name or number>][:<group name or number>]
 #
-#				[<user name or number>]:[<group name or number>]
+#			When this column is non-empty, the rule applies only if the program
+#			generating the output is running under the effective <user> and/or <group>
+#			specified (or is NOT running under that id if "!" is given).
 #
-#			When this column is non-empty, the rule applies only if the 
-#			program generating the output is running under the effective
-#			<user>(s) and/or <group>(s) specified. When a user set name is 
-#			given, a log level may not be present in the ACTION column;
-#			logging for such rules is controlled by user set's entry in
-#			/etc/shorewall/usersets.
+#			Examples:
+#				joe	# program must be run by joe
+#				:kids	# program must be run by a member of the 'kids' group.
+#				!:kids	# program must not be run by a member of the 'kids' group.
 #
 #	Also by default all outbound loc -> net communications are allowed.
 #	You can change this behavior in the sample policy file.
 #
 #	Example:	Accept www requests to the firewall.
 #
-#	#ACTION		SOURCE		DEST		PROTO	DEST	SOURCE	ORIGINAL	RATE	USER
-#	#							PORT	PORT(S)	DEST		LIMIT	SET
+#	#ACTION		SOURCE		DEST		PROTO	DEST	SOURCE	ORIGINAL	RATE	USER/
+#	#							PORT	PORT(S)	DEST		LIMIT	GROUP
 #	ACCEPT		net		fw	tcp	http
 #
 #	Example:	Accept SMTP requests from the Local Network to the Internet
 #
-#	#ACTION		SOURCE		DEST		PROTO	DEST	SOURCE	ORIGINAL	RATE	USER
-#	#							PORT	PORT(S)	DEST		LIMIT	SET
+#	#ACTION		SOURCE		DEST		PROTO	DEST	SOURCE	ORIGINAL	RATE	USER/
+#	#							PORT	PORT(S)	DEST		LIMIT	GROUP
 #	ACCEPT		loc		net		tcp	smtp
 #
 #	Example:	Forward all ssh and http connection requests from the Internet
 #			to local system 192.168.1.3
 #
-#	#ACTION		SOURCE		DEST		PROTO	DEST	SOURCE	ORIGINAL	RATE	USER
-#	#							PORT	PORT(S)	DEST		LIMIT	SET
+#	#ACTION		SOURCE		DEST		PROTO	DEST	SOURCE	ORIGINAL	RATE	USER/
+#	#							PORT	PORT(S)	DEST		LIMIT	GROUP
 #	DNAT		net		loc:192.168.1.3	tcp	ssh,http
 #
 #	Example:	Redirect all locally-originating www connection requests to
 #			port 3128 on the firewall (Squid running on the firewall
 #			system) except when the destination address is 192.168.2.2
 #
-#	#ACTION		SOURCE		DEST		PROTO	DEST	SOURCE	ORIGINAL	RATE	USER
-#	#							PORT	PORT(S)	DEST		LIMIT	SET
+#	#ACTION		SOURCE		DEST		PROTO	DEST	SOURCE	ORIGINAL	RATE	USER/
+#	#							PORT	PORT(S)	DEST		LIMIT	GROUP
 #	REDIRECT	loc		3128		tcp	www	-	!192.168.2.2
 #
 #	Example:	All http requests from the Internet to address
 #			130.252.100.69 are to be forwarded to 192.168.1.3
 #
-#	#ACTION		SOURCE		DEST		PROTO	DEST	SOURCE	ORIGINAL	RATE	USER	
-#	#							PORT	PORT(S)	DEST		LIMIT	SET
+#	#ACTION		SOURCE		DEST		PROTO	DEST	SOURCE	ORIGINAL	RATE	USER/	
+#	#							PORT	PORT(S)	DEST		LIMIT	GROUP
 #	DNAT		net		loc:192.168.1.3	tcp	80	-	130.252.100.69
 ##############################################################################
-#ACTION		SOURCE		DEST		PROTO	DEST	SOURCE	ORIGINAL		RATE	USER
-#							PORT	PORT(S)	DEST			LIMIT	SET
+#ACTION		SOURCE		DEST		PROTO	DEST	SOURCE	ORIGINAL		RATE	USER/
+#							PORT	PORT(S)	DEST			LIMIT	GROUP
 #
 #	Accept DNS connections from the firewall to the network
 #

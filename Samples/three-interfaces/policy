@@ -1,13 +1,14 @@
 #	
-# 	Shorewall 1.4.8a -- Sample Policy File For Three Interfaces
+# 	Shorewall 2.0 -- Sample Policy File For Three Interfaces
 #
 # 	/etc/shorewall/policy
 #
+#		THE ORDER OF ENTRIES IN THIS FILE IS IMPORTANT
+#
 #	This file determines what to do with a new connection request if we
-#	don't get a match from the /etc/shorewall/rules file or from the
-#	/etc/shorewall/common[.def] file. For each source/destination pair, the
-#	file is processed in order until a match is found ("all" will match
-#	any client or server).
+#	don't get a match from the /etc/shorewall/rules file For each 
+#	source/destination pair, the file is processed in order until a 
+#	match is found ("all" will match any client or server).
 #
 # Columns are:
 #
@@ -45,7 +46,14 @@
 #				and you may not have any rules with
 #				this SOURCE and DEST in the /etc/shorewall/rules
 #				file. If such a packet is received the result
-#				is undefined.
+#				is undefined. NONE may not be used if the 
+#				SOURCE or DEST Columns contain the firewall
+#				zone ($FW) or "all".
+#
+#			If This column contains ACCEPT, DROP or REJECT and a
+#			corresponding common action is defined in /etc/shorewall/actions
+#			(or /usr/share/shorewall/actions.std) then that action will be
+#			invoked before the policy named in this column is inforced.
 #
 #	LOG LEVEL	If supplied, each connection handled under the default
 #			POLICY is logged at that level. If not supplied, no

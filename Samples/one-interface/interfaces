@@ -1,5 +1,5 @@
 #	
-# 	Shorewall 1.4.8a  -- Sample Interface File For One Interface
+# 	Shorewall 2.0  -- Sample Interface File For One Interface
 #
 # 	/etc/shorewall/interfaces
 #
@@ -24,7 +24,8 @@
 #			want to make a entry that applies to all PPP
 #			interfaces, use 'ppp+'
 #
-#			DO NOT DEFINE THE LOOPBACK INTERFACE (lo) IN THIS FILE.
+#			There is no need to define the loopback interface (lo)
+#			in this file.
 #
 #	BROADCAST	The broadcast address for the subnetwork to which the
 #			interface belongs. For P-T-P interfaces, this
@@ -65,11 +66,6 @@
 #					interface (anti-spoofing measure). This
 #					option can also be enabled globally in
 #					the /etc/shorewall/shorewall.conf file.
-#			dropunclean
-#					Logs and drops mangled/invalid packets
-#			logunclean
-#					Logs mangled/invalid packets but does
-#					not drop them.
 #			blacklist
 #					Check packets arriving on this interface
 #					against the /etc/shorewall/blacklist
@@ -118,6 +114,15 @@
 #					the interface can respond to ARP who-has requests
 #					for IP addresses on any of the firewall's interface.
 #					The interface must be up when shorewall is started.
+#			nosmurfs
+#					Filter packers for smurfs (Packets with a broadcast
+#					address as the source).
+#			detectnets
+#					Automatically taylors the zone named in the ZONE
+#					column to include only those hosts routed through
+#					the interface.
+#
+#	WARNING: DO NOT SET THE detectnets OPTION ON YOUR INTERNET INTERFACE!
 #
 #			The order in which you list the options is not
 #			significant but the list should have no embedded white
@@ -147,5 +152,5 @@
 #			net	ppp0		-
 ##############################################################################
 #ZONE	INTERFACE	BROADCAST	OPTIONS
-net	eth0		detect		norfc1918,routefilter,dhcp
+net	eth0		detect		norfc1918,routefilter,dhcp,tcpflags
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

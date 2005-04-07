@@ -1,4 +1,74 @@
-Shorewall 2.2.2
+Shorewall 2.2.3
+
+-----------------------------------------------------------------------
+Problems corrected in version 2.2.3
+
+1) If a zone is defined in /etc/shorewall/hosts using
+   <interface>:!<network> in the HOSTS column then startup errors occur
+   on "shorewall [re]start".
+
+2) Previously, if "shorewall status" was run on a system whose kernel
+   lacked advanced routing support (CONFIG_IP_ADVANCED_ROUTER),  then
+   no routing information was displayed. 
+
+-----------------------------------------------------------------------
+New Features in version 2.2.3
+
+1) A new extension script "continue" has been added. This script is
+   invoked after Shorewall has set the built-in filter chains' 
+   policy to DROP, deleted any existing Netfilter rules and user
+   chains and has enabled existing connections.
+
+   It is useful for enabling certain communication while Shorewall is
+   being [re]started. Be sure to delete any rules that you add here in
+   your /etc/shorewall/start file.
+
+2) There has been ongoing confusion about how the
+   /etc/shorewall/routestopped file works. People understand how it
+   works with the 'shorewall stop' command but when they read that
+   'shorewall restart' is logically equivalent to 'shorewall stop'
+   followed by 'shorewall start' then they erroneously conclude that
+   /etc/shorewall/routestopped can be used to enable new connections
+   during 'shorewall restart'. Up to now, it cannot -- that file is not
+   processed during either 'shorewall start' or 'shorewall restart'.
+
+   Beginning with Shorewall version 2.2.3, /etc/shorewall/routestopped
+   will be processed TWICE during 'shorewall start' and during
+   'shorewall restart'. It will be processed early in the command 
+   execution to add rules allowing new connections while the command
+   is running and it will be processed again when the
+   command is complete to remove the rules added earlier.
+
+   The result of this change will be that during most of [re]start, new
+   connections will be allowed in accordance with the contents of
+   /etc/shorewall/routestopped.
+
+3) The performance of configurations with a large numbers of entries in
+   /etc/shorewall/maclist can be improved by setting the new 
+   MACLIST_TTL variable in /etc/shorewall/shorewall.conf.
+
+   If your iptables and kernel support the "Recent Match" (see the
+   output of "shorewall check" near the top), you can cache the results
+   of a 'maclist' file lookup and thus reduce the overhead associated
+   with MAC Verification.
+
+   When a new connection arrives from a 'maclist' interface, the packet
+   passes through then list of entries for that interface in
+   /etc/shorewall/maclist. If there is a match then the source IP
+   address is added to the 'Recent' set for that interface. Subsequent
+   connection attempts from that IP address occuring within
+   $MACLIST_TTL seconds will be accepted without having to scan all
+   of the entries. After $MACLIST_TTL from the first accepted
+   connection request from an IP address, the next connection request
+   from that IP address will be checked against the entire list.
+
+   If MACLIST_TTL is not specified or is specified as empty (e.g, 
+   MACLIST_TTL="" or is specified as zero then 'maclist' lookups
+   will not be cached.
+
+4) You can now specify QUEUE as a policy and you can designate a 
+   common action for QUEUE policies in /etc/shorewall/actions. This is
+   useful for sending packets to something like Snort Inline.
 
 -----------------------------------------------------------------------
 Problems corrected in version 2.2.2

@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-03-10</pubdate>
+    <pubdate>2005-04-06</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -1076,6 +1076,16 @@ loc         eth1:192.168.1.0/24,192.168.12.0/24</programlisting>
           <para>The connection request is rejected with an RST (TCP) or an
           ICMP destination-unreachable packet being returned to the
           client.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>QUEUE</term>
+
+        <listitem>
+          <para>Send the connection request to a user-space process via the
+          iptables QUEUE target (useful when you are using
+          Snort-inline).</para>
         </listitem>
       </varlistentry>
 
@@ -2652,6 +2662,37 @@ eth0                  eth1            206.124.146.176</programlisting>
       </varlistentry>
 
       <varlistentry>
+        <term>MACLIST_TTL</term>
+
+        <listitem>
+          <para>(Added at version 2.2.0) The performance of configurations
+          with a large numbers of entries in /etc/shorewall/maclist can be
+          improved by setting the MACLIST_TTL variable in
+          /etc/shorewall/shorewall.conf.</para>
+
+          <para>If your iptables and kernel support the "Recent Match" (see
+          the output of "shorewall check" near the top), you can cache the
+          results of a 'maclist' file lookup and thus reduce the overhead
+          associated with <ulink url="MAC_Validation.html">MAC
+          Verification</ulink>.</para>
+
+          <para>When a new connection arrives from a 'maclist' interface, the
+          packet passes through then list of entries for that interface in
+          /etc/shorewall/maclist. If there is a match then the source IP
+          address is added to the 'Recent' set for that interface. Subsequent
+          connection attempts from that IP address occuring within
+          $MACLIST_TTL seconds will be accepted without having to scan all of
+          the entries. After $MACLIST_TTL from the first accepted connection
+          request from an IP address, the next connection request from that IP
+          address will be checked against the entire list.</para>
+
+          <para>If MACLIST_TTL is not specified or is specified as empty (e.g,
+          MACLIST_TTL="" or is specified as zero then 'maclist' lookups will
+          not be cached).</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term>RFC1918_STRICT</term>
 
         <listitem>
@@ -3861,7 +3902,11 @@ all      all     tcp         ftp-data          -               8</programlisting
     <title>/etc/shorewall/routestopped (Added in Version 1.3.4)</title>
 
     <para>This file defines the hosts that are accessible from the firewall
-    when the firewall is stopped. Columns in the file are:</para>
+    when the firewall is stopped. Beginning with Shorewall version 2.2.3,
+    entries in this file are also active while Shorewall is being [re]started.
+    </para>
+
+    <para>Columns in the file are:</para>
 
     <variablelist>
       <varlistentry>

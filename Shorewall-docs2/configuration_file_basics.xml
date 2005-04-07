@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-03-24</pubdate>
+    <pubdate>2005-03-18</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -448,7 +448,7 @@ smtp,www,pop3,imap  #Services running on the firewall</programlisting>
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="IPRanges">
     <title>IP Address Ranges</title>
 
     <para>Beginning with Shorewall 2.2.0, if you kernel and iptables have
@@ -506,7 +506,7 @@ DNAT       net        loc:192.168.1.3 tcp       4000:4100</programlisting>
     heading "Shorewall has detected the following iptables/netfilter
     capabilities:") and if its use is appropriate.</para>
 
-    <para>Shorewall can use multiport match if: </para>
+    <para>Shorewall can use multiport match if:</para>
 
     <orderedlist>
       <listitem>
@@ -630,9 +630,11 @@ DNAT       net        loc:192.168.1.3 tcp       4000:4100</programlisting>
       </listitem>
 
       <listitem>
-        <para>specifying the separate directory in a shorewall start or
-        shorewall restart command (e.g., <command>shorewall /etc/testconfig
-        restart</command> )</para>
+        <para>specifying the separate directory in a <command>shorewall
+        start</command> or <command>shorewall restart</command> command (e.g.,
+        <command>shorewall restart /etc/testconfig</command> using Shorewall
+        2.2.0 and later or <command>shorewall -c /etc/testconf
+        restart</command> using earlier versions )</para>
       </listitem>
     </orderedlist>
 

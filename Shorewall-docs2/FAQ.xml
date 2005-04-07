@@ -17,10 +17,10 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-03-07</pubdate>
+    <pubdate>2005-04-05</pubdate>
 
     <copyright>
-      <year>2001-2004</year>
+      <year>2001-2005</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -78,8 +78,8 @@
     </section>
 
     <section>
-      <title>(FAQ 44) I can't install the RPM — I keep getting the message
-      "error: failed dependencies:iproute is needed..."</title>
+      <title>(FAQ 44) I can't install/upgrade the RPM — I keep getting the
+      message "error: failed dependencies:iproute is needed..."</title>
 
       <para><emphasis role="bold">Answer</emphasis>: Read the <ulink
       url="Install.htm">Installation Instructions</ulink>!!!!!</para>
@@ -232,6 +232,51 @@ DNAT    net    loc:&lt;l<emphasis>ocal IP address</emphasis>&gt;[:&lt;<emphasis>
 
         <programlisting>#ACTION    SOURCE   DEST                PROTO    DEST PORT
 DNAT       net      loc:192.168.1.3:22  tcp      1022</programlisting>
+      </section>
+
+      <section id="faq1d">
+        <title>(FAQ 1d) I have a web server in my DMZ and I use port
+        forwarding to make that server accessible from the Internet. That
+        works fine but when my local users try to connect to the server using
+        the Firewall's external IP address, it doesn't work.</title>
+
+        <para><emphasis role="bold">Answer</emphasis>: Let's assume the
+        following:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>External IP address is 206.124.146.176 on <filename
+            class="devicefile">eth0</filename>.</para>
+          </listitem>
+
+          <listitem>
+            <para>Server's IP address is 192.168.2.4</para>
+          </listitem>
+        </itemizedlist>
+
+        <para>You can enable access to the server from your local network
+        using the firewall's external IP address by adding this rule:</para>
+
+        <programlisting>#ACTION    SOURCE   DEST                PROTO    DEST PORT(S)    SOURCE      ORIGINAL
+#                                                                PORT        DEST                 
+DNAT       loc      dmz:192.168.2.4     tcp      80              -           206.124.146.176</programlisting>
+
+        <para>If your external IP address is dynamic, then you must do the
+        following:</para>
+
+        <para>In <filename>/etc/shorewall/init</filename>:</para>
+
+        <programlisting><command>ETH0_IP=`find_interface_address eth0`</command></programlisting>
+
+        <para>For users of Shorewall 2.1.0 and later:</para>
+
+        <programlisting><command>ETH0_IP=`find_first_interface_address eth0`</command></programlisting>
+
+        <para>and make your DNAT rule:</para>
+
+        <programlisting>#ACTION    SOURCE        DEST               PROTO    DEST PORT   SOURCE    ORIGINAL
+#                                                                PORT      DEST.
+DNAT       loc           dmz:192.168.2.4    tcp      80          -         $ETH0_IP</programlisting>
       </section>
     </section>
 
@@ -408,6 +453,51 @@ dmz      eth2         192.168.2.255   <emphasis role="bold">routeback</emphasis>
           <para>In <filename>/etc/shorewall/na</filename>t, be sure that you
           have <quote>Yes</quote> in the ALL INTERFACES column.</para>
         </example>
+      </section>
+
+      <section id="faq2b">
+        <title>(FAQ 2b) I have a web server in my DMZ and I use port
+        forwarding to make that server accessible from the Internet as
+        www.mydomain.com. That works fine but when my local users try to
+        connect to www.mydomain.com, it doesn't work.</title>
+
+        <para><emphasis role="bold">Answer</emphasis>: Let's assume the
+        following:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>External IP address is 206.124.146.176 on <filename
+            class="devicefile">eth0</filename> (www.mydomain.com).</para>
+          </listitem>
+
+          <listitem>
+            <para>Server's IP address is 192.168.2.4</para>
+          </listitem>
+        </itemizedlist>
+
+        <para>You can enable access to the server from your local network
+        using the firewall's external IP address by adding this rule:</para>
+
+        <programlisting>#ACTION    SOURCE   DEST                PROTO    DEST PORT(S)    SOURCE      ORIGINAL
+#                                                                PORT        DEST                 
+DNAT       loc      dmz:192.168.2.4     tcp      80              -           206.124.146.176</programlisting>
+
+        <para>If your external IP address is dynamic, then you must do the
+        following:</para>
+
+        <para>In <filename>/etc/shorewall/init</filename>:</para>
+
+        <programlisting><command>ETH0_IP=`find_interface_address eth0`</command></programlisting>
+
+        <para>For users of Shorewall 2.1.0 and later:</para>
+
+        <programlisting><command>ETH0_IP=`find_first_interface_address eth0`</command></programlisting>
+
+        <para>and make your DNAT rule:</para>
+
+        <programlisting>#ACTION    SOURCE        DEST               PROTO    DEST PORT   SOURCE    ORIGINAL
+#                                                                PORT      DEST.
+DNAT       loc           dmz:192.168.2.4    tcp      80          -         $ETH0_IP</programlisting>
       </section>
     </section>
   </section>
@@ -1144,9 +1234,13 @@ net        net            DROP</programlisting>
 eth0             eth2
 eth1             eth2</programlisting>
 
-      <para><citetitle>There was an article in SysAdmin covering this topic.
-      It may be found at <ulink
-      url="http://www.samag.com/documents/s=1824/sam0201h/">http://www.samag.com/documents/s=1824/sam0201h/</ulink></citetitle></para>
+      <para>There was an article in SysAdmin covering the topic of setting up
+      routing for this configuration. It may be found at <ulink
+      url="http://www.samag.com/documents/s=1824/sam0201h/">http://www.samag.com/documents/s=1824/sam0201h/</ulink>.</para>
+
+      <para>Stephen Carville has put together a Shorewall-specific writeup
+      that covers this subject at <ulink
+      url="http://www.heronforge.net/redhat/node17.html">http://www.heronforge.net/redhat/node17.html</ulink>.</para>
 
       <para><citetitle>The following information regarding setting up routing
       for this configuration is reproduced from the <ulink
@@ -1690,9 +1784,9 @@ alias ipt_pkttype off</programlisting>
       </variablelist>
     </section>
 
-    <section>
-      <title>Given that the Debian Stable Release includes Shorewall 1.2.12,
-      how can you not support that version?</title>
+    <section id="faq43">
+      <title>(FAQ 43) Given that the Debian Stable Release includes Shorewall
+      1.2.12, how can you not support that version?</title>
 
       <para>The first release of Shorewall was in March of 2001. Shorewall
       1.2.12 was released in May of 2002. It is now the year 2005 and
@@ -1909,7 +2003,12 @@ eth0               eth1                        # eth1 = interface to local netwo
         nmap from the firewall system, I get <quote>operation not
         permitted</quote>. How do I allow this option?</title>
 
-        <para>Add this command to your /etc/shorewall/start file:</para>
+        <para>If you are running Shorewall 2.2.0 or later, set DROPINVALID=No
+        in <ulink
+        url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>.</para>
+
+        <para>Otherwise, add this command to your /etc/shorewall/start
+        file:</para>
 
         <programlisting><command>run_iptables -D OUTPUT -p ! icmp -m state --state INVALID -j DROP</command></programlisting>
       </section>
@@ -1958,8 +2057,8 @@ iptables: Invalid argument
     <section id="faq28">
       <title>(FAQ 28) How do I use Shorewall as a Bridging Firewall?</title>
 
-      <para>Experimental Shorewall Bridging Firewall support is available —
-      <ulink url="bridge.html">check here for details</ulink>.</para>
+      <para>Shorewall Bridging Firewall support is available — <ulink
+      url="bridge.html">check here for details</ulink>.</para>
     </section>
 
     <section id="faq39">

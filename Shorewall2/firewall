@@ -937,7 +937,7 @@ validate_interfaces_file() {
 
 	for option in $options; do
 	    case $option in
-		dhcp|norfc1918|nobogons|tcpflags|newnotsyn|arp_filter|routefilter|logmartians|sourceroute|blacklist|proxyarp|maclist|nosmurfs|-)
+		dhcp|norfc1918|nobogons|tcpflags|newnotsyn|arp_filter|routefilter|logmartians|sourceroute|blacklist|proxyarp|maclist|nosmurfs|upnp|-)
 		    ;;
 		detectnets)
 		    [ -n "$wildcard" ] && \
@@ -3473,7 +3473,8 @@ merge_levels() # $1=level at which superior action is called, $2=level at which 
 #
 process_actions1() {
 	
-    ACTIONS="dropBcast allowBcast dropNonSyn dropNotSyn rejNotSyn dropInvalid allowInvalid"
+    ACTIONS="dropBcast allowBcast dropNonSyn dropNotSyn rejNotSyn dropInvalid allowInvalid allowinUPnP allowoutUPnP forwardUPnP"
+    
     USEDACTIONS=
 
     strip_file actions
@@ -3543,6 +3544,15 @@ process_actions1() {
 }
 
 process_actions2() {
+
+    local interfaces="$(find_interfaces_by_option upnp)"
+
+    if [ -n "$interfaces" ]; then
+	if ! list_search forwardUPnP $USEDACTIONS; then
+	    error_message "Warning:Missing forwardUPnP rule (required by 'upnp' interface option on $interfaces)"
+	    USEDACTIONS="$USEDACTIONS forwardUPnP"
+	fi
+    fi
 
     progress_message "   Generating Transitive Closure of Used-action List..."
 
@@ -3693,6 +3703,26 @@ process_actions3() {
 		    [ -n "$xlevel" ] && \
 			log_rule_limit ${xlevel%\!} $xchain allowInvalid ACCEPT "" "$xtag" -A -m state --state INVALID
 		    run_iptables -A $xchain -m state --state INVALID -j ACCEPT
+		fi
+		;;
+	    forwardUPnP)
+		;;
+	    allowinUPnP)
+		if [ "$COMMAND" != check ]; then
+		    if [ -n "$xlevel" ]; then
+			log_rule_limit ${xlevel%\!} $xchain allowinUPnP ACCEPT "" "$xtag" -A -p udp --dport 1900
+			log_rule_limit ${xlevel%\!} $xchain allowinUPnP ACCEPT "" "$xtag" -A -p tcp --dport 49152
+		    fi
+
+		    run_iptables -A $xchain -p udp --dport 1900  -j ACCEPT
+		    run_iptables -A $xchain -p tcp --dport 49152 -j ACCEPT
+		fi
+		;;
+	    allowoutUPnP)
+		if [ "$COMMAND" != check ]; then
+		    [ -n "$xlevel" ] && \
+			log_rule_limit ${xlevel%\!} $xchain allowoutUPnP ACCEPT "" "$xtag" -A -m owner --owner-cmd upnpd
+		    run_iptables -A $xchain -m owner --cmd-owner upnpd -j ACCEPT
 		fi
 		;;
 	    *)
@@ -6290,6 +6320,20 @@ add_common_rules() {
 	    run_iptables -A OUTPUT -o $interface        -j $(dynamic_out $interface)
 	done
     fi
+    #
+    # UPnP
+    #
+    interfaces=$(find_interfaces_by_option upnp)
+
+    if [ -n "$interfaces" ]; then
+	echo "Setting up UPnP..."
+
+	createnatchain UPnP
+	
+	for interface in $interfaces; do
+	    run_iptables -t nat -A PREROUTING -i $interface -j UPnP
+	done
+    fi
 
     setup_forwarding
 }
@@ -6387,7 +6431,9 @@ activate_rules()
     # are inserted before jumps to one-to-one NAT chains.
     #
     addrulejump() # $1 = BUILTIN chain, $2 = user chain, $3 - * other arguments
-    {
+    {    interfaces=$(find_interfaces_by_option upnp)
+
+
 	local sourcechain=$1 destchain=$2
 	shift
 	shift
@@ -6402,7 +6448,7 @@ activate_rules()
 
 	fi
     }    
-
+    
     #
     # Add jumps to early SNAT chains
     #
@@ -6697,6 +6743,7 @@ define_firewall() # $1 = Command (Start or Restart)
 
     echo "Initializing...";                    initialize_netfilter
     echo "Configuring Proxy ARP";              setup_proxy_arp
+
     echo "Setting up NAT...";                  setup_nat
     echo "Setting up NETMAP...";               setup_netmap
     echo "Adding Common Rules";                add_common_rules

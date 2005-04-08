@@ -1,4 +1,67 @@
-Shorewall 2.2.3
+Shorewall 2.2.4
+
+-----------------------------------------------------------------------
+Problems corrected in version 2.2.4
+
+None.
+
+-----------------------------------------------------------------------
+New Features in version 2.2.4
+
+1) Support has been added for UPnP using linux-igd
+   (http://linux-idg.sourceforge.net). UPnP is required by a number of
+   popular applications including MSN IM.
+
+   WARNING: From a security architecture viewpoint, UPnP is a
+	    disaster. It assumes that:
+
+	    a) All local systems and their users are complete
+	       trustworthy.
+
+	    b) No local system is infected with any worm or trojan.
+
+	    If either of these assumptions are not true then UPnP can
+	    be used to totally defeat you firewall and to allow
+	    incoming connections to arbitrary local systems on any port
+	    whatsoever. 
+
+	    In short: USE UPnP AT YOUR OWN RISK.
+
+   WARNING: Building and installing linux-igd is not for the faint of
+	    heart. You must download the source from the CVS and be
+	    prepared to do quite a bit of fiddling with the include
+	    files from libupnp (which is required to build and/or run
+	    linux-igd).
+
+   linux-idg Configuration:
+
+	     In /etc/upnpd.conf, you will want:
+
+		insert_forward_rules = yes
+		prerouting_chain_name = UPnP
+		forward_chain_name = forwardUPnP
+
+   Shorewall Configuration:
+
+	     In /etc/shorewall/interfaces, you need the 'upnp' option
+	     on your external interface.
+
+	     If your fw->loc policy is not ACCEPT then you need this
+	     rule:
+
+	     allowoutUPnP	fw	loc
+
+	     If your loc->fw policy is not ACCEPT then you need this
+	     rule:
+
+	     allowinUPnP	loc	fw
+
+	     You MUST have this rule:
+
+	     forwardUPnP	net	loc
+
+   You must also ensure that you have a route to 224.0.0.0/4 on your
+   internal (local) interface.
 
 -----------------------------------------------------------------------
 Problems corrected in version 2.2.3

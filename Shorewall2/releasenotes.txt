@@ -67,6 +67,16 @@ New Features in version 2.2.4
    You must also ensure that you have a route to 224.0.0.0/4 on your
    internal (local) interface.
 
+2) A new 'started' extension script has been added.  The difference
+   between this extension script and /etc/shorewall/start is that this
+   one is invoked after delayed loading of the blacklist
+   (DELAYBLACKLISTLOAD=Yes) and after the 'shorewall' chain has been
+   created (thus signaling that the firewall is completely up.
+
+   /etc/shorewall/started should not change the firewall configuration
+   directly but may do so indirectly by running /sbin/shorewall with
+   the 'nolock' option.
+
 -----------------------------------------------------------------------
 Problems corrected in version 2.2.3
 

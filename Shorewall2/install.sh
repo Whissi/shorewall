@@ -503,6 +503,16 @@ else
     echo "Continue file installed as ${PREFIX}/etc/shorewall/continue"
 fi
 #
+# Install the Started file
+#
+if [ -f ${PREFIX}/etc/shorewall/started ]; then
+    backup_file /etc/shorewall/started
+else
+    run_install -o $OWNER -g $GROUP -m 0600 started ${PREFIX}/etc/shorewall/started
+    echo
+    echo "Started file installed as ${PREFIX}/etc/shorewall/started"
+fi
+#
 # Install the Standard Actions file
 #
 install_file_with_backup actions.std ${PREFIX}/usr/share/shorewall/actions.std 0600

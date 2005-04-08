@@ -6431,9 +6431,7 @@ activate_rules()
     # are inserted before jumps to one-to-one NAT chains.
     #
     addrulejump() # $1 = BUILTIN chain, $2 = user chain, $3 - * other arguments
-    {    interfaces=$(find_interfaces_by_option upnp)
-
-
+    { 
 	local sourcechain=$1 destchain=$2
 	shift
 	shift
@@ -6743,7 +6741,6 @@ define_firewall() # $1 = Command (Start or Restart)
 
     echo "Initializing...";                    initialize_netfilter
     echo "Configuring Proxy ARP";              setup_proxy_arp
-
     echo "Setting up NAT...";                  setup_nat
     echo "Setting up NETMAP...";               setup_netmap
     echo "Adding Common Rules";                add_common_rules

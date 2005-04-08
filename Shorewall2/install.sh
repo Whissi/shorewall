@@ -493,6 +493,15 @@ else
     echo "Accounting file installed as ${PREFIX}/etc/shorewall/accounting"
 fi
 #
+# Install the Continue file
+#
+if [ -f ${PREFIX}/etc/shorewall/continue ]; then
+    backup_file /etc/shorewall/continue
+else
+    run_install -o $OWNER -g $GROUP -m 0600 continue ${PREFIX}/etc/shorewall/continue
+    echo
+    echo "Continue file installed as ${PREFIX}/etc/shorewall/continue"
+fi
 #
 # Install the Standard Actions file
 #

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
-"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.4//EN"
+"http://www.oasis-open.org/docbook/xml/4.4/docbookx.dtd">
 <article>
   <!--$Id$-->
 
@@ -17,7 +17,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-04-05</pubdate>
+    <pubdate>2005-04-08</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -1654,7 +1654,7 @@ alias ipt_pkttype off</programlisting>
       setting PKTTYPE=No in shorewall.conf.</para>
     </section>
 
-    <section>
+    <section id="faq43">
       <title>(FAQ 43) I just installed the Shorewall RPM and Shorewall doesn't
       start at boot time.</title>
 
@@ -1663,6 +1663,42 @@ alias ipt_pkttype off</programlisting>
       configuring Shorewall startup. You will need to run that tool (insserv,
       chkconfig, run-level editor, …) to configure Shorewall to start in the
       run-levels that you run your firewall system at.</para>
+    </section>
+
+    <section id="faq45">
+      <title>(FAQ 45) Why does "shorewall start fail" when trying to set up
+      SNAT/Masquerading?</title>
+
+      <para><command>shorewall start</command> produces the following
+      output:</para>
+
+      <programlisting>…
+Processing /etc/shorewall/policy...
+   Policy ACCEPT for fw to net using chain fw2net
+   Policy ACCEPT for loc0 to net using chain loc02net
+   Policy ACCEPT for loc1 to net using chain loc12net
+   Policy ACCEPT for wlan to net using chain wlan2net
+Masqueraded Networks and Hosts:
+iptables: Invalid argument
+   ERROR: Command "/sbin/iptables -t nat -A …" Failed</programlisting>
+
+      <para><emphasis role="bold">Answer</emphasis>: 99.999% of the time, this
+      error is caused by a mismatch between your iptables and kernel.</para>
+
+      <orderedlist numeration="loweralpha">
+        <listitem>
+          <para>Your iptables must be compiled against a kernel source tree
+          that is Netfilter-compatible with the kernel that you are
+          running.</para>
+        </listitem>
+
+        <listitem>
+          <para>If you rebuild iptables using the defaults and install it, it
+          will be installed in /usr/local/sbin/iptables. As shown above, you
+          have the IPTABLES variable in shorewall.conf set to
+          "/sbin/iptables".</para>
+        </listitem>
+      </orderedlist>
     </section>
   </section>
 
@@ -1784,8 +1820,8 @@ alias ipt_pkttype off</programlisting>
       </variablelist>
     </section>
 
-    <section id="faq43">
-      <title>(FAQ 43) Given that the Debian Stable Release includes Shorewall
+    <section id="faq46">
+      <title>(FAQ 46) Given that the Debian Stable Release includes Shorewall
       1.2.12, how can you not support that version?</title>
 
       <para>The first release of Shorewall was in March of 2001. Shorewall

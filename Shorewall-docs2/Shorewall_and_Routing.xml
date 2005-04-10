@@ -179,4 +179,28 @@
     role="bold">other than as described in the previous section, there is no
     connection between Shorewall and routing</emphasis>.</para>
   </section>
+
+  <section>
+    <title>Routing and Proxy ARP</title>
+
+    <para>There is one instance where Shorewall creates routing table entries.
+    When an entry in <filename>/etc/shorewall/proxyarp</filename> contains
+    "No" in the HAVEROUTE column then Shorewall will create a host route to
+    the IP address listed in the ADDRESS column through the interface named in
+    the INTERFACE column. <emphasis role="bold">This is the only case where
+    Shorewall directly manipulates the routing table</emphasis>.</para>
+
+    <para>Example:</para>
+
+    <para><filename>/etc/shorewall/proxyarp</filename>:</para>
+
+    <programlisting>#ADDRESS        INTERFACE       EXTERNAL        HAVEROUTE       PERSISTENT
+206.124.146.177 eth1            eth0            No
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+
+    <para>The above entry will cause Shorewall to execute the following
+    command:</para>
+
+    <programlisting><emphasis role="bold">ip route add 206.124.146.177 dev eth1</emphasis></programlisting>
+  </section>
 </article>

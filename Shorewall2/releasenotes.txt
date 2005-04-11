@@ -87,6 +87,17 @@ New Features in version 2.2.4
    directly but may do so indirectly by running /sbin/shorewall with
    the 'nolock' option.
 
+3) By default, shorewall is started with the "-f" (fast) option when
+   your system boots. You can override that setting by setting the
+   OPTIONS variable in /etc/sysconfig/shorewall (SuSE/Redhat) or
+   /etc/default/shorewall (Debian/Bering). If neither file exists, feel
+   free to create one.
+
+   Example: If you want Shorewall to always use the config files even
+   if there is a saved configuration, then specify:
+
+      OPTIONS=""
+
 -----------------------------------------------------------------------
 Problems corrected in version 2.2.3
 

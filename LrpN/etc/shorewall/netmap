@@ -1,0 +1,38 @@
+##############################################################################
+#
+# Shorewall 2.2  -- Network Mapping Table
+#
+# /etc/shorewall/netmap
+#
+#	This file is used to map addresses in one network to corresponding
+#	addresses in a second network.
+#
+#	WARNING: To use this file, your kernel and iptables must have
+#		 NETMAP support included.
+#
+# Columns must be separated by white space and are:
+#
+#	TYPE	        Must be DNAT or SNAT.
+#
+#			If DNAT, traffic entering INTERFACE and addressed to
+#			NET1 has it's destination address rewritten to the
+#			corresponding address in NET2.
+#
+#			If SNAT, traffic leaving INTERFACE with a source
+#			address in NET1 has it's source address rewritten to
+#			the corresponding address in NET2.
+#			
+#	NET1		Network in CIDR format (e.g., 192.168.1.0/24)
+#
+#	INTERFACE	The name of a network interface. The interface must
+#			be defined in /etc/shorewall/interfaces.
+#
+#	NET2		Network in CIDR format
+#
+# See http://shorewall.net/netmap.html for an example and usage
+# information.
+#
+##############################################################################
+#TYPE	NET1			INTERFACE	NET2
+#
+#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE

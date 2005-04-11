@@ -25,6 +25,8 @@
 #			DROP		- Ignore the connection request
 #			REJECT		- For TCP, send RST. For all other, send
 #					  "port unreachable" ICMP.
+#			QUEUE		- Send the request to a user-space
+#					  application using the QUEUE target.
 #			CONTINUE	- Pass the connection request past
 #					  any other rules that it might also
 #					  match (where the source or destination
@@ -82,4 +84,8 @@ net		all		DROP		ULOG
 # remove the comment from the following line.
 #fw             net             ACCEPT
 
+#
+# THE FOLLOWING POLICY MUST BE LAST
+#	
+all		all		REJECT		ULOG
 #LAST LINE -- DO NOT REMOVE

@@ -5651,6 +5651,7 @@ determine_capabilities() {
     PHYSDEV_MATCH=
     IPRANGE_MATCH=
     RECENT_MATCH=
+    OWNER_MATCH=
 
     qt $IPTABLES -N fooX1234
     qt $IPTABLES -A fooX1234 -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT             && CONNTRACK_MATCH=Yes
@@ -5660,6 +5661,7 @@ determine_capabilities() {
     qt $IPTABLES -A fooX1234 -m physdev --physdev-in eth0 -j ACCEPT                     && PHYSDEV_MATCH=Yes
     qt $IPTABLES -A fooX1234 -m iprange --src-range 192.168.1.5-192.168.1.124 -j ACCEPT && IPRANGE_MATCH=Yes
     qt $IPTABLES -A fooX1234 -m recent --update -j ACCEPT                               && RECENT_MATCH=Yes
+    qt $IPTABLES -A fooX1234 -m owner --cmd-owner foo -j ACCEPT                         && OWNER_MATCH=Yes
 
     if [ -n "$PKTTYPE" ]; then
 	qt $IPTABLES -A fooX1234 -m pkttype --pkt-type broadcast -j ACCEPT || PKTTYPE=
@@ -5690,6 +5692,7 @@ report_capabilities() {
     report_capability "Physdev Match" $PHYSDEV_MATCH
     report_capability "IP range Match" $IPRANGE_MATCH
     report_capability "Recent Match" $RECENT_MATCH
+    report_capability "Owner Match" $OWNER_MATCH
 }
 
 #

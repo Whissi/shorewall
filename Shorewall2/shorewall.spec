@@ -139,6 +139,8 @@ fi
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel ipsecvpn
 
 %changelog
+* Fri Apr 08 2005 Tom Eastep tom@shorewall.net
+- Added /etc/shorewall/started
 * Tue Apr 05 2005 Tom Eastep tom@shorewall.net
 - Updated to 2.2.3-1
 * Mon Mar 07 2005 Tom Eastep tom@shorewall.net

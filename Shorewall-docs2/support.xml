@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-03-05</pubdate>
+    <pubdate>2005-04-10</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -86,8 +86,9 @@
     <title>Problem Reporting Guidelines</title>
 
     <note>
-      <para>Shorewall versions earlier than 1.4.0 are no longer
-      supported.</para>
+      <para>Shorewall versions earlier than 2.0.0 are no longer supported; we
+      will only answer your question if it deals with upgrading from these old
+      releases to a current one.</para>
     </note>
 
     <itemizedlist>
@@ -97,28 +98,24 @@
 
         <itemizedlist>
           <listitem>
-            <para>the exact version of Shorewall you are running.</para>
+            <para>If your problem is that an <emphasis
+            role="bold">error</emphasis> occurs when you try to
+            <quote><command>shorewall start</command></quote>, then
+            please:</para>
 
-            <programlisting><command>shorewall version</command></programlisting>
-          </listitem>
+            <blockquote>
+              <programlisting><command>shorewall trace start 2&gt; /tmp/trace</command></programlisting>
 
-          <listitem>
-            <para>the complete, exact output of</para>
+              <para>Forward the <filename>/tmp/trace</filename> file as an
+              attachment (you may compress it if you like).</para>
+            </blockquote>
 
-            <programlisting><command>ip addr show</command></programlisting>
-          </listitem>
-
-          <listitem>
-            <para>the complete, exact output of</para>
-
-            <programlisting><command>ip route show</command></programlisting>
-          </listitem>
-
-          <listitem>
-            <para><emphasis role="bold">THIS IS IMPORTANT!</emphasis> If your
-            problem is that some type of connection to/from or through your
-            firewall isn't working then please perform the following four
-            steps:</para>
+            <para>Otherwise, if your problem is that some set of <emphasis
+            role="bold">connection</emphasis>s to/from or through your
+            firewall <emphasis role="bold">isn't working</emphasis> (examples:
+            local systems can't access the internet, you can't send email
+            through the firewall, you can't surf the web from the firewall,
+            etc.) then please perform the following four steps:</para>
 
             <orderedlist>
               <listitem>
@@ -141,6 +138,27 @@
                 attachment (you may compress it if you like).</para>
               </listitem>
             </orderedlist>
+
+            <para>Otherwise please include the following
+            information:<itemizedlist>
+                <listitem>
+                  <para>the exact version of Shorewall you are running.</para>
+
+                  <programlisting><emphasis role="bold">shorewall version</emphasis></programlisting>
+                </listitem>
+
+                <listitem>
+                  <para>the complete exact output of</para>
+
+                  <programlisting><command>ip addr show</command></programlisting>
+                </listitem>
+
+                <listitem>
+                  <para>the complete exact output of</para>
+
+                  <programlisting><command>ip route show</command></programlisting>
+                </listitem>
+              </itemizedlist></para>
           </listitem>
 
           <listitem>
@@ -149,8 +167,9 @@
 
           <listitem>
             <para><emphasis role="bold">If you installed Shorewall using one
-            of the QuickStart Guides, please indicate which
-            one</emphasis>.</para>
+            of the QuickStart Guides, please indicate which one</emphasis>.
+            <emphasis role="bold">If you did not use one of the QuickStart
+            Guides, please say so</emphasis>.</para>
           </listitem>
         </itemizedlist>
       </listitem>
@@ -221,13 +240,6 @@
         file) that you think are relevant. If you include
         /etc/shorewall/rules, please include /etc/shorewall/policy as well
         (rules are meaningless unless one also knows the policies).</para>
-      </listitem>
-
-      <listitem>
-        <para>If an error occurs when you try to <quote><command>shorewall
-        start</command></quote>, include a trace (See the <ulink
-        url="troubleshoot.htm">Troubleshooting section</ulink> for
-        instructions).</para>
       </listitem>
 
       <listitem>

@@ -3832,7 +3832,14 @@ add_nat_rule() {
 
     # Select target
 
-    if [ -n "$serv" ]; then
+    if [ "$logtarget" = SAME ]; then
+	[ -n "$servport" ] && fatal_error "Port mapping not allowed in SAME rules"
+	serv1=
+	for srv in $(separate_list $serv); do
+	    serv1="$serv1 --to ${srv}"
+	done
+	target1="SAME $serv1"
+    elif [ -n "$serv" ]; then
 	servport="${servport:+:$servport}"
 	serv1=
 	for srv in $(separate_list $serv); do
@@ -4095,9 +4102,9 @@ add_a_rule()
 	    servport=${servport:=$port}
 	    natrule=Yes
 	    ;;
-	DNAT)
+	DNAT|SAME)
 	    [ -n "$serv" ] || \
-		fatal_error "DNAT rules require a server address; rule: \"$rule\""
+		fatal_error "$logtarget rules require a server address; rule: \"$rule\""
 	    natrule=Yes
 	    ;;
 	LOG)
@@ -4114,7 +4121,7 @@ add_a_rule()
 	    if [ -n "$natrule" ]; then
 		add_nat_rule
 	    elif [ -n "$addr" -a "$addr" != "$serv" ] || [ -n "$servport" -a "$servport" != "$port" ]; then
-		fatal_error "Only DNAT and REDIRECT rules may specify destination mapping; rule \"$rule\""
+		fatal_error "Only DNAT, SAME and REDIRECT rules may specify destination mapping; rule \"$rule\""
 	    fi
 
 	    if [ -z "$dnat_only" ]; then
@@ -4169,7 +4176,7 @@ add_a_rule()
 
 	[ -n "$addr" ] && fatal_error \
 	    "An ORIGINAL DESTINATION ($addr) is only allowed in" \
-	    " a DNAT or REDIRECT: \"$rule\""
+	    " a DNAT, SAME or REDIRECT: \"$rule\""
 
 	if [ $COMMAND != check ]; then
 	    if [ -n "$loglevel" ]; then
@@ -4319,7 +4326,7 @@ process_rule() # $1 = target
 	CONTINUE)
 	    target=RETURN
 	    ;;
-	DNAT*)
+	DNAT*|SAME*)
 	    target=ACCEPT
 	    address=${address:=detect}
 	    ;;
@@ -4352,8 +4359,13 @@ process_rule() # $1 = target
 	excludezones="${clientzone#*!}"
 	clientzone="${clientzone%!*}"
 
-	[ "$logtarget" = DNAT ] || [ "$logtarget" = REDIRECT ] ||\
-	    fatal_error "Exclude list only allowed with DNAT or REDIRECT"
+	case $logtarget in
+	    DNAT|REDIRECT|SAME)
+		;;
+	    *)
+		fatal_error "Exclude list only allowed with DNAT, SAME or REDIRECT"
+		;;
+	esac
     fi
 
     validate_zone $clientzone || fatal_error "Undefined Client Zone in rule \"$rule\""
@@ -4416,7 +4428,7 @@ process_rule() # $1 = target
     protocol=${protocol:=all}
 
     case $logtarget in
-	DNAT*)
+	DNAT*|SAME)
 	    if [ -n "$XMULTIPORT" ] && \
 	       ! list_search $protocol "icmp" "ICMP" "1" && \
 	       [ $(( $(list_count $ports)  + $(list_count1 $(split $ports ) ) ))  -le 16 -a \
@@ -4595,7 +4607,7 @@ process_rules()
 	expandv xtarget
 
 	case "${xtarget%%:*}" in
-	    ACCEPT|ACCEPT+|NONAT|DROP|REJECT|DNAT|DNAT-|REDIRECT|REDIRECT-|LOG|CONTINUE|QUEUE)
+	    ACCEPT|ACCEPT+|NONAT|DROP|REJECT|DNAT|DNAT-|REDIRECT|REDIRECT-|LOG|CONTINUE|QUEUE|SAME|SAME-)
 		do_it
 		;;
 	    *)
@@ -5146,6 +5158,8 @@ setup_masq()
 
 	[ "x$addresses" = x- ] && addresses=
 
+	
+
 	if [ -n "$addresses" -a -n "$add_snat_aliases" ]; then
 	    for address in $(separate_list $addresses); do
 		address=${address%:)}
@@ -5292,17 +5306,35 @@ setup_masq()
 	target=MASQUERADE
 
 	if [ -n "$addresses" ]; then
-	    for address in $(separate_list $addresses); do
-		case $address in
-		    *.*.*.*)
-			target=SNAT
-			addrlist="$addrlist --to-source $address"
-			;;
-		    *)
-			addrlist="$addrlist --to-ports ${address#:}"
-			;;
-		esac
-	    done
+	    case "$addresses" in
+		SAME:nodst:*)
+		    target="SAME --nodst"
+		    addresses=${addresses#SAME:nodst:}
+		    for address in $(separate_list $addresses); do
+			addrlist="$addrlist --to $address";
+		    done
+		    ;;
+		SAME:*)
+		    target="SAME"
+		    addresses=${addresses#SAME:}
+		    for address in $(separate_list $addresses); do
+			addrlist="$addrlist --to $address";
+		    done
+		    ;;
+		*)
+		    for address in $(separate_list $addresses); do
+			case $address in
+			    *.*.*.*)
+				target=SNAT
+				addrlist="$addrlist --to-source $address"
+				;;
+			    *)
+				addrlist="$addrlist --to-ports ${address#:}"
+				;;
+			esac
+		    done
+		    ;;
+	    esac
 	fi
 
 	if [ -n "$networks" ]; then

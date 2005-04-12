@@ -86,6 +86,20 @@
 #					192.0.2.4:5000-6000
 #					:4000-5000
 #
+#				You can invoke the SAME target using the 
+#				following in this column:
+#
+#				   SAME:[nodst:]<address-range>[,<address-range>...]
+#
+#				The <address-ranges> may be single addresses. 
+#
+#				SAME works like SNAT with the exception that the
+#				same local IP address is assigned to each connection
+#				from a local address to a given remote address. If
+#				the 'nodst:' option is included, then the same source
+#				address is used for a given internal system regardless
+#				of which remote system is involved.
+#
 #				If you want to leave this column empty
 #				but you need to specify the next column then
 #				place a hyphen ("-") here.

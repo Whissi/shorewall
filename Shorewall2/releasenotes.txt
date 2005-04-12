@@ -98,6 +98,35 @@ New Features in version 2.2.4
 
       OPTIONS=""
 
+4) Shorewall now has support for the SAME target. This change affects
+   the /etc/shorewall/masq and /etc/shorewall/rules file.
+
+   SAME is useful when you specify multiple target IP addresses (in the
+   ADDRESSES column of /etc/shorewall/masq or in the DEST column of
+   /etc/shorewall/rules). 
+
+   If you use normal SNAT then multiple connections from a given local
+   host to hosts on the internet can be assigned different source IP
+   addresses. This confuses some applications that use multiple
+   connections. To correct this problem, prefix the list of address
+   ranges in the ADDRESS column with "SAME:"
+
+	  Example:   SAME:206.124.146.176-206.124.146.180
+
+   If you want each internal system to use the same IP address from the
+   list regardless of which internet host it is talking to then prefix
+   the rages with "SAME:nodst:".
+
+	  Example:   SAME:nodst:206.124.146.176-206.124.146.180
+   
+   Note that it is not possible to map port numbers when using SAME.
+
+   In the rules file, when multiple connections from an internet host
+   match a SAME rule then all of the connections will be sent to the
+   same internal server. SAME rules are very similar to DNAT rules with
+   the keyword SAME replacing DNAT. As in the masq file, changing the
+   port number is not supported.
+
 -----------------------------------------------------------------------
 Problems corrected in version 2.2.3
 

@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-03-28</pubdate>
+    <pubdate>2005-04-13</pubdate>
 
     <copyright>
       <year>2001</year>
@@ -440,65 +440,15 @@ esac</programlisting>
         <emphasis role="bold">loc</emphasis> follows <emphasis
         role="bold">net</emphasis> in /etc/shorewall/zones.</para>
 
-        <table>
-          <title>/etc/shorewall/tunnels</title>
+        <para><filename>/etc/shorewall/tunnels</filename>:</para>
 
-          <tgroup cols="4">
-            <thead>
-              <row>
-                <entry align="center">TYPE</entry>
+        <programlisting>#TYPE           ZONE             GATEWAY           GATEWAY ZONE
+pptpserver      net              0.0.0.0/0</programlisting>
 
-                <entry align="center">ZONE</entry>
+        <para><filename>/etc/shorewall/interfaces</filename>:</para>
 
-                <entry align="center">GATEWAY</entry>
-
-                <entry align="center">GATEWAY ZONE</entry>
-              </row>
-            </thead>
-
-            <tbody>
-              <row>
-                <entry>pptpserver</entry>
-
-                <entry>net</entry>
-
-                <entry>0.0.0.0/0</entry>
-
-                <entry></entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </table>
-
-        <table>
-          <title>/etc/shorewall/interfaces</title>
-
-          <tgroup cols="4">
-            <thead>
-              <row>
-                <entry align="center">ZONE</entry>
-
-                <entry align="center">INTERFACE</entry>
-
-                <entry align="center">BROADCAST</entry>
-
-                <entry align="center">OPTIONS</entry>
-              </row>
-            </thead>
-
-            <tbody>
-              <row>
-                <entry>loc</entry>
-
-                <entry>ppp+</entry>
-
-                <entry>-</entry>
-
-                <entry></entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </table>
+        <programlisting>#ZONE          INTERFACE         BROADCAST        OPTIONS
+loc            ppp+</programlisting>
       </section>
 
       <section>
@@ -511,127 +461,24 @@ esac</programlisting>
         follows <emphasis role="bold">net</emphasis> in /etc/shorewall/zones
         as shown below.</para>
 
-        <table>
-          <title>/etc/shorewall/tunnels</title>
+        <para><filename>/etc/shorewall/tunnels</filename>:</para>
 
-          <tgroup cols="4">
-            <thead>
-              <row>
-                <entry align="center">TYPE</entry>
+        <programlisting>#TYPE           ZONE             GATEWAY           GATEWAY ZONE
+pptpserver      net              0.0.0.0/0</programlisting>
 
-                <entry align="center">ZONE</entry>
+        <para><filename>/etc/shorewall/zones</filename>:</para>
 
-                <entry align="center">GATEWAY</entry>
+        <programlisting>#ZONE           DISPLAY          COMMENTS
+net             Internet         The Internet
+loc             Local            Local Network
+vpn             VPN              Remote Users</programlisting>
 
-                <entry align="center">GATEWAY ZONE</entry>
-              </row>
-            </thead>
+        <para><filename>/etc/shorewall/interfaces</filename>:</para>
 
-            <tbody>
-              <row>
-                <entry>pptpserver</entry>
-
-                <entry>net</entry>
-
-                <entry>0.0.0.0/0</entry>
-
-                <entry></entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </table>
-
-        <table>
-          <title>/etc/shorewall/zones</title>
-
-          <tgroup cols="3">
-            <thead>
-              <row>
-                <entry align="center">ZONE</entry>
-
-                <entry align="center">DISPLAY</entry>
-
-                <entry align="center">COMMENTS</entry>
-              </row>
-            </thead>
-
-            <tbody>
-              <row>
-                <entry>net</entry>
-
-                <entry>Internet</entry>
-
-                <entry>The Internet</entry>
-              </row>
-
-              <row>
-                <entry>loc</entry>
-
-                <entry>Local</entry>
-
-                <entry>Local Network</entry>
-              </row>
-
-              <row>
-                <entry>vpn</entry>
-
-                <entry>VPN</entry>
-
-                <entry>Remote Users</entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </table>
-
-        <table>
-          <title>/etc/shorewall/interfaces</title>
-
-          <tgroup cols="4">
-            <thead>
-              <row>
-                <entry align="center">ZONE</entry>
-
-                <entry align="center">INTERFACE</entry>
-
-                <entry align="center">BROADCAST</entry>
-
-                <entry align="center">OPTIONS</entry>
-              </row>
-            </thead>
-
-            <tbody>
-              <row>
-                <entry>net</entry>
-
-                <entry>eth0</entry>
-
-                <entry>206.124.146.255</entry>
-
-                <entry>norfc1918</entry>
-              </row>
-
-              <row>
-                <entry>loc</entry>
-
-                <entry>eth2</entry>
-
-                <entry>192.168.10.255</entry>
-
-                <entry></entry>
-              </row>
-
-              <row>
-                <entry>vpn</entry>
-
-                <entry>ppp+</entry>
-
-                <entry>-</entry>
-
-                <entry></entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </table>
+        <programlisting>#ZONE          INTERFACE         BROADCAST        OPTIONS
+net            eth0              206.124.146.255  norfc1918
+loc            eth2              192.168.10.255
+vpn            ppp+</programlisting>
 
         <para>Your policies and rules may now be configured for traffic
         to/from the <emphasis role="bold">vpn</emphasis> zone.</para>
@@ -651,185 +498,33 @@ esac</programlisting>
         role="bold">net</emphasis> in /etc/shorewall/zones as shown
         below.</para>
 
-        <table>
-          <title>/etc/shorewall/tunnels</title>
+        <para><filename>/etc/shorewall/tunnels</filename>:</para>
 
-          <tgroup cols="4">
-            <thead>
-              <row>
-                <entry align="center">TYPE</entry>
+        <programlisting>#TYPE           ZONE             GATEWAY           GATEWAY ZONE
+pptpserver      net              0.0.0.0/0</programlisting>
 
-                <entry align="center">ZONE</entry>
+        <para><filename>/etc/shorewall/zones</filename>:</para>
 
-                <entry align="center">GATEWAY</entry>
+        <programlisting>#ZONE           DISPLAY          COMMENTS
+net             Internet         The Internet
+loc             Local            Local Network
+vpn1            Remote1          Remote Network 1
+vpn2            Remote2          Remote Network 2
+vpn3            Remote3          Remote Network 3</programlisting>
 
-                <entry align="center">GATEWAY ZONE</entry>
-              </row>
-            </thead>
+        <para><filename>/etc/shorewall/interfaces</filename>:</para>
 
-            <tbody>
-              <row>
-                <entry>pptpserver</entry>
+        <programlisting>#ZONE          INTERFACE         BROADCAST        OPTIONS
+net            eth0              206.124.146.255  norfc1918
+loc            eth2              192.168.10.255
+-              ppp+</programlisting>
 
-                <entry>net</entry>
+        <para><filename>/etc/shorewall/hosts</filename>:</para>
 
-                <entry>0.0.0.0/0</entry>
-
-                <entry></entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </table>
-
-        <table>
-          <title>/etc/shorewall/zones</title>
-
-          <tgroup cols="3">
-            <thead>
-              <row>
-                <entry align="center">ZONE</entry>
-
-                <entry align="center">DISPLAY</entry>
-
-                <entry align="center">COMMENTS</entry>
-              </row>
-            </thead>
-
-            <tbody>
-              <row>
-                <entry>net</entry>
-
-                <entry>Internet</entry>
-
-                <entry>The Internet</entry>
-              </row>
-
-              <row>
-                <entry>loc</entry>
-
-                <entry>Local</entry>
-
-                <entry>Local Network</entry>
-              </row>
-
-              <row>
-                <entry>vpn1</entry>
-
-                <entry>Remote1</entry>
-
-                <entry>Remote Network 1</entry>
-              </row>
-
-              <row>
-                <entry>vpn2</entry>
-
-                <entry>Remote2</entry>
-
-                <entry>Remote Network 2</entry>
-              </row>
-
-              <row>
-                <entry>vpn3</entry>
-
-                <entry>Remote3</entry>
-
-                <entry>Remote Network 3</entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </table>
-
-        <table>
-          <title>/etc/shorewall/interfaces</title>
-
-          <tgroup cols="4">
-            <thead>
-              <row>
-                <entry align="center">ZONE</entry>
-
-                <entry align="center">INTERFACE</entry>
-
-                <entry align="center">BROADCAST</entry>
-
-                <entry align="center">OPTIONS</entry>
-              </row>
-            </thead>
-
-            <tbody>
-              <row>
-                <entry>net</entry>
-
-                <entry>eth0</entry>
-
-                <entry>206.124.146.255</entry>
-
-                <entry>norfc1918</entry>
-              </row>
-
-              <row>
-                <entry>loc</entry>
-
-                <entry>eth2</entry>
-
-                <entry>192.168.10.255</entry>
-
-                <entry></entry>
-              </row>
-
-              <row>
-                <entry>-</entry>
-
-                <entry>ppp+</entry>
-
-                <entry>-</entry>
-
-                <entry></entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </table>
-
-        <table>
-          <title>/etc/shorewall/hosts</title>
-
-          <tgroup cols="3">
-            <thead>
-              <row>
-                <entry align="center">ZONE</entry>
-
-                <entry align="center">HOST(S)</entry>
-
-                <entry align="center">OPTIONS</entry>
-              </row>
-            </thead>
-
-            <tbody>
-              <row>
-                <entry>vpn1</entry>
-
-                <entry>ppp+:192.168.1.0/24</entry>
-
-                <entry></entry>
-              </row>
-
-              <row>
-                <entry>vpn2</entry>
-
-                <entry>ppp+:192.168.2.0/24</entry>
-
-                <entry></entry>
-              </row>
-
-              <row>
-                <entry>vpn3</entry>
-
-                <entry>ppp+:192.168.3.0/24</entry>
-
-                <entry></entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </table>
+        <programlisting>#ZONE          HOST(S)                   OPTIONS
+vpn1           ppp+:192.168.1.0/24
+vpn2           ppp+:192.168.2.0/24
+vpn3           ppp+:192.168.3.0/24</programlisting>
 
         <para>Your policies and rules can now be configured using separate
         zones (vpn1, vpn2, and vpn3) for the three remote network.</para>
@@ -843,125 +538,22 @@ esac</programlisting>
     <para>If you have a single external IP address, add the following to your
     /etc/shorewall/rules file:</para>
 
-    <table>
-      <title>/etc/shorewall/rules</title>
+    <para><filename>/etc/shorewall/rules</filename>:</para>
 
-      <tgroup cols="7">
-        <thead>
-          <row>
-            <entry align="center">ACTION</entry>
-
-            <entry align="center">SOURCE</entry>
-
-            <entry>DEST</entry>
-
-            <entry>PROTO</entry>
-
-            <entry>DEST PORT(S)</entry>
-
-            <entry>SOURCE PORT(S)</entry>
-
-            <entry>ORIGINAL DEST</entry>
-          </row>
-        </thead>
-
-        <tbody>
-          <row>
-            <entry>DNAT</entry>
-
-            <entry>net</entry>
-
-            <entry>loc:&lt;<emphasis>server address</emphasis>&gt;</entry>
-
-            <entry>tcp</entry>
-
-            <entry>1723</entry>
-
-            <entry></entry>
-
-            <entry></entry>
-          </row>
-
-          <row>
-            <entry>DNAT</entry>
-
-            <entry>net</entry>
-
-            <entry>loc:&lt;<emphasis>server address</emphasis>&gt;</entry>
-
-            <entry>47</entry>
-
-            <entry>-</entry>
-
-            <entry></entry>
-
-            <entry></entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
+    <programlisting>#ACTION      SOURCE         DEST                  PROTO       DEST PORT(S)
+DNAT         net            loc:<emphasis>&lt;server address&gt;</emphasis>  tcp         1723
+DNAT         net            loc:<emphasis>&lt;server address&gt;</emphasis>  47</programlisting>
 
     <para>If you have multiple external IP address and you want to forward a
     single &lt;<emphasis>external address</emphasis>&gt;, add the following to
     your /etc/shorewall/rules file:</para>
 
-    <table>
-      <title>/etc/shorewall/rules</title>
+    <para><filename>/etc/shorewall/rules</filename>:</para>
 
-      <tgroup cols="7">
-        <thead>
-          <row>
-            <entry align="center">ACTION</entry>
-
-            <entry align="center">SOURCE</entry>
-
-            <entry>DEST</entry>
-
-            <entry>PROTO</entry>
-
-            <entry>DEST PORT(S)</entry>
-
-            <entry>SOURCE PORT(S)</entry>
-
-            <entry>ORIGINAL DEST</entry>
-          </row>
-        </thead>
-
-        <tbody>
-          <row>
-            <entry>DNAT</entry>
-
-            <entry>net</entry>
-
-            <entry>loc:&lt;<emphasis>server address</emphasis>&gt;</entry>
-
-            <entry>tcp</entry>
-
-            <entry>1723</entry>
-
-            <entry>-</entry>
-
-            <entry>&lt;<emphasis>external address</emphasis>&gt;</entry>
-          </row>
-
-          <row>
-            <entry>DNAT</entry>
-
-            <entry>net</entry>
-
-            <entry>loc:&lt;<emphasis>server address</emphasis>&gt;</entry>
-
-            <entry>47</entry>
-
-            <entry>-</entry>
-
-            <entry>-</entry>
-
-            <entry>&lt;<emphasis>external address</emphasis>&gt;</entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
+    <programlisting>#ACTION      SOURCE         DEST                  PROTO       DEST PORT(S)     SOURCE          ORIGINAL
+#                                                                              PORT(S)         DEST
+DNAT         net            loc:<emphasis>&lt;server address&gt;</emphasis>  tcp         1723             -               <emphasis>&lt;external address&gt;</emphasis>
+DNAT         net            loc:<emphasis>&lt;server address&gt;</emphasis>  47          -                -               <emphasis>&lt;external address&gt;</emphasis></programlisting>
   </section>
 
   <section id="ClientsBehind">
@@ -1021,179 +613,27 @@ loadmodule ip_nat_proto_gre</programlisting>
       </listitem>
     </orderedlist>
 
-    <para>Here are examples from my setup:</para>
+    <para>Here are examples from one of my old setups:</para>
 
-    <table>
-      <title>/etc/shorewall/zones</title>
+    <para><filename>/etc/shorewall/zones</filename>:</para>
 
-      <tgroup cols="3">
-        <thead>
-          <row>
-            <entry align="center">ZONE</entry>
+    <programlisting>#ZONE          DISPLAY          COMMENTS
+cpq            Compaq           Compaq Intranet</programlisting>
 
-            <entry align="center">DISPLAY</entry>
+    <para><filename>/etc/shorewall/interfaces</filename>:</para>
 
-            <entry align="center">COMMENTS</entry>
-          </row>
-        </thead>
+    <programlisting>#ZONE          INTERFACE        BROADCAST          OPTIONS
+-              ppp+</programlisting>
 
-        <tbody>
-          <row>
-            <entry>cpq</entry>
+    <para>/etc/shorewall/hosts:</para>
 
-            <entry>Compaq</entry>
+    <programlisting>#ZONE          HOST(S)                             OPTIONS
+cpq            ppp+:!192.168.1.0/24</programlisting>
 
-            <entry>Compaq Intranet</entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
+    <para><filename>/etc/shorewall/tunnels</filename>:</para>
 
-    <table>
-      <title>/etc/shorewall/interfaces</title>
-
-      <tgroup cols="4">
-        <thead>
-          <row>
-            <entry align="center">ZONE</entry>
-
-            <entry align="center">INTERFACE</entry>
-
-            <entry align="center">BROADCAST</entry>
-
-            <entry align="center">OPTIONS</entry>
-          </row>
-        </thead>
-
-        <tbody>
-          <row>
-            <entry>-</entry>
-
-            <entry>ppp+</entry>
-
-            <entry></entry>
-
-            <entry></entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
-
-    <table>
-      <title>/etc/shorewall/hosts</title>
-
-      <tgroup cols="3">
-        <thead>
-          <row>
-            <entry align="center">ZONE</entry>
-
-            <entry align="center">HOST(S)</entry>
-
-            <entry align="center">OPTIONS</entry>
-          </row>
-        </thead>
-
-        <tbody>
-          <row>
-            <entry>-</entry>
-
-            <entry>ppp+:!192.168.1.0/24</entry>
-
-            <entry></entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
-
-    <table>
-      <title>/etc/shorewall/rules (For Shorewall versions up to and including
-      1.3.9b)</title>
-
-      <tgroup cols="7">
-        <thead>
-          <row>
-            <entry align="center">ACTION</entry>
-
-            <entry align="center">SOURCE</entry>
-
-            <entry align="center">DEST</entry>
-
-            <entry align="center">PROTO</entry>
-
-            <entry align="center">DEST PORT(S)</entry>
-
-            <entry align="center">SOURCE PORT(S)</entry>
-
-            <entry align="center">ORIGINAL DEST</entry>
-          </row>
-        </thead>
-
-        <tbody>
-          <row>
-            <entry>ACCEPT</entry>
-
-            <entry>fw</entry>
-
-            <entry>net</entry>
-
-            <entry>tcp</entry>
-
-            <entry>1723</entry>
-
-            <entry></entry>
-
-            <entry></entry>
-          </row>
-
-          <row>
-            <entry>ACCEPT</entry>
-
-            <entry>fw</entry>
-
-            <entry>net</entry>
-
-            <entry>47</entry>
-
-            <entry>-</entry>
-
-            <entry></entry>
-
-            <entry></entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
-
-    <table>
-      <title>/etc/shorewall/tunnels (For Shorewall versions 1.3.10 and
-      later)</title>
-
-      <tgroup cols="4">
-        <thead>
-          <row>
-            <entry align="center">TYPE</entry>
-
-            <entry align="center">ZONE</entry>
-
-            <entry align="center">GATEWAY</entry>
-
-            <entry align="center">GATEWAY ZONE</entry>
-          </row>
-        </thead>
-
-        <tbody>
-          <row>
-            <entry>pptpclient</entry>
-
-            <entry>net</entry>
-
-            <entry>0.0.0.0/0</entry>
-
-            <entry></entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
+    <programlisting>#TYPE          ZONE             GATEWAY            GATEWAY ZONE
+pptpclient     net              0.0.0.0/0</programlisting>
 
     <para>I use the combination of interface and hosts file to define the
     <quote>cpq</quote> zone because I also run a PPTP server on my firewall
@@ -1347,7 +787,7 @@ echo "Attempting to restart PPTP"
 restart_pptp &gt; /dev/null 2&gt;&amp;1 &amp;</programlisting>
 
     <para><ulink url="ftp://ftp.shorewall.net/pub/shorewall/misc/Vonau">Here's
-    a scriptand corresponding ip-up.local</ulink> from Jerry Vonau
+    a script and corresponding ip-up.local</ulink> from Jerry Vonau
     <email>jvonau@home.com</email> that controls two PPTP connections.</para>
   </section>
 
@@ -1387,31 +827,8 @@ restart_pptp &gt; /dev/null 2&gt;&amp;1 &amp;</programlisting>
       <listitem>
         <para>Add this entry to /etc/shorewall/zones:</para>
 
-        <table>
-          <title>/etc/shorewall/zones</title>
-
-          <tgroup cols="3">
-            <thead>
-              <row>
-                <entry align="center">ZONE</entry>
-
-                <entry align="center">DISPLAY</entry>
-
-                <entry align="center">COMMENTS</entry>
-              </row>
-            </thead>
-
-            <tbody>
-              <row>
-                <entry>modem</entry>
-
-                <entry>Modem</entry>
-
-                <entry>ADSL Modem</entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </table>
+        <programlisting>#ZONE          DISPLAY          COMMENTS
+modem          Modem            ADSL Modem</programlisting>
 
         <para>That entry defines a new zone called <quote>modem</quote> which
         will contain only your ADSL modem.</para>
@@ -1420,35 +837,8 @@ restart_pptp &gt; /dev/null 2&gt;&amp;1 &amp;</programlisting>
       <listitem>
         <para>Add the following entry to /etc/shorewall/interfaces:</para>
 
-        <table>
-          <title>/etc/shorewall/interfaces</title>
-
-          <tgroup cols="4">
-            <thead>
-              <row>
-                <entry align="center">ZONE</entry>
-
-                <entry align="center">INTERFACE</entry>
-
-                <entry align="center">BROADCAST</entry>
-
-                <entry align="center">OPTIONS</entry>
-              </row>
-            </thead>
-
-            <tbody>
-              <row>
-                <entry>modem</entry>
-
-                <entry>eth0</entry>
-
-                <entry>192.168.1.255</entry>
-
-                <entry>dhcp</entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </table>
+        <programlisting>#ZONE          INTERFACE        BROADCAST          OPTIONS
+modem          eth0             192.168.1.255      dhcp</programlisting>
 
         <para>You will of course modify the <quote>net</quote> entry in
         /etc/shorewall/interfaces to specify <quote>ppp0</quote> as the
@@ -1459,35 +849,8 @@ restart_pptp &gt; /dev/null 2&gt;&amp;1 &amp;</programlisting>
       <listitem>
         <para>Add the following to /etc/shorewall/tunnels:</para>
 
-        <table>
-          <title>/etc/shorewall/tunnels</title>
-
-          <tgroup cols="4">
-            <thead>
-              <row>
-                <entry align="center">TYPE</entry>
-
-                <entry align="center">ZONE</entry>
-
-                <entry align="center">GATEWAY</entry>
-
-                <entry align="center">GATEWAY ZONE</entry>
-              </row>
-            </thead>
-
-            <tbody>
-              <row>
-                <entry>pptpclient</entry>
-
-                <entry>modem</entry>
-
-                <entry>192.168.1.1</entry>
-
-                <entry></entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </table>
+        <programlisting>#TYPE          ZONE             GATEWAY            GATEWAY ZONE
+pptpclient     modem            192.168.1.1</programlisting>
 
         <para>That entry allows a PPTP tunnel to be established between your
         Shorewall system and the PPTP server in the modem.</para>

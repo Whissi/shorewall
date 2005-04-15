@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-01-25</pubdate>
+    <pubdate>2005-04-14</pubdate>
 
     <copyright>
       <year>2002</year>
@@ -79,7 +79,34 @@ AllowSMB  Z2       Z1</programlisting>
 
   <para>To make network browsing (<quote>Network Neighborhood</quote>) work
   properly between Z1 and Z2 requires a Windows Domain Controller and/or a
-  WINS server. I run Samba on my firewall to handle browsing between two zones
-  connected to my firewall. Details are <ulink
-  url="myfiles.htm">here</ulink>.</para>
+  WINS server. I have run Samba on my firewall to handle browsing between two
+  zones connected to my firewall.</para>
+
+  <para>When debugging Samba/SMB problems, I recommend that you do the
+  following:</para>
+
+  <orderedlist>
+    <listitem>
+      <para>Copy <filename>action.Drop</filename> and
+      <filename>action.Reject</filename> from <filename
+      class="directory">/usr/share/shorewall</filename> to <filename
+      class="directory">/etc/shorewall</filename>.</para>
+    </listitem>
+
+    <listitem>
+      <para>Edit the copies and remove the <emphasis
+      role="bold">DropSMB</emphasis> and <emphasis
+      role="bold">RejectSMB</emphasis> lines.</para>
+    </listitem>
+
+    <listitem>
+      <para><command>shorewall restart</command></para>
+    </listitem>
+  </orderedlist>
+
+  <para>The above steps will cause SMB traffic that is dropped or rejected by
+  policy to be logged rather than handled silently.</para>
+
+  <para>You can just remove the copies and <command>shorewall
+  restart</command> when you are finished debugging.</para>
 </article>

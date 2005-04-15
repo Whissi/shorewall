@@ -354,11 +354,18 @@ packet_log() # $1 = number of messages
 
     [ -n "$realtail" ] && options="-n$1"
 
-    grep "${LOGFORMAT}" $LOGFILE | \
-	 sed s/" kernel:"// | \
-	 sed s/" $host $LOGFORMAT"/" "/ | \
-	 sed 's/MAC=.* SRC=/SRC=/' | \
-	 tail $options
+    if [ -n "$VERBOSE" ]; then
+	grep "${LOGFORMAT}" $LOGFILE | \
+	    sed s/" kernel:"// | \
+	    sed s/" $host $LOGFORMAT"/" "/ | \
+	    tail $options
+    else
+	grep "${LOGFORMAT}" $LOGFILE | \
+	    sed s/" kernel:"// | \
+	    sed s/" $host $LOGFORMAT"/" "/ | \
+	    sed 's/MAC=.* SRC=/SRC=/' | \
+	    tail $options
+    fi
 }
 
 #
@@ -597,7 +604,7 @@ help()
 #
 usage() # $1 = exit status
 {
-    echo "Usage: $(basename $0) [debug|trace] [nolock] [-c <directory>] [ -x ] [ -q ] [ -f ] <command>"
+    echo "Usage: $(basename $0) [debug|trace] [nolock] [ -x ] [ -q ] [ -f ] [ -v ] <command>"
     echo "where <command> is one of:"
     echo "   add <interface>[:{<bridge-port>[:<host>]|<host>}[,...]] ... <zone>"
     echo "   allow <address> ..."
@@ -625,7 +632,6 @@ usage() # $1 = exit status
     echo "   try <directory> [ <timeout> ]"
     echo "   version"
     echo 
-    echo "The -c and -f options may not be specified with a <directory> in the start, restart and check commands"
     exit $1
 }
 
@@ -666,6 +672,7 @@ SHOREWALL_DIR=
 QUIET=
 IPT_OPTIONS="-nv"
 FAST=
+VERBOSE=
 
 done=0
 
@@ -706,6 +713,10 @@ while [ $done -eq 0 ]; do
 		    f*)
 			FAST=Yes
 			option=${option#f}
+			;;
+		    v*)
+			VERBOSE=Yes
+			option=${option#v}
 			;;
 		    *)
 			usage 1

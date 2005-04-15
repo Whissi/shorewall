@@ -58,6 +58,7 @@
 #	   shorewall show {mangle|tos}		   Display the rules in the mangle table
 #	   shorewall show tc			   Display traffic control info
 #	   shorewall show classifiers		   Display classifiers
+#          shorewall show capabilities             Display iptables/kernel capabilities
 #	   shorewall version			   Display the installed version id
 #	   shorewall check			   Verify the more heavily-used
 #						   configuration files.
@@ -537,7 +538,8 @@ logwatch() # $1 = timeout -- if negative, prompt each time that
     host=$(echo $HOSTNAME | sed 's/\..*$//')
     oldrejects=$($IPTABLES -L -v -n | grep 'LOG')
 
-    if [ $1 -lt 0 ]; then
+    if [ $1 -lt 0 ]; then> -Tom
+
 	timeout=$((- $1))
 	pause="Yes"
     else
@@ -616,7 +618,7 @@ usage() # $1 = exit status
     echo "   restart [ <directory> ]"
     echo "   restore [ <file name> ]"
     echo "   save [ <file name> ]"
-    echo "   show [<chain> [ <chain> ... ]|classifiers|connections|log|nat|tc|tos|zones]"
+    echo "   show [<chain> [ <chain> ... ]|capabilities|classifiers|connections|log|nat|tc|tos|zones]"
     echo "   start [ <directory> ]"
     echo "   stop"
     echo "   status"
@@ -937,6 +939,9 @@ case "$1" in
 		echo "   ERROR: $STATEDIR/zones does not exist" >&2
 		exit 1
 	    fi
+	    ;;
+	capabilities)
+	    exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock capabilities
 	    ;;
 	*)
 	    shift

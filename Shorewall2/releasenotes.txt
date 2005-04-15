@@ -127,6 +127,30 @@ New Features in version 2.2.4
    the keyword SAME replacing DNAT. As in the masq file, changing the
    port number is not supported.
 
+5) A "shorewall show capabilities" command has been added to report the
+   capabilities of your kernel and iptables.
+
+   Example:
+
+      gateway:~# shorewall show capabilities
+      Loading /usr/share/shorewall/functions...
+      Processing /etc/shorewall/params ...
+      Processing /etc/shorewall/shorewall.conf...
+      Loading Modules...
+      Shorewall has detected the following iptables/netfilter capabilities:
+	     NAT: Available
+	     Packet Mangling: Available
+	     Multi-port Match: Available
+	     Extended Multi-port Match: Available
+	     Connection Tracking Match: Available
+	     Packet Type Match: Not available
+	     Policy Match: Available
+	     Physdev Match: Available
+	     IP range Match: Available
+	     Recent Match: Available
+	     Owner Match: Available
+      gateway:~#
+
 -----------------------------------------------------------------------
 Problems corrected in version 2.2.3
 

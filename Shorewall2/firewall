@@ -2826,6 +2826,12 @@ check_config() {
 	[ -n "$PHYSDEV_MATCH" ] || startup_error "BRIDGING=Yes requires Physdev Match support in your Kernel and iptables"
     fi
 
+    [ "$MACLIST_TTL" = "0" ] && MACLIST_TTL=
+
+    if [ -n "$MACLIST_TTL" -a -z "$RECENT_MATCH" ]; then
+	startup_error "MACLIST_TTL requires the Recent Match capability which is not present in your Kernel and/or iptables"
+    fi
+
     echo "Determining Zones..."
 
     determine_zones
@@ -5743,6 +5749,11 @@ initialize_netfilter () {
 	[ -n "$PHYSDEV_MATCH" ] || startup_error "BRIDGING=Yes requires Physdev Match support in your Kernel and iptables"
     fi
 
+    [ "$MACLIST_TTL" = "0" ] && MACLIST_TTL=
+
+    if [ -n "$MACLIST_TTL" -a -z "$RECENT_MATCH" ]; then
+	startup_error "MACLIST_TTL requires the Recent Match capability which is not present in your Kernel and/or iptables"
+    fi
 
     [ -n "$RFC1918_STRICT" -a -z "$CONNTRACK_MATCH" ] && \
 	startup_error "RFC1918_STRICT=Yes requires Connection Tracking match"
@@ -7562,12 +7573,6 @@ do_initialize() {
     LOGTAGONLY=$(added_param_value_no LOGTAGONLY $LOGTAGONLY)
     DROPINVALID=$(added_param_value_yes DROPINVALID $DROPINVALID)
     RFC1918_STRICT=$(added_param_value_no RFC1918_STRICT $RFC1918_STRICT)
-
-    [ "$MACLIST_TTL" = "0" ] && MACLIST_TTL=
-
-    if [ -n "$MACLIST_TTL" -a -z "$RECENT_MATCH" ]; then
-	startup_error "MACLIST_TTL requires the Recent Match capability which is not present in your Kernel and/or iptables"
-    fi
     #
     # Strip the files that we use often
     #
@@ -7751,6 +7756,10 @@ case "$COMMAND" in
 	do_initialize
 	EMPTY=
 	$@
+	;;
+    capabilities)
+	do_initialize
+	report_capabilities
 	;;
     *)
 	usage

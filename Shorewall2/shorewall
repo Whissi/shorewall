@@ -546,7 +546,6 @@ logwatch() # $1 = timeout -- if negative, prompt each time that
     oldrejects=$($IPTABLES -L -v -n | grep 'LOG')
 
     if [ $1 -lt 0 ]; then
-
 	timeout=$((- $1))
 	pause="Yes"
     else

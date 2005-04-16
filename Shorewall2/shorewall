@@ -545,7 +545,7 @@ logwatch() # $1 = timeout -- if negative, prompt each time that
     host=$(echo $HOSTNAME | sed 's/\..*$//')
     oldrejects=$($IPTABLES -L -v -n | grep 'LOG')
 
-    if [ $1 -lt 0 ]; then> -Tom
+    if [ $1 -lt 0 ]; then
 
 	timeout=$((- $1))
 	pause="Yes"

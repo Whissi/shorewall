@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-04-13</pubdate>
+    <pubdate>2005-04-16</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -1668,11 +1668,17 @@ ACCEPT<emphasis role="bold">:info</emphasis>   -              -               tc
         <listitem>
           <para>Describes the source hosts to which the rule applies.. The
           contents of this field must begin with the name of a zone defined in
-          /etc/shorewall/zones, $FW or <quote>all</quote>. If the ACTION is
-          DNAT or REDIRECT, sub-zones may be excluded from the rule by
-          following the initial zone name with <quote>!</quote> and a
+          /etc/shorewall/zones, $FW, <quote>all</quote> or "none". If the
+          ACTION is DNAT or REDIRECT, sub-zones may be excluded from the rule
+          by following the initial zone name with <quote>!</quote> and a
           comma-separated list of those sub-zones to be excluded. There is an
           <link linkend="Exclude">example</link> above.</para>
+
+          <para>If the source is "none" then the rule is ignored. This is most
+          commonly used with <ulink
+          url="http://shorewall.net/configuration_file_basics.htm#Variables">Shell
+          Variables</ulink> where a shell variable is set to "none" if a rule
+          is to be omitted.</para>
 
           <para>If the source is not <quote>all</quote> then the source may be
           further restricted by adding a colon (<quote>:</quote>) followed by

@@ -339,6 +339,17 @@ AllowPing <emphasis>&lt;source zone&gt;</emphasis>&nbsp;&nbsp; <emphasis>&lt;des
         between the zone containing the system you are pinging from and the
         zone containing 10.1.1.2, the ping requests will be dropped.</para>
       </listitem>
+
+      <listitem>
+        <para>Ping requests are subject to logging under your policies. So
+        ping floods can cause an equally big flood of log messages. To
+        eliminate these, as the last rule in your /etc/shorewall/rules file
+        add:</para>
+
+        <programlisting>#ACTION  SOURCE          DEST                  PROTO   DEST
+#                                                      PORT(S)
+DropPing net             all</programlisting>
+      </listitem>
     </itemizedlist>
   </section>
 

@@ -4613,6 +4613,8 @@ process_rules()
 	expandv xtarget xclients xservers
 
 	if [ "x$xclients" = xnone -o "x$servers" = xnone ]; then
+	    rule="$(echo $xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec)"
+	    progress_message "   Rule \"$rule\" ignored."
 	    continue
 	fi
 

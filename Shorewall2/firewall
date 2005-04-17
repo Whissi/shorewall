@@ -4588,7 +4588,7 @@ process_rules()
     }
 
     do_it() {
-	expandv xclients xservers xprotocol xports xcports xaddress xratelimit xuserspec
+	expandv xprotocol xports xcports xaddress xratelimit xuserspec
 
 	if [ "x$xclients" = xall ]; then
 	    xclients="$zones $FW"
@@ -4596,13 +4596,13 @@ process_rules()
 		xservers="$zones $FW"
 	    fi
 	    process_wildcard_rule
-	    continue
+	    return
 	fi
 
 	if [ "x$xservers" = xall ]; then
 	    xservers="$zones $FW"
 	    process_wildcard_rule
-	    continue
+	    return
 	fi
 	
 	rule="$(echo $xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec)"
@@ -4610,7 +4610,11 @@ process_rules()
     }
 
     while read xtarget xclients xservers xprotocol xports xcports xaddress xratelimit xuserspec; do
-	expandv xtarget
+	expandv xtarget xclients xservers
+
+	if [ "x$xclients" = xnone -o "x$servers" = xnone ]; then
+	    continue
+	fi
 
 	case "${xtarget%%:*}" in
 	    ACCEPT|ACCEPT+|NONAT|DROP|REJECT|DNAT|DNAT-|REDIRECT|REDIRECT-|LOG|CONTINUE|QUEUE|SAME|SAME-)

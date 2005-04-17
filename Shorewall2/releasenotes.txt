@@ -157,6 +157,19 @@ New Features in version 2.2.4
    MAC address in the log message (if any) to be displayed. As
    previously, when "-v" is omitted, the MAC address is suppressed.
 
+7) In /etc/shorewall/rules, a value of 'none' in either the SOURCE or
+   DEST columns now causes the rule to be ignored. This is most useful
+   when used with shell variables:
+
+   Example:
+
+	/etc/shorewall/rules:
+
+		AllowFTP    $FTP_CLIENTS	fw
+
+        When FTP_CLIENTS is set to 'none', the above rule is ignored.
+	Otherwise, the rule is evaluated and generates iptables rules.
+
 -----------------------------------------------------------------------
 Problems corrected in version 2.2.3
 

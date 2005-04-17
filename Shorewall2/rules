@@ -112,10 +112,13 @@
 #
 #	SOURCE		Source hosts to which the rule applies. May be a zone
 #                       defined in /etc/shorewall/zones, $FW to indicate the
-#			firewall itself, or "all" If the ACTION is DNAT or
+#			firewall itself, "all" or "none" If the ACTION is DNAT or
 #			REDIRECT, sub-zones of the specified zone may be
 #			excluded from the rule by following the zone name with
 #			"!' and a comma-separated list of sub-zone names.
+#
+#			When "none" is used either in the SOURCE or DEST column,
+#			the rule is ignored.
 #
 #			When "all" is used either in the SOURCE or DEST column
 #			intra-zone traffic is not affected. You must add 
@@ -157,7 +160,10 @@
 #
 #	DEST		Location of Server. May be a zone defined in
 #			/etc/shorewall/zones, $FW to indicate the firewall
-#			itself or "all"
+#			itself, "all" or "none".
+#
+#			When "none" is used either in the SOURCE or DEST column,
+#			the rule is ignored.
 #
 #			When "all" is used either in the SOURCE or DEST column
 #			intra-zone traffic is not affected. You must add 

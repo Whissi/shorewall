@@ -975,13 +975,21 @@ validate_hosts_file() {
        r="$z $hosts $options"
        validate_zone1 $z || startup_error "Invalid zone ($z) in record \"$r\""
 
-       interface=${hosts%%:*}
-       iface=$(chain_base $interface)
+       case $hosts in
+	   *:*)
 
-       list_search  $interface $ALL_INTERFACES || \
-	   startup_error "Unknown interface ($interface) in record \"$r\""
+	       interface=${hosts%%:*}
+	       iface=$(chain_base $interface)
 
-       hosts=${hosts#*:}
+	       list_search  $interface $ALL_INTERFACES || \
+		   startup_error "Unknown interface ($interface) in record \"$r\""
+
+	       hosts=${hosts#*:}
+	       ;;
+	   *)
+	       fatal_error "Invalid HOST(S) column contents: $hosts"
+	       ;;
+       esac
 
        eval ports=\$${iface}_ports
        eval zports=\$${z}_ports

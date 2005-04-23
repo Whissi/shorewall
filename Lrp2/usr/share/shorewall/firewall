@@ -937,7 +937,7 @@ validate_interfaces_file() {
 
 	for option in $options; do
 	    case $option in
-		dhcp|norfc1918|nobogons|tcpflags|newnotsyn|arp_filter|routefilter|logmartians|sourceroute|blacklist|proxyarp|maclist|nosmurfs|-)
+		dhcp|norfc1918|nobogons|tcpflags|newnotsyn|arp_filter|routefilter|logmartians|sourceroute|blacklist|proxyarp|maclist|nosmurfs|upnp|-)
 		    ;;
 		detectnets)
 		    [ -n "$wildcard" ] && \
@@ -975,13 +975,21 @@ validate_hosts_file() {
        r="$z $hosts $options"
        validate_zone1 $z || startup_error "Invalid zone ($z) in record \"$r\""
 
-       interface=${hosts%%:*}
-       iface=$(chain_base $interface)
+       case $hosts in
+	   *:*)
 
-       list_search  $interface $ALL_INTERFACES || \
-	   startup_error "Unknown interface ($interface) in record \"$r\""
+	       interface=${hosts%%:*}
+	       iface=$(chain_base $interface)
 
-       hosts=${hosts#*:}
+	       list_search  $interface $ALL_INTERFACES || \
+		   startup_error "Unknown interface ($interface) in record \"$r\""
+
+	       hosts=${hosts#*:}
+	       ;;
+	   *)
+	       fatal_error "Invalid HOST(S) column contents: $hosts"
+	       ;;
+       esac
 
        eval ports=\$${iface}_ports
        eval zports=\$${z}_ports
@@ -2826,6 +2834,12 @@ check_config() {
 	[ -n "$PHYSDEV_MATCH" ] || startup_error "BRIDGING=Yes requires Physdev Match support in your Kernel and iptables"
     fi
 
+    [ "$MACLIST_TTL" = "0" ] && MACLIST_TTL=
+
+    if [ -n "$MACLIST_TTL" -a -z "$RECENT_MATCH" ]; then
+	startup_error "MACLIST_TTL requires the Recent Match capability which is not present in your Kernel and/or iptables"
+    fi
+
     echo "Determining Zones..."
 
     determine_zones
@@ -3473,7 +3487,8 @@ merge_levels() # $1=level at which superior action is called, $2=level at which 
 #
 process_actions1() {
 	
-    ACTIONS="dropBcast allowBcast dropNonSyn dropNotSyn rejNotSyn dropInvalid allowInvalid"
+    ACTIONS="dropBcast allowBcast dropNonSyn dropNotSyn rejNotSyn dropInvalid allowInvalid allowinUPnP allowoutUPnP forwardUPnP"
+    
     USEDACTIONS=
 
     strip_file actions
@@ -3543,6 +3558,15 @@ process_actions1() {
 }
 
 process_actions2() {
+
+    local interfaces="$(find_interfaces_by_option upnp)"
+
+    if [ -n "$interfaces" ]; then
+	if ! list_search forwardUPnP $USEDACTIONS; then
+	    error_message "Warning:Missing forwardUPnP rule (required by 'upnp' interface option on $interfaces)"
+	    USEDACTIONS="$USEDACTIONS forwardUPnP"
+	fi
+    fi
 
     progress_message "   Generating Transitive Closure of Used-action List..."
 
@@ -3695,6 +3719,26 @@ process_actions3() {
 		    run_iptables -A $xchain -m state --state INVALID -j ACCEPT
 		fi
 		;;
+	    forwardUPnP)
+		;;
+	    allowinUPnP)
+		if [ "$COMMAND" != check ]; then
+		    if [ -n "$xlevel" ]; then
+			log_rule_limit ${xlevel%\!} $xchain allowinUPnP ACCEPT "" "$xtag" -A -p udp --dport 1900
+			log_rule_limit ${xlevel%\!} $xchain allowinUPnP ACCEPT "" "$xtag" -A -p tcp --dport 49152
+		    fi
+
+		    run_iptables -A $xchain -p udp --dport 1900  -j ACCEPT
+		    run_iptables -A $xchain -p tcp --dport 49152 -j ACCEPT
+		fi
+		;;
+	    allowoutUPnP)
+		if [ "$COMMAND" != check ]; then
+		    [ -n "$xlevel" ] && \
+			log_rule_limit ${xlevel%\!} $xchain allowoutUPnP ACCEPT "" "$xtag" -A -m owner --owner-cmd upnpd
+		    run_iptables -A $xchain -m owner --cmd-owner upnpd -j ACCEPT
+		fi
+		;;
 	    *)
 		#
 		# Not a builtin
@@ -3802,7 +3846,14 @@ add_nat_rule() {
 
     # Select target
 
-    if [ -n "$serv" ]; then
+    if [ "$logtarget" = SAME ]; then
+	[ -n "$servport" ] && fatal_error "Port mapping not allowed in SAME rules"
+	serv1=
+	for srv in $(separate_list $serv); do
+	    serv1="$serv1 --to ${srv}"
+	done
+	target1="SAME $serv1"
+    elif [ -n "$serv" ]; then
 	servport="${servport:+:$servport}"
 	serv1=
 	for srv in $(separate_list $serv); do
@@ -4065,9 +4116,9 @@ add_a_rule()
 	    servport=${servport:=$port}
 	    natrule=Yes
 	    ;;
-	DNAT)
+	DNAT|SAME)
 	    [ -n "$serv" ] || \
-		fatal_error "DNAT rules require a server address; rule: \"$rule\""
+		fatal_error "$logtarget rules require a server address; rule: \"$rule\""
 	    natrule=Yes
 	    ;;
 	LOG)
@@ -4084,7 +4135,7 @@ add_a_rule()
 	    if [ -n "$natrule" ]; then
 		add_nat_rule
 	    elif [ -n "$addr" -a "$addr" != "$serv" ] || [ -n "$servport" -a "$servport" != "$port" ]; then
-		fatal_error "Only DNAT and REDIRECT rules may specify destination mapping; rule \"$rule\""
+		fatal_error "Only DNAT, SAME and REDIRECT rules may specify destination mapping; rule \"$rule\""
 	    fi
 
 	    if [ -z "$dnat_only" ]; then
@@ -4139,7 +4190,7 @@ add_a_rule()
 
 	[ -n "$addr" ] && fatal_error \
 	    "An ORIGINAL DESTINATION ($addr) is only allowed in" \
-	    " a DNAT or REDIRECT: \"$rule\""
+	    " a DNAT, SAME or REDIRECT: \"$rule\""
 
 	if [ $COMMAND != check ]; then
 	    if [ -n "$loglevel" ]; then
@@ -4289,7 +4340,7 @@ process_rule() # $1 = target
 	CONTINUE)
 	    target=RETURN
 	    ;;
-	DNAT*)
+	DNAT*|SAME*)
 	    target=ACCEPT
 	    address=${address:=detect}
 	    ;;
@@ -4322,8 +4373,13 @@ process_rule() # $1 = target
 	excludezones="${clientzone#*!}"
 	clientzone="${clientzone%!*}"
 
-	[ "$logtarget" = DNAT ] || [ "$logtarget" = REDIRECT ] ||\
-	    fatal_error "Exclude list only allowed with DNAT or REDIRECT"
+	case $logtarget in
+	    DNAT|REDIRECT|SAME)
+		;;
+	    *)
+		fatal_error "Exclude list only allowed with DNAT, SAME or REDIRECT"
+		;;
+	esac
     fi
 
     validate_zone $clientzone || fatal_error "Undefined Client Zone in rule \"$rule\""
@@ -4386,7 +4442,7 @@ process_rule() # $1 = target
     protocol=${protocol:=all}
 
     case $logtarget in
-	DNAT*)
+	DNAT*|SAME)
 	    if [ -n "$XMULTIPORT" ] && \
 	       ! list_search $protocol "icmp" "ICMP" "1" && \
 	       [ $(( $(list_count $ports)  + $(list_count1 $(split $ports ) ) ))  -le 16 -a \
@@ -4540,7 +4596,7 @@ process_rules()
     }
 
     do_it() {
-	expandv xclients xservers xprotocol xports xcports xaddress xratelimit xuserspec
+	expandv xprotocol xports xcports xaddress xratelimit xuserspec
 
 	if [ "x$xclients" = xall ]; then
 	    xclients="$zones $FW"
@@ -4548,13 +4604,13 @@ process_rules()
 		xservers="$zones $FW"
 	    fi
 	    process_wildcard_rule
-	    continue
+	    return
 	fi
 
 	if [ "x$xservers" = xall ]; then
 	    xservers="$zones $FW"
 	    process_wildcard_rule
-	    continue
+	    return
 	fi
 	
 	rule="$(echo $xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec)"
@@ -4562,10 +4618,16 @@ process_rules()
     }
 
     while read xtarget xclients xservers xprotocol xports xcports xaddress xratelimit xuserspec; do
-	expandv xtarget
+	expandv xtarget xclients xservers
+
+	if [ "x$xclients" = xnone -o "x$servers" = xnone ]; then
+	    rule="$(echo $xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec)"
+	    progress_message "   Rule \"$rule\" ignored."
+	    continue
+	fi
 
 	case "${xtarget%%:*}" in
-	    ACCEPT|ACCEPT+|NONAT|DROP|REJECT|DNAT|DNAT-|REDIRECT|REDIRECT-|LOG|CONTINUE|QUEUE)
+	    ACCEPT|ACCEPT+|NONAT|DROP|REJECT|DNAT|DNAT-|REDIRECT|REDIRECT-|LOG|CONTINUE|QUEUE|SAME|SAME-)
 		do_it
 		;;
 	    *)
@@ -4971,7 +5033,7 @@ rules_chain() # $1 = source zone, $2 = destination zone
 
     [ -n "$chain" ] && { echo $chain; return; }
 
-    fatal_error "No appropriate chain for zone $1 to zone $2"
+    fatal_error "No policy defined for zone $1 to zone $2"
 }
 
 #
@@ -5115,6 +5177,8 @@ setup_masq()
 	esac
 
 	[ "x$addresses" = x- ] && addresses=
+
+	
 
 	if [ -n "$addresses" -a -n "$add_snat_aliases" ]; then
 	    for address in $(separate_list $addresses); do
@@ -5262,17 +5326,35 @@ setup_masq()
 	target=MASQUERADE
 
 	if [ -n "$addresses" ]; then
-	    for address in $(separate_list $addresses); do
-		case $address in
-		    *.*.*.*)
-			target=SNAT
-			addrlist="$addrlist --to-source $address"
-			;;
-		    *)
-			addrlist="$addrlist --to-ports ${address#:}"
-			;;
-		esac
-	    done
+	    case "$addresses" in
+		SAME:nodst:*)
+		    target="SAME --nodst"
+		    addresses=${addresses#SAME:nodst:}
+		    for address in $(separate_list $addresses); do
+			addrlist="$addrlist --to $address";
+		    done
+		    ;;
+		SAME:*)
+		    target="SAME"
+		    addresses=${addresses#SAME:}
+		    for address in $(separate_list $addresses); do
+			addrlist="$addrlist --to $address";
+		    done
+		    ;;
+		*)
+		    for address in $(separate_list $addresses); do
+			case $address in
+			    *.*.*.*)
+				target=SNAT
+				addrlist="$addrlist --to-source $address"
+				;;
+			    *)
+				addrlist="$addrlist --to-ports ${address#:}"
+				;;
+			esac
+		    done
+		    ;;
+	    esac
 	fi
 
 	if [ -n "$networks" ]; then
@@ -5621,6 +5703,7 @@ determine_capabilities() {
     PHYSDEV_MATCH=
     IPRANGE_MATCH=
     RECENT_MATCH=
+    OWNER_MATCH=
 
     qt $IPTABLES -N fooX1234
     qt $IPTABLES -A fooX1234 -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT             && CONNTRACK_MATCH=Yes
@@ -5630,6 +5713,7 @@ determine_capabilities() {
     qt $IPTABLES -A fooX1234 -m physdev --physdev-in eth0 -j ACCEPT                     && PHYSDEV_MATCH=Yes
     qt $IPTABLES -A fooX1234 -m iprange --src-range 192.168.1.5-192.168.1.124 -j ACCEPT && IPRANGE_MATCH=Yes
     qt $IPTABLES -A fooX1234 -m recent --update -j ACCEPT                               && RECENT_MATCH=Yes
+    qt $IPTABLES -A fooX1234 -m owner --cmd-owner foo -j ACCEPT                         && OWNER_MATCH=Yes
 
     if [ -n "$PKTTYPE" ]; then
 	qt $IPTABLES -A fooX1234 -m pkttype --pkt-type broadcast -j ACCEPT || PKTTYPE=
@@ -5660,6 +5744,7 @@ report_capabilities() {
     report_capability "Physdev Match" $PHYSDEV_MATCH
     report_capability "IP range Match" $IPRANGE_MATCH
     report_capability "Recent Match" $RECENT_MATCH
+    report_capability "Owner Match" $OWNER_MATCH
 }
 
 #
@@ -5678,6 +5763,11 @@ initialize_netfilter () {
 	[ -n "$PHYSDEV_MATCH" ] || startup_error "BRIDGING=Yes requires Physdev Match support in your Kernel and iptables"
     fi
 
+    [ "$MACLIST_TTL" = "0" ] && MACLIST_TTL=
+
+    if [ -n "$MACLIST_TTL" -a -z "$RECENT_MATCH" ]; then
+	startup_error "MACLIST_TTL requires the Recent Match capability which is not present in your Kernel and/or iptables"
+    fi
 
     [ -n "$RFC1918_STRICT" -a -z "$CONNTRACK_MATCH" ] && \
 	startup_error "RFC1918_STRICT=Yes requires Connection Tracking match"
@@ -6290,6 +6380,20 @@ add_common_rules() {
 	    run_iptables -A OUTPUT -o $interface        -j $(dynamic_out $interface)
 	done
     fi
+    #
+    # UPnP
+    #
+    interfaces=$(find_interfaces_by_option upnp)
+
+    if [ -n "$interfaces" ]; then
+	echo "Setting up UPnP..."
+
+	createnatchain UPnP
+	
+	for interface in $interfaces; do
+	    run_iptables -t nat -A PREROUTING -i $interface -j UPnP
+	done
+    fi
 
     setup_forwarding
 }
@@ -6767,6 +6871,7 @@ define_firewall() # $1 = Command (Start or Restart)
     mv -f /var/lib/shorewall/restore-base-$$ /var/lib/shorewall/restore-base
     mv -f $RESTOREBASE /var/lib/shorewall/restore-tail    
 
+    run_user_exit started
 }
 
 #
@@ -7482,12 +7587,6 @@ do_initialize() {
     LOGTAGONLY=$(added_param_value_no LOGTAGONLY $LOGTAGONLY)
     DROPINVALID=$(added_param_value_yes DROPINVALID $DROPINVALID)
     RFC1918_STRICT=$(added_param_value_no RFC1918_STRICT $RFC1918_STRICT)
-
-    [ "$MACLIST_TTL" = "0" ] && MACLIST_TTL=
-
-    if [ -n "$MACLIST_TTL" -a -z "$RECENT_MATCH" ]; then
-	startup_error "MACLIST_TTL requires the Recent Match capability which is not present in your Kernel and/or iptables"
-    fi
     #
     # Strip the files that we use often
     #
@@ -7671,6 +7770,10 @@ case "$COMMAND" in
 	do_initialize
 	EMPTY=
 	$@
+	;;
+    capabilities)
+	do_initialize
+	report_capabilities
 	;;
     *)
 	usage

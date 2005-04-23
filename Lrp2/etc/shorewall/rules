@@ -42,6 +42,16 @@
 #					    Like DNAT but only generates the
 #					    DNAT iptables rule and not
 #					    the companion ACCEPT rule.
+#				SAME	 -- Similar to DNAT except that the
+#					    port may not be remapped and when
+#					    multiple server addresses are 
+#					    listed, all requests from a given
+#					    remote system go to the same
+#					    server.
+#				SAME-    -- Advanced users only.
+#					    Like SAME but only generates the
+#					    NAT iptables rule and not
+#					    the companion ACCEPT rule.
 #				REDIRECT -- Redirect the request to a local
 #					    port on the firewall.
 #				REDIRECT-
@@ -102,10 +112,13 @@
 #
 #	SOURCE		Source hosts to which the rule applies. May be a zone
 #                       defined in /etc/shorewall/zones, $FW to indicate the
-#			firewall itself, or "all" If the ACTION is DNAT or
+#			firewall itself, "all" or "none" If the ACTION is DNAT or
 #			REDIRECT, sub-zones of the specified zone may be
 #			excluded from the rule by following the zone name with
 #			"!' and a comma-separated list of sub-zone names.
+#
+#			When "none" is used either in the SOURCE or DEST column,
+#			the rule is ignored.
 #
 #			When "all" is used either in the SOURCE or DEST column
 #			intra-zone traffic is not affected. You must add 
@@ -147,7 +160,10 @@
 #
 #	DEST		Location of Server. May be a zone defined in
 #			/etc/shorewall/zones, $FW to indicate the firewall
-#			itself or "all"
+#			itself, "all" or "none".
+#
+#			When "none" is used either in the SOURCE or DEST column,
+#			the rule is ignored.
 #
 #			When "all" is used either in the SOURCE or DEST column
 #			intra-zone traffic is not affected. You must add 
@@ -352,6 +368,4 @@ ACCEPT          fw              net             icmp
 # allow loc to fw tcp/80 for weblet to work
 ACCEPT          loc       fw            udp     53
 ACCEPT          loc       fw            tcp     80
-# uncomment to use dnsmasq's dhcpd in your LAN
-#ACCEPT          loc       fw            udp     67,68
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

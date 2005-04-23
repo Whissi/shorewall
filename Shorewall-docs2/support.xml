@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-04-10</pubdate>
+    <pubdate>2005-04-20</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -50,6 +50,12 @@
       <listitem>
         <para>The two currently-supported Shorewall <ulink
         url="ReleaseModel.html">major releases</ulink> are 2.0 and 2.2.</para>
+
+        <note>
+          <para>Shorewall versions earlier than 2.0.0 are no longer supported;
+          we will only answer your question if it deals with upgrading from
+          these old releases to a current one.</para>
+        </note>
       </listitem>
 
       <listitem>
@@ -85,12 +91,6 @@
   <section id="Guidelines">
     <title>Problem Reporting Guidelines</title>
 
-    <note>
-      <para>Shorewall versions earlier than 2.0.0 are no longer supported; we
-      will only answer your question if it deals with upgrading from these old
-      releases to a current one.</para>
-    </note>
-
     <itemizedlist>
       <listitem>
         <para>When reporting a problem, <emphasis
@@ -104,11 +104,63 @@
             please:</para>
 
             <blockquote>
-              <programlisting><command>shorewall trace start 2&gt; /tmp/trace</command></programlisting>
+              <programlisting><command>/sbin/shorewall trace start 2&gt; /tmp/trace</command></programlisting>
 
               <para>Forward the <filename>/tmp/trace</filename> file as an
               attachment (you may compress it if you like).</para>
             </blockquote>
+          </listitem>
+
+          <listitem>
+            <para>Otherwise, if you are unsure if Shorewall is starting
+            successfully on not then first note that if Shorewall starts
+            successfully, the last message it produces is "Shorewall
+            Started":</para>
+
+            <blockquote>
+              <programlisting>…
+Activating Rules...
+<emphasis role="bold">Shorewall Started</emphasis>
+gateway:~#</programlisting>
+            </blockquote>
+
+            <para>If you are seeing this message then Shorewall is starting
+            successfully.</para>
+
+            <para>If you are still unsure if Shorewall is starting or not,
+            enter the following command:</para>
+
+            <blockquote>
+              <programlisting><command>/sbin/shorewall show shorewall</command></programlisting>
+            </blockquote>
+
+            <para>If Shorewall has started successfully, you will see output
+            similar to this:</para>
+
+            <blockquote>
+              <programlisting>Shorewall-2.2.3 Chain shorewall at gateway - Wed Apr 20 14:41:53 PDT 2005
+
+Counters reset Sat Apr 16 17:35:06 PDT 2005
+
+<emphasis role="bold">Chain shorewall (0 references)
+ pkts bytes target     prot opt in     out     source               destination</emphasis></programlisting>
+            </blockquote>
+
+            <para>If Shorewall has not started properly, you will see output
+            similar to this:</para>
+
+            <blockquote>
+              <programlisting>Shorewall-2.2.3 Chain shorewall at gateway - Wed Apr 20 14:43:13 PDT 2005
+
+Counters reset Sat Apr 16 17:35:06 PDT 2005
+
+<emphasis role="bold">iptables: No chain/target/match by that name</emphasis>
+</programlisting>
+            </blockquote>
+
+            <para>If you get this result after you have tried to start
+            Shorewall, please produce a trace and forward it to the list as
+            instructed above.</para>
           </listitem>
 
           <listitem>
@@ -148,7 +200,7 @@
                 <listitem>
                   <para>the exact version of Shorewall you are running.</para>
 
-                  <programlisting><emphasis role="bold">shorewall version</emphasis></programlisting>
+                  <programlisting><emphasis role="bold">/sbin/shorewall version</emphasis></programlisting>
                 </listitem>
 
                 <listitem>

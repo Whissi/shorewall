@@ -145,6 +145,9 @@ if [ -n "$PREFIX" ]; then
 	install -d $OWNERSHIP -m 755 ${PREFIX}${DEST}
 elif [ -d /etc/apt -a -e /usr/bin/dpkg ]; then
     DEBIAN=yes
+elif [ -f /etc/slackware-version ] ; then
+    DEST="/etc/rc.d"
+    INIT="rc.firewall"
 fi
 
 #

@@ -17,7 +17,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-04-08</pubdate>
+    <pubdate>2005-04-24</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -277,6 +277,23 @@ DNAT       loc      dmz:192.168.2.4     tcp      80              -           206
         <programlisting>#ACTION    SOURCE        DEST               PROTO    DEST PORT   SOURCE    ORIGINAL
 #                                                                PORT      DEST.
 DNAT       loc           dmz:192.168.2.4    tcp      80          -         $ETH0_IP</programlisting>
+      </section>
+
+      <section id="faq1e">
+        <title>(FAQ 1e) In order to discourage brute force attacks I would
+        like to redirect all connections on a non-standard port (4104) to port
+        22 on the router/firewall. I notice that setting up a REDIRECT rule
+        causes the firewall to open both ports 4104 and 22 to connections from
+        the net. Is it possible to only redirect 4104 to the localhost port 22
+        and have connection attempts to port 22 from the net dropped?</title>
+
+        <para><emphasis role="bold">Answer </emphasis>courtesy of Ryan: Assume
+        that the IP address of your local firewall interface is 192.168.1.1.
+        If you add the following rule then from the net, you will have 4104
+        listening, from your LAN, port 22.</para>
+
+        <programlisting>#ACTION SOURCE  DEST                    PROTO   DEST PORT(S)
+DNAT    net     fw:192.168.1.1:22       tcp     4104</programlisting>
       </section>
     </section>
 

@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-04-17</pubdate>
+    <pubdate>2005-04-29</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -2565,28 +2565,6 @@ eth0                  eth1            206.124.146.176</programlisting>
           place <quote>Yes</quote> in the HAVEROUTE column.</para>
         </tip></para>
     </example>
-
-    <warning>
-      <para>Do not use Proxy ARP and FreeS/Wan on the same system unless you
-      are prepared to suffer the consequences. If you start or restart
-      Shorewall with an IPSEC tunnel active, the proxied IP addresses are
-      mistakenly assigned to the IPSEC tunnel device (ipsecX) rather than to
-      the interface that you specify in the INTERFACE column of
-      <filename>/etc/shorewall/proxyarp</filename>. I haven't had the time to
-      debug this problem so I can't say if it is a bug in the Kernel or in
-      FreeS/Wan.</para>
-
-      <para>You <emphasis role="bold">might</emphasis> be able to work around
-      this problem using the following (I haven't tried it):</para>
-
-      <para>In <filename>/etc/shorewall/init</filename>, include:</para>
-
-      <programlisting><command>qt /etc/init.d/ipsec stop</command></programlisting>
-
-      <para>In <filename>/etc/shorewall/start</filename>, include:</para>
-
-      <programlisting><command>qt /etc/init.d/ipsec start</command></programlisting>
-    </warning>
   </section>
 
   <section id="NAT" xreflabel="/etc/shorewall/nat">
@@ -2698,7 +2676,7 @@ eth0                  eth1            206.124.146.176</programlisting>
     6to4 and other tunnels with end-points on your firewall.</para>
 
     <para>For an overview of Shorewall's VPN support, try <ulink
-    url="VPNBasics.html">this article</ulink>. </para>
+    url="VPNBasics.html">this article</ulink>.</para>
 
     <para>Instructions for setting up <ulink url="IPSEC.htm">IPSEC
     tunnels</ulink> may be found here (if you are using kernel 2.6 with native

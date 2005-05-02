@@ -249,7 +249,7 @@ find_zones() # $1 = name of the zone file
 	[ -n "$zone" ] && case "$zone" in
 	    \#*)
 		;;
-            $FW)
+            $FW|all|none)
 	        echo "   Warning: Reserved zone name \"$zone\" in zones file ignored" >&2
 		;;
             *)

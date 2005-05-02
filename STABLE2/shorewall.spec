@@ -1,5 +1,5 @@
 %define name shorewall
-%define version 2.2.3
+%define version 2.2.4
 %define release 1
 %define prefix /usr
 
@@ -94,6 +94,7 @@ fi
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/accounting
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/actions
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/continue
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/started
 
 %attr(0544,root,root) /sbin/shorewall
 
@@ -138,6 +139,10 @@ fi
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel ipsecvpn
 
 %changelog
+* Mon Apr 11 2005 Tom Eastep tom@shorewall.net
+- Updated to 2.2.4-1
+* Fri Apr 08 2005 Tom Eastep tom@shorewall.net
+- Added /etc/shorewall/started
 * Tue Apr 05 2005 Tom Eastep tom@shorewall.net
 - Updated to 2.2.3-1
 * Mon Mar 07 2005 Tom Eastep tom@shorewall.net

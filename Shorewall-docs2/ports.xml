@@ -112,6 +112,43 @@ ACCEPT     dmz       net              tcp        53</programlisting>
     </note>
   </section>
 
+  <section id="Emule">
+    <title>Emule</title>
+
+    <para>In contrast to how the rest of this article is organized, for emule
+    I will give you the rules necessary to run emule on a single machine in
+    your loc network (since that's what 99.99% of you want to do). Assume
+    that:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>The internal machine running emule has IP address
+        192.168.1.4.</para>
+      </listitem>
+
+      <listitem>
+        <para>You use Masquerading or SNAT for the local network.</para>
+      </listitem>
+
+      <listitem>
+        <para>The zones are named as they are in the <ulink
+        url="shorewall_quickstart_guide.htm">two- and three-interface
+        QuickStart guides)</ulink>.</para>
+      </listitem>
+
+      <listitem>
+        <para>Your loc-&gt;net policy is ACCEPT</para>
+      </listitem>
+    </orderedlist>
+
+    <para><filename>/etc/shorewall/rules:</filename></para>
+
+    <programlisting>#ACTION     SOURCE   DESTINATION          PROTO         DEST PORT(S)
+DNAT        net      loc:192.168.1.4      tcp           4662
+DNAT        net      loc:192.168.1.4      udp           4672
+DNAT        net      loc:192.168.1.4      tcp           4711</programlisting>
+  </section>
+
   <section>
     <title>FTP</title>
 
@@ -364,6 +401,16 @@ ACCEPT     &lt;<emphasis>apps</emphasis>&gt;    &lt;<emphasis>chooser</emphasis>
     <title>Revision History</title>
 
     <para><revhistory>
+        <revision>
+          <revnumber>1.15</revnumber>
+
+          <date>2005-05-02</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>Added Emule</revremark>
+        </revision>
+
         <revision>
           <revnumber>1.14</revnumber>
 

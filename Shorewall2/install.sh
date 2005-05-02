@@ -22,7 +22,7 @@
 #       Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
 #
 
-VERSION=2.2.4
+VERSION=2.3.0
 
 usage() # $1 = exit status
 {
@@ -518,7 +518,7 @@ fi
 if [ -f ${PREFIX}/etc/shorewall/started ]; then
     backup_file /etc/shorewall/started
 else
-    run_install -o $OWNER -g $GROUP -m 0600 started ${PREFIX}/etc/shorewall/started
+    run_install -o $OWNERSHIP -m 0600 started ${PREFIX}/etc/shorewall/started
     echo
     echo "Started file installed as ${PREFIX}/etc/shorewall/started"
 fi

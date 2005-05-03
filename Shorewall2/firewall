@@ -2409,7 +2409,7 @@ process_tc_rule()
 	    
 	    case "$user" in
 		*+*)
-		    r="$r --cmd-owner ${user#*/}"
+		    r="$r --cmd-owner ${user#*+}"
 		    user=${user%+*}
 		    ;;
 	    esac
@@ -2756,7 +2756,7 @@ process_accounting_rule() {
 		    if [ -n "${user#*+}" ]; then
 			rule="$rule ! --cmd-owner ${user#*+} "
 		    fi
-		    user1=${user%/+}
+		    user1=${user%+*}
 		    ;;		
 		*+*)
 		    if [ -n "${user#*+}" ]; then
@@ -4365,7 +4365,7 @@ process_rule() # $1 = target
 		    userspec=${userspec%+*}
 		fi
 		;;		
-	    */*)
+	    *+*)
 		if [ "$userspec" != "+" ]; then
 		    userandgroup="$userandgroup --cmd-owner ${userspec#*+}"
 		    userspec=${userspec%+*}

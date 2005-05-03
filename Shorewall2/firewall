@@ -2408,9 +2408,9 @@ process_tc_rule()
 	    r="$r-m owner"
 	    
 	    case "$user" in
-		*/*)
+		*+*)
 		    r="$r --cmd-owner ${user#*/}"
-		    user=${user%/*}
+		    user=${user%+*}
 		    ;;
 	    esac
 
@@ -2752,15 +2752,17 @@ process_accounting_rule() {
 	    user1="$user"
 
 	    case "$user" in
-		!*/*)
-		    if [ "$user" != "!/" ]; then
-			rule="$rule ! --cmd-owner ${user#*/} "
-			user1=${user%/*}
+		!*+*)
+		    if [ -n "${user#*+}" ]; then
+			rule="$rule ! --cmd-owner ${user#*+} "
 		    fi
+		    user1=${user%/+}
 		    ;;		
-		*/*)
-		    rule="$rule --cmd-owner ${user#*/} "
-		    user1=${user%/*}
+		*+*)
+		    if [ -n "${user#*+}" ]; then
+			rule="$rule --cmd-owner ${user#*+} "
+		    fi
+		    user1=${user%+*}
 		    ;;
 	    esac
 
@@ -3180,17 +3182,17 @@ process_action() # $1 = chain    (Chain to add the rules to)
 	userandgroup="-m owner"
 	
 	case "$userspec" in
-	    !*/*)
-		if [ "$userspec" != "!/" ]; then
-		    userandgroup="$userandgroup ! --cmd-owner ${userspec#*/}"
-		    userspec=${userspec%/*}
+	    !*+*)
+		if [ -n "${userspec#*+}" ]; then
+		    userandgroup="$userandgroup ! --cmd-owner ${userspec#*+}"
 		fi
+		userspec=${userspec%+*}
 		;;		
 	    */*)
-		if [ "$userspec" != "/" ]; then
-		    userandgroup="$userandgroup --cmd-owner ${userspec#*/}"
-		    userspec=${userspec%/*}
+		if [ -n "${userspec#*+}" ]; then
+		    userandgroup="$userandgroup --cmd-owner ${userspec#*+}"
 		fi
+		userspec=${userspec%+*}
 		;;
 	esac
 
@@ -4357,16 +4359,16 @@ process_rule() # $1 = target
 	userandgroup="-m owner"
 	
 	case "$userspec" in
-	    !*/*)
-		if [ "$userspec" != "!/" ]; then
-		    userandgroup="$userandgroup ! --cmd-owner ${userspec#*/}"
-		    userspec=${userspec%/*}
+	    !*+*)
+		if [ "$userspec" != "!+" ]; then
+		    userandgroup="$userandgroup ! --cmd-owner ${userspec#*+}"
+		    userspec=${userspec%+*}
 		fi
 		;;		
 	    */*)
-		if [ "$userspec" != "/" ]; then
-		    userandgroup="$userandgroup --cmd-owner ${userspec#*/}"
-		    userspec=${userspec%/*}
+		if [ "$userspec" != "+" ]; then
+		    userandgroup="$userandgroup --cmd-owner ${userspec#*+}"
+		    userspec=${userspec%+*}
 		fi
 		;;
 	esac

@@ -2409,7 +2409,7 @@ process_tc_rule()
 	    
 	    case "$user" in
 		*+*)
-		    r="$r --cmd-owner ${user#*+}"
+		    r="$r --cmd-owner ${user#*+} "
 		    user=${user%+*}
 		    ;;
 	    esac
@@ -2422,7 +2422,7 @@ process_tc_rule()
 		    [ -n "$temp" ] && r="$r --gid-owner $temp "
 		    ;;
 		*)
-		    r="$r --uid-owner $user "
+		    [ -n "$user" ] && r="$r --uid-owner $user "
 		    ;;
 	    esac
 	fi

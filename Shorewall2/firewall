@@ -4360,16 +4360,16 @@ process_rule() # $1 = target
 	
 	case "$userspec" in
 	    !*+*)
-		if [ "$userspec" != "!+" ]; then
+		if [ -n "${userspec#*+}" ]; then
 		    userandgroup="$userandgroup ! --cmd-owner ${userspec#*+}"
-		    userspec=${userspec%+*}
 		fi
+		userspec=${userspec%+*}
 		;;		
 	    *+*)
-		if [ "$userspec" != "+" ]; then
+		if [ -n "${userspec#*+}" ]; then
 		    userandgroup="$userandgroup --cmd-owner ${userspec#*+}"
-		    userspec=${userspec%+*}
 		fi
+		userspec=${userspec%+*}
 		;;
 	esac
 

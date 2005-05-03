@@ -9,7 +9,7 @@
   <meta name="CHANGED" content="20040920;15183300">
 </head>
 <body dir="ltr" lang="en-US">
-<h1>Shorewall 2.x</h1>
+<h1><span style="font-weight: bold;"></span>Shorewall 2.x</h1>
 <p><b>Tom Eastep</b><br>
 <br>
 The information on this site applies only
@@ -28,12 +28,12 @@ to 2.x releases of Shorewall. For older versions:</p>
  target="_top">here</a>. </p>
   </li>
 </ul>
-<p>The current 2.2 Stable Release is 2.2.3 -- Here are the <a
- href="http://shorewall.net/pub/shorewall/2.2/shorewall-2.2.3/releasenotes.txt">release
+<p>The current 2.2 Stable Release is 2.2.4 -- Here are the <a
+ href="http://shorewall.net/pub/shorewall/2.2/shorewall-2.2.4/releasenotes.txt">release
 notes</a> and here are the <a
- href="http://shorewall.net/pub/shorewall/2.2/shorewall-2.2.3/known_problems.txt">known
+ href="http://shorewall.net/pub/shorewall/2.2/shorewall-2.2.4/known_problems.txt">known
 problems</a> and <a
- href="http://shorewall.net/pub/shorewall/2.2/shorewall-2.2.3/errata/">updates</a>.<br>
+ href="http://shorewall.net/pub/shorewall/2.2/shorewall-2.2.4/errata/">updates</a>.<br>
 </p>
 <p><a
  href="http://lists.shorewall.net/pipermail/shorewall-announce/2004-December/000451.html"><span
@@ -48,7 +48,7 @@ Foundation; with no Invariant Sections, with no Front-Cover, and with
 no Back-Cover Texts. A copy of the license is included in the section
 entitled “<a href="GnuCopyright.htm" target="_self">GNU
 Free Documentation License</a>”.</p>
-<p>2005-05-01</p>
+<p>2005-05-02</p>
 <hr style="width: 100%; height: 2px;">
 <h3>Table of Contents</h3>
 <p style="margin-left: 0.42in; margin-bottom: 0in;"><a href="#Intro">Introduction
@@ -61,17 +61,7 @@ Shorewall</a><br>
 <a href="#Info">Looking for Information?</a><br>
 <a href="#Mandrake">Running
 Shorewall on Mandrake® with a two-interface setup?</a><br>
-<a href="#License">License</a></p>
-<p style="margin-bottom: 0in; margin-left: 40px;"><a href="#2_0_10">News</a></p>
-<p style="margin-left: 0.83in; margin-bottom: 0in;"><span
- style="text-decoration: underline;"></span><a href="#LinuxFest">Tom
-spoke at LinuxFest NW 2005</a><br>
-<a href="#2_2_3">Shorewall
-2.2.3</a><br>
-<a href="#2_0_17">Shorewall
-2.0.17</a><br>
-<a href="#2_2_2">Shorewall
-2.2.2</a><br>
+<a href="#License">License</a><br>
 </p>
 <div style="margin-left: 40px;"><br>
 <a href="#Leaf">Leaf</a><br>
@@ -179,174 +169,6 @@ published by the Free Software Foundation; with no Invariant
 Sections, with no Front-Cover, and with no Back-Cover Texts. A copy
 of the license is included in the section entitled "GNU Free
 Documentation License". </p>
-<hr>
-<h2><a name="News"></a>News</h2>
-<span style="font-weight: bold;"><a name="LinuxFest"></a>05/01/2005 Tom
-spoke at LinuxFest NW 2005 -- Bellingham Technical College,
-Bellingham Washington<br>
-</span><br>
-Tom's presentation was entitled "Shorewall and Native IPSEC" and is
-available for download <a href="LinuxFest.pdf">here (PDF Format)</a>.
-<br>
-<br>
-<span style="font-weight: bold;"><a name="2_2_3"></a>04/07/2005
-Shorewall 2.2.3<br>
-</span><br>
-Problems Corrected:<br>
-<ol>
-  <li>If a zone is defined in /etc/shorewall/hosts using
-&lt;interface&gt;:!&lt;network&gt; in the HOSTS column then startup
-errors occur on "shorewall [re]start".</li>
-  <li>Previously, if "shorewall status" was run on a system whose
-kernel lacked advanced routing support
-(CONFIG_IP_ADVANCED_ROUTER),&nbsp; then no routing information was
-displayed.</li>
-</ol>
-New Features:<br>
-<ol>
-  <li>A new extension script "continue" has been added. This script is
-invoked after Shorewall has set the built-in filter chains policy to
-DROP, deleted any existing Netfilter rules and user chains and has
-enabled existing connections. It is useful for enabling certain
-communication while Shorewall is being [re]started. Be sure to delete
-any rules that you add here in your /etc/shorewall/start file.</li>
-  <li>There has been ongoing confusion about how the
-/etc/shorewall/routestopped file works. People understand how it works
-with the 'shorewall stop' command but when they read that 'shorewall
-restart' is logically equivalent to 'shorewall stop' followed by
-'shorewall start' then they erroneously conclude that
-/etc/shorewall/routestopped can be used to enable new connections
-during 'shorewall restart'. Up to now, it cannot -- that file is not
-processed during either 'shorewall start' or 'shorewall restart'.<br>
-    <br>
-Beginning with Shorewall version 2.2.3, /etc/shorewall/routestopped
-will be processed TWICE during 'shorewall start' and during 'shorewall
-restart'. It will be processed early in the command execution to add
-rules allowing new connections while the command is running and it will
-be processed again when the command is complete to remove the rules
-added earlier.<br>
-    <br>
-The result of this change will be that during most of [re]start, new
-connections will be allowed in accordance with the contents of
-/etc/shorewall/routestopped.</li>
-  <li>The performance of configurations with a large numbers of entries
-in /etc/shorewall/maclist can be improved by setting the new
-MACLIST_TTL variable in /etc/shorewall/shorewall.conf.<br>
-    <br>
-If your iptables and kernel support the "Recent Match" (see the output
-of "shorewall check" near the top), you can cache the results of a
-'maclist' file lookup and thus reduce the overhead associated with MAC
-Verification.<br>
-    <br>
-When a new connection arrives from a 'maclist' interface, the packet
-passes through then list of entries for that interface in
-/etc/shorewall/maclist. If there is a match then the source IP address
-is added to the 'Recent' set for that interface. Subsequent connection
-attempts from that IP address occuring within $MACLIST_TTL seconds will
-be accepted without having to scan all of the entries. After
-$MACLIST_TTL from the first accepted connection request from an IP
-address, the next connection request from that IP address will be
-checked against the entire list.<br>
-    <br>
-If MACLIST_TTL is not specified or is specified as empty (e.g,
-MACLIST_TTL="" or is specified as zero then 'maclist' lookups will not
-be cached.</li>
-  <li>You can now specify QUEUE as a policy and you can designate a
-common action for QUEUE policies in /etc/shorewall/actions. This is
-useful for sending packets to something like Snort Inline.<br>
-  </li>
-</ol>
-<span style="font-weight: bold;"><a name="2_0_17"></a>03/31/2005
-Shorewall 2.0.17<br>
-<br>
-</span>Problems Corrected:<br>
-<ol>
-  <li>Invoking the 'rejNotSyn' action results in an error at startup.</li>
-  <li>The UDP and TCP port numbers in
-/usr/share/shorewall/action.AllowPCA were reversed.</li>
-  <li>If a zone is defined in /etc/shorewall/hosts using &lt;<span
- style="font-style: italic;">interface</span>&gt;:!&lt;<span
- style="font-style: italic;">network</span>&gt; in the HOSTS column
-then startup errors occur on "shorewall [re]start".<br>
-  </li>
-</ol>
-<span style="font-weight: bold;"><a name="2_2_2"></a>03/12/2005
-Shorewall 2.2.2<br>
-</span><br>
-Problems Corrected:<br>
-<ol>
-  <li>The SOURCE column in the /etc/shorewall/tcrules file now
-correctly allows IP ranges (assuming that your iptables and kernel
-support ranges).<br>
-  </li>
-  <li>If A is a user-defined action and you have file /etc/shorewall/A
-then when that file is invoked by Shorewall during [re]start, the $TAG
-value may be incorrect.</li>
-  <li>Previously, if an iptables command generating a logging rule
-failed, the Shorewall [re]start was still successful. This error is now
-considered fatal and Shorewall will be either restored from the last
-save (if any) or it will be stopped.</li>
-  <li>The port numbers for UDP and TCP were previously reversed in the
-/usr/share/shorewall/action.AllowPCA file.</li>
-  <li>Previously, the 'install.sh' script did not update the
-/usr/share/shorewall/action.* files.</li>
-  <li>Previously, when an interface name appeared in the DEST column of
-/etc/shorewall/tcrules, the name was not validated against the set of
-defined interfaces and bridge ports.<br>
-  </li>
-</ol>
-New Features:<br>
-<ol>
-  <li>The SOURCE column in the /etc/shorewall/tcrules file now allows
-$FW to be optionally followed by ":" and a host/network address or
-address range.</li>
-  <li>Shorewall now clears the output device only if it is a terminal.
-This avoids ugly control sequences being placed in files when
-/sbin/shorewall output is redirected.</li>
-  <li>The output from 'arp -na' has been added to the 'shorewall
-status' display.</li>
-  <li>The 2.6.11 Linux kernel and iptables 1.3.0 now allow port ranges
-to appear in port lists handled by "multiport match". If Shorewall
-detects this capability, it will use "multiport match" for port lists
-containing port ranges. Be cautioned that each port range counts for
-TWO ports and a port list handled with "multiport match" can still
-specify a maximum of 15 ports.<br>
-    <br>
-As always, if a port list in /etc/shorewall/rules is incompatible with
-"multiport match", a separate iptables rule will be generated for each
-element in the list.</li>
-  <li>Traditionally, the RETURN target in the 'rfc1918' file has caused
-'norfc1918' processing to cease for a packet if the packet's source IP
-address matches the rule. Thus, if you have:<br>
-    <br>
-    <span style="font-family: monospace;">&nbsp;&nbsp;
-SUBNETS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; TARGET</span><br
- style="font-family: monospace;">
-    <span style="font-family: monospace;">&nbsp;&nbsp;
-192.168.1.0/24&nbsp;&nbsp; RETURN</span><br>
-    <br>
-then traffic from 192.168.1.4 to 10.0.3.9 will be accepted even though
-you also have:<br>
-    <br>
-    <span style="font-family: monospace;">&nbsp;&nbsp;
-SUBNETS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; TARGET</span><br
- style="font-family: monospace;">
-    <span style="font-family: monospace;">&nbsp;&nbsp;
-10.0.0.0/8&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; logdrop</span><br>
-    <br>
-Setting RFC1918_STRICT=Yes in shorewall.conf will cause such traffic to
-be logged and dropped since while the packet's source matches the
-RETURN rule, the packet's destination matches the 'logdrop' rule.<br>
-    <br>
-If not specified or specified as empty (e.g., RFC1918_STRICT="") then
-RFC1918_STRICT=No is assumed.<br>
-    <br>
-WARNING: RFC1918_STRICT=Yes requires that your kernel and iptables
-support 'Connection Tracking' match.<br>
-  </li>
-</ol>
-<span style="font-weight: bold;"></span><span style="font-weight: bold;"></span>
-<p><a href="News.htm">More News</a></p>
 <hr>
 <h2><a name="Leaf"></a>Leaf</h2>
 <p><a href="http://leaf.sourceforge.net/" target="_top"><font

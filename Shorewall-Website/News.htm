@@ -6,7 +6,8 @@
   <title>Shorewall News</title>
 </head>
 <body>
-<h1 style="text-align: left;">Shorewall News Archive</h1>
+<h1 style="text-align: left;">Shorewall News and Announcements<br>
+</h1>
 <span style="font-weight: bold;">Tom Eastep<br>
 <br>
 </span>Copyright © 2001-2005 Thomas M. Eastep<br>
@@ -18,11 +19,398 @@ Texts. A copy of the license is included in the section entitled “<span
  class="quote"><a href="GnuCopyright.htm" target="_self">GNU Free
 Documentation License</a></span>”.<br>
 </p>
-<p>2005-04-14<br>
+<p>2005-05-02<br>
 </p>
 <hr style="width: 100%; height: 2px;">
 <p><span style="font-weight: bold;"><br>
-</span><span style="font-weight: bold;">02/15/2005
+</span><span style="font-weight: bold;"></span><span
+ style="font-weight: bold;">05/02/2005 Shorewall 2.2.4<br>
+</span></p>
+<p>Problems Corrected:<br>
+</p>
+<ol>
+  <li>The error message:<br>
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Error: No appropriate chain for
+zone &lt;z1&gt; to zone &lt;z2&gt;<br>
+    <br>
+has been changed to one that is more self-explanatory:<br>
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Error: No policy defined for zone
+&lt;z1&gt; to zone &lt;z2&gt;</li>
+  <li>When only an interface name appeared in the HOST(S) column of an
+/etc/shorewall/hosts file entry, a misleading iptables error message
+resulted. Now the following message is generated:<br>
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Error: Invalid HOST(S) column
+contents: &lt;column contents&gt;</li>
+</ol>
+New Features:<br>
+<ol>
+  <li>Support has been added for UPnP using linux-igd&nbsp; (<a
+ href="http://linux-idg.sourceforge.net/">http://linux-idg.sourceforge.net</a>).
+UPnP is required by a number of popular applications including MSN IM.</li>
+</ol>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">WARNING</span>:<br>
+<div style="margin-left: 40px;">From a security architecture viewpoint,
+UPnP is a disaster. It assumes that:<br>
+<ol style="list-style-type: lower-alpha;">
+  <li>All local systems and their users are completely trustworthy.</li>
+  <li>No local system is infected with any worm or trojan.</li>
+</ol>
+</div>
+<div style="margin-left: 40px;">If either of these assumptions are not
+true then UPnP can be used to totally defeat your firewall and to allow
+incoming connections to arbitrary local systems on any port whatsoever.<br>
+In short: <span style="font-weight: bold;">USE UPnP AT YOUR OWN RISK</span>.<br>
+</div>
+<div style="margin-left: 40px;"><br>
+</div>
+</div>
+<div style="margin-left: 40px;"><span style="font-weight: bold;">WARNING</span>:<br>
+<div style="margin-left: 40px;">The linux-igd project appears to be
+inactive and the web site does not display correctly on any open source
+browser that I've tried.<br>
+<br>
+Building and installing linux-igd is not for the faint of heart. You
+must download the source from CVS and be prepared to do quite a bit of
+fiddling with the include files from libupnp (which is required to
+build and/or run linux-igd).<br>
+<br>
+</div>
+</div>
+<div style="margin-left: 40px;">Configuring linux-igd:<br>
+<div style="margin-left: 40px;">In /etc/upnpd.conf, you will want:<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+insert_forward_rules = yes<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+prerouting_chain_name = UPnP<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+forward_chain_name = forwardUPnP<br>
+<br>
+</div>
+</div>
+<div style="margin-left: 40px;">Shorewall Configuration:<br>
+<div style="margin-left: 40px;">In /etc/shorewall/interfaces, you need
+the 'upnp' option on your external interface.<br>
+<br>
+If your fw-&gt;loc policy is not ACCEPT then you need this rule:<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+allowoutUPnP&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+fw&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; loc<br>
+<br>
+Note: To use 'allowoutUPnP', your iptables and kernel must support the
+'owner match' feature (see the output of "shorewall check").<br>
+<br>
+If your loc-&gt;fw policy is not ACCEPT then you need this rule:<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+allowinUPnP&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+loc&nbsp;&nbsp;&nbsp;&nbsp; fw<br>
+<br>
+You MUST have this rule:<br>
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+forwardUPnP&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+net&nbsp;&nbsp;&nbsp;&nbsp; loc<br>
+<br>
+</div>
+</div>
+<div style="margin-left: 40px;">&nbsp;&nbsp; You must also ensure that
+you have a route to 224.0.0.0/4 on you internal (local) interface.<br>
+</div>
+<ol start="2" style="list-style-type: decimal;">
+  <li>A new 'started' extension script has been added.&nbsp; The
+difference between this extension script and /etc/shorewall/start is
+that this one is invoked after delayed loading of the blacklist
+(DELAYBLACKLISTLOAD=Yes) and after the 'shorewall' chain has been
+created (thus signaling that the firewall is completely up.<br>
+    <br>
+/etc/shorewall/started should not change the firewall configuration
+directly but may do so indirectly by running /sbin/shorewall with the
+'nolock' option.<br>
+    <br>
+  </li>
+  <li>By default, shorewall is started with the "-f" (fast) option when
+your system boots. You can override that setting by setting the OPTIONS
+variable in /etc/sysconfig/shorewall (SuSE/Redhat) or
+/etc/default/shorewall (Debian/Bering). If neither file exists, feel
+free to create one or the other.<br>
+    <br>
+Example: If you want Shorewall to always use the config files even if
+there is a saved configuration, then specify:<br>
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; OPTIONS=""<br>
+    <br>
+  </li>
+  <li>Shorewall now has support for the SAME target. This change
+affects the /etc/shorewall/masq and /etc/shorewall/rules file.<br>
+    <br>
+SAME is useful when you specify multiple target IP addresses (in the
+ADDRESSES column of /etc/shorewall/masq or in the DEST column of
+/etc/shorewall/rules).<br>
+    <br>
+If you use normal SNAT then multiple connections from a given local
+host to hosts on the internet can be assigned different source IP
+addresses. This confuses some applications that use multiple
+connections. To correct this problem, prefix the list of address ranges
+in the ADDRESS column with "SAME:"<br>
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Example:&nbsp;&nbsp; SAME:206.124.146.176-206.124.146.180<br>
+    <br>
+If you want each internal system to use the same IP address from the
+list regardless of which internet host it is talking to then prefix the
+ranges with "SAME:nodst:".<br>
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Example:&nbsp;&nbsp; SAME:nodst:206.124.146.176-206.124.146.180<br>
+    <br>
+Note that it is not possible to map port numbers when using SAME.<br>
+    <br>
+In the rules file, when multiple connections from an internet host
+match a SAME rule then all of the connections will be sent to the same
+internal server. SAME rules are very similar to DNAT rules with the
+keyword SAME replacing DNAT. As in the masq file, changing the port
+number is not supported.<br>
+    <br>
+  </li>
+  <li>A "shorewall show capabilities" command has been added to report
+the capabilities of your kernel and iptables.<br>
+    <br>
+&nbsp;&nbsp; Example:<br>
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; gateway:~# shorewall show capabilities<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Loading /usr/share/shorewall/functions...<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Processing /etc/shorewall/params ...<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Processing
+/etc/shorewall/shorewall.conf...<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Loading Modules...<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Shorewall has detected the following
+iptables/netfilter capabilities:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+NAT: Available<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Packet Mangling: Available<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Multi-port Match: Available<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Extended Multi-port Match: Available<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Connection Tracking Match: Available<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Packet Type Match: Not available<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Policy Match: Available<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Physdev Match: Available<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+IP range Match: Available<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Recent Match: Available<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Owner Match: Available<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; gateway:~#<br>
+    <br>
+  </li>
+  <li>A "-v" option has been added to /sbin/shorewall. Currently, this
+option only affects the "show log" command (e.g., "shorewall -v show
+log") and the "monitor" command. In these commands, it causes the MAC
+address in the log message (if any) to be displayed. As previously,
+when "-v" is omitted, the MAC address is suppressed.<br>
+    <br>
+  </li>
+  <li>In /etc/shorewall/rules, a value of 'none' in either the SOURCE
+or DEST columns now causes the rule to be ignored. This is most useful
+when used with shell variables:<br>
+    <br>
+Example:<br>
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /etc/shorewall/rules:<br>
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+AllowFTP&nbsp;&nbsp;&nbsp;
+$FTP_CLIENTS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; fw<br>
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; When FTP_CLIENTS is set to
+'none', the above rule is ignored.&nbsp; Otherwise, the rule is
+evaluated and generates Netfilter rules.<br>
+    <br>
+  </li>
+  <li>The installer now detects that it is running on a Slackware
+system and adjusts the DEST and INIT variables accordingly.<br>
+  </li>
+</ol>
+<p><span style="font-weight: bold;">05/01/2005 Tom
+spoke at LinuxFest NW 2005 -- Bellingham Technical College,
+Bellingham Washington<br>
+</span><br>
+Tom's presentation was entitled "Shorewall and Native IPSEC" and is
+available for download <a href="http://shorewall.net/LinuxFest.pdf">here
+(PDF Format)</a>.
+<br>
+<br>
+<span style="font-weight: bold;">04/07/2005
+Shorewall 2.2.3<br>
+</span><br>
+Problems Corrected:<br>
+</p>
+<ol>
+  <li>If a zone is defined in /etc/shorewall/hosts using
+&lt;interface&gt;:!&lt;network&gt; in the HOSTS column then startup
+errors occur on "shorewall [re]start".</li>
+  <li>Previously, if "shorewall status" was run on a system whose
+kernel lacked advanced routing support
+(CONFIG_IP_ADVANCED_ROUTER),&nbsp; then no routing information was
+displayed.</li>
+</ol>
+New Features:<br>
+<ol>
+  <li>A new extension script "continue" has been added. This script is
+invoked after Shorewall has set the built-in filter chains policy to
+DROP, deleted any existing Netfilter rules and user chains and has
+enabled existing connections. It is useful for enabling certain
+communication while Shorewall is being [re]started. Be sure to delete
+any rules that you add here in your /etc/shorewall/start file.</li>
+  <li>There has been ongoing confusion about how the
+/etc/shorewall/routestopped file works. People understand how it works
+with the 'shorewall stop' command but when they read that 'shorewall
+restart' is logically equivalent to 'shorewall stop' followed by
+'shorewall start' then they erroneously conclude that
+/etc/shorewall/routestopped can be used to enable new connections
+during 'shorewall restart'. Up to now, it cannot -- that file is not
+processed during either 'shorewall start' or 'shorewall restart'.<br>
+    <br>
+Beginning with Shorewall version 2.2.3, /etc/shorewall/routestopped
+will be processed TWICE during 'shorewall start' and during 'shorewall
+restart'. It will be processed early in the command execution to add
+rules allowing new connections while the command is running and it will
+be processed again when the command is complete to remove the rules
+added earlier.<br>
+    <br>
+The result of this change will be that during most of [re]start, new
+connections will be allowed in accordance with the contents of
+/etc/shorewall/routestopped.</li>
+  <li>The performance of configurations with a large numbers of entries
+in /etc/shorewall/maclist can be improved by setting the new
+MACLIST_TTL variable in /etc/shorewall/shorewall.conf.<br>
+    <br>
+If your iptables and kernel support the "Recent Match" (see the output
+of "shorewall check" near the top), you can cache the results of a
+'maclist' file lookup and thus reduce the overhead associated with MAC
+Verification.<br>
+    <br>
+When a new connection arrives from a 'maclist' interface, the packet
+passes through then list of entries for that interface in
+/etc/shorewall/maclist. If there is a match then the source IP address
+is added to the 'Recent' set for that interface. Subsequent connection
+attempts from that IP address occuring within $MACLIST_TTL seconds will
+be accepted without having to scan all of the entries. After
+$MACLIST_TTL from the first accepted connection request from an IP
+address, the next connection request from that IP address will be
+checked against the entire list.<br>
+    <br>
+If MACLIST_TTL is not specified or is specified as empty (e.g,
+MACLIST_TTL="" or is specified as zero then 'maclist' lookups will not
+be cached.</li>
+  <li>You can now specify QUEUE as a policy and you can designate a
+common action for QUEUE policies in /etc/shorewall/actions. This is
+useful for sending packets to something like Snort Inline.<br>
+  </li>
+</ol>
+<span style="font-weight: bold;">03/31/2005
+Shorewall 2.0.17<br>
+<br>
+</span>Problems Corrected:<br>
+<ol>
+  <li>Invoking the 'rejNotSyn' action results in an error at startup.</li>
+  <li>The UDP and TCP port numbers in
+/usr/share/shorewall/action.AllowPCA were reversed.</li>
+  <li>If a zone is defined in /etc/shorewall/hosts using &lt;<span
+ style="font-style: italic;">interface</span>&gt;:!&lt;<span
+ style="font-style: italic;">network</span>&gt; in the HOSTS column
+then startup errors occur on "shorewall [re]start".<br>
+  </li>
+</ol>
+<span style="font-weight: bold;">03/12/2005
+Shorewall 2.2.2<br>
+</span><br>
+Problems Corrected:<br>
+<ol>
+  <li>The SOURCE column in the /etc/shorewall/tcrules file now
+correctly allows IP ranges (assuming that your iptables and kernel
+support ranges).<br>
+  </li>
+  <li>If A is a user-defined action and you have file /etc/shorewall/A
+then when that file is invoked by Shorewall during [re]start, the $TAG
+value may be incorrect.</li>
+  <li>Previously, if an iptables command generating a logging rule
+failed, the Shorewall [re]start was still successful. This error is now
+considered fatal and Shorewall will be either restored from the last
+save (if any) or it will be stopped.</li>
+  <li>The port numbers for UDP and TCP were previously reversed in the
+/usr/share/shorewall/action.AllowPCA file.</li>
+  <li>Previously, the 'install.sh' script did not update the
+/usr/share/shorewall/action.* files.</li>
+  <li>Previously, when an interface name appeared in the DEST column of
+/etc/shorewall/tcrules, the name was not validated against the set of
+defined interfaces and bridge ports.<br>
+  </li>
+</ol>
+New Features:<br>
+<ol>
+  <li>The SOURCE column in the /etc/shorewall/tcrules file now allows
+$FW to be optionally followed by ":" and a host/network address or
+address range.</li>
+  <li>Shorewall now clears the output device only if it is a terminal.
+This avoids ugly control sequences being placed in files when
+/sbin/shorewall output is redirected.</li>
+  <li>The output from 'arp -na' has been added to the 'shorewall
+status' display.</li>
+  <li>The 2.6.11 Linux kernel and iptables 1.3.0 now allow port ranges
+to appear in port lists handled by "multiport match". If Shorewall
+detects this capability, it will use "multiport match" for port lists
+containing port ranges. Be cautioned that each port range counts for
+TWO ports and a port list handled with "multiport match" can still
+specify a maximum of 15 ports.<br>
+    <br>
+As always, if a port list in /etc/shorewall/rules is incompatible with
+"multiport match", a separate iptables rule will be generated for each
+element in the list.</li>
+  <li>Traditionally, the RETURN target in the 'rfc1918' file has caused
+'norfc1918' processing to cease for a packet if the packet's source IP
+address matches the rule. Thus, if you have:<br>
+    <br>
+    <span style="font-family: monospace;">&nbsp;&nbsp;
+SUBNETS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; TARGET</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;
+192.168.1.0/24&nbsp;&nbsp; RETURN</span><br>
+    <br>
+then traffic from 192.168.1.4 to 10.0.3.9 will be accepted even though
+you also have:<br>
+    <br>
+    <span style="font-family: monospace;">&nbsp;&nbsp;
+SUBNETS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; TARGET</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;
+10.0.0.0/8&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; logdrop</span><br>
+    <br>
+Setting RFC1918_STRICT=Yes in shorewall.conf will cause such traffic to
+be logged and dropped since while the packet's source matches the
+RETURN rule, the packet's destination matches the 'logdrop' rule.<br>
+    <br>
+If not specified or specified as empty (e.g., RFC1918_STRICT="") then
+RFC1918_STRICT=No is assumed.<br>
+    <br>
+WARNING: RFC1918_STRICT=Yes requires that your kernel and iptables
+support 'Connection Tracking' match.<br>
+  </li>
+</ol>
+<span style="font-weight: bold;"></span><span style="font-weight: bold;"></span>
+<p><span style="font-weight: bold;">02/15/2005
 Shorewall 2.2.1<br>
 <br>
 </span>This release rolls up the fixes for bugs found in the first 2-3

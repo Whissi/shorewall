@@ -2405,16 +2405,24 @@ process_tc_rule()
 	    [ "$chain" != tcout ] && \
 		fatal_error "Invalid use of a user/group: rule \"$rule\""
 
+	    r="$r-m owner"
+	    
+	    case "$user" in
+		*/*)
+		    r="$r --cmd-owner ${user#*/}"
+		    user=${user%/*}
+		    ;;
+	    esac
+
 	    case "$user" in
 		*:*)
-		    r="$r-m owner"
 		    temp="${user%:*}"
 		    [ -n "$temp" ] && r="$r --uid-owner $temp " 
 		    temp="${user#*:}"
 		    [ -n "$temp" ] && r="$r --gid-owner $temp "
 		    ;;
 		*)
-		    r="$r-m owner --uid-owner $user "
+		    r="$r--uid-owner $user "
 		    ;;
 	    esac
 	fi
@@ -2646,6 +2654,7 @@ process_accounting_rule() {
     rule=
     rule2=
     jumpchain=
+    user1=
 	
     accounting_error() {
 	error_message "Warning: Invalid Accounting rule" $action $chain $source $dest $proto $port $sport $user
@@ -2669,6 +2678,7 @@ process_accounting_rule() {
 	
 	rule="$rule -j $jumpchain"
     }
+
 
     case $source in
 	*:*)
@@ -2735,19 +2745,50 @@ process_accounting_rule() {
     [ -n "$user" ] && case $user in
 	-|any|all)
 	    ;;
-	*:*)
-	    [ "$chain" != OUTPUT ] && \
-		fatal_error "Invalid use of a user/group: chain is not OUTPUT but $chain"
-	    rule="$rule -m owner"
-	    temp="${user%:*}"
-	    [ -n "$temp" ] && rule="$rule --uid-owner $temp " 
-	    temp="${user#*:}"
-	    [ -n "$temp" ] && rule="$rule --gid-owner $temp "
-	    ;;
 	*)
 	    [ "$chain" != OUTPUT ] && \
 		fatal_error "Invalid use of a user/group: chain is not OUTPUT but $chain"
-	    rule="$rule -m owner --uid-owner $user "
+	    rule="$rule -m owner"
+	    user1="$user"
+
+	    case "$user" in
+		!*/*)
+		    if [ "$user" != "!/" ]; then
+			rule="$rule ! --cmd-owner ${user#*/} "
+			user1=${user%/*}
+		    fi
+		    ;;		
+		*/*)
+		    rule="$rule --cmd-owner ${user#*/} "
+		    user1=${user%/*}
+		    ;;
+	    esac
+
+	    case "$user1" in
+		!*:*)
+		    if [ "$user1" != "!:" ]; then
+			temp="${user1#!}"
+			temp="${temp%:*}"
+			[ -n "$temp" ] && rule="$rule ! --uid-owner $temp " 
+			temp="${user1#*:}"
+			[ -n "$temp" ] && rule="$rule ! --gid-owner $temp "
+		    fi
+		    ;;
+		*:*)
+		    if [ "$user1" != ":" ]; then
+			temp="${user1%:*}"
+			[ -n "$temp" ] && rule="$rule --uid-owner $temp " 
+			temp="${user1#*:}"
+			[ -n "$temp" ] && rule="$rule --gid-owner $temp "
+		    fi
+		    ;;
+		!*)
+		    [ "$user1" != "!" ] && rule="$rule ! --uid-owner ${user1#!} "
+		    ;;
+		*)
+		    [ -n "$user1" ] && rule="$rule --uid-owner $user1 "
+		    ;;
+	    esac
 	    ;;
     esac
 
@@ -3136,10 +3177,26 @@ process_action() # $1 = chain    (Chain to add the rules to)
     [ "x$userspec" = "x-" ] && userspec=
 
     if [ -n "$userspec" ]; then
+	userandgroup="-m owner"
+	
+	case "$userspec" in
+	    !*/*)
+		if [ "$userspec" != "!/" ]; then
+		    userandgroup="$userandgroup ! --cmd-owner ${userspec#*/}"
+		    userspec=${userspec%/*}
+		fi
+		;;		
+	    */*)
+		if [ "$userspec" != "/" ]; then
+		    userandgroup="$userandgroup --cmd-owner ${userspec#*/}"
+		    userspec=${userspec%/*}
+		fi
+		;;
+	esac
+
 	case "$userspec" in
 	    !*:*)
 		if [ "$userspec" != "!:" ]; then
-		    userandgroup="-m owner"
 		    temp="${userspec#!}"
 		    temp="${temp%:*}"
 		    [ -n "$temp" ] && userandgroup="$userandgroup ! --uid-owner $temp" 
@@ -3149,7 +3206,6 @@ process_action() # $1 = chain    (Chain to add the rules to)
 		;;
 	    *:*)
 		if [ "$userspec" != ":" ]; then
-		    userandgroup="-m owner"
 		    temp="${userspec%:*}"
 		    [ -n "$temp" ] && userandgroup="$userandgroup --uid-owner $temp" 
 		    temp="${userspec#*:}"
@@ -3157,12 +3213,14 @@ process_action() # $1 = chain    (Chain to add the rules to)
 		fi 
 		;;
 	    !*)
-		userandgroup="-m owner ! --uid-owner ${userspec#!}"
+		[ "$userspec" != "!" ] && userandgroup="$userandgroup ! --uid-owner ${userspec#!}"
 		;;
 	    *)
-		userandgroup="-m owner --uid-owner $userspec"
+		[ -n "$userspec" ] && userandgroup="$userandgroup --uid-owner $userspec"
 		;;
 	esac
+
+	[ "$userandgroup" = "-m owner" ] && userandgroup=
     fi
 
     # Isolate log level
@@ -4105,7 +4163,7 @@ add_a_rule()
 
     case "$logtarget" in
 	ACCEPT|DROP|REJECT|CONTINUE)	
-	    if [ -z "$proto" -a -z "$cli" -a -z "$serv" -a -z "$servport" -a -z "$userspec" ] ; then
+	    if [ -z "$proto" -a -z "$cli" -a -z "$serv" -a -z "$servport" -a -z "$userandgroup" ] ; then
 		error_message "Warning -- Rule \"$rule\" is a POLICY"
 		error_message "	       -- and should be moved to the policy file"
 	    fi
@@ -4295,10 +4353,27 @@ process_rule() # $1 = target
     [ "x$address" = "x-" ] && address=
 
     if [ -n "$userspec" ]; then
+
+	userandgroup="-m owner"
+	
+	case "$userspec" in
+	    !*/*)
+		if [ "$userspec" != "!/" ]; then
+		    userandgroup="$userandgroup ! --cmd-owner ${userspec#*/}"
+		    userspec=${userspec%/*}
+		fi
+		;;		
+	    */*)
+		if [ "$userspec" != "/" ]; then
+		    userandgroup="$userandgroup --cmd-owner ${userspec#*/}"
+		    userspec=${userspec%/*}
+		fi
+		;;
+	esac
+
 	case "$userspec" in
 	    !*:*)
 		if [ "$userspec" != "!:" ]; then
-		    userandgroup="-m owner"
 		    temp="${userspec#!}"
 		    temp="${temp%:*}"
 		    [ -n "$temp" ] && userandgroup="$userandgroup ! --uid-owner $temp" 
@@ -4308,7 +4383,6 @@ process_rule() # $1 = target
 		;;
 	    *:*)
 		if [ "$userspec" != ":" ]; then
-		    userandgroup="-m owner"
 		    temp="${userspec%:*}"
 		    [ -n "$temp" ] && userandgroup="$userandgroup --uid-owner $temp" 
 		    temp="${userspec#*:}"
@@ -4316,12 +4390,14 @@ process_rule() # $1 = target
 		fi 
 		;;
 	    !*)
-		userandgroup="-m owner ! --uid-owner ${userspec#!}"
+		[ "$userspec" != "!" ] && userandgroup="$userandgroup ! --uid-owner ${userspec#!}"
 		;;
 	    *)
-		userandgroup="-m owner --uid-owner $userspec"
+		[ -n "$userspec" ] && userandgroup="$userandgroup --uid-owner $userspec"
 		;;
 	esac
+
+	[ "$userandgroup" = "-m owner" ] && userandgroup=
     fi
 
     case $target in

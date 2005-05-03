@@ -3188,7 +3188,7 @@ process_action() # $1 = chain    (Chain to add the rules to)
 		fi
 		userspec=${userspec%+*}
 		;;		
-	    */*)
+	    *+*)
 		if [ -n "${userspec#*+}" ]; then
 		    userandgroup="$userandgroup --cmd-owner ${userspec#*+}"
 		fi

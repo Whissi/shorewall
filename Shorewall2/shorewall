@@ -846,6 +846,17 @@ case "$1" in
 	    RESTOREPATH=/var/lib/shorewall/$RESTOREFILE
 
 	    if [ -x $RESTOREPATH ]; then
+		if [ -x ${RESTOREPATH}-ipsets ]; then
+		    echo Restoring Ipsets...
+		    #
+		    # We must purge iptables to be sure that there are no
+		    # references to ipsets
+		    #
+		    iptables -F
+		    iptables -X
+		    ${RESTOREPATH}-ipsets
+		fi
+
 		echo Restoring Shorewall...
 		$RESTOREPATH
 		date > $STATEDIR/restarted
@@ -1211,6 +1222,22 @@ case "$1" in
 				    mv -f /var/lib/shorewall/restore-$$ $RESTOREPATH 
 				    chmod +x $RESTOREPATH
 				    echo "   Currently-running Configuration Saved to $RESTOREPATH"
+				    
+				    case $SAVE_IPSETS in
+					[Yy]es)
+					    RESTOREPATH=${RESTOREPATH}-ipsets
+					    echo "#!/bin/sh" >> /var/lib/shorewall/restore-$$
+					    echo "ipset -U :all: :all:" >> /var/lib/shorewall/restore-$$
+					    echo "ipset -F" >> /var/lib/shorewall/restore-$$
+					    echo "ipset -X" >> /var/lib/shorewall/restore-$$
+					    echo "ipset -R << __EOF__" >> /var/lib/shorewall/restore-$$
+					    ipset -S >> /var/lib/shorewall/restore-$$
+					    echo "__EOF__" >> /var/lib/shorewall/restore-$$
+					    mv -f /var/lib/shorewall/restore-$$ $RESTOREPATH 
+					    chmod +x $RESTOREPATH
+					    echo "   Current Ipset Contents Saved to $RESTOREPATH"
+					    ;;
+				    esac
 				else
 				    rm -f /var/lib/shorewall/restore-$$
 				    echo "   ERROR: Currently-running Configuration Not Saved"
@@ -1246,6 +1273,12 @@ case "$1" in
 	RESTOREPATH=/var/lib/shorewall/$RESTOREFILE
 
 	if [ -x $RESTOREPATH ]; then
+
+	    if [ -x ${RESTOREPATH}-ipsets ]; then
+		rm -f ${RESTOREPATH}-ipsets
+		echo "    ${RESTOREPATH}-ipsets removed"
+	    fi
+
 	    rm -f $RESTOREPATH
 	    echo "    $RESTOREPATH removed"
 	elif [ -f $RESTOREPATH ]; then
@@ -1303,6 +1336,14 @@ case "$1" in
 	RESTOREPATH=/var/lib/shorewall/$RESTOREFILE
 
 	if [ -x $RESTOREPATH ]; then
+ 
+	    if [ -x ${RESTOREPATH}-ipsets ] ; then
+		echo Restoring Ipsets...
+		iptables -F
+		iptables -X
+		${RESTOREPATH}-ipsets
+	    fi
+
 	    echo Restoring Shorewall...
 	    $RESTOREPATH && echo "Shorewall restored from /var/lib/shorewall/$RESTOREFILE"
 	else

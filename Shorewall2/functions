@@ -162,6 +162,9 @@ separate_list() {
     local list
     local part
     local newlist
+    local firstpart
+    local lastpart
+    local enclosure
     #
     # There's been whining about us not catching embedded white space in
     # comma-separated lists. This is an attempt to snag some of the cases.
@@ -175,6 +178,25 @@ separate_list() {
             [ -n "$terminator" ] && \
 		$terminator "Invalid comma-separated list \"$@\""
             echo "Warning -- invalid comma-separated list \"$@\"" >&2
+	    ;;
+	*\[*\]*)
+	    #
+	    # Where we need to embed comma-separated lists within lists, we enclose them
+	    # within square brackets
+	    #
+	    firstpart=${@%%[*}
+	    lastpart=${@#*[}
+	    enclosure=${lastpart%]*}
+	    lastpart=${lastpart#*]}
+	    case $lastpart in
+		\,*)
+		    echo "$(separate_list $firstpart)[$enclosure] $(separate_list ${lastpart#,})"
+		    ;;
+		*)
+		     echo "$(separate_list $firstpart)[$enclosure]$(separate_list $lastpart)"
+		     ;;
+	    esac
+	    return
 	    ;;
     esac
 

@@ -562,7 +562,7 @@ get_set_flags() # $1 = set name and optional [levels], $2 = src or dst
     local temp setname options=$2
 
     case $1 in
-	*\[*[1-6]\])
+	*\[[1-6]\])
             temp=${1#*\[}
 	    temp=${temp%\]}
 	    setname=${1%\[*}
@@ -571,6 +571,12 @@ get_set_flags() # $1 = set name and optional [levels], $2 = src or dst
 	       temp=$(($temp - 1))
 	    done	
 	    echo "--set ${setname#+} $options"
+	    ;;
+	*\[*\])
+            temp=${1#*\[}
+	    temp=${temp%\]}
+	    setname=${1%\[*}
+	    echo "--set ${setname#+} $temp"
 	    ;;
 	*)
 	    echo "--set ${1#+} $2"
@@ -811,22 +817,6 @@ match_ipsec_out() # $1 = zone, $2 = host
     elif [ -n "$POLICY_MATCH" ]; then
 	echo "-m policy --pol none --dir out"
     fi
-}
-
-#
-# Generate a match for packets whose source matches the passed IPSET
-#
-match_ipset_source() 
-{
-    echo "-m set --set ${1#+} src"
-}
-
-#
-# Generate a match for packets whose destination matches the passed IPSET
-#
-match_ipset_dest() 
-{
-    echo "-m set --set ${1#+} dst"
 }
 
 #
@@ -1560,6 +1550,17 @@ stop_firewall() {
 	    RESTOREPATH=/var/lib/shorewall/$RESTOREFILE
 	    
 	    if [ -x $RESTOREPATH ]; then
+		if [ -x ${RESTOREPATH}-ipsets ]; then
+		    echo Restoring Ipsets...
+		    #
+		    # We must purge iptables to be sure that there are no
+		    # references to ipsets
+		    #
+		    iptables -F
+		    iptables -X
+		    ${RESTOREPATH}-ipsets
+		fi
+
 		echo Restoring Shorewall...
 		$RESTOREPATH
 		echo "Shorewall restored from $RESTOREPATH"
@@ -5906,13 +5907,15 @@ report_capabilities() {
 }
 
 #
-# Restore ipsets
+# Restore ipset contents
 #
-restore_ipsets() 
-{
-    local restore_sets=/var/lib/shorewall/${RESTOREFILE:-restore}-ipsets
-    
-    [ -x $restore_sets ] && $restore_sets 
+restore_ipset_contents() {
+    local ipset_script=/var/lib/shorewall/${RESTOREFILE:-restore}-ipsets
+
+    if [ -x $ipset_script ]; then
+	progress_message "Restoring IPSET contents..."
+	$ipset_script || stop_firewall
+    fi
 }
 
 #
@@ -6008,10 +6011,11 @@ initialize_netfilter () {
 
     deleteallchains
 
-
     setcontinue FORWARD
     setcontinue INPUT
     setcontinue OUTPUT
+
+    [ -n "$SAVE_IPSETS" ] && restore_ipset_contents
 
     run_user_exit continue
 
@@ -7560,6 +7564,7 @@ do_initialize() {
     DROPINVALID=
     RFC1918_STRICT=
     MACLIST_TTL=
+    SAVE_IPSETS=
     RESTOREFILE=
 
     RESTOREBASE=
@@ -7757,6 +7762,7 @@ do_initialize() {
     LOGTAGONLY=$(added_param_value_no LOGTAGONLY $LOGTAGONLY)
     DROPINVALID=$(added_param_value_yes DROPINVALID $DROPINVALID)
     RFC1918_STRICT=$(added_param_value_no RFC1918_STRICT $RFC1918_STRICT)
+    SAVE_IPSETS=$(added_param_value_no SAVE_IPSETS $SAVE_IPSETS) 
     #
     # Strip the files that we use often
     #

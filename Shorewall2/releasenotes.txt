@@ -40,13 +40,32 @@ New Features in version 2.3.0
    (see http://people.netfilter.org/kadlec/ipset/).
 
    In most places where an host or network address may be used, you may
-   also use the name of an ipset prefaced by "+". The name of the set
-   may optionally followed by a number from 1 to 6 enclosed in square
-   brackets ([]) -- this number indicates the maximum number of ipset
-   binding levels that are to be matched. Depending on the context
-   where the ipset name is used, either all "src" or all "dst" matches
-   will be used.
- 
+   also use the name of an ipset prefaced by "+". 
+
+	Example: "+Mirrors"
+
+   The name of the set may optionally followed by: 
+   
+   a) a number from 1 to 6 enclosed in square brackets ([]) -- this
+   number indicates the maximum number of ipset binding levels that 
+   are to be matched. Depending on the context where the ipset name 
+   is used, either all "src" or all "dst" matches will be used.
+   
+	Example: "+Mirrors[4]"
+
+   b) a series of "src" and "dst" options separated by commas and
+   inclosed in square brackets ([]). These will be passed directly
+   to iptables in the generated --set clause. See the ipset
+   documentation for details. 
+
+	Example: "+Mirrors[src,dst,src]"
+   
+   Note that "+Mirrors[4]" used in the SOURCE column of the rules 
+   file is equivalent to "+Mirrors[src,src,src,src]".
+
+   To generate a negative match, prefix the "+" with "!" as in
+   "!+Mirrors".
+
    Example 1: Blacklist all hosts in an ipset named "blacklist"
 
 	   /etc/shorewall/blacklist
@@ -61,5 +80,60 @@ New Features in version 2.3.0
 	   #ACTION      SOURCE      DEST     PROTO    DEST PORT(S)
            ACCEPT	+sshok      fw	     tcp      22
 
+   Shorewall can automatically manage the contents of your ipsets for
+   you. If you specify SAVE_IPSETS=Yes in /etc/shorewall/shorewall.conf
+   then:
 
+   A) "shorewall save" will save the contents of your ipsets. The file
+   where the sets are saved is formed by taking the name where the
+   Shorewall configuration is stored and appending "-ipsets". So if you
+   enter the command "shorewall save standard" then your Shorewall
+   configuration will be saved in /var/lib/shorewall/standard and your
+   ipset contents will be saved in /var/lib/shorewall/standard-ipsets.
 
+   B) During "shorewall [re]start", shorewall will restore the ipset
+   contents from the file specifed in RESTOREFILE
+   (shorewall.conf). Again "-ipsets" is appended so if you have
+   RESTOREFILE=standard in shorewall.conf then your ipset contents will
+   be restored from /var/lib/shorewall/standard-ipsets.
+
+   Regardless of the setting of SAVE_IPSETS, the "shorewall -f start"
+   and "shorewall start" commands will restore the ipset contents
+   corresponding to the Shorewall configuration restored provided that
+   the saved Shorewall configuration specified exists.
+
+   For example, "shorewall restore standard" would restore the ipset
+   contents from /var/lib/shorewall/standard-ipsets provided that
+   /var/lib/shorewall/standard exists and is executable and that
+   /var/lib/shorewall/standard-ipsets exists and is executable.
+
+   Ipsets are well suited for large blacklists. You can maintain your
+   blacklist using the 'ipset' utility without ever having to restart
+   or refresh Shorewall. If you use the SAVE_IPSETS=Yes feature just be
+   sure to "shorewall save" after altering the blacklist ipset(s). 
+
+   Example /etc/shorewall/blacklist:
+
+   #ADDRESS/SUBNET         PROTOCOL        PORT
+   +Blacklist[2]
+   +Blacklistnets[2]
+
+   Create the blacklist ipsets using:
+
+	  ipset -N Blacklist iphash
+	  ipset -N Blacklistnets nethash
+
+   Add entries
+
+       ipset -A Blacklist 206.124.146.177
+       ipset -A Blacklistnets 206.124.146.0/24
+
+   To allow entries for individual ports
+
+       ipset -N SMTP portmap --from 1 --to 31
+       ipset -A SMTP 25
+
+       ipset -A Blacklist 206.124.146.177
+       ipset -B Blacklist 206.124.146.177 -b SMTP
+
+   Now only port 25 will be blocked from 206.124.146.177. 

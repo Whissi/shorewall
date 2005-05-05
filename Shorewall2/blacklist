@@ -7,9 +7,10 @@
 #
 # Columns are:
 #
-#	ADDRESS/SUBNET 	- Host address, subnetwork, MAC address or IP address
+#	ADDRESS/SUBNET 	- Host address, subnetwork, MAC address, IP address
 #			  range (if your kernel and iptables contain iprange
-#			  match support).
+#			  match support) or ipset name prefaced by "+" (if 
+#			  your kernel supports ipset match).
 #
 # 			  MAC addresses must be prefixed with "~" and use "-"
 #			  as a separator.
@@ -37,6 +38,13 @@
 #
 # ADDRESS/SUBNET	PROTOCOL	PORT
 # 192.0.2.126		udp		53
+#
+# Example:
+#
+# To block DNS queries from addresses in the ipset 'dnsblack':
+#
+# ADDRESS/SUBNET	PROTOCOL	PORT
+# +dnsblack		udp		53
 #
 # Please see http://shorewall.net/blacklisting_support.htm for additional 
 # information.

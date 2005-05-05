@@ -219,6 +219,19 @@ run_tc() {
 }
 
 #
+# Run ipset and if an error occurs, stop the firewall and quit
+#
+run_ipset() {
+    if ! ipset $@ ; then
+	if [ -z "$stopping" ]; then
+	    error_message "ERROR: Command \"ipset $@\" Failed"
+	    stop_firewall
+	    exit 2
+	fi
+    fi
+}
+
+#
 # Create a filter chain
 #
 # If the chain isn't one of the common chains then add a rule to the chain
@@ -541,6 +554,29 @@ iprange_echo()
     fi
 }
 
+#
+# Get set flags
+#
+get_set_flags() # $1 = set name and optional [levels], $2 = src or dst
+{
+    local temp setname options=$2
+
+    case $1 in
+	*\[*[1-6]\])
+            temp=${1#*\[}
+	    temp=${temp%\]}
+	    setname=${1%\[*}
+	    while [ $temp -gt 1 ]; do
+	       options="$options,$2"
+	       temp=$(($temp - 1))
+	    done	
+	    echo "--set ${setname#+} $options"
+	    ;;
+	*)
+	    echo "--set ${1#+} $2"
+	    ;;
+    esac
+}	               
 
 #
 # Source IP range
@@ -557,6 +593,12 @@ source_ip_range() # $1 = Address or Address Range
 		    iprange_echo "--src-range $1"
 		    ;;
 	    esac
+	    ;;
+	!+*)
+	    echo "-m set ! $(get_set_flags ${1#!} src)"
+	    ;;
+	+*)
+	    echo "-m set $(get_set_flags $1 src)"
 	    ;;
 	*)
 	    echo "-s $1"
@@ -580,6 +622,12 @@ dest_ip_range() # $1 = Address or Address Range
 		    ;;
 	    esac
 	    ;;
+	!+*)
+	    echo "-m set ! $(get_set_flags ${1#!} dst)"
+	    ;;
+	+*)
+	    ipset_echo "-m set $(get_set_flags ${1#+} dst)"
+	    ;;
 	*)
 	    echo "-d $1"
 	    ;;
@@ -595,6 +643,10 @@ both_ip_ranges() # $1 = Source address or range, $2 = dest address or range
 	    prefix="-m iprange"
 	    match="--src-range $1"
 	    ;;
+	+*)
+	    prefix="-m set"
+	    match="--set ${1#+} src"
+	    ;;
 	*)
 	    match="-s $1"
 	    ;;
@@ -604,6 +656,18 @@ both_ip_ranges() # $1 = Source address or range, $2 = dest address or range
 	*.*.*.*-*.*.*.*)
 	    prefix="-m iprange"
 	    match="$match --dst-range $2"
+	    ;;
+	+*)
+	    case $1 in
+		*.*.*.*-*.*.*.*)
+		    prefix="$iprange -m set"
+		    ;;
+		*)
+		    prefix="-m set"
+		    ;;
+	    esac
+
+	    match="--set ${1#+} dst"
 	    ;;
 	*)
 	    match="$match -d $2"
@@ -747,6 +811,22 @@ match_ipsec_out() # $1 = zone, $2 = host
     elif [ -n "$POLICY_MATCH" ]; then
 	echo "-m policy --pol none --dir out"
     fi
+}
+
+#
+# Generate a match for packets whose source matches the passed IPSET
+#
+match_ipset_source() 
+{
+    echo "-m set --set ${1#+} src"
+}
+
+#
+# Generate a match for packets whose destination matches the passed IPSET
+#
+match_ipset_dest() 
+{
+    echo "-m set --set ${1#+} dst"
 }
 
 #
@@ -1002,7 +1082,7 @@ validate_hosts_file() {
 			   startup_error "Bridged interfaces may not be defined in /etc/shorewall/interfaces: $host"
 		       check_bridge_port ${host%%:*}
 		       ;;
-		   *.*.*.*)
+		   *.*.*.*|+*)
 		       ;;
 		   *)
 		       known_interface $host && \
@@ -2380,7 +2460,7 @@ process_tc_rule()
 
 	if [ "x$source" != "x-"	 ]; then
 	    case $source in
-		*.*.*)
+		*.*.*|+*|!+*)
 		    r="$(source_ip_range $source) "
 		    ;;
 		~*)
@@ -2431,7 +2511,7 @@ process_tc_rule()
 
 	if [ "x$dest" != "x-"  ]; then
 	    case $dest in
-		*.*.*)
+		*.*.*|+*|!+*)
 		    r="${r}$(dest_ip_range $dest) "
 		    ;;
 		*)
@@ -2685,8 +2765,8 @@ process_accounting_rule() {
 	    accounting_interface_verify ${source%:*}
 	    rule="-s ${source#*:} $(match_source_dev ${source%:*})"
 	    ;;
-	*.*.*.*)
-	    rule="-s $source"
+	*.*.*.*|+*|!+*)
+	    rule="$(source_ip_range)"
 	    ;;
 	-|all|any)
 	    ;;
@@ -2703,7 +2783,7 @@ process_accounting_rule() {
 	    accounting_interface_verify ${dest%:*}
 	    rule="$rule $(dest_ip_range ${dest#*:}) $(match_dest_dev ${dest%:*})"
 	    ;;
-	*.*.*.*)
+	*.*.*.*|+*|!*)
 	    rule="$rule $(dest_ip_range $dest)"
 	    ;;
 	-|all|any)
@@ -3036,8 +3116,8 @@ add_an_action()
 	action_interface_verify ${client%:*}
 	cli="$(match_source_dev ${client%:*}) $(source_ip_range ${client#*:})"
 	;;
-    *.*.*)
-	cli="-s $client"
+    *.*.*|+*|!+*)
+	cli="$(source_ip_range $client)"
 	;;
     ~*)
 	cli=$(mac_match $client)
@@ -3058,7 +3138,7 @@ add_an_action()
     case "$server" in
     -)
 	;;
-    *.*.*)
+    *.*.*|+*|!+*)
 	serv=$server
 	;;
     ~*)
@@ -3116,7 +3196,7 @@ add_an_action()
 		for srv in $(firewall_ip_range $serv1); do
 		    if [ -n "$loglevel" ]; then
 			log_rule_limit $loglevel $chain $action $logtarget "$ratelimit" "$logtag" -A $userandgroup \
-			    $(fix_bang $proto $sports $multiport $cli $(source_ip_range $srv) $dports)
+			    $(fix_bang $proto $sports $multiport $cli $(dest_ip_range $srv) $dports)
 		    fi
 		    
 		    run_iptables2 -A $chain $proto $multiport $cli $sports \
@@ -4082,7 +4162,7 @@ add_a_rule()
 	rule_interface_verify ${client%:*}
 	cli="$(match_source_dev ${client%:*}) $(source_ip_range ${client#*:})"
 	;;
-    *.*.*)
+    *.*.*|+*)
 	cli="$(source_ip_range $client)"
 	;;
     ~*)
@@ -4104,7 +4184,7 @@ add_a_rule()
     case "$server" in
     -)
 	;;
-    *.*.*)
+    *.*.*|+*)
 	serv=$server
 	;;
     ~*)
@@ -4763,7 +4843,7 @@ process_tos_rule() {
     fi
 
     [ -n "$src" ] && case "$src" in
-	*.*.*)
+	*.*.*|+*|!+*)
 	    #
 	    # IP Address or networks
 	    #
@@ -4811,7 +4891,7 @@ process_tos_rule() {
     fi
 
     [ -n "$dst" ] && case "$dst" in
-	*.*.*)
+	*.*.*|+*|!+*)
 	    #
 	    # IP Address or networks
 	    #
@@ -5245,7 +5325,7 @@ setup_masq()
 	source="$networks"
 
 	case $source in
-	*.*.*)
+	*.*.*|+*|!+*)
 	    ;;
 	*)
 	    networks=$(get_routed_networks $networks)
@@ -5254,9 +5334,7 @@ setup_masq()
 	    ;;
 	esac
 
-	[ "x$addresses" = x- ] && addresses=
-
-	
+	[ "x$addresses" = x- ] && addresses=	
 
 	if [ -n "$addresses" -a -n "$add_snat_aliases" ]; then
 	    for address in $(separate_list $addresses); do
@@ -5502,16 +5580,18 @@ process_blacklist_rec() {
     local addr
     local proto
     local dport
+    local temp
+    local setname
 
     for addr in $(separate_list $networks); do
 	case $addr in
-	~*)
-	    addr=$(echo $addr | sed 's/~//;s/-/:/g')
-	    source="--match mac --mac-source $addr"
-	    ;;
-	*)
-	    source="$(source_ip_range $addr)"
-	    ;;
+	    ~*)
+		addr=$(echo $addr | sed 's/~//;s/-/:/g')
+		source="--match mac --mac-source $addr"
+		;;
+	    *)
+		source="$(source_ip_range $addr)"
+		;;
 	esac
 
 	if [ -n "$protocol" ]; then
@@ -5826,6 +5906,16 @@ report_capabilities() {
 }
 
 #
+# Restore ipsets
+#
+restore_ipsets() 
+{
+    local restore_sets=/var/lib/shorewall/${RESTOREFILE:-restore}-ipsets
+    
+    [ -x $restore_sets ] && $restore_sets 
+}
+
+#
 # Perform Initialization
 #	- Delete all old rules
 #	- Delete all user chains
@@ -5917,6 +6007,7 @@ initialize_netfilter () {
     setpolicy FORWARD DROP
 
     deleteallchains
+
 
     setcontinue FORWARD
     setcontinue INPUT
@@ -6918,7 +7009,7 @@ define_firewall() # $1 = Command (Start or Restart)
     for file in chains nat proxyarp zones; do
 	append_file $file
     done
-    
+
     save_progress_message "Restoring Netfilter Configuration..."
 
     save_command 'iptables-restore << __EOF__'
@@ -7469,6 +7560,7 @@ do_initialize() {
     DROPINVALID=
     RFC1918_STRICT=
     MACLIST_TTL=
+    RESTOREFILE=
 
     RESTOREBASE=
     TMP_DIR=

@@ -134,6 +134,11 @@
 #			Hosts may be specified as an IP address range using the
 #			syntax <low address>-<high address>. This requires that
 #			your kernel and iptables contain iprange match support.
+#                       If you kernel and iptables have ipset match support then
+#                       you may give the name of an ipset prefaced by "+". The
+#                       ipset name may be optionally followed by a number from
+#                       1 to 6 enclosed in square brackets ([]) to indicate the
+#                       number of levels of source bindings to be matched.
 #
 #			dmz:192.168.2.2		Host 192.168.2.2 in the DMZ
 #
@@ -188,6 +193,14 @@
 #			<first ip>-<last ip>. When the ACTION is DNAT or DNAT-,
 #			the connections will be assigned to addresses in the
 #			range in a round-robin fashion.
+#
+#                       If you kernel and iptables have ipset match support then
+#                       you may give the name of an ipset prefaced by "+". The
+#                       ipset name may be optionally followed by a number from
+#                       1 to 6 enclosed in square brackets ([]) to indicate the
+#                       number of levels of destination bindings to be matched.
+#                       Only one of the SOURCE and DEST columns may specify an
+#                       ipset name.
 #
 #			The port that the server is listening on may be
 #			included and separated from the server's IP address by

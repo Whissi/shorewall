@@ -70,7 +70,17 @@
 #
 #			10.0.0.4-10.0.0.9	Range of IP addresses; your
 #						kernel and iptables must have
-#						iprange match support. 
+#						iprange match support.
+#
+#			+remote                 The name of an ipset prefaced
+#					        by "+". Your kernel and
+#						iptables must have set match
+#						support
+#
+#			+remote[4]              The name of the ipset may
+#                                               followed by a number of
+#                                               levels of ipset bindings
+#                                               enclosed in square brackets.
 #
 #			192.168.1.1,192.168.1.2
 #						Hosts 192.168.1.1 and
@@ -85,8 +95,9 @@
 #			another colon (":") and an IP/MAC/subnet address
 #			as described above (e.g., eth1:192.168.1.5).
 #
-#	DEST		Location of Server. Same as above with the exception that
-#			MAC addresses are not allowed.
+#	DEST		Location of destination host. Same as above with the exception that
+#			MAC addresses are not allowed and that you cannot specify
+#                       an ipset name in both the SOURCE and DEST columns.
 #
 #	PROTO		Protocol - Must be "tcp", "udp", "icmp", a number, or
 #			"all".

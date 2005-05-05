@@ -36,4 +36,30 @@ New Features in version 2.3.0
    symbolic links, it's easy to alias command names to be anything you
    want.
 
+2) Support has been added for ipsets
+   (see http://people.netfilter.org/kadlec/ipset/).
+
+   In most places where an host or network address may be used, you may
+   also use the name of an ipset prefaced by "+". The name of the set
+   may optionally followed by a number from 1 to 6 enclosed in square
+   brackets ([]) -- this number indicates the maximum number of ipset
+   binding levels that are to be matched. Depending on the context
+   where the ipset name is used, either all "src" or all "dst" matches
+   will be used.
+ 
+   Example 1: Blacklist all hosts in an ipset named "blacklist"
+
+	   /etc/shorewall/blacklist
+
+	   #ADDRESS/SUBNET         PROTOCOL        PORT
+	   +blacklist
+
+   Example 2: Allow SSH from all hosts in an ipset named "sshok:
+
+	   /etc/shorewall/rules
+
+	   #ACTION      SOURCE      DEST     PROTO    DEST PORT(S)
+           ACCEPT	+sshok      fw	     tcp      22
+
+
 

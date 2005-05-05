@@ -518,7 +518,7 @@ fi
 if [ -f ${PREFIX}/etc/shorewall/started ]; then
     backup_file /etc/shorewall/started
 else
-    run_install -o $OWNERSHIP -m 0600 started ${PREFIX}/etc/shorewall/started
+    run_install $OWNERSHIP -m 0600 started ${PREFIX}/etc/shorewall/started
     echo
     echo "Started file installed as ${PREFIX}/etc/shorewall/started"
 fi

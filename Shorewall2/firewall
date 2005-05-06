@@ -632,7 +632,7 @@ dest_ip_range() # $1 = Address or Address Range
 	    echo "-m set ! $(get_set_flags ${1#!} dst)"
 	    ;;
 	+*)
-	    ipset_echo "-m set $(get_set_flags ${1#+} dst)"
+	    echo "-m set $(get_set_flags ${1#+} dst)"
 	    ;;
 	*)
 	    echo "-d $1"

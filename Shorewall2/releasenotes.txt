@@ -39,7 +39,7 @@ New Features in version 2.3.0
 2) Support has been added for ipsets
    (see http://people.netfilter.org/kadlec/ipset/).
 
-   In most places where an host or network address may be used, you may
+   In most places where a host or network address may be used, you may
    also use the name of an ipset prefaced by "+". 
 
 	Example: "+Mirrors"
@@ -82,23 +82,15 @@ New Features in version 2.3.0
 
    Shorewall can automatically manage the contents of your ipsets for
    you. If you specify SAVE_IPSETS=Yes in /etc/shorewall/shorewall.conf
-   then:
-
-   A) "shorewall save" will save the contents of your ipsets. The file
+   then "shorewall save" will save the contents of your ipsets. The file
    where the sets are saved is formed by taking the name where the
    Shorewall configuration is stored and appending "-ipsets". So if you
    enter the command "shorewall save standard" then your Shorewall
    configuration will be saved in /var/lib/shorewall/standard and your
    ipset contents will be saved in /var/lib/shorewall/standard-ipsets.
 
-   B) During "shorewall [re]start", shorewall will restore the ipset
-   contents from the file specifed in RESTOREFILE
-   (shorewall.conf). Again "-ipsets" is appended so if you have
-   RESTOREFILE=standard in shorewall.conf then your ipset contents will
-   be restored from /var/lib/shorewall/standard-ipsets.
-
    Regardless of the setting of SAVE_IPSETS, the "shorewall -f start"
-   and "shorewall start" commands will restore the ipset contents
+   and "shorewall restore" commands will restore the ipset contents
    corresponding to the Shorewall configuration restored provided that
    the saved Shorewall configuration specified exists.
 
@@ -106,6 +98,24 @@ New Features in version 2.3.0
    contents from /var/lib/shorewall/standard-ipsets provided that
    /var/lib/shorewall/standard exists and is executable and that
    /var/lib/shorewall/standard-ipsets exists and is executable.
+
+   Also regardless of the setting of SAVE_IPSETS, the "shorewall forget"
+   command will purge the saved ipset information (if any) associated
+   with the saved shorewall configuration being removed.
+
+   You can also associate ipset contents with Shorewall configuration
+   directories using the following command:
+
+       ipset -S > <config directory>/ipsets
+
+   Example:
+
+       ipset -S > /etc/shorewall/ipsets
+
+   When you start or restart Shorewall (including using the 'try'
+   command) from the configuration directory, your ipsets will be
+   configured from the saved ipsets file. Once again, this behavior is
+   independent of the setting of SAVE_IPSETS.
 
    Ipsets are well suited for large blacklists. You can maintain your
    blacklist using the 'ipset' utility without ever having to restart
@@ -115,8 +125,8 @@ New Features in version 2.3.0
    Example /etc/shorewall/blacklist:
 
    #ADDRESS/SUBNET         PROTOCOL        PORT
-   +Blacklist[2]
-   +Blacklistnets[2]
+   +Blacklist[src,dst]
+   +Blacklistnets[src,dst]
 
    Create the blacklist ipsets using:
 

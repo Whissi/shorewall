@@ -1223,8 +1223,10 @@ case "$1" in
 				    chmod +x $RESTOREPATH
 				    echo "   Currently-running Configuration Saved to $RESTOREPATH"
 				    
-				    case $SAVE_IPSETS in
-					[Yy]es)
+				    rm -f ${RESTOREPATH}-ipsets
+				    
+				    case ${SAVE_IPSETS:-No} in
+					[Yy][Ee][Ss])
 					    RESTOREPATH=${RESTOREPATH}-ipsets
 					    echo "#!/bin/sh" >> /var/lib/shorewall/restore-$$
 					    echo "ipset -U :all: :all:" >> /var/lib/shorewall/restore-$$
@@ -1236,6 +1238,11 @@ case "$1" in
 					    mv -f /var/lib/shorewall/restore-$$ $RESTOREPATH 
 					    chmod +x $RESTOREPATH
 					    echo "   Current Ipset Contents Saved to $RESTOREPATH"
+					    ;;
+					[Nn][Oo])
+					    ;
+					*)
+					    echo "   WARNING: Invalid value ($SAVE_IPSETS) for SAVE_IPSETS. Ipset contents not saved"
 					    ;;
 				    esac
 				else
@@ -1335,8 +1342,7 @@ case "$1" in
 
 	RESTOREPATH=/var/lib/shorewall/$RESTOREFILE
 
-	if [ -x $RESTOREPATH ]; then
- 
+	if [ -x $RESTOREPATH ]; then 
 	    if [ -x ${RESTOREPATH}-ipsets ] ; then
 		echo Restoring Ipsets...
 		iptables -F

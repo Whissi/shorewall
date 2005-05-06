@@ -159,7 +159,7 @@ find_file()
 # Replace commas with spaces and echo the result
 #
 separate_list() {
-    local list
+    local list="$@"
     local part
     local newlist
     local firstpart
@@ -173,7 +173,7 @@ separate_list() {
     # either 'startup_error' or 'fatal_error' depending on the command and
     # command phase
     #
-    case "$@" in
+    case "$list" in
 	*,|,*|*,,*|*[[:space:]]*)
             [ -n "$terminator" ] && \
 		$terminator "Invalid comma-separated list \"$@\""
@@ -184,10 +184,10 @@ separate_list() {
 	    # Where we need to embed comma-separated lists within lists, we enclose them
 	    # within square brackets
 	    #
-	    firstpart=${@%%[*}
-	    lastpart=${@#*[}
-	    enclosure=${lastpart%]*}
-	    lastpart=${lastpart#*]}
+	    firstpart=${list%%\[*}
+	    lastpart=${list#*\[}
+	    enclosure=${lastpart%\]*}
+	    lastpart=${lastpart#*\]}
 	    case $lastpart in
 		\,*)
 		    echo "$(separate_list $firstpart)[$enclosure] $(separate_list ${lastpart#,})"

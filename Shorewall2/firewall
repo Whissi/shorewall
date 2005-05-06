@@ -1550,6 +1550,7 @@ stop_firewall() {
 	    RESTOREPATH=/var/lib/shorewall/$RESTOREFILE
 	    
 	    if [ -x $RESTOREPATH ]; then
+
 		if [ -x ${RESTOREPATH}-ipsets ]; then
 		    echo Restoring Ipsets...
 		    #
@@ -2995,6 +2996,8 @@ check_config() {
     echo "Validating policy file..."
 
     validate_policy
+
+    validate_blacklist
 
     echo "Pre-validating Actions..."
 
@@ -5562,11 +5565,13 @@ setup_masq()
 #   $dport       = destination port selector
 #
 add_blacklist_rule() {
-    if [ -n "$BLACKLIST_LOGLEVEL" ]; then
-	log_rule $BLACKLIST_LOGLEVEL blacklst $BLACKLIST_DISPOSITION  $(fix_bang $source $proto $dport)
+    if [ "$COMMAND" != check ]; then
+	if [ -n "$BLACKLIST_LOGLEVEL" ]; then
+	    log_rule $BLACKLIST_LOGLEVEL blacklst $BLACKLIST_DISPOSITION  $(fix_bang $source $proto $dport)
+	fi
+	
+	run_iptables2 -A blacklst $source $proto $dport -j $disposition
     fi
-
-    run_iptables2 -A blacklst $source $proto $dport -j $disposition
 }
 
 #
@@ -5642,7 +5647,11 @@ process_blacklist_rec() {
 	    addr="$addr $protocol"
 	fi
 
-	progress_message "   $addr added to Black List"
+	if [ "$COMMAND" = check ]; then
+	    progress_message "   $addr" Verified
+	else
+	    progress_message "   $addr added to Black List"
+	fi
     done
 }
 
@@ -5712,6 +5721,25 @@ refresh_blacklist() {
 	    process_blacklist_rec
 	done < $TMP_DIR/blacklist
     fi
+}
+
+#
+# Verify the Black List
+#
+validate_blacklist() {
+    local f=$(find_file blacklist)
+    local disposition=$BLACKLIST_DISPOSITION
+
+    echo "Checking Black List..."
+
+    strip_file blacklist $f
+
+    [ "$disposition" = REJECT ] && disposition=reject
+
+    while read networks protocol ports; do
+	expandv networks protocol ports
+	process_blacklist_rec
+    done < $TMP_DIR/blacklist
 }
 
 #
@@ -5907,18 +5935,6 @@ report_capabilities() {
 }
 
 #
-# Restore ipset contents
-#
-restore_ipset_contents() {
-    local ipset_script=/var/lib/shorewall/${RESTOREFILE:-restore}-ipsets
-
-    if [ -x $ipset_script ]; then
-	progress_message "Restoring IPSET contents..."
-	$ipset_script || stop_firewall
-    fi
-}
-
-#
 # Perform Initialization
 #	- Delete all old rules
 #	- Delete all user chains
@@ -6015,7 +6031,15 @@ initialize_netfilter () {
     setcontinue INPUT
     setcontinue OUTPUT
 
-    [ -n "$SAVE_IPSETS" ] && restore_ipset_contents
+    f=$(find_file ipsets)
+
+    if [ -f $f ]; then
+	echo "Processing $f ..."
+	ipset -U :all: :all:
+	run_ipset -F
+	run_ipset -X
+	run_ipset -R < $f
+    fi
 
     run_user_exit continue
 

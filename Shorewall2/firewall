@@ -555,7 +555,7 @@ iprange_echo()
 }
 
 #
-# Get set flags
+# Get set flags (ipsets).
 #
 get_set_flags() # $1 = set name and optional [levels], $2 = src or dst
 {
@@ -707,7 +707,7 @@ match_source_hosts()
 	    *:*)
 		physdev_echo "--physdev-in ${1%:*} $(source_ip_range ${1#*:})"
 		;;
-	    *.*.*.*)
+	    *.*.*.*|+*|!+*)
 		echo $(source_ip_range $1)
 		;;
 	    *)
@@ -726,7 +726,7 @@ match_dest_hosts()
 	    *:*)
 		physdev_echo "--physdev-out ${1%:*} $(dest_ip_range ${1#*:})"
 		;;
-	    *.*.*.*)
+	    *.*.*.*|+*|!+*)
 		echo $(dest_ip_range $1)
 		;;
 	    *)

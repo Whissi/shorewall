@@ -632,7 +632,7 @@ dest_ip_range() # $1 = Address or Address Range
 	    echo "-m set ! $(get_set_flags ${1#!} dst)"
 	    ;;
 	+*)
-	    echo "-m set $(get_set_flags ${1#+} dst)"
+	    echo "-m set $(get_set_flags $1 dst)"
 	    ;;
 	*)
 	    echo "-d $1"
@@ -642,45 +642,45 @@ dest_ip_range() # $1 = Address or Address Range
 
 both_ip_ranges() # $1 = Source address or range, $2 = dest address or range
 {
-    local prefix= match=
+    local rangeprefix= setprefix= rangematch= setmatch=
 
     case $1 in 
 	*.*.*.*-*.*.*.*)
-	    prefix="-m iprange"
-	    match="--src-range $1"
+	    rangeprefix="-m iprange"
+	    rangematch="--src-range $1"
+	    ;;
+	!+*)
+	    setprefix="-m set"
+	    setmatch="! $(get_set_flags ${1#!} src)"
 	    ;;
 	+*)
-	    prefix="-m set"
-	    match="--set ${1#+} src"
+	    setprefix="-m set"
+	    setmatch="$(get_set_flags $1 src)"
 	    ;;
 	*)
-	    match="-s $1"
+	    rangematch="-s $1"
 	    ;;
     esac
 
     case $2 in 
 	*.*.*.*-*.*.*.*)
-	    prefix="-m iprange"
-	    match="$match --dst-range $2"
+	    rangeprefix="-m iprange"
+	    rangematch="$rangematch --dst-range $2"
+	    ;;
+	!+*)
+	    setprefix="-m set"
+	    match="$setmatch ! $(get_set_flags ${2#!} dst)"
 	    ;;
 	+*)
-	    case $1 in
-		*.*.*.*-*.*.*.*)
-		    prefix="$iprange -m set"
-		    ;;
-		*)
-		    prefix="-m set"
-		    ;;
-	    esac
-
-	    match="--set ${1#+} dst"
+	    setprefix="-m set"
+	    setmatch="$setmatch $(get_set_flags $2 dst)"
 	    ;;
 	*)
-	    match="$match -d $2"
+	    rangematch="$rangematch -d $2"
 	    ;;
     esac
 
-    echo "$prefix $match"
+    echo "$rangeprefix $rangematch $setprefix $setmatch"
 }    
 
 #

@@ -2765,10 +2765,10 @@ process_accounting_rule() {
     case $source in
 	*:*)
 	    accounting_interface_verify ${source%:*}
-	    rule="-s ${source#*:} $(match_source_dev ${source%:*})"
+	    rule="$(source_ip_range ${source#*:}) $(match_source_dev ${source%:*})"
 	    ;;
 	*.*.*.*|+*|!+*)
-	    rule="$(source_ip_range)"
+	    rule="$(source_ip_range $source)"
 	    ;;
 	-|all|any)
 	    ;;

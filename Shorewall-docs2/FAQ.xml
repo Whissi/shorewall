@@ -17,7 +17,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-05-08</pubdate>
+    <pubdate>2005-05-09</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -99,27 +99,22 @@
       shows how to do port forwarding under Shorewall. The format of a
       port-forwarding rule to a local system is as follows:</para>
 
-      <programlisting>#ACTION SOURCE DEST PROTO DEST PORT DNAT net
-      loc:&lt;l<emphasis>ocal IP address</emphasis>&gt;[:&lt;<emphasis>local
-      port</emphasis>&gt;] &lt;<emphasis>protocol</emphasis>&gt;
-      &lt;<emphasis>port #</emphasis>&gt;</programlisting>
+      <programlisting>#ACTION    SOURCE      DEST                                   PROTO        DEST PORT
+DNAT       net         loc:&lt;l<emphasis>ocal IP address</emphasis>&gt;[:&lt;<emphasis>local port</emphasis>&gt;]  &lt;<emphasis>protocol</emphasis>&gt;   &lt;<emphasis>port #</emphasis>&gt;</programlisting>
 
       <para>So to forward UDP port 7777 to internal system 192.168.1.5, the
       rule is:</para>
 
-      <programlisting>#ACTION SOURCE DEST PROTO DEST PORT DNAT net
-      loc:192.168.1.5 udp 7777</programlisting>
+      <programlisting>#ACTION    SOURCE   DEST             PROTO    DEST PORT
+DNAT       net      loc:192.168.1.5  udp      7777</programlisting>
 
       <para>If you want to forward requests directed to a particular address (
       <emphasis>&lt;external IP&gt;</emphasis> ) on your firewall to an
       internal system:</para>
 
-      <programlisting>#ACTION SOURCE DEST PROTO DEST PORT SOURCE ORIGINAL #
-      PORT DEST. DNAT net loc:&lt;l<emphasis>ocal IP
-      address</emphasis>&gt;[:&lt;<emphasis>local port</emphasis>&gt;]
-      &lt;<emphasis>protocol</emphasis>&gt; &lt;<emphasis>port
-      #</emphasis>&gt; - &lt;<emphasis>external
-      IP</emphasis>&gt;</programlisting>
+      <programlisting>#ACTION SOURCE DEST                                   PROTO       DEST PORT  SOURCE  ORIGINAL
+#                                                                            PORT    DEST.
+DNAT    net    loc:&lt;l<emphasis>ocal IP address</emphasis>&gt;[:&lt;<emphasis>local port</emphasis>&gt;]  &lt;<emphasis>protocol</emphasis>&gt;  &lt;<emphasis>port #</emphasis>&gt;   -       &lt;<emphasis>external IP</emphasis>&gt;</programlisting>
 
       <para>Finally, if you need to forward a range of ports, in the DEST PORT
       column specify the range as
@@ -235,8 +230,8 @@
 
         <para>In /<filename>etc/shorewall/rules</filename>:</para>
 
-        <programlisting>#ACTION SOURCE DEST PROTO DEST PORT DNAT net
-        loc:192.168.1.3:22 tcp 1022</programlisting>
+        <programlisting>#ACTION    SOURCE   DEST                PROTO    DEST PORT
+DNAT       net      loc:192.168.1.3:22  tcp      1022</programlisting>
       </section>
 
       <section id="faq1d">
@@ -262,27 +257,26 @@
         <para>You can enable access to the server from your local network
         using the firewall's external IP address by adding this rule:</para>
 
-        <programlisting>#ACTION SOURCE DEST PROTO DEST PORT(S) SOURCE ORIGINAL
-        # PORT DEST DNAT loc dmz:192.168.2.4 tcp 80 -
-        206.124.146.176</programlisting>
+        <programlisting>#ACTION    SOURCE   DEST                PROTO    DEST PORT(S)    SOURCE      ORIGINAL
+#                                                                PORT        DEST                 
+DNAT       loc      dmz:192.168.2.4     tcp      80              -           206.124.146.176</programlisting>
 
         <para>If your external IP address is dynamic, then you must do the
         following:</para>
 
         <para>In <filename>/etc/shorewall/init</filename>:</para>
 
-        <programlisting><command>ETH0_IP=`find_interface_address
-        eth0`</command></programlisting>
+        <programlisting><command>ETH0_IP=`find_interface_address eth0`</command></programlisting>
 
         <para>For users of Shorewall 2.1.0 and later:</para>
 
-        <programlisting><command>ETH0_IP=`find_first_interface_address
-        eth0`</command></programlisting>
+        <programlisting><command>ETH0_IP=`find_first_interface_address eth0`</command></programlisting>
 
         <para>and make your DNAT rule:</para>
 
-        <programlisting>#ACTION SOURCE DEST PROTO DEST PORT SOURCE ORIGINAL #
-        PORT DEST. DNAT loc dmz:192.168.2.4 tcp 80 - $ETH0_IP</programlisting>
+        <programlisting>#ACTION    SOURCE        DEST               PROTO    DEST PORT   SOURCE    ORIGINAL
+#                                                                PORT      DEST.
+DNAT       loc           dmz:192.168.2.4    tcp      80          -         $ETH0_IP</programlisting>
       </section>
 
       <section id="faq1e">
@@ -298,8 +292,8 @@
         If you add the following rule then from the net, you will have 4104
         listening, from your LAN, port 22.</para>
 
-        <programlisting>#ACTION SOURCE DEST PROTO DEST PORT(S) DNAT net
-        fw:192.168.1.1:22 tcp 4104</programlisting>
+        <programlisting>#ACTION SOURCE  DEST                    PROTO   DEST PORT(S)
+DNAT    net     fw:192.168.1.1:22       tcp     4104</programlisting>
       </section>
     </section>
 
@@ -361,9 +355,9 @@
         </listitem>
       </itemizedlist>
 
-      <para>If you insist on an IP solution to the accessibility problem
-      rather than a DNS solution, then if you are running Shorewall 2.0.0 or
-      2.0.1 then please see the <ulink
+      <para>If you insist on a stupid IP solution to the accessibility problem
+      rather than a more efficient DNS solution, then if you are running
+      Shorewall 2.0.0 or 2.0.1 then please see the <ulink
       url="http://www.shorewall.net/1.4/FAQ.htm#faq2">Shorewall 1.4
       FAQ</ulink>.</para>
 
@@ -379,42 +373,40 @@
         <listitem>
           <para>In <filename>/etc/shorewall/interfaces</filename>:</para>
 
-          <programlisting>#ZONE INTERFACE BROADCAST OPTIONS loc eth1 detect
-          <emphasis role="bold">routeback</emphasis></programlisting>
+          <programlisting>#ZONE    INTERFACE    BROADCAST    OPTIONS
+loc      eth1         detect       <emphasis role="bold">routeback</emphasis></programlisting>
         </listitem>
 
         <listitem>
           <para>In <filename>/etc/shorewall/masq</filename>:</para>
 
-          <programlisting>#INTERFACE SUBNET ADDRESS PROTO PORT(S)
-          eth1:192.168.1.5 eth1 192.168.1.254 tcp www</programlisting>
+          <programlisting>#INTERFACE              SUBNET          ADDRESS         PROTO   PORT(S)
+eth1:192.168.1.5        eth1            192.168.1.254   tcp     www</programlisting>
         </listitem>
 
         <listitem>
           <para>In <filename>/etc/shorewall/rules</filename>:</para>
 
-          <programlisting>#ACTION SOURCE DEST PROTO DEST PORT SOURCE ORIGINAL
-          # PORT DEST. DNAT loc loc:192.168.1.5 tcp www -
-          130.151.100.69</programlisting>
+          <programlisting>#ACTION    SOURCE       DEST               PROTO    DEST PORT   SOURCE    ORIGINAL
+#                                                               PORT      DEST.
+DNAT       loc          loc:192.168.1.5    tcp      www         -         130.151.100.69</programlisting>
 
           <para>That rule only works of course if you have a static external
           IP address. If you have a dynamic IP address and are running
           Shorewall 1.3.4 through Shorewall 2.0.* then include this in
           <filename>/etc/shorewall/init</filename>:</para>
 
-          <programlisting><command>ETH0_IP=`find_interface_address
-          eth0`</command></programlisting>
+          <programlisting><command>ETH0_IP=`find_interface_address eth0`</command></programlisting>
 
           <para>For users of Shorewall 2.1.0 and later:</para>
 
-          <programlisting><command>ETH0_IP=`find_first_interface_address
-          eth0`</command></programlisting>
+          <programlisting><command>ETH0_IP=`find_first_interface_address eth0`</command></programlisting>
 
           <para>and make your DNAT rule:</para>
 
-          <programlisting>#ACTION SOURCE DEST PROTO DEST PORT SOURCE ORIGINAL
-          # PORT DEST. DNAT loc loc:192.168.1.5 tcp www -
-          $ETH0_IP</programlisting>
+          <programlisting>#ACTION    SOURCE        DEST               PROTO    DEST PORT   SOURCE    ORIGINAL
+#                                                                PORT      DEST.
+DNAT       loc           loc:192.168.1.5    tcp      www         -         $ETH0_IP</programlisting>
 
           <para>Using this technique, you will want to configure your
           DHCP/PPPoE client to automatically restart Shorewall each time that
@@ -438,8 +430,7 @@
           <programlisting>Oct 4 10:26:40 netgw kernel:
           Shorewall:FORWARD:REJECT:IN=eth1 OUT=eth1 SRC=192.168.118.200
           DST=192.168.118.210 LEN=48 TOS=0x00 PREC=0x00 TTL=127 ID=1342 DF
-          PROTO=TCP SPT=1494 DPT=1491 WINDOW=17472 RES=0x00 ACK SYN
-          URGP=0</programlisting>
+          PROTO=TCP SPT=1494 DPT=1491 WINDOW=17472 RES=0x00 ACK SYN URGP=0</programlisting>
         </note>
 
         <para><emphasis role="bold">Answer:</emphasis> This is another problem
@@ -452,8 +443,8 @@
         addresses and can be accessed externally and internally using the same
         address.</para>
 
-        <para>If you don't like those solutions and prefer routing all Z-&gt;Z
-        traffic through your firewall then:</para>
+        <para>If you don't like those solutions and prefer to stupidly route
+        all Z-&gt;Z traffic through your firewall then:</para>
 
         <orderedlist>
           <listitem>
@@ -469,26 +460,23 @@
         <example>
           <title>Example:</title>
 
-          <literallayout>Zone: dmz Interface: eth2 Subnet: 192.168.2.0/24, Address 192.168.2.254</literallayout>
+          <literallayout>Zone: dmz Interface: eth2 Subnet: 192.168.2.0/24 Address: 192.168.2.254</literallayout>
 
           <para>In <filename>/etc/shorewall/interfaces</filename>:</para>
 
-          <programlisting>#ZONE INTERFACE BROADCAST OPTIONS dmz eth2
-          192.168.2.255 <emphasis
-          role="bold">routeback</emphasis></programlisting>
+          <programlisting>#ZONE    INTERFACE    BROADCAST       OPTIONS
+dmz      eth2         192.168.2.255   <emphasis role="bold">routeback</emphasis></programlisting>
 
           <para>In <filename>/etc/shorewall/na</filename>t, be sure that you
           have <quote>Yes</quote> in the ALL INTERFACES column.</para>
 
-          <para>In <filename>/etc/shorewall/masq</filename>:</para>
+          <para>In /etc/shorewall/masq:</para>
 
-          <programlisting>#INTERFACE   SUBNET          ADDRESS
-eth2         192.168.2.0/24  192.168.2.254</programlisting>
+          <programlisting>#INTERFACE    SUBNETS     ADDRESS
+eth2          eth2        192.168.2.254</programlisting>
 
-          <para>As in FAQ 2 above, all redirected traffic will appear to the
-          server to originate on the firewall (which is yet one more reason
-          that you should use DNS to correct this problem rather than applying
-          horrible IP hacks).</para>
+          <para>Like the idiotic hack in FAQ 2 above, this will make all
+          dmz-&gt;dmz traffic appear to originate on the firewall.</para>
         </example>
       </section>
 
@@ -515,27 +503,26 @@ eth2         192.168.2.0/24  192.168.2.254</programlisting>
         <para>You can enable access to the server from your local network
         using the firewall's external IP address by adding this rule:</para>
 
-        <programlisting>#ACTION SOURCE DEST PROTO DEST PORT(S) SOURCE ORIGINAL
-        # PORT DEST DNAT loc dmz:192.168.2.4 tcp 80 -
-        206.124.146.176</programlisting>
+        <programlisting>#ACTION    SOURCE   DEST                PROTO    DEST PORT(S)    SOURCE      ORIGINAL
+#                                                                PORT        DEST                 
+DNAT       loc      dmz:192.168.2.4     tcp      80              -           206.124.146.176</programlisting>
 
         <para>If your external IP address is dynamic, then you must do the
         following:</para>
 
         <para>In <filename>/etc/shorewall/init</filename>:</para>
 
-        <programlisting><command>ETH0_IP=`find_interface_address
-        eth0`</command></programlisting>
+        <programlisting><command>ETH0_IP=`find_interface_address eth0`</command></programlisting>
 
         <para>For users of Shorewall 2.1.0 and later:</para>
 
-        <programlisting><command>ETH0_IP=`find_first_interface_address
-        eth0`</command></programlisting>
+        <programlisting><command>ETH0_IP=`find_first_interface_address eth0`</command></programlisting>
 
         <para>and make your DNAT rule:</para>
 
-        <programlisting>#ACTION SOURCE DEST PROTO DEST PORT SOURCE ORIGINAL #
-        PORT DEST. DNAT loc dmz:192.168.2.4 tcp 80 - $ETH0_IP</programlisting>
+        <programlisting>#ACTION    SOURCE        DEST               PROTO    DEST PORT   SOURCE    ORIGINAL
+#                                                                PORT      DEST.
+DNAT       loc           dmz:192.168.2.4    tcp      80          -         $ETH0_IP</programlisting>
       </section>
     </section>
   </section>
@@ -554,22 +541,23 @@ eth2         192.168.2.0/24  192.168.2.254</programlisting>
       following:</para>
 
       <blockquote>
-        <para><programlisting>&gt; I know PoM -ng is going to address this
-        issue, but till it is ready, and &gt; all the extras are ported to it,
-        is there any way to use the h.323 &gt; contrack module kernel patch
-        with a 2.6 kernel? &gt; Running 2.6.1 - no 2.4 kernel stuff on the
-        system, so downgrade is not &gt; an option... The module is not ported
-        yet to 2.6, sorry. &gt; Do I have any options besides a gatekeeper app
-        (does not work in my &gt; network) or a proxy (would prefer to avoid
-        them)? I suggest everyone to setup a proxy (gatekeeper) instead: the
-        module is really dumb and does not deserve to exist at all. It was an
-        excellent tool to debug/develop the newnat
-        interface.</programlisting></para>
+        <para><programlisting>&gt; I know PoM -ng is going to address this issue, but till it is ready, and
+&gt; all the extras are ported to it, is there any way to use the h.323
+&gt; contrack module kernel patch with a 2.6 kernel?
+&gt; Running 2.6.1 - no 2.4 kernel stuff on the system, so downgrade is not
+&gt; an option... The module is not ported yet to 2.6, sorry.
+&gt; Do I have any options besides a gatekeeper app (does not work in my
+&gt; network) or a proxy (would prefer to avoid them)?
+
+I suggest everyone to setup a proxy (gatekeeper) instead: the module is
+really dumb and does not deserve to exist at all. It was an excellent tool
+to debug/develop the newnat interface.</programlisting></para>
       </blockquote>
 
-      <para>Look <ulink url="UPnP.html">here</ulink> for a solution for MSN IM
-      but be aware that there are significant security risks involved with
-      this solution. Also check the Netfilter mailing list archives at <ulink
+      <para>Look <ulink url="http://linux-igd.sourceforge.net">here</ulink>
+      for a solution for MSN IM but be aware that there are significant
+      security risks involved with this solution. Also check the Netfilter
+      mailing list archives at <ulink
       url="http://www.netfilter.org">http://www.netfilter.org</ulink>.</para>
     </section>
   </section>
@@ -746,16 +734,16 @@ eth2         192.168.2.0/24  192.168.2.254</programlisting>
       <para>I have this entry in <ulink
       url="Documentation.htm#Tunnels">/etc/shorewall/tunnels</ulink>:</para>
 
-      <programlisting># TYPE ZONE GATEWAY GATEWAY # ZONE openvpn:5000 net
-      69.145.71.133</programlisting>
+      <programlisting># TYPE                  ZONE    GATEWAY         GATEWAY
+#                                               ZONE
+openvpn:5000            net     69.145.71.133</programlisting>
 
       <para>Yet I am seeing this log message:</para>
 
-      <programlisting>Oct 12 13:41:03 localhost kernel:
-      Shorewall:net2all:DROP:IN=eth0 OUT=
-      MAC=00:04:5a:7f:92:9f:00:b0:c2:89:68:e4:08:00 SRC=69.145.71.133
-      DST=216.187.138.18 LEN=42 TOS=0x00 PREC=0x00 TTL=46 ID=11 DF PROTO=UDP
-      SPT=33120 DPT=5000 LEN=22</programlisting>
+      <programlisting>Oct 12 13:41:03 localhost kernel: Shorewall:net2all:DROP:IN=eth0 OUT=
+MAC=00:04:5a:7f:92:9f:00:b0:c2:89:68:e4:08:00 SRC=69.145.71.133
+DST=216.187.138.18 LEN=42 TOS=0x00 PREC=0x00 TTL=46 ID=11 DF PROTO=UDP
+SPT=33120 DPT=5000 LEN=22</programlisting>
 
       <para><emphasis role="bold">Answer</emphasis>: Shorewall's <emphasis
       role="bold">openvpn</emphasis> tunnel type assumes that OpenVPN will be
@@ -765,8 +753,9 @@ eth2         192.168.2.0/24  192.168.2.254</programlisting>
       url="Documentation.htm#Tunnels">/etc/shorewall/tunnels</ulink> entry
       with this one:</para>
 
-      <programlisting># TYPE ZONE GATEWAY GATEWAY # ZONE generic:udp:5000 net
-      69.145.71.133</programlisting>
+      <programlisting># TYPE                  ZONE    GATEWAY         GATEWAY
+#                                               ZONE
+generic:udp:5000        net     69.145.71.133</programlisting>
     </section>
   </section>
 
@@ -795,7 +784,8 @@ eth2         192.168.2.0/24  192.168.2.254</programlisting>
       <filename>/etc/shorewall/shorewall.conf</filename> -- If you want to log
       all messages, set:</para>
 
-      <programlisting>LOGLIMIT="" LOGBURST=""</programlisting>
+      <programlisting>LOGLIMIT=""
+LOGBURST=""</programlisting>
 
       <para>Beginning with Shorewall version 1.3.12, you can <ulink
       url="shorewall_logging.html">set up Shorewall to log all of its messages
@@ -809,14 +799,12 @@ eth2         192.168.2.0/24  192.168.2.254</programlisting>
         that may be helpful:</para>
 
         <literallayout><ulink
-        url="http://www.shorewall.net/pub/shorewall/parsefw/">http://www.shorewall.net/pub/shorewall/parsefw/</ulink>
-        <ulink url="http://www.fireparse.com">http://www.fireparse.com</ulink>
-        <ulink
-        url="http://cert.uni-stuttgart.de/projects/fwlogwatch">http://cert.uni-stuttgart.de/projects/fwlogwatch</ulink>
-        <ulink url="http://www.logwatch.org">http://www.logwatch.org</ulink>
-        <ulink url="http://gege.org/iptables">http://gege.org/iptables</ulink>
-        <ulink
-        url="http://home.regit.org/ulogd-php.html">http://home.regit.org/ulogd-php.html</ulink></literallayout>
+            url="http://www.shorewall.net/pub/shorewall/parsefw/">http://www.shorewall.net/pub/shorewall/parsefw/</ulink>
+<ulink url="http://www.fireparse.com">http://www.fireparse.com</ulink>
+<ulink url="http://cert.uni-stuttgart.de/projects/fwlogwatch">http://cert.uni-stuttgart.de/projects/fwlogwatch</ulink>
+<ulink url="http://www.logwatch.org">http://www.logwatch.org</ulink>
+<ulink url="http://gege.org/iptables">http://gege.org/iptables</ulink>
+<ulink url="http://home.regit.org/ulogd-php.html">http://home.regit.org/ulogd-php.html</ulink></literallayout>
 
         <para>I personally use Logwatch. It emails me a report each day from
         my various systems with each report summarizing the logged activity on
@@ -1094,14 +1082,13 @@ eth2         192.168.2.0/24  192.168.2.254</programlisting>
       <example>
         <title>Here is an example:</title>
 
-        <programlisting>Jun 27 15:37:56 gateway kernel: Shorewall:<emphasis
-        role="bold">all2all:REJECT</emphasis>:<emphasis
-        role="bold">IN=eth2</emphasis> <emphasis
-        role="bold">OUT=eth1</emphasis> <emphasis
-        role="bold">SRC=192.168.2.2</emphasis> <emphasis
-        role="bold">DST=192.168.1.3 </emphasis>LEN=67 TOS=0x00 PREC=0x00
-        TTL=63 ID=5805 DF <emphasis role="bold">PROTO=UDP</emphasis> SPT=1803
-        <emphasis role="bold">DPT=53</emphasis> LEN=47</programlisting>
+        <programlisting>Jun 27 15:37:56 gateway kernel:
+        Shorewall:<emphasis role="bold">all2all:REJECT</emphasis>:<emphasis
+            role="bold">IN=eth2</emphasis> <emphasis role="bold">OUT=eth1</emphasis> <emphasis
+            role="bold">SRC=192.168.2.2</emphasis>
+        <emphasis role="bold">DST=192.168.1.3 </emphasis>LEN=67 TOS=0x00 PREC=0x00 TTL=63 ID=5805 DF <emphasis
+            role="bold">PROTO=UDP</emphasis>
+        SPT=1803 <emphasis role="bold">DPT=53</emphasis> LEN=47</programlisting>
 
         <para>Let's look at the important parts of this message:</para>
 
@@ -1254,21 +1241,23 @@ eth2         192.168.2.0/24  192.168.2.254</programlisting>
 
       <para><filename>/etc/shorewall/interfaces</filename>:</para>
 
-      <programlisting>#ZONE INTERFACE BROADCAST OPTIONS net eth0 detect net
-      eth1 detect</programlisting>
+      <programlisting>#ZONE    INTERFACE    BROADCAST       OPTIONS
+net      eth0         detect
+net      eth1         detect</programlisting>
 
       <para><filename>/etc/shorewall/policy</filename>:</para>
 
-      <programlisting>#SOURCE DESTINATION POLICY LIMIT:BURST net net
-      DROP</programlisting>
+      <programlisting>#SOURCE    DESTINATION    POLICY     LIMIT:BURST
+net        net            DROP</programlisting>
 
       <para>If you have masqueraded hosts, be sure to update
       <filename>/etc/shorewall/masq</filename> to masquerade to both ISPs. For
       example, if you masquerade all hosts connected to <filename
       class="devicefile">eth2</filename> then:</para>
 
-      <programlisting>#INTERFACE SUBNET ADDRESS eth0 eth2 eth1
-      eth2</programlisting>
+      <programlisting>#INTERFACE       SUBNET            ADDRESS
+eth0             eth2
+eth1             eth2</programlisting>
 
       <para>There was an article in SysAdmin covering the topic of setting up
       routing for this configuration. It may be found at <ulink
@@ -1291,12 +1280,23 @@ eth2         192.168.2.0/24  192.168.2.254</programlisting>
         providers that connect a local network (or even a single machine) to
         the big Internet.</para>
 
-        <programlisting>________ +------------+ / | | | +-------------+
-        Provider 1 +------- __ | | | / ___/ \_ +------+-------+ +------------+
-        | _/ \__ | if1 | / / \ | | | | Local network -----+ Linux router | |
-        Internet \_ __/ | | | \__ __/ | if2 | \ \___/ +------+-------+
-        +------------+ | | | | \ +-------------+ Provider 2 +------- | | |
-        +------------+ \________</programlisting>
+        <programlisting>                                                                 ________
+                                          +------------+        /
+                                          |            |       |
+                            +-------------+ Provider 1 +-------
+        __                  |             |            |     /
+    ___/  \_         +------+-------+     +------------+    |
+  _/        \__      |     if1      |                      /
+ /             \     |              |                      |
+| Local network -----+ Linux router |                      |     Internet
+ \_           __/    |              |                      |
+   \__     __/       |     if2      |                      \
+      \___/          +------+-------+     +------------+    |
+                            |             |            |     \
+                            +-------------+ Provider 2 +-------
+                                          |            |       |
+                                          +------------+        \________
+</programlisting>
 
         <para>There are usually two questions given this setup.</para>
 
@@ -1327,9 +1327,10 @@ eth2         192.168.2.0/24  192.168.2.254</programlisting>
         These are added in /etc/iproute2/rt_tables. Then you set up routing in
         these tables as follows:</para>
 
-        <programlisting>ip route add $P1_NET dev $IF1 src $IP1 table T1 ip
-        route add default via $P1 table T1 ip route add $P2_NET dev $IF2 src
-        $IP2 table T2 ip route add default via $P2 table T2</programlisting>
+        <programlisting>ip route add $P1_NET dev $IF1 src $IP1 table T1
+ip route add default via $P1 table T1
+ip route add $P2_NET dev $IF2 src $IP2 table T2
+ip route add default via $P2 table T2</programlisting>
 
         <para>Nothing spectacular, just build a route to the gateway and build
         a default route via that gateway, as you would do in the case of a
@@ -1343,8 +1344,8 @@ eth2         192.168.2.0/24  192.168.2.254</programlisting>
         to that neighbour. Note the `src' arguments, they make sure the right
         outgoing IP address is chosen.</para>
 
-        <programlisting>ip route add $P1_NET dev $IF1 src $IP1 ip route add
-        $P2_NET dev $IF2 src $IP2</programlisting>
+        <programlisting>ip route add $P1_NET dev $IF1 src $IP1
+ip route add $P2_NET dev $IF2 src $IP2</programlisting>
 
         <para>Then, your preference for default route:</para>
 
@@ -1355,8 +1356,8 @@ eth2         192.168.2.0/24  192.168.2.254</programlisting>
         a given interface if you already have the corresponding source
         address:</para>
 
-        <programlisting>ip rule add from $IP1 table T1 ip rule add from $IP2
-        table T2</programlisting>
+        <programlisting>ip rule add from $IP1 table T1
+ip rule add from $IP2 table T2</programlisting>
 
         <para>This set of commands makes sure all answers to traffic coming in
         on a particular interface get answered from that interface.</para>
@@ -1365,11 +1366,12 @@ eth2         192.168.2.0/24  192.168.2.254</programlisting>
           <para>'If $P0_NET is the local network and $IF0 is its interface,
           the following additional entries are desirable:</para>
 
-          <programlisting format="linespecific">ip route add $P0_NET dev $IF0
-          table T1 ip route add $P2_NET dev $IF2 table T1 ip route add
-          127.0.0.0/8 dev lo table T1 ip route add $P0_NET dev $IF0 table T2
-          ip route add $P1_NET dev $IF1 table T2 ip route add 127.0.0.0/8 dev
-          lo table T2</programlisting>
+          <programlisting format="linespecific">ip route add $P0_NET dev $IF0 table T1
+ip route add $P2_NET dev $IF2 table T1
+ip route add 127.0.0.0/8 dev lo table T1
+ip route add $P0_NET dev $IF0 table T2
+ip route add $P1_NET dev $IF1 table T2
+ip route add 127.0.0.0/8 dev lo table T2</programlisting>
         </note>
 
         <para>Now, this is just the very basic setup. It will work for all
@@ -1392,8 +1394,8 @@ eth2         192.168.2.0/24  192.168.2.254</programlisting>
         is done as follows (once more building on the example in the section
         on split-access):</para>
 
-        <programlisting>ip route add default scope global nexthop via $P1 dev
-        $IF1 weight 1 \ nexthop via $P2 dev $IF2 weight 1</programlisting>
+        <programlisting>ip route add default scope global nexthop via $P1 dev $IF1 weight 1 \
+     nexthop via $P2 dev $IF2 weight 1</programlisting>
 
         <para>This will balance the routes over both providers. The <emphasis
         role="bold">weight</emphasis> parameters can be tweaked to favor one
@@ -1470,21 +1472,20 @@ eth2         192.168.2.0/24  192.168.2.254</programlisting>
       <para><emphasis role="bold">Answer:</emphasis> The output you will see
       looks something like this:</para>
 
-      <programlisting>/lib/modules/2.4.17/kernel/net/ipv4/netfilter/ip_tables.o:
-      init_module: Device or resource busy Hint: insmod errors can be caused
-      by incorrect module parameters, including invalid IO or IRQ parameters
-      /lib/modules/2.4.17/kernel/net/ipv4/netfilter/ip_tables.o: insmod
-      /lib/modules/2.4.17/kernel/net/ipv4/netfilter/ip_tables.o failed
-      /lib/modules/2.4.17/kernel/net/ipv4/netfilter/ip_tables.o: insmod
-      ip_tables failed iptables v1.2.3: can't initialize iptables table `nat':
-      iptables who? (do you need to insmod?) Perhaps iptables or your kernel
-      needs to be upgraded.</programlisting>
+      <programlisting>/lib/modules/2.4.17/kernel/net/ipv4/netfilter/ip_tables.o: init_module: Device or resource busy
+Hint: insmod errors can be caused by incorrect module parameters, including invalid IO or IRQ parameters
+/lib/modules/2.4.17/kernel/net/ipv4/netfilter/ip_tables.o: insmod
+/lib/modules/2.4.17/kernel/net/ipv4/netfilter/ip_tables.o failed
+/lib/modules/2.4.17/kernel/net/ipv4/netfilter/ip_tables.o: insmod ip_tables failed
+iptables v1.2.3: can't initialize iptables table `nat': iptables who? (do you need to insmod?)
+Perhaps iptables or your kernel needs to be upgraded.</programlisting>
 
       <para>This problem is usually corrected through the following sequence
       of commands</para>
 
-      <programlisting><command>service ipchains stop chkconfig --delete
-      ipchains rmmod ipchains</command></programlisting>
+      <programlisting><command>service ipchains stop
+chkconfig --delete ipchains
+rmmod ipchains</command></programlisting>
 
       <para>Also, be sure to check the <ulink url="errata.htm">errata</ulink>
       for problems concerning the version of iptables (v1.2.3) shipped with
@@ -1507,13 +1508,21 @@ eth2         192.168.2.0/24  192.168.2.254</programlisting>
       <para>I just installed Shorewall and when I issue the start command, I
       see the following:</para>
 
-      <programlisting>Processing /etc/shorewall/params ... Processing
-      /etc/shorewall/shorewall.conf ... Starting Shorewall... Loading
-      Modules... Initializing... Determining Zones... Zones: net loc
-      Validating interfaces file... Validating hosts file... Determining Hosts
-      in Zones... <emphasis role="bold">Net Zone: eth0:0.0.0.0/0
-      </emphasis><emphasis role="bold">Local Zone: eth1:0.0.0.0/0</emphasis>
-      Deleting user chains... Creating input Chains... ...</programlisting>
+      <programlisting>Processing /etc/shorewall/params ...
+Processing /etc/shorewall/shorewall.conf ...
+Starting Shorewall...
+Loading Modules...
+Initializing...
+Determining Zones...
+   Zones: net loc
+Validating interfaces file...
+Validating hosts file...
+Determining Hosts in Zones...
+    <emphasis role="bold">Net Zone: eth0:0.0.0.0/0
+    </emphasis><emphasis role="bold">Local Zone: eth1:0.0.0.0/0</emphasis>
+Deleting user chains...
+Creating input Chains...
+...</programlisting>
 
       <para>Why can't Shorewall detect my interfaces properly?</para>
 
@@ -1628,11 +1637,11 @@ eth2         192.168.2.0/24  192.168.2.254</programlisting>
 
       <para>When I start shorewall I got the following errors.</para>
 
-      <programlisting>Oct 30 11:13:12 fwr modprobe: modprobe: Can't locate
-      module ipt_conntrack Oct 30 11:13:17 fwr modprobe: modprobe: Can't
-      locate module ipt_pkttype Oct 30 11:13:18 fwr modprobe: modprobe: Can't
-      locate module ipt_pkttype Oct 30 11:13:57 fwr last message repeated 2
-      times Oct 30 11:14:06 fwr root: Shorewall Restarted</programlisting>
+      <programlisting>Oct 30 11:13:12 fwr modprobe: modprobe: Can't locate module ipt_conntrack
+Oct 30 11:13:17 fwr modprobe: modprobe: Can't locate module ipt_pkttype
+Oct 30 11:13:18 fwr modprobe: modprobe: Can't locate module ipt_pkttype
+Oct 30 11:13:57 fwr last message repeated 2 times
+Oct 30 11:14:06 fwr root: Shorewall Restarted</programlisting>
 
       <para>The "shorewall status" output seems complying with my rules set.
       Should I worry ? and is there any way to get rid of these errors
@@ -1662,8 +1671,8 @@ eth2         192.168.2.0/24  192.168.2.254</programlisting>
       are not disabling a feature in your new kernel that you want to
       use.</para>
 
-      <programlisting>alias ipt_conntrack off alias ipt_pkttype
-      off</programlisting>
+      <programlisting>alias ipt_conntrack off
+alias ipt_pkttype off</programlisting>
 
       <para>For users who don't have the pkttype match feature in their
       kernel, I also recommend upgrading to Shorewall 2.0.6 or later and then
@@ -1688,12 +1697,15 @@ eth2         192.168.2.0/24  192.168.2.254</programlisting>
       <para><command>shorewall start</command> produces the following
       output:</para>
 
-      <programlisting>… Processing /etc/shorewall/policy... Policy ACCEPT for
-      fw to net using chain fw2net Policy ACCEPT for loc0 to net using chain
-      loc02net Policy ACCEPT for loc1 to net using chain loc12net Policy
-      ACCEPT for wlan to net using chain wlan2net Masqueraded Networks and
-      Hosts: iptables: Invalid argument ERROR: Command "/sbin/iptables -t nat
-      -A …" Failed</programlisting>
+      <programlisting>…
+Processing /etc/shorewall/policy...
+   Policy ACCEPT for fw to net using chain fw2net
+   Policy ACCEPT for loc0 to net using chain loc02net
+   Policy ACCEPT for loc1 to net using chain loc12net
+   Policy ACCEPT for wlan to net using chain wlan2net
+Masqueraded Networks and Hosts:
+iptables: Invalid argument
+   ERROR: Command "/sbin/iptables -t nat -A …" Failed</programlisting>
 
       <para><emphasis role="bold">Answer</emphasis>: 99.999% of the time, this
       error is caused by a mismatch between your iptables and kernel.</para>
@@ -1767,8 +1779,7 @@ eth2         192.168.2.0/24  192.168.2.254</programlisting>
 
       <para>At the shell prompt, type:</para>
 
-      <programlisting><command>/sbin/shorewall
-      version</command></programlisting>
+      <programlisting><command>/sbin/shorewall version</command></programlisting>
     </section>
 
     <section id="faq31">
@@ -1888,8 +1899,7 @@ eth2         192.168.2.0/24  192.168.2.254</programlisting>
       version of Shorewall earlier than 1.3.1, create /etc/shorewall/start and
       in it, place the following:</para>
 
-      <programlisting><command>run_iptables -I rfc1918 -s 192.168.100.1 -j
-      ACCEPT</command></programlisting>
+      <programlisting><command>run_iptables -I rfc1918 -s 192.168.100.1 -j ACCEPT</command></programlisting>
 
       <para>If you are running version 1.3.1 or later, add the following to
       <ulink url="Documentation.htm#rfc1918">/etc/shorewall/rfc1918</ulink>
@@ -1900,7 +1910,8 @@ eth2         192.168.2.0/24  192.168.2.254</programlisting>
       <para>Be sure that you add the entry ABOVE the entry for
       192.168.0.0/16.</para>
 
-      <programlisting>#SUBNET TARGET 192.168.100.1 RETURN</programlisting>
+      <programlisting>#SUBNET        TARGET
+192.168.100.1  RETURN</programlisting>
 
       <note>
         <para>If you add a second IP address to your external firewall
@@ -1909,8 +1920,9 @@ eth2         192.168.2.0/24  192.168.2.254</programlisting>
         configure the address 192.168.100.2 on your firewall, then you would
         add two entries to /etc/shorewall/rfc1918:</para>
 
-        <programlisting>#SUBNET TARGET 192.168.100.1 RETURN 192.168.100.2
-        RETURN</programlisting>
+        <programlisting>#SUBNET        TARGET
+192.168.100.1  RETURN
+192.168.100.2  RETURN</programlisting>
       </note>
 
       <section id="faq14a">
@@ -1929,10 +1941,8 @@ eth2         192.168.2.0/24  192.168.2.254</programlisting>
 
         <para>I see the following in my log:</para>
 
-        <programlisting>Mar 1 18:20:07 Mail kernel:
-        Shorewall:OUTPUT:REJECT:IN= OUT=eth0 SRC=192.168.1.2 DST=192.168.1.1
-        LEN=60 TOS=0x00 PREC=0x00 TTL=64 ID=26774 DF PROTO=TCP SPT=32797
-        DPT=80 WINDOW=5840 RES=0x00 SYN URGP=0</programlisting>
+        <programlisting>Mar  1 18:20:07 Mail kernel: Shorewall:OUTPUT:REJECT:IN= OUT=eth0 SRC=192.168.1.2 DST=192.168.1.1 LEN=60
+TOS=0x00 PREC=0x00 TTL=64 ID=26774 DF PROTO=TCP SPT=32797 DPT=80 WINDOW=5840 RES=0x00 SYN URGP=0 </programlisting>
 
         <para>Answer: The fact that the message is being logged from the
         OUTPUT chain means that the destination IP address is not in any
@@ -1944,8 +1954,8 @@ eth2         192.168.2.0/24  192.168.2.254</programlisting>
             <para>Add a zone for the modem in
             <filename>/etc/shorewall/zones</filename>:</para>
 
-            <programlisting>#ZONE DISPLAY COMMENTS modem ADSLModem Zone for
-            modem</programlisting>
+            <programlisting>#ZONE    DISPLAY       COMMENTS
+modem    ADSLModem     Zone for modem</programlisting>
           </listitem>
 
           <listitem>
@@ -1954,16 +1964,17 @@ eth2         192.168.2.0/24  192.168.2.254</programlisting>
             to your modem) in
             <filename>/etc/shorewall/interfaces</filename>:</para>
 
-            <programlisting>#ZONE INTERFACE BROADCAST OPTIONS modem eth0
-            detect</programlisting>
+            <programlisting>#ZONE      INTERFACE   BROADCAST    OPTIONS
+modem      eth0        detect</programlisting>
           </listitem>
 
           <listitem>
             <para>Allow web traffic to the modem in
             <filename>/etc/shorewall/rules</filename>:</para>
 
-            <programlisting>#ACTION SOURCE DEST PROTO DEST PORT(S) ACCEPT fw
-            modem tcp 80 ACCEPT loc modem tcp 80</programlisting>
+            <programlisting>#ACTION    SOURCE      DEST      PROTO     DEST PORT(S)
+ACCEPT     fw          modem     tcp       80
+ACCEPT     loc         modem     tcp       80</programlisting>
           </listitem>
         </orderedlist>
 
@@ -1977,8 +1988,8 @@ eth2         192.168.2.0/24  192.168.2.254</programlisting>
 
         <para><filename>/etc/shorewall/masq</filename>:</para>
 
-        <programlisting>#INTERFACE SUBNET ADDRESS eth0 eth1 # eth1 = interface
-        to local network</programlisting>
+        <programlisting>#INTERFACE         SUBNET          ADDRESS
+eth0               eth1                        # eth1 = interface to local network</programlisting>
 
         <para>For an example of this when the ADSL/Cable modem is bridged, see
         <ulink url="myfiles.htm">my configuration</ulink>. In that case, I
@@ -2035,8 +2046,7 @@ eth2         192.168.2.0/24  192.168.2.254</programlisting>
       <example>
         <title>Example:</title>
 
-        <programlisting>ACCEPT net:192.0.2.16/28,192.0.2.44 fw tcp
-        22</programlisting>
+        <programlisting>ACCEPT net:192.0.2.16/28,192.0.2.44 fw tcp 22</programlisting>
       </example>
     </section>
 
@@ -2061,8 +2071,7 @@ eth2         192.168.2.0/24  192.168.2.254</programlisting>
         <para>Otherwise, add this command to your /etc/shorewall/start
         file:</para>
 
-        <programlisting><command>run_iptables -D OUTPUT -p ! icmp -m state
-        --state INVALID -j DROP</command></programlisting>
+        <programlisting><command>run_iptables -D OUTPUT -p ! icmp -m state --state INVALID -j DROP</command></programlisting>
       </section>
     </section>
 
@@ -2085,14 +2094,19 @@ eth2         192.168.2.0/24  192.168.2.254</programlisting>
         <para>The last few lines of <ulink url="troubleshoot.htm">a startup
         trace</ulink> are these:</para>
 
-        <programlisting>+ run_iptables2 -t nat -A eth0_masq -s 192.168.2.0/24
-        -d 0.0.0.0/0 -j MASQUERADE + '[' 'x-t nat -A eth0_masq -s
-        192.168.2.0/24 -d 0.0.0.0/0 -j MASQUERADE' = 'x-t nat -A eth0_masq -s
-        192.168.2.0/24 -d 0.0.0. 0/0 -j MASQUERADE' ']' + run_iptables -t nat
-        -A eth0_masq -s 192.168.2.0/24 -d 0.0.0.0/0 -j MASQUERADE + iptables
-        -t nat -A eth0_masq -s 192.168.2.0/24 -d 0.0.0.0/0 -j MASQUERADE
-        iptables: Invalid argument + '[' -z '' ']' + stop_firewall + set
-        +x</programlisting>
+        <programlisting>+ run_iptables2 -t nat -A eth0_masq -s 192.168.2.0/24 -d 0.0.0.0/0 -j
+MASQUERADE
++ '[' 'x-t nat -A eth0_masq -s 192.168.2.0/24 -d 0.0.0.0/0 -j
+MASQUERADE' = 'x-t nat -A eth0_masq -s 192.168.2.0/24 -d 0.0.0.
+0/0 -j MASQUERADE' ']'
++ run_iptables -t nat -A eth0_masq -s 192.168.2.0/24 -d 0.0.0.0/0 -j
+MASQUERADE
++ iptables -t nat -A eth0_masq -s 192.168.2.0/24 -d 0.0.0.0/0 -j
+MASQUERADE
+iptables: Invalid argument
++ '[' -z '' ']'
++ stop_firewall
++ set +x</programlisting>
 
         <para><emphasis role="bold">Answer:</emphasis> Your new kernel
         contains headers that are incompatible with the ones used to compile
@@ -2116,15 +2130,15 @@ eth2         192.168.2.0/24  192.168.2.254</programlisting>
       everyone's site. Adsense is a Javascript that people add to their Web
       pages. So I entered the rule:</para>
 
-      <programlisting>#ACTION SOURCE DEST PROTO REJECT fw
-      net:pagead2.googlesyndication.com all</programlisting>
+      <programlisting>#ACTION   SOURCE        DEST                                 PROTO
+REJECT    fw            net:pagead2.googlesyndication.com    all</programlisting>
 
       <para>However, this also sometimes restricts access to "google.com". Why
       is that? Using dig, I found these IPs for domain
       googlesyndication.com:<programlisting>216.239.37.99
-      216.239.39.99</programlisting>And this for
-      google.com:<programlisting>216.239.37.99 216.239.39.99
-      216.239.57.99</programlisting>So my guess is that you are not actually
+216.239.39.99</programlisting>And this for google.com:<programlisting>216.239.37.99
+216.239.39.99
+216.239.57.99</programlisting>So my guess is that you are not actually
       blocking the domain, but rather the IP being called. So how in the world
       do you block an actual domain name?</para>
 
@@ -2144,23 +2158,24 @@ eth2         192.168.2.0/24  192.168.2.254</programlisting>
       expressed in terms of those IP addresses. So the rule that you entered
       was equivalent to:</para>
 
-      <para><programlisting>#ACTION SOURCE DEST PROTO REJECT fw
-      net:216.239.37.99 all REJECT fw net:216.239.39.99
-      all</programlisting>Given that name-based multiple hosting is a common
-      practice (another example: lists.shorewall.net and www1.shorewall.net
-      are both hosted on the same system with a single IP address), it is not
-      possible to filter connections to a particular name by examiniation of
-      protocol headers alone. While some protocols such as <ulink
-      url="FTP.html">FTP</ulink> require the firewall to examine and possibly
-      modify packet payload, parsing the payload of individual packets doesn't
-      always work because the application-level data stream can be split
-      across packets in arbitrary ways. This is one of the weaknesses of the
-      'string match' Netfilter extension available in Patch-O-Matic. The only
-      sure way to filter on packet content is to proxy the connections in
-      question -- in the case of HTTP, this means running something like
-      <ulink url="Shorewall_Squid_Usage.html">Squid</ulink>. Proxying allows
-      the proxy process to assemble complete application-level messages which
-      can then be accurately parsed and decisions can be made based on the
+      <para><programlisting>#ACTION   SOURCE        DEST                 PROTO
+REJECT    fw            net:216.239.37.99    all
+REJECT    fw            net:216.239.39.99    all</programlisting>Given that
+      name-based multiple hosting is a common practice (another example:
+      lists.shorewall.net and www1.shorewall.net are both hosted on the same
+      system with a single IP address), it is not possible to filter
+      connections to a particular name by examiniation of protocol headers
+      alone. While some protocols such as <ulink url="FTP.html">FTP</ulink>
+      require the firewall to examine and possibly modify packet payload,
+      parsing the payload of individual packets doesn't always work because
+      the application-level data stream can be split across packets in
+      arbitrary ways. This is one of the weaknesses of the 'string match'
+      Netfilter extension available in Patch-O-Matic. The only sure way to
+      filter on packet content is to proxy the connections in question -- in
+      the case of HTTP, this means running something like <ulink
+      url="Shorewall_Squid_Usage.html">Squid</ulink>. Proxying allows the
+      proxy process to assemble complete application-level messages which can
+      then be accurately parsed and decisions can be made based on the
       result.</para>
     </section>
 
@@ -2172,16 +2187,27 @@ eth2         192.168.2.0/24  192.168.2.254</programlisting>
       check</command>. There is a section near the top of the resulting output
       that gives you a synopsis of your kernel/iptables capabilities.</para>
 
-      <programlisting>gateway:/etc/shorewall # shorewall check Loading
-      /usr/share/shorewall/functions... Processing /etc/shorewall/params ...
-      Processing /etc/shorewall/shorewall.conf... Loading Modules... Notice:
-      The 'check' command is unsupported and problem reports complaining about
-      errors that it didn't catch will not be accepted Shorewall has detected
-      the following iptables/netfilter capabilities: NAT: Available Packet
-      Mangling: Available Multi-port Match: Available Connection Tracking
-      Match: Available Packet Type Match: Not available Policy Match:
-      Available Physdev Match: Available IP range Match: Available Verifying
-      Configuration... ...</programlisting>
+      <programlisting>gateway:/etc/shorewall # shorewall check
+Loading /usr/share/shorewall/functions...
+Processing /etc/shorewall/params ...
+Processing /etc/shorewall/shorewall.conf...
+Loading Modules...
+
+Notice:  The 'check' command is unsupported and problem
+         reports complaining about errors that it didn't catch
+         will not be accepted
+
+Shorewall has detected the following iptables/netfilter capabilities:
+   NAT: Available
+   Packet Mangling: Available
+   Multi-port Match: Available
+   Connection Tracking Match: Available
+   Packet Type Match: Not available
+   Policy Match: Available
+   Physdev Match: Available
+   IP range Match: Available
+Verifying Configuration...
+...</programlisting>
     </section>
   </section>
 </article>

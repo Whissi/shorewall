@@ -172,7 +172,7 @@ DNAT     loc      loc:192.168.1.12 tcp     80          -       130.252.100.69</p
       </listitem>
 
       <listitem>
-        <para> A new IPTABLES variable has been added to shorewall.conf. This
+        <para>A new IPTABLES variable has been added to shorewall.conf. This
         variable names the iptables executable that Shorewall will use. The
         variable is set to "/sbin/iptables". If you use the new
         shorewall.conf, you may need to change this setting to maintain
@@ -276,6 +276,17 @@ DNAT     loc      loc:192.168.1.12 tcp     80          -       130.252.100.69</p
         TARGET is 'logdrop' in
         <filename>/usr/share/shorewall/bogons</filename> are logged at the
         'info' level.</para>
+
+        <warning>
+          <para>If you have a file named <filename>rfc1918</filename> in your
+          <filename class="directory">/etc/shorewall</filename> directory, you
+          must either remove that file or you must copy
+          <filename>/usr/share/shorewall/rfc1918</filename> to <filename
+          class="directory">/etc/shorewall</filename> and modify that file
+          appropriately. Do not leave the old <filename>rfc1918</filename>
+          file in <filename
+          class="directory">/etc/shorewall</filename>.</para>
+        </warning>
       </listitem>
     </itemizedlist>
   </section>
@@ -348,8 +359,7 @@ DNAT     loc      loc:192.168.1.12 tcp     80          -       130.252.100.69</p
         configuration.</para>
 
         <para>For more information see the <ulink
-        url="Actions.html">User-defined Action
-        Page</ulink>.</para>
+        url="Actions.html">User-defined Action Page</ulink>.</para>
       </listitem>
 
       <listitem>

@@ -559,7 +559,7 @@ iprange_echo()
 #
 get_set_flags() # $1 = set name and optional [levels], $2 = src or dst
 {
-    local temp setname options=$2
+    local temp setname=$1 options=$2
 
     case $1 in
 	*\[[1-6]\])
@@ -570,18 +570,17 @@ get_set_flags() # $1 = set name and optional [levels], $2 = src or dst
 	       options="$options,$2"
 	       temp=$(($temp - 1))
 	    done	
-	    echo "--set ${setname#+} $options"
 	    ;;
 	*\[*\])
-            temp=${1#*\[}
-	    temp=${temp%\]}
+	    options=${1#*\[}
+	    options=${options%\]}
 	    setname=${1%\[*}
-	    echo "--set ${setname#+} $temp"
 	    ;;
 	*)
-	    echo "--set ${1#+} $2"
 	    ;;
     esac
+    
+    echo "--set ${setname#+} $options"
 }	               
 
 #
@@ -1072,12 +1071,21 @@ validate_hosts_file() {
 			   startup_error "Bridged interfaces may not be defined in /etc/shorewall/interfaces: $host"
 		       check_bridge_port ${host%%:*}
 		       ;;
-		   *.*.*.*|+*)
+		   *.*.*.*)
+		       ;;
+		   +*)
+		       eval ${z}_is_complex=Yes		       
 		       ;;
 		   *)
 		       known_interface $host && \
 			   startup_error "Bridged interfaces may not be defined in /etc/shorewall/interfaces: $host"
 		       check_bridge_port $host
+		       ;;
+	       esac
+	   else
+	       case $host in
+		   +*)
+		       eval ${z}_is_complex=Yes		       
 		       ;;
 	       esac
 	   fi
@@ -6798,7 +6806,7 @@ activate_rules()
 	    fi
 
 	    case $networks in
-		*.*.*.*)
+		*.*.*.*|+*)
 		    if [ "$networks" != 0.0.0.0/0 ]; then
 			if ! list_search $interface $need_broadcast ; then
 			    interface_has_option $interface detectnets && need_broadcast="$need_broadcast $interface"

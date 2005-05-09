@@ -469,8 +469,7 @@
         <example>
           <title>Example:</title>
 
-          <literallayout>Zone: dmz Interface: eth2 Subnet:
-          192.168.2.0/24</literallayout>
+          <literallayout>Zone: dmz Interface: eth2 Subnet: 192.168.2.0/24, Address 192.168.2.254</literallayout>
 
           <para>In <filename>/etc/shorewall/interfaces</filename>:</para>
 
@@ -480,6 +479,16 @@
 
           <para>In <filename>/etc/shorewall/na</filename>t, be sure that you
           have <quote>Yes</quote> in the ALL INTERFACES column.</para>
+
+          <para>In <filename>/etc/shorewall/masq</filename>:</para>
+
+          <programlisting>#INTERFACE   SUBNET          ADDRESS
+eth2         192.168.2.0/24  192.168.2.254</programlisting>
+
+          <para>As in FAQ 2 above, all redirected traffic will appear to the
+          server to originate on the firewall (which is yet one more reason
+          that you should use DNS to correct this problem rather than applying
+          horrible IP hacks).</para>
         </example>
       </section>
 
@@ -558,10 +567,9 @@
         interface.</programlisting></para>
       </blockquote>
 
-      <para>Look <ulink url="http://linux-igd.sourceforge.net">here</ulink>
-      for a solution for MSN IM but be aware that there are significant
-      security risks involved with this solution. Also check the Netfilter
-      mailing list archives at <ulink
+      <para>Look <ulink url="UPnP.html">here</ulink> for a solution for MSN IM
+      but be aware that there are significant security risks involved with
+      this solution. Also check the Netfilter mailing list archives at <ulink
       url="http://www.netfilter.org">http://www.netfilter.org</ulink>.</para>
     </section>
   </section>

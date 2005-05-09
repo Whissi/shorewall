@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-04-20</pubdate>
+    <pubdate>2005-05-03</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -91,146 +91,134 @@
   <section id="Guidelines">
     <title>Problem Reporting Guidelines</title>
 
-    <itemizedlist>
+    <para>Please refer to the following flowchart to guide you through the
+    problem reporting process.</para>
+
+    <graphic align="center" fileref="images/Troubleshoot.png" />
+
+    <orderedlist>
       <listitem>
-        <para>When reporting a problem, <emphasis
-        role="bold">ALWAYS</emphasis> include this information:</para>
+        <para>If your problem is that an <emphasis
+        role="bold">error</emphasis> occurs when you try to
+        <quote><command>shorewall start</command></quote>, then please:</para>
 
-        <itemizedlist>
-          <listitem>
-            <para>If your problem is that an <emphasis
-            role="bold">error</emphasis> occurs when you try to
-            <quote><command>shorewall start</command></quote>, then
-            please:</para>
+        <blockquote>
+          <programlisting><command>/sbin/shorewall trace start 2&gt; /tmp/trace</command></programlisting>
 
-            <blockquote>
-              <programlisting><command>/sbin/shorewall trace start 2&gt; /tmp/trace</command></programlisting>
+          <para>Forward the <filename>/tmp/trace</filename> file as an
+          attachment (you may compress it if you like).</para>
+        </blockquote>
+      </listitem>
 
-              <para>Forward the <filename>/tmp/trace</filename> file as an
-              attachment (you may compress it if you like).</para>
-            </blockquote>
-          </listitem>
+      <listitem>
+        <para>If you are unsure if Shorewall is starting successfully on not
+        then first note that if Shorewall starts successfully, the last
+        message it produces is "Shorewall Started":</para>
 
-          <listitem>
-            <para>Otherwise, if you are unsure if Shorewall is starting
-            successfully on not then first note that if Shorewall starts
-            successfully, the last message it produces is "Shorewall
-            Started":</para>
-
-            <blockquote>
-              <programlisting>…
+        <blockquote>
+          <programlisting>…
 Activating Rules...
 <emphasis role="bold">Shorewall Started</emphasis>
 gateway:~#</programlisting>
-            </blockquote>
+        </blockquote>
 
-            <para>If you are seeing this message then Shorewall is starting
-            successfully.</para>
+        <para>If you are seeing this message then Shorewall is starting
+        successfully.</para>
 
-            <para>If you are still unsure if Shorewall is starting or not,
-            enter the following command:</para>
+        <para>If you are still unsure if Shorewall is starting or not, enter
+        the following command:</para>
 
-            <blockquote>
-              <programlisting><command>/sbin/shorewall show shorewall</command></programlisting>
-            </blockquote>
+        <blockquote>
+          <programlisting><command>/sbin/shorewall show shorewall</command></programlisting>
+        </blockquote>
 
-            <para>If Shorewall has started successfully, you will see output
-            similar to this:</para>
+        <para>If Shorewall has started successfully, you will see output
+        similar to this:</para>
 
-            <blockquote>
-              <programlisting>Shorewall-2.2.3 Chain shorewall at gateway - Wed Apr 20 14:41:53 PDT 2005
+        <blockquote>
+          <programlisting>Shorewall-2.2.3 Chain shorewall at gateway - Wed Apr 20 14:41:53 PDT 2005
 
 Counters reset Sat Apr 16 17:35:06 PDT 2005
 
 <emphasis role="bold">Chain shorewall (0 references)
  pkts bytes target     prot opt in     out     source               destination</emphasis></programlisting>
-            </blockquote>
+        </blockquote>
 
-            <para>If Shorewall has not started properly, you will see output
-            similar to this:</para>
+        <para>If Shorewall has not started properly, you will see output
+        similar to this:</para>
 
-            <blockquote>
-              <programlisting>Shorewall-2.2.3 Chain shorewall at gateway - Wed Apr 20 14:43:13 PDT 2005
+        <blockquote>
+          <programlisting>Shorewall-2.2.3 Chain shorewall at gateway - Wed Apr 20 14:43:13 PDT 2005
 
 Counters reset Sat Apr 16 17:35:06 PDT 2005
 
 <emphasis role="bold">iptables: No chain/target/match by that name</emphasis>
 </programlisting>
-            </blockquote>
+        </blockquote>
+      </listitem>
 
-            <para>If you get this result after you have tried to start
-            Shorewall, please produce a trace and forward it to the list as
-            instructed above.</para>
+      <listitem>
+        <para>If your problem is that some set of <emphasis
+        role="bold">connection</emphasis>s to/from or through your firewall
+        <emphasis role="bold">isn't working</emphasis> (examples: local
+        systems can't access the internet, you can't send email through the
+        firewall, you can't surf the web from the firewall, etc.) then please
+        perform the following four steps:</para>
+
+        <orderedlist>
+          <listitem>
+            <para>If Shorewall isn't started then <command>/sbin/shorewall
+            start</command>. Otherwise <command>/sbin/shorewall
+            reset</command>.</para>
           </listitem>
 
           <listitem>
-            <para>Otherwise, if your problem is that some set of <emphasis
-            role="bold">connection</emphasis>s to/from or through your
-            firewall <emphasis role="bold">isn't working</emphasis> (examples:
-            local systems can't access the internet, you can't send email
-            through the firewall, you can't surf the web from the firewall,
-            etc.) then please perform the following four steps:</para>
-
-            <orderedlist>
-              <listitem>
-                <para>If Shorewall isn't started then <command>/sbin/shorewall
-                start</command>. Otherwise <command>/sbin/shorewall
-                reset</command>.</para>
-              </listitem>
-
-              <listitem>
-                <para>Try making the connection that is failing.</para>
-              </listitem>
-
-              <listitem>
-                <para><command>/sbin/shorewall status &gt;
-                /tmp/status.txt</command></para>
-              </listitem>
-
-              <listitem>
-                <para>Post the <filename>/tmp/status.txt</filename> file as an
-                attachment (you may compress it if you like).</para>
-              </listitem>
-            </orderedlist>
+            <para>Try making the connection that is failing.</para>
           </listitem>
 
           <listitem>
-            <para>Otherwise please include the following
-            information:<itemizedlist>
-                <listitem>
-                  <para>the exact version of Shorewall you are running.</para>
-
-                  <programlisting><emphasis role="bold">/sbin/shorewall version</emphasis></programlisting>
-                </listitem>
-
-                <listitem>
-                  <para>the complete exact output of</para>
-
-                  <programlisting><command>ip addr show</command></programlisting>
-                </listitem>
-
-                <listitem>
-                  <para>the complete exact output of</para>
-
-                  <programlisting><command>ip route show</command></programlisting>
-                </listitem>
-              </itemizedlist></para>
+            <para><command>/sbin/shorewall status &gt;
+            /tmp/status.txt</command></para>
           </listitem>
 
           <listitem>
-            <para>Please include the exact wording of any ping failure
-            responses</para>
+            <para>Post the <filename>/tmp/status.txt</filename> file as an
+            attachment (you may compress it if you like).</para>
           </listitem>
 
           <listitem>
-            <para><emphasis role="bold">If you installed Shorewall using one
-            of the QuickStart Guides, please indicate which one</emphasis>.
-            <emphasis role="bold">If you did not use one of the QuickStart
-            Guides, please say so</emphasis>.</para>
+            <para>Describe where you are trying to make the connection from
+            (IP address) and what host you are trying to connect to.</para>
+          </listitem>
+        </orderedlist>
+      </listitem>
+
+      <listitem>
+        <para>Otherwise please include the following information:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>the exact version of Shorewall you are running.</para>
+
+            <programlisting><emphasis role="bold">/sbin/shorewall version</emphasis></programlisting>
+          </listitem>
+
+          <listitem>
+            <para>the complete exact output of</para>
+
+            <programlisting><command>ip addr show</command></programlisting>
+          </listitem>
+
+          <listitem>
+            <para>the complete exact output of</para>
+
+            <programlisting><command>ip route show</command></programlisting>
           </listitem>
         </itemizedlist>
       </listitem>
+    </orderedlist>
 
+    <itemizedlist>
       <listitem>
         <para>Please remember we only know what is posted in your message. Do
         not leave out any information that appears to be correct, or was

@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article>
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>Shorewall and UPnP</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate>2005-05-07</pubdate>
+
+    <copyright>
+      <year>2005</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <section>
+    <title>UPnP</title>
+
+    <para>In Shorewall 2.2.4, support was added for UPnP (Universal Plug and
+    Play) using linux-igd (<ulink
+    url="http://linux-idg.sourceforge.net">http://linux-idg.sourceforge.net</ulink>).
+    UPnP is required by a number of popular applications including MSN
+    IM.</para>
+
+    <warning>
+      <para>From a security architecture viewpoint, UPnP is a disaster. It
+      assumes that:</para>
+
+      <orderedlist numeration="loweralpha">
+        <listitem>
+          <para>All local systems and their users are completely
+          trustworthy.</para>
+        </listitem>
+
+        <listitem>
+          <para>No local system is infected with any worm or trojan.</para>
+        </listitem>
+      </orderedlist>
+
+      <para>If either of these assumptions are not true then UPnP can be used
+      to totally defeat your firewall and to allow incoming connections to
+      arbitrary local systems on any port whatsoever. In short: USE UPnP AT
+      YOUR OWN RISK.</para>
+    </warning>
+
+    <warning>
+      <para>The linux-igd project appears to be inactive and the web site does
+      not display correctly on any open source browser that I've tried.
+      Building and installing linux-igd is not for the faint of heart. You
+      must download the source from CVS and be prepared to do quite a bit of
+      fiddling with the include files from libupnp (which is required to build
+      and/or run linux-igd).</para>
+    </warning>
+
+    <warning>
+      <para>Before building liunx-igd, you must apply all patches found at
+      <ulink
+      url="http://shorewall.net/pub/shorewall/contrib/linux-igd">http://shorewall.net/pub/shorewall/contrib/linux-igd</ulink>.</para>
+    </warning>
+
+    <para></para>
+  </section>
+
+  <section>
+    <title>linux-idg Configuration</title>
+
+    <para>In /etc/upnpd.conf, you will want:</para>
+
+    <programlisting>insert_forward_rules = yes
+prerouting_chain_name = UPnP
+forward_chain_name = forwardUPnP</programlisting>
+  </section>
+
+  <section>
+    <title>Shorewall Configuration</title>
+
+    <para>In <filename>/etc/shorewall/interfaces</filename>, you need the
+    'upnp' option on your external interface.</para>
+
+    <para>Example:</para>
+
+    <programlisting>#ZONE   INTERFACE       BROADCAST       OPTIONS
+net     eth1            detect          dhcp,routefilter,norfc1918,tcpflags,<emphasis
+        role="bold">upnp</emphasis></programlisting>
+
+    <para>If your fw-&gt;loc policy is not ACCEPT then you need this
+    rule:</para>
+
+    <programlisting>#ACTION            SOURCE  DEST
+allowoutUPnP       fw      loc</programlisting>
+
+    <note>
+      <para>To use 'allowoutUPnP', your iptables and kernel must support the
+      'owner match' feature (see the output of "shorewall show
+      capabilities").</para>
+    </note>
+
+    <para>If your loc-&gt;fw policy is not ACCEPT then you need this
+    rule:</para>
+
+    <programlisting>#ACTION            SOURCE  DEST
+allowinUPnP        loc     fw</programlisting>
+
+    <para>You MUST have this rule:</para>
+
+    <programlisting>#ACTION            SOURCE  DEST
+forwardUPnP        net     loc</programlisting>
+
+    <para>You must also ensure that you have a route to 224.0.0.0/4 on your
+    internal (local) interface as described in the linux-idg
+    documentation.</para>
+  </section>
+</article>

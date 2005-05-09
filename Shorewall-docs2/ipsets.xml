@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article>
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>Shorewall and Ipsets</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate>2005-05-09</pubdate>
+
+    <copyright>
+      <year>2005</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <section>
+    <title>What are Ipsets?</title>
+
+    <para>Ipsets are an extention to Netfilter/iptables that are currently
+    available in Patch-O-Matic-ng (<ulink
+    url="http://www.netfilter.org">http://www.netfilter.org</ulink>). Using
+    ipsets requires that you patch your kernel and iptables and that you build
+    and install the ipset utility from <ulink
+    url="http://people.netfilter.org/kadlec/ipset/">http://people.netfilter.org/kadlec/ipset/</ulink>.</para>
+
+    <para>Ipset allows you to create one or more named sets of addresses then
+    use those sets to define Netfilter/iptables rules. Possible uses of ipsets
+    include:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>Blacklists. Ipsets provide an effecient way to represent large
+        sets of addresses and you can maintain the lists without the need to
+        restart or even refresh your Shorewall configuration. </para>
+      </listitem>
+
+      <listitem>
+        <para>Zone definition. Using the /etc/shorewall/hosts file, you can
+        define a zone based on the (dynamic) contents of an ipset. Again, you
+        can then add or delete addresses to the ipset without restarting
+        Shorewall.</para>
+      </listitem>
+    </orderedlist>
+
+    <para>See the ipsets site (URL above) for additional information about
+    ipsets.</para>
+  </section>
+
+  <section>
+    <title>Shorewall Support for Ipsets</title>
+
+    <para>Support for ipsets was introduced in Shorewall version 2.3.0. In
+    most places where a host or network address may be used, you may also use
+    the name of an ipset prefaced by "+".</para>
+
+    <para>Example: "+Mirrors"</para>
+
+    <para>The name of the set may optionally followed by:</para>
+
+    <orderedlist numeration="loweralpha">
+      <listitem>
+        <para>a number from 1 to 6 enclosed in square brackets ([]) -- this
+        number indicates the maximum number of ipset binding levels that are
+        to be matched. Depending on the context where the ipset name is used,
+        either all "src" or all "dst" matches will be used.</para>
+
+        <para>Example: "+Mirrors[4]"</para>
+      </listitem>
+
+      <listitem>
+        <para>a series of "src" and "dst" options separated by commas and
+        inclosed in square brackets ([]). These will be passed directly to
+        iptables in the generated --set clause. See the ipset documentation
+        for details.</para>
+
+        <para>Example: "+Mirrors[src,dst,src]"</para>
+
+        <para>Note that "+Mirrors[4]" used in the SOURCE column of the rules
+        file is equivalent to "+Mirrors[src,src,src,src]".</para>
+      </listitem>
+    </orderedlist>
+
+    <para>To generate a negative match, prefix the "+" with "!" as in
+    "!+Mirrors".</para>
+
+    <para>Example 1: Blacklist all hosts in an ipset named "blacklist"</para>
+
+    <para><filename>/etc/shorewall/blacklist</filename><programlisting>#ADDRESS/SUBNET         PROTOCOL        PORT
++blacklist</programlisting></para>
+
+    <para>Example 2: Allow SSH from all hosts in an ipset named "sshok:</para>
+
+    <para><filename>/etc/shorewall/rules</filename><programlisting>#ACTION      SOURCE      DEST     PROTO    DEST PORT(S)
+ACCEPT       +sshok      fw       tcp      22</programlisting></para>
+
+    <para>Shorewall can automatically manage the contents of your ipsets for
+    you. If you specify SAVE_IPSETS=Yes in /etc/shorewall/shorewall.conf then
+    "shorewall save" will save the contents of your ipsets. The file where the
+    sets are saved is formed by taking the name where the Shorewall
+    configuration is stored and appending "-ipsets". So if you enter the
+    command "shorewall save standard" then your Shorewall</para>
+
+    <para>Regardless of the setting of SAVE_IPSETS, the <command>shorewall -f
+    start</command> and <command>shorewall restore</command> commands will
+    restore the ipset contents corresponding to the Shorewall configuration
+    restored provided that the saved Shorewall configuration specified
+    exists.</para>
+
+    <para>For example, <command>shorewall restore standard</command> would
+    restore the ipset contents from
+    <filename>/var/lib/shorewall/standard-ipsets</filename> provided that
+    <filename>/var/lib/shorewall/standard</filename> exists and is executable
+    and that <filename>/var/lib/shorewall/standard-ipsets</filename> exists
+    and is executable.</para>
+
+    <para>Also regardless of the setting of SAVE_IPSETS, the
+    <command>shorewall forget</command> command will purge the saved ipset
+    information (if any) associated with the saved shorewall configuration
+    being removed.</para>
+
+    <para>You can also associate ipset contents with Shorewall configuration
+    directories using the following command:</para>
+
+    <programlisting><command>ipset -S &gt; &lt;config directory&gt;/ipsets</command></programlisting>
+
+    <para>Example:</para>
+
+    <programlisting><command>ipset -S &gt; /etc/shorewall/ipsets</command></programlisting>
+
+    <para>When you start or restart Shorewall (including using the
+    <command>try</command> command) from the configuration directory, your
+    ipsets will be configured from the saved ipsets file. Once again, this
+    behavior is independent of the setting of SAVE_IPSETS.</para>
+
+    <para>As mentioned above, ipsets are well suited for large blacklists. You
+    can maintain your blacklist using the 'ipset' utility without ever having
+    to restart or refresh Shorewall. If you use the SAVE_IPSETS=Yes feature
+    just be sure to "shorewall save" after altering the blacklist ipset(s).
+    Example:</para>
+
+    <para><filename>/etc/shorewall/blacklist</filename>:</para>
+
+    <programlisting>#ADDRESS/SUBNET         PROTOCOL        PORT
++Blacklist[src,dst]
++Blacklistnets[src,dst]</programlisting>
+
+    <para>Create the blacklist ipsets using:</para>
+
+    <programlisting><command>ipset -N Blacklist iphash
+ipset -N Blacklistnets nethash</command></programlisting>
+
+    <para>Add entries:</para>
+
+    <programlisting><command>ipset -A Blacklist 206.124.146.177
+ipset -A Blacklistnets 206.124.147.0/24</command></programlisting>
+
+    <para>To allow entries for individual ports:</para>
+
+    <programlisting><command>ipset -N SMTP portmap --from 1 --to 31
+ipset -A SMTP 25
+
+ipset -A Blacklist 206.124.146.177
+ipset -B Blacklist 206.124.146.177 -b SMTP</command></programlisting>
+
+    <para>Now only port 25 will be blocked from 206.124.146.177.</para>
+  </section>
+</article>

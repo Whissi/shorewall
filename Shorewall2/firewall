@@ -561,6 +561,8 @@ get_set_flags() # $1 = set name and optional [levels], $2 = src or dst
 {
     local temp setname=$1 options=$2
 
+    [ -n "$IPSET_MATCH" ] || fatal_error "Your kernel and/or iptables does not include ipset match: $1"
+
     case $1 in
 	*\[[1-6]\])
             temp=${1#*\[}
@@ -5899,6 +5901,7 @@ determine_capabilities() {
     IPRANGE_MATCH=
     RECENT_MATCH=
     OWNER_MATCH=
+    IPSET_MATCH=
 
     qt $IPTABLES -N fooX1234
     qt $IPTABLES -A fooX1234 -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT             && CONNTRACK_MATCH=Yes
@@ -5909,6 +5912,16 @@ determine_capabilities() {
     qt $IPTABLES -A fooX1234 -m iprange --src-range 192.168.1.5-192.168.1.124 -j ACCEPT && IPRANGE_MATCH=Yes
     qt $IPTABLES -A fooX1234 -m recent --update -j ACCEPT                               && RECENT_MATCH=Yes
     qt $IPTABLES -A fooX1234 -m owner --cmd-owner foo -j ACCEPT                         && OWNER_MATCH=Yes
+
+    qt ipset -X fooX1234 # Just in case something went wrong the last time
+
+    if qt ipset -N fooX1234 iphash ; then
+	if qt $IPTABLES -A fooX1234 -m set --set fooX1234 src -j ACCEPT; then
+	    qt $IPTABLES -D fooX1234 -m set --set fooX1234 src -j ACCEPT
+	    IPSET_MATCH=Yes
+	fi
+	qt ipset -X fooX1234
+    fi		
 
     if [ -n "$PKTTYPE" ]; then
 	qt $IPTABLES -A fooX1234 -m pkttype --pkt-type broadcast -j ACCEPT || PKTTYPE=
@@ -5940,6 +5953,7 @@ report_capabilities() {
     report_capability "IP range Match" $IPRANGE_MATCH
     report_capability "Recent Match" $RECENT_MATCH
     report_capability "Owner Match" $OWNER_MATCH
+    report_capability "Ipset Match" $IPSET_MATCH
 }
 
 #

@@ -1228,19 +1228,27 @@ case "$1" in
 				    case ${SAVE_IPSETS:-No} in
 					[Yy][Ee][Ss])
 					    RESTOREPATH=${RESTOREPATH}-ipsets
-					    echo "#!/bin/sh" >> /var/lib/shorewall/restore-$$
-					    echo "ipset -U :all: :all:" >> /var/lib/shorewall/restore-$$
-					    echo "ipset -F" >> /var/lib/shorewall/restore-$$
-					    echo "ipset -X" >> /var/lib/shorewall/restore-$$
-					    echo "ipset -R << __EOF__" >> /var/lib/shorewall/restore-$$
-					    ipset -S >> /var/lib/shorewall/restore-$$
-					    echo "__EOF__" >> /var/lib/shorewall/restore-$$
-					    mv -f /var/lib/shorewall/restore-$$ $RESTOREPATH 
+
+					    f=/var/lib/shorewall/restore-$$
+
+					    echo "#!/bin/sh" > $f
+					    echo  >> $f
+					    echo ". /usr/share/shorewall/functions" >> $f
+					    echo  >> $f
+					    grep -E '^MODULE|loadmodule ip_set' /var/lib/shorewall/restore-base >>  $f
+					    echo  >> $f
+					    echo "ipset -U :all: :all:" >> $f
+					    echo "ipset -F" >> $f
+					    echo "ipset -X" >> $f
+					    echo "ipset -R << __EOF__" >> $f
+					    ipset -S >> $f
+					    echo "__EOF__" >> $f
+					    mv -f $f $RESTOREPATH 
 					    chmod +x $RESTOREPATH
 					    echo "   Current Ipset Contents Saved to $RESTOREPATH"
 					    ;;
 					[Nn][Oo])
-					    ;
+					    ;;
 					*)
 					    echo "   WARNING: Invalid value ($SAVE_IPSETS) for SAVE_IPSETS. Ipset contents not saved"
 					    ;;

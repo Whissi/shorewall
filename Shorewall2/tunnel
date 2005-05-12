@@ -108,7 +108,7 @@ do_start() {
 
       case $tunnel_type in
       gre)
-          ip tunnel add $tunnel mode gre remote $gateway local $myrealip ttl 255 ${key:+key $key)
+          ip tunnel add $tunnel mode gre remote $gateway local $myrealip ttl 255 ${key:+key $key}
 	  ;;
       *)
           ip tunnel add $tunnel mode ipip remote $gateway

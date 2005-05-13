@@ -17,7 +17,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-05-09</pubdate>
+    <pubdate>2005-05-10</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -77,7 +77,7 @@
       not modify those files.</para>
     </section>
 
-    <section>
+    <section id="faq44">
       <title>(FAQ 44) I can't install/upgrade the RPM — I keep getting the
       message "error: failed dependencies:iproute is needed..."</title>
 
@@ -320,6 +320,14 @@ DNAT    net     fw:192.168.1.1:22       tcp     4104</programlisting>
       url="http://ian.idallen.ca/dnat.txt">Paper about DNAT and
       Linux</ulink>.</para>
     </section>
+
+    <section id="faq48">
+      <title>(FAQ 48) How do I Set up Transparent Proxy with
+      Shorewall?</title>
+
+      <para>Answer: See <ulink
+      url="Shorewall_Squid_Usage.html">Shorewall_Squid_Usage.html</ulink>.</para>
+    </section>
   </section>
 
   <section>
@@ -554,10 +562,9 @@ really dumb and does not deserve to exist at all. It was an excellent tool
 to debug/develop the newnat interface.</programlisting></para>
       </blockquote>
 
-      <para>Look <ulink url="http://linux-igd.sourceforge.net">here</ulink>
-      for a solution for MSN IM but be aware that there are significant
-      security risks involved with this solution. Also check the Netfilter
-      mailing list archives at <ulink
+      <para>Look <ulink url="UPnP.html">here</ulink> for a solution for MSN IM
+      but be aware that there are significant security risks involved with
+      this solution. Also check the Netfilter mailing list archives at <ulink
       url="http://www.netfilter.org">http://www.netfilter.org</ulink>.</para>
     </section>
   </section>
@@ -756,6 +763,33 @@ SPT=33120 DPT=5000 LEN=22</programlisting>
       <programlisting># TYPE                  ZONE    GATEWAY         GATEWAY
 #                                               ZONE
 generic:udp:5000        net     69.145.71.133</programlisting>
+    </section>
+
+    <section id="faq47">
+      <title>(FAQ 47) This Rule Doesn't Work as Documented</title>
+
+      <para>I want to allow access from the local zone to the net except for
+      two systems (192.168.100.101 and 192.168.100.115). I use the following
+      rule but find that 192.168.100.115 can still access the net. Is this a
+      bug?</para>
+
+      <programlisting>#ACTION        SOURCE                                 DEST          PROTO
+ACCEPT         loc:!192.168.100.101,192.168.100.115   net</programlisting>
+
+      <para><emphasis role="bold">Answer</emphasis>: Shorewall is currently
+      inconsistent as to where it correctly supports the "!" before a list of
+      addresses. In some places, it works as you would expect and in other
+      cases such as this one it does not. You will need to take a different
+      approach to accomplish what you want. I recommend that you change your
+      loc-&gt;net policy to ACCEPT and then use this rule:</para>
+
+      <programlisting>#ACTION        SOURCE                                 DEST          PROTO
+REJECT         loc:192.168.100.101,192.168.100.115    net</programlisting>
+
+      <para><emphasis role="bold">Author's Note</emphasis>: I have looked
+      several times at correcting this problem but it really isn't feasible
+      until I muster the energy to rewrite the Shorewall rules parser.
+      Sorry.</para>
     </section>
   </section>
 
@@ -2183,9 +2217,14 @@ REJECT    fw            net:216.239.39.99    all</programlisting>Given that
       <title>(FAQ 42) How can I tell which features my kernel and iptables
       support?</title>
 
-      <para>Answer: At a root prompt, enter the command <command>shorewall
-      check</command>. There is a section near the top of the resulting output
-      that gives you a synopsis of your kernel/iptables capabilities.</para>
+      <para>Answer: Users running Shorewall 2.2.4 or later can simply use the
+      <command>shorewall show capabilities</command> command at a root
+      prompt.</para>
+
+      <para>For those running older versions, at a root prompt, enter the
+      command <command>shorewall check</command>. There is a section near the
+      top of the resulting output that gives you a synopsis of your
+      kernel/iptables capabilities.</para>
 
       <programlisting>gateway:/etc/shorewall # shorewall check
 Loading /usr/share/shorewall/functions...

@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-05-02</pubdate>
+    <pubdate>2005-05-11</pubdate>
 
     <copyright>
       <year>2004</year>
@@ -50,6 +50,48 @@
     <para>You must have <emphasis role="bold">BOTH</emphasis> the
     Netfilter+ipsec patches and the policy match patch. <emphasis
     role="bold">One without the other will not work</emphasis>.</para>
+
+    <para>Here's a combination of components that I know works:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>Kernel 2.6.11 from kernel.org. Patched with:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>The five patches in <ulink
+            url="http://shorewall.net/pub/shorewall/contrib/IPSEC/2.6.11">http://shorewall.net/pub/shorewall/contrib/IPSEC/2.6.11</ulink></para>
+          </listitem>
+
+          <listitem>
+            <para>The "policy match" extension from the Patch-o-matic-ng CVS
+            snapshot from 2005-May-04 (be sure to NOT try to apply the
+            ipsec-NN patches from patch-o-matic-ng).</para>
+          </listitem>
+        </itemizedlist>
+      </listitem>
+
+      <listitem>
+        <para>iptables 1.3.1 patched with the "policy match" extension from
+        the Patch-o-matic-ng CVS snapshot from 2005-May-04.</para>
+      </listitem>
+
+      <listitem>
+        <para>ipsec-tools 0.5.2 compiled from source. I've also had success
+        with:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>ipsec-tools 0.5.2 and racoon 0.5.2 from Debian
+            Sarge/testing</para>
+          </listitem>
+
+          <listitem>
+            <para>The ipsec-tools 0.5 rpm from SuSE 9.3.</para>
+          </listitem>
+        </itemizedlist>
+      </listitem>
+    </orderedlist>
   </important>
 
   <warning>
@@ -193,6 +235,13 @@
     /etc/shorewall/ipsec can be used to match the zone to a particular (set
     of) SA(s) used to encrypt and decrypt traffic to/from the zone and the
     security policies that select which traffic to encrypt/decrypt.</para>
+
+    <para>This article assumes the use of ipsec-tools (<ulink
+    url="http://ipsec-tools.sourceforge.net">http://ipsec-tools.sourceforge.net</ulink>).
+    As of this writing, I recommend that you run at least version 0.5.2.
+    Debian users, please note that there are separate Debian packages for
+    ipsec-tools and racoon although the ipsec-tools project releases them as a
+    single package.</para>
 
     <para>For more information on IPSEC, Kernel 2.6 and Shorewall see <ulink
     url="LinuxFest.pdf">my presentation on the subject given at LinuxFest NW
@@ -773,7 +822,7 @@ all             all             REJECT          info
       url="http://www.ipsec-howto.org/">http://www.ipsec-howto.org/</ulink>.</para>
 
       <para>One piece of information that may not be so easy to find is "How
-      to I generate a PKCS#12 certificate to import into Windows?". Here's the
+      do I generate a PKCS#12 certificate to import into Windows?". Here's the
       openssl command that I used:</para>
 
       <programlisting><command>openssl pkcs12 -export -in eastepnc6000.pem -inkey eastepnc6000_key.pem -out eastepnc6000.pfx -name "IPSEC Cert for Home Wireless"</command> </programlisting>
@@ -785,18 +834,19 @@ all             all             REJECT          info
 
       <itemizedlist>
         <listitem>
-          <para>eastepnc6000.pem was the laptop's certificate in PEM
-          format.</para>
+          <para><filename>eastepnc6000.pem</filename> was the laptop's
+          certificate in PEM format.</para>
         </listitem>
 
         <listitem>
-          <para>eastepnc6000_key.pem was the laptop's private key (actually,
-          it's the original signing request which includes the private
-          key).</para>
+          <para><filename>eastepnc6000_key.pem</filename> was the laptop's
+          private key (actually, it's the original signing request which
+          includes the private key).</para>
         </listitem>
 
         <listitem>
-          <para>eastepnc6000.pfx is the PKCS#12 output file.</para>
+          <para><filename>eastepnc6000.pfx</filename> is the PKCS#12 output
+          file.</para>
         </listitem>
 
         <listitem>
@@ -812,5 +862,14 @@ all             all             REJECT          info
       one split Emacs screen (racoon.conf plus setkey.conf) takes 20+
       different dialog boxes on Windows XP!!!</para>
     </warning>
+  </section>
+
+  <section>
+    <title>Source of Additional Samples</title>
+
+    <para>Be sure to check out the <filename
+    class="directory">src/racoon/samples</filename> subdirectory in the
+    ipsec-tools source tree. It has a wide variety of sample racoon
+    configuration files.</para>
   </section>
 </article>

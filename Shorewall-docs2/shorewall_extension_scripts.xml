@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-04-06</pubdate>
+    <pubdate>2005-05-13</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -129,6 +129,53 @@
       <filename>/var/lib/shorewall/restore</filename> file) or restored
       (Shorewall version &gt;= 2.0.2 Beta 1 and
       <filename>/var/lib/shorewall/restore</filename> exists).</para>
+    </listitem>
+
+    <listitem>
+      <para>If you wish to generate a log message, use <emphasis
+      role="bold">log_rule_limit</emphasis>. Parameters are:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>Log Level</para>
+        </listitem>
+
+        <listitem>
+          <para>Chain to insert the rule into</para>
+        </listitem>
+
+        <listitem>
+          <para>Chain name to display in the message (this can be different
+          from the preceding argument — see the <ulink
+          url="PortKnocking.html">Port Knocking article</ulink> for an example
+          of how to use this).</para>
+        </listitem>
+
+        <listitem>
+          <para>Disposition to report in the message (ACCEPT, DROP,
+          etc)</para>
+        </listitem>
+
+        <listitem>
+          <para>Rate Limit (if passed as "" then $LOGLIMIT is assumed — see
+          the LOGLIMIT option in <ulink
+          url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>)
+          </para>
+        </listitem>
+
+        <listitem>
+          <para>Log Tag ("" if none)</para>
+        </listitem>
+
+        <listitem>
+          <para>Command (-A or -I for append or insert). This argument applies
+          to Shorewall 2.2.0 and later only.</para>
+        </listitem>
+
+        <listitem>
+          <para>The remaining arguments are passed "as is" to iptables</para>
+        </listitem>
+      </itemizedlist>
     </listitem>
 
     <listitem>

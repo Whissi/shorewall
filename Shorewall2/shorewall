@@ -1232,6 +1232,7 @@ case "$1" in
 					    f=/var/lib/shorewall/restore-$$
 
 					    echo "#!/bin/sh" > $f
+					    echo "#This ipset restore file generated $(date) by Shorewall $version" >> $f
 					    echo  >> $f
 					    echo ". /usr/share/shorewall/functions" >> $f
 					    echo  >> $f

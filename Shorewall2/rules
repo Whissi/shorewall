@@ -263,8 +263,8 @@
 #			Otherwise, a separate rule will be generated for each
 #			port.
 #
-#	ORIGINAL DEST	(0ptional -- only allowed if ACTION is DNAT[-] or
-#                       REDIRECT[-]) If included and different from the IP
+#	ORIGINAL DEST	(0ptional) -- If ACTION is DNAT[-] or REDIRECT[-] then 
+#			if included and different from the IP
 #			address given in the SERVER column, this is an address
 #			on some interface on the firewall and connections to
 #			that address will be forwarded to the IP and port
@@ -279,6 +279,20 @@
 #			the rule will be followed only if the original 
 #			destination address in the connection request does not
 #			match any of the addresses listed.
+#
+#			For other actions, this column may be included and may
+#			contain one or more addresses (host or network)
+#			separated by commas. Address ranges are not allowed.
+#                       When this column is supplied, rules are generated
+#                       that require that the original destination address matches
+#                       one of the listed addresses. This feature is most useful when
+#                       you want to generate a filter rule that corresponds to a 
+#		        DNAT- or REDIRECT- rule. In this usage, the list of
+#			addresses should not begin with "!".
+#
+#			See http://shorewall.net/PortKnocking.html for an 
+#			example of using an entry in this column with a
+#			user-defined action rule.		
 #
 #	RATE LIMIT	You may rate-limit the rule by placing a value in 
 #			this colume:

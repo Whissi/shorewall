@@ -4288,8 +4288,8 @@ add_a_rule()
 
 	    if [ -n "$natrule" ]; then
 		add_nat_rule
-	    elif [ -n "$addr" -a "$addr" != "$serv" ] || [ -n "$servport" -a "$servport" != "$port" ]; then
-		fatal_error "Only DNAT, SAME and REDIRECT rules may specify destination mapping; rule \"$rule\""
+	    elif [ -n "$servport" -a "$servport" != "$port" ]; then
+		fatal_error "Only DNAT, SAME and REDIRECT rules may specify destination port mapping; rule \"$rule\""
 	    fi
 
 	    if [ -z "$dnat_only" ]; then
@@ -4312,13 +4312,15 @@ add_a_rule()
 					$(fix_bang $proto $sports $multiport $cli $(dest_ip_range $srv) $dports)
 				fi
 				
-				[ -n "$nonat" ] && \
+				if [ -n "$nonat" ]; then
 				    addnatrule $(dnat_chain $source) $proto $multiport \
 				        $cli $sports $(dest_ip_range $srv) $dports $ratelimit $userandgroup -j RETURN
-
-				[ "$logtarget" != NONAT ] && \
+				fi
+				
+				if [ "$logtarget" != NONAT ]; then
 				    run_iptables2 -A $chain $proto $multiport $cli $sports \
 					$(dest_ip_range $srv) $dports $ratelimit $userandgroup -j $target
+				fi
 			    fi
 			done
 		    done
@@ -4342,24 +4344,43 @@ add_a_rule()
 
 	# Destination is a simple zone
 
-	[ -n "$addr" ] && fatal_error \
-	    "An ORIGINAL DESTINATION ($addr) is only allowed in" \
-	    " a DNAT, SAME or REDIRECT: \"$rule\""
-
 	if [ $COMMAND != check ]; then
-	    if [ -n "$loglevel" ]; then
-		log_rule_limit $loglevel $chain $chain $logtarget "$ratelimit" "$logtag" -A $userandgroup \
-		    $(fix_bang $proto $multiport $cli $dest_interface $sports $dports)
-	    fi
+	    if [ -n "$addr" ]; then
+		for adr in $(separate_list $addr); do
+		    if [ -n "$loglevel" ]; then
+			log_rule_limit $loglevel $chain $chain $logtarget "$ratelimit" "$logtag" -A $userandgroup \
+			    $(fix_bang $proto $multiport $cli $dest_interface $sports $dports -m conntrack --ctorigdst $adr)
+		    fi
 
-	    if [ "$logtarget" != LOG ]; then
-		[ -n "$nonat" ] && \
-		    addnatrule $(dnat_chain $source) $proto $multiport \
-		       $cli $sports $dports $ratelimit $userandgroup -j RETURN
+		    if [ "$logtarget" != LOG ]; then
+			if [ -n "$nonat" ]; then
+			    addnatrule $(dnat_chain $source) $proto $multiport \
+			        $cli $sports $dports $ratelimit $userandgroup  -m conntrack --ctorigdst $adr -j RETURN
+			fi
+			
+			if [ "$logtarget" != NONAT ]; then
+			    run_iptables2 -A $chain $proto $multiport $cli $dest_interface \
+				$sports $dports $ratelimit $userandgroup  -m conntrack --ctorigdst $adr -j $target
+			fi
+		    fi
+		done
+	    else
+		if [ -n "$loglevel" ]; then
+		    log_rule_limit $loglevel $chain $chain $logtarget "$ratelimit" "$logtag" -A $userandgroup \
+			$(fix_bang $proto $multiport $cli $dest_interface $sports $dports)
+		fi
 
-		[ "$logtarget" != NONAT ] && \
-		    run_iptables2 -A $chain $proto $multiport $cli $dest_interface \
-			$sports $dports $ratelimit $userandgroup -j $target
+		if [ "$logtarget" != LOG ]; then
+		    if [ -n "$nonat" ]; then
+			addnatrule $(dnat_chain $source) $proto $multiport \
+			    $cli $sports $dports $ratelimit $userandgroup -j RETURN
+		    fi
+
+		    if [ "$logtarget" != NONAT ]; then
+			run_iptables2 -A $chain $proto $multiport $cli $dest_interface \
+			    $sports $dports $ratelimit $userandgroup -j $target
+		    fi
+		fi
 	    fi
 	fi
     fi

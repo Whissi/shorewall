@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-05-03</pubdate>
+    <pubdate>2005-05-14</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -100,7 +100,8 @@
       <listitem>
         <para>If your problem is that an <emphasis
         role="bold">error</emphasis> occurs when you try to
-        <quote><command>shorewall start</command></quote>, then please:</para>
+        <quote><command>shorewall start</command></quote> or if Shorewall is
+        otherwise failing to start properly, then please:</para>
 
         <blockquote>
           <programlisting><command>/sbin/shorewall trace start 2&gt; /tmp/trace</command></programlisting>
@@ -111,7 +112,7 @@
       </listitem>
 
       <listitem>
-        <para>If you are unsure if Shorewall is starting successfully on not
+        <para>If you are unsure if Shorewall is starting successfully or not
         then first note that if Shorewall starts successfully, the last
         message it produces is "Shorewall Started":</para>
 
@@ -158,12 +159,12 @@ Counters reset Sat Apr 16 17:35:06 PDT 2005
       </listitem>
 
       <listitem>
-        <para>If your problem is that some set of <emphasis
-        role="bold">connection</emphasis>s to/from or through your firewall
-        <emphasis role="bold">isn't working</emphasis> (examples: local
-        systems can't access the internet, you can't send email through the
-        firewall, you can't surf the web from the firewall, etc.) then please
-        perform the following four steps:</para>
+        <para>If Shorewall is starting successfully and your problem is that
+        some set of <emphasis role="bold">connection</emphasis>s to/from or
+        through your firewall <emphasis role="bold">isn't working</emphasis>
+        (examples: local systems can't access the internet, you can't send
+        email through the firewall, you can't surf the web from the firewall,
+        etc.) then please perform the following four steps:</para>
 
         <orderedlist>
           <listitem>
@@ -188,7 +189,16 @@ Counters reset Sat Apr 16 17:35:06 PDT 2005
 
           <listitem>
             <para>Describe where you are trying to make the connection from
-            (IP address) and what host you are trying to connect to.</para>
+            (IP address) and what host (IP address) you are trying to connect
+            to.</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis role="bold">Please do not edit the diagnostic
+            information</emphasis> in an attempt to conceal your IP address,
+            netmask, nameserver addresses, domain name, etc. These aren't
+            secrets, and concealing them often misleads us and may prevent
+            your problem from being looked at all together.</para>
           </listitem>
         </orderedlist>
       </listitem>
@@ -317,9 +327,10 @@ Counters reset Sat Apr 16 17:35:06 PDT 2005
     (expletive deleted) life instead of trying to rid the planet of HTML based
     e-mail</quote>. Nevertheless, to allow subscribers to receive list posts
     as must as possible, I have now configured the list server at
-    shorewall.net to convert all HTML to plain text. These converted posts are
-    difficult to read so all of us will appreciate it if you just post in
-    plain text to begin with.</para>
+    shorewall.net to convert all HTML to plain text. Sometimes the conversion
+    process fails in which case, the post sent to the list is empty. Even when
+    conversion succeeds, the converted post is difficult to read so all of us
+    will appreciate it if you just post in plain text to begin with.</para>
   </section>
 
   <section>

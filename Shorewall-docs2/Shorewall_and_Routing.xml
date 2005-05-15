@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-03-03</pubdate>
+    <pubdate>2005-05-15</pubdate>
 
     <copyright>
       <year>2005</year>
@@ -177,7 +177,8 @@
     the Shorewall init script (<filename>/etc/init.d/shorewall</filename>) to
     configure your alternate routing table at boot time and that <emphasis
     role="bold">other than as described in the previous section, there is no
-    connection between Shorewall and routing</emphasis>.</para>
+    connection between Shorewall and routing when using Shorewall versions
+    prior to 2.3.3.</emphasis> </para>
   </section>
 
   <section>
@@ -202,5 +203,180 @@
     command:</para>
 
     <programlisting><emphasis role="bold">ip route add 206.124.146.177 dev eth1</emphasis></programlisting>
+  </section>
+
+  <section>
+    <title>Routing with Shorewall 2.3.3 and Later</title>
+
+    <para>Beginning with Shorewall 2.2.3, Shorewall is integrated with the
+    ROUTE target extension available from Netfilter Patch-O-Matic-NG (<ulink
+    url="http://www.netfilter.org">http://www.netfilter.org</ulink>).</para>
+
+    <warning>
+      <para>As of this writing, I know of no distribution that is shipping a
+      kernel or iptables with the ROUTE target patch included. This means that
+      you must patch and build your own kernel and iptables. </para>
+    </warning>
+
+    <para>See <ulink url="FAQ.htm#faq42">Shorewall FAQ 42</ulink> for
+    information about determining if your kernel and iptables have this
+    support enabled. You must be running Shorewall 2.3.3 or later to make this
+    determination.</para>
+
+    <para>Routing with Shorewall is specified through entries in
+    /etc/shorewall/routes. Columns in this file are as follows:</para>
+
+    <glosslist>
+      <glossentry>
+        <glossterm>SOURCE</glossterm>
+
+        <glossdef>
+          <para>Source of the packet. May be any of the following:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>A host or network address</para>
+            </listitem>
+
+            <listitem>
+              <para>A network interface name.</para>
+            </listitem>
+
+            <listitem>
+              <para>The name of an ipset prefaced with "+"</para>
+            </listitem>
+
+            <listitem>
+              <para>$FW (for packets originating on the firewall)</para>
+            </listitem>
+
+            <listitem>
+              <para>A MAC address in Shorewall format</para>
+            </listitem>
+
+            <listitem>
+              <para>A range of IP addresses (assuming that your kernel and
+              iptables support range match)</para>
+            </listitem>
+
+            <listitem>
+              <para>A network interface name followed by ":" and an address or
+              address range.</para>
+            </listitem>
+          </itemizedlist>
+        </glossdef>
+      </glossentry>
+
+      <glossentry>
+        <glossterm>DEST</glossterm>
+
+        <glossdef>
+          <para>Destination of the packet. May be any of the following:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>A host or network address</para>
+            </listitem>
+
+            <listitem>
+              <para>A network interface name (determined from routing
+              table(s))</para>
+            </listitem>
+
+            <listitem>
+              <para>The name of an ipset prefaced with "+"</para>
+            </listitem>
+
+            <listitem>
+              <para>A network interface name followed by ":" and an address or
+              address range.</para>
+            </listitem>
+          </itemizedlist>
+        </glossdef>
+      </glossentry>
+
+      <glossentry>
+        <glossterm>PROTO</glossterm>
+
+        <glossdef>
+          <para>Protocol - Must be a protocol listed in /etc/protocols, a
+          number or "ipp2p", a number, or "all". "ipp2p" require ipp2p match
+          support in your kernel and iptables.</para>
+        </glossdef>
+      </glossentry>
+
+      <glossentry>
+        <glossterm>PORT(S)</glossterm>
+
+        <glossdef>
+          <para>Destination Ports. A comma-separated list of Port names (from
+          /etc/services), port numbers or port ranges; if the protocol is
+          "icmp", this column is interpreted as the destination
+          icmp-type(s).</para>
+
+          <para>If the protocol is ipp2p, this column is interpreted as an
+          ipp2p option without the leading "--" (example "bit" for
+          bit-torrent). If no PORT is given, "ipp2p" is assumed.</para>
+
+          <para>This column is ignored if PROTOCOL = all but must be entered
+          if any of the following field is supplied. In that case, it is
+          suggested that this field contain "-"</para>
+        </glossdef>
+      </glossentry>
+
+      <glossentry>
+        <glossterm>SOURCE PORT(S)</glossterm>
+
+        <glossdef>
+          <para>Optional) Source port(s). If omitted, any source port is
+          acceptable. Specified as a comma-separated list of port names, port
+          numbers or port ranges. </para>
+        </glossdef>
+      </glossentry>
+
+      <glossentry>
+        <glossterm>INTERFACE</glossterm>
+
+        <glossdef>
+          <para>The interface that the packet is to be routed out of. If you
+          do not specify this field then you must place "-" in this column and
+          enter an IP address in the GATEWAY column.</para>
+        </glossdef>
+      </glossentry>
+
+      <glossentry>
+        <glossterm>GATEWAY</glossterm>
+
+        <glossdef>
+          <para>The gateway that the packet is to be forewarded
+          through.</para>
+        </glossdef>
+      </glossentry>
+    </glosslist>
+
+    <para>The idea here is that traffic that matches the SOURCE, DEST, PROTO,
+    PORT(S) and SOURCE PORT(S) columns is routed out of the INTERFACE through
+    the optional GATEWAY.</para>
+
+    <blockquote>
+      <para>Example:</para>
+
+      <para>Your local interface is eth1 and your DMZ interface is eth2. You
+      want to run Squid as a transparent proxy for HTTP on 192.168.3.22 in
+      your DMZ. You would use the following entry in
+      /etc/shorewall/routes:</para>
+
+      <programlisting>#SOURCE                 DEST            PROTO   PORT(S) SOURCE  INTERFACE       GATEWAY
+#                                                       PORT(S)
+eth1                    0.0.0.0/0       tcp     80      -       eth1            192.168.3.22</programlisting>
+
+      <para>This entry specifies that "traffic coming in through eth1 to TCP
+      port 80 is to be routed out of eth1 to gateway 192.168.3.22".</para>
+    </blockquote>
+
+    <para>Note that entries in the /etc/shorewall/routes file override the
+    routing specified in your routing tables. These rules generate Netfilter
+    rules in the mangle tables FORWARD chain or OUTPUT chain (see figure
+    above).</para>
   </section>
 </article>

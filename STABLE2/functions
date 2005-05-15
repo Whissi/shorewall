@@ -247,6 +247,9 @@ find_zones() # $1 = name of the zone file
 {
     while read zone display comments; do
 	[ -n "$zone" ] && case "$zone" in
+	    [0-9*])
+                echo "   Warning: Illegal zone name \"$zone\" in zones file ignored" 2>&2
+		;;
 	    \#*)
 		;;
             $FW|all|none)

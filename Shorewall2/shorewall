@@ -631,7 +631,10 @@ save_config() {
 					echo  >> $f
 					echo ". /usr/share/shorewall/functions" >> $f
 					echo  >> $f
-					grep -E '^MODULE|loadmodule ip_set' /var/lib/shorewall/restore-base >>  $f
+					grep '^MODULE' /var/lib/shorewall/restore-base >>  $f
+					echo "reload_kernel_modules << __EOF__" >> $f
+					grep 'loadmodule ip_set' /var/lib/shorewall/restore-base >>  $f
+                                        echo "__EOF__" >> $f
 					echo  >> $f
 					echo "ipset -U :all: :all:" >> $f
 					echo "ipset -F" >> $f

@@ -408,6 +408,16 @@ else
     echo "Blacklist file installed as ${PREFIX}/etc/shorewall/blacklist"
 fi
 #
+# Install the Routes file
+#
+if [ -f ${PREFIX}/etc/shorewall/routes ]; then
+    backup_file /etc/shorewall/routes
+else
+    run_install $OWNERSHIP -m 0600 routes ${PREFIX}/etc/shorewall/routes
+    echo
+    echo "Routes file installed as ${PREFIX}/etc/shorewall/blacklist"
+fi
+#
 # Backup and remove the whitelist file
 #
 if [ -f ${PREFIX}/etc/shorewall/whitelist ]; then

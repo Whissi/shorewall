@@ -95,6 +95,7 @@ fi
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/actions
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/continue
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/started
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/routes
 
 %attr(0544,root,root) /sbin/shorewall
 

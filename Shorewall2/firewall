@@ -5249,6 +5249,103 @@ get_routed_networks() # $1 = interface name
 }
 
 #
+# Add a route from /etc/shorewall/routes
+#
+add_a_route()
+{
+    local r=
+    local chain=routefwd
+
+    if [ "x$source" != "x-"	 ]; then
+	case ${source} in
+	    $FW:*)
+		chain=routeout
+		r="$(source_ip_range ${source%:*}) " 
+		;;
+	    *:*)
+		r="$(match_source_dev ${source%:*}) $(source_ip_range ${source#*:}) "
+		;;
+	    *.*.*|+*|!+*)
+		r="$(source_ip_range $source) "
+		;;
+	    ~*)
+		r="$(mac_match $source) "
+		;;
+	    $FW)
+		chain=routeout
+		;;
+	    *)		    
+		verify_interface $source || fatal_error "Unknown interface $source in rule \"$rule\""
+		r="$(match_source_dev) $source "
+		;;
+	esac
+    fi
+
+    if [ "x$dest" != "x-"  ]; then
+	case $dest in
+	    *:*)
+		verify_interface ${dest%:*} || fatal_error "Unknown interface ${dest%:*} in rule \"$rule\""
+		r="$(match_dest_dev ${dest%:*}) $(dest_ip_range ${dest#*:}) "
+		;;
+	    *.*.*|+*|!+*)
+		r="${r}$(dest_ip_range $dest) "
+		;;
+	    *)
+		verify_interface $dest || fatal_error "Unknown interface $dest in rule \"$rule\""
+		r="${r}$(match_dest_dev $dest) "
+		;;
+	    esac
+    fi
+
+    if [ "x$proto" = xipp2p ]; then
+	[ "x$port" = "x-" ] && port="ipp2p"
+	r="${r}-p tcp -m ipp2p --${port} "
+    else
+	[ "x$proto"  = "x-"  ] && proto=all
+	[ "x$proto"  = "x"   ] && proto=all
+	[ "$proto"   = "all" ] || r="${r}-p $proto "
+	[ "x$port"   = "x-"  ] || r="${r}--dport $port "
+    fi
+
+    [ "x${sport:--}"  = "x-"  ] || r="${r}--sport $sport "
+
+    r="${r}-j ROUTE "
+
+    [ "x${interface:--}" != x- ] && r="${r}--oif $interface "
+
+    [ "x${gateway:--}" != x- ] && r="${r}--gw $gateway"
+
+    run_iptables2 -t mangle -A $chain $r --continue
+
+    progress_message "   Routing Rule \"$rule\" Added."
+}
+
+#
+# Set up Routing
+#
+setup_routes() # $1 = file name
+{
+    strip_file routes $1
+
+    if [ -s $TMP_DIR/routes ]; then
+	echo "Processing $1..."
+	[ -n "$ROUTE_TARGET" ] || \
+	    fatal_error "Entries in /etc/shorewall/routes requires that your kernel and iptables have ROUTE target support"
+	run_iptables -t mangle -N routefwd
+	run_iptables -t mangle -A FORWARD -j routefwd
+	run_iptables -t mangle -N routeout
+	run_iptables -t mangle -A OUTPUT -j routeout
+
+	while read source dest proto port sport interface gateway; do
+
+	    expandv source dest proto port sport interface gateway
+	    rule="$source $dest $proto $port $sport $interface $gateway"
+	    add_a_route
+	done < $TMP_DIR/routes
+    fi
+}
+
+#
 # Set up Source NAT (including masquerading)
 #
 setup_masq()
@@ -5923,6 +6020,7 @@ determine_capabilities() {
     RECENT_MATCH=
     OWNER_MATCH=
     IPSET_MATCH=
+    ROUTE_TARGET=
 
     qt $IPTABLES -N fooX1234
     qt $IPTABLES -A fooX1234 -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT             && CONNTRACK_MATCH=Yes
@@ -5933,6 +6031,12 @@ determine_capabilities() {
     qt $IPTABLES -A fooX1234 -m iprange --src-range 192.168.1.5-192.168.1.124 -j ACCEPT && IPRANGE_MATCH=Yes
     qt $IPTABLES -A fooX1234 -m recent --update -j ACCEPT                               && RECENT_MATCH=Yes
     qt $IPTABLES -A fooX1234 -m owner --cmd-owner foo -j ACCEPT                         && OWNER_MATCH=Yes
+    
+    qt $IPTABLES -t mangle -N fooX1234
+    qt $IPTABLES -t mangle -A fooX1234 -j ROUTE --oif eth0                              && ROUTE_TARGET=Yes
+    qt $IPTABLES -t mangle -F fooX1234
+    qt $IPTABLES -t mangle -X fooX1234
+  
 
     qt ipset -X fooX1234 # Just in case something went wrong the last time
 
@@ -5975,6 +6079,7 @@ report_capabilities() {
     report_capability "Recent Match" $RECENT_MATCH
     report_capability "Owner Match" $OWNER_MATCH
     report_capability "Ipset Match" $IPSET_MATCH
+    report_capability "Route Target" $ROUTE_TARGET
 }
 
 #
@@ -7071,6 +7176,9 @@ define_firewall() # $1 = Command (Start or Restart)
     [ -f $ecn ] && [ -n "$MANGLE_ENABLED" ] && setup_ecn $ecn
 
     [ -n "$TC_ENABLED" ] &&                    setup_tc
+
+    routes=$(find_file routes)
+    [ -f $routes ] &&                          setup_routes $routes
 
     echo "Activating Rules...";                activate_rules
 

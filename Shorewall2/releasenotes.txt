@@ -1,5 +1,76 @@
-Shorewall 2.3.1
+Shorewall 2.3.3
 
+-----------------------------------------------------------------------
+Problems corrected in version 2.3.2
+
+None.
+-----------------------------------------------------------------------
+New Features in version 2.3.2
+
+1) Shorewall 2.3.2 can now configure routing if your kernel and
+   iptables support the ROUTE target extension. This extension is
+   available in Patch-O-Matic-ng.
+
+   Routing is configured using the /etc/shorewall/routes file. Columns
+   in the file are as follows:
+
+      SOURCE 		Source of the packet. May be any of the
+			following:
+
+
+			- A host or network address
+			- A network interface name.
+			- The name of an ipset prefaced with "+"
+			- $FW (for packets originating on the firewall)
+			- A MAC address in Shorewall format
+			- A range of IP addresses (assuming that your
+			  kernel and iptables support range match)
+			- A network interface name followed by ":"
+			  and an address or address range.
+
+	DEST		Destination of the packet. May be any of the
+			following:
+
+			- A host or network address
+			- A network interface name (determined from
+			  routing table(s))
+			- The name of an ipset prefaced with "+"
+			- A network interface name followed by ":"
+			  and an address or address range. 
+
+	PROTO		Protocol - Must be "tcp", "udp", "icmp",
+			"ipp2p", a number, or "all". "ipp2p" requires
+			ipp2p match support in your kernel and
+			iptables.
+
+	PORT(S)		Destination Ports. A comma-separated list of
+			Port names (from /etc/services), port numbers
+			or port ranges; if the protocol is "icmp", this
+			column is interpreted as the destination
+			icmp-type(s).
+
+			If the protocol is ipp2p, this column is
+			interpreted as an ipp2p option without the
+			leading "--" (example "bit" for bit-torrent).
+			If no PORT is given, "ipp2p" is assumed.
+
+			This column is ignored if PROTOCOL = all but
+			must be entered if any of the following field
+			is supplied. In that case, it is suggested that
+			this field contain "-"
+
+	SOURCE PORT(S)	(Optional) Source port(s). If omitted,
+			any source port is acceptable. Specified as a
+			comma-separated list of port names, port
+			numbers or port ranges.
+
+	INTERFACE	The interface that the packet is to be routed
+			out of. If you do not specify this field then
+			you must place "-" in this column and enter an
+			IP address in the GATEWAY column.
+
+	GATEWAY		The gateway that the packet is to be forewarded
+			through.
 -----------------------------------------------------------------------
 Problems corrected in version 2.3.1
 

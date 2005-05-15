@@ -1,13 +1,13 @@
-Shorewall 2.3.0
+Shorewall 2.3.1
 
 -----------------------------------------------------------------------
-Problems corrected in version 2.3.0
+Problems corrected in version 2.3.1
 
 1) A typo in the 'tunnel' script has been corrected (thanks to Patrik
    Varmecký).
 
 2) Previously, if "shorewall save" was done with SAVE_IPSETS=Yes then
-   Shorewall would fail to start on reboot because the ipset modules
+   Shorewall would fail fast start on reboot because the ipset modules
    were not loaded.
 
 -----------------------------------------------------------------------
@@ -85,7 +85,7 @@ New Features in version 2.3.0
 	   #ACTION      SOURCE      DEST     PROTO    DEST PORT(S)
            ACCEPT	+sshok      fw	     tcp      22
 
-   Shorewall can automatically manage the contents of your ipsets for
+   Shorewall can automatically capture the contents of your ipsets for
    you. If you specify SAVE_IPSETS=Yes in /etc/shorewall/shorewall.conf
    then "shorewall save" will save the contents of your ipsets. The file
    where the sets are saved is formed by taking the name where the
@@ -93,6 +93,10 @@ New Features in version 2.3.0
    enter the command "shorewall save standard" then your Shorewall
    configuration will be saved in /var/lib/shorewall/standard and your
    ipset contents will be saved in /var/lib/shorewall/standard-ipsets.
+   Assuming the default RESTOREFILE setting, if you just enter
+   "shorewall save" then your Shorewall configuration will be saved in
+   /var/lib/shorewall/restore and your ipset contents will be saved in
+   /var/lib/shorewall/restore-ipsets.
 
    Regardless of the setting of SAVE_IPSETS, the "shorewall -f start"
    and "shorewall restore" commands will restore the ipset contents

@@ -1,5 +1,5 @@
 %define name shorewall
-%define version 2.3.0
+%define version 2.3.1
 %define release 1
 %define prefix /usr
 
@@ -139,6 +139,8 @@ fi
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel ipsecvpn
 
 %changelog
+* Sun May 15 2005 Tom Eastep tom@shorewall.net
+- Updated to 2.3.1-1
 * Mon Apr 11 2005 Tom Eastep tom@shorewall.net
 - Updated to 2.2.4-1
 * Fri Apr 08 2005 Tom Eastep tom@shorewall.net

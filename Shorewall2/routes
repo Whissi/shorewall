@@ -11,6 +11,8 @@
 #	In order to use entries in this file, your kernel and iptables must
 #	have ROUTE target support.
 #
+#	To omit any column, enter "-" in that column.
+#
 # Columns are:
 #
 #
@@ -50,15 +52,23 @@
 #			for bit-torrent). If no PORT is given, "ipp2p" is
 #			assumed.
 #
-#			This column is ignored if PROTOCOL = all but must be
-#			entered if any of the following field is supplied.
-#			In that case, it is suggested that this field contain
-#			 "-"
-#
 #	SOURCE PORT(S)	(Optional) Source port(s). If omitted,
 #			any source port is acceptable. Specified as a comma-
 #			separated list of port names, port numbers or port
 #			ranges.
+#
+#	TEST		Defines a test on the existing packet or connection mark. 
+#			The rule will match only if the test returns true. Tests
+#			have the format [!]<value>[/<mask>][:C]
+#
+#			Where:
+#
+#				!	Inverts the test (not equal)
+#				<value> Value of the packet or connection mark.
+#				<mask>  A mask to be applied to the mark before
+#					testing 
+#				:C	Designates a connection mark. If omitted,
+#					the packet mark's value is tested.
 #
 #	INTERFACE	The interface that the packet is to be routed out of.
 #
@@ -66,6 +76,6 @@
 #
 # See http://shorewall.net/Shorewall_and_Routing.html for additional information.
 #######################################################################################
-#SOURCE 		DEST		PROTO	PORT(S)	SOURCE	INTERFACE	GATEWAY
-#							PORT(S)
+#SOURCE 	DEST		PROTO	PORT(S)	SOURCE	TEST 	INTERFACE	GATEWAY
+#						PORT(S)
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

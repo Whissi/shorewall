@@ -5255,6 +5255,7 @@ add_a_route()
 {
     local r=
     local chain=routefwd
+    local marktest=
 
     if [ "x$source" != "x-"	 ]; then
 	case ${source} in
@@ -5304,10 +5305,36 @@ add_a_route()
 	[ "x$proto"  = "x-"  ] && proto=all
 	[ "x$proto"  = "x"   ] && proto=all
 	[ "$proto"   = "all" ] || r="${r}-p $proto "
-	[ "x$port"   = "x-"  ] || r="${r}--dport $port "
+	[ "x$port"   = "x-"  ] || r="${r}-m multiport --dports $port "
     fi
 
-    [ "x${sport:--}"  = "x-"  ] || r="${r}--sport $sport "
+    if [ "x${sport:--}" != "x-"  ]; then
+	[ "x$port" = "x-"  ] && r="${r}-m multiport "
+	r="${r}--sports $sport "
+    fi
+
+    case $testval in
+	-)
+	    ;;
+	!*:C)
+	    marktest="connmark ! "
+	    testval=${testval%:*}
+	    testval=${testval#!}
+	    ;;
+	*:C)
+	    marktest="connmark "
+	    testval=${testval%:*}
+	    ;;
+	!*)
+	    marktest="mark ! "
+	    testval=${testval#!}
+	    ;;
+	*)
+	    [ -n "$testval" ] && marktest="mark "
+	    ;;
+    esac
+
+    [ -n "$marktest" ] && r="${r}-m ${marktest}--mark $testval "
 
     r="${r}-j ROUTE "
 
@@ -5336,10 +5363,10 @@ setup_routes() # $1 = file name
 	run_iptables -t mangle -N routeout
 	run_iptables -t mangle -A OUTPUT -j routeout
 
-	while read source dest proto port sport interface gateway; do
+	while read source dest proto port sport testval interface gateway; do
 
-	    expandv source dest proto port sport interface gateway
-	    rule="$source $dest $proto $port $sport $interface $gateway"
+	    expandv source dest proto port sport testval interface gateway
+	    rule="$source $dest $proto $port $sport testval $interface $gateway"
 	    add_a_route
 	done < $TMP_DIR/routes
     fi

@@ -64,6 +64,25 @@ New Features in version 2.3.2
 			comma-separated list of port names, port
 			numbers or port ranges.
 
+	TEST		Defines a test on the existing packet or
+			connection mark. 
+
+			The rule will match only if the test returns
+			true. Tests have the format
+			[!]<value>[/<mask>][:C]
+
+			Where:
+
+				!	Inverts the test (not equal)
+				<value> Value of the packet or
+					connection mark.
+
+				<mask>  A mask to be applied to the
+					mark before testing 
+				:C	Designates a connection
+					mark. If omitted, the packet
+					mark's value is tested.
+
 	INTERFACE	The interface that the packet is to be routed
 			out of. If you do not specify this field then
 			you must place "-" in this column and enter an

@@ -1008,6 +1008,8 @@ validate_interfaces_file() {
 
 	for option in $options; do
 	    case $option in
+		-)
+		    ;;
 		dhcp|norfc1918|nobogons|tcpflags|newnotsyn|arp_filter|routefilter|logmartians|sourceroute|blacklist|proxyarp|maclist|nosmurfs|upnp|-)
 		    ;;
 		detectnets)
@@ -1017,15 +1019,21 @@ validate_interfaces_file() {
 		routeback)
 		    [ -n "$z" ] || startup_error "The routeback option may not be specified on a multi-zone interface"
 		    ;;
+		mark=*)
+		    [ -n "$ROUTE_TARGET" ] || \
+			startup_error "Interface marks require ROUTE Target support in your kernel and iptables: $option"
+		    eval ${iface}_mark=${option#*=}
+		    MARK_INTERFACES="$MARK_INTERFACES $interface"
+		    ;;
 		*)
 		    error_message "Warning: Invalid option ($option) in record \"$r\""
 		    ;;
 	    esac
 	done
 
-	[ -z "$ALL_INTERFACES" ] && startup_error "No Interfaces Defined"
-
     done < $TMP_DIR/interfaces
+    
+    [ -z "$ALL_INTERFACES" ] && startup_error "No Interfaces Defined"
 }
 
 #
@@ -6048,6 +6056,7 @@ determine_capabilities() {
     OWNER_MATCH=
     IPSET_MATCH=
     ROUTE_TARGET=
+    XMARK=
 
     qt $IPTABLES -N fooX1234
     qt $IPTABLES -A fooX1234 -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT             && CONNTRACK_MATCH=Yes
@@ -6061,6 +6070,7 @@ determine_capabilities() {
     
     qt $IPTABLES -t mangle -N fooX1234
     qt $IPTABLES -t mangle -A fooX1234 -j ROUTE --oif eth0                              && ROUTE_TARGET=Yes
+    qt $IPTABLES -t mangle -A fooX1234 -j MARK --or-mark 2                              && XMARK=Yes
     qt $IPTABLES -t mangle -F fooX1234
     qt $IPTABLES -t mangle -X fooX1234
   
@@ -6106,7 +6116,8 @@ report_capabilities() {
     report_capability "Recent Match" $RECENT_MATCH
     report_capability "Owner Match" $OWNER_MATCH
     report_capability "Ipset Match" $IPSET_MATCH
-    report_capability "Route Target" $ROUTE_TARGET
+    report_capability "ROUTE Target" $ROUTE_TARGET
+    report_capability "Extended MARK Target" $XMARK
 }
 
 #
@@ -7056,7 +7067,18 @@ activate_rules()
 	    fi
 	done
     done
-    
+
+    for interface in $MARK_INTERFACES ; do
+	iface=$(chain_base $interface)
+	chain=$(input_chain $interface)
+	eval mark_value=\$${iface}_mark
+
+	run_iptables -t mangle -N $chain
+	run_iptables -t mangle -A PREROUTING -i $interface -j $chain
+
+	eval run_iptables -t mangle -A PREROUTING -i $interface -j MARK --set-mark 
+    done
+
     for interface in $ALL_INTERFACES ; do
 	run_iptables -A FORWARD -i $interface -j $(forward_chain $interface)
 	run_iptables -A INPUT   -i $interface -j $(input_chain $interface)
@@ -7772,6 +7794,7 @@ do_initialize() {
     RESTOREBASE=
     TMP_DIR=
     ALL_INTERFACES=
+    MARK_INTERFACES=
 
     stopping=
     have_mutex=

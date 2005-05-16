@@ -9,7 +9,8 @@
 #                              I M P O R T A N T ! ! ! !
 #
 #	In order to use entries in this file, your kernel and iptables must
-#	have ROUTE target support.
+#	have ROUTE target support (see the output of "shorewall show
+#	capabilities").
 #
 #	To omit any column, enter "-" in that column.
 #
@@ -47,15 +48,22 @@
 #			ranges; if the protocol is "icmp", this column is
 #			interpreted as the destination icmp-type(s).
 #
+#			Port ranges are allowed in a list only if your
+#			kernel and iptables support Extended Multi-port
+#			match (see the output of "shorewall show capabilities").
+#
 #			If the protocol is ipp2p, this column is interpreted
 #			as an ipp2p option without the leading "--" (example "bit"
 #			for bit-torrent). If no PORT is given, "ipp2p" is
 #			assumed.
 #
-#	SOURCE PORT(S)	(Optional) Source port(s). If omitted,
-#			any source port is acceptable. Specified as a comma-
-#			separated list of port names, port numbers or port
-#			ranges.
+#	SOURCE PORT(S)	Source port(s). If omitted, any source port is acceptable.
+#			Specified as a comma-separated list of port names, port
+#			numbers or port ranges.
+#
+#			Port ranges are allowed in a list only if your
+#			kernel and iptables support Extended Multi-port
+#			match (see the output of "shorewall show capabilities").
 #
 #	TEST		Defines a test on the existing packet or connection mark. 
 #			The rule will match only if the test returns true. Tests
@@ -71,6 +79,8 @@
 #					the packet mark's value is tested.
 #
 #	INTERFACE	The interface that the packet is to be routed out of.
+#			If you specify "-" here, then you must enter the IP address
+#			of a gateway in the GATEWAY column.
 #
 #	GATEWAY		The gateway that the packet is to be forewarded through.
 #

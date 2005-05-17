@@ -90,6 +90,27 @@ New Features in version 2.3.2
 
 	GATEWAY		The gateway that the packet is to be forewarded
 			through.
+
+2) Shorewall 2.3.2 includes support for multiple internet interfaces to
+   different ISPs. This feature is enabled by setting the "default"
+   option for each internet interface in /etc/shorewall/interfaces.
+
+   This feature requires a number of extensions in your kernel and
+   iptables:
+
+   - Extended MARK support.
+   - ROUTE Target support.
+   - CONNMARK Target support and conntrack match support.
+
+   Each interface with the 'default' option given must have a default
+   gateway route in the main routing table and must be up when
+   Shorewall is [re]started.
+
+   
+   When you specify 'default' on two or more entries in
+   /etc/shorewall/interfaces, replies to connections from these
+   interfaces are routed back out of the same interface and through the
+   correct gateway.
 -----------------------------------------------------------------------
 Problems corrected in version 2.3.1
 

@@ -167,9 +167,21 @@
 #			detectnets   - Automatically taylors the zone named
 #				       in the ZONE column to include only those
 #				       hosts routed through the interface.
+#
 #			upnp         - Incoming requests from this interface may
 #				       be remapped via UPNP (upnpd).
-#
+#			
+#			default      - This interface is one of two or more on the
+#                                      the firewall that have a default route.
+#				       You should specify 'default' on all such
+#                                      interfaces, the interfaces should be up when 
+#                                      Shorewall starts and each interface must have
+#                                      a default route configured in the main routing
+#                                      table. There are many restrictions on the use
+#                                      of this feature; see
+#                                      http://shorewall.net/Shorewall_and_Routing.html
+#				       for details.	
+#				       
 #		        WARNING: DO NOT SET THE detectnets OPTION ON YOUR
 #			         INTERNET INTERFACE.
 #

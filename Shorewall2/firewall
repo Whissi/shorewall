@@ -1019,11 +1019,20 @@ validate_interfaces_file() {
 		routeback)
 		    [ -n "$z" ] || startup_error "The routeback option may not be specified on a multi-zone interface"
 		    ;;
-		mark=*)
+		default)
 		    [ -n "$ROUTE_TARGET" ] || \
-			startup_error "Interface marks require ROUTE Target support in your kernel and iptables: $option"
-		    eval ${iface}_mark=${option#*=}
-		    MARK_INTERFACES="$MARK_INTERFACES $interface"
+			startup_error "Default route interfaces require ROUTE Target support in your kernel and iptables: $option"
+		    [ -n "$CONNMARK" ] || \
+			startup_error "Default route interfaces  require CONNMARK Target support in your kernel and iptables: $option"
+		    [ -n "$CONNMARK_MATCH" ] || \
+			startup_error "Default route interfaces require Connmark Match support in your kernel and iptables: $option"
+		    [ -n "$XMARK" ] || \
+			startup_error "Default route interfaces require Extended MARK support in your kernel and iptables: $option"
+		    [ $ROUTEMARK -lt 4096 ] || \
+			startup_error "Too many default route interfaces defined"
+		    eval ${iface}_routemark=$ROUTEMARK
+		    ROUTEMARK=$(($ROUTEMARK + 256))
+		    ROUTEMARK_INTERFACES="$ROUTEMARK_INTERFACES $interface"
 		    ;;
 		*)
 		    error_message "Warning: Invalid option ($option) in record \"$r\""
@@ -2461,12 +2470,30 @@ setup_ecn() # $1 = file name
 }
 
 #
+# Check that a mark value or mask is less that 256
+#
+verify_mark() # $1 = value to test
+{
+    verify_mark1() 
+    {
+	[ $1 -lt 256 ]
+    }
+    
+    verify_mark2()
+    {
+	verify_mark1 $1 2> /dev/null
+    }
+    
+    verify_mark2 $1 || fatal_error "Invalid Mark or Mask value: $1"
+}
+
+#
 # Process a TC Rule - $MARKING_CHAIN is assumed to contain the name of the
 #                     default marking chain
 #
 process_tc_rule()
 {
-    chain=$MARKING_CHAIN target="MARK --set-mark" marktest=
+    chain=$MARKING_CHAIN  target="MARK --set-mark" marktest=
 
     verify_designator() {
 	[ "$chain" = tcout ] && \
@@ -2588,30 +2615,47 @@ process_tc_rule()
 		chain=tcpost
 		;;
 	esac
+	
     fi
 
     case $mark in
 	SAVE)
-	    target="CONNMARK --save-mark"
+	    target="CONNMARK --save-mark --mask 255"
 	    mark=
 	    ;;
 	SAVE/*)
 	    target="CONNMARK --save-mark --mask"
 	    mark=${mark#*/}
+	    verify_mark $mark
 	    ;;
 	RESTORE)
-	    target="CONNMARK --restore-mark"
+	    target="CONNMARK --restore-mark --mask 255"
 	    mark=
 	    ;;
 	RESTORE/*)
 	    target="CONNMARK --restore-mark --mask"
 	    mark=${mark#*/}
+	    verify_mark $mark
 	    ;;
 	CONTINUE)
 	    target=RETURN
 	    mark=
 	    ;;
-    esac
+	*)
+	    if [ "$chain" != tcpost ]; then
+		case $mark in
+		    */*)
+			verify_mark ${mark%/*}
+			verify_mark ${mark#*/}
+			;;
+		    *)
+			verify_mark $mark
+			mark=$mark/255
+			;;
+		esac
+	    fi
+	    ;;
+    esac	    
 
     case $testval in
 	-)
@@ -2633,6 +2677,19 @@ process_tc_rule()
 	    [ -n "$testval" ] && marktest="mark "
 	    ;;
     esac
+
+    if [ -n "$marktest" ] ; then
+	case $testval in
+	    */*)
+		verify_mark ${testval%/*}
+		verify_mark ${testval#*/}
+		;;
+	    *)
+		verify_mark $testval
+		testval=$testval/255
+		;;
+	esac
+    fi
 
     for source in $(separate_list ${sources:=-}); do
 	for dest in $(separate_list ${dests:=-}); do
@@ -5026,19 +5083,21 @@ process_tos() # $1 = name of tos file
 {
     echo "Processing $1..."
 
-    run_iptables -t mangle -N pretos
-    run_iptables -t mangle -N outtos
-
     strip_file tos $1
 
-    while read src dst protocol sport dport tos; do
-	expandv src dst protocol sport dport tos
-	rule="$(echo $src $dst $protocol $sport $dport $tos)"
-	process_tos_rule
-    done < $TMP_DIR/tos
+    if [ -s $TMP_DIR/tos ] ; then
+	run_iptables -t mangle -N pretos
+	run_iptables -t mangle -N outtos
 
-    run_iptables -t mangle -A PREROUTING -j pretos
-    run_iptables -t mangle -A OUTPUT	 -j outtos
+	while read src dst protocol sport dport tos; do
+	    expandv src dst protocol sport dport tos
+	    rule="$(echo $src $dst $protocol $sport $dport $tos)"
+	    process_tos_rule
+	done < $TMP_DIR/tos
+
+	run_iptables -t mangle -A PREROUTING -j pretos
+	run_iptables -t mangle -A OUTPUT     -j outtos
+    fi
 }
 
 #
@@ -5323,6 +5382,7 @@ add_a_route()
 
     case $testval in
 	-)
+	    testval=
 	    ;;
 	!*:C)
 	    marktest="connmark ! "
@@ -5342,6 +5402,19 @@ add_a_route()
 	    ;;
     esac
 
+    if [ -n "$testval" ] ; then
+	case $testval in
+	    */*)
+		verify_mark ${testval%/*}
+		verify_mark ${testval#*/}
+		;;
+	    *)
+		verify_mark $testval
+		testval=$testval/255
+		;;
+	esac
+    fi
+
     [ -n "$marktest" ] && r="${r}-m ${marktest}--mark $testval "
 
     r="${r}-j ROUTE "
@@ -5356,6 +5429,17 @@ add_a_route()
 }
 
 #
+# Create routing chains
+#
+create_routing_chains()
+{
+    run_iptables -t mangle -N routefwd
+    run_iptables -t mangle -A FORWARD -j routefwd
+    run_iptables -t mangle -N routeout
+    run_iptables -t mangle -A OUTPUT -j routeout
+}
+
+#
 # Set up Routing
 #
 setup_routes() # $1 = file name
@@ -5366,10 +5450,7 @@ setup_routes() # $1 = file name
 	echo "Processing $1..."
 	[ -n "$ROUTE_TARGET" ] || \
 	    fatal_error "Entries in /etc/shorewall/routes requires that your kernel and iptables have ROUTE target support"
-	run_iptables -t mangle -N routefwd
-	run_iptables -t mangle -A FORWARD -j routefwd
-	run_iptables -t mangle -N routeout
-	run_iptables -t mangle -A OUTPUT -j routeout
+	create_routing_chains
 
 	while read source dest proto port sport testval interface gateway; do
 
@@ -5377,6 +5458,8 @@ setup_routes() # $1 = file name
 	    rule="$source $dest $proto $port $sport testval $interface $gateway"
 	    add_a_route
 	done < $TMP_DIR/routes
+    elif [ -n "$ROUTEMARK_INTERFACES" ]; then
+	create_routing_chains
     fi
 }
 
@@ -6057,6 +6140,8 @@ determine_capabilities() {
     IPSET_MATCH=
     ROUTE_TARGET=
     XMARK=
+    CONNMARK=
+    CONNMARK_MATCH=
 
     qt $IPTABLES -N fooX1234
     qt $IPTABLES -A fooX1234 -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT             && CONNTRACK_MATCH=Yes
@@ -6067,10 +6152,12 @@ determine_capabilities() {
     qt $IPTABLES -A fooX1234 -m iprange --src-range 192.168.1.5-192.168.1.124 -j ACCEPT && IPRANGE_MATCH=Yes
     qt $IPTABLES -A fooX1234 -m recent --update -j ACCEPT                               && RECENT_MATCH=Yes
     qt $IPTABLES -A fooX1234 -m owner --cmd-owner foo -j ACCEPT                         && OWNER_MATCH=Yes
+    qt $IPTABLES -A fooX1234 -m connmark --mark 2  -j ACCEPT                            && CONNMARK_MATCH=Yes
     
     qt $IPTABLES -t mangle -N fooX1234
     qt $IPTABLES -t mangle -A fooX1234 -j ROUTE --oif eth0                              && ROUTE_TARGET=Yes
     qt $IPTABLES -t mangle -A fooX1234 -j MARK --or-mark 2                              && XMARK=Yes
+    qt $IPTABLES -t mangle -A fooX1234 -j CONNMARK --save-mark                          && CONNMARK=Yes
     qt $IPTABLES -t mangle -F fooX1234
     qt $IPTABLES -t mangle -X fooX1234
   
@@ -6118,6 +6205,8 @@ report_capabilities() {
     report_capability "Ipset Match" $IPSET_MATCH
     report_capability "ROUTE Target" $ROUTE_TARGET
     report_capability "Extended MARK Target" $XMARK
+    report_capability "CONNMARK Target" $CONNMARK
+    report_capability "Connmark Match" $CONNMARK_MATCH
 }
 
 #
@@ -7068,16 +7157,43 @@ activate_rules()
 	done
     done
 
-    for interface in $MARK_INTERFACES ; do
-	iface=$(chain_base $interface)
-	chain=$(input_chain $interface)
-	eval mark_value=\$${iface}_mark
+    if [ -n "$CONNMARK" ]; then
+	run_iptables -t mangle -I PREROUTING -m connmark ! --mark 0 -j CONNMARK --restore-mark
+    fi
 
-	run_iptables -t mangle -N $chain
-	run_iptables -t mangle -A PREROUTING -i $interface -j $chain
+    if [ -n "$ROUTEMARK_INTERFACES" ]; then
+	run_iptables -t mangle -N routemark
 
-	eval run_iptables -t mangle -A PREROUTING -i $interface -j MARK --set-mark 
-    done
+	for interface in $ROUTEMARK_INTERFACES ; do
+
+	    iface=$(chain_base $interface)
+	    eval mark_value=\$${iface}_routemark
+
+	    run_iptables -t mangle -A PREROUTING -i $interface -m mark --mark 0/3840 -j routemark
+	    run_iptables -t mangle -A routemark  -i $interface                        -j MARK --or-mark $mark_value
+
+	    ip route ls dev $interface 2> /dev/null | while read net rest; do
+		case $net in
+		    default)
+			gateway=$(find_gateway $rest)
+			for chain in routefwd routeout; do
+			    for interface1 in $ROUTEMARK_INTERFACES; do
+				run_iptables -t mangle -A $chain -o $interface1 -m mark --mark $mark_value/3840 -j ROUTE --oif $interface --gw $gateway --continue
+			    done
+			done
+			;;
+		    *)
+			for chain in routefwd routeout; do
+			    run_iptables -t mangle -A $chain -d $net -o $interface -j RETURN
+			done
+			;;
+		esac
+	    done
+	done
+
+	run_iptables -t mangle -A routemark -m mark ! --mark 0/3840 -j CONNMARK --save-mark --mask 3840
+	run_iptables -t mangle -I POSTROUTING -j MARK --and-mark 255
+    fi
 
     for interface in $ALL_INTERFACES ; do
 	run_iptables -A FORWARD -i $interface -j $(forward_chain $interface)
@@ -7227,7 +7343,11 @@ define_firewall() # $1 = Command (Start or Restart)
     [ -n "$TC_ENABLED" ] &&                    setup_tc
 
     routes=$(find_file routes)
-    [ -f $routes ] &&                          setup_routes $routes
+    if [ -f $routes ]; then
+	setup_routes $routes
+    elif [ -n "$ROUTEMARK_INTERFACES" ]; then
+	add_routing_chains
+    fi
 
     echo "Activating Rules...";                activate_rules
 
@@ -7794,7 +7914,8 @@ do_initialize() {
     RESTOREBASE=
     TMP_DIR=
     ALL_INTERFACES=
-    MARK_INTERFACES=
+    ROUTEMARK_INTERFACES=
+    ROUTEMARK=256
 
     stopping=
     have_mutex=

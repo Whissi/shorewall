@@ -974,9 +974,9 @@ validate_interfaces_file() {
     local found_obsolete_option=
     local z interface networks options r iface option
 
-    while read z interface networks options; do
-	expandv z interface networks options
-	r="$z $interface $networks $options"
+    while read z interface networks options gateway; do
+	expandv z interface networks options gateway
+	r="$z $interface $networks $options gateway"
 
 	[ "x$z" = "x-" ] && z=
 
@@ -1040,6 +1040,13 @@ validate_interfaces_file() {
 	    esac
 	done
 
+	if [ -n "$gateway" ]; then
+	    if ! list_search default $options; then
+		error_message "Warning: GATEWAY ignored when the 'default' option is not given: \"$r\""
+	    fi
+
+	    eval ${iface}_gateway=$gateway
+	fi
     done < $TMP_DIR/interfaces
     
     [ -z "$ALL_INTERFACES" ] && startup_error "No Interfaces Defined"
@@ -5428,22 +5435,48 @@ add_a_route()
     progress_message "   Routing Rule \"$rule\" Added."
 }
 
-#
-# Create routing chains
-#
-create_routing_chains()
-{
-    run_iptables -t mangle -N routefwd
-    run_iptables -t mangle -A FORWARD -j routefwd
-    run_iptables -t mangle -N routeout
-    run_iptables -t mangle -A OUTPUT -j routeout
-}
 
 #
 # Set up Routing
 #
 setup_routes() # $1 = file name
 {
+    local created_chains=
+    #
+    # Create routing chains
+    #
+    create_routing_chains()
+    {
+	if [ -z "$created_chains" ]; then
+	    run_iptables -t mangle -N routefwd
+	    run_iptables -t mangle -A FORWARD -j routefwd
+	    run_iptables -t mangle -N routeout
+	    run_iptables -t mangle -A OUTPUT -j routeout
+	    run_iptables -t mangle -A PREROUTING -m connmark ! --mark 0 -j CONNMARK --restore-mark
+	    created_chains=Yes
+	fi
+    }
+
+    #
+    # Duplicate routes for '$interface' from the main routing table to mangle table $chain
+    # Does not duplicate a default route but rather echo's the gateway from that route.
+    #
+    duplicate_routes()
+    {
+	ip route ls dev $interface 2> /dev/null | while read net rest; do
+	    case $net in
+		default)			
+		    echo $(find_gateway $rest)
+		    ;;
+		*)
+		    for chain in routefwd routeout; do
+			run_iptables -t mangle -A $chain -d $net -o $interface -j RETURN
+		    done
+		    ;;
+	    esac
+	done
+    }
+
     strip_file routes $1
 
     if [ -s $TMP_DIR/routes ]; then
@@ -5458,9 +5491,42 @@ setup_routes() # $1 = file name
 	    rule="$source $dest $proto $port $sport testval $interface $gateway"
 	    add_a_route
 	done < $TMP_DIR/routes
-    elif [ -n "$ROUTEMARK_INTERFACES" ]; then
-	create_routing_chains
     fi
+
+    if [ -n "$ROUTEMARK_INTERFACES" ]; then
+	create_routing_chains
+
+	run_iptables -t mangle -N routemark
+
+	for interface in $ROUTEMARK_INTERFACES ; do
+
+	    iface=$(chain_base $interface)
+	    eval mark_value=\$${iface}_routemark
+
+	    run_iptables -t mangle -A PREROUTING -i $interface -m mark --mark 0/3840 -j routemark
+	    run_iptables -t mangle -A routemark  -i $interface                        -j MARK --or-mark $mark_value
+
+	    eval gateway=\$$(chain_base $interface)_gateway
+
+	    temp=$(duplicate_routes)
+
+	    if [ -n "${gateway:=${temp}}" ]; then
+		for chain in routefwd routeout; do
+		    for interface1 in $ROUTEMARK_INTERFACES; do
+			run_iptables -t mangle -A $chain -o $interface1 -m mark --mark $mark_value/3840 -j ROUTE --oif $interface --gw $gateway --continue
+		    done
+		done
+
+		progress_message "   Default routing rule for dev $interface via $gateway Added"
+	    else
+		fatal_error "No default gateway defined for interface $interface"
+	    fi
+	done
+
+	run_iptables -t mangle -A routemark -m mark ! --mark 0/3840 -j CONNMARK --save-mark --mask 3840
+	run_iptables -t mangle -I POSTROUTING -j MARK --and-mark 255
+    fi
+
 }
 
 #
@@ -6333,6 +6399,12 @@ initialize_netfilter () {
     #
     run_iptables -A INPUT  -i lo -j ACCEPT
     run_iptables -A OUTPUT -o lo -j ACCEPT
+    
+    #
+    # [re]-Establish routing
+    #
+
+    routes=$(find_file routes);                setup_routes $routes
 
     #
     # Allow DNS lookups during startup for FQDNs
@@ -7157,44 +7229,6 @@ activate_rules()
 	done
     done
 
-    if [ -n "$CONNMARK" ]; then
-	run_iptables -t mangle -I PREROUTING -m connmark ! --mark 0 -j CONNMARK --restore-mark
-    fi
-
-    if [ -n "$ROUTEMARK_INTERFACES" ]; then
-	run_iptables -t mangle -N routemark
-
-	for interface in $ROUTEMARK_INTERFACES ; do
-
-	    iface=$(chain_base $interface)
-	    eval mark_value=\$${iface}_routemark
-
-	    run_iptables -t mangle -A PREROUTING -i $interface -m mark --mark 0/3840 -j routemark
-	    run_iptables -t mangle -A routemark  -i $interface                        -j MARK --or-mark $mark_value
-
-	    ip route ls dev $interface 2> /dev/null | while read net rest; do
-		case $net in
-		    default)
-			gateway=$(find_gateway $rest)
-			for chain in routefwd routeout; do
-			    for interface1 in $ROUTEMARK_INTERFACES; do
-				run_iptables -t mangle -A $chain -o $interface1 -m mark --mark $mark_value/3840 -j ROUTE --oif $interface --gw $gateway --continue
-			    done
-			done
-			;;
-		    *)
-			for chain in routefwd routeout; do
-			    run_iptables -t mangle -A $chain -d $net -o $interface -j RETURN
-			done
-			;;
-		esac
-	    done
-	done
-
-	run_iptables -t mangle -A routemark -m mark ! --mark 0/3840 -j CONNMARK --save-mark --mask 3840
-	run_iptables -t mangle -I POSTROUTING -j MARK --and-mark 255
-    fi
-
     for interface in $ALL_INTERFACES ; do
 	run_iptables -A FORWARD -i $interface -j $(forward_chain $interface)
 	run_iptables -A INPUT   -i $interface -j $(input_chain $interface)
@@ -7341,13 +7375,6 @@ define_firewall() # $1 = Command (Start or Restart)
     [ -f $ecn ] && [ -n "$MANGLE_ENABLED" ] && setup_ecn $ecn
 
     [ -n "$TC_ENABLED" ] &&                    setup_tc
-
-    routes=$(find_file routes)
-    if [ -f $routes ]; then
-	setup_routes $routes
-    elif [ -n "$ROUTEMARK_INTERFACES" ]; then
-	add_routing_chains
-    fi
 
     echo "Activating Rules...";                activate_rules
 

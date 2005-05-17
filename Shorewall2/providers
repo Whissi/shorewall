@@ -1,0 +1,56 @@
+##############################################################################
+#
+# Shorewall 2.4  -- Internet Service Providers
+#
+# /etc/shorewall/providers
+#
+#	This file is used to define additional routing tables. You will 
+#	want to define an additional table if:
+#
+#	- You have connections to more than one ISP or multiple connections
+#	  to the same ISP
+#
+#	- You run Squid as a transparent proxy on a host other than the 
+#	  firewall.
+#
+#	To omit a column, enter "-".
+#
+# Columns must be separated by white space and are:
+#
+#	NAME		The provider name.
+#
+#	NUMBER		The provider number -- a number between 1 and 15
+#
+#	MARK		A FWMARK value used in your /etc/shorewall/tcrules
+#			file to direct packets to this provider.
+#
+#	DUPLICATE	The name of an existing table to duplicate. May be
+#			'main' or the name of a previous provider.
+#
+#	INTERFACE	The name of the network interface to the provider.
+#			Must be listed in /etc/shorewall/interfaces.
+#
+#	GATEWAY		The IP address of the provider's gateway router.
+#
+#	OPTIONS		A comma-separated list selected from the following:
+#
+#		track	If specified, connections FROM this interface are
+#			to be tracked so that responses may be routed back
+#			out this same interface.
+#
+#			You want specify 'trask' if internet hosts will be
+#			connecting to local servers through this provider.
+#
+#		default The providers that have 'default' specified will
+#			get outbound traffic load-balanced among them.
+#
+# Example:  You run squid in your DMZ on IP address 192.168.2.99. Your DMZ
+#	    interface is eth2
+#
+#	#NAME	NUMBER	MARK DUPLICATE	INTERFACE GATEWAY	OPTIONS
+#	Squid	1	1    -		eth2	  192.168.2.99	-
+#
+# For additional information, see http://shorewall.net/NAT.htm
+##############################################################################
+#NAME	NUMBER	MARK	DUPLICATE	INTERFACE	GATEWAY		OPTIONS
+#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE

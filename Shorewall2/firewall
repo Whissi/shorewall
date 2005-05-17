@@ -975,8 +975,8 @@ validate_interfaces_file() {
     local z interface networks options r iface option
 
     while read z interface networks options gateway; do
-	expandv z interface networks options gateway
-	r="$z $interface $networks $options gateway"
+	expandv z interface networks options
+	r="$z $interface $networks $options"
 
 	[ "x$z" = "x-" ] && z=
 
@@ -1019,21 +1019,6 @@ validate_interfaces_file() {
 		routeback)
 		    [ -n "$z" ] || startup_error "The routeback option may not be specified on a multi-zone interface"
 		    ;;
-		default)
-		    [ -n "$ROUTE_TARGET" ] || \
-			startup_error "Default route interfaces require ROUTE Target support in your kernel and iptables: $option"
-		    [ -n "$CONNMARK" ] || \
-			startup_error "Default route interfaces  require CONNMARK Target support in your kernel and iptables: $option"
-		    [ -n "$CONNMARK_MATCH" ] || \
-			startup_error "Default route interfaces require Connmark Match support in your kernel and iptables: $option"
-		    [ -n "$XMARK" ] || \
-			startup_error "Default route interfaces require Extended MARK support in your kernel and iptables: $option"
-		    [ $ROUTEMARK -lt 4096 ] || \
-			startup_error "Too many default route interfaces defined"
-		    eval ${iface}_routemark=$ROUTEMARK
-		    ROUTEMARK=$(($ROUTEMARK + 256))
-		    ROUTEMARK_INTERFACES="$ROUTEMARK_INTERFACES $interface"
-		    ;;
 		*)
 		    error_message "Warning: Invalid option ($option) in record \"$r\""
 		    ;;
@@ -1052,6 +1037,119 @@ validate_interfaces_file() {
     [ -z "$ALL_INTERFACES" ] && startup_error "No Interfaces Defined"
 }
 
+#
+# Check that a mark value or mask is less that 256
+#
+verify_mark() # $1 = value to test
+{
+    verify_mark1() 
+    {
+	[ $1 -lt 256 ]
+    }
+    
+    verify_mark2()
+    {
+	verify_mark1 $1 2> /dev/null
+    }
+    
+    verify_mark2 $1 || fatal_error "Invalid Mark or Mask value: $1"
+}
+
+#
+# Process the providers file 
+#
+setup_providers()
+{
+    add_a_provider() {
+	if list_search $table $PROVIDERS; then
+	    fatal_error "Duplicate Provider: $table, provider: \"$provider\""
+	fi
+	
+	eval ${table}_number=$number
+
+	run_and_save_command qt ip route flush table $number
+
+	if [ "x$duplicate" != x- ]; then
+	    run_ip route show table $duplicate | grep -Ev ^default | while read route; do
+		ensure_and_save_command ip route add table $number $route
+	    done
+	fi
+
+	ensure_and_save_command ip route add default via $gateway dev $interface table $number
+
+	iface=$(chain_base $interface)
+	
+	for option in $(separate_list $options); do
+	    case $option in
+		track)
+		    eval ${iface}_routemark=$mark
+		    ROUTEMARK_INTERFACES="$ROUTEMARK_INTERFACES $interface"
+		    ;;
+		default)
+		    DEFAULT_ROUTE="$DEFAULT_ROUTE nexthop via $gateway dev $interface weight 1"
+		    ;;
+	    esac
+	done
+
+	verify_mark $mark
+
+	eval ${table}_mark=$mark
+
+	run_and_save_command qt ip rule del fwmark $mark
+	
+	ensure_and_save_command ip rule add fwmark $mark table $number
+
+    }
+		
+    strip_file providers $1
+
+    if [ -s $TMP_DIR/providers ]; then
+	echo "Processing $1..."
+
+	save_progress_message "Restoring Providers..."
+	
+	while read table number mark duplicate interface gateway options; do
+	    expandv table number mark duplicate interface gateway options
+	    provider="$table $number $mark $duplicate $interface $gateway $options"
+	    add_a_provider
+	    PROVIDERS="$PROVIDERS $table"
+	    progress_message "   Provider $provider Added"
+	done < $TMP_DIR/providers
+
+	if [ -n "$PROVIDERS" ]; then
+	    if [ -n "$DEFAULT_ROUTE" ]; then
+		run_ip route replace default scope global $DEFAULT_ROUTE
+		progress_message "   Default route $DEFAULT_ROUTE Added."
+	    fi
+
+	    cat > /etc/iproute2/rt_tables <<EOF
+#
+# reserved values
+#
+255     local
+254     main
+253     default
+0       unspec
+#
+# local
+#
+EOF
+
+	    for table in $PROVIDERS; do
+		eval number=\$${table}_number
+		/bin/echo -e "$number\t$table" >>  /etc/iproute2/rt_tables
+	    done
+
+	    save_command "cat > /etc/iproute2/rt_tables << __EOF__"
+	    cat /etc/iproute2/rt_tables >> $RESTOREBASE
+	    save_command __EOF__
+
+	fi		
+	
+	ensure_and_save_command ip route flush cache
+    fi
+}
+   
 #
 # Validate the zone names and options in the hosts file
 #
@@ -2476,23 +2574,6 @@ setup_ecn() # $1 = file name
     fi
 }
 
-#
-# Check that a mark value or mask is less that 256
-#
-verify_mark() # $1 = value to test
-{
-    verify_mark1() 
-    {
-	[ $1 -lt 256 ]
-    }
-    
-    verify_mark2()
-    {
-	verify_mark1 $1 2> /dev/null
-    }
-    
-    verify_mark2 $1 || fatal_error "Invalid Mark or Mask value: $1"
-}
 
 #
 # Process a TC Rule - $MARKING_CHAIN is assumed to contain the name of the
@@ -2650,16 +2731,7 @@ process_tc_rule()
 	    ;;
 	*)
 	    if [ "$chain" != tcpost ]; then
-		case $mark in
-		    */*)
-			verify_mark ${mark%/*}
-			verify_mark ${mark#*/}
-			;;
-		    *)
-			verify_mark $mark
-			mark=$mark/255
-			;;
-		esac
+		verify_mark $mark
 	    fi
 	    ;;
     esac	    
@@ -5457,26 +5529,6 @@ setup_routes() # $1 = file name
 	fi
     }
 
-    #
-    # Duplicate routes for '$interface' from the main routing table to mangle table $chain
-    # Does not duplicate a default route but rather echo's the gateway from that route.
-    #
-    duplicate_routes()
-    {
-	ip route ls dev $interface 2> /dev/null | while read net rest; do
-	    case $net in
-		default)			
-		    echo $(find_gateway $rest)
-		    ;;
-		*)
-		    for chain in routefwd routeout; do
-			run_iptables -t mangle -A $chain -d $net -o $interface -j RETURN
-		    done
-		    ;;
-	    esac
-	done
-    }
-
     strip_file routes $1
 
     if [ -s $TMP_DIR/routes ]; then
@@ -5486,7 +5538,6 @@ setup_routes() # $1 = file name
 	create_routing_chains
 
 	while read source dest proto port sport testval interface gateway; do
-
 	    expandv source dest proto port sport testval interface gateway
 	    rule="$source $dest $proto $port $sport testval $interface $gateway"
 	    add_a_route
@@ -5503,28 +5554,12 @@ setup_routes() # $1 = file name
 	    iface=$(chain_base $interface)
 	    eval mark_value=\$${iface}_routemark
 
-	    run_iptables -t mangle -A PREROUTING -i $interface -m mark --mark 0/3840 -j routemark
-	    run_iptables -t mangle -A routemark  -i $interface                        -j MARK --or-mark $mark_value
+	    run_iptables -t mangle -A PREROUTING -i $interface -m mark --mark 0 -j routemark
+	    run_iptables -t mangle -A routemark  -i $interface                  -j MARK --or-mark $mark_value
 
-	    eval gateway=\$$(chain_base $interface)_gateway
-
-	    temp=$(duplicate_routes)
-
-	    if [ -n "${gateway:=${temp}}" ]; then
-		for chain in routefwd routeout; do
-		    for interface1 in $ROUTEMARK_INTERFACES; do
-			run_iptables -t mangle -A $chain -o $interface1 -m mark --mark $mark_value/3840 -j ROUTE --oif $interface --gw $gateway --continue
-		    done
-		done
-
-		progress_message "   Default routing rule for dev $interface via $gateway Added"
-	    else
-		fatal_error "No default gateway defined for interface $interface"
-	    fi
 	done
 
-	run_iptables -t mangle -A routemark -m mark ! --mark 0/3840 -j CONNMARK --save-mark --mask 3840
-	run_iptables -t mangle -I POSTROUTING -j MARK --and-mark 255
+	run_iptables -t mangle -A routemark -m mark ! --mark 0 -j CONNMARK --save-mark --mask 255
     fi
 
 }
@@ -6404,7 +6439,8 @@ initialize_netfilter () {
     # [re]-Establish routing
     #
 
-    routes=$(find_file routes);                setup_routes $routes
+    setup_providers $(find_file providers)
+    setup_routes $(find_file routes)
 
     #
     # Allow DNS lookups during startup for FQDNs
@@ -7943,6 +7979,7 @@ do_initialize() {
     ALL_INTERFACES=
     ROUTEMARK_INTERFACES=
     ROUTEMARK=256
+    PROVIDERS=
 
     stopping=
     have_mutex=

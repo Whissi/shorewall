@@ -92,24 +92,64 @@ New Features in version 2.3.2
 			through.
 
 2) Shorewall 2.3.2 includes support for multiple internet interfaces to
-   different ISPs. This feature is enabled by setting the "default"
-   option for each internet interface in /etc/shorewall/interfaces.
+   different ISPs. 
 
-   This feature requires a number of extensions in your kernel and
-   iptables:
+   The file /etc/shorewall/providers may be used to define the
+   different providers. It can actually be used to define alternate
+   routing tables so uses like transparent proxy can use the file as
+   well.
 
-   - Extended MARK support.
-   - ROUTE Target support.
-   - CONNMARK Target support and conntrack match support.
+   Columns are:
 
-   Each interface with the 'default' option given must have a default
-   route in the main routing table and must be up when
-   Shorewall is [re]started.
-   
-   When you specify 'default' on two or more entries in
-   /etc/shorewall/interfaces, replies to connections from these
-   interfaces are routed back out of the same interface and through the
-   correct gateway.
+       NAME            The provider name.
+
+       NUMBER          The provider number -- a number between 1 and 15
+
+       MARK            A FWMARK value used in your
+		       /etc/shorewall/tcrules file to direct packets to
+		       this provider.
+
+       DUPLICATE       The name of an existing table to duplicate. May
+		       be 'main' or the name of a previous provider.
+
+       INTERFACE       The name of the network interface to the
+		       provider. Must be listed in
+		       /etc/shorewall/interfaces.
+
+       GATEWAY         The IP address of the provider's gateway router.
+
+       OPTIONS         A comma-separated list selected from the
+		       following:
+
+               track   If specified, connections FROM this interface are
+                       to be tracked so that responses may be routed
+                       back out this same interface.
+
+                       You want specify 'trask' if internet hosts will be
+                       connecting to local servers through this
+                       provider.
+
+		       Because of limitations in the 'ip' utility and
+		       policy routing, you may not use the SAVE or
+		       RESTORE tcrules options or use connection
+		       marking on any traffic to or from this
+		       interface. For traffic control purposes, you
+		       must mark packets in the FORWARD chain (or
+		       better yet, use the CLASSIFY target).
+
+               default The providers that have 'default' specified will
+                       get outbound traffic load-balanced among them.
+
+       Example:  You run squid in your DMZ on IP address
+		 192.168.2.99. Your DMZ interface is eth2
+
+       #NAME   NUMBER  MARK DUPLICATE  INTERFACE GATEWAY       OPTIONS
+       Squid   1       1    -          eth2      192.168.2.99  -
+
+   Use of this feature requires that your kernel and iptables 
+   support CONNTRACK target and conntrack match as well as extended
+   MARK support. It does NOT require the ROUTE target extension.
+
 -----------------------------------------------------------------------
 Problems corrected in version 2.3.1
 

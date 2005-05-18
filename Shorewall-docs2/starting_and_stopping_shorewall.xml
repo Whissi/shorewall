@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-04-13</pubdate>
+    <pubdate>2005-05-15</pubdate>
 
     <copyright>
       <year>2004</year>
@@ -48,7 +48,45 @@
         to interact with Shorewall. Normally the root user's PATH includes
         <filename>/sbin</filename> and the program can be run from a shell
         prompt by simply typing <command>shorewall</command> followed by a
-        command. To see a list of supported commands, use the
+        command.</para>
+
+        <warning>
+          <para>In some releases of KDE, the default configuration of the
+          <emphasis role="bold">konsole</emphasis> program is brain dead with
+          respect to the "Root Console". It executes the command "su" where it
+          should execute "su -"; the latter will cause a login shell to be
+          created which will in turn set PATH properly. You can correct this
+          problem as follows:</para>
+
+          <orderedlist>
+            <listitem>
+              <para>Click on "Settings" on the toolbar and select "Configure
+              Konsole"</para>
+            </listitem>
+
+            <listitem>
+              <para>Select the "Session" tab.</para>
+            </listitem>
+
+            <listitem>
+              <para>Click on "Root Console"</para>
+            </listitem>
+
+            <listitem>
+              <para>Change the Execute command from "su" to "su -"</para>
+            </listitem>
+
+            <listitem>
+              <para>Click on "Save Session"</para>
+            </listitem>
+
+            <listitem>
+              <para>Click on "Ok"</para>
+            </listitem>
+          </orderedlist>
+        </warning>
+
+        <para>To see a list of supported commands, use the
         <command>help</command> command:</para>
 
         <programlisting><command>shorewall help</command></programlisting>
@@ -61,10 +99,11 @@
 
       <listitem>
         <para><filename>/etc/shorewall</filename> — The default directory
-        where Shorewall looks for configuration files. See the section
-        entitled <link linkend="AltConfig">Alternate Configuration
-        Directories</link> for information about how you can direct Shorewall
-        to look in other directories.</para>
+        where Shorewall looks for configuration files. See the sections
+        entitled <link linkend="AddDirectories">Additional Configuration
+        Directories</link> and <link linkend="AltConfig">Alternate
+        Configuration Directories</link> for information about how you can
+        direct Shorewall to look in other directories.</para>
       </listitem>
 
       <listitem>
@@ -237,7 +276,7 @@
         is much faster than starting Shorewall using the normal mechanism of
         reading the configuration files and running
         <command>iptables</command> dozens or even hundreds of times.
-        <filename>/etc/init.d/shorewall</filename>
+        <filename>By default, /etc/init.d/shorewall</filename>
         (<filename>/etc/rc.d/firewall.rc</filename>) uses the -f option when
         it is processing a request to start Shorewall.</para>
       </listitem>
@@ -271,16 +310,52 @@
     shell prompt to remove these files).</para>
   </section>
 
-  <section>
-    <title id="AltConfig">Alternate Configuration Directories</title>
+  <section id="AddDirectories">
+    <title>Additional Configuration Directories</title>
 
-    <para>As explained above, Shorewall normally looks for configuration files
-    in the directory <filename class="directory">/etc/shorewall</filename>.
-    The <command>shorewall start</command>, <command>shorewall
-    restart</command>, <command>shorewall check</command>, and
-    <command>shorewall try </command>commands allow you to specify a different
-    directory for Shorewall to check before looking in <filename
-    class="directory">/etc/shorewall</filename>.</para>
+    <para>The CONFIG_PATH setting in
+    <filename>/etc/shorewall/shorewall.conf</filename> determines where
+    Shorewall looks for configuration files. The default setting is
+    CONFIG_PATH=<filename
+    class="directory">/etc/shorewall</filename>:<filename
+    class="directory">/usr/share/shorewall</filename> which means that
+    <filename class="directory">/etc/shorewall</filename> is searched first
+    and if the file is not found then <filename
+    class="directory">/usr/share/shorewall</filename> is searched. You can
+    change the value of CONFIG_PATH to cause additional directories to be
+    searched but CONFIG_PATH should <emphasis>always</emphasis> include both
+    <filename class="directory">/etc/shorewall</filename> and <filename
+    class="directory">/usr/share/shorewall</filename>.</para>
+
+    <para>When an alternate configuration directory is specified as described
+    in the <link linkend="AddDirectories">next section</link>, that directory
+    is searched <emphasis>before</emphasis> those directories listed in
+    CONFIG_PATH.</para>
+
+    <para>Example - Search <filename
+    class="directory">/etc/shorewall</filename>, <filename
+    class="directory">/etc/shorewall/actiondir</filename> and <filename
+    class="directory">/usr/share/shorewall</filename> in that order:</para>
+
+    <programlisting>CONFIG_PATH=/etc/shorewall:/etc/shorewall/actiondir:/usr/share/shorewall</programlisting>
+
+    <para>The above is the setting that I use and it allows me to place all of
+    my user-defined 'action.' files in <filename
+    class="directory">/etc/shorewall/actiondir</filename>.</para>
+  </section>
+
+  <section id="AltConfig">
+    <title>Alternate Configuration Directories</title>
+
+    <para>As explained <link linkend="AddDirectories">above</link>, Shorewall
+    normally looks for configuration files in the directories specified by the
+    CONFIG_PATH option in <filename
+    class="directory">/etc/shorewall/shorewall.conf</filename>. The
+    <command>shorewall start</command>, <command>shorewall restart</command>,
+    <command>shorewall check</command>, and <command>shorewall try
+    </command>commands allow you to specify an additional directory for
+    Shorewall to check before looking in the directories listed in
+    CONFIG_PATH.</para>
 
     <para>Shorewall versions before Shorewall 2.2.0:</para>
 

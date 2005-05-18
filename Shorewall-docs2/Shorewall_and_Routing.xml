@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-05-15</pubdate>
+    <pubdate>2005-05-18</pubdate>
 
     <copyright>
       <year>2005</year>
@@ -178,7 +178,7 @@
     configure your alternate routing table at boot time and that <emphasis
     role="bold">other than as described in the previous section, there is no
     connection between Shorewall and routing when using Shorewall versions
-    prior to 2.3.3.</emphasis> </para>
+    prior to 2.3.3.</emphasis></para>
   </section>
 
   <section>
@@ -206,7 +206,194 @@
   </section>
 
   <section>
-    <title>Routing with Shorewall 2.3.3 and Later</title>
+    <title>Multiple Internet Connection Support in Shorewall 2.3.3 and
+    Later</title>
+
+    <para>Beginning with Shorewall 2.3.3, support is included for multiple
+    internet connections.</para>
+
+    <section>
+      <title>Overview</title>
+
+      <para>Let's assume that a firewall is connected via two separate
+      ethernet interfaces to two different ISP as in the following
+      diagram.</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>eth0 connects to ISP1. The IP address of eth0 is
+          206.124.146.176 and the ISP's gateway router has IP address
+          206.124.146.254.</para>
+        </listitem>
+
+        <listitem>
+          <para>eth1 connects to ISP 2. The IP address of eth1 is
+          130.252.99.27 and the ISP's gateway router has IP address
+          130.252.99.254.</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>Each of these <firstterm>providers</firstterm> is described in an
+      entry in the file <filename>/etc/shorewall/providers</filename>.</para>
+
+      <para>Entries in <filename>/etc/shorewall/providers</filename> can
+      specify that outgoing connections are to be load-balanced between the
+      two ISPs. Entries in <filename>/etc/shorewall/tcrules</filename> can be
+      used to direct particular outgoing connections to one ISP or the
+      other.</para>
+
+      <para>Connections from the internet are automatically routed back out of
+      the correct interface and through the correct ISP gateway. This works
+      whether the connection is handled by the firewall itself or if it is
+      routed or port-forwarded to a system behind the firewall.</para>
+
+      <para>Shorewall will set up the routing and will update the
+      /etc/iproute2/rt_tables to include the table names and number of the
+      tables that it adds.</para>
+
+      <caution>
+        <para>This feature uses <ulink url="traffic_shaping.htm">packet
+        marking</ulink> to control the routing. As a consequence, there are
+        some restrictions concerning entries in /etc/shorewall/tcrules:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>Packet marking for traffic control purposes must be done in
+            the FORWARD table.</para>
+          </listitem>
+
+          <listitem>
+            <para>You may not use the SAVE or RESTORE options.</para>
+          </listitem>
+
+          <listitem>
+            <para>You man not use connection marking.</para>
+          </listitem>
+        </itemizedlist>
+      </caution>
+
+      <para>The <filename>/etc/shorewall/providers</filename> file can also be
+      used in other routing senarios. See the Squid documentation for an
+      example.</para>
+    </section>
+
+    <section>
+      <title>/etc/shorewall/providers File</title>
+
+      <para>Entries in this file have the following columns. As in all
+      Shorewall configuration files, enter "-" in a column if you don't want
+      to enter any value.</para>
+
+      <glossary>
+        <glossdiv>
+          <title>/etc/shorewall/providers:</title>
+
+          <glossentry>
+            <glossterm>NAME</glossterm>
+
+            <glossdef>
+              <para>The provider name. Must begin with a letter and consist of
+              letters and digits. The provider name becomes the name of the
+              generated routing table for this provider.</para>
+            </glossdef>
+          </glossentry>
+
+          <glossentry>
+            <glossterm>NUMBER</glossterm>
+
+            <glossdef>
+              <para>A number between 1 and 252. This becomes the routing table
+              number for the generated table for this provider.</para>
+            </glossdef>
+          </glossentry>
+
+          <glossentry>
+            <glossterm>MARK</glossterm>
+
+            <glossdef>
+              <para>A mark value used in your /etc/shorewall/tcrules file to
+              direct packets to this provider. Shorewall will also mark
+              connections that have seen input from this provider with this
+              value and will restore the packet mark in the PREROUTING
+              CHAIN.</para>
+            </glossdef>
+          </glossentry>
+
+          <glossentry>
+            <glossterm>DUPLICATE</glossterm>
+
+            <glossdef>
+              <para>Gives the name and number of a routing table to duplicate.
+              May be 'main' or the name of a previously declared provider. For
+              most applications, you want to specify 'main' here.</para>
+            </glossdef>
+          </glossentry>
+
+          <glossentry>
+            <glossterm>INTERFACE</glossterm>
+
+            <glossdef>
+              <para>The name of the interface to the provider.</para>
+            </glossdef>
+          </glossentry>
+
+          <glossentry>
+            <glossterm>GATEWAY</glossterm>
+
+            <glossdef>
+              <para>The IP address of the provider's Gateway router.</para>
+            </glossdef>
+          </glossentry>
+
+          <glossentry>
+            <glossterm>OPTIONS</glossterm>
+
+            <glossdef>
+              <para>A comma-separated list from the following:</para>
+
+              <glosslist>
+                <glossentry>
+                  <glossterm>track</glossterm>
+
+                  <glossdef>
+                    <para>If specified, connections FROM this interface are to
+                    be tracked so that responses may be routed back out this
+                    same interface. </para>
+
+                    <para>You want specify 'track' if internet hosts will be
+                    connecting to local servers through this provider.</para>
+                  </glossdef>
+                </glossentry>
+
+                <glossentry>
+                  <glossterm>balance</glossterm>
+
+                  <glossdef>
+                    <para>The providers that have 'default' specified will get
+                    outbound traffic load-balanced among them.</para>
+                  </glossdef>
+                </glossentry>
+              </glosslist>
+            </glossdef>
+          </glossentry>
+        </glossdiv>
+      </glossary>
+    </section>
+
+    <section>
+      <title>Example</title>
+
+      <para>The configuration in the figure at the top of this section would
+      be specified as follows:</para>
+
+      <programlisting>#NAME   NUMBER  MARK    DUPLICATE       INTERFACE       GATEWAY         OPTIONS
+ISP1    1       1       main            eth0            206.124.146.254 track,balance
+ISP2    2       2       main            eth1            130.252.99.254  track,balance</programlisting>
+    </section>
+  </section>
+
+  <section id="RouteTarget">
+    <title>Experimental Routing with Shorewall 2.3.3 and Later</title>
 
     <para>Beginning with Shorewall 2.2.3, Shorewall is integrated with the
     ROUTE target extension available from Netfilter Patch-O-Matic-NG (<ulink
@@ -215,7 +402,11 @@
     <warning>
       <para>As of this writing, I know of no distribution that is shipping a
       kernel or iptables with the ROUTE target patch included. This means that
-      you must patch and build your own kernel and iptables. </para>
+      you must patch and build your own kernel and iptables in order to be
+      able to use the feature described in this section. <emphasis
+      role="bold">This code remains experimental</emphasis> since there is no
+      intent by the Netfilter team to ever submit the ROUTE target patch for
+      inclusion in the official kernels from kernel.org.</para>
     </warning>
 
     <para>See <ulink url="FAQ.htm#faq42">Shorewall FAQ 42</ulink> for
@@ -224,7 +415,13 @@
     determination.</para>
 
     <para>Routing with Shorewall is specified through entries in
-    /etc/shorewall/routes. Columns in this file are as follows:</para>
+    /etc/shorewall/routes. Note that entries in the /etc/shorewall/routes file
+    override the routing specified in your routing tables. These rules
+    generate Netfilter rules in the mangle tables FORWARD chain or OUTPUT
+    chain depending whether the packets are being routed through the firewall
+    or originate on the firewall itself (see figure above).</para>
+
+    <para>Columns in this file are as follows:</para>
 
     <glosslist>
       <glossentry>
@@ -330,7 +527,58 @@
         <glossdef>
           <para>Optional) Source port(s). If omitted, any source port is
           acceptable. Specified as a comma-separated list of port names, port
-          numbers or port ranges. </para>
+          numbers or port ranges.</para>
+        </glossdef>
+      </glossentry>
+
+      <glossentry>
+        <glossterm>TEST</glossterm>
+
+        <glossdef>
+          <para>Defines a test on the existing packet or connection mark. The
+          rule will match only if the test returns true. Tests have the
+          format</para>
+
+          <blockquote>
+            <para>[!]&lt;value&gt;[/&lt;mask&gt;][:C]</para>
+          </blockquote>
+
+          <para>where:</para>
+
+          <glosslist>
+            <glossentry>
+              <glossterm>!</glossterm>
+
+              <glossdef>
+                <para>Inverts the test (not equal)</para>
+              </glossdef>
+            </glossentry>
+
+            <glossentry>
+              <glossterm>&lt;value&gt;</glossterm>
+
+              <glossdef>
+                <para>Value of the packet or connection mark.</para>
+              </glossdef>
+            </glossentry>
+
+            <glossentry>
+              <glossterm>&lt;mask&gt;</glossterm>
+
+              <glossdef>
+                <para>A mask to be applied to the mark before testing</para>
+              </glossdef>
+            </glossentry>
+
+            <glossentry>
+              <glossterm>:C</glossterm>
+
+              <glossdef>
+                <para>Designates a connection mark. If omitted, the packet
+                mark's value is tested</para>
+              </glossdef>
+            </glossentry>
+          </glosslist>
         </glossdef>
       </glossentry>
 
@@ -355,8 +603,8 @@
     </glosslist>
 
     <para>The idea here is that traffic that matches the SOURCE, DEST, PROTO,
-    PORT(S) and SOURCE PORT(S) columns is routed out of the INTERFACE through
-    the optional GATEWAY.</para>
+    PORT(S), SOURCE PORT(S) and TEST columns is routed out of the INTERFACE
+    through the optional GATEWAY.</para>
 
     <blockquote>
       <para>Example:</para>
@@ -366,17 +614,12 @@
       your DMZ. You would use the following entry in
       /etc/shorewall/routes:</para>
 
-      <programlisting>#SOURCE                 DEST            PROTO   PORT(S) SOURCE  INTERFACE       GATEWAY
+      <programlisting>#SOURCE                 DEST            PROTO   PORT(S) SOURCE  TEST    INTERFACE       GATEWAY
 #                                                       PORT(S)
-eth1                    0.0.0.0/0       tcp     80      -       eth1            192.168.3.22</programlisting>
+eth1                    0.0.0.0/0       tcp     80      -       -       eth1            192.168.3.22</programlisting>
 
       <para>This entry specifies that "traffic coming in through eth1 to TCP
       port 80 is to be routed out of eth1 to gateway 192.168.3.22".</para>
     </blockquote>
-
-    <para>Note that entries in the /etc/shorewall/routes file override the
-    routing specified in your routing tables. These rules generate Netfilter
-    rules in the mangle tables FORWARD chain or OUTPUT chain (see figure
-    above).</para>
   </section>
 </article>

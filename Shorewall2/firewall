@@ -1081,12 +1081,17 @@ setup_providers()
 	
 	for option in $(separate_list $options); do
 	    case $option in
+		-)
+		    ;;
 		track)
 		    eval ${iface}_routemark=$mark
 		    ROUTEMARK_INTERFACES="$ROUTEMARK_INTERFACES $interface"
 		    ;;
-		default)
+		balance)
 		    DEFAULT_ROUTE="$DEFAULT_ROUTE nexthop via $gateway dev $interface weight 1"
+		    ;;
+		*)
+		    error_message "   Warning: Invalid option ($option) ignored in provider \"$provider\""
 		    ;;
 	    esac
 	done
@@ -2792,6 +2797,12 @@ setup_tc1() {
     #
 
     run_iptables -t mangle -N tcpre
+
+    for interface in $ROUTEMARK_INTERFACES; do
+	eval mark=\$$(chain_base $interface)_routemark
+	run_iptables -t mangle -A tcpre -m connmark --mark $mark -j RETURN
+    done
+
     run_iptables -t mangle -N tcfor
     run_iptables -t mangle -N tcout
     run_iptables -t mangle -N tcpost

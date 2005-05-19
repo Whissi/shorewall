@@ -22,7 +22,7 @@
 #       Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
 #
 
-VERSION=2.3.2
+VERSION=2.4.0-RC1
 
 usage() # $1 = exit status
 {
@@ -415,8 +415,20 @@ if [ -f ${PREFIX}/etc/shorewall/routes ]; then
 else
     run_install $OWNERSHIP -m 0600 routes ${PREFIX}/etc/shorewall/routes
     echo
-    echo "Routes file installed as ${PREFIX}/etc/shorewall/blacklist"
+    echo "Routes file installed as ${PREFIX}/etc/shorewall/routes"
 fi
+
+#
+# Install the Providers file
+#
+if [ -f ${PREFIX}/etc/shorewall/providers ]; then
+    backup_file /etc/shorewall/providers
+else
+    run_install $OWNERSHIP -m 0600 providers ${PREFIX}/etc/shorewall/providers
+    echo
+    echo "Providers file installed as ${PREFIX}/etc/shorewall/providers"
+fi
+
 #
 # Backup and remove the whitelist file
 #

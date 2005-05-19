@@ -1060,11 +1060,23 @@ verify_mark() # $1 = value to test
 #
 setup_providers()
 {
+    local table number mark duplicate interface gateway options provider
+
     add_a_provider() {
-	if list_search $table $PROVIDERS; then
-	    fatal_error "Duplicate Provider: $table, provider: \"$provider\""
-	fi
-	
+	local t n iface option
+
+	for t in $PROVIDERS; do
+	    if [ "$t" = "$table" ]; then
+		fatal_error "Duplicate Provider: $table, provider: \"$provider\""
+	    fi
+
+	    eval n=\$${t}_number
+
+	    if [ $n -eq $number ]; then
+		fatal_error "Duplicate Provider number: $number, provider: \"$provider\""
+	    fi
+	done
+
 	eval ${table}_number=$number
 
 	run_and_save_command qt ip route flush table $number
@@ -1076,14 +1088,21 @@ setup_providers()
 	fi
 
 	ensure_and_save_command ip route add default via $gateway dev $interface table $number
-
-	iface=$(chain_base $interface)
 	
+	verify_mark $mark
+
+	eval ${table}_mark=$mark
+
+	run_and_save_command qt ip rule del fwmark $mark
+	
+	ensure_and_save_command ip rule add fwmark $mark table $number
+
 	for option in $(separate_list $options); do
 	    case $option in
 		-)
 		    ;;
 		track)
+		    iface=$(chain_base $interface)
 		    eval ${iface}_routemark=$mark
 		    ROUTEMARK_INTERFACES="$ROUTEMARK_INTERFACES $interface"
 		    ;;
@@ -1096,13 +1115,6 @@ setup_providers()
 	    esac
 	done
 
-	verify_mark $mark
-
-	eval ${table}_mark=$mark
-
-	run_and_save_command qt ip rule del fwmark $mark
-	
-	ensure_and_save_command ip rule add fwmark $mark table $number
 
     }
 		
@@ -6446,12 +6458,6 @@ initialize_netfilter () {
     run_iptables -A INPUT  -i lo -j ACCEPT
     run_iptables -A OUTPUT -o lo -j ACCEPT
     
-    #
-    # [re]-Establish routing
-    #
-
-    setup_providers $(find_file providers)
-    setup_routes $(find_file routes)
 
     #
     # Allow DNS lookups during startup for FQDNs
@@ -6504,7 +6510,6 @@ initialize_netfilter () {
 	run_iptables -A newnotsyn -j DROP
     fi
 
-    createchain icmpdef no
     createchain reject	no
     createchain dynamic no
     createchain smurfs no
@@ -7391,7 +7396,14 @@ define_firewall() # $1 = Command (Start or Restart)
     save_load_kernel_modules
 
     echo "Initializing...";                    initialize_netfilter
+
     echo "Configuring Proxy ARP";              setup_proxy_arp
+    #
+    # [re]-Establish routing
+    #
+    setup_providers $(find_file providers)
+    setup_routes $(find_file routes)
+
     echo "Setting up NAT...";                  setup_nat
     echo "Setting up NETMAP...";               setup_netmap
     echo "Adding Common Rules";                add_common_rules

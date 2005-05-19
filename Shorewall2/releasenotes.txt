@@ -1,13 +1,16 @@
-Shorewall 2.3.2
+Shorewall 2.4.0-RC1
 
 -----------------------------------------------------------------------
-Problems corrected in version 2.3.2
+Upgrade Issues when moving to 2.4.0
 
-None.
+1) Shorewall now enforces the restriction that mark values used in 
+   /etc/shorewall/tcrules are less than 256. If you are using mark
+   values >= 256, you must change your configuration before you 
+   upgrade.
 -----------------------------------------------------------------------
-New Features in version 2.3.2
+New Features in version 2.4.0
 
-1) Shorewall 2.3.2 includes support for multiple internet interfaces to
+1) Shorewall 2.4.0 includes support for multiple internet interfaces to
    different ISPs. 
 
    The file /etc/shorewall/providers may be used to define the
@@ -63,109 +66,16 @@ New Features in version 2.3.2
        Squid   1       1    -          eth2      192.168.2.99  -
 
    Use of this feature requires that your kernel and iptables 
-   support CONNTRACK target and conntrack match as well as extended
+   support CONNMARK target and conntrack match as well as extended
    MARK support. It does NOT require the ROUTE target extension.
 
-2) Shorewall 2.3.2 can now configure routing if your kernel and
-   iptables support the ROUTE target extension. This extension is
-   available in Patch-O-Matic-ng. This feature is *EXPERIMENTAL* since
-   the Netfilter team have no intention of ever releasing the ROUTE
-   target extension to kernel.org.
+   WARNING: The current version of iptables (1.3.1) is broken with
+   respect to CONNMARK and iptables-save/iptables-restore. This means
+   that if you configure multiple ISPs, "shorewall restore" will
+   fail. You must patch your iptables using the patch at
+   http://shorewall.net/pub/shorewall/contrib/iptables/CONNMARK.diff.
 
-   Routing is configured using the /etc/shorewall/routes file. Columns
-   in the file are as follows:
-
-      SOURCE 		Source of the packet. May be any of the
-			following:
-
-
-			- A host or network address
-			- A network interface name.
-			- The name of an ipset prefaced with "+"
-			- $FW (for packets originating on the firewall)
-			- A MAC address in Shorewall format
-			- A range of IP addresses (assuming that your
-			  kernel and iptables support range match)
-			- A network interface name followed by ":"
-			  and an address or address range.
-
-	DEST		Destination of the packet. May be any of the
-			following:
-
-			- A host or network address
-			- A network interface name (determined from
-			  routing table(s))
-			- The name of an ipset prefaced with "+"
-			- A network interface name followed by ":"
-			  and an address or address range. 
-
-	PROTO		Protocol - Must be "tcp", "udp", "icmp",
-			"ipp2p", a number, or "all". "ipp2p" requires
-			ipp2p match support in your kernel and
-			iptables.
-
-	PORT(S)		Destination Ports. A comma-separated list of
-			Port names (from /etc/services), port numbers
-			or port ranges; if the protocol is "icmp", this
-			column is interpreted as the destination
-			icmp-type(s).
-
-			If the protocol is ipp2p, this column is
-			interpreted as an ipp2p option without the
-			leading "--" (example "bit" for bit-torrent).
-			If no PORT is given, "ipp2p" is assumed.
-
-			This column is ignored if PROTOCOL = all but
-			must be entered if any of the following field
-			is supplied. In that case, it is suggested that
-			this field contain "-"
-
-	SOURCE PORT(S)	(Optional) Source port(s). If omitted,
-			any source port is acceptable. Specified as a
-			comma-separated list of port names, port
-			numbers or port ranges.
-
-	TEST		Defines a test on the existing packet or
-			connection mark. 
-
-			The rule will match only if the test returns
-			true. Tests have the format
-			[!]<value>[/<mask>][:C]
-
-			Where:
-
-				!	Inverts the test (not equal)
-				<value> Value of the packet or
-					connection mark.
-
-				<mask>  A mask to be applied to the
-					mark before testing 
-				:C	Designates a connection
-					mark. If omitted, the packet
-					mark's value is tested.
-
-	INTERFACE	The interface that the packet is to be routed
-			out of. If you do not specify this field then
-			you must place "-" in this column and enter an
-			IP address in the GATEWAY column.
-
-	GATEWAY		The gateway that the packet is to be forewarded
-			through.
-
------------------------------------------------------------------------
-Problems corrected in version 2.3.1
-
-1) A typo in the 'tunnel' script has been corrected (thanks to Patrik
-   Varmecký).
-
-2) Previously, if "shorewall save" was done with SAVE_IPSETS=Yes then
-   Shorewall would fail fast start on reboot because the ipset modules
-   were not loaded.
-
------------------------------------------------------------------------
-New Features in version 2.3.0
-
-1) Shorewall 2.3.0 supports the 'cmd-owner' option of the owner match
+2) Shorewall 2.3.0 supports the 'cmd-owner' option of the owner match
    facility in Netfilter. Like all owner match options, 'cmd-owner' may
    only be applied to traffic that originates on the firewall.
 
@@ -193,7 +103,7 @@ New Features in version 2.3.0
    symbolic links, it's easy to alias command names to be anything you
    want.
 
-2) Support has been added for ipsets
+3) Support has been added for ipsets
    (see http://people.netfilter.org/kadlec/ipset/).
 
    In most places where a host or network address may be used, you may
@@ -308,3 +218,90 @@ New Features in version 2.3.0
        ipset -B Blacklist 206.124.146.177 -b SMTP
 
    Now only port 25 will be blocked from 206.124.146.177. 
+
+4) Shorewall 2.4.0 can now configure routing if your kernel and
+   iptables support the ROUTE target extension. This extension is
+   available in Patch-O-Matic-ng. This feature is *EXPERIMENTAL* since
+   the Netfilter team have no intention of ever releasing the ROUTE
+   target extension to kernel.org.
+
+   Routing is configured using the /etc/shorewall/routes file. Columns
+   in the file are as follows:
+
+      SOURCE 		Source of the packet. May be any of the
+			following:
+
+
+			- A host or network address
+			- A network interface name.
+			- The name of an ipset prefaced with "+"
+			- $FW (for packets originating on the firewall)
+			- A MAC address in Shorewall format
+			- A range of IP addresses (assuming that your
+			  kernel and iptables support range match)
+			- A network interface name followed by ":"
+			  and an address or address range.
+
+	DEST		Destination of the packet. May be any of the
+			following:
+
+			- A host or network address
+			- A network interface name (determined from
+			  routing table(s))
+			- The name of an ipset prefaced with "+"
+			- A network interface name followed by ":"
+			  and an address or address range. 
+
+	PROTO		Protocol - Must be "tcp", "udp", "icmp",
+			"ipp2p", a number, or "all". "ipp2p" requires
+			ipp2p match support in your kernel and
+			iptables.
+
+	PORT(S)		Destination Ports. A comma-separated list of
+			Port names (from /etc/services), port numbers
+			or port ranges; if the protocol is "icmp", this
+			column is interpreted as the destination
+			icmp-type(s).
+
+			If the protocol is ipp2p, this column is
+			interpreted as an ipp2p option without the
+			leading "--" (example "bit" for bit-torrent).
+			If no PORT is given, "ipp2p" is assumed.
+
+			This column is ignored if PROTOCOL = all but
+			must be entered if any of the following field
+			is supplied. In that case, it is suggested that
+			this field contain "-"
+
+	SOURCE PORT(S)	(Optional) Source port(s). If omitted,
+			any source port is acceptable. Specified as a
+			comma-separated list of port names, port
+			numbers or port ranges.
+
+	TEST		Defines a test on the existing packet or
+			connection mark. 
+
+			The rule will match only if the test returns
+			true. Tests have the format
+			[!]<value>[/<mask>][:C]
+
+			Where:
+
+				!	Inverts the test (not equal)
+				<value> Value of the packet or
+					connection mark.
+
+				<mask>  A mask to be applied to the
+					mark before testing 
+				:C	Designates a connection
+					mark. If omitted, the packet
+					mark's value is tested.
+
+	INTERFACE	The interface that the packet is to be routed
+			out of. If you do not specify this field then
+			you must place "-" in this column and enter an
+			IP address in the GATEWAY column.
+
+	GATEWAY		The gateway that the packet is to be forewarded
+			through.
+

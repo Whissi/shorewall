@@ -345,11 +345,18 @@ New Features in version 2.4.0
 6) Normally when Shorewall is stopped, starting or restarting then 
    connections are allowed from hosts listed in
    /etc/shorewall/routestopped to the firewall and to other hosts
-   listed in /etc/shorewall/routestopped. A new 'loose' option is
-   added for entries in that file which will cause Shorewall to 
-   allow traffic from the host listed in the entry to ANY other 
-   host. When 'loose' is specified in an entry, it is unnecessary
-   to also specify 'routeback'.
+   listed in /etc/shorewall/routestopped. 
+
+   A new 'source' option is added for entries in that file which will
+   cause Shorewall to allow traffic from the host listed in the entry
+   to ANY other host. When 'source' is specified in an entry, it is
+   unnecessary to also specify 'routeback'.
+
+   Similarly, a new 'dest' option is added which will cause Shorewall
+   to allow traffic to the host listed in the entry from ANY other
+   host. When 'source' is specified in an entry, it is unnecessary to
+   also specify 'routeback'.
+
 
 
 

@@ -136,7 +136,7 @@ showchain() # $1 = name of chain
 }
 
 #
-# The 'awk' hack that compensates for a bug in iptables-save (actually in libipt_policy.so) and can be removed when that bug is fixed.
+# The 'awk' hack that compensates for bugs in iptables-save (or rather in the extension modules).
 #
 
 iptablesbug()
@@ -146,6 +146,7 @@ iptablesbug()
              /^-j/           { print sline $0; next };\
              /-m policy.*-j/ { print $0; next };\
              /-m policy/     { sline=$0; next };\
+             /--mask ff/     { sub( /--mask ff/, "--mask 0xff" ) };\
                              {print ; sline="" }'
     else
 	echo "   Warning: You don't have 'awk' on this system so the output of the save command may be unusable" >&2

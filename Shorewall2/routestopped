@@ -23,7 +23,13 @@
 #			  options. The currently-supported options are:
 #
 #			  routeback - Set up a rule to ACCEPT traffic from
-#			  these hosts back to themselves. 
+#			  these hosts back to themselves.
+#
+#			  loose - Allow traffic from these hosts to ANY
+#			  destination. Without this option, only traffic
+#			  from this host to other listed hosts (and the
+#			  firewall) is allowed. If 'loose' is specified
+#			  then 'routeback' is redundent.
 #
 # Example:
 #
@@ -31,6 +37,7 @@
 #	eth2		192.168.1.0/24
 #	eth0		192.0.2.44
 #	br0		-			routeback
+#	eth3		-			loose
 #
 # See http://shorewall.net/Documentation.htm#Routestopped and
 # http://shorewall.net/starting_and_stopping_shorewall.htm for additional 

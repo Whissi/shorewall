@@ -321,7 +321,6 @@ New Features in version 2.4.0
 5) Crossbeam Support (Thanks to Juan Jesús Prieto and the folks at
    eneotecnologia.com)
 
-
    If Shorewall is running in a Crossbeam System
    (www.crossbeamsystems.com) you need to activate this directive if
    you don't want the CPM to think the system is down and send a reset
@@ -342,4 +341,15 @@ New Features in version 2.4.0
    to Yes, CROSSBEAM_BACKBONE indicates the device used by the
    backbone. If not specified or if specified as empty (e.g.,
    CROSSBEAM="") then CROSSBEAM=No is assumed.
+
+6) Normally when Shorewall is stopped, starting or restarting then 
+   connections are allowed from hosts listed in
+   /etc/shorewall/routestopped to the firewall and to other hosts
+   listed in /etc/shorewall/routestopped. A new 'loose' option is
+   added for entries in that file which will cause Shorewall to 
+   allow traffic from the host listed in the entry to ANY other 
+   host. When 'loose' is specified in an entry, it is unnecessary
+   to also specify 'routeback'.
+
+
 

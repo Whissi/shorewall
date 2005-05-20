@@ -1157,6 +1157,7 @@ setup_providers()
 # local
 #
 EOF
+
 	    for table in $PROVIDERS; do
 		eval number=\$${table}_number
 		/bin/echo -e "$number\t$table" >>  /etc/iproute2/rt_tables
@@ -1641,7 +1642,7 @@ disable_ipv6_1() {
 
 process_routestopped() # $1 = command
 {
-    local hosts= interface host host1 options networks
+    local hosts= interface host host1 options networks loose=
 
     while read interface host options; do
 	expandv interface host options
@@ -1665,6 +1666,11 @@ process_routestopped() # $1 = command
 			    done
 			fi
 			;;
+		    loose)
+			for h in $(separate_list $host); do
+			    loose="$loose $interface:$h"
+			done
+			;;
 		    *)
 			error_message "Warning: Unknown routestopped option ignored: $option"
 			;;
@@ -1674,6 +1680,7 @@ process_routestopped() # $1 = command
 		    
     done < $TMP_DIR/routestopped
 
+
     for host in $hosts; do
 	interface=${host%:*}
 	networks=${host#*:}
@@ -1681,9 +1688,13 @@ process_routestopped() # $1 = command
 	[ -z "$ADMINISABSENTMINDED" ] && \
 	    run_iptables $1 OUTPUT -o $interface $(dest_ip_range $networks) -j ACCEPT
 
-	for host1 in $hosts; do
-	    [ "$host" != "$host1" ] && run_iptables $1 FORWARD -i $interface -o ${host1%:*} $(both_ip_ranges $networks ${host1#*:}) -j ACCEPT
-	done
+	if list_search $host $loose ; then
+	    run_iptables $1 FORWARD -i $interface $(source_ip_range $networks) -j ACCEPT
+	else
+	    for host1 in $hosts; do
+		[ "$host" != "$host1" ] && run_iptables $1 FORWARD -i $interface -o ${host1%:*} $(both_ip_ranges $networks ${host1#*:}) -j ACCEPT
+	    done
+	fi
     done
 }
 

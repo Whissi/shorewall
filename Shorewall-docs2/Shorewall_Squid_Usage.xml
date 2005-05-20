@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-05-16</pubdate>
+    <pubdate>2005-05-19</pubdate>
 
     <copyright>
       <year>2003-2005</year>
@@ -173,7 +173,7 @@ REDIRECT  loc        3128     tcp      www              -          !206.124.146.
       a web server running on 192.168.1.3. It is assumed that web access is
       already enabled from the local zone to the internet.</para>
 
-      <para>If you are running a Shorewall version earlier than 2.3.3 OR your
+      <para>If you are running a Shorewall version earlier than 2.3.2 OR your
       kernel and/or iptables do not have <ulink
       url="Shorewall_and_Routing.html#RouteTarget">ROUTE target
       support</ulink> then:</para>
@@ -211,30 +211,29 @@ fi</command></programlisting>
 
           <programlisting><command>run_and_save_command "/etc/shorewall/addroutes"</command></programlisting>
         </listitem>
+      </orderedlist>
 
+      <para>If you are running Shorewall 2.3.2 or later:</para>
+
+      <orderedlist>
+        <listitem>
+          <para>Add this entry to your /etc/shorewall/providers file.</para>
+
+          <programlisting>#NAME   NUMBER  MARK    DUPLICATE       INTERFACE       GATEWAY         OPTIONS
+Squid   1       202     -               eth1            192.168.1.3     -</programlisting>
+        </listitem>
+      </orderedlist>
+
+      <para>Regardless of your Shorewall version, you need the
+      following:</para>
+
+      <orderedlist>
         <listitem>
           <para>In <filename>/etc/shorewall/start</filename> add:</para>
 
           <programlisting><command>iptables -t mangle -A PREROUTING -i eth1 -s ! 192.168.1.3 -p tcp --dport 80 -j MARK --set-mark 202</command></programlisting>
         </listitem>
-      </orderedlist>
 
-      <para>If you are running Shorewall 2.3.3 or later and your kernel and
-      iptables have <ulink url="Shorewall_and_Routing.html#RouteTarget">ROUTE
-      target support</ulink> then add this entry to
-      /etc/shorewall/routes:</para>
-
-      <blockquote>
-        <programlisting>#SOURCE                 DEST            PROTO   PORT(S) SOURCE  TEST    INTERFACE       GATEWAY
-#                                                       PORT(S)
-eth1                    0.0.0.0/0       tcp     80      -       -       eth1            192.168.1.3</programlisting>
-      </blockquote>
-
-      <para>Regardless of your Shorewall version or your kernel and iptables
-      <ulink url="Shorewall_and_Routing.html#RouteTarget">ROUTE target
-      support</ulink>, you need the following:</para>
-
-      <orderedlist>
         <listitem>
           <para>In
           <filename><filename>/etc/shorewall/interfaces</filename></filename>:</para>
@@ -285,7 +284,7 @@ chkconfig --level 35 iptables on</command></programlisting>
       192.0.2.177. You want to run both a web server and Squid on that system.
       Your DMZ interface is eth1 and your local interface is eth2.</para>
 
-      <para>If you are running a Shorewall version earlier than 2.3.3 OR your
+      <para>If you are running a Shorewall version earlier than 2.3.2 OR your
       kernel and/or iptables do not have <ulink
       url="Shorewall_and_Routing.html#RouteTarget">ROUTE target
       support</ulink> then:</para>
@@ -323,7 +322,27 @@ fi</command></programlisting>
 
           <programlisting><command>run_and_save_command "/etc/shorewall/addroutes"</command></programlisting>
         </listitem>
+      </orderedlist>
 
+      <para>If you are running Shorewall 2.3.2 or later:</para>
+
+      <orderedlist>
+        <listitem>
+          <para>Add this entry in
+          <filename>/etc/shorewall/providers</filename>:</para>
+        </listitem>
+      </orderedlist>
+
+      <blockquote>
+        <programlisting>#NAME   NUMBER  MARK    DUPLICATE       INTERFACE       GATEWAY         OPTIONS
+Squid   1       202     -               eth1            192.0.2.177     -
+</programlisting>
+      </blockquote>
+
+      <para>Regardless of your Shorewall version, you need the
+      following:</para>
+
+      <orderedlist>
         <listitem>
           <para>Do <emphasis role="bold">one</emphasis> of the
           following:</para>
@@ -354,24 +373,7 @@ fi</command></programlisting>
             </listitem>
           </orderedlist>
         </listitem>
-      </orderedlist>
 
-      <para>If you are running Shorewall 2.3.3 or later and your kernel and
-      iptables have <ulink url="Shorewall_and_Routing.html#RouteTarget">ROUTE
-      target support</ulink> then add this entry to
-      /etc/shorewall/routes:</para>
-
-      <blockquote>
-        <programlisting>#SOURCE                 DEST            PROTO   PORT(S) SOURCE  TEST    INTERFACE       GATEWAY
-#                                                       PORT(S)
-eth2                    0.0.0.0/0       tcp     80      -       -       eth1            192.0.2.177</programlisting>
-      </blockquote>
-
-      <para>Regardless of your Shorewall version or your kernel and iptables
-      <ulink url="Shorewall_and_Routing.html#RouteTarget">ROUTE target
-      support</ulink>, you need the following:</para>
-
-      <orderedlist>
         <listitem>
           <para>In <filename>/etc/shorewall/rules</filename>, you will
           need:</para>

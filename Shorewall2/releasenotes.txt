@@ -1,6 +1,19 @@
 Shorewall 2.4.0-RC1
 
 -----------------------------------------------------------------------
+Problems Corrected since 2.3.2
+
+1) The /etc/shorewall/providers file is now installed correctly.
+
+2) "shorewall restart" now works correctly when multiple providers 
+   with load-balancing were specified when Shorewall was originally 
+   started.
+
+3) Routes created by entries in /etc/shorewall/proxyarp are now
+   copied to new routing tables created by entries in
+   /etc/shorewall/providers.
+
+-----------------------------------------------------------------------
 Upgrade Issues when moving to 2.4.0
 
 1) Shorewall now enforces the restriction that mark values used in 

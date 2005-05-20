@@ -1082,8 +1082,14 @@ setup_providers()
 	run_and_save_command qt ip route flush table $number
 
 	if [ "x$duplicate" != x- ]; then
-	    run_ip route show table $duplicate | grep -Ev ^default | while read route; do
-		ensure_and_save_command ip route add table $number $route
+	    run_ip route show table $duplicate | while read net route; do
+		case $net in
+		    default|nexthop)
+			;;
+		    *)
+			ensure_and_save_command ip route add table $number $net $route
+			;;
+		esac
 	    done
 	fi
 
@@ -1151,7 +1157,6 @@ setup_providers()
 # local
 #
 EOF
-
 	    for table in $PROVIDERS; do
 		eval number=\$${table}_number
 		/bin/echo -e "$number\t$table" >>  /etc/iproute2/rt_tables

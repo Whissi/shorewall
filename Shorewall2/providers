@@ -50,7 +50,19 @@
 #	#NAME	NUMBER	MARK DUPLICATE	INTERFACE GATEWAY	OPTIONS
 #	Squid	1	1    -		eth2	  192.168.2.99	-
 #
-# For additional information, see http://shorewall.net/NAT.htm
+# Example: 
+#
+#      eth0 connects to ISP 1. The IP address of eth0 is 206.124.146.176 and
+#      the ISP's gateway router has IP address 206.124.146.254.
+#
+#      eth1 connects to ISP 2. The IP address of eth1 is 130.252.99.27 and the
+#      ISP's gateway router has IP address 130.252.99.254.
+#
+#      #NAME   NUMBER  MARK DUPLICATE   INTERFACE   GATEWAY         OPTIONS
+#      ISP1    1       1    main        eth0        206.124.146.254 track,balance
+#      ISP2    2       2    main        eth1        130.252.99.254  track,balance 
+#
+# For additional information, see http://shorewall.net/Shorewall_and_Routing.html
 ##############################################################################
 #NAME	NUMBER	MARK	DUPLICATE	INTERFACE	GATEWAY		OPTIONS
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE

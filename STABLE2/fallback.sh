@@ -28,7 +28,7 @@
 #       shown below. Simply run this script to revert to your prior version of
 #       Shoreline Firewall.
 
-VERSION=2.2.4
+VERSION=2.2.5
 
 usage() # $1 = exit status
 {

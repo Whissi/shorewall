@@ -7461,6 +7461,8 @@ do_initialize() {
 	[ -e "$IPTABLES" ] || startup_error "\$IPTABLES=$IPTABLES does not exist or is not executable"
     fi
 
+    PKTTYPE=$(added_param_value_no PKTTYPE $PKTTYPE) # Used in determine_capabilities
+
     determine_capabilities
 
     [ -z "${STATEDIR}" ] && STATEDIR=/var/state/shorewall
@@ -7580,7 +7582,6 @@ do_initialize() {
     DISABLE_IPV6=$(added_param_value_no DISABLE_IPV6 $DISABLE_IPV6)
     BRIDGING=$(added_param_value_no BRIDGING $BRIDGING)
     DYNAMIC_ZONES=$(added_param_value_no DYNAMIC_ZONES $DYNAMIC_ZONES)
-    PKTTYPE=$(added_param_value_no PKTTYPE $PKTTYPE)
     STARTUP_ENABLED=$(added_param_value_yes STARTUP_ENABLED $STARTUP_ENABLED)
     RETAIN_ALIASES=$(added_param_value_no RETAIN_ALIASES $RETAIN_ALIASES)
     DELAYBLACKLISTLOAD=$(added_param_value_no DELAYBLACKLISTLOAD $DELAYBLACKLISTLOAD)

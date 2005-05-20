@@ -1484,7 +1484,15 @@ deleteallchains() {
     run_iptables -X
 }
 
+# Create rules to accept traffic into the crossbeam backbone
 #
+addcrossbeamrules() {
+    run_iptables -A INPUT -i $CROSSBEAM_BACKBONE -j ACCEPT
+    run_iptables -A OUTPUT -o $CROSSBEAM_BACKBONE -j ACCEPT
+    run_iptables -A FORWARD -i $CROSSBEAM_BACKBONE -o $CROSSBEAM_BACKBONE -j ACCEPT
+}
+
+##
 # Source a user exit file if it exists
 #
 run_user_exit() # $1 = file name
@@ -1744,24 +1752,60 @@ stop_firewall() {
 
     [ -n "$DISABLE_IPV6" ] && disable_ipv6_1
 
-    if [ -z "$ADMINISABSENTMINDED" ]; then
-	for chain in INPUT OUTPUT FORWARD; do
-	    setpolicy $chain DROP
-	done
+    if [ -z "$CROSSBEAM" ]; then
 
-	deleteallchains
+       if [ -z "$ADMINISABSENTMINDED" ]; then
+           for chain in INPUT OUTPUT FORWARD; do
+               setpolicy $chain DROP
+           done
+
+           deleteallchains
+       else
+           for chain in INPUT FORWARD; do
+               setpolicy $chain DROP
+           done
+
+           setpolicy OUTPUT ACCEPT
+
+           deleteallchains
+
+           for chain in INPUT FORWARD; do
+               setcontinue $chain
+           done
+       fi
+
     else
-	for chain in INPUT FORWARD; do
-	    setpolicy $chain DROP
-	done
 
-	setpolicy OUTPUT ACCEPT
+       if [ -z "$ADMINISABSENTMINDED" ]; then
+           for chain in INPUT OUTPUT FORWARD; do
+               setpolicy $chain ACCEPT
+           done
 
-	deleteallchains
+	   deleteallchains
+	   addcrossbeamrules
 
-	for chain in INPUT FORWARD; do
-	    setcontinue $chain
-	done
+           for chain in INPUT OUTPUT FORWARD; do
+               setpolicy $chain DROP
+           done
+
+       else
+           for chain in INPUT FORWARD; do
+               setpolicy $chain ACCEPT
+           done
+
+           setpolicy OUTPUT ACCEPT
+
+           deleteallchains
+           addcrossbeamrules
+
+           for chain in INPUT FORWARD; do
+               setcontinue $chain
+           done
+
+           for chain in INPUT FORWARD; do
+               setpolicy $chain DROP
+           done
+       fi
     fi
 
     hosts=
@@ -1822,13 +1866,13 @@ stop_firewall() {
 clear_firewall() {
     stop_firewall
 
-    run_iptables -F
-
-    echo 1 > /proc/sys/net/ipv4/ip_forward
-
     setpolicy INPUT ACCEPT
     setpolicy FORWARD ACCEPT
     setpolicy OUTPUT ACCEPT
+
+    run_iptables -F
+
+    echo 1 > /proc/sys/net/ipv4/ip_forward
 
     if qt which ip6tables; then
 	ip6tables -P INPUT   ACCEPT 2> /dev/null
@@ -6425,15 +6469,37 @@ initialize_netfilter () {
     exists_INPUT=Yes
     exists_OUTPUT=Yes
     exists_FORWARD=Yes
-    setpolicy INPUT DROP
-    setpolicy OUTPUT DROP
-    setpolicy FORWARD DROP
+    
+    if [ -z "$CROSSBEAM" ]; then
 
-    deleteallchains
+	setpolicy INPUT DROP
+	setpolicy OUTPUT DROP
+	setpolicy FORWARD DROP
+	
+	deleteallchains
+	
+	setcontinue FORWARD
+	setcontinue INPUT
+	setcontinue OUTPUT
 
-    setcontinue FORWARD
-    setcontinue INPUT
-    setcontinue OUTPUT
+    else
+
+	setpolicy INPUT ACCEPT
+	setpolicy OUTPUT ACCEPT
+	setpolicy FORWARD ACCEPT
+
+	deleteallchains
+	addcrossbeamrules
+
+	setcontinue FORWARD
+	setcontinue INPUT
+	setcontinue OUTPUT
+
+	setpolicy INPUT DROP
+	setpolicy OUTPUT DROP
+	setpolicy FORWARD DROP
+
+    fi
 
     f=$(find_file ipsets)
 
@@ -8004,6 +8070,8 @@ do_initialize() {
 
     RESTOREBASE=
     TMP_DIR=
+    CROSSBEAM=
+    CROSSBEAM_BACKBONE=
     ALL_INTERFACES=
     ROUTEMARK_INTERFACES=
     ROUTEMARK=256
@@ -8202,6 +8270,9 @@ do_initialize() {
     DROPINVALID=$(added_param_value_yes DROPINVALID $DROPINVALID)
     RFC1918_STRICT=$(added_param_value_no RFC1918_STRICT $RFC1918_STRICT)
     SAVE_IPSETS=$(added_param_value_no SAVE_IPSETS $SAVE_IPSETS) 
+    # Check if we are on a crossbeam machine
+    CROSSBEAM=$(added_param_value_no CROSSBEAM $CROSSBEAM)
+    [ -z "$CROSSBEAM_BACKBONE" ]   && CROSSBEAM_BACKBONE=eth0
     #
     # Strip the files that we use often
     #

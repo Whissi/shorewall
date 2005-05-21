@@ -1642,7 +1642,7 @@ disable_ipv6_1() {
 
 process_routestopped() # $1 = command
 {
-    local hosts= interface host host1 options networks loose=
+    local hosts= interface host host1 options networks source= dest= matched
 
     while read interface host options; do
 	expandv interface host options
@@ -1666,9 +1666,13 @@ process_routestopped() # $1 = command
 			    done
 			fi
 			;;
-		    loose)
+		    source)
 			for h in $(separate_list $host); do
-			    loose="$loose $interface:$h"
+			    source="$source $interface:$h"
+			done
+		    dest)
+			for h in $(separate_list $host); do
+			    dest="$dest $interface:$h"
 			done
 			;;
 		    *)
@@ -1688,9 +1692,19 @@ process_routestopped() # $1 = command
 	[ -z "$ADMINISABSENTMINDED" ] && \
 	    run_iptables $1 OUTPUT -o $interface $(dest_ip_range $networks) -j ACCEPT
 
-	if list_search $host $loose ; then
+	matched=
+
+	if list_search $host $source ; then
 	    run_iptables $1 FORWARD -i $interface $(source_ip_range $networks) -j ACCEPT
-	else
+	    matched=Yes
+	fi
+
+	if list_search $host $dest ; then
+	    run_iptables $1 FORWARD -o $interface $(dest_ip_range $networks) -j ACCEPT
+	    matched=Yes
+	fi
+	
+	if [ -z "$matched" ]; then
 	    for host1 in $hosts; do
 		[ "$host" != "$host1" ] && run_iptables $1 FORWARD -i $interface -o ${host1%:*} $(both_ip_ranges $networks ${host1#*:}) -j ACCEPT
 	    done
@@ -5638,7 +5652,7 @@ setup_routes() # $1 = file name
 	    eval mark_value=\$${iface}_routemark
 
 	    run_iptables -t mangle -A PREROUTING -i $interface -m mark --mark 0 -j routemark
-	    run_iptables -t mangle -A routemark  -i $interface                  -j MARK --or-mark $mark_value
+	    run_iptables -t mangle -A routemark  -i $interface                  -j MARK --set-mark $mark_value
 
 	done
 

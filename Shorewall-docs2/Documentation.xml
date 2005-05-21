@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-04-29</pubdate>
+    <pubdate>2005-05-20</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -348,6 +348,24 @@
           <para>files in <filename
           class="directory">/usr/share/shorewall</filename> that define the
           actions included as a standard part of Shorewall.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><ulink url="Shorewall_and_Routing.html">providers</ulink></term>
+
+        <listitem>
+          <para>file in /etc/shorewall that is used to define multiple
+          Internet Service Providers and load-balancing.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term><ulink url="Shorewall_and_Routing.html">routes</ulink></term>
+
+        <listitem>
+          <para>file in /etc/shorewall that is used to interface to the
+          experimental ROUTE target from Netfilter patch-o-matic-ng.</para>
         </listitem>
       </varlistentry>
     </variablelist>
@@ -2970,10 +2988,11 @@ eth0                  eth1            206.124.146.176</programlisting>
           state</ulink>. When ADMINISABSENTMINDES=No, only traffic to/from
           those addresses listed in /etc/shorewall/routestopped is accepted
           when Shorewall is stopped.When ADMINISABSENTMINDED=Yes, in addition
-          to traffic to/from addresses in /etc/shorewall/routestopped,
-          connections that were active when Shorewall stopped continue to work
-          and all new connections from the firewall system itself are allowed.
-          If this variable is not set or is given the empty value then
+          to traffic to/from addresses in
+          <filename>/etc/shorewall/routestopped</filename>, connections that
+          were active when Shorewall stopped continue to work and all new
+          connections from the firewall system itself are allowed. If this
+          variable is not set or is given the empty value then
           ADMINISABSENTMINDED=No is assumed.</para>
         </listitem>
       </varlistentry>
@@ -3519,6 +3538,32 @@ LOGBURST=5</programlisting>
           <quote>yes</quote> then route filtering (anti-spoofing) is enabled
           on all network interfaces which are brought up while Shorewall is in
           the started state. The default value is <quote>no</quote>.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>CROSSBEAM and CROSSBEAM_BACKBONE</term>
+
+        <listitem>
+          <para>(Added in Shorewall 2.4.0) — If Shorewall is running in a
+          Crossbeam System (<ulink
+          url="http://www.crossbeamsystems.com">http://www.crossbeamsystems.com</ulink>)
+          you need to activate this directive if you don't want the CPM to
+          think the system is down and send a reset signal. Also Crossbeam has
+          a backplane chassis that needs to be configured in such a way that
+          it accepts all traffic continuously. If CROSSBEAM=Yes, then during a
+          Shorewall start, restart or clear instead of setting default
+          policies to DROP and then activating established connections,
+          Shorewall will first set default policies to ACCEPT, activate
+          established connections and then sets the default policies to DROP.
+          After that, Shorewall starts generating rules as usual.</para>
+
+          <para>If CROSSBEAM=No, CROSSBEAM_BACKBONE is not used. If
+          CROSSBEAM_BACKBONE is set to Yes, CROSSBEAM_BACKBONE indicates the
+          network interface used by the backbone. </para>
+
+          <para>If not specified or if specified as empty (e.g., CROSSBEAM="")
+          then CROSSBEAM=No is assumed.</para>
         </listitem>
       </varlistentry>
     </variablelist>

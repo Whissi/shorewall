@@ -1060,7 +1060,7 @@ verify_mark() # $1 = value to test
 #
 setup_providers()
 {
-    local table number mark duplicate interface gateway options provider
+    local table number mark duplicate interface gateway options provider address
 
     add_a_provider() {
 	local t n iface option
@@ -1093,6 +1093,10 @@ setup_providers()
 	    done
 	fi
 
+	if [ "x$gateway" = xdetect ] ; then
+	    gateway=$( find_peer $(ip addr ls $interface ) )
+	fi
+
 	ensure_and_save_command ip route add default via $gateway dev $interface table $number
 	
 	verify_mark $mark
@@ -1102,6 +1106,11 @@ setup_providers()
 	run_and_save_command qt ip rule del fwmark $mark
 	
 	ensure_and_save_command ip rule add fwmark $mark table $number
+
+	for address in $(find_interface_addresses $interface); do
+	    run_and_save_command qt ip rule del from $address
+	    ensure_and_save_command ip rule add from $address table $number
+	done
 
 	for option in $(separate_list $options); do
 	    case $option in
@@ -2687,15 +2696,15 @@ process_tc_rule()
 
 	if [ "x$source" != "x-"	 ]; then
 	    case $source in
+		$FW:*)
+		    chain=tcout
+		    r="$(source_ip_range ${source#*:}) " 
+		    ;;
 		*.*.*|+*|!+*)
 		    r="$(source_ip_range $source) "
 		    ;;
 		~*)
 		    r="$(mac_match $source) "
-		    ;;
-		$FW:*)
-		    chain=tcout
-		    r="$(source_ip_range ${source%:*}) " 
 		    ;;
 		$FW)
 		    chain=tcout

@@ -790,6 +790,18 @@ find_gateway() {
 }
     
 #
+# Find the value 'peer' in the passed arguments then echo the next value up to
+# "/"
+#
+
+find_peer() {
+    while [ $# -gt 1 ]; do
+	[ "x$1" = xpeer ] && echo ${2%/*} && return
+	shift
+    done
+}
+    
+#
 # Find the interfaces that have a route to the passed address - the default
 # route is not used.
 #

@@ -824,6 +824,14 @@ find_rt_interface() {
 }
 
 #
+# Try to find the gateway through an interface looking for 'nexthop' 
+
+find_nexthop() # $1 = interface
+{
+    echo $(find_gateway `ip route ls | grep -E "[[:space:]]*nexthop.* $1"`)
+}    
+
+#
 # Find the default route's interface
 #
 find_default_interface() {

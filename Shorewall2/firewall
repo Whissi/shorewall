@@ -1094,7 +1094,22 @@ setup_providers()
 	fi
 
 	if [ "x$gateway" = xdetect ] ; then
+	    #
+	    # First assume that this is some sort of point-to-point interface
+	    #
 	    gateway=$( find_peer $(ip addr ls $interface ) )
+	    #
+	    # Maybe there's a default route through this gateway already
+	    #
+	    [ -n "$gateway" ] || gateway=$(find_gateway $(ip route ls dev $interface))
+	    #
+	    # Last hope -- is there a load-balancing route through the interface?
+	    #
+	    [ -n "$gateway" ] || gateway=$(find_nexthop $interface)
+	    #
+	    # Be sure we found one
+	    #
+	    [ -n "$gateway" ] || fatal_error "Unable to detect the gateway through interface $interface"
 	fi
 
 	ensure_and_save_command ip route add default via $gateway dev $interface table $number
@@ -1150,7 +1165,7 @@ setup_providers()
 
 	if [ -n "$PROVIDERS" ]; then
 	    if [ -n "$DEFAULT_ROUTE" ]; then
-		run_ip route replace default scope global $DEFAULT_ROUTE
+		run_ip route replace default scope global metric 1 $DEFAULT_ROUTE"
 		progress_message "   Default route $DEFAULT_ROUTE Added."
 	    fi
 

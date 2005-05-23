@@ -1,20 +1,10 @@
-Shorewall 2.4.0-RC1
+Shorewall 2.4.0-RC2
 
 -----------------------------------------------------------------------
-Problems Corrected since 2.3.2
+Problems Corrected since 2.4.0-RC1
 
-1) The /etc/shorewall/providers file is now installed correctly.
-
-2) "shorewall restart" now works correctly when multiple providers 
-   with load-balancing were specified when Shorewall was originally 
-   started.
-
-3) Routes created by entries in /etc/shorewall/proxyarp are now
-   copied to new routing tables created by entries in
-   /etc/shorewall/providers.
-
-4) Where multiple internet providers were configured, traffic from the
-   firewall itself was mishandled.
+1) The value 'detect' in the GATEWAY column of the providers file
+   is no longer restricted to P-T-P interfaces.
 
 -----------------------------------------------------------------------
 Upgrade Issues when moving to 2.4.0
@@ -52,6 +42,9 @@ New Features in version 2.4.0
 		       /etc/shorewall/interfaces.
 
        GATEWAY         The IP address of the provider's gateway router.
+                       If you enter "detect" here then Shorewall will
+                       attempt to determine the gateway IP address
+                       automatically.
 
        OPTIONS         A comma-separated list selected from the
 		       following:

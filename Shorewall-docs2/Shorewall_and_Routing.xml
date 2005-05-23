@@ -361,12 +361,9 @@
             <glossdef>
               <para>The IP address of the provider's Gateway router.</para>
 
-              <para>Users with point-to-point dynamic connections such as
-              PPPoE, PPPoA or PPTP can enter <emphasis
-              role="bold">detect</emphasis> here and Shorewall will
-              automatically determine the gateway IP address. You must of
-              course configure your ppp service to restart Shorewall when you
-              connect or when the gateway IP address changes.</para>
+              <para>You can enter <emphasis role="bold">detect</emphasis> here
+              and Shorewall will attempt to automatically determine the
+              gateway IP address.</para>
             </glossdef>
           </glossentry>
 
@@ -435,9 +432,12 @@
 
         <listitem>
           <para>If you specify <emphasis role="bold">balance</emphasis>, then
-          Shorewall will replace the 'default' route in the 'main' routing
-          table with a load-balancing route among those gateways where
-          <emphasis role="bold">balance</emphasis> was specified.</para>
+          Shorewall will replace the 'default' route with weight 100 in the
+          'main' routing table with a load-balancing route among those
+          gateways where <emphasis role="bold">balance</emphasis> was
+          specified. So if you configure default routes, be sure that their
+          weight is less than 100 or the route added by Shorewall will not be
+          used.</para>
         </listitem>
       </orderedlist>
 
@@ -472,6 +472,14 @@
         usually be done by <command>/etc/init.d/network restart</command> or
         <command>/etc/init.d/networking restart</command>. Check your
         distribution's networking documentation.</para>
+
+        <para>You can mitigate the effect of the Shorewall-generated changes
+        to your routing table by specifying a <emphasis>metric</emphasis> for
+        each default route that you configure. Shorewall will generate a
+        load-balancing default route (assuming that <emphasis
+        role="bold">balance</emphasis> has been specified for some of the
+        providers) that does not include a metric and that will therefore not
+        replace any existing route that has a non-zero metric.</para>
       </warning>
     </section>
 
@@ -543,11 +551,12 @@ eth1             eth2              130.252.99.27</programlisting>
     determination.</para>
 
     <para>Routing with Shorewall is specified through entries in
-    /etc/shorewall/routes. Note that entries in the /etc/shorewall/routes file
-    override the routing specified in your routing tables. These rules
-    generate Netfilter rules in the mangle tables FORWARD chain or OUTPUT
-    chain depending whether the packets are being routed through the firewall
-    or originate on the firewall itself (see figure above).</para>
+    <filename>/etc/shorewall/routes</filename>. Note that entries in the
+    <filename>/etc/shorewall/routes</filename> file override the routing
+    specified in your routing tables. These rules generate Netfilter rules in
+    the mangle tables FORWARD chain or OUTPUT chain depending whether the
+    packets are being routed through the firewall or originate on the firewall
+    itself (see the flow diagram at the top of this article).</para>
 
     <para>Columns in this file are as follows:</para>
 

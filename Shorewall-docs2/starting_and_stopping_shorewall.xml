@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-05-15</pubdate>
+    <pubdate>2005-05-23</pubdate>
 
     <copyright>
       <year>2004</year>
@@ -777,6 +777,40 @@
           be restored from the file specified by the RESTOREFILE option in
           <ulink
           url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>safe-restart (Shorewall version 2.4.0 and later)</term>
+
+        <listitem>
+          <para><command>shorewall [ -q ] safe-restart [ &lt;filename&gt;
+          ]</command></para>
+
+          <para>Only allowed if Shorewall is running. The current
+          configuration is saved in
+          <filename>/var/lib/shorewall/safe-restart</filename> (see the
+          <command>save</command> command below). You will then be prompted
+          asking if you want to accept the new configuration or not. If you
+          answer "n" or if you fail to answer within 60 seconds (such as when
+          your new configuration has disabled communication with your
+          terminal), the configuration is restored from the saved
+          configuration.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>safe-start (Shorewall version 2.4.0 and later)</term>
+
+        <listitem>
+          <para><command>shorewall [ -q ] safe-start [ &lt;filename&gt;
+          ]</command></para>
+
+          <para>Shorewall is started normally. You will then be prompted
+          asking if everything went all right. If you answer "n" or if you
+          fail to answer within 60 seconds (such as when your new
+          configuration has disabled communication with your terminal), a
+          <command>shorewall clear</command> is performed for you.</para>
         </listitem>
       </varlistentry>
 

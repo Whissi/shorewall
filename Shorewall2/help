@@ -212,6 +212,19 @@ restart)
     If \"-q\" is specified, less detain is displayed making it easier to spot warnings"
 	;;
 
+safe-restart)
+	echo "safe-restart: safe-restart
+    Restart the same way as a shorewall restart except that previous firewall 
+    configuration is backed up and will be restored if you notice any anomalies
+    or you are not able to reach the firewall any more."
+    ;;
+
+safe-start)
+	echo "safe-start: safe-start
+    Start the same way as a shorewall start except that in case of anomalies 
+    shorewall clear is issued. "
+    ;;
+
 restore)
 	echo "restore: restore [ <file name> ]
     Restore Shorewall to a state saved using the 'save' command

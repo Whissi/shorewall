@@ -353,6 +353,25 @@ New Features in version 2.4.0
    host. When 'source' is specified in an entry, it is unnecessary to
    also specify 'routeback'.
 
+7) This change was implemented by Lorenzo Martignoni. It provides two
+   new commands: "safe-start" and "safe-restart". 
+
+   safe-start starts Shorewall then prompts you to ask you if
+   everything looks ok. If you answer "no" or if you don't answer
+   within 60 seconds, a "shorewall clear" is executed.
+
+   safe-restart saves your current configuration to
+   /var/lib/shorewall/safe-restart then issues a "shorewall restart";
+   It then prompts you to ask if you if you want to accept the new
+   configuration. If you answer "no" or if you don't answer within 60
+   seconds, the configuration is restored to its prior state.
+
+   These new commands require either that your /bin/sh supports the
+   "-t" option to the 'read' command or that you have /bin/bash
+   installed.
+
+
+
 
 
 

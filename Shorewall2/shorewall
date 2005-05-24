@@ -1395,6 +1395,8 @@ case "$1" in
 
 	RESTOREPATH=/var/lib/shorewall/$RESTOREFILE
 
+	[ -n "$nolock" ] || mutex_on
+
 	if [ -x $RESTOREPATH ]; then 
 	    if [ -x ${RESTOREPATH}-ipsets ] ; then
 		echo Restoring Ipsets...
@@ -1405,8 +1407,10 @@ case "$1" in
 
 	    echo Restoring Shorewall...
 	    $RESTOREPATH && echo "Shorewall restored from /var/lib/shorewall/$RESTOREFILE"
+	    [ -n "$nolock" ] || mutex_off
 	else
 	    echo "File /var/lib/shorewall/$RESTOREFILE: file not found"
+	    [ -n "$nolock" ] || mutex_off
             exit 2
         fi
         ;;

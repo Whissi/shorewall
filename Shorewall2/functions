@@ -828,7 +828,7 @@ find_rt_interface() {
 
 find_nexthop() # $1 = interface
 {
-    echo $(find_gateway `ip route ls | grep -E "[[:space:]]*nexthop.* $1"`)
+    echo $(find_gateway `ip route ls | grep "[[:space:]]nexthop.* $1"`)
 }    
 
 #

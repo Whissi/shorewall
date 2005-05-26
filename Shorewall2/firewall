@@ -7641,7 +7641,8 @@ refresh_firewall()
 add_to_zone() # $1...${n-1} = <interface>[:<hosts>] $n = zone
 {
     local interface host zone z h z1 z2 chain
-    local dhcp_interfaces blacklist_interfaces maclist_interfaces tcpflags_interfaces
+    local dhcp_interfaces blacklist_interfaces maclist_interfaces
+    local tcpflags_interfaces newhostlist=
     local rulenum source_chain dest_hosts iface hosts hostlist=
 
     nat_chain_exists() # $1 = chain name
@@ -7725,16 +7726,16 @@ add_to_zone() # $1...${n-1} = <interface>[:<hosts>] $n = zone
 
     while read z hosts; do
 	if [ "$z" = "$zone" ]; then
-	    for h in $hosts; do
-		for host in $hostlist; do
-		    if [ "$h" = "$host" ]; then
-			rm -f ${STATEDIR}/zones_$$
-			startup_error "$host already in zone $zone"
-		    fi
-		done
+	    for h in $hostlist; do
+		list_search $h $hosts
+		if [ "$?" -gt 0 ]; then
+		    newhostlist="$newhostlist $h"
+		else
+		    error_message "$h already in zone $zone"
+		fi
 	    done
 	    
-	    [ -z "$hosts" ] && hosts=$hostlist || hosts="$hosts $hostlist"
+	    [ -z "$hosts" ] && hosts=$newhostlist || hosts="$hosts $newhostlist"
 	fi
 
 	eval ${z}_hosts=\"$hosts\"
@@ -7748,7 +7749,7 @@ add_to_zone() # $1...${n-1} = <interface>[:<hosts>] $n = zone
     #
     # Create a new Zone state file
     #
-    for newhost in $hostlist; do
+    for newhost in $newhostlist; do
         #
         # Isolate interface and host parts
         #
@@ -7908,7 +7909,7 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		    fi
 		done
 
-		[ -n "$found" ] || error_message "Warning: $1 does not appear to be in zone $2"
+		[ -n "$found" ] || error_message "Warning: $host does not appear to be in zone $zone"
 	    done
 
 	    for h in $temp; do

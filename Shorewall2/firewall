@@ -7769,13 +7769,14 @@ add_to_zone() # $1...${n-1} = <interface>[:<hosts>] $n = zone
         # Insert new rules into the filter table for the passed interface
         #
 	while read z1 z2 chain; do
+	    [ "$z1" = "$z2" ] && op="-I" || op="-A"
 	    if [ "$z1" = "$zone" ]; then
 		if [ "$z2" = "$FW" ]; then
-		    do_iptables -A $(dynamic_in $interface) $(match_source_hosts $host) $(match_ipsec_in $z1 $newhost) -j $chain
+		    do_iptables $op $(dynamic_in $interface) $(match_source_hosts $host) $(match_ipsec_in $z1 $newhost) -j $chain
 		else
 		    source_chain=$(dynamic_fwd $interface)
 		    if is_ipsec_host $z1 $newhost ; then
-			do_iptables -A $source_chain $(match_source_hosts $host) $(match_ipsec_in $z1 $newhost) -j ${z1}_frwd
+			do_iptables $op $source_chain $(match_source_hosts $host) $(match_ipsec_in $z1 $newhost) -j ${z1}_frwd
 		    else
 			eval dest_hosts=\"\$${z2}_hosts\"
 
@@ -7784,7 +7785,7 @@ add_to_zone() # $1...${n-1} = <interface>[:<hosts>] $n = zone
 			    hosts=${h#*:}
 			    
 			    if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
-				do_iptables -A $source_chain $(match_source_hosts $host) -o $iface $(match_dest_hosts $hosts) $(match_ipsec_out $z2 $h) -j $chain
+				do_iptables $op $source_chain $(match_source_hosts $host) -o $iface $(match_dest_hosts $hosts) $(match_ipsec_out $z2 $h) -j $chain
 			    fi
 			done
 		    fi
@@ -7794,7 +7795,7 @@ add_to_zone() # $1...${n-1} = <interface>[:<hosts>] $n = zone
 		    #
 		    # Add a rule to the dynamic out chain for the interface
 		    #
-		    do_iptables -A $(dynamic_out $interface) $(match_dest_hosts $host) $(match_ipsec_out $z2 $newhost) -j $chain
+		    do_iptables $op $(dynamic_out $interface) $(match_dest_hosts $host) $(match_ipsec_out $z2 $newhost) -j $chain
 		else
 		    eval source_hosts=\"\$${z1}_hosts\"
 
@@ -7804,9 +7805,9 @@ add_to_zone() # $1...${n-1} = <interface>[:<hosts>] $n = zone
 
 			if [ "$iface" != "$interface" -o "$hosts" != "$host" ]; then
 			    if is_ipsec_host $z1 $h; then
-				do_iptables -A ${z1}_dyn -o $interface $(match_dest_hosts $host) $(match_ipsec_out $z2 $newhost) -j $chain
+				do_iptables $op ${z1}_dyn -o $interface $(match_dest_hosts $host) $(match_ipsec_out $z2 $newhost) -j $chain
 			    else
-				do_iptables -A $(dynamic_fwd $iface) $(match_source_hosts $hosts) -o $interface $(match_dest_hosts $host) $(match_ipsec_out $z2 $newhost) -j $chain
+				do_iptables $op $(dynamic_fwd $iface) $(match_source_hosts $hosts) -o $interface $(match_dest_hosts $host) $(match_ipsec_out $z2 $newhost) -j $chain
 			    fi
 			fi
 		    done

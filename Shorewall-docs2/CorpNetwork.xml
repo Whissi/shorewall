@@ -33,7 +33,8 @@
       1.2 or any later version published by the Free Software Foundation; with
       no Invariant Sections, with no Front-Cover, and with no Back-Cover
       Texts. A copy of the license is included in the section entitled
-      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
 
@@ -50,7 +51,8 @@
 
         <listitem>
           <para>Make sure you know what public IP addresses are currently
-          being used and verify these <emphasis>before</emphasis> starting.</para>
+          being used and verify these <emphasis>before</emphasis>
+          starting.</para>
         </listitem>
 
         <listitem>
@@ -69,9 +71,9 @@
       <para>This configuration uses a combination of One-to-one NAT and Proxy
       ARP. This is generally not relevant to a simple configuration with a
       single public IP address. If you have just a single public IP address,
-      most of what you see here won&#39;t apply to your setup so beware of
-      copying parts of this configuration and expecting them to work for you.
-      What you copy may or may not work in your configuration.</para>
+      most of what you see here won't apply to your setup so beware of copying
+      parts of this configuration and expecting them to work for you. What you
+      copy may or may not work in your configuration.</para>
     </warning>
 
     <para>I have a T1 with 64 static IP addresses (192.0.18.65-127/26). The
@@ -79,7 +81,8 @@
     (10.10.0.0/22) and the DMZ is connected to eth2 (192.168.21.0/24). I have
     an IPSec tunnel connecting our offices in Germany to our offices in the
     US. I host two Microsoft Exchange servers for two different companies
-    behind the firewall hence, the two Exchange servers in the diagram below.</para>
+    behind the firewall hence, the two Exchange servers in the diagram
+    below.</para>
 
     <section>
       <title>Summary</title>
@@ -140,18 +143,20 @@
       installed on the firewall and the system in the DMZ. X applications
       tunnel through SSH to Hummingbird Exceed running on a PC located in the
       LAN. Access to the firewall using SSH is restricted to systems in the
-      LAN, DMZ or the system Kaos which is on the Internet and managed by me.</para>
+      LAN, DMZ or the system Kaos which is on the Internet and managed by
+      me.</para>
 
       <graphic fileref="images/CorpNetwork.gif" />
 
       <para>The Ethernet 0 interface in the Server is configured with IP
-      address 192.0.18.68, netmask 255.255.255.192. The server&#39;s default
+      address 192.0.18.68, netmask 255.255.255.192. The server's default
       gateway is 192.0.18.65, the Router connected to my network and the ISP.
       This is the same default gateway used by the firewall itself. On the
       firewall, Shorewall automatically adds a host route to 192.0.18.80
       through Ethernet 2 (192.168.21.1) because of the entry in
       /etc/shorewall/proxyarp (see below). I modified the start, stop and init
-      scripts to include the fixes suggested when having an IPSec tunnel.</para>
+      scripts to include the fixes suggested when having an IPSec
+      tunnel.</para>
     </section>
 
     <section>
@@ -213,8 +218,8 @@
 
         <listitem>
           <para>When asking for assistance, be honest and include as much
-          detail as requested. Don&#39;t try and hide IP addresses etc., you
-          will probably screw up the logs and make receiving assistance
+          detail as requested. Don't try and hide IP addresses etc., you will
+          probably screw up the logs and make receiving assistance
           harder.</para>
         </listitem>
 
@@ -235,7 +240,7 @@
   </section>
 
   <section>
-    <title>Configuation Files</title>
+    <title>Configuration Files</title>
 
     <para>Here are copies of my files. I have removed most of the internal
     documentation for the purpose of this space however, my system still has
@@ -421,7 +426,8 @@ ipsec net 134.147.129.82
     </section>
 
     <section>
-      <title>Rules File (The shell variables are set in /etc/shorewall/params)</title>
+      <title>Rules File (The shell variables are set in
+      /etc/shorewall/params)</title>
 
       <programlisting>##############################################################################
 #ACTION SOURCE DEST PROTO DEST SOURCE ORIGINAL

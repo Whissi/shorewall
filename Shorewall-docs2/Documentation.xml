@@ -946,7 +946,7 @@ loc      eth1         192.168.1.255,192.168.12.255</programlisting>
               <listitem>
                 <para>Packets arriving on this port and that have a source
                 address that is reserved in RFC 1918 will be dropped after
-                being optionally logged as specified in the settion of
+                being optionally logged as specified in the section of
                 RFC1918_LOG_LEVEL in shorewall.conf.</para>
               </listitem>
             </varlistentry>
@@ -1197,7 +1197,7 @@ loc         eth1:192.168.1.0/24,192.168.12.0/24</programlisting>
           will be 10 per second and a burst of 40 connections will be
           tolerated. Connection requests in excess of these limits will be
           dropped. See the <link linkend="Rules">rules file
-          documentation</link> for an explaination of how rate limiting
+          documentation</link> for an explanation of how rate limiting
           works.</para>
         </listitem>
       </varlistentry>
@@ -1264,7 +1264,7 @@ loc        loc       REJECT    info</programlisting>
 
       <orderedlist>
         <listitem>
-          <para>A zone should be homogenous with respect to security
+          <para>A zone should be homogeneous with respect to security
           requirements.</para>
         </listitem>
 
@@ -2249,7 +2249,8 @@ eth1::192.0.2.32/27
           Netfilter should use the addresses in the range in round-robin
           fashion. Beginning with Shorewall version 1.4.7, you may include a
           list of ranges and/or addresses in this column; again, Netfilter
-          will use all listed ranges/addresses in rounde-robin fashion.</para>
+          will use all listed ranges/addresses in rounded-robin
+          fashion.</para>
 
           <para>Beginning with Shorewall 2.2.0, you may also specify the
           source port range to be used (the PROTO column must specify tcp or
@@ -2742,7 +2743,7 @@ eth0                  eth1            206.124.146.176</programlisting>
           packet passes through then list of entries for that interface in
           /etc/shorewall/maclist. If there is a match then the source IP
           address is added to the 'Recent' set for that interface. Subsequent
-          connection attempts from that IP address occuring within
+          connection attempts from that IP address occurring within
           $MACLIST_TTL seconds will be accepted without having to scan all of
           the entries. After $MACLIST_TTL from the first accepted connection
           request from an IP address, the next connection request from that IP
@@ -2823,7 +2824,7 @@ eth0                  eth1            206.124.146.176</programlisting>
 
         <listitem>
           <para>(Aded at version 2.2.0)- When set to a log level, this option
-          causes Shorewall to generaate a logging rule as the first rule in
+          causes Shorewall to generate a logging rule as the first rule in
           each builtin chain.</para>
 
           <itemizedlist>
@@ -2987,7 +2988,7 @@ eth0                  eth1            206.124.146.176</programlisting>
           Shorewall's <ulink url="starting_and_stopping_shorewall.htm">stopped
           state</ulink>. When ADMINISABSENTMINDES=No, only traffic to/from
           those addresses listed in /etc/shorewall/routestopped is accepted
-          when Shorewall is stopped.When ADMINISABSENTMINDED=Yes, in addition
+          when Shorewall is stopped. When ADMINISABSENTMINDED=Yes, in addition
           to traffic to/from addresses in
           <filename>/etc/shorewall/routestopped</filename>, connections that
           were active when Shorewall stopped continue to work and all new
@@ -3014,7 +3015,7 @@ eth0                  eth1            206.124.146.176</programlisting>
         <listitem>
           <para>(Added at version 2.2.0) — This parameter names the iptables
           executable to be used by Shorewall. If not specified or if specified
-          as a null value, then the iptables executable located usint the PATH
+          as a null value, then the iptables executable located using the PATH
           option is used.</para>
         </listitem>
       </varlistentry>
@@ -3138,8 +3139,8 @@ eth0                  eth1            206.124.146.176</programlisting>
           <para>(Added in Version 1.3.11) - Determines the <ulink
           url="shorewall_logging.html">syslog level</ulink> for logging
           packets that fail the checks enabled by the <link
-          linkend="Interfaces">tcpflags</link> interface option.The value must
-          be a valid syslogd log level. If you don't want to log these
+          linkend="Interfaces">tcpflags</link> interface option. The value
+          must be a valid syslogd log level. If you don't want to log these
           packets, set to the empty value (e.g.,
           TCP_FLAGS_LOG_LEVEL="").</para>
         </listitem>
@@ -3178,7 +3179,7 @@ eth0                  eth1            206.124.146.176</programlisting>
         <listitem>
           <para>(Added in Version 1.3.8) - When set to <quote>Yes</quote> or
           <quote>yes</quote>, Shorewall will filter TCP packets that are not
-          part of an established connention and that are not SYN packets (SYN
+          part of an established connection and that are not SYN packets (SYN
           flag on - ACK flag off). If set to <quote>No</quote>, Shorewall will
           silently drop such packets. If not set or set to the empty value
           (e.g., <quote>NEWNOTSYN=</quote>), NEWNOTSYN=No is assumed.</para>
@@ -3458,12 +3459,12 @@ LOGBURST=5</programlisting>
 
         <listitem>
           <para>This parameter determines the logging level of mangled/invalid
-          packets controlled by the <quote>dropunclean and logunclean</quote>
-          interface options. If LOGUNCLEAN is empty (LOGUNCLEAN=) then packets
-          selected by <quote>dropclean</quote> are dropped silently
-          (<quote>logunclean</quote> packets are logged under the
-          <quote>info</quote> log level). Otherwise, these packets are logged
-          at the specified level (Example: LOGUNCLEAN=debug).</para>
+          packets controlled by the <quote>dropunclean" and
+          "logunclean</quote> interface options. If LOGUNCLEAN is empty
+          (LOGUNCLEAN=) then packets selected by <quote>dropclean</quote> are
+          dropped silently (<quote>logunclean</quote> packets are logged under
+          the <quote>info</quote> log level). Otherwise, these packets are
+          logged at the specified level (Example: LOGUNCLEAN=debug).</para>
         </listitem>
       </varlistentry>
 
@@ -3483,9 +3484,9 @@ LOGBURST=5</programlisting>
         <term>BLACKLIST_LOGLEVEL</term>
 
         <listitem>
-          <para>This paremter determines if packets from blacklisted hosts are
-          logged and it determines the syslog level that they are to be logged
-          at. Its value is a <ulink url="shorewall_logging.html">syslog
+          <para>This parameter determines if packets from blacklisted hosts
+          are logged and it determines the syslog level that they are to be
+          logged at. Its value is a <ulink url="shorewall_logging.html">syslog
           level</ulink> (Example: BLACKLIST_LOGLEVEL=debug). If you do not
           assign a value or if you assign an empty value then packets from
           blacklisted hosts are not logged.</para>
@@ -3560,7 +3561,7 @@ LOGBURST=5</programlisting>
 
           <para>If CROSSBEAM=No, CROSSBEAM_BACKBONE is not used. If
           CROSSBEAM_BACKBONE is set to Yes, CROSSBEAM_BACKBONE indicates the
-          network interface used by the backbone. </para>
+          network interface used by the backbone.</para>
 
           <para>If not specified or if specified as empty (e.g., CROSSBEAM="")
           then CROSSBEAM=No is assumed.</para>
@@ -4002,7 +4003,7 @@ all      all     tcp         ftp-data          -               8</programlisting
         <term>INTERFACE</term>
 
         <listitem>
-          <para>The firewall interface through which the host(s) comminicate
+          <para>The firewall interface through which the host(s) communicate
           with the firewall.</para>
         </listitem>
       </varlistentry>
@@ -4032,7 +4033,7 @@ eth1                -</programlisting>
     <note>
       <para>Prior to Shorewall version 2.2.3, the contents of the
       <filename>/etc/shorewall/routestopped</filename> file did NOT affect
-      connection attempts occuring during the processing of the
+      connection attempts occurring during the processing of the
       <command>shorewall start</command> and <command>shorewall
       restart</command> commands. Beginning with version 2.2.3, Shorewall
       allows connections defined by the contents of
@@ -4118,7 +4119,7 @@ eth1                -</programlisting>
 
             <member><emphasis
             role="bold">reqid[!]=&lt;<emphasis>number</emphasis>&gt;</emphasis>
-            — A number assiged to a security policy using the
+            — A number assigned to a security policy using the
             unique:&lt;number&gt; as the SPD level. See setkey(8).</member>
 
             <member><emphasis
@@ -4135,7 +4136,7 @@ eth1                -</programlisting>
 
             <member><emphasis role="bold">mss</emphasis>=&lt;number&gt; — Sets
             the MSS field in TCP syn packets forwarded to/from this zone. May
-            be used to compensate for the lack of IPSEC pseuo-deviceses with
+            be used to compensate for the lack of IPSEC pseudo-devices with
             their own MTU in the 2.6 Kernel IPSEC implementation. If specified
             in the IN OPTIONS, TCP SYN packets from the zone will have MSS
             altered; if specified in the OUT OPTIONS, TCP SYN packets to the

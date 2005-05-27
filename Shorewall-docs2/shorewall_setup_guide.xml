@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-01-22</pubdate>
+    <pubdate>2005-05-26</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -1901,6 +1901,12 @@ ACCEPT   net             fw                 tcp    ssh     #SSH to the
 options {
         directory "/var/named";
         listen-on { 127.0.0.1 ; 192.0.2.177; };
+        transfer-format many-answers;
+        max-transfer-time-in 60;
+
+allow-transfer {
+        // Servers allowed to request zone tranfers 
+       &lt;secondary NS IP&gt;; };
 };
 
 logging {
@@ -2014,7 +2020,6 @@ view "external" {
                  type master;
                  notify yes;
                  allow-update {none; };
-                 allow-transfer { &lt;secondary NS IP&gt;; };
                  file "ext/db.foobar";
          };
 
@@ -2022,7 +2027,6 @@ view "external" {
                  type master;
                  notify yes;
                  allow-update { none; };
-                 allow-transfer { &lt;secondary NS IP&gt;; };
                  file "db.192.0.2.176";
          };
 
@@ -2030,7 +2034,6 @@ view "external" {
                  type master;
                  notify yes;
                  allow-update { none; };
-                 allow-transfer { &lt;secondary NS IP&gt;; };
                  file "db.192.0.2.177";
          };
 
@@ -2038,7 +2041,6 @@ view "external" {
                  type master;
                  notify yes;
                  allow-update { none; };
-                 allow-transfer { &lt;secondary NS IP&gt;; };
                  file "db.192.0.2.178";
          };
 
@@ -2046,7 +2048,6 @@ view "external" {
                  type master;
                  notify yes;
                  allow-update { none; };
-                 allow-transfer { &lt;secondary NS IP&gt;; };
                  file "db.192.0.2.179";
          };
 };</programlisting>

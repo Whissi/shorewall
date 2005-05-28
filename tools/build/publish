@@ -1,0 +1,53 @@
+#!/bin/sh
+
+#STYLESHEET=/home/teastep/Shorewall/docbook-xsl-1.62.4//xhtml/docbook.xsl
+STYLESHEET=/usr/share/xml/docbook/stylesheet/nwalsh/current/xhtml/docbook.xsl
+WEBSITE=/home/teastep/Shorewall/Website
+
+if [ $# -eq 0 ]; then
+    echo "Usage: $(basename $0) <XML file> ..."
+    exit 2
+fi
+
+while [ $# -gt 0 ]; do
+
+    case $1 in
+	*.xml)
+	    b=${1%.*}
+
+	    if [ -f ../Website/$b.htm ]; then
+		b=$b.htm
+		f="$WEBSITE/$b"
+	    else
+		b=$b.html
+		f="$WEBSITE/$b"
+	    fi
+
+	    echo "Converting $1 from XML to HTML ($b) ..."
+
+	    if xmllint --valid --noout $1 && xsltproc --output $f --stringparam html.stylesheet html.css --stringparam ulink.target _self -param toc.section.depth 3 $STYLESHEET $1 ; then
+		filestocopy="$filestocopy $f"
+	    fi
+	    ;;
+
+	*)
+	    filestocopy="$filestocopy $1"
+	    ;;
+    esac
+
+    shift
+
+done
+
+if [ -n "$filestocopy" ]; then
+    for f in $filestocopy; do
+	filestoreport="$filestoreport $(basename $f)"
+    done
+
+    echo "Copying$filestoreport to SourceForge..."
+    scp $filestocopy teastep@shorewall.sourceforge.net:/home/groups/s/sh/shorewall/htdocs > /dev/null
+    echo "Copying$filestoreport to Mail..."
+    scp -p $filestocopy root@mail:/var/www/html > /dev/null
+fi
+
+

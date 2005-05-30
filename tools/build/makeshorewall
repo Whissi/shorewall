@@ -274,7 +274,7 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
     rm -rf $SHOREWALLDIR
     rm -rf $CVSPROJ
 
-    do_or_die "cvs -d :pserver:anonymous@cvs.shorewall.net:/usr/local/cvs export -D now $CVSPROJ >> $LOGFILE 2>&1"
+    do_or_die "cvs -d :pserver:anonymous@cvs.sourceforge.net:/cvsroot/shorewall export -D now $CVSPROJ >> $LOGFILE 2>&1"
     do_or_die mv $CVSPROJ $SHOREWALLDIR
 
     fgrep VERSION=$VERSION $SHOREWALLDIR/install.sh > /dev/null 2>&1    || fatal_error "install.sh has wrong version"
@@ -300,7 +300,7 @@ if [ -n "${BUILDXML}${BUILDHTML}" ]; then
     rm -rf $XMLPROJ
     rm -rf shorewall-docs-xml-$VERSION
 
-    do_or_die "cvs -d :pserver:anonymous@cvs.shorewall.net:/usr/local/cvs export -D now $XMLPROJ >> $LOGFILE 2>&1"
+    do_or_die "cvs -d :pserver:anonymous@cvs.sourceforge.net:/cvsroot/shorewall export -D now $XMLPROJ >> $LOGFILE 2>&1"
     do_or_die mv $XMLPROJ shorewall-docs-xml-$VERSION
 
     rm -f shorewall-docs-xml-$VERSION/images/*.vsd
@@ -416,7 +416,7 @@ if [ -n "$BUILDLRP" ]; then
     rm -rf $LRPDIR
     rm -rf $LRPPROJ
     
-    do_or_die "cvs -d :pserver:anonymous@cvs.shorewall.net:/usr/local/cvs export -D now $LRPPROJ >> $LOGFILE 2>&1"
+    do_or_die "cvs -d :pserver:anonymous@cvs.sourceforge.net:/cvsroot/shorewall export -D now $LRPPROJ >> $LOGFILE 2>&1"
     do_or_die mv $LRPPROJ $LRPDIR
     
     cd $LRPDIR

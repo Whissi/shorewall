@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-05-27</pubdate>
+    <pubdate>2005-06-01</pubdate>
 
     <copyright>
       <year>2005</year>
@@ -398,6 +398,15 @@
                     not be perfect, as it is route based, and routes are
                     cached. This means that routes to often-used sites will
                     always be over the same provider.</para>
+
+                    <para>By default, each provider is given the same weight
+                    (1) . Beginning with 2.4.0-RC3, you can change the weight
+                    of a given provider by following
+                    <emphasis>balance</emphasis> with "=" and the desired
+                    weight (e.g., balance=2). The weights reflect the relative
+                    bandwidth of the providers connections and should be small
+                    numbers since the kernel actually creates additional
+                    default routes for each weight increment. </para>
                   </glossdef>
                 </glossentry>
               </glosslist>

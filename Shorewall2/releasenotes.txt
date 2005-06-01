@@ -71,7 +71,12 @@ New Features in version 2.4.0
 		       better yet, use the CLASSIFY target).
 
                balance The providers that have 'balance' specified will
-                       get outbound traffic load-balanced among them.
+                       get outbound traffic load-balanced among them. By
+		       default, all interfaces with 'balance' specified
+		       will have the same weight (1). You can change the 
+		       weight of the route out of the interface by
+                       specifiying balance=<weight> where <weight> is
+                       the desired route weight.
 
        Example:  You run squid in your DMZ on IP address
 		 192.168.2.99. Your DMZ interface is eth2

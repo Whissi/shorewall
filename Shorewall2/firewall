@@ -1136,6 +1136,9 @@ setup_providers()
 		    eval ${iface}_routemark=$mark
 		    ROUTEMARK_INTERFACES="$ROUTEMARK_INTERFACES $interface"
 		    ;;
+		balance=*)
+		    DEFAULT_ROUTE="$DEFAULT_ROUTE nexthop via $gateway dev $interface weight ${option#*=}"
+		    ;;
 		balance)
 		    DEFAULT_ROUTE="$DEFAULT_ROUTE nexthop via $gateway dev $interface weight 1"
 		    ;;

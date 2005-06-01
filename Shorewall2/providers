@@ -45,7 +45,12 @@
 #			connecting to local servers through this provider.
 #
 #		balance The providers that have 'default' specified will
-#			get outbound traffic load-balanced among them.
+#			get outbound traffic load-balanced among them. By
+#			default, all interfaces with 'balance' specified
+#			will have the same weight (1). You can change the 
+#			weight of an interface by specifiying balance=<weight>
+#			where <weight> is the weight of the route out of
+#			this interface.
 #
 # Example:  You run squid in your DMZ on IP address 192.168.2.99. Your DMZ
 #	    interface is eth2

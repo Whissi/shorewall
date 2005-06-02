@@ -62,9 +62,28 @@
   </section>
 
   <section>
-    <title>Version &gt;= 2.2.0</title>
+    <title>Version &gt;= 2.4.0</title>
 
-    <para></para>
+    <orderedlist>
+      <listitem>
+        <para>Shorewall now enforces the restriction that mark values used in
+        <filename> /etc/shorewall/tcrules</filename> are less than 256. If you
+        are using mark values &gt;= 256, you must change your configuration
+        before you upgrade.</para>
+      </listitem>
+
+      <listitem>
+        <para>The value "ipp2p" is no longer accepted in the PROTO column of
+        the <filename>/etc/shorewall/rules</filename> file. This support has
+        never worked as intended and cannot be made to work in a consistent
+        way. A "Howto" article on filtering P2P with Shorewall and ipp2p will
+        be forthcoming.</para>
+      </listitem>
+    </orderedlist>
+  </section>
+
+  <section>
+    <title>Version &gt;= 2.2.0</title>
 
     <orderedlist>
       <listitem>

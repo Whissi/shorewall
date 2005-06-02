@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-05-20</pubdate>
+    <pubdate>2005-06-01</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -1813,11 +1813,8 @@ ACCEPT<emphasis role="bold">:info</emphasis>   -              -               tc
 
         <listitem>
           <para>Protocol. Must be a protocol name from /etc/protocols, a
-          number, "ipp2p" or <quote>all</quote>. Specifies the protocol of the
-          connection request. If "ipp2p" then your kernel and iptables must
-          have ipp2p match support from <ulink
-          url="http://www.netfilter.org">Netfilter
-          Patch-o-matic-ng</ulink>.</para>
+          number, or <quote>all</quote>. Specifies the protocol of the
+          connection request.</para>
         </listitem>
       </varlistentry>
 
@@ -1828,14 +1825,11 @@ ACCEPT<emphasis role="bold">:info</emphasis>   -              -               tc
           <para>Port or port range (&lt;low port&gt;:&lt;high port&gt;) being
           connected to. May only be specified if the protocol is tcp, udp or
           icmp. For icmp, this column's contents are interpreted as an icmp
-          type. For ipp2p, this column must contain an ipp2p option without
-          the leading "--" (default "ipp2p" -- for a list of valid options, as
-          root type <command>iptables -m ipp2p --help</command>). If you don't
-          want to specify DEST PORT(S) but need to include information in one
-          of the columns to the right, enter <quote>-</quote> in this column.
-          You may give a list of ports and/or port ranges separated by commas.
-          Port numbers may be either integers or service names from
-          /etc/services.</para>
+          type. If you don't want to specify DEST PORT(S) but need to include
+          information in one of the columns to the right, enter
+          <quote>-</quote> in this column. You may give a list of ports and/or
+          port ranges separated by commas. Port numbers may be either integers
+          or service names from /etc/services.</para>
         </listitem>
       </varlistentry>
 

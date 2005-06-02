@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-06-01</pubdate>
+    <pubdate>2005-06-02</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -567,13 +567,43 @@ DNAT       net        loc:192.168.1.3 tcp       4000:4100</programlisting>
 
       <para>Because the <filename>/etc/shorewall/params</filename> file is
       simply sourced into the shell, you can place arbitrary shell code in the
-      file and it will be executed each time that the file is read. One
-      possible use of this feature is to compensate for recent Linux behavior
-      in which the identity of network interfaces varies from boot to boot
-      (what is <filename class="devicefile">eth0</filename> after one boot may
-      be <filename class="devicefile">eth1</filename> after the next).
-      <trademark>SuSE</trademark> users, for example, can take the following
-      approach:</para>
+      file and it will be executed each time that the file is read. Any code
+      included should follow these guidelines:</para>
+
+      <orderedlist>
+        <listitem>
+          <para>The code should not have side effects, especially on other
+          shorewall configuration files.</para>
+        </listitem>
+
+        <listitem>
+          <para>The code should be safe to execute multiple times without
+          producing different results.</para>
+        </listitem>
+
+        <listitem>
+          <para>Should not depend on where the code is called from (the params
+          file is source by both /sbin/shorewall and
+          /usr/lib/shorewall/firewall).</para>
+        </listitem>
+
+        <listitem>
+          <para>Should not assume anything about the state of
+          Shorewall.</para>
+        </listitem>
+
+        <listitem>
+          <para>The names of any functions or variables declared should begin
+          with an upper case letter.</para>
+        </listitem>
+      </orderedlist>
+
+      <para>One possible use of this feature is to compensate for recent Linux
+      behavior in which the identity of network interfaces varies from boot to
+      boot (what is <filename class="devicefile">eth0</filename> after one
+      boot may be <filename class="devicefile">eth1</filename> after the
+      next). <trademark>SuSE</trademark> users, for example, can take the
+      following approach:</para>
 
       <programlisting>wookie:~ # lspci
 0000:00:00.0 Host bridge: VIA Technologies, Inc. VT82C598 [Apollo MVP3] (rev 04)

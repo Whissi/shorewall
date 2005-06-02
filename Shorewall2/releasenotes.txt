@@ -18,6 +18,12 @@ Upgrade Issues when moving to 2.4.0
    /etc/shorewall/tcrules are less than 256. If you are using mark
    values >= 256, you must change your configuration before you 
    upgrade.
+
+2) The value "ipp2p" is no longer accepted in the PROTO column of the
+   rules file. This support has never worked as intended and filtering
+   P2P applications this way is a bad idea to begin with (you should be
+   using a proxy).
+
 -----------------------------------------------------------------------
 New Features in version 2.4.0
 

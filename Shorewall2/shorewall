@@ -1161,7 +1161,8 @@ case "$1" in
 	    echo
 	    ip rule ls
 	    ip rule ls | while read rule; do
-		table=${rule##* }
+		echo ${rule##* }
+	    done | sort -u | while read table; do 
 		echo
 		echo "Table $table:"
 		echo

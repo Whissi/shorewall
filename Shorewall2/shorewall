@@ -1430,7 +1430,7 @@ case "$1" in
 	;;
     safe-restart|safe-start)
 	# test is the shell supports timed read 
-	read -t 0 2> /dev/null
+	read -t 0 junk 2> /dev/null
 	if [ $? -eq 2 -a ! -x /bin/bash ]
 	then
 	    echo "Your shell does not support a feature required to execute this command".

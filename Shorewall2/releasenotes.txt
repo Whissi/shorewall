@@ -328,31 +328,7 @@ New Features in version 2.4.0
 	GATEWAY		The gateway that the packet is to be forewarded
 			through.
 
-5) Crossbeam Support (Thanks to Juan Jesús Prieto and the folks at
-   eneotecnologia.com)
-
-   If Shorewall is running in a Crossbeam System
-   (www.crossbeamsystems.com) you need to activate this directive if
-   you don't want the CPM to think the system is down and send a reset
-   signal. Also Crossbeam has a backplane chassis that needs to be
-   configured in such a way that it accepts all traffic.
-
-   This change adds two new options in /etc/shorewall/shorewall.conf:
-   CROSSBEAM and CROSSBEAM_BACKBONE.
-
-   If CROSSBEAM=Yes, then during a Shorewall start, restart or clear
-   instead of setting the default policies to DROP and then activating
-   established connections, Shorewall will first set the default
-   policies to ACCEPT, activate established connections and then set
-   the default policies to DROP. After that, Shorewall starts
-   generating the rules as usual.
-
-   If CROSSBEAM=No, CROSSBEAM_BACKBONE is not used. If CROSSBEAM is set
-   to Yes, CROSSBEAM_BACKBONE indicates the device used by the
-   backbone. If not specified or if specified as empty (e.g.,
-   CROSSBEAM="") then CROSSBEAM=No is assumed.
-
-6) Normally when Shorewall is stopped, starting or restarting then 
+5) Normally when Shorewall is stopped, starting or restarting then 
    connections are allowed from hosts listed in
    /etc/shorewall/routestopped to the firewall and to other hosts
    listed in /etc/shorewall/routestopped. 
@@ -367,7 +343,7 @@ New Features in version 2.4.0
    host. When 'source' is specified in an entry, it is unnecessary to
    also specify 'routeback'.
 
-7) This change was implemented by Lorenzo Martignoni. It provides two
+6) This change was implemented by Lorenzo Martignoni. It provides two
    new commands: "safe-start" and "safe-restart". 
 
    safe-start starts Shorewall then prompts you to ask you if

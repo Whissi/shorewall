@@ -3535,32 +3535,6 @@ LOGBURST=5</programlisting>
           the started state. The default value is <quote>no</quote>.</para>
         </listitem>
       </varlistentry>
-
-      <varlistentry>
-        <term>CROSSBEAM and CROSSBEAM_BACKBONE</term>
-
-        <listitem>
-          <para>(Added in Shorewall 2.4.0) — If Shorewall is running in a
-          Crossbeam System (<ulink
-          url="http://www.crossbeamsystems.com">http://www.crossbeamsystems.com</ulink>)
-          you need to activate this directive if you don't want the CPM to
-          think the system is down and send a reset signal. Also Crossbeam has
-          a backplane chassis that needs to be configured in such a way that
-          it accepts all traffic continuously. If CROSSBEAM=Yes, then during a
-          Shorewall start, restart or clear instead of setting default
-          policies to DROP and then activating established connections,
-          Shorewall will first set default policies to ACCEPT, activate
-          established connections and then sets the default policies to DROP.
-          After that, Shorewall starts generating rules as usual.</para>
-
-          <para>If CROSSBEAM=No, CROSSBEAM_BACKBONE is not used. If
-          CROSSBEAM_BACKBONE is set to Yes, CROSSBEAM_BACKBONE indicates the
-          network interface used by the backbone.</para>
-
-          <para>If not specified or if specified as empty (e.g., CROSSBEAM="")
-          then CROSSBEAM=No is assumed.</para>
-        </listitem>
-      </varlistentry>
     </variablelist>
   </section>
 

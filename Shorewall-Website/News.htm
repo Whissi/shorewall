@@ -70,7 +70,9 @@ Must be listed in</span><span style="font-family: monospace;">
 GATEWAY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The IP address
 of the provider's gateway router.</span><span
  style="font-family: monospace;"> If you enter "detect" here then
-Shorewall will</span><span style="font-family: monospace;"> attempt to
+Shorewall<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+will</span><span style="font-family: monospace;"> attempt to
 determine the gateway IP address</span><span
  style="font-family: monospace;"> automatically.</span><br
  style="font-family: monospace;">
@@ -84,39 +86,49 @@ comma-separated list selected from the</span><span
     <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 track&nbsp;&nbsp; If specified, connections FROM this interface are</span><span
  style="font-family: monospace;"> to be tracked so that responses may
-be routed</span><span style="font-family: monospace;"> back out this
+be<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+routed</span><span style="font-family: monospace;"> back out this
 same interface.</span><br style="font-family: monospace;">
     <br style="font-family: monospace;">
     <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 You want specify 'track' if internet hosts will be</span><span
- style="font-family: monospace;"> connecting to local servers through
+ style="font-family: monospace;"> connecting to local servers through<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 this</span><span style="font-family: monospace;"> provider.</span><br
  style="font-family: monospace;">
     <br style="font-family: monospace;">
     <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Because of limitations in the 'ip' utility and</span><span
  style="font-family: monospace;"> policy routing, you may not use the
-SAVE or</span><span style="font-family: monospace;"> RESTORE tcrules
+SAVE or</span><span style="font-family: monospace;"><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+RESTORE tcrules
 options or use connection</span><span style="font-family: monospace;">
 marking on any traffic to or from this</span><br
  style="font-family: monospace;">
     <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 interface. For traffic control purposes, you</span><span
  style="font-family: monospace;"> must mark packets in the FORWARD
-chain (or</span><span style="font-family: monospace;"> better yet, use
+chain (or</span><span style="font-family: monospace;"><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+better yet, use
 the CLASSIFY target).</span><br style="font-family: monospace;">
     <br style="font-family: monospace;">
     <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 balance The providers that have 'balance' specified will</span><span
  style="font-family: monospace;"> get outbound traffic load-balanced
-among them. By</span><span style="font-family: monospace;"> default,
+among<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+them. By</span><span style="font-family: monospace;"> default,
 all interfaces with 'balance' specified</span><span
  style="font-family: monospace;"> will have the same
-weight&nbsp;&nbsp;&nbsp; <br>
+weight (1).<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-(1). You can change the</span><span style="font-family: monospace;">
+You can change the</span><span style="font-family: monospace;">
 weight of the route out of the interface by</span><span
- style="font-family: monospace;"> specifiying balance=&lt;weight&gt;
+ style="font-family: monospace;"> specifiying balance=&lt;weight&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 where &lt;weight&gt; is</span><span style="font-family: monospace;">
 the desired route weight.</span><br style="font-family: monospace;">
     <br style="font-family: monospace;">
@@ -133,14 +145,14 @@ Squid&nbsp;&nbsp; 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 -&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 eth2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 192.168.2.99&nbsp; -</span><br>
     <br>
-&nbsp;&nbsp; Use of this feature requires that your kernel and iptabls
+Use of this feature requires that your kernel and iptabls
 support CONNMARK target and conntrack match support. It does NOT
 require the ROUTE target extension.<br>
     <br>
-&nbsp;&nbsp; WARNING: The current version of iptables (1.3.1) is broken
+WARNING: The current version of iptables (1.3.1) is broken
 with respect to CONNMARK and iptables-save/iptables-restore. This means
-that if you configure multiple ISPs, "shorewall restore" may<br>
-&nbsp;&nbsp; fail. You must patch your iptables using the patch at <a
+that if you configure multiple ISPs, "shorewall restore" may fail. You
+must patch your iptables using the patch at <a
  href="http://shorewall.net/pub/shorewall/contrib/iptables/CONNMARK.diff">http://shorewall.net/pub/shorewall/contrib/iptables/CONNMARK.diff</a>.<br>
     <br>
   </li>
@@ -393,24 +405,30 @@ and an address or address range.</span><br
 PROTO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Protocol - Must be "tcp", "udp", "icmp",</span><span
  style="font-family: monospace;"> "ipp2p", a number, or "all". "ipp2p"
-requires</span><span style="font-family: monospace;"> ipp2p match
+requires</span><span style="font-family: monospace;"><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ipp2p match
 support in your kernel and</span><span style="font-family: monospace;">
 iptables.</span><br style="font-family: monospace;">
     <br style="font-family: monospace;">
     <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 PORT(S)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Destination
 Ports. A comma-separated list of</span><span
- style="font-family: monospace;"> Port names (from /etc/services), port
+ style="font-family: monospace;"> Port names (from /etc/services), port<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 numbers</span><span style="font-family: monospace;"> or port ranges; if
 the protocol is "icmp", this</span><span style="font-family: monospace;">
-column is interpreted as the destination</span><span
- style="font-family: monospace;"> icmp-type(s).</span><br
+column is interpreted as the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+destination</span><span style="font-family: monospace;"> icmp-type(s).</span><br
  style="font-family: monospace;">
     <br style="font-family: monospace;">
     <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 If the protocol is ipp2p, this column is</span><span
  style="font-family: monospace;"> interpreted as an ipp2p option
-without the</span><span style="font-family: monospace;"> leading "--"
+without the</span><span style="font-family: monospace;"><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+leading "--"
 (example "bit" for bit-torrent).</span><span
  style="font-family: monospace;"> If no PORT is given, "ipp2p" is
 assumed.</span><br style="font-family: monospace;">
@@ -418,7 +436,9 @@ assumed.</span><br style="font-family: monospace;">
     <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 This column is ignored if PROTOCOL = all but</span><span
  style="font-family: monospace;"> must be entered if any of the
-following field</span><span style="font-family: monospace;"> is
+following<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+field</span><span style="font-family: monospace;"> is
 supplied. In that case, it is suggested that</span><span
  style="font-family: monospace;"> this field contain "-"</span><br
  style="font-family: monospace;">
@@ -426,7 +446,8 @@ supplied. In that case, it is suggested that</span><span
     <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 SOURCE PORT(S)&nbsp; (Optional) Source port(s). If omitted,</span><span
  style="font-family: monospace;"> any source port is acceptable.
-Specified as a</span><span style="font-family: monospace;">
+Specified as a</span><span style="font-family: monospace;"><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 comma-separated list of port names, port</span><span
  style="font-family: monospace;"> numbers or port ranges.</span><br
  style="font-family: monospace;">
@@ -440,7 +461,9 @@ Defines a test on the existing packet or</span><span
     <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 The rule will match only if the test returns</span><span
  style="font-family: monospace;"> true. Tests have the format</span><span
- style="font-family: monospace;"> [!]&lt;value&gt;[/&lt;mask&gt;][:C]</span><br
+ style="font-family: monospace;"><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+[!]&lt;value&gt;[/&lt;mask&gt;][:C]</span><br
  style="font-family: monospace;">
     <br style="font-family: monospace;">
     <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -449,8 +472,9 @@ Where:</span><br style="font-family: monospace;">
     <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 !&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Inverts the test (not equal)</span><span
  style="font-family: monospace;"> &lt;value&gt; Value of the packet or</span><span
- style="font-family: monospace;"> connection mark.</span><br
- style="font-family: monospace;">
+ style="font-family: monospace;"><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+connection mark.</span><br style="font-family: monospace;">
     <br style="font-family: monospace;">
     <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 &lt;mask&gt;&nbsp; A mask to be applied to the</span><span
@@ -459,16 +483,21 @@ Where:</span><br style="font-family: monospace;">
     <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 :C&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Designates a connection</span><span
  style="font-family: monospace;"> mark. If omitted, the packet</span><span
- style="font-family: monospace;"> mark's value is tested.</span><br
- style="font-family: monospace;">
+ style="font-family: monospace;"> mark's value<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+is tested.</span><br style="font-family: monospace;">
     <br style="font-family: monospace;">
     <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 INTERFACE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The interface that the
 packet is to be routed</span><span style="font-family: monospace;"> out
-of. If you do not specify this field then</span><span
- style="font-family: monospace;"> you must place "-" in this column and
+of. If you do not specify this<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+field then</span><span style="font-family: monospace;"> you must place
+"-" in this column and
 enter an</span><span style="font-family: monospace;"> IP address in the
-GATEWAY column.</span><br style="font-family: monospace;">
+GATEWAY<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+column.</span><br style="font-family: monospace;">
     <br style="font-family: monospace;">
     <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 GATEWAY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The gateway

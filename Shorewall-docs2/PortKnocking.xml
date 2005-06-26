@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-05-14</pubdate>
+    <pubdate>2005-06-26</pubdate>
 
     <copyright>
       <year>2005</year>
@@ -56,7 +56,8 @@
 
     <orderedlist>
       <listitem>
-        <para>Attempting to connect to port 1600 enables SSH access.</para>
+        <para>Attempting to connect to port 1600 enables SSH access. Access is
+        enabled for 60 seconds.</para>
       </listitem>
 
       <listitem>
@@ -84,10 +85,10 @@
     log_rule_limit $LEVEL $CHAIN SSHKnock ACCEPT "" "$TAG" -A -p tcp --dport 22   -m recent --rcheck --name SSH
     log_rule_limit $LEVEL $CHAIN SSHKnock DROP   "" "$TAG" -A -p tcp --dport ! 22
 fi
-run_iptables -A $CHAIN -p tcp --dport 22   -m recent --rcheck --name SSH          -j ACCEPT
-run_iptables -A $CHAIN -p tcp --dport 1599 -m recent          --name SSH --remove -j DROP
-run_iptables -A $CHAIN -p tcp --dport 1600 -m recent          --name SSH --set    -j DROP
-run_iptables -A $CHAIN -p tcp --dport 1601 -m recent          --name SSH --remove -j DROP</programlisting>
+run_iptables -A $CHAIN -p tcp --dport 22   -m recent --rcheck --seconds 60 --name SSH          -j ACCEPT
+run_iptables -A $CHAIN -p tcp --dport 1599 -m recent                       --name SSH --remove -j DROP
+run_iptables -A $CHAIN -p tcp --dport 1600 -m recent                       --name SSH --set    -j DROP
+run_iptables -A $CHAIN -p tcp --dport 1601 -m recent                       --name SSH --remove -j DROP</programlisting>
       </listitem>
 
       <listitem>

@@ -4660,11 +4660,13 @@ process_rule() # $1 = target
 	    expandv logtag
 	fi
 
-	if [ "$loglevel" = none ]; then
-	    [ "$target" = LOG ] && return
-	    loglevel=
-	    logtag=
-	fi
+	case $loglevel in
+	    none*)
+		loglevel=
+		logtag=
+		[ $target = LOG ] && return
+		;;
+	esac
 
 	loglevel=${loglevel%\!}	
     fi

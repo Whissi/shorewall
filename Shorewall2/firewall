@@ -7092,9 +7092,13 @@ apply_policy_rules() {
 		    ;;
 	    esac
 
-	    [ -n "$synparams" ] && \
-		[ $policy = ACCEPT -o $policy = CONTINUE ] && \
-		run_iptables -I $chain 2 -p tcp --syn -j @$chain
+	    if [ -n "$synparams" ]; then
+		case $policy in
+		    ACCEPT|CONTINUE|QUEUE)
+			run_iptables -I $chain 2 -p tcp --syn -j @$chain
+			;;
+		esac
+	    fi
 	fi
 
     done

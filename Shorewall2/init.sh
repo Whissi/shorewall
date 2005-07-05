@@ -34,7 +34,11 @@ RCDLINKS="2,S41 3,S41 6,K41"
 #	   shorewall stop			  Stops the firewall
 #	   shorewall status			  Displays firewall status
 #
-#### BEGIN INIT INFO
+
+# chkconfig: 2345 25 90
+# description: Packet filtering firewall
+
+### BEGIN INIT INFO
 # Provides:	  shorewall
 # Required-Start: $network
 # Required-Stop:
@@ -42,10 +46,6 @@ RCDLINKS="2,S41 3,S41 6,K41"
 # Default-Stop:	  0 1 6
 # Description:	  starts and stops the shorewall firewall
 ### END INIT INFO
-
-# chkconfig: 2345 25 90
-# description: Packet filtering firewall
-#
 
 ################################################################################
 # Give Usage Information						       #

@@ -3,6 +3,58 @@
 #STYLESHEET=/home/teastep/Shorewall/docbook-xsl-1.62.4//xhtml/docbook.xsl
 STYLESHEET=/usr/share/xml/docbook/stylesheet/nwalsh/current/xhtml/docbook.xsl
 WEBSITE=/home/teastep/Shorewall/Website
+HTMFILES="
+    6to4.htm
+    blacklisting_support.htm
+    configuration_file_basics.htm
+    CorpNetwork.htm
+    dhcp.htm
+    Documentation.htm
+    errata.htm
+    fallback.htm
+    FAQ.htm
+    GnuCopyright.htm
+    Install.htm
+    IPIP.htm
+    IPSEC.htm
+    kernel.htm
+    myfiles.htm
+    NAT.htm
+    ports.htm
+    PPTP.htm
+    ProxyARP.htm
+    quotes.htm
+    samba.htm
+    shorewall_extension_scripts.htm
+    shorewall_features.htm
+    shorewall_mirrors.htm
+    shorewall_prerequisites.htm
+    shorewall_quickstart_guide.htm
+    shorewall_setup_guide_fr.htm
+    shorewall_setup_guide.htm
+    Shorewall_sfindex_frame.htm
+    standalone.htm
+    starting_and_stopping_shorewall.htm
+    support.htm
+    three-interface.htm
+    traffic_shaping.htm
+    troubleshoot.htm
+    two-interface.htm
+    upgrade_issues.htm
+    VPN.htm
+    whitelisting_under_shorewall.htm"
+
+list_search() # $1 = element to search for , $2-$n = list
+{
+    local e=$1
+
+    while [ $# -gt 1 ]; do
+	shift
+	[ "x$e" = "x$1" ] && return 0
+    done
+
+    return 1
+}
 
 if [ $# -eq 0 ]; then
     echo "Usage: $(basename $0) <XML file> ..."
@@ -15,7 +67,11 @@ while [ $# -gt 0 ]; do
 	*.xml)
 	    b=${1%.*}
 
-	    if [ -f ../Website/$b.htm ]; then
+	#
+	# The original HTML documents were created using MS FrontPage and used
+	# the .htm suffix. The remainder use the .html suffix.
+	#
+	    if list_search $b.htm $HTMFILES ; then
 		b=$b.htm
 		f="$WEBSITE/$b"
 	    else
@@ -47,7 +103,7 @@ if [ -n "$filestocopy" ]; then
     echo "Copying$filestoreport to SourceForge..."
     scp $filestocopy teastep@shorewall.sourceforge.net:/home/groups/s/sh/shorewall/htdocs > /dev/null
     echo "Copying$filestoreport to Mail..."
-    scp -p $filestocopy root@mail:/var/www/html > /dev/null
+    scp $filestocopy mail:/var/www/html > /dev/null
 fi
 
 

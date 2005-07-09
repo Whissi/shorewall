@@ -5,6 +5,7 @@ WAIT_FOR_IFUP=/usr/share/shorewall/wait4ifup
 # Note, set INITLOG to /dev/null if you do not want to
 # keep logs of the firewall (not recommended)
 INITLOG=/var/log/shorewall-init.log
+OPTIONS="-f"
 
 test -x $SRWL || exit 0
 test -n $INITLOG || {
@@ -83,7 +84,7 @@ wait_for_pppd () {
 shorewall_start () {
   echo -n "Starting \"Shorewall firewall\": "
   wait_for_pppd
-  $SRWL -f start >> $INITLOG 2>&1 && echo "done." || echo_notdone
+  $SRWL $OPTIONS start >> $INITLOG 2>&1 && echo "done." || echo_notdone
   return 0
 }
 

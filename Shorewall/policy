@@ -1,5 +1,5 @@
 #
-# Shorewall 2.0 -- Policy File
+# Shorewall 2.2 -- Policy File
 #
 # /etc/shorewall/policy
 #
@@ -25,6 +25,8 @@
 #			DROP		- Ignore the connection request
 #			REJECT		- For TCP, send RST. For all other, send
 #					  "port unreachable" ICMP.
+#			QUEUE		- Send the request to a user-space
+#					  application using the QUEUE target.
 #			CONTINUE	- Pass the connection request past
 #					  any other rules that it might also
 #					  match (where the source or destination
@@ -66,20 +68,25 @@
 #			and the size of an acceptable burst. If not specified,
 #			TCP connections are not limited.
 #
-#	As shipped, the default policies are:
+#	Example:
 #
 #	a) All connections from the local network to the internet are allowed
 #	b) All connections from the internet are ignored but logged at syslog
 #	   level KERNEL.INFO.
 #	d) All other connection requests are rejected and logged at level
 #	   KERNEL.INFO.
+#
+#	#SOURCE		DEST		POLICY		LOG
+#	#						LEVEL
+#	loc		net		ACCEPT
+#	net		all		DROP		info
+#	#
+#	# THE FOLLOWING POLICY MUST BE LAST
+#	#	
+#	all		all		REJECT		info 
+#
+# See http://shorewall.net/Documentation.htm#Policy for additional information.
 ###############################################################################
 #SOURCE		DEST		POLICY		LOG		LIMIT:BURST
 #						LEVEL
-loc		net		ACCEPT
-net		all		DROP		info
-#
-# THE FOLLOWING POLICY MUST BE LAST
-#	
-all		all		REJECT		info 
 #LAST LINE -- DO NOT REMOVE

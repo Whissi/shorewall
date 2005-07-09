@@ -1,11 +1,11 @@
 #!/bin/sh
 #
-# Shorewall help subsystem - V2.0 - 2/14/2004
+# Shorewall help subsystem - V2.2
 #
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
 #
-#     (c) 2003-2004 - Tom Eastep (teastep@shorewall.net)
+#     (c) 2003-2005 - Tom Eastep (teastep@shorewall.net)
 #                     Steve Herber (herber@thing.com)
 #
 #	This file should be placed in /usr/share/shorewall/help
@@ -29,11 +29,18 @@
 case $1 in
 
 add)
-	echo "add: add <interface>[:<bridge-port>][:<host>] <zone>
-    Adds a host or subnet to a dynamic zone usually used with VPN's.
+	echo "add: add <interface>[:<host-list>] ... <zone>
+    Adds a list of hosts or subnets to a dynamic zone usually used with VPN's.
 
-    shorewall add interface[:port][:host] zone - Adds the specified interface
-    (and bridge port/host if included) to the specified zone.
+    shorewall add interface:host-list ... zone - Adds the specified interface
+    (and host-list if included) to the specified zone.
+
+    A host-list is a comma-separated list whose elements are:
+
+        A host or network address
+        The name of a bridge port
+        The name of a bridge port followed by a colon (":") and a host or
+        network address.
 
     Example:
 
@@ -46,7 +53,9 @@ add)
 address|host)
         echo "<$1>: 
     May be either a host IP address such as 192.168.1.4 or a network address in
-    CIDR format like 192.168.1.0/24"
+    CIDR format like 192.168.1.0/24. If your kernel and iptables contain iprange
+    match support then IP address ranges of the form <low address>-<high address>
+    are also permitted."
 	;;
 
 allow)
@@ -60,7 +69,7 @@ allow)
 	;;
 
 check)
-	echo "check: check [ -c <configuration-directory> ]
+	echo "check: check [ <configuration-directory> ]
    Performs a cursory validation of the zones, interfaces, hosts,
    rules and policy files.  Use this if you are unsure of any edits
    you have made to the shorewall configuration.  See the try command
@@ -93,11 +102,18 @@ debug)
 	;;
 
 delete)
-	echo "delete: delete <interface>[:<bridge-port>][:<host>] <zone>
-    Deletes a host or subnet from a dynamic zone usually used with VPN's.
+	echo "delete: delete <interface>[:<host-list>] ... <zone>
+    Deletes a list of hosts or networks from a dynamic zone usually used with VPN's.
 
-    shorewall delete interface[:port][:host] zone - Deletes the specified
-    interface (and bridge port/host if included) from the specified zone.
+    shorewall delete interface[:host-list] ... zone - Deletes the specified
+    interfaces (and host list if included) from the specified zone.
+
+    A host-list is a comma-separated list whose elements are:
+
+        A host or network address
+        The name of a bridge port
+        The name of a bridge port followed by a colon (":") and a host or
+        network address.
 
     Example:
 
@@ -187,7 +203,7 @@ reset)
 	;;
 
 restart)
-	echo "restart: restart [ -q ] [ -c <configuration-directory> ]
+	echo "restart: [ -q ] restart [ <configuration-directory> ]
     Restart is the same as a shorewall stop && shorewall start.
     Existing connections are maintained.
     If \"-q\" is specified, less detain is displayed making it easier to spot warnings"
@@ -217,7 +233,7 @@ save)
 	;;
 
 show)
-	echo "show: show [ <chain> [ <chain> ...] |classifiers|connections|log|nat|tc|tos]
+	echo "show: show [ <chain> [ <chain> ...] |classifiers|connections|log|nat|tc|tos|zones]
 
     shorewall [-x] show <chain> [ <chain> ... ]  - produce a verbose report about the IPtable chain(s).
     (iptables -L chain -n -v)
@@ -236,17 +252,22 @@ show)
     shorewall show tc - displays information about the traffic
 	control/shaping configuration.
 
+    shorewall show zones - displays the contents of all zones.
+
+    shorewall show capabilities - displays your kernel/iptables capabilities
+
     When -x is given, that option is also passed to iptables to display actual packet and byte counts."
 	;;
 
 start)
-	echo "start: [ -q ] [ -f ] [ -c <configuration-directory> ] start
+	echo "start: [ -q ] [ -f ] start [ <configuration-directory> ]
     Start shorewall.  Existing connections through shorewall managed
     interfaces are untouched.  New connections will be allowed only
     if they are allowed by the firewall rules or policies.
     If \"-q\" is specified, less detail is displayed making it easier to spot warnings
     If \"-f\" is specified, the saved configuration specified by the RESTOREFILE option
-    in shorewall.conf will be restored if that saved configuration exists"
+    in shorewall.conf will be restored if that saved configuration exists. In that
+    case, a <configuration-directory> may not be specified".
 	;;
 
 stop)

@@ -1,0 +1,59 @@
+#
+# Shorewall 2.2 - /etc/shorewall/ipsec
+#
+#	This file defines the attributes of zones with respect to
+#	IPSEC. To use this file for any purpose except for setting mss, 
+#	you must be running a 2.6 kernel and both your kernel and iptables
+#	must include Policy Match Support.
+#
+#	The columns are:
+#
+#		ZONE	The name of a zone defined in /etc/shorewall/zones. The
+#			$FW zone may not be listed.
+#
+#		IPSEC   Yes --  Communication with all zone hosts is encrypted
+#		ONLY	No  --  Communication with some zone hosts is encrypted. 
+#				Encrypted hosts are designated using the 'ipsec'
+#				option in /etc/shorewall/hosts. 				
+#
+#		OPTIONS,        A comma-separated list of options as follows:
+#		IN OPTIONS,
+#		OUT OPTIONS	reqid=<number> where <number> is specified
+#				using setkey(8) using the 'unique:<number>
+#				option for the SPD level.
+#
+#				spi=<number> where <number> is the SPI of
+#				the SA used to encrypt/decrypt packets.
+#
+#				proto=ah|esp|ipcomp
+#
+#				mss=<number> (sets the MSS field in TCP packets)
+#
+#				mode=transport|tunnel
+#
+#				tunnel-src=<address>[/<mask>] (only
+#				available with mode=tunnel)
+#
+#				tunnel-dst=<address>[/<mask>] (only
+#				available with mode=tunnel)
+#
+#				strict  Means that packets must match all rules.
+#
+#				next    Separates rules; can only be used with
+#                                       strict..
+#
+#			Example:
+#				mode=transport,reqid=44
+#
+#		The options in the OPTIONS column are applied to both incoming
+#		and outgoing traffic. The IN OPTIONS are applied to incoming
+#		traffic (in addition to OPTIONS) and the OUT OPTIONS are 
+#		applied to outgoing traffic.
+#
+#		If you wish to leave a column empty but need to make an entry
+#		in a following column, use "-".
+###################################################################################
+#ZONE	IPSEC	OPTIONS			IN			OUT
+#	ONLY				OPTIONS			OPTIONS
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
+

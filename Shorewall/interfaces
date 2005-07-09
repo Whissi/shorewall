@@ -1,5 +1,5 @@
 #
-# Shorewall 2.0 -- Interfaces File
+# Shorewall 2.2 -- Interfaces File
 #
 # /etc/shorewall/interfaces
 #
@@ -75,12 +75,23 @@
 #				       option does not cover those ranges
 #				       reserved by RFC 1918 -- see above).
 #
+#				       I PERSONALLY RECOMMEND AGAINST USING
+#				       THE 'nobogons' OPTION.
+#
 #			routefilter  - turn on kernel route filtering for this
 #				       interface (anti-spoofing measure). This
 #                                      option can also be enabled globally in
 #				       the /etc/shorewall/shorewall.conf file.
 #
-#	.	.	blacklist    - Check packets arriving on this interface
+#			logmartians  - turn on kernel martian logging (logging
+#				       of packets with impossible source
+#				       addresses. It is suggested that if you
+#				       set routefilter on an interface that
+#				       you also set logmartians. This option
+#				       may also be enabled globally in the
+#				       /etc/shorewall/shorewall.conf file.
+#
+#			blacklist    - Check packets arriving on this interface
 #				       against the /etc/shorewall/blacklist
 #				       file.
 #
@@ -156,6 +167,8 @@
 #			detectnets   - Automatically taylors the zone named
 #				       in the ZONE column to include only those
 #				       hosts routed through the interface.
+#			upnp         - Incoming requests from this interface may
+#				       be remapped via UPNP (upnpd).
 #
 #		        WARNING: DO NOT SET THE detectnets OPTION ON YOUR
 #			         INTERNET INTERFACE.
@@ -188,6 +201,9 @@
 #			connections.
 #
 #			net	ppp0	-
+#
+# For additional information, see http://shorewall.net/Documentation.htm#Interfaces
+#
 ##############################################################################
 #ZONE	 INTERFACE	BROADCAST	OPTIONS
 #

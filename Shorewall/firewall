@@ -1160,7 +1160,7 @@ setup_providers()
 
 	if [ -n "$PROVIDERS" ]; then
 	    if [ -n "$DEFAULT_ROUTE" ]; then
-		run_ip route replace default scope global $DEFAULT_ROUTE
+		ensure_and_save_command ip route replace default scope global $DEFAULT_ROUTE
 		progress_message "   Default route $DEFAULT_ROUTE Added."
 	    fi
 

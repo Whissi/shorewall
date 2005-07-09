@@ -1,0 +1,94 @@
+#
+# Shorewall version 2.4 - Routing Rules
+#
+# /etc/shorewall/routes
+#
+#	Entries in this file cause packets to be routed in non-standard 
+#       ways.
+#
+#                              I M P O R T A N T ! ! ! !
+#
+#	In order to use entries in this file, your kernel and iptables must
+#	have ROUTE target support (see the output of "shorewall show
+#	capabilities").
+#
+#       This facility is *EXPERIMENTAL* -- the Netfilter team have no intention
+#       of ever submitting the ROUTE target patch to kernel.org.
+#
+#	To omit any column, enter "-" in that column.
+#
+# Columns are:
+#
+#
+#	SOURCE 		Source of the packet. May be any of the following:
+#
+#			- A host or network address
+#			- A network interface name.
+#			- The name of an ipset prefaced with "+"
+#			- $FW (for packets originating on the firewall)
+#			- A MAC address in Shorewall format
+#			- A range of IP addresses (assuming that your
+#			  kernel and iptables support range match)
+#			- A network interface name followed by ":"
+#			  and an address or address range.
+#
+#	DEST		Destination of the packet. May be any of the
+#			following:
+#
+#			- A host or network address
+#			- A network interface name (determined from
+#			  routing table(s))
+#			- The name of an ipset prefaced with "+"
+#			- A network interface name followed by ":"
+#			  and an address or address range. 
+#
+#	PROTO		Protocol - Must be "tcp", "udp", "icmp", "ipp2p", 
+#			a number, or "all". "ipp2p" requires ipp2p match
+#			support in your kernel and iptables.
+#
+#	PORT(S)		Destination Ports. A comma-separated list of Port
+#			names (from /etc/services), port numbers or port
+#			ranges; if the protocol is "icmp", this column is
+#			interpreted as the destination icmp-type(s).
+#
+#			Port ranges are allowed in a list only if your
+#			kernel and iptables support Extended Multi-port
+#			match (see the output of "shorewall show capabilities").
+#
+#			If the protocol is ipp2p, this column is interpreted
+#			as an ipp2p option without the leading "--" (example "bit"
+#			for bit-torrent). If no PORT is given, "ipp2p" is
+#			assumed.
+#
+#	SOURCE PORT(S)	Source port(s). If omitted, any source port is acceptable.
+#			Specified as a comma-separated list of port names, port
+#			numbers or port ranges.
+#
+#			Port ranges are allowed in a list only if your
+#			kernel and iptables support Extended Multi-port
+#			match (see the output of "shorewall show capabilities").
+#
+#	TEST		Defines a test on the existing packet or connection mark. 
+#			The rule will match only if the test returns true. Tests
+#			have the format [!]<value>[/<mask>][:C]
+#
+#			Where:
+#
+#				!	Inverts the test (not equal)
+#				<value> Value of the packet or connection mark.
+#				<mask>  A mask to be applied to the mark before
+#					testing 
+#				:C	Designates a connection mark. If omitted,
+#					the packet mark's value is tested.
+#
+#	INTERFACE	The interface that the packet is to be routed out of.
+#			If you specify "-" here, then you must enter the IP address
+#			of a gateway in the GATEWAY column.
+#
+#	GATEWAY		The gateway that the packet is to be forewarded through.
+#
+# See http://shorewall.net/Shorewall_and_Routing.html for additional information.
+#######################################################################################
+#SOURCE 	DEST		PROTO	PORT(S)	SOURCE	TEST 	INTERFACE	GATEWAY
+#						PORT(S)
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

@@ -1,0 +1,76 @@
+##############################################################################
+#
+# Shorewall 2.4  -- Internet Service Providers
+#
+# /etc/shorewall/providers
+#
+#	This file is used to define additional routing tables. You will 
+#	want to define an additional table if:
+#
+#	- You have connections to more than one ISP or multiple connections
+#	  to the same ISP
+#
+#	- You run Squid as a transparent proxy on a host other than the 
+#	  firewall.
+#
+#	To omit a column, enter "-".
+#
+# Columns must be separated by white space and are:
+#
+#	NAME		The provider name.
+#
+#	NUMBER		The provider number -- a number between 1 and 15
+#
+#	MARK		A FWMARK value used in your /etc/shorewall/tcrules
+#			file to direct packets to this provider.
+#
+#	DUPLICATE	The name of an existing table to duplicate. May be
+#			'main' or the name of a previous provider.
+#
+#	INTERFACE	The name of the network interface to the provider.
+#			Must be listed in /etc/shorewall/interfaces.
+#
+#	GATEWAY		The IP address of the provider's gateway router.
+#
+#			You can enter "detect" here and Shorewall will
+#			attempt to detect the gateway automatically.
+#
+#	OPTIONS		A comma-separated list selected from the following:
+#
+#		track	If specified, connections FROM this interface are
+#			to be tracked so that responses may be routed back
+#			out this same interface.
+#
+#			You want specify 'track' if internet hosts will be
+#			connecting to local servers through this provider.
+#
+#		balance The providers that have 'default' specified will
+#			get outbound traffic load-balanced among them. By
+#			default, all interfaces with 'balance' specified
+#			will have the same weight (1). You can change the 
+#			weight of an interface by specifiying balance=<weight>
+#			where <weight> is the weight of the route out of
+#			this interface.
+#
+# Example:  You run squid in your DMZ on IP address 192.168.2.99. Your DMZ
+#	    interface is eth2
+#
+#	#NAME	NUMBER	MARK DUPLICATE	INTERFACE GATEWAY	OPTIONS
+#	Squid	1	1    -		eth2	  192.168.2.99	-
+#
+# Example: 
+#
+#      eth0 connects to ISP 1. The IP address of eth0 is 206.124.146.176 and
+#      the ISP's gateway router has IP address 206.124.146.254.
+#
+#      eth1 connects to ISP 2. The IP address of eth1 is 130.252.99.27 and the
+#      ISP's gateway router has IP address 130.252.99.254.
+#
+#      #NAME   NUMBER  MARK DUPLICATE   INTERFACE   GATEWAY         OPTIONS
+#      ISP1    1       1    main        eth0        206.124.146.254 track,balance
+#      ISP2    2       2    main        eth1        130.252.99.254  track,balance 
+#
+# For additional information, see http://shorewall.net/Shorewall_and_Routing.html
+##############################################################################
+#NAME	NUMBER	MARK	DUPLICATE	INTERFACE	GATEWAY		OPTIONS
+#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE

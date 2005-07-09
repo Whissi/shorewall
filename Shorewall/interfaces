@@ -1,5 +1,5 @@
 #
-# Shorewall 2.2 -- Interfaces File
+# Shorewall 2.4 -- Interfaces File
 #
 # /etc/shorewall/interfaces
 #
@@ -167,15 +167,22 @@
 #			detectnets   - Automatically taylors the zone named
 #				       in the ZONE column to include only those
 #				       hosts routed through the interface.
+#
 #			upnp         - Incoming requests from this interface may
 #				       be remapped via UPNP (upnpd).
-#
+#			
 #		        WARNING: DO NOT SET THE detectnets OPTION ON YOUR
 #			         INTERNET INTERFACE.
 #
 #			The order in which you list the options is not
 #			significant but the list should have no embedded white
 #			space.
+#
+#	GATEWAY		This column is only meaningful if the 'default' OPTION
+#			is given -- it is ignored otherwise. You may specify 
+#			the default gateway IP address for this interface here
+#			and Shorewall will use that IP address rather than any
+#			that it finds in the main routing table.
 #
 #	Example 1:	Suppose you have eth0 connected to a DSL modem and
 #			eth1 connected to your local network and that your
@@ -205,6 +212,6 @@
 # For additional information, see http://shorewall.net/Documentation.htm#Interfaces
 #
 ##############################################################################
-#ZONE	 INTERFACE	BROADCAST	OPTIONS
+#ZONE	 INTERFACE	BROADCAST	OPTIONS			GATEWAY
 #
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Shorewall help subsystem - V2.2
+# Shorewall help subsystem - V2.4
 #
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
@@ -55,7 +55,10 @@ address|host)
     May be either a host IP address such as 192.168.1.4 or a network address in
     CIDR format like 192.168.1.0/24. If your kernel and iptables contain iprange
     match support then IP address ranges of the form <low address>-<high address>
-    are also permitted."
+    are also permitted. If your kernel and iptables contain ipset match support 
+    then you may specify the name of an ipset prefaced by "+". The name of the
+    ipsec may be optionally followed by a number of levels of ipset bindings
+    (1 - 6) that are to be followed"
 	;;
 
 allow)
@@ -208,6 +211,19 @@ restart)
     Existing connections are maintained.
     If \"-q\" is specified, less detain is displayed making it easier to spot warnings"
 	;;
+
+safe-restart)
+	echo "safe-restart: safe-restart
+    Restart the same way as a shorewall restart except that previous firewall 
+    configuration is backed up and will be restored if you notice any anomalies
+    or you are not able to reach the firewall any more."
+    ;;
+
+safe-start)
+	echo "safe-start: safe-start
+    Start the same way as a shorewall start except that in case of anomalies 
+    shorewall clear is issued. "
+    ;;
 
 restore)
 	echo "restore: restore [ <file name> ]

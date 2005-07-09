@@ -1,5 +1,5 @@
 #
-# Shorewall version 2.2 - Traffic Control Rules File
+# Shorewall version 2.4 - Traffic Control Rules File
 #
 # /etc/shorewall/tcrules
 #
@@ -16,10 +16,14 @@
 #		final mark for each packet will be the one assigned by the
 #		LAST tcrule that matches.
 #
+#		If you use multiple internet providers with the 'track' option,
+#		in /etc/shorewall/providers be sure to read the restrictions at
+#		http://shorewall.net/Shorewall_and_Routing.html.
+#
 # Columns are:
 #
 #
-#	MARK/		a) A mark value which is a integer in the range 1-255
+#	MARK/		a) A mark value which is an integer in the range 1-255
 #       CLASSIFY
 #			   May optionally be followed by ":P" or ":F"
 #			   where ":P" indicates that marking should occur in
@@ -130,10 +134,11 @@
 #
 #			It may contain :
 #
-#			   [<user name or number>]:[<group name or number>]
+#			   [<user name or number>]:[<group name or number>][+<program name>]
 #
-#			The colon is optionnal when specifying only a user.
-#			Examples : john: / john / :users / john:users
+#			The colon is optionnal when specifying only a user 
+#			or a program name.
+#			Examples : john: , john , :users , john:users , +mozilla-bin
 #
 #	TEST		Defines a test on the existing packet or connection mark. 
 #			The rule will match only if the test returns true. Tests

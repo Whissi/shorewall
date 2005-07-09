@@ -1,5 +1,5 @@
 #
-# Shorewall version 2.2 - Rules File
+# Shorewall version 2.4 - Rules File
 #
 # /etc/shorewall/rules
 #
@@ -134,6 +134,11 @@
 #			Hosts may be specified as an IP address range using the
 #			syntax <low address>-<high address>. This requires that
 #			your kernel and iptables contain iprange match support.
+#                       If you kernel and iptables have ipset match support then
+#                       you may give the name of an ipset prefaced by "+". The
+#                       ipset name may be optionally followed by a number from
+#                       1 to 6 enclosed in square brackets ([]) to indicate the
+#                       number of levels of source bindings to be matched.
 #
 #			dmz:192.168.2.2		Host 192.168.2.2 in the DMZ
 #
@@ -189,6 +194,14 @@
 #			the connections will be assigned to addresses in the
 #			range in a round-robin fashion.
 #
+#                       If you kernel and iptables have ipset match support then
+#                       you may give the name of an ipset prefaced by "+". The
+#                       ipset name may be optionally followed by a number from
+#                       1 to 6 enclosed in square brackets ([]) to indicate the
+#                       number of levels of destination bindings to be matched.
+#                       Only one of the SOURCE and DEST columns may specify an
+#                       ipset name.
+#
 #			The port that the server is listening on may be
 #			included and separated from the server's IP address by
 #			":". If omitted, the firewall will not modifiy the
@@ -204,19 +217,13 @@
 #			contain the port number on the firewall that the
 #			request should be redirected to.
 #
-#	PROTO		Protocol - Must be "tcp", "udp", "icmp", "ipp2p", 
-#			a number, or "all". "ipp2p" requires ipp2p match
-#			support in your kernel and iptables.
+#	PROTO		Protocol - Must be "tcp", "udp", "icmp", a number, or
+#			"all".
 #
 #	DEST PORT(S)    Destination Ports. A comma-separated list of Port
 #			names (from /etc/services), port numbers or port
 #			ranges; if the protocol is "icmp", this column is
 #			interpreted as the destination icmp-type(s).
-#
-#			If the protocol is ipp2p, this column is interpreted
-#			as an ipp2p option without the leading "--" (example "bit"
-#			for bit-torrent). If no port is given, "ipp2p" is
-#			assumed.
 #
 #			A port range is expressed as <low port>:<high port>.
 #
@@ -250,8 +257,8 @@
 #			Otherwise, a separate rule will be generated for each
 #			port.
 #
-#	ORIGINAL DEST	(0ptional -- only allowed if ACTION is DNAT[-] or
-#                       REDIRECT[-]) If included and different from the IP
+#	ORIGINAL DEST	(0ptional) -- If ACTION is DNAT[-] or REDIRECT[-] then 
+#			if included and different from the IP
 #			address given in the SERVER column, this is an address
 #			on some interface on the firewall and connections to
 #			that address will be forwarded to the IP and port
@@ -266,6 +273,20 @@
 #			the rule will be followed only if the original 
 #			destination address in the connection request does not
 #			match any of the addresses listed.
+#
+#			For other actions, this column may be included and may
+#			contain one or more addresses (host or network)
+#			separated by commas. Address ranges are not allowed.
+#                       When this column is supplied, rules are generated
+#                       that require that the original destination address matches
+#                       one of the listed addresses. This feature is most useful when
+#                       you want to generate a filter rule that corresponds to a 
+#		        DNAT- or REDIRECT- rule. In this usage, the list of
+#			addresses should not begin with "!".
+#
+#			See http://shorewall.net/PortKnocking.html for an 
+#			example of using an entry in this column with a
+#			user-defined action rule.		
 #
 #	RATE LIMIT	You may rate-limit the rule by placing a value in 
 #			this colume:
@@ -285,7 +306,7 @@
 #			
 #			The column may contain:
 #
-#			   [!][<user name or number>][:<group name or number>]
+#			   [!][<user name or number>][:<group name or number>][+<program name>]
 #
 #			When this column is non-empty, the rule applies only
 #			if the program generating the output is running under
@@ -299,6 +320,7 @@
 #					#the 'kids' group
 #				!:kids  #program must not be run by a member
 #					#of the 'kids' group
+#				+upnpd  #program named 'upnpd'
 #
 #	Example: Accept SMTP requests from the DMZ to the internet
 #

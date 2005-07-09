@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Shorewall 2.2 -- /usr/share/shorewall/functions
+# Shorewall 2.4 -- /usr/share/shorewall/functions
 
 # Function to truncate a string -- It uses 'cut -b -<n>'
 # rather than ${v:first:last} because light-weight shells like ash and
@@ -159,9 +159,12 @@ find_file()
 # Replace commas with spaces and echo the result
 #
 separate_list() {
-    local list
+    local list="$@"
     local part
     local newlist
+    local firstpart
+    local lastpart
+    local enclosure
     #
     # There's been whining about us not catching embedded white space in
     # comma-separated lists. This is an attempt to snag some of the cases.
@@ -170,11 +173,30 @@ separate_list() {
     # either 'startup_error' or 'fatal_error' depending on the command and
     # command phase
     #
-    case "$@" in
+    case "$list" in
 	*,|,*|*,,*|*[[:space:]]*)
             [ -n "$terminator" ] && \
 		$terminator "Invalid comma-separated list \"$@\""
             echo "Warning -- invalid comma-separated list \"$@\"" >&2
+	    ;;
+	*\[*\]*)
+	    #
+	    # Where we need to embed comma-separated lists within lists, we enclose them
+	    # within square brackets
+	    #
+	    firstpart=${list%%\[*}
+	    lastpart=${list#*\[}
+	    enclosure=${lastpart%\]*}
+	    lastpart=${lastpart#*\]}
+	    case $lastpart in
+		\,*)
+		    echo "$(separate_list $firstpart)[$enclosure] $(separate_list ${lastpart#,})"
+		    ;;
+		*)
+		     echo "$(separate_list $firstpart)[$enclosure]$(separate_list $lastpart)"
+		     ;;
+	    esac
+	    return
 	    ;;
     esac
 
@@ -757,6 +779,29 @@ find_device() {
 }
     
 #
+# Find the value 'via' in the passed arguments then echo the next value
+#
+
+find_gateway() {
+    while [ $# -gt 1 ]; do
+	[ "x$1" = xvia ] && echo $2 && return
+	shift
+    done
+}
+    
+#
+# Find the value 'peer' in the passed arguments then echo the next value up to
+# "/"
+#
+
+find_peer() {
+    while [ $# -gt 1 ]; do
+	[ "x$1" = xpeer ] && echo ${2%/*} && return
+	shift
+    done
+}
+    
+#
 # Find the interfaces that have a route to the passed address - the default
 # route is not used.
 #
@@ -777,6 +822,14 @@ find_rt_interface() {
 	esac
     done
 }
+
+#
+# Try to find the gateway through an interface looking for 'nexthop' 
+
+find_nexthop() # $1 = interface
+{
+    echo $(find_gateway `ip route ls | grep "[[:space:]]nexthop.* $1"`)
+}    
 
 #
 # Find the default route's interface

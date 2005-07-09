@@ -974,7 +974,7 @@ validate_interfaces_file() {
     local found_obsolete_option=
     local z interface networks options r iface option
 
-    while read z interface networks options gateway; do
+    while read z interface networks options; do
 	expandv z interface networks options
 	r="$z $interface $networks $options"
 
@@ -1024,14 +1024,6 @@ validate_interfaces_file() {
 		    ;;
 	    esac
 	done
-
-	if [ -n "$gateway" ]; then
-	    if ! list_search default $options; then
-		error_message "Warning: GATEWAY ignored when the 'default' option is not given: \"$r\""
-	    fi
-
-	    eval ${iface}_gateway=$gateway
-	fi
     done < $TMP_DIR/interfaces
     
     [ -z "$ALL_INTERFACES" ] && startup_error "No Interfaces Defined"
@@ -4660,11 +4652,13 @@ process_rule() # $1 = target
 	    expandv logtag
 	fi
 
-	if [ "$loglevel" = none ]; then
-	    [ "$target" = LOG ] && return
-	    loglevel=
-	    logtag=
-	fi
+	case $loglevel in
+	    none*)
+		loglevel=
+		logtag=
+		[ $target = LOG ] && return
+		;;
+	esac
 
 	loglevel=${loglevel%\!}	
     fi
@@ -7090,9 +7084,13 @@ apply_policy_rules() {
 		    ;;
 	    esac
 
-	    [ -n "$synparams" ] && \
-		[ $policy = ACCEPT -o $policy = CONTINUE ] && \
-		run_iptables -I $chain 2 -p tcp --syn -j @$chain
+	    if [ -n "$synparams" ]; then
+		case $policy in
+		    ACCEPT|CONTINUE|QUEUE)
+			run_iptables -I $chain 2 -p tcp --syn -j @$chain
+			;;
+		esac
+	    fi
 	fi
 
     done

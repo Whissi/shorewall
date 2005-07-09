@@ -1,5 +1,5 @@
 %define name shorewall
-%define version 1.4.10d
+%define version 2.0.16
 %define release 1
 %define prefix /usr
 
@@ -33,7 +33,7 @@ a multi-function gateway/ router/server or on a standalone GNU/Linux system.
 export PREFIX=$RPM_BUILD_ROOT ; \
 export OWNER=`id -n -u` ; \
 export GROUP=`id -n -g` ;\
-./install.sh /etc/init.d
+./install.sh
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -68,18 +68,17 @@ if [ $1 = 0 ]; then
 fi
 
 %files
-/etc/init.d/shorewall
+%attr(0544,root,root) /etc/init.d/shorewall
 %attr(0700,root,root) %dir /etc/shorewall
 %attr(0700,root,root) %dir /usr/share/shorewall
 %attr(0700,root,root) %dir /var/lib/shorewall
-%attr(0600,root,root) /usr/share/shorewall/version
-%attr(0600,root,root) /etc/shorewall/common.def
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/shorewall.conf
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/zones
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/policy
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/interfaces
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/rules
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/nat
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/netmap
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/params
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/proxyarp
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/routestopped
@@ -91,42 +90,146 @@ fi
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/tunnels
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/hosts
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/blacklist
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/rfc1918
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/init
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/initdone
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/start
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/stop
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/stopped
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/ecn
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/accounting
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/usersets
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/users
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/actions
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/action.template
+
 %attr(0544,root,root) /sbin/shorewall
+
+%attr(0600,root,root) /usr/share/shorewall/version
+%attr(0600,root,root) /usr/share/shorewall/actions.std
+%attr(0600,root,root) /usr/share/shorewall/action.AllowAuth
+%attr(0600,root,root) /usr/share/shorewall/action.AllowDNS
+%attr(0600,root,root) /usr/share/shorewall/action.AllowFTP
+%attr(0600,root,root) /usr/share/shorewall/action.AllowIMAP
+%attr(0600,root,root) /usr/share/shorewall/action.AllowNNTP
+%attr(0600,root,root) /usr/share/shorewall/action.AllowNTP
+%attr(0600,root,root) /usr/share/shorewall/action.AllowPCA
+%attr(0600,root,root) /usr/share/shorewall/action.AllowPing
+%attr(0600,root,root) /usr/share/shorewall/action.AllowPOP3
+%attr(0600,root,root) /usr/share/shorewall/action.AllowRdate
+%attr(0600,root,root) /usr/share/shorewall/action.AllowSMB
+%attr(0600,root,root) /usr/share/shorewall/action.AllowSMTP
+%attr(0600,root,root) /usr/share/shorewall/action.AllowSNMP
+%attr(0600,root,root) /usr/share/shorewall/action.AllowSSH
+%attr(0600,root,root) /usr/share/shorewall/action.AllowTelnet
+%attr(0600,root,root) /usr/share/shorewall/action.AllowTrcrt
+%attr(0600,root,root) /usr/share/shorewall/action.AllowVNC
+%attr(0600,root,root) /usr/share/shorewall/action.AllowVNCL
+%attr(0600,root,root) /usr/share/shorewall/action.AllowWeb
+%attr(0600,root,root) /usr/share/shorewall/action.Drop
+%attr(0600,root,root) /usr/share/shorewall/action.DropDNSrep
+%attr(0600,root,root) /usr/share/shorewall/action.DropPing
+%attr(0600,root,root) /usr/share/shorewall/action.DropSMB
+%attr(0600,root,root) /usr/share/shorewall/action.DropUPnP
+%attr(0600,root,root) /usr/share/shorewall/action.Reject
+%attr(0600,root,root) /usr/share/shorewall/action.RejectAuth
+%attr(0600,root,root) /usr/share/shorewall/action.RejectSMB
+%attr(0600,root,root) /usr/share/shorewall/action.template
 %attr(0444,root,root) /usr/share/shorewall/functions
 %attr(0544,root,root) /usr/share/shorewall/firewall
 %attr(0544,root,root) /usr/share/shorewall/help
+%attr(0600,root,root) /usr/share/shorewall/rfc1918
+%attr(0600,root,root) /usr/share/shorewall/bogons
+%attr(0600,root,root) /usr/share/shorewall/configpath
+
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel
 
 %changelog
-* Tue Mar 16 2004 Tom Eastep <tom@shorewall.net>
-- Changed version to 1.4.10d-1
-* Sun Feb 15 2004 Tom Eastep <tom@shorewall.net>
-- Changed version to 1.4.10c-1
+* Tue Feb 01 2005 Tom Eastep tom@shorewall.net
+- Updated to 2.0.16-1
+* Wed Jan 12 2005 Tom Eastep tom@shorewall.net
+- Updated to 2.0.15-1
+* Mon Jan 03 2005 Tom Eastep tom@shorewall.net
+- Updated to 2.0.14-1
+* Thu Dec 02 2004 Tom Eastep tom@shorewall.net
+- Updated to 2.0.13-1
+* Wed Dec 01 2004 Tom Eastep tom@shorewall.net
+- Updated to 2.0.12-1
+* Mon Nov 22 2004 Tom Eastep tom@shorewall.net
+- Updated to 2.0.11-1
+* Mon Oct 25 2004 Tom Eastep tom@shorewall.net
+- Updated to 2.0.10-1
+* Thu Sep 23 2004 Tom Eastep tom@shorewall.net
+- Updated to 2.0.9-1
+* Sun Aug 22 2004 Tom Eastep tom@shorewall.net
+- Updated to 2.0.8-1
+* Tue Jul 20 2004 Tom Eastep tom@shorewall.net
+- Updated to 2.0.7-1
+* Sun Jul 11 2004 Tom Eastep tom@shorewall.net
+- Updated to 2.0.6-1
+* Fri Jul 09 2004 Tom Eastep tom@shorewall.net
+- Updated to 2.0.5-1
+* Tue Jul 06 2004 Tom Eastep tom@shorewall.net
+- Updated to 2.0.4-1
+* Fri Jul 02 2004 Tom Eastep tom@shorewall.net
+- Updated to 2.0.3c-1
+* Wed Jun 30 2004 Tom Eastep tom@shorewall.net
+- Updated to 2.0.3b-1
+* Mon Jun 28 2004 Tom Eastep tom@shorewall.net
+- Updated to 2.0.3a-1
+* Wed Jun 23 2004 Tom Eastep tom@shorewall.net
+- Updated to 2.0.3-1
+* Sat Jun 19 2004 Tom Eastep tom@shorewall.net
+- Updated to 2.0.2-0RC2
+* Tue Jun 15 2004 Tom Eastep tom@shorewall.net
+- Updated to 2.0.2-0RC1
+* Mon Jun 14 2004 Tom Eastep tom@shorewall.net
+- Added %attr spec for /etc/init.d/shorewall
+* Sat May 15 2004 Tom Eastep tom@shorewall.net
+- Updated for 2.0.2a-1
+* Thu May 13 2004 Tom Eastep tom@shorewall.net
+- Updated for 2.0.2-1
+* Mon May 10 2004 Tom Eastep tom@shorewall.net
+- Add /etc/shorewall/initdone
+* Fri May 07 2004 Tom Eastep tom@shorewall.net
+- Shorewall 2.0.2-RC1
+* Tue May 04 2004 Tom Eastep tom@shorewall.net
+- Shorewall 2.0.2-Beta2
+* Tue Apr 13 2004 Tom Eastep tom@shorewall.net
+- Add /usr/share/shorewall/configpath
+* Mon Apr 05 2004 Tom Eastep tom@shorewall.net
+- Updated for 2.0.1-1
+* Thu Apr 02 2004 Tom Eastep tom@shorewall.net
+- Updated for 2.0.1 RC5
+* Thu Apr 01 2004 Tom Eastep tom@shorewall.net
+- Updated for 2.0.1 RC4
+* Sun Mar 28 2004 Tom Eastep tom@shorewall.net
+- Updated for 2.0.1 RC3
+* Thu Mar 25 2004 Tom Eastep tom@shorewall.net
+- Updated for 2.0.1 RC2
+* Wed Mar 24 2004 Tom Eastep tom@shorewall.net
+- Updated for 2.0.1 RC1
+* Fri Mar 19 2004 Tom Eastep tom@shorewall.net
+- Updated for 2.0.1 Beta 2
+* Thu Mar 18 2004 Tom Eastep tom@shorewall.net
+- Added netmap file
+* Wed Mar 17 2004 Tom Eastep <tom@shorewall.net>
+- Update for 2.0.1 Beta 1
+* Wed Mar 17 2004 Tom Eastep <tom@shorewall.net>
+- Add bogons file
+* Sat Mar 13 2004 Tom Eastep <tom@shorewall.net>
+- Update for 2.0.0 Final
+* Sat Mar 06 2004 Tom Eastep <tom@shorewall.net>
+- Update for RC2
+* Fri Feb 27 2004 Tom Eastep <tom@shorewall.net>
+- Update for RC1
+* Mon Feb 16 2004 Tom Eastep <tom@shorewall.net>
+- Moved rfc1918 to /usr/share/shorewall
+- Update for Beta 3
+* Sat Feb 14 2004 Tom Eastep <tom@shorewall.net>
+- Removed common.def
+- Unconditionally replace actions.std
+- Update for Beta 2
 * Thu Feb 12 2004 Tom Eastep <tom@shorewall.net>
-- Changed version to 1.4.10b-1
+- Added action.AllowPCA
 * Sun Feb 08 2004 Tom Eastep <tom@shorewall.net>
-- Changed version to 1.4.10a-1
-* Fri Jan 30 2004 Tom Eastep <tom@shorewall.net>
-- Changed version to 1.4.10-1
-* Tue Jan 27 2004 Tom Eastep <tom@shorewall.net>
-- Changed version to 1.4.10-RC3
-* Sat Jan 24 2004 Tom Eastep <tom@shorewall.net>
-- Changed version to 1.4.10-RC2
-* Thu Jan 22 2004 Tom Eastep <tom@shorewall.net>
-- Changed version to 1.4.10-RC1
-* Tue Jan 13 2004 Tom Eastep <tom@shorewall.net>
-- Changed version to 1.4.9
+- Updates for Shorewall 2.0.0.
 * Mon Dec 29 2003 Tom Eastep <tom@shorewall.net>
 - Remove Documentation from this RPM
 * Sun Dec 28 2003 Tom Eastep <tom@shorewall.net>

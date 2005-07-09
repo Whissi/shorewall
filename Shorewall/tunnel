@@ -2,14 +2,14 @@
 
 RCDLINKS="2,S45 3,S45 6,K45"
 ################################################################################
-#   Script to create a gre or ipip tunnel -- Shorewall 1.4
+#   Script to create a gre or ipip tunnel -- Shorewall 2.0
 #
 #   Modified - Steve Cowles 5/9/2000
 #     Incorporated init {start|stop} syntax and iproute2 usage
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
 #
-#     (c) 2000,2001,2002,2003 - Tom Eastep (teastep@shorewall.net)
+#     (c) 2000,2001,2002,2003,2004 - Tom Eastep (teastep@shorewall.net)
 #
 #   Modify the following variables to match your configuration
 #
@@ -59,6 +59,13 @@ gateway="x.x.x.x"
 
 subnet="192.168.9.0/24"
 
+# GRE Key -- set this to a number or to a dotted quad if you want
+#            a keyed GRE tunnel. You must specify a KEY if you
+#            intend to load ip_conntrack_proto_gre on either
+#            gateway system
+
+key=
+
 PATH=$PATH:/sbin:/usr/sbin:/usr/local/sbin
 
 load_modules () {
@@ -101,7 +108,7 @@ do_start() {
 
       case $tunnel_type in
       gre)
-          ip tunnel add $tunnel mode gre remote $gateway local $myrealip ttl 255
+          ip tunnel add $tunnel mode gre remote $gateway local $myrealip ttl 255 ${key:+key $key)
 	  ;;
       *)
           ip tunnel add $tunnel mode ipip remote $gateway

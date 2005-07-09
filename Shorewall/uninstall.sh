@@ -4,7 +4,7 @@
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
 #
-#     (c) 2000,2001,2002,2003 - Tom Eastep (teastep@shorewall.net)
+#     (c) 2000,2001,2002,2003,2004 - Tom Eastep (teastep@shorewall.net)
 #
 #       Shorewall documentation is available at http://shorewall.sourceforge.net
 #
@@ -26,11 +26,11 @@
 #       You may only use this script to uninstall the version
 #       shown below. Simply run this script to remove Seattle Firewall
 
-VERSION=1.4.10d
+VERSION=2.0.16
 
 usage() # $1 = exit status
 {
-    ME=`basename $0`
+    ME=$(basename $0)
     echo "usage: $ME"
     exit $1
 }
@@ -61,7 +61,7 @@ remove_file() # $1 = file to restore
 }
 
 if [ -f /usr/share/shorewall/version ]; then
-    INSTALLED_VERSION="`cat /usr/share/shorewall/version`"
+    INSTALLED_VERSION="$(cat /usr/share/shorewall/version)"
     if [ "$INSTALLED_VERSION" != "$VERSION" ]; then
 	echo "WARNING: Shorewall Version $INSTALLED_VERSION is installed"
 	echo "         and this is the $VERSION uninstaller."
@@ -72,27 +72,25 @@ else
     VERSION=""
 fi
 
-echo "Uninstalling Shorewall $VERSION"
+echo "Uninstalling shorewall $VERSION"
 
 if qt iptables -L shorewall -n; then
    /sbin/shorewall clear
 fi
 
-if [ -L /usr/lib/shorewall/firewall ]; then
-    FIREWALL=`ls -l /usr/lib/shorewall/firewall | sed 's/^.*> //'`
-elif [ -L /var/lib/shorewall/firewall ]; then
-    FIREWALL=`ls -l /var/lib/shorewall/firewall | sed 's/^.*> //'`
-elif [ -L /usr/lib/shorewall/init ]; then
-    FIREWALL=`ls -l /usr/lib/shorewall/init | sed 's/^.*> //'`
+if [ -L /usr/share/shorewall/init ]; then
+    FIREWALL=$(ls -l /usr/share/shorewall/init | sed 's/^.*> //')
 else
-    FIREWALL=
+    FIREWALL=/etc/init.d/shorewall
 fi
 
 if [ -n "$FIREWALL" ]; then
     if [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
         insserv -r $FIREWALL
     elif [ -x /sbin/chkconfig -o -x /usr/sbin/chkconfig ]; then
-	chkconfig --del `basename $FIREWALL`
+	chkconfig --del $(basename $FIREWALL)
+    else
+	rm -f /etc/rc*.d/*$(basename $FIREWALL)
     fi
 
     remove_file $FIREWALL
@@ -102,12 +100,7 @@ fi
 rm -f /sbin/shorewall
 rm -f /sbin/shorewall-*.bkout
 
-if [ -n "$VERSION" ]; then
-    restore_file /etc/rc.d/rc.local
-fi
-
 rm -rf /etc/shorewall
-rm -rf /usr/lib/shorewall
 rm -rf /var/lib/shorewall
 rm -rf /usr/share/shorewall
 

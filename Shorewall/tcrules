@@ -1,5 +1,5 @@
 #
-# Shorewall version 1.4 - Traffic Control Rules File
+# Shorewall version 2.0 - Traffic Control Rules File
 #
 # /etc/shorewall/tcrules
 #
@@ -10,6 +10,11 @@
 #
 #		FOR ENTRIES IN THIS FILE TO HAVE ANY EFFECT, YOU MUST SET
 #		TC_ENABLED=Yes in /etc/shorewall/shorewall.conf
+#
+#		Unlike rules in the /etc/shorewall/rules file, evaluation
+#		of rules in this file will continue after a match. So the 
+#		final mark for each packet will be the one assigned by the
+#		LAST tcrule that matches.
 #
 # Columns are:
 #

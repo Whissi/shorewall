@@ -1124,6 +1124,8 @@ setup_providers()
 		-)
 		    ;;
 		track)
+		    list_search $interface $ROUTEMARK_INTERFACES && \
+			fatal_error "Interface $interface is tracked through an earlier provider"
 		    iface=$(chain_base $interface)
 		    eval ${iface}_routemark=$mark
 		    ROUTEMARK_INTERFACES="$ROUTEMARK_INTERFACES $interface"
@@ -2717,6 +2719,7 @@ process_tc_rule()
 		    r="${r}$(dest_ip_range $dest) "
 		    ;;
 		*)
+		    [ "$chain" = tcpre ] && fatal_error "Destination interface is not allowed in the PREROUTING chain"
 		    verify_interface $dest || fatal_error "Unknown interface $dest in rule \"$rule\""
 		    r="${r}$(match_dest_dev $dest) "
 		    ;;

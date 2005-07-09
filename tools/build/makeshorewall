@@ -65,8 +65,8 @@ SOURCEDIR=
 LRPPROJ=
 LRPDIR=
 LRP=
-CVSPROJ=
-CVSSTABLE=
+CVSTAG=
+#CVSSTABLE=
 XMLPROJ=
 RPMNAME=
 TARBALL=
@@ -122,6 +122,11 @@ usage()
 ################################################################################
 #                E X E C U T I O N   S T A R T S   H E R E
 ################################################################################
+
+# Added by Paul Gear 2005-07-09, just in case i've screwed up the CVS changes.
+set -e
+set -u
+
 done=
 
 case $1 in
@@ -203,24 +208,24 @@ progress_message "Build of Shorewall $VERSION on $(date)"
 
 case $VERSION in
     2.0.*)
-	CVSPROJ=STABLE
+	CVSTAG=SHOREWALL-2_0
 	XMLPROJ=Shorewall-docs
 	LRP=shorwall-${VERSION}.lrp
 	LRPPROJ=Lrp
 	;;
     2.2.*)
-	CVSPROJ=STABLE2
+	CVSTAG=SHOREWALL-2_0
 	XMLPROJ=Shorewall-docs2
 	LRP=shorewall-lrp-${VERSION}.tgz
 	LRPPROJ=Lrp2
 	;;
-    2.3.*)
-        CVSPROJ=Shorewall2
+    2.4.*)
+        CVSTAG=SHOREWALL-2_4
 	XMLPROJ=Shorewall-docs2
 	BUILDLRP=
 	;;
-    2.4.*)
-        CVSPROJ=Shorewall2
+    2.5.*)
+        CVSTAG=HEAD
 	XMLPROJ=Shorewall-docs2
 	BUILDLRP=
 	;;
@@ -260,7 +265,7 @@ LRPDIR=shorewall-lrp-$VERSION
 
 if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
     report "Shorewall directory is $DIR/$SHOREWALLDIR"
-    report "CVS Project is $CVSPROJ"
+    report "CVS tag is $CVSTAG"
     [ -n "$BUILDTARBALL" ] && report "TARBALL is $TARBALL"
     [ -n "$BUILDRPM" ]     && report "RPM is $RPMNAME"
 fi
@@ -269,13 +274,11 @@ fi
 [ -n "$BUILDLRP" ]  && report "LRP Directory is $LRPDIR"
 
 if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
-    progress_message "Exporting $CVSPROJ from CVS..."
+    progress_message "Exporting $CVSTAG from CVS..."
 
     rm -rf $SHOREWALLDIR
-    rm -rf $CVSPROJ
 
-    do_or_die "cvs -d :pserver:anonymous@cvs.sourceforge.net:/cvsroot/shorewall export -D now $CVSPROJ >> $LOGFILE 2>&1"
-    do_or_die mv $CVSPROJ $SHOREWALLDIR
+    do_or_die "cvs -d :pserver:anonymous@cvs.sourceforge.net:/cvsroot/shorewall export -r $CVSTAG -d $SHOREWALLDIR Shorewall >> $LOGFILE 2>&1"
 
     fgrep VERSION=$VERSION $SHOREWALLDIR/install.sh > /dev/null 2>&1    || fatal_error "install.sh has wrong version"
     fgrep VERSION=$VERSION $SHOREWALLDIR/uninstall.sh > /dev/null 2>&1  || fatal_error "uninstall.sh has wrong version"

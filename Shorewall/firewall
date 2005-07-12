@@ -6853,7 +6853,7 @@ add_common_rules() {
 
 	    savelogparms="$LOGPARMS"
 
-	    LOGPARMS="$LOGPARMS --log-ip-options"
+	    [ "$TCP_FLAGS_LOG_LEVEL" = ULOG ] || LOGPARMS="$LOGPARMS --log-ip-options"
 
 	    log_rule $TCP_FLAGS_LOG_LEVEL logflags $TCP_FLAGS_DISPOSITION 
 

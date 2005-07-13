@@ -2302,6 +2302,7 @@ setup_mac_lists() {
     local hosts
     local ipsec
     local policy=
+    local options
     #
     # Generate the list of interfaces having MAC verification
     #
@@ -2390,6 +2391,10 @@ setup_mac_lists() {
 	    run_iptables -A $chain -s $address -d 255.255.255.255 -j $chain1
 	    run_iptables -A $chain -s $address -d 224.0.0.0/4     -j $chain1
 	done
+
+	if $(interface_has_option $interface dhcp); then
+	    run_iptables -A $chain -p udp --sport 68 --dport 67 -s 0.0.0.0 -d 255.255.255.255 -j ACCEPT
+	fi
 
 	if [ -n "$MACLIST_LOG_LEVEL" ]; then
 	    log_rule $MACLIST_LOG_LEVEL $chain $MACLIST_DISPOSITION 

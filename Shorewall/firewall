@@ -2392,10 +2392,6 @@ setup_mac_lists() {
 	    run_iptables -A $chain -s $address -d 224.0.0.0/4     -j $chain1
 	done
 
-	if $(interface_has_option $interface dhcp); then
-	    run_iptables -A $chain -p udp --sport 68 --dport 67 -s 0.0.0.0 -d 255.255.255.255 -j ACCEPT
-	fi
-
 	if [ -n "$MACLIST_LOG_LEVEL" ]; then
 	    log_rule $MACLIST_LOG_LEVEL $chain $MACLIST_DISPOSITION 
 	fi
@@ -6697,7 +6693,7 @@ add_common_rules() {
 
 	for interface in $interfaces; do
 	    if [ -n "$BRIDGING" ]; then
-		eval is_bridge=\$$(chain_base $interface)_ports
+		is_bridge=$( brctl show $interface 2> /dev/null | grep ^$interface[[:space:]] )
 		[ -n "$is_bridge" ] && \
 		    $IPTABLES -A $(forward_chain $interface) -p udp -o $interface --dport 67:68 -j ACCEPT
             fi

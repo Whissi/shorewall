@@ -228,6 +228,11 @@ get_config() {
 
     export RESTOREFILE
 
+    case $STARTUP_ENABLED in
+	[Nn][Oo])
+            echo "   WARNING: Shorewall startup is disabled. To enable startup, set STARTUP_ENABLED=Yes in /etc/shorewall/shorewall.conf" >&2
+	    ;;
+    esac
 }
 
 #

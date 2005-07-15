@@ -2384,8 +2384,9 @@ setup_mac_lists() {
 	    fatal_error "Interface $interface must be up before Shorewall can start"
 
 	ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet //; s/brd //; s/scope.*//;' | while read address broadcast; do
+	    address=${address%/*}
 	    if [ -n "$broadcast" ]; then
-		run_iptables -A $chain -s ${address%/*} -d $broadcast -j $chain1
+		run_iptables -A $chain -s $address -d $broadcast -j $chain1
 	    fi
 
 	    run_iptables -A $chain -s $address -d 255.255.255.255 -j $chain1

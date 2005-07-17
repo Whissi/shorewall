@@ -477,11 +477,6 @@ mac_chain() # $1 = interface
    echo $(chain_base $1)_mac
 }
 
-macrecent_target() # $1 - interface
-{
-    [ -n "$MACLIST_TTL" ] && echo $(chain_base $1)_rec || echo RETURN
-}
-
 #
 # Functions for creating dynamic zone rules
 #
@@ -2327,14 +2322,6 @@ setup_mac_lists() {
     for interface in $maclist_interfaces; do
 	chain=$(mac_chain $interface)
 	createchain $chain no
-	
-	if [ -n "$MACLIST_TTL" ]; then
-	    chain1=$(macrecent_target $interface)
-	    createchain $chain1 no
-	    run_iptables -A $chain  -m recent --rcheck --seconds $MACLIST_TTL --name $chain -j $chain1
-	    run_iptables -A $chain1 -m recent --update                        --name $chain -j ACCEPT
-	    run_iptables -A $chain1 -m recent --set                           --name $chain -j ACCEPT
-	fi
     done
     #
     # Process the maclist file producing the verification rules
@@ -3193,8 +3180,8 @@ check_config() {
 
     [ "$MACLIST_TTL" = "0" ] && MACLIST_TTL=
 
-    if [ -n "$MACLIST_TTL" -a -z "$RECENT_MATCH" ]; then
-	startup_error "MACLIST_TTL requires the Recent Match capability which is not present in your Kernel and/or iptables"
+    if [ -n "$MACLIST_TTL" ]; then
+	error_message "WARNING: MACLIST_TTL has been disabled until further notice"
     fi
 
     echo "Determining Zones..."
@@ -6402,8 +6389,8 @@ initialize_netfilter () {
 
     [ "$MACLIST_TTL" = "0" ] && MACLIST_TTL=
 
-    if [ -n "$MACLIST_TTL" -a -z "$RECENT_MATCH" ]; then
-	startup_error "MACLIST_TTL requires the Recent Match capability which is not present in your Kernel and/or iptables"
+    if [ -n "$MACLIST_TTL" ]; then
+	error_message "WARNING: MACLIST_TTL has been disabled until further notice"
     fi
 
     [ -n "$RFC1918_STRICT" -a -z "$CONNTRACK_MATCH" ] && \

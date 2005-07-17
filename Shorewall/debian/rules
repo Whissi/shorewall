@@ -63,7 +63,8 @@ install: build
 binary-indep: build install
 	dh_testdir
 	dh_testroot
-	dh_installdocs releasenotes.txt debian/NEWS.Debian 
+	dh_installdocs releasenotes.txt
+	#debian/NEWS.Debian 
 	dh_installman debian/shorewall.8
 	dh_installchangelogs changelog.txt
 	dh_installlogrotate

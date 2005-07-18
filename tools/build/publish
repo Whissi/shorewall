@@ -95,15 +95,21 @@ while [ $# -gt 0 ]; do
 
 done
 
+DESTS="
+shorewall.sourceforge.net:/home/groups/s/sh/shorewall/htdocs
+mail.shorewall.net:/var/www/html
+"
+
 if [ -n "$filestocopy" ]; then
     for f in $filestocopy; do
 	filestoreport="$filestoreport $(basename $f)"
     done
 
-    echo "Copying$filestoreport to SourceForge..."
-    scp $filestocopy shorewall.sourceforge.net:/home/groups/s/sh/shorewall/htdocs > /dev/null
-    echo "Copying$filestoreport to Mail..."
-    scp $filestocopy mail.shorewall.net:/var/www/html > /dev/null
+    chmod g+w $filestocopy
+    for d in $DESTS; do
+	echo "$filestoreport -> $d"
+	scp -qp $filestocopy $d
+    done
 fi
 
 

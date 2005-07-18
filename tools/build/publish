@@ -105,7 +105,7 @@ if [ -n "$filestocopy" ]; then
 	filestoreport="$filestoreport $(basename $f)"
     done
 
-    chmod g+w $filestocopy
+    chmod 664 $filestocopy
     for d in $DESTS; do
 	echo "$filestoreport -> $d"
 	scp -qp $filestocopy $d

@@ -19,8 +19,82 @@ Texts. A copy of the license is included in the section entitled “<span
  class="quote"><a href="GnuCopyright.htm" target="_self">GNU Free
 Documentation License</a></span>”.<br>
 </p>
-<p>2005-07-14<br>
+<p>2005-07-17<br>
 </p>
+
+<hr style="width: 100%; height: 2px;">
+<a name="20050717"></a>
+<h2><font color="#FF0000">07/17/2005 Security vulnerability in MACLIST processing</font></h2>
+
+<h3>Description</h3>
+
+<p>
+A security vulnerability has been discovered which affects all supported
+stable versions of Shorewall.&nbsp;  This vulnerability enables a client
+accepted by MAC address filtering to bypass any other rule.&nbsp; If
+MACLIST_TTL is set to a value greater than 0 or MACLIST_DISPOSITION is set
+to "ACCEPT" in /etc/shorewall/shorewall.conf (default is MACLIST_TTL=0 and
+MACLIST_DISPOSITION=REJECT), and a client is positively identified through
+its MAC address, it bypasses all other policies/rules in place, thus
+gaining access to all open services on the firewall.
+</p>
+
+<h3>Fix</h3>
+
+<h4>Workaround</h4>
+
+<p>
+For Shorewall 2.2.x or 2.4.x, set MACLIST_TTL=0 or MACLIST_DISPOSITION=REJECT
+in /etc/shorewall/shorewall.conf.&nbsp; For Shorewall 2.0.x, set
+MACLIST_DISPOSITION=REJECT in /etc/shorewall/shorewall.conf.&nbsp; MACLIST
+filtering is of limited on Internet-connected hosts, and the Shorewall team
+recommends this approach to be used if possible.
+</p>
+
+<h4>Upgrade</h4>
+
+<p>
+For Shorewall 2.4.x, a fixed version of the 'firewall' script is available at:
+<a href="http://shorewall.net/pub/shorewall/2.4/shorewall-2.4.1/errata/firewall">http://shorewall.net/pub/shorewall/2.4/shorewall-2.4.1/errata/firewall</a>
+and its mirrors, 
+<a href="http://www.shorewall.net/pub/shorewall/2.4/shorewall-2.4.1/errata/firewall">http://www.shorewall.net/pub/shorewall/2.4/shorewall-2.4.1/errata/firewall</a>
+and
+<a href="http://slovakia.shorewall.net/pub/shorewall/2.4/shorewall-2.4.1/errata/firewall">http://slovakia.shorewall.net/pub/shorewall/2.4/shorewall-2.4.1/errata/firewall</a>.
+</p>
+
+<p>
+For Shorewall 2.2.x, a fixed version of the 'firewall' script is available at:
+<a href="http://shorewall.net/pub/shorewall/2.2/shorewall-2.2.5/errata/firewall">http://shorewall.net/pub/shorewall/2.2/shorewall-2.2.5/errata/firewall</a>
+and its mirrors, 
+<a href="http://www.shorewall.net/pub/shorewall/2.2/shorewall-2.2.5/errata/firewall">http://www.shorewall.net/pub/shorewall/2.2/shorewall-2.2.5/errata/firewall</a>
+and
+<a href="http://slovakia.shorewall.net/pub/shorewall/2.2/shorewall-2.2.5/errata/firewall">http://slovakia.shorewall.net/pub/shorewall/2.2/shorewall-2.2.5/errata/firewall</a>.
+</p>
+
+<p>
+For Shorewall 2.0.x, a fixed version of the 'firewall' script is available at:
+<a href="http://shorewall.net/pub/shorewall/errata/2.0.17/firewall">http://shorewall.net/pub/shorewall/errata/2.0.17/firewall</a>
+and its mirrors, 
+<a href="http://www.shorewall.net/pub/shorewall/errata/2.0.17/firewall">http://www.shorewall.net/pub/shorewall/errata/2.0.17/firewall</a>
+and
+<a href="http://slovakia.shorewall.net/pub/shorewall/errata/2.0.17/firewall">http://slovakia.shorewall.net/pub/shorewall/errata/2.0.17/firewall</a>.
+</p>
+
+<p>
+Users of any version before 2.0.17 are urged to upgrade to a supported
+version of Shorewall (preferably 2.4.1) before using the fixed
+files.&nbsp;  Only the most recent version of the 2.0.x and 2.2.x
+streams will be supported by the development team, and the 1.x branches
+are no longer maintained at all.&nbsp;  Future releases of Shorewall will
+include this fix.
+</p>
+
+<p>This information was based on
+<a href="http://seclists.org/lists/fulldisclosure/2005/Jul/0409.html">Patrick
+Blitz's post to the Full Disclosure mailing list</a>.&nbsp;  Thanks to
+Supernaut (supernaut at ns dot sympatico dot ca) for reporting this bug.
+</p>
+
 <hr style="width: 100%; height: 2px;"><span style="font-weight: bold;">07/13/2005
 Shorewall 2.4.1<br>
 </span><br>
@@ -50,6 +124,7 @@ configurations, be filtered by the 'maclist' option even though the
 'dhcp' option was specified. This has been corrected.<br>
   </li>
 </ol>
+
 <span style="font-weight: bold;">06/05/2005
 Shorewall 2.4.0<br>
 <br>

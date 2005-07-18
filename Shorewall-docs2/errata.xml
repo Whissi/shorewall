@@ -13,7 +13,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-03-16</pubdate>
+    <pubdate>2005-07-17</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -90,7 +90,7 @@
   </section>
 
   <section>
-    <title>Problems in Version 2.2</title>
+    <title>Problems in Version 2.2 and Later</title>
 
     <para>Beginning with Shorewall version 2.2.0, errata will not be published
     on this page. Rather, the download directory for each version will
@@ -113,6 +113,36 @@
 
   <section>
     <title>Problems in Version 2.0</title>
+
+    <section>
+      <title>Shorewall 2.0.17</title>
+
+      <itemizedlist>
+        <listitem>
+          <para>Users specifying TCP_FLAGS_LOG_LEVEL=ULOG will find that
+          "shorewall [re]start" fails with the following error:</para>
+
+          <programlisting>iptables v1.3.2: Unknown arg `--log-ip-options'
+Try `iptables -h' or 'iptables --help' for more information.
+ERROR: Command "/usr/sbin/iptables -A logflags   -j ULOG --log-ip-options --ulog-prefix "Shorewall:logflags:DROP:"" Failed</programlisting>
+
+          <para>Install the '<ulink
+          url="http://www1.shorewall.net/pub/shorewall/errata/2.0.17/firewall">firewall'
+          script in the errata directory </ulink>into
+          /usr/share/shorewall/firewall replacing the file by that
+          name.</para>
+        </listitem>
+
+        <listitem>
+          <para>Setting MACLIST_DISPOSITION=ACCEPT opens a serious security
+          vulnerability. Install the '<ulink
+          url="http://www1.shorewall.net/pub/shorewall/errata/2.0.17/firewall">firewall'
+          script in the errata directory</ulink>into
+          /usr/share/shorewall/firewall replacing the file by that
+          name.</para>
+        </listitem>
+      </itemizedlist>
+    </section>
 
     <section>
       <title>Shorewall 2.0.15-2.0.16</title>

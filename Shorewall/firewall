@@ -1052,7 +1052,34 @@ verify_mark() # $1 = value to test
 #
 setup_providers()
 {
-    local table number mark duplicate interface gateway options provider address
+    local table number mark duplicate interface gateway options provider address copy route loose addresses
+
+    copy_table() {
+	run_ip route show table $duplicate | while read net route; do
+	    case $net in
+		default|nexthop)
+		    ;;
+		*)
+		    ensure_and_save_command ip route add table $number $net $route
+		    ;;
+	    esac
+	done
+    }
+
+    copy_and_edit_table() {
+       
+	run_ip route show table $duplicate | while read net route; do
+	    case $net in
+		default|nexthop)
+		    ;;
+		*)
+		    if list_search $(find_device $route) $copy; then
+			ensure_and_save_command ip route add table $number $net $route
+		    fi
+		    ;;
+	    esac
+	done
+    }
 
     add_a_provider() {
 	local t n iface option
@@ -1073,16 +1100,13 @@ setup_providers()
 
 	run_and_save_command qt ip route flush table $number
 
-	if [ "x$duplicate" != x- ]; then
-	    run_ip route show table $duplicate | while read net route; do
-		case $net in
-		    default|nexthop)
-			;;
-		    *)
-			ensure_and_save_command ip route add table $number $net $route
-			;;
-		esac
-	    done
+	if [ "x${duplicate:=-}" != x- ]; then
+	    if [ "x${copy:=-}" != "x-" ]; then
+		copy="$interface $(separate_list $copy)" 
+		copy_and_edit_table
+	    else
+		copy_table
+	    fi
 	fi
 
 	if [ "x$gateway" = xdetect ] ; then
@@ -1104,6 +1128,7 @@ setup_providers()
 	    [ -n "$gateway" ] || fatal_error "Unable to detect the gateway through interface $interface"
 	fi
 
+	ensure_and_save_command ip route replace $gateway dev $interface table $number
 	ensure_and_save_command ip route add default via $gateway dev $interface table $number
 	
 	verify_mark $mark
@@ -1114,10 +1139,7 @@ setup_providers()
 	
 	ensure_and_save_command ip rule add fwmark $mark table $number
 
-	for address in $(find_interface_addresses $interface); do
-	    run_and_save_command qt ip rule del from $address
-	    ensure_and_save_command ip rule add from $address table $number
-	done
+	loose=
 
 	for option in $(separate_list $options); do
 	    case $option in
@@ -1136,13 +1158,19 @@ setup_providers()
 		balance)
 		    DEFAULT_ROUTE="$DEFAULT_ROUTE nexthop via $gateway dev $interface weight 1"
 		    ;;
+ 		loose)
+ 		    loose=Yes
+ 		    ;;
 		*)
 		    error_message "   Warning: Invalid option ($option) ignored in provider \"$provider\""
 		    ;;
 	    esac
 	done
 
-
+ 	find_interface_addresses $interface | while read address; do
+ 	    run_and_save_command qt ip rule del from $address
+ 	    [ -n "$loose" ] || ensure_and_save_command ip rule add from $address table $number
+ 	done
     }
 		
     strip_file providers $1
@@ -1152,9 +1180,9 @@ setup_providers()
 
 	save_progress_message "Restoring Providers..."
 	
-	while read table number mark duplicate interface gateway options; do
-	    expandv table number mark duplicate interface gateway options
-	    provider="$table $number $mark $duplicate $interface $gateway $options"
+	while read table number mark duplicate interface gateway options copy; do
+	    expandv table number mark duplicate interface gateway options copy
+	    provider="$table $number $mark $duplicate $interface $gateway $options $copy"
 	    add_a_provider
 	    PROVIDERS="$PROVIDERS $table"
 	    progress_message "   Provider $provider Added"

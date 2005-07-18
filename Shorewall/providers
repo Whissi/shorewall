@@ -52,6 +52,16 @@
 #			where <weight> is the weight of the route out of
 #			this interface.
 #
+#		loose	Normally, Shorewall adds routing rules to prohibit
+#			firewall marks from working with traffic generated
+#			on the firewall itself. By setting the 'loose' 
+#			option, generation of these rules is avoided.
+#
+#	COPY		A comma-separated lists of other interfaces on your
+#			firewall. Only makes sense when DUPLICATE is 'main'.
+#			Only copy routes through INTERFACE and through
+#			interfaces listed here.
+#
 # Example:  You run squid in your DMZ on IP address 192.168.2.99. Your DMZ
 #	    interface is eth2
 #
@@ -66,11 +76,11 @@
 #      eth1 connects to ISP 2. The IP address of eth1 is 130.252.99.27 and the
 #      ISP's gateway router has IP address 130.252.99.254.
 #
-#      #NAME   NUMBER  MARK DUPLICATE   INTERFACE   GATEWAY         OPTIONS
+#      #NAME   NUMBER  MARK DUPLICATE   INTERFACE   GATEWAY         OPTIONS		COPY
 #      ISP1    1       1    main        eth0        206.124.146.254 track,balance
 #      ISP2    2       2    main        eth1        130.252.99.254  track,balance 
 #
 # For additional information, see http://shorewall.net/Shorewall_and_Routing.html
-##############################################################################
-#NAME	NUMBER	MARK	DUPLICATE	INTERFACE	GATEWAY		OPTIONS
+##############################################################################################
+#NAME	NUMBER	MARK	DUPLICATE	INTERFACE	GATEWAY		OPTIONS		COPY
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE

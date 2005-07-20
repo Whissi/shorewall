@@ -24,7 +24,7 @@
 #    Usage:
 #
 #       You may only use this script to uninstall the version
-#       shown below. Simply run this script to remove Seattle Firewall
+#       shown below. Simply run this script to remove Shoreline Firewall
 
 VERSION=2.4.0
 

@@ -17,7 +17,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-06-01</pubdate>
+    <pubdate>2005-07-19</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -1273,8 +1273,9 @@ LOGBURST=""</programlisting>
         <para>Anyone with two Internet connections MUST read and understand
         <ulink url="Shorewall_and_Routing.html">this article on Shorewall and
         Routing</ulink>. If you don't, you will be completely lost trying to
-        make this work. And that article should be all that you need if you
-        are running Shorewall 2.3.2 or later.</para>
+        make this work. And <emphasis role="bold">that article should be all
+        that you need if you are running Shorewall 2.3.2 or
+        later</emphasis>.</para>
       </important>
 
       <para>Setting this up in Shorewall is easy; setting up the routing is a
@@ -1303,6 +1304,11 @@ net        net            DROP</programlisting>
       <programlisting>#INTERFACE       SUBNET            ADDRESS
 eth0             eth2
 eth1             eth2</programlisting>
+
+      <para>Again, if you are running Shorewall 2.3.2 or later, please see
+      <ulink url="Shorewall_and_Routing.html">this article</ulink> for
+      instructions for setting up the routing. Otherwise, follow the
+      instructions that follow.</para>
 
       <para>There was an article in SysAdmin covering the topic of setting up
       routing for this configuration. It may be found at <ulink
@@ -1497,6 +1503,34 @@ ip route add 127.0.0.0/8 dev lo table T2</programlisting>
         url="http://www.ssi.bg/~ja/">http://www.ssi.bg/~ja/</ulink>
         </citetitle></para>
       </sidebar>
+    </section>
+
+    <section id="faq49">
+      <title>(FAQ 49) When I start Shorewall, my routing table gets blown
+      away. Why does Shorewall do that?</title>
+
+      <para><emphasis role="bold">Answer</emphasis>: This is usually the
+      consequence of a one-to-one nat configuration blunder:</para>
+
+      <orderedlist>
+        <listitem>
+          <para>Specifying the primary IP address for an interface in the
+          EXTERNAL column of <filename>/etc/shorewall/nat</filename> even
+          though the documentation (and the comments in the file) warn you not
+          to do that.</para>
+        </listitem>
+
+        <listitem>
+          <para>Specifying ADD_IP_ALIASES=Yes and RETAIN_ALIASES=No in
+          /etc/shorewall/shorewall.conf.</para>
+        </listitem>
+      </orderedlist>
+
+      <para>This combination causes Shorewall to delete the primary IP address
+      from the network interface specified in the INTERFACE column which
+      usually causes all routes out of that interface to be deleted. The
+      solution is to <emphasis role="bold">not specify the primary IP address
+      of an interface in the EXTERNAL column</emphasis>.</para>
     </section>
   </section>
 

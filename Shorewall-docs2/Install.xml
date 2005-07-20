@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-05-13</pubdate>
+    <pubdate>2005-07-15</pubdate>
 
     <copyright>
       <year>2001</year>
@@ -282,6 +282,40 @@ INIT="rc.firewall"</programlisting>
     <para>Once you have completed configuring Shorewall, you can enable
     startup at boot time by setting startup=1 in
     <filename>/etc/default/shorewall</filename>.</para>
+  </section>
+
+  <section>
+    <title>General Notes about Upgrading Shorewall</title>
+
+    <para>Most problems associated with upgrades come from two causes:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>The user didn't read and follow the migration considerations in
+        the release notes (these are also reproduced in the <ulink
+        url="upgrade_issues.htm">Shorewall Upgrade Issues</ulink>.</para>
+      </listitem>
+
+      <listitem>
+        <para>The user mis-handled the
+        <filename>/etc/shorewall/shorewall.conf</filename> file during
+        upgrade. Shorewall is designed to allow the default behavior of the
+        product to evolve over time. To make this possible, the design assumes
+        that <emphasis role="bold">you will not replace your current
+        shorewall.conf</emphasis> <emphasis role="bold">file during
+        upgrades</emphasis>. It is recommended that after you first install
+        Shorewall that you modify
+        <filename>/etc/shorewall/shorewall.conf</filename> so as to prevent
+        your package manager from overwriting it during subsequent upgrades
+        (since the addition of STARTUP_ENABLED, such modification is assured
+        since you must manually change the setting of that option). If you
+        feel absolutely compelled to have the latest comments and options in
+        your shorewall.conf then you must proceed carefully. You should
+        determine which new options have been added and you must reset their
+        value (e.g. OPTION=""); otherwise, you will get different behavior
+        from what you expect.</para>
+      </listitem>
+    </itemizedlist>
   </section>
 
   <section id="Upgrade_RPM">

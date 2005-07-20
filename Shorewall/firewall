@@ -5773,8 +5773,7 @@ setup_masq()
 	    networks="${networks%!*}"
 	fi
 
-
-	source="$networks"
+	source="${networks:=0.0.0.0/0}"
 
 	case $source in
 	*.*.*|+*|!+*)

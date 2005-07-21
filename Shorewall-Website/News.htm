@@ -19,82 +19,134 @@ Texts. A copy of the license is included in the section entitled “<span
  class="quote"><a href="GnuCopyright.htm" target="_self">GNU Free
 Documentation License</a></span>”.<br>
 </p>
-<p>2005-07-17<br>
+<p>2005-07-21<br>
 </p>
-
 <hr style="width: 100%; height: 2px;">
-<a name="20050717"></a>
-<h2><font color="#FF0000">07/17/2005 Security vulnerability in MACLIST processing</font></h2>
-
+<span style="font-weight: bold;">07/21/2005 Shorewall 2.4.2<br>
+<br>
+</span>Problems Corrected:<br>
+<ol>
+  <li>The /etc/shorewall/hosts file now includes information about
+defining a zone using one or more ipsets.</li>
+  <li>A <a href="#20050717">vulnerability involving MACLIST_TTL &gt; 0
+or MACLIST_DISPOSITION=ACCEPT</a> has been corrected.</li>
+  <li>It is now possible to specify !&lt;address&gt; in the SUBNET
+column of /etc/shorewall/masq. Previously, it was necessary to write
+0.0.0.0/0!&lt;address&gt;.</li>
+  <li>When &lt;network1&gt;!&lt;network2&gt; was specified in the
+SUBNET column of /etc/shorewall/masq, IPSEC policies were not correctly
+applied to the resulting rules. This usually resulted in IPSEC not
+working through the interface specified in the INTERFACES column.<br>
+    <span style="font-weight: bold;"></span></li>
+</ol>
+New Features:<br>
+<ol>
+  <li>A 'loose' provider option has been added. If you wish to be able
+to use marking to specify the gateway used by connections originating
+on the firewall itself, the specify 'loose' for each provider. It has
+bee reported that 'loose' may break the effect of 'track' so beware if
+you need 'track' functionality (you shouldn't be originating many
+connections from your firewall to the net anyway).<br>
+    <br>
+To use 'loose', you also need to add two entries in /etc/shorewall/masq:<br>
+    <pre><span style="font-family: monospace;">&nbsp;&nbsp; #INTERFACE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; SUBNET&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ADDRESS<br>   $IF_ISP1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; $IP_ISP2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; $IP_ISP1<br>   $IF_ISP2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; $IP_ISP1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; $IP_ISP2</span></pre>
+where:<br>
+    <pre>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; $IF_ISP1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; is the interface to ISP 1.<br>        $IF_ISP2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; is the interface to ISP 2.<br>        $IP_ISP1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; is the IP address of $IF_ISP1<br>        $IP_ISP2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; is the IP address of $IF_ISP2</pre>
+  </li>
+  <li>/sbin/shorewall now issues a warning each time that it finds that
+startup is disabled.</li>
+  <li>A new COPY column has been added to the /etc/shorewall/providers
+file. Normally, when a table name/number is given in the DUPLICATE
+column, the entire table (less default routes) is copied. The COPY
+column allows you to limit the routes copied to those that go through
+an interface listed in COPY. For example, if you enter eth0 in
+INTERFACE, "eth1,eth2" in COPY and 'main' in DUPLICATE then the new
+table created will contain those routes through the interfaces eth0,
+eth1 and eth2.<br>
+  </li>
+</ol>
+<span style="font-weight: bold;"></span>
+<hr style="width: 100%; height: 2px;">
+<h2><a name="20050717"></a><font color="#ff0000"><span
+ style="font-weight: bold;"></span>07/17/2005 Security vulnerability in
+MACLIST processing</font></h2>
 <h3>Description</h3>
-
 <p>
-A security vulnerability has been discovered which affects all supported
-stable versions of Shorewall.&nbsp;  This vulnerability enables a client
+A security vulnerability has been discovered which affects all
+supported
+stable versions of Shorewall.&nbsp; This vulnerability enables a client
 accepted by MAC address filtering to bypass any other rule.&nbsp; If
-MACLIST_TTL is set to a value greater than 0 or MACLIST_DISPOSITION is set
-to "ACCEPT" in /etc/shorewall/shorewall.conf (default is MACLIST_TTL=0 and
-MACLIST_DISPOSITION=REJECT), and a client is positively identified through
+MACLIST_TTL is set to a value greater than 0 or MACLIST_DISPOSITION is
+set
+to "ACCEPT" in /etc/shorewall/shorewall.conf (default is MACLIST_TTL=0
+and
+MACLIST_DISPOSITION=REJECT), and a client is positively identified
+through
 its MAC address, it bypasses all other policies/rules in place, thus
 gaining access to all open services on the firewall.
 </p>
-
 <h3>Fix</h3>
-
 <h4>Workaround</h4>
-
 <p>
-For Shorewall 2.2.x or 2.4.x, set MACLIST_TTL=0 or MACLIST_DISPOSITION=REJECT
+For Shorewall 2.2.x or 2.4.x, set MACLIST_TTL=0 or
+MACLIST_DISPOSITION=REJECT
 in /etc/shorewall/shorewall.conf.&nbsp; For Shorewall 2.0.x, set
-MACLIST_DISPOSITION=REJECT in /etc/shorewall/shorewall.conf.&nbsp; MACLIST
+MACLIST_DISPOSITION=REJECT in /etc/shorewall/shorewall.conf.&nbsp;
+MACLIST
 filtering is of limited value on Internet-connected hosts, and the
 Shorewall team recommends this approach to be used if possible.
 </p>
-
 <h4>Upgrade</h4>
-
 <p>
-For Shorewall 2.4.x, a fixed version of the 'firewall' script is available at:
-<a href="http://shorewall.net/pub/shorewall/2.4/shorewall-2.4.1/errata/firewall">http://shorewall.net/pub/shorewall/2.4/shorewall-2.4.1/errata/firewall</a>
-and its mirrors, 
-<a href="http://www.shorewall.net/pub/shorewall/2.4/shorewall-2.4.1/errata/firewall">http://www.shorewall.net/pub/shorewall/2.4/shorewall-2.4.1/errata/firewall</a>
+For Shorewall 2.4.x, a fixed version of the 'firewall' script is
+available at:
+<a
+ href="http://shorewall.net/pub/shorewall/2.4/shorewall-2.4.1/errata/firewall">http://shorewall.net/pub/shorewall/2.4/shorewall-2.4.1/errata/firewall</a>
+and its mirrors, <a
+ href="http://www.shorewall.net/pub/shorewall/2.4/shorewall-2.4.1/errata/firewall">http://www.shorewall.net/pub/shorewall/2.4/shorewall-2.4.1/errata/firewall</a>
 and
-<a href="http://slovakia.shorewall.net/pub/shorewall/2.4/shorewall-2.4.1/errata/firewall">http://slovakia.shorewall.net/pub/shorewall/2.4/shorewall-2.4.1/errata/firewall</a>.
+<a
+ href="http://slovakia.shorewall.net/pub/shorewall/2.4/shorewall-2.4.1/errata/firewall">http://slovakia.shorewall.net/pub/shorewall/2.4/shorewall-2.4.1/errata/firewall</a>.
 </p>
-
 <p>
-For Shorewall 2.2.x, a fixed version of the 'firewall' script is available at:
-<a href="http://shorewall.net/pub/shorewall/2.2/shorewall-2.2.5/errata/firewall">http://shorewall.net/pub/shorewall/2.2/shorewall-2.2.5/errata/firewall</a>
-and its mirrors, 
-<a href="http://www.shorewall.net/pub/shorewall/2.2/shorewall-2.2.5/errata/firewall">http://www.shorewall.net/pub/shorewall/2.2/shorewall-2.2.5/errata/firewall</a>
+For Shorewall 2.2.x, a fixed version of the 'firewall' script is
+available at:
+<a
+ href="http://shorewall.net/pub/shorewall/2.2/shorewall-2.2.5/errata/firewall">http://shorewall.net/pub/shorewall/2.2/shorewall-2.2.5/errata/firewall</a>
+and its mirrors, <a
+ href="http://www.shorewall.net/pub/shorewall/2.2/shorewall-2.2.5/errata/firewall">http://www.shorewall.net/pub/shorewall/2.2/shorewall-2.2.5/errata/firewall</a>
 and
-<a href="http://slovakia.shorewall.net/pub/shorewall/2.2/shorewall-2.2.5/errata/firewall">http://slovakia.shorewall.net/pub/shorewall/2.2/shorewall-2.2.5/errata/firewall</a>.
+<a
+ href="http://slovakia.shorewall.net/pub/shorewall/2.2/shorewall-2.2.5/errata/firewall">http://slovakia.shorewall.net/pub/shorewall/2.2/shorewall-2.2.5/errata/firewall</a>.
 </p>
-
 <p>
-For Shorewall 2.0.x, a fixed version of the 'firewall' script is available at:
+For Shorewall 2.0.x, a fixed version of the 'firewall' script is
+available at:
 <a href="http://shorewall.net/pub/shorewall/errata/2.0.17/firewall">http://shorewall.net/pub/shorewall/errata/2.0.17/firewall</a>
-and its mirrors, 
-<a href="http://www.shorewall.net/pub/shorewall/errata/2.0.17/firewall">http://www.shorewall.net/pub/shorewall/errata/2.0.17/firewall</a>
+and its mirrors, <a
+ href="http://www.shorewall.net/pub/shorewall/errata/2.0.17/firewall">http://www.shorewall.net/pub/shorewall/errata/2.0.17/firewall</a>
 and
-<a href="http://slovakia.shorewall.net/pub/shorewall/errata/2.0.17/firewall">http://slovakia.shorewall.net/pub/shorewall/errata/2.0.17/firewall</a>.
+<a
+ href="http://slovakia.shorewall.net/pub/shorewall/errata/2.0.17/firewall">http://slovakia.shorewall.net/pub/shorewall/errata/2.0.17/firewall</a>.
 </p>
-
 <p>
 Users of any version before 2.0.17 are urged to upgrade to a supported
 version of Shorewall (preferably 2.4.1) before using the fixed
-files.&nbsp;  Only the most recent version of the 2.0.x and 2.2.x
+files.&nbsp; Only the most recent version of the 2.0.x and 2.2.x
 streams will be supported by the development team, and the 1.x branches
-are no longer maintained at all.&nbsp;  Future releases of Shorewall will
+are no longer maintained at all.&nbsp; Future releases of Shorewall
+will
 include this fix.
 </p>
-
 <p>This information was based on
 <a href="http://seclists.org/lists/fulldisclosure/2005/Jul/0409.html">Patrick
-Blitz's post to the Full Disclosure mailing list</a>.&nbsp;  Thanks to
-Supernaut (supernaut at ns dot sympatico dot ca) for reporting this bug.
+Blitz's post to the Full Disclosure mailing list</a>.&nbsp; Thanks to
+Supernaut (supernaut at ns dot sympatico dot ca) for reporting this bug.<br>
 </p>
-
+<p><span style="font-weight: bold;">Version Upgrade<br>
+</span></p>
+<p>The vulnerability is corrected in Shorewall 2.4.2.<br>
+</p>
 <hr style="width: 100%; height: 2px;"><span style="font-weight: bold;">07/13/2005
 Shorewall 2.4.1<br>
 </span><br>
@@ -124,7 +176,6 @@ configurations, be filtered by the 'maclist' option even though the
 'dhcp' option was specified. This has been corrected.<br>
   </li>
 </ol>
-
 <span style="font-weight: bold;">06/05/2005
 Shorewall 2.4.0<br>
 <br>

@@ -1052,7 +1052,7 @@ verify_mark() # $1 = value to test
 #
 setup_providers()
 {
-    local table number mark duplicate interface gateway options provider address copy route loose addresses
+    local table number mark duplicate interface gateway options provider address copy route loose addresses rulenum pref
 
     copy_table() {
 	run_ip route show table $duplicate | while read net route; do
@@ -1066,8 +1066,7 @@ setup_providers()
 	done
     }
 
-    copy_and_edit_table() {
-       
+    copy_and_edit_table() {     
 	run_ip route show table $duplicate | while read net route; do
 	    case $net in
 		default|nexthop)
@@ -1137,7 +1136,7 @@ setup_providers()
 
 	run_and_save_command qt ip rule del fwmark $mark
 	
-	ensure_and_save_command ip rule add fwmark $mark table $number
+	ensure_and_save_command ip rule add fwmark $mark pref $((10000 + $mark)) table $number
 
 	loose=
 
@@ -1167,9 +1166,15 @@ setup_providers()
 	    esac
 	done
 
+	rulenum=0
+
  	find_interface_addresses $interface | while read address; do
  	    run_and_save_command qt ip rule del from $address
- 	    [ -n "$loose" ] || ensure_and_save_command ip rule add from $address table $number
+ 	    if [ -z "$loose" ]; then
+ 		pref=$((20000 + $rulenum * 1000 + $mark ))
+ 		rulenum=$(($rulenum + 1))
+ 		ensure_and_save_command ip rule add from $address pref $pref table $number
+ 	    fi
  	done
     }
 		
@@ -5903,7 +5908,7 @@ setup_masq()
 		    if [ -n "$networks" ]; then
 			for s in $networks; do
 			    for destnet in $(separate_list $destnets); do
-				addnatrule $chain $(both_ip_ranges $s $destnet) $proto $ports -j $newchain
+				addnatrule $chain $(both_ip_ranges $s $destnet) $proto $ports $policy -j $newchain
 			    done
 			done
 		    else

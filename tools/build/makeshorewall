@@ -123,11 +123,12 @@ usage()
 #                E X E C U T I O N   S T A R T S   H E R E
 ################################################################################
 
-# Added by Paul Gear 2005-07-09, just in case i've screwed up the CVS changes.
 set -e
 set -u
 
 done=
+
+[ $# -eq 0 ] && usage
 
 case $1 in
     -*)
@@ -292,6 +293,11 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
     if [ -n "$BUILDTARBALL" ]; then    
 	progress_message "Creating $DIR/$TARBALL..."
 	do_or_die "tar -zcvf $TARBALL $SHOREWALLDIR >> $LOGFILE 2>&1"
+        do_or_die "tar -jcvf shorewall-$VERSION.tar.bz2 $SHOREWALLDIR >> $LOGFILE 2>&1"
+	for shoreball in shorewall-$VERSION.t*; do
+	    do_or_die "sha1sum $shoreball >> $VERSION.sha1sums"
+	    do_or_die "md5sum $shoreball >> $VERSION.md5sums"
+        done
     fi
 
     if [ -n "$BUILDRPM" ]; then
@@ -299,6 +305,8 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 
 	do_or_die "rpmbuild -tb $TARBALL >> $LOGFILE 2>&1"
 	do_or_die cp -a $RPMDIR/RPMS/noarch/$RPMNAME .
+        do_or_die "sha1sum shorewall-${VERSION}-1.noarch.rpm >> $VERSION.sha1sums"
+        do_or_die "md5sum  shorewall-${VERSION}-1.noarch.rpm >> $VERSION.md5sums"
     fi
 fi
 
@@ -320,6 +328,11 @@ if [ -n "${BUILDXML}${BUILDHTML}" ]; then
     if [ -n "$BUILDXML" ]; then
 	progress_message "Creating $DIR/shorewall-docs-xml-$VERSION.tgz..."
 	do_or_die "tar -zcvf shorewall-docs-xml-$VERSION.tgz shorewall-docs-xml-$VERSION >> $LOGFILE 2>&1"
+        do_or_die "tar -jcvf shorewall-docs-xml-$VERSION.tar.bz2 shorewall-docs-xml-$VERSION >> $LOGFILE 2>&1"
+        for xmlball in shorewall-docs-xml-$VERSION.t*; do
+	    do_or_die "sha1sum $xmlball >> $VERSION.sha1sums"
+	    do_or_die "md5sum $xmlball >> $VERSION.md5sums"
+        done
     fi
 
     if [ -n "$BUILDHTML" ]; then
@@ -394,9 +407,15 @@ if [ -n "${BUILDXML}${BUILDHTML}" ]; then
 
 	do_or_die ln -s Documentation_Index.html shorewall-docs-html-$VERSION/index.html
 	
-	progress_message "Creating $DIR/shorewall-docs-html-$VERSION.tgz ..."
+	progress_message "Creating $DIR/shorewall-docs-html-$VERSION tarballs ..."
 	
 	do_or_die "tar -zcvf shorewall-docs-html-$VERSION.tgz shorewall-docs-html-$VERSION >> $LOGFILE 2>&1"
+	do_or_die "tar -jcvf shorewall-docs-html-$VERSION.tar.bz2 shorewall-docs-html-$VERSION >> $LOGFILE 2>&1"
+
+	for htmlball in shorewall-docs-html-$VERSION.t*; do
+	    do_or_die "sha1sum $htmlball >> $VERSION.sha1sums"
+	    do_or_die "md5sum $htmlball >> $VERSION.md5sums"
+	done
     fi
 fi
 
@@ -415,7 +434,13 @@ fi
 	progress_message "Creating $DIR/shorewall-${VERSION}.tgz ..."
 	
 	do_or_die "tar -zcvf shorewall-${VERSION}.tgz shorewall-$VERSION >> $LOGFILE 2>&1"
-	;;
+        do_or_die "tar -jcvf shorewall-$VERSION.tar.bz2 shorewall-$VERSION >> $LOGFILE 2>&1"
+        for betaball in shorewall-$VERSION.t*; do
+        do_or_die "sha1sum $betaball >> $VERSION.sha1sums"
+        do_or_die "md5sum $betaball >> $VERSION.md5sums"
+        done
+
+;;
 esac
 
 if [ -n "$BUILDLRP" ]; then

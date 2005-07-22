@@ -66,11 +66,10 @@ while [ $# -gt 0 ]; do
     case $1 in
 	*.xml)
 	    b=${1%.*}
-
-	#
-	# The original HTML documents were created using MS FrontPage and used
-	# the .htm suffix. The remainder use the .html suffix.
-	#
+            #
+	    # The original HTML documents were created using MS FrontPage and
+	    # used the .htm suffix. The remainder use the .html suffix.
+	    #
 	    if list_search $b.htm $HTMFILES ; then
 		b=$b.htm
 		f="$WEBSITE/$b"

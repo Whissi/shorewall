@@ -1,11 +1,13 @@
 #
-# Shorewall 2.0 /etc/shorewall/action.AllowAmanda
+# Shorewall action.AllowAmanda
 #
-#	This action accepts connections required by the Amanda backup system.
+#	This action accepts connections to the AMANDA backup system.
 #
-######################################################################################
+################################################################################
 #TARGET  SOURCE		DEST      	PROTO	DEST		SOURCE	   RATE
 #                       	        	PORT		PORT(S)    LIMIT
-ACCEPT   -              -               udp     amanda
-ACCEPT   -              -               tcp     50000:50100
+ACCEPT   -              -               udp     10080
+# Not sure why this is necessary - using ip_conntrack_amanda along with
+# the above should be sufficient.
+#ACCEPT   -              -               tcp     50000:50100
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

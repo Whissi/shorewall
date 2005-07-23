@@ -1,10 +1,12 @@
 #
-# Shorewall 2.0 /etc/shorewall/action.AllowLDAP
+# Shorewall action.AllowLDAP
 #
 #	This action accepts LDAP traffic.
 #
-######################################################################################
+################################################################################
 #TARGET  SOURCE		DEST      	PROTO	DEST		SOURCE	   RATE
 #                       	        	PORT		PORT(S)    LIMIT
-ACCEPT   -              -               tcp     ldap
+ACCEPT   -              -               tcp     389
+# This is LDAPS - should it be included?
+#ACCEPT   -              -               tcp     636
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

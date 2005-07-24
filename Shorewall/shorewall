@@ -51,6 +51,7 @@
 #						   broadcast address on any "detect"
 #						   interface.
 #	   shorewall show <chain> [ <chain> ... ]  Display the rules in each <chain> listed
+#          shorewall show actions                  Displays the available actions
 #	   shorewall show log			   Print the last 20 log messages
 #	   shorewall show connections		   Show the kernel's connection
 #						   tracking table
@@ -720,7 +721,7 @@ usage() # $1 = exit status
     echo "   restart [ <directory> ]"
     echo "   restore [ <file name> ]"
     echo "   save [ <file name> ]"
-    echo "   show [<chain> [ <chain> ... ]|capabilities|classifiers|connections|log|nat|tc|tos|zones]"
+    echo "   show [<chain> [ <chain> ... ]|actions|capabilities|classifiers|connections|log|nat|tc|tos|zones]"
     echo "   start [ <directory> ]"
     echo "   stop"
     echo "   status"
@@ -1083,6 +1084,18 @@ case "$1" in
 	    ;;
 	capabilities)
 	    exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock capabilities
+	    ;;
+	actions)
+	    echo "allowBcast         #Silently Allow Broadcast/multicast"
+	    echo "dropBcast          #Silently Drop Broadcast/multicast"
+            echo "dropNotSyn         #Silently Drop Non-syn TCP packets"
+	    echo "rejNotSyn          #Silently Reject Non-syn TCP packets"
+	    echo "dropInvalid        #Silently Drop packets that are in the INVALID conntrack state"
+	    echo "allowInvalid       #Accept packets that are in the INVALID conntrack state."
+	    echo "allowoutUPnP       #Allow traffic from local command 'upnpd'"
+	    echo "allowinUPnP        #Allow UPnP inbound (to firewall) traffic"
+	    echo "forwardUPnP        #Allow traffic that upnpd has redirected from"
+	    cat /usr/share/shorewall/actions.std /etc/shorewall/actions | grep -Ev '^\#|^$'
 	    ;;
 	*)
 	    shift

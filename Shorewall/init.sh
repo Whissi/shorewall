@@ -74,7 +74,7 @@ case "$command" in
 
     start)
 	
-	exec /sbin/shorewall $OPTIONS start
+	exec /sbin/shorewall $OPTIONS $@
 	;;
 
     stop|restart|status)

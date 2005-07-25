@@ -22,7 +22,7 @@
 #       Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
 #
 
-VERSION=2.4.0
+VERSION=2.5.0
 
 usage() # $1 = exit status
 {
@@ -264,8 +264,9 @@ if [ -f ${PREFIX}/etc/shorewall/ipsec ]; then
 else
     run_install $OWNERSHIP -m 0600 ipsec ${PREFIX}/etc/shorewall/ipsec
     echo
-    echo "Ipsec file installed as ${PREFIX}/etc/shorewall/ipsec"
+    echo "Dummy IPSEC file installed as ${PREFIX}/etc/shorewall/ipsec"
 fi
+
 #
 # Install the hosts file
 #
@@ -408,15 +409,9 @@ else
     echo "Blacklist file installed as ${PREFIX}/etc/shorewall/blacklist"
 fi
 #
-# Install the Routes file
+# Delete the Routes file
 #
-if [ -f ${PREFIX}/etc/shorewall/routes ]; then
-    backup_file /etc/shorewall/routes
-else
-    run_install $OWNERSHIP -m 0600 routes ${PREFIX}/etc/shorewall/routes
-    echo
-    echo "Routes file installed as ${PREFIX}/etc/shorewall/routes"
-fi
+delete_file /etc/shorewall/routes
 
 #
 # Install the Providers file
@@ -442,12 +437,6 @@ fi
 install_file_with_backup rfc1918 ${PREFIX}/usr/share/shorewall/rfc1918 0600
 echo
 echo "RFC 1918 file installed as ${PREFIX}/usr/share/shorewall/rfc1918"
-#
-# Install the bogons file
-#
-install_file_with_backup bogons ${PREFIX}/usr/share/shorewall/bogons 0600
-echo
-echo "Bogon file installed as ${PREFIX}/usr/share/shorewall/bogons"
 #
 # Install the default config path file
 #
@@ -568,6 +557,14 @@ for f in action.* ; do
     install_file_with_backup $f ${PREFIX}/usr/share/shorewall/$f 0600
     echo
     echo "Action ${f#*.} file installed as ${PREFIX}/usr/share/shorewall/$f"
+done
+#
+# Install the Macro files
+#
+for f in macro.* ; do
+    install_file_with_backup $f ${PREFIX}/usr/share/shorewall/$f 0600
+    echo
+    echo "Macro ${f#*.} file installed as ${PREFIX}/usr/share/shorewall/$f"
 done
 #
 # Backup the version file

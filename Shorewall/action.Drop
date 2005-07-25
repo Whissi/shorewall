@@ -1,5 +1,5 @@
 #
-# Shorewall 2.4 /usr/share/shorewall/action.Drop
+# Shorewall 2.6 /usr/share/shorewall/action.Drop
 #
 #	The default DROP common rules
 #
@@ -15,11 +15,11 @@
 #
 # IF YOU ARE HAVING CONNECTION PROBLEMS, CHANGING THIS FILE WON'T HELP!!!!!!!!!!!!
 ######################################################################################
-#TARGET  	SOURCE		DEST      	PROTO
+#TARGET  	SOURCE		DEST      	PROTO	DPORT	SPORT
 #
 # Reject 'auth'
 #
-RejectAuth
+Auth/REJECT
 #
 # Don't log broadcasts
 #
@@ -36,7 +36,7 @@ dropInvalid
 #
 # Drop Microsoft noise so that it doesn't clutter up the log.
 #
-DropSMB
+SMB/DROP
 DropUPnP
 #
 # Drop 'newnotsyn' traffic so that it doesn't get logged.

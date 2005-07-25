@@ -1,5 +1,5 @@
 #
-# Shorewall 2.4 -- Policy File
+# Shorewall 2.6 -- Policy File
 #
 # /etc/shorewall/policy
 #
@@ -49,6 +49,13 @@
 #			/etc/shorewall/actions (or /usr/share/shorewall/actions.std)
 #			then that action will be invoked before the policy named in
 #			this column is inforced.
+#
+#			The policy determined the default treatment of new 
+#			connection requests and may optionally be followed by ":" 
+#			and an ESTABLISHED policy which determines what
+#			is to be done with packets that are part of an established
+#			connection. The choices are ACCEPT (the default) and QUEUE
+#			(to queue the packet to a user-space filter like Snort Inline). 
 #
 #	LOG LEVEL	If supplied, each connection handled under the default
 #			POLICY is logged at that level. If not supplied, no

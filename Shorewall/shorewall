@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-#     Shorewall Packet Filtering Firewall Control Program - V2.4
+#     Shorewall Packet Filtering Firewall Control Program - V2.6
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
 #
@@ -158,7 +158,7 @@ iptablesbug()
              /--mask ff/     { sub( /--mask ff/, "--mask 0xff" ) };\
                              {print ; sline="" }'
     else
-	echo "   Warning: You don't have 'awk' on this system so the output of the save command may be unusable" >&2
+	echo "   WARNING: You don't have 'awk' on this system so the output of the save command may be unusable" >&2
 	cat
     fi
 }
@@ -234,6 +234,7 @@ get_config() {
             echo "   WARNING: Shorewall startup is disabled. To enable startup, set STARTUP_ENABLED=Yes in /etc/shorewall/shorewall.conf" >&2
 	    ;;
     esac
+
 }
 
 #
@@ -241,112 +242,6 @@ get_config() {
 #
 clear_term() {
     [ -t 1 ] && clear
-}
-
-#
-# Display IPTABLES rules -- we used to store them in a variable but ash
-# dies when trying to display large sets of rules
-#
-display_chains()
-{
-    trap "rm -f /tmp/chains-$$; exit 1" 1 2 3 4 5 6 9
-
-    if [ "$haveawk" = "Yes" ]; then
-	#
-	# Send the output to a temporary file since ash craps if we try to store
-	# the output in a variable.
-	#
-	TMPFILE=$(mktempfile)
-	[ -n "$TMPFILE" ] || { echo "   ERROR:Cannot create temporary file" >&2; exit 1; }
-
-	$IPTABLES -L $IPT_OPTIONS >> $TMPFILE
-
-	clear_term
-	echo "$banner $(date)"
-	echo
-	echo "Standard Chains"
-	echo
-	firstchain="Yes"
-	showchain INPUT
-	showchain OUTPUT
-	showchain FORWARD
-
-	timed_read
-
-	clear_term
-	echo "$banner $(date)"
-	echo
-	firstchain=Yes
-	echo "Input Chains"
-	echo
-
-	chains=$(grep '^Chain.*_[in|fwd]' $TMPFILE | cut -d' ' -f 2)
-
-	for chain in $chains; do
-	    showchain $chain
-	done
-
-	timed_read
-
-	for zone in $zones; do
-
-	    if [ -n "$(grep "^Chain \.*${zone}" $TMPFILE)" ] ; then
-		clear_term
-		echo "$banner $(date)"
-		echo
-		firstchain=Yes
-		eval display=\$${zone}_display
-		echo "$display Chains"
-		echo
-		for zone1 in $FW $zones; do
-		    showchain ${zone}2$zone1
-		    showchain @${zone}2$zone1
-		    [ "$zone" != "$zone1" ] && \
-			showchain ${zone1}2${zone} && \
-			showchain @${zone1}2${zone}
-		done
-
-		timed_read
-	    fi
-	done
-
-	clear_term
-	echo "$banner $(date)"
-	echo
-	firstchain=Yes
-	echo "Policy Chains"
-	echo
-	showchain common
-	showchain badpkt
-	showchain icmpdef
-	showchain rfc1918
-	showchain blacklst
-	showchain reject
-	showchain newnotsyn
-	for zone in $zones all; do
-	    showchain ${zone}2all
-	    showchain @${zone}2all
-	    [ "$zone" = "all" ] || { showchain all2${zone}; showchain @all2${zone}; }
-	done
-
-	timed_read
-
-	clear_term
-	echo "$banner $(date)"
-	echo
-	firstchain=Yes
-	echo "Dynamic Chain"
-	echo
-	showchain dynamic
-	timed_read
-
-	qt rm -f $TMPFILE
-    else
-	$IPTABLES -L -n -v
-	timed_read
-    fi
-    trap - 1 2 3 4 5 6 9
-
 }
 
 #
@@ -440,114 +335,6 @@ show_classifiers() {
 	esac
     done
 
-}
-#
-# Monitor the Firewall
-#
-monitor_firewall() # $1 = timeout -- if negative, prompt each time that
-		   #		     an 'interesting' packet count changes
-{
-
-    host=$(echo $HOSTNAME | sed 's/\..*$//')
-    oldrejects=$($IPTABLES -L -v -n | grep 'LOG')
-
-    if [ $1 -lt 0 ]; then
-	let "timeout=- $1"
-	pause="Yes"
-    else
-	pause="No"
-	timeout=$1
-    fi
-
-
-    if qt which awk; then
-	TMP_DIR=$(mktempdir)
-	[ -n "$TMP_DIR" ] || { echo "   ERROR:Cannot create temporary directory" >&2; exit 1; }
-	haveawk=Yes
-	determine_zones
-	rm -rf $TMP_DIR
-    else
-	haveawk=
-    fi
-
-    while true; do
-	display_chains
-
-	clear_term
-	echo "$banner $(date)"
-	echo
-
-	echo "Dropped/Rejected Packet Log"
-	echo
-
-	show_reset
-
-	rejects=$($IPTABLES -L -v -n | grep 'LOG')
-
-	if [ "$rejects" != "$oldrejects" ]; then
-	    oldrejects="$rejects"
-
-	    $RING_BELL
-
-	    packet_log 20
-
-	    if [ "$pause" = "Yes" ]; then
-		echo
-		echo $ECHO_N 'Enter any character to continue: '
-		read foo
-	    else
-		timed_read
-	    fi
-	else
-	    echo
-	    packet_log 20
-	    timed_read
-	fi
-
-	clear_term
-	echo "$banner $(date)"
-	echo
-	echo "NAT Status"
-	echo
-	$IPTABLES -t nat -L $IPT_OPTIONS
-	timed_read
-
-	clear_term
-	echo "$banner $(date)"
-	echo
-	echo
-	echo "TOS/MARK Status"
-	echo
-	$IPTABLES -t mangle -L $IPT_OPTIONS
-	timed_read
-
-	clear_term
-	echo "$banner $(date)"
-	echo
-	echo
-	echo "Tracked Connections"
-	echo
-	cat /proc/net/ip_conntrack
-	timed_read
-
-	clear_term
-	echo "$banner $(date)"
-	echo
-	echo
-	echo "Traffic Shaping/Control"
-	echo
-	show_tc
-	timed_read
-
-	clear_term
-	echo "$banner $(date)"
-	echo
-	echo
-	echo "Packet Classifiers"
-	echo
-	show_classifiers
-	timed_read
-    done
 }
 
 #
@@ -714,7 +501,6 @@ usage() # $1 = exit status
     echo "   ipcalc [ <address>/<vlsm> | <address> <netmask> ]"
     echo "   iprange <address>-<address>"
     echo "   logwatch [<refresh interval>]"
-    echo "   monitor [<refresh interval>]"
     echo "   refresh"
     echo "   reject <address> ..."
     echo "   reset"
@@ -737,8 +523,8 @@ usage() # $1 = exit status
 # Display the time that the counters were last reset
 #
 show_reset() {
-    [ -f $STATEDIR/restarted ] && \
-	echo "Counters reset $(cat $STATEDIR/restarted)" && \
+    [ -f /var/lib/shorewall/restarted ] && \
+	echo "Counters reset $(cat /var/lib/shorewall/restarted)" && \
 	echo
 }
 
@@ -896,8 +682,6 @@ export CONFIG_PATH
 
 get_config
 
-[ -z "${STATEDIR}" ] && STATEDIR=/var/state/shorewall
-
 if [ ! -f $FIREWALL ]; then
     echo "ERROR: Shorewall is not properly installed"
     if [ -L $FIREWALL ]; then
@@ -953,7 +737,7 @@ case "$1" in
 			echo "Directory $2 does not exist" >&2 && exit 2
 		    fi
 		fi
-			
+		
 		SHOREWALL_DIR=$2
 		export SHOREWALL_DIR
 		;;
@@ -963,29 +747,37 @@ case "$1" in
 	esac
 	
 	if [ -n "$FAST" ]; then
-	    
-	    RESTOREPATH=/var/lib/shorewall/$RESTOREFILE
+	    if qt which make; then
+		make -qf /etc/shorewall/Makefile || FAST=
+	    fi
 
-	    if [ -x $RESTOREPATH ]; then
-		if [ -x ${RESTOREPATH}-ipsets ]; then
-		    echo Restoring Ipsets...
-		    #
-		    # We must purge iptables to be sure that there are no
-		    # references to ipsets
-		    #
-		    iptables -F
-		    iptables -X
-		    ${RESTOREPATH}-ipsets
+	    if [ -n "$FAST" ]; then
+		   
+		RESTOREPATH=/var/lib/shorewall/$RESTOREFILE
+
+		if [ -x $RESTOREPATH ]; then
+		    if [ -x ${RESTOREPATH}-ipsets ]; then
+			echo Restoring Ipsets...
+		        #
+		        # We must purge iptables to be sure that there are no
+		        # references to ipsets
+		        #
+			iptables -F
+			iptables -X
+			${RESTOREPATH}-ipsets
+		    fi
+
+		    echo Restoring Shorewall...
+		    $RESTOREPATH
+		    date > /var/lib/shorewall/restarted
+		    echo Shorewall restored from $RESTOREPATH
+		else
+		    exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock start
 		fi
-
-		echo Restoring Shorewall...
-		$RESTOREPATH
-		date > $STATEDIR/restarted
-		echo Shorewall restored from $RESTOREPATH
 	    else
 		exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock start
 	    fi
-        else
+	else
 	    exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock start
 	fi
 	;;
@@ -1066,8 +858,7 @@ case "$1" in
 	    ;;
 	zones)
 	    [ $# -gt 2 ] && usage 1
-	    [ -z "${STATEDIR}" ] && STATEDIR=/var/state/shorewall
-	    if [ -f $STATEDIR/zones ]; then
+	    if [ -f /var/lib/shorewall/zones ]; then
 		echo "Shorewall-$version Zones at $HOSTNAME - $(date)"
 		echo
 		while read zone hosts; do
@@ -1075,10 +866,10 @@ case "$1" in
 		    for host in $hosts; do
 			echo "   $host"
 		    done
-		done < $STATEDIR/zones
+		done < /var/lib/shorewall/zones
 		echo
 	    else
-		echo "   ERROR: $STATEDIR/zones does not exist" >&2
+		echo "   ERROR: /var/lib/shorewall/zones does not exist" >&2
 		exit 1
 	    fi
 	    ;;
@@ -1112,16 +903,6 @@ case "$1" in
 	    fi
 	    ;;
 	esac
-	;;
-    monitor)
-    	[ -n "$debugging" ] && set -x
-	if [ $# -eq 2 ]; then
-	    monitor_firewall $2
-	elif [ $# -eq 1 ]; then
-	    monitor_firewall 30
-	else
-	    usage 1
-	fi
 	;;
     status)
     	[ -n "$debugging" ] && set -x
@@ -1168,7 +949,7 @@ case "$1" in
 	show_proc /proc/sys/net/ipv4/icmp_echo_ignore_all
 
 	for directory in /proc/sys/net/ipv4/conf/*; do
-	    for file in proxy_arp arp_filter rp_filter log_martians; do
+	    for file in proxy_arp arp_filter arp_ignore rp_filter log_martians; do
 		show_proc $directory/$file
 	    done
 	done
@@ -1252,7 +1033,7 @@ case "$1" in
 	echo $version
 	;;
     try)
-	[ -n "$SHOREWALL_DIR" ] && startup_error "Error: -c option may not be used with \"try\""
+	[ -n "$SHOREWALL_DIR" ] && startup_error "ERROR: -c option may not be used with \"try\""
 	[ $# -lt 2 -o $# -gt 3 ] && usage 1
 	if ! $0 $debugging -c $2 restart; then
 	    if ! $IPTABLES -L shorewall > /dev/null 2> /dev/null; then

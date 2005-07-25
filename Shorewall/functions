@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Shorewall 2.4 -- /usr/share/shorewall/functions
+# Shorewall 2.6 -- /usr/share/shorewall/functions
 
 # Function to truncate a string -- It uses 'cut -b -<n>'
 # rather than ${v:first:last} because light-weight shells like ash and
@@ -263,85 +263,6 @@ reload_kernel_modules() {
 }
 
 #
-# Find the zones
-#
-find_zones() # $1 = name of the zone file
-{
-    while read zone display comments; do
-	expandv zone display
-	[ -n "$zone" ] && case "$zone" in
-	    [0-9*])
-                echo "   Warning: Illegal zone name \"$zone\" in zones file ignored" 2>&2
-		;;
-	    \#*)
-		;;
-            $FW|all|none)
-	        echo "   Warning: Reserved zone name \"$zone\" in zones file ignored" >&2
-		;;
-            *)
-		echo $zone
-		;;
-        esac
-    done < $1
-}
-
-find_display() # $1 = zone, $2 = name of the zone file
-{
-    grep ^$1 $2 | while read z display comments; do
-	[ "x$1" = "x$z" ] && echo $display
-    done
-}
-#
-# This function assumes that the TMP_DIR variable is set and that
-# its value named an existing directory.
-#
-determine_zones()
-{
-    local zonefile=$(find_file zones)
-
-    multi_display=Multi-zone
-    strip_file zones $zonefile
-    zones=$(find_zones $TMP_DIR/zones)
-    newzones=
-    
-    for zone in $zones; do
-	dsply=$(find_display $zone $TMP_DIR/zones)
-	[ ${#zone} -gt 5 ] && echo "   Warning: Zone name longer than 5 characters: $zone" >&2
-	eval ${zone}_display=\$dsply
-	newzones="$newzones $zone"
-    done
-
-    zones=${newzones# }
-}
-
-#
-# The following functions may be used by apps that wish to ensure that
-# the state of Shorewall isn't changing
-#
-# This function loads the STATEDIR variable (directory where Shorewall is to
-# store state files). If your application supports alternate Shorewall
-# configurations then the name of the alternate configuration directory should
-# be in $SHOREWALL_DIR at the time of the call.
-#
-# If the shorewall.conf file does not exist, this function does not return
-#
-get_statedir()
-{
-    MUTEX_TIMEOUT=
-
-    local config=$(find_file shorewall.conf)
-
-    if [ -f $config ]; then
-       . $config
-    else
-	echo "/etc/shorewall/shorewall.conf does not exist!" >&2
-	exit 2
-    fi
-
-    [ -z "${STATEDIR}" ] && STATEDIR=/var/state/shorewall
-}
-
-#
 # Call this function to assert MUTEX with Shorewall. If you invoke the
 # /sbin/shorewall program while holding MUTEX, you should pass "nolock" as
 # the first argument. Example "shorewall nolock refresh"
@@ -353,13 +274,13 @@ get_statedir()
 mutex_on()
 {
     local try=0
-    local lockf=$STATEDIR/lock
+    local lockf=/var/lib/shorewall/lock
 
     MUTEX_TIMEOUT=${MUTEX_TIMEOUT:-60}
 
     if [ $MUTEX_TIMEOUT -gt 0 ]; then
 
-	[ -d $STATEDIR ] || mkdir -p $STATEDIR
+	[ -d /var/lib/shorewall ] || mkdir -p /var/lib/shorewall
 
 	if qt which lockfile; then
 	    lockfile -${MUTEX_TIMEOUT} -r1 ${lockf}
@@ -384,7 +305,7 @@ mutex_on()
 #
 mutex_off()
 {
-    rm -f $STATEDIR/lock
+    rm -f /var/lib/shorewall/lock
 }
 
 #

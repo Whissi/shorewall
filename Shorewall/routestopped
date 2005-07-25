@@ -1,6 +1,6 @@
 ##############################################################################
 #
-# Shorewall 2.4 -- Hosts Accessible when the Firewall is Stopped
+# Shorewall 2.6 -- Hosts Accessible when the Firewall is Stopped
 #
 # /etc/shorewall/routestopped
 #
@@ -36,6 +36,13 @@
 #                         option, only traffic from this host to other
 #			  listed hosts (and the firewall) is allowed. If
 #                         'dest' is specified then 'routeback' is redundent.
+#
+#			  critical - Allow traffic between the firewall and
+#			  these hosts throughout '[re]start', 'stop' and
+#			  'clear'. Specifying 'critical' on one or more
+#			  entries will cause your firewall to be "totally
+#			  open" for a brief window during each of those
+#			  operations.
 #
 # Example:
 #

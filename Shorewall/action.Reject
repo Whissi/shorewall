@@ -1,5 +1,5 @@
 #
-# Shorewall 2.4 /usr/share/shorewall/action.Reject
+# Shorewall 2.6 /usr/share/shorewall/action.Reject
 #
 #	The default REJECT action common rules
 #
@@ -16,7 +16,7 @@
 #
 # Don't log 'auth' REJECT
 #
-RejectAuth
+Auth/REJECT
 #
 # Drop Broadcasts so they don't clutter up the log (broadcasts must *not* be rejected).
 #
@@ -33,7 +33,7 @@ dropInvalid
 #
 # Drop Microsoft noise so that it doesn't clutter up the lot.
 #
-RejectSMB
+SMB/REJECT
 DropUPnP
 #
 # Drop 'newnotsyn' traffic so that it doesn't get logged.

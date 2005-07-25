@@ -1,5 +1,5 @@
 #
-# Shorewall 2.4 -- Interfaces File
+# Shorewall 2.6 -- Interfaces File
 #
 # /etc/shorewall/interfaces
 #
@@ -155,6 +155,37 @@
 #                                      interface. The interface must be up
 #				       when Shorewall is started.
 #
+#			arp_ignore[=<number>]
+#				     - If specified, this interface will 
+#				       respond to arp requests based on the
+#				       value of <number>. 
+#
+#   				        1 - reply only if the target IP address
+#					is local address configured on the
+#					incoming interface
+#
+#					2 - reply only if the target IP address
+#					is local address configured on the
+#					incoming interface and both with the
+#					sender's IP address are part from same
+#					subnet on this interface
+#
+#					3 - do not reply for local addresses
+#					configured with scope host, only
+#					resolutions for global and link
+#					addresses are replied
+#
+#					4-7 - reserved
+#
+#        				8 - do not reply for all local
+#					addresses
+#
+#					If no <number> is given then the value
+#					1 is assumed
+#
+#					WARNING -- DO NOT SPECIFY arp_ignore
+#					FOR ANY INTERFACE INVOLVED IN PROXY ARP.
+#
 #			nosmurfs     - Filter packets for smurfs
 #				       (packets with a broadcast
 #				       address as the source).
@@ -164,7 +195,7 @@
 #				       shorewall.conf. After logging, the
 #				       packets are dropped.
 #
-#			detectnets   - Automatically tailors the zone named
+#			detectnets   - Automatically taylors the zone named
 #				       in the ZONE column to include only those
 #				       hosts routed through the interface.
 #

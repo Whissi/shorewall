@@ -1,5 +1,5 @@
 %define name shorewall
-%define version 2.4.0
+%define version 2.5.0
 %define release 1
 %define prefix /usr
 
@@ -95,52 +95,70 @@ fi
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/actions
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/continue
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/started
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/routes
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/providers
 
 %attr(0544,root,root) /sbin/shorewall
 
 %attr(0600,root,root) /usr/share/shorewall/version
 %attr(0600,root,root) /usr/share/shorewall/actions.std
-%attr(0600,root,root) /usr/share/shorewall/action.AllowAuth
-%attr(0600,root,root) /usr/share/shorewall/action.AllowDNS
-%attr(0600,root,root) /usr/share/shorewall/action.AllowFTP
-%attr(0600,root,root) /usr/share/shorewall/action.AllowICMPs
-%attr(0600,root,root) /usr/share/shorewall/action.AllowIMAP
-%attr(0600,root,root) /usr/share/shorewall/action.AllowNNTP
-%attr(0600,root,root) /usr/share/shorewall/action.AllowNTP
-%attr(0600,root,root) /usr/share/shorewall/action.AllowPCA
-%attr(0600,root,root) /usr/share/shorewall/action.AllowPing
-%attr(0600,root,root) /usr/share/shorewall/action.AllowPOP3
-%attr(0600,root,root) /usr/share/shorewall/action.AllowRdate
-%attr(0600,root,root) /usr/share/shorewall/action.AllowSMB
-%attr(0600,root,root) /usr/share/shorewall/action.AllowSMTP
-%attr(0600,root,root) /usr/share/shorewall/action.AllowSNMP
-%attr(0600,root,root) /usr/share/shorewall/action.AllowSSH
-%attr(0600,root,root) /usr/share/shorewall/action.AllowTelnet
-%attr(0600,root,root) /usr/share/shorewall/action.AllowTrcrt
-%attr(0600,root,root) /usr/share/shorewall/action.AllowVNC
-%attr(0600,root,root) /usr/share/shorewall/action.AllowVNCL
-%attr(0600,root,root) /usr/share/shorewall/action.AllowWeb
 %attr(0600,root,root) /usr/share/shorewall/action.Drop
-%attr(0600,root,root) /usr/share/shorewall/action.DropDNSrep
-%attr(0600,root,root) /usr/share/shorewall/action.DropPing
-%attr(0600,root,root) /usr/share/shorewall/action.DropSMB
-%attr(0600,root,root) /usr/share/shorewall/action.DropUPnP
 %attr(0600,root,root) /usr/share/shorewall/action.Reject
-%attr(0600,root,root) /usr/share/shorewall/action.RejectAuth
-%attr(0600,root,root) /usr/share/shorewall/action.RejectSMB
 %attr(0600,root,root) /usr/share/shorewall/action.template
 %attr(0444,root,root) /usr/share/shorewall/functions
 %attr(0544,root,root) /usr/share/shorewall/firewall
 %attr(0544,root,root) /usr/share/shorewall/help
+%attr(0600,root,root) /usr/share/shorewall/macro.AllowAuth
+%attr(0600,root,root) /usr/share/shorewall/macro.AllowDNS
+%attr(0600,root,root) /usr/share/shorewall/macro.AllowFTP
+%attr(0600,root,root) /usr/share/shorewall/macro.AllowICMPs
+%attr(0600,root,root) /usr/share/shorewall/macro.AllowIMAP
+%attr(0600,root,root) /usr/share/shorewall/macro.AllowNNTP
+%attr(0600,root,root) /usr/share/shorewall/macro.AllowNTP
+%attr(0600,root,root) /usr/share/shorewall/macro.AllowPCA
+%attr(0600,root,root) /usr/share/shorewall/macro.AllowPing
+%attr(0600,root,root) /usr/share/shorewall/macro.AllowPOP3
+%attr(0600,root,root) /usr/share/shorewall/macro.AllowRdate
+%attr(0600,root,root) /usr/share/shorewall/macro.AllowSMTP
+%attr(0600,root,root) /usr/share/shorewall/macro.AllowSNMP
+%attr(0600,root,root) /usr/share/shorewall/macro.AllowSMB
+%attr(0600,root,root) /usr/share/shorewall/macro.AllowSSH
+%attr(0600,root,root) /usr/share/shorewall/macro.AllowTelnet
+%attr(0600,root,root) /usr/share/shorewall/macro.AllowTrcrt
+%attr(0600,root,root) /usr/share/shorewall/macro.AllowVNC
+%attr(0600,root,root) /usr/share/shorewall/macro.AllowVNCL
+%attr(0600,root,root) /usr/share/shorewall/macro.AllowWeb
+%attr(0600,root,root) /usr/share/shorewall/macro.DropDNSrep
+%attr(0600,root,root) /usr/share/shorewall/macro.DropPing
+%attr(0600,root,root) /usr/share/shorewall/macro.DropSMB
+%attr(0600,root,root) /usr/share/shorewall/macro.RejectSMB
+%attr(0600,root,root) /usr/share/shorewall/macro.DropUPnP
+%attr(0600,root,root) /usr/share/shorewall/macro.FwdAuth
+%attr(0600,root,root) /usr/share/shorewall/macro.FwdDNS
+%attr(0600,root,root) /usr/share/shorewall/macro.FwdFTP
+%attr(0600,root,root) /usr/share/shorewall/macro.FwdIMAP
+%attr(0600,root,root) /usr/share/shorewall/macro.FwdNNTP
+%attr(0600,root,root) /usr/share/shorewall/macro.FwdPCA
+%attr(0600,root,root) /usr/share/shorewall/macro.FwdPing
+%attr(0600,root,root) /usr/share/shorewall/macro.FwdPOP3
+%attr(0600,root,root) /usr/share/shorewall/macro.FwdRdate
+%attr(0600,root,root) /usr/share/shorewall/macro.FwdSMTP
+%attr(0600,root,root) /usr/share/shorewall/macro.FwdSNMP
+%attr(0600,root,root) /usr/share/shorewall/macro.FwdSSH
+%attr(0600,root,root) /usr/share/shorewall/macro.FwdTelnet
+%attr(0600,root,root) /usr/share/shorewall/macro.FwdVNC
+%attr(0600,root,root) /usr/share/shorewall/macro.FwdVNCL
+%attr(0600,root,root) /usr/share/shorewall/macro.FwdWeb
+%attr(0600,root,root) /usr/share/shorewall/macro.RejectAuth
+%attr(0600,root,root) /usr/share/shorewall/macro.template
 %attr(0600,root,root) /usr/share/shorewall/rfc1918
-%attr(0600,root,root) /usr/share/shorewall/bogons
 %attr(0600,root,root) /usr/share/shorewall/configpath
 
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel ipsecvpn
 
 %changelog
+* Mon Jul 25 2005 Tom Eastep tom@shorewall.net
+- Updated to 2.5.0-1
+- Add macros and convert most actions to macros
 * Thu Jun 02 2005 Tom Eastep tom@shorewall.net
 - Updated to 2.4.0-1
 * Sun May 30 2005 Tom Eastep tom@shorewall.net

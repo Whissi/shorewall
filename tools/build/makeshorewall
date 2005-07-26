@@ -46,15 +46,19 @@ STYLESHEET=/usr/share/xml/docbook/stylesheet/nwalsh/current/xhtml/docbook.xsl
 # Directory where the build log will be placed. The log has the name
 # shorewall_build_<version>.log
 #
-LOGDIR=/root
+LOGDIR=.
 #
 # Your RPM build directory
 #
-RPMDIR=/usr/src/packages
+RPMDIR=~/rpm/
 #
 # Directory where you want the release to be built
 #
 DIR=$PWD
+#
+# CVS Root
+#
+export CVSROOT=:ext:${USER}@cvs.sourceforge.net:/cvsroot/shorewall
 ################################################################################
 #                               V A R I A B L E S
 ################################################################################
@@ -284,7 +288,7 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 
     rm -rf $SHOREWALLDIR
 
-    do_or_die "cvs -d :pserver:anonymous@cvs.sourceforge.net:/cvsroot/shorewall export -r $CVSTAG -d $SHOREWALLDIR Shorewall >> $LOGFILE 2>&1"
+    do_or_die "cvs export -r $CVSTAG -d $SHOREWALLDIR Shorewall >> $LOGFILE 2>&1"
 
     fgrep VERSION=$VERSION $SHOREWALLDIR/install.sh > /dev/null 2>&1    || fatal_error "install.sh has wrong version"
     fgrep VERSION=$VERSION $SHOREWALLDIR/uninstall.sh > /dev/null 2>&1  || fatal_error "uninstall.sh has wrong version"
@@ -303,7 +307,7 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
     if [ -n "$BUILDRPM" ]; then
 	progress_message "Building $RPMNAME..."
 
-	do_or_die "rpmbuild -tb $TARBALL >> $LOGFILE 2>&1"
+	do_or_die "rpmbuild -tb --sign $TARBALL >> $LOGFILE 2>&1"
 	do_or_die cp -a $RPMDIR/RPMS/noarch/$RPMNAME .
         do_or_die "sha1sum shorewall-${VERSION}-1.noarch.rpm >> $VERSION.sha1sums"
         do_or_die "md5sum  shorewall-${VERSION}-1.noarch.rpm >> $VERSION.md5sums"
@@ -316,7 +320,7 @@ if [ -n "${BUILDXML}${BUILDHTML}" ]; then
     rm -rf $XMLPROJ
     rm -rf shorewall-docs-xml-$VERSION
 
-    do_or_die "cvs -d :pserver:anonymous@cvs.sourceforge.net:/cvsroot/shorewall export -D now $XMLPROJ >> $LOGFILE 2>&1"
+    do_or_die "cvs export -D now $XMLPROJ >> $LOGFILE 2>&1"
     do_or_die mv $XMLPROJ shorewall-docs-xml-$VERSION
 
     rm -f shorewall-docs-xml-$VERSION/images/*.vsd
@@ -449,7 +453,7 @@ if [ -n "$BUILDLRP" ]; then
     rm -rf $LRPDIR
     rm -rf $LRPPROJ
     
-    do_or_die "cvs -d :pserver:anonymous@cvs.sourceforge.net:/cvsroot/shorewall export -D now $LRPPROJ >> $LOGFILE 2>&1"
+    do_or_die "cvs export -D now $LRPPROJ >> $LOGFILE 2>&1"
     do_or_die mv $LRPPROJ $LRPDIR
     
     cd $LRPDIR

@@ -137,6 +137,7 @@ fi
 %attr(0600,root,root) /usr/share/shorewall/macro.SSH
 %attr(0600,root,root) /usr/share/shorewall/macro.SVN
 %attr(0600,root,root) /usr/share/shorewall/macro.Syslog
+%attr(0600,root,root) /usr/share/shorewall/macro.Telnet
 %attr(0600,root,root) /usr/share/shorewall/macro.template
 %attr(0600,root,root) /usr/share/shorewall/macro.Trcrt
 %attr(0600,root,root) /usr/share/shorewall/macro.VNC

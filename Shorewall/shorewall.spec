@@ -143,7 +143,6 @@ fi
 %attr(0600,root,root) /usr/share/shorewall/macro.VNC
 %attr(0600,root,root) /usr/share/shorewall/macro.VNCL
 %attr(0600,root,root) /usr/share/shorewall/macro.Web
-%attr(0600,root,root) /usr/share/shorewall/macro.template
 %attr(0600,root,root) /usr/share/shorewall/rfc1918
 %attr(0600,root,root) /usr/share/shorewall/configpath
 

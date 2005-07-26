@@ -112,6 +112,7 @@ fi
 %attr(0600,root,root) /usr/share/shorewall/macro.Auth
 %attr(0600,root,root) /usr/share/shorewall/macro.BitTorrent
 %attr(0600,root,root) /usr/share/shorewall/macro.CVS
+%attr(0600,root,root) /usr/share/shorewall/macro.Distcc
 %attr(0600,root,root) /usr/share/shorewall/macro.DNS
 %attr(0600,root,root) /usr/share/shorewall/macro.DropDNSrep
 %attr(0600,root,root) /usr/share/shorewall/macro.DropUPnP
@@ -121,6 +122,7 @@ fi
 %attr(0600,root,root) /usr/share/shorewall/macro.ICQ
 %attr(0600,root,root) /usr/share/shorewall/macro.IMAP
 %attr(0600,root,root) /usr/share/shorewall/macro.LDAP
+%attr(0600,root,root) /usr/share/shorewall/macro.MySQL
 %attr(0600,root,root) /usr/share/shorewall/macro.NNTP
 %attr(0600,root,root) /usr/share/shorewall/macro.NTP
 %attr(0600,root,root) /usr/share/shorewall/macro.PCA

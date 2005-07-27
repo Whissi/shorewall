@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-07-11</pubdate>
+    <pubdate>2005-07-26</pubdate>
 
     <copyright>
       <year>2005</year>
@@ -207,11 +207,13 @@
   </section>
 
   <section>
-    <title>Multiple Internet Connection Support in Shorewall 2.3.2 and
+    <title>Multiple Internet Connection Support in Shorewall 2.4.2 and
     Later</title>
 
     <para>Beginning with Shorewall 2.3.2, support is included for multiple
-    internet connections.</para>
+    internet connections. If you wish to use this feature, we recommend
+    strongly that you upgrade to version 2.4.2 or later. This section assumes
+    that you have so upgraded.</para>
 
     <section>
       <title>Overview</title>
@@ -417,6 +419,20 @@
               </glosslist>
             </glossdef>
           </glossentry>
+
+          <glossentry>
+            <glossterm>COPY</glossterm>
+
+            <glossdef>
+              <para>When you specify an existing table in the DUPLICATE
+              column, Shorewall copies all routes through the interface
+              specified in the INTERFACE column plus the interfaces listed in
+              this column. At a minumum, you should list all interfaces on
+              your firewall in this column except those internet interfaces
+              specified in the INTERFACE column of entries in this file.
+              </para>
+            </glossdef>
+          </glossentry>
         </glossdiv>
       </glossary>
     </section>
@@ -504,11 +520,12 @@
 
       <para>The configuration in the figure at the top of this section would
       be specified in <filename>/etc/shorewall/providers</filename> as
-      follows:</para>
+      follows. Assume tht there is a single internal interface, <filename
+      class="devicefile">eth2</filename>.</para>
 
-      <programlisting>#NAME   NUMBER  MARK    DUPLICATE       INTERFACE       GATEWAY         OPTIONS
-ISP1    1       1       main            eth0            206.124.146.254 track,balance
-ISP2    2       2       main            eth1            130.252.99.254  track,balance</programlisting>
+      <programlisting>#NAME   NUMBER  MARK    DUPLICATE       INTERFACE       GATEWAY         OPTIONS          COPY
+ISP1    1       1       main            eth0            206.124.146.254 track,balance    eth2
+ISP2    2       2       main            eth1            130.252.99.254  track,balance    eth2</programlisting>
 
       <para>Other configuration files go something like this:</para>
 

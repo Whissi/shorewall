@@ -6591,7 +6591,7 @@ verify_os_version() {
 #
 add_ip_aliases()
 {
-    local addresses external interface inet cidr rest val
+    local addresses external interface inet cidr rest val arping=$(mywhich arping)
 
     address_details() 
     {
@@ -6627,7 +6627,7 @@ add_ip_aliases()
 	    ensure_and_save_command ip addr add ${external}${val} dev $interface $label
 	fi
 
-	qt mywhich arping && run_and_save_command qt arping -U -c 2 -I $interface $external
+	[ -n "$arping"] && run_and_save_command qt $arping -U -c 2 -I $interface $external
 
 	echo "$external $interface" >> /var/lib/shorewall/nat
 	[ -n "$label" ] && label="with $label"

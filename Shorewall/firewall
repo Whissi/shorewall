@@ -4220,28 +4220,31 @@ process_actions1() {
 				    fn=$(find_file $f1)
 				    
 				    if [ ! -f $TMP_DIR/$f1 ]; then
+					#
+					# We must only verify macros once to ensure that they don't invoke any non-standard actions
+					#
 					if [ -f $fn ]; then
 					    strip_file $f1 $fn
+					
+					    progress_message "   ..Expanding Macro $fn..."
+				    
+					    while read mtarget mclients mservers mprotocol mports mcports mratelimit muserspec; do
+						expandv mtarget
+						temp="${mtarget%%:*}"
+						case "$temp" in
+						    ACCEPT|DROP|REJECT|LOG|QUEUE|CONTINUE|PARAM)
+							;;
+						    *)
+							rule="$mtarget $mclients $mservers $mprotocol $mports $mcports $mratelimit $muserspec"
+							startup_error "Invalid TARGET in rule \"$rule\""
+						esac 
+					    done < $TMP_DIR/$f1
+					    
+					    progress_message "   ..End Macro"
 					else
 					    rule="$xtarget $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec"
 					    startup_error "Invalid TARGET in rule \"$rule\""
 					fi
-			
-					progress_message "   ..Expanding Macro $fn..."
-				    
-					while read mtarget mclients mservers mprotocol mports mcports mratelimit muserspec; do
-					    expandv mtarget
-					    temp="${mtarget%%:*}"
-					    case "$temp" in
-						ACCEPT|DROP|REJECT|LOG|QUEUE|CONTINUE|PARAM)
-						    ;;
-						*)
-						    rule="$mtarget $mclients $mservers $mprotocol $mports $mcports $mratelimit $muserspec"
-						    startup_error "Invalid TARGET in rule \"$rule\""
-					    esac 
-					done < $TMP_DIR/$f1
-					
-					progress_message "   ..End Macro"
 				    fi
 				fi
 				;;
@@ -7541,6 +7544,14 @@ activate_rules()
 	fi
     }    
 
+    # 
+    # Create a dynamic chain for a zone and jump to it from a second chain
+    #
+    create_zone_dyn_chain() # $1 = zone, $2 = second chain
+    {
+	createchain ${1}_dyn No
+	run_iptables -A $2 -j ${1}_dyn
+    }
     #
     # Add jumps to early SNAT chains
     #
@@ -7584,12 +7595,10 @@ activate_rules()
 
 		if [ -n "$is_ipsec" ]; then
 		    eval source_hosts=\$${zone}_hosts
-		    if [ -n "$DYNAMIC_ZONES" ]; then
-			createchain ${zone}_dyn No
-			run_iptables -A $frwd_chain -j ${zone}_dyn
-		    fi
+		    [ -n "$DYNAMIC_ZONES" ] && create_zone_dyn_chain $zone $frwd_chain
 		else
 		    eval source_hosts=\$${zone}_ipsec_hosts
+		    [ -n "$DYNAMIC_ZONES" -a -n "$source_hosts" ] && create_zone_dyn_chain $zone $frwd_chain
 		fi
 
 		for host in $source_hosts; do

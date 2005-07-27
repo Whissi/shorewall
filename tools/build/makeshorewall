@@ -206,9 +206,9 @@ esac
 
 VERSION=$1
 LOGFILE=$LOGDIR/shorewall_build_${VERSION}.log
-
+# location and options for GnuPG
+GPG="/usr/bin/gpg -ab --batch"
 touch $LOGFILE
-
 progress_message "Build of Shorewall $VERSION on $(date)"
 
 case $VERSION in
@@ -288,7 +288,7 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 
     rm -rf $SHOREWALLDIR
 
-    do_or_die "cvs export -r $CVSTAG -d $SHOREWALLDIR Shorewall >> $LOGFILE 2>&1"
+    do_or_die "cvs -z3 export -r $CVSTAG -d $SHOREWALLDIR Shorewall >> $LOGFILE 2>&1"
 
     fgrep VERSION=$VERSION $SHOREWALLDIR/install.sh > /dev/null 2>&1    || fatal_error "install.sh has wrong version"
     fgrep VERSION=$VERSION $SHOREWALLDIR/uninstall.sh > /dev/null 2>&1  || fatal_error "uninstall.sh has wrong version"
@@ -298,9 +298,15 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	progress_message "Creating $DIR/$TARBALL..."
 	do_or_die "tar -zcvf $TARBALL $SHOREWALLDIR >> $LOGFILE 2>&1"
         do_or_die "tar -jcvf shorewall-$VERSION.tar.bz2 $SHOREWALLDIR >> $LOGFILE 2>&1"
-	for shoreball in shorewall-$VERSION.t*; do
+	for shoresuffix in tgz tar.bz2; do
+	    shoreball=shorewall-$VERSION.${shoresuffix}
+	    report "Creating $DIR/$shoreball tarball sha1sums.."
 	    do_or_die "sha1sum $shoreball >> $VERSION.sha1sums"
+	    report "Creating $DIR/$shoreball tarball md5sums.."
 	    do_or_die "md5sum $shoreball >> $VERSION.md5sums"
+	    report "GPG signing $DIR/$shoreball"
+	    rm -f ${shoreball}.asc
+	    do_or_die "$GPG $shoreball"
         done
     fi
 
@@ -309,7 +315,9 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 
 	do_or_die "rpmbuild -tb --sign $TARBALL >> $LOGFILE 2>&1"
 	do_or_die cp -a $RPMDIR/RPMS/noarch/$RPMNAME .
+        progress_message "Creating $RPMNAME sha1sums.."
         do_or_die "sha1sum shorewall-${VERSION}-1.noarch.rpm >> $VERSION.sha1sums"
+	progress_message "Creating $RPMNAME md5sums.."
         do_or_die "md5sum  shorewall-${VERSION}-1.noarch.rpm >> $VERSION.md5sums"
     fi
 fi
@@ -320,7 +328,7 @@ if [ -n "${BUILDXML}${BUILDHTML}" ]; then
     rm -rf $XMLPROJ
     rm -rf shorewall-docs-xml-$VERSION
 
-    do_or_die "cvs export -D now $XMLPROJ >> $LOGFILE 2>&1"
+    do_or_die "cvs -z3 export -D now $XMLPROJ >> $LOGFILE 2>&1"
     do_or_die mv $XMLPROJ shorewall-docs-xml-$VERSION
 
     rm -f shorewall-docs-xml-$VERSION/images/*.vsd
@@ -330,12 +338,18 @@ if [ -n "${BUILDXML}${BUILDHTML}" ]; then
     rm -f shorewall-docs-xml-$VERSION/images/Thumbs.db
 
     if [ -n "$BUILDXML" ]; then
-	progress_message "Creating $DIR/shorewall-docs-xml-$VERSION.tgz..."
-	do_or_die "tar -zcvf shorewall-docs-xml-$VERSION.tgz shorewall-docs-xml-$VERSION >> $LOGFILE 2>&1"
+	progress_message "Creating $DIR/shorewall-docs-xml-$VERSION tarballs"
+        do_or_die "tar -zcvf shorewall-docs-xml-$VERSION.tgz shorewall-docs-xml-$VERSION >> $LOGFILE 2>&1"
         do_or_die "tar -jcvf shorewall-docs-xml-$VERSION.tar.bz2 shorewall-docs-xml-$VERSION >> $LOGFILE 2>&1"
-        for xmlball in shorewall-docs-xml-$VERSION.t*; do
+	for shoresuffix in tgz tar.bz2; do
+	    xmlball=shorewall-docs-xml-$VERSION.${shoresuffix}
+	    report "Creating $DIR/$xmlball tarball sha1sums.."
 	    do_or_die "sha1sum $xmlball >> $VERSION.sha1sums"
+	    report "Creating $DIR/$xmlball tarball md5sums.."
 	    do_or_die "md5sum $xmlball >> $VERSION.md5sums"
+	    report "GPG signing $DIR/$xmlball tarball"
+	    rm -f ${xmlball}.asc
+	    do_or_die "$GPG $xmlball"
         done
     fi
 
@@ -415,10 +429,15 @@ if [ -n "${BUILDXML}${BUILDHTML}" ]; then
 	
 	do_or_die "tar -zcvf shorewall-docs-html-$VERSION.tgz shorewall-docs-html-$VERSION >> $LOGFILE 2>&1"
 	do_or_die "tar -jcvf shorewall-docs-html-$VERSION.tar.bz2 shorewall-docs-html-$VERSION >> $LOGFILE 2>&1"
-
-	for htmlball in shorewall-docs-html-$VERSION.t*; do
+	for shoresuffix in tgz tar.bz2; do
+	    htmlball=shorewall-docs-html-$VERSION.${shoresuffix}
+	    report "Creating $DIR/$htmlball tarball sha1sums"
 	    do_or_die "sha1sum $htmlball >> $VERSION.sha1sums"
+	    report "Creating $DIR/$htmlball tarball md5sums"
 	    do_or_die "md5sum $htmlball >> $VERSION.md5sums"
+	    report "GPG signing $DIR/$htmlball tarball"
+	    rm -f ${htmlball}.asc
+	    do_or_die "$GPG $htmlball"
 	done
     fi
 fi
@@ -437,11 +456,18 @@ fi
 	
 	progress_message "Creating $DIR/shorewall-${VERSION}.tgz ..."
 	
-	do_or_die "tar -zcvf shorewall-${VERSION}.tgz shorewall-$VERSION >> $LOGFILE 2>&1"
+        do_or_die "tar -zcvf shorewall-${VERSION}.tgz shorewall-$VERSION >> $LOGFILE 2>&1"
         do_or_die "tar -jcvf shorewall-$VERSION.tar.bz2 shorewall-$VERSION >> $LOGFILE 2>&1"
-        for betaball in shorewall-$VERSION.t*; do
-        do_or_die "sha1sum $betaball >> $VERSION.sha1sums"
-        do_or_die "md5sum $betaball >> $VERSION.md5sums"
+  
+	for shoresuffix in tgz tar.bz2; do
+	    betaball=shorewall-$VERSION.${shoresuffix}
+	    report "Creating $DIR/shorewall-$VERSION tarball sha1sums"
+	    do_or_die "sha1sum $betaball >> $VERSION.sha1sums"
+	    report "Creating $DIR/shorewall-$VERSION tarball md5sums"
+	    do_or_die "md5sum $betaball >> $VERSION.md5sums"
+	    report "GPG signing $DIR/$betaball tarball"
+	    rm -f ${betaball}.asc
+	    do_or_die "$GPG $betaball"
         done
 
 ;;
@@ -453,7 +479,7 @@ if [ -n "$BUILDLRP" ]; then
     rm -rf $LRPDIR
     rm -rf $LRPPROJ
     
-    do_or_die "cvs export -D now $LRPPROJ >> $LOGFILE 2>&1"
+    do_or_die "cvs -z3 export -D now $LRPPROJ >> $LOGFILE 2>&1"
     do_or_die mv $LRPPROJ $LRPDIR
     
     cd $LRPDIR

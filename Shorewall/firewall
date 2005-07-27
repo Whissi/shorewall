@@ -1090,7 +1090,7 @@ verify_mark() # $1 = value to test
 #
 setup_providers()
 {
-    local table number mark duplicate interface gateway options provider address copy route loose addresses rulenum pref
+    local table number mark duplicate interface gateway options provider address copy route loose addresses rulenum pref echobin=$(mywhich echo)
 
     copy_table() {
 	run_ip route show table $duplicate | while read net route; do
@@ -1252,7 +1252,7 @@ EOF
 
 	    for table in $PROVIDERS; do
 		eval number=\$${table}_number
-		/bin/echo -e "$number\t$table" >>  /etc/iproute2/rt_tables
+		${echobin:-echo} -e "$number\t$table" >>  /etc/iproute2/rt_tables
 	    done
 
 	    save_command "cat > /etc/iproute2/rt_tables << __EOF__"
@@ -6627,7 +6627,7 @@ add_ip_aliases()
 	    ensure_and_save_command ip addr add ${external}${val} dev $interface $label
 	fi
 
-	[ -n "$arping"] && run_and_save_command qt $arping -U -c 2 -I $interface $external
+	[ -n "$arping" ] && run_and_save_command qt $arping -U -c 2 -I $interface $external
 
 	echo "$external $interface" >> /var/lib/shorewall/nat
 	[ -n "$label" ] && label="with $label"

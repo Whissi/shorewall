@@ -223,7 +223,7 @@ loadmodule() # $1 = module name, $2 - * arguments
     local suffix
     moduleloader=modprobe
 
-    if ! qt which modprobe; then 
+    if ! qt mywhich modprobe; then 
 	moduleloader=insmod
     fi
 
@@ -282,7 +282,7 @@ mutex_on()
 
 	[ -d /var/lib/shorewall ] || mkdir -p /var/lib/shorewall
 
-	if qt which lockfile; then
+	if qt mywhich lockfile; then
 	    lockfile -${MUTEX_TIMEOUT} -r1 ${lockf}
 	else
 	    while [ -f ${lockf} -a ${try} -lt ${MUTEX_TIMEOUT} ] ; do
@@ -316,7 +316,7 @@ mutex_off()
 #     STD  - mktemp.org mktemp
 #
 find_mktemp() {
-    local mktemp=`which mktemp 2> /dev/null`
+    local mktemp=`mywhich mktemp 2> /dev/null`
 
     if [ -n "$mktemp" ]; then
 	if qt mktemp -V ; then
@@ -783,4 +783,20 @@ find_interface_by_address() {
 find_interface_addresses() # $1 = interface
 {
     ip -f inet addr show $1 | grep inet | sed 's/inet //;s/\/.*//;s/ peer.*//'
+}
+
+#
+# Internal version of 'which'
+#
+mywhich() {
+    local dir
+
+    for dir in $(split $PATH); do
+	if [ -x $dir/$1 ]; then
+	    echo $dir/$1
+	    return 0
+	fi
+    done
+
+    return 2
 }

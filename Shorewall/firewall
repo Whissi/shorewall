@@ -1734,7 +1734,7 @@ disable_ipv6() {
     local foo="$(ip -f inet6 addr ls 2> /dev/null)"
 
     if [ -n "$foo" ]; then
-	if qt which ip6tables; then
+	if qt mywhich ip6tables; then
 	    save_progress_message "Disabling IPV6..."
 	    ip6tables -P FORWARD DROP && save_command ip6tables -P FORWARD DROP
 	    ip6tables -P INPUT DROP   && save_command ip6tables -P INPUT DROP
@@ -1749,7 +1749,7 @@ disable_ipv6_1() {
     local foo="$(ip -f inet6 addr ls 2> /dev/null)"
 
     if [ -n "$foo" ]; then
-	if qt which ip6tables; then
+	if qt mywhich ip6tables; then
 	    progress_message "Disabling IPV6..."
 	    ip6tables -P FORWARD DROP
 	    ip6tables -P INPUT DROP
@@ -2084,7 +2084,7 @@ clear_firewall() {
 
     echo 1 > /proc/sys/net/ipv4/ip_forward
 
-    if qt which ip6tables; then
+    if qt mywhich ip6tables; then
 	ip6tables -P INPUT   ACCEPT 2> /dev/null
 	ip6tables -P OUTPUT  ACCEPT 2> /dev/null
 	ip6tables -P FORWARD ACCEPT 2> /dev/null
@@ -6627,6 +6627,8 @@ add_ip_aliases()
 	    ensure_and_save_command ip addr add ${external}${val} dev $interface $label
 	fi
 
+	qt mywhich arping && run_and_save_command qt arping -U -c 2 -I $interface $external
+
 	echo "$external $interface" >> /var/lib/shorewall/nat
 	[ -n "$label" ] && label="with $label"
 	progress_message "   IP Address $external added to interface $interface $label"
@@ -6741,7 +6743,7 @@ determine_capabilities() {
     qt $IPTABLES -t mangle -X fooX1234
   
 
-    if qt which ipset; then
+    if qt mywhich ipset; then
 	qt ipset -X fooX1234 # Just in case something went wrong the last time
 
 	if qt ipset -N fooX1234 iphash ; then
@@ -8519,7 +8521,7 @@ do_initialize() {
     load_kernel_modules
 
     if [ -z "$IPTABLES" ]; then
-	IPTABLES=$(which iptables 2> /dev/null)
+	IPTABLES=$(mywhich iptables 2> /dev/null)
 
 	[ -z "$IPTABLES" ] && startup_error "Can't find iptables executable"
     else

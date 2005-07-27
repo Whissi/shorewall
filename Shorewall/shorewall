@@ -150,7 +150,7 @@ showchain() # $1 = name of chain
 
 iptablesbug()
 {
-    if qt which awk ; then
+    if qt mywhich awk ; then
 	awk 'BEGIN           {sline=""; };\
              /^-j/           { print sline $0; next };\
              /-m policy.*-j/ { print $0; next };\
@@ -209,7 +209,7 @@ get_config() {
 	    exit 2
 	fi
     else
-	IPTABLES=$(which iptables 2> /dev/null)
+	IPTABLES=$(mywhich iptables 2> /dev/null)
 	if [ -z "$IPTABLES" ] ; then
 	    echo "   ERROR: Can't find iptables executable" >&2
 	    exit 2
@@ -355,7 +355,7 @@ logwatch() # $1 = timeout -- if negative, prompt each time that
 	timeout=$1
     fi
 
-    qt which awk && haveawk=Yes || haveawk=
+    qt mywhich awk && haveawk=Yes || haveawk=
 
     while true; do
 	clear_term
@@ -747,7 +747,7 @@ case "$1" in
 	esac
 	
 	if [ -n "$FAST" ]; then
-	    if qt which make; then
+	    if qt mywhich make; then
 		make -qf /etc/shorewall/Makefile || FAST=
 	    fi
 
@@ -934,7 +934,7 @@ case "$1" in
 	echo
 	ip -stat link ls
 	
-	if qt which brctl; then
+	if qt mywhich brctl; then
 	    echo
 	    echo "Bridges"
 	    echo
@@ -979,7 +979,7 @@ case "$1" in
 	echo
 	arp -na
 	
-	if qt which lsmod; then
+	if qt mywhich lsmod; then
 	    echo
 	    echo "Modules"
 	    echo

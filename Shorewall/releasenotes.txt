@@ -7,6 +7,12 @@ Problems Corrected in 2.5.1:
 2) "shorewall add" no longer fails when the 'ipsec' option has appeared
    in /etc/shorewall/hosts.
 
+3) The Makefile has been changed to compare the modification times of
+   the files in /etc/shorewall with
+   /var/lib/shorewall/restore-base. That file is modified each time
+   that Shorewall is [re]started whereas /var/lib/shorewall/restarted
+   is also modified by "shorewall reset" and "shorewall refresh".
+
 Problems Corrected in 2.5.0:
 
 1) The behavior of CONTINUE policies has been improved. Shorewall no
@@ -136,6 +142,10 @@ Migration Considerations:
    previously set STATEDIR to another directory, please copy the files
    from that directory to /var/lib/shorewall/ before [re]starting
    Shorewall after the upgrade to this version.
+
+7) The "shorewall status" command now just gives the status of
+   Shorewall (started or not-started). The previous status command has
+   been renamed "dump".
 
 New Features in Shorewall 2.5.0
 

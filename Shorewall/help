@@ -135,6 +135,18 @@ drop)
     See also \"help address\""
 	;;
 
+dump)
+	echo "dump: dump
+
+    shorewall [-x] dump
+
+    Produce a verbose report about the firewall for problem analysis.
+   
+    (iptables -L -n -)
+
+    When -x is given, that option is also passed to iptables to display actual packet and byte counts."
+	;;
+
 forget)
 	echo "forget: forget [ <file name> ]
     Deletes /var/lib/shorewall/<file name>. If no <file name> is given then
@@ -288,13 +300,11 @@ stop)
 status)
 	echo "status: status
 
-    shorewall [-x] status
+    shorewall status
 
-    Produce a verbose report about the firewall.
-   
-    (iptables -L -n -)
-
-    When -x is given, that option is also passed to iptables to display actual packet and byte counts."
+    Displays the Shorewall status (started/not-started). If Shorewall is started,
+    the time at which Shorewall was last started/restarted/refreshed or reset is
+    displayed.   
 	;;
 
 trace)

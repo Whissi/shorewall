@@ -33,6 +33,8 @@
 #
 #          shorewall add <iface>[:<host>] zone     Adds a host or subnet to a zone
 #          shorewall delete <iface>[:<host>] zone  Deletes a host or subnet from a zone
+#          shorewall dump                          Dumps all Shorewall-related information
+#                                                  for problem analysis
 #	   shorewall start 			   Starts the firewall
 #	   shorewall restart			   Restarts the firewall
 #	   shorewall stop			   Stops the firewall
@@ -495,6 +497,7 @@ usage() # $1 = exit status
     echo "   clear"
     echo "   delete <interface>[:{<bridge-port>[:<host>]|<host>}[,...]] ... <zone>"
     echo "   drop <address> ..."
+    echo "   dump"
     echo "   forget [ <file name> ]"
     echo "   help [ <command > | host | address ]"
     echo "   hits"
@@ -905,10 +908,22 @@ case "$1" in
 	esac
 	;;
     status)
+	[ $# -eq 1 ] || usage 1
+	echo "Shorewall-$version Status at $HOSTNAME - $(date)"
+	echo
+	if qt $IPTABLES -L shorewall -n -v; then
+	    echo "Shorewall is started"
+	    echo 
+	    show_reset
+	else
+	    echo "Shorewall is not started"
+	fi
+	;;
+    dump)
     	[ -n "$debugging" ] && set -x
 	[ $# -eq 1 ] || usage 1
 	clear_term
-	echo "Shorewall-$version Status at $HOSTNAME - $(date)"
+	echo "Shorewall-$version Dump at $HOSTNAME - $(date)"
 	echo
 	show_reset
 	host=$(echo $HOSTNAME | sed 's/\..*$//')

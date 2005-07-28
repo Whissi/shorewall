@@ -31,7 +31,24 @@ Migration Considerations:
 2) The "DISPLAY" and "COMMENTS" columns in the /etc/shorewall/zones
    file have been removed and have been replaced by the former 
    columns of the /etc/shorewall/ipsec file. The latter file has been
-   removed. As a result, the columns in the /etc/shorewall/zones file
+   removed.
+
+   To attempt to adhere to the principle of least astonishment, the
+   old /etc/shorewall/ipsec file will continue to be supported. A new
+   IPSECFILE variable in /etc/shorewall/shorewall.conf determines the
+   name of the file that Shorewall looks in for IPSEC information. If
+   that variable is not set or is set to the empty value then
+   IPSECFILE=ipsec is assumed. So if you simply upgrade and don't do
+   something idiotic like replace your current shorewall.conf file with
+   the new one, your old configuration will continue to work. A dummy
+   'ipsec' file is included in the release so that your package manager
+   (e.g., rpm) won't remove your existing file.
+
+   The shorewall.conf file included in this release sets
+   IPSECFILE=zones so that new users are expected to use the new zone
+   file format. 
+
+   As a result, the columns in the /etc/shorewall/zones file
    are now as follows:
 
 	ZONE		Short name of the zone (5 Characters or less in
@@ -94,21 +111,6 @@ Migration Considerations:
 
    THE ORDER OF THE ENTRIES IN THIS FILE IS IMPORTANT IF YOU HAVE
    NESTED OR OVERLAPPING ZONES DEFINED THROUGH /etc/shorewall/hosts.
-
-   To attempt to adhere to the principle of least astonishment, the
-   old /etc/shorewall/ipsec file will continue to be supported. A new
-   IPSECFILE variable in /etc/shorewall/shorewall.conf determines the
-   name of the file that Shorewall looks in for IPSEC information. If
-   that variable is not set or is set to the empty value then
-   IPSECFILE=ipsec is assumed. So if you simply upgrade and don't do
-   something idiotic like replace your current shorewall.conf file with
-   the new one, your old configuration will continue to work. A dummy
-   'ipsec' file is included in the release so that your package manager
-   (e.g., rpm) won't remove your existing file.
-
-   The shorewall.conf file included in this release sets
-   IPSECFILE=zones so that new users are expected to use the new zone
-   file format. 
 
 
 3) The DROPINVALID option has been removed from shorewall.conf. The

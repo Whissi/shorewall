@@ -8758,9 +8758,18 @@ case "$COMMAND" in
 
     status)
 	[ $# -ne 1 ] && usage
+	do_initialize
 	echo "Shorewall-$version Status at $HOSTNAME - $(date)"
 	echo
-	$IPTABLES -L -n -v
+	if chain_exists shorewall; then
+	    echo "Shorewall is started"
+	    echo 
+	    [ -f /var/lib/shorewall/restarted ] && \
+		echo "Counters reset $(cat /var/lib/shorewall/restarted)" && \
+		echo
+	else
+	    echo "Shorewall is not started"
+	fi
 	;;
 
     reset)

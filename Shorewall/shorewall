@@ -241,6 +241,13 @@ get_config() {
 }
 
 #
+# Determine if Shorewall is "running"
+#
+shorewall_is_started() {
+    qt $IPTABLES -L shorewall -n
+}
+
+#
 # Clear descriptor 1 if it is a terminal
 #
 clear_term() {
@@ -400,7 +407,7 @@ logwatch() # $1 = timeout -- if negative, prompt each time that
 save_config() {
     [ "$nolock" ] || mutex_on
 
-    if qt $IPTABLES -L shorewall -n; then
+    if shorewall_is_started ; then
 	[ -d /var/lib/shorewall ] || mkdir -p /var/lib/shorewall
 	
 	if [ -f $RESTOREPATH -a ! -x $RESTOREPATH ]; then
@@ -911,7 +918,7 @@ case "$1" in
 	;;
     status)
 	[ $# -eq 1 ] || usage 1
-	if qt $IPTABLES -L shorewall -n -v; then
+	if shorewall_is_started ; then
 	    echo "Shorewall is running"
 	    exit 0
 	fi
@@ -1273,7 +1280,7 @@ case "$1" in
 
 	mutex_on
 
-	if qt $IPTABLES -L shorewall -n 
+	if shorewall_is_started
 	then
 	    running=0
 	else

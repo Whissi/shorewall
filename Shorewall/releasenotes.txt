@@ -149,13 +149,23 @@ Migration Considerations:
    Shorewall (started or not-started). The previous status command has
    been renamed "dump".
 
+   A new "state" command gives the Shorewall state relative to the
+   state diagram at
+   http://shorewall.net/starting_and_stopping_shorewall.htm. In
+   addition to the state, the time and date at which that state was
+   entered is shown.
+
+   Note that at least one "shorewall [re]start" must be issued after
+   upgrading to this release before "shorewall state" will show
+   anything but "Unknown" for the state.
+
 New Features in Shorewall 2.5.0
 
 1) Error and warning messages are made easier to spot by using
    capitalization (e.g., ERROR: and WARNING:).
 
 2) Beginning with this version, the POLICY column in
-   /etc/shorewall/policy to potentially contain two policies separated
+   /etc/shorewall/policy can potentially contain two policies separated
    by ":". The first policy is the policy for new connections (the only
    policy that you can currently configure). The second policy is for
    ESTABLISHED packets (those that are part of an established

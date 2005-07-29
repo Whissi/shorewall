@@ -29,7 +29,6 @@
 #	   shorewall start			  Starts the firewall
 #	   shorewall restart			  Restarts the firewall
 #	   shorewall stop			  Stops the firewall
-#	   shorewall status			  Displays firewall status
 #	   shorewall reset			  Resets iptables packet and
 #						  byte counts
 #	   shorewall clear			  Remove all Shorewall chains
@@ -1941,14 +1940,22 @@ stop_firewall() {
 		fi
 
 		echo Restoring Shorewall...
-		$RESTOREPATH
-		echo "Shorewall restored from $RESTOREPATH"
+
+		if $RESTOREPATH; then
+		    echo "Shorewall restored from $RESTOREPATH"
+		    set_state "Started"
+		else
+		    set_state "Unknown"
+		fi  
+		
 		my_mutex_off
 		kill $$
 		exit 2
 	    fi
 	    ;;
     esac
+
+    set_state "Stopping"
 
     stopping="Yes"
 
@@ -2051,6 +2058,8 @@ stop_firewall() {
 
     run_user_exit stopped
 
+    set_state "Stopped"
+
     logger "Shorewall Stopped"
 
     rm -rf $TMP_DIR
@@ -2091,6 +2100,8 @@ clear_firewall() {
     fi
 
     run_user_exit clear
+
+    set_state "Cleared"
 
     logger "Shorewall Cleared"
 }
@@ -7829,6 +7840,8 @@ define_firewall() # $1 = Command (Start or Restart)
 
     echo "${1}ing Shorewall..."
 
+    set_state "${1}ing"
+
     verify_os_version
     verify_ip
 
@@ -7925,6 +7938,8 @@ define_firewall() # $1 = Command (Start or Restart)
     createchain shorewall no
 
     date > /var/lib/shorewall/restarted
+
+    run_and_save_command set_state "Started"
 
     report "Shorewall ${1}ed"
 
@@ -8690,7 +8705,7 @@ do_initialize() {
 # Give Usage Information
 #
 usage() {
-    echo "Usage: $0 [debug] {start|stop|reset|restart|status|refresh|clear|{add|delete} <interface>[:hosts] zone}}"
+    echo "Usage: $0 [debug] {start|stop|reset|restart|refresh|clear|{add|delete} <interface>[:hosts] zone}}"
     exit 1
 }
 
@@ -8754,22 +8769,6 @@ case "$COMMAND" in
 
 	[ $? -eq 0 ] && [ -n "$SUBSYSLOCK" ] && touch $SUBSYSLOCK
 	my_mutex_off
-	;;
-
-    status)
-	[ $# -ne 1 ] && usage
-	do_initialize
-	echo "Shorewall-$version Status at $HOSTNAME - $(date)"
-	echo
-	if chain_exists shorewall; then
-	    echo "Shorewall is started"
-	    echo 
-	    [ -f /var/lib/shorewall/restarted ] && \
-		echo "Counters reset $(cat /var/lib/shorewall/restarted)" && \
-		echo
-	else
-	    echo "Shorewall is not started"
-	fi
 	;;
 
     reset)

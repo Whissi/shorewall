@@ -800,3 +800,11 @@ mywhich() {
 
     return 2
 }
+
+#
+# Set the Shorewall state
+#
+set_state () # $1 = state
+{
+    echo "$1 ($(date))" > /var/lib/shorewall/state
+}

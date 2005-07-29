@@ -42,6 +42,7 @@
 #						   plus the last 20 "interesting"
 #						   packets
 #	   shorewall status			   Displays firewall status
+#          shorewall state                         Displays firewall state
 #	   shorewall reset			   Resets iptables packet and
 #						   byte counts
 #	   shorewall clear			   Open the floodgates by
@@ -513,6 +514,7 @@ usage() # $1 = exit status
     echo "   show [<chain> [ <chain> ... ]|actions|capabilities|classifiers|connections|log|nat|tc|tos|zones]"
     echo "   start [ <directory> ]"
     echo "   stop"
+    echo "   state"
     echo "   status"
     echo "   try <directory> [ <timeout> ]"
     echo "   version"
@@ -909,15 +911,33 @@ case "$1" in
 	;;
     status)
 	[ $# -eq 1 ] || usage 1
-	echo "Shorewall-$version Status at $HOSTNAME - $(date)"
-	echo
 	if qt $IPTABLES -L shorewall -n -v; then
-	    echo "Shorewall is started"
-	    echo 
-	    show_reset
-	else
-	    echo "Shorewall is not started"
+	    echo "Shorewall is running"
+	    exit 0
 	fi
+
+	echo "Shorewall is stopped"
+	status=4
+	if [ -f /var/lib/shorewall/state ]; then
+	    case $(cat /var/lib/shorewall/state) in
+		Stopped*|Clear*)
+		    status=3
+		    ;;
+	    esac
+	fi
+	exit $status    
+	;;
+    state)
+	[ $# -eq 1 ] || usage 1
+	echo "Shorewall-$version State at $HOSTNAME - $(date)"
+	echo
+	if [ -f /var/lib/shorewall/state ]; then
+	    state=$(cat /var/lib/shorewall/state)
+	else
+	    state=Unknown
+	fi
+	echo "The Shorewall state is $state"
+	echo
 	;;
     dump)
     	[ -n "$debugging" ] && set -x

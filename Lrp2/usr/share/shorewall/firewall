@@ -464,11 +464,6 @@ mac_chain() # $1 = interface
    echo $(chain_base $1)_mac
 }
 
-macrecent_target() # $1 - interface
-{
-    [ -n "$MACLIST_TTL" ] && echo $(chain_base $1)_rec || echo RETURN
-}
-
 #
 # Functions for creating dynamic zone rules
 #
@@ -492,6 +487,11 @@ dynamic_chains() #$1 = interface
    local c=$(chain_base $1)
 
    echo ${c}_dyni ${c}_dynf ${c}_dyno
+}
+
+macrecent_target() # $1 - interface
+{
+    [ -n "$MACLIST_TTL" ] && echo $(chain_base $1)_rec || echo RETURN
 }
 
 #
@@ -2043,13 +2043,14 @@ setup_mac_lists() {
     for interface in $maclist_interfaces; do
 	chain=$(mac_chain $interface)
 	createchain $chain no
-	
+
 	if [ -n "$MACLIST_TTL" ]; then
 	    chain1=$(macrecent_target $interface)
 	    createchain $chain1 no
-	    run_iptables -A $chain  -m recent --rcheck --seconds $MACLIST_TTL --name $chain -j $chain1
-	    run_iptables -A $chain1 -m recent --update                        --name $chain -j ACCEPT
-	    run_iptables -A $chain1 -m recent --set                           --name $chain -j ACCEPT
+	    run_iptables -A $chain  -m recent --rcheck --seconds $MACLIST_TTL --name $chain -j RETURN
+	    run_iptables -A $chain                                                          -j $chain1
+	    run_iptables -A $chain  -m recent --update                        --name $chain -j RETURN
+	    run_iptables -A $chain  -m recent --set                           --name $chain
 	fi
     done
     #
@@ -2069,8 +2070,7 @@ setup_mac_lists() {
 	    esac
 	fi
 
-	chain=$(mac_chain $interface)
-	chain1=$(macrecent_target $interface)
+	[ -n "$MACLIST_TTL" ] && chain=$(macrecent_target $interface) || chain=$(mac_chain $interface)
 
 	if ! havechain $chain ; then
 	    fatal_error "No hosts on $interface have the maclist option specified"
@@ -2079,10 +2079,10 @@ setup_mac_lists() {
 	macpart=$(mac_match $mac)
 
 	if [ -z "$addresses" ]; then
-	    run_iptables -A $chain $macpart $physdev_part -j $chain1
+	    run_iptables -A $chain $macpart $physdev_part -j RETURN
 	else
 	    for address in $(separate_list $addresses) ; do
-		run_iptables2 -A $chain $macpart -s $address $physdev_part -j $chain1
+		run_iptables2 -A $chain $macpart -s $address $physdev_part -j RETURN
 	    done
 	fi
     done < $TMP_DIR/maclist
@@ -2091,8 +2091,7 @@ setup_mac_lists() {
     # chains
     #
     for interface in $maclist_interfaces; do
-	chain=$(mac_chain $interface)
-	chain1=$(macrecent_target $interface)
+	[ -n "$MACLIST_TTL" ] && chain=$(macrecent_target $interface) || chain=$(mac_chain $interface)
 
 	blob=$(ip link show $interface 2> /dev/null)
 
@@ -2100,12 +2099,13 @@ setup_mac_lists() {
 	    fatal_error "Interface $interface must be up before Shorewall can start"
 
 	ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet //; s/brd //; s/scope.*//;' | while read address broadcast; do
+	    address=${address%/*}
 	    if [ -n "$broadcast" ]; then
-		run_iptables -A $chain -s ${address%/*} -d $broadcast -j $chain1
+		run_iptables -A $chain -s $address -d $broadcast -j RETURN
 	    fi
 
-	    run_iptables -A $chain -s $address -d 255.255.255.255 -j $chain1
-	    run_iptables -A $chain -s $address -d 224.0.0.0/4     -j $chain1
+	    run_iptables -A $chain -s $address -d 255.255.255.255 -j RETURN
+	    run_iptables -A $chain -s $address -d 224.0.0.0/4     -j RETURN
 	done
 
 	if [ -n "$MACLIST_LOG_LEVEL" ]; then
@@ -2837,7 +2837,7 @@ check_config() {
     [ "$MACLIST_TTL" = "0" ] && MACLIST_TTL=
 
     if [ -n "$MACLIST_TTL" -a -z "$RECENT_MATCH" ]; then
-	startup_error "MACLIST_TTL requires the Recent Match capability which is not present in your Kernel and/or iptables"
+ 	startup_error "MACLIST_TTL requires the Recent Match capability which is not present in your Kernel and/or iptables"
     fi
 
     echo "Determining Zones..."
@@ -5766,7 +5766,7 @@ initialize_netfilter () {
     [ "$MACLIST_TTL" = "0" ] && MACLIST_TTL=
 
     if [ -n "$MACLIST_TTL" -a -z "$RECENT_MATCH" ]; then
-	startup_error "MACLIST_TTL requires the Recent Match capability which is not present in your Kernel and/or iptables"
+ 	startup_error "MACLIST_TTL requires the Recent Match capability which is not present in your Kernel and/or iptables"
     fi
 
     [ -n "$RFC1918_STRICT" -a -z "$CONNTRACK_MATCH" ] && \
@@ -6207,7 +6207,7 @@ add_common_rules() {
 
 	    savelogparms="$LOGPARMS"
 
-	    LOGPARMS="$LOGPARMS --log-ip-options"
+	    [ "$TCP_FLAGS_LOG_LEVEL" = ULOG ] || LOGPARMS="$LOGPARMS --log-ip-options"
 
 	    log_rule $TCP_FLAGS_LOG_LEVEL logflags $TCP_FLAGS_DISPOSITION 
 
@@ -7525,8 +7525,11 @@ do_initialize() {
 	case $MACLIST_DISPOSITION in
 	    REJECT)
 		;;
-	    ACCEPT|DROP)
-		maclist_target=$MACLIST_DISPOSITION
+	    DROP)
+		maclist_target=DROP
+		;;
+	    ACCEPT)
+		maclist_target=RETURN
 		;;
 	    *)
 		startup_error "Invalid value ($MACLIST_DISPOSITION) for MACLIST_DISPOSITION"

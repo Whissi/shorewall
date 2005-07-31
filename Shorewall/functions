@@ -165,16 +165,17 @@ separate_list() {
     local firstpart
     local lastpart
     local enclosure
-    #
-    # There's been whining about us not catching embedded white space in
-    # comma-separated lists. This is an attempt to snag some of the cases.
-    #
-    # The 'terminator' function will be set by the 'firewall' script to
-    # either 'startup_error' or 'fatal_error' depending on the command and
-    # command phase
-    #
+
     case "$list" in
 	*,|,*|*,,*|*[[:space:]]*)
+	    #
+	    # There's been whining about us not catching embedded white space in
+	    # comma-separated lists. This is an attempt to snag some of the cases.
+	    #
+	    # The 'terminator' function will be set by the 'firewall' script to
+	    # either 'startup_error' or 'fatal_error' depending on the command and
+	    # command phase
+	    #
             [ -n "$terminator" ] && \
 		$terminator "Invalid comma-separated list \"$@\""
             echo "Warning -- invalid comma-separated list \"$@\"" >&2
@@ -186,15 +187,29 @@ separate_list() {
 	    #
 	    firstpart=${list%%\[*}
 	    lastpart=${list#*\[}
-	    enclosure=${lastpart%\]*}
+	    enclosure=${lastpart%%\]*}
 	    lastpart=${lastpart#*\]}
 	    case $lastpart in
 		\,*)
-		    echo "$(separate_list $firstpart)[$enclosure] $(separate_list ${lastpart#,})"
+		    case $firstpart in
+			*\,)
+			    echo "$(separate_list ${firstpart%,}) [$enclosure] $(separate_list ${lastpart#,})"
+			    ;;
+			*)
+			    echo "$(separate_list $firstpart)[$enclosure] $(separate_list ${lastpart#,})"
+			    ;;
+		    esac
 		    ;;
 		*)
-		     echo "$(separate_list $firstpart)[$enclosure]$(separate_list $lastpart)"
-		     ;;
+		    case $firstpart in
+			*\,)	
+			    echo "$(separate_list ${firstpart%,}) [$enclosure]$(separate_list $lastpart)"
+			    ;;
+			*)
+			    echo "$(separate_list $firstpart)[$enclosure]$(separate_list $lastpart)"
+			    ;;
+		    esac
+		    ;;
 	    esac
 	    return
 	    ;;

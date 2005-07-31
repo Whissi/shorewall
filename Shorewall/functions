@@ -178,7 +178,7 @@ separate_list() {
 	    #
             [ -n "$terminator" ] && \
 		$terminator "Invalid comma-separated list \"$@\""
-            echo "Warning -- invalid comma-separated list \"$@\"" >&2
+            echo "WARNING -- invalid comma-separated list \"$@\"" >&2
 	    ;;
 	*\[*\]*)
 	    #
@@ -431,7 +431,7 @@ read_file() # $1 = file name, $2 = nest count
 	done < $1
     else
 	[ -n "$terminator" ] && $terminator "No such file: $1"
-	echo "Warning -- No such file: $1"
+	echo "WARNING -- No such file: $1"
     fi
 }
 

@@ -8477,7 +8477,7 @@ do_initialize() {
     TMP_DIR=
     ALL_INTERFACES=
     ROUTEMARK_INTERFACES=
-    ROUTEMARK=256
+    IPSECMARK=256
     PROVIDERS=
     CRITICALHOSTS=
     IPSECFILE=
@@ -8749,7 +8749,7 @@ case "$COMMAND" in
 	[ $# -ne 1 ] && usage
 	do_initialize
 	my_mutex_on
-	if qt $IPTABLES -L shorewall -n ; then
+	if shorewall_is_started ; then
 	    [ -n "$SUBSYSLOCK" ] && touch $SUBSYSLOCK
 	    echo "Shorewall Already Started"
 	    [ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
@@ -8764,7 +8764,7 @@ case "$COMMAND" in
 	[ $# -ne 1 ] && usage
 	do_initialize
 	my_mutex_on
-	if qt $IPTABLES -L shorewall -n ; then
+	if shorewall_is_started; then
 	    define_firewall "Restart"
 	else
 	    echo "Shorewall Not Currently Running"
@@ -8779,7 +8779,7 @@ case "$COMMAND" in
 	[ $# -ne 1 ] && usage
 	do_initialize
 	my_mutex_on
-	if ! qt $IPTABLES -L shorewall -n ; then
+	if ! shorewall_is_started ; then
 	    echo "Shorewall Not Started"
 	    [ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
 	    my_mutex_off
@@ -8797,7 +8797,7 @@ case "$COMMAND" in
 	[ $# -ne 1 ] && usage
 	do_initialize
 	my_mutex_on
-	if ! qt $IPTABLES -L shorewall -n ; then
+	if ! shorewall_is_started ; then
 	    echo "Shorewall Not Started"
 	    [ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
 	    my_mutex_off
@@ -8828,7 +8828,7 @@ case "$COMMAND" in
 	[ $# -lt 3 ] && usage
 	do_initialize
 	my_mutex_on
-	if ! qt $IPTABLES -L shorewall -n ; then
+	if ! shorewall_is_started ; then
 	    echo "Shorewall Not Started"
 	    [ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
 	    my_mutex_off
@@ -8843,7 +8843,7 @@ case "$COMMAND" in
 	[ $# -lt 3 ] && usage
 	do_initialize
 	my_mutex_on
-	if ! qt $IPTABLES -L shorewall -n ; then
+	if ! shorewall_is_started ; then
 	    echo "Shorewall Not Started"
 	    [ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
 	    my_mutex_off

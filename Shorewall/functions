@@ -71,6 +71,13 @@ qt()
 }
 
 #
+# Determine if Shorewall is "running"
+#
+shorewall_is_started() {
+    qt $IPTABLES -L shorewall -n
+}
+
+#
 # Perform variable substitution on the passed argument and echo the result
 #
 expand() # $@ = contents of variable which may be the name of another variable

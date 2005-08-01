@@ -1959,7 +1959,7 @@ stop_firewall() {
 
     stopping="Yes"
 
-    terminator=
+    TERMINATOR=
 
     deletechain shorewall
 
@@ -3095,12 +3095,6 @@ setup_tc1() {
     #
 
     run_iptables -t mangle -N tcpre
-
-    for interface in $ROUTEMARK_INTERFACES; do
-	eval mark=\$$(chain_base $interface)_routemark
-	run_iptables -t mangle -A tcpre -m connmark --mark $mark -j RETURN
-    done
-
     run_iptables -t mangle -N tcfor
     run_iptables -t mangle -N tcout
     run_iptables -t mangle -N tcpost
@@ -3118,9 +3112,18 @@ setup_tc1() {
     # Link to the TC mangle chains from the main chains
     #
 
+    if [ -n "$ROUTEMARK_INTERFACES" ]; then
+	#
+	# Route marks are restored in PREROUTING/OUTPUT prior to these rules. We only send 
+	# packets that are not part of a marked connection to the 'tcpre/tcout' chains
+	#
+	run_iptables -t mangle -A PREROUTING  -m mark --mark 0 -j tcpre
+	run_iptables -t mangle -A OUTPUT      -m mark --mark 0 -j tcout
+    else
+	run_iptables -t mangle -A PREROUTING -j tcpre
+	run_iptables -t mangle -A OUTPUT     -j tcout
+    fi
     run_iptables -t mangle -A FORWARD     -j tcfor
-    run_iptables -t mangle -A PREROUTING  -j tcpre
-    run_iptables -t mangle -A OUTPUT      -j tcout
     run_iptables -t mangle -A POSTROUTING -j tcpost
 
     f=$(find_file tcstart)
@@ -6038,6 +6041,7 @@ setup_routes()
 {
 
     run_iptables -t mangle -A PREROUTING -m connmark ! --mark 0 -j CONNMARK --restore-mark
+    run_iptables -t mangle -A OUTPUT     -m connmark ! --mark 0 -j CONNMARK --restore-mark
     run_iptables -t mangle -N routemark
 
     for interface in $ROUTEMARK_INTERFACES ; do
@@ -6868,7 +6872,7 @@ initialize_netfilter () {
     echo "Pre-processing Actions..."
     process_actions1
 
-    terminator=fatal_error
+    TERMINATOR=fatal_error
 
     deletechain shorewall
 
@@ -8096,7 +8100,7 @@ add_to_zone() # $1...${n-1} = <interface>[:<hosts>] $n = zone
 
     mv -f /var/lib/shorewall/zones_$$ /var/lib/shorewall/zones
 
-    terminator=fatal_error
+    TERMINATOR=fatal_error
     #
     # Create a new Zone state file
     #
@@ -8284,7 +8288,7 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
 
     mv -f /var/lib/shorewall/zones_$$ /var/lib/shorewall/zones
 
-    terminator=fatal_error
+    TERMINATOR=fatal_error
 
     for delhost in $hostlist; do
 	interface=${delhost%%:*}
@@ -8412,7 +8416,7 @@ do_initialize() {
     #
     # Establish termination function
     #
-    terminator=startup_error
+    TERMINATOR=startup_error
     #
     # Clear all configuration variables
     #

@@ -1,21 +1,24 @@
 #
-# Shorewall 2.6 /usr/share/shorewall/action.Drop
+# Shorewall version 2.6 - Drop Action
+#
+# /usr/share/shorewall/action.Drop
 #
 #	The default DROP common rules
 #
-# This action is invoked before a DROP policy is enforced. The purpose of the action
-# is:
+#	This action is invoked before a DROP policy is enforced. The purpose
+#	of the action is:
 #
-#	a) Avoid logging lots of useless cruft. 
-#	b) Ensure that 'auth' requests are rejected, even if the policy is DROP.
-#	   Otherwise, you may experience problems establishing connections with
-#	   servers that use auth.
-#       c) Ensure that certain ICMP packets that are necessary for successful 
+#	a) Avoid logging lots of useless cruft.
+#	b) Ensure that 'auth' requests are rejected, even if the policy is
+#	   DROP. Otherwise, you may experience problems establishing
+#	   connections with servers that use auth.
+#	c) Ensure that certain ICMP packets that are necessary for successful
 #	   internet operation are always ACCEPTed.
 #
-# IF YOU ARE HAVING CONNECTION PROBLEMS, CHANGING THIS FILE WON'T HELP!!!!!!!!!!!!
-######################################################################################
-#TARGET  	SOURCE		DEST      	PROTO	DPORT	SPORT
+# IF YOU ARE HAVING CONNECTION PROBLEMS, CHANGING THIS FILE WON'T HELP!!!!!!!!!
+#
+###############################################################################
+#TARGET		SOURCE	DEST	PROTO	DPORT	SPORT
 #
 # Reject 'auth'
 #
@@ -27,10 +30,10 @@ dropBcast
 #
 # ACCEPT critical ICMP types
 #
-AllowICMPs	-		-		icmp
+AllowICMPs	-	-	icmp
 #
-# Drop packets that in the INVALID state -- these are usually ICMP packets and just
-# confuse people when they appear in the log.
+# Drop packets that in the INVALID state -- these are usually ICMP packets
+# and just confuse people when they appear in the log.
 #
 dropInvalid
 #
@@ -41,9 +44,10 @@ DropUPnP
 #
 # Drop 'newnotsyn' traffic so that it doesn't get logged.
 #
-dropNotSyn	-		-		tcp
+dropNotSyn	-	-	tcp
 #
-# Drop late-arriving DNS replies. These are just a nuisance and clutter up the log.
+# Drop late-arriving DNS replies. These are just a nuisance and clutter up
+# the log.
 #
 DropDNSrep
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

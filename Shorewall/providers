@@ -1,21 +1,20 @@
-##############################################################################
 #
-# Shorewall 2.6  -- Internet Service Providers
+# Shorewall version 2.6 - Providers File
 #
 # /etc/shorewall/providers
 #
-#	This file is used to define additional routing tables. You will 
+#	This file is used to define additional routing tables. You will
 #	want to define an additional table if:
 #
 #	- You have connections to more than one ISP or multiple connections
 #	  to the same ISP
 #
-#	- You run Squid as a transparent proxy on a host other than the 
+#	- You run Squid as a transparent proxy on a host other than the
 #	  firewall.
 #
 #	To omit a column, enter "-".
 #
-# Columns must be separated by white space and are:
+# Columns are:
 #
 #	NAME		The provider name.
 #
@@ -47,14 +46,14 @@
 #		balance The providers that have 'default' specified will
 #			get outbound traffic load-balanced among them. By
 #			default, all interfaces with 'balance' specified
-#			will have the same weight (1). You can change the 
+#			will have the same weight (1). You can change the
 #			weight of an interface by specifiying balance=<weight>
 #			where <weight> is the weight of the route out of
 #			this interface.
 #
 #		loose	Normally, Shorewall adds routing rules to prohibit
 #			firewall marks from working with traffic generated
-#			on the firewall itself. By setting the 'loose' 
+#			on the firewall itself. By setting the 'loose'
 #			option, generation of these rules is avoided.
 #
 #	COPY		A comma-separated lists of other interfaces on your
@@ -68,7 +67,7 @@
 #	#NAME	NUMBER	MARK DUPLICATE	INTERFACE GATEWAY	OPTIONS
 #	Squid	1	1    -		eth2	  192.168.2.99	-
 #
-# Example: 
+# Example:
 #
 #      eth0 connects to ISP 1. The IP address of eth0 is 206.124.146.176 and
 #      the ISP's gateway router has IP address 206.124.146.254.
@@ -76,11 +75,13 @@
 #      eth1 connects to ISP 2. The IP address of eth1 is 130.252.99.27 and the
 #      ISP's gateway router has IP address 130.252.99.254.
 #
-#      #NAME   NUMBER  MARK DUPLICATE   INTERFACE   GATEWAY         OPTIONS		COPY
-#      ISP1    1       1    main        eth0        206.124.146.254 track,balance
-#      ISP2    2       2    main        eth1        130.252.99.254  track,balance 
+#      #NAME NUMBER MARK DUPLICATE INTERFACE GATEWAY	     OPTIONS	  COPY
+#      ISP1  1	    1	 main	   eth0	     206.124.146.254 track,balance
+#      ISP2  2	    2	 main	   eth1	     130.252.99.254  track,balance
 #
-# For additional information, see http://shorewall.net/Shorewall_and_Routing.html
-##############################################################################################
+# For additional information, see
+# http://shorewall.net/Shorewall_and_Routing.html
+#
+############################################################################################
 #NAME	NUMBER	MARK	DUPLICATE	INTERFACE	GATEWAY		OPTIONS		COPY
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE

@@ -1,20 +1,24 @@
 #
-# Shorewall 2.6 /etc/shorewall/zones
+# Shorewall version 2.6 - Zones File
 #
-# This file determines your network zones. Columns are:
+# /etc/shorewall/zones
+#
+#	This file determines your network zones.
+#
+# Columns are:
 #
 #	ZONE	Short name of the zone (5 Characters or less in length).
 #		The names "all" and "none" are reserved and may not be
 #		used as zone names.
 #
-#	IPSEC   Yes --  Communication with all zone hosts is encrypted
+#	IPSEC	Yes --	Communication with all zone hosts is encrypted
 #	ONLY		Your kernel and iptables must include policy
 #			match support.
-#		No  --  Communication with some zone hosts may be encrypted. 
+#		No  --	Communication with some zone hosts may be encrypted.
 #			Encrypted hosts are designated using the 'ipsec'
-#			option in /etc/shorewall/hosts. 				
+#			option in /etc/shorewall/hosts.
 #
-#	OPTIONS,        A comma-separated list of options as follows:
+#	OPTIONS,	A comma-separated list of options as follows:
 #	IN OPTIONS,
 #	OUT OPTIONS	reqid=<number> where <number> is specified
 #			using setkey(8) using the 'unique:<number>
@@ -25,7 +29,7 @@
 #
 #			proto=ah|esp|ipcomp
 #
-#			mss=<number> (sets the MSS field in TCP packets) 
+#			mss=<number> (sets the MSS field in TCP packets)
 #
 #			mode=transport|tunnel
 #
@@ -35,36 +39,38 @@
 #			tunnel-dst=<address>[/<mask>] (only
 #			available with mode=tunnel)
 #
-#			strict  Means that packets must match all rules.
+#			strict	Means that packets must match all rules.
 #
-#			next    Separates rules; can only be used with
-#                               strict..
+#			next	Separates rules; can only be used with
+#				strict..
 #
 #		Example:
 #			mode=transport,reqid=44
 #
 #	The options in the OPTIONS column are applied to both incoming
 #	and outgoing traffic. The IN OPTIONS are applied to incoming
-#	traffic (in addition to OPTIONS) and the OUT OPTIONS are 
+#	traffic (in addition to OPTIONS) and the OUT OPTIONS are
 #	applied to outgoing traffic.
 #
 #	If you wish to leave a column empty but need to make an entry
 #	in a following column, use "-".
 #
-# THE ORDER OF THE ENTRIES IN THIS FILE IS IMPORTANT IF YOU HAVE NESTED OR 
+# THE ORDER OF THE ENTRIES IN THIS FILE IS IMPORTANT IF YOU HAVE NESTED OR
 # OVERLAPPING ZONES DEFINED THROUGH /etc/shorewall/hosts.
 #
 # See http://www.shorewall.net/Documentation.htm#Nested
-#--------------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 # Example zones:
 #
-#    You have a three interface firewall with internet, local and DMZ interfaces.
+#	You have a three interface firewall with internet, local and DMZ
+#	interfaces.
 #
 #	#ZONE	IPSEC	OPTIONS		IN			OUT	
 #	net	
 #	loc
 #	dmz
 #
+###############################################################################
 #ZONE	IPSEC	OPTIONS			IN			OUT
 #	ONLY				OPTIONS			OPTIONS
 #LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE

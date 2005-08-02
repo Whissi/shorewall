@@ -101,11 +101,11 @@
 #                                                  a list of network/host addresses.
 #
 #          shorewall safe-start                    Starts the firewall and promtp for a c
-#                                                  confirmation to accept or reject the new 
+#                                                  confirmation to accept or reject the new
 #                                                  configuration
 #
-#          shorewall safe-restart                  Restarts the firewall and prompt for a 
-#                                                  confirmation to accept or reject the new 
+#          shorewall safe-restart                  Restarts the firewall and prompt for a
+#                                                  confirmation to accept or reject the new
 #                                                  configuration
 #
 # Fatal Error
@@ -175,7 +175,7 @@ validate_restorefile() # $* = label
 	    echo "   ERROR: $@ must specify a simple file name: $RESTOREFILE" >&2
 	    exit 2
 	    ;;
-    esac    
+    esac
 }
 
 #
@@ -418,12 +418,12 @@ save_config() {
 				echo __EOF__ >> /var/lib/shorewall/restore-$$
 				[ -f /var/lib/shorewall/restore-tail ] && \
 				    cat /var/lib/shorewall/restore-tail >> /var/lib/shorewall/restore-$$
-				mv -f /var/lib/shorewall/restore-$$ $RESTOREPATH 
+				mv -f /var/lib/shorewall/restore-$$ $RESTOREPATH
 				chmod +x $RESTOREPATH
 				echo "   Currently-running Configuration Saved to $RESTOREPATH"
 				
 				rm -f ${RESTOREPATH}-ipsets
-				    
+				
 				case ${SAVE_IPSETS:-No} in
 				    [Yy][Ee][Ss])
                                         RESTOREPATH=${RESTOREPATH}-ipsets
@@ -446,7 +446,7 @@ save_config() {
 					echo "ipset -R << __EOF__" >> $f
 					ipset -S >> $f
 					echo "__EOF__" >> $f
-					mv -f $f $RESTOREPATH 
+					mv -f $f $RESTOREPATH
 					chmod +x $RESTOREPATH
 					echo "   Current Ipset Contents Saved to $RESTOREPATH"
 					;;
@@ -472,7 +472,7 @@ save_config() {
     else
 	echo "Shorewall isn't started"
     fi
-    
+
     [ "$nolock" ] || mutex_off
 }
 #
@@ -483,7 +483,7 @@ help()
     [ -x $HELP ] && { export version; exec $HELP $*; }
     echo "Help subsystem is not installed at $HELP"
 }
- 
+
 #
 # Give Usage Information
 #
@@ -518,7 +518,7 @@ usage() # $1 = exit status
     echo "   version"
     echo "   safe-start"
     echo "   safe-restart"
-    echo 
+    echo
     exit $1
 }
 
@@ -534,12 +534,12 @@ show_reset() {
 #
 # Display's the passed file name followed by "=" and the file's contents.
 #
-show_proc() # $1 = name of a file  
+show_proc() # $1 = name of a file
 {
     [ -f $1 ] && echo "   $1 = $(cat $1)"
 }
 
-read_yesno_with_timeout() { 
+read_yesno_with_timeout() {
     read -t 60 yn 2> /dev/null
     if [ $? -eq 2 ]
     then
@@ -593,7 +593,7 @@ while [ $done -eq 0 ]; do
 	    option=${option#-}
 
 	    [ -z "$option" ] && usage 1
-	    
+	
 	    while [ -n "$option" ]; do
 		case $option in
 		    c)
@@ -755,7 +755,7 @@ case "$1" in
 	    fi
 
 	    if [ -n "$FAST" ]; then
-		   
+		
 		RESTOREPATH=/var/lib/shorewall/$RESTOREFILE
 
 		if [ -x $RESTOREPATH ]; then
@@ -893,7 +893,7 @@ case "$1" in
 	    ;;
 	*)
 	    shift
-	    
+	
 	    echo "Shorewall-$version $([ $# -gt 1 ] && echo Chains || echo Chain) $* at $HOSTNAME - $(date)"
 	    echo
 	    show_reset
@@ -931,7 +931,7 @@ case "$1" in
 	fi
 	echo "State:$state"
 	echo
-	exit $status    
+	exit $status
 	;;
     dump)
     	[ -n "$debugging" ] && set -x
@@ -990,7 +990,7 @@ case "$1" in
 	    ip rule ls
 	    ip rule ls | while read rule; do
 		echo ${rule##* }
-	    done | sort -u | while read table; do 
+	    done | sort -u | while read table; do
 		echo
 		echo "Table $table:"
 		echo
@@ -1226,7 +1226,7 @@ case "$1" in
 
 	[ -n "$nolock" ] || mutex_on
 
-	if [ -x $RESTOREPATH ]; then 
+	if [ -x $RESTOREPATH ]; then
 	    if [ -x ${RESTOREPATH}-ipsets ] ; then
 		echo Restoring Ipsets...
 		iptables -F
@@ -1243,7 +1243,7 @@ case "$1" in
             exit 2
         fi
         ;;
-    call) 
+    call)
     	[ -n "$debugging" ] && set -x
 	#
 	# Undocumented way to call functions in /usr/share/shorewall/functions directly
@@ -1257,7 +1257,7 @@ case "$1" in
 	help $@
 	;;
     safe-restart|safe-start)
-	# test is the shell supports timed read 
+	# test is the shell supports timed read
 	read -t 0 junk 2> /dev/null
 	if [ $? -eq 2 -a ! -x /bin/bash ]
 	then
@@ -1314,10 +1314,10 @@ case "$1" in
 	    then
 		$0 nolock $debugging restore "safe-start-restart"
 		rm /var/lib/shorewall/safe-start-restart
-	    else		    
+	    else		
 		$0 nolock $debugging clear
 	    fi
-	    
+	
 	    mutex_off
 	    echo "New configuration has been rejected and the old one restored"
 	    exit 2

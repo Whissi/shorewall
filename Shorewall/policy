@@ -1,9 +1,9 @@
 #
-# Shorewall 2.6 -- Policy File
+# Shorewall version 2.6 - Policy File
 #
 # /etc/shorewall/policy
 #
-#	             THE ORDER OF ENTRIES IN THIS FILE IS IMPORTANT
+#		     THE ORDER OF ENTRIES IN THIS FILE IS IMPORTANT
 #
 #	This file determines what to do with a new connection request if we
 #	don't get a match from the /etc/shorewall/rules file . For each
@@ -23,39 +23,43 @@
 #
 #			ACCEPT		- Accept the connection
 #			DROP		- Ignore the connection request
-#			REJECT		- For TCP, send RST. For all other, send
-#					  "port unreachable" ICMP.
+#			REJECT		- For TCP, send RST. For all other,
+#					  send "port unreachable" ICMP.
 #			QUEUE		- Send the request to a user-space
 #					  application using the QUEUE target.
 #			CONTINUE	- Pass the connection request past
 #					  any other rules that it might also
-#					  match (where the source or destination
-#					  zone in those rules is a superset of
-#					  the SOURCE or DEST in this policy).
+#					  match (where the source or
+#					  destination zone in those rules is
+#					  a superset of the SOURCE or DEST
+#					  in this policy).
 #			NONE		- Assume that there will never be any
 #					  packets from this SOURCE
-#					  to this DEST. Shorewall will not set up
-#					  any infrastructure to handle such
-#				 	  packets and you may not have any rules
-#					  with this SOURCE and DEST in the
-#					  /etc/shorewall/rules file. If such a
-#					  packet _is_ received, the result is
-#					  undefined. NONE may not be used if the 
-#					  SOURCE or DEST columns contain the
-#					  firewall zone ($FW) or "all".
+#					  to this DEST. Shorewall will not set
+#					  up any infrastructure to handle such
+#					  packets and you may not have any
+#					  rules with this SOURCE and DEST in
+#					  the /etc/shorewall/rules file. If
+#					  such a packet _is_ received, the
+#					  result is undefined. NONE may not be
+#					  used if the SOURCE or DEST columns
+#					  contain the firewall zone ($FW) or
+#					  "all".
 #
-#			If this column contains ACCEPT, DROP or REJECT and a 
+#			If this column contains ACCEPT, DROP or REJECT and a
 #			corresponding common action is defined in
-#			/etc/shorewall/actions (or /usr/share/shorewall/actions.std)
-#			then that action will be invoked before the policy named in
-#			this column is inforced.
+#			/etc/shorewall/actions (or
+#			/usr/share/shorewall/actions.std) then that action
+#			will be invoked before the policy named in this column
+#			is inforced.
 #
-#			The policy determined the default treatment of new 
-#			connection requests and may optionally be followed by ":" 
-#			and an ESTABLISHED policy which determines what
-#			is to be done with packets that are part of an established
-#			connection. The choices are ACCEPT (the default) and QUEUE
-#			(to queue the packet to a user-space filter like Snort Inline). 
+#			The policy determined the default treatment of new
+#			connection requests and may optionally be followed by
+#			":" and an ESTABLISHED policy which determines what
+#			is to be done with packets that are part of an
+#			established connection. The choices are ACCEPT (the
+#			default) and QUEUE (to queue the packet to a
+#			user-space filter like Snort Inline).
 #
 #	LOG LEVEL	If supplied, each connection handled under the default
 #			POLICY is logged at that level. If not supplied, no
@@ -90,9 +94,10 @@
 #	#
 #	# THE FOLLOWING POLICY MUST BE LAST
 #	#	
-#	all		all		REJECT		info 
+#	all		all		REJECT		info
 #
 # See http://shorewall.net/Documentation.htm#Policy for additional information.
+#
 ###############################################################################
 #SOURCE		DEST		POLICY		LOG		LIMIT:BURST
 #						LEVEL

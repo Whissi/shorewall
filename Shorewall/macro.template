@@ -1,21 +1,24 @@
 #
-# Shorewall version 2.6 - Macro Template File
+# Shorewall version 2.6 - Template Macro
 #
 # /usr/share/shorewall/macro.template
 #
 # Macro files are similar to template files with the following exceptions:
 #
-#	- A macro file is not processed unless the marcro that it defines is referenced in the
-#	  /etc/shorewall/rules file or in an action definition file.
+#	- A macro file is not processed unless the marcro that it defines is
+#	  referenced in the /etc/shorewall/rules file or in an action
+#	  definition file.
 #
-#	- Macros are translated directly into one or more rules whereas actions become their own
-#	  chain.
+#	- Macros are translated directly into one or more rules whereas
+#	  actions become their own chain.
 #
-#	- All entries in a macro undergo substitution when the macro is invoked in the rules file.
+#	- All entries in a macro undergo substitution when the macro is
+#	  invoked in the rules file.
 #
 #	- Macros may not invoke other macros.
 #
-# The columns in a macro definition are the same as those in the action.template file.
+# The columns in a macro definition are the same as those in the
+# action.template file.
 # A few examples should help show how Macros work.
 #
 # /etc/shorewall/macro.FwdFTP:
@@ -26,44 +29,52 @@
 #
 # /etc/shorewall/rules:
 #
-#	#ACTION	SOURCE	DEST		PROTO	DEST	SOURCE	ORIGINAL	RATE	USER/
-#	#					PORT	PORT(S)	DEST		LIMIT	GROUP
+#	#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGINAL RATE	USER/
+#	#				PORT	PORT(S)	DEST	 LIMIT	GROUP
 #	FwdFTP	net	loc:192.168.1.5
 #
 # The result is equivalent to:
 #
-#	#ACTION	SOURCE	DEST		PROTO	DEST	SOURCE	ORIGINAL	RATE	USER/
-#	#					PORT	PORT(S)	DEST		LIMIT	GROUP
+#	#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGINAL RATE	USER/
+#	#				PORT	PORT(S)	DEST	 LIMIT	GROUP
 #	DNAT	net	loc:192.168.1.5	tcp	21	
 #
 # The substitution rules are as follows:
 #
-#	ACTION column		If in the invocation of the macro, the macro name is followed by
-#				slash ("/") and a second name, the second name is substituted for
-#				each entry in the macro whose ACTION is PARAM
+#	ACTION column		If in the invocation of the macro, the macro
+#				name is followed by slash ("/") and a second
+#				name, the second name is substituted for each
+#				entry in the macro whose ACTION is PARAM
 #
-#				For example, if macro FOO is invoked as FOO/ACCEPT then when
-#				expanding macro.FOO, Shorewall will substitute ACCEPT in each
-#				entry in macro.FOO whose ACTION column contains PARAM. PARAM may
-#				be optionally followed by a colon and a log level.
-# 	
-#				Any logging specified when the macro is invoked is applied to each
-#				entry in the macros.
-#
-#	SOURCE and DEST		If the column in the macro is empty then the value in the rules 
-#	columns 		file is used. If the column in the macro is non-empty then any
-#				value in the rules file is appended with a ":" separator.
-#
-#				Example:   Macro File	DNAT	net	loc	tcp	21
-#					   rules File	FwdFTP	-	192.168.1.5
-#					   Result	DNAT	net	loc:192.168.1.5	tcp	21
+#				For example, if macro FOO is invoked as
+#				FOO/ACCEPT then when expanding macro.FOO,
+#				Shorewall will substitute ACCEPT in each
+#				entry in macro.FOO whose ACTION column
+#				contains PARAM. PARAM may be optionally
+#				followed by a colon and a log level.
 #	
-#	Remaining 		Any value in the rules file REPLACES the value given in the macro
-#	columns			file.
+#				Any logging specified when the macro is
+#				invoked is applied to each entry in the macros.
 #
+#	SOURCE and DEST		If the column in the macro is empty then the
+#	columns			value in the rules file is used. If the column
+#				in the macro is non-empty then any value in
+#				the rules file is appended with a ":"
+#				separator.
+#
+#
+#	Example:		###############################################
+#				#ACTION	SOURCE	DEST		PROTO	DEST
+#				#					PORT
+#		   Macro File	DNAT	net	loc		tcp	21
+#		   rules File	FwdFTP	-	192.168.1.5
+#		   Result	DNAT	net	loc:192.168.1.5	tcp	21
+#	
+#	Remaining		Any value in the rules file REPLACES the value
+#	columns			given in the macro file.
 #
 #		
-####################################################################################################
-#ACTION  SOURCE		DEST      	PROTO	DEST    SOURCE	   RATE		USER/
-#                       	        	PORT    PORT(S)    LIMIT	GROUP
+###############################################################################
+#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGINAL	RATE	USER/
+#				PORT	PORT(S)	DEST		LIMIT	GROUP
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

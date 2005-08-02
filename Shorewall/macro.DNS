@@ -1,11 +1,13 @@
 #
-# Shorewall 2.6 /usr/share/shorewall/macro.DNS
+# Shorewall version 2.6 - DNS Macro
+#
+# /usr/share/shorewall/macro.DNS
 #
 #	This macro handles DNS traffic.
 #
-######################################################################################
-#TARGET  SOURCE		DEST      	PROTO	DEST    SOURCE	 	RATE	USER/
-#                       	        	PORT    PORT(S)		LIMIT	GROUP
-PARAM	 -	        -               udp	53
-PARAM	 -		-		tcp	53
+###############################################################################
+#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGINAL	RATE	USER/
+#				PORT	PORT(S)	DEST		LIMIT	GROUP
+PARAM	-	-	udp	53
+PARAM	-	-	tcp	53
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

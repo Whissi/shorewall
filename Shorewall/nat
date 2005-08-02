@@ -1,6 +1,5 @@
-##############################################################################
 #
-# Shorewall 2.6  -- Network Address Translation Table
+# Shorewall version 2.6 - Nat File
 #
 # /etc/shorewall/nat
 #
@@ -8,17 +7,17 @@
 #	(NAT).
 #
 # WARNING: If all you want to do is simple port forwarding, do NOT use this
-#          file. See http://www.shorewall.net/FAQ.htm#faq1. Also, in most
+#	   file. See http://www.shorewall.net/FAQ.htm#faq1. Also, in most
 #	   cases, Proxy ARP is a better solution that one-to-one NAT.
 #
-# Columns must be separated by white space and are:
+# Columns are:
 #
 #	EXTERNAL	External IP Address - this should NOT be the primary
 #			IP address of the interface named in the next
 #			column and must not be a DNS Name.
 #
 #	INTERFACE	Interface that you want to EXTERNAL address to appear
-#                       on. If ADD_IP_ALIASES=Yes in shorewall.conf, you may
+#			on. If ADD_IP_ALIASES=Yes in shorewall.conf, you may
 #			follow the interface name with ":" and a digit to
 #			indicate that you want Shorewall to add the alias
 #			with this name (e.g., "eth0:0"). That allows you to
@@ -31,17 +30,17 @@
 #			":" and no digit (e.g., "eth0:").
 #	INTERNAL	Internal Address (must not be a DNS Name).
 #
-#       ALL INTERFACES  If Yes or yes, NAT will be effective from all hosts.
-#                       If No or no (or left empty) then NAT will be effective
-#                       only through the interface named in the INTERFACE
-#                       column
+#	ALL INTERFACES	If Yes or yes, NAT will be effective from all hosts.
+#			If No or no (or left empty) then NAT will be effective
+#			only through the interface named in the INTERFACE
+#			column
 #
-#       LOCAL           If Yes or yes, NAT will be effective from the firewall
-#                       system
+#	LOCAL		If Yes or yes, NAT will be effective from the firewall
+#			system
 #
 # For additional information, see http://shorewall.net/NAT.htm
-##############################################################################
+#
+###############################################################################
 #EXTERNAL	INTERFACE	INTERNAL	ALL		LOCAL
 #						INTERFACES
-#
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE

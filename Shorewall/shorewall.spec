@@ -152,7 +152,7 @@ fi
 
 %changelog
 * Tue Jul 26 2005 Tom Eastep tom@shorewall.net
-- Fix omissions/errors 
+- Fix omissions/errors
 * Mon Jul 25 2005 Tom Eastep tom@shorewall.net
 - Updated to 2.5.0-1
 - Add macros and convert most actions to macros

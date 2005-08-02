@@ -51,11 +51,11 @@ add)
 	;;
 
 address|host)
-        echo "<$1>: 
+        echo "<$1>:
     May be either a host IP address such as 192.168.1.4 or a network address in
     CIDR format like 192.168.1.0/24. If your kernel and iptables contain iprange
     match support then IP address ranges of the form <low address>-<high address>
-    are also permitted. If your kernel and iptables contain ipset match support 
+    are also permitted. If your kernel and iptables contain ipset match support
     then you may specify the name of an ipset prefaced by "+". The name of the
     ipsec may be optionally followed by a number of levels of ipset bindings
     (1 - 6) that are to be followed"
@@ -141,7 +141,7 @@ dump)
     shorewall [-x] dump
 
     Produce a verbose report about the firewall for problem analysis.
-   
+
     (iptables -L -n -)
 
     When -x is given, that option is also passed to iptables to display actual packet and byte counts."
@@ -215,22 +215,22 @@ restart)
 
 safe-restart)
 	echo "safe-restart: safe-restart
-    Restart the same way as a shorewall restart except that previous firewall 
+    Restart the same way as a shorewall restart except that previous firewall
     configuration is backed up and will be restored if you notice any anomalies
     or you are not able to reach the firewall any more."
     ;;
 
 safe-start)
 	echo "safe-start: safe-start
-    Start the same way as a shorewall start except that in case of anomalies 
+    Start the same way as a shorewall start except that in case of anomalies
     shorewall clear is issued. "
     ;;
 
 restore)
 	echo "restore: restore [ <file name> ]
     Restore Shorewall to a state saved using the 'save' command
-    Existing connections are maintained. The <file name> names a restore file in 
-    /var/lib/shorewall created using "shorewall save"; if no <file name> is given 
+    Existing connections are maintained. The <file name> names a restore file in
+    /var/lib/shorewall created using "shorewall save"; if no <file name> is given
     then Shorewall will be restored from the file specified by the RESTOREFILE
     option in shorewall.conf.
 
@@ -239,7 +239,7 @@ restore)
 
 save)
 	echo "save: save [ <file name> ]
-    The dynamic data is stored in /var/lib/shorewall/save. The state of the 
+    The dynamic data is stored in /var/lib/shorewall/save. The state of the
     firewall is stored in /var/lib/shorewall/<file name> for use by the 'shorewall restore'
     and 'shorewall -f start' commands. If <file name> is not given then the state is saved
     in the file specified by the RESTOREFILE option in shorewall.conf.
@@ -305,8 +305,8 @@ status)
     Displays the Shorewall status (running/not-running).
 
     Also displays the Shorewall state as shown in the state diagram at
-    http://www.shorewall.net/starting_and_stopping_shorewall.  The time and 
-    date when that state was reached is also displayed."  
+    http://www.shorewall.net/starting_and_stopping_shorewall.  The time and
+    date when that state was reached is also displayed."
 	;;
 
 trace)

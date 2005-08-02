@@ -128,7 +128,7 @@ ensure_config_path() {
 	. $F
     fi
 }
-   
+
 #
 # Find a File -- For relative file name, look first in $SHOREWALL_DIR then in /etc/shorewall
 #
@@ -245,7 +245,7 @@ loadmodule() # $1 = module name, $2 - * arguments
     local suffix
     moduleloader=modprobe
 
-    if ! qt mywhich modprobe; then 
+    if ! qt mywhich modprobe; then
 	moduleloader=insmod
     fi
 
@@ -278,7 +278,7 @@ reload_kernel_modules() {
 
     [ -z "$MODULESDIR" ] && MODULESDIR=/lib/modules/$(uname -r)/kernel/net/ipv4/netfilter
 
-    while read command; do 
+    while read command; do
 	eval $command
     done
 
@@ -398,8 +398,8 @@ mktempfile() {
 #
 mktempdir() {
 
-    [ -z "$MKTEMP" ] && find_mktemp   
-     
+    [ -z "$MKTEMP" ] && find_mktemp
+
     case "$MKTEMP" in
 	STD)
 	    mktemp -td shorewall.XXXXXX
@@ -483,7 +483,7 @@ decodeaddr() {
     local x
     local temp=0
     local ifs=$IFS
-    
+
     IFS=.
 
     for x in $1; do
@@ -517,7 +517,7 @@ encodeaddr() {
 #
 # Comes in two flavors:
 #
-# ip_range() - produces a mimimal list of network/host addresses that spans 
+# ip_range() - produces a mimimal list of network/host addresses that spans
 #              the range.
 #
 # ip_range_explicit() - explicitly enumerates the range.
@@ -571,7 +571,7 @@ ip_range() {
 ip_range_explicit() {
     local first last
 
-    case $1 in 
+    case $1 in
     [0-9]*.*.*.*-*.*.*.*)
 	;;
     *)
@@ -700,7 +700,7 @@ if_match() # $1 = Name in interfaces file - may end in "+"
            # $2 = Full interface name - may also end in "+"
 {
     local pattern=${1%+}
-    
+
     case $1 in
 	*+)
 	    test  "x$(echo $2 | truncate ${#pattern} )" = "x${pattern}"
@@ -721,7 +721,7 @@ find_device() {
 	shift
     done
 }
-    
+
 #
 # Find the value 'via' in the passed arguments then echo the next value
 #
@@ -732,7 +732,7 @@ find_gateway() {
 	shift
     done
 }
-    
+
 #
 # Find the value 'peer' in the passed arguments then echo the next value up to
 # "/"
@@ -744,7 +744,7 @@ find_peer() {
 	shift
     done
 }
-    
+
 #
 # Find the interfaces that have a route to the passed address - the default
 # route is not used.
@@ -768,12 +768,12 @@ find_rt_interface() {
 }
 
 #
-# Try to find the gateway through an interface looking for 'nexthop' 
+# Try to find the gateway through an interface looking for 'nexthop'
 
 find_nexthop() # $1 = interface
 {
     echo $(find_gateway `ip route ls | grep "[[:space:]]nexthop.* $1"`)
-}    
+}
 
 #
 # Find the default route's interface

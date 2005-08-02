@@ -1,11 +1,13 @@
 #
-# Shorewall 2.6 /usr/share/shorewall/macro.AllowICMPs
+# Shorewall version 2.6 - AllowICMPs Macro
+#
+# /usr/share/shorewall/macro.AllowICMPs
 #
 #	ACCEPT needed ICMP types
 #
-######################################################################################
-#TARGET  SOURCE		DEST      	PROTO	DEST    SOURCE	 	RATE	USER/
-#                       	        	PORT    PORT(S)		LIMIT	GROUP
-#
-ACCEPT	-		-		icmp	fragmentation-needed
-ACCEPT	-		-		icmp	time-exceeded
+###############################################################################
+#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGINAL	RATE	USER/
+#				PORT	PORT(S)	DEST		LIMIT	GROUP
+ACCEPT	-	-	icmp	fragmentation-needed
+ACCEPT	-	-	icmp	time-exceeded
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

@@ -29,7 +29,7 @@ Migration Considerations:
 1) The "monitor" command has been eliminated.
 
 2) The "DISPLAY" and "COMMENTS" columns in the /etc/shorewall/zones
-   file have been removed and have been replaced by the former 
+   file have been removed and have been replaced by the former
    columns of the /etc/shorewall/ipsec file. The latter file has been
    removed.
 
@@ -46,7 +46,7 @@ Migration Considerations:
 
    The shorewall.conf file included in this release sets
    IPSECFILE=zones so that new users are expected to use the new zone
-   file format. 
+   file format.
 
    As a result, the columns in the /etc/shorewall/zones file
    are now as follows:
@@ -80,7 +80,7 @@ Migration Considerations:
 				proto=ah|esp|ipcomp
 
 				mss=<number> (sets the MSS field in TCP
-				packets) 
+				packets)
 
 				mode=transport|tunnel
 
@@ -124,7 +124,7 @@ Migration Considerations:
 5) Most of the standard actions have been replaced by parameterized
    macros (see below). So for example, the action.AllowSMTP and
    action.DropSMTP have been removed an a parameterized macro
-   macro.SMTP has been added to replace them. 
+   macro.SMTP has been added to replace them.
 
    In order that current users don't have to immediately update their
    rules and user-defined actions, Shorewall can substitute an
@@ -232,7 +232,7 @@ New Features in Shorewall 2.5.0
       the macro. The first three columns get special treatment:
 
       TARGET	 If you code PARAM as the target in a macro then
-		 when you invoke the macro, you can include the 
+		 when you invoke the macro, you can include the
 		 name of the macro followed by a slash ("/") and
 		 an ACTION (either builtin or user-defined. All
 		 instances of PARAM in the body of the macro will be
@@ -241,11 +241,11 @@ New Features in Shorewall 2.5.0
 		 Any logging applied when the action is invoked is
 		 applied following the same rules as for actions.
 
-      SOURCE and 
+      SOURCE and
       DEST	 If the rule in the macro file specifies a value and
 		 the invocation of the rule also specifies a value then
 		 the value in the invocation is appended to the value
-		 in the rule using ":" as a separator. 
+		 in the rule using ":" as a separator.
 
 		 Example:
 
@@ -298,5 +298,5 @@ New Features in Shorewall 2.5.0
     WARNING -- DO NOT SPECIFY arp_ignore FOR ANY INTERFACE INVOLVED IN
     PROXY ARP.
 
-	  
+	
 

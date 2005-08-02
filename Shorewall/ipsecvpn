@@ -54,7 +54,7 @@ NETWORKS="192.168.1.0/24"
 #
 CERTS=/etc/certs
 #
-# Certificate to be used for this connection. The cert 
+# Certificate to be used for this connection. The cert
 # directory must contain:
 #
 #     ${CERT}.pem     - the certificate
@@ -180,14 +180,14 @@ make_racoon_conf() {
 #
 # Make a setkey configuration file using the variables above
 #
-make_setkey_conf() 
+make_setkey_conf()
 {
     echo "flush;"
     echo "spdflush;"
 
     echo "spdadd $IPADDR/32 $GATEWAY/32 any -P out  ipsec esp/tunnel/${IPADDR}-${GATEWAY}/require;"
     echo "spdadd $GATEWAY/32 $IPADDR/32 any -P in   ipsec esp/tunnel/${GATEWAY}-${IPADDR}/require;"
-    
+
     for network in $NETWORKS; do
 	echo "spdadd $IPADDR/32 $network any -P out  ipsec esp/tunnel/${IPADDR}-${GATEWAY}/require;"
 	echo "spdadd $network $IPADDR/32 any -P in   ipsec esp/tunnel/${GATEWAY}-${IPADDR}/require;"
@@ -197,7 +197,7 @@ make_setkey_conf()
 #
 # Start the Tunnel
 #
-start() 
+start()
 {
     #
     # Get the first IP address configured on the device in INTERFACE
@@ -242,7 +242,7 @@ start()
 #
 # Stop the Tunnel
 #
-stop() 
+stop()
 {
     #
     # Kill any racoon daemons
@@ -257,7 +257,7 @@ stop()
 #
 # Display command syntax and abend
 #
-usage() 
+usage()
 {
     error_message "usage: $(basename $0) [start|stop|restart]"
     exit 1
@@ -286,7 +286,7 @@ case $1 in
 esac
 
 
-    
+
 
 
 

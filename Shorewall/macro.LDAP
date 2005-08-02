@@ -1,11 +1,13 @@
 #
-# Shorewall macro.LDAP
+# Shorewall version 2.6 - LDAP Macro
+#
+# /usr/share/shorewall/macro.LDAP
 #
 #	This macro handles LDAP traffic (secure and insecure)
 #
-################################################################################
-#TARGET  SOURCE		DEST      	PROTO	DEST		SOURCE	   RATE
-#                       	        	PORT		PORT(S)    LIMIT
-PARAM    -              -               tcp     389
-PARAM    -              -               tcp     636
+###############################################################################
+#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGINAL	RATE	USER/
+#				PORT	PORT(S)	DEST		LIMIT	GROUP
+PARAM	-	-	tcp	389
+PARAM	-	-	tcp	636
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

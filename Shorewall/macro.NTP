@@ -1,11 +1,13 @@
 #
-# Shorewall 2.6 /usr/share/shorewall/macro.NTP
+# Shorewall version 2.6 - NTP Macro
+#
+# /usr/share/shorewall/macro.NTP
 #
 #	This macro handles NTP traffic (ntpd).
+#	For broadcast NTP traffic, use NTPbrd Macro.
 #
-######################################################################################
-#TARGET  SOURCE		DEST      	PROTO	DEST    SOURCE	   ORIGINAL	RATE
-#                       	        	PORT    PORT(S)    DEST         LIMIT
-PARAM	 -	        -               udp	123
-PARAM	 -		-		udp	1024:	123
+###############################################################################
+#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGINAL	RATE	USER/
+#				PORT	PORT(S)	DEST		LIMIT	GROUP
+PARAM	-	-	udp	123
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

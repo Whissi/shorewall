@@ -1,6 +1,5 @@
-##############################################################################
 #
-# Shorewall 2.6 -- Hosts Accessible when the Firewall is Stopped
+# Shorewall version 2.6 - Routestopped File
 #
 # /etc/shorewall/routestopped
 #
@@ -8,7 +7,7 @@
 #	firewall is stopped or when it is in the process of being
 #	[re]started.
 #
-# Columns must be separated by white space and are:
+# Columns are:
 #
 #	INTERFACE	- Interface through which host(s) communicate with
 #			  the firewall
@@ -19,7 +18,7 @@
 #
 #			  If left empty or supplied as "-",
 #			  0.0.0.0/0 is assumed.
-#	OPTIONS         - (Optional) A comma-separated list of
+#	OPTIONS		- (Optional) A comma-separated list of
 #			  options. The currently-supported options are:
 #
 #			  routeback - Set up a rule to ACCEPT traffic from
@@ -27,15 +26,15 @@
 #
 #			  source - Allow traffic from these hosts to ANY
 #			  destination. Without this option or the 'dest'
-#                         option, only traffic from this host to other
+#			  option, only traffic from this host to other
 #			  listed hosts (and the firewall) is allowed. If
-#                         'source' is specified then 'routeback' is redundent.
+#			  'source' is specified then 'routeback' is redundent.
 #
 #			  dest - Allow traffic to these hosts from ANY
 #			  source. Without this option or the 'source'
-#                         option, only traffic from this host to other
+#			  option, only traffic from this host to other
 #			  listed hosts (and the firewall) is allowed. If
-#                         'dest' is specified then 'routeback' is redundent.
+#			  'dest' is specified then 'routeback' is redundent.
 #
 #			  critical - Allow traffic between the firewall and
 #			  these hosts throughout '[re]start', 'stop' and
@@ -53,8 +52,9 @@
 #	eth3		-			source
 #
 # See http://shorewall.net/Documentation.htm#Routestopped and
-# http://shorewall.net/starting_and_stopping_shorewall.htm for additional 
+# http://shorewall.net/starting_and_stopping_shorewall.htm for additional
 # information.
-##############################################################################
-#INTERFACE	HOST(S)		OPTIONS
+#
+###############################################################################
+#INTERFACE	HOST(S)			OPTIONS
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

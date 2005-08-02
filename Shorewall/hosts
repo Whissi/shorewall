@@ -1,5 +1,7 @@
 #
-# Shorewall 2.6 - /etc/shorewall/hosts
+# Shorewall version 2.6 - Hosts file
+#
+# /etc/shorewall/hosts
 #
 #	THE ONLY TIME YOU NEED THIS FILE IS WHERE YOU HAVE MORE THAN
 #	ONE ZONE CONNECTED THROUGH A SINGLE INTERFACE.
@@ -17,7 +19,7 @@
 #	The order of entries in this file is not significant in
 #	determining zone composition. Rather, the order that the zones
 #	are defined in /etc/shorewall/zones determines the order in
-#	which the records in this file are interpreted. 
+#	which the records in this file are interpreted.
 #
 #	ZONE	- The name of a zone defined in /etc/shorewall/zones
 #
@@ -37,7 +39,8 @@
 #			   be defined in /etc/shorewall/interfaces and may
 #			   optionally followed by a colon (":") and a
 #			   host or network IP or a range.
-#			   See http://www.shorewall.net/Bridge.html for details.
+#			   See http://www.shorewall.net/Bridge.html
+#			   for details.
 #			e) The name of an ipset (preceded by "+").
 #
 #		  Examples:
@@ -60,19 +63,20 @@
 #				       an ethernet NIC and must be up before
 #				       Shorewall is started.
 #
-#			routeback    - Shorewall should set up the infrastructure
-#				       to pass packets from this/these
-#				       address(es) back to themselves. This is
-#				       necessary if hosts in this group use the
-#				       services of a transparent proxy that is
+#			routeback    - Shorewall should set up the
+#				       infrastructure to pass packets
+#				       from this/these address(es) back
+#				       to themselves. This is necessary if
+#				       hosts in this group use the services
+#				       of a transparent proxy that is
 #				       a member of the group or if DNAT is used
-#				       to send requests originating from this 
+#				       to send requests originating from this
 #				       group to a server in the group.
 #
 #			norfc1918    - This option only makes sense for ports
 #				       on a bridge.
 #
-#				       The port should not accept 
+#				       The port should not accept
 #				       any packets whose source is in one
 #				       of the ranges reserved by RFC 1918
 #				       (i.e., private or "non-routable"
@@ -100,7 +104,7 @@
 #
 #			nosmurfs     - This option only makes sense for ports
 #				       on a bridge.
-#				       
+#				
 #				       Filter packets for smurfs
 #				       (packets with a broadcast
 #				       address as the source).
@@ -110,24 +114,26 @@
 #				       shorewall.conf. After logging, the
 #				       packets are dropped.
 #
-#			newnotsyn    - TCP packets that don't have the SYN 
+#			newnotsyn    - TCP packets that don't have the SYN
 #				       flag set and which are not part of an
 #				       established connection will be accepted
-#				       from these hosts, even if 
+#				       from these hosts, even if
 #				       NEWNOTSYN=No has been specified in
 #				       /etc/shorewall/shorewall.conf.
 #
-#				       This option has no effect if 
+#				       This option has no effect if
 #				       NEWNOTSYN=Yes.
 #
-#			ipsec        - The zone is accessed via a
+#			ipsec	     - The zone is accessed via a
 #				       kernel 2.6 ipsec SA. Note that if the
-#				       zone named in the ZONE column is 
+#				       zone named in the ZONE column is
 #				       specified as an IPSEC zone in the
-#				       /etc/shorewall/zones file then you do NOT
-#				       need to specify the 'ipsec' option here.
+#				       /etc/shorewall/zones file then you
+#				       do NOT need to specify the 'ipsec'
+#				       option here.
 #
 # For additional information, see http://shorewall.net/Documentation.htm#Hosts
 #
-#ZONE		HOST(S)				OPTIONS
+###############################################################################
+#ZONE	HOST(S)					OPTIONS
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS LINE -- DO NOT REMOVE

@@ -9,7 +9,7 @@ OPTIONS="-f"
 
 test -x $SRWL || exit 0
 test -n $INITLOG || {
-	echo "INITLOG cannot be empty, please configure $0" ; 
+	echo "INITLOG cannot be empty, please configure $0" ;
 	exit 1;
 }
 
@@ -21,9 +21,9 @@ fi
 
 echo_notdone () {
 
-  if [ "$INITLOG" = "/dev/null" ] ; then 
+  if [ "$INITLOG" = "/dev/null" ] ; then
 	  "not done."
-  else 
+  else
 	  "not done (check $INITLOG)."
   fi
 
@@ -62,7 +62,7 @@ else
 	not_configured
 fi
 
-# wait an unconfigured interface 
+# wait an unconfigured interface
 wait_for_pppd () {
 	if [ "$wait_interface" != "" ]
 	then

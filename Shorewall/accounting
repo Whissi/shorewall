@@ -7,7 +7,7 @@
 #	that you define in this file. You may display these rules and their
 #	packet and byte counters using the "shorewall show accounting" command.
 #
-#	Please see http://shorewall.net/Accounting.html for examples and 
+#	Please see http://shorewall.net/Accounting.html for examples and
 #	additional information about how to use this file.
 #
 #
@@ -21,7 +21,7 @@
 #					  to match any other accounting rules
 #					  in the chain specified in the CHAIN
 #					  column.
-#				<chain>[:COUNT] 
+#				<chain>[:COUNT]
 #					- Where <chain> is the name of
 #					  a chain. Shorewall will create
 #					  the chain automatically if it
@@ -29,18 +29,18 @@
 #					  a jump to that chain. If :COUNT
 #					  is including, a counting rule
 #					  matching this record will be
-#				          added to <chain>
+#					  added to <chain>
 #
-#	CHAIN	      - The name of a chain. If specified as "-" the 
+#	CHAIN	      - The name of a chain. If specified as "-" the
 #			'accounting' chain is assumed. This is the chain
 #			where the accounting rule is added. The chain will
 #			be created if it doesn't already exist.
-# 
+#
 #	SOURCE	      - Packet Source
 #
 #			The name of an interface, an address (host or net) or
 #			an interface name followed by ":"
-#			and a host or net address. 
+#			and a host or net address.
 #
 #	DESTINATION   - Packet Destination
 #
@@ -49,14 +49,15 @@
 #	PROTOCOL	A protocol name (from /etc/protocols), a protocol
 #			number, or "ipp2p"
 #
-#	DEST PORT	Destination Port number. If the PROTOCOL is "ipp2p" then
-#			this column must contain an ipp2p option ("iptables -m 
-#			ipp2p --help") without the leading "--". If no option
-#			is given in this column, "ipp2p" is assumed.
+#	DEST PORT	Destination Port number. If the PROTOCOL is "ipp2p"
+#			then this column must contain an ipp2p option
+#			("iptables -m ipp2p --help") without the leading
+#			"--". If no option is given in this column, "ipp2p"
+#			is assumed.
 #
 #			Service name from /etc/services or port number. May
 #			only be specified if the protocol is TCP or UDP (6
-#			or 17). 
+#			or 17).
 #
 #	SOURCE PORT	Source Port number
 #
@@ -69,7 +70,7 @@
 #			
 #			The column may contain:
 #
-#			   [!][<user name or number>][:<group name or number>][+<program name>]
+#	[!][<user name or number>][:<group name or number>][+<program name>]
 #
 #			When this column is non-empty, the rule applies only
 #			if the program generating the output is running under
@@ -81,17 +82,17 @@
 #				joe	#program must be run by joe
 #				:kids	#program must be run by a member of
 #					#the 'kids' group
-#				!:kids  #program must not be run by a member
+#				!:kids	#program must not be run by a member
 #					#of the 'kids' group
-#				+upnpd  #program named upnpd
+#				+upnpd	#program named upnpd
 #
 #	In all of the above columns except ACTION and CHAIN, the values "-",
 #	"any" and "all" may be used as wildcards
 #
-#	Please see http://shorewall.net/Accounting.html for examples and 
-#	additional information about how to use this file.
+# Please see http://shorewall.net/Accounting.html for examples and
+# additional information about how to use this file.
 #
-#ACTION	CHAIN 	SOURCE		DESTINATION	PROTO	DEST	   	SOURCE	USER/
+#####################################################################################
+#ACTION	CHAIN	SOURCE		DESTINATION	PROTO	DEST		SOURCE	USER/
 #							PORT		PORT	GROUP
-#
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

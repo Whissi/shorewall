@@ -560,9 +560,9 @@ dnat_chain() # $1 = zone
 }
 
 #
-# SNAT Chain to a zone or from an interface
+# SNAT Chain to an interface
 #
-snat_chain() # $1 = zone or interface
+snat_chain() # $1 = interface
 {
    echo $(chain_base $1)_snat
 }
@@ -7654,10 +7654,9 @@ activate_rules()
 	    [ -n "$chain1" ] && run_iptables2 -A OUTPUT -o $interface $(match_dest_hosts $networks) $(match_ipsec_out $zone $host) -j $chain1
 
 	    #
-	    # Add jumps from the builtin chains for DNAT and SNAT rules
+	    # Add jumps from the builtin chain for DNAT rules
 	    #
 	    addrulejump PREROUTING  $(dnat_chain $zone) -i $interface $(match_source_hosts $networks) $(match_ipsec_in $zone $host)
-	    addrulejump POSTROUTING $(snat_chain $zone) -o $interface $(match_dest_hosts $networks) $(match_ipsec_out $zone $host)
 
 	    [ -n "$chain2" ] && run_iptables2 -A $(input_chain $interface) $(match_source_hosts $networks) $(match_ipsec_in $zone $host) -j $chain2
 

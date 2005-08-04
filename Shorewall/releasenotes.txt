@@ -157,6 +157,9 @@ Migration Considerations:
    upgrading to this release before "shorewall status" will show
    anything but "Unknown" for the state.
 
+8) The "shorewall forget" command now removes the dynamic blacklist
+   save file (/var/lib/shorewall/save).
+
 New Features in Shorewall 2.5.0
 
 1) Error and warning messages are made easier to spot by using
@@ -298,5 +301,13 @@ New Features in Shorewall 2.5.0
     WARNING -- DO NOT SPECIFY arp_ignore FOR ANY INTERFACE INVOLVED IN
     PROXY ARP.
 
-	
+7)  In /etc/shorewall/rules, "all+" in the SOURCE or DEST column works
+    like "all" but also includes intrazone traffic. So the rule:
 
+	 ACCEPT     loc		 all+	 tcp	   22
+
+    would allow SSH traffic from loc->loc whereas 	
+
+	 ACCEPT     loc		 all	 tcp	   22
+	
+    does not.

@@ -5493,14 +5493,15 @@ process_rules() # $1 = "Yes" if the target is a macro.
     #
     # Process a rule where the source or destination is "all"
     #
-    process_wildcard_rule() {
+    process_wildcard_rule() # $1 = Yes, if this is a macro, $2 = Yes if we want intrazone traffic 
+    {
 	local yclients yservers ysourcezone ydestzone ypolicy
 	
 	for yclients in $xclients; do
 	    for yservers in $xservers; do
 		ysourcezone=${yclients%%:*}
 		ydestzone=${yservers%%:*}
-		if [ "${ysourcezone}" != "${ydestzone}" ] ; then
+		if [ "$2" = Yes -o "${ysourcezone}" != "${ydestzone}" ] ; then
 		    eval ypolicy=\$${ysourcezone}2${ydestzone}_policy
 		    if [ "$ypolicy" != NONE ] ; then
 			if [ "$1" = Yes ]; then
@@ -5517,20 +5518,34 @@ process_rules() # $1 = "Yes" if the target is a macro.
 
     do_it() # $1 = "Yes" if the target is a macro.
     {
-	expandv xprotocol xports xcports xaddress xratelimit xuserspec
+	expandv xprotocol xports xcports xaddress xratelimit xuserspec intrazone=
+
+	case $xclients in 
+	    all+)
+		xclients=all
+		intrazone=Yes
+		;;
+	esac
+
+	case $xservers in
+	    all+)
+		xservers=all
+		intrazone=Yes
+		;;
+	esac
 
 	if [ "x$xclients" = xall ]; then
 	    xclients="$ZONES $FW"
 	    if [ "x$xservers" = xall ]; then
 		xservers="$ZONES $FW"
 	    fi
-	    process_wildcard_rule $1
+	    process_wildcard_rule "$1" $intrazone
 	    return
 	fi
 
 	if [ "x$xservers" = xall ]; then
 	    xservers="$ZONES $FW"
-	    process_wildcard_rule $1
+	    process_wildcard_rule "$1" $intrazone
 	    return
 	fi
 

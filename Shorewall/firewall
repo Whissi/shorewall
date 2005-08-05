@@ -2876,6 +2876,27 @@ setup_ecn() # $1 = file name
     fi
 }
 
+#
+# Set up an exclusion chain and return it's name
+#
+build_exclusion_chain() # $1 = table, $2 = SOURCE exclusion list, $3 = DESTINATION exclusion list
+{
+    local chain=excl_${EXCLUSION_SEQ} net
+
+    EXCLUSION_SEQ=$(( $EXCLUSION_SEQ + 1 ))
+
+    run_iptables -t $1 -N $chain
+
+    for net in $(separate_list $2); do
+	run_iptables -t $1 -A $chain $(source_ip_range $net) -j RETURN
+    done
+
+    for net in $(separate_list 3); do
+	run_iptables -t $1 -A $chain $(dest_ip_range $net) -j RETURN
+    done
+
+    echo $chain
+}
 
 #
 # Process a TC Rule - $MARKING_CHAIN is assumed to contain the name of the
@@ -4623,7 +4644,7 @@ add_nat_rule() {
 	    ;;
 	!*)
 	    if [ $(list_count $addr) -gt 1 ]; then
-		excludedests="$(separate_list ${addr#\!})"
+		excludedests="${addr#\!}"
 		addr=
 	    fi
 	    ;;
@@ -4660,16 +4681,10 @@ add_nat_rule() {
     if [ $COMMAND != check ]; then
 	if [ "$source" = "$FW" ]; then
 	    if [ -n "$excludedests" ]; then
-		chain=nonat${nonat_seq}
-		nonat_seq=$(($nonat_seq + 1))
-		createnatchain $chain
+		chain=$(build_exclusion_chain nat "" $excludedests)
 
 		for adr in $(separate_list $addr); do
 		    run_iptables2 -t nat -A OUTPUT $cli $proto $userandgroup $multiport $sports $dports $(dest_ip_range $adr) -j $chain
-		done
-
-		for adr in $excludedests; do
-		    addnatrule $chain $(dest_ip_range $adr) -j RETURN
 		done
 
 		if [ -n "$loglevel" ]; then
@@ -4691,9 +4706,7 @@ add_nat_rule() {
 	    chain=$(dnat_chain $source)
 
 	    if [ -n "${excludezones}${excludedests}" ]; then
-		chain=nonat${nonat_seq}
-		nonat_seq=$(($nonat_seq + 1))
-		createnatchain $chain
+		chain=$( build_exclusion_chain nat "" $excludedests
 
 		for adr in $(separate_list $addr); do
 		    addnatrule $(dnat_chain $source) $cli $proto $multiport $sports $dports $(dest_ip_range $adr) -j $chain
@@ -4704,10 +4717,6 @@ add_nat_rule() {
 		    for host in $hosts; do
 			addnatrule $chain $(match_source_hosts ${host#*:}) -j RETURN
 		    done
-		done
-
-		for adr in $excludedests; do
-		    addnatrule $chain $(dest_ip_range $adr) -j RETURN
 		done
 
 		if [ -n "$loglevel" ]; then
@@ -6274,13 +6283,8 @@ setup_masq()
 
 	case $destnets in
 	    !*)
-		newchain=masq${masq_seq}
-		createnatchain $newchain
 		destnets=${destnets#!}
-
-		for destnet in $(separate_list $destnets); do
-		    addnatrule $newchain $(dest_ip_range $destnet) -j RETURN
-		done
+		newchain=$( build_exclusion_chain nat "$nomasq" "$destnets" )
 
 		if [ -n "$networks" ]; then
 		    for s in $networks; do
@@ -6291,24 +6295,17 @@ setup_masq()
 		    addnatrule $chain -j $newchain
 		fi
 
-		masq_seq=$(($masq_seq + 1))
 		chain=$newchain
 		destnets=0.0.0.0/0
 		proto=
 		ports=
 		policy=
 
-		if [ -n "$nomasq" ]; then
-		    for addr in $(separate_list $nomasq); do
-			addnatrule $chain $(source_ip_range $addr) -j RETURN
-		    done
-		    source="$source except $nomasq"
-		fi
+		[ -n "$nomasq" ] && source="$source except $nomasq"
 		;;
 	    *)
 		if [ -n "$nomasq" ]; then
-		    newchain=masq${masq_seq}
-		    createnatchain $newchain
+		    newchain=$( build_exclusion_chain nat $nomasq )
 
 		    if [ -n "$networks" ]; then
 			for s in $networks; do
@@ -6322,18 +6319,12 @@ setup_masq()
 			done
 		    fi
 
-		    masq_seq=$(($masq_seq + 1))
 		    chain=$newchain
 		    networks=
 		    destnets=0.0.0.0/0
 		    proto=
 		    ports=
 		    policy=
-
-		    for addr in $(separate_list $nomasq); do
-			addnatrule $chain $(source_ip_range $addr) -j RETURN
-		    done
-
 		    source="$source except $nomasq"
 		fi
 		;;
@@ -8497,11 +8488,10 @@ do_initialize() {
     PROVIDERS=
     CRITICALHOSTS=
     IPSECFILE=
+    EXCLUSION_SEQ=1
 
     stopping=
     have_mutex=
-    masq_seq=1
-    nonat_seq=1
     aliases_to_add=
 
     FUNCTIONS=$SHARED_DIR/functions

@@ -4763,6 +4763,7 @@ add_nat_rule() {
 #    userandgroup= -m owner clause
 #    userspec    = User name
 #    logtag      = Log tag
+#    policy      = Applicable Policy
 #
 add_a_rule()
 {
@@ -4915,6 +4916,7 @@ add_a_rule()
 
 	    if [ -n "$natrule" ]; then
 		add_nat_rule
+		[ $policy = ACCEPT ] && return
 	    elif [ -n "$servport" -a "$servport" != "$port" ]; then
 		fatal_error "Only DNAT, SAME and REDIRECT rules may specify destination port mapping; rule \"$rule\""
 	    fi

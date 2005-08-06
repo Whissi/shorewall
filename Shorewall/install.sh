@@ -148,6 +148,10 @@ elif [ -d /etc/apt -a -e /usr/bin/dpkg ]; then
 elif [ -f /etc/slackware-version ] ; then
     DEST="/etc/rc.d"
     INIT="rc.firewall"
+elif [ -f /etc/arch-release ] ; then 
+      DEST="/etc/rc.d"
+      INIT="shorewall"
+      ARCHLINUX=yes
 fi
 
 #
@@ -199,6 +203,11 @@ else
    echo
    echo "Config file installed as ${PREFIX}/etc/shorewall/shorewall.conf"
 fi
+
+if [ -n "$ARCHLINUX" ] ; then
+
+   sed -e 's!LOGFILE=/var/log/messages!LOGFILE=/var/log/messages.log!' -i ${PREFIX}/etc/shorewall/shorewall.conf
+fi 
 #
 # Install the zones file
 #
@@ -549,6 +558,14 @@ else
     run_install $OWNERSHIP -m 0600 actions ${PREFIX}/etc/shorewall/actions
     echo
     echo "Actions file installed as ${PREFIX}/etc/shorewall/actions"
+fi
+
+if [ -f ${PREFIX}/etc/shorewall/Makefile ]; then
+    backup_file /etc/shorewall/Makefile
+else
+    run_install $OWNERSHIP -m 0600 actions ${PREFIX}/etc/shorewall/Makefile
+    echo
+    echo "Makefile installed as ${PREFIX}/etc/shorewall/Makefile"
 fi
 #
 # Install the Action files

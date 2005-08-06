@@ -96,6 +96,7 @@ fi
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/continue
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/started
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/providers
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/Makefile
 
 %attr(0544,root,root) /sbin/shorewall
 

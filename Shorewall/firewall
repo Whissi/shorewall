@@ -4688,7 +4688,7 @@ add_nat_rule() {
 		done
 
 		if [ -n "$loglevel" ]; then
-		    log_rule $loglevel $chain $logtarget -t nat
+		    log_rule_limit $loglevel $chain OUTPUT $logtarget "$ratelimit" "$logtag" -A -t nat
 		fi
 
 		addnatrule $chain $ratelimit $proto -j $target1 # Protocol is necessary for port redirection
@@ -4703,8 +4703,6 @@ add_nat_rule() {
 		done
 	    fi
 	else
-	    chain=$(dnat_chain $source)
-
 	    if [ -n "${excludezones}${excludedests}" ]; then
 		chain=$( build_exclusion_chain nat "" $excludedests
 
@@ -4720,11 +4718,12 @@ add_nat_rule() {
 		done
 
 		if [ -n "$loglevel" ]; then
-		    log_rule_limit $loglevel $chain $chain $logtarget "$ratelimit" "$logtag" -A -t nat
+		    log_rule_limit $loglevel $chain $(dnat_chain $source) $logtarget "$ratelimit" "$logtag" -A -t nat
 		fi
 
 		addnatrule $chain $ratelimit $proto -j $target1 # Protocol is necessary for port redirection
 	    else
+		chain=$(dnat_chain $source)
 		for adr in $(separate_list $addr); do
 		    if [ -n "$loglevel" ]; then
 			ensurenatchain $chain
@@ -4768,6 +4767,7 @@ add_nat_rule() {
 #    multioption = String to invoke multiport match if appropriate
 #    servport	 = Port the server listens on
 #    chain	 = The canonical chain for this rule
+#    logchain    = The chain that should be mentioned in log messages
 #    ratelimit   = Optional rate limiting clause
 #    userandgroup= -m owner clause
 #    userspec    = User name
@@ -4937,7 +4937,7 @@ add_a_rule()
 			    if [ -n "$addr" -a -n "$CONNTRACK_MATCH" ]; then
 				for adr in $(separate_list $addr); do
 				    if [ -n "$loglevel" -a -z "$natrule" ]; then
-					log_rule_limit $loglevel $chain $chain $logtarget "$ratelimit" "$logtag" -A -m conntrack --ctorigdst $adr \
+					log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A -m conntrack --ctorigdst $adr \
 					    $userandgroup $(fix_bang $proto $sports $multiport $cli $(dest_ip_range $srv) $dports)
 				    fi
 
@@ -4946,7 +4946,7 @@ add_a_rule()
 				done
 			    else
 				if [ -n "$loglevel" -a -z "$natrule" ]; then
-				    log_rule_limit $loglevel $chain $chain $logtarget "$ratelimit" "$logtag" -A $userandgroup \
+				    log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $userandgroup \
 					$(fix_bang $proto $sports $multiport $cli $(dest_ip_range $srv) $dports)
 				fi
 				
@@ -4964,7 +4964,7 @@ add_a_rule()
 		    done
 		else
 		    if [ -n "$loglevel" -a -z "$natrule" ]; then
-		        log_rule_limit $loglevel $chain $chain $logtarget "$ratelimit" "$logtag" -A $userandgroup \
+		        log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $userandgroup \
 			    $(fix_bang $proto $sports $multiport $cli $dports)
 		    fi
 
@@ -4986,7 +4986,7 @@ add_a_rule()
 	    if [ -n "$addr" ]; then
 		for adr in $(separate_list $addr); do
 		    if [ -n "$loglevel" ]; then
-			log_rule_limit $loglevel $chain $chain $logtarget "$ratelimit" "$logtag" -A $userandgroup \
+			log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $userandgroup \
 			    $(fix_bang $proto $multiport $cli $dest_interface $sports $dports -m conntrack --ctorigdst $adr)
 		    fi
 
@@ -5004,7 +5004,7 @@ add_a_rule()
 		done
 	    else
 		if [ -n "$loglevel" ]; then
-		    log_rule_limit $loglevel $chain $chain $logtarget "$ratelimit" "$logtag" -A $userandgroup \
+		    log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $userandgroup \
 			$(fix_bang $proto $multiport $cli $dest_interface $sports $dports)
 		fi
 
@@ -5271,6 +5271,7 @@ process_rule() # $1 = target
     # Ensure that this rule doesn't apply to a NONE policy pair of zones
 
     chain=${source}2${dest}
+    logchain=$chain
 
     eval policy=\$${chain}_policy
 

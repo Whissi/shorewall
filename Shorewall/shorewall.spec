@@ -126,6 +126,7 @@ fi
 %attr(0600,root,root) /usr/share/shorewall/macro.MySQL
 %attr(0600,root,root) /usr/share/shorewall/macro.NNTP
 %attr(0600,root,root) /usr/share/shorewall/macro.NTP
+%attr(0600,root,root) /usr/share/shorewall/macro.NTPbrd
 %attr(0600,root,root) /usr/share/shorewall/macro.PCA
 %attr(0600,root,root) /usr/share/shorewall/macro.Ping
 %attr(0600,root,root) /usr/share/shorewall/macro.POP3
@@ -138,6 +139,7 @@ fi
 %attr(0600,root,root) /usr/share/shorewall/macro.SNMP
 %attr(0600,root,root) /usr/share/shorewall/macro.SPAMD
 %attr(0600,root,root) /usr/share/shorewall/macro.SSH
+%attr(0600,root,root) /usr/share/shorewall/macro.Submission
 %attr(0600,root,root) /usr/share/shorewall/macro.SVN
 %attr(0600,root,root) /usr/share/shorewall/macro.Syslog
 %attr(0600,root,root) /usr/share/shorewall/macro.Telnet

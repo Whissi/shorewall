@@ -4093,7 +4093,7 @@ merge_levels() # $1=level at which superior action is called, $2=level at which 
 #
 substitute_action() # $1 = parameter, $2 = action
 {
-    local logpart=${2%%:*}
+    local logpart=${2##*:}
 
     case $2 in
 	*:*)
@@ -4704,7 +4704,7 @@ add_nat_rule() {
 	    fi
 	else
 	    if [ -n "${excludezones}${excludedests}" ]; then
-		chain=$( build_exclusion_chain nat "" $excludedests
+		chain=$( build_exclusion_chain nat "" $excludedests )
 
 		for adr in $(separate_list $addr); do
 		    addnatrule $(dnat_chain $source) $cli $proto $multiport $sports $dports $(dest_ip_range $adr) -j $chain

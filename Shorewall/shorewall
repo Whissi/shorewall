@@ -561,6 +561,15 @@ read_yesno_with_timeout() {
 }
 
 #
+# Print a heading with leading and trailing black lines
+#
+heading() {
+    echo
+    echo "$@"
+    echo
+}
+
+#
 # Execution begins here
 #
 debugging=
@@ -944,40 +953,28 @@ case "$1" in
 	$IPTABLES -L $IPT_OPTIONS
 	echo
 	packet_log 20
-	echo
-	echo "NAT Table"
-	echo
+
+	heading "NAT Table"
 	$IPTABLES -t nat -L $IPT_OPTIONS
-	echo
-	echo "Mangle Table"
-	echo
+
+	heading "Mangle Table"
 	$IPTABLES -t mangle -L $IPT_OPTIONS
 	echo
 	cat /proc/net/ip_conntrack
-	echo
-	echo "Kernel"
-	echo
-	cat /proc/version
-	echo
-	echo "IP Configuration"
-	echo
+
+	heading "IP Configuration"
 	ip addr ls
-	echo
-	echo "IP Stats"
-	echo
+
+	heading "IP Stats"
 	ip -stat link ls
 	
 	if qt mywhich brctl; then
-	    echo
-	    echo "Bridges"
-	    echo
+	    heading "Bridges"
 	    brctl show
 	fi
 
-	echo
-	echo "/proc"
-	echo
-
+	heading "/proc"
+	show_proc /proc/version
 	show_proc /proc/sys/net/ipv4/ip_forward
 	show_proc /proc/sys/net/ipv4/icmp_echo_ignore_all
 
@@ -988,34 +985,24 @@ case "$1" in
 	done
 
 	if [ -n "$(ip rule ls)" ]; then
-	    echo
-	    echo "Routing Rules"
-	    echo
+	    heading "Routing Rules"
 	    ip rule ls
 	    ip rule ls | while read rule; do
 		echo ${rule##* }
 	    done | sort -u | while read table; do
-		echo
-		echo "Table $table:"
-		echo
+		heading "Table $table:"
 		ip route ls table $table
 	    done
 	else
-	    echo
-	    echo "Routing Table"
-	    echo
+	    heading "Routing Table"
 	    ip route ls
 	fi
 
-	echo
-	echo "ARP"
-	echo
+	heading "ARP"
 	arp -na
 	
 	if qt mywhich lsmod; then
-	    echo
-	    echo "Modules"
-	    echo
+	    heading "Modules"
 	    lsmod | grep -E '^ip_|^ipt_|^iptable_'
 	fi
 	;;

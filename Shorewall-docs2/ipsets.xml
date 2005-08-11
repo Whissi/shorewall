@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-05-09</pubdate>
+    <pubdate>2005-07-27</pubdate>
 
     <copyright>
       <year>2005</year>
@@ -52,7 +52,7 @@
       <listitem>
         <para>Blacklists. Ipsets provide an effecient way to represent large
         sets of addresses and you can maintain the lists without the need to
-        restart or even refresh your Shorewall configuration. </para>
+        restart or even refresh your Shorewall configuration.</para>
       </listitem>
 
       <listitem>
@@ -184,5 +184,33 @@ ipset -A Blacklist 206.124.146.177
 ipset -B Blacklist 206.124.146.177 -b SMTP</command></programlisting>
 
     <para>Now only port 25 will be blocked from 206.124.146.177.</para>
+  </section>
+
+  <section>
+    <title>Defining Dynamic Zones using Ipsets</title>
+
+    <para>The use of ipsets provides a much better way to define dynamic zones
+    than is provided by the native Shorewall implementation. To define a
+    dynamic zone of hosts <emphasis role="bold">dyn</emphasis> that interface
+    through interface eth3, use:</para>
+
+    <para>/etc/shorewall/zones:</para>
+
+    <programlisting>#ZONE         IPSEC         OPTIONS            IN OPTIONS        OUT OPTIONS
+dyn           No</programlisting>
+
+    <para>/etc/shorewall/interfaces:</para>
+
+    <programlisting>#ZONE         INTERFACE     OPTIONS
+-             eth3          …</programlisting>
+
+    <para>/etc/shorewall/hosts:</para>
+
+    <programlisting>#ZONE         HOSTS         OPTIONS
+dyn           eth3:+Dyn</programlisting>
+
+    <para>Now create an ipmap named <emphasis role="bold">Dyn</emphasis> and
+    you're all set. You can add and delete addresses from Dyn without having
+    to touch Shorewall.</para>
   </section>
 </article>

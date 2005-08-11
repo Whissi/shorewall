@@ -1425,6 +1425,8 @@ validate_policy()
 
 	case $policy in
 	    *:*)
+		[ -n "$FASTACCEPT" ] && \
+		    startup_error "ESTABLISHED policy may not be specified with FASTACCEPT=Yes in shorewall.conf"
 		epolicy=${policy#*:}
 		policy=${policy%:*}
 
@@ -1432,7 +1434,7 @@ validate_policy()
 		    ACCEPT|QUEUE)
 			;;
 		    *)
-			startup_error " $client $server $policy $loglevel $synparams: Invalid ESTABLISHED/RELATED policy: $epolicy"
+			startup_error "$client $server $policy $loglevel $synparams: Invalid ESTABLISHED policy: $epolicy"
 			;;
 		esac
 		;;
@@ -3414,7 +3416,7 @@ setup_accounting() # $1 = Name of accounting file
 
     if havechain accounting; then
 	for chain in INPUT FORWARD OUTPUT; do
-	    run_iptables -A $chain -j accounting
+	    run_iptables -I $chain -j accounting
 	done
     fi
 
@@ -5839,7 +5841,7 @@ policy_rules() # $1 = chain to add rules to
 {
     local target="$2"
 
-    case $3 in
+    [ -n "$FASTACCEPT" ] || case $3 in
 	QUEUE)
 	    run_iptables -I $1 -m state --state RELATED -j ACCEPT
 	    run_iptables -I $1 -m state --state ESTABLISHED -j QUEUE
@@ -5903,7 +5905,7 @@ default_policy() # $1 = client $2 = server
 	# Add a jump to from the canonical chain to the policy chain. On return,
 	# $chain is set to the name of the policy chain
 	#
-	case $epolicy in
+	[ -n "$FASTACCEPT" ] || case $epolicy in
 	    QUEUE)
 		run_iptables -I $chain -m state --state RELATED -j ACCEPT
 		run_iptables -I $chain -m state --state ESTABLISHED -j QUEUE
@@ -7808,7 +7810,7 @@ activate_rules()
     disable_critical_hosts
 
     for chain in INPUT OUTPUT FORWARD; do
-	run_iptables -D $chain -m state --state ESTABLISHED,RELATED -j ACCEPT
+	[ -n "$FASTACCEPT" ] || run_iptables -D $chain -m state --state ESTABLISHED,RELATED -j ACCEPT
 	run_iptables -D $chain -p udp --dport 53 -j ACCEPT
     done
 
@@ -8690,6 +8692,7 @@ do_initialize() {
     RFC1918_STRICT=$(added_param_value_no RFC1918_STRICT $RFC1918_STRICT)
     SAVE_IPSETS=$(added_param_value_no SAVE_IPSETS $SAVE_IPSETS)
     MAPOLDACTIONS=$(added_param_value_yes MAPOLDACTIONS $MAPOLDACTIONS)
+    FASTACCEPT=$(added_param_value_no FASTACCEPT $FASTACCEPT)
 
     case ${IPSECFILE:=ipsec} in
 	ipsec|zones)

@@ -2891,7 +2891,7 @@ build_exclusion_chain() # $1 = table, $2 = SOURCE exclusion list, $3 = DESTINATI
 	run_iptables -t $1 -A $chain $(source_ip_range $net) -j RETURN
     done
 
-    for net in $(separate_list 3); do
+    for net in $(separate_list $3); do
 	run_iptables -t $1 -A $chain $(dest_ip_range $net) -j RETURN
     done
 
@@ -4683,6 +4683,8 @@ add_nat_rule() {
 	    if [ -n "$excludedests" ]; then
 		chain=$(build_exclusion_chain nat "" $excludedests)
 
+		eval exists_nat_${chain}=Yes
+
 		for adr in $(separate_list $addr); do
 		    run_iptables2 -t nat -A OUTPUT $cli $proto $userandgroup $multiport $sports $dports $(dest_ip_range $adr) -j $chain
 		done
@@ -4705,6 +4707,8 @@ add_nat_rule() {
 	else
 	    if [ -n "${excludezones}${excludedests}" ]; then
 		chain=$( build_exclusion_chain nat "" $excludedests )
+
+		eval exists_nat_${chain}=Yes
 
 		for adr in $(separate_list $addr); do
 		    addnatrule $(dnat_chain $source) $cli $proto $multiport $sports $dports $(dest_ip_range $adr) -j $chain
@@ -6287,6 +6291,8 @@ setup_masq()
 		destnets=${destnets#!}
 		newchain=$( build_exclusion_chain nat "$nomasq" "$destnets" )
 
+		eval exists_nat_${newchain}=Yes
+
 		if [ -n "$networks" ]; then
 		    for s in $networks; do
 			addnatrule $chain $(source_ip_range $s) $proto $ports $policy -j $newchain
@@ -6308,6 +6314,8 @@ setup_masq()
 		if [ -n "$nomasq" ]; then
 		    newchain=$( build_exclusion_chain nat $nomasq )
 
+		    eval exists_nat_${newchain}=Yes
+		    
 		    if [ -n "$networks" ]; then
 			for s in $networks; do
 			    for destnet in $(separate_list $destnets); do

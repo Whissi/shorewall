@@ -2982,6 +2982,8 @@ process_tc_rule()
 	    esac
 	fi
 
+	multiport=
+
 	if [ "x$proto" = xipp2p ]; then
 	    [ "x$port" = "x-" ] && port="ipp2p"
 	    r="${r}-p tcp -m ipp2p --${port} "
@@ -2989,10 +2991,24 @@ process_tc_rule()
 	    [ "x$proto"  = "x-"  ] && proto=all
 	    [ "x$proto"  = "x"   ] && proto=all
 	    [ "$proto"   = "all" ] || r="${r}-p $proto "
-	    [ "x$port"   = "x-"  ] || r="${r}--dport $port "
+	    
+	    if [ "x$port" != "x-"  ]; then
+		if [ -n "$MULTIPORT" ]; then
+		    r="${r}-m multiport --dports $port "
+		    multiport=Yes
+		else
+		    r="${r}--dport $port "
+		fi
+	    fi
 	fi
 
-	[ "x$sport"  = "x-"  ] || r="${r}--sport $sport "
+	if [ "x$sport" != "x-"  ]; then
+	    if [ -n "$MULTIPORT" ]; then
+		[ -n "$multiport" ] && r="${r}--sports $sport " || r="${r}-m multiport --sports $sport "
+	    else
+		r="${r}--sport $sport "
+	    fi
+	fi
 
 	case $chain in
 	    tcpost)
@@ -3297,11 +3313,18 @@ process_accounting_rule() {
 	    ;;
     esac
 
+    multiport=
+
     [ -n "$port" ] && case $port in
 	-|any|all)
 	    ;;
 	*)
-	    rule="$rule --dport $port"
+	    if [ -n "$MULTIPORT" ]; then
+		rule="$rule -m multiport --dports $port"
+		multiport=Yes
+	    else
+		rule="$rule --dport $port"	
+	    fi
 	    ;;
     esac
 
@@ -3309,7 +3332,11 @@ process_accounting_rule() {
 	-|any|all)
 	    ;;
 	*)
-	    rule="$rule --sport $sport"
+	    if [ -n "$MULTIPORT" ]; then
+		[ -n "$multiport" ] && rule="$rule --sports $sport" || rule="$rule -m multiport --sports $sport"
+	    else
+		rule="$rule --sport $sport"
+	    fi
 	    ;;
     esac
 

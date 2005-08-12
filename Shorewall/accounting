@@ -49,7 +49,7 @@
 #	PROTOCOL	A protocol name (from /etc/protocols), a protocol
 #			number, or "ipp2p"
 #
-#	DEST PORT	Destination Port number. If the PROTOCOL is "ipp2p"
+#	DEST PORT(S)	Destination Port number. If the PROTOCOL is "ipp2p"
 #			then this column must contain an ipp2p option
 #			("iptables -m ipp2p --help") without the leading
 #			"--". If no option is given in this column, "ipp2p"
@@ -59,11 +59,19 @@
 #			only be specified if the protocol is TCP or UDP (6
 #			or 17).
 #
-#	SOURCE PORT	Source Port number
+#			You may place a comma-separated list of port numbers in
+#			this column if your kernel and iptables include 
+#			multiport match support.
+#
+#	SOURCE PORT(S)	Source Port number
 #
 #			Service name from /etc/services or port number. May
 #			only be specified if the protocol is TCP or UDP (6
 #			or 17).
+#
+#			You may place a comma-separated list of port numbers in
+#			this column if your kernel and iptables include 
+#			multiport match support.
 #
 #	USER/GROUP	This column may only be non-empty if the CHAIN is
 #			OUTPUT.
@@ -94,5 +102,5 @@
 #
 #####################################################################################
 #ACTION	CHAIN	SOURCE		DESTINATION	PROTO	DEST		SOURCE	USER/
-#							PORT		PORT	GROUP
+#							PORT(S)		PORT(S)	GROUP
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

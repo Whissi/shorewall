@@ -2991,24 +2991,10 @@ process_tc_rule()
 	    [ "x$proto"  = "x-"  ] && proto=all
 	    [ "x$proto"  = "x"   ] && proto=all
 	    [ "$proto"   = "all" ] || r="${r}-p $proto "
-	    
-	    if [ "x$port" != "x-"  ]; then
-		if [ -n "$MULTIPORT" ]; then
-		    r="${r}-m multiport --dports $port "
-		    multiport=Yes
-		else
-		    r="${r}--dport $port "
-		fi
-	    fi
+	    [ "x$port"   = "x-"  ] || r="${r}--dport $port "
 	fi
 
-	if [ "x$sport" != "x-"  ]; then
-	    if [ -n "$MULTIPORT" ]; then
-		[ -n "$multiport" ] && r="${r}--sports $sport " || r="${r}-m multiport --sports $sport "
-	    else
-		r="${r}--sport $sport "
-	    fi
-	fi
+	[ "x$sport" = "x-"  ] || r="${r}--sport $sport "
 
 	case $chain in
 	    tcpost)

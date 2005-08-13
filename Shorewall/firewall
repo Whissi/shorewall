@@ -2879,25 +2879,34 @@ setup_ecn() # $1 = file name
 }
 
 #
-# Set up an exclusion chain and return it's name
+# Set up an exclusion chain
 #
-build_exclusion_chain() # $1 = table, $2 = SOURCE exclusion list, $3 = DESTINATION exclusion list
+build_exclusion_chain() # $1 = variableto store chain name in $2 = table, $3 = SOURCE exclusion list, $4 = DESTINATION exclusion list
 {
-    local chain=excl_${EXCLUSION_SEQ} net
+    local c=excl_${EXCLUSION_SEQ} net
 
     EXCLUSION_SEQ=$(( $EXCLUSION_SEQ + 1 ))
 
-    run_iptables -t $1 -N $chain
-
-    for net in $(separate_list $2); do
-	run_iptables -t $1 -A $chain $(source_ip_range $net) -j RETURN
-    done
+    run_iptables -t $2 -N $c
 
     for net in $(separate_list $3); do
-	run_iptables -t $1 -A $chain $(dest_ip_range $net) -j RETURN
+	run_iptables -t $2 -A $c $(source_ip_range $net) -j RETURN
     done
 
-    echo $chain
+    for net in $(separate_list $4); do
+	run_iptables -t $2 -A $c $(dest_ip_range $net) -j RETURN
+    done
+
+    case $2 in
+	filter)
+	    eval exists_${c}=Yes
+	    ;;
+	nat)
+	    eval exists_nat_${c}=Yes
+	    ;;
+    esac
+
+    eval $1=$c
 }
 
 #
@@ -4696,9 +4705,7 @@ add_nat_rule() {
     if [ $COMMAND != check ]; then
 	if [ "$source" = "$FW" ]; then
 	    if [ -n "$excludedests" ]; then
-		chain=$(build_exclusion_chain nat "" $excludedests)
-
-		eval exists_nat_${chain}=Yes
+		build_exclusion_chain chain nat "" $excludedests
 
 		for adr in $(separate_list $addr); do
 		    run_iptables2 -t nat -A OUTPUT $cli $proto $userandgroup $multiport $sports $dports $(dest_ip_range $adr) -j $chain
@@ -4721,9 +4728,7 @@ add_nat_rule() {
 	    fi
 	else
 	    if [ -n "${excludezones}${excludedests}" ]; then
-		chain=$( build_exclusion_chain nat "" $excludedests )
-
-		eval exists_nat_${chain}=Yes
+		build_exclusion_chain chain nat "" $excludedests
 
 		for adr in $(separate_list $addr); do
 		    addnatrule $(dnat_chain $source) $cli $proto $multiport $sports $dports $(dest_ip_range $adr) -j $chain
@@ -6304,9 +6309,7 @@ setup_masq()
 	case $destnets in
 	    !*)
 		destnets=${destnets#!}
-		newchain=$( build_exclusion_chain nat "$nomasq" "$destnets" )
-
-		eval exists_nat_${newchain}=Yes
+		build_exclusion_chain newchain nat "$nomasq" "$destnets"
 
 		if [ -n "$networks" ]; then
 		    for s in $networks; do
@@ -6327,9 +6330,7 @@ setup_masq()
 		;;
 	    *)
 		if [ -n "$nomasq" ]; then
-		    newchain=$( build_exclusion_chain nat $nomasq )
-
-		    eval exists_nat_${newchain}=Yes
+		    build_exclusion_chain newchain nat $nomasq
 		    
 		    if [ -n "$networks" ]; then
 			for s in $networks; do

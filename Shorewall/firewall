@@ -4394,7 +4394,7 @@ process_actions3() {
 	case $xaction1 in
 	    dropBcast)
 		if [ "$COMMAND" != check ]; then
-		    if [ -n "$PKTTYPE" ]; then
+		    if [ -n "$USEPKTTYPE" ]; then
 			case $xlevel in
 			    none'!')
 	                        ;;
@@ -4426,7 +4426,7 @@ process_actions3() {
 		;;
 	    allowBcast)
 		if [ "$COMMAND" != check ]; then
-		    if [ -n "$PKTTYPE" ]; then
+		    if [ -n "$USEPKTTYPE" ]; then
 			case $xlevel in
 			    none'!')
 	                        ;;
@@ -6814,9 +6814,7 @@ determine_capabilities() {
 	fi
     fi		
 
-    if [ -n "$PKTTYPE" ]; then
-	qt $IPTABLES -A fooX1234 -m pkttype --pkt-type broadcast -j ACCEPT || PKTTYPE=
-    fi
+    qt $IPTABLES -A fooX1234 -m pkttype --pkt-type broadcast -j ACCEPT && USEPKTTYPE=Yes
 
     qt $IPTABLES -F fooX1234
     qt $IPTABLES -X fooX1234
@@ -6838,7 +6836,8 @@ report_capabilities() {
     report_capability "Multi-port Match" $MULTIPORT
     [ -n "$MULTIPORT" ] && report_capability "Extended Multi-port Match" $XMULTIPORT
     report_capability "Connection Tracking Match" $CONNTRACK_MATCH
-    report_capability "Packet Type Match" $PKTTYPE
+    report_capability "Packet Type Match" $USEPKTTYPE
+    [ -n "$PKTTYPE" ] || USEPKTTYPE=
     report_capability "Policy Match" $POLICY_MATCH
     report_capability "Physdev Match" $PHYSDEV_MATCH
     report_capability "IP range Match" $IPRANGE_MATCH
@@ -7100,7 +7099,7 @@ add_common_rules() {
     #
     # Reject Rules -- Don't respond to broadcasts with an ICMP
     #
-    if [ -n "$PKTTYPE" ]; then
+    if [ -n "$USEPKTTYPE" ]; then
 	qt $IPTABLES -A reject -m pkttype --pkt-type broadcast -j DROP
 	if ! qt $IPTABLES -A reject -m pkttype --pkt-type multicast -j DROP; then
             #
@@ -8506,6 +8505,7 @@ do_initialize() {
     BRIDGING=
     DYNAMIC_ZONES=
     PKTTYPE=
+    USEPKTYPE=
     RETAIN_ALIASES=
     DELAYBLACKLISTLOAD=
     LOGTAGONLY=
@@ -8589,7 +8589,7 @@ do_initialize() {
 	[ -e "$IPTABLES" ] || startup_error "\$IPTABLES=$IPTABLES does not exist or is not executable"
     fi
 
-    PKTTYPE=$(added_param_value_no PKTTYPE $PKTTYPE) # Used in determine_capabilities
+    PKTTYPE=$(added_param_value_no PKTTYPE $PKTTYPE)
 
     determine_capabilities
 

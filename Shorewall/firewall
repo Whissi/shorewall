@@ -1041,7 +1041,18 @@ validate_interfaces_file() {
 	    case $option in
 		-)
 		    ;;
-		dhcp|norfc1918|tcpflags|newnotsyn|arp_filter|routefilter|logmartians|sourceroute|blacklist|proxyarp|maclist|nosmurfs|upnp|-)
+		dhcp|tcpflags|newnotsyn|arp_filter|routefilter|logmartians|sourceroute|blacklist|proxyarp|maclist|nosmurfs|upnp|-)
+		    ;;
+		norfc1918)
+		    addr=$(ip -f inet addr show $interface 2> /dev/null | grep inet | head -n1)
+		    if [ -n "$addr" ]; then
+			addr=$(echo $addr | sed 's/inet //;s/\/.*//;s/ peer.*//')
+			for network in 10.0.0.0/8 176.16.0.0/12 192.168.0.0/16; do
+			    if in_network $addr $network; then
+				startup_error "The 'norfc1918' option may not be specified on an interface with an RFC 1918 address. Interface:$interface"
+			    fi
+			done
+		    fi
 		    ;;
 		arp_ignore=*)
 		    eval ${iface}_arp_ignore=${option#*=}
@@ -2881,7 +2892,7 @@ setup_ecn() # $1 = file name
 #
 # Set up an exclusion chain
 #
-build_exclusion_chain() # $1 = variableto store chain name in $2 = table, $3 = SOURCE exclusion list, $4 = DESTINATION exclusion list
+build_exclusion_chain() # $1 = variable to store chain name into $2 = table, $3 = SOURCE exclusion list, $4 = DESTINATION exclusion list
 {
     local c=excl_${EXCLUSION_SEQ} net
 

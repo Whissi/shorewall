@@ -164,7 +164,7 @@ Migration Considerations:
 8) The "shorewall forget" command now removes the dynamic blacklist
    save file (/var/lib/shorewall/save).
 
-New Features in Shorewall 2.5.0
+New Features in Shorewall 2.5.*
 
 1) Error and warning messages are made easier to spot by using
    capitalization (e.g., ERROR: and WARNING:).
@@ -328,3 +328,6 @@ New Features in Shorewall 2.5.0
     accepted early in the INPUT, FORWARD and OUTPUT chains. If you set
     FASTACCEPT=Yes then you may not specify ESTABLISHED policies in 
     /etc/shorewall/policy (see above).
+
+9)  Shorewall not generates an error if the 'norfc1918' option is
+    specified for an interface with an RFC 1918 address.

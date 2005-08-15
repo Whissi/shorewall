@@ -4868,9 +4868,10 @@ process_rule() # $1 = target
 		done
 		addr=
 	    else
-		run_iptables -A $chain $(fix_bang $proto $sports $multiport $dports) $user -j $newchain
+		run_iptables -A $chain $(fix_bang $cli $proto $sports $multiport $dports) $user -j $newchain
 	    fi
 
+	    cli=
 	    proto=
 	    sports=
 	    multiport=

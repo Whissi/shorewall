@@ -331,3 +331,15 @@ New Features in Shorewall 2.5.*
 
 9)  Shorewall not generates an error if the 'norfc1918' option is
     specified for an interface with an RFC 1918 address.
+
+10) You may now specify "!" followed by a list of addresses in the
+    SOURCE and DEST columns of entries in /etc/shorewall/rules and
+    Shorewall will generate the rule that you expect.
+
+    Example:
+
+    #ACTION    SOURCE				DEST	PROTO     DEST PORT(S)
+    ACCEPT     loc:!192.168.1.0/24,10.0.0.0/8	net	tcp	  80
+
+    That rule would allow loc->net HTTP access except for the local
+    networks 192.168.1.0/24 and 10.0.0.0/8.

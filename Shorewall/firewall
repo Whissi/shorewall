@@ -4824,9 +4824,9 @@ process_rule() # $1 = target
     #	 logtag		= Log tag
     #	 policy		= Applicable Policy
     #
-    add_a_rule()
+    add_a_rule() # $1 = chain to add rules to
     {
-	local natrule=
+	local natrule= chain=$1
 
 	do_ports() {
 	    if [ -n "$port" ]; then
@@ -5366,7 +5366,7 @@ process_rule() # $1 = target
 		    server=${servers:=-}
 		    port=${ports:=-}
 		    cport=${cports:=-}
-		    add_a_rule
+		    add_a_rule $chain
 		done
 	    elif [ -n "$MULTIPORT" ] && \
 	       ! list_search $protocol "icmp" "ICMP" "1" && \
@@ -5387,7 +5387,7 @@ process_rule() # $1 = target
 		    server=${servers:=-}
 		    port=${ports:=-}
 		    cport=${cports:=-}
-		    add_a_rule
+		    add_a_rule $chain
 		done
 	    else
 	        #
@@ -5398,7 +5398,7 @@ process_rule() # $1 = target
 		    for port in $(separate_list ${ports:=-}); do
 			for cport in $(separate_list ${cports:=-}); do
 			    server=${servers:=-}
-			    add_a_rule
+			    add_a_rule $chain
 			done
 		    done
 		done
@@ -5423,7 +5423,7 @@ process_rule() # $1 = target
 		        #
 			port=${ports:=-}
 			cport=${cports:=-}
-			add_a_rule
+			add_a_rule $chain
 		    done
 		done
 	    elif [ -n "$MULTIPORT" ] && \
@@ -5445,7 +5445,7 @@ process_rule() # $1 = target
 		        #
 			port=${ports:=-}
 			cport=${cports:=-}
-			add_a_rule
+			add_a_rule $chain
 		    done
 		done
 	    else
@@ -5457,7 +5457,7 @@ process_rule() # $1 = target
 		    for server in $(separate_list ${servers:=-}); do
 			for port in $(separate_list ${ports:=-}); do
 			    for cport in $(separate_list ${cports:=-}); do
-				add_a_rule
+				add_a_rule $chain
 			    done
 			done
 		    done

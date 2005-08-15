@@ -4858,6 +4858,24 @@ process_rule() # $1 = target
 	    verify_interface $1 || interface_error $1
 	}
 
+	handle_exclusion()
+	{
+	    build_exclusion_chain newchain filter "$excludesource" "$excludedest"
+	    
+	    if [ $(list_count $addr) -eq 1 -a -n "$CONNTRACK_MATCH" ]; then
+		run_iptables -A $chain $(fix_bang $proto $sports $multiport $dports) -m conntrack --ctorigdst $addr -j $newchain
+		addr=
+	    else
+		run_iptables -A $chain $(fix_bang $proto $sports $multiport $dports) -j $newchain
+	    fi
+
+	    proto=
+	    sports=
+	    multiport=
+	    dports=
+	    chain=$newchain
+	}
+
 	# Set source variables. The 'cli' variable will hold the client match predicate(s).
 
 	cli=
@@ -4984,6 +5002,10 @@ process_rule() # $1 = target
 		    fatal_error "Only DNAT, SAME and REDIRECT rules may specify destination port mapping; rule \"$rule\""
 		fi
 
+		if [ -n "${excludesource}${excludedest}" ]; then
+		    handle_exclusion
+		fi
+
 		if [ -z "$dnat_only" ]; then
 		    if [ -n "$serv" ]; then
 			for serv1 in $(separate_list $serv); do
@@ -5037,6 +5059,10 @@ process_rule() # $1 = target
 	    # Destination is a simple zone
 
 	    if [ $COMMAND != check ]; then
+		if [ -n "${excludesource}${excludedest}" ]; then
+		    handle_exclusion
+		fi
+
 		if [ -n "$addr" ]; then
 		    for adr in $(separate_list $addr); do
 			if [ -n "$loglevel" ]; then
@@ -5311,17 +5337,7 @@ process_rule() # $1 = target
 
     [ "x$protocol" = "x-" ] && protocol=all || protocol=${protocol:=all}
 
-    if [ $COMMAND != check ]; then
-	ensurechain $chain
-
-	if [ -n "${excludesource}${excludedest}" ]; then
-	    build_exclusion_chain newchain filter "$excludesource" "$excludedest"
-	    
-	    run_iptables -A $chain -p $protocol -j $newchain
-	    
-	    chain=$newchain
-	fi
-    fi
+    [ $COMMAND = check ] || ensurechain $chain
 
     # Generate Netfilter rule(s)
 

@@ -4862,17 +4862,20 @@ process_rule() # $1 = target
 	{
 	    build_exclusion_chain newchain filter "$excludesource" "$excludedest"
 	    
-	    if [ $(list_count $addr) -eq 1 -a -n "$CONNTRACK_MATCH" ]; then
-		run_iptables -A $chain $(fix_bang $proto $sports $multiport $dports) -m conntrack --ctorigdst $addr -j $newchain
+	    if [ -n "$addr" -a -n "$CONNTRACK_MATCH" ]; then
+		for adr in $(separate_list $addr); do
+		    run_iptables -A $chain $(fix_bang $proto $sports $multiport $dports) $user -m conntrack --ctorigdst $adr -j $newchain
+		done
 		addr=
 	    else
-		run_iptables -A $chain $(fix_bang $proto $sports $multiport $dports) -j $newchain
+		run_iptables -A $chain $(fix_bang $proto $sports $multiport $dports) $user -j $newchain
 	    fi
 
 	    proto=
 	    sports=
 	    multiport=
 	    dports=
+	    user=
 	    chain=$newchain
 	}
 
@@ -4932,6 +4935,7 @@ process_rule() # $1 = target
 	addr=$address
 	servport=$serverport
 	multiport=
+	user="$userandgroup"
 
 	[ x$port  = x- ] && port=
 	[ x$cport = x- ] && cport=
@@ -4964,7 +4968,7 @@ process_rule() # $1 = target
 
 	case "$logtarget" in
 	    ACCEPT|DROP|REJECT|CONTINUE)	
-		if [ -z "$proto" -a -z "$cli" -a -z "$serv" -a -z "$servport" -a -z "$userandgroup" -a -z "$excludesource" -a -z "$excludedest" ] ; then
+		if [ -z "$proto" -a -z "$cli" -a -z "$serv" -a -z "$servport" -a -z "$user" -a -z "$excludesource" -a -z "$excludedest" ] ; then
 		    error_message "Warning -- Rule \"$rule\" is a POLICY"
 		    error_message "	       -- and should be moved to the policy file"
 		fi
@@ -5014,43 +5018,43 @@ process_rule() # $1 = target
 				    for adr in $(separate_list $addr); do
 					if [ -n "$loglevel" -a -z "$natrule" ]; then
 					    log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A -m conntrack --ctorigdst $adr \
-						$userandgroup $(fix_bang $proto $sports $multiport $cli $(dest_ip_range $srv) $dports)
+						$user $(fix_bang $proto $sports $multiport $cli $(dest_ip_range $srv) $dports)
 					fi
 
 					run_iptables2 -A $chain $proto $ratelimit $multiport $cli $sports \
-					    $(dest_ip_range $srv) $dports -m conntrack --ctorigdst $adr $userandgroup -j $target
+					    $(dest_ip_range $srv) $dports -m conntrack --ctorigdst $adr $user -j $target
 				    done
 				else
 				    if [ -n "$loglevel" -a -z "$natrule" ]; then
-					log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $userandgroup \
+					log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $user \
 					    $(fix_bang $proto $sports $multiport $cli $(dest_ip_range $srv) $dports)
 				    fi
 
 				    if [ -n "$nonat" ]; then
 					addnatrule $(dnat_chain $source) $proto $multiport \
-					    $cli $sports $(dest_ip_range $srv) $dports $ratelimit $userandgroup -j RETURN
+					    $cli $sports $(dest_ip_range $srv) $dports $ratelimit $user -j RETURN
 				    fi
 
 				    if [ "$logtarget" != NONAT ]; then
 					run_iptables2 -A $chain $proto $multiport $cli $sports \
-					    $(dest_ip_range $srv) $dports $ratelimit $userandgroup -j $target
+					    $(dest_ip_range $srv) $dports $ratelimit $user -j $target
 				    fi
 				fi
 			    done
 			done
 		    else
 			if [ -n "$loglevel" -a -z "$natrule" ]; then
-			    log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $userandgroup \
+			    log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $user \
 				$(fix_bang $proto $sports $multiport $cli $dports)
 			fi
 
 			[ -n "$nonat" ] && \
 			    addnatrule $(dnat_chain $source) $proto $multiport \
-			    $cli $sports $dports $ratelimit $userandgroup -j RETURN
+			    $cli $sports $dports $ratelimit $user -j RETURN
 
 			    [ "$logtarget" != NONAT ] && \
 				run_iptables2 -A $chain $proto $multiport $cli $sports \
-				$dports $ratelimit $userandgroup -j $target
+				$dports $ratelimit $user -j $target
 		    fi
 		fi
 	    fi
@@ -5066,37 +5070,37 @@ process_rule() # $1 = target
 		if [ -n "$addr" ]; then
 		    for adr in $(separate_list $addr); do
 			if [ -n "$loglevel" ]; then
-			    log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $userandgroup \
+			    log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $user \
 				$(fix_bang $proto $multiport $cli $dest_interface $sports $dports -m conntrack --ctorigdst $adr)
 			fi
 
 			if [ "$logtarget" != LOG ]; then
 			    if [ -n "$nonat" ]; then
 				addnatrule $(dnat_chain $source) $proto $multiport \
-				    $cli $sports $dports $ratelimit $userandgroup  -m conntrack --ctorigdst $adr -j RETURN
+				    $cli $sports $dports $ratelimit $user  -m conntrack --ctorigdst $adr -j RETURN
 			    fi
 
 			    if [ "$logtarget" != NONAT ]; then
 				run_iptables2 -A $chain $proto $multiport $cli $dest_interface \
-				    $sports $dports $ratelimit $userandgroup  -m conntrack --ctorigdst $adr -j $target
+				    $sports $dports $ratelimit $user  -m conntrack --ctorigdst $adr -j $target
 			    fi
 			fi
 		    done
 		else
 		    if [ -n "$loglevel" ]; then
-			log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $userandgroup \
+			log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $user \
 			    $(fix_bang $proto $multiport $cli $dest_interface $sports $dports)
 		    fi
 
 		    if [ "$logtarget" != LOG ]; then
 			if [ -n "$nonat" ]; then
 			    addnatrule $(dnat_chain $source) $proto $multiport \
-				$cli $sports $dports $ratelimit $userandgroup -j RETURN
+				$cli $sports $dports $ratelimit $user -j RETURN
 			fi
 
 			if [ "$logtarget" != NONAT ]; then
 			    run_iptables2 -A $chain $proto $multiport $cli $dest_interface \
-				$sports $dports $ratelimit $userandgroup -j $target
+				$sports $dports $ratelimit $user -j $target
 			fi
 		    fi
 		fi

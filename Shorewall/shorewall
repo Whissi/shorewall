@@ -1055,15 +1055,16 @@ case "$1" in
     try)
 	[ -n "$SHOREWALL_DIR" ] && startup_error "ERROR: -c option may not be used with \"try\""
 	[ $# -lt 2 -o $# -gt 3 ] && usage 1
-	if ! $0 $debugging -c $2 restart; then
+	[ -n "$QUIET" ] && QUIET=-q
+	if ! $0 $debugging $QUIET -c $2 restart; then
 	    if ! $IPTABLES -L shorewall > /dev/null 2> /dev/null; then
-		$0 start
+		$0 $QUIET start
 	    fi
 	elif ! $IPTABLES -L shorewall > /dev/null 2> /dev/null; then
-	    $0 start
+	    $0 $QUIET start
 	elif [ $# -eq 3 ]; then
 	    sleep $3
-	    $0 restart
+	    $0 $QUIET restart
 	fi
 	;;
     logwatch)

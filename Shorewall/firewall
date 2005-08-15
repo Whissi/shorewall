@@ -4824,9 +4824,9 @@ process_rule() # $1 = target
     #	 logtag		= Log tag
     #	 policy		= Applicable Policy
     #
-    add_a_rule() # $1 = chain to add rules to
+    add_a_rule()
     {
-	local natrule= chain=$1
+	local natrule=
 
 	do_ports() {
 	    if [ -n "$port" ]; then
@@ -4860,15 +4860,15 @@ process_rule() # $1 = target
 
 	handle_exclusion()
 	{
-	    build_exclusion_chain newchain filter "$excludesource" "$excludedest"
-	    
+	    build_exclusion_chain chain filter "$excludesource" "$excludedest"
+
 	    if [ -n "$addr" -a -n "$CONNTRACK_MATCH" ]; then
 		for adr in $(separate_list $addr); do
-		    run_iptables -A $chain $(fix_bang $proto $sports $multiport $dports) $user -m conntrack --ctorigdst $adr -j $newchain
+		    run_iptables -A $logchain $(fix_bang $proto $sports $multiport $dports) $user -m conntrack --ctorigdst $adr -j $chain
 		done
 		addr=
 	    else
-		run_iptables -A $chain $(fix_bang $cli $proto $sports $multiport $dports) $user -j $newchain
+		run_iptables -A $logchain $(fix_bang $cli $proto $sports $multiport $dports) $user -j $chain
 	    fi
 
 	    cli=
@@ -4877,7 +4877,6 @@ process_rule() # $1 = target
 	    multiport=
 	    dports=
 	    user=
-	    chain=$newchain
 	}
 
 	# Set source variables. The 'cli' variable will hold the client match predicate(s).
@@ -4937,6 +4936,10 @@ process_rule() # $1 = target
 	servport=$serverport
 	multiport=
 	user="$userandgroup"
+	
+	# Restore $chain to the canonical chain.
+
+	chain=$logchain
 
 	[ x$port  = x- ] && port=
 	[ x$cport = x- ] && cport=
@@ -5330,6 +5333,11 @@ process_rule() # $1 = target
     # Ensure that this rule doesn't apply to a NONE policy pair of zones
 
     chain=${source}2${dest}
+
+    # If we have one or more exclusion lists, we will create a new chain and
+    # store it's name in 'chain'. We still want log rules to reflect the 
+    # canonical chain so we store it's name in $logchain.
+
     logchain=$chain
 
     eval policy=\$${chain}_policy
@@ -5345,7 +5353,7 @@ process_rule() # $1 = target
     [ $COMMAND = check ] || ensurechain $chain
 
     # Generate Netfilter rule(s)
-
+    
     case $logtarget in
 	DNAT*|SAME)
 
@@ -5366,7 +5374,7 @@ process_rule() # $1 = target
 		    server=${servers:=-}
 		    port=${ports:=-}
 		    cport=${cports:=-}
-		    add_a_rule $chain
+		    add_a_rule
 		done
 	    elif [ -n "$MULTIPORT" ] && \
 	       ! list_search $protocol "icmp" "ICMP" "1" && \
@@ -5387,7 +5395,7 @@ process_rule() # $1 = target
 		    server=${servers:=-}
 		    port=${ports:=-}
 		    cport=${cports:=-}
-		    add_a_rule $chain
+		    add_a_rule
 		done
 	    else
 	        #
@@ -5398,7 +5406,7 @@ process_rule() # $1 = target
 		    for port in $(separate_list ${ports:=-}); do
 			for cport in $(separate_list ${cports:=-}); do
 			    server=${servers:=-}
-			    add_a_rule $chain
+			    add_a_rule
 			done
 		    done
 		done
@@ -5423,7 +5431,7 @@ process_rule() # $1 = target
 		        #
 			port=${ports:=-}
 			cport=${cports:=-}
-			add_a_rule $chain
+			add_a_rule
 		    done
 		done
 	    elif [ -n "$MULTIPORT" ] && \
@@ -5445,7 +5453,7 @@ process_rule() # $1 = target
 		        #
 			port=${ports:=-}
 			cport=${cports:=-}
-			add_a_rule $chain
+			add_a_rule
 		    done
 		done
 	    else
@@ -5457,7 +5465,7 @@ process_rule() # $1 = target
 		    for server in $(separate_list ${servers:=-}); do
 			for port in $(separate_list ${ports:=-}); do
 			    for cport in $(separate_list ${cports:=-}); do
-				add_a_rule $chain
+				add_a_rule
 			    done
 			done
 		    done

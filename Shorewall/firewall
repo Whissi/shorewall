@@ -2941,7 +2941,7 @@ process_tc_rule()
 	if [ "x$source" != "x-"	 ]; then
 	    case $source in
 		$FW:*)
-		    chain=tcout
+		    [ $chain = tcpost ] || chain=tcout
 		    r="$(source_ip_range ${source#*:}) "
 		    ;;
 		*.*.*|+*|!+*)
@@ -2951,7 +2951,7 @@ process_tc_rule()
 		    r="$(mac_match $source) "
 		    ;;
 		$FW)
-		    chain=tcout
+		    [ $chain = tcpost ] || chain=tcout
 		    ;;
 		*)		
 		    verify_interface $source || fatal_error "Unknown interface $source in rule \"$rule\""
@@ -3016,14 +3016,15 @@ process_tc_rule()
 
 	[ "x$sport" = "x-"  ] || r="${r}--sport $sport "
 
-	case $chain in
-	    tcpost)
-		run_iptables2 -t mangle -A tcpost $r -j CLASSIFY --set-class $mark
-		;;
-	    *)
-		run_iptables2 -t mangle -A $chain $r -j $target $mark
-		;;
-	esac
+	if [ -n "${excludesources}${excludedests}" ]; then
+	    build_exclusion_chain chain1 mangle "$excludesources" "$excludedests"
+
+	    run_iptables2 -t mangle -A $chain $r -j $chain1
+
+	    run_iptables -t mangle -A $chain1 -j $target $mark
+	else
+	    run_iptables2 -t mangle -A $chain $r -j $target $mark
+	fi
 
     }
 
@@ -3049,6 +3050,7 @@ process_tc_rule()
 		;;
 	    *)
 		chain=tcpost
+		target="CLASSIFY --set-class" 
 		;;
 	esac
 	
@@ -3118,8 +3120,44 @@ process_tc_rule()
 	esac
     fi
 
-    for source in $(separate_list ${sources:=-}); do
-	for dest in $(separate_list ${dests:=-}); do
+    excludesources=
+
+    case ${sources:=-} in
+	*!*!*)
+	    fatal_error "Invalid SOURCE in rule \"$rule\""
+	    ;;
+	!*)
+	    if [ $(list_count $sourcess) -gt 1 ]; then
+		excludesources=${sources#!}
+		sources=-
+	    fi
+	    ;;
+	*!*)
+	    excludesources=${sources#*!}
+	    sources=${sources%!*}
+	    ;;
+    esac
+
+    excludedests=
+
+    case ${dests:=-} in
+	*!*!*)
+	    fatal_error "Invalid DEST in rule \"$rule\""
+	    ;;
+	!*)
+	    if [ $(list_count $dests) -gt 1 ]; then
+		excludedests=${dests#*!}
+		dests=-
+	    fi
+	    ;;
+	*!*)
+	    excludedests=${dests#*!}
+	    dests=${dests%!*}
+	    ;;
+    esac
+    
+    for source in $(separate_list $sources); do
+	for dest in $(separate_list $dests); do
 	    for port in $(separate_list ${ports:=-}); do
 		for sport in $(separate_list ${sports:=-}); do
 		    add_a_tc_rule

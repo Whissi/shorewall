@@ -19,9 +19,37 @@ Texts. A copy of the license is included in the section entitled “<span
  class="quote"><a href="GnuCopyright.htm" target="_self">GNU Free
 Documentation License</a></span>”.<br>
 </p>
-<p>2005-07-30<br>
+<p>2005-08-16<br>
 </p>
 <hr style="width: 100%; height: 2px;">
+<span style="font-weight: bold;">08/16/2005 Shorewall 2.4.3<br>
+</span><br>
+Problems Corrected:<br>
+<ol>
+  <li>Shorewall is no longer dependent on the 'which' utility.</li>
+  <li>The 'shorewall add' command failed if there existed a zone in the
+configuration that specified the 'ipsec' option in /etc/shorewall/hosts.</li>
+  <li>Shorewall is no longer dependent on /bin/echo.</li>
+  <li>A CLASSIFY rule&nbsp; with $FW in the SOURCE column (tcrules) no
+longer results in a "shorewall start" error.</li>
+  <li>You may now use port lists in the DEST PORT and SOURCE PORT
+columns of the /etc/shorewall/accounting file.</li>
+  <li>The "shorewall show capabilities" command now accurately reports
+the availability of "Packet type match" independent of the setting of
+PKTTYPE in shorewall.conf.</li>
+  <li>Thanks to Tuomo Soini, all of the files have been siginificantly
+cleaned up in terms of formatting and extra white-space.<br>
+  </li>
+</ol>
+New Features:<br>
+<ol>
+  <li>New Allow.Submission and Allow.NTPbrd actions have been added.
+Users of the Allow.NTP action that use NTP broadcasting should switch
+to use of Allow.NTPbrd instead.</li>
+  <li>The kernel version string is now included in the output of
+"shorewall status".<br>
+  </li>
+</ol>
 <span style="font-weight: bold;">07/30/2005 Shorewall 2.2.6<br>
 <br>
 </span>Problems Corrected:<br>

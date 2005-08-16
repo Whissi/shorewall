@@ -2244,7 +2244,7 @@ setup_tunnels() # $1 = name of tunnels file
 	addrule2 $inchain  -p $protocol $(source_ip_range $1) --dport $p -j ACCEPT
 	addrule2 $outchain -p $protocol $(dest_ip_range $1)   --sport $p -j ACCEPT
 
-	progress_message "   OPENVPN server tunnel to $1:$protocol:$p defined."
+	progress_message "   OPENVPN server tunnel from $1:$protocol:$p defined."
     }
 
     setup_one_openvpn_client() # $1 = gateway, $2 = kind[:port]

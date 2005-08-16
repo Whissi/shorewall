@@ -13,16 +13,18 @@
 #
 #	TYPE	    --	must start in column 1 and be "ipsec", "ipsecnat",
 #			"ipip", "gre", "6to4", "pptpclient", "pptpserver",
-#			"openvpn" or "generic"
+#			"openvpn", "openvpnclient", "openvpnserver" or
+#			"generic"
 #
 #			If the type is "ipsec" or "ipsecnat", it may be
 #			followed by ":noah" to indicate that the Authentication
 #			Header protocol (51) is not used by the tunnel.
 #
-#			If type is "openvpn", it may optionally be followed
+#			If type is "openvpn", "openvpnclient" or
+#			"openvpnserver" it may optionally be followed
 #			by ":" and the port number used by the tunnel. if no
 #			":" and port number are included, then the default port
-#			of 5000 will be used
+#			of 1194 will be used
 #
 #			If type is "generic", it must be followed by ":" and
 #			a protocol name (from /etc/protocols) or a protocol

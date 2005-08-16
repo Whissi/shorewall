@@ -2225,6 +2225,50 @@ setup_tunnels() # $1 = name of tunnels file
 	progress_message "   OPENVPN tunnel to $1:$protocol:$p defined."
     }
 
+    setup_one_openvpn_server() # $1 = gateway, $2 = kind[:port]
+    {
+	local protocol=udp
+	local p=1194
+
+	case $2 in
+	    *:*:*)
+		protocol=${2%:*}
+		protocol=${protocol#*:}
+		p=${2##*:}
+		;;
+	    *:*)
+		p=${2#*:}
+		;;
+	esac
+
+	addrule2 $inchain  -p $protocol $(source_ip_range $1) --dport $p -j ACCEPT
+	addrule2 $outchain -p $protocol $(dest_ip_range $1)   --sport $p -j ACCEPT
+
+	progress_message "   OPENVPN server tunnel to $1:$protocol:$p defined."
+    }
+
+    setup_one_openvpn_client() # $1 = gateway, $2 = kind[:port]
+    {
+	local protocol=udp
+	local p=1194
+
+	case $2 in
+	    *:*:*)
+		protocol=${2%:*}
+		protocol=${protocol#*:}
+		p=${2##*:}
+		;;
+	    *:*)
+		p=${2#*:}
+		;;
+	esac
+
+	addrule2 $inchain  -p $protocol $(source_ip_range $1) --dsport $p -j ACCEPT
+	addrule2 $outchain -p $protocol $(dest_ip_range $1)   --dport  $p -j ACCEPT
+
+	progress_message "   OPENVPN client tunnel to $1:$protocol:$p defined."
+    }
+
     setup_one_generic() # $1 = gateway, $2 = kind:protocol[:port], $3 = Gateway Zone
     {
 	local protocol
@@ -2296,6 +2340,12 @@ setup_tunnels() # $1 = name of tunnels file
 		    ;;
 		openvpn|OPENVPN|openvpn:*|OPENVPN:*)
 		    setup_one_openvpn $gateway $kind
+		    ;;
+		openvpnclient|OPENVPNCLIENT|openvpnclient:*|OPENVPNCLIENT:*)
+		    setup_one_openvpn_client $gateway $kind
+		    ;;
+		openvpnserver|OPENVPNSERVER|openvpnserver:*|OPENVPNSERVER:*)
+		    setup_one_openvpn_server $gateway $kind
 		    ;;
 		generic:*|GENERIC:*)
 		    setup_one_generic $gateway $kind $z1

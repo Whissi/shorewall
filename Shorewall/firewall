@@ -5265,11 +5265,18 @@ process_rule() # $1 = target
     excludesource=
 
     case $clients in
+	*!*!*)
+	    fatal_error "Invalid SOURCE in rule \"$rule\""
+	    ;;
 	!*)
 	    if [ $(list_count $clients) -gt 1 ]; then
 		excludesource=${clients#!}
 		clients=
 	    fi
+	    ;;
+	*!*)
+	    excludesource=${clients#*!}
+	    clients=${clients%!*}
 	    ;;
     esac
     
@@ -5316,11 +5323,18 @@ process_rule() # $1 = target
     excludedest=
 
     case $servers in
+	*!*!*)
+	    fatal_error "Invalid DEST in rule \"$rule\""
+	    ;;
 	!*)
 	    if [ $(list_count $servers) -gt 1 ]; then
 		excludedest=${servers#*!}
 		servers=
 	    fi
+	    ;;
+	*!*)
+	    excludedest=${servers#*!}
+	    servers=${servers%!*}
 	    ;;
     esac
     

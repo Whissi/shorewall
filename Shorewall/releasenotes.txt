@@ -26,7 +26,7 @@ New Features in Shorewall 2.5.3
 
 	EXT_IF=$(find_interface_by_mac 00:02:e3:08:55:fa)
 
-    Now simple use $EXT_IF any time that you wish to refer to that
+    Now simply use $EXT_IF any time that you wish to refer to that
     interface.
 
     WARNING: If you have this problem, you will not wish to use the
@@ -427,3 +427,33 @@ New Features in Shorewall 2.5.*
 
     That rule would allow loc->net HTTP access except for the local
     networks 192.168.1.0/24 and 10.0.0.0/8.
+
+11) You may now specify "!" followed by a list of addresses in the
+    SOURCE and DEST columns of entries in /etc/shorewall/tcrules and
+    Shorewall will generate the rule that you expect.
+
+12) Tunnel types "openvpnserver" and "openvpnclient" have been added
+    to reflect the introduction of client and server OpenVPN
+    configurations in OpenVPN 2.0.
+
+13) The COMMAND variable is now set to 'restore' in restore
+    scripts. The value of this variable is sometimes of interest to
+    programmers providing custom /etc/shorewall/tcstart scripts.
+
+14) If you have problems with ethernet interfaces switching names when
+    your system is rebooted, you can now work around the problem. For
+    each interface, select a shell variable name and set the variable
+    to the value echoed by the 'find_interface_by_mac' function.
+
+    Example: To set EXT_IF to the interface with MAC address
+    00:02:e3:08:55:fa, in /etc/shorewall/params:
+
+	EXT_IF=$(find_interface_by_mac 00:02:e3:08:55:fa)
+
+    Now simply use $EXT_IF any time that you wish to refer to that
+    interface.
+
+    WARNING: If you have this problem, you will not wish to use the
+    "-f" option in the Shorewall SysV init script (usually named
+    /etc/init.d/shorewall).
+

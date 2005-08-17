@@ -799,6 +799,27 @@ find_interface_by_address() {
 }
 
 #
+# Find the interface with the passed MAC address
+#
+
+find_interface_by_mac() {
+    local mac=$1 first second rest dev
+
+    ip link ls | while read first second rest; do
+	case $first in
+	    *:)
+                dev=$second
+		;;
+	    *)
+	        if [ "$second" = $mac ]; then
+		    echo ${dev%:}
+		    return
+		fi
+	esac
+    done
+}
+
+#
 # Find interface addresses--returns the set of addresses assigned to the passed
 # device
 #

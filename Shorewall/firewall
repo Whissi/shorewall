@@ -1404,7 +1404,7 @@ validate_policy()
 	    progress_message "   Policy for $1 to $2 is $policy using chain $chain"
     }
 
-    all_policy_chains=
+    ALL_POLICY_CHAINS=
 
     strip_file policy
 
@@ -1479,7 +1479,7 @@ validate_policy()
 	[ "x$synparms"  = "x-" ] && synparms=
 	[ "x$epolicy"   = "x-" ] && epolicy=
 
-	[ $policy = NONE ] || all_policy_chains="$all_policy_chains $chain"
+	[ $policy = NONE ] || ALL_POLICY_CHAINS="$ALL_POLICY_CHAINS $chain"
 
 	eval ${chain}_is_policy=Yes
 	eval ${chain}_policy=$policy
@@ -7719,7 +7719,7 @@ apply_policy_rules() {
     #
     # Create policy chains
     #
-    for chain in $all_policy_chains; do
+    for chain in $ALL_POLICY_CHAINS; do
 	eval policy=\$${chain}_policy
 	eval loglevel=\$${chain}_loglevel
 	eval synparams=\$${chain}_synparams

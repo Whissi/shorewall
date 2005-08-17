@@ -3682,6 +3682,8 @@ refresh_tc() {
 #
 add_an_action()
 {
+    local chain1
+
     do_ports() {
 	if [ -n "$port" ]; then
 	    dports="--dport"
@@ -3710,6 +3712,20 @@ add_an_action()
     action_interface_verify()
     {
 	verify_interface $1 || interface_error $1
+    }
+
+    handle_exclusion()
+    {
+	build_exclusion_chain chain1 filter "$excludesource" "$excludedest"
+
+	run_iptables -A $chain $(fix_bang $cli $proto $sports $multiport $dports) $user -j $chain1
+
+	cli=
+	proto=
+	sports=
+	multiport=
+	dports=
+	user=
     }
 
     # Set source variables. The 'cli' variable will hold the client match predicate(s).
@@ -3766,6 +3782,8 @@ add_an_action()
     proto=$protocol
     servport=$serverport
     multiport=
+    chain1=$chain
+    user="$userandgroup"
 
     [ x$port  = x- ] && port=
     [ x$cport = x- ] && cport=
@@ -3798,26 +3816,30 @@ add_an_action()
     esac
 
     if [ $COMMAND != check ]; then
+	if [ -n "${excludesource}${excludedest}" ]; then
+	    handle_exclusion
+	fi
+
        if [ -n "${serv}" ]; then
 	    for serv1 in $(separate_list $serv); do
 		for srv in $(firewall_ip_range $serv1); do
 		    if [ -n "$loglevel" ]; then
-			log_rule_limit $loglevel $chain $action $logtarget "$ratelimit" "$logtag" -A $userandgroup \
+			log_rule_limit $loglevel $chain1 $action $logtarget "$ratelimit" "$logtag" -A $user \
 			    $(fix_bang $proto $sports $multiport $cli $(dest_ip_range $srv) $dports)
 		    fi
 		
-		    run_iptables2 -A $chain $proto $multiport $cli $sports \
-			$(dest_ip_range $srv) $dports $ratelimit $userandgroup -j $target
+		    run_iptables2 -A $chain1 $proto $multiport $cli $sports \
+			$(dest_ip_range $srv) $dports $ratelimit $user -j $target
 		done
 	    done
 	else
 	    if [ -n "$loglevel" ]; then
-		log_rule_limit $loglevel $chain $action $logtarget "$ratelimit" "$logtag" -A $userandgroup \
+		log_rule_limit $loglevel $chain1 $action $logtarget "$ratelimit" "$logtag" -A $user \
 		    $(fix_bang $proto $sports $multiport $cli $dest_interface $dports)
 	    fi
 		
-	    run_iptables2 -A $chain $proto $multiport $cli $dest_interface $sports \
-		$dports $ratelimit $userandgroup -j $target
+	    run_iptables2 -A $chain1 $proto $multiport $cli $dest_interface $sports \
+		$dports $ratelimit $user -j $target
 	fi
     fi
 }
@@ -3950,6 +3972,42 @@ process_action() # $1 = chain    (Chain to add the rules to)
 	    ;;
 	esac
 
+    excludesource=
+
+    case ${clients:=-} in
+	*!*!*)
+	    fatal_error "Invalid SOURCE in rule \"$rule\""
+	    ;;
+	!*)
+	    if [ $(list_count $clients) -gt 1 ]; then
+		excludesource=${clients#!}
+		clients=
+	    fi
+	    ;;
+	*!*)
+	    excludesource=${clients#*!}
+	    clients=${clients%!*}
+	    ;;
+    esac
+    
+    excludedest=
+
+    case ${servers:=-} in
+	*!*!*)
+	    fatal_error "Invalid DEST in rule \"$rule\""
+	    ;;
+	!*)
+	    if [ $(list_count $servers) -gt 1 ]; then
+		excludedest=${servers#*!}
+		servers=
+	    fi
+	    ;;
+	*!*)
+	    excludedest=${servers#*!}
+	    servers=${servers%!*}
+	    ;;
+    esac
+    
     # Generate Netfilter rule(s)
 
     [ "x$protocol" = "x-" ] && protocol=all || protocol=${protocol:=all}
@@ -3964,8 +4022,8 @@ process_action() # $1 = chain    (Chain to add the rules to)
 	# 16 ports are listed (port ranges count as two ports) - use multiport match.
 	#
 	multioption="-m multiport"
-	for client in $(separate_list ${clients:=-}); do
-	    for server in $(separate_list ${servers:=-}); do
+	for client in $(separate_list $clients); do
+	    for server in $(separate_list $servers); do
 		#
 		# add_an_action() modifies these so we must set their values each time
 		#
@@ -3986,8 +4044,8 @@ process_action() # $1 = chain    (Chain to add the rules to)
 	# 16 ports are listed - use multiport match.
 	#
 	multioption="-m multiport"
-	for client in $(separate_list ${clients:=-}); do
-	    for server in $(separate_list ${servers:=-}); do
+	for client in $(separate_list $clients); do
+	    for server in $(separate_list $servers); do
 		#
 		# add_an_action() modifies these so we must set their values each time
 		#
@@ -4001,8 +4059,8 @@ process_action() # $1 = chain    (Chain to add the rules to)
 	# MULTIPORT is disabled or the rule isn't compatible with multiport match
 	#
 	multioption=
-	for client in $(separate_list ${clients:=-}); do
-	    for server in $(separate_list ${servers:=-}); do
+	for client in $(separate_list $clients); do
+	    for server in $(separate_list $servers); do
 		for port in $(separate_list ${ports:=-}); do
 		    for cport in $(separate_list ${cports:=-}); do
 			add_an_action

@@ -17,6 +17,26 @@ New Features in Shorewall 2.5.3
     scripts. The value of this variable is sometimes of interest to
     programmers providing custom /etc/shorewall/tcstart scripts.
 
+4)  Previously, if you defined any intra-zone rule(s) then any traffic
+    not matching the rule(s) was subject to normal policies (which
+    usually turned out to involve the all->all REJECT policy). Now, the
+    intra-zone ACCEPT policy will still be in effect in the presense of
+    intra-zone rules. That policy can still be overridden by an
+    explicit policy in your /etc/shorewall/policy file.
+
+    Example:
+
+    /etc/shorewall/rules:
+
+    DNAT	fw	 loc:192.168.1.4:3128	tcp	80
+
+    Any other fw->fw traffic will still be accepted. If you want to
+    also log that fw->fw traffic at the info log level then add this to
+    /etc/shorewall/policy:
+
+    #SOURCE	DEST	POLICY	LOG LEVEL
+    fw		fw	ACCEPT	info
+
 Problems Corrected in 2.5.2:
 
 1) You may now include port lists in in the /etc/shorewall/accounting

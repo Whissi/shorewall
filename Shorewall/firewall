@@ -1480,7 +1480,11 @@ validate_policy()
 	chain=${client}2${server}
 
 	if is_policy_chain $chain ; then
-	    startup_error "Duplicate policy: $client $server $policy"
+	    if eval test \$${chain}_is_optional = Yes ; then
+		eval ${chain}_is_optional=
+	    else
+		startup_error "Duplicate policy: $client $server $policy"
+	    fi
 	fi
 
 	[ "x$loglevel"  = "x-" ] && loglevel=

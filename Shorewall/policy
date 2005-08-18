@@ -13,8 +13,10 @@
 #	                INTRA-ZONE POLICIES ARE PRE-DEFINED
 #
 #	For $FW and for all of the zoned defined in /etc/shorewall/zones,
-#	the POLICY for connections from the zone to itself is ACCEPT and may
-#	not be modified by entries in this file. 
+#	the POLICY for connections from the zone to itself is ACCEPT (with no
+#	logging or TCP connection rate limiting but may be overridden by an
+#	entry in this file. The overriding entry must be explicit (cannot use
+#	"all" in the SOURCE or DEST).
 #
 # Columns are:
 #

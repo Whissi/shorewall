@@ -1406,6 +1406,14 @@ validate_policy()
 
     ALL_POLICY_CHAINS=
 
+    for zone in $ZONES $FW; do
+	chain=${zone}2${zone}
+	eval ${chain}_is_policy=Yes
+	eval ${chain}_is_optional=Yes
+	eval ${chain}_policy=ACCEPT
+	ALL_POLICY_CHAINS="$ALL_POLICY_CHAINS $chain"
+    done	
+
     strip_file policy
 
     while read client server policy loglevel synparams; do
@@ -1472,7 +1480,7 @@ validate_policy()
 	chain=${client}2${server}
 
 	if is_policy_chain $chain ; then
-	    startup_error "Duplicate policy $policy"
+	    startup_error "Duplicate policy: $client $server $policy"
 	fi
 
 	[ "x$loglevel"  = "x-" ] && loglevel=
@@ -7724,6 +7732,7 @@ apply_policy_rules() {
 	eval loglevel=\$${chain}_loglevel
 	eval synparams=\$${chain}_synparams
 	eval epolicy=\$${chain}_epolicy
+	eval optional=\$${chain}_is_optional
 
 	[ -n "$synparams" ] && setup_syn_flood_chain $chain $synparams $loglevel
 
@@ -7731,7 +7740,7 @@ apply_policy_rules() {
 	    [ "$epolicy" = ACCEPT ] && ordinal=2 || ordinal=3
 	    [ -n "$synparams" ] && \
 		run_iptables -I $chain $ordinal -p tcp --syn -j @$chain
-	elif [ "$policy" != CONTINUE ]; then
+	elif [ -z "$optional" -a "$policy" != CONTINUE ]; then
 	    #
 	    # The chain doesn't exist. Create the chain and add policy
 	    # rules

@@ -340,17 +340,22 @@
 #
 #	Accept DNS connections from the firewall to the network
 #
-ACCEPT		fw		net		tcp	53
-ACCEPT		fw		net		udp	53
+DNS/ACCEPT	fw		net
 #
 #	Accept SSH connections from the local network for administration
 #
-ACCEPT		loc		fw		tcp	22
+SSH/ACCEPT	loc             net	
 #
-#	Allow Ping To And From Firewall
+#	Allow Ping from the local network
 #
-ACCEPT		loc		fw		icmp	8
-ACCEPT		net		fw		icmp	8
+Ping/ACCEPT	loc		fw
+
+#
+# Reject Ping from the "bad" net zone.. and prevent your log from being flooded..
+#
+
+Ping/REJECT:none!     net		fw
+
 ACCEPT		fw		loc		icmp	
 ACCEPT		fw		net		icmp	
 #

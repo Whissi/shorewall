@@ -43,11 +43,11 @@
 #		      not specify "nolock" on the runline.
 #
 my_mutex_on() {
-    [ -n "$nolock" ] || { mutex_on; have_mutex=Yes; }
+    [ -n "$nolock" ] || { mutex_on; HAVE_MUTEX=Yes; }
 }
 
 my_mutex_off() {
-    [ -n "$have_mutex" ] && { mutex_off; have_mutex=; }
+    [ -n "$have_mutex" ] && { mutex_off; HAVE_MUTEX=; }
 }
 
 #
@@ -133,7 +133,7 @@ ensure_and_save_command()
     if eval $* ; then
 	echo "$@" >> $RESTOREBASE
     else
-	[ -z "$stopping" ] && { stop_firewall; exit 2; }
+	[ -z "STOPPING" ] && { stop_firewall; exit 2; }
     fi
 }
 
@@ -156,7 +156,7 @@ run_iptables() {
     [ -n "$IPRANGE_MATCH" ] && [ -f $TMP_DIR/iprange ] && rm -f $TMP_DIR/iprange
 
     if ! $IPTABLES $@ ; then
-	if [ -z "$stopping" ]; then
+	if [ -z "STOPPING" ]; then
 	    error_message "ERROR: Command \"$IPTABLES $@\" Failed"
 	    stop_firewall
 	    exit 2
@@ -196,7 +196,7 @@ qt_iptables() {
 #
 run_ip() {
     if ! ip $@ ; then
-	if [ -z "$stopping" ]; then
+	if [ -z "STOPPING" ]; then
 	    error_message "ERROR: Command \"ip $@\" Failed"
 	    stop_firewall
 	    exit 2
@@ -209,7 +209,7 @@ run_ip() {
 #
 run_tc() {
     if ! tc $@ ; then
-	if [ -z "$stopping" ]; then
+	if [ -z "STOPPING" ]; then
 	    error_message "ERROR: Command \"tc $@\" Failed"
 	    stop_firewall
 	    exit 2
@@ -222,7 +222,7 @@ run_tc() {
 #
 run_ipset() {
     if ! ipset $@ ; then
-	if [ -z "$stopping" ]; then
+	if [ -z "STOPPING" ]; then
 	    error_message "ERROR: Command \"ipset $@\" Failed"
 	    stop_firewall
 	    exit 2
@@ -1698,7 +1698,7 @@ log_rule_limit() # $1 = log level, $2 = chain, $3 = display Chain $4 = dispositi
     case $level in
 	ULOG)
 	    if ! $IPTABLES $command $chain $@ $limit -j ULOG $LOGPARMS --ulog-prefix "$prefix" ; then
-		if [ -z "$stopping" ]; then
+		if [ -z "STOPPING" ]; then
 		    error_message "ERROR: Command \"$IPTABLES $command $chain $@ $limit -j ULOG $LOGPARMS --ulog-prefix \"$prefix\"\" Failed"
 		    stop_firewall
 		    exit 2
@@ -1707,7 +1707,7 @@ log_rule_limit() # $1 = log level, $2 = chain, $3 = display Chain $4 = dispositi
 	    ;;
 	*)
 	    if ! $IPTABLES $command $chain $@ $limit -j LOG $LOGPARMS --log-level $level --log-prefix "$prefix"; then
-		if [ -z "$stopping" ]; then
+		if [ -z "STOPPING" ]; then
 		    error_message "ERROR: Command \"$IPTABLES $command $chain $@ $limit -j  LOG $LOGPARMS --log-level $level --log-prefix \"$prefix\"\" Failed"
 		    stop_firewall
 		    exit 2
@@ -1717,7 +1717,7 @@ log_rule_limit() # $1 = log level, $2 = chain, $3 = display Chain $4 = dispositi
     esac
 	
     if [ $? -ne 0 ] ; then
-	[ -z "$stopping" ] && { stop_firewall; exit 2; }
+	[ -z "STOPPING" ] && { stop_firewall; exit 2; }
     fi
 }
 
@@ -1982,7 +1982,7 @@ stop_firewall() {
 
     set_state "Stopping"
 
-    stopping="Yes"
+    $STOPPING="Yes"
 
     TERMINATOR=
 
@@ -2832,8 +2832,8 @@ setup_nat() {
 	    run_iptables2 -t nat -A OUTPUT -d $external $policyout -j DNAT --to-destination $internal
 
 	if [ -n "$add_ip_aliases" ]; then
-	    list_search $external $aliases_to_add || \
-		aliases_to_add="$aliases_to_add $external $interface"
+	    list_search $external $ALIASES_TO_ADD || \
+		ALIASES_TO_ADD="$ALIASES_TO_ADD $external $interface"
 	fi
     }
     #
@@ -6476,9 +6476,9 @@ setup_masq()
 		address=${address%:)}
 		if [ -n "$address" ]; then
 		    for addr in $(ip_range_explicit ${address%:*}) ; do
-			if ! list_search $addr $aliases_to_add; then
+			if ! list_search $addr $ALIASES_TO_ADD; then
 			    [ -n "$RETAIN_ALIASES" ] || save_command qt ip addr del $addr dev $interface
-			    aliases_to_add="$aliases_to_add $addr $fullinterface"
+			    ALIASES_TO_ADD="$ALIASES_TO_ADD $addr $fullinterface"
 			    case $fullinterface in
 				*:*)
 				    fullinterface=${fullinterface%:*}:$((${fullinterface#*:} + 1 ))
@@ -6922,7 +6922,7 @@ add_ip_aliases()
 	progress_message "   IP Address $external added to interface $interface $label"
     }
 
-    set -- $aliases_to_add
+    set -- $ALIASES_TO_ADD
 
     save_progress_message "Restoring IP Addresses..."
 
@@ -8186,7 +8186,7 @@ define_firewall() # $1 = Command (Start or Restart)
 
     echo "Activating Rules...";                activate_rules
 
-    [ -n "$aliases_to_add" ] && \
+    [ -n "$ALIASES_TO_ADD" ] && \
 	echo "Adding IP Addresses..." &&       add_ip_aliases
 
     for file in chains nat proxyarp zones; do
@@ -8757,9 +8757,9 @@ do_initialize() {
     IPSECFILE=
     EXCLUSION_SEQ=1
 
-    stopping=
-    have_mutex=
-    aliases_to_add=
+    STOPPING=
+    HAVE_MUTEX=
+    ALIASES_TO_ADD=
 
     FUNCTIONS=$SHARED_DIR/functions
 

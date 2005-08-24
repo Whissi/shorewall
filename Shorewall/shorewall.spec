@@ -62,6 +62,7 @@ if [ $1 = 0 ]; then
 fi
 
 %files
+%defattr(-,root,root)
 %attr(0544,root,root) /etc/init.d/shorewall
 %attr(0700,root,root) %dir /etc/shorewall
 %attr(0700,root,root) %dir /usr/share/shorewall

@@ -1994,6 +1994,10 @@ stop_firewall() {
 	run_iptables -t mangle -F && \
 	run_iptables -t mangle -X
 
+    [ -n "$RAW_TABLE" ] && \
+	run_iptables -t raw -F && \
+	run_iptables -t raw -X	
+
     [ -n "$NAT_ENABLED" ] && delete_nat
     delete_proxy_arp
     [ -n "$CLEAR_TC" ] && delete_tc1
@@ -7011,6 +7015,7 @@ determine_capabilities() {
     XMARK=
     CONNMARK=
     CONNMARK_MATCH=
+    RAW_TABLE=
 
     qt $IPTABLES -N fooX1234
     qt $IPTABLES -A fooX1234 -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT             && CONNTRACK_MATCH=Yes
@@ -7030,6 +7035,7 @@ determine_capabilities() {
     qt $IPTABLES -t mangle -F fooX1234
     qt $IPTABLES -t mangle -X fooX1234
 
+    qt $IPTABLES -t raw	   -L -n							&& RAW_TABLE=Yes
 
     if qt mywhich ipset; then
 	qt ipset -X fooX1234 # Just in case something went wrong the last time
@@ -7077,6 +7083,7 @@ report_capabilities() {
     report_capability "Extended MARK Target" $XMARK
     report_capability "CONNMARK Target" $CONNMARK
     report_capability "Connmark Match" $CONNMARK_MATCH
+    report_capability "Raw Table" $RAW_TABLE
 }
 
 #
@@ -7155,6 +7162,10 @@ initialize_netfilter () {
     [ -n "$MANGLE_ENABLED" ] && \
 	run_iptables -t mangle -F && \
 	run_iptables -t mangle -X
+
+    [ -n "$RAW_TABLE" ] && \
+	run_iptables -t raw -F && \
+	run_iptables -t raw -X
 
     [ -n "$CLEAR_TC" ] && delete_tc
 

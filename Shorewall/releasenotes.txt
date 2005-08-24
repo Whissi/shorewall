@@ -2,6 +2,9 @@ Shorewall 2.5.3
 
 Problems Corrected in 2.5.3:
 
+1)  The Netfilter 'raw' table is now cleared during "shorewall stop",
+    "shorewall [re]start" and "shorewall clear".
+
 New Features in Shorewall 2.5.3
 
 1)  You may now specify "!" followed by a list of addresses in the
@@ -28,14 +31,14 @@ New Features in Shorewall 2.5.3
 
     /etc/shorewall/rules:
 
-    DNAT	fw	 loc:192.168.1.4:3128	tcp	80
+    DNAT	loc:!192.168.1.4  loc:192.168.1.4:3128	tcp	80
 
-    Any other fw->fw traffic will still be accepted. If you want to
-    also log that fw->fw traffic at the info log level then add this to
-    /etc/shorewall/policy:
+    Any other loc->loc traffic will still be accepted. If you want to
+    also log that other loc->loc traffic at the info log level then
+    insert this into /etc/shorewall/policy:
 
     #SOURCE	DEST	POLICY	LOG LEVEL
-    fw		fw	ACCEPT	info
+    loc		loc	ACCEPT	info
 
 Problems Corrected in 2.5.2:
 

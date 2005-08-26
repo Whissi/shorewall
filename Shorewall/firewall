@@ -1443,26 +1443,6 @@ validate_policy()
 	esac
 
 	case $policy in
-	    *:*)
-		[ -n "$FASTACCEPT" ] && \
-		    startup_error "ESTABLISHED policy may not be specified with FASTACCEPT=Yes in shorewall.conf"
-		epolicy=${policy#*:}
-		policy=${policy%:*}
-
-		case $epolicy in
-		    ACCEPT|QUEUE)
-			;;
-		    *)
-			startup_error "$client $server $policy $loglevel $synparams: Invalid ESTABLISHED policy: $epolicy"
-			;;
-		esac
-		;;
-	    *)
-		epolicy=ACCEPT
-		;;
-	esac
-
-	case $policy in
 	ACCEPT|REJECT|DROP|CONTINUE|QUEUE)
 	    ;;
 	NONE)
@@ -1489,7 +1469,6 @@ validate_policy()
 
 	[ "x$loglevel"  = "x-" ] && loglevel=
 	[ "x$synparms"  = "x-" ] && synparms=
-	[ "x$epolicy"   = "x-" ] && epolicy=
 
 	[ $policy = NONE ] || ALL_POLICY_CHAINS="$ALL_POLICY_CHAINS $chain"
 
@@ -1497,7 +1476,6 @@ validate_policy()
 	eval ${chain}_policy=$policy
 	eval ${chain}_loglevel=$loglevel
 	eval ${chain}_synparams=$synparams
-	eval ${chain}_epolicy=$epolicy
 
 	if [ -n "${clientwild}" ]; then
 	    if [ -n "${serverwild}" ]; then
@@ -6098,20 +6076,9 @@ display_list() # $1 = List Title, rest of $* = list to display
 
 policy_rules() # $1 = chain to add rules to
 	       # $2 = policy
-               # $3 = E/R Policy
-	       # $4 = loglevel
+	       # $3 = loglevel
 {
     local target="$2"
-
-    [ -n "$FASTACCEPT" ] || case $3 in
-	QUEUE)
-	    run_iptables -I $1 -m state --state RELATED -j ACCEPT
-	    run_iptables -I $1 -m state --state ESTABLISHED -j QUEUE
-	    ;;
-	ACCEPT)
-	    run_iptables -I $1 -m state --state ESTABLISHED,RELATED -j ACCEPT
-	    ;;
-    esac
 
     case "$target" in
 	ACCEPT)
@@ -6135,8 +6102,8 @@ policy_rules() # $1 = chain to add rules to
 	    ;;
     esac
 
-    if [ $# -eq 4 -a "x${4}" != "x-" ]; then
-	log_rule $4 $1 $2
+    if [ $# -eq 3 -a "x${3}" != "x-" ]; then
+	log_rule $3 $1 $2
     fi
 
     [ -n "$target" ] && run_iptables -A $1 -j $target
@@ -6161,22 +6128,9 @@ default_policy() # $1 = client $2 = server
 
     jump_to_policy_chain() {
 	#
-	# Insert a rule of ESTABLISHED,RELATED packets at the head of the
-	# canonical chain.
-	#
 	# Add a jump to from the canonical chain to the policy chain. On return,
 	# $chain is set to the name of the policy chain
 	#
-	[ -n "$FASTACCEPT" ] || case $epolicy in
-	    QUEUE)
-		run_iptables -I $chain -m state --state RELATED -j ACCEPT
-		run_iptables -I $chain -m state --state ESTABLISHED -j QUEUE
-		;;
-	    ACCEPT)
-		run_iptables -I $chain -m state --state ESTABLISHED,RELATED -j ACCEPT
-		;;
-	esac
-
 	run_iptables -A $chain -j $chain1
 	chain=$chain1
     }
@@ -6189,7 +6143,6 @@ default_policy() # $1 = client $2 = server
 	eval policy=\$${chain1}_policy
 	eval loglevel=\$${chain1}_loglevel
 	eval synparams=\$${chain1}_synparams
-	eval epolicy=\$${chain1}_epolicy
 	#
 	# Add the appropriate rules to the canonical chain ($chain) to enforce
 	# the specified policy
@@ -6199,7 +6152,7 @@ default_policy() # $1 = client $2 = server
 	    # The policy chain is the canonical chain; add policy rule to it
 	    # The syn flood jump has already been added if required.
 	    #
-	    policy_rules $chain $policy $epolicy $loglevel
+	    policy_rules $chain $policy $loglevel
 	else
 	    #
 	    # The policy chain is different from the canonical chain -- approach
@@ -6213,7 +6166,7 @@ default_policy() # $1 = client $2 = server
 		    # in this chain.
 		    #
 		    enable_syn_flood_protection $chain $chain1
-		    policy_rules $chain $policy $epolicy $loglevel
+		    policy_rules $chain $policy $loglevel
 		else
 		    #
 		    # No problem with double-counting so just jump to the
@@ -6229,7 +6182,7 @@ default_policy() # $1 = client $2 = server
 		#
 		[ -n "$synparams" ] && \
 		    enable_syn_flood_protection $chain $chain1
-		policy_rules $chain $policy $epolicy $loglevel
+		policy_rules $chain $policy $loglevel
 		;;
 	    *)
 		#
@@ -7746,15 +7699,13 @@ apply_policy_rules() {
 	eval policy=\$${chain}_policy
 	eval loglevel=\$${chain}_loglevel
 	eval synparams=\$${chain}_synparams
-	eval epolicy=\$${chain}_epolicy
 	eval optional=\$${chain}_is_optional
 
 	[ -n "$synparams" ] && setup_syn_flood_chain $chain $synparams $loglevel
 
 	if havechain $chain; then
-	    [ "$epolicy" = ACCEPT ] && ordinal=2 || ordinal=3
 	    [ -n "$synparams" ] && \
-		run_iptables -I $chain $ordinal -p tcp --syn -j @$chain
+		run_iptables -I $chain 2 -p tcp --syn -j @$chain ### FIX ME ###
 	elif [ -z "$optional" -a "$policy" != CONTINUE ]; then
 	    #
 	    # The chain doesn't exist. Create the chain and add policy
@@ -7779,7 +7730,7 @@ apply_policy_rules() {
 
 	    case $chain in
 		all2*|*2all)
-		    policy_rules $chain $policy $epolicy $loglevel
+		    policy_rules $chain $policy $loglevel
 		    ;;
 	    esac
 	fi
@@ -8771,6 +8722,8 @@ do_initialize() {
     STOPPING=
     HAVE_MUTEX=
     ALIASES_TO_ADD=
+    SECTION=
+    SECTIONS=
 
     FUNCTIONS=$SHARED_DIR/functions
 

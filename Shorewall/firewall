@@ -235,10 +235,37 @@ run_ipset() {
 #
 finish_chain_section() # $1 = canonical chain $2 = state list
 {
+    local policy policychain
+
     [ -n "$FASTACCEPT" ] || run_iptables -A $1 -m state --state $2 -j ACCEPT
+    
     if list_search RELATED $(separate_list $2) ; then
 	[ -z "$NEWNOTSYN" ]  && run_iptables -A $1 -m state --state NEW -p tcp ! --syn -j newnotsyn
-    fi	    
+
+	if is_policy_chain $1 ; then
+	    if eval test -n \"\$${1}_synparams\" ; then
+		if [ $SECTION = DONE ]; then
+		    eval policy=\$${1}_policy
+
+		    case $policy in
+			ACCEPT|CONTINUE|QUEUE)
+			    run_iptables -A $1 -p tcp --syn -j @$1
+			    ;;
+			*)
+			
+		    esac
+		else
+		    run_iptables -A $1 -p tcp --syn -j @$1
+		fi
+	    fi
+	else
+	    eval policychain=\$${1}_policychain
+	    
+	    if eval test -n \"\$${policychain}_synparams\" ; then
+		run_iptables -A $1 -p tcp --syn -j @$policychain
+	    fi
+	fi
+    fi
 }
 
 finish_section() # $1 = Section(s)
@@ -273,7 +300,7 @@ createchain() # $1 = chain name, $2 = If "yes", create newnotsyn rule
 
     if [ $2 = yes ]; then
 	case $SECTION in
-	    NEW)
+	    NEW|DONE)
 		finish_chain_section $1 ESTABLISHED,RELATED
 		;;
 	    RELATED)
@@ -296,7 +323,7 @@ createchain2() # $1 = chain name, $2 = If "yes", create default rules
 
 	if [ $2 = yes ]; then
 	    case $SECTION in
-		NEW)
+		NEW|DONE)
 		    finish_chain_section $1 ESTABLISHED,RELATED
 		    ;;
 		RELATED)
@@ -1455,6 +1482,7 @@ validate_policy()
 	eval ${chain}_is_policy=Yes
 	eval ${chain}_is_optional=Yes
 	eval ${chain}_policy=ACCEPT
+	eval ${chain}_policychain=$chain
 	ALL_POLICY_CHAINS="$ALL_POLICY_CHAINS $chain"
     done	
 
@@ -1511,8 +1539,8 @@ validate_policy()
 	    fi
 	fi
 
-	[ "x$loglevel"  = "x-" ] && loglevel=
-	[ "x$synparms"  = "x-" ] && synparms=
+	[ "x$loglevel"   = "x-" ] && loglevel=
+	[ "x$synparams"  = "x-" ] && synparams=
 
 	[ $policy = NONE ] || ALL_POLICY_CHAINS="$ALL_POLICY_CHAINS $chain"
 
@@ -2781,17 +2809,6 @@ setup_syn_flood_chains()
 
 	[ -n "$synparams" ] && setup_syn_flood_chain $chain $synparams $loglevel
     done
-}
-#
-# Enable SYN flood protection on a chain
-#
-# Insert a jump rule to the protection chain from the first chain. Inserted
-# as the second rule and restrict the jump to SYN packets
-#
-enable_syn_flood_protection() # $1 = chain, $2 = protection chain
-{
-    run_iptables -I $1 -p tcp --syn -j @$2
-    progress_message "      Enabled SYN flood protection"
 }
 
 #
@@ -5979,13 +5996,13 @@ process_rules() # $1 = "Yes" if the target is a macro.
     case $SECTION in
 	ESTABLISHED)
 	    finish_section ESTABLISHED,RELATED
-	    SECTION=NEW
 	    ;;
 	RELATED)
 	    finish_section RELATED
-	    SECTION=NEW
 	    ;;
     esac
+
+    SECTION=DONE
 }
 
 #
@@ -6250,6 +6267,11 @@ default_policy() # $1 = client $2 = server
 	chain=$chain1
     }
 
+    report_syn_flood_protection()
+    {
+	progress_message "      Enabled SYN flood protection"
+    }
+
     apply_default()
     {
 	#
@@ -6280,7 +6302,7 @@ default_policy() # $1 = client $2 = server
 		    # To avoid double-counting SYN packets, enforce the policy
 		    # in this chain.
 		    #
-		    enable_syn_flood_protection $chain $chain1
+		    report_syn_flood_protection
 		    policy_rules $chain $policy $loglevel
 		else
 		    #
@@ -6296,7 +6318,7 @@ default_policy() # $1 = client $2 = server
 		# rules and enable SYN flood protection if requested
 		#
 		[ -n "$synparams" ] && \
-		    enable_syn_flood_protection $chain $chain1
+		    report_syn_flood_protection
 		policy_rules $chain $policy $loglevel
 		;;
 	    *)
@@ -6305,7 +6327,7 @@ default_policy() # $1 = client $2 = server
 		# enable SYN flood protection if requested.
 		#
 		[ -n "$synparams" ] && \
-		    enable_syn_flood_protection $chain $chain1
+		    report_syn_flood_protection
 		jump_to_policy_chain
 		;;
 	    esac
@@ -7815,11 +7837,7 @@ apply_policy_rules() {
 	eval loglevel=\$${chain}_loglevel
 	eval optional=\$${chain}_is_optional
 
-	[ -n "$synparams" ] && setup_syn_flood_chain $chain $synparams $loglevel
-
-	if havechain $chain ; then
-	    [ -n "$synparms" ] && run_iptables -I $chain -p tcp --syn -j @$chain
-	elif [ -z "$optional" -a "$policy" != CONTINUE ]; then
+	if ! havechain $chain && [ -z "$optional" -a "$policy" != CONTINUE ]; then
 	    #
 	    # The chain doesn't exist. Create the chain and add policy
 	    # rules
@@ -7832,14 +7850,6 @@ apply_policy_rules() {
 	    # Otherwise, this is a canonical chain which will be handled in
 	    # the for loop below
 	    #
-	    if [ -n "$synparams" ]; then
-		case $policy in
-		    ACCEPT|CONTINUE|QUEUE)
-			run_iptables -I $chain -p tcp --syn -j @$chain
-			;;
-		esac
-	    fi
-
 	    case $chain in
 		all2*|*2all)
 		    policy_rules $chain $policy $loglevel
@@ -8233,6 +8243,8 @@ define_firewall() # $1 = Command (Start or Restart)
     echo "Setting up NETMAP...";               setup_netmap
     echo "Adding Common Rules";                add_common_rules
 
+    setup_syn_flood_chains
+
     tunnels=$(find_file tunnels)
     [ -f $tunnels ] && \
 	echo "Processing $tunnels..." &&       setup_tunnels $tunnels
@@ -8241,8 +8253,6 @@ define_firewall() # $1 = Command (Start or Restart)
 
     maclist_hosts=$(find_hosts_by_option maclist)
     [ -n "$maclist_hosts" ] &&                 setup_mac_lists
-
-    setup_syn_flood_chains
 
     echo "Processing $(find_file rules)...";   process_rules
     echo "Processing Actions...";              process_actions2

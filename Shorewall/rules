@@ -19,6 +19,40 @@
 #	   you cannot use an ACCEPT rule to allow traffic from the internet to
 #	   that system. You *must* use a DNAT rule instead.
 #------------------------------------------------------------------------------
+#
+# The rules file is divided into sections. Each section is introduced by
+# a "Section Header" which is a line beginning with SECTION followed by the
+# section name.
+#
+# Sections are as follows and must appear in the order listed:
+#
+#	ESTABLISHED		Packets in the ESTABLISHED state are processed
+#				by rules in this section.
+#
+#				The only ACTIONs allowed in this section are
+#				ACCEPT, DROP, REJECT, LOG and QUEUE
+#
+#				There is an implicit ACCEPT rule inserted
+#				at the end of this section.
+#
+#	RELATED			Packets in the RELATED state are processed by
+#				rules in this section.
+#
+#				The only ACTIONs allowed in this section are
+#				ACCEPT, DROP, REJECT, LOG and QUEUE
+#
+#				There is an implicit ACCEPT rule inserted
+#				at the end of this section.
+#
+#	NEW			Packets in the NEW and INVALID states are
+#				processed by rules in this section.
+#
+# WARNING: If you specify FASTACCEPT=Yes in shorewall.conf then the 
+#	   ESTABLISHED and RELATED sections must be empty.
+#
+# You may omit any section that you don't need. If no Section Headers appear
+# in the file then all rules are assumed to be in the NEW section.
+#	
 # Columns are:
 #
 #	ACTION		ACCEPT, DROP, REJECT, DNAT, DNAT-, REDIRECT, CONTINUE,
@@ -370,4 +404,7 @@
 #############################################################################################################
 #ACTION	SOURCE		DEST		PROTO	DEST	SOURCE		ORIGINAL	RATE		USER/
 #						PORT	PORT(S)		DEST		LIMIT		GROUP
+SECTION ESTABLISHED
+SECTION RELATED
+SECTION NEW
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

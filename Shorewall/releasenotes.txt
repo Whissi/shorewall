@@ -40,6 +40,38 @@ New Features in Shorewall 2.5.3
     #SOURCE	DEST	POLICY	LOG LEVEL
     loc		loc	ACCEPT	info
 
+5)  Prior to Shorewall 2.5.3, the rules file only controlled packets in
+    the Netfilter states NEW and INVALID. Beginning with this release,
+    the rules file can also deal with packets in the ESTABLISHED and
+    RELATED states. 
+
+    The /etc/shorewall/rules file may now be divided into
+    "sections". Each section is introduced by a line that begins with
+    the keyword SECTION which is followed by the section name. Sections
+    are as listed below and must appear in the order shown.
+
+    ESTABLISHED
+
+	Rules in this section apply to packets in the ESTABLISHED
+	state.
+
+    RELATED
+
+	Rules in this section apply to packets in the RELATED state.
+
+    NEW
+
+	Rules in this section apply to packets in the NEW and INVALID
+	states.
+
+    Rules in the ESTABLISHED and RELATED sections are limited to the
+    following ACTIONs:
+
+	ACCEPT, DROP, REJECT, QUEUE, LOG and User-defined actions.
+
+    Macros may be used in these sections provided that they expand to
+    only these ACTIONs.
+
 Problems Corrected in 2.5.2:
 
 1) You may now include port lists in in the /etc/shorewall/accounting

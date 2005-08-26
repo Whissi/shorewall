@@ -231,6 +231,33 @@ run_ipset() {
 }
 
 #
+# Add the implicit ACCEPT rules at the end of a rules file section
+#
+finish_chain_section() # $1 = canonical chain $2 = state list
+{
+    [ -n "$FASTACCEPT" ] || run_iptables -A $1 -m state --state $2 -j ACCEPT
+    if list_search RELATED $(separate_list $2) ; then
+	[ -z "$NEWNOTSYN" ]  && run_iptables -A $1 -m state --state NEW -p tcp ! --syn -j newnotsyn
+    fi	    
+}
+
+finish_section() # $1 = Section(s)
+{
+    local zone zone1 chain
+
+    if [ "$COMMAND" != check ]; then
+	for zone in $ZONES $FW; do
+	    for zone1 in $ZONES $FW; do
+		chain=${zone}2${zone1}
+		if havechain $chain; then
+		    finish_chain_section $chain $1
+		fi
+	    done
+	done
+    fi
+}
+
+#
 # Create a filter chain
 #
 # If the chain isn't one of the common chains then add a rule to the chain
@@ -245,6 +272,15 @@ createchain() # $1 = chain name, $2 = If "yes", create newnotsyn rule
     run_iptables -N $1
 
     if [ $2 = yes ]; then
+	case $SECTION in
+	    NEW)
+		finish_chain_section $1 ESTABLISHED,RELATED
+		;;
+	    RELATED)
+		finish_chain_section $1 ESTABLISHED
+		;;
+	esac
+
 	[ -z "$NEWNOTSYN" ] && \
 	    run_iptables -A $1 -m state --state NEW -p tcp ! --syn -j newnotsyn
     fi
@@ -259,12 +295,20 @@ createchain2() # $1 = chain name, $2 = If "yes", create default rules
     if $IPTABLES -N $1; then
 
 	if [ $2 = yes ]; then
-	    [ -z "$NEWNOTSYN" ] && \
-		run_iptables -A $1 -m state --state NEW -p tcp ! --syn -j newnotsyn
+	    case $SECTION in
+		NEW)
+		    finish_chain_section $1 ESTABLISHED,RELATED
+		    ;;
+		RELATED)
+		    finish_chain_section $1 ESTABLISHED
+		    ;;
+	    esac
+	    
 	fi
 	
 	eval exists_${c}=Yes
     fi
+
 }
 
 #
@@ -2729,6 +2773,15 @@ setup_syn_flood_chain ()
     run_iptables -A $chain -j DROP
 }
 
+setup_syn_flood_chains()
+{
+    for chain in $ALL_POLICY_CHAINS; do
+	eval loglevel=\$${chain}_loglevel
+	eval synparams=\$${chain}_synparams
+
+	[ -n "$synparams" ] && setup_syn_flood_chain $chain $synparams $loglevel
+    done
+}
 #
 # Enable SYN flood protection on a chain
 #
@@ -5015,11 +5068,11 @@ process_rule() # $1 = target
 
 	    if [ -n "$addr" -a -n "$CONNTRACK_MATCH" ]; then
 		for adr in $(separate_list $addr); do
-		    run_iptables -A $logchain $(fix_bang $proto $sports $multiport $dports) $user -m conntrack --ctorigdst $adr -j $chain
+		    run_iptables -A $logchain $state $(fix_bang $proto $sports $multiport $dports) $user -m conntrack --ctorigdst $adr -j $chain
 		done
 		addr=
 	    else
-		run_iptables -A $logchain $(fix_bang $cli $proto $sports $multiport $dports) $user -j $chain
+		run_iptables -A $state $logchain $(fix_bang $cli $proto $sports $multiport $dports) $user -j $chain
 	    fi
 
 	    cli=
@@ -5028,6 +5081,7 @@ process_rule() # $1 = target
 	    multiport=
 	    dports=
 	    user=
+	    state=
 	}
 
 	# Set source variables. The 'cli' variable will hold the client match predicate(s).
@@ -5148,7 +5202,19 @@ process_rule() # $1 = target
 		    fatal_error "LOG requires log level"
 		;;
 	esac
-	
+
+	case $SECTION in
+	    NEW)
+		state=
+		;;
+	    ESTABLISHED)
+		state="-m state --state ESTABLISHED"
+		;;
+	    RELATED)
+		state="-m state --state ESTABLISHED"
+		;;
+	esac
+
 	if [ -n "${serv}${servport}" ]; then
 	    if [ $COMMAND != check ]; then
 
@@ -5173,16 +5239,16 @@ process_rule() # $1 = target
 				    for adr in $(separate_list $addr); do
 					if [ -n "$loglevel" -a -z "$natrule" ]; then
 					    log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A -m conntrack --ctorigdst $adr \
-						$user $(fix_bang $proto $sports $multiport $cli $(dest_ip_range $srv) $dports)
+						$user $(fix_bang $proto $sports $multiport $cli $(dest_ip_range $srv) $dports) $state
 					fi
 
-					run_iptables2 -A $chain $proto $ratelimit $multiport $cli $sports \
+					run_iptables2 -A $chain $state $proto $ratelimit $multiport $cli $sports \
 					    $(dest_ip_range $srv) $dports -m conntrack --ctorigdst $adr $user -j $target
 				    done
 				else
 				    if [ -n "$loglevel" -a -z "$natrule" ]; then
 					log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $user \
-					    $(fix_bang $proto $sports $multiport $cli $(dest_ip_range $srv) $dports)
+					    $(fix_bang $proto $sports $multiport $cli $(dest_ip_range $srv) $dports) $state
 				    fi
 
 				    if [ -n "$nonat" ]; then
@@ -5191,7 +5257,7 @@ process_rule() # $1 = target
 				    fi
 
 				    if [ "$logtarget" != NONAT ]; then
-					run_iptables2 -A $chain $proto $multiport $cli $sports \
+					run_iptables2 -A $chain $state $proto $multiport $cli $sports \
 					    $(dest_ip_range $srv) $dports $ratelimit $user -j $target
 				    fi
 				fi
@@ -5200,7 +5266,7 @@ process_rule() # $1 = target
 		    else
 			if [ -n "$loglevel" -a -z "$natrule" ]; then
 			    log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $user \
-				$(fix_bang $proto $sports $multiport $cli $dports)
+				$(fix_bang $proto $sports $multiport $cli $dports) $state
 			fi
 
 			[ -n "$nonat" ] && \
@@ -5226,7 +5292,7 @@ process_rule() # $1 = target
 		    for adr in $(separate_list $addr); do
 			if [ -n "$loglevel" ]; then
 			    log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $user \
-				$(fix_bang $proto $multiport $cli $dest_interface $sports $dports -m conntrack --ctorigdst $adr)
+				$(fix_bang $proto $multiport $cli $dest_interface $sports $dports -m conntrack --ctorigdst $adr) $state
 			fi
 
 			if [ "$logtarget" != LOG ]; then
@@ -5236,7 +5302,7 @@ process_rule() # $1 = target
 			    fi
 
 			    if [ "$logtarget" != NONAT ]; then
-				run_iptables2 -A $chain $proto $multiport $cli $dest_interface \
+				run_iptables2 -A $chain $state $proto $multiport $cli $dest_interface \
 				    $sports $dports $ratelimit $user  -m conntrack --ctorigdst $adr -j $target
 			    fi
 			fi
@@ -5244,7 +5310,7 @@ process_rule() # $1 = target
 		else
 		    if [ -n "$loglevel" ]; then
 			log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $user \
-			    $(fix_bang $proto $multiport $cli $dest_interface $sports $dports)
+			    $(fix_bang $proto $multiport $cli $dest_interface $sports $dports) $state
 		    fi
 
 		    if [ "$logtarget" != LOG ]; then
@@ -5254,7 +5320,7 @@ process_rule() # $1 = target
 			fi
 
 			if [ "$logtarget" != NONAT ]; then
-			    run_iptables2 -A $chain $proto $multiport $cli $dest_interface \
+			    run_iptables2 -A $chain $state $proto $multiport $cli $dest_interface \
 				$sports $dports $ratelimit $user -j $target
 			fi
 		    fi
@@ -5372,6 +5438,7 @@ process_rule() # $1 = target
 
     case $target in
 	ACCEPT+|NONAT)
+	    [ $SECTION = NEW ] || fatal_error "$target rules are not allowed in the $SECTION SECTION"
 	    nonat=Yes
 	    target=ACCEPT
 	    ;;
@@ -5387,10 +5454,12 @@ process_rule() # $1 = target
 	    target=RETURN
 	    ;;
 	DNAT*|SAME*)
+	    [ $SECTION = NEW ] || fatal_error "$target rules are not allowed in the $SECTION SECTION"
 	    target=ACCEPT
 	    address=${address:=detect}
 	    ;;
 	REDIRECT*)
+	    [ $SECTION = NEW ] || fatal_error "REDIRECT rules are not allowed in the $SECTION SECTION"
 	    target=ACCEPT
 	    address=${address:=all}
 	    if [ "x-" = "x$servers" ]; then
@@ -5398,6 +5467,9 @@ process_rule() # $1 = target
 	    else
 		servers="$FW::$servers"
 	    fi
+	    ;;
+	*-)
+	    [ $SECTION = NEW ] || fatal_error "$target rules are not allowed in the $SECTION SECTION"
 	    ;;
     esac
 
@@ -5778,6 +5850,8 @@ process_rules() # $1 = "Yes" if the target is a macro.
     {
 	expandv xprotocol xports xcports xaddress xratelimit xuserspec intrazone=
 
+	[ -z "$SECTIONS" ] && SECTIONS="ESTABLISHED RELATED NEW"
+
 	case $xclients in 
 	    all+)
 		xclients=all
@@ -5828,6 +5902,30 @@ process_rules() # $1 = "Yes" if the target is a macro.
 	    ACCEPT|ACCEPT+|NONAT|DROP|REJECT|DNAT|DNAT-|REDIRECT|REDIRECT-|LOG|CONTINUE|QUEUE|SAME|SAME-)
 		do_it No
 		;;
+	    SECTION)
+		list_search $xclients $SECTIONS && fatal_error "Duplicate or out of order SECTION $xclients"
+
+		case $xclients in
+		    ESTABLISHED)
+			SECTIONS=ESTABLISHED
+			;;
+		    RELATED)
+			finish_section ESTABLISHED
+			SECTIONS="ESTABLISHED RELATED"
+		        ;;
+		    NEW)
+			[ $SECTION = RELATED ] && finish_section RELATED || finish_section ESTABLISHED,RELATED
+			SECTIONS="ESTABLISHED RELATED NEW"
+			;;
+		    *)
+			fatal_error "Invalid SECTION $xclients"
+			;;
+		esac
+
+		[ -n "$xservers" ] && fatal_error "Invalid SECTION $xclients $xservers"
+
+		SECTION=$xclients
+		;;
 	    *)
 		if list_search ${xtarget%%:*} $ACTIONS; then
 		    if ! list_search $xtarget $USEDACTIONS; then
@@ -5871,6 +5969,17 @@ process_rules() # $1 = "Yes" if the target is a macro.
 
 	esac
     done < $TMP_DIR/rules
+
+    case $SECTION in
+	ESTABLISHED)
+	    finish_section ESTABLISHED,RELATED
+	    SECTION=NEW
+	    ;;
+	RELATED)
+	    finish_section RELATED
+	    SECTION=NEW
+	    ;;
+    esac
 }
 
 #
@@ -7698,21 +7807,18 @@ apply_policy_rules() {
     for chain in $ALL_POLICY_CHAINS; do
 	eval policy=\$${chain}_policy
 	eval loglevel=\$${chain}_loglevel
-	eval synparams=\$${chain}_synparams
 	eval optional=\$${chain}_is_optional
 
 	[ -n "$synparams" ] && setup_syn_flood_chain $chain $synparams $loglevel
 
-	if havechain $chain; then
-	    [ -n "$synparams" ] && \
-		run_iptables -I $chain 2 -p tcp --syn -j @$chain ### FIX ME ###
+	if havechain $chain ; then
+	    [ -n "$synparms" ] && run_iptables -I $chain -p tcp --syn -j @$chain
 	elif [ -z "$optional" -a "$policy" != CONTINUE ]; then
 	    #
 	    # The chain doesn't exist. Create the chain and add policy
 	    # rules
 	    #
 	    createchain $chain yes
-
 	    #
 	    # If either client or server is 'all' then this MUST be
 	    # a policy chain and we must apply the appropriate policy rules
@@ -8129,6 +8235,8 @@ define_firewall() # $1 = Command (Start or Restart)
 
     maclist_hosts=$(find_hosts_by_option maclist)
     [ -n "$maclist_hosts" ] &&                 setup_mac_lists
+
+    setup_syn_flood_chains
 
     echo "Processing $(find_file rules)...";   process_rules
     echo "Processing Actions...";              process_actions2
@@ -8722,7 +8830,7 @@ do_initialize() {
     STOPPING=
     HAVE_MUTEX=
     ALIASES_TO_ADD=
-    SECTION=
+    SECTION=NEW
     SECTIONS=
 
     FUNCTIONS=$SHARED_DIR/functions

@@ -21,7 +21,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-02-08</pubdate>
+    <pubdate>2005-08-27</pubdate>
 
     <copyright>
       <year>2003</year>
@@ -254,6 +254,17 @@ road       tun+</programlisting>
 openvpn:1194  net            0.0.0.0/0</programlisting>
     </blockquote>
 
+    <para>If you are running Shorewall 2.4.3 or later, you might prefer the
+    following in <filename>/etc/shorewall/tunnels</filename> on system A.
+    Specifying the tunnel type as openvpnserver has the advantage that the VPN
+    connection will still work if the client is behind a gateway/firewall that
+    uses NAT.</para>
+
+    <blockquote>
+      <programlisting>#TYPE               ZONE           GATEWAY        GATEWAY ZONE
+openvpnserver:1194  net            0.0.0.0/0</programlisting>
+    </blockquote>
+
     <para>We want the remote systems to have access to the local LAN — we do
     that with an entry in <filename>/etc/shorewall/policy</filename> (assume
     that the local LAN comprises the zone <quote>loc</quote>).</para>
@@ -324,6 +335,15 @@ home       tun0</programlisting>
     <blockquote>
       <programlisting>#TYPE         ZONE           GATEWAY        GATEWAY ZONE
 openvpn:1194  net            206.162.148.9</programlisting>
+    </blockquote>
+
+    <para>Again in you are running Shorewall 2.4.3 or later, in
+    <filename>/etc/shorewall/tunnels</filename> on system B you might
+    prefer:</para>
+
+    <blockquote>
+      <programlisting>#TYPE               ZONE           GATEWAY        GATEWAY ZONE
+openvpnclient:1194  net            206.162.148.9</programlisting>
     </blockquote>
 
     <para>We want the remote clien to have access to the local LAN — we do

@@ -2329,7 +2329,7 @@ setup_tunnels() # $1 = name of tunnels file
 		;;
 	esac
 
-	addrule2 $inchain  -p $protocol $(source_ip_range $1) --dsport $p -j ACCEPT
+	addrule2 $inchain  -p $protocol $(source_ip_range $1) --sport $p -j ACCEPT
 	addrule2 $outchain -p $protocol $(dest_ip_range $1)   --dport  $p -j ACCEPT
 
 	progress_message "   OPENVPN client tunnel to $1:$protocol:$p defined."

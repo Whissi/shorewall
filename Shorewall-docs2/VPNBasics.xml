@@ -15,10 +15,12 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-12-23</pubdate>
+    <pubdate>2005-08-27</pubdate>
 
     <copyright>
       <year>2004</year>
+
+      <year>2005</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -333,6 +335,40 @@ openvpn:P       Z1            1.2.3.4</programlisting>
 
 ACCEPT   Z1:1.2.3.4     $FW             udp     P
 ACCEPT   $FW            Z1:1.2.3.4      udp     P</programlisting>
+      </blockquote>
+
+      <para><filename>/etc/shorewall/tunnels</filename>:</para>
+
+      <blockquote>
+        <programlisting>#TYPE           ZONE          GATEWAY          GATEWAY ZONE
+openvpnclient:P Z1            1.2.3.4</programlisting>
+      </blockquote>
+
+      <para><filename>/etc/shorewall/rules</filename>:</para>
+
+      <blockquote>
+        <programlisting>#ACTION  SOURCE         DEST            PROTO   DEST    SOURCE 
+#                                               PORT    PORT(S)
+
+ACCEPT   Z1:1.2.3.4     $FW             udp     -       P
+ACCEPT   $FW            Z1:1.2.3.4      udp     P</programlisting>
+      </blockquote>
+
+      <para><filename>/etc/shorewall/tunnels</filename>:</para>
+
+      <blockquote>
+        <programlisting>#TYPE           ZONE          GATEWAY          GATEWAY ZONE
+openvpnserver:P Z1            1.2.3.4</programlisting>
+      </blockquote>
+
+      <para><filename>/etc/shorewall/rules</filename>:</para>
+
+      <blockquote>
+        <programlisting>#ACTION  SOURCE         DEST            PROTO   DEST    SOURCE 
+#                                               PORT    PORT(S)
+
+ACCEPT   Z1:1.2.3.4     $FW             udp     P
+ACCEPT   $FW            Z1:1.2.3.4      udp     -       P</programlisting>
       </blockquote>
     </section>
   </section>

@@ -2192,7 +2192,7 @@ setup_tunnels() # $1 = name of tunnels file
 {
     local inchain
     local outchain
-
+    local options="-m state --state NEW,INVALID -j ACCEPT"
 
     setup_one_ipsec() # $1 = gateway $2 = Tunnel Kind $3 = gateway zones
     {
@@ -2208,16 +2208,16 @@ setup_tunnels() # $1 = name of tunnels file
 
 	[ $kind = IPSEC ] && kind=ipsec
 
-	options="-m state --state NEW -j ACCEPT"
-	addrule2 $inchain	  -p 50	 $(source_ip_range $1) -j ACCEPT
-	addrule2 $outchain	  -p 50	 $(dest_ip_range $1)   -j ACCEPT
+
+	addrule2 $inchain	  -p 50	 $(source_ip_range $1) $options
+	addrule2 $outchain	  -p 50	 $(dest_ip_range $1)   $options
 
 	if [ -z "$noah" ]; then
-	    run_iptables -A $inchain  -p 51 $(source_ip_range $1) -j ACCEPT
-	    run_iptables -A $outchain -p 51 $(dest_ip_range $1)   -j ACCEPT
+	    run_iptables -A $inchain  -p 51 $(source_ip_range $1) $options
+	    run_iptables -A $outchain -p 51 $(dest_ip_range $1)   $options
 	fi
 
-	run_iptables -A $outchain -p udp $(dest_ip_range $1) --dport 500 $options
+	run_iptables -A $outchain -p udp $(dest_ip_range $1) --dport 500 $options 
 
 	if [ $kind = ipsec ]; then
 	    run_iptables -A $inchain  -p udp $(source_ip_range $1) --dport 500 $options
@@ -2245,26 +2245,26 @@ setup_tunnels() # $1 = name of tunnels file
 
     setup_one_other() # $1 = TYPE, $2 = gateway, $3 = protocol
     {
-	addrule2 $inchain  -p $3 $(source_ip_range $2) -j ACCEPT
-	addrule2 $outchain -p $3 $(dest_ip_range $2) -j ACCEPT
+	addrule2 $inchain  -p $3 $(source_ip_range $2) $options
+	addrule2 $outchain -p $3 $(dest_ip_range $2)   $options
 
 	progress_message "   $1 tunnel to $2 defined."
     }
 
     setup_pptp_client() # $1 = gateway
     {
-	addrule2 $outchain -p 47               $(dest_ip_range $1)   -j ACCEPT
-	addrule2 $inchain  -p 47               $(source_ip_range $1) -j ACCEPT
-	addrule2 $outchain -p tcp --dport 1723 $(dest_ip_range $1)   -j ACCEPT
+	addrule2 $outchain -p 47               $(dest_ip_range $1)   $options
+	addrule2 $inchain  -p 47               $(source_ip_range $1) $options
+	addrule2 $outchain -p tcp --dport 1723 $(dest_ip_range $1)   $options
 
 	progress_message "   PPTP tunnel to $1 defined."
     }
 
     setup_pptp_server() # $1 = gateway
     {
-	addrule2 $inchain  -p 47               $(source_ip_range $1) -j ACCEPT
-	addrule2 $outchain -p 47               $(dest_ip_range $1)   -j ACCEPT
-	addrule2 $inchain  -p tcp --dport 1723 $(source_ip_range $1) -j ACCEPT
+	addrule2 $inchain  -p 47               $(source_ip_range $1) $options
+	addrule2 $outchain -p 47               $(dest_ip_range $1)   $options
+	addrule2 $inchain  -p tcp --dport 1723 $(source_ip_range $1) $options
 
 	progress_message "   PPTP server defined."
     }
@@ -2285,8 +2285,8 @@ setup_tunnels() # $1 = name of tunnels file
 		;;
 	esac
 
-	addrule2 $inchain  -p $protocol $(source_ip_range $1) --dport $p -j ACCEPT
-	addrule2 $outchain -p $protocol $(dest_ip_range $1)   --dport $p -j ACCEPT
+	addrule2 $inchain  -p $protocol $(source_ip_range $1) --dport $p $options
+	addrule2 $outchain -p $protocol $(dest_ip_range $1)   --dport $p $options
 
 	progress_message "   OPENVPN tunnel to $1:$protocol:$p defined."
     }
@@ -2307,8 +2307,8 @@ setup_tunnels() # $1 = name of tunnels file
 		;;
 	esac
 
-	addrule2 $inchain  -p $protocol $(source_ip_range $1) --dport $p -j ACCEPT
-	addrule2 $outchain -p $protocol $(dest_ip_range $1)   --sport $p -j ACCEPT
+	addrule2 $inchain  -p $protocol $(source_ip_range $1) --dport $p $options
+	addrule2 $outchain -p $protocol $(dest_ip_range $1)   --sport $p $options
 
 	progress_message "   OPENVPN server tunnel from $1:$protocol:$p defined."
     }
@@ -2329,8 +2329,8 @@ setup_tunnels() # $1 = name of tunnels file
 		;;
 	esac
 
-	addrule2 $inchain  -p $protocol $(source_ip_range $1) --dsport $p -j ACCEPT
-	addrule2 $outchain -p $protocol $(dest_ip_range $1)   --dport  $p -j ACCEPT
+	addrule2 $inchain  -p $protocol $(source_ip_range $1) --dsport $p $options
+	addrule2 $outchain -p $protocol $(dest_ip_range $1)   --dport  $p $options
 
 	progress_message "   OPENVPN client tunnel to $1:$protocol:$p defined."
     }
@@ -2357,13 +2357,13 @@ setup_tunnels() # $1 = name of tunnels file
 
 	p=${p:+--dport $p}
 
-	addrule2 $inchain  -p $protocol $(source_ip_range $1) $p -j ACCEPT
-	addrule2 $outchain -p $protocol $(dest_ip_range $1)   $p -j ACCEPT
+	addrule2 $inchain  -p $protocol $(source_ip_range $1) $p $options
+	addrule2 $outchain -p $protocol $(dest_ip_range $1)   $p $options
 
 	for z in $(separate_list $3); do
 	    if validate_zone $z; then
-		addrule ${FW}2${z} -p $protocol $p -j ACCEPT
-		addrule ${z}2${FW} -p $protocol $p -j ACCEPT
+		addrule ${FW}2${z} -p $protocol $p $options
+		addrule ${z}2${FW} -p $protocol $p $options
 	    else
 		error_message "WARNING: Invalid gateway zone ($z)" \
 		" -- Tunnel \"$tunnel\" may encounter problems"
@@ -5873,7 +5873,11 @@ process_rules() # $1 = "Yes" if the target is a macro.
     {
 	expandv xprotocol xports xcports xaddress xratelimit xuserspec intrazone=
 
-	[ -z "$SECTIONS" ] && SECTIONS="ESTABLISHED RELATED NEW"
+	if [ -z "$SECTIONS" ]; then
+	    finish_section ESTABLISHED,RELATED
+	    SECTIONS="ESTABLISHED RELATED NEW"
+	    SECTION=NEW
+	fi
 
 	case $xclients in 
 	    all+)
@@ -8846,7 +8850,7 @@ do_initialize() {
     STOPPING=
     HAVE_MUTEX=
     ALIASES_TO_ADD=
-    SECTION=NEW
+    SECTION=ESTABLISHED
     SECTIONS=
 
     FUNCTIONS=$SHARED_DIR/functions

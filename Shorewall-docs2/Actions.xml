@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-05-13</pubdate>
+    <pubdate>2005-08-28</pubdate>
 
     <copyright>
       <year>2005</year>
@@ -33,6 +33,12 @@
       License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
+
+  <caution>
+    <para>This article applies to Shorewall 3.0 and later. If you are running
+    a version of Shorewall earlier than Shorewall 3.0.0 then please see the
+    documentation for that release.</para>
+  </caution>
 
   <section>
     <title>What are Shorewall Actions?</title>
@@ -167,16 +173,16 @@ Reject:REJECT   #Common Action for REJECT policy</programlisting>
         action begins with a capital letter; that way, the name won't conflict
         with a Shorewall-defined chain name.</para>
 
-        <para>Beginning with Shorewall-2.0.0-Beta1, the name of the action may
-        be optionally followed by a colon (<quote>:</quote>) and ACCEPT, DROP
-        or REJECT. When this is done, the named action will become the
-        <emphasis>common action </emphasis>for policies of type ACCEPT, DROP
-        or REJECT respectively. The common action is applied immediately
-        before the policy is enforced (before any logging is done under that
-        policy) and is used mainly to suppress logging of uninteresting
-        traffic which would otherwise clog your logs. The same policy name can
-        appear in multiple actions; the last such action for each policy name
-        is the one which Shorewall will use.</para>
+        <para>The name of the action may be optionally followed by a colon
+        (<quote>:</quote>) and ACCEPT, DROP or REJECT. When this is done, the
+        named action will become the <emphasis>common action </emphasis>for
+        policies of type ACCEPT, DROP or REJECT respectively. The common
+        action is applied immediately before the policy is enforced (before
+        any logging is done under that policy) and is used mainly to suppress
+        logging of uninteresting traffic which would otherwise clog your logs.
+        The same policy name can appear in multiple actions; the last such
+        action for each policy name is the one which Shorewall will
+        use.</para>
 
         <para>Shorewall includes pre-defined actions for DROP and REJECT --
         see above.</para>
@@ -369,12 +375,9 @@ LogAndAccept loc         fw          tcp      22</programlisting>
   <section>
     <title>Actions and Logging</title>
 
-    <para>Prior to Shorewall 2.1.2, specifying a log level (and optionally a
-    log tag) on a rule that specified a user-defined (or Shorewall-defined)
-    action would log all traffic passed to the action. Beginning with
-    Shorewall 2.1.2, specifying a log level in a rule that specifies a user-
-    or Shorewall-defined action will cause each rule in the action to be
-    logged with the specified level (and tag).</para>
+    <para>Specifying a log level in a rule that specifies a user- or
+    Shorewall-defined action will cause each rule in the action to be logged
+    with the specified level (and tag).</para>
 
     <para>The extent to which logging of action rules occur is governed by the
     following:</para>

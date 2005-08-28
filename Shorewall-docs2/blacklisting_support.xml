@@ -15,10 +15,10 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-10-25</pubdate>
+    <pubdate>2005-08-28</pubdate>
 
     <copyright>
-      <year>2002-2004</year>
+      <year>2002-2005</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -38,16 +38,14 @@
     <title>Introduction</title>
 
     <para>Shorewall supports two different forms of blacklisting; static and
-    dynamic. Beginning with Shorewall version 1.4.8, the BLACKLISTNEWONLY
-    option in /etc/shorewall/shorewall.conf controls the degree of blacklist
-    filtering:</para>
+    dynamic. The BLACKLISTNEWONLY option in /etc/shorewall/shorewall.conf
+    controls the degree of blacklist filtering:</para>
 
     <orderedlist>
       <listitem>
         <para>BLACKLISTNEWONLY=No --&nbsp; All incoming packets are checked
         against the blacklist. New blacklist entries can be used to terminate
-        existing connections. Versions of Shorewall prior to 1.4.8 behave in
-        this manner.</para>
+        existing connections.</para>
       </listitem>
 
       <listitem>
@@ -66,10 +64,12 @@
     </important>
 
     <important>
-      <para><emphasis role="bold">Neither form of Shorewall blacklisting is
-      appropriate for blacklisting 1,000s of different addresses</emphasis>.
-      The blacklists will take forever to load and will have a very negative
-      effect on firewall performance.</para>
+      <para><emphasis role="bold">Dynamic Shorewall blacklisting is not
+      appropriate for blacklisting 1,000s of different addresses. Static
+      Blacklisting can handle large blacklists but only if you use
+      ipsets</emphasis>. Without ipsets, the blacklists will take forever to
+      load and will have a very negative effect on firewall
+      performance.</para>
     </important>
   </section>
 
@@ -97,8 +97,8 @@
         <para>You list the IP addresses/subnets that you wish to blacklist in
         <ulink
         url="Documentation.htm#Blacklist"><filename>/etc/shorewall/blacklist</filename></ulink>.
-        Beginning with Shorewall version 1.3.8, you may also specify PROTOCOL
-        and Port numbers/Service names in the blacklist file.</para>
+        You may also specify PROTOCOL and Port numbers/Service names in the
+        blacklist file.</para>
       </listitem>
 
       <listitem>
@@ -123,14 +123,41 @@
     blacklisted hosts to slip by during construction of the blacklist, it can
     substantially reduce the time that all new connections are disabled during
     "shorewall [re]start".</para>
+
+    <para>Beginning with Shorewall 2.4.0, you can use <ulink
+    url="ipsets.html">ipsets</ulink> to define your static blacklist. Here's
+    an example:</para>
+
+    <programlisting>#ADDRESS/SUBNET         PROTOCOL        PORT
++Blacklistports[dst]
++Blacklistnets[src,dst]
++Blacklist[src,dst]
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+
+    <para>In this example, there is a portmap ipset
+    <emphasis>Blacklistports</emphasis> that blacklists all traffic with
+    destination ports included in the ipsec. There are also
+    <emphasis>Blacklistnets</emphasis> (type <emphasis>nethash</emphasis>) and
+    <emphasis>Blacklist</emphasis> (type <emphasis>iphash</emphasis>) ipsets
+    that allow blacklisting networks and individual IP addresses. Note that
+    [src,dst] is specified so that individual entries in the sets can be bound
+    to other portmap ipsets to allow blacklisting (<emphasis>source
+    address</emphasis>, <emphasis>destination port</emphasis>) combinations.
+    For example:</para>
+
+    <programlisting>ipset -N SMTP portmap --from 1 --to 31
+ipset -A SMTP 25
+ipset -A Blacklist 206.124.146.177
+ipset -B Blacklist 206.124.146.177 -b SMTP</programlisting>
+
+    <para>This will blacklist SMTP traffic from host 206.124.146.177.</para>
   </section>
 
   <section>
     <title>Dynamic Blacklisting</title>
 
-    <para>Dynamic blacklisting support was added in version 1.3.2. Dynamic
-    blacklisting doesn't use any configuration parameters but is rather
-    controlled using /sbin/shorewall commands:</para>
+    <para>Dynamic blacklisting doesn't use any configuration parameters but is
+    rather controlled using /sbin/shorewall commands:</para>
 
     <itemizedlist>
       <listitem>

@@ -215,28 +215,33 @@ progress_message "Build of Shorewall $VERSION on $(date)"
 case $VERSION in
     2.0.*)
 	CVSTAG=SHOREWALL-2_0
+	DOCTAG=HEAD
 	XMLPROJ=Shorewall-docs
 	LRP=shorwall-${VERSION}.lrp
 	LRPPROJ=Lrp
 	;;
     2.2.*)
 	CVSTAG=SHOREWALL-2_2
+	DOCTAG=SHOREWALL_2_4
 	XMLPROJ=Shorewall-docs2
 	LRP=shorewall-lrp-${VERSION}.tgz
 	LRPPROJ=Lrp2
 	;;
     2.4.*)
         CVSTAG=SHOREWALL-2_4
+	DOCTAG=SHOREWALL_2_4
 	XMLPROJ=Shorewall-docs2
 	BUILDLRP=
 	;;
     *ex)
         CVSTAG=EXPERIMENTAL
+	DOCTAG=HEAD
 	XMLPROJ=Shorewall-docs2
 	BUILDLRP=
 	;;
     2.5.*)
         CVSTAG=HEAD
+	DOCTAG=HEAD
 	XMLPROJ=Shorewall-docs2
 	BUILDLRP=
 	;;
@@ -329,7 +334,7 @@ if [ -n "${BUILDXML}${BUILDHTML}" ]; then
     rm -rf $XMLPROJ
     rm -rf shorewall-docs-xml-$VERSION
 
-    do_or_die "cvs -z3 export -D now $XMLPROJ >> $LOGFILE 2>&1"
+    do_or_die "cvs -z3 export -r $DOCTAG $XMLPROJ >> $LOGFILE 2>&1"
     do_or_die mv $XMLPROJ shorewall-docs-xml-$VERSION
 
     rm -f shorewall-docs-xml-$VERSION/images/*.vsd

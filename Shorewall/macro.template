@@ -17,8 +17,7 @@
 #
 #	- Macros may not invoke other macros.
 #
-# The columns in a macro definition are the same as those in the
-# action.template file.
+
 # A few examples should help show how Macros work.
 #
 # /etc/shorewall/macro.FwdFTP:
@@ -52,6 +51,8 @@
 #				entry in macro.FOO whose ACTION column
 #				contains PARAM. PARAM may be optionally
 #				followed by a colon and a log level.
+#
+#				You may also follow the 
 #	
 #				Any logging specified when the macro is
 #				invoked is applied to each entry in the macros.
@@ -64,11 +65,11 @@
 #
 #
 #	Example:		###############################################
-#				#ACTION	SOURCE	DEST		PROTO	DEST
+#				#ACTION	 SOURCE	DEST		PROTO	DEST
 #				#					PORT
-#		   Macro File	DNAT	net	loc		tcp	21
-#		   rules File	FwdFTP	-	192.168.1.5
-#		   Result	DNAT	net	loc:192.168.1.5	tcp	21
+#		   Macro File	PARAM	 net	loc		tcp	21
+#		   rules File	FTP/DNAT -	192.168.1.5
+#		   Result	DNAT	 net	loc:192.168.1.5	tcp	21
 #	
 #	Remaining		Any value in the rules file REPLACES the value
 #	columns			given in the macro file.

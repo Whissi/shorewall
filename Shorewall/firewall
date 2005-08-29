@@ -4276,6 +4276,9 @@ merge_levels() # $1=level at which superior action is called, $2=level at which 
     set -- $(split $1)
 
     case $superior in
+	*::*)
+	    fatal_error "Invalid ACTION $superior"
+	    ;;
 	*:*:*)
 	    case $2 in
 		'none!')

@@ -4211,6 +4211,9 @@ createlogactionchain() # $1 = Action Name, $2 = Log Level [: Log Tag ]
 createactionchain() # $1 = Action, including log level and tag if any
 {
     case $1 in
+	*::*)
+	    fatal_error "Invalid ACTION $1"
+	    ;;
 	*:*:*)
 	    set -- $(split $1)
 	    createlogactionchain $1 $2:$3
@@ -4276,9 +4279,6 @@ merge_levels() # $1=level at which superior action is called, $2=level at which 
     set -- $(split $1)
 
     case $superior in
-	*::*)
-	    fatal_error "Invalid ACTION $superior"
-	    ;;
 	*:*:*)
 	    case $2 in
 		'none!')

@@ -5803,7 +5803,24 @@ process_macro() # $1 = target
 	    PARAM|PARAM:*)
 		[ -n "$param" ] && mtarget=$(substitute_action $param $mtarget) || fatal_error "PARAM requires that a parameter be supplied in macro invocation"
 		;;
-	esac		
+	esac
+
+	case $mtarget in
+	    ACCEPT|ACCEPT+|NONAT|DROP|REJECT|DNAT|DNAT-|REDIRECT|REDIRECT-|LOG|CONTINUE|QUEUE|SAME|SAME-)
+		;;
+	    *)
+		if list_search ${mtarget%%:*} $ACTIONS; then
+		    if ! list_search $mtarget $USEDACTIONS; then
+			createactionchain $mtarget
+			USEDACTIONS="$USEDACTIONS $mtarget"
+		    fi
+		    
+		    mtarget=$(find_logactionchain $mtarget)
+		else
+		    fatal_error "Invalid Action in rule \"$mtarget ${mclients:--} ${mservers:--} ${mprotocol:--} ${mports:--} ${mcports:--} ${xaddress:--} ${mratelimit:--} ${muserspec:--}\""
+		fi
+		;;
+	esac
 
 	if [ -n "$mclients" ]; then
 	    case $mclients in
@@ -5828,7 +5845,7 @@ process_macro() # $1 = target
 		    ;;
 	    esac
 	else
-	    mservers=${iserverss}
+	    mservers=${iservers}
 	fi
 	
 	[ -n "$iprotocol" ]  && [ "x${iprotocol}" != x- ]  && mprotocol=$iprotocol

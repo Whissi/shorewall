@@ -1,89 +1,12 @@
-Shorewall 2.5.3
+Shorewall 2.5.4
 
-Problems Corrected in 2.5.3:
+Problems Corrected in 2.5.4:
 
-1)  The Netfilter 'raw' table is now cleared during "shorewall stop",
-    "shorewall [re]start" and "shorewall clear".
+1)  Several problems associated with macros have been corrected.
 
-New Features in Shorewall 2.5.3
+New Features in Shorewall 2.5.4
 
-1)  You may now specify "!" followed by a list of addresses in the
-    SOURCE and DEST columns of entries in /etc/shorewall/tcrules and
-    in action files and Shorewall will generate the rule that you
-    expect.
-
-2)  Tunnel types "openvpnserver" and "openvpnclient" have been added
-    to reflect the introduction of client and server OpenVPN
-    configurations in OpenVPN 2.0.
-
-3)  The COMMAND variable is now set to 'restore' in restore
-    scripts. The value of this variable is sometimes of interest to
-    programmers providing custom /etc/shorewall/tcstart scripts.
-
-4)  Previously, if you defined any intra-zone rule(s) then any traffic
-    not matching the rule(s) was subject to normal policies (which
-    usually turned out to involve the all->all REJECT policy). Now, the
-    intra-zone ACCEPT policy will still be in effect in the presense of
-    intra-zone rules. That policy can still be overridden by an
-    explicit policy in your /etc/shorewall/policy file.
-
-    Example:
-
-    /etc/shorewall/rules:
-
-    DNAT	loc:!192.168.1.4  loc:192.168.1.4:3128	tcp	80
-
-    Any other loc->loc traffic will still be accepted. If you want to
-    also log that other loc->loc traffic at the info log level then
-    insert this into /etc/shorewall/policy:
-
-    #SOURCE	DEST	POLICY	LOG LEVEL
-    loc		loc	ACCEPT	info
-
-5)  Prior to Shorewall 2.5.3, the rules file only controlled packets in
-    the Netfilter states NEW and INVALID. Beginning with this release,
-    the rules file can also deal with packets in the ESTABLISHED and
-    RELATED states. 
-
-    The /etc/shorewall/rules file may now be divided into
-    "sections". Each section is introduced by a line that begins with
-    the keyword SECTION which is followed by the section name. Sections
-    are as listed below and must appear in the order shown.
-
-    ESTABLISHED
-
-	Rules in this section apply to packets in the ESTABLISHED
-	state.
-
-    RELATED
-
-	Rules in this section apply to packets in the RELATED state.
-
-    NEW
-
-	Rules in this section apply to packets in the NEW and INVALID
-	states.
-
-    Rules in the ESTABLISHED and RELATED sections are limited to the
-    following ACTIONs:
-
-	ACCEPT, DROP, REJECT, QUEUE, LOG and User-defined actions.
-
-    Macros may be used in these sections provided that they expand to
-    only these ACTIONs.
-
-    At the end of the ESTABLISHED and RELATED sections, there is an
-    implicit "ALLOW   all	  all all" rule.
-
-    RESTRICTION: If you specify FASTACCEPT=Yes in
-    /etc/shorewall.shorewall.conf then the ESTABLISHED and RELATED
-    sections must be empty.
-
-6)  The value 'ipp2p' is once again allowed in the PROTO column of
-    the rules file. It is recommended that rules specifying 'ipp2p'
-    only be included in the ESTABLISHED section of the file.
-
-7)  Shorewall actions lack a generalized way to pass parameters to an
+1)  Shorewall actions lack a generalized way to pass parameters to an
     extension script associated with an action. To work around this
     lack, some users have used the log tag as a parameter. This works
     but requires that a log level other than 'none' be specified when
@@ -105,6 +28,11 @@ New Features in Shorewall 2.5.3
 	IFS=$ifs
 
     Now, $1 = these, $2 = are and $3 = parameters
+
+Problems Corrected in 2.5.3:
+
+1)  The Netfilter 'raw' table is now cleared during "shorewall stop",
+    "shorewall [re]start" and "shorewall clear".
 
 Problems Corrected in 2.5.2:
 
@@ -553,4 +481,27 @@ New Features in Shorewall 2.5.*
     the rules file. It is recommended that rules specifying 'ipp2p'
     only be included in the ESTABLISHED section of the file.
 
+
+17) Shorewall actions lack a generalized way to pass parameters to an
+    extension script associated with an action. To work around this
+    lack, some users have used the log tag as a parameter. This works
+    but requires that a log level other than 'none' be specified when
+    the action is invoked. Beginning with this release, you can invoke
+    an action with 'none'.
+
+    Example:
+
+	#ACTION				SOURCE          DEST
+	A:none:these,are,parameters   fw		net
+
+    When /etc/shorewall/A is invoked, the LEVEL variable will be empty
+    but the TAG variable will contain "these,are,parameters" which
+    can be easily parsed to isolate "these", "are" and "parameters":
+
+	ifs=$IFS
+	IFS=,
+	set -- $TAG
+	IFS=$ifs
+
+    Now, $1 = these, $2 = are and $3 = parameters
 

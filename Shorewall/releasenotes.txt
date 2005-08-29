@@ -83,6 +83,29 @@ New Features in Shorewall 2.5.3
     the rules file. It is recommended that rules specifying 'ipp2p'
     only be included in the ESTABLISHED section of the file.
 
+7)  Shorewall actions lack a generalized way to pass parameters to an
+    extension script associated with an action. To work around this
+    lack, some users have used the log tag as a parameter. This works
+    but requires that a log level other than 'none' be specified when
+    the action is invoked. Beginning with this release, you can invoke
+    an action with 'none'.
+
+    Example:
+
+	#ACTION				SOURCE          DEST
+	A:none:these,are,parameters   fw		net
+
+    When /etc/shorewall/A is invoked, the LEVEL variable will be empty
+    but the TAG variable will contain "these,are,parameters" which
+    can be easily parsed to isolate "these", "are" and "parameters":
+
+	ifs=$IFS
+	IFS=,
+	set -- $TAG
+	IFS=$ifs
+
+    Now, $1 = these, $2 = are and $3 = parameters
+
 Problems Corrected in 2.5.2:
 
 1) You may now include port lists in in the /etc/shorewall/accounting

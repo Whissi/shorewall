@@ -4015,7 +4015,6 @@ process_action() # $1 = chain    (Chain to add the rules to)
 	case $loglevel in
 	    none*)
 		loglevel=
-		logtag=
 		[ $target = LOG ] && return
 		;;
 	esac
@@ -4195,6 +4194,9 @@ createlogactionchain() # $1 = Action Name, $2 = Log Level [: Log Tag ]
 	else
 	    TAG=
 	fi
+	
+	[ none = "${LEVEL%\!}" ] && LEVEL=
+	
 	run_user_exit $1
     fi
 
@@ -4277,7 +4279,7 @@ merge_levels() # $1=level at which superior action is called, $2=level at which 
 	*:*:*)
 	    case $2 in
 		'none!')
-		    echo ${subordinate%%:*}:'none!'
+		    echo ${subordinate%%:*}:'none!':$3
 		    return
 		    ;;
 		*'!')
@@ -4286,8 +4288,12 @@ merge_levels() # $1=level at which superior action is called, $2=level at which 
 		    ;;
 		*)
 		    case $subordinate in
-			*:*)
+			*:*:*)
 			    echo $subordinate
+			    return
+			    ;;
+			*:*)
+			    echo $subordinate:$3
 			    return
 			    ;;
 			*)
@@ -5384,7 +5390,6 @@ process_rule() # $1 = target
 	case $loglevel in
 	    none*)
 		loglevel=
-		logtag=
 		[ $target = LOG ] && return
 		;;
 	esac

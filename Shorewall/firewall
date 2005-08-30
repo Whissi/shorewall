@@ -2605,21 +2605,25 @@ setup_proxy_arp() {
 	    ;;
 	esac
 
-	if [ -z "$haveroute" ]; then
-	    ensure_and_save_command ip route replace $address dev $interface
-	    [ -n "$persistent" ] && haveroute=yes
+	if [ $COMMAND != check ]; then
+	    if [ -z "$haveroute" ]; then
+		ensure_and_save_command ip route replace $address dev $interface
+		[ -n "$persistent" ] && haveroute=yes
+	    fi
+
+	    ensure_and_save_command arp -i $external -Ds $address $external pub
+
+	    echo $address $interface $external $haveroute >> /var/lib/shorewall/proxyarp
 	fi
-
-	ensure_and_save_command arp -i $external -Ds $address $external pub
-
-	echo $address $interface $external $haveroute >> /var/lib/shorewall/proxyarp
 
 	progress_message "   Host $address connected to $interface added to ARP on $external"
     }
 
-    > /var/lib/shorewall/proxyarp
+    if [ $COMMAND != check ]; then
+	> /var/lib/shorewall/proxyarp
 
-    save_progress_message "Restoring Proxy ARP..."
+	save_progress_message "Restoring Proxy ARP..."
+    fi
 
     while read address interface external haveroute persistent; do
 	expandv address interface external haveroute persistent
@@ -2628,25 +2632,27 @@ setup_proxy_arp() {
 	setup_one_proxy_arp
     done < $TMP_DIR/proxyarp
 
-    for interface in $resetlist; do
-	list_search $interface $setlist || \
-	    run_and_save_command "echo 0 > /proc/sys/net/ipv4/conf/$interface/proxy_arp"
-    done
+    if [ $COMMAND != check ]; then
+	for interface in $resetlist; do
+	    list_search $interface $setlist || \
+		run_and_save_command "echo 0 > /proc/sys/net/ipv4/conf/$interface/proxy_arp"
+	done
 
-    for interface in $setlist; do
-	run_and_save_command "echo 1 > /proc/sys/net/ipv4/conf/$interface/proxy_arp"
-    done
+	for interface in $setlist; do
+	    run_and_save_command "echo 1 > /proc/sys/net/ipv4/conf/$interface/proxy_arp"
+	done
 
-    interfaces=$(find_interfaces_by_option proxyarp)
+	interfaces=$(find_interfaces_by_option proxyarp)
 
-    for interface in $interfaces; do
-	if echo 1 > /proc/sys/net/ipv4/conf/$interface/proxy_arp 2> /dev/null; then
-	    progress_message "   Enabled proxy ARP on $interface"
-	    save_command "echo 1 > /proc/sys/net/ipv4/conf/$interface/proxy_arp"
-        else
-	    error_message "WARNING: Unable to enable proxy ARP on $interface"
-        fi
-    done
+	for interface in $interfaces; do
+	    if echo 1 > /proc/sys/net/ipv4/conf/$interface/proxy_arp 2> /dev/null; then
+		progress_message "   Enabled proxy ARP on $interface"
+		save_command "echo 1 > /proc/sys/net/ipv4/conf/$interface/proxy_arp"
+	    else
+		error_message "WARNING: Unable to enable proxy ARP on $interface"
+	    fi
+	done
+    fi
 }
 
 #
@@ -3665,6 +3671,10 @@ check_config() {
     validate_policy
 
     validate_blacklist
+
+    echo "Validating Proxy ARP"
+    strip_file proxyarp
+    setup_proxy_arp
 
     echo "Pre-validating Actions..."
 

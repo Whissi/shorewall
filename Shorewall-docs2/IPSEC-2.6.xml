@@ -320,9 +320,9 @@ ipsec         net         206.162.148.9
       B:</para>
 
       <programlisting>#ZONE          IPSEC            OPTIONS             IN           OUT
-#              ONLY                                 OPTIONS      OPTIONS#ZONE           DISPLAY         COMMENTS
-vpn             VPN             Virtual Private Network
-net             Internet        The big bad internet
+#              ONLY                                 OPTIONS      OPTIONS
+vpn            No
+net            No
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
     </blockquote>
 
@@ -503,10 +503,11 @@ sec     yes     mode=tunnel             <emphasis role="bold">mss=1400</emphasis
       <blockquote>
         <para>/etc/shorewall/zones — System A</para>
 
-        <programlisting>#ZONE           DISPLAY         COMMENTS
-vpn             VPN             Road Warriors
-net             Internet        The big bad internet
-loc             local           Local Network (192.168.1.0/24)
+        <programlisting>#ZONE          IPSEC            OPTIONS             IN           OUT
+#              ONLY                                 OPTIONS      OPTIONS
+vpn            Yes
+net            No
+loc            No
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
       </blockquote>
 
@@ -533,7 +534,7 @@ ipsec         net         0.0.0.0/0           vpn
         <para>/etc/shorewall/hosts — System A:</para>
 
         <programlisting>#ZONE             HOSTS                  OPTIONS
-vpn               eth0:0.0.0.0/0        <emphasis role="bold"> ipsec</emphasis>
+vpn               eth0:0.0.0.0/0
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
       </blockquote>
 
@@ -545,10 +546,11 @@ vpn               eth0:0.0.0.0/0        <emphasis role="bold"> ipsec</emphasis>
       <blockquote>
         <para>/etc/shorewall/zones - System B:</para>
 
-        <programlisting>#ZONE           DISPLAY         COMMENTS
-vpn             VPN             VPN back home
-net             Internet        The big bad internet
-loc             local           Local Network (192.168.1.0/24)
+        <programlisting>#ZONE          IPSEC            OPTIONS             IN           OUT
+#              ONLY                                 OPTIONS      OPTIONS
+vpn            Yes
+net            No
+loc            No
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
 
         <para>/etc/shorewall/tunnels - System B:</para>
@@ -560,7 +562,7 @@ ipsec         net         206.162.148.9       vpn
         <para>/etc/shorewall/hosts - System B:</para>
 
         <programlisting>#ZONE             HOSTS                  OPTIONS
-vpn               eth0:0.0.0.0/0        <emphasis role="bold"> ipsec</emphasis>
+vpn               eth0:0.0.0.0/0
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
       </blockquote>
 

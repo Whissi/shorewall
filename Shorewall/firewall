@@ -1216,14 +1216,16 @@ setup_providers()
 
 	eval ${table}_number=$number
 
-	run_and_save_command qt ip route flush table $number
+	if [ $COMMAND != check ]; then
+	    run_and_save_command qt ip route flush table $number
 
-	if [ "x${duplicate:=-}" != x- ]; then
-	    if [ "x${copy:=-}" != "x-" ]; then
-		copy="$interface $(separate_list $copy)"
-		copy_and_edit_table
-	    else
-		copy_table
+	    if [ "x${duplicate:=-}" != x- ]; then
+		if [ "x${copy:=-}" != "x-" ]; then
+		    copy="$interface $(separate_list $copy)"
+		    copy_and_edit_table
+		else
+		    copy_table
+		fi
 	    fi
 	fi
 
@@ -1246,16 +1248,19 @@ setup_providers()
 	    [ -n "$gateway" ] || fatal_error "Unable to detect the gateway through interface $interface"
 	fi
 
-	ensure_and_save_command ip route replace $gateway dev $interface table $number
-	ensure_and_save_command ip route add default via $gateway dev $interface table $number
-	
+	if [ $COMMAND != check ]; then
+	    ensure_and_save_command ip route replace $gateway dev $interface table $number
+	    ensure_and_save_command ip route add default via $gateway dev $interface table $number
+	fi
+
 	verify_mark $mark
 
 	eval ${table}_mark=$mark
 
-	run_and_save_command qt ip rule del fwmark $mark
-	
-	ensure_and_save_command ip rule add fwmark $mark pref $((10000 + $mark)) table $number
+	if [ $COMMAND != check ]; then
+	    run_and_save_command qt ip rule del fwmark $mark
+	    ensure_and_save_command ip rule add fwmark $mark pref $((10000 + $mark)) table $number
+	fi
 
 	loose=
 
@@ -1287,22 +1292,28 @@ setup_providers()
 
 	rulenum=0
 
-	find_interface_addresses $interface | while read address; do
-	    run_and_save_command qt ip rule del from $address
-	    if [ -z "$loose" ]; then
-		pref=$((20000 + $rulenum * 1000 + $mark ))
-		rulenum=$(($rulenum + 1))
-		ensure_and_save_command ip rule add from $address pref $pref table $number
-	    fi
-	done
+	if [ $COMMAND != check ]; then
+	    find_interface_addresses $interface | while read address; do
+		run_and_save_command qt ip rule del from $address
+		if [ -z "$loose" ]; then
+		    pref=$((20000 + $rulenum * 1000 + $mark ))
+		    rulenum=$(($rulenum + 1))
+		    ensure_and_save_command ip rule add from $address pref $pref table $number
+		fi
+	    done
+	fi
     }
 		
     strip_file providers $1
 
     if [ -s $TMP_DIR/providers ]; then
-	echo "Processing $1..."
+	if [ $COMMAND != check ]; then
+	    echo "Processing $1..."
 
-	save_progress_message "Restoring Providers..."
+	    save_progress_message "Restoring Providers..."
+	else
+	    echo "Validating $1..."
+	fi
 	
 	while read table number mark duplicate interface gateway options copy; do
 	    expandv table number mark duplicate interface gateway options copy
@@ -1312,13 +1323,14 @@ setup_providers()
 	    progress_message "   Provider $provider Added"
 	done < $TMP_DIR/providers
 
-	if [ -n "$PROVIDERS" ]; then
-	    if [ -n "$DEFAULT_ROUTE" ]; then
-		ensure_and_save_command ip route replace default scope global $DEFAULT_ROUTE
-		progress_message "   Default route $DEFAULT_ROUTE Added."
-	    fi
+	if [ $COMMAND != check ]; then
+	    if [ -n "$PROVIDERS" ]; then
+		if [ -n "$DEFAULT_ROUTE" ]; then
+		    ensure_and_save_command ip route replace default scope global $DEFAULT_ROUTE
+		    progress_message "   Default route $DEFAULT_ROUTE Added."
+		fi
 
-	    cat > /etc/iproute2/rt_tables <<EOF
+		cat > /etc/iproute2/rt_tables <<EOF
 #
 # reserved values
 #
@@ -1331,18 +1343,19 @@ setup_providers()
 #
 EOF
 
-	    for table in $PROVIDERS; do
-		eval number=\$${table}_number
-		${echobin:-echo} -e "$number\t$table" >>  /etc/iproute2/rt_tables
-	    done
+		for table in $PROVIDERS; do
+		    eval number=\$${table}_number
+		    ${echobin:-echo} -e "$number\t$table" >>  /etc/iproute2/rt_tables
+		done
 
-	    save_command "cat > /etc/iproute2/rt_tables << __EOF__"
-	    cat /etc/iproute2/rt_tables >> $RESTOREBASE
-	    save_command __EOF__
+		save_command "cat > /etc/iproute2/rt_tables << __EOF__"
+		cat /etc/iproute2/rt_tables >> $RESTOREBASE
+		save_command __EOF__
 
-	fi		
+	    fi		
 	
-	ensure_and_save_command ip route flush cache
+	    ensure_and_save_command ip route flush cache
+	fi
     fi
 }
 
@@ -2878,16 +2891,18 @@ setup_nat() {
 	validate_one allints  "ALL INTERFACES" $allints
 	validate_one localnat "LOCAL"          $localnat
 	
-	if [ -n "$allints" ]; then
-	    addnatrule nat_in  -d $external $policyin  -j DNAT --to-destination $internal
-	    addnatrule nat_out -s $internal $policyout -j SNAT --to-source $external
-	else
-	    addnatrule $(input_chain $iface)  -d $external $policyin  -j DNAT --to-destination $internal
-	    addnatrule $(output_chain $iface) -s $internal $policyout -j SNAT --to-source $external
+	if [ $COMMAND != check ]; then
+	    if [ -n "$allints" ]; then
+		addnatrule nat_in  -d $external $policyin  -j DNAT --to-destination $internal
+		addnatrule nat_out -s $internal $policyout -j SNAT --to-source $external
+	    else
+		addnatrule $(input_chain $iface)  -d $external $policyin  -j DNAT --to-destination $internal
+		    addnatrule $(output_chain $iface) -s $internal $policyout -j SNAT --to-source $external
+	    fi
+	    
+	    [ -n "$localnat" ] && \
+		run_iptables2 -t nat -A OUTPUT -d $external $policyout -j DNAT --to-destination $internal
 	fi
-	
-	[ -n "$localnat" ] && \
-	    run_iptables2 -t nat -A OUTPUT -d $external $policyout -j DNAT --to-destination $internal
 
 	if [ -n "$add_ip_aliases" ]; then
 	    list_search $external $ALIASES_TO_ADD || \
@@ -2897,14 +2912,14 @@ setup_nat() {
     #
     # At this point, we're just interested in the network translation
     #
-    > /var/lib/shorewall/nat
+    [ $COMMAND = check ] || > /var/lib/shorewall/nat
 
     if [ -n "$POLICY_MATCH" ]; then
 	policyin="-m policy --pol none --dir in"
 	policyout="-m policy --pol none --dir out"
     fi
 
-    [ -n "$RETAIN_ALIASES" ] || save_progress_message "Restoring one-to-one NAT..."
+    [ -n "$RETAIN_ALIASES" -o $COMMAND = check ] || save_progress_message "Restoring one-to-one NAT..."
 
     while read external interface internal allints localnat; do
 	expandv external interface internal allints localnat
@@ -3670,11 +3685,17 @@ check_config() {
 
     validate_policy
 
+    setup_providers $(find_file providers)
+
     validate_blacklist
 
     echo "Validating Proxy ARP"
     strip_file proxyarp
     setup_proxy_arp
+
+    echo "Validating NAT..."
+    strip_file nat
+    setup_nat
 
     echo "Pre-validating Actions..."
 

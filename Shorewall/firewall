@@ -3681,6 +3681,9 @@ check_config() {
     process_actions2
     process_actions3
 
+    masq=$(find_file masq)
+    [ -f $masq ] && setup_masq $masq
+
     rm -rf $TMP_DIR
     [ -n "$RESTOREBASE" ] && rm -f $RESTOREBASE
 
@@ -6672,15 +6675,20 @@ setup_masq()
 	case $destnets in
 	    !*)
 		destnets=${destnets#!}
-		build_exclusion_chain newchain nat "$nomasq" "$destnets"
+		
+		if [ $COMMAND != check ]; then
+		    build_exclusion_chain newchain nat "$nomasq" "$destnets"
 
-		if [ -n "$networks" ]; then
-		    for s in $networks; do
-			addnatrule $chain $(source_ip_range $s) $proto $ports $policy -j $newchain
-		    done
-		    networks=
+		    if [ -n "$networks" ]; then
+			for s in $networks; do
+			    addnatrule $chain $(source_ip_range $s) $proto $ports $policy -j $newchain
+			done
+			networks=
+		    else
+			addnatrule $chain -j $newchain
+		    fi
 		else
-		    addnatrule $chain -j $newchain
+		    networks=
 		fi
 
 		chain=$newchain
@@ -6693,18 +6701,20 @@ setup_masq()
 		;;
 	    *)
 		if [ -n "$nomasq" ]; then
-		    build_exclusion_chain newchain nat $nomasq
+		    if [ $COMMAND != check ]; then
+			build_exclusion_chain newchain nat $nomasq
 		    
-		    if [ -n "$networks" ]; then
-			for s in $networks; do
-			    for destnet in $(separate_list $destnets); do
-				addnatrule $chain $(both_ip_ranges $s $destnet) $proto $ports $policy -j $newchain
+			if [ -n "$networks" ]; then
+			    for s in $networks; do
+				for destnet in $(separate_list $destnets); do
+				    addnatrule $chain $(both_ip_ranges $s $destnet) $proto $ports $policy -j $newchain
+				done
 			    done
-			done
-		    else
-			for destnet in $(separate_list $destnets); do
-			    addnatrule $chain $(dest_ip_range $destnet) $proto $ports $policy -j $newchain
-			done
+			else
+			    for destnet in $(separate_list $destnets); do
+				addnatrule $chain $(dest_ip_range $destnet) $proto $ports $policy -j $newchain
+			    done
+			fi
 		    fi
 
 		    chain=$newchain
@@ -6755,9 +6765,11 @@ setup_masq()
 
 	if [ -n "$networks" ]; then
 	    for network in $networks; do
-		for destnet in $(separate_list $destnets); do
-		    addnatrule $chain $(both_ip_ranges $network $destnet) $proto $ports $policy -j $target $addrlist
-		done
+		if [ $COMMAND != check ]; then
+		    for destnet in $(separate_list $destnets); do
+			addnatrule $chain $(both_ip_ranges $network $destnet) $proto $ports $policy -j $target $addrlist
+		    done
+		fi
 
 		if [ -n "$addresses" ]; then
 		    progress_message "   To $destination $displayproto from $network through ${interface} using $addresses"
@@ -6766,9 +6778,11 @@ setup_masq()
 		fi
 	    done
 	else
-	    for destnet in $(separate_list $destnets); do
-		addnatrule $chain $(dest_ip_range $destnet) $proto $ports $policy -j $target $addrlist
-	    done
+	    if [ $COMMAND != check ]; then
+		for destnet in $(separate_list $destnets); do
+		    addnatrule $chain $(dest_ip_range $destnet) $proto $ports $policy -j $target $addrlist
+		done
+	    fi
 	
 	    if [ -n "$addresses" ]; then
 		progress_message "   To $destination $displayproto from $source through ${interface} using $addresses"
@@ -6783,7 +6797,7 @@ setup_masq()
 
     if [ -n "$NAT_ENABLED" ]; then
 	echo "Masqueraded Networks and Hosts:"
-	[ -n "$RETAIN_ALIASES" ] || save_progress_message "Restoring Masquerading/SNAT..."
+	[ -n "$RETAIN_ALIASES" -o $COMMAND = check ] || save_progress_message "Restoring Masquerading/SNAT..."
     fi
 
     while read fullinterface networks addresses proto ports ipsec; do

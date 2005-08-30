@@ -17,7 +17,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-08-24</pubdate>
+    <pubdate>2005-08-30</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -35,6 +35,13 @@
       </quote>.</para>
     </legalnotice>
   </articleinfo>
+
+  <caution>
+    <para><emphasis role="bold">This article applies to Shorewall 3.0 and
+    later. If you are running a version of Shorewall earlier than Shorewall
+    3.0.0 then please see the documentation for that
+    release.</emphasis></para>
+  </caution>
 
   <section>
     <title>Installing Shorewall</title>
@@ -90,9 +97,9 @@
       message "warning: user teastep does not exist - using root"</title>
 
       <para><emphasis role="bold">Answer:</emphasis> You may safely ignore
-      this warning message.  It was caused by a minor packaging error
-      that has since been corrected.  It makes no difference to
-      Shorewall's operation.</para>
+      this warning message. It was caused by a minor packaging error that has
+      since been corrected. It makes no difference to Shorewall's
+      operation.</para>
     </section>
   </section>
 
@@ -373,15 +380,9 @@ DNAT    net     fw:192.168.1.1:22       tcp     4104</programlisting>
         </listitem>
       </itemizedlist>
 
-      <para>If you insist on a stupid IP solution to the accessibility problem
-      rather than a more efficient DNS solution, then if you are running
-      Shorewall 2.0.0 or 2.0.1 then please see the <ulink
-      url="http://www.shorewall.net/1.4/FAQ.htm#faq2">Shorewall 1.4
-      FAQ</ulink>.</para>
-
-      <para>Otherwise, assuming that your external interface is eth0 and your
-      internal interface is eth1 and that eth1 has IP address 192.168.1.254
-      with subnet 192.168.1.0/24, then:<warning>
+      <para>Assuming that your external interface is eth0 and your internal
+      interface is eth1 and that eth1 has IP address 192.168.1.254 with subnet
+      192.168.1.0/24, then:<warning>
           <para>All traffic redirected through use of this hack will look to
           the server as if it came from the firewall (192.168.1.254) rather
           than from the original client!</para>
@@ -410,13 +411,8 @@ eth1:192.168.1.5        eth1            192.168.1.254   tcp     www</programlist
 DNAT       loc          loc:192.168.1.5    tcp      www         -         130.151.100.69</programlisting>
 
           <para>That rule only works of course if you have a static external
-          IP address. If you have a dynamic IP address and are running
-          Shorewall 1.3.4 through Shorewall 2.0.* then include this in
+          IP address. If you have a dynamic IP address then include this in
           <filename>/etc/shorewall/init</filename>:</para>
-
-          <programlisting><command>ETH0_IP=`find_interface_address eth0`</command>          </programlisting>
-
-          <para>For users of Shorewall 2.1.0 and later:</para>
 
           <programlisting><command>ETH0_IP=`find_first_interface_address eth0`</command>        </programlisting>
 
@@ -530,10 +526,6 @@ DNAT       loc      dmz:192.168.2.4     tcp      80              -           206
 
         <para>In <filename>/etc/shorewall/init</filename>:</para>
 
-        <programlisting><command>ETH0_IP=`find_interface_address eth0`</command></programlisting>
-
-        <para>For users of Shorewall 2.1.0 and later:</para>
-
         <programlisting><command>ETH0_IP=`find_first_interface_address eth0`</command>  </programlisting>
 
         <para>and make your DNAT rule:</para>
@@ -587,40 +579,10 @@ to debug/develop the newnat interface.</programlisting></para>
       and it shows some ports as <quote>closed</quote> rather than
       <quote>blocked</quote>. Why?</title>
 
-      <para><emphasis role="bold">Answer:</emphasis> (Shorewall versions prior
-      to 2.0.0 only). The common.def included with version 1.3.x always
-      rejects connection requests on TCP port 113 rather than dropping them.
-      This is necessary to prevent outgoing connection problems to services
-      that use the <quote>Auth</quote> mechanism for identifying requesting
-      users. Shorewall also rejects TCP ports 135, 137, 139 and 445 as well as
-      UDP ports 137-139. These are ports that are used by Windows (Windows
-      <emphasis>can</emphasis> be configured to use the DCE cell locator on
-      port 135). Rejecting these connection requests rather than dropping them
-      cuts down slightly on the amount of Windows chatter on LAN segments
-      connected to the Firewall.</para>
-
-      <para>If you are seeing port 80 being <quote>closed</quote>, that's
-      probably your ISP preventing you from running a web server in violation
-      of your Service Agreement.</para>
-
-      <tip>
-        <para>You can change the default behavior of Shorewall through use of
-        an /etc/shorewall/common file. See the <ulink
-        url="shorewall_extension_scripts.htm">Extension Script
-        Section</ulink>.</para>
-      </tip>
-
-      <tip>
-        <para>Beginning with Shorewall 1.4.9, Shorewall no longer rejects the
-        Windows SMB ports (135-139 and 445) by default and silently drops them
-        instead.</para>
-      </tip>
-
-      <para><emphasis role="bold">Answer:</emphasis> (Shorewall versions 2.0.0
-      and later). The default Shorewall setup invokes the <emphasis
-      role="bold">Drop</emphasis> action prior to enforcing a DROP policy and
-      the default policy to all zone from the internet is DROP. The Drop
-      action is defined in
+      <para><emphasis role="bold">Answer:</emphasis> The default Shorewall
+      setup invokes the <emphasis role="bold">Drop</emphasis> action prior to
+      enforcing a DROP policy and the default policy to all zone from the
+      internet is DROP. The Drop action is defined in
       <filename>/usr/share/shorewall/action.Drop</filename> which in turn
       invokes the <emphasis role="bold">RejectAuth</emphasis> action (defined
       in <filename>/usr/share/shorewall/action.RejectAuth</filename>). This is
@@ -744,63 +706,6 @@ to debug/develop the newnat interface.</programlisting></para>
       url="SimpleBridge.html">Shorewall Simple Bridge
       documentation</ulink>.</para>
     </section>
-
-    <section id="faq40">
-      <title>(FAQ 40) Shorewall is Blocking my OpenVPN Tunnel</title>
-
-      <para>I have this entry in <ulink
-      url="Documentation.htm#Tunnels">/etc/shorewall/tunnels</ulink>:</para>
-
-      <programlisting># TYPE                  ZONE    GATEWAY         GATEWAY
-#                                               ZONE
-openvpn:5000            net     69.145.71.133</programlisting>
-
-      <para>Yet I am seeing this log message:</para>
-
-      <programlisting>Oct 12 13:41:03 localhost kernel: Shorewall:net2all:DROP:IN=eth0 OUT=
-MAC=00:04:5a:7f:92:9f:00:b0:c2:89:68:e4:08:00 SRC=69.145.71.133
-DST=216.187.138.18 LEN=42 TOS=0x00 PREC=0x00 TTL=46 ID=11 DF PROTO=UDP
-SPT=33120 DPT=5000 LEN=22</programlisting>
-
-      <para><emphasis role="bold">Answer</emphasis>: Shorewall's <emphasis
-      role="bold">openvpn</emphasis> tunnel type assumes that OpenVPN will be
-      using the same port (default 5000) for both the source and destination
-      port. From the above message, it is clear that the remote client is
-      using source port 33120. The solution is to replace your <ulink
-      url="Documentation.htm#Tunnels">/etc/shorewall/tunnels</ulink> entry
-      with this one:</para>
-
-      <programlisting># TYPE                  ZONE    GATEWAY         GATEWAY
-#                                               ZONE
-generic:udp:5000        net     69.145.71.133</programlisting>
-    </section>
-
-    <section id="faq47">
-      <title>(FAQ 47) This Rule Doesn't Work as Documented</title>
-
-      <para>I want to allow access from the local zone to the net except for
-      two systems (192.168.100.101 and 192.168.100.115). I use the following
-      rule but find that 192.168.100.115 can still access the net. Is this a
-      bug?</para>
-
-      <programlisting>#ACTION        SOURCE                                 DEST          PROTO
-ACCEPT         loc:!192.168.100.101,192.168.100.115   net</programlisting>
-
-      <para><emphasis role="bold">Answer</emphasis>: Shorewall is currently
-      inconsistent as to where it correctly supports the "!" before a list of
-      addresses. In some places, it works as you would expect and in other
-      cases such as this one it does not. You will need to take a different
-      approach to accomplish what you want. I recommend that you change your
-      loc-&gt;net policy to ACCEPT and then use this rule:</para>
-
-      <programlisting>#ACTION        SOURCE                                 DEST          PROTO
-REJECT         loc:192.168.100.101,192.168.100.115    net</programlisting>
-
-      <para><emphasis role="bold">Author's Note</emphasis>: I have looked
-      several times at correcting this problem but it really isn't feasible
-      until I muster the energy to rewrite the Shorewall rules parser.
-      Sorry.</para>
-    </section>
   </section>
 
   <section>
@@ -831,9 +736,8 @@ REJECT         loc:192.168.100.101,192.168.100.115    net</programlisting>
       <programlisting>LOGLIMIT=""
 LOGBURST=""</programlisting>
 
-      <para>Beginning with Shorewall version 1.3.12, you can <ulink
-      url="shorewall_logging.html">set up Shorewall to log all of its messages
-      to a separate file</ulink>.</para>
+      <para>It is also possible to <ulink url="shorewall_logging.html">set up
+      Shorewall to log all of its messages to a separate file</ulink>.</para>
 
       <section id="faq6a">
         <title>(FAQ 6a) Are there any log parsers that work with
@@ -912,9 +816,7 @@ LOGBURST=""</programlisting>
       <title>(FAQ 16) Shorewall is writing log messages all over my console
       making it unusable!</title>
 
-      <para><emphasis role="bold">Answer:</emphasis> If you are running
-      Shorewall version 1.4.4 or 1.4.4a then check the <ulink
-      url="errata.htm">errata</ulink>. Otherwise:</para>
+      <para><emphasis role="bold">Answer:</emphasis> </para>
 
       <itemizedlist>
         <listitem>
@@ -1279,240 +1181,8 @@ LOGBURST=""</programlisting>
       <title>(FAQ 32) My firewall has two connections to the internet from two
       different ISPs. How do I set this up in Shorewall?</title>
 
-      <important>
-        <para>Anyone with two Internet connections MUST read and understand
-        <ulink url="Shorewall_and_Routing.html">this article on Shorewall and
-        Routing</ulink>. If you don't, you will be completely lost trying to
-        make this work. And <emphasis role="bold">that article should be all
-        that you need if you are running Shorewall 2.3.2 or
-        later</emphasis>.</para>
-      </important>
-
-      <para>Setting this up in Shorewall is easy; setting up the routing is a
-      bit harder.</para>
-
-      <para>Assuming that <filename class="devicefile">eth0</filename> and
-      <filename class="devicefile">eth1</filename> are the interfaces to the
-      two ISPs then:</para>
-
-      <para><filename>/etc/shorewall/interfaces</filename>:</para>
-
-      <programlisting>#ZONE    INTERFACE    BROADCAST       OPTIONS
-net      eth0         detect
-net      eth1         detect</programlisting>
-
-      <para><filename>/etc/shorewall/policy</filename>:</para>
-
-      <programlisting>#SOURCE    DESTINATION    POLICY     LIMIT:BURST
-net        net            DROP</programlisting>
-
-      <para>If you have masqueraded hosts, be sure to update
-      <filename>/etc/shorewall/masq</filename> to masquerade to both ISPs. For
-      example, if you masquerade all hosts connected to <filename
-      class="devicefile">eth2</filename> then:</para>
-
-      <programlisting>#INTERFACE       SUBNET            ADDRESS
-eth0             eth2
-eth1             eth2</programlisting>
-
-      <para>Again, if you are running Shorewall 2.3.2 or later, please see
-      <ulink url="Shorewall_and_Routing.html">this article</ulink> for
-      instructions for setting up the routing. Otherwise, follow the
-      instructions that follow.</para>
-
-      <para>There was an article in SysAdmin covering the topic of setting up
-      routing for this configuration. It may be found at <ulink
-      url="http://www.samag.com/documents/s=1824/sam0201h/">http://www.samag.com/documents/s=1824/sam0201h/</ulink>.</para>
-
-      <para>Stephen Carville has put together a Shorewall-specific writeup
-      that covers this subject at <ulink
-      url="http://www.heronforge.net/redhat/node17.html">http://www.heronforge.net/redhat/node17.html</ulink>.</para>
-
-      <para><citetitle>The following information regarding setting up routing
-      for this configuration is reproduced from the <ulink
-      url="http://www.lartc.org">LARTC HOWTO</ulink> and has not been verified
-      by the author. If you have questions or problems with the instructions
-      given below, please post to the <ulink
-      url="http://www.lartc.org/#mailinglist">LARTC mailing
-      list</ulink>.</citetitle></para>
-
-      <sidebar>
-        <para>A common configuration is the following, in which there are two
-        providers that connect a local network (or even a single machine) to
-        the big Internet.</para>
-
-        <programlisting>                                                                 ________
-                                          +------------+        /
-                                          |            |       |
-                            +-------------+ Provider 1 +-------
-        __                  |             |            |     /
-    ___/  \_         +------+-------+     +------------+    |
-  _/        \__      |     if1      |                      /
- /             \     |              |                      |
-| Local network -----+ Linux router |                      |     Internet
- \_           __/    |              |                      |
-   \__     __/       |     if2      |                      \
-      \___/          +------+-------+     +------------+    |
-                            |             |            |     \
-                            +-------------+ Provider 2 +-------
-                                          |            |       |
-                                          +------------+        \________
-</programlisting>
-
-        <para>There are usually two questions given this setup.</para>
-
-        <para><emphasis role="bold">Split access</emphasis></para>
-
-        <para>The first is how to route answers to packets coming in over a
-        particular provider, say Provider 1, back out again over that same
-        provider.</para>
-
-        <para>Let us first set some symbolical names. Let <emphasis
-        role="bold">$IF1</emphasis> be the name of the first interface (if1 in
-        the picture above) and <emphasis role="bold">$IF2</emphasis> the name
-        of the second interface. Then let <emphasis
-        role="bold">$IP1</emphasis> be the IP address associated with
-        <emphasis role="bold">$IF1</emphasis> and <emphasis
-        role="bold">$IP2</emphasis> the IP address associated with <emphasis
-        role="bold">$IF2</emphasis>. Next, let <emphasis
-        role="bold">$P1</emphasis> be the IP address of the gateway at
-        Provider 1, and <emphasis role="bold">$P2</emphasis> the IP address of
-        the gateway at provider 2. Finally, let <emphasis
-        role="bold">$P1_NET</emphasis> be the IP network <emphasis
-        role="bold">$P1</emphasis> is in, and <emphasis
-        role="bold">$P2_NET</emphasis> the IP network <emphasis
-        role="bold">$P2</emphasis> is in.</para>
-
-        <para>One creates two additional routing tables, say <emphasis
-        role="bold">T1</emphasis> and <emphasis role="bold">T2</emphasis>.
-        These are added in /etc/iproute2/rt_tables. Then you set up routing in
-        these tables as follows:</para>
-
-        <programlisting>ip route add $P1_NET dev $IF1 src $IP1 table T1
-ip route add default via $P1 table T1
-ip route add $P2_NET dev $IF2 src $IP2 table T2
-ip route add default via $P2 table T2</programlisting>
-
-        <para>Nothing spectacular, just build a route to the gateway and build
-        a default route via that gateway, as you would do in the case of a
-        single upstream provider, but put the routes in a separate table per
-        provider. Note that the network route suffices, as it tells you how to
-        find any host in that network, which includes the gateway, as
-        specified above.</para>
-
-        <para>Next you set up the main routing table. It is a good idea to
-        route things to the direct neighbour through the interface connected
-        to that neighbour. Note the `src' arguments, they make sure the right
-        outgoing IP address is chosen.</para>
-
-        <programlisting>ip route add $P1_NET dev $IF1 src $IP1
-ip route add $P2_NET dev $IF2 src $IP2</programlisting>
-
-        <para>Then, your preference for default route:</para>
-
-        <programlisting>ip route add default via $P1</programlisting>
-
-        <para>Next, you set up the routing rules. These actually choose what
-        routing table to route with. You want to make sure that you route out
-        a given interface if you already have the corresponding source
-        address:</para>
-
-        <programlisting>ip rule add from $IP1 table T1
-ip rule add from $IP2 table T2</programlisting>
-
-        <para>This set of commands makes sure all answers to traffic coming in
-        on a particular interface get answered from that interface.</para>
-
-        <note>
-          <para>'If $P0_NET is the local network and $IF0 is its interface,
-          the following additional entries are desirable:</para>
-
-          <programlisting format="linespecific">ip route add $P0_NET dev $IF0 table T1
-ip route add $P2_NET dev $IF2 table T1
-ip route add 127.0.0.0/8 dev lo table T1
-ip route add $P0_NET dev $IF0 table T2
-ip route add $P1_NET dev $IF1 table T2
-ip route add 127.0.0.0/8 dev lo table T2</programlisting>
-        </note>
-
-        <para>Now, this is just the very basic setup. It will work for all
-        processes running on the router itself, and for the local network, if
-        it is masqueraded. If it is not, then you either have IP space from
-        both providers or you are going to want to masquerade to one of the
-        two providers. In both cases you will want to add rules selecting
-        which provider to route out from based on the IP address of the
-        machine in the local network.</para>
-
-        <para><emphasis role="bold">Load balancing</emphasis></para>
-
-        <para>The second question is how to balance traffic going out over the
-        two providers. This is actually not hard if you already have set up
-        split access as above.</para>
-
-        <para>Instead of choosing one of the two providers as your default
-        route, you now set up the default route to be a multipath route. In
-        the default kernel this will balance routes over the two providers. It
-        is done as follows (once more building on the example in the section
-        on split-access):</para>
-
-        <programlisting>ip route add default scope global nexthop via $P1 dev $IF1 weight 1 \
-     nexthop via $P2 dev $IF2 weight 1</programlisting>
-
-        <para>This will balance the routes over both providers. The <emphasis
-        role="bold">weight</emphasis> parameters can be tweaked to favor one
-        provider over the other.</para>
-
-        <note>
-          <para>balancing will not be perfect, as it is route based, and
-          routes are cached. This means that routes to often-used sites will
-          always be over the same provider.</para>
-        </note>
-
-        <para>Furthermore, if you really want to do this, you probably also
-        want to look at Julian Anastasov's patches at <ulink
-        url="http://www.ssi.bg/%7Eja/#routes">http://www.ssi.bg/~ja/#routes</ulink>
-        , Julian's route patch page. They will make things nicer to work
-        with.</para>
-      </sidebar>
-
-      <para>The following was contributed by Martin Brown and is an excerpt
-      from <citetitle> <ulink
-      url="http://www.docum.org/stef.coene/qos/faq/cache/44.html">http://www.docum.org/stef.coene/qos/faq/cache/44.html</ulink>
-      </citetitle>.</para>
-
-      <sidebar>
-        <para>There are two issues requiring different handling when dealing
-        with multiple Internet providers on a given network. The below assumes
-        that the host which has multiple Internet connections is a
-        masquerading (or NATting) host and is at the chokepoint between the
-        internal and external networks. For the use of multiple inbound
-        connections to the same internal server (public IP A from ISP A and
-        public IP B from ISP B both get redirected to the same internal
-        server), the ideal solution involves using two private IP addresses on
-        the internal server. This leads to an end-to-end uniqueness of public
-        IP to private IP and can be easily accomplished by following the
-        directions here:</para>
-
-        <para><ulink
-        url="http://linux-ip.net/html/adv-multi-internet.html#adv-multi-internet-inbound">
-        <citetitle>http://linux-ip.net/html/adv-multi-internet.html#adv-multi-internet-inbound</citetitle>
-        </ulink></para>
-
-        <para>For the use of multiple outbound links to the Internet, there
-        are a number of different techniques. The simplest is identified
-        here:</para>
-
-        <para><citetitle> <ulink
-        url="http://linux-ip.net/html/adv-multi-internet.html#adv-multi-internet-outbound">http://linux-ip.net/html/adv-multi-internet.html#adv-multi-internet-outbound</ulink>
-        </citetitle></para>
-
-        <para>Better (and more robust) techniques are available after a kernel
-        routing patch by Julian Anastasov. See the famous nano-howto.</para>
-
-        <para><citetitle> <ulink
-        url="http://www.ssi.bg/~ja/">http://www.ssi.bg/~ja/</ulink>
-        </citetitle></para>
-      </sidebar>
+      <para>Answer: See <ulink url="Shorewall_and_Routing.html">this article
+      on Shorewall and Routing</ulink>. </para>
     </section>
 
     <section id="faq49">
@@ -1664,8 +1334,8 @@ Creating input Chains...
       output to a file as in <command>shorewall restart &gt;
       /dev/null</command>).</para>
 
-      <para>Beginning with Shorewall version 2.0.2 Beta 1, Shorewall supports
-      a fast start capability. To use this capability:</para>
+      <para>Shorewall also supports a fast start capability. To use this
+      capability:</para>
 
       <orderedlist>
         <listitem>
@@ -1712,66 +1382,6 @@ Creating input Chains...
       <command>shorewall save</command>. Otherwise at the next reboot, you
       will revert to the old configuration stored in
       <filename>/var/lib/shorewall/restore</filename>.</para>
-
-      <section id="faq34a">
-        <title>(FAQ 34a) I get errors about a host or network not found when I
-        run<filename>/var/lib/shorewall/restore</filename>. The
-        <command>shorewall restore</command> and <command>shorewall -f
-        start</command> commands gives the same result.</title>
-
-        <para>Answer: iptables 1.2.9 is broken with respect to iptables-save
-        and the connection tracking match extension. You must patch your
-        iptables using the patch available from the <ulink
-        url="errata.htm">Shorewall errata page</ulink>.</para>
-      </section>
-    </section>
-
-    <section id="faq41">
-      <title>(FAQ 41) Why do I get modprobe failure messages when I start
-      Shorewall?</title>
-
-      <para>When I start shorewall I got the following errors.</para>
-
-      <programlisting>Oct 30 11:13:12 fwr modprobe: modprobe: Can't locate module ipt_conntrack
-Oct 30 11:13:17 fwr modprobe: modprobe: Can't locate module ipt_pkttype
-Oct 30 11:13:18 fwr modprobe: modprobe: Can't locate module ipt_pkttype
-Oct 30 11:13:57 fwr last message repeated 2 times
-Oct 30 11:14:06 fwr root: Shorewall Restarted</programlisting>
-
-      <para>The "shorewall status" output seems complying with my rules set.
-      Should I worry ? and is there any way to get rid of these errors
-      ?</para>
-
-      <para><emphasis role="bold">Answer</emphasis>: You are seeing two
-      different things:</para>
-
-      <orderedlist>
-        <listitem>
-          <para>The normal checking that Shorewall does when it starts.
-          Shorewall tries to determine the the capabilities of your 'iptables'
-          and kernel and then taylors the ruleset accordingly.</para>
-        </listitem>
-
-        <listitem>
-          <para>A problem in Shorewall 2.0.3a through 2.0.5 whereby Shorewall
-          tried to use the <emphasis>pkttype match</emphasis> feature each
-          time that it wanted to generate a rule involving broadcast or
-          multicast packets.</para>
-        </listitem>
-      </orderedlist>
-
-      <para>You can suppress the messages by aliasing the modules mentioned in
-      the error messages to off in /etc/modules.conf. Just be sure to review
-      these aliases each time that you do a kernel upgrade to be sure that you
-      are not disabling a feature in your new kernel that you want to
-      use.</para>
-
-      <programlisting>alias ipt_conntrack off
-alias ipt_pkttype off</programlisting>
-
-      <para>For users who don't have the pkttype match feature in their
-      kernel, I also recommend upgrading to Shorewall 2.0.6 or later and then
-      setting PKTTYPE=No in shorewall.conf.</para>
     </section>
 
     <section id="faq43">
@@ -1938,18 +1548,6 @@ iptables: Invalid argument
           </listitem>
         </varlistentry>
       </variablelist>
-    </section>
-
-    <section id="faq46">
-      <title>(FAQ 46) Given that the Debian Stable Release includes Shorewall
-      1.2.12, how can you not support that version?</title>
-
-      <para>The first release of Shorewall was in March of 2001. Shorewall
-      1.2.12 was released in May of 2002. It is now the year 2005 and
-      Shorewall 2.2 is available. Shorewall 1.2.12 is poorly documented and is
-      missing many of the features that Shorewall users find essential today
-      and it is silly to continue to run it simply because it is bundled with
-      an ancient Debian release.</para>
     </section>
 
     <section id="faq36">
@@ -2153,21 +1751,6 @@ eth0               eth1                        # eth1 = interface to local netwo
       <para>Edit /etc/shorewall/shorewall.conf and change
       <quote>NEWNOTSYN=No</quote> to <quote>NEWNOTSYN=Yes</quote> then restart
       Shorewall.</para>
-
-      <section id="faq26a">
-        <title>(FAQ 26a) When I try to use the <quote>-O</quote> option of
-        nmap from the firewall system, I get <quote>operation not
-        permitted</quote>. How do I allow this option?</title>
-
-        <para>If you are running Shorewall 2.2.0 or later, set DROPINVALID=No
-        in <ulink
-        url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>.</para>
-
-        <para>Otherwise, add this command to your /etc/shorewall/start
-        file:</para>
-
-        <programlisting><command>run_iptables -D OUTPUT -p ! icmp -m state --state INVALID -j DROP</command>        </programlisting>
-      </section>
     </section>
 
     <section id="faq27">
@@ -2278,36 +1861,33 @@ REJECT    fw            net:216.239.39.99    all</programlisting>Given that
       <title>(FAQ 42) How can I tell which features my kernel and iptables
       support?</title>
 
-      <para>Answer: Users running Shorewall 2.2.4 or later can simply use the
-      <command>shorewall show capabilities</command> command at a root
-      prompt.</para>
+      <para>Answer: Use the <command>shorewall show capabilities</command>
+      command at a root prompt.</para>
 
-      <para>For those running older versions, at a root prompt, enter the
-      command <command>shorewall check</command>. There is a section near the
-      top of the resulting output that gives you a synopsis of your
-      kernel/iptables capabilities.</para>
-
-      <programlisting>gateway:/etc/shorewall # shorewall check
+      <programlisting>gateway:~# shorewall show capabilities
 Loading /usr/share/shorewall/functions...
 Processing /etc/shorewall/params ...
 Processing /etc/shorewall/shorewall.conf...
 Loading Modules...
-
-Notice:  The 'check' command is unsupported and problem
-         reports complaining about errors that it didn't catch
-         will not be accepted
-
 Shorewall has detected the following iptables/netfilter capabilities:
    NAT: Available
    Packet Mangling: Available
    Multi-port Match: Available
+   Extended Multi-port Match: Available
    Connection Tracking Match: Available
-   Packet Type Match: Not available
+   Packet Type Match: Available
    Policy Match: Available
    Physdev Match: Available
    IP range Match: Available
-Verifying Configuration...
-...</programlisting>
+   Recent Match: Available
+   Owner Match: Available
+   Ipset Match: Available
+   ROUTE Target: Available
+   Extended MARK Target: Available
+   CONNMARK Target: Available
+   Connmark Match: Available
+   Raw Table: Available
+gateway:~#</programlisting>
     </section>
   </section>
 </article>

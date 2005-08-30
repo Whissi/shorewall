@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-08-20</pubdate>
+    <pubdate>2005-08-30</pubdate>
 
     <copyright>
       <year>2004</year>
@@ -36,6 +36,13 @@
     </legalnotice>
   </articleinfo>
 
+  <caution>
+    <para><emphasis role="bold">This article applies to Shorewall 3.0 and
+    later. If you are running a version of Shorewall earlier than Shorewall
+    3.0.0 then please see the documentation for that
+    release.</emphasis></para>
+  </caution>
+
   <important>
     <para>The information in this article is only applicable if you plan to
     have IPSEC end-points on the same system where Shorewall is used.</para>
@@ -43,12 +50,10 @@
 
   <warning>
     <para>To use the features described in this article, your kernel and
-    iptables must include the Netfilter+ipsec patches and policy match support
-    and you must be running Shorewall 2.1.5 or later (with Shorewall 2.2.0
-    Beta 1 or later recommended). The Netfilter patches are available from
-    Netfilter Patch-O-Matic-NG and are also included in some commercial
-    distributions (most notably <trademark>SuSE</trademark> 9.1 and
-    9.2).</para>
+    iptables must include the Netfilter+ipsec patches and policy match
+    support. The Netfilter patches are available from Netfilter
+    Patch-O-Matic-NG and are also included in some commercial distributions
+    (most notably <trademark>SuSE</trademark> 9.1 through 9.3).</para>
   </warning>
 
   <important>
@@ -106,7 +111,7 @@
   </warning>
 
   <section>
-    <title>Shorewall 2.2 and Kernel 2.6 IPSEC</title>
+    <title>Shorewall 3.0 and Kernel 2.6 IPSEC</title>
 
     <para>This is <emphasis role="bold">not</emphasis> a HOWTO for Kernel 2.6
     IPSEC -- for that, please see <ulink
@@ -181,8 +186,8 @@
       </listitem>
 
       <listitem>
-        <para>A <filename>new </filename><ulink
-        url="Documentation.htm#Ipsec"><filename>/etc/shorewall/ipsec</filename></ulink>
+        <para>The<filename> </filename><ulink
+        url="Documentation.htm#Zones"><filename>/etc/shorewall/zones</filename></ulink>
         file allows you to associate zones with traffic that will be encrypted
         or that has been decrypted.</para>
       </listitem>
@@ -195,9 +200,8 @@
       </listitem>
     </orderedlist>
 
-    <para>In summary, Shorewall 2.1.5 and later versions provide the
-    facilities to replace the use of ipsec pseudo-interfaces in zone and
-    MASQUERADE/SNAT definition.</para>
+    <para>In summary, Shorewall provides the facilities to replace the use of
+    ipsec pseudo-interfaces in zone and MASQUERADE/SNAT definition.</para>
 
     <para>There are two cases to consider:</para>
 
@@ -250,7 +254,9 @@
 
     <para>For more information on IPSEC, Kernel 2.6 and Shorewall see <ulink
     url="LinuxFest.pdf">my presentation on the subject given at LinuxFest NW
-    2005</ulink>.</para>
+    2005</ulink>. Be warned though that the presentation is based on Shorewall
+    2.2 and there are some differences in the details of how IPSEC is
+    configured.</para>
   </section>
 
   <section>
@@ -313,17 +319,12 @@ ipsec         net         206.162.148.9
       <para><filename>/etc/shorewall/zones</filename> — Systems A and
       B:</para>
 
-      <programlisting>#ZONE           DISPLAY         COMMENTS
+      <programlisting>#ZONE          IPSEC            OPTIONS             IN           OUT
+#              ONLY                                 OPTIONS      OPTIONS#ZONE           DISPLAY         COMMENTS
 vpn             VPN             Virtual Private Network
 net             Internet        The big bad internet
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
     </blockquote>
-
-    <important>
-      <para>Note that the <quote>vpn</quote> zone is defined before the
-      <quote>net</quote> zone. This is necessary if you are using a Shorewall
-      version earlier than 2.1.11.</para>
-    </important>
 
     <para>Remember the assumption that both systems A and B have eth0 as their
     internet interface.</para>
@@ -466,7 +467,7 @@ sainfo address 192.168.1.0/24 any address 134.28.54.2/32 any
         <para>If you have hosts that access the internet through an IPSEC
         tunnel, then it is a good idea to set the MSS value for traffic from
         those hosts explicitly in the
-        <filename>/etc/shorewall/ipsec</filename> file. For example, if hosts
+        <filename>/etc/shorewall/zones</filename> file. For example, if hosts
         in the <emphasis role="bold">sec</emphasis> zone access the internet
         through an ESP tunnel then the following entry would be
         appropriate:</para>
@@ -507,12 +508,6 @@ vpn             VPN             Road Warriors
 net             Internet        The big bad internet
 loc             local           Local Network (192.168.1.0/24)
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
-
-        <important>
-          <para>Note that the <quote>vpn</quote> zone is defined before the
-          <quote>net</quote> zone. This is necessary if you are using a
-          Shorewall version earlier than 2.1.11.</para>
-        </important>
       </blockquote>
 
       <para>In this instance, the mobile system (B) has IP address 134.28.54.2
@@ -748,19 +743,6 @@ spdadd 192.168.20.40/32 192.168.20.10/32 any -P in  ipsec esp/transport/192.168.
     <para>Shorewall configuration goes as follows:</para>
 
     <blockquote>
-      <para><filename>/etc/shorewall/zones</filename>:</para>
-
-      <programlisting>#ZONE   DISPLAY         COMMENTS
-net     Net             Internet
-loc     Local           Local Network
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
-
-      <important>
-        <para>Note that the <quote>vpn</quote> zone is defined before the
-        <quote>net</quote> zone. This is advised if you are using a Shorewall
-        version earlier than 2.1.11.</para>
-      </important>
-
       <para><filename>/etc/shorewall/interfaces</filename>:</para>
 
       <programlisting>#ZONE   INTERFACE       BROADCAST       OPTIONS
@@ -773,11 +755,12 @@ net     eth0            detect          routefilter,dhcp,tcpflags
 #                                               ZONE
 ipsec:noah     net              192.168.20.0/24 loc</programlisting>
 
-      <para>/etc/shorewall/ipsec:</para>
+      <para>/etc/shorewall/zones:</para>
 
       <programlisting>#ZONE          IPSEC            OPTIONS             IN           OUT
 #              ONLY                                 OPTIONS      OPTIONS
-loc            Yes              mode=transport</programlisting>
+loc            Yes              mode=transport
+net</programlisting>
 
       <para><filename>/etc/shorewall/hosts</filename>:</para>
 

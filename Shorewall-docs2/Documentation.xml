@@ -411,8 +411,7 @@ NET_OPTIONS=blacklist,norfc1918</programlisting>
 
         <listitem>
           <para>short name for the zone. The name should be 5 characters or
-          less in length (4 characters or less if you are running Shorewall
-          1.4.4 or later) and consist of lower-case letters or numbers. Short
+          less in length and consist of lower-case letters or numbers. Short
           names must begin with a letter and the name assigned to the firewall
           is reserved for use by Shorewall itself. Note that the output
           produced by iptables is much easier to read if you select short
@@ -596,21 +595,21 @@ NET_OPTIONS=blacklist,norfc1918</programlisting>
                 <para>respond to arp requests based on the value of
                 &lt;<emphasis>number</emphasis>&gt;.</para>
 
-                <para> 1 - reply only if the target IP address is local
-                address configured on the incoming interface</para>
+                <para>1 - reply only if the target IP address is local address
+                configured on the incoming interface</para>
 
-                <para> 2 - reply only if the target IP address is local
-                address configured on the incoming interface and both with the
+                <para>2 - reply only if the target IP address is local address
+                configured on the incoming interface and both with the
                 sender's IP address are part from same subnet on this
                 interface</para>
 
-                <para> 3 - do not reply for local addresses configured with
+                <para>3 - do not reply for local addresses configured with
                 scope host, only resolutions for global and link addresses are
                 replied</para>
 
-                <para> 4-7 - reserved</para>
+                <para>4-7 - reserved</para>
 
-                <para> 8 - do not reply for all local addresses </para>
+                <para>8 - do not reply for all local addresses</para>
 
                 <para>If no &lt;<emphasis>number</emphasis>&gt; is given then
                 the value 1 is assumed</para>
@@ -1057,13 +1056,6 @@ net      eth0         detect       dhcp,norfc1918
       <para>Your /etc/shorewall/hosts file might look like:</para>
 
       <programlisting>#ZONE       HOST(S)               OPTIONS
-loc         eth1:192.168.1.0/24
-loc         eth1:192.168.12.0/24</programlisting>
-
-      <para>If you are running Shorewall 1.4.6 or later, your hosts file may
-      look like:</para>
-
-      <programlisting>#ZONE       HOST(S)               OPTIONS
 loc         eth1:192.168.1.0/24,192.168.12.0/24</programlisting>
     </example>
 
@@ -1494,18 +1486,18 @@ DNAT      net       loc:192.168.1.3 tcp      ssh
       </varlistentry>
     </variablelist>
 
-    <para> Rules in the ESTABLISHED and RELATED sections are limited to the
+    <para>Rules in the ESTABLISHED and RELATED sections are limited to the
     following ACTIONs:</para>
 
     <blockquote>
-      <para>ACCEPT, DROP, REJECT, QUEUE, LOG and User-defined actions. </para>
+      <para>ACCEPT, DROP, REJECT, QUEUE, LOG and User-defined actions.</para>
     </blockquote>
 
     <para>Macros may be used in these sections provided that they expand to
     only these ACTIONs. At the end of the ESTABLISHED and RELATED sections,
     there is an implicit ACCEPT rule.</para>
 
-    <para> RESTRICTION: If you specify FASTACCEPT=Yes in
+    <para>RESTRICTION: If you specify FASTACCEPT=Yes in
     /etc/shorewall.shorewall.conf then the ESTABLISHED and RELATED sections
     must be empty.</para>
 
@@ -2005,7 +1997,7 @@ ACCEPT<emphasis role="bold">:info</emphasis>   -              -               tc
     <example>
       <title>You wish to forward all ssh connection requests from the internet
       to local system 192.168.1.3. You wish to limit the number of connections
-      to 4/minute with a burst of 8 (Shorewall 1.4.7 and later only):</title>
+      to 4/minute with a burst of 8:</title>
 
       <programlisting>#ACTION        SOURCE      DEST             PROTO      DEST PORT(S)
 DNAT&lt;4/min:8&gt;  net         loc:192.168.1.3  tcp        ssh</programlisting>
@@ -2109,11 +2101,10 @@ ACCEPT   net      fw:206.124.146.176 tcp   22</programlisting>
     </example>
 
     <example>
-      <title>(For advanced users running Shorewall version 1.3.13 or later).
-      From the internet, you with to forward tcp port 25 directed to
-      192.0.2.178 and 192.0.2.179 to host 192.0.2.177 in your DMZ. You also
-      want to allow access from the internet directly to tcp port 25 on
-      192.0.2.177.</title>
+      <title>(For advanced users). From the internet, you with to forward tcp
+      port 25 directed to 192.0.2.178 and 192.0.2.179 to host 192.0.2.177 in
+      your DMZ. You also want to allow access from the internet directly to
+      tcp port 25 on 192.0.2.177.</title>
 
       <programlisting>#ACTION  SOURCE   DEST             PROTO  DEST PORT(S)   SOURCE   ORIGINAL
 #                                                        PORT(S)  DEST
@@ -2126,20 +2117,18 @@ ACCEPT   net      dmz:192.0.2.177  tcp    25</programlisting>
     </example>
 
     <example>
-      <title>(Shorewall version 1.4.6 or later). You have 9 http servers
-      behind a Shorewall firewall and you want connection requests to be
-      distributed among your servers. The servers are
-      192.168.1.101-192.168.1.109.</title>
+      <title>You have 9 http servers behind a Shorewall firewall and you want
+      connection requests to be distributed among your servers. The servers
+      are 192.168.1.101-192.168.1.109.</title>
 
       <programlisting>#ACTION  SOURCE   DEST                            PROTO DEST PORT(S)
 DNAT     net      loc:192.168.1.101-192.168.1.109 tcp   80</programlisting>
     </example>
 
     <example>
-      <title>(Shorewall 2.0.2 Beta 2 and Later). You want to redirect all
-      local www connection requests EXCEPT those from 192.168.1.4 and
-      192.168.1.199 to a Squid transparent proxy running on the firewall and
-      listening on port 3128.</title>
+      <title>You want to redirect all local www connection requests EXCEPT
+      those from 192.168.1.4 and 192.168.1.199 to a Squid transparent proxy
+      running on the firewall and listening on port 3128.</title>
 
       <programlisting>#ACTION  SOURCE  DEST   PROTO   DEST PORT(S)   SOURCE   ORIGINAL
 #                                              PORT(S)  DEST
@@ -2434,7 +2423,7 @@ eth0       192.168.10.0/24!192.168.10.44,192.168.10.45 206.124.146.176</programl
     </example>
 
     <example>
-      <title> You have a second IP address (206.124.146.177) assigned to you
+      <title>You have a second IP address (206.124.146.177) assigned to you
       and wish to use it for SNAT of the subnet 192.168.12.0/24. You want to
       give that address the name eth0:0. You must have ADD_SNAT_ALIASES=Yes in
       <xref linkend="Conf" />.</title>
@@ -2444,16 +2433,16 @@ eth0:0               192.168.12.0/24  206.124.146.177</programlisting>
     </example>
 
     <example>
-      <title> You want to use both 206.124.146.177 and 206.124.146.179 for
-      SNAT of the subnet 192.168.12.0/24. Each address will be used on
-      alternate outbound connections.</title>
+      <title>You want to use both 206.124.146.177 and 206.124.146.179 for SNAT
+      of the subnet 192.168.12.0/24. Each address will be used on alternate
+      outbound connections.</title>
 
       <programlisting>#INTERFACE            SUBNET          ADDRESS
 eth0                  192.168.12.0/24 206.124.146.177,206.124.146.179</programlisting>
     </example>
 
     <example>
-      <title> You want all outgoing SMTP traffic entering the firewall on eth1
+      <title>You want all outgoing SMTP traffic entering the firewall on eth1
       to be sent from eth0 with source IP address 206.124.146.177. You want
       all other outgoing traffic from eth1 to be sent from eth0 with source IP
       address 206.124.146.176.</title>
@@ -3074,8 +3063,7 @@ eth0                  eth1            206.124.146.176</programlisting>
           under the <link linkend="rfc1918"><quote>norfc1918</quote>
           mechanism</link> are logged. The value must be a valid <ulink
           url="shorewall_logging.html">syslog level</ulink> and if no level is
-          given, then info is assumed. Prior to Shorewall version 1.3.12,
-          these packets are always logged at the info level.</para>
+          given, then info is assumed.</para>
         </listitem>
       </varlistentry>
 
@@ -3633,8 +3621,7 @@ LOGBURST=5</programlisting>
       </varlistentry>
     </variablelist>
 
-    <para><filename>/etc/shorewall/tos</filename> file that is included with
-    Shorewall</para>
+    <para>Here's a sample <filename>/etc/shorewall/tos</filename> file:</para>
 
     <programlisting>#SOURCE  DEST    PROTOCOL    SOURCE PORTS(S)   DEST PORTS(S)   TOS
 all      all     tcp         -                 ssh             16

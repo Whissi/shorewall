@@ -13,7 +13,7 @@
       <surname>Eastep</surname>
     </author>
 
-    <pubdate>2005-08-11</pubdate>
+    <pubdate>2005-08-30</pubdate>
 
     <copyright>
       <year>2003-2005</year>
@@ -35,7 +35,7 @@
   <section>
     <title>Introduction</title>
 
-    <para>The information in this document applies only to 2.x releases of
+    <para>The information in this document applies only to 3.x releases of
     Shorewall.</para>
 
     <section>
@@ -119,7 +119,7 @@
     <para>Shorewall views the network where it is running as being composed of
     a set of <firstterm>zones</firstterm>. In the <ulink
     url="three-interface.htm">three-interface sample configuration</ulink> for
-    example, the following zone names are used: </para>
+    example, the following zone names are used:</para>
 
     <programlisting>#NAME                  DESCRIPTION
 net                    The Internet
@@ -133,7 +133,9 @@ dmz                    Demilitarized Zone</programlisting>
 
     <para>Shorewall also recognizes the firewall system as its own zone - by
     default, the firewall itself is known as <emphasis
-    role="bold"><varname>fw</varname></emphasis>.</para>
+    role="bold"><varname>fw</varname></emphasis> but that may be changed by
+    setting the FW option in <ulink
+    url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>.</para>
 
     <para>Rules about what traffic to allow and what traffic to deny are
     expressed in terms of zones. <itemizedlist spacing="compact">

@@ -36,6 +36,13 @@
     </legalnotice>
   </articleinfo>
 
+  <caution>
+    <para><emphasis role="bold">This article applies to Shorewall 3.0 and
+    later. If you are installing or upgradeing to a version of Shorewall
+    earlier than Shorewall 3.0.0 then please see the documentation for that
+    release.</emphasis></para>
+  </caution>
+
   <important>
     <para>Before attempting installation, I strongly urge you to read and
     print a copy of the <ulink url="shorewall_quickstart_guide.htm">Shorewall
@@ -158,39 +165,11 @@
 
       <listitem>
         <para>cd to the shorewall directory (the version is encoded in the
-        directory name as in <quote>shorewall-1.1.10</quote>).</para>
+        directory name as in <quote>shorewall-3.0.0</quote>).</para>
       </listitem>
 
       <listitem>
-        <para>If you are running <ulink
-        url="http://www.slackware.com">Slackware</ulink>, you need Shorewall
-        2.0.2 RC1 or later. If you are installing a Shorewall version earlier
-        than 2.0.3 Beta 1 then you must also edit the install.sh file and
-        change the lines</para>
-
-        <programlisting>DEST="/etc/init.d"
-INIT="shorewall"</programlisting>
-
-        <para>to</para>
-
-        <programlisting>DEST="/etc/rc.d"
-INIT="rc.firewall"</programlisting>
-      </listitem>
-
-      <listitem>
-        <para>If you are running Slackware and are installing Shorewall 2.0.3
-        Beta 1 to Shorewall 2.2.3, then type:</para>
-
-        <programlisting><emphasis role="bold">DEST=/etc/rc.d INIT=rc.firewall ./install.sh</emphasis></programlisting>
-
-        <para>If you are running Slackware and are installing Shorewall 2.2.4
-        or later, then type:</para>
-
-        <programlisting><command>./install.sh</command></programlisting>
-      </listitem>
-
-      <listitem>
-        <para>Otherwise, type:</para>
+        <para>Type:</para>
 
         <programlisting><command>./install.sh</command></programlisting>
       </listitem>
@@ -201,26 +180,9 @@ INIT="rc.firewall"</programlisting>
       </listitem>
 
       <listitem>
-        <para>Enable Startup:</para>
-
-        <itemizedlist>
-          <listitem>
-            <para>Users running Shorewall 2.1.3 or later, edit
-            <filename>/etc/shorewall/shorewall.conf</filename> and set
-            STARTUP_ENABLED=Yes.</para>
-          </listitem>
-
-          <listitem>
-            <para>Users running Shorewall 2.1.2 or earlier and using the .deb
-            should edit <filename>/etc/default/shorewall</filename> and set
-            startup=1.</para>
-          </listitem>
-
-          <listitem>
-            <para>All other users, remove the file
-            <filename>/etc/shorewall/startup_disabled</filename></para>
-          </listitem>
-        </itemizedlist>
+        <para>Enable Startup by editing
+        <filename>/etc/shorewall/shorewall.conf</filename> and set
+        STARTUP_ENABLED=Yes.</para>
       </listitem>
 
       <listitem>
@@ -273,9 +235,9 @@ INIT="rc.firewall"</programlisting>
     described <ulink
     url="http://idea.sec.dico.unimi.it/%7Elorenzo/index.html#Debian">here</ulink>.</para>
 
-    <para>Once you have completed configuring Shorewall, you can enable
-    startup at boot time by setting startup=1 in
-    <filename>/etc/default/shorewall</filename>.</para>
+    <para><emphasis role="bold">Once you have completed configuring Shorewall,
+    you can enable startup at boot time by setting startup=1 in
+    <filename>/etc/default/shorewall</filename>.</emphasis></para>
   </section>
 
   <section>
@@ -395,35 +357,7 @@ INIT="rc.firewall"</programlisting>
       </listitem>
 
       <listitem>
-        <para>If you are running <ulink
-        url="http://www.slackware.com">Slackware</ulink>, you should use
-        Shorewall 2.0.2 RC1 or later. If you are installing a Shorewall
-        version earlier than 2.0.3 Beta 1 then you must also edit the
-        install.sh file and change the lines</para>
-
-        <programlisting>DEST="/etc/init.d"
-INIT="shorewall"</programlisting>
-
-        <para>to</para>
-
-        <programlisting>DEST="/etc/rc.d"
-INIT="rc.firewall"</programlisting>
-      </listitem>
-
-      <listitem>
-        <para>If you are running Slackware and are installing Shorewall 2.0.3
-        Beta 1 through Shorewall 2.2.3, then type:</para>
-
-        <programlisting><emphasis role="bold">DEST=/etc/rc.d INIT=rc.firewall ./install.sh</emphasis></programlisting>
-
-        <para>If you are running Slackware and are installing Shorewall 2.2.4
-        or later, then type:</para>
-
-        <programlisting><command>./install.sh</command></programlisting>
-      </listitem>
-
-      <listitem>
-        <para>Otherwise, type:</para>
+        <para>Type:</para>
 
         <programlisting><command>./install.sh</command></programlisting>
       </listitem>

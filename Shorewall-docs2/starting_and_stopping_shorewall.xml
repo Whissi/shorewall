@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-05-23</pubdate>
+    <pubdate>2005-08-30</pubdate>
 
     <copyright>
       <year>2004</year>
@@ -35,6 +35,12 @@
       License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
+
+  <caution>
+    <para>This article applies to Shorewall 3.0 and later. If you are running
+    a version of Shorewall earlier than Shorewall 3.0.0 then please see the
+    documentation for that release.</para>
+  </caution>
 
   <section>
     <title>Operational Components</title>
@@ -213,14 +219,11 @@
         <itemizedlist>
           <listitem>
             <para>Shorewall startup is disabled by default. Once you have
-            configured your firewall, you can enable startup by removing the
-            file <filename>/etc/shorewall/startup_disabled</filename>. Note:
-            Users of the .deb package must edit
-            <filename>/etc/default/shorewall</filename> and set
-            <quote>startup=1</quote> while users who are running Shorewall
-            2.1.3 or later must edit
-            <filename>/etc/shorewall/shorewall.conf</filename> and set
-            STARTUP_ENABLED=Yes.</para>
+            configured your firewall, you can enable startup by editing
+            <filename>/etc/shorewall/shorewall.conf</filename> and setting
+            STARTUP_ENABLED=Yes.. Note: Users of the .deb package must also
+            edit <filename>/etc/default/shorewall</filename> and set
+            <quote>startup=1</quote>.</para>
           </listitem>
 
           <listitem>
@@ -357,14 +360,6 @@
     Shorewall to check before looking in the directories listed in
     CONFIG_PATH.</para>
 
-    <para>Shorewall versions before Shorewall 2.2.0:</para>
-
-    <programlisting>     <command>shorewall [ -c &lt;configuration-directory&gt; ] {start|restart|check}</command>
-     <command>shorewall try &lt;configuration-directory&gt; [ &lt;timeout&gt; ]</command></programlisting>
-
-    <para>Shorewall versions 2.2.0 and later the -c option is
-    deprecated:</para>
-
     <programlisting>     <command>shorewall {start|restart|check} &lt;configuration-directory&gt;</command>
      <command>shorewall try &lt;configuration-directory&gt; [ &lt;timeout&gt; ]</command></programlisting>
 
@@ -468,12 +463,6 @@
           <para>Adds an interface (and list of hosts if included) to a dynamic
           zone usually used with VPN's.</para>
 
-          <para>Note that there was no provision in the syntax for specifying
-          a <ulink url="bridge.html">bridge</ulink> port prior to Shorewall
-          versions 2.0.12 and 2.2.0 Beta 7 and that the "shorewall add"
-          command was not supported for hosts connected to the firewall
-          through a bridge port prior to those releases.</para>
-
           <para>Example: <command>shorewall add ipsec0:192.0.2.24
           vpn1</command></para>
 
@@ -497,32 +486,17 @@
       </varlistentry>
 
       <varlistentry>
-        <term>check (Shorewall versions prior to 2.2.0)</term>
-
-        <listitem>
-          <para><command>shorewall [ -c &lt;configuration-directory&gt; ]
-          check</command></para>
-
-          <para>Performs a cursory validation of the zones, interfaces, hosts,
-          rules and policy files. Use this if you are unsure of any edits you
-          have made to the shorewall configuration. See <link
-          linkend="AltConfig">above</link> for a recommended way to make
-          changes.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>check (Shorewall 2.2.0 and later)</term>
+        <term>check</term>
 
         <listitem>
           <para><command>shorewall [-q] check [
           &lt;configuration-directory&gt; ]</command></para>
 
           <para>Performs a cursory validation of the zones, interfaces, hosts,
-          rules and policy files. Use this if you are unsure of any edits you
-          have made to the shorewall configuration. See <link
-          linkend="AltConfig">above</link> for a recommended way to make
-          changes.</para>
+          rules, policy, masq, blacklist, proxyarp, nat and provider files.
+          Use this if you are unsure of any edits you have made to the
+          shorewall configuration. See <link linkend="AltConfig">above</link>
+          for a recommended way to make changes.</para>
         </listitem>
       </varlistentry>
 
@@ -568,12 +542,6 @@
           <para>Deletes the specified interface (and host list if included)
           from the specified zone.</para>
 
-          <para>Note that there was no provision in the syntax for specifying
-          a <ulink url="bridge.html">bridge</ulink> port prior to Shorewall
-          versions 2.0.12 and 2.2.0 Beta 7 and that the "shorewall delete"
-          command was not supported for hosts connected to the firewall
-          through a bridge port prior to those releases.</para>
-
           <para>Example:</para>
 
           <para><command>shorewall delete ipsec0:192.0.2.24
@@ -592,6 +560,19 @@
 
           <para>Causes packets from the specified
           &lt;<emphasis>address</emphasis>&gt; to be ignored</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>dump</term>
+
+        <listitem>
+          <para><command>shorewall [ -x ] dump</command></para>
+
+          <para>Produce a verbose report about the firewall.</para>
+
+          <para>When -x is given, that option is also passed to iptables to
+          display actual packet and byte counts.</para>
         </listitem>
       </varlistentry>
 
@@ -680,22 +661,6 @@
       </varlistentry>
 
       <varlistentry>
-        <term>monitor</term>
-
-        <listitem>
-          <para><command>shorewall [-x] monitor
-          [&lt;refresh_interval&gt;]</command></para>
-
-          <para>Continuously display the firewall status, last 20 log entries
-          and nat. When the log entry display changes, an audible alarm is
-          sounded.</para>
-
-          <para>When -x is given, that option is also passed to iptables to
-          display actual packet and byte counts.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
         <term>refresh</term>
 
         <listitem>
@@ -733,21 +698,7 @@
       </varlistentry>
 
       <varlistentry>
-        <term>restart (Prior to Shorewall version 2.2.0)</term>
-
-        <listitem>
-          <para><command>shorewall [ -q ] [ -c &lt;configuration-directory&gt;
-          ] restart</command></para>
-
-          <para>Restart is similar to <command>shorewall stop</command>
-          followed by <command>shorewall start</command>. Existing connections
-          are maintained. If -q is specified, less detail is displayed making
-          it easier to spot warnings</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>restart (Shorewall version 2.2.0 and later)</term>
+        <term>restart</term>
 
         <listitem>
           <para><command>shorewall [ -q ] restart
@@ -781,7 +732,7 @@
       </varlistentry>
 
       <varlistentry>
-        <term>safe-restart (Shorewall version 2.4.0 and later)</term>
+        <term>safe-restart</term>
 
         <listitem>
           <para><command>shorewall [ -q ] safe-restart [ &lt;filename&gt;
@@ -800,7 +751,7 @@
       </varlistentry>
 
       <varlistentry>
-        <term>safe-start (Shorewall version 2.4.0 and later)</term>
+        <term>safe-start</term>
 
         <listitem>
           <para><command>shorewall [ -q ] safe-start [ &lt;filename&gt;
@@ -853,9 +804,8 @@
           <para><command>shorewall show log</command> - display the last 20
           packet log entries.</para>
 
-          <para><command>shorewall show capabilities</command> - Added in
-          Shorewall version 2.2.4 and displays your kernel/iptables
-          capabilities</para>
+          <para><command>shorewall show capabilities</command> - Displays your
+          kernel/iptables capabilities</para>
 
           <para><command>shorewall show connections</command> - displays the
           IP connections currently being tracked by the firewall.</para>
@@ -866,11 +816,8 @@
           <para><command>shorewall show tc</command> - displays information
           about the traffic control/shaping configuration.</para>
 
-          <para><command>shorewall show zones</command> — Added in Shorewall
-          version 2.2.0 Beta 7. Enabled when Shorewall is [re]started with
-          DYNAMIC_ZONES=Yes in <ulink
-          url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>.
-          Displays the composition of each zone.</para>
+          <para><command>shorewall show zones</command> — Displays the
+          composition of each zone.</para>
 
           <para>When -x is given, that option is also passed to iptables to
           display actual packet and byte counts.</para>
@@ -878,25 +825,7 @@
       </varlistentry>
 
       <varlistentry>
-        <term>start (Shorewall versions prior to 2.2.0)</term>
-
-        <listitem>
-          <para><command>shorewall [ -q ] [ -f ] [ -c
-          &lt;configuration-directory&gt; ] start</command></para>
-
-          <para>Start shorewall. Existing connections through shorewall
-          managed interfaces are untouched. New connections will be allowed
-          only if they are allowed by the firewall rules or policies. If -q is
-          specified, less detail is displayed making it easier to spot
-          warnings If -f is specified, the saved configuration specified by
-          the RESTOREFILE option in <ulink
-          url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>
-          will be restored if that saved configuration exists</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>start (Shorewall 2.2.0 and later)</term>
+        <term>start</term>
 
         <listitem>
           <para><command>shorewall [ -q ] [ -f ] start [
@@ -935,12 +864,10 @@
         <term>status</term>
 
         <listitem>
-          <para><command>shorewall [ -x ] status</command></para>
+          <para><command>shorewall status</command></para>
 
-          <para>Produce a verbose report about the firewall.</para>
-
-          <para>When -x is given, that option is also passed to iptables to
-          display actual packet and byte counts.</para>
+          <para>Produce a short report about the firewall's status and state
+          relative to <link linkend="State">the diagram below</link>.</para>
         </listitem>
       </varlistentry>
 
@@ -1020,9 +947,8 @@
             <entry>firewall stop</entry>
 
             <entry>Only traffic to/from hosts listed in /etc/shorewall/hosts
-            is passed to/from/through the firewall. For Shorewall versions
-            beginning with 1.4.7, if ADMINISABSENTMINDED=Yes in
-            /etc/shorewall/shorewall.conf then in addition, all existing
+            is passed to/from/through the firewall. If ADMINISABSENTMINDED=Yes
+            in /etc/shorewall/shorewall.conf then in addition, all existing
             connections are retained and all connection requests from the
             firewall are accepted.</entry>
           </row>

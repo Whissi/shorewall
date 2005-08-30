@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-07-19</pubdate>
+    <pubdate>2005-08-30</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -41,6 +41,13 @@
     </legalnotice>
   </articleinfo>
 
+  <caution>
+    <para><emphasis role="bold">This article applies to Shorewall 3.0 and
+    later. If you are running a version of Shorewall earlier than Shorewall
+    3.0.0 then please see the documentation for that
+    release.</emphasis></para>
+  </caution>
+
   <section>
     <title>Before Reporting a Problem or Asking a Question</title>
 
@@ -49,14 +56,14 @@
 
     <itemizedlist>
       <listitem>
-        <para>The two currently-supported Shorewall <ulink
-        url="ReleaseModel.html">major releases</ulink> are 2.4 and 2.2.
+        <para>The three currently-supported Shorewall <ulink
+        url="ReleaseModel.html">major releases</ulink> are 3.0, 2.4 and 2.2.
         Because of the short time between the releases of 2.2.0 and 2.4.0,
-        Shorewall 2.0 will be supported until 1 December 2005 or until the
-        release of 2.6.0, whichever comes first.</para>
+        Shorewall 2.2 will be supported until 1 December 2006 or until the
+        release of 3.1.0, whichever comes first.</para>
 
         <note>
-          <para>Shorewall versions earlier than 2.0.0 are no longer supported;
+          <para>Shorewall versions earlier than 2.2.0 are no longer supported;
           we will only answer your question if it deals with upgrading from
           these old releases to a current one.</para>
         </note>
@@ -134,32 +141,32 @@ gateway:~#</programlisting>
         the following command:</para>
 
         <blockquote>
-          <programlisting><command>/sbin/shorewall show shorewall</command></programlisting>
+          <programlisting><command>/sbin/shorewall status shorewall</command></programlisting>
         </blockquote>
 
         <para>If Shorewall has started successfully, you will see output
         similar to this:</para>
 
         <blockquote>
-          <programlisting>Shorewall-2.2.3 Chain shorewall at gateway - Wed Apr 20 14:41:53 PDT 2005
+          <programlisting>Shorewall-2.5.4 Status at gateway - Tue Aug 30 14:07:29 PDT 2005
 
-Counters reset Sat Apr 16 17:35:06 PDT 2005
-
-<emphasis role="bold">Chain shorewall (0 references)
- pkts bytes target     prot opt in     out     source               destination</emphasis></programlisting>
+Shorewall is running
+State:Started (Tue Aug 30 07:18:07 PDT 2005)</programlisting>
         </blockquote>
 
         <para>If Shorewall has not started properly, you will see output
         similar to this:</para>
 
         <blockquote>
-          <programlisting>Shorewall-2.2.3 Chain shorewall at gateway - Wed Apr 20 14:43:13 PDT 2005
+          <programlisting>Shorewall-2.5.4 Status at gateway - Tue Aug 30 14:08:11 PDT 2005
 
-Counters reset Sat Apr 16 17:35:06 PDT 2005
-
-<emphasis role="bold">iptables: No chain/target/match by that name</emphasis>
-</programlisting>
+Shorewall is stopped
+State:Stopped (Tue Aug 30 14:08:11 PDT 2005)</programlisting>
         </blockquote>
+
+        <para>The "State:" refers to the <ulink
+        url="starting_and_stopping_shorewall.htm%23State">Shorewall State
+        Diagram</ulink>.</para>
       </listitem>
 
       <listitem>
@@ -182,7 +189,7 @@ Counters reset Sat Apr 16 17:35:06 PDT 2005
           </listitem>
 
           <listitem>
-            <para><command>/sbin/shorewall status &gt;
+            <para><command>/sbin/shorewall dump &gt;
             /tmp/status.txt</command></para>
           </listitem>
 

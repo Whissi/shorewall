@@ -5839,7 +5839,7 @@ process_macro() # $1 = target
 		;;
 	esac
 
-	case $mtarget in
+	case ${mtarget%%:*} in
 	    ACCEPT|ACCEPT+|NONAT|DROP|REJECT|DNAT|DNAT-|REDIRECT|REDIRECT-|LOG|CONTINUE|QUEUE|SAME|SAME-)
 		;;
 	    *)

@@ -15,12 +15,12 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-04-14</pubdate>
+    <pubdate>2005-08-31</pubdate>
 
     <copyright>
       <year>2002</year>
 
-      <year>2004</year>
+      <year>-</year>
 
       <year>2005</year>
 
@@ -41,41 +41,17 @@
   <para>If you wish to run Samba on your firewall and access shares between
   the firewall and local hosts, you need the following rules:</para>
 
-  <para><emphasis role="bold">/etc/shorewall/rules:</emphasis><programlisting>#ACTION   SOURCE   DEST   PROTO    DEST PORT(S)   SOURCE
-#                                                 PORT(S)
-ACCEPT    fw       loc    udp      137:139
-ACCEPT    fw       loc    tcp      137,139,445
-ACCEPT    fw       loc    udp      1024:          137
-ACCEPT    loc      fw     udp      137:139
-ACCEPT    loc      fw     tcp      137,139,445
-ACCEPT    loc      fw     udp      1024:          137</programlisting></para>
-
-  <para>Users running Shorewall 2.0.0 or later may simpify the above through
-  use of the <firstterm>AllowSMB</firstterm> <ulink
-  url="Actions.html">action</ulink>:</para>
-
   <programlisting>#ACTION   SOURCE   DEST   PROTO    DEST PORT(S)   SOURCE
 #                                                 PORT(S)
-AllowSMB  fw       loc
-AllowSMB  loc      fw</programlisting>
+SMB/ACCEPT  fw       loc
+SMB/ACCEPT  loc      fw</programlisting>
 
   <para>To pass traffic SMB/Samba traffic between zones Z1 and Z2:</para>
 
-  <para><emphasis role="bold">/etc/shorewall/rules:</emphasis><programlisting>#ACTION   SOURCE   DEST   PROTO    DEST PORT(S)   SOURCE
-#                                                 PORT(S)
-ACCEPT    Z1       Z2     udp      137:139
-ACCEPT    Z1       Z2     tcp      137,139,445
-ACCEPT    Z1       Z2     udp      1024:          137
-ACCEPT    Z2       Z1     udp      137:139
-ACCEPT    Z2       Z1     tcp      137,139,445
-ACCEPT    Z1       Z1     udp      1024:          137</programlisting></para>
-
-  <para>Again, users running 2.0.0 or later may write:</para>
-
   <programlisting>#ACTION   SOURCE   DEST   PROTO    DEST PORT(S)   SOURCE
 #                                                 PORT(S)
-AllowSMB  Z1       Z2
-AllowSMB  Z2       Z1</programlisting>
+SMB/ACCEPT  Z1       Z2
+SMB/ACCEPT  Z2       Z1</programlisting>
 
   <para>To make network browsing (<quote>Network Neighborhood</quote>) work
   properly between Z1 and Z2 requires a Windows Domain Controller and/or a
@@ -95,8 +71,8 @@ AllowSMB  Z2       Z1</programlisting>
 
     <listitem>
       <para>Edit the copies and remove the <emphasis
-      role="bold">DropSMB</emphasis> and <emphasis
-      role="bold">RejectSMB</emphasis> lines.</para>
+      role="bold">SMB/DROP</emphasis> and <emphasis
+      role="bold">SMB/REJECT</emphasis> lines.</para>
     </listitem>
 
     <listitem>

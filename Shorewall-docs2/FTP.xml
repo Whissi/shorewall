@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-03-03</pubdate>
+    <pubdate>2005-08-31</pubdate>
 
     <copyright>
       <year>2003</year>
@@ -37,6 +37,13 @@
       License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
+
+  <caution>
+    <para><emphasis role="bold">This article applies to Shorewall 3.0 and
+    later. If you are running a version of Shorewall earlier than Shorewall
+    3.0.0 then please see the documentation for that
+    release.</emphasis></para>
+  </caution>
 
   <section>
     <title>FTP Protocol</title>
@@ -314,7 +321,15 @@ DNAT                                                                    ACTION =
     with 20 (ftp-data) in the PORT(S) column. If you post your rules on the
     mailing list and they show 20 in the PORT(S) column, I will know that you
     haven't read this article and I will either ignore your post or tell you
-    to RTFM.<example>
+    to RTFM.</para>
+
+    <para>Shorewall includes an FTP macro that simplifies creation of FTP
+    rules. The macro source is in
+    <filename>/usr/share/shorewall/macro.FTP</filename>. Using the macro is
+    the preferred way to generate the rules described above. Here are a couple
+    of examples.</para>
+
+    <para><example>
         <title>Server running behind a Masquerading Gateway</title>
 
         <para>Suppose that you run an FTP server on 192.168.1.5 in your local
@@ -322,13 +337,13 @@ DNAT                                                                    ACTION =
 
         <programlisting>#ACTION      SOURCE     DESTINATION     PROTO     PORT(S)    SOURCE      ORIGINAL
 #                                                            PORT(S)     DESTINATION
-FTP/DNAT      net        192.168.1.5</programlisting>
+FTP/DNAT      net       loc:192.168.1.5</programlisting>
       </example><example>
         <title>Allow your DMZ FTP access to the Internet</title>
 
         <programlisting>#ACTION      SOURCE     DESTINATION     PROTO     PORT(S)    SOURCE      ORIGINAL
 #                                                            PORT(S)     DESTINATION
-FTP/ACCEPT       dmz        net</programlisting>
+FTP/ACCEPT   dmz        net</programlisting>
       </example></para>
 
     <para>Note that the FTP connection tracking in the kernel cannot handle

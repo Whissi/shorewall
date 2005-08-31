@@ -52,12 +52,13 @@ cant_autostart()
 backup_directory() # $1 = directory to backup
 {
     if [ -d $1 ]; then
-	if -a $1  ${1}-${VERSION}.bkout ; then
+	if cp -a $1  ${1}-${VERSION}.bkout ; then
 	    echo
 	    echo "$1 saved to ${1}-${VERSION}.bkout"
 	else
 	    exit 1
 	fi
+    fi
 }
     
 backup_file() # $1 = file to backup
@@ -82,6 +83,11 @@ delete_file() # $1 = file to delete
 	    exit 1
         fi
     fi
+}
+
+install_file() # $1 = source $2 = target $3 = mode
+{
+    run_install $OWNERSHIP -m $3 $1 ${2}
 }
 
 install_file_with_backup() # $1 = source $2 = target $3 = mode
@@ -181,11 +187,11 @@ echo "Installing Shorewall Version $VERSION"
 #
 if [ -d ${PREFIX}/etc/shorewall ]; then
     first_install=""
-else
-    first_install="Yes"
     backup_directory ${PREFIX}/etc/shorewall
     backup_directory ${PREFIX}/usr/share/shorewall
     backup_directory ${PREFIX}/var/lib/shorewall
+else
+    first_install="Yes"
 fi
 
 install_file_with_backup shorewall ${PREFIX}/sbin/shorewall 0544
@@ -215,7 +221,7 @@ mkdir -p ${PREFIX}/var/lib/shorewall
 # Install the config file
 #
 if [ ! -f ${PREFIX}/etc/shorewall/shorewall.conf ]; then
-   run_install $OWNERSHIP -m 0744 shorewall.conf ${PREFIX}/etc/shorewall/shorewall.conf
+   install_file $OWNERSHIP -m 0744 shorewall.conf ${PREFIX}/etc/shorewall/shorewall.conf
    echo
    echo "Config file installed as ${PREFIX}/etc/shorewall/shorewall.conf"
 fi
@@ -228,7 +234,7 @@ fi
 # Install the zones file
 #
 if [ ! -f ${PREFIX}/etc/shorewall/zones ]; then
-    run_install $OWNERSHIP -m 0744 zones ${PREFIX}/etc/shorewall/zones
+    install_file $OWNERSHIP -m 0744 zones ${PREFIX}/etc/shorewall/zones
     echo
     echo "Zones file installed as ${PREFIX}/etc/shorewall/zones"
 fi
@@ -237,7 +243,7 @@ fi
 # Install the functions file
 #
 
-run_install functions ${PREFIX}/usr/share/shorewall/functions 0444
+install_file functions ${PREFIX}/usr/share/shorewall/functions 0444
 
 echo
 echo "Common functions installed in ${PREFIX}/usr/share/shorewall/functions"
@@ -245,7 +251,7 @@ echo "Common functions installed in ${PREFIX}/usr/share/shorewall/functions"
 #
 # Install the Help file
 #
-run_install help ${PREFIX}/usr/share/shorewall/help 0544
+install_file help ${PREFIX}/usr/share/shorewall/help 0544
 
 echo
 echo "Help command executor installed in ${PREFIX}/usr/share/shorewall/help"
@@ -253,10 +259,10 @@ echo "Help command executor installed in ${PREFIX}/usr/share/shorewall/help"
 #
 # Install the tcstart file
 #
-run_install tcstart ${PREFIX}/usr/share/shorewall/tcstart 0544
+install_file tcstart ${PREFIX}/usr/share/shorewall/tcstart 0544
 
 echo
-echo "Help Traffic Shaper installed in ${PREFIX}/usr/share/shorewall/tcstart"
+echo "Traffic Shaper installed in ${PREFIX}/usr/share/shorewall/tcstart"
 
 #
 # Install the policy file
@@ -335,7 +341,7 @@ fi
 # Install the Stopped Routing file
 #
 if [ ! -f ${PREFIX}/etc/shorewall/routestopped ]; then
-    backup_file /etc/shorewall/routestopped
+    run_install $OWNERSHIP -m 0600 routestopped ${PREFIX}/etc/shorewall/routestopped
     echo
     echo "Stopped Routing file installed as ${PREFIX}/etc/shorewall/routestopped"
 fi
@@ -433,13 +439,13 @@ fi
 #
 # Install the rfc1918 file
 #
-run_install rfc1918 ${PREFIX}/usr/share/shorewall/rfc1918 0600
+install_file rfc1918 ${PREFIX}/usr/share/shorewall/rfc1918 0600
 echo
 echo "RFC 1918 file installed as ${PREFIX}/usr/share/shorewall/rfc1918"
 #
 # Install the default config path file
 #
-run_install configpath ${PREFIX}/usr/share/shorewall/configpath 0600
+install_file configpath ${PREFIX}/usr/share/shorewall/configpath 0600
 echo
 echo " Default config path file installed as ${PREFIX}/usr/share/shorewall/configpath"
 #
@@ -517,7 +523,7 @@ fi
 #
 # Install the Standard Actions file
 #
-run_install actions.std ${PREFIX}/usr/share/shorewall/actions.std 0600
+install_file actions.std ${PREFIX}/usr/share/shorewall/actions.std 0600
 echo
 echo "Standard actions file installed as ${PREFIX}/etc/shorewall/actions.std"
 
@@ -539,7 +545,7 @@ fi
 # Install the Action files
 #
 for f in action.* ; do
-    run_install $f ${PREFIX}/usr/share/shorewall/$f 0600
+    install_file $f ${PREFIX}/usr/share/shorewall/$f 0600
     echo
     echo "Action ${f#*.} file installed as ${PREFIX}/usr/share/shorewall/$f"
 done
@@ -547,7 +553,7 @@ done
 # Install the Macro files
 #
 for f in macro.* ; do
-    run_install $f ${PREFIX}/usr/share/shorewall/$f 0600
+    install_file $f ${PREFIX}/usr/share/shorewall/$f 0600
     echo
     echo "Macro ${f#*.} file installed as ${PREFIX}/usr/share/shorewall/$f"
 done
@@ -569,7 +575,7 @@ fi
 #
 # Install the firewall script
 #
-run_install firewall ${PREFIX}/usr/share/shorewall/firewall 0544
+install_file firewall ${PREFIX}/usr/share/shorewall/firewall 0544
 
 if [ -z "$PREFIX" -a -n "$first_install" ]; then
     if [ -n "$DEBIAN" ]; then

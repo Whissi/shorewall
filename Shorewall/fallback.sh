@@ -39,7 +39,7 @@ usage() # $1 = exit status
 restore_directory() # $1 = directory to restore
 {
     if [ -d ${1}-${VERSION}.bkout ]; then
-	if rm -rf $1 && mv ${1}-${VERSION}.bkout $1
+	if mv -f $1 ${1}-${VERSION} && mv ${1}-${VERSION}.bkout $1; then
 	    echo
 	    echo "$1 restored"
 	else
@@ -70,7 +70,7 @@ fi
 echo "Backing Out Installation of Shorewall $VERSION"
 
 if [ -L /usr/share/shorewall/init ]; then
-    FIREWALL=$(ls -l /usr/share/shorewall/firewall | sed 's/^.*> //')
+    FIREWALL=$(ls -l /usr/share/shorewall/init | sed 's/^.*> //')
     restore_file $FIREWALL
 else
     restore_file /etc/init.d/shorewall

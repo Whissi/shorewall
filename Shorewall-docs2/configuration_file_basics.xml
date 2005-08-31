@@ -35,6 +35,13 @@
   </articleinfo>
 
   <caution>
+    <para><emphasis role="bold">This article applies to Shorewall 3.0 and
+    later. If you are running a version of Shorewall earlier than Shorewall
+    3.0.0 then please see the documentation for that
+    release.</emphasis></para>
+  </caution>
+
+  <caution>
     <para>If you copy or edit your configuration files on a system running
     Microsoft Windows, you must run them through <ulink
     url="http://www.megaloman.com/~hany/software/hd2u/">dos2unix</ulink>
@@ -167,20 +174,12 @@
 
         <listitem>
           <para><filename>/etc/shorewall/actions</filename> and
-          <filename>/usr/share/shorewall/action.template</filename> - define
-          your own actions for rules in /etc/shorewall/rules (Shorewall 1.4.9
-          and later).</para>
+          <filename>/usr/share/shorewall/action.template</filename>.</para>
         </listitem>
 
         <listitem>
           <para><filename>/etc/shorewall/providers</filename> - defines an
-          alternate routing table.(Shorewall 2.3.2 and later).</para>
-        </listitem>
-
-        <listitem>
-          <para><filename>/etc/shorewall/routes</filename> - see <ulink
-          url="Shorewall_and_Routing.html#RouteTarget">here</ulink> (Shorewall
-          2.3.2 and later,experimental)</para>
+          alternate routing table.</para>
         </listitem>
 
         <listitem>
@@ -189,8 +188,13 @@
         </listitem>
 
         <listitem>
-          <para><filename>/usr/share/shorewall/actions.*</filename> - Details
+          <para><filename>/usr/share/shorewall/action.*</filename> - Details
           of actions defined by Shorewall.</para>
+        </listitem>
+
+        <listitem>
+          <para><filename>/usr/share/shorewall/macro.*</filename> - Details of
+          macros defined by Shorewall.</para>
         </listitem>
 
         <listitem>
@@ -448,6 +452,31 @@ smtp,www,pop3,imap  #Services running on the firewall</programlisting>
         order.</para>
       </listitem>
     </itemizedlist>
+  </section>
+
+  <section id="Exclusion">
+    <title>Exclusion Lists</title>
+
+    <para>Shorewall 3.0 differs from earlier versions in that in most contexts
+    where a comma-separated list of addresses is accepted, an
+    <firstterm>exclusion list</firstterm> may also be included. An exclusion
+    list is a comma-separated list of addresses that begins with "!".</para>
+
+    <para>Example:</para>
+
+    <programlisting>!192.168.1.3,192.168.1.12,192.168.1.32/27</programlisting>
+
+    <para>The above list refers to "All addresses except 192.168.1.3,
+    192.168.1.12 and 192.168.1.32-192.168.1.63.</para>
+
+    <para>Exclusion lists can also be added after a network address.</para>
+
+    <para>Example:</para>
+
+    <programlisting>192.168.1.0/24!192.168.1.3,192.168.1.12,192.168.1.32/27</programlisting>
+
+    <para>The above list refers to "All addresses in 192.168.1.0-192.168.1.255
+    except 192.168.1.3, 192.168.1.12 and 192.168.1.32-192.168.1.63.</para>
   </section>
 
   <section id="IPRanges">

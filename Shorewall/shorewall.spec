@@ -97,6 +97,8 @@ fi
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/continue
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/started
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/providers
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/tcclasses
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/tcdevices
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/Makefile
 
 %attr(0544,root,root) /sbin/shorewall
@@ -108,6 +110,7 @@ fi
 %attr(0600,root,root) /usr/share/shorewall/action.template
 %attr(0444,root,root) /usr/share/shorewall/functions
 %attr(0544,root,root) /usr/share/shorewall/firewall
+%attr(0544,root,root) /usr/share/shorewall/tcstart
 %attr(0544,root,root) /usr/share/shorewall/help
 %attr(0600,root,root) /usr/share/shorewall/macro.AllowICMPs
 %attr(0600,root,root) /usr/share/shorewall/macro.Amanda

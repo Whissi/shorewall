@@ -241,6 +241,14 @@ echo
 echo "Help command executor installed in ${PREFIX}/usr/share/shorewall/help"
 
 #
+# Install the tcstart file
+#
+install_file_with_backup tcstart ${PREFIX}/usr/share/shorewall/tcstart 0544
+
+echo
+echo "Help command executor installed in ${PREFIX}/usr/share/shorewall/help"
+
+#
 # Delete the icmp.def file
 #
 delete_file icmp.def
@@ -431,6 +439,28 @@ else
     run_install $OWNERSHIP -m 0600 providers ${PREFIX}/etc/shorewall/providers
     echo
     echo "Providers file installed as ${PREFIX}/etc/shorewall/providers"
+fi
+
+#
+# Install the tcclasses file
+#
+if [ -f ${PREFIX}/etc/shorewall/tcclasses ]; then
+    backup_file /etc/shorewall/tcclasses
+else
+    run_install $OWNERSHIP -m 0600 tcclasses ${PREFIX}/etc/shorewall/tcclasses
+    echo
+    echo "TC Classes file installed as ${PREFIX}/etc/shorewall/tcclasses"
+fi
+
+#
+# Install the tcdevices file
+#
+if [ -f ${PREFIX}/etc/shorewall/tcdevices ]; then
+    backup_file /etc/shorewall/tcdevices
+else
+    run_install $OWNERSHIP -m 0600 tcdevices ${PREFIX}/etc/shorewall/tcdevices
+    echo
+    echo "TC Devices file installed as ${PREFIX}/etc/shorewall/tcdevices"
 fi
 
 #

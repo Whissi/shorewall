@@ -1,0 +1,152 @@
+# tc4shorewall	Version 0.5
+#
+#
+# /etc/shorewall/tcclasses
+#
+#	Define the classes used for traffic shaping in this file.
+#	
+#	A note on the rate/bandwidth definitions used in this file:
+#
+#		- don't use a space between the integer value and
+#		  the unit: 30kbit is valid while 30 kbit is NOT.
+#
+#		- you can use one of the following units:
+#
+#       		kbps		Kilobytes per second
+#       		mbps   		Megabytes per second
+#       		kbit   		Kilobits per second
+#      			mbit   		Megabits per second
+#      			bps or a 
+#			bare number	Bytes per second
+#
+#		- if you want the values to be calculated for you depending
+#		on the output bandwidth setting defined for an interface
+#		in tcdevices, you can use expressions like the following:
+#			
+#			full/3		causes the bandwidth to be calculated
+#					as 3 of the the full outgoing
+#					speed that is defined.
+#
+#			full*9/10	will set this bandwidth to 9/10 of
+#					the full bandwidth
+#
+#		DO NOT add a unit to the rate if it is calculated !
+#
+# Columns are:
+#
+#	INTERFACE	Name of interface. Each interface may be listed only
+#			once in this file. You may NOT specify the name of
+#			an alias (e.g., eth0:0) here; see
+#			http://www.shorewall.net/FAQ.htm#faq18
+#
+#			You man NOT specify wildcards here,  e.g. if you
+#			have multiple ppp interfaces, you need to put
+#			them all in here!
+#
+#			Please note that you can only use interface names
+#			in here that have a bandwidth defined in the tcdevices
+#			file
+#
+#	MARK		The mark value which is an integer in the range 1-255.
+#			You define this marks in the tcrules file, marking
+#			the traffic you want to fit in the classes defined
+#			in here. 
+#
+#			You can use the same marks for different Interfaces
+#
+#	RATE		The minimum bandwidth this class should get,
+#			when the traffic load rises. Please note
+#			that first the classes which equal or a lesser priority
+#			value are served.
+#
+#			You can use the following 			
+#Use kbit or kbps(for Kilobytes per second) for
+#			speed, and make sure there is NO space between the
+#			number and the unit.
+#			
+#	CEIL		The maximum bandwidth this class is allowed to use
+#			when the link is idle. Useful if you have traffic
+#			which can get full speed when more needed services
+#			(e.g. ssh) are not used.
+#
+#			You can use the value "full" in here for setting
+#			the maximum bandwidth to the defined output bandwidth
+#			of that interface
+#
+#			Use kbit or kbps(for Kilobytes per second) for
+#			speed, and make sure there is NO space between the
+#			number and the unit.
+#
+#	PRIORITY	you have to define a priority for the class
+#			Packages in a class with a higher priority (=lesser value)
+#			are handled before lesser priority onces.
+#			You can just define the mark value here also, if you are
+#			increasing the mark values with lesser priority.
+#				
+#	OPTIONS         A comma-separated list of options including the 
+#			following:
+#	
+#			default		- this is the default class for that 
+#					interface where all traffic should go, 
+#					that is not classified otherwise.
+#
+#					NOTE: defining default for exactly one 
+#					class per interface is mandatory!
+#
+#			tos-<tosname>	- this lets you define a filter for 
+#					the given <tosname> which lets you
+#					define a value of the Type Of Service
+#					bits in the ip package which causes
+#					the package to go in this class.
+#					Please note, that this filter overrides
+#					all mark settings, so if you define
+#					a tos filter for a class all traffic
+#					having that mark will go in it regard-
+#					less of the mark on the package.
+#					You can use the following 
+#					for this option
+#
+#   					tos-minimize-delay (16)
+#                               	tos-maximize-throughput (8)
+#                               	tos-maximize-reliability (4)
+#                               	tos-minimize-cost (2)
+#                               	tos-normal-service (0)
+#					
+#					NOTE: each of this options is only 
+#					valid for ONE class per interface.
+#							
+#			tcp-ack		- if defined causes an tc filter to
+#					be created that puts all tcp ack 
+#					packets on that interface that have
+#					an size of <=64 Bytes to go in this
+#					class. This is useful for speeding up
+#					downloads. Please note that the size
+#					of the ack packages is limited to 64
+#					bytes as some applications (p2p for
+#					example) use to make every package an
+#					ack package which would cause them 
+#					all into here. We want only packages
+#					WITHOUT payload to match, so the size
+#					limit.
+# 
+#					NOTE: This option is only valid for 
+#					ONE class per interface.
+#
+# 			
+#
+#	Example 1:	Suppose you are using PPP over Ethernet (DSL)
+#			and ppp0 is the interface for this. The
+#			device has an outgoing bandwidth of 500kbit.
+#			You have 3 classes here, the first you can use for
+#			interactive traffic (ssh) the second for p2p networking
+#			and the last one the rest. They all have a guaranteed
+#			bandwidth of 100kbit upstream, but 1 and 3 can get
+#			full speed if link is idle, 2 is limited to 200kbit 
+#
+#			ppp0  1  100kbit  full	   1  tcp-ack,tos-minimize-delay	
+#			ppp0  2	 100kbit  200kbit  2  	
+#			ppp0  3	 full/3  full/2	   3  default
+#
+################################################################################
+#INTERFACE	MARK	RATE	CEIL	PRIORITY	OPTIONS
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

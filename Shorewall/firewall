@@ -3897,6 +3897,12 @@ add_an_action()
 	icmp|ICMP|1)
 	    [ -n "$port" ]  && 	dports="--icmp-type $port"
 	    ;;
+	ipp2p)
+	    dports="-m ipp2p --${port:-ipp2p}"
+	    port=
+	    proto=tcp
+	    do_ports
+	    ;;
 	*)
 	    [ -n "$port" ] && \
 		fatal_error "Port number not allowed with protocol \"$proto\"; rule: \"$rule\""
@@ -5270,14 +5276,11 @@ process_rule() # $1 = target
 	esac
 
 	case $SECTION in
-	    NEW)
+	    ESTABLISHED|RELATED)
+		state="-m state --state $SECTION"
+		;;
+	    *)
 		state=
-		;;
-	    ESTABLISHED)
-		state="-m state --state ESTABLISHED"
-		;;
-	    RELATED)
-		state="-m state --state RELATED"
 		;;
 	esac
 

@@ -69,11 +69,9 @@ restore_file /sbin/shorewall
 
 restore_file /etc/shorewall/shorewall.conf
 
-restore_file /etc/shorewall/functions
-restore_file /usr/lib/shorewall/functions
-restore_file /var/lib/shorewall/functions
-restore_file /usr/lib/shorewall/firewall
-restore_file /usr/lib/shorewall/help
+restore_file /usr/share/shorewall/tcstart
+restore_file /usr/share/shorewall/functions
+restore_file /usr/share/shorewall/help
 
 restore_file /etc/shorewall/common.def
 

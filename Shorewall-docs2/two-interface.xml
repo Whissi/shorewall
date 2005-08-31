@@ -33,6 +33,13 @@
     </legalnotice>
   </articleinfo>
 
+  <caution>
+    <para><emphasis role="bold">This article applies to Shorewall 3.0 and
+    later. If you are running a version of Shorewall earlier than Shorewall
+    3.0.0 then please see the documentation for that
+    release.</emphasis></para>
+  </caution>
+
   <section>
     <title>Introduction</title>
 
@@ -596,28 +603,33 @@ fw         net         ACCEPT</programlisting> The above policy will:
     <para>The general form of a simple port forwarding rule in <filename
     class="directory">/etc/shorewall/</filename><filename>rules</filename> is:
     <programlisting>#ACTION   SOURCE    DEST                                          PROTO      DEST PORT(S)
-DNAT      net       loc:<emphasis>&lt;server local ip address&gt;</emphasis>[:<emphasis>&lt;server port&gt;</emphasis>] <emphasis>&lt;protocol&gt;</emphasis> <emphasis>&lt;port&gt;</emphasis></programlisting>
-    <example label="1">
+DNAT      net       loc:<emphasis>&lt;server local ip address&gt;</emphasis>[:<emphasis>&lt;server port&gt;</emphasis>] <emphasis>&lt;protocol&gt;</emphasis> <emphasis>&lt;port&gt;</emphasis></programlisting>Shorewall
+    has macros for many popular applications. Look at
+    /usr/share/shorewall/macro.* to see what is available in your release.
+    Macros simplify creating DNAT rules by supplying the protocol and port(s)
+    as shown in the following examples.</para>
+
+    <para><example label="1">
         <title>Web Server</title>
 
         <para>You run a Web Server on computer 2 and you want to forward
         incoming <acronym>TCP</acronym> port 80 to that system:
         <programlisting>#ACTION   SOURCE    DEST             PROTO     DEST PORT(S)
-Web/DNAT  net      192.168.1.5</programlisting></para>
+Web/DNAT  net       loc:192.168.1.5</programlisting></para>
       </example> <example label="2">
         <title>FTP Server</title>
 
         <para>You run an <acronym>FTP</acronym> Server on computer 1 so you
         want to forward incoming <acronym>TCP</acronym> port 21 to that
         system: <programlisting>#ACTION    SOURCE    DEST            PROTO     DEST PORT(S)
-FTP/DNAT    net     10.10.10.1</programlisting> For <acronym>FTP</acronym>,
-        you will also need to have <acronym>FTP</acronym> connection tracking
-        and <acronym>NAT</acronym> support in your kernel. For vendor-supplied
-        kernels, this means that the <filename
-        class="libraryfile">ip_conntrack_ftp</filename> and <filename
-        class="libraryfile">ip_nat_ftp</filename> modules must be loaded.
-        Shorewall will automatically load these modules if they are available
-        and located in the standard place under <filename
+FTP/DNAT   net       loc:10.10.10.1</programlisting> For
+        <acronym>FTP</acronym>, you will also need to have
+        <acronym>FTP</acronym> connection tracking and <acronym>NAT</acronym>
+        support in your kernel. For vendor-supplied kernels, this means that
+        the <filename class="libraryfile">ip_conntrack_ftp</filename> and
+        <filename class="libraryfile">ip_nat_ftp</filename> modules must be
+        loaded. Shorewall will automatically load these modules if they are
+        available and located in the standard place under <filename
         class="directory">/lib/modules/&lt;kernel
         version&gt;/kernel/net/ipv4/netfilter</filename>.</para>
       </example> A couple of important points to keep in mind: <itemizedlist>
@@ -691,7 +703,7 @@ DNAT       net       loc:10.10.10.2:80  tcp       5000</programlisting>
           in <filename
           class="directory">/etc/shorewall/</filename><filename>rules</filename>.
           <programlisting>#ACTION    SOURCE    DEST               PROTO     DEST PORT(S)
-DNS/ACCEPT   loc       fw</programlisting></para>
+DNS/ACCEPT loc       fw</programlisting></para>
         </listitem>
       </itemizedlist></para>
   </section>
@@ -701,7 +713,7 @@ DNS/ACCEPT   loc       fw</programlisting></para>
 
     <para>The two-interface sample includes the following rules:
     <programlisting>#ACTION     SOURCE    DEST               PROTO     DEST PORT(S)
-DNS/ACCEPT   fw        net</programlisting>This rule allows
+DNS/ACCEPT  fw        net</programlisting>This rule allows
     <acronym>DNS</acronym> access from your firewall and may be removed if you
     uncommented the line in <filename
     class="directory">/etc/shorewall/</filename><filename>policy</filename>
@@ -716,11 +728,10 @@ DNS/ACCEPT   fw        net</programlisting>This rule allows
     accept connection requests have names that begin with
     <quote>Allow</quote>.</para>
 
-    <para>You don't have to use defined actions when coding a rule in
-    <filename>/etc/shorewall/rules</filename>; the generated Netfilter ruleset
-    is slightly more efficient if you code your rules directly rather than
-    using defined actions. The the rule shown above could also have been coded
-    as follows:<programlisting>#ACTION    SOURCE    DEST               PROTO     DEST PORT(S)
+    <para>You don't have to use defined macros when coding a rule in
+    <filename>/etc/shorewall/rules</filename>; Shorewall will start slightly
+    faster if you code your rules directly rather than using macros. The the
+    rule shown above could also have been coded as follows:<programlisting>#ACTION    SOURCE    DEST               PROTO     DEST PORT(S)
 ACCEPT     fw        net                udp       53
 ACCEPT     fw        net                tcp       53</programlisting></para>
 
@@ -728,23 +739,22 @@ ACCEPT     fw        net                tcp       53</programlisting></para>
     your needs, you can either define the action yourself or you can simply
     code the appropriate rules directly.</para>
 
-    <para>The sample also includes: <programlisting>#ACTION     SOURCE    DEST               PROTO     DEST PORT(S)
+    <para>The sample also includes: <programlisting>#ACTION      SOURCE    DEST               PROTO     DEST PORT(S)
 SSH/ACCEPT   loc       fw</programlisting> That rule allows you to run an
     <acronym>SSH</acronym> server on your firewall and connect to that server
     from your local systems.</para>
 
     <para>If you wish to enable other connections from your firewall to other
-    systems, the general format using an <quote>Allow</quote> action is:
-    <programlisting>#ACTION    SOURCE    DEST               PROTO      DEST PORT(S)
-&lt;action&gt;   fw        <emphasis>&lt;destination zone&gt;</emphasis></programlisting>The
+    systems, the general format using a macro is: <programlisting>#ACTION         SOURCE    DEST               PROTO      DEST PORT(S)
+&lt;macro&gt;/ACCEPT  fw        <emphasis>&lt;destination zone&gt;</emphasis></programlisting>The
     general format when not using defined actions is:<programlisting>#ACTION    SOURCE    DEST               PROTO      DEST PORT(S)
 ACCEPT     fw        <emphasis>&lt;destination zone&gt; &lt;protocol&gt; &lt;port&gt;</emphasis></programlisting><example>
         <title>Web Server on Firewall</title>
 
         <para>You want to run a Web Server on your firewall system:
         <programlisting>#ACTION     SOURCE    DEST               PROTO     DEST PORT(S)
-Web/ACCEPT   net       fw
-Web/ACCEPT   loc       fw</programlisting> Those two rules would of course be
+Web/ACCEPT  net       fw
+Web/ACCEPT  loc       fw</programlisting> Those two rules would of course be
         in addition to the rules listed above under <quote><link
         linkend="cachingdns">You can configure a Caching Name Server on your
         firewall</link></quote>.</para>
@@ -755,7 +765,7 @@ Web/ACCEPT   loc       fw</programlisting> Those two rules would of course be
         shell access to your firewall from the internet, use
         <acronym>SSH</acronym>:</para>
 
-        <programlisting>#ACTION    SOURCE    DEST               PROTO     DEST PORT(S)
+        <programlisting>#ACTION      SOURCE    DEST               PROTO     DEST PORT(S)
 SSH/ACCEPT   net       fw</programlisting>
       </important> <inlinegraphic fileref="images/leaflogo.gif"
     format="GIF" />Bering users will want to add the following two rules to be

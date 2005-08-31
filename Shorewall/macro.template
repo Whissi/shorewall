@@ -23,7 +23,7 @@
 # Columns are:
 #
 #	ACTION		ACCEPT, DROP, REJECT, DNAT, DNAT-, REDIRECT, CONTINUE,
-#			LOG, or QUEUE.
+#			LOG, QUEUE, PARAM or an <action> name.
 #
 #				ACCEPT	 -- allow the connection request
 #				ACCEPT+	 -- like ACCEPT but also excludes the
@@ -74,6 +74,17 @@
 #				QUEUE	 -- Queue the packet to a user-space
 #					    application such as ftwall
 #					    (http://p2pwall.sf.net).
+#				PARAM	 -- If you code PARAM as the action in
+#					    a macro then when you invoke the
+#					    macro, you can include the name of
+#					    the macro followed by a slash ("/")
+#					    and an ACTION (either builtin or
+#					    user-defined. All instances of
+#					    PARAM in the body of the macro will
+#					    be replaced with the ACTION.
+#				<action> -- The name of an action defined in
+#					    /usr/share/shorewall/actions.std or
+#					    in /etc/shorewall/actions.
 #
 #			The ACTION may optionally be followed
 #			by ":" and a syslog log level (e.g, REJECT:info or

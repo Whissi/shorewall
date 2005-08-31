@@ -221,7 +221,7 @@ mkdir -p ${PREFIX}/var/lib/shorewall
 # Install the config file
 #
 if [ ! -f ${PREFIX}/etc/shorewall/shorewall.conf ]; then
-   install_file $OWNERSHIP -m 0744 shorewall.conf ${PREFIX}/etc/shorewall/shorewall.conf
+   run_installinstall $OWNERSHIP -m 0744 shorewall.conf ${PREFIX}/etc/shorewall/shorewall.conf
    echo
    echo "Config file installed as ${PREFIX}/etc/shorewall/shorewall.conf"
 fi
@@ -234,7 +234,7 @@ fi
 # Install the zones file
 #
 if [ ! -f ${PREFIX}/etc/shorewall/zones ]; then
-    install_file $OWNERSHIP -m 0744 zones ${PREFIX}/etc/shorewall/zones
+    run)install $OWNERSHIP -m 0744 zones ${PREFIX}/etc/shorewall/zones
     echo
     echo "Zones file installed as ${PREFIX}/etc/shorewall/zones"
 fi

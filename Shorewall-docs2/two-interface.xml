@@ -12,14 +12,10 @@
       <surname>Eastep</surname>
     </author>
 
-    <pubdate>2005-02-02</pubdate>
+    <pubdate>2005-08-31</pubdate>
 
     <copyright>
-      <year>2002</year>
-
-      <year>2003</year>
-
-      <year>2004</year>
+      <year>2002-</year>
 
       <year>2005</year>
 
@@ -335,11 +331,11 @@ fw         net         ACCEPT</programlisting> The above policy will:
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
-    <para>If your external interface is <filename
+    <para>I<emphasis role="bold">f your external interface is <filename
     class="devicefile">ppp0</filename> or <filename
     class="devicefile">ippp0</filename> then you will want to set
     <varname>CLAMPMSS=yes</varname> in <filename
-    class="directory">/etc/shorewall/</filename><filename>shorewall.conf</filename>.</para>
+    class="directory">/etc/shorewall/</filename><filename>shorewall.conf</filename></emphasis>.</para>
 
     <para>Your <emphasis>Internal Interface</emphasis> will be an ethernet
     adapter (<filename class="devicefile">eth1</filename> or <filename
@@ -347,15 +343,14 @@ fw         net         ACCEPT</programlisting> The above policy will:
     switch. Your other computers will be connected to the same hub/switch
     (note: If you have only a single internal system, you can connect the
     firewall directly to the computer using a cross-over cable). <warning>
-        <para>Do not connect the internal and external interface to the same
-        hub or switch except for testing AND you are running Shorewall version
-        1.4.7 or later. When using these recent versions, you can test using
-        this kind of configuration if you specify the arp_filter option in
-        <filename
+        <para><emphasis role="bold">Do not connect the internal and external
+        interface to the same hub or switch except for testing</emphasis>.You
+        can test using this kind of configuration if you specify the
+        arp_filter option in <filename
         class="directory">/etc/shorewall/</filename><filename>interfaces</filename>
-        for all interfaces connected to the common hub/switch. Using such a
-        setup with a production firewall is strongly recommended
-        against.</para>
+        for all interfaces connected to the common hub/switch. <emphasis
+        role="bold">Using such a setup with a production firewall is strongly
+        recommended against</emphasis>.</para>
       </warning> <inlinegraphic fileref="images/BD21298_.gif"
     format="GIF" /></para>
 
@@ -382,17 +377,6 @@ fw         net         ACCEPT</programlisting> The above policy will:
         <para>If your internal interface is a bridge create using the
         <command>brctl</command> utility then you must add the
         <varname>routeback</varname> option to the option list.</para>
-      </tip><tip>
-        <para>If you specify <emphasis>norfc1918</emphasis> for your external
-        interface, you will want to check the <ulink
-        url="errata.htm">Shorewall Errata</ulink> periodically for updates to
-        the <filename>/usr/share/shorewall/rfc1918 file</filename>.
-        Alternatively, you can copy
-        <filename>/usr/share/shorewall/rfc1918</filename> to
-        <filename>/etc/shorewall/rfc1918</filename> then <ulink
-        url="myfiles.htm#RFC1918">strip down your
-        <filename>/etc/shorewall/rfc1918</filename> file as I
-        do</ulink>.</para>
       </tip></para>
   </section>
 
@@ -418,10 +402,11 @@ fw         net         ACCEPT</programlisting> The above policy will:
 192.168.0.0 - 192.168.255.255</programlisting> <inlinegraphic
     fileref="images/BD21298_.gif" format="GIF" /></para>
 
-    <para>Before starting Shorewall, you should look at the IP address of your
-    external interface and if it is one of the above ranges, you should remove
-    the 'norfc1918' option from the external interface's entry in <filename
-    class="directory">/etc/shorewall/</filename><filename>interfaces</filename>.</para>
+    <para>Before starting Shorewall, <emphasis role="bold">you should look at
+    the IP address of your external interface and if it is one of the above
+    ranges, you should remove the 'norfc1918' option from the external
+    interface's entry in <filename
+    class="directory">/etc/shorewall/</filename><filename>interfaces</filename>.</emphasis></para>
 
     <para>You will want to assign your addresses from the same sub-network
     (subnet). For our purposes, we can consider a subnet to consists of a
@@ -511,8 +496,8 @@ fw         net         ACCEPT</programlisting> The above policy will:
         <para>Your <acronym>ISP</acronym> might assign your external interface
         an <emphasis role="bold">RFC 1918</emphasis> address. If that address
         is in the <systemitem class="ipaddress">10.10.10.0/24</systemitem>
-        subnet then you will need to select a DIFFERENT RFC 1918 subnet for
-        your local network.</para>
+        subnet then <emphasis role="bold">you will need to select a DIFFERENT
+        RFC 1918 subnet for your local network.</emphasis></para>
       </warning></para>
   </section>
 
@@ -579,10 +564,10 @@ fw         net         ACCEPT</programlisting> The above policy will:
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
-    <para>If you are using the Debian package, please check your
-    <filename>shorewall.conf</filename> file to ensure that the following is
-    set correctly; if it is not, change it appropriately: <itemizedlist
-        spacing="compact">
+    <para>I<emphasis role="bold">f you are using the Debian package, please
+    check your <filename>shorewall.conf</filename> file to ensure that the
+    following is set correctly; if it is not, change it
+    appropriately:</emphasis> <itemizedlist spacing="compact">
         <listitem>
           <para><varname>IP_FORWARDING=On</varname></para>
         </listitem>
@@ -618,21 +603,21 @@ DNAT      net       loc:<emphasis>&lt;server local ip address&gt;</emphasis>[:<e
         <para>You run a Web Server on computer 2 and you want to forward
         incoming <acronym>TCP</acronym> port 80 to that system:
         <programlisting>#ACTION   SOURCE    DEST             PROTO     DEST PORT(S)
-DNAT      net       loc:10.10.10.2   tcp       80</programlisting></para>
+Web/DNAT  net      192.168.1.5</programlisting></para>
       </example> <example label="2">
         <title>FTP Server</title>
 
         <para>You run an <acronym>FTP</acronym> Server on computer 1 so you
         want to forward incoming <acronym>TCP</acronym> port 21 to that
         system: <programlisting>#ACTION    SOURCE    DEST            PROTO     DEST PORT(S)
-DNAT       net       loc:10.10.10.1  tcp       21</programlisting> For
-        <acronym>FTP</acronym>, you will also need to have
-        <acronym>FTP</acronym> connection tracking and <acronym>NAT</acronym>
-        support in your kernel. For vendor-supplied kernels, this means that
-        the <filename class="libraryfile">ip_conntrack_ftp</filename> and
-        <filename class="libraryfile">ip_nat_ftp</filename> modules must be
-        loaded. Shorewall will automatically load these modules if they are
-        available and located in the standard place under <filename
+FTP/DNAT    net     10.10.10.1</programlisting> For <acronym>FTP</acronym>,
+        you will also need to have <acronym>FTP</acronym> connection tracking
+        and <acronym>NAT</acronym> support in your kernel. For vendor-supplied
+        kernels, this means that the <filename
+        class="libraryfile">ip_conntrack_ftp</filename> and <filename
+        class="libraryfile">ip_nat_ftp</filename> modules must be loaded.
+        Shorewall will automatically load these modules if they are available
+        and located in the standard place under <filename
         class="directory">/lib/modules/&lt;kernel
         version&gt;/kernel/net/ipv4/netfilter</filename>.</para>
       </example> A couple of important points to keep in mind: <itemizedlist>
@@ -706,7 +691,7 @@ DNAT       net       loc:10.10.10.2:80  tcp       5000</programlisting>
           in <filename
           class="directory">/etc/shorewall/</filename><filename>rules</filename>.
           <programlisting>#ACTION    SOURCE    DEST               PROTO     DEST PORT(S)
-AllowDNS   loc       fw</programlisting></para>
+DNS/ACCEPT   loc       fw</programlisting></para>
         </listitem>
       </itemizedlist></para>
   </section>
@@ -715,15 +700,15 @@ AllowDNS   loc       fw</programlisting></para>
     <title>Other Connections</title>
 
     <para>The two-interface sample includes the following rules:
-    <programlisting>#ACTION    SOURCE    DEST               PROTO     DEST PORT(S)
-AllowDNS   fw        net</programlisting>This rule allows
+    <programlisting>#ACTION     SOURCE    DEST               PROTO     DEST PORT(S)
+DNS/ACCEPT   fw        net</programlisting>This rule allows
     <acronym>DNS</acronym> access from your firewall and may be removed if you
     uncommented the line in <filename
     class="directory">/etc/shorewall/</filename><filename>policy</filename>
     allowing all connections from the firewall to the internet.</para>
 
-    <para>In the rule shown above, <quote>AllowDNS</quote> is an example of a
-    <emphasis>defined action</emphasis>. Shorewall includes a number of
+    <para>In the rule shown above, <quote>DNS/ACCEPT</quote> is an example of
+    a <emphasis>defined action</emphasis>. Shorewall includes a number of
     defined actions and <ulink url="Actions.html">you can add your
     own</ulink>. To see the list of actions included with your version of
     Shorewall, look in the file
@@ -743,8 +728,8 @@ ACCEPT     fw        net                tcp       53</programlisting></para>
     your needs, you can either define the action yourself or you can simply
     code the appropriate rules directly.</para>
 
-    <para>The sample also includes: <programlisting>#ACTION    SOURCE    DEST               PROTO     DEST PORT(S)
-AllowSSH   loc       fw</programlisting> That rule allows you to run an
+    <para>The sample also includes: <programlisting>#ACTION     SOURCE    DEST               PROTO     DEST PORT(S)
+SSH/ACCEPT   loc       fw</programlisting> That rule allows you to run an
     <acronym>SSH</acronym> server on your firewall and connect to that server
     from your local systems.</para>
 
@@ -757,10 +742,10 @@ ACCEPT     fw        <emphasis>&lt;destination zone&gt; &lt;protocol&gt; &lt;por
         <title>Web Server on Firewall</title>
 
         <para>You want to run a Web Server on your firewall system:
-        <programlisting>#ACTION    SOURCE    DEST               PROTO     DEST PORT(S)
-AllowWeb   net       fw
-AllowWeb   loc       fw</programlisting> Those two rules would of course be in
-        addition to the rules listed above under <quote><link
+        <programlisting>#ACTION     SOURCE    DEST               PROTO     DEST PORT(S)
+Web/ACCEPT   net       fw
+Web/ACCEPT   loc       fw</programlisting> Those two rules would of course be
+        in addition to the rules listed above under <quote><link
         linkend="cachingdns">You can configure a Caching Name Server on your
         firewall</link></quote>.</para>
       </example> If you don't know what port and protocol a particular
@@ -771,7 +756,7 @@ AllowWeb   loc       fw</programlisting> Those two rules would of course be in
         <acronym>SSH</acronym>:</para>
 
         <programlisting>#ACTION    SOURCE    DEST               PROTO     DEST PORT(S)
-AllowSSH   net       fw</programlisting>
+SSH/ACCEPT   net       fw</programlisting>
       </important> <inlinegraphic fileref="images/leaflogo.gif"
     format="GIF" />Bering users will want to add the following two rules to be
     compatible with Jacques's Shorewall configuration.<programlisting>#ACTION    SOURCE    DEST    PROTO     DEST PORT(S)
@@ -846,19 +831,14 @@ ACCEPT     loc       fw      tcp       80          #Allow Weblet to work</progra
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
     <para>The <ulink url="Install.htm">installation procedure</ulink>
-    configures your system to start Shorewall at system boot but beginning
-    with Shorewall version 1.3.9 startup is disabled so that your system won't
-    try to start Shorewall before configuration is complete. Once you have
-    completed configuration of your firewall, you can enable Shorewall startup
-    by removing the file <filename
-    class="directory">/etc/shorewall/</filename><filename>startup_disabled</filename>.
-    <important>
+    configures your system to start Shorewall at system boot but startup is
+    disabled so that your system won't try to start Shorewall before
+    configuration is complete. Once you have completed configuration of your
+    firewall, you must edit /etc/shorewall/shorewall.conf and set
+    STARTUP_ENABLED=Yes.<important>
         <para>Users of the .deb package must edit <filename
         class="directory">/etc/default/</filename><filename>shorewall</filename>
         and set <varname>startup=1</varname>.</para>
-      </important><important>
-        <para>Users running Shorewall 2.1.3 or later must edit
-        /etc/shorewall/shorewall.conf and set STARTUP_ENABLED=Yes.</para>
       </important> The firewall is started using the <quote><command>shorewall
     start</command></quote> command and stopped using
     <quote><command>shorewall stop</command></quote>. When the firewall is

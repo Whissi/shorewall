@@ -228,13 +228,6 @@ jbd                    47860   2  [ext3]
     <para>If you want Shorewall to load these modules from an alternate
     directory, you need to set the MODULESDIR variable in
     /etc/shorewall/shorewall.conf to point to that directory.</para>
-
-    <para>If your FTP helper modules are compressed and have the names
-    <emphasis>ip_nat_ftp.o.gz and ip_conntrack_ftp.o.gz</emphasis> then you
-    will need Shorewall 1.4.7 or later if you want Shorewall to load them for
-    you. If your helper modules have names <emphasis>ip_nat_ftp.ko.gz and
-    ip_conntrack_ftp.ko.gz</emphasis> then you will need Shorewall 2.0.2 or
-    later if you want Shorewall to load them for you.</para>
   </section>
 
   <section>
@@ -329,13 +322,13 @@ DNAT                                                                    ACTION =
 
         <programlisting>#ACTION      SOURCE     DESTINATION     PROTO     PORT(S)    SOURCE      ORIGINAL
 #                                                            PORT(S)     DESTINATION
-DNAT         net        loc:192.168.1.5 tcp       21</programlisting>
+FTP/DNAT      net        192.168.1.5</programlisting>
       </example><example>
         <title>Allow your DMZ FTP access to the Internet</title>
 
         <programlisting>#ACTION      SOURCE     DESTINATION     PROTO     PORT(S)    SOURCE      ORIGINAL
 #                                                            PORT(S)     DESTINATION
-ACCEPT       dmz        net             tcp       21</programlisting>
+FTP/ACCEPT       dmz        net</programlisting>
       </example></para>
 
     <para>Note that the FTP connection tracking in the kernel cannot handle

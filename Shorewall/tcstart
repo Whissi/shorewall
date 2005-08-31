@@ -12,6 +12,14 @@ if [ -z "$COMMAND" ]; then
 
 	. $FUNCTIONS
 
+elif [ "$COMMAND" = restore ]; then
+        cd /etc/shorewall
+	SHOREWALL_DIR=.
+fi
+
+if [ -z "$COMMAND" -o "$COMMAND" = restore ]; then
+	run_tc() { tc $@; }
+	fatal_error() { echo "   ERROR: $@" >&2; exit 2; }
 	TMP_DIR=
 	TMP_DIR=$(mktempdir)
 fi

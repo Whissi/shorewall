@@ -3346,12 +3346,12 @@ setup_tc1() {
 
     f=$(find_file tcstart)
 
-    if [ -f $f ]; then
+    if [ -x $f ]; then
 
 	run_user_exit tcstart
 
 	save_progress_message "Restoring Traffic Control..."
-	save_command . $(find_file tcstart)
+	save_command $(find_file tcstart)
     fi
 }
 

@@ -36,6 +36,19 @@ usage() # $1 = exit status
     exit $1
 }
 
+restore_directory() # $1 = directory to restore
+{
+    if [ -d ${1}-${VERSION}.bkout ]; then
+	if rm -rf $1 && mv ${1}-${VERSION}.bkout $1
+	    echo
+	    echo "$1 restored"
+	else
+	    echo "ERROR: Could not restore $1"
+	    exit 1
+	fi
+    fi
+}	
+    
 restore_file() # $1 = file to restore
 {
     if [ -f ${1}-${VERSION}.bkout -o -L ${1}-${VERSION}.bkout ]; then
@@ -49,7 +62,7 @@ restore_file() # $1 = file to restore
     fi
 }
 
-if [ ! -f /usr/share/shorewall/version-${VERSION}.bkout ]; then
+if [ ! -f /usr/share/shorewall-${VERSION}.bkout/version ]; then
     echo "Shorewall Version $VERSION is not installed"
     exit 1
 fi
@@ -63,88 +76,11 @@ else
     restore_file /etc/init.d/shorewall
 fi
 
-restore_file /usr/share/shorewall/firewall
-
 restore_file /sbin/shorewall
 
-restore_file /etc/shorewall/shorewall.conf
-
-restore_file /usr/share/shorewall/tcstart
-restore_file /usr/share/shorewall/functions
-restore_file /usr/share/shorewall/help
-
-restore_file /etc/shorewall/common.def
-
-restore_file /etc/shorewall/icmp.def
-
-restore_file /etc/shorewall/zones
-
-restore_file /etc/shorewall/policy
-
-restore_file /etc/shorewall/interfaces
-
-restore_file /etc/shorewall/ipsec
-
-restore_file /etc/shorewall/hosts
-
-restore_file /etc/shorewall/rules
-
-restore_file /etc/shorewall/nat
-
-restore_file /etc/shorewall/netmap
-
-restore_file /etc/shorewall/params
-
-restore_file /etc/shorewall/proxyarp
-
-restore_file /etc/shorewall/routestopped
-
-restore_file /etc/shorewall/maclist
-
-restore_file /etc/shorewall/masq
-
-restore_file /etc/shorewall/modules
-
-restore_file /etc/shorewall/tcrules
-
-restore_file /etc/shorewall/tos
-
-restore_file /etc/shorewall/tunnels
-
-restore_file /etc/shorewall/blacklist
-
-restore_file /etc/shorewall/whitelist
-
-restore_file /etc/shorewall/rfc1918
-restore_file /usr/share/shorewall/rfc1918
-
-restore_file /usr/share/shorewall/bogons
-
-restore_file /usr/share/shorewall/configpath
-
-restore_file /etc/shorewall/init
-
-restore_file /etc/shorewall/initdone
-
-restore_file /etc/shorewall/start
-
-restore_file /etc/shorewall/stop
-
-restore_file /etc/shorewall/stopped
-
-restore_file /etc/shorewall/ecn
-
-restore_file /etc/shorewall/accounting
-
-restore_file /etc/shorewall/actions.std
-
-restore_file /etc/shorewall/actions
-
-for f in /usr/share/shorewall/action.*-${VERSION}.bkout; do
-    restore_file $(echo $f | sed "s/-${VERSION}.bkout//")
-done
-
-restore_file /usr/share/shorewall/version
+restore_directory /etc/shorewall
+restore_directory /usr/share/shorewall
+restore_directory /var/lib/shorewall
 
 echo "Shorewall Restored to Version $oldversion"
 

@@ -3346,12 +3346,16 @@ setup_tc1() {
 
     f=$(find_file tcstart)
 
-    if [ -x $f ]; then
+    if [ -f $f ]; then
 
 	run_user_exit tcstart
 
-	save_progress_message "Restoring Traffic Control..."
-	save_command $(find_file tcstart)
+	f=$(find_file tcstart) # In case the script used this variable
+ 
+	if [ $f != /usr/share/shorewall/tcstart ]; then
+	    save_progress_message "Restoring Traffic Control..."
+	    save_command . $f
+	fi
     fi
 }
 
@@ -3752,8 +3756,6 @@ refresh_tc() {
 	    rule=$(echo "$mark $sources $dests $proto $ports $sports")
 	    process_tc_rule
         done < $TMP_DIR/tcrules
-
-	run_user_exit tcstart
     else
 	setup_tc1
     fi

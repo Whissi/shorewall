@@ -4,6 +4,35 @@
 # (c) 2005 Arne Bernin <arne@ucbering.de>
 # published under GPL Version 2
 
+if [ -z "$COMMAND" ]; then
+	SHOREWALL_DIR=.
+	SHARED_DIR=/usr/share/shorewall
+	FUNCTIONS=$SHARED_DIR/functions
+
+	. $FUNCTIONS
+
+	ensure_and_save_command()
+	{ 
+	    if ! eval $* ; then
+		[ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
+		exit 2
+	    fi
+	}
+
+	run_and_save_command() { eval $*; }
+
+	save_progress_message() { echo $@; }
+
+	fatal_error() 
+	{ 
+	    echo "   ERROR: $@" >&2
+	    [ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
+	    exit 2
+	}
+
+	TMP_DIR=
+	TMP_DIR=$(mktempdir)
+fi
 
 setup_traffic_shaping()
 {
@@ -141,8 +170,8 @@ setup_traffic_shaping()
 	add_root_tc() {
 		local defmark
 		defmark=$(get_defmark_for_dev $device)
-		run_and_save_command "tc qdisc del dev $device root 2>/dev/null  > /dev/null"
-		run_and_save_command "tc qdisc del dev $device ingress 2>/dev/null > /dev/null"
+		run_and_save_command qt tc qdisc del dev $device root
+		run_and_save_command qt tc qdisc del dev $device ingress
 		ensure_and_save_command tc qdisc add dev $device root handle 1: htb default 1$defmark
 		ensure_and_save_command tc class add dev $device parent 1: classid 1:1 htb rate $outband 
 		ensure_and_save_command tc qdisc add dev $device handle ffff: ingress
@@ -223,4 +252,4 @@ setup_traffic_shaping()
 
 setup_traffic_shaping
 
-[ -n "$COMMAND" -a "$COMMAND" != restore ] || rm -rf $TMP_DIR
+[ -n "$COMMAND" ] || rm -rf $TMP_DIR

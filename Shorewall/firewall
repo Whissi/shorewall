@@ -3758,6 +3758,12 @@ refresh_tc() {
         done < $TMP_DIR/tcrules
     else
 	setup_tc1
+
+	f=$(find_file tcstart)
+
+	if [ -x &f ]; then
+	    eval $f
+	fi
     fi
 
 }

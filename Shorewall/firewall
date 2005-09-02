@@ -487,14 +487,53 @@ flushmangle() # $1 = name of chain
 }
 
 #
-# Find the zones
+# This function assumes that the TMP_DIR variable is set and that
+# its value named an existing directory.
 #
-find_zones() # $1 = name of the zone file
+determine_zones()
 {
-    local zone rest
+    local zone parent parents rest new_zone_file=
 
-    while read zone rest; do
-	expandv zone
+    merge_zone()
+    {
+	local z zones="$ZONES" merged=
+
+	ZONES=
+
+	for z in $zones; do
+	    if [ -z "$merged" ] && list_search $z $parents; then
+		ZONES="$ZONES $zone"
+		merged=Yes
+	    fi
+	    ZONES="$ZONES $z"
+	done
+    }	
+
+    strip_file zones
+
+    ZONES=
+
+    [ "$IPSECFILE" = zones ] && new_zone_file=Yes
+
+    while read zone type rest; do
+	expandv zone type
+
+	case $zone in
+	    *:*)
+		parents=${zone#*:}
+		zone=${zone%:*}
+		[ -n "$zone" ] || startup_error "Invalid nested zone syntax: :$parents"
+		parents=$(separate_list $parents)
+		;;
+	    *)
+		parents=
+		;;
+	esac
+
+	for parent in $parents; do
+	    [ "$parent" = "$FW" ] && startup_error "Sub-zones of the firewall zone are not allowed" 
+	    list_search $parent $ZONES || startup_error "Parent zone not defined: $parent"
+	done   
 
 	[ ${#zone} -gt 5 ] && startup_error "Zone name longer than 5 characters: $zone"
 
@@ -502,35 +541,42 @@ find_zones() # $1 = name of the zone file
 	    [0-9*])
                 startup_error "Illegal zone name \"$zone\" in zones file"
 		;;
-            $FW|all|none)
-	        startup_error "Reserved zone name \"$zone\" in zones file ignored"
-		;;
-            *)
-		echo $zone
+            all|none)
+	        startup_error "Reserved zone name \"$zone\" in zones file"
 		;;
         esac
-    done < $1
-}
 
-#
-# This function assumes that the TMP_DIR variable is set and that
-# its value named an existing directory.
-#
-determine_zones()
-{
-    local zonefile=$(find_file zones) zones=
+	if [ -n "$new_zone_file" ]; then
+	    case ${type:=plain} in
+		plain|-)
+		    list_search $zone $ZONES $FW && startup_error "Zone $zone is defined more than once"
+		    merge_zone
+		    ;;
+		ipsec)
+		    list_search $zone $ZONES $FW && startup_error "Zone $zone is defined more than once"
+		    [ -n "$POLICY_MATCH" ] || fatal_error "Your kernel and/or iptables does not support policy match"
+		    eval ${zone}_is_ipsec=Yes
+		    eval ${zone}_is_complex=Yes
+		    merge_zone
+		    ;;
+		firewall)
+		    list_search $zone $ZONES && startup_error "Zone $zone is defined more than once"
+		    [ -n "$parents" ] && startup_error "The firewall zone may not be nested"
+		    [ -n "$rest" ] && startup_error "OPTIONS not allowed in a firewall zone"
+		    FW=$zone
+		    ;;
+		*)
+		    startup_error "Invalid Zone Type: $zone"
+		    ;;
+	    esac
+	else
+	    ZONES="$ZONES $zone"
+	fi
+    done < $TMP_DIR/zones
 
-    strip_file zones $zonefile
+    [ -z "$ZONES" ] && startup_error "No plain or ipsec Zones Defined"
 
-    ZONES=
-    zones=$(find_zones $TMP_DIR/zones)
-
-    for zone in $zones; do
-	list_search $zone $ZONES && startup_error "Zone $zone is defined more than once"
-	ZONES="$ZONES $zone"
-    done
-
-    [ -z "$ZONES" ] && startup_error "ERROR: No Zones Defined"
+    [ -z "$FW" ] && startup_error "No Firewall Zone Defined"
 }
 
 #
@@ -2536,26 +2582,28 @@ setup_ipsec() {
 	    ;;
     esac
 
-    while read zone ipsec options in_options out_options mss; do
-	expandv zone ipsec options in_options out_options mss
+    while read zone type options in_options out_options mss; do
+	expandv zone type options in_options out_options mss
 
 	if [ -n "$using_ipsec" ]; then
 	    validate_zone1 $zone || fatal_error "Unknown zone: $zone"
 	fi
 
-	if [ -n "$ipsec" ]; then
-	    case $ipsec in
-		-|No|no)
-		    ;;
-		Yes|yes)
-		    [ -n "$POLICY_MATCH" ] || fatal_error "Your kernel and/or iptables does not support policy match"
-		    eval ${zone}_is_ipsec=Yes
-		    eval ${zone}_is_complex=Yes
-		    ;;
-		*)
-		    fatal_error "Invalid IPSEC column value: $ipsec"
-		    ;;
-	    esac
+	if [ -n "$type" ]; then
+	    if [ -n "$using_ipsec" ]; then
+		case $type in
+		    No|no)
+			;;
+		    Yes|yes)
+			[ -n "$POLICY_MATCH" ] || fatal_error "Your kernel and/or iptables does not support policy match"
+			eval ${zone}_is_ipsec=Yes
+			eval ${zone}_is_complex=Yes
+			;;
+		    *)
+			fatal_error "Invalid IPSEC column contents"
+			;;
+		esac
+	    fi
 	
 	    do_options ""     $options
 	    do_options "_in"  $in_options
@@ -8999,8 +9047,6 @@ do_initialize() {
     determine_capabilities
 
     [ -d /var/lib/shorewall ] || mkdir -p /var/lib/shorewall
-
-    [ -z "$FW" ] && FW=fw
 
     ALLOWRELATED="$(added_param_value_yes ALLOWRELATED $ALLOWRELATED)"
     [ -n "$ALLOWRELATED" ] || \

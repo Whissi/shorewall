@@ -11,12 +11,16 @@
 #		The names "all" and "none" are reserved and may not be
 #		used as zone names.
 #
-#	IPSEC	Yes --	Communication with all zone hosts is encrypted
-#	ONLY		Your kernel and iptables must include policy
+#	TYPE	ipsec -	Communication with all zone hosts is encrypted
+#			Your kernel and iptables must include policy
 #			match support.
-#		No  --	Communication with some zone hosts may be encrypted.
+#		plain -	Communication with some zone hosts may be encrypted.
 #			Encrypted hosts are designated using the 'ipsec'
 #			option in /etc/shorewall/hosts.
+#		firewall
+#		      - Designates the firewall itself. You must have 
+#			exactly one 'firewall' zone. No options are
+#			permitted with a 'firewall' zone.
 #
 #	OPTIONS,	A comma-separated list of options as follows:
 #	IN OPTIONS,
@@ -65,12 +69,15 @@
 #	You have a three interface firewall with internet, local and DMZ
 #	interfaces.
 #
-#	#ZONE	IPSEC	OPTIONS		IN			OUT	
+#	#ZONE	TYPE		OPTIONS		IN			OUT
+#	#					OPTIONS			OPTIONS
+#	fw	firewall	
 #	net	
 #	loc
 #	dmz
 #
 ###############################################################################
-#ZONE	IPSEC	OPTIONS			IN			OUT
-#	ONLY				OPTIONS			OPTIONS
+#ZONE	TYPE		OPTIONS		IN			OUT
+#					OPTIONS			OPTIONS
+fw	firewall
 #LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE

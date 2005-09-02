@@ -500,15 +500,16 @@ determine_zones()
 
 	ZONES=
 
-	for z in $zones; do
-	    if [ -z "$merged" ] && list_search $z $parents; then
-		ZONES="$ZONES $zone"
-		merged=Yes
-	    fi
-	    ZONES="$ZONES $z"
+	if [ -n "$parents" ]; then
+	    for z in $zones; do
+		if [ -z "$merged" ] && list_search $z $parents; then
+		    ZONES="$ZONES $zone"
+		    merged=Yes
+		fi
+		ZONES="$ZONES $z"
 	done
 
-	[ -n "$merged" ] || ZONES="$ZONES $zone"
+	[ -n "$merged" ] || ZONES="$zones $zone"
     }	
 
     strip_file zones

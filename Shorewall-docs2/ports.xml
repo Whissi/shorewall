@@ -13,12 +13,10 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-10-01</pubdate>
+    <pubdate>2005-09-02</pubdate>
 
     <copyright>
-      <year>2001-2002</year>
-
-      <year>2004</year>
+      <year>2001-2005</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -41,21 +39,26 @@
     </abstract>
   </articleinfo>
 
+  <caution>
+    <para><emphasis role="bold">This article applies to Shorewall 3.0 and
+    later. If you are running a version of Shorewall earlier than Shorewall
+    3.0.0 then please see the documentation for that release</emphasis></para>
+  </caution>
+
   <section>
     <title>Important Notes</title>
 
     <note>
-      <para>Beginning with Shorewall 2.0.0, the Shorewall distribution
-      contains a library of user-defined actions that allow for easily
-      allowing or blocking a particular application. Check your
-      <filename>/usr/share/shorewall/actions.std</filename> file for a list of
-      the actions in your distribution. If you find what you need, you simply
-      use the action in a rule. For example, to allow DNS queries from the
-      <emphasis role="bold">dmz</emphasis> zone to the <emphasis
+      <para> Shorewall distribution contains a library of user-defined macros
+      that allow for easily allowing or blocking a particular application.
+      Check your <filename>/usr/share/shorewall/actions.std</filename> file
+      for a list of macros in your distribution. If you find what you need,
+      you simply use the action in a rule. For example, to allow DNS queries
+      from the <emphasis role="bold">dmz</emphasis> zone to the <emphasis
       role="bold">net</emphasis> zone:</para>
 
       <programlisting>#ACTION         SOURCE        DESTINATION
-AllowDNS        dmz           net</programlisting>
+DNS/ACCEPT        dmz           net</programlisting>
     </note>
 
     <note>
@@ -68,28 +71,32 @@ AllowDNS        dmz           net</programlisting>
       at 192.168.1.4 in your DMZ. The FTP section below gives you:</para>
 
       <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        21</programlisting>
+FTP/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
 
       <para>You would code your rule as follows:</para>
 
       <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-DNAT       net       dmz:192.168.1.4  tcp        21</programlisting>
+FTP/DNAT       net       dmz:192.168.1.4  </programlisting>
     </note>
   </section>
 
   <section>
     <title>Auth (identd)</title>
 
-    <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        113</programlisting>
+    <caution>
+      <para><emphasis role="bold"><emphasis>Now,It's 21 Century</emphasis> ,
+      don't use identd in production anymore.</emphasis></para>
+    </caution>
+
+    <programlisting>#ACTION          SOURCE    DESTINATION      PROTO      DEST PORT(S)
+Auth/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
   </section>
 
   <section>
     <title>DNS</title>
 
-    <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    udp        53
-ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        53</programlisting>
+    <programlisting>#ACTION          SOURCE    DESTINATION      PROTO      DEST PORT(S)
+DNS/ACCEPT     <emphasis> &lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    </programlisting>
 
     <para>Note that if you are setting up a DNS server that supports recursive
     resolution, the server is the &lt;<emphasis>destination</emphasis>&gt; for
@@ -100,10 +107,8 @@ ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</e
     local clients then you would need:</para>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     all       dmz              udp        53
-ACCEPT     all       dmz              tcp        53
-ACCEPT     dmz       net              udp        53
-ACCEPT     dmz       net              tcp        53</programlisting>
+DNS/ACCEPT  all       dmz              
+DNS/ACCEPT  dmz       net              </programlisting>
 
     <note>
       <para>Recursive Resolution means that if the server itself can't resolve
@@ -153,7 +158,7 @@ DNAT        net      loc:192.168.1.4      tcp           4711</programlisting>
     <title>FTP</title>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        21</programlisting>
+FTP/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
 
     <para>Look <ulink url="FTP.html">here</ulink> for much more
     information.</para>
@@ -163,15 +168,20 @@ ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</e
     <title>ICQ/AIM</title>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&lt;source&gt;</emphasis>  net              tcp        5190</programlisting>
+ICQ/ACCEPT  <emphasis>&lt;source&gt;</emphasis>  net</programlisting>
   </section>
 
   <section>
     <title>IMAP</title>
 
+    <caution>
+      <para>When accessing you mail from the internet,use <emphasis
+      role="bold">only</emphasis> <emphasis role="bold">IMAP over
+      SSL</emphasis></para>
+    </caution>
+
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        143           #Unsecure IMAP
-ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        993           #Secure IMAP</programlisting>
+IMAP/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis> #Secure &amp; Unsecure IMAP</programlisting>
   </section>
 
   <section>
@@ -215,6 +225,11 @@ ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</e
   <section>
     <title>Pop3</title>
 
+    <caution>
+      <para>If Possible , <emphasis role="bold">Avoid this protocol</emphasis>
+      , use <emphasis role="bold">IMAP</emphasis> instead.</para>
+    </caution>
+
     <para>TCP Port 110 (Secure Pop3 is TCP Port 995)</para>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
@@ -248,10 +263,10 @@ ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</e
   </section>
 
   <section>
-    <title>SSH</title>
+    <title>SSH/SFTP</title>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        22</programlisting>
+SSH/ACCEPT <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis> </programlisting>
   </section>
 
   <section>
@@ -401,6 +416,16 @@ ACCEPT     &lt;<emphasis>apps</emphasis>&gt;    &lt;<emphasis>chooser</emphasis>
     <title>Revision History</title>
 
     <para><revhistory>
+        <revision>
+          <revnumber>1.16</revnumber>
+
+          <date>2005-09-02</date>
+
+          <authorinitials>CR</authorinitials>
+
+          <revremark>Updated for Shorewall v3.0</revremark>
+        </revision>
+
         <revision>
           <revnumber>1.15</revnumber>
 

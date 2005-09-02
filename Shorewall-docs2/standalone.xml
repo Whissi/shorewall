@@ -291,13 +291,6 @@ all            all                REJECT   info</programlisting>
       if you have a static IP address, you can remove <quote>dhcp</quote> from
       the option list.</para>
     </tip>
-
-    <tip>
-      <para>If you specify <emphasis>nobogons</emphasis> for your external
-      interface, you will want to check the <ulink url="errata.htm">Shorewall
-      Errata</ulink> periodically for updates to the
-      <filename>/usr/share/shorewall/bogons file</filename>.</para>
-    </tip>
   </section>
 
   <section>
@@ -345,12 +338,12 @@ all            all                REJECT   info</programlisting>
 &lt;<emphasis>action</emphasis>&gt;  net       fw</programlisting>
 
     <example>
-      <title>You want to run a Web Server and a POP3 Server on your firewall
+      <title>You want to run a Web Server and a IMAP Server on your firewall
       system:</title>
 
       <programlisting>#ACTION   SOURCE    DESTINATION     PROTO       DEST PORT(S)
-AllowWeb  net       fw
-AllowPOP3 net       fw</programlisting>
+Web/ACCEPT  net       fw
+IMAP/ACCEPT net       fw</programlisting>
     </example>
 
     <para>You may also choose to code your rules directly without using the
@@ -363,12 +356,12 @@ AllowPOP3 net       fw</programlisting>
 ACCEPT    net       fw              <emphasis>&lt;protocol&gt;</emphasis>  <emphasis>&lt;port&gt;</emphasis></programlisting>
 
     <example>
-      <title>You want to run a Web Server and a POP3 Server on your firewall
+      <title>You want to run a Web Server and a IMAP Server on your firewall
       system:</title>
 
       <para><programlisting>#ACTION   SOURCE    DESTINATION     PROTO       DEST PORT(S)
 ACCEPT    net       fw              tcp          80
-ACCEPT    net       fw              tcp          110</programlisting></para>
+ACCEPT    net       fw              tcp          143</programlisting></para>
     </example>
 
     <para>If you don't know what port and protocol a particular application
@@ -380,7 +373,7 @@ ACCEPT    net       fw              tcp          110</programlisting></para>
       firewall from the internet, use SSH:</para>
 
       <programlisting>#ACTION   SOURCE    DESTINATION     PROTO       DEST PORT(S)
-AllowSSH  net       fw            </programlisting>
+SSH/ACCEPT  net       fw            </programlisting>
     </important>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
@@ -409,9 +402,9 @@ AllowSSH  net       fw            </programlisting>
     </important>
 
     <important>
-      <para><emphasis role="bold">If you are running Shorewall 2.1.3 or later,
-      you must enable startup by editing /etc/shorewall/shorewall.conf and
-      setting STARTUP_ENABLED=Yes.</emphasis></para>
+      <para><emphasis role="bold">You must enable startup by editing
+      /etc/shorewall/shorewall.conf and setting
+      STARTUP_ENABLED=Yes.</emphasis></para>
     </important>
 
     <para>The firewall is started using the <quote><command>shorewall
@@ -453,6 +446,16 @@ AllowSSH  net       fw            </programlisting>
     <title>Revision History</title>
 
     <para><revhistory>
+        <revision>
+          <revnumber>1.9</revnumber>
+
+          <date>2005-09-02</date>
+
+          <authorinitials>CR</authorinitials>
+
+          <revremark>Update for Shorewall 3.0</revremark>
+        </revision>
+
         <revision>
           <revnumber>1.8</revnumber>
 

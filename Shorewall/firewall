@@ -492,23 +492,24 @@ flushmangle() # $1 = name of chain
 #
 determine_zones()
 {
-    local zone parent parents rest new_zone_file=
+    local zone parent parents rest new_zone_file= r
 
     merge_zone()
     {
 	local z zones="$ZONES" merged=
 
-	ZONES=
-
-	for z in $zones; do
-	    if [ -z "$merged" ] && list_search $z $parents; then
-		ZONES="$ZONES $zone"
-		merged=Yes
-	    fi
-	    ZONES="$ZONES $z"
-	done
-
-	[ -n "$merged" ] || ZONES="$ZONES $zone"
+	if [ -n "$parents" ]; then
+	    ZONES=
+	    for z in $zones; do
+		if [ -z "$merged" ] && list_search $z $parents; then
+		    ZONES="$ZONES $zone"
+		    merged=Yes
+		fi
+		ZONES="$ZONES $z"
+	    done
+	else
+	    ZONES="$ZONES $zone"
+	fi
     }
 
     strip_file zones
@@ -564,14 +565,17 @@ determine_zones()
 		firewall)
 		    list_search $zone $ZONES && startup_error "Zone $zone is defined more than once"
 		    [ -n "$parents" ] && startup_error "The firewall zone may not be nested"
-		    [ -n "$rest" ] && startup_error "OPTIONS not allowed in a firewall zone"
+		    for r in $rest; do
+			[ "x$r" = x- ] || startup_error "OPTIONS not allowed on the firewall zone"
+		    done
 		    FW=$zone
 		    ;;
 		*)
-		    startup_error "Invalid Zone Type: $zone"
+		    startup_error "Invalid Zone Type: $type"
 		    ;;
 	    esac
 	else
+	    list_search $zone $ZONES $FW && startup_error "Zone $zone is defined more than once"
 	    ZONES="$ZONES $zone"
 	fi
     done < $TMP_DIR/zones

@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-08-20</pubdate>
+    <pubdate>2005-09-03</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -33,6 +33,13 @@
       License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
+
+  <caution>
+    <para><emphasis role="bold">This article applies to Shorewall 3.0 and
+    later. If you are running a version of Shorewall earlier than Shorewall
+    3.0.0 then please see the documentation for that
+    release.</emphasis></para>
+  </caution>
 
   <important>
     <para>The information in this article is only applicable if you plan to
@@ -66,13 +73,6 @@
     url="http://jixen.tripod.com/">http://jixen.tripod.com/</ulink>. I highly
     recommend that you consult that site for information about configuring
     FreeS/Wan.</para>
-
-    <warning>
-      <para>IPSEC and Proxy ARP do not work unless you are running Shorewall
-      2.0.1 Beta 3 or later or unless you have installed the fix to Shorewall
-      2.0.0 available from the <ulink url="errata.htm">Errata
-      Page</ulink>.</para>
-    </warning>
 
     <important>
       <para>The documentation below assumes that you have disabled
@@ -131,67 +131,13 @@ conn packetdefault
 
     <para>In /etc/shorewall/tunnels on system A, we need the following</para>
 
-    <table>
-      <title>/etc/shorewall/tunnels - System A</title>
-
-      <tgroup cols="4">
-        <thead>
-          <row>
-            <entry align="center">TYPE</entry>
-
-            <entry align="center">ZONE</entry>
-
-            <entry align="center">GATEWAY</entry>
-
-            <entry align="center">GATEWAY ZONE</entry>
-          </row>
-        </thead>
-
-        <tbody>
-          <row>
-            <entry>ipsec</entry>
-
-            <entry>net</entry>
-
-            <entry>134.28.54.2</entry>
-
-            <entry></entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
+    <programlisting>#TYPE      ZONE        GATEWAY          GATEWAY ZONE
+ipsec      net         134.28.54.2</programlisting>
 
     <para>In /etc/shorewall/tunnels on system B, we would have:</para>
 
-    <table>
-      <title>/etc/shorewall/tunnels - System B</title>
-
-      <tgroup cols="4">
-        <thead>
-          <row>
-            <entry align="center">TYPE</entry>
-
-            <entry align="center">ZONE</entry>
-
-            <entry align="center">GATEWAY</entry>
-
-            <entry align="center">GATEWAY ZONE</entry>
-          </row>
-        </thead>
-
-        <tbody>
-          <row>
-            <entry>ipsec</entry>
-
-            <entry>net</entry>
-
-            <entry>206.161.148.9</entry>
-
-            <entry></entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
+    <programlisting>#TYPE      ZONE        GATEWAY          GATEWAY ZONE
+ipsec      net         206.161.148.9</programlisting>
 
     <note>
       <para>If either of the endpoints is behind a NAT gateway then the
@@ -206,72 +152,19 @@ conn packetdefault
     zone called <quote>vpn</quote> to represent the remote subnet. Note that
     you should define the vpn zone before the net zone.</para>
 
-    <para><table>
-        <title>/etc/shorewall/zones - Systems A and B</title>
+    <para>/etc/shorewall/zones (both systems):</para>
 
-        <tgroup cols="3">
-          <thead>
-            <row>
-              <entry align="center">ZONE</entry>
-
-              <entry align="center">DISPLAY</entry>
-
-              <entry align="center">COMMENTS</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>vpn</entry>
-
-              <entry>VPN</entry>
-
-              <entry>Remote Subnet</entry>
-            </row>
-
-            <row>
-              <entry>net</entry>
-
-              <entry>Internet</entry>
-
-              <entry>The big bad internet</entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </table></para>
+    <programlisting>#ZONE          TYPE         OPTIONS
+vpn            plain
+net            plain</programlisting>
 
     <para><emphasis role="bold">If you are running kernel
     2.4:</emphasis><blockquote>
         <para>At both systems, ipsec0 would be included in
         /etc/shorewall/interfaces as a <quote>vpn</quote> interface:</para>
 
-        <para><table>
-            <title>/etc/shorewall/interfaces - Systems A and B</title>
-
-            <tgroup cols="4">
-              <thead>
-                <row>
-                  <entry align="center">ZONE</entry>
-
-                  <entry align="center">INTERFACE</entry>
-
-                  <entry align="center">BROADCAST</entry>
-
-                  <entry align="center">OPTIONS</entry>
-                </row>
-              </thead>
-
-              <tbody>
-                <row>
-                  <entry>vpn</entry>
-
-                  <entry>ipsec0</entry>
-
-                  <entry></entry>
-                </row>
-              </tbody>
-            </tgroup>
-          </table></para>
+        <programlisting>#ZONE         INTERFACE         BROADCAST       OPTIONS
+vpn           ipsec0</programlisting>
       </blockquote></para>
 
     <para><emphasis role="bold">If you are running kernel
@@ -289,57 +182,15 @@ conn packetdefault
       <para>You must define the vpn zone using the /etc/shorewall/hosts
       file.</para>
 
-      <table>
-        <title>/etc/shorewall/hosts - System A</title>
+      <para>/etc/shorewall/hosts - System A</para>
 
-        <tgroup cols="3">
-          <thead>
-            <row>
-              <entry>ZONE</entry>
+      <programlisting>#ZONE        HOSTS                  OPTIONS
+vpn          eth0:10.0.0.0/8</programlisting>
 
-              <entry>HOSTS</entry>
+      <para>/etc/shorewall/hots - System B</para>
 
-              <entry>OPTIONS</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>vpn</entry>
-
-              <entry>eth0:10.0.0.0/8</entry>
-
-              <entry></entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </table>
-
-      <table>
-        <title>/etc/shorewall/hosts - System B</title>
-
-        <tgroup cols="3">
-          <thead>
-            <row>
-              <entry>ZONE</entry>
-
-              <entry>HOSTS</entry>
-
-              <entry>OPTIONS</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>vpn</entry>
-
-              <entry>eth0:192.168.1.0/24</entry>
-
-              <entry></entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </table>
+      <programlisting>#ZONE        HOSTS                  OPTIONS
+vpn          eth0:192.168.1.0/24</programlisting>
 
       <para>In addition, <emphasis role="bold">if you are using Masquerading
       or SNAT</emphasis> on your firewalls, you need to elmiinate the remote
@@ -347,102 +198,26 @@ conn packetdefault
       role="bold">replace</emphasis> your current masquerade/SNAT entries for
       the local networks.</para>
 
-      <table>
-        <title>/etc/shorewall/masq - System A</title>
+      <para>/etc/shorewall/masq - System A</para>
 
-        <tgroup cols="3">
-          <thead>
-            <row>
-              <entry>INTERFACE</entry>
+      <programlisting>#INTERFACE            SUBNET                ADDRESS
+eth0:!10.0.0.0/8      192.168.1.0/24</programlisting>
 
-              <entry>SUBNET</entry>
+      <para>/etc/shorewall/masq - System B</para>
 
-              <entry>ADDRESS</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>eth0:!10.0.0.0/8</entry>
-
-              <entry>192.168.1.0/24</entry>
-
-              <entry>...</entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </table>
-
-      <table>
-        <title>/etc/shorewall/masq System B</title>
-
-        <tgroup cols="3">
-          <thead>
-            <row>
-              <entry>INTERFACE</entry>
-
-              <entry>SUBNET</entry>
-
-              <entry>ADDRESS</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>eth0:!192.168.1.0/24</entry>
-
-              <entry>10.0.0.0/8</entry>
-
-              <entry>...</entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </table>
+      <programlisting>#INTERFACE            SUBNET                ADDRESS
+eth0:!192.168.1.0/24  10.0.0.0/8</programlisting>
     </blockquote>
 
     <para>You will need to allow traffic between the <quote>vpn</quote> zone
     and the <quote>loc</quote> zone -- if you simply want to admit all traffic
     in both directions, you can use the policy file:</para>
 
-    <para><table>
-        <title>/etc/shorewall/policy - Systems A and B</title>
+    <programlisting>#SOURCE       DEST        POLICY       LOG LEVEL
+loc           vpn         ACCEPT
+vpn           loc         ACCEPT</programlisting>
 
-        <tgroup cols="4">
-          <thead>
-            <row>
-              <entry align="center">SOURCE</entry>
-
-              <entry align="center">DEST</entry>
-
-              <entry align="center">POLICY</entry>
-
-              <entry align="center">LOG LEVEL</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>loc</entry>
-
-              <entry>vpn</entry>
-
-              <entry>ACCEPT</entry>
-
-              <entry></entry>
-            </row>
-
-            <row>
-              <entry>vpn</entry>
-
-              <entry>loc</entry>
-
-              <entry>ACCEPT</entry>
-
-              <entry></entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </table></para>
+    <para></para>
 
     <para>Once you have these entries in place, restart Shorewall (type
     shorewall restart); you are now ready to configure the tunnel in <ulink
@@ -487,77 +262,14 @@ conn packetdefault
 
     <para>In /etc/shorewall/tunnels on system A, we need the following</para>
 
-    <table>
-      <title>/etc/shorewall/tunnels system A</title>
-
-      <tgroup cols="4">
-        <thead>
-          <row>
-            <entry align="center">TYPE</entry>
-
-            <entry align="center">ZONE</entry>
-
-            <entry align="center">GATEWAY</entry>
-
-            <entry align="center">GATEWAY ZONE</entry>
-          </row>
-        </thead>
-
-        <tbody>
-          <row>
-            <entry>ipsec</entry>
-
-            <entry>net</entry>
-
-            <entry>134.28.54.2</entry>
-
-            <entry></entry>
-          </row>
-
-          <row>
-            <entry>ipsec</entry>
-
-            <entry>net</entry>
-
-            <entry>130.152.100.14</entry>
-
-            <entry></entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
+    <programlisting>#TYPE         ZONE         GATEWAY         GATEWAY ZONE
+ipsec         net          134.28.54.2
+ipsec         net          130.252.100.14</programlisting>
 
     <para>In /etc/shorewall/tunnels on systems B and C, we would have:</para>
 
-    <table>
-      <title>/etc/shorewall/tunnels system B &amp; C</title>
-
-      <tgroup cols="4">
-        <thead>
-          <row>
-            <entry align="center">TYPE</entry>
-
-            <entry align="center">ZONE</entry>
-
-            <entry align="center">GATEWAY</entry>
-
-            <entry align="center">GATEWAY ZONE</entry>
-          </row>
-        </thead>
-
-        <tbody>
-          <row>
-            <entry>ipsec</entry>
-
-            <entry>net</entry>
-
-            <entry>206.161.148.9</entry>
-
-            <entry></entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
+    <programlisting>#TYPE         ZONE         GATEWAY         GATEWAY ZONE
+ipsec         net          206.161.148.9</programlisting>
 
     <note>
       <para>If either of the endpoints is behind a NAT gateway then the
@@ -570,170 +282,33 @@ conn packetdefault
     <para>On each system, we will create a zone to represent the remote
     networks. On System A:</para>
 
-    <table>
-      <title>/etc/shorewall/zones system A</title>
-
-      <tgroup cols="3">
-        <thead>
-          <row>
-            <entry align="center">ZONE</entry>
-
-            <entry align="center">DISPLAY</entry>
-
-            <entry align="center">COMMENTS</entry>
-          </row>
-        </thead>
-
-        <tbody>
-          <row>
-            <entry>vpn1</entry>
-
-            <entry>VPN1</entry>
-
-            <entry>Remote Subnet on system B</entry>
-          </row>
-
-          <row>
-            <entry>vpn2</entry>
-
-            <entry>VPN2</entry>
-
-            <entry>Remote Subnet on system C</entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
+    <programlisting>#ZONE       TYPE         OPTIONS
+vpn1        plain
+vp2         plain</programlisting>
 
     <para>On systems B and C:</para>
 
-    <table>
-      <title>/etc/shorewall/zones system B &amp; C</title>
-
-      <tgroup cols="3">
-        <thead>
-          <row>
-            <entry align="center">ZONE</entry>
-
-            <entry align="center">DISPLAY</entry>
-
-            <entry align="center">COMMENTS</entry>
-          </row>
-        </thead>
-
-        <tbody>
-          <row>
-            <entry>vpn</entry>
-
-            <entry>VPN</entry>
-
-            <entry>Remote Subnet on system A</entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
+    <programlisting>#ZONE       TYPE         OPTIONS
+vpn         plain</programlisting>
 
     <para>At system A, ipsec0 represents two zones so we have the following in
     /etc/shorewall/interfaces:</para>
 
-    <table>
-      <title>/etc/shorewall/interfaces system A</title>
-
-      <tgroup cols="4">
-        <thead>
-          <row>
-            <entry align="center">ZONE</entry>
-
-            <entry align="center">INTERFACE</entry>
-
-            <entry align="center">BROADCAST</entry>
-
-            <entry align="center">OPTIONS</entry>
-          </row>
-        </thead>
-
-        <tbody>
-          <row>
-            <entry>-</entry>
-
-            <entry>ipsec0</entry>
-
-            <entry></entry>
-
-            <entry></entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
+    <programlisting>#ZONE       INTERFACE    BROADCAST       OPTIONS
+-           ipsec0</programlisting>
 
     <para>The /etc/shorewall/hosts file on system A defines the two VPN
     zones:</para>
 
-    <table>
-      <title>/etc/shorewall/hosts system A</title>
-
-      <tgroup cols="3">
-        <thead>
-          <row>
-            <entry align="center">ZONE</entry>
-
-            <entry align="center">HOSTS</entry>
-
-            <entry align="center">OPTIONS</entry>
-          </row>
-        </thead>
-
-        <tbody>
-          <row>
-            <entry>vpn1</entry>
-
-            <entry>ipsec0:10.0.0.0/16</entry>
-
-            <entry></entry>
-          </row>
-
-          <row>
-            <entry>vpn2</entry>
-
-            <entry>ipsec0:10.1.0.0/16</entry>
-
-            <entry></entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
+    <programlisting>#ZONE       HOSTS                        OPTIONS
+vpn1        ipsec0:10.0.0.0/16
+vpn2        ipsec0:10.1.0.0/16</programlisting>
 
     <para>At systems B and C, ipsec0 represents a single zone so we have the
     following in /etc/shorewall/interfaces:</para>
 
-    <table>
-      <title>/etc/shorewall/interfaces system B &amp; C</title>
-
-      <tgroup cols="4">
-        <thead>
-          <row>
-            <entry align="center">ZONE</entry>
-
-            <entry align="center">INTERFACE</entry>
-
-            <entry align="center">BROADCAST</entry>
-
-            <entry align="center">OPTIONS</entry>
-          </row>
-        </thead>
-
-        <tbody>
-          <row>
-            <entry>vpn</entry>
-
-            <entry>ipsec0</entry>
-
-            <entry></entry>
-
-            <entry></entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
+    <programlisting>#ZONE       INTERFACE       BROADCAST    OPTIONS
+vpn         ipsec0</programlisting>
 
     <para>On systems A, you will need to allow traffic between the
     <quote>vpn1</quote> zone and the <quote>loc</quote> zone as well as
@@ -741,110 +316,22 @@ conn packetdefault
     simply want to admit all traffic in both directions, you can use the
     following policy file entries on all three gateways:</para>
 
-    <table>
-      <title>/etc/shorewall/policy system A</title>
-
-      <tgroup cols="4">
-        <thead>
-          <row>
-            <entry align="center">SOURCE</entry>
-
-            <entry align="center">DEST</entry>
-
-            <entry align="center">POLICY</entry>
-
-            <entry align="center">LOG LEVEL</entry>
-          </row>
-        </thead>
-
-        <tbody>
-          <row>
-            <entry>loc</entry>
-
-            <entry>vpn1</entry>
-
-            <entry>ACCEPT</entry>
-
-            <entry></entry>
-          </row>
-
-          <row>
-            <entry>vpn1</entry>
-
-            <entry>loc</entry>
-
-            <entry>ACCEPT</entry>
-
-            <entry></entry>
-          </row>
-
-          <row>
-            <entry>loc</entry>
-
-            <entry>vpn2</entry>
-
-            <entry>ACCEPT</entry>
-
-            <entry></entry>
-          </row>
-
-          <row>
-            <entry>vpn2</entry>
-
-            <entry>loc</entry>
-
-            <entry>ACCEPT</entry>
-
-            <entry></entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
+    <programlisting>#SOURCE      DEST       POLICY           LOG LEVEL
+loc          vpn1       ACCEPT
+vpn1         loc        ACCEPT
+loc          vpn2       ACCEPT
+vpn2         loc        ACCEPT</programlisting>
 
     <para>On systems B and C, you will need to allow traffic between the
     <quote>vpn</quote> zone and the <quote>loc</quote> zone -- if you simply
     want to admit all traffic in both directions, you can use the following
     policy file entries on all three gateways:</para>
 
-    <table>
-      <title>/etc/shorewall/policy system B &amp; C</title>
+    <para>/etc/shorewall/policy -- Systems B &amp; C</para>
 
-      <tgroup cols="4">
-        <thead>
-          <row>
-            <entry align="center">SOURCE</entry>
-
-            <entry align="center">DEST</entry>
-
-            <entry align="center">POLICY</entry>
-
-            <entry align="center">LOG LEVEL</entry>
-          </row>
-        </thead>
-
-        <tbody>
-          <row>
-            <entry>loc</entry>
-
-            <entry>vpn</entry>
-
-            <entry>ACCEPT</entry>
-
-            <entry></entry>
-          </row>
-
-          <row>
-            <entry>vpn</entry>
-
-            <entry>loc</entry>
-
-            <entry>ACCEPT</entry>
-
-            <entry></entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
+    <programlisting>#SOURCE      DEST       POLICY           LOG LEVEL
+loc          vpn        ACCEPT
+vpn          loc        ACCEPT</programlisting>
 
     <para>Once you have the Shorewall entries added, restart Shorewall on each
     gateway (type shorewall restart); you are now ready to configure the
@@ -856,45 +343,9 @@ conn packetdefault
       it is necessary to simply add two additional entries to the
       /etc/shorewall/policy file on system A.</para>
 
-      <table>
-        <title>/etc/shorewall/policy system A</title>
-
-        <tgroup cols="4">
-          <thead>
-            <row>
-              <entry align="center">SOURCE</entry>
-
-              <entry align="center">DEST</entry>
-
-              <entry align="center">POLICY</entry>
-
-              <entry align="center">LOG LEVEL</entry>
-            </row>
-          </thead>
-
-          <tbody>
-            <row>
-              <entry>vpn1</entry>
-
-              <entry>vpn2</entry>
-
-              <entry>ACCEPT</entry>
-
-              <entry></entry>
-            </row>
-
-            <row>
-              <entry>vpn2</entry>
-
-              <entry>vpn1</entry>
-
-              <entry>ACCEPT</entry>
-
-              <entry></entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </table>
+      <programlisting>#SOURCE      DEST       POLICY           LOG LEVEL
+vpn1         vpn2       ACCEPT
+vpn2         vpn1       ACCEPT</programlisting>
     </note>
 
     <note>
@@ -920,65 +371,17 @@ conn packetdefault
       local zone. In this example, we'll assume that you have created a zone
       called <quote>vpn</quote> to represent the remote host.</para>
 
-      <para><table>
-          <title>/etc/shorewall/zones local</title>
+      <para>/etc/shorewall/zones - System A</para>
 
-          <tgroup cols="3">
-            <thead>
-              <row>
-                <entry align="center">ZONE</entry>
-
-                <entry align="center">DISPLAY</entry>
-
-                <entry align="center">COMMENTS</entry>
-              </row>
-            </thead>
-
-            <tbody>
-              <row>
-                <entry>vpn</entry>
-
-                <entry>VPN</entry>
-
-                <entry>Remote Subnet</entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </table></para>
+      <programlisting>#ZONE      TYPE        OPTIONS
+vpn        plain</programlisting>
 
       <para>In this instance, the mobile system (B) has IP address 134.28.54.2
       but that cannot be determined in advance. In the /etc/shorewall/tunnels
       file on system A, the following entry should be made:</para>
 
-      <para><table>
-          <title>/etc/shorewall/tunnels system A</title>
-
-          <tgroup cols="4">
-            <thead>
-              <row>
-                <entry align="center">TYPE</entry>
-
-                <entry align="center">ZONE</entry>
-
-                <entry align="center">GATEWAY</entry>
-
-                <entry align="center">GATEWAY ZONE</entry>
-              </row>
-            </thead>
-
-            <tbody>
-              <row>
-                <entry>ipsec</entry>
-
-                <entry>net</entry>
-
-                <entry>0.0.0.0/0</entry>
-
-                <entry>vpn</entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </table></para>
+      <programlisting>#TYPE       ZONE       GATEWAY        GATEWAY ZONE
+ipsec       net        0.0.0.0/0</programlisting>
 
       <para><note>
           <para>the GATEWAY ZONE column contains the name of the zone
@@ -1004,79 +407,15 @@ conn packetdefault
 
     <para>In /etc/shorewall/zones:</para>
 
-    <table>
-      <title>/etc/shorewall/zones</title>
-
-      <tgroup cols="3">
-        <thead>
-          <row>
-            <entry align="center">ZONE</entry>
-
-            <entry align="center">DISPLAY</entry>
-
-            <entry align="center">COMMENTS</entry>
-          </row>
-        </thead>
-
-        <tbody>
-          <row>
-            <entry>vpn1</entry>
-
-            <entry>VPN-1</entry>
-
-            <entry>First VPN Zone</entry>
-          </row>
-
-          <row>
-            <entry>vpn2</entry>
-
-            <entry>VPN-2</entry>
-
-            <entry>Second VPN Zone</entry>
-          </row>
-
-          <row>
-            <entry>vpn3</entry>
-
-            <entry>VPN-3</entry>
-
-            <entry>Third VPN Zone</entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
+    <programlisting>#ZONE       TYPE       OPTIONS
+vpn1        plain
+vpn2        plain
+vpn3        plain</programlisting>
 
     <para>In /etc/shorewall/tunnels:</para>
 
-    <table>
-      <title>/etc/shorewall/tunnels</title>
-
-      <tgroup cols="4">
-        <thead>
-          <row>
-            <entry align="center">TYPE</entry>
-
-            <entry align="center">ZONE</entry>
-
-            <entry align="center">GATEWAY</entry>
-
-            <entry align="center">GATEWAY ZONE</entry>
-          </row>
-        </thead>
-
-        <tbody>
-          <row>
-            <entry>ipsec</entry>
-
-            <entry>net</entry>
-
-            <entry>0.0.0.0/0</entry>
-
-            <entry>vpn1,vpn2,vpn3</entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
+    <programlisting>#TYPE       ZONE       GATEWAY         GATEWAY ZONE
+ipsec       net        0.0.0.0/0       vpn1,vpn2,vpn3</programlisting>
 
     <para>When Shorewall is started, the zones vpn[1-3] will all be empty and
     Shorewall will issue warnings to that effect. These warnings may be safely
@@ -1101,48 +440,11 @@ conn packetdefault
       <para>If you include a dynamic zone in the exclude list of a DNAT rule,
       the dynamically-added hosts are not excluded from the rule.</para>
 
+      <programlisting>#ACTION      SOURCE        DEST            PROTO     DEST PORT(S)
+DNAT         z!dyn         loc:192.168.1.3 tcp       80</programlisting>
+
       <example>
         <title>dyn=dynamic zone</title>
-
-        <para><informaltable>
-            <tgroup cols="7">
-              <thead>
-                <row>
-                  <entry align="center">ACTION</entry>
-
-                  <entry align="center">SOURCE</entry>
-
-                  <entry align="center">DESTINATION</entry>
-
-                  <entry align="center">PROTOCOL</entry>
-
-                  <entry align="center">PORT(S)</entry>
-
-                  <entry align="center">CLIENT PORT(S)</entry>
-
-                  <entry align="center">ORIGINAL DESTINATION</entry>
-                </row>
-              </thead>
-
-              <tbody>
-                <row>
-                  <entry>DNAT</entry>
-
-                  <entry>z!dyn</entry>
-
-                  <entry>loc:192.168.1.3</entry>
-
-                  <entry>tcp</entry>
-
-                  <entry>80</entry>
-
-                  <entry></entry>
-
-                  <entry></entry>
-                </row>
-              </tbody>
-            </tgroup>
-          </informaltable></para>
 
         <para>Dynamic changes to the zone <emphasis role="bold">dyn</emphasis>
         will have no effect on the above rule.</para>

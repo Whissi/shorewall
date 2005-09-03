@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-06-01</pubdate>
+    <pubdate>2005-09-03</pubdate>
 
     <copyright>
       <year>2003-2005</year>
@@ -34,6 +34,13 @@
     </legalnotice>
   </articleinfo>
 
+  <caution>
+    <para><emphasis role="bold">This article applies to Shorewall 3.0 and
+    later. If you are running a version of Shorewall earlier than Shorewall
+    3.0.0 then please see the documentation for that
+    release.</emphasis></para>
+  </caution>
+
   <para>Beginning with Shorewall version 1.4.8, Shorewall can interface to
   ftwall. <emphasis role="bold">ftwall</emphasis> is part of the <ulink
   url="http://p2pwall.sourceforge.net">p2pwall project</ulink> and is a
@@ -42,8 +49,9 @@
   KazaaLite, iMash and Grokster.</para>
 
   <para>To filter traffic from your <quote>loc</quote> zone with ftwall, you
-  insert the following rules in /etc/shorewall/rules file after any DROP or
-  REJECT rules whose source is the <quote>loc</quote> zone.</para>
+  insert the following rules in the ESTABLISHED section of
+  /etc/shorewall/rules file after any DROP or REJECT rules whose source is the
+  <quote>loc</quote> zone.</para>
 
   <programlisting>        #ACTION SOURCE     DEST       PROTO
         QUEUE   loc        net        tcp

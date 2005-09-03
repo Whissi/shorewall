@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-05-22</pubdate>
+    <pubdate>2005-09-03</pubdate>
 
     <copyright>
       <year>2001</year>
@@ -26,6 +26,8 @@
 
       <year>2004</year>
 
+      <year>2005</year>
+
       <holder>Thomas M. Eastep</holder>
     </copyright>
 
@@ -35,7 +37,8 @@
       1.2 or any later version published by the Free Software Foundation; with
       no Invariant Sections, with no Front-Cover, and with no Back-Cover
       Texts. A copy of the license is included in the section entitled
-      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
 
@@ -48,11 +51,11 @@
   masqueraded networks.</para>
 
   <para>The simple scripts described in the <citetitle><ulink
-  url="http://ds9a.nl/lartc">Linux Advanced Routing and Shaping HOWTO</ulink></citetitle>
-  work fine with Shorewall. Shorewall also includes a tunnel script for
-  automating tunnel configuration. If you have installed the RPM, the tunnel
-  script may be found in the Shorewall documentation directory (usually
-  /usr/share/doc/shorewall-&#60;version&#62;/).</para>
+  url="http://ds9a.nl/lartc">Linux Advanced Routing and Shaping
+  HOWTO</ulink></citetitle> work fine with Shorewall. Shorewall also includes
+  a tunnel script for automating tunnel configuration. If you have installed
+  the RPM, the tunnel script may be found in the Shorewall documentation
+  directory (usually /usr/share/doc/shorewall-&lt;version&gt;/).</para>
 
   <section>
     <title>Bridging two Masqueraded Networks</title>
@@ -71,10 +74,11 @@
     by default -- If you install using the tarball, the script is included in
     the tarball; if you install using the RPM, the file is in your Shorewall
     documentation directory (normally
-    /usr/share/doc/shorewall-&#60;version&#62;).</para>
+    /usr/share/doc/shorewall-&lt;version&gt;).</para>
 
-    <para>In the /etc/shorewall/tunnel script, set the <quote>tunnel_type</quote>
-    parameter to the type of tunnel that you want to create.</para>
+    <para>In the /etc/shorewall/tunnel script, set the
+    <quote>tunnel_type</quote> parameter to the type of tunnel that you want
+    to create.</para>
 
     <example>
       <title>/etc/shorewall/tunnel</title>
@@ -85,106 +89,31 @@
     <warning>
       <para>If you use the PPTP connection tracking modules from Netfilter
       Patch-O-Matic (ip_conntrack_proto_gre ip_conntrack_pptp,
-      ip_nat_proto_gre and ip_nat_pptp) then you cannot use GRE tunnels.</para>
+      ip_nat_proto_gre and ip_nat_pptp) then you cannot use GRE
+      tunnels.</para>
     </warning>
 
     <para>On each firewall, you will need to declare a zone to represent the
-    remote subnet. We&#39;ll assume that this zone is called <quote>vpn</quote>
+    remote subnet. We'll assume that this zone is called <quote>vpn</quote>
     and declare it in /etc/shorewall/zones on both systems as follows.</para>
 
-    <table>
-      <title>/etc/shorewall/zones system A &#38; B</title>
+    <programlisting>#ZONE        TYPE           OPTIONS
+vpn          plain</programlisting>
 
-      <tgroup cols="3">
-        <thead>
-          <row>
-            <entry align="center">ZONE</entry>
+    <para>On system A, the 10.0.0.0/8 will comprise the <emphasis
+    role="bold">vpn</emphasis> zone. In /etc/shorewall/interfaces:</para>
 
-            <entry align="center">DISPLAY</entry>
-
-            <entry align="center">COMMENTS</entry>
-          </row>
-        </thead>
-
-        <tbody>
-          <row>
-            <entry>vpn</entry>
-
-            <entry>VPN</entry>
-
-            <entry>Remote Subnet</entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
-
-    <para>On system A, the 10.0.0.0/8 will comprise the <emphasis role="bold">vpn</emphasis>
-    zone. In /etc/shorewall/interfaces:</para>
-
-    <table>
-      <title>/etc/shorewall/interfaces system A</title>
-
-      <tgroup cols="4">
-        <thead>
-          <row>
-            <entry align="center">ZONE</entry>
-
-            <entry align="center">INTERFACE</entry>
-
-            <entry align="center">BROADCAST</entry>
-
-            <entry align="center">OPTIONS</entry>
-          </row>
-        </thead>
-
-        <tbody>
-          <row>
-            <entry>vpn</entry>
-
-            <entry>tosysb</entry>
-
-            <entry>10.255.255.255</entry>
-
-            <entry></entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
+    <programlisting>#ZONE        INTERFACE      BROADCAST        OPTIONS
+vpn          tosysb         10.255.255.255</programlisting>
 
     <para>In /etc/shorewall/tunnels on system A, we need the following:</para>
 
-    <table>
-      <title>/etc/shorewall/tunnels system A</title>
-
-      <tgroup cols="4">
-        <thead>
-          <row>
-            <entry align="center">TYPE</entry>
-
-            <entry align="center">ZONE</entry>
-
-            <entry align="center">GATEWAY</entry>
-
-            <entry align="center">GATEWAY ZONE</entry>
-          </row>
-        </thead>
-
-        <tbody>
-          <row>
-            <entry>ipip</entry>
-
-            <entry>net</entry>
-
-            <entry>134.28.54.2</entry>
-
-            <entry></entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
+    <programlisting>#TYPE         ZONE          GATEWAY          GATEWAY ZONE
+ipip          net           134.28.54.2</programlisting>
 
     <para>This entry in /etc/shorewall/tunnels, opens the firewall so that the
-    IP encapsulation protocol (4) will be accepted to/from the remote gateway.</para>
+    IP encapsulation protocol (4) will be accepted to/from the remote
+    gateway.</para>
 
     <para>In the tunnel script on system A:</para>
 
@@ -201,69 +130,16 @@ subnet=10.0.0.0/8
     </example>
 
     <para>Similarly, On system B the 192.168.1.0/24 subnet will comprise the
-    <emphasis role="bold">vpn</emphasis> zone. In /etc/shorewall/interfaces:</para>
+    <emphasis role="bold">vpn</emphasis> zone. In
+    /etc/shorewall/interfaces:</para>
 
-    <table>
-      <title>/etc/shorewall/interfaces system B</title>
-
-      <tgroup cols="4">
-        <thead>
-          <row>
-            <entry align="center">ZONE</entry>
-
-            <entry align="center">INTERFACE</entry>
-
-            <entry align="center">BROADCAST</entry>
-
-            <entry align="center">OPTIONS</entry>
-          </row>
-        </thead>
-
-        <tbody>
-          <row>
-            <entry>vpn</entry>
-
-            <entry>tosysa</entry>
-
-            <entry>192.168.1.255</entry>
-
-            <entry></entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
+    <programlisting>#ZONE        INTERFACE          BROADCAST
+vpn          tosysa             192.168.1.255</programlisting>
 
     <para>In /etc/shorewall/tunnels on system B, we have:</para>
 
-    <table>
-      <title>/etc/shorewall/tunnels system B</title>
-
-      <tgroup cols="4">
-        <thead>
-          <row>
-            <entry align="center">TYPE</entry>
-
-            <entry align="center">ZONE</entry>
-
-            <entry align="center">GATEWAY</entry>
-
-            <entry align="center">GATEWAY ZONE</entry>
-          </row>
-        </thead>
-
-        <tbody>
-          <row>
-            <entry>ipip</entry>
-
-            <entry>net</entry>
-
-            <entry>206.191.148.9</entry>
-
-            <entry></entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
+    <programlisting>#TYPE        ZONE           GATEWAY           GATEWAY ZONE
+ipip         net            206.191.148.9</programlisting>
 
     <para>And in the tunnel script on system B:</para>
 
@@ -285,45 +161,9 @@ subnet=192.168.1.0/24</programlisting>
     and the <quote>loc</quote> zone on both systems -- if you simply want to
     admit all traffic in both directions, you can use the policy file:</para>
 
-    <table>
-      <title>/etc/shorewall/policy system A &#38; B</title>
-
-      <tgroup cols="4">
-        <thead>
-          <row>
-            <entry align="center">SOURCE</entry>
-
-            <entry align="center">DEST</entry>
-
-            <entry align="center">POLICY</entry>
-
-            <entry align="center">LOG LEVEL</entry>
-          </row>
-        </thead>
-
-        <tbody>
-          <row>
-            <entry>loc</entry>
-
-            <entry>vpn</entry>
-
-            <entry>ACCEPT</entry>
-
-            <entry></entry>
-          </row>
-
-          <row>
-            <entry>vpn</entry>
-
-            <entry>loc</entry>
-
-            <entry>ACCEPT</entry>
-
-            <entry></entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
+    <programlisting>#SOURCE          DEST          POLICY         LOG LEVEL
+loc              vpn           ACCEPT
+vpn              loc           ACCEPT</programlisting>
 
     <para>On both systems, restart Shorewall and run the modified tunnel
     script with the <quote>start</quote> argument on each system. The systems

@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-05-15</pubdate>
+    <pubdate>2005-09-03</pubdate>
 
     <copyright>
       <year>2003-2005</year>
@@ -33,6 +33,13 @@
       License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
+
+  <caution>
+    <para><emphasis role="bold">This article applies to Shorewall 3.0 and
+    later. If you are running a version of Shorewall earlier than Shorewall
+    3.0.0 then please see the documentation for that
+    release.</emphasis></para>
+  </caution>
 
   <section>
     <title>Introduction</title>
@@ -205,9 +212,9 @@
 
         <para><filename>/etc/shorewall/zones</filename></para>
 
-        <programlisting>#ZONE               DISPLAY             COMMENTS
-loc1                Local1              Hosts accessed through internal router
-loc                 Local               All hosts accessed via eth1</programlisting>
+        <programlisting>#ZONE       TYPE      OPTIONS
+loc1        plain
+loc         plain</programlisting>
 
         <note>
           <para>the sub-zone (loc1) is defined first!</para>
@@ -244,9 +251,9 @@ loc1                loc                  NONE</programlisting>
 
         <para><filename>/etc/shorewall/zones</filename></para>
 
-        <programlisting>#ZONE               DISPLAY             COMMENTS
-loc1                Local1              Hosts accessed Directly from Firewall
-loc2                Local2              Hosts accessed via the internal Router</programlisting>
+        <programlisting>#ZONE       TYPE      OPTIONS
+loc1        plain
+loc2        plain</programlisting>
 
         <note>
           <para>Here it doesn't matter which zone is defined first.</para>
@@ -287,9 +294,9 @@ loc2                loc1                 NONE</programlisting>
 
     <para><filename>/etc/shorewall/zones</filename></para>
 
-    <programlisting>#ZONE               DISPLAY             COMMENTS
-loc1                Local1              192.168.1.8-192.168.1.15
-loc                 Local               All hosts accessed via eth1</programlisting>
+    <programlisting>#ZONE       TYPE      OPTIONS
+loc1        plain
+loc         plain</programlisting>
 
     <note>
       <para>the sub-zone (loc1) is defined first!</para>
@@ -332,9 +339,9 @@ loc1                loc                  NONE</programlisting>
 
     <para><filename>/etc/shorewall/zones</filename></para>
 
-    <programlisting>#ZONE               DISPLAY             COMMENTS
-loc                 Local               Local Zone
-net                 Internet            The big bad Internet</programlisting>
+    <programlisting>#ZONE       TYPE      OPTIONS
+loc1        plain
+net         plain</programlisting>
 
     <note>
       <para>the sub-zone (loc) is defined first!</para>

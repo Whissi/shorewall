@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-02-22</pubdate>
+    <pubdate>2005-09-03</pubdate>
 
     <copyright>
       <year>2004</year>
@@ -485,9 +485,10 @@ rc-update add bridge boot
     defined -- one for the internet and one for the local LAN so in
     <filename>/etc/shorewall/zones</filename>:</para>
 
-    <programlisting>#ZONE   DISPLAY         COMMENTS
-net     Net             Internet
-loc     Local           Local networks
+    <programlisting>#ZONE   TYPE            OPTIONS
+fw      firewall
+net     plain
+loc     plain
 #LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
 
     <para>A conventional two-zone policy file is appropriate here —

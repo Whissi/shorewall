@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-05-26</pubdate>
+    <pubdate>2005-09-03</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -33,6 +33,13 @@
       License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
+
+  <caution>
+    <para><emphasis role="bold">This article applies to Shorewall 3.0 and
+    later. If you are running a version of Shorewall earlier than Shorewall
+    3.0.0 then please see the documentation for that
+    release.</emphasis></para>
+  </caution>
 
   <section id="Introduction">
     <title>Introduction</title>
@@ -123,63 +130,28 @@
     instructions and some contain default entries.</para>
 
     <para>Shorewall views the network where it is running as being composed of
-    a set of zones. In the default installation, the following zone names are
-    used:</para>
-
-    <table>
-      <title>Zones</title>
-
-      <tgroup cols="2">
-        <tbody>
-          <row>
-            <entry align="left"><emphasis role="bold">Name</emphasis></entry>
-
-            <entry align="left" role="underline"><emphasis
-            role="bold">Description</emphasis></entry>
-          </row>
-
-          <row>
-            <entry>net</entry>
-
-            <entry>The Internet</entry>
-          </row>
-
-          <row>
-            <entry>loc</entry>
-
-            <entry>Your Local Network</entry>
-          </row>
-
-          <row>
-            <entry>dmz</entry>
-
-            <entry>Demilitarized Zone</entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
+    a set of zones. </para>
 
     <para>Zones are defined in the file <filename><ulink
     url="Documentation.htm#Zones"><filename>/etc/shorewall/zones</filename></ulink></filename>.</para>
 
     <important>
-      <para>Beginning with Shorewall 2.2.0, the
-      <filename>/etc/shorewall/zones</filename> file included in the release
-      is empty. You can create the above set of zones by copying and pasting
-      the following into the file:</para>
+      <para>The <filename>/etc/shorewall/zones</filename> file included in the
+      release is empty. You can create a standard set of zones by copying and
+      pasting the following into the file:</para>
 
-      <programlisting>net     Net             Internet
-loc     Local           Local networks
-dmz     DMZ             Demilitarized zone</programlisting>
+      <programlisting>#ZONE   TYPE             OPTIONS
+fw      firewall
+net     plain
+loc     plain
+dmz     plain</programlisting>
     </important>
 
-    <para>Shorewall also recognizes the firewall system as its own zone - by
-    default, the firewall itself is known as <emphasis
-    role="bold">fw</emphasis> but that may be changed in the <ulink
-    url="Documentation.htm#Config"><filename>/etc/shorewall/shorewall.conf</filename></ulink>
-    file. In this guide, the default name (<emphasis
-    role="bold">fw</emphasis>) will be used. With the exception of <emphasis
-    role="bold">fw</emphasis>, Shorewall attaches absolutely no meaning to
+    <para>Note that Shorewall recognizes the firewall system as its own zone -
+    The above example follows the usual convention of naming the Firewall zone
+    <emphasis role="bold">fw</emphasis>. In this guide, the name <emphasis
+    role="bold">fw</emphasis> will be used. With the exception of the name
+    assigned to the firewall zone, Shorewall attaches absolutely no meaning to
     zone names. Zones are entirely what YOU make of them. That means that you
     should not expect Shorewall to do something special <quote>because this is
     the internet zone</quote> or <quote>because that is the

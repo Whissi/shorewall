@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2003-08-09</pubdate>
+    <pubdate>2003-09-03</pubdate>
 
     <copyright>
       <year>2001</year>
@@ -23,6 +23,8 @@
       <year>2002</year>
 
       <year>2003</year>
+
+      <year>2005</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -33,13 +35,15 @@
       1.2 or any later version published by the Free Software Foundation; with
       no Invariant Sections, with no Front-Cover, and with no Back-Cover
       Texts. A copy of the license is included in the section entitled
-      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
 
   <para>Shorewall includes built-in support for a wide range of VPN solutions.
   If you have need for a tunnel type that does not have explicit support, you
-  can generally describe the tunneling software using <quote>generic tunnels</quote>.</para>
+  can generally describe the tunneling software using <quote>generic
+  tunnels</quote>.</para>
 
   <section>
     <title>Bridging two Masqueraded Networks</title>
@@ -50,7 +54,7 @@
 
     <para>We want systems in the 192.168.1.0/24 subnetwork to be able to
     communicate with the systems in the 10.0.0.0/8 network. This is
-    accomplished through use of the /etc/shorewall/tunnels file, the
+    accomplished through use of the /etc/shorwall/tunnels file, the
     /etc/shorewall/policy file and the /etc/shorewall/tunnel script that is
     included with Shorewall.</para>
 
@@ -73,217 +77,44 @@
     </orderedlist>
 
     <para>On each firewall, you will need to declare a zone to represent the
-    remote subnet. We&#39;ll assume that this zone is called <quote>vpn</quote>
+    remote subnet. We'll assume that this zone is called <quote>vpn</quote>
     and declare it in /etc/shorewall/zones on both systems as follows.</para>
 
-    <informaltable>
-      <tgroup cols="3">
-        <thead>
-          <row>
-            <entry align="center">ZONE</entry>
+    <programlisting>#ZONE        TYPE          OPTIONS
+vpn          plain</programlisting>
 
-            <entry align="center">DISPLAY</entry>
+    <para>On system A, the 10.0.0.0/8 will comprise the <emphasis
+    role="bold">vpn</emphasis> zone. In /etc/shorewall/interfaces:</para>
 
-            <entry align="center">COMMENTS</entry>
-          </row>
-        </thead>
-
-        <tbody>
-          <row>
-            <entry>vpn</entry>
-
-            <entry>VPN</entry>
-
-            <entry>Remote Subnet</entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </informaltable>
-
-    <para>On system A, the 10.0.0.0/8 will comprise the <emphasis role="bold">vpn</emphasis>
-    zone. In /etc/shorewall/interfaces:</para>
-
-    <informaltable>
-      <tgroup cols="4">
-        <thead>
-          <row>
-            <entry align="center">ZONE</entry>
-
-            <entry align="center">INTERFACE</entry>
-
-            <entry align="center">BROADCAST</entry>
-
-            <entry align="center">OPTIONS</entry>
-          </row>
-        </thead>
-
-        <tbody>
-          <row>
-            <entry>vpn</entry>
-
-            <entry>tun0</entry>
-
-            <entry>10.255.255.255</entry>
-
-            <entry></entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </informaltable>
+    <programlisting>#ZONE      INTERFACE       BROADCAST        OPTIONS
+vpn        tun0            10.255.255.255</programlisting>
 
     <para>In /etc/shorewall/tunnels on system A, we need the following:</para>
 
-    <informaltable>
-      <tgroup cols="4">
-        <thead>
-          <row>
-            <entry align="center">TYPE</entry>
-
-            <entry align="center">ZONE</entry>
-
-            <entry align="center">GATEWAY</entry>
-
-            <entry align="center">GATEWAY ZONE</entry>
-          </row>
-        </thead>
-
-        <tbody>
-          <row>
-            <entry>generic:tcp:1071</entry>
-
-            <entry>net</entry>
-
-            <entry>134.28.54.2</entry>
-
-            <entry></entry>
-          </row>
-
-          <row>
-            <entry>generic:47</entry>
-
-            <entry>net</entry>
-
-            <entry>134.28.54.2</entry>
-
-            <entry></entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </informaltable>
+    <programlisting>#TYPE            ZONE           GATEWAY         GATEWAY ZONE
+generic:tcp:1071 net            134.28.54.2
+generic:47       net            134.28.54.2</programlisting>
 
     <para>These entries in /etc/shorewall/tunnels, opens the firewall so that
     TCP port 1071 and the Generalized Routing Encapsulation Protocol (47) will
     be accepted to/from the remote gateway.</para>
 
-    <informaltable>
-      <tgroup cols="4">
-        <thead>
-          <row>
-            <entry align="center">ZONE</entry>
-
-            <entry align="center">INTERFACE</entry>
-
-            <entry align="center">BROADCAST</entry>
-
-            <entry align="center">OPTIONS</entry>
-          </row>
-        </thead>
-
-        <tbody>
-          <row>
-            <entry>vpn</entry>
-
-            <entry>tun0</entry>
-
-            <entry>192.168.1.255</entry>
-
-            <entry></entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </informaltable>
+    <programlisting>#ZONE        INTERFACE        BROADCAST         OPTIONS
+vpn          tun0             192.168.1.255</programlisting>
 
     <para>In /etc/shorewall/tunnels on system B, we have:</para>
 
-    <informaltable>
-      <tgroup cols="4">
-        <thead>
-          <row>
-            <entry align="center">TYPE</entry>
-
-            <entry align="center">ZONE</entry>
-
-            <entry align="center">GATEWAY</entry>
-
-            <entry align="center">GATEWAY ZONE</entry>
-          </row>
-        </thead>
-
-        <tbody>
-          <row>
-            <entry>generic:tcp:1071</entry>
-
-            <entry>net</entry>
-
-            <entry>206.191.148.9</entry>
-
-            <entry></entry>
-          </row>
-
-          <row>
-            <entry>generic:47</entry>
-
-            <entry>net</entry>
-
-            <entry>134.28.54.2</entry>
-
-            <entry></entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </informaltable>
+    <programlisting>#TYPE            ZONE           GATEWAY         GATEWAY ZONE
+generic:tcp:1071 net            206.191.148.9
+generic:47       net            206.191.148.9</programlisting>
 
     <para>You will need to allow traffic between the <quote>vpn</quote> zone
     and the <quote>loc</quote> zone on both systems -- if you simply want to
     admit all traffic in both directions, you can use the policy file:</para>
 
-    <informaltable>
-      <tgroup cols="4">
-        <thead>
-          <row>
-            <entry align="center">SOURCE</entry>
-
-            <entry align="center">DEST</entry>
-
-            <entry align="center">POLICY</entry>
-
-            <entry align="center">LOG LEVEL</entry>
-          </row>
-        </thead>
-
-        <tbody>
-          <row>
-            <entry>loc</entry>
-
-            <entry>vpn</entry>
-
-            <entry>ACCEPT</entry>
-
-            <entry></entry>
-          </row>
-
-          <row>
-            <entry>vpn</entry>
-
-            <entry>loc</entry>
-
-            <entry>ACCEPT</entry>
-
-            <entry></entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </informaltable>
+    <programlisting>#SOURCE      DEST        POLICY        LOG LEVEL
+loc          vpn         ACCEPT
+vpn          loc         ACCEPT</programlisting>
 
     <para>On both systems, restart Shorewall and start your VPN software on
     each system. The systems in the two masqueraded subnetworks can now talk

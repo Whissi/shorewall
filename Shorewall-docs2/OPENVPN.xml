@@ -21,7 +21,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-08-27</pubdate>
+    <pubdate>2005-08-30</pubdate>
 
     <copyright>
       <year>2003</year>
@@ -45,6 +45,13 @@
       License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
+
+  <caution>
+    <para><emphasis role="bold">This article applies to Shorewall 3.0 and
+    later. If you are running a version of Shorewall earlier than Shorewall
+    3.0.0 then please see the documentation for that
+    release.</emphasis></para>
+  </caution>
 
   <para>OpenVPN is a robust and highly configurable VPN (Virtual Private
   Network) daemon which can be used to securely link two or more private
@@ -97,8 +104,9 @@
       <para><filename>/etc/shorewall/zones</filename> — Systems A &amp;
       B</para>
 
-      <programlisting>#ZONE           DISPLAY           COMMENTS
-vpn             VPN               Remote subnet</programlisting>
+      <programlisting>#ZONE   TYPE   OPTIONS                 IN                      OUT
+#                                      OPTIONS                 OPTIONS
+vpn     plain</programlisting>
     </blockquote>
 
     <para>On system A, the 10.0.0.0/8 will comprise the <emphasis
@@ -231,8 +239,9 @@ vpn            loc           ACCEPT</programlisting>
     <blockquote>
       <para><filename>/etc/shorewall/zones</filename> — System A:</para>
 
-      <programlisting>#ZONE           DISPLAY           COMMENTS
-road            Roadwarriors      Remote clients</programlisting>
+      <programlisting>#ZONE   TYPE   OPTIONS                 IN                      OUT
+#                                      OPTIONS                 OPTIONS
+road    plain</programlisting>
     </blockquote>
 
     <para>On system A, the remote clients will comprise the <emphasis
@@ -314,8 +323,9 @@ verb 3</programlisting>
     <blockquote>
       <para><filename>/etc/shorewall/zones</filename> — System B:</para>
 
-      <programlisting>#ZONE           DISPLAY           COMMENTS
-home            Home              Home LAN</programlisting>
+      <programlisting>#ZONE   TYPE   OPTIONS                 IN                      OUT
+#                                      OPTIONS                 OPTIONS
+home    plain</programlisting>
     </blockquote>
 
     <para>On system A, the hosts accessible through the tunnel will comprise

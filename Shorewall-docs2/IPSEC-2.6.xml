@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-08-30</pubdate>
+    <pubdate>2005-09-03</pubdate>
 
     <copyright>
       <year>2004</year>
@@ -210,19 +210,19 @@
         <para>Encrypted communication is used to/from all hosts in a
         zone.</para>
 
-        <para>The value <emphasis role="bold">Yes</emphasis> is placed in the
-        IPSEC column of the <filename>/etc/shorewall/ipsec</filename> entry
+        <para>The value <emphasis role="bold">ipsec</emphasis> is placed in
+        the TYPE column of the <filename>/etc/shorewall/zones</filename> entry
         for the zone.</para>
       </listitem>
 
       <listitem>
-        <para>Encrypted communication is used to/from only part of the hosts
-        in a zone.</para>
+        <para>By default, encrypted communication is not used to communicate
+        with the hosts in a zone.</para>
 
-        <para>The value <emphasis role="bold">No</emphasis> is placed in the
-        IPSEC column of the <filename>/etc/shorewall/ipsec</filename> entry
+        <para>The value <emphasis role="bold">plain</emphasis> is placed in
+        the TYPE column of the <filename>/etc/shorewall/zones</filename> entry
         for the zone and the new <emphasis role="bold">ipsec</emphasis> option
-        is specified in <filename>/etc/shorewall/hosts</filename> for those
+        is specified in <filename>/etc/shorewall/hosts</filename> for any
         hosts requiring secure communication.</para>
       </listitem>
     </orderedlist>
@@ -233,15 +233,15 @@
     </note>
 
     <note>
-      <para>It is redundent to have <emphasis role="bold">Yes</emphasis> in
-      the IPSEC column of the <filename>/etc/shorewall/ipsec</filename> entry
+      <para>It is redundent to have <emphasis role="bold">ipsec</emphasis> in
+      the TYPE column of the <filename>/etc/shorewall/zones</filename> entry
       for a zone and to also have the <emphasis role="bold">ipsec</emphasis>
       option in <filename>/etc/shorewall/hosts</filename> entries for that
       zone.</para>
     </note>
 
     <para>Finally, the OPTIONS, IN OPTIONS and OUT OPTIONS columns in
-    /etc/shorewall/ipsec can be used to match the zone to a particular (set
+    /etc/shorewall/zones can be used to match the zone to a particular (set
     of) SA(s) used to encrypt and decrypt traffic to/from the zone and the
     security policies that select which traffic to encrypt/decrypt.</para>
 
@@ -319,10 +319,10 @@ ipsec         net         206.162.148.9
       <para><filename>/etc/shorewall/zones</filename> — Systems A and
       B:</para>
 
-      <programlisting>#ZONE          IPSEC            OPTIONS             IN           OUT
-#              ONLY                                 OPTIONS      OPTIONS
-vpn            No
-net            No
+      <programlisting>#ZONE          TYPE             OPTIONS             IN           OUT
+#                                                   OPTIONS      OPTIONS
+vpn            plain
+net            plain
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
     </blockquote>
 
@@ -472,9 +472,9 @@ sainfo address 192.168.1.0/24 any address 134.28.54.2/32 any
         through an ESP tunnel then the following entry would be
         appropriate:</para>
 
-        <programlisting>#ZONE   IPSEC   OPTIONS                 IN                      OUT
-#       ONLY                            OPTIONS                 OPTIONS
-sec     yes     mode=tunnel             <emphasis role="bold">mss=1400</emphasis></programlisting>
+        <programlisting>#ZONE   TYPE    OPTIONS                 IN                      OUT
+#                                       OPTIONS                 OPTIONS
+sec     ipsec   mode=tunnel             <emphasis role="bold">mss=1400</emphasis></programlisting>
 
         <para>Note that CLAMPMSS=Yes in <filename>shorewall.conf</filename>
         isn't effective with the 2.6 native IPSEC implementation because there
@@ -503,11 +503,11 @@ sec     yes     mode=tunnel             <emphasis role="bold">mss=1400</emphasis
       <blockquote>
         <para>/etc/shorewall/zones — System A</para>
 
-        <programlisting>#ZONE          IPSEC            OPTIONS             IN           OUT
-#              ONLY                                 OPTIONS      OPTIONS
-vpn            Yes
-net            No
-loc            No
+        <programlisting>#ZONE          TYPE             OPTIONS             IN           OUT
+#                                                   OPTIONS      OPTIONS
+vpn            ipsec
+net            plain
+loc            plain
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
       </blockquote>
 
@@ -546,11 +546,11 @@ vpn               eth0:0.0.0.0/0
       <blockquote>
         <para>/etc/shorewall/zones - System B:</para>
 
-        <programlisting>#ZONE          IPSEC            OPTIONS             IN           OUT
-#              ONLY                                 OPTIONS      OPTIONS
-vpn            Yes
-net            No
-loc            No
+        <programlisting>#ZONE          TYPE             OPTIONS             IN           OUT
+#                                                   OPTIONS      OPTIONS
+vpn            ipsec
+net            plain
+loc            plain
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
 
         <para>/etc/shorewall/tunnels - System B:</para>
@@ -759,10 +759,10 @@ ipsec:noah     net              192.168.20.0/24 loc</programlisting>
 
       <para>/etc/shorewall/zones:</para>
 
-      <programlisting>#ZONE          IPSEC            OPTIONS             IN           OUT
-#              ONLY                                 OPTIONS      OPTIONS
-loc            Yes              mode=transport
-net</programlisting>
+      <programlisting>#ZONE          TYPE             OPTIONS             IN           OUT
+#                                                   OPTIONS      OPTIONS
+loc            ipsec            mode=transport
+net            plain</programlisting>
 
       <para><filename>/etc/shorewall/hosts</filename>:</para>
 

@@ -188,16 +188,6 @@
       </varlistentry>
 
       <varlistentry>
-        <term><link linkend="Ipsec">ipsec</link></term>
-
-        <listitem>
-          <para>a parameter file installed in <filename
-          class="directory">/etc/shorewall</filename> and used to describe
-          ipsec policies associated with zones.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
         <term><link linkend="Maclist">maclist</link></term>
 
         <listitem>
@@ -423,16 +413,22 @@ NET_OPTIONS=blacklist,norfc1918</programlisting>
       </varlistentry>
 
       <varlistentry>
-        <term>IPSEC</term>
+        <term>TYPE</term>
 
         <listitem>
           <simplelist>
-            <member>Yes - All traffic to/from this zone is encrypted.</member>
+            <member><emphasis role="bold">ipsec</emphasis> - All traffic
+            to/from this zone is encrypted.</member>
 
-            <member>No - By default, traffic to/from some of the hosts in this
-            zone is not encrypted. Any encrypted hosts are designated using
-            the <emphasis role="bold">ipsec</emphasis> option in <link
+            <member><emphasis role="bold">plain</emphasis> - By default,
+            traffic to/from some of the hosts in this zone is not encrypted.
+            Any encrypted hosts are designated using the <emphasis
+            role="bold">ipsec</emphasis> option in <link
             linkend="Hosts">/etc/shorewall/hosts</link>.</member>
+
+            <member><emphasis role="bold">firewall</emphasis> - Designates the
+            firewall itself. You must have exactly one 'firewall' zone. No
+            options are permitted with a 'firewall' zone. </member>
           </simplelist>
         </listitem>
       </varlistentry>
@@ -1337,10 +1333,11 @@ loc        loc       REJECT    info</programlisting>
 
       <para><filename>/etc/shorewall/zones</filename>:</para>
 
-      <programlisting>#ZONE    DISPLAY     COMMENTS
-sam      Sam         Sam's system at home
-net      Internet    The Internet
-loc      Local       Local Network</programlisting>
+      <programlisting>#ZONE    TYPE        OPTION
+fw       firewall
+sam      plain
+net      plain
+loc      plain</programlisting>
 
       <para><filename>/etc/shorewall/interfaces</filename>:</para>
 

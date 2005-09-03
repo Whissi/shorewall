@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-03-17</pubdate>
+    <pubdate>2005-09-03</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -33,6 +33,13 @@
       License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
+
+  <caution>
+    <para><emphasis role="bold">This article applies to Shorewall 3.0 and
+    later. If you are running a version of Shorewall earlier than Shorewall
+    3.0.0 then please see the documentation for that
+    release.</emphasis></para>
+  </caution>
 
   <section>
     <title>Background</title>
@@ -265,9 +272,8 @@ ACCEPT     net        loc:192.168.1.3   tcp       22</programlisting></para>
 
         <para>In <filename>/etc/shorewall/zones</filename>:</para>
 
-        <programlisting>#ZONE        DISPLAY              DESCRIPTION
-loc          Local                Local Zone
-</programlisting>
+        <programlisting>#ZONE        TYPE          OPTIONS
+loc          plain</programlisting>
 
         <para>In <filename>/etc/shorewall/interfaces</filename>:</para>
 
@@ -285,13 +291,11 @@ loc         eth1       192.168.1.255,192.168.20.255   <emphasis role="bold">rout
         separate zones and control the access between them (the users of the
         systems do not have administrative privileges).</title>
 
-        <para>This example applies to Shorewall 1.4.2 and later.</para>
-
         <para>In <filename>/etc/shorewall/zones</filename>:</para>
 
-        <programlisting>#ZONE        DISPLAY              DESCRIPTION
-loc          Local                Local Zone 1
-loc2         Local2               Local Zone 2</programlisting>
+        <programlisting>#ZONE        TYPE                 OPTIONS
+loc          plain
+loc2         plain</programlisting>
 
         <para>In <filename>/etc/shorewall/interfaces</filename>:</para>
 

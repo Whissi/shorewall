@@ -12,7 +12,7 @@
       <surname>Eastep</surname>
     </author>
 
-    <pubdate>2005-09-02</pubdate>
+    <pubdate>2005-09-03</pubdate>
 
     <copyright>
       <year>2002-2005</year>
@@ -74,53 +74,12 @@
 
   <bridgehead renderas="sect4">Zone File</bridgehead>
 
-  <informaltable colsep="1" pgwide="0">
-    <tgroup align="left" cols="3">
-      <thead valign="middle">
-        <row valign="middle">
-          <entry align="left">ZONE</entry>
-
-          <entry align="left">DISPLAY</entry>
-
-          <entry align="left">COMMENTS</entry>
-        </row>
-      </thead>
-
-      <tbody valign="middle">
-        <row valign="middle">
-          <entry align="left"><literal>net</literal></entry>
-
-          <entry align="left">Net</entry>
-
-          <entry align="left">Internet</entry>
-        </row>
-
-        <row valign="middle">
-          <entry align="left"><literal>ops</literal></entry>
-
-          <entry align="left">Operations</entry>
-
-          <entry align="left">Operations Staff's Class C</entry>
-        </row>
-
-        <row valign="middle">
-          <entry align="left"><literal>loc</literal></entry>
-
-          <entry align="left">Local</entry>
-
-          <entry align="left">Local Class B</entry>
-        </row>
-
-        <row valign="middle">
-          <entry align="left"><literal>dmz</literal></entry>
-
-          <entry align="left">DMZ</entry>
-
-          <entry align="left">Demilitarized zone</entry>
-        </row>
-      </tbody>
-    </tgroup>
-  </informaltable>
+  <programlisting>#ZONE      TYPE          OPTIONS
+fw         firewall
+net        plain
+ops        plain
+loc        plain
+dmz        plain</programlisting>
 
   <para>The <literal>ops</literal> zone has been added to the standard 3-zone
   zones file -- since <literal>ops</literal> is a sub-zone of
@@ -131,53 +90,10 @@
 
   <bridgehead renderas="sect4">Interfaces File</bridgehead>
 
-  <informaltable colsep="1" pgwide="0">
-    <tgroup align="left" cols="4">
-      <thead valign="middle">
-        <row valign="middle">
-          <entry align="left">ZONE</entry>
-
-          <entry align="left">INTERFACE</entry>
-
-          <entry align="left">BROADCAST</entry>
-
-          <entry align="left">OPTIONS</entry>
-        </row>
-      </thead>
-
-      <tbody valign="middle">
-        <row valign="middle">
-          <entry align="left"><literal>net</literal></entry>
-
-          <entry align="left"><literal>eth0</literal></entry>
-
-          <entry align="left">&lt;whatever&gt;</entry>
-
-          <entry align="left">&lt;options&gt;</entry>
-        </row>
-
-        <row valign="middle">
-          <entry align="left"><literal>dmz</literal></entry>
-
-          <entry align="left"><literal>eth1</literal></entry>
-
-          <entry align="left">&lt;whatever&gt;</entry>
-
-          <entry align="left"></entry>
-        </row>
-
-        <row>
-          <entry align="left"><literal>-</literal></entry>
-
-          <entry align="left"><literal>eth2</literal></entry>
-
-          <entry align="left"><literal>10.10.255.255</literal></entry>
-
-          <entry align="left"></entry>
-        </row>
-      </tbody>
-    </tgroup>
-  </informaltable>
+  <programlisting>#ZONE      INTERFACE        BROACAST        OPTIONS
+net        eth0             &lt;whatever&gt;      ...
+dmz        eth1             &lt;whatever&gt;      ...
+-          eth2             10.10.255.255</programlisting>
 
   <para>Because <literal>eth2</literal> interfaces to two zones
   (<literal>ops</literal> and <literal>loc</literal>), we don't specify a zone
@@ -187,37 +103,9 @@
 
   <bridgehead renderas="sect4">Hosts File</bridgehead>
 
-  <informaltable colsep="1" pgwide="0">
-    <tgroup align="left" cols="3">
-      <thead valign="middle">
-        <row valign="middle">
-          <entry align="left">ZONE</entry>
-
-          <entry align="left">HOST(S)</entry>
-
-          <entry align="left">OPTIONS</entry>
-        </row>
-      </thead>
-
-      <tbody valign="middle">
-        <row valign="middle">
-          <entry align="left"><literal>ops</literal></entry>
-
-          <entry align="left"><literal>eth2:10.10.10.0/24</literal></entry>
-
-          <entry align="left"></entry>
-        </row>
-
-        <row valign="middle">
-          <entry align="left"><literal>loc</literal></entry>
-
-          <entry align="left"><literal>eth2:0.0.0.0/0</literal></entry>
-
-          <entry align="left"></entry>
-        </row>
-      </tbody>
-    </tgroup>
-  </informaltable>
+  <programlisting>#ZONE      HOST(S)                OPTIONS
+ops        eth2:10.10.10.0/24
+loc        eth2:0.0.0.0/0</programlisting>
 
   <para>Here we define the <literal>ops</literal> and <literal>loc</literal>
   zones. When Shorewall is stopped, only the hosts in the
@@ -232,93 +120,12 @@
 
   <bridgehead renderas="sect4">Policy File</bridgehead>
 
-  <informaltable colsep="1" pgwide="0">
-    <tgroup align="left" cols="5">
-      <thead valign="middle">
-        <row valign="middle">
-          <entry align="left">SOURCE</entry>
-
-          <entry align="left">DEST</entry>
-
-          <entry align="left">POLICY</entry>
-
-          <entry align="left">LOG LEVEL</entry>
-
-          <entry align="left">LIMIT BURST</entry>
-        </row>
-      </thead>
-
-      <tbody>
-        <row valign="middle">
-          <entry align="left"><!-- To color the cell grey, uncomment the following 2 lines
-								<?dbhtml bgcolor="#EEEEEE" ?>
-								<?dbfo bgcolor="#EEEEEE" ?>
-								--> <emphasis role="bold"> <literal>ops</literal> </emphasis></entry>
-
-          <entry align="left"><emphasis role="bold"> <literal>all</literal>
-          </emphasis></entry>
-
-          <entry align="left"><emphasis role="bold"> <literal>ACCEPT</literal>
-          </emphasis></entry>
-
-          <entry align="left"></entry>
-
-          <entry align="left"></entry>
-        </row>
-
-        <row valign="middle">
-          <entry align="left"><emphasis role="bold"> <literal>all</literal>
-          </emphasis></entry>
-
-          <entry align="left"><emphasis role="bold"> <literal>ops</literal>
-          </emphasis></entry>
-
-          <entry align="left"><emphasis role="bold">
-          <literal>CONTINUE</literal> </emphasis></entry>
-
-          <entry align="left"></entry>
-
-          <entry align="left"></entry>
-        </row>
-
-        <row valign="middle">
-          <entry align="left"><literal>loc</literal></entry>
-
-          <entry align="left"><literal>net</literal></entry>
-
-          <entry align="left"><literal>ACCEPT</literal></entry>
-
-          <entry align="left"></entry>
-
-          <entry align="left"></entry>
-        </row>
-
-        <row valign="middle">
-          <entry align="left"><literal>net</literal></entry>
-
-          <entry align="left"><literal>all</literal></entry>
-
-          <entry align="left"><literal>DROP</literal></entry>
-
-          <entry align="left"><literal>info</literal></entry>
-
-          <entry align="left"></entry>
-        </row>
-
-        <row valign="middle">
-          <entry align="left"><literal>all</literal></entry>
-
-          <entry align="left"><literal>all</literal></entry>
-
-          <entry align="left"><literal>REJECT</literal></entry>
-
-          <entry align="left"><literal>info</literal></entry>
-
-          <entry align="left"></entry>
-        </row>
-      </tbody>
-    </tgroup>
-  </informaltable>
+  <programlisting>#SOURCE          DEST         POLICY         LOG LEVEL
+<emphasis role="bold">ops              all          ACCEPT
+all              ops          CONTINUE</emphasis>
+loc              net          ACCEPT
+net              all          DROP           info
+all              all          REJECT         info</programlisting>
 
   <para>Two entries for <literal>ops</literal> (in bold) have been added to
   the standard 3-zone policy file.</para>
@@ -327,61 +134,8 @@
 
   <bridgehead renderas="sect4">Rules File</bridgehead>
 
-  <informaltable colsep="1" pgwide="0">
-    <tgroup align="left" cols="7">
-      <thead valign="middle">
-        <row valign="middle">
-          <entry align="left">ACTION</entry>
-
-          <entry align="left">SOURCE</entry>
-
-          <entry align="left">DEST</entry>
-
-          <entry align="left">PROTO</entry>
-
-          <entry align="left">DEST PORT(S)</entry>
-
-          <entry align="left">SOURCE PORT(S)</entry>
-
-          <entry align="left">ORIGINAL DEST</entry>
-        </row>
-      </thead>
-
-      <tbody>
-        <row valign="middle">
-          <entry align="left"><literal>REDIRECT</literal></entry>
-
-          <entry align="left"><literal>loc!ops</literal></entry>
-
-          <entry align="left"><literal>3128</literal></entry>
-
-          <entry align="left"><literal>tcp</literal></entry>
-
-          <entry align="left"><literal>http</literal></entry>
-
-          <entry align="left"></entry>
-
-          <entry align="left"></entry>
-        </row>
-
-        <row valign="middle">
-          <entry align="left"><literal>...</literal></entry>
-
-          <entry align="left"></entry>
-
-          <entry align="left"></entry>
-
-          <entry align="left"></entry>
-
-          <entry align="left"></entry>
-
-          <entry align="left"></entry>
-
-          <entry align="left"></entry>
-        </row>
-      </tbody>
-    </tgroup>
-  </informaltable>
+  <programlisting>#ACTION   SOURCE      DEST        PROTO        DEST PORT(S)     SOURCE PORTS(S)    ORIGINAL DEST
+REDIRECT  loc!ops     3128        tcp          http</programlisting>
 
   <para>This is the rule that transparently redirects web traffic to the
   transparent proxy running on the firewall. The <emphasis
@@ -392,29 +146,7 @@
 
   <bridgehead renderas="sect4">Routestopped File</bridgehead>
 
-  <informaltable colsep="1" pgwide="0">
-    <tgroup align="left" cols="2">
-      <thead valign="middle">
-        <row valign="middle">
-          <entry align="left">INTERFACE</entry>
-
-          <entry align="left">HOST(S))</entry>
-        </row>
-      </thead>
-
-      <tbody>
-        <row valign="middle">
-          <entry align="left"><literal>eth1</literal></entry>
-
-          <entry align="left"></entry>
-        </row>
-
-        <row valign="middle">
-          <entry align="left"><literal>eth2</literal></entry>
-
-          <entry align="left"><literal>10.10.10.0/24</literal></entry>
-        </row>
-      </tbody>
-    </tgroup>
-  </informaltable>
+  <programlisting>#INTERFACE          HOST(S)           OPTIONS
+eth1
+eth2                10.10.10.0/24</programlisting>
 </article>

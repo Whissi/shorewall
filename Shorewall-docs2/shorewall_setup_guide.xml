@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-09-03</pubdate>
+    <pubdate>2005-09-04</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -130,15 +130,50 @@
     instructions and some contain default entries.</para>
 
     <para>Shorewall views the network where it is running as being composed of
-    a set of zones. </para>
+    a set of zones. In this guide, we will use the following zones:</para>
+
+    <variablelist>
+      <varlistentry>
+        <term>fw</term>
+
+        <listitem>
+          <para>The firewall system itself.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>net</term>
+
+        <listitem>
+          <para>The public Internet. </para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>loc</term>
+
+        <listitem>
+          <para>A private local network using private IP addresses.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>dmz</term>
+
+        <listitem>
+          <para>A Demilitarized Zone holding publicly-accessible
+          servers.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
 
     <para>Zones are defined in the file <filename><ulink
     url="Documentation.htm#Zones"><filename>/etc/shorewall/zones</filename></ulink></filename>.</para>
 
     <important>
       <para>The <filename>/etc/shorewall/zones</filename> file included in the
-      release is empty. You can create a standard set of zones by copying and
-      pasting the following into the file:</para>
+      release is empty. You can create the standard set of zones described
+      above by copying and pasting the following into the file:</para>
 
       <programlisting>#ZONE   TYPE             OPTIONS
 fw      firewall
@@ -214,10 +249,11 @@ dmz     plain</programlisting>
     <para>Just because connections of a particular type are allowed from zone
     A to the firewall and are also allowed from the firewall to zone B
     <emphasis role="bold">DOES NOT mean that these connections are allowed
-    from zone A to zone B</emphasis>. It rather means that you can have a
-    proxy running on the firewall that accepts a connection from zone A and
-    then establishes its own separate connection from the firewall to zone
-    B.</para>
+    from zone A to zone B</emphasis> (in other words, policies and rules
+    involving the firewall zone are not transitibe). It rather means that you
+    can have a proxy running on the firewall that accepts a connection from
+    zone A and then establishes its own separate connection from the firewall
+    to zone B.</para>
 
     <para>For each connection request entering the firewall, the request is
     first checked against the <filename>/etc/shorewall/rules</filename> file.
@@ -237,9 +273,9 @@ net              all                 DROP       info
 all              all                 REJECT     info</programlisting>
 
     <important>
-      <para>Beginning with Shorewall 2.2.0, the released policy file is empty.
-      You can copy and paste the above entries to create a starting point from
-      which to customize your policies.</para>
+      <para>The currently released policy file is empty. You can copy and
+      paste the above entries to create a starting point from which to
+      customize your policies.</para>
     </important>
 
     <para>The above policies will:</para>
@@ -381,6 +417,9 @@ all              all                 REJECT     info</programlisting>
 net      eth0           detect        rfc1918
 loc      eth1           detect
 dmz      eth2           detect</programlisting>
+
+    <para>Note that the <emphasis role="bold">fw</emphasis> zone has no entry
+    in the /etc/shorewall/interfaces file.</para>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" /></para>
 
@@ -1655,6 +1694,12 @@ ACCEPT   net     loc:192.168.201.4  tcp    www</programlisting>
 
     <section id="Rules">
       <title>Rules</title>
+
+      <note>
+        <para>Shorewall has a <ulink url="Macros.html">macro facility</ulink>
+        that includes macros for many standard applications. This section does
+        not use those macros but rather defines the rules directly. </para>
+      </note>
 
       <para><inlinegraphic fileref="images/BD21298_.gif" /></para>
 

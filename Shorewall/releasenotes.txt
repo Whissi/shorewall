@@ -1,43 +1,21 @@
-Shorewall 2.5.4
+Shorewall 2.5.5.
+
+Problems Corrected in 2.5.5:
+
+1)  The install script now installs the correct Makefile. Previously,
+    the /etc/shorewall/actions file was identical to the Makefile.
+
+2)  The IPSEC column in /etc/shorewall/zones has been renamed TYPE and
+    can have one of the following values:
+
+    plain, -, or <empty>	  A normal zone
+    ipsec			  An IPSEC zone
+    firewall			  The firewall zone. There must be
+				  exactly one firewall zone.
 
 Problems Corrected in 2.5.4:
 
 1)  Several serious problems associated with macros have been corrected.
-
-New Features in Shorewall 2.5.4
-
-1)  Shorewall actions lack a generalized way to pass parameters to an
-    extension script associated with an action. To work around this
-    lack, some users have used the log tag as a parameter. This works
-    but requires that a log level other than 'none' be specified when
-    the action is invoked. Beginning with this release, you can invoke
-    an action with 'none'.
-
-    Example:
-
-	#ACTION				SOURCE          DEST
-	A:none:these,are,parameters   fw		net
-
-    When /etc/shorewall/A is invoked, the LEVEL variable will be empty
-    but the TAG variable will contain "these,are,parameters" which
-    can be easily parsed to isolate "these", "are" and "parameters":
-
-	ifs=$IFS
-	IFS=,
-	set -- $TAG
-	IFS=$ifs
-
-    Now, $1 = these, $2 = are and $3 = parameters
-
-2)  The "shorewall check" command now checks the /etc/shorewall/masq,
-    /etc/shorewall/blacklist, /etc/shorewall/proxyarp, 
-    /etc/shorewall/nat and /etc/shorewall/providers files.
-
-3)  Arne Bernin's "tc4shorewall" package has been integrated into
-    Shorewall. Arne will be providing documentation and support for
-    this part of Shorewall.
-
-    Thanks, Arne!
 
 Problems Corrected in 2.5.3:
 
@@ -527,4 +505,14 @@ New Features in Shorewall 2.5.*
 	IFS=$ifs
 
     Now, $1 = these, $2 = are and $3 = parameters
+
+18) The "shorewall check" command now checks the /etc/shorewall/masq,
+    /etc/shorewall/blacklist, /etc/shorewall/proxyarp, 
+    /etc/shorewall/nat and /etc/shorewall/providers files.
+
+19)  Arne Bernin's "tc4shorewall" package has been integrated into
+    Shorewall. Arne will be providing documentation and support for
+    this part of Shorewall.
+
+    Thanks, Arne!
 

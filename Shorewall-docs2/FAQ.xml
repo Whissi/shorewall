@@ -17,7 +17,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-08-30</pubdate>
+    <pubdate>2005-09-07</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -89,7 +89,7 @@
       message "error: failed dependencies:iproute is needed..."</title>
 
       <para><emphasis role="bold">Answer</emphasis>: Read the <ulink
-      url="Install.htm">Installation Instructions</ulink>!!!!!</para>
+      url="Install.htm">Installation Instructions</ulink>!</para>
     </section>
 
     <section id="faq50">
@@ -631,6 +631,26 @@ to debug/develop the newnat interface.</programlisting></para>
         PortSentry.</para>
       </section>
     </section>
+
+    <section id="faq51">
+      <title>(FAQ 51) How do I "Open a Port" with Shorewall</title>
+
+      <para><emphasis role="bold">Answer</emphasis>: It depends…</para>
+
+      <para>If the application serving the port is running on the same system
+      as Shorewall then add this rule:</para>
+
+      <programlisting>#ACTION       SOURCE         DEST        PROTO         DEST PORT(S)
+ACCEPT        net            $FW         &lt;protocol&gt;    &lt;port number&gt;</programlisting>
+
+      <para>Where &lt;protocol&gt; is either <emphasis>tcp</emphasis> or
+      <emphasis>udp</emphasis> and &lt;port number&gt; is the port that you
+      wish to "open".</para>
+
+      <para>If the application serving the port is running on one of the
+      systems in your local network then please see <link linkend="faq1">FAQ
+      1</link>.</para>
+    </section>
   </section>
 
   <section>
@@ -816,7 +836,7 @@ LOGBURST=""</programlisting>
       <title>(FAQ 16) Shorewall is writing log messages all over my console
       making it unusable!</title>
 
-      <para><emphasis role="bold">Answer:</emphasis> </para>
+      <para><emphasis role="bold">Answer:</emphasis></para>
 
       <itemizedlist>
         <listitem>
@@ -1182,7 +1202,7 @@ LOGBURST=""</programlisting>
       different ISPs. How do I set this up in Shorewall?</title>
 
       <para>Answer: See <ulink url="Shorewall_and_Routing.html">this article
-      on Shorewall and Routing</ulink>. </para>
+      on Shorewall and Routing</ulink>.</para>
     </section>
 
     <section id="faq49">
@@ -1647,8 +1667,8 @@ TOS=0x00 PREC=0x00 TTL=64 ID=26774 DF PROTO=TCP SPT=32797 DPT=80 WINDOW=5840 RES
             <para>Add a zone for the modem in
             <filename>/etc/shorewall/zones</filename>:</para>
 
-            <programlisting>#ZONE    DISPLAY       COMMENTS
-modem    ADSLModem     Zone for modem</programlisting>
+            <programlisting>#ZONE    TYPE          OPTIONS
+modem    plain</programlisting>
           </listitem>
 
           <listitem>

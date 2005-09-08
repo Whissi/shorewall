@@ -5,7 +5,13 @@ Problems Corrected in 2.5.5:
 1)  The install script now installs the correct Makefile. Previously,
     the /etc/shorewall/actions file was identical to the Makefile.
 
-2)  The IPSEC column in /etc/shorewall/zones has been renamed TYPE and
+2)  Error Handling was completely broken; operations such as 
+    "shorewall start" would continue after what should have been fatal
+    errors.
+
+New Features in 2.5.5:
+
+1)  The IPSEC column in /etc/shorewall/zones has been renamed TYPE and
     can have one of the following values:
 
     plain, -, or <empty>	  A normal zone

@@ -133,7 +133,7 @@ ensure_and_save_command()
     if eval $* ; then
 	echo "$@" >> $RESTOREBASE
     else
-	[ -z "STOPPING" ] && { stop_firewall; exit 2; }
+	[ -z "$STOPPING" ] && { stop_firewall; exit 2; }
     fi
 }
 
@@ -156,7 +156,7 @@ run_iptables() {
     [ -n "$IPRANGE_MATCH" ] && [ -f $TMP_DIR/iprange ] && rm -f $TMP_DIR/iprange
 
     if ! $IPTABLES $@ ; then
-	if [ -z "STOPPING" ]; then
+	if [ -z "$STOPPING" ]; then
 	    error_message "ERROR: Command \"$IPTABLES $@\" Failed"
 	    stop_firewall
 	    exit 2
@@ -196,7 +196,7 @@ qt_iptables() {
 #
 run_ip() {
     if ! ip $@ ; then
-	if [ -z "STOPPING" ]; then
+	if [ -z "$STOPPING" ]; then
 	    error_message "ERROR: Command \"ip $@\" Failed"
 	    stop_firewall
 	    exit 2
@@ -209,7 +209,7 @@ run_ip() {
 #
 run_tc() {
     if ! tc $@ ; then
-	if [ -z "STOPPING" ]; then
+	if [ -z "$STOPPING" ]; then
 	    error_message "ERROR: Command \"tc $@\" Failed"
 	    stop_firewall
 	    exit 2
@@ -222,7 +222,7 @@ run_tc() {
 #
 run_ipset() {
     if ! ipset $@ ; then
-	if [ -z "STOPPING" ]; then
+	if [ -z "$STOPPING" ]; then
 	    error_message "ERROR: Command \"ipset $@\" Failed"
 	    stop_firewall
 	    exit 2
@@ -1813,7 +1813,7 @@ log_rule_limit() # $1 = log level, $2 = chain, $3 = display Chain $4 = dispositi
     case $level in
 	ULOG)
 	    if ! $IPTABLES $command $chain $@ $limit -j ULOG $LOGPARMS --ulog-prefix "$prefix" ; then
-		if [ -z "STOPPING" ]; then
+		if [ -z "$STOPPING" ]; then
 		    error_message "ERROR: Command \"$IPTABLES $command $chain $@ $limit -j ULOG $LOGPARMS --ulog-prefix \"$prefix\"\" Failed"
 		    stop_firewall
 		    exit 2
@@ -1822,7 +1822,7 @@ log_rule_limit() # $1 = log level, $2 = chain, $3 = display Chain $4 = dispositi
 	    ;;
 	*)
 	    if ! $IPTABLES $command $chain $@ $limit -j LOG $LOGPARMS --log-level $level --log-prefix "$prefix"; then
-		if [ -z "STOPPING" ]; then
+		if [ -z "$STOPPING" ]; then
 		    error_message "ERROR: Command \"$IPTABLES $command $chain $@ $limit -j  LOG $LOGPARMS --log-level $level --log-prefix \"$prefix\"\" Failed"
 		    stop_firewall
 		    exit 2
@@ -1832,7 +1832,7 @@ log_rule_limit() # $1 = log level, $2 = chain, $3 = display Chain $4 = dispositi
     esac
 	
     if [ $? -ne 0 ] ; then
-	[ -z "STOPPING" ] && { stop_firewall; exit 2; }
+	[ -z "$STOPPING" ] && { stop_firewall; exit 2; }
     fi
 }
 

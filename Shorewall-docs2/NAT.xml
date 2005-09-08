@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2004-12-23</pubdate>
+    <pubdate>2005-09-08</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -33,6 +33,13 @@
       License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
+
+  <caution>
+    <para><emphasis role="bold">This article applies to Shorewall 3.0 and
+    later. If you are running a version of Shorewall earlier than Shorewall
+    3.0.0 then please see the documentation for that
+    release.</emphasis></para>
+  </caution>
 
   <section>
     <title>One-to-one NAT</title>
@@ -79,8 +86,7 @@
       whether access to the external IP from all firewall interfaces should
       undergo NAT (Yes or yes) or if only access from the interface in the
       INTERFACE column should undergo NAT. If you leave this column empty,
-      <quote>No</quote> is assumed (Shorewall 2.0.0 and later -- prior to
-      this, <quote>Yes</quote> was assumed). <emphasis role="bold">Specifying
+      <quote>No</quote> is assumed . <emphasis role="bold">Specifying
       <quote>Yes</quote> in this column will not by itself allow systems on
       the lower LAN to access each other using their public IP
       addresses.</emphasis> For example, the lower left-hand system (10.1.1.2)
@@ -98,13 +104,7 @@
       <quote>yes</quote> then you must NOT configure your own
       alias(es).</para>
 
-      <para><important>
-          <para>Shorewall versions earlier than 1.4.6 can only add external
-          addresses to an interface that is configured with a single
-          subnetwork -- if your external interface has addresses in more than
-          one subnetwork, Shorewall 1.4.5 and earlier can only add addresses
-          to the first one.</para>
-        </important></para>
+      <para></para>
     </note>
 
     <note>

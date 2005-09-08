@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-03-31</pubdate>
+    <pubdate>2005-09-07</pubdate>
 
     <copyright>
       <year>2002-2005</year>
@@ -202,39 +202,11 @@
     a set of zones. In the three-interface sample configuration, the following
     zone names are used:</para>
 
-    <informaltable>
-      <tgroup align="left" cols="2">
-        <thead valign="middle">
-          <row>
-            <entry align="center">Name</entry>
-
-            <entry align="center">Description</entry>
-          </row>
-        </thead>
-
-        <tbody>
-          <row>
-            <entry>net</entry>
-
-            <entry>The Internet</entry>
-          </row>
-
-          <row>
-            <entry>loc</entry>
-
-            <entry>Your Local Network</entry>
-          </row>
-
-          <row>
-            <entry>dmz</entry>
-
-            <entry>Demilitarized Zone</entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </informaltable>
-
-    <para>Zone names are defined in
+    <para><programlisting>#ZONE   IPSEC   OPTIONS                 IN                      OUT
+#       ONLY                            OPTIONS                 OPTIONS
+net
+loc
+dmz</programlisting>Zone names are defined in
     <filename>/etc/shorewall/zones</filename>.</para>
 
     <para>Shorewall also recognizes the firewall system as its own zone - by
@@ -341,11 +313,11 @@ fw         net         ACCEPT</programlisting>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
-    <para>If your external interface is <filename
+    <para>I<emphasis role="bold">f your external interface is <filename
     class="devicefile">ppp0</filename> or <filename
     class="devicefile">ippp0</filename> then you will want to set
     <varname>CLAMPMSS=yes</varname> in
-    <filename>/etc/shorewall/shorewall.conf</filename>.</para>
+    <filename>/etc/shorewall/shorewall.conf</filename>.</emphasis></para>
 
     <para>Your Local Interface will be an ethernet adapter (<filename
     class="devicefile">eth0</filename>, <filename
@@ -398,13 +370,6 @@ fw         net         ACCEPT</programlisting>
       class="devicefile">ippp0</filename> or if you have a static IP address,
       you can remove <quote>dhcp</quote> from the option list.</para>
     </tip>
-
-    <tip>
-      <para>If you specify <emphasis>nobogons</emphasis> for your external
-      interface, you will want to check the <ulink url="errata.htm">Shorewall
-      Errata</ulink> periodically for updates to the
-      <filename>/usr/share/shorewall/bogons file</filename>.</para>
-    </tip>
   </section>
 
   <section>
@@ -429,10 +394,11 @@ fw         net         ACCEPT</programlisting>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
-    <para>Before starting Shorewall, you should look at the IP address of your
-    external interface and if it is one of the above ranges, you should remove
-    the <varname>norfc1918</varname> option from the external interface's
-    entry in <filename>/etc/shorewall/interfaces</filename>.</para>
+    <para>Before starting Shorewall, <emphasis role="bold">you should look at
+    the IP address of your external interface and if it is one of the above
+    ranges, you should remove the <varname>norfc1918</varname> option from the
+    external interface's entry in
+    <filename>/etc/shorewall/interfaces</filename>.</emphasis></para>
 
     <para>You will want to assign your local addresses from one sub-network or
     subnet and your DMZ addresses from another subnet. For our purposes, we
@@ -606,9 +572,10 @@ fw         net         ACCEPT</programlisting>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
-    <para>If you are using the Debian package, please check your
-    <filename>shorewall.conf</filename> file to ensure that the following is
-    set correctly; if it is not, change it appropriately: <itemizedlist>
+    <para><emphasis role="bold">If you are using the Debian package, please
+    check your <filename>shorewall.conf</filename> file to ensure that the
+    following is set correctly; if it is not, change it appropriately:
+    </emphasis><itemizedlist>
         <listitem>
           <para><varname>IP_FORWARDING=On</varname></para>
         </listitem>
@@ -645,9 +612,9 @@ DNAT      net       dmz:<emphasis>&lt;server local IP address&gt;</emphasis>[:<e
       <title>You run a Web Server on DMZ Computer 2 and you want to forward
       incoming TCP port 80 to that system</title>
 
-      <para><programlisting>#ACTION   SOURCE    DEST                PROTO      DEST PORT(S)
-DNAT      net       dmz:10.10.11.2      tcp        80
-ACCEPT    loc       dmz:10.10.11.2      tcp        80</programlisting><itemizedlist>
+      <para><programlisting>#ACTION     SOURCE    DEST                PROTO      DEST PORT(S)
+Web/DNAT     net    dmz:10.10.11.2  
+Web/ACCEPT   loc    dmz:10.10.11.2</programlisting><itemizedlist>
           <listitem>
             <para>Entry 1 forwards port 80 from the Internet.</para>
           </listitem>
@@ -755,11 +722,11 @@ DNAT      loc       dmz:10.10.11.2   tcp     80            -        $ETH0_IP</pr
         </listitem>
       </itemizedlist> If you run the name server on the firewall:
     <programlisting>#ACTION   SOURCE    DEST                PROTO      DEST PORT(S)                      
-AllowDNS  loc       fw
-AllowDNS  dmz       fw             </programlisting> Run name server on DMZ
+DNS/ACCEPT  loc       fw
+DNS/ACCEPT  dmz       fw             </programlisting> Run name server on DMZ
     computer 1: <programlisting>#ACTION   SOURCE    DEST                PROTO      DEST PORT(S)                      
-AllowDNS  loc       dmz:10.10.11.1
-AllowDNS  fw        dmz:10.10.11.1             </programlisting></para>
+DNS/ACCEPT  loc       dmz:10.10.11.1
+DNS/ACCEPT  fw        dmz:10.10.11.1             </programlisting></para>
 
     <para>In the rules shown above, <quote>AllowDNS</quote> is an example of a
     <emphasis>defined action</emphasis>. Shorewall includes a number of
@@ -792,20 +759,20 @@ ACCEPT    dmz       fw                  udp        53              </programlist
 
     <para>The three-interface sample includes the following rule:
     <programlisting>#ACTION   SOURCE    DEST                PROTO      DEST PORT(S)                      
-AllowDNS  fw        net       </programlisting>That rule allow DNS access from
-    your firewall and may be removed if you commented out the line in
+DNS/ACCEPT  fw        net       </programlisting>That rule allow DNS access
+    from your firewall and may be removed if you commented out the line in
     <filename>/etc/shorewall/policy</filename> allowing all connections from
     the firewall to the Internet.</para>
 
     <para>The sample also includes: <programlisting>#ACTION   SOURCE    DEST                PROTO      DEST PORT(S)                      
-AllowSSH  loc       fw
-AllowSSH  loc       dmz        </programlisting>Those rules allow you to run
+SSH/ACCEPT  loc       fw
+SSH/ACCEPT  loc       dmz        </programlisting>Those rules allow you to run
     an SSH server on your firewall and in each of your DMZ systems and to
     connect to those servers from your local systems.</para>
 
     <para>If you wish to enable other connections between your systems, the
     general format for using a defined action is: <programlisting>#ACTION   SOURCE        DEST                PROTO      DEST PORT(S)                      
-&lt;<emphasis>action</emphasis>&gt;  <emphasis>&lt;source zone&gt; &lt;destination zone&gt;</emphasis></programlisting></para>
+&lt;<emphasis>macro</emphasis>&gt;  <emphasis>&lt;source zone&gt; &lt;destination zone&gt;</emphasis></programlisting></para>
 
     <para>The general format when not using a defined action
     is:<programlisting>#ACTION   SOURCE        DEST                PROTO      DEST PORT(S)                      
@@ -815,10 +782,10 @@ ACCEPT    <emphasis>&lt;source zone&gt; &lt;destination zone&gt;  &lt;protocol&g
       <title>You want to run a publicly-available DNS server on your firewall
       system</title>
 
-      <para>Using defined actions:</para>
+      <para>Using defined macros:</para>
 
       <programlisting>#ACTION   SOURCE    DEST                PROTO      DEST PORT(S)
-AllowDNS  net       fw</programlisting>
+DNS/ACCEPT  net       fw</programlisting>
 
       <para>Not using defined actions:</para>
 
@@ -837,7 +804,7 @@ ACCEPT    net       fw                  udp        53        </programlisting>
       <para>I don't recommend enabling telnet to/from the Internet because it
       uses clear text (even for login!). If you want shell access to your
       firewall from the Internet, use SSH: <programlisting>#ACTION   SOURCE    DEST                PROTO      DEST PORT(S)                      
-AllowSSH  net       fw</programlisting></para>
+SSH/ACCEPT  net       fw</programlisting></para>
     </important>
 
     <para><inlinegraphic fileref="images/leaflogo.gif" format="GIF" /> Bering

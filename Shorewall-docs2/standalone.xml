@@ -166,25 +166,9 @@
     a set of <emphasis>zones</emphasis>. In the one-interface sample
     configuration, only one zone is defined:</para>
 
-    <informaltable>
-      <tgroup cols="2">
-        <thead>
-          <row>
-            <entry align="center">Name</entry>
-
-            <entry align="center">Description</entry>
-          </row>
-        </thead>
-
-        <tbody>
-          <row>
-            <entry>net</entry>
-
-            <entry>The Internet</entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </informaltable>
+    <programlisting>#ZONE   IPSEC   OPTIONS                 IN                      OUT
+#       ONLY                            OPTIONS                 OPTIONS
+net</programlisting>
 
     <para>Shorewall zones are defined in <ulink
     url="Documentation.htm#Zones"><filename>/etc/shorewall/zones</filename></ulink>.</para>
@@ -312,18 +296,18 @@ all            all                REJECT   info</programlisting>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
-    <para>Before starting Shorewall, you should look at the IP address of your
-    external interface and if it is one of the above ranges, you should remove
-    the <quote>norfc1918</quote> option from the entry in
-    <filename>/etc/shorewall/interfaces</filename>.</para>
+    <para>Before starting Shorewall, <emphasis role="bold">you should look at
+    the IP address of your external interface and if it is one of the above
+    ranges, you should remove the <quote>norfc1918</quote> option from the
+    entry in <filename>/etc/shorewall/interfaces</filename>.</emphasis></para>
   </section>
 
   <section>
     <title>Enabling other Connections</title>
 
-    <para>Shorewall 2.0.0 and later include a collection of actions that can
-    be used to quickly allow or deny services. You can find a list of the
-    actions included in your version of Shorewall in the file
+    <para>Shorewall includes a collection of actions that can be used to
+    quickly allow or deny services. You can find a list of the actions
+    included in your version of Shorewall in the file
     <filename>/usr/share/shorewall/actions.std</filename>.</para>
 
     <para>Those actions that allow a connection begin with

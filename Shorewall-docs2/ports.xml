@@ -13,7 +13,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-09-02</pubdate>
+    <pubdate>2005-09-07</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -49,7 +49,7 @@
     <title>Important Notes</title>
 
     <note>
-      <para> Shorewall distribution contains a library of user-defined macros
+      <para>Shorewall distribution contains a library of user-defined macros
       that allow for easily allowing or blocking a particular application.
       Check your <filename>/usr/share/shorewall/actions.std</filename> file
       for a list of macros in your distribution. If you find what you need,
@@ -165,6 +165,31 @@ FTP/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt
   </section>
 
   <section>
+    <title>Gnutella</title>
+
+    <para><orderedlist>
+        <listitem>
+          <para>The internal machine running a Gnutella Client has IP address
+          192.168.1.4.</para>
+        </listitem>
+
+        <listitem>
+          <para>You use Masquerading or SNAT for the local network.</para>
+        </listitem>
+
+        <listitem>
+          <para>The zones are named as they are in the <ulink
+          url="shorewall_quickstart_guide.htm">two- and three-interface
+          QuickStart guides)</ulink>.</para>
+        </listitem>
+
+        <listitem>
+          <para>Your loc-&gt;net policy is ACCEPT</para>
+        </listitem>
+      </orderedlist><programlisting>Gnutella/DNAT        net      loc:192.168.1.4</programlisting></para>
+  </section>
+
+  <section>
     <title>ICQ/AIM</title>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
@@ -211,15 +236,14 @@ ACCEPT     <emphasis>&lt;z1&gt;</emphasis>:&lt;list of client IPs&gt;  <emphasis
     <title>NTP (Network Time Protocol)</title>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    udp        123</programlisting>
+NTP/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
   </section>
 
   <section>
     <title><trademark>PCAnywhere</trademark></title>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    udp        5632
-ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        5631</programlisting>
+PCA/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
   </section>
 
   <section>
@@ -233,8 +257,7 @@ ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</e
     <para>TCP Port 110 (Secure Pop3 is TCP Port 995)</para>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        110           #Unsecure Pop3
-ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        995           #Secure Pop3</programlisting>
+POP3/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis> # Secure &amp; Unsecure Pop3</programlisting>
   </section>
 
   <section>
@@ -252,14 +275,14 @@ ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</e
     <title>rdate</title>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        37</programlisting>
+Rdate/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
   </section>
 
   <section>
     <title>rsync</title>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        873</programlisting>
+Rsync/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
   </section>
 
   <section>
@@ -273,10 +296,8 @@ SSH/ACCEPT <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</e
     <title>SMB/NMB (Samba/Windows Browsing/File Sharing)</title>
 
     <programlisting>#ACTION    SOURCE         DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>     &lt;destination&gt;</emphasis>    tcp        137,139,445     
-ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>     &lt;destination&gt;</emphasis>    udp        137:139
-ACCEPT     <emphasis>&lt;destination&gt;</emphasis>  <emphasis>&lt;source&gt;</emphasis>         tcp        137,139,445
-ACCEPT     <emphasis>&lt;destination&gt;</emphasis>  <emphasis>&lt;source&gt;</emphasis>         udp        137:139</programlisting>
+SMB/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>     &lt;destination&gt;</emphasis>
+SMB/ACCEPT     <emphasis>&lt;destination&gt;</emphasis>  <emphasis>&lt;source&gt;</emphasis></programlisting>
 
     <para>Also, see <ulink url="samba.htm">this page</ulink>.</para>
   </section>
@@ -285,7 +306,7 @@ ACCEPT     <emphasis>&lt;destination&gt;</emphasis>  <emphasis>&lt;source&gt;</e
     <title>SMTP</title>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        25     #Insecure SMTP
+SMTP/ACCEPT<emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>                      #Insecure SMTP
 ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        465    #SMTP over SSL (TLS)</programlisting>
   </section>
 
@@ -293,15 +314,14 @@ ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</e
     <title>SNMP</title>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    udp        161:162
-ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        161</programlisting>
+SNMP/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
   </section>
 
   <section>
     <title>Telnet</title>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        23</programlisting>
+Telnet/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
   </section>
 
   <section>
@@ -325,8 +345,7 @@ ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</e
     <title>Traceroute</title>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    udp        33434:33443        #Good for 10 hops
-ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    icmp       8</programlisting>
+Trcrt/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>  #Good for 10 hops</programlisting>
 
     <para>UDP traceroute uses ports 33434 through 33434+&lt;max number of
     hops&gt;-1. Note that for the firewall to respond with a TTL expired ICMP
@@ -345,7 +364,7 @@ ACCEPT     fw        ...</programlisting>
     <title>Usenet (NNTP)</title>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        119</programlisting>
+NNTP/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis> </programlisting>
 
     <para>TCP Port 119</para>
   </section>
@@ -367,7 +386,7 @@ ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</e
     <para>Vncserver to Vncviewer in listen mode -- TCP port 5500.</para>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        5500</programlisting>
+VNCL/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
   </section>
 
   <section>
@@ -386,8 +405,7 @@ ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</e
     <title>Web Access</title>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        80       #Insecure HTTP
-ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        443      #Secure HTTP</programlisting>
+Web/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis> #Insecure HTTP&amp; Secure HTTP</programlisting>
   </section>
 
   <section>

@@ -19,6 +19,14 @@ New Features in 2.5.5:
     firewall			  The firewall zone. There must be
 				  exactly one firewall zone.
 
+2)  When /usr/share/shorewall/functions is loaded it now sets
+
+	 SHOREWALL_LIBRARY=Loaded
+
+    Application code such as /etc/shorewall/tcstart may test that
+    variable to determine if the library has been loaded into the
+    current shell process.
+
 Problems Corrected in 2.5.4:
 
 1)  Several serious problems associated with macros have been corrected.

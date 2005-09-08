@@ -213,31 +213,12 @@
 
     <para>Shorewall views the network where it is running as being composed of
     a set of zones. In the two-interface sample configuration, the following
-    zone names are used: <informaltable frame="all" pgwide="0">
-        <tgroup align="left" cols="2">
-          <thead valign="middle">
-            <row valign="middle">
-              <entry align="left">Name</entry>
+    zone names are used: </para>
 
-              <entry align="left">Description</entry>
-            </row>
-          </thead>
-
-          <tbody valign="middle">
-            <row valign="middle">
-              <entry align="left"><varname>net</varname></entry>
-
-              <entry align="left">The Internet</entry>
-            </row>
-
-            <row valign="middle">
-              <entry align="left"><varname>loc</varname></entry>
-
-              <entry align="left">Your Local Network</entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable> Zones are defined in the <ulink
+    <para><programlisting>#ZONE   IPSEC   OPTIONS                 IN                      OUT
+#       ONLY                            OPTIONS                 OPTIONS
+net
+loc</programlisting> Zones are defined in the <ulink
     url="Documentation.htm#Zones"><filename
     class="directory">/etc/shorewall/</filename><filename>zones</filename></ulink>
     file.</para>

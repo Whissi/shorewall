@@ -180,7 +180,6 @@ setup_traffic_shaping()
 
 	add_tc_class() {
 		local full
-		#set -x
 		full=$(get_outband_for_dev $device)
 		full=$(rate_to_kbit $full)
 		#set -x
@@ -201,7 +200,6 @@ setup_traffic_shaping()
                 		ceil="$(($ceil))kbit"
 				;;
 		esac
-		#set +x
 	
 		ensure_and_save_command tc class add dev $device parent 1:1 classid 1:1$mark htb rate $rate ceil $ceil prio $prio quantum $(calculate_quantum $rate)
 		ensure_and_save_command tc qdisc add dev $device parent 1:1$mark handle 1$mark: sfq perturb 10
@@ -215,7 +213,6 @@ setup_traffic_shaping()
 		list_search "tos-minimize-reliability" $options && ensure_and_save_command tc filter add dev $device parent 1:0 protocol ip prio 10 u32 match ip tos 0x04 0xff flowid 1:1$mark
 		list_search "tos-normal-service" $options && ensure_and_save_command tc filter add dev $device parent 1:0 protocol ip prio 10 u32 match ip tos 0x00 0xff flowid 1:1$mark
 		# tcp
-		set +x
 	}
 
 	strip_file tcdevices

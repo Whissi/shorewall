@@ -278,122 +278,14 @@ loc       loc           ACCEPT</programlisting>
     <section id="DMZ">
       <title>Squid (transparent) Running in the DMZ</title>
 
-      <para>You have a single Linux system in your DMZ with IP address
-      192.0.2.177. You want to run both a web server and Squid on that system.
-      Your DMZ interface is eth1 and your local interface is eth2.</para>
+      <para>You have a single system in your DMZ with IP address 192.0.2.177.
+      You want to run both a web server and Squid on that system.</para>
 
-      <para>If you are running a Shorewall version earlier than 2.3.2
-      then:</para>
+      <para>In <filename>/etc/shorewall/rules</filename>:</para>
 
-      <orderedlist>
-        <listitem>
-          <para>On your firewall system, issue the following command</para>
-
-          <programlisting><command>echo 202 www.out &gt;&gt; /etc/iproute2/rt_tables</command>     </programlisting>
-        </listitem>
-
-        <listitem>
-          <para>Create <filename>/etc/shorewall/addroutes</filename> as
-          follows:</para>
-
-          <programlisting><command>#!/bin/sh
-
-if [ -z "`ip rule list | grep www.out`" ] ; then
-        ip rule add fwmark 0xCA table www.out # Note 0xCA = 202
-        ip route add default via 192.168.1.3 dev eth1 table www.out
-        ip route flush cache
-        echo 0 &gt; /proc/sys/net/ipv4/conf/eth1/send_redirects
-fi</command>
-          </programlisting>
-        </listitem>
-
-        <listitem>
-          <para>Make <filename>/etc/shorewall/addroutes</filename> executable
-          via:</para>
-
-          <programlisting><command>chmod +x /etc/shorewall/addroutes</command>       </programlisting>
-        </listitem>
-
-        <listitem>
-          <para>In <filename>/etc/shorewall/init</filename>, put:</para>
-
-          <programlisting><command>run_and_save_command "/etc/shorewall/addroutes"</command>  </programlisting>
-        </listitem>
-      </orderedlist>
-
-      <para>If you are running Shorewall 2.3.2 or later:</para>
-
-      <orderedlist>
-        <listitem>
-          <para>Add this entry in
-          <filename>/etc/shorewall/providers</filename>:</para>
-        </listitem>
-      </orderedlist>
-
-      <blockquote>
-        <programlisting>#NAME   NUMBER  MARK    DUPLICATE       INTERFACE       GATEWAY         OPTIONS
-Squid   1       202     -               eth1            192.0.2.177     -
-</programlisting>
-      </blockquote>
-
-      <para>Regardless of your Shorewall version, you need the
-      following:</para>
-
-      <orderedlist>
-        <listitem>
-          <para>Do <emphasis role="bold">one</emphasis> of the
-          following:</para>
-
-          <orderedlist numeration="loweralpha">
-            <listitem>
-              <para>In <filename>/etc/shorewall/start</filename> add</para>
-
-              <programlisting><command>iptables -t mangle -A PREROUTING -i eth2 -p tcp --dport 80 -j MARK --set-mark 202</command>      </programlisting>
-            </listitem>
-
-            <listitem>
-              <para>Set MARK_IN_FORWARD_CHAIN=No in
-              <filename>/etc/shorewall/shorewall.conf</filename> and add the
-              following entry in
-              <filename>/etc/shorewall/tcrules</filename>:</para>
-
-              <programlisting>#MARK   SOURCE   DESTINATION    PROTOCOL    PORT
-202     eth2     0.0.0.0/0      tcp         80</programlisting>
-            </listitem>
-
-            <listitem>
-              <para>Add the following entry in
-              <filename>/etc/shorewall/tcrules</filename>:</para>
-
-              <programlisting>#MARK   SOURCE   DESTINATION    PROTOCOL    PORT
-202:P   eth2     0.0.0.0/0      tcp         80</programlisting>
-            </listitem>
-          </orderedlist>
-        </listitem>
-
-        <listitem>
-          <para>In <filename>/etc/shorewall/rules</filename>, you will
-          need:</para>
-
-          <programlisting>#ACTION   SOURCE   DEST   PROTO   DEST PORT(S)
-ACCEPT    loc      dmz    tcp     80
-ACCEPT    dmz      net    tcp     80</programlisting>
-        </listitem>
-
-        <listitem>
-          <para>On 192.0.2.177 (your Web/Squid server), arrange for the
-          following command to be executed after networking has come up</para>
-
-          <programlisting><command>iptables -t nat -A PREROUTING -i eth0 -d ! 192.0.2.177 -p tcp --dport 80 -j REDIRECT --to-ports 3128</command>         </programlisting>
-
-          <para>If you are running RedHat/Fedora on the server, you can simply
-          execute the following commands after you have typed the iptables
-          command above:</para>
-
-          <programlisting><command>iptables-save &gt; /etc/sysconfig/iptables
-chkconfig --level 35 iptables on</command>          </programlisting>
-        </listitem>
-      </orderedlist>
+      <programlisting>#ACTION  SOURCE   DEST                 PROTO    DEST PORT(S)    SOURCE     ORIGINAL
+#                                                               PORT(S)    DEST
+DNAT     loc      dmz:192.0.2.177:3128 tcp      80              -          !192.0.2.177</programlisting>
     </section>
   </section>
 

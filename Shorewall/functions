@@ -163,6 +163,31 @@ find_file()
 }
 
 #
+# Get fully-qualified name of file
+#
+resolve_file() # $1 = file name
+{
+    local pwd=$PWD
+
+    case $1 in
+	/*)
+	    echo $1
+	    ;;
+	./*)
+	    echo ${pwd}${1#.}
+	    ;;
+	../*)
+	    cd ..
+	    echo ${PWD}${1#..}
+	    cd $pwd
+	    ;;
+	*)
+	    echo $pwd/$1
+	    ;;
+    esac
+}    
+
+#
 # Replace commas with spaces and echo the result
 #
 separate_list() {

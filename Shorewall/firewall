@@ -8359,7 +8359,7 @@ define_firewall() # $1 = Command (Start or Restart)
     f=$(find_file params)
 
     [ -f $f ] && \
-	save_command ". $f"
+	save_command ". $(resolve_file $f)"
 
     save_command "#"
     save_command "COMMAND=restore"

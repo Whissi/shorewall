@@ -19,7 +19,24 @@ New Features in 2.5.5:
     firewall			  The firewall zone. There must be
 				  exactly one firewall zone.
 
-2)  When /usr/share/shorewall/functions is loaded it now sets
+2)  You may now define zone nesting in the /etc/shorewall/zones
+    file. In the ZONE column, the (sub)zone name can be followed by a
+    colon (":") and a comma-separated list of parent zones. The parent
+    zone(s) must be listed before the subzone.
+
+    Example: Zone B is a subzone of zone A
+
+    #ZONE       TYPE            OPTIONS
+    A           plain
+    B:A         plain
+
+    Currently, Shorewall only uses the zone nesting information to
+    re-order the zone list such that subzones appear before their
+    parent zones. In a future release, Shorewall might make additional
+    use of this information to structure the ruleset in a more
+    efficient fashion. 
+
+3)  When /usr/share/shorewall/functions is loaded it now sets
 
 	 SHOREWALL_LIBRARY=Loaded
 
@@ -448,7 +465,7 @@ New Features in Shorewall 2.5.*
 
     The /etc/shorewall/rules file may now be divided into
     "sections". Each section is introduced by a line that begins with
-    the keyword SECTION which is followed by the section name. Sections
+    the keyword SECTION followed by the section name. Sections
     are as listed below and must appear in the order shown.
 
     ESTABLISHED

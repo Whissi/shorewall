@@ -236,19 +236,7 @@ New Features in Shorewall 2.5.*
 1) Error and warning messages are made easier to spot by using
    capitalization (e.g., ERROR: and WARNING:).
 
-2) Beginning with this version, the POLICY column in
-   /etc/shorewall/policy can potentially contain two policies separated
-   by ":". The first policy is the policy for new connections (the only
-   policy that you can currently configure). The second policy is for
-   ESTABLISHED packets (those that are part of an established
-   connection) and must be either ACCEPT (the default) or QUEUE. So if
-   the policy column contains DROP:QUEUE then new connection requests
-   are dropped by default but packets that are part of an established
-   connection are sent to the QUEUE target. RELATED state packets are
-   always ACCEPTED so that ICMPs (which are almost always RELATED)
-   won't go through QUEUE.
-
-3) A new option 'critical' has been added to
+2) A new option 'critical' has been added to
    /etc/shorewall/routestopped. This option can be used to enable
    communication with a host or set of hosts during the entire
    "shorewall [re]start/stop" process. Listing a host with this option
@@ -271,7 +259,7 @@ New Features in Shorewall 2.5.*
    (www.crossbeam.com). You will want to list the Crossbeam interface
    in this option
 
-4) A new 'macro' feature has been added.
+3) A new 'macro' feature has been added.
 
    Macros are very similar to actions and can be used in similar
    ways. The differences between actions and macros are as follows:
@@ -342,13 +330,13 @@ New Features in Shorewall 2.5.*
     actions. Macros that are invoked from actions cannot themselves
     invoke other actions.
 
-5)  If you have 'make' installed on your firewall, then when you use
+4)  If you have 'make' installed on your firewall, then when you use
     the '-f' option to 'shorewall start' (as happens when you reboot),
     if your /etc/shorewall/ directory contains files that were modified
     after Shorewall was last restarted then Shorewall is started using
     the config files rather than using the saved configuration.
 
-6)  The 'arp_ignore' option has been added to /etc/shorewall/interfaces
+5)  The 'arp_ignore' option has been added to /etc/shorewall/interfaces
     entries. This option sets
     /proc/sys/net/ipv4/conf/<interface>/arp_ignore. By default, the
     option sets the value to 1. You can also write arp_ignore=<value>
@@ -372,7 +360,7 @@ New Features in Shorewall 2.5.*
     WARNING -- DO NOT SPECIFY arp_ignore FOR ANY INTERFACE INVOLVED IN
     PROXY ARP.
 
-7)  In /etc/shorewall/rules, "all+" in the SOURCE or DEST column works
+6)  In /etc/shorewall/rules, "all+" in the SOURCE or DEST column works
     like "all" but also includes intrazone traffic. So the rule:
 
 	 ACCEPT     loc		 all+	 tcp	   22
@@ -383,7 +371,7 @@ New Features in Shorewall 2.5.*
 	
     does not.
 
-8)  A new FASTACCEPT option has been added to shorewall.conf.
+7)  A new FASTACCEPT option has been added to shorewall.conf.
 
     Normally, Shorewall accepting ESTABLISHED/RELATED packets until
     these packets reach the chain in which the original connection was
@@ -396,10 +384,10 @@ New Features in Shorewall 2.5.*
     FASTACCEPT=Yes then you may not include rules in the ESTABLISHED or
     RELATED sections of /etc/shorewall/rules.
 
-9)  Shorewall now generates an error if the 'norfc1918' option is
+8)  Shorewall now generates an error if the 'norfc1918' option is
     specified for an interface with an RFC 1918 address.
 
-10) You may now specify "!" followed by a list of addresses in the
+9)  You may now specify "!" followed by a list of addresses in the
     SOURCE and DEST columns of entries in /etc/shorewall/rules, 
     /etc/shorewall/tcrules and in action files and Shorewall will
     generate the rule that you expect.
@@ -421,19 +409,19 @@ New Features in Shorewall 2.5.*
     That rule would allow loc->net HTTP access from the local
     network 10.0.0.0/24 except for hosts 10.0.0.4 and 10.0.0.22.
 
-11) You may now specify "!" followed by a list of addresses in the
+10) You may now specify "!" followed by a list of addresses in the
     SOURCE and DEST columns of entries in /etc/shorewall/tcrules and
     Shorewall will generate the rule that you expect.
 
-12) Tunnel types "openvpnserver" and "openvpnclient" have been added
+11) Tunnel types "openvpnserver" and "openvpnclient" have been added
     to reflect the introduction of client and server OpenVPN
     configurations in OpenVPN 2.0.
 
-13) The COMMAND variable is now set to 'restore' in restore
+12) The COMMAND variable is now set to 'restore' in restore
     scripts. The value of this variable is sometimes of interest to
     programmers providing custom /etc/shorewall/tcstart scripts.
 
-14) Previously, if you defined any intra-zone rule(s) then any traffic
+13) Previously, if you defined any intra-zone rule(s) then any traffic
     not matching the rule(s) was subject to normal policies (which
     usually turned out to involve the all->all REJECT policy). Now, the
     intra-zone ACCEPT policy will still be in effect in the presense of
@@ -453,7 +441,7 @@ New Features in Shorewall 2.5.*
     #SOURCE	DEST	POLICY	LOG LEVEL
     loc		loc	ACCEPT	info
 
-15) Prior to Shorewall 2.5.3, the rules file only controlled packets in
+14) Prior to Shorewall 2.5.3, the rules file only controlled packets in
     the Netfilter states NEW and INVALID. Beginning with this release,
     the rules file can also deal with packets in the ESTABLISHED and
     RELATED states. 
@@ -492,12 +480,12 @@ New Features in Shorewall 2.5.*
     /etc/shorewall.shorewall.conf then the ESTABLISHED and RELATED
     sections must be empty.
 
-16) The value 'ipp2p' is once again allowed in the PROTO column of
+15) The value 'ipp2p' is once again allowed in the PROTO column of
     the rules file. It is recommended that rules specifying 'ipp2p'
     only be included in the ESTABLISHED section of the file.
 
 
-17) Shorewall actions lack a generalized way to pass parameters to an
+16) Shorewall actions lack a generalized way to pass parameters to an
     extension script associated with an action. To work around this
     lack, some users have used the log tag as a parameter. This works
     but requires that a log level other than 'none' be specified when
@@ -520,11 +508,11 @@ New Features in Shorewall 2.5.*
 
     Now, $1 = these, $2 = are and $3 = parameters
 
-18) The "shorewall check" command now checks the /etc/shorewall/masq,
+17) The "shorewall check" command now checks the /etc/shorewall/masq,
     /etc/shorewall/blacklist, /etc/shorewall/proxyarp, 
     /etc/shorewall/nat and /etc/shorewall/providers files.
 
-19)  Arne Bernin's "tc4shorewall" package has been integrated into
+18) Arne Bernin's "tc4shorewall" package has been integrated into
     Shorewall. Arne will be providing documentation and support for
     this part of Shorewall.
 

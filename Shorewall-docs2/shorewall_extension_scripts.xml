@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-05-13</pubdate>
+    <pubdate>2005-09-11</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -33,6 +33,13 @@
       License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
+
+  <caution>
+    <para><emphasis role="bold">This article applies to Shorewall 3.0 and
+    later. If you are running a version of Shorewall earlier than Shorewall
+    3.0.0 then please see the documentation for that
+    release.</emphasis></para>
+  </caution>
 
   <para>Extension scripts are user-provided scripts that are invoked at
   various points during firewall start, restart, stop and clear. The scripts
@@ -65,14 +72,18 @@
     </listitem>
 
     <listitem>
-      <para>initdone (added in Shorewall 2.0.2 RC1) -- invoked after Shorewall
-      has flushed all existing rules but before any rules have been added to
-      the builtin chains.</para>
+      <para>initdone -- invoked after Shorewall has flushed all existing rules
+      but before any rules have been added to the builtin chains.</para>
     </listitem>
 
     <listitem>
       <para>start -- invoked after the firewall has been started or
       restarted.</para>
+    </listitem>
+
+    <listitem>
+      <para>started -- invoked as a first step when the firewall is being
+      started</para>
     </listitem>
 
     <listitem>
@@ -94,18 +105,11 @@
     </listitem>
 
     <listitem>
-      <para>newnotsyn (added in version 1.3.6) -- invoked after the
-      <quote>newnotsyn</quote> chain has been created but before any rules
-      have been added to it.</para>
-    </listitem>
-
-    <listitem>
-      <para>continue (added in version 2.2.3) -- invoked to allow you to
-      insert special rules to allow traffic while Shorewall is [re]starting.
-      Any rules added in this script should be deleted in your
-      <emphasis>start</emphasis> script. This script is invoked earlier in the
-      [re]start process than is the <emphasis>initdone</emphasis> script
-      described above.</para>
+      <para>continue -- invoked to allow you to insert special rules to allow
+      traffic while Shorewall is [re]starting. Any rules added in this script
+      should be deleted in your <emphasis>start</emphasis> script. This script
+      is invoked earlier in the [re]start process than is the
+      <emphasis>initdone</emphasis> script described above.</para>
     </listitem>
   </itemizedlist>
 
@@ -125,10 +129,7 @@
       <command>run_iptables</command> instead. <command>run_iptables</command>
       will run the iptables utility passing the arguments to
       <command>run_iptables</command> and if the command fails, the firewall
-      will be stopped (Shorewall version &lt; 2.0.2 Beta 1 or there is no
-      <filename>/var/lib/shorewall/restore</filename> file) or restored
-      (Shorewall version &gt;= 2.0.2 Beta 1 and
-      <filename>/var/lib/shorewall/restore</filename> exists).</para>
+      will be stopped.</para>
     </listitem>
 
     <listitem>
@@ -159,8 +160,7 @@
         <listitem>
           <para>Rate Limit (if passed as "" then $LOGLIMIT is assumed — see
           the LOGLIMIT option in <ulink
-          url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>)
-          </para>
+          url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>)</para>
         </listitem>
 
         <listitem>
@@ -168,8 +168,7 @@
         </listitem>
 
         <listitem>
-          <para>Command (-A or -I for append or insert). This argument applies
-          to Shorewall 2.2.0 and later only.</para>
+          <para>Command (-A or -I for append or insert).</para>
         </listitem>
 
         <listitem>
@@ -179,11 +178,10 @@
     </listitem>
 
     <listitem>
-      <para>With Shorewall 2.0.2 Beta 1 and later versions, if you run
-      commands other than <command>iptables</command> that must be re-run in
-      order to restore the firewall to its current state then you must save
-      the commands to the <firstterm>restore file</firstterm>. The restore
-      file is a temporary file in <filename
+      <para>if you run commands other than <command>iptables</command> that
+      must be re-run in order to restore the firewall to its current state
+      then you must save the commands to the <firstterm>restore
+      file</firstterm>. The restore file is a temporary file in <filename
       class="directory">/var/lib/shorewall</filename> that will be renamed
       <filename>/var/lib/shorewall/restore-base</filename> at the successful
       completion of the Shorewall command. The <command>shorewall
@@ -228,13 +226,12 @@
     </listitem>
   </itemizedlist>
 
-  <para>Beginning with Shorewall 2.0.0, you can also define a <emphasis>common
-  action</emphasis> to be performed immediately before a policy of ACCEPT,
-  DROP or REJECT is applied. Separate <ulink
-  url="Actions.html">actions</ulink> can be assigned to each policy type so
-  for example you can have a different common action for DROP and REJECT
-  policies. The most common usage of common actions is to silently drop
-  traffic that you don't wish to have logged by the policy.</para>
+  <para> You can also define a <emphasis>common action</emphasis> to be
+  performed immediately before a policy of ACCEPT, DROP or REJECT is applied.
+  Separate <ulink url="Actions.html">actions</ulink> can be assigned to each
+  policy type so for example you can have a different common action for DROP
+  and REJECT policies. The most common usage of common actions is to silently
+  drop traffic that you don't wish to have logged by the policy.</para>
 
   <para>As released, Shorewall defines a number of actions which are cataloged
   in the <filename>/usr/share/shorewall/actions.std</filename> file. That file

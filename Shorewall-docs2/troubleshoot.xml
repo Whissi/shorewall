@@ -13,7 +13,7 @@
       <surname>Eastep</surname>
     </author>
 
-    <pubdate>2005-03-22</pubdate>
+    <pubdate>2005-09-11</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -42,7 +42,7 @@
       <title>Check the FAQs.</title>
 
       <para>Check the <ulink url="FAQ.htm">FAQs</ulink> for solutions to over
-      30 common problems.</para>
+      50 common problems.</para>
     </section>
 
     <section>
@@ -199,14 +199,14 @@ iptables: No chain/target/match by that name
       <listitem>
         <para>Multiple interfaces connected to the same HUB or Switch. Given
         the way that the Linux kernel respond to ARP <quote>who-has</quote>
-        requests, this type of setup does NOT work the way that you expect it
-        to. If you are running Shorewall version 1.4.7 or later, you can test
-        using this kind of configuration if you specify the <emphasis
+        requests, this type of setup <emphasis role="bold">does NOT work the
+        way that you expect it to</emphasis>. You can test using this kind of
+        configuration if you specify the <emphasis
         role="bold">arp_filter</emphasis> option in <filename><ulink
         url="Documentation.htm#Interfaces">/etc/shorewall/interfaces</ulink></filename>
-        for all interfaces connected to the common hub/switch. Using such a
-        setup with a production firewall is strongly recommended
-        against.</para>
+        for all interfaces connected to the common hub/switch. <emphasis
+        role="bold">Using such a setup with a production firewall is strongly
+        recommended against</emphasis>.</para>
       </listitem>
     </itemizedlist>
   </section>
@@ -326,7 +326,7 @@ ACCEPT    dmz              loc                   udp     53</programlisting>
 
         <programlisting>#ACTION  SOURCE          DEST                  PROTO   DEST
 #                                                      PORT(S)
-AllowPing <emphasis>&lt;source zone&gt;</emphasis>&nbsp;&nbsp; <emphasis>&lt;destination zone&gt;</emphasis></programlisting>
+Ping/ACCEPT <emphasis>&lt;source zone&gt;</emphasis>&nbsp;&nbsp; <emphasis>&lt;destination zone&gt;</emphasis></programlisting>
 
         <para>The ramifications of this can be subtle. For example, if you
         have the following in <filename><ulink
@@ -348,7 +348,7 @@ AllowPing <emphasis>&lt;source zone&gt;</emphasis>&nbsp;&nbsp; <emphasis>&lt;des
 
         <programlisting>#ACTION  SOURCE          DEST                  PROTO   DEST
 #                                                      PORT(S)
-DropPing net             all</programlisting>
+Ping/DROP net             all</programlisting>
       </listitem>
     </itemizedlist>
   </section>
@@ -441,6 +441,16 @@ DropPing net             all</programlisting>
     <title>Revision History</title>
 
     <para><revhistory>
+        <revision>
+          <revnumber>2.0</revnumber>
+
+          <date>2005-09-11</date>
+
+          <authorinitials>CR</authorinitials>
+
+          <revremark>Updated for Shorewall 3.0</revremark>
+        </revision>
+
         <revision>
           <revnumber>1.9</revnumber>
 

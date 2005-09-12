@@ -365,20 +365,20 @@
 #
 #	#ACTION	 SOURCE	DEST		PROTO	DEST	SOURCE	ORIGINAL
 #	#					PORT	PORT(S) DEST
-#	ACCEPT	 net:130.252.100.69,130.252.100.70 fw \
+#	ACCEPT	 net:130.252.100.69,130.252.100.70 $FW \
 #					tcp	22
 #############################################################################################################
-#ACTION	SOURCE		DEST		PROTO	DEST	SOURCE		ORIGINAL	RATE		USER/
-#						PORT	PORT(S)		DEST		LIMIT		GROUP
+#ACTION		SOURCE		DEST		PROTO	DEST	SOURCE		ORIGINAL	RATE		USER/
+#							PORT	PORT(S)		DEST		LIMIT		GROUP
 #
 #	Accept DNS connections from the firewall to the Internet
 #
-DNS/ACCEPT	fw		net
+DNS/ACCEPT	$FW		net
 #
 #
 #	Accept SSH connections from the local network to the firewall and DMZ
 #
-SSH/ACCEPT      loc             fw
+SSH/ACCEPT      loc             $FW
 SSH/ACCEPT      loc             dmz
 #
 #	DMZ DNS access to the Internet
@@ -388,22 +388,22 @@ DNS/ACCEPT	dmz		net
 
 # Reject Ping from the "bad" net zone.
 
-Ping/REJECT:none!     net               fw
+Ping/REJECT     net             $FW
 
 #
 #       Make ping work bi-directionally between the dmz, net, Firewall and local zone
 #       (assumes that the loc-> net policy is ACCEPT).
 #
 
-Ping/ACCEPT     loc             fw
-Ping/ACCEPT     dmz             fw
+Ping/ACCEPT     loc             $FW
+Ping/ACCEPT     dmz             $FW
 Ping/ACCEPT     loc             dmz
 Ping/ACCEPT     dmz             loc
 Ping/ACCEPT     dmz             net
 
-ACCEPT		fw		net		icmp
-ACCEPT		fw		loc		icmp	
-ACCEPT		fw		dmz		icmp	
+ACCEPT		$FW		net		icmp
+ACCEPT		$FW		loc		icmp	
+ACCEPT		$FW		dmz		icmp	
 
 # Uncomment this if using Proxy ARP and static NAT and you want to allow ping from
 # the net zone to the dmz and loc

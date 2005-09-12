@@ -365,7 +365,7 @@
 #
 #	#ACTION	 SOURCE	DEST		PROTO	DEST	SOURCE	ORIGINAL
 #	#					PORT	PORT(S) DEST
-#	ACCEPT	 net:130.252.100.69,130.252.100.70 fw \
+#	ACCEPT	 net:130.252.100.69,130.252.100.70 $FW \
 #					tcp	22
 #############################################################################################################
 #ACTION	SOURCE		DEST		PROTO	DEST	SOURCE		ORIGINAL	RATE		USER/
@@ -373,10 +373,10 @@
 
 # Reject Ping from the "bad" net zone.. and prevent your log from being flooded..
 
-Ping/REJECT:none!     net               fw
+Ping/REJECT:none!     net               $FW
 
 # Permit all ICMP traffic FROM the firewall TO the net zone
 
-ACCEPT		fw	net	icmp
+ACCEPT		$FW	net	icmp
 
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

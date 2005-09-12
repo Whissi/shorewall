@@ -365,33 +365,33 @@
 #
 #	#ACTION	 SOURCE	DEST		PROTO	DEST	SOURCE	ORIGINAL
 #	#					PORT	PORT(S) DEST
-#	ACCEPT	 net:130.252.100.69,130.252.100.70 fw \
+#	ACCEPT	 net:130.252.100.69,130.252.100.70 $FW \
 #					tcp	22
 #############################################################################################################
-#ACTION	SOURCE		DEST		PROTO	DEST	SOURCE		ORIGINAL	RATE		USER/
-#						PORT	PORT(S)		DEST		LIMIT		GROUP
-#                                                       PORT    PORT(S) DEST                    LIMIT   GROUP
+#ACTION		SOURCE		DEST		PROTO	DEST	SOURCE		ORIGINAL	RATE		USER/
+#							PORT	PORT(S)		DEST		LIMIT		GROUP
+#								PORT	PORT(S) DEST			LIMIT	GROUP
 #
-#       Accept DNS connections from the firewall to the network
+#	Accept DNS connections from the firewall to the network
 #
-DNS/ACCEPT      fw              net
+DNS/ACCEPT	$FW		net
 #
-#       Accept SSH connections from the local network for administration
+#	Accept SSH connections from the local network for administration
 #
-SSH/ACCEPT      loc             fw
+SSH/ACCEPT	loc		$FW
 #
-#       Allow Ping from the local network
+#	Allow Ping from the local network
 #
-Ping/ACCEPT     loc             fw
+Ping/ACCEPT	loc		$FW
 
 #
 # Reject Ping from the "bad" net zone.. and prevent your log from being flooded..
 #
 
-Ping/REJECT:none!     net               fw
+Ping/REJECT	net		$FW
 
-ACCEPT          fw              loc             icmp
-ACCEPT          fw              net             icmp
+ACCEPT		$FW		loc		icmp
+ACCEPT		$FW		net		icmp
 #
 
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

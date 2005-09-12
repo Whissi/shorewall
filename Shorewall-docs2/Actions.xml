@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-08-28</pubdate>
+    <pubdate>2005-09-12</pubdate>
 
     <copyright>
       <year>2005</year>
@@ -221,6 +221,12 @@ Reject:REJECT   #Common Action for REJECT policy</programlisting>
         a log level. This will log to the ULOG target for routing to a
         separate log through use of ulogd (<ulink
         url="http://www.gnumonks.org/projects/ulogd">http://www.gnumonks.org/projects/ulogd</ulink>).</para>
+
+        <para>You may also use a <ulink url="Macros.html">macro</ulink> in
+        your action provided that the macro's expansion only results in the
+        ACTIONs ACCEPT, DROP, REJECT, LOG, CONTINUE, or QUEUE. See
+        <filename>/usr/share/shorewall/Drop</filename> for an example of an
+        action that users macros extensively.</para>
       </listitem>
 
       <listitem>
@@ -369,7 +375,7 @@ Reject:REJECT   #Common Action for REJECT policy</programlisting>
     might do something like:</para>
 
     <programlisting>#ACTION      SOURCE      DEST        PROTO    DEST PORT(S)
-LogAndAccept loc         fw          tcp      22</programlisting>
+LogAndAccept loc         $FW         tcp      22</programlisting>
   </section>
 
   <section>
@@ -399,7 +405,7 @@ bar:info</programlisting>
         <para>/etc/shorewall/rules:</para>
 
         <programlisting>#ACTION      SOURCE     DEST     PROTO    DEST PORT(S)
-foo:debug    fw         net</programlisting>
+foo:debug    $FW         net</programlisting>
 
         <para>Logging in the invoke 'foo' action will be as if foo had been
         defined as:</para>
@@ -424,7 +430,7 @@ bar:info</programlisting>
         <para>/etc/shorewall/rules:</para>
 
         <programlisting>#ACTION      SOURCE     DEST     PROTO    DEST PORT(S)
-foo:debug!    fw         net</programlisting>
+foo:debug!   $FW        net</programlisting>
 
         <para>Logging in the invoke 'foo' action will be as if foo had been
         defined as:</para>
@@ -463,7 +469,7 @@ bar:debug</programlisting>
     <para><filename>/etc/shorewall/rules</filename>:</para>
 
     <programlisting>#ACTION          SOURCE           DEST
-acton:info:test  fw               net</programlisting>
+acton:info:test  $FW              net</programlisting>
 
     <para>Your /etc/shorewall/acton file will be run with:</para>
 

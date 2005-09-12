@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-09-04</pubdate>
+    <pubdate>2005-09-12</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -145,7 +145,7 @@
         <term>net</term>
 
         <listitem>
-          <para>The public Internet. </para>
+          <para>The public Internet.</para>
         </listitem>
       </varlistentry>
 
@@ -184,8 +184,10 @@ dmz     plain</programlisting>
 
     <para>Note that Shorewall recognizes the firewall system as its own zone -
     The above example follows the usual convention of naming the Firewall zone
-    <emphasis role="bold">fw</emphasis>. In this guide, the name <emphasis
-    role="bold">fw</emphasis> will be used. With the exception of the name
+    <emphasis role="bold">fw</emphasis>. The name specified for the firewall
+    zone (<emphasis role="bold">fw</emphasis> in the above example) is stored
+    in the shell variable <firstterm>$FW</firstterm> when the
+    /etc/shorewall/zones file is processed. With the exception of the name
     assigned to the firewall zone, Shorewall attaches absolutely no meaning to
     zone names. Zones are entirely what YOU make of them. That means that you
     should not expect Shorewall to do something special <quote>because this is
@@ -418,7 +420,7 @@ net      eth0           detect        rfc1918
 loc      eth1           detect
 dmz      eth2           detect</programlisting>
 
-    <para>Note that the <emphasis role="bold">fw</emphasis> zone has no entry
+    <para>Note that the <emphasis role="bold">$FW</emphasis> zone has no entry
     in the /etc/shorewall/interfaces file.</para>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" /></para>
@@ -1698,7 +1700,7 @@ ACCEPT   net     loc:192.168.201.4  tcp    www</programlisting>
       <note>
         <para>Shorewall has a <ulink url="Macros.html">macro facility</ulink>
         that includes macros for many standard applications. This section does
-        not use those macros but rather defines the rules directly. </para>
+        not use those macros but rather defines the rules directly.</para>
       </note>
 
       <para><inlinegraphic fileref="images/BD21298_.gif" /></para>
@@ -1738,7 +1740,7 @@ ACCEPT   loc             dmz:192.0.2.178    tcp    smtp    #Mail from local
                                                            #Network
 ACCEPT   loc             dmz:192.0.2.178    tcp    pop3    #Pop3 from local
                                                            #Network
-ACCEPT   fw              dmz:192.0.2.178    tcp    smtp    #Mail from the
+ACCEPT   $FW             dmz:192.0.2.178    tcp    smtp    #Mail from the
                                                            #Firewall
 ACCEPT   dmz:192.0.2.178 net                tcp    smtp    #Mail to the
                                                            #Internet
@@ -1763,9 +1765,9 @@ ACCEPT   loc             dmz:192.0.2.177    udp    domain  #UDP DNS from
                                                            #Local Network
 ACCEPT   loc             dmz:192.0.2.177    tcp    domain  #TCP DNS from
                                                            #Local Network
-ACCEPT   fw              dmz:192.0.2.177    udp    domain  #UDP DNS from
+ACCEPT   $FW             dmz:192.0.2.177    udp    domain  #UDP DNS from
                                                            #the Firewall
-ACCEPT   fw              dmz:192.0.2.177    tcp    domain  #TCP DNS from
+ACCEPT   $FW             dmz:192.0.2.177    tcp    domain  #TCP DNS from
                                                            #the Firewall
 ACCEPT   dmz:192.0.2.177 net                udp    domain  #UDP DNS to
                                                            #the Internet
@@ -1780,7 +1782,7 @@ ACCEPT   dmz:192.0.2.177 net                tcp    domain  #TCPP DNS to
       <programlisting>#ACTION  SOURCE          DEST               PROTO  DEST    COMMENTS 
 #                                           PORT(S)
 ACCEPT   loc             dmz                tcp    ssh     #SSH to the DMZ
-ACCEPT   net             fw                 tcp    ssh     #SSH to the
+ACCEPT   net             $FW                tcp    ssh     #SSH to the
                                                            #Firewall</programlisting>
     </section>
 
@@ -1860,7 +1862,7 @@ ACCEPT   loc             dmz:192.0.2.178    tcp    smtp    #Mail from local
                                                            #Network
 ACCEPT   loc             dmz:192.0.2.178    tcp    pop3    #Pop3 from local
                                                            #Network
-ACCEPT   fw              dmz:192.0.2.178    tcp    smtp    #Mail from the
+ACCEPT   $FW             dmz:192.0.2.178    tcp    smtp    #Mail from the
                                                            #Firewall
 ACCEPT   dmz:192.0.2.178 net                tcp    smtp    #Mail to the
                                                            #Internet
@@ -1879,16 +1881,16 @@ ACCEPT   loc             dmz:192.0.2.177    udp    domain  #UDP DNS from
                                                            #Local Network
 ACCEPT   loc             dmz:192.0.2.177    tcp    domain  #TCP DNS from
                                                            #Local Network
-ACCEPT   fw              dmz:192.0.2.177    udp    domain  #UDP DNS from
+ACCEPT   $FW             dmz:192.0.2.177    udp    domain  #UDP DNS from
                                                            #the Firewall
-ACCEPT   fw              dmz:192.0.2.177    tcp    domain  #TCP DNS from
+ACCEPT   $FW             dmz:192.0.2.177    tcp    domain  #TCP DNS from
                                                            #the Firewall
 ACCEPT   dmz:192.0.2.177 net                udp    domain  #UDP DNS to
                                                            #the Internet
 ACCEPT   dmz:192.0.2.177 net                tcp    domain  #TCPP DNS to
                                                            #the Internet
 ACCEPT   loc             dmz                tcp    ssh     #SSH to the DMZ
-ACCEPT   net             fw                 tcp    ssh     #SSH to the
+ACCEPT   net             $FW                tcp    ssh     #SSH to the
                                                            #Firewall</programlisting>
     </section>
   </section>
@@ -2339,7 +2341,7 @@ foobar.net.      86400   IN A    192.0.2.177
         external IP address does not mean that the request will be associated
         with the external interface or the <quote>net</quote> zone. Any
         traffic that you generate from the local network will be associated
-        with your local interface and will be treated as loc-&gt;fw
+        with your local interface and will be treated as loc-&gt;$FW
         traffic.</para>
       </listitem>
 

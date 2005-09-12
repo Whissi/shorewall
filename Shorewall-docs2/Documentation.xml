@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-09-08</pubdate>
+    <pubdate>2005-09-12</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -1366,7 +1366,7 @@ loc        loc       REJECT    info</programlisting>
       <para><filename>/etc/shorewall/zones</filename>:</para>
 
       <programlisting>#ZONE    TYPE        OPTION
-fw       firewall
+$FW      firewall
 sam      plain
 net      plain
 loc      plain</programlisting>
@@ -1434,7 +1434,7 @@ DNAT      net       loc:192.168.1.5 tcp      www
 
       <programlisting>#ACTION   SOURCE    DEST            PROTO    DEST PORT(S)
 ...
-DNAT      sam       fw              tcp      ssh
+DNAT      sam       $FW             tcp      ssh
 DNAT      net       loc:192.168.1.3 tcp      ssh
 ...</programlisting>
 
@@ -2046,7 +2046,7 @@ DNAT&lt;4/min:8&gt;  net         loc:192.168.1.3  tcp        ssh</programlisting
       <programlisting>#ACTION  SOURCE  DEST   PROTO   DEST PORT(S)   SOURCE   ORIGINAL
 #                                              PORT(S)  DEST
 REDIRECT loc     3128   tcp     www            -        !206.124.146.177
-ACCEPT   fw      net    tcp     www</programlisting>
+ACCEPT   $FW     net    tcp     www</programlisting>
     </example>
 
     <example>
@@ -2166,7 +2166,7 @@ DNAT     net      loc:192.168.1.101-192.168.1.109 tcp   80</programlisting>
 NONAT    loc:192.168.1.4,192.168.1.199 \
                  net    tcp     www
 REDIRECT loc     3128   tcp     www            -
-ACCEPT   fw      net    tcp     www</programlisting>
+ACCEPT   $FW     net    tcp     www</programlisting>
 
       <para>The reason that NONAT is used in the above example rather than
       ACCEPT+ is that the example is assuming the usual ACCEPT loc-&gt;net
@@ -3240,16 +3240,6 @@ eth0                  eth1            206.124.146.176</programlisting>
           linkend="NAT" /> file. If set to <quote>Yes</quote> or
           <quote>yes</quote>, port forwarding rules cannot override one-to-one
           NAT. If not set or set to an empty value, <quote>Yes</quote> is
-          assumed.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>FW</term>
-
-        <listitem>
-          <para>This parameter specifies the name of the firewall zone. If not
-          set or if set to an empty string, the value <quote>fw</quote> is
           assumed.</para>
         </listitem>
       </varlistentry>

@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-07-12</pubdate>
+    <pubdate>2005-09-12</pubdate>
 
     <copyright>
       <year>2002-2005</year>
@@ -164,18 +164,21 @@
 
     <para>Shorewall views the network where it is running as being composed of
     a set of <emphasis>zones</emphasis>. In the one-interface sample
-    configuration, only one zone is defined:</para>
+    configuration, only two zones are defined:</para>
 
-    <programlisting>#ZONE   IPSEC   OPTIONS                 IN                      OUT
-#       ONLY                            OPTIONS                 OPTIONS
-net</programlisting>
+    <programlisting>#ZONE   TYPE    OPTIONS                 IN                      OUT
+#                                       OPTIONS                 OPTIONS
+fw      firewall
+net     plain</programlisting>
 
     <para>Shorewall zones are defined in <ulink
     url="Documentation.htm#Zones"><filename>/etc/shorewall/zones</filename></ulink>.</para>
 
-    <para>Shorewall also recognizes the firewall system as its own zone - by
-    default, the firewall itself is known as <emphasis
-    role="bold">fw</emphasis>.</para>
+    <para>Note that Shorewall recognizes the firewall system as its own zone.
+    The name of the firewall zone (<emphasis role="bold">fw</emphasis> in the
+    above example) is stored in the shell variable <firstterm>$FW</firstterm>
+    which may be used throughout the rest of the Shorewall configuration to
+    refer to the firewall itself.</para>
 
     <para>Rules about what traffic to allow and what traffic to deny are
     expressed in terms of zones.</para>
@@ -210,7 +213,7 @@ net</programlisting>
     the one-interface sample has the following policies:</para>
 
     <programlisting>#SOURCE ZONE   DESTINATION ZONE   POLICY   LOG LEVEL   LIMIT:BURST
-fw             net                ACCEPT
+$FW            net                ACCEPT
 net            all                DROP     info
 all            all                REJECT   info</programlisting>
 
@@ -319,15 +322,15 @@ all            all                REJECT   info</programlisting>
     rule in <filename>/etc/shorewall/rules</filename> is:</para>
 
     <programlisting>#ACTION   SOURCE    DESTINATION     PROTO       DEST PORT(S)
-&lt;<emphasis>action</emphasis>&gt;  net       fw</programlisting>
+&lt;<emphasis>action</emphasis>&gt;  net       $FW</programlisting>
 
     <example>
       <title>You want to run a Web Server and a IMAP Server on your firewall
       system:</title>
 
-      <programlisting>#ACTION   SOURCE    DESTINATION     PROTO       DEST PORT(S)
-Web/ACCEPT  net       fw
-IMAP/ACCEPT net       fw</programlisting>
+      <programlisting>#ACTION     SOURCE    DESTINATION     PROTO       DEST PORT(S)
+Web/ACCEPT  net       $FW
+IMAP/ACCEPT net       $FW</programlisting>
     </example>
 
     <para>You may also choose to code your rules directly without using the
@@ -337,15 +340,15 @@ IMAP/ACCEPT net       fw</programlisting>
     is:</para>
 
     <programlisting>#ACTION   SOURCE    DESTINATION     PROTO       DEST PORT(S)
-ACCEPT    net       fw              <emphasis>&lt;protocol&gt;</emphasis>  <emphasis>&lt;port&gt;</emphasis></programlisting>
+ACCEPT    net       $FW             <emphasis>&lt;protocol&gt;</emphasis>  <emphasis>&lt;port&gt;</emphasis></programlisting>
 
     <example>
       <title>You want to run a Web Server and a IMAP Server on your firewall
       system:</title>
 
       <para><programlisting>#ACTION   SOURCE    DESTINATION     PROTO       DEST PORT(S)
-ACCEPT    net       fw              tcp          80
-ACCEPT    net       fw              tcp          143</programlisting></para>
+ACCEPT    net       $FW             tcp          80
+ACCEPT    net       $FW             tcp          143</programlisting></para>
     </example>
 
     <para>If you don't know what port and protocol a particular application
@@ -356,8 +359,8 @@ ACCEPT    net       fw              tcp          143</programlisting></para>
       uses clear text (even for login!). If you want shell access to your
       firewall from the internet, use SSH:</para>
 
-      <programlisting>#ACTION   SOURCE    DESTINATION     PROTO       DEST PORT(S)
-SSH/ACCEPT  net       fw            </programlisting>
+      <programlisting>#ACTION     SOURCE    DESTINATION     PROTO       DEST PORT(S)
+SSH/ACCEPT  net       $FW           </programlisting>
     </important>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>

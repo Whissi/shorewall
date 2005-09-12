@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-09-07</pubdate>
+    <pubdate>2005-09-12</pubdate>
 
     <copyright>
       <year>2002-2005</year>
@@ -202,15 +202,19 @@
     a set of zones. In the three-interface sample configuration, the following
     zone names are used:</para>
 
-    <para><programlisting>#ZONE   IPSEC   OPTIONS                 IN                      OUT
-#       ONLY                            OPTIONS                 OPTIONS
-net
-loc
-dmz</programlisting>Zone names are defined in
+    <para><programlisting>#ZONE   TYPE   OPTIONS                 IN                      OUT
+#                                      OPTIONS                 OPTIONS
+fw      firewall
+net     plain
+loc     plain
+dmz     plain</programlisting>Zone names are defined in
     <filename>/etc/shorewall/zones</filename>.</para>
 
-    <para>Shorewall also recognizes the firewall system as its own zone - by
-    default, the firewall itself is known as <varname>fw</varname>.</para>
+    <para>Note that Shorewall recognizes the firewall system as its own zone.
+    When the /etc/shorewall/zones file is processed, he name of the firewall
+    zone is stored in the shell variable <firstterm>$FW</firstterm> which may
+    be used throughout the Shorewall configuration to refer to the firewall
+    zone.</para>
 
     <para>Rules about what traffic to allow and what traffic to deny are
     expressed in terms of zones.</para>
@@ -252,7 +256,7 @@ all        all         REJECT      info</programlisting>
       servers on the internet, uncomment that line.</para>
 
       <programlisting>#SOURCE    DEST        POLICY      LOG LEVEL    LIMIT:BURST
-fw         net         ACCEPT</programlisting>
+$FW        net         ACCEPT</programlisting>
     </important>
 
     <para>The above policy will:</para>
@@ -721,12 +725,12 @@ DNAT      loc       dmz:10.10.11.2   tcp     80            -        $ETH0_IP</pr
           <filename>/etc/shorewall/rules</filename>.</para>
         </listitem>
       </itemizedlist> If you run the name server on the firewall:
-    <programlisting>#ACTION   SOURCE    DEST                PROTO      DEST PORT(S)                      
-DNS/ACCEPT  loc       fw
-DNS/ACCEPT  dmz       fw             </programlisting> Run name server on DMZ
-    computer 1: <programlisting>#ACTION   SOURCE    DEST                PROTO      DEST PORT(S)                      
+    <programlisting>#ACTION     SOURCE    DEST                PROTO      DEST PORT(S)                      
+DNS/ACCEPT  loc       $FW
+DNS/ACCEPT  dmz       $FW            </programlisting> Run name server on DMZ
+    computer 1: <programlisting>#ACTION     SOURCE    DEST                PROTO      DEST PORT(S)                      
 DNS/ACCEPT  loc       dmz:10.10.11.1
-DNS/ACCEPT  fw        dmz:10.10.11.1             </programlisting></para>
+DNS/ACCEPT  $FW       dmz:10.10.11.1             </programlisting></para>
 
     <para>In the rules shown above, <quote>AllowDNS</quote> is an example of a
     <emphasis>defined action</emphasis>. Shorewall includes a number of
@@ -744,10 +748,10 @@ DNS/ACCEPT  fw        dmz:10.10.11.1             </programlisting></para>
     firewall) could also have been coded as follows:</para>
 
     <programlisting>#ACTION   SOURCE    DEST                PROTO      DEST PORT(S)                      
-ACCEPT    loc       fw                  tcp        53
-ACCEPT    loc       fw                  udp        53
-ACCEPT    dmz       fw                  tcp        53
-ACCEPT    dmz       fw                  udp        53              </programlisting>
+ACCEPT    loc       $FW                 tcp        53
+ACCEPT    loc       $FW                 udp        53
+ACCEPT    dmz       $FW                 tcp        53
+ACCEPT    dmz       $FW                 udp        53              </programlisting>
 
     <para>In cases where Shorewall doesn't include a defined action to meet
     your needs, you can either define the action yourself or you can simply
@@ -758,14 +762,14 @@ ACCEPT    dmz       fw                  udp        53              </programlist
     <title>Other Connections</title>
 
     <para>The three-interface sample includes the following rule:
-    <programlisting>#ACTION   SOURCE    DEST                PROTO      DEST PORT(S)                      
-DNS/ACCEPT  fw        net       </programlisting>That rule allow DNS access
+    <programlisting>#ACTION     SOURCE    DEST                PROTO      DEST PORT(S)                      
+DNS/ACCEPT  $FW       net       </programlisting>That rule allow DNS access
     from your firewall and may be removed if you commented out the line in
     <filename>/etc/shorewall/policy</filename> allowing all connections from
     the firewall to the Internet.</para>
 
-    <para>The sample also includes: <programlisting>#ACTION   SOURCE    DEST                PROTO      DEST PORT(S)                      
-SSH/ACCEPT  loc       fw
+    <para>The sample also includes: <programlisting>#ACTION     SOURCE    DEST                PROTO      DEST PORT(S)                      
+SSH/ACCEPT  loc       $FW
 SSH/ACCEPT  loc       dmz        </programlisting>Those rules allow you to run
     an SSH server on your firewall and in each of your DMZ systems and to
     connect to those servers from your local systems.</para>
@@ -784,14 +788,14 @@ ACCEPT    <emphasis>&lt;source zone&gt; &lt;destination zone&gt;  &lt;protocol&g
 
       <para>Using defined macros:</para>
 
-      <programlisting>#ACTION   SOURCE    DEST                PROTO      DEST PORT(S)
-DNS/ACCEPT  net       fw</programlisting>
+      <programlisting>#ACTION     SOURCE    DEST                PROTO      DEST PORT(S)
+DNS/ACCEPT  net       $FW</programlisting>
 
       <para>Not using defined actions:</para>
 
       <programlisting>#ACTION   SOURCE    DEST                PROTO      DEST PORT(S)                      
-ACCEPT    net       fw                  tcp        53
-ACCEPT    net       fw                  udp        53        </programlisting>
+ACCEPT    net       $FW                 tcp        53
+ACCEPT    net       $FW                 udp        53        </programlisting>
 
       <para>Those rules would of course be in addition to the rules listed
       above under "If you run the name server on your firewall".</para>
@@ -803,15 +807,15 @@ ACCEPT    net       fw                  udp        53        </programlisting>
     <important>
       <para>I don't recommend enabling telnet to/from the Internet because it
       uses clear text (even for login!). If you want shell access to your
-      firewall from the Internet, use SSH: <programlisting>#ACTION   SOURCE    DEST                PROTO      DEST PORT(S)                      
-SSH/ACCEPT  net       fw</programlisting></para>
+      firewall from the Internet, use SSH: <programlisting>#ACTION     SOURCE    DEST                PROTO      DEST PORT(S)                      
+SSH/ACCEPT  net       $FW</programlisting></para>
     </important>
 
     <para><inlinegraphic fileref="images/leaflogo.gif" format="GIF" /> Bering
     users will want to add the following two rules to be compatible with
     Jacques's Shorewall configuration: <programlisting>#ACTION   SOURCE    DEST                PROTO      DEST PORT(S)                      
-ACCEPT    loc       fw                  udp        53
-ACCEPT    net       fw                  tcp        80       </programlisting><itemizedlist>
+ACCEPT    loc       $FW                 udp        53
+ACCEPT    net       $FW                 tcp        80       </programlisting><itemizedlist>
         <listitem>
           <para>Entry 1 allows the DNS Cache to be used.</para>
         </listitem>

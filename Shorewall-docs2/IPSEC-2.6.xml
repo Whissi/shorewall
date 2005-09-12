@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-09-03</pubdate>
+    <pubdate>2005-09-12</pubdate>
 
     <copyright>
       <year>2004</year>
@@ -387,17 +387,6 @@ spdadd 134.28.54.2/32   206.162.148.9/32 any -P in  ipsec esp/tunnel/134.28.54.2
 
     <para>The <filename>setkey.conf</filename> file on gateway B would be
     similar.</para>
-
-    <caution>
-      <para>If you are running kernel 2.6.10 or later, then you need
-      ipsec-tools (and racoon) 0.5 or later OR you need to add <emphasis
-      role="bold">-P fwd</emphasis> rules (duplicate each <emphasis
-      role="bold">-P in</emphasis> rule and replace the <emphasis
-      role="bold">in</emphasis> with <emphasis role="bold">fwd</emphasis>) --
-      as of this writing (2005-02028, the IPSEC HOWTO (<ulink
-      url="http://www.ipsec-howto.org/x277.html">http://www.ipsec-howto.org/x277.html</ulink>)
-      is inaccurate on this point.</para>
-    </caution>
 
     <para>A sample <filename>/etc/racoon/racoon.conf</filename> file using
     X.509 certificates might look like:</para>
@@ -779,8 +768,8 @@ loc             eth0:192.168.20.0/24
       <para><filename>/etc/shorewall/policy</filename>:</para>
 
       <programlisting>#SOURCE         DEST            POLICY          LOG LEVEL       LIMIT:BURST
-fw              all             ACCEPT
-loc             fw              ACCEPT
+$FW             all             ACCEPT
+loc             $FW             ACCEPT
 net             loc             NONE
 loc             net             NONE
 net             all             DROP            info

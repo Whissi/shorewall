@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-06-26</pubdate>
+    <pubdate>2005-09-12</pubdate>
 
     <copyright>
       <year>2005</year>
@@ -97,13 +97,13 @@ run_iptables -A $CHAIN -p tcp --dport 1601 -m recent                       --nam
         <filename>/etc/shorewall/rules</filename>:</para>
 
         <programlisting>#ACTION          SOURCE            DEST           PROTO       DEST PORT(S)
-SSHKnock         net               fw             tcp         22,1599,1600,1601</programlisting>
+SSHKnock         net               $FW            tcp         22,1599,1600,1601</programlisting>
 
         <para>If you want to log the DROPs and ACCEPTs done by SSHKnock, you
         can just add a log level as in:</para>
 
         <programlisting>#ACTION          SOURCE            DEST           PROTO       DEST PORT(S)
-SSHKnock:info    net               fw             tcp         22,1599,1600,1601</programlisting>
+SSHKnock:info    net               $FW            tcp         22,1599,1600,1601</programlisting>
       </listitem>
 
       <listitem>
@@ -115,7 +115,7 @@ SSHKnock:info    net               fw             tcp         22,1599,1600,1601<
         <programlisting>#ACTION          SOURCE            DEST            PROTO       DEST PORT(S)  SOURCE      ORIGINAL
 #                                                                            PORT(S)     DEST
 DNAT-            net               loc:192.168.1.5 tcp         22            -           206.124.146.178
-SSHKnock         net               fw              tcp         1599,1600,1601
+SSHKnock         net               $FW             tcp         1599,1600,1601
 SSHKnock         net               loc:192.168.1.5 tcp         22            -           206.124.146.178</programlisting>
 
         <note>

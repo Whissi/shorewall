@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-04-15</pubdate>
+    <pubdate>2005-09-12</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -333,7 +333,7 @@ $WIFI_IF        192.168.3.0/24
 
       <blockquote>
         <programlisting>#SOURCE         DESTINATION     POLICY          LOG LEVEL       BURST:LIMIT
-fw              fw              ACCEPT
+$FW             $FW             ACCEPT
 loc             net             ACCEPT
 $FW             vpn             ACCEPT
 vpn             net             ACCEPT
@@ -342,14 +342,14 @@ sec             vpn             ACCEPT
 vpn             sec             ACCEPT
 sec             loc             ACCEPT
 loc             sec             ACCEPT
-fw              sec             ACCEPT
+$FW             sec             ACCEPT
 sec             net             ACCEPT
 Wifi            sec             NONE
 sec             Wifi            NONE
-fw              Wifi            ACCEPT
+$FW             Wifi            ACCEPT
 loc             vpn             ACCEPT
 $FW             loc             ACCEPT
-loc             fw              REJECT          $LOG
+loc             $FW             REJECT          $LOG
 net             all             DROP            $LOG            10/sec:40
 all             all             REJECT          $LOG
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
@@ -514,23 +514,23 @@ REDIRECT        sec                             3128                    tcp     
 #####
 # Local Network to Firewall 
 #
-DROP            loc:!192.168.0.0/22             fw                      # Silently drop traffic with an HP source IP from my XP box
-ACCEPT          loc                             fw                      tcp     ssh,time,631,8080
-ACCEPT          loc                             fw                      udp     161,ntp,631
-DROP            loc                             fw                      tcp     3185          #SuSE Meta pppd
+DROP            loc:!192.168.0.0/22             $FW                     # Silently drop traffic with an HP source IP from my XP box
+ACCEPT          loc                             $FW                     tcp     ssh,time,631,8080
+ACCEPT          loc                             $FW                     udp     161,ntp,631
+DROP            loc                             $FW                     tcp     3185          #SuSE Meta pppd
 ##########################################################################################################################################################################
 #####
 # Secure wireless to Firewall 
 #
-ACCEPT          sec                             fw                      tcp     ssh,time,631,8080
-ACCEPT          sec                             fw                      udp     161,ntp,631
-DROP            sec                             fw                      tcp     3185          #SuSE Meta pppd
+ACCEPT          sec                             $FW                     tcp     ssh,time,631,8080
+ACCEPT          sec                             $FW                     udp     161,ntp,631
+DROP            sec                             $FW                     tcp     3185          #SuSE Meta pppd
 ##########################################################################################################################################################################
 #####
 # Roadwarriors to Firewall 
 #
-ACCEPT          vpn                             fw                      tcp     ssh,time,631,8080
-ACCEPT          vpn                             fw                      udp     161,ntp,631
+ACCEPT          vpn                             $FW                     tcp     ssh,time,631,8080
+ACCEPT          vpn                             $FW                     udp     161,ntp,631
 ##########################################################################################################################################################################
 #####
 # Local Network to DMZ
@@ -561,7 +561,7 @@ ACCEPT          vpn                             dmz                     tcp     
 #####
 # Internet to ALL -- drop NewNotSyn packets
 #
-dropNotSyn      net             fw              tcp
+dropNotSyn      net             $FW             tcp
 dropNotSyn      net             loc             tcp
 dropNotSyn      net             dmz             tcp
 
@@ -632,10 +632,10 @@ ACCEPT:$LOG     dmz                             net                     tcp     
 #####
 # DMZ to Firewall -- ntp &amp; snmp, Silently reject Auth
 #
-ACCEPT          dmz                             fw                      udp     ntp                                     ntp
-ACCEPT          dmz                             fw                      tcp     161,ssh
-ACCEPT          dmz                             fw                      udp     161
-REJECT          dmz                             fw                      tcp     auth
+ACCEPT          dmz                             $FW                     udp     ntp                                     ntp
+ACCEPT          dmz                             $FW                     tcp     161,ssh
+ACCEPT          dmz                             $FW                     udp     161
+REJECT          dmz                             $FW                     tcp     auth
 ##########################################################################################################################################################################
 #####
 # DMZ to Local Network  
@@ -647,29 +647,29 @@ ACCEPT          dmz:206.124.146.177             loc:192.168.1.5         udp
 #####
 # Internet to Firewall
 #
-REJECT          net                             fw                      tcp     www,ftp,https
+REJECT          net                             $FW                     tcp     www,ftp,https
 ACCEPT          net                             dmz                     udp     33434:33454
-ACCEPT          net:$OMAK                       fw                      udp     ntp
-ACCEPT          net:$OMAK                       fw                      tcp     22      #SSH from Omak
+ACCEPT          net:$OMAK                       $FW                     udp     ntp
+ACCEPT          net:$OMAK                       $FW                     tcp     22      #SSH from Omak
 ##########################################################################################################################################################################
 #####
 # Firewall to Internet
 #
-ACCEPT          fw                              net:$NTPSERVERS         udp     ntp                                     ntp
-#ACCEPT         fw                              net:$POPSERVERS         tcp     pop3
-ACCEPT          fw                              net                     udp     domain
-ACCEPT          fw                              net                     tcp     domain,www,https,ssh,1723,whois,1863,ftp,2702,2703,7
-ACCEPT          fw                              net                     udp     33435:33535
-ACCEPT          fw                              net                     icmp
-REJECT:$LOG     fw                              net                     udp     1025:1031
-DROP            fw                              net                     udp     ntp
+ACCEPT          $FW                             net:$NTPSERVERS         udp     ntp                                     ntp
+#ACCEPT         $FW                             net:$POPSERVERS         tcp     pop3
+ACCEPT          $FW                             net                     udp     domain
+ACCEPT          $FW                             net                     tcp     domain,www,https,ssh,1723,whois,1863,ftp,2702,2703,7
+ACCEPT          $FW                             net                     udp     33435:33535
+ACCEPT          $FW                             net                     icmp
+REJECT:$LOG     $FW                             net                     udp     1025:1031
+DROP            $FW                             net                     udp     ntp
 ##########################################################################################################################################################################
 #####
 # Firewall to DMZ
 #
-ACCEPT          fw                              dmz                     tcp     www,ftp,ssh,smtp,993,465
-ACCEPT          fw                              dmz                     udp     domain
-REJECT          fw                              dmz                     udp     137:139
+ACCEPT          $FW                             dmz                     tcp     www,ftp,ssh,smtp,993,465
+ACCEPT          $FW                             dmz                     udp     domain
+REJECT          $FW                             dmz                     udp     137:139
 ##########################################################################################################################################################################
 #####
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
@@ -883,9 +883,9 @@ net     Net             Internet
 
       <blockquote>
         <programlisting>#SOURCE         DEST            POLICY          LOG LEVEL       LIMIT:BURST
-fw              net             ACCEPT
-fw              home            ACCEPT
-home            fw              ACCEPT
+$FW             net             ACCEPT
+$FW             home            ACCEPT
+home            $FW             ACCEPT
 net             home            NONE
 home            net             NONE
 net             all             DROP            info
@@ -932,9 +932,9 @@ home            eth0:0.0.0.0/0
       <blockquote>
         <programlisting>#ACTION         SOURCE                  DEST    PROTO   DEST    SOURCE  ORIGINAL        RATE    USER/
 #                                                       PORT    PORT(S) DEST            LIMIT   GROUP
-ACCEPT          net                     fw      icmp    8
-ACCEPT          net                     fw      tcp     22
-ACCEPT          net                     fw      tcp     4000:4100
+ACCEPT          net                     $FW     icmp    8
+ACCEPT          net                     $FW     tcp     22
+ACCEPT          net                     $FW     tcp     4000:4100
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
       </blockquote>
     </section>
@@ -1021,9 +1021,9 @@ net     Net             Internet
 
       <blockquote>
         <programlisting>#SOURCE         DEST            POLICY          LOG LEVEL       LIMIT:BURST
-fw              net             ACCEPT
-fw              home            ACCEPT
-home            fw              ACCEPT
+$FW             net             ACCEPT
+$FW             home            ACCEPT
+home            $FW             ACCEPT
 net             home            NONE
 home            net             NONE
 net             all             DROP            info
@@ -1050,9 +1050,9 @@ home    tun0            -
       <blockquote>
         <programlisting>#ACTION         SOURCE                  DEST    PROTO   DEST    SOURCE  ORIGINAL        RATE    USER/
 #                                                       PORT    PORT(S) DEST            LIMIT   GROUP
-ACCEPT          net                     fw      icmp    8
-ACCEPT          net                     fw      tcp     22
-ACCEPT          net                     fw      tcp     4000:4100
+ACCEPT          net                     $FW     icmp    8
+ACCEPT          net                     $FW     tcp     22
+ACCEPT          net                     $FW     tcp     4000:4100
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
       </blockquote>
     </section>

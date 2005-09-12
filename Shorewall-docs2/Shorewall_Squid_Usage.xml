@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-06-01</pubdate>
+    <pubdate>2005-09-12</pubdate>
 
     <copyright>
       <year>2003-2005</year>
@@ -150,7 +150,7 @@
       <programlisting>#ACTION   SOURCE     DEST     PROTO    DEST PORT(S)     SOURCE     ORIGINAL
 #                                                       PORT(S)    DEST
 REDIRECT  loc        3128     tcp      www              -          !206.124.146.177
-ACCEPT    fw         net      tcp      www</programlisting>
+ACCEPT    $FW        net      tcp      www</programlisting>
 
       <para>There may be a requirement to exclude additional destination hosts
       or networks from being redirected. For example, you might also want
@@ -218,7 +218,7 @@ fi</command>          </programlisting>
           <para>Add this entry to your /etc/shorewall/providers file.</para>
 
           <programlisting>#NAME   NUMBER  MARK    DUPLICATE       INTERFACE       GATEWAY         OPTIONS
-Squid   1       202     -               eth1            192.168.1.3     -</programlisting>
+Squid   1       202     -               eth1            192.168.1.3     loose</programlisting>
         </listitem>
       </orderedlist>
 
@@ -308,8 +308,8 @@ ACCEPT    SZ       net    tcp     80,443</programlisting>
       <quote>loc</quote> zone:</title>
 
       <para><filename>/etc/shorewall/rules:</filename> <programlisting>#ACTION   SOURCE   DEST   PROTO    DEST PORT(S)
-ACCEPT    loc      fw     tcp      8080
-ACCEPT    fw       net    tcp      80,443</programlisting></para>
+ACCEPT    loc      $FW    tcp      8080
+ACCEPT    $FW      net    tcp      80,443</programlisting></para>
     </example>
   </section>
 </article>

@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-03-04</pubdate>
+    <pubdate>2005-09-12</pubdate>
 
     <copyright>
       <year>2001 - 2005</year>
@@ -68,7 +68,7 @@
         <para>The packet matches a rule in <ulink
         url="Documentation.htm#Rules">/etc/shorewall/rules</ulink>. By
         including a syslog level (see below) in the ACTION column of a rule
-        (e.g., <quote>ACCEPT<emphasis role="bold">:info</emphasis> net fw tcp
+        (e.g., <quote>ACCEPT<emphasis role="bold">:info</emphasis> net $FW tcp
         22</quote>), the connection attempt will be logged at that
         level.</para>
       </listitem>
@@ -231,7 +231,7 @@ rules:REJECT:$LOG       loc                             net                     
 rules:REJECT:$LOG       loc                             net                     udp     1025:1031
 rules:REJECT:$LOG       dmz                             net                     udp     1025:1031
 rules:ACCEPT:$LOG       dmz                             net                     tcp     1024:                                   20
-rules:REJECT:$LOG       fw                              net                     udp     1025:1031
+rules:REJECT:$LOG       $FW                             net                     udp     1025:1031
 shorewall.conf:LOGFILE=/var/log/shorewall
 shorewall.conf:LOGUNCLEAN=$LOG
 shorewall.conf:LOGNEWNOTSYN=$LOG

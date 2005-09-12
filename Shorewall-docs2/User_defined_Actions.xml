@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-01-14</pubdate>
+    <pubdate>2005-09-12</pubdate>
 
     <copyright>
       <year>2003</year>
@@ -257,7 +257,7 @@
     might do something like:</para>
 
     <programlisting>#ACTION      SOURCE      DEST        PROTO    DEST PORT(S)
-LogAndAccept loc         fw          tcp      22</programlisting>
+LogAndAccept loc         $FW         tcp      22</programlisting>
 
     <para>Prior to Shorewall 2.1.2, specifying a log level (and optionally a
     log tag) on a rule that specified a user-defined (or Shorewall-defined)
@@ -286,7 +286,7 @@ bar:info</programlisting>
         <para>/etc/shorewall/rules:</para>
 
         <programlisting>#ACTION      SOURCE     DEST     PROTO    DEST PORT(S)
-foo:debug    fw         net</programlisting>
+foo:debug    $FW        net</programlisting>
 
         <para>Logging in the invoke 'foo' action will be as if foo had been
         defined as:</para>
@@ -311,7 +311,7 @@ bar:info</programlisting>
         <para>/etc/shorewall/rules:</para>
 
         <programlisting>#ACTION      SOURCE     DEST     PROTO    DEST PORT(S)
-foo:debug!    fw         net</programlisting>
+foo:debug!    $FW        net</programlisting>
 
         <para>Logging in the invoke 'foo' action will be as if foo had been
         defined as:</para>
@@ -350,7 +350,7 @@ bar:debug</programlisting>
     <para><filename>/etc/shorewall/rules</filename>:</para>
 
     <programlisting>#ACTION          SOURCE           DEST
-acton:info:test  fw               net</programlisting>
+acton:info:test  $FW              net</programlisting>
 
     <para>Your /etc/shorewall/acton file will be run with:</para>
 
@@ -383,7 +383,7 @@ acton:info:test  fw               net</programlisting>
       your firewall. In <filename>/etc/shorewall/rules</filename>:</para>
 
       <programlisting>#ACTION   SOURCE      DEST        PROTO    ...
-AllowFTP  loc         fw</programlisting>
+AllowFTP  loc         $FW</programlisting>
     </example>
 
     <para><filename>/usr/share/shorewall/actions.std</filename> is processed

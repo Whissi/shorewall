@@ -12,7 +12,7 @@
       <surname>Eastep</surname>
     </author>
 
-    <pubdate>2005-08-31</pubdate>
+    <pubdate>2005-09-12</pubdate>
 
     <copyright>
       <year>2002-</year>
@@ -223,9 +223,10 @@ loc</programlisting> Zones are defined in the <ulink
     class="directory">/etc/shorewall/</filename><filename>zones</filename></ulink>
     file.</para>
 
-    <para>Shorewall also recognizes the firewall system as its own zone - by
-    default, the firewall itself is known as <emphasis
-    role="bold"><varname>fw</varname></emphasis>.</para>
+    <para>Note that Shorewall recognizes the firewall system as its own zone -
+    when the /etc/shorewall/zones file is processed, the name of the firewall
+    zone is stored in the shell variable $FW which may be used to refer to the
+    firewall zone throughout the Shorewall configuration.</para>
 
     <para>Rules about what traffic to allow and what traffic to deny are
     expressed in terms of zones. <itemizedlist spacing="compact">
@@ -265,7 +266,7 @@ all        all         REJECT      info</programlisting> In the two-interface
     sample, the line below is included but commented out. If you want your
     firewall system to have full access to servers on the internet, uncomment
     that line. <programlisting>#SOURCE    DEST        POLICY      LOG LEVEL    LIMIT:BURST
-fw         net         ACCEPT</programlisting> The above policy will:
+$FW        net         ACCEPT</programlisting> The above policy will:
     <itemizedlist>
         <listitem>
           <para>Allow all connection requests from your local network to the
@@ -586,10 +587,10 @@ fw         net         ACCEPT</programlisting> The above policy will:
     class="directory">/etc/shorewall/</filename><filename>rules</filename> is:
     <programlisting>#ACTION   SOURCE    DEST                                          PROTO      DEST PORT(S)
 DNAT      net       loc:<emphasis>&lt;server local ip address&gt;</emphasis>[:<emphasis>&lt;server port&gt;</emphasis>] <emphasis>&lt;protocol&gt;</emphasis> <emphasis>&lt;port&gt;</emphasis></programlisting>Shorewall
-    has macros for many popular applications. Look at
-    /usr/share/shorewall/macro.* to see what is available in your release.
-    Macros simplify creating DNAT rules by supplying the protocol and port(s)
-    as shown in the following examples.</para>
+    has <ulink url="Macros.html">macros</ulink> for many popular applications.
+    Look at /usr/share/shorewall/macro.* to see what is available in your
+    release. Macros simplify creating DNAT rules by supplying the protocol and
+    port(s) as shown in the following examples.</para>
 
     <para><example label="1">
         <title>Web Server</title>
@@ -685,7 +686,7 @@ DNAT       net       loc:10.10.10.2:80  tcp       5000</programlisting>
           in <filename
           class="directory">/etc/shorewall/</filename><filename>rules</filename>.
           <programlisting>#ACTION    SOURCE    DEST               PROTO     DEST PORT(S)
-DNS/ACCEPT loc       fw</programlisting></para>
+DNS/ACCEPT loc       $FW</programlisting></para>
         </listitem>
       </itemizedlist></para>
   </section>
@@ -695,48 +696,44 @@ DNS/ACCEPT loc       fw</programlisting></para>
 
     <para>The two-interface sample includes the following rules:
     <programlisting>#ACTION     SOURCE    DEST               PROTO     DEST PORT(S)
-DNS/ACCEPT  fw        net</programlisting>This rule allows
+DNS/ACCEPT  $FW       net</programlisting>This rule allows
     <acronym>DNS</acronym> access from your firewall and may be removed if you
     uncommented the line in <filename
     class="directory">/etc/shorewall/</filename><filename>policy</filename>
     allowing all connections from the firewall to the internet.</para>
 
     <para>In the rule shown above, <quote>DNS/ACCEPT</quote> is an example of
-    a <emphasis>defined action</emphasis>. Shorewall includes a number of
-    defined actions and <ulink url="Actions.html">you can add your
-    own</ulink>. To see the list of actions included with your version of
-    Shorewall, look in the file
-    <filename>/usr/share/shorewall/actions.std</filename>. Those actions that
-    accept connection requests have names that begin with
-    <quote>Allow</quote>.</para>
+    a <emphasis>macro invocation</emphasis>. Shorewall includes a number of
+    macros (see <filename>/usr/share/shorewall/macro.*</filename>) and <ulink
+    url="Macros.html">you can add your own</ulink>.</para>
 
     <para>You don't have to use defined macros when coding a rule in
     <filename>/etc/shorewall/rules</filename>; Shorewall will start slightly
     faster if you code your rules directly rather than using macros. The the
     rule shown above could also have been coded as follows:<programlisting>#ACTION    SOURCE    DEST               PROTO     DEST PORT(S)
-ACCEPT     fw        net                udp       53
-ACCEPT     fw        net                tcp       53</programlisting></para>
+ACCEPT     $FW       net                udp       53
+ACCEPT     $FW       net                tcp       53</programlisting></para>
 
     <para>In cases where Shorewall doesn't include a defined action to meet
     your needs, you can either define the action yourself or you can simply
     code the appropriate rules directly.</para>
 
     <para>The sample also includes: <programlisting>#ACTION      SOURCE    DEST               PROTO     DEST PORT(S)
-SSH/ACCEPT   loc       fw</programlisting> That rule allows you to run an
+SSH/ACCEPT   loc       </programlisting>$FWThat rule allows you to run an
     <acronym>SSH</acronym> server on your firewall and connect to that server
     from your local systems.</para>
 
     <para>If you wish to enable other connections from your firewall to other
     systems, the general format using a macro is: <programlisting>#ACTION         SOURCE    DEST               PROTO      DEST PORT(S)
-&lt;macro&gt;/ACCEPT  fw        <emphasis>&lt;destination zone&gt;</emphasis></programlisting>The
+&lt;macro&gt;/ACCEPT  $FW       <emphasis>&lt;destination zone&gt;</emphasis></programlisting>The
     general format when not using defined actions is:<programlisting>#ACTION    SOURCE    DEST               PROTO      DEST PORT(S)
-ACCEPT     fw        <emphasis>&lt;destination zone&gt; &lt;protocol&gt; &lt;port&gt;</emphasis></programlisting><example>
+ACCEPT     $FW       <emphasis>&lt;destination zone&gt; &lt;protocol&gt; &lt;port&gt;</emphasis></programlisting><example>
         <title>Web Server on Firewall</title>
 
         <para>You want to run a Web Server on your firewall system:
         <programlisting>#ACTION     SOURCE    DEST               PROTO     DEST PORT(S)
-Web/ACCEPT  net       fw
-Web/ACCEPT  loc       fw</programlisting> Those two rules would of course be
+Web/ACCEPT  net       $FW
+Web/ACCEPT  loc       </programlisting>$FWThose two rules would of course be
         in addition to the rules listed above under <quote><link
         linkend="cachingdns">You can configure a Caching Name Server on your
         firewall</link></quote>.</para>
@@ -748,12 +745,12 @@ Web/ACCEPT  loc       fw</programlisting> Those two rules would of course be
         <acronym>SSH</acronym>:</para>
 
         <programlisting>#ACTION      SOURCE    DEST               PROTO     DEST PORT(S)
-SSH/ACCEPT   net       fw</programlisting>
+SSH/ACCEPT   net       $FW</programlisting>
       </important> <inlinegraphic fileref="images/leaflogo.gif"
     format="GIF" />Bering users will want to add the following two rules to be
     compatible with Jacques's Shorewall configuration.<programlisting>#ACTION    SOURCE    DEST    PROTO     DEST PORT(S)
-ACCEPT     loc       fw      udp       53          #Allow DNS Cache to work
-ACCEPT     loc       fw      tcp       80          #Allow Weblet to work</programlisting>
+ACCEPT     loc       $FW     udp       53          #Allow DNS Cache to work
+ACCEPT     loc       $FW     tcp       80          #Allow Weblet to work</programlisting>
     <inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
     <para>Now edit your <filename

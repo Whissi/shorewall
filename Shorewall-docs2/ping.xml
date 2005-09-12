@@ -13,7 +13,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-08-31</pubdate>
+    <pubdate>2005-09-12</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -64,7 +64,7 @@ Ping/ACCEPT    z1        z2</programlisting>
       <para>To permit ping from the local zone to the firewall:</para>
 
       <programlisting>#ACTION      SOURCE    DEST     PROTO    DEST PORT(S)
-Ping/ACCEPT   loc       fw</programlisting>
+Ping/ACCEPT   loc      $FW</programlisting>
     </example>
 
     <para>If you would like to accept <quote>ping</quote> by default even when
@@ -89,7 +89,7 @@ Ping/DROP     z1        z2</programlisting>
       <filename>/etc/shorewall/rules</filename>:</para>
 
       <programlisting>#ACTION    SOURCE    DEST     PROTO    DEST PORT(S)
-Ping/DROP  net       fw</programlisting>
+Ping/DROP  net       $FW</programlisting>
     </example>
 
     <para>Note that the above rule may be used without changing the action

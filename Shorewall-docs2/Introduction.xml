@@ -13,7 +13,7 @@
       <surname>Eastep</surname>
     </author>
 
-    <pubdate>2005-08-30</pubdate>
+    <pubdate>2005-09-12</pubdate>
 
     <copyright>
       <year>2003-2005</year>
@@ -132,11 +132,10 @@ dmz                    Demilitarized Zone</programlisting>
     class="directory">/etc/shorewall/</filename><filename>zones</filename></ulink>
     file.</para>
 
-    <para>Shorewall also recognizes the firewall system as its own zone - by
-    default, the firewall itself is known as <emphasis
-    role="bold"><varname>fw</varname></emphasis> but that may be changed by
-    setting the FW option in <ulink
-    url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>.</para>
+    <para>Note that Shorewall recognizes the firewall system as its own zone.
+    The name of the zone designating the firewall itself is stored in the
+    shell variable $<firstterm>FW</firstterm> which may be used throughout the
+    Shorewall configuration to refer to the firewall zone.</para>
 
     <para>Rules about what traffic to allow and what traffic to deny are
     expressed in terms of zones. <itemizedlist spacing="compact">
@@ -207,7 +206,7 @@ all        all         REJECT      info</programlisting>In the three-interface
     sample, the line below is included but commented out. If you want your
     firewall system to have full access to servers on the internet, uncomment
     that line. <programlisting>#SOURCE    DEST        POLICY      LOG LEVEL    LIMIT:BURST
-fw         net         ACCEPT</programlisting> The above policy will:
+$FW        net         ACCEPT</programlisting> The above policy will:
     <itemizedlist>
         <listitem>
           <para>Allow all connection requests from your local network to the
@@ -255,7 +254,7 @@ dmz        eth2          detect</programlisting>
 
     <programlisting>#ACTION    SOURCE        DEST      PROTO      DEST
 #                                             PORT(S)
-ACCEPT     net           fw        tcp        22</programlisting>
+ACCEPT     net           $FW       tcp        22</programlisting>
 
     <para>So although you have a policy of ignoring all connection attempts
     from the net zone (from the internet), the above exception to that policy

@@ -21,7 +21,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-08-22</pubdate>
+    <pubdate>2005-09-12</pubdate>
 
     <copyright>
       <year>2005</year>
@@ -40,6 +40,13 @@
     </legalnotice>
   </articleinfo>
 
+  <caution>
+    <para><emphasis role="bold">This article applies to Shorewall 3.0 and
+    later. If you are running a version of Shorewall earlier than Shorewall
+    3.0.0 then please see the documentation for that
+    release.</emphasis></para>
+  </caution>
+
   <section>
     <title>What are Shorewall Macros?</title>
 
@@ -47,8 +54,9 @@
     series of one or more iptables rules. The symbolic name may appear in the
     ACTION column of an <filename><ulink
     url="Documentation.htm#Rules">/etc/shorewall/rules</ulink></filename> file
-    entry in which case, the traffic matching that rules file entry will be
-    passed to the series of iptables rules named by the action.</para>
+    entry and in the TARGET column of an action in which case, the traffic
+    matching that rules file entry will be passed to the series of iptables
+    rules named by the macro.</para>
 
     <para>Macros can be thought of as templates. When a macro is invoked in an
     <filename>/etc/shorewall/rules</filename> entry, it may be qualified by a
@@ -57,30 +65,22 @@
     which each packet/rule match within the macro causes a log message to be
     generated.</para>
 
-    <para>There are three types of Shorewall macros:</para>
+    <para>There are two types of Shorewall macros:</para>
 
     <orderedlist>
       <listitem>
-        <para>Built-in Macros. These macros are known by the Shorewall code
-        itself. They are listed in the comments at the top of the file
-        <filename>/usr/share/shorewall/actions.std</filename>.</para>
-      </listitem>
-
-      <listitem>
-        <para>Standard Macros. These actions are released as part of
-        Shorewall. They are listed in the file
-        <filename>/usr/share/shorewall/actions.std</filename> and are defined
-        in the corresponding macros.* files in <filename
+        <para>Standard Macros. These macros are released as part of Shorewall.
+        They are defined in macros.* files in <filename
         class="directory">/usr/share/shorewall</filename>. Each
         <filename>macros.*</filename> file has a comment at the beginning of
-        the file that describes what the action does. As an example, here is
-        the definition of the <firstterm>AllowSMB</firstterm> standard
+        the file that describes what the macro does. As an example, here is
+        the definition of the <firstterm>SMB</firstterm> standard
         macro.</para>
 
         <programlisting>#
 # Shorewall 2.2 /usr/share/shorewall/macro.AllowSMB
 #
-#       Allow Microsoft SMB traffic. You need to invoke this action in
+#       Allow Microsoft SMB traffic. You need to invoke this macro in
 #       both directions.
 #
 ######################################################################################
@@ -100,126 +100,97 @@ PARAM    -              -               tcp     135,139,445
 
       <listitem>
         <para>User-defined Macros. These macros are created by end-users. They
-        are listed in the file /etc/shorewall/actions and are defined in
-        macros.* files in /etc/shorewall/actions or in another directory
-        listed in your CONFIG_PATH (defined in <ulink
+        are defined in macros.* files in /etc/shorewall or in another
+        directory listed in your CONFIG_PATH (defined in <ulink
         url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>).</para>
       </listitem>
     </orderedlist>
   </section>
 
   <section>
-    <title>Common Actions</title>
-
-    <para>Shorewall allows the association of a <firstterm>common
-    action</firstterm> with policies. A separate common action may be
-    associated with ACCEPT, DROP and REJECT policies. Common actions provide a
-    way to invoke a set of common rules just before the policy is enforced.
-    Common actions accomplish two goals:</para>
-
-    <orderedlist>
-      <listitem>
-        <para>Relieve log congestion. Common actions typically include rules
-        to silently drop or reject traffic that would otherwise be logged when
-        the policy is enforced.</para>
-      </listitem>
-
-      <listitem>
-        <para>Ensure correct operation. Common actions can also avoid common
-        pitfalls like dropping connection requests on port TCP port 113. If
-        these connections are dropped (rather than rejected) then you may
-        encounter problems connecting to internet services that utilize the
-        AUTH protocol of client authentication<footnote>
-            <para>AUTH is actually pretty silly on today's internet but it's
-            amazing how many servers still employ it.</para>
-          </footnote>.</para>
-      </listitem>
-    </orderedlist>
-
-    <para>Shorewall provides common actions for the REJECT and DROP policies.
-    The common action for REJECT is named <firstterm>Reject</firstterm> and
-    the common action for DROP is named <firstterm>Drop</firstterm>. These
-    associations are made through two entries in
-    /usr/share/shorewall/actions.std:</para>
-
-    <programlisting>Drop:DROP       #Common Action for DROP policy
-Reject:REJECT   #Common Action for REJECT policy</programlisting>
-
-    <para>These may be overridden by entries in your /etc/shorewall/actions
-    file.</para>
-
-    <warning>
-      <para>Entries in the DROP and REJECT common actions <emphasis
-      role="bold">ARE NOT THE CAUSE OF CONNECTION PROBLEMS</emphasis>.
-      Remember — common actions are only invoked immediately before the packet
-      is going to be dropped or rejected anyway!!!</para>
-    </warning>
-  </section>
-
-  <section>
     <title>Defining your own Macros</title>
 
-    <para>To define a new action:</para>
+    <para>To define a new macro:</para>
 
     <orderedlist>
       <listitem>
-        <para>Add a line to
-        <filename><filename>/etc/shorewall/actions</filename></filename> that
-        names your new action. Action names must be valid shell variable names
-        ((must begin with a letter and be composed of letters, digits and
-        underscore characters) as well as valid Netfilter chain names. If you
-        intend to log from the action, the name must have a maximum of 11
-        characters. It is recommended that the name you select for a new
-        action begins with a capital letter; that way, the name won't conflict
-        with a Shorewall-defined chain name.</para>
-
-        <para>Beginning with Shorewall-2.0.0-Beta1, the name of the action may
-        be optionally followed by a colon (<quote>:</quote>) and ACCEPT, DROP
-        or REJECT. When this is done, the named action will become the
-        <emphasis>common action </emphasis>for policies of type ACCEPT, DROP
-        or REJECT respectively. The common action is applied immediately
-        before the policy is enforced (before any logging is done under that
-        policy) and is used mainly to suppress logging of uninteresting
-        traffic which would otherwise clog your logs. The same policy name can
-        appear in multiple actions; the last such action for each policy name
-        is the one which Shorewall will use.</para>
-
-        <para>Shorewall includes pre-defined actions for DROP and REJECT --
-        see above.</para>
+        <para>Macro names must be valid shell variable names ((must begin with
+        a letter and be composed of letters, digits and underscore characters)
+        as well as valid Netfilter chain names.</para>
       </listitem>
 
       <listitem>
-        <para>Once you have defined your new action name (ActionName), then
-        copy /usr/share/shorewall/action.template to
-        <filename>/etc/shorewall/action.ActionName</filename> (for example, if
-        your new action name is <quote>Foo</quote> then copy
-        <filename>/usr/share/shorewall/action.template</filename> to
-        <filename>/etc/shorewall/action.Foo</filename>).</para>
+        <para>Copy /usr/share/shorewall/macro.template to
+        <filename>/etc/shorewall/macro.ActionName</filename> (for example, if
+        your new macro name is <quote>Foo</quote> then copy
+        <filename>/usr/share/shorewall/macro.template</filename> to
+        <filename>/etc/shorewall/macro.Foo</filename>).</para>
       </listitem>
 
       <listitem>
-        <para>Now modify the new file to define the new action.</para>
+        <para>Now modify the new file to define the new macro.</para>
       </listitem>
     </orderedlist>
 
-    <para>Columns in the action.template file are as follows:</para>
+    <para>Columns in the macro.template file are as follows:</para>
 
     <itemizedlist>
       <listitem>
-        <para>TARGET - Must be ACCEPT, DROP, REJECT, LOG, CONTINUE, QUEUE or
-        &lt;<emphasis>action</emphasis>&gt; where
-        &lt;<emphasis>action</emphasis>&gt; is a previously-defined action
-        (that is, it must precede the action being defined in this file in
-        your <filename>/etc/shorewall/actions</filename> file). These actions
-        have the same meaning as they do in the
-        <filename>/etc/shorewall/rules</filename> file (CONTINUE terminates
-        processing of the current action and returns to the point where that
-        action was invoked). The TARGET may optionally be followed by a colon
-        (<quote>:</quote>) and a syslog log level (e.g, REJECT:info or
-        ACCEPT:debugging). This causes the packet to be logged at the
-        specified level. You may also specify ULOG (must be in upper case) as
-        a log level. This will log to the ULOG target for routing to a
-        separate log through use of ulogd (<ulink
+        <para>ACTION - ACCEPT, DROP, REJECT, DNAT, DNAT-, REDIRECT, CONTINUE,
+        LOG, QUEUE, PARAM or an action name.</para>
+
+        <simplelist>
+          <member>ACCEPT - allow the connection request</member>
+
+          <member>ACCEPT+ - like ACCEPT but also excludes the connection from
+          any subsequent DNAT[-] or REDIRECT[-] rules.</member>
+
+          <member>NONAT - Excludes the connection from any subsequent DNAT[-]
+          or REDIRECT[-] rules but doesn't generate a rule to accept the
+          traffic.</member>
+
+          <member>DROP - ignore the request</member>
+
+          <member>REJECT - disallow the request and return an icmp unreachable
+          or an RST packet.</member>
+
+          <member>DNAT - Forward the request to another address (and
+          optionally another port).</member>
+
+          <member>DNAT- - Advanced users only. Like DNAT but only generates
+          the DNAT iptables rule and not the companion ACCEPT rule.</member>
+
+          <member>SAME - Similar to DNAT except that the port may not be
+          remapped and when multiple server addresses are listed, all requests
+          from a given remote system go to the same server.</member>
+
+          <member>SAME- - Advanced users only. Like SAME but only generates
+          the SAME iptables rule and not the companion ACCEPT rule.</member>
+
+          <member>REDIRECT - Redirect the request to a local port on the
+          firewall.</member>
+
+          <member>REDIRECT- - Advanced users only. Like REDIRET but only
+          generates the REDIRECT iptables rule and not the companion ACCEPT
+          rule.</member>
+
+          <member>CONTINUE - (For experts only). Do not process any of the
+          following rules for this (source zone,destination zone). If The
+          source and/or destination If the address falls into a zone defined
+          later in /etc/shorewall/zones, this connection request will be
+          passed to the rules defined for that (those) zone(s).</member>
+
+          <member>LOG - Simply log the packet and continue.</member>
+
+          <member>QUEUE - Queue the packet to a user-space application such as
+          ftwall (http://p2pwall.sf.net).</member>
+        </simplelist>
+
+        <para>The ACTION may optionally be followed by ":" and a syslog log
+        level (e.g, REJECT:info or DNAT:debug). This causes the packet to be
+        logged at the specified level.</para>
+
+        <para>(<ulink
         url="http://www.gnumonks.org/projects/ulogd">http://www.gnumonks.org/projects/ulogd</ulink>).</para>
       </listitem>
 
@@ -360,156 +331,77 @@ Reject:REJECT   #Common Action for REJECT policy</programlisting>
 
     <para>Example:</para>
 
-    <para><filename>/etc/shorewall/actions</filename>:</para>
-
-    <para><programlisting>     LogAndAccept</programlisting><phrase><filename>/etc/shorewall/action.LogAndAccept</filename></phrase><programlisting>     LOG:info
+    <para><phrase><filename>/etc/shorewall/macro.LogAndAccept</filename></phrase><programlisting>     LOG:info
      ACCEPT</programlisting></para>
 
-    <para>To use your action, in <filename>/etc/shorewall/rules</filename> you
+    <para>To use your macro, in <filename>/etc/shorewall/rules</filename> you
     might do something like:</para>
 
     <programlisting>#ACTION      SOURCE      DEST        PROTO    DEST PORT(S)
-LogAndAccept loc         fw          tcp      22</programlisting>
+LogAndAccept loc         $FW         tcp      22</programlisting>
   </section>
 
   <section>
-    <title>Actions and Logging</title>
+    <title>Macros and Logging</title>
 
-    <para>Prior to Shorewall 2.1.2, specifying a log level (and optionally a
-    log tag) on a rule that specified a user-defined (or Shorewall-defined)
-    action would log all traffic passed to the action. Beginning with
-    Shorewall 2.1.2, specifying a log level in a rule that specifies a user-
-    or Shorewall-defined action will cause each rule in the action to be
-    logged with the specified level (and tag).</para>
+    <para>Specifying a log level in a rule that invokes a user- or
+    Shorewall-defined action will cause each rule in the macro to be logged
+    with the specified level (and tag).</para>
 
-    <para>The extent to which logging of action rules occur is governed by the
+    <para>The extent to which logging of macro rules occur is governed by the
     following:</para>
 
     <orderedlist>
       <listitem>
-        <para>When you invoke an action and specify a log level, only those
-        rules in the action that have no log level will be changed to log at
+        <para>When you invoke a macro and specify a log level, only those
+        rules in the macro that have no log level will be changed to log at
         the level specified at the action invocation.</para>
 
         <para>Example:</para>
 
-        <para>/etc/shorewall/action.foo</para>
+        <para>/etc/shorewall/macro.foo</para>
 
-        <programlisting>#TARGET      SOURCE     DEST     PROTO    DEST PORT(S)
+        <programlisting>#ACTION      SOURCE     DEST     PROTO    DEST PORT(S)
 ACCEPT       -          -        tcp      22
 bar:info</programlisting>
 
         <para>/etc/shorewall/rules:</para>
 
         <programlisting>#ACTION      SOURCE     DEST     PROTO    DEST PORT(S)
-foo:debug    fw         net</programlisting>
+foo:debug    $FW        net</programlisting>
 
-        <para>Logging in the invoke 'foo' action will be as if foo had been
+        <para>Logging in the invokeD 'foo' macro will be as if foo had been
         defined as:</para>
 
-        <programlisting>#TARGET      SOURCE     DEST     PROTO    DEST PORT(S)
+        <programlisting>#ACTION      SOURCE     DEST     PROTO    DEST PORT(S)
 ACCEPT:debug -          -        tcp      22
 bar:info</programlisting>
       </listitem>
 
       <listitem>
         <para>If you follow the log level with "!" then logging will be at
-        that level for all rules recursively invoked by the action.</para>
+        that level for all rules recursively invoked by the macro.</para>
 
         <para>Example:</para>
 
-        <para>/etc/shorewall/action.foo</para>
+        <para>/etc/shorewall/macro.foo</para>
 
-        <programlisting>#TARGET      SOURCE     DEST     PROTO    DEST PORT(S)
+        <programlisting>#ACTION      SOURCE     DEST     PROTO    DEST PORT(S)
 ACCEPT       -          -        tcp      22
 bar:info</programlisting>
 
         <para>/etc/shorewall/rules:</para>
 
         <programlisting>#ACTION      SOURCE     DEST     PROTO    DEST PORT(S)
-foo:debug!    fw         net</programlisting>
+foo:debug!   $FW        net</programlisting>
 
-        <para>Logging in the invoke 'foo' action will be as if foo had been
+        <para>Logging in the invoked 'foo' macro will be as if foo had been
         defined as:</para>
 
-        <programlisting>#TARGET      SOURCE     DEST     PROTO    DEST PORT(S)
+        <programlisting>#ACTION      SOURCE     DEST     PROTO    DEST PORT(S)
 ACCEPT:debug -          -        tcp      22
 bar:debug</programlisting>
       </listitem>
     </orderedlist>
-
-    <para>The change in Shorewall 2.1.2 has an effect on extension scripts
-    used with user-defined actions. If you define an action 'acton' and you
-    have an <filename>/etc/shorewall/acton</filename> script then when that
-    script is invoked, the following three variables will be set for use by
-    the script:</para>
-
-    <itemizedlist>
-      <listitem>
-        <para>$CHAIN = the name of the chain where your rules are to be
-        placed. When logging is used on an action invocation, Shorewall
-        creates a chain with a slightly different name from the action
-        itself.</para>
-      </listitem>
-
-      <listitem>
-        <para>$LEVEL = Log level. If empty, no logging was specified.</para>
-      </listitem>
-
-      <listitem>
-        <para>$TAG = Log Tag.</para>
-      </listitem>
-    </itemizedlist>
-
-    <para>Example:</para>
-
-    <para><filename>/etc/shorewall/rules</filename>:</para>
-
-    <programlisting>#ACTION          SOURCE           DEST
-acton:info:test  fw               net</programlisting>
-
-    <para>Your /etc/shorewall/acton file will be run with:</para>
-
-    <itemizedlist>
-      <listitem>
-        <para>$CHAIN="%acton1"</para>
-      </listitem>
-
-      <listitem>
-        <para>$LEVEL="info"</para>
-      </listitem>
-
-      <listitem>
-        <para>$TAG="test"</para>
-      </listitem>
-    </itemizedlist>
-
-    <para>For an example of how to use these variables, see <ulink
-    url="PortKnocking.html">this article</ulink>.</para>
-  </section>
-
-  <section id="Extension">
-    <title>Creating an Action using an Extension Script</title>
-
-    <para>There may be cases where you wish to create a chain with rules that
-    can't be constructed using the tools defined in the action.template. In
-    that case, you can use an extension script.<note>
-        <para>If you actually need an action to drop broadcast packets, use
-        the <command>dropBcast</command> standard action rather than create
-        one like this.</para>
-      </note></para>
-
-    <example>
-      <title>An action to drop all broadcast packets</title>
-
-      <para>/etc/shorewall/actions<programlisting>DropBcasts</programlisting></para>
-
-      <para>/etc/shorewall/action.DropBcasts<programlisting># This file is empty</programlisting></para>
-
-      <para>/etc/shorewall/DropBcasts<programlisting>run_iptables -A DropBcasts -m pkttype --pkttype broadcast -j DROP</programlisting></para>
-    </example>
-
-    <para>For a richer example, see <ulink url="PortKnocking.html">this
-    article</ulink>.</para>
   </section>
 </article>

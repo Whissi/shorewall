@@ -201,12 +201,6 @@
 #			significant but the list should have no embedded white
 #			space.
 #
-#	GATEWAY		This column is only meaningful if the 'default' OPTION
-#			is given -- it is ignored otherwise. You may specify
-#			the default gateway IP address for this interface here
-#			and Shorewall will use that IP address rather than any
-#			that it finds in the main routing table.
-#
 #	Example 1:	Suppose you have eth0 connected to a DSL modem and
 #			eth1 connected to your local network and that your
 #			local subnet is 192.168.1.0/24. The interface gets
@@ -236,7 +230,7 @@
 # http://shorewall.net/Documentation.htm#Interfaces
 #
 ###############################################################################
-#ZONE	INTERFACE	BROADCAST	OPTIONS			GATEWAY
+#ZONE	INTERFACE	BROADCAST	OPTIONS
 net     eth0            detect          tcpflags,dhcp,routefilter,norfc1918,nosmurfs,logmartians
 loc     eth1            detect          tcpflags,detectnets,nosmurfs
 dmz     eth2            detect          

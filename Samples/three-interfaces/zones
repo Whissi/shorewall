@@ -11,12 +11,36 @@
 #		The names "all" and "none" are reserved and may not be
 #		used as zone names.
 #
-#	IPSEC	Yes --	Communication with all zone hosts is encrypted
-#	ONLY		Your kernel and iptables must include policy
+#		Where a zone is nested in one or more other zones,
+#		you may follow the (sub)zone name by ":" and a
+#		comma-separated list of the parent zones. The parent
+#		zones must have been defined in earlier records in this
+#		file.
+#
+#		Example:
+#
+#			#ZONE     TYPE     OPTIONS
+#			a	  plain
+#			b	  plain
+#			c:a,b     plain
+#
+#		Currently, Shorewall uses this information only to reorder the
+#		zone list so that parent zones appear after their subzones in
+#		the list. In the future, Shorewall may make more extensive use
+#		of that information.
+#
+#	TYPE	plain -	This is the standard Shorewall zone type and is the
+#			default if you leave this column empty or if you enter
+#			"-" in the column. Communication with some zone hosts
+#			may be encrypted. Encrypted hosts are designated using
+#			the 'ipsec'option in /etc/shorewall/hosts.
+#		ipsec -	Communication with all zone hosts is encrypted
+#			Your kernel and iptables must include policy
 #			match support.
-#		No  --	Communication with some zone hosts may be encrypted.
-#			Encrypted hosts are designated using the 'ipsec'
-#			option in /etc/shorewall/hosts.
+#		firewall
+#		      - Designates the firewall itself. You must have 
+#			exactly one 'firewall' zone. No options are
+#			permitted with a 'firewall' zone.
 #
 #	OPTIONS,	A comma-separated list of options as follows:
 #	IN OPTIONS,
@@ -59,21 +83,11 @@
 # OVERLAPPING ZONES DEFINED THROUGH /etc/shorewall/hosts.
 #
 # See http://www.shorewall.net/Documentation.htm#Nested
-#------------------------------------------------------------------------------
-# Example zones:
-#
-#	You have a three interface firewall with internet, local and DMZ
-#	interfaces.
-#
-#	#ZONE	IPSEC	OPTIONS		IN			OUT	
-#	net	
-#	loc
-#	dmz
-#
 ###############################################################################
-#ZONE	IPSEC	OPTIONS			IN			OUT
-#	ONLY				OPTIONS			OPTIONS
-net
-loc
-dmz
+#ZONE	TYPE	OPTIONS			IN			OUT
+#					OPTIONS			OPTIONS
+fw	firewall
+net	plain
+loc	plain
+dmz	plain
 #LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE

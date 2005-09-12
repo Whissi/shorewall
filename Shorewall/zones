@@ -29,12 +29,14 @@
 #		the list. In the future, Shorewall may make more extensive use
 #		of that information.
 #
-#	TYPE	ipsec -	Communication with all zone hosts is encrypted
+#	TYPE	plain -	This is the standard Shorewall zone type and is the
+#			default if you leave this column empty or if you enter
+#			"-" in the column. Communication with some zone hosts
+#			may be encrypted. Encrypted hosts are designated using
+#			the 'ipsec'option in /etc/shorewall/hosts.
+#		ipsec -	Communication with all zone hosts is encrypted
 #			Your kernel and iptables must include policy
 #			match support.
-#		plain -	Communication with some zone hosts may be encrypted.
-#			Encrypted hosts are designated using the 'ipsec'
-#			option in /etc/shorewall/hosts.
 #		firewall
 #		      - Designates the firewall itself. You must have 
 #			exactly one 'firewall' zone. No options are

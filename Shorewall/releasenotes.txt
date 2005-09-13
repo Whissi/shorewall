@@ -1,4 +1,22 @@
-Shorewall 2.5.5.
+Shorewall 2.5.6.
+
+Problems Corrected in 2.5.6:
+
+None.
+
+New Features in 2.5.6:
+
+1)  The install.sh script now does a much cleaner job of backing up the
+    current installation. It copies the directories /etc/shorewall,
+    /usr/share/shorewall and /var/lib/shorewall to a directory of the
+    same name with "-$VERSION.bkout" appended. The init script and
+    /sbin/shorewall are backed up to the /usr/share/shorewall and
+    /var/lib/shorewall directories respectively. This makes it very
+    simple to remove the backups:
+
+	   rm -rf /etc/shorewall-*.bkout
+	   rm -rf /usr/share/shorewall-*.bkout
+	   rm -rf /var/lib/shorewall-*.bkout
 
 Problems Corrected in 2.5.5:
 
@@ -8,41 +26,6 @@ Problems Corrected in 2.5.5:
 2)  Error Handling was completely broken; operations such as 
     "shorewall start" would continue after what should have been fatal
     errors.
-
-New Features in 2.5.5:
-
-1)  The IPSEC column in /etc/shorewall/zones has been renamed TYPE and
-    can have one of the following values:
-
-    plain, -, or <empty>	  A normal zone
-    ipsec			  An IPSEC zone
-    firewall			  The firewall zone. There must be
-				  exactly one firewall zone.
-
-2)  You may now define zone nesting in the /etc/shorewall/zones
-    file. In the ZONE column, the (sub)zone name can be followed by a
-    colon (":") and a comma-separated list of parent zones. The parent
-    zone(s) must be listed before the subzone.
-
-    Example: Zone B is a subzone of zone A
-
-    #ZONE       TYPE            OPTIONS
-    A           plain
-    B:A         plain
-
-    Currently, Shorewall only uses the zone nesting information to
-    re-order the zone list such that subzones appear before their
-    parent zones. In a future release, Shorewall might make additional
-    use of this information to structure the ruleset in a more
-    efficient fashion. 
-
-3)  When /usr/share/shorewall/functions is loaded it now sets
-
-	 SHOREWALL_LIBRARY=Loaded
-
-    Application code such as /etc/shorewall/tcstart may test that
-    variable to determine if the library has been loaded into the
-    current shell process.
 
 Problems Corrected in 2.5.4:
 
@@ -121,17 +104,38 @@ Migration Considerations:
    are now as follows:
 
 	ZONE		Short name of the zone (5 Characters or less in
-			length).
+			length). The names "all" and "none" are
+			reserved and may not be used as zone names.
 
-			The names "all" and "none" are reserved and may
-			not beused as zone names.
 
-	TYPE	ipsec -	Communication with all zone hosts is encrypted
+			Where a zone is nested in one or more other
+			zones, you may follow the (sub)zone name by ":"
+			and a comma-separated list of the parent
+			zones. The parent zones must have been defined
+			in earlier records in this file.
+
+			Example:
+
+				#ZONE     TYPE     OPTIONS
+				a	  plain
+				b	  plain
+				c:a,b     plain
+
+		        Currently, Shorewall uses this information only
+		        to reorder the zone list so that parent zones
+		        appear after their subzones in the list. In the
+			future, Shorewall may make more extensive use
+		        of that information.
+
+	TYPE	plain -	This is the standard Shorewall zone type and is
+			the default if the column is left empty or if
+			it is entered as "-".  Communication with some
+			zone hosts may be encrypted. Encrypted hosts
+			are designated using the 'ipsec' option in
+			/etc/shorewall/hosts.
+		ipsec -	Communication with all zone hosts is encrypted
 			Your kernel and iptables must include policy
 			match support.
-		plain -	Communication with some zone hosts may be encrypted.
-			Encrypted hosts are designated using the 'ipsec'
-			option in /etc/shorewall/hosts.
 		firewall
 		      - Designates the firewall itself. You must have 
 			exactly one 'firewall' zone. No options are
@@ -534,4 +538,12 @@ New Features in Shorewall 2.5.*
     this part of Shorewall.
 
     Thanks, Arne!
+
+19) When /usr/share/shorewall/functions is loaded it now sets
+
+	 SHOREWALL_LIBRARY=Loaded
+
+    Application code such as /etc/shorewall/tcstart may test that
+    variable to determine if the library has been loaded into the
+    current shell process.
 

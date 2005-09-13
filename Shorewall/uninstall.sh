@@ -26,7 +26,7 @@
 #       You may only use this script to uninstall the version
 #       shown below. Simply run this script to remove Shorewall Firewall
 
-VERSION=2.5.5
+VERSION=2.5.6
 
 usage() # $1 = exit status
 {
@@ -101,8 +101,11 @@ rm -f /sbin/shorewall
 rm -f /sbin/shorewall-*.bkout
 
 rm -rf /etc/shorewall
+rm -rf /etc/shorewall-*.bkout
 rm -rf /var/lib/shorewall
+rm -rf /var/lib/shorewall-*.bkout
 rm -rf /usr/share/shorewall
+rm -rf /usr/share/shorewall-*.bkout
 
 echo "Shorewall Uninstalled"
 

@@ -22,7 +22,7 @@
 #       Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
 #
 
-VERSION=2.5.5
+VERSION=2.5.6
 
 usage() # $1 = exit status
 {
@@ -37,7 +37,7 @@ run_install()
 {
     if ! install $*; then
 	echo
-	echo "ERROR: Failed to install $*"
+	echo "ERROR: Failed to install $*" >&2
 	exit 1
     fi
 }
@@ -45,8 +45,7 @@ run_install()
 cant_autostart()
 {
     echo
-    echo  "WARNING: Unable to configure shorewall to start"
-    echo  "           automatically at boot"
+    echo  "WARNING: Unable to configure shorewall to start automatically at boot" >&2
 }
 
 backup_directory() # $1 = directory to backup
@@ -61,15 +60,26 @@ backup_directory() # $1 = directory to backup
     fi
 }
     
-backup_file() # $1 = file to backup
+backup_file() # $1 = file to backup, $2 = (optional) Directory in which to create the backup
 {
-    if [ -z "$PREFIX" -a -f $1 -a ! -f ${1}-${VERSION}.bkout ]; then
-	if (cp $1 ${1}-${VERSION}.bkout); then
-	    echo
-	    echo "$1 saved to ${1}-${VERSION}.bkout"
-        else
-	    exit 1
-        fi
+    if [ -z "$PREFIX" ]; then 
+	if [ -f $1 -a ! -f ${1}-${VERSION}.bkout ]; then
+	    if [ -n "$2" ]; then
+		if [ -d $2 ]; then
+		    if cp -f $1 $2 ; then
+			echo
+			echo "$1 saved to $2/$(basename $1)"
+		    else
+			exit 1
+		    fi
+		fi
+	    elif cp $1 ${1}-${VERSION}.bkout; then
+		echo
+		echo "$1 saved to ${1}-${VERSION}.bkout"
+	    else
+		exit 1
+	    fi
+	fi
     fi
 }
 
@@ -90,9 +100,9 @@ install_file() # $1 = source $2 = target $3 = mode
     run_install $OWNERSHIP -m $3 $1 ${2}
 }
 
-install_file_with_backup() # $1 = source $2 = target $3 = mode
+install_file_with_backup() # $1 = source $2 = target $3 = mode $4 = (optional) backup directory
 {
-    backup_file $2
+    backup_file $2 $4
     run_install $OWNERSHIP -m $3 $1 ${2}
 }
 
@@ -194,7 +204,7 @@ else
     first_install="Yes"
 fi
 
-install_file_with_backup shorewall ${PREFIX}/sbin/shorewall 0544
+install_file_with_backup shorewall ${PREFIX}/sbin/shorewall 0544 ${PREFIX}/var/lib/shorewall-${VERSION}.bkout
 
 echo
 echo "shorewall control program installed in ${PREFIX}/sbin/shorewall"
@@ -203,9 +213,9 @@ echo "shorewall control program installed in ${PREFIX}/sbin/shorewall"
 # Install the Firewall Script
 #
 if [ -n "$DEBIAN" ]; then
-    install_file_with_backup init.debian.sh /etc/init.d/shorewall 0544
+    install_file_with_backup init.debian.sh /etc/init.d/shorewall 0544 ${PREFIX}/usr/share/shorewall-${VERSION}.bkout
 else
-    install_file_with_backup init.sh ${PREFIX}${DEST}/$INIT 0544
+    install_file_with_backup init.sh ${PREFIX}${DEST}/$INIT 0544 ${PREFIX}/usr/share/shorewall-${VERSION}.bkout
 fi
 
 echo
@@ -227,7 +237,6 @@ if [ ! -f ${PREFIX}/etc/shorewall/shorewall.conf ]; then
 fi
 
 if [ -n "$ARCHLINUX" ] ; then
-
    sed -e 's!LOGFILE=/var/log/messages!LOGFILE=/var/log/messages.log!' -i ${PREFIX}/etc/shorewall/shorewall.conf
 fi 
 #
@@ -381,9 +390,7 @@ fi
 #
 # Install the TOS file
 #
-if [ -f ${PREFIX}/etc/shorewall/tos ]; then
-    backup_file /etc/shorewall/tos
-else
+if [ ! -f ${PREFIX}/etc/shorewall/tos ]; then
     run_install $OWNERSHIP -m 0600 tos ${PREFIX}/etc/shorewall/tos
     echo
     echo "TOS file installed as ${PREFIX}/etc/shorewall/tos"
@@ -447,7 +454,7 @@ echo "RFC 1918 file installed as ${PREFIX}/usr/share/shorewall/rfc1918"
 #
 install_file configpath ${PREFIX}/usr/share/shorewall/configpath 0600
 echo
-echo " Default config path file installed as ${PREFIX}/usr/share/shorewall/configpath"
+echo "Default config path file installed as ${PREFIX}/usr/share/shorewall/configpath"
 #
 # Install the init file
 #

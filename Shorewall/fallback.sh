@@ -28,7 +28,7 @@
 #       shown below. Simply run this script to revert to your prior version of
 #       Shoreline Firewall.
 
-VERSION=2.5.5
+VERSION=2.5.6
 
 usage() # $1 = exit status
 {
@@ -49,8 +49,23 @@ restore_directory() # $1 = directory to restore
     fi
 }	
     
-restore_file() # $1 = file to restore
+restore_file() # $1 = file to restore, $2 = (Optional) Directory to restore from
 {
+    if [ -n "$2" ]; then
+	local file=$(basename $1)
+
+	if [ -f $2/$file ]; then
+	    if mv -f $2/$file $1 ; then
+		echo
+		echo "$1 restored"
+		return
+	    fi
+
+	    echo "ERROR: Could not restore $1"
+	    exit 1
+        fi
+    fi    
+    
     if [ -f ${1}-${VERSION}.bkout -o -L ${1}-${VERSION}.bkout ]; then
 	if (mv -f ${1}-${VERSION}.bkout $1); then
 	    echo
@@ -71,17 +86,17 @@ echo "Backing Out Installation of Shorewall $VERSION"
 
 if [ -L /usr/share/shorewall/init ]; then
     FIREWALL=$(ls -l /usr/share/shorewall/init | sed 's/^.*> //')
-    restore_file $FIREWALL
+    restore_file $FIREWALL /usr/share/shorewall-${VERSION}.bkout
 else
-    restore_file /etc/init.d/shorewall
+    restore_file /etc/init.d/shorewall /usr/share/shorewall-${VERSION}.bkout
 fi
 
-restore_file /sbin/shorewall
+restore_file /sbin/shorewall /var/lib/shorewall-${VERSION}.bkout
 
 restore_directory /etc/shorewall
 restore_directory /usr/share/shorewall
 restore_directory /var/lib/shorewall
 
-echo "Shorewall Restored to Version $oldversion"
+echo "Shorewall Restored to Version $(cat /usr/share/shorewall/version)"
 
 

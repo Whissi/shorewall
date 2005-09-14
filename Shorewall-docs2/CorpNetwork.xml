@@ -21,10 +21,14 @@
       </author>
     </authorgroup>
 
-    <pubdate>2003-11-13</pubdate>
+    <pubdate>2005-09-13</pubdate>
 
     <copyright>
-      <year>2003 Thomas M. Eastep and Graeme Boyle</year>
+      <year>2003</year>
+
+      <year>2005</year>
+
+      <holder>Thomas M. Eastep and Graeme Boyle</holder>
     </copyright>
 
     <legalnotice>
@@ -311,11 +315,11 @@ TCP_FLAGS_DISPOSITION=DROP
 # DISPLAY Display name of the zone
 # COMMENTS Comments about the zone
 #
-#ZONE DISPLAY COMMENTS
-net Net Internet
-loc Local Local Networks
-dmz DMZ Demilitarized Zone
-vpn1 VPN1 VPN to Germany
+#ZONE          DISPLAY              COMMENTS
+net            Net                  Internet
+loc            Local                Local Networks
+dmz            DMZ                  Demilitarized Zone
+vpn1           VPN1                 VPN to Germany
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
     </section>
 
@@ -323,11 +327,11 @@ vpn1 VPN1 VPN to Germany
       <title>Interfaces File</title>
 
       <programlisting>##############################################################################
-#ZONE INTERFACE BROADCAST OPTIONS
-net eth0 62.123.106.127 routefilter,norfc1918,blacklist,tcpflags
-loc eth1 detect dhcp,routefilter
-dmz eth2 detect
-vpn1 ipsec0
+#ZONE    INTERFACE     BROADCAST      OPTIONS
+net      eth0          62.123.106.127 routefilter,norfc1918,blacklist,tcpflags
+loc      eth1          detect         dhcp,routefilter
+dmz      eth2          detect
+vpn1     ipsec0
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
 </programlisting>
     </section>
@@ -336,8 +340,8 @@ vpn1 ipsec0
       <title>Routestopped File</title>
 
       <programlisting>#INTERFACE HOST(S)
-eth1 -
-eth2 -
+eth1       -
+eth2       -
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
     </section>
 
@@ -345,29 +349,29 @@ eth2 -
       <title>Policy File</title>
 
       <programlisting>###############################################################################
-#SOURCE DEST POLICY LOG LEVEL LIMIT:BURST
-loc net ACCEPT
-loc fw ACCEPT
-loc dmz ACCEPT
+#SOURCE DEST POLICY       LOG LEVEL         LIMIT:BURST
+loc     net  ACCEPT
+loc     fw   ACCEPT
+loc     dmz  ACCEPT
 # If you want open access to the Internet from your Firewall 
 # remove the comment from the following line.
-fw net ACCEPT
-fw loc ACCEPT
-fw dmz ACCEPT
-dmz fw ACCEPT
-dmz loc ACCEPT
-dmz net ACCEPT
+fw      net  ACCEPT
+fw      loc  ACCEPT
+fw      dmz  ACCEPT
+dmz     fw   ACCEPT
+dmz     loc  ACCEPT
+dmz     net  ACCEPT
 # 
 # Adding VPN Access
-loc vpn1 ACCEPT
-dmz vpn1 ACCEPT
-fw vpn1 ACCEPT
-vpn1 loc ACCEPT
-vpn1 dmz ACCEPT
-vpn1 fw ACCEPT
+loc     vpn1 ACCEPT
+dmz     vpn1 ACCEPT
+fw      vpn1 ACCEPT
+vpn1    loc  ACCEPT
+vpn1    dmz  ACCEPT
+vpn1    fw   ACCEPT
 #
-net all DROP info
-all all REJECT info
+net     all  DROP         info
+all     all  REJECT       info
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
     </section>
 
@@ -375,7 +379,7 @@ all all REJECT info
       <title>Masq File</title>
 
       <programlisting>#INTERFACE SUBNET ADDRESS
-eth0 eth1 1192.0.18.126
+eth0       eth1   192.0.18.126
 #
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
     </section>
@@ -383,25 +387,25 @@ eth0 eth1 1192.0.18.126
     <section>
       <title>NAT File</title>
 
-      <programlisting>#EXTERNAL INTERFACE INTERNAL ALL INTERFACES LOCAL
+      <programlisting>#EXTERNAL    INTERFACE INTERNAL    ALL INTERFACES LOCAL
 #
 # Intranet Web Server
-192.0.18.115 eth0:0 10.10.1.60 No No
+192.0.18.115 eth0:0    10.10.1.60  No  No
 #
 # Project Web Server
-192.0.18.84 eth0:1 10.10.1.55 No No
+192.0.18.84  eth0:1    10.10.1.55  No  No
 #
 # Blackberry Server
-192.0.18.97 eth0:2 10.10.1.55 No No
+192.0.18.97  eth0:2    10.10.1.55  No  No
 #
 # Corporate Mail Server
-192.0.18.93 eth0:3 10.10.1.252 No No
+192.0.18.93  eth0:3    10.10.1.252 No  No
 #
 # Second Corp Mail Server
-192.0.18.70 eth0:4 10.10.1.8 No No
+192.0.18.70  eth0:4    10.10.1.8   No  No
 #
 # Sims Server
-192.0.18.75 eth0:5 10.10.1.56 No No
+192.0.18.75  eth0:5    10.10.1.56  No  No
 #
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
     </section>
@@ -409,10 +413,10 @@ eth0 eth1 1192.0.18.126
     <section>
       <title>Proxy ARP File</title>
 
-      <programlisting>#ADDRESS INTERFACE EXTERNAL HAVEROUTE
+      <programlisting>#ADDRESS    INTERFACE EXTERNAL HAVEROUTE
 #
 # The Corporate email server in the DMZ
-192.0.18.80 eth2 eth0 No
+192.0.18.80 eth2      eth0     No
 #
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
     </section>
@@ -420,8 +424,8 @@ eth0 eth1 1192.0.18.126
     <section>
       <title>Tunnels File</title>
 
-      <programlisting># TYPE ZONE GATEWAY GATEWAY ZONE PORT
-ipsec net 134.147.129.82
+      <programlisting># TYPE ZONE GATEWAY         GATEWAY ZONE PORT
+ipsec  net  134.147.129.82
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
     </section>
 
@@ -430,81 +434,81 @@ ipsec net 134.147.129.82
       /etc/shorewall/params)</title>
 
       <programlisting>##############################################################################
-#ACTION SOURCE DEST PROTO DEST SOURCE ORIGINAL
-# PORT PORT(S) DEST
+#ACTION   SOURCE             DEST            PROTO     DEST  SOURCE  ORIGINAL
+#                                                      PORT  PORT(S) DEST
 #
 # Accept DNS connections from the firewall to the network
 #
-ACCEPT fw net tcp 53
-ACCEPT fw net udp 53
+ACCEPT    fw                 net             tcp       53
+ACCEPT    fw                 net             udp       53
 #
 # Accept SSH from internet interface from kaos only
 #
-ACCEPT net:192.0.18.98 fw tcp 22
+ACCEPT    net:192.0.18.98    fw              tcp       22
 #
 # Accept connections from the local network for administration 
 #
-ACCEPT loc fw tcp 20:22
-ACCEPT loc net tcp 22
-ACCEPT loc fw tcp 53
-ACCEPT loc fw udp 53
-ACCEPT loc net tcp 53
-ACCEPT loc net udp 53
+ACCEPT    loc                fw              tcp       20:22
+ACCEPT    loc                net             tcp       22
+ACCEPT    loc                fw              tcp       53
+ACCEPT    loc                fw              udp       53
+ACCEPT    loc                net             tcp       53
+ACCEPT    loc                net             udp       53
 #
 # Allow Ping To And From Firewall
 #
-ACCEPT loc fw icmp 8
-ACCEPT loc dmz icmp 8
-ACCEPT loc net icmp 8
-ACCEPT dmz fw icmp 8
-ACCEPT dmz loc icmp 8
-ACCEPT dmz net icmp 8
-DROP net fw icmp 8
-DROP net loc icmp 8
-DROP net dmz icmp 8
-ACCEPT fw loc icmp 8
-ACCEPT fw dmz icmp 8
-DROP fw net icmp 8
+ACCEPT    loc                fw              icmp      8
+ACCEPT    loc                dmz             icmp      8
+ACCEPT    loc                net             icmp      8
+ACCEPT    dmz                fw              icmp      8
+ACCEPT    dmz                loc             icmp      8
+ACCEPT    dmz                net             icmp      8
+DROP      net                fw              icmp      8
+DROP      net                loc             icmp      8
+DROP      net                dmz             icmp      8
+ACCEPT    fw                 loc             icmp      8
+ACCEPT    fw                 dmz             icmp      8
+DROP      fw                 net             icmp      8
 #
 # Accept proxy web connections from the inside
 #
-ACCEPT loc fw tcp 8118
+ACCEPT    loc                fw              tcp       8118
 #
 # Forward PcAnywhere, Oracle and Web traffic from outside to the Demo systems
 # From a specific IP Address on the Internet.
 # 
-# ACCEPT net:207.65.110.10 loc:10.10.3.151 tcp 1521,http
-# ACCEPT net:207.65.110.10 loc:10.10.2.32 tcp 5631:5632
+# ACCEPT  net:207.65.110.10  loc:10.10.3.151 tcp       1521,http
+# ACCEPT  net:207.65.110.10  loc:10.10.2.32  tcp       5631:5632
 #
 # Intranet web server
-ACCEPT net loc:10.10.1.60 tcp 443
-ACCEPT dmz loc:10.10.1.60 tcp 443
+ACCEPT    net                loc:10.10.1.60  tcp       443
+ACCEPT    dmz                loc:10.10.1.60  tcp       443
 #
 # Projects web server
-ACCEPT net loc:10.10.1.55 tcp 80
-ACCEPT dmz loc:10.10.1.55 tcp 80
+ACCEPT    net                loc:10.10.1.55  tcp       80
+ACCEPT    dmz                loc:10.10.1.55  tcp       80
 # 
 # Blackberry Server
-ACCEPT net loc:10.10.1.230 tcp 3101
+ACCEPT    net                loc:10.10.1.230 tcp       3101
 #
 # Corporate Email Server
-ACCEPT net loc:10.10.1.252 tcp 25,53,110,143,443
+ACCEPT    net                loc:10.10.1.252 tcp       25,53,110,143,443
 #
 # Corporate #2 Email Server
-ACCEPT net loc:10.10.1.8 tcp 25,80,110,443
+ACCEPT    net                loc:10.10.1.8   tcp       25,80,110,443
 #
 # Sims Server
-ACCEPT net loc:10.10.1.56 tcp 80,443
-ACCEPT net loc:10.10.1.56 tcp 7001:7002
-ACCEPT net:63.83.198.0/24 loc:10.10.1.56 tcp 5631:5632
+ACCEPT    net                loc:10.10.1.56  tcp       80,443
+ACCEPT    net                loc:10.10.1.56  tcp       7001:7002
+ACCEPT    net:63.83.198.0/24 loc:10.10.1.56  tcp       5631:5632
 #
 # Access to DMZ
-ACCEPT loc dmz udp 53,177
-ACCEPT loc dmz tcp 80,25,53,22,143,443,993,20,110 -
-ACCEPT net dmz udp 53
-ACCEPT net dmz tcp 25,53,22,21,123
-ACCEPT dmz net tcp 25,53,80,123,443,21,22
-ACCEPT dmz net udp 53
+ACCEPT    loc                dmz             udp       53,177
+ACCEPT    loc                dmz             tcp       80,25,53,22,143,443,993,20,110
+ACCEPT    net                dmz             udp       53
+ACCEPT    net                dmz             tcp       25,53,22,21,123
+ACCEPT    dmz                net             tcp       25,53,80,123,443,21,22
+ACCEPT    dmz                net             udp       53
 #
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
     </section>

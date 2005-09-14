@@ -489,7 +489,7 @@ help()
 #
 usage() # $1 = exit status
 {
-    echo "Usage: $(basename $0) [debug|trace] [nolock] [ -x ] [ -q ] [ -f ] [ -v ] <command>"
+    echo "Usage: $(basename $0) [debug|trace] [nolock] [ -x ] [ -q ] [ -f ] [ -v ] [ -n ] <command>"
     echo "where <command> is one of:"
     echo "   add <interface>[:{<bridge-port>[:<host>]|<host>}[,...]] ... <zone>"
     echo "   allow <address> ..."
@@ -591,6 +591,7 @@ QUIET=
 IPT_OPTIONS="-nv"
 FAST=
 VERBOSE=
+NOROUTES=
 
 done=0
 
@@ -636,6 +637,10 @@ while [ $done -eq 0 ]; do
 			VERBOSE=Yes
 			option=${option#v}
 			;;
+		    n*)
+			NOROUTES=Yes
+			option=${option#n}
+			;;			
 		    *)
 			usage 1
 			;;
@@ -757,6 +762,8 @@ case "$1" in
 		usage 1
 		;;
 	esac
+
+	export NOROUTES
 	
 	if [ -n "$FAST" ]; then
 	    if qt mywhich make; then
@@ -795,6 +802,7 @@ case "$1" in
 	;;
     stop|reset|clear|refresh)
 	[ $# -ne 1 ] && usage 1
+	export NOROUTES
 	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $1
 	;;
     check|restart)
@@ -819,6 +827,9 @@ case "$1" in
 		usage 1
 		;;
 	esac
+
+	export NOROUTES
+	
 	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $1
 	;;
     add|delete)
@@ -1216,6 +1227,8 @@ case "$1" in
 	esac
 
 	RESTOREPATH=/var/lib/shorewall/$RESTOREFILE
+
+	export NOROUTES
 
 	[ -n "$nolock" ] || mutex_on
 

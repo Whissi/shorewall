@@ -543,11 +543,10 @@ if [ ! -f ${PREFIX}/etc/shorewall/actions ]; then
     echo "Actions file installed as ${PREFIX}/etc/shorewall/actions"
 fi
 
-if [ ! -f ${PREFIX}/etc/shorewall/Makefile ]; then
-    run_install $OWNERSHIP -m 0600 Makefile ${PREFIX}/etc/shorewall/Makefile
-    echo
-    echo "Makefile installed as ${PREFIX}/etc/shorewall/Makefile"
-fi
+run_install $OWNERSHIP -m 0600 Makefile ${PREFIX}/etc/shorewall/Makefile
+echo
+echo "Makefile installed as ${PREFIX}/etc/shorewall/Makefile"
+
 #
 # Install the Action files
 #

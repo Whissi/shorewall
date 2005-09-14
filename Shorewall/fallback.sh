@@ -39,9 +39,10 @@ usage() # $1 = exit status
 restore_directory() # $1 = directory to restore
 {
     if [ -d ${1}-${VERSION}.bkout ]; then
-	if mv -f $1 ${1}-${VERSION} && mv ${1}-${VERSION}.bkout $1 && rm -rf ${1}-${VERSION}; then
+	if mv -f $1 ${1}-${VERSION} && mv ${1}-${VERSION}.bkout $1; then
 	    echo
 	    echo "$1 restored"
+	    rm -rf ${1}-${VERSION}
 	else
 	    echo "ERROR: Could not restore $1"
 	    exit 1

@@ -2,7 +2,16 @@ Shorewall 2.5.6.
 
 Problems Corrected in 2.5.6:
 
-None.
+1)  The following fatal error could occur at startup:
+
+    ERROR: Command "/sbin/iptables -A INPUT   -j  LOG  --log-level NONE
+        --log-prefix "Shorewall:INPUT:ACCEPT:"" Failed
+
+    That problem has been corrected.
+
+2)  The Makefile is now unconditionally installed in /etc/shorewall
+    during an upgrade (the prior copy has been saved in
+    /etc/shorewall-<version>.bkout/Makefile).
 
 New Features in 2.5.6:
 

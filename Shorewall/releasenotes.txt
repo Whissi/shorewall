@@ -27,6 +27,14 @@ New Features in 2.5.6:
 	   rm -rf /usr/share/shorewall-*.bkout
 	   rm -rf /var/lib/shorewall-*.bkout
 
+2)  A new '-n' option has been added to the "start", "restart",
+    "restore",  "stop" and "try" commands. This option instructs
+    Shorewall to not alter the routing in any way.
+
+    This option is useful when you have a multi-ISP environment because
+    it prevents the route cache from being flushed which preserves the
+    mapping of end-point address pairs to routes.
+
 Problems Corrected in 2.5.5:
 
 1)  The install script now installs the correct Makefile. Previously,

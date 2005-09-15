@@ -592,6 +592,7 @@ IPT_OPTIONS="-nv"
 FAST=
 VERBOSE=
 NOROUTES=
+noroutes=
 
 done=0
 
@@ -1067,15 +1068,16 @@ case "$1" in
 	[ -n "$SHOREWALL_DIR" ] && startup_error "ERROR: -c option may not be used with \"try\""
 	[ $# -lt 2 -o $# -gt 3 ] && usage 1
 	[ -n "$QUIET" ] && QUIET=-q
+	[ -n "$NOROUTES" ] && NOROUTES=-n
 	if ! $0 $debugging $QUIET -c $2 restart; then
 	    if ! $IPTABLES -L shorewall > /dev/null 2> /dev/null; then
-		$0 $QUIET start
+		$0 $QUIET $NOROUTES start
 	    fi
 	elif ! $IPTABLES -L shorewall > /dev/null 2> /dev/null; then
-	    $0 $QUIET start
+	    $0 $QUIET $NOROUTES start
 	elif [ $# -eq 3 ]; then
 	    sleep $3
-	    $0 $QUIET restart
+	    $0 $QUIET $NOROUTES restart
 	fi
 	;;
     logwatch)
@@ -1285,6 +1287,7 @@ case "$1" in
 	    # the command is safe-start but the firewall is already running
 	    $0 nolock $debugging start
 	    ret=$?
+	    mutex_off
 	    exit 0
 	fi
 	

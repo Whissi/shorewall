@@ -207,10 +207,11 @@ reset)
 	;;
 
 restart)
-	echo "restart: [ -q ] restart [ <configuration-directory> ]
+	echo "restart: [ -q ] [ -n ] restart [ <configuration-directory> ]
     Restart is the same as a shorewall stop && shorewall start.
     Existing connections are maintained.
-    If \"-q\" is specified, less detain is displayed making it easier to spot warnings"
+    If \"-q\" is specified, less detain is displayed making it easier to spot warnings
+    If \"-n\" is specified, no changes to routing will be made"
 	;;
 
 safe-restart)
@@ -227,12 +228,14 @@ safe-start)
     ;;
 
 restore)
-	echo "restore: restore [ <file name> ]
+	echo "restore: restore [ -n ] [ <file name> ]
     Restore Shorewall to a state saved using the 'save' command
     Existing connections are maintained. The <file name> names a restore file in
     /var/lib/shorewall created using "shorewall save"; if no <file name> is given
     then Shorewall will be restored from the file specified by the RESTOREFILE
     option in shorewall.conf.
+
+    If \"-n\" is specified, no changes to routing will be made.
 
     See also \"help save\" and \"help forget\""
 	;;
@@ -279,22 +282,25 @@ show)
 	;;
 
 start)
-	echo "start: [ -q ] [ -f ] start [ <configuration-directory> ]
+	echo "start: [ -q ] [ -f ] [ -n ] start [ <configuration-directory> ]
     Start shorewall.  Existing connections through shorewall managed
     interfaces are untouched.  New connections will be allowed only
     if they are allowed by the firewall rules or policies.
     If \"-q\" is specified, less detail is displayed making it easier to spot warnings
     If \"-f\" is specified, the saved configuration specified by the RESTOREFILE option
     in shorewall.conf will be restored if that saved configuration exists. In that
-    case, a <configuration-directory> may not be specified".
+    case, a <configuration-directory> may not be specified.
+    If \"-n\" is specified, no changes to routing will be made".
 	;;
 
 stop)
-	echo "stop: stop
+	echo "stop: [ -n ] stop
     Stops the firewall.  All existing connections, except those
     listed in /etc/shorewall/routestopped, are taken down.
     The only new traffic permitted through the firewall
-    is from systems listed in /etc/shorewall/routestopped."
+    is from systems listed in /etc/shorewall/routestopped.
+
+    If \"-n\" is specified, no changes to routing will be made"
 	;;
 
 status)
@@ -327,12 +333,15 @@ trace)
 	;;
 
 try)
-	echo "try: try <configuration-directory> [ <timeout> ]
+	echo "try: try [ -n ] <configuration-directory> [ <timeout> ]
     Restart shorewall using the specified configuration.  If an error
     occurs during the restart, then another shorewall restart is performed
     using the default configuration.  If a timeout is specified then
     the restart is always performed after the timeout occurs and uses
-    the default configuration."
+    the default configuration.
+
+    The \"-n\" option will be passed down to the underlying commands (see
+    'start', 'stop', 'restart' and 'restore')"
 	;;
 
 version)

@@ -1955,7 +1955,7 @@ process_routestopped() # $1 = command
 	interface=${host%:*}
 	networks=${host#*:}
 	$IPTABLES $1 INPUT  -i $interface $(source_ip_range $networks) -j ACCEPT
-	[ -z "$ADMINISABSENTMINDED" ] && \
+	[ -z "$ADMINISABSENTMINDED" -o $COMMAND != stop ] && \
 	    run_iptables $1 OUTPUT -o $interface $(dest_ip_range $networks) -j ACCEPT
 
 	matched=

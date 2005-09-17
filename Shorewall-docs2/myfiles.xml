@@ -509,7 +509,7 @@ Ping/ACCEPT     vpn                             fw
 # Local Network to DMZ
 #
 DNAT-           loc                             dmz:206.124.146.177:3128 \
-                                                                        tcp     www                                     -               !206.124.146.177
+                                                                        tcp     www                                     -               !206.124.146.177,192.168.1.1
 DROP            loc:!192.168.0.0/22             dmz
 ACCEPT          loc                             dmz                     udp     domain,xdmcp
 ACCEPT          loc                             dmz                     tcp     www,smtp,smtps,domain,ssh,imap,https,imaps,ftp,10023,pop3,3128                  -
@@ -531,7 +531,7 @@ Ping/ACCEPT     Wifi                            net
 #
 DROP            sec:!192.168.0.0/22             dmz
 DNAT            sec                             dmz:206.124.146.177:3128 \
-                                                                        tcp     www                                     -               !206.124.146.177
+                                                                        tcp     www                                     -               !206.124.146.177,192.168.1.1
 ACCEPT          sec                             dmz                     udp     domain,xdmcp
 ACCEPT          sec                             dmz                     tcp     www,smtp,smtps,domain,ssh,imap,https,imaps,ftp,10023,pop3               -
 Ping/ACCEPT     sec                             dmz

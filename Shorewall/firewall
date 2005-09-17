@@ -2616,7 +2616,7 @@ setup_ipsec() {
 	fi
 
     done < $TMP_DIR/$f
-}	
+}
 
 ##
 # Setup Proxy ARP
@@ -2952,7 +2952,7 @@ setup_nat() {
 		addnatrule $(input_chain $iface)  -d $external $policyin  -j DNAT --to-destination $internal
 		    addnatrule $(output_chain $iface) -s $internal $policyout -j SNAT --to-source $external
 	    fi
-	    
+
 	    [ -n "$localnat" ] && \
 		run_iptables2 -t nat -A OUTPUT -d $external $policyout -j DNAT --to-destination $internal
 	fi
@@ -3343,7 +3343,7 @@ process_tc_rule()
 	    dests=${dests%!*}
 	    ;;
     esac
-    
+
     for source in $(separate_list $sources); do
 	for dest in $(separate_list $dests); do
 	    for port in $(separate_list ${ports:=-}); do
@@ -3424,7 +3424,6 @@ setup_tc() {
 #
 delete_tc()
 {
-
     clear_one_tc() {
 	run_and_save_command "tc qdisc del dev $1 root 2> /dev/null"
 	run_and_save_command "tc qdisc del dev $1 ingress 2> /dev/null"
@@ -3449,7 +3448,6 @@ delete_tc()
 
 delete_tc1()
 {
-
     clear_one_tc() {
 	tc qdisc del dev $1 root 2> /dev/null
 	tc qdisc del dev $1 ingress 2> /dev/null
@@ -3651,7 +3649,7 @@ process_accounting_rule() {
 
     [ "x$chain" = "x-" ] && chain=accounting
     [ -z "$chain" ] && chain=accounting
-		
+
     ensurechain1 $chain
 
     if $IPTABLES -A $chain $(fix_bang $rule) ; then
@@ -3699,7 +3697,6 @@ check_config() {
 	echo "         error conditions that 'check' doesn't find"
 	echo
     }
-
 
     report_capabilities
 
@@ -4002,7 +3999,7 @@ add_an_action()
 		log_rule_limit $loglevel $chain1 $action $logtarget "$ratelimit" "$logtag" -A $user \
 		    $(fix_bang $proto $sports $multiport $cli $dest_interface $dports)
 	    fi
-		
+
 	    run_iptables2 -A $chain1 $proto $multiport $cli $dest_interface $sports \
 		$dports $ratelimit $user -j $target
 	fi
@@ -4574,7 +4571,7 @@ process_actions1() {
 		fn=$(find_file $f)
 	
 		eval requiredby_${action}=
-		
+
 		if [ -f $fn ]; then
 		    echo "   Pre-processing $fn..."
 		    strip_file $f $fn
@@ -4629,7 +4626,7 @@ process_actions1() {
 							startup_error "Invalid TARGET in rule \"$rule\""
 						esac
 					    done < $TMP_DIR/$f1
-					
+
 					    progress_message "   ..End Macro"
 					else
 					    rule="$xtarget $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec"
@@ -4638,13 +4635,13 @@ process_actions1() {
 				    fi
 				fi
 				;;
-			
+
 			esac
 		    done < $TMP_DIR/$f
 		else
 		    startup_error "Missing Action File: $f"
 		fi
-		
+
 		ACTIONS="$ACTIONS $xaction"
 	    fi
 	done < $TMP_DIR/$inputfile
@@ -4757,7 +4754,7 @@ process_actions3() {
 				fi
 				;;
 			esac
-			
+
 			run_iptables -A allowBcast -m pkttype --pkt-type broadcast -j ACCEPT
 			run_iptables -A allowBcast -m pkttype --pkt-type multicast -j ACCEPT
 		    else
@@ -4852,7 +4849,7 @@ process_actions3() {
 		    param=
 
 		    xtarget1=${xaction2%%:*}
-		
+
 		    case $xtarget1 in
 			ACCEPT|DROP|REJECT|LOG|QUEUE|CONTINUE)
 			    #
@@ -4899,7 +4896,7 @@ process_actions3() {
 				    [ -n "$param" ] && mtarget=$(substitute_action $param $mtarget) || fatal_error "PARAM requires that a parameter be supplied in macro invocation"
 				    ;;
 			    esac
-			
+
 			    if [ -n "$mclients" ]; then
 				case $mclients in
 				    -)
@@ -4945,7 +4942,7 @@ process_actions3() {
 	esac
     done
 }
-	
+
 #
 # Add a NAT rule - Helper function for the rules file processor
 #
@@ -5631,7 +5628,7 @@ process_rule() # $1 = target
 	    clients=${clients%!*}
 	    ;;
     esac
-    
+
     if [ "$clientzone" = "${clientzone%!*}" ]; then
  	excludezones=
     else

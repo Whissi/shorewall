@@ -107,7 +107,6 @@ save_command()
 #
 save_progress_message()
 {
-
     echo                           >> $RESTOREBASE
     echo "progress_message \"$@\"" >> $RESTOREBASE
     echo                           >> $RESTOREBASE
@@ -238,7 +237,7 @@ finish_chain_section() # $1 = canonical chain $2 = state list
     local policy policychain
 
     [ -n "$FASTACCEPT" ] || run_iptables -A $1 -m state --state $2 -j ACCEPT
-    
+
     if list_search RELATED $(separate_list $2) ; then
 	[ -z "$NEWNOTSYN" ]  && run_iptables -A $1 -m state --state NEW -p tcp ! --syn -j newnotsyn
 
@@ -260,7 +259,7 @@ finish_chain_section() # $1 = canonical chain $2 = state list
 	    fi
 	else
 	    eval policychain=\$${1}_policychain
-	    
+
 	    if eval test -n \"\$${policychain}_synparams\" ; then
 		run_iptables -A $1 -p tcp --syn -j @$policychain
 	    fi
@@ -330,7 +329,7 @@ createchain2() # $1 = chain name, $2 = If "yes", create default rules
 		    finish_chain_section $1 ESTABLISHED
 		    ;;
 	    esac
-	    
+
 	fi
 	
 	eval exists_${c}=Yes
@@ -4154,7 +4153,7 @@ process_action() # $1 = chain    (Chain to add the rules to)
 	    clients=${clients%!*}
 	    ;;
     esac
-    
+
     excludedest=
 
     case ${servers:=-} in
@@ -4172,7 +4171,7 @@ process_action() # $1 = chain    (Chain to add the rules to)
 	    servers=${servers%!*}
 	    ;;
     esac
-    
+
     # Generate Netfilter rule(s)
 
     [ "x$protocol" = "x-" ] && protocol=all || protocol=${protocol:=all}
@@ -5735,7 +5734,7 @@ process_rule() # $1 = target
     [ $COMMAND = check ] || ensurechain $chain
 
     # Generate Netfilter rule(s)
-    
+
     case $logtarget in
 	DNAT*|SAME)
 

@@ -7615,7 +7615,7 @@ add_common_rules() {
     hosts=$(find_hosts_by_option nosmurfs)
 
     if [ -n "$hosts" ]; then
-	
+
 	echo "Adding Anti-smurf Rules"
 
 	for host in $hosts; do
@@ -7760,7 +7760,7 @@ add_common_rules() {
 	    log_rule $TCP_FLAGS_LOG_LEVEL logflags $TCP_FLAGS_DISPOSITION
 
 	    LOGPARMS="$savelogparms"
-	
+
 	    case $TCP_FLAGS_DISPOSITION in
 		REJECT)
 		    run_iptables -A logflags -j REJECT --reject-with tcp-reset
@@ -7950,7 +7950,7 @@ add_common_rules() {
 	echo "Setting up UPnP..."
 
 	createnatchain UPnP
-	
+
 	for interface in $interfaces; do
 	    run_iptables -t nat -A PREROUTING -i $interface -j UPnP
 	done
@@ -8212,7 +8212,7 @@ activate_rules()
 		routeback=
 		num_ifaces=0
 	    fi
-	
+
 	    if [ -n "$complex" ]; then
 		for host1 in $dest_hosts; do
 		    interface1=${host1%%:*}
@@ -8231,7 +8231,7 @@ activate_rules()
 		    networks=${host#*:}
 		
 		    chain3=$(forward_chain $interface)
-		
+
 		    for host1 in $dest_hosts; do
 			interface1=${host1%%:*}
 			networks1=${host1#*:}
@@ -9016,12 +9016,10 @@ do_initialize() {
 	    [ -n "$QUIET" ] || echo "Processing $config..."
 	    . $config
 	else
-	    echo "   ERROR: Cannot read $config (Hint: Are you root?)"
-	    exit 2
+	    startup_error "Cannot read $config (Hint: Are you root?)"
 	fi
     else
-	echo "$config does not exist!" >&2
-	exit 2
+	startup_error "$config does not exist!"
     fi
     #
     # Restore CONFIG_PATH if the shorewall.conf file cleared it

@@ -5063,12 +5063,12 @@ add_nat_rule() {
 		    addnatrule $(dnat_chain $source) $cli $proto $multiport $sports $dports $(dest_ip_range $adr) -j $chain
 		done
 
- 		for z in $(separate_list $excludezones); do
- 		    eval hosts=\$${z}_hosts
- 		    for host in $hosts; do
- 			addnatrule $chain $(match_source_hosts ${host#*:}) -j RETURN
- 		    done
- 		done
+		for z in $(separate_list $excludezones); do
+		    eval hosts=\$${z}_hosts
+		    for host in $hosts; do
+			addnatrule $chain $(match_source_hosts ${host#*:}) -j RETURN
+		    done
+		done
  
 		if [ -n "$loglevel" ]; then
 		    log_rule_limit $loglevel $chain $(dnat_chain $source) $logtarget "$ratelimit" "$logtag" -A -t nat
@@ -5517,7 +5517,7 @@ process_rule() # $1 = target
     if [ -n "$userspec" ]; then
 
 	userandgroup="-m owner"
-	
+
 	case "$userspec" in
 	    !*+*)
 		if [ -n "${userspec#*+}" ]; then
@@ -5633,7 +5633,7 @@ process_rule() # $1 = target
  	excludezones=
     else
 	excludezones="${clientzone#*!}"
- 	clientzone="${clientzone%!*}"
+	clientzone="${clientzone%!*}"
  
 	case $logtarget in
  	    DNAT|REDIRECT|SAME)
@@ -5643,7 +5643,7 @@ process_rule() # $1 = target
  		;;
  	esac
     fi
- 
+
     validate_zone $clientzone || fatal_error "Undefined Client Zone in rule \"$rule\""
 
     # Parse and validate destination
@@ -5701,7 +5701,7 @@ process_rule() # $1 = target
 	    servers=${servers%!*}
 	    ;;
     esac
-    
+
     if ! validate_zone $serverzone; then
 	fatal_error "Undefined Server Zone in rule \"$rule\""
     fi
@@ -5909,7 +5909,7 @@ process_macro() # $1 = target
 			createactionchain $mtarget
 			USEDACTIONS="$USEDACTIONS $mtarget"
 		    fi
-		    
+
 		    mtarget=$(find_logactionchain $mtarget)
 		else
 		    fatal_error "Invalid Action in rule \"$mtarget ${mclients:--} ${mservers:--} ${mprotocol:--} ${mports:--} ${mcports:--} ${xaddress:--} ${mratelimit:--} ${muserspec:--}\""
@@ -6795,7 +6795,7 @@ setup_masq()
 		if [ -n "$nomasq" ]; then
 		    if [ $COMMAND != check ]; then
 			build_exclusion_chain newchain nat $nomasq
-		    
+
 			if [ -n "$networks" ]; then
 			    for s in $networks; do
 				for destnet in $(separate_list $destnets); do
@@ -6911,7 +6911,7 @@ add_blacklist_rule() {
 	if [ -n "$BLACKLIST_LOGLEVEL" ]; then
 	    log_rule $BLACKLIST_LOGLEVEL blacklst $BLACKLIST_DISPOSITION  $(fix_bang $source $proto $dport)
 	fi
-	
+
 	run_iptables2 -A blacklst $source $proto $dport -j $disposition
     fi
 }
@@ -7185,7 +7185,7 @@ load_kernel_modules()
     modules=$(find_file modules)
 
     if [ -f $modules -a -d $MODULESDIR ]; then
- 	progress_message "Loading Modules..."
+	progress_message "Loading Modules..."
 	. $modules
     fi
 
@@ -7407,12 +7407,12 @@ initialize_netfilter () {
 	setpolicy INPUT ACCEPT
 	setpolicy OUTPUT ACCEPT
 	setpolicy FORWARD DROP
-	
+
 	deleteallchains
 
 	enable_critical_hosts
 	
- 	setpolicy INPUT DROP
+	setpolicy INPUT DROP
 	setpolicy OUTPUT DROP
 
 	setcontinue FORWARD
@@ -7423,9 +7423,9 @@ initialize_netfilter () {
 	setpolicy INPUT DROP
 	setpolicy OUTPUT DROP
 	setpolicy FORWARD DROP
-	
+
 	deleteallchains
-	
+
 	setcontinue FORWARD
 	setcontinue INPUT
 	setcontinue OUTPUT
@@ -7823,7 +7823,7 @@ add_common_rules() {
 		    "WARNING: Cannot set ARP filtering on $interface"
 	    fi
 	done
-	
+
 	for interface in $interfaces1; do
 	    file=/proc/sys/net/ipv4/conf/$interface/arp_ignore
 	    if [ -f $file ]; then
@@ -7858,7 +7858,7 @@ add_common_rules() {
 		    "WARNING: Cannot set route filtering on $interface"
 	    fi
 	done
-	
+
 	run_and_save_command "echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter"
 
 	if [ -n "$ROUTE_FILTER" ]; then
@@ -7913,7 +7913,7 @@ add_common_rules() {
 
     if [ -n "$interfaces" ]; then
 	echo "Setting up Accept Source Routing..."
-	
+
 	for interface in $interfaces; do
 	    file=/proc/sys/net/ipv4/conf/$interface/accept_source_route
 	    if [ -f $file ]; then

@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-09-12</pubdate>
+    <pubdate>2005-09-19</pubdate>
 
     <copyright>
       <year>2002-2005</year>
@@ -33,6 +33,13 @@
       License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
+
+  <caution>
+    <para><emphasis role="bold">This article applies to Shorewall 3.0 and
+    later. If you are running a version of Shorewall earlier than Shorewall
+    3.0.0 then please see the documentation for that
+    release.</emphasis></para>
+  </caution>
 
   <section>
     <title>Introduction</title>
@@ -340,13 +347,13 @@ $FW        net         ACCEPT</programlisting>
     to the computer using a cross-over cable).</para>
 
     <caution>
-      <para>Do not connect the internal and external interface to the same hub
-      or switch except for testing AND you are running Shorewall version 1.4.7
-      or later. When using these recent versions, you can test using this kind
-      of configuration if you specify the arp_filter option in
-      <filename>/etc/shorewall/interfaces</filename> for all interfaces
-      connected to the common hub/switch. Using such a setup with a production
-      firewall is strongly recommended against.</para>
+      <para><emphasis role="bold">Do NOT connect the internal and external
+      interface to the same hub or switch except for testing</emphasis>. You
+      can test using this kind of configuration if you specify the arp_filter
+      option in <filename>/etc/shorewall/interfaces</filename> for all
+      interfaces connected to the common hub/switch. <emphasis
+      role="bold">Using such a setup with a production firewall is strongly
+      recommended against</emphasis>.</para>
     </caution>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
@@ -732,19 +739,16 @@ DNS/ACCEPT  dmz       $FW            </programlisting> Run name server on DMZ
 DNS/ACCEPT  loc       dmz:10.10.11.1
 DNS/ACCEPT  $FW       dmz:10.10.11.1             </programlisting></para>
 
-    <para>In the rules shown above, <quote>AllowDNS</quote> is an example of a
-    <emphasis>defined action</emphasis>. Shorewall includes a number of
-    defined actions and <ulink url="Actions.html">you can add your
-    own</ulink>. To see the list of actions included with your version of
-    Shorewall, look in the file
-    <filename>/usr/share/shorewall/actions.std</filename>. Those actions that
-    accept connection requests have names that begin with
-    <quote>Allow</quote>.</para>
+    <para>In the rules shown above, <quote>DNS/ACCEPT</quote> is an example of
+    a <emphasis>defined macro</emphasis>. Shorewall includes a number of
+    defined macros and <ulink url="Actions.html">you can add your own</ulink>.
+    To see the list of macros included with your version of Shorewall, look in
+    the file <filename>/usr/share/shorewall/actions.std</filename>.</para>
 
-    <para>You don't have to use defined actions when coding a rule in
+    <para>You don't have to use defined macros when coding a rule in
     <filename>/etc/shorewall/rules</filename>; the generated Netfilter ruleset
     is slightly more efficient if you code your rules directly rather than
-    using defined actions. The first example above (name server on the
+    using defined macros. The first example above (name server on the
     firewall) could also have been coded as follows:</para>
 
     <programlisting>#ACTION   SOURCE    DEST                PROTO      DEST PORT(S)                      
@@ -753,8 +757,8 @@ ACCEPT    loc       $FW                 udp        53
 ACCEPT    dmz       $FW                 tcp        53
 ACCEPT    dmz       $FW                 udp        53              </programlisting>
 
-    <para>In cases where Shorewall doesn't include a defined action to meet
-    your needs, you can either define the action yourself or you can simply
+    <para>In cases where Shorewall doesn't include a defined macro to meet
+    your needs, you can either define the macro yourself or you can simply
     code the appropriate rules directly.</para>
   </section>
 
@@ -775,7 +779,7 @@ SSH/ACCEPT  loc       dmz        </programlisting>Those rules allow you to run
     connect to those servers from your local systems.</para>
 
     <para>If you wish to enable other connections between your systems, the
-    general format for using a defined action is: <programlisting>#ACTION   SOURCE        DEST                PROTO      DEST PORT(S)                      
+    general format for using a defined macro is: <programlisting>#ACTION   SOURCE        DEST                PROTO      DEST PORT(S)                      
 &lt;<emphasis>macro</emphasis>&gt;  <emphasis>&lt;source zone&gt; &lt;destination zone&gt;</emphasis></programlisting></para>
 
     <para>The general format when not using a defined action
@@ -892,17 +896,16 @@ ACCEPT    net       $FW                 tcp        80       </programlisting><it
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
     <para>The <ulink url="Install.htm">installation procedure</ulink>
-    configures your system to start Shorewall at system boot but beginning
-    with Shorewall version 1.3.9 startup is disabled so that your system won't
-    try to start Shorewall before configuration is complete. Once you have
-    completed configuration of your firewall, you can enable Shorewall startup
-    by removing the file <filename>/etc/shorewall/startup_disabled</filename>.
-    <important>
+    configures your system to start Shorewall at system boot but startup is
+    disabled so that your system won't try to start Shorewall before
+    configuration is complete. Once you have completed configuration of your
+    firewall, you can enable Shorewall startup by removing the file
+    <filename>/etc/shorewall/startup_disabled</filename>. <important>
         <para>Users of the <filename>.deb</filename> package must edit
         <filename>/etc/default/shorewall</filename> and set
         <varname>startup=1</varname>.</para>
       </important><important>
-        <para>Users running Shorewall 2.1.3 or later should edit
+        <para>You should edit
         <filename>/etc/shorewall/shorewall.conf</filename> and set
         STARTUP_ENABLED=Yes.</para>
       </important>The firewall is started using the <command>shorewall

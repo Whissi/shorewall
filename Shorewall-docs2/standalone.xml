@@ -308,21 +308,18 @@ all            all                REJECT   info</programlisting>
   <section>
     <title>Enabling other Connections</title>
 
-    <para>Shorewall includes a collection of actions that can be used to
-    quickly allow or deny services. You can find a list of the actions
-    included in your version of Shorewall in the file
-    <filename>/usr/share/shorewall/actions.std</filename>.</para>
-
-    <para>Those actions that allow a connection begin with
-    <quote>Allow</quote>.</para>
+    <para>Shorewall includes a collection of macros that can be used to
+    quickly allow or deny services. You can find a list of the macros included
+    in your version of Shorewall using the command <command>ls
+    <filename>/usr/share/shorewall/macro.*</filename></command>.</para>
 
     <para>If you wish to enable connections from the internet to your firewall
-    and you find an appropriate <quote>Allow</quote> action in
-    <filename>/etc/shorewall/actions.std</filename>, the general format of a
-    rule in <filename>/etc/shorewall/rules</filename> is:</para>
+    and you find an appropriate macro in
+    <filename>/etc/shorewall/macro.*</filename>, the general format of a rule
+    in <filename>/etc/shorewall/rules</filename> is:</para>
 
-    <programlisting>#ACTION   SOURCE    DESTINATION     PROTO       DEST PORT(S)
-&lt;<emphasis>action</emphasis>&gt;  net       $FW</programlisting>
+    <programlisting>#ACTION         SOURCE    DESTINATION     PROTO       DEST PORT(S)
+&lt;<emphasis>macro</emphasis>&gt;/ACCEPT  net       $FW</programlisting>
 
     <example>
       <title>You want to run a Web Server and a IMAP Server on your firewall
@@ -334,10 +331,9 @@ IMAP/ACCEPT net       $FW</programlisting>
     </example>
 
     <para>You may also choose to code your rules directly without using the
-    pre-defined actions. This will be necessary in the event that there is not
-    a pre-defined action that meets your requirements. In that case the
-    general format of a rule in <filename>/etc/shorewall/rules</filename>
-    is:</para>
+    pre-defined macros. This will be necessary in the event that there is not
+    a pre-defined macro that meets your requirements. In that case the general
+    format of a rule in <filename>/etc/shorewall/rules</filename> is:</para>
 
     <programlisting>#ACTION   SOURCE    DESTINATION     PROTO       DEST PORT(S)
 ACCEPT    net       $FW             <emphasis>&lt;protocol&gt;</emphasis>  <emphasis>&lt;port&gt;</emphasis></programlisting>
@@ -433,6 +429,16 @@ SSH/ACCEPT  net       $FW           </programlisting>
     <title>Revision History</title>
 
     <para><revhistory>
+        <revision>
+          <revnumber>2.0</revnumber>
+
+          <date>2005-09-12</date>
+
+          <authorinitials>TE</authorinitials>
+
+          <revremark>More 3.0 Updates</revremark>
+        </revision>
+
         <revision>
           <revnumber>1.9</revnumber>
 

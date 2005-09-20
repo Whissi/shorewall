@@ -741,15 +741,14 @@ DNS/ACCEPT  $FW       dmz:10.10.11.1             </programlisting></para>
 
     <para>In the rules shown above, <quote>DNS/ACCEPT</quote> is an example of
     a <emphasis>defined macro</emphasis>. Shorewall includes a number of
-    defined macros and <ulink url="Actions.html">you can add your own</ulink>.
-    To see the list of macros included with your version of Shorewall, look in
-    the file <filename>/usr/share/shorewall/actions.std</filename>.</para>
+    defined macros and <ulink url="Macros.html">you can add your own</ulink>.
+    To see the list of macros included with your version of Shorewall, run the
+    command <command>ls
+    <filename>/usr/share/shorewall/macro.*</filename></command>.</para>
 
     <para>You don't have to use defined macros when coding a rule in
-    <filename>/etc/shorewall/rules</filename>; the generated Netfilter ruleset
-    is slightly more efficient if you code your rules directly rather than
-    using defined macros. The first example above (name server on the
-    firewall) could also have been coded as follows:</para>
+    <filename>/etc/shorewall/rules</filename>. The first example above (name
+    server on the firewall) could also have been coded as follows:</para>
 
     <programlisting>#ACTION   SOURCE    DEST                PROTO      DEST PORT(S)                      
 ACCEPT    loc       $FW                 tcp        53
@@ -759,7 +758,9 @@ ACCEPT    dmz       $FW                 udp        53              </programlist
 
     <para>In cases where Shorewall doesn't include a defined macro to meet
     your needs, you can either define the macro yourself or you can simply
-    code the appropriate rules directly.</para>
+    code the appropriate rules directly. <ulink url="ports.html">This
+    page</ulink> can be of help if you don't know the protocol and port
+    involved.</para>
   </section>
 
   <section>
@@ -779,8 +780,8 @@ SSH/ACCEPT  loc       dmz        </programlisting>Those rules allow you to run
     connect to those servers from your local systems.</para>
 
     <para>If you wish to enable other connections between your systems, the
-    general format for using a defined macro is: <programlisting>#ACTION   SOURCE        DEST                PROTO      DEST PORT(S)                      
-&lt;<emphasis>macro</emphasis>&gt;  <emphasis>&lt;source zone&gt; &lt;destination zone&gt;</emphasis></programlisting></para>
+    general format for using a defined macro is: <programlisting>#ACTION         SOURCE        DEST                PROTO      DEST PORT(S)                      
+&lt;<emphasis>macro</emphasis>&gt;/ACCEPT  <emphasis>&lt;source zone&gt; &lt;destination zone&gt;</emphasis></programlisting></para>
 
     <para>The general format when not using a defined action
     is:<programlisting>#ACTION   SOURCE        DEST                PROTO      DEST PORT(S)                      

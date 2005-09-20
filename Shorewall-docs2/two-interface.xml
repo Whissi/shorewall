@@ -12,7 +12,7 @@
       <surname>Eastep</surname>
     </author>
 
-    <pubdate>2005-09-12</pubdate>
+    <pubdate>2005-09-20</pubdate>
 
     <copyright>
       <year>2002-</year>
@@ -714,12 +714,12 @@ DNS/ACCEPT  $FW       net</programlisting>This rule allows
 ACCEPT     $FW       net                udp       53
 ACCEPT     $FW       net                tcp       53</programlisting></para>
 
-    <para>In cases where Shorewall doesn't include a defined action to meet
-    your needs, you can either define the action yourself or you can simply
+    <para>In cases where Shorewall doesn't include a defined macro to meet
+    your needs, you can either define the macro yourself or you can simply
     code the appropriate rules directly.</para>
 
     <para>The sample also includes: <programlisting>#ACTION      SOURCE    DEST               PROTO     DEST PORT(S)
-SSH/ACCEPT   loc       </programlisting>$FWThat rule allows you to run an
+SSH/ACCEPT   loc       $FW  </programlisting>That rule allows you to run an
     <acronym>SSH</acronym> server on your firewall and connect to that server
     from your local systems.</para>
 

@@ -21,7 +21,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-09-12</pubdate>
+    <pubdate>2005-09-20</pubdate>
 
     <copyright>
       <year>2005</year>
@@ -121,7 +121,7 @@ PARAM    -              -               tcp     135,139,445
 
       <listitem>
         <para>Copy /usr/share/shorewall/macro.template to
-        <filename>/etc/shorewall/macro.ActionName</filename> (for example, if
+        <filename>/etc/shorewall/macro.MacroName</filename> (for example, if
         your new macro name is <quote>Foo</quote> then copy
         <filename>/usr/share/shorewall/macro.template</filename> to
         <filename>/etc/shorewall/macro.Foo</filename>).</para>
@@ -137,7 +137,8 @@ PARAM    -              -               tcp     135,139,445
     <itemizedlist>
       <listitem>
         <para>ACTION - ACCEPT, DROP, REJECT, DNAT, DNAT-, REDIRECT, CONTINUE,
-        LOG, QUEUE, PARAM or an action name.</para>
+        LOG, QUEUE, PARAM or an action name. Note that a macro may not invoke
+        another macro.</para>
 
         <simplelist>
           <member>ACCEPT - allow the connection request</member>
@@ -189,9 +190,6 @@ PARAM    -              -               tcp     135,139,445
         <para>The ACTION may optionally be followed by ":" and a syslog log
         level (e.g, REJECT:info or DNAT:debug). This causes the packet to be
         logged at the specified level.</para>
-
-        <para>(<ulink
-        url="http://www.gnumonks.org/projects/ulogd">http://www.gnumonks.org/projects/ulogd</ulink>).</para>
       </listitem>
 
       <listitem>
@@ -401,6 +399,32 @@ foo:debug!   $FW        net</programlisting>
         <programlisting>#ACTION      SOURCE     DEST     PROTO    DEST PORT(S)
 ACCEPT:debug -          -        tcp      22
 bar:debug</programlisting>
+      </listitem>
+    </orderedlist>
+  </section>
+
+  <section>
+    <title>How do I know if I should create an Action or a Macro?</title>
+
+    <para>While actions and macros perform similar functions, in any given
+    case you will generally find that one is more appropriate than the
+    other.</para>
+
+    <orderedlist>
+      <listitem>
+        <para>You can not associate an Extension Script with a macro <ulink
+        url="Actions.html#Extension">the way that you can with an
+        Action</ulink>. So if you need access to iptables features not
+        directly supported by Shorewall then you must use an action.</para>
+      </listitem>
+
+      <listitem>
+        <para>Macros are expanded in-line while each action is it's own chain.
+        So if there are a lot of rules involved in your new action/macro then
+        it is generally better to use an action than a macro. Only the packets
+        selected when you invoke the action are directed to the corresponding
+        chain. On the other hand, if there are only one or two rules involved
+        in what you want to do then a macro is more efficient.</para>
       </listitem>
     </orderedlist>
   </section>

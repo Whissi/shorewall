@@ -3196,7 +3196,7 @@ process_tc_rule()
 	    ipp2p|IPP2P)
 		[ "x$port" = "x-" ] && port="ipp2p"
 		r="${r}-p tcp -m ipp2p --${port} "
-           ;;
+		;;
 	    icmp|ICMP|1)
 		r="${r}-p icmp "
 		[ "x$port"   = "x-" ] || r="${r}--icmp-type $port"

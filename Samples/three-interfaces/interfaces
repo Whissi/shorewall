@@ -1,5 +1,5 @@
 #
-# Shorewall version 2.6 - Interfaces File
+# Shorewall version 3.0 - Interfaces File
 #
 # /etc/shorewall/interfaces
 #
@@ -8,8 +8,9 @@
 #
 # Columns are:
 #
-#	ZONE		Zone for this interface. Must match the short name
-#			of a zone defined in /etc/shorewall/zones.
+#	ZONE		Zone for this interface. Must match the name of a
+#			zone defined in /etc/shorewall/zones. You may not
+#			list the firewall zone in this column.
 #
 #			If the interface serves multiple zones that will be
 #			defined in the /etc/shorewall/hosts file, you should
@@ -193,7 +194,7 @@
 #
 #			upnp	     - Incoming requests from this interface
 #				       may be remapped via UPNP (upnpd).
-#			
+#
 #			WARNING: DO NOT SET THE detectnets OPTION ON YOUR
 #				 INTERNET INTERFACE.
 #
@@ -233,5 +234,5 @@
 #ZONE	INTERFACE	BROADCAST	OPTIONS
 net     eth0            detect          tcpflags,dhcp,routefilter,norfc1918,nosmurfs,logmartians
 loc     eth1            detect          tcpflags,detectnets,nosmurfs
-dmz     eth2            detect          
+dmz     eth2            detect
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

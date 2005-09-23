@@ -1,352 +1,473 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
 <html>
-<head>
-  <meta http-equiv="Content-Language" content="en-us">
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <title>Download</title>
-</head>
-<body>
-<h1 style="text-align: left;">Shorewall Download</h1>
-<span style="font-weight: bold;">Tom Eastep<br>
-<br>
-</span>Copyright ©&nbsp; 2001-2005 Thomas M. Eastep<span
- style="font-weight: bold;"><br>
-</span>
-<p>Permission is granted to copy, distribute and/or modify this
-document under the terms of the GNU Free Documentation License, Version
-1.2 or any later version published by the Free Software Foundation;
-with no Invariant Sections, with no Front-Cover, and with no Back-Cover
-Texts. A copy of the license is included in the section entitled “<span
- class="quote"><a href="GnuCopyright.htm" target="_self">GNU Free
-Documentation License</a></span>”.<br>
-</p>
-<p>2005-08-27<br>
-</p>
-<hr style="width: 100%; height: 2px;">
-<p><b>I strongly urge you to read and print a copy of the <a
- href="shorewall_quickstart_guide.htm">Shorewall QuickStart Guide</a>
-for the configuration that most closely matches your own.<br>
-</b></p>
-<p>The entire set of Shorewall documentation is available in PDF format
-at:</p>
-<p>&nbsp;&nbsp;&nbsp; <a
- href="ftp://slovakia.shorewall.net/mirror/shorewall/pdf/">ftp://slovakia.shorewall.net/mirror/shorewall/pdf/</a><br>
-&nbsp;&nbsp;&nbsp; <a
- href="http://slovakia.shorewall.net/pub/shorewall/pdf/">http://slovakia.shorewall.net/pub/shorewall/pdf/</a><br>
-&nbsp;&nbsp;&nbsp; <a
- href="rsync://slovakia.shorewall.net/shorewall/pdf/">rsync://slovakia.shorewall.net/shorewall/pdf/</a>
-</p>
-<p>The documentation in both XML and HTML formats is also available for
-download from the Download Sites listed in the table below.</p>
-<p><font color="#ff0000"><b>NOTICE: There are two current Shorewall
-Release Series:</b></font><br>
-</p>
-<ul>
-  <li>The STABLE release series is 2.4. Choose this release if you
-value stability and good documentation.<br>
-  </li>
-  <li>The DEVELOPMENT release series is 2.5. Choose this release if
-you want the latest and greatest and are willing to help test it.<br>
-  </li>
-</ul>
-For additional information, see this article about the<a
- href="ReleaseModel.html"> Shorewall Release Model</a>.
-<p> Once you've printed the appropriate QuickStart Guide, download <u>
-one</u> of the modules:</p>
-<ul>
-  <li>Simon Matter provides RPMs taylored for <span
- style="font-weight: bold;">Redhat</span> and <span
- style="font-weight: bold;">Fedora</span>. You can <a
- href="http://www.invoca.ch/pub/packages/shorewall/">download them from
-his site</a>. <br>
-  </li>
-  <li>Jack Coates provides RPMs taylored for <span
- style="font-weight: bold;">Mandrake.</span> You can <a
- href="http://www.monkeynoodle.org/comp/net/shorewall/">download them
-from his site</a>.</li>
-  <li>Marc Zonzon provides a package for <span
- style="font-weight: bold;">OpenWRT</span> (Open firmware for Linksys®
-WRT54G). You can <a
- href="http://www.iut-lannion.fr/ZONZON/memos_index.php?part=Network&amp;section=WRTMemo&amp;subsec=shorewall">download
-it from his site</a>.<br>
-  </li>
-  <li>jMCg provides a package for <span style="font-weight: bold;">Arch
-Linux.</span> You can <a
- href="http://aur.archlinux.org/packages.php?do_Details=1&amp;ID=1563&amp;O=0&amp;L=0&amp;C=0&amp;K=shorewall&amp;SB=n&amp;PP=25&amp;do_MyPackages=0">download
-it
-from the Arch Linux site</a>.</li>
-  <li>If you run a <b>SuSE, </b><b>Linux
-PPC</b>, <span style="font-weight: bold;">Trustix</span> or <b>
-TurboLinux</b> distribution with a 2.4 or 2.6 kernel, you can
-use the standard RPM version (note: the RPM should also work with other
-distributions that store init scripts in /etc/init.d and that include
-chkconfig or insserv). If you find that it works in other cases, let <a
- href="mailto:teastep@shorewall.net"> me</a> know so that I can mention
-them here (Note: the standard RPM is known to work on Redhat, Fedora
-and Mandrake with issues ranging from trivial (Redhat and Fedora) to
-moderate (Mandrake)). See the <a href="Install.htm">Installation
-Instructions</a>
-if you have problems installing the RPM.<br>
-  </li>
-  <li>If you run <a href="http://www.debian.org"><b>Debian</b></a> and
-would like a .deb package, Shorewall is included in both the <a
- href="http://packages.debian.org/testing/net/shorewall.html">Debian
-Testing Branch</a> and the <a
- href="http://packages.debian.org/unstable/net/shorewall.html">Debian
-Unstable Branch</a>.</li>
-  <li>If you run LEAF/Bering or one if it's derivatives, you can
-download a .lrp file from the <a target="_top"
- href="http://leaf-project.org">LEAF site</a>.<br>
-  </li>
-  <li>Otherwise, download the <i>shorewall</i> module (.tgz)</li>
-</ul>
-<p>You will probably also want to download the HTML version of the
-documentation for easy reference.</p>
-<p>Beginning with Shorewall 2.2.0, you will find a file named
-known_problems.txt in the download directory. This file lists the known
-problems with that version of Shorewall. If corrections are available,
-they will be listed in the known problems and you can download them
-from the 'errata' subdirectory.<br>
-</p>
-<p>Example:<br>
-</p>
-<p style="margin-left: 40px;"><span style="font-family: monospace;">ftp&gt;
-cd
-pub/shorewall/2.2/shorewall-2.2.0</span><br
- style="font-family: monospace;">
-<span style="font-family: monospace;">250 OK. Current directory is
-/pub/shorewall/2.2/shorewall-2.2.0</span><br
- style="font-family: monospace;">
-<span style="font-family: monospace;">ftp&gt; ls</span><span
- style="font-family: monospace;"></span><br
- style="font-family: monospace;">
-<span style="font-family: monospace;">227 Entering Passive Mode
-(206,124,146,177,35,91)</span><br style="font-family: monospace;">
-<span style="font-family: monospace;">150 Accepted data connection</span><br
- style="font-family: monospace;">
-<span style="font-family: monospace;">drwxr-sr-x&nbsp;&nbsp;&nbsp; 3
-0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-4096 Feb&nbsp; 1 09:52 .</span><br style="font-family: monospace;">
-<span style="font-family: monospace;">drwxr-sr-x&nbsp;&nbsp;&nbsp; 3
-0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-4096 Jan 28 14:28 ..</span><br style="font-family: monospace;">
-<span style="font-family: monospace;">-rw-r--r--&nbsp;&nbsp;&nbsp; 1
-0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-500 Jan 28 14:27 2.2.0.md5sums</span><br style="font-family: monospace;">
-<span style="font-family: monospace; color: rgb(204, 0, 0);">drwxr-sr-x&nbsp;&nbsp;&nbsp;
-2 0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-4096 Feb&nbsp; 1 09:51
-errata&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-&lt;=== (1)</span><br style="font-family: monospace;">
-<span style="font-family: monospace; color: rgb(204, 0, 0);">-rw-r--r--&nbsp;&nbsp;&nbsp;
-1 0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-156 Feb&nbsp; 1 09:52 known_problems.txt &lt;=== (2)</span><span
- style="font-family: monospace;"></span><br
- style="font-family: monospace;">
-<span style="font-family: monospace;">-rw-r--r--&nbsp;&nbsp;&nbsp; 1
-0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 16059 Jan
-24 16:13 patch-2.2.0</span><br style="font-family: monospace;">
-<span style="font-family: monospace;">-rwxr-xr-x&nbsp;&nbsp;&nbsp; 1
-0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 22963 Jan
-24 16:10 releasenotes.txt</span><br style="font-family: monospace;">
-<span style="font-family: monospace;">-rw-r--r--&nbsp;&nbsp;&nbsp; 1
-0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 100232 Jan 25
-15:58 shorewall-2.2.0-1.noarch.rpm</span><br
- style="font-family: monospace;">
-<span style="font-family: monospace;">-rw-r--r--&nbsp;&nbsp;&nbsp; 1
-0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 122161 Jan 25
-15:58 shorewall-2.2.0.tgz</span><br style="font-family: monospace;">
-<span style="font-family: monospace;">-rw-r--r--&nbsp;&nbsp;&nbsp; 1
-0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2534077 Jan 28 13:29
-shorewall-docs-html-2.2.0.tgz</span><br style="font-family: monospace;">
-<span style="font-family: monospace;">-rw-r--r--&nbsp;&nbsp;&nbsp; 1
-0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4481205 Jan 28 13:29
-shorewall-docs-xml-2.2.0.tgz</span><br style="font-family: monospace;">
-<span style="font-family: monospace;">-rw-r--r--&nbsp;&nbsp;&nbsp; 1
-0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 93905 Jan
-25 15:58 shorewall-lrp-2.2.0.tgz</span><br
- style="font-family: monospace;">
-<span style="font-family: monospace;">226-Options: -a -l</span><br
- style="font-family: monospace;">
-<span style="font-family: monospace;">226 13 matches total</span><br
- style="font-family: monospace;">
-<span style="font-family: monospace;">ftp&gt;<br>
-</span></p>
-<p style="margin-left: 40px;"><span style="font-family: monospace;"><span
- style="color: rgb(204, 0, 0);">(1) Directory containing updates. For
-Shorewall versions prior to 2.4.0, the
-updates/LRP directory contains those updates that apply to the LRP
-package.</span><br style="color: rgb(204, 0, 0);">
-<span style="color: rgb(204, 0, 0);">(2) List of known problems,
-workarounds and updates.. &nbsp;&nbsp;&nbsp;</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-</span><br>
-</p>
-<p><b>Download Sites:<br>
-</b></p>
-<div style="margin-left: 40px;"><span style="font-weight: bold;">Redhat</span>
-and <span style="font-weight: bold;">Fedora</span> RPMS provided by
-Simon Matter: <a href="http://www.invoca.ch/pub/packages/shorewall/">http://www.invoca.ch/pub/packages/shorewall/</a><br>
-<br>
-<span style="font-weight: bold;">Mandrake</span> RPMS provided by Jack
-Coates: <a href="http://www.monkeynoodle.org/comp/net/shorewall/">http://www.monkeynoodle.org/comp/net/shorewall/</a><br>
-<br>
-<span style="font-weight: bold;">OpenWRT</span> package provided by
-Marc Zonzon: <a
- href="http://www.iut-lannion.fr/ZONZON/memos_index.php?part=Network&amp;section=WRTMemo&amp;subsec=shorewall">http://www.iut-lannion.fr/ZONZON/memos_index.php?part=Network&amp;section=WRTMemo&amp;subsec=shorewall</a><br>
-<br>
-Use the sites below to download the<span style="font-weight: bold;">
-tarball</span>, the <span style="font-weight: bold;">documentation</span>
-<span style="font-weight: bold;"></span>and the
-<span style="font-weight: bold;">standard RPM</span> for (<span
- style="font-weight: bold;">Suse</span>, <span
- style="font-weight: bold;">Power PPC</span>, <span
- style="font-weight: bold;">Trustix</span> and <span
- style="font-weight: bold;">TurboLinux</span>).<br>
-<br>
-Packages are GPG signed, please <span style="font-weight: bold;">
-verify the integrity of the files</span>using our public key <a
- href="https://lists.shorewall.net/shorewall.gpg.key">https://lists.shorewall.net/shorewall.gpg.key</a>
-</div>
-<blockquote>
-  <table style="border-collapse: collapse;" border="2" cellpadding="2">
-    <tbody>
-      <tr>
-        <td><b>SERVER LOCATION</b></td>
-        <td><b>DOMAIN</b></td>
-        <td><b>HTTP</b></td>
-        <td><b>FTP</b></td>
-      </tr>
-      <tr>
-        <td>Slovak Republic</td>
-        <td>Shorewall.net</td>
-        <td><a href="http://slovakia.shorewall.net/pub/shorewall/">Browse</a></td>
-        <td> <a target="_blank"
- href="ftp://slovakia.shorewall.net/mirror/shorewall/">Browse</a></td>
-      </tr>
-      <tr>
-        <td style="vertical-align: top;">Vienna, Va, USA</td>
-        <td style="vertical-align: top;">Shorewall.net</td>
-        <td style="vertical-align: top;"><a
- href="http://www.shorewall.net/pub/shorewall/">Browse</a></td>
-        <td style="vertical-align: top;"><a
- href="ftp://ftp.shorewall.net/pub/shorewall/" target="_blank">Browse</a></td>
-      </tr>
-      <tr>
-        <td style="vertical-align: top;">Frankfurt/Main, Germany<br>
-        </td>
-        <td style="vertical-align: top;">Shorewall.de<br>
-        </td>
-        <td style="vertical-align: top;"><a
- href="http://www.shorewall.de/pub/shorewall/">Browse</a><br>
-        </td>
-        <td style="vertical-align: top;"><a target="_top"
- href="ftp://ftp.shorewall.de/pub/shorewall/">Browse</a><br>
-        </td>
-      </tr>
-      <tr>
-        <td style="vertical-align: top;">Shoreline, Wa, USA<br>
-        </td>
-        <td style="vertical-align: top;">Shorewall.net<br>
-        </td>
-        <td style="vertical-align: top;"><a
- href="http://www1.shorewall.net/pub/shorewall/">Browse</a><br>
-        </td>
-        <td style="vertical-align: top;"><a target="_top"
- href="ftp://ftp1.shorewall.net/pub/shorewall">Browse</a><br>
-        </td>
-      </tr>
-      <tr>
-        <td style="vertical-align: top;">Boston, Mass., USA<br>
-        </td>
-        <td style="vertical-align: top;">viisage.com<br>
-        </td>
-        <td style="vertical-align: top;"><a
- href="http://shorewall.viisage.com/pub/shorewall">Browse</a><br>
-        </td>
-        <td style="vertical-align: top;">N/A<br>
-        </td>
-      </tr>
-      <tr>
-        <td style="vertical-align: top;">Austin Texas, USA<br>
-        </td>
-        <td style="vertical-align: top;">shorewall.net<br>
-        </td>
-        <td style="vertical-align: top;"><a target="_top"
- href="http://slovak.ece.utexas.edu/mirrors/shorewall/">Browse</a><br>
-        </td>
-        <td style="vertical-align: top;"><a target="_top"
- href="ftp://slovak.ece.utexas.edu/shorewall/">Browse</a><br>
-        </td>
-      </tr>
-      <tr>
-        <td>Plano Texas, USA</td>
-        <td>Infohiiway.com</td>
-        <td><a href="http://shorewall.infohiiway.com/pub/shorewall">Browse</a></td>
-        <td><a target="_blank"
- href="ftp://ftp.infohiiway.com/pub/shorewall/">Browse<br>
-        </a></td>
-      </tr>
-<!--<tr>
-       <td>France</td>
-        <td>Shorewall.net</td>
-        <td><a href="http://france.shorewall.net/pub/shorewall">Browse</a></td>
-        <td> <a target="_blank"
- href="ftp://france.shorewall.net/pub/mirrors/shorewall/">Browse</a></td>
-      </tr>-->
-      <tr>
-        <td valign="top">Argentina<br>
-        </td>
-        <td valign="top">Shorewall.net<br>
-        </td>
-        <td valign="top"><a
- href="http://argentina.shorewall.net/pub/shorewall/shorewall">Browse</a><br>
-        </td>
-        <td valign="top"><a href="ftp://ftp.syachile.cl/pub/shorewall"
- target="_top">Browse</a><br>
-        </td>
-      </tr>
-      <tr>
-        <td>Sourceforge - California, USA (Incomplete)<br>
-        </td>
-        <td>Sourceforge.net<br>
-        </td>
-        <td><a href="http://sourceforge.net/projects/shorewall">Browse<br>
-        </a></td>
-        <td>N/A<br>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-</blockquote>
-<p align="left"><b>CVS:</b></p>
-<blockquote>
-  <p align="left">The <a target="_top"
- href="http://cvs.sourceforge.net/viewcvs.py/shorewall">CVS
-repository at cvs.shorewall.net</a> contains the latest snapshots of
-the each Shorewall component. There's no guarantee that what you find
-there will work at all.<br>
-  </p>
-  <p align="left">The CVS repository also can be used to retreive the
-latest released versions. <a
- href="http://cvs.sourceforge.net/viewcvs.py/shorewall/tools/build/makeshorewall">Here
-is a
-shell script</a> that allows you to generate Shorewall packages from
-the current
-contents of the CVS repository (it is the same script that I use to
-build Shorewall releases).<br>
-  </p>
-</blockquote>
-</body>
+  <head>
+    <meta name="generator" content=
+    "HTML Tidy for Linux (vers 1st April 2002), see www.w3.org">
+    <meta http-equiv="Content-Language" content="en-us">
+    <meta http-equiv="Content-Type" content=
+    "text/html; charset=utf-8">
+
+    <title>Download</title>
+  </head>
+
+  <body>
+    <h1 style="text-align: left;">Shorewall Download</h1>
+    <span style="font-weight: bold;">Tom Eastep<br>
+    <br>
+    </span> Copyright ©&nbsp; 2001-2005 Thomas M. Eastep<span
+    style="font-weight: bold;"><br>
+    </span> 
+
+    <p>Permission is granted to copy, distribute and/or modify this
+    document under the terms of the GNU Free Documentation License,
+    Version 1.2 or any later version published by the Free Software
+    Foundation; with no Invariant Sections, with no Front-Cover,
+    and with no Back-Cover Texts. A copy of the license is included
+    in the section entitled “<span class="quote"><a href=
+    "GnuCopyright.htm" target="_self">GNU Free Documentation
+    License</a></span>”.<br>
+    </p>
+
+    <p>2005-08-27<br>
+    </p>
+    <hr style="width: 100%; height: 2px;">
+
+    <p><b>I strongly urge you to read and print a copy of the <a
+    href="shorewall_quickstart_guide.htm">Shorewall QuickStart
+    Guide</a> for the configuration that most closely matches your
+    own.<br>
+    </b></p>
+
+    <p>The entire set of Shorewall documentation is available in
+    PDF format at:</p>
+
+    <p>&nbsp;&nbsp;&nbsp; <a href=
+    "ftp://slovakia.shorewall.net/mirror/shorewall/pdf/">ftp://slovakia.shorewall.net/mirror/shorewall/pdf/</a><br>
+
+     &nbsp;&nbsp;&nbsp; <a href=
+    "http://slovakia.shorewall.net/pub/shorewall/pdf/">http://slovakia.shorewall.net/pub/shorewall/pdf/</a><br>
+
+     &nbsp;&nbsp;&nbsp; <a href=
+    "rsync://slovakia.shorewall.net/shorewall/pdf/">rsync://slovakia.shorewall.net/shorewall/pdf/</a></p>
+
+    <p>The documentation in both XML and HTML formats is also
+    available for download from the Download Sites listed in the
+    table below.</p>
+
+    <p><font color="#ff0000"><b>NOTICE: There are two current
+    Shorewall Release Series:</b></font><br>
+    </p>
+
+    <ul>
+      <li>The STABLE release series is 2.4. Choose this release if
+      you value stability and good documentation.<br>
+      </li>
+
+      <li>The DEVELOPMENT release series is 2.5. Choose this
+      release if you want the latest and greatest and are willing
+      to help test it.<br>
+      </li>
+    </ul>
+    For additional information, see this article about the <a href=
+    "ReleaseModel.html">Shorewall Release Model</a>. 
+
+    <p>Once you've printed the appropriate QuickStart Guide,
+    download <u>one</u> of the modules:</p>
+
+    <ul>
+      <li>Simon Matter provides RPMs taylored for <span style=
+      "font-weight: bold;">Redhat</span> and <span style=
+      "font-weight: bold;">Fedora</span>. You can <a href=
+      "http://www.invoca.ch/pub/packages/shorewall/">download them
+      from his site</a>.<br>
+      </li>
+
+      <li>Jack Coates provides RPMs taylored for <span style=
+      "font-weight: bold;">Mandrake.</span> You can <a href=
+      "http://www.monkeynoodle.org/comp/net/shorewall/">download
+      them from his site</a>.</li>
+
+      <li>Marc Zonzon provides a package for <span style=
+      "font-weight: bold;">OpenWRT</span> (Open firmware for
+      Linksys® WRT54G). You can <a href=
+      "http://www.iut-lannion.fr/ZONZON/memos_index.php?part=Network&amp;section=WRTMemo&amp;subsec=shorewall">
+      download it from his site</a>.<br>
+      </li>
+
+      <li>jMCg provides a package for <span style=
+      "font-weight: bold;">Arch Linux.</span> You can <a href=
+      "http://aur.archlinux.org/packages.php?do_Details=1&amp;ID=1563&amp;O=0&amp;L=0&amp;C=0&amp;K=shorewall&amp;SB=n&amp;PP=25&amp;do_MyPackages=0">
+      download it from the Arch Linux site</a>.</li>
+
+      <li>If you run a <b>SuSE,</b> <b>Linux PPC</b>, <span style=
+      "font-weight: bold;">Trustix</span> or <b>TurboLinux</b>
+      distribution with a 2.4 or 2.6 kernel, you can use the
+      standard RPM version (note: the RPM should also work with
+      other distributions that store init scripts in /etc/init.d
+      and that include chkconfig or insserv). If you find that it
+      works in other cases, let <a href=
+      "mailto:teastep@shorewall.net">me</a> know so that I can
+      mention them here (Note: the standard RPM is known to work on
+      Redhat, Fedora and Mandrake with issues ranging from trivial
+      (Redhat and Fedora) to moderate (Mandrake)). See the <a href=
+      "Install.htm">Installation Instructions</a> if you have
+      problems installing the RPM.<br>
+      </li>
+
+      <li>If you run <a href=
+      "http://www.debian.org"><b>Debian</b></a> and would like a
+      .deb package, Shorewall is included in both the <a href=
+      "http://packages.debian.org/testing/net/shorewall.html">Debian
+      Testing Branch</a> and the <a href=
+      "http://packages.debian.org/unstable/net/shorewall.html">Debian
+      Unstable Branch</a>.</li>
+
+      <li>If you run LEAF/Bering or one if it's derivatives, you
+      can download a .lrp file from the <a target="_top" href=
+      "http://leaf-project.org">LEAF site</a>.<br>
+      </li>
+
+      <li>Otherwise, download the <i>shorewall</i> module
+      (.tgz)</li>
+    </ul>
+
+    <p>You will probably also want to download the HTML version of
+    the documentation for easy reference.</p>
+
+    <p>Beginning with Shorewall 2.2.0, you will find a file named
+    known_problems.txt in the download directory. This file lists
+    the known problems with that version of Shorewall. If
+    corrections are available, they will be listed in the known
+    problems and you can download them from the 'errata'
+    subdirectory.<br>
+    </p>
+
+    <p>Example:<br>
+    </p>
+
+    <p style="margin-left: 40px;"><span style=
+    "font-family: monospace;">ftp&gt; cd
+    pub/shorewall/2.2/shorewall-2.2.0</span><br style=
+    "font-family: monospace;">
+     <span style="font-family: monospace;">250 OK. Current
+    directory is /pub/shorewall/2.2/shorewall-2.2.0</span><br
+    style="font-family: monospace;">
+     <span style="font-family: monospace;">ftp&gt; ls</span><br
+    style="font-family: monospace;">
+     <span style="font-family: monospace;">227 Entering Passive
+    Mode (206,124,146,177,35,91)</span><br style=
+    "font-family: monospace;">
+     <span style="font-family: monospace;">150 Accepted data
+    connection</span><br style="font-family: monospace;">
+     <span style=
+    "font-family: monospace;">drwxr-sr-x&nbsp;&nbsp;&nbsp; 3
+    0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    4096 Feb&nbsp; 1 09:52 .</span><br style=
+    "font-family: monospace;">
+     <span style=
+    "font-family: monospace;">drwxr-sr-x&nbsp;&nbsp;&nbsp; 3
+    0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    4096 Jan 28 14:28 ..</span><br style="font-family: monospace;">
+     <span style=
+    "font-family: monospace;">-rw-r--r--&nbsp;&nbsp;&nbsp; 1
+    0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    500 Jan 28 14:27 2.2.0.md5sums</span><br style=
+    "font-family: monospace;">
+     <span style=
+    "font-family: monospace; color: rgb(204, 0, 0);">drwxr-sr-x&nbsp;&nbsp;&nbsp;
+    2 0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    4096 Feb&nbsp; 1 09:51
+    errata&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    &lt;=== (1)</span><br style="font-family: monospace;">
+     <span style=
+    "font-family: monospace; color: rgb(204, 0, 0);">-rw-r--r--&nbsp;&nbsp;&nbsp;
+    1 0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    156 Feb&nbsp; 1 09:52 known_problems.txt &lt;=== (2)</span><br
+    style="font-family: monospace;">
+     <span style=
+    "font-family: monospace;">-rw-r--r--&nbsp;&nbsp;&nbsp; 1
+    0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    16059 Jan 24 16:13 patch-2.2.0</span><br style=
+    "font-family: monospace;">
+     <span style=
+    "font-family: monospace;">-rwxr-xr-x&nbsp;&nbsp;&nbsp; 1
+    0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    22963 Jan 24 16:10 releasenotes.txt</span><br style=
+    "font-family: monospace;">
+     <span style=
+    "font-family: monospace;">-rw-r--r--&nbsp;&nbsp;&nbsp; 1
+    0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 100232
+    Jan 25 15:58 shorewall-2.2.0-1.noarch.rpm</span><br style=
+    "font-family: monospace;">
+     <span style=
+    "font-family: monospace;">-rw-r--r--&nbsp;&nbsp;&nbsp; 1
+    0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 122161
+    Jan 25 15:58 shorewall-2.2.0.tgz</span><br style=
+    "font-family: monospace;">
+     <span style=
+    "font-family: monospace;">-rw-r--r--&nbsp;&nbsp;&nbsp; 1
+    0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2534077 Jan
+    28 13:29 shorewall-docs-html-2.2.0.tgz</span><br style=
+    "font-family: monospace;">
+     <span style=
+    "font-family: monospace;">-rw-r--r--&nbsp;&nbsp;&nbsp; 1
+    0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4481205 Jan
+    28 13:29 shorewall-docs-xml-2.2.0.tgz</span><br style=
+    "font-family: monospace;">
+     <span style=
+    "font-family: monospace;">-rw-r--r--&nbsp;&nbsp;&nbsp; 1
+    0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    93905 Jan 25 15:58 shorewall-lrp-2.2.0.tgz</span><br style=
+    "font-family: monospace;">
+     <span style="font-family: monospace;">226-Options: -a
+    -l</span><br style="font-family: monospace;">
+     <span style="font-family: monospace;">226 13 matches
+    total</span><br style="font-family: monospace;">
+     <span style="font-family: monospace;">ftp&gt;<br>
+    </span></p>
+
+    <p style="margin-left: 40px;"><span style=
+    "font-family: monospace;"><span style=
+    "color: rgb(204, 0, 0);">(1) Directory containing updates. For
+    Shorewall versions prior to 2.4.0, the updates/LRP directory
+    contains those updates that apply to the LRP package.</span><br
+    style="color: rgb(204, 0, 0);">
+     <span style="color: rgb(204, 0, 0);">(2) List of known
+    problems, workarounds and updates..
+    &nbsp;&nbsp;&nbsp;</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><br>
+
+    </p>
+
+    <p><b>Download Sites:<br>
+    </b></p>
+
+    <div style="margin-left: 40px;">
+      <span style="font-weight: bold;">Redhat</span> and <span
+      style="font-weight: bold;">Fedora</span> RPMS provided by
+      Simon Matter: <a href=
+      "http://www.invoca.ch/pub/packages/shorewall/">http://www.invoca.ch/pub/packages/shorewall/</a><br>
+
+      <br>
+       <span style="font-weight: bold;">Mandrake</span> RPMS
+      provided by Jack Coates: <a href=
+      "http://www.monkeynoodle.org/comp/net/shorewall/">http://www.monkeynoodle.org/comp/net/shorewall/</a><br>
+
+      <br>
+       <span style="font-weight: bold;">OpenWRT</span> package
+      provided by Marc Zonzon: <a href=
+      "http://www.iut-lannion.fr/ZONZON/memos_index.php?part=Network&amp;section=WRTMemo&amp;subsec=shorewall">
+      http://www.iut-lannion.fr/ZONZON/memos_index.php?part=Network&amp;section=WRTMemo&amp;subsec=shorewall</a><br>
+
+      <br>
+       Use the sites below to download the<span style=
+      "font-weight: bold;">tarball</span>, the <span style=
+      "font-weight: bold;">documentation</span> and the <span
+      style="font-weight: bold;">standard RPM</span> for (<span
+      style="font-weight: bold;">Suse</span>, <span style=
+      "font-weight: bold;">Power PPC</span>, <span style=
+      "font-weight: bold;">Trustix</span> and <span style=
+      "font-weight: bold;">TurboLinux</span>).<br>
+      <br>
+       Packages are GPG signed, please <span style=
+      "font-weight: bold;">verify the integrity of the files</span>
+      using our public key <a href=
+      "https://lists.shorewall.net/shorewall.gpg.key">https://lists.shorewall.net/shorewall.gpg.key</a>
+    </div>
+
+    <blockquote>
+      <table style="border-collapse: collapse;" border="2"
+      cellpadding="2">
+        <tbody>
+          <tr>
+            <td><b>SERVER LOCATION</b></td>
+
+            <td><b>DOMAIN</b></td>
+
+            <td><b>HTTP</b></td>
+
+            <td><b>FTP</b></td>
+          </tr>
+
+          <tr>
+            <td>Slovak Republic</td>
+
+            <td>Shorewall.net</td>
+
+            <td><a href=
+            "http://slovakia.shorewall.net/pub/shorewall/">Browse</a></td>
+
+            <td><a target="_blank" href=
+            "ftp://slovakia.shorewall.net/mirror/shorewall/">Browse</a></td>
+          </tr>
+
+          <tr>
+            <td style="vertical-align: top;">Vienna, Va, USA</td>
+
+            <td style="vertical-align: top;">Shorewall.net</td>
+
+            <td style="vertical-align: top;"><a href=
+            "http://www.shorewall.net/pub/shorewall/">Browse</a></td>
+
+            <td style="vertical-align: top;"><a href=
+            "ftp://ftp.shorewall.net/pub/shorewall/" target=
+            "_blank">Browse</a></td>
+          </tr>
+
+          <tr>
+            <td style="vertical-align: top;">Frankfurt/Main,
+            Germany<br>
+            </td>
+
+            <td style="vertical-align: top;">Shorewall.de<br>
+            </td>
+
+            <td style="vertical-align: top;"><a href=
+            "http://www.shorewall.de/pub/shorewall/">Browse</a><br>
+            </td>
+
+            <td style="vertical-align: top;"><a target="_top" href=
+            "ftp://ftp.shorewall.de/pub/shorewall/">Browse</a><br>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="vertical-align: top;">Shoreline, Wa, USA<br>
+            </td>
+
+            <td style="vertical-align: top;">Shorewall.net<br>
+            </td>
+
+            <td style="vertical-align: top;"><a href=
+            "http://www1.shorewall.net/pub/shorewall/">Browse</a><br>
+
+            </td>
+
+            <td style="vertical-align: top;"><a target="_top" href=
+            "ftp://ftp1.shorewall.net/pub/shorewall">Browse</a><br>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="vertical-align: top;">Boston, Mass., USA<br>
+            </td>
+
+            <td style="vertical-align: top;">viisage.com<br>
+            </td>
+
+            <td style="vertical-align: top;"><a href=
+            "http://shorewall.viisage.com/pub/shorewall">Browse</a><br>
+
+            </td>
+
+            <td style="vertical-align: top;">N/A<br>
+            </td>
+          </tr>
+
+          <tr>
+            <td style="vertical-align: top;">Austin Texas, USA<br>
+            </td>
+
+            <td style="vertical-align: top;">shorewall.net<br>
+            </td>
+
+            <td style="vertical-align: top;"><a target="_top" href=
+            "http://slovak.ece.utexas.edu/mirrors/shorewall/">Browse</a><br>
+
+            </td>
+
+            <td style="vertical-align: top;"><a target="_top" href=
+            "ftp://slovak.ece.utexas.edu/shorewall/">Browse</a><br>
+            </td>
+          </tr>
+
+          <tr>
+            <td>Plano Texas, USA</td>
+
+            <td>Infohiiway.com</td>
+
+            <td><a href=
+            "http://shorewall.infohiiway.com/pub/shorewall">Browse</a></td>
+
+            <td><a target="_blank" href=
+            "ftp://ftp.infohiiway.com/pub/shorewall/">Browse<br>
+            </a></td>
+          </tr>
+          <!--<tr>
+                           <td>France</td>
+                            <td>Shorewall.net</td>
+                            <td><a href="http://france.shorewall.net/pub/shorewall">Browse</a></td>
+                            <td> <a target="_blank"
+                     href="ftp://france.shorewall.net/pub/mirrors/shorewall/">Browse</a></td>
+                          </tr>-->
+
+          <tr>
+            <td valign="top">Argentina<br>
+            </td>
+
+            <td valign="top">Shorewall.net<br>
+            </td>
+
+            <td valign="top"><a href=
+            "http://argentina.shorewall.net/pub/shorewall/shorewall">
+            Browse</a><br>
+            </td>
+
+            <td valign="top"><a href=
+            "ftp://ftp.syachile.cl/pub/shorewall" target=
+            "_top">Browse</a><br>
+            </td>
+          </tr>
+
+          <tr>
+            <td>Sourceforge - California, USA (Incomplete)<br>
+            </td>
+
+            <td>Sourceforge.net<br>
+            </td>
+
+            <td><a href=
+            "http://sourceforge.net/projects/shorewall">Browse<br>
+            </a></td>
+
+            <td>N/A<br>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </blockquote>
+
+    <p align="left"><b>CVS:</b></p>
+
+    <blockquote>
+      <p align="left">The <a target="_top" href=
+      "http://cvs.sourceforge.net/viewcvs.py/shorewall">CVS
+      repository at cvs.shorewall.net</a> contains the latest
+      snapshots of the each Shorewall component. There's no
+      guarantee that what you find there will work at all.<br>
+      </p>
+
+      <p align="left">The CVS repository also can be used to
+      retreive the latest released versions. <a href=
+      "http://cvs.sourceforge.net/viewcvs.py/shorewall/tools/build/makeshorewall">
+      Here is a shell script</a> that allows you to generate
+      Shorewall packages from the current contents of the CVS
+      repository (it is the same script that I use to build
+      Shorewall releases).<br>
+      </p>
+    </blockquote>
+  </body>
 </html>
+

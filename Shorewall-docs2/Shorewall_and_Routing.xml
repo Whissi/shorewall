@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-08-11</pubdate>
+    <pubdate>2005-09-25</pubdate>
 
     <copyright>
       <year>2005</year>
@@ -305,138 +305,145 @@
       Shorewall configuration files, enter "-" in a column if you don't want
       to enter any value.</para>
 
-      <glossary>
-        <glossdiv>
-          <title>/etc/shorewall/providers:</title>
+      <variablelist>
+        <varlistentry>
+          <term>NAME</term>
 
-          <glossentry>
-            <glossterm>NAME</glossterm>
+          <listitem>
+            <para>The provider name. Must begin with a letter and consist of
+            letters and digits. The provider name becomes the name of the
+            generated routing table for this provider.</para>
+          </listitem>
+        </varlistentry>
 
-            <glossdef>
-              <para>The provider name. Must begin with a letter and consist of
-              letters and digits. The provider name becomes the name of the
-              generated routing table for this provider.</para>
-            </glossdef>
-          </glossentry>
+        <varlistentry>
+          <term>NUMBER</term>
 
-          <glossentry>
-            <glossterm>NUMBER</glossterm>
+          <listitem>
+            <para>A number between 1 and 252. This becomes the routing table
+            number for the generated table for this provider.</para>
+          </listitem>
+        </varlistentry>
 
-            <glossdef>
-              <para>A number between 1 and 252. This becomes the routing table
-              number for the generated table for this provider.</para>
-            </glossdef>
-          </glossentry>
+        <varlistentry>
+          <term>MARK</term>
 
-          <glossentry>
-            <glossterm>MARK</glossterm>
+          <listitem>
+            <para>A mark value used in your /etc/shorewall/tcrules file to
+            direct packets to this provider. Shorewall will also mark
+            connections that have seen input from this provider with this
+            value and will restore the packet mark in the PREROUTING
+            CHAIN.</para>
+          </listitem>
+        </varlistentry>
 
-            <glossdef>
-              <para>A mark value used in your /etc/shorewall/tcrules file to
-              direct packets to this provider. Shorewall will also mark
-              connections that have seen input from this provider with this
-              value and will restore the packet mark in the PREROUTING
-              CHAIN.</para>
-            </glossdef>
-          </glossentry>
+        <varlistentry>
+          <term>DUPLICATE</term>
 
-          <glossentry>
-            <glossterm>DUPLICATE</glossterm>
+          <listitem>
+            <para>Gives the name or number of a routing table to duplicate.
+            May be 'main' or the name or number of a previously declared
+            provider. For most applications, you want to specify 'main'
+            here.</para>
+          </listitem>
+        </varlistentry>
 
-            <glossdef>
-              <para>Gives the name or number of a routing table to duplicate.
-              May be 'main' or the name or number of a previously declared
-              provider. For most applications, you want to specify 'main'
-              here.</para>
-            </glossdef>
-          </glossentry>
+        <varlistentry>
+          <term>INTERFACE</term>
 
-          <glossentry>
-            <glossterm>INTERFACE</glossterm>
+          <listitem>
+            <para>The name of the interface to the provider.</para>
+          </listitem>
+        </varlistentry>
 
-            <glossdef>
-              <para>The name of the interface to the provider.</para>
-            </glossdef>
-          </glossentry>
+        <varlistentry>
+          <term>GATEWAY</term>
 
-          <glossentry>
-            <glossterm>GATEWAY</glossterm>
+          <listitem>
+            <para>The IP address of the provider's Gateway router.</para>
 
-            <glossdef>
-              <para>The IP address of the provider's Gateway router.</para>
+            <para>You can enter <emphasis role="bold">detect</emphasis> here
+            and Shorewall will attempt to automatically determine the gateway
+            IP address.</para>
 
-              <para>You can enter <emphasis role="bold">detect</emphasis> here
-              and Shorewall will attempt to automatically determine the
-              gateway IP address.</para>
+            <para><emphasis role="bold">Hint:</emphasis> <emphasis
+            role="bold">"detect"</emphasis> is appropriate for use in cases
+            where the interface named in the INTERFACE column is dynamically
+            configured via DHCP etc.</para>
+          </listitem>
+        </varlistentry>
 
-              <para><emphasis role="bold">Hint:</emphasis> <emphasis
-              role="bold">"detect"</emphasis> is appropriate for use in cases
-              where the interface named in the INTERFACE column is dynamically
-              configured via DHCP etc.</para>
-            </glossdef>
-          </glossentry>
+        <varlistentry>
+          <term>OPTIONS</term>
 
-          <glossentry>
-            <glossterm>OPTIONS</glossterm>
+          <listitem>
+            <para>A comma-separated list from the following:</para>
 
-            <glossdef>
-              <para>A comma-separated list from the following:</para>
+            <variablelist>
+              <varlistentry>
+                <term>track</term>
 
-              <glosslist>
-                <glossentry>
-                  <glossterm>track</glossterm>
+                <listitem>
+                  <para>If specified, connections FROM this interface are to
+                  be tracked so that responses may be routed back out this
+                  same interface.</para>
 
-                  <glossdef>
-                    <para>If specified, connections FROM this interface are to
-                    be tracked so that responses may be routed back out this
-                    same interface.</para>
+                  <para>You want specify 'track' if internet hosts will be
+                  connecting to local servers through this provider. Any time
+                  that you specify 'track', you will also want to specify
+                  'balance' (see below).</para>
+                </listitem>
+              </varlistentry>
 
-                    <para>You want specify 'track' if internet hosts will be
-                    connecting to local servers through this provider. Any
-                    time that you specify 'track', you will also want to
-                    specify 'balance' (see below).</para>
-                  </glossdef>
-                </glossentry>
+              <varlistentry>
+                <term>balance</term>
 
-                <glossentry>
-                  <glossterm>balance</glossterm>
+                <listitem>
+                  <para>The providers that have 'balance' specified will get
+                  outbound traffic load-balanced among them. Balancing will
+                  not be perfect, as it is route based, and routes are cached.
+                  This means that routes to often-used sites will always be
+                  over the same provider.</para>
 
-                  <glossdef>
-                    <para>The providers that have 'balance' specified will get
-                    outbound traffic load-balanced among them. Balancing will
-                    not be perfect, as it is route based, and routes are
-                    cached. This means that routes to often-used sites will
-                    always be over the same provider.</para>
+                  <para>By default, each provider is given the same weight (1)
+                  . Beginning with 2.4.0-RC3, you can change the weight of a
+                  given provider by following <emphasis>balance</emphasis>
+                  with "=" and the desired weight (e.g., balance=2). The
+                  weights reflect the relative bandwidth of the providers
+                  connections and should be small numbers since the kernel
+                  actually creates additional default routes for each weight
+                  increment.</para>
+                </listitem>
+              </varlistentry>
 
-                    <para>By default, each provider is given the same weight
-                    (1) . Beginning with 2.4.0-RC3, you can change the weight
-                    of a given provider by following
-                    <emphasis>balance</emphasis> with "=" and the desired
-                    weight (e.g., balance=2). The weights reflect the relative
-                    bandwidth of the providers connections and should be small
-                    numbers since the kernel actually creates additional
-                    default routes for each weight increment.</para>
-                  </glossdef>
-                </glossentry>
-              </glosslist>
-            </glossdef>
-          </glossentry>
+              <varlistentry>
+                <term>loose</term>
 
-          <glossentry>
-            <glossterm>COPY</glossterm>
+                <listitem>
+                  <para>Do not include routing rules that force traffic whose
+                  source IP is an address of the INTERFACE to be routed to
+                  this provider. Useful for defining providers that are to be
+                  used only when the appropriate packet mark is
+                  applied.</para>
+                </listitem>
+              </varlistentry>
+            </variablelist>
+          </listitem>
+        </varlistentry>
 
-            <glossdef>
-              <para>When you specify an existing table in the DUPLICATE
-              column, Shorewall copies all routes through the interface
-              specified in the INTERFACE column plus the interfaces listed in
-              this column. At a minumum, you should list all interfaces on
-              your firewall in this column except those internet interfaces
-              specified in the INTERFACE column of entries in this
-              file.</para>
-            </glossdef>
-          </glossentry>
-        </glossdiv>
-      </glossary>
+        <varlistentry>
+          <term>COPY</term>
+
+          <listitem>
+            <para>When you specify an existing table in the DUPLICATE column,
+            Shorewall copies all routes through the interface specified in the
+            INTERFACE column plus the interfaces listed in this column. At a
+            minumum, you should list all interfaces on your firewall in this
+            column except those internet interfaces specified in the INTERFACE
+            column of entries in this file.</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
     </section>
 
     <section>
@@ -447,8 +454,9 @@
 
       <orderedlist>
         <listitem>
-          <para>An ip rule is generated for each IP address on the INTERFACE
-          that routes traffic from that address through the associated routing
+          <para>Unless <emphasis role="bold">loose</emphasis> is specified, an
+          ip rule is generated for each IP address on the INTERFACE that
+          routes traffic from that address through the associated routing
           table.</para>
         </listitem>
 
@@ -561,237 +569,5 @@ eth1             eth2              130.252.99.27</programlisting>
 #                                                               PORT(S)
 2:P             &lt;local network&gt; 0.0.0.0/0       tcp     25</programlisting>
     </section>
-  </section>
-
-  <section id="RouteTarget">
-    <title>Experimental Routing with Shorewall 2.3.2 and Later</title>
-
-    <para>Beginning with Shorewall 2.3.2, Shorewall is integrated with the
-    ROUTE target extension available from Netfilter Patch-O-Matic-NG (<ulink
-    url="http://www.netfilter.org">http://www.netfilter.org</ulink>).</para>
-
-    <warning>
-      <para>As of this writing, I know of no distribution that is shipping a
-      kernel or iptables with the ROUTE target patch included. This means that
-      you must patch and build your own kernel and iptables in order to be
-      able to use the feature described in this section. <emphasis
-      role="bold">This code remains experimental</emphasis> since there is no
-      intent by the Netfilter team to ever submit the ROUTE target patch for
-      inclusion in the official kernels from kernel.org. This support may also
-      be removed from Shorewall in a future release.</para>
-    </warning>
-
-    <para>See <ulink url="FAQ.htm#faq42">Shorewall FAQ 42</ulink> for
-    information about determining if your kernel and iptables have this
-    support enabled. You must be running Shorewall 2.3.2 or later to make this
-    determination.</para>
-
-    <para>Routing with Shorewall is specified through entries in
-    <filename>/etc/shorewall/routes</filename>. Note that entries in the
-    <filename>/etc/shorewall/routes</filename> file override the routing
-    specified in your routing tables. These rules generate Netfilter rules in
-    the mangle tables FORWARD chain or OUTPUT chain depending whether the
-    packets are being routed through the firewall or originate on the firewall
-    itself (see the flow diagram at the top of this article).</para>
-
-    <para>Columns in this file are as follows:</para>
-
-    <glosslist>
-      <glossentry>
-        <glossterm>SOURCE</glossterm>
-
-        <glossdef>
-          <para>Source of the packet. May be any of the following:</para>
-
-          <itemizedlist>
-            <listitem>
-              <para>A host or network address</para>
-            </listitem>
-
-            <listitem>
-              <para>A network interface name.</para>
-            </listitem>
-
-            <listitem>
-              <para>The name of an ipset prefaced with "+"</para>
-            </listitem>
-
-            <listitem>
-              <para>$FW (for packets originating on the firewall)</para>
-            </listitem>
-
-            <listitem>
-              <para>A MAC address in Shorewall format</para>
-            </listitem>
-
-            <listitem>
-              <para>A range of IP addresses (assuming that your kernel and
-              iptables support range match)</para>
-            </listitem>
-
-            <listitem>
-              <para>A network interface name followed by ":" and an address or
-              address range.</para>
-            </listitem>
-          </itemizedlist>
-        </glossdef>
-      </glossentry>
-
-      <glossentry>
-        <glossterm>DEST</glossterm>
-
-        <glossdef>
-          <para>Destination of the packet. May be any of the following:</para>
-
-          <itemizedlist>
-            <listitem>
-              <para>A host or network address</para>
-            </listitem>
-
-            <listitem>
-              <para>A network interface name (determined from routing
-              table(s))</para>
-            </listitem>
-
-            <listitem>
-              <para>The name of an ipset prefaced with "+"</para>
-            </listitem>
-
-            <listitem>
-              <para>A network interface name followed by ":" and an address or
-              address range.</para>
-            </listitem>
-          </itemizedlist>
-        </glossdef>
-      </glossentry>
-
-      <glossentry>
-        <glossterm>PROTO</glossterm>
-
-        <glossdef>
-          <para>Protocol - Must be a protocol listed in /etc/protocols, a
-          number or "ipp2p", a number, or "all". "ipp2p" require ipp2p match
-          support in your kernel and iptables.</para>
-        </glossdef>
-      </glossentry>
-
-      <glossentry>
-        <glossterm>PORT(S)</glossterm>
-
-        <glossdef>
-          <para>Destination Ports. A comma-separated list of Port names (from
-          /etc/services), port numbers or port ranges; if the protocol is
-          "icmp", this column is interpreted as the destination
-          icmp-type(s).</para>
-
-          <para>If the protocol is ipp2p, this column is interpreted as an
-          ipp2p option without the leading "--" (example "bit" for
-          bit-torrent). If no PORT is given, "ipp2p" is assumed.</para>
-
-          <para>This column is ignored if PROTOCOL = all but must be entered
-          if any of the following field is supplied. In that case, it is
-          suggested that this field contain "-"</para>
-        </glossdef>
-      </glossentry>
-
-      <glossentry>
-        <glossterm>SOURCE PORT(S)</glossterm>
-
-        <glossdef>
-          <para>Optional) Source port(s). If omitted, any source port is
-          acceptable. Specified as a comma-separated list of port names, port
-          numbers or port ranges.</para>
-        </glossdef>
-      </glossentry>
-
-      <glossentry>
-        <glossterm>TEST</glossterm>
-
-        <glossdef>
-          <para>Defines a test on the existing packet or connection mark. The
-          rule will match only if the test returns true. Tests have the
-          format</para>
-
-          <blockquote>
-            <para>[!]&lt;value&gt;[/&lt;mask&gt;][:C]</para>
-          </blockquote>
-
-          <para>where:</para>
-
-          <glosslist>
-            <glossentry>
-              <glossterm>!</glossterm>
-
-              <glossdef>
-                <para>Inverts the test (not equal)</para>
-              </glossdef>
-            </glossentry>
-
-            <glossentry>
-              <glossterm>&lt;value&gt;</glossterm>
-
-              <glossdef>
-                <para>Value of the packet or connection mark.</para>
-              </glossdef>
-            </glossentry>
-
-            <glossentry>
-              <glossterm>&lt;mask&gt;</glossterm>
-
-              <glossdef>
-                <para>A mask to be applied to the mark before testing</para>
-              </glossdef>
-            </glossentry>
-
-            <glossentry>
-              <glossterm>:C</glossterm>
-
-              <glossdef>
-                <para>Designates a connection mark. If omitted, the packet
-                mark's value is tested</para>
-              </glossdef>
-            </glossentry>
-          </glosslist>
-        </glossdef>
-      </glossentry>
-
-      <glossentry>
-        <glossterm>INTERFACE</glossterm>
-
-        <glossdef>
-          <para>The interface that the packet is to be routed out of. If you
-          do not specify this field then you must place "-" in this column and
-          enter an IP address in the GATEWAY column.</para>
-        </glossdef>
-      </glossentry>
-
-      <glossentry>
-        <glossterm>GATEWAY</glossterm>
-
-        <glossdef>
-          <para>The gateway that the packet is to be forwarded through.</para>
-        </glossdef>
-      </glossentry>
-    </glosslist>
-
-    <para>The idea here is that traffic that matches the SOURCE, DEST, PROTO,
-    PORT(S), SOURCE PORT(S) and TEST columns is routed out of the INTERFACE
-    through the optional GATEWAY.</para>
-
-    <blockquote>
-      <para>Example:</para>
-
-      <para>Your local interface is eth1 and your DMZ interface is eth2. You
-      want to run Squid as a transparent proxy for HTTP on 192.168.3.22 in
-      your DMZ. You would use the following entry in
-      /etc/shorewall/routes:</para>
-
-      <programlisting>#SOURCE                 DEST            PROTO   PORT(S) SOURCE  TEST    INTERFACE       GATEWAY
-#                                                       PORT(S)
-eth1                    0.0.0.0/0       tcp     80      -       -       eth1            192.168.3.22</programlisting>
-
-      <para>This entry specifies that "traffic coming in through eth1 to TCP
-      port 80 is to be routed out of eth1 to gateway 192.168.3.22".</para>
-    </blockquote>
   </section>
 </article>

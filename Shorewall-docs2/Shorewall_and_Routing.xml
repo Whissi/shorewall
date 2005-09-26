@@ -245,10 +245,14 @@
       specify that outgoing connections are to be load-balanced between the
       two ISPs. Entries in <filename>/etc/shorewall/tcrules</filename> can be
       used to direct particular outgoing connections to one ISP or the
-      other.</para>
+      other. Use of <filename>/etc/shorewall/tcrules</filename> is not
+      required for <filename>/etc/shorewall/providers</filename> to work, but
+      but you must select a unique MARK value for each provider so Shorewall
+      can set up the correct marking rules for you.</para>
 
-      <para>Connections from the internet are automatically routed back out of
-      the correct interface and through the correct ISP gateway. This works
+      <para>When using <filename>/etc/shorewall/providers</filename>,
+      connections from the internet are automatically routed back out of the
+      correct interface and through the correct ISP gateway. This works
       whether the connection is handled by the firewall itself or if it is
       routed or port-forwarded to a system behind the firewall.</para>
 

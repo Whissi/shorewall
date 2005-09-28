@@ -256,9 +256,6 @@ sec     ipsec   mode=tunnel             mss=1400
       <title>Interfaces File</title>
 
       <blockquote>
-        <para>This is set up so that I can start the firewall before bringing
-        up my Ethernet interfaces.</para>
-
         <programlisting>#ZONE   INTERFACE       BROADCAST               OPTIONS
 net     $EXT_IF         206.124.146.255         dhcp,norfc1918,logmartians,blacklist,tcpflags,nosmurfs,arp_filter
 loc     $INT_IF         detect                  dhcp,routeback
@@ -296,6 +293,9 @@ $WIFI_IF        -               source,dest
       <title>Providers File</title>
 
       <blockquote>
+        <para>This entry isn't necessary but it allows me to smoke test
+        parsing of the providers file.</para>
+
         <programlisting>#NAME   NUMBER  MARK    DUPLICATE       INTERFACE       GATEWAY         OPTIONS                 COPY
 Blarg   1       1       main            $EXT_IF         206.124.146.254 track,balance=1         $INT_IF,$DMZ_IF,$WIFI_IF,tun0
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE
@@ -307,6 +307,9 @@ Blarg   1       1       main            $EXT_IF         206.124.146.254 track,ba
       <title>Blacklist File</title>
 
       <blockquote>
+        <para>I use <ulink url="ipsets.html">ipsets</ulink> to represent my
+        blacklist.</para>
+
         <programlisting>#ADDRESS/SUBNET         PROTOCOL        PORT
 +Blacklistports[dst]
 +Blacklistnets[src,dst]
@@ -550,8 +553,6 @@ dropNotSyn      net             dmz             tcp
 ###############################################################################################################################################################################
 # Internet to DMZ
 #
-DNAT-           net                             dmz:206.124.146.177     tcp     www                                     -               206.124.146.179
-DNAT-           net                             dmz:206.124.146.177     tcp     smtp                                    -               206.124.146.178
 ACCEPT          net                             dmz                     udp     domain
 ACCEPT          net                             dmz                     tcp     smtps,www,ftp,imaps,domain,https        -
 ACCEPT          net                             dmz                     tcp     smtp                                    -               206.124.146.177,206.124.146.178
@@ -569,9 +570,9 @@ DNAT            net                             loc:192.168.1.4         tcp     
 DNAT            net                             loc:192.168.1.4         gre
 ACCEPT          net:$OMAK                       loc:192.168.1.5         tcp     22
 #
-# ICQ
+# Auth for IRC
 #
-ACCEPT          net                             loc:192.168.1.5         tcp     113,4000:4100
+ACCEPT          net                             loc:192.168.1.5         tcp     113
 #
 # Real Audio
 #
@@ -619,15 +620,17 @@ Ping/ACCEPT     dmz                             fw
 # DMZ to Local Network
 #
 ACCEPT          dmz                             loc                     tcp     smtp,6001:6010
-ACCEPT          dmz:206.124.146.177             loc:192.168.1.5,192.168.1.3     tcp     111
-ACCEPT          dmz:206.124.146.177             loc:192.168.1.5,192.168.1.3     udp
+ACCEPT          dmz:206.124.146.177             loc:192.168.1.5,192.168.1.3 \
+                                                                        tcp     111
+ACCEPT          dmz:206.124.146.177             loc:192.168.1.5,192.168.1.3 \
+                                                                        udp
 Ping/ACCEPT     dmz                             loc
 ###############################################################################################################################################################################
 # Internet to Firewall
 #
 REJECT          net                             fw                      tcp     www,ftp,https
 DROP            net                             fw                      icmp    8
-ACCEPT          net                             dmz                     udp     33434:33454
+ACCEPT          net                             fw                      udp     33434:33454
 ACCEPT          net:$OMAK                       fw                      udp     ntp
 ACCEPT          net                             fw                      tcp     auth
 SSHKnock:info   net                             fw                      tcp     22,4320,4321,4322
@@ -652,6 +655,45 @@ REJECT          fw                              dmz                     udp     
 Ping/ACCEPT     fw                              dmz
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
 
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+      </blockquote>
+    </section>
+
+    <section>
+      <title>/etc/shorewall/tcdevices</title>
+
+      <blockquote>
+        <programlisting>#INTERFACE      IN-BANDWITH     OUT-BANDWIDTH
+$EXT_IF         1.5mbit         384kbit
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+      </blockquote>
+    </section>
+
+    <section>
+      <title>/etc/shorewall/tcclasses</title>
+
+      <blockquote>
+        <para>My traffic shaping configuration is the "WonderShaper" example
+        from tc4shorewall.</para>
+
+        <programlisting>#INTERFACE      MARK    RATE    CEIL    PRIORITY        OPTIONS
+$EXT_IF         10      100kbit full    1               tcp-ack,tos-minimize-delay
+$EXT_IF         20      100kbit 200kbit 2
+$EXT_IF         30      full/3  full/2  3               default
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+      </blockquote>
+    </section>
+
+    <section>
+      <title>/etc/shorewall/tcrules</title>
+
+      <blockquote>
+        <para>I give full bandwidth to my L2TP/IPSEC VPN -- only seems fair
+        since HP pays for the DSL service.</para>
+
+        <programlisting>#MARK           SOURCE                  DEST            PROTO   PORT(S) CLIENT  USER    TEST
+#                                                                       PORT(S)
+10:F            192.168.1.6             $EXT_IF         udp     4500
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
       </blockquote>
     </section>
@@ -725,7 +767,7 @@ remote 192.168.3.8
         my_identifier asn1dn ;
         peers_identifier asn1dn ;
         verify_identifier on ;
-        lifetime time 1 hour ;
+        lifetime time 30 minutes ;
         proposal {
                 encryption_algorithm blowfish ;
                 hash_algorithm sha1 ;
@@ -737,7 +779,7 @@ remote 192.168.3.8
 sainfo address 0.0.0.0/0 any address 192.168.3.8 any
 {
         pfs_group 2 ;
-        lifetime time 1 hour ;
+        lifetime time 30 minutes ;
         encryption_algorithm blowfish ;
         authentication_algorithm hmac_sha1, hmac_md5 ;
         compression_algorithm deflate ;
@@ -943,7 +985,7 @@ remote 192.168.3.254
         my_identifier asn1dn ;
         peers_identifier asn1dn ;
         verify_identifier on ;
-        lifetime time 24 hour ;
+        lifetime time 30 minutes ;
         proposal {
                 encryption_algorithm blowfish ;
                 hash_algorithm sha1;
@@ -955,7 +997,7 @@ remote 192.168.3.254
 sainfo address 192.168.3.8/32 any address 0.0.0.0/0 any
 {
         pfs_group 2;
-        lifetime time 12 hour ;
+        lifetime time 30 minutes ;
         encryption_algorithm blowfish ;
         authentication_algorithm hmac_sha1, hmac_md5 ;
         compression_algorithm deflate ;

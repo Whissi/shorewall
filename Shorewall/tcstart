@@ -4,6 +4,8 @@
 # (c) 2005 Arne Bernin <arne@ucbering.de>
 # published under GPL Version 2
 
+created_tmp_dir=
+
 if [ "$SHOREWALL_LIBRARY" != Loaded ]; then
 	SHOREWALL_DIR=.
 	SHARED_DIR=/usr/share/shorewall
@@ -32,6 +34,7 @@ if [ "$SHOREWALL_LIBRARY" != Loaded ]; then
 
 	TMP_DIR=
 	TMP_DIR=$(mktempdir)
+	created_tmp_dir=Yes
 fi
 
 setup_traffic_shaping()
@@ -249,4 +252,4 @@ setup_traffic_shaping()
 
 setup_traffic_shaping
 
-[ -n "$COMMAND" ] || rm -rf $TMP_DIR
+[ -n "$created_tmp_dir" ] && rm -rf $TMP_DIR

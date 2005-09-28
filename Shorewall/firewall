@@ -2068,7 +2068,7 @@ stop_firewall() {
 	*)
 	    set +x
 
-	    [ -z "$RESTOREFILE" ] && RESTOREFILE=restore
+	    [ -n "${RESTOREFILE:=restore}" ]
 
 	    RESTOREPATH=/var/lib/shorewall/$RESTOREFILE
 
@@ -3661,8 +3661,7 @@ process_accounting_rule() {
 	    ;;
     esac
 
-    [ "x$chain" = "x-" ] && chain=accounting
-    [ -z "$chain" ] && chain=accounting
+    [ "x${chain:=accounting}" = "x-" ] && chain=accounting
 
     ensurechain1 $chain
 
@@ -9046,7 +9045,7 @@ do_initialize() {
     # capabilities when module autoloading isn't enabled.
     #
 
-    [ -n "$MODULE_SUFFIX" ] || MODULE_SUFFIX="o gz ko o.gz ko.gz"
+    [ -n "${MODULE_SUFFIX:=o gz ko o.gz ko.gz}" ]
     load_kernel_modules
 
     if [ -z "$IPTABLES" ]; then
@@ -9091,7 +9090,7 @@ do_initialize() {
 	startup_error "Traffic Control requires Mangle"
     fi
 
-    [ -z "$BLACKLIST_DISPOSITION" ] && BLACKLIST_DISPOSITION=DROP
+    [ -n "${BLACKLIST_DISPOSITION:=DROP}" ]
 
     case "$CLAMPMSS" in
 	[0-9]*)
@@ -9143,7 +9142,7 @@ do_initialize() {
 	TCP_FLAGS_DISPOSITION=DROP
     fi
 
-    [ -z "$RFC1918_LOG_LEVEL" ] && RFC1918_LOG_LEVEL=info
+    [ -n "${RFC1918_LOG_LEVEL:=info}" ]
 
     MARK_IN_FORWARD_CHAIN=$(added_param_value_no MARK_IN_FORWARD_CHAIN $MARK_IN_FORWARD_CHAIN)
     [ -n "$MARK_IN_FORWARD_CHAIN" ] && MARKING_CHAIN=tcfor || MARKING_CHAIN=tcpre
@@ -9203,7 +9202,7 @@ do_initialize() {
     #
     # Check out the user's shell
     #
-    [ -n "$SHOREWALL_SHELL" ] || SHOREWALL_SHELL=/bin/sh
+    [ -n "${SHOREWALL_SHELL:=/bin/sh}" ]
 
     temp=$(decodeaddr 192.168.1.1)
     if [ $(encodeaddr $temp) != 192.168.1.1 ]; then

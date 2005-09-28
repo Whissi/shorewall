@@ -16,6 +16,8 @@ if [ "$SHOREWALL_LIBRARY" != Loaded ]; then
 	PARAMS=$(find_file params)
 	[ -f $PARAMS ] && . $PARAMS
 
+	[ -n "${SHOREWALL_DIR:=.}" ]
+
 	ensure_and_save_command()
 	{
 		if ! eval $* ; then

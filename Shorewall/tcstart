@@ -7,11 +7,14 @@
 created_tmp_dir=
 
 if [ "$SHOREWALL_LIBRARY" != Loaded ]; then
-	SHOREWALL_DIR=.
 	SHARED_DIR=/usr/share/shorewall
 	FUNCTIONS=$SHARED_DIR/functions
+	CONFIG_DIR=/etc/shorewall
 
 	. $FUNCTIONS
+
+	PARAMS=$(find_file params)
+	[ -f $PARAMS ] && . $PARAMS
 
 	ensure_and_save_command()
 	{

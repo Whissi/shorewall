@@ -677,10 +677,10 @@ $EXT_IF         1.5mbit         384kbit
         url="http://www1.shorewall.net/pub/shorewall/Samples/tc4shorewall">example
         from tc4shorewall</ulink>.</para>
 
-        <programlisting>#INTERFACE      MARK    RATE    CEIL    PRIORITY        OPTIONS
-$EXT_IF         10      100kbit full    1               tcp-ack,tos-minimize-delay
-$EXT_IF         20      100kbit 200kbit 2
-$EXT_IF         30      full/3  full/2  3               default
+        <programlisting>#INTERFACE      MARK    RATE            CEIL            PRIORITY        OPTIONS
+$EXT_IF         10      full            full            1               tcp-ack,tos-minimize-delay
+$EXT_IF         20      9*full/10       9*full/10       2               default
+$EXT_IF         30      8*full/10       8*full/10       2
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
       </blockquote>
     </section>
@@ -689,12 +689,12 @@ $EXT_IF         30      full/3  full/2  3               default
       <title>/etc/shorewall/tcrules</title>
 
       <blockquote>
-        <para>I give full bandwidth to my L2TP/IPSEC VPN -- only seems fair
-        since HP pays for the DSL service.</para>
+        <para>I give full bandwidth to my local systems -- the server gets
+        throttled.</para>
 
         <programlisting>#MARK           SOURCE                  DEST            PROTO   PORT(S) CLIENT  USER    TEST
 #                                                                       PORT(S)
-10:F            192.168.1.6             $EXT_IF         udp     4500
+10:F            192.168.0.0/22          $EXT_IF
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
       </blockquote>
     </section>

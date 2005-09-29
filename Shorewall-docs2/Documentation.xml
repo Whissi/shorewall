@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-09-12</pubdate>
+    <pubdate>2005-09-29</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -3365,6 +3365,13 @@ LOGBURST=5</programlisting>
 
           <para>If this variable is not set or is given an empty value
           (ADD_IP_ALIASES="") then ADD_IP_ALIASES=Yes is assumed.</para>
+
+          <warning>
+            <para>Addresses added by ADD_IP_ALIASES=Yes are deleted and
+            re-added during <command>shorewall restart</command>. As a
+            consequence, all connections using those addresses are
+            severed.</para>
+          </warning>
         </listitem>
       </varlistentry>
 
@@ -3382,6 +3389,13 @@ LOGBURST=5</programlisting>
 
           <para>If this variable is not set or is given an empty value
           (ADD_SNAT_ALIASES="") then ADD_SNAT_ALIASES=No is assumed.</para>
+
+          <warning>
+            <para>Addresses added by ADD_SNAT_ALIASES=Yes are deleted and
+            re-added during <command>shorewall restart</command>. As a
+            consequence, all connections using those addresses are
+            severed.</para>
+          </warning>
         </listitem>
       </varlistentry>
 

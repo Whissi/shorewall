@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-09-12</pubdate>
+    <pubdate>2005-09-30</pubdate>
 
     <copyright>
       <year>2004</year>
@@ -219,11 +219,11 @@
         <para>By default, encrypted communication is not used to communicate
         with the hosts in a zone.</para>
 
-        <para>The value <emphasis role="bold">plain</emphasis> is placed in
-        the TYPE column of the <filename>/etc/shorewall/zones</filename> entry
-        for the zone and the new <emphasis role="bold">ipsec</emphasis> option
-        is specified in <filename>/etc/shorewall/hosts</filename> for any
-        hosts requiring secure communication.</para>
+        <para>The value <emphasis role="bold">ipv4</emphasis> is placed in the
+        TYPE column of the <filename>/etc/shorewall/zones</filename> entry for
+        the zone and the new <emphasis role="bold">ipsec</emphasis> option is
+        specified in <filename>/etc/shorewall/hosts</filename> for any hosts
+        requiring secure communication.</para>
       </listitem>
     </orderedlist>
 
@@ -321,8 +321,8 @@ ipsec         net         206.162.148.9
 
       <programlisting>#ZONE          TYPE             OPTIONS             IN           OUT
 #                                                   OPTIONS      OPTIONS
-vpn            plain
-net            plain
+vpn            ipv4
+net            ipv4
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
     </blockquote>
 
@@ -495,8 +495,8 @@ sec     ipsec   mode=tunnel             <emphasis role="bold">mss=1400</emphasis
         <programlisting>#ZONE          TYPE             OPTIONS             IN           OUT
 #                                                   OPTIONS      OPTIONS
 vpn            ipsec
-net            plain
-loc            plain
+net            ipv4
+loc            ipv4
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
       </blockquote>
 
@@ -538,8 +538,8 @@ vpn               eth0:0.0.0.0/0
         <programlisting>#ZONE          TYPE             OPTIONS             IN           OUT
 #                                                   OPTIONS      OPTIONS
 vpn            ipsec
-net            plain
-loc            plain
+net            ipv4
+loc            ipv4
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
 
         <para>/etc/shorewall/tunnels - System B:</para>
@@ -751,7 +751,7 @@ ipsec:noah     net              192.168.20.0/24 loc</programlisting>
       <programlisting>#ZONE          TYPE             OPTIONS             IN           OUT
 #                                                   OPTIONS      OPTIONS
 loc            ipsec            mode=transport
-net            plain</programlisting>
+net            ipv4</programlisting>
 
       <para><filename>/etc/shorewall/hosts</filename>:</para>
 

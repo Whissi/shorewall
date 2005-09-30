@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-09-03</pubdate>
+    <pubdate>2005-09-30</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -155,8 +155,8 @@ ipsec      net         206.161.148.9</programlisting>
     <para>/etc/shorewall/zones (both systems):</para>
 
     <programlisting>#ZONE          TYPE         OPTIONS
-vpn            plain
-net            plain</programlisting>
+vpn            ipv4
+net            ipv4</programlisting>
 
     <para><emphasis role="bold">If you are running kernel
     2.4:</emphasis><blockquote>
@@ -283,13 +283,13 @@ ipsec         net          206.161.148.9</programlisting>
     networks. On System A:</para>
 
     <programlisting>#ZONE       TYPE         OPTIONS
-vpn1        plain
-vp2         plain</programlisting>
+vpn1        ipv4
+vp2         ipv4</programlisting>
 
     <para>On systems B and C:</para>
 
     <programlisting>#ZONE       TYPE         OPTIONS
-vpn         plain</programlisting>
+vpn         ipv4</programlisting>
 
     <para>At system A, ipsec0 represents two zones so we have the following in
     /etc/shorewall/interfaces:</para>
@@ -374,7 +374,7 @@ vpn2         vpn1       ACCEPT</programlisting>
       <para>/etc/shorewall/zones - System A</para>
 
       <programlisting>#ZONE      TYPE        OPTIONS
-vpn        plain</programlisting>
+vpn        ipv4</programlisting>
 
       <para>In this instance, the mobile system (B) has IP address 134.28.54.2
       but that cannot be determined in advance. In the /etc/shorewall/tunnels
@@ -408,9 +408,9 @@ ipsec       net        0.0.0.0/0</programlisting>
     <para>In /etc/shorewall/zones:</para>
 
     <programlisting>#ZONE       TYPE       OPTIONS
-vpn1        plain
-vpn2        plain
-vpn3        plain</programlisting>
+vpn1        ipv4
+vpn2        ipv4
+vpn3        ipv4</programlisting>
 
     <para>In /etc/shorewall/tunnels:</para>
 

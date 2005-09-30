@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-09-12</pubdate>
+    <pubdate>2005-09-29</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -205,16 +205,6 @@
           copy</emphasis>.</para>
         </listitem>
       </itemizedlist></para>
-  </section>
-
-  <section>
-    <title>Special Note about /etc/shorewall/shorewall.conf</title>
-
-    <para>It is a good idea to modify your /etc/shorewall/shorewall.conf file,
-    even if you just add a comment that says "I modified this file". That way,
-    your package manager won't overwrite the file with future updated
-    versions. Such overwrites can cause unwanted changes in the behavior of
-    Shorewall.</para>
   </section>
 
   <section id="Comments">
@@ -530,9 +520,8 @@ DNAT       net        loc:192.168.1.3 tcp       4000:4100</programlisting>
     comma-separated list of ports or port ranges may also be entered.
     Shorewall will use the Netfilter <emphasis
     role="bold">multiport</emphasis> match capability if it is available (see
-    the output of "<emphasis role="bold">shorewall check</emphasis>" under the
-    heading "Shorewall has detected the following iptables/netfilter
-    capabilities:") and if its use is appropriate.</para>
+    the output of "<emphasis role="bold">shorewall show
+    capabilities</emphasis>") and if its use is appropriate.</para>
 
     <para>Shorewall can use multiport match if:</para>
 
@@ -544,9 +533,10 @@ DNAT       net        loc:192.168.1.3 tcp       4000:4100</programlisting>
       <listitem>
         <para>There are no port ranges listed OR your iptables/kernel support
         the Extended <emphasis role="bold">multiport</emphasis> match (again
-        see the output of "shorewall check"). Where the Extended <emphasis
-        role="bold">multiport</emphasis> match is available, each port range
-        counts as two ports toward the maximum of 15.</para>
+        see the output of "<command>shorewall show capabilities</command>").
+        Where the Extended <emphasis role="bold">multiport</emphasis> match is
+        available, each port range counts as two ports toward the maximum of
+        15.</para>
       </listitem>
     </orderedlist>
   </section>
@@ -644,6 +634,15 @@ wookie:~ #</programlisting>
       <programlisting>EXT_IF=$(getcfg-interface bus-pci-0000:00:05.0)
 INT_IF=$(getcfg-interface bus-pci-0000:00:03.0)</programlisting>
     </example>
+
+    <caution>
+      <para>The <command>shorewall save</command> and <command>shorewall
+      restore</command> commands should be used carefully if you use the above
+      workaround for unstable interface names. In particular, you should set
+      OPTIONS="" in <filename>/etc/default/shorewall</filename> or
+      <filename>/etc/sysconfig/shorewall</filename> so that the "-f" option
+      will not be specified on startup at boot time. </para>
+    </caution>
   </section>
 
   <section id="MAC">

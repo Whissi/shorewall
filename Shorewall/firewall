@@ -554,11 +554,11 @@ determine_zones()
 
 	if [ -n "$new_zone_file" ]; then
 	    case ${type:=ipv4} in
-		ipv4|plain|-)
+		ipv4|IPv4|IPV4|plain|-)
 		    list_search $zone $ZONES $FW && startup_error "Zone $zone is defined more than once"
 		    merge_zone
 		    ;;
-		ipsec)
+		ipsec|IPSEC|ipsec4|IPSEC4)
 		    list_search $zone $ZONES $FW && startup_error "Zone $zone is defined more than once"
 		    [ -n "$POLICY_MATCH" ] || fatal_error "Your kernel and/or iptables does not support policy match"
 		    eval ${zone}_is_ipsec=Yes

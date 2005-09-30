@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-09-16</pubdate>
+    <pubdate>2005-09-30</pubdate>
 
     <copyright>
       <year>2002-2005</year>
@@ -34,6 +34,13 @@
     </legalnotice>
   </articleinfo>
 
+  <caution>
+    <para><emphasis role="bold">This article applies to Shorewall 3.0 and
+    later. If you are running a version of Shorewall earlier than Shorewall
+    3.0.0 then please see the documentation for that
+    release.</emphasis></para>
+  </caution>
+
   <para>If you wish to run Samba on your firewall and access shares between
   the firewall and local hosts, you need the following rules:</para>
 
@@ -50,9 +57,9 @@ SMB/ACCEPT  Z1       Z2
 SMB/ACCEPT  Z2       Z1</programlisting>
 
   <para>To make network browsing (<quote>Network Neighborhood</quote>) work
-  properly between Z1 and Z2 requires a Windows Domain Controller and/or a
-  WINS server. I have run Samba on my firewall to handle browsing between two
-  zones connected to my firewall.</para>
+  properly between Z1 and Z2 <emphasis role="bold">requires a Windows Domain
+  Controller and/or a WINS server.</emphasis> I have run Samba on my firewall
+  to handle browsing between two zones connected to my firewall.</para>
 
   <para>When debugging Samba/SMB problems, I recommend that you do the
   following:</para>
@@ -78,6 +85,9 @@ SMB/ACCEPT  Z2       Z1</programlisting>
 
   <para>The above steps will cause SMB traffic that is dropped or rejected by
   policy to be logged rather than handled silently.</para>
+
+  <para>If you are using <trademark>Windows XP</trademark> to test your
+  setup,make you sure you have a properly configured client firewall .</para>
 
   <para>You can just remove the copies and <command>shorewall
   restart</command> when you are finished debugging.</para>

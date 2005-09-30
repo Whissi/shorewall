@@ -11,94 +11,10 @@ Problems Corrected in 2.5.7:
 2) The "shorewall refresh" command was clearing traffic shaping but not
    reconfiguring it.
 
-Problems Corrected in 2.5.6:
+New Features in 2.5.7:
 
-1)  The following fatal error could occur at startup:
-
-    ERROR: Command "/sbin/iptables -A INPUT   -j  LOG  --log-level NONE
-        --log-prefix "Shorewall:INPUT:ACCEPT:"" Failed
-
-    That problem has been corrected.
-
-2)  The Makefile is now unconditionally installed in /etc/shorewall
-    during an upgrade (the prior copy has been saved in
-    /etc/shorewall-<version>.bkout/Makefile).
-
-New Features in 2.5.6:
-
-1)  The install.sh script now does a much cleaner job of backing up the
-    current installation. It copies the directories /etc/shorewall,
-    /usr/share/shorewall and /var/lib/shorewall to a directory of the
-    same name with "-$VERSION.bkout" appended. The init script and
-    /sbin/shorewall are backed up to the /usr/share/shorewall and
-    /var/lib/shorewall directories respectively. This makes it very
-    simple to remove the backups:
-
-	   rm -rf /etc/shorewall-*.bkout
-	   rm -rf /usr/share/shorewall-*.bkout
-	   rm -rf /var/lib/shorewall-*.bkout
-
-2)  A new '-n' option has been added to the "start", "restart",
-    "restore",  "stop" and "try" commands. This option instructs
-    Shorewall to not alter the routing in any way.
-
-    This option is useful when you have a multi-ISP environment because
-    it prevents the route cache from being flushed which preserves the
-    mapping of end-point address pairs to routes.
-
-Problems Corrected in 2.5.5:
-
-1)  The install script now installs the correct Makefile. Previously,
-    the /etc/shorewall/actions file was identical to the Makefile.
-
-2)  Error Handling was completely broken; operations such as 
-    "shorewall start" would continue after what should have been fatal
-    errors.
-
-Problems Corrected in 2.5.4:
-
-1)  Several serious problems associated with macros have been corrected.
-
-Problems Corrected in 2.5.3:
-
-1)  The Netfilter 'raw' table is now cleared during "shorewall stop",
-    "shorewall [re]start" and "shorewall clear".
-
-Problems Corrected in 2.5.2:
-
-1) You may now include port lists in in the /etc/shorewall/accounting
-   file.
-
-2) The packet type match capability is now correctly reported when
-   PKTTYPE=No in /etc/shorewall/shorewall.conf.
-
-Problems Corrected in 2.5.1:
-
-1) Shorewall is no longer dependent on the 'which' utility.
-
-2) "shorewall add" no longer fails when the 'ipsec' option has appeared
-   in /etc/shorewall/hosts.
-
-3) The Makefile has been changed to compare the modification times of
-   the files in /etc/shorewall with
-   /var/lib/shorewall/restore-base. That file is modified each time
-   that Shorewall is [re]started whereas /var/lib/shorewall/restarted
-   is also modified by "shorewall reset" and "shorewall refresh".
-
-4) The handling of log levels passed to macros has been
-   corrected. Previously, passing a log level to a macro resulted in a
-   [re]start error.
-
-Problems Corrected in 2.5.0:
-
-1) The behavior of CONTINUE policies has been improved. Shorewall no
-   longer generates a useless policy chain corresponding to these
-   policies.
-
-2) The combining of the zones and ipsec files has now been made upward
-   compatible provided that the user doesn't do something idiotic such
-   as install the new shorewall.conf file then manually update it
-   with exactly the changes that had been applied to the old file.
+1) The output of "shorewall dump" now includes a capabilities report
+   such as the one produced by "shorewall show capabilities".
 
 Migration Considerations:
 
@@ -165,13 +81,13 @@ Migration Considerations:
 			Your kernel and iptables must include policy
 			match support.
 		firewall
-		      - Designates the firewall itself. You must have 
+		      - Designates the firewall itself. You must have
 			exactly one 'firewall' zone. No options are
 			permitted with a 'firewall' zone.
 
 	OPTIONS,		A comma-separated list of options as
 	IN OPTIONS,		follows:
-	OUT OPTIONS	
+	OUT OPTIONS
 				reqid=<number> where <number> is
 				specified using setkey(8) using the
 				'unique:<number> option for the SPD
@@ -414,10 +330,10 @@ New Features in Shorewall 2.5.*
 
 	 ACCEPT     loc		 all+	 tcp	   22
 
-    would allow SSH traffic from loc->loc whereas 	
+    would allow SSH traffic from loc->loc whereas
 
 	 ACCEPT     loc		 all	 tcp	   22
-	
+
     does not.
 
 7)  A new FASTACCEPT option has been added to shorewall.conf.
@@ -437,7 +353,7 @@ New Features in Shorewall 2.5.*
     specified for an interface with an RFC 1918 address.
 
 9)  You may now specify "!" followed by a list of addresses in the
-    SOURCE and DEST columns of entries in /etc/shorewall/rules, 
+    SOURCE and DEST columns of entries in /etc/shorewall/rules,
     /etc/shorewall/tcrules and in action files and Shorewall will
     generate the rule that you expect.
 
@@ -493,7 +409,7 @@ New Features in Shorewall 2.5.*
 14) Prior to Shorewall 2.5.3, the rules file only controlled packets in
     the Netfilter states NEW and INVALID. Beginning with this release,
     the rules file can also deal with packets in the ESTABLISHED and
-    RELATED states. 
+    RELATED states.
 
     The /etc/shorewall/rules file may now be divided into
     "sections". Each section is introduced by a line that begins with
@@ -558,7 +474,7 @@ New Features in Shorewall 2.5.*
     Now, $1 = these, $2 = are and $3 = parameters
 
 17) The "shorewall check" command now checks the /etc/shorewall/masq,
-    /etc/shorewall/blacklist, /etc/shorewall/proxyarp, 
+    /etc/shorewall/blacklist, /etc/shorewall/proxyarp,
     /etc/shorewall/nat and /etc/shorewall/providers files.
 
 18) Arne Bernin's "tc4shorewall" package has been integrated into
@@ -574,4 +490,24 @@ New Features in Shorewall 2.5.*
     Application code such as /etc/shorewall/tcstart may test that
     variable to determine if the library has been loaded into the
     current shell process.
+
+20) The install.sh script now does a much cleaner job of backing up the
+    current installation. It copies the directories /etc/shorewall,
+    /usr/share/shorewall and /var/lib/shorewall to a directory of the
+    same name with "-$VERSION.bkout" appended. The init script and
+    /sbin/shorewall are backed up to the /usr/share/shorewall and
+    /var/lib/shorewall directories respectively. This makes it very
+    simple to remove the backups:
+
+	   rm -rf /etc/shorewall-*.bkout
+	   rm -rf /usr/share/shorewall-*.bkout
+	   rm -rf /var/lib/shorewall-*.bkout
+
+21) A new '-n' option has been added to the "start", "restart",
+    "restore",  "stop" and "try" commands. This option instructs
+    Shorewall to not alter the routing in any way.
+
+    This option is useful when you have a multi-ISP environment because
+    it prevents the route cache from being flushed which preserves the
+    mapping of end-point address pairs to routes.
 

@@ -401,7 +401,7 @@ save_config() {
 
     if shorewall_is_started ; then
 	[ -d /var/lib/shorewall ] || mkdir -p /var/lib/shorewall
-	
+
 	if [ -f $RESTOREPATH -a ! -x $RESTOREPATH ]; then
 	    echo "   ERROR: $RESTOREPATH exists and is not a saved Shorewall configuration"
 	else
@@ -421,9 +421,9 @@ save_config() {
 				mv -f /var/lib/shorewall/restore-$$ $RESTOREPATH
 				chmod +x $RESTOREPATH
 				echo "   Currently-running Configuration Saved to $RESTOREPATH"
-				
+
 				rm -f ${RESTOREPATH}-ipsets
-				
+
 				case ${SAVE_IPSETS:-No} in
 				    [Yy][Ee][Ss])
                                         RESTOREPATH=${RESTOREPATH}-ipsets
@@ -604,7 +604,7 @@ while [ $done -eq 0 ]; do
 	    option=${option#-}
 
 	    [ -z "$option" ] && usage 1
-	
+
 	    while [ -n "$option" ]; do
 		case $option in
 		    c)
@@ -617,7 +617,7 @@ while [ $done -eq 0 ]; do
 				echo "Directory $2 does not exist" >&2 && exit 2
 			    fi
 			fi
-			
+
 			SHOREWALL_DIR=$2
 			option=
 			shift
@@ -641,7 +641,7 @@ while [ $done -eq 0 ]; do
 		    n*)
 			NOROUTES=Yes
 			option=${option#n}
-			;;			
+			;;
 		    *)
 			usage 1
 			;;
@@ -755,7 +755,7 @@ case "$1" in
 			echo "Directory $2 does not exist" >&2 && exit 2
 		    fi
 		fi
-		
+
 		SHOREWALL_DIR=$2
 		export SHOREWALL_DIR
 		;;
@@ -765,14 +765,14 @@ case "$1" in
 	esac
 
 	export NOROUTES
-	
+
 	if [ -n "$FAST" ]; then
 	    if qt mywhich make; then
 		make -qf /etc/shorewall/Makefile || FAST=
 	    fi
 
 	    if [ -n "$FAST" ]; then
-		
+
 		RESTOREPATH=/var/lib/shorewall/$RESTOREFILE
 
 		if [ -x $RESTOREPATH ]; then
@@ -820,7 +820,7 @@ case "$1" in
 			echo "Directory $2 does not exist" >&2 && exit 2
 		    fi
 		fi
-			
+
 		SHOREWALL_DIR=$2
 		export SHOREWALL_DIR
 		;;
@@ -830,7 +830,7 @@ case "$1" in
 	esac
 
 	export NOROUTES
-	
+
 	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $1
 	;;
     add|delete)
@@ -898,7 +898,8 @@ case "$1" in
 	    fi
 	    ;;
 	capabilities)
-	    exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock capabilities
+	    determine_capabilities
+	    report_capabilities
 	    ;;
 	actions)
 	    echo "allowBcast         #Silently Allow Broadcast/multicast"
@@ -914,7 +915,7 @@ case "$1" in
 	    ;;
 	*)
 	    shift
-	
+
 	    echo "Shorewall-$version $([ $# -gt 1 ] && echo Chains || echo Chain) $* at $HOSTNAME - $(date)"
 	    echo
 	    show_reset
@@ -979,7 +980,7 @@ case "$1" in
 
 	heading "IP Stats"
 	ip -stat link ls
-	
+
 	if qt mywhich brctl; then
 	    heading "Bridges"
 	    brctl show
@@ -1012,11 +1013,15 @@ case "$1" in
 
 	heading "ARP"
 	arp -na
-	
+
 	if qt mywhich lsmod; then
 	    heading "Modules"
 	    lsmod | grep -E '^ip_|^ipt_|^iptable_'
 	fi
+
+	determine_capabilities
+	echo
+	report_capabilities
 	;;
     hits)
     	[ -n "$debugging" ] && set -x
@@ -1191,7 +1196,7 @@ case "$1" in
 	else
 	    usage 1
 	fi
-	
+
 	[ -z "$vlsm" ] && exit 2
 	[ "x$address" = "x$vlsm" ] && usage 2
 	[ $vlsm -gt 32 ] && echo "Invalid VLSM: /$vlsm" >&2 && exit 2
@@ -1290,7 +1295,7 @@ case "$1" in
 	    mutex_off
 	    exit 0
 	fi
-	
+
 	if [ "$1" = "safe-start" -o  $running -ne 0 ]
 	then
 	    # the command is safe-start or shorewall is not started yet
@@ -1318,15 +1323,15 @@ case "$1" in
 		# removed previous configuration
 		rm /var/lib/shorewall/safe-start-restart
 	    fi
-	else	
+	else
 	    if [ "$command" = "restart" ]
 	    then
 		$0 nolock $debugging restore "safe-start-restart"
 		rm /var/lib/shorewall/safe-start-restart
-	    else		
+	    else
 		$0 nolock $debugging clear
 	    fi
-	
+
 	    mutex_off
 	    echo "New configuration has been rejected and the old one restored"
 	    exit 2

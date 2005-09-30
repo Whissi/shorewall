@@ -553,8 +553,8 @@ determine_zones()
         esac
 
 	if [ -n "$new_zone_file" ]; then
-	    case ${type:=plain} in
-		plain|-)
+	    case ${type:=ipv4} in
+		ipv4|plain|-)
 		    list_search $zone $ZONES $FW && startup_error "Zone $zone is defined more than once"
 		    merge_zone
 		    ;;

@@ -20,16 +20,16 @@
 #		Example:
 #
 #			#ZONE     TYPE     OPTIONS
-#			a	  plain
-#			b	  plain
-#			c:a,b     plain
+#			a	  ipv4
+#			b	  ipv4
+#			c:a,b     ipv4
 #
 #		Currently, Shorewall uses this information only to reorder the
 #		zone list so that parent zones appear after their subzones in
 #		the list. In the future, Shorewall may make more extensive use
 #		of that information.
 #
-#	TYPE	plain -	This is the standard Shorewall zone type and is the
+#	TYPE	ipv4 -	This is the standard Shorewall zone type and is the
 #			default if you leave this column empty or if you enter
 #			"-" in the column. Communication with some zone hosts
 #			may be encrypted. Encrypted hosts are designated using
@@ -88,7 +88,7 @@
 #ZONE	TYPE	OPTIONS			IN			OUT
 #					OPTIONS			OPTIONS
 fw	firewall
-net	plain
-loc	plain
-dmz	plain
+net	ipv4
+loc	ipv4
+dmz	ipv4
 #LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE

@@ -19,8 +19,8 @@
 # Columns are:
 #
 #
-#	TARGET		ACCEPT, DROP, REJECT, LOG, QUEUE or a
-#			previously-defined <action>
+#	TARGET		ACCEPT, DROP, REJECT, LOG, QUEUE, CONTINUEa <macro>
+#			or a previously-defined <action>
 #
 #				ACCEPT	 -- allow the connection request
 #				DROP	 -- ignore the request
@@ -37,6 +37,16 @@
 #					    The <action> must appear in that
 #					    file BEFORE the one being defined
 #					    in this file.
+#				<macro>	 -- The name of a macro defined in a
+#					    file named macro.<macro-name>. If
+#					    the macro accepts an action
+#					    parameter (Look at the macro
+#					    source to see if it has PARAM in
+#					    the TARGET column) then the macro
+#					    name is followed by "/" and the
+#					    action (ACCEPT, DROP, REJECT, ...)
+#					    to be substituted for the
+#					    parameter. Example: FTP/ACCEPT.
 #
 #			The TARGET may optionally be followed
 #			by ":" and a syslog log level (e.g, REJECT:info or

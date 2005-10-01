@@ -21,7 +21,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-09-20</pubdate>
+    <pubdate>2005-10-01</pubdate>
 
     <copyright>
       <year>2005</year>
@@ -48,7 +48,7 @@
   </caution>
 
   <section>
-    <title>What are Shorewall Macros?</title>
+    <title>Overview of Shorewall Macros?</title>
 
     <para>Shorewall macros allow a symbolic name to be associated with a
     series of one or more iptables rules. The symbolic name may appear in the
@@ -78,9 +78,9 @@
         macro.</para>
 
         <programlisting>#
-# Shorewall 2.2 /usr/share/shorewall/macro.AllowSMB
+# Shorewall 3.0 /usr/share/shorewall/macro.SMB
 #
-#       Allow Microsoft SMB traffic. You need to invoke this macro in
+#       Handle Microsoft SMB traffic. You need to invoke this macro in
 #       both directions.
 #
 ######################################################################################
@@ -105,6 +105,79 @@ PARAM    -              -               tcp     135,139,445
         url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>).</para>
       </listitem>
     </orderedlist>
+
+    <para>Most Standard Macros are <firstterm>parameterized</firstterm>. That
+    means that you specify what you want to do (ACCEPT, DROP, REJECT, etc.)
+    when you invoke the macro. The SMB macro shown above is parameterized
+    (note PARAM in the TARGET column). When invoking a parameterized macro,
+    you follow the name of the macro with a slash ("/") and the action that
+    you want to substitute for PARAM.</para>
+
+    <para>Example:</para>
+
+    <blockquote>
+      <para>/etc/shorewall/rules:</para>
+
+      <programlisting>#ACTION      SOURCE        DEST         PROTO   DEST PORT(S)
+SMB/ACCEPT   loc           fw         </programlisting>
+
+      <para>The above is equivalent to coding the following series of
+      rules:</para>
+
+      <programlisting>#TARGET      SOURCE        DEST         PROTO   DEST PORT(s)
+ACCEPT       loc           fw           udp     135,445
+ACCEPT       loc           fw           udp     137:139
+ACCEPT       loc           fw           udp     1024:   137
+ACCEPT       loc           fw           tcp     135,139,445</programlisting>
+    </blockquote>
+
+    <para>Logging is covered in <link linkend="Logging">a following
+    section</link>. The other columns are treated as follows:</para>
+
+    <variablelist>
+      <varlistentry>
+        <term>SOURCE and DEST</term>
+
+        <listitem>
+          <para>If the rule in the macro file specifies a value and the
+          invocation of the rule also specifies a value then the value in the
+          invocation is appended to the value in the rule using ":" as a
+          separator.</para>
+
+          <para>Example:</para>
+
+          <blockquote>
+            <para>/etc/shorewall/macro.SMTP</para>
+
+            <programlisting>#TARGET          SOURCE   DEST            PROTO    DEST PORT(S)
+PARAM            -        loc             tcp      25</programlisting>
+
+            <para>/etc/shorewall/rules</para>
+
+            <programlisting>#ACTION          SOURCE   DEST            PROTO    DEST PORT(S)
+SMTP/DNAT:info   net      192.168.1.5</programlisting>
+
+            <para>This would be equivalent to coding the following directly in
+            /etc/shorewall/rules</para>
+
+            <programlisting>#ACTION          SOURCE   DEST            PROTO    DEST PORT(S)
+DNAT:info        net      loc:192.168.1.5 tcp      25</programlisting>
+          </blockquote>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>Remaining columns</term>
+
+        <listitem>
+          <para>Any value in the invocation replaces the value in the rule in
+          the macro.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+
+    <para>One remaining restriction must be mentioned: macros that are invoked
+    from actions cannot themselves invoke other actions.</para>
   </section>
 
   <section>
@@ -339,7 +412,7 @@ PARAM    -              -               tcp     135,139,445
 LogAndAccept loc         $FW         tcp      22</programlisting>
   </section>
 
-  <section>
+  <section id="Logging">
     <title>Macros and Logging</title>
 
     <para>Specifying a log level in a rule that invokes a user- or

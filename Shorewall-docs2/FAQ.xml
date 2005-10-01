@@ -17,7 +17,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-09-30</pubdate>
+    <pubdate>2005-10-01</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -998,21 +998,6 @@ LOGBURST=""</programlisting>
         </varlistentry>
 
         <varlistentry>
-          <term>newnotsyn</term>
-
-          <listitem>
-            <para>The packet is being logged because it is a TCP packet that
-            is not part of any current connection yet it is not a syn packet.
-            Options affecting the logging of such packets include <emphasis
-            role="bold">NEWNOTSYN</emphasis> and <emphasis
-            role="bold">LOGNEWNOTSYN</emphasis> in <ulink
-            url="Documentation.htm#Conf">
-            <filename>/etc/shorewall/shorewall.conf</filename>
-            </ulink>.</para>
-          </listitem>
-        </varlistentry>
-
-        <varlistentry>
           <term>INPUT or FORWARD</term>
 
           <listitem>
@@ -1768,8 +1753,8 @@ eth0               eth1                        # eth1 = interface to local netwo
       behind the firewall, I get <quote>operation not permitted</quote>. How
       can I use nmap with Shorewall?"</title>
 
-      <para>Edit /etc/shorewall/shorewall.conf and change
-      <quote>NEWNOTSYN=No</quote> to <quote>NEWNOTSYN=Yes</quote> then restart
+      <para>Temporarily remove and rejNotSyn, dropNotSyn and dropInvalid rules
+      from <filename>/etc/shorewall/rules</filename> and restart
       Shorewall.</para>
     </section>
 

@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-09-30</pubdate>
+    <pubdate>2005-10-01</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -646,18 +646,6 @@ NET_OPTIONS=blacklist,norfc1918</programlisting>
                     <para><emphasis role="bold">DO NOT SPECIFY arp_ignore FOR
                     ANY INTERFACE INVOLVED IN PROXY ARP</emphasis>.</para>
                   </warning></para>
-              </listitem>
-            </varlistentry>
-
-            <varlistentry>
-              <term>newnotsyn</term>
-
-              <listitem>
-                <para>This option overrides <link
-                linkend="Conf">NEWNOTSYN=No</link> for packets arriving on
-                this interface. In other words, packets coming in on this
-                interface are processed as if NEWNOTSYN=Yes had been specified
-                in <xref linkend="Conf" />.</para>
               </listitem>
             </varlistentry>
 
@@ -3149,57 +3137,6 @@ eth0                  eth1            206.124.146.176</programlisting>
           be a valid syslogd log level. If you don't want to log these
           connection requests, set to the empty value (e.g.,
           MACLIST_LOG_LEVEL="").</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>NEWNOTSYN</term>
-
-        <listitem>
-          <para>When set to <quote>Yes</quote> or <quote>yes</quote>,
-          Shorewall will filter TCP packets that are not part of an
-          established connection and that are not SYN packets (SYN flag on -
-          ACK flag off). If set to <quote>No</quote>, Shorewall will silently
-          drop such packets. If not set or set to the empty value (e.g.,
-          <quote>NEWNOTSYN=</quote>), NEWNOTSYN=No is assumed.</para>
-
-          <para>If you have a HA setup with failover to another firewall, you
-          should have NEWNOTSYN=Yes on both firewalls. You should also select
-          NEWNOTSYN=Yes if you have asymmetric routing.</para>
-
-          <note>
-            <para>I find that NEWNOTSYN=No tends to result in lots of "stuck"
-            connections because any network timeout during TCP session tear
-            down results in retries being dropped (Netfilter has removed the
-            connection from the conntrack table but the end-points haven't
-            completed shutting down the connection). I therefore have chosen
-            NEWNOTSYN=Yes as the default value and I advise caution in using
-            NEWNOTSYN=Yes.</para>
-
-            <para>If you are looking for a way to defeat "stealth TCP scans"
-            then I recommend the <emphasis role="bold">tcpflags</emphasis>
-            interface option in <link
-            linkend="Interfaces">/etc/shorewall/interfaces</link> rather than
-            NEWNOTSYN=No.</para>
-          </note>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>LOGNEWNOTSYN</term>
-
-        <listitem>
-          <para>Shorewall can be configured to drop non-SYN TCP packets that
-          are not part of an existing connection (see NEWNOTSYN above). If you
-          would like to log these packets, set LOGNEWNOTSYN to the <ulink
-          url="shorewall_logging.html">syslog level</ulink> at which you want
-          the packets logged. Example: LOGNEWNOTSYN=ULOG|</para>
-
-          <note>
-            <para>Packets logged under this option are usually the result of a
-            "stuck" connection rather than as the result of an attempt to
-            breach your firewall.</para>
-          </note>
         </listitem>
       </varlistentry>
 

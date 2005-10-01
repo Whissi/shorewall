@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-08-27</pubdate>
+    <pubdate>2005-09-30</pubdate>
 
     <copyright>
       <year>2004</year>
@@ -194,14 +194,14 @@
     <programlisting>#ZONE           DISPLAY              COMMENT
 net             Internet             The big bad net
 loc             Local                Local LAN
-<emphasis role="bold">rem           Remote             Remote LAN</emphasis></programlisting>
+<emphasis role="bold">rem             Remote               Remote LAN</emphasis></programlisting>
 
     <para><filename>/etc/shorewall/interfaces</filename>:</para>
 
     <programlisting>#ZONE           INTERFACE          BROADCAST          OPTION
 net             eth0               detect             norft1918,routefilter
 loc             eth1               detect
-<emphasis role="bold">rem           tun0             192.168.10.0/24</emphasis></programlisting>
+<emphasis role="bold">rem             tun0               192.168.10.0/24</emphasis></programlisting>
 
     <para>The /etc/shorewall/hosts file comes into play when:</para>
 
@@ -230,21 +230,21 @@ loc             eth1               detect
     <programlisting>#ZONE           DISPLAY              COMMENT
 net             Internet             The big bad net
 loc             Local                Local LAN
-<emphasis role="bold">rem1          Remote1            Remote LAN 1
-rem2          Remote2            Remote LAN 2</emphasis></programlisting>
+<emphasis role="bold">rem1            Remote1              Remote LAN 1
+rem2            Remote2              Remote LAN 2</emphasis></programlisting>
 
     <para><filename>/etc/shorewall/interfaces</filename>:</para>
 
     <programlisting>#ZONE           INTERFACE          BROADCAST          OPTION
 net             eth0               detect             norft1918,routefilter
 loc             eth1               detect
-<emphasis role="bold">-             tun+             -</emphasis></programlisting>
+<emphasis role="bold">-               tun+               -</emphasis></programlisting>
 
     <para>/etc/shorewall/hosts:</para>
 
     <programlisting>#ZONE           HOST(S)            OPTIONS
-<emphasis role="bold">rem1          tun+:10.0.0.0/24
-rem2          tun+:10.0.1.0/24</emphasis></programlisting>
+<emphasis role="bold">rem1            tun+:10.0.0.0/24
+rem2            tun+:10.0.1.0/24</emphasis></programlisting>
 
     <para>The <filename>/etc/shorewall/hosts</filename> file is also used with
     <ulink url="IPSEC-2.6.html">kernel 2.6 native IPSEC</ulink>.</para>

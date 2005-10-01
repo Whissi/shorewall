@@ -2,6 +2,7 @@
 
 # tcstart from tc4shorewall       Version 0.5
 # (c) 2005 Arne Bernin <arne@ucbering.de>
+# Modified by Tom Eastep for integration into the Shorewall distribution
 # published under GPL Version 2
 
 created_tmp_dir=
@@ -86,7 +87,7 @@ setup_traffic_shaping()
 	fi
     }
 
-	# get given outbandwidth for device
+    # get given outbandwidth for device
     get_outband_for_dev() {
 	local device inband outband
 	while read device inband outband; do

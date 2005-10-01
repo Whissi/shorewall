@@ -243,8 +243,6 @@ finish_chain_section() # $1 = canonical chain $2 = state list
     [ -n "$FASTACCEPT" ] || run_iptables -A $1 -m state --state $2 -j ACCEPT
 
     if list_search RELATED $(separate_list $2) ; then
-	[ -z "$NEWNOTSYN" ]  && run_iptables -A $1 -m state --state NEW -p tcp ! --syn -j newnotsyn
-
 	if is_policy_chain $1 ; then
 	    if eval test -n \"\$${1}_synparams\" ; then
 		if [ $SECTION = DONE ]; then
@@ -295,7 +293,7 @@ finish_section() # $1 = Section(s)
 # variable exists_${1} and set its value to Yes to indicate that the chain now
 # exists.
 #
-createchain() # $1 = chain name, $2 = If "yes", create newnotsyn rule
+createchain() # $1 = chain name, $2 = If "yes", do section-end processing
 {
     local c=$(chain_base $1)
 
@@ -310,9 +308,6 @@ createchain() # $1 = chain name, $2 = If "yes", create newnotsyn rule
 		finish_chain_section $1 ESTABLISHED
 		;;
 	esac
-
-	[ -z "$NEWNOTSYN" ] && \
-	    run_iptables -A $1 -m state --state NEW -p tcp ! --syn -j newnotsyn
     fi
 
     eval exists_${c}=Yes
@@ -1167,7 +1162,7 @@ validate_interfaces_file() {
 	    case $option in
 		-)
 		    ;;
-		dhcp|tcpflags|newnotsyn|arp_filter|routefilter|logmartians|sourceroute|blacklist|proxyarp|maclist|nosmurfs|upnp|-)
+		dhcp|tcpflags|arp_filter|routefilter|logmartians|sourceroute|blacklist|proxyarp|maclist|nosmurfs|upnp|-)
 		    ;;
 		norfc1918)
 		    addr=$(ip -f inet addr show $interface 2> /dev/null | grep inet | head -n1)
@@ -1483,7 +1478,7 @@ validate_hosts_file() {
 
 	   for option in $(separate_list $options) ; do
 	       case $option in
-		   maclist|norfc1918|blacklist|tcpflags|nosmurfs|newnotsyn|-)
+		   maclist|norfc1918|blacklist|tcpflags|nosmurfs|-)
 		       ;;
 		   ipsec)
 		       [ -n "$POLICY_MATCH" ] || \
@@ -4546,7 +4541,7 @@ map_old_action() # $1 = Potential Old Action
 #
 process_actions1() {
 
-    ACTIONS="dropBcast allowBcast dropNonSyn dropNotSyn rejNotSyn dropInvalid allowInvalid allowinUPnP allowoutUPnP forwardUPnP"
+    ACTIONS="dropBcast allowBcast dropNotSyn rejNotSyn dropInvalid allowInvalid allowinUPnP allowoutUPnP forwardUPnP"
 
     USEDACTIONS=
 
@@ -4785,15 +4780,6 @@ process_actions3() {
 			    run_iptables -A $xchain -d $address -j ACCEPT
 			done
 		    fi
-		fi
-		;;
-	    dropNonSyn)
-		error_message "WARNING: \"dropNonSyn\" has been replaced by \"dropNotSyn\""
-
-		if [ "$COMMAND" != check ]; then
-		    [ -n "$xlevel" ] && \
-			log_rule_limit ${xlevel%\!} $xchain dropNonSyn DROP "" "$xtag" -A -p tcp ! --syn
-		    run_iptables -A $xchain -p tcp ! --syn -j DROP
 		fi
 		;;
 	    dropNotSyn)
@@ -7408,30 +7394,6 @@ initialize_netfilter () {
 
     [ -f $accounting_file ] && setup_accounting $accounting_file
 
-    if [ -z "$NEWNOTSYN" ]; then
-	createchain newnotsyn no
-
-	for host in $(find_hosts_by_option newnotsyn); do
-	    ipsec=${host%^*}
-	    host=${host#*^}
-	    [ -n "$POLICY_MATCH" ] && policy="-m policy --pol $ipsec --dir in" || policy=
-	    interface=${host%%:*}
-	    network=${host#*:}
-	    run_iptables -A newnotsyn -i $interface $(match_source_hosts $network) $policy -p tcp --tcp-flags ACK ACK -j ACCEPT
-	    run_iptables -A newnotsyn -i $interface $(match_source_hosts $network) $policy -p tcp --tcp-flags RST RST -j ACCEPT
-	    run_iptables -A newnotsyn -i $interface $(match_source_hosts $network) $policy -p tcp --tcp-flags FIN FIN -j ACCEPT
-	    run_iptables -A newnotsyn -i $interface $(match_source_hosts $network) $policy -j RETURN
-	done
-
-	run_user_exit newnotsyn
-
-	if [ -n "$LOGNEWNOTSYN" ]; then
-	    log_rule $LOGNEWNOTSYN newnotsyn DROP
-	fi
-
-	run_iptables -A newnotsyn -j DROP
-    fi
-
     createchain reject	no
     createchain dynamic no
     createchain smurfs no
@@ -8857,8 +8819,6 @@ do_initialize() {
     LOG_MARTIANS=
     DETECT_DNAT_IPADDRS=
     MUTEX_TIMEOUT=
-    NEWNOTSYN=
-    LOGNEWNOTSYN=
     FORWARDPING=
     MACLIST_DISPOSITION=
     MACLIST_LOG_LEVEL=
@@ -9016,8 +8976,6 @@ do_initialize() {
     FORWARDPING=$(added_param_value_no FORWARDPING $FORWARDPING)
     [ -n "$FORWARDPING" ] && \
 	startup_error "FORWARDPING=Yes is no longer supported"
-
-    NEWNOTSYN=$(added_param_value_yes NEWNOTSYN $NEWNOTSYN)
 
     maclist_target=reject
 

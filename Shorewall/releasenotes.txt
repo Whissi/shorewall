@@ -20,6 +20,11 @@ New Features in 2.5.7:
    "IPv4" and "IPV4" are synonyms for "ipv4". In addition, "IPSEC",
    "ipsec4" and "IPSEC4" are recognized synonyms for "ipsec".
 
+3) The NEWNOTSYN and LOGNEWNOTSYN options in shorewall.conf have been
+   removed as have the 'newnotsyn' options in /etc/shorewall/interfaces
+   and /etc/shorewall/hosts. See the Migration Considerations for
+   instructions if you wish to block "new-not-syn" TCP packets.
+
 Migration Considerations:
 
 1) The "monitor" command has been eliminated.
@@ -199,6 +204,23 @@ Migration Considerations:
     if it is executable but will not source it. Users of third-party TC
     scripts like WonderShaper should see no change provided that
     execute permission is placed on /etc/shorewall/tcstart.
+
+11) The NEWNOTSYN and LOGNEWNOTSYN options in shorewall.conf have been
+    removed as have the 'newnotsyn' options in /etc/shorewall/interfaces
+    and /etc/shorewall/hosts.
+
+    TCP new-not-syn packets may be blocked using the 'dropNonSyn' or
+    'rejNonSyn' built-in actions.
+
+    Example: Reject all new-not-syn packets from the net and log them at
+             the 'info' level.
+
+	#ACTION          SOURCE           DEST           PROTO
+	SECTION NEW
+	rejNonSyn:info   net              all            tcp
+
+    Note that the rule is added at the front of the NEW section of the
+    rules file.
 
 New Features in Shorewall 2.5.*
 

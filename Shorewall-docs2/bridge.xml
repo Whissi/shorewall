@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-09-30</pubdate>
+    <pubdate>2005-10-02</pubdate>
 
     <copyright>
       <year>2004</year>
@@ -69,8 +69,13 @@
       </listitem>
 
       <listitem>
-        <para>A router cannot forward broadcast packets while a bridge
-        can.</para>
+        <para>In most configurations, routers don't forward broadcast packets
+        while a bridges do.</para>
+
+        <note>
+          <para>Section 4 of RFC 1812 describes the conditions under which a
+          router may or must forward broadcasts.</para>
+        </note>
       </listitem>
     </orderedlist>
   </section>
@@ -172,7 +177,7 @@
     configuration information may be found at <ulink
     url="http://bridge.sf.net">http://bridge.sf.net</ulink>.</para>
 
-    <para>Unfortunately, Linux distributions don't have good bridge
+    <para>Unfortunately, many Linux distributions don't have good bridge
     configuration tools and the network configuration GUIs don't detect the
     presence of bridge devices. Here is an excerpt from a Debian
     <filename>/etc/network/interfaces</filename> file for a two-port bridge

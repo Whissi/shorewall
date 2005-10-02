@@ -5375,7 +5375,7 @@ process_rule() # $1 = target
 				else
 				    if [ -n "$loglevel" -a -z "$natrule" ]; then
 					log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $user \
-					    $(fix_bang $proto $sports $multiport $cli $(dest_ip_range $srv) $dports) $state
+					     $state $(fix_bang $proto $sports $multiport $cli $(dest_ip_range $srv) $dports)
 				    fi
 
 				    if [ -n "$nonat" ]; then
@@ -5393,7 +5393,7 @@ process_rule() # $1 = target
 		    else
 			if [ -n "$loglevel" -a -z "$natrule" ]; then
 			    log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $user \
-				$(fix_bang $proto $sports $multiport $cli $dports) $state
+				 $state $(fix_bang $proto $sports $multiport $cli $dports)
 			fi
 
 			[ -n "$nonat" ] && \
@@ -5401,7 +5401,7 @@ process_rule() # $1 = target
 			    $cli $sports $dports $ratelimit $user -j RETURN
 
 			    [ "$logtarget" != NONAT ] && \
-				run_iptables2 -A $chain $proto $multiport $cli $sports \
+				run_iptables2 -A $chain $state $proto $multiport $cli $sports \
 				$dports $ratelimit $user -j $target
 		    fi
 		fi
@@ -5419,7 +5419,7 @@ process_rule() # $1 = target
 		    for adr in $(separate_list $addr); do
 			if [ -n "$loglevel" ]; then
 			    log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $user \
-				$(fix_bang $proto $multiport $cli $dest_interface $sports $dports -m conntrack --ctorigdst $adr) $state
+				 $state $(fix_bang $proto $multiport $cli $dest_interface $sports $dports -m conntrack --ctorigdst $adr)
 			fi
 
 			if [ "$logtarget" != LOG ]; then
@@ -5437,7 +5437,7 @@ process_rule() # $1 = target
 		else
 		    if [ -n "$loglevel" ]; then
 			log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $user \
-			    $(fix_bang $proto $multiport $cli $dest_interface $sports $dports) $state
+			     $state $(fix_bang $proto $multiport $cli $dest_interface $sports $dports)
 		    fi
 
 		    if [ "$logtarget" != LOG ]; then

@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-10-02</pubdate>
+    <pubdate>2005-10-03</pubdate>
 
     <copyright>
       <year>2004</year>
@@ -168,6 +168,145 @@
 
     <variablelist>
       <varlistentry>
+        <term>ERROR: Invalid nested zone syntax: :&lt;parent-zone&gt;</term>
+
+        <listitem>
+          <para>The zone name in the ZONE column of
+          <filename>/etc/shorewall/zones</filename> may not start with a colon
+          (":").</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>ERROR: Sub-zones of the firewall zone are not allowed</term>
+
+        <listitem>
+          <para>The firewall zone may not be defined to have zones nested
+          within it.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>ERROR: Parent zone not defined: &lt;parent-zone&gt;</term>
+
+        <listitem>
+          <para>When defining nested zones in
+          <filename>/etc/shorewall/zones</filename>, the parent zone must be
+          defined before any zones nested inside of it.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>ERROR: Zone name longer than 5 characters: &lt;zone&gt;</term>
+
+        <listitem>
+          <para>Zone names are restricted to 5 characters or less in
+          length.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>ERROR: Illegal zone name "&lt;zone&gt;" in zones file</term>
+
+        <listitem>
+          <para>The zone name quoted in the error message begins with a digit
+          -- zone names must begin with an alphabetic character.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>ERROR: Reserved zone name "&lt;zone&gt;" in zones file</term>
+
+        <listitem>
+          <para>The names "none" and "all" are reserved and may not be used as
+          zone names in <filename>/etc/shorewall/zones</filename>.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>ERROR: Zone &lt;zone&gt; is defined more than once</term>
+
+        <listitem>
+          <para>There are two records in
+          <filename>/etc/shorewall/zones</filename> that define the named
+          zone.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>ERROR: Your kernel and/or iptables does not support policy
+        match</term>
+
+        <listitem>
+          <para>You have defined a zone of type <emphasis
+          role="bold">ipsec</emphasis> in
+          <filename>/etc/shorewall/zones</filename> or have specified the
+          ipsec option in an <filename>/etc/shorewall/hosts</filename> record
+          but your kernel and/or iptables don't include policy match support
+          -- see <ulink url="IPSEC-2.6.html">this article</ulink> for
+          details.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>ERROR: The firewall zone may not be nested</term>
+
+        <listitem>
+          <para>You have defined a zone of type <emphasis
+          role="bold">firewall</emphasis> to be nested inside another zone.
+          Shorewall does not support such nesting.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>ERROR: OPTIONS not allowed on the firewall zone</term>
+
+        <listitem>
+          <para>The zone of type <emphasis role="bold">firewall</emphasis> may
+          not have any options specified in the OPTIONS, IN OPTIONS or OUT
+          OPTIONS columns of <filename>/etc/shorewall/zones</filename>.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>ERROR: Only one firewall zone may be defined</term>
+
+        <listitem>
+          <para>You may have only one record in
+          <filename>/etc/shorewall/zones</filename> that has type <emphasis
+          role="bold">firewall</emphasis>.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>ERROR: No ipv4 or ipsec Zones Defined</term>
+
+        <listitem>
+          <para>You must define at least one ipv4 or ipsec zone in
+          <filename>/etc/shorewall/zones</filename>.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>ERROR: No Firewall Zone Defined</term>
+
+        <listitem>
+          <para>You must define one (and only one) zone if type <emphasis
+          role="bold">firewall</emphasis> in
+          <filename>/etc/shorewall/zones</filename>.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>ERROR: Invalid Mark or Mask value: &lt;number&gt;</term>
+
+        <listitem>
+          <para>Shorewall-assigned packet and connection marks are limited to
+          the range 1-255.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term>ERROR: Invalid zone definition for zone &lt;zone&gt;</term>
 
         <listitem>
@@ -187,6 +326,29 @@
           <filename>/etc/shorewall/interfaces</filename> or
           <filename>/etc/shorewall/hosts</filename> is not defined in
           <filename>/etc/shorewall/zones</filename>.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>ERROR: The routeback option may not be specified on a multi-zone
+        interface</term>
+
+        <listitem>
+          <para>The ZONE column of a record in
+          <filename>/etc/shorewall/interfaces</filename> was empty ("-"). Such
+          interfaces may not specify the <emphasis
+          role="bold">routeback</emphasis> option.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>ERROR: The "detectnets" option may not be used with a wild-card
+        interface</term>
+
+        <listitem>
+          <para>The interface name in the INTERFACE column is a wild-card
+          (ends with "+"). Such interfaces may not specify the <emphasis
+          role="bold">detectnets</emphasis> option.</para>
         </listitem>
       </varlistentry>
 
@@ -211,6 +373,19 @@
       </varlistentry>
 
       <varlistentry>
+        <term>ERROR: The 'norfc1918' option may not be specified on an
+        interface with an RFC 1918 address. Interface:
+        &lt;interface&gt;</term>
+
+        <listitem>
+          <para>The &lt;interface&gt; named in the message is configured with
+          an IP address that is reserved by RFC 1918 -- that address is
+          incompatible with the <emphasis role="bold">norfc1918</emphasis>
+          interface option.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term>ERROR: Unknown interface (&lt;interface&gt;) in record
         "&lt;record&gt;"</term>
 
@@ -223,6 +398,19 @@
       </varlistentry>
 
       <varlistentry>
+        <term>ERROR: Invalid HOST(S) column contents: &lt;hosts&gt;</term>
+
+        <listitem>
+          <para>The contests of the HOST(S) column in a record from
+          <filename>/etc/shorewall/hosts</filename> does not follow the proper
+          syntax for that column in that it doesn't contain at least one colon
+          (":"). See the <ulink
+          url="Documentation.htm#Hosts">/etc/shorewall/hosts
+          documentation</ulink>.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term>ERROR: Bridged interfaces may not be defined in
         /etc/shorewall/interfaces: &lt;interface&gt;[:&lt;address&gt;]</term>
 
@@ -230,19 +418,6 @@
           <para>The named interface appears in /etc/shorewall/hosts and
           appears as a bridge port (after a colon) but is also defined in
           <filename>/etc/shorewall/interfaces</filename>.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>ERROR: Your kernel and/or iptables does not support policy
-        match: ipsec</term>
-
-        <listitem>
-          <para>You have specified the <emphasis role="bold">ipsec</emphasis>
-          option in an <filename>/etc/shorewall/hosts</filename> record but
-          your kernel and/or iptables is missing policy match support. That
-          support in turn requires a set of ipsec-netfilter patches in order
-          to work correctly.</para>
         </listitem>
       </varlistentry>
 
@@ -278,18 +453,6 @@
           <emphasis>&lt;record&gt;</emphasis> from
           <filename>/etc/shorewall/tunnels</filename> but is not defined in
           <filename>/etc/shorewall/zones</filename>.</para>
-        </listitem>
-      </varlistentry>
-
-      <varlistentry>
-        <term>ERROR: Your kernel and/or iptables does not support policy
-        match</term>
-
-        <listitem>
-          <para>Your /etc/shorewall/ipsec file is non-empty but your kernel
-          and/or iptables do not include policy match support. That support in
-          turn requires a set of ipsec-netfilter patches in order to work
-          correctly.</para>
         </listitem>
       </varlistentry>
 
@@ -568,7 +731,7 @@
 
         <listitem>
           <para>If you need help understanding that warning message then you
-          probably need to take up another hobby or line of work. </para>
+          probably need to take up another hobby or line of work.</para>
         </listitem>
       </varlistentry>
     </variablelist>

@@ -514,7 +514,7 @@ determine_zones()
 
     ZONES=
 
-    [ "$IPSECFILE" = zones ] && new_zone_file=Yes
+    [ "$IPSECFILE" = zones ] && new_zone_file=Yes || test -n "${FW:=fw}"
 
     while read zone type rest; do
 	expandv zone type

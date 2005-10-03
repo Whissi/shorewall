@@ -431,6 +431,36 @@
       </varlistentry>
 
       <varlistentry>
+        <term>ERROR: &lt;policy record&gt;: NONE policy not allowed to/from
+        the &lt;firewall-zone-name&gt; zone</term>
+
+        <listitem>
+          <para>Shorewall does not support a policy of NONE when the source or
+          destination zone is the firewall itself.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>ERROR: &lt;policy record&gt;: NONE policy not allowed with
+        "all"</term>
+
+        <listitem>
+          <para>Shorewall does not support a policy of NONE when the source or
+          destination zone is "all".</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>ERROR: Duplicate policy: &lt;source zone&gt; &lt;destination
+        zone&gt; &lt;policy&gt; </term>
+
+        <listitem>
+          <para>There is an earlier record in the file with the same
+          &lt;source zone&gt; and &lt;destination zone&gt;</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term>ERROR: Can't determine the IP address of
         &lt;interface&gt;</term>
 
@@ -501,6 +531,36 @@
           <filename>/etc/shorewall/shorewall.conf</filename> but it appears
           that your kernel and/or iptables do not have physdev match
           support.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>ERROR: Invalid Action Name: &lt;action&gt;</term>
+
+        <listitem>
+          <para>The &lt;action&gt; contains one of the following characters:
+          ".", "-", or "%". Those characters are not allowed in an action
+          name.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>ERROR: Invalid Macro Parameter in rule "&lt;rule&gt;"</term>
+
+        <listitem>
+          <para>The value being passed to a parameterized macro is not ACCEPT,
+          DROP, REJECT, LOG, QUEUE or CONTINUE.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>ERROR: Missing Action File: action.&lt;action name&gt;</term>
+
+        <listitem>
+          <para>The specified &lt;action name&gt; has an entry in
+          <filename>/usr/share/shorewall/actions.std</filename> or in
+          <filename>/etc/shorewall/actions</filename> but the corresponding
+          action file does not exist on the CONFIG_PATH.</para>
         </listitem>
       </varlistentry>
 

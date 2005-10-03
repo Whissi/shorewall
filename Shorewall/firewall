@@ -561,6 +561,7 @@ determine_zones()
 		    merge_zone
 		    ;;
 		firewall)
+		    [ -n "$FW" ] && startup_error "Only one firewall zone may be defined"
 		    list_search $zone $ZONES && startup_error "Zone $zone is defined more than once"
 		    [ -n "$parents" ] && startup_error "The firewall zone may not be nested"
 		    for r in $rest; do
@@ -1442,7 +1443,7 @@ validate_hosts_file() {
 	       hosts=${hosts#*:}
 	       ;;
 	   *)
-	       fatal_error "Invalid HOST(S) column contents: $hosts"
+	       startup_error "Invalid HOST(S) column contents: $hosts"
 	       ;;
        esac
 
@@ -3727,6 +3728,7 @@ check_config() {
     determine_zones
 
     display_list "Zones:" $ZONES
+    display_list "Firewall Zone:" $FW
 
     setup_ipsec
 

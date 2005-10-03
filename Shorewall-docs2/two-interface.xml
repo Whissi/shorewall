@@ -12,7 +12,7 @@
       <surname>Eastep</surname>
     </author>
 
-    <pubdate>2005-09-30</pubdate>
+    <pubdate>2005-10-03</pubdate>
 
     <copyright>
       <year>2002-</year>
@@ -642,6 +642,15 @@ DNAT       net       loc:10.10.10.2:80  tcp       5000</programlisting>
     <para>At this point, modify <filename
     class="directory">/etc/shorewall/</filename><filename>rules</filename> to
     add any <acronym>DNAT</acronym> rules that you require.</para>
+
+    <important>
+      <para>When testing DNAT rules like those shown above, you must test from
+      a client OUTSIDE YOUR FIREWALL (in the 'net' zone). You cannot test
+      these rules from inside the firewall!</para>
+
+      <para>For DNAT troubleshooting tips, <ulink url="FAQ.htm#faq1a">see FAQs
+      1a and 1b</ulink>.</para>
+    </important>
   </section>
 
   <section>

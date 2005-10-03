@@ -365,13 +365,12 @@
      <command>shorewall try &lt;configuration-directory&gt; [ &lt;timeout&gt; ]</command></programlisting>
 
     <para>If a <emphasis>&lt;configuration-directory</emphasis>&gt; is
-    specified, each time that Shorewall is going to use a file in <filename
-    class="directory">/etc/shorewall</filename> it will first look in
-    the<emphasis> &lt;configuration-directory&gt;</emphasis> . If the file is
-    present in the <emphasis>&lt;configuration-directory&gt;,</emphasis> that
-    file will be used; otherwise, the file in <filename
-    class="directory">/etc/shorewall</filename> will be used. When changing
-    the configuration of a production firewall, I recommend the
+    specified, each time that Shorewall is going to read a file, it will first
+    look in the<emphasis> &lt;configuration-directory&gt;</emphasis> . If the
+    file is present in the
+    <emphasis>&lt;configuration-directory&gt;,</emphasis> that file will be
+    used; otherwise, the directories in the CONFIG_PATH will be searched. When
+    changing the configuration of a production firewall, I recommend the
     following:</para>
 
     <itemizedlist>

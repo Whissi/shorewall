@@ -28,7 +28,7 @@
 #       shown below. Simply run this script to revert to your prior version of
 #       Shoreline Firewall.
 
-VERSION=2.5.6
+VERSION=2.5.7
 
 usage() # $1 = exit status
 {
@@ -48,8 +48,8 @@ restore_directory() # $1 = directory to restore
 	    exit 1
 	fi
     fi
-}	
-    
+}
+
 restore_file() # $1 = file to restore, $2 = (Optional) Directory to restore from
 {
     if [ -n "$2" ]; then
@@ -65,8 +65,8 @@ restore_file() # $1 = file to restore, $2 = (Optional) Directory to restore from
 	    echo "ERROR: Could not restore $1"
 	    exit 1
         fi
-    fi    
-    
+    fi
+
     if [ -f ${1}-${VERSION}.bkout -o -L ${1}-${VERSION}.bkout ]; then
 	if (mv -f ${1}-${VERSION}.bkout $1); then
 	    echo

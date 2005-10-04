@@ -22,7 +22,7 @@
 #       Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
 #
 
-VERSION=2.5.6
+VERSION=2.5.7
 
 usage() # $1 = exit status
 {
@@ -59,10 +59,10 @@ backup_directory() # $1 = directory to backup
 	fi
     fi
 }
-    
+
 backup_file() # $1 = file to backup, $2 = (optional) Directory in which to create the backup
 {
-    if [ -z "$PREFIX" ]; then 
+    if [ -z "$PREFIX" ]; then
 	if [ -f $1 -a ! -f ${1}-${VERSION}.bkout ]; then
 	    if [ -n "$2" ]; then
 		if [ -d $2 ]; then
@@ -175,7 +175,7 @@ elif [ -d /etc/apt -a -e /usr/bin/dpkg ]; then
 elif [ -f /etc/slackware-version ] ; then
     DEST="/etc/rc.d"
     INIT="rc.firewall"
-elif [ -f /etc/arch-release ] ; then 
+elif [ -f /etc/arch-release ] ; then
       DEST="/etc/rc.d"
       INIT="shorewall"
       ARCHLINUX=yes
@@ -238,7 +238,7 @@ fi
 
 if [ -n "$ARCHLINUX" ] ; then
    sed -e 's!LOGFILE=/var/log/messages!LOGFILE=/var/log/messages.log!' -i ${PREFIX}/etc/shorewall/shorewall.conf
-fi 
+fi
 #
 # Install the zones file
 #

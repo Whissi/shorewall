@@ -5306,6 +5306,7 @@ process_rule() # $1 = target
 		proto=
 		;;
 	    ipp2p)
+		[ -n "$IPP2P_MATCH" ] || fatal_error "Your kernel and/or iptables does not have IPP2P match support. Rule: \"$rule\""
 		dports="-m ipp2p --${port:-ipp2p}"
 		port=
 		proto=tcp

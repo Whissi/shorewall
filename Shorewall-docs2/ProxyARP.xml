@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-04-17</pubdate>
+    <pubdate>2005-10-04</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -182,8 +182,38 @@ iface eth1 inet static
     <para>A word of warning is in order here. ISPs typically configure their
     routers with a long ARP cache timeout. If you move a system from parallel
     to your firewall to behind your firewall with Proxy ARP, it will probably
-    be HOURS before that system can communicate with the internet. There are a
-    couple of things that you can try:</para>
+    be HOURS before that system can communicate with the internet.</para>
+
+    <para>If you sniff traffic on the firewall's external interface, you can
+    see incoming traffic for the internal system(s) but the traffic is never
+    sent out the internal interface.</para>
+
+    <para>You can determine if your ISP's gateway ARP cache is stale using
+    ping and tcpdump. Suppose that we suspect that the gateway router has a
+    stale ARP cache entry for 130.252.100.19. On the firewall, run tcpdump as
+    follows:</para>
+
+    <programlisting>tcpdump -nei eth0 icmp</programlisting>
+
+    <para>Now from 130.252.100.19, ping the ISP's gateway (which we will
+    assume is 130.252.100.254):</para>
+
+    <programlisting>ping 130.252.100.254</programlisting>
+
+    <para>We can now observe the tcpdump output:</para>
+
+    <programlisting>13:35:12.159321 <emphasis role="bold">0:4:e2:20:20:33</emphasis> 0:0:77:95:dd:19 ip 98: 130.252.100.19 &gt; 130.252.100.254: icmp: echo request (DF)
+13:35:12.207615 0:0:77:95:dd:19 <emphasis role="bold">0:c0:a8:50:b2:57 </emphasis>ip 98: 130.252.100.254 &gt; 130.252.100.177 : icmp: echo reply</programlisting>
+
+    <para>Notice that the source MAC address in the echo request is different
+    from the destination MAC address in the echo reply!! In this case
+    0:4:e2:20:20:33 was the MAC of the firewall's eth0 NIC while
+    0:c0:a8:50:b2:57 was the MAC address of the system on the lower left. In
+    other words, the gateway's ARP cache still associates 130.252.100.19 with
+    the NIC in that system rather than with the firewall's eth0.</para>
+
+    <para>If you have this problem, there are a couple of things that you can
+    try:</para>
 
     <orderedlist>
       <listitem>
@@ -255,29 +285,5 @@ shorewall start</programlisting>
 
       <para>You want the second one by Alexey Kuznetsov.</para>
     </warning>
-
-    <para>You can determine if your ISP's gateway ARP cache is stale using
-    ping and tcpdump. Suppose that we suspect that the gateway router has a
-    stale ARP cache entry for 130.252.100.19. On the firewall, run tcpdump as
-    follows:</para>
-
-    <programlisting>tcpdump -nei eth0 icmp</programlisting>
-
-    <para>Now from 130.252.100.19, ping the ISP's gateway (which we will
-    assume is 130.252.100.254):</para>
-
-    <programlisting>ping 130.252.100.254</programlisting>
-
-    <para>We can now observe the tcpdump output:</para>
-
-    <programlisting>13:35:12.159321 0:4:e2:20:20:33 0:0:77:95:dd:19 ip 98: 130.252.100.19 &gt; 130.252.100.254: icmp: echo request (DF)
-13:35:12.207615 0:0:77:95:dd:19 0:c0:a8:50:b2:57 ip 98: 130.252.100.254 &gt; 130.252.100.177 : icmp: echo reply</programlisting>
-
-    <para>Notice that the source MAC address in the echo request is different
-    from the destination MAC address in the echo reply!! In this case
-    0:4:e2:20:20:33 was the MAC of the firewall's eth0 NIC while
-    0:c0:a8:50:b2:57 was the MAC address of the system on the lower left. In
-    other words, the gateway's ARP cache still associates 130.252.100.19 with
-    the NIC in that system rather than with the firewall's eth0.</para>
   </section>
 </article>

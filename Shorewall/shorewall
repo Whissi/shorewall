@@ -885,8 +885,8 @@ case "$1" in
 	    if [ -f /var/lib/shorewall/zones ]; then
 		echo "Shorewall-$version Zones at $HOSTNAME - $(date)"
 		echo
-		while read zone hosts; do
-		    echo $zone
+		while read zone type hosts; do
+		    echo "$zone ($type)"
 		    for host in $hosts; do
 			echo "   $host"
 		    done

@@ -513,6 +513,8 @@ determine_zones()
     strip_file zones
 
     ZONES=
+    IPV4_ZONES=
+    IPSEC_ZONES=
 
     [ "$IPSECFILE" = zones ] && new_zone_file=Yes || test -n "${FW:=fw}"
 
@@ -552,6 +554,7 @@ determine_zones()
 		ipv4|IPv4|IPV4|plain|-)
 		    list_search $zone $ZONES $FW && startup_error "Zone $zone is defined more than once"
 		    merge_zone
+		    IPV4_ZONES="$IPV4_ZONES $zone"
 		    ;;
 		ipsec|IPSEC|ipsec4|IPSEC4)
 		    list_search $zone $ZONES $FW && startup_error "Zone $zone is defined more than once"
@@ -559,6 +562,7 @@ determine_zones()
 		    eval ${zone}_is_ipsec=Yes
 		    eval ${zone}_is_complex=Yes
 		    merge_zone
+		    IPSEC_ZONES="$IPSEC_ZONES $zone"
 		    ;;
 		firewall)
 		    [ -n "$FW" ] && startup_error "Only one firewall zone may be defined"
@@ -573,9 +577,13 @@ determine_zones()
 		    startup_error "Invalid Zone Type: $type"
 		    ;;
 	    esac
+
+	    eval ${zone}_type=$type
 	else
 	    list_search $zone $ZONES $FW && startup_error "Zone $zone is defined more than once"
 	    ZONES="$ZONES $zone"
+	    IPV4_ZONES="$IPV4_ZONES $zone"
+	    eval ${zone}_type=ipv4
 	fi
     done < $TMP_DIR/zones
 
@@ -2606,6 +2614,7 @@ setup_ipsec() {
 			[ -n "$POLICY_MATCH" ] || fatal_error "Your kernel and/or iptables does not support policy match"
 			eval ${zone}_is_ipsec=Yes
 			eval ${zone}_is_complex=Yes
+			eval ${zone}_type=ipsec4
 			;;
 		    *)
 			fatal_error "Invalid IPSEC column contents"
@@ -3727,7 +3736,9 @@ check_config() {
 
     determine_zones
 
-    display_list "Zones:" $ZONES
+    display_list "IPv4_Zones:" $IPV4_ZONES
+    [ -n "$IPSEC_ZONES" ] && \
+        display_list "IPSEC Zones:" $IPSEC_ZONES
     display_list "Firewall Zone:" $FW
 
     setup_ipsec
@@ -7251,7 +7262,10 @@ initialize_netfilter () {
 
     determine_zones
 
-    display_list "Zones:" $ZONES
+    display_list "IPv4 Zones:" $IPV4_ZONES
+    [ -n "$IPSEC_ZONES" ] && \
+        display_list "IPSEC Zones:" $IPSEC_ZONES
+    display_list "Firewall Zone:" $FW
 
     echo "Validating interfaces file..."
 
@@ -7972,7 +7986,7 @@ activate_rules()
     done
 
     > /var/lib/shorewall/chains
-    > /var/lib/shorewall/zones
+    echo "$FW firewall" > /var/lib/shorewall/zones
     #
     # Create forwarding chains for complex zones and generate jumps for IPSEC source hosts to that chain.
     #
@@ -8014,10 +8028,11 @@ activate_rules()
 	chain2=$(rules_chain $zone $FW)
 
 	eval complex=\$${zone}_is_complex
+	eval type=\$${zone}_type
 
 	[ -n "$complex" ] && frwd_chain=${zone}_frwd
 
-	echo $zone $source_hosts >> /var/lib/shorewall/zones
+	echo $zone $type $source_hosts >> /var/lib/shorewall/zones
 
 	if [ -n "$DYNAMIC_ZONES" ]; then
 	    echo "$FW $zone $chain1" >> /var/lib/shorewall/chains
@@ -8461,7 +8476,7 @@ add_to_zone() # $1...${n-1} = <interface>[:<hosts>] $n = zone
     #
     > /var/lib/shorewall/zones_$$
 
-    while read z hosts; do
+    while read z type hosts; do
 	if [ "$z" = "$zone" ]; then
 	    for h in $hostlist; do
 		list_search $h $hosts
@@ -8477,7 +8492,7 @@ add_to_zone() # $1...${n-1} = <interface>[:<hosts>] $n = zone
 
 	eval ${z}_hosts=\"$hosts\"
 
-	echo "$z $hosts" >> /var/lib/shorewall/zones_$$
+	echo "$z $type $hosts" >> /var/lib/shorewall/zones_$$
     done < /var/lib/shorewall/zones
 
     mv -f /var/lib/shorewall/zones_$$ /var/lib/shorewall/zones

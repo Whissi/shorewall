@@ -1261,6 +1261,14 @@ setup_providers()
     add_a_provider() {
 	local t n iface option
 
+	case $MARKING_CHAIN in
+	    tcfor)
+		;;
+	    *)
+		error_message "WARNING: MARK_IN_FORWARD_CHAIN=No is incompatible with multiple providers"
+		;;
+	esac
+
 	for t in $PROVIDERS; do
 	    if [ "$t" = "$table" ]; then
 		fatal_error "Duplicate Provider: $table, provider: \"$provider\""
@@ -3817,8 +3825,9 @@ refresh_tc() {
         # Flush the TC mangle chains
         #
 	run_iptables -t mangle -F $chain
-
+	[ -n "$MARK_IN_FORWARD_CHAIN" ] && run_iptables -t mangle -F tcpre
         run_iptables -t mangle -F tcout
+        run_iptables -t mangle -F tcpost
         #
         # Process the TC Rules File
         #

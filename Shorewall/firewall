@@ -3145,24 +3145,23 @@ process_tc_rule()
 
     do_ipp2p()
     {
+	[ -n "$IPP2P_MATCH" ] || fatal_error "Your kernel and/or iptables does not have IPP2P match support. Rule: \"$rule\""
+
 	case $proto in
-	    ipp2p|IPP2P|ipp2p-tcp|IPP2P-TCP)
-		[ -n "$IPP2P_MATCH" ] || fatal_error "Your kernel and/or iptables does not have IPP2P match support. Rule: \"$rule\""
+	    ipp2p|IPP2P|ipp2p:tcp|IPP2P:TCP)
 		[ "x$port" = "x-" ] && port="ipp2p"
 		r="${r}-p tcp -m ipp2p --${port} "
 		;;
-	    ipp2p-udp|IPP2P-UDP)
-		[ -n "$IPP2P_MATCH" ] || fatal_error "Your kernel and/or iptables does not have IPP2P match support. Rule: \"$rule\""
+	    ipp2p:udp|IPP2P:UDP)
 		[ "x$port" = "x-" ] && port="ipp2p"
 		r="${r}-p udp -m ipp2p --${port} "
 		;;
-	    ipp2p-both|IPP2P-both)
-		[ -n "$IPP2P_MATCH" ] || fatal_error "Your kernel and/or iptables does not have IPP2P match support. Rule: \"$rule\""
+	    ipp2p:all|IPP2P:ALL)
 		[ "x$port" = "x-" ] && port="ipp2p"
 		r="${r}-m ipp2p --${port} "
 		;;
 	    *)
-		fatal_error "Unknown Protocol $proto. Rule: \"$rule\""
+		fatal_error "Invalid IPP2P Protocol ${proto#*:}. Rule: \"$rule\""
 		;;
 	esac
     }
@@ -3237,7 +3236,7 @@ process_tc_rule()
 	multiport=
 
 	case $proto in
-	    ipp2p*|IPP2P*)
+	    ipp2p|IPP2P|ipp2p:*|IPP2P:*)
 		do_ipp2p
 		;;
 	    icmp|ICMP|1)
@@ -3551,24 +3550,22 @@ process_accounting_rule() {
     }
 
     do_ipp2p() {
+	[ -n "$IPP2P_MATCH" ] || fatal_error "Your kernel and/or iptables does not have IPP2P match support"
 	case $proto in
-	    ipp2p|IPP2P|ipp2p-tcp|IPP2P-TCP)
-		[ -n "$IPP2P_MATCH" ] || fatal_error "Your kernel and/or iptables does not have IPP2P match support"
+	    ipp2p|IPP2P|ipp2p:tcp|IPP2P:TCP)
 		rule="$rule -p tcp -m ipp2p --${port:-ipp2p}"
 		port=
 		;;
-	    ipp2p-udp|IPP2P-udp)
-		[ -n "$IPP2P_MATCH" ] || fatal_error "Your kernel and/or iptables does not have IPP2P match support"
+	    ipp2p:udp|IPP2P:UDP)
 		rule="$rule -p udp -m ipp2p --${port:-ipp2p}"
 		port=
 		;;
-	    ipp2p-all|IPP2P-all)
-		[ -n "$IPP2P_MATCH" ] || fatal_error "Your kernel and/or iptables does not have IPP2P match support"
+	    ipp2p:all|IPP2P:ALL)
 		rule="$rule -m ipp2p --${port:-ipp2p}"
 		port=
 		;;
 	    *)
-		fatal_error "Unknown Protocol $proto"
+		fatal_error "Invalid IPP2P Protocol ${proto#*:}"
 		;;
 	esac
     }
@@ -3610,7 +3607,7 @@ process_accounting_rule() {
     [ -n "$proto" ] && case $proto in
 	-|any|all)
 	    ;;
-	    ipp2p*|IPP2P*)
+	    ipp2p|IPP2P|ipp2p:*|IPP2P:*)
 		do_ipp2p
 		;;
 	*)
@@ -3960,31 +3957,30 @@ add_an_action()
     }
 
     do_ipp2p() {
+	[ -n "$IPP2P_MATCH" ] || fatal_error "Your kernel and/or iptables does not have IPP2P match support. Rule: \"$rule\""
+
 	case $proto in
-	    ipp2p|IPP2P|ipp2p-tcp|IPP2P-TCP)
-		[ -n "$IPP2P_MATCH" ] || fatal_error "Your kernel and/or iptables does not have IPP2P match support. Rule: \"$rule\""
+	    ipp2p|IPP2P|ipp2p:tcp|IPP2P:TCP)
 		dports="-m ipp2p --${port:-ipp2p}"
 		port=
 		proto=tcp
 		do_ports
 		;;
-	    ipp2p-udpIPP2P-udp)
-		[ -n "$IPP2P_MATCH" ] || fatal_error "Your kernel and/or iptables does not have IPP2P match support. Rule: \"$rule\""
+	    ipp2p:udpIPP2P:UDP)
 		dports="-m ipp2p --${port:-ipp2p}"
 		port=
 		proto=udp
 		do_ports
 		;;
-	    ipp2p-all|IPP2P-all)
+	    ipp2p:all|IPP2P:ALL)
 		[ -n "$port" ] && \
 		    fatal_error "Port number not allowed with protocol \"$proto\"; rule: \"$rule\""
-		[ -n "$IPP2P_MATCH" ] || fatal_error "Your kernel and/or iptables does not have IPP2P match support. Rule: \"$rule\""
 		dports="-m ipp2p --${port:-ipp2p}"
 		port=
 		proto=all
 		;;
 	    *)
-		fatal_error "Unknown protocol $proto.  Rule: \"$rule\""
+		fatal_error "Invalid IPP2P protocol ${proto#*:}.  Rule: \"$rule\""
 		;;
 	esac
     }
@@ -4060,7 +4056,7 @@ add_an_action()
 	icmp|ICMP|1)
 	    [ -n "$port" ]  && 	dports="--icmp-type $port"
 	    ;;
-	ipp2p*|IPP2P*)
+	ipp2p|IPP2P|ipp2p:*|IPP2P:*)
 	    do_ipp2p
 	    ;;
 	*)
@@ -5302,31 +5298,30 @@ process_rule() # $1 = target
 	}
 
 	do_ipp2p() {
+	    [ -n "$IPP2P_MATCH" ] || fatal_error "Your kernel and/or iptables does not have IPP2P match support. Rule: \"$rule\""
+
 	    case $proto in
-		ipp2p|IPP2P|ipp2p-tcp|IPP2P-TCP)
-		    [ -n "$IPP2P_MATCH" ] || fatal_error "Your kernel and/or iptables does not have IPP2P match support. Rule: \"$rule\""
+		ipp2p|IPP2P|ipp2p:tcp|IPP2P:TCP)
 		    dports="-m ipp2p --${port:-ipp2p}"
 		    port=
 		    proto=tcp
 		    do_ports
 		    ;;
-		ipp2p-udp|IPP2P-UDP)
-		    [ -n "$IPP2P_MATCH" ] || fatal_error "Your kernel and/or iptables does not have IPP2P match support. Rule: \"$rule\""
+		ipp2p:udp|IPP2P:UDP)
 		    dports="-m ipp2p --${port:-ipp2p}"
 		    port=
 		    proto=udp
 		    do_ports
 		    ;;
-		ipp2p-all|IPP2P-ALL)
+		ipp2p:all|IPP2P:ALL)
 		    [ -n "$port" ] && \
 			fatal_error "Port number not allowed with protocol \"$proto\"; rule: \"$rule\""
-		    [ -n "$IPP2P_MATCH" ] || fatal_error "Your kernel and/or iptables does not have IPP2P match support. Rule: \"$rule\""
 		    dports="-m ipp2p --${port:-ipp2p}"
 		    port=
 		    proto=all
 		    ;;
 		*)
-		    fatal_error "Unknown protocol $proto. Rule:  \"$rule\""
+		    fatal_error "Invalid IPP2P protocol ${proto#*:}. Rule:  \"$rule\""
 		    ;;
 	    esac
 	}
@@ -5412,7 +5407,7 @@ process_rule() # $1 = target
 		    fatal_error "Port number not allowed with protocol \"all\"; rule: \"$rule\""
 		proto=
 		;;
-	    ipp2p*|IPP2P*)
+	    ipp2p|IPP2P|ipp2p:*|IPP2P:*)
 		do_ipp2p
 		;;
 	    *)

@@ -39,6 +39,16 @@ New Features in 2.5.7:
    in shorewall.conf. This is done to ensure that "shorewall refresh" will
    work correctly.
 
+6) Shorewall now supports UDP IPP2P matching. In addition to the "ipp2p"
+   keyword in the PROTOCOL column of the relevant files, the following
+   values may be specified:
+
+	ipp2p:tcp           Equivalent to ipp2p and matches TCP traffic
+			    only.
+	ipp2p:udp           Matches UDP traffic.
+	ipp2p:all           Matches both UDP and TCP traffic. You may
+			    not specify a SOURCE PORT with this PROTOCOL.
+
 Migration Considerations:
 
 1) The "monitor" command has been eliminated.

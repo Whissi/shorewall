@@ -3206,6 +3206,7 @@ process_tc_rule()
 
 	case $proto in
 	    ipp2p|IPP2P)
+		[ -n "$IPP2P_MATCH" ] || fatal_error "Your kernel and/or iptables does not have IPP2P match support. Rule: \"$rule\""
 		[ "x$port" = "x-" ] && port="ipp2p"
 		r="${r}-p tcp -m ipp2p --${port} "
 		;;
@@ -3558,6 +3559,7 @@ process_accounting_rule() {
 	-|any|all)
 	    ;;
 	ipp2p)
+	   [ -n "$IPP2P_MATCH" ] || fatal_error "Your kernel and/or iptables does not have IPP2P match support"
 	    rule="$rule -p tcp -m ipp2p --${port:-ipp2p}"
 	    port=
 	    ;;
@@ -3978,6 +3980,7 @@ add_an_action()
 	    [ -n "$port" ]  && 	dports="--icmp-type $port"
 	    ;;
 	ipp2p)
+	    [ -n "$IPP2P_MATCH" ] || fatal_error "Your kernel and/or iptables does not have IPP2P match support. Rule: \"$rule\""
 	    dports="-m ipp2p --${port:-ipp2p}"
 	    port=
 	    proto=tcp

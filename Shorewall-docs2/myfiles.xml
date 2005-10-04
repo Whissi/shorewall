@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-10-01</pubdate>
+    <pubdate>2005-10-04</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -676,9 +676,9 @@ $EXT_IF         1.5mbit         384kbit
         from tc4shorewall</ulink>.</para>
 
         <programlisting>#INTERFACE      MARK    RATE            CEIL            PRIORITY        OPTIONS
-$EXT_IF         10      full            full            1               tcp-ack,tos-minimize-delay
+$EXT_IF         10      full            ful             1               tcp-ack,tos-minimize-delay
 $EXT_IF         20      9*full/10       9*full/10       2               default
-$EXT_IF         30      8*full/10       8*full/10       2
+$EXT_IF         30      6*full/10       6*full/10       3
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
       </blockquote>
     </section>
@@ -688,11 +688,19 @@ $EXT_IF         30      8*full/10       8*full/10       2
 
       <blockquote>
         <para>I give full bandwidth to my local systems -- the server gets
-        throttled.</para>
+        throttled and rsync gets throttled even more.</para>
+
+        <note>
+          <para>The class id for tc4shorewall-generated classes is 1:&lt;100 +
+          mark value&gt;. The rules below are using the Netfilter CLASSIFY
+          target to classify the traffic directly without having to first mark
+          then classify based on the marks.</para>
+        </note>
 
         <programlisting>#MARK           SOURCE                  DEST            PROTO   PORT(S) CLIENT  USER    TEST
 #                                                                       PORT(S)
-10:F            192.168.0.0/22          $EXT_IF
+1:110           192.168.0.0/22          $EXT_IF
+1:130           206.124.146.177         $EXT_IF         tcp     -       873
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
       </blockquote>
     </section>

@@ -800,7 +800,7 @@
   <section>
     <title>Iptables Error Messages</title>
 
-    <para>By far the most asked about iptables error message is:</para>
+    <para>By far the most asked about iptables error messages are:</para>
 
     <glosslist>
       <glossentry>
@@ -813,27 +813,53 @@
           copy of the iptables command that is failing. Most commonly, the
           problem is that one of the match types (keyword following "-m" in
           the command) isn't supported by your iptables/kernel. The output of
-          "shorewall check" shows you what your iptables/kernel
+          "shorewall show capabilities" shows you what your iptables/kernel
           support:</para>
 
-          <programlisting>gateway:~# shorewall check
-Loading /usr/share/shorewall/functions...
-Processing /etc/shorewall/params ...
-Processing /etc/shorewall/shorewall.conf...
-Loading Modules...
-<emphasis role="bold">Shorewall has detected the following iptables/netfilter capabilities:
-   NAT: Available
+          <programlisting>gateway:~# shorewall show capabilities
+Shorewall has detected the following iptables/netfilter capabilities:
+ <emphasis role="bold">  NAT: Available
    Packet Mangling: Available
    Multi-port Match: Available
    Extended Multi-port Match: Available
    Connection Tracking Match: Available
-   Packet Type Match: Not available
+   Packet Type Match: Available
    Policy Match: Available
    Physdev Match: Available
-   IP range Match: Available</emphasis>
-Verifying Configuration...
+   IP range Match: Available
+   Recent Match: Available
+   Owner Match: Available
+   Ipset Match: Available
+   ROUTE Target: Not available
+   Extended MARK Target: Available
+   CONNMARK Target: Available
+   Connmark Match: Available</emphasis>
+   <emphasis role="bold">Raw Table: Available</emphasis>
+gateway:~#</programlisting>
+        </glossdef>
+      </glossentry>
 
-...</programlisting>
+      <glossentry>
+        <glossterm>iptables: invalid argument</glossterm>
+
+        <glossdef>
+          <para>Answer: 99.999% of the time, this error is caused by a
+          mismatch between your iptables and kernel.</para>
+
+          <orderedlist>
+            <listitem>
+              <para>Your iptables must be compiled against a kernel source
+              tree that is Netfilter-compatible with the kernel that you are
+              running.</para>
+            </listitem>
+
+            <listitem>
+              <para>If you rebuild iptables using the defaults and install it,
+              it will be installed in /usr/local/sbin/iptables. As shown
+              above, you have the IPTABLES variable in shorewall.conf set to
+              "/sbin/iptables".</para>
+            </listitem>
+          </orderedlist>
         </glossdef>
       </glossentry>
     </glosslist>

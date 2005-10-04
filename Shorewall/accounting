@@ -47,9 +47,9 @@
 #			Format the same as the SOURCE column.
 #
 #	PROTOCOL	A protocol name (from /etc/protocols), a protocol
-#			number, or "ipp2p"
+#			number, "ipp2p", "ipp2p-udp" or "ipp2p-all"
 #
-#	DEST PORT(S)	Destination Port number. If the PROTOCOL is "ipp2p"
+#	DEST PORT(S)	Destination Port number. If the PROTOCOL is "ipp2p*"
 #			then this column must contain an ipp2p option
 #			("iptables -m ipp2p --help") without the leading
 #			"--". If no option is given in this column, "ipp2p"
@@ -60,7 +60,7 @@
 #			or 17).
 #
 #			You may place a comma-separated list of port numbers in
-#			this column if your kernel and iptables include 
+#			this column if your kernel and iptables include
 #			multiport match support.
 #
 #	SOURCE PORT(S)	Source Port number
@@ -70,12 +70,12 @@
 #			or 17).
 #
 #			You may place a comma-separated list of port numbers in
-#			this column if your kernel and iptables include 
+#			this column if your kernel and iptables include
 #			multiport match support.
 #
 #	USER/GROUP	This column may only be non-empty if the CHAIN is
 #			OUTPUT.
-#			
+#
 #			The column may contain:
 #
 #	[!][<user name or number>][:<group name or number>][+<program name>]

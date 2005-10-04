@@ -214,16 +214,17 @@
 #			contain the port number on the firewall that the
 #			request should be redirected to.
 #
-#	PROTO		Protocol - Must be "tcp", "udp", "icmp", "ipp2p", 
-#			a number, or "all". "ipp2p" requires ipp2p match
-#			support in your kernel and iptables.
+#	PROTO		Protocol - Must be "tcp", "udp", "icmp", "ipp2p",
+#                       "ipp2p-udp", "ipp2p-all" a number, or "all".
+#                       "ipp2p*" requires ipp2p match support in your kernel
+#                       and iptables.
 #
 #	DEST PORT(S)	Destination Ports. A comma-separated list of Port
 #			names (from /etc/services), port numbers or port
 #			ranges; if the protocol is "icmp", this column is
 #			interpreted as the destination icmp-type(s).
 #
-#			If the protocol is ipp2p, this column is interpreted
+#			If the protocol is ipp2p*, this column is interpreted
 #			as an ipp2p option without the leading "--" (example
 #			"bit" for bit-torrent). If no port is given, "ipp2p" is
 #			assumed.
@@ -275,7 +276,7 @@
 #
 #	USER/GROUP	This column may only be non-empty if the SOURCE is
 #			the firewall itself.
-#			
+#
 #			The column may contain:
 #
 #	[!][<user name or number>][:<group name or number>][+<program name>]
@@ -312,7 +313,7 @@
 #
 #	#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGINAL RATE	USER/
 #	#				PORT	PORT(S)	DEST	 LIMIT	GROUP
-#	DNAT	net	loc:192.168.1.5	tcp	21	
+#	DNAT	net	loc:192.168.1.5	tcp	21
 #
 # The substitution rules are as follows:
 #
@@ -328,8 +329,8 @@
 #				contains PARAM. PARAM may be optionally
 #				followed by a colon and a log level.
 #
-#				You may also follow the 
-#	
+#				You may also follow the
+#
 #				Any logging specified when the macro is
 #				invoked is applied to each entry in the macros.
 #
@@ -346,11 +347,11 @@
 #		macro.FTP File	PARAM	 net	loc		tcp	21
 #		rules File	FTP/DNAT -	192.168.1.5
 #		Result		DNAT	 net	loc:192.168.1.5	tcp	21
-#	
+#
 #	Remaining		Any value in the rules file REPLACES the value
 #	columns			given in the macro file.
 #
-#		
+#
 ###############################################################################
 #ACTION		SOURCE		DEST	PROTO	DEST	SOURCE	RATE	USER/
 #						PORT	PORT(S)	LIMIT	GROUP

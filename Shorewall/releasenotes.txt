@@ -250,6 +250,13 @@ Migration Considerations:
     /etc/shorewall/providers then you must set MARK_IN_FORWARD_CHAIN=Yes in
     shorewall.conf.
 
+13) The meaning of TC_ENABLED has been changed to coincide with the
+    integration of tc4shorewall. Beginning with this release,
+    the /etc/shorewall/tcrules file will be processed unconditionally.
+    TC_ENABLED=Yes will cause Shorewall to look for an external tcstart
+    script as it does today. TC_ENABLED=No will cause Shorewall to use
+    its internal traffic shaper (tc4shorewall).
+
 New Features in Shorewall 2.5.*
 
 1) Error and warning messages are made easier to spot by using

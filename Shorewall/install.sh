@@ -85,14 +85,7 @@ backup_file() # $1 = file to backup, $2 = (optional) Directory in which to creat
 
 delete_file() # $1 = file to delete
 {
-    if [ -z "$PREFIX" -a -f $1 -a ! -f ${1}-${VERSION}.bkout ]; then
-	if (mv $1 ${1}-${VERSION}.bkout); then
-	    echo
-	    echo "$1 moved to ${1}-${VERSION}.bkout"
-        else
-	    exit 1
-        fi
-    fi
+    rm -f $1
 }
 
 install_file() # $1 = source $2 = target $3 = mode
@@ -266,14 +259,6 @@ echo
 echo "Help command executor installed in ${PREFIX}/usr/share/shorewall/help"
 
 #
-# Install the tcstart file
-#
-install_file tcstart ${PREFIX}/usr/share/shorewall/tcstart 0544
-
-echo
-echo "Traffic Shaper installed in ${PREFIX}/usr/share/shorewall/tcstart"
-
-#
 # Install the policy file
 #
 if [ ! -f ${PREFIX}/etc/shorewall/policy ]; then
@@ -414,7 +399,12 @@ fi
 #
 # Delete the Routes file
 #
-delete_file /etc/shorewall/routes
+delete_file ${PREFIX}/etc/shorewall/routes
+#
+# Delete the tcstart file
+#
+
+delete_file ${PREFIX}/usr/share/shorewall/tcstart
 
 #
 # Install the Providers file

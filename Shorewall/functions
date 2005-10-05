@@ -899,6 +899,7 @@ determine_capabilities() {
     CONNMARK_MATCH=
     RAW_TABLE=
     IPP2P_MATCH=
+    CLASSIFY_TARGET=
 
     qt $IPTABLES -N fooX1234
     qt $IPTABLES -A fooX1234 -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT             && CONNTRACK_MATCH=Yes
@@ -916,6 +917,7 @@ determine_capabilities() {
     qt $IPTABLES -t mangle -A fooX1234 -j ROUTE --oif eth0                              && ROUTE_TARGET=Yes
     qt $IPTABLES -t mangle -A fooX1234 -j MARK --or-mark 2                              && XMARK=Yes
     qt $IPTABLES -t mangle -A fooX1234 -j CONNMARK --save-mark                          && CONNMARK=Yes
+    qt $IPTABLES -t mangle -A fooX1234 -j CLASSIFY --set-class 1:1                      && CLASSIFY_TARGET=Yes
     qt $IPTABLES -t mangle -F fooX1234
     qt $IPTABLES -t mangle -X fooX1234
 
@@ -968,7 +970,7 @@ report_capabilities() {
     report_capability "CONNMARK Target" $CONNMARK
     report_capability "Connmark Match" $CONNMARK_MATCH
     report_capability "Raw Table" $RAW_TABLE
-    report_capability "IPP2P Match" $IPP2P_MATCH
+    report_capability "CLASSIFY Target" $CLASSIFY_TARGET
 
 }
 

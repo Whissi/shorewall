@@ -3309,30 +3309,31 @@ setup_traffic_shaping()
     validate_tcdevices_file
     validate_tcclasses_file
 
-    if [ -s $TMP_DIR/tcdevices ]; then
-	save_progress_message "Restoring Traffic Control..."
-	echo "Processing tcdevices..."
+   if [ $COMMAND != check ]; then
+	if [ -s $TMP_DIR/tcdevices ]; then
+	    save_progress_message "Restoring Traffic Control..."
+	    echo "Processing tcdevices..."
 
-	while read device inband outband defmark ackmark; do
-	    expandv device inband outband defmark ackmark
-	    tcdev="$device $inband $outband"
-	    add_root_tc
-	    progress_message "   TC Device $tcdev Added."
-	done < $TMP_DIR/tcdevices
+	    while read device inband outband defmark ackmark; do
+		expandv device inband outband defmark ackmark
+		tcdev="$device $inband $outband"
+		add_root_tc
+		progress_message "   TC Device $tcdev Added."
+	    done < $TMP_DIR/tcdevices
+	fi
+
+	if [ -s $TMP_DIR/tcclasses ]; then
+	    echo "Processing tcclasses..."
+
+	    while read device mark rate ceil prio options; do
+		expandv device mark rate ceil prio options
+		tcdev="$device $mark $rate $ceil $prio $options"
+		options=$(separate_list $options | tr '[A-Z]' '[a-z]')
+		add_tc_class
+		progress_message "   TC Class \"$tcdev\" Added."
+	    done < $TMP_DIR/tcclasses
+	fi
     fi
-
-    if [ -s $TMP_DIR/tcclasses ]; then
-	echo "Processing tcclasses..."
-
-	while read device mark rate ceil prio options; do
-	    expandv device mark rate ceil prio options
-	    tcdev="$device $mark $rate $ceil $prio $options"
-	    options=$(separate_list $options | tr '[A-Z]' '[a-z]')
-	    add_tc_class
-	    progress_message "   TC Class \"$tcdev\" Added."
-	done < $TMP_DIR/tcclasses
-    fi
-
 }
 
 #
@@ -4033,6 +4034,8 @@ check_config() {
     masq=$(find_file masq)
     [ -f $masq ] && setup_masq $masq
 
+    setup_traffic_shaping
+
     rm -rf $TMP_DIR
     [ -n "$RESTOREBASE" ] && rm -f $RESTOREBASE
 
@@ -4075,7 +4078,7 @@ refresh_tc() {
 	setup_tc1
     fi
 
-    if [ -n "$TC_ENABLED" ]; THEN
+    if [ -n "$TC_ENABLED" ]; then
 	f=$(find_file tcstart)
 
 	if [ -x $f ]; then

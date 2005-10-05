@@ -1261,13 +1261,7 @@ setup_providers()
     add_a_provider() {
 	local t n iface option
 
-	case $MARKING_CHAIN in
-	    tcfor)
-		;;
-	    *)
-		fatal_error "MARK_IN_FORWARD_CHAIN=No is incompatible with multiple providers"
-		;;
-	esac
+	[ -z "$TC_ENABLED" ] && fatal_error "Providers require TC_ENABLED=Yes in shorewall.conf"
 
 	for t in $PROVIDERS; do
 	    if [ "$t" = "$table" ]; then
@@ -3146,24 +3140,18 @@ process_tc_rule()
     do_ipp2p()
     {
 	[ -n "$IPP2P_MATCH" ] || fatal_error "Your kernel and/or iptables does not have IPP2P match support. Rule: \"$rule\""
+	[ "x$port" = "x-" ] && port="ipp2p"
 
 	case $proto in
-	    ipp2p|IPP2P|ipp2p:tcp|IPP2P:TCP)
-		[ "x$port" = "x-" ] && port="ipp2p"
-		r="${r}-p tcp -m ipp2p --${port} "
-		;;
-	    ipp2p:udp|IPP2P:UDP)
-		[ "x$port" = "x-" ] && port="ipp2p"
-		r="${r}-p udp -m ipp2p --${port} "
-		;;
-	    ipp2p:all|IPP2P:ALL)
-		[ "x$port" = "x-" ] && port="ipp2p"
-		r="${r}-m ipp2p --${port} "
+	    *:*)
+		proto=${proto#*:}
 		;;
 	    *)
-		fatal_error "Invalid IPP2P Protocol ${proto#*:}. Rule: \"$rule\""
+		proto=tcp
 		;;
 	esac
+
+	r="${r}-p $proto -m ipp2p --${port} "
     }
 
     add_a_tc_rule() {
@@ -3552,22 +3540,15 @@ process_accounting_rule() {
     do_ipp2p() {
 	[ -n "$IPP2P_MATCH" ] || fatal_error "Your kernel and/or iptables does not have IPP2P match support"
 	case $proto in
-	    ipp2p|IPP2P|ipp2p:tcp|IPP2P:TCP)
-		rule="$rule -p tcp -m ipp2p --${port:-ipp2p}"
-		port=
-		;;
-	    ipp2p:udp|IPP2P:UDP)
-		rule="$rule -p udp -m ipp2p --${port:-ipp2p}"
-		port=
-		;;
-	    ipp2p:all|IPP2P:ALL)
-		rule="$rule -m ipp2p --${port:-ipp2p}"
-		port=
+	    *:*)
+		proto=${proto#*:}
 		;;
 	    *)
-		fatal_error "Invalid IPP2P Protocol ${proto#*:}"
+		proto=tcp
 		;;
 	esac
+
+	rule="$rule -p $proto -m ipp2p --${port:-ipp2p}"
     }
 
     case $source in
@@ -3863,8 +3844,8 @@ refresh_tc() {
         #
         # Flush the TC mangle chains
         #
-	run_iptables -t mangle -F $chain
-	[ -n "$MARK_IN_FORWARD_CHAIN" ] && run_iptables -t mangle -F tcpre
+	run_iptables -t mangle -F tcfor
+	run_iptables -t mangle -F tcpre
         run_iptables -t mangle -F tcout
         run_iptables -t mangle -F tcpost
         #
@@ -3959,28 +3940,21 @@ add_an_action()
     do_ipp2p() {
 	[ -n "$IPP2P_MATCH" ] || fatal_error "Your kernel and/or iptables does not have IPP2P match support. Rule: \"$rule\""
 
+	dports="-m ipp2p --${port:-ipp2p}"
+
 	case $proto in
-	    ipp2p|IPP2P|ipp2p:tcp|IPP2P:TCP)
-		dports="-m ipp2p --${port:-ipp2p}"
-		port=
+	    ipp2p|IPP2P)
 		proto=tcp
+		port=
 		do_ports
 		;;
 	    ipp2p:udpIPP2P:UDP)
-		dports="-m ipp2p --${port:-ipp2p}"
-		port=
 		proto=udp
+		port=
 		do_ports
 		;;
 	    ipp2p:all|IPP2P:ALL)
-		[ -n "$port" ] && \
-		    fatal_error "Port number not allowed with protocol \"$proto\"; rule: \"$rule\""
-		dports="-m ipp2p --${port:-ipp2p}"
-		port=
 		proto=all
-		;;
-	    *)
-		fatal_error "Invalid IPP2P protocol ${proto#*:}.  Rule: \"$rule\""
 		;;
 	esac
     }
@@ -5300,23 +5274,20 @@ process_rule() # $1 = target
 	do_ipp2p() {
 	    [ -n "$IPP2P_MATCH" ] || fatal_error "Your kernel and/or iptables does not have IPP2P match support. Rule: \"$rule\""
 
+	    dports="-m ipp2p --${port:-ipp2p}"
+
 	    case $proto in
 		ipp2p|IPP2P|ipp2p:tcp|IPP2P:TCP)
-		    dports="-m ipp2p --${port:-ipp2p}"
 		    port=
 		    proto=tcp
 		    do_ports
 		    ;;
 		ipp2p:udp|IPP2P:UDP)
-		    dports="-m ipp2p --${port:-ipp2p}"
 		    port=
 		    proto=udp
 		    do_ports
 		    ;;
 		ipp2p:all|IPP2P:ALL)
-		    [ -n "$port" ] && \
-			fatal_error "Port number not allowed with protocol \"$proto\"; rule: \"$rule\""
-		    dports="-m ipp2p --${port:-ipp2p}"
 		    port=
 		    proto=all
 		    ;;

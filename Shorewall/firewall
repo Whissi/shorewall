@@ -2754,6 +2754,34 @@ setup_mac_lists() {
     local hosts
     local ipsec
     local policy=
+
+    create_mac_chain()
+    {
+	case $MACLIST_TABLE in
+	    filter)
+		createchain $1 no
+		;;
+	    *)
+		run_iptables -t mangle -N $1
+		;;
+	esac
+    }
+
+    have_mac_chain()
+    {
+	local result
+	
+	case $MACLIST_TABLE in
+	    filter)
+		havechain $1 && result=0 || result=1
+		;;
+	    *)
+		mangle_chain_exists $1 && result=0 || result=1
+		;;
+	esac
+
+	return $result
+    }
     #
     # Generate the list of interfaces having MAC verification
     #
@@ -2777,15 +2805,15 @@ setup_mac_lists() {
     #
     for interface in $maclist_interfaces; do
 	chain=$(mac_chain $interface)
-	createchain $chain no
+	create_mac_chain $chain
 
 	if [ -n "$MACLIST_TTL" ]; then
 	    chain1=$(macrecent_target $interface)
-	    createchain $chain1 no
-	    run_iptables -A $chain  -m recent --rcheck --seconds $MACLIST_TTL --name $chain -j RETURN
-	    run_iptables -A $chain                                                          -j $chain1
-	    run_iptables -A $chain  -m recent --update                        --name $chain -j RETURN
-	    run_iptables -A $chain  -m recent --set                           --name $chain
+	    create_mac_chain $chain1
+	    run_iptables -t $MACLIST_TABLE -A $chain  -m recent --rcheck --seconds $MACLIST_TTL --name $chain -j RETURN
+	    run_iptables -t $MACLIST_TABLE -A $chain                                                          -j $chain1
+	    run_iptables -t $MACLIST_TABLE -A $chain  -m recent --update                        --name $chain -j RETURN
+	    run_iptables -t $MACLIST_TABLE -A $chain  -m recent --set                           --name $chain
 	fi
     done
     #
@@ -2807,17 +2835,17 @@ setup_mac_lists() {
 
 	[ -n "$MACLIST_TTL" ] && chain=$(macrecent_target $interface) || chain=$(mac_chain $interface)
 
-	if ! havechain $chain ; then
+	if ! have_mac_chain $chain ; then
 	    fatal_error "No hosts on $interface have the maclist option specified"
 	fi
 
 	macpart=$(mac_match $mac)
 
 	if [ -z "$addresses" ]; then
-	    run_iptables -A $chain $macpart $physdev_part -j RETURN
+	    run_iptables -t $MACLIST_TABLE -A $chain $macpart $physdev_part -j RETURN
 	else
 	    for address in $(separate_list $addresses) ; do
-		run_iptables2 -A $chain $macpart -s $address $physdev_part -j RETURN
+		run_iptables2 -t $MACLIST_TABLE -A $chain $macpart -s $address $physdev_part -j RETURN
 	    done
 	fi
     done < $TMP_DIR/maclist
@@ -2836,18 +2864,18 @@ setup_mac_lists() {
 	ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet //; s/brd //; s/scope.*//;' | while read address broadcast; do
 	    address=${address%/*}
 	    if [ -n "$broadcast" ]; then
-		run_iptables -A $chain -s $address -d $broadcast -j RETURN
+		run_iptables -t $MACLIST_TABLE -A $chain -s $address -d $broadcast -j RETURN
 	    fi
 
-	    run_iptables -A $chain -s $address -d 255.255.255.255 -j RETURN
-	    run_iptables -A $chain -s $address -d 224.0.0.0/4     -j RETURN
+	    run_iptables -t $MACLIST_TABLE -A $chain -s $address -d 255.255.255.255 -j RETURN
+	    run_iptables -t $MACLIST_TABLE -A $chain -s $address -d 224.0.0.0/4     -j RETURN
 	done
 
 	if [ -n "$MACLIST_LOG_LEVEL" ]; then
-	    log_rule_limit $MACLIST_LOG_LEVEL $chain $(mac_chain $interface) $MACLIST_DISPOSITION "$LOGLIMIT" "" -A
+	    log_rule_limit $MACLIST_LOG_LEVEL $chain $(mac_chain $interface) $MACLIST_DISPOSITION "$LOGLIMIT" "" -A -t $MACLIST_TABLE
 	fi
 
-	run_iptables -A $chain -j $maclist_target
+	run_iptables -t $MACLIST_TABLE -A $chain -j $maclist_target
     done
     #
     # Generate jumps from the input and forward chains
@@ -2858,10 +2886,18 @@ setup_mac_lists() {
 	[ -n "$POLICY_MATCH" ] && policy="-m policy --pol $ipsec --dir in" || policy=
 	interface=${hosts%%:*}
 	hosts=${hosts#*:}
-	for chain in $(first_chains $interface) ; do
-	    run_iptables -A $chain $(match_source_hosts $hosts) -m state --state NEW \
-		$policy -j $(mac_chain $interface)
-	done
+	case $MACLIST_TABLE in
+	    filter)
+		for chain in $(first_chains $interface) ; do
+		    run_iptables -A $chain $(match_source_hosts $hosts) -m state --state NEW \
+			$policy -j $(mac_chain $interface)
+		done
+		;;
+	    *)
+		run_itables -t mangle -A PREROUTING $(match_source_hosts $hosts) -m state --state NEW \
+			$policy -j $(mac_chain $interface)
+		;;
+	esac
     done
 }
 
@@ -9364,6 +9400,16 @@ do_initialize() {
 	    ;;
 	*)
 	    startup_error "Invalid value ($IPSECFILE) for IPSECFILE option"
+	    ;;
+    esac
+
+    case ${MACLIST_TABLE:=filter} in
+	filter)
+	    ;;
+	mangle)
+	    [ $MACLIST_DISPOSITION = reject ] && startup_error "MACLIST_DISPOSITION=REJECT is not allowed with MACLIST_TABLE=mangle"
+	    ;;	*)
+	    startup_error "Invalid value ($MACLIST_TABLE) for MACLIST_TABLE option"
 	    ;;
     esac
 

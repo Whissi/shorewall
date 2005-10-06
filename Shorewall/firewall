@@ -3126,7 +3126,7 @@ build_exclusion_chain() # $1 = variable to store chain name into $2 = table, $3 
 
 setup_traffic_shaping()
 {
-    local mtu r2q tc_all_devices device mark rate ceil prio options
+    local mtu r2q tc_all_devices device mark rate ceil prio options devfile=$(find_file tcdevices) classfile=$(find_file tcclasses)
     mtu=1500
     r2q=10
 
@@ -3217,7 +3217,7 @@ setup_traffic_shaping()
     }
 
     validate_tcdevices_file() {
-	echo "Validating tcdevices file..."
+	echo "Validating $devfile..."
 	local device local device inband outband
 	while read device inband outband; do
 	    expandv device inband outband
@@ -3234,7 +3234,7 @@ setup_traffic_shaping()
     }
 
     validate_tcclasses_file() {
-	echo "Validating tcclasses file..."
+	echo "Validating $classfile..."
 	local classlist device mark rate ceil prio bandw wrongopt allopts opt
 	allopts=""
 	while read device mark rate ceil prio options; do
@@ -3306,8 +3306,8 @@ setup_traffic_shaping()
 	# tcp
     }
 
-    strip_file tcdevices
-    strip_file tcclasses
+    strip_file tcdevices $devfile
+    strip_file tcclasses $classfile
 
     validate_tcdevices_file
     validate_tcclasses_file
@@ -3315,7 +3315,7 @@ setup_traffic_shaping()
    if [ $COMMAND != check ]; then
 	if [ -s $TMP_DIR/tcdevices ]; then
 	    save_progress_message "Restoring Traffic Control..."
-	    echo "Processing tcdevices..."
+	    echo "Processing $devfile..."
 
 	    while read device inband outband defmark ackmark; do
 		expandv device inband outband defmark ackmark
@@ -3326,7 +3326,7 @@ setup_traffic_shaping()
 	fi
 
 	if [ -s $TMP_DIR/tcclasses ]; then
-	    echo "Processing tcclasses..."
+	    echo "Processing $classfile..."
 
 	    while read device mark rate ceil prio options; do
 		expandv device mark rate ceil prio options

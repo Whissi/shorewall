@@ -1265,6 +1265,8 @@ setup_providers()
     add_a_provider() {
 	local t n iface option
 
+	[ -n "$MANGLE_ENABLED" ] || fatal_error "Providers require mangle support in your kernel and iptables"
+
 	for t in $PROVIDERS; do
 	    if [ "$t" = "$table" ]; then
 		fatal_error "Duplicate Provider: $table, provider: \"$provider\""

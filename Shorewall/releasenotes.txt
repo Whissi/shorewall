@@ -1,53 +1,26 @@
-Shorewall 2.5.7.
+Shorewall 2.5.8.
 
-Problems Corrected in 2.5.7:
+Problems Corrected in 2.5.8:
 
-1) In previous versions, when the command is 'start', 'restart' or
-   'stop' then OUTPUT traffic to hosts listed in
-   /etc/shorewall/routestopped is not enabled if
-   ADMINISABSENTMINDED=Yes. That traffic is now enabled independent of
-   the setting of ADMINISABSENTMINDED.
+1) "shorewall refresh" will fail if there are entries in
+    /etc/shorewall/tcrules with non-empty USER/GROUP or TEST columns.
 
-2) The "shorewall refresh" command was clearing traffic shaping but not
-   reconfiguring it.
+    This problem may be corrected by replacing /usr/share/shorewall/firewall
+    with the 'firewall' file from the 'errata' subdirectory.
 
-3) Previously, 'ipp2p' rules that specified logging would generate an
-   error on "shorewall start". This is a bug in the ipp2p code but I
-   have included a workaround in Shorewall.
+New Features in 2.5.8:
 
-4) Fix "shorwall flush" vs mangle table.
+1)  Normally MAC verification triggered by the 'maclist' interface and host
+    options is done out of the INPUT and FORWARD chains of the filter table.
+    Users have reported that under some circulstances, MAC verification is
+    failing for forwarded packets.
 
-New Features in 2.5.7:
-
-1) The output of "shorewall dump" now includes a capabilities report
-   such as the one produced by "shorewall show capabilities".
-
-2) The "plain" zone type has been replaced by "ipv4". The types
-   "IPv4" and "IPV4" are synonyms for "ipv4". In addition, "IPSEC",
-   "ipsec4" and "IPSEC4" are recognized synonyms for "ipsec".
-
-3) The NEWNOTSYN and LOGNEWNOTSYN options in shorewall.conf have been
-   removed as have the 'newnotsyn' options in /etc/shorewall/interfaces
-   and /etc/shorewall/hosts. See the Migration Considerations for
-   instructions if you wish to block "new-not-syn" TCP packets.
-
-4) The "shorewall show zones" command now displays the zone type. You
-   must have restarted Shorewall using this release before this feature
-   will work correctly.
-
-5) The multi-ISP code now requires that that you set MARK_IN_FORWARD_CHAIN=Yes
-   in shorewall.conf. This is done to ensure that "shorewall refresh" will
-   work correctly.
-
-6) Shorewall now supports UDP IPP2P matching. In addition to the "ipp2p"
-   keyword in the PROTOCOL column of the relevant files, the following
-   values may be specified:
-
-	ipp2p:tcp           Equivalent to ipp2p and matches TCP traffic
-			    only.
-	ipp2p:udp           Matches UDP traffic.
-	ipp2p:all           Matches both UDP and TCP traffic. You may
-			    not specify a SOURCE PORT with this PROTOCOL.
+    To work around this problem, a MACLIST_TABLE option has been added to
+    shorewall.conf. The default value is MACLIST_TABLE=filter which results
+    in the current behavior. If MACLIST_TABLE=mangle then filtering will
+    take place out of the PREROUTING chain of the mangle table. Because
+    the REJECT target may not be used in the PREROUTING chain, the settings
+    MACLIST_DISPOSITION=REJECT and MACLIST_TABLE=mangle are incompatible.
 
 Migration Considerations:
 
@@ -571,4 +544,35 @@ New Features in Shorewall 2.5.*
     This option is useful when you have a multi-ISP environment because
     it prevents the route cache from being flushed which preserves the
     mapping of end-point address pairs to routes.
+
+22) The output of "shorewall dump" now includes a capabilities report
+    such as the one produced by "shorewall show capabilities".
+
+23) The "plain" zone type has been replaced by "ipv4". The types
+    "IPv4" and "IPV4" are synonyms for "ipv4". In addition, "IPSEC",
+    "ipsec4" and "IPSEC4" are recognized synonyms for "ipsec".
+
+24) The NEWNOTSYN and LOGNEWNOTSYN options in shorewall.conf have been
+    removed as have the 'newnotsyn' options in /etc/shorewall/interfaces
+    and /etc/shorewall/hosts. See the Migration Considerations for
+    instructions if you wish to block "new-not-syn" TCP packets.
+
+25) The "shorewall show zones" command now displays the zone type. You
+    must have restarted Shorewall using this release before this feature
+    will work correctly.
+
+26) The multi-ISP code now requires that that you set MARK_IN_FORWARD_CHAIN=Yes
+    in shorewall.conf. This is done to ensure that "shorewall refresh" will
+    work correctly.
+
+27) Shorewall now supports UDP IPP2P matching. In addition to the "ipp2p"
+    keyword in the PROTOCOL column of the relevant files, the following
+    values may be specified:
+
+	ipp2p:tcp           Equivalent to ipp2p and matches TCP traffic
+			    only.
+	ipp2p:udp           Matches UDP traffic.
+	ipp2p:all           Matches both UDP and TCP traffic. You may
+			    not specify a SOURCE PORT with this PROTOCOL.
+
 

@@ -3292,8 +3292,11 @@ setup_traffic_shaping()
 	ensure_and_save_command tc class add dev $device parent 1:1 classid 1:1$mark htb rate $rate ceil $ceil prio $prio quantum $(calculate_quantum $rate)
 	ensure_and_save_command tc qdisc add dev $device parent 1:1$mark handle 1$mark: sfq perturb 10
 	# add filters
-	ensure_and_save_command tc filter add dev $device protocol ip parent 1:0 prio 1 handle $mark fw classid 1:1$mark
-	# options
+	if [ -n "$CLASSIFY_TARGET" ]; then
+	    run_iptables -t mangle -A tcpost -o $device -m mark --mark $mark -j CLASSIFY --set-class 1:1$mark
+	else
+	    ensure_and_save_command tc filter add dev $device protocol ip parent 1:0 prio 1 handle $mark fw classid 1:1$mark
+	fi
 	list_search "tcp-ack" $options && ensure_and_save_command tc filter add dev $device parent 1:0 protocol ip prio 10 u32 match ip protocol 6 0xff match u8 0x05 0x0f at 0 match u16 0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid 1:1$mark
 	list_search "tos-minimize-delay" $options && ensure_and_save_command tc filter add dev $device parent 1:0 protocol ip prio 10 u32 match ip tos 0x10 0xff flowid 1:1$mark
 	list_search "tos-minimize-cost" $options && ensure_and_save_command tc filter add dev $device parent 1:0 protocol ip prio 10 u32 match ip tos 0x02 0xff flowid 1:1$mark

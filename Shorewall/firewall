@@ -5,6 +5,7 @@
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
 #
 #     (c) 1999,2000,2001,2002,2003,2004,2005 - Tom Eastep (teastep@shorewall.net)
+#
 #     tcstart from tc4shorewall       Version 0.5
 #     (c) 2005 Arne Bernin <arne@ucbering.de>
 #     Modified by Tom Eastep for integration into the Shorewall distribution
@@ -3162,9 +3163,12 @@ build_exclusion_chain() # $1 = variable to store chain name into $2 = table, $3 
     eval $1=$c
 }
 
+#
+# Arne Bernin's 'tc4shorewall'
+#
 setup_traffic_shaping()
 {
-    local mtu r2q tc_all_devices device mark rate ceil prio options devfile=$(find_file tcdevices) classfile=$(find_file tcclasses)
+    local mtu r2q tc_all_devices device mark rate ceil prio options devfile=$(find_file tcdevices) classfile=$(find_file tcclasses) devnum=1
     mtu=1500
     r2q=10
 
@@ -3298,14 +3302,16 @@ setup_traffic_shaping()
 	defmark=$(get_defmark_for_dev $device)
 	run_and_save_command qt tc qdisc del dev $device root
 	run_and_save_command qt tc qdisc del dev $device ingress
-	ensure_and_save_command tc qdisc add dev $device root handle 1: htb default 1$defmark
-	ensure_and_save_command tc class add dev $device parent 1: classid 1:1 htb rate $outband
+	ensure_and_save_command tc qdisc add dev $device root handle $devnum: htb default $defmark
+	ensure_and_save_command tc class add dev $device parent $devnum: classid $devnum:1 htb rate $outband
 	ensure_and_save_command tc qdisc add dev $device handle ffff: ingress
 	ensure_and_save_command tc filter add dev $device parent ffff: protocol ip prio 50 u32 match ip src 0.0.0.0/0 police rate ${inband} burst 10k drop flowid :1
+	eval $(chain_base $device)_devnum=$devnum
+	devnum=$(($devnum + 1))
     }
 
     add_tc_class() {
-	local full
+	local full classid
 	full=$(get_outband_for_dev $device)
 	full=$(rate_to_kbit $full)
 
@@ -3327,21 +3333,26 @@ setup_traffic_shaping()
 		;;
 	esac
 
-	ensure_and_save_command tc class add dev $device parent 1:1 classid 1:1$mark htb rate $rate ceil $ceil prio $prio quantum $(calculate_quantum $rate)
-	ensure_and_save_command tc qdisc add dev $device parent 1:1$mark handle 1$mark: sfq perturb 10
+	eval devnum=\$$(chain_base $device)_devnum
+	classid=$devnum:1$mark
+
+	[ -n "$devnum" ] || fatal_error "Device $device not defined in $devfile"
+
+	ensure_and_save_command tc class add dev $device parent $devnum:1 classid $classid htb rate $rate ceil $ceil prio $prio quantum $(calculate_quantum $rate)
+	ensure_and_save_command tc qdisc add dev $device parent $classid handle 1$mark: sfq perturb 10
 	# add filters
 	if [ -n "$CLASSIFY_TARGET" ]; then
-	    run_iptables -t mangle -A tcpost -o $device -m mark --mark $mark -j CLASSIFY --set-class 1:1$mark
+	    run_iptables -t mangle -A tcpost -o $device -m mark --mark $mark -j CLASSIFY --set-class $classid
 	else
-	    ensure_and_save_command tc filter add dev $device protocol ip parent 1:0 prio 1 handle $mark fw classid 1:1$mark
+	    ensure_and_save_command tc filter add dev $device protocol ip parent $devnum:0 prio 1 handle $mark fw classid $classid
 	fi
 	#options
-	list_search "tcp-ack" $options && ensure_and_save_command tc filter add dev $device parent 1:0 protocol ip prio 10 u32 match ip protocol 6 0xff match u8 0x05 0x0f at 0 match u16 0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid 1:1$mark
-	list_search "tos-minimize-delay" $options && ensure_and_save_command tc filter add dev $device parent 1:0 protocol ip prio 10 u32 match ip tos 0x10 0xff flowid 1:1$mark
-	list_search "tos-minimize-cost" $options && ensure_and_save_command tc filter add dev $device parent 1:0 protocol ip prio 10 u32 match ip tos 0x02 0xff flowid 1:1$mark
-	list_search "tos-maximize-troughput" $options && ensure_and_save_command tc filter add dev $device parent 1:0 protocol ip prio 10 u32 match ip tos 0x08 0xff flowid 1:1$mark
-	list_search "tos-minimize-reliability" $options && ensure_and_save_command tc filter add dev $device parent 1:0 protocol ip prio 10 u32 match ip tos 0x04 0xff flowid 1:1$mark
-	list_search "tos-normal-service" $options && ensure_and_save_command tc filter add dev $device parent 1:0 protocol ip prio 10 u32 match ip tos 0x00 0xff flowid 1:1$mark
+	list_search "tcp-ack" $options && ensure_and_save_command tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip protocol 6 0xff match u8 0x05 0x0f at 0 match u16 0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid $classid
+	list_search "tos-minimize-delay" $options && ensure_and_save_command tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos 0x10 0xff flowid $classid
+	list_search "tos-minimize-cost" $options && ensure_and_save_command tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos 0x02 0xff flowid $classid
+	list_search "tos-maximize-troughput" $options && ensure_and_save_command tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos 0x08 0xff flowid $classid
+	list_search "tos-minimize-reliability" $options && ensure_and_save_command tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos 0x04 0xff flowid $classid
+	list_search "tos-normal-service" $options && ensure_and_save_command tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos 0x00 0xff flowid $classid
 	# tcp
     }
 

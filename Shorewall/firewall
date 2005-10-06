@@ -3297,6 +3297,7 @@ setup_traffic_shaping()
 	else
 	    ensure_and_save_command tc filter add dev $device protocol ip parent 1:0 prio 1 handle $mark fw classid 1:1$mark
 	fi
+	#options
 	list_search "tcp-ack" $options && ensure_and_save_command tc filter add dev $device parent 1:0 protocol ip prio 10 u32 match ip protocol 6 0xff match u8 0x05 0x0f at 0 match u16 0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid 1:1$mark
 	list_search "tos-minimize-delay" $options && ensure_and_save_command tc filter add dev $device parent 1:0 protocol ip prio 10 u32 match ip tos 0x10 0xff flowid 1:1$mark
 	list_search "tos-minimize-cost" $options && ensure_and_save_command tc filter add dev $device parent 1:0 protocol ip prio 10 u32 match ip tos 0x02 0xff flowid 1:1$mark
@@ -8602,7 +8603,7 @@ define_firewall() # $1 = Command (Start or Restart)
     ecn=$(find_file ecn)
     [ -f $ecn ] && [ -n "$MANGLE_ENABLED" ] && setup_ecn $ecn
 
-    setup_tc
+    [ -n "$MANGLE_ENABLED" ]                && setup_tc
 
     echo "Activating Rules...";                activate_rules
 
@@ -8676,7 +8677,7 @@ refresh_firewall()
     #
     # Refresh Traffic Control
     #
-    refresh_tc
+    [ -n "$MANGLE_ENABLED" ] && refresh_tc
 
     report "Shorewall Refreshed"
 

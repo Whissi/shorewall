@@ -2770,7 +2770,7 @@ setup_mac_lists() {
     have_mac_chain()
     {
 	local result
-	
+
 	case $MACLIST_TABLE in
 	    filter)
 		havechain $1 && result=0 || result=1
@@ -2894,7 +2894,7 @@ setup_mac_lists() {
 		done
 		;;
 	    *)
-		run_itables -t mangle -A PREROUTING $(match_source_hosts $hosts) -m state --state NEW \
+		run_iptables -t mangle -A PREROUTING -i $interface $(match_source_hosts $hosts) -m state --state NEW \
 			$policy -j $(mac_chain $interface)
 		;;
 	esac

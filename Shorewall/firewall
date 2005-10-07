@@ -112,9 +112,11 @@ save_command()
 #
 save_progress_message()
 {
-    echo                           >> $RESTOREBASE
-    echo "progress_message \"$@\"" >> $RESTOREBASE
-    echo                           >> $RESTOREBASE
+    if [ $COMMAND != refresh ]; then
+	echo                           >> $RESTOREBASE
+	echo "progress_message \"$@\"" >> $RESTOREBASE
+	echo                           >> $RESTOREBASE
+    fi
 }
 
 #
@@ -125,7 +127,7 @@ save_progress_message()
 #
 run_and_save_command()
 {
-    echo "$@" >> $RESTOREBASE
+    [ $COMMAND = refresh ] || echo "$@" >> $RESTOREBASE
     eval $*
 }
 
@@ -135,7 +137,7 @@ run_and_save_command()
 ensure_and_save_command()
 {
     if eval $* ; then
-	echo "$@" >> $RESTOREBASE
+	[ $COMMAND = refresh ] || echo "$@" >> $RESTOREBASE
     else
 	[ -z "$STOPPING" ] && { stop_firewall; exit 2; }
     fi

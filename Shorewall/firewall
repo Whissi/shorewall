@@ -3703,16 +3703,12 @@ setup_tc1() {
     run_iptables -t mangle -A FORWARD     -j tcfor
     run_iptables -t mangle -A POSTROUTING -j tcpost
 
-    f=$(find_file tcstart)
+    if [ -n "$TC_SCRIPT" ]; then
 
-    if [ -f $f ]; then
-
-	run_user_exit tcstart
-
-	f=$(find_file tcstart) # In case the script used this variable
+	run_user_exit $TC_SCRIPT
 
         save_progress_message "Restoring Traffic Control..."
-	save_command . $f
+	save_command . $TC_SCRIPT
     else
 	setup_traffic_shaping
     fi
@@ -4133,8 +4129,8 @@ refresh_tc() {
 	setup_tc1
     fi
 
-    if [ -n "$TC_ENABLED" ]; then
-	run_user_exit tcstart
+    if [ -n "$TC_SCRIPT" ]; then
+	run_user_exit $TC_SCRIPT
     else
 	setup_traffic_shaping
     fi
@@ -9171,7 +9167,7 @@ do_initialize() {
     LOGLIMIT=
     ADD_IP_ALIASES=
     ADD_SNAT_ALIASES=
-    TC_ENABLED=
+    TC_SCRIPT=
     BLACKLIST_DISPOSITION=
     BLACKLIST_LOGLEVEL=
     CLAMPMSS=
@@ -9295,7 +9291,6 @@ do_initialize() {
     [ -n "$ALLOWRELATED" ] || \
 	startup_error "ALLOWRELATED=No is not supported"
     ADD_IP_ALIASES="$(added_param_value_yes ADD_IP_ALIASES $ADD_IP_ALIASES)"
-    TC_ENABLED="$(added_param_value_yes TC_ENABLED $TC_ENABLED)"
 
     if [ -n "${LOGRATE}${LOGBURST}" ]; then
 	LOGLIMIT="--match limit"
@@ -9420,6 +9415,12 @@ do_initialize() {
 	    startup_error "Invalid value ($MACLIST_TABLE) for MACLIST_TABLE option"
 	    ;;
     esac
+
+    if [ -n "$TC_SCRIPT" ] ; then
+	f="$TC_SCRIPT"
+	TC_SCRIPT=$(find_file $TC_SCRIPT)
+	[ -f $TC_SCRIPT ] || startup_error "Unable to find TC_SCRIPT file ($f)"
+    fi
 
     [ "x${SHOREWALL_DIR}" = "x." ] && SHOREWALL_DIR="$PWD"
 

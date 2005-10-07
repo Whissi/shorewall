@@ -1,24 +1,16 @@
-Shorewall 2.5.8.
+Shorewall 2.5.9.
 
-Problems Corrected in 2.5.8:
+Problems Corrected in 2.5.9:
 
-1) "shorewall refresh" will fail if there are entries in
-    /etc/shorewall/tcrules with non-empty USER/GROUP or TEST columns.
+New Features in 2.5.9:
 
-New Features in 2.5.8:
+1) A new TC_SCRIPT option replaces TC_ENABLED in shorewall.conf. If the
+   option is not set then the internal shaper (tc4shorewall by Arne
+   Bernin) is used. Otherwise, the script named in the variable is
+   used.
 
-1)  Normally MAC verification triggered by the 'maclist' interface and host
-    options is done out of the INPUT and FORWARD chains of the filter table.
-    Users have reported that under some circumstances, MAC verification is
-    failing for forwarded packets when the packets are being forwarded out
-    of a bridge.
-
-    To work around this problem, a MACLIST_TABLE option has been added to
-    shorewall.conf. The default value is MACLIST_TABLE=filter which results
-    in the current behavior. If MACLIST_TABLE=mangle then filtering will
-    take place out of the PREROUTING chain of the mangle table. Because
-    the REJECT target may not be used in the PREROUTING chain, the settings
-    MACLIST_DISPOSITION=REJECT and MACLIST_TABLE=mangle are incompatible.
+   Users who currently use an /etc/shorewall/tcstart file should set
+   TC_SCRIPT=/etc/shorewall/tcstart in shorewall.conf.
 
 Migration Considerations:
 
@@ -61,6 +53,14 @@ Migration Considerations:
 			and a comma-separated list of the parent
 			zones. The parent zones must have been defined
 			in earlier records in this file.
+1) A new TC_SCRIPT option replaces TC_ENABLED in shorewall.conf. If the
+   option is not set then the internal shaper (tc4shorewall by Arne
+   Bernin) is used. Otherwise, the script named in the variable is
+   used.
+
+   Users who currently use an /etc/shorewall/tcstart file should set
+   TC_SCRIPT=/etc/shorewall/tcstart in shorewall.conf.
+
 
 			Example:
 
@@ -89,7 +89,15 @@ Migration Considerations:
 			exactly one 'firewall' zone. No options are
 			permitted with a 'firewall' zone.
 
-	OPTIONS,		A comma-separated list of options as
+	OPTIONS,		A comma-separated list of options as1) A new TC_SCRIPT option replaces TC_ENABLED in shorewall.conf. If the
+   option is not set then the internal shaper (tc4shorewall by Arne
+   Bernin) is used. Otherwise, the script named in the variable is
+   used.
+
+   Users who currently use an /etc/shorewall/tcstart file should set
+   TC_SCRIPT=/etc/shorewall/tcstart in shorewall.conf.
+
+
 	IN OPTIONS,		follows:
 	OUT OPTIONS
 				reqid=<number> where <number> is
@@ -115,7 +123,15 @@ Migration Considerations:
 				available with mode=tunnel)
 
 
-				strict  Means that packets must match
+				strict  Means that packets must ma1) A new TC_SCRIPT option replaces TC_ENABLED in shorewall.conf. If the
+   option is not set then the internal shaper (tc4shorewall by Arne
+   Bernin) is used. Otherwise, the script named in the variable is
+   used.
+
+   Users who currently use an /etc/shorewall/tcstart file should set
+   TC_SCRIPT=/etc/shorewall/tcstart in shorewall.conf.
+
+tch
 					all rules.
 
 
@@ -160,7 +176,15 @@ Migration Considerations:
    it is not set (such as if you are using your old shorewall.conf
    file) then Shorewall will perform the substitution. Once you have
    converted to use the new macros, you can set MAPOLDACTIONS=No and
-   invocations of those actions will go much quicker during 'shorewall
+   invocations of those actions will go much quicker during 'shore1) A new TC_SCRIPT option replaces TC_ENABLED in shorewall.conf. If the
+   option is not set then the internal shaper (tc4shorewall by Arne
+   Bernin) is used. Otherwise, the script named in the variable is
+   used.
+
+   Users who currently use an /etc/shorewall/tcstart file should set
+   TC_SCRIPT=/etc/shorewall/tcstart in shorewall.conf.
+
+wall
    [re]start'.
 
 6) The STATEDIR variable in /etc/shorewall/shorewall.conf has been
@@ -211,13 +235,14 @@ Migration Considerations:
     Note that the rule is added at the front of the NEW section of the
     rules file.
 
-11) The meaning of TC_ENABLED has been changed to coincide with the
-    integration of tc4shorewall. Beginning with this release,
-    the /etc/shorewall/tcrules file will be processed unconditionally
-    (assuming that your kernel and iptables have Packet Mangling support).
-    TC_ENABLED=Yes will cause Shorewall to look for an external tcstart
-    script as it does today. TC_ENABLED=No will cause Shorewall to use
-    its internal traffic shaper (tc4shorewall).
+11) A new TC_SCRIPT option replaces TC_ENABLED in shorewall.conf. If the
+    option is not set then the internal shaper (tc4shorewall by Arne
+    Bernin) is used. Otherwise, the script named in the variable is
+    used.
+
+    Users who currently use an /etc/shorewall/tcstart file and wish to
+    continue to do so should set
+    TC_SCRIPT=/etc/shorewall/tcstart in shorewall.conf.
 
 New Features in Shorewall 2.5.*
 
@@ -563,5 +588,18 @@ New Features in Shorewall 2.5.*
 	ipp2p:udp           Matches UDP traffic.
 	ipp2p:all           Matches both UDP and TCP traffic. You may
 			    not specify a SOURCE PORT with this PROTOCOL.
+
+28) Normally MAC verification triggered by the 'maclist' interface and host
+    options is done out of the INPUT and FORWARD chains of the filter table.
+    Users have reported that under some circumstances, MAC verification is
+    failing for forwarded packets when the packets are being forwarded out
+    of a bridge.
+
+    To work around this problem, a MACLIST_TABLE option has been added to
+    shorewall.conf. The default value is MACLIST_TABLE=filter which results
+    in the current behavior. If MACLIST_TABLE=mangle then filtering will
+    take place out of the PREROUTING chain of the mangle table. Because
+    the REJECT target may not be used in the PREROUTING chain, the settings
+    MACLIST_DISPOSITION=REJECT and MACLIST_TABLE=mangle are incompatible.
 
 

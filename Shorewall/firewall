@@ -4132,12 +4132,7 @@ refresh_tc() {
     fi
 
     if [ -n "$TC_ENABLED" ]; then
-	f=$(find_file tcstart)
-
-	if [ -x $f ]; then
-	    export CONFIG_PATH SHOREWALL_DIR
-	    eval $f
-	fi
+	run_user_exit tcstart
     else
 	setup_traffic_shaping
     fi

@@ -12,6 +12,9 @@ New Features in 2.5.9:
    Users who currently use an /etc/shorewall/tcstart file should set
    TC_SCRIPT=/etc/shorewall/tcstart in shorewall.conf.
 
+2) The default traffic shaping class for a device was being incorrectly
+   specified by tc4shorewall.
+
 Migration Considerations:
 
 1) The "monitor" command has been eliminated.
@@ -46,7 +49,6 @@ Migration Considerations:
 	ZONE		Short name of the zone (5 Characters or less in
 			length). The names "all" and "none" are
 			reserved and may not be used as zone names.
-
 
 			Where a zone is nested in one or more other
 			zones, you may follow the (sub)zone name by ":"

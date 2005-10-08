@@ -3304,7 +3304,7 @@ setup_traffic_shaping()
 	defmark=$(get_defmark_for_dev $device)
 	run_and_save_command qt tc qdisc del dev $device root
 	run_and_save_command qt tc qdisc del dev $device ingress
-	ensure_and_save_command tc qdisc add dev $device root handle $devnum: htb default $defmark
+	ensure_and_save_command tc qdisc add dev $device root handle $devnum: htb default 1$defmark
 	ensure_and_save_command tc class add dev $device parent $devnum: classid $devnum:1 htb rate $outband
 	ensure_and_save_command tc qdisc add dev $device handle ffff: ingress
 	ensure_and_save_command tc filter add dev $device parent ffff: protocol ip prio 50 u32 match ip src 0.0.0.0/0 police rate ${inband} burst 10k drop flowid :1

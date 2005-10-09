@@ -112,11 +112,9 @@ save_command()
 #
 save_progress_message()
 {
-    if [ $COMMAND != refresh ]; then
-	echo                           >> $RESTOREBASE
-	echo "progress_message \"$@\"" >> $RESTOREBASE
-	echo                           >> $RESTOREBASE
-    fi
+    echo                           >> $RESTOREBASE
+    echo "progress_message \"$@\"" >> $RESTOREBASE
+    echo                           >> $RESTOREBASE
 }
 
 #
@@ -127,7 +125,7 @@ save_progress_message()
 #
 run_and_save_command()
 {
-    [ $COMMAND = refresh ] || echo "$@" >> $RESTOREBASE
+    echo "$@" >> $RESTOREBASE
     eval $*
 }
 
@@ -137,7 +135,7 @@ run_and_save_command()
 ensure_and_save_command()
 {
     if eval $* ; then
-	[ $COMMAND = refresh ] || echo "$@" >> $RESTOREBASE
+	echo "$@" >> $RESTOREBASE
     else
 	[ -z "$STOPPING" ] && { stop_firewall; exit 2; }
     fi
@@ -8696,6 +8694,26 @@ define_firewall() # $1 = Command (Start or Restart)
 #
 refresh_firewall()
 {
+    #
+    # Overload some functions that need different behavior in this command
+    #
+    save_progress_message()
+    {
+	echo $@ >> /dev/null
+    }
+
+    run_and_save_command()
+    {
+	eval $*
+    }
+
+    ensure_and_save_command()
+    {
+	if ! eval $* ; then
+	    [ -z "$STOPPING" ] && { stop_firewall; exit 2; }
+	fi
+    }
+
     echo "Refreshing Shorewall..."
 
     echo "Determining Zones and Interfaces..."

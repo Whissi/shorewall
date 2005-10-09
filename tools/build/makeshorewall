@@ -25,14 +25,14 @@
 #
 #      -t      Build tarball
 #      -r      Build RPM
-#      -h      Build HTML documentation 
+#      -h      Build HTML documentation
 #      -x      Build XML documentation
 #      -l      Build LRP
 #
 # If no options are given, all options are assumed.
 #
 # If <previous version> is given, a patch file reflecting the differences
-# between that version and the current version ( <version> ) is 
+# between that version and the current version ( <version> ) is
 # generated. The directory ./shorewall-<previous version> must exist and
 # contain the version against which the patch is generated.
 ################################################################################
@@ -84,14 +84,14 @@ BUILDLRP=
 ################################################################################
 #                               F U N C T I O N S
 ################################################################################
-progress_message() 
+progress_message()
 {
     echo         >>    $LOGFILE
     echo "$@" | tee -a $LOGFILE
     echo         >>    $LOGFILE
 }
 
-report() 
+report()
 {
     echo "$@" | tee -a $LOGFILE
 }
@@ -118,7 +118,7 @@ list_search() # $1 = element to search for , $2-$n = list
     return 1
 }
 
-usage() 
+usage()
 {
     echo "usage: $(basename $0) [ -trhxl] <version> [ <old-version> ]"
     exit 2
@@ -150,14 +150,14 @@ esac
 
 while [ -z "$done" ]; do
     [ $# -eq 0 ] && break
-  
+
     option=$1
     case $option in
 	-*)
 	    option=${option#-}
 
 	    [ -z "$option" ] && break
-	    
+
 	    while [ -n "$option" ]; do
 		case $option in
 		    t*)
@@ -201,7 +201,7 @@ case $# in
 	OLDVERSION=$2
 	;;
     *)
-	usage 
+	usage
 	;;
 esac
 
@@ -239,7 +239,7 @@ case $VERSION in
 	XMLPROJ=Shorewall-docs2
 	BUILDLRP=
 	;;
-    2.5.*)
+    2.5.*|3.0.0*)
         CVSTAG=HEAD
 	DOCTAG=HEAD
 	XMLPROJ=Shorewall-docs2
@@ -300,12 +300,12 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
     fgrep VERSION=$VERSION $SHOREWALLDIR/uninstall.sh > /dev/null 2>&1  || fatal_error "uninstall.sh has wrong version"
     fgrep VERSION=$VERSION $SHOREWALLDIR/fallback.sh > /dev/null 2>&1   || fatal_error "fallback.sh has wrong version"
 
-    if [ -n "$BUILDTARBALL" ]; then    
+    if [ -n "$BUILDTARBALL" ]; then
 	progress_message "Creating $DIR/$TARBALL..."
 	do_or_die "tar -zcvf $TARBALL $SHOREWALLDIR >> $LOGFILE 2>&1"
-        do_or_die "tar -jcvf shorewall-$VERSION.tar.bz2 $SHOREWALLDIR >> $LOGFILE 2>&1"
+        do_or_die "tar -jcvf shorewall-${VERSION%-*}.tar.bz2 $SHOREWALLDIR >> $LOGFILE 2>&1"
 	for shoresuffix in tgz tar.bz2; do
-	    shoreball=shorewall-$VERSION.${shoresuffix}
+	    shoreball=shorewall-${VERSION%-*}.${shoresuffix}
 	    report "Creating $DIR/$shoreball tarball sha1sums.."
 	    do_or_die "sha1sum $shoreball >> $VERSION.sha1sums"
 	    report "Creating $DIR/$shoreball tarball md5sums.."
@@ -322,9 +322,9 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	do_or_die "rpmbuild -tb --sign $TARBALL >> $LOGFILE 2>&1"
 	do_or_die cp -a $RPMDIR/RPMS/noarch/$RPMNAME .
         progress_message "Creating $RPMNAME sha1sums.."
-        do_or_die "sha1sum shorewall-${VERSION}-1.noarch.rpm >> $VERSION.sha1sums"
+        do_or_die "sha1sum $RPMNAME >> $VERSION.sha1sums"
 	progress_message "Creating $RPMNAME md5sums.."
-        do_or_die "md5sum  shorewall-${VERSION}-1.noarch.rpm >> $VERSION.md5sums"
+        do_or_die "md5sum  $RPMNAME >> $VERSION.md5sums"
     fi
 fi
 
@@ -410,15 +410,15 @@ if [ -n "${BUILDXML}${BUILDHTML}" ]; then
 	    upgrade_issues.htm
 	    VPN.htm
 	    whitelisting_under_shorewall.htm"
-	    
+
 	for file in shorewall-docs-xml-$VERSION/*.xml; do
 	    a=$(basename $file)
 	    b=${a%.*}
 	    list_search $b.htm $HTMFILES && b=$b.htm || b=$b.html
 	    f="shorewall-docs-html-$VERSION/$b"
-	
+
 	    report "Converting $DIR/$file from XML to HTML ($DIR/$f) ..."
-	    
+
 	    do_or_die xsltproc --output $f --stringparam html.stylesheet html.css --stringparam ulink.target _self -param toc.section.depth 3 $STYLESHEET $file
 	done
 
@@ -430,9 +430,9 @@ if [ -n "${BUILDXML}${BUILDHTML}" ]; then
 	do_or_die cp -a shorewall-docs-xml-$VERSION/*.css $HTMLDIR
 
 	do_or_die ln -s Documentation_Index.html shorewall-docs-html-$VERSION/index.html
-	
+
 	progress_message "Creating $DIR/shorewall-docs-html-$VERSION tarballs ..."
-	
+
 	do_or_die "tar -zcvf shorewall-docs-html-$VERSION.tgz shorewall-docs-html-$VERSION >> $LOGFILE 2>&1"
 	do_or_die "tar -jcvf shorewall-docs-html-$VERSION.tar.bz2 shorewall-docs-html-$VERSION >> $LOGFILE 2>&1"
 	for shoresuffix in tgz tar.bz2; do
@@ -451,20 +451,20 @@ fi
 [ -n "$BUILDTARBALL" ] && case $VERSION in
     *Beta*|*RC*)
 	#
-	# The original tarball created above didn't include the -Beta or -RC portion of the 
+	# The original tarball created above didn't include the -Beta or -RC portion of the
 	# name in either the tarball name or the directory name. Create it here
 	#
 	progress_message "Creating $DIR/shorewall-$VERSION..."
 
 	rm -rf shorewall-$VERSION
-	
+
 	do_or_die mv $SHOREWALLDIR shorewall-$VERSION
-	
+
 	progress_message "Creating $DIR/shorewall-${VERSION}.tgz ..."
-	
+
         do_or_die "tar -zcvf shorewall-${VERSION}.tgz shorewall-$VERSION >> $LOGFILE 2>&1"
         do_or_die "tar -jcvf shorewall-$VERSION.tar.bz2 shorewall-$VERSION >> $LOGFILE 2>&1"
-  
+
 	for shoresuffix in tgz tar.bz2; do
 	    betaball=shorewall-$VERSION.${shoresuffix}
 	    report "Creating $DIR/shorewall-$VERSION tarball sha1sums"
@@ -481,23 +481,23 @@ esac
 
 if [ -n "$BUILDLRP" ]; then
     progress_message "Exporting $LRPPROJ from CVS ..."
-    
+
     rm -rf $LRPDIR
     rm -rf $LRPPROJ
-    
+
     do_or_die "cvs -z3 export -D now $LRPPROJ >> $LOGFILE 2>&1"
     do_or_die mv $LRPPROJ $LRPDIR
-    
+
     cd $LRPDIR
-   
+
     [ "$VERSION" = $(cat usr/share/shorewall/version) ] || fatal_error "$LRPPROJ has wrong version"
-    
+
     rm -f var/lib/lrpkg/shorwall.version
-   
+
     do_or_die ln -s ../../../usr/share/shorewall/version var/lib/lrpkg/shorwall.version
 
     [ -d var/lib/shorewall ] || do_or_die mkdir var/lib/shorewall
-    
+
     do_or_die chmod 700 etc etc/init.d etc/shorewall sbin usr usr/share usr/share/shorewall var var/lib var/lib/lrpkg var/lib/shorewall
     do_or_die chmod 600 etc/shorewall/*
     do_or_die chmod 700 etc/init.d/shorewall
@@ -507,7 +507,7 @@ if [ -n "$BUILDLRP" ]; then
     do_or_die chmod 600 var/lib/lrpkg/shorwall.help
     do_or_die chmod 600 var/lib/lrpkg/shorwall.list
     do_or_die chmod 600 var/lib/lrpkg/shorwall.conf
-    
+
     case $VERSION in
 	2.*)
 	    [ -d etc/shorewall/start.d ] || do_or_die mkdir etc/shorewall/start.d
@@ -518,16 +518,16 @@ if [ -n "$BUILDLRP" ]; then
     esac
 
     progress_message "Creating $DIR/$LRP ..."
-    
+
     do_or_die "tar -zcvf ../$LRP $(cat var/lib/lrpkg/shorwall.list)  >> $LOGFILE 2>&1"
-    
+
     cd $DIR
 fi
 
 if [ -n "$OLDVERSION" ]; then
     progress_message "Creating patch-$VERSION ..."
-    
+
     diff -Nau shorewall-$OLDVERSION shorewall-$VERSION > patch-$VERSION
-fi    
+fi
 
 progress_message "Shorewall $VERSION Build complete - $(date)"

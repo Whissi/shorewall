@@ -4,13 +4,10 @@ Problems Corrected in 2.5.9:
 
 New Features in 2.5.9:
 
-1) A new TC_SCRIPT option replaces TC_ENABLED in shorewall.conf. If the
-   option is not set then the internal shaper (tc4shorewall by Arne
-   Bernin) is used. Otherwise, the script named in the variable is
-   used.
-
-   Users who currently use an /etc/shorewall/tcstart file should set
-   TC_SCRIPT=/etc/shorewall/tcstart in shorewall.conf.
+1) A new value is defined for the TC_ENABLED option in shorewall.conf to
+   enable the builtin tc4shorewall traffic shaper. If you set
+   TC_ENABLED=internal then tc4shorewall will be used.   If the option is
+   set to Yes then Shorewall will continue to look for a 'tcstart' script.
 
 2) The default traffic shaping class for a device was being incorrectly
    specified by tc4shorewall.
@@ -205,14 +202,10 @@ Migration Considerations:
     Note that the rule is added at the front of the NEW section of the
     rules file.
 
-11) A new TC_SCRIPT option replaces TC_ENABLED in shorewall.conf. If the
-    option is not set then the internal shaper (tc4shorewall by Arne
-    Bernin) is used. Otherwise, the script named in the variable is
-    used.
-
-    Users who currently use an /etc/shorewall/tcstart file and wish to
-    continue to do so should set
-    TC_SCRIPT=/etc/shorewall/tcstart in shorewall.conf.
+11) A new value is defined for the TC_ENABLED option in shorewall.conf to
+    enable the builtin tc4shorewall traffic shaper. If you set
+    TC_ENABLED=internal then tc4shorewall will be used.   If the option is
+    set to Yes then Shorewall will continue to look for a 'tcstart' script.
 
 New Features in Shorewall 2.5.*
 

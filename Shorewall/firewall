@@ -3701,13 +3701,13 @@ setup_tc1() {
     run_iptables -t mangle -A FORWARD     -j tcfor
     run_iptables -t mangle -A POSTROUTING -j tcpost
 
-    if [ -n "$TC_SCRIPT" ]; then
+    if [ -n "$TC_ENABLED" ]; then
 
 	run_user_exit $TC_SCRIPT
 
         save_progress_message "Restoring Traffic Control..."
 	save_command . $TC_SCRIPT
-    else
+    elif [ -n "$TC_ENABLED" ]; then
 	setup_traffic_shaping
     fi
 }
@@ -4129,7 +4129,7 @@ refresh_tc() {
 
     if [ -n "$TC_SCRIPT" ]; then
 	run_user_exit $TC_SCRIPT
-    else
+    elif [ -n "$TC_ENABLED" ]; then
 	setup_traffic_shaping
     fi
 
@@ -9185,7 +9185,7 @@ do_initialize() {
     LOGLIMIT=
     ADD_IP_ALIASES=
     ADD_SNAT_ALIASES=
-    TC_SCRIPT=
+    TC_ENABLED=
     BLACKLIST_DISPOSITION=
     BLACKLIST_LOGLEVEL=
     CLAMPMSS=
@@ -9434,10 +9434,28 @@ do_initialize() {
 	    ;;
     esac
 
-    if [ -n "$TC_SCRIPT" ] ; then
-	f="$TC_SCRIPT"
-	TC_SCRIPT=$(find_file $TC_SCRIPT)
-	[ -f $TC_SCRIPT ] || startup_error "Unable to find TC_SCRIPT file ($f)"
+   TC_SCRIPT=
+
+   if [ -n "$TC_ENABLED" ] ; then
+	case "$TC_ENABLED" in
+	    [Yy][Ee][Ss])
+		TC_ENABLED=
+		TC_SCRIPT=$(find_file tcstart)
+		[ -f $TC_SCRIPT ] || startup_error "Unable to find tcstart file"
+		;;
+	    [Ii][Nn][Tt][Ee][Rr][Nn][Aa][Ll])
+		TC_ENABLED=Yes
+		;;
+	    [Nn][Oo])
+		TC_ENABLED=
+		;;
+	esac
+    else
+	TC_ENABLED=Yes
+    fi
+
+    if [ -n "$TC_ENABLED" ];then
+	[ -n "$MANGLE_ENABLED" ] || startup_error "Traffic Shaping requires mangle support in your kernel and iptables"
     fi
 
     [ "x${SHOREWALL_DIR}" = "x." ] && SHOREWALL_DIR="$PWD"

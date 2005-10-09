@@ -3701,7 +3701,7 @@ setup_tc1() {
     run_iptables -t mangle -A FORWARD     -j tcfor
     run_iptables -t mangle -A POSTROUTING -j tcpost
 
-    if [ -n "$TC_ENABLED" ]; then
+    if [ -n "$TC_SCRIPT" ]; then
 
 	run_user_exit $TC_SCRIPT
 

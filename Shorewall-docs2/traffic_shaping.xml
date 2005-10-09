@@ -151,11 +151,10 @@
 
     <itemizedlist>
       <listitem>
-        <para>Set <emphasis role="bold">TC_ENABLED</emphasis> to No in
-        /etc/shorewall/shorewall.conf. While that seems a bit illogical, it is
-        done for compatibility with previous releases where TC_ENABLED=Yes
-        causes Shorewall to look for an external tcstart file (See <link
-        linkend="tcstart">a later section</link> for details).</para>
+        <para>Set <emphasis role="bold">TC_ENABLED</emphasis> to "Internal" in
+        /etc/shorewall/shorewall.conf. Setting TC_ENABLED=Yes causes Shorewall
+        to look for an external tcstart file (See <link linkend="tcstart">a
+        later section</link> for details).</para>
       </listitem>
 
       <listitem>
@@ -519,14 +518,12 @@ NOPRIOHOSTDST=60.0.0.0/24
 NOPRIOPORTSRC="6662 6663"
 
 # low priority destination ports
-NOPRIOPORTDST="6662 6663"
-	  </programlisting>
+NOPRIOPORTDST="6662 6663"  </programlisting>
 
         <para>This would result in the following additional settings to the
         tcrules file:</para>
 
-        <programlisting>
-3               192.168.1.128/25 0.0.0.0/0      all
+        <programlisting>3               192.168.1.128/25 0.0.0.0/0      all
 3               192.168.3.28     0.0.0.0/0      all
 3               0.0.0.0/0        60.0.0.0/24    all
 3               0.0.0.0/0        0.0.0.0/0      udp     6662,6663

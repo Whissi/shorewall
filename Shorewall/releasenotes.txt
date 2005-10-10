@@ -1,16 +1,13 @@
-Shorewall 3.0.0 Beta 1.
+Shorewall 3.0.0 Beta 2.
 
-Problems Corrected in 3.0.0 Beta 1:
+Problems Corrected in 3.0.0 Beta 2:
 
-1) The default traffic shaping class for a device was being incorrectly
-   specified by tc4shorewall.
+1) The MACLIST_TABLE option was incorrectly included in shorewall.conf
+   as MAC_TABLE.
 
-New Features in 3.0.0 Beta 1:
+New Features in 3.0.0 Beta 2:
 
-1) A new value is defined for the TC_ENABLED option in shorewall.conf to
-   enable the builtin tc4shorewall traffic shaper. If you set
-   TC_ENABLED=internal then tc4shorewall will be used.   If the option is
-   set to Yes then Shorewall will continue to look for a 'tcstart' script.
+None.
 
 Migration Considerations:
 
@@ -148,7 +145,8 @@ Migration Considerations:
    will replace that call with SMTP/ACCEPT. Because this substitution
    is expensive, it is conditional based on the setting of
    MAPOLDACTIONS in shorewall.conf. If this option is set to YES or if
-   it is not set (such as if you are using your old shorewall.conf
+   it is not set (such as if you are using your old shorewall.confThe default traffic shaping class for a device was being incorrectly
+   specified by tc4shorewall.
    file) then Shorewall will perform the substitution. Once you have
    converted to use the new macros, you can set MAPOLDACTIONS=No and
    invocations of those actions will go much quicker during 'shorewall

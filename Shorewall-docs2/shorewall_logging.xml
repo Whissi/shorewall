@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-10-01</pubdate>
+    <pubdate>2005-10-10</pubdate>
 
     <copyright>
       <year>2001 - 2005</year>
@@ -34,6 +34,13 @@
     </legalnotice>
   </articleinfo>
 
+  <caution>
+    <para><emphasis role="bold">This article applies to Shorewall 3.0 and
+    later. If you are running a version of Shorewall earlier than Shorewall
+    3.0.0 then please see the documentation for that
+    release.</emphasis></para>
+  </caution>
+
   <section>
     <title>How to Log Traffic Through a Shorewall Firewall</title>
 
@@ -43,15 +50,19 @@
 
     <orderedlist>
       <listitem>
-        <para>The packet is part of an established connecection. The packet is
-        accepted and cannot be logged.</para>
+        <para>The packet is part of an established connecection. While the
+        packet can be logged using LOG rules in the ESTABLISHED section of
+        <ulink url="Documentation.htm#Rules">/etc/shorewall/rules</ulink>,
+        that is not recommended because of the large amount of information
+        that may be logged.</para>
       </listitem>
 
       <listitem>
         <para>The packet represents a connection request that is related to an
         established connection (such as a <ulink url="FTP.html">data
         connection associated with an FTP control connection</ulink>). These
-        packets also cannot be logged.</para>
+        packets may be logged using LOG rules in the RELATED section of <ulink
+        url="Documentation.htm#Rules">/etc/shorewall/rules</ulink>.</para>
       </listitem>
 
       <listitem>

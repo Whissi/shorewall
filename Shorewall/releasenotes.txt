@@ -207,7 +207,7 @@ Migration Considerations:
     TC_ENABLED=internal then tc4shorewall will be used.   If the option is
     set to Yes then Shorewall will continue to look for a 'tcstart' script.
 
-New Features in Shorewall 2.5.*
+New Features in Shorewall 3.0.*
 
 1) Error and warning messages are made easier to spot by using
    capitalization (e.g., ERROR: and WARNING:).
@@ -349,9 +349,9 @@ New Features in Shorewall 2.5.*
 
 7)  A new FASTACCEPT option has been added to shorewall.conf.
 
-    Normally, Shorewall accepting ESTABLISHED/RELATED packets until
-    these packets reach the chain in which the original connection was
-    accepted. So for packets going from the 'loc' zone to the 'net'
+    Normally, Shorewall defers accepting ESTABLISHED/RELATED packets
+    until these packets reach the chain in which the original connection
+    was accepted. So for packets going from the 'loc' zone to the 'net'
     zone, ESTABLISHED/RELATED packets are ACCEPTED in the 'loc2net'
     chain.
 
@@ -385,19 +385,15 @@ New Features in Shorewall 2.5.*
     That rule would allow loc->net HTTP access from the local
     network 10.0.0.0/24 except for hosts 10.0.0.4 and 10.0.0.22.
 
-10) You may now specify "!" followed by a list of addresses in the
-    SOURCE and DEST columns of entries in /etc/shorewall/tcrules and
-    Shorewall will generate the rule that you expect.
-
-11) Tunnel types "openvpnserver" and "openvpnclient" have been added
+10) Tunnel types "openvpnserver" and "openvpnclient" have been added
     to reflect the introduction of client and server OpenVPN
     configurations in OpenVPN 2.0.
 
-12) The COMMAND variable is now set to 'restore' in restore
+11) The COMMAND variable is now set to 'restore' in restore
     scripts. The value of this variable is sometimes of interest to
     programmers providing custom /etc/shorewall/tcstart scripts.
 
-13) Previously, if you defined any intra-zone rule(s) then any traffic
+12) Previously, if you defined any intra-zone rule(s) then any traffic
     not matching the rule(s) was subject to normal policies (which
     usually turned out to involve the all->all REJECT policy). Now, the
     intra-zone ACCEPT policy will still be in effect in the presense of
@@ -417,7 +413,7 @@ New Features in Shorewall 2.5.*
     #SOURCE	DEST	POLICY	LOG LEVEL
     loc		loc	ACCEPT	info
 
-14) Prior to Shorewall 2.5.3, the rules file only controlled packets in
+13) Prior to Shorewall 2.5.3, the rules file only controlled packets in
     the Netfilter states NEW and INVALID. Beginning with this release,
     the rules file can also deal with packets in the ESTABLISHED and
     RELATED states.
@@ -456,12 +452,12 @@ New Features in Shorewall 2.5.*
     /etc/shorewall.shorewall.conf then the ESTABLISHED and RELATED
     sections must be empty.
 
-15) The value 'ipp2p' is once again allowed in the PROTO column of
+14) The value 'ipp2p' is once again allowed in the PROTO column of
     the rules file. It is recommended that rules specifying 'ipp2p'
     only be included in the ESTABLISHED section of the file.
 
 
-16) Shorewall actions lack a generalized way to pass parameters to an
+15) Shorewall actions lack a generalized way to pass parameters to an
     extension script associated with an action. To work around this
     lack, some users have used the log tag as a parameter. This works
     but requires that a log level other than 'none' be specified when
@@ -484,17 +480,17 @@ New Features in Shorewall 2.5.*
 
     Now, $1 = these, $2 = are and $3 = parameters
 
-17) The "shorewall check" command now checks the /etc/shorewall/masq,
+16) The "shorewall check" command now checks the /etc/shorewall/masq,
     /etc/shorewall/blacklist, /etc/shorewall/proxyarp,
     /etc/shorewall/nat and /etc/shorewall/providers files.
 
-18) Arne Bernin's "tc4shorewall" package has been integrated into
+17) Arne Bernin's "tc4shorewall" package has been integrated into
     Shorewall. Arne will be providing documentation and support for
     this part of Shorewall.
 
     Thanks, Arne!
 
-19) When /usr/share/shorewall/functions is loaded it now sets
+18) When /usr/share/shorewall/functions is loaded it now sets
 
 	 SHOREWALL_LIBRARY=Loaded
 
@@ -502,7 +498,7 @@ New Features in Shorewall 2.5.*
     variable to determine if the library has been loaded into the
     current shell process.
 
-20) The install.sh script now does a much cleaner job of backing up the
+19) The install.sh script now does a much cleaner job of backing up the
     current installation. It copies the directories /etc/shorewall,
     /usr/share/shorewall and /var/lib/shorewall to a directory of the
     same name with "-$VERSION.bkout" appended. The init script and
@@ -514,7 +510,7 @@ New Features in Shorewall 2.5.*
 	   rm -rf /usr/share/shorewall-*.bkout
 	   rm -rf /var/lib/shorewall-*.bkout
 
-21) A new '-n' option has been added to the "start", "restart",
+20) A new '-n' option has been added to the "start", "restart",
     "restore",  "stop" and "try" commands. This option instructs
     Shorewall to not alter the routing in any way.
 
@@ -522,27 +518,27 @@ New Features in Shorewall 2.5.*
     it prevents the route cache from being flushed which preserves the
     mapping of end-point address pairs to routes.
 
-22) The output of "shorewall dump" now includes a capabilities report
+21) The output of "shorewall dump" now includes a capabilities report
     such as the one produced by "shorewall show capabilities".
 
-23) The "plain" zone type has been replaced by "ipv4". The types
+22) The "plain" zone type has been replaced by "ipv4". The types
     "IPv4" and "IPV4" are synonyms for "ipv4". In addition, "IPSEC",
     "ipsec4" and "IPSEC4" are recognized synonyms for "ipsec".
 
-24) The NEWNOTSYN and LOGNEWNOTSYN options in shorewall.conf have been
+23) The NEWNOTSYN and LOGNEWNOTSYN options in shorewall.conf have been
     removed as have the 'newnotsyn' options in /etc/shorewall/interfaces
     and /etc/shorewall/hosts. See the Migration Considerations for
     instructions if you wish to block "new-not-syn" TCP packets.
 
-25) The "shorewall show zones" command now displays the zone type. You
+24) The "shorewall show zones" command now displays the zone type. You
     must have restarted Shorewall using this release before this feature
     will work correctly.
 
-26) The multi-ISP code now requires that that you set MARK_IN_FORWARD_CHAIN=Yes
+25) The multi-ISP code now requires that that you set MARK_IN_FORWARD_CHAIN=Yes
     in shorewall.conf. This is done to ensure that "shorewall refresh" will
     work correctly.
 
-27) Shorewall now supports UDP IPP2P matching. In addition to the "ipp2p"
+26) Shorewall now supports UDP IPP2P matching. In addition to the "ipp2p"
     keyword in the PROTOCOL column of the relevant files, the following
     values may be specified:
 
@@ -552,7 +548,7 @@ New Features in Shorewall 2.5.*
 	ipp2p:all           Matches both UDP and TCP traffic. You may
 			    not specify a SOURCE PORT with this PROTOCOL.
 
-28) Normally MAC verification triggered by the 'maclist' interface and host
+27) Normally MAC verification triggered by the 'maclist' interface and host
     options is done out of the INPUT and FORWARD chains of the filter table.
     Users have reported that under some circumstances, MAC verification is
     failing for forwarded packets when the packets are being forwarded out

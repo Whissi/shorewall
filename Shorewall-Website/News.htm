@@ -1,948 +1,767 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-
 <html>
-  <head>
-    <meta name="generator" content=
-    "HTML Tidy for Linux (vers 1st April 2002), see www.w3.org">
-    <meta http-equiv="Content-Type" content=
-    "text/html; charset=UTF-8">
-
-    <title>Shorewall News</title>
-  </head>
-
-  <body>
-    <h1 style="text-align: left;">Shorewall News and
-    Announcements<br>
-    </h1>
-    <span style="font-weight: bold;">Tom Eastep<br>
+<head>
+  <meta name="generator"
+ content="HTML Tidy for Linux (vers 1st April 2002), see www.w3.org">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>Shorewall News</title>
+</head>
+<body>
+<h1 style="text-align: left;">Shorewall News and Announcements<br>
+</h1>
+<span style="font-weight: bold;">Tom Eastep<br>
+<br>
+</span>Copyright © 2001-2005 Thomas M. Eastep<br>
+<p>Permission is granted to copy, distribute and/or modify this
+document under the terms of the GNU Free Documentation License, Version
+1.2 or any later version published by the Free Software Foundation;
+with no Invariant Sections, with no Front-Cover, and with no Back-Cover
+Texts. A copy of the license is included in the section entitled “<span
+ class="quote"><a href="GnuCopyright.htm" target="_self">GNU Free
+Documentation License</a></span>”.<br>
+</p>
+<p>2005-05-05<br>
+</p>
+<hr style="width: 100%; height: 2px;"> <span style="font-weight: bold;">10/05/2005
+Shorewall 2.4.5<br>
+</span>
+<br>
+Problems Corrected in 2.4.5<br>
+<br>
+<ol>
+  <li>In previous versions, when the command is 'start', 'restart' or
+'stop' then OUTPUT traffic to hosts listed in
+/etc/shorewall/routestopped is not enabled if ADMINISABSENTMINDED=Yes.
+That traffic is now enabled independent of the setting of
+ADMINISABSENTMINDED.</li>
+  <li>Although it was documented that icmp types could be used in the
+tcrules file, the code did not support it. Thanks to Jorge Molina, that
+problem is now corrected.</li>
+  <li>In a multi-ISP configuration, fwmark routing rules now have a
+higher priority than source IP rules. This allows entries in tcrules to
+be more effective in controlling routing.</li>
+  <li>Previously, not all of the mangle chains were flushed during
+"shorewall restart".</li>
+</ol>
+<span style="font-weight: bold;">09/12/2005 Shorewall 2.4.4<br>
+</span><br>
+Problems Corrected<br>
+<ol>
+  <li>An incorrect comment in the /etc/shorewall/proxyarp file has been
+removed.</li>
+  <li>The message generated when a duplicate policy has been entered is
+now more informative. Previously, only the POLICY column contents
+appeared in the message. Now the SOURCE, DEST and POLICY column
+contents are shown.</li>
+  <li>Shorewall now clears the Netfilter "raw" table during "shorewall
+[re]start", "shorewall stop" and "shorewall clear" processing.</li>
+</ol>
+New Features<br>
+<ol>
+  <li>Tunnel types "openvpnserver" and "openvpnclient" have been added
+to reflect the introduction of client and server OpenVPN configurations
+in OpenVPN 2.0.</li>
+  <li>The COMMAND variable is now set to 'restore' in restore scripts.
+The value of this variable is sometimes of interest to programmers
+providing custom /etc/shorewall/tcstart scripts.<br>
+  </li>
+</ol>
+<span style="font-weight: bold;">08/16/2005 Shorewall 2.4.3<br>
+</span><br>
+Problems Corrected:<br>
+<ol>
+  <li>Shorewall is no longer dependent on the 'which' utility.</li>
+  <li>The 'shorewall add' command failed if there existed a zone in the
+configuration that specified the 'ipsec' option in /etc/shorewall/hosts.</li>
+  <li>Shorewall is no longer dependent on /bin/echo.</li>
+  <li>A CLASSIFY rule&nbsp; with $FW in the SOURCE column (tcrules) no
+longer results in a "shorewall start" error.</li>
+  <li>You may now use port lists in the DEST PORT and SOURCE PORT
+columns of the /etc/shorewall/accounting file.</li>
+  <li>The "shorewall show capabilities" command now accurately reports
+the availability of "Packet type match" independent of the setting of
+PKTTYPE in shorewall.conf.</li>
+  <li>Thanks to Tuomo Soini, all of the files have been siginificantly
+cleaned up in terms of formatting and extra white-space.<br>
+  </li>
+</ol>
+New Features:<br>
+<ol>
+  <li>New Allow.Submission and Allow.NTPbrd actions have been added.
+Users of the Allow.NTP action that use NTP broadcasting should switch
+to use of Allow.NTPbrd instead.</li>
+  <li>The kernel version string is now included in the output of
+"shorewall status".<br>
+  </li>
+</ol>
+<span style="font-weight: bold;">07/30/2005 Shorewall 2.2.6<br>
+<br>
+</span>Problems Corrected:<br>
+<ol>
+  <li><a href="#20050717">MACLIST_TTL Vulnerability</a> fix.</li>
+  <li>TCP_FLAGS_LOG_LEVEL=ULOG breaks with recent versions of iptables.</li>
+  <li>The bogons file has been updated to reflect recent IANA
+allocations.</li>
+</ol>
+<span style="font-weight: bold;">07/21/2005 Shorewall 2.4.2<br>
+<br>
+</span>Problems Corrected:<br>
+<ol>
+  <li>The /etc/shorewall/hosts file now includes information about
+defining a zone using one or more ipsets.</li>
+  <li>A <a href="#20050717">vulnerability involving MACLIST_TTL &gt; 0
+or MACLIST_DISPOSITION=ACCEPT</a> has been corrected.</li>
+  <li>It is now possible to specify !&lt;address&gt; in the SUBNET
+column of /etc/shorewall/masq. Previously, it was necessary to write
+0.0.0.0/0!&lt;address&gt;.</li>
+  <li>When &lt;network1&gt;!&lt;network2&gt; was specified in the
+SUBNET column of /etc/shorewall/masq, IPSEC policies were not correctly
+applied to the resulting rules. This usually resulted in IPSEC not
+working through the interface specified in the INTERFACES column.<br>
+  </li>
+</ol>
+New Features:<br>
+<ol>
+  <li> A 'loose' provider option has been added. If you wish to be able
+to use marking to specify the gateway used by connections originating
+on the firewall itself, the specify 'loose' for each provider. It has
+bee reported that 'loose' may break the effect of 'track' so beware if
+you need 'track' functionality (you shouldn't be originating many
+connections from your firewall to the net anyway).<br>
     <br>
-    </span>Copyright © 2001-2005 Thomas M. Eastep<br>
-
-    <p>Permission is granted to copy, distribute and/or modify this
-    document under the terms of the GNU Free Documentation License,
-    Version 1.2 or any later version published by the Free Software
-    Foundation; with no Invariant Sections, with no Front-Cover,
-    and with no Back-Cover Texts. A copy of the license is included
-    in the section entitled “<span class="quote"><a href=
-    "GnuCopyright.htm" target="_self">GNU Free Documentation
-    License</a></span>”.<br>
-    </p>
-
-    <p>2005-09-12<br>
-    </p>
-    <hr style="width: 100%; height: 2px;">
-    <span style="font-weight: bold;">09/12/2005 Shorewall 2.4.4<br>
-    </span><br>
-    Problems Corrected<br>
-
-    <ol>
-      <li>An incorrect comment in the /etc/shorewall/proxyarp file
-      has been removed.</li>
-
-      <li>The message generated when a duplicate policy has been
-      entered is now more informative. Previously, only the POLICY
-      column contents appeared in the message. Now the SOURCE, DEST
-      and POLICY column contents are shown.</li>
-
-      <li>Shorewall now clears the Netfilter "raw" table during
-      "shorewall [re]start", "shorewall stop" and "shorewall clear"
-      processing.</li>
-    </ol>
-    New Features<br>
-
-    <ol>
-      <li>Tunnel types "openvpnserver" and "openvpnclient" have
-      been added to reflect the introduction of client and server
-      OpenVPN configurations in OpenVPN 2.0.</li>
-
-      <li>The COMMAND variable is now set to 'restore' in restore
-      scripts. The value of this variable is sometimes of interest
-      to programmers providing custom /etc/shorewall/tcstart
-      scripts.<br>
-      </li>
-    </ol>
-    <span style="font-weight: bold;">08/16/2005 Shorewall 2.4.3<br>
-    </span><br>
-    Problems Corrected:<br>
-
-    <ol>
-      <li>Shorewall is no longer dependent on the 'which'
-      utility.</li>
-
-      <li>The 'shorewall add' command failed if there existed a
-      zone in the configuration that specified the 'ipsec' option
-      in /etc/shorewall/hosts.</li>
-
-      <li>Shorewall is no longer dependent on /bin/echo.</li>
-
-      <li>A CLASSIFY rule&nbsp; with $FW in the SOURCE column
-      (tcrules) no longer results in a "shorewall start"
-      error.</li>
-
-      <li>You may now use port lists in the DEST PORT and SOURCE
-      PORT columns of the /etc/shorewall/accounting file.</li>
-
-      <li>The "shorewall show capabilities" command now accurately
-      reports the availability of "Packet type match" independent
-      of the setting of PKTTYPE in shorewall.conf.</li>
-
-      <li>Thanks to Tuomo Soini, all of the files have been
-      siginificantly cleaned up in terms of formatting and extra
-      white-space.<br>
-      </li>
-    </ol>
-    New Features:<br>
-
-    <ol>
-      <li>New Allow.Submission and Allow.NTPbrd actions have been
-      added. Users of the Allow.NTP action that use NTP
-      broadcasting should switch to use of Allow.NTPbrd
-      instead.</li>
-
-      <li>The kernel version string is now included in the output
-      of "shorewall status".<br>
-      </li>
-    </ol>
-    <span style="font-weight: bold;">07/30/2005 Shorewall 2.2.6<br>
-    <br>
-    </span>Problems Corrected:<br>
-
-    <ol>
-      <li><a href="#20050717">MACLIST_TTL Vulnerability</a>
-      fix.</li>
-
-      <li>TCP_FLAGS_LOG_LEVEL=ULOG breaks with recent versions of
-      iptables.</li>
-
-      <li>The bogons file has been updated to reflect recent IANA
-      allocations.</li>
-    </ol>
-    <span style="font-weight: bold;">07/21/2005 Shorewall 2.4.2<br>
-    <br>
-    </span>Problems Corrected:<br>
-
-    <ol>
-      <li>The /etc/shorewall/hosts file now includes information
-      about defining a zone using one or more ipsets.</li>
-
-      <li>A <a href="#20050717">vulnerability involving MACLIST_TTL
-      &gt; 0 or MACLIST_DISPOSITION=ACCEPT</a> has been
-      corrected.</li>
-
-      <li>It is now possible to specify !&lt;address&gt; in the
-      SUBNET column of /etc/shorewall/masq. Previously, it was
-      necessary to write 0.0.0.0/0!&lt;address&gt;.</li>
-
-      <li>When &lt;network1&gt;!&lt;network2&gt; was specified in
-      the SUBNET column of /etc/shorewall/masq, IPSEC policies were
-      not correctly applied to the resulting rules. This usually
-      resulted in IPSEC not working through the interface specified
-      in the INTERFACES column.<br>
-      </li>
-    </ol>
-    New Features:<br>
-
-    <ol>
-      <li>
-        A 'loose' provider option has been added. If you wish to be
-        able to use marking to specify the gateway used by
-        connections originating on the firewall itself, the specify
-        'loose' for each provider. It has bee reported that 'loose'
-        may break the effect of 'track' so beware if you need
-        'track' functionality (you shouldn't be originating many
-        connections from your firewall to the net anyway).<br>
-        <br>
-        To use 'loose', you also need to add two entries in
-        /etc/shorewall/masq:<br>
-
-<pre>
-<span style=
-"font-family: monospace;">#INTERFACE           SUBNET          ADDRESS<br>
+To use 'loose', you also need to add two entries in /etc/shorewall/masq:<br>
+    <pre><span style="font-family: monospace;">#INTERFACE           SUBNET          ADDRESS<br>
    $IF_ISP1             $IP_ISP2        $IP_ISP1<br>
    $IF_ISP2             $IP_ISP1        $IP_ISP2</span>
-</pre>
-        where:<br>
-
-<pre>
-        $IF_ISP1        is the interface to ISP 1.<br>
+    </pre>
+where:<br>
+    <pre>        $IF_ISP1        is the interface to ISP 1.<br>
         $IF_ISP2        is the interface to ISP 2.<br>
         $IP_ISP1        is the IP address of $IF_ISP1<br>
         $IP_ISP2        is the IP address of $IF_ISP2
-</pre>
-      </li>
-
-      <li>/sbin/shorewall now issues a warning each time that it
-      finds that startup is disabled.</li>
-
-      <li>A new COPY column has been added to the
-      /etc/shorewall/providers file. Normally, when a table
-      name/number is given in the DUPLICATE column, the entire
-      table (less default routes) is copied. The COPY column allows
-      you to limit the routes copied to those that go through an
-      interface listed in COPY. For example, if you enter eth0 in
-      INTERFACE, "eth1,eth2" in COPY and 'main' in DUPLICATE then
-      the new table created will contain those routes through the
-      interfaces eth0, eth1 and eth2.<br>
-      </li>
-    </ol>
-
-    <hr style="width: 100%; height: 2px;">
-
-    <h2><a name="20050717"></a><font color="#ff0000">07/17/2005
-    Security vulnerability in MACLIST processing</font></h2>
-
-    <h3>Description</h3>
-
-    <p>A security vulnerability has been discovered which affects
-    all supported stable versions of Shorewall.&nbsp; This
-    vulnerability enables a client accepted by MAC address
-    filtering to bypass any other rule.&nbsp; If MACLIST_TTL is set
-    to a value greater than 0 or MACLIST_DISPOSITION is set to
-    "ACCEPT" in /etc/shorewall/shorewall.conf (default is
-    MACLIST_TTL=0 and MACLIST_DISPOSITION=REJECT), and a client is
-    positively identified through its MAC address, it bypasses all
-    other policies/rules in place, thus gaining access to all open
-    services on the firewall.</p>
-
-    <h3>Fix</h3>
-
-    <h4>Workaround</h4>
-
-    <p>For Shorewall 2.2.x or 2.4.x, set MACLIST_TTL=0 or
-    MACLIST_DISPOSITION=REJECT in
-    /etc/shorewall/shorewall.conf.&nbsp; For Shorewall 2.0.x, set
-    MACLIST_DISPOSITION=REJECT in
-    /etc/shorewall/shorewall.conf.&nbsp; MACLIST filtering is of
-    limited value on Internet-connected hosts, and the Shorewall
-    team recommends this approach to be used if possible.</p>
-
-    <h4>Upgrade</h4>
-
-    <p>For Shorewall 2.4.x, a fixed version of the 'firewall'
-    script is available at: <a href=
-    "http://shorewall.net/pub/shorewall/2.4/shorewall-2.4.1/errata/firewall">
-    http://shorewall.net/pub/shorewall/2.4/shorewall-2.4.1/errata/firewall</a>
-    and its mirrors, <a href=
-    "http://www.shorewall.net/pub/shorewall/2.4/shorewall-2.4.1/errata/firewall">
-    http://www.shorewall.net/pub/shorewall/2.4/shorewall-2.4.1/errata/firewall</a>
-    and <a href=
-    "http://slovakia.shorewall.net/pub/shorewall/2.4/shorewall-2.4.1/errata/firewall">
-    http://slovakia.shorewall.net/pub/shorewall/2.4/shorewall-2.4.1/errata/firewall</a>.</p>
-
-    <p>For Shorewall 2.2.x, a fixed version of the 'firewall'
-    script is available at: <a href=
-    "http://shorewall.net/pub/shorewall/2.2/shorewall-2.2.5/errata/firewall">
-    http://shorewall.net/pub/shorewall/2.2/shorewall-2.2.5/errata/firewall</a>
-    and its mirrors, <a href=
-    "http://www.shorewall.net/pub/shorewall/2.2/shorewall-2.2.5/errata/firewall">
-    http://www.shorewall.net/pub/shorewall/2.2/shorewall-2.2.5/errata/firewall</a>
-    and <a href=
-    "http://slovakia.shorewall.net/pub/shorewall/2.2/shorewall-2.2.5/errata/firewall">
-    http://slovakia.shorewall.net/pub/shorewall/2.2/shorewall-2.2.5/errata/firewall</a>.</p>
-
-    <p>For Shorewall 2.0.x, a fixed version of the 'firewall'
-    script is available at: <a href=
-    "http://shorewall.net/pub/shorewall/errata/2.0.17/firewall">http://shorewall.net/pub/shorewall/errata/2.0.17/firewall</a>
-    and its mirrors, <a href=
-    "http://www.shorewall.net/pub/shorewall/errata/2.0.17/firewall">
-    http://www.shorewall.net/pub/shorewall/errata/2.0.17/firewall</a>
-    and <a href=
-    "http://slovakia.shorewall.net/pub/shorewall/errata/2.0.17/firewall">
-    http://slovakia.shorewall.net/pub/shorewall/errata/2.0.17/firewall</a>.</p>
-
-    <p>Users of any version before 2.0.17 are urged to upgrade to a
-    supported version of Shorewall (preferably 2.4.1) before using
-    the fixed files.&nbsp; Only the most recent version of the
-    2.0.x and 2.2.x streams will be supported by the development
-    team, and the 1.x branches are no longer maintained at
-    all.&nbsp; Future releases of Shorewall will include this
-    fix.</p>
-
-    <p>This information was based on <a href=
-    "http://seclists.org/lists/fulldisclosure/2005/Jul/0409.html">Patrick
-    Blitz's post to the Full Disclosure mailing list</a>.&nbsp;
-    Thanks to Supernaut (supernaut at ns dot sympatico dot ca) for
-    reporting this bug.<br>
-    </p>
-
-    <p><span style="font-weight: bold;">Version Upgrade<br>
-    </span></p>
-
-    <p>The vulnerability is corrected in Shorewall 2.4.2 and in
-    Shorewall 2.2.6.<br>
-    </p>
-    <hr style="width: 100%; height: 2px;">
-    <span style="font-weight: bold;">07/13/2005 Shorewall 2.4.1<br>
-    </span><br>
-    Problems Corrected:<br>
-
-    <ol>
-      <li>Shell variables may now be used in the zones file.</li>
-
-      <li>The /usr/share/shorewall/bogons file has been updated to
-      reflect recent IANA allocations.</li>
-
-      <li>Shorewall now detects an error where multiple providers
-      specify the 'track' option on the same interface.</li>
-
-      <li>The remnants of the GATEWAY column in
-      /etc/shorewall/interfaces have been removed. This column
-      appeared briefly in one of the Beta versions and was
-      immediately removed but some vestiges remained.</li>
-
-      <li>Shorewall now correctly restores a load-balancing default
-      route during processing of the 'shorewall restore' and
-      'shorewall -f start' commands. The latter command is normally
-      executed by the Shorewall init script during reboot.</li>
-
-      <li>A log level of "None!" is now allowed on builtin actions
-      such as ACCEPT and DROP.</li>
-
-      <li>Previously, LIMIT:BURST parameters in
-      /etc/shorewall/policy were not correctly applied when the
-      policy was QUEUE.</li>
-
-      <li>The 'chkconfig' command on FC4 and Mandriva previously
-      created symbolic links with incorrect names ("S-1shorewall").
-      The init script has been changed to prevent this incorrect
-      behavior.</li>
-
-      <li>DHCP traffic forwarded through a bridge could, under some
-      configurations, be filtered by the 'maclist' option even
-      though the 'dhcp' option was specified. This has been
-      corrected.<br>
-      </li>
-    </ol>
-    <span style="font-weight: bold;">06/05/2005 Shorewall 2.4.0<br>
+    </pre>
+  </li>
+  <li>/sbin/shorewall now issues a warning each time that it finds that
+startup is disabled.</li>
+  <li>A new COPY column has been added to the /etc/shorewall/providers
+file. Normally, when a table name/number is given in the DUPLICATE
+column, the entire table (less default routes) is copied. The COPY
+column allows you to limit the routes copied to those that go through
+an interface listed in COPY. For example, if you enter eth0 in
+INTERFACE, "eth1,eth2" in COPY and 'main' in DUPLICATE then the new
+table created will contain those routes through the interfaces eth0,
+eth1 and eth2.<br>
+  </li>
+</ol>
+<hr style="width: 100%; height: 2px;">
+<h2><a name="20050717"></a><font color="#ff0000">07/17/2005 Security
+vulnerability in MACLIST processing</font></h2>
+<h3>Description</h3>
+<p>A security vulnerability has been discovered which affects all
+supported stable versions of Shorewall.&nbsp; This vulnerability
+enables a client accepted by MAC address filtering to bypass any other
+rule.&nbsp; If MACLIST_TTL is set to a value greater than 0 or
+MACLIST_DISPOSITION is set to "ACCEPT" in /etc/shorewall/shorewall.conf
+(default is MACLIST_TTL=0 and MACLIST_DISPOSITION=REJECT), and a client
+is positively identified through its MAC address, it bypasses all other
+policies/rules in place, thus gaining access to all open services on
+the firewall.</p>
+<h3>Fix</h3>
+<h4>Workaround</h4>
+<p>For Shorewall 2.2.x or 2.4.x, set MACLIST_TTL=0 or
+MACLIST_DISPOSITION=REJECT in /etc/shorewall/shorewall.conf.&nbsp; For
+Shorewall 2.0.x, set MACLIST_DISPOSITION=REJECT in
+/etc/shorewall/shorewall.conf.&nbsp; MACLIST filtering is of limited
+value on Internet-connected hosts, and the Shorewall team recommends
+this approach to be used if possible.</p>
+<h4>Upgrade</h4>
+<p>For Shorewall 2.4.x, a fixed version of the 'firewall' script is
+available at: <a
+ href="http://shorewall.net/pub/shorewall/2.4/shorewall-2.4.1/errata/firewall">
+http://shorewall.net/pub/shorewall/2.4/shorewall-2.4.1/errata/firewall</a>
+and its mirrors, <a
+ href="http://www.shorewall.net/pub/shorewall/2.4/shorewall-2.4.1/errata/firewall">
+http://www.shorewall.net/pub/shorewall/2.4/shorewall-2.4.1/errata/firewall</a>
+and <a
+ href="http://slovakia.shorewall.net/pub/shorewall/2.4/shorewall-2.4.1/errata/firewall">
+http://slovakia.shorewall.net/pub/shorewall/2.4/shorewall-2.4.1/errata/firewall</a>.</p>
+<p>For Shorewall 2.2.x, a fixed version of the 'firewall' script is
+available at: <a
+ href="http://shorewall.net/pub/shorewall/2.2/shorewall-2.2.5/errata/firewall">
+http://shorewall.net/pub/shorewall/2.2/shorewall-2.2.5/errata/firewall</a>
+and its mirrors, <a
+ href="http://www.shorewall.net/pub/shorewall/2.2/shorewall-2.2.5/errata/firewall">
+http://www.shorewall.net/pub/shorewall/2.2/shorewall-2.2.5/errata/firewall</a>
+and <a
+ href="http://slovakia.shorewall.net/pub/shorewall/2.2/shorewall-2.2.5/errata/firewall">
+http://slovakia.shorewall.net/pub/shorewall/2.2/shorewall-2.2.5/errata/firewall</a>.</p>
+<p>For Shorewall 2.0.x, a fixed version of the 'firewall' script is
+available at: <a
+ href="http://shorewall.net/pub/shorewall/errata/2.0.17/firewall">http://shorewall.net/pub/shorewall/errata/2.0.17/firewall</a>
+and its mirrors, <a
+ href="http://www.shorewall.net/pub/shorewall/errata/2.0.17/firewall">
+http://www.shorewall.net/pub/shorewall/errata/2.0.17/firewall</a> and <a
+ href="http://slovakia.shorewall.net/pub/shorewall/errata/2.0.17/firewall">
+http://slovakia.shorewall.net/pub/shorewall/errata/2.0.17/firewall</a>.</p>
+<p>Users of any version before 2.0.17 are urged to upgrade to a
+supported version of Shorewall (preferably 2.4.1) before using the
+fixed files.&nbsp; Only the most recent version of the 2.0.x and 2.2.x
+streams will be supported by the development team, and the 1.x branches
+are no longer maintained at all.&nbsp; Future releases of Shorewall
+will include this fix.</p>
+<p>This information was based on <a
+ href="http://seclists.org/lists/fulldisclosure/2005/Jul/0409.html">Patrick
+Blitz's post to the Full Disclosure mailing list</a>.&nbsp; Thanks to
+Supernaut (supernaut at ns dot sympatico dot ca) for reporting this bug.<br>
+</p>
+<p><span style="font-weight: bold;">Version Upgrade<br>
+</span></p>
+<p>The vulnerability is corrected in Shorewall 2.4.2 and in Shorewall
+2.2.6.<br>
+</p>
+<hr style="width: 100%; height: 2px;"> <span style="font-weight: bold;">07/13/2005
+Shorewall 2.4.1<br>
+</span><br>
+Problems Corrected:<br>
+<ol>
+  <li>Shell variables may now be used in the zones file.</li>
+  <li>The /usr/share/shorewall/bogons file has been updated to reflect
+recent IANA allocations.</li>
+  <li>Shorewall now detects an error where multiple providers specify
+the 'track' option on the same interface.</li>
+  <li>The remnants of the GATEWAY column in /etc/shorewall/interfaces
+have been removed. This column appeared briefly in one of the Beta
+versions and was immediately removed but some vestiges remained.</li>
+  <li>Shorewall now correctly restores a load-balancing default route
+during processing of the 'shorewall restore' and 'shorewall -f start'
+commands. The latter command is normally executed by the Shorewall init
+script during reboot.</li>
+  <li>A log level of "None!" is now allowed on builtin actions such as
+ACCEPT and DROP.</li>
+  <li>Previously, LIMIT:BURST parameters in /etc/shorewall/policy were
+not correctly applied when the policy was QUEUE.</li>
+  <li>The 'chkconfig' command on FC4 and Mandriva previously created
+symbolic links with incorrect names ("S-1shorewall"). The init script
+has been changed to prevent this incorrect behavior.</li>
+  <li>DHCP traffic forwarded through a bridge could, under some
+configurations, be filtered by the 'maclist' option even though the
+'dhcp' option was specified. This has been corrected.<br>
+  </li>
+</ol>
+<span style="font-weight: bold;">06/05/2005 Shorewall 2.4.0<br>
+<br>
+Note:</span> Because of the short time that has elapsed since the
+release of Shorewall 2.2.0, Shorewall 2.0 will be supported until 1
+December 2005 or until the release of Shorewall 2.6.0, whichever occurs
+first.<br>
+<br>
+New Features:<br>
+<ol>
+  <li>Shorewall 2.4.0 includes support for multiple internet interfaces
+to different ISPs.<br>
     <br>
-    Note:</span> Because of the short time that has elapsed since
-    the release of Shorewall 2.2.0, Shorewall 2.0 will be supported
-    until 1 December 2005 or until the release of Shorewall 2.6.0,
-    whichever occurs first.<br>
+The file /etc/shorewall/providers may be used to define the different
+providers. It can actually be used to define alternate routing tables
+so uses like transparent proxy can use the file as well.<br>
     <br>
-    New Features:<br>
-
-    <ol>
-      <li>Shorewall 2.4.0 includes support for multiple internet
-      interfaces to different ISPs.<br>
-      <br>
-      The file /etc/shorewall/providers may be used to define the
-      different providers. It can actually be used to define
-      alternate routing tables so uses like transparent proxy can
-      use the file as well.<br>
-      <br>
-      Columns are:<br>
-      <br>
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      NAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      The provider name.</span><br style="font-family: monospace;">
-      <br style="font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      NUMBER&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      The provider number -- a number between 1 and 15</span><br
-      style="font-family: monospace;">
-      <br style="font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      MARK&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      A FWMARK value used in your /etc/shorewall/tcrules file to
-      direct packets for this provider.</span><br style=
-      "font-family: monospace;">
-      <br style="font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      DUPLICATE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The name of an
-      existing table to duplicate. May</span> <span style=
-      "font-family: monospace;">be 'main' or the name of a previous
-      provider.</span><br style="font-family: monospace;">
-      <br style="font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      INTERFACE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The name of the
-      network interface to the</span> <span style=
-      "font-family: monospace;">provider. Must be listed
-      in</span><span style=
-      "font-family: monospace;">/etc/shorewall/interfaces.</span><br
-       style="font-family: monospace;">
-      <br style="font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      GATEWAY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The
-      IP address of the provider's gateway router.</span> <span
-      style="font-family: monospace;">If you enter "detect" here
-      then Shorewall<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      will</span> <span style="font-family: monospace;">attempt to
-      determine the gateway IP address</span> <span style=
-      "font-family: monospace;">automatically.</span><br style=
-      "font-family: monospace;">
-      <br style="font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      OPTIONS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; A
-      comma-separated list selected from the</span> <span style=
-      "font-family: monospace;">following:</span><br style=
-      "font-family: monospace;">
-      <br style="font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      track&nbsp;&nbsp; If specified, connections FROM this
-      interface are</span> <span style="font-family: monospace;">to
-      be tracked so that responses may be<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      routed</span> <span style="font-family: monospace;">back out
-      this same interface.</span><br style=
-      "font-family: monospace;">
-      <br style="font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      You want specify 'track' if internet hosts will be</span>
-      <span style="font-family: monospace;">connecting to local
-      servers through<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      this</span> <span style=
-      "font-family: monospace;">provider.</span><br style=
-      "font-family: monospace;">
-      <br style="font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      Because of limitations in the 'ip' utility and</span> <span
-      style="font-family: monospace;">policy routing, you may not
-      use the SAVE or</span><span style=
-      "font-family: monospace;"><br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      RESTORE tcrules options or use connection</span><span style=
-      "font-family: monospace;">marking on any traffic to or from
-      this</span><br style="font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      interface. For traffic control purposes, you</span> <span
-      style="font-family: monospace;">must mark packets in the
-      FORWARD chain (or</span><span style=
-      "font-family: monospace;"><br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      better yet, use the CLASSIFY target).</span><br style=
-      "font-family: monospace;">
-      <br style="font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      balance The providers that have 'balance' specified
-      will</span> <span style="font-family: monospace;">get
-      outbound traffic load-balanced among<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      them. By</span> <span style=
-      "font-family: monospace;">default, all interfaces with
-      'balance' specified</span> <span style=
-      "font-family: monospace;">will have the same weight (1).<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      You can change the</span><span style=
-      "font-family: monospace;">weight of the route out of the
-      interface by</span> <span style=
-      "font-family: monospace;">specifiying
-      balance=&lt;weight&gt;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      where &lt;weight&gt; is</span><span style=
-      "font-family: monospace;">the desired route weight.</span><br
-      style="font-family: monospace;">
-      <br style="font-family: monospace;">
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Example:&nbsp; You run
-      squid in your DMZ on IP address 192.168.2.99. Your DMZ
-      interface is eth2<br>
-      <br style="font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      #NAME&nbsp;&nbsp; NUMBER&nbsp; MARK DUPLICATE&nbsp; INTERFACE
-      GATEWAY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; OPTIONS</span><br
-      style="font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      Squid&nbsp;&nbsp; 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      1&nbsp;&nbsp;&nbsp;
-      -&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      eth2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 192.168.2.99&nbsp;
-      -</span><br>
-      <br>
-      Use of this feature requires that your kernel and iptabls
-      support CONNMARK target and conntrack match support. It does
-      NOT require the ROUTE target extension.<br>
-      <br>
-      WARNING: The current version of iptables (1.3.1) is broken
-      with respect to CONNMARK and iptables-save/iptables-restore.
-      This means that if you configure multiple ISPs, "shorewall
-      restore" may fail. You must patch your iptables using the
-      patch at <a href=
-      "http://shorewall.net/pub/shorewall/contrib/iptables/CONNMARK.diff">
-      http://shorewall.net/pub/shorewall/contrib/iptables/CONNMARK.diff</a>.<br>
-
-      <br>
-      </li>
-
-      <li>Shorewall 2.3.0 supports the 'cmd-owner' option of the
-      owner match facility in Netfilter. Like all owner match
-      options, 'cmd-owner' may only be applied to traffic that
-      originates on the firewall.<br>
-      <br>
-      The syntax of the USER/GROUP column in the following files
-      has been extended:<br>
-      <br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      /etc/shorewall/accounting<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      /etc/shorewall/rules<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      /etc/shorewall/tcrules<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      /usr/share/shorewall/action.template<br>
-      <br>
-      To specify a command, prefix the command name with "+".<br>
-      <br>
-      &nbsp;&nbsp; Examples:<br>
-      <br>
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      +mozilla-bin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      #The program is named "mozilla-bin"</span><br style=
-      "font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      joe+mozilla-bin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      #The program is named "mozilla-bin" and</span><br style=
-      "font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      #is being run by user "joe"</span><br style=
-      "font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      joe:users+mozilla-bin&nbsp;&nbsp; #The program is named
-      "mozilla-bin" and</span><br style="font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      #is being run by user "joe" with</span><br style=
-      "font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      #effective group "users".</span><br style=
-      "font-family: monospace;">
-      <br>
-      &nbsp;&nbsp; Note that this is not a particularly robust
-      feature and I would never advertise it as a "Personal
-      Firewall" equivalent. Using symbolic links, it's easy to
-      alias command names to be anything you want.<br>
-      <br>
-      </li>
-
-      <li>Support has been added for ipsets (see <a href=
-      "http://people.netfilter.org/kadlec/ipset/">http://people.netfilter.org/kadlec/ipset/</a>).<br>
-
-      <br>
-      In most places where a host or network address may be used,
-      you may also use the name of an ipset prefaced by "+".<br>
-      <br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Example:
-      "+Mirrors"<br>
-      <br>
-      The name of the set may be optionally followed by:<br>
-      <br>
-      a) a number from 1 to 6 enclosed in square brackets ([]) --
-      this number indicates the maximum number of ipset binding
-      levels that are to be matched. Depending on the context where
-      the ipset name is used, either all "src" or all "dst" matches
-      will be used.<br>
-      <br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Example:
-      "+Mirrors[4]"<br>
-      <br>
-      b) a series of "src" and "dst" options separated by commas
-      and inclosed in square brackets ([]). These will be passed
-      directly to iptables in the generated --set clause. See the
-      ipset documentation for details.<br>
-      <br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Example:
-      "+Mirrors[src,dst,src]"<br>
-      <br>
-      Note that "+Mirrors[4]" used in the SOURCE column of the
-      rules file is equivalent to "+Mirrors[src,src,src,src]".<br>
-      <br>
-      To generate a negative match, prefix the "+" with "!" as in
-      "!+Mirrors".<br>
-      <br>
-      Example 1: Blacklist all hosts in an ipset named
-      "blacklist"<br>
-      <br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      /etc/shorewall/blacklist<br>
-      <br style="font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      #ADDRESS/SUBNET&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      PROTOCOL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      PORT</span><br style="font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      +blacklist</span><br style="font-family: monospace;">
-      <br>
-      Example 2: Allow SSH from all hosts in an ipset named
-      "sshok:<br>
-      <br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      /etc/shorewall/rules<br>
-      <br style="font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      #ACTION&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      SOURCE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      DEST&nbsp;&nbsp;&nbsp;&nbsp; PROTO&nbsp;&nbsp;&nbsp; DEST
-      PORT(S)</span><br style="font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      ACCEPT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      +sshok&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      fw&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      tcp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 22</span><br style=
-      "font-family: monospace;">
-      <br>
-      Shorewall can automatically capture the contents of your
-      ipsets for you. If you specify SAVE_IPSETS=Yes in
-      /etc/shorewall/shorewall.conf then "shorewall save" will save
-      the contents of your ipsets. The file where the sets are
-      saved is formed by taking the name where the Shorewall
-      configuration is stored and appending "-ipsets". So if you
-      enter the command "shorewall save standard" then your
-      Shorewall configuration will be saved in
-      var/lib/shorewall/standard and your ipset contents will be
-      saved in /var/lib/shorewall/standard-ipsets. Assuming the
-      default RESTOREFILE setting, if you just enter "shorewall
-      save" then your Shorewall configuration will be saved in
-      /var/lib/shorewall/restore and your ipset contents will be
-      saved in /var/lib/shorewall/restore-ipsets.<br>
-      <br>
-      Regardless of the setting of SAVE_IPSETS, the "shorewall -f
-      start" and "shorewall restore" commands will restore the
-      ipset contents corresponding to the Shorewall configuration
-      restored provided that the saved Shorewall configuration
-      specified exists.<br>
-      <br>
-      For example, "shorewall restore standard" would restore the
-      ipset contents from /var/lib/shorewall/standard-ipsets
-      provided that /var/lib/shorewall/standard exists and is
-      executable and that /var/lib/shorewall/standard-ipsets exists
-      and is executable.<br>
-      <br>
-      Also regardless of the setting of SAVE_IPSETS, the "shorewall
-      forget" command will purge the saved ipset information (if
-      any) associated with the saved shorewall configuration being
-      removed.<br>
-      <br>
-      You can also associate ipset contents with Shorewall
-      configuration directories using the following command:<br>
-      <br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ipset -S &gt; &lt;config
-      directory&gt;/ipsets<br>
-      <br>
-      Example:<br>
-      <br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ipset -S &gt;
-      /etc/shorewall/ipsets<br>
-      <br>
-      When you start or restart Shorewall (including using the
-      'try' command) from the configuration directory, your ipsets
-      will be configured from the saved ipsets file. Once again,
-      this behavior is independent of the setting of
-      SAVE_IPSETS.<br>
-      <br>
-      Ipsets are well suited for large blacklists. You can maintain
-      your blacklist using the 'ipset' utility without ever having
-      to restart or refresh Shorewall. If you use the
-      SAVE_IPSETS=Yes feature just be sure to "shorewall save"
-      after altering the blacklist ipset(s).<br>
-      <br>
-      Example /etc/shorewall/blacklist:<br>
-      <br>
-       <span style="font-family: monospace;">&nbsp;&nbsp;
-      #ADDRESS/SUBNET&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      PROTOCOL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      PORT</span><br style="font-family: monospace;">
-       <span style="font-family: monospace;">&nbsp;&nbsp;
-      +Blacklist[src,dst]</span><br style=
-      "font-family: monospace;">
-       <span style="font-family: monospace;">&nbsp;&nbsp;
-      +Blacklistnets[src,dst]</span><br style=
-      "font-family: monospace;">
-      <br>
-      Create the blacklist ipsets using:<br>
-      <br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ipset
-      -N Blacklist iphash<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ipset
-      -N Blacklistnets nethash<br>
-      <br>
-      Add entries<br>
-      <br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ipset -A Blacklist
-      206.124.146.177<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ipset -A Blacklistnets
-      206.124.146.0/24<br>
-      <br>
-      To allow entries for individual ports<br>
-      <br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ipset -N SMTP portmap
-      --from 1 --to 31<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ipset -A SMTP 25<br>
-      <br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ipset -A Blacklist
-      206.124.146.177<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ipset -B Blacklist
-      206.124.146.177 -b SMTP<br>
-      <br>
-      Now only port 25 will be blocked from 206.124.146.177.<br>
-      <br>
-      </li>
-
-      <li>Shorewall 2.4.0 can now configure routing if your kernel
-      and iptables support the ROUTE target extension. This
-      extension is available in Patch-O-Matic-ng. This feature is
-      *EXPERIMENTAL* since the Netfilter team have no intention of
-      ever releasing the ROUTE target extension to kernel.org.<br>
-      <br>
-      Routing is configured using the /etc/shorewall/routes file.
-      Columns in the file are as follows:<br>
-      <br>
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      SOURCE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      Source of the packet. May be any of the</span> <span style=
-      "font-family: monospace;">following:</span><br style=
-      "font-family: monospace;">
-      <br style="font-family: monospace;">
-      <br style="font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      - A host or network address</span><br style=
-      "font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      - A network interface name.</span><br style=
-      "font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      - The name of an ipset prefaced with "+"</span><br style=
-      "font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      - $FW (for packets originating on the firewall)</span><br
-      style="font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      - A MAC address in Shorewall format</span><br style=
-      "font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      - A range of IP addresses (assuming that your</span> <span
-      style="font-family: monospace;">kernel and iptables support
-      range match)</span><br style="font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      - A network interface name followed by ":"</span> <span
-      style="font-family: monospace;">and an address or address
-      range.</span><br style="font-family: monospace;">
-      <br style="font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      DEST&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      Destination of the packet. May be any of the</span> <span
-      style="font-family: monospace;">following:</span><br style=
-      "font-family: monospace;">
-      <br style="font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      - A host or network address</span><br style=
-      "font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      - A network interface name (determined from</span><br style=
-      "font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      routing table(s))</span><br style="font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      - The name of an ipset prefaced with "+"</span><br style=
-      "font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      - A network interface name followed by ":"</span><br style=
-      "font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      and an address or address range.</span><br style=
-      "font-family: monospace;">
-      <br style="font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      PROTO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      Protocol - Must be "tcp", "udp", "icmp",</span> <span style=
-      "font-family: monospace;">"ipp2p", a number, or "all".
-      "ipp2p" requires</span><span style=
-      "font-family: monospace;"><br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      ipp2p match support in your kernel and</span><span style=
-      "font-family: monospace;">iptables.</span><br style=
-      "font-family: monospace;">
-      <br style="font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      PORT(S)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      Destination Ports. A comma-separated list of</span> <span
-      style="font-family: monospace;">Port names (from
-      /etc/services), port<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      numbers</span> <span style="font-family: monospace;">or port
-      ranges; if the protocol is "icmp", this</span><span style=
-      "font-family: monospace;">column is interpreted as the<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      destination</span> <span style=
-      "font-family: monospace;">icmp-type(s).</span><br style=
-      "font-family: monospace;">
-      <br style="font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      If the protocol is ipp2p, this column is</span> <span style=
-      "font-family: monospace;">interpreted as an ipp2p option
-      without the</span><span style="font-family: monospace;"><br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      leading "--" (example "bit" for bit-torrent).</span> <span
-      style="font-family: monospace;">If no PORT is given, "ipp2p"
-      is assumed.</span><br style="font-family: monospace;">
-      <br style="font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      This column is ignored if PROTOCOL = all but</span> <span
-      style="font-family: monospace;">must be entered if any of the
-      following<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      field</span> <span style="font-family: monospace;">is
-      supplied. In that case, it is suggested that</span> <span
-      style="font-family: monospace;">this field contain
-      "-"</span><br style="font-family: monospace;">
-      <br style="font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      SOURCE PORT(S)&nbsp; (Optional) Source port(s). If
-      omitted,</span> <span style="font-family: monospace;">any
-      source port is acceptable. Specified as a</span><span style=
-      "font-family: monospace;"><br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      comma-separated list of port names, port</span> <span style=
-      "font-family: monospace;">numbers or port ranges.</span><br
-      style="font-family: monospace;">
-      <br style="font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      TEST&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      Defines a test on the existing packet or</span> <span style=
-      "font-family: monospace;">connection mark.</span><br style=
-      "font-family: monospace;">
-      <br style="font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      The rule will match only if the test returns</span> <span
-      style="font-family: monospace;">true. Tests have the
-      format</span><span style="font-family: monospace;"><br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      [!]&lt;value&gt;[/&lt;mask&gt;][:C]</span><br style=
-      "font-family: monospace;">
-      <br style="font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      Where:</span><br style="font-family: monospace;">
-      <br style="font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      !&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Inverts the test (not
-      equal)</span> <span style=
-      "font-family: monospace;">&lt;value&gt; Value of the packet
-      or</span><span style="font-family: monospace;"><br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      connection mark.</span><br style="font-family: monospace;">
-      <br style="font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      &lt;mask&gt;&nbsp; A mask to be applied to the</span> <span
-      style="font-family: monospace;">mark before testing</span><br
-      style="font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      :C&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Designates a
-      connection</span> <span style="font-family: monospace;">mark.
-      If omitted, the packet</span> <span style=
-      "font-family: monospace;">mark's value<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      is tested.</span><br style="font-family: monospace;">
-      <br style="font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      INTERFACE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The interface
-      that the packet is to be routed</span> <span style=
-      "font-family: monospace;">out of. If you do not specify
-      this<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      field then</span> <span style="font-family: monospace;">you
-      must place "-" in this column and enter an</span> <span
-      style="font-family: monospace;">IP address in the GATEWAY<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      column.</span><br style="font-family: monospace;">
-      <br style="font-family: monospace;">
-       <span style=
-      "font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      GATEWAY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The
-      gateway that the packet is to be forewarded</span> <span
-      style="font-family: monospace;">through.</span><br style=
-      "font-family: monospace;">
-      <br style="font-family: monospace;">
-      </li>
-
-      <li>Normally when Shorewall is stopped, starting or
-      restarting then connections are allowed from hosts listed in
-      /etc/shorewall/routestopped to the firewall and to other
-      hosts listed in /etc/shorewall/routestopped.<br>
-      <br>
-      A new 'source' option is added for entries in that file which
-      will cause Shorewall to allow traffic from the host listed in
-      the entry to ANY other host. When 'source' is specified in an
-      entry, it is unnecessary to also specify 'routeback'.<br>
-      <br>
-      Similarly, a new 'dest' option is added which will cause
-      Shorewall to allow traffic to the host listed in the entry
-      from ANY other host. When 'source' is specified in an entry,
-      it is unnecessary to also specify 'routeback'.<br>
-      <br>
-      </li>
-
-      <li>This change was implemented by Lorenzo Martignoni. It
-      provides two new commands: "safe-start" and
-      "safe-restart".<br>
-      <br>
-       <span style="font-weight: bold;">safe-start</span> starts
-      Shorewall then prompts you to ask you if everything looks ok.
-      If you answer "no" or if you don't answer within 60 seconds,
-      a "shorewall clear" is executed.<br>
-      <br>
-       <span style="font-weight: bold;">safe-restart</span> saves
-      your current configuration to /var/lib/shorewall/safe-restart
-      then issues a "shorewall restart"; It then prompts you to ask
-      if you if you want to accept the new configuration. If you
-      answer "no" or if you don't answer within 60 seconds, the
-      configuration is restored to its prior state.<br>
-      <br>
-      These new commands require either that your /bin/sh supports
-      the "-t" option to the 'read' command or that you have
-      /bin/bash installed.<br>
-      </li>
-    </ol>
-<span style="font-weight: bold;">Old News <a href="oldnews.html">here</a><br></span>
-  </body>
+Columns are:<br>
+    <br>
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+NAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+The provider name.</span><br style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+NUMBER&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The
+provider number -- a number between 1 and 15</span><br
+ style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+MARK&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+A FWMARK value used in your /etc/shorewall/tcrules file to direct
+packets for this provider.</span><br style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+DUPLICATE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The name of an existing
+table to duplicate. May</span> <span style="font-family: monospace;">be
+'main' or the name of a previous provider.</span><br
+ style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+INTERFACE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The name of the network
+interface to the</span> <span style="font-family: monospace;">provider.
+Must be listed in</span><span style="font-family: monospace;">/etc/shorewall/interfaces.</span><br
+ style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+GATEWAY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The IP address
+of the provider's gateway router.</span> <span
+ style="font-family: monospace;">If you enter "detect" here then
+Shorewall<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+will</span> <span style="font-family: monospace;">attempt to determine
+the gateway IP address</span> <span style="font-family: monospace;">automatically.</span><br
+ style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+OPTIONS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; A
+comma-separated list selected from the</span> <span
+ style="font-family: monospace;">following:</span><br
+ style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+track&nbsp;&nbsp; If specified, connections FROM this interface are</span>
+    <span style="font-family: monospace;">to be tracked so that
+responses may be<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+routed</span> <span style="font-family: monospace;">back out this same
+interface.</span><br style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+You want specify 'track' if internet hosts will be</span> <span
+ style="font-family: monospace;">connecting to local servers through<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+this</span> <span style="font-family: monospace;">provider.</span><br
+ style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Because of limitations in the 'ip' utility and</span> <span
+ style="font-family: monospace;">policy routing, you may not use the
+SAVE or</span><span style="font-family: monospace;"><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+RESTORE tcrules options or use connection</span><span
+ style="font-family: monospace;">marking on any traffic to or from this</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+interface. For traffic control purposes, you</span> <span
+ style="font-family: monospace;">must mark packets in the FORWARD chain
+(or</span><span style="font-family: monospace;"><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+better yet, use the CLASSIFY target).</span><br
+ style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+balance The providers that have 'balance' specified will</span> <span
+ style="font-family: monospace;">get outbound traffic load-balanced
+among<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+them. By</span> <span style="font-family: monospace;">default, all
+interfaces with 'balance' specified</span> <span
+ style="font-family: monospace;">will have the same weight (1).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+You can change the</span><span style="font-family: monospace;">weight
+of the route out of the interface by</span> <span
+ style="font-family: monospace;">specifiying balance=&lt;weight&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+where &lt;weight&gt; is</span><span style="font-family: monospace;">the
+desired route weight.</span><br style="font-family: monospace;">
+    <br style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Example:&nbsp; You run squid in
+your DMZ on IP address 192.168.2.99. Your DMZ interface is eth2<br>
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+#NAME&nbsp;&nbsp; NUMBER&nbsp; MARK DUPLICATE&nbsp; INTERFACE
+GATEWAY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; OPTIONS</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Squid&nbsp;&nbsp; 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1&nbsp;&nbsp;&nbsp;
+-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+eth2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 192.168.2.99&nbsp; -</span><br>
+    <br>
+Use of this feature requires that your kernel and iptabls support
+CONNMARK target and conntrack match support. It does NOT require the
+ROUTE target extension.<br>
+    <br>
+WARNING: The current version of iptables (1.3.1) is broken with respect
+to CONNMARK and iptables-save/iptables-restore. This means that if you
+configure multiple ISPs, "shorewall restore" may fail. You must patch
+your iptables using the patch at <a
+ href="http://shorewall.net/pub/shorewall/contrib/iptables/CONNMARK.diff">
+http://shorewall.net/pub/shorewall/contrib/iptables/CONNMARK.diff</a>.<br>
+    <br>
+  </li>
+  <li>Shorewall 2.3.0 supports the 'cmd-owner' option of the owner
+match facility in Netfilter. Like all owner match options, 'cmd-owner'
+may only be applied to traffic that originates on the firewall.<br>
+    <br>
+The syntax of the USER/GROUP column in the following files has been
+extended:<br>
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /etc/shorewall/accounting<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /etc/shorewall/rules<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /etc/shorewall/tcrules<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/usr/share/shorewall/action.template<br>
+    <br>
+To specify a command, prefix the command name with "+".<br>
+    <br>
+&nbsp;&nbsp; Examples:<br>
+    <br>
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
++mozilla-bin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+#The program is named "mozilla-bin"</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+joe+mozilla-bin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; #The
+program is named "mozilla-bin" and</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+#is being run by user "joe"</span><br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+joe:users+mozilla-bin&nbsp;&nbsp; #The program is named "mozilla-bin"
+and</span><br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+#is being run by user "joe" with</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+#effective group "users".</span><br style="font-family: monospace;">
+    <br>
+&nbsp;&nbsp; Note that this is not a particularly robust feature and I
+would never advertise it as a "Personal Firewall" equivalent. Using
+symbolic links, it's easy to alias command names to be anything you
+want.<br>
+    <br>
+  </li>
+  <li>Support has been added for ipsets (see <a
+ href="http://people.netfilter.org/kadlec/ipset/">http://people.netfilter.org/kadlec/ipset/</a>).<br>
+    <br>
+In most places where a host or network address may be used, you may
+also use the name of an ipset prefaced by "+".<br>
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Example: "+Mirrors"<br>
+    <br>
+The name of the set may be optionally followed by:<br>
+    <br>
+a) a number from 1 to 6 enclosed in square brackets ([]) -- this number
+indicates the maximum number of ipset binding levels that are to be
+matched. Depending on the context where the ipset name is used, either
+all "src" or all "dst" matches will be used.<br>
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Example: "+Mirrors[4]"<br>
+    <br>
+b) a series of "src" and "dst" options separated by commas and inclosed
+in square brackets ([]). These will be passed directly to iptables in
+the generated --set clause. See the ipset documentation for details.<br>
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Example:
+"+Mirrors[src,dst,src]"<br>
+    <br>
+Note that "+Mirrors[4]" used in the SOURCE column of the rules file is
+equivalent to "+Mirrors[src,src,src,src]".<br>
+    <br>
+To generate a negative match, prefix the "+" with "!" as in "!+Mirrors".<br>
+    <br>
+Example 1: Blacklist all hosts in an ipset named "blacklist"<br>
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/etc/shorewall/blacklist<br>
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+#ADDRESS/SUBNET&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+PROTOCOL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; PORT</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
++blacklist</span><br style="font-family: monospace;">
+    <br>
+Example 2: Allow SSH from all hosts in an ipset named "sshok:<br>
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/etc/shorewall/rules<br>
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+#ACTION&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+SOURCE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; DEST&nbsp;&nbsp;&nbsp;&nbsp;
+PROTO&nbsp;&nbsp;&nbsp; DEST PORT(S)</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ACCEPT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
++sshok&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+fw&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+tcp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 22</span><br
+ style="font-family: monospace;">
+    <br>
+Shorewall can automatically capture the contents of your ipsets for
+you. If you specify SAVE_IPSETS=Yes in /etc/shorewall/shorewall.conf
+then "shorewall save" will save the contents of your ipsets. The file
+where the sets are saved is formed by taking the name where the
+Shorewall configuration is stored and appending "-ipsets". So if you
+enter the command "shorewall save standard" then your Shorewall
+configuration will be saved in var/lib/shorewall/standard and your
+ipset contents will be saved in /var/lib/shorewall/standard-ipsets.
+Assuming the default RESTOREFILE setting, if you just enter "shorewall
+save" then your Shorewall configuration will be saved in
+/var/lib/shorewall/restore and your ipset contents will be saved in
+/var/lib/shorewall/restore-ipsets.<br>
+    <br>
+Regardless of the setting of SAVE_IPSETS, the "shorewall -f start" and
+"shorewall restore" commands will restore the ipset contents
+corresponding to the Shorewall configuration restored provided that the
+saved Shorewall configuration specified exists.<br>
+    <br>
+For example, "shorewall restore standard" would restore the ipset
+contents from /var/lib/shorewall/standard-ipsets provided that
+/var/lib/shorewall/standard exists and is executable and that
+/var/lib/shorewall/standard-ipsets exists and is executable.<br>
+    <br>
+Also regardless of the setting of SAVE_IPSETS, the "shorewall forget"
+command will purge the saved ipset information (if any) associated with
+the saved shorewall configuration being removed.<br>
+    <br>
+You can also associate ipset contents with Shorewall configuration
+directories using the following command:<br>
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ipset -S &gt; &lt;config
+directory&gt;/ipsets<br>
+    <br>
+Example:<br>
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ipset -S &gt; /etc/shorewall/ipsets<br>
+    <br>
+When you start or restart Shorewall (including using the 'try' command)
+from the configuration directory, your ipsets will be configured from
+the saved ipsets file. Once again, this behavior is independent of the
+setting of SAVE_IPSETS.<br>
+    <br>
+Ipsets are well suited for large blacklists. You can maintain your
+blacklist using the 'ipset' utility without ever having to restart or
+refresh Shorewall. If you use the SAVE_IPSETS=Yes feature just be sure
+to "shorewall save" after altering the blacklist ipset(s).<br>
+    <br>
+Example /etc/shorewall/blacklist:<br>
+    <br>
+    <span style="font-family: monospace;">&nbsp;&nbsp;
+#ADDRESS/SUBNET&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+PROTOCOL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; PORT</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;
++Blacklist[src,dst]</span><br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;
++Blacklistnets[src,dst]</span><br style="font-family: monospace;">
+    <br>
+Create the blacklist ipsets using:<br>
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ipset -N
+Blacklist iphash<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ipset -N
+Blacklistnets nethash<br>
+    <br>
+Add entries<br>
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ipset -A Blacklist 206.124.146.177<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ipset -A Blacklistnets
+206.124.146.0/24<br>
+    <br>
+To allow entries for individual ports<br>
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ipset -N SMTP portmap --from 1
+--to 31<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ipset -A SMTP 25<br>
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ipset -A Blacklist 206.124.146.177<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ipset -B Blacklist 206.124.146.177
+-b SMTP<br>
+    <br>
+Now only port 25 will be blocked from 206.124.146.177.<br>
+    <br>
+  </li>
+  <li>Shorewall 2.4.0 can now configure routing if your kernel and
+iptables support the ROUTE target extension. This extension is
+available in Patch-O-Matic-ng. This feature is *EXPERIMENTAL* since the
+Netfilter team have no intention of ever releasing the ROUTE target
+extension to kernel.org.<br>
+    <br>
+Routing is configured using the /etc/shorewall/routes file. Columns in
+the file are as follows:<br>
+    <br>
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+SOURCE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Source of the packet. May be any of the</span> <span
+ style="font-family: monospace;">following:</span><br
+ style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+- A host or network address</span><br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+- A network interface name.</span><br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+- The name of an ipset prefaced with "+"</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+- $FW (for packets originating on the firewall)</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+- A MAC address in Shorewall format</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+- A range of IP addresses (assuming that your</span> <span
+ style="font-family: monospace;">kernel and iptables support range
+match)</span><br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+- A network interface name followed by ":"</span> <span
+ style="font-family: monospace;">and an address or address range.</span><br
+ style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+DEST&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Destination of the packet. May be any of the</span> <span
+ style="font-family: monospace;">following:</span><br
+ style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+- A host or network address</span><br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+- A network interface name (determined from</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+routing table(s))</span><br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+- The name of an ipset prefaced with "+"</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+- A network interface name followed by ":"</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+and an address or address range.</span><br
+ style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+PROTO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Protocol - Must be "tcp", "udp", "icmp",</span> <span
+ style="font-family: monospace;">"ipp2p", a number, or "all". "ipp2p"
+requires</span><span style="font-family: monospace;"><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ipp2p match support in your kernel and</span><span
+ style="font-family: monospace;">iptables.</span><br
+ style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+PORT(S)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Destination
+Ports. A comma-separated list of</span> <span
+ style="font-family: monospace;">Port names (from /etc/services), port<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+numbers</span> <span style="font-family: monospace;">or port ranges;
+if the protocol is "icmp", this</span><span
+ style="font-family: monospace;">column is interpreted as the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+destination</span> <span style="font-family: monospace;">icmp-type(s).</span><br
+ style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+If the protocol is ipp2p, this column is</span> <span
+ style="font-family: monospace;">interpreted as an ipp2p option without
+the</span><span style="font-family: monospace;"><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+leading "--" (example "bit" for bit-torrent).</span> <span
+ style="font-family: monospace;">If no PORT is given, "ipp2p" is
+assumed.</span><br style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+This column is ignored if PROTOCOL = all but</span> <span
+ style="font-family: monospace;">must be entered if any of the following<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+field</span> <span style="font-family: monospace;">is supplied. In
+that case, it is suggested that</span> <span
+ style="font-family: monospace;">this field contain "-"</span><br
+ style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+SOURCE PORT(S)&nbsp; (Optional) Source port(s). If omitted,</span> <span
+ style="font-family: monospace;">any source port is acceptable.
+Specified as a</span><span style="font-family: monospace;"><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+comma-separated list of port names, port</span> <span
+ style="font-family: monospace;">numbers or port ranges.</span><br
+ style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+TEST&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Defines a test on the existing packet or</span> <span
+ style="font-family: monospace;">connection mark.</span><br
+ style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+The rule will match only if the test returns</span> <span
+ style="font-family: monospace;">true. Tests have the format</span><span
+ style="font-family: monospace;"><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+[!]&lt;value&gt;[/&lt;mask&gt;][:C]</span><br
+ style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Where:</span><br style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Inverts the test (not equal)</span>
+    <span style="font-family: monospace;">&lt;value&gt; Value of the
+packet or</span><span style="font-family: monospace;"><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+connection mark.</span><br style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;mask&gt;&nbsp; A mask to be applied to the</span> <span
+ style="font-family: monospace;">mark before testing</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+:C&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Designates a connection</span> <span
+ style="font-family: monospace;">mark. If omitted, the packet</span> <span
+ style="font-family: monospace;">mark's value<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+is tested.</span><br style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+INTERFACE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The interface that the
+packet is to be routed</span> <span style="font-family: monospace;">out
+of. If you do not specify this<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+field then</span> <span style="font-family: monospace;">you must place
+"-" in this column and enter an</span> <span
+ style="font-family: monospace;">IP address in the GATEWAY<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+column.</span><br style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+GATEWAY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The gateway
+that the packet is to be forewarded</span> <span
+ style="font-family: monospace;">through.</span><br
+ style="font-family: monospace;">
+    <br style="font-family: monospace;">
+  </li>
+  <li>Normally when Shorewall is stopped, starting or restarting then
+connections are allowed from hosts listed in
+/etc/shorewall/routestopped to the firewall and to other hosts listed
+in /etc/shorewall/routestopped.<br>
+    <br>
+A new 'source' option is added for entries in that file which will
+cause Shorewall to allow traffic from the host listed in the entry to
+ANY other host. When 'source' is specified in an entry, it is
+unnecessary to also specify 'routeback'.<br>
+    <br>
+Similarly, a new 'dest' option is added which will cause Shorewall to
+allow traffic to the host listed in the entry from ANY other host. When
+'source' is specified in an entry, it is unnecessary to also specify
+'routeback'.<br>
+    <br>
+  </li>
+  <li>This change was implemented by Lorenzo Martignoni. It provides
+two new commands: "safe-start" and "safe-restart".<br>
+    <br>
+    <span style="font-weight: bold;">safe-start</span> starts Shorewall
+then prompts you to ask you if everything looks ok. If you answer "no"
+or if you don't answer within 60 seconds, a "shorewall clear" is
+executed.<br>
+    <br>
+    <span style="font-weight: bold;">safe-restart</span> saves your
+current configuration to /var/lib/shorewall/safe-restart then issues a
+"shorewall restart"; It then prompts you to ask if you if you want to
+accept the new configuration. If you answer "no" or if you don't answer
+within 60 seconds, the configuration is restored to its prior state.<br>
+    <br>
+These new commands require either that your /bin/sh supports the "-t"
+option to the 'read' command or that you have /bin/bash installed.<br>
+  </li>
+</ol>
+<span style="font-weight: bold;">Old News <a href="oldnews.html">here</a><br>
+</span>
+</body>
 </html>
-

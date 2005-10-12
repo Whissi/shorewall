@@ -439,12 +439,11 @@ iface br0 inet static
         address 192.168.1.254
         netmask 255.255.255.0
         pre-up /usr/sbin/openvpn --mktun --dev tap0
-        pre-up /sbin/ip link set tun0 up
+        pre-up /sbin/ip link set tap0 up
         pre-up /sbin/ip link set eth3 up
         pre-up /usr/sbin/brctl addbr br0
         pre-up /usr/sbin/brctl addif br0 eth3
         pre-up /usr/sbin/brctl addif br0 tap0
-        up ip route add 224.0.0.0/4 dev br0
         post-down /usr/sbin/brctl delif br0 eth3
         post-down /usr/sbin/brctl delif br0 tap0
         post-down /usr/sbin/brctl delbr br0
@@ -467,7 +466,8 @@ iface br0 inet static
         addresses 192.168.1.64-192.168.1.71 for VPN clients. Note that the
         bridge server only uses local IP address 192.168.3.254. We run two
         instances of OpenVPN; this one and a second tunnel-mode instance for
-        remote access (see </para>
+        remote access (see <ulink url="myfiles.htm">this
+        article</ulink>).</para>
 
         <programlisting>dev tap0
 

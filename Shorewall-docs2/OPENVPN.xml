@@ -11,7 +11,7 @@
       <author>
         <firstname>Simon</firstname>
 
-        <surname>Mater</surname>
+        <surname>Matter</surname>
       </author>
 
       <author>
@@ -597,7 +597,7 @@ openvpnserver:1194      Wifi    192.168.3.0/24
 
           <programlisting>#ZONE   TYPE    OPTIONS                 IN                      OUT
 #                                       OPTIONS                 OPTIONS
-<emphasis role="bold">home    ipv4</emphasis>    #Wired LAN at our home
+<emphasis role="bold">lan     ipv4</emphasis>    #Wired LAN at our home
 net     ipv4
 #LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE
 </programlisting>
@@ -609,7 +609,7 @@ net     ipv4
           <programlisting>#ZONE    INTERFACE      BROADCAST       OPTIONS
 #
 net      eth0           detect          routefilter,dhcp,tcpflags
-<emphasis role="bold">home     tap0           192.168.1.255</emphasis>
+<emphasis role="bold">lan      tap0           192.168.1.255</emphasis>
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
 </programlisting>
         </section>
@@ -619,17 +619,17 @@ net      eth0           detect          routefilter,dhcp,tcpflags
 
           <para>Since we don't expect any traffic between the <emphasis
           role="bold">net</emphasis> zone and the <emphasis
-          role="bold">home</emphasis> zone, we use NONE policies for that
+          role="bold">lan</emphasis> zone, we use NONE policies for that
           traffic. If any such traffic should occur, it will be handled
           according to the all-&gt;all policy.</para>
 
           <programlisting>#SOURCE         DEST            POLICY          LOG             LIMIT:BURST
 #                                               LEVEL
 fw              net             ACCEPT
-<emphasis role="bold">fw              home            ACCEPT
-home            fw              ACCEPT
-net             home            NONE
-home            net             NONE</emphasis>
+<emphasis role="bold">fw              lan             ACCEPT
+lan             fw              ACCEPT
+net             lan             NONE
+lan             net             NONE</emphasis>
 net             all             DROP            info
 # The FOLLOWING POLICY MUST BE LAST
 all             all             REJECT          info

@@ -21,7 +21,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-09-30</pubdate>
+    <pubdate>2005-10-12</pubdate>
 
     <copyright>
       <year>2003</year>
@@ -290,30 +290,30 @@ road         loc                ACCEPT</programlisting>
       <programlisting>dev tun
 
 server 192.168.2.0 255.255.255.0
- 
+
 dh dh1024.pem
- 
+
 ca /etc/certs/cacert.pem
- 
+
 crl-verify /etc/certs/crl.pem
- 
+
 cert /etc/certs/SystemA.pem
 key /etc/certs/SystemA_key.pem
- 
+
 port 1194
- 
+
 comp-lzo
- 
+
 user nobody
- 
+
 group nogroup
- 
+
 ping 15
 ping-restart 45
 ping-timer-rem
 persist-tun
 persist-key
- 
+
 verb 3</programlisting>
     </blockquote>
 
@@ -371,28 +371,28 @@ $FW          home               ACCEPT</programlisting>
       <programlisting>dev tun
 remote 206.162.148.9
 up /etc/openvpn/home.up
- 
+
 tls-client
 pull
- 
+
 ca /etc/certs/cacert.pem
 
 cert /etc/certs/SystemB.pem
 key /etc/certs/SystemB_key.pem
- 
+
 port 1194
- 
+
 user nobody
 group nogroup
- 
+
 comp-lzo
- 
+
 ping 15
 ping-restart 45
 ping-timer-rem
 persist-tun
 persist-key
- 
+
 verb 3</programlisting>
     </blockquote>
 
@@ -564,28 +564,82 @@ verb 3</programlisting>
       url="SimpleBridge.html">Simple Bridge documentation</ulink>.</para>
 
       <section>
-        <title>/etc/shorewall/interfaces</title>
+        <title>Firewall</title>
 
-        <para>Note that the bridge (br0) is defined as the interface to the
-        local zone and has the <emphasis role="bold">routeback</emphasis>
-        option.</para>
+        <section>
+          <title>/etc/shorewall/interfaces</title>
 
-        <programlisting>#ZONE   INTERFACE       BROADCAST               OPTIONS
+          <para>Note that the bridge (br0) is defined as the interface to the
+          local zone and has the <emphasis role="bold">routeback</emphasis>
+          option.</para>
+
+          <programlisting>#ZONE   INTERFACE       BROADCAST               OPTIONS
 net     eth2            206.124.146.255         dhcp,norfc1918,logmartians,blacklist,tcpflags,nosmurfs
 loc     br0             192.168.1.255           dhcp,<emphasis role="bold">routeback</emphasis>
 dmz     eth1            -                       logmartians
 Wifi    eth0            192.168.3.255           dhcp,maclist
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+        </section>
+
+        <section>
+          <title>/etc/shorewall/tunnels</title>
+
+          <programlisting>#TYPE                   ZONE    GATEWAY         GATEWAY
+#                                               ZONE
+openvpnserver:1194      Wifi    192.168.3.0/24
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+        </section>
       </section>
 
       <section>
-        <title>/etc/shorewall/tunnels</title>
+        <title>Tipper</title>
 
-        <programlisting>#TYPE                   ZONE    GATEWAY         GATEWAY
-#                                               ZONE
-openvpn-server:1194     Wifi    192.168.3.0/24
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+        <section>
+          <title>/etc/shorewall/zones</title>
+
+          <programlisting>#ZONE   IPSEC   OPTIONS                 IN                      OUT
+#       ONLY                            OPTIONS                 OPTIONS
+<emphasis role="bold">home    ipv4</emphasis>    #Wired LAN at our home
+net     ipv4
+#LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE
+</programlisting>
+        </section>
+
+        <section>
+          <title>/etc/shorewall/interfaces</title>
+
+          <programlisting>#ZONE    INTERFACE      BROADCAST       OPTIONS
+#
+net     eth0            detect          routefilter,dhcp,tcpflags
+<emphasis role="bold">home    tap0            192.168.1.255</emphasis>
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
+</programlisting>
+        </section>
+
+        <section>
+          <title>/etc/shorewall/policy</title>
+
+          <para>Since we don't expect any traffic between the <emphasis
+          role="bold">net</emphasis> zone and the <emphasis
+          role="bold">home</emphasis> zone, we use NONE policies for that
+          traffic. If any such traffic should occur, it will be handled
+          according to the all-&gt;all policy.</para>
+
+          <programlisting>#SOURCE         DEST            POLICY          LOG             LIMIT:BURST
+#                                               LEVEL
+fw              net             ACCEPT
+<emphasis role="bold">fw              home            ACCEPT
+home            fw              ACCEPT
+net             home            NONE
+home            net             NONE</emphasis>
+net             all             DROP            info
+# The FOLLOWING POLICY MUST BE LAST
+all             all             REJECT          info
+#LAST LINE -- DO NOT REMOVE
+</programlisting>
+        </section>
       </section>
     </section>
   </section>
+
 </article>

@@ -21,7 +21,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-10-08</pubdate>
+    <pubdate>2005-10-13</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -58,10 +58,11 @@
     <para>The support for traffic shaping and control still does not cover all
     options available (and especially all algorithms that can be used to queue
     traffic) in the Linux kernel but it should fit most needs. If you are
-    using your own script for traffic control and you still want to use it
-    in the future, you will find information on how to do this, <link linkend="owntcstart">
-    later in this document</link>. But for this to work, you will also need to 
-    enable traffic shaping in the kernel and Shorewall as covered by the next sections.</para>
+    using your own script for traffic control and you still want to use it in
+    the future, you will find information on how to do this, <link
+    linkend="owntcstart"> later in this document</link>. But for this to work,
+    you will also need to enable traffic shaping in the kernel and Shorewall
+    as covered by the next sections.</para>
   </section>
 
   <section>
@@ -85,38 +86,38 @@
     <para>For Shorewall traffic shaping we use two algorithms, one is called
     HTB (Hierarchical Token Bucket) and SFQ (Stochastic Fairness Queuing). SFQ
     is easy to explain: it just tries to track your connections (tcp or udp
-    streams) and balances the traffic between them. This normally works well. HTB
-    allows you to define a set of classes, and you can put the traffic you
+    streams) and balances the traffic between them. This normally works well.
+    HTB allows you to define a set of classes, and you can put the traffic you
     want into these classes. You can define minimum and maximum bandwitdh
-    settings for those classes and order them hierachically (the less priorized
-    classes only get bandwitdth if the more important have what they need).
-    Shorewall builtin traffic shaping allows you to define these classes (and
-    their bandwidth limits), and it uses SFQ inside these classes to make
-    sure, that different data streams are handled equally.</para>
+    settings for those classes and order them hierachically (the less
+    priorized classes only get bandwitdth if the more important have what they
+    need). Shorewall builtin traffic shaping allows you to define these
+    classes (and their bandwidth limits), and it uses SFQ inside these classes
+    to make sure, that different data streams are handled equally.</para>
 
     <para>You can only shape outgoing traffic. The reason for this is simple,
     the packets were already received by your network card before you can
     decide what to do with them. So the only choice would be to drop them
-    which does normally makes no sense (since you received the packet already,
-    it went through the possible bottleneck (the incoming connection). The
-    next possible bottleneck might come if the packet leaves on another
-    interface, so this will be the place where queuing might occur. So,
-    defining queues for incoming packages is not very useful, you just want to
-    have it forwarded to the outgoing interface as fast as possible.</para>
+    which normally makes no sense (since you received the packet already, it
+    went through the possible bottleneck (the incoming connection). The next
+    possible bottleneck might come if the packet leaves on another interface,
+    so this will be the place where queuing might occur. So, defining queues
+    for incoming packages is not very useful, you just want to have it
+    forwarded to the outgoing interface as fast as possible.</para>
 
     <para>There is one exception, though. Limiting incoming traffic to a value
     a bit slower than your actual line speed will avoid queueing on the other
     end of that connection. This is mostly useful if you don't have access to
     traffic control on the other side and if this other side has a faster
     network connection than you do (the line speed between the systems is the
-    bottleneck, e.g. a DSL connection to you providers router, the router itself
-    is normally connected to a much faster backbone). So, if you
-    drop packages that are coming in too fast, the underlaying protocol might
+    bottleneck, e.g. a DSL connection to you providers router, the router
+    itself is normally connected to a much faster backbone). So, if you drop
+    packages that are coming in too fast, the underlaying protocol might
     recognize this and slow down the connection. TCP has a builtin mechanism
     for this, UDP has not (but the protocol over UDP might recognize it , if
     there is any).</para>
 
-    <para>The reason why qeueing is bad in these cases is, that you might have
+    <para>The reason why queing is bad in these cases is, that you might have
     packets which need to be priorized over others, e.g. VoIP or ssh. For this
     type of connections it is important that packets arrive in a certain
     amount of time. For others like http downloads, it does not really matter
@@ -126,6 +127,44 @@
     does not care about QoS or the QoS bits are not set properly, your
     important packets will go into the same queue as your less timecritical
     download packets which will result in a large delay.</para>
+
+    <para>You shape and control outgoing traffic by assigning the traffic to
+    <firstterm>classes</firstterm>. Each class is associated with exactly one
+    network interface and has a number of attributes:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>PRIORITY - Used to give preference to one class over another
+        when selecting a packet to send. The priority is a numeric value with
+        1 being the highest priority, 2 being the next highest, and so
+        on.</para>
+      </listitem>
+
+      <listitem>
+        <para>RATE - The minimum bandwidth this class should get, when the
+        traffic load rises. Classes with a higher priority (lower PRIORITY
+        value) are served even if there are others that have a guaranteed
+        bandwith but have a lower priority (higher PRIORITY value).</para>
+      </listitem>
+
+      <listitem>
+        <para>CEIL - The maximum bandwidth the class is allowed to use when
+        the link is idle.</para>
+      </listitem>
+
+      <listitem>
+        <para>MARK - Netfilter has a facility for
+        <firstterm>marking</firstterm> packets. Packet marks have a numberic
+        value which is limited in Shorewall to the values 1-255. You assign
+        packet marks to different types of traffic using entries in the
+        <filename>/etc/shorewall/tcrules</filename> file. </para>
+      </listitem>
+    </orderedlist>
+
+    <para>One class for each interface must be designated as the
+    <firstterm>default class</firstterm>. This is the class to which unmarked
+    traffic (packets to which you have not assigned a mark value in
+    <filename>/etc/shorewall/tcrules</filename>) is assigned.</para>
   </section>
 
   <section>
@@ -178,28 +217,28 @@
 
     <para>For defining bandwidths (for either devices or classes) please use
     kbit or kbps(for Kilobytes per second) and make sure there is <emphasis
-    role="bold">NO</emphasis> space
-    between the number and the unit (it is 100kbit <emphasis role="bold">not</emphasis>
-    100 kbit). Using mbit, mbps or a raw number (which means bytes) could be used, 
-    but note that only integer numbers are supported (0.5 is <emphasis role="bold">not
+    role="bold">NO</emphasis> space between the number and the unit (it is
+    100kbit <emphasis role="bold">not</emphasis> 100 kbit). Using mbit, mbps
+    or a raw number (which means bytes) could be used, but note that only
+    integer numbers are supported (0.5 is <emphasis role="bold">not
     valid</emphasis>).</para>
 
     <para>To properly configure the settings for your devices you might need
     to find out, the real up- and downstream rates you have. This is
     especially the case, if you are using a DSL connection or one of another
-    type that do not have a guaranteed bandwidth.Don't trust the 
-    values your provider tells you for this, especially measuring the real 
-    download speed is important! There are several online
-    tools that help you find out, search for "dsl speed test" on google (For Germany you
-    can use <ulink url="http://www.speedcheck.arcor.de/cgi-bin/speedcheck.cgi">arcor speed
-    check</ulink>). Be sure to choose a test located near you. </para>
+    type that do not have a guaranteed bandwidth.Don't trust the values your
+    provider tells you for this, especially measuring the real download speed
+    is important! There are several online tools that help you find out,
+    search for "dsl speed test" on google (For Germany you can use <ulink
+    url="http://www.speedcheck.arcor.de/cgi-bin/speedcheck.cgi">arcor speed
+    check</ulink>). Be sure to choose a test located near you.</para>
 
     <section>
       <title>/etc/shorewall/tcrules</title>
 
       <para>The fwmark classifier provides a convenient way to classify
-      packets for traffic shaping. The <quote>/etc/shorewall/tcrules</quote> file 
-      is used for specifying these marks in a tabular fashion.</para>
+      packets for traffic shaping. The <quote>/etc/shorewall/tcrules</quote>
+      file is used for specifying these marks in a tabular fashion.</para>
 
       <para>Normally, packet marking occurs in the PREROUTING chain before any
       address rewriting takes place. This makes it impossible to mark inbound
@@ -478,26 +517,25 @@ ppp0           6000kbit         500kbit</programlisting>
         should do. You are free to change it...</para>
 
         <section>
-	  <title>tcdevices file</title>
+          <title>tcdevices file</title>
 
-        <programlisting>#INTERFACE    IN-BANDWITH      OUT-BANDWIDTH
+          <programlisting>#INTERFACE    IN-BANDWITH      OUT-BANDWIDTH
 ppp0            5000kbit        500kbit</programlisting>
+        </section>
 
-	</section>
         <section>
-	  <title>tcclasses file</title>
+          <title>tcclasses file</title>
 
-        <programlisting>#INTERFACE      MARK    RATE            CEIL        PRIORITY    OPTIONS
+          <programlisting>#INTERFACE      MARK    RATE            CEIL        PRIORITY    OPTIONS
 ppp0            1       full            full            1       tcp-ack,tos-minimize-delay
 ppp0            2       9*full/10       9*full/10       2       default
 ppp0            3       8*full/10       8*full/10       2</programlisting>
+        </section>
 
-	</section>
+        <section>
+          <title>tcrules file</title>
 
-	<section>
-        <title>tcrules file</title>
-
-        <programlisting>#MARK           SOURCE          DEST            PROTO   PORT(S) CLIENT   USER
+          <programlisting>#MARK           SOURCE          DEST            PROTO   PORT(S) CLIENT   USER
 #                                                              PORT(S)
 1:P             0.0.0.0/0       0.0.0.0/0       icmp    echo-request
 1:P             0.0.0.0/0       0.0.0.0/0       icmp    echo-reply
@@ -505,20 +543,20 @@ ppp0            3       8*full/10       8*full/10       2</programlisting>
 # mldonkey
 3               0.0.0.0/0       0.0.0.0/0       udp     -        4666</programlisting>
 
-        <para>Wondershaper allows you to define a set of hosts and/or ports
-        you want to classify as low priority. To achieve this , you have to
-        add these hosts to tcrules and set the mark to 3 (true if you use the
-        example configuration files).</para>
+          <para>Wondershaper allows you to define a set of hosts and/or ports
+          you want to classify as low priority. To achieve this , you have to
+          add these hosts to tcrules and set the mark to 3 (true if you use
+          the example configuration files).</para>
+        </section>
 
-	</section>
-	<section>
-        <title>Setting hosts to low priority</title>
+        <section>
+          <title>Setting hosts to low priority</title>
 
-        <para>lets assume the following settings from your old wondershaper
-        script (don't assume these example values are really useful, they are
-        only used for demonstrating ;-):</para>
+          <para>lets assume the following settings from your old wondershaper
+          script (don't assume these example values are really useful, they
+          are only used for demonstrating ;-):</para>
 
-        <programlisting>
+          <programlisting>
 # low priority OUTGOING traffic - you can leave this blank if you want
 # low priority source netmasks
 NOPRIOHOSTSRC="192.168.1.128/25 192.168.3.28"
@@ -532,66 +570,65 @@ NOPRIOPORTSRC="6662 6663"
 # low priority destination ports
 NOPRIOPORTDST="6662 6663"  </programlisting>
 
-        <para>This would result in the following additional settings to the
-        tcrules file:</para>
+          <para>This would result in the following additional settings to the
+          tcrules file:</para>
 
-        <programlisting>3               192.168.1.128/25 0.0.0.0/0      all
+          <programlisting>3               192.168.1.128/25 0.0.0.0/0      all
 3               192.168.3.28     0.0.0.0/0      all
 3               0.0.0.0/0        60.0.0.0/24    all
 3               0.0.0.0/0        0.0.0.0/0      udp     6662,6663
 3               0.0.0.0/0        0.0.0.0/0      udp     -         6662,6663
 3               0.0.0.0/0        0.0.0.0/0      tcp     6662,6663
 3               0.0.0.0/0        0.0.0.0/0      tcp     -         6662,6663</programlisting>
-	</section>
+        </section>
       </section>
+
       <section>
         <title>A simple setup</title>
-	
-	<para>This is a simple setup for people sharing an internet connection
-	  and using different computers for this. It just basically shapes
-          between 2 hosts which have the ip addresses 192.168.2.23 and
-	192.168.2.42</para>
-	
-	<section>
-	  <title>tcdevices file</title>
 
-	  <programlisting>#INTERFACE    IN-BANDWITH      OUT-BANDWIDTH
+        <para>This is a simple setup for people sharing an internet connection
+        and using different computers for this. It just basically shapes
+        between 2 hosts which have the ip addresses 192.168.2.23 and
+        192.168.2.42</para>
+
+        <section>
+          <title>tcdevices file</title>
+
+          <programlisting>#INTERFACE    IN-BANDWITH      OUT-BANDWIDTH
 ppp0            6000kbit        700kbit</programlisting>
 
-	  <para>We have 6mbit down and 700kbit upstream.</para>
-	  
-	</section>
-	<section>
-	  <title>tcclasses file</title>
+          <para>We have 6mbit down and 700kbit upstream.</para>
+        </section>
 
-        <programlisting>#INTERFACE      MARK    RATE            CEIL        PRIORITY    OPTIONS
+        <section>
+          <title>tcclasses file</title>
+
+          <programlisting>#INTERFACE      MARK    RATE            CEIL        PRIORITY    OPTIONS
 ppp0            1       10kbit          50kbit         1       tcp-ack
 ppp0            2       300kbit         full            2
 ppp0            3       300kbit         full            2
 ppp0            4       90kbit          200kbit         3       default</programlisting>
 
-	<para>We add a class for tcp ack packets with highest priority, so
-	    that downloads are fast. The following 2 classes share most
-	    of the bandwidth between the 2 hosts, if the connection is idle,
-	    they may use full speed. As the hosts should be treated equally
-	    they have the same priority. The last class is for the remaining traffic.</para>
+          <para>We add a class for tcp ack packets with highest priority, so
+          that downloads are fast. The following 2 classes share most of the
+          bandwidth between the 2 hosts, if the connection is idle, they may
+          use full speed. As the hosts should be treated equally they have the
+          same priority. The last class is for the remaining traffic.</para>
+        </section>
 
-	</section>
+        <section>
+          <title>tcrules file</title>
 
-	<section>
-        <title>tcrules file</title>
-
-        <programlisting>#MARK           SOURCE          DEST            PROTO   PORT(S) CLIENT   USER
+          <programlisting>#MARK           SOURCE          DEST            PROTO   PORT(S) CLIENT   USER
 #                                                              PORT(S)
 1:P             0.0.0.0/0       0.0.0.0/0       icmp    echo-request
 1:P             0.0.0.0/0       0.0.0.0/0       icmp    echo-reply
 2:P             192.168.2.23    0.0.0.0/0       all
 3:P             192.168.2.42    0.0.0.0/0       all</programlisting>
 
-	  <para>We mark icmp ping and replies so they will go into the fast
-	    interactive class and set a mark for each host.</para>
-	  
-	</section>
+          <para>We mark icmp ping and replies so they will go into the fast
+          interactive class and set a mark for each host.</para>
+        </section>
       </section>
     </section>
   </section>

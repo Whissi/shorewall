@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-08-31</pubdate>
+    <pubdate>2005-10-13</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -73,7 +73,7 @@
   <section>
     <title>Components</title>
 
-    <para>There are four components to this facility.</para>
+    <para>There are six components to this facility.</para>
 
     <orderedlist>
       <listitem>
@@ -135,6 +135,21 @@
         <para>If MACLIST_TTL is not specified or is specified as empty (e.g,
         MACLIST_TTL="" or is specified as zero then 'maclist' lookups will not
         be cached).</para>
+      </listitem>
+
+      <listitem>
+        <para>Beginning with Shorewall 2.4.6, the <emphasis
+        role="bold">MACLIST_TABLE</emphasis> variable in <ulink
+        url="???">/etc/shorewall/shorewall.conf</ulink>. Normally, MAC
+        verification occurs in the filter table (INPUT and FORWARD) chains.
+        When forwarding a packet from an interface with MAC verification to a
+        bridge interface, that doesn't work.</para>
+
+        <para>This problem can be worked around by setting
+        MACLIST_TABLE=mangle which will cause MAC verification to occur out of
+        the PREROUTING chain. Because REJECT isn't available in that
+        environment, you may not specify MACLIST_DISPOSITION=REJECT with
+        MACLIST_TABLE=mangle.</para>
       </listitem>
     </orderedlist>
   </section>

@@ -21,7 +21,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-10-12</pubdate>
+    <pubdate>2005-10-13</pubdate>
 
     <copyright>
       <year>2003</year>
@@ -550,6 +550,38 @@ verb 3</programlisting>
         <para>/etc/openvpn/wireless.down:</para>
 
         <programlisting>ip route replace default via 192.168.3.254 dev eth0</programlisting>
+      </section>
+
+      <section>
+        <title>Eastepnc6000 (Windows XP) Configuration</title>
+
+        <para>C:\Program Files\Openvpn\config\homewireless.ovpn:</para>
+
+        <programlisting>dev tap
+remote 192.168.3.254
+tls-remote gateway.shorewall.net
+
+tls-client
+pull
+
+ca "/Program Files/OpenVPN/certs/cacert.pem"
+
+cert "/Program Files/OpenVPN/certs/eastepnc6000.pem"
+key "/Program Files/OpenVPN/certs/eastepnc6000_key.pem"
+
+redirect-gateway
+
+port 1194
+
+comp-lzo
+
+ping 15
+ping-restart 45
+ping-timer-rem
+persist-tun
+persist-key
+
+verb 3</programlisting>
       </section>
     </section>
 

@@ -454,6 +454,8 @@ iface br0 inet static
         remote access (see <ulink url="myfiles.htm">this
         article</ulink>).</para>
 
+        <para></para>
+
         <programlisting>dev tap0
 
 local 192.168.3.254
@@ -483,7 +485,16 @@ ping-timer-rem
 persist-tun
 persist-key
 
+client-config-dir /etc/openvpn/bridge-clients
+ccd-exclusive
+
 verb 3</programlisting>
+
+        <para>The files in <filename>/etc/openvpn/bridge-clients</filename>
+        are used to assign a fixed IP address to each laptop. For example,
+        tipper.shorewall.net:</para>
+
+        <programlisting>ifconfig-push 192.168.1.8 255.255.255.0</programlisting>
       </section>
 
       <section>

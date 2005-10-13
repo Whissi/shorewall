@@ -157,7 +157,7 @@
         <firstterm>marking</firstterm> packets. Packet marks have a numberic
         value which is limited in Shorewall to the values 1-255. You assign
         packet marks to different types of traffic using entries in the
-        <filename>/etc/shorewall/tcrules</filename> file. </para>
+        <filename>/etc/shorewall/tcrules</filename> file.</para>
       </listitem>
     </orderedlist>
 
@@ -603,11 +603,11 @@ ppp0            6000kbit        700kbit</programlisting>
         <section>
           <title>tcclasses file</title>
 
-          <programlisting>#INTERFACE      MARK    RATE            CEIL        PRIORITY    OPTIONS
-ppp0            1       10kbit          50kbit         1       tcp-ack
+          <programlisting>#INTERFACE      MARK    RATE            CEIL            PRIORITY    OPTIONS
+ppp0            1       10kbit          50kbit          1           tcp-ack
 ppp0            2       300kbit         full            2
 ppp0            3       300kbit         full            2
-ppp0            4       90kbit          200kbit         3       default</programlisting>
+ppp0            4       90kbit          200kbit         3           default</programlisting>
 
           <para>We add a class for tcp ack packets with highest priority, so
           that downloads are fast. The following 2 classes share most of the
@@ -619,8 +619,8 @@ ppp0            4       90kbit          200kbit         3       default</program
         <section>
           <title>tcrules file</title>
 
-          <programlisting>#MARK           SOURCE          DEST            PROTO   PORT(S) CLIENT   USER
-#                                                              PORT(S)
+          <programlisting>#MARK           SOURCE          DEST            PROTO   PORT(S)      CLIENT   USER
+#                                                                    PORT(S)
 1:P             0.0.0.0/0       0.0.0.0/0       icmp    echo-request
 1:P             0.0.0.0/0       0.0.0.0/0       icmp    echo-reply
 2:P             192.168.2.23    0.0.0.0/0       all

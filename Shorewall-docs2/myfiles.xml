@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-10-04</pubdate>
+    <pubdate>2005-10-13</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -48,7 +48,7 @@
 
     <caution>
       <para>The configuration shown here corresponds to Shorewall version
-      2.5.5. My configuration uses features not available in earlier Shorewall
+      3.0.0. My configuration uses features not available in earlier Shorewall
       releases.</para>
     </caution>
 
@@ -78,11 +78,12 @@
       </listitem>
 
       <listitem>
-        <para>I use SNAT through 206.124.146.176 for&nbsp;my Wife's Windows XP
-        system <quote>Tarry</quote>, and our SuSE 10.0 laptop
-        <quote>Tipper</quote> which connects through the Wireless Access Point
-        (wap) via a Wireless Bridge (wet), and my work laptop (eastepnc6000)
-        when it is not docked in my office.<note>
+        <para>I use SNAT through 206.124.146.179 for&nbsp;my Wife's Windows XP
+        system <quote>Tarry</quote>, my <firstterm>crash and burn</firstterm>
+        system "Wookie", and our SuSE 10.0 laptop <quote>Tipper</quote> which
+        connects through the Wireless Access Point (wap) via a Wireless Bridge
+        (wet), and my work laptop (eastepnc6000) when it is not docked in my
+        office.<note>
             <para>While the distance between the WAP and where I usually use
             the laptop isn't very far (50 feet or so), using a WAC11 (CardBus
             wireless card) has proved very unsatisfactory (lots of lost
@@ -112,21 +113,17 @@
     WAP11.&nbsp; In additional to using the rather weak WEP 40-bit encryption
     (64-bit with the 24-bit preamble), I use <ulink
     url="MAC_Validation.html">MAC verification</ulink> and <ulink
-    url="IPSEC-2.6.html">Kernel 2.6 IPSEC</ulink> or <ulink
     url="OPENVPN.html">OpenVPN</ulink>.</para>
 
     <para>The single system in the DMZ (address 206.124.146.177) runs postfix,
     Courier IMAP (imaps and pop3), DNS, a Web server (Apache) and an FTP
-    server (Pure-ftpd) under Fedora Core 3. The system also runs fetchmail to
-    fetch our email from our old and current ISPs. That server is managed
-    through Proxy ARP.</para>
+    server (Pure-ftpd) under Fedora Core 4. The system also runs fetchmail to
+    fetch our email from our old and current ISPs. That server is accessible
+    from the Internet through <ulink url="ProxyARP.htm">Proxy
+    ARP</ulink>.</para>
 
     <para>The firewall system itself runs a DHCP server that serves the local
     and wireless networks.</para>
-
-    <para>I have one system (Remote, 206.124.146.179) outside the firewall.
-    This system, which runs Debian Sarge (testing) is used for roadwarrior VPN
-    testing and for checking my firewall "from the outside".</para>
 
     <para>All administration and publishing is done using ssh/scp. I have a
     desktop environment installed on the firewall but I usually don't start
@@ -149,11 +146,9 @@
 
     <para>The firewall is configured with OpenVPN for VPN access from our
     second home in <ulink url="http://www.omakchamber.com/">Omak,
-    Washington</ulink> or when we are otherwise out of town. Secure remote
-    access via IPSEC is also available. We typically use IPSEC for wireless
-    security around the house and OpenVPN for roadwarrior access but the
-    Firewall is set up to access either tunnel type from either
-    location.</para>
+    Washington</ulink> or when we are otherwise out of town. We run a second
+    instance of OpenVPN that is used to <ulink url="OPENVPN.html">bridge the
+    wireless laptops in the Wifi zone to the local lan</ulink>.</para>
 
     <para><graphic align="center" fileref="images/network.png" /></para>
   </section>
@@ -177,25 +172,23 @@ MACLIST_LOG_LEVEL=$LOG
 TCP_FLAGS_LOG_LEVEL=$LOG
 RFC1918_LOG_LEVEL=$LOG
 SMURF_LOG_LEVEL=$LOG
-BOGON_LOG_LEVEL=$LOG
 LOG_MARTIANS=No
 IPTABLES=
-PATH=/usr/local/sbin:/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin
+PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 SHOREWALL_SHELL=/bin/dash
 SUBSYSLOCK=
-STATEDIR=/var/lib/shorewall
 MODULESDIR=
 CONFIG_PATH=/etc/shorewall:/usr/share/shorewall
 RESTOREFILE=standard
 IPSECFILE=zones
-FW=fw
+FW=
 IP_FORWARDING=On
 ADD_IP_ALIASES=Yes
 ADD_SNAT_ALIASES=Yes
 RETAIN_ALIASES=Yes
-TC_ENABLED=Yes
+TC_ENABLED=Internal
 CLEAR_TC=Yes
-MARK_IN_FORWARD_CHAIN=No
+MARK_IN_FORWARD_CHAIN=Yes
 CLAMPMSS=Yes
 ROUTE_FILTER=No
 DETECT_DNAT_IPADDRS=Yes
@@ -205,7 +198,8 @@ BLACKLISTNEWONLY=Yes
 DELAYBLACKLISTLOAD=No
 MODULE_SUFFIX=
 DISABLE_IPV6=Yes
-BRIDGING=No
+BRIDGING=Yes
+DYNAMIC_ZONES=No
 PKTTYPE=No
 RFC1918_STRICT=Yes
 MACLIST_TTL=60
@@ -213,7 +207,8 @@ SAVE_IPSETS=Yes
 MAPOLDACTIONS=No
 FASTACCEPT=No
 BLACKLIST_DISPOSITION=DROP
-MACLIST_DISPOSITION=REJECT
+MACLIST_TABLE=mangle
+MACLIST_DISPOSITION=DROP
 TCP_FLAGS_DISPOSITION=DROP</programlisting>
       </blockquote>
     </section>
@@ -227,7 +222,7 @@ POPSERVERS=&lt;list of external POP3 servers accessed by fetchmail running on th
 LOG=info
 WIFI_IF=eth0
 EXT_IF=eth2
-INT_IF=eth3
+INT_IF=br0
 DMZ_IF=eth1
 OMAK=&lt;ip address of the gateway at our second home&gt;</programlisting></para>
       </blockquote>
@@ -244,9 +239,7 @@ dmz     ipv4
 loc     ipv4
 vpn     ipv4
 Wifi    ipv4
-sec     ipsec   mode=tunnel             mss=1400
-#LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE
-</programlisting>
+#LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
       </blockquote>
     </section>
 
@@ -261,17 +254,6 @@ dmz     $DMZ_IF         -
 vpn     tun+            -
 Wifi    $WIFI_IF        -                       dhcp,maclist
 #LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
-      </blockquote>
-    </section>
-
-    <section>
-      <title>Hosts File</title>
-
-      <blockquote>
-        <programlisting>#ZONE           HOST(S)                 OPTIONS
-sec             $WIFI_IF:192.168.3.0/24
-sec             $EXT_IF:0.0.0.0/0
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
       </blockquote>
     </section>
 
@@ -345,14 +327,6 @@ loc             net             ACCEPT
 $FW             vpn             ACCEPT
 vpn             net             ACCEPT
 vpn             loc             ACCEPT
-sec             vpn             ACCEPT
-vpn             sec             ACCEPT
-sec             loc             ACCEPT
-loc             sec             ACCEPT
-fw              sec             ACCEPT
-sec             net             ACCEPT
-Wifi            sec             NONE
-sec             Wifi            NONE
 fw              Wifi            ACCEPT
 loc             vpn             ACCEPT
 $FW             loc             ACCEPT          #Firewall to Local
@@ -377,17 +351,9 @@ all             all             REJECT          $LOG
         file below. The double colons ("::") cause the entry to be exempt from
         ADD_SNAT_ALIASES=Yes in my shorewall.conf file above.</para>
 
-        <note>
-          <para>My use of ADD_SNAT_ALIASES=Yes is an anachronism. I previously
-          used 206.124.146.179 as the SNAT address before I configured a
-          system outside the firewall with that IP address.
-          ADD_SNAT_ALIASES=Yes was used to add 206.124.146.179 as an IP
-          address on the external interface.</para>
-        </note>
-
         <programlisting>#INTERFACE              SUBNET          ADDRESS         PROTO   PORT
 +$EXT_IF::192.168.1.1   0.0.0.0/0       192.168.1.254
-$EXT_IF::               192.168.0.0/22  206.124.146.176
+$EXT_IF:2               192.168.0.0/22  206.124.146.179
 $DMZ_IF::               206.124.146.176 192.168.1.254   tcp     80
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
       </blockquote>
@@ -424,10 +390,8 @@ $DMZ_IF::               206.124.146.176 192.168.1.254   tcp     80
 
       <blockquote>
         <programlisting>#TYPE                   ZONE    GATEWAY         GATEWAY ZONE    PORT
-openvpn:1194            net     0.0.0.0/0
-ipsec                   net     0.0.0.0/0       sec
-openvpn:1194            Wifi    192.168.3.0/24
-ipsec                   Wifi    192.168.3.0/24  sec
+openvpnserver:1194      net     0.0.0.0/0
+openvpnserver:1194      Wifi    192.168.3.0/24
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
       </blockquote>
     </section>
@@ -477,8 +441,7 @@ REJECT:$LOG     loc                             net                     udp     
 #
 REJECT          loc                             net                     tcp     137,445
 REJECT          loc                             net                     udp     137:139
-REJECT          sec                             net                     tcp     137,445
-REJECT          sec                             net                     udp     137:139
+
 #
 # Stop my idiotic work laptop from sending to the net with an HP source/dest IP address
 #
@@ -493,13 +456,6 @@ ACCEPT          loc                             fw                      tcp     
 ACCEPT          loc                             fw                      udp     161,ntp,631
 DROP            loc                             fw                      tcp     3185          #SuSE Meta pppd
 Ping/ACCEPT     loc                             fw
-###############################################################################################################################################################################
-# Secure wireless to Firewall
-#
-ACCEPT          sec                             fw                      tcp     ssh,time,631,8080
-ACCEPT          sec                             fw                      udp     161,ntp,631
-DROP            sec                             fw                      tcp     3185          #SuSE Meta pppd
-Ping/ACCEPT     sec                             fw
 ###############################################################################################################################################################################
 # Roadwarriors to Firewall
 #
@@ -527,15 +483,6 @@ ACCEPT          Wifi                            dmz                     tcp     
 ACCEPT          Wifi                            net                     udp     500
 ACCEPT          Wifi                            net                     udp     4500
 Ping/ACCEPT     Wifi                            net
-###############################################################################################################################################################################
-# Secure Wireless to DMZ
-#
-DROP            sec:!192.168.0.0/22             dmz
-DNAT            sec                             dmz:206.124.146.177:3128 \
-                                                                        tcp     www                                     -               !206.124.146.177,192.168.1.1
-ACCEPT          sec                             dmz                     udp     domain,xdmcp
-ACCEPT          sec                             dmz                     tcp     www,smtp,smtps,domain,ssh,imap,https,imaps,ftp,10023,pop3               -
-Ping/ACCEPT     sec                             dmz
 ###############################################################################################################################################################################
 # Road Warriors to DMZ
 #
@@ -716,9 +663,7 @@ $EXT_IF         30      6*full/10       6*full/10       3
 auto lo
 iface lo inet loopback
 
-# DMZ interface -- After the interface is up, add a route to the server. This allows the 'Yes' setting
-#                  in the HAVEROUTE column of /etc/shorewall/proxyarp above.
-
+# DMZ interface
 auto eth1
 iface eth1 inet static
         address 206.124.146.176
@@ -726,8 +671,7 @@ iface eth1 inet static
         broadcast 0.0.0.0
         up ip route add 206.124.146.177 dev eth1
 
-# Internet interface -- After the interface is up, add a route to the Westell 2200 DSL "Modem"
-
+# Internet interface
 auto eth2
 iface eth2 inet static
         address 206.124.146.176
@@ -735,7 +679,7 @@ iface eth2 inet static
         gateway 206.124.146.254
         up ip route add 192.168.1.1 dev eth2
 
-# Wireless interface
+# Wireless network
 
 auto eth0
 iface eth0 inet static
@@ -743,281 +687,93 @@ iface eth0 inet static
         netmask 255.255.255.0
 
 # LAN interface
+auto br0
+iface br0 inet static
+        address 192.168.1.254
+        netmask 255.255.255.0
+        pre-up /usr/sbin/openvpn --mktun --dev tap0
+        pre-up /sbin/ip link set tap0 up
+        pre-up /sbin/ip link set eth3 up
+        pre-up /usr/sbin/brctl addbr br0
+        pre-up /usr/sbin/brctl addif br0 eth3
+        pre-up /usr/sbin/brctl addif br0 tap0
+        up ip route add 224.0.0.0/4 dev br0
+        post-down /usr/sbin/brctl delif br0 eth3
+        post-down /usr/sbin/brctl delif br0 tap0
+        post-down /usr/sbin/brctl delbr br0
+        post-down /usr/sbin/openvpn --rmtun --dev tap0
 
-auto eth3
+# Unbrided LAN interface
+
 iface eth3 inet static
         address 192.168.1.254
-        netmask 255.255.255.0</programlisting>
+        netmask 255.255.255.0
+        up ip route add 224.0.0.0/4 dev eth3
+
+# Second Internet interface
+
+iface eth4 inet static
+        pre-up modprobe ne io=0x300 irq=10
+        address 206.124.146.179
+        netmask 255.255.255.0
+</programlisting>
       </blockquote>
     </section>
 
     <section>
-      <title>/etc/racoon/racoon.conf</title>
+      <title>/etc/openvpn/server.conf</title>
+
+      <para>Only the tunnel-mode OpenVPN configuration is described here --
+      the bridge is described in the <ulink url="OPENVPN.html">OpenVPN
+      documentation</ulink>.</para>
 
       <blockquote>
-        <programlisting>listen
-{
-        isakmp 206.124.146.176 ;
-        isakmp 192.168.3.254 ;
-        isakmp_natt 206.124.146.176 [4500] ;
-        adminsock "/usr/local/var/racoon/racoon.sock" "root" "operator" 0660 ;
-}
-#
-# Tipper at Home
-#
-remote 192.168.3.8
-{
-        exchange_mode main ;
-        dpd_delay 20 ;
-        certificate_type x509 "gateway.pem" "gateway_key.pem" ;
-        verify_cert on ;
-        my_identifier asn1dn ;
-        peers_identifier asn1dn ;
-        verify_identifier on ;
-        lifetime time 30 minutes ;
-        proposal {
-                encryption_algorithm blowfish ;
-                hash_algorithm sha1 ;
-                authentication_method rsasig ;
-                dh_group 2 ;
-        }
-}
+        <programlisting>dev tun
 
-sainfo address 0.0.0.0/0 any address 192.168.3.8 any
-{
-        pfs_group 2 ;
-        lifetime time 30 minutes ;
-        encryption_algorithm blowfish ;
-        authentication_algorithm hmac_sha1, hmac_md5 ;
-        compression_algorithm deflate ;
-}
-#
-# Work Laptop at Home -- it doesn't like getting proposals from us
-#                        so we let it initiate the tunnel.
-#
-#                        Windows XP doesn't support blowfish or rijndal
-#                        so we're stuck with 3des :-(
-#
-remote 192.168.3.6 inherit 192.168.3.8
-{
-        proposal_check obey ;
-        passive on ;
-        generate_policy on ;
-        proposal {
-                encryption_algorithm 3des ;
-                hash_algorithm sha1 ;
-                authentication_method rsasig ;
-                dh_group 2 ;
-        }
-}
+local 206.124.146.176
 
-sainfo address 0.0.0.0/0 any address 192.168.3.6 any
-{
-        pfs_group 2 ;
-        lifetime time 1 hour ;
-        encryption_algorithm 3des ;
-        authentication_algorithm hmac_sha1, hmac_md5 ;
-        compression_algorithm deflate ;
-}
-#
-# Both systems on the road -- We use 3des for phase I to accomodate XP.
-#                             Since we don't know the IP address of the
-#                             remote host ahead of time, we must use
-#                             "anonymous".
-#
-remote anonymous inherit 192.168.3.6
-{
-        nat_traversal on ;
-        ike_frag on;
-}
+server 192.168.2.0 255.255.255.0
 
-sainfo anonymous
-{
-        pfs_group 2;
-        lifetime time 12 hour ;
-        encryption_algorithm blowfish, 3des;
-        authentication_algorithm hmac_sha1, hmac_md5 ;
-        compression_algorithm deflate ;
-}</programlisting>
-      </blockquote>
-    </section>
+dh dh1024.pem
 
-    <section>
-      <title>/etc/racoon/setkey.conf</title>
+ca /etc/certs/cacert.pem
 
-      <blockquote>
-        <programlisting># First of all flush the SAD and SPD databases
+crl-verify /etc/certs/crl.pem
 
-flush;
-spdflush;
+cert /etc/certs/gateway.pem
+key /etc/certs/gateway_key.pem
 
-# We only define policies for 'tipper'. The XP box seems to work better when it initiates the
-# negotiation so we essentially run it like a roadwarrior even around the house.
+port 1194
 
-spdadd 0.0.0.0/0          192.168.3.8/32     any -P out ipsec esp/tunnel/192.168.3.254-192.168.3.8/require;
-spdadd 192.168.3.8/32     0.0.0.0/0          any -P in  ipsec esp/tunnel/192.168.3.8-192.168.3.254/require;</programlisting>
+comp-lzo
+
+user nobody
+group nogroup
+
+keepalive 15 45
+ping-timer-rem
+persist-tun
+persist-key
+
+client-config-dir /etc/openvpn/clients
+ccd-exclusive
+client-to-client
+
+verb 3
+</programlisting>
       </blockquote>
     </section>
   </section>
 
   <section>
-    <title>Tipper Configuration while at Home</title>
+    <title>Tipper Configuration while on the Road</title>
 
     <para>This laptop is either configured on our wireless network
-    (192.168.3.8) or as a standalone system on the road. While this system is
-    connected via our wireless network, it uses IPSEC tunnel mode for all
-    access.</para>
-
-    <note>
-      <para>Given that I use OpenVPN for remote access, it would be more
-      convenient to also use it for wireless access at home. I use IPSEC just
-      so that I always have a working IPSEC testbed.</para>
-    </note>
+    (192.168.3.8) or as a standalone system on the road.</para>
 
     <para>Tipper's view of the world is shown in the following diagram:</para>
 
     <graphic align="center" fileref="images/network2.png" valign="middle" />
-
-    <para>The key configuration files are shown in the following
-    sections.</para>
-
-    <section>
-      <title>zones</title>
-
-      <blockquote>
-        <programlisting>#ZONE   DISPLAY         COMMENTS
-home    Home            Shorewall Network
-net     Net             Internet
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE
-</programlisting>
-      </blockquote>
-    </section>
-
-    <section>
-      <title>policy</title>
-
-      <blockquote>
-        <programlisting>#SOURCE         DEST            POLICY          LOG LEVEL       LIMIT:BURST
-$FW             net             ACCEPT
-$FW             home            ACCEPT
-home            $FW             ACCEPT
-net             home            NONE
-home            net             NONE
-net             all             DROP            info
-# The FOLLOWING POLICY MUST BE LAST
-all             all             REJECT          info
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
-      </blockquote>
-    </section>
-
-    <section>
-      <title>interfaces</title>
-
-      <blockquote>
-        <programlisting>#ZONE   INTERFACE       BROADCAST       OPTIONS
-net     eth0            detect          dhcp,tcpflags
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
-      </blockquote>
-    </section>
-
-    <section>
-      <title>ipsec</title>
-
-      <blockquote>
-        <programlisting>#ZONE   IPSEC   OPTIONS                 IN                      OUT
-#       ONLY                            OPTIONS                 OPTIONS
-home    yes     mode=tunnel
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
-      </blockquote>
-    </section>
-
-    <section>
-      <title>hosts</title>
-
-      <blockquote>
-        <programlisting>#ZONE           HOST(S)                         OPTIONS
-home            eth0:0.0.0.0/0
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS LINE -- DO NOT REMOVE</programlisting>
-      </blockquote>
-    </section>
-
-    <section>
-      <title>rules</title>
-
-      <blockquote>
-        <programlisting>#ACTION         SOURCE                  DEST    PROTO   DEST    SOURCE  ORIGINAL        RATE    USER/
-#                                                       PORT    PORT(S) DEST            LIMIT   GROUP
-ACCEPT          net                     $FW     icmp    8
-ACCEPT          net                     $FW     tcp     22
-ACCEPT          net                     $FW     tcp     4000:4100
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
-      </blockquote>
-    </section>
-
-    <section>
-      <title>/etc/racoon/setkey.conf</title>
-
-      <blockquote>
-        <programlisting>flush;
-spdflush;
-
-# Policies for while we're connected via Wireless at home
-
-spdadd 192.168.3.8/32     192.168.3.8/32     any -P in  none;
-spdadd 192.168.3.8/32     192.168.3.8/32     any -P out none;
-spdadd 127.0.0.0/8        127.0.0.0/8        any -P in  none;
-spdadd 127.0.0.0/8        127.0.0.0/8        any -P out none;
-spdadd 0.0.0.0/0          192.168.3.8/32     any -P in  ipsec esp/tunnel/192.168.3.254-192.168.3.8/require;
-spdadd 192.168.3.8/32     0.0.0.0/0          any -P out ipsec esp/tunnel/192.168.3.8-192.168.3.254/require;
-</programlisting>
-      </blockquote>
-    </section>
-
-    <section>
-      <title>/etc/racoon/racoon.conf</title>
-
-      <blockquote>
-        <programlisting>path certificate "/etc/certs";
-
-listen
-{
-        isakmp 192.168.3.8;
-}
-
-remote 192.168.3.254
-{
-        exchange_mode main ;
-        certificate_type x509 "tipper.pem" "tipper_key.pem";
-        verify_cert on;
-        my_identifier asn1dn ;
-        peers_identifier asn1dn ;
-        verify_identifier on ;
-        lifetime time 30 minutes ;
-        proposal {
-                encryption_algorithm blowfish ;
-                hash_algorithm sha1;
-                authentication_method rsasig ;
-                dh_group 2 ;
-        }
-}
-
-sainfo address 192.168.3.8/32 any address 0.0.0.0/0 any
-{
-        pfs_group 2;
-        lifetime time 30 minutes ;
-        encryption_algorithm blowfish ;
-        authentication_algorithm hmac_sha1, hmac_md5 ;
-        compression_algorithm deflate ;
-}</programlisting>
-      </blockquote>
-    </section>
-  </section>
-
-  <section>
-    <title>Tipper Configuration on the Road</title>
-
-    <para>When Tipper is on the road, it's world view is the same as in the
-    diagram above.</para>
 
     <section>
       <title>zones</title>

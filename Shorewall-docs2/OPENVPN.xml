@@ -48,9 +48,9 @@
 
   <caution>
     <para><emphasis role="bold">This article applies to Shorewall 3.0 and
-    later. If you are running a version of Shorewall earlier than Shorewall
-    3.0.0 then please see the documentation for that
-    release.</emphasis></para>
+    later and to OpenVPN 2.0 and later. If you are running a version of
+    Shorewall earlier than Shorewall 3.0.0 then please see the documentation
+    for that release.</emphasis></para>
   </caution>
 
   <para>OpenVPN is a robust and highly configurable VPN (Virtual Private
@@ -117,22 +117,6 @@ vpn        tun0</programlisting>
       <programlisting>#TYPE         ZONE           GATEWAY        GATEWAY ZONE
 openvpn       net            134.28.54.2</programlisting>
     </blockquote>
-
-    <note>
-      <para>Shorewall versions prior to 2.2.0 Beta 1 enforced use of the same
-      port number for both the source and destination port.</para>
-
-      <para>Some OpenVPN clients (notabley on <trademark>Windows</trademark>)
-      do not use the same source and destination ports which can cause
-      problems. If system B is a Windows system or if you find that Shorewall
-      is blocking the UDP port 1194 traffic from the remote gateway and you
-      are running a version of Shorewall prior to 2.2.0 Beta 1, then you will
-      want the following entry in <filename>/etc/shorewall/tunnels</filename>
-      instead of the one above:</para>
-
-      <programlisting>#TYPE                  ZONE           GATEWAY        GATEWAY ZONE
-generic:udp:1194       net            134.28.54.2</programlisting>
-    </note>
 
     <para>This entry in <filename>/etc/shorewall/tunnels</filename> opens the
     firewall so that OpenVPN traffic on the default port 1194/udp will be
@@ -421,11 +405,12 @@ verb 3</programlisting>
     of two laptops: Eastepnc6000 (Windows XP - SP1) and Tipper (SuSE 10.0). We
     use OpenVPN to bridge those two laptops with the Local Zone shown in the
     lower left hand corner. The laptops are configured with addresses in the
-    192.168.3.0/24 network connection to the firewall's <filename
+    192.168.3.0/24 network connected to the firewall's <filename
     class="devicefile">eth0</filename> interface which places them in the
-    firewall's Wifi zone. OpenVPN bridging allows them to be assigned an
-    additional temporary IP address from the 192.168.1.0/24 network and to be
-    securely bridged to the LAN on the lower left.</para>
+    firewall's <emphasis role="bold">Wifi</emphasis> zone. OpenVPN bridging
+    allows them to be assigned an additional temporary IP address from the
+    192.168.1.0/24 network and to be securely bridged to the LAN on the lower
+    left.</para>
 
     <section>
       <title>Configuring the Bridge</title>

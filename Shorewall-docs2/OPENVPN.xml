@@ -498,10 +498,7 @@ tls-remote gateway.shorewall.net
 
 client
 
-route-gateway 192.168.1.254
-
-up /etc/openvpn/wireless.up
-down /etc/openvpn/wireless.down
+redirect-gateway
 
 ca /etc/certs/cacert.pem
 
@@ -521,20 +518,6 @@ persist-key
 mute-replay-warnings
 
 verb 3</programlisting>
-
-        <para>/etc/openvpn/wireless.up changes the default gateway to
-        192.168.1.254:</para>
-
-        <programlisting>ip route replace default via 192.168.1.254 dev tap0</programlisting>
-
-        <para>/etc/openvpn/wireless.down restores the default gateway to
-        192.168.3.254. Note that this command requires privilege and hence we
-        do not include "user nobody" and "group nobody" in
-        /etc/openvpn/wireless.conf.</para>
-
-        <para>/etc/openvpn/wireless.down:</para>
-
-        <programlisting>ip route replace default via 192.168.3.254 dev eth0</programlisting>
       </section>
 
       <section>

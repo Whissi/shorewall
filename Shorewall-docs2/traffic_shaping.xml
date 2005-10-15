@@ -21,7 +21,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-10-13</pubdate>
+    <pubdate>2005-10-15</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -32,7 +32,7 @@
     <copyright>
       <year>2005</year>
 
-      <holder>Arne Bernin</holder>
+      <holder>Arne Bernin &amp; Thomas M. Eastep</holder>
     </copyright>
 
     <legalnotice>
@@ -495,6 +495,27 @@ ppp0           6000kbit         500kbit</programlisting>
           </itemizedlist>
         </listitem>
       </itemizedlist>
+    </section>
+
+    <section>
+      <title>ppp devices</title>
+
+      <para>If you use ppp/pppoe/pppoa) to connect to your internet provider 
+	and you use traffic shaping you need to restart shorewall traffic
+	shaping. The reason for this is, that if the ppp connection gets 
+	restartet (and it usally does this at least daily), all <quote>tc</quote> 
+	filters/qdiscs related to that interface are deleted.</para>
+    
+      <para>The easiest way to achieve this, is just to restart shorewall
+	once the link is up. To achieve this add a small executable 
+	script to<quote>/etc/ppp/ip-up.d</quote>.</para>
+
+      <programlisting>#! /bin/sh
+
+/sbin/shorewall restart</programlisting>
+
+
+
     </section>
 
     <section>

@@ -115,9 +115,16 @@
 #				<action> -- The name of an action defined in
 #					    /etc/shorewall/actions or in
 #					    /usr/share/shorewall/actions.std.
-#
-#				<macro>  -- The name of a macro defined in a
-#					    file named macro.<macro-name>.
+#				<macro>	 -- The name of a macro defined in a
+#					    file named macro.<macro-name>. If
+#					    the macro accepts an action
+#					    parameter (Look at the macro
+#					    source to see if it has PARAM in
+#					    the TARGET column) then the macro
+#					    name is followed by "/" and the
+#					    action (ACCEPT, DROP, REJECT, ...)
+#					    to be substituted for the
+#					    parameter. Example: FTP/ACCEPT.
 #
 #			The ACTION may optionally be followed
 #			by ":" and a syslog log level (e.g, REJECT:info or
@@ -262,8 +269,9 @@
 #			request should be redirected to.
 #
 #	PROTO		Protocol - Must be "tcp", "udp", "icmp", "ipp2p",
-#			a number, or "all". "ipp2p" requires ipp2p match
-#			support in your kernel and iptables.
+#                       "ipp2p:udp", "ipp2p:all" a number, or "all".
+#                       "ipp2p*" requires ipp2p match support in your kernel
+#                       and iptables.
 #
 #	DEST PORT(S)	Destination Ports. A comma-separated list of Port
 #			names (from /etc/services), port numbers or port

@@ -59,7 +59,7 @@ Migration Considerations:
 
 		        Currently, Shorewall uses this information only
 		        to reorder the zone list so that parent zones
-		        appear after their subzones in the list. In the
+		        appear after their sub zones in the list. In the
 			future, Shorewall may make more extensive use
 		        of that information.
 
@@ -133,9 +133,9 @@ Migration Considerations:
 4) The 'nobogons' interface and hosts option as well as the
    BOGON_LOG_LEVEL option have been eliminated.
 
-5) Most of the standard actions have been replaced by parameterized
+5) Most of the standard actions have been replaced by parametrized
    macros (see below). So for example, the action.AllowSMTP and
-   action.DropSMTP have been removed an a parameterized macro
+   action.DropSMTP have been removed an a parametrized macro
    macro.SMTP has been added to replace them.
 
    In order that current users don't have to immediately update their
@@ -145,7 +145,8 @@ Migration Considerations:
    will replace that call with SMTP/ACCEPT. Because this substitution
    is expensive, it is conditional based on the setting of
    MAPOLDACTIONS in shorewall.conf. If this option is set to YES or if
-   it is not set (such as if you are using your old shorewall.confThe default traffic shaping class for a device was being incorrectly
+   it is not set (such as if you are using your old shorewall.conf
+   The default traffic shaping class for a device was being incorrectly
    specified by tc4shorewall.
    file) then Shorewall will perform the substitution. Once you have
    converted to use the new macros, you can set MAPOLDACTIONS=No and
@@ -201,7 +202,7 @@ Migration Considerations:
     rules file.
 
 11) A new value is defined for the TC_ENABLED option in shorewall.conf to
-    enable the builtin tc4shorewall traffic shaper. If you set
+    enable the built-in tc4shorewall traffic shaper. If you set
     TC_ENABLED=internal then tc4shorewall will be used.   If the option is
     set to Yes then Shorewall will continue to look for a 'tcstart' script.
 
@@ -226,7 +227,7 @@ New Features in Shorewall 3.0.*
 
    Possible uses for this option are:
 
-   a) Root fileset is NFS mounted. You will want to list the NFS server
+   a) Root file system is NFS mounted. You will want to list the NFS server
    in the 'critical' option.
 
    b) You are running Shorewall in a Crossbeam environment
@@ -270,7 +271,7 @@ New Features in Shorewall 3.0.*
       ACTION	 If you code PARAM as the action in a macro then
 		 when you invoke the macro, you can include the
 		 name of the macro followed by a slash ("/") and
-		 an ACTION (either builtin or user-defined. All
+		 an ACTION (either built-in or user-defined. All
 		 instances of PARAM in the body of the macro will be
 		 replaced with the ACTION.
 
@@ -394,7 +395,7 @@ New Features in Shorewall 3.0.*
 12) Previously, if you defined any intra-zone rule(s) then any traffic
     not matching the rule(s) was subject to normal policies (which
     usually turned out to involve the all->all REJECT policy). Now, the
-    intra-zone ACCEPT policy will still be in effect in the presense of
+    intra-zone ACCEPT policy will still be in effect in the presence of
     intra-zone rules. That policy can still be overridden by an
     explicit policy in your /etc/shorewall/policy file.
 

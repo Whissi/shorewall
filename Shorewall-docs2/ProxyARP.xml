@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-10-04</pubdate>
+    <pubdate>2005-10-16</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -132,6 +132,15 @@
     <filename>eth0</filename>. Note though that the VLSM is 32 so there is no
     network associated with this address. This is the approach <ulink
     url="myfiles.htm">that I take with my DMZ</ulink>.</para>
+
+    <para>To permit internet hosts to connect to the local systems, you use
+    ACCEPT rules. For example, if you run a web server on 130.252.100.19 which
+    you have configured to be in the <emphasis role="bold">loc</emphasis> zone
+    then you would need this entry in /etc/shorewall/rules:</para>
+
+    <programlisting>#ACTION SOURCE          DEST                    PROTO   DEST
+#                                                       PORT
+ACCEPT  net             loc:130.252.100.19      tcp     80</programlisting>
 
     <warning>
       <para>Your distribution's network configuration GUI may not be capable

@@ -143,8 +143,6 @@ Migration Considerations:
    is expensive, it is conditional based on the setting of
    MAPOLDACTIONS in shorewall.conf. If this option is set to YES or if
    it is not set (such as if you are using your old shorewall.conf
-   The default traffic shaping class for a device was being incorrectly
-   specified by tc4shorewall.
    file) then Shorewall will perform the substitution. Once you have
    converted to use the new macros, you can set MAPOLDACTIONS=No and
    invocations of those actions will go much quicker during 'shorewall
@@ -481,8 +479,9 @@ New Features in Shorewall 3.0.*
     /etc/shorewall/nat and /etc/shorewall/providers files.
 
 17) Arne Bernin's "tc4shorewall" package has been integrated into
-    Shorewall. Arne will be providing documentation and support for
-    this part of Shorewall.
+    Shorewall.
+
+    See: http://www.shorewall.net/3.0/traffic_shaping.htm for details.
 
     Thanks, Arne!
 

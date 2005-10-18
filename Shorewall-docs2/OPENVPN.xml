@@ -21,7 +21,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-10-15</pubdate>
+    <pubdate>2005-10-18</pubdate>
 
     <copyright>
       <year>2003</year>
@@ -150,6 +150,26 @@ openvpn       net            134.28.54.2</programlisting>
 
       <programlisting>#TYPE             ZONE           GATEWAY         GATEWAY ZONE
 openvpn:7777      net            134.28.54.2</programlisting>
+    </blockquote>
+
+    <para>Similarly, if you want to use TCP for your tunnel rather than UDP
+    (the default), then you can define /etc/shorewall/tunnels like
+    this:</para>
+
+    <blockquote>
+      <para>/etc/shorewall/tunnels using TCP:</para>
+
+      <programlisting>#TYPE             ZONE           GATEWAY         GATEWAY ZONE
+openvpn:tcp       net            134.28.54.2</programlisting>
+    </blockquote>
+
+    <para>Finally, if you want to use TCP and port 7777:</para>
+
+    <blockquote>
+      <para>/etc/shorewall/tunnels using TCP port 7777:</para>
+
+      <programlisting>#TYPE             ZONE           GATEWAY         GATEWAY ZONE
+openvpn:tcp:7777  net            134.28.54.2</programlisting>
     </blockquote>
 
     <para>This is the OpenVPN config on system A:</para>

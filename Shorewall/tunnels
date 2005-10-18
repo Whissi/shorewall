@@ -21,10 +21,17 @@
 #			Header protocol (51) is not used by the tunnel.
 #
 #			If type is "openvpn", "openvpnclient" or
+#			"openvpnserver" it may optionally be followed by ":"
+#			and "tcp" or "udp" to specify the protocol to be
+#			used. If not specified, "udp" is assumed.
+#
+#			If type is "openvpn", "openvpnclient" or
 #			"openvpnserver" it may optionally be followed
 #			by ":" and the port number used by the tunnel. if no
 #			":" and port number are included, then the default port
-#			of 1194 will be used
+#			of 1194 will be used. . Where both the protocol and port
+#			are specified, the protocol must be given first (e.g.,
+#			openvpn:tcp:4444).
 #
 #			If type is "generic", it must be followed by ":" and
 #			a protocol name (from /etc/protocols) or a protocol

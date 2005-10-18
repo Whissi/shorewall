@@ -2362,8 +2362,11 @@ setup_tunnels() # $1 = name of tunnels file
 		protocol=${protocol#*:}
 		p=${2##*:}
 		;;
-	    *:*)
+	    *:[0:9]*)
 		p=${2#*:}
+		;;
+	    *:*)
+		protocol=${2#*:}
 		;;
 	esac
 
@@ -2384,8 +2387,11 @@ setup_tunnels() # $1 = name of tunnels file
 		protocol=${protocol#*:}
 		p=${2##*:}
 		;;
-	    *:*)
+	    *:[0:9]*)
 		p=${2#*:}
+		;;
+	    *:*)
+		protocol=${2#*:}
 		;;
 	esac
 
@@ -2406,8 +2412,11 @@ setup_tunnels() # $1 = name of tunnels file
 		protocol=${protocol#*:}
 		p=${2##*:}
 		;;
-	    *:*)
+	    *:[0:9]*)
 		p=${2#*:}
+		;;
+	    *:*)
+		protocol=${2#*:}
 		;;
 	esac
 

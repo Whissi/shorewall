@@ -154,7 +154,7 @@ fi
 %attr(0600,root,root) /usr/share/shorewall/rfc1918
 %attr(0600,root,root) /usr/share/shorewall/configpath
 
-%doc COPYING INSTALL changelog.txt releasenotes.txt tunnel ipsecvpn
+%doc COPYING INSTALL changelog.txt releasenotes.txt tunnel ipsecvpn Samples
 
 %changelog
 * Mon Oct 17 2005 Tom Eastep tom@shorewall.net

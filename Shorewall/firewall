@@ -1315,7 +1315,7 @@ setup_providers()
 	fi
 
 	if [ $COMMAND != check ]; then
-	    ensure_and_save_command "[ -n \"\$NOROUTES\" ] || ip route replace $gateway dev $interface table $number"
+	    ensure_and_save_command "[ -n \"\$NOROUTES\" ] || ip route replace $gateway src $(find_first_interface_address $interface) dev $interface table $number"
 	    ensure_and_save_command "[ -n \"\$NOROUTES\" ] || ip route add default via $gateway dev $interface table $number"
 	fi
 
@@ -1696,7 +1696,7 @@ find_first_interface_address() # $1 = interface
     #
     # get the line of output containing the first IP address
     #
-    addr=$(ip -f inet addr show $1 2> /dev/null | grep inet | head -n1)
+    addr=$(ip -f inet addr show $1 2> /dev/null | grep 'inet .* global' | head -n1)
     #
     # If there wasn't one, bail out now
     #

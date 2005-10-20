@@ -303,7 +303,7 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
     fgrep VERSION=$VERSION $SHOREWALLDIR/fallback.sh > /dev/null 2>&1   || fatal_error "fallback.sh has wrong version"
 
     if [ -n "$SAMPLES" ]; then
-	do_or_die "cvs -z3 export -r $CVSTAG -d $SHOREWALLDIR/Samples Samples >> $LOGFILE 2>&1"
+	do_or_die "cvs -z3 export -r $CVSTAG -d $DIR/$SHOREWALLDIR/Samples Samples >> $LOGFILE 2>&1"
     fi
 
     if [ -n "$BUILDTARBALL" ]; then

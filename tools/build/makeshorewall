@@ -81,6 +81,7 @@ BUILDRPM=
 BUILDXML=
 BUILDHTML=
 BUILDLRP=
+SAMPLES=
 ################################################################################
 #                               F U N C T I O N S
 ################################################################################
@@ -244,6 +245,7 @@ case $VERSION in
 	DOCTAG=HEAD
 	XMLPROJ=Shorewall-docs2
 	BUILDLRP=
+	SAMPLES=Yes
 	;;
     *)
 	echo "Unsupported Version: $VERSION"
@@ -299,6 +301,10 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
     fgrep VERSION=$VERSION $SHOREWALLDIR/install.sh > /dev/null 2>&1    || fatal_error "install.sh has wrong version"
     fgrep VERSION=$VERSION $SHOREWALLDIR/uninstall.sh > /dev/null 2>&1  || fatal_error "uninstall.sh has wrong version"
     fgrep VERSION=$VERSION $SHOREWALLDIR/fallback.sh > /dev/null 2>&1   || fatal_error "fallback.sh has wrong version"
+
+    if [ -n "$SAMPLES" ]; then
+	do_or_die "cvs -z3 export -r $CVSTAG -d $SHOREWALLDIR/Samples Samples >> $LOGFILE 2>&1"
+    fi
 
     if [ -n "$BUILDTARBALL" ]; then
 	progress_message "Creating $DIR/$TARBALL..."

@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-10-13</pubdate>
+    <pubdate>2005-10-22</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -52,15 +52,16 @@
       releases.</para>
     </caution>
 
-    <para>I have DSL service and have 5 static IP addresses
-    (206.124.146.176-180). My DSL <quote>modem</quote> (Westell 2200) is
-    connected to eth2 and has IP address 192.168.1.1 (factory default). The
-    modem is configured in <quote>bridge</quote> mode so PPPoE is not
-    involved. I have a local network connected to eth3 (subnet
-    192.168.1.0/24), a wireless network (192.168.3.0/24) connected to eth0,
-    and a DMZ connected to eth1 (206.124.146.176/32). Note that I configure
-    the same IP address on both <filename class="devicefile">eth1</filename>
-    and <filename class="devicefile">eth2</filename>.</para>
+    <para>I have DSL service with 5 static IP addresses (206.124.146.176-180).
+    My DSL <quote>modem</quote> (Westell 2200) is connected to eth2 and has IP
+    address 192.168.1.1 (factory default). The modem is configured in
+    <quote>bridge</quote> mode so PPPoE is not involved. I have a local
+    network connected to eth3 which is bridged to interface tun0 via bridge
+    br0 (subnet 192.168.1.0/24), a wireless network (192.168.3.0/24) connected
+    to eth0, and a DMZ connected to eth1 (206.124.146.176/32). Note that I
+    configure the same IP address on both <filename
+    class="devicefile">eth1</filename> and <filename
+    class="devicefile">eth2</filename>.</para>
 
     <para>In this configuration:</para>
 
@@ -80,7 +81,7 @@
       <listitem>
         <para>I use SNAT through 206.124.146.179 for&nbsp;my Wife's Windows XP
         system <quote>Tarry</quote>, my <firstterm>crash and burn</firstterm>
-        system "Wookie", and our SuSE 10.0 laptop <quote>Tipper</quote> which
+        system "Wookie", our SuSE 10.0 laptop <quote>Tipper</quote> which
         connects through the Wireless Access Point (wap) via a Wireless Bridge
         (wet), and my work laptop (eastepnc6000) when it is not docked in my
         office.<note>
@@ -113,13 +114,13 @@
     WAP11.&nbsp; In additional to using the rather weak WEP 40-bit encryption
     (64-bit with the 24-bit preamble), I use <ulink
     url="MAC_Validation.html">MAC verification</ulink> and <ulink
-    url="OPENVPN.html">OpenVPN</ulink>.</para>
+    url="OPENVPN.html">OpenVPN</ulink> in bridge mode.</para>
 
     <para>The single system in the DMZ (address 206.124.146.177) runs postfix,
-    Courier IMAP (imaps and pop3), DNS, a Web server (Apache) and an FTP
-    server (Pure-ftpd) under Fedora Core 4. The system also runs fetchmail to
-    fetch our email from our old and current ISPs. That server is accessible
-    from the Internet through <ulink url="ProxyARP.htm">Proxy
+    Courier IMAP (imap and imaps), DNS (Bind 9), a Web server (Apache) and an
+    FTP server (Pure-ftpd) under Fedora Core 4. The system also runs fetchmail
+    to fetch our email from our old and current ISPs. That server is
+    accessible from the Internet through <ulink url="ProxyARP.htm">Proxy
     ARP</ulink>.</para>
 
     <para>The firewall system itself runs a DHCP server that serves the local
@@ -144,11 +145,10 @@
     /etc/network/interfaces file (see below) adds a host route to
     206.124.146.177 through eth1 when that interface is brought up.</para>
 
-    <para>The firewall is configured with OpenVPN for VPN access from our
-    second home in <ulink url="http://www.omakchamber.com/">Omak,
-    Washington</ulink> or when we are otherwise out of town. We run a second
-    instance of OpenVPN that is used to <ulink url="OPENVPN.html">bridge the
-    wireless laptops in the Wifi zone to the local lan</ulink>.</para>
+    <para>In addition to the Openvpn bridge, the firewall hosts an OpenVPN
+    Tunnel server for VPN access from our second home in <ulink
+    url="http://www.omakchamber.com/">Omak, Washington</ulink> or when we are
+    otherwise out of town.</para>
 
     <para><graphic align="center" fileref="images/network.png" /><note>
         <para>Eastepnc6000 is shown in both the local LAN and in the Wifi zone
@@ -624,15 +624,25 @@ $EXT_IF         1.5mbit         384kbit
       <title>/etc/shorewall/tcclasses</title>
 
       <blockquote>
-        <para>My traffic shaping configuration is the "WonderShaper" <ulink
+        <para>My traffic shaping configuration is basically the "WonderShaper"
+        <ulink
         url="http://www1.shorewall.net/pub/shorewall/Samples/tc4shorewall">example
-        from tc4shorewall</ulink>.</para>
+        from tc4shorewall</ulink> with a little tweaking.</para>
 
         <programlisting>#INTERFACE      MARK    RATE            CEIL            PRIORITY        OPTIONS
 $EXT_IF         10      full            ful             1               tcp-ack,tos-minimize-delay
 $EXT_IF         20      9*full/10       9*full/10       2               default
 $EXT_IF         30      6*full/10       6*full/10       3
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+
+        <programlisting>
+ Sent 3144472390 bytes 4019424 pkts (dropped 0, overlimits 0)
+
+Device tun0:
+qdisc pfifo_fast 0: bands 3 priomap  1 2 2 2 1 2 0 0 1 1 1 1 1 1 1 1
+ Sent 0 bytes 0 pkts (dropped 0, overlimits 0)
+
+</programlisting>
       </blockquote>
     </section>
 
@@ -644,17 +654,69 @@ $EXT_IF         30      6*full/10       6*full/10       3
         throttled and rsync gets throttled even more.</para>
 
         <note>
-          <para>The class id for tc4shorewall-generated classes is 1:&lt;100 +
-          mark value&gt;. The rules below are using the Netfilter CLASSIFY
-          target to classify the traffic directly without having to first mark
-          then classify based on the marks.</para>
+          <para>The class id for tc4shorewall-generated classes is
+          &lt;<emphasis>device number</emphasis>&gt;:&lt;<emphasis>100 + mark
+          value</emphasis>&gt; where the first device in
+          <filename>/etc/shorewall/tcdevices</filename> is device number 1,
+          the second is device number 2 and so on. The rules below are using
+          the Netfilter CLASSIFY target to classify the traffic directly
+          without having to first mark then classify based on the
+          marks.</para>
         </note>
 
         <programlisting>#MARK           SOURCE                  DEST            PROTO   PORT(S) CLIENT  USER    TEST
 #                                                                       PORT(S)
 1:110           192.168.0.0/22          $EXT_IF
-1:130           206.124.146.177         $EXT_IF         tcp     -       873
+1:130           206.124.146.177         $EXT_IF         tcp     -       873 #Rsync to the Mirrors
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+
+        <para>Here is the output of <command>shorewall show tc</command> while
+        the Shorewall mirrors were receiving updates via rsync and the link
+        was otherwise idle. Note the rate limiting imposed by the 1:30
+        Class.</para>
+
+        <programlisting>Shorewall-3.0.0-RC2 Traffic Control at gateway - Sat Oct 22 09:11:26 PDT 2005
+
+...
+
+Device eth2:
+qdisc htb 1: r2q 10 default 120 direct_packets_stat 2 ver 3.17
+ Sent 205450106 bytes 644093 pkts (dropped 0, overlimits 104779)
+ backlog 20p
+qdisc ingress ffff: ----------------
+ Sent 160811382 bytes 498294 pkts (dropped 37, overlimits 0)
+qdisc sfq 110: parent 1:110 limit 128p quantum 1514b flows 128/1024 perturb 10sec
+ Sent 81718034 bytes 417516 pkts (dropped 0, overlimits 0)
+qdisc sfq 120: parent 1:120 limit 128p quantum 1514b flows 128/1024 perturb 10sec
+ Sent 61224535 bytes 177773 pkts (dropped 0, overlimits 0)
+qdisc sfq 130: parent 1:130 limit 128p quantum 1514b flows 128/1024 perturb 10sec
+ Sent 62507157 bytes 48802 pkts (dropped 0, overlimits 0)
+ backlog 20p
+class htb 1:110 parent 1:1 leaf 110: prio 1 quantum 4915 rate 384000bit ceil 384000bit burst 1791b/8 mpu 0b overhead 0b cburst 1791b/8 mpu 0b overhead 0b level 0
+ Sent 81718034 bytes 417516 pkts (dropped 0, overlimits 0)
+ rate 424bit
+ lended: 417516 borrowed: 0 giants: 0
+ tokens: 36864 ctokens: 36864
+
+class htb 1:1 root rate 384000bit ceil 384000bit burst 1791b/8 mpu 0b overhead 0b cburst 1791b/8 mpu 0b overhead 0b level 7
+ Sent 205422474 bytes 644073 pkts (dropped 0, overlimits 0)
+ rate 231568bit 19pps
+ lended: 0 borrowed: 0 giants: 0
+ tokens: -26280 ctokens: -26280
+
+class htb 1:130 parent 1:1 leaf 130: prio 3 quantum 2944 rate 230000bit ceil 230000bit burst 1714b/8 mpu 0b overhead 0b cburst 1714b/8 mpu 0b overhead 0b level 0
+ Sent 62507157 bytes 48802 pkts (dropped 0, overlimits 0)
+ <emphasis role="bold">rate 230848bit 19pps backlog 18p</emphasis>
+ lended: 48784 borrowed: 0 giants: 0
+ tokens: -106401 ctokens: -106401
+
+class htb 1:120 parent 1:1 leaf 120: prio 2 quantum 4416 rate 345000bit ceil 345000bit burst 1771b/8 mpu 0b overhead 0b cburst 1771b/8 mpu 0b overhead 0b level 0
+ Sent 61224535 bytes 177773 pkts (dropped 0, overlimits 0)
+ rate 1000bit
+ lended: 177773 borrowed: 0 giants: 0
+ tokens: 41126 ctokens: 41126
+
+...</programlisting>
       </blockquote>
     </section>
 

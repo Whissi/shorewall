@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-09-30</pubdate>
+    <pubdate>2005-10-20</pubdate>
 
     <copyright>
       <year>2002-2005</year>
@@ -132,12 +132,29 @@
     <filename class="directory">/etc/shorewall</filename> -- for simple
     setups, you only need to deal with a few of these as described in this
     guide. After you have <ulink url="Install.htm">installed
-    Shorewall</ulink>, <emphasis role="bold">download the <ulink
-    url="http://www1.shorewall.net/pub/shorewall/Samples/">one-interface
-    sample</ulink>, un-tar it (tar -zxvf one-interface.tgz) and and copy the
-    files to /etc/shorewall (they will replace files with the same names that
-    were placed in /etc/shorewall during Shorewall
-    installation)</emphasis>.</para>
+    Shorewall</ulink>, you can find the Samples as follows:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>If you installed using an RPM, the samples will be in the
+        Samples/one-interface/ subdirectory of the Shorewall documentation
+        directory. If you don't know where the Shorewall documentation
+        directory is, you can find the samples using this command:</para>
+
+        <programlisting>~# rpm -ql shorewall | fgrep one-interface
+/usr/share/doc/packages/shorewall/Samples/one-interface
+/usr/share/doc/packages/shorewall/Samples/one-interface/interfaces
+/usr/share/doc/packages/shorewall/Samples/one-interface/policy
+/usr/share/doc/packages/shorewall/Samples/one-interface/rules
+/usr/share/doc/packages/shorewall/Samples/one-interface/zones
+~#</programlisting>
+      </listitem>
+
+      <listitem>
+        <para>If you installed using the tarball, the samples are in the
+        Samples/one-interface directory in the tarball.</para>
+      </listitem>
+    </orderedlist>
 
     <warning>
       <para><emphasis role="bold">Note to Debian Users</emphasis></para>

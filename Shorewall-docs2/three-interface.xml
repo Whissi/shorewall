@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-10-03</pubdate>
+    <pubdate>2005-10-20</pubdate>
 
     <copyright>
       <year>2002-2005</year>
@@ -192,14 +192,32 @@
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
-    <para>After you have installed Shorewall, <emphasis role="bold">download
-    the <ulink
-    url="http://shorewall.net/pub/shorewall/Samples">three-interface
-    sample</ulink>, un-tar it</emphasis> (<command>tar <option>-zxvf</option>
-    <filename>three-interfaces.tgz</filename></command>) and and copy the
-    files to <filename>/etc/shorewall</filename> (the files will replace files
-    with the same names that were placed in
-    <filename>/etc/shorewall</filename> when Shorewall was installed).</para>
+    <para>After you have installed Shorewall, locate the three-interface
+    Sample configuration:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>If you installed using an RPM, the samples will be in the
+        Samples/three-interfaces/ subdirectory of the Shorewall documentation
+        directory. If you don't know where the Shorewall documentation
+        directory is, you can find the samples using this command:</para>
+
+        <programlisting>~# rpm -ql shorewall | fgrep three-interfaces
+/usr/share/doc/packages/shorewall/Samples/three-interfaces
+/usr/share/doc/packages/shorewall/Samples/three-interfaces/interfaces
+/usr/share/doc/packages/shorewall/Samples/three-interfaces/masq
+/usr/share/doc/packages/shorewall/Samples/three-interfaces/policy
+/usr/share/doc/packages/shorewall/Samples/three-interfaces/routestopped
+/usr/share/doc/packages/shorewall/Samples/three-interfaces/rules
+/usr/share/doc/packages/shorewall/Samples/three-interfaces/zones
+~#</programlisting>
+      </listitem>
+
+      <listitem>
+        <para>If you installed using the tarball, the samples are in the
+        Samples/three-interfaces directory in the tarball.</para>
+      </listitem>
+    </orderedlist>
 
     <para>As each file is introduced, I suggest that you look through the
     actual file on your system -- each file contains detailed configuration

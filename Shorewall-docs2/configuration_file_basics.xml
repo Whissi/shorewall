@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-09-29</pubdate>
+    <pubdate>2005-10-20</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -127,8 +127,8 @@
         </listitem>
 
         <listitem>
-          <para><filename>/etc/shorewall/tunnels</filename> - defines IPSEC,
-          GRE and IPIP tunnels with end-points on the firewall system.</para>
+          <para><filename>/etc/shorewall/tunnels</filename> - defines tunnels
+          (VPN) with end-points on the firewall system.</para>
         </listitem>
 
         <listitem>
@@ -173,7 +173,8 @@
 
         <listitem>
           <para><filename>/etc/shorewall/actions</filename> and
-          <filename>/usr/share/shorewall/action.template</filename>.</para>
+          <filename>/usr/share/shorewall/action.template</filename> allow
+          user-defined actions.</para>
         </listitem>
 
         <listitem>
@@ -227,13 +228,13 @@ ACCEPT  net     $FW      tcp     www     #This is an end-of-line comment</progra
     <title>Line Continuation</title>
 
     <para>You may continue lines in the configuration files using the usual
-    backslash (<quote>\</quote>) followed immediately by a new line
-    character.</para>
+    backslash (<quote>\</quote>) followed immediately by a new line character
+    (Enter key).</para>
 
     <example>
       <title>Line Continuation</title>
 
-      <programlisting>ACCEPT  net     $FW      tcp \
+      <programlisting>ACCEPT  net     $FW      tcp \↵
 smtp,www,pop3,imap  #Services running on the firewall</programlisting>
     </example>
   </section>
@@ -488,7 +489,8 @@ Shorewall has detected the following iptables/netfilter capabilities:
    Packet Type Match: Not available
    Policy Match: Available
    Physdev Match: Available
-   <emphasis role="bold">IP range Match: Available &lt;-------------- </emphasis></programlisting>
+   <emphasis role="bold">IP range Match: Available &lt;-------------- 
+</emphasis></programlisting>
   </section>
 
   <section id="Ports">

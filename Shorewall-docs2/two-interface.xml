@@ -12,7 +12,7 @@
       <surname>Eastep</surname>
     </author>
 
-    <pubdate>2005-10-03</pubdate>
+    <pubdate>2005-10-21</pubdate>
 
     <copyright>
       <year>2002-</year>
@@ -78,33 +78,7 @@
             <imagedata fileref="images/basics.png" format="PNG" />
           </imageobject>
         </mediaobject>
-      </figure> <tip>
-        <title>Shorewall and <trademark>Mandrake</trademark> 9.0+</title>
-
-        <para>If you are running Shorewall under
-        <trademark>Mandrake</trademark> 9.0 or later, you can easily configure
-        the above setup using the <trademark>Mandrake</trademark>
-        <quote>Internet Connection Sharing</quote> applet. From the
-        <emphasis><interface>Mandrake Control Center</interface></emphasis>,
-        select <quote><guimenuitem>Network</guimenuitem> &amp;
-        <guisubmenu>Internet</guisubmenu></quote> then
-        <quote><interface>Connection Sharing</interface></quote>.</para>
-
-        <para>Note however, that the Shorewall configuration produced by
-        <emphasis>Mandrake Internet Connection Sharing</emphasis> is strange
-        and is apt to confuse you if you use the rest of this documentation
-        (it has two local zones; <varname>loc</varname> and
-        <varname>masq</varname> where <varname>loc</varname> is empty; this
-        conflicts with this documentation which assumes a single local zone
-        <varname>loc</varname>). We therefore recommend that once you have set
-        up this sharing that you uninstall the <trademark>Mandrake</trademark>
-        Shorewall RPM and install the one from the <ulink
-        url="download.htm">download</ulink> page then follow the instructions
-        in this Guide.</para>
-      </tip><note>
-        <para><emphasis role="bold">The above Shorewall Issue is corrected in
-        Mandrake 10.0 and later.</emphasis></para>
-      </note> <caution>
+      </figure> <caution>
         <para>If you edit your configuration files on a
         <trademark>Windows</trademark> system, you must save them as
         <trademark>Unix</trademark> files if your editor supports that option
@@ -199,14 +173,32 @@
     <para><inlinegraphic fileref="images/BD21298_.gif"
     format="GIF" /><important>
         <para>After you have <ulink url="Install.htm">installed
-        Shorewall</ulink>, <emphasis role="bold">download the <ulink
-        url="http://www1.shorewall.net/pub/shorewall/Samples/">two-interface
-        sample</ulink>, un-tar it </emphasis>(<command>tar
-        <option>-zxvf</option>
-        <filename>two-interfaces.tgz</filename></command>) and and copy the
-        files to <filename class="directory">/etc/shorewall</filename>
-        <emphasis role="bold">(these files will replace files with the same
-        name)</emphasis>.</para>
+        Shorewall</ulink>, locate the two-interfaces samples:</para>
+
+        <orderedlist>
+          <listitem>
+            <para>If you installed using an RPM, the samples will be in the
+            Samples/two-interfaces/ subdirectory of the Shorewall
+            documentation directory. If you don't know where the Shorewall
+            documentation directory is, you can find the samples using this
+            command:</para>
+
+            <programlisting>~# rpm -ql shorewall | fgrep two-interfaces
+/usr/share/doc/packages/shorewall/Samples/two-interfaces
+/usr/share/doc/packages/shorewall/Samples/two-interfaces/interfaces
+/usr/share/doc/packages/shorewall/Samples/two-interfaces/masq
+/usr/share/doc/packages/shorewall/Samples/two-interfaces/policy
+/usr/share/doc/packages/shorewall/Samples/two-interfaces/routestopped
+/usr/share/doc/packages/shorewall/Samples/two-interfaces/rules
+/usr/share/doc/packages/shorewall/Samples/two-interfaces/zones
+~#</programlisting>
+          </listitem>
+
+          <listitem>
+            <para>If you installed using the tarball, the samples are in the
+            Samples/two-interfaces directory in the tarball.</para>
+          </listitem>
+        </orderedlist>
       </important> As each file is introduced, I suggest that you look through
     the actual file on your system -- each file contains detailed
     configuration instructions and default entries.</para>

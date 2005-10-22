@@ -33,7 +33,8 @@
       1.2 or any later version published by the Free Software Foundation; with
       no Invariant Sections, with no Front-Cover, and with no Back-Cover
       Texts. A copy of the license is included in the section entitled
-      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation License</ulink></quote>.</para>
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
 
@@ -42,8 +43,8 @@
     at a level below Netfilter. Hence, Netfilter (and therefore Shorewall)
     cannot be used effectively to police DHCP. The <quote>dhcp</quote>
     interface option described in this article allows for Netfilter to stay
-    out of DHCP&#39;s way for those operations that can be controlled by
-    Netfilter and prevents unwanted logging of DHCP-related traffic by
+    out of DHCP's way for those operations that can be controlled by Netfilter
+    and prevents unwanted logging of DHCP-related traffic by
     Shorewall-generated Netfilter logging rules.</para>
   </note>
 
@@ -65,8 +66,6 @@
         modifying <filename>/etc/sysconfig/dhcpd</filename>.</para>
       </listitem>
     </itemizedlist>
-
-    <para></para>
   </section>
 
   <section>
@@ -75,22 +74,25 @@
     <itemizedlist>
       <listitem>
         <para>Specify the <quote>dhcp</quote> option for this interface in the
-        <ulink url="Documentation.htm#Interfaces"><filename>/etc/shorewall/interfaces</filename></ulink>
-        file.&#x00A0;This will generate rules that will allow DHCP to and from
+        <ulink
+        url="Documentation.htm#Interfaces"><filename>/etc/shorewall/interfaces</filename></ulink>
+        file.&nbsp;This will generate rules that will allow DHCP to and from
         your firewall system.</para>
       </listitem>
 
       <listitem>
         <para>If you know that the dynamic address is always going to be in
-        the same subnet, you can specify the subnet address in the
-        interface&#39;s entry in the <ulink url="Documentation.htm#Interfaces"><filename>/etc/shorewall/interfaces</filename></ulink>
+        the same subnet, you can specify the subnet address in the interface's
+        entry in the <ulink
+        url="Documentation.htm#Interfaces"><filename>/etc/shorewall/interfaces</filename></ulink>
         file.</para>
       </listitem>
 
       <listitem>
-        <para>If you don&#39;t know the subnet address in advance, you should
-        specify <quote>detect</quote> for the interface&#39;s subnet address
-        in the <ulink url="Documentation.htm#Interfaces"><filename>/etc/shorewall/interfaces</filename></ulink>
+        <para>If you don't know the subnet address in advance, you should
+        specify <quote>detect</quote> for the interface's subnet address in
+        the <ulink
+        url="Documentation.htm#Interfaces"><filename>/etc/shorewall/interfaces</filename></ulink>
         file and start Shorewall after the interface has started.</para>
       </listitem>
 
@@ -98,7 +100,7 @@
         <para>In the event that the subnet address might change while
         Shorewall is started, you need to arrange for a <quote>shorewall
         refresh</quote> command to be executed when a new dynamic IP address
-        gets assigned to the interface. Check your DHCP client&#39;s
+        gets assigned to the interface. Check your DHCP client's
         documentation.</para>
       </listitem>
     </itemizedlist>

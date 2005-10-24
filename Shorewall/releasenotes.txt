@@ -1,26 +1,10 @@
-Shorewall 3.0.0 RC 2.
+Shorewall 3.0.0 RC 3.
 
-Problems Corrected in 3.0.0 RC 2:
+Problems Corrected in 3.0.0 RC 3:
 
-1)  Support for OpenVPN TCP tunnels was released in Shorewall 2.2.0 but the
-    implementation was incomplete. It has now been completed and is
-    documented in the /etc/shorewall/tunnels file.
-
-2)  When running on older kernels, the following message could be issued
-    during "shorewall start":
-
-    /usr/share/shorewall/firewall: line 1: \
-    /proc/sys/net/ipv4/conf/all/arp_ignore: No such file or directory
-
-3)  The /etc/shorewall/interfaces now clarifies that multiple interfaces
-    to a zone are supported.
-
-New Features in Shorewall 3.0.0 RC 2:
-
-1)  The sample configurations are now packaged with the product. They are
-    in the Samples directory on the tarball and are in the RPM they are
-    in the Samples sub-directory of the Shorewall documentation
-    directory.
+1)  Shorewall no longer has any functionality that is dependent on the
+    Netfilter ROUTE target so detection and reporting of that target
+    has been removed.
 
 Migration Considerations:
 
@@ -572,4 +556,7 @@ New Features in Shorewall 3.0.*
     the REJECT target may not be used in the PREROUTING chain, the settings
     MACLIST_DISPOSITION=REJECT and MACLIST_TABLE=mangle are incompatible.
 
-
+28) The sample configurations are now packaged with the product. They are
+    in the Samples directory on the tarball and are in the RPM they are
+    in the Samples sub-directory of the Shorewall documentation
+    directory.

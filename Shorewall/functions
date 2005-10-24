@@ -893,7 +893,6 @@ determine_capabilities() {
     RECENT_MATCH=
     OWNER_MATCH=
     IPSET_MATCH=
-    XMARK=
     CONNMARK=
     CONNMARK_MATCH=
     RAW_TABLE=
@@ -913,7 +912,6 @@ determine_capabilities() {
     qt $IPTABLES -A fooX1234 -p tcp -m ipp2p --ipp2p -j ACCEPT                          && IPP2P_MATCH=Yes
 
     qt $IPTABLES -t mangle -N fooX1234
-    qt $IPTABLES -t mangle -A fooX1234 -j MARK --or-mark 2                              && XMARK=Yes
     qt $IPTABLES -t mangle -A fooX1234 -j CONNMARK --save-mark                          && CONNMARK=Yes
     qt $IPTABLES -t mangle -A fooX1234 -j CLASSIFY --set-class 1:1                      && CLASSIFY_TARGET=Yes
     qt $IPTABLES -t mangle -F fooX1234
@@ -963,7 +961,6 @@ report_capabilities() {
     report_capability "Recent Match" $RECENT_MATCH
     report_capability "Owner Match" $OWNER_MATCH
     report_capability "Ipset Match" $IPSET_MATCH
-    report_capability "Extended MARK Target" $XMARK
     report_capability "CONNMARK Target" $CONNMARK
     report_capability "Connmark Match" $CONNMARK_MATCH
     report_capability "Raw Table" $RAW_TABLE

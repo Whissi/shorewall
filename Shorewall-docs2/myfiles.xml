@@ -53,38 +53,40 @@
     </caution>
 
     <para>I have DSL service with 5 static IP addresses (206.124.146.176-180).
-    My DSL <quote>modem</quote> (Westell 2200) is connected to eth2 and has IP
-    address 192.168.1.1 (factory default). The modem is configured in
-    <quote>bridge</quote> mode so PPPoE is not involved. I have a local
-    network connected to eth3 which is bridged to interface tun0 via bridge
-    br0 (subnet 192.168.1.0/24), a wireless network (192.168.3.0/24) connected
-    to eth0, and a DMZ connected to eth1 (206.124.146.176/32). Note that I
-    configure the same IP address on both <filename
-    class="devicefile">eth1</filename> and <filename
+    My DSL <quote>modem</quote> (<ulink
+    url="http://www.westell.com/pages/index.jsp">Westell</ulink> 2200) is
+    connected to eth2 and has IP address 192.168.1.1 (factory default). The
+    modem is configured in <quote>bridge</quote> mode so PPPoE is not
+    involved. I have a local network connected to eth3 which is bridged to
+    interface tun0 via bridge br0 (subnet 192.168.1.0/24), a wireless network
+    (192.168.3.0/24) connected to eth0, and a DMZ connected to eth1
+    (206.124.146.176/32). Note that I configure the same IP address on both
+    <filename class="devicefile">eth1</filename> and <filename
     class="devicefile">eth2</filename>.</para>
 
     <para>In this configuration:</para>
 
     <itemizedlist>
       <listitem>
-        <para>I use one-to-one NAT for Ursa (my personal system that run SuSE
-        10.0) - Internal address 192.168.1.5 and external address
-        206.124.146.178.</para>
+        <para>I use one-to-one NAT for <emphasis>"Ursa"</emphasis> (my
+        personal system that run SuSE 10.0) - Internal address 192.168.1.5 and
+        external address 206.124.146.178.</para>
       </listitem>
 
       <listitem>
-        <para>I use one-to-one NAT for Eastepnc6000 (My work system -- Windows
-        XP SP1). Internal address 192.168.1.6 and external address
-        206.124.146.180.</para>
+        <para>I use one-to-one NAT for <emphasis>"Eastepnc6000</emphasis>" (My
+        work system -- Windows XP SP1). Internal address 192.168.1.6 and
+        external address 206.124.146.180.</para>
       </listitem>
 
       <listitem>
         <para>I use SNAT through 206.124.146.179 for&nbsp;my Wife's Windows XP
-        system <quote>Tarry</quote>, my <firstterm>crash and burn</firstterm>
-        system "Wookie", our SuSE 10.0 laptop <quote>Tipper</quote> which
-        connects through the Wireless Access Point (wap) via a Wireless Bridge
-        (wet), and my work laptop (eastepnc6000) when it is not docked in my
-        office.<note>
+        system <quote><emphasis>Tarry</emphasis></quote>, my <firstterm>crash
+        and burn</firstterm> system "<emphasis>Wookie</emphasis>", our SuSE
+        10.0 laptop <quote><emphasis>Tipper</emphasis></quote> which connects
+        through the Wireless Access Point (wap) via a Wireless Bridge (wet),
+        and my work laptop (<emphasis>eastepnc6000</emphasis>) when it is not
+        docked in my office.<note>
             <para>While the distance between the WAP and where I usually use
             the laptop isn't very far (50 feet or so), using a WAC11 (CardBus
             wireless card) has proved very unsatisfactory (lots of lost
@@ -107,36 +109,38 @@
 
     <para>The firewall runs on a P-II/233 with Debian Sarge (testing).</para>
 
-    <para>Ursa runs Samba for file sharing with the Windows systems and is
-    configured as a Wins server.</para>
+    <para><emphasis>Ursa</emphasis> runs Samba for file sharing with the
+    Windows systems and is configured as a Wins server.</para>
 
     <para>The wireless network connects to the firewall's eth0 via a LinkSys
     WAP11.&nbsp; In additional to using the rather weak WEP 40-bit encryption
     (64-bit with the 24-bit preamble), I use <ulink
     url="MAC_Validation.html">MAC verification</ulink> and <ulink
-    url="OPENVPN.html">OpenVPN</ulink> in bridge mode.</para>
+    url="OPENVPN.html#Bridge">OpenVPN in bridge mode</ulink>. </para>
 
-    <para>The single system in the DMZ (address 206.124.146.177) runs postfix,
-    Courier IMAP (imap and imaps), DNS (Bind 9), a Web server (Apache) and an
-    FTP server (Pure-ftpd) under Fedora Core 4. The system also runs fetchmail
-    to fetch our email from our old and current ISPs. That server is
-    accessible from the Internet through <ulink url="ProxyARP.htm">Proxy
-    ARP</ulink>.</para>
+    <para>The single system in the DMZ (address 206.124.146.177) runs <ulink
+    url="http://www.postfix.org">Postfix</ulink>, <ulink
+    url="http://www.courier-mta.org/imap/">Courier IMAP</ulink> (imap and
+    imaps), <ulink url="http://www.isc.org/sw/bind/">DNS (Bind 9)</ulink>, a
+    <ulink url="http://www.apache.org">Web server (Apache)</ulink> and an
+    <ulink url="http://www.pureftpd.org/">FTP server (Pure-ftpd)</ulink> under
+    <ulink url="http://fedora.redhat.com/">Fedora Core 4</ulink>. The system
+    also runs <ulink
+    url="http://www.catb.org/~esr/fetchmail/">fetchmail</ulink> to fetch our
+    email from our old and current ISPs. That server is accessible from the
+    Internet through <ulink url="ProxyARP.htm">Proxy ARP</ulink>.</para>
 
-    <para>The firewall system itself runs a DHCP server that serves the local
-    and wireless networks.</para>
+    <para>The firewall system itself runs a <ulink
+    url="http://www.isc.org/sw/dhcp/">DHCP server</ulink> that serves the
+    local and wireless networks.</para>
 
     <para>All administration and publishing is done using ssh/scp. I have a
     desktop environment installed on the firewall but I usually don't start
-    it. X applications tunnel through SSH to Ursa or one of the laptops. The
-    server also has a desktop environment installed but it is seldom started
-    either. For the most part, X tunneled through SSH is used for server
-    administration and the server runs at run level 3 (multi-user console mode
-    on Fedora).</para>
-
-    <para>I run an SNMP server on my firewall to serve <ulink
-    url="http://www.ee.ethz.ch/~oetiker/webtools/mrtg/">MRTG</ulink> running
-    in the DMZ.</para>
+    it. X applications tunnel through SSH to <emphasis>Ursa</emphasis> or one
+    of the laptops. The server also has a desktop environment installed but it
+    is seldom started either. For the most part, X tunneled through SSH is
+    used for server administration and the server runs at run level 3
+    (multi-user console mode on Fedora).</para>
 
     <para>The ethernet interface in the Server is configured with IP address
     206.124.146.177, netmask 255.255.255.0. The server's default gateway is
@@ -145,16 +149,17 @@
     /etc/network/interfaces file (see below) adds a host route to
     206.124.146.177 through eth1 when that interface is brought up.</para>
 
-    <para>In addition to the Openvpn bridge, the firewall hosts an OpenVPN
+    <para>In addition to the OpenVPN bridge, the firewall hosts an OpenVPN
     Tunnel server for VPN access from our second home in <ulink
     url="http://www.omakchamber.com/">Omak, Washington</ulink> or when we are
     otherwise out of town.</para>
 
     <para><graphic align="center" fileref="images/network.png" /><note>
-        <para>Eastepnc6000 is shown in both the local LAN and in the Wifi zone
-        with IP address 192.168.1.6 -- clearly, the computer can only be in
-        one place or the other. Tipper can also be in either place and will
-        have the IP address 192.168.1.8 regardless.</para>
+        <para><emphasis>Eastepnc6000</emphasis> is shown in both the local LAN
+        and in the Wifi zone with IP address 192.168.1.6 -- clearly, the
+        computer can only be in one place or the other.
+        <emphasis>Tipper</emphasis> can also be in either place and will have
+        the IP address 192.168.1.8 regardless.</para>
       </note></para>
   </section>
 
@@ -818,10 +823,18 @@ client-config-dir /etc/openvpn/clients
 ccd-exclusive
 client-to-client
 
-verb 3
-</programlisting>
+verb 3</programlisting>
       </blockquote>
     </section>
+  </section>
+
+  <section>
+    <title>Tipper and Eastepnc6000 Configuration in the Wireless
+    Network</title>
+
+    <para>Please find this information in the <ulink
+    url="OPENVPN.html#Bridge">OpenVPN bridge mode</ulink> documentation.
+    </para>
   </section>
 
   <section>
@@ -830,7 +843,8 @@ verb 3
     <para>This laptop is either configured on our wireless network
     (192.168.3.8) or as a standalone system on the road.</para>
 
-    <para>Tipper's view of the world is shown in the following diagram:</para>
+    <para><emphasis>Tipper</emphasis>'s view of the world is shown in the
+    following diagram:</para>
 
     <graphic align="center" fileref="images/network2.png" valign="middle" />
 

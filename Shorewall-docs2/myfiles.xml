@@ -744,7 +744,6 @@ iface eth2 inet static
         up ip route add 192.168.1.1 dev eth2
 
 # Wireless network
-
 auto eth0
 iface eth0 inet static
         address 192.168.3.254
@@ -767,15 +766,13 @@ iface br0 inet static
         post-down /usr/sbin/brctl delbr br0
         post-down /usr/sbin/openvpn --rmtun --dev tap0
 
-# Unbrided LAN interface
-
+# Unbridged LAN interface (Not started automatically)
 iface eth3 inet static
         address 192.168.1.254
         netmask 255.255.255.0
         up ip route add 224.0.0.0/4 dev eth3
 
-# Second Internet interface
-
+# Second Internet interface (Not started automatically -- address is duplicate of one added by Shorewall to eth2)
 iface eth4 inet static
         pre-up modprobe ne io=0x300 irq=10
         address 206.124.146.179

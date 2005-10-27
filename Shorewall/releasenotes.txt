@@ -183,15 +183,15 @@ Migration Considerations:
     removed as have the 'newnotsyn' options in /etc/shorewall/interfaces
     and /etc/shorewall/hosts.
 
-    TCP new-not-syn packets may be blocked using the 'dropNonSyn' or
-    'rejNonSyn' built-in actions.
+    TCP new-not-syn packets may be blocked using the 'dropNotSyn' or
+    'rejNotSyn' built-in actions.
 
     Example: Reject all new-not-syn packets from the net and log them at
              the 'info' level.
 
 	#ACTION          SOURCE           DEST           PROTO
 	SECTION NEW
-	rejNonSyn:info   net              all            tcp
+	rejNotSyn:info   net              all            tcp
 
     Note that the rule is added at the front of the NEW section of the
     rules file.

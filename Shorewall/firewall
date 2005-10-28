@@ -2998,7 +2998,7 @@ setup_nat() {
 		    add_ip_aliases=
 		    ;;
 		*)
-		    [ -n "$RETAIN_ALIASES" ] || run_and_save_command qt ip addr del $external dev $iface
+		    [ -n "$RETAIN_ALIASES" -o $COMMAND = check ] || run_and_save_command qt ip addr del $external dev $iface
 		    ;;
 	    esac
 	else

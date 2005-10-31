@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-09-12</pubdate>
+    <pubdate>2005-10-31</pubdate>
 
     <copyright>
       <year>2005</year>
@@ -113,9 +113,16 @@ allowoutUPnP       $FW     loc</programlisting>
 
     <note>
       <para>To use 'allowoutUPnP', your iptables and kernel must support the
-      'owner match' feature (see the output of "shorewall show
-      capabilities").</para>
+      'owner match' feature (see the output of "shorewall show capabilities")
+      and you may not be running kernel version 2.6.14 or later. If you are
+      running 2.6.14 or later, then replace the above rule with:</para>
     </note>
+
+    <blockquote>
+      <programlisting>#ACTION            SOURCE  DEST   PROTO     DEST PORT(S)     SOURCE     ORIGINAL     RATE     USER/
+#                                                            PORT(S)    DESTINATION  LIMIT    GROUP
+ACCEPT             $FW     loc    all       -                -          -            -        root</programlisting>
+    </blockquote>
 
     <para>If your loc-&gt;fw policy is not ACCEPT then you need this
     rule:</para>

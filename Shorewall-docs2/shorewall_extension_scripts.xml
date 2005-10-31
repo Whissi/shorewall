@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-09-11</pubdate>
+    <pubdate>2005-10-31</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -224,9 +224,18 @@
         </listitem>
       </orderedlist>
     </listitem>
+
+    <listitem>
+      <para>Many of the extension scripts get executed for both the shorewall
+      start and shorewall restart commands. You can determine which command is
+      being executed using the contents of $COMMAND.</para>
+
+      <programlisting>if [ $COMMAND = start ]; then
+   ...</programlisting>
+    </listitem>
   </itemizedlist>
 
-  <para> You can also define a <emphasis>common action</emphasis> to be
+  <para>You can also define a <emphasis>common action</emphasis> to be
   performed immediately before a policy of ACCEPT, DROP or REJECT is applied.
   Separate <ulink url="Actions.html">actions</ulink> can be assigned to each
   policy type so for example you can have a different common action for DROP

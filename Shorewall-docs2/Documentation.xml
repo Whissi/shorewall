@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-10-13</pubdate>
+    <pubdate>2005-11-02</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -2007,9 +2007,23 @@ ACCEPT<emphasis role="bold">:info</emphasis>   -              -               tc
 
         <listitem>
           <para>Output rules from the firewall itself may be restricted to a
-          particular set of users and/or user groups. See the <ulink
-          url="UserSets.html">User Set Documentation</ulink> for
-          details.</para>
+          particular user or group.</para>
+
+          <para>The column may contain:</para>
+
+          <programlisting>       [!][&lt;user name or number&gt;][:&lt;group name or number&gt;][+&lt;program name&gt;]</programlisting>
+
+          <para>When this column is non-empty, the rule applies only if the
+          program generating the output is running under the effective
+          &lt;user&gt; and/or &lt;group&gt; specified (or is NOT running under
+          that id if "!" is given). </para>
+
+          <para>Examples:</para>
+
+          <programlisting>joe     #program must be run by joe
+:kids   #program must be run by a member of the 'kids' group
+!:kids  #program must not be run by a member of the 'kids' group
++upnpd  #program named upnpd (This feature was removed from Netfilter in kernel version 2.6.14).</programlisting>
         </listitem>
       </varlistentry>
     </variablelist>

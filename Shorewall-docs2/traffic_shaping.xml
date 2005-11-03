@@ -294,18 +294,23 @@
         </listitem>
 
         <listitem>
-          <para>USER (Added in Shorewall version 1.4.10) - (Optional) This
-          column may only be non-empty if the SOURCE is the firewall itself.
-          When this column is non-empty, the rule applies only if the program
-          generating the output is running under the effective user and/or
-          group. It may contain :</para>
+          <para>USER/GROUP (Added in Shorewall version 1.4.10) - (Optional)
+          This column may only be non-empty if the SOURCE is the firewall
+          itself. When this column is non-empty, the rule applies only if the
+          program generating the output is running under the effective user
+          and/or group. It may contain :</para>
 
-          <para>[&lt;user name or number&gt;]:[&lt;group name or
-          number&gt;]</para>
+          <para>[!][&lt;user name or number&gt;]:[&lt;group name or
+          number&gt;][+&lt;program name&gt;]</para>
 
           <para>The colon is optionnal when specifying only a user.</para>
 
-          <para>Examples : john: / john / :users / john:users</para>
+          <para>Examples:</para>
+
+          <programlisting>joe     #program must be run by joe
+:kids   #program must be run by a member of the 'kids' group
+!:kids  #program must not be run by a member of the 'kids' group
++upnpd  #program named upnpd (This feature was removed from Netfilter in kernel version 2.6.14).</programlisting>
         </listitem>
       </itemizedlist>
 
@@ -500,22 +505,20 @@ ppp0           6000kbit         500kbit</programlisting>
     <section>
       <title>ppp devices</title>
 
-      <para>If you use ppp/pppoe/pppoa) to connect to your internet provider 
-	and you use traffic shaping you need to restart shorewall traffic
-	shaping. The reason for this is, that if the ppp connection gets 
-	restartet (and it usally does this at least daily), all <quote>tc</quote> 
-	filters/qdiscs related to that interface are deleted.</para>
-    
-      <para>The easiest way to achieve this, is just to restart shorewall
-	once the link is up. To achieve this add a small executable 
-	script to<quote>/etc/ppp/ip-up.d</quote>.</para>
+      <para>If you use ppp/pppoe/pppoa) to connect to your internet provider
+      and you use traffic shaping you need to restart shorewall traffic
+      shaping. The reason for this is, that if the ppp connection gets
+      restartet (and it usally does this at least daily), all
+      <quote>tc</quote> filters/qdiscs related to that interface are
+      deleted.</para>
+
+      <para>The easiest way to achieve this, is just to restart shorewall once
+      the link is up. To achieve this add a small executable script
+      to<quote>/etc/ppp/ip-up.d</quote>.</para>
 
       <programlisting>#! /bin/sh
 
 /sbin/shorewall restart</programlisting>
-
-
-
     </section>
 
     <section>

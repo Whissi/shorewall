@@ -1,28 +1,4 @@
-Shorewall 3.0.0 RC 3.
-
-Problems Corrected in 3.0.0 RC 3:
-
-1)  Shorewall no longer has any functionality that is dependent on the
-    Netfilter ROUTE target and extended packet marking so detection and
-    reporting of those capabilities has been removed.
-
-2)  Previously, the following message could appear in the error output
-    from the 'check' command:
-
-    "/usr/share/shorewall/firewall:  line 128:  $RESTOREBASE:  ambiguous
-    redirect"
-
-3)  The test that Shorewall uses to detect the availability of the
-    owner match capability has been changed to avoid the generation
-    of ipt_owner messages under kernel 2.6.14. The affected configuration
-    files have been updated to warn that +<program name> is not supported
-    by kernel versions 2.6.14 and later.
-
-4)  When MACLIST_TABLE=mangle and an interface is enabled for DHCP (the
-    'dhcp' option is specified in /etc/shorewall/interfaces) then broadcasts
-    on UDP port 67 to address 255.255.255.255 from address 0.0.0.0 were being
-    dropped and logged. While this did not prevent the client from acquiring
-    an IP address, it could result in lots of log messages.
+Shorewall 3.0.0
 
 Migration Considerations:
 

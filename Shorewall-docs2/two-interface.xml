@@ -12,7 +12,7 @@
       <surname>Eastep</surname>
     </author>
 
-    <pubdate>2005-11-02</pubdate>
+    <pubdate>2005-11-10</pubdate>
 
     <copyright>
       <year>2002-</year>
@@ -260,7 +260,7 @@ loc     ipv4</programlisting>Zones are defined in the <ulink
     <programlisting>#SOURCE    DEST        POLICY      LOG LEVEL    LIMIT:BURST
 loc        net         ACCEPT
 net        all         DROP        info
-all        all         REJECT      info</programlisting> In the two-interface
+all        all         REJECT      info</programlisting>In the two-interface
     sample, the line below is included but commented out. If you want your
     firewall system to have full access to servers on the internet, uncomment
     that line. <programlisting>#SOURCE    DEST        POLICY      LOG LEVEL    LIMIT:BURST
@@ -286,6 +286,14 @@ $FW        net         ACCEPT</programlisting> The above policy will:
         </listitem>
       </itemizedlist> <inlinegraphic fileref="images/BD21298_.gif"
     format="GIF" /></para>
+
+    <para>It is important to note that Shorewall policies (and rules) refer to
+    <emphasis role="bold">connections</emphasis> and not packet flow. With the
+    policies defined in the <filename
+    class="directory">/etc/shorewall/policy</filename> file shown above,
+    connections are allowed from the <emphasis>loc</emphasis> zone to the
+    <emphasis>net</emphasis> zone even though connections are not allowed from
+    the <emphasis>loc</emphasis> zone to the firewall itself.</para>
 
     <para>At this point, edit your <filename
     class="directory">/etc/shorewall/</filename><filename>policy</filename>

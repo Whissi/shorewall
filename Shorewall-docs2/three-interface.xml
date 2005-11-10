@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-12-02</pubdate>
+    <pubdate>2005-11-10</pubdate>
 
     <copyright>
       <year>2002-2005</year>
@@ -311,6 +311,14 @@ $FW        net         ACCEPT</programlisting>
         <para>reject all other connection requests.</para>
       </listitem>
     </orderedlist>
+
+    <para>It is important to note that Shorewall policies (and rules) refer to
+    <emphasis role="bold">connections</emphasis> and not packet flow. With the
+    policies defined in the <filename
+    class="directory">/etc/shorewall/policy</filename> file shown above,
+    connections are allowed from the <emphasis>loc</emphasis> zone to the
+    <emphasis>net</emphasis> zone even though connections are not allowed from
+    the <emphasis>loc</emphasis> zone to the firewall itself.</para>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 

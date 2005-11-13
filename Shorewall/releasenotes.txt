@@ -1,4 +1,11 @@
-Shorewall 3.0.0
+Shorewall 3.0.1
+
+Problems Corrected in 3.0.1
+
+1) If the previous firewall configuration included a policy other than
+   ACCEPT in the nat, mangle or raw tables then Shorewall would not set
+   the policy to ACCEPT. This could result in a ruleset that rejected or
+   dropped all traffic.
 
 Migration Considerations:
 

@@ -2138,6 +2138,26 @@ stop_firewall() {
 
     process_criticalhosts
 
+    [ -n "$RAW_TABLE" ] && rawtable=raw || rawtable=
+
+    for table in mangle nat $rawtable ; do
+	case $table in
+	    mangle)
+		chains="PREROUTING INPUT FORWARD POSTROUTING"
+		;;
+	    nat)
+		chains="PREROUTING POSTROUTING OUTPUT"
+		;;
+	    *)
+		chains="PREROUTING OUTPUT"
+		;;
+	esac
+
+	for chain in $chains; do
+	    iptables -t $table -P $chain ACCEPT
+	done
+    done
+
     if [ -n "$CRITICALHOSTS" ]; then
 	if [ -z "$ADMINISABSENTMINDED" ]; then
 	    for chain in INPUT OUTPUT; do
@@ -7679,6 +7699,26 @@ initialize_netfilter () {
     exists_FORWARD=Yes
 
     process_criticalhosts
+
+    [ -n "$RAW_TABLE" ] && rawtable=raw || rawtable=
+
+    for table in mangle nat $rawtable ; do
+	case $table in
+	    mangle)
+		chains="PREROUTING INPUT FORWARD POSTROUTING"
+		;;
+	    nat)
+		chains="PREROUTING POSTROUTING OUTPUT"
+		;;
+	    *)
+		chains="PREROUTING OUTPUT"
+		;;
+	esac
+
+	for chain in $chains; do
+	    iptables -t $table -P $chain ACCEPT
+	done
+    done
 
     if [ -n "$CRITICALHOSTS" ]; then
 

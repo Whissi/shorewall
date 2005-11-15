@@ -2016,7 +2016,7 @@ ACCEPT<emphasis role="bold">:info</emphasis>   -              -               tc
           <para>When this column is non-empty, the rule applies only if the
           program generating the output is running under the effective
           &lt;user&gt; and/or &lt;group&gt; specified (or is NOT running under
-          that id if "!" is given). </para>
+          that id if "!" is given).</para>
 
           <para>Examples:</para>
 
@@ -3690,12 +3690,12 @@ all      all     tcp         ftp-data          -               8</programlisting
 
         <listitem>
           <para>Optional; may only be given if PROTOCOL is tcp, udp or icmp.
-          Expressed as a comma-separated list of port numbers or service names
-          (from /etc/services). If present, only packets destined for the
-          specified protocol and one of the listed ports are blocked. When the
-          PROTOCOL is icmp, the PORTS column contains a comma-separated list
-          of ICMP type numbers or names (see <quote>iptables -h
-          icmp</quote>).</para>
+          Expressed as a comma-separated list of destination port numbers or
+          service names (from /etc/services). If present, only packets
+          matching the specified protocol and one of the listed destination
+          ports are blocked. When the PROTOCOL is icmp, the PORTS column
+          contains a comma-separated list of ICMP type numbers or names (see
+          <quote>iptables -h icmp</quote>).</para>
         </listitem>
       </varlistentry>
     </variablelist>

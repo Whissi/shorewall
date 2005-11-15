@@ -7,6 +7,49 @@ Problems Corrected in 3.0.1
    the policy to ACCEPT. This could result in a ruleset that rejected or
    dropped all traffic.
 
+2) The Makefile was broken such that 'make' didn't always work correctly.
+
+3) If the SOURCE or DEST column in a macro body was non-empty and a dash
+   ("-") appeared in the corresponding column of an invocation of that
+   macro, then an invalid rule was generated.
+
+New Features in 3.0.1
+
+1)  To make the macro facility more flexible, Shorewall now examines the
+    contents of the SOURCE and DEST columns in both the macro body and in
+    the invocation and tries to create the intended rule. If the value in
+    the invocation appears to be an address (IP or MAC) or the name of an
+    ipset, then it is placed after the value in the macro body. Otherwise,
+    it is placed before the value in the macro body.
+
+    Example 1:
+
+    /etc/shorewall/macro.foo:
+
+	PARAM        -            192.168.1.5      tcp    http
+
+    /etc/shorewallrules:
+
+	foo/ACCEPT   net          loc
+
+    Effective rule:
+
+	ACCEPT       net          loc:192.168.1.5   tcp   http
+
+    Example 2:
+
+    /etc/shorewall/macro.bar:
+
+	PARAM        net           loc              tcp    http
+
+    /etc/shorewall/rules:
+
+	bar/ACCEPT   -             192.168.1.5
+
+    Effective rule:
+
+	ACCEPT       net           loc:192.168.1.5  tcp    http
+
 Migration Considerations:
 
 1) The "monitor" command has been eliminated.

@@ -4877,6 +4877,27 @@ map_old_action() # $1 = Potential Old Action
 }
 
 #
+# Combine a source/dest from the macro body with one from the macro invocation
+#
+merge_macro_source_dest() # $1 = source/dest from macro body, $2 = source/dest from invocation
+{
+    case $2 in
+	-)
+	    echo ${1}
+	    ;;
+	*.*.*|+*|~*)
+	    #
+	    # Value in the invocation is an address -- put it behind the value from the macro
+	    #
+	    echo ${1}:${2}
+	    ;;
+	*)
+	    echo ${2}:${1}
+	    ;;
+    esac
+}
+
+#
 # The next three functions implement the three phases of action processing.
 #
 # The first phase (process_actions1) occurs before the rules file is processed. /usr/share/shorewall/actions.std
@@ -5235,6 +5256,7 @@ process_actions3() {
 			    ;;
 		    esac
 
+	    echo ${2%:*}:${1}
 		    expandv xclients xservers xprotocol xports xcports xratelimit xuserspec
 
 		    if [ -n "$is_macro" ]; then
@@ -5252,7 +5274,7 @@ process_actions3() {
 			while read mtarget mclients mservers mprotocol mports mcports mratelimit muserspec; do
 			    expandv mtarget mclients mservers mprotocol mports mcports mratelimit muserspec
 
-			    mtarget=$(merge_levels $xaction2 $mtarget)
+			    mtarget=$(merge_levels $xaction $mtarget)
 
 			    case $mtarget in
 				PARAM|PARAM:*)
@@ -5266,7 +5288,7 @@ process_actions3() {
 					mclients=${xclients}
 					;;
 				    *)
-					mclients=${mclients}:${xclients}
+					mclients=$(merge_macro_source_dest $mclients $xclients)
 					;;
 				esac
 			    else
@@ -5279,7 +5301,7 @@ process_actions3() {
 					mservers=${xservers}
 					;;
 				    *)
-					mservers=${mservers}:${xservers}
+					mservers=$(merge_macro_source_dest $mservers $xservers)
 					;;
 				esac
 			    else
@@ -6309,7 +6331,7 @@ process_macro() # $1 = target
 		    mclients=${iclients}
 		    ;;
 		*)
-		    mclients=${mclients}:${iclients}
+		    mclients=$(merge_macro_source_dest $mclients $iclients)
 		    ;;
 	    esac
 	else
@@ -6322,7 +6344,7 @@ process_macro() # $1 = target
 		    mservers=${iservers}
 		    ;;
 		*)
-		    mservers=${mservers}:${iservers}
+		    mservers=$(merge_macro_source_dest $mservers $iservers)
 		    ;;
 	    esac
 	else

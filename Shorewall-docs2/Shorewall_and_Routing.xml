@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-09-25</pubdate>
+    <pubdate>2005-11-16</pubdate>
 
     <copyright>
       <year>2005</year>
@@ -244,11 +244,11 @@
       <para>Entries in <filename>/etc/shorewall/providers</filename> can
       specify that outgoing connections are to be load-balanced between the
       two ISPs. Entries in <filename>/etc/shorewall/tcrules</filename> can be
-      used to direct particular outgoing connections to one ISP or the
-      other. Use of <filename>/etc/shorewall/tcrules</filename> is not
-      required for <filename>/etc/shorewall/providers</filename> to work, but
-      you must select a unique MARK value for each provider so Shorewall can
-      set up the correct marking rules for you.</para>
+      used to direct particular outgoing connections to one ISP or the other.
+      Use of <filename>/etc/shorewall/tcrules</filename> is not required for
+      <filename>/etc/shorewall/providers</filename> to work, but you must
+      select a unique MARK value for each provider so Shorewall can set up the
+      correct marking rules for you.</para>
 
       <para>When using <filename>/etc/shorewall/providers</filename>,
       connections from the internet are automatically routed back out of the
@@ -562,6 +562,13 @@ net        net            DROP</programlisting>
       <programlisting>#INTERFACE       SUBNET            ADDRESS
 eth0             eth2              206.124.146.176
 eth1             eth2              130.252.99.27</programlisting>
+
+      <warning>
+        <para>Entries in <filename>/etc/shorewall/masq</filename> have no
+        effect on which ISP a particular connection will be sent through. That
+        is rather the purpuse of entries in
+        <filename>/etc/shorewall/tcrules</filename>.</para>
+      </warning>
 
       <para>Now suppose that you want to route all outgoing SMTP traffic from
       your local network through ISP 2. You would make this entry in <ulink

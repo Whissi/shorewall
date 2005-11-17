@@ -1,0 +1,12 @@
+#/bin/sh
+
+DEST="root@mail.shorewall.net:/var/ftp/pub/shorewall/${1%.*}/shorewall-$1"
+
+usage() { echo "$0: <version>"; }
+
+[ $# -eq 1 ] || usage
+
+[ -d errata ] || mkdir errata
+echo "There are no known problems in Shorewall version $1" > known_problems.txt
+
+scp -r errata known_problems.txt patch-$1 ${1}.* shorewall-${1}/releasenotes.txt shorewall-${1}-[0-1]* shorewall*${1}*.tgz* shorewall*${1}*.bz2* $DEST

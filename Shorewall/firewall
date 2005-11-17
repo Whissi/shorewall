@@ -7636,6 +7636,19 @@ verify_ip() {
 #	- Determine the zones
 #
 initialize_netfilter () {
+    setup_mss()
+    {
+	case $CLAMPMSS in
+	    Yes)
+		option="--clamp-mss-to-pmtu"
+		;;
+	    *)
+		option="--set-mss $CLAMPMSS"
+		;;
+	esac
+
+	run_iptables -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS $option
+    }
 
     report_capabilities
 
@@ -7754,6 +7767,8 @@ initialize_netfilter () {
 	setpolicy INPUT DROP
 	setpolicy OUTPUT DROP
 
+	[ -n "$CLAMPMSS" ] && setup_mss
+
 	setcontinue FORWARD
 	setcontinue INPUT
 	setcontinue OUTPUT
@@ -7764,6 +7779,8 @@ initialize_netfilter () {
 	setpolicy FORWARD DROP
 
 	deleteallchains
+
+	[ -n "$CLAMPMSS" ] && setup_mss
 
 	setcontinue FORWARD
 	setcontinue INPUT
@@ -7806,19 +7823,6 @@ initialize_netfilter () {
     for chain in INPUT OUTPUT FORWARD; do
 	run_iptables -A $chain -p udp --dport 53 -j ACCEPT
     done
-
-    if [ -n "$CLAMPMSS" ]; then
-	case $CLAMPMSS in
-	    Yes)
-		option="--clamp-mss-to-pmtu"
-		;;
-	    *)
-		option="--set-mss $CLAMPMSS"
-		;;
-	esac
-
-	run_iptables -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS $option
-    fi
 
     accounting_file=$(find_file accounting)
 

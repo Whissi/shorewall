@@ -17,7 +17,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-10-25</pubdate>
+    <pubdate>2005-11-18</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -1082,7 +1082,14 @@ LOGBURST=""</programlisting>
             <listitem>
               <para>if accepted, the packet would be sent on eth1. If you see
               <quote>OUT=</quote> with no interface name, the packet would be
-              processed by the firewall itself.</para>
+              processed by the firewall itself. </para>
+
+              <note>
+                <para>When a DNAT rule is logged, there will never be an OUT=
+                shown because the packet is being logged before it is routed.
+                Also, DNAT logging will show the <emphasis>original</emphasis>
+                destination IP address and destination port number.</para>
+              </note>
             </listitem>
           </varlistentry>
 

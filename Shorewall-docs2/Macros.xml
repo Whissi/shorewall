@@ -21,7 +21,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-11-02</pubdate>
+    <pubdate>2005-11-18</pubdate>
 
     <copyright>
       <year>2005</year>
@@ -139,12 +139,14 @@ ACCEPT       loc           fw           tcp     135,139,445</programlisting>
         <term>SOURCE and DEST</term>
 
         <listitem>
-          <para>If the rule in the macro file specifies a value and the
-          invocation of the rule also specifies a value then the value in the
-          invocation is appended to the value in the rule using ":" as a
-          separator.</para>
+          <para>If a value other than "-" appears in both the macro body and
+          in the invocation of the macro, then the value in the invocation is
+          examined and the appropriate action is taken. If the value in the
+          invocation appears to be an address (IP or MAC) or the name of an
+          ipset, then it is placed after the value in the macro body.
+          Otherwise, it is placed before the value in the macro body.</para>
 
-          <para>Example:</para>
+          <para>Example 1:</para>
 
           <blockquote>
             <para>/etc/shorewall/macro.SMTP</para>
@@ -156,6 +158,26 @@ PARAM            -        loc             tcp      25</programlisting>
 
             <programlisting>#ACTION          SOURCE   DEST            PROTO    DEST PORT(S)
 SMTP/DNAT:info   net      192.168.1.5</programlisting>
+
+            <para>This would be equivalent to coding the following directly in
+            /etc/shorewall/rules</para>
+
+            <programlisting>#ACTION          SOURCE   DEST            PROTO    DEST PORT(S)
+DNAT:info        net      loc:192.168.1.5 tcp      25</programlisting>
+          </blockquote>
+
+          <para>Example 2:</para>
+
+          <blockquote>
+            <para>/etc/shorewall/macro.SMTP</para>
+
+            <programlisting>#TARGET          SOURCE   DEST            PROTO    DEST PORT(S)
+PARAM            -        192.168.1.5     tcp      25</programlisting>
+
+            <para>/etc/shorewall/rules</para>
+
+            <programlisting>#ACTION          SOURCE   DEST            PROTO    DEST PORT(S)
+SMTP/DNAT:info   net      loc</programlisting>
 
             <para>This would be equivalent to coding the following directly in
             /etc/shorewall/rules</para>

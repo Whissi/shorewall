@@ -2130,7 +2130,7 @@ stop_firewall() {
 	done
     fi
 
-    [ -n "$RAW_TABLE" ]; then
+    if [ -n "$RAW_TABLE" ]; then
 	run_iptables -t raw -F
 	run_iptables -t raw -X
 	for chain in PREROUTING OUTPUT; do

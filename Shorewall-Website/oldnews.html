@@ -9,6 +9,744 @@
   </head>
 
   <body>
+  <span style="font-weight: bold;">10/05/2005
+Shorewall 2.4.5<br>
+</span>
+<br>
+Problems Corrected in 2.4.5<br>
+<ol>
+  <li>In previous versions, when the command is 'start', 'restart' or
+'stop' then OUTPUT traffic to hosts listed in
+/etc/shorewall/routestopped is not enabled if ADMINISABSENTMINDED=Yes.
+That traffic is now enabled independent of the setting of
+ADMINISABSENTMINDED.</li>
+  <li>Although it was documented that icmp types could be used in the
+tcrules file, the code did not support it. Thanks to Jorge Molina, that
+problem is now corrected.</li>
+  <li>In a multi-ISP configuration, fwmark routing rules now have a
+higher priority than source IP rules. This allows entries in tcrules to
+be more effective in controlling routing.</li>
+  <li>Previously, not all of the mangle chains were flushed during
+"shorewall restart".</li>
+</ol>
+<span style="font-weight: bold;">09/12/2005 Shorewall 2.4.4<br>
+</span><br>
+Problems Corrected<br>
+<ol>
+  <li>An incorrect comment in the /etc/shorewall/proxyarp file has been
+removed.</li>
+  <li>The message generated when a duplicate policy has been entered is
+now more informative. Previously, only the POLICY column contents
+appeared in the message. Now the SOURCE, DEST and POLICY column
+contents are shown.</li>
+  <li>Shorewall now clears the Netfilter "raw" table during "shorewall
+[re]start", "shorewall stop" and "shorewall clear" processing.</li>
+</ol>
+New Features<br>
+<ol>
+  <li>Tunnel types "openvpnserver" and "openvpnclient" have been added
+to reflect the introduction of client and server OpenVPN configurations
+in OpenVPN 2.0.</li>
+  <li>The COMMAND variable is now set to 'restore' in restore scripts.
+The value of this variable is sometimes of interest to programmers
+providing custom /etc/shorewall/tcstart scripts.<br>
+  </li>
+</ol>
+<span style="font-weight: bold;">08/16/2005 Shorewall 2.4.3<br>
+</span><br>
+Problems Corrected:<br>
+<ol>
+  <li>Shorewall is no longer dependent on the 'which' utility.</li>
+  <li>The 'shorewall add' command failed if there existed a zone in the
+configuration that specified the 'ipsec' option in /etc/shorewall/hosts.</li>
+  <li>Shorewall is no longer dependent on /bin/echo.</li>
+  <li>A CLASSIFY rule&nbsp; with $FW in the SOURCE column (tcrules) no
+longer results in a "shorewall start" error.</li>
+  <li>You may now use port lists in the DEST PORT and SOURCE PORT
+columns of the /etc/shorewall/accounting file.</li>
+  <li>The "shorewall show capabilities" command now accurately reports
+the availability of "Packet type match" independent of the setting of
+PKTTYPE in shorewall.conf.</li>
+  <li>Thanks to Tuomo Soini, all of the files have been siginificantly
+cleaned up in terms of formatting and extra white-space.<br>
+  </li>
+</ol>
+New Features:<br>
+<ol>
+  <li>New Allow.Submission and Allow.NTPbrd actions have been added.
+Users of the Allow.NTP action that use NTP broadcasting should switch
+to use of Allow.NTPbrd instead.</li>
+  <li>The kernel version string is now included in the output of
+"shorewall status".<br>
+  </li>
+</ol>
+<span style="font-weight: bold;">07/30/2005 Shorewall 2.2.6<br>
+<br>
+</span>Problems Corrected:<br>
+<ol>
+  <li><a href="#20050717">MACLIST_TTL Vulnerability</a> fix.</li>
+  <li>TCP_FLAGS_LOG_LEVEL=ULOG breaks with recent versions of iptables.</li>
+  <li>The bogons file has been updated to reflect recent IANA
+allocations.</li>
+</ol>
+<span style="font-weight: bold;">07/21/2005 Shorewall 2.4.2<br>
+<br>
+</span>Problems Corrected:<br>
+<ol>
+  <li>The /etc/shorewall/hosts file now includes information about
+defining a zone using one or more ipsets.</li>
+  <li>A <a href="#20050717">vulnerability involving MACLIST_TTL &gt; 0
+or MACLIST_DISPOSITION=ACCEPT</a> has been corrected.</li>
+  <li>It is now possible to specify !&lt;address&gt; in the SUBNET
+column of /etc/shorewall/masq. Previously, it was necessary to write
+0.0.0.0/0!&lt;address&gt;.</li>
+  <li>When &lt;network1&gt;!&lt;network2&gt; was specified in the
+SUBNET column of /etc/shorewall/masq, IPSEC policies were not correctly
+applied to the resulting rules. This usually resulted in IPSEC not
+working through the interface specified in the INTERFACES column.<br>
+  </li>
+</ol>
+New Features:<br>
+<ol>
+  <li> A 'loose' provider option has been added. If you wish to be able
+to use marking to specify the gateway used by connections originating
+on the firewall itself, the specify 'loose' for each provider. It has
+bee reported that 'loose' may break the effect of 'track' so beware if
+you need 'track' functionality (you shouldn't be originating many
+connections from your firewall to the net anyway).<br>
+    <br>
+To use 'loose', you also need to add two entries in /etc/shorewall/masq:<br>
+    <pre><span style="font-family: monospace;">#INTERFACE           SUBNET          ADDRESS<br>
+   $IF_ISP1             $IP_ISP2        $IP_ISP1<br>
+   $IF_ISP2             $IP_ISP1        $IP_ISP2</span>
+    </pre>
+where:<br>
+    <pre>        $IF_ISP1        is the interface to ISP 1.<br>
+        $IF_ISP2        is the interface to ISP 2.<br>
+        $IP_ISP1        is the IP address of $IF_ISP1<br>
+        $IP_ISP2        is the IP address of $IF_ISP2
+    </pre>
+  </li>
+  <li>/sbin/shorewall now issues a warning each time that it finds that
+startup is disabled.</li>
+  <li>A new COPY column has been added to the /etc/shorewall/providers
+file. Normally, when a table name/number is given in the DUPLICATE
+column, the entire table (less default routes) is copied. The COPY
+column allows you to limit the routes copied to those that go through
+an interface listed in COPY. For example, if you enter eth0 in
+INTERFACE, "eth1,eth2" in COPY and 'main' in DUPLICATE then the new
+table created will contain those routes through the interfaces eth0,
+eth1 and eth2.<br>
+  </li>
+</ol>
+<hr style="width: 100%; height: 2px;">
+<h2><a name="20050717"></a><font color="#ff0000">07/17/2005 Security
+vulnerability in MACLIST processing</font></h2>
+<h3>Description</h3>
+<p>A security vulnerability has been discovered which affects all
+supported stable versions of Shorewall.&nbsp; This vulnerability
+enables a client accepted by MAC address filtering to bypass any other
+rule.&nbsp; If MACLIST_TTL is set to a value greater than 0 or
+MACLIST_DISPOSITION is set to "ACCEPT" in /etc/shorewall/shorewall.conf
+(default is MACLIST_TTL=0 and MACLIST_DISPOSITION=REJECT), and a client
+is positively identified through its MAC address, it bypasses all other
+policies/rules in place, thus gaining access to all open services on
+the firewall.</p>
+<h3>Fix</h3>
+<h4>Workaround</h4>
+<p>For Shorewall 2.2.x or 2.4.x, set MACLIST_TTL=0 or
+MACLIST_DISPOSITION=REJECT in /etc/shorewall/shorewall.conf.&nbsp; For
+Shorewall 2.0.x, set MACLIST_DISPOSITION=REJECT in
+/etc/shorewall/shorewall.conf.&nbsp; MACLIST filtering is of limited
+value on Internet-connected hosts, and the Shorewall team recommends
+this approach to be used if possible.</p>
+<h4>Upgrade</h4>
+<p>For Shorewall 2.4.x, a fixed version of the 'firewall' script is
+available at: <a
+ href="http://shorewall.net/pub/shorewall/2.4/shorewall-2.4.1/errata/firewall">
+http://shorewall.net/pub/shorewall/2.4/shorewall-2.4.1/errata/firewall</a>
+and its mirrors, <a
+ href="http://www.shorewall.net/pub/shorewall/2.4/shorewall-2.4.1/errata/firewall">
+http://www.shorewall.net/pub/shorewall/2.4/shorewall-2.4.1/errata/firewall</a>
+and <a
+ href="http://slovakia.shorewall.net/pub/shorewall/2.4/shorewall-2.4.1/errata/firewall">
+http://slovakia.shorewall.net/pub/shorewall/2.4/shorewall-2.4.1/errata/firewall</a>.</p>
+<p>For Shorewall 2.2.x, a fixed version of the 'firewall' script is
+available at: <a
+ href="http://shorewall.net/pub/shorewall/2.2/shorewall-2.2.5/errata/firewall">
+http://shorewall.net/pub/shorewall/2.2/shorewall-2.2.5/errata/firewall</a>
+and its mirrors, <a
+ href="http://www.shorewall.net/pub/shorewall/2.2/shorewall-2.2.5/errata/firewall">
+http://www.shorewall.net/pub/shorewall/2.2/shorewall-2.2.5/errata/firewall</a>
+and <a
+ href="http://slovakia.shorewall.net/pub/shorewall/2.2/shorewall-2.2.5/errata/firewall">
+http://slovakia.shorewall.net/pub/shorewall/2.2/shorewall-2.2.5/errata/firewall</a>.</p>
+<p>For Shorewall 2.0.x, a fixed version of the 'firewall' script is
+available at: <a
+ href="http://shorewall.net/pub/shorewall/errata/2.0.17/firewall">http://shorewall.net/pub/shorewall/errata/2.0.17/firewall</a>
+and its mirrors, <a
+ href="http://www.shorewall.net/pub/shorewall/errata/2.0.17/firewall">
+http://www.shorewall.net/pub/shorewall/errata/2.0.17/firewall</a> and <a
+ href="http://slovakia.shorewall.net/pub/shorewall/errata/2.0.17/firewall">
+http://slovakia.shorewall.net/pub/shorewall/errata/2.0.17/firewall</a>.</p>
+<p>Users of any version before 2.0.17 are urged to upgrade to a
+supported version of Shorewall (preferably 2.4.1) before using the
+fixed files.&nbsp; Only the most recent version of the 2.0.x and 2.2.x
+streams will be supported by the development team, and the 1.x branches
+are no longer maintained at all.&nbsp; Future releases of Shorewall
+will include this fix.</p>
+<p>This information was based on <a
+ href="http://seclists.org/lists/fulldisclosure/2005/Jul/0409.html">Patrick
+Blitz's post to the Full Disclosure mailing list</a>.&nbsp; Thanks to
+Supernaut (supernaut at ns dot sympatico dot ca) for reporting this bug.<br>
+</p>
+<p><span style="font-weight: bold;">Version Upgrade<br>
+</span></p>
+<p>The vulnerability is corrected in Shorewall 2.4.2 and in Shorewall
+2.2.6.<br>
+</p>
+<hr style="width: 100%; height: 2px;"> <span style="font-weight: bold;">07/13/2005
+Shorewall 2.4.1<br>
+</span><br>
+Problems Corrected:<br>
+<ol>
+  <li>Shell variables may now be used in the zones file.</li>
+  <li>The /usr/share/shorewall/bogons file has been updated to reflect
+recent IANA allocations.</li>
+  <li>Shorewall now detects an error where multiple providers specify
+the 'track' option on the same interface.</li>
+  <li>The remnants of the GATEWAY column in /etc/shorewall/interfaces
+have been removed. This column appeared briefly in one of the Beta
+versions and was immediately removed but some vestiges remained.</li>
+  <li>Shorewall now correctly restores a load-balancing default route
+during processing of the 'shorewall restore' and 'shorewall -f start'
+commands. The latter command is normally executed by the Shorewall init
+script during reboot.</li>
+  <li>A log level of "None!" is now allowed on builtin actions such as
+ACCEPT and DROP.</li>
+  <li>Previously, LIMIT:BURST parameters in /etc/shorewall/policy were
+not correctly applied when the policy was QUEUE.</li>
+  <li>The 'chkconfig' command on FC4 and Mandriva previously created
+symbolic links with incorrect names ("S-1shorewall"). The init script
+has been changed to prevent this incorrect behavior.</li>
+  <li>DHCP traffic forwarded through a bridge could, under some
+configurations, be filtered by the 'maclist' option even though the
+'dhcp' option was specified. This has been corrected.<br>
+  </li>
+</ol>
+<span style="font-weight: bold;">06/05/2005 Shorewall 2.4.0<br>
+<br>
+Note:</span> Because of the short time that has elapsed since the
+release of Shorewall 2.2.0, Shorewall 2.0 will be supported until 1
+December 2005 or until the release of Shorewall 2.6.0, whichever occurs
+first.<br>
+<br>
+New Features:<br>
+<ol>
+  <li>Shorewall 2.4.0 includes support for multiple internet interfaces
+to different ISPs.<br>
+    <br>
+The file /etc/shorewall/providers may be used to define the different
+providers. It can actually be used to define alternate routing tables
+so uses like transparent proxy can use the file as well.<br>
+    <br>
+Columns are:<br>
+    <br>
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+NAME&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+The provider name.</span><br style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+NUMBER&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The
+provider number -- a number between 1 and 15</span><br
+ style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+MARK&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+A FWMARK value used in your /etc/shorewall/tcrules file to direct
+packets for this provider.</span><br style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+DUPLICATE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The name of an existing
+table to duplicate. May</span> <span style="font-family: monospace;">be
+'main' or the name of a previous provider.</span><br
+ style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+INTERFACE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The name of the network
+interface to the</span> <span style="font-family: monospace;">provider.
+Must be listed in</span><span style="font-family: monospace;">/etc/shorewall/interfaces.</span><br
+ style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+GATEWAY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The IP address
+of the provider's gateway router.</span> <span
+ style="font-family: monospace;">If you enter "detect" here then
+Shorewall<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+will</span> <span style="font-family: monospace;">attempt to determine
+the gateway IP address</span> <span style="font-family: monospace;">automatically.</span><br
+ style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+OPTIONS&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; A
+comma-separated list selected from the</span> <span
+ style="font-family: monospace;">following:</span><br
+ style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+track&nbsp;&nbsp; If specified, connections FROM this interface are</span>
+    <span style="font-family: monospace;">to be tracked so that
+responses may be<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+routed</span> <span style="font-family: monospace;">back out this same
+interface.</span><br style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+You want specify 'track' if internet hosts will be</span> <span
+ style="font-family: monospace;">connecting to local servers through<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+this</span> <span style="font-family: monospace;">provider.</span><br
+ style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Because of limitations in the 'ip' utility and</span> <span
+ style="font-family: monospace;">policy routing, you may not use the
+SAVE or</span><span style="font-family: monospace;"><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+RESTORE tcrules options or use connection</span><span
+ style="font-family: monospace;">marking on any traffic to or from this</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+interface. For traffic control purposes, you</span> <span
+ style="font-family: monospace;">must mark packets in the FORWARD chain
+(or</span><span style="font-family: monospace;"><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+better yet, use the CLASSIFY target).</span><br
+ style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+balance The providers that have 'balance' specified will</span> <span
+ style="font-family: monospace;">get outbound traffic load-balanced
+among<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+them. By</span> <span style="font-family: monospace;">default, all
+interfaces with 'balance' specified</span> <span
+ style="font-family: monospace;">will have the same weight (1).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+You can change the</span><span style="font-family: monospace;">weight
+of the route out of the interface by</span> <span
+ style="font-family: monospace;">specifiying balance=&lt;weight&gt;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+where &lt;weight&gt; is</span><span style="font-family: monospace;">the
+desired route weight.</span><br style="font-family: monospace;">
+    <br style="font-family: monospace;">
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Example:&nbsp; You run squid in
+your DMZ on IP address 192.168.2.99. Your DMZ interface is eth2<br>
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+#NAME&nbsp;&nbsp; NUMBER&nbsp; MARK DUPLICATE&nbsp; INTERFACE
+GATEWAY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; OPTIONS</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Squid&nbsp;&nbsp; 1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1&nbsp;&nbsp;&nbsp;
+-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+eth2&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 192.168.2.99&nbsp; -</span><br>
+    <br>
+Use of this feature requires that your kernel and iptabls support
+CONNMARK target and conntrack match support. It does NOT require the
+ROUTE target extension.<br>
+    <br>
+WARNING: The current version of iptables (1.3.1) is broken with respect
+to CONNMARK and iptables-save/iptables-restore. This means that if you
+configure multiple ISPs, "shorewall restore" may fail. You must patch
+your iptables using the patch at <a
+ href="http://shorewall.net/pub/shorewall/contrib/iptables/CONNMARK.diff">
+http://shorewall.net/pub/shorewall/contrib/iptables/CONNMARK.diff</a>.<br>
+    <br>
+  </li>
+  <li>Shorewall 2.3.0 supports the 'cmd-owner' option of the owner
+match facility in Netfilter. Like all owner match options, 'cmd-owner'
+may only be applied to traffic that originates on the firewall.<br>
+    <br>
+The syntax of the USER/GROUP column in the following files has been
+extended:<br>
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /etc/shorewall/accounting<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /etc/shorewall/rules<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /etc/shorewall/tcrules<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/usr/share/shorewall/action.template<br>
+    <br>
+To specify a command, prefix the command name with "+".<br>
+    <br>
+&nbsp;&nbsp; Examples:<br>
+    <br>
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
++mozilla-bin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+#The program is named "mozilla-bin"</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+joe+mozilla-bin&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; #The
+program is named "mozilla-bin" and</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+#is being run by user "joe"</span><br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+joe:users+mozilla-bin&nbsp;&nbsp; #The program is named "mozilla-bin"
+and</span><br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+#is being run by user "joe" with</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+#effective group "users".</span><br style="font-family: monospace;">
+    <br>
+&nbsp;&nbsp; Note that this is not a particularly robust feature and I
+would never advertise it as a "Personal Firewall" equivalent. Using
+symbolic links, it's easy to alias command names to be anything you
+want.<br>
+    <br>
+  </li>
+  <li>Support has been added for ipsets (see <a
+ href="http://people.netfilter.org/kadlec/ipset/">http://people.netfilter.org/kadlec/ipset/</a>).<br>
+    <br>
+In most places where a host or network address may be used, you may
+also use the name of an ipset prefaced by "+".<br>
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Example: "+Mirrors"<br>
+    <br>
+The name of the set may be optionally followed by:<br>
+    <br>
+a) a number from 1 to 6 enclosed in square brackets ([]) -- this number
+indicates the maximum number of ipset binding levels that are to be
+matched. Depending on the context where the ipset name is used, either
+all "src" or all "dst" matches will be used.<br>
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Example: "+Mirrors[4]"<br>
+    <br>
+b) a series of "src" and "dst" options separated by commas and inclosed
+in square brackets ([]). These will be passed directly to iptables in
+the generated --set clause. See the ipset documentation for details.<br>
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Example:
+"+Mirrors[src,dst,src]"<br>
+    <br>
+Note that "+Mirrors[4]" used in the SOURCE column of the rules file is
+equivalent to "+Mirrors[src,src,src,src]".<br>
+    <br>
+To generate a negative match, prefix the "+" with "!" as in "!+Mirrors".<br>
+    <br>
+Example 1: Blacklist all hosts in an ipset named "blacklist"<br>
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/etc/shorewall/blacklist<br>
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+#ADDRESS/SUBNET&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+PROTOCOL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; PORT</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
++blacklist</span><br style="font-family: monospace;">
+    <br>
+Example 2: Allow SSH from all hosts in an ipset named "sshok:<br>
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/etc/shorewall/rules<br>
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+#ACTION&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+SOURCE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; DEST&nbsp;&nbsp;&nbsp;&nbsp;
+PROTO&nbsp;&nbsp;&nbsp; DEST PORT(S)</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ACCEPT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
++sshok&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+fw&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+tcp&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 22</span><br
+ style="font-family: monospace;">
+    <br>
+Shorewall can automatically capture the contents of your ipsets for
+you. If you specify SAVE_IPSETS=Yes in /etc/shorewall/shorewall.conf
+then "shorewall save" will save the contents of your ipsets. The file
+where the sets are saved is formed by taking the name where the
+Shorewall configuration is stored and appending "-ipsets". So if you
+enter the command "shorewall save standard" then your Shorewall
+configuration will be saved in var/lib/shorewall/standard and your
+ipset contents will be saved in /var/lib/shorewall/standard-ipsets.
+Assuming the default RESTOREFILE setting, if you just enter "shorewall
+save" then your Shorewall configuration will be saved in
+/var/lib/shorewall/restore and your ipset contents will be saved in
+/var/lib/shorewall/restore-ipsets.<br>
+    <br>
+Regardless of the setting of SAVE_IPSETS, the "shorewall -f start" and
+"shorewall restore" commands will restore the ipset contents
+corresponding to the Shorewall configuration restored provided that the
+saved Shorewall configuration specified exists.<br>
+    <br>
+For example, "shorewall restore standard" would restore the ipset
+contents from /var/lib/shorewall/standard-ipsets provided that
+/var/lib/shorewall/standard exists and is executable and that
+/var/lib/shorewall/standard-ipsets exists and is executable.<br>
+    <br>
+Also regardless of the setting of SAVE_IPSETS, the "shorewall forget"
+command will purge the saved ipset information (if any) associated with
+the saved shorewall configuration being removed.<br>
+    <br>
+You can also associate ipset contents with Shorewall configuration
+directories using the following command:<br>
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ipset -S &gt; &lt;config
+directory&gt;/ipsets<br>
+    <br>
+Example:<br>
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ipset -S &gt; /etc/shorewall/ipsets<br>
+    <br>
+When you start or restart Shorewall (including using the 'try' command)
+from the configuration directory, your ipsets will be configured from
+the saved ipsets file. Once again, this behavior is independent of the
+setting of SAVE_IPSETS.<br>
+    <br>
+Ipsets are well suited for large blacklists. You can maintain your
+blacklist using the 'ipset' utility without ever having to restart or
+refresh Shorewall. If you use the SAVE_IPSETS=Yes feature just be sure
+to "shorewall save" after altering the blacklist ipset(s).<br>
+    <br>
+Example /etc/shorewall/blacklist:<br>
+    <br>
+    <span style="font-family: monospace;">&nbsp;&nbsp;
+#ADDRESS/SUBNET&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+PROTOCOL&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; PORT</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;
++Blacklist[src,dst]</span><br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;
++Blacklistnets[src,dst]</span><br style="font-family: monospace;">
+    <br>
+Create the blacklist ipsets using:<br>
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ipset -N
+Blacklist iphash<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ipset -N
+Blacklistnets nethash<br>
+    <br>
+Add entries<br>
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ipset -A Blacklist 206.124.146.177<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ipset -A Blacklistnets
+206.124.146.0/24<br>
+    <br>
+To allow entries for individual ports<br>
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ipset -N SMTP portmap --from 1
+--to 31<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ipset -A SMTP 25<br>
+    <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ipset -A Blacklist 206.124.146.177<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ipset -B Blacklist 206.124.146.177
+-b SMTP<br>
+    <br>
+Now only port 25 will be blocked from 206.124.146.177.<br>
+    <br>
+  </li>
+  <li>Shorewall 2.4.0 can now configure routing if your kernel and
+iptables support the ROUTE target extension. This extension is
+available in Patch-O-Matic-ng. This feature is *EXPERIMENTAL* since the
+Netfilter team have no intention of ever releasing the ROUTE target
+extension to kernel.org.<br>
+    <br>
+Routing is configured using the /etc/shorewall/routes file. Columns in
+the file are as follows:<br>
+    <br>
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+SOURCE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Source of the packet. May be any of the</span> <span
+ style="font-family: monospace;">following:</span><br
+ style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+- A host or network address</span><br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+- A network interface name.</span><br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+- The name of an ipset prefaced with "+"</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+- $FW (for packets originating on the firewall)</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+- A MAC address in Shorewall format</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+- A range of IP addresses (assuming that your</span> <span
+ style="font-family: monospace;">kernel and iptables support range
+match)</span><br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+- A network interface name followed by ":"</span> <span
+ style="font-family: monospace;">and an address or address range.</span><br
+ style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+DEST&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Destination of the packet. May be any of the</span> <span
+ style="font-family: monospace;">following:</span><br
+ style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+- A host or network address</span><br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+- A network interface name (determined from</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+routing table(s))</span><br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+- The name of an ipset prefaced with "+"</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+- A network interface name followed by ":"</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+and an address or address range.</span><br
+ style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+PROTO&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Protocol - Must be "tcp", "udp", "icmp",</span> <span
+ style="font-family: monospace;">"ipp2p", a number, or "all". "ipp2p"
+requires</span><span style="font-family: monospace;"><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+ipp2p match support in your kernel and</span><span
+ style="font-family: monospace;">iptables.</span><br
+ style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+PORT(S)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Destination
+Ports. A comma-separated list of</span> <span
+ style="font-family: monospace;">Port names (from /etc/services), port<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+numbers</span> <span style="font-family: monospace;">or port ranges;
+if the protocol is "icmp", this</span><span
+ style="font-family: monospace;">column is interpreted as the<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+destination</span> <span style="font-family: monospace;">icmp-type(s).</span><br
+ style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+If the protocol is ipp2p, this column is</span> <span
+ style="font-family: monospace;">interpreted as an ipp2p option without
+the</span><span style="font-family: monospace;"><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+leading "--" (example "bit" for bit-torrent).</span> <span
+ style="font-family: monospace;">If no PORT is given, "ipp2p" is
+assumed.</span><br style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+This column is ignored if PROTOCOL = all but</span> <span
+ style="font-family: monospace;">must be entered if any of the following<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+field</span> <span style="font-family: monospace;">is supplied. In
+that case, it is suggested that</span> <span
+ style="font-family: monospace;">this field contain "-"</span><br
+ style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+SOURCE PORT(S)&nbsp; (Optional) Source port(s). If omitted,</span> <span
+ style="font-family: monospace;">any source port is acceptable.
+Specified as a</span><span style="font-family: monospace;"><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+comma-separated list of port names, port</span> <span
+ style="font-family: monospace;">numbers or port ranges.</span><br
+ style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+TEST&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Defines a test on the existing packet or</span> <span
+ style="font-family: monospace;">connection mark.</span><br
+ style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+The rule will match only if the test returns</span> <span
+ style="font-family: monospace;">true. Tests have the format</span><span
+ style="font-family: monospace;"><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+[!]&lt;value&gt;[/&lt;mask&gt;][:C]</span><br
+ style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Where:</span><br style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+!&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Inverts the test (not equal)</span>
+    <span style="font-family: monospace;">&lt;value&gt; Value of the
+packet or</span><span style="font-family: monospace;"><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+connection mark.</span><br style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+&lt;mask&gt;&nbsp; A mask to be applied to the</span> <span
+ style="font-family: monospace;">mark before testing</span><br
+ style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+:C&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Designates a connection</span> <span
+ style="font-family: monospace;">mark. If omitted, the packet</span> <span
+ style="font-family: monospace;">mark's value<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+is tested.</span><br style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+INTERFACE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The interface that the
+packet is to be routed</span> <span style="font-family: monospace;">out
+of. If you do not specify this<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+field then</span> <span style="font-family: monospace;">you must place
+"-" in this column and enter an</span> <span
+ style="font-family: monospace;">IP address in the GATEWAY<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+column.</span><br style="font-family: monospace;">
+    <br style="font-family: monospace;">
+    <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+GATEWAY&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; The gateway
+that the packet is to be forewarded</span> <span
+ style="font-family: monospace;">through.</span><br
+ style="font-family: monospace;">
+    <br style="font-family: monospace;">
+  </li>
+  <li>Normally when Shorewall is stopped, starting or restarting then
+connections are allowed from hosts listed in
+/etc/shorewall/routestopped to the firewall and to other hosts listed
+in /etc/shorewall/routestopped.<br>
+    <br>
+A new 'source' option is added for entries in that file which will
+cause Shorewall to allow traffic from the host listed in the entry to
+ANY other host. When 'source' is specified in an entry, it is
+unnecessary to also specify 'routeback'.<br>
+    <br>
+Similarly, a new 'dest' option is added which will cause Shorewall to
+allow traffic to the host listed in the entry from ANY other host. When
+'source' is specified in an entry, it is unnecessary to also specify
+'routeback'.<br>
+    <br>
+  </li>
+  <li>This change was implemented by Lorenzo Martignoni. It provides
+two new commands: "safe-start" and "safe-restart".<br>
+    <br>
+    <span style="font-weight: bold;">safe-start</span> starts Shorewall
+then prompts you to ask you if everything looks ok. If you answer "no"
+or if you don't answer within 60 seconds, a "shorewall clear" is
+executed.<br>
+    <br>
+    <span style="font-weight: bold;">safe-restart</span> saves your
+current configuration to /var/lib/shorewall/safe-restart then issues a
+"shorewall restart"; It then prompts you to ask if you if you want to
+accept the new configuration. If you answer "no" or if you don't answer
+within 60 seconds, the configuration is restored to its prior state.<br>
+    <br>
+These new commands require either that your /bin/sh supports the "-t"
+option to the 'read' command or that you have /bin/bash installed.<br>
+  </li>
+</ol>
     <span style="font-weight: bold;">05/20/2005&nbsp; Shorewall CVS
     Repository has Moved to Sourceforge<br>
     <br>
@@ -25,7 +763,7 @@
      -Tom<br>
      <br>
      Problems Corrected:<br>
-     
+
 
     <ol>
       <li>Previously, if PKTTYPE=No in shorewall.conf then pkttype
@@ -64,7 +802,7 @@
      Regards,<br>
      <br>
      -Tom<br>
-     
+
 
     <p><span style="font-weight: bold;">05/02/2005 Shorewall
     2.2.4<br>
@@ -93,7 +831,7 @@
       column contents: &lt;column contents&gt;</li>
     </ol>
     New Features:<br>
-     
+
 
     <ol>
       <li>Support has been added for UPnP using linux-igd&nbsp; (<a
@@ -105,12 +843,12 @@
 
     <div style="margin-left: 40px;">
       <span style="font-weight: bold;">WARNING</span>:<br>
-       
+
 
       <div style="margin-left: 40px;">
         From a security architecture viewpoint, UPnP is a disaster.
         It assumes that:<br>
-         
+
 
         <ol style="list-style-type: lower-alpha;">
           <li>All local systems and their users are completely
@@ -137,7 +875,7 @@
 
     <div style="margin-left: 40px;">
       <span style="font-weight: bold;">WARNING</span>:<br>
-       
+
 
       <div style="margin-left: 40px;">
         The linux-igd project appears to be inactive and the web
@@ -155,7 +893,7 @@
 
     <div style="margin-left: 40px;">
       Configuring linux-igd:<br>
-       
+
 
       <div style="margin-left: 40px;">
         In /etc/upnpd.conf, you will want:<br>
@@ -172,7 +910,7 @@
 
     <div style="margin-left: 40px;">
       Shorewall Configuration:<br>
-       
+
 
       <div style="margin-left: 40px;">
         In /etc/shorewall/interfaces, you need the 'upnp' option on
@@ -378,7 +1116,7 @@
       information was displayed.</li>
     </ol>
     New Features:<br>
-     
+
 
     <ol>
       <li>A new extension script "continue" has been added. This
@@ -446,7 +1184,7 @@
     2.0.17<br>
     <br>
     </span> Problems Corrected:<br>
-     
+
 
     <ol>
       <li>Invoking the 'rejNotSyn' action results in an error at
@@ -465,7 +1203,7 @@
     <span style="font-weight: bold;">03/12/2005 Shorewall 2.2.2<br>
     </span> <br>
      Problems Corrected:<br>
-     
+
 
     <ol>
       <li>The SOURCE column in the /etc/shorewall/tcrules file now
@@ -495,7 +1233,7 @@
       </li>
     </ol>
     New Features:<br>
-     
+
 
     <ol>
       <li>The SOURCE column in the /etc/shorewall/tcrules file now
@@ -613,7 +1351,7 @@
     </span> <br>
      This release back-ports the DROPINVALID shorewall.conf option
     from 2.2.0.<br>
-     
+
 
     <ol>
       <li>Recent 2.6 kernels include code that evaluates TCP
@@ -768,7 +1506,7 @@
       invoked, the following three variables will be set for use by
       the script:<br>
       <br>
-       
+
 
       <div style="margin-left: 40px;">
         $CHAIN = the name of the chain where your rules are to be
@@ -788,7 +1526,7 @@
       <br>
        Your /etc/shorewall/acton file will be run with:<br>
       <br>
-       
+
 
       <div style="margin-left: 40px;">
         $CHAIN="%acton1<br>
@@ -797,7 +1535,7 @@
       </div>
     </div>
     <br>
-     
+
 
     <ol start="6">
       <li>The /etc/shorewall/startup_disabled file is no longer
@@ -917,7 +1655,7 @@
              Under 2.4 Kernel FreeS/Wan:<br>
             <br>
              /etc/shorewall/zones:<br>
-             
+
 <pre>
 net    Net    The big bad Internet<br>
 loc    Local  Extended local zone
@@ -1528,7 +2266,7 @@ loc    Local  Extended local zone
       /etc/shorewall/ecn produce startup errors.</li>
     </ol>
     New Features:<br>
-     
+
 
     <ol>
       <li>A new AllowInvalid standard built-in action has been
@@ -1545,7 +2283,7 @@ loc    Local  Extended local zone
      <a name="2_0_15"></a>01/12/2005 - Shorewall 2.0.15<br>
     </span> <br>
      Problems Corrected:<br>
-     
+
 
     <ol>
       <li>The range of ports opened by the AllowTrcrt action has
@@ -1565,7 +2303,7 @@ loc    Local  Extended local zone
     "2_2_0_RC4"></a>01/06/2005 - Shorewall 2.2.0 RC4<br>
     </span> <br>
      New Features:<br>
-     
+
 
     <ol>
       <li>A listing of loaded iptables kernel modules is now
@@ -1573,7 +2311,7 @@ loc    Local  Extended local zone
       </li>
     </ol>
     Problems Corrected.<br>
-     
+
 
     <ol>
       <li>Several problems associated with processing the IPSEC
@@ -1584,7 +2322,7 @@ loc    Local  Extended local zone
     "2_0_14"></a>01/03/2005 - Shorewall 2.0.14<br>
     </span> <br>
      New Features:<br>
-     
+
 
     <ol>
       <li>Previously, when rate-limiting was specified in
@@ -1596,7 +2334,7 @@ loc    Local  Extended local zone
       </li>
     </ol>
     Problems Corrected:<br>
-     
+
 
     <ol>
       <li>A typo in the /etc/shorewall/interfaces file has been
@@ -1636,7 +2374,7 @@ loc    Local  Extended local zone
     "2_2_0_RC3"></a>12/30/2004 - Shorewall 2.2.0 RC3<br>
     </span> <br>
      Problems Corrected:<br>
-     
+
 
     <ol>
       <li>The following error message could appear during
@@ -1679,7 +2417,7 @@ loc    Local  Extended local zone
     "2_2_0_RC1"></a>12/19/2004 - Shorewall 2.2.0 RC1<br>
     <br>
     </span> Problems Corrected:<br>
-     
+
 
     <ol>
       <li>The syntax of the add and delete command has been
@@ -1687,7 +2425,7 @@ loc    Local  Extended local zone
       /sbin/shorewall.</li>
     </ol>
     New Features:<br>
-     
+
 
     <ol>
       <li>
@@ -1701,7 +2439,7 @@ loc    Local  Extended local zone
         &lt;gateway&gt;<br>
         <br>
          Examples:<br>
-         
+
 <pre>
     openvpn:tcp         net    1.2.3.4    # TCP tunnel on port 5000<br>
     openvpn:3344        net    1.2.3.4    # UDP on port 3344<br>
@@ -1730,7 +2468,7 @@ loc    Local  Extended local zone
     "2_2_0_Beta8"></a>12/11/2004 - Shorewall 2.2.0 Beta 8<br>
     <br>
     </span> Problems Corrected:<br>
-     
+
 
     <ol>
       <li>A typo in the /etc/shorewall/interfaces file has been
@@ -1741,7 +2479,7 @@ loc    Local  Extended local zone
       was available.</li>
     </ol>
     New Features:<br>
-     
+
 
     <ol>
       <li>Recent 2.6 kernels include code that evaluates TCP
@@ -1794,7 +2532,7 @@ loc    Local  Extended local zone
     "2_2_0_Beta7"></a>12/04/2004 - Shorewall 2.2.0 Beta 7<br>
     </span> <br>
      Problems Corrected:<br>
-     
+
 
     <ol>
       <li>The "shorewall add" and "shorewall delete" commands now
@@ -1850,7 +2588,7 @@ loc    Local  Extended local zone
       was run, capabilities were mis-detected.</li>
     </ol>
     New Features:<br>
-     
+
 
     <ol>
       <li>You can now use the "shorewall show zones" command to
@@ -1922,13 +2660,13 @@ loc    Local  Extended local zone
     "2_0_13"></a>12/02/2004 - Shorewall 2.0.13<br>
     <br>
     </span> Problems Corrected:<br>
-     
+
 
     <ol>
       <li>
         A typo in /usr/share/shorewall/firewall caused the
         "shorewall add" to issue an error message:<br>
-         
+
 <pre class="programlisting">
 /usr/share/shorewall/firewall: line 1: match_destination_hosts: command not found
 </pre>
@@ -1938,7 +2676,7 @@ loc    Local  Extended local zone
     "2_0_12"></a>12/01/2004 - Shorewall 2.0.12<br>
     </span> <br>
      Problems Corrected:<br>
-     
+
 
     <ol>
       <li>A typo in shorewall.conf (NETNOTSYN) has been
@@ -1992,7 +2730,7 @@ loc    Local  Extended local zone
       policies and rules. This has been corrected.</li>
     </ol>
     New Features:<br>
-     
+
 
     <ol>
       <li>Variable expansion may now be used with the INCLUDE
@@ -2019,7 +2757,7 @@ loc    Local  Extended local zone
     </span> Beta 5 was more or less DOA. Here's Beta 6.<br>
      <br>
      Problems Corrected:<br>
-     
+
 
     <ol>
       <li>Fixed a number of problems associated with not having an
@@ -2033,14 +2771,14 @@ loc    Local  Extended local zone
     "2_2_0_Beta5"></a>11/26/2004 - Shorewall 2.2.0 Beta 5<br>
     </span> <br>
      Problems corrected:<br>
-     
+
 
     <ol>
       <li>A typo in shorewall.conf (NETNOTSYN) has been
       corrected.</li>
     </ol>
     New Features:<br>
-     
+
 
     <ol>
       <li>For consistency, the CLIENT PORT(S) column in the tcrules
@@ -2059,7 +2797,7 @@ loc    Local  Extended local zone
     "2_0_11"></a>11/23/2004 - Shorewall 2.0.11<br>
     </span> <br>
      Problems corrected:<br>
-     
+
 
     <ol>
       <li>The INSTALL file now include special instructions for
@@ -2074,7 +2812,7 @@ loc    Local  Extended local zone
       a new install has been corrected.</li>
     </ol>
     New Features:<br>
-     
+
 
     <ol>
       <li>The AllowNNTP action now allows NNTP over SSL/TLS
@@ -2085,7 +2823,7 @@ loc    Local  Extended local zone
     "2_2_0_Beta4"></a>11/19/2004 - Shorewall 2.2.0 Beta 4<br>
     </span> <br>
      Problems Corrected:<br>
-     
+
 
     <ol>
       <li>A cut and paste error resulted in some nonsense in the
@@ -2099,7 +2837,7 @@ loc    Local  Extended local zone
       but did nothing -- now it works.</li>
     </ol>
     New Features:<br>
-     
+
 
     <ol>
       <li>The AllowNNTP action now allows NNTP over SSL/TLS
@@ -2110,7 +2848,7 @@ loc    Local  Extended local zone
     "2_2_0_Beta3"></a>11/09/2004 - Shorewall 2.2.0 Beta 3<br>
     </span> <br>
      Problems Corrected:<br>
-     
+
 
     <ol>
       <li>Missing '#' in the rfc1918 file has been corrected.</li>
@@ -2119,13 +2857,13 @@ loc    Local  Extended local zone
       Slackware users.</li>
     </ol>
     New Features:<br>
-     
+
 
     <ol>
       <li>
         In CLASSIFY rules (/etc/shorewall/tcrules), an interface
         name may now appear in the DEST column as in:<br>
-         
+
 <pre>
         #MARK/      SOURCE       DEST      PROTO     PORT(S)<br>
         #CLASSIFY<br>
@@ -2137,7 +2875,7 @@ loc    Local  Extended local zone
     "2_2_0_Beta2"></a>11/02/2004 - Shorewall 2.2.0 Beta 2<br>
     <br>
     </span> Problems Corrected:<br>
-     
+
 
     <ol>
       <li>The "shorewall check" command results in the (harmless)
@@ -2160,7 +2898,7 @@ loc    Local  Extended local zone
       file.</li>
     </ol>
     New Features:<br>
-     
+
 
     <ol>
       <li>The SUBNET column in /etc/shorewall/rfc1918 has been
@@ -2172,7 +2910,7 @@ loc    Local  Extended local zone
     "2_0_10"></a>10/25/2004 - Shorewall 2.0.10<br>
     </span> <br>
      Problems Corrected:<br>
-     
+
 
     <ol>
       <li>The GATEWAY column was previously ignored in 'pptpserver'
@@ -2191,7 +2929,7 @@ loc    Local  Extended local zone
       </li>
     </ol>
     New Features:<br>
-     
+
 
     <ol>
       <li>The "shorewall status" command has been enhanced to
@@ -2229,7 +2967,7 @@ loc    Local  Extended local zone
     </span> The first beta in the 2.2 series is now available.
     Download location is:<br>
      <br>
-     
+
 
     <div style="margin-left: 40px;">
       <a href=
@@ -2294,7 +3032,7 @@ loc    Local  Extended local zone
       /etc/shorewall/tcrules file.</li>
     </ol>
     New Features:<br>
-     
+
 
     <ol>
       <li>The "shorewall status" command now includes the output of
@@ -3054,7 +3792,7 @@ loc    Local  Extended local zone
 
     <p><b>5/21/2004 - Shorewall 2.0.2c</b></p>
     One problem corrected:<br>
-     
+
 
     <ol>
       <li>&nbsp;DNAT rules with a dynamic source zone don't work
@@ -3128,7 +3866,7 @@ loc    Local  Extended local zone
     </ol>
     Issues when migrating from Shorewall 2.0.1 to Shorewall
     2.0.2:<br>
-     
+
 
     <ol>
       <li>Extension Scripts -- In order for extension scripts to
@@ -3180,7 +3918,7 @@ loc    Local  Extended local zone
       set DYNAMIC_ZONES=No in /etc/shorewall/shorewall.conf.</li>
     </ol>
     New Features:<br>
-     
+
 
     <ol>
       <li>Shorewall has now been integrated with
@@ -3391,13 +4129,13 @@ loc    Local  Extended local zone
     presentation was entitled "<a href=
     "http://lists.shorewall.net/Shorewall_and_the_Enterprise.htm"
     target="_blank">Shorewall and the Enterprise</a>" and described
-    the history of Shorewall and gave an overview of its features. 
+    the history of Shorewall and gave an overview of its features.
 
     <p><b>4/5/2004 - Shorewall 2.0.1</b><br>
     </p>
     Problems Corrected since 2.0.0<br>
      <br>
-     
+
 
     <ol>
       <li>Using actions in the manner recommended in the
@@ -3418,7 +4156,7 @@ loc    Local  Extended local zone
     Issues when migrating from Shorewall 2.0.0 to Shorewall
     2.0.1:<br>
      <br>
-     
+
 
     <ol>
       <li>The function of 'norfc1918' is now split between that
@@ -3445,7 +4183,7 @@ loc    Local  Extended local zone
     </ol>
     New Features:<br>
      <br>
-     
+
 
     <ol>
       <li>Support for Bridging Firewalls has been added. For
@@ -3496,7 +4234,7 @@ loc    Local  Extended local zone
 
       <li>
         Shorewall now traps two common zone definition errors:<br>
-         
+
 
         <ul>
           <li>Including the firewall zone in a /etc/shorewall/hosts
@@ -3550,7 +4288,7 @@ loc    Local  Extended local zone
 
     <p><b>3/14/2004 - Shorewall 2.0.0b&nbsp;</b></p>
     Corrects two problems:<br>
-     
+
 
     <ol>
       <li>Thanks to Sean Mathews, the long-standing problem with
@@ -3816,7 +4554,7 @@ loc    Local  Extended local zone
     <p>Corrects one problem:<br>
     </p>
     Entries in /etc/shorewall/tcrules with an empty USER/GROUP
-    column would cause a startup error. 
+    column would cause a startup error.
 
     <p><b>2/12/2004 - Shorewall 1.4.10b&nbsp;</b></p>
 
@@ -3873,7 +4611,7 @@ loc    Local  Extended local zone
      &nbsp;&nbsp;&nbsp; None.<br>
      <br>
      New Features:<br>
-     
+
 
     <ol>
       <li>The INTERFACE column in the /etc/shorewall/masq file may
@@ -3958,7 +4696,7 @@ loc    Local  Extended local zone
      &nbsp;&nbsp;&nbsp; None.<br>
      <br>
      New Features:<br>
-     
+
 
     <ol>
       <li>The INTERFACE column in the /etc/shorewall/masq file may
@@ -4034,7 +4772,7 @@ loc    Local  Extended local zone
      &nbsp;&nbsp;&nbsp; None.<br>
      <br>
      New Features:<br>
-     
+
 
     <ol>
       <li>The INTERFACE column in the /etc/shorewall/masq file may
@@ -4103,7 +4841,7 @@ loc    Local  Extended local zone
      &nbsp;&nbsp;&nbsp; None.<br>
      <br>
      New Features:<br>
-     
+
 
     <ol>
       <li>The INTERFACE column in the /etc/shorewall/masq file may
@@ -4513,7 +5251,7 @@ loc    Local  Extended local zone
     field questions and problems from new users. I will not monitor
     that list personally. I will continue my active development of
     Shorewall and will be available via the development list to
-    handle development issues -- Tom. 
+    handle development issues -- Tom.
 
     <p><b>11/07/2003 - Shorewall 1.4.8<br>
     <br>
@@ -4603,7 +5341,7 @@ loc    Local  Extended local zone
       </li>
     </ol>
     Migration Issues:<br>
-     
+
 
     <ol>
       <li>The definition of the ROUTE_FILTER option in
@@ -4611,7 +5349,7 @@ loc    Local  Extended local zone
       </li>
     </ol>
     New Features:<br>
-     
+
 
     <ol>
       <li>A new QUEUE action has been introduced for rules. QUEUE
@@ -4660,7 +5398,7 @@ loc    Local  Extended local zone
     Given the small number of new features and the relatively few
     lines of code that were changed, there will be no Beta for
     1.4.8.<br>
-     
+
 
     <p><b><a href=
     "http://shorewall.net/pub/shorewall/Beta">http://shorewall.net/pub/shorewall/Beta</a><br>
@@ -4737,7 +5475,7 @@ loc    Local  Extended local zone
       'routefilter' option in the interfaces file.</li>
     </ol>
     Migration Issues:<br>
-     
+
 
     <ol>
       <li>The definition of the ROUTE_FILTER option in
@@ -4745,7 +5483,7 @@ loc    Local  Extended local zone
       </li>
     </ol>
     New Features:<br>
-     
+
 
     <ol>
       <li>A new QUEUE action has been introduced for rules. QUEUE
@@ -4806,7 +5544,7 @@ loc    Local  Extended local zone
 
     <p><b>10/24/2003 - Shorewall 1.4.7b</b></p>
     This is a bugfx rollup of the 1.4.7a fixes plus:<br>
-     
+
 
     <ol>
       <li>The fix for problem 5 in 1.4.7a was wrong with the result
@@ -4880,7 +5618,7 @@ loc    Local  Extended local zone
     </b></p>
     <b>Problems Corrected since version 1.4.6 (Those in bold font
     were corrected since 1.4.7 RC2).</b><br>
-     
+
 
     <ol>
       <li>Corrected problem in 1.4.6 where the MANGLE_ENABLED
@@ -5012,7 +5750,7 @@ loc    Local  Extended local zone
       </span></li>
     </ol>
     <b>Migration Issues:</b><br>
-     
+
 
     <ol>
       <li>Shorewall IP Traffic Accounting has changed since
@@ -5030,7 +5768,7 @@ loc    Local  Extended local zone
       </li>
     </ol>
     <b>New Features:</b><br>
-     
+
 
     <ol>
       <li>Thanks to Steve Herber, the 'help' command can now give
@@ -5226,7 +5964,7 @@ loc    Local  Extended local zone
     </b></p>
     <b>Problems Corrected since version 1.4.6 (Those in bold font
     were corrected since 1.4.7 RC 1).</b><br>
-     
+
 
     <ol>
       <li>Corrected problem in 1.4.6 where the MANGLE_ENABLED
@@ -5346,7 +6084,7 @@ loc    Local  Extended local zone
       </span></li>
     </ol>
     <b>Migration Issues:</b><br>
-     
+
 
     <ol>
       <li>Shorewall IP Traffic Accounting has changed since
@@ -5364,7 +6102,7 @@ loc    Local  Extended local zone
       </li>
     </ol>
     <b>New Features:</b><br>
-     
+
 
     <ol>
       <li>Thanks to Steve Herber, the 'help' command can now give
@@ -5560,7 +6298,7 @@ loc    Local  Extended local zone
     </b></p>
     <b>Problems Corrected since version 1.4.6 (Those in bold font
     were corrected since 1.4.7 Beta 1).</b><br>
-     
+
 
     <ol>
       <li>Corrected problem in 1.4.6 where the MANGLE_ENABLED
@@ -5626,7 +6364,7 @@ loc    Local  Extended local zone
       </li>
     </ol>
     <b>Migration Issues:</b><br>
-     
+
 
     <ol>
       <li>Shorewall IP Traffic Accounting has changed since
@@ -5644,7 +6382,7 @@ loc    Local  Extended local zone
       </li>
     </ol>
     <b>New Features:</b><br>
-     
+
 
     <ol>
       <li>Thanks to Steve Herber, the 'help' command can now give
@@ -5840,7 +6578,7 @@ loc    Local  Extended local zone
     </b></p>
     <b>Problems Corrected since version 1.4.6 (Those in bold font
     were corrected since 1.4.7 Beta 1).</b><br>
-     
+
 
     <ol>
       <li>Corrected problem in 1.4.6 where the MANGLE_ENABLED
@@ -5900,7 +6638,7 @@ loc    Local  Extended local zone
       </li>
     </ol>
     <b>Migration Issues:</b><br>
-     
+
 
     <ol>
       <li>Shorewall IP Traffic Accounting has changed since
@@ -5918,7 +6656,7 @@ loc    Local  Extended local zone
       </li>
     </ol>
     <b>New Features:</b><br>
-     
+
 
     <ol>
       <li>Thanks to Steve Herber, the 'help' command can now give
@@ -6121,7 +6859,7 @@ loc    Local  Extended local zone
     Guide&nbsp;</b></p>
     Thanks to Fabien <font size="3">Demassieux, there is now a <a
     href="shorewall_setup_guide_fr.htm">French translation of the
-    Shorewall Setup Guide</a>. Merci Beacoup, Fabien!</font> 
+    Shorewall Setup Guide</a>. Merci Beacoup, Fabien!</font>
 
     <p><b>8/25/2003 - Shorewall 1.4.7 Beta 1</b> <b><br>
     </b></p>
@@ -6133,7 +6871,7 @@ loc    Local  Extended local zone
     "_top">ftp://shorewall.net/pub/shorewall/Beta</a><br>
     </b></p>
     <b>Problems Corrected since version 1.4.6</b><br>
-     
+
 
     <ol>
       <li>Corrected problem in 1.4.6 where the MANGLE_ENABLED
@@ -6167,7 +6905,7 @@ loc    Local  Extended local zone
       </li>
     </ol>
     <b>Migration Issues:</b><br>
-     
+
 
     <ol>
       <li>Shorewall IP Traffic Accounting has changed since
@@ -6185,7 +6923,7 @@ loc    Local  Extended local zone
       </li>
     </ol>
     <b>New Features:</b><br>
-     
+
 
     <ol>
       <li>Thanks to Steve Herber, the 'help' command can now give
@@ -6383,7 +7121,7 @@ loc    Local  Extended local zone
       "_top">ftp://shorewall.net/pub/shorewall/Snapshots/</a></p>
     </blockquote>
     <b>Problems Corrected since version 1.4.6</b><br>
-     
+
 
     <ol>
       <li>Corrected problem in 1.4.6 where the MANGLE_ENABLED
@@ -6417,7 +7155,7 @@ loc    Local  Extended local zone
       </li>
     </ol>
     <b>Migration Issues:</b><br>
-     
+
 
     <ol>
       <li>Once you have installed this version of Shorewall, you
@@ -6438,7 +7176,7 @@ loc    Local  Extended local zone
       page</a> for details.</li>
     </ol>
     <b>New Features:</b><br>
-     
+
 
     <ol>
       <li>Shorewall now creates a dynamic blacklisting chain for
@@ -6647,7 +7385,7 @@ loc    Local  Extended local zone
       "_top">ftp://shorewall.net/pub/shorewall/Snapshots/</a></p>
     </blockquote>
     <b>Problems Corrected since version 1.4.6</b><br>
-     
+
 
     <ol>
       <li>Corrected problem in 1.4.6 where the MANGLE_ENABLED
@@ -6678,7 +7416,7 @@ loc    Local  Extended local zone
       </li>
     </ol>
     <b>Migration Issues:</b><br>
-     
+
 
     <ol>
       <li>Once you have installed this version of Shorewall, you
@@ -6691,7 +7429,7 @@ loc    Local  Extended local zone
       rejectall"</li>
     </ol>
     <b>New Features:</b><br>
-     
+
 
     <ol>
       <li>Shorewall now creates a dynamic blacklisting chain for
@@ -6882,7 +7620,7 @@ loc    Local  Extended local zone
       "_top">ftp://shorewall.net/pub/shorewall/Snapshots/</a></p>
     </blockquote>
     <b>Problems Corrected since version 1.4.6</b><br>
-     
+
 
     <ol>
       <li>Corrected problem in 1.4.6 where the MANGLE_ENABLED
@@ -6908,7 +7646,7 @@ loc    Local  Extended local zone
       </li>
     </ol>
     <b>Migration Issues:</b><br>
-     
+
 
     <ol>
       <li>Once you have installed this version of Shorewall, you
@@ -6921,7 +7659,7 @@ loc    Local  Extended local zone
       rejectall"</li>
     </ol>
     <b>New Features:</b><br>
-     
+
 
     <ol>
       <li>Shorewall now creates a dynamic blacklisting chain for
@@ -7038,7 +7776,7 @@ loc    Local  Extended local zone
     <p><b>8/5/2003 - Shorewall-1.4.6b</b><b>&nbsp;<br>
     </b></p>
     <b>Problems Corrected since version 1.4.6:</b><br>
-     
+
 
     <ol>
       <li>Previously, if TC_ENABLED is set to yes in shorewall.conf
@@ -7068,7 +7806,7 @@ loc    Local  Extended local zone
     <p><b>8/5/2003 - Shorewall-1.4.6b</b> <b><br>
     </b></p>
     <b>Problems Corrected since version 1.4.6:</b><br>
-     
+
 
     <ol>
       <li>Previously, if TC_ENABLED is set to yes in shorewall.conf
@@ -7213,7 +7951,7 @@ loc    Local  Extended local zone
       "_top">ftp://shorewall.net/pub/shorewall/Snapshots/</a></p>
     </blockquote>
     <b>Problems Corrected since version 1.4.6</b><br>
-     
+
 
     <ol>
       <li>Corrected problem in 1.4.6 where the MANGLE_ENABLED
@@ -7225,7 +7963,7 @@ loc    Local  Extended local zone
       </li>
     </ol>
     <b>Migration Issues:</b><br>
-     
+
 
     <ol>
       <li>Once you have installed this version of Shorewall, you
@@ -7238,7 +7976,7 @@ loc    Local  Extended local zone
       rejectall"</li>
     </ol>
     <b>New Features:</b><br>
-     
+
 
     <ol>
       <li>Shorewall now creates a dynamic blacklisting chain for
@@ -7308,12 +8046,12 @@ loc    Local  Extended local zone
      Two new commands ('dropall' and 'rejectall') have been
     introduced that do what 'drop' and 'reject' used to do; namely,
     when an address is blacklisted using these new commands, it
-    will be blacklisted on all of your firewall's interfaces. 
+    will be blacklisted on all of your firewall's interfaces.
 
     <p><b>7/22/2003 - Shorewall-1.4.6a</b> <b><br>
     </b></p>
     <b>Problems Corrected:</b><br>
-     
+
 
     <ol>
       <li>Previously, if TC_ENABLED is set to yes in shorewall.conf
@@ -7587,7 +8325,7 @@ loc    Local  Extended local zone
     </b></p>
     Thanks to the folks at securityopensource.org.br, there is now
     a <a href="http://shorewall.securityopensource.org.br" target=
-    "_top">Shorewall mirror in Brazil</a>. 
+    "_top">Shorewall mirror in Brazil</a>.
 
     <p><b>7/15/2003 - Shorewall-1.4.6 RC 1</b> <b><br>
     </b></p>
@@ -8235,7 +8973,7 @@ loc    Local  Extended local zone
     that restores the previous 5-character limit by conditionally
     omitting the log rule number when the LOGFORMAT doesn't contain
     '%d'. <br>
-     
+
 
     <p><b>5/23/2003 - Shorewall-1.4.4</b></p>
     I apologize for the rapid-fire releases but since there is a
@@ -8244,13 +8982,13 @@ loc    Local  Extended local zone
     bug-fix release. <br>
      <br>
      <b>&nbsp;&nbsp;&nbsp; Problems corrected:</b><br>
-     
+
 
     <blockquote>
       None.<br>
     </blockquote>
     <b>&nbsp;&nbsp;&nbsp; New Features:<br>
-    </b> 
+    </b>
 
     <ol>
       <li>A REDIRECT- rule target has been added. This target
@@ -8291,7 +9029,7 @@ loc    Local  Extended local zone
     </p>
     This version primarily corrects the documentation included in
     the .tgz and in the .rpm. In addition: <br>
-     
+
 
     <ol>
       <li>(This change is in 1.4.3 but is not documented) If you
@@ -8315,7 +9053,7 @@ loc    Local  Extended local zone
     <p><b>5/18/2003 - Shorewall 1.4.3</b><br>
     </p>
     &nbsp;&nbsp;&nbsp; <b>Problems Corrected:<br>
-    </b> 
+    </b>
 
     <ol>
       <li>There were several cases where Shorewall would fail to
@@ -8329,7 +9067,7 @@ loc    Local  Extended local zone
       confused.</li>
     </ol>
     &nbsp;&nbsp;&nbsp; <b>New Features:<br>
-    </b> 
+    </b>
 
     <ol>
       <li>&nbsp;IPV6-IPV4 (6to4) tunnels are now supported in the
@@ -8350,7 +9088,7 @@ loc    Local  Extended local zone
 
     <p><b>5/8/2003 - Shorewall Mirror in Chile</b></p>
     Thanks to Darcy Ganga, there is now an HTTP mirror in Santiago
-    Chile. 
+    Chile.
 
     <p><b>4/21/2003 - Samples updated for Shorewall version
     1.4.2</b></p>
@@ -8491,14 +9229,14 @@ loc    Local  Extended local zone
       if there are entries in /etc/shorewall/ecn.</li>
     </ol>
     <b>New Features:</b><br>
-     
+
 
     <blockquote>
       Note: In the list that follows, the term <i>group</i> refers
       to a particular network or subnetwork (which may be 0.0.0.0/0
       or it may be a host address) accessed through a particular
       interface. Examples:<br>
-       
+
 
       <blockquote>
         eth0:0.0.0.0/0<br>
@@ -8531,7 +9269,7 @@ loc    Local  Extended local zone
       traffic from Z1 to Z2.</li>
     </ul>
     See the <a href="upgrade_issues.htm">upgrade issues</a> for a
-    discussion of how these changes may affect your configuration. 
+    discussion of how these changes may affect your configuration.
 
     <p><b>3/17/2003 - Shorewall 1.4.0</b></p>
     Shorewall 1.4 represents the next step in the evolution of
@@ -8544,7 +9282,7 @@ loc    Local  Extended local zone
      <br>
      Function from 1.3 that has been omitted from this version
     include:<br>
-     
+
 
     <ol>
       <li>The MERGE_HOSTS variable in shorewall.conf is no longer
@@ -8588,7 +9326,7 @@ loc    Local  Extended local zone
       </li>
     </ol>
     Changes for 1.4 include:<br>
-     
+
 
     <ol>
       <li>The /etc/shorewall/shorewall.conf file has been
@@ -8759,7 +9497,7 @@ loc    Local  Extended local zone
          &nbsp;<br>
          Example 1 -- This is how it works in 1.3.14.<br>
          &nbsp;&nbsp;<br>
-         
+
 <pre>
    [root@gateway test]# cat /etc/shorewall/masq<br>
    #INTERFACE              SUBNET                  ADDRESS<br>
@@ -8796,7 +9534,7 @@ loc    Local  Extended local zone
          Example 2 -- Suppose that your current config is as
         follows:<br>
          &nbsp;&nbsp;<br>
-         
+
 <pre>
    [root@gateway test]# cat /etc/shorewall/masq<br>
    #INTERFACE              SUBNET                  ADDRESS<br>
@@ -8819,7 +9557,7 @@ loc    Local  Extended local zone
          Example 3 -- What if your current configuration is like
         this?<br>
          &nbsp;<br>
-         
+
 <pre>
    [root@gateway test]# cat /etc/shorewall/masq<br>
    #INTERFACE              SUBNET                  ADDRESS<br>
@@ -8837,7 +9575,7 @@ loc    Local  Extended local zone
         &nbsp;<br>
          &nbsp;&nbsp; In this case, you would want to change the
         entry in&nbsp; /etc/shorewall/masq to:<br>
-         
+
 <pre>
    #INTERFACE              SUBNET                  ADDRESS<br>
    eth0                    192.168.1.0/24          206.124.146.176<br>
@@ -8915,7 +9653,7 @@ loc    Local  Extended local zone
          &nbsp;<br>
          Example 1 -- This is how it works in 1.3.14.<br>
          &nbsp;&nbsp;<br>
-         
+
 <pre>
    [root@gateway test]# cat /etc/shorewall/masq<br>
    #INTERFACE              SUBNET                  ADDRESS<br>
@@ -8952,7 +9690,7 @@ loc    Local  Extended local zone
          Example 2 -- Suppose that your current config is as
         follows:<br>
          &nbsp;&nbsp;<br>
-         
+
 <pre>
    [root@gateway test]# cat /etc/shorewall/masq<br>
    #INTERFACE              SUBNET                  ADDRESS<br>
@@ -8975,7 +9713,7 @@ loc    Local  Extended local zone
          Example 3 -- What if your current configuration is like
         this?<br>
          &nbsp;<br>
-         
+
 <pre>
    [root@gateway test]# cat /etc/shorewall/masq<br>
    #INTERFACE              SUBNET                  ADDRESS<br>
@@ -8993,7 +9731,7 @@ loc    Local  Extended local zone
         &nbsp;<br>
          &nbsp;&nbsp; In this case, you would want to change the
         entry in&nbsp; /etc/shorewall/masq to:<br>
-         
+
 <pre>
    #INTERFACE              SUBNET                  ADDRESS<br>
    eth0                    192.168.1.0/24          206.124.146.176<br>
@@ -9014,7 +9752,7 @@ loc    Local  Extended local zone
 
      &nbsp;&nbsp;&nbsp; <a href=
     "http://slovakia.shorewall.net/pub/shorewall/pdf/">http://slovakia.shorewall.net/pub/shorewall/pdf/</a>
-    
+
 
     <p><b>1/17/2003 - shorewall.net has MOVED</b><b>&nbsp;</b></p>
 
@@ -9178,7 +9916,7 @@ loc    Local  Extended local zone
     2, if BLACKLIST_LOG_LEVEL was set to anything but ULOG, the
     firewall would fail to start and "shorewall refresh" would also
     fail.<br>
-     
+
 
     <p><b>12/20/2002 - Shorewall 1.3.12 Beta 2</b></p>
 
@@ -9187,7 +9925,7 @@ loc    Local  Extended local zone
     audience).<br>
     </p>
     Features include:<br>
-     
+
 
     <ol>
       <li>"shorewall refresh" now reloads the traffic shaping rules
@@ -9226,7 +9964,7 @@ loc    Local  Extended local zone
       the upgrade process won't overwrite your file.</li>
     </ol>
     You may download the Beta from:<br>
-     
+
 
     <blockquote>
       <a href=
@@ -9246,7 +9984,7 @@ loc    Local  Extended local zone
     Multi Network Firewall (MNF)</a> product. Here is the <a href=
     "http://www.mandrakesoft.com/company/press/pr?n=/pr/products/2403">
     press release</a>.<br>
-     
+
 
     <p><b>12/7/2002 - Shorewall Support for Mandrake 9.0</b></p>
 
@@ -9363,11 +10101,11 @@ loc    Local  Extended local zone
     Alexandru Hartmann reports that his Shorewall package is now a
     part of <a href="http://www.gentoo.org">the Gentoo Linux
     distribution</a>. Thanks Alex!<br>
-     
+
 
     <p><b>10/23/2002 - Shorewall 1.3.10 Beta 1</b></p>
     In this version:<br>
-     
+
 
     <ul>
       <li>You may now <a href="IPSEC.htm#Dynamic">define the
@@ -9405,7 +10143,7 @@ loc    Local  Extended local zone
       distribution-dependent code.</li>
     </ul>
     You may download the Beta from:<br>
-     
+
 
     <ul>
       <li><a href=
@@ -9425,7 +10163,7 @@ loc    Local  Extended local zone
     <p><b>10/9/2002 - Shorewall 1.3.9b</b></p>
     This release rolls up fixes to the installer and to the
     firewall script.<br>
-     
+
 
     <p><b>10/6/2002 - Shorewall.net now running on RH8.0<br>
     </b><br>
@@ -9434,7 +10172,7 @@ loc    Local  Extended local zone
      <b><br>
      9/30/2002 - Shorewall 1.3.9a</b></p>
     Roles up the fix for broken tunnels.<br>
-     
+
 
     <p><b>9/30/2002 - TUNNELS Broken in 1.3.9!!!</b></p>
     There is an updated firewall script at <a href=
@@ -9442,7 +10180,7 @@ loc    Local  Extended local zone
     target=
     "_top">ftp://www.shorewall.net/pub/shorewall/errata/1.3.9/firewall</a>
     -- copy that file to /usr/lib/shorewall/firewall.<br>
-     
+
 
     <p><b>9/28/2002 - Shorewall 1.3.9</b></p>
 
@@ -9475,7 +10213,7 @@ loc    Local  Extended local zone
     <img src="images/j0233056.gif" alt="Brown Paper Bag" align=
     "left" height="86" width="50"> A couple of recent configuration
     changes at www.shorewall.net broke the Search facility:<br>
-     
+
 
     <blockquote>
       <ol>
@@ -9486,14 +10224,14 @@ loc    Local  Extended local zone
         <li>Only one page of matches was presented.</li>
       </ol>
     </blockquote>
-    Hopefully these problems are now corrected. 
+    Hopefully these problems are now corrected.
 
     <p><b>9/23/2002 - Full Shorewall Site/Mailing List Archive
     Search Capability Restored<br>
     </b></p>
     A couple of recent configuration changes at www.shorewall.net
     had the negative effect of breaking the Search facility:<br>
-     
+
 
     <ol>
       <li>Mailing List Archive Search was not available.</li>
@@ -9503,7 +10241,7 @@ loc    Local  Extended local zone
       <li>Only one page of matches was presented.</li>
     </ol>
     Hopefully these problems are now corrected.<br>
-     
+
 
     <p><b>9/18/2002 - &nbsp;Debian 1.3.8 Packages Available<br>
     </b></p>
@@ -10191,7 +10929,7 @@ loc    Local  Extended local zone
       <li>
         Filtering by <a href="Documentation.htm#MAC">MAC
         address</a> has been added. MAC addresses may be used as
-        the source address in: 
+        the source address in:
 
         <ul>
           <li>Filtering rules (<a href=
@@ -10388,7 +11126,7 @@ loc    Local  Extended local zone
 
     <ul>
       <li>
-        Support for IP blacklisting has been added 
+        Support for IP blacklisting has been added
 
         <ul>
           <li>You specify whether you want packets from blacklisted
@@ -10417,7 +11155,7 @@ loc    Local  Extended local zone
       </li>
 
       <li>
-        Use of TCP RST replies has been expanded&nbsp; 
+        Use of TCP RST replies has been expanded&nbsp;
 
         <ul>
           <li>TCP connection requests rejected because of a REJECT

@@ -2122,41 +2122,35 @@ stop_firewall() {
 
     run_user_exit stop
 
-    [ -n "$MANGLE_ENABLED" ] && \
-	run_iptables -t mangle -F && \
+    if [ -n "$MANGLE_ENABLED" ]; then
+	run_iptables -t mangle -F
 	run_iptables -t mangle -X
+	for chain in PREROUTING INPUT FORWARD POSTROUTING; do
+	    run_iptables -t mangle -P $chain ACCEPT
+	done
+    fi
 
-    [ -n "$RAW_TABLE" ] && \
-	run_iptables -t raw -F && \
+    [ -n "$RAW_TABLE" ]; then
+	run_iptables -t raw -F
 	run_iptables -t raw -X
+	for chain in PREROUTING OUTPUT; do
+	    run_iptables -t raw -P $chain ACCEPT
+	done
+    fi
 
-    [ -n "$NAT_ENABLED" ] && delete_nat
+    if [ -n "$NAT_ENABLED" ]; then
+	delete_nat
+	for chain in PREROUTING POSTROUTING OUTPUT; do
+	    run_iptables -t nat -P $chain ACCEPT
+	done
+    fi
+
     delete_proxy_arp
     [ -n "$CLEAR_TC" ] && delete_tc1
 
     [ -n "$DISABLE_IPV6" ] && disable_ipv6_1
 
     process_criticalhosts
-
-    [ -n "$RAW_TABLE" ] && rawtable=raw || rawtable=
-
-    for table in mangle nat $rawtable ; do
-	case $table in
-	    mangle)
-		chains="PREROUTING INPUT FORWARD POSTROUTING"
-		;;
-	    nat)
-		chains="PREROUTING POSTROUTING OUTPUT"
-		;;
-	    *)
-		chains="PREROUTING OUTPUT"
-		;;
-	esac
-
-	for chain in $chains; do
-	    iptables -t $table -P $chain ACCEPT
-	done
-    done
 
     if [ -n "$CRITICALHOSTS" ]; then
 	if [ -z "$ADMINISABSENTMINDED" ]; then

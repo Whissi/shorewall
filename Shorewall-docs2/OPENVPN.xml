@@ -444,15 +444,15 @@ verb 3</programlisting>
     <graphic fileref="images/network3.png" />
 
     <para>The Wireless network is in the lower right of the diagram and
-    consists of two laptops: Eastepnc6000 (Windows XP - SP1) and Tipper (SuSE
-    10.0). We use OpenVPN to bridge those two laptops with the local LAN shown
-    in the lower left hand corner. The laptops are configured with addresses
-    in the 192.168.3.0/24 network connected to the firewall's <filename
-    class="devicefile">eth0</filename> interface which places them in the
-    firewall's <emphasis role="bold">Wifi</emphasis> zone. OpenVPN bridging
-    allows them to be assigned an additional IP address from the
-    192.168.1.0/24 network and to be securely bridged to the LAN on the lower
-    left.</para>
+    consists of two laptops: Eastepnc6000 (Dual Boot Windows XP - SP1, SuSE
+    10.0) and Tipper (SuSE 10.0). We use OpenVPN to bridge those two laptops
+    with the local LAN shown in the lower left hand corner. The laptops are
+    configured with addresses in the 192.168.3.0/24 network connected to the
+    firewall's <filename class="devicefile">eth0</filename> interface which
+    places them in the firewall's <emphasis role="bold">Wifi</emphasis> zone.
+    OpenVPN bridging allows them to be assigned an additional IP address from
+    the 192.168.1.0/24 network and to be securely bridged to the LAN on the
+    lower left.</para>
 
     <note>
       <para>Eastepnc6000 is shown in both the local LAN and in the Wifi zone
@@ -610,6 +610,13 @@ persist-tun
 persist-key
 
 verb 3</programlisting>
+      </section>
+
+      <section>
+        <title>Eastepnc6000 (SuSE10.0) Configuration</title>
+
+        <para>The configuration is the same as shown above only with "/Program
+        Files/OpenVPN" replaced with "/etc/openvpn" (I love OpenVPN).</para>
       </section>
     </section>
 

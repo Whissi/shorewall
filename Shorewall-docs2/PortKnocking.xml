@@ -132,7 +132,7 @@ SSHKnock         net               loc:192.168.1.5 tcp         22            -  
     <title>Limiting Per-IP Connection Rate</title>
 
     <para>Suppose that you wish to limit the number of connections to port 22
-    to 3/minute from internet host.</para>
+    to 3/minute from individual internet hosts to the firewall.</para>
 
     <orderedlist>
       <listitem>
@@ -156,13 +156,32 @@ run_iptables -A $CHAIN -m recent --name SSHA --seconds 60 --hitcount 3 -j reject
         <para>Add this rule to /etc/shorewall/rules:</para>
 
         <programlisting>#ACTION          SOURCE            DEST           PROTO       DEST PORT(S)
-SSHLimit         net               all            tcp         22</programlisting>
+SSHLimit         net               $FW            tcp         22</programlisting>
 
         <para>If you wish to log the rejects at the 'info' level then use this
         rule instead:</para>
 
         <programlisting>#ACTION          SOURCE            DEST           PROTO       DEST PORT(S)
-SSHLimit:info    net               all            tcp         22</programlisting>
+SSHLimit:info    net               $FW            tcp         22</programlisting>
+      </listitem>
+
+      <listitem>
+        <para>If you wish to use SSHLimit with a forwarded connection, you
+        must be using Shorewall 2.3.1 or later for fullest protection. Assume
+        that you forward port 22 from external IP address 206.124.146.178 to
+        internal system 192.168.1.5. In /etc/shorewall/rules:</para>
+
+        <programlisting>#ACTION          SOURCE            DEST            PROTO       DEST PORT(S)  SOURCE      ORIGINAL
+#                                                                            PORT(S)     DEST
+DNAT-            net               loc:192.168.1.5 tcp         22            -           206.124.146.178
+SSHLimit         net               loc:192.168.1.5 tcp         22            -           206.124.146.178</programlisting>
+
+        <note>
+          <para>You can use SSHLimit with DNAT on earlier releases provided
+          that you omit the ORIGINAL DEST entry on the second SSHLimit rule.
+          This rule will be quite secure provided that you specify 'norfc1918'
+          on your external interface.</para>
+        </note>
       </listitem>
     </orderedlist>
   </section>

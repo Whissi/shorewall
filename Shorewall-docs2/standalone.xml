@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-11-02</pubdate>
+    <pubdate>2005-11-20</pubdate>
 
     <copyright>
       <year>2002-2005</year>
@@ -33,6 +33,13 @@
       License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
+
+  <caution>
+    <para><emphasis role="bold">This article applies to Shorewall 3.0 and
+    later. If you are running a version of Shorewall earlier than Shorewall
+    3.0.0 then please see the documentation for that
+    release.</emphasis></para>
+  </caution>
 
   <section>
     <title>Introduction</title>
@@ -400,12 +407,11 @@ SSH/ACCEPT  net       $FW           </programlisting>
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
     <para>The <ulink url="Install.htm">installation procedure</ulink>
-    configures your system to start Shorewall at system boot but beginning
-    with Shorewall version 1.3.9 startup is disabled so that your system won't
-    try to start Shorewall before configuration is complete. Once you have
-    completed configuration of your firewall, you can enable Shorewall startup
-    by removing the file
-    <filename>/etc/shorewall/startup_disabled</filename>.</para>
+    configures your system to start Shorewall at system boot but startup is
+    disabled so that your system won't try to start Shorewall before
+    configuration is complete. Once you have completed configuration of your
+    firewall, you must edit /etc/shorewall/shorewall.conf and set
+    STARTUP_ENABLED=Yes.</para>
 
     <important>
       <para><emphasis role="bold">Users of the .deb package must edit

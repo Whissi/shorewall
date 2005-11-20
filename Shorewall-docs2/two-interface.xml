@@ -12,7 +12,7 @@
       <surname>Eastep</surname>
     </author>
 
-    <pubdate>2005-11-10</pubdate>
+    <pubdate>2005-11-20</pubdate>
 
     <copyright>
       <year>2002-</year>
@@ -604,7 +604,7 @@ DNAT      net       loc:<emphasis>&lt;server local ip address&gt;</emphasis>[:<e
         <para>You run a Web Server on computer 2 and you want to forward
         incoming <acronym>TCP</acronym> port 80 to that system:
         <programlisting>#ACTION   SOURCE    DEST             PROTO     DEST PORT(S)
-Web/DNAT  net       loc:192.168.1.5</programlisting></para>
+Web/DNAT  net       loc:10.10.10.2</programlisting></para>
       </example> <example label="2">
         <title>FTP Server</title>
 
@@ -748,8 +748,8 @@ ACCEPT     $FW       <emphasis>&lt;destination zone&gt; &lt;protocol&gt; &lt;por
         <para>You want to run a Web Server on your firewall system:
         <programlisting>#ACTION     SOURCE    DEST               PROTO     DEST PORT(S)
 Web/ACCEPT  net       $FW
-Web/ACCEPT  loc       </programlisting>$FWThose two rules would of course be
-        in addition to the rules listed above under <quote><link
+Web/ACCEPT  loc       $FW       </programlisting>Those two rules would of
+        course be in addition to the rules listed above under <quote><link
         linkend="cachingdns">You can configure a Caching Name Server on your
         firewall</link></quote>.</para>
       </example> If you don't know what port and protocol a particular

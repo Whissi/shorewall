@@ -5,7 +5,7 @@
   <!--$Id$-->
 
   <articleinfo>
-    <title>Port Knocking</title>
+    <title>Port Knocking and Other Uses of 'Recent Match' </title>
 
     <authorgroup>
       <author>
@@ -124,6 +124,45 @@ SSHKnock         net               loc:192.168.1.5 tcp         22            -  
           This rule will be quite secure provided that you specify 'norfc1918'
           on your external interface.</para>
         </note>
+      </listitem>
+    </orderedlist>
+  </section>
+
+  <section>
+    <title>Limiting Per-IP Connection Rate</title>
+
+    <para>Suppose that you wish to limit the number of connections to port 22
+    to 3/minute from internet host.</para>
+
+    <orderedlist>
+      <listitem>
+        <para>Add an action named SSHLimit (see the <ulink
+        url="Actions.html">Action documentation</ulink>). Leave the
+        <filename>action.SSHLimit</filename> file empty.</para>
+      </listitem>
+
+      <listitem>
+        <para>Create /etc/shorewall/SSLimit with the following
+        contents:</para>
+
+        <programlisting>run_iptables -A $CHAIN -m recent --name SSHA --set
+if [ -n "$LEVEL" ]; then
+    log_rule_limit $LEVEL $CHAIN SSHLimit REJECT "" "$TAG" -A -m recent --name SSHA --seconds 60 --hitcount 3
+fi
+run_iptables -A $CHAIN -m recent --name SSHA --seconds 60 --hitcount 3 -j reject</programlisting>
+      </listitem>
+
+      <listitem>
+        <para>Add this rule to /etc/shorewall/rules:</para>
+
+        <programlisting>#ACTION          SOURCE            DEST           PROTO       DEST PORT(S)
+SSHLimit         net               all            tcp         22</programlisting>
+
+        <para>If you wish to log the rejects at the 'info' level then use this
+        rule instead:</para>
+
+        <programlisting>#ACTION          SOURCE            DEST           PROTO       DEST PORT(S)
+SSHLimit:info    net               all            tcp         22</programlisting>
       </listitem>
     </orderedlist>
   </section>

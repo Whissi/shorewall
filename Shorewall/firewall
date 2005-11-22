@@ -2126,7 +2126,7 @@ stop_firewall() {
 	run_iptables -t mangle -F
 	run_iptables -t mangle -X
 	for chain in PREROUTING INPUT FORWARD POSTROUTING; do
-	    run_iptables -t mangle -P $chain ACCEPT
+	    qt $IPTABLES -t mangle -P $chain ACCEPT
 	done
     fi
 
@@ -2134,14 +2134,14 @@ stop_firewall() {
 	run_iptables -t raw -F
 	run_iptables -t raw -X
 	for chain in PREROUTING OUTPUT; do
-	    run_iptables -t raw -P $chain ACCEPT
+	    qt $IPTABLES -t raw -P $chain ACCEPT
 	done
     fi
 
     if [ -n "$NAT_ENABLED" ]; then
 	delete_nat
 	for chain in PREROUTING POSTROUTING OUTPUT; do
-	    run_iptables -t nat -P $chain ACCEPT
+	    qt $IPTABLES -t nat -P $chain ACCEPT
 	done
     fi
 
@@ -7709,7 +7709,7 @@ initialize_netfilter () {
     if [ -n "$NAT_ENABLED" ]; then
 	delete_nat
 	for chain in PREROUTING POSTROUTING OUTPUT; do
-	    run_iptables -t nat -P $chain ACCEPT
+	    qt $IPTABLES -t nat -P $chain ACCEPT
 	done
     fi
 
@@ -7719,7 +7719,7 @@ initialize_netfilter () {
 	run_iptables -t mangle -F
 	run_iptables -t mangle -X
 	for chain in PREROUTING INPUT FORWARD POSTROUTING; do
-	    run_iptables -t mangle -P $chain ACCEPT
+	    qt $IPTABLES -t mangle -P $chain ACCEPT
 	done
     fi
 
@@ -7727,7 +7727,7 @@ initialize_netfilter () {
 	run_iptables -t raw -F
 	run_iptables -t raw -X
 	for chain in PREROUTING OUTPUT; do
-	    run_iptables -t raw -P $chain ACCEPT
+	    qt $IPTABLES -t raw -P $chain ACCEPT
 	done
     fi
 

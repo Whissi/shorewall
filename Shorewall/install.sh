@@ -207,6 +207,10 @@ echo "shorewall control program installed in ${PREFIX}/sbin/shorewall"
 #
 if [ -n "$DEBIAN" ]; then
     install_file_with_backup init.debian.sh /etc/init.d/shorewall 0544 ${PREFIX}/usr/share/shorewall-${VERSION}.bkout
+
+elif [ -n "$ARCHLINUX" ]; then
+    install_file_with_backup init.archlinux.sh ${PREFIX}${DEST}/$INIT 0544 ${PREFIX}/usr/share/shorewall-${VERSION}.bkout
+
 else
     install_file_with_backup init.sh ${PREFIX}${DEST}/$INIT 0544 ${PREFIX}/usr/share/shorewall-${VERSION}.bkout
 fi

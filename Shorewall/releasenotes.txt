@@ -14,7 +14,7 @@ Problems Corrected in 3.0.2
 New Features in 3.0.2
 
 1) New Webmin macro
- 
+
 Problems Corrected in 3.0.1
 
 1) If the previous firewall configuration included a policy other than
@@ -198,13 +198,13 @@ Migration Considerations:
    BOGON_LOG_LEVEL option have been eliminated.
 
 5) Most of the standard actions have been replaced by parametrized
-   macros (see below). So for example, the action.AllowSMTP and
-   action.DropSMTP have been removed an a parametrized macro
+   macros (see below). So for example, action.AllowSMTP and
+   action.DropSMTP have been removed and a parametrized macro
    macro.SMTP has been added to replace them.
 
    In order that current users don't have to immediately update their
    rules and user-defined actions, Shorewall can substitute an
-   invocation of the a new macro for an existing invocation of one of
+   invocation of a new macro for an existing invocation of one of
    the old actions. So if your rules file calls AllowSMTP, Shorewall
    will replace that call with SMTP/ACCEPT. Because this substitution
    is expensive, it is conditional based on the setting of

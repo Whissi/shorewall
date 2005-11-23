@@ -92,21 +92,21 @@
 130.252.100.18    eth1        eth0      no         yes
 130.252.100.19    eth1        eth0      no         yes  </programlisting>
 
-    <para>Be sure that the internal systems (130.242.100.18 and 130.252.100.19
-    in the above example) are not included in any specification in
-    <filename>/etc/shorewall/masq</filename> or
-    <filename>/etc/shorewall/nat</filename>.</para>
+    <para><emphasis role="bold">Be sure that the internal systems
+    (130.242.100.18 and 130.252.100.19 in the above example) are not included
+    in any specification in <filename>/etc/shorewall/masq</filename> or
+    <filename>/etc/shorewall/nat</filename>.</emphasis></para>
 
     <note>
       <para>I've used an RFC1918 IP address for eth1 - that IP address is
       largely irrelevant (see below).</para>
     </note>
 
-    <para>The lower systems (130.252.100.18 and 130.252.100.19) should have
-    their subnet mask and default gateway configured exactly the same way that
-    the Firewall system's eth0 is configured. In other words, they should be
-    configured just like they would be if they were parallel to the firewall
-    rather than behind it.</para>
+    <para>The lower systems (130.252.100.18 and 130.252.100.19) <emphasis
+    role="bold">should have their subnet mask and default gateway configured
+    exactly the same way that the Firewall system's eth0 is configured. In
+    other words, they should be configured just like they would be if they
+    were parallel to the firewall rather than behind it.</emphasis></para>
 
     <warning>
       <para>Do not add the Proxy ARP'ed address(es) (130.252.100.18 and
@@ -191,7 +191,8 @@ iface eth1 inet static
     <para>A word of warning is in order here. ISPs typically configure their
     routers with a long ARP cache timeout. If you move a system from parallel
     to your firewall to behind your firewall with Proxy ARP, it will probably
-    be HOURS before that system can communicate with the internet.</para>
+    be <emphasis role="bold">HOURS</emphasis> before that system can
+    communicate with the internet.</para>
 
     <para>If you sniff traffic on the firewall's external interface, you can
     see incoming traffic for the internal system(s) but the traffic is never

@@ -117,7 +117,7 @@
     network connection than you do (the line speed between the systems is the
     bottleneck, e.g. a DSL connection to you providers router, the router
     itself is normally connected to a much faster backbone). So, if you drop
-    packages that are coming in too fast, the underlaying protocol might
+    packets that are coming in too fast, the underlaying protocol might
     recognize this and slow down the connection. TCP has a builtin mechanism
     for this, UDP has not (but the protocol over UDP might recognize it , if
     there is any).</para>
@@ -159,7 +159,7 @@
 
       <listitem>
         <para>MARK - Netfilter has a facility for
-        <firstterm>marking</firstterm> packets. Packet marks have a numberic
+        <firstterm>marking</firstterm> packets. Packet marks have a numeric
         value which is limited in Shorewall to the values 1-255. You assign
         packet marks to different types of traffic using entries in the
         <filename>/etc/shorewall/tcrules</filename> file.</para>
@@ -491,9 +491,9 @@ ppp0           6000kbit         500kbit</programlisting>
               that puts all tcp ack packets on that interface that have an
               size of &lt;=64 Bytes to go in this class. This is useful for
               speeding up downloads. Please note that the size of the ack
-              packages is limited to 64 bytes as some applications (p2p for
+              packets is limited to 64 bytes as some applications (p2p for
               example) use to make every package an ack package which would
-              cause them all into here. We want only packages WITHOUT payload
+              cause them all into here. We want only packets WITHOUT payload
               to match, so the size limit. Bigger packets just take their
               normal way into the classes.</para>
 

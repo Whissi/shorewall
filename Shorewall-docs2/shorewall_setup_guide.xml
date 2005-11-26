@@ -53,19 +53,15 @@
     necessary.</para>
 
     <caution>
-      <para>If you run LEAF Bering, your Shorewall configuration is NOT what I
-      release -- I suggest that you consider installing a stock Shorewall lrp
-      from the shorewall.net site before you proceed. Shorewall requires that
-      the iproute/iproute2 package be installed (on RedHat, the package is
-      called iproute). You can tell if this package is installed by the
-      presence of an <emphasis role="bold">ip</emphasis> program on your
-      firewall system. As root, you can use the <quote>which</quote> command
-      to check for this program:</para>
+      <para>Shorewall requires that the iproute/iproute2 package be installed
+      (on RedHat, the package is called iproute). You can tell if this package
+      is installed by the presence of an <emphasis role="bold">ip</emphasis>
+      program on your firewall system. As root, you can use the
+      <quote>which</quote> command to check for this program:</para>
 
       <programlisting>[root@gateway root]# <command>which ip</command>
 /sbin/ip
-[root@gateway root]#
-</programlisting>
+[root@gateway root]#</programlisting>
 
       <para>I recommend that you first read through the guide to familiarize
       yourself with what's involved then go back through it again making your
@@ -252,7 +248,7 @@ dmz     ipv4</programlisting>
     A to the firewall and are also allowed from the firewall to zone B
     <emphasis role="bold">DOES NOT mean that these connections are allowed
     from zone A to zone B</emphasis> (in other words, policies and rules
-    involving the firewall zone are not transitive). It rather means that you
+    involving the firewall zone are not transitibe). It rather means that you
     can have a proxy running on the firewall that accepts a connection from
     zone A and then establishes its own separate connection from the firewall
     to zone B.</para>

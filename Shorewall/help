@@ -253,18 +253,18 @@ save)
 	;;
 
 show)
-	echo "show: show [ <chain> [ <chain> ...] |actions|classifiers|connections|log|macros|nat|tc|tos|zones]
+	echo "show: show [ <chain> [ <chain> ...] |actions|classifiers|connections|log|macros|mangle|nat|tc|zones]
 
     shorewall [-x] show <chain> [ <chain> ... ]  - produce a verbose report about the IPtable chain(s).
     (iptables -L chain -n -v)
 
     shorewall show actions - produce a list of builtin actions and actions defined in /usr/share/shorewall/actions.std and /etc/shorewall
 
+    shorewall [-x] show mangle - produce a verbose report about the mangle table.
+    (iptables -t mangle -L -n -v)
+
     shorewall [-x] show nat - produce a verbose report about the nat table.
     (iptables -t nat -L -n -v)
-
-    shorewall [-x] show tos - produce a verbose report about the mangle table.
-    (iptables -t mangle -L -n -v)
 
     shorewall show log - display the last 20 packet log entries.
 

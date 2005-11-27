@@ -510,7 +510,7 @@ usage() # $1 = exit status
     echo "   restart [ <directory> ]"
     echo "   restore [ <file name> ]"
     echo "   save [ <file name> ]"
-    echo "   show [<chain> [ <chain> ... ]|actions|capabilities|classifiers|connections|log|nat|tc|tos|zones]"
+    echo "   show [<chain> [ <chain> ... ]|actions|capabilities|classifiers|connections|log|macros|nat|tc|tos|zones]"
     echo "   start [ <directory> ]"
     echo "   stop"
     echo "   status"
@@ -912,6 +912,20 @@ case "$1" in
 	    echo "allowinUPnP        #Allow UPnP inbound (to firewall) traffic"
 	    echo "forwardUPnP        #Allow traffic that upnpd has redirected from"
 	    cat /usr/share/shorewall/actions.std /etc/shorewall/actions | grep -Ev '^\#|^$'
+	    ;;
+	macros)
+	    for macro in /usr/share/shorewall/macro.*; do
+		foo=`grep 'This macro' $macro | head -n 1`
+		if [ -n "$foo" ]; then
+		    macro=${macro#*.}
+		    foo=${foo%.*}
+		    if [ ${#macro} -lt 4 ]; then
+			echo -e "   $macro \t${foo#\#}"
+		    else
+			echo "   $macro ${foo#\#}"
+		    fi
+		fi
+	    done
 	    ;;
 	*)
 	    shift

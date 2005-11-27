@@ -621,8 +621,8 @@
         <term>ipcalc</term>
 
         <listitem>
-          <para><command>shorewall ipcalc [ &lt;address&gt; &lt;mask&gt; |
-          &lt;address&gt;/&lt;vlsm&gt; ]</command></para>
+          <para><command>shorewall ipcalc { &lt;address&gt; &lt;mask&gt; |
+          &lt;address&gt;/&lt;vlsm&gt; }</command></para>
 
           <para>Ipcalc displays the network address, broadcast address,
           network in CIDR notation and netmask corresponding to the
@@ -664,7 +664,7 @@
         <term>refresh</term>
 
         <listitem>
-          <para><command>shorewall refresh: [ -q ] refresh</command></para>
+          <para><command>shorewall [ -q ] refresh</command></para>
 
           <para>The rules involving the broadcast addresses of firewall
           interfaces, the black list, traffic control rules and ECN control
@@ -741,12 +741,12 @@
           <para>Only allowed if Shorewall is running. The current
           configuration is saved in
           <filename>/var/lib/shorewall/safe-restart</filename> (see the
-          <command>save</command> command below). You will then be prompted
-          asking if you want to accept the new configuration or not. If you
-          answer "n" or if you fail to answer within 60 seconds (such as when
-          your new configuration has disabled communication with your
-          terminal), the configuration is restored from the saved
-          configuration.</para>
+          <command>save</command> command below) that a restart is done. You
+          will then be prompted asking if you want to accept the new
+          configuration or not. If you answer "n" or if you fail to answer
+          within 60 seconds (such as when your new configuration has disabled
+          communication with your terminal), the configuration is restored
+          from the saved configuration.</para>
         </listitem>
       </varlistentry>
 

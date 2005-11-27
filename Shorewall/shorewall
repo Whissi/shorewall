@@ -848,14 +848,14 @@ case "$1" in
 	    ;;
 	nat)
 	    [ $# -gt 2 ] && usage 1
-	    echo "Shorewall-$version NAT at $HOSTNAME - $(date)"
+	    echo "Shorewall-$version NAT Table at $HOSTNAME - $(date)"
 	    echo
 	    show_reset
 	    $IPTABLES -t nat -L $IPT_OPTIONS
 	    ;;
 	tos|mangle)
 	    [ $# -gt 2 ] && usage 1
-	    echo "Shorewall-$version TOS at $HOSTNAME - $(date)"
+	    echo "Shorewall-$version Mangle Table at $HOSTNAME - $(date)"
 	    echo
 	    show_reset
 	    $IPTABLES -t mangle -L $IPT_OPTIONS

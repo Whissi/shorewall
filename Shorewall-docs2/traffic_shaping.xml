@@ -99,12 +99,7 @@
     the packets were already received by your network card before you can
     decide what to do with them. So the only choice would be to drop them
     which normally makes no sense (since you received the packet already, it
-    went through the possible bottleneck (the incoming connection); dropping
-    packets <emphasis>does</emphasis> have an advantage when you are connected
-    to the internet using a Cable Modem or DSL because it can prevent large
-    queues of download traffic from forming at your ISP and thus can improve
-    response time (see the definition of the IN-BANDWIDTH column of the
-    <filename>/etc/shorewall/tcdevices</filename> file below). The next
+    went through the possible bottleneck (the incoming connection). The next
     possible bottleneck might come if the packet leaves on another interface,
     so this will be the place where queuing might occur. So, defining queues
     for incoming packets is not very useful, you just want to have it

@@ -1,9 +1,13 @@
-# tc4shorewall Version 0.5
+#
+# Shorewall version 3.0 - Tcdevices File
+#
+# Based on tc4shorewall version 0.5 by Arne Bernin
 #
 # /etc/shorewall/tcdevices
 #
 #	Entries in this file define the bandwidth for interfaces
 #	on which you want traffic shaping to be enabled.
+#
 #	If you do not plan to use traffic shaping for a device,
 #	don't put it in here as it limits the troughput of that
 #	device to the limits you set here.
@@ -12,9 +16,9 @@
 #
 #
 #	INTERFACE	Name of interface. Each interface may be listed only
-#                       once in this file. You may NOT specify the name of
-#                       an alias (e.g., eth0:0) here; see
-#                       http://www.shorewall.net/FAQ.htm#faq18
+#			once in this file. You may NOT specify the name of
+#			an alias (e.g., eth0:0) here; see
+#			http://www.shorewall.net/FAQ.htm#faq18
 #	
 #			You man NOT specify wildcards here,  e.g. if you
 #			have multiple ppp interfaces, you need to put
@@ -26,12 +30,12 @@
 #			received before you could do so. But this allows
 #			you to define the maximum traffic allowed for
 #			this interface in total, if the rate is exceeded,
-#			the packets are dropped. 
+#			the packets are dropped.
 #			You want this mainly if you have a DSL or Cable
-#			Connection to avoid queuing at your providers side.
+#			connection to avoid queuing at your providers side.
 #
 #			If you don't want any traffic to be dropped set this
-#			to a value faster than your interface
+#			to a value faster than your interface.
 #
 #			Use kbit or kbps(for Kilobytes per second) for
 #			speed, and make sure there is NO space between the
@@ -41,19 +45,19 @@
 #			This is the maximum speed you connection can handle.
 #			It is also the speed you can refer as "full" if
 #			you define the tc classes. 
-#			Outgoing traffic above this rate will be dropped
+#			Outgoing traffic above this rate will be dropped.
 #
 #			Use kbit or kbps(for Kilobytes per second) for
 #			speed, and make sure there is NO space between the
 #			number and the unit.
 #
 #	Example 1:	Suppose you are using PPP over Ethernet (DSL)
-#                       and ppp0 is the interface for this. The
-#                       device has an outgoing bandwidth of 500kbit and an
+#			and ppp0 is the interface for this. The
+#			device has an outgoing bandwidth of 500kbit and an
 #			incoming bandwidth of 6000kbit
 #			ppp0	6000kbit	500kbit
 #
 #
-#################################################################################
-#INTERFACE    IN-BANDWITH      OUT-BANDWIDTH
+###############################################################################
+#INTERFACE	IN-BANDWITH	OUT-BANDWIDTH
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

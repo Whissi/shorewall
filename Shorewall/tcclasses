@@ -1,5 +1,7 @@
-# tc4shorewall	Version 0.5
 #
+# Shorewall version 3.0 - Tcclasses File
+#
+# Based on tc4shorewall version 0.5 by Arne Bernin
 #
 # /etc/shorewall/tcclasses
 #
@@ -12,11 +14,11 @@
 #
 #		- you can use one of the following units:
 #
-#       		kbps		Kilobytes per second
-#       		mbps   		Megabytes per second
-#       		kbit   		Kilobits per second
-#      			mbit   		Megabits per second
-#      			bps or a
+#			kbps		Kilobytes per second
+#			mbps		Megabytes per second
+#			kbit		Kilobits per second
+#			mbit		Megabits per second
+#			bps or a
 #			bare number	Bytes per second
 #
 #		- if you want the values to be calculated for you depending
@@ -59,8 +61,7 @@
 #			that first the classes which equal or a lesser priority
 #			value are served.
 #
-#			You can use the following
-#Use kbit or kbps(for Kilobytes per second) for
+#			Use kbit or kbps(for Kilobytes per second) for
 #			speed, and make sure there is NO space between the
 #			number and the unit.
 #
@@ -73,17 +74,18 @@
 #			the maximum bandwidth to the defined output bandwidth
 #			of that interface
 #
-#			Use kbit or kbps(for Kilobytes per second) for
+#			Use kbit or kbps (for Kilobytes per second) for
 #			speed, and make sure there is NO space between the
 #			number and the unit.
 #
 #	PRIORITY	you have to define a priority for the class
-#			Packages in a class with a higher priority (=lesser value)
-#			are handled before lesser priority onces.
-#			You can just define the mark value here also, if you are
-#			increasing the mark values with lesser priority.
+#			Packages in a class with a higher priority
+#			(=lesser value) are handled before lesser priority
+#			onces.
+#			You can just define the mark value here also, if you
+#			 are increasing the mark values with lesser priority.
 #
-#	OPTIONS         A comma-separated list of options including the
+#	OPTIONS		A comma-separated list of options including the
 #			following:
 #
 #			default		- this is the default class for that
@@ -106,11 +108,11 @@
 #					You can use the following
 #					for this option
 #
-#   					tos-minimize-delay (16)
-#                               	tos-maximize-throughput (8)
-#                               	tos-maximize-reliability (4)
-#                               	tos-minimize-cost (2)
-#                               	tos-normal-service (0)
+#					tos-minimize-delay (16)
+#					tos-maximize-throughput (8)
+#					tos-maximize-reliability (4)
+#					tos-minimize-cost (2)
+#					tos-normal-service (0)
 #
 #					NOTE: each of this options is only
 #					valid for ONE class per interface.
@@ -143,10 +145,10 @@
 #			bandwidth of 100kbit upstream, but 1 and 3 can get
 #			full speed if link is idle, 2 is limited to 200kbit
 #
-#			ppp0  1  100kbit  full	   1  tcp-ack,tos-minimize-delay
-#			ppp0  2	 100kbit  200kbit  2
-#			ppp0  3	 full/3   full	   3  default
+#		ppp0  1	 100kbit  full	   1  tcp-ack,tos-minimize-delay
+#		ppp0  2	 100kbit  200kbit  2
+#		ppp0  3	 full/3	  full	   3  default
 #
-################################################################################
+###############################################################################
 #INTERFACE	MARK	RATE	CEIL	PRIORITY	OPTIONS
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

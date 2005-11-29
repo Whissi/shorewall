@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-11-22</pubdate>
+    <pubdate>2005-11-25</pubdate>
 
     <copyright>
       <year>2002-2005</year>
@@ -838,7 +838,7 @@ ACCEPT    <emphasis>&lt;source zone&gt; &lt;destination zone&gt;  &lt;protocol&g
       <programlisting>#ACTION     SOURCE    DEST                PROTO      DEST PORT(S)
 DNS/ACCEPT  net       $FW</programlisting>
 
-      <para>Not using defined actions:</para>
+      <para>Not using defined macros:</para>
 
       <programlisting>#ACTION   SOURCE    DEST                PROTO      DEST PORT(S)                      
 ACCEPT    net       $FW                 tcp        53
@@ -942,15 +942,12 @@ ACCEPT    net       $FW                 tcp        80       </programlisting><it
     configures your system to start Shorewall at system boot but startup is
     disabled so that your system won't try to start Shorewall before
     configuration is complete. Once you have completed configuration of your
-    firewall, you can enable Shorewall startup by removing the file
-    <filename>/etc/shorewall/startup_disabled</filename>. <important>
+    firewall, you can enable Shorewall startup by editing
+    <filename>/etc/shorewall/shorewall.conf</filename> and setting
+    STARTUP_ENABLED=Yes.<important>
         <para>Users of the <filename>.deb</filename> package must edit
         <filename>/etc/default/shorewall</filename> and set
         <varname>startup=1</varname>.</para>
-      </important><important>
-        <para>You should edit
-        <filename>/etc/shorewall/shorewall.conf</filename> and set
-        STARTUP_ENABLED=Yes.</para>
       </important>The firewall is started using the <command>shorewall
     start</command> command and stopped using <command>shorewall
     stop</command>. When the firewall is stopped, routing is enabled on those

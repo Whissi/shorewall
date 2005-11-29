@@ -1288,6 +1288,8 @@ case "$1" in
 	    exit 2
 	fi
 
+	[ -n "$QUIET" ] && QUIET=-q
+
 	mutex_on
 
 	if shorewall_is_started
@@ -1300,7 +1302,7 @@ case "$1" in
 	if [ "$1" = "safe-start" -a  $running -eq 0 ]
 	then
 	    # the command is safe-start but the firewall is already running
-	    $0 nolock $debugging start
+	    $0 $debugging nolock $QUIET start
 	    ret=$?
 	    mutex_off
 	    exit 0
@@ -1318,10 +1320,10 @@ case "$1" in
 	if [ "$command" = "restart" ]
 	then
 	    # save previous configuration
-	    $0 nolock $debugging save "safe-start-restart"
+	    $0 $debugging nolock save "safe-start-restart"
 	fi
 
-	$0 nolock $debugging $command
+	$0 $debugging nolock $QUIET $command
 
 	echo -n "Do you want to accept the new firewall configuration? [y/n] "
 	read_yesno_with_timeout
@@ -1336,10 +1338,10 @@ case "$1" in
 	else
 	    if [ "$command" = "restart" ]
 	    then
-		$0 nolock $debugging restore "safe-start-restart"
+		$0 $debugging nolock restore "safe-start-restart"
 		rm /var/lib/shorewall/safe-start-restart
 	    else
-		$0 nolock $debugging clear
+		$0 $debugging nolock clear
 	    fi
 
 	    mutex_off

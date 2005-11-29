@@ -308,6 +308,8 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	cd $DIR
     fi
 
+    do_or_die "rm -rf $SHOREWALLDIR/debian"
+
     if [ -n "$BUILDTARBALL" ]; then
 	progress_message "Creating $DIR/$TARBALL..."
 	do_or_die "tar -zcvf $TARBALL $SHOREWALLDIR >> $LOGFILE 2>&1"

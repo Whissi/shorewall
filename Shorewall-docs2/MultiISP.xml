@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-11-22</pubdate>
+    <pubdate>2005-12-01</pubdate>
 
     <copyright>
       <year>2005</year>
@@ -35,13 +35,10 @@
   </articleinfo>
 
   <section>
-    <title>Multiple Internet Connection Support in Shorewall 2.4.2 and
-    Later</title>
+    <title>Multiple Internet Connection Support</title>
 
     <para>Beginning with Shorewall 2.3.2, support is included for multiple
-    internet connections. If you wish to use this feature, we recommend
-    strongly that you upgrade to version 2.4.2 or later. This section assumes
-    that you have so upgraded.</para>
+    internet connections.</para>
 
     <section>
       <title>Overview</title>
@@ -78,11 +75,12 @@
       select a unique MARK value for each provider so Shorewall can set up the
       correct marking rules for you.</para>
 
-      <para>When using <filename>/etc/shorewall/providers</filename>,
-      connections from the internet are automatically routed back out of the
-      correct interface and through the correct ISP gateway. This works
-      whether the connection is handled by the firewall itself or if it is
-      routed or port-forwarded to a system behind the firewall.</para>
+      <para>When you use the <emphasis role="bold">track</emphasis> option in
+      <filename>/etc/shorewall/providers</filename>, connections from the
+      internet are automatically routed back out of the correct interface and
+      through the correct ISP gateway. This works whether the connection is
+      handled by the firewall itself or if it is routed or port-forwarded to a
+      system behind the firewall.</para>
 
       <para>Shorewall will set up the routing and will update the
       <filename>/etc/iproute2/rt_tables</filename> to include the table names
@@ -110,19 +108,6 @@
           </listitem>
         </itemizedlist>
       </caution>
-
-      <para>Use of this feature requires that your kernel and iptables support
-      CONNMARK target and conntrack match support. It does NOT require the
-      ROUTE target extension.</para>
-
-      <warning>
-        <para>The current version of iptables (1.3.1) is broken with respect
-        to CONNMARK and iptables-save/iptables-restore. This means that if you
-        configure multiple ISPs, <command>shorewall restore</command> may
-        fail. If it does, you may patch your iptables using the patch at
-        <ulink
-        url="http://shorewall.net/pub/shorewall/contrib/iptables/CONNMARK.diff">http://shorewall.net/pub/shorewall/contrib/iptables/CONNMARK.diff</ulink>.</para>
-      </warning>
 
       <para>The <filename>/etc/shorewall/providers</filename> file can also be
       used in other routing scenarios. See the <ulink
@@ -224,6 +209,19 @@
                   connecting to local servers through this provider. Any time
                   that you specify 'track', you will also want to specify
                   'balance' (see below).</para>
+
+                  <para>Use of this feature requires that your kernel and
+                  iptables support CONNMARK target and connmark match support.
+                  It does not require the ROUTE target extension.</para>
+
+                  <warning>
+                    <para>iptables 1.3.1 is broken with respect to CONNMARK
+                    and iptables-save/iptables-restore. This means that if you
+                    configure multiple ISPs, <command>shorewall
+                    restore</command> may fail. If it does, you may patch your
+                    iptables using the patch at <ulink
+                    url="http://shorewall.net/pub/shorewall/contrib/iptables/CONNMARK.diff">http://shorewall.net/pub/shorewall/contrib/iptables/CONNMARK.diff</ulink>.</para>
+                  </warning>
                 </listitem>
               </varlistentry>
 
@@ -238,13 +236,12 @@
                   over the same provider.</para>
 
                   <para>By default, each provider is given the same weight (1)
-                  . Beginning with 2.4.0-RC3, you can change the weight of a
-                  given provider by following <emphasis>balance</emphasis>
-                  with "=" and the desired weight (e.g., balance=2). The
-                  weights reflect the relative bandwidth of the providers
-                  connections and should be small numbers since the kernel
-                  actually creates additional default routes for each weight
-                  increment.</para>
+                  . You can change the weight of a given provider by following
+                  <emphasis>balance</emphasis> with "=" and the desired weight
+                  (e.g., balance=2). The weights reflect the relative
+                  bandwidth of the providers connections and should be small
+                  numbers since the kernel actually creates additional default
+                  routes for each weight increment.</para>
                 </listitem>
               </varlistentry>
 
@@ -297,9 +294,10 @@
           connections which have had at least one packet arrive on the
           interface listed in the INTERFACE column have their connection mark
           set to the value in the MARK column. In the PREROUTING chain,
-          packets with that connmark have their packet mark set to that value;
-          packets so marked then bypass any prerouting rules that you create
-          in <filename>/etc/shorewall/tcrules</filename>. This ensures that
+          packets with a connection mark have their packet mark set to the
+          value of the associated connection mark; packets marked in this way
+          bypass any prerouting rules that you create in
+          <filename>/etc/shorewall/tcrules</filename>. This ensures that
           packets associated with connections from outside are always routed
           out of the correct interface.</para>
         </listitem>
@@ -372,8 +370,7 @@
 
       <para>The configuration in the figure at the top of this section would
       be specified in <filename>/etc/shorewall/providers</filename> as
-      follows. Assume tht there is a single internal interface, <filename
-      class="devicefile">eth2</filename>.</para>
+      follows.</para>
 
       <programlisting>#NAME   NUMBER  MARK    DUPLICATE       INTERFACE       GATEWAY         OPTIONS          COPY
 ISP1    1       1       main            eth0            206.124.146.254 track,balance    eth2

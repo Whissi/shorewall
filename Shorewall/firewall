@@ -7334,6 +7334,9 @@ process_blacklist_rec() {
 
     for addr in $(separate_list $networks); do
 	case $addr in
+	    -)
+		source=
+		;;
 	    ~*)
 		addr=$(echo $addr | sed 's/~//;s/-/:/g')
 		source="--match mac --mac-source $addr"

@@ -237,6 +237,12 @@ get_config() {
 	    ;;
     esac
 
+    case $TC_ENABLED in
+	[Nn][Oo])
+	    TC_ENABLED=
+	    ;;
+    esac
+
 }
 
 #
@@ -1032,6 +1038,16 @@ case "$1" in
 	determine_capabilities
 	echo
 	report_capabilities
+
+	if [ -n "$TC_ENABLED" ]; then
+	    echo
+	    echo "Traffic Control"
+	    echo
+	    show_tc
+	    echo "Traffic Filters"
+	    echo
+	    show_classifiers
+	fi
 	;;
     hits)
     	[ -n "$debugging" ] && set -x

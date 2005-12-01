@@ -664,11 +664,7 @@ New Features in Shorewall 3.0.*
     must have restarted Shorewall using this release before this feature
     will work correctly.
 
-25) The multi-ISP code now requires that that you set MARK_IN_FORWARD_CHAIN=Yes
-    in shorewall.conf. This is done to ensure that "shorewall refresh" will
-    work correctly.
-
-26) Shorewall now supports UDP IPP2P matching. In addition to the "ipp2p"
+25) Shorewall now supports UDP IPP2P matching. In addition to the "ipp2p"
     keyword in the PROTOCOL column of the relevant files, the following
     values may be specified:
 
@@ -678,7 +674,7 @@ New Features in Shorewall 3.0.*
 	ipp2p:all           Matches both UDP and TCP traffic. You may
 			    not specify a SOURCE PORT with this PROTOCOL.
 
-27) Normally MAC verification triggered by the 'maclist' interface and host
+26) Normally MAC verification triggered by the 'maclist' interface and host
     options is done out of the INPUT and FORWARD chains of the filter table.
     Users have reported that under some circumstances, MAC verification is
     failing for forwarded packets when the packets are being forwarded out
@@ -691,7 +687,7 @@ New Features in Shorewall 3.0.*
     the REJECT target may not be used in the PREROUTING chain, the settings
     MACLIST_DISPOSITION=REJECT and MACLIST_TABLE=mangle are incompatible.
 
-28) The sample configurations are now packaged with the product. They are
+27) The sample configurations are now packaged with the product. They are
     in the Samples directory on the tarball and are in the RPM they are
     in the Samples sub-directory of the Shorewall documentation
     directory.

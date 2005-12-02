@@ -92,13 +92,18 @@
 #          shorewall restore [ <file> ]            Restore the state of the firewall from
 #                                                  previously saved information.
 #
-#          shorewall ipaddr [ <address>/<cidr> | <address> <netmask> ]
+#          shorewall ipaddr { <address>/<cidr> | <address> <netmask> }
 #
 #                                                  Displays information about the network
 #                                                  defined by the argument[s]
 #
 #          shorewall iprange <address>-<address>   Decomposes a range of IP addresses into
 #                                                  a list of network/host addresses.
+#
+#          shorewall ipdecimal { <address> | <integer> }
+#
+#                                                  Displays the decimal equivalent of an IP
+#                                                  address and vice versa.
 #
 #          shorewall safe-start                    Starts the firewall and promtp for a c
 #                                                  confirmation to accept or reject the new
@@ -507,7 +512,8 @@ usage() # $1 = exit status
     echo "   forget [ <file name> ]"
     echo "   help [ <command > | host | address ]"
     echo "   hits"
-    echo "   ipcalc [ <address>/<vlsm> | <address> <netmask> ]"
+    echo "   ipcalc { <address>/<vlsm> | <address> <netmask> }"
+    echo "   ipdecimal { <address> | <integer> }"
     echo "   iprange <address>-<address>"
     echo "   logwatch [<refresh interval>]"
     echo "   refresh"
@@ -844,7 +850,7 @@ case "$1" in
 	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $@
 	;;
     show|list)
-    	[ -n "$debugging" ] && set -x
+	[ -n "$debugging" ] && set -x
 	case "$2" in
 	connections)
 	    [ $# -gt 2 ] && usage 1
@@ -972,7 +978,7 @@ case "$1" in
 	exit $status
 	;;
     dump)
-    	[ -n "$debugging" ] && set -x
+	[ -n "$debugging" ] && set -x
 	[ $# -eq 1 ] || usage 1
 	clear_term
 	echo "Shorewall-$version Dump at $HOSTNAME - $(date)"
@@ -1050,7 +1056,7 @@ case "$1" in
 	fi
 	;;
     hits)
-    	[ -n "$debugging" ] && set -x
+	[ -n "$debugging" ] && set -x
 	[ $# -eq 1 ] || usage 1
 	clear_term
 	echo "Shorewall-$version Hits at $HOSTNAME - $(date)"
@@ -1112,7 +1118,7 @@ case "$1" in
 	fi
 	;;
     logwatch)
-    	[ -n "$debugging" ] && set -x
+	[ -n "$debugging" ] && set -x
 	if [ $# -eq 2 ]; then
 	    logwatch $2
 	elif [ $# -eq 1 ]; then
@@ -1122,7 +1128,7 @@ case "$1" in
 	fi
 	;;
     drop)
-    	[ -n "$debugging" ] && set -x
+	[ -n "$debugging" ] && set -x
 	[ $# -eq 1 ] && usage 1
 	mutex_on
 	while [ $# -gt 1 ]; do
@@ -1135,7 +1141,7 @@ case "$1" in
 	mutex_off
 	;;
     reject)
-    	[ -n "$debugging" ] && set -x
+	[ -n "$debugging" ] && set -x
 	[ $# -eq 1 ] && usage 1
 	mutex_on
 	while [ $# -gt 1 ]; do
@@ -1148,7 +1154,7 @@ case "$1" in
 	mutex_off
 	;;
     allow)
-    	[ -n "$debugging" ] && set -x
+	[ -n "$debugging" ] && set -x
 	[ $# -eq 1 ] && usage 1
 	mutex_on
 	while [ $# -gt 1 ]; do
@@ -1162,7 +1168,7 @@ case "$1" in
 	mutex_off
 	;;
     save)
-    	[ -n "$debugging" ] && set -x
+	[ -n "$debugging" ] && set -x
 
 	case $# in
 	1)
@@ -1236,13 +1242,24 @@ case "$1" in
 	;;
 
     iprange)
-    	[ -n "$debugging" ] && set -x
+	[ -n "$debugging" ] && set -x
 	case $2 in
 	    *.*.*.*-*.*.*.*)
 		ip_range $2
 		;;
 	    *)
 		usage 1
+		;;
+	esac
+	;;
+    ipdecimal)
+	[ -n "$debugging" ] && set -x
+	case $2 in
+	    *.*.*.*)
+		echo "   $(decodeaddr $2)"
+		;;
+	    *)
+		echo "   $(encodeaddr $2)"
 		;;
 	esac
 	;;
@@ -1283,7 +1300,7 @@ case "$1" in
         fi
         ;;
     call)
-    	[ -n "$debugging" ] && set -x
+	[ -n "$debugging" ] && set -x
 	#
 	# Undocumented way to call functions in /usr/share/shorewall/functions directly
 	#

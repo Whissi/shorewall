@@ -1287,7 +1287,11 @@ setup_providers()
 
 	    if [ "x${duplicate:=-}" != x- ]; then
 		if [ "x${copy:=-}" != "x-" ]; then
-		    copy="$interface $(separate_list $copy)"
+		    if [ "x${copy}" = xnone ]; then
+			copy=$interface
+		    else
+			copy="$interface $(separate_list $copy)"
+		    fi
 		    copy_and_edit_table
 		else
 		    copy_table

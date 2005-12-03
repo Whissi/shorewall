@@ -21,7 +21,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-12-02</pubdate>
+    <pubdate>2005-12-03</pubdate>
 
     <copyright>
       <year>2001-2004</year>
@@ -234,6 +234,157 @@
     check</ulink>). Be sure to choose a test located near you.</para>
 
     <section>
+      <title>/etc/shorewall/tcdevices</title>
+
+      <para>This file allows you to define the incoming and outgoing bandwidth
+      for the devices you want traffic shaping to be enabled. That means, if
+      you want to use traffic shaping for a device, you have to define it
+      here.</para>
+
+      <para>Columns in the file are as follows:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>INTERFACE - Name of interface. Each interface may be listed
+          only once in this file. You may NOT specify the name of an alias
+          (e.g., eth0:0) here; see <ulink url="FAQ.htm#faq18">FAQ #18</ulink>.
+          You man NOT specify wildcards here, e.g. if you have multiple ppp
+          interfaces, you need to put them all in here!</para>
+        </listitem>
+
+        <listitem>
+          <para>IN-BANDWIDTH - The incoming Bandwidth of that interface.
+          Please note that you are not able to do traffic shaping on incoming
+          traffic, as the traffic is already received before you could do so.
+          This Column allows you to define the maximum traffic allowed for
+          this interface in total, if the rate is exceeded, the packets are
+          dropped. You want this mainly if you have a DSL or Cable Connection
+          to avoid queuing at your providers side. If you don't want any
+          traffic to be dropped set this to a value faster than your interface
+          maximum rate.</para>
+        </listitem>
+
+        <listitem>
+          <para>OUT-BANDWIDTH - Specifiy the outgoing bandwidth of that
+          interface. This is the maximum speed your connection can handle. It
+          is also the speed you can refer as "full" if you define the tc
+          classes. Outgoing traffic above this rate will be dropped.</para>
+        </listitem>
+      </itemizedlist>
+
+      <example>
+        <title></title>
+
+        <para>Suppose you are using PPP over Ethernet (DSL) and ppp0 is the
+        interface for this. The device has an outgoing bandwidth of 500kbit
+        and an incoming bandwidth of 6000kbit</para>
+
+        <programlisting>#INTERFACE    IN-BANDWITH      OUT-BANDWIDTH
+ppp0           6000kbit         500kbit</programlisting>
+      </example>
+    </section>
+
+    <section>
+      <title>/etc/shorewall/tcclasses</title>
+
+      <para>This file allows you to define the actual classes that are used to
+      split the outgoing traffic.</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>INTERFACE - Name of interface. Must match the name of an
+          interface with an entry in
+          <filename>/etc/shorewall/tcdevices</filename>.</para>
+        </listitem>
+
+        <listitem>
+          <para>MARK - The mark value which is an integer in the range 1-255.
+          You define these marks in the tcrules file, marking the traffic you
+          want to go into the queueing classes defined in here. You can use
+          the same marks for different Interfaces.</para>
+        </listitem>
+
+        <listitem>
+          <para>RATE - The minimum bandwidth this class should get, when the
+          traffic load rises. Please note that first the classes which equal
+          or a lesser priority value are served even if there are others that
+          have a guaranteed bandwith but a lower priority.</para>
+        </listitem>
+
+        <listitem>
+          <para>CEIL - The maximum bandwidth this class is allowed to use when
+          the link is idle. Useful if you have traffic which can get full
+          speed when more important services (e.g. interactive like ssh) are
+          not used. You can use the value "full" in here for setting the
+          maximum bandwidth to the defined output bandwidth of that
+          interface.</para>
+        </listitem>
+
+        <listitem>
+          <para>PRIORITY - you have to define a priority for the class.
+          packets in a class with a higher priority (=lesser value) are
+          handled before less priorized onces. You can just define the mark
+          value here also, if you are increasing the mark values with lesser
+          priority.</para>
+        </listitem>
+
+        <listitem>
+          <para>OPTIONS - A comma-separated list of options including the
+          following:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>default - this is the default class for that interface
+              where all traffic should go, that is not classified
+              otherwise.</para>
+
+              <note>
+                <para>defining default for exactly <emphasis
+                role="bold">one</emphasis> class per interface is
+                mandatory!</para>
+              </note>
+            </listitem>
+
+            <listitem>
+              <para>tos-&lt;tosname&gt; - this lets you define a filter for
+              the given &lt;tosname&gt; which lets you define a value of the
+              Type Of Service bits in the ip package which causes the package
+              to go in this class. Please note, that this filter overrides all
+              mark settings, so if you define a tos filter for a class all
+              traffic having that mark will go in it regardless of the mark on
+              the package. You can use the following for this option:
+              tos-minimize-delay (16) tos-maximize-throughput (8)
+              tos-maximize-reliability (4) tos-minimize-cost (2)
+              tos-normal-service (0)</para>
+
+              <note>
+                <para>Each of this options is only valid for <emphasis
+                role="bold">one</emphasis> class per interface.</para>
+              </note>
+            </listitem>
+
+            <listitem>
+              <para>tcp-ack - if defined causes an tc filter to be created
+              that puts all tcp ack packets on that interface that have an
+              size of &lt;=64 Bytes to go in this class. This is useful for
+              speeding up downloads. Please note that the size of the ack
+              packets is limited to 64 bytes as some applications (p2p for
+              example) use to make every package an ack package which would
+              cause them all into here. We want only packets WITHOUT payload
+              to match, so the size limit. Bigger packets just take their
+              normal way into the classes.</para>
+
+              <note>
+                <para>This option is only valid for <emphasis
+                role="bold">class</emphasis> per interface.</para>
+              </note>
+            </listitem>
+          </itemizedlist>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section>
       <title>/etc/shorewall/tcrules</title>
 
       <para>The fwmark classifier provides a convenient way to classify
@@ -350,159 +501,6 @@
     </section>
 
     <section>
-      <title>/etc/shorewall/tcdevices</title>
-
-      <para>This file allows you to define the incoming and outgoing bandwidth
-      for the devices you want traffic shaping to be enabled. That means, if
-      you want to use traffic shaping for a device, you have to define it
-      here.</para>
-
-      <para>Columns in the file are as follows:</para>
-
-      <itemizedlist>
-        <listitem>
-          <para>INTERFACE - Name of interface. Each interface may be listed
-          only once in this file. You may NOT specify the name of an alias
-          (e.g., eth0:0) here; see <ulink url="FAQ.htm#faq18">FAQ #18</ulink>.
-          You man NOT specify wildcards here, e.g. if you have multiple ppp
-          interfaces, you need to put them all in here!</para>
-        </listitem>
-
-        <listitem>
-          <para>IN-BANDWIDTH - The incoming Bandwidth of that interface.
-          Please note that you are not able to do traffic shaping on incoming
-          traffic, as the traffic is already received before you could do so.
-          This Column allows you to define the maximum traffic allowed for
-          this interface in total, if the rate is exceeded, the packets are
-          dropped. You want this mainly if you have a DSL or Cable Connection
-          to avoid queuing at your providers side. If you don't want any
-          traffic to be dropped set this to a value faster than your interface
-          maximum rate.</para>
-        </listitem>
-
-        <listitem>
-          <para>OUT-BANDWIDTH - Specifiy the outgoing bandwidth of that
-          interface. This is the maximum speed your connection can handle. It
-          is also the speed you can refer as "full" if you define the tc
-          classes. Outgoing traffic above this rate will be dropped.</para>
-        </listitem>
-      </itemizedlist>
-
-      <example>
-        <title></title>
-
-        <para>Suppose you are using PPP over Ethernet (DSL) and ppp0 is the
-        interface for this. The device has an outgoing bandwidth of 500kbit
-        and an incoming bandwidth of 6000kbit</para>
-
-        <programlisting>#INTERFACE    IN-BANDWITH      OUT-BANDWIDTH
-ppp0           6000kbit         500kbit</programlisting>
-      </example>
-    </section>
-
-    <section>
-      <title>/etc/shorewall/tcclasses</title>
-
-      <para>This file allows you to define the actual classes that are used to
-      split the outgoing traffic.</para>
-
-      <itemizedlist>
-        <listitem>
-          <para>INTERFACE - Name of interface. Each interface may be listed
-          only once in this file. You may NOT specify the name of an alias
-          (e.g., eth0:0) here; see <ulink url="FAQ.htm#faq18">FAQ #18</ulink>.
-          You man NOT specify wildcards here, e.g. if you have multiple ppp
-          interfaces, you need to put them all in here!</para>
-        </listitem>
-
-        <listitem>
-          <para>MARK - The mark value which is an integer in the range 1-255.
-          You define these marks in the tcrules file, marking the traffic you
-          want to go into the queueing classes defined in here. You can use
-          the same marks for different Interfaces.</para>
-        </listitem>
-
-        <listitem>
-          <para>RATE - The minimum bandwidth this class should get, when the
-          traffic load rises. Please note that first the classes which equal
-          or a lesser priority value are served even if there are others that
-          have a guaranteed bandwith but a lower priority.</para>
-        </listitem>
-
-        <listitem>
-          <para>CEIL - The maximum bandwidth this class is allowed to use when
-          the link is idle. Useful if you have traffic which can get full
-          speed when more important services (e.g. interactive like ssh) are
-          not used. You can use the value "full" in here for setting the
-          maximum bandwidth to the defined output bandwidth of that
-          interface.</para>
-        </listitem>
-
-        <listitem>
-          <para>PRIORITY - you have to define a priority for the class.
-          packets in a class with a higher priority (=lesser value) are
-          handled before less priorized onces. You can just define the mark
-          value here also, if you are increasing the mark values with lesser
-          priority.</para>
-        </listitem>
-
-        <listitem>
-          <para>OPTIONS - A comma-separated list of options including the
-          following:</para>
-
-          <itemizedlist>
-            <listitem>
-              <para>default - this is the default class for that interface
-              where all traffic should go, that is not classified
-              otherwise.</para>
-
-              <note>
-                <para>defining default for exactly <emphasis
-                role="bold">one</emphasis> class per interface is
-                mandatory!</para>
-              </note>
-            </listitem>
-
-            <listitem>
-              <para>tos-&lt;tosname&gt; - this lets you define a filter for
-              the given &lt;tosname&gt; which lets you define a value of the
-              Type Of Service bits in the ip package which causes the package
-              to go in this class. Please note, that this filter overrides all
-              mark settings, so if you define a tos filter for a class all
-              traffic having that mark will go in it regardless of the mark on
-              the package. You can use the following for this option:
-              tos-minimize-delay (16) tos-maximize-throughput (8)
-              tos-maximize-reliability (4) tos-minimize-cost (2)
-              tos-normal-service (0)</para>
-
-              <note>
-                <para>Each of this options is only valid for <emphasis
-                role="bold">one</emphasis> class per interface.</para>
-              </note>
-            </listitem>
-
-            <listitem>
-              <para>tcp-ack - if defined causes an tc filter to be created
-              that puts all tcp ack packets on that interface that have an
-              size of &lt;=64 Bytes to go in this class. This is useful for
-              speeding up downloads. Please note that the size of the ack
-              packets is limited to 64 bytes as some applications (p2p for
-              example) use to make every package an ack package which would
-              cause them all into here. We want only packets WITHOUT payload
-              to match, so the size limit. Bigger packets just take their
-              normal way into the classes.</para>
-
-              <note>
-                <para>This option is only valid for <emphasis
-                role="bold">class</emphasis> per interface.</para>
-              </note>
-            </listitem>
-          </itemizedlist>
-        </listitem>
-      </itemizedlist>
-    </section>
-
-    <section>
       <title>ppp devices</title>
 
       <para>If you use ppp/pppoe/pppoa) to connect to your internet provider
@@ -518,7 +516,7 @@ ppp0           6000kbit         500kbit</programlisting>
 
       <programlisting>#! /bin/sh
 
-/sbin/shorewall restart</programlisting>
+/sbin/shorewall refresh</programlisting>
     </section>
 
     <section>

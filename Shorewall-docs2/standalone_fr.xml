@@ -33,7 +33,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-11-19</pubdate>
+    <pubdate>2005-12-3</pubdate>
 
     <copyright>
       <year>2002-2005</year>
@@ -64,11 +64,32 @@
     url="mailto:vetsel.patrice@wanadoo.fr">VETSEL Patrice</ulink> et la
     révision pour la version 2 de Shorewall a été effectuée par <ulink
     url="mailto:fd03x@wanadoo.fr">Fabien Demassieux</ulink>. J'ai assuré la
-    révision pour l'adapter à la version 3 de Shorewall et Thierry Boudet m'a
-    beaucoup aidé avec son regard de relecteur impitoyable. Si vous trouvez
-    des erreurs ou des améliorations à apporter vous pouvez me contacter
-    <ulink url="mailto:guy@posteurs.com">Guy Marcenac</ulink>.</para>
+    révision pour l'adapter à la version 3 de Shorewall. Si vous trouvez des
+    erreurs ou des améliorations à apporter vous pouvez me contacter <ulink
+    url="mailto:guy@posteurs.com">Guy Marcenac</ulink>.</para>
   </note>
+
+  <caution>
+    <para><emphasis role="bold">Cet article s'applique à Shorewall 3.0 et ses
+    versions ultérieures. Si vous utilisez une version plus ancienne de
+    Shorewall, référez-vous à la documention s'applicant à votre
+    version.</emphasis></para>
+  </caution>
+
+  <warning>
+    <para>Les fichiers de configuration pour l'exemple fournis avec Shorewall
+    3.0.0 et 3.0.1 ne fonctionnaient pas. La première erreur à se produire
+    était:</para>
+
+    <para><emphasis role="bold">ERROR: No Firewall Zone
+    Defined</emphasis></para>
+
+    <para>Vous trouverez les fichiers corrigés 'zones' et 'interfaces' à cette
+    adresse <ulink
+    url="http://www.shorewall.net/pub/shorewall/3.0/shorewall-3.0.1/errata/one-interface/">http://www.shorewall.net/pub/shorewall/3.0/shorewall-3.0.1/errata/one-interface/</ulink>.</para>
+
+    <para>Le problème a été résolu avec Shorewall 3.0.2.</para>
+  </warning>
 
   <section>
     <title>Introduction</title>
@@ -232,10 +253,10 @@
     chacun des fichiers contient des instructions de configuration détaillées
     et des entrées par défaut.</para>
 
-    <para>Shorewall voit le réseau où il fonctionne, comme un ensemble de
-    <emphasis>zones</emphasis>. Dans les fichiers de configuration fournis
-    dans l'archive d'exemples pour une unique interface (one-interface), deux
-    zones seulement sont définies :</para>
+    <para>Shorewall voit le réseau où il fonctionne, comme étant composé d'un
+    ensemble de <emphasis>zones</emphasis>. Dans les fichiers de configuration
+    fournis dans l'archive d'exemples pour une unique interface
+    (one-interface), deux zones seulement sont définies :</para>
 
     <para><programlisting>#ZONE   TYPE    OPTIONS                 IN                      OUT
 #                                       OPTIONS                 OPTIONS
@@ -319,8 +340,7 @@ all            all                REJECT   info</programlisting>
     <title>Interface Externe</title>
 
     <para>Le firewall possède une seule interface réseau. Lorsque la connexion
-    Internet passe par un modem câble ou par un
-    <quote>Routeur</quote><acronym> ADSL</acronym> (pas un simple modem),
+    Internet passe par un "modem" câble ou <acronym>ADSL</acronym>,
     l'<emphasis>Interface Externe</emphasis> sera l'adaptateur ethernet qui y
     est connecté à ce <quote>Modem</quote> (e.g., <filename
     class="devicefile">eth0</filename>). Par contre, si vous vous connectez
@@ -470,13 +490,11 @@ SSH/ACCEPT  net       $FW           </programlisting>
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
     <para>La <ulink url="Install.htm">procédure d'installation</ulink>
-    configure votre système pour lancer Shorewall au boot du système, mais à
-    partir de la version 1.3.9 de Shorewall le lancement est désactivé, de
-    façon à ce que votre système ne tente pas de lancer Shorewall avant que la
-    configuration ne soit terminée. Une fois que vous en avez fini avec la
-    configuration de votre firewall, vous pouvez activer le lancement de
-    Shorewall en supprimant le fichier
-    <filename>/etc/shorewall/startup_disabled</filename>.</para>
+    configure votre système pour lancer Shorewall au boot du système, mais le
+    lancement est désactivé, de façon à ce que votre système ne tente pas de
+    lancer Shorewall avant que la configuration ne soit terminée. Une fois que
+    vous en aurez fini avec la configuration du firewall, vous devez éditer
+    /etc/shorewall/shorewall.conf et y mettre STARTUP_ENABLED=Yes.</para>
 
     <important>
       <para><emphasis role="bold">Les utilisateurs des paquets .deb doivent
@@ -531,16 +549,6 @@ SSH/ACCEPT  net       $FW           </programlisting>
     <title>Revision History</title>
 
     <para><revhistory>
-        <revision>
-          <revnumber>1.8</revnumber>
-
-          <date>2005-11-20</date>
-
-          <authorinitials>GM</authorinitials>
-
-          <revremark>Update for Shorewall 3.0</revremark>
-        </revision>
-
         <revision>
           <revnumber>1.7</revnumber>
 

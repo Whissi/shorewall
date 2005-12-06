@@ -147,9 +147,10 @@ SSHKnock         net               loc:192.168.1.5 tcp         22            -  
 
         <programlisting>run_iptables -A $CHAIN -m recent --name SSHA --set
 if [ -n "$LEVEL" ]; then
-    log_rule_limit $LEVEL $CHAIN SSHLimit REJECT "" "$TAG" -A -m recent --name SSHA --seconds 60 --hitcount 3
+    log_rule_limit $LEVEL $CHAIN SSHLimit REJECT "" "$TAG" -A -m recent --name SSHA --update --seconds 60 --hitcount 4
 fi
-run_iptables -A $CHAIN -m recent --name SSHA --seconds 60 --hitcount 3 -j reject</programlisting>
+run_iptables -A $CHAIN -m recent --update --name SSHA --seconds 60 --hitcount 4 -j reject
+run_iptables -A $CHAIN -j ACCEPT</programlisting>
       </listitem>
 
       <listitem>

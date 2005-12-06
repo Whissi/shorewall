@@ -147,9 +147,13 @@ SSHKnock         net               loc:192.168.1.5 tcp         22            -  
 
         <programlisting>run_iptables -A $CHAIN -m recent --name SSHA --set
 if [ -n "$LEVEL" ]; then
-    log_rule_limit $LEVEL $CHAIN SSHLimit REJECT "" "$TAG" -A -m recent --name SSHA --update --seconds 60 --hitcount 4
+    run_iptables -N $CHAIN%
+    log_rule_limit $LEVEL $CHAIN% SSHLimit REJECT "" "" -A
+    run_iptables -A $CHAIN% -j reject
+    run_iptables -A $CHAIN -m recent --name SSHA --update --seconds 60 --hitcount 4 -j $CHAIN%
+else
+    run_iptables -A $CHAIN -m recent --update --name SSHA --seconds 60 --hitcount 4 -j reject
 fi
-run_iptables -A $CHAIN -m recent --update --name SSHA --seconds 60 --hitcount 4 -j reject
 run_iptables -A $CHAIN -j ACCEPT</programlisting>
       </listitem>
 
@@ -198,11 +202,18 @@ SSHLimit         net               loc:192.168.1.5 tcp         22            -  
         <para>Create /etc/shorewall/Limit with the following contents:</para>
 
         <programlisting>set -- $(separate_list $TAG)
+
 run_iptables -A $CHAIN -m recent --name $1 --set
+
 if [ -n "$LEVEL" ]; then
-    log_rule_limit $LEVEL $CHAIN SSHLimit REJECT "" "" -A -m recent --name $1 --update --seconds $3 --hitcount $(( $2 + 1 ))
+    run_iptables -N $CHAIN%
+    log_rule_limit $LEVEL $CHAIN% $1 REJECT "" "" -A
+    run_iptables -A $CHAIN% -j reject
+    run_iptables -A $CHAIN -m recent --name $1 --update --seconds $3 --hitcount $(( $2 + 1 )) -j $CHAIN%
+else
+    run_iptables -A $CHAIN -m recent --update --name $1 --seconds $3 --hitcount $(( $2 + 1 )) -j reject
 fi
-run_iptables -A $CHAIN -m recent --update --name $1 --seconds $3 --hitcount $(( $2 + 1 )) -j reject
+
 run_iptables -A $CHAIN -j ACCEPT</programlisting>
       </listitem>
     </orderedlist>

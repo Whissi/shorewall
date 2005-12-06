@@ -185,5 +185,63 @@ SSHLimit         net               loc:192.168.1.5 tcp         22            -  
         </note>
       </listitem>
     </orderedlist>
+
+    <para>The above can be generalized into a flexible 'Limit' target.</para>
+
+    <orderedlist>
+      <listitem>
+        <para>Add an action named Limit. Leave the action.Limit file
+        empty.</para>
+      </listitem>
+
+      <listitem>
+        <para>Create /etc/shorewall/Limit with the following contents:</para>
+
+        <programlisting>set -- $(separate_list $TAG)
+run_iptables -A $CHAIN -m recent --name $1 --set
+if [ -n "$LEVEL" ]; then
+    log_rule_limit $LEVEL $CHAIN SSHLimit REJECT "" "" -A -m recent --name $1 --update --seconds $3 --hitcount $(( $2 + 1 ))
+fi
+run_iptables -A $CHAIN -m recent --update --name $1 --seconds $3 --hitcount $(( $2 + 1 )) -j reject
+run_iptables -A $CHAIN -j ACCEPT</programlisting>
+      </listitem>
+    </orderedlist>
+
+    <para>Now if you want to limit the number of connections to port 22 to
+    3/munute from individual internet hosts to the filrewall, you can add this
+    rule:</para>
+
+    <programlisting>#ACTION                SOURCE            DEST           PROTO       DEST PORT(S)
+Limit:none:SSHA,3,60   net               $FW            tcp         22</programlisting>
+
+    <para>If you want rejected connections to be logged at the info level, use
+    this rule instead:</para>
+
+    <programlisting>#ACTION                SOURCE            DEST           PROTO       DEST PORT(S)
+Limit:info:SSHA,3,60   net               $FW            tcp         22</programlisting>
+
+    <para>As you can see, you pass four pieces of information to the Limit
+    action:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>The log level. If you don't want to log, specify "none".</para>
+      </listitem>
+
+      <listitem>
+        <para>The name of the recent set that you want to use ("SSHA" in this
+        example).</para>
+      </listitem>
+
+      <listitem>
+        <para>The maximum number of connections to accept (3 in this
+        example).</para>
+      </listitem>
+
+      <listitem>
+        <para>The number of seconds over which you are willing to accept that
+        many connections (60 in this example).</para>
+      </listitem>
+    </itemizedlist>
   </section>
 </article>

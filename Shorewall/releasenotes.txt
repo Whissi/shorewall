@@ -35,6 +35,9 @@ Note to users upgrading from Shorewall 2.x
                  set it to MAPOLDACTIONS=Yes in order to permit rules that use
                  the 2.x builtin actions such as AllowPing to continue to work.
 
+   Please see the "Migration Considerations" below for additional upgrade
+   information.
+
 Problems Corrected in 3.0.3
 
 1) The comments in the /etc/shorewall/shorewall.conf and
@@ -351,6 +354,9 @@ Migration Considerations for Users upgrade from Shorewall 2.2 or 2.4.
     enable the built-in tc4shorewall traffic shaper. If you set
     TC_ENABLED=internal then tc4shorewall will be used.   If the option is
     set to Yes then Shorewall will continue to look for a 'tcstart' script.
+    Note that Shorewall itself does not provide a file named
+    /etc/shorewall/tcstart so if you set TC_ENABLED=Yes, then you must
+    supply that script.
 
 New Features in Shorewall 3.0.*
 

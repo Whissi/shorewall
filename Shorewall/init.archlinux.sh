@@ -28,7 +28,7 @@ case "$1" in
 			stat_done
 		fi
 		;;
-		
+
 
 	stop)
 		stat_busy "Stopping $DAEMON_NAME"
@@ -41,7 +41,7 @@ case "$1" in
 		fi
 		;;
 
-	restart)
+	restart|reload)
 		stat_busy "Restarting $DAEMON_NAME"
 		/sbin/shorewall restart &>/dev/null
 		if [ $? -gt 0  ]; then
@@ -52,7 +52,7 @@ case "$1" in
 		;;
 
 	*)
-		echo "usage: $0 {start|stop|restart}"  
+		echo "usage: $0 {start|stop|restart}"
 esac
 exit 0
 

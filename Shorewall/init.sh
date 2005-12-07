@@ -31,6 +31,7 @@ RCDLINKS="2,S41 3,S41 6,K41"
 #
 #	   shorewall start			  Starts the firewall
 #	   shorewall restart			  Restarts the firewall
+#	   shorewall reload			  Restarts the firewall
 #	   shorewall stop			  Stops the firewall
 #	   shorewall status			  Displays firewall status
 #
@@ -51,7 +52,7 @@ RCDLINKS="2,S41 3,S41 6,K41"
 # Give Usage Information						       #
 ################################################################################
 usage() {
-    echo "Usage: $0 start|stop|restart|status"
+    echo "Usage: $0 start|stop|reload|restart|status"
     exit 1
 }
 
@@ -71,19 +72,17 @@ fi
 command="$1"
 
 case "$command" in
-
     start)
-	
 	exec /sbin/shorewall $OPTIONS $@
 	;;
-
     stop|restart|status)
-
 	exec /sbin/shorewall $@
 	;;
+    reload)
+	shift
+	exec /sbin/shorewall restart $@
+	;;
     *)
-
 	usage
 	;;
-
 esac

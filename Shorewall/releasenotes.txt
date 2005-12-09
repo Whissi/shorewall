@@ -92,81 +92,7 @@ New Features in 3.0.3
 7) /etc/init.d/shorewall now supports a 'reload' command which is
    synonymous with the 'restart' command.
 
-Problems Corrected in 3.0.2
-
-1) A couple of typos in the one-interface sample configuration have
-   been corrected.
-
-2) The 3.0.1 version of Shorewall was incompatible with old versions of
-   the Linux kernel (2.4.7 for example). The new code ignores errors
-   produced when Shorewall 3.x is run on these ancient kernels.
-
-3) Arch Linux installation routines has been improved.
-
-New Features in 3.0.2
-
-1) A new Webmin macro has been added. This macro assumes that Webmin is
-   running on its default port (10000).
-
-Problems Corrected in 3.0.1
-
-1) If the previous firewall configuration included a policy other than
-   ACCEPT in the nat, mangle or raw tables then Shorewall would not set
-   the policy to ACCEPT. This could result in a ruleset that rejected or
-   dropped all traffic.
-
-2) The Makefile was broken such that 'make' didn't always work correctly.
-
-3) If the SOURCE or DEST column in a macro body was non-empty and a dash
-   ("-") appeared in the corresponding column of an invocation of that
-   macro, then an invalid rule was generated.
-
-4) The comments in the /etc/shorewall/blacklist file have been updated to
-   clarify that the PORTS column refers to destination port number/service
-   names.
-
-5) When CLAMPMSS is set to a value other than "No" and FASTACCEPT=Yes, the
-   order of the rules generated was incorrect causing RELATED TCP connections
-   to not have CLAMPMSS applied.
-
-New Features in 3.0.1
-
-1)  To make the macro facility more flexible, Shorewall now examines the
-    contents of the SOURCE and DEST columns in both the macro body and in
-    the invocation and tries to create the intended rule. If the value in
-    the invocation appears to be an address (IP or MAC) or the name of an
-    ipset, then it is placed after the value in the macro body. Otherwise,
-    it is placed before the value in the macro body.
-
-    Example 1:
-
-    /etc/shorewall/macro.foo:
-
-	PARAM        -            192.168.1.5      tcp    http
-
-    /etc/shorewallrules:
-
-	foo/ACCEPT   net          loc
-
-    Effective rule:
-
-	ACCEPT       net          loc:192.168.1.5   tcp   http
-
-    Example 2:
-
-    /etc/shorewall/macro.bar:
-
-	PARAM        net           loc              tcp    http
-
-    /etc/shorewall/rules:
-
-	bar/ACCEPT   -             192.168.1.5
-
-    Effective rule:
-
-	ACCEPT       net           loc:192.168.1.5  tcp    http
-
-Migration Considerations for Users upgrade from Shorewall 2.2 or 2.4.
+Migration Considerations for Users upgrading from Shorewall 2.x.
 
 1) The "monitor" command has been eliminated.
 
@@ -364,6 +290,19 @@ Migration Considerations for Users upgrade from Shorewall 2.2 or 2.4.
     /etc/shorewall/tcstart so if you set TC_ENABLED=Yes, then you must
     supply that script.
 
+Additional Migration Considerations for Users upgrading from Shorewall 2.2 or 2.0.
+
+Note that these are in addition to the considerations listed above.
+
+1) Shorewall now enforces the restriction that mark values used in
+   /etc/shorewall/tcrules are less than 256. If you are using mark
+   values >= 256, you must change your configuration before you
+   upgrade.
+
+2) LEAF/Bering packages for version 2.4.0 and later will not be
+   available from shorewall.net. See http://leaf.sf.net for the lastest
+   version of Shorewall for LEAF variants.
+
 Additional Migration Considerations for Users upgrading from Shorewall 2.0.
 
 Note that these are in addition to the considerations listed above.
@@ -436,7 +375,7 @@ Note that these are in addition to the considerations listed above.
 
 	ETH0_IP=`find_first_interface_address eth0`
 
-New Features in Shorewall 3.0.0
+New Features in Shorewall 3.0.0.
 
 1) Error and warning messages are made easier to spot by using
    capitalization (e.g., ERROR: and WARNING:).
@@ -793,3 +732,45 @@ New Features in Shorewall 3.0.0
     in the Samples directory on the tarball and are in the RPM they are
     in the Samples sub-directory of the Shorewall documentation
     directory.
+
+New Features in 3.0.1
+
+1)  To make the macro facility more flexible, Shorewall now examines the
+    contents of the SOURCE and DEST columns in both the macro body and in
+    the invocation and tries to create the intended rule. If the value in
+    the invocation appears to be an address (IP or MAC) or the name of an
+    ipset, then it is placed after the value in the macro body. Otherwise,
+    it is placed before the value in the macro body.
+
+    Example 1:
+
+    /etc/shorewall/macro.foo:
+
+	PARAM        -            192.168.1.5      tcp    http
+
+    /etc/shorewallrules:
+
+	foo/ACCEPT   net          loc
+
+    Effective rule:
+
+	ACCEPT       net          loc:192.168.1.5   tcp   http
+
+    Example 2:
+
+    /etc/shorewall/macro.bar:
+
+	PARAM        net           loc              tcp    http
+
+    /etc/shorewall/rules:
+
+	bar/ACCEPT   -             192.168.1.5
+
+    Effective rule:
+
+	ACCEPT       net           loc:192.168.1.5  tcp    http
+
+New Features in 3.0.2
+
+1) A new Webmin macro has been added. This macro assumes that Webmin is
+   running on its default port (10000).

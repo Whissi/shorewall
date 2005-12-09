@@ -928,7 +928,7 @@ case "$1" in
 		if [ -n "$foo" ]; then
 		    macro=${macro#*.}
 		    foo=${foo%.*}
-		    echo "   $macro  ${foo#\#}"
+		    echo "   $macro  ${foo#\#}" | sed 's/This macro //'
 		fi
 	    done
 	    ;;

@@ -17,7 +17,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-11-18</pubdate>
+    <pubdate>2005-12-09</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -691,6 +691,17 @@ ACCEPT        net            $FW         &lt;protocol&gt;    &lt;port number&gt;
           running a DNS server on the firewall and hasn't enabled UDP and TCP
           port 53 from the firewall to the internet.</para>
         </listitem>
+
+        <listitem>
+          <para>Forwarding is not enabled. Enter this command:</para>
+
+          <programlisting>cat /proc/sys/net/ipv4/ip_forward</programlisting>
+
+          <para>The the value displayed is 0 (zero) then set <emphasis
+          role="bold">IP_FORWARDING=On</emphasis> in
+          <filename>/etc/shorewall/shorewall.conf</filename> and restart
+          Shorewall.</para>
+        </listitem>
       </orderedlist>
     </section>
 
@@ -1082,7 +1093,7 @@ LOGBURST=""</programlisting>
             <listitem>
               <para>if accepted, the packet would be sent on eth1. If you see
               <quote>OUT=</quote> with no interface name, the packet would be
-              processed by the firewall itself. </para>
+              processed by the firewall itself.</para>
 
               <note>
                 <para>When a DNAT rule is logged, there will never be an OUT=

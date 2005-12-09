@@ -35,6 +35,14 @@ Note to users upgrading from Shorewall 2.x
                  set it to MAPOLDACTIONS=Yes in order to permit rules that use
                  the 2.x builtin actions such as AllowPing to continue to work.
 
+   While you are at it, if you have a file named /etc/shorewall/rfc1918 then
+   please check that file. If it has addresses listed that are NOT in one of
+   these three ranges, then please rename the file to /etc/shorewall/rfc1918.old.
+
+	10.0.0.0 - 10.255.255.255
+	172.16.0.0 - 172.31.255.255
+	192.168.0.0 - 192.168.255.255
+
    Please see the "Migration Considerations" below for additional upgrade
    information.
 

@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-10-20</pubdate>
+    <pubdate>2005-12-09</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -730,5 +730,39 @@ INT_IF=$(getcfg-interface bus-pci-0000:00:03.0)</programlisting>
     command</ulink> allows you to attempt to restart using an alternate
     configuration and if an error occurs to automatically restart the standard
     configuration.</para>
+  </section>
+
+  <section>
+    <title>Saved Configurations</title>
+
+    <para>Shorewall allows you to <firstterm>save</firstterm> the
+    currently-running configuration in a form that allows it to be restored
+    quickly. When you save the configuration using the <command>shorewall
+    save</command> command, the running configuration is saved in a file in
+    the <filename class="directory">/var/lib/shorewall</filename> directory.
+    The default name of that file is
+    <filename>/var/lib/shorewall/restore</filename> but you can specify a
+    different name as part of the command. For example, the command
+    <command>shorewall save standard</command> will save the running
+    configuration in <filename>/var/lib/shorewall/standard</filename>. A saved
+    configuration is re-installed using the <command>shorewall
+    restore</command> command. Again, that command normally will restore the
+    configuration saved in <filename>/var/lib/shorewall/restore</filename> but
+    as with the <command>save</command> command, you can specify a different
+    file name in the command. For example, shorewall restore standard will
+    re-install the configuration saved in
+    <filename>/var/lib/shorewall/standard</filename>. By permitting you to
+    save different configurations under different names, Shorewall provides a
+    means for quickly switching between these different saved
+    configurations.</para>
+
+    <para>As mentioned above, the default configuration is called 'restore'
+    but like most things in Shorewall, that can be changed. The default name
+    is specified using the <emphasis role="bold">RESTOREFILE</emphasis> option
+    in <filename>/etc/shorewall/shorewall.conf</filename>.</para>
+
+    <para>For more information about saved configurations, see the <ulink
+    url="starting_and_stopping_shorewall.htm">Shorewall Operations
+    documentation</ulink>.</para>
   </section>
 </article>

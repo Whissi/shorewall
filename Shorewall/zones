@@ -5,6 +5,16 @@
 #
 #	This file determines your network zones.
 #
+#	WARNING: The format of this file changed in Shorewall 3.0.0. You can
+#		 continue to use your old records provided that you set
+#		 IPSECFILE=ipsec in /etc/shorewall/shorewall.conf. This will
+#		 signal Shorewall that the IPSEC-related zone options are
+#		 still specified in /etc/shorewall/ipsec rather than in this
+#		 file.
+#
+#		 To use records in the format described below, you must have
+#		 IPSECFILE=zones specified in /etc/shorewall/shorewall.conf.
+#
 # Columns are:
 #
 #	ZONE	Short name of the zone (5 Characters or less in length).
@@ -90,9 +100,9 @@
 #	#ZONE	TYPE		OPTIONS		IN			OUT
 #	#					OPTIONS			OPTIONS
 #	fw	firewall
-#	net
-#	loc
-#	dmz
+#	net	ipv4
+#	loc	ipv4
+#	dmz	ipv4
 #
 #
 # For more information, see http://www.shorewall.net/Documentation.htm#Zones

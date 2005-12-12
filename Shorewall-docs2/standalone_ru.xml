@@ -40,10 +40,9 @@
     <para>Установка Shorewall на отдельной Linux системе очень проста, если Вы
     понимаете основы и следуете данной документации.</para>
 
-    <para>Это руководство не пытается познакомить Вас со всеми особенностями
-    Shorewall. Оно более сфокусировано на том, что требуется для
-    конфигурирования Shorewall в одной из его наиболее общих
-    конфигураций:</para>
+    <para>Это руководство не пытается ознакомить Вас со всеми особенностями
+    Shorewall. Оно больше сфокусировано на том, что требуется для настройки
+    Shorewall в наиболее типичных конфигурациях:</para>
 
     <itemizedlist>
       <listitem>
@@ -51,25 +50,28 @@
       </listitem>
 
       <listitem>
-        <para>Один внешний IP адрес</para>
+        <para>Один внешний(публичный) <acronym>IP</acronym>-адрес</para>
       </listitem>
 
       <listitem>
-        <para>Соединение через кабельный модем, DSL, ISDN, Frame Relay,
-        dial-up... или есть соединение с LAN и Вы просто хотите защитить Вашу
-        Linux систему от других систем в этой LAN.</para>
+        <para>Интернет-соединение посредством кабельного модема,
+        <acronym>DSL</acronym>, <acronym>ISDN</acronym>, Frame Relay,
+        коммутирумой линии ... или есть соединение с <acronym>LAN</acronym> и
+        Вы просто хотите защитить Вашу Linux систему от других систем в этой
+        <acronym>LAN</acronym>.</para>
       </listitem>
     </itemizedlist>
 
     <section>
-      <title>Требования</title>
+      <title>Системные требования</title>
 
       <para>Shorewall требует, чтобы у Вас был установлен пакет
-      iproute/iproute2 (на RedHat, этот пакет называется
-      <emphasis>iproute</emphasis>). Вы можете определить установлен ли этот
-      пакет по наличию программы <emphasis role="bold">ip</emphasis> на Вашем
-      файерволе. Как root, Вы можете использовать команду <quote>which</quote>
-      для проверки наличия этой программы:</para>
+      <command>iproute</command>/<command>iproute2</command> (на
+      <trademark>RedHat</trademark>, этот пакет называется<command>
+      iproute</command>). Вы можете определить установлен ли этот пакет по
+      наличию программы <command>ip</command> на Вашем файерволе. Как root, Вы
+      можете использовать команду <command>which</command> для проверки
+      наличия этой программы:</para>
 
       <programlisting>[root@gateway root]# <command>which ip</command>
 /sbin/ip
@@ -84,29 +86,34 @@
       конфигурацию.</para>
 
       <caution>
-        <para>Если Вы редактируете Ваши файлы конфигурации на Windows системе,
-        Вы должны сохранить их как Unix файлы в том случае, если Ваш редактор
+        <para>Если Вы редактируете Ваши файлы конфигурации на
+        <trademark>Windows</trademark> системе, Вы должны сохранить их как
+        <trademark>Unix</trademark> файлы в том случае, если Ваш редактор
         поддерживает эту возможность, иначе Вы должны пропустить их через
-        программу dos2unix перед тем как использовать их. Аналогично, если Вы
-        копируете конфигурационный файл с Вашего жесткого диска с Windows на
-        дискету, Вы должны воспользоваться dos2unix для копии перед ее
-        использованием с Shorewall.</para>
+        программу <command>dos2unix</command> перед тем как использовать их.
+        Аналогично, если Вы копируете конфигурационный файл с Вашего жесткого
+        диска с Windows на дискету, Вы должны воспользоваться
+        <command>dos2unix</command> для копии перед ее использованием с
+        Shorewall. <itemizedlist>
+            <listitem>
+              <para><ulink
+              url="http://www.simtel.net/pub/pd/51438.html"><trademark>Windows</trademark>
+              версия <command>dos2unix</command></ulink></para>
+            </listitem>
 
-        <simplelist>
-          <member><ulink url="http://www.simtel.net/pub/pd/51438.html">Windows
-          версия dos2unix</ulink></member>
-
-          <member><ulink
-          url="http://www.megaloman.com/~hany/software/hd2u/">Linux версия
-          dos2unix</ulink></member>
-        </simplelist>
+            <listitem>
+              <para><ulink
+              url="http://www.megaloman.com/%7Ehany/software/hd2u/">Linux
+              версия <command>dos2unix</command></ulink></para>
+            </listitem>
+          </itemizedlist></para>
       </caution>
     </section>
 
     <section>
       <title>Соглашения</title>
 
-      <para>Места, в которых рекомендуется вносить изменения, отмечены
+      <para>Места, в которых рекомендуется вносить изменения, отмечены как
       <inlinegraphic fileref="images/BD21298_.gif" format="GIF" />.</para>
     </section>
   </section>
@@ -116,11 +123,13 @@
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
-    <para>Если У Вас есть ADSL модем и Вы используете PPTP для взаимодействия
-    с сервером на этом модеме, Вы должны сделать <ulink
-    url="PPTP.htm#PPTP_ADSL">изменения рекомендуемые здесь</ulink> <emphasis
-    role="underline">в дополнение к тем, что описаны в последующих
-    шагах</emphasis>. ADSL с PPTP наиболее распространен в Европе, особенно в
+    <para>Если У Вас есть <acronym>ADSL</acronym> модем и Вы используете
+    <acronym>PPTP</acronym> для взаимодействия с сервером на этом модеме, Вы
+    должны сделать изменения рекоммендуемые <ulink
+    url="PPTP.htm#PPTP_ADSL">здесь</ulink> <emphasis role="bold"><emphasis
+    role="underline"><emphasis>в дополнение к тем, что описаны в последующих
+    шагах</emphasis></emphasis></emphasis>. <acronym>ADSL</acronym> с
+    <acronym>PPTP</acronym> наиболее распространен в Европе, особенно в
     Австрии.</para>
   </section>
 
@@ -138,11 +147,11 @@
 
     <orderedlist>
       <listitem>
-        <para>Если Вы при установке использовали RPM, примеры будут находится
-        в поддиректории Samples/one-interface/ директории с документацией
-        Shorewall. Если Вы не знаете где расположена директория с
-        документацией Shorewall, Вы можете найти примеры используя
-        команду:</para>
+        <para>Если Вы при установке использовали <acronym>RPM</acronym>,
+        примеры будут находится в поддиректории Samples/one-interface/
+        директории с документацией Shorewall. Если Вы не знаете где
+        расположена директория с документацией Shorewall, Вы можете найти
+        примеры используя команду:</para>
 
         <programlisting>~# rpm -ql shorewall | fgrep one-interface
 /usr/share/doc/packages/shorewall/Samples/one-interface
@@ -236,8 +245,8 @@ net     ipv4</programlisting>
     <filename>/usr/share/shorewall/actions.std</filename>, тогда это действие
     выполняется перед тем как .</para>
 
-    <para>Файл <filename>/etc/shorewall/policy</filename> входящий в пример с
-    одним интерфейсом имеет следующие политики:</para>
+    <para>Файл <filename>/etc/shorewall/policy,</filename> входящий в пример с
+    одним интерфейсом, имеет следующие политики:</para>
 
     <programlisting>#SOURCE ZONE   DESTINATION ZONE   POLICY   LOG LEVEL   LIMIT:BURST
 $FW            net                ACCEPT
@@ -248,18 +257,19 @@ all            all                REJECT   info</programlisting>
 
     <orderedlist>
       <listitem>
-        <para>разрешать все запросы на соединение из файервола в
+        <para>разрешать все запросы на соединение с файервола в
         Internet;</para>
       </listitem>
 
       <listitem>
         <para>отбрасывать (игнорировать) все запросы на соединение из Internet
-        на Ваш файервол;</para>
+        к Вашему файерволу;</para>
       </listitem>
 
       <listitem>
         <para>отвергать все другие запросы на соединение (Shorewall требует
-        наличия такой политики, применимой для всех запросов).</para>
+        наличия такой политики, применимой для всех остальных
+        запросов).</para>
       </listitem>
     </orderedlist>
 
@@ -272,19 +282,21 @@ all            all                REJECT   info</programlisting>
     <title>Внешний интерфейс</title>
 
     <para>Файервол имеет один сетевой интерфейс. Если соединение с Internet
-    осуществляется при помощи кабельного или DSL <quote>Модема</quote>, the
-    <emphasis>Внешним интерфейсом</emphasis> будет ethernet-адаптер (<emphasis
-    role="bold">eth0</emphasis>), который подсоединен к этому
-    <quote>Модему</quote>, <emphasis role="underline">если же</emphasis> Вы
-    соединены посредством протокола <emphasis>Point-to-Point Protocol over
-    Ethernet</emphasis> (PPPoE) или <emphasis>Point-to-Point Tunneling
-    Protocol</emphasis> (PPTP), то в этом случае <emphasis>Внешним
-    интерфейсом</emphasis> будет <emphasis role="bold">ppp0</emphasis>. Если
-    Вы подсоединены через обычный модем, Вашим <emphasis>Внешним
-    интерфейсом</emphasis> будет также <emphasis role="bold">ppp0</emphasis>.
-    Если Вы соединяетесь используя ISDN, <emphasis>Внешним
-    интерфейсом</emphasis> будет <emphasis
-    role="bold">ippp0</emphasis>.</para>
+    осуществляется при помощи кабельного или <acronym>DSL</acronym>
+    <quote>Модема</quote>, <emphasis>Внешним интерфейсом</emphasis> будет
+    ethernet-адаптер (например, <emphasis role="bold">eth0</emphasis>),
+    который подсоединен к этому <quote>Модему</quote>, <emphasis
+    role="underline">если же</emphasis> Вы соединены посредством протокола
+    <emphasis>Point-to-Point Protocol over Ethernet</emphasis>
+    (<acronym>PPPoE</acronym>) или <emphasis>Point-to-Point Tunneling
+    Protocol</emphasis> (<acronym>PPTP</acronym>), то в этом случае
+    <emphasis>Внешним интерфейсом</emphasis> будет <emphasis
+    role="bold">ppp</emphasis> интерфейс (например, <emphasis
+    role="bold">ppp0</emphasis>). Если Вы подсоединены через обычный модем,
+    Вашим <emphasis>Внешним интерфейсом</emphasis> будет также <emphasis
+    role="bold">ppp0</emphasis>. Если Вы соединяетесь используя
+    <acronym>ISDN</acronym>, <emphasis>Внешним интерфейсом</emphasis> будет
+    <emphasis role="bold">ippp0</emphasis>.</para>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
@@ -293,34 +305,41 @@ all            all                REJECT   info</programlisting>
     </emphasis>- <emphasis role="bold">eth0</emphasis>. Если Ваша конфигурация
     отличается, Вам необходимо изменить файл примера /etc/shorewall/interfaces
     соответственно. Пока Вы здесь, Вы возможно захотите просмотреть список
-    опций, специфичных для интерфейса. Несколько подсказок:</para>
+    опций, специфичных для интерфейса. Вот несколько подсказок:</para>
 
     <tip>
       <para>Если Ваш внешний интерфейс <emphasis role="bold">ppp0</emphasis>
       или <emphasis role="bold">ippp0</emphasis>, Вы можете заменить
       <quote>detect</quote>(обнаружить) во втором столбце на
-      <quote>-</quote>.</para>
+      <quote>-</quote>(знак минус в ковычках).</para>
     </tip>
 
     <tip>
       <para>Если Ваш внешний интерфейс <emphasis role="bold">ppp0</emphasis>
-      или <emphasis role="bold">ippp0</emphasis> или Вы имеете статический IP
-      адрес, Вы можете удалить <quote>dhcp</quote> из списка опций.</para>
+      или <emphasis role="bold">ippp0</emphasis> или Вы имеете статический
+      <acronym>IP</acronym>-адрес, Вы можете удалить <quote>dhcp</quote> из
+      списка опций.</para>
     </tip>
   </section>
 
   <section>
-    <title>IP адреса</title>
+    <title>IP-адреса</title>
 
-    <para>Перед тем как идти дальше, мы должны сказать несколько слов о IP
-    адресах. Обычно, Ваш ISP назначает Вам один IP адрес. Этот адрес может
-    быть назначен статически, при помощи Dynamic Host Configuration Protocol
-    (DHCP), в процессе установки Вами коммутированного соединения, или при
-    установке Вами другого типа PPP соединения (PPPoA, PPPoE и т.д.).</para>
+    <para>Перед тем как идти дальше, мы должны сказать несколько слов о
+    <emphasis>Internet Protocol</emphasis> (<acronym>IP</acronym>)-адресах.
+    Обычно, Ваш Интернет-провайдер<emphasis> (Internet Service
+    Provider</emphasis> - <acronym>ISP</acronym>) назначает Вам один
+    <acronym>IP</acronym>-адрес. Этот адрес может быть назначен статически,
+    при помощи <emphasis>Протокола Динамического Конфигурирования Хостов
+    (Dynamic Host Configuration Protocol</emphasis> -
+    <acronym>DHCP</acronym>), в процессе установки Вами коммутированного
+    соединения (обычный модем), или при установке Вами другого типа
+    <acronym>PPP</acronym> соединения (<acronym>PPPoA</acronym>,
+    <acronym>PPPoE</acronym> и т.д.).</para>
 
-    <para>RFC 1918 резервирует несколько <emphasis>Частных
-    (Private)</emphasis> IP диапазонов адресов для использования в частных
-    сетях:</para>
+    <para><acronym>RFC-1918</acronym> резервирует несколько диапазонов
+    <emphasis>Частных (Private)</emphasis> <acronym>IP</acronym>-адресов для
+    использования в частных сетях:</para>
 
     <programlisting>10.0.0.0    - 10.255.255.255
 172.16.0.0  - 172.31.255.255
@@ -328,16 +347,17 @@ all            all                REJECT   info</programlisting>
 
     <para>На эти адреса иногда ссылаются как на
     <emphasis>немаршрутизируемые</emphasis> потому, что магистральные
-    маршрутизаторы Internet не переправляют пакеты, адреса назначения которых
-    зарезервированы RFC 1918. Хотя в некоторых случаях, ISPs назначающие эти
-    адреса, используют затем <emphasis>Преобразование Сетевых Адресов (Network
-    Address Translation)</emphasis> для перезаписи заголовков пакетов при
-    перенаправлении в/из Internet.</para>
+    маршрутизаторы Интернет не переправляют пакеты, адреса назначения которых
+    зарезервированы <acronym>RFC-1918</acronym>. Хотя в некоторых случаях,
+    <acronym>ISP</acronym>s назначающие эти адреса, используют затем
+    <emphasis>Преобразование Сетевых Адресов (Network Address Translation -
+    <acronym>NAT</acronym>)</emphasis> для перезаписи заголовков пакетов при
+    перенаправлении в/из Интернет.</para>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
     <para>Перед запуском Shorewall, <emphasis role="bold">Вы должны взглянуть
-    на IP адрес Вашего внешнего интерфейса и, если он принадлежит одному из
+    на IP-адрес Вашего внешнего интерфейса и, если он принадлежит одному из
     указанных выше диапазонов, Вы должны удалить опцию
     <quote>norfc1918</quote> из записи в
     <filename>/etc/shorewall/interfaces</filename>.</emphasis></para>
@@ -346,12 +366,15 @@ all            all                REJECT   info</programlisting>
   <section>
     <title>Разрешение других соединений</title>
 
-    <para>Shorewall включает коллекцию макросов, которые могут использованы
-    для быстрого разрешения или запрещения служб. Вы можете найти список
-    макросов включенный в Вашу версия Shorewall при помощи команды <command>ls
-    <filename>/usr/share/shorewall/macro.*</filename></command>.</para>
+    <para>Shorewall включает коллекцию макросов, которые могут быть
+    использованы для быстрого разрешения или запрещения служб. Вы можете найти
+    список макросов включенный в Вашу версия Shorewall при помощи
+    команды:</para>
 
-    <para>Если Вы хотите разрешить соединения из Internet на Ваш файервол и Вы
+    <para><command>ls
+    <filename>/usr/share/shorewall/macro.*</filename></command></para>
+
+    <para>Если Вы хотите разрешить соединения из Интернет на Ваш файервол и Вы
     нашли соответствующий макрос в
     <filename>/etc/shorewall/macro.*</filename>, то общий формат правила в
     <filename>/etc/shorewall/rules</filename> такой:</para>
@@ -360,7 +383,7 @@ all            all                REJECT   info</programlisting>
 &lt;<emphasis>macro</emphasis>&gt;/ACCEPT  net       $FW</programlisting>
 
     <example>
-      <title>Вы хотите запустить Web сервер и IMAP сервер на Вашем
+      <title>Вы хотите запустить Web-сервер и IMAP-сервер на Вашем
       файерволе:</title>
 
       <programlisting>#ACTION     SOURCE    DESTINATION     PROTO       DEST PORT(S)
@@ -378,7 +401,7 @@ IMAP/ACCEPT net       $FW</programlisting>
 ACCEPT    net       $FW             <emphasis>&lt;protocol&gt;</emphasis>  <emphasis>&lt;port&gt;</emphasis></programlisting>
 
     <example>
-      <title>Вы хотите запустить Web сервер и IMAP сервер на Вашем
+      <title>Вы хотите запустить Web-сервер и IMAP-сервер на Вашем
       файерволе:</title>
 
       <para><programlisting>#ACTION   SOURCE    DESTINATION     PROTO       DEST PORT(S)
@@ -390,10 +413,10 @@ ACCEPT    net       $FW             tcp          143</programlisting></para>
     приложение, смотрите <ulink url="ports.htm">здесь</ulink>.</para>
 
     <important>
-      <para>Я не рекоммендую разрешать telnet в/из Internet потому, что он
+      <para>Я не рекоммендую разрешать telnet в/из Интернет потому, что он
       использует открытый текст (даже для передачи имени и пароля!). Если Вы
       хотите иметь доступ к командному интерпретатору Вашего файервола из
-      Internet, используйте SSH:</para>
+      Интернет, используйте <acronym>SSH</acronym>:</para>
 
       <programlisting>#ACTION     SOURCE    DESTINATION     PROTO       DEST PORT(S)
 SSH/ACCEPT  net       $FW           </programlisting>
@@ -411,7 +434,7 @@ SSH/ACCEPT  net       $FW           </programlisting>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
-    <para> <ulink url="Install.htm">Процедура установки</ulink> конфигурирует
+    <para><ulink url="Install.htm">Процедура установки</ulink> настраивает
     Вашу систему для запуска Shorewall при загрузке системе, но начиная с
     Shorewall версии 1.3.9 запуск отключен, так что система не будет пытаться
     запустить Shorewall до полного завершения конфигурирования. Как только Вы
@@ -422,7 +445,7 @@ SSH/ACCEPT  net       $FW           </programlisting>
     <important>
       <para><emphasis role="bold">Пользователи пакета .deb должны
       отредактировать <filename>/etc/default/shorewall</filename> и установить
-      <quote>startup=1</quote>.</emphasis></para>
+      <quote>startup=1</quote>. </emphasis></para>
     </important>
 
     <important>
@@ -439,37 +462,37 @@ SSH/ACCEPT  net       $FW           </programlisting>
     url="Documentation.htm#Routestopped">/etc/shorewall/routestopped</ulink></filename>.
     Запущенный файервол может быть перезапущен при помощи команды
     <quote><command>shorewall restart</command></quote>. Если Вы хотите
-    полностью удалить следы присутствия Shorewall из конфигурации Вашего
-    Netfilter, используйте <quote><command>shorewall
+    полностью удалить изменения сделанные Shorewall из конфигурации Вашего
+    Netfilter, используйте команду <quote><command>shorewall
     clear</command></quote>.</para>
 
     <warning>
-      <para>Если Вы подсоединены к Вашему файерволу из Internet, не
+      <para>Если Вы подсоединены к Вашему файерволу из Интернет, не
       используйте команду <quote><command>shorewall stop</command></quote>
-      если Вы не добавили запись для IP адреса, с которого Вы подсоединены, в
-      <ulink
+      если Вы не добавили запись для <acronym>IP</acronym>-адреса, с которого
+      Вы подсоединены, в <ulink
       url="Documentation.htm#Routestopped"><filename>/etc/shorewall/routestopped</filename></ulink>.
       Также, я не рекоммендую использовать <quote><command>shorewall
       restart</command></quote>; лучше создать <emphasis><ulink
       url="configuration_file_basics.htm#Configs">альтернативную
-      конфигурацию</ulink></emphasis> и протестировать ее при помощи <ulink
-      url="starting_and_stopping_shorewall.htm">команды</ulink> <ulink
+      конфигурацию</ulink></emphasis> и протестировать ее при помощи команды
+      <ulink
       url="starting_and_stopping_shorewall.htm"><quote><command>shorewall
       try</command></quote></ulink>.</para>
     </warning>
   </section>
 
   <section>
-    <title>Дополнительно рекомендуемая литература</title>
+    <title>Дополнительно рекоммендуемая литература</title>
 
     <para>Я особо рекоммендую просмотреть Вам <ulink
     url="configuration_file_basics.htm">страницу Особенностей Общих Фалов
-    Конфигурации</ulink> -- она содержит полезную информацию об особенностях
+    Конфигурации</ulink> -- она содержит полезные советы об особенностях
     Shorewall, делающую администрирование Вашего файервола проще.</para>
   </section>
 
   <appendix>
-    <title>Обзор истории</title>
+    <title>История пересмотров</title>
 
     <para><revhistory>
         <revision>
@@ -479,7 +502,7 @@ SSH/ACCEPT  net       $FW           </programlisting>
 
           <authorinitials>TE</authorinitials>
 
-          <revremark>More 3.0 Updates</revremark>
+          <revremark>Больше обновлений для 3.0</revremark>
         </revision>
 
         <revision>
@@ -489,7 +512,7 @@ SSH/ACCEPT  net       $FW           </programlisting>
 
           <authorinitials>CR</authorinitials>
 
-          <revremark>Update for Shorewall 3.0</revremark>
+          <revremark>Обновление для Shorewall 3.0</revremark>
         </revision>
 
         <revision>
@@ -499,7 +522,7 @@ SSH/ACCEPT  net       $FW           </programlisting>
 
           <authorinitials>TE</authorinitials>
 
-          <revremark>Change reference to rfc1918 to bogons.</revremark>
+          <revremark>Исправлена неверная ссылка на rfc1918.</revremark>
         </revision>
 
         <revision>
@@ -509,7 +532,7 @@ SSH/ACCEPT  net       $FW           </programlisting>
 
           <authorinitials>TE</authorinitials>
 
-          <revremark>Move /etc/shorewall/rfc1918 to
+          <revremark>Файл /etc/shorewall/rfc1918 перемещен в
           /usr/share/shorewall.</revremark>
         </revision>
 
@@ -520,7 +543,7 @@ SSH/ACCEPT  net       $FW           </programlisting>
 
           <authorinitials>TE</authorinitials>
 
-          <revremark>Update for Shorewall 2.0</revremark>
+          <revremark>Обновление для Shorewall 2.0</revremark>
         </revision>
 
         <revision>
@@ -530,7 +553,7 @@ SSH/ACCEPT  net       $FW           </programlisting>
 
           <authorinitials>TE</authorinitials>
 
-          <revremark>Standards Changes</revremark>
+          <revremark>Стандартные изменения</revremark>
         </revision>
 
         <revision>
@@ -540,7 +563,8 @@ SSH/ACCEPT  net       $FW           </programlisting>
 
           <authorinitials>TE</authorinitials>
 
-          <revremark>Add tip about /etc/shorewall/rfc1918 updates.</revremark>
+          <revremark>Добавлен срвет по обновлению
+          /etc/shorewall/rfc1918.</revremark>
         </revision>
 
         <revision>
@@ -550,7 +574,7 @@ SSH/ACCEPT  net       $FW           </programlisting>
 
           <authorinitials>TE</authorinitials>
 
-          <revremark>Initial Docbook Conversion</revremark>
+          <revremark>Начальное преобразование DocBook</revremark>
         </revision>
       </revhistory></para>
   </appendix>

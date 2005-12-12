@@ -3475,7 +3475,7 @@ process_tc_rule()
 		    ;;
 		*)
 		    verify_interface $source || fatal_error "Unknown interface $source in rule \"$rule\""
-		    r="$(match_source_dev) $source "
+		    r="$(match_source_dev $source) "
 		    ;;
 	    esac
 	fi

@@ -33,6 +33,32 @@ usage() # $1 = exit status
     exit $1
 }
 
+split() {
+    local ifs=$IFS
+    IFS=:
+    set -- $1
+    echo $*
+    IFS=$ifs
+}
+
+qt()
+{
+    "$@" >/dev/null 2>&1
+}
+
+mywhich() {
+    local dir
+
+    for dir in $(split $PATH); do
+	if [ -x $dir/$1 ]; then
+	    echo $dir/$1
+	    return 0
+	fi
+    done
+
+    return 2
+}
+
 run_install()
 {
     if ! install $*; then
@@ -207,7 +233,6 @@ echo "shorewall control program installed in ${PREFIX}/sbin/shorewall"
 #
 if [ -n "$DEBIAN" ]; then
     install_file_with_backup init.debian.sh /etc/init.d/shorewall 0544 ${PREFIX}/usr/share/shorewall-${VERSION}.bkout
-
 elif [ -n "$ARCHLINUX" ]; then
     install_file_with_backup init.archlinux.sh ${PREFIX}${DEST}/$INIT 0544 ${PREFIX}/usr/share/shorewall-${VERSION}.bkout
 
@@ -587,6 +612,8 @@ if [ -z "$PREFIX" -a -n "$first_install" ]; then
 	echo
 	echo "shorewall will start automatically at boot"
 	echo "Set startup=1 in /etc/default/shorewall to enable"
+	touch /var/log/shorewall-init.log
+	qt mywhich perl && perl -p -w -i -e 's/^STARTUP_ENABLED=No/STARTUP_ENABLED=Yes/;s/^IP_FORWARDING=On/IP_FORWARDING=Keep/' /etc/shorewall/shorewall.conf
     else
 	if [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
 	    if insserv /etc/init.d/shorewall ; then

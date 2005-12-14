@@ -22,16 +22,60 @@ Texts. A copy of the license is included in the section entitled “<span
  class="quote"><a href="GnuCopyright.htm" target="_self">GNU Free
 Documentation License</a></span>”.<br>
 </p>
-<p> 2005-12-01 </p>
-<hr style="width: 100%; height: 2px;"> <span style="font-weight: bold;">2005-12-01
+<p> 2005-12-12 </p>
+<hr style="width: 100%; height: 2px;"> <span style="font-weight: bold;">2005-12-12
+Shorewall 2.4.7</span><br>
+<br>
+Problems Corrected in 2.4.7<br>
+<br>
+1) &nbsp;When MACLIST_TABLE=mangle and an interface is enabled for DHCP
+(the<br>
+&nbsp; &nbsp; 'dhcp' option is specified in /etc/shorewall/interfaces)
+then broadcasts<br>
+&nbsp; &nbsp; on UDP port 67 to address 255.255.255.255 from address
+0.0.0.0 were being<br>
+&nbsp; &nbsp; dropped and logged. While this did not prevent the client
+from acquiring<br>
+&nbsp; &nbsp; an IP address, it could result in lots of log messages.<br>
+<br>
+2) &nbsp;Entries for openvpn tunnels (including openvpnclient and<br>
+&nbsp; &nbsp; openvpnserver) that specify a port but no protocol cause
+startup<br>
+&nbsp; &nbsp; errors as follows:<br>
+<br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;iptables v1.3.3: unknown
+protocol `1194' specified<br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;Try `iptables -h' or 'iptables
+--help' for more information.<br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;ERROR: Command
+"/usr/sbin/iptables -A net2fw -p 1194 -s<br>
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;0.0.0.0/0 --sport 1194 -j
+ACCEPT" Failed<br>
+<br>
+&nbsp; &nbsp; The problem may be worked around by specifying the
+protocol as well<br>
+&nbsp; &nbsp; (e.g., "openvpn:udp:3455).<br>
+<br>
+3) &nbsp;If the previous firewall configuration included a policy other
+than<br>
+&nbsp; &nbsp; ACCEPT in the nat, mangle or raw tables then Shorewall
+would not set<br>
+&nbsp; &nbsp; the policy to ACCEPT. This could result in a ruleset that
+rejected or<br>
+&nbsp; &nbsp; dropped all traffic.<br>
+<br>
+4) &nbsp;Specifying an interface name in the SOURCE column <br>
+&nbsp; &nbsp; of /etc/shorewall/tcrules resulted in a startup error.<br>
+<span style="font-weight: bold;"><br>
+</span><span style="font-weight: bold;">2005-12-01
 End of Support for Shorewall versions 2.0 and 2.2<br>
 <br>
 </span>Effective today, versions 2.0 and 2.2 are no longer supported.
 This means that if you find a bug in one of these releases, we won't
 fix it and if you ask for help with one of these releases, we will not
 spend much time trying to solve your issue.<br>
-<span style="font-weight: bold;"><br>
-2005-11-25
+<br>
+<span style="font-weight: bold;">2005-11-25
 Shorewall 3.0.2<br>
 </span>
 <pre>Problems Corrected in 3.0.2<br><br>1) A couple of typos in the one-interface sample configuration have<br>   been corrected.<br><br>2) The 3.0.1 version of Shorewall was incompatible with old versions of<br>   the Linux kernel (2.4.7 for example). The new code ignores errors<br>   produced when Shorewall 3.x is run on these ancient kernels.<br><br>3) Arch Linux installation routines has been improved.<br><br>New Features in 3.0.2<br><br>1) A new Webmin macro has been added. This macro assumes that Webmin is<br>   running on its default port (10000).<br></pre>

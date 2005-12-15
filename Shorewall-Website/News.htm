@@ -22,6 +22,78 @@ Texts. A copy of the license is included in the section entitled “<span
  class="quote"><a href="GnuCopyright.htm" target="_self">GNU Free
 Documentation License</a></span>”.<br>
 </p>
+
+<!-- Shorewall Release 3.0.3 -->
+
+<span style="font-weight: bold;">2005-12-13
+Shorewall 3.0.3<br>
+</span>
+<pre>Problems Corrected in 3.0.3<br><br>
+
+1) The comments in the /etc/shorewall/shorewall.conf and
+   /etc/shorewall/hosts files have been changed to clarify when
+   BRIDGING=Yes is required when dealing with bridges.
+
+2) Thanks to Tuomo Soini, formatting of the comments in the tcdevices
+   and tcclasses files has been cleaned up.
+
+3) Specifying 'trace' on the 'safe-start' and 'safe-restart' command no
+   longer fails.
+
+4) The output of "shorewall help restore" has been corrected. It previously
+   printed incorrect syntax for that command.
+
+5) The README.txt file in the tarball was stale and contained incorrect
+   information. It has been corrected.
+
+6) The shorewall.conf default setting of CLEAR_TC was previously "No". Given
+   that the default setting of TC_ENABLED is "Internal", the setting of
+   CLREAR_TC has been changed to the more appropriate value of "Yes".
+
+7) Specifying an interface name in the SOURCE column of /etc/shorewall/tcrules
+   resulted in a startup error.
+
+8) When the 'install.sh' script is used on Debian, it now creates
+   /var/log/shorewall-init.log. And if perl is installed on the system then
+   STARTUP_ENABLED=Yes is specified in shorewall.conf (the user must still
+   set startup=1 in /etc/default/shorewall).
+
+New Features in 3.0.3 <br/>
+
+1) A "shorewall show macros" command has been added. This command displays
+   a list of the standard macros along with a brief description of each.
+
+2) The '-q' option is now supported with 'safe-start' and 'safe-restart'.
+
+3) The value "-" is now allowed in the ADDRESS/SUBNET column of
+   /etc/shorewall/blacklist. That value is equivalent to specifying
+   0.0.0.0/0 in that column.
+
+4) The output of "shorewall show tc" and "shorewall show classifiers" is
+   now included in the output from "shorewall dump". This will aid us in
+   analyzing traffic shaping problems.
+
+5) You can now specify 'none' in the COPY column of /etc/shorewall/providers
+   to signal that you want Shorewall to only copy routes through the interface
+   listed in the INTERFACE column.
+
+   Note: This works on older versions of Shorewall as well. It is
+         now documented.
+
+6) An 'ipdecimal' command has been added to /sbin/shorewall. This command
+   converts between dot-quad and decimal.
+
+   Example:
+
+    gateway:/etc/openvpn# shorewall ipdecimal 192.168.1.4
+        3232235780
+    gateway:/etc/openvpn# shorewall ipdecimal 3232235780
+        192.168.1.4
+    gateway:/etc/openvpn#
+
+7) /etc/init.d/shorewall now supports a 'reload' command which is
+   synonymous with the 'restart' command.
+</pre>
 <p> 2005-12-12 </p>
 <hr style="width: 100%; height: 2px;"> <span style="font-weight: bold;">2005-12-12
 Shorewall 2.4.7</span><br>

@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-11-27</pubdate>
+    <pubdate>2005-12-15</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -48,7 +48,7 @@
 
     <caution>
       <para>The configuration shown here corresponds to Shorewall version
-      3.0.0. My configuration uses features not available in earlier Shorewall
+      3.0.3. My configuration uses features not available in earlier Shorewall
       releases.</para>
     </caution>
 
@@ -213,7 +213,7 @@ DYNAMIC_ZONES=No
 PKTTYPE=No
 RFC1918_STRICT=Yes
 MACLIST_TTL=60
-SAVE_IPSETS=Yes
+SAVE_IPSETS=No
 MAPOLDACTIONS=No
 FASTACCEPT=No
 BLACKLIST_DISPOSITION=DROP
@@ -234,7 +234,8 @@ WIFI_IF=eth0
 EXT_IF=eth2
 INT_IF=br0
 DMZ_IF=eth1
-OMAK=&lt;ip address of the gateway at our second home&gt;</programlisting></para>
+OMAK=&lt;ip address of the gateway at our second home&gt;
+MIRRORS=&lt;list IP addresses of Shorewall mirrors&gt;</programlisting></para>
       </blockquote>
     </section>
 
@@ -295,16 +296,17 @@ Blarg   1       1       main            $EXT_IF         206.124.146.254 track,ba
     </section>
 
     <section>
-      <title>Blacklist File</title>
+      <title>Blacklist File (Edited)</title>
 
       <blockquote>
-        <para>I use <ulink url="ipsets.html">ipsets</ulink> to represent my
-        blacklist.</para>
+        <para>I blacklist a number of ports globally to cut down on the amount
+        of noise in my firewall log. Note that the syntax shown below was
+        introduced in Shorewall 3.0.3 ("-" in the ADDRESS/SUBNET column);
+        earlier versions must use "0.0.0.0/0".</para>
 
         <programlisting>#ADDRESS/SUBNET         PROTOCOL        PORT
-+Blacklistports[dst]
-+Blacklistnets[src,dst]
-+Blacklist[src,dst]
+-                       udp             1024:1033
+-                       tcp             57,1433,1434,2401,2745,3127,3306,3410,4899,5554,6101,8081,9898
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
       </blockquote>
     </section>
@@ -411,9 +413,12 @@ openvpnserver:1194      Wifi    192.168.3.0/24
       <title>Actions File</title>
 
       <blockquote>
+        <para>The Limit action is described in a <ulink
+        url="PortKnocking.html#Limit">separate article</ulink>.</para>
+
         <programlisting>#ACTION
 Mirrors             #Accept traffic from the Shorewall Mirror sites
-SSHKnock            #Port Knocking
+Limit               #Limit connection rate from individual Hosts
 #LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
       </blockquote>
     </section>
@@ -422,15 +427,11 @@ SSHKnock            #Port Knocking
       <title>action.Mirrors File</title>
 
       <blockquote>
-        <para>The <emphasis>Mirrors</emphasis> and
-        <emphasis>Mirrornets</emphasis> <ulink
-        url="ipsets.html">ipsets</ulink> define the set of Shorewall
-        mirrors.</para>
+        <para>$MIRRORS is set in /etc/shorewall/params above.</para>
 
         <programlisting>#TARGET  SOURCE         DEST            PROTO   DEST    SOURCE     ORIGINAL     RATE
 #                                               PORT    PORT(S)    DEST         LIMIT
-ACCEPT   +Mirrors
-ACCEPT   +Mirrornets                    
+ACCEPT   $MIRRORS                   
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
       </blockquote>
     </section>
@@ -514,7 +515,12 @@ ACCEPT          net                             dmz                     tcp     
 ACCEPT          net                             dmz                     tcp     smtp                                    -               206.124.146.177,206.124.146.178
 ACCEPT          net                             dmz                     udp     33434:33454
 Mirrors         net                             dmz                     tcp     rsync
-ACCEPT          net                             dmz                     tcp     22
+#
+# Allow SSH access from anywhere but limit all but from our second home
+#
+ACCEPT          net:$OMAK                       dmz                     tcp     22
+Limit:info:SSHA,3,60 \
+                net                             dmz                     tcp     22
 Ping/ACCEPT     net                             dmz
 ###############################################################################################################################################################################
 #
@@ -524,7 +530,12 @@ Ping/ACCEPT     net                             dmz
 #
 DNAT            net                             loc:192.168.1.4         tcp     1729
 DNAT            net                             loc:192.168.1.4         gre
+#
+# Allow SSH access from anywhere but limit all but from our second home
+#
 ACCEPT          net:$OMAK                       loc:192.168.1.5         tcp     22
+Limit:info:SSHA,3,60 \
+                net                             loc:192.168.1.5         tcp     22
 #
 # Auth for IRC
 #
@@ -589,7 +600,12 @@ DROP            net                             fw                      icmp    
 ACCEPT          net                             fw                      udp     33434:33454
 ACCEPT          net:$OMAK                       fw                      udp     ntp
 ACCEPT          net                             fw                      tcp     auth
-SSHKnock:info   net                             fw                      tcp     22,4320,4321,4322
+#
+# Allow SSH access from anywhere but limit all but from our second home
+#
+ACCEPT          net:$OMAK                       fw                      tcp     22
+Limit:info:SSHA,3,60 \
+                net                             fw                      tcp     22
 ###############################################################################################################################################################################
 # Firewall to Internet
 #

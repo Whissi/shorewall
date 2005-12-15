@@ -67,11 +67,11 @@
 
       <para>Shorewall требует, чтобы у Вас был установлен пакет
       <command>iproute</command>/<command>iproute2</command> (на
-      <trademark>RedHat</trademark>, этот пакет называется<command>
-      iproute</command>). Вы можете определить установлен ли этот пакет по
-      наличию программы <command>ip</command> на Вашем файерволе. Как root, Вы
-      можете использовать команду <command>which</command> для проверки
-      наличия этой программы:</para>
+      <trademark>RedHat</trademark>, этот пакет называется
+      <command>iproute</command>). Вы можете определить установлен ли этот
+      пакет по наличию программы <command>ip</command> на Вашем файерволе. Как
+      root, Вы можете использовать команду <command>which</command> для
+      проверки наличия этой программы:</para>
 
       <programlisting>[root@gateway root]# <command>which ip</command>
 /sbin/ip
@@ -148,10 +148,11 @@
     <orderedlist>
       <listitem>
         <para>Если Вы при установке использовали <acronym>RPM</acronym>,
-        примеры будут находится в поддиректории Samples/one-interface/
-        директории с документацией Shorewall. Если Вы не знаете где
-        расположена директория с документацией Shorewall, Вы можете найти
-        примеры используя команду:</para>
+        примеры будут находится в поддиректории <filename
+        class="directory">Samples/one-interface</filename>/ директории с
+        документацией Shorewall. Если Вы не знаете где расположена директория
+        с документацией Shorewall, Вы можете найти примеры используя
+        команду:</para>
 
         <programlisting>~# rpm -ql shorewall | fgrep one-interface
 /usr/share/doc/packages/shorewall/Samples/one-interface
@@ -164,12 +165,15 @@
 
       <listitem>
         <para>Если Вы установили Shorewall из tarball'а, примеры находятся в
-        директории Samples/one-interface внутри tarball'а.</para>
+        директории <filename
+        class="directory">Samples/one-interface</filename> внутри
+        tarball'а.</para>
       </listitem>
 
       <listitem>
         <para>Если же Вы пользовались пакетом .deb, примеры находятся в
-        /usr/share/doc/shorewall/examples/one-interface.</para>
+        директории <filename
+        class="directory">/usr/share/doc/shorewall/examples/one-interface</filename>.</para>
       </listitem>
     </orderedlist>
 
@@ -188,9 +192,10 @@
 
       <para>Заметьте, что Вы должны скопировать <filename
       class="directory">/usr/share/doc/shorewall/default-config/shorewall.conf</filename>
-      и /usr/share/doc/shorewall/default-config/modules в <filename
-      class="directory">/etc/shorewall</filename> даже если Вы не будете
-      изменять эти файлы.</para>
+      и <filename
+      class="directory">/usr/share/doc/shorewall/default-config/modules</filename>
+      в <filename class="directory">/etc/shorewall</filename> даже если Вы не
+      будете изменять эти файлы.</para>
     </warning>
 
     <para>По мере того как мы будем знакомится с каждым файлом, я надеюсь, что
@@ -211,10 +216,11 @@ net     ipv4</programlisting>
     url="Documentation.htm#Zones"><filename>/etc/shorewall/zones</filename></ulink>.</para>
 
     <para>Заметьте, что Shorewall рассматривает систему файервола как свою
-    собственную зону. Имя зоны файервола (<emphasis role="bold">fw</emphasis>
-    в примере выше) храниться в переменной shell <firstterm>$FW</firstterm>,
-    которая может использоваться во всей конфигурации Shorewall для ссылки на
-    сам файервол.</para>
+    собственную зону. При обработке файла
+    <filename>/etc/shorewall/zones</filename> имя зоны файервола
+    (<quote>fw</quote> в примере выше) храниться в переменной shell
+    <firstterm>$FW</firstterm>, которая может использоваться во всей
+    конфигурации Shorewall для ссылки на сам файервол.</para>
 
     <para>Правила о том какой трафик разрешен, а какой запрещен выражаются в
     терминах зон.</para>
@@ -301,11 +307,11 @@ all            all                REJECT   info</programlisting>
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
     <para>Пример конфигурации Shorewall для одного интерфейса подразумевает,
-    что <emphasis>Внешний интерфейс</emphasis><emphasis role="bold">
-    </emphasis>- <emphasis role="bold">eth0</emphasis>. Если Ваша конфигурация
-    отличается, Вам необходимо изменить файл примера /etc/shorewall/interfaces
-    соответственно. Пока Вы здесь, Вы возможно захотите просмотреть список
-    опций, специфичных для интерфейса. Вот несколько подсказок:</para>
+    что внешний интерфейс - <emphasis role="bold">eth0</emphasis>. Если Ваша
+    конфигурация отличается, Вам необходимо изменить файл примера
+    <filename>/etc/shorewall/interfaces</filename> соответственно. Пока Вы
+    здесь, Вы возможно захотите просмотреть список опций, специфичных для
+    интерфейса. Вот несколько подсказок:</para>
 
     <tip>
       <para>Если Ваш внешний интерфейс <emphasis role="bold">ppp0</emphasis>
@@ -334,8 +340,8 @@ all            all                REJECT   info</programlisting>
     (Dynamic Host Configuration Protocol</emphasis> -
     <acronym>DHCP</acronym>), в процессе установки Вами коммутированного
     соединения (обычный модем), или при установке Вами другого типа
-    <acronym>PPP</acronym> соединения (<acronym>PPPoA</acronym>,
-    <acronym>PPPoE</acronym> и т.д.).</para>
+    <acronym>PPP</acronym> (<acronym>PPPoA</acronym>, <acronym>PPPoE</acronym>
+    и т.д.) соединения.</para>
 
     <para><acronym>RFC-1918</acronym> резервирует несколько диапазонов
     <emphasis>Частных (Private)</emphasis> <acronym>IP</acronym>-адресов для
@@ -349,9 +355,9 @@ all            all                REJECT   info</programlisting>
     <emphasis>немаршрутизируемые</emphasis> потому, что магистральные
     маршрутизаторы Интернет не переправляют пакеты, адреса назначения которых
     зарезервированы <acronym>RFC-1918</acronym>. Хотя в некоторых случаях,
-    <acronym>ISP</acronym>s назначающие эти адреса, используют затем
+    <acronym>ISP</acronym>, назначающие эти адреса, используют затем
     <emphasis>Преобразование Сетевых Адресов (Network Address Translation -
-    <acronym>NAT</acronym>)</emphasis> для перезаписи заголовков пакетов при
+    </emphasis><acronym>NAT</acronym>) для перезаписи заголовков пакетов при
     перенаправлении в/из Интернет.</para>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
@@ -443,15 +449,15 @@ SSH/ACCEPT  net       $FW           </programlisting>
     <filename>/etc/shorewall/startup_disabled</filename>.</para>
 
     <important>
-      <para><emphasis role="bold">Пользователи пакета .deb должны
-      отредактировать <filename>/etc/default/shorewall</filename> и установить
-      <quote>startup=1</quote>. </emphasis></para>
+      <para>Пользователи пакета .deb должны отредактировать файл
+      <filename>/etc/default/shorewall</filename> и установить параметр
+      <varname>STARTUP=1.</varname></para>
     </important>
 
     <important>
-      <para><emphasis role="bold">Вы должны разрешить запуск путем
-      редактирования /etc/shorewall/shorewall.conf и установки
-      STARTUP_ENABLED=Yes.</emphasis></para>
+      <para>Вы должны разрешить запуск путем редактирования файла
+      <filename>/etc/shorewall/shorewall.conf</filename> и установки параметра
+      <varname>STARTUP_ENABLED=Yes.</varname></para>
     </important>
 
     <para>Файервол запускается при помощи команды <quote><command>shorewall
@@ -486,7 +492,7 @@ SSH/ACCEPT  net       $FW           </programlisting>
     <title>Дополнительно рекоммендуемая литература</title>
 
     <para>Я особо рекоммендую просмотреть Вам <ulink
-    url="configuration_file_basics.htm">страницу Особенностей Общих Фалов
+    url="configuration_file_basics.htm">страницу Общих Особенностей Файлов
     Конфигурации</ulink> -- она содержит полезные советы об особенностях
     Shorewall, делающую администрирование Вашего файервола проще.</para>
   </section>

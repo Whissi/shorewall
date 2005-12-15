@@ -577,6 +577,9 @@ for f in action.* ; do
     echo
     echo "Action ${f#*.} file installed as ${PREFIX}/usr/share/shorewall/$f"
 done
+
+install_file Limit ${PREFIX}/usr/share/shorewall/Limit 0600
+echo "Limit action extension script installed as ${PREFIX}/usr/share/shorewall/Limit"
 #
 # Install the Macro files
 #

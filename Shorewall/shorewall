@@ -911,15 +911,15 @@ case "$1" in
 	    report_capabilities
 	    ;;
 	actions)
-	    echo "allowBcast         #Silently Allow Broadcast/multicast"
-	    echo "dropBcast          #Silently Drop Broadcast/multicast"
-            echo "dropNotSyn         #Silently Drop Non-syn TCP packets"
-	    echo "rejNotSyn          #Silently Reject Non-syn TCP packets"
-	    echo "dropInvalid        #Silently Drop packets that are in the INVALID conntrack state"
-	    echo "allowInvalid       #Accept packets that are in the INVALID conntrack state."
-	    echo "allowoutUPnP       #Allow traffic from local command 'upnpd'"
-	    echo "allowinUPnP        #Allow UPnP inbound (to firewall) traffic"
-	    echo "forwardUPnP        #Allow traffic that upnpd has redirected from"
+	    echo "allowBcast          # Silently Allow Broadcast/multicast"
+	    echo "dropBcast           # Silently Drop Broadcast/multicast"
+            echo "dropNotSyn          # Silently Drop Non-syn TCP packets"
+	    echo "rejNotSyn           # Silently Reject Non-syn TCP packets"
+	    echo "dropInvalid         # Silently Drop packets that are in the INVALID conntrack state"
+	    echo "allowInvalid        # Accept packets that are in the INVALID conntrack state."
+	    echo "allowoutUPnP        # Allow traffic from local command 'upnpd'"
+	    echo "allowinUPnP         # Allow UPnP inbound (to firewall) traffic"
+	    echo "forwardUPnP         # Allow traffic that upnpd has redirected from"
 	    cat /usr/share/shorewall/actions.std /etc/shorewall/actions | grep -Ev '^\#|^$'
 	    ;;
 	macros)

@@ -1,0 +1,22 @@
+#
+# Shorewall version 3.0 -- Extension Script to create Limit action.
+#
+# /usr/share/shorewall/Limit
+##############################################################################
+
+set -- $(separate_list $TAG)
+
+[ $# -eq 3 ] || fatal_error "Rule must include <set name>,<max connections>,<interval> as the log tag"
+
+run_iptables -A $CHAIN -m recent --name $1 --set
+
+if [ -n "$LEVEL" ]; then
+    run_iptables -N $CHAIN%
+    log_rule_limit $LEVEL $CHAIN% $1 DROP "" "" -A
+    run_iptables -A $CHAIN% -j DROP
+    run_iptables -A $CHAIN -m recent --name $1 --update --seconds $3 --hitcount $(( $2 + 1 )) -j $CHAIN%
+else
+    run_iptables -A $CHAIN -m recent --update --name $1 --seconds $3 --hitcount $(( $2 + 1 )) -j DROP
+fi
+
+run_iptables -A $CHAIN -j ACCEPT

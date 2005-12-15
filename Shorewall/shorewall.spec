@@ -106,11 +106,13 @@ fi
 %attr(0600,root,root) /usr/share/shorewall/version
 %attr(0600,root,root) /usr/share/shorewall/actions.std
 %attr(0600,root,root) /usr/share/shorewall/action.Drop
+%attr(0600,root,root) /usr/share/shorewall/action.Limit
 %attr(0600,root,root) /usr/share/shorewall/action.Reject
 %attr(0600,root,root) /usr/share/shorewall/action.template
 %attr(0444,root,root) /usr/share/shorewall/functions
 %attr(0544,root,root) /usr/share/shorewall/firewall
 %attr(0544,root,root) /usr/share/shorewall/help
+%attr(0600,root,root) /usr/share/shorewall/Limit
 %attr(0600,root,root) /usr/share/shorewall/macro.AllowICMPs
 %attr(0600,root,root) /usr/share/shorewall/macro.Amanda
 %attr(0600,root,root) /usr/share/shorewall/macro.Auth
@@ -146,7 +148,7 @@ fi
 %attr(0600,root,root) /usr/share/shorewall/macro.SVN
 %attr(0600,root,root) /usr/share/shorewall/macro.Syslog
 %attr(0600,root,root) /usr/share/shorewall/macro.Telnet
-%attr(0600,root,root) /usr/share/shorewall/macro.template
+%attr(0600,root,root) /usr/share/shorewall/macro.template%
 %attr(0600,root,root) /usr/share/shorewall/macro.Trcrt
 %attr(0600,root,root) /usr/share/shorewall/macro.VNC
 %attr(0600,root,root) /usr/share/shorewall/macro.VNCL
@@ -158,6 +160,8 @@ fi
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel ipsecvpn Samples
 
 %changelog
+* Thu Dec 15 2005 Tom Eastep tom@shorewall.net
+- Add Limit action
 * Mon Dec 12 2005 Tom Eastep tom@shorewall.net
 - Updated to 3.0.3-1
 * Tue Nov 22 2005 Tom Eastep tom@shorewall.net

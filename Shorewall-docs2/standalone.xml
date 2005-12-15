@@ -71,25 +71,27 @@
       </listitem>
 
       <listitem>
-        <para>Single external IP address</para>
+        <para>Single external <acronym>IP</acronym> address</para>
       </listitem>
 
       <listitem>
-        <para>Connection through Cable Modem, DSL, ISDN, Frame Relay,
-        dial-up... or connected to a LAN and you simply wish to protect your
-        Linux system from other systems on that LAN.</para>
+        <para>Connection through Cable Modem, <acronym>DSL</acronym>,
+        <acronym>ISDN</acronym>, Frame Relay, dial-up... or connected to a
+        <acronym>LAN</acronym> and you simply wish to protect your Linux
+        system from other systems on that <acronym>LAN</acronym>.</para>
       </listitem>
     </itemizedlist>
 
     <section>
-      <title>Requirements</title>
+      <title>System Requirements</title>
 
-      <para>Shorewall requires that you have the iproute/iproute2 package
-      installed (on RedHat, the package is called
-      <emphasis>iproute</emphasis>). You can tell if this package is installed
-      by the presence of an <emphasis role="bold">ip</emphasis> program on
-      your firewall system. As root, you can use the <quote>which</quote>
-      command to check for this program:</para>
+      <para>Shorewall requires that you have the
+      <command>iproute</command>/<command>iproute2</command> package installed
+      (on<trademark> RedHat</trademark>, the package is called
+      <command>iproute</command>). You can tell if this package is installed
+      by the presence of an <command>ip</command> program on your firewall
+      system. As root, you can use the <command>which</command> command to
+      check for this program:</para>
 
       <programlisting>[root@gateway root]# <command>which ip</command>
 /sbin/ip
@@ -104,21 +106,26 @@
       configuration changes.</para>
 
       <caution>
-        <para>If you edit your configuration files on a Windows system, you
-        must save them as Unix files if your editor supports that option or
-        you must run them through dos2unix before trying to use them.
-        Similarly, if you copy a configuration file from your Windows hard
-        drive to a floppy disk, you must run dos2unix against the copy before
-        using it with Shorewall.</para>
+        <para>If you edit your configuration files on a
+        <trademark>Windows</trademark> system, you must save them as
+        <trademark>Unix</trademark> files if your editor supports that option
+        or you must run them through <command>dos2unix</command> before trying
+        to use them. Similarly, if you copy a configuration file from your
+        <trademark>Windows</trademark> hard drive to a floppy disk, you must
+        run <command>dos2unix</command> against the copy before using it with
+        Shorewall. <itemizedlist>
+            <listitem>
+              <para><ulink
+              url="http://www.simtel.net/pub/pd/51438.html"><trademark>Windows</trademark>
+              Version of <command>dos2unix</command></ulink></para>
+            </listitem>
 
-        <simplelist>
-          <member><ulink url="http://www.simtel.net/pub/pd/51438.html">Windows
-          Version of dos2unix</ulink></member>
-
-          <member><ulink
-          url="http://www.megaloman.com/~hany/software/hd2u/">Linux Version of
-          dos2unix</ulink></member>
-        </simplelist>
+            <listitem>
+              <para><ulink
+              url="http://www.megaloman.com/%7Ehany/software/hd2u/">Linux
+              Version of <command>dos2unix</command></ulink></para>
+            </listitem>
+          </itemizedlist></para>
       </caution>
     </section>
 
@@ -136,12 +143,12 @@
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
-    <para>If you have an ADSL Modem and you use PPTP to communicate with a
-    server in that modem, you must make the <ulink
-    url="PPTP.htm#PPTP_ADSL">changes recommended here</ulink> <emphasis
-    role="underline">in addition to those described in the steps
-    below</emphasis>. ADSL with PPTP is most commonly found in Europe, notably
-    in Austria.</para>
+    <para>If you have an <acronym>ADSL</acronym> Modem and you use
+    <acronym>PPTP</acronym> to communicate with a server in that modem, you
+    must make the changes recommended <ulink
+    url="PPTP.htm#PPTP_ADSL">here</ulink> in addition to those detailed below.
+    <acronym>ADSL</acronym> with <acronym>PPTP</acronym> is most commonly
+    found in Europe, notably in Austria.</para>
   </section>
 
   <section>
@@ -157,10 +164,12 @@
 
     <orderedlist>
       <listitem>
-        <para>If you installed using an RPM, the samples will be in the
-        Samples/one-interface/ subdirectory of the Shorewall documentation
-        directory. If you don't know where the Shorewall documentation
-        directory is, you can find the samples using this command:</para>
+        <para>If you installed using an <acronym>RPM</acronym>, the samples
+        will be in the <filename
+        class="directory">Samples/one-interface</filename> subdirectory of the
+        Shorewall documentation directory. If you don't know where the
+        Shorewall documentation directory is, you can find the samples using
+        this command:</para>
 
         <programlisting>~# rpm -ql shorewall | fgrep one-interface
 /usr/share/doc/packages/shorewall/Samples/one-interface
@@ -173,12 +182,13 @@
 
       <listitem>
         <para>If you installed using the tarball, the samples are in the
-        Samples/one-interface directory in the tarball.</para>
+        <filename class="directory">Samples/one-interface</filename> directory
+        in the tarball.</para>
       </listitem>
 
       <listitem>
-        <para>If you installed using the .deb, the samples are in
-        /usr/share/doc/shorewall/examples/one-interface.</para>
+        <para>If you installed using the .deb, the samples are in <filename
+        class="directory">/usr/share/doc/shorewall/examples/one-interface</filename>.</para>
       </listitem>
     </orderedlist>
 
@@ -196,9 +206,10 @@
 
       <para>Note that you must copy <filename
       class="directory">/usr/share/doc/shorewall/default-config/shorewall.conf</filename>
-      and /usr/share/doc/shorewall/default-config/modules to <filename
-      class="directory">/etc/shorewall</filename> even if you do not modify
-      those files.</para>
+      and <filename
+      class="directory">/usr/share/doc/shorewall/default-config/modules</filename>
+      to <filename class="directory">/etc/shorewall</filename> even if you do
+      not modify those files.</para>
     </warning>
 
     <para>As each file is introduced, I suggest that you look through the
@@ -218,10 +229,11 @@ net     ipv4</programlisting>
     url="Documentation.htm#Zones"><filename>/etc/shorewall/zones</filename></ulink>.</para>
 
     <para>Note that Shorewall recognizes the firewall system as its own zone.
-    The name of the firewall zone (<emphasis role="bold">fw</emphasis> in the
-    above example) is stored in the shell variable <firstterm>$FW</firstterm>
-    which may be used throughout the rest of the Shorewall configuration to
-    refer to the firewall itself.</para>
+    When the <filename>/etc/shorewall/zones</filename> file is processed, the
+    name of the firewall zone (<quote>fw</quote> in the above example) is
+    stored in the shell variable <firstterm>$FW</firstterm> which may be used
+    to refer to the firewall zone throughout the Shorewall
+    configuration.</para>
 
     <para>Rules about what traffic to allow and what traffic to deny are
     expressed in terms of zones.</para>
@@ -287,54 +299,62 @@ all            all                REJECT   info</programlisting>
     <title>External Interface</title>
 
     <para>The firewall has a single network interface. Where Internet
-    connectivity is through a cable or DSL <quote>Modem</quote>, the
-    <emphasis>External Interface</emphasis> will be the ethernet adapter
-    (<emphasis role="bold">eth0</emphasis>) that is connected to that
-    <quote>Modem</quote> <emphasis role="underline">unless</emphasis> you
-    connect via <emphasis>Point-to-Point Protocol over Ethernet</emphasis>
-    (PPPoE) or <emphasis>Point-to-Point Tunneling Protocol</emphasis> (PPTP)
-    in which case the External Interface will be a <emphasis
-    role="bold">ppp0</emphasis>. If you connect via a regular modem, your
-    External Interface will also be <emphasis role="bold">ppp0</emphasis>. If
-    you connect using ISDN, your external interface will be <emphasis
-    role="bold">ippp0</emphasis>.</para>
+    connectivity is through a cable or <acronym>DSL</acronym>
+    <quote>Modem</quote>, the <emphasis>External Interface</emphasis> will be
+    the ethernet adapter (<filename class="devicefile">eth0</filename>) that
+    is connected to that <quote>Modem</quote> <emphasis
+    role="underline">unless</emphasis> you connect via
+    <emphasis>Point-to-Point Protocol over Ethernet</emphasis>
+    (<acronym>PPPoE</acronym>) or <emphasis>Point-to-Point Tunneling
+    Protocol</emphasis> (<acronym>PPTP</acronym>) in which case the External
+    Interface will be a <acronym>PPP</acronym> interface (e.g., <filename
+    class="devicefile">ppp0</filename>). If you connect via a regular modem,
+    your External Interface will also be <filename
+    class="devicefile">ppp0</filename>. If you connect using
+    <acronym>ISDN</acronym>, your external interface will be <filename
+    class="devicefile">ippp0</filename>.</para>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
     <para>The Shorewall one-interface sample configuration assumes that the
-    external interface is <emphasis role="bold">eth0</emphasis>. If your
-    configuration is different, you will have to modify the sample
-    /etc/shorewall/interfaces file accordingly. While you are there, you may
-    wish to review the list of options that are specified for the interface.
-    Some hints:</para>
+    external interface is <filename class="devicefile">eth0</filename>. If
+    your configuration is different, you will have to modify the sample
+    <filename>/etc/shorewall/interfaces</filename> file accordingly. While you
+    are there, you may wish to review the list of options that are specified
+    for the interface. Some hints:</para>
 
     <tip>
-      <para>If your external interface is <emphasis
-      role="bold">ppp0</emphasis> or <emphasis role="bold">ippp0</emphasis>,
-      you can replace the <quote>detect</quote> in the second column with
-      <quote>-</quote>.</para>
+      <para>If your external interface is <filename
+      class="devicefile">ppp0</filename> or <filename
+      class="devicefile">ippp0</filename>, you can replace the
+      <quote>detect</quote> in the second column with <quote>-</quote> (minus
+      the quotes).</para>
     </tip>
 
     <tip>
-      <para>If your external interface is <emphasis
-      role="bold">ppp0</emphasis> or <emphasis role="bold">ippp0</emphasis> or
-      if you have a static IP address, you can remove <quote>dhcp</quote> from
-      the option list.</para>
+      <para>If your external interface is <filename
+      class="devicefile">ppp0</filename> or <filename
+      class="devicefile">ippp0</filename> or if you have a static IP address,
+      you can remove <quote>dhcp</quote> from the option list.</para>
     </tip>
   </section>
 
   <section>
     <title>IP Addresses</title>
 
-    <para>Before going further, we should say a few words about IP Addresses.
-    Normally, your ISP will assign you a single IP address. That address can
-    be assigned statically, by the Dynamic Host Configuration Protocol (DHCP),
-    through the establishment of your dial-up connection, or during
-    establishment of your other type of PPP connection (PPPoA, PPPoE,
-    etc.).</para>
+    <para>Before going further, we should say a few words about
+    <emphasis>Internet Protocol</emphasis> (<acronym>IP</acronym>) addresses.
+    Normally, your <emphasis>Internet Service Provider</emphasis>
+    (<acronym>ISP</acronym>) will assign you a single <acronym>IP</acronym>
+    address. That address can be assigned statically, by the <emphasis>Dynamic
+    Host Configuration Protocol</emphasis> (<acronym>DHCP</acronym>), through
+    the establishment of your dial-up connection, or during establishment of
+    your other type of <acronym>PPP</acronym> (<acronym>PPPoA</acronym>,
+    <acronym>PPPoE</acronym>, etc.) connection.</para>
 
-    <para>RFC 1918 reserves several <emphasis>Private</emphasis> IP address
-    ranges for use in private networks:</para>
+    <para><emphasis role="bold">RFC-1918</emphasis> reserves several
+    <emphasis>Private</emphasis> <acronym>IP</acronym> address ranges for use
+    in private networks:</para>
 
     <programlisting>10.0.0.0    - 10.255.255.255
 172.16.0.0  - 172.31.255.255
@@ -342,10 +362,12 @@ all            all                REJECT   info</programlisting>
 
     <para>These addresses are sometimes referred to as
     <emphasis>non-routable</emphasis> because the Internet backbone routers
-    will not forward a packet whose destination address is reserved by RFC
-    1918. In some cases though, ISPs are assigning these addresses then using
-    <emphasis>Network Address Translation</emphasis> to rewrite packet headers
-    when forwarding to/from the internet.</para>
+    will not forward a packet whose destination address is reserved by
+    <emphasis role="bold">RFC-1918</emphasis>. In some cases though,
+    <acronym>ISP</acronym>s are assigning these addresses then using
+    <emphasis>Network Address Translation</emphasis> <emphasis>-
+    </emphasis><acronym>NAT</acronym>) to rewrite packet headers when
+    forwarding to/from the internet.</para>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
@@ -404,7 +426,7 @@ ACCEPT    net       $FW             tcp          143</programlisting></para>
     <important>
       <para>I don't recommend enabling telnet to/from the internet because it
       uses clear text (even for login!). If you want shell access to your
-      firewall from the internet, use SSH:</para>
+      firewall from the internet, use <acronym>SSH</acronym>:</para>
 
       <programlisting>#ACTION     SOURCE    DESTINATION     PROTO       DEST PORT(S)
 SSH/ACCEPT  net       $FW           </programlisting>
@@ -429,15 +451,15 @@ SSH/ACCEPT  net       $FW           </programlisting>
     STARTUP_ENABLED=Yes.</para>
 
     <important>
-      <para><emphasis role="bold">Users of the .deb package must edit
+      <para>Users of the .deb package must edit
       <filename>/etc/default/shorewall</filename> and set
-      <quote>startup=1</quote>.</emphasis></para>
+      <varname>STARTUP=1.</varname></para>
     </important>
 
     <important>
-      <para><emphasis role="bold">You must enable startup by editing
-      /etc/shorewall/shorewall.conf and setting
-      STARTUP_ENABLED=Yes.</emphasis></para>
+      <para>You must enable startup by editing
+      <filename>/etc/shorewall/shorewall.conf</filename> and setting
+      <varname>STARTUP_ENABLED=Yes.</varname></para>
     </important>
 
     <para>The firewall is started using the <quote><command>shorewall
@@ -462,7 +484,7 @@ SSH/ACCEPT  net       $FW           </programlisting>
       url="configuration_file_basics.htm#Configs">alternate
       configuration</ulink></emphasis> and test it using the <ulink
       url="starting_and_stopping_shorewall.htm"><quote><command>shorewall
-      try</command></quote> command</ulink>.</para>
+      try</command></quote></ulink> command.</para>
     </warning>
   </section>
 

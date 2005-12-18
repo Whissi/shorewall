@@ -176,15 +176,15 @@
         <filename>/etc/shorewall/interfaces</filename> and
         <filename>/etc/shorewall/hosts</filename>.</para>
 
-        <para>TCP new-not-syn packets may be blocked using the 'dropNonSyn' or
-        'rejNonSyn' built-in actions.</para>
+        <para>TCP new-not-syn packets may be blocked using the 'dropNotSyn' or
+        'rejNotSyn' built-in actions.</para>
 
         <para>Example: Reject all new-not-syn packets from the net and log
         them at the 'info' level.</para>
 
         <programlisting>#ACTION          SOURCE           DEST           PROTO
 SECTION NEW
-rejNonSyn:info   net              all            tcp</programlisting>
+rejNotSyn:info   net              all            tcp</programlisting>
 
         <para>Note that the rule is added at the front of the NEW section of
         the rules file.</para>

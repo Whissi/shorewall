@@ -1,11 +1,11 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="ISO-8859-15"?>
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
 "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
-<article id="three-interface">
+<article id="three-interface" lang="fr">
   <!--$Id$-->
 
   <articleinfo>
-    <title>Three-Interface Firewall</title>
+    <title>Firewall à trois interfaces</title>
 
     <authorgroup>
       <author>
@@ -33,7 +33,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-12-3</pubdate>
+    <pubdate>2005-12-18</pubdate>
 
     <copyright>
       <year>2002-2005</year>
@@ -48,6 +48,20 @@
     </copyright>
 
     <legalnotice>
+      <para>Permission est accordée de copier, distribuer et/ou modifier ce
+      document selon les termes de la Licence de Documentation Libre GNU (GNU
+      Free Documentation License), version 1.2 ou toute version ultérieure
+      publiée par la Free Software Foundation ; sans section Invariables, sans
+      première de Couverture, et sans texte de quatrième de couverture. Une
+      copie de la présente Licence est incluse dans la section intitulée. Une
+      traduction française de la licence se trouve dans la section
+      <quote><ulink
+      url="http://www.idealx.org/dossier/oss/gfdl.fr.html">Licence de
+      Documentation Libre GNU</ulink></quote>. Ce paragraphe est une
+      traduction française pour aider à votre compréhension. Seul le texte
+      original en anglais présenté ci-dessous fixe les conditions
+      d'utilisation de cette documentation.</para>
+
       <para>Permission is granted to copy, distribute and/or modify this
       document under the terms of the GNU Free Documentation License, Version
       1.2 or any later version published by the Free Software Foundation; with
@@ -60,37 +74,37 @@
 
   <note>
     <para><emphasis role="underline">Notes du traducteur :</emphasis> Le guide
-    initial a Ã©tÃ© traduit par <ulink
-    url="mailto:vetsel.patrice@wanadoo.fr">VETSEL Patrice</ulink> et la pour
-    la version 2 de Shorewall a Ã©tÃ© effectuÃ©e par <ulink
-    url="mailto:fd03x@wanadoo.fr">Fabien Demassieux</ulink>. J'ai assurÃ© la
-    rÃ©vision pour l'adapter Ã  la version 3 de Shorewall. Si vous trouvez des
-    erreurs ou des amÃ©liorations Ã  apporter vous pouvez me contacter <ulink
+    initial a été traduit par <ulink
+    url="mailto:vetsel.patrice@wanadoo.fr">VETSEL Patrice</ulink> et la
+    révision pour la version 2 de Shorewall a été effectuée par <ulink
+    url="mailto:fd03x@wanadoo.fr">Fabien Demassieux</ulink>. J'ai assuré la
+    révision pour l'adapter à la version 3 de Shorewall. Si vous trouvez des
+    erreurs ou des améliorations à y apporter vous pouvez me contacter <ulink
     url="mailto:guy@posteurs.com">Guy Marcenac</ulink>.</para>
   </note>
 
   <caution>
-    <para><emphasis role="bold">Cet article s'applique Ã  Shorewall 3.0 et ses
-    versions ultÃ©rieures. Si vous utilisez une version plus ancienne de
-    Shorewall, rÃ©fÃ©rez-vous Ã  la documention s'applicant Ã  votre
+    <para><emphasis role="bold">Cet article s'applique à Shorewall 3.0 et à
+    ses versions ultérieures. Si vous utilisez une version plus ancienne de
+    Shorewall, référez-vous à la documentation s'appliquant à votre
     version</emphasis>.</para>
   </caution>
 
   <section>
     <title>Introduction</title>
 
-    <para>Mettre en place un systÃ¨me Linux en tant que firewall pour un petit
-    rÃ©seau contenant une DMZ est une chose assez simple, si vous comprenez les
-    bases et que vous suivez la documentation.</para>
+    <para>Mettre en place un système Linux en tant que firewall pour un petit
+    réseau contenant une <acronym>DMZ</acronym> est une chose assez simple, si
+    vous comprenez les bases et que vous suivez la documentation.</para>
 
-    <para>Ce guide ne veut pas vous apprendre tous les rouages de Shorewall.
-    Il se focalise sur ce qui est nÃ©cessaire pour configurer Shorewall, dans
-    une de ses configurations les plus courantes :</para>
+    <para>Ce guide ne prétend pas vous apprendre tous les rouages de
+    Shorewall. Il se concentre sur ce qui est nécessaire pour configurer
+    Shorewall dans son utilisation la plus courante:</para>
 
     <itemizedlist>
       <listitem>
-        <para>Un systÃ¨me Linux utilisÃ© en tant que firewall/routeur pour un
-        petit rÃ©seau local.</para>
+        <para>Un système Linux utilisé en tant que firewall/routeur pour un
+        petit réseau local.</para>
       </listitem>
 
       <listitem>
@@ -98,30 +112,31 @@
 
         <note>
           <para>Si vous avez plus d'une adresse IP, ce n'est pas le guide qui
-          vous convient -- regardez plutÃ´t du cotÃ© du <ulink
+          vous convient -- regardez plutôt du coté du <ulink
           url="shorewall_setup_guide_fr.htm">Guide de Configuration
           Shorewall</ulink>.</para>
         </note>
       </listitem>
 
       <listitem>
-        <para>Une DMZ connectÃ©e sur une interface Ethernet sÃ©parÃ©e. L'objet
-        d'une DMZ est d'isoler les systÃ¨mes de votre rÃ©seau local de vos
-        serveurs qui sont exposÃ©s sur internet, de telle maniÃ¨re que, si un de
-        ces serveurs Ã©tait compromis, il reste encore un firewall entre le
-        systÃ¨me compromis et vos systÃ¨mes locaux.</para>
+        <para>Une DMZ connectée sur une interface éthernet séparée. L'objet
+        d'une <acronym>DMZ</acronym> est d'isoler les systèmes de votre réseau
+        local de vos serveurs qui sont exposés sur internet, de telle manière
+        que, si un de ces serveurs était compromis, il reste encore un
+        firewall entre le système compromis et vos systèmes locaux.</para>
       </listitem>
 
       <listitem>
-        <para>Une connexion Internet par le biais d'un modem cÃ¢ble, ADSL,
-        ISDN, "Frame Relay", RTC ...</para>
+        <para>Une connexion internet par le biais d'un modem câble,
+        <acronym>ADSL</acronym>, <acronym>ISDN-RNIS</acronym>, "Frame Relay",
+        <acronym>RTC</acronym> ...</para>
       </listitem>
     </itemizedlist>
 
-    <para>Voici le schÃ©ma d'une installation typique.</para>
+    <para>Voici le schéma d'une installation typique.</para>
 
     <figure>
-      <title>SchÃ©ma d'une installation typique</title>
+      <title>Schéma d'une installation typique</title>
 
       <mediaobject>
         <imageobject>
@@ -131,16 +146,16 @@
     </figure>
 
     <section>
-      <title>PrÃ©-requis</title>
+      <title>Pré-requis Système</title>
 
-      <para>Shorewall a besoin que le package
-      <command>iproute</command>/<command>iproute2</command> soit installÃ©
-      (avec la distribution <trademark>RedHat</trademark>, le package
-      s'appelle <command>iproute</command>). Vous pouvez vÃ©rifier si le
-      package est installÃ© par la prÃ©sence du programme <command>ip</command>
-      sur votre firewall. En tant que <systemitem
-      class="username">root</systemitem>, vous pouvez utiliser la commande
-      <command>which</command> pour cela:</para>
+      <para>Shorewall a besoin que le paquetage
+      <command><command>iproute</command></command>/<command><command>iproute2</command></command>
+      soit installé (avec la distribution <trademark>RedHat</trademark>, le
+      paquetage s'appelle <command><command>iproute</command></command>). Vous
+      pouvez contrôler que le package est installé en vérifiant la présence du
+      programme <command><command>ip</command></command> sur votre firewall.
+      En tant que <systemitem class="username">root</systemitem>, vous pouvez
+      utiliser la commande <command>which</command> pour cela:</para>
 
       <programlisting>[root@gateway root]# <command>which ip</command>
 /sbin/ip
@@ -150,17 +165,17 @@
     <section>
       <title>Avant de commencer</title>
 
-      <para>Je recommande de commencer par une lecture complÃ¨te du guide afin
-      de se familiariser avec les tenants et aboutissants, puis de recommencer
-      et seulement alors d'appliquer vos modifications de
-      configuration.</para>
+      <para>Je vous recommande de commencer par une lecture complète du guide
+      afin de vous familiariser avec les concepts mis en oeuvre, puis de
+      recommencer la lecture et seulement alors d'appliquer vos modifications
+      de configuration.</para>
 
       <caution>
-        <para>Si vous Ã©ditez vos fichiers de configuration sur un systÃ¨me
-        <trademark>Windows</trademark>, vous devez les sauver comme des
-        fichiers <trademark>Unix</trademark> si votre Ã©diteur supporte cette
+        <para>Si vous éditez vos fichiers de configuration sur un système
+        <trademark>Windows</trademark>, vous devez les enregistrer comme des
+        fichiers <trademark>Unix</trademark> si votre éditeur supporte cette
         option sinon vous devez les convertir avec <command>dos2unix</command>
-        avant d'essayer de les utiliser. De la mÃªme maniÃ¨re, si vous copiez un
+        avant d'essayer de les utiliser. De la même manière, si vous copiez un
         fichier de configuration depuis votre disque dur
         <trademark>Windows</trademark> vers une disquette, vous devez lancer
         <command>dos2unix</command> sur la copie avant de l'utiliser avec
@@ -180,11 +195,11 @@
     <section>
       <title>Conventions</title>
 
-      <para>Les points oÃ¹ des modifications s'imposent sont indiquÃ©s par
+      <para>Les points où des modifications s'imposent sont indiqués par
       <inlinegraphic fileref="images/BD21298_.gif" format="GIF" />.</para>
 
-      <para>Les notes de configuration qui sont propres Ã  LEAF/Bering sont
-      marquÃ©es avec <inlinegraphic fileref="images/leaflogo.gif"
+      <para>Les notes de configuration qui sont propres à LEAF/Bering sont
+      marquées avec <inlinegraphic fileref="images/leaflogo.gif"
       format="GIF" />.</para>
     </section>
   </section>
@@ -194,53 +209,55 @@
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
-    <para>Si vous Ãªtes Ã©quipÃ© d'un modem <acronym>ADSL</acronym> et que vous
-    utilisez <acronym>PPTP</acronym> pour communiquer avec un serveur Ã 
-    travers ce modem, vous devez faire les changements <ulink
-    url="PPTP.htm#PPTP_ADSL">suivants</ulink> en plus de ceux dÃ©crits
-    ci-dessous. <acronym>ADSL</acronym> avec <acronym>PPTP</acronym> est
-    commun en Europe, notamment en Autriche.</para>
+    <para>Si vous êtes équipé d'un modem
+    <acronym><acronym>ADSL</acronym></acronym> et que vous utilisez
+    <acronym>PPTP</acronym> pour communiquer avec un serveur à travers ce
+    modem, vous devez faire les changements <ulink
+    url="PPTP.htm#PPTP_ADSL">suivants</ulink> en plus de ceux décrits
+    ci-dessous. <acronym><acronym>ADSL</acronym></acronym> avec
+    <acronym><acronym>PPTP</acronym></acronym> est répandu en Europe,
+    notamment en Autriche.</para>
   </section>
 
   <section>
     <title>Les Concepts de Shorewall</title>
 
-    <para>Les fichiers de configuration pour Shorewall sont situÃ©s dans le
-    rÃ©pertoire /etc/shorewall -- pour de simples paramÃ©trages, vous n'avez Ã 
-    faire qu'avec quelques un d'entre eux comme dÃ©cris dans ce guide.</para>
+    <para>Les fichiers de configuration pour Shorewall sont situés dans le
+    répertoire /etc/shorewall -- pour de simples paramétrages, vous n'aurez à
+    faire qu'avec quelques-uns d'entre eux comme décrit dans ce guide.</para>
 
     <warning>
       <para><emphasis role="bold">Note aux utilisateurs de
       Debian</emphasis></para>
 
       <para>Si vous vous servez du .deb pour installer, vous vous rendrez
-      compte que votre rÃ©pertoire <filename
+      compte que votre répertoire <filename
       class="directory">/etc/shorewall</filename> est vide. Ceci est voulu.
       Les squelettes des fichiers de configuration se trouvent sur votre
-      systÃ¨me dans le rÃ©pertoire <filename
+      système dans le répertoire <filename
       class="directory">/usr/share/doc/shorewall/default-config</filename>.
       Copiez simplement les fichiers dont vous avez besoin depuis ce
-      rÃ©pertoire dans <filename class="directory">/etc/shorewall</filename>,
+      répertoire dans <filename class="directory">/etc/shorewall</filename>,
       puis modifiez ces copies.</para>
 
-      <para>Remarquez que vous devez copier <filename>
+      <para>Remarquez que vous devez copier<filename>
       /usr/share/doc/shorewall/default-config/shorewall.conf</filename> et
       <filename>/usr/share/doc/shorewall/default-config/modules</filename>
       dans <filename
-      class="directory"><filename>/etc/shorewall</filename></filename> mÃªme si
+      class="directory"><filename>/etc/shorewall</filename></filename> même si
       vous ne modifiez pas ces fichiers.</para>
     </warning>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
-    <para>AprÃ¨s avoir installÃ© Shorewall, vous pourrez trouver les exemples de
-    la maniÃ¨re suivante:<orderedlist>
+    <para>Après avoir installé Shorewall, vous pourrez trouver les exemples de
+    la manière suivante:<orderedlist>
         <listitem>
-          <para>Si vous avez intallÃ© en utilisant un RPM, les exemples seront
-          dans le sous-rÃ©pertoire <filename
-          class="directory">Samples/three-interfaces/</filename> du rÃ©pertoire
-          de la documentation de Shorewall. Si vous ne savez pas oÃ¹ se trouve
-          le rÃ©pertoire de la documentation de Shorewall, vous pouvez trouver
+          <para>Si vous avez installé en utilisant un <acronym>RPM</acronym>,
+          les exemples seront dans le sous-répertoire <filename
+          class="directory">Samples/three-interfaces/</filename> du répertoire
+          de la documentation de Shorewall. Si vous ne savez pas où se trouve
+          le répertoire de la documentation de Shorewall, vous pouvez trouver
           les exemples en utilisant cette commande:</para>
 
           <programlisting>~# rpm -ql shorewall | fgrep three-interfaces
@@ -255,26 +272,26 @@
         </listitem>
 
         <listitem>
-          <para>Si vous avez installÃ© depuis le tarball, les exemples sont
-          dans le rÃ©pertoire <filename>Samples/three-interfaces</filename> du
+          <para>Si vous avez installé depuis le tarball, les exemples sont
+          dans le répertoire <filename>Samples/three-interfaces</filename> du
           tarball.</para>
         </listitem>
 
         <listitem>
-          <para>Si vous avez installÃ© en utlisant un .deb, les exemples sont
+          <para>Si vous avez installé en utilisant un .deb, les exemples sont
           dans
           <filename>/usr/share/doc/shorewall/examples/three-interfaces</filename>.</para>
         </listitem>
       </orderedlist></para>
 
-    <para>Au fur et Ã  mesure de la prÃ©sentation de chaque fichier, je vous
-    suggÃ¨re de jeter un oeil Ã  ceux physiquement prÃ©sents sur votre systÃ¨me --
-    chacun des fichiers contient des instructions de configuration dÃ©taillÃ©es
-    et des entrÃ©es par dÃ©faut.</para>
+    <para>Au fur et à mesure de la présentation de chaque fichier, je vous
+    suggère de jeter un oeil à ceux physiquement présents sur votre système --
+    chacun des fichiers contient des instructions de configuration détaillées
+    et des entrées par défaut.</para>
 
-    <para>Shorewall voit le rÃ©seau oÃ¹ il fonctionne, comme Ã©tant composÃ© d'un
+    <para>Shorewall voit le réseau où il fonctionne, comme étant composé d'un
     ensemble de zones. Dans une configuration avec trois interfaces, les noms
-    des zones suivantes sont utilisÃ©s:</para>
+    des zones suivants sont utilisés:</para>
 
     <programlisting>#ZONE   TYPE   OPTIONS                 IN                      OUT
 #                                      OPTIONS                 OPTIONS
@@ -283,46 +300,45 @@ net     ipv4
 loc     ipv4
 dmz     ipv4</programlisting>
 
-    <para>Les zones de Shorewall sont dÃ©finies dans le fichier <ulink
+    <para>Les zones de Shorewall sont définies dans le fichier <ulink
     url="Documentation.htm#Zones"><filename
     class="directory">/etc/shorewall/</filename><filename>zones</filename></ulink>.</para>
 
-    <para>Remarquez que Shorewall reconnaÃ®t le systÃ¨me de firewall comme sa
+    <para>Remarquez que Shorewall reconnaît le système de firewall comme sa
     propre zone. Quand le fichier <filename>/etc/shorewall/zones</filename>
-    est traitÃ©, le nom de la zone firewall est stockÃ© dans la variable
-    d'environnement <emphasis>$FW</emphasis> qui peut Ãªtre utilisÃ©e depuis
+    est traité, le nom de la zone firewall est stocké dans la variable
+    d'environnement <emphasis>$FW</emphasis> qui peut être utilisée depuis
     l'ensemble des autres fichiers de configuration de Shorewall, pour faire
-    rÃ©fÃ©rence au firewall lui-mÃªme.</para>
+    référence au firewall lui-même.</para>
 
-    <para>Les rÃ¨gles Ã  propos du trafic Ã  autoriser et Ã  interdire sont
-    exprimÃ©es en utilisant le terme de zones.</para>
+    <para>Les règles à propos du trafic à autoriser et à interdire sont
+    exprimées en utilisant le terme de zones.</para>
 
     <itemizedlist>
       <listitem>
-        <para>Vous exprimez votre politique par dÃ©faut pour les connexions
+        <para>Vous exprimez votre politique par défaut pour les connexions
         d'une zone vers une autre zone dans le fichier <ulink
         url="Documentation.htm#Policy"><filename
         class="directory">/etc/shorewall/</filename><filename>policy</filename></ulink>.</para>
       </listitem>
 
       <listitem>
-        <para>Vous dÃ©finissez les exceptions Ã  ces politiques pas dÃ©faut dans
+        <para>Vous définissez les exceptions à ces politiques pas défaut dans
         le fichier <ulink url="Documentation.htm#Rules"><filename
         class="directory">/etc/shorewall/</filename><filename>rules</filename></ulink>.</para>
       </listitem>
     </itemizedlist>
 
-    <para>Pour chaque connexion demandant Ã  entrer dans le firewall, la
-    requÃªte est en premier lieu vÃ©rifiÃ©e par rapport au fichier
-    <filename>/etc/shorewall/rules</filename>. Si aucune rÃ¨gle dans ce fichier
-    ne correspond Ã  la demande de connexion alors la premiÃ¨re politique dans
+    <para>Pour chaque connexion demandant à entrer dans le firewall, la
+    requête est en premier lieu vérifiée par rapport au contenu du fichier
+    <filename>/etc/shorewall/rules</filename>. Si aucune règle dans ce fichier
+    ne correspond à la demande de connexion, alors la première politique dans
     le fichier <filename>/etc/shorewall/policy</filename> qui y correspond
-    sera appliquÃ©e. S'il y a une <ulink
-    url="shorewall_extension_scripts.htm">action commune</ulink> dÃ©finie pour
+    sera appliquée. S'il y a une <ulink
+    url="shorewall_extension_scripts.htm">action commune</ulink> définie pour
     cette politique dans <filename>/etc/shorewall/actions</filename> ou dans
     <filename>/usr/share/shorewall/actions.std</filename> cette action commune
-    sera exÃ©cutÃ©e avant que l'action spÃ©cifiÃ©e dans
-    <filename>/etc/shorewall/rules</filename> ne soit appliquÃ©e.</para>
+    sera exécutée avant que la politique ne soit appliquée.</para>
 
     <para>Le fichier /etc/shorewall/policy inclus dans l'archive d'exemple
     (three-interface) contient les politiques suivantes:</para>
@@ -334,46 +350,46 @@ all        all         REJECT      info</programlisting>
 
     <important>
       <para>Dans le fichier d'exemple (three-interface), la ligne suivante est
-      incluse mais elle est commentÃ©e. Si vous voulez que votre firewall
-      puisse avoir un accÃ¨s complet aux serveurs sur Internet, dÃ©commentez la
+      incluse mais elle est commentée. Si vous voulez que votre firewall
+      puisse avoir un accès complet aux serveurs sur internet, dé-commentez la
       ligne.</para>
 
       <programlisting>#SOURCE    DEST        POLICY      LOG LEVEL    LIMIT:BURST
 $FW         net         ACCEPT</programlisting>
     </important>
 
-    <para>Les politiques prÃ©cÃ©dentes vont: <itemizedlist>
+    <para>Les politiques précédentes vont: <itemizedlist>
         <listitem>
-          <para>Permettre toutes demandes de connexion depuis votre rÃ©seau
-          local vers Internet</para>
+          <para>Autoriser (ACCEPT) toutes les demandes de connexion depuis
+          votre réseau local vers internet</para>
         </listitem>
 
         <listitem>
-          <para>Drop (ignorer) toutes les demandes de connexion depuis
-          l'Internet vers votre firewall ou votre rÃ©seau local</para>
+          <para>Ignorer (DROP) toutes les demandes de connexion depuis
+          internet vers votre firewall ou votre réseau local</para>
         </listitem>
 
         <listitem>
-          <para>Accept (accepter) facultativement toutes les demandes de
-          connexion de votre firewall vers l'Internet (si vous avez dÃ©commentÃ©
-          la politique additionnelle)</para>
+          <para>Autoriser (ACCEPT) toutes les demandes de connexion de votre
+          firewall vers internet (si vous avez dé-commenté la politique
+          additionnelle)</para>
         </listitem>
 
         <listitem>
-          <para>Reject (rejeter) toutes les autres requÃªtes de
+          <para>Rejeter (REJECT) toutes les autres requêtes de
           connexion.</para>
         </listitem>
       </itemizedlist></para>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
-    <para>Maintenant, editez votre propre fichier <filename><filename
+    <para>Maintenant, éditez votre propre fichier <filename><filename
     class="directory">/etc/shorewall/</filename><filename>policy</filename></filename>
-    et faites-y les changements que vous dÃ©sirez.</para>
+    et faites-y les changements que vous désirez.</para>
   </section>
 
   <section>
-    <title>Les Interfaces RÃ©seau</title>
+    <title>Les Interfaces Réseau</title>
 
     <figure>
       <title>DMZ</title>
@@ -385,78 +401,89 @@ $FW         net         ACCEPT</programlisting>
       </mediaobject>
     </figure>
 
-    <para>Le firewall possÃ¨de trois interfaces rÃ©seau. Lorsque la connexion
-    Internet passe par un "modem" cable ou<acronym> ADSL</acronym>,
-    l'<emphasis>Interface Externe</emphasis> sera l'adaptateur ethernet qui y
-    est connectÃ© Ã  ce <quote>Modem</quote> (e.g., <filename
+    <para>Le firewall possède trois interfaces réseau. Lorsque la connexion
+    internet passe par un <quote>modem</quote> câble ou<acronym><acronym> ADSL
+    </acronym></acronym><emphasis><emphasis>l'Interface
+    Externe</emphasis></emphasis> sera l'adaptateur éthernet qui est connecté
+    à ce <quote>Modem</quote> (par exemple <filename
     class="devicefile">eth0</filename>). Par contre, si vous vous connectez
-    par <emphasis>Point-to-Point Protocol</emphasis> over Ethernet
-    (<acronym>PPPoE</acronym>) ou <emphasis>par Point-to-Point Tunneling
-    Protocol</emphasis> (<acronym>PPTP</acronym>) l'interface externe sera une
-    interface ppp (e.g. <filename class="devicefile">ppp0</filename>). Si vous
-    vous connectez par un simple modem (<acronym>RTC</acronym>), votre
-    interface externe sera aussi <filename class="devicefile">ppp0</filename>.
-    Si vous vous connectez en utilisant l'<acronym>ISDN</acronym>, votre
-    interface externe sera <filename
-    class="devicefile">ippp0</filename>.</para>
+    avec <acronym>PPPoE</acronym> (Point-to-Point Protocol over Ethernet) ou
+    avec <acronym><acronym>PPTP</acronym></acronym> (Point-to-Point Tunneling
+    Protocol), l'interface externe sera une interface ppp (par exemple
+    <filename class="devicefile"><filename
+    class="devicefile">ppp0</filename></filename>). Si vous vous connectez
+    avec un simple modem <acronym><acronym>RTC</acronym></acronym>, votre
+    interface externe sera aussi <filename class="devicefile"><filename
+    class="devicefile">ppp0</filename></filename>. Si vous vous connectez en
+    utilisant l'<acronym><acronym>ISDN</acronym></acronym>, votre interface
+    externe sera <filename class="devicefile"><filename
+    class="devicefile">ippp0</filename></filename>.</para>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
-    <para><emphasis role="bold">Si votre interface vers l'extÃ©rieur est
+    <para><emphasis role="bold">Si votre interface vers l'extérieur est
     <filename class="devicefile">ppp0</filename> ou <filename
     class="devicefile">ippp0</filename> alors vous mettrez CLAMPMSS=yes dans
     le fichier
     <filename>/etc/shorewall/shorewall.conf</filename></emphasis>.</para>
 
     <para>Votre <emphasis>Interface locale</emphasis> sera un adaptateur
-    Ethernet (<filename class="devicefile">eth0</filename>, <filename
+    éthernet (<filename class="devicefile">eth0</filename>, <filename
     class="devicefile">eth1</filename> or <filename
-    class="devicefile">eth2</filename>) et sera connectÃ© Ã  un hub ou un
-    switch. Vos ordinateurs locaux seront connectÃ©s Ã  ce mÃªme switch (note :
-    si vous n'avez qu'un seul ordinateur en local, vous pouvez le connecter
-    directement au firewall par un cÃ¢ble croisÃ©).</para>
+    class="devicefile">eth2</filename>) et sera connecté à un hub ou à un
+    switch. Vos ordinateurs locaux seront connectés à ce même hub ou switch
+    (note : si vous n'avez qu'un seul ordinateur en local, vous pouvez le
+    connecter directement au firewall par un câble croisé).</para>
 
-    <para>Votre <emphasis>interface DMZ</emphasis> sera aussi un adaptateur
-    Ethernet (<filename class="devicefile">eth0</filename>, <filename
+    <para>Votre <emphasis>interface <acronym>DMZ</acronym></emphasis> sera
+    aussi un adaptateur éthernet (<filename
+    class="devicefile">eth0</filename>, <filename
     class="devicefile">eth1</filename> or <filename
-    class="devicefile">eth2</filename>) et sera connectÃ© Ã  un hub ou un
-    switch. Vos ordinateurs appartenant Ã  la DMZ seront connectÃ©s Ã  ce mÃªme
-    switch (note : si vous n'avez qu'un seul ordinateur dans la DMZ, vous
-    pouvez le connecter directement au firewall par un cÃ¢ble croisÃ©).</para>
+    class="devicefile">eth2</filename>) et sera connectée à un hub ou à un
+    switch. Vos ordinateurs appartenant à la <acronym>DMZ</acronym> seront
+    connectés à ce même hub ou switch (note : si vous n'avez qu'un seul
+    ordinateur dans la <acronym>DMZ</acronym>, vous pouvez le connecter
+    directement au firewall par un câble croisé).</para>
 
     <warning>
-      <para><emphasis role="bold">Ne connectez pas l'interface interne et
-      externe sur le mÃªme hub ou switch, sauf pour tester</emphasis>. Vous
-      pouvez tester ce type de configuration si vous spÃ©cifiez l'option
-      <emphasis role="bold">arp_filter</emphasis> ou bien l'option <emphasis
+      <para><emphasis role="bold">Ne connectez pas les interfaces interne et
+      externe sur le même hub ou le même switch, sauf à des fins de
+      test</emphasis>. Vous pouvez tester en utilisant ce type de
+      configuration si vous spécifiez l'option <emphasis
+      role="bold">arp_filter</emphasis> ou l'option <emphasis
       role="bold">arp_ignore</emphasis> dans le fichier <filename
-      class="directory">/etc/shorewall/</filename><filename>interfaces</filename>
-      pour toutes les interfaces connectÃ©es au hub/switch commun. <emphasis
-      role="bold">Utiliser une telle configuration avec un firewall en
-      production est fortement dÃ©conseillÃ©</emphasis>.</para>
+      class="directory">/etc/shorewall/</filename><filename>interfaces, et
+      ce</filename> pour toutes les interfaces connectées au hub/switch
+      commun. <emphasis role="bold">Il est très fortement déconseillé
+      d'utiliser une telle configuration avec un firewall en
+      production</emphasis>.</para>
     </warning>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
-    <para>Le fichier de configuration d'exemple pour trois interfaces suppose
-    que votre interface externe est <filename
-    class="devicefile">eth0</filename>, que l'interface locale est eth1 et que
-    la DMZ est sur l'interface <filename class="devicefile">eth2</filename>.
-    Si votre configuration est diffÃ©rente, vous devrez modifier le
-    fichier<filename> /etc/shorewall/interfaces</filename> en consÃ©quence.
-    Tant que vous y Ãªtes, vous pourriez parcourir la liste des options qui
-    sont spÃ©cifiÃ©es pour les interfaces. Quelques trucs:<tip>
-        <para>Si votre interface vers l'extÃ©rieur est <filename
+    <para>Le fichier de configuration d'exemple pour le firewall à trois
+    interfaces suppose que votre interface externe est <filename
+    class="devicefile"><filename
+    class="devicefile">eth0</filename></filename>, que l'interface locale est
+    <filename class="devicefile">eth1</filename> et que la
+    <acronym>DMZ</acronym> est sur l'interface <filename
+    class="devicefile"><filename
+    class="devicefile">eth2</filename></filename>. Si votre configuration est
+    différente, vous devrez modifier le fichier<filename>
+    /etc/shorewall/interfaces</filename> en conséquence. Tant que vous y êtes,
+    vous pourriez parcourir la liste des options qui sont spécifiées pour les
+    interfaces. Quelques astuces:<tip>
+        <para>Si votre interface vers l'extérieur est <filename
         class="devicefile">ppp0</filename> ou <filename
-        class="devicefile">ippp0</filename>, vous pouvez remplacer le detect
-        dans la seconde colonne par un <quote>-</quote> (sans les
-        quotes).</para>
+        class="devicefile">ippp0</filename>, vous pouvez remplacer le
+        <quote>detect</quote> dans la seconde colonne par un <quote>-</quote>
+        (sans guillemets).</para>
       </tip><tip>
-        <para>Si votre interface vers l'extÃ©rieur est <filename
+        <para>Si votre interface vers l'extérieur est <filename
         class="devicefile">ppp0</filename> or <filename
         class="devicefile">ippp0</filename> ou si vous avez une adresse
         <acronym>IP</acronym> statique, vous pouvez enlever
-        <varname>dhcp</varname> dans la liste des options .</para>
+        <quote>dhcp</quote> dans la liste des options .</para>
       </tip></para>
   </section>
 
@@ -464,20 +491,23 @@ $FW         net         ACCEPT</programlisting>
     <title>Adresses IP</title>
 
     <para>Avant d'aller plus loin, nous devons dire quelques mots au sujet des
-    adresses IP. Normalement, votre Fournisseur d' AccÃ¨s Internet (FAI) vous
-    assignera une seule adresse IP. Cette adresse peut Ãªtre assignÃ©e par le
-    Dynamic Host Configuration Protocol (DHCP), lors de l'Ã©tablissement de
-    votre connexion lorsque vous vous connectez (modem standard) ou bien
-    lorsque vous Ã©tablissez un autre type de connexion PPP (PPPoA, PPPoE,
-    etc.). Dans certains cas , votre fournisseur peut vous assigner une
-    adresse statique IP. Cela signifie que vous devez configurer l'interface
-    externe de votre firewall afin d'utiliser cette adresse de maniÃ¨re
-    permanente. Quelle que soit la faÃ§on dont votre adresse externe vous est
-    assignÃ©e, elle va Ãªtre partagÃ©e par tous vos systÃ¨mes lors de l'accÃ¨s Ã 
-    Internet. Vous devrez assigner vos propres adresses dans votre rÃ©seau
-    local (votre interface interne sur le firewall ainsi que les autres
-    ordinateurs). La RFC 1918 reserve des plages d'adresses IP privÃ©es pour
-    utilisation dans les rÃ©seau privÃ©s:</para>
+    adresses IP. Normalement, votre Fournisseur d' Accès Internet
+    (<acronym>FAI</acronym>) ne vous allouera qu'une seule adresse IP. Cette
+    adresse peut vous être allouée par <acronym>DHCP</acronym> (Dynamic Host
+    Configuration Protocol), lors de l'établissement de votre connexion (modem
+    standard) ou bien lorsque vous établissez un autre type de connexion
+    <acronym>PPP</acronym> (<acronym>PPPoA</acronym>,
+    <acronym>PPPoE</acronym>, etc.). Dans certains cas , votre fournisseur
+    peut vous allouer une adresse statique IP. Dans ce cas vous devez
+    configurer l'interface externe de votre firewall afin d'utiliser cette
+    adresse de manière permanente.</para>
+
+    <para>Quelle que soit la façon dont votre adresse externe vous est
+    attribuée, elle va être partagée par tous vos systèmes lors de l'accès à
+    internet. Vous devrez assigner vos propres adresses au machines de votre
+    réseau local (votre interface interne sur le firewall ainsi que les autres
+    ordinateurs). La RFC 1918 réserve des plages d'adresses IP pour
+    l'utilisation dans les réseau privés:</para>
 
     <programlisting>10.0.0.0    - 10.255.255.255
 172.16.0.0  - 172.31.255.255
@@ -486,57 +516,56 @@ $FW         net         ACCEPT</programlisting>
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
     <para>Avant de lancer Shorewall, <emphasis role="bold">il faut regarder
-    l'adresse IP de votre interface externe, et, si elle est dans les plages
-    prÃ©cÃ©dentes, vous devez enlever l'option "norfc1918" dans la ligne
+    l'adresse IP de votre interface externe, et, si elle est dans l'une des
+    plages précédentes, vous devez enlever l'option "norfc1918" dans la ligne
     concernant l'interface externe dans le fichier
     <filename>/etc/shorewall/interfaces</filename></emphasis>.</para>
 
-    <para>Vous devrez assigner vos adresses locales dans un sous-rÃ©seau et les
-    adresses de votre DMZ dans un autre sous-rÃ©seau. Pour ce faire, nous
-    pouvons considÃ©rer un sous-rÃ©seau comme Ã©tant une plage d'adresses
-    <varname>x.y.z.0 - x.y.z.255</varname>. Un tel sous-rÃ©seau aura un masque
-    (Subnet Mask) <systemitem class="netmask">de 255.255.255.0</systemitem>.
-    L'adresse <varname>x.y.z.0</varname> est rÃ©servÃ©e comme l'adresse de
-    sous-rÃ©seau <emphasis>(Subnet Address</emphasis>) et
-    <varname>x.y.z.255</varname> est rÃ©servÃ©e en tant qu'adresse de broadcast
-    <emphasis>(Subnet Broadcast Address</emphasis>). Dans Shorewall, un
-    sous-rÃ©seau est dÃ©crit en utilisant <ulink
-    url="shorewall_setup_guide.htm#Subnets">la notation CIDR (Classless
-    InterDomain Routing)</ulink> qui consiste en l'adresse du sous-rÃ©seau
-    suivie par<varname>/24</varname>. Le <quote>24</quote> se rÃ©fÃ¨re au nombre
-    consÃ©cutif de bits Ã  <quote>1</quote> dans la partie gauche du masque de
-    sous-rÃ©seau.</para>
+    <para>Vous devrez allouer vos adresses depuis le même sous-réseau
+    (subnet). Pour ce faire, nous pouvons considérer un sous-réseau comme
+    étant une plage d'adresses <varname>allant de x.y.z.0 à
+    x.y.z.255</varname>. Un tel sous-réseau aura un masque (subnet mask)
+    <systemitem class="netmask">de 255.255.255.0</systemitem>. L'adresse
+    <varname>x.y.z.0</varname> est réservée comme l'adresse de sous-réseau
+    <emphasis>(Subnet Address</emphasis>) et l'adresse
+    <varname>x.y.z.255</varname> est réservée en tant qu'adresse de diffusion
+    (<emphasis>broadcast</emphasis>). Dans Shorewall, un tel sous-réseau est
+    décrit en utilisant <ulink url="shorewall_setup_guide_fr.htm#Subnets">la
+    notation CIDR (Classless InterDomain Routing)</ulink> qui consiste en
+    l'adresse du sous-réseau suivie par<varname> /</varname>24. Le
+    <quote>24</quote> indiquant le nombre consécutif de bits à
+    <quote>1</quote> dans la partie gauche du masque de sous-réseau.</para>
 
     <table>
-      <title>Un exemple de sous-rÃ©seau (sub-network) :</title>
+      <title>Un exemple de sous-réseau (sub-network) :</title>
 
       <tgroup cols="2">
         <colspec align="left" />
 
         <tbody>
           <row>
-            <entry>Range:</entry>
+            <entry>Etendue:</entry>
 
             <entry><systemitem class="ipaddress">10.10.10.0</systemitem> -
             <systemitem class="ipaddress">10.10.10.255</systemitem></entry>
           </row>
 
           <row>
-            <entry>Subnet Address:</entry>
+            <entry>Adresse de sous-réseau:</entry>
 
             <entry><systemitem
             class="ipaddress">10.10.10.0</systemitem></entry>
           </row>
 
           <row>
-            <entry>Broadcast Address:</entry>
+            <entry>Adresse de diffusion:</entry>
 
             <entry><systemitem
             class="ipaddress">10.10.10.255</systemitem></entry>
           </row>
 
           <row>
-            <entry>CIDR Notation:</entry>
+            <entry>Notation CIDR:</entry>
 
             <entry><systemitem
             class="ipaddress">10.10.10.0/24</systemitem></entry>
@@ -545,38 +574,39 @@ $FW         net         ACCEPT</programlisting>
       </tgroup>
     </table>
 
-    <para>La convention veut que l'on affecte Ã  l'interface interne du
-    firewall la premiÃ¨re adresse utilisable du sous-rÃ©seau (<systemitem
-    class="ipaddress">10.10.10.1</systemitem> dans l'exemple prÃ©cÃ©dent) ou
-    bien la derniÃ¨re adresse utilisable (<systemitem
+    <para>La convention veut que l'on affecte à l'interface interne du
+    firewall la première adresse utilisable du sous-réseau (<systemitem
+    class="ipaddress">10.10.10.1</systemitem> dans l'exemple précédent) ou
+    bien la dernière adresse utilisable (<systemitem
     class="ipaddress">10.10.10.254</systemitem>).</para>
 
-    <para>L'un des buts d'un sous-rÃ©seau est de permettre Ã  tous les
-    ordinateurs dans le sous-rÃ©seau de savoir avec quels autres ordinateurs
-    ils peuvent communiquer directement. Pour communiquer avec des systÃ¨mes en
-    dehors du sous-rÃ©seau, les ordinateurs envoient des paquets Ã  travers une
-    paserelle (gateway routeur).</para>
+    <para>L'un des objectifs de la gestion en sous-réseaux est de permettre à
+    tous les ordinateurs du sous-réseau de savoir avec quels autres
+    ordinateurs ils peuvent communiquer directement. Pour communiquer avec des
+    systèmes en dehors du sous-réseau auquel ils appartiennent, les
+    ordinateurs doivent envoyer leurs paquets par l'intermédiaire d'une
+    passerelle (gateway).</para>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
-    <para>Vos ordinateurs en local (local computer 1 et local computer 2 dans
-    le diagramme) devraient Ãªtre configurÃ©s avec leur passerelle par dÃ©faut
-    (default gateway) pointant sur l'adresse <acronym>IP</acronym> de
-    l'interface interne du firewall. Les ordinateurs de votre DMZ (DMZ
-    Computers 1 et DMZ computer 2) devraient Ãªtre configurÃ©s avec leur
-    passerelle par dÃ©faut (default gateway) pointant sur l'adresse
-    <acronym>IP</acronym> de l'interface DMZ du firewall.</para>
+    <para>Vos ordinateurs locaux (computer 1 et computer 2 dans le diagramme)
+    doivent être configurés avec leur passerelle par défaut (default gateway)
+    pointant sur l'adresse <acronym>IP</acronym> de l'interface interne du
+    firewall. Les ordinateurs de votre <acronym>DMZ</acronym> (DMZ Computer 1
+    et DMZ computer 2) devraient être configurés avec leur passerelle par
+    défaut (default gateway) pointant sur l'adresse <acronym>IP</acronym> de
+    l'interface <acronym>DMZ</acronym> du firewall.</para>
 
-    <para>La prÃ©sentation prÃ©cÃ©dente ne fait que d'effleurer la question des
-    sous rÃ©seaux et du routage. Si vous Ãªtes intÃ©ressÃ© pour apprendre plus sur
+    <para>Cette brève présentation ne fait qu'effleurer la question des
+    sous-réseaux et du routage. Si vous voulez en apprendre plus sur
     l'adressage <acronym>IP</acronym> et le routage, je recommande <quote>IP
     Fundamentals: What Everyone Needs to Know about Addressing &amp;
     Routing</quote>, Thomas A. Maufer, Prentice-Hall, 1999, ISBN 0-13-975483-0
     (<ulink
-    url="http://www.phptr.com/browse/product.asp?product_id={58D4F6D4-54C5-48BA-8EDD-86EBD7A42AF6}">link</ulink>).</para>
+    url="http://www.phptr.com/browse/product.asp?product_id={58D4F6D4-54C5-48BA-8EDD-86EBD7A42AF6}">lien</ulink>).</para>
 
-    <para>Le reste de ce guide assumera que vous avez configurÃ© votre rÃ©seau
-    comme montrÃ© ci-dessous :</para>
+    <para>Le reste de ce guide suppose que vous avez configuré votre réseau
+    comme montré ci-dessous :</para>
 
     <figure>
       <title>DMZ</title>
@@ -587,18 +617,18 @@ $FW         net         ACCEPT</programlisting>
         </imageobject>
 
         <caption>
-          <para>La passerelle par dÃ©faut pour la DMZ sera <systemitem
+          <para>La passerelle par défaut pour la DMZ sera <systemitem
           class="ipaddress">10.10.11.254</systemitem> et la passerelle par
-          dÃ©faut pour les ordinateurs locaux sera <systemitem
+          défaut pour les ordinateurs locaux sera <systemitem
           class="ipaddress">10.10.10.254</systemitem>.</para>
 
           <warning>
-            <para>Votre <acronym>FAI</acronym> (fournisseur d'accÃ¨s) pourrait
-            assigner une adresse <emphasis role="bold">RFC 1918</emphasis> Ã 
-            votre interface externe. Si cette adresse est le sous-rÃ©seau
-            <systemitem class="ipaddress">10.10.10.0/24</systemitem> alors
-            <emphasis role="bold">vous aurez besoin d'un sous-rÃ©seau DIFFERENT
-            RFC 1918 pour votre rÃ©seau local</emphasis>.</para>
+            <para>Votre <acronym>FAI</acronym> pourrait allouer une adresse
+            <emphasis role="bold">RFC 1918</emphasis> à votre interface
+            externe. Si cette adresse est le sous-réseau <systemitem
+            class="ipaddress">10.10.10.0/24</systemitem> alors <emphasis
+            role="bold">vous aurez besoin d'un sous-réseau RFC 1918 DIFFÉRENT
+            pour votre réseau local</emphasis>.</para>
           </warning>
         </caption>
       </mediaobject>
@@ -608,79 +638,82 @@ $FW         net         ACCEPT</programlisting>
   <section>
     <title>IP Masquerading (SNAT)</title>
 
-    <para>Les adresses rÃ©servÃ©es par la RFC 1918 sont parfois dÃ©signÃ©es comme
-    non-routables car les routeurs Internet (backbone) ne font pas circuler
-    les paquets qui ont une adresse de destination appartenant Ã  la RFC-1918.
-    Lorsqu'un de vos systÃ¨mes en local (supposons l'ordinateur1) demande une
-    connexion Ã  un serveur par Internet, le firewall doit effectuer une
-    traduction d'adresse rÃ©seau ( <emphasis>Network Address Translation
-    </emphasis><acronym>NAT</acronym>). Le firewall rÃ©Ã©crit l'adresse source
-    dans le paquet et la remplace par l'adresse de l'interface externe du
-    firewall; en d'autres termes, le firewall fait croire que c'est lui mÃªme
-    qui initie la connexion. Ceci est nÃ©cessaire afin que l'hÃ´te de
-    destination soit capable de renvoyer les paquets au firewall (souvenez
-    vous que les paquets qui ont pour adresse de destination, une adresse
-    rÃ©servÃ©e par la RFC 1918 ne peuvent pas Ãªtre routÃ©s Ã  travers Internet,
-    donc l'hÃ´te Internet ne peut adresser sa rÃ©ponse Ã  l'ordinateur 1).
-    Lorsque le firewall reÃ§oit le paquet de rÃ©ponse, il reÃ©crit l'adresse de
-    destination Ã  <systemitem class="ipaddress">10.10.10.1</systemitem> et
-    fait passer le paquet vers l'ordinateur 1.</para>
+    <para>Les adresses réservées par la RFC 1918 sont parfois désignées comme
+    non-routables car les routeurs centraux d'internet (backbone) ne font pas
+    suivre les paquets qui ont une adresse de destination appartenant à la
+    RFC-1918. Lorsqu'un de vos systèmes en local (supposons Computer 1) envoie
+    une demande de connexion à un serveur internet, le firewall doit effectuer
+    une traduction d'adresse réseau ou <emphasis>Network Address Translation
+    (</emphasis><acronym><acronym>NAT</acronym></acronym>). Le firewall
+    réécrit l'adresse source dans le paquet et la remplace par l'adresse de
+    l'interface externe du firewall; en d'autres termes, le firewall fait
+    croire que c'est lui même qui initie la connexion. Ceci est nécessaire
+    afin que l'hôte de destination soit capable de renvoyer les paquets au
+    firewall (souvenez vous que les paquets qui ont pour adresse de
+    destination une adresse réservée par la RFC 1918 ne peuvent pas être
+    routés à travers internet, donc l'hôte internet ne peut adresser sa
+    réponse à l'ordinateur 1). Lorsque le firewall reçoit le paquet de
+    réponse, il réécrit l'adresse de destination à <systemitem
+    class="ipaddress">10.10.10.1</systemitem> et fait passer le paquet vers
+    l'ordinateur Computer 1.</para>
 
-    <para>Sur les systÃ¨mes Linux, ce procÃ©dÃ© est souvent appelÃ© <emphasis>IP
-    Masquerading</emphasis> mais vous verrez aussi le terme de
-    <emphasis>Source Network Address Translation</emphasis>
-    (<acronym>SNAT</acronym>). Shorewall suit la convention utilisÃ©e avec
-    Netfilter:<itemizedlist>
+    <para>Sur les systèmes Linux, ce procédé est souvent appelé <emphasis>IP
+    Masquerading</emphasis> mais vous verrez aussi le terme de traduction
+    d'adresses source ou <emphasis>Source Network Address
+    Translation</emphasis> (<acronym>SNAT</acronym>). Shorewall suit la
+    convention utilisée avec Netfilter:<itemizedlist>
         <listitem>
-          <para><emphasis>Masquerade</emphasis> dÃ©signe le cas ou vous laissez
-          votre firewall dÃ©tecter automatiquement l'adresse de l'interface
+          <para><emphasis>Masquerade</emphasis> désigne le cas ou vous laissez
+          votre firewall détecter automatiquement l'adresse de votre interface
           externe.</para>
         </listitem>
 
         <listitem>
-          <para><emphasis><acronym>SNAT</acronym></emphasis> dÃ©signe le cas oÃ¹
-          vous spÃ©cifiez explicitement l'adresse source des paquets sortant de
-          votre rÃ©seau local.</para>
+          <para><emphasis><acronym>SNAT</acronym></emphasis> désigne le cas où
+          vous spécifiez explicitement l'adresse source des paquets sortant de
+          votre réseau local.</para>
         </listitem>
       </itemizedlist>Sous Shorewall, autant le
-    <emphasis>Masquerading</emphasis> et le
-    <emphasis><acronym>SNAT</acronym></emphasis> sont configurÃ© avec des
-    entrÃ©s dans le fichier <filename
-    class="directory">/etc/shorewall/</filename><filename>masq</filename>.</para>
+    <emphasis>Masquerading</emphasis> que la
+    <emphasis><acronym>SNAT</acronym></emphasis> sont configurés avec des
+    entrées dans le fichier <filename>/etc/shorewall/masq</filename>. Vous
+    utiliserez normalement le Masquerading si votre adresse
+    <acronym>IP</acronym> externe est dynamique, et la <acronym>SNAT</acronym>
+    si votre adresse <acronym>IP</acronym> externe est statique.</para>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
     <para>Si votre interface externe est <filename
-    class="devicefile">eth0</filename>, votre interface locale <filename
-    class="devicefile">eth1</filename> et votre interface pour la DMZ
-    <filename class="devicefile">eth2</filename> vous n'avez pas besoin de
-    modifier le fichier fourni avec l'exemple. Dans le cas contraire, Ã©ditez
-    <filename
+    class="devicefile">eth0</filename>, si votre interface locale est
+    <filename class="devicefile">eth1</filename> et que votre interface pour
+    la <acronym>DMZ</acronym> est <filename
+    class="devicefile">eth2</filename>, vous n'avez pas besoin de modifier le
+    fichier fourni avec l'exemple. Dans le cas contraire, éditez <filename
     class="directory">/etc/shorewall/</filename><filename>masq</filename> et
-    changez le en consÃ©quence.</para>
+    changez-le en conséquence.</para>
 
-    <para>Si, malgrÃ© les avertissements, vous utilisez ce guide et que vous
-    voulez faire du one-to-one NAT ou du Proxy ARP pour votre DMZ, enlevez
-    l'entrÃ©e pour <filename class="devicefile">eth2</filename> de
+    <para>Si, malgré les avertissements, vous utilisez ce guide et que vous
+    voulez faire du NAT un-à-un (one-to-one NAT) ou du Proxy ARP pour votre
+    DMZ, enlevez l'entrée pour <filename class="devicefile">eth2</filename> de
     <filename><filename
     class="directory">/etc/shorewall/</filename><filename>masq</filename></filename>.</para>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
-    <para>Si votre IP externe est statique, vous pouvez la mettre dans la
-    troisiÃ¨me colonne dans <filename
+    <para>Si votre adresse externe <acronym>IP</acronym> est statique, vous
+    pouvez la mettre dans la troisième colonne dans <filename
     class="directory">/etc/shorewall/</filename><filename>masq</filename> si
-    vous le dÃ©sirez, de toutes faÃ§ons votre firewall fonctionnera bien si vous
-    laissez cette colonne vide. Le fait de mettre votre IP statique dans la
-    troisiÃ¨me colonne permet un traitement des paquets sortant un peu plus
-    efficace.</para>
+    vous le désirez. De toutes façons votre firewall fonctionnera bien si vous
+    laissez cette colonne vide. Le fait de mettre votre adresse
+    <acronym>IP</acronym> statique dans la troisième colonne permet un
+    traitement des paquets sortants un peu plus efficace.</para>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
-    <para>Si vous utilisez les paquets Debian, vÃ©rifiez dans votre fichier de
+    <para>Si vous utilisez un paquetage Debian, vérifiez dans votre fichier de
     configuration <filename>shorewall.conf</filename> que la valeur suivante
-    est convenablemblement paramÃ¨trÃ©e, sinon faites les changements
-    nÃ©cessaires:<itemizedlist spacing="compact">
+    est convenablement paramétrée, sinon faites les changements
+    nécessaires:<itemizedlist spacing="compact">
         <listitem>
           <para><varname>IP_FORWARDING=On</varname></para>
         </listitem>
@@ -688,38 +721,36 @@ $FW         net         ACCEPT</programlisting>
   </section>
 
   <section>
-    <title>Port Forwarding (DNAT)</title>
+    <title>Transfert de ports (DNAT)</title>
 
-    <para>Un de nos buts est de faire tourner un ou plusieurs serveurs sur nos
-    ordinateurs dans la DMZ. Puique ces ordinateurs ont une adresse RFC-1918,
-    il n'est pas possible pour les clients sur Internet de se connecter
-    directement Ã  eux. Il est nÃ©cessaire pour ces clients d'adresser leurs
-    demandes de connexion au firewall qui rÃ©Ã©crira l'adresse de votre serveur
-    comme adresse de destination, puis fera passer le paquet Ã  celui-ci.
-    Lorsque votre serveur rÃ©pond, le firewall applique automatiquement un
-    <acronym>SNAT</acronym> pour rÃ©Ã©crire l'adresse source dans la
-    rÃ©ponse.</para>
+    <para>Un de nos objectifs est de faire tourner un ou plusieurs serveurs
+    sur nos ordinateurs dans la DMZ. Puisque ces ordinateurs ont une adresse
+    RFC-1918, il n'est pas possible pour les clients sur internet de s'y
+    connecter directement. Il faudra plutôt à que ces clients adressent leurs
+    demandes de connexion au firewall qui réécrira l'adresse de votre serveur
+    comme adresse de destination, puis lui fera passer le paquet. Lorsque
+    votre serveur retournera sa réponse, le firewall appliquera
+    automatiquement une règle <acronym><acronym>SNAT</acronym></acronym> pour
+    réécrire l'adresse source dans la réponse.</para>
 
-    <para>Ce procÃ©dÃ© est appelÃ© <emphasis>Port Forwarding</emphasis> ou
-    <emphasis>traduction d'adresses destination</emphasis> (DNAT). Vous
-    configurez le port forwarding en utilisant les rÃ¨gles DNAT dans le fichier
-    <filename
-    class="directory">/etc/shorewall/</filename><filename>rules</filename>
-    file.</para>
+    <para>Ce procédé est appelé transfert de port (<emphasis>Port
+    Forwarding)</emphasis> ou traduction d'adresses réseau destination ou
+    <emphasis>Destination Network Address Translation</emphasis>
+    (<acronym><acronym>DNAT</acronym></acronym>). Vous configurez le transfert
+    de port en utilisant des règles <acronym><acronym>DNAT</acronym></acronym>
+    dans le fichier <filename>/etc/shorewall/rules</filename>.</para>
 
-    <para>La forme gÃ©nÃ©rale d'une simple rÃ¨gle de port forwarding dans
-    <filename
-    class="directory">/etc/shorewall/</filename><filename>rules</filename>
-    est: <programlisting>#ACTION   SOURCE    DEST                                          PROTO      DEST PORT(S)
+    <para>La forme générale d'une simple règle de transfert de port dans
+    <filename>/etc/shorewall/rules</filename> est:<programlisting>#ACTION   SOURCE    DEST                                          PROTO      DEST PORT(S)
 DNAT      net       dmz:<emphasis>&lt;server local IP address&gt;</emphasis>[:<emphasis>&lt;server port&gt;</emphasis>] <emphasis>&lt;protocol&gt;</emphasis> <emphasis>&lt;port&gt;</emphasis></programlisting>
-    Si vous ne spÃ©cifiez pas <emphasis><varname>&lt;server
-    port&gt;</varname></emphasis>, il est supposÃ© Ãªtre le mÃªme que
+    Si vous ne spécifiez pas <emphasis><varname>&lt;server
+    port&gt;</varname></emphasis>, il est supposé être le même que
     <emphasis><varname>&lt;port&gt;</varname></emphasis>.</para>
 
     <example>
-      <title>Vous faites tourner un serveur Web sur l'ordinateur 2 de votre
-      DMZ et vous voulez faire suivre les paquets entrant en TCP sur le port
-      80 Ã  ce systÃ¨me</title>
+      <title>Vous faites tourner un serveur Web sur l'ordinateur Computer 2 de
+      votre <acronym>DMZ</acronym> et vous voulez faire suivre à ce système
+      les paquets entrant en TCP sur le port 80</title>
 
       <programlisting>#ACTION     SOURCE    DEST                PROTO      DEST PORT(S)
 Web/DNAT     net    dmz:10.10.11.2  
@@ -727,27 +758,29 @@ Web/ACCEPT   loc    dmz:10.10.11.2</programlisting>
 
       <para><itemizedlist>
           <listitem>
-            <para>L'entrÃ©e 1 fait suivre le port 80 depuis Internet vers la
-            DMZ.</para>
+            <para>L'entrée 1 fait suivre le port 80 depuis internet vers la
+            <acronym>DMZ</acronym>.</para>
           </listitem>
 
           <listitem>
-            <para>L'entrÃ©e 2 autorise les connexions du rÃ©seau local.</para>
+            <para>L'entrée 2 autorise les connexions depuis le réseau
+            local.</para>
           </listitem>
-        </itemizedlist>Plusieurs points importants Ã  garder en mÃ©moire
+        </itemizedlist>Plusieurs points importants sont à garder en mémoire
       :<itemizedlist>
           <listitem>
-            <para>Lorsque vous vous connectez Ã  votre serveur Ã  partir de
-            votre rÃ©seau local, vous devez utiliser l'adresse IP interne du
+            <para>Lorsque vous vous connectez à votre serveur à partir de
+            votre réseau local, vous devez utiliser l'adresse IP interne du
             serveur (<systemitem
             class="ipaddress">10.10.11.2</systemitem>).</para>
           </listitem>
 
           <listitem>
-            <para>Quelques fournisseurs Internet (FAI) bloquent les requÃªtes
-            de connexion entrantes sur le port 80. Si vous avez des problÃ¨mes
-            pour vous connecter Ã  votre serveur web, essayez la rÃ¨gle suivante
-            et connectez vous sur le port 5000 (c.a.d., connectez vous Ã 
+            <para>Quelques Fournisseurs d'Accès Internet
+            (<acronym>FAI</acronym>) bloquent les requêtes de connexion
+            entrantes sur le port 80. Si vous avez des problèmes pour vous
+            connecter à votre serveur web, essayez la règle suivante et
+            connectez vous sur le port 5000 (c.a.d., connectez vous à
             <literal>http://w.x.y.z:5000 ou w.x.y.z</literal> est votre IP
             externe).<programlisting>#ACTION   SOURCE    DEST                PROTO      DEST PORT(S)    SOURCE
 #                                                                  PORT(S)
@@ -755,27 +788,27 @@ DNAT      net       dmz:10.10.11.2:80   tcp        80              5000</program
           </listitem>
 
           <listitem>
-            <para>Si vous voulez avoir la possibilitÃ© de vous connecter Ã 
-            votre serveur depuis le rÃ©seau local en utilisant votre adresse
+            <para>Si vous voulez avoir la possibilité de vous connecter à
+            votre serveur depuis le réseau local en utilisant votre adresse
             externe, et si vous avez une adresse IP externe statique (fixe),
-            vous pouvez remplacer la rÃ¨gle loc-&gt;dmz prÃ©cÃ©dente par
+            vous pouvez remplacer la règle loc-&gt;dmz précédente par
             :<programlisting>#ACTION   SOURCE    DEST            PROTO  DEST PORT(S)  SOURCE   ORIGINAL
 #                                                        PORT(S)  DEST
 DNAT      loc       dmz:10.10.11.2  tcp    80            -        <emphasis>&lt;external IP&gt;</emphasis></programlisting>Si
             vous avez une IP dynamique, vous devez vous assurer que votre
             interface externe est en route avant de lancer Shorewall et vous
-            devez suivre les Ã©tapes suivantes (en supposant que votre
+            devez suivre les étapes suivantes (en supposant que votre
             interface externe est <filename
             class="devicefile">eth0</filename>):<orderedlist>
                 <listitem>
-                  <para>InsÃ©rez ce qui suit dans /etc/shorewall/params:</para>
+                  <para>Insérez ce qui suit dans /etc/shorewall/params:</para>
 
                   <para><command>ETH0_IP=$(find_interface_address
                   eth0)</command></para>
                 </listitem>
 
                 <listitem>
-                  <para>Votre rÃ¨gle <literal>loc-&gt;dmz</literal> deviendra:
+                  <para>Votre règle <literal>loc-&gt;dmz</literal> deviendra:
                   <programlisting>#ACTION   SOURCE    DEST             PROTO   DEST PORT(S)  SOURCE   ORIGINAL
 #                                                          PORT(S)  DEST
 DNAT      loc       dmz:10.10.11.2   tcp     80            -        $ETH0_IP</programlisting></para>
@@ -784,8 +817,8 @@ DNAT      loc       dmz:10.10.11.2   tcp     80            -        $ETH0_IP</pr
           </listitem>
 
           <listitem>
-            <para>Si vous voulez accÃ©der Ã  votre serveur depuis la DMZ en
-            utilisant votre adresse IP externe, regardez <ulink
+            <para>Si vous voulez accéder à votre serveur depuis la DMZ en
+            utilisant votre adresse IP externe, regardez la <ulink
             url="FAQ.htm#faq2a">FAQ 2a</ulink>.</para>
           </listitem>
         </itemizedlist></para>
@@ -793,62 +826,68 @@ DNAT      loc       dmz:10.10.11.2   tcp     80            -        $ETH0_IP</pr
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
-    <para>Maintenant, ajoutez les rÃ¨gles DNAT et ACCEPT pour vos
-    serveurs.</para>
+    <para>Maintenant, modifiez <filename>/etc/shorewall/rules</filename> pour
+    ajouter les règles <acronym>DNAT</acronym> dont vous avez besoin.</para>
 
     <important>
-      <para>Quand vous testez des rÃ¨gles DNAT telles que celles prÃ©sentÃ©es
-      plus haut, vous devez les tester depuis un client A L'EXTERIEUR DE VOTRE
-      FIREWALL (depuis la zone 'net'). Vous ne pouvez pas tester ces rÃ¨gles de
-      l'intÃ©rieur !</para>
+      <para>Quand vous testez des règles <acronym>DNAT</acronym> telles que
+      celles présentées plus haut, <emphasis role="bold">vous devez les tester
+      depuis un client A L'EXTÉRIEUR DE VOTRE FIREWALL</emphasis> (depuis la
+      zone <quote>net</quote>). Vous ne pouvez pas tester ces règles de
+      l'intérieur !</para>
 
-      <para>Pour des trucs en cas de problÃ¨me avec le DNAT, <ulink
-      url="FAQ.htm#faq1a">allez lire les FAQs 1a et 1b</ulink>.</para>
+      <para>Pour des astuces en cas de problème avec la
+      <acronym>DNAT</acronym>, <ulink url="FAQ.htm#faq1a">allez lire les FAQ
+      1a et 1b</ulink>.</para>
     </important>
   </section>
 
   <section>
-    <title>Domain Name Server (DNS)</title>
+    <title>Service de Noms de Domaines (DNS)</title>
 
-    <para>Normalement, quand vous vous connectez Ã  votre fournisseur
-    (FAI/ISP), en mÃªme temps que vous obtenez votre adresse IP, votre resolver
-    <emphasis>Domain Name Service</emphasis> (<acronym>DNS</acronym>) pour le
-    firewall est configurÃ© automatiquement (c.a.d.,le fichier
-    <filename>/etc/resolv.conf</filename> est mis Ã  jour). Il arrive que votre
-    fournisseur d'accÃ¨s vous donne une paire d'adresse <acronym>IP</acronym>
-    pour les serveurs <acronym>DNS</acronym> afin que vous configuriez
+    <para>Normalement, quand vous vous connectez à votre fournisseur d'accès
+    (<acronym>FAI</acronym>), en même temps que vous obtenez votre adresse IP,
+    votre <quote>resolver</quote> pour le Service des Noms de Domaines ou
+    <emphasis>Domain Name Service</emphasis>
+    (<acronym><acronym>DNS</acronym></acronym>) pour le firewall est configuré
+    automatiquement (c.a.d., le fichier <filename>/etc/resolv.conf</filename>
+    est mis à jour). Il arrive que votre fournisseur d'accès vous donne une
+    paire d'adresse <acronym><acronym>IP</acronym></acronym> pour les serveurs
+    <acronym><acronym>DNS</acronym></acronym> afin que vous configuriez
     manuellement vos serveurs de noms primaire et secondaire. Quelle que soit
-    la maniÃ¨re dont le <acronym>DNS</acronym> est configurÃ© sur votre
-    firewall, il est de votre responsabilitÃ© de configurer le resolver sur vos
-    systÃ¨mes internes. Vous pouvez procÃ©der d'une de ces deux faÃ§ons
-    :<itemizedlist spacing="compact">
+    la manière dont le <acronym>DNS</acronym> est configuré sur votre
+    firewall, il est de votre responsabilité de configurer le
+    <quote>resolver</quote> sur chacun de vos systèmes internes. Vous pouvez
+    procéder d'une de ces deux façons :<itemizedlist spacing="compact">
         <listitem>
-          <para>Vous pouvez configurer votre systÃ¨me interne pour utiliser les
-          serveurs de noms de votre fournisseur. Si votre fournisseur vous
-          donne les adresses de ses serveurs ou si ces adresses sont
+          <para>Vous pouvez configurer votre système interne pour utiliser les
+          serveurs de noms de votre fournisseur d'accès. Si votre fournisseur
+          vous donne les adresses de ses serveurs ou si ces adresses sont
           disponibles sur son site web, vous pouvez les utiliser pour
-          configurer vos systÃ¨mes internes. Si cette information n' est pas
+          configurer vos systèmes internes. Si cette information n' est pas
           disponible, regardez dans <filename>/etc/resolv.conf</filename> sur
-          votre firewall -- les noms des serveurs sont donnÃ©s dans
-          l'enregistrement "nameserver" dans ce fichier.</para>
+          votre firewall -- les noms des serveurs sont donnés dans
+          l'enregistrement "<command>nameserver</command>" de ce
+          fichier.</para>
         </listitem>
 
         <listitem>
-          <para><anchor id="cachingdns" />Vous pouvez configurer un cache dns
-          <emphasis>Caching Name Server</emphasis> sur votre firewall.
-          <trademark>Red Hat</trademark> a un <acronym>RPM</acronym> pour
-          serveur cache dns (le <acronym>RPM</acronym> Ã  besoin aussi du
-          paquetage <command>bind</command><acronym>RPM</acronym>) et pour les
-          utilisateurs de Bering, il y a <command>dnscache.lrp</command>. Si
-          vous adoptez cette approche, vous configurez vos systÃ¨mes internes
-          pour utiliser le firewall lui mÃªme comme Ã©tant le seul serveur de
-          nom primaire. Vous utilisez l'adresse <acronym>IP</acronym> interne
-          du firewall (<systemitem class="ipaddress">10.10.10.254</systemitem>
-          dans l'exemple prÃ©cÃ©dent) pour l'adresse de serveur de nom. Pour
-          permettre Ã  vos systÃ¨mes locaux d'accÃ©der Ã  votre serveur cache de
-          noms, vous devez ouvrir le port 53 (Ã  la fois <acronym>UDP</acronym>
-          and <acronym>TCP</acronym>) depuis le rÃ©seau local vers le firewall;
-          vous ferez ceci en ajoutant les rÃ¨gles suivantes dans <filename
+          <para><anchor id="cachingdns" />Vous pouvez configurer un cache DNS
+          (<emphasis>Caching Name Server)</emphasis> sur votre firewall.
+          <trademark>Red Hat</trademark> fournit un
+          <acronym><acronym>RPM</acronym></acronym> pour serveur cache DNS (ce
+          <acronym>RPM</acronym> à aussi besoin aussi du paquetage<acronym>
+          RPM</acronym> <command>bind</command>) et pour les utilisateurs de
+          Bering, il y a le paquetage <command>dnscache.lrp</command>. Si vous
+          adoptez cette approche, vous configurez vos systèmes internes pour
+          utiliser le firewall lui même comme étant le seul serveur de noms
+          primaire. Vous utilisez l'adresse <acronym>IP</acronym> interne du
+          firewall (<systemitem class="ipaddress">10.10.10.254</systemitem>
+          dans l'exemple précédent) pour adresse du serveur de nom. Pour
+          permettre à vos systèmes locaux d'accéder à votre serveur cache DNS,
+          vous devez ouvrir le port 53 (à la fois <acronym>UDP</acronym> and
+          <acronym>TCP</acronym>) depuis le réseau local vers le firewall;
+          vous ferez ceci en ajoutant les règles suivantes dans <filename
           class="directory">/etc/shorewall/</filename><filename>rules</filename>.</para>
         </listitem>
       </itemizedlist></para>
@@ -860,23 +899,25 @@ DNS/ACCEPT  loc       $FW
 DNS/ACCEPT  dmz       $FW            </programlisting>
 
     <para>Si vous faites tourner le serveur de noms sur l'ordinateur 1 de la
-    DMZ:</para>
+    <acronym>DMZ</acronym>:</para>
 
     <programlisting>#ACTION     SOURCE    DEST                PROTO      DEST PORT(S)                      
 DNS/ACCEPT  loc       dmz:10.10.11.1
 DNS/ACCEPT  $FW       dmz:10.10.11.1             </programlisting>
 
-    <para>Dans la rÃ©gle ci-dessus, <quote>DNS/ACCEPT</quote> est un exemple
-    d'utilisation d'une macro prÃ©dÃ©finie. Shorewall comprend un certain nombre
-    de macros prÃ©dÃ©finies et vous pouvez <ulink url="Macros.html">ajouter les
-    votres</ulink>. Vous pouvez trouver une liste des macros comprises dans
+    <para>Dans la régle ci-dessus, <quote>DNS/ACCEPT</quote> est un exemple
+    d'utilisation d'une macro prédéfinie. Shorewall comprend un certain nombre
+    de macros prédéfinies et vous pouvez <ulink url="Macros.html">ajouter les
+    vôtres</ulink>. Vous pouvez trouver une liste des macros comprises dans
     votre version de Shorewall en utilisant la commande <command>ls
-    <filename>/usr/share/shorewall/macro.*</filename></command>.</para>
+    <filename>/usr/share/shorewall/macro.*</filename></command> ou bien la
+    commande <command>shorewall show macros</command> si vous utilisez une
+    version 3.0.3 ou ultérieure de Shorewall.</para>
 
-    <para>Vous n'Ãªtes pas obligÃ© d'utiliser des macros prÃ©dÃ©finies si vous
-    codez vos rÃ©gles dans le fichier
+    <para>Vous n'êtes pas obligé d'utiliser des macros prédéfinies et vous
+    pouvez codez vos régles vous-même dans le fichier
     <filename>/etc/shorewall/rules</filename>. Le premier exemple vu plus haut
-    (serveur de noms sur le firewall) aurait pu Ãªtre codÃ© comme suit:</para>
+    (serveur de noms sur le firewall) aurait pu être codé comme suit:</para>
 
     <programlisting>#ACTION   SOURCE    DEST                PROTO      DEST PORT(S)                      
 ACCEPT    loc       $FW                 tcp        53
@@ -884,10 +925,10 @@ ACCEPT    loc       $FW                 udp        53
 ACCEPT    dmz       $FW                 tcp        53
 ACCEPT    dmz       $FW                 udp        53              </programlisting>
 
-    <para>Au cas ou Shorewall n'inclue pas de macro prÃ©-dÃ©finies qui vous
-    convienne, vous pouvez dÃ©finir une macro vous-mÃªme ou bien coder
-    directement les rÃ©gles appropriÃ©es. Si vous ne savez pas quel port(s) et
-    protocole(s) une application particuliÃ¨re utilise, vous pouvez regarder
+    <para>Au cas ou Shorewall n'inclue pas de macro pré-définie qui vous
+    convienne, vous pouvez définir une macro vous-même ou bien coder
+    directement les régles appropriées. Si vous ne savez pas quel port(s) et
+    protocole(s) une application particulière utilise, vous pouvez regarder
     <ulink url="ports.htm">ici</ulink>.</para>
   </section>
 
@@ -895,205 +936,208 @@ ACCEPT    dmz       $FW                 udp        53              </programlist
     <title>Autres Connexions</title>
 
     <para>Les fichiers exemples inclus dans l'archive (three-interface)
-    contiennent la rÃ¨gle suivante :<programlisting>#ACTION     SOURCE    DEST                PROTO      DEST PORT(S)                      
-DNS/ACCEPT  $FW       net       </programlisting>Cette rÃ¨gle autorise l'accÃ¨s
-    <acronym>DNS</acronym> Ã  partir de votre firewall. Elle peut Ãªtre enlevÃ©e
-    si vous avez dÃ©commentÃ© la ligne dans <filename
+    contiennent la règle suivante :<programlisting>#ACTION     SOURCE    DEST                PROTO      DEST PORT(S)                      
+DNS/ACCEPT  $FW       net       </programlisting>Cette règle autorise l'accès
+    <acronym>DNS</acronym> à partir de votre firewall. Elle peut être enlevée
+    si vous avez dé-commenté la ligne dans <filename
     class="directory">/etc/shorewall/</filename><filename>policy</filename>
-    autorisant toutes les connexions depuis le firewall vers Internet.</para>
+    autorisant toutes les connexions depuis le firewall vers internet.</para>
 
     <para>L'exemple inclue aussi: <programlisting>#ACTION     SOURCE    DEST                PROTO      DEST PORT(S)                      
 SSH/ACCEPT  loc       $FW
-SSH/ACCEPT  loc       dmz        </programlisting>Ces rÃ©gles autorisent un
+SSH/ACCEPT  loc       dmz        </programlisting>Ces régles autorisent un
     serveur <acronym>SSH</acronym> sur votre firewall et sur chacun des
-    systÃ¨mes de votre DMZ et permettent de s'y connecter depuis vos systÃ¨mes
-    locaux (loc).</para>
+    systèmes de votre <acronym>DMZ</acronym> et permettent de s'y connecter
+    depuis vos systèmes locaux (zone <quote>loc</quote>).</para>
 
-    <para>Si vous dÃ©sirez permettre d'autres connexions entre vos systÃ¨mes, la
-    syntaxe gÃ©nÃ©rale d'une macro prÃ©dÃ©finie est:</para>
+    <para>Si vous désirez autoriser d'autres connexions entre vos systèmes, la
+    syntaxe générale d'une macro pré-définie est:</para>
 
     <programlisting>#ACTION         SOURCE        DEST                PROTO      DEST PORT(S)                      
 &lt;<emphasis>macro</emphasis>&gt;/ACCEPT  <emphasis>&lt;source zone&gt; &lt;destination zone&gt;</emphasis></programlisting>
 
-    <para>La syntaxe gÃ©nÃ©rale lorsqu'on utilise pas de macro prÃ©dÃ©finie
+    <para>La syntaxe générale lorsqu'on n'utilise pas de macro pré-définie
     est:<programlisting>#ACTION   SOURCE        DEST                PROTO      DEST PORT(S)                      
 ACCEPT    <emphasis>&lt;source zone&gt; &lt;destination zone&gt;  &lt;protocol&gt; &lt;port&gt; </emphasis></programlisting></para>
 
     <example>
-      <title>Vous voulez rendre publiquement accessible votre serveur DNS sur
-      le firewall</title>
+      <title>Vous voulez rendre votre serveur DNS sur le firewall accessible
+      depuis internet</title>
 
-      <para>En utilisant une macro prÃ©dÃ©finie:</para>
+      <para>En utilisant une macro pré-définie:</para>
 
       <programlisting>#ACTION     SOURCE    DEST                PROTO      DEST PORT(S)
 DNS/ACCEPT  net       $FW</programlisting>
 
-      <para>En n'utilisant pas de macro prÃ©dÃ©finie:</para>
+      <para>En n'utilisant pas de macro pré-définie:</para>
 
       <programlisting>#ACTION   SOURCE    DEST                PROTO      DEST PORT(S)                      
 ACCEPT    net       $FW                 tcp        53
 ACCEPT    net       $FW                 udp        53        </programlisting>
 
-      <para>Ces deux rÃ©gles viennent Ã©videmment s'ajouter Ã  celles prÃ©sentÃ©es
-      plus haut dans "vous pouvez configurer un cache DNS sur votre
-      firewall".</para>
+      <para>Ces deux régles viennent évidemment s'ajouter à celles présentées
+      plus haut dans <quote><link linkend="cachingdns">Vous pouvez configurer
+      un cache DNS sur votre firewall</link></quote>.</para>
     </example>
 
     <para>Si vous ne savez pas quel port(s) et protocole(s) une application
-    particuliÃ¨re utilise, vous pouvez regarder <ulink
+    particulière utilise, vous pouvez regarder <ulink
     url="ports.htm">ici</ulink>.</para>
 
     <important>
       <para>Je ne recommande pas d'autoriser <command>telnet</command> vers/de
-      l'Internet parce qu'il utilise du texte en clair (mÃªme pour le login!).
-      Si vous voulez un accÃ¨s shell Ã  votre firewall, utilisez <acronym>SSH
+      internet parce qu'il utilise du texte en clair (même pour le login !).
+      Si vous voulez un accès shell à votre firewall, utilisez <acronym>SSH
       :</acronym><programlisting>#ACTION     SOURCE    DEST                PROTO      DEST PORT(S)                      
 SSH/ACCEPT  net       $FW</programlisting></para>
     </important>
 
     <para><inlinegraphic fileref="images/leaflogo.gif" format="GIF" /> Les
-    utilisateurs de Bering pourront ajouter les deux rÃ©gles suivantes pour
-    Ãªtre compatible avec la configuration du firewall de
-    Jacques.<programlisting>#ACTION   SOURCE    DEST                PROTO      DEST PORT(S)                      
+    utilisateurs de Bering pourront ajouter les deux régles suivantes pour
+    être compatible avec la configuration du firewall de Jacques (Jacques's
+    Shorewall configuration).<programlisting>#ACTION   SOURCE    DEST                PROTO      DEST PORT(S)                      
 ACCEPT    loc       $FW                 udp        53
 ACCEPT    net       $FW                 tcp        80       </programlisting><itemizedlist>
         <listitem>
-          <para>L'entrÃ©e 1 autorise l'utilisation du Cache DNS.</para>
+          <para>L'entrée 1 autorise l'utilisation du Cache DNS.</para>
         </listitem>
 
         <listitem>
-          <para>L'entrÃ©e 2 autorise le <quote>weblet</quote> Ã 
+          <para>L'entrée 2 autorise le <quote>weblet</quote> à
           fonctionner.</para>
         </listitem>
       </itemizedlist><inlinegraphic fileref="images/BD21298_.gif"
     format="GIF" /></para>
 
-    <para>Maintenant, Ã©ditez votre fichier de configuration <filename
+    <para>Maintenant, éditez votre fichier de configuration <filename
     class="directory">/etc/shorewall/</filename><filename>rules</filename>
-    pour y ajouter, modifier ou supprimer les autres connexions
-    voulues.</para>
+    pour ajouter, modifier ou supprimer d'autres connexions suivant vos
+    besoins.</para>
   </section>
 
   <section>
-    <title>Quelques Points Ã  Garder en MÃ©moire</title>
+    <title>Quelques Points à Garder en Mémoire</title>
 
     <itemizedlist>
       <listitem>
         <para><emphasis role="bold">Vous ne pouvez pas tester votre firewall
-        de l'intÃ©rieur de votre rÃ©seau</emphasis>. Car envoyer des requÃªtes Ã 
+        depuis l'intérieur de votre réseau</emphasis>. Envoyer des requêtes à
         l'adresse IP externe de votre firewall ne signifie pas qu'elle seront
-        associÃ©es Ã  votre interface externe ou la zone <quote>net</quote>.
-        Tout trafic gÃ©nÃ©rÃ© par le rÃ©seau local sera associÃ© Ã  l'interface
-        locale et sera traitÃ© comme du trafic de loc-&gt;fw.</para>
+        associées à votre interface externe ou à la zone <quote>net</quote>.
+        Tout trafic généré par le réseau local sera associé à l'interface
+        locale et sera traité comme du trafic du réseau local vers le firewall
+        (loc-&gt;fw).</para>
       </listitem>
 
       <listitem>
-        <para><emphasis role="bold">Les adresses IP sont des propriÃ©tÃ©s des
-        systÃ¨mes, pas des interfaces</emphasis>. C'est une erreur de croire
+        <para><emphasis role="bold">Les adresses IP sont des propriétés des
+        systèmes, pas des interfaces</emphasis>. C'est une erreur de croire
         que votre firewall est capable de faire suivre
         (<emphasis>forward</emphasis>) des paquets simplement parce que vous
-        pouvez faire un ping sur l'adresse IP de toutes les interfaces du
-        firewall depuis le rÃ©seau local. La seule conclusion que vous puissiez
-        faire dans ce cas est que le lien entre le rÃ©seau local et le firewall
-        fonctionne et que vous avez probablement la bonne adresse de
-        passerelle par dÃ©faut sur votre systÃ¨me.</para>
+        pouvez faire un <command>ping</command> sur l'adresse IP de toutes les
+        interfaces du firewall depuis le réseau local. La seule conclusion que
+        vous puissiez tirer dans ce cas est que le lien entre le réseau local
+        et le firewall fonctionne et que vous avez probablement la bonne
+        adresse de passerelle par défaut sur votre système.</para>
       </listitem>
 
       <listitem>
-        <para><emphasis role="bold">Toutes les adresses IP configurÃ©es sur le
+        <para><emphasis role="bold">Toutes les adresses IP configurées sur le
         firewall sont dans la zone $FW (fw)</emphasis>. Si 192.168.1.254 est
-        l'adresse IP de votre interface interne, alors vous pouvez Ã©crire
+        l'adresse IP de votre interface interne, alors vous pouvez écrire
         <quote><emphasis role="bold">$FW:192.168.1.254</emphasis></quote> dans
-        une rÃ©gle mais vous ne devez pas Ã©crire <quote><emphasis
-        role="bold">loc:192.168.1.254</emphasis></quote>. C'est aussi un
-        non-sens d'ajouter 192.168.1.254 Ã  la zone <emphasis
-        role="bold">loc</emphasis> en utilisant une entrÃ©e dans
+        une régle mais vous ne devez pas écrire <quote><emphasis
+        role="bold">loc:192.168.1.254</emphasis></quote>. C'est aussi une
+        absurdité d'ajouter 192.168.1.254 à la zone <emphasis
+        role="bold">loc</emphasis> en utilisant une entrée dans
         <filename>/etc/shorewall/hosts</filename>.</para>
       </listitem>
 
       <listitem>
-        <para><emphasis role="bold">Les paquets de retour (Reply) ne suivent
-        PAS automatiquement le chemin inverse de la requÃªte
-        d'origine</emphasis>. Tous les paquets sont routÃ©s en se rÃ©fÃ©rant Ã  la
-        table de routage respective de chaque hÃ´te Ã  chaque Ã©tape du trajet.
-        Ce problÃ¨me se produit en gÃ©nÃ©ral lorsque on installe un firewall
-        Shorewall en parallÃ¨le Ã  une passerelle existante et qu'on essaye
-        d'utiliser DNAT dans Shorewall sans changer la passerelle par dÃ©faut
-        sur les systÃ¨mes recevant les requÃªtes transfÃ©rÃ©es (forwarded). Les
-        requÃªtes passent Ã  travers le firewall Shorewall oÃ¹ l'adresse de
-        destination IP est rÃ©Ã©crite, mais la rÃ©ponse revient par l'ancienne
-        passerelle qui ne modifiera pas le paquet.</para>
+        <para><emphasis role="bold">Les paquets de retour (reply) ne suivent
+        PAS automatiquement le chemin inverse de la requête
+        d'origine</emphasis>. Tous les paquets sont routés en se référant à la
+        table de routage respective de chaque hôte à chaque étape du trajet.
+        Ce problème se produit en général lorsque on installe un firewall
+        Shorewall en parallèle à une passerelle existante et qu'on essaye
+        d'utiliser des règles <acronym>DNAT</acronym> dans Shorewall sans
+        changer la passerelle par défaut sur les systèmes recevant les
+        requêtes transférées (forwarded). Les requêtes passent dans le
+        firewall Shorewall où l'adresse de destination IP est réécrite, mais
+        la réponse revient par l'ancienne passerelle qui, elle, ne modifiera
+        pas le paquet.</para>
       </listitem>
 
       <listitem>
-        <para><emphasis role="bold">Shorewall lui-mÃªme n'a aucune notion du
-        dedans et du dehors</emphasis>. Ces concepts dÃ©pendent de la faÃ§on
-        dont Shorewall est configurÃ©.</para>
+        <para><emphasis role="bold">Shorewall lui-même n'a aucune notion du
+        dedans et du dehors</emphasis>. Ces concepts dépendent de la façon
+        dont Shorewall est configuré.</para>
       </listitem>
     </itemizedlist>
   </section>
 
   <section>
-    <title>DÃ©marrer et ArrÃªter Votre Firewall</title>
+    <title>Démarrer et Arrêter Votre Firewall</title>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
-    <para>La <ulink url="Install.htm">procÃ©dure d'installation</ulink>
-    configure votre systÃ¨me pour lancer Shorewall au boot du systÃ¨me, mais le
-    lancement est dÃ©sactivÃ©, de faÃ§on Ã  ce que votre systÃ¨me ne tente pas de
-    lancer Shorewall avant que la configuration ne soit terminÃ©e. Une fois que
-    vous en aurez fini avec la configuration du firewall, vous devez Ã©diter
+    <para>La <ulink url="Install.htm">procédure d'installation</ulink>
+    configure votre système pour lancer Shorewall dès le boot du système, mais
+    le lancement est désactivé, de façon à ce que votre système ne tente pas
+    de lancer Shorewall avant que la configuration ne soit terminée. Une fois
+    que vous en avez fini avec la configuration du firewall, vous devez éditer
     /etc/shorewall/shorewall.conf et y mettre STARTUP_ENABLED=Yes.<important>
-        <para>Les utilisateurs des paquets .deb doivent Ã©diter <filename
+        <para>Les utilisateurs des paquetages .deb doivent éditer <filename
         class="directory">/etc/default/</filename><filename>shorewall</filename>
         et mettre <varname>startup=1</varname>.</para>
-      </important>Le firewall est activÃ© en utilisant la commande
-    <quote><command>shorewall start</command></quote> et arrÃªtÃ© avec
-    <quote><command>shorewall stop</command></quote>. Lorsque le firewall est
-    stoppÃ©, le routage est autorisÃ© sur les hÃ´tes qui possÃ¨dent une entrÃ©e
-    dans <filename
-    class="directory">/etc/shorewall/</filename><filename><ulink
-    url="Documentation.htm#Routestopped">routestopped</ulink></filename>. Un
-    firewall qui tourne peut Ãªtre relancÃ© en utilisant la commande
-    <quote><command>shorewall restart</command></quote> command. Si vous
-    voulez enlever toutes traces de Shorewall sur votre configuration de
-    Netfilter, utilisez <quote><command>shorewall
-    clear</command></quote>.</para>
+      </important></para>
+
+    <para>Le firewall est activé en utilisant la commande
+    <quote><command>shorewall start</command></quote> et arrêté avec la
+    commande <quote><command>shorewall stop</command></quote>. Lorsque le
+    firewall est arrêté, le routage est autorisé sur les hôtes qui possèdent
+    une entrée dans <filename class="directory"><ulink
+    url="Documentation.htm#Routestopped">/etc/shorewall/routestopped</ulink></filename>.
+    Un firewall qui tourne peut être relancé en utilisant la commande
+    <quote><command>shorewall restart</command></quote>. Si vous voulez
+    enlever toute trace de Shorewall sur votre configuration de Netfilter,
+    utilisez <quote><emphasis role="bold">shorewall
+    clear</emphasis></quote></para>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
-    <para>Les exemples (three-interface) supposent que vous voulez permettre
-    le routage depuis ou vers <filename class="devicefile">eth1</filename> (le
-    rÃ©seau local) et <filename class="devicefile">eth2</filename> (DMZ)
-    lorsque Shorewall est stoppÃ©. Si ces deux interfaces ne sont pas
-    connectÃ©es Ã  votre rÃ©seau local et Ã  votre DMZ, ou si vous voulez
-    permettre un ensemble d'hÃ´tes diffÃ©rents, modifiez
-    <filename>/etc/shorewall/routestopped</filename> en consÃ©quence.</para>
-
-    <warning>
-      <para>Si vous Ãªtes connectÃ© Ã  votre firewall depuis Internet, n'essayez
-      pas d'exÃ©cuter une commande <quote><command>shorewall
-      stop</command></quote> tant que vous n'avez pas ajoutÃ© une entrÃ©e pour
-      votre adresse <acronym>IP</acronym> (celle Ã  partir de laquelle vous
-      Ãªtes connectÃ©) dans <filename><filename
-      class="directory">/etc/shorewall/</filename><filename>routestopped</filename></filename>.
-      De la mÃªme maniÃ¨re, je ne vous recommande pas d'utiliser
-      <quote><command>shorewall restart</command></quote>; il est plus
-      intÃ©ressant de crÃ©er <ulink
-      url="configuration_file_basics.htm#Configs">une configuration
-      alternative</ulink> et de la tester en utilisant la <ulink
-      url="starting_and_stopping_shorewall.htm">commande "<emphasis
-      role="bold">shorewall try</emphasis>"</ulink></para>
-    </warning>
+    <para>Les fichiers de l'exemple Firewall à Trois Interfaces
+    (three-interface) supposent que vous voulez autoriser le routage depuis ou
+    vers <filename class="devicefile">eth1</filename> (votre réseau local) et
+    <filename class="devicefile">eth2</filename> (votre DMZ) lorsque Shorewall
+    est arrêté. Si ces interfaces ne sont pas connectées à votre réseau local
+    ou à votre DMZ, ou bien que vous voulez permettre l'accès depuis ou vers
+    d'autres hôtes, modifiez <filename
+    class="directory">/etc/shorewall/</filename><filename><ulink
+    url="Documentation.htm#Routestopped">routestopped</ulink></filename> en
+    conséquence. <warning>
+        <para>Si vous êtes connecté à votre firewall depuis internet,
+        n'essayez pas d'exécuter une commande <quote><command>shorewall
+        stop</command></quote> tant que vous n'avez pas ajouté une entrée dans
+        <filename><filename
+        class="directory">/etc/shorewall/</filename><filename>routestopped</filename></filename>
+        pour l'adresse IP à partir de laquelle vous êtes connecté . De la même
+        manière, je vous déconseille d'utiliser <quote><command>shorewall
+        restart</command></quote>; il est plus intéressant de créer <ulink
+        url="configuration_file_basics.htm#Configs">une configuration
+        alternative</ulink> et de la tester en utilisant la commande
+        <quote><ulink url="starting_and_stopping_shorewall.htm">shorewall
+        try</ulink></quote></para>
+      </warning></para>
   </section>
 
   <section>
-    <title>Autres Lectures RecommandÃ©es</title>
+    <title>Autres Lectures Recommandées</title>
 
     <para>Je vous recommande vivement de lire la <ulink
-    url="configuration_file_basics.htm">page des FonctionnalitÃ©s GÃ©nÃ©rales des
-    Fichiers de Configuration</ulink> -- elle contient des trucs sur les
-    possibilitÃ©s de Shorewall pour rendre aisÃ© l'administration de votre
-    firewall Shorewall.</para>
+    url="configuration_file_basics.htm">page des Fonctionnalités Générales des
+    Fichiers de Configuration</ulink> -- elle contient des astuces sur des
+    possibilités de Shorewall qui peuvent rendre plus aisée l'administration
+    de votre firewall Shorewall.</para>
   </section>
 </article>

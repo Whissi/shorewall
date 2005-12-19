@@ -8293,26 +8293,27 @@ apply_policy_rules() {
 	eval loglevel=\$${chain}_loglevel
 	eval optional=\$${chain}_is_optional
 
-	if ! havechain $chain && [ -z "$optional" -a "$policy" != CONTINUE ]; then
-	    #
-	    # The chain doesn't exist. Create the chain and add policy
-	    # rules
-	    #
-	    createchain $chain yes
-	    #
-	    # If either client or server is 'all' then this MUST be
-	    # a policy chain and we must apply the appropriate policy rules
-	    #
-	    # Otherwise, this is a canonical chain which will be handled in
-	    # the for loop below
-	    #
-	    case $chain in
-		all2*|*2all)
-		    policy_rules $chain $policy $loglevel
-		    ;;
-	    esac
+	if [ "$policy" != NONE ]; then
+	    if ! havechain $chain && [ -z "$optional" -a "$policy" != CONTINUE ]; then
+		#
+		# The chain doesn't exist. Create the chain and add policy
+		# rules
+		#
+		createchain $chain yes
+		#
+		# If either client or server is 'all' then this MUST be
+		# a policy chain and we must apply the appropriate policy rules
+		#
+		# Otherwise, this is a canonical chain which will be handled in
+		# the for loop below
+		#
+		case $chain in
+		    all2*|*2all)
+			policy_rules $chain $policy $loglevel
+			;;
+		esac
+	    fi
 	fi
-
     done
 
     #
@@ -8571,14 +8572,6 @@ activate_rules()
 	run_iptables -A FORWARD -i $interface -j $(forward_chain $interface)
 	run_iptables -A INPUT   -i $interface -j $(input_chain $interface)
 	addnatjump POSTROUTING $(masq_chain $interface) -o $interface
-	#
-        # Bridges under the 2.4 kernel have the wierd property that REJECTS have the physdev-in and physdev-out set to the input physdev.
-        # To accomodate this feature/bug, we effectively set 'routeback' on bridge ports.
-	#
-	eval ports=\$$(chain_base $interface)_ports
-	for port in $ports; do
-	    run_iptables -A $(forward_chain $interface) -o $interface -m physdev --physdev-in $port --physdev-out $port -j ACCEPT
-	done
     done
 
     chain=${FW}2${FW}

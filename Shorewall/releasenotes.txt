@@ -51,6 +51,15 @@ Problems Corrected in 3.0.4
 1)  The shorewall.conf file is once again "console friendly". Patch is
     courtesy of Tuomo Soini.
 
+2)  A potential security hole has been closed. Previously, Shorewall ACCEPTed
+    all traffic from a bridge port that was sent back out on the same port. If
+    the port was described in /etc/shorewall/hosts using the wildcard "+" (eg,
+    xenbr0:vif+), this could lead to traffic being passed in variance with the
+    supplied policies and rules.
+
+3)  Previously, an intra-zone policy of NONE would cause a startup error. That
+    problem has been corrected.
+
 New Features in 3.0.4
 
 1)  By popular demand, the 'Limit' action described at

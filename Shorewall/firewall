@@ -1902,7 +1902,7 @@ disable_ipv6() {
 	    ip6tables -F                        && save_command ip6tables -F
 	    ip6tables -X                        && save_command ip6tables -X
 	    ip6tables -A OUTPUT -o lo -j ACCEPT && save_command ip6tables -A OUTPUT -o lo -j ACCEPT
-	    ip6tables -A INPUT -i lo -j ACCEPT  && save_command ip6tables -A INPUT -i lo -j
+	    ip6tables -A INPUT -i lo -j ACCEPT  && save_command ip6tables -A INPUT -i lo -j ACCEPT
 	else
 	    error_message "WARNING: DISABLE_IPV6=Yes in shorewall.conf but this system does not appear to have ip6tables"
 	fi

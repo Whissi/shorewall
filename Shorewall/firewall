@@ -3021,7 +3021,8 @@ setup_nat() {
     do_one_nat() {
 	local add_ip_aliases=$ADD_IP_ALIASES iface=${interface%:*}
 
-	if [ -n "$add_ip_aliases" ]; then
+	if [ -n "$
+	_aliases" ]; then
 	    case $interface in
 		*:)
 		    interface=${interface%:}
@@ -7581,7 +7582,11 @@ add_ip_aliases()
 
 	shift;shift
 
-	list_search $external $(find_interface_addresses $interface) || do_one
+	if list_search $external $(find_interface_addresses $interface) ; then
+	    save_command qt ip addr add ${external}$(address_details) dev $interface $label
+	else
+	    do_one
+	fi
     done
 }
 

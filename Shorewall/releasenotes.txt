@@ -60,6 +60,16 @@ Problems Corrected in 3.0.4
 3)  Previously, an intra-zone policy of NONE would cause a startup error. That
     problem has been corrected.
 
+4)  When RETAIN_ALIASES=Yes, the script produced by "shorewall save" did not
+    add the retained aliases. This means that the following sequence of
+    events resulted in missing aliases:
+
+	    shorewall start
+	    shorewall restart
+	    shorewall save
+	    reboot
+	    shorewall -f start (which is the default during boot up)
+
 New Features in 3.0.4
 
 1)  By popular demand, the 'Limit' action described at

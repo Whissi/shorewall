@@ -1466,7 +1466,7 @@ validate_hosts_file() {
 	       ;;
        esac
 
-       eval ports=\$${iface}_ports
+       ports=\$${iface}
        eval zports=\$${z}_ports
 
        for host in $(separate_list $hosts); do
@@ -1517,10 +1517,7 @@ validate_hosts_file() {
 	   done
        done
 
-       if [ -n "$ports" ]; then
-	   eval ${iface}_ports=\"$ports\"
-	   eval ${z}_ports=\"$zports\"
-       fi
+       [ -n "$ports" ]  && eval ${z}_ports=\"$zports\"
 
    done < $TMP_DIR/hosts
 

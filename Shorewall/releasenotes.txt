@@ -79,6 +79,20 @@ New Features in 3.0.4
 2)  DISABLE_IPV6 no longer disabled local (loopback) IPV6 traffic. This
     change is reported to improve Java startup time on some distributions.
 
+3)  Shorewall now contains support for wildcard ports. In /etc/shorewall/hosts,
+    you may specify the port name with trailing "+" then use specific port names
+    in rules.
+
+    Example:
+
+    /etc/shorewall/hosts
+
+	vpn      br0:tap+
+
+    /etc/shorewall/hosts
+
+	DROP      vpn:tap0              vpn:tap1          udp    9999
+
 Migration Considerations for Users upgrading from Shorewall 2.x.
 
 1) The "monitor" command has been eliminated.

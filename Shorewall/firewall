@@ -942,7 +942,7 @@ known_interface() # $1 = interface name
 match_source_dev()
 {
     if [ -n "$BRIDGING" ]; then
-	list_search $1 $all_ports && physdev_echo "--physdev-in $1" || echo -i $1
+	list_search $1 $ALL_PORTS && physdev_echo "--physdev-in $1" || echo -i $1
     else
 	echo -i $1
     fi
@@ -951,7 +951,7 @@ match_source_dev()
 match_dest_dev()
 {
     if [ -n "$BRIDGING" ]; then
-	list_search $1 $all_ports && physdev_echo "--physdev-out $1" || echo -o $1
+	list_search $1 $ALL_PORTS && physdev_echo "--physdev-out $1" || echo -o $1
     else
 	echo -o $1
     fi
@@ -959,7 +959,7 @@ match_dest_dev()
 
 verify_interface()
 {
-    known_interface $1 || { [ -n "$BRIDGING" ] && list_search $1 $all_ports ; }
+    known_interface $1 || { [ -n "$BRIDGING" ] && list_search $1 $ALL_PORTS ; }
 }
 
 #
@@ -1442,7 +1442,7 @@ validate_hosts_file() {
    {
        list_search $1 $ports || ports="$ports $1"
        list_search ${interface}:${1} $zports || zports="$zports ${interface}:${1}"
-       list_search $1 $all_ports || all_ports="$all_ports $1"
+       list_search $1 $ALL_PORTS || ALL_PORTS="$ALL_PORTS $1"
    }
 
    while read z hosts options; do
@@ -1521,7 +1521,7 @@ validate_hosts_file() {
 
    done < $TMP_DIR/hosts
 
-   [ -n "$all_ports" ] && echo "   Bridge ports are: $all_ports"
+   [ -n "$ALL_PORTS" ] && echo "   Bridge ports are: $ALL_PORTS"
 }
 
 #
@@ -9312,12 +9312,12 @@ do_initialize() {
     CRITICALHOSTS=
     IPSECFILE=
     EXCLUSION_SEQ=1
-
     STOPPING=
     HAVE_MUTEX=
     ALIASES_TO_ADD=
     SECTION=ESTABLISHED
     SECTIONS=
+    ALL_PORTS=
 
     FUNCTIONS=$SHARED_DIR/functions
 

@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-11-02</pubdate>
+    <pubdate>2005-12-04</pubdate>
 
     <copyright>
       <year>2002-2005</year>
@@ -33,6 +33,26 @@
       License</ulink></quote>.</para>
     </legalnotice>
   </articleinfo>
+
+  <caution>
+    <para><emphasis role="bold">Эта статья применима для Shorewall версии 3.0
+    и выше. Если Вы работаете с более ранней версией Shorewall чем Shorewall
+    3.0.0, тогда смотрите документацию для этого выпуска.</emphasis></para>
+  </caution>
+
+  <warning>
+    <para>Пример файлов конфигурации в составе Shorewall 3.0.0 и 3.0.1 был
+    некорректен. Первой генерируемой ошибкой была:</para>
+
+    <para><emphasis role="bold">ERROR: No Firewall Zone Defined (ОШИБКА: Не
+    определены зоны файервола)</emphasis></para>
+
+    <para>Исправленные файла 'зоны' ('zones') и 'интерфейсы' ('interfaces')
+    доступны по адресу: <ulink
+    url="http://www.shorewall.net/pub/shorewall/3.0/shorewall-3.0.1/errata/one-interface/">http://www.shorewall.net/pub/shorewall/3.0/shorewall-3.0.1/errata/one-interface/</ulink>.</para>
+
+    <para>Эта проблема исправлена в Shorewall 3.0.2.</para>
+  </warning>
 
   <section>
     <title>Введение</title>
@@ -136,13 +156,35 @@
   <section>
     <title>Концепции Shorewall</title>
 
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
-
     <para>Конфигурационные файлы Shorewall находятся в директории <filename
     class="directory">/etc/shorewall</filename> -- в случае простой установки
     Вам необходимо иметь дело только с немногими из них, как описано в этом
-    руководстве. После того как Вы <ulink url="Install.htm">установили
-    Shorewall</ulink>, Вы можете найти Примеры файлов настроек в следующих
+    руководстве.</para>
+
+    <para><warning>
+        <para><emphasis role="bold">Замечание для пользователей
+        Debian</emphasis></para>
+
+        <para>Если Вы при установке пользовались .deb, Вы обнаружите, что
+        директория <filename class="directory">/etc/shorewall</filename>
+        пуста. Это сделано специально. Поставляемые шаблоны файлов
+        конфигурации Вы найдете на вашей системе в директории <filename
+        class="directory">/usr/share/doc/shorewall/default-config</filename>.
+        Просто скопируйте нужные Вам файлы из этой директории в <filename
+        class="directory">/etc/shorewall</filename> и отредактируйте
+        копии.</para>
+
+        <para>Заметьте, что Вы должны скопировать <filename
+        class="directory">/usr/share/doc/shorewall/default-config/shorewall.conf</filename>
+        и <filename
+        class="directory">/usr/share/doc/shorewall/default-config/modules</filename>
+        в <filename class="directory">/etc/shorewall</filename> даже если Вы
+        не будете изменять эти файлы.</para>
+      </warning><inlinegraphic fileref="images/BD21298_.gif"
+    format="GIF" /></para>
+
+    <para>После того как Вы <ulink url="Install.htm">установили
+    Shorewall</ulink>, Вы можете найти примеры файлов настроек в следующих
     местах:</para>
 
     <orderedlist>
@@ -176,27 +218,6 @@
         class="directory">/usr/share/doc/shorewall/examples/one-interface</filename>.</para>
       </listitem>
     </orderedlist>
-
-    <warning>
-      <para><emphasis role="bold">Замечание для пользователей
-      Debian</emphasis></para>
-
-      <para>Если Вы при установке пользовались .deb, Вы обнаружите, что
-      директория <filename class="directory">/etc/shorewall</filename> пуста.
-      Это сделано специально. Поставляемые шаблоны файлов конфигурации Вы
-      найдете на вашей системе в директории <filename
-      class="directory">/usr/share/doc/shorewall/default-config</filename>.
-      Просто скопируйте нужные Вам файлы из этой директории в <filename
-      class="directory">/etc/shorewall</filename> и отредактируйте
-      копии.</para>
-
-      <para>Заметьте, что Вы должны скопировать <filename
-      class="directory">/usr/share/doc/shorewall/default-config/shorewall.conf</filename>
-      и <filename
-      class="directory">/usr/share/doc/shorewall/default-config/modules</filename>
-      в <filename class="directory">/etc/shorewall</filename> даже если Вы не
-      будете изменять эти файлы.</para>
-    </warning>
 
     <para>По мере того как мы будем знакомится с каждым файлом, я надеюсь, что
     Вы просмотрите реальный файл на вашей системе -- каждый файл содержит
@@ -249,7 +270,7 @@ net     ipv4</programlisting>
     action</ulink>) определенное для политики в файле
     <filename>/etc/shorewall/actions</filename> или
     <filename>/usr/share/shorewall/actions.std</filename>, тогда это действие
-    выполняется перед тем как .</para>
+    выполняется перед тем как применяется политика.</para>
 
     <para>Файл <filename>/etc/shorewall/policy,</filename> входящий в пример с
     одним интерфейсом, имеет следующие политики:</para>
@@ -290,39 +311,41 @@ all            all                REJECT   info</programlisting>
     <para>Файервол имеет один сетевой интерфейс. Если соединение с Internet
     осуществляется при помощи кабельного или <acronym>DSL</acronym>
     <quote>Модема</quote>, <emphasis>Внешним интерфейсом</emphasis> будет
-    ethernet-адаптер (например, <emphasis role="bold">eth0</emphasis>),
+    ethernet-адаптер (например, <filename class="devicefile">eth0</filename>),
     который подсоединен к этому <quote>Модему</quote>, <emphasis
     role="underline">если же</emphasis> Вы соединены посредством протокола
     <emphasis>Point-to-Point Protocol over Ethernet</emphasis>
     (<acronym>PPPoE</acronym>) или <emphasis>Point-to-Point Tunneling
     Protocol</emphasis> (<acronym>PPTP</acronym>), то в этом случае
-    <emphasis>Внешним интерфейсом</emphasis> будет <emphasis
-    role="bold">ppp</emphasis> интерфейс (например, <emphasis
-    role="bold">ppp0</emphasis>). Если Вы подсоединены через обычный модем,
-    Вашим <emphasis>Внешним интерфейсом</emphasis> будет также <emphasis
-    role="bold">ppp0</emphasis>. Если Вы соединяетесь используя
+    <emphasis>Внешним интерфейсом</emphasis> будет <acronym>PPP</acronym>
+    интерфейс (например, <filename class="devicefile">ppp0</filename>). Если
+    Вы подсоединены через обычный модем, Вашим <emphasis>Внешним
+    интерфейсом</emphasis> будет также <filename
+    class="devicefile">ppp0</filename>. Если Вы соединяетесь используя
     <acronym>ISDN</acronym>, <emphasis>Внешним интерфейсом</emphasis> будет
-    <emphasis role="bold">ippp0</emphasis>.</para>
+    <filename class="devicefile">ippp0</filename>.</para>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
     <para>Пример конфигурации Shorewall для одного интерфейса подразумевает,
-    что внешний интерфейс - <emphasis role="bold">eth0</emphasis>. Если Ваша
-    конфигурация отличается, Вам необходимо изменить файл примера
+    что внешний интерфейс - <filename class="devicefile">eth0</filename>. Если
+    Ваша конфигурация отличается, Вам необходимо изменить файл примера
     <filename>/etc/shorewall/interfaces</filename> соответственно. Пока Вы
     здесь, Вы возможно захотите просмотреть список опций, специфичных для
     интерфейса. Вот несколько подсказок:</para>
 
     <tip>
-      <para>Если Ваш внешний интерфейс <emphasis role="bold">ppp0</emphasis>
-      или <emphasis role="bold">ippp0</emphasis>, Вы можете заменить
+      <para>Если Ваш внешний интерфейс <filename
+      class="devicefile">ppp0</filename> или <filename
+      class="devicefile">ippp0</filename>, Вы можете заменить
       <quote>detect</quote>(обнаружить) во втором столбце на
       <quote>-</quote>(знак минус в ковычках).</para>
     </tip>
 
     <tip>
-      <para>Если Ваш внешний интерфейс <emphasis role="bold">ppp0</emphasis>
-      или <emphasis role="bold">ippp0</emphasis> или Вы имеете статический
+      <para>Если Ваш внешний интерфейс <filename
+      class="devicefile">ppp0</filename> или <filename
+      class="devicefile">ippp0</filename> или Вы имеете статический
       <acronym>IP</acronym>-адрес, Вы можете удалить <quote>dhcp</quote> из
       списка опций.</para>
     </tip>
@@ -441,12 +464,12 @@ SSH/ACCEPT  net       $FW           </programlisting>
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
     <para><ulink url="Install.htm">Процедура установки</ulink> настраивает
-    Вашу систему для запуска Shorewall при загрузке системе, но начиная с
-    Shorewall версии 1.3.9 запуск отключен, так что система не будет пытаться
-    запустить Shorewall до полного завершения конфигурирования. Как только Вы
-    полностью завершите конфигурирование Вашего файервола, Вы можете включить
-    запуск Shorewall путем удаления файла
-    <filename>/etc/shorewall/startup_disabled</filename>.</para>
+    Вашу систему для запуска Shorewall при загрузке системе, но запуск
+    остается отключен, так что система не будет пытаться запустить Shorewall
+    до полного завершения конфигурирования. Как только Вы полностью завершите
+    конфигурирование Вашего файервола, Вы можете включить запуск Shorewall,
+    отредактировав файл <filename>/etc/shorewall/shorewall.conf</filename> и
+    установив параметр <varname>STARTUP_ENABLED=Yes</varname>.</para>
 
     <important>
       <para>Пользователи пакета .deb должны отредактировать файл

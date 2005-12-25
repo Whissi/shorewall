@@ -1,23 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
 "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
-<!-- $Id$ -->
-<article id="two-interface">
+<article id="three-interface">
+  <!--$Id$-->
+
   <articleinfo>
-    <title>Основной файервол с двумя интерфейсами</title>
+    <title>Файервол с тремя интерфейсами</title>
 
-    <author>
-      <firstname>Tom</firstname>
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
 
-      <surname>Eastep</surname>
-    </author>
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
 
     <pubdate>2005-11-10</pubdate>
 
     <copyright>
-      <year>2002-</year>
-
-      <year>2005</year>
+      <year>2002-2005</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -49,7 +50,7 @@
     Shorewall. Оно больше сфокусировано на том, что требуется для настройки
     Shorewall в наиболее типичных конфигурациях:</para>
 
-    <itemizedlist mark="bullet" spacing="compact">
+    <itemizedlist>
       <listitem>
         <para>Linux система, используемая как файервол/маршрутизатор для
         небольшой локальной сети.</para>
@@ -68,21 +69,32 @@
       </listitem>
 
       <listitem>
+        <para><emphasis>DeMilitarized Zone</emphasis> (<acronym>DMZ</acronym>)
+        подсоединена к отдельному интерфейсу Ethernet. Цель
+        <acronym>DMZ</acronym> - изолировать те Ваши локальные серверы,
+        которые открыты для Интернет так, что если один из этих серверов
+        скомпрометирован, остается еще файервол между взломанным сервером и
+        Вашими локальными системами.</para>
+      </listitem>
+
+      <listitem>
         <para>Интернет-соединение посредством кабельного модема,
         <acronym>DSL</acronym>, <acronym>ISDN</acronym>, Frame Relay,
         коммутирумой линии ...</para>
       </listitem>
     </itemizedlist>
 
-    <para>Вот схема типичной установки:<figure label="1">
-        <title>Общая конфигурация файервола с двумя интерфейсами</title>
+    <para>Вот схема типичной установки:</para>
 
-        <mediaobject>
-          <imageobject>
-            <imagedata fileref="images/basics.png" format="PNG" />
-          </imageobject>
-        </mediaobject>
-      </figure></para>
+    <figure>
+      <title>schematic of a typical installation</title>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata align="center" fileref="images/dmz1.png" format="PNG" />
+        </imageobject>
+      </mediaobject>
+    </figure>
 
     <section>
       <title>Системные требования</title>
@@ -131,7 +143,7 @@
     </section>
 
     <section>
-      <title>Соглашения</title>
+      <title>Conventions</title>
 
       <para>Места, в которых рекомендуется вносить изменения, отмечены как
       <inlinegraphic fileref="images/BD21298_.gif" format="GIF" />.</para>
@@ -195,33 +207,33 @@
       <listitem>
         <para>Если Вы при установке использовали <acronym>RPM</acronym>,
         примеры будут находится в поддиректории <filename
-        class="directory">Samples/two-interface</filename> директории с
+        class="directory">Samples/three-interface</filename> директории с
         документацией Shorewall. Если Вы не знаете где расположена директория
         с документацией Shorewall, Вы можете найти примеры используя
         команду:</para>
 
-        <programlisting>~# rpm -ql shorewall | fgrep two-interfaces
-/usr/share/doc/packages/shorewall/Samples/two-interfaces
-/usr/share/doc/packages/shorewall/Samples/two-interfaces/interfaces
-/usr/share/doc/packages/shorewall/Samples/two-interfaces/masq
-/usr/share/doc/packages/shorewall/Samples/two-interfaces/policy
-/usr/share/doc/packages/shorewall/Samples/two-interfaces/routestopped
-/usr/share/doc/packages/shorewall/Samples/two-interfaces/rules
-/usr/share/doc/packages/shorewall/Samples/two-interfaces/zones
+        <programlisting>~# rpm -ql shorewall | fgrep three-interfaces
+/usr/share/doc/packages/shorewall/Samples/three-interfaces
+/usr/share/doc/packages/shorewall/Samples/three-interfaces/interfaces
+/usr/share/doc/packages/shorewall/Samples/three-interfaces/masq
+/usr/share/doc/packages/shorewall/Samples/three-interfaces/policy
+/usr/share/doc/packages/shorewall/Samples/three-interfaces/routestopped
+/usr/share/doc/packages/shorewall/Samples/three-interfaces/rules
+/usr/share/doc/packages/shorewall/Samples/three-interfaces/zones
 ~#</programlisting>
       </listitem>
 
       <listitem>
         <para>Если Вы установили Shorewall из tarball'а, примеры находятся в
         директории <filename
-        class="directory">Samples/two-interface</filename> внутри
+        class="directory">Samples/three-interface</filename> внутри
         tarball'а.</para>
       </listitem>
 
       <listitem>
         <para>Если же Вы пользовались пакетом .deb, примеры находятся в
         директории<filename
-        class="directory">/usr/share/doc/shorewall/examples/two-interface</filename>.</para>
+        class="directory">/usr/share/doc/shorewall/examples/three-interface</filename>.</para>
       </listitem>
     </orderedlist>
 
@@ -231,14 +243,15 @@
     умолчанию.</para>
 
     <para>Shorewall видит сеть, в которой он работает, как состоящую из набора
-    <emphasis>зон(zones)</emphasis>. В примере конфигурации с двумя
+    <emphasis>зон(zones)</emphasis>. В примере конфигурации с тремя
     интерфейсами, определены следующие зоны:</para>
 
-    <programlisting>#ZONE   TYPE     OPTIONS                 IN                      OUT
-#                                        OPTIONS                 OPTIONS
+    <programlisting>#ZONE   TYPE   OPTIONS                 IN                      OUT
+#                                      OPTIONS                 OPTIONS
 fw      firewall
 net     ipv4
-loc     ipv4</programlisting>
+loc     ipv4
+dmz     ipv4</programlisting>
 
     <para>Зоны Shorewall описаны в файле <ulink
     url="Documentation.htm#Zones"><filename>/etc/shorewall/zones</filename></ulink>.</para>
@@ -280,14 +293,14 @@ loc     ipv4</programlisting>
     выполняется перед тем как .</para>
 
     <para>Файл <filename>/etc/shorewall/policy,</filename> входящий в пример с
-    двумя интерфейсами, имеет следующие политики:</para>
+    тремя интерфейсами, имеет следующие политики:</para>
 
     <programlisting>#SOURCE    DEST        POLICY      LOG LEVEL    LIMIT:BURST
 loc        net         ACCEPT
 net        all         DROP        info
 all        all         REJECT      info</programlisting>
 
-    <para>В примере с двумя интерфейсами строка показанная внизу
+    <para>В примере с тремя интерфейсами строка показанная внизу
     закомментирована. Если Вы хотите, чтобы Ваш файервол имел полный доступ к
     серверам Интернет, раскомментируйте эту строчку. <programlisting>#SOURCE    DEST        POLICY      LOG LEVEL    LIMIT:BURST
 $FW        net         ACCEPT</programlisting>Политики приведенные выше
@@ -333,13 +346,17 @@ $FW        net         ACCEPT</programlisting>Политики приведен�
   <section>
     <title>Сетевые интерфейсы</title>
 
-    <mediaobject>
-      <imageobject>
-        <imagedata fileref="images/basics.png" format="PNG" />
-      </imageobject>
-    </mediaobject>
+    <figure>
+      <title>DMZ</title>
 
-    <para>Файервол имеет два сетевых интерфейса. Если соединение с Интернет
+      <mediaobject>
+        <imageobject>
+          <imagedata align="center" fileref="images/dmz1.png" format="PNG" />
+        </imageobject>
+      </mediaobject>
+    </figure>
+
+    <para>Файервол имеет три сетевых интерфейса. Если соединение с Интернет
     осуществляется при помощи кабельного или <acronym>DSL</acronym>
     <quote>Модема</quote>, <emphasis>Внешним интерфейсом</emphasis> будет тот
     ethernet-адаптер (например, <filename class="devicefile">eth0</filename>),
@@ -365,51 +382,63 @@ $FW        net         ACCEPT</programlisting>Политики приведен�
     class="directory">/etc/shorewall/</filename><filename>shorewall.conf</filename></emphasis>.</para>
 
     <para>Ваш <emphasis>Внешний интерфейс</emphasis> будет ethernet-адаптер
-    (<filename class="devicefile">eth0</filename> or <filename
-    class="devicefile">eth1</filename>) и будет соединен с
+    (<filename class="devicefile">eth0</filename>, <filename
+    class="devicefile">eth1</filename> or <filename
+    class="devicefile">eth2</filename>) и будет соединен с
     <emphasis>хабом</emphasis> или <emphasis>коммутатором</emphasis>. Другие
     Ваши компьютеры будут соединены с тем же хабом/коммутатором (заметьте:
     если Вы имеете только одну внутреннюю систему, Вы можете соединить
     файервол с этим компьютером напрямую, используя кроссоверный (cross-over)
     кабель.</para>
 
-    <para><caution>
-        <para><emphasis role="bold">НЕ подсоединяйте внутренний и внешний
-        интерфейсы к одному т тому же хабу или коммутатору исключая время
-        тестирование</emphasis>.Вы можете провести тестирование используя
-        данную конфигурацию, если Вы указали параметр
-        <varname>ARP_FILTER</varname> в <filename
-        class="directory">/etc/shorewall/</filename><filename>interfaces</filename>
-        для всех интерфейсов подсоединенных к общему хабу/коммутатору.
-        <emphasis role="bold">Использовать такие установки на рабочем
-        файерволе строго не рекоммендуется</emphasis>.</para>
-      </caution> <inlinegraphic fileref="images/BD21298_.gif"
-    format="GIF" /></para>
+    <para>Ваш <acronym>DMZ</acronym>-bynthatqc будет ethernet-адаптер
+    (<filename class="devicefile">eth0</filename>, <filename
+    class="devicefile">eth1</filename> or <filename
+    class="devicefile">eth2</filename>) и будет соединен с хабом или
+    комутатором. Другие Ваши компьютеры из <acronym>DMZ</acronym> будут
+    соединены с тем же хабом/коммутатором (заметьте: если Вы имеете только
+    одну систему в <acronym>DMZ</acronym>, Вы можете соединить файервол с этим
+    компьютером напрямую, используя кроссоверный (cross-over) кабель.</para>
 
-    <para>Пример конфигурации Shorewall с двумя интерфейсами подразумевает,
+    <caution>
+      <para><emphasis role="bold">НЕ подсоединяйте внутренний и внешний
+      интерфейсы к одному т тому же хабу или коммутатору исключая время
+      тестирование</emphasis>.Вы можете провести тестирование используя данную
+      конфигурацию, если Вы указали параметр <varname>ARP_FILTER</varname> в
+      <filename
+      class="directory">/etc/shorewall/</filename><filename>interfaces</filename>
+      для всех интерфейсов подсоединенных к общему хабу/коммутатору. <emphasis
+      role="bold">Использовать такие установки на рабочем файерволе строго не
+      рекоммендуется</emphasis>.</para>
+    </caution>
+
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+
+    <para>Пример конфигурации Shorewall с тремя интерфейсами подразумевает,
     что внешний интерфейс - это <filename class="devicefile">eth0</filename>,
-    а внутренний - <filename class="devicefile">eth1</filename>. Если Ваша
-    конфигурация отличается, Вы должны будете изменить пример файл <filename
+    внутренний - <filename class="devicefile">eth1</filename>, а
+    <acronym>DMZ</acronym> - <filename class="devicefile">eth2</filename>.
+    Если Ваша конфигурация отличается, Вы должны будете изменить пример файл
+    <filename
     class="directory">/etc/shorewall/</filename><filename>interfaces</filename>
     соответственно. Пока Вы здесь, Вы возможно захотите просмотреть список
-    опций, специфичных для интерфейса. Вот несколько подсказок:<tip>
-        <para>Если Ваш внешний интерфейс <filename
-        class="devicefile">ppp0</filename> или <filename
-        class="devicefile">ippp0</filename>, Вы можете заменить
-        <quote>detect</quote>(обнаружить) во втором столбце на
-        <quote>-</quote>(знак минус в ковычках).</para>
-      </tip><tip>
-        <para>Если Ваш внешний интерфейс <filename
-        class="devicefile">ppp0</filename> или <filename
-        class="devicefile">ippp0</filename> или Вы имеете статический
-        <acronym>IP</acronym>-адрес, Вы можете удалить <quote>dhcp</quote> из
-        списка опций.</para>
-      </tip><tip>
-        <para>Если Ваш внешний интерфейс является мостом, созданным с
-        использованием утилиты <command>brctl</command>, тогда <emphasis
-        role="bold">Вы должны добавить опцию <varname>routeback</varname> в
-        список опций.</emphasis></para>
-      </tip></para>
+    опций, специфичных для интерфейса. Вот несколько подсказок:</para>
+
+    <tip>
+      <para>Если Ваш внешний интерфейс <filename
+      class="devicefile">ppp0</filename> или <filename
+      class="devicefile">ippp0</filename>, Вы можете заменить
+      <quote>detect</quote>(обнаружить) во втором столбце на
+      <quote>-</quote>(знак минус в ковычках).</para>
+    </tip>
+
+    <tip>
+      <para>Если Ваш внешний интерфейс <filename
+      class="devicefile">ppp0</filename> или <filename
+      class="devicefile">ippp0</filename> или Вы имеете статический
+      <acronym>IP</acronym>-адрес, Вы можете удалить <quote>dhcp</quote> из
+      списка опций.</para>
+    </tip>
   </section>
 
   <section>
@@ -431,13 +460,16 @@ $FW        net         ACCEPT</programlisting>Политики приведен�
     адреса постоянно. Как бы ни был назначен Вам внешний адрес, он будет
     разделяться между всеми Вашими системами при доступе в Интернет. Вы должны
     будете назначить свои собственные адреса в Вашей внутренней сети
-    (внутренний интерфейс на Вашем файерволе, плюс другие Ваши компьютеры).
-    <acronym>RFC-1918</acronym> резервирует несколько <emphasis>Частных
-    (Private)</emphasis> <acronym>IP</acronym>-адресов для этих целей:
+    (внутренний и <acronym>DMZ</acronym> интерфейсы на Вашем файерволе, плюс
+    другие Ваши компьютеры). <acronym>RFC-1918</acronym> резервирует несколько
+    <emphasis>Частных (Private)</emphasis> <acronym>IP</acronym>-адресов для
+    этих целей:</para>
+
     <programlisting>10.0.0.0    - 10.255.255.255
 172.16.0.0  - 172.31.255.255
-192.168.0.0 - 192.168.255.255</programlisting> <inlinegraphic
-    fileref="images/BD21298_.gif" format="GIF" /></para>
+192.168.0.0 - 192.168.255.255</programlisting>
+
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
     <para>Перед запуском Shorewall, <emphasis role="bold">Вы должны взглянуть
     на IP-адрес Вашего внешнего интерфейса и если он входит в один указанных
@@ -445,64 +477,63 @@ $FW        net         ACCEPT</programlisting>Политики приведен�
     для внешнего интерфейса в файле <filename
     class="directory">/etc/shorewall/</filename><filename>interfaces</filename>.</emphasis></para>
 
-    <para>Вы можете захотеть назначить Ваши адреса из такой же подсети
-    (subnet). Для наших целей мы можем рассматривать подсеть состоящую из
-    диапазона адресов <varname>x.y.z.0 - x.y.z.255</varname>. Такая подсеть
-    будет иметь <emphasis>Маску Подсети</emphasis> (<emphasis>Subnet
-    Mask</emphasis>) - <systemitem class="netmask">255.255.255.0</systemitem>.
-    Адрес <varname>x.y.z.0</varname> зарезервирован как <emphasis>Адрес
-    Подсети (Subnet Address)</emphasis>, а <varname>x.y.z.255</varname> как
+    <para>Вы можете захотеть назначить Ваши локальные адреса из одной подсети
+    (subnet), а адреса <acronym>DMZ</acronym> из другой подсети . Для наших
+    целей мы можем рассматривать подсеть состоящую из диапазона адресов
+    <varname>x.y.z.0 - x.y.z.255</varname>. Такая подсеть будет иметь
+    <emphasis>Маску Подсети</emphasis> (<emphasis>Subnet Mask</emphasis>) -
+    <systemitem class="netmask">255.255.255.0</systemitem>. Адрес
+    <varname>x.y.z.0</varname> зарезервирован как <emphasis>Адрес Подсети
+    (Subnet Address)</emphasis>, а <varname>x.y.z.255</varname> как
     <emphasis>Широковещательный Адрес Подсети (Subnet Broadcast
     Address</emphasis>). В Shorewall подсеть описывается с использованием
-    нотации <ulink url="shorewall_setup_guide.htm#Subnets"> Бесклассовой
+    нотации <ulink url="shorewall_setup_guide.htm#Subnets">Бесклассовой
     Междоменной Маршрутизации (Classless InterDomain Routing</ulink> -
     <acronym>CIDR</acronym> notation) с адресом посети оканчивающимся
     <varname>/24</varname>. <quote>24</quote> указывает число непрерывных
-    ведущих бит установленных в <quote>1</quote> слева в маске подсети.
-    <informaltable frame="all" label="Example sub-network" pgwide="0">
-        <!--
-				Orientation types for tables are not supported by fop yet so we'll fake it by using boldface on left side entries.
-				 -->
+    ведущих бит установленных в <quote>1</quote> слева в маске подсети.</para>
 
-        <tgroup align="left" cols="2">
-          <tbody valign="middle">
-            <row valign="middle">
-              <entry align="left"><emphasis
-              role="bold">Диапазон:</emphasis></entry>
+    <table>
+      <title>Example sub-network</title>
 
-              <entry><systemitem class="ipaddress">10.10.10.0</systemitem> -
-              <systemitem class="ipaddress">10.10.10.255</systemitem></entry>
-            </row>
+      <tgroup cols="2">
+        <colspec align="left" />
 
-            <row>
-              <entry align="left"><emphasis role="bold">Адрес
-              подсети:</emphasis></entry>
+        <tbody>
+          <row>
+            <entry>Диапазон:</entry>
 
-              <entry align="left"><systemitem
-              class="netmask">10.10.10.0</systemitem></entry>
-            </row>
+            <entry><systemitem class="ipaddress">10.10.10.0</systemitem> -
+            <systemitem class="ipaddress">10.10.10.255</systemitem></entry>
+          </row>
 
-            <row>
-              <entry align="left"><emphasis role="bold">Широковещательный
-              адрес:</emphasis></entry>
+          <row>
+            <entry>Адрес подсети:</entry>
 
-              <entry align="left"><systemitem
-              class="ipaddress">10.10.10.255</systemitem></entry>
-            </row>
+            <entry><systemitem
+            class="ipaddress">10.10.10.0</systemitem></entry>
+          </row>
 
-            <row>
-              <entry align="left"><emphasis role="bold">Нотация
-              CIDR:</emphasis></entry>
+          <row>
+            <entry>Широковещательный адрес:</entry>
 
-              <entry align="left"><systemitem
-              class="ipaddress">10.10.10.0/24</systemitem></entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable>Удобно назначать внутреннему интерфейсу либо первый
-    используемый адрес подсети (<systemitem
-    class="ipaddress">10.10.10.1</systemitem> в примере выше), либо последний
-    используемый адрес (<systemitem
+            <entry><systemitem
+            class="ipaddress">10.10.10.255</systemitem></entry>
+          </row>
+
+          <row>
+            <entry>Нотация CIDR::</entry>
+
+            <entry><systemitem
+            class="ipaddress">10.10.10.0/24</systemitem></entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+
+    <para>Удобно назначать внутреннему интерфейсу либо первый используемый
+    адрес подсети (<systemitem class="ipaddress">10.10.10.1</systemitem> в
+    примере выше), либо последний используемый адрес (<systemitem
     class="ipaddress">10.10.10.254</systemitem>).</para>
 
     <para>Одна из целей разбиения на подсети - это позволить всем компьютерам
@@ -513,10 +544,14 @@ $FW        net         ACCEPT</programlisting>Политики приведен�
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
-    <para>Ваши локальные компьютеры (computer 1 и computer 2 на диаграмме
-    выше) должны быть сконфигурированы так, чтобы
+    <para>Ваши локальные компьютеры (локальные компьютеры 1 &amp; 2 на
+    диаграмме выше) должны быть сконфигурированы так, чтобы
     <acronym>IP</acronym>-адресом их маршрутизатора по умолчанию был
-    <acronym>IP</acronym>-адрес внутреннего интерфейса файервола.</para>
+    <acronym>IP</acronym>-адрес внутреннего интерфейса файервола и Ваши
+    компьютеры <acronym>DMZ</acronym> (<acronym>DMZ</acronym> компьютеры 1
+    &amp; 2) должны иметь <acronym>IP</acronym>-адрес маршрутизатора по
+    умолчанию установленным в <acronym>IP</acronym>-адрес
+    <acronym>DMZ</acronym>- интерфейса файервола.</para>
 
     <para>Короткая предшествующая дискуссия лишь поверхностно затронула
     вопросы связанные с подсетями и маршрутизацией. Если Вы заинтересованы
@@ -528,19 +563,36 @@ $FW        net         ACCEPT</programlisting>Политики приведен�
     url="http://www.phptr.com/browse/product.asp?product_id={58D4F6D4-54C5-48BA-8EDD-86EBD7A42AF6}">link</ulink>).</para>
 
     <para>Оставшаяся часть руководства расчитана на то, что Вы имеете сеть,
-    сконфигурированную так, как показано здесь: <mediaobject>
+    сконфигурированную так, как показано здесь:</para>
+
+    <figure>
+      <title>DMZ</title>
+
+      <mediaobject>
         <imageobject>
-          <imagedata fileref="images/basics1.png" format="PNG" />
+          <imagedata fileref="images/dmz2.png" />
         </imageobject>
-      </mediaobject> Маршрутизатором по умолчанию для computer 1 и 2 должен
-    быть <systemitem class="ipaddress">10.10.10.254</systemitem>.<warning>
-        <para>Ваш <acronym>ISP</acronym> может назначить Вашему внешнему
-        интерфейсу адрес из <acronym>RFC-1918</acronym>. Если этот адрес из
-        подсети <systemitem class="ipaddress"> 10.10.10.0/24</systemitem>,
-        тогда <emphasis role="bold">Вы должны будете выделить ДРУГУЮ подсеть
-        <acronym>RFC-1918</acronym> для вашей локальной
-        подсети.</emphasis></para>
-      </warning></para>
+
+        <caption>
+          <para>Маршрутизатором по умолчанию для DMZ должен быть<systemitem
+          class="ipaddress">10.10.11.254</systemitem>, а для локальных
+          компьютеров 1 и 2 должен быть <systemitem
+          class="ipaddress">10.10.10.254</systemitem>.</para>
+
+          <warning>
+            <para>Ваш <acronym>ISP</acronym> может назначить Вашему внешнему
+            интерфейсу адрес из <acronym>RFC-1918</acronym>. Если этот адрес
+            из подсети <systemitem
+            class="ipaddress">10.10.10.0/24</systemitem>, тогда <emphasis
+            role="bold">Вы должны будете выделить ДРУГУЮ подсеть
+            <acronym>RFC-1918</acronym> для вашей локальной подсети и если это
+            <systemitem class="ipaddress">10.10.11.0/24</systemitem>, то Вы
+            должны будете выделить ДРУГУЮ подсеть <acronym>RFC-1918</acronym>
+            для Вашей DMZ.</emphasis></para>
+          </warning>
+        </caption>
+      </mediaobject>
+    </figure>
   </section>
 
   <section>
@@ -592,11 +644,18 @@ $FW        net         ACCEPT</programlisting>Политики приведен�
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
     <para>Если Ваш внешний интерфейс файервола - <filename
-    class="devicefile">eth0</filename>, Вам не нужно изменять файл из примера.
-    В противном случае, отредактируйте <filename
-    class="directory">/etc/shorewall/</filename><filename>masq</filename> и
-    измените первый столбец на имя Вашего внешнего интерфейса и второй столбец
-    на имя Вашего внутреннего интерфейса.</para>
+    class="devicefile">eth0</filename>, Ваш локальный интерфейс - <filename
+    class="devicefile">eth1</filename> и Ваш <acronym>DMZ</acronym>-нитерфейс
+    - <filename class="devicefile">eth2</filename>, Вам не нужно изменять файл
+    из примера. В противном случае, отредактируйте <filename
+    class="directory">/etc/shorewall/</filename><filename>masq</filename> так,
+    чтобы он соответствовал Вашей конфигурации.</para>
+
+    <para>А если, несмотря и вопреки всем советам, Вы используете это
+    руководство и хотите применить <acronym>NAT</acronym> один-к-одному или
+    прокси-<acronym>ARP</acronym> для Вашей <acronym>DMZ</acronym>, удалите
+    запись для <filename class="devicefile">eth2</filename> из файла
+    <filename>/etc/shorewall/masq</filename>.</para>
 
     <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
 
@@ -624,8 +683,8 @@ $FW        net         ACCEPT</programlisting>Политики приведен�
     <title>Перенаправление портов (DNAT)</title>
 
     <para>Одной из Ваших целей может быть запуск одного или более серверов на
-    Ваших локальных компьютерах. Так как эти компьютеры имеют адреса из
-    <acronym>RFC-1918</acronym>, то клиентам из Интернет невозможно
+    Ваших <acronym>DMZ</acronym> компьютерах. Так как эти компьютеры имеют
+    адреса из <acronym>RFC-1918</acronym>, то клиентам из Интернет невозможно
     соединиться напрямую с ними. Это более невозможно для тех клиентов, кто
     адресует свои запросы для соединения на файервол, который переписывает
     адрес назначения на адрес Вашего сервера и переправляет пакет на этот
@@ -636,73 +695,93 @@ $FW        net         ACCEPT</programlisting>Политики приведен�
     (Port Forwarding)</emphasis> или <emphasis>Преобразование Сетевого Адреса
     Назначения (Destination Network Address Translation</emphasis> -
     <acronym>DNAT</acronym>). Вы настраиваете перенаправление портов при
-    помощи правил <varname>DNAT</varname> в файле <filename
+    помощи правил <acronym>DNAT</acronym> в файле <filename
     class="directory">/etc/shorewall/</filename><filename>rules</filename>.</para>
 
     <para>Основная форма примерного правила перенаправления портов в <filename
     class="directory">/etc/shorewall/</filename><filename>rules</filename>
-    такая:<programlisting>#ACTION   SOURCE    DEST                                          PROTO      DEST PORT(S)
-DNAT      net       loc:<emphasis>&lt;server local ip address&gt;</emphasis>[:<emphasis>&lt;server port&gt;</emphasis>] <emphasis>&lt;protocol&gt;</emphasis> <emphasis>&lt;port&gt;</emphasis></programlisting>Shorewall
-    имеет <ulink url="Macros.html">макрос (macros)</ulink> для многих
-    популярных приложений. Смотрите в
-    <filename>/user/share/shorewall/macro.*</filename>, чтобы увидеть, что
-    доступно в Вашем релизе. Макрос упрощает создание правил
-    <varname>DNAT</varname> предоставляя протокол и порт(ы) как показано
-    ниже.</para>
+    такая: <programlisting>#ACTION   SOURCE    DEST                                          PROTO      DEST PORT(S)
+DNAT      net       dmz:<emphasis>&lt;server local IP address&gt;</emphasis>[:<emphasis>&lt;server port&gt;</emphasis>] <emphasis>&lt;protocol&gt;</emphasis> <emphasis>&lt;port&gt;</emphasis></programlisting>Если
+    Вы не указали <emphasis><varname>&lt;server port&gt;</varname></emphasis>
+    (порт сервера), его значение будет таким же как и у
+    <emphasis><varname>&lt;port&gt;</varname></emphasis>.</para>
 
-    <para><example label="1">
-        <title>Web-сервер</title>
+    <example>
+      <title>Вы запускаете Web-сервер на DMZ-компьютере 2 и хотите
+      перенаправить приходящие на порт 80 TCP-запросы на эту систему</title>
 
-        <para>Вы запускаете Web-сервер на computer 2 и Вы хотите перенаправить
-        входящие на порт 80 <acronym>TCP</acronym>-пакеты на эту систему:
-        <programlisting>#ACTION   SOURCE    DEST             PROTO     DEST PORT(S)
-Web/DNAT  net       loc:192.168.1.5</programlisting></para>
-      </example> <example label="2">
-        <title>FTP-сервер</title>
+      <para><programlisting>#ACTION     SOURCE    DEST                PROTO      DEST PORT(S)
+Web/DNAT     net    dmz:10.10.11.2  
+Web/ACCEPT   loc    dmz:10.10.11.2</programlisting><itemizedlist>
+          <listitem>
+            <para>Первая запись перенаправляет порт 80 из Интернет.</para>
+          </listitem>
 
-        <para>Вы запустили <acronym>FTP</acronym>-сервер на computer 1, так
-        что Вы хотите перенаправить входящие на порт 21
-        <acronym>TCP</acronym>-пакеты на эту систему: <programlisting>#ACTION    SOURCE    DEST            PROTO     DEST PORT(S)
-FTP/DNAT   net       loc:10.10.10.1</programlisting>Для <acronym>FTP</acronym>
-        Вы должны также буете иметь отслеживание <acronym>FTP</acronym>
-        соединений (connection tracking) и поддержку <acronym>NAT</acronym> в
-        Вашем ядре. Для ядер, предоставляемых продавцами дистрибутивов, это
-        означает, что должны быть загружены модули <filename
-        class="libraryfile">ip_conntrack_ftp</filename> и <filename
-        class="libraryfile">ip_nat_ftp</filename>. Shorewall автоматически
-        загрузит эти модули если они доступны и расположены в стандартных
-        местах внутри <filename class="directory">/lib/modules/&lt;kernel
-        version&gt;/kernel/net/ipv4/netfilter</filename>.</para>
-      </example>Нужно иметь в виду пару важных моментов: <itemizedlist>
-        <listitem>
-          <para>Вы должны протестировать приведенные выше правила для клиентов
-          вне Вашей локальной сети (т.е., не тестировать из браузера,
-          запущенного на computer 1 или 2 или на файерволе). Если Вы хотите
-          иметь доступ к Вашему Web-серверу и/или
-          <acronym>FTP</acronym>-серверу с Вашего файервола, используя
-          <acronym>IP</acronym>-адрес Вашего внешнего интерфейса, смотрите
-          <ulink url="FAQ.htm#faq2">Shorewall FAQ #2</ulink>.</para>
-        </listitem>
+          <listitem>
+            <para>Вторая запись разрешает соединения из локальной сети.</para>
+          </listitem>
+        </itemizedlist>Нужно иметь в виду несколько важных
+      моментов:<itemizedlist>
+          <listitem>
+            <para>Когда Вы соединяетесь с Вашим сервером с Ваших локальных
+            систем, Вы должны внутренний <acronym>IP</acronym>-адрес сервера
+            (<systemitem class="ipaddress">10.10.11.2</systemitem>).</para>
+          </listitem>
 
-        <listitem>
-          <para>Многие <acronym>ISP</acronym> блокируют входящие запросы для
-          соединения на порт 80. Если у Вас есть проблемы при соединении с
-          Вашим Web-сервером, попробуйте следующее правило и попытайтесь
-          соединиться с портом 5000 (например, подключитесь к
-          <literal>http://w.x.y.z:5000</literal>, где
-          <literal>w.x.y.z</literal> - Ваш внешний
-          <acronym>IP</acronym>).</para>
+          <listitem>
+            <para>Многие <acronym>ISP</acronym> блокируют входящие запросы для
+            соединения на порт 80. Если у Вас есть проблемы при соединении с
+            Вашим Web-сервером, попробуйте следующее правило и попытайтесь
+            соединиться с портом 5000 (например, подключитесь к
+            <literal>http://w.x.y.z:5000</literal>, где
+            <literal>w.x.y.z</literal> - Ваш внешний
+            <acronym>IP</acronym>).<programlisting>#ACTION   SOURCE    DEST                PROTO      DEST PORT(S)    SOURCE
+#                                                                  PORT(S)
+DNAT      net       dmz:10.10.11.2:80   tcp        80              5000</programlisting></para>
+          </listitem>
 
-          <programlisting>#ACTION    SOURCE    DEST               PROTO     DEST PORT(S)
-DNAT       net       loc:10.10.10.2:80  tcp       5000</programlisting>
-        </listitem>
-      </itemizedlist> <inlinegraphic fileref="images/BD21298_.gif"
-    format="GIF" /></para>
+          <listitem>
+            <para>Если Вы хотите иметь доступ к Вашим серверам из локальной
+            сети используя Ваш внешний адрес, тогда, если Вы имеете
+            статический внешний <acronym>IP</acronym>-адрес, Вы можете
+            заменить правило <quote>loc</quote>-&gt;<quote>dmz</quote> выше
+            на:<programlisting>#ACTION   SOURCE    DEST            PROTO  DEST PORT(S)  SOURCE   ORIGINAL
+#                                                        PORT(S)  DEST
+DNAT      loc       dmz:10.10.11.2  tcp    80            -        <emphasis>&lt;external IP&gt;</emphasis></programlisting>Если
+            же у Вас динамический внешний <acronym>IP</acronym>-адрес, то Вы
+            должны убедиться, что Ваш внешний интерфейс включен перед тем как
+            запускать Shorewall и Вам нужно выполнить следующие операции
+            (подразумевая, что Ваш внешний интерфейс - <filename
+            class="devicefile">eth0</filename>):<orderedlist>
+                <listitem>
+                  <para>Включить следующую строку в файл <filename
+                  class="directory">/etc/shorewall/</filename><filename>params</filename>:</para>
 
-    <para>В этом месте измените <filename
-    class="directory">/etc/shorewall/</filename><filename>rules</filename>
-    добавив любое правило <varname>DNAT</varname>, какое Вам
-    необходимо.</para>
+                  <para><command>ETH0_IP=$(find_interface_address
+                  eth0)</command></para>
+                </listitem>
+
+                <listitem>
+                  <para>Создать Ваше правило
+                  <quote>loc</quote>-&gt;<quote>dmz</quote>: <programlisting>#ACTION   SOURCE    DEST             PROTO   DEST PORT(S)  SOURCE   ORIGINAL
+#                                                          PORT(S)  DEST
+DNAT      loc       dmz:10.10.11.2   tcp     80            -        $ETH0_IP</programlisting></para>
+                </listitem>
+              </orderedlist></para>
+          </listitem>
+
+          <listitem>
+            <para>Если Вам нужен доступ к серверу из <acronym>DMZ</acronym>,
+            используйте для доступа Ваш внешний <acronym>IP</acronym>-адрес,
+            смотрите <ulink url="FAQ.htm#faq2a">FAQ 2a</ulink>.</para>
+          </listitem>
+        </itemizedlist></para>
+    </example>
+
+    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
+
+    <para>В этом месте измените добавьте правила <varname>DNAT</varname> и
+    <varname>ACCEPT</varname> для Ваших серверов.</para>
 
     <important>
       <para>Когда тестируете правила <varname>DNAT</varname> похожие на те,
@@ -718,144 +797,160 @@ DNAT       net       loc:10.10.10.2:80  tcp       5000</programlisting>
   <section>
     <title>Сервер Доменных Имен (Domain Name Server - DNS)</title>
 
-    <para>Обычно, когда Вы соединяетесь с Вашим <acronym>ISP</acronym>, как
-    часть получения <acronym>IP</acronym>-адреса будет автоматически настроен
-    резольвер <emphasis>Сервиса Доменных Имен (Domain Name Service</emphasis>
-    - <acronym>DNS</acronym>) Вашего файервола (например, будет записан файл
-    <filename
-    class="directory">/etc/</filename><filename>resolv.conf</filename>). Как
-    альтернатива, Ваш <acronym>ISP</acronym> может сообщить Вам
-    <acronym>IP</acronym>-адреса пары <acronym>DNS</acronym>-серверов, чтобы
-    Вы вручную указали их как Ваши первичный и вторичный сервера имен. Вне
-    зависимости от того как Вы настроете <acronym>DNS</acronym> на Вашем
-    файерволе, на Вас лежит ответственность за то как будет настроен резольвер
-    на Ваших внутренних системах. Вы можете применить один из двух подходов:
-    <itemizedlist spacing="compact">
+    <para>Normally, when you connect to your ISP, as part of getting an IP
+    address your firewall's <emphasis>Domain Name Service</emphasis> (DNS)
+    resolver will be automatically configured (e.g., the
+    <filename>/etc/resolv.conf</filename> file will be written).
+    Alternatively, your ISP may have given you the IP address of a pair of DNS
+    name servers for you to manually configure as your primary and secondary
+    name servers. It is your responsibility to configure the resolver in your
+    internal systems. You can take one of two approaches: <itemizedlist>
         <listitem>
-          <para>Вы можете настроить Ваши внутренние системы на использование
-          серверов имен Вашего <acronym>ISP</acronym>. Если Ваш
-          <acronym>ISP</acronym> дал Вам адреса этих серверовthe или если эти
-          адреса доступны на Web-сайте, Вы можете настроить Ваши внутренние
-          системы на использование этих адресов. Если эта информация
-          недоступна, загляните в <filename
+          <para>You can configure your internal systems to use your
+          <acronym>ISP</acronym>'s name servers. If your
+          <acronym>ISP</acronym> gave you the addresses of their servers or if
+          those addresses are available on their web site, you can configure
+          your internal systems to use those addresses. If that information
+          isn't available, look in <filename
           class="directory">/etc/</filename><filename>resolv.conf</filename>
-          на Вашем файерволе -- сервера имен указаны в записях
-          <quote>nameserver</quote> этого файла.</para>
+          on your firewall system -- the name servers are given in
+          <quote>nameserver</quote> records in that file.</para>
         </listitem>
 
         <listitem>
-          <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" />
-          </para>
+          <para><inlinegraphic fileref="images/BD21298_.gif"
+          format="GIF" /></para>
 
           <para>Вы можете настроить <emphasis>Кэширующий Сервер Имен (Caching
-          Name Server)</emphasis> на Вашем файерволе. <trademark>Red
-          Hat</trademark> имеет <acronym>RPM</acronym> для кэширующего сервера
-          имен (которому также необходим пакет
-          <command>bind-</command><acronym>RPM</acronym>), а для пользователей
-          Bering существует <command>dnscache.lrp</command>. Если Вы пойдете
-          этим путем, Вы настраиваете Ваши внутренние системы на использование
-          самого файервола как первичного (и только) сервера имен. Вы
-          используете внутренний <acronym>IP</acronym>-адрес файервола
-          (<systemitem class="ipaddress">10.10.10.254</systemitem> в примере
-          выше) для адреса сервера имен, если Вы запускаете сервер имен на
-          Вашем файерволе. Чтобы позволить Вашим локальным системам общаться с
-          Вашим кэширующим сервером имен, Вы должны открыть доступ к порту 53
-          (оба <acronym>UDP</acronym> и <acronym>TCP</acronym>) на файерволе
-          из внутренней сети. Вы можете сделать это, добавив следующее правило
-          в файл <filename
-          class="directory">/etc/shorewall/</filename><filename>rules</filename>.<programlisting>#ACTION    SOURCE    DEST               PROTO     DEST PORT(S)
-DNS/ACCEPT loc       $FW</programlisting></para>
+          Name Server)</emphasis> на Вашем файерволе или в Вашей
+          <acronym>DMZ</acronym>. <trademark>Red Hat</trademark> имеет
+          <acronym>RPM</acronym> для кэширующего сервера имен (которому также
+          необходим пакет <command>bind-</command><acronym>RPM</acronym>), а
+          для пользователей Bering существует <command>dnscache.lrp</command>.
+          Если Вы пойдете этим путем, Вы настраиваете Ваши внутренние системы
+          на использование самого файервола как первичного (и только) сервера
+          имен. Вы используете внутренний <acronym>IP</acronym>-адрес
+          файервола (<systemitem class="ipaddress">10.10.10.254</systemitem> в
+          примере выше) для адреса сервера имен, если Вы запускаете сервер
+          имен на Вашем файерволе. Чтобы позволить Вашим локальным системам
+          общаться с Вашим кэширующим сервером имен, Вы должны открыть доступ
+          к порту 53 (оба <acronym>UDP</acronym> и <acronym>TCP</acronym>) на
+          файерволе из внутренней сети. Вы можете сделать это, добавив
+          следующее правило в файл <filename
+          class="directory">/etc/shorewall/</filename><filename>rules</filename>.
+          </para>
         </listitem>
-      </itemizedlist></para>
-  </section>
+      </itemizedlist>Если Вы запускаете сервер имен на файерволе:
+    <programlisting>#ACTION     SOURCE    DEST                PROTO      DEST PORT(S)                      
+DNS/ACCEPT  loc       $FW
+DNS/ACCEPT  dmz       $FW            </programlisting>Запуск сервера имен на
+    <acronym>DMZ</acronym>-компьютере 1: <programlisting>#ACTION     SOURCE    DEST                PROTO      DEST PORT(S)                      
+DNS/ACCEPT  loc       dmz:10.10.11.1
+DNS/ACCEPT  $FW       dmz:10.10.11.1             </programlisting></para>
 
-  <section>
-    <title>Другие соединения</title>
+    <para>В правилах, показанных выше, <quote>DNS/ACCEPT</quote> - это пример
+    <emphasis>предопределенного макроса (defined macro)</emphasis>. Shorewall
+    включает множество предопределенных макросов и <ulink url="Macros.html">Вы
+    можете добавить Ваши собственные</ulink>. Для просмотра списка макросов,
+    включенных в Вашу версию Shorewall, запустите команду <command>ls
+    <filename>/usr/share/shorewall/macro.*</filename></command>.</para>
 
-    <para>Пример с двумя интерфейсами включает следующие
-    правила:<programlisting>#ACTION     SOURCE    DEST               PROTO     DEST PORT(S)
-DNS/ACCEPT  $FW       net</programlisting>Это правило разрешает доступ к
-    <acronym>DNS</acronym> с Вашего файервола и может быть удалено, если Вы
-    раскомментировали строку в <filename
-    class="directory">/etc/shorewall/</filename><filename>policy</filename>,
-    разрешающую все соединения с файервола в Интернет.</para>
+    <para>Вы не обязаны использовать предопределенные макросы при написании
+    правил в файле <filename>/etc/shorewall/rules</filename>. Первый пример
+    выше (сервер имен на файерволе) может быть также записан как:</para>
 
-    <para>В показанном выше правиле <quote>DNS/ACCEPT</quote> - это пример
-    <emphasis>привлечения макроса (macro invocation)</emphasis>. Shorewall
-    включает множество макросов (смотри
-    <filename>/usr/share/shorewall/macro.*</filename>) и <ulink
-    url="Macros.html">Вы можете добавить Ваш собственный</ulink>.</para>
-
-    <para>Вам не обязательно использовать предопределенные макросы при
-    написании правил в файле <filename>/etc/shorewall/rules</filename>;
-    Shorewall будет запускаться немного быстрее, если Вы будете писать Ваши
-    правила напрямую, чем при использовании макросов. Правил, показанное выше
-    может быть также записано как:<programlisting>#ACTION    SOURCE    DEST               PROTO     DEST PORT(S)
-ACCEPT     $FW       net                udp       53
-ACCEPT     $FW       net                tcp       53</programlisting></para>
+    <programlisting>#ACTION   SOURCE    DEST                PROTO      DEST PORT(S)                      
+ACCEPT    loc       $FW                 tcp        53
+ACCEPT    loc       $FW                 udp        53
+ACCEPT    dmz       $FW                 tcp        53
+ACCEPT    dmz       $FW                 udp        53              </programlisting>
 
     <para>В случаях когда Shorewall не имеет предопределенных макросов,
     отвечающих Вашим потребностям, Вы можете либо определить свой собственный
     макрос, либо просто записать соответствующие правила напрямую. <ulink
     url="ports.html">Эта страница</ulink> может помочь Вам в случае, если Вы
     не знаете используемые протокол и порт.</para>
+  </section>
 
-    <para>Пример также включает: <programlisting>#ACTION      SOURCE    DEST               PROTO     DEST PORT(S)
-SSH/ACCEPT   loc       $FW  </programlisting>Это правило разрешает Вам
-    запускать <acronym>SSH</acronym>-сервер на Вашем файерволе и соединяться с
-    ним с Ваших локальных систем.</para>
+  <section>
+    <title>Другие соединения</title>
+
+    <para>Пример с тремя интерфейсами включает следующие
+    правила:<programlisting>#ACTION     SOURCE    DEST                PROTO      DEST PORT(S)                      
+DNS/ACCEPT  $FW       net       </programlisting>Это правило разрешает доступ
+    к <acronym>DNS</acronym> с Вашего файервола и может быть удалено, если Вы
+    раскомментировали строку в <filename
+    class="directory">/etc/shorewall/</filename><filename>policy</filename>,
+    разрешающую все соединения с файервола в Интернет.</para>
+
+    <para>Пример также включает:<programlisting>#ACTION     SOURCE    DEST                PROTO      DEST PORT(S)                      
+SSH/ACCEPT  loc       $FW
+SSH/ACCEPT  loc       dmz        </programlisting>Это правило разрешает Вам
+    запускать <acronym>SSH</acronym>-сервер на Вашем файерволе и на кождой из
+    Ваших <acronym>DMZ</acronym>-систем и соединяться с ним с Ваших локальных
+    систем.</para>
 
     <para>Если Вы хотите разрешить другие соединения с Вашего файервола к
     другим системам, основной формат использования макроса
-    такой:<programlisting>#ACTION         SOURCE    DEST               PROTO      DEST PORT(S)
-&lt;macro&gt;/ACCEPT  $FW       <emphasis>&lt;destination zone&gt;</emphasis></programlisting>Основной
-    формат при отсутствии предопределенных макросами действий
-    такой:<programlisting>#ACTION    SOURCE    DEST               PROTO      DEST PORT(S)
-ACCEPT     $FW       <emphasis>&lt;destination zone&gt; &lt;protocol&gt; &lt;port&gt;</emphasis></programlisting><example>
-        <title>Web-сервер на файрволе</title>
+    такой:<programlisting>#ACTION         SOURCE        DEST                PROTO      DEST PORT(S)                      
+&lt;<emphasis>macro</emphasis>&gt;/ACCEPT  <emphasis>&lt;source zone&gt; &lt;destination zone&gt;</emphasis></programlisting></para>
 
-        <para>Вы хотите запустить Web-сервер на Вашем файерволе:
-        <programlisting>#ACTION     SOURCE    DEST               PROTO     DEST PORT(S)
-Web/ACCEPT  net       $FW
-Web/ACCEPT  loc       </programlisting>Эти два правила, конечно, должны быть
-        добавлены к тем правилам, которые указаны выше в абзаце <quote><link
-        linkend="cachingdns">Вы можете настроить Кэширующий Сервер Имен на
-        Вашем файерволе</link></quote>.</para>
-      </example>Если Вы не знаете какой порт и протокол использует конкретное
-    приложение, смотрите <ulink url="ports.htm">здесь</ulink>. <important>
-        <para>Я не рекоммендую разрешать <command>telnet</command> в/из
-        Интернет потому, что он использует открытый текст (даже для передачи
-        имени и пароля!). Если Вы хотите иметь доступ к командному
-        интерпретатору Вашего файервола из Интернет, используйте
-        <acronym>SSH</acronym>:</para>
+    <para>Основной формат при отсутствии предопределенных макросами действий
+    такой:<programlisting>#ACTION   SOURCE        DEST                PROTO      DEST PORT(S)                      
+ACCEPT    <emphasis>&lt;source zone&gt; &lt;destination zone&gt;  &lt;protocol&gt; &lt;port&gt; </emphasis></programlisting></para>
 
-        <programlisting>#ACTION      SOURCE    DEST               PROTO     DEST PORT(S)
-SSH/ACCEPT   net       $FW</programlisting>
-      </important> <inlinegraphic fileref="images/leaflogo.gif"
-    format="GIF" /></para>
+    <example>
+      <title>Вы хотите запустить общедоступный DNS-сервер на Вашем
+      файерволе</title>
+
+      <para>Используя предопределенный макрос:</para>
+
+      <programlisting>#ACTION     SOURCE    DEST                PROTO      DEST PORT(S)
+DNS/ACCEPT  net       $FW</programlisting>
+
+      <para>Не используя предопределенный макрос:</para>
+
+      <programlisting>#ACTION   SOURCE    DEST                PROTO      DEST PORT(S)                      
+ACCEPT    net       $FW                 tcp        53
+ACCEPT    net       $FW                 udp        53        </programlisting>
+
+      <para>Эти два правила, конечно, должны быть добавлены к тем правилам,
+      которые указаны выше в абзаце "если Вы запускаете сервер имен на Вашем
+      файерволе".</para>
+    </example>
+
+    <para>Если Вы не знаете какой порт и протокол использует конкретное
+    приложение, смотрите <ulink url="ports.htm">здесь</ulink>.</para>
+
+    <important>
+      <para>Я не рекоммендую разрешать <command>telnet</command> в/из Интернет
+      потому, что он использует открытый текст (даже для передачи имени и
+      пароля!). Если Вы хотите иметь доступ к командному интерпретатору Вашего
+      файервола из Интернет, используйте
+      <acronym>SSH</acronym>:<programlisting>#ACTION     SOURCE    DEST                PROTO      DEST PORT(S)                      
+SSH/ACCEPT  net       $FW</programlisting></para>
+    </important>
+
+    <para><inlinegraphic fileref="images/leaflogo.gif" format="GIF" /> </para>
 
     <para>Пользователи дистрибутива Bering захотят добавить следующие два
-    правила для совместимости с конфигурацией Shorewall от
-    Jacques.<programlisting>#ACTION    SOURCE    DEST    PROTO     DEST PORT(S)
-ACCEPT     loc       $FW     udp       53          #Allow DNS Cache to work
-ACCEPT     loc       $FW     tcp       80          #Allow Weblet to work</programlisting></para>
+    правила для совместимости с конфигурацией Shorewall от Jacques.
+    <programlisting>#ACTION   SOURCE    DEST                PROTO      DEST PORT(S)                      
+ACCEPT    loc       $FW                 udp        53
+ACCEPT    net       $FW                 tcp        80       </programlisting><itemizedlist>
+        <listitem>
+          <para>Запись 1 разрешает использование кэширующего
+          <acronym>DNS</acronym>.</para>
+        </listitem>
 
-    <itemizedlist>
-      <listitem>
-        <para>Запись 1 разрешает использование кэширующего
-        <acronym>DNS</acronym>.</para>
-      </listitem>
+        <listitem>
+          <para>Запись 2 разрешает работу <quote>weblet</quote>.</para>
+        </listitem>
+      </itemizedlist><inlinegraphic fileref="images/BD21298_.gif"
+    format="GIF" /></para>
 
-      <listitem>
-        <para>Запись 2 разрешает работу <quote>weblet</quote>.</para>
-      </listitem>
-    </itemizedlist>
-
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
-
-    <para>Теперь Вы можете отредактировать Ваш файл <filename
-    class="directory">/etc/shorewall/</filename><filename>rules</filename>,
-    добавляя или удаляя другие соединения по необходимости.</para>
+    <para>Now modify <filename>/etc/shorewall/rules</filename> to add or
+    remove other connections as required.</para>
   </section>
 
   <section>
@@ -951,11 +1046,11 @@ ACCEPT     loc       $FW     tcp       80          #Allow Weblet to work</progra
 
     <para>Пример с двумя интерфейсами предполагает, что Вы хотите разрешить
     маршрутизацию к/из <filename class="devicefile">eth1</filename> (локальная
-    сеть) когда Shorewall остановлен. Если Ваша локальная сеть не подсоединена
-    к <filename class="devicefile">eth1</filename> или Вы не хотите разрешать
-    доступ к/из других хостов, измените файл <filename
-    class="directory">/etc/shorewall/</filename><filename>routestopped</filename>
-    соответственно.<warning>
+    сеть) и <filename class="devicefile">eth2</filename>
+    (<acronym>DMZ</acronym>) когда Shorewall остановлен. Если эти два
+    интерфейса не соединены с Вашей локальной сетью и <acronym>DMZ</acronym>
+    или если Вы хотите разрешить другой набор хостов, измените файл
+    <filename>/etc/shorewall/routestopped</filename> соответственно.<warning>
         <para>Если Вы подсоединены к Вашему файерволу из Интернет, не
         используйте команду <quote><command>shorewall stop</command></quote>
         если Вы не добавили запись для <acronym>IP</acronym>-адреса, с
@@ -978,94 +1073,5 @@ ACCEPT     loc       $FW     tcp       80          #Allow Weblet to work</progra
     url="configuration_file_basics.htm">страницу Общих Особенностей Файлов
     Конфигурации</ulink> -- она содержит полезные советы об особенностях
     Shorewall, делающую администрирование Вашего файервола проще.</para>
-  </section>
-
-  <section>
-    <title>Добавление сегмента беспроводной связи к Вашему файерволу с двумя
-    интерфейсами</title>
-
-    <para>Как только Вы будете иметь работающую конфигурацию с двумя
-    интерфейсами, следующий логический шаг - добавление беспроводной сети.
-    Первый шаг включает добавление дополнительной сетевой карты в Ваш
-    файервол, либо карты беспроводного интерфейса, либо Ethernet-карты,
-    которая соединена с <emphasis>Точкой Беспроводного Доступа (Wireless
-    Access Point</emphasis>).<caution>
-        <para>Когла Вы добавляете сетевую карту, она необязательно будет
-        определена как следующая по порядку сетевой интерфейс. Например, если
-        Вы имеете две карты Ethernet в Вашей системе (<filename
-        class="devicefile">eth0</filename> и <filename
-        class="devicefile">eth1</filename>) и Вы добавляете третью карту,
-        которая использует такой же драйвер как и одна из имеющихся, то эта
-        третья карта необязательно будет определена как <filename
-        class="devicefile">eth2</filename>; она может определиться как
-        <filename class="devicefile">eth0</filename> или <filename
-        class="devicefile">eth1</filename>! Вы можете оставить все как есть,
-        либо можете переставлять карты в слотах до тех пор, пока новая карта
-        не будет определена как <filename
-        class="devicefile">eth2</filename>.</para>
-      </caution></para>
-
-    <para>Ваша новая сеть будет выглядеть примерно так, как показано на
-    следующем рисунке.<graphic fileref="images/basics2.png" /></para>
-
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
-
-    <para>Во-первых необходимо отметить, что компьютеры в Вашей беспроводной
-    сети будут принадлежать другой подсети, чем те, что находяться в проводной
-    локальной сети. В примере выше мы выбрали для использования сеть
-    10.10.11.0/24. Computers 3 и 4 должны быть настроены с
-    <acronym>IP</acronym>-адресом маршрутизатора по умолчанию
-    10.10.11.254.</para>
-
-    <para>Во-вторых мы решили включить беспроводную сеть как часть зоны
-    <quote>loc</quote>. Поскольку Shorewall по умолчанию разрешает
-    внутризонный трафик, трафик может свободно перемещаться между локальными
-    проводной и беспроводной сетями.</para>
-
-    <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" /></para>
-
-    <para>Необходимо выполнить всего-лишь два изменения в настройках
-    Shorewall:</para>
-
-    <itemizedlist>
-      <listitem>
-        <para>Нужно добавить запись для интерфейса беспроводной сети в файл
-        <filename>/etc/shorewall/interfaces</filename>. Если беспроводной
-        интерфейс <filename class="devicefile">wlan0</filename>, то запись
-        может выглядеть так:</para>
-
-        <programlisting>#ZONE     INTERFACE       BROADCAST          OPTIONS
-loc       wlan0           detect             maclist</programlisting>
-
-        <para>Как показано выше, я рекоммендую использовать опцию <ulink
-        url="MAC_Validation.html">maclist</ulink> для беспроводного сегмента.
-        Добавив записи для computers 3 и 4 в файл
-        <filename>/etc/shorewall/maclist</filename>, Вы можете быть
-        уверенными, что Вашими соседями не сможет стать любой, используя Ваше
-        Интернет соединение. Начните без этой опции, а когда у Вас все
-        заработает, добавьте ее и настройте Ваш файл
-        <filename>/etc/shorewall/maclist</filename>.</para>
-      </listitem>
-
-      <listitem>
-        <para>Вам необходимо добавить запись в файл
-        <filename>/etc/shorewall/masq</filename> для маскарадинга трафика из
-        беспроводной сети в Интернет. Если Ваш Интернет-интерфейс <filename
-        class="devicefile">eth0</filename> и Ваш беспроводной интерфейс
-        <filename class="devicefile">wlan0</filename>, то запись будет
-        такой:</para>
-
-        <programlisting>#INTERFACE           SUBNET             ADDRESS
-eth0                 wlan0</programlisting>
-      </listitem>
-    </itemizedlist>
-
-    <para>Еще одно замечание. Для того, чтобы между беспроводной и проводной
-    сетями работала сеть <trademark>Microsoft</trademark>, Вам необходим либо
-    <acronym>WINS</acronym>-сервер, либо <acronym>PDC</acronym>. Я лично
-    пользуюсь Samba, настроенной как <acronym>WINS</acronym>-сервер,
-    работающей на моем файерволе. Запуск <acronym>WINS</acronym>-сервера на
-    Вашем файерволе потребует правил, перечисленных в <ulink
-    url="samba.htm">документации Shorewall/Samba</ulink>.</para>
   </section>
 </article>

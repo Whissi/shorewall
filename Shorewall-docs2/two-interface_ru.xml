@@ -744,25 +744,25 @@ DNAT       net       loc:10.10.10.2:80  tcp       5000</programlisting>
         </listitem>
 
         <listitem>
-          <para><inlinegraphic fileref="images/BD21298_.gif" format="GIF" />
-          </para>
+          <para><inlinegraphic fileref="images/BD21298_.gif"
+          format="GIF" /></para>
 
-          <para>Вы можете настроить <emphasis>Кэширующий Сервер Имен (Caching
-          Name Server)</emphasis> на Вашем файерволе. <trademark>Red
-          Hat</trademark> имеет <acronym>RPM</acronym> для кэширующего сервера
-          имен (которому также необходим пакет
-          <command>bind-</command><acronym>RPM</acronym>), а для пользователей
-          Bering существует <command>dnscache.lrp</command>. Если Вы пойдете
-          этим путем, Вы настраиваете Ваши внутренние системы на использование
-          самого файервола как первичного (и только) сервера имен. Вы
-          используете внутренний <acronym>IP</acronym>-адрес файервола
-          (<systemitem class="ipaddress">10.10.10.254</systemitem> в примере
-          выше) для адреса сервера имен, если Вы запускаете сервер имен на
-          Вашем файерволе. Чтобы позволить Вашим локальным системам общаться с
-          Вашим кэширующим сервером имен, Вы должны открыть доступ к порту 53
-          (оба <acronym>UDP</acronym> и <acronym>TCP</acronym>) на файерволе
-          из внутренней сети. Вы можете сделать это, добавив следующее правило
-          в файл <filename
+          <para><anchor id="cachingdns" /> Вы можете настроить
+          <emphasis>Кэширующий Сервер Имен (Caching Name Server)</emphasis> на
+          Вашем файерволе. <trademark>Red Hat</trademark> имеет
+          <acronym>RPM</acronym> для кэширующего сервера имен (которому также
+          необходим пакет <command>bind-</command><acronym>RPM</acronym>), а
+          для пользователей Bering существует <command>dnscache.lrp</command>.
+          Если Вы пойдете этим путем, Вы настраиваете Ваши внутренние системы
+          на использование самого файервола как первичного (и только) сервера
+          имен. Вы используете внутренний <acronym>IP</acronym>-адрес
+          файервола (<systemitem class="ipaddress">10.10.10.254</systemitem> в
+          примере выше) для адреса сервера имен, если Вы запускаете сервер
+          имен на Вашем файерволе. Чтобы позволить Вашим локальным системам
+          общаться с Вашим кэширующим сервером имен, Вы должны открыть доступ
+          к порту 53 (оба <acronym>UDP</acronym> и <acronym>TCP</acronym>) на
+          файерволе из внутренней сети. Вы можете сделать это, добавив
+          следующее правило в файл <filename
           class="directory">/etc/shorewall/</filename><filename>rules</filename>.<programlisting>#ACTION    SOURCE    DEST               PROTO     DEST PORT(S)
 DNS/ACCEPT loc       $FW</programlisting></para>
         </listitem>

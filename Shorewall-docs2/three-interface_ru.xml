@@ -837,11 +837,10 @@ DNAT      loc       dmz:10.10.11.2   tcp     80            -        $ETH0_IP</pr
           к порту 53 (оба <acronym>UDP</acronym> и <acronym>TCP</acronym>) на
           файерволе из внутренней сети. Вы можете сделать это, добавив
           следующее правило в файл <filename
-          class="directory">/etc/shorewall/</filename><filename>rules</filename>.
-          </para>
+          class="directory">/etc/shorewall/</filename><filename>rules</filename>.</para>
         </listitem>
-      </itemizedlist>Если Вы запускаете сервер имен на файерволе:
-    <programlisting>#ACTION     SOURCE    DEST                PROTO      DEST PORT(S)                      
+      </itemizedlist><anchor id="cachingdns" /> Если Вы запускаете сервер имен
+    на файерволе: <programlisting>#ACTION     SOURCE    DEST                PROTO      DEST PORT(S)                      
 DNS/ACCEPT  loc       $FW
 DNS/ACCEPT  dmz       $FW            </programlisting>Запуск сервера имен на
     <acronym>DMZ</acronym>-компьютере 1: <programlisting>#ACTION     SOURCE    DEST                PROTO      DEST PORT(S)                      
@@ -916,7 +915,8 @@ ACCEPT    net       $FW                 udp        53        </programlisting>
 
       <para>Эти два правила, конечно, должны быть добавлены к тем правилам,
       которые указаны выше в абзаце "если Вы запускаете сервер имен на Вашем
-      файерволе".</para>
+      файерволе"<quote><link linkend="cachingdns">если Вы запускаете сервер
+      имен на Вашем файерволе</link></quote>.</para>
     </example>
 
     <para>Если Вы не знаете какой порт и протокол использует конкретное
@@ -931,7 +931,7 @@ ACCEPT    net       $FW                 udp        53        </programlisting>
 SSH/ACCEPT  net       $FW</programlisting></para>
     </important>
 
-    <para><inlinegraphic fileref="images/leaflogo.gif" format="GIF" /> </para>
+    <para><inlinegraphic fileref="images/leaflogo.gif" format="GIF" /></para>
 
     <para>Пользователи дистрибутива Bering захотят добавить следующие два
     правила для совместимости с конфигурацией Shorewall от Jacques.

@@ -17,7 +17,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-12-09</pubdate>
+    <pubdate>2005-12-28</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -919,6 +919,23 @@ LOGBURST=""</programlisting>
             role="bold">logdrop</emphasis> target -- see <filename> <ulink
             url="Documentation.htm#rfc1918">/usr/share/shorewall/rfc1918</ulink>
             </filename>.</para>
+
+            <note>
+              <para>If you see packets being dropped in the rfc1918 chain and
+              neither the source nor the destination IP address is reserved by
+              RFC 1918, that usually means that you have a old
+              <filename>rfc1918</filename> file in <filename
+              class="directory">/etc/shorewall</filename> (this problem most
+              frequently occurs if you are running Debian or one if its
+              derivatives). The <filename>rfc1918</filename> file used to
+              include bogons as well as the three ranges reserved by RFC 1918
+              and it resided in <filename
+              class="directory">/etc/shorewall</filename>. The file now only
+              includes the three RFC 1918 ranges and it resides in <filename
+              class="directory">/usr/share/shorewall</filename>. Remove the
+              stale <filename>rfc1918</filename> file in <filename
+              class="directory">/etc/shorewall</filename>. </para>
+            </note>
           </listitem>
         </varlistentry>
 

@@ -45,17 +45,17 @@
     <trademark>SuSE</trademark> distributions.</para>
 
     <para>Xen refers to the virtual machines as
-    <firstterm>Domains</firstterm>. Domains are number with the first domain
+    <firstterm>Domains</firstterm>. Domains are numbered with the first domain
     being domain 0, the second domain 1, and so on. Domain 0 is special
     because that is the domain created when to machine is booted. Additional
-    domains are created using the <command>xm create</command> command.
-    Additional domains can also be created automatically at boot time by using
-    the <command>xendomains</command> service.</para>
+    domains are created using the <command>xm create</command> command from
+    within Domain 0. Additional domains can also be created automatically at
+    boot time by using the <command>xendomains</command> service.</para>
 
     <para>Xen virtualizes a network interface named <filename
     class="devicefile">eth0</filename> in each domain. In domain 0, Xen also
-    creates a bridge and a number of virtual interfaces as shown in the
-    following diagram.</para>
+    creates a bridge (<filename class="devicefile">xenbr0</filename>) and a
+    number of virtual interfaces as shown in the following diagram.</para>
 
     <graphic align="center" fileref="images/Xen1.png" />
 

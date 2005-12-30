@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-12-15</pubdate>
+    <pubdate>2005-12-30</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -38,12 +38,12 @@
     <title>My Current Network</title>
 
     <caution>
-      <para>I use a combination of One-to-one NAT and Proxy ARP, neither of
-      which are relevant to a simple configuration with a single public IP
-      address. If you have just a single public IP address, most of what you
-      see here won't apply to your setup so beware of copying parts of this
-      configuration and expecting them to work for you. What you copy may or
-      may not work in your environment.</para>
+      <para>I use a combination of One-to-one NAT and Xen paravirtualization,
+      neither of which are relevant to a simple configuration with a single
+      public IP address. If you have just a single public IP address, most of
+      what you see here won't apply to your setup so beware of copying parts
+      of this configuration and expecting them to work for you. What you copy
+      may or may not work in your environment.</para>
     </caution>
 
     <caution>
@@ -57,36 +57,41 @@
     url="http://www.westell.com/pages/index.jsp">Westell</ulink> 2200) is
     connected to eth2 and has IP address 192.168.1.1 (factory default). The
     modem is configured in <quote>bridge</quote> mode so PPPoE is not
-    involved. I have a local network connected to eth3 which is bridged to
-    interface tun0 via bridge br0 (subnet 192.168.1.0/24), a wireless network
-    (192.168.3.0/24) connected to eth0, and a DMZ connected to eth1
-    (206.124.146.176/32). Note that I configure the same IP address on both
-    <filename class="devicefile">eth1</filename> and <filename
-    class="devicefile">eth2</filename>.</para>
+    involved. I have a local network connected to eth1 which is bridged to
+    interface tun0 via bridge br0 (subnet 192.168.1.0/24) and a wireless
+    network (192.168.3.0/24) connected to eth0. (206.124.146.176/32).</para>
 
     <para>In this configuration:</para>
 
     <itemizedlist>
       <listitem>
         <para>I use one-to-one NAT for <emphasis>"Ursa"</emphasis> (my
-        personal system that run SUSE 10.0) - Internal address 192.168.1.5 and
+        personal system that run SuSE 10.0) - Internal address 192.168.1.5 and
         external address 206.124.146.178.</para>
       </listitem>
 
       <listitem>
-        <para>I use one-to-one NAT for <emphasis>"Eastepnc6000</emphasis>" (My
-        work system -- Windows XP SP1/SUSE 10.0). Internal address 192.168.1.6
-        and external address 206.124.146.180.</para>
+        <para>I use one-to-one NAT for "<emphasis>lists</emphasis>" (My server
+        system that runs SuSE 10.0 in a Xen virtual system on
+        <emphasis>ursa</emphasis>) - Internal address 192.168.1.7 and external
+        address 206.124.146.177.</para>
       </listitem>
 
       <listitem>
-        <para>I use SNAT through 206.124.146.179 for&nbsp;my Wife's Windows XP
-        system <quote><emphasis>Tarry</emphasis></quote>, my <firstterm>crash
-        and burn</firstterm> system "<emphasis>Wookie</emphasis>", our SUSE
-        10.0 laptop <quote><emphasis>Tipper</emphasis></quote> which connects
-        through the Wireless Access Point (wap) via a Wireless Bridge (wet),
-        and my work laptop (<emphasis>eastepnc6000</emphasis>) when it is not
-        docked in my office.<note>
+        <para>I use one-to-one NAT for <emphasis>"Eastepnc6000</emphasis>" (My
+        work system -- Windows XP SP1/SuSE 10.0). Internal address 192.168.1.6
+        and external address 206.124.146.180.</para>
+      </listitem>
+    </itemizedlist>
+
+    <itemizedlist>
+      <listitem>
+        <para> use SNAT through 206.124.146.179 for&nbsp;my Wife's Windows XP
+        system <quote><emphasis>Tarry</emphasis></quote>, our SUSE 10.0 laptop
+        <quote><emphasis>Tipper</emphasis></quote> which connects through the
+        Wireless Access Point (wap) via a Wireless Bridge (wet), and my work
+        laptop (<emphasis>eastepnc6000</emphasis>) when it is not docked in my
+        office.<note>
             <para>While the distance between the WAP and where I usually use
             the laptop isn't very far (50 feet or so), using a WAC11 (CardBus
             wireless card) has proved very unsatisfactory (lots of lost
@@ -100,14 +105,7 @@
       </listitem>
     </itemizedlist>
 
-    <itemizedlist>
-      <listitem>
-        <para>Squid runs on the DMZ server and is configured as a transparent
-        proxy.</para>
-      </listitem>
-    </itemizedlist>
-
-    <para>The firewall runs on a P-II/233 with Debian Sarge (testing).</para>
+    <para>The firewall runs on a Celeron 1.4Ghz under SuSE 10.0.</para>
 
     <para><emphasis>Ursa</emphasis> runs Samba for file sharing with the
     Windows systems and is configured as a Wins server.</para>
@@ -118,17 +116,13 @@
     url="MAC_Validation.html">MAC verification</ulink> and <ulink
     url="OPENVPN.html#Bridge">OpenVPN in bridge mode</ulink>.</para>
 
-    <para>The single system in the DMZ (address 206.124.146.177) runs <ulink
+    <para>The server in runs <ulink
     url="http://www.postfix.org">Postfix</ulink>, <ulink
     url="http://www.courier-mta.org/imap/">Courier IMAP</ulink> (imap and
     imaps), <ulink url="http://www.isc.org/sw/bind/">DNS (Bind 9)</ulink>, a
     <ulink url="http://www.apache.org">Web server (Apache)</ulink> and an
-    <ulink url="http://www.pureftpd.org/">FTP server (Pure-ftpd)</ulink> under
-    <ulink url="http://fedora.redhat.com/">Fedora Core 4</ulink>. The system
-    also runs <ulink
-    url="http://fetchmail.berlios.de/">fetchmail</ulink> to fetch our
-    email from our old and current ISPs. That server is accessible from the
-    Internet through <ulink url="ProxyARP.htm">Proxy ARP</ulink>.</para>
+    <ulink url="http://www.pureftpd.org/">FTP server
+    (Pure-ftpd)</ulink>.</para>
 
     <para>The firewall system itself runs a <ulink
     url="http://www.isc.org/sw/dhcp/">DHCP server</ulink> that serves the
@@ -138,16 +132,9 @@
     desktop environment installed on the firewall but I usually don't start
     it. X applications tunnel through SSH to <emphasis>Ursa</emphasis> or one
     of the laptops. The server also has a desktop environment installed but it
-    is seldom started either. For the most part, X tunneled through SSH is
-    used for server administration and the server runs at run level 3
-    (multi-user console mode on Fedora).</para>
-
-    <para>The ethernet interface in the Server is configured with IP address
-    206.124.146.177, netmask 255.255.255.0. The server's default gateway is
-    206.124.146.254 (Router at my ISP. This is the same default gateway used
-    by the firewall itself). On the firewall, an entry in my
-    /etc/network/interfaces file (see below) adds a host route to
-    206.124.146.177 through eth1 when that interface is brought up.</para>
+    is never started. For the most part, X tunneled through SSH is used for
+    server administration and the server runs at run level 3 (multi-user
+    console mode on SuSE).</para>
 
     <para>In addition to the OpenVPN bridge, the firewall hosts an OpenVPN
     Tunnel server for VPN access from our second home in <ulink
@@ -233,7 +220,6 @@ LOG=info
 WIFI_IF=eth0
 EXT_IF=eth2
 INT_IF=br0
-DMZ_IF=eth1
 OMAK=&lt;ip address of the gateway at our second home&gt;
 MIRRORS=&lt;list IP addresses of Shorewall mirrors&gt;</programlisting></para>
       </blockquote>
@@ -247,8 +233,8 @@ MIRRORS=&lt;list IP addresses of Shorewall mirrors&gt;</programlisting></para>
 #                                      OPTIONS            OPTIONS
 fw      firewall
 net     ipv4
-dmz     ipv4
 loc     ipv4
+dmz:loc ipv4
 vpn     ipv4
 Wifi    ipv4
 #LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
@@ -262,10 +248,23 @@ Wifi    ipv4
         <programlisting>#ZONE   INTERFACE       BROADCAST               OPTIONS
 net     $EXT_IF         206.124.146.255         dhcp,norfc1918,logmartians,blacklist,tcpflags,nosmurfs
 loc     $INT_IF         detect                  dhcp,routeback
-dmz     $DMZ_IF         -
 vpn     tun+            -
 Wifi    $WIFI_IF        -                       dhcp,maclist
 #LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
+      </blockquote>
+    </section>
+
+    <section>
+      <title>Hosts File</title>
+
+      <para>This file is used to define the dmz zone -- the single (virtual)
+      system with internal IP address 192.168.1.7.</para>
+
+      <blockquote>
+        <programlisting>#ZONE   HOST(S)                                 OPTIONS
+dmz     $INT_IF:192.168.1.7
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS LINE -- DO NOT REMOVE
+</programlisting>
       </blockquote>
     </section>
 
@@ -274,7 +273,6 @@ Wifi    $WIFI_IF        -                       dhcp,maclist
 
       <blockquote>
         <programlisting>#INTERFACE      HOST(S)         OPTIONS
-$DMZ_IF         206.124.146.177 source
 $INT_IF         -               source,dest
 $WIFI_IF        -               source,dest
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
@@ -289,7 +287,7 @@ $WIFI_IF        -               source,dest
         parsing of the providers file.</para>
 
         <programlisting>#NAME   NUMBER  MARK    DUPLICATE       INTERFACE       GATEWAY         OPTIONS                 COPY
-Blarg   1       1       main            $EXT_IF         206.124.146.254 track,balance=1         $INT_IF,$DMZ_IF,$WIFI_IF,tun0
+Blarg   1       1       main            $EXT_IF         206.124.146.254 track,balance=1         $INT_IF,$WIFI_IF,tun0
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE
 </programlisting>
       </blockquote>
@@ -361,14 +359,13 @@ all             all             REJECT          $LOG
         <para>The first entry allows access to the DSL modem and uses features
         introduced in Shorewall 2.1.1. The leading plus sign ("+_") causes the
         rule to be placed before rules generated by the /etc/shorewall/nat
-        file below. The double colons ("::") cause the entry to be exempt from
-        ADD_SNAT_ALIASES=Yes in my shorewall.conf file above.</para>
+        file below.</para>
 
-        <programlisting>#INTERFACE              SUBNET          ADDRESS         PROTO   PORT
+        <programlisting>#INTERFACE              SUBNET          ADDRESS         PROTO   PORT(S) IPSEC
 +$EXT_IF::192.168.1.1   0.0.0.0/0       192.168.1.254
 $EXT_IF:2               192.168.0.0/22  206.124.146.179
-$DMZ_IF::               206.124.146.176 192.168.1.254   tcp     80
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE
+</programlisting>
       </blockquote>
     </section>
 
@@ -376,25 +373,13 @@ $DMZ_IF::               206.124.146.176 192.168.1.254   tcp     80
       <title>NAT File</title>
 
       <blockquote>
-        <programlisting>#EXTERNAL               INTERFACE       INTERNAL        ALL INTERFACES  LOCAL
+        <programlisting>#EXTERNAL               INTERFACE       INTERNAL        ALL             LOCAL
+#                                                       INTERFACES
+206.124.146.177         $EXT_IF:3       192.168.1.7     No              No
 206.124.146.178         $EXT_IF:0       192.168.1.5     No              No
 206.124.146.180         $EXT_IF:1       192.168.1.6     No              No
-#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
-      </blockquote>
-    </section>
-
-    <section id="ProxyARP">
-      <title>Proxy ARP File</title>
-
-      <blockquote>
-        <para>I configure the host route to 206.124.146.177 on <filename
-        class="devicefile">eth1</filename> in <link
-        linkend="debian_interfaces">/etc/network/interfaces</link>.</para>
-
-        <programlisting>#ADDRESS                INTERFACE       EXTERNAL        HAVEROUTE          PERSISTENT
-206.124.146.177         $DMZ_IF         $EXT_IF         yes
-192.168.1.1             $EXT_IF         $INT_IF         yes # Allow access to DSL modem from the local zone
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE
+</programlisting>
       </blockquote>
     </section>
 
@@ -442,11 +427,11 @@ ACCEPT   $MIRRORS
       /etc/shorewall/params)</title>
 
       <blockquote>
-        <programlisting>###############################################################################################################################################################################
+        <programlisting>SECTION NEW
+###############################################################################################################################################################################
 #ACTION         SOURCE                          DEST                    PROTO   DEST                                    SOURCE          ORIGINAL        RATE    USER/
 #                                                                               PORT                                    PORT(S)         DEST            LIMIT   GROUP
 ###############################################################################################################################################################################
-SECTION NEW
 REJECT:$LOG     loc                             net                     tcp     25
 REJECT:$LOG     loc                             net                     udp     1025:1031
 #
@@ -454,7 +439,6 @@ REJECT:$LOG     loc                             net                     udp     
 #
 REJECT          loc                             net                     tcp     137,445
 REJECT          loc                             net                     udp     137:139
-
 #
 # Stop my idiotic work laptop from sending to the net with an HP source/dest IP address
 #
@@ -465,29 +449,29 @@ DROP            Wifi                            net:16.0.0.0/8
 # Local Network to Firewall
 #
 DROP            loc:!192.168.0.0/22             fw                      # Silently drop traffic with an HP source IP from my XP box
-ACCEPT          loc                             fw                      tcp     ssh,time,631,8080
+Limit:$LOG:SSHA,3,60\
+                loc                             fw                      tcp     22
+ACCEPT          loc                             fw                      tcp     time,631,8080
 ACCEPT          loc                             fw                      udp     161,ntp,631
-DROP            loc                             fw                      tcp     3185          #SUSE Meta pppd
+ACCEPT          loc:192.168.1.5                 fw                      udp     111
+DROP            loc                             fw                      tcp     3185          #SuSE Meta pppd
 Ping/ACCEPT     loc                             fw
-###############################################################################################################################################################################
-# Roadwarriors to Firewall
-#
-ACCEPT          vpn                             fw                      tcp     ssh,time,631,8080
-ACCEPT          vpn                             fw                      udp     161,ntp,631
-Ping/ACCEPT     vpn                             fw
 ###############################################################################################################################################################################
 # Local Network to DMZ
 #
-DNAT-           loc                             dmz:206.124.146.177:3128 \
-                                                                        tcp     www                                     -               !206.124.146.177,192.168.1.1
+#DNAT-          loc                             dmz:206.124.146.177:3128 \
+                                                                        tcp     www                                     -               !206.124.146.177,192.168.1.0/24
 DROP            loc:!192.168.0.0/22             dmz
 ACCEPT          loc                             dmz                     udp     domain,xdmcp
-ACCEPT          loc                             dmz                     tcp     www,smtp,smtps,domain,ssh,imap,https,imaps,ftp,10023,pop3,3128                  -
+ACCEPT          loc                             dmz                     tcp     www,smtp,smtps,domain,ssh,imap,https,rsync,imaps,ftp,10023,pop3,3128
 Ping/ACCEPT     loc                             dmz
+###############################################################################################################################################################################
+# Local Network to Wireless
+#
+Ping/ACCEPT     loc                             Wifi
 ###############################################################################################################################################################################
 # Insecure Wireless to DMZ
 #
-
 ACCEPT          Wifi                            dmz                     udp     domain
 ACCEPT          Wifi                            dmz                     tcp     domain
 ###############################################################################################################################################################################
@@ -495,13 +479,25 @@ ACCEPT          Wifi                            dmz                     tcp     
 #
 ACCEPT          Wifi                            net                     udp     500
 ACCEPT          Wifi                            net                     udp     4500
+ACCEPT          Wifi:192.168.3.9                net                     all
 Ping/ACCEPT     Wifi                            net
+###############################################################################################################################################################################
+# Insecure Wireless to Firewall
+#
+SSH/ACCEPT      Wifi                            fw
+###############################################################################################################################################################################
+# Road Warriors to Firewall
+#
+ACCEPT            vpn                             fw                      tcp     ssh,time,631,8080
+ACCEPT            vpn                             fw                      udp     161,ntp,631
+Ping/ACCEPT       vpn                             fw
 ###############################################################################################################################################################################
 # Road Warriors to DMZ
 #
-ACCEPT          vpn                             dmz                     udp     domain
-ACCEPT          vpn                             dmz                     tcp     www,smtp,smtps,domain,ssh,imap,https,imaps,ftp,10023,pop3       -
-Ping/ACCEPT     vpn                             dmz
+ACCEPT            vpn                             dmz                     udp     domain
+ACCEPT            vpn                             dmz                     tcp     www,smtp,smtps,domain,ssh,imap,https,imaps,ftp,10023,pop3       -
+Ping/ACCEPT       vpn                             dmz
+
 ###############################################################################################################################################################################
 # Internet to ALL -- drop NewNotSyn packets
 #
@@ -512,35 +508,45 @@ dropNotSyn      net             dmz             tcp
 # Internet to DMZ
 #
 ACCEPT          net                             dmz                     udp     domain
+LOG:$LOG        net:64.126.128.0/18             dmz                     tcp     smtp
 ACCEPT          net                             dmz                     tcp     smtps,www,ftp,imaps,domain,https        -
 ACCEPT          net                             dmz                     tcp     smtp                                    -               206.124.146.177,206.124.146.178
 ACCEPT          net                             dmz                     udp     33434:33454
 Mirrors         net                             dmz                     tcp     rsync
-#
-# Allow SSH access from anywhere but limit all but from our second home
-#
-ACCEPT          net:$OMAK                       dmz                     tcp     22
-Limit:info:SSHA,3,60 \
+Limit:$LOG:SSHA,3,60\
                 net                             dmz                     tcp     22
 Ping/ACCEPT     net                             dmz
 ###############################################################################################################################################################################
 #
 # Net to Local
 #
+##########################################################################################
+# Test Server
+#
+ACCEPT          net                             loc:192.168.1.9         tcp     80
+ACCEPT          net                             loc:192.168.1.9         tcp     443
+ACCEPT          net                             loc:192.168.1.9         tcp     21
+Ping/ACCEPT     net                             loc:192.168.1.9
+#
 # When I'm "on the road", the following two rules allow me VPN access back home using PPTP.
 #
 DNAT            net                             loc:192.168.1.4         tcp     1729
 DNAT            net                             loc:192.168.1.4         gre
 #
-# Allow SSH access from anywhere but limit all but from our second home
+# Roadwarrior access to Ursa
 #
-ACCEPT          net:$OMAK                       loc:192.168.1.5         tcp     22
-Limit:info:SSHA,3,60 \
-                net                             loc:192.168.1.5         tcp     22
+ACCEPT          net:$OMAK                       loc                     tcp     22
+Limit:$LOG:SSHA,3,60\
+                net                             loc                     tcp     22
 #
-# Auth for IRC
+# ICQ
 #
-ACCEPT          net                             loc:192.168.1.5         tcp     113
+ACCEPT          net                             loc:192.168.1.5         tcp     113,4000:4100
+#
+# Bittorrent
+#
+ACCEPT          net                             loc:192.168.1.5         tcp     6881:6889,6969
+ACCEPT          net                             loc:192.168.1.5         udp     6881:6889,6969
 #
 # Real Audio
 #
@@ -555,6 +561,10 @@ ACCEPT          net                             loc:192.168.1.5         udp     
 #
 ACCEPT          net                             loc:192.168.1.5         udp     1194
 #
+# Skype
+#
+ACCEPT          net                             loc:192.168.1.6         tcp     1194
+#
 # Silently Handle common probes
 #
 REJECT          net                             loc                     tcp     www,ftp,https
@@ -563,19 +573,15 @@ DROP            net                             loc                     icmp    
 # DMZ to Internet
 #
 ACCEPT          dmz                             net                     udp     domain,ntp
-ACCEPT          dmz                             net                     tcp     smtp,domain,www,81,https,whois,echo,2702,21,2703,ssh,8080,cvspserver
-REJECT:$LOG     dmz                             net                     udp     1025:1031
+ACCEPT          dmz                             net                     tcp     echo,ftp,ssh,smtp,whois,domain,www,81,https,cvspserver,2702,2703,8080
 ACCEPT          dmz                             net:$POPSERVERS         tcp     pop3
+Ping/ACCEPT     dmz                             net
 #
+# Some FTP clients seem prone to sending the PORT command split over two packets. This prevents the FTP connection tracking
+# code from processing the command  and setting up the proper expectation. The following rule allows active FTP to work in these cases
+# but logs the connection so I can keep an eye on this potential security hole.
 #
-# OpenVPN
-#
-ACCEPT          net                             loc:192.168.1.5         udp     1194
-#
-# Silently Handle common probes
-#
-REJECT          net                             loc                     tcp     www,ftp,https
-DROP            net                             loc                     icmp    8
+ACCEPT:$LOG     dmz                             net                     tcp     1024:                                   20
 ###############################################################################################################################################################################
 # DMZ to Firewall -- ntp &amp; snmp, Silently reject Auth
 #
@@ -588,10 +594,8 @@ Ping/ACCEPT     dmz                             fw
 # DMZ to Local Network
 #
 ACCEPT          dmz                             loc                     tcp     smtp,6001:6010
-ACCEPT          dmz:206.124.146.177             loc:192.168.1.5,192.168.1.3 \
-                                                                        tcp     111
-ACCEPT          dmz:206.124.146.177             loc:192.168.1.5,192.168.1.3 \
-                                                                        udp
+ACCEPT          dmz:206.124.146.177             loc:192.168.1.5,192.168.1.3     tcp     111
+ACCEPT          dmz:206.124.146.177             loc:192.168.1.5,192.168.1.3     udp
 Ping/ACCEPT     dmz                             loc
 ###############################################################################################################################################################################
 # Internet to Firewall
@@ -601,11 +605,8 @@ DROP            net                             fw                      icmp    
 ACCEPT          net                             fw                      udp     33434:33454
 ACCEPT          net:$OMAK                       fw                      udp     ntp
 ACCEPT          net                             fw                      tcp     auth
-#
-# Allow SSH access from anywhere but limit all but from our second home
-#
 ACCEPT          net:$OMAK                       fw                      tcp     22
-Limit:info:SSHA,3,60 \
+Limit:$LOG:SSHA,3,60\
                 net                             fw                      tcp     22
 ###############################################################################################################################################################################
 # Firewall to Internet
@@ -626,7 +627,12 @@ ACCEPT          fw                              dmz                     tcp     
 ACCEPT          fw                              dmz                     udp     domain
 REJECT          fw                              dmz                     udp     137:139
 Ping/ACCEPT     fw                              dmz
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+###############################################################################################################################################################################
+# Firewall to Insecure Wireless
+#
+Ping/ACCEPT     fw                              Wifi
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
+</programlisting>
       </blockquote>
     </section>
 
@@ -731,71 +737,6 @@ class htb 1:120 parent 1:1 leaf 120: prio 2 quantum 4416 rate 345000bit ceil 345
       </blockquote>
     </section>
 
-    <section id="debian_interfaces">
-      <title>/etc/network/interfaces</title>
-
-      <para>This file is Debian-specific and defines the configuration of the
-      network interfaces.</para>
-
-      <blockquote>
-        <programlisting># The loopback network interface
-auto lo
-iface lo inet loopback
-
-# DMZ interface
-auto eth1
-iface eth1 inet static
-        address 206.124.146.176
-        netmask 255.255.255.255
-        broadcast 0.0.0.0
-        up ip route add 206.124.146.177 dev eth1
-
-# Internet interface
-auto eth2
-iface eth2 inet static
-        address 206.124.146.176
-        netmask 255.255.255.0
-        gateway 206.124.146.254
-        up ip route add 192.168.1.1 dev eth2
-
-# Wireless network
-auto eth0
-iface eth0 inet static
-        address 192.168.3.254
-        netmask 255.255.255.0
-
-# LAN interface
-auto br0
-iface br0 inet static
-        address 192.168.1.254
-        netmask 255.255.255.0
-        pre-up /usr/sbin/openvpn --mktun --dev tap0
-        pre-up /sbin/ip link set tap0 up
-        pre-up /sbin/ip link set eth3 up
-        pre-up /usr/sbin/brctl addbr br0
-        pre-up /usr/sbin/brctl addif br0 eth3
-        pre-up /usr/sbin/brctl addif br0 tap0
-        up ip route add 224.0.0.0/4 dev br0
-        post-down /usr/sbin/brctl delif br0 eth3
-        post-down /usr/sbin/brctl delif br0 tap0
-        post-down /usr/sbin/brctl delbr br0
-        post-down /usr/sbin/openvpn --rmtun --dev tap0
-
-# Unbridged LAN interface (Not started automatically)
-iface eth3 inet static
-        address 192.168.1.254
-        netmask 255.255.255.0
-        up ip route add 224.0.0.0/4 dev eth3
-
-# Second Internet interface (Not started automatically -- address is duplicate of one added by Shorewall to eth2)
-iface eth4 inet static
-        pre-up modprobe ne io=0x300 irq=10
-        address 206.124.146.179
-        netmask 255.255.255.0
-</programlisting>
-      </blockquote>
-    </section>
-
     <section>
       <title>/etc/openvpn/server.conf</title>
 
@@ -838,6 +779,16 @@ client-to-client
 verb 3</programlisting>
       </blockquote>
     </section>
+  </section>
+
+  <section>
+    <title>Ursa (Xen) Configuration</title>
+
+    <para>Ursa runs two domains. Domain 0 is my personal Linux desktop
+    environment. The other domains comprise my DMZ. There is currently only
+    one system (lists) in the DMZ. Ursa's Shorewall configuration is described
+    in <ulink url="Xen.html">the article about Xen and
+    Shorewall</ulink>.</para>
   </section>
 
   <section>

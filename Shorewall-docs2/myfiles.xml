@@ -59,7 +59,7 @@
     modem is configured in <quote>bridge</quote> mode so PPPoE is not
     involved. I have a local network connected to eth1 which is bridged to
     interface tun0 via bridge br0 (subnet 192.168.1.0/24) and a wireless
-    network (192.168.3.0/24) connected to eth0. (206.124.146.176/32).</para>
+    network (192.168.3.0/24) connected to eth0.</para>
 
     <para>In this configuration:</para>
 
@@ -457,15 +457,6 @@ ACCEPT          loc:192.168.1.5                 fw                      udp     
 DROP            loc                             fw                      tcp     3185          #SuSE Meta pppd
 Ping/ACCEPT     loc                             fw
 ###############################################################################################################################################################################
-# Local Network to DMZ
-#
-#DNAT-          loc                             dmz:206.124.146.177:3128 \
-                                                                        tcp     www                                     -               !206.124.146.177,192.168.1.0/24
-DROP            loc:!192.168.0.0/22             dmz
-ACCEPT          loc                             dmz                     udp     domain,xdmcp
-ACCEPT          loc                             dmz                     tcp     www,smtp,smtps,domain,ssh,imap,https,rsync,imaps,ftp,10023,pop3,3128
-Ping/ACCEPT     loc                             dmz
-###############################################################################################################################################################################
 # Local Network to Wireless
 #
 Ping/ACCEPT     loc                             Wifi
@@ -590,13 +581,6 @@ ACCEPT          dmz                             fw                      tcp     
 ACCEPT          dmz                             fw                      udp     161
 REJECT          dmz                             fw                      tcp     auth
 Ping/ACCEPT     dmz                             fw
-###############################################################################################################################################################################
-# DMZ to Local Network
-#
-ACCEPT          dmz                             loc                     tcp     smtp,6001:6010
-ACCEPT          dmz:206.124.146.177             loc:192.168.1.5,192.168.1.3     tcp     111
-ACCEPT          dmz:206.124.146.177             loc:192.168.1.5,192.168.1.3     udp
-Ping/ACCEPT     dmz                             loc
 ###############################################################################################################################################################################
 # Internet to Firewall
 #

@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article>
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>Xen and Shorewall</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate>2006-01-01</pubdate>
+
+    <copyright>
+      <year>2006</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <section>
+    <title>Xen Network Environment</title>
+
+    <para><ulink
+    url="http://www.cl.cam.ac.uk/Research/SRG/netos/xen/">Xen</ulink> is a
+    <firstterm>paravirtualization</firstterm> tool that allows you to run
+    multiple virtual machines on one physical machine. It is available on a
+    wide number of platforms and is included in recent
+    <trademark>SuSE</trademark> distributions.</para>
+
+    <para>Xen refers to the virtual machines as
+    <firstterm>Domains</firstterm>. Domains are number with the first domain
+    being domain 0, the second domain 1, and so on. Domain 0 is special
+    because that is the domain created when to machine is booted. Additional
+    domains are created using the <command>xm create</command> command.
+    Additional domains can also be created automatically at boot time by using
+    the <command>xendomains</command> service.</para>
+
+    <para>Xen virtualizes a network interface named <filename
+    class="devicefile">eth0</filename> in each domain. In domain 0, Xen also
+    creates a bridge and a number of virtual interfaces as shown in the
+    following diagram.</para>
+
+    <graphic align="center" fileref="images/Xen1.png" />
+
+    <para>I use the term <firstterm>Extended Domain 0</firstterm> to
+    distinguish the bridge and virtual interfaces from domain 0 itself. That
+    distinction is important when we try to apply Shorewall in this
+    environment.</para>
+
+    <para>The bridge has a number of ports:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>peth0 — This is the port that connects to the physical network
+        interface in your system.</para>
+      </listitem>
+
+      <listitem>
+        <para>vif0.0 — This is the bridge port that is used by traffic to/from
+        Domain 0.</para>
+      </listitem>
+
+      <listitem>
+        <para>vifX.0 — This is the bridge port that is used by traffic to/from
+        Domain X.</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Configuring Shorewall in Domain 0</title>
+
+    <para>As I state in the answer to <ulink url="FAQ.htm#faq2">Shorewall FAQ
+    2</ulink>, I object to running servers in a local zone because if the
+    server becomes compromised then there is no protection between that
+    compromised server and the other local systems. Xen allows you to safely
+    run Internet-accessible servers in your local zone by creating a firewall
+    in (the Extended) Domain 0 to isolate the server(s) from the other local
+    systems (including Domain 0).</para>
+
+    <para>Here is an example. In this example, we will assume that the system
+    is behind a second firewall that restricts incoming traffic so that we
+    only have to worry about protecting the local lan from the systems running
+    in domains other than domain 0.</para>
+
+    <section>
+      <title>/etc/shorewall/zones</title>
+
+      <para>One thing strange about configuring Shorewall in this environment
+      is that Domain 0 is defined as two different zones. It is defined as the
+      firewall zone and it is also defined as "all systems connected to
+      <filename class="devicefile">xenbr0:vif0.0</filename>. In this case, we
+      call this second zone <emphasis role="bold">ursa</emphasis>; that zone
+      corresponds roughly to what is shown as Extended Domain 0 above.</para>
+
+      <blockquote>
+        <programlisting>#                                       OPTIONS                 OPTIONS
+fw      firewall                        #Domain 0
+ursa    ipv4                            #Domain 0 on the bridge
+dmz     ipv4                            #Server(s) running in Domains other than 0
+net     ipv4                            #The local LAN and beyond
+#LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
+      </blockquote>
+    </section>
+
+    <section>
+      <title>/etc/shorewall/interfaces</title>
+
+      <para>We must deal with two network interfaces. We must deal with the
+      (virtualized) eth0 and we must also deal with the bridge (xenbr0)
+      created by Xen.</para>
+
+      <blockquote>
+        <programlisting>#ZONE   INTERFACE       BROADCAST       OPTIONS
+-       xenbr0          -               dhcp
+net     eth0            detect          dhcp
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+      </blockquote>
+    </section>
+
+    <section>
+      <title>/etc/shorewall/hosts</title>
+
+      <para>Here we define the zones <emphasis role="bold">ursa</emphasis> and
+      <emphasis role="bold">dmz</emphasis> and we extend the definition of the
+      zone <emphasis role="bold">net</emphasis>.<blockquote>
+          <programlisting>#ZONE   HOST(S)                                 OPTIONS
+ursa    xenbr0:vif0.0
+dmz     xenbr0:vif+
+net     xenbr0:peth0
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS LINE -- DO NOT REMOVE</programlisting>
+        </blockquote></para>
+
+      <para>Note that the <emphasis role="bold">net</emphasis> zone has two
+      different interfaces. From the point of view of Domain 0 (which is where
+      Shorewall runs), the <emphasis role="bold">net</emphasis> zone comprises
+      everything except Domain 0. From the point of view of the Extended
+      Domain 0, the <emphasis role="bold">net</emphasis> zone is everything
+      connected (directly or indirectly) to the <filename
+      class="devicefile">peth0</filename> port on the bridge.</para>
+    </section>
+
+    <section>
+      <title>/etc/shorewall/policy</title>
+
+      <para>The policies shown here effectively isolate Domains 1...N.</para>
+
+      <blockquote>
+        <programlisting>#SOURCE         DEST            POLICY          LOG             LIMIT:BURST
+#                                               LEVEL
+all             fw              ACCEPT
+fw              all             ACCEPT
+ursa            all             ACCEPT
+net             ursa            ACCEPT
+net             net             NONE
+all             all             REJECT          info
+#LAST LINE -- DO NOT REMOVE
+</programlisting>
+      </blockquote>
+    </section>
+
+    <section>
+      <title>/etc/shorewall/rules</title>
+
+      <para>These rules determine the traffic allowed into and out of the
+      <emphasis role="bold">dmz</emphasis> zone.</para>
+
+      <blockquote>
+        <programlisting>#
+# "Net' to DMZ
+#
+ACCEPT          net                dmz                     udp     domain
+ACCEPT          net                dmz                     tcp     www,smtp,smtps,domain,ssh,imap,rsync,https,imaps,ftp,10023,pop3,3128
+Trcrt/ACCEPT    net                dmz
+#
+# DMZ to 'Net'
+#
+ACCEPT          dmz                net:!192.168.0.0/22     udp     domain,ntp
+ACCEPT          dmz                net:!192.168.0.0/22     tcp     echo,ftp,ssh,smtp,whois,domain,www,81,https,rsync,cvspserver,2702,2703,8080
+ACCEPT          dmz                net:$POPSERVERS         tcp     pop3
+Ping/ACCEPT     dmz                net
+
+Ping/ACCEPT     dmz                ursa</programlisting>
+      </blockquote>
+
+      <para>In this example, 192.168.0.0/22 comprises the local
+      network.</para>
+
+      <para>From the point of view of Shorewall, the zone diagram is as shown
+      in the following diagram.</para>
+
+      <graphic align="center" fileref="images/Xen2.png" />
+    </section>
+  </section>
+</article>

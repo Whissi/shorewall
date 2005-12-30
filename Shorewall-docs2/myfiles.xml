@@ -418,7 +418,7 @@ openvpnserver:1194      Wifi    192.168.3.0/24
 
         <programlisting>#ACTION
 Mirrors             #Accept traffic from the Shorewall Mirror sites
-Limit               #Limit connection rate from individual Hosts
+Limit               #Limit connection rate from each individual Host
 #LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
       </blockquote>
     </section>
@@ -427,7 +427,8 @@ Limit               #Limit connection rate from individual Hosts
       <title>action.Mirrors File</title>
 
       <blockquote>
-        <para>$MIRRORS is set in /etc/shorewall/params above.</para>
+        <para>$MIRRORS is set in <filename>/etc/shorewall/params</filename>
+        above.</para>
 
         <programlisting>#TARGET  SOURCE         DEST            PROTO   DEST    SOURCE     ORIGINAL     RATE
 #                                               PORT    PORT(S)    DEST         LIMIT

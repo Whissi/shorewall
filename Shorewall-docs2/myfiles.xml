@@ -86,7 +86,7 @@
 
     <itemizedlist>
       <listitem>
-        <para> use SNAT through 206.124.146.179 for&nbsp;my Wife's Windows XP
+        <para>use SNAT through 206.124.146.179 for&nbsp;my Wife's Windows XP
         system <quote><emphasis>Tarry</emphasis></quote>, our SUSE 10.0 laptop
         <quote><emphasis>Tipper</emphasis></quote> which connects through the
         Wireless Access Point (wap) via a Wireless Bridge (wet), and my work
@@ -488,7 +488,13 @@ Ping/ACCEPT       vpn                             fw
 ACCEPT            vpn                             dmz                     udp     domain
 ACCEPT            vpn                             dmz                     tcp     www,smtp,smtps,domain,ssh,imap,https,imaps,ftp,10023,pop3       -
 Ping/ACCEPT       vpn                             dmz
-
+###############################################################################################################################################################################
+# Local network to DMZ 
+#
+ACCEPT            loc                             dmz                     udp     domain
+ACCEPT            loc                             dmz                     tcp     ssh,smtps,www,ftp,imaps,domain,https	-
+ACCEPT            loc                             dmz                     tcp     smtp
+ACCEPT            loc                             dmz                     udp     33434:33454
 ###############################################################################################################################################################################
 # Internet to ALL -- drop NewNotSyn packets
 #

@@ -7,6 +7,10 @@
   <articleinfo>
     <title>Shorewall et pont filtrant</title>
 
+    <subtitle>Version Française de <foreignphrase lang="en"><ulink
+    url="http://www.shorewall.net/bridge.html">Shorewall and Bridged
+    Firewalls</ulink></foreignphrase></subtitle>
+
     <authorgroup>
       <author>
         <firstname>Tom</firstname>
@@ -14,14 +18,14 @@
         <surname>Eastep</surname>
       </author>
 
-      <author>
+      <othercredit class="translator" role="traduction">
         <firstname>Guy</firstname>
 
         <surname>Marcenac</surname>
-      </author>
+      </othercredit>
     </authorgroup>
 
-    <pubdate>2005-12-18</pubdate>
+    <pubdate>2005-12-31</pubdate>
 
     <copyright>
       <year>2004</year>
@@ -80,7 +84,7 @@
     Interconnect), un routeur opère au niveau 3. Shorewall peut également être
     déployé sur un système GNU Linux se comportant comme un pont (bridge). Les
     ponts sont des équipements de niveau 2 dans le modèle OSI (pensez à un
-    pont comme étant un switch éthernet).</para>
+    pont comme à un switch éthernet).</para>
 
     <para>Voici quelques-unes des différences entre les routeurs et les
     ponts:</para>
@@ -368,7 +372,7 @@ exit 0</programlisting></para>
 
     <para>Voici une contribution de Axel Westerhold qui propose cet exemple de
     configuration d'un pont ayant une adresse statique sur un système Fedora
-    System (Core 1 and Core 2 Test 1). Remarquez que ces fichiers configurent
+    (Core 1 and Core 2 Test 1). Remarquez que ces fichiers configurent
     également le pont ce qui évite d'avoir à écrire un script de configuration
     séparé.</para>
 
@@ -518,7 +522,7 @@ rc-update add bridge boot
 
     <para>Les utilisateurs qui réussissent dans la configuration d'un pont sur
     d'autres distributions que celles présentées plus haut, sont encouragés à
-    <ulink url="mailto:webmaster@shorewall.net">m'</ulink>envoyer leurs
+    <ulink url="mailto:webmaster@shorewall.net">m'envoyer</ulink> leurs
     configurations afin que je puisse les publier ici.</para>
   </section>
 
@@ -532,7 +536,7 @@ rc-update add bridge boot
 
     <para>Dans le scénario présenté plus haut, il y aurait probablement deux
     zones définies. - une pour internet et une pour le réseau local, ce qui
-    donnerait en fichier <filename>/etc/shorewall/zones</filename> comme
+    donnerait un fichier <filename>/etc/shorewall/zones</filename> comme
     celui-ci:</para>
 
     <programlisting>#ZONE   TYPE            OPTIONS
@@ -583,7 +587,7 @@ br0             192.168.1.0/24  routeback
   </section>
 
   <section id="bridge-router">
-    <title>Combinaison pont/routeur</title>
+    <title>Combinaison Pont/Routeur</title>
 
     <para>Un système Shorewall n'a pas à s'exécuter exclusivement comme un
     pont ou bien comme un routeur -- il peut parfaitement faire les deux.
@@ -619,7 +623,7 @@ dmz      br0:eth2</programlisting>
 
       <listitem>
         <para>Les systèmes en DMZ ont besoin d'avoir une route par 192.0.2.176
-        vers le réseau 192.168.201.0/24 afin qu'il puissent communiquer avec
+        vers le réseau 192.168.201.0/24 afin qu'ils puissent communiquer avec
         le réseau local.</para>
       </listitem>
     </orderedlist>

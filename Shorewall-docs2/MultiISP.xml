@@ -15,10 +15,12 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-12-01</pubdate>
+    <pubdate>2006-01-02</pubdate>
 
     <copyright>
       <year>2005</year>
+
+      <year>2006</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -227,6 +229,15 @@
                     iptables using the patch at <ulink
                     url="http://shorewall.net/pub/shorewall/contrib/iptables/CONNMARK.diff">http://shorewall.net/pub/shorewall/contrib/iptables/CONNMARK.diff</ulink>.</para>
                   </warning>
+
+                  <important>
+                    <para>If you are using
+                    <filename>/etc/shorewall/providers</filename> because you
+                    have multiple internet connections, we recommend that you
+                    specify 'track' even if you don't need it. It helps
+                    maintain long-term connections in which there are
+                    significant periods with no traffic.</para>
+                  </important>
                 </listitem>
               </varlistentry>
 
@@ -247,6 +258,15 @@
                   bandwidth of the providers connections and should be small
                   numbers since the kernel actually creates additional default
                   routes for each weight increment.</para>
+
+                  <important>
+                    <para>If you are using
+                    <filename>/etc/shorewall/providers</filename> because you
+                    have multiple internet connections, we recommend that you
+                    specify 'balance' even if you don't need it. You can still
+                    use entries in <filename>/etc/shorewall/tcrules</filename>
+                    to force traffic to one provider or another. </para>
+                  </important>
                 </listitem>
               </varlistentry>
 

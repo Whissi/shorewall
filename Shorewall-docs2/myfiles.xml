@@ -15,10 +15,10 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-12-31</pubdate>
+    <pubdate>2006-01-02</pubdate>
 
     <copyright>
-      <year>2001-2005</year>
+      <year>2001-2006</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -87,11 +87,10 @@
     <itemizedlist>
       <listitem>
         <para>use SNAT through 206.124.146.179 for&nbsp;my Wife's Windows XP
-        system <quote><emphasis>Tarry</emphasis></quote>, our SUSE 10.0 laptop
-        <quote><emphasis>Tipper</emphasis></quote> which connects through the
-        Wireless Access Point (wap) via a Wireless Bridge (wet), and my work
-        laptop (<emphasis>eastepnc6000</emphasis>) when it is not docked in my
-        office.<note>
+        system <quote><emphasis>Tarry</emphasis></quote> and our SUSE 10.0
+        laptop <quote><emphasis>Tipper</emphasis></quote> which connects
+        through the Wireless Access Point (wap) via a Wireless Bridge
+        (wet).<note>
             <para>While the distance between the WAP and where I usually use
             the laptop isn't very far (50 feet or so), using a WAC11 (CardBus
             wireless card) has proved very unsatisfactory (lots of lost
@@ -161,6 +160,23 @@
 
     <para>Ursa's Shorewall configuration is described in <ulink
     url="Xen.html">the article about Xen and Shorewall</ulink>.</para>
+
+    <para>About the only thing that is unique about the configuration of
+    Domain 1 (lists) is that its (virtualized) eth0 has two addresses:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>192.168.1.7/24</para>
+      </listitem>
+
+      <listitem>
+        <para>206.124.146.177/32</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>This prevents the DNS server from getting confused due to the fact
+    that the two different views have a different IP addresses for the primary
+    name server for the domain shorewall.net.</para>
   </section>
 
   <section>

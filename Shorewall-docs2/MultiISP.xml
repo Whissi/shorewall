@@ -49,7 +49,7 @@
       ethernet interfaces to two different ISPs as in the following
       diagram.</para>
 
-      <graphic fileref="images/TwoISPs.png" />
+      <graphic align="left" fileref="images/TwoISPs.png" />
 
       <itemizedlist>
         <listitem>
@@ -265,7 +265,7 @@
                     have multiple internet connections, we recommend that you
                     specify 'balance' even if you don't need it. You can still
                     use entries in <filename>/etc/shorewall/tcrules</filename>
-                    to force traffic to one provider or another. </para>
+                    to force traffic to one provider or another.</para>
                   </important>
                 </listitem>
               </varlistentry>
@@ -413,6 +413,14 @@ net      eth1         detect          …</programlisting>
 
       <programlisting>#SOURCE    DESTINATION    POLICY     LIMIT:BURST
 net        net            DROP</programlisting>
+
+      <para>Regardless of whether you have masqueraded hosts or not, <emphasis
+      role="bold">YOU MUST ADD THESE TWO ENTRIES TO
+      <filename>/etc/shorewall/masq</filename></emphasis>:</para>
+
+      <programlisting>#INTERFACE       SUBNET            ADDRESS
+eth0             130.252.99.27     206.124.146.176
+eth1             206.124.146.176   130.252.99.27</programlisting>
 
       <para>If you have masqueraded hosts, be sure to update
       <filename>/etc/shorewall/masq</filename> to masquerade to both ISPs. For

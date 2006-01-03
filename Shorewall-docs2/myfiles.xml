@@ -446,7 +446,7 @@ Limit               #Limit connection rate from each individual Host
 
         <programlisting>#TARGET  SOURCE         DEST            PROTO   DEST    SOURCE     ORIGINAL     RATE
 #                                               PORT    PORT(S)    DEST         LIMIT
-ACCEPT   $MIRRORS                   
+ACCEPT   $MIRRORS
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
       </blockquote>
     </section>
@@ -518,7 +518,7 @@ ACCEPT            vpn                             dmz                     udp   
 ACCEPT            vpn                             dmz                     tcp     www,smtp,smtps,domain,ssh,imap,https,imaps,ftp,10023,pop3       -
 Ping/ACCEPT       vpn                             dmz
 ###############################################################################################################################################################################
-# Local network to DMZ 
+# Local network to DMZ
 #
 ACCEPT            loc                             dmz                     udp     domain
 ACCEPT            loc                             dmz                     tcp     ssh,smtps,www,ftp,imaps,domain,https	-
@@ -880,28 +880,28 @@ ACCEPT          net                     $FW     tcp     4000:4100
         <programlisting>dev tun
 remote gateway.shorewall.net
 up /etc/openvpn/home.up
- 
+
 tls-client
 pull
- 
+
 ca /etc/certs/cacert.pem
- 
+
 cert /etc/certs/tipper.pem
 key /etc/certs/tipper_key.pem
- 
+
 port 1194
- 
+
 user nobody
 group nogroup
- 
+
 comp-lzo
- 
+
 ping 15
 ping-restart 45
 ping-timer-rem
 persist-tun
 persist-key
- 
+
 verb 3</programlisting>
       </blockquote>
     </section>
@@ -911,7 +911,7 @@ verb 3</programlisting>
 
       <blockquote>
         <programlisting>#!/bin/bash
- 
+
 ip route add 192.168.1.0/24 via $5     #Access to Home Network
 ip route add 206.124.146.177/32 via $5 #So that DNS names will resolve in my
                                        #Internal Bind 9 view because the source IP will

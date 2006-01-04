@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2006-01-02</pubdate>
+    <pubdate>2006-01-04</pubdate>
 
     <copyright>
       <year>2001-2006</year>
@@ -209,8 +209,8 @@ RESTOREFILE=standard
 IPSECFILE=zones
 FW=
 IP_FORWARDING=On
-ADD_IP_ALIASES=Yes
-ADD_SNAT_ALIASES=Yes
+ADD_IP_ALIASES=No
+ADD_SNAT_ALIASES=No
 RETAIN_ALIASES=Yes
 TC_ENABLED=Internal
 CLEAR_TC=Yes
@@ -391,8 +391,8 @@ all             all             REJECT          $LOG
         file below.</para>
 
         <programlisting>#INTERFACE              SUBNET          ADDRESS         PROTO   PORT(S) IPSEC
-+$EXT_IF::192.168.1.1   0.0.0.0/0       192.168.1.254
-$EXT_IF:2               192.168.0.0/22  206.124.146.179
++$EXT_IF:192.168.1.1    0.0.0.0/0       192.168.1.254
+$EXT_IF                 192.168.0.0/22  206.124.146.179
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE
 </programlisting>
       </blockquote>
@@ -404,9 +404,9 @@ $EXT_IF:2               192.168.0.0/22  206.124.146.179
       <blockquote>
         <programlisting>#EXTERNAL               INTERFACE       INTERNAL        ALL             LOCAL
 #                                                       INTERFACES
-206.124.146.177         $EXT_IF:3       192.168.1.7     No              No
-206.124.146.178         $EXT_IF:0       192.168.1.5     No              No
-206.124.146.180         $EXT_IF:1       192.168.1.6     No              No
+206.124.146.177         $EXT_IF         192.168.1.7     No              No
+206.124.146.178         $EXT_IF         192.168.1.5     No              No
+206.124.146.180         $EXT_IF         192.168.1.6     No              No
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE
 </programlisting>
       </blockquote>

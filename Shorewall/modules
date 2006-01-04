@@ -13,9 +13,15 @@
 # http://shorewall.net/Documentation.htm#modules
 #
 ###############################################################################
+#
+# Essential Modules
+#
 loadmodule ip_tables
 loadmodule iptable_filter
 loadmodule ip_conntrack
+#
+# Helpers
+#
 loadmodule ip_conntrack_ftp
 loadmodule ip_conntrack_tftp
 loadmodule ip_conntrack_irc
@@ -28,4 +34,58 @@ loadmodule ip_set_iphash
 loadmodule ip_set_ipmap
 loadmodule ip_set_macipmap
 loadmodule ip_set_portmap
+#
+# Traffic Shaping
+#
+loadmodule sch_sfq
+loadmodule sch_ingress
+loadmodule sch_htb
+loadmodule cls_u32
+#
+# Extensions
+#
+loadmodule ipt_addrtype
+loadmodule ipt_ah
+loadmodule ipt_CLASSIFY
+loadmodule ipt_CLUSTERIP
+loadmodule ipt_comment
+loadmodule ipt_connmark
+loadmodule ipt_CONNMARK
+loadmodule ipt_conntrack
+loadmodule ipt_dscp
+loadmodule ipt_DSCP
+loadmodule ipt_ecn
+loadmodule ipt_ECN
+loadmodule ipt_esp
+loadmodule ipt_hashlimit
+loadmodule ipt_helper
+loadmodule ipt_iprange
+loadmodule ipt_length
+loadmodule ipt_limit
+loadmodule ipt_LOG
+loadmodule ipt_mac
+loadmodule ipt_mark
+loadmodule ipt_MARK
+loadmodule ipt_MASQUERADE
+loadmodule ipt_multiport
+loadmodule ipt_NETMAP
+loadmodule ipt_NOTRACK
+loadmodule ipt_owner
+loadmodule ipt_physdev
+loadmodule ipt_pkttype
+loadmodule ipt_policy
+loadmodule ipt_realm
+loadmodule ipt_recent
+loadmodule ipt_REDIRECT
+loadmodule ipt_REJECT
+loadmodule ipt_SAME
+loadmodule ipt_sctp
+loadmodule ipt_state
+loadmodule ipt_tcpmss
+loadmodule ipt_TCPMSS
+loadmodule ipt_tos
+loadmodule ipt_TOS
+loadmodule ipt_ttl
+loadmodule ipt_TTL
+loadmodule ipt_ULOG
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

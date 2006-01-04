@@ -641,31 +641,6 @@ macrecent_target() # $1 - interface
 }
 
 #
-# Functions for creating dynamic zone rules
-#
-dynamic_fwd() # $1 = interface
-{
-   echo $(chain_base $1)_dynf
-}
-
-dynamic_in() # $1 = interface
-{
-   echo $(chain_base $1)_dyni
-}
-
-dynamic_out() # $1 = interface
-{
-   echo $(chain_base $1)_dyno
-}
-
-dynamic_chains() #$1 = interface
-{
-   local c=$(chain_base $1)
-
-   echo ${c}_dyni ${c}_dynf ${c}_dyno
-}
-
-#
 # DNAT Chain from a zone
 #
 dnat_chain() # $1 = zone

@@ -1770,7 +1770,7 @@ log_rule_limit() # $1 = log level, $2 = chain, $3 = display Chain $4 = dispositi
     local prefix
     local base=$(chain_base $displayChain)
 
-    shift;shift;shift;shift;shift;shift;shift
+    shift 7
 
     if [ -n "$tag" -a -n "$LOGTAGONLY" ]; then
 	displayChain=$tag
@@ -1827,7 +1827,7 @@ log_rule() # $1 = log level, $2 = chain, $3 = disposition , $... = predicates fo
     local chain=$2
     local disposition=$3
 
-    shift;shift;shift
+    shift 3
 
     log_rule_limit $level $chain $chain $disposition "$LOGLIMIT" "" -A $@
 }
@@ -4702,7 +4702,7 @@ find_logactionchain() # $1 = Action, including log level and tag if any
 
     while [ $# -gt 0 ]; do
 	[ "$1" = "$level" ] && { echo $2 ; return ; }
-	shift;shift
+	shift 2
     done
 
     fatal_error "Fatal error in find_logactionchain"
@@ -7547,7 +7547,7 @@ add_ip_aliases()
 	    label="label $interface:$label"
 	fi
 
-	shift;shift
+	shift 2
 
 	if list_search $external $(find_interface_addresses $interface) ; then
 	    save_command qt ip addr add ${external}$(address_details) dev $interface $label
@@ -9282,7 +9282,7 @@ case "$COMMAND" in
 	#
 	# Undocumented way to call functions in /usr/share/shorewall/firewall directly
 	#
-	shift;
+	shift
 	do_initialize
 	EMPTY=
 	$@

@@ -1895,7 +1895,6 @@ disable_ipv6_1() {
 #
 # Process the routestopped file either adding or deleting rules
 #
-
 process_routestopped() # $1 = command
 {
     local hosts= interface host host1 options networks source= dest= matched
@@ -9246,36 +9245,6 @@ case "$COMMAND" in
 	[ $# -ne 1 ] && usage
 	do_initialize
 	check_config
-	;;
-
-    add)
-	[ $# -lt 3 ] && usage
-	do_initialize
-	my_mutex_on
-	if ! shorewall_is_started ; then
-	    echo "Shorewall Not Started"
-	    [ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
-	    my_mutex_off
-	    exit 2;
-	fi
-	shift
-	add_to_zone $@
-	my_mutex_off
-	;;
-
-    delete)
-	[ $# -lt 3 ] && usage
-	do_initialize
-	my_mutex_on
-	if ! shorewall_is_started ; then
-	    echo "Shorewall Not Started"
-	    [ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
-	    my_mutex_off
-	    exit 2;
-	fi
-	shift
-	delete_from_zone $@
-	my_mutex_off
 	;;
 
     call)

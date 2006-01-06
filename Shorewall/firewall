@@ -152,6 +152,21 @@ append_file() # $1 = File Name
 }
 
 #
+# Run iptables -- we define this so that it may be overloaded in the compiler
+#
+do_iptables() {
+    $IPTABLES $@
+}
+
+#
+# Run iptables quietly -- we define this so that it may be overloaded in the compiler
+#
+qt_iptables() {
+    $IPTABLES $@
+}
+
+
+#
 # Run iptables and if an error occurs, stop the firewall and quit
 #
 run_iptables() {
@@ -343,14 +358,6 @@ havechain() # $1 = name of chain
 }
 
 #
-# Query NetFilter about the existence of a mangle chain
-#
-mangle_chain_exists() # $1 = chain name
-{
-    qt $IPTABLES -t mangle -L $1 -n
-}
-
-#
 # Ensure that a chain exists (create it if it doesn't)
 #
 ensurechain() # $1 = chain name
@@ -376,6 +383,39 @@ addrule2() # $1 = chain name, remainder of arguments specify the rule
 {
     ensurechain $1
     run_iptables2 -A $@
+}
+
+#
+# Create a mangle chain
+#
+# Create a variable exists_mangle_${1} and set its value to Yes to indicate that
+# the chain now exists.
+#
+createmanglechain() # $1 = chain name
+{
+    run_iptables -t mangle -N $1
+
+    eval exists_mangle_${1}=Yes
+}
+
+#
+# Determine if a mangle chain exists
+#
+# When we create a chain "chain", we create a variable named exists_nat_chain
+# and set its value to Yes. This function tests for the "exists_" variable
+# corresponding to the passed chain having the value of "Yes".
+#
+havemanglechain() # $1 = name of chain
+{
+    eval test \"\$exists_mangle_${1}\" = Yes
+}
+
+#
+# Ensure that a mangle chain exists (create it if it doesn't)
+#
+ensuremanglechain() # $1 = chain name
+{
+    havemanglechain $1 || createmanglechain $1
 }
 
 #
@@ -1797,22 +1837,10 @@ log_rule_limit() # $1 = log level, $2 = chain, $3 = display Chain $4 = dispositi
 
     case $level in
 	ULOG)
-	    if ! $IPTABLES $command $chain $@ $limit -j ULOG $LOGPARMS --ulog-prefix "$prefix" ; then
-		if [ -z "$STOPPING" ]; then
-		    error_message "ERROR: Command \"$IPTABLES $command $chain $@ $limit -j ULOG $LOGPARMS --ulog-prefix \"$prefix\"\" Failed"
-		    stop_firewall
-		    exit 2
-		fi
-	    fi
+	    run_iptables $command $chain $@ $limit -j ULOG $LOGPARMS --ulog-prefix "$prefix"
 	    ;;
 	*)
-	    if ! $IPTABLES $command $chain $@ $limit -j LOG $LOGPARMS --log-level $level --log-prefix "$prefix"; then
-		if [ -z "$STOPPING" ]; then
-		    error_message "ERROR: Command \"$IPTABLES $command $chain $@ $limit -j  LOG $LOGPARMS --log-level $level --log-prefix \"$prefix\"\" Failed"
-		    stop_firewall
-		    exit 2
-		fi
-	    fi
+	    run_iptables $command $chain $@ $limit -j LOG $LOGPARMS --log-level $level --log-prefix "$prefix"
 	    ;;
     esac
 
@@ -1946,7 +1974,7 @@ process_routestopped() # $1 = command
     for host in $hosts; do
 	interface=${host%:*}
 	networks=${host#*:}
-	$IPTABLES $1 INPUT  -i $interface $(source_ip_range $networks) -j ACCEPT
+	do_iptables $1 INPUT  -i $interface $(source_ip_range $networks) -j ACCEPT
 	[ -z "$ADMINISABSENTMINDED" -o $COMMAND != stop ] && \
 	    run_iptables $1 OUTPUT -o $interface $(dest_ip_range $networks) -j ACCEPT
 
@@ -2015,8 +2043,8 @@ enable_critical_hosts()
     for host in $CRITICALHOSTS; do
 	interface=${host%:*}
 	networks=${host#*:}
-	$IPTABLES -A INPUT  -i $interface $(source_ip_range $networks) -j ACCEPT
-	$IPTABLES -A OUTPUT -o $interface $(dest_ip_range $networks) -j ACCEPT
+	do_iptables -A INPUT  -i $interface $(source_ip_range $networks) -j ACCEPT
+	do_iptables -A OUTPUT -o $interface $(dest_ip_range $networks) -j ACCEPT
     done
 }
 
@@ -2029,8 +2057,8 @@ disable_critical_hosts()
     for host in $CRITICALHOSTS; do
 	interface=${host%:*}
 	networks=${host#*:}
-	$IPTABLES -D INPUT  -i $interface $(source_ip_range $networks) -j ACCEPT
-	$IPTABLES -D OUTPUT -o $interface $(dest_ip_range $networks) -j ACCEPT
+	do_iptables -D INPUT  -i $interface $(source_ip_range $networks) -j ACCEPT
+	do_iptables -D OUTPUT -o $interface $(dest_ip_range $networks) -j ACCEPT
     done
 }
 
@@ -2761,7 +2789,7 @@ setup_mac_lists() {
 		createchain $1 no
 		;;
 	    *)
-		run_iptables -t mangle -N $1
+		createmanglechain $1
 		;;
 	esac
     }
@@ -2775,7 +2803,7 @@ setup_mac_lists() {
 		havechain $1 && result=0 || result=1
 		;;
 	    *)
-		mangle_chain_exists $1 && result=0 || result=1
+		havemanglechain $1 && result=0 || result=1
 		;;
 	esac
 
@@ -3119,10 +3147,10 @@ setup_ecn() # $1 = file name
 
 	for interface in $interfaces; do
 	    chain=$(ecn_chain $interface)
-	    if mangle_chain_exists $chain; then
+	    if havemanglechain $chain; then
 		flushmangle $chain
 	    else
-		run_iptables -t mangle -N $chain
+		createmanglechain $chain
 		run_iptables -t mangle -A POSTROUTING -p tcp -o $interface -j $chain
 		run_iptables -t mangle -A OUTPUT      -p tcp -o $interface -j $chain
 	    fi
@@ -3674,10 +3702,10 @@ setup_tc1() {
     # Create the TC mangle chains
     #
 
-    run_iptables -t mangle -N tcpre
-    run_iptables -t mangle -N tcfor
-    run_iptables -t mangle -N tcout
-    run_iptables -t mangle -N tcpost
+    createmanglechain tcpre
+    createmanglechain tcfor
+    createmanglechain tcout
+    createmanglechain tcpost
     #
     # Process the TC Rules File
     #
@@ -3968,7 +3996,7 @@ process_accounting_rule() {
 
     ensurechain1 $chain
 
-    if $IPTABLES -A $chain $(fix_bang $rule) ; then
+    if do_iptables -A $chain $(fix_bang $rule) ; then
 	[ -n "$rule2" ] && run_iptables2 -A $jumpchain $rule2
 	progress_message "   Accounting rule" $action $chain $source $dest $proto $port $sport $user Added
     else
@@ -4110,7 +4138,7 @@ refresh_tc() {
 
     [ -n "$MARK_IN_FORWARD_CHAIN" ] && chain=tcfor || chain=tcpre
 
-    if mangle_chain_exists $chain; then
+    if qt $IPTABLES -t mangle -L $chain -n ; then
         #
         # Flush the TC mangle chains
         #
@@ -6685,8 +6713,8 @@ process_tos() # $1 = name of tos file
     strip_file tos $1
 
     if [ -s $TMP_DIR/tos ] ; then
-	run_iptables -t mangle -N pretos
-	run_iptables -t mangle -N outtos
+	createmanglechain pretos
+	createmanglechain outtos
 
 	while read src dst protocol sport dport tos; do
 	    expandv src dst protocol sport dport tos
@@ -6928,7 +6956,7 @@ setup_routes()
 
     run_iptables -t mangle -A PREROUTING -m connmark ! --mark 0 -j CONNMARK --restore-mark
     run_iptables -t mangle -A OUTPUT     -m connmark ! --mark 0 -j CONNMARK --restore-mark
-    run_iptables -t mangle -N routemark
+    createmanglechain routemark
 
     for interface in $ROUTEMARK_INTERFACES ; do
 
@@ -7692,7 +7720,7 @@ initialize_netfilter () {
     if [ -n "$NAT_ENABLED" ]; then
 	delete_nat
 	for chain in PREROUTING POSTROUTING OUTPUT; do
-	    qt $IPTABLES -t nat -P $chain ACCEPT
+	    qt_iptables -t nat -P $chain ACCEPT
 	done
     fi
 
@@ -7702,7 +7730,7 @@ initialize_netfilter () {
 	run_iptables -t mangle -F
 	run_iptables -t mangle -X
 	for chain in PREROUTING INPUT FORWARD POSTROUTING; do
-	    qt $IPTABLES -t mangle -P $chain ACCEPT
+	    qt_iptables -t mangle -P $chain ACCEPT
 	done
     fi
 
@@ -7710,7 +7738,7 @@ initialize_netfilter () {
 	run_iptables -t raw -F
 	run_iptables -t raw -X
 	for chain in PREROUTING OUTPUT; do
-	    qt $IPTABLES -t raw -P $chain ACCEPT
+	    qt_iptables -t raw -P $chain ACCEPT
 	done
     fi
 
@@ -7854,13 +7882,8 @@ add_common_rules() {
     # Reject Rules -- Don't respond to broadcasts with an ICMP
     #
     if [ -n "$USEPKTTYPE" ]; then
-	qt $IPTABLES -A reject -m pkttype --pkt-type broadcast -j DROP
-	if ! qt $IPTABLES -A reject -m pkttype --pkt-type multicast -j DROP; then
-            #
-	    # No pkttype support -- do it the hard way
-	    #
-	    drop_broadcasts
-	fi
+	run_iptables -A reject -m pkttype --pkt-type broadcast -j DROP
+	run_iptables -A reject -m pkttype --pkt-type multicast -j DROP; then
     else
 	drop_broadcasts
     fi
@@ -7876,11 +7899,10 @@ add_common_rules() {
     #
     # Not all versions of iptables support these so don't complain if they don't work
     #
-    qt $IPTABLES  -A reject -p icmp -j REJECT --reject-with icmp-host-unreachable
-    if ! qt $IPTABLES -A reject -j REJECT --reject-with icmp-host-prohibited; then
-	#
-	# In case the above doesn't work
-	#
+    if [ -n "$ENHANCED_REJECT" ]; THEN
+	run_iptables -A reject -p icmp -j REJECT --reject-with icmp-host-unreachable
+	run_iptables -A reject -j REJECT --reject-with icmp-host-prohibited
+    else
 	run_iptables -A reject -j REJECT
     fi
 
@@ -7932,7 +7954,7 @@ add_common_rules() {
 	    if [ -n "$BRIDGING" ]; then
 		is_bridge=$( brctl show $interface 2> /dev/null | grep ^$interface[[:space:]] )
 		[ -n "$is_bridge" ] && \
-		    $IPTABLES -A $(forward_chain $interface) -p udp -o $interface --dport 67:68 -j ACCEPT
+		    do_iptables -A $(forward_chain $interface) -p udp -o $interface --dport 67:68 -j ACCEPT
             fi
 	    run_iptables -A $(input_chain $interface) -p udp --dport 67:68 -j ACCEPT
 	    run_iptables -A OUTPUT -o $interface      -p udp --dport 67:68 -j ACCEPT
@@ -7973,8 +7995,8 @@ add_common_rules() {
 	    #
 	    # Also add a chain to log and drop any RFC1918 packets that we find
 	    #
-	    run_iptables -t mangle -N man1918
-	    run_iptables -t mangle -N rfc1918
+	    createmanglechain man1918
+	    createmanglechain rfc1918
 	    log_rule $RFC1918_LOG_LEVEL rfc1918 DROP -t mangle
 	    run_iptables -t mangle -A rfc1918 -j DROP
 	fi
@@ -9132,7 +9154,7 @@ do_initialize() {
 # Give Usage Information
 #
 usage() {
-    echo "Usage: $0 [debug] {start|stop|reset|restart|refresh|clear|{add|delete} <interface>[:hosts] zone}}"
+    echo "Usage: $0 [debug] {start|stop|reset|restart|refresh|clear|generate <filename>}"
     exit 1
 }
 
@@ -9245,6 +9267,12 @@ case "$COMMAND" in
 	[ $# -ne 1 ] && usage
 	do_initialize
 	check_config
+	;;
+
+    generate)
+	[ $# -ne 2 ] && usage
+	. /usr/share/shorewall/compiler
+	compile $2
 	;;
 
     call)

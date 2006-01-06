@@ -898,6 +898,7 @@ determine_capabilities() {
     RAW_TABLE=
     IPP2P_MATCH=
     CLASSIFY_TARGET=
+    ENHANCED_REJECT=
 
     qt $IPTABLES -N fooX1234
     qt $IPTABLES -A fooX1234 -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT             && CONNTRACK_MATCH=Yes
@@ -910,6 +911,7 @@ determine_capabilities() {
     qt $IPTABLES -A fooX1234 -m owner --uid-owner 0 -j ACCEPT                           && OWNER_MATCH=Yes
     qt $IPTABLES -A fooX1234 -m connmark --mark 2  -j ACCEPT                            && CONNMARK_MATCH=Yes
     qt $IPTABLES -A fooX1234 -p tcp -m ipp2p --ipp2p -j ACCEPT                          && IPP2P_MATCH=Yes
+    qt $IPTABLES -A fooX1234 -j REJECT --reject-with icmp-host-prohibited               && ENHANCED_REJECT=Yes
 
     qt $IPTABLES -t mangle -N fooX1234
     qt $IPTABLES -t mangle -A fooX1234 -j CONNMARK --save-mark                          && CONNMARK=Yes
@@ -965,6 +967,7 @@ report_capabilities() {
     report_capability "Connmark Match" $CONNMARK_MATCH
     report_capability "Raw Table" $RAW_TABLE
     report_capability "CLASSIFY Target" $CLASSIFY_TARGET
+    report_capability "Enhanced REJECT" $ENHANCED_REJECT
 
 }
 

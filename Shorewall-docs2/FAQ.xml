@@ -17,10 +17,10 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-12-28</pubdate>
+    <pubdate>2005-01-06</pubdate>
 
     <copyright>
-      <year>2001-2005</year>
+      <year>2001-2006</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -282,7 +282,7 @@ DNAT       loc      dmz:192.168.2.4     tcp      80              -           206
         <para>If your external IP address is dynamic, then you must do the
         following:</para>
 
-        <para>In <filename>/etc/shorewall/init</filename>:</para>
+        <para>In <filename>/etc/shorewall/params</filename>:</para>
 
         <programlisting><command>ETH0_IP=`find_interface_address eth0`</command>       </programlisting>
 
@@ -413,7 +413,7 @@ DNAT       loc          loc:192.168.1.5    tcp      www         -         130.15
 
           <para>That rule only works of course if you have a static external
           IP address. If you have a dynamic IP address then include this in
-          <filename>/etc/shorewall/init</filename>:</para>
+          <filename>/etc/shorewall/params</filename>:</para>
 
           <programlisting><command>ETH0_IP=`find_first_interface_address eth0`</command>        </programlisting>
 
@@ -525,7 +525,7 @@ DNAT       loc      dmz:192.168.2.4     tcp      80              -           206
         <para>If your external IP address is dynamic, then you must do the
         following:</para>
 
-        <para>In <filename>/etc/shorewall/init</filename>:</para>
+        <para>In <filename>/etc/shorewall/params</filename>:</para>
 
         <programlisting><command>ETH0_IP=`find_first_interface_address eth0`</command>  </programlisting>
 
@@ -934,7 +934,7 @@ LOGBURST=""</programlisting>
               includes the three RFC 1918 ranges and it resides in <filename
               class="directory">/usr/share/shorewall</filename>. Remove the
               stale <filename>rfc1918</filename> file in <filename
-              class="directory">/etc/shorewall</filename>. </para>
+              class="directory">/etc/shorewall</filename>.</para>
             </note>
           </listitem>
         </varlistentry>

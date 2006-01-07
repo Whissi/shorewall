@@ -8823,7 +8823,7 @@ define_firewall() # $1 = Command (Start or Restart)
 #
 compile_firewall() # $1 = File Name
 {
-    file=$1 dir=$(dirname $1)
+    outfile=$1 dir=$(dirname $1)
     #
     # We overload a number of functions when compiling.
     #
@@ -8904,20 +8904,20 @@ compile_firewall() # $1 = File Name
     #
     # END OVERLOADED FUNCTIONS
     #
-    case $file in
+    case $outfile in
 	*/*)
 	    [ -d $dir ] || startup_error "Directory $dir does not exist"
 	    [ -h $dir ] && startup_error "$dir is a Symbolic Link"
-	    [ -d $file ] && startup_error "$file is a Directory"
-	    [ -h $file ] && startup_error "$file is a Symbolic Link"
+	    [ -d $outfile ] && startup_error "$outfile is a Directory"
+	    [ -h $outfile ] && startup_error "$outfile is a Symbolic Link"
 
 	    ;;
 	*)
-	    file=/var/lib/shorewall/$1
+	    outfile=/var/lib/shorewall/$1
 	    ;;
     esac
 
-    [ -f $file -a ! -x $file ] && startup_error "$file exists and is not a restore file"
+    [ -f $outfile -a ! -x $outfile ] && startup_error "$outfile exists and is not a restore file"
 
     verify_os_version
     verify_ip
@@ -9045,7 +9045,7 @@ compile_firewall() # $1 = File Name
 
     run_user_exit started
 
-    mv -f $RESTOREBASE $file
+    mv -f $RESTOREBASE $outfile
 
     chmod 700 $file
 

@@ -4047,6 +4047,8 @@ setup_accounting() # $1 = Name of accounting file
 
     echo "Setting up Accounting..."
 
+    [ $COMMAND = generate ] && save_progress_message "Restoring Accounting..."
+
     strip_file accounting $1
 
     while read action chain source dest proto port sport user ; do
@@ -7472,6 +7474,8 @@ setup_blacklist() {
     if [ -n "$hosts" -a -f $f ]; then
 	echo "Setting up Blacklisting..."
 
+	[ $COMMAND = restore ] && save_progress_message "Restoring Blacklisting..."
+
 	strip_file blacklist $f
 
 	createchain blacklst no
@@ -7801,6 +7805,8 @@ initialize_netfilter () {
 
     echo "Deleting user chains..."
 
+    [ $COMMAND = generate ] && save_progress_message "Deleting user chains..."
+
     exists_INPUT=Yes
     exists_OUTPUT=Yes
     exists_FORWARD=Yes
@@ -7844,10 +7850,11 @@ initialize_netfilter () {
 
     if [ -f $f ]; then
 	echo "Processing $f ..."
-	ipset -U :all: :all:
-	run_ipset -F
-	run_ipset -X
-	run_ipset -R < $f
+	save_progress_message "Restoring IPSETS..."
+	run_and_save_command "ipset -U :all: :all:"
+	run_and_save_command "run_ipset -F"
+	run_and_save_command "run_ipset -X"
+	run_and_save_command "run_ipset -R < $f"
     fi
 
     run_user_exit continue
@@ -7888,6 +7895,8 @@ initialize_netfilter () {
     if [ -f /var/lib/shorewall/save ]; then
 	echo "Restoring dynamic rules..."
 
+	[ $COMMAND = generate ] && save_progress_message "Restoring dynamic rules..."
+
 	if [ -f /var/lib/shorewall/save ]; then
 	    while read target ignore1 ignore2 address rest; do
 		case $target in
@@ -7904,6 +7913,8 @@ initialize_netfilter () {
     [ -n "$BLACKLISTNEWONLY" ] && state="-m state --state NEW,INVALID" || state=
 
     echo "Creating Interface Chains..."
+
+    [ $COMMAND = generate ] && save_progress_message "Creating Interface Chains..."
 
     for interface in $ALL_INTERFACES; do
 	createchain $(forward_chain $interface) no
@@ -7929,6 +7940,8 @@ add_common_rules() {
     #
     # Populate the smurf chain
     #
+    [ $COMMAND = generate ] && save_progress_message "Restoring SMURF control..."
+
     for address in $broadcasts ; do
 	[ -n "$SMURF_LOG_LEVEL" ] && log_rule $SMURF_LOG_LEVEL smurfs DROP -s $address
 	run_iptables -A smurfs $(source_ip_range $address) -j DROP
@@ -7973,6 +7986,8 @@ add_common_rules() {
     #
     # Process Black List
     #
+    [ $COMMAND = generate ] && save_progress_message "Restoring Black List..."
+
     setup_blacklist
 
     #
@@ -7983,6 +7998,8 @@ add_common_rules() {
     if [ -n "$hosts" ]; then
 
 	echo "Adding Anti-smurf Rules"
+
+	[ $COMMAND = generate ] && save_progress_message "Adding Anti-smurf Jumps..."
 
 	for host in $hosts; do
 	    ipsec=${host%^*}
@@ -8005,6 +8022,8 @@ add_common_rules() {
 
 	echo "Adding rules for DHCP"
 
+	[ $COMMAND = generate ] && save_progress_message "Restoring rules for DHCP..."
+
 	for interface in $interfaces; do
 	    if [ -n "$BRIDGING" ]; then
 		is_bridge=$( brctl show $interface 2> /dev/null | grep ^$interface[[:space:]] )
@@ -8022,6 +8041,8 @@ add_common_rules() {
 
     if [ -n "$hosts" ]; then
 	echo "Enabling RFC1918 Filtering"
+
+	[ $COMMAND = generate ] && save_progress_message "Restoring RFC1918 Filtering..."
 
 	strip_file rfc1918
 
@@ -8113,6 +8134,8 @@ add_common_rules() {
 
     if [ -n "$hosts" ]; then
 	echo "Setting up TCP Flags checking..."
+
+	[ $COMMAND = generate ] && save_progress_message "Restoring TCP Flags checking..."
 
 	createchain tcpflags no
 
@@ -8280,6 +8303,8 @@ add_common_rules() {
     if [ -n "$interfaces" ]; then
 	echo "Setting up Accept Source Routing..."
 
+	save_progress_message "Restoring Source Routing..."
+
 	for interface in $interfaces; do
 	    file=/proc/sys/net/ipv4/conf/$interface/accept_source_route
 	    if [ -f $file ]; then
@@ -8298,6 +8323,8 @@ add_common_rules() {
 
     if [ -n "$interfaces" ]; then
 	echo "Setting up UPnP..."
+
+	[ $COMMAND = generate ] && save_progress_message "Restoring UPnP..."
 
 	createnatchain UPnP
 
@@ -8739,8 +8766,10 @@ define_firewall() # $1 = Command (Start or Restart)
 
     echo "Activating Rules...";                activate_rules
 
-    [ -n "$ALIASES_TO_ADD" ] && \
-	echo "Adding IP Addresses..." &&       add_ip_aliases
+    if [ -n "$ALIASES_TO_ADD" ]; then
+	echo "Adding IP Addresses..."
+	add_ip_aliases
+    fi
 
     for file in chains nat proxyarp zones; do
 	append_file $file
@@ -8885,7 +8914,9 @@ generate_firewall() # $1 = File Name
 
     save_load_kernel_modules
 
-    echo "Initializing...";                    initialize_netfilter
+    echo "Initializing..."
+    save_progress_message "Initializing..."
+    initialize_netfilter
 
     echo "Compiling Proxy ARP";                setup_proxy_arp
     #
@@ -8904,30 +8935,58 @@ generate_firewall() # $1 = File Name
     setup_ipsec
 
     maclist_hosts=$(find_hosts_by_option maclist)
-    [ -n "$maclist_hosts" ] &&                 setup_mac_lists
 
-    echo "Compiling $(find_file rules)...";    process_rules
+    if [ -n "$maclist_hosts" ]; then
+	save_progress_message "Restoring MAC Filtration..."
+	setup_mac_lists
+    fi
+
+    echo "Compiling $(find_file rules)..."
+    save_progress_message "Restoring Rules..."
+    process_rules
 
     tunnels=$(find_file tunnels)
-    [ -f $tunnels ] && \
-	echo "Compiling $tunnels..." &&       setup_tunnels $tunnels
+    if [ -f $tunnels ]; then
+	echo "Compiling $tunnels..."
+	save_progress_message "Restoring Tunnels..."
+	setup_tunnels $tunnels
+    fi
+
+    save_progress_message "Restoring Actions..."
 
     echo "Compiling Actions...";               process_actions2
                                                process_actions3
+
+    save_progress_message "Applying Policies..."
+
     echo "Compiling $(find_file policy)...";  apply_policy_rules
 
     masq=$(find_file masq)
-    [ -f $masq ] &&                            setup_masq $masq
+    if [ -f $masq ]; then
+	save_progress_message "Restoring Masquerading/SNAT..."
+	setup_masq $masq
+    fi
 
     tos=$(find_file tos)
-    [ -f $tos ] && [ -n "$MANGLE_ENABLED" ] && process_tos $tos
+    if [ -f $tos -a -n "$MANGLE_ENABLED" ]; then
+	save_progress_message "Restoring TOS..."
+	process_tos $tos
+    fi
 
     ecn=$(find_file ecn)
-    [ -f $ecn ] && [ -n "$MANGLE_ENABLED" ] && setup_ecn $ecn
+    if [ -f $ecn -a -n "$MANGLE_ENABLED" ]; then
+	save_progress_message "Restoring ECN..."
+	setup_ecn $ecn
+    fi
 
-    [ -n "$MANGLE_ENABLED" ]                && setup_tc
+    if [ -n "$MANGLE_ENABLED" ]; then
+	save_progress_message "Restoring TC Rules..."
+	setup_tc
+    fi
 
-    echo "Compiling Rule Activation...";       activate_rules
+    echo "Compiling Rule Activation..."
+    save_progress_message "Activating Rules..."
+    activate_rules
 
     [ -n "$ALIASES_TO_ADD" ] && \
 	echo "Adding IP Addresses..." &&       add_ip_aliases

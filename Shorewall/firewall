@@ -8868,6 +8868,7 @@ generate_firewall() # $1 = File Name
     run_ip() {
 	if ! ip $@ ; then
 	    error_message "ERROR: Command \"ip $@\" Failed"
+	    rm -rf $TMP_DIR
 	    exit 2
 	fi
     }

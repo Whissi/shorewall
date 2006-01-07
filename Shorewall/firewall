@@ -69,7 +69,7 @@ error_message() # $* = Error Message
 fatal_error() # $* = Error Message
 {
     echo "   ERROR: $@" >&2
-    if [ $COMMAND = check ]; then
+    if [ $COMMAND = check -o $COMMAND = generate ]; then
 	[ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
     else
 	stop_firewall

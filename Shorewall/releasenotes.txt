@@ -33,17 +33,17 @@ Problems corrected in 3.1.0
 
 Migration Considerations:
 
-1) The dynamic zone capability has been removed from Shorewall. Based on when
-   ipsets are made a standard part of the Linux kernels from kernel.org, dynamic
-   zones may be restored prior to the release of Shorewall 3.2.
+1)  The dynamic zone capability has been removed from Shorewall. Based on when
+    ipsets are made a standard part of the Linux kernels from kernel.org, dynamic
+    zones may be restored prior to the release of Shorewall 3.2.
 
 New Features:
 
-1) A new 'shorewall generate' command has been added.
+1)  A new 'shorewall generate' command has been added.
 
 	shorewall [ -q ] generate [ <config directory> ] <script file>
 
-   where:
+    where:
 
 	-q                    Suppresses many of the progress messages
 	<config directory>    Is an optional directory to be searched for
@@ -53,39 +53,66 @@ New Features:
 	                      filename is given, the file will be created in
 	                      /var/lib/shorewall.
 
-   The 'generate' command processes the configuration and writes a script file
-   which may then be executed (either directly or using the 'shorewall restore'
-   command) to configure the firewall.
+    The 'generate' command processes the configuration and writes a script file
+    which may then be executed (either directly or using the 'shorewall restore'
+    command) to configure the firewall.
 
-   WARNING: The generated script HAS ABSOLUTELY NO ERROR CHECKING so if there
-            are errors in your configuration files that result in errors when
-            the script is run then you may not be able to access your firewall
-            or your firewall may have security holes.
+    WARNING: The generated script HAS ABSOLUTELY NO ERROR CHECKING so if there
+             are errors in your configuration files that result in errors when
+             the script is run then you may not be able to access your firewall
+             or your firewall may have security holes.
 
-   Given the above warning, I recommend that you use 'generate' when making
-   simple changes to your configuration but that you continue to use 'restart'
-   for complex changes.
+    Given the above warning, I recommend that you use 'generate' when making
+    simple changes to your configuration but that you continue to use 'restart'
+    for complex changes.
 
-   Some additional considerations:
+    Some additional considerations:
 
-   a) All 'detect' operations are done at the time that the 'generate' command
-      is run. So it is generally not possible to run 'generate' on one system
-      then move the generated script to another system.
+    a) All 'detect' operations are done at the time that the 'generate' command
+       is run. So it is generally not possible to run 'generate' on one system
+       then move the generated script to another system.
 
-   b) If you have extension scripts, they may need modification. The scripts
-      will be run at generation time, rather than when the generated script
-      is executed. The standard functions like 'run_iptables' and
-      'log_rule_limit' will write the iptables command to the script file
-      rather than executing the command. As always, you can check $COMMAND
-      to determine which shorewall command is being executed.
+    b) If you have extension scripts, they may need modification. The scripts
+       will be run at generation time, rather than when the generated script
+       is executed. The standard functions like 'run_iptables' and
+       'log_rule_limit' will write the iptables command to the script file
+       rather than executing the command. As always, you can check $COMMAND
+       to determine which shorewall command is being executed.
 
-   In addition to 'generate', a 'shorewall reload' command has been added.
+    In addition to 'generate', a 'shorewall reload' command has been added.
 
 	shorewall [ -q ] reload [ <config directory>
 
-   where -q and <config directory> are as above.
+    where -q and <config directory> are as above.
 
-   The 'reload' command creates a script using 'generate' and if there are
-   no errors, it then restores that script. It is equivalent to:
+    The 'reload' command creates a script using 'generate' and if there are
+    no errors, it then restores that script. It is equivalent to:
 
-   if shorewall generate <temp file>; then restore <tempfile>; fi
+    if shorewall generate <temp file>; then restore <tempfile>; fi
+
+    The advantage of using reload over restart is that reload results in new
+    connections being dropped for a much shorter time. Here are the results of
+    tests that I conducted on my own firewall:
+
+    A) shorewall -q restart
+
+	real    0m17.540s
+	user    0m5.956s
+	sys     0m10.737s
+
+    B) shorewall -q restore foo # foo created using "shorewall generate"
+
+	real    0m3.505s
+	user    0m1.332s
+	sys     0m2.164s
+
+
+    C) shorewall -q restore # Restores from file generated by "shorewall save"
+
+	real    0m1.164s
+	user    0m0.556s
+	sys     0m0.608s
+
+    The time difference from B to C reflects the difference between
+    "iptables-restore" and multiple executions of "iptables". The system is a
+    1.4Ghz Celeron with 512MB RAM.

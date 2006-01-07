@@ -117,6 +117,11 @@ save_progress_message()
     echo                           >> $RESTOREBASE
 }
 
+save_progress_message_short()
+{
+    echo "progress_message \"$@\"" >> $RESTOREBASE
+}
+
 #
 # Save the passed command in the restore script then run it -- returns the status of the command
 # If the command involves file redirection then it must be enclosed in quotes as in:
@@ -4645,6 +4650,7 @@ process_action() # $1 = chain    (Chain to add the rules to)
 	    ;;
 	generate)
 	    progress_message "   Rule \"$rule\" compiled."
+	    save_progress_message_short "   Rule \"$rule\" added."
 	    ;;
 	*)
 	    progress_message "   Rule \"$rule\" added."
@@ -5262,6 +5268,8 @@ process_actions3() {
 		f=action.$xaction1
 
 		echo "Processing $(find_file $f) for Chain $xchain..."
+
+		[ $COMMAND = generate ] && save_progress_message "Creating action Chain $xchain..."
 
 		while read xtarget xclients xservers xprotocol xports xcports xratelimit xuserspec; do
 		    expandv xtarget
@@ -6308,7 +6316,7 @@ process_rule() # $1 = target
 	    ;;
 	generate)
 	    progress_message "   Rule \"$rule\" compiled."
-	    save_command "progress_message '   Rule \"'$rule'\" added.'"
+	    save_progress_message_short "   Rule \"$rule\" added."
 	    ;;
 	*)
 	    progress_message "   Rule \"$rule\" added."
@@ -8978,7 +8986,6 @@ generate_firewall() # $1 = File Name
 
     masq=$(find_file masq)
     if [ -f $masq ]; then
-	save_progress_message "Restoring Masquerading/SNAT..."
 	setup_masq $masq
     fi
 

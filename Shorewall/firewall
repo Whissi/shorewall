@@ -8815,6 +8815,9 @@ define_firewall() # $1 = Command (Start or Restart)
 #
 generate_firewall() # $1 = File Name
 {
+    #
+    # We overload a number of functions when compiling.
+    #
     ensure_and_save_command()
     {
 	echo "$@" >> $RESTOREBASE
@@ -8865,6 +8868,10 @@ generate_firewall() # $1 = File Name
 
     }
 
+    run_iptables2()){
+	run_iptables $(fix_bang $@)
+    }
+
     run_ip() {
 	if ! ip $@ ; then
 	    error_message "ERROR: Command \"ip $@\" Failed"
@@ -8885,7 +8892,9 @@ generate_firewall() # $1 = File Name
     {
 	save_command "qt $IPTABLES -L $1 -n && qt $IPTABLES -F $1 && qt $IPTABLES -X $1"
     }
-
+    #
+    # END OVERLOADED FUNCTIONS
+    #
     verify_os_version
     verify_ip
 
@@ -9008,9 +9017,20 @@ generate_firewall() # $1 = File Name
 
     run_user_exit started
 
-    mv -f $RESTOREBASE /var/lib/shorewall/$1
+    case $1 in
+	.*|/*)
+	    file=$1
+	    ;;
+	*)
+	    file=/var/lib/shorewall/$1
+	    ;;
+    esac
 
-    chmod 700 /var/lib/shorewall/$1
+    mv -f $RESTOREBASE $file
+
+    chmod 700 $file
+
+    echo "Shorewall configuration compiled to $file"
 
     rm -rf $TMP_DIR
 }
@@ -9371,6 +9391,7 @@ do_initialize() {
     BRIDGING=$(added_param_value_no BRIDGING $BRIDGING)
     STARTUP_ENABLED=$(added_param_value_yes STARTUP_ENABLED $STARTUP_ENABLED)
     RETAIN_ALIASES=$(added_param_value_no RETAIN_ALIASES $RETAIN_ALIASES)
+    [ -n "${ADD_IP_ALIASES}${ADD_SNAT_ALIASES}" ] || RETAIN_ALIASES=
     DELAYBLACKLISTLOAD=$(added_param_value_no DELAYBLACKLISTLOAD $DELAYBLACKLISTLOAD)
     LOGTAGONLY=$(added_param_value_no LOGTAGONLY $LOGTAGONLY)
     RFC1918_STRICT=$(added_param_value_no RFC1918_STRICT $RFC1918_STRICT)

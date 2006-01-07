@@ -8821,8 +8821,9 @@ define_firewall() # $1 = Command (Start or Restart)
 #
 # Compile a Restore Script
 #
-generate_firewall() # $1 = File Name
+compile_firewall() # $1 = File Name
 {
+    file=$1 dir=$(dirname $1)
     #
     # We overload a number of functions when compiling.
     #
@@ -8903,6 +8904,21 @@ generate_firewall() # $1 = File Name
     #
     # END OVERLOADED FUNCTIONS
     #
+    case $file in
+	*/*)
+	    [ -d $dir ] || startup_error "Directory $dir does not exist"
+	    [ -h $dir ] && startup_error "$dir is a Symbolic Link"
+	    [ -d $file ] && startup_error "$file is a Directory"
+	    [ -h $file ] && startup_error "$file is a Symbolic Link"
+
+	    ;;
+	*)
+	    file=/var/lib/shorewall/$1
+	    ;;
+    esac
+
+    [ -f $file -a ! -x $file ] && startup_error "$file exists and is not a restore file"
+
     verify_os_version
     verify_ip
 
@@ -9028,15 +9044,6 @@ generate_firewall() # $1 = File Name
     save_command set_state "Started"
 
     run_user_exit started
-
-    case $1 in
-	*/*)
-	    file=$1
-	    ;;
-	*)
-	    file=/var/lib/shorewall/$1
-	    ;;
-    esac
 
     mv -f $RESTOREBASE $file
 
@@ -9593,10 +9600,10 @@ case "$COMMAND" in
 	check_config
 	;;
 
-    generate)
+    compile|generate)
 	[ $# -ne 2 ] && usage
 	do_initialize
-	generate_firewall $2
+	compile_firewall $2
 	;;
 
     call)

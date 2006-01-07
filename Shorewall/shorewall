@@ -108,7 +108,7 @@
 #                                                  confirmation to accept or reject the new
 #                                                  configuration
 #
-#          shorewall generate [ <directory> ] ]<filename>
+#          shorewall {generate|compile} [ <directory> ] ]<filename>
 #                                                  Compile a pseudo restore file.
 #
 #          shorewall reload [ <directory name> ]   Safe reload
@@ -505,6 +505,7 @@ usage() # $1 = exit status
     echo "   allow <address> ..."
     echo "   check [ <directory> ]"
     echo "   clear"
+    echo "   compile [ <directory name> ] <file name>"
     echo "   drop <address> ..."
     echo "   dump"
     echo "   forget [ <file name> ]"
@@ -818,7 +819,7 @@ case "$1" in
 	export NOROUTES
 	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $1
 	;;
-    generate)
+    compile|generate)
 	file=
 	case $# in
 	    1)
@@ -901,7 +902,7 @@ case "$1" in
 
 	export NOROUTES
 
-	if $SHOREWALL_SHELL $FIREWALL $debugging $nolock generate .reload; then
+	if $SHOREWALL_SHELL $FIREWALL $debugging $nolock compile .reload; then
 	   [ -n "$QUIET" ] && QUIET=-q
 	   $0 $QUIET restore .reload
 	fi

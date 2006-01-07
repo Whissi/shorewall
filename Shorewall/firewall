@@ -7351,7 +7351,7 @@ setup_masq()
 
     if [ -n "$NAT_ENABLED" ]; then
 	echo "Masqueraded Networks and Hosts:"
-	[ -n "$RETAIN_ALIASES" -o $COMMAND = check ] || save_progress_message "Restoring Masquerading/SNAT..."
+	[ $COMMAND = check ] || save_progress_message "Restoring Masquerading/SNAT..."
     fi
 
     while read fullinterface networks addresses proto ports ipsec; do
@@ -8868,7 +8868,7 @@ generate_firewall() # $1 = File Name
 
     }
 
-    run_iptables2()){
+    run_iptables2() {
 	run_iptables $(fix_bang $@)
     }
 
@@ -9018,7 +9018,7 @@ generate_firewall() # $1 = File Name
     run_user_exit started
 
     case $1 in
-	.*|/*)
+	./*|../*|/*)
 	    file=$1
 	    ;;
 	*)

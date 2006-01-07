@@ -8902,7 +8902,9 @@ generate_firewall() # $1 = File Name
 
     RESTOREBASE=$(mktempfile /var/lib/shorewall)
 
-    STATEDIR=$TMP_DIR
+    STATEDIR=/var/lib/shorewall/.compiler
+
+    [ -d $STATEDIR ] || mkdir $STATEDIR
 
     [ -n "$RESTOREBASE" ] || startup_error "Cannot create temporary file in /var/lib/shorewall"
 
@@ -8935,12 +8937,15 @@ generate_firewall() # $1 = File Name
     setup_providers $(find_file providers)
     [ -n "$ROUTEMARK_INTERFACES" ] &&          setup_routes
 
-
     echo "Compiling NAT...";                  setup_nat
     echo "Compiling NETMAP...";               setup_netmap
     echo "Compiling Common Rules";            add_common_rules
 
+    save_progress_message "Restoring SYN Flood Protection..."
+
     setup_syn_flood_chains
+
+    save_progress_message "Restoring IPSEC management..."
 
     setup_ipsec
 

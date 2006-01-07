@@ -108,7 +108,8 @@
 #                                                  confirmation to accept or reject the new
 #                                                  configuration
 #
-#          shorewall generate <filename>           Compile a pseudo restore file.
+#          shorewall generate [ <directory> ] ]<filename>
+#                                                   Compile a pseudo restore file.
 #
 # Fatal Error
 #
@@ -505,7 +506,7 @@ usage() # $1 = exit status
     echo "   drop <address> ..."
     echo "   dump"
     echo "   forget [ <file name> ]"
-    echo "   generate [ <file name> ]"
+    echo "   generate [ <directory name> ] <file name>"
     echo "   help [ <command > | host | address ]"
     echo "   hits"
     echo "   ipcalc { <address>/<vlsm> | <address> <netmask> }"
@@ -815,8 +816,35 @@ case "$1" in
 	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $1
 	;;
     generate)
-	[ $# -ne 2 ] && usage 1
-	exec $SHOREWALL_SHELL $FIREWALL $debugging generate $2
+	file=
+	case $# in
+	    1)
+		usage 1
+		;;
+	    2)
+		file=$2
+		;;
+	    3)
+		[ -n "$SHOREWALL_DIR" ] && usage 2
+
+		if [ ! -d $2 ]; then
+		    if [ -e $2 ]; then
+			echo "$2 is not a directory" >&2 && exit 2
+		    else
+			echo "Directory $2 does not exist" >&2 && exit 2
+		    fi
+		fi
+
+		SHOREWALL_DIR=$2
+		export SHOREWALL_DIR
+		file=$3
+		;;
+	    *)
+		usage 1
+		;;
+	esac
+
+	exec $SHOREWALL_SHELL $FIREWALL $debugging generate $file
 	;;
     check|restart)
 	case $# in

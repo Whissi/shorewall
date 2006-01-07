@@ -108,6 +108,8 @@
 #                                                  confirmation to accept or reject the new
 #                                                  configuration
 #
+#          shorewall generate <filename>           Compile a pseudo restore file.
+#
 # Fatal Error
 #
 fatal_error() # $@ = Message
@@ -503,6 +505,7 @@ usage() # $1 = exit status
     echo "   drop <address> ..."
     echo "   dump"
     echo "   forget [ <file name> ]"
+    echo "   generate [ <file name> ]"
     echo "   help [ <command > | host | address ]"
     echo "   hits"
     echo "   ipcalc { <address>/<vlsm> | <address> <netmask> }"
@@ -810,6 +813,10 @@ case "$1" in
 	[ $# -ne 1 ] && usage 1
 	export NOROUTES
 	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $1
+	;;
+    generate)
+	[ $# -ne 2 ] && usage 1
+	exec $SHOREWALL_SHELL $FIREWALL $debugging generate $2
 	;;
     check|restart)
 	case $# in

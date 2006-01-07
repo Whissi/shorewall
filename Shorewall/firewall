@@ -147,7 +147,7 @@ ensure_and_save_command()
 append_file() # $1 = File Name
 {
     save_command "cat > /var/lib/shorewall/$1 << __EOF__"
-    cat /var/lib/shorewall/$1 >> $RESTOREBASE
+    cat $STATEDIR/$1 >> $RESTOREBASE
     save_command __EOF__
 }
 
@@ -1400,14 +1400,28 @@ setup_providers()
 	    provider="$table $number $mark $duplicate $interface $gateway $options $copy"
 	    add_a_provider
 	    PROVIDERS="$PROVIDERS $table"
-	    progress_message "   Provider $provider Added"
+	    case $COMMAND in
+		generate)
+		    progress_message "   Provider $provider comipled"
+		    ;;
+		*)
+		    progress_message "   Provider $provider Added"
+		    ;;
+	    esac
 	done < $TMP_DIR/providers
 
 	if [ $COMMAND != check ]; then
 	    if [ -n "$PROVIDERS" ]; then
 		if [ -n "$DEFAULT_ROUTE" ]; then
 		    ensure_and_save_command "[ -n \"\$NOROUTES\" ] || ip route replace default scope global $DEFAULT_ROUTE"
-		    progress_message "   Default route $DEFAULT_ROUTE Added."
+		case $COMMAND in
+		    generate)
+			progress_message "   Default route $DEFAULT_ROUTE Compiled."
+			;;
+		    *)
+			progress_message "   Default route $DEFAULT_ROUTE Added."
+			;;
+		    esac
 		fi
 
 		cat > /etc/iproute2/rt_tables <<EOF
@@ -2724,14 +2738,14 @@ setup_proxy_arp() {
 
 	    ensure_and_save_command arp -i $external -Ds $address $external pub
 
-	    echo $address $interface $external $haveroute >> /var/lib/shorewall/proxyarp
+	    echo $address $interface $external $haveroute >> $STATEDIR/proxyarp
 	fi
 
 	progress_message "   Host $address connected to $interface added to ARP on $external"
     }
 
     if [ $COMMAND != check ]; then
-	> /var/lib/shorewall/proxyarp
+	> $STATEDIR/proxyarp
 
 	save_progress_message "Restoring Proxy ARP..."
     fi
@@ -2756,9 +2770,9 @@ setup_proxy_arp() {
 	interfaces=$(find_interfaces_by_option proxyarp)
 
 	for interface in $interfaces; do
-	    if echo 1 > /proc/sys/net/ipv4/conf/$interface/proxy_arp 2> /dev/null; then
+	    if [ -f /proc/sys/net/ipv4/conf/$interface/proxy_arp ] ; then
+		run_and_save_command "echo 1 > /proc/sys/net/ipv4/conf/$interface/proxy_arp"
 		progress_message "   Enabled proxy ARP on $interface"
-		save_command "echo 1 > /proc/sys/net/ipv4/conf/$interface/proxy_arp"
 	    else
 		error_message "WARNING: Unable to enable proxy ARP on $interface"
 	    fi
@@ -2977,16 +2991,16 @@ setup_syn_flood_chains()
 delete_proxy_arp() {
     if [ -f /var/lib/shorewall/proxyarp ]; then
 	while read address interface external haveroute; do
-	    qt arp -i $external -d $address pub
+	    [ $COMMAND = generate ] || qt arp -i $external -d $address pub
 	    [ -z "${haveroute}${NOROUTES}" ] && qt ip route del $address dev $interface
 	done < /var/lib/shorewall/proxyarp
 
-	rm -f /var/lib/shorewall/proxyarp
+	[ $COMMAND = generate ] || rm -f /var/lib/shorewall/proxyarp
     fi
 
-    [ -d /var/lib/shorewall ] && touch /var/lib/shorewall/proxyarp
+    [ -d $STATEDIR ] && touch $STATEDIR/proxyarp
 
-    for f in /proc/sys/net/ipv4/conf/*; do
+    [ $COMMAND = generate ] || for f in /proc/sys/net/ipv4/conf/*; do
 	[ -f $f/proxy_arp ] && echo 0 > $f/proxy_arp
     done
 }
@@ -3053,7 +3067,7 @@ setup_nat() {
     #
     # At this point, we're just interested in the network translation
     #
-    [ $COMMAND = check ] || > /var/lib/shorewall/nat
+    [ $COMMAND = check ] || > $STATEDIR/nat
 
     if [ -n "$POLICY_MATCH" ]; then
 	policyin="-m policy --pol none --dir in"
@@ -3083,10 +3097,10 @@ delete_nat() {
 	    qt ip addr del $external dev $interface
 	done < /var/lib/shorewall/nat
 
-	rm -f {/var/lib/shorewall}/nat
+	[ $COMMAND = generate ] || rm -f {/var/lib/shorewall}/nat
     fi
 
-    [ -d /var/lib/shorewall ] && touch /var/lib/shorewall/nat
+    [ -d $STATEDIR ] && touch $STATEDIR/nat
 }
 
 #
@@ -3404,7 +3418,14 @@ setup_traffic_shaping()
 		expandv device inband outband defmark ackmark
 		tcdev="$device $inband $outband"
 		add_root_tc
-		progress_message "   TC Device $tcdev Added."
+		case $COMMAND in
+		    generate)
+			progress_message "   TC Device $tcdev Compiled."
+			;;
+		    *)
+			progress_message "   TC Device $tcdev Added."
+			;;
+		esac
 	    done < $TMP_DIR/tcdevices
 	fi
 
@@ -3416,7 +3437,14 @@ setup_traffic_shaping()
 		tcdev="$device $mark $rate $ceil $prio $options"
 		options=$(separate_list $options | tr '[A-Z]' '[a-z]')
 		add_tc_class
-		progress_message "   TC Class \"$tcdev\" Added."
+		case $COMMAND in
+		    generate)
+			progress_message "   TC Class $tcdev Compiled."
+			;;
+		    *)
+			progress_message "   TC Class \"$tcdev\" Added."
+			;;
+		esac
 	    done < $TMP_DIR/tcclasses
 	fi
     fi
@@ -3691,7 +3719,14 @@ process_tc_rule()
 	done
     done
 
-    progress_message "   TC Rule \"$rule\" added"
+    case $COMMAND in
+	generate)
+	    progress_message "   TC Rule \"$rule\" compiled"
+	    ;;
+	*)
+	    progress_message "   TC Rule \"$rule\" added"
+	    ;;
+    esac
 }
 
 #
@@ -4602,11 +4637,17 @@ process_action() # $1 = chain    (Chain to add the rules to)
     #
     # Report Result
     #
-    if [ $COMMAND = check ]; then
-	progress_message "   Rule \"$rule\" checked."
-    else
-	progress_message "   Rule \"$rule\" added."
-    fi
+    case $COMMAND in
+	check)
+	    progress_message "   Rule \"$rule\" checked."
+	    ;;
+	generate)
+	    progress_message "   Rule \"$rule\" compiled."
+	    ;;
+	*)
+	    progress_message "   Rule \"$rule\" added."
+	    ;;
+    esac
 }
 
 #
@@ -6259,11 +6300,18 @@ process_rule() # $1 = target
     #
     # Report Result
     #
-    if [ $COMMAND = check ]; then
-	progress_message "   Rule \"$rule\" checked."
-    else
-	progress_message "   Rule \"$rule\" added."
-    fi
+    case $COMMAND in
+	check)
+	    progress_message "   Rule \"$rule\" checked."
+	    ;;
+	generate)
+	    progress_message "   Rule \"$rule\" compiled."
+	    save_command "progress_message '   Rule \"'$rule'\" added.'"
+	    ;;
+	*)
+	    progress_message "   Rule \"$rule\" added."
+	    ;;
+    esac
 }
 
 #
@@ -6700,7 +6748,14 @@ process_tos_rule() {
 	esac
     done
 
-    progress_message "   Rule \"$rule\" added."
+    case $COMMAND in
+	generate)
+	    progress_message "   Rule \"$rule\" compiled."
+	    ;;
+	*)
+	    progress_message "   Rule \"$rule\" added."
+	    ;;
+    esac
 }
 
 #
@@ -7546,7 +7601,7 @@ add_ip_aliases()
 	val=$(address_details)
 
 	if [ -n "$RETAIN_ALIASES" ]; then
-	    run_ip addr add ${external}${val} dev $interface $label
+	    [ "$COMMAND" = generate ] || run_ip addr add ${external}${val} dev $interface $label
 	    save_command qt ip addr add ${external}${val} dev $interface $label
 	else
 	    ensure_and_save_command ip addr add ${external}${val} dev $interface $label
@@ -7554,7 +7609,7 @@ add_ip_aliases()
 
 	[ -n "$arping" ] && run_and_save_command qt $arping -U -c 2 -I $interface $external
 
-	echo "$external $interface" >> /var/lib/shorewall/nat
+	echo "$external $interface" >> $STATEDIR/nat
 	[ -n "$label" ] && label="with $label"
 	progress_message "   IP Address $external added to interface $interface $label"
     }
@@ -7883,7 +7938,7 @@ add_common_rules() {
     #
     if [ -n "$USEPKTTYPE" ]; then
 	run_iptables -A reject -m pkttype --pkt-type broadcast -j DROP
-	run_iptables -A reject -m pkttype --pkt-type multicast -j DROP; then
+	run_iptables -A reject -m pkttype --pkt-type multicast -j DROP
     else
 	drop_broadcasts
     fi
@@ -7899,7 +7954,7 @@ add_common_rules() {
     #
     # Not all versions of iptables support these so don't complain if they don't work
     #
-    if [ -n "$ENHANCED_REJECT" ]; THEN
+    if [ -n "$ENHANCED_REJECT" ]; then
 	run_iptables -A reject -p icmp -j REJECT --reject-with icmp-host-unreachable
 	run_iptables -A reject -j REJECT --reject-with icmp-host-prohibited
     else
@@ -8374,8 +8429,8 @@ activate_rules()
 	addnatjump POSTROUTING $(output_chain $interface) -o $interface
     done
 
-    > /var/lib/shorewall/chains
-    echo "$FW firewall" > /var/lib/shorewall/zones
+    > $STATEDIR/chains
+    echo "$FW firewall" > $STATEDIR/zones
     #
     # Create forwarding chains for complex zones and generate jumps for IPSEC source hosts to that chain.
     #
@@ -8419,7 +8474,7 @@ activate_rules()
 
 	[ -n "$complex" ] && frwd_chain=${zone}_frwd
 
-	echo $zone $type $source_hosts >> /var/lib/shorewall/zones
+	echo $zone $type $source_hosts >> $STATEDIR/zones
 
 	need_broadcast=
 
@@ -8616,6 +8671,8 @@ define_firewall() # $1 = Command (Start or Restart)
 
     [ -d /var/lib/shorewall ] || { mkdir -p /var/lib/shorewall ; chmod 700 /var/lib/shorewall; }
 
+    STATEDIR=/var/lib/shorewall
+
     RESTOREBASE=$(mktempfile /var/lib/shorewall)
 
     [ -n "$RESTOREBASE" ] || startup_error "Cannot create temporary file in /var/lib/shorewall"
@@ -8722,6 +8779,180 @@ define_firewall() # $1 = Command (Start or Restart)
 
     mv -f /var/lib/shorewall/restore-base-$$ /var/lib/shorewall/restore-base
     mv -f $RESTOREBASE /var/lib/shorewall/restore-tail
+}
+
+#
+# Compile a Restore Script
+#
+generate_firewall() # $1 = File Name
+{
+    ensure_and_save_command()
+    {
+	echo "$@" >> $RESTOREBASE
+    }
+
+    run_and_save_command()
+    {
+	echo "$@" >> $RESTOREBASE
+    }
+
+    do_iptables() {
+	save_command $IPTABLES $@
+    }
+
+    qt_iptables() {
+	save_command qt $IPTABLES $@
+    }
+
+    createchain2() # $1 = chain name, $2 = If "yes", create default rules
+    {
+	local c=$(chain_base $1)
+
+	ensurechain $1
+
+	if [ $2 = yes ]; then
+	    case $SECTION in
+		NEW|DONE)
+		    finish_chain_section $1 ESTABLISHED,RELATED
+		    ;;
+		RELATED)
+		    finish_chain_section $1 ESTABLISHED
+		    ;;
+	    esac
+
+	fi
+
+	eval exists_${c}=Yes
+    }
+
+    run_iptables() {
+	#
+	# Purge the temporary files that we use to prevent duplicate '-m' specifications
+	#
+	[ -n "$BRIDGING" ]      && [ -f $TMP_DIR/physdev ] && rm -f $TMP_DIR/physdev
+	[ -n "$IPRANGE_MATCH" ] && [ -f $TMP_DIR/iprange ] && rm -f $TMP_DIR/iprange
+
+	save_command $IPTABLES $@
+
+    }
+
+    run_ip() {
+	if ! ip $@ ; then
+	    error_message "ERROR: Command \"ip $@\" Failed"
+	    exit 2
+	fi
+    }
+
+    run_tc() {
+	save_command tc $@
+    }
+
+    run_ipset() {
+	save_command ipset $@
+    }
+
+    deletechain() # $1 = name of chain
+    {
+	save_command "qt $IPTABLES -L $1 -n && qt $IPTABLES -F $1 && qt $IPTABLES -X $1"
+    }
+
+    verify_os_version
+    verify_ip
+
+    [ -d /var/lib/shorewall ] || { mkdir -p /var/lib/shorewall ; chmod 700 /var/lib/shorewall; }
+
+    RESTOREBASE=$(mktempfile /var/lib/shorewall)
+
+    STATEDIR=$TMP_DIR
+
+    [ -n "$RESTOREBASE" ] || startup_error "Cannot create temporary file in /var/lib/shorewall"
+
+    echo '#bin/sh' >> $RESTOREBASE
+    save_command "#"
+    save_command "# Compiled startup file generated by Shorewall $version - $(date)"
+    save_command "#"
+    save_command ". /usr/share/shorewall/functions"
+
+    f=$(find_file params)
+
+    [ -f $f ] && \
+	save_command ". $(resolve_file $f)"
+
+    save_command "#"
+    save_command "COMMAND=restore"
+    save_command "MODULESDIR=\"$MODULESDIR\""
+    save_command "MODULE_SUFFIX=\"$MODULE_SUFFIX\""
+
+    save_load_kernel_modules
+
+    echo "Initializing...";                    initialize_netfilter
+
+    echo "Compiling Proxy ARP";                setup_proxy_arp
+    #
+    # [re]-Establish routing
+    #
+    setup_providers $(find_file providers)
+    [ -n "$ROUTEMARK_INTERFACES" ] &&          setup_routes
+
+
+    echo "Compiling NAT...";                  setup_nat
+    echo "Compiling NETMAP...";               setup_netmap
+    echo "Compiling Common Rules";            add_common_rules
+
+    setup_syn_flood_chains
+
+    setup_ipsec
+
+    maclist_hosts=$(find_hosts_by_option maclist)
+    [ -n "$maclist_hosts" ] &&                 setup_mac_lists
+
+    echo "Compiling $(find_file rules)...";    process_rules
+
+    tunnels=$(find_file tunnels)
+    [ -f $tunnels ] && \
+	echo "Compiling $tunnels..." &&       setup_tunnels $tunnels
+
+    echo "Compiling Actions...";               process_actions2
+                                               process_actions3
+    echo "Compiling $(find_file policy)...";  apply_policy_rules
+
+    masq=$(find_file masq)
+    [ -f $masq ] &&                            setup_masq $masq
+
+    tos=$(find_file tos)
+    [ -f $tos ] && [ -n "$MANGLE_ENABLED" ] && process_tos $tos
+
+    ecn=$(find_file ecn)
+    [ -f $ecn ] && [ -n "$MANGLE_ENABLED" ] && setup_ecn $ecn
+
+    [ -n "$MANGLE_ENABLED" ]                && setup_tc
+
+    echo "Compiling Rule Activation...";       activate_rules
+
+    [ -n "$ALIASES_TO_ADD" ] && \
+	echo "Adding IP Addresses..." &&       add_ip_aliases
+
+    for file in chains nat proxyarp zones; do
+	append_file $file
+    done
+
+    save_command "date > /var/lib/shorewall/restarted"
+
+    run_user_exit start
+
+    [ -n "$DELAYBLACKLISTLOAD" ] && refresh_blacklist
+
+    createchain shorewall no
+
+    save_command set_state "Started"
+
+    run_user_exit started
+
+    mv -f $RESTOREBASE /var/lib/shorewall/$1
+
+    chmod 700 /var/lib/shorewall/$1
+
+    rm -rf $TMP_DIR
 }
 
 #
@@ -9271,8 +9502,8 @@ case "$COMMAND" in
 
     generate)
 	[ $# -ne 2 ] && usage
-	. /usr/share/shorewall/compiler
-	compile $2
+	do_initialize
+	generate_firewall $2
 	;;
 
     call)

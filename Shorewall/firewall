@@ -4038,7 +4038,15 @@ process_accounting_rule() {
 
     if do_iptables -A $chain $(fix_bang $rule) ; then
 	[ -n "$rule2" ] && run_iptables2 -A $jumpchain $rule2
-	progress_message "   Accounting rule" $action $chain $source $dest $proto $port $sport $user Added
+	case $COMMAND in
+	    generate)
+		progress_message "   Accounting rule" $action $chain $source $dest $proto $port $sport $user Compiled
+		save_progress_message_short "   Accounting rule $action $chain $source $dest $proto $port $sport $user Added"
+		;;
+	*)
+		progress_message "   Accounting rule" $action $chain $source $dest $proto $port $sport $user Added
+		;;
+	esac
     else
 	accounting_error
     fi

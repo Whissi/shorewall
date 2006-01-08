@@ -8904,6 +8904,11 @@ compile_firewall() # $1 = File Name
     #
     # END OVERLOADED FUNCTIONS
     #
+    verify_os_version
+    verify_ip
+
+    [ -d /var/lib/shorewall ] || { mkdir -p /var/lib/shorewall ; chmod 700 /var/lib/shorewall; }
+
     case $outfile in
 	*/*)
 	    [ -d $dir ] || startup_error "Directory $dir does not exist"
@@ -8918,11 +8923,6 @@ compile_firewall() # $1 = File Name
     esac
 
     [ -f $outfile -a ! -x $outfile ] && startup_error "$outfile exists and is not a restore file"
-
-    verify_os_version
-    verify_ip
-
-    [ -d /var/lib/shorewall ] || { mkdir -p /var/lib/shorewall ; chmod 700 /var/lib/shorewall; }
 
     RESTOREBASE=$(mktempfile /var/lib/shorewall)
 
@@ -9047,9 +9047,9 @@ compile_firewall() # $1 = File Name
 
     mv -f $RESTOREBASE $outfile
 
-    chmod 700 $file
+    chmod 700 $outfile
 
-    echo "Shorewall configuration compiled to $file"
+    echo "Shorewall configuration compiled to $outfile"
 
     rm -rf $TMP_DIR
 }

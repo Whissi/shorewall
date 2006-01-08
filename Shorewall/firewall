@@ -5153,6 +5153,9 @@ process_actions3() {
 	xaction1=$1
 	xlevel=$2
 	xtag=$3
+
+	[ $COMMAND = generate ] && save_progress_message "Creating action chain $xaction1"
+
 	#
 	# Handle Builtin actions
 	#
@@ -5276,8 +5279,6 @@ process_actions3() {
 		f=action.$xaction1
 
 		echo "Processing $(find_file $f) for Chain $xchain..."
-
-		[ $COMMAND = generate ] && save_progress_message "Creating action Chain $xchain..."
 
 		while read xtarget xclients xservers xprotocol xports xcports xratelimit xuserspec; do
 		    expandv xtarget
@@ -7885,12 +7886,13 @@ initialize_netfilter () {
 
     [ -n "$DISABLE_IPV6" ] && disable_ipv6
 
+    [ $COMMAND = generate ] && save_progress_message "Enabling Loopback and DNS Lookups"
+
     #
     # Enable the Loopback interface for now
     #
     run_iptables -A INPUT  -i lo -j ACCEPT
     run_iptables -A OUTPUT -o lo -j ACCEPT
-
 
     #
     # Allow DNS lookups during startup for FQDNs

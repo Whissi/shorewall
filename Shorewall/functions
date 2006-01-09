@@ -59,7 +59,12 @@ list_count() {
 #
 progress_message() # $* = Message
 {
-    [ -n "$QUIET" ] || echo "$@"
+    [ $QUIET -lt 1 ] && echo "$@"
+}
+
+progress_message2() # $* = Message
+{
+    [ $QUIET -lt 2 ] && echo "$@"
 }
 
 #
@@ -949,25 +954,28 @@ report_capability() # $1 = Capability Description , $2 Capability Setting (if an
 }
 
 report_capabilities() {
-    echo "Shorewall has detected the following iptables/netfilter capabilities:"
-    report_capability "NAT" $NAT_ENABLED
-    report_capability "Packet Mangling" $MANGLE_ENABLED
-    report_capability "Multi-port Match" $MULTIPORT
-    [ -n "$MULTIPORT" ] && report_capability "Extended Multi-port Match" $XMULTIPORT
-    report_capability "Connection Tracking Match" $CONNTRACK_MATCH
-    report_capability "Packet Type Match" $USEPKTTYPE
+    if [ $QUIET -lt 2 ]; then
+	echo "Shorewall has detected the following iptables/netfilter capabilities:"
+	report_capability "NAT" $NAT_ENABLED
+	report_capability "Packet Mangling" $MANGLE_ENABLED
+	report_capability "Multi-port Match" $MULTIPORT
+	[ -n "$MULTIPORT" ] && report_capability "Extended Multi-port Match" $XMULTIPORT
+	report_capability "Connection Tracking Match" $CONNTRACK_MATCH
+	report_capability "Packet Type Match" $USEPKTTYPE
+	report_capability "Policy Match" $POLICY_MATCH
+	report_capability "Physdev Match" $PHYSDEV_MATCH
+	report_capability "IP range Match" $IPRANGE_MATCH
+	report_capability "Recent Match" $RECENT_MATCH
+	report_capability "Owner Match" $OWNER_MATCH
+	report_capability "Ipset Match" $IPSET_MATCH
+	report_capability "CONNMARK Target" $CONNMARK
+	report_capability "Connmark Match" $CONNMARK_MATCH
+	report_capability "Raw Table" $RAW_TABLE
+	report_capability "CLASSIFY Target" $CLASSIFY_TARGET
+	report_capability "Extended REJECT" $ENHANCED_REJECT
+    fi
+
     [ -n "$PKTTYPE" ] || USEPKTTYPE=
-    report_capability "Policy Match" $POLICY_MATCH
-    report_capability "Physdev Match" $PHYSDEV_MATCH
-    report_capability "IP range Match" $IPRANGE_MATCH
-    report_capability "Recent Match" $RECENT_MATCH
-    report_capability "Owner Match" $OWNER_MATCH
-    report_capability "Ipset Match" $IPSET_MATCH
-    report_capability "CONNMARK Target" $CONNMARK
-    report_capability "Connmark Match" $CONNMARK_MATCH
-    report_capability "Raw Table" $RAW_TABLE
-    report_capability "CLASSIFY Target" $CLASSIFY_TARGET
-    report_capability "Extended REJECT" $ENHANCED_REJECT
 
 }
 

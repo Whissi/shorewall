@@ -1255,7 +1255,7 @@ setup_providers()
 		default|nexthop)
 		    ;;
 		*)
-		    ensure_and_save_command "[ -n \"\$NOROUTES\" ] || ip route add table $number $net $route"
+		    ensure_and_save_command "    ip route add table $number $net $route"
 		    ;;
 	    esac
 	done
@@ -1268,7 +1268,7 @@ setup_providers()
 		    ;;
 		*)
 		    if list_search $(find_device $route) $copy; then
-			ensure_and_save_command "[ -n \"\$NOROUTES\" ] || ip route add table $number $net $route"
+			ensure_and_save_command "    ip route add table $number $net $route"
 		    fi
 		    ;;
 	    esac
@@ -1295,7 +1295,7 @@ setup_providers()
 	eval ${table}_number=$number
 
 	if [ $COMMAND != check ]; then
-	    run_and_save_command "[ -n \"\$NOROUTES\" ] || qt ip route flush table $number"
+	    run_and_save_command "    qt ip route flush table $number"
 
 	    if [ "x${duplicate:=-}" != x- ]; then
 		if [ "x${copy:=-}" != "x-" ]; then
@@ -1331,8 +1331,8 @@ setup_providers()
 	fi
 
 	if [ $COMMAND != check ]; then
-	    ensure_and_save_command "[ -n \"\$NOROUTES\" ] || ip route replace $gateway src $(find_first_interface_address $interface) dev $interface table $number"
-	    ensure_and_save_command "[ -n \"\$NOROUTES\" ] || ip route add default via $gateway dev $interface table $number"
+	    ensure_and_save_command "    ip route replace $gateway src $(find_first_interface_address $interface) dev $interface table $number"
+	    ensure_and_save_command "    ip route add default via $gateway dev $interface table $number"
 	fi
 
 	if [ x${mark} != x- ]; then
@@ -1341,8 +1341,8 @@ setup_providers()
 	    eval ${table}_mark=$mark
 
 	    if [ $COMMAND != check ]; then
-		run_and_save_command "[ -n \"\$NOROUTES\" ] || qt ip rule del fwmark $mark"
-		ensure_and_save_command "[ -n \"\$NOROUTES\" ] || ip rule add fwmark $mark pref $((10000 + $mark)) table $number"
+		run_and_save_command "    qt ip rule del fwmark $mark"
+		ensure_and_save_command "    ip rule add fwmark $mark pref $((10000 + $mark)) table $number"
 	    fi
 	fi
 
@@ -1379,11 +1379,11 @@ setup_providers()
 
 	if [ $COMMAND != check ]; then
 	    find_interface_addresses $interface | while read address; do
-		run_and_save_command "[ -n \"\$NOROUTES\" ] || qt ip rule del from $address"
+		run_and_save_command "    qt ip rule del from $address"
 		if [ -z "$loose" ]; then
 		    pref=$((20000 + $rulenum * 1000 + $number ))
 		    rulenum=$(($rulenum + 1))
-		    ensure_and_save_command "[ -n \"\$NOROUTES\" ] || ip rule add from $address pref $pref table $number"
+		    ensure_and_save_command "    ip rule add from $address pref $pref table $number"
 		fi
 	    done
 	fi
@@ -1394,8 +1394,8 @@ setup_providers()
     if [ -s $TMP_DIR/providers ]; then
 	if [ $COMMAND != check ]; then
 	    progress_message2 "Processing $1..."
-
 	    save_progress_message "Restoring Providers..."
+	    save_command "if [ -z \"\$NOROUTES\" ]; then"
 	else
 	    progress_message2 "Validating $1..."
 	fi
@@ -1418,7 +1418,7 @@ setup_providers()
 	if [ $COMMAND != check ]; then
 	    if [ -n "$PROVIDERS" ]; then
 		if [ -n "$DEFAULT_ROUTE" ]; then
-		    ensure_and_save_command "[ -n \"\$NOROUTES\" ] || ip route replace default scope global $DEFAULT_ROUTE"
+		    ensure_and_save_command "    ip route replace default scope global $DEFAULT_ROUTE"
 		case $COMMAND in
 		    generate)
 			progress_message "   Default route $DEFAULT_ROUTE Compiled."
@@ -1447,13 +1447,16 @@ EOF
 		    ${echobin:-echo} -e "$number\t$table" >>  /etc/iproute2/rt_tables
 		done
 
-		save_command "cat > /etc/iproute2/rt_tables << __EOF__"
+		save_command "    cat > /etc/iproute2/rt_tables << __EOF__"
 		cat /etc/iproute2/rt_tables >> $RESTOREBASE
 		save_command __EOF__
 
 	    fi
 
-	    ensure_and_save_command "[ -n \"\$NOROUTES\" ] || ip route flush cache"
+	    ensure_and_save_command "    ip route flush cache"
+
+	    save_command "fi"
+	    save_command ""
 	fi
     fi
 }

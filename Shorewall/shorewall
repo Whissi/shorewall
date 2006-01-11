@@ -31,6 +31,8 @@
 #
 #	Commands are:
 #
+#          shorewall add <iface>[:<host>] zone     Adds a host or subnet to a zone
+#          shorewall delete <iface>[:<host>] zone  Deletes a host or subnet from a zone
 #          shorewall dump                          Dumps all Shorewall-related information
 #                                                  for problem analysis
 #	   shorewall start 			   Starts the firewall
@@ -920,6 +922,10 @@ case "$1" in
 	if $SHOREWALL_SHELL $FIREWALL $debugging $nolock compile .reload; then
 	   $0 $(make_quiet) restore .reload
 	fi
+	;;
+    add|delete)
+	[ $# -lt 3 ] && usage 1
+	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $@
 	;;
     show|list)
 	[ -n "$debugging" ] && set -x

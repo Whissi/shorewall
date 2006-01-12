@@ -1405,7 +1405,7 @@ __EOF__
 		cat >> $RESTOREBASE << __EOF__
     gateway=\$(detect_gateway $interface)
 
-    if [ -z \"\$gateway\" ]; then
+    if [ -n \"\$gateway\" ]; then
 	ip route replace \$gateway src \$(find_first_interface_address $interface) dev $interface table $number
 	ip route add default via \$gateway dev $interface table $number
     else

@@ -502,7 +502,7 @@ help()
 #
 usage() # $1 = exit status
 {
-    echo "Usage: $(basename $0) [debug|trace] [nolock] [ -x ] [ -q ] [ -f ] [ -v ] [ -n ] <command>"
+    echo "Usage: $(basename $0) [debug|trace] [nolock] [ -x ] [ -q ] [ -f ] [ -v ] [ -n ] [ -e ] <command>"
     echo "where <command> is one of:"
     echo "   add <interface>[:<host-list>] ... <zone>"
     echo "   allow <address> ..."
@@ -626,6 +626,7 @@ IPT_OPTIONS="-nv"
 FAST=
 VERBOSE=
 NOROUTES=
+EXPORT=
 noroutes=
 
 done=0
@@ -655,6 +656,10 @@ while [ $done -eq 0 ]; do
 			SHOREWALL_DIR=$2
 			option=
 			shift
+			;;
+		    e*)
+			EXPORT=Yes
+			option=${option#e}
 			;;
 		    x*)
 			IPT_OPTIONS="-xnv"
@@ -866,6 +871,8 @@ case "$1" in
 		usage 1
 		;;
 	esac
+
+	export EXPORT
 
 	exec $SHOREWALL_SHELL $FIREWALL $debugging generate $file
 	;;

@@ -1218,6 +1218,8 @@ validate_interfaces_file() {
 	options=$(separate_list $options)
 	iface=$(chain_base $interface)
 
+	[ -n "$EXPORT" -a x$networks = detect ] && startup_error "BROADCAST 'detect' is incompatible with the -e option: Interface \"$interface\""
+
 	eval ${iface}_broadcast="$networks"
 	eval ${iface}_zone="$z"
 	eval ${iface}_options=\"$options\"
@@ -1226,7 +1228,10 @@ validate_interfaces_file() {
 	    case $option in
 		-)
 		    ;;
-		dhcp|tcpflags|arp_filter|routefilter|logmartians|sourceroute|blacklist|proxyarp|maclist|nosmurfs|upnp|-)
+		dhcp|tcpflags|arp_filter|routefilter|logmartians|sourceroute|blacklist|proxyarp|nosmurfs|upnp|-)
+		    ;;
+		maclist)
+		    [ -n "$EXPORT" ] && startup_error "The 'maclist' option is incompatible with the -e option: Interface \"$interface\""
 		    ;;
 		norfc1918)
 		    if [ $COMMAND = generate ]; then
@@ -1266,6 +1271,8 @@ __EOF__
 		detectnets)
 		    [ -n "$wildcard" ] && \
 			startup_error "The \"detectnets\" option may not be used with a wild-card interface"
+		    [ -n $EXPORT ] && \
+			startup_error "'detectnets' not permitted with the -e option"
 		    ;;
 		routeback)
 		    [ -n "$z" ] || startup_error "The routeback option may not be specified on a multi-zone interface"
@@ -1478,16 +1485,44 @@ __EOF__
 
 	rulenum=0
 
-	if [ $COMMAND != check ]; then
-	    find_interface_addresses $interface | while read address; do
-		run_and_save_command "    qt ip rule del from $address"
+	case $COMMAND in
+	    check)
+		;;
+	    generate)
 		if [ -z "$loose" ]; then
-		    pref=$((20000 + $rulenum * 1000 + $number ))
-		    rulenum=$(($rulenum + 1))
-		    ensure_and_save_command "    ip rule add from $address pref $pref table $number"
+		    cat >> $RESTOREBASE << __EOF__
+
+    rulenum=0
+
+    find_interface_addresses $interface | while read address; do
+        qt ip rule del from \$address
+        pref=\$((20000 + \$rulenum * 1000 + $number ))
+        rulenum=\$((\$rulenum + 1))
+        ip rule add from \$address pref \$pref table $number"
+    done
+
+__EOF__
+		else
+		    cat >> $RESTOREBASE << __EOF__
+
+    find_interface_addresses $interface | while read address; do
+        qt ip rule del from \$address
+    done
+
+__EOF__
 		fi
-	    done
-	fi
+		;;
+	    *)
+		find_interface_addresses $interface | while read address; do
+		    run_and_save_command "    qt ip rule del from $address"
+		    if [ -z "$loose" ]; then
+			pref=$((20000 + $rulenum * 1000 + $number ))
+			rulenum=$(($rulenum + 1))
+			ensure_and_save_command "    ip rule add from $address pref $pref table $number"
+		    fi
+		done
+		;;
+	esac
     }
 
     strip_file providers $1
@@ -1632,8 +1667,11 @@ validate_hosts_file() {
 
 	   for option in $(separate_list $options) ; do
 	       case $option in
-		   maclist|norfc1918|blacklist|tcpflags|nosmurfs|-)
+		   norfc1918|blacklist|tcpflags|nosmurfs|-)
 		       ;;
+		   maclist)
+			[ -n "$EXPORT" ] && startup_error "The 'maclist' option is incompatible with the -e option: \"$host\""
+			;;
 		   ipsec)
 		       [ -n "$POLICY_MATCH" ] || \
 			   startup_error "Your kernel and/or iptables does not support policy match: ipsec"
@@ -1823,27 +1861,6 @@ find_broadcasts() {
 }
 
 #
-# Find interface address--returns the first IP address assigned to the passed
-# device
-#
-find_first_interface_address() # $1 = interface
-{
-    #
-    # get the line of output containing the first IP address
-    #
-    addr=$(ip -f inet addr show $1 2> /dev/null | grep 'inet .* global' | head -n1)
-    #
-    # If there wasn't one, bail out now
-    #
-    [ -n "$addr" ] || fatal_error "Can't determine the IP address of $1"
-    #
-    # Strip off the trailing VLSM mask (or the peer IP in case of a P-t-P link)
-    # along with everything else on the line
-    #
-    echo $addr | sed 's/inet //;s/\/.*//;s/ peer.*//'
-}
-
-#
 # Find interfaces that have the passed option specified
 #
 find_interfaces_by_option() # $1 = option
@@ -2004,28 +2021,6 @@ setup_forwarding() {
 	progress_message2 "IP Forwarding Disabled!"
 	;;
     esac
-}
-
-#
-# Disable IPV6
-#
-disable_ipv6() {
-    local foo="$(ip -f inet6 addr ls 2> /dev/null)"
-
-    if [ -n "$foo" ]; then
-	if qt mywhich ip6tables; then
-	    save_progress_message "Disabling IPV6..."
-	    ip6tables -P FORWARD DROP           && save_command ip6tables -P FORWARD DROP
-	    ip6tables -P INPUT DROP             && save_command ip6tables -P INPUT DROP
-	    ip6tables -P OUTPUT DROP            && save_command ip6tables -P OUTPUT DROP
-	    ip6tables -F                        && save_command ip6tables -F
-	    ip6tables -X                        && save_command ip6tables -X
-	    ip6tables -A OUTPUT -o lo -j ACCEPT && save_command ip6tables -A OUTPUT -o lo -j ACCEPT
-	    ip6tables -A INPUT -i lo -j ACCEPT  && save_command ip6tables -A INPUT -i lo -j ACCEPT
-	else
-	    error_message "WARNING: DISABLE_IPV6=Yes in shorewall.conf but this system does not appear to have ip6tables"
-	fi
-    fi
 }
 
 disable_ipv6_1() {
@@ -3015,6 +3010,7 @@ setup_mac_lists() {
     # chains
     #
     for interface in $maclist_interfaces; do
+
 	[ -n "$MACLIST_TTL" ] && chain=$(macrecent_target $interface) || chain=$(mac_chain $interface)
 
 	blob=$(ip link show $interface 2> /dev/null)
@@ -3104,8 +3100,12 @@ setup_syn_flood_chains()
 delete_proxy_arp() {
     if [ -f /var/lib/shorewall/proxyarp ]; then
 	while read address interface external haveroute; do
-	    [ $COMMAND = generate ] || qt arp -i $external -d $address pub
-	    [ -z "${haveroute}${NOROUTES}" ] && qt ip route del $address dev $interface
+	    run_and_save_command "qt arp -i $external -d $address pub"
+	    if [ $COMMAND = generate ]; then
+		[ -z "$haveroute" ] && save_command "qt ip route del $address dev $interface"
+	    else
+		[ -z "${haveroute}${NOROUTES}" ] && qt ip route del $address dev $interface
+	    fi
 	done < /var/lib/shorewall/proxyarp
 
 	[ $COMMAND = generate ] || rm -f /var/lib/shorewall/proxyarp
@@ -3113,9 +3113,19 @@ delete_proxy_arp() {
 
     [ -d $STATEDIR ] && touch $STATEDIR/proxyarp
 
-    [ $COMMAND = generate ] || for f in /proc/sys/net/ipv4/conf/*; do
-	[ -f $f/proxy_arp ] && echo 0 > $f/proxy_arp
-    done
+    if [ $COMMAND = generate ]; then
+	cat >> $RESTOREBASE << __EOF__
+
+for f in /proc/sys/net/ipv4/conf/*; do
+    [ -f \$f/proxy_arp ] && echo 0 > \$f/proxy_arp
+done
+
+__EOF__
+    else
+	for f in /proc/sys/net/ipv4/conf/*; do
+	    [ -f $f/proxy_arp ] && echo 0 > $f/proxy_arp
+	done
+    fi
 }
 
 #
@@ -3205,15 +3215,31 @@ delete_nat() {
     run_iptables -t nat -F
     run_iptables -t nat -X
 
-    if [ -f /var/lib/shorewall/nat ]; then
-	while read external interface; do
-	    qt ip addr del $external dev $interface
-	done < /var/lib/shorewall/nat
+    if [ $COMMAND = generate ]; then
+	[ -d $STATEDIR ] && touch $STATEDIR/nat
 
-	[ $COMMAND = generate ] || rm -f {/var/lib/shorewall}/nat
+	cat >> $RESTOREBASE << __EOF__
+
+if [ -f /var/lib/shorewall/nat ]; then
+   while read external interface; do
+	qt ip addr del \$external dev \$interface
+    done < /var/lib/shorewall/nat
+
+    rm -f {/var/lib/shorewall}/nat
+fi
+
+__EOF__
+    else
+	if [ -f /var/lib/shorewall/nat ]; then
+	    while read external interface; do
+		qt ip addr del $external dev $interface
+	    done < /var/lib/shorewall/nat
+
+	    rm -f {/var/lib/shorewall}/nat
+	fi
+
+	[ -d $STATEDIR ] && touch $STATEDIR/nat
     fi
-
-    [ -d $STATEDIR ] && touch $STATEDIR/nat
 }
 
 #
@@ -7285,6 +7311,7 @@ setup_masq()
 	*.*.*|+*|!+*)
 	    ;;
 	*)
+	    [ -n "$EXPORT" ] && fatal_error "An interface name in the SUBNET column is not allowed with the -e option"
 	    networks=$(get_routed_networks $networks)
 	    [ -z "$networks" ] && fatal_error "Unable to determine the routes through interface \"$source\""
 	    networks="$networks"
@@ -7900,7 +7927,9 @@ initialize_netfilter () {
 
     process_routestopped -A
 
-    [ -n "$DISABLE_IPV6" ] && disable_ipv6
+    if [ -n "$DISABLE_IPV6" ]; then
+	run_and_save_command disable_ipv6
+    fi
 
     [ $COMMAND = generate ] && save_progress_message "Enabling Loopback and DNS Lookups"
 
@@ -9771,6 +9800,8 @@ do_initialize() {
     ROUTE_FILTER=$(added_param_value_no ROUTE_FILTER $ROUTE_FILTER)
     LOG_MARTIANS=$(added_param_value_no LOG_MARTIANS $LOG_MARTIANS)
     DETECT_DNAT_IPADDRS=$(added_param_value_no DETECT_DNAT_IPADDRS $DETECT_DNAT_IPADDRS)
+    [ -n "$DETECT_DNAT_IPADDRS" -a -n "$EXPORT" ] && \
+	startup_error "DETECT_DNAT_IPADDRS=Yes not allowed with the -e option"
     FORWARDPING=$(added_param_value_no FORWARDPING $FORWARDPING)
     [ -n "$FORWARDPING" ] && \
 	startup_error "FORWARDPING=Yes is no longer supported"

@@ -39,11 +39,16 @@ New Features:
 
 1)  A new 'shorewall generate' command has been added.
 
-	shorewall [ -q ] generate [ <config directory> ] <script file>
+	shorewall [ -q ] [ -e ] generate [ <config directory> ] <script file>
 
     where:
 
 	-q                    Suppresses many of the progress messages
+	-e                    Generates an error if the configuration used
+	                      an option that would prevent the generated
+	                      script from running on a system other than
+	                      where the 'generate' command is running (see
+	                      additional consideration a) below).
 	<config directory>    Is an optional directory to be searched for
 	                      configuration files prior to those listed
 	                      in CONFIG_DIR in /etc/shorewall/shorewall.conf.
@@ -57,7 +62,7 @@ New Features:
 
     'compile' is a synonym for 'generate':
 
-	shorewall [ -q ] compile [ <config directory> ] <script file>
+	shorewall [ -q ] [ -e ] compile [ <config directory> ] <script file>
 
     WARNING: The generated script HAS ABSOLUTELY NO ERROR CHECKING so if there
              are errors in your configuration files that result in errors when
@@ -70,9 +75,14 @@ New Features:
 
     Some additional considerations:
 
-    a) All 'detect' operations are done at the time that the 'generate' command
-       is run. So it is generally not possible to run 'generate' on one system
-       then move the generated script to another system.
+    a) It is possible to run 'generate' ('compile') on one system and then
+       run the generated script on another system but there are certain
+       limitation.
+
+       1) The same version of Shorewall must be running on the remote system
+       2) The 'detectnets' interface option is not allowed.
+       3) 'detect' in the BROADCAST column of /etc/shorewall/ is not allowed.
+       4) DETECT_DNAT_ADDRS=Yes is not allowed.
 
     b) If you have extension scripts, they may need modification. The scripts
        will be run at generation time, rather than when the generated script
@@ -83,14 +93,14 @@ New Features:
 
     In addition to 'generate', a 'shorewall reload' command has been added.
 
-	shorewall [ -q ] reload [ <config directory>
+	shorewall [ -q ] reload [ <config directory> ]
 
     where -q and <config directory> are as above.
 
     The 'reload' command creates a script using 'generate' and if there are
     no errors, it then restores that script. It is equivalent to:
 
-    if shorewall generate <temp file>; then restore <tempfile>; fi
+    if shorewall generate .reload; then restore .reload; fi
 
     The advantage of using reload over restart is that reload results in new
     connections being dropped for a much shorter time. Here are the results of

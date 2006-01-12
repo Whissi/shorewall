@@ -2,6 +2,14 @@
 #
 # Shorewall 3.0 -- /usr/share/shorewall/functions
 
+#
+# Message to stderr
+#
+error_message() # $* = Error Message
+{
+   echo "   $@" >&2
+}
+
 # Function to truncate a string -- It uses 'cut -b -<n>'
 # rather than ${v:first:last} because light-weight shells like ash and
 # dash do not support that form of expansion.
@@ -312,6 +320,26 @@ reload_kernel_modules() {
 	eval $command
     done
 
+}
+
+#
+# Load kernel modules required for Shorewall
+#
+load_kernel_modules()
+{
+    save_modules_dir=$MODULESDIR
+
+    [ -z "$MODULESDIR" ] && \
+	MODULESDIR=/lib/modules/$(uname -r)/kernel/net/ipv4/netfilter
+
+    modules=$(find_file modules)
+
+    if [ -f $modules -a -d $MODULESDIR ]; then
+	progress_message "Loading Modules..."
+	. $modules
+    fi
+
+    MODULESDIR=$save_modules_dir
 }
 
 #
@@ -850,6 +878,27 @@ find_interface_by_mac() {
 }
 
 #
+# Find interface address--returns the first IP address assigned to the passed
+# device
+#
+find_first_interface_address() # $1 = interface
+{
+    #
+    # get the line of output containing the first IP address
+    #
+    addr=$(ip -f inet addr show $1 2> /dev/null | grep 'inet .* global' | head -n1)
+    #
+    # If there wasn't one, bail out now
+    #
+    [ -n "$addr" ] || fatal_error "Can't determine the IP address of $1"
+    #
+    # Strip off the trailing VLSM mask (or the peer IP in case of a P-t-P link)
+    # along with everything else on the line
+    #
+    echo $addr | sed 's/inet //;s/\/.*//;s/ peer.*//'
+}
+
+#
 # Find interface addresses--returns the set of addresses assigned to the passed
 # device
 #
@@ -979,5 +1028,84 @@ report_capabilities() {
 
 }
 
+# Add IP Aliases
+#
+add_ip_aliases() # $1 = List of addresses
+{
+    local addresses external interface inet cidr rest val arping=$(mywhich arping)
+
+    address_details()
+    {
+	#
+	# Folks feel uneasy if they don't see all of the same
+	# decoration on these IP addresses that they see when their
+	# distro's net config tool adds them. In an attempt to reduce
+	# the anxiety level, we have the following code which sets
+	# the VLSM and BRD from an existing address in the same networks
+	#
+	# Get all of the lines that contain inet addresses with broadcast
+	#
+	ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | while read inet cidr rest ; do
+	    case $cidr in
+		*/*)
+		    if in_network $external $cidr; then
+			echo "/${cidr#*/} brd $(broadcastaddress $cidr)"
+			break
+		    fi
+		    ;;
+	    esac
+	done
+    }
+
+    do_one()
+    {
+	val=$(address_details)
+
+	ip addr add ${external}${val} dev $interface $label
+	[ -n "$arping" ] && qt $arping -U -c 2 -I $interface $external
+	echo "$external $interface" >> $STATEDIR/nat
+	[ -n "$label" ] && label="with $label"
+	progress_message "   IP Address $external added to interface $interface $label"
+    }
+
+    progress_message "Adding IP Addresses..."
+
+    while [ $# -gt 0 ]; do
+	external=$1
+	interface=$2
+	label=
+
+	if [ "$interface" != "${interface%:*}" ]; then
+	    label="${interface#*:}"
+	    interface="${interface%:*}"
+	    label="label $interface:$label"
+	fi
+
+	shift 2
+
+	list_search $external $(find_interface_addresses $interface) || do_one
+    done
+}
+
+detect_gateway() # $1 = interface
+{
+    local interface=$1
+    #
+    # First assume that this is some sort of point-to-point interface
+    #
+    gateway=$( find_peer $(ip addr ls $interface ) )
+    #
+    # Maybe there's a default route through this gateway already
+    #
+    [ -n "$gateway" ] || gateway=$(find_gateway $(ip route ls dev $interface))
+    #
+    # Last hope -- is there a load-balancing route through the interface?
+    #
+    [ -n "$gateway" ] || gateway=$(find_nexthop $interface)
+    #
+    # Be sure we found one
+    #
+    [ -n "$gateway" ] && echo $gateway
+}
 
 SHOREWALL_LIBRARY=Loaded

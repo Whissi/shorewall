@@ -56,14 +56,6 @@ my_mutex_off() {
 }
 
 #
-# Message to stderr
-#
-error_message() # $* = Error Message
-{
-   echo "   $@" >&2
-}
-
-#
 # Fatal error -- stops the firewall after issuing the error message
 #
 fatal_error() # $* = Error Message
@@ -1237,14 +1229,32 @@ validate_interfaces_file() {
 		dhcp|tcpflags|arp_filter|routefilter|logmartians|sourceroute|blacklist|proxyarp|maclist|nosmurfs|upnp|-)
 		    ;;
 		norfc1918)
-		    addr=$(ip -f inet addr show $interface 2> /dev/null | grep inet | head -n1)
-		    if [ -n "$addr" ]; then
-			addr=$(echo $addr | sed 's/inet //;s/\/.*//;s/ peer.*//')
-			for network in 10.0.0.0/8 176.16.0.0/12 192.168.0.0/16; do
-			    if in_network $addr $network; then
-				startup_error "The 'norfc1918' option may not be specified on an interface with an RFC 1918 address. Interface:$interface"
-			    fi
-			done
+		    if [ $COMMAND = generate ]; then
+			cat >> $RESTOREBASE << __EOF__
+
+progress_message "Verifying 'norfc1918' on $interface"
+
+addr=\$(ip -f inet addr show $interface 2> /dev/null | grep inet | head -n1)
+if [ -n "\$addr" ]; then
+    addr=\$(echo \$addr | sed 's/inet //;s/\/.*//;s/ peer.*//')
+    for network in 10.0.0.0/8 176.16.0.0/12 192.168.0.0/16; do
+	if in_network \$addr \$network; then
+	    fatal_error "The 'norfc1918' option has been specified on an interface with an RFC 1918 address. Interface:$interface"
+	fi
+    done
+fi
+
+__EOF__
+		    else
+			addr=$(ip -f inet addr show $interface 2> /dev/null | grep inet | head -n1)
+			if [ -n "$addr" ]; then
+			    addr=$(echo $addr | sed 's/inet //;s/\/.*//;s/ peer.*//')
+			    for network in 10.0.0.0/8 176.16.0.0/12 192.168.0.0/16; do
+				if in_network $addr $network; then
+				    startup_error "The 'norfc1918' option may not be specified on an interface with an RFC 1918 address. Interface:$interface"
+				fi
+			    done
+			fi
 		    fi
 		    ;;
 		arp_ignore=*)
@@ -1296,29 +1306,62 @@ setup_providers()
     local table number mark duplicate interface gateway options provider address copy route loose addresses rulenum pref echobin=$(mywhich echo)
 
     copy_table() {
-	run_ip route show table $duplicate | while read net route; do
-	    case $net in
-		default|nexthop)
-		    ;;
-		*)
-		    ensure_and_save_command "    ip route add table $number $net $route"
-		    ;;
-	    esac
-	done
+	if [ $COMMAND = generate ]; then
+	    cat >> $RESTOREBASE << __EOF__
+    ip route show table $duplicate | while read net route; do
+	case \$net in
+	    default|nexthop)
+		;;
+	    *)
+		ip route add table $number \$net \$route"
+		;;
+	esac
+    done
+__EOF__
+	else
+	    run_ip route show table $duplicate | while read net route; do
+		case $net in
+		    default|nexthop)
+			;;
+		    *)
+			ensure_and_save_command "    ip route add table $number $net $route"
+			;;
+		esac
+	    done
+	fi
     }
 
     copy_and_edit_table() {
-	run_ip route show table $duplicate | while read net route; do
-	    case $net in
-		default|nexthop)
-		    ;;
-		*)
-		    if list_search $(find_device $route) $copy; then
-			ensure_and_save_command "    ip route add table $number $net $route"
-		    fi
-		    ;;
-	    esac
-	done
+	if [ $COMMAND = generate ]; then
+	    cat >> $RESTOREBASE << __EOF__
+    ip route show table $duplicate | while read net route; do
+	case \$net in
+	    default|nexthop)
+		;;
+	    *)
+		case \$(find_device \$route) in
+		    `echo $copy\) | sed 's/ /|/g'`
+			ip route add table $number \$net \$route
+			;;
+		esac
+		;;
+	esac
+    done
+
+__EOF__
+	else
+	    run_ip route show table $duplicate | while read net route; do
+		case $net in
+		    default|nexthop)
+			;;
+		    *)
+			if list_search $(find_device $route) $copy; then
+			    ensure_and_save_command "    ip route add table $number $net $route"
+			fi
+			;;
+		esac
+	    done
+	fi
     }
 
     add_a_provider() {
@@ -1358,28 +1401,32 @@ setup_providers()
 	fi
 
 	if [ "x$gateway" = xdetect ] ; then
-	    #
-	    # First assume that this is some sort of point-to-point interface
-	    #
-	    gateway=$( find_peer $(ip addr ls $interface ) )
-	    #
-	    # Maybe there's a default route through this gateway already
-	    #
-	    [ -n "$gateway" ] || gateway=$(find_gateway $(ip route ls dev $interface))
-	    #
-	    # Last hope -- is there a load-balancing route through the interface?
-	    #
-	    [ -n "$gateway" ] || gateway=$(find_nexthop $interface)
-	    #
-	    # Be sure we found one
-	    #
-	    [ -n "$gateway" ] || fatal_error "Unable to detect the gateway through interface $interface"
+	    if [ $COMMAND = generate ]; then
+		cat >> $RESTOREBASE << __EOF__
+    gateway=\$(detect_gateway $interface)
+
+    if [ -z \"\$gateway\" ]; then
+	ip route replace \$gateway src \$(find_first_interface_address $interface) dev $interface table $number
+	ip route add default via \$gateway dev $interface table $number
+    else
+	fatal_error "Unable to detect the gateway through interface $interface"
+    fi
+
+__EOF__
+	    else
+		gateway=$(detect_gateway $interface)
+		[ -n "$gateway" ] || fatal_error "Unable to detect the gateway through interface $interface"
+	    fi
 	fi
 
-	if [ $COMMAND != check ]; then
-	    ensure_and_save_command "    ip route replace $gateway src $(find_first_interface_address $interface) dev $interface table $number"
-	    ensure_and_save_command "    ip route add default via $gateway dev $interface table $number"
-	fi
+	case $COMMAND in
+	    check|generate)
+		;;
+	    *)
+		ensure_and_save_command "    ip route replace $gateway src $(find_first_interface_address $interface) dev $interface table $number"
+		ensure_and_save_command "    ip route add default via $gateway dev $interface table $number"
+		;;
+	esac
 
 	if [ x${mark} != x- ]; then
 	    verify_mark $mark
@@ -1407,10 +1454,18 @@ setup_providers()
 		    ROUTEMARK_INTERFACES="$ROUTEMARK_INTERFACES $interface"
 		    ;;
 		balance=*)
-		    DEFAULT_ROUTE="$DEFAULT_ROUTE nexthop via $gateway dev $interface weight ${option#*=}"
+		    if [ $COMMAND = generate ]; then
+			save_command "    DEFAULT_ROUTE=\"\$DEFAULT_ROUTE nexthop via \$gateway dev $interface weight ${option#*=}\""
+		    else
+			DEFAULT_ROUTE="$DEFAULT_ROUTE nexthop via $gateway dev $interface weight ${option#*=}"
+		    fi
 		    ;;
 		balance)
-		    DEFAULT_ROUTE="$DEFAULT_ROUTE nexthop via $gateway dev $interface weight 1"
+		    if [ $COMMAND = generate ]; then
+			save_command "    DEFAULT_ROUTE=\"\$DEFAULT_ROUTE nexthop via \$gateway dev $interface weight 1\""
+		    else
+			DEFAULT_ROUTE="$DEFAULT_ROUTE nexthop via $gateway dev $interface weight 1"
+		    fi
 		    ;;
 		loose)
 		    loose=Yes
@@ -1438,10 +1493,13 @@ setup_providers()
     strip_file providers $1
 
     if [ -s $TMP_DIR/providers ]; then
+	DEFAULT_ROUTE=
+
 	if [ $COMMAND != check ]; then
 	    progress_message2 "Processing $1..."
 	    save_progress_message "Restoring Providers..."
 	    save_command "if [ -z \"\$NOROUTES\" ]; then"
+	    [ $COMMAND = generate ] && save_command "    DEFAULT_ROUTE="
 	else
 	    progress_message2 "Validating $1..."
 	fi
@@ -1463,17 +1521,18 @@ setup_providers()
 
 	if [ $COMMAND != check ]; then
 	    if [ -n "$PROVIDERS" ]; then
-		if [ -n "$DEFAULT_ROUTE" ]; then
-		    ensure_and_save_command "    ip route replace default scope global $DEFAULT_ROUTE"
 		case $COMMAND in
 		    generate)
-			progress_message "   Default route $DEFAULT_ROUTE Compiled."
-			;;
+			    save_command "    [ -n \"\$DEFAULT_ROUTE\" ] && ip route replace default scope global \$DEFAULT_ROUTE"
+			    save_command "    progress_message Default route \$DEFAULT_ROUTE Added"
+			    ;;
 		    *)
-			progress_message "   Default route $DEFAULT_ROUTE Added."
+			if [ -n "$DEFAULT_ROUTE" ]; then
+			    ensure_and_save_command "    ip route replace default scope global $DEFAULT_ROUTE"
+			    progress_message "   Default route $DEFAULT_ROUTE Added."
+			fi
 			;;
-		    esac
-		fi
+		esac
 
 		cat > /etc/iproute2/rt_tables <<EOF
 #
@@ -3856,16 +3915,31 @@ delete_tc()
 
     run_user_exit tcclear
 
-    run_ip link list | \
-    while read inx interface details; do
-	case $inx in
-	    [0-9]*)
-		clear_one_tc ${interface%:}
-		;;
-	    *)
-		;;
-	esac
-    done
+    if [ $COMMAND = generate ]; then
+	cat >> $RESTOREBASE << __EOF__
+ip link list | while read inx interface details; do
+    case \$inx in
+	[0-9]*)
+	    qt tc qdisc del dev \${interface%:} root
+	    qt tc qdisc del dev \${interface%:} ingress
+	    ;;
+	*)
+	    ;;
+    esac
+done
+__EOF__
+    else
+	run_ip link list | \
+	while read inx interface details; do
+	    case $inx in
+		[0-9]*)
+		    clear_one_tc ${interface%:}
+		    ;;
+		*)
+		    ;;
+	    esac
+	done
+    fi
 }
 
 delete_tc1()
@@ -7641,120 +7715,6 @@ verify_os_version() {
 	startup_error "Shorewall can't start with the ipchains kernel module loaded - see FAQ #8"
 }
 
-#
-# Add IP Aliases
-#
-add_ip_aliases()
-{
-    local addresses external interface inet cidr rest val arping=$(mywhich arping)
-
-    address_details()
-    {
-	#
-	# Folks feel uneasy if they don't see all of the same
-	# decoration on these IP addresses that they see when their
-	# distro's net config tool adds them. In an attempt to reduce
-	# the anxiety level, we have the following code which sets
-	# the VLSM and BRD from an existing address in the same networks
-	#
-	# Get all of the lines that contain inet addresses with broadcast
-	#
-	ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | while read inet cidr rest ; do
-	    case $cidr in
-		*/*)
-		    if in_network $external $cidr; then
-			echo "/${cidr#*/} brd $(broadcastaddress $cidr)"
-			break
-		    fi
-		    ;;
-	    esac
-	done
-    }
-
-    do_one()
-    {
-	val=$(address_details)
-
-	if [ -n "$RETAIN_ALIASES" ]; then
-	    [ "$COMMAND" = generate ] || run_ip addr add ${external}${val} dev $interface $label
-	    save_command qt ip addr add ${external}${val} dev $interface $label
-	else
-	    ensure_and_save_command ip addr add ${external}${val} dev $interface $label
-	fi
-
-	[ -n "$arping" ] && run_and_save_command qt $arping -U -c 2 -I $interface $external
-
-	echo "$external $interface" >> $STATEDIR/nat
-	[ -n "$label" ] && label="with $label"
-	progress_message "   IP Address $external added to interface $interface $label"
-    }
-
-    set -- $ALIASES_TO_ADD
-
-    save_progress_message "Restoring IP Addresses..."
-
-    while [ $# -gt 0 ]; do
-	external=$1
-	interface=$2
-	label=
-
-	if [ "$interface" != "${interface%:*}" ]; then
-	    label="${interface#*:}"
-	    interface="${interface%:*}"
-	    label="label $interface:$label"
-	fi
-
-	shift 2
-
-	if list_search $external $(find_interface_addresses $interface) ; then
-	    save_command qt ip addr add ${external}$(address_details) dev $interface $label
-	else
-	    do_one
-	fi
-    done
-}
-
-#
-# Load kernel modules required for Shorewall
-#
-load_kernel_modules()
-{
-    save_modules_dir=$MODULESDIR
-
-    [ -z "$MODULESDIR" ] && \
-	MODULESDIR=/lib/modules/$(uname -r)/kernel/net/ipv4/netfilter
-
-    modules=$(find_file modules)
-
-    if [ -f $modules -a -d $MODULESDIR ]; then
-	progress_message "Loading Modules..."
-	. $modules
-    fi
-
-    MODULESDIR=$save_modules_dir
-}
-
-save_load_kernel_modules()
-{
-
-    modules=$(find_file modules)
-
-    save_progress_message "Loading kernel modules..."
-    save_command "reload_kernel_modules <<__EOF__"
-
-    while read command; do
-	case "$command" in
-	    loadmodule*)
-		save_command $command
-		;;
-	esac
-    done < $modules
-
-    save_command __EOF__
-    save_command ""
-
-}
-
 # Verify that the 'ip' program is installed
 
 verify_ip() {
@@ -8726,9 +8686,7 @@ activate_rules()
 	#
 	# There is a fw->fw chain. Send loopback output through that chain
 	#
-	run_ip link ls | grep LOOPBACK | while read ordinal interface rest ; do
-	    run_iptables -A OUTPUT -o ${interface%:*} -j $chain
-	done
+	run_iptables -A OUTPUT -o lo -j $chain
 	#
 	# And delete the unconditional ACCEPT rule
 	#
@@ -8825,7 +8783,7 @@ define_firewall() # $1 = Command (Start or Restart)
     save_command "MODULESDIR=\"$MODULESDIR\""
     save_command "MODULE_SUFFIX=\"$MODULE_SUFFIX\""
 
-    save_load_kernel_modules
+    save_command "load_kernel_modules"
 
     progress_message2 "Initializing...";                    initialize_netfilter
 
@@ -9029,23 +8987,32 @@ compile_firewall() # $1 = File Name
 
     [ -n "$RESTOREBASE" ] || startup_error "Cannot create temporary file in /var/lib/shorewall"
 
-    echo '#bin/sh' >> $RESTOREBASE
-    save_command "#"
-    save_command "# Compiled startup file generated by Shorewall $version - $(date)"
-    save_command "#"
-    save_command ". /usr/share/shorewall/functions"
-
+    cat >> $RESTOREBASE << __EOF__
+#
+# Compiled startup file generated by Shorewall $version - $(date)"
+#
+. /usr/share/shorewall/functions
+__EOF__
     f=$(find_file params)
 
     [ -f $f ] && \
 	save_command ". $(resolve_file $f)"
+    cat >> $RESTOREBASE << __EOF__
+#
+COMMAND=restore
+[ -n \${QUIET:=0} ]
+MODULESDIR="$MODULESDIR"
+MODULE_SUFFIX="$MODULE_SUFFIX"
 
-    save_command "#"
-    save_command "COMMAND=restore"
-    save_command "MODULESDIR=\"$MODULESDIR\""
-    save_command "MODULE_SUFFIX=\"$MODULE_SUFFIX\""
+fatal_error()
+{
+    echo "   ERROR: \$@" >&2
+    exit 2
+}
 
-    save_load_kernel_modules
+load_kernel_modules
+
+__EOF__
 
     progress_message2 "Initializing..."
     save_progress_message "Initializing..."

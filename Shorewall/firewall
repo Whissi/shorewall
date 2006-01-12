@@ -1218,7 +1218,7 @@ validate_interfaces_file() {
 	options=$(separate_list $options)
 	iface=$(chain_base $interface)
 
-	[ -n "$EXPORT" -a x$networks = detect ] && startup_error "BROADCAST 'detect' is incompatible with the -e option: Interface \"$interface\""
+	[ -n "$EXPORT" -a x$networks = detect ] && startup_error "BROADCAST 'detect' is incompatible with the -e run-line option: Interface \"$interface\""
 
 	eval ${iface}_broadcast="$networks"
 	eval ${iface}_zone="$z"
@@ -1231,7 +1231,7 @@ validate_interfaces_file() {
 		dhcp|tcpflags|arp_filter|routefilter|logmartians|sourceroute|blacklist|proxyarp|nosmurfs|upnp|-)
 		    ;;
 		maclist)
-		    [ -n "$EXPORT" ] && startup_error "The 'maclist' option is incompatible with the -e option: Interface \"$interface\""
+		    [ -n "$EXPORT" ] && startup_error "The 'maclist' option is incompatible with the -e run-line option: Interface \"$interface\""
 		    ;;
 		norfc1918)
 		    if [ $COMMAND = generate ]; then
@@ -1272,7 +1272,7 @@ __EOF__
 		    [ -n "$wildcard" ] && \
 			startup_error "The \"detectnets\" option may not be used with a wild-card interface"
 		    [ -n $EXPORT ] && \
-			startup_error "'detectnets' not permitted with the -e option"
+			startup_error "'detectnets' not permitted with the -e run-line option"
 		    ;;
 		routeback)
 		    [ -n "$z" ] || startup_error "The routeback option may not be specified on a multi-zone interface"
@@ -1670,7 +1670,7 @@ validate_hosts_file() {
 		   norfc1918|blacklist|tcpflags|nosmurfs|-)
 		       ;;
 		   maclist)
-			[ -n "$EXPORT" ] && startup_error "The 'maclist' option is incompatible with the -e option: \"$host\""
+			[ -n "$EXPORT" ] && startup_error "The 'maclist' option is incompatible with the -e run-line option: \"$host\""
 			;;
 		   ipsec)
 		       [ -n "$POLICY_MATCH" ] || \
@@ -7311,7 +7311,7 @@ setup_masq()
 	*.*.*|+*|!+*)
 	    ;;
 	*)
-	    [ -n "$EXPORT" ] && fatal_error "An interface name in the SUBNET column is not allowed with the -e option"
+	    [ -n "$EXPORT" ] && fatal_error "An interface name in the SUBNET column is not allowed with the -e run-line option"
 	    networks=$(get_routed_networks $networks)
 	    [ -z "$networks" ] && fatal_error "Unable to determine the routes through interface \"$source\""
 	    networks="$networks"
@@ -9801,7 +9801,7 @@ do_initialize() {
     LOG_MARTIANS=$(added_param_value_no LOG_MARTIANS $LOG_MARTIANS)
     DETECT_DNAT_IPADDRS=$(added_param_value_no DETECT_DNAT_IPADDRS $DETECT_DNAT_IPADDRS)
     [ -n "$DETECT_DNAT_IPADDRS" -a -n "$EXPORT" ] && \
-	startup_error "DETECT_DNAT_IPADDRS=Yes not allowed with the -e option"
+	startup_error "DETECT_DNAT_IPADDRS=Yes not allowed with the -e run-line option"
     FORWARDPING=$(added_param_value_no FORWARDPING $FORWARDPING)
     [ -n "$FORWARDPING" ] && \
 	startup_error "FORWARDPING=Yes is no longer supported"

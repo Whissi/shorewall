@@ -1405,7 +1405,7 @@ __EOF__
 		cat >> $RESTOREBASE << __EOF__
     gateway=\$(detect_gateway $interface)
 
-    if [ -n \"\$gateway\" ]; then
+    if [ -n "\$gateway" ]; then
 	ip route replace \$gateway src \$(find_first_interface_address $interface) dev $interface table $number
 	ip route add default via \$gateway dev $interface table $number
     else
@@ -1497,7 +1497,7 @@ __EOF__
 
 	if [ $COMMAND != check ]; then
 	    progress_message2 "Processing $1..."
-	    save_progress_message "Restoring Providers..."
+	    save_progress_message "Adding Providers..."
 	    save_command "if [ -z \"\$NOROUTES\" ]; then"
 	    [ $COMMAND = generate ] && save_command "    DEFAULT_ROUTE="
 	else
@@ -1992,7 +1992,7 @@ log_rule() # $1 = log level, $2 = chain, $3 = disposition , $... = predicates fo
 #
 setup_forwarding() {
 
-    save_progress_message "Restoring IP Forwarding..."
+    save_progress_message "Setting up IP Forwarding..."
 
     case "$IP_FORWARDING" in
     [Oo][Nn])
@@ -2860,7 +2860,7 @@ setup_proxy_arp() {
     if [ $COMMAND != check ]; then
 	> $STATEDIR/proxyarp
 
-	save_progress_message "Restoring Proxy ARP..."
+	save_progress_message "Setting up Proxy ARP..."
     fi
 
     while read address interface external haveroute persistent; do
@@ -3187,7 +3187,7 @@ setup_nat() {
 	policyout="-m policy --pol none --dir out"
     fi
 
-    [ -n "$RETAIN_ALIASES" -o $COMMAND = check ] || save_progress_message "Restoring one-to-one NAT..."
+    [ -n "$RETAIN_ALIASES" -o $COMMAND = check ] || save_progress_message "Setting up one-to-one NAT..."
 
     while read external interface internal allints localnat; do
 	expandv external interface internal allints localnat
@@ -3524,7 +3524,7 @@ setup_traffic_shaping()
 
    if [ $COMMAND != check ]; then
 	if [ -s $TMP_DIR/tcdevices ]; then
-	    save_progress_message "Restoring Traffic Control..."
+	    save_progress_message "Setting up Traffic Control..."
 	    progress_message2 "Processing $devfile..."
 
 	    while read device inband outband defmark ackmark; do
@@ -3886,7 +3886,7 @@ setup_tc1() {
 
 	run_user_exit $TC_SCRIPT
 
-        save_progress_message "Restoring Traffic Control..."
+        save_progress_message "Setting up Traffic Control..."
 	save_command . $TC_SCRIPT
     elif [ -n "$TC_ENABLED" ]; then
 	setup_traffic_shaping
@@ -4183,7 +4183,7 @@ setup_accounting() # $1 = Name of accounting file
 
     progress_message2 "Setting up Accounting..."
 
-    [ $COMMAND = generate ] && save_progress_message "Restoring Accounting..."
+    [ $COMMAND = generate ] && save_progress_message "Setting up Accounting..."
 
     strip_file accounting $1
 
@@ -7493,7 +7493,7 @@ setup_masq()
 
     if [ -n "$NAT_ENABLED" ]; then
 	progress_message2 "Masqueraded Networks and Hosts:"
-	[ $COMMAND = check ] || save_progress_message "Restoring Masquerading/SNAT..."
+	[ $COMMAND = check ] || save_progress_message "Setting up Masquerading/SNAT..."
     fi
 
     while read fullinterface networks addresses proto ports ipsec; do
@@ -7619,7 +7619,7 @@ setup_blacklist() {
     if [ -n "$hosts" -a -f $f ]; then
 	progress_message2 "Setting up Blacklisting..."
 
-	[ $COMMAND = restore ] && save_progress_message "Restoring Blacklisting..."
+	[ $COMMAND = restore ] && save_progress_message "Setting up Blacklisting..."
 
 	strip_file blacklist $f
 
@@ -7927,7 +7927,7 @@ initialize_netfilter () {
     createchain smurfs no
 
     if [ -f /var/lib/shorewall/save ]; then
-	progress_message2 "Restoring dynamic rules..."
+	progress_message2 "Setting up dynamic rules..."
 
 	[ $COMMAND = generate ] && save_progress_message "Restoring dynamic rules..."
 
@@ -7974,7 +7974,7 @@ add_common_rules() {
     #
     # Populate the smurf chain
     #
-    [ $COMMAND = generate ] && save_progress_message "Restoring SMURF control..."
+    [ $COMMAND = generate ] && save_progress_message "Setting up SMURF control..."
 
     for address in $broadcasts ; do
 	[ -n "$SMURF_LOG_LEVEL" ] && log_rule $SMURF_LOG_LEVEL smurfs DROP -s $address
@@ -8020,7 +8020,7 @@ add_common_rules() {
     #
     # Process Black List
     #
-    [ $COMMAND = generate ] && save_progress_message "Restoring Black List..."
+    [ $COMMAND = generate ] && save_progress_message "Setting up Black List..."
 
     setup_blacklist
 
@@ -8056,7 +8056,7 @@ add_common_rules() {
 
 	progress_message2 "Adding rules for DHCP"
 
-	[ $COMMAND = generate ] && save_progress_message "Restoring rules for DHCP..."
+	[ $COMMAND = generate ] && save_progress_message "Setting up rules for DHCP..."
 
 	for interface in $interfaces; do
 	    if [ -n "$BRIDGING" ]; then
@@ -8076,7 +8076,7 @@ add_common_rules() {
     if [ -n "$hosts" ]; then
 	progress_message2 "Enabling RFC1918 Filtering"
 
-	[ $COMMAND = generate ] && save_progress_message "Restoring RFC1918 Filtering..."
+	[ $COMMAND = generate ] && save_progress_message "Setting up RFC1918 Filtering..."
 
 	strip_file rfc1918
 
@@ -8169,7 +8169,7 @@ add_common_rules() {
     if [ -n "$hosts" ]; then
 	progress_message2 "Setting up TCP Flags checking..."
 
-	[ $COMMAND = generate ] && save_progress_message "Restoring TCP Flags checking..."
+	[ $COMMAND = generate ] && save_progress_message "Setting up TCP Flags checking..."
 
 	createchain tcpflags no
 
@@ -8224,7 +8224,7 @@ add_common_rules() {
     #
     # ARP Filtering
     #
-    save_progress_message "Restoring ARP filtering..."
+    save_progress_message "Setting up ARP filtering..."
 
     for f in /proc/sys/net/ipv4/conf/*; do
 	run_and_save_command "[ -f $f/arp_filter ] && echo 0 > $f/arp_filter"
@@ -8266,7 +8266,7 @@ add_common_rules() {
     if [ -n "$interfaces" -o -n "$ROUTE_FILTER" ]; then
 	progress_message2 "Setting up Kernel Route Filtering..."
 
-	save_progress_message "Restoring Route Filtering..."
+	save_progress_message "Setting up Route Filtering..."
 
 	for f in /proc/sys/net/ipv4/conf/*; do
 	    run_and_save_command "[ -f $f/rp_filter ]    && echo 0 > $f/rp_filter"
@@ -8300,7 +8300,7 @@ add_common_rules() {
     if [ -n "$interfaces" -o -n "$LOG_MARTIANS" ]; then
 	progress_message2 "Setting up Martian Logging..."
 
-	save_progress_message "Restoring Martian Logging..."
+	save_progress_message "Setting up Martian Logging..."
 
 	for f in /proc/sys/net/ipv4/conf/*; do
 	    run_and_save_command "[ -f $f/log_martians ]    && echo 0 > $f/log_martians"
@@ -8326,7 +8326,7 @@ add_common_rules() {
     #
     # Source Routing
     #
-    save_progress_message "Restoring Accept Source Routing..."
+    save_progress_message "Setting up Accept Source Routing..."
 
     for f in /proc/sys/net/ipv4/conf/*; do
 	run_and_save_command "[ -f $f/accept_source_route ] && echo 0 > $f/accept_source_route"
@@ -8337,7 +8337,7 @@ add_common_rules() {
     if [ -n "$interfaces" ]; then
 	progress_message2 "Setting up Accept Source Routing..."
 
-	save_progress_message "Restoring Source Routing..."
+	save_progress_message "Setting up Source Routing..."
 
 	for interface in $interfaces; do
 	    file=/proc/sys/net/ipv4/conf/$interface/accept_source_route
@@ -8374,7 +8374,7 @@ add_common_rules() {
     if [ -n "$interfaces" ]; then
 	progress_message2 "Setting up UPnP..."
 
-	[ $COMMAND = generate ] && save_progress_message "Restoring UPnP..."
+	[ $COMMAND = generate ] && save_progress_message "Setting up UPnP..."
 
 	createnatchain UPnP
 
@@ -9029,33 +9029,33 @@ __EOF__
     progress_message2 "Compiling NETMAP...";               setup_netmap
     progress_message2 "Compiling Common Rules";            add_common_rules
 
-    save_progress_message "Restoring SYN Flood Protection..."
+    save_progress_message "Setting up SYN Flood Protection..."
 
     setup_syn_flood_chains
 
-    save_progress_message "Restoring IPSEC management..."
+    save_progress_message "Setting up IPSEC management..."
 
     setup_ipsec
 
     maclist_hosts=$(find_hosts_by_option maclist)
 
     if [ -n "$maclist_hosts" ]; then
-	save_progress_message "Restoring MAC Filtration..."
+	save_progress_message "Setting up MAC Filtration..."
 	setup_mac_lists
     fi
 
     progress_message2 "Compiling $(find_file rules)..."
-    save_progress_message "Restoring Rules..."
+    save_progress_message "Setting up Rules..."
     process_rules
 
     tunnels=$(find_file tunnels)
     if [ -f $tunnels ]; then
 	progress_message2 "Compiling $tunnels..."
-	save_progress_message "Restoring Tunnels..."
+	save_progress_message "Setting up Tunnels..."
 	setup_tunnels $tunnels
     fi
 
-    save_progress_message "Restoring Actions..."
+    save_progress_message "Setting up Actions..."
 
     progress_message2 "Compiling Actions...";               process_actions2
                                                             process_actions3
@@ -9071,18 +9071,18 @@ __EOF__
 
     tos=$(find_file tos)
     if [ -f $tos -a -n "$MANGLE_ENABLED" ]; then
-	save_progress_message "Restoring TOS..."
+	save_progress_message "Setting up TOS..."
 	process_tos $tos
     fi
 
     ecn=$(find_file ecn)
     if [ -f $ecn -a -n "$MANGLE_ENABLED" ]; then
-	save_progress_message "Restoring ECN..."
+	save_progress_message "Setting up ECN..."
 	setup_ecn $ecn
     fi
 
     if [ -n "$MANGLE_ENABLED" ]; then
-	save_progress_message "Restoring TC Rules..."
+	save_progress_message "Setting up TC Rules..."
 	setup_tc
     fi
 

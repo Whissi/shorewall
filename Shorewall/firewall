@@ -1308,7 +1308,7 @@ verify_mark() # $1 = value to test
 #
 setup_providers()
 {
-    local table number mark duplicate interface gateway options provider address copy route loose addresses rulenum pref echobin=$(mywhich echo)
+    local table number mark duplicate interface gateway options provider address copy route loose addresses rulenum pref echobin=$(mywhich echo) balance
 
     copy_table() {
 	if [ $COMMAND = generate ]; then
@@ -1459,6 +1459,7 @@ __EOF__
 		    ROUTEMARK_INTERFACES="$ROUTEMARK_INTERFACES $interface"
 		    ;;
 		balance=*)
+		    balance=yes
 		    if [ $COMMAND = generate ]; then
 			save_command "    DEFAULT_ROUTE=\"\$DEFAULT_ROUTE nexthop via \$gateway dev $interface weight ${option#*=}\""
 		    else
@@ -1466,6 +1467,7 @@ __EOF__
 		    fi
 		    ;;
 		balance)
+		    balance=yes
 		    if [ $COMMAND = generate ]; then
 			save_command "    DEFAULT_ROUTE=\"\$DEFAULT_ROUTE nexthop via \$gateway dev $interface weight 1\""
 		    else
@@ -1527,6 +1529,7 @@ __EOF__
 
     if [ -s $TMP_DIR/providers ]; then
 	DEFAULT_ROUTE=
+	balance=
 
 	if [ $COMMAND != check ]; then
 	    progress_message2 "Processing $1..."
@@ -1556,9 +1559,11 @@ __EOF__
 	    if [ -n "$PROVIDERS" ]; then
 		case $COMMAND in
 		    generate)
-			    save_command "    [ -n \"\$DEFAULT_ROUTE\" ] && ip route replace default scope global \$DEFAULT_ROUTE"
+			if [ -n "$balance" ]; then
+			    save_command "    ip route replace default scope global \$DEFAULT_ROUTE"
 			    save_command "    progress_message Default route \$DEFAULT_ROUTE Added"
-			    ;;
+			fi
+			;;
 		    *)
 			if [ -n "$DEFAULT_ROUTE" ]; then
 			    ensure_and_save_command "    ip route replace default scope global $DEFAULT_ROUTE"
@@ -8972,19 +8977,10 @@ compile_firewall() # $1 = File Name
 
     [ -d /var/lib/shorewall ] || { mkdir -p /var/lib/shorewall ; chmod 700 /var/lib/shorewall; }
 
-    case $outfile in
-	*/*)
-	    [ -d $dir ] || startup_error "Directory $dir does not exist"
-	    [ -h $dir ] && startup_error "$dir is a Symbolic Link"
-	    [ -d $outfile ] && startup_error "$outfile is a Directory"
-	    [ -h $outfile ] && startup_error "$outfile is a Symbolic Link"
-
-	    ;;
-	*)
-	    outfile=/var/lib/shorewall/$1
-	    ;;
-    esac
-
+    [ -d $dir ] || startup_error "Directory $dir does not exist"
+    [ -h $dir ] && startup_error "$dir is a Symbolic Link"
+    [ -d $outfile ] && startup_error "$outfile is a Directory"
+    [ -h $outfile ] && startup_error "$outfile is a Symbolic Link"
     [ -f $outfile -a ! -x $outfile ] && startup_error "$outfile exists and is not a restore file"
 
     RESTOREBASE=$(mktempfile /var/lib/shorewall)

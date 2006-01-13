@@ -1,4 +1,4 @@
-Shorewall 3.1.1
+Shorewall 3.1.2
 
 Note to users upgrading from Shorewall 2.x or 3.0
 
@@ -52,9 +52,7 @@ New Features:
 	<config directory>    Is an optional directory to be searched for
 	                      configuration files prior to those listed
 	                      in CONFIG_DIR in /etc/shorewall/shorewall.conf.
-	<script file>         Is the name of the output file. If a simple
-	                      filename is given, the file will be created in
-	                      /var/lib/shorewall.
+	<script file>         Is the name of the output file.
 
     The 'generate' command processes the configuration and writes a script file
     which may then be executed (either directly or using the 'shorewall restore'
@@ -100,7 +98,7 @@ New Features:
     The 'reload' command creates a script using 'generate' and if there are
     no errors, it then restores that script. It is equivalent to:
 
-    if shorewall generate .reload; then restore .reload; fi
+    if shorewall generate /var/lib/shorewall/.reload; then restore .reload; fi
 
     The advantage of using reload over restart is that reload results in new
     connections being dropped for a much shorter time. Here are the results of

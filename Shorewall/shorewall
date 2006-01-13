@@ -928,7 +928,7 @@ case "$1" in
 
 	export NOROUTES
 
-	if $SHOREWALL_SHELL $FIREWALL $debugging $nolock compile .reload; then
+	if $SHOREWALL_SHELL $FIREWALL $debugging $nolock compile /var/lib/shorewall/.reload; then
 	   $0 $(make_quiet) restore .reload
 	fi
 	;;

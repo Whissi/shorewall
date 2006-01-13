@@ -1129,4 +1129,70 @@ disable_ipv6() {
     fi
 }
 
+#
+# Add a logging rule.
+#
+log_rule_limit() # $1 = log level, $2 = chain, $3 = display Chain $4 = disposition , $5 = rate limit $6=log tag $7=command $... = predicates for the rule
+{
+    local level=$1
+    local chain=$2
+    local displayChain=$3
+    local disposition=$4
+    local rulenum=
+    local limit="${5:-$LOGLIMIT}"
+    local tag=${6:+$6 }
+    local command=${7:--A}
+    local prefix
+    local base=$(chain_base $displayChain)
+
+    shift 7
+
+    if [ -n "$tag" -a -n "$LOGTAGONLY" ]; then
+	displayChain=$tag
+	tag=
+    fi
+
+    if [ -n "$LOGRULENUMBERS" ]; then
+	eval rulenum=\$${base}_logrules
+
+	rulenum=${rulenum:-1}
+
+	prefix="$(printf "$LOGFORMAT" $displayChain $rulenum $disposition)${tag}"
+
+	rulenum=$(($rulenum + 1))
+	eval ${base}_logrules=$rulenum
+    else
+	prefix="$(printf "$LOGFORMAT" $displayChain $disposition)${tag}"
+    fi
+
+    if [ ${#prefix} -gt 29 ]; then
+	prefix="$(echo $prefix | truncate 29)"
+	error_message "WARNING: Log Prefix shortened to \"$prefix\""
+    fi
+
+    case $level in
+	ULOG)
+	    run_iptables $command $chain $@ $limit -j ULOG $LOGPARMS --ulog-prefix "$prefix"
+	    ;;
+	*)
+	    run_iptables $command $chain $@ $limit -j LOG $LOGPARMS --log-level $level --log-prefix "$prefix"
+	    ;;
+    esac
+
+    if [ $? -ne 0 ] ; then
+	[ -z "$STOPPING" ] && { stop_firewall; exit 2; }
+    fi
+}
+
+log_rule() # $1 = log level, $2 = chain, $3 = disposition , $... = predicates for the rule
+{
+    local level=$1
+    local chain=$2
+    local disposition=$3
+
+    shift 3
+
+    log_rule_limit $level $chain $chain $disposition "$LOGLIMIT" "" -A $@
+}
+
 SHOREWALL_LIBRARY=Loaded

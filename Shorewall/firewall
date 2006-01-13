@@ -1218,8 +1218,6 @@ validate_interfaces_file() {
 	options=$(separate_list $options)
 	iface=$(chain_base $interface)
 
-	[ -n "$EXPORT" -a x$networks = detect ] && startup_error "BROADCAST 'detect' is incompatible with the -e run-line option: Interface \"$interface\""
-
 	eval ${iface}_broadcast="$networks"
 	eval ${iface}_zone="$z"
 	eval ${iface}_options=\"$options\"
@@ -1228,10 +1226,7 @@ validate_interfaces_file() {
 	    case $option in
 		-)
 		    ;;
-		dhcp|tcpflags|arp_filter|routefilter|logmartians|sourceroute|blacklist|proxyarp|nosmurfs|upnp|-)
-		    ;;
-		maclist)
-		    [ -n "$EXPORT" ] && startup_error "The 'maclist' option is incompatible with the -e run-line option: Interface \"$interface\""
+		dhcp|tcpflags|arp_filter|routefilter|maclist|logmartians|sourceroute|blacklist|proxyarp|nosmurfs|upnp|-)
 		    ;;
 		norfc1918)
 		    if [ $COMMAND = generate ]; then
@@ -1670,11 +1665,8 @@ validate_hosts_file() {
 
 	   for option in $(separate_list $options) ; do
 	       case $option in
-		   norfc1918|blacklist|tcpflags|nosmurfs|-)
+		   norfc1918|blacklist|maclist|tcpflags|nosmurfs|-)
 		       ;;
-		   maclist)
-			[ -n "$EXPORT" ] && startup_error "The 'maclist' option is incompatible with the -e run-line option: \"$host\""
-			;;
 		   ipsec)
 		       [ -n "$POLICY_MATCH" ] || \
 			   startup_error "Your kernel and/or iptables does not support policy match: ipsec"
@@ -1850,17 +1842,32 @@ validate_policy()
 }
 
 #
-# Find broadcast addresses
+# Find broadcast addresses -- if we are compiling a script and 'detect' is specified for an interface
+#                             the function returns nothing for that interface
 #
 find_broadcasts() {
     for interface in $ALL_INTERFACES; do
 	eval bcast=\$$(chain_base $interface)_broadcast
 	if [ "x$bcast" = "xdetect" ]; then
-	    ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet.*brd //; s/scope.*//;' | sort -u
+	    if [ $COMMAND != generate ]; then
+		ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet.*brd //; s/scope.*//;' | sort -u
+	    fi
 	elif [ "x${bcast}" != "x-" ]; then
 	    echo $(separate_list $bcast)
 	fi
     done
+}
+
+#
+# Find interfaces with BROADCAST=detect -- Only returns information if we are compiling a script
+#
+find_bcastdetect_interfaces() {
+    if [ $COMMAND = generate ]; then
+	for interface in $ALL_INTERFACES; do
+	    eval bcast=\$$(chain_base $interface)_broadcast
+	    [ "x$bcast" = "xdetect" ] && echo $interface
+	done
+    fi
 }
 
 #
@@ -1939,72 +1946,6 @@ run_user_exit() # $1 = file name
 	progress_message "Processing $user_exit ..."
 	. $user_exit
     fi
-}
-
-#
-# Add a logging rule.
-#
-log_rule_limit() # $1 = log level, $2 = chain, $3 = display Chain $4 = disposition , $5 = rate limit $6=log tag $7=command $... = predicates for the rule
-{
-    local level=$1
-    local chain=$2
-    local displayChain=$3
-    local disposition=$4
-    local rulenum=
-    local limit="${5:-$LOGLIMIT}"
-    local tag=${6:+$6 }
-    local command=${7:--A}
-    local prefix
-    local base=$(chain_base $displayChain)
-
-    shift 7
-
-    if [ -n "$tag" -a -n "$LOGTAGONLY" ]; then
-	displayChain=$tag
-	tag=
-    fi
-
-    if [ -n "$LOGRULENUMBERS" ]; then
-	eval rulenum=\$${base}_logrules
-
-	rulenum=${rulenum:-1}
-
-	prefix="$(printf "$LOGFORMAT" $displayChain $rulenum $disposition)${tag}"
-
-	rulenum=$(($rulenum + 1))
-	eval ${base}_logrules=$rulenum
-    else
-	prefix="$(printf "$LOGFORMAT" $displayChain $disposition)${tag}"
-    fi
-
-    if [ ${#prefix} -gt 29 ]; then
-	prefix="$(echo $prefix | truncate 29)"
-	error_message "WARNING: Log Prefix shortened to \"$prefix\""
-    fi
-
-    case $level in
-	ULOG)
-	    run_iptables $command $chain $@ $limit -j ULOG $LOGPARMS --ulog-prefix "$prefix"
-	    ;;
-	*)
-	    run_iptables $command $chain $@ $limit -j LOG $LOGPARMS --log-level $level --log-prefix "$prefix"
-	    ;;
-    esac
-
-    if [ $? -ne 0 ] ; then
-	[ -z "$STOPPING" ] && { stop_firewall; exit 2; }
-    fi
-}
-
-log_rule() # $1 = log level, $2 = chain, $3 = disposition , $... = predicates for the rule
-{
-    local level=$1
-    local chain=$2
-    local disposition=$3
-
-    shift 3
-
-    log_rule_limit $level $chain $chain $disposition "$LOGLIMIT" "" -A $@
 }
 
 #
@@ -2997,20 +2938,38 @@ setup_mac_lists() {
 
 	[ -n "$MACLIST_TTL" ] && chain=$(macrecent_target $interface) || chain=$(mac_chain $interface)
 
-	blob=$(ip link show $interface 2> /dev/null)
+	if [ $COMMAND = generate ]; then
+	    cat >> $RESTOREBASE << __EOF__
 
-	[ -z "$blob" ] && \
-	    fatal_error "Interface $interface must be up before Shorewall can start"
+blob=\$(ip link show $interface 2> /dev/null)
 
-	ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet //; s/brd //; s/scope.*//;' | while read address broadcast; do
-	    address=${address%/*}
-	    if [ -n "$broadcast" ]; then
-		run_iptables -t $MACLIST_TABLE -A $chain -s $address -d $broadcast -j RETURN
-	    fi
+[ -z "\$blob" ] && \
+    fatal_error "Interface $interface must be up before Shorewall can start"
 
-	    run_iptables -t $MACLIST_TABLE -A $chain -s $address -d 255.255.255.255 -j RETURN
-	    run_iptables -t $MACLIST_TABLE -A $chain -s $address -d 224.0.0.0/4     -j RETURN
-	done
+ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet //; s/brd //; s/scope.*//;' | while read address broadcast; do
+    address=\${address%/*}
+    if [ -n "\$broadcast" ]; then
+	$IPTABLES -t $MACLIST_TABLE -A $chain -s \$address -d \$broadcast -j RETURN
+    fi
+done
+
+__EOF__
+	else
+	    blob=$(ip link show $interface 2> /dev/null)
+
+	    [ -z "$blob" ] && \
+		fatal_error "Interface $interface must be up before Shorewall can start"
+
+	    ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet //; s/brd //; s/scope.*//;' | while read address broadcast; do
+		address=${address%/*}
+		if [ -n "$broadcast" ]; then
+		    run_iptables -t $MACLIST_TABLE -A $chain -s $address -d $broadcast -j RETURN
+		fi
+
+		run_iptables -t $MACLIST_TABLE -A $chain -s $address -d 255.255.255.255 -j RETURN
+		run_iptables -t $MACLIST_TABLE -A $chain -s $address -d 224.0.0.0/4     -j RETURN
+	    done
+	fi
 
 	if [ -n "$MACLIST_LOG_LEVEL" ]; then
 	    log_rule_limit $MACLIST_LOG_LEVEL $chain $(mac_chain $interface) $MACLIST_DISPOSITION "$LOGLIMIT" "" -A -t $MACLIST_TABLE
@@ -5312,6 +5271,29 @@ process_actions3() {
 			run_iptables -A dropBcast -m pkttype --pkt-type broadcast -j DROP
 			run_iptables -A dropBcast -m pkttype --pkt-type multicast -j DROP
 		    else
+			for interface in $(find_bcastdetect_interfaces); do
+			    cat >> $RESTOREBASE << __EOF__
+
+ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet.*brd //; s/scope.*//;' | sort -u | while read address; do
+__EOF__
+			    case $xlevel in
+				none*)
+				    ;;
+				*)
+				    [ -n "$xlevel" ] && \
+					cat >> $RESTOREBASE << __EOF__
+   log_rule_limit ${xlevel%\!} $xchain dropBcast DROP "" "$xtag" -A -d \$address
+__EOF__
+				    ;;
+			    esac
+
+			    cat >> $RESTOREBASE << __EOF__
+    $IPTABLES -A $xchain -d \$address -j DROP
+done
+
+__EOF__
+			done
+
 			for address in $(find_broadcasts) 255.255.255.255 224.0.0.0/4 ; do
 			    case $xlevel in
 				none*)
@@ -5344,6 +5326,29 @@ process_actions3() {
 			run_iptables -A allowBcast -m pkttype --pkt-type broadcast -j ACCEPT
 			run_iptables -A allowBcast -m pkttype --pkt-type multicast -j ACCEPT
 		    else
+			for interface in $(find_bcastdetect_interfaces); do
+			    cat >> $RESTOREBASE << __EOF__
+
+ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet.*brd //; s/scope.*//;' | sort -u | while read address; do
+__EOF__
+			    case $xlevel in
+				none*)
+				    ;;
+				*)
+				    [ -n "$xlevel" ] && \
+					cat >> $RESTOREBASE << __EOF__
+   log_rule_limit ${xlevel%\!} $xchain allowBcast ACCEPT "" "$xtag" -A -d \$address
+__EOF__
+				    ;;
+			    esac
+
+			    cat >> $RESTOREBASE << __EOF__
+    $IPTABLES -A $xchain -d \$address -j
+done
+
+__EOF__
+			done
+
 			for address in $(find_broadcasts) 255.255.255.255 224.0.0.0/4 ; do
 			    case $xlevel in
 				none*)
@@ -7979,19 +7984,45 @@ add_common_rules() {
     local broadcasts="$(find_broadcasts) 255.255.255.255 224.0.0.0/4"
 
     drop_broadcasts() {
+	for interface in $(find_bcastdetect_interfaces); do
+	    cat >> $RESTOREBASE << __EOF__
+
+ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet.*brd //; s/scope.*//;' | sort -u | while read address; do
+    $IPTABLES -A reject -d \$address -j DROP
+done
+
+__EOF__
+	done
+
 	for address in $broadcasts ; do
 	    run_iptables -A reject -d $address -j DROP
 	done
     }
-
     #
     # Populate the smurf chain
     #
     [ $COMMAND = generate ] && save_progress_message "Setting up SMURF control..."
 
+    for interface in $(find_bcastdetect_interfaces); do
+	cat >> $RESTOREBASE << __EOF__
+
+ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet.*brd //; s/scope.*//;' | sort -u | while read address; do
+__EOF__
+	[ -n "$SMURF_LOG_LEVEL" ] && \
+	    cat >> $RESTOREBASE << __EOF__
+    log_rule $SMURF_LOG_LEVEL smurfs DROP -s \$address
+__EOF__
+	cat >> $RESTOREBASE << __EOF__
+    $IPTABLES -A smurfs -s \$address -j DROP
+done
+
+__EOF__
+    done
+
     for address in $broadcasts ; do
 	[ -n "$SMURF_LOG_LEVEL" ] && log_rule $SMURF_LOG_LEVEL smurfs DROP -s $address
 	run_iptables -A smurfs $(source_ip_range $address) -j DROP
+	run_iptables -A reject -s $address -j DROP
     done
     #
     # Reject Rules -- Don't respond to broadcasts with an ICMP
@@ -8997,10 +9028,20 @@ compile_firewall() # $1 = File Name
 #
 . /usr/share/shorewall/functions
 
+stop_firewall()
+{
+    exit 2
+}
+
 fatal_error()
 {
     echo "   ERROR: \$@" >&2
     exit 2
+}
+
+run_iptables()
+{
+    $IPTABLES \$@
 }
 
 if [ ! -f /usr/share/shorewall/version ] || [ \$(cat /usr/share/shorewall/version) != $VERSION ]; then
@@ -9014,10 +9055,17 @@ __EOF__
 	save_command ". $(resolve_file $f)"
     cat >> $RESTOREBASE << __EOF__
 #
+# These variables are required by the library functions called in this script
+#
 COMMAND=restore
 [ -n \${QUIET:=0} ]
 MODULESDIR="$MODULESDIR"
 MODULE_SUFFIX="$MODULE_SUFFIX"
+LOGLIMIT="$LOGLIMIT"
+LOGTAGONLY="$LOGTAGONLY"
+LOGRULENUMBERS="$LOGRULENUMBERS"
+LOGFORMAT="$LOGFORMAT"
+STOPPING=
 
 load_kernel_modules
 

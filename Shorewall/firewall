@@ -7300,10 +7300,15 @@ setup_masq()
 	*.*.*|+*|!+*)
 	    ;;
 	*)
-	    [ -n "$EXPORT" ] && fatal_error "An interface name in the SUBNET column is not allowed with the -e run-line option"
-	    networks=$(get_routed_networks $networks)
-	    [ -z "$networks" ] && fatal_error "Unable to determine the routes through interface \"$source\""
-	    networks="$networks"
+	    if [ $COMMAND = generate ]; then
+		detectinterface=$networks
+		networks=
+	    else
+		networks=$(get_routed_networks $networks)
+		[ -z "$networks" ] && fatal_error "Unable to determine the routes through interface \"$source\""
+		networks="$networks"
+		detectinterface=
+	    fi
 	    ;;
 	esac
 
@@ -7384,6 +7389,8 @@ setup_masq()
 
 	[ -z "$pre_nat" ] && chain=$(masq_chain $interface) || chain=$(snat_chain $interface)
 
+	ensurenatchain $chain
+
 	case $destnets in
 	    !*)
 		destnets=${destnets#!}
@@ -7396,6 +7403,18 @@ setup_masq()
 			    addnatrule $chain $(source_ip_range $s) $proto $ports $policy -j $newchain
 			done
 			networks=
+		    elif [ -n "$detectinterface" ]; then
+			cat >> $RESTOREBASE << __EOF__
+
+networks ="\$(get_routed_networks $detectinterface)"
+
+[ -z "\$networks" ] && fatal_error "Unable to determine the routes through interface \"$detectinterface\""
+
+for network in \$networks; do
+    $IPTABLES -t nat -A $chain -s \$network $proto $ports $policy -j $newchain
+done
+
+__EOF__
 		    else
 			addnatrule $chain -j $newchain
 		    fi
@@ -7422,6 +7441,24 @@ setup_masq()
 				    addnatrule $chain $(both_ip_ranges $s $destnet) $proto $ports $policy -j $newchain
 				done
 			    done
+			elif [ -n "$detectinterface" ]; then
+			    cat >> $RESTOREBASE << __EOF__
+
+networks ="\$(get_routed_networks $detectinterface)"
+
+[ -z "\$networks" ] && fatal_error "Unable to determine the routes through interface \"$detectinterface\""
+
+for network in \$networks; do
+__EOF__
+			    for destnet in $(separate_list $destnets); do
+				cat >> $RESTOREBASE << __EOF__
+    $IPTABLES -t nat -A $chain -s \$network $(dest_ip_range $destnet) $proto $sports $policy -j $netchain
+__EOF__
+			    done
+			    cat >> $RESTOREBASE << __EOF__
+
+done
+__EOF__
 			else
 			    for destnet in $(separate_list $destnets); do
 				addnatrule $chain $(dest_ip_range $destnet) $proto $ports $policy -j $newchain
@@ -7489,6 +7526,33 @@ setup_masq()
 		    progress_message "   To $destination $displayproto from $network through ${interface}"
 		fi
 	    done
+	elif [ -n "$detectinterface" ]; then
+	    cat >> $RESTOREBASE << __EOF__
+
+networks ="\$(get_routed_networks $detectinterface)"
+
+[ -z "\$networks" ] && fatal_error "Unable to determine the routes through interface \"$detectinterface\""
+
+for network in \$networks; do
+__EOF__
+	    for destnet in $(separate_list $destnets); do
+		cat >> $RESTOREBASE << __EOF__
+    $IPTABLES -t nat -A $CHAIN -s \$network $(dest_ip_range $destnet) $proto $ports $policy -j $target $addrlist
+__EOF__
+	    done
+
+	    if [ -n "$addresses" ]; then
+		message="   To $destination $displayproto from \$network through ${interface} using $addresses"
+	    else
+		message="   To $destination $displayproto from \$network through ${interface}"
+	    fi
+
+	    cat >> $RESTOREBASE << __EOF__
+    progress_message "$message"
+done
+
+__EOF__
+
 	else
 	    if [ $COMMAND != check ]; then
 		for destnet in $(separate_list $destnets); do

@@ -9136,6 +9136,8 @@ if [ -n "$EXPORT" ]; then
 else
     cat >> $RESTOREBASE << __EOF__
 
+. /usr/share/shorewall/functions
+
 if [ ! -f /usr/share/shorewall/version ] || [ \$(cat /usr/share/shorewall/version) != $VERSION ]; then
     error_message "This script requires Shorewall version $VERSION"
     exit 2

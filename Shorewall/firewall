@@ -1578,7 +1578,11 @@ EOF
 
 	    fi
 
-	    ensure_and_save_command "    ip route flush cache"
+	    if [ $COMMAND = compile ]; then
+		save_command "    run_ip route flush cache"
+	    else
+		ensure_and_save_command "    ip route flush cache"
+	    fi
 
 	    save_command "fi"
 	    save_command ""
@@ -2750,16 +2754,36 @@ setup_proxy_arp() {
 	    ;;
 	esac
 
-	if [ $COMMAND != check ]; then
-	    if [ -z "$haveroute" ]; then
-		ensure_and_save_command "[ -n \"\$NOROUTES\" ] || ip route replace $address dev $interface"
-		[ -n "$persistent" ] && haveroute=yes
-	    fi
+	case $COMMAND in
+	    compile)
+		if [ -z "$haveroute" ]; then
+		    save_command "[ -n \"\$NOROUTES\" ] || run_ip route replace $address dev $interface"
+		    [ -n "$persistent" ] && haveroute=yes
+		fi
 
-	    ensure_and_save_command arp -i $external -Ds $address $external pub
+		cat >> $RESTOREBASE << __EOF__
+if ! arp -i $external -Ds $address $external pub; then
+    fatal_error "Command \"arp -i $external -Ds $address $external pub\" failed"
+fi
 
-	    echo $address $interface $external $haveroute >> $STATEDIR/proxyarp
-	fi
+progress_message "   Host $address connected to $interface added to ARP on $external"
+
+__EOF__
+		echo $address $interface $external $haveroute >> $STATEDIR/proxyarp
+		;;
+	    check)
+		;;
+	    *)
+		if [ -z "$haveroute" ]; then
+		    ensure_and_save_command "[ -n \"\$NOROUTES\" ] || ip route replace $address dev $interface"
+		    [ -n "$persistent" ] && haveroute=yes
+		fi
+
+		ensure_and_save_command arp -i $external -Ds $address $external pub
+
+		echo $address $interface $external $haveroute >> $STATEDIR/proxyarp
+		;;
+	esac
 
 	progress_message "   Host $address connected to $interface added to ARP on $external"
     }
@@ -9024,7 +9048,7 @@ compile_firewall() # $1 = File Name
     #
     ensure_and_save_command()
     {
-	echo "$@" >> $RESTOREBASE
+	echo $@ >> $RESTOREBASE
     }
 
     run_and_save_command()
@@ -9138,12 +9162,8 @@ else
 
 . /usr/share/shorewall/functions
 
-if [ ! -f /usr/share/shorewall/version ] || [ \$(cat /usr/share/shorewall/version) != $VERSION ]; then
-    error_message "This script requires Shorewall version $VERSION"
-    exit 2
-fi
-
 __EOF__
+
 fi
 
 cat >> $RESTOREBASE << __EOF__
@@ -9238,6 +9258,18 @@ LOGFORMAT="$LOGFORMAT"
 RESTOREFILE="$RESTOREFILE"
 
 STOPPING=
+
+__EOF__
+
+if [ -z "$EXPORT" ]; then
+    cat >> $RESTOREBASE << __EOF__
+if [ ! -f /usr/share/shorewall/version ] || [ \$(cat /usr/share/shorewall/version) != $VERSION ]; then
+    error_message "This script requires Shorewall version $VERSION"
+    exit 2
+fi
+__EOF__
+fi
+cat >> $RESTOREBASE << __EOF__
 
 load_kernel_modules
 

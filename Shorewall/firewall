@@ -2132,8 +2132,11 @@ stop_firewall() {
 		    # We must purge iptables to be sure that there are no
 		    # references to ipsets
 		    #
-		    iptables -F
-		    iptables -X
+		    for table in mangle nat filter; do
+			iptables -t $table -F
+			iptables -t $table -X
+		    done
+
 		    ${RESTOREPATH}-ipsets
 		fi
 
@@ -9184,8 +9187,11 @@ stop_firewall()
 	    # We must purge iptables to be sure that there are no
 	    # references to ipsets
 	    #
-	    iptables -F
-	    iptables -X
+	    for table in nat mangle filter; do
+		iptables -t \$table -F
+		iptables -t \$table -X
+	    done
+
 	    \${RESTOREPATH}-ipsets
 	fi
 

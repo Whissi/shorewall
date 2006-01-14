@@ -5569,12 +5569,28 @@ add_nat_rule() {
 	    addr=
 	    ;;
 	detect)
-	    addr=
+	    eval interfaces=\$${source}_interfaces
+
 	    if [ -n "$DETECT_DNAT_IPADDRS" -a "$source" != "$FW" ]; then
-		eval interfaces=\$${source}_interfaces
-		for interface in $interfaces; do
-		    addr=${addr:+$addr,}$(find_first_interface_address $interface)
-		done
+
+		if [ $COMMAND = generate ]; then
+		    save_command ""
+		    if [ $(list_count1 $interfaces) -eq 1 ]; then
+			save_command "addr=\$(find_first_interface_address $interface)"
+		    else
+			savecomment "addr="
+			for interface in $interfaces; do
+			    cat >> $RESTOREBASE << __EOF__
+addr="\$addr \$(find_first_interface_address $interface)"
+__EOF__
+			done
+		    fi
+		else
+		    addr=
+		    for interface in $interfaces; do
+			addr=${addr:+$addr,}$(find_first_interface_address $interface)
+		    done
+		fi
 	    fi
 	    ;;
 	!*)
@@ -5641,9 +5657,19 @@ add_nat_rule() {
 	    if [ -n "${excludesource}${excludedests}${excludezones}" ]; then
 		build_exclusion_chain chain nat "$excludesource" $excludedests
 
-		for adr in $(separate_list $addr); do
-		    addnatrule $(dnat_chain $source) $cli $proto $multiport $sports $dports $(dest_ip_range $adr) -j $chain
-		done
+		if [ $addr = detect ]; then
+		    ensurenatchain $(dnat_chain $source)
+
+		    cat >> $RESTOREBASE << __EOF__
+
+for adr in \$addr; do
+    $IPTABLES -t nat -A $(fix_bang $(dnat_chain $source) $cli $proto $multiport $sports $dports) -d \$adr -j $chain
+__EOF__
+		else
+		    for adr in $(separate_list $addr); do
+			addnatrule $(dnat_chain $source) $cli $proto $multiport $sports $dports $(dest_ip_range $adr) -j $chain
+		    done
+		fi
 
 		for z in $(separate_list $excludezones); do
 		    eval hosts=\$${z}_hosts
@@ -5659,16 +5685,35 @@ add_nat_rule() {
 		addnatrule $chain $ratelimit $proto -j $target1 # Protocol is necessary for port redirection
 	    else
 		chain=$(dnat_chain $source)
-		for adr in $(separate_list $addr); do
+
+		if [ $addr = detect ]; then
+		    ensurenatchain $chain
+
+		    cat >> $RESTOREBASE << __EOF__
+
+for adr in \$addr; do
+__EOF__
 		    if [ -n "$loglevel" ]; then
-			ensurenatchain $chain
-			log_rule_limit $loglevel $chain $chain $logtarget "$ratelimit" "$logtag" -A -t nat \
-			    $(fix_bang $proto $cli $sports $(dest_ip_range $adr) $multiport $dports)
+			cat >> $RESTOREBASE << __EOF__
+    log_rule_limit $loglevel $chain $chain $logtarget "$ratelimit" "$logtag" -A -t nat $(fix_bang $proto $cli $sports $multiport $dports) -d \$adr
+__EOF__
 		    fi
 
-		    addnatrule $chain $proto $ratelimit $cli $sports \
-			-d $adr $multiport $dports -j $target1
-		done
+		    cat >> $RESTOREBASE << __EOF__
+    $IPTABLES -t nat -A $chain $(fix_bang $proto $ratelimit $cli $sports $multiport $dports) -d \$adr -j $target1
+__EOF__
+		else
+		    for adr in $(separate_list $addr); do
+			if [ -n "$loglevel" ]; then
+			    ensurenatchain $chain
+			    log_rule_limit $loglevel $chain $chain $logtarget "$ratelimit" "$logtag" -A -t nat \
+				$(fix_bang $proto $cli $sports $(dest_ip_range $adr) $multiport $dports)
+			fi
+
+			addnatrule $chain $proto $ratelimit $cli $sports \
+			    -d $adr $multiport $dports -j $target1
+		    done
+		fi
 	    fi
 	fi
     fi
@@ -5968,15 +6013,23 @@ process_rule() # $1 = target
 			for serv1 in $(separate_list $serv); do
 			    for srv in $(firewall_ip_range $serv1); do
 				if [ -n "$addr" -a -n "$CONNTRACK_MATCH" ]; then
-				    for adr in $(separate_list $addr); do
-					if [ -n "$loglevel" -a -z "$natrule" ]; then
-					    log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A -m conntrack --ctorigdst $adr \
-						$user $(fix_bang $proto $sports $multiport $cli $(dest_ip_range $srv) $dports) $state
-					fi
+				    if [ "$addr" = detect ]; then
+					cat >> $RESTOREBASE << __EOF__
+    $IPTABLES -A $chain $state $proto $ratelimit $multiport $cli $sports $(dest_ip_range $srv) $dports -m conntrack --ctorigdst \$adr $user -j $target
+done
 
-					run_iptables2 -A $chain $state $proto $ratelimit $multiport $cli $sports \
-					    $(dest_ip_range $srv) $dports -m conntrack --ctorigdst $adr $user -j $target
-				    done
+__EOF__
+				    else
+					for adr in $(separate_list $addr); do
+					    if [ -n "$loglevel" -a -z "$natrule" ]; then
+						log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A -m conntrack --ctorigdst $adr \
+						    $user $(fix_bang $proto $sports $multiport $cli $(dest_ip_range $srv) $dports) $state
+					    fi
+
+					    run_iptables2 -A $chain $state $proto $ratelimit $multiport $cli $sports \
+						$(dest_ip_range $srv) $dports -m conntrack --ctorigdst $adr $user -j $target
+					done
+				    fi
 				else
 				    if [ -n "$loglevel" -a -z "$natrule" ]; then
 					log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $user \
@@ -7144,25 +7197,6 @@ rules_chain() # $1 = source zone, $2 = destination zone
 }
 
 #
-#  echo the list of networks routed out of a given interface
-#
-get_routed_networks() # $1 = interface name
-{
-    local address
-    local rest
-
-    ip route show dev $1 2> /dev/null |
-	while read address rest; do
-	    if [ "x$address" = xdefault ]; then
-		error_message "WARNING: default route ignored on interface $1"
-	    else
-		[ "$address" = "${address%/*}" ] && address="${address}/32"
-		echo $address
-	    fi
-        done
-}
-
-#
 # Set up Routing
 #
 setup_routes()
@@ -7406,7 +7440,7 @@ setup_masq()
 		    elif [ -n "$detectinterface" ]; then
 			cat >> $RESTOREBASE << __EOF__
 
-networks ="\$(get_routed_networks $detectinterface)"
+networks="\$(get_routed_networks $detectinterface)"
 
 [ -z "\$networks" ] && fatal_error "Unable to determine the routes through interface \"$detectinterface\""
 
@@ -7444,7 +7478,7 @@ __EOF__
 			elif [ -n "$detectinterface" ]; then
 			    cat >> $RESTOREBASE << __EOF__
 
-networks ="\$(get_routed_networks $detectinterface)"
+networks="\$(get_routed_networks $detectinterface)"
 
 [ -z "\$networks" ] && fatal_error "Unable to determine the routes through interface \"$detectinterface\""
 
@@ -7529,7 +7563,7 @@ __EOF__
 	elif [ -n "$detectinterface" ]; then
 	    cat >> $RESTOREBASE << __EOF__
 
-networks ="\$(get_routed_networks $detectinterface)"
+networks="\$(get_routed_networks $detectinterface)"
 
 [ -z "\$networks" ] && fatal_error "Unable to determine the routes through interface \"$detectinterface\""
 
@@ -7537,7 +7571,7 @@ for network in \$networks; do
 __EOF__
 	    for destnet in $(separate_list $destnets); do
 		cat >> $RESTOREBASE << __EOF__
-    $IPTABLES -t nat -A $CHAIN -s \$network $(dest_ip_range $destnet) $proto $ports $policy -j $target $addrlist
+    $IPTABLES -t nat -A $chain -s \$network $(dest_ip_range $destnet) $proto $ports $policy -j $target $addrlist
 __EOF__
 	    done
 
@@ -9892,8 +9926,6 @@ do_initialize() {
     ROUTE_FILTER=$(added_param_value_no ROUTE_FILTER $ROUTE_FILTER)
     LOG_MARTIANS=$(added_param_value_no LOG_MARTIANS $LOG_MARTIANS)
     DETECT_DNAT_IPADDRS=$(added_param_value_no DETECT_DNAT_IPADDRS $DETECT_DNAT_IPADDRS)
-    [ -n "$DETECT_DNAT_IPADDRS" -a -n "$EXPORT" ] && \
-	startup_error "DETECT_DNAT_IPADDRS=Yes not allowed with the -e run-line option"
     FORWARDPING=$(added_param_value_no FORWARDPING $FORWARDPING)
     [ -n "$FORWARDPING" ] && \
 	startup_error "FORWARDPING=Yes is no longer supported"

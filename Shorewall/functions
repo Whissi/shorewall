@@ -119,16 +119,20 @@ expandv() # $* = list of variable names
 fix_bang() {
     local i;
 
-    for i in $@; do
-	case $i in
-	    !*)
-		echo "! ${i#!}"
-		;;
-	    *)
-		echo $i
-		;;
-	esac
-    done
+    if [ $COMMAND = generate ]; then
+	echo $@ | sed 's/!/! /g'
+    else
+	for i in $@; do
+	    case $i in
+		!*)
+		    echo "! ${i#!}"
+		    ;;
+		*)
+		    echo $i
+		    ;;
+	    esac
+	done
+    fi
 }
 
 #
@@ -905,6 +909,25 @@ find_first_interface_address() # $1 = interface
 find_interface_addresses() # $1 = interface
 {
     ip -f inet addr show $1 | grep inet | sed 's/inet //;s/\/.*//;s/ peer.*//'
+}
+
+#
+#  echo the list of networks routed out of a given interface
+#
+get_routed_networks() # $1 = interface name
+{
+    local address
+    local rest
+
+    ip route show dev $1 2> /dev/null |
+	while read address rest; do
+	    if [ "x$address" = xdefault ]; then
+		error_message "WARNING: default route ignored on interface $1"
+	    else
+		[ "$address" = "${address%/*}" ] && address="${address}/32"
+		echo $address
+	    fi
+        done
 }
 
 #

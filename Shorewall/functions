@@ -119,20 +119,16 @@ expandv() # $* = list of variable names
 fix_bang() {
     local i;
 
-    if [ $COMMAND = compile ]; then
-	echo $@ | sed 's/!/! /g'
-    else
-	for i in $@; do
-	    case $i in
-		!*)
-		    echo "! ${i#!}"
-		    ;;
-		*)
-		    echo $i
-		    ;;
-	    esac
-	done
-    fi
+    for i in $@; do
+	case $i in
+	    !*)
+		echo "! ${i#!}"
+		;;
+	    *)
+		echo $i
+		;;
+	esac
+    done
 }
 
 #

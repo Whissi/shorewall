@@ -156,14 +156,6 @@ do_iptables() {
 }
 
 #
-# Run iptables quietly -- we define this so that it may be overloaded in the compiler
-#
-qt_iptables() {
-    $IPTABLES $@
-}
-
-
-#
 # Run iptables and if an error occurs, stop the firewall and quit
 #
 run_iptables() {
@@ -231,19 +223,6 @@ run_tc() {
     if ! tc $@ ; then
 	if [ -z "$STOPPING" ]; then
 	    error_message "ERROR: Command \"tc $@\" Failed"
-	    stop_firewall
-	    exit 2
-	fi
-    fi
-}
-
-#
-# Run ipset and if an error occurs, stop the firewall and quit
-#
-run_ipset() {
-    if ! ipset $@ ; then
-	if [ -z "$STOPPING" ]; then
-	    error_message "ERROR: Command \"ipset $@\" Failed"
 	    stop_firewall
 	    exit 2
 	fi
@@ -1313,7 +1292,7 @@ setup_providers()
 	    default|nexthop)
 		;;
 	    *)
-		ip route add table $number \$net \$route"
+		run_ip route add table $number \$net \$route"
 		;;
 	esac
     done
@@ -1341,7 +1320,7 @@ __EOF__
 	    *)
 		case \$(find_device \$route) in
 		    `echo $copy\) | sed 's/ /|/g'`
-			ip route add table $number \$net \$route
+			run_ip route add table $number \$net \$route
 			;;
 		esac
 		;;
@@ -1406,8 +1385,8 @@ __EOF__
     gateway=\$(detect_gateway $interface)
 
     if [ -n "\$gateway" ]; then
-	ip route replace \$gateway src \$(find_first_interface_address $interface) dev $interface table $number
-	ip route add default via \$gateway dev $interface table $number
+	run_ip route replace \$gateway src \$(find_first_interface_address $interface) dev $interface table $number
+	run_ip route add default via \$gateway dev $interface table $number
     else
 	fatal_error "Unable to detect the gateway through interface $interface"
     fi
@@ -1433,10 +1412,18 @@ __EOF__
 
 	    eval ${table}_mark=$mark
 
-	    if [ $COMMAND != check ]; then
-		run_and_save_command "    qt ip rule del fwmark $mark"
-		ensure_and_save_command "    ip rule add fwmark $mark pref $((10000 + $mark)) table $number"
-	    fi
+	    case $COMMAND in
+		check)
+		    ;;
+		compile)
+		    save_command "    qt ip rule del fwmark $mark"
+		    save_command "    run_ip rule add fwmark $mark pref $((10000 + $mark)) table $number"
+		    ;;
+		*)
+		    run_and_save_command "    qt ip rule del fwmark $mark"
+		    ensure_and_save_command "    ip rule add fwmark $mark pref $((10000 + $mark)) table $number"
+		    ;;
+	    esac
 	fi
 
 	loose=
@@ -1493,7 +1480,7 @@ __EOF__
         qt ip rule del from \$address
         pref=\$((20000 + \$rulenum * 1000 + $number ))
         rulenum=\$((\$rulenum + 1))
-        ip rule add from \$address pref \$pref table $number
+        run_ip rule add from \$address pref \$pref table $number
     done
 
 __EOF__
@@ -1555,7 +1542,7 @@ __EOF__
 		case $COMMAND in
 		    compile)
 			if [ -n "$balance" ]; then
-			    save_command "    ip route replace default scope global \$DEFAULT_ROUTE"
+			    save_command "    run_ip route replace default scope global \$DEFAULT_ROUTE"
 			    save_command "    progress_message Default route \$DEFAULT_ROUTE Added"
 			fi
 			;;
@@ -2021,7 +2008,7 @@ process_routestopped() # $1 = command
     for host in $hosts; do
 	interface=${host%:*}
 	networks=${host#*:}
-	do_iptables $1 INPUT  -i $interface $(source_ip_range $networks) -j ACCEPT
+	run_iptables $1 INPUT  -i $interface $(source_ip_range $networks) -j ACCEPT
 	[ -z "$ADMINISABSENTMINDED" -o $COMMAND != stop ] && \
 	    run_iptables $1 OUTPUT -o $interface $(dest_ip_range $networks) -j ACCEPT
 
@@ -2122,7 +2109,7 @@ stop_firewall() {
     case $COMMAND in
 	stop|clear)
 	    ;;
-	check)
+	check|compile)
 	    kill $$
 	    exit 2
 	    ;;
@@ -2949,7 +2936,7 @@ blob=\$(ip link show $interface 2> /dev/null)
 ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet //; s/brd //; s/scope.*//;' | while read address broadcast; do
     address=\${address%/*}
     if [ -n "\$broadcast" ]; then
-	$IPTABLES -t $MACLIST_TABLE -A $chain -s \$address -d \$broadcast -j RETURN
+	run_iptables -t $MACLIST_TABLE -A $chain -s \$address -d \$broadcast -j RETURN
     fi
 done
 
@@ -3301,6 +3288,17 @@ setup_traffic_shaping()
     mtu=1500
     r2q=10
 
+    ensure_and_save_tc() {
+	run_tc $@
+
+	if [ $COMMAND != compile ]; then
+	    #
+	    # compile_command()'s version of run_tc does the save
+	    #
+	    save_command tc $@
+	fi
+    }
+
     rate_to_kbit() {
 	local rateunit rate
 	rate=$1
@@ -3431,10 +3429,10 @@ setup_traffic_shaping()
 	defmark=$(get_defmark_for_dev $device)
 	run_and_save_command qt tc qdisc del dev $device root
 	run_and_save_command qt tc qdisc del dev $device ingress
-	ensure_and_save_command tc qdisc add dev $device root handle $devnum: htb default 1$defmark
-	ensure_and_save_command tc class add dev $device parent $devnum: classid $devnum:1 htb rate $outband
-	ensure_and_save_command tc qdisc add dev $device handle ffff: ingress
-	ensure_and_save_command tc filter add dev $device parent ffff: protocol ip prio 50 u32 match ip src 0.0.0.0/0 police rate ${inband} burst 10k drop flowid :1
+	ensure_and_save_tc qdisc add dev $device root handle $devnum: htb default 1$defmark
+	ensure_and_save_tc class add dev $device parent $devnum: classid $devnum:1 htb rate $outband
+	ensure_and_save_tc qdisc add dev $device handle ffff: ingress
+	ensure_and_save_tc filter add dev $device parent ffff: protocol ip prio 50 u32 match ip src 0.0.0.0/0 police rate ${inband} burst 10k drop flowid :1
 	eval $(chain_base $device)_devnum=$devnum
 	devnum=$(($devnum + 1))
     }
@@ -3467,21 +3465,21 @@ setup_traffic_shaping()
 
 	[ -n "$devnum" ] || fatal_error "Device $device not defined in $devfile"
 
-	ensure_and_save_command tc class add dev $device parent $devnum:1 classid $classid htb rate $rate ceil $ceil prio $prio quantum $(calculate_quantum $rate)
-	ensure_and_save_command tc qdisc add dev $device parent $classid handle 1$mark: sfq perturb 10
+	ensure_and_save_tc class add dev $device parent $devnum:1 classid $classid htb rate $rate ceil $ceil prio $prio quantum $(calculate_quantum $rate)
+	ensure_and_save_tc qdisc add dev $device parent $classid handle 1$mark: sfq perturb 10
 	# add filters
 	if [ -n "$CLASSIFY_TARGET" ]; then
 	    run_iptables -t mangle -A tcpost -o $device -m mark --mark $mark -j CLASSIFY --set-class $classid
 	else
-	    ensure_and_save_command tc filter add dev $device protocol ip parent $devnum:0 prio 1 handle $mark fw classid $classid
+	    ensure_and_save_tc filter add dev $device protocol ip parent $devnum:0 prio 1 handle $mark fw classid $classid
 	fi
 	#options
-	list_search "tcp-ack" $options && ensure_and_save_command tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip protocol 6 0xff match u8 0x05 0x0f at 0 match u16 0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid $classid
-	list_search "tos-minimize-delay" $options && ensure_and_save_command tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos 0x10 0xff flowid $classid
-	list_search "tos-minimize-cost" $options && ensure_and_save_command tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos 0x02 0xff flowid $classid
-	list_search "tos-maximize-troughput" $options && ensure_and_save_command tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos 0x08 0xff flowid $classid
-	list_search "tos-minimize-reliability" $options && ensure_and_save_command tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos 0x04 0xff flowid $classid
-	list_search "tos-normal-service" $options && ensure_and_save_command tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos 0x00 0xff flowid $classid
+	list_search "tcp-ack" $options && ensure_and_save_tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip protocol 6 0xff match u8 0x05 0x0f at 0 match u16 0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid $classid
+	list_search "tos-minimize-delay" $options && ensure_and_save_tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos 0x10 0xff flowid $classid
+	list_search "tos-minimize-cost" $options && ensure_and_save_tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos 0x02 0xff flowid $classid
+	list_search "tos-maximize-troughput" $options && ensure_and_save_tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos 0x08 0xff flowid $classid
+	list_search "tos-minimize-reliability" $options && ensure_and_save_tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos 0x04 0xff flowid $classid
+	list_search "tos-normal-service" $options && ensure_and_save_tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos 0x00 0xff flowid $classid
 	# tcp
     }
 
@@ -5288,7 +5286,7 @@ __EOF__
 			    esac
 
 			    cat >> $RESTOREBASE << __EOF__
-    $IPTABLES -A $xchain -d \$address -j DROP
+    run_iptables -A $xchain -d \$address -j DROP
 done
 
 __EOF__
@@ -5343,7 +5341,7 @@ __EOF__
 			    esac
 
 			    cat >> $RESTOREBASE << __EOF__
-    $IPTABLES -A $xchain -d \$address -j
+    run_iptables -A $xchain -d \$address -j
 done
 
 __EOF__
@@ -5663,7 +5661,7 @@ __EOF__
 		    cat >> $RESTOREBASE << __EOF__
 
 for adr in \$addr; do
-    $IPTABLES -t nat -A $(fix_bang $(dnat_chain $source) $cli $proto $multiport $sports $dports) -d \$adr -j $chain
+    run_iptables -t nat -A $(fix_bang $(dnat_chain $source) $cli $proto $multiport $sports $dports) -d \$adr -j $chain
 __EOF__
 		else
 		    for adr in $(separate_list $addr); do
@@ -5700,7 +5698,7 @@ __EOF__
 		    fi
 
 		    cat >> $RESTOREBASE << __EOF__
-    $IPTABLES -t nat -A $chain $(fix_bang $proto $ratelimit $cli $sports $multiport $dports) -d \$adr -j $target1
+    run_iptables -t nat -A $chain $(fix_bang $proto $ratelimit $cli $sports $multiport $dports) -d \$adr -j $target1
 __EOF__
 		else
 		    for adr in $(separate_list $addr); do
@@ -6015,7 +6013,7 @@ process_rule() # $1 = target
 				if [ -n "$addr" -a -n "$CONNTRACK_MATCH" ]; then
 				    if [ "$addr" = detect ]; then
 					cat >> $RESTOREBASE << __EOF__
-    $IPTABLES -A $chain $state $proto $ratelimit $multiport $cli $sports $(dest_ip_range $srv) $dports -m conntrack --ctorigdst \$adr $user -j $target
+    run_iptables -A $chain $state $proto $ratelimit $multiport $cli $sports $(dest_ip_range $srv) $dports -m conntrack --ctorigdst \$adr $user -j $target
 done
 
 __EOF__
@@ -7445,7 +7443,7 @@ networks="\$(get_routed_networks $detectinterface)"
 [ -z "\$networks" ] && fatal_error "Unable to determine the routes through interface \"$detectinterface\""
 
 for network in \$networks; do
-    $IPTABLES -t nat -A $chain -s \$network $proto $ports $policy -j $newchain
+    run_iptables -t nat -A $chain -s \$network $proto $ports $policy -j $newchain
 done
 
 __EOF__
@@ -7486,7 +7484,7 @@ for network in \$networks; do
 __EOF__
 			    for destnet in $(separate_list $destnets); do
 				cat >> $RESTOREBASE << __EOF__
-    $IPTABLES -t nat -A $chain -s \$network $(dest_ip_range $destnet) $proto $sports $policy -j $netchain
+    run_iptables -t nat -A $chain -s \$network $(dest_ip_range $destnet) $proto $sports $policy -j $netchain
 __EOF__
 			    done
 			    cat >> $RESTOREBASE << __EOF__
@@ -7571,7 +7569,7 @@ for network in \$networks; do
 __EOF__
 	    for destnet in $(separate_list $destnets); do
 		cat >> $RESTOREBASE << __EOF__
-    $IPTABLES -t nat -A $chain -s \$network $(dest_ip_range $destnet) $proto $ports $policy -j $target $addrlist
+    run_iptables -t nat -A $chain -s \$network $(dest_ip_range $destnet) $proto $ports $policy -j $target $addrlist
 __EOF__
 	    done
 
@@ -7998,10 +7996,10 @@ initialize_netfilter () {
     if [ -f $f ]; then
 	progress_message2 "Processing $f ..."
 	save_progress_message "Restoring IPSETS..."
-	run_and_save_command "ipset -U :all: :all:"
-	run_and_save_command "run_ipset -F"
-	run_and_save_command "run_ipset -X"
-	run_and_save_command "run_ipset -R < $f"
+	ensure_and_save_command "ipset -U :all: :all:"
+	ensure_and_save_command "ipset -F"
+	ensure_and_save_command "ipset -X"
+	ensure_and_save_command "ipset -R < $f"
     fi
 
     run_user_exit continue
@@ -8086,7 +8084,7 @@ add_common_rules() {
 	    cat >> $RESTOREBASE << __EOF__
 
 ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet.*brd //; s/scope.*//;' | sort -u | while read address; do
-    $IPTABLES -A reject -d \$address -j DROP
+    run_iptables -A reject -d \$address -j DROP
 done
 
 __EOF__
@@ -8111,7 +8109,7 @@ __EOF__
     log_rule $SMURF_LOG_LEVEL smurfs DROP -s \$address
 __EOF__
 	cat >> $RESTOREBASE << __EOF__
-    $IPTABLES -A smurfs -s \$address -j DROP
+    run_iptables -A smurfs -s \$address -j DROP
 done
 
 __EOF__
@@ -9039,6 +9037,12 @@ compile_firewall() # $1 = File Name
     }
 
     qt_iptables() {
+	#
+	# Purge the temporary files that we use to prevent duplicate '-m' specifications
+	#
+	[ -n "$BRIDGING" ]      && [ -f $TMP_DIR/physdev ] && rm -f $TMP_DIR/physdev
+	[ -n "$IPRANGE_MATCH" ] && [ -f $TMP_DIR/iprange ] && rm -f $TMP_DIR/iprange
+
 	save_command qt $IPTABLES $@
     }
 
@@ -9070,12 +9074,12 @@ compile_firewall() # $1 = File Name
 	[ -n "$BRIDGING" ]      && [ -f $TMP_DIR/physdev ] && rm -f $TMP_DIR/physdev
 	[ -n "$IPRANGE_MATCH" ] && [ -f $TMP_DIR/iprange ] && rm -f $TMP_DIR/iprange
 
-	save_command $IPTABLES $@
+	save_command run_iptables $@
 
     }
 
     run_iptables2() {
-	run_iptables $(fix_bang $@)
+	save_command run_iptables $(fix_bang $@)
     }
 
     run_ip() {
@@ -9087,16 +9091,16 @@ compile_firewall() # $1 = File Name
     }
 
     run_tc() {
-	save_command tc $@
-    }
-
-    run_ipset() {
-	save_command ipset $@
+	save_command run_tc $@
     }
 
     deletechain() # $1 = name of chain
     {
 	save_command "qt $IPTABLES -L $1 -n && qt $IPTABLES -F $1 && qt $IPTABLES -X $1"
+    }
+
+    fix_bang() {
+	echo $@ | sed 's/!/! /g'
     }
     #
     # END OVERLOADED FUNCTIONS
@@ -9133,7 +9137,8 @@ else
     cat >> $RESTOREBASE << __EOF__
 
 if [ ! -f /usr/share/shorewall/version ] || [ \$(cat /usr/share/shorewall/version) != $VERSION ]; then
-    fatal_error "This script requires Shorewall version $VERSION"
+    error_message "This script requires Shorewall version $VERSION"
+    exit 2
 fi
 
 __EOF__
@@ -9143,18 +9148,72 @@ cat >> $RESTOREBASE << __EOF__
 
 stop_firewall()
 {
+    set +x
+
+    [ -n "\${RESTOREFILE:=restore}" ]
+
+    RESTOREPATH=/var/lib/shorewall/$RESTOREFILE
+
+    if [ -x \$RESTOREPATH ]; then
+
+	if [ -x \${RESTOREPATH}-ipsets ]; then
+	    progress_message2 Restoring Ipsets...
+	    #
+	    # We must purge iptables to be sure that there are no
+	    # references to ipsets
+	    #
+	    iptables -F
+	    iptables -X
+	    \${RESTOREPATH}-ipsets
+	fi
+
+	echo Restoring Shorewall...
+
+	if \$RESTOREPATH; then
+	    echo "Shorewall restored from \$RESTOREPATH"
+	    set_state "Started"
+	else
+	    set_state "Unknown"
+	fi
+    elif [ -x /sbin/shorewall ]; then
+	/sbin/shorewall stop
+    fi
+
+    kill \$\$
     exit 2
 }
 
 fatal_error()
 {
     echo "   ERROR: \$@" >&2
+    stop_firewall
     exit 2
 }
 
 run_iptables()
 {
-    $IPTABLES \$@
+    if ! $IPTABLES \$@; then
+	error_message "ERROR: Command \"$IPTABLES \$@\" Failed"
+	stop_firewall
+	exit 2
+    fi
+}
+
+run_ip()
+{
+    if ! ip \$@; then
+	error_message "ERROR: Command \"ip \$@\" Failed"
+	stop_firewall
+	exit 2
+    fi
+}
+
+run_tc() {
+    if ! tc \$@ ; then
+	error_message "ERROR: Command \"tc \$@\" Failed"
+	stop_firewall
+	exit 2
+    fi
 }
 
 __EOF__
@@ -9174,6 +9233,8 @@ LOGLIMIT="$LOGLIMIT"
 LOGTAGONLY="$LOGTAGONLY"
 LOGRULENUMBERS="$LOGRULENUMBERS"
 LOGFORMAT="$LOGFORMAT"
+RESTOREFILE="$RESTOREFILE"
+
 STOPPING=
 
 load_kernel_modules

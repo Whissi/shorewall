@@ -64,14 +64,15 @@ New Features:
 
 	shorewall [ -q ] [ -e ] compile [ <config directory> ] <script file>
 
-    WARNING: The generated script HAS ABSOLUTELY NO ERROR CHECKING so if there
-             are errors in your configuration files that result in errors when
-             the script is run then you may not be able to access your firewall
-             or your firewall may have security holes.
+    The generated script contains error checking and will terminate if an
+    important command fails. Before terminating:
 
-    Given the above warning, I recommend that you use 'generate' when making
-    simple changes to your configuration but that you continue to use 'restart'
-    for complex changes.
+    a) The script will check for the existence of the restore script specified
+       by the RESTOREFILE variable in shorewall.conf. If that restore script
+       exists, it is executed.
+
+    b) If the restore script doesn't exist but Shorewall appears to be installed
+       on the system, an "/sbin/shorewall stop" command is executed.
 
     Some additional considerations:
 
@@ -80,7 +81,7 @@ New Features:
        limitations.
 
        1) The same version of Shorewall must be running on the remote system
-          unless you use the "-e" option.
+          unless you use the "-e" option when you compile the script.
        2) The 'detectnets' interface option is not allowed.
 
     b) If you have extension scripts, they may need modification. The scripts

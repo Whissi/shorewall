@@ -119,7 +119,7 @@ expandv() # $* = list of variable names
 fix_bang() {
     local i;
 
-    if [ $COMMAND = generate ]; then
+    if [ $COMMAND = compile ]; then
 	echo $@ | sed 's/!/! /g'
     else
 	for i in $@; do

@@ -61,7 +61,7 @@ my_mutex_off() {
 fatal_error() # $* = Error Message
 {
     echo "   ERROR: $@" >&2
-    if [ $COMMAND = check -o $COMMAND = generate ]; then
+    if [ $COMMAND = check -o $COMMAND = compile ]; then
 	[ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
     else
 	stop_firewall
@@ -1229,7 +1229,7 @@ validate_interfaces_file() {
 		dhcp|tcpflags|arp_filter|routefilter|maclist|logmartians|sourceroute|blacklist|proxyarp|nosmurfs|upnp|-)
 		    ;;
 		norfc1918)
-		    if [ $COMMAND = generate ]; then
+		    if [ $COMMAND = compile ]; then
 			cat >> $RESTOREBASE << __EOF__
 
 addr=\$(ip -f inet addr show $interface 2> /dev/null | grep inet | head -n1)
@@ -1306,7 +1306,7 @@ setup_providers()
     local table number mark duplicate interface gateway options provider address copy route loose addresses rulenum pref echobin=$(mywhich echo) balance
 
     copy_table() {
-	if [ $COMMAND = generate ]; then
+	if [ $COMMAND = compile ]; then
 	    cat >> $RESTOREBASE << __EOF__
     ip route show table $duplicate | while read net route; do
 	case \$net in
@@ -1332,7 +1332,7 @@ __EOF__
     }
 
     copy_and_edit_table() {
-	if [ $COMMAND = generate ]; then
+	if [ $COMMAND = compile ]; then
 	    cat >> $RESTOREBASE << __EOF__
     ip route show table $duplicate | while read net route; do
 	case \$net in
@@ -1401,7 +1401,7 @@ __EOF__
 	fi
 
 	if [ "x$gateway" = xdetect ] ; then
-	    if [ $COMMAND = generate ]; then
+	    if [ $COMMAND = compile ]; then
 		cat >> $RESTOREBASE << __EOF__
     gateway=\$(detect_gateway $interface)
 
@@ -1420,7 +1420,7 @@ __EOF__
 	fi
 
 	case $COMMAND in
-	    check|generate)
+	    check|compile)
 		;;
 	    *)
 		ensure_and_save_command "    ip route replace $gateway src $(find_first_interface_address $interface) dev $interface table $number"
@@ -1455,7 +1455,7 @@ __EOF__
 		    ;;
 		balance=*)
 		    balance=yes
-		    if [ $COMMAND = generate ]; then
+		    if [ $COMMAND = compile ]; then
 			save_command "    DEFAULT_ROUTE=\"\$DEFAULT_ROUTE nexthop via \$gateway dev $interface weight ${option#*=}\""
 		    else
 			DEFAULT_ROUTE="$DEFAULT_ROUTE nexthop via $gateway dev $interface weight ${option#*=}"
@@ -1463,7 +1463,7 @@ __EOF__
 		    ;;
 		balance)
 		    balance=yes
-		    if [ $COMMAND = generate ]; then
+		    if [ $COMMAND = compile ]; then
 			save_command "    DEFAULT_ROUTE=\"\$DEFAULT_ROUTE nexthop via \$gateway dev $interface weight 1\""
 		    else
 			DEFAULT_ROUTE="$DEFAULT_ROUTE nexthop via $gateway dev $interface weight 1"
@@ -1483,7 +1483,7 @@ __EOF__
 	case $COMMAND in
 	    check)
 		;;
-	    generate)
+	    compile)
 		if [ -z "$loose" ]; then
 		    cat >> $RESTOREBASE << __EOF__
 
@@ -1530,7 +1530,7 @@ __EOF__
 	    progress_message2 "Processing $1..."
 	    save_progress_message "Adding Providers..."
 	    save_command "if [ -z \"\$NOROUTES\" ]; then"
-	    [ $COMMAND = generate ] && save_command "    DEFAULT_ROUTE="
+	    [ $COMMAND = compile ] && save_command "    DEFAULT_ROUTE="
 	else
 	    progress_message2 "Validating $1..."
 	fi
@@ -1541,7 +1541,7 @@ __EOF__
 	    add_a_provider
 	    PROVIDERS="$PROVIDERS $table"
 	    case $COMMAND in
-		generate)
+		compile)
 		    progress_message "   Provider $provider comipled"
 		    ;;
 		*)
@@ -1553,7 +1553,7 @@ __EOF__
 	if [ $COMMAND != check ]; then
 	    if [ -n "$PROVIDERS" ]; then
 		case $COMMAND in
-		    generate)
+		    compile)
 			if [ -n "$balance" ]; then
 			    save_command "    ip route replace default scope global \$DEFAULT_ROUTE"
 			    save_command "    progress_message Default route \$DEFAULT_ROUTE Added"
@@ -1849,7 +1849,7 @@ find_broadcasts() {
     for interface in $ALL_INTERFACES; do
 	eval bcast=\$$(chain_base $interface)_broadcast
 	if [ "x$bcast" = "xdetect" ]; then
-	    if [ $COMMAND != generate ]; then
+	    if [ $COMMAND != compile ]; then
 		ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet.*brd //; s/scope.*//;' | sort -u
 	    fi
 	elif [ "x${bcast}" != "x-" ]; then
@@ -1862,7 +1862,7 @@ find_broadcasts() {
 # Find interfaces with BROADCAST=detect -- Only returns information if we are compiling a script
 #
 find_bcastdetect_interfaces() {
-    if [ $COMMAND = generate ]; then
+    if [ $COMMAND = compile ]; then
 	for interface in $ALL_INTERFACES; do
 	    eval bcast=\$$(chain_base $interface)_broadcast
 	    [ "x$bcast" = "xdetect" ] && echo $interface
@@ -2938,7 +2938,7 @@ setup_mac_lists() {
 
 	[ -n "$MACLIST_TTL" ] && chain=$(macrecent_target $interface) || chain=$(mac_chain $interface)
 
-	if [ $COMMAND = generate ]; then
+	if [ $COMMAND = compile ]; then
 	    cat >> $RESTOREBASE << __EOF__
 
 blob=\$(ip link show $interface 2> /dev/null)
@@ -3044,19 +3044,19 @@ delete_proxy_arp() {
     if [ -f /var/lib/shorewall/proxyarp ]; then
 	while read address interface external haveroute; do
 	    run_and_save_command "qt arp -i $external -d $address pub"
-	    if [ $COMMAND = generate ]; then
+	    if [ $COMMAND = compile ]; then
 		[ -z "$haveroute" ] && save_command "qt ip route del $address dev $interface"
 	    else
 		[ -z "${haveroute}${NOROUTES}" ] && qt ip route del $address dev $interface
 	    fi
 	done < /var/lib/shorewall/proxyarp
 
-	[ $COMMAND = generate ] || rm -f /var/lib/shorewall/proxyarp
+	[ $COMMAND = compile ] || rm -f /var/lib/shorewall/proxyarp
     fi
 
     [ -d $STATEDIR ] && touch $STATEDIR/proxyarp
 
-    if [ $COMMAND = generate ]; then
+    if [ $COMMAND = compile ]; then
 	cat >> $RESTOREBASE << __EOF__
 
 for f in /proc/sys/net/ipv4/conf/*; do
@@ -3158,7 +3158,7 @@ delete_nat() {
     run_iptables -t nat -F
     run_iptables -t nat -X
 
-    if [ $COMMAND = generate ]; then
+    if [ $COMMAND = compile ]; then
 	[ -d $STATEDIR ] && touch $STATEDIR/nat
 
 	cat >> $RESTOREBASE << __EOF__
@@ -3501,7 +3501,7 @@ setup_traffic_shaping()
 		tcdev="$device $inband $outband"
 		add_root_tc
 		case $COMMAND in
-		    generate)
+		    compile)
 			progress_message "   TC Device $tcdev Compiled."
 			;;
 		    *)
@@ -3520,7 +3520,7 @@ setup_traffic_shaping()
 		options=$(separate_list $options | tr '[A-Z]' '[a-z]')
 		add_tc_class
 		case $COMMAND in
-		    generate)
+		    compile)
 			progress_message "   TC Class $tcdev Compiled."
 			;;
 		    *)
@@ -3802,7 +3802,7 @@ process_tc_rule()
     done
 
     case $COMMAND in
-	generate)
+	compile)
 	    progress_message "   TC Rule \"$rule\" compiled"
 	    ;;
 	*)
@@ -3884,7 +3884,7 @@ delete_tc()
 
     run_user_exit tcclear
 
-    if [ $COMMAND = generate ]; then
+    if [ $COMMAND = compile ]; then
 	cat >> $RESTOREBASE << __EOF__
 ip link list | while read inx interface details; do
     case \$inx in
@@ -4131,7 +4131,7 @@ process_accounting_rule() {
     if do_iptables -A $chain $(fix_bang $rule) ; then
 	[ -n "$rule2" ] && run_iptables2 -A $jumpchain $rule2
 	case $COMMAND in
-	    generate)
+	    compile)
 		progress_message "   Accounting rule" $action $chain $source $dest $proto $port $sport $user Compiled
 		save_progress_message_short "   Accounting rule $action $chain $source $dest $proto $port $sport $user Added"
 		;;
@@ -4152,7 +4152,7 @@ setup_accounting() # $1 = Name of accounting file
 
     progress_message2 "Setting up Accounting..."
 
-    [ $COMMAND = generate ] && save_progress_message "Setting up Accounting..."
+    [ $COMMAND = compile ] && save_progress_message "Setting up Accounting..."
 
     strip_file accounting $1
 
@@ -4750,7 +4750,7 @@ process_action() # $1 = chain    (Chain to add the rules to)
 	check)
 	    progress_message "   Rule \"$rule\" checked."
 	    ;;
-	generate)
+	compile)
 	    progress_message "   Rule \"$rule\" compiled."
 	    save_progress_message_short "   Rule \"$rule\" added."
 	    ;;
@@ -5248,7 +5248,7 @@ process_actions3() {
 	xlevel=$2
 	xtag=$3
 
-	[ $COMMAND = generate ] && save_progress_message "Creating action chain $xaction1"
+	[ $COMMAND = compile ] && save_progress_message "Creating action chain $xaction1"
 
 	#
 	# Handle Builtin actions
@@ -5573,7 +5573,7 @@ add_nat_rule() {
 
 	    if [ -n "$DETECT_DNAT_IPADDRS" -a "$source" != "$FW" ]; then
 
-		if [ $COMMAND = generate ]; then
+		if [ $COMMAND = compile ]; then
 		    save_command ""
 		    if [ $(list_count1 $interfaces) -eq 1 ]; then
 			save_command "addr=\$(find_first_interface_address $interface)"
@@ -6516,7 +6516,7 @@ __EOF__
 	check)
 	    progress_message "   Rule \"$rule\" checked."
 	    ;;
-	generate)
+	compile)
 	    progress_message "   Rule \"$rule\" compiled."
 	    save_progress_message_short "   Rule \"$rule\" added."
 	    ;;
@@ -6961,7 +6961,7 @@ process_tos_rule() {
     done
 
     case $COMMAND in
-	generate)
+	compile)
 	    progress_message "   Rule \"$rule\" compiled."
 	    ;;
 	*)
@@ -7334,7 +7334,7 @@ setup_masq()
 	*.*.*|+*|!+*)
 	    ;;
 	*)
-	    if [ $COMMAND = generate ]; then
+	    if [ $COMMAND = compile ]; then
 		detectinterface=$networks
 		networks=
 	    else
@@ -7952,7 +7952,7 @@ initialize_netfilter () {
 
     progress_message2 "Deleting user chains..."
 
-    [ $COMMAND = generate ] && save_progress_message "Deleting user chains..."
+    [ $COMMAND = compile ] && save_progress_message "Deleting user chains..."
 
     exists_INPUT=Yes
     exists_OUTPUT=Yes
@@ -8018,7 +8018,7 @@ initialize_netfilter () {
 	run_and_save_command disable_ipv6
     fi
 
-    [ $COMMAND = generate ] && save_progress_message "Enabling Loopback and DNS Lookups"
+    [ $COMMAND = compile ] && save_progress_message "Enabling Loopback and DNS Lookups"
 
     #
     # Enable the Loopback interface for now
@@ -8045,7 +8045,7 @@ initialize_netfilter () {
     if [ -f /var/lib/shorewall/save ]; then
 	progress_message2 "Setting up dynamic rules..."
 
-	[ $COMMAND = generate ] && save_progress_message "Restoring dynamic rules..."
+	[ $COMMAND = compile ] && save_progress_message "Restoring dynamic rules..."
 
 	if [ -f /var/lib/shorewall/save ]; then
 	    while read target ignore1 ignore2 address rest; do
@@ -8064,7 +8064,7 @@ initialize_netfilter () {
 
     progress_message2 "Creating Interface Chains..."
 
-    [ $COMMAND = generate ] && save_progress_message "Creating Interface Chains..."
+    [ $COMMAND = compile ] && save_progress_message "Creating Interface Chains..."
 
     for interface in $ALL_INTERFACES; do
 	createchain $(forward_chain $interface) no
@@ -8099,7 +8099,7 @@ __EOF__
     #
     # Populate the smurf chain
     #
-    [ $COMMAND = generate ] && save_progress_message "Setting up SMURF control..."
+    [ $COMMAND = compile ] && save_progress_message "Setting up SMURF control..."
 
     for interface in $(find_bcastdetect_interfaces); do
 	cat >> $RESTOREBASE << __EOF__
@@ -8162,7 +8162,7 @@ __EOF__
     #
     # Process Black List
     #
-    [ $COMMAND = generate ] && save_progress_message "Setting up Black List..."
+    [ $COMMAND = compile ] && save_progress_message "Setting up Black List..."
 
     setup_blacklist
 
@@ -8175,7 +8175,7 @@ __EOF__
 
 	progress_message2 "Adding Anti-smurf Rules"
 
-	[ $COMMAND = generate ] && save_progress_message "Adding Anti-smurf Jumps..."
+	[ $COMMAND = compile ] && save_progress_message "Adding Anti-smurf Jumps..."
 
 	for host in $hosts; do
 	    ipsec=${host%^*}
@@ -8198,7 +8198,7 @@ __EOF__
 
 	progress_message2 "Adding rules for DHCP"
 
-	[ $COMMAND = generate ] && save_progress_message "Setting up rules for DHCP..."
+	[ $COMMAND = compile ] && save_progress_message "Setting up rules for DHCP..."
 
 	for interface in $interfaces; do
 	    if [ -n "$BRIDGING" ]; then
@@ -8218,7 +8218,7 @@ __EOF__
     if [ -n "$hosts" ]; then
 	progress_message2 "Enabling RFC1918 Filtering"
 
-	[ $COMMAND = generate ] && save_progress_message "Setting up RFC1918 Filtering..."
+	[ $COMMAND = compile ] && save_progress_message "Setting up RFC1918 Filtering..."
 
 	strip_file rfc1918
 
@@ -8311,7 +8311,7 @@ __EOF__
     if [ -n "$hosts" ]; then
 	progress_message2 "Setting up TCP Flags checking..."
 
-	[ $COMMAND = generate ] && save_progress_message "Setting up TCP Flags checking..."
+	[ $COMMAND = compile ] && save_progress_message "Setting up TCP Flags checking..."
 
 	createchain tcpflags no
 
@@ -8516,7 +8516,7 @@ __EOF__
     if [ -n "$interfaces" ]; then
 	progress_message2 "Setting up UPnP..."
 
-	[ $COMMAND = generate ] && save_progress_message "Setting up UPnP..."
+	[ $COMMAND = compile ] && save_progress_message "Setting up UPnP..."
 
 	createnatchain UPnP
 
@@ -10068,7 +10068,7 @@ do_initialize() {
 # Give Usage Information
 #
 usage() {
-    echo "Usage: $0 [debug] {start|stop|reset|restart|refresh|clear|generate <filename>}"
+    echo "Usage: $0 [debug] {start|stop|reset|restart|refresh|clear|{generate|compile} <filename>}"
     exit 1
 }
 
@@ -10186,7 +10186,7 @@ case "$COMMAND" in
     compile|generate)
 	[ $# -ne 2 ] && usage
 	do_initialize
-	COMMAND=generate
+	COMMAND=compile
 	compile_firewall $2
 	;;
 

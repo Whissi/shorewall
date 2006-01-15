@@ -8023,7 +8023,7 @@ initialize_netfilter () {
     if [ -f $f ]; then
 	progress_message2 "Processing $f ..."
 	save_progress_message "Restoring IPSETS..."
-	ensure_and_save_command "ipset -U :all: :all:"
+	run_and_save_command "ipset -U :all: :all:"
 	ensure_and_save_command "ipset -F"
 	ensure_and_save_command "ipset -X"
 	ensure_and_save_command "ipset -R < $f"
@@ -8998,7 +8998,7 @@ define_firewall() # $1 = Command (Start or Restart)
 
     if [ -n "$ALIASES_TO_ADD" ]; then
 	progress_message2 "Adding IP Addresses..."
-	add_ip_aliases
+	add_ip_aliases $ALIASES_TO_ADD
     fi
 
     for file in chains nat proxyarp zones; do
@@ -9357,8 +9357,9 @@ __EOF__
     save_progress_message "Activating Rules..."
     activate_rules
 
-    [ -n "$ALIASES_TO_ADD" ] && \
-	progress_message2 "Adding IP Addresses..." &&       add_ip_aliases
+    if [ -n "$ALIASES_TO_ADD" ]; then
+	save_command add_ip_aliases $ALIASES_TO_ADD
+    fi
 
     for file in chains nat proxyarp zones; do
 	append_file $file

@@ -3656,6 +3656,11 @@ process_tc_rule()
 	    esac
 	fi
 
+	if [ "x${length:=-}" != "x-" ]; then
+		[ -n "$LENGTH_MATCH" ] || fatal_error "Your kernel and/or iptables does not have length match support. Rule: \"$rule\""
+		r="${r}-m length --length ${length} "
+	fi
+
 	multiport=
 
 	case $proto in
@@ -3853,9 +3858,9 @@ setup_tc1() {
     #
     strip_file tcrules
 
-    while read mark sources dests proto ports sports user testval; do
-	expandv mark sources dests proto ports sports user testval
-	rule=$(echo "$mark $sources $dests $proto $ports $sports $user $testval")
+    while read mark sources dests proto ports sports user testval length; do
+	expandv mark sources dests proto ports sports user testval length
+	rule=$(echo "$mark $sources $dests $proto $ports $sports $user $testval $length")
 	process_tc_rule
     done < $TMP_DIR/tcrules
     #
@@ -4320,9 +4325,9 @@ refresh_tc() {
         #
         strip_file tcrules
 
-	while read mark sources dests proto ports sports user testval; do
-	    expandv mark sources dests proto ports sports user testval
-	    rule=$(echo "$mark $sources $dests $proto $ports $sports $user $testval")
+	while read mark sources dests proto ports sports user testval length; do
+	    expandv mark sources dests proto ports sports user testval length
+	    rule=$(echo "$mark $sources $dests $proto $ports $sports $user $testval $length")
 	    process_tc_rule
         done < $TMP_DIR/tcrules
     else

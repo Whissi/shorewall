@@ -970,6 +970,7 @@ determine_capabilities() {
     CONNMARK_MATCH=
     RAW_TABLE=
     IPP2P_MATCH=
+    LENGTH_MATCH=
     CLASSIFY_TARGET=
     ENHANCED_REJECT=
 
@@ -984,6 +985,7 @@ determine_capabilities() {
     qt $IPTABLES -A fooX1234 -m owner --uid-owner 0 -j ACCEPT                           && OWNER_MATCH=Yes
     qt $IPTABLES -A fooX1234 -m connmark --mark 2  -j ACCEPT                            && CONNMARK_MATCH=Yes
     qt $IPTABLES -A fooX1234 -p tcp -m ipp2p --ipp2p -j ACCEPT                          && IPP2P_MATCH=Yes
+    qt $IPTABLES -A fooX1234 -m length --length 10:20 -j ACCEPT                         && LENGTH_MATCH=Yes
     qt $IPTABLES -A fooX1234 -j REJECT --reject-with icmp-host-prohibited               && ENHANCED_REJECT=Yes
 
     qt $IPTABLES -t mangle -N fooX1234
@@ -1032,6 +1034,7 @@ report_capabilities() {
 	report_capability "Packet Type Match" $USEPKTTYPE
 	report_capability "Policy Match" $POLICY_MATCH
 	report_capability "Physdev Match" $PHYSDEV_MATCH
+	report_capability "Packet length Match" $LENGTH_MATCH
 	report_capability "IP range Match" $IPRANGE_MATCH
 	report_capability "Recent Match" $RECENT_MATCH
 	report_capability "Owner Match" $OWNER_MATCH

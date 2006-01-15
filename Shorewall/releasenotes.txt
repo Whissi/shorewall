@@ -26,10 +26,18 @@ Note to users upgrading from Shorewall 2.x or 3.0
    Please see the "Migration Considerations" below for additional upgrade
    information.
 
-Problems corrected in 3.1.0
+Changes in 3.1.2
 
-1) If /etc/shorewall/ipsets exists, it is processed during [re]start but not
-   during 'shorewall restore'.
+1) With the execption of 'detectnets', the restrictions on remote compilation
+   (compile on one system and execute on nother) have been removed. It is
+   doubtful that the 'detectnets' restriction will ever be lifted.
+
+2) The compiled script now contains the same error checking as would be done
+   during "shorewall [re]start" -- if an error occurs, a 'restore' or 'stop'
+   is done (requires that Shorewall be installed on the target system).
+
+3) The '-e' option now follows "compile" or "generate" on the command line
+   (it is specific to those commands).
 
 Migration Considerations:
 
@@ -39,7 +47,7 @@ New Features:
 
 1)  A new 'shorewall generate' command has been added.
 
-	shorewall [ -q ] [ -e ] generate [ <config directory> ] <script file>
+	shorewall generate [ -q ] [ -e ] [ <config directory> ] <script file>
 
     where:
 
@@ -62,7 +70,7 @@ New Features:
 
     'compile' is a synonym for 'generate':
 
-	shorewall [ -q ] [ -e ] compile [ <config directory> ] <script file>
+	shorewall compile [ -q ] [ -e ] [ <config directory> ] <script file>
 
     The generated script contains error checking and will terminate if an
     important command fails. Before terminating:

@@ -2514,7 +2514,7 @@ setup_tunnels() # $1 = name of tunnels file
 		addrule ${FW}2${z} -p $protocol $p -j ACCEPT
 		addrule ${z}2${FW} -p $protocol $p -j ACCEPT
 	    else
-		error_message "Warning: Invalid gateway zone ($z)" \
+		error_message "WARNING: Invalid gateway zone ($z)" \
 		" -- Tunnel \"$tunnel\" may encounter problems"
 	    fi
 	done
@@ -2566,12 +2566,12 @@ setup_tunnels() # $1 = name of tunnels file
 		    setup_one_generic $gateway $kind $z1
 		    ;;
 		*)
-		    error_message "Tunnels of type $kind are not supported:" \
+		    error_message "WARNING: Tunnels of type $kind are not supported:" \
 			"Tunnel \"$tunnel\" Ignored"
 		    ;;
 	    esac
 	else
-	    error_message "Invalid gateway zone ($z)" \
+	    error_message "ERROR: Invalid gateway zone ($z)" \
 		" -- Tunnel \"$tunnel\" Ignored"
 	fi
     done < $TMP_DIR/tunnels
@@ -5983,8 +5983,8 @@ process_rule() # $1 = target
 	case "$logtarget" in
 	    ACCEPT|DROP|REJECT|CONTINUE)
 		if [ -z "$proto" -a -z "$cli" -a -z "$serv" -a -z "$servport" -a -z "$user" -a -z "$excludesource" -a -z "$excludedest" ] ; then
-		    error_message "Warning -- Rule \"$rule\" is a POLICY"
-		    error_message "	       -- and should be moved to the policy file"
+		    error_message "WARNING -- Rule \"$rule\" is a POLICY"
+		    error_message "	   -- and should be moved to the policy file"
 		fi
 		;;
 	    REDIRECT)
@@ -9270,7 +9270,7 @@ __EOF__
 if [ -z "$EXPORT" ]; then
     cat >> $RESTOREBASE << __EOF__
 if [ ! -f /usr/share/shorewall/version ] || [ \$(cat /usr/share/shorewall/version) != $VERSION ]; then
-    error_message "This script requires Shorewall version $VERSION"
+    error_message "ERROR: This script requires Shorewall version $VERSION"
     exit 2
 fi
 __EOF__
@@ -9280,6 +9280,8 @@ cat >> $RESTOREBASE << __EOF__
 load_kernel_modules
 
 __EOF__
+
+    my_mutex_on
 
     progress_message2 "Initializing..."
     save_progress_message "Initializing..."
@@ -9462,7 +9464,7 @@ add_to_zone() # $1...${n-1} = <interface>[:<hosts>] $n = zone
 	[ -n "$IPRANGE_MATCH" ] && [ -f $TMP_DIR/iprange ] && rm -f $TMP_DIR/iprange
 
 	if ! $IPTABLES $@ ; then
-	    error_message "Can't add $newhost to zone $zone"
+	    error_message "ERROR: Can't add $newhost to zone $zone"
 	fi
     }
 
@@ -9716,7 +9718,7 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		    fi
 		done
 
-		[ -n "$found" ] || error_message "Warning: $host does not appear to be in zone $zone"
+		[ -n "$found" ] || error_message "WARNING: $host does not appear to be in zone $zone"
 	    done
 
 	    for h in $temp; do

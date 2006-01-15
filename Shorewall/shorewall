@@ -502,18 +502,18 @@ help()
 #
 usage() # $1 = exit status
 {
-    echo "Usage: $(basename $0) [debug|trace] [nolock] [ -x ] [ -q ] [ -f ] [ -v ] [ -n ] [ -e ] <command>"
+    echo "Usage: $(basename $0) [debug|trace] [nolock] [ -x ] [ -q ] [ -f ] [ -v ] [ -n ] <command>"
     echo "where <command> is one of:"
     echo "   add <interface>[:<host-list>] ... <zone>"
     echo "   allow <address> ..."
     echo "   check [ <directory> ]"
     echo "   clear"
-    echo "   compile [ <directory name> ] <file name>"
+    echo "   compile  [ -e ] [ -p ] [ <directory name> ] <file name>"
     echo "   delete <interface>[:<host-list>] ... <zone>"
     echo "   drop <address> ..."
     echo "   dump"
     echo "   forget [ <file name> ]"
-    echo "   generate [ <directory name> ] <file name>"
+    echo "   generate  [ -e ] [-p ] [ <directory name> ] <file name>"
     echo "   help [ <command > | host | address ]"
     echo "   hits"
     echo "   ipcalc { <address>/<vlsm> | <address> <netmask> }"
@@ -844,28 +844,66 @@ case "$1" in
 	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $1
 	;;
     compile|generate)
+	shift
+
+	done=0
+
+	while [ $done -eq 0 ]; do
+	    [ $# -eq 0 ] && usage 1
+	    option=$1
+	    case $option in
+		-*)
+		    option=${option#-}
+
+		    [ -z "$option" ] && usage 1
+
+		    while [ -n "$option" ]; do
+			case $option in
+			    e*)
+				EXPORT=Yes
+				option=${option#e}
+				;;
+			    q*)
+				QUIET=$(($QUIET + 1 ))
+				option=${option#q}
+				;;
+			    p*)
+				exportPROGRAM=Yes
+				option=${option#p}
+				;;
+			    *)
+				usage 1
+				;;
+			esac
+		    done
+		    shift
+		    ;;
+		*)
+		    done=1
+		    ;;
+	    esac
+	done
+
 	file=
+
 	case $# in
 	    1)
-		usage 1
+		file=$1
 		;;
 	    2)
-		file=$2
-		;;
-	    3)
 		[ -n "$SHOREWALL_DIR" ] && usage 2
 
-		if [ ! -d $2 ]; then
-		    if [ -e $2 ]; then
-			echo "$2 is not a directory" >&2 && exit 2
+		if [ ! -d $1 ]; then
+		    if [ -e $1 ]; then
+			echo "$1 is not a directory" >&2 && exit 2
 		    else
-			echo "Directory $2 does not exist" >&2 && exit 2
+			echo "Directory $1 does not exist" >&2 && exit 2
 		    fi
 		fi
 
-		SHOREWALL_DIR=$2
+		SHOREWALL_DIR=$1
 		export SHOREWALL_DIR
-		file=$3
+		file=$2
 		;;
 	    *)
 		usage 1

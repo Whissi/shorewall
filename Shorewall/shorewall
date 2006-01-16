@@ -966,9 +966,13 @@ case "$1" in
 
 	export NOROUTES
 
+	[ -n "$nolock" ] || mutex_on
+
 	if $SHOREWALL_SHELL $FIREWALL $debugging $nolock compile /var/lib/shorewall/.reload; then
-	   $0 $(make_quiet) restore .reload
+	   $0 $(make_quiet) restore nolock .reload
 	fi
+
+	[ -n "$nolock" ] || mutex_off
 	;;
     add|delete)
 	[ $# -lt 3 ] && usage 1

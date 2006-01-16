@@ -47,14 +47,6 @@
 #		      the corresponding function in that file if the user did
 #		      not specify "nolock" on the runline.
 #
-my_mutex_on() {
-    [ -n "$nolock" ] || { mutex_on; HAVE_MUTEX=Yes; }
-}
-
-my_mutex_off() {
-    [ -n "$HAVE_MUTEX" ] && { mutex_off; HAVE_MUTEX=; }
-}
-
 #
 # Fatal error -- stops the firewall after issuing the error message
 #
@@ -9209,7 +9201,7 @@ stop_firewall()
 	    set_state "Unknown"
 	fi
     elif [ -x /sbin/shorewall ]; then
-	/sbin/shorewall stop
+	/sbin/shorewall nolock stop
     fi
 
     kill \$\$

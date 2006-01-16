@@ -1,1 +1,1 @@
-This is the Shorewall stable 3.0 branch of CVS.
+This is the Shorewall Development 3.2 branch of CVS.

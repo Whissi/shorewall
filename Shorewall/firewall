@@ -8990,6 +8990,45 @@ run_tc() {
     fi
 }
 
+stop_firewall() {
+
+    [ -n "${RESTOREFILE:=restore}" ]
+
+    RESTOREPATH=/var/lib/shorewall/$RESTOREFILE
+
+    if [ -x $RESTOREPATH ]; then
+
+	if [ -x ${RESTOREPATH}-ipsets ]; then
+	    progress_message2 Restoring Ipsets...
+	    #
+	    # We must purge iptables to be sure that there are no
+	    # references to ipsets
+	    #
+	    for table in mangle nat filter; do
+		iptables -t $table -F
+		iptables -t $table -X
+	    done
+
+	    ${RESTOREPATH}-ipsets
+	fi
+
+	echo Restoring Shorewall...
+
+	if $RESTOREPATH; then
+	    echo "Shorewall restored from $RESTOREPATH"
+	    set_state "Started"
+	else
+	    set_state "Unknown"
+	fi
+    elif [ -x /sbin/shorewall ]; then
+	/sbin/shorewall nolock stop
+    fi
+
+    kill $$
+    exit 2
+}
+
+
 __EOF__
     f=$(find_file params)
 

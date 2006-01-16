@@ -868,7 +868,7 @@ case "$1" in
 				option=${option#q}
 				;;
 			    p*)
-				exportPROGRAM=Yes
+				export PROGRAM=Yes
 				option=${option#p}
 				;;
 			    *)
@@ -1094,7 +1094,7 @@ case "$1" in
 
 	if [ -f /var/lib/shorewall/state ]; then
 	    state="$(cat /var/lib/shorewall/state)"
-	    case $state in
+	    case \$state in
 		Stopped*|Clear*)
 		    status=3
 		    ;;

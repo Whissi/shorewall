@@ -48,6 +48,15 @@
 #		      not specify "nolock" on the runline.
 #
 #
+my_mutex_on() {
+    [ -n "$nolock" ] || { mutex_on; HAVE_MUTEX=Yes; }
+}
+
+my_mutex_off() {
+    [ -n "$HAVE_MUTEX" ] && { mutex_off; HAVE_MUTEX=; }
+}
+
+#
 # Fatal error -- stops the firewall after issuing the error message
 #
 fatal_error() # $* = Error Message
@@ -447,14 +456,6 @@ addnatrule() # $1 = chain name, remainder of arguments specify the rule
 {
     ensurenatchain $1
     run_iptables2 -t nat -A $@
-}
-
-#
-# Delete a chain if it exists
-#
-deletechain() # $1 = name of chain
-{
-    qt $IPTABLES -L $1 -n && qt $IPTABLES -F $1 && qt $IPTABLES -X $1
 }
 
 #
@@ -2093,231 +2094,6 @@ disable_critical_hosts()
 }
 
 #
-# Stop the Firewall
-#
-stop_firewall() {
-    #
-    # Turn off trace unless we were tracing "stop" or "clear"
-    #
-
-    [ -n "$RESTOREBASE" ] && rm -f $RESTOREBASE
-
-    case $COMMAND in
-	stop|clear)
-	    ;;
-	check|compile)
-	    kill $$
-	    exit 2
-	    ;;
-	*)
-	    set +x
-
-	    [ -n "${RESTOREFILE:=restore}" ]
-
-	    RESTOREPATH=/var/lib/shorewall/$RESTOREFILE
-
-	    if [ -x $RESTOREPATH ]; then
-
-		if [ -x ${RESTOREPATH}-ipsets ]; then
-		    progress_message2 Restoring Ipsets...
-		    #
-		    # We must purge iptables to be sure that there are no
-		    # references to ipsets
-		    #
-		    for table in mangle nat filter; do
-			iptables -t $table -F
-			iptables -t $table -X
-		    done
-
-		    ${RESTOREPATH}-ipsets
-		fi
-
-		echo Restoring Shorewall...
-
-		if $RESTOREPATH; then
-		    echo "Shorewall restored from $RESTOREPATH"
-		    set_state "Started"
-		else
-		    set_state "Unknown"
-		fi
-
-		my_mutex_off
-		kill $$
-		exit 2
-	    fi
-	    ;;
-    esac
-
-    set_state "Stopping"
-
-    STOPPING="Yes"
-
-    TERMINATOR=
-
-    deletechain shorewall
-
-    run_user_exit stop
-
-    if [ -n "$MANGLE_ENABLED" ]; then
-	run_iptables -t mangle -F
-	run_iptables -t mangle -X
-	for chain in PREROUTING INPUT FORWARD POSTROUTING; do
-	    qt $IPTABLES -t mangle -P $chain ACCEPT
-	done
-    fi
-
-    if [ -n "$RAW_TABLE" ]; then
-	run_iptables -t raw -F
-	run_iptables -t raw -X
-	for chain in PREROUTING OUTPUT; do
-	    qt $IPTABLES -t raw -P $chain ACCEPT
-	done
-    fi
-
-    if [ -n "$NAT_ENABLED" ]; then
-	delete_nat
-	for chain in PREROUTING POSTROUTING OUTPUT; do
-	    qt $IPTABLES -t nat -P $chain ACCEPT
-	done
-    fi
-
-    delete_proxy_arp
-    [ -n "$CLEAR_TC" ] && delete_tc1
-
-    [ -n "$DISABLE_IPV6" ] && disable_ipv6
-
-    process_criticalhosts
-
-    if [ -n "$CRITICALHOSTS" ]; then
-	if [ -z "$ADMINISABSENTMINDED" ]; then
-	    for chain in INPUT OUTPUT; do
-		setpolicy $chain ACCEPT
-	    done
-
-	    setpolicy FORWARD DROP
-
-	    deleteallchains
-
-	    enable_critical_hosts
-
-	    for chain in INPUT OUTPUT; do
-		setpolicy $chain DROP
-	    done
-	else
-	    for chain in INPUT OUTPUT; do
-		setpolicy $chain ACCEPT
-	    done
-
-	    setpolicy FORWARD DROP
-
-	    deleteallchains
-
-	    enable_critical_hosts
-
-	    setpolicy INPUT DROP
-
-	    for chain in INPUT FORWARD; do
-		setcontinue $chain
-	    done
-	fi
-    elif [ -z "$ADMINISABSENTMINDED" ]; then
-	for chain in INPUT OUTPUT FORWARD; do
-	    setpolicy $chain DROP
-	done
-
-	deleteallchains
-    else
-	for chain in INPUT FORWARD; do
-	    setpolicy $chain DROP
-	done
-
-	setpolicy OUTPUT ACCEPT
-
-	deleteallchains
-
-	for chain in INPUT FORWARD; do
-	    setcontinue $chain
-	done
-    fi
-
-    process_routestopped -A
-
-    $IPTABLES -A INPUT  -i lo -j ACCEPT
-    [ -z "$ADMINISABSENTMINDED" ] && \
-	$IPTABLES -A OUTPUT -o lo -j ACCEPT
-
-    for interface in $(find_interfaces_by_option dhcp); do
-	$IPTABLES -A INPUT  -p udp -i $interface --dport 67:68 -j ACCEPT
-	[ -z "$ADMINISABSENTMINDED" ] && \
-	    $IPTABLES -A OUTPUT -p udp -o $interface --dport 67:68 -j ACCEPT
-	#
-	# This might be a bridge
-	#
-	$IPTABLES -A FORWARD -p udp -i $interface -o $interface --dport 67:68 -j ACCEPT
-    done
-
-    case "$IP_FORWARDING" in
-    [Oo][Nn])
-	echo 1 > /proc/sys/net/ipv4/ip_forward
-	progress_message2 "IP Forwarding Enabled"
-	;;
-    [Oo][Ff][Ff])
-	echo 0 > /proc/sys/net/ipv4/ip_forward
-	progress_message2 "IP Forwarding Disabled!"
-	;;
-    esac
-
-    run_user_exit stopped
-
-    set_state "Stopped"
-
-    logger "Shorewall Stopped"
-
-    rm -rf $TMP_DIR
-
-    case $COMMAND in
-    stop|clear)
-	;;
-    *)
-	#
-	# The firewall is being stopped when we were trying to do something
-	# else. Remove the lock file and Kill the shell in case we're in a
-	# subshell
-	#
-	my_mutex_off
-	kill $$
-	;;
-    esac
-}
-
-#
-# Remove all rules and remove all user-defined chains
-#
-clear_firewall() {
-    stop_firewall
-
-    setpolicy INPUT ACCEPT
-    setpolicy FORWARD ACCEPT
-    setpolicy OUTPUT ACCEPT
-
-    run_iptables -F
-
-    echo 1 > /proc/sys/net/ipv4/ip_forward
-
-    if qt mywhich ip6tables; then
-	ip6tables -P INPUT   ACCEPT 2> /dev/null
-	ip6tables -P OUTPUT  ACCEPT 2> /dev/null
-	ip6tables -P FORWARD ACCEPT 2> /dev/null
-    fi
-
-    run_user_exit clear
-
-    set_state "Cleared"
-
-    logger "Shorewall Cleared"
-}
-
-#
 # Set up ipsec tunnels
 #
 setup_tunnels() # $1 = name of tunnels file
@@ -3049,12 +2825,20 @@ setup_syn_flood_chains()
 delete_proxy_arp() {
     if [ -f /var/lib/shorewall/proxyarp ]; then
 	while read address interface external haveroute; do
-	    run_and_save_command "qt arp -i $external -d $address pub"
-	    if [ $COMMAND = compile ]; then
-		[ -z "$haveroute" ] && save_command "qt ip route del $address dev $interface"
-	    else
-		[ -z "${haveroute}${NOROUTES}" ] && qt ip route del $address dev $interface
-	    fi
+	    case $COMMAND in
+		compile)
+		    save_command "qt arp -i $external -d $address pub"
+		    [ -z "$haveroute" ] && save_command "qt ip route del $address dev $interface"
+		    ;;
+		stop|clear)
+		    qt arp -i $external -d $address pub
+		    [ -z "$haveroute" ] || qt ip route del $address dev $interface
+		    ;;
+		*)
+		    run_and_save_command qt arp -i $external -d $address pub
+		    [ -z "${haveroute}" ] && run_and_save_command "[ -n \"\$NOROUTES\" ] || qt ip route del $address dev $interface"
+		    ;;
+	    esac
 	done < /var/lib/shorewall/proxyarp
 
 	[ $COMMAND = compile ] || rm -f /var/lib/shorewall/proxyarp
@@ -9168,46 +8952,6 @@ fi
 
 cat >> $RESTOREBASE << __EOF__
 
-stop_firewall()
-{
-    set +x
-
-    [ -n "\${RESTOREFILE:=restore}" ]
-
-    RESTOREPATH=/var/lib/shorewall/$RESTOREFILE
-
-    if [ -x \$RESTOREPATH ]; then
-
-	if [ -x \${RESTOREPATH}-ipsets ]; then
-	    progress_message2 Restoring Ipsets...
-	    #
-	    # We must purge iptables to be sure that there are no
-	    # references to ipsets
-	    #
-	    for table in nat mangle filter; do
-		iptables -t \$table -F
-		iptables -t \$table -X
-	    done
-
-	    \${RESTOREPATH}-ipsets
-	fi
-
-	echo Restoring Shorewall...
-
-	if \$RESTOREPATH; then
-	    echo "Shorewall restored from \$RESTOREPATH"
-	    set_state "Started"
-	else
-	    set_state "Unknown"
-	fi
-    elif [ -x /sbin/shorewall ]; then
-	/sbin/shorewall nolock stop
-    fi
-
-    kill \$\$
-    exit 2
-}
-
 fatal_error()
 {
     echo "   ERROR: \$@" >&2
@@ -9222,6 +8966,11 @@ run_iptables()
 	stop_firewall
 	exit 2
     fi
+}
+
+my_mutex_off()
+{
+    true
 }
 
 run_ip()
@@ -9246,11 +8995,12 @@ __EOF__
 
     [ -f $f ] && \
 	save_command ". $(resolve_file $f)"
+
     cat >> $RESTOREBASE << __EOF__
 #
 # These variables are required by the library functions called in this script
 #
-COMMAND=restore
+COMMAND=run
 [ -n \${QUIET:=0} ]
 MODULESDIR="$MODULESDIR"
 MODULE_SUFFIX="$MODULE_SUFFIX"
@@ -9259,24 +9009,42 @@ LOGTAGONLY="$LOGTAGONLY"
 LOGRULENUMBERS="$LOGRULENUMBERS"
 LOGFORMAT="$LOGFORMAT"
 RESTOREFILE="$RESTOREFILE"
+PKTTYPE="$PKTTYPE"
+CLEAR_TC="$CLEAR_TC"
+DISABLE_IPV6="$DISABLE_IPV6"
+CRITICALHOSTS="$CRITICALHOSTS"
+ADMINISABSENTMINDED="$ADMINISABSENTMINDED"
+IP_FORWARDING="$IP_FORWARDING"
+CONFIG_PATH="$CONFIG_PATH"
 
 STOPPING=
+#
+# The library function require the existence of /var/lib/shorewall
+#
+mkdir -p /var/lib/shorewall
+#
+# And they require knowledge of the capabilities
+#
+determine_capabilities
 
 __EOF__
 
-if [ -z "$EXPORT" ]; then
-    cat >> $RESTOREBASE << __EOF__
+    if [ -z "$EXPORT" ]; then
+	cat >> $RESTOREBASE << __EOF__
 if [ ! -f /usr/share/shorewall/version ] || [ \$(cat /usr/share/shorewall/version) != $VERSION ]; then
     error_message "ERROR: This script requires Shorewall version $VERSION"
     exit 2
 fi
-__EOF__
-fi
-cat >> $RESTOREBASE << __EOF__
-
-load_kernel_modules
 
 __EOF__
+    fi
+
+    if [ -n "$PROGRAM" ]; then
+	save_command "define_firewall() {"
+	save_command ""
+    fi
+
+    save_command "load_kernel_modules"
 
     progress_message2 "Initializing..."
     save_progress_message "Initializing..."
@@ -9373,6 +9141,80 @@ __EOF__
     save_command set_state "Started"
 
     run_user_exit started
+
+    if [ -n "$PROGRAM" ]; then
+	cat >> $RESTOREBASE << __EOF__
+}
+
+usage()
+{
+    echo "Usage: \$0 {start|stop|restart|reload|clear|status}"
+    exit 1
+}
+
+[ \$# -ne 1 ] && usage
+
+
+COMMAND="\$1"
+
+case "\$COMMAND" in
+    stop)
+	echo "Stopping Firewall..."
+	stop_firewall
+	echo "done."
+	;;
+
+    start)
+	echo "Starting Firewall..."
+	define_firewall
+	echo "done."
+	;;
+    restart)
+	echo "Restarting Firewall..."
+	define_firewall
+	echo "done."
+	;;
+    reload)
+	echo "Reloading Firewall..."
+	define_firewall
+	echo "done."
+	;;
+    clear)
+	echo "Clearing Firewall..."
+	clear_firewall
+	echo "done."
+	;;
+    status)
+	echo "Firewall Status at \$HOSTNAME - \$(date)"
+	echo
+	if qt iptables -L shorewall -n ; then
+	    echo "Firewall is running"
+	    status=0
+	else
+	    echo "Firewall is stopped"
+	    status=4
+	fi
+
+	if [ -f /var/lib/shorewall/state ]; then
+	    state="\$(cat /var/lib/shorewall/state)"
+	    case $state in
+		Stopped*|Clear*)
+		    status=3
+		    ;;
+	    esac
+	else
+	    state=Unknown
+	fi
+	echo "State:\$state"
+	echo
+	exit \$status
+	;;
+    *)
+	usage
+	;;
+esac
+__EOF__
+    fi
 
     mv -f $RESTOREBASE $outfile
 

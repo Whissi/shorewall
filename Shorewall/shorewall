@@ -629,9 +629,9 @@ NOROUTES=
 EXPORT=
 noroutes=
 
-done=0
+finished=0
 
-while [ $done -eq 0 ]; do
+while [ $finished -eq 0 ]; do
     [ $# -eq 0 ] && usage 1
     option=$1
     case $option in
@@ -681,6 +681,10 @@ while [ $done -eq 0 ]; do
 			NOROUTES=Yes
 			option=${option#n}
 			;;
+		    -)
+			finished=1
+			option=
+			;;
 		    *)
 			usage 1
 			;;
@@ -689,7 +693,7 @@ while [ $done -eq 0 ]; do
 	    shift
 	    ;;
 	*)
-	    done=1
+	    finished=1
             ;;
     esac
 done
@@ -846,9 +850,9 @@ case "$1" in
     compile|generate)
 	shift
 
-	done=0
+	finished=0
 
-	while [ $done -eq 0 ]; do
+	while [ $finished -eq 0 ]; do
 	    [ $# -eq 0 ] && usage 1
 	    option=$1
 	    case $option in
@@ -871,6 +875,10 @@ case "$1" in
 				export PROGRAM=Yes
 				option=${option#p}
 				;;
+			    -)
+				finished=1
+				option=
+				;;
 			    *)
 				usage 1
 				;;
@@ -879,7 +887,7 @@ case "$1" in
 		    shift
 		    ;;
 		*)
-		    done=1
+		    finished=1
 		    ;;
 	    esac
 	done

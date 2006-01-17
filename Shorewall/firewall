@@ -63,6 +63,7 @@ fatal_error() # $* = Error Message
     echo "   ERROR: $@" >&2
     if [ $COMMAND = check -o $COMMAND = compile ]; then
 	[ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
+	[ -n "$RESTOREBASE" ] && rm -f $RESTOREBASE
     else
 	stop_firewall
     fi
@@ -9958,7 +9959,7 @@ do_initialize() {
     [ -n "$TMP_DIR" ] && chmod 700 $TMP_DIR || \
        startup_error "Can't create a temporary directory"
 
-    trap "rm -rf $TMP_DIR; my_mutex_off; exit 2" 1 2 3 4 5 6 9
+    trap "[ -n "$RESTOREBASE" ] && rm -f $RESTOREBASE;rm -rf $TMP_DIR; my_mutex_off; exit 2" 1 2 3 4 5 6 9
 
     ensure_config_path
 

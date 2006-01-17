@@ -200,6 +200,19 @@ resolve_file() # $1 = file name
     esac
 }
 
+##
+# Source a user exit file if it exists
+#
+run_user_exit() # $1 = file name
+{
+    local user_exit=$(find_file $1)
+
+    if [ -f $user_exit ]; then
+	progress_message "Processing $user_exit ..."
+	. $user_exit
+    fi
+}
+
 #
 # Replace commas with spaces and echo the result
 #
@@ -770,6 +783,105 @@ if_match() # $1 = Name in interfaces file - may end in "+"
 }
 
 #
+# Source IP range
+#
+source_ip_range() # $1 = Address or Address Range
+{
+    case $1 in
+	*.*.*.*-*.*.*.*)
+	    case $1 in
+		!*)
+		    iprange_echo "! --src-range ${1#!}"
+		    ;;
+		*)
+		    iprange_echo "--src-range $1"
+		    ;;
+	    esac
+	    ;;
+	!+*)
+	    echo "-m set ! $(get_set_flags ${1#!} src)"
+	    ;;
+	+*)
+	    echo "-m set $(get_set_flags $1 src)"
+	    ;;
+	*)
+	    echo "-s $1"
+	    ;;
+    esac
+}
+
+#
+# Destination IP range
+#
+dest_ip_range() # $1 = Address or Address Range
+{
+    case $1 in
+	*.*.*.*-*.*.*.*)
+	    case $1 in
+		!*)
+		    iprange_echo "! --dst-range ${1#!}"
+		    ;;
+		*)
+		    iprange_echo "--dst-range $1"
+		    ;;
+	    esac
+	    ;;
+	!+*)
+	    echo "-m set ! $(get_set_flags ${1#!} dst)"
+	    ;;
+	+*)
+	    echo "-m set $(get_set_flags $1 dst)"
+	    ;;
+	*)
+	    echo "-d $1"
+	    ;;
+    esac
+}
+
+both_ip_ranges() # $1 = Source address or range, $2 = dest address or range
+{
+    local rangeprefix= setprefix= rangematch= setmatch=
+
+    case $1 in
+	*.*.*.*-*.*.*.*)
+	    rangeprefix="-m iprange"
+	    rangematch="--src-range $1"
+	    ;;
+	!+*)
+	    setprefix="-m set"
+	    setmatch="! $(get_set_flags ${1#!} src)"
+	    ;;
+	+*)
+	    setprefix="-m set"
+	    setmatch="$(get_set_flags $1 src)"
+	    ;;
+	*)
+	    rangematch="-s $1"
+	    ;;
+    esac
+
+    case $2 in
+	*.*.*.*-*.*.*.*)
+	    rangeprefix="-m iprange"
+	    rangematch="$rangematch --dst-range $2"
+	    ;;
+	!+*)
+	    setprefix="-m set"
+	    match="$setmatch ! $(get_set_flags ${2#!} dst)"
+	    ;;
+	+*)
+	    setprefix="-m set"
+	    setmatch="$setmatch $(get_set_flags $2 dst)"
+	    ;;
+	*)
+	    rangematch="$rangematch -d $2"
+	    ;;
+    esac
+
+    echo "$rangeprefix $rangematch $setprefix $setmatch"
+}
+
+#
 # Find the value 'dev' in the passed arguments then echo the next value
 #
 
@@ -1215,6 +1327,28 @@ log_rule() # $1 = log level, $2 = chain, $3 = disposition , $... = predicates fo
     shift 3
 
     log_rule_limit $level $chain $chain $disposition "$LOGLIMIT" "" -A $@
+}
+
+delete_tc1()
+{
+    clear_one_tc() {
+	tc qdisc del dev $1 root 2> /dev/null
+	tc qdisc del dev $1 ingress 2> /dev/null
+
+    }
+
+    run_user_exit tcclear
+
+    run_ip link list | \
+    while read inx interface details; do
+	case $inx in
+	    [0-9]*)
+		clear_one_tc ${interface%:}
+		;;
+	    *)
+		;;
+	esac
+    done
 }
 
 SHOREWALL_LIBRARY=Loaded

@@ -782,105 +782,6 @@ get_set_flags() # $1 = set name and optional [levels], $2 = src or dst
 }
 
 #
-# Source IP range
-#
-source_ip_range() # $1 = Address or Address Range
-{
-    case $1 in
-	*.*.*.*-*.*.*.*)
-	    case $1 in
-		!*)
-		    iprange_echo "! --src-range ${1#!}"
-		    ;;
-		*)
-		    iprange_echo "--src-range $1"
-		    ;;
-	    esac
-	    ;;
-	!+*)
-	    echo "-m set ! $(get_set_flags ${1#!} src)"
-	    ;;
-	+*)
-	    echo "-m set $(get_set_flags $1 src)"
-	    ;;
-	*)
-	    echo "-s $1"
-	    ;;
-    esac
-}
-
-#
-# Destination IP range
-#
-dest_ip_range() # $1 = Address or Address Range
-{
-    case $1 in
-	*.*.*.*-*.*.*.*)
-	    case $1 in
-		!*)
-		    iprange_echo "! --dst-range ${1#!}"
-		    ;;
-		*)
-		    iprange_echo "--dst-range $1"
-		    ;;
-	    esac
-	    ;;
-	!+*)
-	    echo "-m set ! $(get_set_flags ${1#!} dst)"
-	    ;;
-	+*)
-	    echo "-m set $(get_set_flags $1 dst)"
-	    ;;
-	*)
-	    echo "-d $1"
-	    ;;
-    esac
-}
-
-both_ip_ranges() # $1 = Source address or range, $2 = dest address or range
-{
-    local rangeprefix= setprefix= rangematch= setmatch=
-
-    case $1 in
-	*.*.*.*-*.*.*.*)
-	    rangeprefix="-m iprange"
-	    rangematch="--src-range $1"
-	    ;;
-	!+*)
-	    setprefix="-m set"
-	    setmatch="! $(get_set_flags ${1#!} src)"
-	    ;;
-	+*)
-	    setprefix="-m set"
-	    setmatch="$(get_set_flags $1 src)"
-	    ;;
-	*)
-	    rangematch="-s $1"
-	    ;;
-    esac
-
-    case $2 in
-	*.*.*.*-*.*.*.*)
-	    rangeprefix="-m iprange"
-	    rangematch="$rangematch --dst-range $2"
-	    ;;
-	!+*)
-	    setprefix="-m set"
-	    match="$setmatch ! $(get_set_flags ${2#!} dst)"
-	    ;;
-	+*)
-	    setprefix="-m set"
-	    setmatch="$setmatch $(get_set_flags $2 dst)"
-	    ;;
-	*)
-	    rangematch="$rangematch -d $2"
-	    ;;
-    esac
-
-    echo "$rangeprefix $rangematch $setprefix $setmatch"
-}
-
-#
 # Horrible hack to work around an iptables limitation
 #
 physdev_echo()
@@ -1925,19 +1826,6 @@ find_hosts_by_option() # $1 = option
 deleteallchains() {
     run_iptables -F
     run_iptables -X
-}
-
-##
-# Source a user exit file if it exists
-#
-run_user_exit() # $1 = file name
-{
-    local user_exit=$(find_file $1)
-
-    if [ -f $user_exit ]; then
-	progress_message "Processing $user_exit ..."
-	. $user_exit
-    fi
 }
 
 #
@@ -3940,28 +3828,6 @@ __EOF__
 	    esac
 	done
     fi
-}
-
-delete_tc1()
-{
-    clear_one_tc() {
-	tc qdisc del dev $1 root 2> /dev/null
-	tc qdisc del dev $1 ingress 2> /dev/null
-
-    }
-
-    run_user_exit tcclear
-
-    run_ip link list | \
-    while read inx interface details; do
-	case $inx in
-	    [0-9]*)
-		clear_one_tc ${interface%:}
-		;;
-	    *)
-		;;
-	esac
-    done
 }
 
 #
@@ -9047,6 +8913,266 @@ define_firewall() # $1 = Command (Start or Restart)
 }
 
 #
+# Compile a script that will stop the firewall
+#
+# This function is called by compile_firewall() so all of the overloaded functions
+# from that script are available here
+#
+compile_stop_firewall() {
+
+    run_iptables() {
+	#
+	# Purge the temporary files that we use to prevent duplicate '-m' specifications
+	#
+	[ -n "$BRIDGING" ]      && [ -f $TMP_DIR/physdev ] && rm -f $TMP_DIR/physdev
+	[ -n "$IPRANGE_MATCH" ] && [ -f $TMP_DIR/iprange ] && rm -f $TMP_DIR/iprange
+
+	save_command "    $IPTABLES $@"
+
+    }
+
+    cat >> $RESTOREBASE << __EOF__
+
+stop_firewall() {
+
+    detetechain() {
+	qt $IPTABLES -L \$1 -n && qt $IPTABLES -F \$1 && qt $IPTABLES -X \$1
+    }
+
+    deleteallchains() {
+	$IPTABLES -F
+	$IPTABLES -X
+    }
+
+    setpolicy() {
+	$IPTABLES -P $1 $2
+    }
+
+    case \$COMMAND in
+	stop|clear)
+	    ;;
+	*)
+	    set +x
+
+	    [ -n "\${RESTOREFILE:=restore}" ]
+
+	    RESTOREPATH=/var/lib/shorewall/\$RESTOREFILE
+
+	    if [ -x \$RESTOREPATH ]; then
+
+		if [ -x \${RESTOREPATH}-ipsets ]; then
+		    progress_message2 Restoring Ipsets...
+		    #
+		    # We must purge iptables to be sure that there are no
+		    # references to ipsets
+		    #
+		    for table in mangle nat filter; do
+			$IPTABLES -t \$table -F
+			$IPTABLES -t \$table -X
+		    done
+
+		    \${RESTOREPATH}-ipsets
+		fi
+
+		echo Restoring Shorewall...
+
+		if \$RESTOREPATH; then
+		    echo "Shorewall restored from \$RESTOREPATH"
+		    set_state "Started"
+		else
+		    set_state "Unknown"
+		fi
+
+		my_mutex_off
+		kill \$\$
+		exit 2
+	    fi
+	    ;;
+    esac
+
+    set_state "Stopping"
+
+    STOPPING="Yes"
+
+    TERMINATOR=
+
+    deletechain shorewall
+
+    determine_capabilities
+
+    run_user_exit stop
+
+    if [ -n "\$MANGLE_ENABLED" ]; then
+	run_iptables -t mangle -F
+	run_iptables -t mangle -X
+	for chain in PREROUTING INPUT FORWARD POSTROUTING; do
+	    qt $IPTABLES -t mangle -P \$chain ACCEPT
+	done
+    fi
+
+    if [ -n "\$RAW_TABLE" ]; then
+	run_iptables -t raw -F
+	run_iptables -t raw -X
+	for chain in PREROUTING OUTPUT; do
+	    qt $IPTABLES -t raw -P \$chain ACCEPT
+	done
+    fi
+
+    if [ -n "\$NAT_ENABLED" ]; then
+	delete_nat
+	for chain in PREROUTING POSTROUTING OUTPUT; do
+	    qt $IPTABLES -t nat -P \$chain ACCEPT
+	done
+    fi
+
+    if [ -f /var/lib/shorewall/proxyarp ]; then
+	while read address interface external haveroute; do
+	    qt arp -i \$external -d \$address pub
+	    [ -z "\${haveroute}\${NOROUTES}" ] && qt ip route del \$address dev \$interface
+	done < /var/lib/shorewall/proxyarp
+    fi
+
+    for f in /proc/sys/net/ipv4/conf/*; do
+	    [ -f \$f/proxy_arp ] && echo 0 > \$f/proxy_arp
+	done
+    fi
+
+__EOF__
+    [ -n "$CLEAR_TC" ] && save_command "    delete_tc1"
+
+    [ -n "$DISABLE_IPV6" ] && save_command "    disable_ipv6"
+
+    process_criticalhosts
+
+    if [ -n "$CRITICALHOSTS" ]; then
+	if [ -z "$ADMINISABSENTMINDED" ]; then
+	    cat >> $RESTOREBASE << __EOF__
+
+    for chain in INPUT OUTPUT; do
+	setpolicy \$chain ACCEPT
+    done
+
+    setpolicy FORWARD DROP
+
+    deleteallchains
+
+    for host in $CRITICALHOSTS; do
+	interface=\${host%:*}
+	networks=\${host#*:}
+	$IPTABLES -A INPUT  -i \$interface \$(source_ip_range \$networks) -j ACCEPT
+	$IPTABLES -A OUTPUT -o \$interface \$(dest_ip_range \$networks) -j ACCEPT
+    done
+
+    for chain in INPUT OUTPUT; do
+	setpolicy $\chain DROP
+    done
+
+__EOF__
+	else
+	    cat >> $RESTOREBASE << __EOF__
+
+    for chain in INPUT OUTPUT; do
+	setpolicy \$chain ACCEPT
+    done
+
+    setpolicy FORWARD DROP
+
+    deleteallchains
+
+    for host in $CRITICALHOSTS; do
+	interface=\${host%:*}
+	networks=\${host#*:}
+	$IPTABLES -A INPUT  -i \$interface \$(source_ip_range \$networks) -j ACCEPT
+	$IPTABLES -A OUTPUT -o \$interface \$(dest_ip_range \$networks) -j ACCEPT
+    done
+
+    setpolicy INPUT DROP
+
+    for chain in INPUT FORWARD; do
+	setcontinue \$chain
+    done
+
+__EOF__
+	fi
+    elif [ -z "$ADMINISABSENTMINDED" ]; then
+	cat >> $RESTOREBASE << __EOF__
+
+    for chain in INPUT OUTPUT FORWARD; do
+	setpolicy \$chain DROP
+    done
+
+    deleteallchains
+
+__EOF__
+    else
+	cat >> $RESTOREBASE << __EOF__
+
+    for chain in INPUT FORWARD; do
+	setpolicy \$chain DROP
+    done
+
+    setpolicy OUTPUT ACCEPT
+
+    deleteallchains
+
+    for chain in INPUT FORWARD; do
+	setcontinue \$chain
+    done
+
+__EOF__
+    fi
+
+    process_routestopped -A
+
+    $IPTABLES -A INPUT  -i lo -j ACCEPT
+    [ -z "$ADMINISABSENTMINDED" ] && \
+	save_command "$IPTABLES -A OUTPUT -o lo -j ACCEPT"
+
+    for interface in $(find_interfaces_by_option dhcp); do
+	save_command "$IPTABLES -A INPUT  -p udp -i $interface --dport 67:68 -j ACCEPT"
+	[ -z "$ADMINISABSENTMINDED" ] && \
+	    save_command "$IPTABLES -A OUTPUT -p udp -o $interface --dport 67:68 -j ACCEPT"
+	#
+	# This might be a bridge
+	#
+	save_command "$IPTABLES -A FORWARD -p udp -i $interface -o $interface --dport 67:68 -j ACCEPT"
+    done
+
+    case "$IP_FORWARDING" in
+    [Oo][Nn])
+	save_command "    echo 1 > /proc/sys/net/ipv4/ip_forward"
+	save_command "    progress_message2 IP Forwarding Enabled"
+	;;
+    [Oo][Ff][Ff])
+	save_command "    echo 0 > /proc/sys/net/ipv4/ip_forward"
+	save_command "    progress_message2 IP Forwarding Disabled!"
+	;;
+    esac
+
+    cat >> $RESTOREBASE << __EOF__
+    run_user_exit stopped
+
+    set_state "Stopped"
+
+    logger "Shorewall Stopped"
+
+    case \$COMMAND in
+    stop|clear)
+	;;
+    *)
+	#
+	# The firewall is being stopped when we were trying to do something
+	# else. Remove the lock file and Kill the shell in case we're in a
+	# subshell
+	#
+	kill \$\$
+	;;
+    esac
+}
+__EOF__
+}
+
+#
 # Compile a Restore Script
 #
 compile_firewall() # $1 = File Name
@@ -9164,58 +9290,20 @@ compile_firewall() # $1 = File Name
 
 __EOF__
 
-if [ -n "$EXPORT" ]; then
-    cat /usr/share/shorewall/functions >> $RESTOREBASE
-else
-    cat >> $RESTOREBASE << __EOF__
+    if [ -n "$EXPORT" ]; then
+	cat /usr/share/shorewall/functions >> $RESTOREBASE
+    else
+	cat >> $RESTOREBASE << __EOF__
 
 . /usr/share/shorewall/functions
 
 __EOF__
 
-fi
-
-cat >> $RESTOREBASE << __EOF__
-
-stop_firewall()
-{
-    set +x
-
-    [ -n "\${RESTOREFILE:=restore}" ]
-
-    RESTOREPATH=/var/lib/shorewall/$RESTOREFILE
-
-    if [ -x \$RESTOREPATH ]; then
-
-	if [ -x \${RESTOREPATH}-ipsets ]; then
-	    progress_message2 Restoring Ipsets...
-	    #
-	    # We must purge iptables to be sure that there are no
-	    # references to ipsets
-	    #
-	    for table in nat mangle filter; do
-		iptables -t \$table -F
-		iptables -t \$table -X
-	    done
-
-	    \${RESTOREPATH}-ipsets
-	fi
-
-	echo Restoring Shorewall...
-
-	if \$RESTOREPATH; then
-	    echo "Shorewall restored from \$RESTOREPATH"
-	    set_state "Started"
-	else
-	    set_state "Unknown"
-	fi
-    elif [ -x /sbin/shorewall ]; then
-	/sbin/shorewall stop
     fi
 
-    kill \$\$
-    exit 2
-}
+    compile_stop_firewall
+
+cat >> $RESTOREBASE << __EOF__
 
 fatal_error()
 {

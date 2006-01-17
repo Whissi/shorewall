@@ -97,7 +97,7 @@ report () { # $* = message
 #
 save_command()
 {
-    echo "$@" >> $RESTOREBASE
+    echo "${INDENT}${@}" >> $RESTOREBASE
 }
 
 #
@@ -105,14 +105,14 @@ save_command()
 #
 save_progress_message()
 {
-    echo                           >> $RESTOREBASE
-    echo "progress_message \"$@\"" >> $RESTOREBASE
-    echo                           >> $RESTOREBASE
+    echo                                    >> $RESTOREBASE
+    echo "${INDENT}progress_message \"$@\"" >> $RESTOREBASE
+    echo                                    >> $RESTOREBASE
 }
 
 save_progress_message_short()
 {
-    echo "progress_message \"$@\"" >> $RESTOREBASE
+    echo "${INDENT}progress_message \"$@\"" >> $RESTOREBASE
 }
 
 #
@@ -1113,15 +1113,15 @@ validate_interfaces_file() {
 		    if [ $COMMAND = compile ]; then
 			cat >> $RESTOREBASE << __EOF__
 
-addr=\$(ip -f inet addr show $interface 2> /dev/null | grep inet | head -n1)
-if [ -n "\$addr" ]; then
-    addr=\$(echo \$addr | sed 's/inet //;s/\/.*//;s/ peer.*//')
-    for network in 10.0.0.0/8 176.16.0.0/12 192.168.0.0/16; do
-	if in_network \$addr \$network; then
-	    fatal_error "The 'norfc1918' option has been specified on an interface with an RFC 1918 address. Interface:$interface"
-	fi
-    done
-fi
+${INDENT}addr=\$(ip -f inet addr show $interface 2> /dev/null | grep inet | head -n1)
+${INDENT}if [ -n "\$addr" ]; then
+${INDENT}    addr=\$(echo \$addr | sed 's/inet //;s/\/.*//;s/ peer.*//')
+${INDENT}    for network in 10.0.0.0/8 176.16.0.0/12 192.168.0.0/16; do
+${INDENT}	if in_network \$addr \$network; then
+${INDENT}	    fatal_error "The 'norfc1918' option has been specified on an interface with an RFC 1918 address. Interface:$interface"
+${INDENT}	fi
+${INDENT}    done
+${INDENT}fi
 
 __EOF__
 		    else
@@ -1189,15 +1189,15 @@ setup_providers()
     copy_table() {
 	if [ $COMMAND = compile ]; then
 	    cat >> $RESTOREBASE << __EOF__
-    ip route show table $duplicate | while read net route; do
-	case \$net in
-	    default|nexthop)
-		;;
-	    *)
-		run_ip route add table $number \$net \$route"
-		;;
-	esac
-    done
+${INDENT}    ip route show table $duplicate | while read net route; do
+${INDENT}	case \$net in
+${INDENT}	    default|nexthop)
+${INDENT}		;;
+${INDENT}	    *)
+${INDENT}		run_ip route add table $number \$net \$route"
+${INDENT}		;;
+${INDENT}	esac
+${INDENT}    done
 __EOF__
 	else
 	    run_ip route show table $duplicate | while read net route; do
@@ -1215,19 +1215,19 @@ __EOF__
     copy_and_edit_table() {
 	if [ $COMMAND = compile ]; then
 	    cat >> $RESTOREBASE << __EOF__
-    ip route show table $duplicate | while read net route; do
-	case \$net in
-	    default|nexthop)
-		;;
-	    *)
-		case \$(find_device \$route) in
-		    `echo $copy\) | sed 's/ /|/g'`
-			run_ip route add table $number \$net \$route
-			;;
-		esac
-		;;
-	esac
-    done
+${INDENT}    ip route show table $duplicate | while read net route; do
+${INDENT}	case \$net in
+${INDENT}	    default|nexthop)
+${INDENT}		;;
+${INDENT}	    *)
+${INDENT}		case \$(find_device \$route) in
+${INDENT}		    `echo $copy\) | sed 's/ /|/g'`
+${INDENT}			run_ip route add table $number \$net \$route
+${INDENT}			;;
+${INDENT}		esac
+${INDENT}		;;
+${INDENT}	esac
+${INDENT}    done
 
 __EOF__
 	else
@@ -1284,14 +1284,14 @@ __EOF__
 	if [ "x$gateway" = xdetect ] ; then
 	    if [ $COMMAND = compile ]; then
 		cat >> $RESTOREBASE << __EOF__
-    gateway=\$(detect_gateway $interface)
+${INDENT}    gateway=\$(detect_gateway $interface)
 
-    if [ -n "\$gateway" ]; then
-	run_ip route replace \$gateway src \$(find_first_interface_address $interface) dev $interface table $number
-	run_ip route add default via \$gateway dev $interface table $number
-    else
-	fatal_error "Unable to detect the gateway through interface $interface"
-    fi
+${INDENT}    if [ -n "\$gateway" ]; then
+${INDENT}	run_ip route replace \$gateway src \$(find_first_interface_address $interface) dev $interface table $number
+${INDENT}	run_ip route add default via \$gateway dev $interface table $number
+${INDENT}    else
+${INDENT}	fatal_error "Unable to detect the gateway through interface $interface"
+${INDENT}    fi
 
 __EOF__
 	    else
@@ -1376,22 +1376,22 @@ __EOF__
 		if [ -z "$loose" ]; then
 		    cat >> $RESTOREBASE << __EOF__
 
-    rulenum=0
+${INDENT}    rulenum=0
 
-    find_interface_addresses $interface | while read address; do
-        qt ip rule del from \$address
-        pref=\$((20000 + \$rulenum * 1000 + $number ))
-        rulenum=\$((\$rulenum + 1))
-        run_ip rule add from \$address pref \$pref table $number
-    done
+${INDENT}    find_interface_addresses $interface | while read address; do
+${INDENT}        qt ip rule del from \$address
+${INDENT}        pref=\$((20000 + \$rulenum * 1000 + $number ))
+${INDENT}        rulenum=\$((\$rulenum + 1))
+${INDENT}        run_ip rule add from \$address pref \$pref table $number
+${INDENT}    done
 
 __EOF__
 		else
 		    cat >> $RESTOREBASE << __EOF__
 
-    find_interface_addresses $interface | while read address; do
-        qt ip rule del from \$address
-    done
+${INDENT}    find_interface_addresses $interface | while read address; do
+${INDENT}        qt ip rule del from \$address
+${INDENT}    done
 
 __EOF__
 		fi
@@ -2654,11 +2654,11 @@ setup_proxy_arp() {
 		fi
 
 		cat >> $RESTOREBASE << __EOF__
-if ! arp -i $external -Ds $address $external pub; then
-    fatal_error "Command \"arp -i $external -Ds $address $external pub\" failed"
-fi
+${INDENT}if ! arp -i $external -Ds $address $external pub; then
+${INDENT}    fatal_error "Command \"arp -i $external -Ds $address $external pub\" failed"
+${INDENT}fi
 
-progress_message "   Host $address connected to $interface added to ARP on $external"
+${INDENT}progress_message "   Host $address connected to $interface added to ARP on $external"
 
 __EOF__
 		echo $address $interface $external $haveroute >> $STATEDIR/proxyarp
@@ -2844,17 +2844,17 @@ setup_mac_lists() {
 	if [ $COMMAND = compile ]; then
 	    cat >> $RESTOREBASE << __EOF__
 
-blob=\$(ip link show $interface 2> /dev/null)
+${INDENT}blob=\$(ip link show $interface 2> /dev/null)
 
-[ -z "\$blob" ] && \
-    fatal_error "Interface $interface must be up before Shorewall can start"
+${INDENT}[ -z "\$blob" ] && \
+${INDENT}    fatal_error "Interface $interface must be up before Shorewall can start"
 
-ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet //; s/brd //; s/scope.*//;' | while read address broadcast; do
-    address=\${address%/*}
-    if [ -n "\$broadcast" ]; then
-	run_iptables -t $MACLIST_TABLE -A $chain -s \$address -d \$broadcast -j RETURN
-    fi
-done
+${INDENT}ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet //; s/brd //; s/scope.*//;' | while read address broadcast; do
+${INDENT}    address=\${address%/*}
+${INDENT}    if [ -n "\$broadcast" ]; then
+${INDENT}	run_iptables -t $MACLIST_TABLE -A $chain -s \$address -d \$broadcast -j RETURN
+${INDENT}    fi
+${INDENT}done
 
 __EOF__
 	else
@@ -2962,10 +2962,10 @@ delete_proxy_arp() {
     if [ $COMMAND = compile ]; then
 	cat >> $RESTOREBASE << __EOF__
 
-for f in /proc/sys/net/ipv4/conf/*; do
-    [ -f \$f/proxy_arp ] && echo 0 > \$f/proxy_arp
-done
-
+${INDENT}for f in /proc/sys/net/ipv4/conf/*; do
+${INDENT}    [ -f \$f/proxy_arp ] && echo 0 > \$f/proxy_arp
+${INDENT}done
+${INDENT}
 __EOF__
     else
 	for f in /proc/sys/net/ipv4/conf/*; do
@@ -3066,13 +3066,13 @@ delete_nat() {
 
 	cat >> $RESTOREBASE << __EOF__
 
-if [ -f /var/lib/shorewall/nat ]; then
-   while read external interface; do
-	qt ip addr del \$external dev \$interface
-    done < /var/lib/shorewall/nat
-
-    rm -f {/var/lib/shorewall}/nat
-fi
+${INDENT}if [ -f /var/lib/shorewall/nat ]; then
+${INDENT}   while read external interface; do
+${INDENT}	qt ip addr del \$external dev \$interface
+${INDENT}    done < /var/lib/shorewall/nat
+${INDENT}
+${INDENT}    rm -f {/var/lib/shorewall}/nat
+${INDENT}fi
 
 __EOF__
     else
@@ -3805,16 +3805,16 @@ delete_tc()
 
     if [ $COMMAND = compile ]; then
 	cat >> $RESTOREBASE << __EOF__
-ip link list | while read inx interface details; do
-    case \$inx in
-	[0-9]*)
-	    qt tc qdisc del dev \${interface%:} root
-	    qt tc qdisc del dev \${interface%:} ingress
-	    ;;
-	*)
-	    ;;
-    esac
-done
+${INDENT}ip link list | while read inx interface details; do
+${INDENT}    case \$inx in
+${INDENT}	[0-9]*)
+${INDENT}	    qt tc qdisc del dev \${interface%:} root
+${INDENT}	    qt tc qdisc del dev \${interface%:} ingress
+${INDENT}	    ;;
+${INDENT}	*)
+${INDENT}	    ;;
+${INDENT}    esac
+${INDENT}done
 __EOF__
     else
 	run_ip link list | \
@@ -5171,7 +5171,7 @@ process_actions3() {
 			for interface in $(find_bcastdetect_interfaces); do
 			    cat >> $RESTOREBASE << __EOF__
 
-ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet.*brd //; s/scope.*//;' | sort -u | while read address; do
+${INDENT}ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet.*brd //; s/scope.*//;' | sort -u | while read address; do
 __EOF__
 			    case $xlevel in
 				none*)
@@ -5179,14 +5179,14 @@ __EOF__
 				*)
 				    [ -n "$xlevel" ] && \
 					cat >> $RESTOREBASE << __EOF__
-   log_rule_limit ${xlevel%\!} $xchain dropBcast DROP "" "$xtag" -A -d \$address
+${INDENT}   log_rule_limit ${xlevel%\!} $xchain dropBcast DROP "" "$xtag" -A -d \$address
 __EOF__
 				    ;;
 			    esac
 
 			    cat >> $RESTOREBASE << __EOF__
-    run_iptables -A $xchain -d \$address -j DROP
-done
+${INDENT}    run_iptables -A $xchain -d \$address -j DROP
+${INDENT}done
 
 __EOF__
 			done
@@ -5226,7 +5226,7 @@ __EOF__
 			for interface in $(find_bcastdetect_interfaces); do
 			    cat >> $RESTOREBASE << __EOF__
 
-ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet.*brd //; s/scope.*//;' | sort -u | while read address; do
+${INDENT}ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet.*brd //; s/scope.*//;' | sort -u | while read address; do
 __EOF__
 			    case $xlevel in
 				none*)
@@ -5234,14 +5234,14 @@ __EOF__
 				*)
 				    [ -n "$xlevel" ] && \
 					cat >> $RESTOREBASE << __EOF__
-   log_rule_limit ${xlevel%\!} $xchain allowBcast ACCEPT "" "$xtag" -A -d \$address
+${INDENT}   log_rule_limit ${xlevel%\!} $xchain allowBcast ACCEPT "" "$xtag" -A -d \$address
 __EOF__
 				    ;;
 			    esac
 
 			    cat >> $RESTOREBASE << __EOF__
-    run_iptables -A $xchain -d \$address -j
-done
+${INDENT}    run_iptables -A $xchain -d \$address -j
+${INDENT}done
 
 __EOF__
 			done
@@ -5478,7 +5478,7 @@ add_nat_rule() {
 			savecomment "addr="
 			for interface in $interfaces; do
 			    cat >> $RESTOREBASE << __EOF__
-addr="\$addr \$(find_first_interface_address $interface)"
+${INDENT}addr="\$addr \$(find_first_interface_address $interface)"
 __EOF__
 			done
 		    fi
@@ -5559,8 +5559,8 @@ __EOF__
 
 		    cat >> $RESTOREBASE << __EOF__
 
-for adr in \$addr; do
-    run_iptables -t nat -A $(fix_bang $(dnat_chain $source) $cli $proto $multiport $sports $dports) -d \$adr -j $chain
+${INDENT}for adr in \$addr; do
+${INDENT}    run_iptables -t nat -A $(fix_bang $(dnat_chain $source) $cli $proto $multiport $sports $dports) -d \$adr -j $chain
 __EOF__
 		else
 		    for adr in $(separate_list $addr); do
@@ -5588,16 +5588,16 @@ __EOF__
 
 		    cat >> $RESTOREBASE << __EOF__
 
-for adr in \$addr; do
+${INDENT}for adr in \$addr; do
 __EOF__
 		    if [ -n "$loglevel" ]; then
 			cat >> $RESTOREBASE << __EOF__
-    log_rule_limit $loglevel $chain $chain $logtarget "$ratelimit" "$logtag" -A -t nat $(fix_bang $proto $cli $sports $multiport $dports) -d \$adr
+${INDENT}    log_rule_limit $loglevel $chain $chain $logtarget "$ratelimit" "$logtag" -A -t nat $(fix_bang $proto $cli $sports $multiport $dports) -d \$adr
 __EOF__
 		    fi
 
 		    cat >> $RESTOREBASE << __EOF__
-    run_iptables -t nat -A $chain $(fix_bang $proto $ratelimit $cli $sports $multiport $dports) -d \$adr -j $target1
+${INDENT}    run_iptables -t nat -A $chain $(fix_bang $proto $ratelimit $cli $sports $multiport $dports) -d \$adr -j $target1
 __EOF__
 		else
 		    for adr in $(separate_list $addr); do
@@ -5912,8 +5912,8 @@ process_rule() # $1 = target
 				if [ -n "$addr" -a -n "$CONNTRACK_MATCH" ]; then
 				    if [ "$addr" = detect ]; then
 					cat >> $RESTOREBASE << __EOF__
-    run_iptables -A $chain $state $proto $ratelimit $multiport $cli $sports $(dest_ip_range $srv) $dports -m conntrack --ctorigdst \$adr $user -j $target
-done
+${INDENT}    run_iptables -A $chain $state $proto $ratelimit $multiport $cli $sports $(dest_ip_range $srv) $dports -m conntrack --ctorigdst \$adr $user -j $target
+${INDENT}done
 
 __EOF__
 				    else
@@ -7337,13 +7337,13 @@ setup_masq()
 		    elif [ -n "$detectinterface" ]; then
 			cat >> $RESTOREBASE << __EOF__
 
-networks="\$(get_routed_networks $detectinterface)"
+${INDENT}networks="\$(get_routed_networks $detectinterface)"
 
-[ -z "\$networks" ] && fatal_error "Unable to determine the routes through interface \"$detectinterface\""
+${INDENT}[ -z "\$networks" ] && fatal_error "Unable to determine the routes through interface \"$detectinterface\""
 
-for network in \$networks; do
-    run_iptables -t nat -A $chain -s \$network $proto $ports $policy -j $newchain
-done
+${INDENT}for network in \$networks; do
+${INDENT}    run_iptables -t nat -A $chain -s \$network $proto $ports $policy -j $newchain
+${INDENT}done
 
 __EOF__
 		    else
@@ -7375,20 +7375,20 @@ __EOF__
 			elif [ -n "$detectinterface" ]; then
 			    cat >> $RESTOREBASE << __EOF__
 
-networks="\$(get_routed_networks $detectinterface)"
+${INDENT}networks="\$(get_routed_networks $detectinterface)"
 
-[ -z "\$networks" ] && fatal_error "Unable to determine the routes through interface \"$detectinterface\""
+${INDENT}[ -z "\$networks" ] && fatal_error "Unable to determine the routes through interface \"$detectinterface\""
 
-for network in \$networks; do
+${INDENT}for network in \$networks; do
 __EOF__
 			    for destnet in $(separate_list $destnets); do
 				cat >> $RESTOREBASE << __EOF__
-    run_iptables -t nat -A $chain -s \$network $(dest_ip_range $destnet) $proto $sports $policy -j $netchain
+${INDENT}    run_iptables -t nat -A $chain -s \$network $(dest_ip_range $destnet) $proto $sports $policy -j $netchain
 __EOF__
 			    done
 			    cat >> $RESTOREBASE << __EOF__
 
-done
+${INDENT}done
 __EOF__
 			else
 			    for destnet in $(separate_list $destnets); do
@@ -7460,15 +7460,15 @@ __EOF__
 	elif [ -n "$detectinterface" ]; then
 	    cat >> $RESTOREBASE << __EOF__
 
-networks="\$(get_routed_networks $detectinterface)"
+${INDENT}networks="\$(get_routed_networks $detectinterface)"
 
-[ -z "\$networks" ] && fatal_error "Unable to determine the routes through interface \"$detectinterface\""
+${INDENT}[ -z "\$networks" ] && fatal_error "Unable to determine the routes through interface \"$detectinterface\""
 
-for network in \$networks; do
+${INDENT}for network in \$networks; do
 __EOF__
 	    for destnet in $(separate_list $destnets); do
 		cat >> $RESTOREBASE << __EOF__
-    run_iptables -t nat -A $chain -s \$network $(dest_ip_range $destnet) $proto $ports $policy -j $target $addrlist
+${INDENT}    run_iptables -t nat -A $chain -s \$network $(dest_ip_range $destnet) $proto $ports $policy -j $target $addrlist
 __EOF__
 	    done
 
@@ -7479,8 +7479,8 @@ __EOF__
 	    fi
 
 	    cat >> $RESTOREBASE << __EOF__
-    progress_message "$message"
-done
+${INDENT}    progress_message "$message"
+${INDENT}done
 
 __EOF__
 
@@ -7982,9 +7982,9 @@ add_common_rules() {
 	for interface in $(find_bcastdetect_interfaces); do
 	    cat >> $RESTOREBASE << __EOF__
 
-ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet.*brd //; s/scope.*//;' | sort -u | while read address; do
-    run_iptables -A reject -d \$address -j DROP
-done
+${INDENT}ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet.*brd //; s/scope.*//;' | sort -u | while read address; do
+${INDENT}    run_iptables -A reject -d \$address -j DROP
+${INDENT}done
 
 __EOF__
 	done
@@ -8001,15 +8001,15 @@ __EOF__
     for interface in $(find_bcastdetect_interfaces); do
 	cat >> $RESTOREBASE << __EOF__
 
-ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet.*brd //; s/scope.*//;' | sort -u | while read address; do
+${INDENT}ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet.*brd //; s/scope.*//;' | sort -u | while read address; do
 __EOF__
 	[ -n "$SMURF_LOG_LEVEL" ] && \
 	    cat >> $RESTOREBASE << __EOF__
-    log_rule $SMURF_LOG_LEVEL smurfs DROP -s \$address
+${INDENT}    log_rule $SMURF_LOG_LEVEL smurfs DROP -s \$address
 __EOF__
 	cat >> $RESTOREBASE << __EOF__
-    run_iptables -A smurfs -s \$address -j DROP
-done
+${INDENT}    run_iptables -A smurfs -s \$address -j DROP
+${INDENT}done
 
 __EOF__
     done
@@ -8919,17 +8919,8 @@ define_firewall() # $1 = Command (Start or Restart)
 # from that script are available here
 #
 compile_stop_firewall() {
-
-    run_iptables() {
-	#
-	# Purge the temporary files that we use to prevent duplicate '-m' specifications
-	#
-	[ -n "$BRIDGING" ]      && [ -f $TMP_DIR/physdev ] && rm -f $TMP_DIR/physdev
-	[ -n "$IPRANGE_MATCH" ] && [ -f $TMP_DIR/iprange ] && rm -f $TMP_DIR/iprange
-
-	save_command "    $IPTABLES $@"
-
-    }
+    local IPTABLES_COMMAND="$IPTABLES"
+    local INDENT="    "
 
     cat >> $RESTOREBASE << __EOF__
 
@@ -9034,13 +9025,12 @@ stop_firewall() {
 
     for f in /proc/sys/net/ipv4/conf/*; do
 	    [ -f \$f/proxy_arp ] && echo 0 > \$f/proxy_arp
-	done
-    fi
+    done
 
 __EOF__
-    [ -n "$CLEAR_TC" ] && save_command "    delete_tc1"
+    [ -n "$CLEAR_TC" ] && save_command "delete_tc1"
 
-    [ -n "$DISABLE_IPV6" ] && save_command "    disable_ipv6"
+    [ -n "$DISABLE_IPV6" ] && save_command "disable_ipv6"
 
     process_criticalhosts
 
@@ -9124,7 +9114,8 @@ __EOF__
 
     process_routestopped -A
 
-    $IPTABLES -A INPUT  -i lo -j ACCEPT
+    save_command "$IPTABLES -A INPUT  -i lo -j ACCEPT"
+
     [ -z "$ADMINISABSENTMINDED" ] && \
 	save_command "$IPTABLES -A OUTPUT -o lo -j ACCEPT"
 
@@ -9138,18 +9129,21 @@ __EOF__
 	save_command "$IPTABLES -A FORWARD -p udp -i $interface -o $interface --dport 67:68 -j ACCEPT"
     done
 
+    save_command
+
     case "$IP_FORWARDING" in
     [Oo][Nn])
-	save_command "    echo 1 > /proc/sys/net/ipv4/ip_forward"
-	save_command "    progress_message2 IP Forwarding Enabled"
+	save_command "echo 1 > /proc/sys/net/ipv4/ip_forward"
+	save_command "progress_message2 IP Forwarding Enabled"
 	;;
     [Oo][Ff][Ff])
-	save_command "    echo 0 > /proc/sys/net/ipv4/ip_forward"
-	save_command "    progress_message2 IP Forwarding Disabled!"
+	save_command "echo 0 > /proc/sys/net/ipv4/ip_forward"
+	save_command "progress_message2 IP Forwarding Disabled!"
 	;;
     esac
 
     cat >> $RESTOREBASE << __EOF__
+
     run_user_exit stopped
 
     set_state "Stopped"
@@ -9177,18 +9171,21 @@ __EOF__
 #
 compile_firewall() # $1 = File Name
 {
+    local IPTABLES_COMMAND=run_iptables
+    local INDENT=""
+
     outfile=$1 dir=$(dirname $1)
     #
     # We overload a number of functions when compiling.
     #
     ensure_and_save_command()
     {
-	echo $@ >> $RESTOREBASE
+	echo "${INDENT}${@} >> $RESTOREBASE"
     }
 
     run_and_save_command()
     {
-	echo "$@" >> $RESTOREBASE
+	echo "${INDENT}${@}" >> $RESTOREBASE
     }
 
     do_iptables() {
@@ -9233,7 +9230,7 @@ compile_firewall() # $1 = File Name
 	[ -n "$BRIDGING" ]      && [ -f $TMP_DIR/physdev ] && rm -f $TMP_DIR/physdev
 	[ -n "$IPRANGE_MATCH" ] && [ -f $TMP_DIR/iprange ] && rm -f $TMP_DIR/iprange
 
-	save_command run_iptables $@
+	save_command "$IPTABLES_COMMAND $@"
 
     }
 
@@ -9284,6 +9281,7 @@ compile_firewall() # $1 = File Name
     [ -n "$RESTOREBASE" ] || startup_error "Cannot create temporary file in /var/lib/shorewall"
 
     cat >> $RESTOREBASE << __EOF__
+#! $SHOREWALL_SHELL
 #
 # Compiled startup file generated by Shorewall $VERSION - $(date)"
 #
@@ -9347,7 +9345,7 @@ __EOF__
 #
 # These variables are required by the library functions called in this script
 #
-COMMAND=restore
+[ -n \${COMMAND:=restart} ];
 [ -n \${QUIET:=0} ]
 MODULESDIR="$MODULESDIR"
 MODULE_SUFFIX="$MODULE_SUFFIX"
@@ -9361,17 +9359,23 @@ STOPPING=
 
 __EOF__
 
-if [ -z "$EXPORT" ]; then
-    cat >> $RESTOREBASE << __EOF__
-if [ ! -f /usr/share/shorewall/version ] || [ \$(cat /usr/share/shorewall/version) != $VERSION ]; then
-    error_message "ERROR: This script requires Shorewall version $VERSION"
-    exit 2
-fi
+    if [ -n "$PROGRAM" ]; then
+	save_command "define_firewall() {"
+	INDENT="    "
+    fi
+
+    if [ -z "$EXPORT" ]; then
+	cat >> $RESTOREBASE << __EOF__
+${INDENT}if [ ! -f /usr/share/shorewall/version ] || [ \$(cat /usr/share/shorewall/version) != $VERSION ]; then
+${INDENT}    error_message "ERROR: This script requires Shorewall version $VERSION"
+${INDENT}    exit 2
+${INDENT}fi
 __EOF__
-fi
+    fi
+
 cat >> $RESTOREBASE << __EOF__
 
-load_kernel_modules
+${INDENT}load_kernel_modules
 
 __EOF__
 
@@ -9470,6 +9474,12 @@ __EOF__
     save_command set_state "Started"
 
     run_user_exit started
+
+    if [ -n "$PROGRAM" ]; then
+	INDENT=
+	save_command "}"
+	save_command ""
+    fi
 
     mv -f $RESTOREBASE $outfile
 

@@ -3657,7 +3657,7 @@ process_tc_rule()
 	    esac
 	fi
 
-	if [ "x{$length:=-}" != "x-" ]; then
+	if [ "x${length:=-}" != "x-" ]; then
 	    [ -n "$LENGTH_MATCH" ] || fatal_error "Your kernel and/or iptables does not have length match support. Rule: \"$rule\""
 	    r="${r}-m length --length ${length} "
 	fi

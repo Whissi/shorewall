@@ -635,6 +635,9 @@ while [ $finished -eq 0 ]; do
     [ $# -eq 0 ] && usage 1
     option=$1
     case $option in
+	-)
+	    finished=1
+	    ;;
 	-*)
 	    option=${option#-}
 

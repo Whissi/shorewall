@@ -48,7 +48,7 @@
 #		      not specify "nolock" on the runline.
 #
 my_mutex_on() {
-    [ -n "$nolock" ] || { mutex_on; HAVE_MUTEX=Yes; }
+    [ -n "$NOLOCK" ] || { mutex_on; HAVE_MUTEX=Yes; }
 }
 
 my_mutex_off() {
@@ -10199,9 +10199,9 @@ usage() {
 #
 [ $# -gt 1 ] && [ "$1" = "debug" ] && { set -x ; shift ; }
 
-nolock=
+NOLOCK=
 
-[ $# -gt 1 ] && [ "$1" = "nolock" ] && { nolock=Yes; shift ; }
+[ $# -gt 1 ] && [ "$1" = "nolock" ] && { NOLOCK=Yes; shift ; }
 
 trap "my_mutex_off; exit 2" 1 2 3 4 5 6 9
 

@@ -980,7 +980,7 @@ case "$1" in
 	[ -n "$nolock" ] || mutex_on
 
 	if $SHOREWALL_SHELL $FIREWALL $debugging $nolock compile /var/lib/shorewall/.reload; then
-	   $0  nolock $(make_quiet) restore .reload
+	   $0 nolock $(make_quiet) restore .reload
 	fi
 
 	[ -n "$nolock" ] || mutex_off
@@ -1105,7 +1105,7 @@ case "$1" in
 
 	if [ -f /var/lib/shorewall/state ]; then
 	    state="$(cat /var/lib/shorewall/state)"
-	    case \$state in
+	    case $state in
 		Stopped*|Clear*)
 		    status=3
 		    ;;

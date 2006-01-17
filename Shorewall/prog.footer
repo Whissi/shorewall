@@ -1,0 +1,70 @@
+################################################################################
+# Give Usage Information						       #
+################################################################################
+usage() {
+    echo "Usage: $0 start|stop|reload|restart|status"
+    exit 1
+}
+################################################################################
+# E X E C U T I O N    B E G I N S   H E R E				       #
+################################################################################
+initialize
+
+COMMAND="$1"
+
+case "$COMMAND" in
+    start)
+	echo "Starting Shorewall...."
+	define_firewall
+	status=$?
+	echo "done."
+	;;
+    stop)
+	echo "Stopping Shorewall...."
+	stop_firewall
+	status=0
+	echo "done."
+	;;
+    restart)
+	echo "Restarting Shorewall...."
+	define_firewall
+	status=$?
+	echo "done."
+	;;
+    clear)
+	echo "Clearing Shorewall...."
+	clear_firewall
+	status=0
+	echo "done."
+	;;
+    status)
+	echo "Shorewall Status at $HOSTNAME - $(date)"
+	echo
+	if iptables -L shorewall -n > /dev/null 2>&1; then
+	    echo "Shorewall is running"
+	    status=0
+	else
+	    echo "Shorewall is stopped"
+	    status=4
+	fi
+
+	if [ -f /var/lib/shorewall/state ]; then
+	    state="$(cat /var/lib/shorewall/state)"
+	    case $state in
+		Stopped*|Clear*)
+		    status=3
+		    ;;
+	    esac
+	else
+	    state=Unknown
+	fi
+	echo "State:$state"
+	echo
+	;;
+    *)
+	usage
+	status=2
+	;;
+esac
+
+exit $status

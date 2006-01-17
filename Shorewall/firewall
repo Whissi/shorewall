@@ -100,6 +100,11 @@ save_command()
     echo "${INDENT}${@}" >> $RESTOREBASE
 }
 
+save_command_unindented()
+{
+    echo "${@}" >> $RESTOREBASE
+}
+
 #
 # Write a progress_message command to $RESTOREBASE
 #
@@ -146,7 +151,7 @@ append_file() # $1 = File Name
 {
     save_command "cat > /var/lib/shorewall/$1 << __EOF__"
     cat $STATEDIR/$1 >> $RESTOREBASE
-    save_command __EOF__
+    save_command_unindented __EOF__
 }
 
 #
@@ -1190,13 +1195,13 @@ setup_providers()
 	if [ $COMMAND = compile ]; then
 	    cat >> $RESTOREBASE << __EOF__
 ${INDENT}    ip route show table $duplicate | while read net route; do
-${INDENT}	case \$net in
-${INDENT}	    default|nexthop)
-${INDENT}		;;
-${INDENT}	    *)
-${INDENT}		run_ip route add table $number \$net \$route"
-${INDENT}		;;
-${INDENT}	esac
+${INDENT}        case \$net in
+${INDENT}            default|nexthop)
+${INDENT}                ;;
+${INDENT}            *)
+${INDENT}                run_ip route add table $number \$net \$route"
+${INDENT}                ;;
+${INDENT}        esac
 ${INDENT}    done
 __EOF__
 	else
@@ -1216,17 +1221,17 @@ __EOF__
 	if [ $COMMAND = compile ]; then
 	    cat >> $RESTOREBASE << __EOF__
 ${INDENT}    ip route show table $duplicate | while read net route; do
-${INDENT}	case \$net in
-${INDENT}	    default|nexthop)
-${INDENT}		;;
-${INDENT}	    *)
-${INDENT}		case \$(find_device \$route) in
-${INDENT}		    `echo $copy\) | sed 's/ /|/g'`
-${INDENT}			run_ip route add table $number \$net \$route
-${INDENT}			;;
-${INDENT}		esac
-${INDENT}		;;
-${INDENT}	esac
+${INDENT}        case \$net in
+${INDENT}            default|nexthop)
+${INDENT}                ;;
+${INDENT}            *)
+${INDENT}                case \$(find_device \$route) in
+${INDENT}                    `echo $copy\) | sed 's/ /|/g'`
+${INDENT}                         run_ip route add table $number \$net \$route
+${INDENT}                         ;;
+${INDENT}                esac
+${INDENT}                ;;
+${INDENT}        esac
 ${INDENT}    done
 
 __EOF__
@@ -1287,10 +1292,10 @@ __EOF__
 ${INDENT}    gateway=\$(detect_gateway $interface)
 
 ${INDENT}    if [ -n "\$gateway" ]; then
-${INDENT}	run_ip route replace \$gateway src \$(find_first_interface_address $interface) dev $interface table $number
-${INDENT}	run_ip route add default via \$gateway dev $interface table $number
+${INDENT}        run_ip route replace \$gateway src \$(find_first_interface_address $interface) dev $interface table $number
+${INDENT}        run_ip route add default via \$gateway dev $interface table $number
 ${INDENT}    else
-${INDENT}	fatal_error "Unable to detect the gateway through interface $interface"
+${INDENT}        fatal_error "Unable to detect the gateway through interface $interface"
 ${INDENT}    fi
 
 __EOF__
@@ -1476,7 +1481,7 @@ EOF
 
 		save_command "    cat > /etc/iproute2/rt_tables << __EOF__"
 		cat /etc/iproute2/rt_tables >> $RESTOREBASE
-		save_command __EOF__
+		save_command_unindented __EOF__
 
 	    fi
 
@@ -2852,7 +2857,7 @@ ${INDENT}    fatal_error "Interface $interface must be up before Shorewall can s
 ${INDENT}ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet //; s/brd //; s/scope.*//;' | while read address broadcast; do
 ${INDENT}    address=\${address%/*}
 ${INDENT}    if [ -n "\$broadcast" ]; then
-${INDENT}	run_iptables -t $MACLIST_TABLE -A $chain -s \$address -d \$broadcast -j RETURN
+${INDENT}       run_iptables -t $MACLIST_TABLE -A $chain -s \$address -d \$broadcast -j RETURN
 ${INDENT}    fi
 ${INDENT}done
 
@@ -3068,7 +3073,7 @@ delete_nat() {
 
 ${INDENT}if [ -f /var/lib/shorewall/nat ]; then
 ${INDENT}   while read external interface; do
-${INDENT}	qt ip addr del \$external dev \$interface
+${INDENT}       qt ip addr del \$external dev \$interface
 ${INDENT}    done < /var/lib/shorewall/nat
 ${INDENT}
 ${INDENT}    rm -f {/var/lib/shorewall}/nat
@@ -3807,12 +3812,12 @@ delete_tc()
 	cat >> $RESTOREBASE << __EOF__
 ${INDENT}ip link list | while read inx interface details; do
 ${INDENT}    case \$inx in
-${INDENT}	[0-9]*)
-${INDENT}	    qt tc qdisc del dev \${interface%:} root
-${INDENT}	    qt tc qdisc del dev \${interface%:} ingress
-${INDENT}	    ;;
-${INDENT}	*)
-${INDENT}	    ;;
+${INDENT}       [0-9]*)
+${INDENT}           qt tc qdisc del dev \${interface%:} root
+${INDENT}           qt tc qdisc del dev \${interface%:} ingress
+${INDENT}           ;;
+${INDENT}       *)
+${INDENT}           ;;
 ${INDENT}    esac
 ${INDENT}done
 __EOF__
@@ -8926,7 +8931,7 @@ compile_stop_firewall() {
 
 stop_firewall() {
 
-    detetechain() {
+    deletechain() {
 	qt $IPTABLES -L \$1 -n && qt $IPTABLES -F \$1 && qt $IPTABLES -X \$1
     }
 
@@ -8936,7 +8941,11 @@ stop_firewall() {
     }
 
     setpolicy() {
-	$IPTABLES -P $1 $2
+	$IPTABLES -P \$1 \$2
+    }
+
+    setcontinue() {
+	$IPTABLES -A \$1 -m state --state ESTABLISHED,RELATED -j ACCEPT
     }
 
     case \$COMMAND in
@@ -9261,6 +9270,7 @@ compile_firewall() # $1 = File Name
     #
     # END OVERLOADED FUNCTIONS
     #
+
     verify_os_version
     verify_ip
 
@@ -9280,8 +9290,9 @@ compile_firewall() # $1 = File Name
 
     [ -n "$RESTOREBASE" ] || startup_error "Cannot create temporary file in /var/lib/shorewall"
 
+    [ -z "$PROGRAM" ] && save_command "#! $SHOREWALL_SHELL --"
+
     cat >> $RESTOREBASE << __EOF__
-#! $SHOREWALL_SHELL
 #
 # Compiled startup file generated by Shorewall $VERSION - $(date)"
 #
@@ -9336,36 +9347,36 @@ run_tc() {
     fi
 }
 
+initialize() {
+    #
+    # These variables are required by the library functions called in this script
+    #
+    [ -n \${COMMAND:=restart} ]
+    [ -n \${QUIET:=0} ]
+    MODULESDIR="$MODULESDIR"
+    MODULE_SUFFIX="$MODULE_SUFFIX"
+    LOGLIMIT="$LOGLIMIT"
+    LOGTAGONLY="$LOGTAGONLY"
+    LOGRULENUMBERS="$LOGRULENUMBERS"
+    LOGFORMAT="$LOGFORMAT"
+    RESTOREFILE="$RESTOREFILE"
+
+    STOPPING=
+    #
+    # The library requires that /var/lib/shorewall exist
+    #
+    mkdir -p /var/lib/shorewall
+}
+
 __EOF__
-    f=$(find_file params)
-
-    [ -f $f ] && \
-	save_command ". $(resolve_file $f)"
-    cat >> $RESTOREBASE << __EOF__
-#
-# These variables are required by the library functions called in this script
-#
-[ -n \${COMMAND:=restart} ];
-[ -n \${QUIET:=0} ]
-MODULESDIR="$MODULESDIR"
-MODULE_SUFFIX="$MODULE_SUFFIX"
-LOGLIMIT="$LOGLIMIT"
-LOGTAGONLY="$LOGTAGONLY"
-LOGRULENUMBERS="$LOGRULENUMBERS"
-LOGFORMAT="$LOGFORMAT"
-RESTOREFILE="$RESTOREFILE"
-
-STOPPING=
-
-__EOF__
-
     if [ -n "$PROGRAM" ]; then
 	save_command "define_firewall() {"
 	INDENT="    "
-    fi
+   fi
 
     if [ -z "$EXPORT" ]; then
 	cat >> $RESTOREBASE << __EOF__
+
 ${INDENT}if [ ! -f /usr/share/shorewall/version ] || [ \$(cat /usr/share/shorewall/version) != $VERSION ]; then
 ${INDENT}    error_message "ERROR: This script requires Shorewall version $VERSION"
 ${INDENT}    exit 2
@@ -9381,6 +9392,7 @@ __EOF__
 
     progress_message2 "Initializing..."
     save_progress_message "Initializing..."
+
     initialize_netfilter
 
     progress_message2 "Compiling Proxy ARP";                setup_proxy_arp
@@ -9478,10 +9490,13 @@ __EOF__
     if [ -n "$PROGRAM" ]; then
 	INDENT=
 	save_command "}"
+	write_globals
 	save_command ""
+	cat $(find_file prog.header) $RESTOREBASE $(find_file prog.footer) > $outfile
+	rm $RESTOREBASE
+    else
+	mv -f $RESTOREBASE $outfile
     fi
-
-    mv -f $RESTOREBASE $outfile
 
     chmod 700 $outfile
 

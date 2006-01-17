@@ -588,7 +588,14 @@ for f in macro.* ; do
     echo
     echo "Macro ${f#*.} file installed as ${PREFIX}/usr/share/shorewall/$f"
 done
-
+#
+# Install the program skeleton files
+#
+for f in prog.* ; do
+    install_file $f ${PREFIX}/usr/share/shorewall/$f 0600
+    echo
+    echo "Program skeleton file ${f#*.} installed as ${PREFIX}/usr/share/shorewall/$f"
+done
 #
 # Create the version file
 #

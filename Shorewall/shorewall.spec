@@ -154,12 +154,16 @@ fi
 %attr(0600,root,root) /usr/share/shorewall/macro.VNCL
 %attr(0600,root,root) /usr/share/shorewall/macro.Web
 %attr(0600,root,root) /usr/share/shorewall/macro.Webmin
+%attr(0600,root,root) /usr/share/shorewall/prog.footer
+%attr(0600,root,root) /usr/share/shorewall/prog.header
 %attr(0600,root,root) /usr/share/shorewall/rfc1918
 %attr(0600,root,root) /usr/share/shorewall/configpath
 
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel ipsecvpn Samples
 
 %changelog
+* Sun Tue 17 2006 Tom Eastep tom@shorewall.net
+- Added program skeleton Files
 * Sun Jan 15 2006 Tom Eastep tom@shorewall.net
 - Updated to 3.1.2-1
 * Thu Jan 12 2006 Tom Eastep tom@shorewall.net

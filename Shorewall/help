@@ -88,14 +88,20 @@ clear)
 	;;
 
 compile)
-	echo "compile: compile [ -e ] [ <directory name> ] <file name>
+	echo "compile: compile [ -e ] [ -p ] [ <directory name> ] <path name>
     Compiles the current configuration into the executable file
-    /var/lib/shorewall/<file name>
+    <path name>. If <path name> names a file in /var/lib/shorewall then
+    the file may be executed using the \"restore\" command.
 
     When -e is specified, the compilation is being performed on a system
     other than where the compiled script will run. This option disables
     certain configuration options that require the script to be compiled
     where it is to be run.
+
+    When -p is specified, a complete program is produced that supports
+    the 'start', 'stop', 'restart', etc. commands. That program is suitable
+    for placing in /etc/init.d/ and can provide a firewall on a system
+    without Shorewall installed.
 
     'generate' is a synonym for 'compile'."
 	;;
@@ -220,7 +226,8 @@ refresh)
 	echo "refresh: [ -q ] refresh
     The rules involving the broadcast addresses of firewall interfaces,
     the black list, traffic control rules and ECN control rules are recreated
-    to reflect any changes made.  Existing connections are untouched
+    to reflect any changes made.  Existing connections are untouched.
+
     If \"-q\" is specified, less detain is displayed making it easier to spot warnings"
 	;;
 
@@ -234,11 +241,14 @@ reject)
 	;;
 
 reload)
-	echo "reload: reload [ <directory name> ]
+	echo "reload: reload [ -q ] [ -n ] [ <directory name> ]
 
     Causes Shorewall to generate a new compiled restore file using the named directory
     as the first search directory for configuration file. If that generation is error-free,
-    the generated restore file is executed."
+    the generated restore file is executed.
+
+    If \"-q\" is specified, less detain is displayed making it easier to spot warnings
+    If \"-n\" is specified, no changes to routing will be made"
 	;;
 
 reset)
@@ -247,9 +257,10 @@ reset)
 	;;
 
 restart)
-	echo "restart: [ -q ] [ -n ] restart [ <configuration-directory> ]
+	echo "restart: restart [ -q ] [ -n ] [ <configuration-directory> ]
     Restart is the same as a shorewall stop && shorewall start.
     Existing connections are maintained.
+
     If \"-q\" is specified, less detain is displayed making it easier to spot warnings
     If \"-n\" is specified, no changes to routing will be made"
 	;;
@@ -268,22 +279,17 @@ safe-start)
     ;;
 
 restore)
-	echo "restore: [ -n ] restore [ <file name> ]
+	echo "restore: restore [ -q ] [ -n ] [ <file name> ]
     Restore Shorewall to a state saved using the 'save' command
     Existing connections are maintained. The <file name> names a restore file in
-    /var/lib/shorewall created using "shorewall save"; if no <file name> is given
+    /var/lib/shorewall created using \"shorewall save\"; if no <file name> is given
     then Shorewall will be restored from the file specified by the RESTOREFILE
     option in shorewall.conf.
 
+    If \"-q\" is specified, less detain is displayed making it easier to spot warnings
     If \"-n\" is specified, no changes to routing will be made.
 
-    WARNING: If the restore file specified by <file name> was created using the
-    'shorewall generate' command and error messages are produced during 'shorewall
-    restore' then your firewall is probably in an INSECURE STATE.
-
-    YOU HAVE BEEN WARNED!!!!
-
-    See also \"help save\", \"help generate\" and \"help forget\""
+    See also \"help save\", \"help compile\" and \"help forget\""
 	;;
 
 save)
@@ -330,7 +336,7 @@ show)
 	;;
 
 start)
-	echo "start: [ -q ] [ -f ] [ -n ] start [ <configuration-directory> ]
+	echo "start: start [ -f ] [ -n ] [ -q ] [ <configuration-directory> ]
     Start shorewall.  Existing connections through shorewall managed
     interfaces are untouched.  New connections will be allowed only
     if they are allowed by the firewall rules or policies.

@@ -2,8 +2,8 @@
 # Give Usage Information						       #
 ################################################################################
 usage() {
-    echo "Usage: $0 start|stop|clear|reload|restart|status|version"
-    exit 1
+    echo "Usage: $0 [ -q ] [ -n ] [ start|stop|clear|reload|restart|status|version ]"
+    exit $1
 }
 ################################################################################
 # E X E C U T I O N    B E G I N S   H E R E				       #
@@ -12,8 +12,7 @@ initialize
 
 finished=0
 
-while [ $finished -eq 0 ]; do
-    [ $# -eq 0 ] && usage 1
+while [ $finished -eq 0 -a $# -gt 0 ]; do
     option=$1
     case $option in
 	-*)
@@ -45,10 +44,16 @@ while [ $finished -eq 0 ]; do
 done
 
 if [ $# -eq 0 ]; then
-    usage 1
+    if shorewall_is_started; then
+	COMMAND=restart
+    else
+	COMMAND=start
+    fi
+elif [ $# -gt 1 ]; then
+    usage 2
+else
+    COMMAND="$1"
 fi
-
-COMMAND="$1"
 
 case "$COMMAND" in
     start)
@@ -84,7 +89,7 @@ case "$COMMAND" in
     status)
 	echo "Shorewall-$VERSION Status at $HOSTNAME - $(date)"
 	echo
-	if iptables -L shorewall -n > /dev/null 2>&1; then
+	if shorewall_is_started; then
 	    echo "Shorewall is running"
 	    status=0
 	else
@@ -109,9 +114,11 @@ case "$COMMAND" in
 	echo $VERSION
 	status=0
 	;;
+    help)
+	usage 0
+	;;
     *)
-	usage
-	status=2
+	usage 2
 	;;
 esac
 

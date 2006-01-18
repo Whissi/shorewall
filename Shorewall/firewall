@@ -1122,9 +1122,9 @@ ${INDENT}addr=\$(ip -f inet addr show $interface 2> /dev/null | grep inet | head
 ${INDENT}if [ -n "\$addr" ]; then
 ${INDENT}    addr=\$(echo \$addr | sed 's/inet //;s/\/.*//;s/ peer.*//')
 ${INDENT}    for network in 10.0.0.0/8 176.16.0.0/12 192.168.0.0/16; do
-${INDENT}	if in_network \$addr \$network; then
-${INDENT}	    fatal_error "The 'norfc1918' option has been specified on an interface with an RFC 1918 address. Interface:$interface"
-${INDENT}	fi
+${INDENT}        if in_network \$addr \$network; then
+${INDENT}            fatal_error "The 'norfc1918' option has been specified on an interface with an RFC 1918 address. Interface:$interface"
+${INDENT}        fi
 ${INDENT}    done
 ${INDENT}fi
 
@@ -9379,6 +9379,18 @@ run_tc() {
 }
 
 initialize() {
+__EOF__
+    if [ -z "$EXPORT" ]; then
+	cat >> $RESTOREBASE << __EOF__
+
+    if [ ! -f /usr/share/shorewall/version ] || [ \$(cat /usr/share/shorewall/version) != $VERSION ]; then
+	error_message "ERROR: This script requires Shorewall version $VERSION"
+	exit 2
+    fi
+__EOF__
+    fi
+
+    cat >> $RESTOREBASE << __EOF__
     #
     # These variables are required by the library functions called in this script
     #
@@ -9392,33 +9404,22 @@ initialize() {
     LOGFORMAT="$LOGFORMAT"
     RESTOREFILE="$RESTOREFILE"
     VERSION="$VERSION"
+    IPTABLES="$IPTABLES"
 
     STOPPING=
     #
     # The library requires that /var/lib/shorewall exist
     #
-    mkdir -p /var/lib/shorewall
+    [ -d /var/lib/shorewall ] || mkdir -p /var/lib/shorewall
 }
 
 __EOF__
-    if [ -n "$PROGRAM" ]; then
-	save_command "define_firewall() {"
-	INDENT="    "
-   fi
-
-    if [ -z "$EXPORT" ]; then
-	cat >> $RESTOREBASE << __EOF__
-
-${INDENT}if [ ! -f /usr/share/shorewall/version ] || [ \$(cat /usr/share/shorewall/version) != $VERSION ]; then
-${INDENT}    error_message "ERROR: This script requires Shorewall version $VERSION"
-${INDENT}    exit 2
-${INDENT}fi
-__EOF__
-    fi
+    save_command "define_firewall() {"
+    INDENT="    "
 
 cat >> $RESTOREBASE << __EOF__
 
-${INDENT}load_kernel_modules
+    load_kernel_modules
 
 __EOF__
 
@@ -9427,7 +9428,7 @@ __EOF__
 
     initialize_netfilter
 
-    progress_message2 "Compiling Proxy ARP";                setup_proxy_arp
+    progress_message2 "Compiling Proxy ARP";               setup_proxy_arp
     #
     # [re]-Establish routing
     #
@@ -9519,13 +9520,16 @@ __EOF__
 
     run_user_exit started
 
+    INDENT=
+    save_command "}"
+    save_command ""
+
     if [ -n "$PROGRAM" ]; then
-	INDENT=
-	save_command "}"
-	save_command ""
 	cat $(find_file prog.header) $RESTOREBASE $(find_file prog.footer) > $outfile
 	rm $RESTOREBASE
     else
+	save_command "initialize"
+	save_command "define_firewall"
 	mv -f $RESTOREBASE $outfile
     fi
 

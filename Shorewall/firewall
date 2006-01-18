@@ -8940,10 +8940,6 @@ stop_firewall() {
 	$IPTABLES -X
     }
 
-    setpolicy() {
-	$IPTABLES -P \$1 \$2
-    }
-
     setcontinue() {
 	$IPTABLES -A \$1 -m state --state ESTABLISHED,RELATED -j ACCEPT
     }
@@ -9314,6 +9310,34 @@ __EOF__
 
 cat >> $RESTOREBASE << __EOF__
 
+setpolicy() {
+    $IPTABLES -P \$1 \$2
+}
+
+clear_firewall() {
+    stop_firewall
+
+    setpolicy INPUT ACCEPT
+    setpolicy FORWARD ACCEPT
+    setpolicy OUTPUT ACCEPT
+
+    run_iptables -F
+
+    echo 1 > /proc/sys/net/ipv4/ip_forward
+
+    if qt mywhich ip6tables; then
+	ip6tables -P INPUT   ACCEPT 2> /dev/null
+	ip6tables -P OUTPUT  ACCEPT 2> /dev/null
+	ip6tables -P FORWARD ACCEPT 2> /dev/null
+    fi
+
+    run_user_exit clear
+
+    set_state "Cleared"
+
+    logger "Shorewall Cleared"
+}
+
 fatal_error()
 {
     echo "   ERROR: \$@" >&2
@@ -9360,6 +9384,7 @@ initialize() {
     LOGRULENUMBERS="$LOGRULENUMBERS"
     LOGFORMAT="$LOGFORMAT"
     RESTOREFILE="$RESTOREFILE"
+    VERSION="$VERSION"
 
     STOPPING=
     #
@@ -9490,7 +9515,6 @@ __EOF__
     if [ -n "$PROGRAM" ]; then
 	INDENT=
 	save_command "}"
-	write_globals
 	save_command ""
 	cat $(find_file prog.header) $RESTOREBASE $(find_file prog.footer) > $outfile
 	rm $RESTOREBASE

@@ -2951,12 +2951,29 @@ setup_syn_flood_chains()
 delete_proxy_arp() {
     if [ -f /var/lib/shorewall/proxyarp ]; then
 	while read address interface external haveroute; do
-	    run_and_save_command "qt arp -i $external -d $address pub"
-	    if [ $COMMAND = compile ]; then
-		[ -z "$haveroute" ] && save_command "qt ip route del $address dev $interface"
-	    else
-		[ -z "${haveroute}${NOROUTES}" ] && qt ip route del $address dev $interface
-	    fi
+	    case $COMMAND in
+		compile)
+		    save_command "qt arp -i $external -d $address pub"
+		    [ -z "$haveroute" ] && save_command "[ -n \"\$NOROUTE\" ] || qt ip route del $address dev $interface"
+		    ;;
+		stop|clear)
+		    qt arp -i $external -d $address pub
+		    [ -z "${haveroute}${NOROUTES}" ] && qt ip route del $address dev $interface
+		    ;;
+		*)
+		    if [ -n "$STOPPING" ]; then
+			run_and_save_command "qt arp -i $external -d $address pub"
+			qt arp -i $external -d $address pub
+			[ -z "${haveroute}${NOROUTES}" ] && qt ip route del $address dev $interface
+		    else
+			run_and_save_command "qt arp -i $external -d $address pub"
+			if [ -z "$haveroute" ];then
+			    [ -n "$NOROUTE" ] || qt ip route del $address dev $interface
+			    save_command "[ -n \"\$NOROUTE\" ] || qt ip route del $address dev $interface"
+			fi
+		    fi
+		    ;;
+	    esac
 	done < /var/lib/shorewall/proxyarp
 
 	[ $COMMAND = compile ] || rm -f /var/lib/shorewall/proxyarp
@@ -2964,19 +2981,33 @@ delete_proxy_arp() {
 
     [ -d $STATEDIR ] && touch $STATEDIR/proxyarp
 
-    if [ $COMMAND = compile ]; then
-	cat >> $RESTOREBASE << __EOF__
+    case $COMMAND in
+	compile)
+	    cat >> $RESTOREBASE << __EOF__
 
 ${INDENT}for f in /proc/sys/net/ipv4/conf/*; do
 ${INDENT}    [ -f \$f/proxy_arp ] && echo 0 > \$f/proxy_arp
 ${INDENT}done
 ${INDENT}
 __EOF__
-    else
-	for f in /proc/sys/net/ipv4/conf/*; do
-	    [ -f $f/proxy_arp ] && echo 0 > $f/proxy_arp
-	done
-    fi
+	    ;;
+	stop|clear)
+	    for f in /proc/sys/net/ipv4/conf/*; do
+		[ -f $f/proxy_arp ] && echo 0 > $f/proxy_arp
+	    done
+	    ;;
+	*)
+	    if [ -n "$STOPPING" ]; then
+		for f in /proc/sys/net/ipv4/conf/*; do
+		    [ -f $f/proxy_arp ] && echo 0 > $f/proxy_arp
+		done
+	    else
+		for f in /proc/sys/net/ipv4/conf/*; do
+		    run_and_save_command "[ -f $f/proxy_arp ] && echo 0 > $f/proxy_arp"
+		done
+	    fi
+	    ;;
+    esac
 }
 
 #

@@ -69,6 +69,12 @@ case "$COMMAND" in
 	status=$?
 	echo "done."
 	;;
+    reload)
+	echo "Reloading Shorewall...."
+	define_firewall
+	status=$?
+	echo "done."
+	;;
     clear)
 	echo "Clearing Shorewall...."
 	clear_firewall

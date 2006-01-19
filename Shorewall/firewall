@@ -2378,7 +2378,7 @@ setup_tunnels() # $1 = name of tunnels file
 	progress_message "   OPENVPN client tunnel to $1:$protocol:$p defined."
     }
 
-    setup_one_generic() # $1 = gateway, $2 = kind:protocol[:port], $3 = Gateway Zone
+    setup_one_generic() # $1 = gateway, $2 = kind:protocol[:port]
     {
 	local protocol
 	local p=
@@ -2402,16 +2402,6 @@ setup_tunnels() # $1 = name of tunnels file
 
 	addrule2 $inchain  -p $protocol $(source_ip_range $1) $p -j ACCEPT
 	addrule2 $outchain -p $protocol $(dest_ip_range $1)   $p -j ACCEPT
-
-	for z in $(separate_list $3); do
-	    if validate_zone $z; then
-		addrule ${FW}2${z} -p $protocol $p -j ACCEPT
-		addrule ${z}2${FW} -p $protocol $p -j ACCEPT
-	    else
-		error_message "WARNING: Invalid gateway zone ($z)" \
-		" -- Tunnel \"$tunnel\" may encounter problems"
-	    fi
-	done
 
 	progress_message "   GENERIC tunnel to $1:$p defined."
     }
@@ -2457,7 +2447,7 @@ setup_tunnels() # $1 = name of tunnels file
 		    setup_one_openvpn_server $gateway $kind
 		    ;;
 		generic:*|GENERIC:*)
-		    setup_one_generic $gateway $kind $z1
+		    setup_one_generic $gateway $kind
 		    ;;
 		*)
 		    error_message "WARNING: Tunnels of type $kind are not supported:" \

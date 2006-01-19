@@ -488,6 +488,688 @@ save_config() {
 
     [ "$nolock" ] || mutex_off
 }
+
+start_command() {
+    local finished=0
+
+    while [ $finished -eq 0 -a $# -gt 0 ]; do
+	option=$1
+	case $option in
+	    -*)
+		option=${option#-}
+
+		while [ -n "$option" ]; do
+		    case $option in
+			-)
+			    finished=1
+			    option=
+			    ;;
+			q*)
+			    QUIET=$(($QUIET + 1 ))
+			    option=${option#q}
+			    ;;
+			f*)
+			    FAST=Yes
+			    option=${option#f}
+			    ;;
+			n*)
+			    NOROUTES=Yes
+			    option=${option#n}
+			    ;;
+			*)
+			    usage 1
+			    ;;
+		    esac
+		done
+		shift
+		;;
+	    *)
+		finished=1
+		;;
+	esac
+    done
+
+    case $# in
+	0)
+	    ;;
+	1)
+	    [ -n "$SHOREWALL_DIR" -o -n "$FAST" ] && usage 2
+
+	    if [ ! -d $1 ]; then
+		if [ -e $1 ]; then
+		    echo "$1 is not a directory" >&2 && exit 2
+		else
+		    echo "Directory $1 does not exist" >&2 && exit 2
+		fi
+	    fi
+
+	    SHOREWALL_DIR=$
+	    export SHOREWALL_DIR
+	    ;;
+	*)
+	    usage 1
+	    ;;
+    esac
+
+    export NOROUTES
+
+    if [ -n "$FAST" ]; then
+	if qt mywhich make; then
+	    make -qf /etc/shorewall/Makefile || FAST=
+	fi
+
+	if [ -n "$FAST" ]; then
+
+	    RESTOREPATH=/var/lib/shorewall/$RESTOREFILE
+
+	    if [ -x $RESTOREPATH ]; then
+		if [ -x ${RESTOREPATH}-ipsets ]; then
+		    echo Restoring Ipsets...
+		    #
+		    # We must purge iptables to be sure that there are no
+		    # references to ipsets
+		    #
+		    iptables -F
+		    iptables -X
+		    ${RESTOREPATH}-ipsets
+		fi
+
+		echo Restoring Shorewall...
+		$RESTOREPATH
+		date > /var/lib/shorewall/restarted
+		echo Shorewall restored from $RESTOREPATH
+	    else
+		exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock start
+	    fi
+	else
+	    exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock start
+	fi
+    else
+	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock start
+    fi
+}
+
+compile_command() {
+    local finished=0
+
+    while [ $finished -eq 0 ]; do
+	[ $# -eq 0 ] && usage 1
+	option=$1
+	case $option in
+	    -*)
+		option=${option#-}
+
+		[ -z "$option" ] && usage 1
+
+		while [ -n "$option" ]; do
+		    case $option in
+			e*)
+			    EXPORT=Yes
+			    option=${option#e}
+			    ;;
+			q*)
+			    QUIET=$(($QUIET + 1 ))
+			    option=${option#q}
+			    ;;
+			p*)
+			    export PROGRAM=Yes
+			    option=${option#p}
+			    ;;
+			-)
+			    finished=1
+			    option=
+			    ;;
+			*)
+			    usage 1
+			    ;;
+		    esac
+		done
+		shift
+		;;
+	    *)
+		finished=1
+		;;
+	esac
+    done
+
+    file=
+
+    case $# in
+	1)
+	    file=$1
+	    ;;
+	2)
+	    [ -n "$SHOREWALL_DIR" ] && usage 2
+
+	    if [ ! -d $1 ]; then
+		if [ -e $1 ]; then
+		    echo "$1 is not a directory" >&2 && exit 2
+		else
+		    echo "Directory $1 does not exist" >&2 && exit 2
+		fi
+	    fi
+
+	    SHOREWALL_DIR=$1
+	    export SHOREWALL_DIR
+	    file=$2
+	    ;;
+	*)
+	    usage 1
+	    ;;
+    esac
+
+    export EXPORT
+
+    exec $SHOREWALL_SHELL $FIREWALL $debugging generate $file
+}
+
+restart_command() {
+    local finished=0
+
+    while [ $finished -eq 0 -a $# -gt 0 ]; do
+	option=$1
+	case $option in
+	    -*)
+		option=${option#-}
+
+		while [ -n "$option" ]; do
+		    case $option in
+			-)
+			    finished=1
+			    option=
+			    ;;
+			q*)
+			    QUIET=$(($QUIET + 1 ))
+			    option=${option#q}
+			    ;;
+			n*)
+			    NOROUTES=Yes
+			    option=${option#n}
+			    ;;
+			*)
+			    usage 1
+			    ;;
+		    esac
+		done
+		shift
+		;;
+	    *)
+		finished=1
+		;;
+	esac
+    done
+
+    case $# in
+	0)
+	    ;;
+	1)
+	    [ -n "$SHOREWALL_DIR" ] && usage 2
+
+	    if [ ! -d $1 ]; then
+		if [ -e $1 ]; then
+		    echo "$1 is not a directory" >&2 && exit 2
+		else
+		    echo "Directory $1 does not exist" >&2 && exit 2
+		fi
+	    fi
+
+	    SHOREWALL_DIR=$1
+	    export SHOREWALL_DIR
+	    ;;
+	*)
+	    usage 1
+	    ;;
+    esac
+
+    export NOROUTES
+
+    exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock restart
+}
+
+check_command() {
+    local finished=0
+
+    while [ $finished -eq 0 -a $# -gt 0 ]; do
+	option=$1
+	case $option in
+	    -*)
+		option=${option#-}
+
+		while [ -n "$option" ]; do
+		    case $option in
+			-)
+			    finished=1
+			    option=
+			    ;;
+			q*)
+			    QUIET=$(($QUIET + 1 ))
+			    option=${option#q}
+			    ;;
+			*)
+			    usage 1
+			    ;;
+		    esac
+		done
+		shift
+		;;
+	    *)
+		finished=1
+		;;
+	esac
+    done
+
+    case $# in
+	0)
+	    ;;
+	1)
+	    [ -n "$SHOREWALL_DIR" ] && usage 2
+
+	    if [ ! -d $1 ]; then
+		if [ -e $1 ]; then
+		    echo "$1 is not a directory" >&2 && exit 2
+		else
+		    echo "Directory $1 does not exist" >&2 && exit 2
+		fi
+	    fi
+
+	    SHOREWALL_DIR=$1
+	    export SHOREWALL_DIR
+	    ;;
+	*)
+	    usage 1
+	    ;;
+    esac
+
+    export NOROUTES
+
+    exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock check
+}
+
+reload_command() {
+    local finished=0
+
+    while [ $finished -eq 0 -a $# -gt 0 ]; do
+	option=$1
+	case $option in
+	    -*)
+		option=${option#-}
+
+		while [ -n "$option" ]; do
+		    case $option in
+			-)
+			    finished=1
+			    option=
+			    ;;
+			q*)
+			    QUIET=$(($QUIET + 1 ))
+			    option=${option#q}
+			    ;;
+			n*)
+			    NOROUTES=Yes
+			    option=${option#n}
+			    ;;
+			*)
+			    usage 1
+			    ;;
+		    esac
+		done
+		shift
+		;;
+	    *)
+		finished=1
+		;;
+	esac
+    done
+
+    case $# in
+	0)
+	    ;;
+	1)
+	    [ -n "$SHOREWALL_DIR" ] && usage 2
+
+	    if [ ! -d $1 ]; then
+		if [ -e $1 ]; then
+		    echo "$1 is not a directory" >&2 && exit 2
+		else
+		    echo "Directory $1 does not exist" >&2 && exit 2
+		fi
+	    fi
+
+	    SHOREWALL_DIR=$1
+	    export SHOREWALL_DIR
+	    ;;
+	*)
+	    usage 1
+	    ;;
+    esac
+
+    export NOROUTES
+
+    [ -n "$nolock" ] || mutex_on
+
+    if $SHOREWALL_SHELL $FIREWALL $debugging $nolock compile /var/lib/shorewall/.reload; then
+	$0 nolock $(make_quiet) restore .reload
+    fi
+
+    [ -n "$nolock" ] || mutex_off
+}
+
+show_command() {
+    local finished=0
+
+    while [ $finished -eq 0 -a $# -gt 0 ]; do
+	option=$1
+	case $option in
+	    -*)
+		option=${option#-}
+
+		while [ -n "$option" ]; do
+		    case $option in
+			-)
+			    finished=1
+			    option=
+			    ;;
+			v*)
+			    VERBOSE=Yes
+			    option=${option#v}
+			    ;;
+			*)
+			    usage 1
+			    ;;
+		    esac
+		done
+		shift
+		;;
+	    *)
+		finished=1
+		;;
+	esac
+    done
+
+    [ -n "$debugging" ] && set -x
+    case "$1" in
+    connections)
+	[ $# -gt 1 ] && usage 1
+	echo "Shorewall-$version Connections at $HOSTNAME - $(date)"
+	echo
+	cat /proc/net/ip_conntrack
+	;;
+    nat)
+	[ $# -gt 1 ] && usage 1
+	echo "Shorewall-$version NAT Table at $HOSTNAME - $(date)"
+	echo
+	show_reset
+	$IPTABLES -t nat -L $IPT_OPTIONS
+	;;
+    tos|mangle)
+	[ $# -gt 1 ] && usage 1
+	echo "Shorewall-$version Mangle Table at $HOSTNAME - $(date)"
+	echo
+	show_reset
+	$IPTABLES -t mangle -L $IPT_OPTIONS
+	;;
+    log)
+	[ $# -gt 1 ] && usage 1
+	echo "Shorewall-$version Log at $HOSTNAME - $(date)"
+	echo
+	show_reset
+	host=$(echo $HOSTNAME | sed 's/\..*$//')
+	packet_log 20
+	;;
+    tc)
+	[ $# -gt 1 ] && usage 1
+	echo "Shorewall-$version Traffic Control at $HOSTNAME - $(date)"
+	echo
+	show_tc
+	;;
+    classifiers)
+	[ $# -gt 1 ] && usage 1
+	echo "Shorewall-$version Clasifiers at $HOSTNAME - $(date)"
+	echo
+	show_classifiers
+	;;
+    zones)
+	[ $# -gt 1 ] && usage 1
+	if [ -f /var/lib/shorewall/zones ]; then
+	    echo "Shorewall-$version Zones at $HOSTNAME - $(date)"
+	    echo
+	    while read zone type hosts; do
+		echo "$zone ($type)"
+		for host in $hosts; do
+		    echo "   $host"
+		done
+	    done < /var/lib/shorewall/zones
+	    echo
+	else
+	    echo "   ERROR: /var/lib/shorewall/zones does not exist" >&2
+	    exit 1
+	fi
+	;;
+    capabilities)
+	[ $# -gt 1 ] && usage 1
+	determine_capabilities
+	report_capabilities
+	;;
+    actions)
+	[ $# -gt 1 ] && usage 1
+	echo "allowBcast          # Silently Allow Broadcast/multicast"
+	echo "dropBcast           # Silently Drop Broadcast/multicast"
+	echo "dropNotSyn          # Silently Drop Non-syn TCP packets"
+	echo "rejNotSyn           # Silently Reject Non-syn TCP packets"
+	echo "dropInvalid         # Silently Drop packets that are in the INVALID conntrack state"
+	echo "allowInvalid        # Accept packets that are in the INVALID conntrack state."
+	echo "allowoutUPnP        # Allow traffic from local command 'upnpd'"
+	echo "allowinUPnP         # Allow UPnP inbound (to firewall) traffic"
+	echo "forwardUPnP         # Allow traffic that upnpd has redirected from"
+	cat /usr/share/shorewall/actions.std /etc/shorewall/actions | grep -Ev '^\#|^$'
+	;;
+    macros)
+	[ $# -gt 1 ] && usage 1
+	for macro in /usr/share/shorewall/macro.*; do
+	    foo=`grep 'This macro' $macro | head -n 1`
+	    if [ -n "$foo" ]; then
+		macro=${macro#*.}
+		foo=${foo%.*}
+		echo "   $macro  ${foo#\#}" | sed 's/This macro //'
+	    fi
+	done
+	;;
+    *)
+	echo "Shorewall-$version $([ $# -gt 0 ] && echo Chains || echo Chain) $* at $HOSTNAME - $(date)"
+	echo
+	show_reset
+	if [ $# -gt 0 ]; then
+	    for chain in $*; do
+		$IPTABLES -L $chain $IPT_OPTIONS
+	    done
+	else
+	    $IPTABLES -L $IPT_OPTIONS
+	fi
+	;;
+    esac
+}
+
+dump_command() {
+    local finished=0
+
+    while [ $finished -eq 0 -a $# -gt 0 ]; do
+	option=$1
+	case $option in
+	    -*)
+		option=${option#-}
+
+		while [ -n "$option" ]; do
+		    case $option in
+			-)
+			    finished=1
+			    option=
+			    ;;
+			v*)
+			    VERBOSE=Yes
+			    option=${option#v}
+			    ;;
+			*)
+			    usage 1
+			    ;;
+		    esac
+		done
+		shift
+		;;
+	    *)
+		finished=1
+		;;
+	esac
+    done
+
+    [ -n "$debugging" ] && set -x
+    [ $# -eq 0 ] || usage 1
+    clear_term
+    echo "Shorewall-$version Dump at $HOSTNAME - $(date)"
+    echo
+    show_reset
+    host=$(echo $HOSTNAME | sed 's/\..*$//')
+    $IPTABLES -L $IPT_OPTIONS
+    echo
+    packet_log 20
+
+    heading "NAT Table"
+    $IPTABLES -t nat -L $IPT_OPTIONS
+
+    heading "Mangle Table"
+    $IPTABLES -t mangle -L $IPT_OPTIONS
+    echo
+    cat /proc/net/ip_conntrack
+
+    heading "IP Configuration"
+    ip addr ls
+
+    heading "IP Stats"
+    ip -stat link ls
+
+    if qt mywhich brctl; then
+	heading "Bridges"
+	brctl show
+    fi
+
+    heading "/proc"
+    show_proc /proc/version
+    show_proc /proc/sys/net/ipv4/ip_forward
+    show_proc /proc/sys/net/ipv4/icmp_echo_ignore_all
+
+    for directory in /proc/sys/net/ipv4/conf/*; do
+	for file in proxy_arp arp_filter arp_ignore rp_filter log_martians; do
+	    show_proc $directory/$file
+	done
+    done
+
+    if [ -n "$(ip rule ls)" ]; then
+	heading "Routing Rules"
+	ip rule ls
+	ip rule ls | while read rule; do
+	    echo ${rule##* }
+	done | sort -u | while read table; do
+	    heading "Table $table:"
+	    ip route ls table $table
+	done
+    else
+	heading "Routing Table"
+	ip route ls
+    fi
+
+    heading "ARP"
+    arp -na
+
+    if qt mywhich lsmod; then
+	heading "Modules"
+	lsmod | grep -E '^ip_|^ipt_|^iptable_'
+    fi
+
+    determine_capabilities
+    echo
+    report_capabilities
+
+    if [ -n "$TC_ENABLED" ]; then
+	echo
+	echo "Traffic Control"
+	echo
+	show_tc
+	echo "Traffic Filters"
+	echo
+	show_classifiers
+	fi
+}
+
+restore_command() {
+    local finished=0
+
+    while [ $finished -eq 0 -a $# -gt 0 ]; do
+	option=$1
+	case $option in
+	    -*)
+		option=${option#-}
+
+		while [ -n "$option" ]; do
+		    case $option in
+			-)
+			    finished=1
+			    option=
+			    ;;
+			q*)
+			    QUIET=$(($QUIET + 1 ))
+			    option=${option#q}
+			    ;;
+			n*)
+			    NOROUTES=Yes
+			    option=${option#n}
+			    ;;
+			*)
+			    usage 1
+			    ;;
+		    esac
+		done
+		shift
+		;;
+	    *)
+		finished=1
+		;;
+	esac
+    done
+
+    case $# in
+    0)
+	;;
+    1)
+	RESTOREFILE="$1"
+	validate_restorefile '<restore file>'
+	;;
+    *)
+	usage 1
+	;;
+    esac
+
+    RESTOREPATH=/var/lib/shorewall/$RESTOREFILE
+
+    export NOROUTES
+
+    [ -n "$nolock" ] || mutex_on
+
+    if [ -x $RESTOREPATH ]; then
+	if [ -x ${RESTOREPATH}-ipsets ] ; then
+	    echo Restoring Ipsets...
+	    iptables -F
+	    iptables -X
+	    ${RESTOREPATH}-ipsets
+	fi
+
+	echo Restoring Shorewall...
+	$RESTOREPATH && echo "Shorewall restored from /var/lib/shorewall/$RESTOREFILE"
+	[ -n "$nolock" ] || mutex_off
+    else
+	echo "File /var/lib/shorewall/$RESTOREFILE: file not found"
+	[ -n "$nolock" ] || mutex_off
+	exit 2
+    fi
+}
 #
 # Help information
 #
@@ -506,12 +1188,12 @@ usage() # $1 = exit status
     echo "where <command> is one of:"
     echo "   add <interface>[:<host-list>] ... <zone>"
     echo "   allow <address> ..."
-    echo "   check [ <directory> ]"
+    echo "   check [ -q ] [ <directory> ]"
     echo "   clear"
     echo "   compile  [ -e ] [ -p ] [ <directory name> ] <path name>"
     echo "   delete <interface>[:<host-list>] ... <zone>"
     echo "   drop <address> ..."
-    echo "   dump"
+    echo "   dump [ -q ] [ -v ]"
     echo "   forget [ <file name> ]"
     echo "   generate  [ -e ] [-p ] [ <directory name> ] <path name>"
     echo "   help [ <command > | host | address ]"
@@ -519,7 +1201,7 @@ usage() # $1 = exit status
     echo "   ipcalc { <address>/<vlsm> | <address> <netmask> }"
     echo "   ipdecimal { <address> | <integer> }"
     echo "   iprange <address>-<address>"
-    echo "   logwatch [<refresh interval>]"
+    echo "   logwatch [ -v ] [<refresh interval>]"
     echo "   refresh"
     echo "   reject <address> ..."
     echo "   reset"
@@ -527,7 +1209,7 @@ usage() # $1 = exit status
     echo "   restart [ -n ] [ -q ] [ <directory> ]"
     echo "   restore [ -n ] [ -q ] [ <file name> ]"
     echo "   save [ <file name> ]"
-    echo "   show [<chain> [ <chain> ... ]|actions|capabilities|classifiers|connections|log|macros|mangle|nat|tc|zones]"
+    echo "   show [ -v ] [<chain> [ <chain> ... ]|actions|capabilities|classifiers|connections|log|macros|mangle|nat|tc|zones]"
     echo "   start [ -f ] [ -n ] [ -q ] [ <directory> ]"
     echo "   stop"
     echo "   status"
@@ -603,6 +1285,7 @@ make_quiet() {
 	echo $option
     fi
 }
+
 #
 # Execution begins here
 #
@@ -790,103 +1473,8 @@ case "$COMMAND" in
     start)
 	shift
 
-	finished=0
+	start_command $@
 
-	while [ $finished -eq 0 -a $# -gt 0 ]; do
-	    option=$1
-	    case $option in
-		-*)
-		    option=${option#-}
-
-		    while [ -n "$option" ]; do
-			case $option in
-			    -)
-				finished=1
-				option=
-				;;
-			    q*)
-				QUIET=$(($QUIET + 1 ))
-				option=${option#q}
-				;;
-			    f*)
-				FAST=Yes
-				option=${option#f}
-				;;
-			    n*)
-				NOROUTES=Yes
-				option=${option#n}
-				;;
-			    *)
-				usage 1
-				;;
-			esac
-		    done
-		    shift
-		    ;;
-		*)
-		    finished=1
-		    ;;
-	    esac
-	done
-
-	case $# in
-	    0)
-		;;
-	    1)
-		[ -n "$SHOREWALL_DIR" -o -n "$FAST" ] && usage 2
-
-		if [ ! -d $1 ]; then
-		    if [ -e $1 ]; then
-			echo "$1 is not a directory" >&2 && exit 2
-		    else
-			echo "Directory $1 does not exist" >&2 && exit 2
-		    fi
-		fi
-
-		SHOREWALL_DIR=$
-		export SHOREWALL_DIR
-		;;
-	    *)
-		usage 1
-		;;
-	esac
-
-	export NOROUTES
-
-	if [ -n "$FAST" ]; then
-	    if qt mywhich make; then
-		make -qf /etc/shorewall/Makefile || FAST=
-	    fi
-
-	    if [ -n "$FAST" ]; then
-
-		RESTOREPATH=/var/lib/shorewall/$RESTOREFILE
-
-		if [ -x $RESTOREPATH ]; then
-		    if [ -x ${RESTOREPATH}-ipsets ]; then
-			echo Restoring Ipsets...
-		        #
-		        # We must purge iptables to be sure that there are no
-		        # references to ipsets
-		        #
-			iptables -F
-			iptables -X
-			${RESTOREPATH}-ipsets
-		    fi
-
-		    echo Restoring Shorewall...
-		    $RESTOREPATH
-		    date > /var/lib/shorewall/restarted
-		    echo Shorewall restored from $RESTOREPATH
-		else
-		    exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock start
-		fi
-	    else
-		exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock start
-	    fi
-	else
-	    exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock start
-	fi
 	;;
     stop|reset|clear|refresh)
 	[ $# -ne 1 ] && usage 1
@@ -896,344 +1484,36 @@ case "$COMMAND" in
     compile|generate)
 	shift
 
-	finished=0
+	compile_command $@
 
-	while [ $finished -eq 0 ]; do
-	    [ $# -eq 0 ] && usage 1
-	    option=$1
-	    case $option in
-		-*)
-		    option=${option#-}
-
-		    [ -z "$option" ] && usage 1
-
-		    while [ -n "$option" ]; do
-			case $option in
-			    e*)
-				EXPORT=Yes
-				option=${option#e}
-				;;
-			    q*)
-				QUIET=$(($QUIET + 1 ))
-				option=${option#q}
-				;;
-			    p*)
-				export PROGRAM=Yes
-				option=${option#p}
-				;;
-			    -)
-				finished=1
-				option=
-				;;
-			    *)
-				usage 1
-				;;
-			esac
-		    done
-		    shift
-		    ;;
-		*)
-		    finished=1
-		    ;;
-	    esac
-	done
-
-	file=
-
-	case $# in
-	    1)
-		file=$1
-		;;
-	    2)
-		[ -n "$SHOREWALL_DIR" ] && usage 2
-
-		if [ ! -d $1 ]; then
-		    if [ -e $1 ]; then
-			echo "$1 is not a directory" >&2 && exit 2
-		    else
-			echo "Directory $1 does not exist" >&2 && exit 2
-		    fi
-		fi
-
-		SHOREWALL_DIR=$1
-		export SHOREWALL_DIR
-		file=$2
-		;;
-	    *)
-		usage 1
-		;;
-	esac
-
-	export EXPORT
-
-	exec $SHOREWALL_SHELL $FIREWALL $debugging generate $file
 	;;
     restart)
 	shift
 
-	finished=0
+	restart_command $@
 
-	while [ $finished -eq 0 -a $# -gt 0 ]; do
-	    option=$1
-	    case $option in
-		-*)
-		    option=${option#-}
-
-		    while [ -n "$option" ]; do
-			case $option in
-			    -)
-				finished=1
-				option=
-				;;
-			    q*)
-				QUIET=$(($QUIET + 1 ))
-				option=${option#q}
-				;;
-			    n*)
-				NOROUTES=Yes
-				option=${option#n}
-				;;
-			    *)
-				usage 1
-				;;
-			esac
-		    done
-		    shift
-		    ;;
-		*)
-		    finished=1
-		    ;;
-	    esac
-	done
-
-	case $# in
-	    0)
-		;;
-	    1)
-		[ -n "$SHOREWALL_DIR" ] && usage 2
-
-		if [ ! -d $1 ]; then
-		    if [ -e $1 ]; then
-			echo "$1 is not a directory" >&2 && exit 2
-		    else
-			echo "Directory $1 does not exist" >&2 && exit 2
-		    fi
-		fi
-
-		SHOREWALL_DIR=$1
-		export SHOREWALL_DIR
-		;;
-	    *)
-		usage 1
-		;;
-	esac
-
-	export NOROUTES
-
-	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock restart
 	;;
     check)
-	case $# in
-	    1)
-		;;
-	    2)
-		[ -n "$SHOREWALL_DIR" ] && usage 2
+	shift
 
-		if [ ! -d $2 ]; then
-		    if [ -e $2 ]; then
-			echo "$2 is not a directory" >&2 && exit 2
-		    else
-			echo "Directory $2 does not exist" >&2 && exit 2
-		    fi
-		fi
+	check_command $@
 
-		SHOREWALL_DIR=$2
-		export SHOREWALL_DIR
-		;;
-	    *)
-		usage 1
-		;;
-	esac
-
-	export NOROUTES
-
-	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock check
 	;;
     reload)
 	shift
 
-	finished=0
+	reload_command $@
 
-	while [ $finished -eq 0 -a $# -gt 0 ]; do
-	    option=$1
-	    case $option in
-		-*)
-		    option=${option#-}
-
-		    while [ -n "$option" ]; do
-			case $option in
-			    -)
-				finished=1
-				option=
-				;;
-			    q*)
-				QUIET=$(($QUIET + 1 ))
-				option=${option#q}
-				;;
-			    n*)
-				NOROUTES=Yes
-				option=${option#n}
-				;;
-			    *)
-				usage 1
-				;;
-			esac
-		    done
-		    shift
-		    ;;
-		*)
-		    finished=1
-		    ;;
-	    esac
-	done
-
-	case $# in
-	    0)
-		;;
-	    1)
-		[ -n "$SHOREWALL_DIR" ] && usage 2
-
-		if [ ! -d $1 ]; then
-		    if [ -e $1 ]; then
-			echo "$1 is not a directory" >&2 && exit 2
-		    else
-			echo "Directory $1 does not exist" >&2 && exit 2
-		    fi
-		fi
-
-		SHOREWALL_DIR=$1
-		export SHOREWALL_DIR
-		;;
-	    *)
-		usage 1
-		;;
-	esac
-
-	export NOROUTES
-
-	[ -n "$nolock" ] || mutex_on
-
-	if $SHOREWALL_SHELL $FIREWALL $debugging $nolock compile /var/lib/shorewall/.reload; then
-	   $0 nolock $(make_quiet) restore .reload
-	fi
-
-	[ -n "$nolock" ] || mutex_off
 	;;
     add|delete)
 	[ $# -lt 3 ] && usage 1
 	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $@
 	;;
     show|list)
-	[ -n "$debugging" ] && set -x
-	case "$2" in
-	connections)
-	    [ $# -gt 2 ] && usage 1
-	    echo "Shorewall-$version Connections at $HOSTNAME - $(date)"
-	    echo
-	    cat /proc/net/ip_conntrack
-	    ;;
-	nat)
-	    [ $# -gt 2 ] && usage 1
-	    echo "Shorewall-$version NAT Table at $HOSTNAME - $(date)"
-	    echo
-	    show_reset
-	    $IPTABLES -t nat -L $IPT_OPTIONS
-	    ;;
-	tos|mangle)
-	    [ $# -gt 2 ] && usage 1
-	    echo "Shorewall-$version Mangle Table at $HOSTNAME - $(date)"
-	    echo
-	    show_reset
-	    $IPTABLES -t mangle -L $IPT_OPTIONS
-	    ;;
-	log)
-	    [ $# -gt 2 ] && usage 1
-	    echo "Shorewall-$version Log at $HOSTNAME - $(date)"
-	    echo
-	    show_reset
-	    host=$(echo $HOSTNAME | sed 's/\..*$//')
-	    packet_log 20
-	    ;;
-	tc)
-	    [ $# -gt 2 ] && usage 1
-	    echo "Shorewall-$version Traffic Control at $HOSTNAME - $(date)"
-	    echo
-	    show_tc
-	    ;;
-	classifiers)
-	    [ $# -gt 2 ] && usage 1
-	    echo "Shorewall-$version Clasifiers at $HOSTNAME - $(date)"
-	    echo
-	    show_classifiers
-	    ;;
-	zones)
-	    [ $# -gt 2 ] && usage 1
-	    if [ -f /var/lib/shorewall/zones ]; then
-		echo "Shorewall-$version Zones at $HOSTNAME - $(date)"
-		echo
-		while read zone type hosts; do
-		    echo "$zone ($type)"
-		    for host in $hosts; do
-			echo "   $host"
-		    done
-		done < /var/lib/shorewall/zones
-		echo
-	    else
-		echo "   ERROR: /var/lib/shorewall/zones does not exist" >&2
-		exit 1
-	    fi
-	    ;;
-	capabilities)
-	    determine_capabilities
-	    report_capabilities
-	    ;;
-	actions)
-	    echo "allowBcast          # Silently Allow Broadcast/multicast"
-	    echo "dropBcast           # Silently Drop Broadcast/multicast"
-            echo "dropNotSyn          # Silently Drop Non-syn TCP packets"
-	    echo "rejNotSyn           # Silently Reject Non-syn TCP packets"
-	    echo "dropInvalid         # Silently Drop packets that are in the INVALID conntrack state"
-	    echo "allowInvalid        # Accept packets that are in the INVALID conntrack state."
-	    echo "allowoutUPnP        # Allow traffic from local command 'upnpd'"
-	    echo "allowinUPnP         # Allow UPnP inbound (to firewall) traffic"
-	    echo "forwardUPnP         # Allow traffic that upnpd has redirected from"
-	    cat /usr/share/shorewall/actions.std /etc/shorewall/actions | grep -Ev '^\#|^$'
-	    ;;
-	macros)
-	    for macro in /usr/share/shorewall/macro.*; do
-		foo=`grep 'This macro' $macro | head -n 1`
-		if [ -n "$foo" ]; then
-		    macro=${macro#*.}
-		    foo=${foo%.*}
-		    echo "   $macro  ${foo#\#}" | sed 's/This macro //'
-		fi
-	    done
-	    ;;
-	*)
-	    shift
+    	shift
 
-	    echo "Shorewall-$version $([ $# -gt 1 ] && echo Chains || echo Chain) $* at $HOSTNAME - $(date)"
-	    echo
-	    show_reset
-	    if [ $# -gt 0 ]; then
-		for chain in $*; do
-		    $IPTABLES -L $chain $IPT_OPTIONS
-		done
-	    else
-		$IPTABLES -L $IPT_OPTIONS
-	    fi
-	    ;;
-	esac
+    	show_command $@
+
 	;;
     status)
 	[ $# -eq 1 ] || usage 1
@@ -1262,82 +1542,10 @@ case "$COMMAND" in
 	exit $status
 	;;
     dump)
-	[ -n "$debugging" ] && set -x
-	[ $# -eq 1 ] || usage 1
-	clear_term
-	echo "Shorewall-$version Dump at $HOSTNAME - $(date)"
-	echo
-	show_reset
-	host=$(echo $HOSTNAME | sed 's/\..*$//')
-	$IPTABLES -L $IPT_OPTIONS
-	echo
-	packet_log 20
+    	shift
 
-	heading "NAT Table"
-	$IPTABLES -t nat -L $IPT_OPTIONS
+    	dump_command $@
 
-	heading "Mangle Table"
-	$IPTABLES -t mangle -L $IPT_OPTIONS
-	echo
-	cat /proc/net/ip_conntrack
-
-	heading "IP Configuration"
-	ip addr ls
-
-	heading "IP Stats"
-	ip -stat link ls
-
-	if qt mywhich brctl; then
-	    heading "Bridges"
-	    brctl show
-	fi
-
-	heading "/proc"
-	show_proc /proc/version
-	show_proc /proc/sys/net/ipv4/ip_forward
-	show_proc /proc/sys/net/ipv4/icmp_echo_ignore_all
-
-	for directory in /proc/sys/net/ipv4/conf/*; do
-	    for file in proxy_arp arp_filter arp_ignore rp_filter log_martians; do
-		show_proc $directory/$file
-	    done
-	done
-
-	if [ -n "$(ip rule ls)" ]; then
-	    heading "Routing Rules"
-	    ip rule ls
-	    ip rule ls | while read rule; do
-		echo ${rule##* }
-	    done | sort -u | while read table; do
-		heading "Table $table:"
-		ip route ls table $table
-	    done
-	else
-	    heading "Routing Table"
-	    ip route ls
-	fi
-
-	heading "ARP"
-	arp -na
-
-	if qt mywhich lsmod; then
-	    heading "Modules"
-	    lsmod | grep -E '^ip_|^ipt_|^iptable_'
-	fi
-
-	determine_capabilities
-	echo
-	report_capabilities
-
-	if [ -n "$TC_ENABLED" ]; then
-	    echo
-	    echo "Traffic Control"
-	    echo
-	    show_tc
-	    echo "Traffic Filters"
-	    echo
-	    show_classifiers
-	fi
 	;;
     hits)
 	[ -n "$debugging" ] && set -x
@@ -1402,10 +1610,47 @@ case "$COMMAND" in
 	fi
 	;;
     logwatch)
+	shift
+
+	finished=0
+
+	while [ $finished -eq 0 ]; do
+	    [ $# -eq 0 ] && usage 1
+	    option=$1
+	    case $option in
+		-*)
+		    option=${option#-}
+
+		    [ -z "$option" ] && usage 1
+
+		    while [ -n "$option" ]; do
+			case $option in
+			    v*)
+				VERBOSE=Yes
+				option=${option#e}
+				;;
+			    -)
+				finished=1
+				option=
+				;;
+			    *)
+				usage 1
+				;;
+			esac
+		    done
+		    shift
+		    ;;
+		*)
+		    finished=1
+		    ;;
+	    esac
+	done
+
 	[ -n "$debugging" ] && set -x
-	if [ $# -eq 2 ]; then
-	    logwatch $2
-	elif [ $# -eq 1 ]; then
+
+	if [ $# -eq 1 ]; then
+	    logwatch $1
+	elif [ $# -eq 0 ]; then
 	    logwatch 30
 	else
 	    usage 1
@@ -1550,75 +1795,8 @@ case "$COMMAND" in
     restore)
 	shift
 
-	finished=0
+	restore_command $@
 
-	while [ $finished -eq 0 -a $# -gt 0 ]; do
-	    option=$1
-	    case $option in
-		-*)
-		    option=${option#-}
-
-		    while [ -n "$option" ]; do
-			case $option in
-			    -)
-				finished=1
-				option=
-				;;
-			    q*)
-				QUIET=$(($QUIET + 1 ))
-				option=${option#q}
-				;;
-			    n*)
-				NOROUTES=Yes
-				option=${option#n}
-				;;
-			    *)
-				usage 1
-				;;
-			esac
-		    done
-		    shift
-		    ;;
-		*)
-		    finished=1
-		    ;;
-	    esac
-	done
-
-	case $# in
-	0)
-	    ;;
-	1)
-	    RESTOREFILE="$1"
-	    validate_restorefile '<restore file>'
-	    ;;
-	*)
-	    usage 1
-	    ;;
-	esac
-
-	RESTOREPATH=/var/lib/shorewall/$RESTOREFILE
-
-	export NOROUTES
-
-	[ -n "$nolock" ] || mutex_on
-
-	if [ -x $RESTOREPATH ]; then
-	    if [ -x ${RESTOREPATH}-ipsets ] ; then
-		echo Restoring Ipsets...
-		iptables -F
-		iptables -X
-		${RESTOREPATH}-ipsets
-	    fi
-
-	    echo Restoring Shorewall...
-	    $RESTOREPATH && echo "Shorewall restored from /var/lib/shorewall/$RESTOREFILE"
-	    [ -n "$nolock" ] || mutex_off
-	else
-	    echo "File /var/lib/shorewall/$RESTOREFILE: file not found"
-	    [ -n "$nolock" ] || mutex_off
-            exit 2
-        fi
         ;;
     call)
 	[ -n "$debugging" ] && set -x

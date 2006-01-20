@@ -162,11 +162,11 @@ fi
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel ipsecvpn Samples
 
 %changelog
-* Fri Tue 20 2006 Tom Eastep tom@shorewall.net
+* Fri Jan 20 2006 Tom Eastep tom@shorewall.net
 - Updated to 3.1.3-1
-* Fri Tue 20 2006 Tom Eastep tom@shorewall.net
+* Fri Jan 20 2006 Tom Eastep tom@shorewall.net
 - Change security so that ordinary users can compile
-* Sun Tue 17 2006 Tom Eastep tom@shorewall.net
+* Tue Jan 17 2006 Tom Eastep tom@shorewall.net
 - Added program skeleton Files
 * Sun Jan 15 2006 Tom Eastep tom@shorewall.net
 - Updated to 3.1.2-1

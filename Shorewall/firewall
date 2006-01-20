@@ -8945,7 +8945,7 @@ define_firewall() # $1 = Command (Start or Restart)
 # from that script are available here
 #
 compile_stop_firewall() {
-    local IPTABLES_COMMAND="$IPTABLES"
+    local IPTABLES_COMMAND="\$IPTABLES"
     local INDENT="    "
 
     cat >> $RESTOREBASE << __EOF__
@@ -8953,16 +8953,16 @@ compile_stop_firewall() {
 stop_firewall() {
 
     deletechain() {
-	qt $IPTABLES -L \$1 -n && qt $IPTABLES -F \$1 && qt $IPTABLES -X \$1
+	qt \$IPTABLES -L \$1 -n && qt \$IPTABLES -F \$1 && qt \$IPTABLES -X \$1
     }
 
     deleteallchains() {
-	$IPTABLES -F
-	$IPTABLES -X
+	\$IPTABLES -F
+	\$IPTABLES -X
     }
 
     setcontinue() {
-	$IPTABLES -A \$1 -m state --state ESTABLISHED,RELATED -j ACCEPT
+	\$IPTABLES -A \$1 -m state --state ESTABLISHED,RELATED -j ACCEPT
     }
 
     case \$COMMAND in
@@ -8984,8 +8984,8 @@ stop_firewall() {
 		    # references to ipsets
 		    #
 		    for table in mangle nat filter; do
-			$IPTABLES -t \$table -F
-			$IPTABLES -t \$table -X
+			\$IPTABLES -t \$table -F
+			\$IPTABLES -t \$table -X
 		    done
 
 		    \${RESTOREPATH}-ipsets
@@ -9023,7 +9023,7 @@ stop_firewall() {
 	run_iptables -t mangle -F
 	run_iptables -t mangle -X
 	for chain in PREROUTING INPUT FORWARD POSTROUTING; do
-	    qt $IPTABLES -t mangle -P \$chain ACCEPT
+	    qt \$IPTABLES -t mangle -P \$chain ACCEPT
 	done
     fi
 
@@ -9031,14 +9031,14 @@ stop_firewall() {
 	run_iptables -t raw -F
 	run_iptables -t raw -X
 	for chain in PREROUTING OUTPUT; do
-	    qt $IPTABLES -t raw -P \$chain ACCEPT
+	    qt \$IPTABLES -t raw -P \$chain ACCEPT
 	done
     fi
 
     if [ -n "\$NAT_ENABLED" ]; then
 	delete_nat
 	for chain in PREROUTING POSTROUTING OUTPUT; do
-	    qt $IPTABLES -t nat -P \$chain ACCEPT
+	    qt \$IPTABLES -t nat -P \$chain ACCEPT
 	done
     fi
 
@@ -9075,8 +9075,8 @@ __EOF__
     for host in $CRITICALHOSTS; do
 	interface=\${host%:*}
 	networks=\${host#*:}
-	$IPTABLES -A INPUT  -i \$interface \$(source_ip_range \$networks) -j ACCEPT
-	$IPTABLES -A OUTPUT -o \$interface \$(dest_ip_range \$networks) -j ACCEPT
+	\$IPTABLES -A INPUT  -i \$interface \$(source_ip_range \$networks) -j ACCEPT
+	\$IPTABLES -A OUTPUT -o \$interface \$(dest_ip_range \$networks) -j ACCEPT
     done
 
     for chain in INPUT OUTPUT; do
@@ -9098,8 +9098,8 @@ __EOF__
     for host in $CRITICALHOSTS; do
 	interface=\${host%:*}
 	networks=\${host#*:}
-	$IPTABLES -A INPUT  -i \$interface \$(source_ip_range \$networks) -j ACCEPT
-	$IPTABLES -A OUTPUT -o \$interface \$(dest_ip_range \$networks) -j ACCEPT
+	\$IPTABLES -A INPUT  -i \$interface \$(source_ip_range \$networks) -j ACCEPT
+	\$IPTABLES -A OUTPUT -o \$interface \$(dest_ip_range \$networks) -j ACCEPT
     done
 
     setpolicy INPUT DROP
@@ -9140,19 +9140,19 @@ __EOF__
 
     process_routestopped -A
 
-    save_command "$IPTABLES -A INPUT  -i lo -j ACCEPT"
+    save_command "\$IPTABLES -A INPUT  -i lo -j ACCEPT"
 
     [ -z "$ADMINISABSENTMINDED" ] && \
-	save_command "$IPTABLES -A OUTPUT -o lo -j ACCEPT"
+	save_command "\$IPTABLES -A OUTPUT -o lo -j ACCEPT"
 
     for interface in $(find_interfaces_by_option dhcp); do
-	save_command "$IPTABLES -A INPUT  -p udp -i $interface --dport 67:68 -j ACCEPT"
+	save_command "\$IPTABLES -A INPUT  -p udp -i $interface --dport 67:68 -j ACCEPT"
 	[ -z "$ADMINISABSENTMINDED" ] && \
-	    save_command "$IPTABLES -A OUTPUT -p udp -o $interface --dport 67:68 -j ACCEPT"
+	    save_command "\$IPTABLES -A OUTPUT -p udp -o $interface --dport 67:68 -j ACCEPT"
 	#
 	# This might be a bridge
 	#
-	save_command "$IPTABLES -A FORWARD -p udp -i $interface -o $interface --dport 67:68 -j ACCEPT"
+	save_command "\$IPTABLES -A FORWARD -p udp -i $interface -o $interface --dport 67:68 -j ACCEPT"
     done
 
     save_command
@@ -9215,7 +9215,7 @@ compile_firewall() # $1 = File Name
     }
 
     do_iptables() {
-	save_command $IPTABLES $@
+	save_command \$IPTABLES $@
     }
 
     qt_iptables() {
@@ -9225,7 +9225,7 @@ compile_firewall() # $1 = File Name
 	[ -n "$BRIDGING" ]      && [ -f $TMP_DIR/physdev ] && rm -f $TMP_DIR/physdev
 	[ -n "$IPRANGE_MATCH" ] && [ -f $TMP_DIR/iprange ] && rm -f $TMP_DIR/iprange
 
-	save_command qt $IPTABLES $@
+	save_command qt \$IPTABLES $@
     }
 
     createchain2() # $1 = chain name, $2 = If "yes", create default rules
@@ -9278,7 +9278,7 @@ compile_firewall() # $1 = File Name
 
     deletechain() # $1 = name of chain
     {
-	save_command "qt $IPTABLES -L $1 -n && qt $IPTABLES -F $1 && qt $IPTABLES -X $1"
+	save_command "qt \$IPTABLES -L $1 -n && qt \$IPTABLES -F $1 && qt \$IPTABLES -X $1"
     }
 
     fix_bang() {
@@ -9330,7 +9330,7 @@ __EOF__
 cat >> $RESTOREBASE << __EOF__
 
 setpolicy() {
-    $IPTABLES -P \$1 \$2
+    \$IPTABLES -P \$1 \$2
 }
 
 clear_firewall() {
@@ -9373,8 +9373,8 @@ fatal_error()
 
 run_iptables()
 {
-    if ! $IPTABLES \$@; then
-	error_message "ERROR: Command \"$IPTABLES \$@\" Failed"
+    if ! \$IPTABLES \$@; then
+	error_message "ERROR: Command \"\$IPTABLES \$@\" Failed"
 	stop_firewall
 	exit 2
     fi
@@ -9423,8 +9423,24 @@ __EOF__
     LOGFORMAT="$LOGFORMAT"
     RESTOREFILE="$RESTOREFILE"
     VERSION="$VERSION"
-    IPTABLES="$IPTABLES"
     CONFIG_PATH="$CONFIG_PATH"
+
+__EOF__
+    if [ -n "$IPTABLES" ]; then
+	cat >> $RESTOREBASE << __EOF__
+    IPTABLES="$IPTABLES"
+
+    [ -e "$IPTABLES" ] || startup_error "\$IPTABLES=$IPTABLES does not exist or is not executable"
+__EOF__
+   else
+	cat >> $RESTOREBASE << __EOF__
+    IPTABLES=\$(mywhich iptables 2> /dev/null)
+
+    [ -z "\$IPTABLES" ] && startup_error "Can't find iptables executable"
+__EOF__
+    fi
+
+    cat >> $RESTOREBASE << __EOF__
 
     STOPPING=
     #
@@ -10158,19 +10174,21 @@ do_initialize() {
     # We load the kernel modules here to accurately determine
     # capabilities when module autoloading isn't enabled.
     #
+    PKTTYPE=$(added_param_value_no PKTTYPE $PKTTYPE)
 
     [ -n "${MODULE_SUFFIX:=o gz ko o.gz ko.gz}" ]
+
     load_kernel_modules
 
-    if [ -z "$IPTABLES" ]; then
-	IPTABLES=$(mywhich iptables 2> /dev/null)
+    if [ -z "$EXPORT" ]; then
+	if [ -z "$IPTABLES" ]; then
+	    IPTABLES=$(mywhich iptables 2> /dev/null)
 
-	[ -z "$IPTABLES" ] && startup_error "Can't find iptables executable"
-    else
-	[ -e "$IPTABLES" ] || startup_error "\$IPTABLES=$IPTABLES does not exist or is not executable"
+	    [ -z "$IPTABLES" ] && startup_error "Can't find iptables executable"
+	else
+	    [ -e "$IPTABLES" ] || startup_error "\$IPTABLES=$IPTABLES does not exist or is not executable"
+	fi
     fi
-
-    PKTTYPE=$(added_param_value_no PKTTYPE $PKTTYPE)
 
     determine_capabilities
 

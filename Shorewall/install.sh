@@ -249,10 +249,6 @@ echo  "Shorewall script installed in ${PREFIX}${DEST}/$INIT"
 mkdir -p ${PREFIX}/etc/shorewall
 mkdir -p ${PREFIX}/usr/share/shorewall
 mkdir -p ${PREFIX}/var/lib/shorewall
-
-chmod 755 ${PREFIX}/etc/shorewall
-chmod 755 ${PREFIX}/usr/share/shorewall
-
 #
 # Install the config file
 #
@@ -553,7 +549,7 @@ fi
 #
 # Install the Standard Actions file
 #
-install_file actions.std ${PREFIX}/usr/share/shorewall/actions.std 0644
+install_file actions.std ${PREFIX}/usr/share/shorewall/actions.std 0600
 echo
 echo "Standard actions file installed as ${PREFIX}/etc/shorewall/actions.std"
 
@@ -561,7 +557,7 @@ echo "Standard actions file installed as ${PREFIX}/etc/shorewall/actions.std"
 # Install the Actions file
 #
 if [ ! -f ${PREFIX}/etc/shorewall/actions ]; then
-    run_install $OWNERSHIP -m 0644 actions ${PREFIX}/etc/shorewall/actions
+    run_install $OWNERSHIP -m 0600 actions ${PREFIX}/etc/shorewall/actions
     echo
     echo "Actions file installed as ${PREFIX}/etc/shorewall/actions"
 fi
@@ -577,7 +573,7 @@ echo "Makefile installed as ${PREFIX}/etc/shorewall/Makefile"
 # Install the Action files
 #
 for f in action.* ; do
-    install_file $f ${PREFIX}/usr/share/shorewall/$f 0644
+    install_file $f ${PREFIX}/usr/share/shorewall/$f 0600
     echo
     echo "Action ${f#*.} file installed as ${PREFIX}/usr/share/shorewall/$f"
 done
@@ -588,7 +584,7 @@ echo "Limit action extension script installed as ${PREFIX}/usr/share/shorewall/L
 # Install the Macro files
 #
 for f in macro.* ; do
-    install_file $f ${PREFIX}/usr/share/shorewall/$f 0644
+    install_file $f ${PREFIX}/usr/share/shorewall/$f 0600
     echo
     echo "Macro ${f#*.} file installed as ${PREFIX}/usr/share/shorewall/$f"
 done
@@ -596,7 +592,7 @@ done
 # Install the program skeleton files
 #
 for f in prog.* ; do
-    install_file $f ${PREFIX}/usr/share/shorewall/$f 0644
+    install_file $f ${PREFIX}/usr/share/shorewall/$f 0600
     echo
     echo "Program skeleton file ${f#*.} installed as ${PREFIX}/usr/share/shorewall/$f"
 done

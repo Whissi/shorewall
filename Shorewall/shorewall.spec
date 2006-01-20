@@ -67,7 +67,7 @@ fi
 %attr(0700,root,root) %dir /etc/shorewall
 %attr(0700,root,root) %dir /usr/share/shorewall
 %attr(0700,root,root) %dir /var/lib/shorewall
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/shorewall.conf
+%attr(0644,root,root) %config(noreplace) /etc/shorewall/shorewall.conf
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/zones
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/policy
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/interfaces
@@ -101,67 +101,69 @@ fi
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/tcdevices
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/Makefile
 
-%attr(0544,root,root) /sbin/shorewall
+%attr(0555,root,root) /sbin/shorewall
 
-%attr(0600,root,root) /usr/share/shorewall/version
-%attr(0600,root,root) /usr/share/shorewall/actions.std
-%attr(0600,root,root) /usr/share/shorewall/action.Drop
-%attr(0600,root,root) /usr/share/shorewall/action.Limit
-%attr(0600,root,root) /usr/share/shorewall/action.Reject
-%attr(0600,root,root) /usr/share/shorewall/action.template
+%attr(0644,root,root) /usr/share/shorewall/version
+%attr(0644,root,root) /usr/share/shorewall/actions.std
+%attr(0644,root,root) /usr/share/shorewall/action.Drop
+%attr(0644,root,root) /usr/share/shorewall/action.Limit
+%attr(0644,root,root) /usr/share/shorewall/action.Reject
+%attr(0644,root,root) /usr/share/shorewall/action.template
 %attr(0444,root,root) /usr/share/shorewall/functions
 %attr(0544,root,root) /usr/share/shorewall/firewall
 %attr(0544,root,root) /usr/share/shorewall/help
-%attr(0600,root,root) /usr/share/shorewall/Limit
-%attr(0600,root,root) /usr/share/shorewall/macro.AllowICMPs
-%attr(0600,root,root) /usr/share/shorewall/macro.Amanda
-%attr(0600,root,root) /usr/share/shorewall/macro.Auth
-%attr(0600,root,root) /usr/share/shorewall/macro.BitTorrent
-%attr(0600,root,root) /usr/share/shorewall/macro.CVS
-%attr(0600,root,root) /usr/share/shorewall/macro.Distcc
-%attr(0600,root,root) /usr/share/shorewall/macro.DNS
-%attr(0600,root,root) /usr/share/shorewall/macro.DropDNSrep
-%attr(0600,root,root) /usr/share/shorewall/macro.DropUPnP
-%attr(0600,root,root) /usr/share/shorewall/macro.Edonkey
-%attr(0600,root,root) /usr/share/shorewall/macro.FTP
-%attr(0600,root,root) /usr/share/shorewall/macro.Gnutella
-%attr(0600,root,root) /usr/share/shorewall/macro.ICQ
-%attr(0600,root,root) /usr/share/shorewall/macro.IMAP
-%attr(0600,root,root) /usr/share/shorewall/macro.LDAP
-%attr(0600,root,root) /usr/share/shorewall/macro.MySQL
-%attr(0600,root,root) /usr/share/shorewall/macro.NNTP
-%attr(0600,root,root) /usr/share/shorewall/macro.NTP
-%attr(0600,root,root) /usr/share/shorewall/macro.NTPbrd
-%attr(0600,root,root) /usr/share/shorewall/macro.PCA
-%attr(0600,root,root) /usr/share/shorewall/macro.Ping
-%attr(0600,root,root) /usr/share/shorewall/macro.POP3
-%attr(0600,root,root) /usr/share/shorewall/macro.PostgreSQL
-%attr(0600,root,root) /usr/share/shorewall/macro.Rdate
-%attr(0600,root,root) /usr/share/shorewall/macro.Rsync
-%attr(0600,root,root) /usr/share/shorewall/macro.SMB
-%attr(0600,root,root) /usr/share/shorewall/macro.SMBswat
-%attr(0600,root,root) /usr/share/shorewall/macro.SMTP
-%attr(0600,root,root) /usr/share/shorewall/macro.SNMP
-%attr(0600,root,root) /usr/share/shorewall/macro.SPAMD
-%attr(0600,root,root) /usr/share/shorewall/macro.SSH
-%attr(0600,root,root) /usr/share/shorewall/macro.Submission
-%attr(0600,root,root) /usr/share/shorewall/macro.SVN
-%attr(0600,root,root) /usr/share/shorewall/macro.Syslog
-%attr(0600,root,root) /usr/share/shorewall/macro.Telnet
-%attr(0600,root,root) /usr/share/shorewall/macro.template
-%attr(0600,root,root) /usr/share/shorewall/macro.Trcrt
-%attr(0600,root,root) /usr/share/shorewall/macro.VNC
-%attr(0600,root,root) /usr/share/shorewall/macro.VNCL
-%attr(0600,root,root) /usr/share/shorewall/macro.Web
-%attr(0600,root,root) /usr/share/shorewall/macro.Webmin
-%attr(0600,root,root) /usr/share/shorewall/prog.footer
-%attr(0600,root,root) /usr/share/shorewall/prog.header
-%attr(0600,root,root) /usr/share/shorewall/rfc1918
-%attr(0600,root,root) /usr/share/shorewall/configpath
+%attr(0644,root,root) /usr/share/shorewall/Limit
+%attr(0644,root,root) /usr/share/shorewall/macro.AllowICMPs
+%attr(0644,root,root) /usr/share/shorewall/macro.Amanda
+%attr(0644,root,root) /usr/share/shorewall/macro.Auth
+%attr(0644,root,root) /usr/share/shorewall/macro.BitTorrent
+%attr(0644,root,root) /usr/share/shorewall/macro.CVS
+%attr(0644,root,root) /usr/share/shorewall/macro.Distcc
+%attr(0644,root,root) /usr/share/shorewall/macro.DNS
+%attr(0644,root,root) /usr/share/shorewall/macro.DropDNSrep
+%attr(0644,root,root) /usr/share/shorewall/macro.DropUPnP
+%attr(0644,root,root) /usr/share/shorewall/macro.Edonkey
+%attr(0644,root,root) /usr/share/shorewall/macro.FTP
+%attr(0644,root,root) /usr/share/shorewall/macro.Gnutella
+%attr(0644,root,root) /usr/share/shorewall/macro.ICQ
+%attr(0644,root,root) /usr/share/shorewall/macro.IMAP
+%attr(0644,root,root) /usr/share/shorewall/macro.LDAP
+%attr(0644,root,root) /usr/share/shorewall/macro.MySQL
+%attr(0644,root,root) /usr/share/shorewall/macro.NNTP
+%attr(0644,root,root) /usr/share/shorewall/macro.NTP
+%attr(0644,root,root) /usr/share/shorewall/macro.NTPbrd
+%attr(0644,root,root) /usr/share/shorewall/macro.PCA
+%attr(0644,root,root) /usr/share/shorewall/macro.Ping
+%attr(0644,root,root) /usr/share/shorewall/macro.POP3
+%attr(0644,root,root) /usr/share/shorewall/macro.PostgreSQL
+%attr(0644,root,root) /usr/share/shorewall/macro.Rdate
+%attr(0644,root,root) /usr/share/shorewall/macro.Rsync
+%attr(0644,root,root) /usr/share/shorewall/macro.SMB
+%attr(0644,root,root) /usr/share/shorewall/macro.SMBswat
+%attr(0644,root,root) /usr/share/shorewall/macro.SMTP
+%attr(0644,root,root) /usr/share/shorewall/macro.SNMP
+%attr(0644,root,root) /usr/share/shorewall/macro.SPAMD
+%attr(0644,root,root) /usr/share/shorewall/macro.SSH
+%attr(0644,root,root) /usr/share/shorewall/macro.Submission
+%attr(0644,root,root) /usr/share/shorewall/macro.SVN
+%attr(0644,root,root) /usr/share/shorewall/macro.Syslog
+%attr(0644,root,root) /usr/share/shorewall/macro.Telnet
+%attr(0644,root,root) /usr/share/shorewall/macro.template
+%attr(0644,root,root) /usr/share/shorewall/macro.Trcrt
+%attr(0644,root,root) /usr/share/shorewall/macro.VNC
+%attr(0644,root,root) /usr/share/shorewall/macro.VNCL
+%attr(0644,root,root) /usr/share/shorewall/macro.Web
+%attr(0644,root,root) /usr/share/shorewall/macro.Webmin
+%attr(0644,root,root) /usr/share/shorewall/prog.footer
+%attr(0644,root,root) /usr/share/shorewall/prog.header
+%attr(0644,root,root) /usr/share/shorewall/rfc1918
+%attr(0644,root,root) /usr/share/shorewall/configpath
 
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel ipsecvpn Samples
 
 %changelog
+* Fri Tue 20 2006 Tom Eastep tom@shorewall.net
+- Change security so that ordinary users can compile
 * Sun Tue 17 2006 Tom Eastep tom@shorewall.net
 - Added program skeleton Files
 * Sun Jan 15 2006 Tom Eastep tom@shorewall.net

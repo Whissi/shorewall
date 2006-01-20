@@ -1461,7 +1461,9 @@ __EOF__
 			;;
 		esac
 
-		cat > /etc/iproute2/rt_tables <<EOF
+		if [ $COMMAND = compile ]; then
+		    cat >> $RESTOREBASE << __EOF__
+${INDENT}    		cat > /etc/iproute2/rt_tables <<EOF
 #
 # reserved values
 #
@@ -1473,16 +1475,35 @@ __EOF__
 # local
 #
 EOF
+__EOF__
+		    for table in $PROVIDERS; do
+			eval number=\$${table}_number
+${INDENT}               cat >> $RESTOREBASE << __EOF__
+${INDENT}    \${echobin:-echo} -e "$number\t$table" >>  /etc/iproute2/rt_tables
+__EOF__
+		    done
+		else
+		    cat > /etc/iproute2/rt_tables <<EOF
+#
+# reserved values
+#
+255     local
+254     main
+253     default
+0       unspec
+#
+# local
+#
+EOF
+		    for table in $PROVIDERS; do
+			eval number=\$${table}_number
+			${echobin:-echo} -e "$number\t$table" >>  /etc/iproute2/rt_tables
+		    done
 
-		for table in $PROVIDERS; do
-		    eval number=\$${table}_number
-		    ${echobin:-echo} -e "$number\t$table" >>  /etc/iproute2/rt_tables
-		done
-
-		save_command "    cat > /etc/iproute2/rt_tables << __EOF__"
-		cat /etc/iproute2/rt_tables >> $RESTOREBASE
-		save_command_unindented __EOF__
-
+		    save_command "    cat > /etc/iproute2/rt_tables << __EOF__"
+		    cat /etc/iproute2/rt_tables >> $RESTOREBASE
+		    save_command_unindented __EOF__
+		fi
 	    fi
 
 	    if [ $COMMAND = compile ]; then
@@ -8291,10 +8312,20 @@ __EOF__
     #
     save_progress_message "Setting up ARP filtering..."
 
-    for f in /proc/sys/net/ipv4/conf/*; do
-	run_and_save_command "[ -f $f/arp_filter ] && echo 0 > $f/arp_filter"
-	run_and_save_command "[ -f $f/arp_ignore ] && echo 0 > $f/arp_ignore"
-    done
+    if [ $COMMAND = compile ]; then
+	cat >> $RESTOREBASE << __EOF__
+${INDENT}for f in /proc/sys/net/ipv4/conf/*; do
+${INDENT}    [ -f \$f/arp_filter ] && echo 0 > \$f/arp_filter
+${INDENT}    [ -f \$f/arp_ignore ] && echo 0 > \$f/arp_ignore
+${INDENT}done
+
+__EOF__
+    else
+	for f in /proc/sys/net/ipv4/conf/*; do
+	    run_and_save_command "[ -f $f/arp_filter ] && echo 0 > $f/arp_filter"
+	    run_and_save_command "[ -f $f/arp_ignore ] && echo 0 > $f/arp_ignore"
+	done
+    fi
 
     interfaces=$(find_interfaces_by_option arp_filter)
     interfaces1=$(find_interfaces_by_option1 arp_ignore)
@@ -8302,26 +8333,51 @@ __EOF__
     if [ -n "${interfaces}${interfaces1}" ]; then
 	progress_message2 "Setting up ARP Filtering..."
 
-	for interface in $interfaces; do
-	    file=/proc/sys/net/ipv4/conf/$interface/arp_filter
-	    if [ -f $file ]; then
-		run_and_save_command "echo 1 > $file"
-	    else
-		error_message \
-		    "WARNING: Cannot set ARP filtering on $interface"
-	    fi
-	done
+	if [ $COMMAND = compile ]; then
+	    for interface in $interfaces; do
+		file=/proc/sys/net/ipv4/conf/$interface/arp_filter
+		cat >> $RESTOREBASE << __EOF__
+${INDENT}if [ -f $file ]; then
+${INDENT}    echo 1 > $file
+${INDENT}else
+${INDENT}    error_message "WARNING: Cannot set ARP filtering on $interface"
+${INDENT}fi
+__EOF__
+	    done
 
-	for interface in $interfaces1; do
-	    file=/proc/sys/net/ipv4/conf/$interface/arp_ignore
-	    if [ -f $file ]; then
-		eval command="\"echo \$$(chain_base $interface)_arp_ignore > $file\""
-		run_and_save_command "$command"
-	    else
-		error_message \
-		    "WARNING: Cannot set ARP filtering on $interface"
-	    fi
-	done
+	    for interface in $interfaces1; do
+		file=/proc/sys/net/ipv4/conf/$interface/arp_ignore
+		eval value="\$$(chain_base $interface)_arp_ignore"
+		cat >> $RESTOREBASE << __EOF__
+${INDENT}if [ -f $file ]; then
+${INDENT}    echo $value > $file
+${INDENT}else
+${INDENT}    error_message "WARNING: Cannot set ARP filtering on $interface"
+${INDENT}fi
+__EOF__
+	    done
+	else
+	    for interface in $interfaces; do
+		file=/proc/sys/net/ipv4/conf/$interface/arp_filter
+		if [ -f $file ]; then
+		    run_and_save_command "echo 1 > $file"
+		else
+		    error_message \
+			"WARNING: Cannot set ARP filtering on $interface"
+		fi
+	    done
+
+	    for interface in $interfaces1; do
+		file=/proc/sys/net/ipv4/conf/$interface/arp_ignore
+		if [ -f $file ]; then
+		    eval command="\"echo \$$(chain_base $interface)_arp_ignore > $file\""
+		    run_and_save_command "$command"
+		else
+		    error_message \
+			"WARNING: Cannot set ARP filtering on $interface"
+		fi
+	    done
+	fi
     fi
     #
     # Route Filtering
@@ -8333,19 +8389,40 @@ __EOF__
 
 	save_progress_message "Setting up Route Filtering..."
 
-	for f in /proc/sys/net/ipv4/conf/*; do
-	    run_and_save_command "[ -f $f/rp_filter ]    && echo 0 > $f/rp_filter"
-	done
+	if [ $COMMAND = compile ]; then
+	    cat >> $RESTOREBASE << __EOF__
 
-	for interface in $interfaces; do
-	    file=/proc/sys/net/ipv4/conf/$interface/rp_filter
-	    if [ -f $file ]; then
-		run_and_save_command "echo 1 > $file"
-	    else
-		error_message \
-		    "WARNING: Cannot set route filtering on $interface"
-	    fi
-	done
+${INDENT}for f in /proc/sys/net/ipv4/conf/*; do
+${INDENT}    [ -f \$f/log_martians ] && echo 0 > \$f/rp_filter
+${INDENT}done
+
+__EOF__
+	    for interface in $interfaces; do
+		file=/proc/sys/net/ipv4/conf/$interface/rp_filter
+
+		cat >> $RESTOREBASE << __EOF__
+${INDENT}if [ -f $file ]; then
+${INDENT}    echo 1 > $file
+${INDENT}else
+${INDENT}    error_message "WARNING: Cannot set route filtering on $interface"
+${INDENT}fi
+__EOF__
+	    done
+	else
+	    for f in /proc/sys/net/ipv4/conf/*; do
+		run_and_save_command "[ -f $f/rp_filter ]    && echo 0 > $f/rp_filter"
+	    done
+
+	    for interface in $interfaces; do
+		file=/proc/sys/net/ipv4/conf/$interface/rp_filter
+		if [ -f $file ]; then
+		    run_and_save_command "echo 1 > $file"
+		else
+		    error_message \
+			"WARNING: Cannot set route filtering on $interface"
+		fi
+	    done
+	fi
 
 	run_and_save_command "echo 1 > /proc/sys/net/ipv4/conf/all/rp_filter"
 
@@ -8367,19 +8444,40 @@ __EOF__
 
 	save_progress_message "Setting up Martian Logging..."
 
-	for f in /proc/sys/net/ipv4/conf/*; do
-	    run_and_save_command "[ -f $f/log_martians ]    && echo 0 > $f/log_martians"
-	done
+	if [ $COMMAND = compile ]; then
+	    cat >> $RESTOREBASE << __EOF__
 
-	for interface in $interfaces; do
-	    file=/proc/sys/net/ipv4/conf/$interface/log_martians
-	    if [ -f $file ]; then
-		run_and_save_command "echo 1 > $file"
-	    else
-		error_message \
-		    "WARNING: Cannot set Martian logging on $interface"
-	    fi
-	done
+${INDENT}for f in /proc/sys/net/ipv4/conf/*; do
+${INDENT}    [ -f \$f/log_martians ] && echo 0 > \$f/log_martians
+${INDENT}done
+
+__EOF__
+	    for interface in $interfaces; do
+		file=/proc/sys/net/ipv4/conf/$interface/log_martians
+
+		cat >> $RESTOREBASE << __EOF__
+${INDENT}if [ -f $file ]; then
+${INDENT}    echo 1 > $file
+${INDENT}else
+${INDENT}    error_message "WARNING: Cannot set Martian logging on $interface"
+${INDENT}fi
+__EOF__
+	    done
+	else
+	    for f in /proc/sys/net/ipv4/conf/*; do
+		run_and_save_command "[ -f $f/log_martians ]    && echo 0 > $f/log_martians"
+	    done
+
+	    for interface in $interfaces; do
+		file=/proc/sys/net/ipv4/conf/$interface/log_martians
+		if [ -f $file ]; then
+		    run_and_save_command "echo 1 > $file"
+		else
+		    error_message \
+			"WARNING: Cannot set Martian logging on $interface"
+		fi
+	    done
+	fi
 
 	if [ -n "$LOG_MARTIANS" ]; then
 	    run_and_save_command "echo 1 > /proc/sys/net/ipv4/conf/default/log_martians"
@@ -8393,9 +8491,18 @@ __EOF__
     #
     save_progress_message "Setting up Accept Source Routing..."
 
-    for f in /proc/sys/net/ipv4/conf/*; do
-	run_and_save_command "[ -f $f/accept_source_route ] && echo 0 > $f/accept_source_route"
-    done
+    if [ $COMMAND = compile ]; then
+	cat >> $RESTOREBASE << __EOF__
+${INDENT}for f in /proc/sys/net/ipv4/conf/*; do
+${INDENT}    [ -f \$f/accept_source_route ] && echo 0 > \$f/accept_source_route
+${INDENT}done
+
+__EOF__
+    else
+	for f in /proc/sys/net/ipv4/conf/*; do
+	    run_and_save_command "[ -f $f/accept_source_route ] && echo 0 > $f/accept_source_route"
+	done
+    fi
 
     interfaces=$(find_interfaces_by_option sourceroute)
 
@@ -8404,15 +8511,29 @@ __EOF__
 
 	save_progress_message "Setting up Source Routing..."
 
-	for interface in $interfaces; do
-	    file=/proc/sys/net/ipv4/conf/$interface/accept_source_route
-	    if [ -f $file ]; then
-		run_and_save_command "echo 1 > $file"
-	    else
-		error_message \
-		    "WARNING: Cannot set Accept Source Routing on $interface"
-	    fi
-	done
+	if [ $COMMAND = compile ]; then
+	    for interface in $interfaces; do
+		file=/proc/sys/net/ipv4/conf/$interface/accept_source_route
+
+		cat >> $RESTOREBASE << __EOF__
+${INDENT}if [ -f $file ]; then
+${INDENT}    echo 1 > $file
+${INDENT}else
+${INDENT}    error_message "WARNING: Cannot set Accept Source Routing on $interface"
+${INDENT}fi
+__EOF__
+	    done
+	else
+	    for interface in $interfaces; do
+		file=/proc/sys/net/ipv4/conf/$interface/accept_source_route
+		if [ -f $file ]; then
+		    run_and_save_command "echo 1 > $file"
+		else
+		    error_message \
+			"WARNING: Cannot set Accept Source Routing on $interface"
+		fi
+	    done
+	fi
     fi
 
     if [ -n "$DYNAMIC_ZONES" ]; then
@@ -8577,7 +8698,7 @@ activate_rules()
 	addnatjump POSTROUTING $(output_chain $interface) -o $interface
     done
 
-    > /var/lib/shorewall/chains
+    > $STATEDIR/chains
     echo "$FW firewall" > $STATEDIR/zones
     #
     # Create forwarding chains for complex zones and generate jumps for IPSEC source hosts to that chain.
@@ -9299,13 +9420,13 @@ compile_firewall() # $1 = File Name
     [ -h $outfile ] && startup_error "$outfile is a Symbolic Link"
     [ -f $outfile -a ! -x $outfile ] && startup_error "$outfile exists and is not a restore file"
 
-    RESTOREBASE=$(mktempfile /var/lib/shorewall)
+    RESTOREBASE=$(mktempfile /tmp)
 
-    STATEDIR=/var/lib/shorewall/.compiler
+    STATEDIR=/tmp/$USER/.compiler
 
-    [ -d $STATEDIR ] || mkdir $STATEDIR
+    [ -d $STATEDIR ] || mkdir -p $STATEDIR
 
-    [ -n "$RESTOREBASE" ] || startup_error "Cannot create temporary file in /var/lib/shorewall"
+    [ -n "$RESTOREBASE" ] || startup_error "Cannot create temporary file in /tmp"
 
     [ -z "$PROGRAM" ] && save_command "#! $SHOREWALL_SHELL --"
 
@@ -10051,7 +10172,7 @@ do_initialize() {
     export LC_ALL=C
 
     # Make sure umask is sane
-    umask 177
+    umask 077
 
     PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin:/usr/local/bin
     #
@@ -10177,10 +10298,10 @@ do_initialize() {
     PKTTYPE=$(added_param_value_no PKTTYPE $PKTTYPE)
 
     [ -n "${MODULE_SUFFIX:=o gz ko o.gz ko.gz}" ]
-
-    load_kernel_modules
-
     if [ -z "$EXPORT" ]; then
+
+	load_kernel_modules
+
 	if [ -z "$IPTABLES" ]; then
 	    IPTABLES=$(mywhich iptables 2> /dev/null)
 
@@ -10188,11 +10309,15 @@ do_initialize() {
 	else
 	    [ -e "$IPTABLES" ] || startup_error "\$IPTABLES=$IPTABLES does not exist or is not executable"
 	fi
+	determine_capabilities
+
+	[ -d /var/lib/shorewall ] || mkdir -p /var/lib/shorewall
+
+    else
+	f=$(find_file capabilities)
+
+	[ -f $f ] && . $f || startup_error "The -e flag requires a capabilities file"
     fi
-
-    determine_capabilities
-
-    [ -d /var/lib/shorewall ] || mkdir -p /var/lib/shorewall
 
     ALLOWRELATED="$(added_param_value_yes ALLOWRELATED $ALLOWRELATED)"
     [ -n "$ALLOWRELATED" ] || \

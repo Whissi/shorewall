@@ -1085,6 +1085,7 @@ determine_capabilities() {
     LENGTH_MATCH=
     CLASSIFY_TARGET=
     ENHANCED_REJECT=
+    USEPKTTYPE=
 
     qt $IPTABLES -N fooX1234
     qt $IPTABLES -A fooX1234 -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT             && CONNTRACK_MATCH=Yes
@@ -1154,6 +1155,7 @@ report_capabilities() {
 	report_capability "CONNMARK Target" $CONNMARK
 	report_capability "Connmark Match" $CONNMARK_MATCH
 	report_capability "Raw Table" $RAW_TABLE
+	report_capability "IPP2P Match" $IPP2P_MATCH
 	report_capability "CLASSIFY Target" $CLASSIFY_TARGET
 	report_capability "Extended REJECT" $ENHANCED_REJECT
     fi

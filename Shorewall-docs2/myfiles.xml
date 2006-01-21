@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2006-01-04</pubdate>
+    <pubdate>2006-01-21</pubdate>
 
     <copyright>
       <year>2001-2006</year>
@@ -448,6 +448,32 @@ Limit               #Limit connection rate from each individual Host
 #                                               PORT    PORT(S)    DEST         LIMIT
 ACCEPT   $MIRRORS
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+      </blockquote>
+    </section>
+
+    <section>
+      <title>Accounting File</title>
+
+      <blockquote>
+        <programlisting>#ACTION CHAIN   SOURCE          DESTINATION                                     PROTO   DEST            SOURCE  USER/
+#                                                                                       PORT(S)         PORT(S) GROUP
+hp:COUNT        accounting      $EXT_IF                 $INT_IF:192.168.1.6     UDP
+hp:COUNT        accounting      $INT_IF:192.168.1.6     $EXT_IF                 UDP
+DONE            hp
+
+mail:COUNT      -               $EXT_IF                 $INT_IF:192.168.1.7     tcp     25
+mail:COUNT      -               $INT_IF:192.168.1.7     $EXT_IF                 tcp     25
+DONE            mail
+
+web             -               $EXT_IF                 $INT_IF:192.168.1.7     tcp     80
+web             -               $EXT_IF                 $INT_IF:192.168.1.7     tcp     443
+web             -               $INT_IF:192.168.1.7     $EXT_IF                 tcp     80
+web             -               $INT_IF:192.168.1.7     $EXT_IF                 tcp     443
+
+COUNT           web             $EXT_IF                 $INT_IF:192.168.1.7
+COUNT           web             $INT_IF:192.168.1.7     $EXT_IF
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
+</programlisting>
       </blockquote>
     </section>
 

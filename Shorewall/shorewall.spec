@@ -154,6 +154,7 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/macro.VNCL
 %attr(0644,root,root) /usr/share/shorewall/macro.Web
 %attr(0644,root,root) /usr/share/shorewall/macro.Webmin
+%attr(0644,root,root) /usr/share/shorewall/macro.Whois
 %attr(0644,root,root) /usr/share/shorewall/prog.footer
 %attr(0644,root,root) /usr/share/shorewall/prog.header
 %attr(0644,root,root) /usr/share/shorewall/rfc1918

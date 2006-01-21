@@ -63,6 +63,7 @@ fatal_error() # $* = Error Message
     echo "   ERROR: $@" >&2
     if [ $COMMAND = check -o $COMMAND = compile ]; then
 	[ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
+	[ -n "$TMP_DIR1" ] && rm -rf $TMP_DIR1
 	[ -n "$RESTOREBASE" ] && rm -f $RESTOREBASE
     else
 	stop_firewall
@@ -79,6 +80,7 @@ startup_error() # $* = Error Message
     echo "   ERROR: $@" >&2
     my_mutex_off
     [ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
+    [ -n "$TMP_DIR1" ] && rm -rf $TMP_DIR1
     [ -n "$RESTOREBASE" ] && rm -f $RESTOREBASE
     kill $$
     exit 2
@@ -2197,6 +2199,8 @@ stop_firewall() {
     logger "Shorewall Stopped"
 
     rm -rf $TMP_DIR
+    [ -n "$TMP_DIR1" ] && rm -rf $TMP_DIR1
+
 
     case $COMMAND in
     stop|clear)
@@ -9422,9 +9426,9 @@ compile_firewall() # $1 = File Name
 
     RESTOREBASE=$(mktempfile /tmp)
 
-    STATEDIR=/tmp/$USER/.compiler
+    STATEDIR=$(mktempdir)
 
-    [ -d $STATEDIR ] || mkdir -p $STATEDIR
+    TMP_DIR1=$STATEDIR
 
     [ -n "$RESTOREBASE" ] || startup_error "Cannot create temporary file in /tmp"
 
@@ -9695,6 +9699,8 @@ __EOF__
     echo "Shorewall configuration compiled to $outfile"
 
     rm -rf $TMP_DIR
+    rm -rf $TMP_DIR1
+
 }
 
 #

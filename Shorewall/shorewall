@@ -664,7 +664,7 @@ compile_command() {
 
     export EXPORT
 
-    exec $SHOREWALL_SHELL $FIREWALL $debugging generate $file
+    exec $SHOREWALL_SHELL /usr/share/shorewall/compiler $debugging generate $file
 }
 #
 # Restart Command Executor
@@ -857,7 +857,7 @@ reload_command() {
 
     [ -n "$nolock" ] || mutex_on
 
-    if $SHOREWALL_SHELL $FIREWALL $debugging $nolock compile /var/lib/shorewall/.reload; then
+    if $SHOREWALL_SHELL /usr/share/shorewall/compiler $debugging $nolock compile /var/lib/shorewall/.reload; then
 	$0 nolock $(make_quiet) restore .reload
     fi
 

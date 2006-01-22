@@ -7303,20 +7303,21 @@ setup_masq()
 
 	source="${networks:=0.0.0.0/0}"
 
+	detectinterface=
+
 	case $source in
-	*.*.*|+*|!+*)
-	    ;;
-	*)
-	    if [ $COMMAND = compile ]; then
-		detectinterface=$networks
-		networks=
-	    else
-		networks=$(get_routed_networks $networks)
-		[ -z "$networks" ] && fatal_error "Unable to determine the routes through interface \"$source\""
-		networks="$networks"
-		detectinterface=
-	    fi
-	    ;;
+	    *.*.*|+*|!+*)
+		;;
+	    *)
+		if [ $COMMAND = compile ]; then
+		    detectinterface=$networks
+		    networks=
+		else
+		    networks=$(get_routed_networks $networks)
+		    [ -z "$networks" ] && fatal_error "Unable to determine the routes through interface \"$source\""
+		    networks="$networks"
+		fi
+		;;
 	esac
 
 	[ "x$addresses" = x- ] && addresses=

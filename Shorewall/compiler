@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-#     The Shoreline Firewall (Shorewall) Packet Filtering Firewall - V3.2
+#     The Shoreline Firewall (Shorewall) Packet Filtering Firewall Compiler - V3.2
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
 #
@@ -31,7 +31,8 @@
 #
 #	Commands are:
 #
-#          shorewall check                        Verify the configuration files.
+#          compile check                        Verify the configuration files.
+#	   compile compile <path name>          Compile into <path name>
 #
 # Mutual exclusion -- These functions are jackets for the mutual exclusion
 #		      routines in $FUNCTIONS. They invoke
@@ -43,10 +44,8 @@
 # Fatal error -- stops the firewall after issuing the error message
 #
 fatal_error() # $* = Error Message
-{
-    echo "   ERROR: $@" >&2
+{    echo "   ERROR: $@" >&2
     [ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
-    [ -n "$TMP_DIR1" ] && rm -rf $TMP_DIR1
     [ -n "$RESTOREBASE" ] && rm -f $RESTOREBASE
     exit 2
 }
@@ -59,7 +58,6 @@ startup_error() # $* = Error Message
 {
     echo "   ERROR: $@" >&2
     [ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
-    [ -n "$TMP_DIR1" ] && rm -rf $TMP_DIR1
     [ -n "$RESTOREBASE" ] && rm -f $RESTOREBASE
     kill $$
     exit 2
@@ -8343,8 +8341,6 @@ compile_firewall() # $1 = File Name
 
     STATEDIR=$(mktempdir)
 
-    TMP_DIR1=$STATEDIR
-
     [ -n "$RESTOREBASE" ] || startup_error "Cannot create temporary file in /tmp"
 
     [ -z "$PROGRAM" ] && save_command "#! $SHOREWALL_SHELL --"
@@ -8619,10 +8615,9 @@ __EOF__
     fi
 
     rm -rf $TMP_DIR
-    rm -rf $TMP_DIR1
+    rm -rf $STATEDIR
 
 }
-
 
 #
 # Determine the value for a parameter that defaults to Yes

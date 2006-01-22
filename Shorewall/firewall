@@ -2823,8 +2823,25 @@ setup_mac_lists() {
     #
     # Process the maclist file producing the verification rules
     #
-    while read interface mac addresses; do
-	expandv interface mac addresses
+    while read disposition interface mac addresses; do
+	expandv disposition interface mac addresses
+
+	case $disposition in
+	    ACCEPT)
+		disposition=RETURN
+		;;
+	    REJECT)
+		[ $MACLIST_TABLE = mangle ] && fatal_error "DISPOSITION = REJECT is incompatible with MACLIST_TABLE=mangle"
+		;;
+	    DROP)
+		;;
+	    *)
+		addresses="$mac"
+		mac="$interface"
+		interface="$disposition"
+		disposition=RETURN
+		;;
+	esac
 
 	physdev_part=
 
@@ -2843,13 +2860,21 @@ setup_mac_lists() {
 	    fatal_error "No hosts on $interface have the maclist option specified"
 	fi
 
-	macpart=$(mac_match $mac)
+	if [ x${mac:=-} = x- ]; then
+	    if [ -z "$addresses" ]; then
+		fatal_error "You must specify a MAC address or an IP address"
+	    else
+		mac=
+	    fi
+	else
+	    macpart=$(mac_match $mac)
+	fi
 
 	if [ -z "$addresses" ]; then
-	    run_iptables -t $MACLIST_TABLE -A $chain $macpart $physdev_part -j RETURN
+	    run_iptables -t $MACLIST_TABLE -A $chain $macpart $physdev_part -j $disposition
 	else
 	    for address in $(separate_list $addresses) ; do
-		run_iptables2 -t $MACLIST_TABLE -A $chain $macpart -s $address $physdev_part -j RETURN
+		run_iptables2 -t $MACLIST_TABLE -A $chain $macpart -s $address $physdev_part -j $disposition
 	    done
 	fi
     done < $TMP_DIR/maclist
@@ -7371,7 +7396,7 @@ setup_masq()
 
 	[ -z "$pre_nat" ] && chain=$(masq_chain $interface) || chain=$(snat_chain $interface)
 
-	ensurenatchain $chain
+	[ $COMMAND = compile ] && ensurenatchain $chain
 
 	case $destnets in
 	    !*)

@@ -488,7 +488,9 @@ save_config() {
 
     [ "$nolock" ] || mutex_off
 }
-
+#
+# Start Command Executor
+#
 start_command() {
     local finished=0
 
@@ -588,7 +590,9 @@ start_command() {
 	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock start
     fi
 }
-
+#
+# Compile Command Executor
+#
 compile_command() {
     local finished=0
 
@@ -662,7 +666,9 @@ compile_command() {
 
     exec $SHOREWALL_SHELL $FIREWALL $debugging generate $file
 }
-
+#
+# Restart Command Executor
+#
 restart_command() {
     local finished=0
 
@@ -725,7 +731,9 @@ restart_command() {
 
     exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock restart
 }
-
+#
+# Check Command Executor
+#
 check_command() {
     local finished=0
 
@@ -784,7 +792,9 @@ check_command() {
 
     exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock check
 }
-
+#
+# Reload Command Executor
+#
 reload_command() {
     local finished=0
 
@@ -853,7 +863,9 @@ reload_command() {
 
     [ -n "$nolock" ] || mutex_off
 }
-
+#
+# Show Command Executor
+#
 show_command() {
     local finished=0
 
@@ -988,7 +1000,9 @@ show_command() {
 	;;
     esac
 }
-
+#
+# Dump Command Executor
+#
 dump_command() {
     local finished=0
 
@@ -1098,7 +1112,9 @@ dump_command() {
 	show_classifiers
 	fi
 }
-
+#
+# Restore Comand Executor
+#
 restore_command() {
     local finished=0
 

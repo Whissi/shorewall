@@ -1,4 +1,4 @@
-Shorewall 3.1.3
+Shorewall 3.1.4
 
 Note to users upgrading from Shorewall 2.x or 3.0
 
@@ -26,23 +26,10 @@ Note to users upgrading from Shorewall 2.x or 3.0
    Please see the "Migration Considerations" below for additional upgrade
    information.
 
-New Features in 3.1.3
+Problems Corrected in 3.1.4
 
-1)  A LENGTH column has been added to the /etc/shorewall/tcrules file to allow
-    packet marking by packet length. Patch courtesy of Fabio Longerai.
-
-2)  When a compiled script encounters an error, the firewall is now put in the
-    "stopped" state without the need for running "/sbin/shorewall stop".
-
-3)  The -p option to the 'compile command now generates a complete firewall
-    program that can be placed in /etc/init.d (on SuSE) and installed using
-    "insserv". If the system where you install the program does not have
-    Shorewall installed, you will need to generate the program with the "-e"
-    option.
-
-    In 3.1.4, I hope to have support for other distributions included.
-
-4)  A Whois macro has been added (courtesy of Paul Gear).
+1) "shorewall check" generates an error if there are entries in
+   /etc/shorewall/massq.
 
 Migration Considerations:
 

@@ -10,13 +10,18 @@
 #
 # Columns are:
 #
+#	DISPOSITION	ACCEPT or DROP (if MACLIST_TABLE=filter, then REJECT
+#			is also allowed)
+#
 #	INTERFACE	Network interface to a host. If the interface
 #			names a bridge, it may be optionally followed by
 #			a colon (":") and a physical port name (e.g.,
 #			br0:eth4).
 #
 #	MAC		MAC address of the host -- you do not need to use
-#			the Shorewall format for MAC addresses here
+#			the Shorewall format for MAC addresses here. If IP
+#			ADDRESSES is supplied then MAC can be supplied as
+#			a dash ("-")
 #
 #	IP ADDRESSES	Optional -- if specified, both the MAC and IP address
 #			must match. This column can contain a comma-separated
@@ -27,5 +32,5 @@
 # For additional information, see http://shorewall.net/MAC_Validation.html
 #
 ###############################################################################
-#INTERFACE		MAC			IP ADDRESSES (Optional)
+#DISPOSITION	INTERFACE		MAC			IP ADDRESSES (Optional)
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE

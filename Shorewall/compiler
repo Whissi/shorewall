@@ -153,17 +153,6 @@ qt_iptables() {
 }
 
 #
-# Run ip and if an error occurs, issue a message and quit
-#
-run_ip() {
-    if ! ip $@ ; then
-	error_message "ERROR: Command \"ip $@\" Failed"
-	rm -rf $TMP_DIR
-	exit 2
-    fi
-}
-
-#
 # Generate a command to run tc
 #
 run_tc() {
@@ -6953,30 +6942,6 @@ validate_blacklist() {
 }
 
 #
-# Verify that kernel has netfilter support
-#
-verify_os_version() {
-
-    osversion=$(uname -r)
-
-    case $osversion in
-    2.4.*|2.5.*|2.6.*)
-	;;
-    *)
-	startup_error "Shorewall version $VERSION does not work with kernel version $osversion"
-	;;
-    esac
-
-}
-
-# Verify that the 'ip' program is installed
-
-verify_ip() {
-    qt ip link ls ||\
-	startup_error "Shorewall $VERSION requires the iproute package ('ip' utility)"
-}
-
-#
 # Perform Initialization
 #	- Delete all old rules
 #	- Delete all user chains
@@ -7180,23 +7145,18 @@ initialize_netfilter () {
     createchain dynamic no
     createchain smurfs no
 
-    if [ -f /var/lib/shorewall/save ]; then
-	progress_message2 "Setting up dynamic rules..."
-
-	save_progress_message "Restoring dynamic rules..."
-
-	if [ -f /var/lib/shorewall/save ]; then
-	    while read target ignore1 ignore2 address rest; do
-		case $target in
-		    DROP|reject)
-			run_iptables -A dynamic -s $address -j $target
-			;;
-		    *)
-			;;
-		esac
-	    done < /var/lib/shorewall/save
-	fi
-    fi
+    echo >> $RESTOREBASE << __EOF__
+${INDENT}if [ -f /var/lib/shorewall/save ]; then
+${INDENT}    progress_message2 "Setting up dynamic rules..."
+${INDENT}    while read target ignore1 ignore2 address rest; do
+${INDENT}        case \$target in
+${INDENT}            DROP|reject)
+${INDENT}                run_iptables -A dynamic -s \$address -j \$target
+${INDENT}                ;;
+${INDENT}        esac
+${INDENT}    done < /var/lib/shorewall/save
+${INDENT}fi
+__EOF__
 
     [ -n "$BLACKLISTNEWONLY" ] && state="-m state --state NEW,INVALID" || state=
 
@@ -7862,8 +7822,8 @@ activate_rules()
 	echo $zone $type $source_hosts >> $STATEDIR/zones
 
 	if [ -n "$DYNAMIC_ZONES" ]; then
-	    echo "$FW $zone $chain1" >> /var/lib/shorewall/chains
-	    echo "$zone $FW $chain2" >> /var/lib/shorewall/chains
+	    echo "$FW $zone $chain1" >> $STATEDIR/chains
+	    echo "$zone $FW $chain2" >> $STATEDIR/chains
 	fi
 
 	need_broadcast=
@@ -7915,7 +7875,7 @@ activate_rules()
 
 	    [ -z "$chain" ] && continue # CONTINUE policy and there is no canonical chain.
 
-	    [ -n "$DYNAMIC_ZONES" ] && echo "$zone $zone1 $chain" >> /var/lib/shorewall/chains
+	    [ -n "$DYNAMIC_ZONES" ] && echo "$zone $zone1 $chain" >> $STATEDIR/chains
 
 	    if [ $zone = $zone1 ]; then
 		#
@@ -8306,11 +8266,6 @@ compile_firewall() # $1 = File Name
     #
     # END OVERLOADED FUNCTIONS
     #
-
-    verify_os_version
-    verify_ip
-
-    [ -d /var/lib/shorewall ] || { mkdir -p /var/lib/shorewall ; chmod 700 /var/lib/shorewall; }
 
     if [ $COMMAND = compile ]; then
 	dir=$(dirname $1)
@@ -8805,8 +8760,6 @@ do_initialize() {
 	    [ -e "$IPTABLES" ] || startup_error "\$IPTABLES=$IPTABLES does not exist or is not executable"
 	fi
 	determine_capabilities
-
-	[ -d /var/lib/shorewall ] || mkdir -p /var/lib/shorewall
 
     else
 	f=$(find_file capabilities)

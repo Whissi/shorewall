@@ -383,6 +383,14 @@ addnatrule() # $1 = chain name, remainder of arguments specify the rule
 }
 
 #
+# Create a rule to delete a chain if it exists
+#
+deletechain() # $1 = name of chain
+{
+    save_command "qt $IPTABLES -L $1 -n && qt $IPTABLES -F $1 && qt $IPTABLES -X $1"
+}
+
+#
 # Determine if a chain is a policy chain
 #
 is_policy_chain() # $1 = name of chain
@@ -7050,6 +7058,8 @@ initialize_netfilter () {
     process_actions1
 
     TERMINATOR=fatal_error
+
+    deletechain shorewall
 
     if [ -n "$NAT_ENABLED" ]; then
 	delete_nat

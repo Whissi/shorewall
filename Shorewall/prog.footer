@@ -61,34 +61,51 @@ fi
 
 case "$COMMAND" in
     start)
-	echo "Starting Shorewall...."
-	define_firewall
-	status=$?
-	echo "done."
+	if shorewall_is_started; then
+	    error_message "Shorewall is already Running"
+	    status=1
+	else
+	    progress_message3 "Starting Shorewall...."
+	    define_firewall
+	    status=$?
+	    progress_message3 "done."
+	fi
 	;;
     stop)
-	echo "Stopping Shorewall...."
+	progress_message3 "Stopping Shorewall...."
 	stop_firewall
 	status=0
-	echo "done."
+	progress_message3 "done."
 	;;
     restart)
-	echo "Restarting Shorewall...."
+	if shorewall_is_started; then
+	    progress_message3 "Restarting Shorewall...."
+	else
+	    echo "Shorewall is not running" >&2
+	    progress_message3 "Starting Shorewall...."
+	fi
+
 	define_firewall
 	status=$?
-	echo "done."
+	progress_message3 "done."
 	;;
     reload)
-	echo "Reloading Shorewall...."
+	if shorewall_is_started; then
+	    progress_message3 "Reloading Shorewall...."
+	else
+	    echo "Shorewall is not running" >&2
+	    progress_message3 "Starting Shorewall...."
+	fi
+
 	define_firewall
 	status=$?
 	echo "done."
 	;;
     clear)
-	echo "Clearing Shorewall...."
+	progress_message3 "Clearing Shorewall...."
 	clear_firewall
 	status=0
-	echo "done."
+	progress_message3 "done."
 	;;
     status)
 	echo "Shorewall-$VERSION Status at $HOSTNAME - $(date)"

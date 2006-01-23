@@ -494,6 +494,23 @@ save_config() {
 start_command() {
     local finished=0
 
+    do_it() {
+	[ -n "$nolock" ] || mutex_on
+
+	progress_message3 "Compiling..."
+
+	if $SHOREWALL_SHELL /usr/share/shorewall/compiler $debugging $nolock compile /var/lib/shorewall/.start; then
+	    /var/lib/shorewall/.start start
+	fi
+
+	[ -n "$nolock" ] || mutex_off
+    }
+
+    if shorewall_is_started; then
+	error_message "Shorewall is already running"
+	exit 1
+    fi
+
     while [ $finished -eq 0 -a $# -gt 0 ]; do
 	option=$1
 	case $option in
@@ -558,6 +575,7 @@ start_command() {
     esac
 
     export NOROUTES
+    export PROGRAM=Yes
 
     if [ -n "$FAST" ]; then
 	if qt mywhich make; then
@@ -585,13 +603,13 @@ start_command() {
 		date > /var/lib/shorewall/restarted
 		echo Shorewall restored from $RESTOREPATH
 	    else
-		exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock start
+		do_it
 	    fi
 	else
-	    exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock start
+	    do_it
 	fi
     else
-	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock start
+	do_it
     fi
 }
 #
@@ -675,75 +693,6 @@ compile_command() {
     exec $SHOREWALL_SHELL /usr/share/shorewall/compiler $debugging generate $file
 }
 #
-# Restart Command Executor
-#
-restart_command() {
-    local finished=0
-
-    while [ $finished -eq 0 -a $# -gt 0 ]; do
-	option=$1
-	case $option in
-	    -*)
-		option=${option#-}
-
-		while [ -n "$option" ]; do
-		    case $option in
-			-)
-			    finished=1
-			    option=
-			    ;;
-			q*)
-			    VERBOSE=$(($VERBOSE - 1 ))
-			    option=${option#q}
-			    ;;
-			v*)
-			    VERBOSE=$(($VERBOSE + 1 ))
-			    option=${option#v}
-			    ;;
-			n*)
-			    NOROUTES=Yes
-			    option=${option#n}
-			    ;;
-			*)
-			    usage 1
-			    ;;
-		    esac
-		done
-		shift
-		;;
-	    *)
-		finished=1
-		;;
-	esac
-    done
-
-    case $# in
-	0)
-	    ;;
-	1)
-	    [ -n "$SHOREWALL_DIR" ] && usage 2
-
-	    if [ ! -d $1 ]; then
-		if [ -e $1 ]; then
-		    echo "$1 is not a directory" >&2 && exit 2
-		else
-		    echo "Directory $1 does not exist" >&2 && exit 2
-		fi
-	    fi
-
-	    SHOREWALL_DIR=$1
-	    export SHOREWALL_DIR
-	    ;;
-	*)
-	    usage 1
-	    ;;
-    esac
-
-    export NOROUTES
-
-    exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock restart
-}
-#
 # Check Command Executor
 #
 check_command() {
@@ -808,6 +757,7 @@ check_command() {
 
     exec $SHOREWALL_SHELL /usr/share/shorewall/compiler $debugging $nolock check
 }
+
 #
 # Reload Command Executor
 #
@@ -881,12 +831,91 @@ reload_command() {
     progress_message3 "Compiling..."
 
     if $SHOREWALL_SHELL /usr/share/shorewall/compiler $debugging $nolock compile /var/lib/shorewall/.reload; then
-	progress_message3 "Installing..."
 	/var/lib/shorewall/.reload reload
     fi
 
     [ -n "$nolock" ] || mutex_off
 }
+
+#
+# Restart Command Executor
+#
+restart_command() {
+    local finished=0
+
+    while [ $finished -eq 0 -a $# -gt 0 ]; do
+	option=$1
+	case $option in
+	    -*)
+		option=${option#-}
+
+		while [ -n "$option" ]; do
+		    case $option in
+			-)
+			    finished=1
+			    option=
+			    ;;
+			q*)
+			    VERBOSE=$(($VERBOSE - 1 ))
+			    option=${option#q}
+			    ;;
+			v*)
+			    VERBOSE=$(($VERBOSE + 1 ))
+			    option=${option#v}
+			    ;;
+			n*)
+			    NOROUTES=Yes
+			    option=${option#n}
+			    ;;
+			*)
+			    usage 1
+			    ;;
+		    esac
+		done
+		shift
+		;;
+	    *)
+		finished=1
+		;;
+	esac
+    done
+
+    case $# in
+	0)
+	    ;;
+	1)
+	    [ -n "$SHOREWALL_DIR" ] && usage 2
+
+	    if [ ! -d $1 ]; then
+		if [ -e $1 ]; then
+		    echo "$1 is not a directory" >&2 && exit 2
+		else
+		    echo "Directory $1 does not exist" >&2 && exit 2
+		fi
+	    fi
+
+	    SHOREWALL_DIR=$1
+	    export SHOREWALL_DIR
+	    ;;
+	*)
+	    usage 1
+	    ;;
+    esac
+
+    export NOROUTES
+    export PROGRAM=Yes
+
+    [ -n "$nolock" ] || mutex_on
+
+    progress_message3 "Compiling..."
+
+    if $SHOREWALL_SHELL /usr/share/shorewall/compiler $debugging $nolock compile /var/lib/shorewall/.restart; then
+	/var/lib/shorewall/.restart restart
+    fi
+
+    [ -n "$nolock" ] || mutex_off
+}
+
 #
 # Show Command Executor
 #
@@ -1249,8 +1278,8 @@ usage() # $1 = exit status
     echo "   refresh"
     echo "   reject <address> ..."
     echo "   reset"
-    echo "   reload [ -n ] [ -q ] [ <directory> ]"
-    echo "   restart [ -n ] [ -q ] [ <directory> ]"
+    echo "   reload [ -n ] [ -q ] [ -v ] [ <directory> ]"
+    echo "   restart [ -n ] [ -q ] [ -v ] [ <directory> ]"
     echo "   restore [ -n ] [ -q ] [ <file name> ]"
     echo "   save [ <file name> ]"
     echo "   show [ -v ] [<chain> [ <chain> ... ]|actions|capabilities|classifiers|connections|log|macros|mangle|nat|tc|zones]"

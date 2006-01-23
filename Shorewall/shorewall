@@ -879,9 +879,9 @@ reload_command() {
 
     progress_message3 "Compiling..."
 
-    if $SHOREWALL_SHELL /usr/share/shorewall/compiler $debugging $nolock compile /var/lib/shorewall/.reload; then
+    if $SHOREWALL_SHELL /usr/share/shorewall/compiler $debugging $nolock compile -p /var/lib/shorewall/.reload; then
 	progress_message3 "Installing..."
-	/var/lib/shorewall/.reload $(make_verbose) reload
+	/var/lib/shorewall/.reload reload
     fi
 
     [ -n "$nolock" ] || mutex_off

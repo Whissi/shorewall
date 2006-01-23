@@ -1703,7 +1703,7 @@ process_routestopped() # $1 = command
 	interface=${host%:*}
 	networks=${host#*:}
 	run_iptables $1 INPUT  -i $interface $(source_ip_range $networks) -j ACCEPT
-	[ -z "$ADMINISABSENTMINDED" -o $COMMAND != stop ] && \
+	[ -z "$ADMINISABSENTMINDED" ] && \
 	    run_iptables $1 OUTPUT -o $interface $(dest_ip_range $networks) -j ACCEPT
 
 	matched=
@@ -2045,12 +2045,8 @@ setup_ipsec() {
 	eval local policy=\$${1}_policy
 
 	if [ "$policy" != NONE ]; then
-	    case $COMMAND in
-		start|restart)
-		    ensurechain $1
-		    run_iptables -I $1 -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss $2
-		;;
-	    esac
+	    ensurechain $1
+	    run_iptables -I $1 -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss $2
 	fi
     }
     #
@@ -4575,11 +4571,9 @@ __EOF__
 		fi
 		;;
 	    dropNotSyn)
-		if [ "$COMMAND" != check ]; then
-		    [ -n "$xlevel" ] && \
-			log_rule_limit ${xlevel%\!} $xchain dropNotSyn DROP "" "$xtag" -A -p tcp ! --syn
-		    run_iptables -A $xchain -p tcp ! --syn -j DROP
-		fi
+		[ -n "$xlevel" ] && \
+		    log_rule_limit ${xlevel%\!} $xchain dropNotSyn DROP "" "$xtag" -A -p tcp ! --syn
+		run_iptables -A $xchain -p tcp ! --syn -j DROP
 		;;
 	    rejNotSyn)
 		[ -n "$xlevel" ] && \
@@ -6883,8 +6877,6 @@ setup_blacklist() {
     if [ -n "$hosts" -a -f $f ]; then
 	progress_message2 "Setting up Blacklisting..."
 
-	[ $COMMAND = restore ] && save_progress_message "Setting up Blacklisting..."
-
 	strip_file blacklist $f
 
 	createchain blacklst no
@@ -6975,8 +6967,6 @@ verify_os_version() {
 	;;
     esac
 
-    [ $COMMAND = start -a -n "$(lsmod 2> /dev/null | grep '^ipchains')" ] && \
-	startup_error "Shorewall can't start with the ipchains kernel module loaded - see FAQ #8"
 }
 
 # Verify that the 'ip' program is installed

@@ -1343,10 +1343,12 @@ if [ $# -gt 0 ] && [ "$1" = "nolock" ]; then
     shift
 fi
 
+[ -n "${VERBOSE:=2}" ]
+
 SHOREWALL_DIR=
 IPT_OPTIONS="-nv"
 FAST=
-export VERBOSE=0
+export VERBOSE
 NOROUTES=
 EXPORT=
 noroutes=

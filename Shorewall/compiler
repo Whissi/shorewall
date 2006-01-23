@@ -64,7 +64,8 @@ startup_error() # $* = Error Message
 }
 
 #
-# Write the passed args to $RESTOREBASE
+# Write the passed args to $RESTOREBASE -- We need all of these varieties to support
+#                                          extension scripts.
 #
 save_command()
 {
@@ -8579,7 +8580,7 @@ __EOF__
     else
 	chmod 700 $outfile
 
-	echo "Shorewall configuration compiled to $outfile"
+	progress_message2 "Shorewall configuration compiled to $outfile"
     fi
 
     rm -rf $TMP_DIR

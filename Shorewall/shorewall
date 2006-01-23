@@ -874,12 +874,11 @@ reload_command() {
     esac
 
     export NOROUTES
+    export PROGRAM=Yes
 
     [ -n "$nolock" ] || mutex_on
 
     progress_message3 "Compiling..."
-
-    export PROGRAM=Yes
 
     if $SHOREWALL_SHELL /usr/share/shorewall/compiler $debugging $nolock compile /var/lib/shorewall/.reload; then
 	progress_message3 "Installing..."

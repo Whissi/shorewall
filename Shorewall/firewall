@@ -2294,12 +2294,8 @@ setup_ipsec() {
 	eval local policy=\$${1}_policy
 
 	if [ "$policy" != NONE ]; then
-	    case $COMMAND in
-		start|restart)
-		    ensurechain $1
-		    run_iptables -I $1 -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss $2
-		;;
-	    esac
+	    ensurechain $1
+	    run_iptables -I $1 -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss $2
 	fi
     }
     #
@@ -2762,7 +2758,7 @@ delete_proxy_arp() {
 	    esac
 	done < /var/lib/shorewall/proxyarp
 
-	[ $COMMAND = compile ] || rm -f /var/lib/shorewall/proxyarp
+	rm -f /var/lib/shorewall/proxyarp
     fi
 
     [ -d $STATEDIR ] && touch $STATEDIR/proxyarp

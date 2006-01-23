@@ -279,7 +279,7 @@ packet_log() # $1 = number of messages
 
     [ -n "$realtail" ] && options="-n$1"
 
-    if [ -n "$VERBOSE" ]; then
+    if [ $VERBOSE -gt 1 ]; then
 	grep "${LOGFORMAT}" $LOGFILE | \
 	    sed s/" kernel:"// | \
 	    sed s/" $host $LOGFORMAT"/" "/ | \
@@ -507,8 +507,12 @@ start_command() {
 			    option=
 			    ;;
 			q*)
-			    QUIET=$(($QUIET + 1 ))
+			    VERBOSE=$(($VERBOSE - 1 ))
 			    option=${option#q}
+			    ;;
+			v*)
+			    VERBOSE=$(($VERBOSE + 1 ))
+			    option=${option#v}
 			    ;;
 			f*)
 			    FAST=Yes
@@ -612,8 +616,12 @@ compile_command() {
 			    option=${option#e}
 			    ;;
 			q*)
-			    QUIET=$(($QUIET + 1 ))
+			    VERBOSE=$(($VERBOSE - 1 ))
 			    option=${option#q}
+			    ;;
+			v*)
+			    VERBOSE=$(($VERBOSE + 1 ))
+			    option=${option#v}
 			    ;;
 			p*)
 			    export PROGRAM=Yes
@@ -685,8 +693,12 @@ restart_command() {
 			    option=
 			    ;;
 			q*)
-			    QUIET=$(($QUIET + 1 ))
+			    VERBOSE=$(($VERBOSE - 1 ))
 			    option=${option#q}
+			    ;;
+			v*)
+			    VERBOSE=$(($VERBOSE + 1 ))
+			    option=${option#v}
 			    ;;
 			n*)
 			    NOROUTES=Yes
@@ -750,8 +762,12 @@ check_command() {
 			    option=
 			    ;;
 			q*)
-			    QUIET=$(($QUIET + 1 ))
+			    VERBOSE=$(($VERBOSE - 1 ))
 			    option=${option#q}
+			    ;;
+			v*)
+			    VERBOSE=$(($VERBOSE + 1 ))
+			    option=${option#v}
 			    ;;
 			*)
 			    usage 1
@@ -811,8 +827,12 @@ reload_command() {
 			    option=
 			    ;;
 			q*)
-			    QUIET=$(($QUIET + 1 ))
+			    VERBOSE=$(($VERBOSE - 1 ))
 			    option=${option#q}
+			    ;;
+			v*)
+			    VERBOSE=$(($VERBOSE + 1 ))
+			    option=${option#v}
 			    ;;
 			n*)
 			    NOROUTES=Yes
@@ -858,7 +878,7 @@ reload_command() {
     [ -n "$nolock" ] || mutex_on
 
     if $SHOREWALL_SHELL /usr/share/shorewall/compiler $debugging $nolock compile /var/lib/shorewall/.reload; then
-	$0 nolock $(make_quiet) restore .reload
+	$0 nolock $(make_verbose) restore .reload
     fi
 
     [ -n "$nolock" ] || mutex_off
@@ -882,8 +902,8 @@ show_command() {
 			    option=
 			    ;;
 			v*)
-			    VERBOSE=Yes
-			    option=${option#v}
+			    VERBOSE=$(($VERBOSE + 1 ))
+			    option=${option#q}
 			    ;;
 			*)
 			    usage 1
@@ -1019,8 +1039,8 @@ dump_command() {
 			    option=
 			    ;;
 			v*)
-			    VERBOSE=Yes
-			    option=${option#v}
+			    VERBOSE=$(($VERBOSE + 1 ))
+			    option=${option#q}
 			    ;;
 			*)
 			    usage 1
@@ -1131,8 +1151,12 @@ restore_command() {
 			    option=
 			    ;;
 			q*)
-			    QUIET=$(($QUIET + 1 ))
+			    VERBOSE=$(($VERBOSE + 1 ))
 			    option=${option#q}
+			    ;;
+			v*)
+			    VERBOSE=$(($VERBOSE + 1 ))
+			    option=${option#v}
 			    ;;
 			n*)
 			    NOROUTES=Yes
@@ -1287,15 +1311,15 @@ heading() {
 #
 # Create the appropriate -q option to pass oneward
 #
-make_quiet() {
-    local q=$QUIET
+make_verbose() {
+    local v=$VERBOSE
 
-    if [ $QUIET -gt 0 ]; then
+    if [ $VERBOSE -gt 0 ]; then
 	local option=-
 
-	while [ $q -gt 0 ]; do
-	    option="${option}q"
-	    q=$(($q - 1))
+	while [ $v -gt 0 ]; do
+	    option="${option}v"
+	    v=$(($v - 1))
 	done
 
 	echo $option
@@ -1320,10 +1344,9 @@ if [ $# -gt 0 ] && [ "$1" = "nolock" ]; then
 fi
 
 SHOREWALL_DIR=
-export QUIET=0
 IPT_OPTIONS="-nv"
 FAST=
-VERBOSE=
+export VERBOSE=0
 NOROUTES=
 EXPORT=
 noroutes=
@@ -1368,7 +1391,7 @@ while [ $finished -eq 0 ]; do
 			option=${option#x}
 			;;
 		    q*)
-			QUIET=$(($QUIET + 1 ))
+			VERBOSE=$(($VERBOSE - 1 ))
 			option=${option#q}
 			;;
 		    f*)
@@ -1376,8 +1399,8 @@ while [ $finished -eq 0 ]; do
 			option=${option#f}
 			;;
 		    v*)
-			VERBOSE=Yes
-			option=${option#v}
+			VERBOSE=$(($VERBOSE + 1 ))
+			option=${option#q}
 			;;
 		    n*)
 			NOROUTES=Yes
@@ -1612,17 +1635,17 @@ case "$COMMAND" in
     try)
 	[ -n "$SHOREWALL_DIR" ] && startup_error "ERROR: -c option may not be used with \"try\""
 	[ $# -lt 2 -o $# -gt 3 ] && usage 1
-	[ -n "$QUIET" ] && QUIET=$(make_quiet)
+	[ $VERBOSE -gt 0 ] && VERBOSE=$(make_verbose)
 	[ -n "$NOROUTES" ] && NOROUTES=-n
-	if ! $0 $debugging $QUIET -c $2 restart; then
+	if ! $0 $debugging $VERBOSE -c $2 restart; then
 	    if ! $IPTABLES -L shorewall > /dev/null 2> /dev/null; then
-		$0 $QUIET $NOROUTES start
+		$0 $VERBOSE $NOROUTES start
 	    fi
 	elif ! $IPTABLES -L shorewall > /dev/null 2> /dev/null; then
-	    $0 $QUIET $NOROUTES start
+	    $0 $VERBOSE $NOROUTES start
 	elif [ $# -eq 3 ]; then
 	    sleep $3
-	    $0 $QUIET $NOROUTES restart
+	    $0 $VERBOSE $NOROUTES restart
 	fi
 	;;
     logwatch)
@@ -1642,8 +1665,8 @@ case "$COMMAND" in
 		    while [ -n "$option" ]; do
 			case $option in
 			    v*)
-				VERBOSE=Yes
-				option=${option#e}
+				VERBOSE=$(($VERBOSE + 1 ))
+				option=${option#q}
 				;;
 			    -)
 				finished=1
@@ -1836,7 +1859,7 @@ case "$COMMAND" in
 	    exit 2
 	fi
 
-	[ -n "$QUIET" ] && QUIET=$(make_quiet)
+	[ $VERBOSE -gt 0 ] && VERBOSE=$(make_verbose)
 
 	mutex_on
 
@@ -1850,7 +1873,7 @@ case "$COMMAND" in
 	if [ "$1" = "safe-start" -a  $running -eq 0 ]
 	then
 	    # the command is safe-start but the firewall is already running
-	    $0 $debugging nolock $QUIET start
+	    $0 $debugging nolock $VERBOSE start
 	    ret=$?
 	    mutex_off
 	    exit 0
@@ -1871,7 +1894,7 @@ case "$COMMAND" in
 	    $0 $debugging nolock save "safe-start-restart"
 	fi
 
-	$0 $debugging nolock $QUIET $command
+	$0 $debugging nolock $VERBOSE $command
 
 	echo -n "Do you want to accept the new firewall configuration? [y/n] "
 	read_yesno_with_timeout

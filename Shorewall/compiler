@@ -956,7 +956,7 @@ determine_hosts() {
 	eval ${zone}_hosts="\$hosts"
 
 	if [ -n "$hosts" ]; then
-	    [ $QUIET -lt 2 ] && display_list "$zone Zone:" $hosts
+	    [ $VERBOSE -ge 1 ] && display_list "$zone Zone:" $hosts
 	else
 	    error_message "WARNING: Zone $zone is empty"
 	fi
@@ -6983,7 +6983,7 @@ initialize_netfilter () {
 
     determine_zones
 
-    if [ $QUIET -lt 2 ]; then
+    if [ $VERBOSE -ge 1 ]; then
 	display_list "IPv4 Zones:" $IPV4_ZONES
 	[ -n "$IPSEC_ZONES" ] && \
 	    display_list "IPSEC Zones:" $IPSEC_ZONES
@@ -8395,7 +8395,7 @@ __EOF__
     # These variables are required by the library functions called in this script
     #
     [ -n \${COMMAND:=restart} ]
-    [ -n \${QUIET:=0} ]
+    [ -n \${VERBOSE:=0} ]
     MODULESDIR="$MODULESDIR"
     MODULE_SUFFIX="$MODULE_SUFFIX"
     LOGLIMIT="$LOGLIMIT"
@@ -8703,7 +8703,7 @@ do_initialize() {
     FUNCTIONS=$SHARED_DIR/functions
 
     if [ -f $FUNCTIONS ]; then
-	[ $QUIET -lt 1 ] && echo "Loading $FUNCTIONS..."
+	[ $VERBOSE -ge 2 ] && echo "Loading $FUNCTIONS..."
 	. $FUNCTIONS
     else
 	startup_error "$FUNCTIONS does not exist!"

@@ -67,12 +67,12 @@ list_count() {
 #
 progress_message() # $* = Message
 {
-    [ $QUIET -lt 1 ] && echo "$@"
+    [ $VERBOSE -gt 1 ] && echo "$@"
 }
 
 progress_message2() # $* = Message
 {
-    [ $QUIET -lt 2 ] && echo "$@"
+    [ $VERBOSE -gt 0 ] && echo "$@"
 }
 
 #
@@ -1137,7 +1137,7 @@ report_capability() # $1 = Capability Description , $2 Capability Setting (if an
 }
 
 report_capabilities() {
-    if [ $QUIET -lt 2 ]; then
+    if [ $VERBOSE -gt 1 ]; then
 	echo "Shorewall has detected the following iptables/netfilter capabilities:"
 	report_capability "NAT" $NAT_ENABLED
 	report_capability "Packet Mangling" $MANGLE_ENABLED

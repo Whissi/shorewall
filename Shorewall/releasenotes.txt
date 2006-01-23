@@ -31,6 +31,21 @@ Problems Corrected in 3.1.4
 1) "shorewall check" generates an error if there are entries in
    /etc/shorewall/massq.
 
+New Features added in 3.1.4
+
+1) The /etc/shorewall/maclist file has a new column layout. The first column is
+   now DISPOSITION. This column determines what to do with matching packets and
+   can have the value ACCEPT or DROP (if MACLIST_TABLE=filter, it can also
+   contain REJECT). This change is upward compatible so your existing maclist
+   file can still be used.
+
+2) Shorewall has always been very noisy (lots of messages). No more. The default
+   is now to be very quiet and you get more detail using the -v option (or -vv if
+   you want the old noisy behavior). The -q option is still supported but only
+   reverses the effect of -v. So "shorewall start -qqvv" is still completely quiet
+   while "shorewall start -vv" gives the same amount of output as the old "shorewall
+   start" did.
+
 Migration Considerations:
 
 None.

@@ -26,6 +26,10 @@ while [ $finished -eq 0 -a $# -gt 0 ]; do
 			VERBOSE=$(($VERBOSE + 1 ))
 			option=${option#v}
 			;;
+		    q*)
+			VERBOSE=$(($VERBOSE - 1 ))
+			option=${option#v}
+			;;
 		    n*)
 			NOROUTES=Yes
 			option=${option#n}

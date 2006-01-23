@@ -2577,10 +2577,10 @@ setup_mac_lists() {
 	if [ -n "$MACLIST_TTL" ]; then
 	    chain1=$(macrecent_target $interface)
 	    create_mac_chain $chain1
-	    run_iptables -t $MACLIST_TABLE -A $chain  -m recent --rcheck --seconds $MACLIST_TTL --name $chain -j RETURN
-	    run_iptables -t $MACLIST_TABLE -A $chain                                                          -j $chain1
-	    run_iptables -t $MACLIST_TABLE -A $chain  -m recent --update                        --name $chain -j RETURN
-	    run_iptables -t $MACLIST_TABLE -A $chain  -m recent --set                           --name $chain
+	    run_iptables -A $chain  -t $MACLIST_TABLE -m recent --rcheck --seconds $MACLIST_TTL --name $chain -j RETURN
+	    run_iptables -A $chain  -t $MACLIST_TABLE                                                         -j $chain1
+	    run_iptables -A $chain  -t $MACLIST_TABLE -m recent --update                        --name $chain -j RETURN
+	    run_iptables -A $chain  -t $MACLIST_TABLE -m recent --set                           --name $chain
 	fi
     done
 
@@ -2591,11 +2591,26 @@ setup_mac_lists() {
 	expandv disposition interface mac addresses
 
 	case $disposition in
+	    ACCEPT:*)
+		level=${disposition#*:}
+		disposition=ACCEPT
+		target=RETURN
+		;;
 	    ACCEPT)
 		disposition=RETURN
 		;;
+	    REJECT:*)
+		[ $MACLIST_TABLE = mangle ] && fatal_error "DISPOSITION = REJECT is incompatible with MACLIST_TABLE=mangle"
+		target=reject
+		disposition=REJECT
+		;;
 	    REJECT)
 		[ $MACLIST_TABLE = mangle ] && fatal_error "DISPOSITION = REJECT is incompatible with MACLIST_TABLE=mangle"
+		;;
+	    DROP:*)
+		level=${disposition#*:}
+		disposition=DROP
+		target=DROP
 		;;
 	    DROP)
 		;;
@@ -2635,10 +2650,14 @@ setup_mac_lists() {
 	fi
 
 	if [ -z "$addresses" ]; then
-	    run_iptables -t $MACLIST_TABLE -A $chain $macpart $physdev_part -j $disposition
+	    [ -n "$level" ] && \
+		log_rule_limit $level $chain $(mac_chain $interface) $disposition "$LOGLIMIT" "" -A -t $MACLIST_TABLE $macpart $physdev_part
+	    run_iptables -A $chain -t $MACLIST_TABLE $macpart $physdev_part -j $target
 	else
 	    for address in $(separate_list $addresses) ; do
-		run_iptables2 -t $MACLIST_TABLE -A $chain $macpart -s $address $physdev_part -j $disposition
+		[ -n "$level" ] && \
+		    log_rule_limit $level $chain $(mac_chain $interface) $disposition "$LOGLIMIT" "" -A -t $MACLIST_TABLE $macpart -s $address $physdev_part
+		run_iptables2 -A $chain -t $MACLIST_TABLE $macpart -s $address $physdev_part -j $target
 	    done
 	fi
     done < $TMP_DIR/maclist

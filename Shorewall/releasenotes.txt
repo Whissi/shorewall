@@ -62,6 +62,13 @@ New Features added in 3.1.4
    In summary, each "q" subtracts one from VERBOSE while each "v" adds one to
    VERBOSE.
 
+   The "shorewall show log", "shorewall logwatch" and "shorewall dump" commands
+   require VERBOSE to be greater than or equal to 3 to display MAC addresses.
+   This is consistent with the previous implementation which required a single
+   -v to enable MAC display but means that if you set VERBOSE=0 in shorewall.conf,
+   then you will need to include -vvv in these commands in order to have MACs
+   displayed.
+
 Migration Considerations:
 
 None.

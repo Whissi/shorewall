@@ -281,7 +281,7 @@ packet_log() # $1 = number of messages
 
     [ -n "$realtail" ] && options="-n$1"
 
-    if [ $VERBOSE -gt 1 ]; then
+    if [ $VERBOSE -gt 2 ]; then
 	grep "${LOGFORMAT}" $LOGFILE | \
 	    sed s/" kernel:"// | \
 	    sed s/" $host $LOGFORMAT"/" "/ | \

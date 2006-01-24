@@ -8429,7 +8429,7 @@ __EOF__
     # These variables are required by the library functions called in this script
     #
     [ -n \${COMMAND:=restart} ]
-    VERBOSE=${VERBOSE:=0}
+    VERBOSE=\${VERBOSE:=0}
     MODULESDIR="$MODULESDIR"
     MODULE_SUFFIX="$MODULE_SUFFIX"
     LOGLIMIT="$LOGLIMIT"
@@ -8445,7 +8445,7 @@ __EOF__
 	cat >> $RESTOREBASE << __EOF__
     IPTABLES="$IPTABLES"
 
-    [ -e "$IPTABLES" ] || startup_error "\$IPTABLES=$IPTABLES does not exist or is not executable"
+    [ -e "$IPTABLES" ] || startup_error "IPTABLES=$IPTABLES does not exist or is not executable"
 __EOF__
    else
 	cat >> $RESTOREBASE << __EOF__
@@ -8733,6 +8733,7 @@ do_initialize() {
     SECTION=ESTABLISHED
     SECTIONS=
     ALL_PORTS=
+    SAVE_VERBOSE=$VERBOSE
 
     FUNCTIONS=$SHARED_DIR/functions
 
@@ -8770,6 +8771,10 @@ do_initialize() {
     else
 	startup_error "$config does not exist!"
     fi
+    #
+    # Restore VERBOSE
+    #
+    VERBOSE=${SAVE_VERBOSE:-0}
     #
     # Restore CONFIG_PATH if the shorewall.conf file cleared it
     #

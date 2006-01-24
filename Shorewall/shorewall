@@ -410,8 +410,6 @@ logwatch() # $1 = timeout -- if negative, prompt each time that
 # Save currently running configuration
 #
 save_config() {
-    [ "$nolock" ] || mutex_on
-
     if shorewall_is_started ; then
 	[ -d /var/lib/shorewall ] || mkdir -p /var/lib/shorewall
 
@@ -486,7 +484,6 @@ save_config() {
 	echo "Shorewall isn't started"
     fi
 
-    [ "$nolock" ] || mutex_off
 }
 #
 # Start Command Executor
@@ -1165,6 +1162,117 @@ dump_command() {
 	show_classifiers
 	fi
 }
+
+#
+# Safe-start/safe-restart Command Executor
+#
+safe_commands() {
+    local finished=0
+
+    # test is the shell supports timed read
+    read -t 0 junk 2> /dev/null
+    if [ $? -eq 2 -a ! -x /bin/bash ];then
+	echo "Your shell does not support a feature required to execute this command".
+	exit 2
+    fi
+
+    while [ $finished -eq 0 -a $# -gt 0 ]; do
+	option=$1
+	case $option in
+	    -*)
+		option=${option#-}
+
+		while [ -n "$option" ]; do
+		    case $option in
+			-)
+			    finished=1
+			    option=
+			    ;;
+			q*)
+			    VERBOSE=$(($VERBOSE - 1 ))
+			    option=${option#q}
+			    ;;
+			v*)
+			    VERBOSE=$(($VERBOSE + 1 ))
+			    option=${option#v}
+			    ;;
+			n*)
+			    NOROUTES=Yes
+			    option=${option#n}
+			    ;;
+			*)
+			    usage 1
+			    ;;
+		    esac
+		done
+		shift
+		;;
+	    *)
+		finished=1
+		;;
+	esac
+    done
+
+    [ $# -eq 0 ] || usage 2
+
+    export VERBOSE
+    export PROGRAM=Yes
+
+    mutex_on
+
+    if shorewall_is_started; then
+	running=Yes
+    else
+	running=
+    fi
+
+    if [ "$COMMAND" = "safe-start" -a  -n "$running" ]; then
+	# the command is safe-start but the firewall is already running
+	error_message "Shorewall is already started"
+	mutex_off
+	exit 1
+    fi
+
+    if [ "$COMMAND" = "safe-start" -o -z "$running" ]; then
+	# the command is safe-start or shorewall is not started yet
+	command="start"
+    else
+	# the command is safe-restart and the firewall is already running
+	command="restart"
+    fi
+
+    if ! $SHOREWALL_SHELL /usr/share/shorewall/compiler $debugging nolock compile /var/lib/shorewall/.$command; then
+	status=$?
+	mutex_off
+	exit $status
+    fi
+
+    RESTOREPATH=/var/lib/shorewall/.safe
+
+    save_config
+
+    /var/lib/shorewall/.$command $command
+
+    echo -n "Do you want to accept the new firewall configuration? [y/n] "
+
+    if read_yesno_with_timeout; then
+	echo "New configuration has been accepted"
+    else
+	if [ "$command" = "restart" ]; then
+	    /var/lib/shorewall/.safe
+	else
+	    /var/lib/shorewall/.$command clear
+	fi
+
+	mutex_off
+	echo "New configuration has been rejected and the old one restored"
+	exit 2
+    fi
+
+    mutex_off
+    [ $? -eq 0 ] && [ -n "$SUBSYSLOCK" ] && touch $SUBSYSLOCK
+}
+
 #
 # Restore Comand Executor
 #
@@ -1787,8 +1895,11 @@ case "$COMMAND" in
 
 	RESTOREPATH=/var/lib/shorewall/$RESTOREFILE
 
+	[ "$nolock" ] || mutex_on
+
 	save_config
 
+	[ "$nolock" ] || mutex_off
 	;;
     forget)
 	case $# in
@@ -1886,77 +1997,10 @@ case "$COMMAND" in
 	help $@
 	;;
     safe-restart|safe-start)
-	# test is the shell supports timed read
-	read -t 0 junk 2> /dev/null
-	if [ $? -eq 2 -a ! -x /bin/bash ]
-	then
-	    echo "Your shell does not support a feature required to execute this command".
-	    exit 2
-	fi
+	shift
 
-	[ $VERBOSE -gt 0 ] && VERBOSE=$(make_verbose)
+	safe_commands $@
 
-	mutex_on
-
-	if shorewall_is_started
-	then
-	    running=0
-	else
-	    running=1
-	fi
-
-	if [ "$1" = "safe-start" -a  $running -eq 0 ]
-	then
-	    # the command is safe-start but the firewall is already running
-	    $0 $debugging nolock $VERBOSE start
-	    ret=$?
-	    mutex_off
-	    exit 0
-	fi
-
-	if [ "$1" = "safe-start" -o  $running -ne 0 ]
-	then
-	    # the command is safe-start or shorewall is not started yet
-	    command="start"
-	else
-	    # the command is safe-restart and the firewall is already running
-	    command="restart"
-	fi
-
-	if [ "$command" = "restart" ]
-	then
-	    # save previous configuration
-	    $0 $debugging nolock save "safe-start-restart"
-	fi
-
-	$0 $debugging nolock $VERBOSE $command
-
-	echo -n "Do you want to accept the new firewall configuration? [y/n] "
-	read_yesno_with_timeout
-	if [ $? -eq 0 ]
-	then
-	    echo "New configuration has been accepted"
-	    if [ "$command" = "restart" ]
-	    then
-		# removed previous configuration
-		rm /var/lib/shorewall/safe-start-restart
-	    fi
-	else
-	    if [ "$command" = "restart" ]
-	    then
-		$0 $debugging nolock restore "safe-start-restart"
-		rm /var/lib/shorewall/safe-start-restart
-	    else
-		$0 $debugging nolock clear
-	    fi
-
-	    mutex_off
-	    echo "New configuration has been rejected and the old one restored"
-	    exit 2
-	fi
-
-	mutex_off
-	[ $? -eq 0 ] && [ -n "$SUBSYSLOCK" ] && touch $SUBSYSLOCK
 	;;
     *)
 	usage 1

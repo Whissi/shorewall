@@ -935,7 +935,7 @@ show_command() {
 			    ;;
 			v*)
 			    VERBOSE=$(($VERBOSE + 1 ))
-			    option=${option#q}
+			    option=${option#v}
 			    ;;
 			*)
 			    usage 1
@@ -1072,7 +1072,7 @@ dump_command() {
 			    ;;
 			v*)
 			    VERBOSE=$(($VERBOSE + 1 ))
-			    option=${option#q}
+			    option=${option#v}
 			    ;;
 			*)
 			    usage 1
@@ -1545,7 +1545,7 @@ while [ $finished -eq 0 ]; do
 			;;
 		    v*)
 			VERBOSE=$(($VERBOSE + 1 ))
-			option=${option#q}
+			option=${option#v}
 			;;
 		    n*)
 			NOROUTES=Yes
@@ -1811,7 +1811,7 @@ case "$COMMAND" in
 			case $option in
 			    v*)
 				VERBOSE=$(($VERBOSE + 1 ))
-				option=${option#q}
+				option=${option#v}
 				;;
 			    -)
 				finished=1

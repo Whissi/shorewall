@@ -89,6 +89,12 @@ save_progress_message_short()
     echo "${INDENT}progress_message \"$@\"" >> $RESTOREBASE
 }
 
+progress_message_and_save()
+{
+    [ $VERBOSE -gt 1 ] && echo "$@"
+    echo "${INDENT}progress_message \"$@\"" >> $RESTOREBASE
+}
+
 #
 # Append a file in /var/lib/shorewall to $RESTOREBASE
 #
@@ -1619,16 +1625,16 @@ deleteallchains() {
 #
 setup_forwarding() {
 
-    save_progress_message "Setting up IP Forwarding..."
+    progress_message2 "Compiling IP Forwarding..."
 
     case "$IP_FORWARDING" in
     [Oo][Nn])
+	save_progress_message "IP Forwarding Enabled"
 	save_command "echo 1 > /proc/sys/net/ipv4/ip_forward"
-	progress_message2 "IP Forwarding Enabled"
 	;;
     [Oo][Ff][Ff])
+	save_progress_message "IP Forwarding Disabled!"
 	save_command "echo 0 > /proc/sys/net/ipv4/ip_forward"
-	progress_message2 "IP Forwarding Disabled!"
 	;;
     esac
 }
@@ -1830,7 +1836,7 @@ setup_tunnels() # $1 = name of tunnels file
 	    fi
 	done
 
-	progress_message "   IPSEC tunnel to $gateway defined."
+	progress_message_and_save "   IPSEC tunnel to $gateway defined."
     }
 
     setup_one_other() # $1 = TYPE, $2 = gateway, $3 = protocol
@@ -1838,7 +1844,7 @@ setup_tunnels() # $1 = name of tunnels file
 	addrule2 $inchain  -p $3 $(source_ip_range $2) -j ACCEPT
 	addrule2 $outchain -p $3 $(dest_ip_range $2) -j ACCEPT
 
-	progress_message "   $1 tunnel to $2 defined."
+	progress_message_and_save "   $1 tunnel to $2 compiled."
     }
 
     setup_pptp_client() # $1 = gateway
@@ -1847,7 +1853,7 @@ setup_tunnels() # $1 = name of tunnels file
 	addrule2 $inchain  -p 47               $(source_ip_range $1) -j ACCEPT
 	addrule2 $outchain -p tcp --dport 1723 $(dest_ip_range $1)   -j ACCEPT
 
-	progress_message "   PPTP tunnel to $1 defined."
+	progress_message_and_save "   PPTP tunnel to $1 defined."
     }
 
     setup_pptp_server() # $1 = gateway
@@ -1856,7 +1862,7 @@ setup_tunnels() # $1 = name of tunnels file
 	addrule2 $outchain -p 47               $(dest_ip_range $1)   -j ACCEPT
 	addrule2 $inchain  -p tcp --dport 1723 $(source_ip_range $1) -j ACCEPT
 
-	progress_message "   PPTP server defined."
+	progress_message_and_save "   PPTP server defined."
     }
 
     setup_one_openvpn() # $1 = gateway, $2 = kind[:port]
@@ -1881,7 +1887,7 @@ setup_tunnels() # $1 = name of tunnels file
 	addrule2 $inchain  -p $protocol $(source_ip_range $1) --dport $p -j ACCEPT
 	addrule2 $outchain -p $protocol $(dest_ip_range $1)   --dport $p -j ACCEPT
 
-	progress_message "   OPENVPN tunnel to $1:$protocol:$p defined."
+	progress_message_and_save "   OPENVPN tunnel to $1:$protocol:$p defined."
     }
 
     setup_one_openvpn_server() # $1 = gateway, $2 = kind[:port]
@@ -1906,7 +1912,7 @@ setup_tunnels() # $1 = name of tunnels file
 	addrule2 $inchain  -p $protocol $(source_ip_range $1) --dport $p -j ACCEPT
 	addrule2 $outchain -p $protocol $(dest_ip_range $1)   --sport $p -j ACCEPT
 
-	progress_message "   OPENVPN server tunnel from $1:$protocol:$p defined."
+	progress_message_and_save "   OPENVPN server tunnel from $1:$protocol:$p defined."
     }
 
     setup_one_openvpn_client() # $1 = gateway, $2 = kind[:port]
@@ -1931,7 +1937,7 @@ setup_tunnels() # $1 = name of tunnels file
 	addrule2 $inchain  -p $protocol $(source_ip_range $1) --sport $p -j ACCEPT
 	addrule2 $outchain -p $protocol $(dest_ip_range $1)   --dport $p -j ACCEPT
 
-	progress_message "   OPENVPN client tunnel to $1:$protocol:$p defined."
+	progress_message_and_save "   OPENVPN client tunnel to $1:$protocol:$p defined."
     }
 
     setup_one_generic() # $1 = gateway, $2 = kind:protocol[:port]
@@ -1959,7 +1965,7 @@ setup_tunnels() # $1 = name of tunnels file
 	addrule2 $inchain  -p $protocol $(source_ip_range $1) $p -j ACCEPT
 	addrule2 $outchain -p $protocol $(dest_ip_range $1)   $p -j ACCEPT
 
-	progress_message "   GENERIC tunnel to $1:$p defined."
+	progress_message_and_save "   GENERIC tunnel to $1:$p defined."
     }
 
     strip_file tunnels $1
@@ -2096,12 +2102,12 @@ setup_ipsec() {
     case $IPSECFILE in
 	zones)
 	    f=zones
-	    progress_message "$DOING IPSEC..."
+	    progress_message2 "$DOING IPSEC..."
 	    ;;
 	*)
 	    f=$IPSECFILE
 	    strip_file $f
-	    progress_message "$DOING $f..."
+	    progress_message2 "$DOING $f..."
 	    using_ipsec=Yes
 	    ;;
     esac
@@ -2232,12 +2238,14 @@ __EOF__
     interfaces=$(find_interfaces_by_option proxyarp)
 
     for interface in $interfaces; do
-	if [ -f /proc/sys/net/ipv4/conf/$interface/proxy_arp ] ; then
-	    save_command "echo 1 > /proc/sys/net/ipv4/conf/$interface/proxy_arp"
-	    progress_message "   Enabled proxy ARP on $interface"
-	else
-	    error_message "WARNING: Unable to enable proxy ARP on $interface"
-	fi
+	cat >> $RESTOREFILE << __EOF__
+${INDENT}if [ -f /proc/sys/net/ipv4/conf/$interface/proxy_arp ] ; then
+${INDENT}    echo 1 > /proc/sys/net/ipv4/conf/$interface/proxy_arP
+${INDENT}else
+${INDENT}    error_message "WARNING: Unable to enable proxy ARP on $interface"
+${INDENT}fi
+
+__EOF__
     done
 
 }
@@ -2598,7 +2606,7 @@ setup_nat() {
 
 	do_one_nat
 
-	progress_message "   Host $internal NAT $external on $interface"
+	progress_message_and_save "   Host $internal NAT $external on $interface"
     done < $TMP_DIR/nat
 }
 
@@ -2647,7 +2655,7 @@ setup_netmap() {
 		;;
 	esac
 
-	progress_message "   Network $net1 on $interface mapped to $net2 ($type)"
+	progress_message_and_save "   Network $net1 on $interface mapped to $net2 ($type)"
 
     done < $TMP_DIR/netmap
 }
@@ -2695,7 +2703,7 @@ setup_ecn() # $1 = file name
 	    interface=${host%:*}
 	    h=${host#*:}
 	    run_iptables -t mangle -A $(ecn_chain $interface) -p tcp $(dest_ip_range $h) -j ECN --ecn-tcp-remove
-	    progress_message "   ECN Disabled to $h through $interface"
+	    progress_message_and_save "   ECN Disabled to $h through $interface"
 	done
     fi
 }
@@ -2942,7 +2950,7 @@ setup_traffic_shaping()
 	    expandv device inband outband defmark ackmark
 	    tcdev="$device $inband $outband"
 	    add_root_tc
-	    progress_message "   TC Device $tcdev $DONE."
+	    progress_message_and_save "   TC Device $tcdev $DONE."
 	done < $TMP_DIR/tcdevices
     fi
 
@@ -2954,7 +2962,7 @@ setup_traffic_shaping()
 	    tcdev="$device $mark $rate $ceil $prio $options"
 	    options=$(separate_list $options | tr '[A-Z]' '[a-z]')
 	    add_tc_class
-	    progress_message "   TC Class $tcdev $DONE."
+	    progress_message_and_save "   TC Class $tcdev $DONE."
 	done < $TMP_DIR/tcclasses
     fi
 }
@@ -3234,6 +3242,7 @@ process_tc_rule()
     done
 
     progress_message "   TC Rule \"$rule\" $DONE"
+    save_progress_message "   TC Rule \"$rule\" Added"
 }
 
 #
@@ -6141,6 +6150,7 @@ process_tos_rule() {
     done
 
     progress_message "   Rule \"$rule\" $DONE."
+    save_progress_message "Rule \"$rule\"  Added."
 }
 
 #
@@ -6716,9 +6726,9 @@ __EOF__
 		done
 
 		if [ -n "$addresses" ]; then
-		    progress_message "   To $destination $displayproto from $network through ${interface} using $addresses"
+		    progress_message_and_save "   To $destination $displayproto from $network through ${interface} using $addresses"
 		else
-		    progress_message "   To $destination $displayproto from $network through ${interface}"
+		    progress_message_and_save "   To $destination $displayproto from $network through ${interface}"
 		fi
 	    done
 	elif [ -n "$detectinterface" ]; then
@@ -6754,9 +6764,9 @@ __EOF__
 	    done
 
 	    if [ -n "$addresses" ]; then
-		progress_message "   To $destination $displayproto from $source through ${interface} using $addresses"
+		progress_message_and_save "   To $destination $displayproto from $source through ${interface} using $addresses"
 	    else
-		progress_message "   To $destination $displayproto from $source through ${interface}"
+		progress_message_and_save "   To $destination $displayproto from $source through ${interface}"
 	    fi
 	fi
 
@@ -6870,7 +6880,7 @@ process_blacklist_rec() {
 	    addr="$addr $protocol"
 	fi
 
-	progress_message "   $addr added to Black List"
+	progress_message_and_save "   $addr added to Black List"
     done
 }
 
@@ -6905,7 +6915,7 @@ setup_blacklist() {
 
 	    [ $network = 0/0.0.0.0 ] && network= || network=":$network"
 
-	    progress_message "   Blacklisting enabled on ${interface}${network}"
+	    progress_message_and_save "   Blacklisting enabled on ${interface}${network}"
 	done
 
 	[ "$disposition" = REJECT ] && disposition=reject
@@ -6927,7 +6937,8 @@ refresh_blacklist() {
     local disposition=$BLACKLIST_DISPOSITION
 
     if qt $IPTABLES -L blacklst -n ; then
-	progress_message2 "Loading Black List..."
+	progress_message2 "$DOING Black List..."
+	save_progress_message "Loading Black List..."
 
 	strip_file blacklist $f
 
@@ -8469,7 +8480,7 @@ cat >> $RESTOREBASE << __EOF__
 __EOF__
 
     progress_message2 "Initializing..."
-    save_progress_message_short "Initializing..."
+    save_progress_message "Initializing..."
 
     initialize_netfilter
 
@@ -8727,9 +8738,9 @@ do_initialize() {
     SECTION=ESTABLISHED
     SECTIONS=
     ALL_PORTS=
-    SAVE_VERBOSE=${VERBOSE:=2}
-
     FUNCTIONS=$SHARED_DIR/functions
+
+    [ -n "${VERBOSE:=2}" ]
 
     if [ -f $FUNCTIONS ]; then
 	[ $VERBOSE -ge 2 ] && echo "Loading $FUNCTIONS..."
@@ -8765,10 +8776,7 @@ do_initialize() {
     else
 	fatal_error "$config does not exist!"
     fi
-    #
-    # Restore VERBOSE
-    #
-    VERBOSE=$SAVE_VERBOSE
+
     #
     # Restore CONFIG_PATH if the shorewall.conf file cleared it
     #

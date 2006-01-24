@@ -46,9 +46,9 @@ New Features added in 3.1.4
    for new users is now to be very quiet and you get more detail using the -v option
    (or -vv if you want the old noisy behavior).
 
-   You set the default level of verbosity using the VERBOSE option in
+   You set the default level of verbosity using the VERBOSITY option in
    shorewall.conf. If you don't set it (as would be the case of you use your
-   old shorewall.conf file) then VERBOSE defaults to a value of 2 which is
+   old shorewall.conf file) then VERBOSITY defaults to a value of 2 which is
    the old default. A value of 1 suppresses some of the output (like the old
    -q option did) while a value of 0 makes Shorewall almost silent.
 
@@ -59,15 +59,15 @@ New Features added in 3.1.4
    If the default is set at 2, you can still make a command silent by using two
    "q"s (e.g., shorewall -qq restart).
 
-   In summary, each "q" subtracts one from VERBOSE while each "v" adds one to
-   VERBOSE.
+   In summary, each "q" subtracts one from VERBOSITY while each "v" adds one to
+   VERBOSITY.
 
    The "shorewall show log", "shorewall logwatch" and "shorewall dump" commands
    require VERBOSE to be greater than or equal to 3 to display MAC addresses.
    This is consistent with the previous implementation which required a single
-   -v to enable MAC display but means that if you set VERBOSE=0 in shorewall.conf,
-   then you will need to include -vvv in these commands in order to have MACs
-   displayed.
+   -v to enable MAC display but means that if you set VERBOSITY=0 in shorewall.conf,
+   then you will need to include -vvv in commands that display log records in
+   order to have MACs displayed.
 
 Migration Considerations:
 

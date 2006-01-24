@@ -250,7 +250,11 @@ get_config() {
 	    ;;
     esac
 
-    [ -n "${VERBOSE:=2}" ]
+    [ -n "${VERBOSITY:=2}" ]
+
+    VERBOSE=$(($VERBOSE + $VERBOSITY))
+
+    export VERBOSE
 
 }
 
@@ -1217,7 +1221,6 @@ safe_commands() {
 
     [ $# -eq 0 ] || usage 2
 
-    export VERBOSE
     export PROGRAM=Yes
 
     mutex_on
@@ -1486,12 +1489,10 @@ if [ $# -gt 0 ] && [ "$1" = "nolock" ]; then
     shift
 fi
 
-[ -n "${VERBOSE:=2}" ]
-
 SHOREWALL_DIR=
 IPT_OPTIONS="-nv"
 FAST=
-export VERBOSE
+VERBOSE=0
 NOROUTES=
 EXPORT=
 noroutes=

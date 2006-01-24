@@ -88,13 +88,13 @@ save_command_unindented()
 }
 
 #
-# Write a progress_message command to $RESTOREBASE
+# Write a progress_message2 command to $RESTOREBASE
 #
 save_progress_message()
 {
-    echo                                    >> $RESTOREBASE
-    echo "${INDENT}progress_message \"$@\"" >> $RESTOREBASE
-    echo                                    >> $RESTOREBASE
+    echo                                     >> $RESTOREBASE
+    echo "${INDENT}progress_message2 \"$@\"" >> $RESTOREBASE
+    echo                                     >> $RESTOREBASE
 }
 
 save_progress_message_short()
@@ -2109,7 +2109,7 @@ setup_ipsec() {
     case $IPSECFILE in
 	zones)
 	    f=zones
-	    progress_message "Setting up IPSEC..."
+	    progress_message "$DOING IPSEC..."
 	    ;;
 	*)
 	    f=$IPSECFILE
@@ -2315,7 +2315,7 @@ setup_mac_lists() {
 	fi
     done
 
-    progress_message "Setting up MAC Verification on $maclist_interfaces..."
+    progress_message "$DOING MAC Verification on $maclist_interfaces..."
     #
     # Create chains.
     #
@@ -2691,7 +2691,7 @@ setup_ecn() # $1 = file name
     done < $TMP_DIR/ecn
 
     if [ -n "$interfaces" ]; then
-	progress_message "Setting up ECN control on${interfaces}..."
+	progress_message "$DOING ECN control on${interfaces}..."
 
 	for interface in $interfaces; do
 	    chain=$(ecn_chain $interface)
@@ -3302,7 +3302,7 @@ setup_tc1() {
 
 setup_tc() {
 
-    progress_message2 "Setting up Traffic Control Rules..."
+    progress_message2 "$DOING Traffic Control Rules..."
 
     setup_tc1
 }
@@ -3546,7 +3546,7 @@ process_accounting_rule() {
 setup_accounting() # $1 = Name of accounting file
 {
 
-    progress_message2 "Setting up Accounting..."
+    progress_message2 "$DOING Accounting..."
 
     save_progress_message "Setting up Accounting..."
 
@@ -6778,7 +6778,7 @@ __EOF__
     strip_file masq $1
 
     if [ -n "$NAT_ENABLED" ]; then
-	progress_message2 "Masqueraded Networks and Hosts:"
+	progress_message2 "$DOING Masquerading/SNAT"
 	save_progress_message "Setting up Masquerading/SNAT..."
     fi
 
@@ -6897,7 +6897,7 @@ setup_blacklist() {
     local ipsec policy
 
     if [ -n "$hosts" -a -f $f ]; then
-	progress_message2 "Setting up Blacklisting..."
+	progress_message2 "$DOING Blacklisting..."
 
 	strip_file blacklist $f
 
@@ -7442,7 +7442,7 @@ __EOF__
     hosts=$(find_hosts_by_option tcpflags)
 
     if [ -n "$hosts" ]; then
-	progress_message2 "Setting up TCP Flags checking..."
+	progress_message2 "$DOING TCP Flags checking..."
 
 	save_progress_message "Setting up TCP Flags checking..."
 
@@ -7513,7 +7513,7 @@ __EOF__
     interfaces1=$(find_interfaces_by_option1 arp_ignore)
 
     if [ -n "${interfaces}${interfaces1}" ]; then
-	progress_message2 "Setting up ARP Filtering..."
+	progress_message2 "$DOING ARP Filtering..."
 
 	for interface in $interfaces; do
 	    file=/proc/sys/net/ipv4/conf/$interface/arp_filter
@@ -7544,7 +7544,7 @@ __EOF__
     interfaces="$(find_interfaces_by_option routefilter)"
 
     if [ -n "$interfaces" -o -n "$ROUTE_FILTER" ]; then
-	progress_message2 "Setting up Kernel Route Filtering..."
+	progress_message2 "$DOING Kernel Route Filtering..."
 
 	save_progress_message "Setting up Route Filtering..."
 
@@ -7583,7 +7583,7 @@ __EOF__
     interfaces="$(find_interfaces_by_option logmartians)"
 
     if [ -n "$interfaces" -o -n "$LOG_MARTIANS" ]; then
-	progress_message2 "Setting up Martian Logging..."
+	progress_message2 "$DOING Martian Logging..."
 
 	save_progress_message "Setting up Martian Logging..."
 
@@ -7628,7 +7628,7 @@ __EOF__
     interfaces=$(find_interfaces_by_option sourceroute)
 
     if [ -n "$interfaces" ]; then
-	progress_message2 "Setting up Accept Source Routing..."
+	progress_message2 "$DOING Accept Source Routing..."
 
 	save_progress_message "Setting up Source Routing..."
 
@@ -7646,7 +7646,7 @@ __EOF__
     fi
 
     if [ -n "$DYNAMIC_ZONES" ]; then
-	echo "Setting up Dynamic Zone Chains..."
+	progress_message "$DOING Dynamic Zone Chains..."
 
 	for interface in $ALL_INTERFACES; do
 	    for chain in $(dynamic_chains $interface); do
@@ -7667,7 +7667,7 @@ __EOF__
     interfaces=$(find_interfaces_by_option upnp)
 
     if [ -n "$interfaces" ]; then
-	progress_message2 "Setting up UPnP..."
+	progress_message2 "$DOING UPnP..."
 
 	save_progress_message "Setting up UPnP..."
 
@@ -8733,7 +8733,7 @@ do_initialize() {
     SECTION=ESTABLISHED
     SECTIONS=
     ALL_PORTS=
-    SAVE_VERBOSE=$VERBOSE
+    SAVE_VERBOSE=${VERBOSE:=2}
 
     FUNCTIONS=$SHARED_DIR/functions
 
@@ -8774,7 +8774,7 @@ do_initialize() {
     #
     # Restore VERBOSE
     #
-    VERBOSE=${SAVE_VERBOSE:-0}
+    VERBOSE=$SAVE_VERBOSE
     #
     # Restore CONFIG_PATH if the shorewall.conf file cleared it
     #

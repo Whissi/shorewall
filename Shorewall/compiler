@@ -41,25 +41,12 @@
 #
 
 #
-# Fatal error -- stops the firewall after issuing the error message
+# Fatal error -- stops the compiler after issuing the error message
 #
 fatal_error() # $* = Error Message
 {    echo "   ERROR: $@" >&2
     [ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
     [ -n "$RESTOREBASE" ] && rm -f $RESTOREBASE
-    exit 2
-}
-
-#
-# Fatal error during startup -- generate an error message and abend without
-#				altering the state of the firewall
-#
-startup_error() # $* = Error Message
-{
-    echo "   ERROR: $@" >&2
-    [ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
-    [ -n "$RESTOREBASE" ] && rm -f $RESTOREBASE
-    kill $$
     exit 2
 }
 
@@ -471,7 +458,7 @@ determine_zones()
 	    *:*)
 		parents=${zone#*:}
 		zone=${zone%:*}
-		[ -n "$zone" ] || startup_error "Invalid nested zone syntax: :$parents"
+		[ -n "$zone" ] || fatal_error "Invalid nested zone syntax: :$parents"
 		parents=$(separate_list $parents)
 		;;
 	    *)
@@ -480,30 +467,30 @@ determine_zones()
 	esac
 
 	for parent in $parents; do
-	    [ "$parent" = "$FW" ] && startup_error "Sub-zones of the firewall zone are not allowed"
-	    list_search $parent $ZONES || startup_error "Parent zone not defined: $parent"
+	    [ "$parent" = "$FW" ] && fatal_error "Sub-zones of the firewall zone are not allowed"
+	    list_search $parent $ZONES || fatal_error "Parent zone not defined: $parent"
 	done
 
-	[ ${#zone} -gt 5 ] && startup_error "Zone name longer than 5 characters: $zone"
+	[ ${#zone} -gt 5 ] && fatal_error "Zone name longer than 5 characters: $zone"
 
 	case "$zone" in
 	    [0-9*])
-                startup_error "Illegal zone name \"$zone\" in zones file"
+                fatal_error "Illegal zone name \"$zone\" in zones file"
 		;;
             all|none)
-	        startup_error "Reserved zone name \"$zone\" in zones file"
+	        fatal_error "Reserved zone name \"$zone\" in zones file"
 		;;
         esac
 
 	if [ -n "$new_zone_file" ]; then
 	    case ${type:=ipv4} in
 		ipv4|IPv4|IPV4|plain|-)
-		    list_search $zone $ZONES $FW && startup_error "Zone $zone is defined more than once"
+		    list_search $zone $ZONES $FW && fatal_error "Zone $zone is defined more than once"
 		    merge_zone
 		    IPV4_ZONES="$IPV4_ZONES $zone"
 		    ;;
 		ipsec|IPSEC|ipsec4|IPSEC4)
-		    list_search $zone $ZONES $FW && startup_error "Zone $zone is defined more than once"
+		    list_search $zone $ZONES $FW && fatal_error "Zone $zone is defined more than once"
 		    [ -n "$POLICY_MATCH" ] || fatal_error "Your kernel and/or iptables does not support policy match"
 		    eval ${zone}_is_ipsec=Yes
 		    eval ${zone}_is_complex=Yes
@@ -511,31 +498,31 @@ determine_zones()
 		    IPSEC_ZONES="$IPSEC_ZONES $zone"
 		    ;;
 		firewall)
-		    [ -n "$FW" ] && startup_error "Only one firewall zone may be defined"
-		    list_search $zone $ZONES && startup_error "Zone $zone is defined more than once"
-		    [ -n "$parents" ] && startup_error "The firewall zone may not be nested"
+		    [ -n "$FW" ] && fatal_error "Only one firewall zone may be defined"
+		    list_search $zone $ZONES && fatal_error "Zone $zone is defined more than once"
+		    [ -n "$parents" ] && fatal_error "The firewall zone may not be nested"
 		    for r in $rest; do
-			[ "x$r" = x- ] || startup_error "OPTIONS not allowed on the firewall zone"
+			[ "x$r" = x- ] || fatal_error "OPTIONS not allowed on the firewall zone"
 		    done
 		    FW=$zone
 		    ;;
 		*)
-		    startup_error "Invalid Zone Type: $type"
+		    fatal_error "Invalid Zone Type: $type"
 		    ;;
 	    esac
 
 	    eval ${zone}_type=$type
 	else
-	    list_search $zone $ZONES $FW && startup_error "Zone $zone is defined more than once"
+	    list_search $zone $ZONES $FW && fatal_error "Zone $zone is defined more than once"
 	    ZONES="$ZONES $zone"
 	    IPV4_ZONES="$IPV4_ZONES $zone"
 	    eval ${zone}_type=ipv4
 	fi
     done < $TMP_DIR/zones
 
-    [ -z "$ZONES" ] && startup_error "No ipv4 or ipsec Zones Defined"
+    [ -z "$ZONES" ] && fatal_error "No ipv4 or ipsec Zones Defined"
 
-    [ -z "$FW" ] && startup_error "No Firewall Zone Defined"
+    [ -z "$FW" ] && fatal_error "No Firewall Zone Defined"
 }
 
 #
@@ -948,9 +935,9 @@ determine_hosts() {
 	    interface=${host%:*}
 	    if list_search $interface $interfaces; then
 		list_search $interface:0.0.0.0/0 $hosts && \
-		    startup_error "Invalid zone definition for zone $zone"
+		    fatal_error "Invalid zone definition for zone $zone"
 		list_search $interface:0/0 $hosts && \
-		    startup_error "Invalid zone definition for zone $zone"
+		    fatal_error "Invalid zone definition for zone $zone"
 		eval ${zone}_is_complex=Yes
 	    else
 		if [ -z "$interfaces" ]; then
@@ -1002,17 +989,17 @@ validate_interfaces_file() {
 	[ "x$z" = "x-" ] && z=
 
 	if [ -n "$z" ]; then
-	    validate_zone $z || startup_error "Invalid zone ($z) in record \"$r\""
+	    validate_zone $z || fatal_error "Invalid zone ($z) in record \"$r\""
 	fi
 
 	list_search $interface $ALL_INTERFACES && \
-	    startup_error "Duplicate Interface $interface"
+	    fatal_error "Duplicate Interface $interface"
 
 	wildcard=
 
 	case $interface in
 	    *:*|+)
-		startup_error "Invalid Interface Name: $interface"
+		fatal_error "Invalid Interface Name: $interface"
 		;;
 	    *+)
 		wildcard=Yes
@@ -1056,12 +1043,12 @@ __EOF__
 		    ;;
 		detectnets)
 		    [ -n "$wildcard" ] && \
-			startup_error "The \"detectnets\" option may not be used with a wild-card interface"
+			fatal_error "The \"detectnets\" option may not be used with a wild-card interface"
 		    [ -n $EXPORT ] && \
-			startup_error "'detectnets' not permitted with the -e run-line option"
+			fatal_error "'detectnets' not permitted with the -e run-line option"
 		    ;;
 		routeback)
-		    [ -n "$z" ] || startup_error "The routeback option may not be specified on a multi-zone interface"
+		    [ -n "$z" ] || fatal_error "The routeback option may not be specified on a multi-zone interface"
 		    ;;
 		*)
 		    error_message "WARNING: Invalid option ($option) in record \"$r\""
@@ -1070,7 +1057,7 @@ __EOF__
 	done
     done < $TMP_DIR/interfaces
 
-    [ -z "$ALL_INTERFACES" ] && startup_error "No Interfaces Defined"
+    [ -z "$ALL_INTERFACES" ] && fatal_error "No Interfaces Defined"
 }
 
 #
@@ -1314,7 +1301,7 @@ validate_hosts_file() {
    while read z hosts options; do
        expandv z hosts options
        r="$z $hosts $options"
-       validate_zone1 $z || startup_error "Invalid zone ($z) in record \"$r\""
+       validate_zone1 $z || fatal_error "Invalid zone ($z) in record \"$r\""
 
        case $hosts in
 	   *:*)
@@ -1323,12 +1310,12 @@ validate_hosts_file() {
 	       iface=$(chain_base $interface)
 
 	       list_search  $interface $ALL_INTERFACES || \
-		   startup_error "Unknown interface ($interface) in record \"$r\""
+		   fatal_error "Unknown interface ($interface) in record \"$r\""
 
 	       hosts=${hosts#*:}
 	       ;;
 	   *)
-	       startup_error "Invalid HOST(S) column contents: $hosts"
+	       fatal_error "Invalid HOST(S) column contents: $hosts"
 	       ;;
        esac
 
@@ -1340,7 +1327,7 @@ validate_hosts_file() {
 	       case $host in
 		   *:*)
 		       known_interface ${host%:*} && \
-			   startup_error "Bridged interfaces may not be defined in /etc/shorewall/interfaces: $host"
+			   fatal_error "Bridged interfaces may not be defined in /etc/shorewall/interfaces: $host"
 		       check_bridge_port ${host%%:*}
 		       ;;
 		   *.*.*.*)
@@ -1350,7 +1337,7 @@ validate_hosts_file() {
 		       ;;
 		   *)
 		       known_interface $host && \
-			   startup_error "Bridged interfaces may not be defined in /etc/shorewall/interfaces: $host"
+			   fatal_error "Bridged interfaces may not be defined in /etc/shorewall/interfaces: $host"
 		       check_bridge_port $host
 		       ;;
 	       esac
@@ -1368,7 +1355,7 @@ validate_hosts_file() {
 		       ;;
 		   ipsec)
 		       [ -n "$POLICY_MATCH" ] || \
-			   startup_error "Your kernel and/or iptables does not support policy match: ipsec"
+			   fatal_error "Your kernel and/or iptables does not support policy match: ipsec"
 		       eval ${z}_ipsec_hosts=\"\$${z}_ipsec_hosts $interface:$host\"
 		       eval ${z}_is_complex=Yes
 		       ;;
@@ -1448,7 +1435,7 @@ validate_policy()
 	    ;;
 	*)
 	    if ! validate_zone $client; then
-		startup_error "Undefined zone $client"
+		fatal_error "Undefined zone $client"
 	    fi
 	esac
 
@@ -1458,7 +1445,7 @@ validate_policy()
 	    ;;
 	*)
 	    if ! validate_zone $server; then
-		startup_error "Undefined zone $server"
+		fatal_error "Undefined zone $server"
 	    fi
 	esac
 
@@ -1467,13 +1454,13 @@ validate_policy()
 	    ;;
 	NONE)
 	    [ "$client" = "$FW" -o "$server" = "$FW" ] && \
-		startup_error " $client $server $policy $loglevel $synparams: NONE policy not allowed to/from the $FW zone"
+		fatal_error " $client $server $policy $loglevel $synparams: NONE policy not allowed to/from the $FW zone"
 
 	    [ -n "$clientwild" -o -n "$serverwild" ] && \
-		startup_error " $client $server $policy $loglevel $synparams: NONE policy not allowed with \"all\""
+		fatal_error " $client $server $policy $loglevel $synparams: NONE policy not allowed with \"all\""
 	    ;;
 	*)
-	    startup_error "Invalid policy $policy"
+	    fatal_error "Invalid policy $policy"
 	    ;;
 	esac
 
@@ -1483,7 +1470,7 @@ validate_policy()
 	    if eval test \$${chain}_is_optional = Yes ; then
 		eval ${chain}_is_optional=
 	    else
-		startup_error "Duplicate policy: $client $server $policy"
+		fatal_error "Duplicate policy: $client $server $policy"
 	    fi
 	fi
 
@@ -2681,7 +2668,7 @@ setup_ecn() # $1 = file name
     while read interface host; do
 	expandv interface host
 	list_search  $interface $ALL_INTERFACES || \
-	    startup_error "Unknown interface $interface"
+	    fatal_error "Unknown interface $interface"
 	list_search $interface $interfaces || \
 	    interfaces="$interfaces $interface"
 	[ "x$host" = "x-" ] && host=
@@ -4331,14 +4318,14 @@ process_actions1() {
 			    fi
 			    ;;
 			*)
-			    startup_error "Common Actions are only allowed for ACCEPT, DROP, REJECT and QUEUE"
+			    fatal_error "Common Actions are only allowed for ACCEPT, DROP, REJECT and QUEUE"
 			    ;;
 		    esac
 	    esac
 
 	    [ -z "$xaction" ] && continue
 
-	    [ "$xaction" = "$(chain_base $xaction)" ] || startup_error "Invalid Action Name: $xaction"
+	    [ "$xaction" = "$(chain_base $xaction)" ] || fatal_error "Invalid Action Name: $xaction"
 
 	    if ! list_search $xaction $ACTIONS; then
 		f=action.$xaction
@@ -4370,7 +4357,7 @@ process_actions1() {
 						    ;;
 						*)
 						    rule="$xtarget $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec"
-						    startup_error "Invalid Macro Parameter in rule \"$rule\""
+						    fatal_error "Invalid Macro Parameter in rule \"$rule\""
 						    ;;
 					    esac
 					    temp=${temp%%/*}
@@ -4397,14 +4384,14 @@ process_actions1() {
 							;;
 						    *)
 							rule="$mtarget $mclients $mservers $mprotocol $mports $mcports $mratelimit $muserspec"
-							startup_error "Invalid TARGET in rule \"$rule\""
+							fatal_error "Invalid TARGET in rule \"$rule\""
 						esac
 					    done < $TMP_DIR/$f1
 
 					    progress_message "   ..End Macro"
 					else
 					    rule="$xtarget $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec"
-					    startup_error "Invalid TARGET in rule \"$rule\""
+					    fatal_error "Invalid TARGET in rule \"$rule\""
 					fi
 				    fi
 				fi
@@ -4413,7 +4400,7 @@ process_actions1() {
 			esac
 		    done < $TMP_DIR/$f
 		else
-		    startup_error "Missing Action File: $f"
+		    fatal_error "Missing Action File: $f"
 		fi
 
 		ACTIONS="$ACTIONS $xaction"
@@ -7000,17 +6987,17 @@ initialize_netfilter () {
     report_capabilities
 
     if [ -n "$BRIDGING" ]; then
-	[ -n "$PHYSDEV_MATCH" ] || startup_error "BRIDGING=Yes requires Physdev Match support in your Kernel and iptables"
+	[ -n "$PHYSDEV_MATCH" ] || fatal_error "BRIDGING=Yes requires Physdev Match support in your Kernel and iptables"
     fi
 
     [ "$MACLIST_TTL" = "0" ] && MACLIST_TTL=
 
     if [ -n "$MACLIST_TTL" -a -z "$RECENT_MATCH" ]; then
-	startup_error "MACLIST_TTL requires the Recent Match capability which is not present in your Kernel and/or iptables"
+	fatal_error "MACLIST_TTL requires the Recent Match capability which is not present in your Kernel and/or iptables"
     fi
 
     [ -n "$RFC1918_STRICT" -a -z "$CONNTRACK_MATCH" ] && \
-	startup_error "RFC1918_STRICT=Yes requires Connection Tracking match"
+	fatal_error "RFC1918_STRICT=Yes requires Connection Tracking match"
 
     progress_message2 "Determining Zones..."
 
@@ -8303,11 +8290,11 @@ compile_firewall() # $1 = File Name
 
     if [ $COMMAND = compile ]; then
 	dir=$(dirname $1)
-	[ -d $dir ] || startup_error "Directory $dir does not exist"
-	[ -h $dir ] && startup_error "$dir is a Symbolic Link"
-	[ -d $outfile ] && startup_error "$outfile is a Directory"
-	[ -h $outfile ] && startup_error "$outfile is a Symbolic Link"
-	[ -f $outfile -a ! -x $outfile ] && startup_error "$outfile exists and is not a restore file"
+	[ -d $dir ] || fatal_error "Directory $dir does not exist"
+	[ -h $dir ] && fatal_error "$dir is a Symbolic Link"
+	[ -d $outfile ] && fatal_error "$outfile is a Directory"
+	[ -h $outfile ] && fatal_error "$outfile is a Symbolic Link"
+	[ -f $outfile -a ! -x $outfile ] && fatal_error "$outfile exists and is not a restore file"
 
 	DOING=Compiling
 	DONE=compiled
@@ -8320,7 +8307,7 @@ compile_firewall() # $1 = File Name
 
     STATEDIR=$(mktempdir)
 
-    [ -n "$RESTOREBASE" ] || startup_error "Cannot create temporary file in /tmp"
+    [ -n "$RESTOREBASE" ] || fatal_error "Cannot create temporary file in /tmp"
 
     [ -z "$PROGRAM" ] && save_command "#! $SHOREWALL_SHELL --"
 
@@ -8445,6 +8432,7 @@ __EOF__
     RESTOREFILE="$RESTOREFILE"
     VERSION="$VERSION"
     CONFIG_PATH="$CONFIG_PATH"
+    TERMINATOR=fatal_error
 
 __EOF__
     if [ -n "$IPTABLES" ]; then
@@ -8621,7 +8609,7 @@ added_param_value_yes() # $1 = Parameter Name, $2 = Parameter value
 	    echo ""
 	    ;;
 	*)
-	    startup_error "Invalid value ($val) for $1"
+	    fatal_error "Invalid value ($val) for $1"
 	    ;;
 	esac
     fi
@@ -8644,7 +8632,7 @@ added_param_value_no() # $1 = Parameter Name, $2 = Parameter value
 	    echo ""
 	    ;;
 	*)
-	    startup_error "Invalid value ($val) for $1"
+	    fatal_error "Invalid value ($val) for $1"
 	    ;;
 	esac
     fi
@@ -8668,7 +8656,7 @@ do_initialize() {
     #
     # Establish termination function
     #
-    TERMINATOR=startup_error
+    TERMINATOR=fatal_error
     #
     # Clear all configuration variables
     #
@@ -8747,13 +8735,13 @@ do_initialize() {
 	[ $VERBOSE -ge 2 ] && echo "Loading $FUNCTIONS..."
 	. $FUNCTIONS
     else
-	startup_error "$FUNCTIONS does not exist!"
+	fatal_error "$FUNCTIONS does not exist!"
     fi
 
     TMP_DIR=$(mktempdir)
 
     [ -n "$TMP_DIR" ] && chmod 700 $TMP_DIR || \
-       startup_error "Can't create a temporary directory"
+       fatal_error "Can't create a temporary directory"
 
     trap "[ -n "$RESTOREBASE" ] && rm -f $RESTOREBASE;rm -rf $TMP_DIR; exit 2" 1 2 3 4 5 6 9
 
@@ -8772,10 +8760,10 @@ do_initialize() {
 	    progress_message "Processing $config..."
 	    . $config
 	else
-	    startup_error "Cannot read $config (Hint: Are you root?)"
+	    fatal_error "Cannot read $config (Hint: Are you root?)"
 	fi
     else
-	startup_error "$config does not exist!"
+	fatal_error "$config does not exist!"
     fi
     #
     # Restore VERBOSE
@@ -8800,21 +8788,21 @@ do_initialize() {
 	if [ -z "$IPTABLES" ]; then
 	    IPTABLES=$(mywhich iptables 2> /dev/null)
 
-	    [ -z "$IPTABLES" ] && startup_error "Can't find iptables executable"
+	    [ -z "$IPTABLES" ] && fatal_error "Can't find iptables executable"
 	else
-	    [ -e "$IPTABLES" ] || startup_error "\$IPTABLES=$IPTABLES does not exist or is not executable"
+	    [ -e "$IPTABLES" ] || fatal_error "\$IPTABLES=$IPTABLES does not exist or is not executable"
 	fi
 	determine_capabilities
 
     else
 	f=$(find_file capabilities)
 
-	[ -f $f ] && . $f || startup_error "The -e flag requires a capabilities file"
+	[ -f $f ] && . $f || fatal_error "The -e flag requires a capabilities file"
     fi
 
     ALLOWRELATED="$(added_param_value_yes ALLOWRELATED $ALLOWRELATED)"
     [ -n "$ALLOWRELATED" ] || \
-	startup_error "ALLOWRELATED=No is not supported"
+	fatal_error "ALLOWRELATED=No is not supported"
     ADD_IP_ALIASES="$(added_param_value_yes ADD_IP_ALIASES $ADD_IP_ALIASES)"
 
     if [ -n "${LOGRATE}${LOGBURST}" ]; then
@@ -8828,7 +8816,7 @@ do_initialize() {
 	[Oo][Nn]|[Oo][Ff][Ff]|[Kk][Ee][Ee][Pp])
 	    ;;
 	*)
-	    startup_error "Invalid value ($IP_FORWARDING) for IP_FORWARDING"
+	    fatal_error "Invalid value ($IP_FORWARDING) for IP_FORWARDING"
 	    ;;
 	esac
     else
@@ -8851,7 +8839,7 @@ do_initialize() {
     DETECT_DNAT_IPADDRS=$(added_param_value_no DETECT_DNAT_IPADDRS $DETECT_DNAT_IPADDRS)
     FORWARDPING=$(added_param_value_no FORWARDPING $FORWARDPING)
     [ -n "$FORWARDPING" ] && \
-	startup_error "FORWARDPING=Yes is no longer supported"
+	fatal_error "FORWARDPING=Yes is no longer supported"
 
     maclist_target=reject
 
@@ -8866,7 +8854,7 @@ do_initialize() {
 		maclist_target=RETURN
 		;;
 	    *)
-		startup_error "Invalid value ($MACLIST_DISPOSITION) for MACLIST_DISPOSITION"
+		fatal_error "Invalid value ($MACLIST_DISPOSITION) for MACLIST_DISPOSITION"
 		;;
 	esac
     else
@@ -8878,7 +8866,7 @@ do_initialize() {
 	    REJECT|ACCEPT|DROP)
 		;;
 	    *)
-		startup_error "Invalid value ($TCP_FLAGS_DISPOSITION) for TCP_FLAGS_DISPOSITION"
+		fatal_error "Invalid value ($TCP_FLAGS_DISPOSITION) for TCP_FLAGS_DISPOSITION"
 		;;
 	esac
     else
@@ -8896,16 +8884,16 @@ do_initialize() {
 	    LOGRULENUMBERS=Yes
 	    temp=$(printf "$LOGFORMAT" fooxx 1 barxx 2> /dev/null)
 	    if [ $? -ne 0 ]; then
-		startup_error "Invalid LOGFORMAT string: \"$LOGFORMAT\""
+		fatal_error "Invalid LOGFORMAT string: \"$LOGFORMAT\""
 	    fi
 	else
 	    temp=$(printf "$LOGFORMAT" fooxx barxx 2> /dev/null)
 	    if [ $? -ne 0 ]; then
-		startup_error "Invalid LOGFORMAT string: \"$LOGFORMAT\""
+		fatal_error "Invalid LOGFORMAT string: \"$LOGFORMAT\""
 	    fi
 	fi
 
-	[ ${#temp} -le 29 ] || startup_error "LOGFORMAT string is longer than 29 characters: \"$LOGFORMAT\""
+	[ ${#temp} -le 29 ] || fatal_error "LOGFORMAT string is longer than 29 characters: \"$LOGFORMAT\""
     else
 	LOGFORMAT="Shorewall:%s:%s:"
     fi
@@ -8928,7 +8916,7 @@ do_initialize() {
 	ipsec|zones)
 	    ;;
 	*)
-	    startup_error "Invalid value ($IPSECFILE) for IPSECFILE option"
+	    fatal_error "Invalid value ($IPSECFILE) for IPSECFILE option"
 	    ;;
     esac
 
@@ -8936,9 +8924,9 @@ do_initialize() {
 	filter)
 	    ;;
 	mangle)
-	    [ $MACLIST_DISPOSITION = reject ] && startup_error "MACLIST_DISPOSITION=REJECT is not allowed with MACLIST_TABLE=mangle"
+	    [ $MACLIST_DISPOSITION = reject ] && fatal_error "MACLIST_DISPOSITION=REJECT is not allowed with MACLIST_TABLE=mangle"
 	    ;;	*)
-	    startup_error "Invalid value ($MACLIST_TABLE) for MACLIST_TABLE option"
+	    fatal_error "Invalid value ($MACLIST_TABLE) for MACLIST_TABLE option"
 	    ;;
     esac
 
@@ -8949,7 +8937,7 @@ do_initialize() {
 	    [Yy][Ee][Ss])
 		TC_ENABLED=
 		TC_SCRIPT=$(find_file tcstart)
-		[ -f $TC_SCRIPT ] || startup_error "Unable to find tcstart file"
+		[ -f $TC_SCRIPT ] || fatal_error "Unable to find tcstart file"
 		;;
 	    [Ii][Nn][Tt][Ee][Rr][Nn][Aa][Ll])
 		TC_ENABLED=Yes
@@ -8963,7 +8951,7 @@ do_initialize() {
     fi
 
     if [ -n "$TC_ENABLED" ];then
-	[ -n "$MANGLE_ENABLED" ] || startup_error "Traffic Shaping requires mangle support in your kernel and iptables"
+	[ -n "$MANGLE_ENABLED" ] || fatal_error "Traffic Shaping requires mangle support in your kernel and iptables"
     fi
 
     [ "x${SHOREWALL_DIR}" = "x." ] && SHOREWALL_DIR="$PWD"
@@ -8980,7 +8968,7 @@ do_initialize() {
 
     temp=$(decodeaddr 192.168.1.1)
     if [ $(encodeaddr $temp) != 192.168.1.1 ]; then
-	startup_error "Shell $SHOREWALL_SHELL is broken and may not be used with Shorewall"
+	fatal_error "Shell $SHOREWALL_SHELL is broken and may not be used with Shorewall"
     fi
 
     rm -f $TMP_DIR/physdev

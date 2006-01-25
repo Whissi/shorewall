@@ -1134,7 +1134,7 @@ stop_firewall() {
 
 		echo Restoring Shorewall...
 
-		if $RESTOREPATH; then
+		if $RESTOREPATH restore; then
 		    echo "Shorewall restored from $RESTOREPATH"
 		    set_state "Started"
 		else

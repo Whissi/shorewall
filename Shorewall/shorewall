@@ -598,7 +598,7 @@ start_command() {
 		fi
 
 		echo Restoring Shorewall...
-		$RESTOREPATH
+		$RESTOREPATH restore
 		date > /var/lib/shorewall/restarted
 		echo Shorewall restored from $RESTOREPATH
 	    else
@@ -1240,6 +1240,7 @@ safe_commands() {
 	exit $status
     fi
 
+    RESTOREFILE=.safe
     RESTOREPATH=/var/lib/shorewall/.safe
 
     save_config
@@ -1252,7 +1253,7 @@ safe_commands() {
 	echo "New configuration has been accepted"
     else
 	if [ "$command" = "restart" ]; then
-	    /var/lib/shorewall/.safe
+	    /var/lib/shorewall/.safe restore
 	else
 	    /var/lib/shorewall/.$command clear
 	fi
@@ -1336,7 +1337,7 @@ restore_command() {
 	fi
 
 	echo Restoring Shorewall...
-	$RESTOREPATH && echo "Shorewall restored from /var/lib/shorewall/$RESTOREFILE"
+	$RESTOREPATH restore && echo "Shorewall restored from /var/lib/shorewall/$RESTOREFILE"
 	[ -n "$nolock" ] || mutex_off
     else
 	echo "File /var/lib/shorewall/$RESTOREFILE: file not found"
@@ -1362,29 +1363,29 @@ usage() # $1 = exit status
     echo "where <command> is one of:"
     echo "   add <interface>[:<host-list>] ... <zone>"
     echo "   allow <address> ..."
-    echo "   check [ -q ] [ <directory> ]"
+    echo "   check [ <directory> ]"
     echo "   clear"
-    echo "   compile [ -e ] [ -v ] [ -q ] [ <directory name> ] <path name>"
+    echo "   compile [ -e ] [ <directory name> ] <path name>"
     echo "   delete <interface>[:<host-list>] ... <zone>"
     echo "   drop <address> ..."
-    echo "   dump [ -q ] [ -v ]"
+    echo "   dump"
     echo "   forget [ <file name> ]"
-    echo "   generate  [ -e ] [-v ] [ -q ] [ <directory name> ] <path name>"
+    echo "   generate  [ -e ] [ <directory name> ] <path name>"
     echo "   help [ <command > | host | address ]"
     echo "   hits"
     echo "   ipcalc { <address>/<vlsm> | <address> <netmask> }"
     echo "   ipdecimal { <address> | <integer> }"
     echo "   iprange <address>-<address>"
-    echo "   logwatch [ -v ] [<refresh interval>]"
+    echo "   logwatch [<refresh interval>]"
     echo "   refresh"
     echo "   reject <address> ..."
     echo "   reset"
-    echo "   reload [ -n ] [ -q ] [ -v ] [ <directory> ]"
-    echo "   restart [ -n ] [ -q ] [ -v ] [ <directory> ]"
-    echo "   restore [ -n ] [ -q ] [ <file name> ]"
+    echo "   reload [ <directory> ]"
+    echo "   restart [ <directory> ]"
+    echo "   restore [ <file name> ]"
     echo "   save [ <file name> ]"
-    echo "   show [ -v ] [<chain> [ <chain> ... ]|actions|capabilities|classifiers|connections|log|macros|mangle|nat|tc|zones]"
-    echo "   start [ -f ] [ -n ] [ -q ] [ <directory> ]"
+    echo "   show [<chain> [ <chain> ... ]|actions|capabilities|classifiers|connections|log|macros|mangle|nat|tc|zones]"
+    echo "   start [ -f ] [ <directory> ]"
     echo "   stop"
     echo "   status"
     echo "   try <directory> [ <timeout> ]"
@@ -1787,8 +1788,7 @@ case "$COMMAND" in
 
 	finished=0
 
-	while [ $finished -eq 0 ]; do
-	    [ $# -eq 0 ] && usage 1
+	while [ $finished -eq 0 -a $# -ne 0 ]; do
 	    option=$1
 	    case $option in
 		-*)

@@ -2,7 +2,7 @@
 # Give Usage Information
 #
 usage() {
-    echo "Usage: $0 [ -q ] [ -v ] [ -n ] [ start|stop|clear|reload|restart|status|restore|version ]"
+    echo "Usage: $0 [ -q ] [ -v ] [ -n ] [ start|stop|clear|reload|restart|status|version ]"
     exit $1
 }
 ################################################################################
@@ -47,9 +47,7 @@ while [ $finished -eq 0 -a $# -gt 0 ]; do
     esac
 done
 
-if [ $# -eq 0 ]; then
-    COMMAND=restore
-elif [ $# -gt 1 ]; then
+if [ $# -ne 1 ]; then
     usage 2
 else
     COMMAND="$1"

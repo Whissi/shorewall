@@ -578,7 +578,6 @@ start_command() {
     esac
 
     export NOROUTES
-    export PROGRAM=Yes
 
     if [ -n "$FAST" ]; then
 	if qt mywhich make; then
@@ -643,10 +642,6 @@ compile_command() {
 			v*)
 			    VERBOSE=$(($VERBOSE + 1 ))
 			    option=${option#v}
-			    ;;
-			p*)
-			    export PROGRAM=Yes
-			    option=${option#p}
 			    ;;
 			-)
 			    finished=1
@@ -827,7 +822,6 @@ reload_command() {
     esac
 
     export NOROUTES
-    export PROGRAM=Yes
 
     [ -n "$nolock" ] || mutex_on
 
@@ -906,7 +900,6 @@ restart_command() {
     esac
 
     export NOROUTES
-    export PROGRAM=Yes
 
     [ -n "$nolock" ] || mutex_on
 
@@ -1221,8 +1214,6 @@ safe_commands() {
 
     [ $# -eq 0 ] || usage 2
 
-    export PROGRAM=Yes
-
     mutex_on
 
     if shorewall_is_started; then
@@ -1376,12 +1367,12 @@ usage() # $1 = exit status
     echo "   allow <address> ..."
     echo "   check [ -q ] [ <directory> ]"
     echo "   clear"
-    echo "   compile  [ -e ] [ -p ] [ <directory name> ] <path name>"
+    echo "   compile [ -e ] [ -v ] [ -q ] [ <directory name> ] <path name>"
     echo "   delete <interface>[:<host-list>] ... <zone>"
     echo "   drop <address> ..."
     echo "   dump [ -q ] [ -v ]"
     echo "   forget [ <file name> ]"
-    echo "   generate  [ -e ] [-p ] [ <directory name> ] <path name>"
+    echo "   generate  [ -e ] [-v ] [ -q ] [ <directory name> ] <path name>"
     echo "   help [ <command > | host | address ]"
     echo "   hits"
     echo "   ipcalc { <address>/<vlsm> | <address> <netmask> }"

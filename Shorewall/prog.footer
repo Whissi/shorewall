@@ -2,7 +2,7 @@
 # Give Usage Information						       #
 ################################################################################
 usage() {
-    echo "Usage: $0 [ -q ] [ -v ] [ -n ] [ start|stop|clear|reload|restart|status|version ]"
+    echo "Usage: $0 [ -q ] [ -v ] [ -n ] [ start|stop|clear|reload|restart|status|restore|version ]"
     exit $1
 }
 ################################################################################
@@ -137,6 +137,9 @@ case "$COMMAND" in
 	;;
     help)
 	usage 0
+	;;
+    restore)
+	restore_command
 	;;
     *)
 	usage 2

@@ -88,7 +88,7 @@ clear)
 	;;
 
 compile)
-	echo "compile: compile [ -e ] [ -p ] [ <directory name> ] <path name>
+	echo "compile: compile [ -e ] [ <directory name> ] <path name>
     Compiles the current configuration into the executable file
     <path name>. If <path name> names a file in /var/lib/shorewall then
     the file may be executed using the \"restore\" command.
@@ -97,11 +97,6 @@ compile)
     other than where the compiled script will run. This option disables
     certain configuration options that require the script to be compiled
     where it is to be run.
-
-    When -p is specified, a complete program is produced that supports
-    the 'start', 'stop', 'restart', etc. commands. That program is suitable
-    for placing in /etc/init.d/ and can provide a firewall on a system
-    without Shorewall installed.
 
     'generate' is a synonym for 'compile'."
 	;;
@@ -175,7 +170,7 @@ forget)
 	;;
 
 generate)
-	echo "generate: generate [ <directory name> ] <file name>
+	echo "generate: generate [ -e ] [ <directory name> ] <file name>
     Compiles the current configuration into the executable file
     /var/lib/shorewall/<file name>
 

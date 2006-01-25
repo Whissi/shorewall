@@ -105,6 +105,13 @@ append_file() # $1 = File Name
     save_command_unindented __EOF__
 }
 
+append_file1() # $1 = File Name
+{
+    save_command "cat > /var/lib/shorewall/$1 << _EOF_"
+    cat $STATEDIR/$1 >> $OUTPUT
+    save_command_unindented _EOF_
+}
+
 #
 # Generate a command to run iptables
 #
@@ -8585,8 +8592,8 @@ __EOF__
 	echo "Shorewall configuration verified"
     else
 	cp $OUTPUT $STATEDIR/restore-tail
-	append_file restore-base
-	append_file restore-tail
+	append_file1 restore-base
+	append_file1 restore-tail
 	INDENT=
 	save_command "}"
 	cat $(find_file prog.header) $STATEDIR/restore-base $OUTPUT $(find_file prog.footer) > $outfile
@@ -9022,7 +9029,7 @@ case "$COMMAND" in
 
    call)
 	#
-	# Undocumented way to call functions in /usr/share/shorewall/firewall directly
+	# Undocumented way to call functions in /usr/share/shorewall/compiler directly
 	#
 	shift
 	do_initialize

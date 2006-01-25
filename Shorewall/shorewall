@@ -429,56 +429,47 @@ save_config() {
 		*)
 		    if $IPTABLES -L dynamic -n > /var/lib/shorewall/save; then
 			echo "   Dynamic Rules Saved"
-			if [ -f /var/lib/shorewall/restore-base ]; then
-			    cp -f /var/lib/shorewall/restore-base /var/lib/shorewall/restore-$$
-			    if iptables-save | iptablesbug >> /var/lib/shorewall/restore-$$ ; then
-				echo __EOF__ >> /var/lib/shorewall/restore-$$
-				[ -f /var/lib/shorewall/restore-tail ] && \
-				    cat /var/lib/shorewall/restore-tail >> /var/lib/shorewall/restore-$$
-				mv -f /var/lib/shorewall/restore-$$ $RESTOREPATH
-				chmod +x $RESTOREPATH
-				echo "   Currently-running Configuration Saved to $RESTOREPATH"
+			if [ -f /var/lib/shorewall/.restore ]; then
+			    cp -f /var/lib/shorewall/.restore $RESTOREPATH
+			    chmod +x $RESTOREPATH
+			    echo "   Currently-running Configuration Saved to $RESTOREPATH"
 
-				rm -f ${RESTOREPATH}-ipsets
+			    rm -f ${RESTOREPATH}-ipsets
 
-				case ${SAVE_IPSETS:-No} in
-				    [Yy][Ee][Ss])
-                                        RESTOREPATH=${RESTOREPATH}-ipsets
+			    case ${SAVE_IPSETS:-No} in
+				[Yy][Ee][Ss])
+				    RESTOREPATH=${RESTOREPATH}-ipsets
 
-					f=/var/lib/shorewall/restore-$$
+				    f=/var/lib/shorewall/restore-$$
 
-					echo "#!/bin/sh" > $f
-					echo "#This ipset restore file generated $(date) by Shorewall $version" >> $f
-					echo  >> $f
-					echo ". /usr/share/shorewall/functions" >> $f
-					echo  >> $f
-					grep '^MODULE' /var/lib/shorewall/restore-base >>  $f
-					echo "reload_kernel_modules << __EOF__" >> $f
-					grep 'loadmodule ip_set' /var/lib/shorewall/restore-base >>  $f
-                                        echo "__EOF__" >> $f
-					echo  >> $f
-					echo "ipset -U :all: :all:" >> $f
-					echo "ipset -F" >> $f
-					echo "ipset -X" >> $f
-					echo "ipset -R << __EOF__" >> $f
-					ipset -S >> $f
-					echo "__EOF__" >> $f
-					mv -f $f $RESTOREPATH
-					chmod +x $RESTOREPATH
-					echo "   Current Ipset Contents Saved to $RESTOREPATH"
-					;;
-				    [Nn][Oo])
-				        ;;
-				    *)
-				        echo "   WARNING: Invalid value ($SAVE_IPSETS) for SAVE_IPSETS. Ipset contents not saved"
-					;;
-				esac
-			    else
-			        rm -f /var/lib/shorewall/restore-$$
-				echo "   ERROR: Currently-running Configuration Not Saved"
-			    fi
+				    echo "#!/bin/sh" > $f
+				    echo "#This ipset restore file generated $(date) by Shorewall $version" >> $f
+				    echo  >> $f
+				    echo ". /usr/share/shorewall/functions" >> $f
+				    echo  >> $f
+				    grep '^MODULE' /var/lib/shorewall/restore-base >>  $f
+				    echo "reload_kernel_modules << __EOF__" >> $f
+				    grep 'loadmodule ip_set' /var/lib/shorewall/restore-base >>  $f
+				    echo "__EOF__" >> $f
+				    echo  >> $f
+				    echo "ipset -U :all: :all:" >> $f
+				    echo "ipset -F" >> $f
+				    echo "ipset -X" >> $f
+				    echo "ipset -R << __EOF__" >> $f
+				    ipset -S >> $f
+				    echo "__EOF__" >> $f
+				    mv -f $f $RESTOREPATH
+				    chmod +x $RESTOREPATH
+				    echo "   Current Ipset Contents Saved to $RESTOREPATH"
+				    ;;
+				[Nn][Oo])
+				    ;;
+				*)
+				    echo "   WARNING: Invalid value ($SAVE_IPSETS) for SAVE_IPSETS. Ipset contents not saved"
+				    ;;
+			    esac
 			else
-			    echo "   ERROR: /var/lib/shorewall/restore-base does not exist"
+			    echo "   ERROR: /var/lib/shorewall/.restoredoes not exist"
 			fi
 		    else
 		        echo "Error Saving the Dynamic Rules"

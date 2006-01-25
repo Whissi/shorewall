@@ -105,13 +105,6 @@ append_file() # $1 = File Name
     save_command_unindented __EOF__
 }
 
-append_file1() # $1 = File Name
-{
-    save_command "cat > /var/lib/shorewall/$1 << _EOF_"
-    cat $STATEDIR/$1 >> $OUTPUT
-    save_command_unindented _EOF_
-}
-
 #
 # Generate a command to run iptables
 #
@@ -8569,13 +8562,6 @@ __EOF__
 	append_file $file
     done
 
-    # Logical break between restore-base and restore-tail
-
-    if [ $COMMAND = compile ]; then
-	mv -f $OUTPUT $STATEDIR/restore-base
-	OUTPUT=$(mktempfile $STATEDIR)
-    fi
-
     save_command "date > /var/lib/shorewall/restarted"
 
     run_user_exit start
@@ -8588,17 +8574,15 @@ __EOF__
 
     run_user_exit started
 
+    save_command "cp -f \$SCRIPT /var/lib/shorewall/.restore"
+
     if [ $COMMAND = check ]; then
 	echo "Shorewall configuration verified"
     else
-	cp $OUTPUT $STATEDIR/restore-tail
-	append_file1 restore-base
-	append_file1 restore-tail
 	INDENT=
 	save_command "}"
-	cat $(find_file prog.header) $STATEDIR/restore-base $OUTPUT $(find_file prog.footer) > $outfile
+	cat $(find_file prog.header) $OUTPUT $(find_file prog.footer) > $outfile
 	chmod 700 $outfile
-	rm -f $STATEDIR/restore-base rm -f $STATEDIR/restore-tail
 	progress_message2 "Shorewall configuration compiled to $outfile"
     fi
 

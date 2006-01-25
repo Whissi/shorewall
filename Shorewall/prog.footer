@@ -1,3 +1,23 @@
+restore_firewall()
+{
+    fatal_error()
+    {
+	echo "   ERROR: $@" >&2
+    }
+
+    startup_error() # foo = Error Message
+    {
+	echo "   ERROR: $@" >&2
+    }
+
+    define_firewall
+}
+
+current_command() {
+    cd $(dirname $0)
+    echo $PWD/$(basename $0)
+}
+
 ################################################################################
 # Give Usage Information						       #
 ################################################################################
@@ -8,6 +28,8 @@ usage() {
 ################################################################################
 # E X E C U T I O N    B E G I N S   H E R E				       #
 ################################################################################
+SCRIPT=$(current_command)
+
 initialize
 
 finished=0
@@ -48,11 +70,7 @@ while [ $finished -eq 0 -a $# -gt 0 ]; do
 done
 
 if [ $# -eq 0 ]; then
-    if shorewall_is_started; then
-	COMMAND=restart
-    else
-	COMMAND=start
-    fi
+    COMMAND=restore
 elif [ $# -gt 1 ]; then
     usage 2
 else
@@ -99,7 +117,11 @@ case "$COMMAND" in
 
 	define_firewall
 	status=$?
-	echo "done."
+	progress_message3 "done."
+	;;
+    restore)
+	restore_firewall
+	status=$?
 	;;
     clear)
 	progress_message3 "Clearing Shorewall...."
@@ -137,9 +159,6 @@ case "$COMMAND" in
 	;;
     help)
 	usage 0
-	;;
-    restore)
-	restore_command
 	;;
     *)
 	usage 2

@@ -137,6 +137,14 @@ fix_bang() {
 }
 
 #
+# Echos the fully-qualified name of the calling shell program
+#
+my_pathname() {
+    cd $(dirname $0)
+    echo $PWD/$(basename $0)
+}
+
+#
 # Set default config path
 #
 ensure_config_path() {

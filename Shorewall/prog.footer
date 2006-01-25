@@ -1,30 +1,4 @@
 #
-# Define Firewall and ignore errors
-#
-restore_firewall()
-{
-    fatal_error()
-    {
-	echo "   ERROR: $@" >&2
-    }
-
-    startup_error() # foo = Error Message
-    {
-	echo "   ERROR: $@" >&2
-    }
-
-    define_firewall
-}
-
-#
-# Returns the fully-qualified name of this script
-#
-current_command() {
-    cd $(dirname $0)
-    echo $PWD/$(basename $0)
-}
-
-#
 # Give Usage Information
 #
 usage() {
@@ -34,8 +8,6 @@ usage() {
 ################################################################################
 # E X E C U T I O N    B E G I N S   H E R E				       #
 ################################################################################
-SCRIPT=$(current_command)
-
 initialize
 
 finished=0

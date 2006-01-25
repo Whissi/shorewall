@@ -8497,7 +8497,7 @@ __EOF__
 #
 # Start/Restart/Reload the firewall
 #
-define_firewall() {}
+define_firewall() {
 __EOF__
 
     INDENT="    "
@@ -8593,6 +8593,14 @@ __EOF__
 	append_file $file
     done
 
+    cat >> $OUTPUT << __EOF__
+
+    if [ \$COMMAND = restore ]; then
+	iptables-restore <
+	 \$1
+    fi
+
+__EOF__
     save_command "date > /var/lib/shorewall/restarted"
 
     run_user_exit start
@@ -8605,14 +8613,51 @@ __EOF__
 
     run_user_exit started
 
-    save_command "cp -f \$SCRIPT /var/lib/shorewall/.restore"
+    cat >> $OUTPUT << __EOF__
+
+    cp -f \$(my_pathname) /var/lib/shorewall/.restore
+
+}
+
+#
+# Silently efine Firewall and ignore errors
+#
+restore_firewall()
+{
+    iptables_save_file=/var/lib/shorewall/\$(basename \$0)-iptables
+
+    fatal_error()
+    {
+	echo "   ERROR: \$@" >&2
+    }
+
+    startup_error() # \$@ = Error Message
+    {
+	echo "   ERROR: \$@" >&2
+    }
+
+    run_iptables() { return 0; }
+
+    VERBOSE=-1
+
+    IPTABLES=run_iptables
+
+    if [ -f \$iptables_save_file ]; then
+	{
+	    define_firewall \$iptables_save_file
+	}
+    else
+	fatal_error "\$iptables_save_file does not exist"
+	exit 2
+    fi
+}
+
+__EOF__
 
     if [ $COMMAND = check ]; then
 	echo "Shorewall configuration verified"
     else
 	INDENT=
-	save_command "}"
-	save_command ""
 	cat $(find_file prog.header) $OUTPUT $(find_file prog.footer) > $outfile
 	chmod 700 $outfile
 	progress_message2 "Shorewall configuration compiled to $outfile"

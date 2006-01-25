@@ -8034,6 +8034,9 @@ compile_stop_firewall() {
 
     cat >> $OUTPUT << __EOF__
 
+#
+# Stop/restore the firewall after an error or because of a "stop" or "clear" command
+#
 stop_firewall() {
 
     deletechain() {
@@ -8340,10 +8343,16 @@ __EOF__
 
 cat >> $OUTPUT << __EOF__
 
+#
+# Set policy of chain \$1 to \$2
+#
 setpolicy() {
     \$IPTABLES -P \$1 \$2
 }
 
+#
+# Remove all Shorewall-added rules
+#
 clear_firewall() {
     stop_firewall
 
@@ -8375,6 +8384,9 @@ __EOF__
     logger "Shorewall Cleared"
 }
 
+#
+# Issue a message and stop/restore the firewall
+#
 fatal_error()
 {
     echo "   ERROR: \$@" >&2
@@ -8382,6 +8394,9 @@ fatal_error()
     exit 2
 }
 
+#
+# Issue a message and stop
+#
 startup_error() # $* = Error Message
 {
     echo "   ERROR: \$@" >&2
@@ -8389,6 +8404,9 @@ startup_error() # $* = Error Message
     exit 2
 }
 
+#
+# Run iptables and if an error occurs, stop/restore the firewall
+#
 run_iptables()
 {
     if ! \$IPTABLES \$@; then
@@ -8398,6 +8416,9 @@ run_iptables()
     fi
 }
 
+#
+# Run iptables and if an error occurs, stop/restore the firewall
+#
 run_ip()
 {
     if ! ip \$@; then
@@ -8407,6 +8428,9 @@ run_ip()
     fi
 }
 
+#
+# Run tc and if an error occurs, stop/restore the firewall
+#
 run_tc() {
     if ! tc \$@ ; then
 	error_message "ERROR: Command \"tc \$@\" Failed"
@@ -8415,6 +8439,9 @@ run_tc() {
     fi
 }
 
+#
+# Initialize environment
+#
 initialize() {
 __EOF__
     if [ -z "$EXPORT" ]; then
@@ -8467,8 +8494,12 @@ __EOF__
     [ -d /var/lib/shorewall ] || mkdir -p /var/lib/shorewall
 }
 
+#
+# Start/Restart/Reload the firewall
+#
+define_firewall() {}
 __EOF__
-    save_command "define_firewall() {"
+
     INDENT="    "
 
 cat >> $OUTPUT << __EOF__
@@ -8581,6 +8612,7 @@ __EOF__
     else
 	INDENT=
 	save_command "}"
+	save_command ""
 	cat $(find_file prog.header) $OUTPUT $(find_file prog.footer) > $outfile
 	chmod 700 $outfile
 	progress_message2 "Shorewall configuration compiled to $outfile"

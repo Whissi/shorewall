@@ -1,3 +1,6 @@
+#
+# Define Firewall and ignore errors
+#
 restore_firewall()
 {
     fatal_error()
@@ -13,14 +16,17 @@ restore_firewall()
     define_firewall
 }
 
+#
+# Returns the fully-qualified name of this script
+#
 current_command() {
     cd $(dirname $0)
     echo $PWD/$(basename $0)
 }
 
-################################################################################
-# Give Usage Information						       #
-################################################################################
+#
+# Give Usage Information
+#
 usage() {
     echo "Usage: $0 [ -q ] [ -v ] [ -n ] [ start|stop|clear|reload|restart|status|restore|version ]"
     exit $1

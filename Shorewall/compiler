@@ -7178,7 +7178,8 @@ initialize_netfilter () {
     createchain dynamic no
     createchain smurfs no
 
-    echo >> $OUTPUT << __EOF__
+    cat >> $OUTPUT << __EOF__
+
 ${INDENT}if [ -f /var/lib/shorewall/save ]; then
 ${INDENT}    progress_message2 "Setting up dynamic rules..."
 ${INDENT}    while read target ignore1 ignore2 address rest; do
@@ -8619,7 +8620,7 @@ __EOF__
 }
 
 #
-# Silently efine Firewall and ignore errors
+# Silently define Firewall and ignore errors
 #
 restore_firewall()
 {
@@ -8637,7 +8638,7 @@ restore_firewall()
 
     run_iptables() { return 0; }
 
-    VERBOSE=-1
+    VERBOSE=-1 # The progress messages don't make sense without iptables
 
     IPTABLES=run_iptables
 

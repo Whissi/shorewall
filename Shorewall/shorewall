@@ -179,7 +179,11 @@ validate_restorefile() # $* = label
 {
     case $RESTOREFILE in
 	*/*)
-	    echo "   ERROR: $@ must specify a simple file name: $RESTOREFILE" >&2
+	    error_message "ERROR: $@ must specify a simple file name: $RESTOREFILE"
+	    exit 2
+	    ;;
+	.*)
+	    error_message "ERROR: Reserved File Name: $RESTOREFILE"
 	    exit 2
 	    ;;
     esac
@@ -488,6 +492,7 @@ save_config() {
     fi
 
 }
+
 #
 # Start Command Executor
 #
@@ -1801,6 +1806,10 @@ case "$COMMAND" in
 			    v*)
 				VERBOSE=$(($VERBOSE + 1 ))
 				option=${option#v}
+				;;
+			    q*)
+				VERBOSE=$(($VERBOSE - 1 ))
+				option=${option#q}
 				;;
 			    -)
 				finished=1

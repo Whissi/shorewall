@@ -3,11 +3,11 @@
 #
 # /usr/share/shorewall/macro.IMAP
 #
-#	This macro handles IMAP traffic (secure and insecure).
+#	This macro handles plaintext IMAP traffic.  For encrypted IMAP,
+#	see macro.IMAPS.
 #
 ###############################################################################
 #ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGINAL	RATE	USER/
 #				PORT	PORT(S)	DEST		LIMIT	GROUP
-PARAM	-	-	tcp	143	# Unsecure IMAP	
-PARAM	-	-	tcp	993	# Secure IMAP
+PARAM	-	-	tcp	143
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

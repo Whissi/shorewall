@@ -3,11 +3,11 @@
 #
 # /usr/share/shorewall/macro.NNTP
 #
-#	This macro handles NNTP traffic (Usenet) and encrypted NNTP (NNTPS)
+#	This macro handles plaintext NNTP traffic (Usenet).  For
+#	encrypted NNTP, see macro.NNTPS.
 #
 ###############################################################################
 #ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGINAL	RATE	USER/
 #				PORT	PORT(S)	DEST		LIMIT	GROUP
-PARAM	-	-	tcp	119	# plaintext
-PARAM	-	-	tcp	563	# over SSL
+PARAM	-	-	tcp	119
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

@@ -1788,11 +1788,12 @@ setup_tunnels() # $1 = name of tunnels file
 {
     local inchain
     local outchain
+    local source
+    local dest
 
-
-    setup_one_ipsec() # $1 = gateway $2 = Tunnel Kind $3 = gateway zones
+    setup_one_ipsec() # $1 = Tunnel Kind $2 = gateway zones
     {
-    	local kind=$2 noah=
+    	local kind=$1 noah=
 
 	case $kind in
 	    *:*)
@@ -1805,31 +1806,41 @@ setup_tunnels() # $1 = name of tunnels file
 	[ $kind = IPSEC ] && kind=ipsec
 
 	options="-m state --state NEW -j ACCEPT"
-	addrule2 $inchain	  -p 50	 $(source_ip_range $1) -j ACCEPT
-	addrule2 $outchain	  -p 50	 $(dest_ip_range $1)   -j ACCEPT
+	addrule2 $inchain	  -p 50	 $source -j ACCEPT
+	addrule2 $outchain	  -p 50	 $dest   -j ACCEPT
 
 	if [ -z "$noah" ]; then
-	    run_iptables -A $inchain  -p 51 $(source_ip_range $1) -j ACCEPT
-	    run_iptables -A $outchain -p 51 $(dest_ip_range $1)   -j ACCEPT
+	    run_iptables -A $inchain  -p 51 $source -j ACCEPT
+	    run_iptables -A $outchain -p 51 $dest   -j ACCEPT
 	fi
 
-	run_iptables -A $outchain -p udp $(dest_ip_range $1) --dport 500 $options
+	run_iptables -A $outchain -p udp $dest --dport 500 $options
 
 	if [ $kind = ipsec ]; then
-	    run_iptables -A $inchain  -p udp $(source_ip_range $1) --dport 500 $options
+	    run_iptables -A $inchain  -p udp $source --dport 500 $options
 	else
-	    run_iptables -A $inchain  -p udp $(source_ip_range $1) --dport 500 $options
-	    run_iptables -A $inchain  -p udp $(source_ip_range $1) --dport 4500 $options
+	    run_iptables -A $inchain  -p udp $source --dport 500 $options
+	    run_iptables -A $inchain  -p udp $source --dport 4500 $options
 	fi
 
-	for z in $(separate_list $3); do
+	for z in $(separate_list $2); do
 	    if validate_zone $z; then
-		addrule ${FW}2${z} -p udp --dport 500 $options
+		if [ -z "$POLICY_MATCH" ]; then
+		    addrule ${z}2${FW} -p 50 $source -j ACCEPT
+		    addrule ${FW}2${z} -p 50 $dest   -j ACCEPT
+		    if [ -z "$noah" ]; then
+			addrule ${z}2${FW} -p 51 $source -j ACCEPT
+			addrule ${FW}2${z} -p 51 $dest   -j ACCEPT
+		    fi
+		fi
 		if [ $kind = ipsec ]; then
-		    addrule ${z}2${FW} -p udp --dport 500 $options
+		    addrule ${z}2${FW} -p udp $source --dport 500 $options
+		    addrule ${FW}2${z} -p udp $dest   --dport 500 $options
 		else
-		    addrule ${z}2${FW} -p udp --dport 500 $options
-		    addrule ${z}2${FW} -p udp --dport 4500 $options
+		    addrule ${z}2${FW} -p udp $source --dport 500 $options
+		    addrule ${FW}2${z} -p udp $dest   --dport 500 $options
+		    addrule ${z}2${FW} -p udp $source --dport 4500 $options
+		    addrule ${FW}2${z} -p udp $dest   --dport 4500 $options
 		fi
 	    else
 		fatal_error "Invalid gateway zone ($z) -- Tunnel \"$tunnel\""
@@ -1839,120 +1850,120 @@ setup_tunnels() # $1 = name of tunnels file
 	progress_message_and_save "   IPSEC tunnel to $gateway defined."
     }
 
-    setup_one_other() # $1 = TYPE, $2 = gateway, $3 = protocol
+    setup_one_other() # $1 = TYPE, $2 = protocol
     {
-	addrule2 $inchain  -p $3 $(source_ip_range $2) -j ACCEPT
-	addrule2 $outchain -p $3 $(dest_ip_range $2) -j ACCEPT
+	addrule2 $inchain  -p $2 $source -j ACCEPT
+	addrule2 $outchain -p $2 $dest   -j ACCEPT
 
-	progress_message_and_save "   $1 tunnel to $2 compiled."
+	progress_message_and_save "   $1 tunnel to $gateway compiled."
     }
 
-    setup_pptp_client() # $1 = gateway
+    setup_pptp_client()
     {
-	addrule2 $outchain -p 47               $(dest_ip_range $1)   -j ACCEPT
-	addrule2 $inchain  -p 47               $(source_ip_range $1) -j ACCEPT
-	addrule2 $outchain -p tcp --dport 1723 $(dest_ip_range $1)   -j ACCEPT
+	addrule2 $outchain -p 47               $dest   -j ACCEPT
+	addrule2 $inchain  -p 47               $source -j ACCEPT
+	addrule2 $outchain -p tcp --dport 1723 $dest   -j ACCEPT
 
-	progress_message_and_save "   PPTP tunnel to $1 defined."
+	progress_message_and_save "   PPTP tunnel to $gateway defined."
     }
 
-    setup_pptp_server() # $1 = gateway
+    setup_pptp_server()
     {
-	addrule2 $inchain  -p 47               $(source_ip_range $1) -j ACCEPT
-	addrule2 $outchain -p 47               $(dest_ip_range $1)   -j ACCEPT
-	addrule2 $inchain  -p tcp --dport 1723 $(source_ip_range $1) -j ACCEPT
+	addrule2 $inchain  -p 47               $source -j ACCEPT
+	addrule2 $outchain -p 47               $dest   -j ACCEPT
+	addrule2 $inchain  -p tcp --dport 1723 $source -j ACCEPT
 
 	progress_message_and_save "   PPTP server defined."
     }
 
-    setup_one_openvpn() # $1 = gateway, $2 = kind[:port]
+    setup_one_openvpn() # $1 = kind[:port]
     {
 	local protocol=udp
 	local p=1194
 
-	case $2 in
+	case $1 in
 	    *:*:*)
-		protocol=${2%:*}
+		protocol=${1%:*}
 		protocol=${protocol#*:}
-		p=${2##*:}
+		p=${1##*:}
 		;;
 	    *:tcp|*:udp|*:TCP|*:UDP)
-		protocol=${2#*:}
+		protocol=${1#*:}
 		;;
 	    *:*)
-		p=${2#*:}
+		p=${1#*:}
 		;;
 	esac
 
-	addrule2 $inchain  -p $protocol $(source_ip_range $1) --dport $p -j ACCEPT
-	addrule2 $outchain -p $protocol $(dest_ip_range $1)   --dport $p -j ACCEPT
+	addrule2 $inchain  -p $protocol $source --dport $p -j ACCEPT
+	addrule2 $outchain -p $protocol $dest   --dport $p -j ACCEPT
 
-	progress_message_and_save "   OPENVPN tunnel to $1:$protocol:$p defined."
+	progress_message_and_save "   OPENVPN tunnel to $gateway:$protocol:$p defined."
     }
 
-    setup_one_openvpn_server() # $1 = gateway, $2 = kind[:port]
+    setup_one_openvpn_server() # $1 = kind[:port]
     {
 	local protocol=udp
 	local p=1194
 
-	case $2 in
+	case $1 in
 	    *:*:*)
-		protocol=${2%:*}
+		protocol=${1%:*}
 		protocol=${protocol#*:}
-		p=${2##*:}
+		p=${1##*:}
 		;;
 	    *:tcp|*:udp|*:TCP|*:UDP)
-		protocol=${2#*:}
+		protocol=${1#*:}
 		;;
 	    *:*)
-		p=${2#*:}
+		p=${1#*:}
 		;;
 	esac
 
-	addrule2 $inchain  -p $protocol $(source_ip_range $1) --dport $p -j ACCEPT
-	addrule2 $outchain -p $protocol $(dest_ip_range $1)   --sport $p -j ACCEPT
+	addrule2 $inchain  -p $protocol $source --dport $p -j ACCEPT
+	addrule2 $outchain -p $protocol $dest   --sport $p -j ACCEPT
 
-	progress_message_and_save "   OPENVPN server tunnel from $1:$protocol:$p defined."
+	progress_message_and_save "   OPENVPN server tunnel from $gateway:$protocol:$p defined."
     }
 
-    setup_one_openvpn_client() # $1 = gateway, $2 = kind[:port]
+    setup_one_openvpn_client() # $1 = kind[:port]
     {
 	local protocol=udp
 	local p=1194
 
-	case $2 in
+	case $1 in
 	    *:*:*)
-		protocol=${2%:*}
+		protocol=${1%:*}
 		protocol=${protocol#*:}
-		p=${2##*:}
+		p=${1##*:}
 		;;
 	    *:tcp|*:udp|*:TCP|*:UDP)
-		protocol=${2#*:}
+		protocol=${1#*:}
 		;;
 	    *:*)
-		p=${2#*:}
+		p=${1#*:}
 		;;
 	esac
 
-	addrule2 $inchain  -p $protocol $(source_ip_range $1) --sport $p -j ACCEPT
-	addrule2 $outchain -p $protocol $(dest_ip_range $1)   --dport $p -j ACCEPT
+	addrule2 $inchain  -p $protocol $source --sport $p -j ACCEPT
+	addrule2 $outchain -p $protocol $dest   --dport $p -j ACCEPT
 
-	progress_message_and_save "   OPENVPN client tunnel to $1:$protocol:$p defined."
+	progress_message_and_save "   OPENVPN client tunnel to $gateway:$protocol:$p defined."
     }
 
-    setup_one_generic() # $1 = gateway, $2 = kind:protocol[:port]
+    setup_one_generic() # $1 = kind:protocol[:port]
     {
 	local protocol
 	local p=
 
-	case $2 in
+	case $1 in
 	    *:*:*)
-		p=${2##*:}
-		protocol=${2%:*}
+		p=${1##*:}
+		protocol=${1%:*}
 		protocol=${protocol#*:}
 		;;
 	    *:*)
-		protocol=${2#*:}
+		protocol=${1#*:}
 		;;
 	    *)
 		protocol=udp
@@ -1962,8 +1973,8 @@ setup_tunnels() # $1 = name of tunnels file
 
 	p=${p:+--dport $p}
 
-	addrule2 $inchain  -p $protocol $(source_ip_range $1) $p -j ACCEPT
-	addrule2 $outchain -p $protocol $(dest_ip_range $1)   $p -j ACCEPT
+	addrule2 $inchain  -p $protocol $source $p -j ACCEPT
+	addrule2 $outchain -p $protocol $dest   $p -j ACCEPT
 
 	progress_message_and_save "   GENERIC tunnel to $1:$p defined."
     }
@@ -1977,39 +1988,42 @@ setup_tunnels() # $1 = name of tunnels file
 	    inchain=${z}2${FW}
 	    outchain=${FW}2${z}
 	    gateway=${gateway:-0.0.0.0/0}
+	    source=$(source_ip_range $gateway)
+	    dest=$(dest_ip_range $gateway)
+
 	    case $kind in
 		ipsec|IPSEC|ipsec:*|IPSEC:*)
-		    setup_one_ipsec $gateway $kind $z1
+		    setup_one_ipsec $kind $z1
 		    ;;
 		ipsecnat|IPSECNAT|ipsecnat:*|IPSECNAT:*)
-		    setup_one_ipsec $gateway $kind $z1
+		    setup_one_ipsec $kind $z1
 		    ;;
 		ipip|IPIP)
-		    setup_one_other IPIP $gateway 4
+		    setup_one_other IPIP 4
 		    ;;
 		gre|GRE)
-		    setup_one_other GRE $gateway 47
+		    setup_one_other GRE 47
 		    ;;
 		6to4|6TO4)
-		    setup_one_other 6to4 $gateway 41
+		    setup_one_other 6to4 41
 		    ;;
 		pptpclient|PPTPCLIENT)
-		    setup_pptp_client $gateway
+		    setup_pptp_client
 		    ;;
 		pptpserver|PPTPSERVER)
-		    setup_pptp_server $gateway
+		    setup_pptp_server
 		    ;;
 		openvpn|OPENVPN|openvpn:*|OPENVPN:*)
-		    setup_one_openvpn $gateway $kind
+		    setup_one_openvpn $kind
 		    ;;
 		openvpnclient|OPENVPNCLIENT|openvpnclient:*|OPENVPNCLIENT:*)
-		    setup_one_openvpn_client $gateway $kind
+		    setup_one_openvpn_client $kind
 		    ;;
 		openvpnserver|OPENVPNSERVER|openvpnserver:*|OPENVPNSERVER:*)
-		    setup_one_openvpn_server $gateway $kind
+		    setup_one_openvpn_server $kind
 		    ;;
 		generic:*|GENERIC:*)
-		    setup_one_generic $gateway $kind
+		    setup_one_generic $kind
 		    ;;
 		*)
 		    error_message "WARNING: Tunnels of type $kind are not supported:" \
@@ -8303,6 +8317,8 @@ compile_firewall() # $1 = File Name
     # END OVERLOADED FUNCTIONS
     #
 
+    STATEDIR=$(mktempdir)
+
     if [ $COMMAND = compile ]; then
 	dir=$(dirname $1)
 	[ -d $dir ] || fatal_error "Directory $dir does not exist"
@@ -8313,18 +8329,18 @@ compile_firewall() # $1 = File Name
 
 	DOING=Compiling
 	DONE=compiled
+
+	OUTPUT=$(mktempfile $STATEDIR)
+
+	[ -n "$OUTPUT" ] || fatal_error "Cannot create temporary file in /tmp"
+
+	exec 3>>$OUTPUT
     else
 	DOING=Checking
 	DONE=checked
+
+	exec 3>/dev/null
     fi
-
-    STATEDIR=$(mktempdir)
-
-    OUTPUT=$(mktempfile $STATEDIR)
-
-    [ -n "$OUTPUT" ] || fatal_error "Cannot create temporary file in /tmp"
-
-    exec 3>$OUTPUT
 
     cat >&3 << __EOF__
 #
@@ -8665,9 +8681,9 @@ __EOF__
 	cat $(find_file prog.header) $OUTPUT $(find_file prog.footer) > $outfile
 	chmod 700 $outfile
 	progress_message2 "Shorewall configuration compiled to $outfile"
+	rm -f $OUTPUT
     fi
 
-    rm -f $OUTPUT
     rm -rf $TMP_DIR
     rm -rf $STATEDIR
 

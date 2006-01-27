@@ -225,7 +225,6 @@ fi
 
 install_file_with_backup shorewall ${PREFIX}/sbin/shorewall 0544 ${PREFIX}/var/lib/shorewall-${VERSION}.bkout
 
-echo
 echo "shorewall control program installed in ${PREFIX}/sbin/shorewall"
 
 #
@@ -240,7 +239,6 @@ else
     install_file_with_backup init.sh ${PREFIX}${DEST}/$INIT 0544 ${PREFIX}/usr/share/shorewall-${VERSION}.bkout
 fi
 
-echo
 echo  "Shorewall script installed in ${PREFIX}${DEST}/$INIT"
 
 #
@@ -258,7 +256,6 @@ chmod 755 ${PREFIX}/usr/share/shorewall
 #
 if [ ! -f ${PREFIX}/etc/shorewall/shorewall.conf ]; then
    run_install $OWNERSHIP -m 0744 shorewall.conf ${PREFIX}/etc/shorewall/shorewall.conf
-   echo
    echo "Config file installed as ${PREFIX}/etc/shorewall/shorewall.conf"
 fi
 
@@ -270,7 +267,6 @@ fi
 #
 if [ ! -f ${PREFIX}/etc/shorewall/zones ]; then
     run_install $OWNERSHIP -m 0744 zones ${PREFIX}/etc/shorewall/zones
-    echo
     echo "Zones file installed as ${PREFIX}/etc/shorewall/zones"
 fi
 
@@ -280,7 +276,6 @@ fi
 
 install_file functions ${PREFIX}/usr/share/shorewall/functions 0444
 
-echo
 echo "Common functions installed in ${PREFIX}/usr/share/shorewall/functions"
 
 #
@@ -297,7 +292,6 @@ echo "Compiler installed in ${PREFIX}/usr/share/shorewall/compiler"
 #
 install_file help ${PREFIX}/usr/share/shorewall/help 0544
 
-echo
 echo "Help command executor installed in ${PREFIX}/usr/share/shorewall/help"
 
 #
@@ -305,7 +299,6 @@ echo "Help command executor installed in ${PREFIX}/usr/share/shorewall/help"
 #
 if [ ! -f ${PREFIX}/etc/shorewall/policy ]; then
     run_install $OWNERSHIP -m 0600 policy ${PREFIX}/etc/shorewall/policy
-    echo
     echo "Policy file installed as ${PREFIX}/etc/shorewall/policy"
 fi
 #
@@ -313,7 +306,6 @@ fi
 #
 if [ ! -f ${PREFIX}/etc/shorewall/interfaces ]; then
     run_install $OWNERSHIP -m 0600 interfaces ${PREFIX}/etc/shorewall/interfaces
-    echo
     echo "Interfaces file installed as ${PREFIX}/etc/shorewall/interfaces"
 fi
 #
@@ -321,7 +313,6 @@ fi
 #
 if [ ! -f ${PREFIX}/etc/shorewall/ipsec ]; then
     run_install $OWNERSHIP -m 0600 ipsec ${PREFIX}/etc/shorewall/ipsec
-    echo
     echo "Dummy IPSEC file installed as ${PREFIX}/etc/shorewall/ipsec"
 fi
 
@@ -330,7 +321,6 @@ fi
 #
 if [ ! -f ${PREFIX}/etc/shorewall/hosts ]; then
     run_install $OWNERSHIP -m 0600 hosts ${PREFIX}/etc/shorewall/hosts
-    echo
     echo "Hosts file installed as ${PREFIX}/etc/shorewall/hosts"
 fi
 #
@@ -338,7 +328,6 @@ fi
 #
 if [ ! -f ${PREFIX}/etc/shorewall/rules ]; then
     run_install $OWNERSHIP -m 0600 rules ${PREFIX}/etc/shorewall/rules
-    echo
     echo "Rules file installed as ${PREFIX}/etc/shorewall/rules"
 fi
 #
@@ -346,7 +335,6 @@ fi
 #
 if [ ! -f ${PREFIX}/etc/shorewall/nat ]; then
     run_install $OWNERSHIP -m 0600 nat ${PREFIX}/etc/shorewall/nat
-    echo
     echo "NAT file installed as ${PREFIX}/etc/shorewall/nat"
 fi
 #
@@ -354,7 +342,6 @@ fi
 #
 if [ ! -f ${PREFIX}/etc/shorewall/netmap ]; then
     run_install $OWNERSHIP -m 0600 netmap ${PREFIX}/etc/shorewall/netmap
-    echo
     echo "NETMAP file installed as ${PREFIX}/etc/shorewall/netmap"
 fi
 #
@@ -362,7 +349,6 @@ fi
 #
 if [ ! -f ${PREFIX}/etc/shorewall/params ]; then
     run_install $OWNERSHIP -m 0600 params ${PREFIX}/etc/shorewall/params
-    echo
     echo "Parameter file installed as ${PREFIX}/etc/shorewall/params"
 fi
 #
@@ -370,7 +356,6 @@ fi
 #
 if [ ! -f ${PREFIX}/etc/shorewall/proxyarp ]; then
     run_install $OWNERSHIP -m 0600 proxyarp ${PREFIX}/etc/shorewall/proxyarp
-    echo
     echo "Proxy ARP file installed as ${PREFIX}/etc/shorewall/proxyarp"
 fi
 #
@@ -378,7 +363,6 @@ fi
 #
 if [ ! -f ${PREFIX}/etc/shorewall/routestopped ]; then
     run_install $OWNERSHIP -m 0600 routestopped ${PREFIX}/etc/shorewall/routestopped
-    echo
     echo "Stopped Routing file installed as ${PREFIX}/etc/shorewall/routestopped"
 fi
 #
@@ -386,7 +370,6 @@ fi
 #
 if [ ! -f ${PREFIX}/etc/shorewall/maclist ]; then
     run_install $OWNERSHIP -m 0600 maclist ${PREFIX}/etc/shorewall/maclist
-    echo
     echo "MAC list file installed as ${PREFIX}/etc/shorewall/maclist"
 fi
 #
@@ -394,7 +377,6 @@ fi
 #
 if [ ! -f ${PREFIX}/etc/shorewall/masq ]; then
     run_install $OWNERSHIP -m 0600 masq ${PREFIX}/etc/shorewall/masq
-    echo
     echo "Masquerade file installed as ${PREFIX}/etc/shorewall/masq"
 fi
 #
@@ -402,7 +384,6 @@ fi
 #
 if [ ! -f ${PREFIX}/etc/shorewall/modules ]; then
     run_install $OWNERSHIP -m 0600 modules ${PREFIX}/etc/shorewall/modules
-    echo
     echo "Modules file installed as ${PREFIX}/etc/shorewall/modules"
 fi
 #
@@ -410,7 +391,6 @@ fi
 #
 if [ ! -f ${PREFIX}/etc/shorewall/tcrules ]; then
     run_install $OWNERSHIP -m 0600 tcrules ${PREFIX}/etc/shorewall/tcrules
-    echo
     echo "TC Rules file installed as ${PREFIX}/etc/shorewall/tcrules"
 fi
 
@@ -419,7 +399,6 @@ fi
 #
 if [ ! -f ${PREFIX}/etc/shorewall/tos ]; then
     run_install $OWNERSHIP -m 0600 tos ${PREFIX}/etc/shorewall/tos
-    echo
     echo "TOS file installed as ${PREFIX}/etc/shorewall/tos"
 fi
 #
@@ -427,7 +406,6 @@ fi
 #
 if [ ! -f ${PREFIX}/etc/shorewall/tunnels ]; then
     run_install $OWNERSHIP -m 0600 tunnels ${PREFIX}/etc/shorewall/tunnels
-    echo
     echo "Tunnels file installed as ${PREFIX}/etc/shorewall/tunnels"
 fi
 #
@@ -435,7 +413,6 @@ fi
 #
 if [ ! -f ${PREFIX}/etc/shorewall/blacklist ]; then
     run_install $OWNERSHIP -m 0600 blacklist ${PREFIX}/etc/shorewall/blacklist
-    echo
     echo "Blacklist file installed as ${PREFIX}/etc/shorewall/blacklist"
 fi
 #
@@ -453,7 +430,6 @@ delete_file ${PREFIX}/usr/share/shorewall/tcstart
 #
 if [ ! -f ${PREFIX}/etc/shorewall/providers ]; then
     run_install $OWNERSHIP -m 0600 providers ${PREFIX}/etc/shorewall/providers
-    echo
     echo "Providers file installed as ${PREFIX}/etc/shorewall/providers"
 fi
 
@@ -462,7 +438,6 @@ fi
 #
 if [ ! -f ${PREFIX}/etc/shorewall/tcclasses ]; then
     run_install $OWNERSHIP -m 0600 tcclasses ${PREFIX}/etc/shorewall/tcclasses
-    echo
     echo "TC Classes file installed as ${PREFIX}/etc/shorewall/tcclasses"
 fi
 
@@ -471,7 +446,6 @@ fi
 #
 if [ ! -f ${PREFIX}/etc/shorewall/tcdevices ]; then
     run_install $OWNERSHIP -m 0600 tcdevices ${PREFIX}/etc/shorewall/tcdevices
-    echo
     echo "TC Devices file installed as ${PREFIX}/etc/shorewall/tcdevices"
 fi
 
@@ -479,20 +453,17 @@ fi
 # Install the rfc1918 file
 #
 install_file rfc1918 ${PREFIX}/usr/share/shorewall/rfc1918 0600
-echo
 echo "RFC 1918 file installed as ${PREFIX}/usr/share/shorewall/rfc1918"
 #
 # Install the default config path file
 #
 install_file configpath ${PREFIX}/usr/share/shorewall/configpath 0600
-echo
 echo "Default config path file installed as ${PREFIX}/usr/share/shorewall/configpath"
 #
 # Install the init file
 #
 if [ ! -f ${PREFIX}/etc/shorewall/init ]; then
     run_install $OWNERSHIP -m 0600 init ${PREFIX}/etc/shorewall/init
-    echo
     echo "Init file installed as ${PREFIX}/etc/shorewall/init"
 fi
 #
@@ -500,7 +471,6 @@ fi
 #
 if [ ! -f ${PREFIX}/etc/shorewall/initdone ]; then
     run_install $OWNERSHIP -m 0600 initdone ${PREFIX}/etc/shorewall/initdone
-    echo
     echo "Initdone file installed as ${PREFIX}/etc/shorewall/initdone"
 fi
 #
@@ -508,7 +478,6 @@ fi
 #
 if [ ! -f ${PREFIX}/etc/shorewall/start ]; then
     run_install $OWNERSHIP -m 0600 start ${PREFIX}/etc/shorewall/start
-    echo
     echo "Start file installed as ${PREFIX}/etc/shorewall/start"
 fi
 #
@@ -516,7 +485,6 @@ fi
 #
 if [ ! -f ${PREFIX}/etc/shorewall/stop ]; then
     run_install $OWNERSHIP -m 0600 stop ${PREFIX}/etc/shorewall/stop
-    echo
     echo "Stop file installed as ${PREFIX}/etc/shorewall/stop"
 fi
 #
@@ -524,7 +492,6 @@ fi
 #
 if [ ! -f ${PREFIX}/etc/shorewall/stopped ]; then
     run_install $OWNERSHIP -m 0600 stopped ${PREFIX}/etc/shorewall/stopped
-    echo
     echo "Stopped file installed as ${PREFIX}/etc/shorewall/stopped"
 fi
 #
@@ -532,7 +499,6 @@ fi
 #
 if [ ! -f ${PREFIX}/etc/shorewall/ecn ]; then
     run_install $OWNERSHIP -m 0600 ecn ${PREFIX}/etc/shorewall/ecn
-    echo
     echo "ECN file installed as ${PREFIX}/etc/shorewall/ecn"
 fi
 #
@@ -540,7 +506,6 @@ fi
 #
 if [ ! -f ${PREFIX}/etc/shorewall/accounting ]; then
     run_install $OWNERSHIP -m 0600 accounting ${PREFIX}/etc/shorewall/accounting
-    echo
     echo "Accounting file installed as ${PREFIX}/etc/shorewall/accounting"
 fi
 #
@@ -548,7 +513,6 @@ fi
 #
 if [ ! -f ${PREFIX}/etc/shorewall/continue ]; then
     run_install $OWNERSHIP -m 0600 continue ${PREFIX}/etc/shorewall/continue
-    echo
     echo "Continue file installed as ${PREFIX}/etc/shorewall/continue"
 fi
 #
@@ -556,14 +520,12 @@ fi
 #
 if [ ! -f ${PREFIX}/etc/shorewall/started ]; then
     run_install $OWNERSHIP -m 0600 started ${PREFIX}/etc/shorewall/started
-    echo
     echo "Started file installed as ${PREFIX}/etc/shorewall/started"
 fi
 #
 # Install the Standard Actions file
 #
 install_file actions.std ${PREFIX}/usr/share/shorewall/actions.std 0644
-echo
 echo "Standard actions file installed as ${PREFIX}/etc/shorewall/actions.std"
 
 #
@@ -571,7 +533,6 @@ echo "Standard actions file installed as ${PREFIX}/etc/shorewall/actions.std"
 #
 if [ ! -f ${PREFIX}/etc/shorewall/actions ]; then
     run_install $OWNERSHIP -m 0644 actions ${PREFIX}/etc/shorewall/actions
-    echo
     echo "Actions file installed as ${PREFIX}/etc/shorewall/actions"
 fi
 
@@ -579,7 +540,6 @@ fi
 # Install the  Makefile
 #
 run_install $OWNERSHIP -m 0600 Makefile ${PREFIX}/etc/shorewall/Makefile
-echo
 echo "Makefile installed as ${PREFIX}/etc/shorewall/Makefile"
 
 #
@@ -587,7 +547,6 @@ echo "Makefile installed as ${PREFIX}/etc/shorewall/Makefile"
 #
 for f in action.* ; do
     install_file $f ${PREFIX}/usr/share/shorewall/$f 0644
-    echo
     echo "Action ${f#*.} file installed as ${PREFIX}/usr/share/shorewall/$f"
 done
 
@@ -598,7 +557,6 @@ echo "Limit action extension script installed as ${PREFIX}/usr/share/shorewall/L
 #
 for f in macro.* ; do
     install_file $f ${PREFIX}/usr/share/shorewall/$f 0644
-    echo
     echo "Macro ${f#*.} file installed as ${PREFIX}/usr/share/shorewall/$f"
 done
 #
@@ -606,7 +564,6 @@ done
 #
 for f in prog.* ; do
     install_file $f ${PREFIX}/usr/share/shorewall/$f 0644
-    echo
     echo "Program skeleton file ${f#*.} installed as ${PREFIX}/usr/share/shorewall/$f"
 done
 #
@@ -632,7 +589,6 @@ if [ -z "$PREFIX" -a -n "$first_install" ]; then
     if [ -n "$DEBIAN" ]; then
 	run_install $OWNERSHIP -m 0644 default.debian /etc/default/shorewall
 	ln -s ../init.d/shorewall /etc/rcS.d/S40shorewall
-	echo
 	echo "shorewall will start automatically at boot"
 	echo "Set startup=1 in /etc/default/shorewall to enable"
 	touch /var/log/shorewall-init.log
@@ -640,7 +596,6 @@ if [ -z "$PREFIX" -a -n "$first_install" ]; then
     else
 	if [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
 	    if insserv /etc/init.d/shorewall ; then
-		echo
 		echo "shorewall will start automatically at boot"
 		echo "Set STARTUP_ENABLED=Yes in /etc/shorewall/shorewall.conf to enable"
 	    else
@@ -648,7 +603,6 @@ if [ -z "$PREFIX" -a -n "$first_install" ]; then
 	    fi
 	elif [ -x /sbin/chkconfig -o -x /usr/sbin/chkconfig ]; then
 	    if chkconfig --add shorewall ; then
-		echo
 		echo "shorewall will start automatically in run levels as follows:"
 		echo "Set STARTUP_ENABLED=Yes in /etc/shorewall/shorewall.conf to enable"
 		chkconfig --list shorewall
@@ -657,7 +611,6 @@ if [ -z "$PREFIX" -a -n "$first_install" ]; then
 	    fi
 	elif [ -x /sbin/rc-update ]; then
 	    if rc-update add shorewall default; then
-		echo
 		echo "shorewall will start automatically at boot"
 		echo "Set STARTUP_ENABLED=Yes in /etc/shorewall/shorewall.conf to enable"
 	    else
@@ -672,5 +625,4 @@ fi
 #
 #  Report Success
 #
-echo
 echo "shorewall Version $VERSION Installed"

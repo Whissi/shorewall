@@ -149,6 +149,50 @@ file>
 	    - All scripts associated with a given chain such as Action
               chains
 
+    If you need to interject run-time code into the generated script then
+    you need to write it to file descriptor 3. Here is an example of creating
+    tap device tap0 and adding it to bridge xenbr0; the text will be indented
+    to line up with the surrounding text:
+
+    cat >&3 << __EOF__
+    ${INDENT}if ! qt /sbin/ip link ls dev tap0; then
+    ${INDENT}    /usr/sbin/openvpn --mktun --dev tap0
+    ${INDENT}    /sbin/ip link set dev tap0 up
+    ${INDENT}    /sbin/brctl addif xenbr0 tap0
+    ${INDENT}fi
+
+    __EOF__
+
+    This results in the following code in the script:
+
+    if ! qt /sbin/ip link ls dev tap0; then
+        /usr/sbin/openvpn --mktun --dev tap0
+        /sbin/ip link set dev tap0 up
+        /sbin/brctl addif xenbr0 tap0
+    fi
+
+
+    (Yes -- there is an extra blank line at the end)
+
+    If you need to expand variables in the generated text, be sure to escape
+    the '$' symbol.
+
+    Example:
+
+    cat >&3 << __EOF__
+
+    ${INDENT}addr=\$(ip -f inet addr show $interface 2> /dev/null | grep inet | head -n1)
+    ${INDENT}if [ -n "\$addr" ]; then
+    ${INDENT}    addr=\$(echo \$addr | sed 's/inet //;s/\/.*//;s/ peer.*//')
+    ${INDENT}    for network in 10.0.0.0/8 176.16.0.0/12 192.168.0.0/16; do
+    ${INDENT}        if in_network \$addr \$network; then
+    ${INDENT}            startup_error "The 'norfc1918' option has been specified on an interface with an RFC 1918 address. Interface:$interface"
+    ${INDENT}        fi
+    ${INDENT}    done
+    ${INDENT}fi
+
+    __EOF__
+
     In addition to 'generate', a 'shorewall reload' command has been added.
 
 	shorewall reload [ -v ] [ -q ] [ <config directory> ]

@@ -34,13 +34,12 @@
 #          compile check                        Verify the configuration files.
 #	   compile compile <path name>          Compile into <path name>
 #
-# Mutual exclusion -- These functions are jackets for the mutual exclusion
-#		      routines in $FUNCTIONS. They invoke
-#		      the corresponding function in that file if the user did
-#		      not specify "nolock" on the runline.
+#	Environmental Variables:
 #
+#	    EXPORT=Yes                          -e option specified to /sbin/shorewall
+#	    SHOREWALL_DIR                       A directory name was passed to /sbin/shorewall
+#	    VERBOSE                             Standard Shorewall verbosity control.
 
-#
 # Fatal error -- stops the compiler after issuing the error message
 #
 fatal_error() # $* = Error Message

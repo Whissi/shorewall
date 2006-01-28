@@ -25,7 +25,14 @@ RCDLINKS="2,S41 3,S41 6,K41"
 #	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
 #
 #	If an error occurs while starting or restarting the firewall, the
-#	firewall is automatically stopped.
+#	firewall is automatically restored if there is a current
+#	restore file (created by "shorewall save"). If there is no restore
+#	file, the firewall is stopped.
+#
+#	Options are:
+#
+#	    -n				  Don't alter Routing
+#	    -v and -q			  Standard Shorewall Verbosity control
 #
 #	Commands are:
 #

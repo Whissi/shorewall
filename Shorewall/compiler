@@ -46,6 +46,7 @@ fatal_error() # $* = Error Message
 {    echo "   ERROR: $@" >&2
     [ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
     [ -n "$OUTPUT" ] && rm -f $OUTPUT
+    kill $$
     exit 2
 }
 

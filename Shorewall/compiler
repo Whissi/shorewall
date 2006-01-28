@@ -129,6 +129,9 @@ run_iptables() {
 # Version of 'run_iptables' that inserts white space after "!" in the arg list
 #
 run_iptables2() {
+    [ -n "$BRIDGING" ]      && [ -f $TMP_DIR/physdev ] && rm -f $TMP_DIR/physdev
+    [ -n "$IPRANGE_MATCH" ] && [ -f $TMP_DIR/iprange ] && rm -f $TMP_DIR/iprange
+
     save_command run_iptables $(fix_bang $@)
 }
 
@@ -7212,10 +7215,10 @@ __EOF__
     save_progress_message "Creating Interface Chains..."
 
     for interface in $ALL_INTERFACES; do
-	createchain $(forward_chain $interface) no
-	run_iptables -A $(forward_chain $interface) $state -j dynamic
-	createchain $(input_chain $interface)   no
-	run_iptables -A $(input_chain $interface) $state -j dynamic
+	for chain in $(input_chain $interface) $(forward_chain $interface); do
+	    createchain $chain no
+	    run_iptables -A $chain $state -j dynamic
+	done
     done
 }
 

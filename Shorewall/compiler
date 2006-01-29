@@ -5149,13 +5149,13 @@ process_rule() # $1 = target
 	case $proto in
 	    tcp|TCP|6)
 		do_ports
-		[ "$target" = QUEUE ] && proto="$proto --syn"
+		[ "$target" = QUEUE -a $SECTION != ESTABLISHED ] && proto="$proto --syn"
 		;;
 	    udp|UDP|17)
 		do_ports
 		;;
 	    icmp|ICMP|1)
-		[ -n "$port" ]  && 	dports="--icmp-type $port"
+		[ -n "$port" ] && dports="--icmp-type $port"
 		;;
 	    all|ALL)
 		[ -n "$port" ] && \

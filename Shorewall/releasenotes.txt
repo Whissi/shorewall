@@ -29,8 +29,15 @@ Note to users upgrading from Shorewall 2.x or 3.0
 
 Problems Corrected in 3.1.4
 
-1) "shorewall check" generates an error if there are entries in
+1) "shorewall check" generated an error if there were entries in
    /etc/shorewall/massq.
+
+2) Bridging now works.
+
+3) The handling of the QUEUE target in the ESTABLISHED section has been
+   corrected. Previously, the "--syn" option was being added unconditionally
+   to rules with the QUEUE target with the result that no TCP packets in the
+   ESTABLISHED state would be sent to QUEUE.
 
 New Features added in 3.1.4
 

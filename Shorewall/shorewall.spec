@@ -148,8 +148,8 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/macro.SMB
 %attr(0644,root,root) /usr/share/shorewall/macro.SMBswat
 %attr(0644,root,root) /usr/share/shorewall/macro.SMTP
+%attr(0644,root,root) /usr/share/shorewall/macro.SMTPS
 %attr(0644,root,root) /usr/share/shorewall/macro.SNMP
-%attr(0644,root,root) /usr/share/shorewall/macro.SNMPS
 %attr(0644,root,root) /usr/share/shorewall/macro.SPAMD
 %attr(0644,root,root) /usr/share/shorewall/macro.SSH
 %attr(0644,root,root) /usr/share/shorewall/macro.Submission

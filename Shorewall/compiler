@@ -8306,15 +8306,11 @@ compile_firewall() # $1 = File Name
 
     outfile=$1 dir=
     #
-    # Overload a couple of functions from the library
+    # Overload a function from the library
     #
     deletechain() # $1 = name of chain
     {
 	save_command "qt \$IPTABLES -L $1 -n && qt \$IPTABLES -F $1 && qt \$IPTABLES -X $1"
-    }
-
-    fix_bang() {
-	echo $@ | sed 's/!/! /g'
     }
     #
     # END OVERLOADED FUNCTIONS

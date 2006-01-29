@@ -118,22 +118,25 @@ expandv() # $* = list of variable names
 }
 
 #
-# Replace all leading "!" with "! " in the passed argument list
+# Add whitespace after "!"
 #
+fix_bang()
+{
+    local result=
 
-fix_bang() {
-    local i;
-
-    for i in $@; do
-	case $i in
+    while [ $# -gt 0 ]; do
+	case $1 in
 	    !*)
-		echo "! ${i#!}"
+		result="$result ! ${1#!}"
 		;;
 	    *)
-		echo $i
+		result="$result $1"
 		;;
 	esac
+	shift
     done
+
+    echo $result
 }
 
 #

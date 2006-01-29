@@ -1,5 +1,5 @@
 %define name shorewall
-%define version 3.1.3
+%define version 3.1.4
 %define release 1
 %define prefix /usr
 
@@ -164,6 +164,8 @@ fi
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel ipsecvpn Samples
 
 %changelog
+* Sun Jan 29 2006 Tom Eastep tom@shorewall.net
+- Updated to 3.1.4-1
 * Fri Jan 20 2006 Tom Eastep tom@shorewall.net
 - Change permissions for compile by ordinary user
 * Fri Jan 20 2006 Tom Eastep tom@shorewall.net

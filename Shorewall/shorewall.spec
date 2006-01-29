@@ -126,16 +126,22 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/macro.Edonkey
 %attr(0644,root,root) /usr/share/shorewall/macro.FTP
 %attr(0644,root,root) /usr/share/shorewall/macro.Gnutella
+%attr(0644,root,root) /usr/share/shorewall/macro.HTTP
+%attr(0644,root,root) /usr/share/shorewall/macro.HTTPS
 %attr(0644,root,root) /usr/share/shorewall/macro.ICQ
 %attr(0644,root,root) /usr/share/shorewall/macro.IMAP
+%attr(0644,root,root) /usr/share/shorewall/macro.IMAPS
 %attr(0644,root,root) /usr/share/shorewall/macro.LDAP
+%attr(0644,root,root) /usr/share/shorewall/macro.LDAPS
 %attr(0644,root,root) /usr/share/shorewall/macro.MySQL
 %attr(0644,root,root) /usr/share/shorewall/macro.NNTP
+%attr(0644,root,root) /usr/share/shorewall/macro.NNTPS
 %attr(0644,root,root) /usr/share/shorewall/macro.NTP
 %attr(0644,root,root) /usr/share/shorewall/macro.NTPbrd
 %attr(0644,root,root) /usr/share/shorewall/macro.PCA
 %attr(0644,root,root) /usr/share/shorewall/macro.Ping
 %attr(0644,root,root) /usr/share/shorewall/macro.POP3
+%attr(0644,root,root) /usr/share/shorewall/macro.POP3S
 %attr(0644,root,root) /usr/share/shorewall/macro.PostgreSQL
 %attr(0644,root,root) /usr/share/shorewall/macro.Rdate
 %attr(0644,root,root) /usr/share/shorewall/macro.Rsync
@@ -143,6 +149,7 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/macro.SMBswat
 %attr(0644,root,root) /usr/share/shorewall/macro.SMTP
 %attr(0644,root,root) /usr/share/shorewall/macro.SNMP
+%attr(0644,root,root) /usr/share/shorewall/macro.SNMPS
 %attr(0644,root,root) /usr/share/shorewall/macro.SPAMD
 %attr(0644,root,root) /usr/share/shorewall/macro.SSH
 %attr(0644,root,root) /usr/share/shorewall/macro.Submission
@@ -166,6 +173,7 @@ fi
 %changelog
 * Sun Jan 29 2006 Tom Eastep tom@shorewall.net
 - Updated to 3.1.4-1
+- Added new Macros
 * Fri Jan 20 2006 Tom Eastep tom@shorewall.net
 - Change permissions for compile by ordinary user
 * Fri Jan 20 2006 Tom Eastep tom@shorewall.net

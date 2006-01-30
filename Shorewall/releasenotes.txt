@@ -83,7 +83,19 @@ New Features added in 3.1.4
 
 Migration Considerations:
 
-None.
+1)  A number of macros have been split into two.  The macros affected are:
+	IMAP LDAP NNTP POP3 SMTP
+    Each of these macros now handles only traffic on the native (plaintext)
+    port.  There is a corresponding macro with S added to the end of the
+    name for the SSL version of the same protocol.  Thus each macro results
+    in the insertion of only one port per invocation.
+
+    The Web macro has not been split, but two new macros, HTTP and HTTPS have
+    been created.  The Web macro is deprecated in favour of these new macros,
+    and may be removed from future Shorewall releases.
+
+    These changes have been made to ensure no unexpected ports are opened due
+    to the use of macros.
 
 New Features:
 

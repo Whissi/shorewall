@@ -17,7 +17,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-01-16</pubdate>
+    <pubdate>2006-01-30</pubdate>
 
     <copyright>
       <year>2001-2006</year>
@@ -1214,6 +1214,27 @@ LOGBURST=""</programlisting>
       your firewall to log and drop the packet out of the rfc1918 chain
       because the source IP is reserved by RFC 1918.</para>
     </section>
+
+    <section id="faq52">
+      <title>(FAQ 52) When I blacklist an IP address with "shorewall drop
+      www.xxx.yyy.zzz", why does my log still show REDIRECT and DNAT entries
+      from that address?</title>
+
+      <para>I blacklisted the address 130.252.100.59 using <command>shorewall
+      drop 130.252.100.59</command> but I am still seeing these log
+      messages:</para>
+
+      <programlisting>Jan 30 15:38:34 server Shorewall:net_dnat:REDIRECT:IN=eth1 OUT= MAC=00:4f:4e:14:97:8e:00:01:5c:23:24:cc:08:00
+                       SRC=130.252.100.59 DST=206.124.146.176 LEN=64 TOS=0x00 PREC=0x00 TTL=43 ID=42444 DF
+                       PROTO=TCP SPT=2215 DPT=139 WINDOW=53760 RES=0x00 SYN URGP=0</programlisting>
+
+      <para><emphasis role="bold">Answer</emphasis>: Please refer to the
+      <ulink url="NetfilterOverview.html">Shorewall Netfilter
+      Documentation</ulink>. Logging of REDIRECT and DNAT rules occurs in the
+      nat table's PREROUTING chain where the original destination IP address
+      is still available. Blacklisting occurs out of the filter table's INPUT
+      and FORWARD chains which aren't traversed until later.</para>
+    </section>
   </section>
 
   <section>
@@ -1936,14 +1957,6 @@ Shorewall has detected the following iptables/netfilter capabilities:
    Connmark Match: Available
    Raw Table: Available
 gateway:~#</programlisting>
-    </section>
-
-    <section id="faq52">
-      <title>(FAQ 52) How do I Configure Shorewall to work with
-      Snort-Inline?</title>
-
-      <para><emphasis role="bold">Answer</emphasis>: Please see <ulink
-      url="http://www.catherders.com/tikiwiki-1.9.1/tiki-read_article.php?articleId=47">http://www.catherders.com/tikiwiki-1.9.1/tiki-read_article.php?articleId=47</ulink></para>
     </section>
   </section>
 </article>

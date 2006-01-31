@@ -82,14 +82,20 @@
 #			   As in a) above, may be followed by ":P" or ":F".
 #
 #	SOURCE		Source of the packet. A comma-separated list of
-#			interface names, IP addresses, MAC addresses
-#			and/or subnets. If your kernel and iptables include
-#			iprange match support, IP address ranges are also
-#			allowed. Use $FW if the packet originates on
-#			the firewall in which case the MARK column may NOT
-#			specify either ":P" or ":F" (marking always occurs
-#			in the OUTPUT chain). $FW may be optionally followed
-#			by ":" and a host/network address.
+#			interface names, IP addresses, MAC addresses and/or
+#			subnets for packets being routed through a common path.
+#			For example, all packets for connections masqueraded to
+#			eth0 from other interfaces can be matched in a single rule
+#			with several alternative SOURCE criteria. However, a
+#			connection whose packets gets to eth0 in a different way,
+#			e.g., direct from the firewall itself, needs a different
+#			rule.
+#
+#			Accordingly, use $FW in its own separate rule for packets
+#			originating on the firewall. In such a rule, the MARK
+#			column may NOT specify either ":P" or ":F" because marking
+#			for firewall-originated packets always occurs in the OUTPUT
+#			chain.
 #
 #			MAC addresses must be prefixed with "~" and use
 #			"-" as a separator.

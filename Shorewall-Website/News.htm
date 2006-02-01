@@ -13,7 +13,7 @@
 </h1>
 <span style="font-weight: bold;">Tom Eastep<br>
 <br>
-</span>Copyright © 2001-2005 Thomas M. Eastep<br>
+</span>Copyright © 2001-2006 Thomas M. Eastep<br>
 <p>Permission is granted to copy, distribute and/or modify this
 document under the terms of the GNU Free Documentation License, Version
 1.2 or any later version published by the Free Software Foundation;
@@ -25,6 +25,9 @@ Documentation License</a></span>”.<br>
 <hr style="width: 100%; height: 2px;">
 <p></p>
 <!-- Shorewall Release 3.0.3 -->
+<span style="font-weight: bold;">2006-01-05 Shorewall 3.0.4<br>
+</span>
+<pre>Problems Corrected in 3.0.4<br><br>1) &nbsp;The shorewall.conf file is once again "console friendly". Patch is<br>&nbsp; &nbsp; courtesy of Tuomo Soini.<br><br>2) &nbsp;A potential security hole has been closed. Previously, Shorewall ACCEPTed<br>&nbsp; &nbsp; all traffic from a bridge port that was sent back out on the same port. If<br>&nbsp; &nbsp; the port was described in /etc/shorewall/hosts using the wildcard "+" (eg,<br>&nbsp; &nbsp; xenbr0:vif+), this could lead to traffic being passed in variance with the<br>&nbsp; &nbsp; supplied policies and rules.<br><br>3) &nbsp;Previously, an intra-zone policy of NONE would cause a startup error. That<br>&nbsp; &nbsp; problem has been corrected.<br><br>4) &nbsp;When RETAIN_ALIASES=Yes, the script produced by "shorewall save" did not<br>&nbsp; &nbsp; add the retained aliases. This means that the following sequence of<br>&nbsp; &nbsp; events resulted in missing aliases:<br><br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; shorewall start<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; shorewall restart<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; shorewall save<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; reboot<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; shorewall -f start (which is the default during boot up)<br><br>5) &nbsp;When a 2.x standard action is invoked with a log level (example<br>&nbsp; &nbsp; "AllowPing:info"), logging does not occur.<br><br>New Features in 3.0.4<br><br>1) &nbsp;By popular demand, the 'Limit' action described at<br>&nbsp; &nbsp; http://www1.shorewall.net/PortKnocking.html#Limit has been made a standard<br>&nbsp; &nbsp; action. Limit requires 'recent match' support in your kernel and iptables.<br><br>2) &nbsp;DISABLE_IPV6 no longer disabled local (loopback) IPV6 traffic. This<br>&nbsp; &nbsp; change is reported to improve Java startup time on some distributions.<br><br>3) &nbsp;Shorewall now contains support for wildcard ports. In<br>&nbsp; &nbsp; /etc/shorewall/hosts, you may specify the port name with trailing "+" then <br>&nbsp; &nbsp; use specific port names in rules.<br><br>&nbsp; &nbsp; Example:<br><br>&nbsp; &nbsp; /etc/shorewall/hosts<br><br>&nbsp; &nbsp; &nbsp; &nbsp; vpn &nbsp; &nbsp; &nbsp;br0:tap+<br><br>&nbsp; &nbsp; /etc/shorewall/hosts<br><br>&nbsp; &nbsp; &nbsp; &nbsp; DROP &nbsp; &nbsp; &nbsp;vpn:tap0 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;vpn:tap1 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;udp &nbsp; &nbsp;9999<br><br>4) &nbsp;For the benefit of those who run Shorewall on distributions that don't <br>&nbsp; &nbsp; autoload kernel modules, /etc/shorewall/modules now contains load commands <br>&nbsp; &nbsp; for a wide range of Netfilter modules.<br></pre>
 <span style="font-weight: bold;">2005-12-13
 Shorewall 3.0.3<br>
 </span>

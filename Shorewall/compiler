@@ -5205,6 +5205,7 @@ process_rule() # $1 = target
 
 	case $SECTION in
 	    ESTABLISHED|RELATED)
+		[ -n "$FASTACCEPT" ] && fatal_error "Entries in the $SECTION SECTION of the rules file not permitted with FASTACCEPT=Yes"
 		state="-m state --state $SECTION"
 		;;
 	    *)

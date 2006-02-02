@@ -4845,10 +4845,6 @@ __EOF__
 	target1="REDIRECT --to-port $servport"
     fi
 
-    if [ $source = $FW ]; then
-	[ -n "$excludezones" ] && fatal_error "Invalid Source in rule \"$rule\""
-    fi
-
     # Generate nat table rules
 
     if [ "$source" = "$FW" ]; then
@@ -4875,7 +4871,7 @@ __EOF__
 	    done
 	fi
     else
-	if [ -n "${excludesource}${excludedests}${excludezones}" ]; then
+	if [ -n "${excludesource}${excludedests}" ]; then
 	    build_exclusion_chain chain nat "$excludesource" $excludedests
 
 	    if [ $addr = detect ]; then
@@ -4891,13 +4887,6 @@ __EOF__
 		    addnatrule $(dnat_chain $source) $cli $proto $multiport $sports $dports $(dest_ip_range $adr) -j $chain
 		done
 	    fi
-
-	    for z in $(separate_list $excludezones); do
-		eval hosts=\$${z}_hosts
-		for host in $hosts; do
-		    addnatrule $chain $(match_source_hosts ${host#*:}) -j RETURN
-		done
-	    done
 
 	    if [ -n "$loglevel" ]; then
 		log_rule_limit $loglevel $chain $(dnat_chain $source) $logtarget "$ratelimit" "$logtag" -A -t nat
@@ -5503,21 +5492,6 @@ __EOF__
 	    clients=${clients%!*}
 	    ;;
     esac
-
-    if [ "$clientzone" = "${clientzone%!*}" ]; then
- 	excludezones=
-    else
-	excludezones="${clientzone#*!}"
-	clientzone="${clientzone%!*}"
-
-	case $logtarget in
- 	    DNAT|REDIRECT|SAME)
- 		;;
- 	    *)
- 		fatal_error "Exclude zone only allowed with DNAT, SAME or REDIRECT"
- 		;;
- 	esac
-    fi
 
     validate_zone $clientzone || fatal_error "Undefined Client Zone in rule \"$rule\""
 

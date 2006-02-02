@@ -54,6 +54,24 @@ Migration Considerations:
     These changes have been made to ensure no unexpected ports are opened due
     to the use of macros.
 
+2)  In previous Shorewall releases, DNAT and REDIRECT rules supported a
+    special syntax for exclusion of a subnet from the effect of the rule.
+
+    Example:
+
+	Z2 is a subzone of Z1:
+
+	DNAT     Z1!Z2        loc:192.168.1.4        ...
+
+    That syntax has never worked correctly when Z2 is a dynamic zone.
+    Furthermore, now that Shorewall supports exclusion lists the capability
+    is redundant since the above rule can now be written in the form:
+
+	DNAT     Z1:!<list of exclusions>   loc:192.168.1.4   ...
+
+    Beginning with Shorewall 3.2.0, the special exclusion syntax will no
+    longer be supported.
+
 New Features:
 
 1)  A new 'shorewall generate' command has been added.

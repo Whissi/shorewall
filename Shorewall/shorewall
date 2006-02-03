@@ -526,21 +526,9 @@ start_command() {
 			    finished=1
 			    option=
 			    ;;
-			q*)
-			    VERBOSE=$(($VERBOSE - 1 ))
-			    option=${option#q}
-			    ;;
-			v*)
-			    VERBOSE=$(($VERBOSE + 1 ))
-			    option=${option#v}
-			    ;;
 			f*)
 			    FAST=Yes
 			    option=${option#f}
-			    ;;
-			n*)
-			    NOROUTES=Yes
-			    option=${option#n}
 			    ;;
 			*)
 			    usage 1
@@ -635,14 +623,6 @@ compile_command() {
 			    EXPORT=Yes
 			    option=${option#e}
 			    ;;
-			q*)
-			    VERBOSE=$(($VERBOSE - 1 ))
-			    option=${option#q}
-			    ;;
-			v*)
-			    VERBOSE=$(($VERBOSE + 1 ))
-			    option=${option#v}
-			    ;;
 			-)
 			    finished=1
 			    option=
@@ -708,13 +688,9 @@ check_command() {
 			    finished=1
 			    option=
 			    ;;
-			q*)
-			    VERBOSE=$(($VERBOSE - 1 ))
-			    option=${option#q}
-			    ;;
-			v*)
-			    VERBOSE=$(($VERBOSE + 1 ))
-			    option=${option#v}
+			e*)
+			    EXPORT=Yes
+			    option=${option#e}
 			    ;;
 			*)
 			    usage 1
@@ -773,14 +749,6 @@ restart_command() {
 			-)
 			    finished=1
 			    option=
-			    ;;
-			q*)
-			    VERBOSE=$(($VERBOSE - 1 ))
-			    option=${option#q}
-			    ;;
-			v*)
-			    VERBOSE=$(($VERBOSE + 1 ))
-			    option=${option#v}
 			    ;;
 			n*)
 			    NOROUTES=Yes
@@ -855,6 +823,10 @@ show_command() {
 			v*)
 			    VERBOSE=$(($VERBOSE + 1 ))
 			    option=${option#v}
+			    ;;
+			x*)
+			    IPT_OPTIONS="-xnv"
+			    option=${option#x}
 			    ;;
 			*)
 			    usage 1
@@ -989,9 +961,9 @@ dump_command() {
 			    finished=1
 			    option=
 			    ;;
-			v*)
-			    VERBOSE=$(($VERBOSE + 1 ))
-			    option=${option#v}
+			x*)
+			    IPT_OPTIONS="-xnv"
+			    option=${option#x}
 			    ;;
 			*)
 			    usage 1
@@ -1109,14 +1081,6 @@ safe_commands() {
 			    finished=1
 			    option=
 			    ;;
-			q*)
-			    VERBOSE=$(($VERBOSE - 1 ))
-			    option=${option#q}
-			    ;;
-			v*)
-			    VERBOSE=$(($VERBOSE + 1 ))
-			    option=${option#v}
-			    ;;
 			n*)
 			    NOROUTES=Yes
 			    option=${option#n}
@@ -1210,14 +1174,6 @@ restore_command() {
 			    finished=1
 			    option=
 			    ;;
-			q*)
-			    VERBOSE=$(($VERBOSE + 1 ))
-			    option=${option#q}
-			    ;;
-			v*)
-			    VERBOSE=$(($VERBOSE + 1 ))
-			    option=${option#v}
-			    ;;
 			n*)
 			    NOROUTES=Yes
 			    option=${option#n}
@@ -1284,7 +1240,7 @@ help()
 #
 usage() # $1 = exit status
 {
-    echo "Usage: $(basename $0) [debug|trace] [nolock] [ -x ] [ -q ] [ -v ] [ -n ] <command>"
+    echo "Usage: $(basename $0) [debug|trace] [nolock] [ -q ] [ -v ] <command>"
     echo "where <command> is one of:"
     echo "   add <interface>[:<host-list>] ... <zone>"
     echo "   allow <address> ..."
@@ -1293,7 +1249,7 @@ usage() # $1 = exit status
     echo "   compile [ -e ] [ <directory name> ] <path name>"
     echo "   delete <interface>[:<host-list>] ... <zone>"
     echo "   drop <address> ..."
-    echo "   dump"
+    echo "   dump [ -x ]"
     echo "   forget [ <file name> ]"
     echo "   help [ <command > | host | address ]"
     echo "   hits"
@@ -1304,11 +1260,11 @@ usage() # $1 = exit status
     echo "   refresh"
     echo "   reject <address> ..."
     echo "   reset"
-    echo "   restart [ <directory> ]"
-    echo "   restore [ <file name> ]"
+    echo "   restart [ -n ] [ <directory> ]"
+    echo "   restore [ -n ] [ <file name> ]"
     echo "   save [ <file name> ]"
-    echo "   show [<chain> [ <chain> ... ]|actions|capabilities|classifiers|connections|log|macros|mangle|nat|tc|zones]"
-    echo "   start [ -f ] [ <directory> ]"
+    echo "   show [ -x ] [<chain> [ <chain> ... ]|actions|capabilities|classifiers|connections|log|macros|mangle|nat|tc|zones]"
+    echo "   start [ -f ] [ -n ] [ <directory> ]"
     echo "   stop"
     echo "   status"
     echo "   try <directory> [ <timeout> ]"

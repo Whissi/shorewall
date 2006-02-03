@@ -203,12 +203,10 @@ logwatch)
 	;;
 
 refresh)
-	echo "refresh: [ -q ] refresh
+	echo "refresh: refresh
     The rules involving the broadcast addresses of firewall interfaces,
     the black list, traffic control rules and ECN control rules are recreated
     to reflect any changes made.  Existing connections are untouched.
-
-    If \"-q\" is specified, less detain is displayed making it easier to spot warnings"
 	;;
 
 reject)
@@ -226,36 +224,34 @@ reset)
 	;;
 
 restart)
-	echo "restart: restart [ -q ] [ -n ] [ <configuration-directory> ]
+	echo "restart: restart [ -n ] [ <configuration-directory> ]
     Restart is the same as a shorewall stop && shorewall start.
     Existing connections are maintained.
 
-    If \"-q\" is specified, less detain is displayed making it easier to spot warnings
     If \"-n\" is specified, no changes to routing will be made"
 	;;
 
 safe-restart)
-	echo "safe-restart: [ -q ] safe-restart
+	echo "safe-restart: safe-restart
     Restart the same way as a shorewall restart except that previous firewall
     configuration is backed up and will be restored if you notice any anomalies
     or you are not able to reach the firewall any more."
     ;;
 
 safe-start)
-	echo "safe-start: [ -q ] safe-start
+	echo "safe-start: safe-start
     Start the same way as a shorewall start except that in case of anomalies
     shorewall clear is issued. "
     ;;
 
 restore)
-	echo "restore: restore [ -q ] [ -n ] [ <file name> ]
+	echo "restore: restore [ -n ] [ <file name> ]
     Restore Shorewall to a state saved using the 'save' command
     Existing connections are maintained. The <file name> names a restore file in
     /var/lib/shorewall created using \"shorewall save\"; if no <file name> is given
     then Shorewall will be restored from the file specified by the RESTOREFILE
     option in shorewall.conf.
 
-    If \"-q\" is specified, less detain is displayed making it easier to spot warnings
     If \"-n\" is specified, no changes to routing will be made.
 
     See also \"help save\", \"help compile\" and \"help forget\""
@@ -305,11 +301,10 @@ show)
 	;;
 
 start)
-	echo "start: start [ -f ] [ -n ] [ -q ] [ <configuration-directory> ]
+	echo "start: start [ -f ] [ -n ] [ <configuration-directory> ]
     Start shorewall.  Existing connections through shorewall managed
     interfaces are untouched.  New connections will be allowed only
     if they are allowed by the firewall rules or policies.
-    If \"-q\" is specified, less detail is displayed making it easier to spot warnings
     If \"-f\" is specified, the saved configuration specified by the RESTOREFILE option
     in shorewall.conf will be restored if that saved configuration exists. In that
     case, a <configuration-directory> may not be specified.
@@ -317,13 +312,11 @@ start)
 	;;
 
 stop)
-	echo "stop: [ -n ] stop
+	echo "stop: stop
     Stops the firewall.  All existing connections, except those
     listed in /etc/shorewall/routestopped, are taken down.
     The only new traffic permitted through the firewall
     is from systems listed in /etc/shorewall/routestopped.
-
-    If \"-n\" is specified, no changes to routing will be made"
 	;;
 
 status)
@@ -364,7 +357,7 @@ try)
     the default configuration.
 
     The \"-n\" option will be passed down to the underlying commands (see
-    'start', 'stop', 'restart' and 'restore')"
+    'start', 'restart' and 'restore')"
 	;;
 
 version)

@@ -2453,7 +2453,6 @@ ${INDENT}    fatal_error "Interface $interface must be up before Shorewall can s
 ${INDENT}ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet //; s/brd //; s/scope.*//;' | while read address broadcast; do
 ${INDENT}    address=\${address%/*}
 ${INDENT}    run_iptables -t $MACLIST_TABLE -A $chain -s \$address -j RETURN
-${INDENT}    fi
 ${INDENT}done
 
 __EOF__

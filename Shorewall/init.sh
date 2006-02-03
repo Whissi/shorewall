@@ -32,6 +32,7 @@ RCDLINKS="2,S41 3,S41 6,K41"
 #	   shorewall start			  Starts the firewall
 #	   shorewall restart			  Restarts the firewall
 #	   shorewall reload			  Reload the firewall
+#						  (same as restart)
 #	   shorewall stop			  Stops the firewall
 #	   shorewall status			  Displays firewall status
 #
@@ -75,8 +76,12 @@ case "$command" in
     start)
 	exec /sbin/shorewall $OPTIONS $@
 	;;
-    stop|restart|status|reload)
+    stop|restart|status)
 	exec /sbin/shorewall $@
+	;;
+    reload)
+	shift
+	exec /sbin/shorewall restart $@
 	;;
     *)
 	usage

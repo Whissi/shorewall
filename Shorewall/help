@@ -97,8 +97,6 @@ compile)
     other than where the compiled script will run. This option disables
     certain configuration options that require the script to be compiled
     where it is to be run.
-
-    'generate' is a synonym for 'compile'."
 	;;
 
 debug)
@@ -169,19 +167,6 @@ forget)
     See also \"help save\""
 	;;
 
-generate)
-	echo "generate: generate [ -e ] [ <directory name> ] <file name>
-    Compiles the current configuration into the executable file
-    /var/lib/shorewall/<file name>
-
-    When -e is specified, the compilation is being performed on a system
-    other than where the compiled script will run. This option disables
-    certain configuration options that require the script to be compiled
-    where it is to be run.
-
-    'compile' is a synonym for 'generate'."
-	;;
-
 help)
 	echo "help: help [<command> | host | address ]
     Display helpful information about the shorewall commands."
@@ -233,17 +218,6 @@ reject)
     Shorewall allow, drop, rejct and save implement dynamic blacklisting.
 
     See also \"help address\""
-	;;
-
-reload)
-	echo "reload: reload [ -q ] [ -n ] [ <directory name> ]
-
-    Causes Shorewall to generate a new compiled restore file using the named directory
-    as the first search directory for configuration file. If that generation is error-free,
-    the generated restore file is executed.
-
-    If \"-q\" is specified, less detain is displayed making it easier to spot warnings
-    If \"-n\" is specified, no changes to routing will be made"
 	;;
 
 reset)

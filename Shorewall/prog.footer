@@ -2,7 +2,7 @@
 # Give Usage Information
 #
 usage() {
-    echo "Usage: $0 [ -q ] [ -v ] [ -n ] [ start|stop|clear|reload|restart|status|version ]"
+    echo "Usage: $0 [ -q ] [ -v ] [ -n ] [ start|stop|clear|restart|status|version ]"
     exit $1
 }
 ################################################################################
@@ -74,18 +74,6 @@ case "$COMMAND" in
     restart)
 	if shorewall_is_started; then
 	    progress_message3 "Restarting Shorewall...."
-	else
-	    echo "Shorewall is not running" >&2
-	    progress_message3 "Starting Shorewall...."
-	fi
-
-	define_firewall
-	status=$?
-	progress_message3 "done."
-	;;
-    reload)
-	if shorewall_is_started; then
-	    progress_message3 "Reloading Shorewall...."
 	else
 	    echo "Shorewall is not running" >&2
 	    progress_message3 "Starting Shorewall...."

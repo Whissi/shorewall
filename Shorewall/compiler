@@ -9047,7 +9047,7 @@ do_initialize() {
 # Give Usage Information
 #
 usage() {
-    echo "Usage: $0 [debug] check|{generate|compile} <filename>}"
+    echo "Usage: $0 [debug] check|compile <filename>}"
     exit 1
 }
 
@@ -9075,10 +9075,9 @@ case "$COMMAND" in
 	compile_firewall
 	;;
 
-    compile|generate)
+    compile)
 	[ $# -ne 2 ] && usage
 	do_initialize
-	COMMAND=compile
 	compile_firewall $2
 	;;
 

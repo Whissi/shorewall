@@ -28,7 +28,8 @@
 #       shown below. Simply run this script to revert to your prior version of
 #       Shoreline Firewall.
 
-VERSION=3.1.4
+VERSION=3.1.5
+
 usage() # $1 = exit status
 {
     echo "usage: $(basename $0)"

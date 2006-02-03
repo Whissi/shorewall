@@ -299,7 +299,8 @@ file>
     shorewall.conf. If you don't set it (as would be the case of you use your
     old shorewall.conf file) then VERBOSITY defaults to a value of 2 which is
     the old default. A value of 1 suppresses some of the output (like the old
-    -q option did) while a value of 0 makes Shorewall almost silent.
+    -q option did) while a value of 0 makes Shorewall almost silent. A value
+    of -1 suppresses all output except warning and error messages.
 
     The value specified in the 3.2 shorewall.conf is 1. So you can make
     Shorewall as verbose as previously using a single -v and you can make it
@@ -312,7 +313,7 @@ file>
     to VERBOSITY.
 
     The "shorewall show log", "shorewall logwatch" and "shorewall dump"
-    commands require VERBOSE to be greater than or equal to 3 to display MAC
+    commands require VERBOSITY to be greater than or equal to 3 to display MAC
     addresses.This is consistent with the previous implementation which
     required a single -v to enable MAC display but means that if you set
     VERBOSITY=0 in shorewall.conf, then you will need to include -vvv in

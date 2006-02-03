@@ -1698,19 +1698,21 @@ process_routestopped() # $1 = command
     for host in $hosts; do
 	interface=${host%:*}
 	networks=${host#*:}
-	run_iptables $1 INPUT  -i $interface $(source_ip_range $networks) -j ACCEPT
+	source_range=$(source_ip_range $networks)
+	dest_range=$(dest_ip_range $networks)
+	run_iptables $1 INPUT  -i $interface $source_range -j ACCEPT
 	[ -z "$ADMINISABSENTMINDED" ] && \
-	    run_iptables $1 OUTPUT -o $interface $(dest_ip_range $networks) -j ACCEPT
+	    run_iptables $1 OUTPUT -o $interface $dest_range -j ACCEPT
 
 	matched=
 
 	if list_search $host $source ; then
-	    run_iptables $1 FORWARD -i $interface $(source_ip_range $networks) -j ACCEPT
+	    run_iptables $1 FORWARD -i $interface $source_range -j ACCEPT
 	    matched=Yes
 	fi
 
 	if list_search $host $dest ; then
-	    run_iptables $1 FORWARD -o $interface $(dest_ip_range $networks) -j ACCEPT
+	    run_iptables $1 FORWARD -o $interface $dest_range -j ACCEPT
 	    matched=Yes
 	fi
 
@@ -2455,7 +2457,7 @@ ${INDENT}    address=\${address%/*}
 ${INDENT}    if [ -n "\$broadcast" ]; then
 ${INDENT}        run_iptables -t $MACLIST_TABLE -A $chain -s \$address -d \$broadcast -j RETURN
 ${INDENT}    fi
-${INDENT}
+
 ${INDENT}    run_iptables -t $MACLIST_TABLE -A $chain -s \$address -d 255.255.255.255 -j RETURN
 ${INDENT}    run_iptables -t $MACLIST_TABLE -A $chain -s \$address -d 224.0.0.0/4     -j RETURN
 ${INDENT}done
@@ -2541,18 +2543,16 @@ ${INDENT}    done < /var/lib/shorewall/proxyarp
 
 ${INDENT}    rm -f {/var/lib/shorewall}/nat
 ${INDENT}fi
-__EOF__
-
-    [ -d $STATEDIR ] && touch $STATEDIR/proxyarp
-
-    cat >&3 << __EOF__
 
 ${INDENT}for f in /proc/sys/net/ipv4/conf/*; do
 ${INDENT}    [ -f \$f/proxy_arp ] && echo 0 > \$f/proxy_arp
 ${INDENT}done
 ${INDENT}
 __EOF__
-}
+
+    [ -d $STATEDIR ] && touch $STATEDIR/proxyarp
+
+ }
 
 #
 # Setup Static Network Address Translation (NAT)
@@ -2770,10 +2770,6 @@ setup_traffic_shaping()
     mtu=1500
     r2q=10
 
-    ensure_and_save_tc() {
-	run_tc $@
-    }
-
     rate_to_kbit() {
 	local rateunit rate
 	rate=$1
@@ -2904,10 +2900,10 @@ setup_traffic_shaping()
 	defmark=$(get_defmark_for_dev $device)
 	save_command qt tc qdisc del dev $device root
 	save_command qt tc qdisc del dev $device ingress
-	ensure_and_save_tc qdisc add dev $device root handle $devnum: htb default 1$defmark
-	ensure_and_save_tc class add dev $device parent $devnum: classid $devnum:1 htb rate $outband
-	ensure_and_save_tc qdisc add dev $device handle ffff: ingress
-	ensure_and_save_tc filter add dev $device parent ffff: protocol ip prio 50 u32 match ip src 0.0.0.0/0 police rate ${inband} burst 10k drop flowid :1
+	run_tc qdisc add dev $device root handle $devnum: htb default 1$defmark
+	run_tc class add dev $device parent $devnum: classid $devnum:1 htb rate $outband
+	run_tc qdisc add dev $device handle ffff: ingress
+	run_tc filter add dev $device parent ffff: protocol ip prio 50 u32 match ip src 0.0.0.0/0 police rate ${inband} burst 10k drop flowid :1
 	eval $(chain_base $device)_devnum=$devnum
 	devnum=$(($devnum + 1))
     }
@@ -2940,21 +2936,21 @@ setup_traffic_shaping()
 
 	[ -n "$devnum" ] || fatal_error "Device $device not defined in $devfile"
 
-	ensure_and_save_tc class add dev $device parent $devnum:1 classid $classid htb rate $rate ceil $ceil prio $prio quantum $(calculate_quantum $rate)
-	ensure_and_save_tc qdisc add dev $device parent $classid handle 1$mark: sfq perturb 10
+	run_tc class add dev $device parent $devnum:1 classid $classid htb rate $rate ceil $ceil prio $prio quantum $(calculate_quantum $rate)
+	run_tc qdisc add dev $device parent $classid handle 1$mark: sfq perturb 10
 	# add filters
 	if [ -n "$CLASSIFY_TARGET" ]; then
 	    run_iptables -t mangle -A tcpost -o $device -m mark --mark $mark -j CLASSIFY --set-class $classid
 	else
-	    ensure_and_save_tc filter add dev $device protocol ip parent $devnum:0 prio 1 handle $mark fw classid $classid
+	    run_tc filter add dev $device protocol ip parent $devnum:0 prio 1 handle $mark fw classid $classid
 	fi
 	#options
-	list_search "tcp-ack" $options && ensure_and_save_tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip protocol 6 0xff match u8 0x05 0x0f at 0 match u16 0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid $classid
-	list_search "tos-minimize-delay" $options && ensure_and_save_tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos 0x10 0xff flowid $classid
-	list_search "tos-minimize-cost" $options && ensure_and_save_tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos 0x02 0xff flowid $classid
-	list_search "tos-maximize-troughput" $options && ensure_and_save_tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos 0x08 0xff flowid $classid
-	list_search "tos-minimize-reliability" $options && ensure_and_save_tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos 0x04 0xff flowid $classid
-	list_search "tos-normal-service" $options && ensure_and_save_tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos 0x00 0xff flowid $classid
+	list_search "tcp-ack" $options && run_tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip protocol 6 0xff match u8 0x05 0x0f at 0 match u16 0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid $classid
+	list_search "tos-minimize-delay" $options && run_tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos 0x10 0xff flowid $classid
+	list_search "tos-minimize-cost" $options && run_tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos 0x02 0xff flowid $classid
+	list_search "tos-maximize-troughput" $options && run_tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos 0x08 0xff flowid $classid
+	list_search "tos-minimize-reliability" $options && run_tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos 0x04 0xff flowid $classid
+	list_search "tos-normal-service" $options && run_tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos 0x00 0xff flowid $classid
 	# tcp
     }
 

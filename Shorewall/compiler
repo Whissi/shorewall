@@ -1173,6 +1173,8 @@ ${INDENT}        fatal_error "Unable to detect the gateway through interface $in
 ${INDENT}    fi
 
 __EOF__
+	else
+	    save_command "gateway=$gateway"
 	fi
 
 	if [ x${mark} != x- ]; then
@@ -8439,8 +8441,14 @@ initialize() {
 __EOF__
     if [ -z "$EXPORT" ]; then
 	cat >&3 << __EOF__
-    if [ ! -f /usr/share/shorewall/version ] || [ \$(cat /usr/share/shorewall/version) != $VERSION ]; then
-	startup_error "This script requires Shorewall version $VERSION"
+    if [ ! -f /usr/share/shorewall/version ]; then
+	fatal_error "This script requires Shorewall which does not appear to be installed on this system"
+    fi
+
+    local version=\$(cat /usr/share/shorewall/version)
+
+    if [ \${LIBVERSION:-0} -lt 30105 ]; then
+	fatal_error "This script requires Shorewall version 3.1.5 or later; current version is \$version"
     fi
 
 __EOF__

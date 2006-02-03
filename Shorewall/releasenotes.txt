@@ -66,7 +66,7 @@ Migration Considerations:
 	DNAT     Z1!Z2        loc:192.168.1.4        ...
 
     That syntax has never worked correctly when Z2 is a dynamic zone.
-    Furthermore, now that Shorewall supports exclusion lists the capability
+    Furthermore, now that Shorewall supports exclusion lists, the capability
     is redundant since the above rule can now be written in the form:
 
 	DNAT     Z1:!<list of exclusions>   loc:192.168.1.4   ...
@@ -78,12 +78,11 @@ New Features:
 
 1)  A new 'shorewall compile' command has been added.
 
-     shorewall compile [ -v ] [ -q ] [ -e ] [ <config directory> ] <script
+     shorewall compile [ -e ] [ -d <distro> ] [ <config directory> ] <script
 file>
 
     where:
 
-	-v and -q             are described elsewhere in this document.
 	-e                    Generates an error if the configuration uses
 	                      an option that would prevent the generated
 	                      script from running on a system other than
@@ -91,6 +90,22 @@ file>
 	                      additional consideration a) below).
 	                      Also allows the generated script to run
 	                      on a system without Shorewall installed.
+	-d <distribution>     Compile the script for execution on the
+	                      distribution specified by <distro>. Currently,
+	                      'suse' is the only valid <distro>.
+
+			      Note that specifying a distribution should
+			      only be required if you intend to install
+			      the compiled script in /etc/init.d on the
+			      target system.
+
+	                      Example:
+
+				shorewall compile -d suse foo
+
+			      Additional distributions are expected to be
+			      supported shortly.
+
 	<config directory>    Is an optional directory to be searched for
 	                      configuration files prior to those listed
 	                      in CONFIG_DIR in
@@ -120,6 +135,11 @@ file>
        1) The same version of Shorewall must be running on the remote system
           unless you use the "-e" option when you compile the script.
        2) The 'detectnets' interface option is not allowed.
+       3) You must supply the file /etc/shorewall/capabilities to provide
+          the compiler with knowledge of the capabilities of the system
+          where the script is to be run. The /etc/shorewall/capabilities
+          file included in this release includes instructions for its
+          use.
 
     b) If you have extension scripts, they may need modification. Some of
        the scripts will be run at compile time, rather than when the

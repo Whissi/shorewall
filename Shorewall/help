@@ -88,7 +88,7 @@ clear)
 	;;
 
 compile)
-	echo "compile: compile [ -e ] [ <directory name> ] <path name>
+	echo "compile: compile [ -e ] [ -d <distro> ] [ <directory name> ] <path name>
     Compiles the current configuration into the executable file
     <path name>. If <path name> names a file in /var/lib/shorewall then
     the file may be executed using the \"restore\" command.
@@ -97,6 +97,16 @@ compile)
     other than where the compiled script will run. This option disables
     certain configuration options that require the script to be compiled
     where it is to be run.
+
+    When -d <distribution> is given, the script is built for execution
+    on the distribution specified by <distro>. Currently, 'suse' is the
+    only valid <distro>. Usually specified together with -e.
+
+    Example:
+
+	shorewall compile -ed suse foo
+
+    Additional distributions are expected to be supported shortly."
 	;;
 
 debug)

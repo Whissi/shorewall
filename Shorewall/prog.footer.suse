@@ -1,0 +1,132 @@
+#
+# Give Usage Information
+#
+usage() {
+    echo "Usage: $0 [ -q ] [ -v ] [ -n ] [ start|stop|clear|restart|status|version ]"
+    exit $1
+}
+################################################################################
+# E X E C U T I O N    B E G I N S   H E R E				       #
+################################################################################
+initialize
+
+finished=0
+
+while [ $finished -eq 0 -a $# -gt 0 ]; do
+    option=$1
+    case $option in
+	-*)
+	    option=${option#-}
+
+	    [ -z "$option" ] && usage 1
+
+	    while [ -n "$option" ]; do
+		case $option in
+		    v*)
+			VERBOSE=$(($VERBOSE + 1 ))
+			option=${option#v}
+			;;
+		    q*)
+			VERBOSE=$(($VERBOSE - 1 ))
+			option=${option#q}
+			;;
+		    n*)
+			NOROUTES=Yes
+			option=${option#n}
+			;;
+		    *)
+			usage 1
+			;;
+		esac
+	    done
+	    shift
+	    ;;
+	*)
+	    finished=1
+            ;;
+    esac
+done
+
+if [ $# -ne 1 ]; then
+    usage 2
+else
+    COMMAND="$1"
+fi
+
+case "$COMMAND" in
+    start)
+	if shorewall_is_started; then
+	    error_message "Shorewall is already Running"
+	    status=1
+	else
+	    progress_message3 "Starting Shorewall...."
+	    define_firewall
+	    status=$?
+	    progress_message3 "done."
+	fi
+	;;
+    stop)
+	progress_message3 "Stopping Shorewall...."
+	stop_firewall
+	status=0
+	progress_message3 "done."
+	;;
+    restart)
+	if shorewall_is_started; then
+	    progress_message3 "Restarting Shorewall...."
+	else
+	    echo "Shorewall is not running" >&2
+	    progress_message3 "Starting Shorewall...."
+	fi
+
+	define_firewall
+	status=$?
+	progress_message3 "done."
+	;;
+    restore)
+	restore_firewall
+	status=$?
+	;;
+    clear)
+	progress_message3 "Clearing Shorewall...."
+	clear_firewall
+	status=0
+	progress_message3 "done."
+	;;
+    status)
+	echo "Shorewall-$VERSION Status at $HOSTNAME - $(date)"
+	echo
+	if shorewall_is_started; then
+	    echo "Shorewall is running"
+	    status=0
+	else
+	    echo "Shorewall is stopped"
+	    status=4
+	fi
+
+	if [ -f /var/lib/shorewall/state ]; then
+	    state="$(cat /var/lib/shorewall/state)"
+	    case $state in
+		Stopped*|Clear*)
+		    status=3
+		    ;;
+	    esac
+	else
+	    state=Unknown
+	fi
+	echo "State:$state"
+	echo
+	;;
+    version)
+	echo $VERSION
+	status=0
+	;;
+    help)
+	usage 0
+	;;
+    *)
+	usage 2
+	;;
+esac
+
+exit $status

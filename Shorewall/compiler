@@ -8652,7 +8652,7 @@ __EOF__
 	echo "Shorewall configuration verified"
     else
 	INDENT=
-	cat $(find_file prog.header) $OUTPUT $(find_file prog.footer) > $outfile
+	cat $(find_file prog.header${DISTRIBUTION}) $OUTPUT $(find_file prog.footer${DISTRIBUTION}) > $outfile
 	chmod 700 $outfile
 	progress_message2 "Shorewall configuration compiled to $outfile"
 	rm -f $OUTPUT

@@ -165,6 +165,8 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/macro.Whois
 %attr(0644,root,root) /usr/share/shorewall/prog.footer
 %attr(0644,root,root) /usr/share/shorewall/prog.header
+%attr(0644,root,root) /usr/share/shorewall/prog.footer.suse
+%attr(0644,root,root) /usr/share/shorewall/prog.header.suse
 %attr(0644,root,root) /usr/share/shorewall/rfc1918
 %attr(0644,root,root) /usr/share/shorewall/configpath
 

@@ -37,7 +37,33 @@ Problems Corrected in 3.1.6
 
 Other changes in 3.1.6
 
-None.
+1)  In macro files, you can now use the reserved words SOURCE and DEST
+    in the columns of the same names. When Shorewall expands the
+    macro, it will substitute the SOURCE from the macro invocation for
+    SOURCE and the DEST from the invocation for DEST. This allows you
+    to write macros that act in both directions (from source to destination
+    and from destination to source).
+
+    Example:
+
+	macro.FOO:
+
+	    PARAM      SOURCE        DEST      udp     500
+	    PARAM      DEST          SOURCE    udp     500
+
+	/etc/shorewall/rules:
+
+	    FOO/ACCEPT    fw         net
+
+	Resulting rules:
+
+	    ACCEPT        fw         net        udp     500
+	    ACCEPT        net        fw         udp     500
+
+    This new feature has been used to implement the SMBBI macro.
+    SMBBI is the same as the SMB macro with the exception that
+    it passes SMB traffic in both directions whereas SMB only
+    passes that traffic in one direction.
 
 Migration Considerations:
 

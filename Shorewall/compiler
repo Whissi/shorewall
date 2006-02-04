@@ -4586,7 +4586,7 @@ __EOF__
 			    esac
 
 			    cat >&3 << __EOF__
-${INDENT}    run_iptables -A $xchain -d \$address -j
+${INDENT}    run_iptables -A $xchain -d \$address -j ACCEPT
 ${INDENT}done
 
 __EOF__
@@ -4711,8 +4711,11 @@ __EOF__
 
 			    if [ -n "$mclients" ]; then
 				case $mclients in
-				    -)
+				    -|SOURCE)
 					mclients=${xclients}
+					;;
+				    DEST)
+					mclients=${xservers}
 					;;
 				    *)
 					mclients=$(merge_macro_source_dest $mclients $xclients)
@@ -4724,8 +4727,11 @@ __EOF__
 
 			    if [ -n "$mservers" ]; then
 				case $mservers in
-				    -)
+				    -|DEST)
 					mservers=${xservers}
+					;;
+				    SOURCE)
+					mservers=${xclients}
 					;;
 				    *)
 					mservers=$(merge_macro_source_dest $mservers $xservers)
@@ -5766,8 +5772,11 @@ process_macro() # $1 = target
 
 	if [ -n "$mclients" ]; then
 	    case $mclients in
-		-)
+		-|SOURCE)
 		    mclients=${iclients}
+		    ;;
+		DEST)
+		    mclients=${iservers}
 		    ;;
 		*)
 		    mclients=$(merge_macro_source_dest $mclients $iclients)
@@ -5779,8 +5788,11 @@ process_macro() # $1 = target
 
 	if [ -n "$mservers" ]; then
 	    case $mservers in
-		-)
+		-|DEST)
 		    mservers=${iservers}
+		    ;;
+		SOURCE)
+		    mservers=${iclients}
 		    ;;
 		*)
 		    mservers=$(merge_macro_source_dest $mservers $iservers)

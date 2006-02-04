@@ -1,0 +1,23 @@
+#
+# Shorewall version 3.2 - SMB Bi-directional Macro
+#
+# /usr/share/shorewall/macro.SMBBI
+#
+#	This macro handles Microsoft SMB traffic.
+#
+#	Beware!  This macro opens a lot of ports, and could possibly be used
+#	to compromise your firewall if not used with care.  You should only
+#	allow SMB traffic between hosts you fully trust.
+#
+###############################################################################
+#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGINAL	RATE	USER/
+#				PORT	PORT(S)	DEST		LIMIT	GROUP
+PARAM	-	-	udp	135,445
+PARAM	-	-	udp	137:139
+PARAM	-	-	udp	1024:	137
+PARAM	-	-	tcp	135,139,445
+PARAM	DEST	SOURCE	udp	135,445
+PARAM	DEST	SOURCE	udp	137:139
+PARAM	DEST	SOURCE	udp	1024:	137
+PARAM	DEST	SOURCE	tcp	135,139,445
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

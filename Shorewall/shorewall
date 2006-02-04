@@ -243,7 +243,16 @@ get_config() {
     case $STARTUP_ENABLED in
 	[Nn][Oo])
             echo "   WARNING: Shorewall startup is disabled. To enable startup, set STARTUP_ENABLED=Yes in /etc/shorewall/shorewall.conf" >&2
+            STARTUP_ENABLED=
 	    ;;
+	[Yy][Ee][Ss])
+	    ;;
+	*)
+	    if [ -n "$STARTUP_ENABLED" ]; then
+		echo "   ERROR: Invalid Value for STARTUP_ENABLE: $STARTUP_ENABLED" >&2
+		exit 2
+	    fi
+	    ;;;
     esac
 
     case ${TC_ENABLED:=Internal} in
@@ -512,6 +521,11 @@ start_command() {
     if shorewall_is_started; then
 	error_message "Shorewall is already running"
 	exit 1
+    fi
+
+    if [ -z "$STARTUP_ENABLED" ]; then
+	error_message "ERROR: Startup is disabled"
+	exit 2
     fi
 
     while [ $finished -eq 0 -a $# -gt 0 ]; do
@@ -802,6 +816,11 @@ restart_command() {
 	    usage 1
 	    ;;
     esac
+
+    if [ -z "$STARTUP_ENABLED" ]; then
+	error_message "ERROR: Startup is disabled"
+	exit 2
+    fi
 
     export NOROUTES
 
@@ -1114,6 +1133,11 @@ safe_commands() {
 
     [ $# -eq 0 ] || usage 2
 
+    if [ -z "$STARTUP_ENABLED" ]; then
+	error_message "ERROR: Startup is disabled"
+	exit 2
+    fi
+
     mutex_on
 
     if shorewall_is_started; then
@@ -1227,6 +1251,11 @@ restore_command() {
 	usage 1
 	;;
     esac
+
+    if [ -z "$STARTUP_ENABLED" ]; then
+	error_message "ERROR: Startup is disabled"
+	exit 2
+    fi
 
     RESTOREPATH=/var/lib/shorewall/$RESTOREFILE
 

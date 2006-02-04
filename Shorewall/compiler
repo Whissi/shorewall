@@ -794,6 +794,10 @@ match_source_dev()
 {
     if [ -n "$BRIDGING" ]; then
 	known_port $1 && physdev_echo "--physdev-in $1" || echo -i $1
+    elif known_interface $1 then
+	echo -i $1
+    elif [ -n "$PHYSDEV_MATCH" ]; then
+	physdev_echo "--physdev-in $1"
     else
 	echo -i $1
     fi
@@ -803,6 +807,10 @@ match_dest_dev()
 {
     if [ -n "$BRIDGING" ]; then
 	known_port $1 && physdev_echo "--physdev-out $1" || echo -o $1
+    elif known_interface $1 then
+	echo -o $1
+    elif [ -n "$PHYSDEV_MATCH" ]; then
+	physdev_echo "--physdev-out $1"
     else
 	echo -o $1
     fi

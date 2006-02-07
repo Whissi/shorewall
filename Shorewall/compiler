@@ -2954,11 +2954,11 @@ setup_traffic_shaping()
 	fi
 	#options
 	list_search "tcp-ack" $options && run_tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip protocol 6 0xff match u8 0x05 0x0f at 0 match u16 0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid $classid
-	list_search "tos-minimize-delay" $options && run_tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos 0x10 0xff flowid $classid
-	list_search "tos-minimize-cost" $options && run_tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos 0x02 0xff flowid $classid
-	list_search "tos-maximize-troughput" $options && run_tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos 0x08 0xff flowid $classid
-	list_search "tos-minimize-reliability" $options && run_tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos 0x04 0xff flowid $classid
-	list_search "tos-normal-service" $options && run_tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos 0x00 0xff flowid $classid
+	list_search "tos-minimize-delay" $options && run_tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos 0x10 0x10 flowid $classid
+	list_search "tos-minimize-cost" $options && run_tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos 0x02 0x20 flowid $classid
+	list_search "tos-maximize-throughput" $options && run_tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos 0x08 0x08 flowid $classid
+	list_search "tos-minimize-reliability" $options && run_tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos 0x04 0x04 flowid $classid
+	list_search "tos-normal-service" $options && run_tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos 0x00 0x1e flowid $classid
 	# tcp
     }
 

@@ -1648,6 +1648,8 @@ setup_traffic_shaping()
 	    case $1 in
 		default|tcp-ack|tos-minimize-delay|tos-maximize-throughput|tos-maximize-reliability|tos-minimize-cost|tos-normal-service)
 		    ;;
+		tos=0x[0-9a-f][0-9a-f]|tos=0x[0-9a-f][0-9a-f]/0x[0-9a-f][0-9a-f])
+		    ;;
 		*)
 		    echo $1
 		    return 1
@@ -1704,8 +1706,14 @@ setup_traffic_shaping()
 	    ratew=$(get_outband_for_dev $device)
 	    options=$(separate_list $options | tr '[A-Z]' '[a-z]')
 	    for opt in $options; do
-		list_search "$device-$opt" $allopts && fatal_error "option $opt already defined in a chain for interface $device in tcclasses"
-		allopts="$allopts $device-$opt"
+	    	case opt in
+	    	    tos=*)
+	    	    ;;
+		*)
+		    list_search "$device-$opt" $allopts && fatal_error "option $opt already defined in a chain for interface $device in tcclasses"
+		    allopts="$allopts $device-$opt"
+		    ;;
+		esac
 	    done
 	    wrongopt=$(check_tcclasses_options $options) || fatal_error "unknown option $wrongopt for class iface $device mark $mark in tcclasses file"
 	    if [ -z "$ratew" ] ; then
@@ -1730,7 +1738,7 @@ setup_traffic_shaping()
     }
 
     add_tc_class() {
-	local full classid
+	local full classid tospair tosmask
 	full=$(get_outband_for_dev $device)
 	full=$(rate_to_kbit $full)
 
@@ -1761,7 +1769,7 @@ setup_traffic_shaping()
 	run_tc qdisc add dev $device parent $classid handle 1$mark: sfq perturb 10
 	# add filters
 	if [ -n "$CLASSIFY_TARGET" ]; then
-	    run_iptables -t mangle -A tcpost -o $device -m mark --mark $mark -j CLASSIFY --set-class $classid
+	    run_iptables -t mangle -A tcpost $(match_dest_dev $device) -m mark --mark $mark -j CLASSIFY --set-class $classid
 	else
 	    run_tc filter add dev $device protocol ip parent $devnum:0 prio 1 handle $mark fw classid $classid
 	fi
@@ -1772,7 +1780,18 @@ setup_traffic_shaping()
 	list_search "tos-maximize-throughput" $options && run_tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos 0x08 0x08 flowid $classid
 	list_search "tos-minimize-reliability" $options && run_tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos 0x04 0x04 flowid $classid
 	list_search "tos-normal-service" $options && run_tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos 0x00 0x1e flowid $classid
-	# tcp
+
+	for tospair in $(list_walk "tos=" $options) ; do
+	    case $tospair in
+	    	*/*)
+		    tosmask=${tospair##*/}
+		    ;;
+		*)
+		    tosmask=0xff
+		    ;;
+	    esac
+	    run_tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos ${tospair%%/*} $tosmask flowid $classid
+	done
     }
 
     strip_file tcdevices $devfile

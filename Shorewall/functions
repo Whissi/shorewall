@@ -50,6 +50,24 @@ list_search() # $1 = element to search for , $2-$n = list
 }
 
 #
+# Return a space separated list of values matching
+#
+list_walk() # $1 = element to search for, $2-$n = list
+{
+    local e=$1 result=
+
+    while [ $# -gt 1 ]; do
+	shift
+	case $1 in
+	    $e*)
+	    	result="$result ${1##$e}"
+		;;
+	esac
+    done
+    echo $result
+}
+
+#
 # Functions to count list elements
 # - - - - - - - - - - - - - - - -
 # Whitespace-separated list

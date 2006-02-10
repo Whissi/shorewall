@@ -146,6 +146,7 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/macro.Rdate
 %attr(0644,root,root) /usr/share/shorewall/macro.Rsync
 %attr(0644,root,root) /usr/share/shorewall/macro.SMB
+%attr(0644,root,root) /usr/share/shorewall/macro.SMBBI
 %attr(0644,root,root) /usr/share/shorewall/macro.SMBswat
 %attr(0644,root,root) /usr/share/shorewall/macro.SMTP
 %attr(0644,root,root) /usr/share/shorewall/macro.SMTPS

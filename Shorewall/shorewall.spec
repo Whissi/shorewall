@@ -102,7 +102,6 @@ fi
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/Makefile
 
 %attr(05555,root,root) /sbin/shorewall
-%attr(05555,root,root) /sbin/shorecap
 
 %attr(0644,root,root) /usr/share/shorewall/version
 %attr(0644,root,root) /usr/share/shorewall/actions.std

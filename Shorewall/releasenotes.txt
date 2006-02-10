@@ -72,6 +72,22 @@ Other changes in 3.1.6
     /etc/shorewall/capabilities file to determine the capabilities of
     the target system.
 
+3)  When "shorewall check" or "shorewall compile" is run by a user other
+    than root, Shorewall now automatically uses the /etc/shorewall/capabilities
+    file to determine the capabilities of the target system.
+
+4)  Shorewall now includes a 'shorecap' program. The RPM installs the
+    program in the documentation directory. The install.sh script does
+    not install the program.
+
+    The shorecap program can be used to create an /etc/shorewall/capabilities
+    file on a remote system. The file can then be copied to the local
+    system where it can be used when compiling firewall programs targeted for
+    the remote system.
+
+    For instructions about running shorecap, see the comments at the top
+    of the program file (it's a simple shell script).
+
 Migration Considerations:
 
 1)  A number of macros have been split into two.  The macros affected are:

@@ -8894,7 +8894,8 @@ do_initialize() {
     PKTTYPE=$(added_param_value_no PKTTYPE $PKTTYPE)
 
     [ -n "${MODULE_SUFFIX:=o gz ko o.gz ko.gz}" ]
-    if [ -z "$EXPORT" ]; then
+
+    if [ -z "$EXPORT" -a "$(whoami)" = root ]; then
 
 	load_kernel_modules
 

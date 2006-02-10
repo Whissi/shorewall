@@ -102,6 +102,7 @@ fi
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/Makefile
 
 %attr(05555,root,root) /sbin/shorewall
+%attr(05555,root,root) /sbin/shorecap
 
 %attr(0644,root,root) /usr/share/shorewall/version
 %attr(0644,root,root) /usr/share/shorewall/actions.std
@@ -170,9 +171,11 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/rfc1918
 %attr(0644,root,root) /usr/share/shorewall/configpath
 
-%doc COPYING INSTALL changelog.txt releasenotes.txt tunnel ipsecvpn Samples
+%doc COPYING INSTALL changelog.txt releasenotes.txt tunnel ipsecvpn Samples shorecap
 
 %changelog
+* Fri Feb 10 2006 Tom Eastep tom@shorewall.net
+- Added shorecap
 * Fri Feb 03 2006 Tom Eastep tom@shorewall.net
 - Updated to 3.1.5-1
 - Added new program header/footer files

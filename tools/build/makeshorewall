@@ -529,10 +529,10 @@ if [ -n "$OLDVERSION" ]; then
     diff -Naur shorewall-$OLDVERSION shorewall-$VERSION > patch-$VERSION
 fi
 
-report "Creating md5sums"
-do_or_die "md5sum *.tgz *.rpm *.bz2 > $VERSION.md5sums"
+progress_message "Creating md5sums"
+do_or_die "*$VERSION[-.]*tgz *$VERSION[-.]*rpm *$VERSION[-.]*bz2 > $VERSION.md5sums"
 
-report "Creating sha1sums"
+progress_message "Creating sha1sums"
 do_or_die "sha1sum *$VERSION[-.]*tgz *$VERSION[-.]*rpm *$VERSION[-.]*bz2 > $VERSION.sha1sums"
 
 progress_message "Shorewall $VERSION Build complete - $(date)"

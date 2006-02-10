@@ -533,6 +533,6 @@ report "Creating md5sums"
 do_or_die "md5sum *.tgz *.rpm *.bz2 > $VERSION.md5sums"
 
 report "Creating sha1sums"
-do_or_die "sha1sum *.tgz *.rpm *.bz2 > $VERSION.sha1sums"
+do_or_die "sha1sum *$VERSION[-.]*tgz *$VERSION[-.]*rpm *$VERSION[-.]*bz2 > $VERSION.sha1sums"
 
 progress_message "Shorewall $VERSION Build complete - $(date)"

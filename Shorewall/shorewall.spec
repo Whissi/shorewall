@@ -1,5 +1,5 @@
 %define name shorewall
-%define version 3.1.5
+%define version 3.1.6
 %define release 1
 %define prefix /usr
 
@@ -176,6 +176,7 @@ fi
 %changelog
 * Fri Feb 10 2006 Tom Eastep tom@shorewall.net
 - Added shorecap
+- Updated to 3.1.6-1
 * Fri Feb 03 2006 Tom Eastep tom@shorewall.net
 - Updated to 3.1.5-1
 - Added new program header/footer files

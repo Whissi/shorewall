@@ -25,9 +25,110 @@ Documentation License</a></span>”.<br>
 <hr style="width: 100%; height: 2px;">
 <p></p>
 <!-- Shorewall Release 3.0.3 -->
+<span style="font-weight: bold;">2006-02-10 Shorewall 3.0.5<br>
+</span>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="Generator" content="Kate, the KDE Advanced Text Editor">
+<pre>Problems corrected in Shorewall 3.0.5
+
+1)  Previously, if /etc/shorewall/ipsets existed, it was run when Shorewall starts
+    but not when Shorewall was restored.
+
+2)  When using the NETKEY IPSEC implementation in kernel 2.6 but without the
+    policy match patch and the Netfilter/IPSEC patches, previously an
+    entry in /etc/shorewall/tunnels was not sufficient in cases where:
+
+    a) gw&lt;-&gt;gw traffic was encrypted
+    b) The gw&lt;-&gt;gw policy through the tunnel was not ACCEPT
+
+    Thanks to Tuomo Soini, this has been corrected. By simply including the
+    remote VPN zone in the GATEWAY ZONE column for the tunnel's entry, no
+    additional rules are required.
+
+3)  Extra blank output lines are no longer produced by install.sh (patch
+    courtesy of Tuomo Soini).
+
+4)  TCP packets sent to QUEUE by rules in the ESTABLISHED section of the
+    rules file previously didn't work (they had the "--syn" parameter
+    added to them which resulted in a rule that no traffic would match).
+
+    WARNING: If you use the QUEUE target from an action, Shorewall will
+    still insert --syn if the protocol is tcp. So you don't want to
+    invoke such an action from the ESTABLISHED section of the rules
+    file.
+
+5)  The description of the SOURCE column in /etc/shorewall/rules has been
+    improved (patch courtesy of Ed Suominen).
+
+6)  The 'allow', 'drop' and 'reject' commands no longer produce iptables
+    errors when executed while Shorewall is not started.
+
+7)  The spelling of "maximize-throughput" has been corrected in the code
+    that implements tcclasses parsing. Patch courtesy of Paul Traina.
+
+8)  Shorewall now generates the correct match for devices in
+    /etc/shorewall/tcdevices that are actually bridge ports.
+
+New Features in Shorewall 3.0.5
+
+1)  The facilities available for dealing with the TOS field in
+    /etc/shorewall/tcclasses has been expended. The OPTIONS field is now may
+    contain a comma-separates list of the following:
+
+	tos=0x&lt;value&gt;[/0x&lt;mask&gt;]	(mask defaults to 0xff)
+					- this lets you define a classifier
+					for the given &lt;value&gt;/&lt;mask&gt; combination
+					of the IP packet's TOS/Precedence/DiffSrv
+					octet (aka the TOS byte).  Please note,
+					classifiers override all mark settings,
+					so if you define a classifer for a class,
+					all traffic having that mark will go in it
+					regardless of any mark set on the packet
+					by a firewall/mangle filter.
+
+					NOTE: multiple tos= statements may be
+					applied per class and per interface, but
+					a given value/mask pair is valid for only
+					ONE class per interface.
+
+	tos-&lt;tosname&gt;			- aliases for the following TOS octet
+					value and mask encodings.  TOS encodings
+					of the "TOS byte" have been deprecated in
+					favor of diffserve classes, but programs
+					like ssh, rlogin, and ftp still use them.
+
+   					tos-minimize-delay 	 0x10/0x10
+					tos-maximize-throughput	 0x08/0x08
+					tos-maximize-reliability 0x04/0x04
+					tos-minimize-cost	 0x02/0x02
+					tos-normal-service	 0x00/0x1e
+
+	tcp-ack                 	-    defined causes an tc filter to
+					be created that puts all tcp ack
+					packets on that interface that have
+					an size of &lt;=64 Bytes to go in this
+					class. This is useful for speeding up
+					downloads. Please note that the size
+					of the ack packets is limited to 64
+					bytes as some applications (p2p for
+					example) use to make every packet an
+					ack packet which would cause them
+					all into here. We want only packets
+					WITHOUT payload to match, so the size
+					limit.
+
+					NOTE: This option is only valid for
+					ONE class per interface.
+
+    Note that the semantics of 'tos-&lt;tosname&gt;' have changed slightly. Previously,
+    these were tested using a mask of 0xff (example: tos-minimize-delay was
+    equivalent to 0x10/0xff). Now each bit is tested individually.
+
+    This enhancement is courtesy of Paul Traina.
+</pre>
 <span style="font-weight: bold;">2006-01-05 Shorewall 3.0.4<br>
 </span>
-<pre>Problems Corrected in 3.0.4<br><br>1) &nbsp;The shorewall.conf file is once again "console friendly". Patch is<br>&nbsp; &nbsp; courtesy of Tuomo Soini.<br><br>2) &nbsp;A potential security hole has been closed. Previously, Shorewall ACCEPTed<br>&nbsp; &nbsp; all traffic from a bridge port that was sent back out on the same port. If<br>&nbsp; &nbsp; the port was described in /etc/shorewall/hosts using the wildcard "+" (eg,<br>&nbsp; &nbsp; xenbr0:vif+), this could lead to traffic being passed in variance with the<br>&nbsp; &nbsp; supplied policies and rules.<br><br>3) &nbsp;Previously, an intra-zone policy of NONE would cause a startup error. That<br>&nbsp; &nbsp; problem has been corrected.<br><br>4) &nbsp;When RETAIN_ALIASES=Yes, the script produced by "shorewall save" did not<br>&nbsp; &nbsp; add the retained aliases. This means that the following sequence of<br>&nbsp; &nbsp; events resulted in missing aliases:<br><br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; shorewall start<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; shorewall restart<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; shorewall save<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; reboot<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; shorewall -f start (which is the default during boot up)<br><br>5) &nbsp;When a 2.x standard action is invoked with a log level (example<br>&nbsp; &nbsp; "AllowPing:info"), logging does not occur.<br><br>New Features in 3.0.4<br><br>1) &nbsp;By popular demand, the 'Limit' action described at<br>&nbsp; &nbsp; http://www1.shorewall.net/PortKnocking.html#Limit has been made a standard<br>&nbsp; &nbsp; action. Limit requires 'recent match' support in your kernel and iptables.<br><br>2) &nbsp;DISABLE_IPV6 no longer disabled local (loopback) IPV6 traffic. This<br>&nbsp; &nbsp; change is reported to improve Java startup time on some distributions.<br><br>3) &nbsp;Shorewall now contains support for wildcard ports. In<br>&nbsp; &nbsp; /etc/shorewall/hosts, you may specify the port name with trailing "+" then <br>&nbsp; &nbsp; use specific port names in rules.<br><br>&nbsp; &nbsp; Example:<br><br>&nbsp; &nbsp; /etc/shorewall/hosts<br><br>&nbsp; &nbsp; &nbsp; &nbsp; vpn &nbsp; &nbsp; &nbsp;br0:tap+<br><br>&nbsp; &nbsp; /etc/shorewall/hosts<br><br>&nbsp; &nbsp; &nbsp; &nbsp; DROP &nbsp; &nbsp; &nbsp;vpn:tap0 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;vpn:tap1 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;udp &nbsp; &nbsp;9999<br><br>4) &nbsp;For the benefit of those who run Shorewall on distributions that don't <br>&nbsp; &nbsp; autoload kernel modules, /etc/shorewall/modules now contains load commands <br>&nbsp; &nbsp; for a wide range of Netfilter modules.<br></pre>
+<pre>Problems Corrected in 3.0.4<br><br>1) &nbsp;The shorewall.conf file is once again "console friendly". Patch is<br>&nbsp; &nbsp; courtesy of Tuomo Soini.<br><br>2) &nbsp;A potential security hole has been closed. Previously, Shorewall ACCEPTed<br>&nbsp; &nbsp; all traffic from a bridge port that was sent back out on the same port. If<br>&nbsp; &nbsp; the port was described in /etc/shorewall/hosts using the wildcard "+" (eg,<br>&nbsp; &nbsp; xenbr0:vif+), this could lead to traffic being passed in variance with the<br>&nbsp; &nbsp; supplied policies and rules.<br><br>3) &nbsp;Previously, an intra-zone policy of NONE would cause a startup error. That<br>&nbsp; &nbsp; problem has been corrected.<br><br>4) &nbsp;When RETAIN_ALIASES=Yes, the script produced by "shorewall save" did not<br>&nbsp; &nbsp; add the retained aliases. This means that the following sequence of<br>&nbsp; &nbsp; events resulted in missing aliases:<br><br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; shorewall start<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; shorewall restart<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; shorewall save<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; reboot<br>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; shorewall -f start (which is the default during boot up)<br><br>5) &nbsp;When a 2.x standard action is invoked with a log level (example<br>&nbsp; &nbsp; "AllowPing:info"), logging does not occur.<br><br>New Features in 3.0.4<br><br>1) &nbsp;By popular demand, the 'Limit' action described at<br>&nbsp; &nbsp; http://www1.shorewall.net/PortKnocking.html#Limit has been made a standard<br>&nbsp; &nbsp; action. Limit requires 'recent match' support in your kernel and iptables.<br><br>2) &nbsp;DISABLE_IPV6 no longer disabled local (loopback) IPV6 traffic. This<br>&nbsp; &nbsp; change is reported to improve Java startup time on some distributions.<br><br>3) &nbsp;Shorewall now contains support for wildcard ports. In<br>&nbsp; &nbsp; /etc/shorewall/hosts, you may specify the port name with trailing "+" then <br>&nbsp; &nbsp; use specific port names in rules.<br><br>&nbsp; &nbsp; Example:<br><br>&nbsp; &nbsp; /etc/shorewall/hosts<br><br>&nbsp; &nbsp; &nbsp; &nbsp; vpn &nbsp; &nbsp; &nbsp;br0:tap+<br><br>&nbsp; &nbsp; /etc/shorewall/rules<br><br>&nbsp; &nbsp; &nbsp; &nbsp; DROP &nbsp; &nbsp; &nbsp;vpn:tap0 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;vpn:tap1 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;udp &nbsp; &nbsp;9999<br><br>4) &nbsp;For the benefit of those who run Shorewall on distributions that don't <br>&nbsp; &nbsp; autoload kernel modules, /etc/shorewall/modules now contains load commands <br>&nbsp; &nbsp; for a wide range of Netfilter modules.<br></pre>
 <span style="font-weight: bold;">2005-12-13
 Shorewall 3.0.3<br>
 </span>

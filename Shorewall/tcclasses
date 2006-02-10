@@ -54,16 +54,10 @@
 #			the traffic you want to fit in the classes defined
 #			in here.
 #
-#			You can use the same marks for different Interfaces
+#			You can use the same marks for different interfaces.
 #
 #	RATE		The minimum bandwidth this class should get,
-#			when the traffic load rises. Please note
-#			that first the classes which equal or a lesser priority
-#			value are served.
-#
-#			Use kbit or kbps(for Kilobytes per second) for
-#			speed, and make sure there is NO space between the
-#			number and the unit.
+#			when the traffic load rises.
 #
 #	CEIL		The maximum bandwidth this class is allowed to use
 #			when the link is idle. Useful if you have traffic
@@ -74,16 +68,18 @@
 #			the maximum bandwidth to the defined output bandwidth
 #			of that interface
 #
-#			Use kbit or kbps (for Kilobytes per second) for
-#			speed, and make sure there is NO space between the
-#			number and the unit.
+#	PRIORITY	The priority in which classes will be serviced by
+#			the packet shaping scheduler and also the priority
+#			in which bandwidth in excess of the rate will be
+#			given to each class.
 #
-#	PRIORITY	you have to define a priority for the class
-#			Packages in a class with a higher priority
-#			(=lesser value) are handled before lesser priority
-#			onces.
-#			You can just define the mark value here also, if you
-#			 are increasing the mark values with lesser priority.
+#			Higher priority classes will experience less delay
+#			since they are serviced first.  Priority values
+#			are serviced in ascending order (e.g. 0 is higher
+#			priority than 1).
+#
+#			Classes may be set to the same priority, in which
+#			case they will be serviced as equals.
 #
 #	OPTIONS		A comma-separated list of options including the
 #			following:
@@ -95,24 +91,33 @@
 #					NOTE: defining default for exactly one
 #					class per interface is mandatory!
 #
-#			tos-<tosname>	- this lets you define a filter for
-#					the given <tosname> which lets you
-#					define a value of the Type Of Service
-#					bits in the ip packet which causes
-#					the packet to go in this class.
-#					Please note, that this filter overrides
-#					all mark settings, so if you define
-#					a tos filter for a class all traffic
-#					having that mark will go in it regard-
-#					less of the mark on the packet.
-#					You can use the following
-#					for this option
+#			tos=0x<value>[/0x<mask>]	(mask defaults to 0xff)
+#					- this lets you define a classifier
+#					for the given <value>/<mask> combination
+#					of the IP packet's TOS/Precedence/DiffSrv
+#					octet (aka the TOS byte).  Please note,
+#					classifiers override all mark settings,
+#					so if you define a classifer for a class,
+#					all traffic having that mark will go in it
+#					regardless of any mark set on the packet
+#					by a firewall/mangle filter.
 #
-#					tos-minimize-delay (16)
-#					tos-maximize-throughput (8)
-#					tos-maximize-reliability (4)
-#					tos-minimize-cost (2)
-#					tos-normal-service (0)
+#					NOTE: multiple tos= statements may be
+#					applied per class and per interface, but
+#					a given value/mask pair is valid for only
+#					ONE class per interface.
+#
+#			tos-<tosname>	- aliases for the following TOS octet
+#					value and mask encodings.  TOS encodings
+#					of the "TOS byte" have been deprecated in
+#					favor of diffserve classes, but programs
+#					like ssh, rlogin, and ftp still use them.
+#
+#   					tos-minimize-delay 	 0x10/0x10
+#                               	tos-maximize-throughput	 0x08/0x08
+#                               	tos-maximize-reliability 0x04/0x04
+#                               	tos-minimize-cost	 0x02/0x02
+#                               	tos-normal-service	 0x00/0x1e
 #
 #					NOTE: each of this options is only
 #					valid for ONE class per interface.
@@ -137,17 +142,46 @@
 #
 #
 #	Example 1:	Suppose you are using PPP over Ethernet (DSL)
-#			and ppp0 is the interface for this. The
-#			device has an outgoing bandwidth of 500kbit.
-#			You have 3 classes here, the first you can use for
-#			interactive traffic (ssh) the second for p2p networking
-#			and the last one the rest. They all have a guaranteed
-#			bandwidth of 100kbit upstream, but 1 and 3 can get
-#			full speed if link is idle, 2 is limited to 200kbit
+#			and ppp0 is the interface for this. You have 4 classes here,
+#			the first you can use for voice	over IP traffic,
+#			the second interactive traffic (e.g. ssh/telnet but not scp),
+#			the third will be for all unclassified traffic, and the
+#			forth is for low priority traffic (e.g. peer-to-peer).
 #
-#		ppp0  1	 100kbit  full	   1  tcp-ack,tos-minimize-delay
-#		ppp0  2	 100kbit  200kbit  2
-#		ppp0  3	 full/3	  full	   3  default
+#			The voice traffic in the first class will be guaranteed
+#			a minimum of 100kbps and always be serviced first (because
+#			of the low priority number, giving less delay) and will be
+#			granted excess bandwidth (up to 180kbps, the class ceiling)
+#			first,	before any other traffic.  A single VOIP stream,
+#			depending upon codecs, after encapsulation, can take up to
+#			80kbps on a PPOE/DSL link, so we pad a little bit just in
+#			case.  (TOS byte values 0xb8 and 0x68 are DiffServ classes
+#			EF and AFF3-1 respectively and are often used by VOIP
+#			devices).
+#
+#			Interactive traffic (tos-minimum-delay)	and TCP acks (and
+#			ICMP echo traffic if you use the example in tcrules) and
+#			any packet with a mark of 2 will be guaranteed 1/4 of the
+#			link bandwidth, and may extend up to full speed of the link.
+#
+#			Unclassified traffic and packets marked as 3 will be
+#			guaranteed 1/4th of the link bandwidth, and may extend
+#			to the full speed of the link.
+#
+#			Packets marked with 4 will be treated as low priority
+#			packets.  (The tcrules example marks p2p traffic as
+#			such.)  If the link is congested, they're only guaranteed
+#			1/8th of the speed, and even if the link is empty, can
+#			only expand to 80% of link bandwidth just as a precaution
+#			in case there are upstream queues we didn't account for.
+#			This is the last class to get additional bandwidth and
+#			the last to get serviced by the scheduler because of the
+#			low priority.
+#
+#			ppp0  1  100kbit  180kbit   1  tos=0x68/0xfc,tos=0xb8/0xfc
+#			ppp0  2  full/4   full	    2  tcp-ack,tos-minimize-delay
+#			ppp0  3	 full/4   full	    3  default
+#			ppp0  4	 full/8   full*8/10 4
 #
 ###############################################################################
 #INTERFACE	MARK	RATE	CEIL	PRIORITY	OPTIONS

@@ -523,16 +523,17 @@ if [ -n "$BUILDLRP" ]; then
     cd $DIR
 fi
 
-if [ -n "$OLDVERSION" ]; then
-    progress_message "Creating patch-$VERSION ..."
-
-    diff -Naur shorewall-$OLDVERSION shorewall-$VERSION > patch-$VERSION
-fi
-
 progress_message "Creating md5sums"
-do_or_die "*$VERSION[-.]*tgz *$VERSION[-.]*rpm *$VERSION[-.]*bz2 > $VERSION.md5sums"
+do_or_die "md5sum *$VERSION[-.]*tgz *$VERSION[-.]*rpm *$VERSION[-.]*bz2 > $VERSION.md5sums"
 
 progress_message "Creating sha1sums"
 do_or_die "sha1sum *$VERSION[-.]*tgz *$VERSION[-.]*rpm *$VERSION[-.]*bz2 > $VERSION.sha1sums"
 
+if [ -n "$OLDVERSION" ]; then
+    progress_message "Creating patch-$VERSION ..."
+
+    diff -Naur shorewall-$OLDVERSION shorewall-$VERSION > patch-$VERSION || true
+fi
+
 progress_message "Shorewall $VERSION Build complete - $(date)"
+

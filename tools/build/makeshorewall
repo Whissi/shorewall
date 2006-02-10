@@ -305,9 +305,11 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 
     do_or_die "cvs -z3 export -r $CVSTAG -d $SHOREWALLDIR Shorewall >> $LOGFILE 2>&1"
 
-    fgrep VERSION=$VERSION $SHOREWALLDIR/install.sh > /dev/null 2>&1    || fatal_error "install.sh has wrong version"
-    fgrep VERSION=$VERSION $SHOREWALLDIR/uninstall.sh > /dev/null 2>&1  || fatal_error "uninstall.sh has wrong version"
-    fgrep VERSION=$VERSION $SHOREWALLDIR/fallback.sh > /dev/null 2>&1   || fatal_error "fallback.sh has wrong version"
+    fgrep VERSION=$VERSION $SHOREWALLDIR/install.sh > /dev/null 2>&1     || fatal_error "install.sh has wrong version"
+    fgrep VERSION=$VERSION $SHOREWALLDIR/uninstall.sh > /dev/null 2>&1   || fatal_error "uninstall.sh has wrong version"
+    fgrep VERSION=$VERSION $SHOREWALLDIR/fallback.sh > /dev/null 2>&1    || fatal_error "fallback.sh has wrong version"
+    [ -f $SHOREWALLDIR/shorecap ] && \
+	{ fgrep VERSION=$VERSION $SHOREWALLDIR/shorecap > /dev/null 2>&1 || fatal_error "shorecap has wrong version"; }
 
     if [ -n "$SAMPLESTAG" ]; then
 	cd $SHOREWALLDIR
@@ -323,10 +325,6 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
         do_or_die "tar -jcvf shorewall-${VERSION%-*}.tar.bz2 $SHOREWALLDIR >> $LOGFILE 2>&1"
 	for shoresuffix in tgz tar.bz2; do
 	    shoreball=shorewall-${VERSION%-*}.${shoresuffix}
-	    report "Creating $DIR/$shoreball tarball sha1sums.."
-	    do_or_die "sha1sum $shoreball >> $VERSION.sha1sums"
-	    report "Creating $DIR/$shoreball tarball md5sums.."
-	    do_or_die "md5sum $shoreball >> $VERSION.md5sums"
 	    report "GPG signing $DIR/$shoreball"
 	    rm -f ${shoreball}.asc
 	    do_or_die "$GPG $shoreball"
@@ -338,10 +336,6 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 
 	do_or_die "rpmbuild -tb --sign $TARBALL >> $LOGFILE 2>&1"
 	do_or_die cp -a $RPMDIR/RPMS/noarch/$RPMNAME .
-        progress_message "Creating $RPMNAME sha1sums.."
-        do_or_die "sha1sum $RPMNAME >> $VERSION.sha1sums"
-	progress_message "Creating $RPMNAME md5sums.."
-        do_or_die "md5sum  $RPMNAME >> $VERSION.md5sums"
     fi
 fi
 
@@ -366,10 +360,6 @@ if [ -n "${BUILDXML}${BUILDHTML}" ]; then
         do_or_die "tar -jcvf shorewall-docs-xml-$VERSION.tar.bz2 shorewall-docs-xml-$VERSION >> $LOGFILE 2>&1"
 	for shoresuffix in tgz tar.bz2; do
 	    xmlball=shorewall-docs-xml-$VERSION.${shoresuffix}
-	    report "Creating $DIR/$xmlball tarball sha1sums.."
-	    do_or_die "sha1sum $xmlball >> $VERSION.sha1sums"
-	    report "Creating $DIR/$xmlball tarball md5sums.."
-	    do_or_die "md5sum $xmlball >> $VERSION.md5sums"
 	    report "GPG signing $DIR/$xmlball tarball"
 	    rm -f ${xmlball}.asc
 	    do_or_die "$GPG $xmlball"
@@ -454,10 +444,6 @@ if [ -n "${BUILDXML}${BUILDHTML}" ]; then
 	do_or_die "tar -jcvf shorewall-docs-html-$VERSION.tar.bz2 shorewall-docs-html-$VERSION >> $LOGFILE 2>&1"
 	for shoresuffix in tgz tar.bz2; do
 	    htmlball=shorewall-docs-html-$VERSION.${shoresuffix}
-	    report "Creating $DIR/$htmlball tarball sha1sums"
-	    do_or_die "sha1sum $htmlball >> $VERSION.sha1sums"
-	    report "Creating $DIR/$htmlball tarball md5sums"
-	    do_or_die "md5sum $htmlball >> $VERSION.md5sums"
 	    report "GPG signing $DIR/$htmlball tarball"
 	    rm -f ${htmlball}.asc
 	    do_or_die "$GPG $htmlball"
@@ -484,10 +470,6 @@ fi
 
 	for shoresuffix in tgz tar.bz2; do
 	    betaball=shorewall-$VERSION.${shoresuffix}
-	    report "Creating $DIR/shorewall-$VERSION tarball sha1sums"
-	    do_or_die "sha1sum $betaball >> $VERSION.sha1sums"
-	    report "Creating $DIR/shorewall-$VERSION tarball md5sums"
-	    do_or_die "md5sum $betaball >> $VERSION.md5sums"
 	    report "GPG signing $DIR/$betaball tarball"
 	    rm -f ${betaball}.asc
 	    do_or_die "$GPG $betaball"
@@ -546,5 +528,11 @@ if [ -n "$OLDVERSION" ]; then
 
     diff -Naur shorewall-$OLDVERSION shorewall-$VERSION > patch-$VERSION
 fi
+
+report "Creating md5sums"
+do_or_die "md5sum *.tgz *.rpm *.bz2 > $VERSION.md5sums"
+
+report "Creating sha1sums"
+do_or_die "sha1sum *.tgz *.rpm *.bz2 > $VERSION.sha1sums"
 
 progress_message "Shorewall $VERSION Build complete - $(date)"

@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2006-01-01</pubdate>
+    <pubdate>2006-02-02</pubdate>
 
     <copyright>
       <year>2006</year>
@@ -111,6 +111,17 @@
     </note>
 
     <section>
+      <title>/etc/shorewall/shorewall.conf</title>
+
+      <para>Because Xen uses normal Linux bridging, you must enable bridge
+      support in shorewall.conf</para>
+
+      <blockquote>
+        <programlisting>BRIDGING=Yes</programlisting>
+      </blockquote>
+    </section>
+
+    <section>
       <title>/etc/shorewall/zones</title>
 
       <para>One thing strange about configuring Shorewall in this environment
@@ -119,8 +130,8 @@
       <filename class="devicefile">xenbr0:vif0.0</filename>. In this case, I
       call this second zone <emphasis role="bold">ursa</emphasis> (which is
       the name given to the virtual system running in Domain 0); that zone
-      corresponds roughly to what is shown as the Extended Domain 0
-      above.</para>
+      corresponds to Domain 0 as seen from the outside in the diagram above
+      (see more <link linkend="zones">below</link>).</para>
 
       <blockquote>
         <programlisting>#                                       OPTIONS                 OPTIONS
@@ -216,10 +227,17 @@ Ping/ACCEPT     dmz                ursa</programlisting>
 
       <para>Here, 192.168.0.0/22 comprises my local network.</para>
 
-      <para>From the point of view of Shorewall, the zone diagram is as shown
-      in the following diagram.</para>
+      <para id="zones">From the point of view of Shorewall, the zone diagram
+      is as shown in the following diagram.</para>
 
       <graphic align="center" fileref="images/Xen2.png" />
+
+      <para>Note that the <emphasis role="bold">ursa</emphasis> zone subsumes
+      the <emphasis role="bold">fw</emphasis> zone because the <emphasis
+      role="bold">ursa</emphasis> zone is defined to be all systems that
+      interface to xenbr0's vif0.0 port — it is the rules governing traffic
+      to/from the <emphasis role="bold">ursa</emphasis> zone that protect the
+      firewall in this configuration.</para>
     </section>
   </section>
 </article>

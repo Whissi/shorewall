@@ -3755,7 +3755,10 @@ add_an_action()
     case $proto in
 	tcp|TCP|6)
 	    do_ports
-	    [ "$target" = QUEUE ] && proto="$proto --syn"
+	    ;;
+	tcpsyn)
+	    proto="$proto --syn"
+	    do_ports
 	    ;;
 	udp|UDP|17)
 	    do_ports
@@ -5171,7 +5174,10 @@ process_rule() # $1 = target
 	case $proto in
 	    tcp|TCP|6)
 		do_ports
-		[ "$target" = QUEUE -a $SECTION != ESTABLISHED ] && proto="$proto --syn"
+		;;
+	    tcpsyn)
+		proto="tcp --syn"
+		do_ports
 		;;
 	    udp|UDP|17)
 		do_ports

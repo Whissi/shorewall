@@ -90,6 +90,14 @@ Other changes in 3.1.6
     For instructions about running shorecap, see the comments at the top
     of the program file (it's a simple shell script).
 
+5)  In the /etc/shorewall/rules file and in actions, you may now specify
+    'tcpsyn' in the PROTO column. 'tcpsyn' is equivalent to 'tcp' but also
+    requires that the SYN flag is set and the RST, FIN and ACK flags be
+    off ("--syn" is added to the iptables rule).
+
+    As part of this change, Shorewall no longer adds the "--syn" option
+    to TCP rules that specify QUEUE as their target.
+
 Migration Considerations:
 
 1)  A number of macros have been split into two.  The macros affected are:
@@ -123,6 +131,16 @@ Migration Considerations:
 
     Beginning with Shorewall 3.2.0, the special exclusion syntax will no
     longer be supported.
+
+3)  Important if you use the QUEUE target.
+
+    In the /etc/shorewall/rules file and in actions, you may now specify
+    'tcpsyn' in the PROTO column. 'tcpsyn' is equivalent to 'tcp' but also
+    requires that the SYN flag is set and the RST, FIN and ACK flags be
+    off ("--syn" is added to the iptables rule).
+
+    As part of this change, Shorewall no longer adds the "--syn" option
+    to TCP rules that specify QUEUE as their target.
 
 New Features:
 

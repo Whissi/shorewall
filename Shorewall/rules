@@ -267,10 +267,13 @@
 #			contain the port number on the firewall that the
 #			request should be redirected to.
 #
-#	PROTO		Protocol - Must be "tcp", "udp", "icmp", "ipp2p",
-#                       "ipp2p:udp", "ipp2p:all" a number, or "all".
+#	PROTO		Protocol - Must be "tcp", "tcpsyn", "udp", "icmp",
+#			"ipp2p", "ipp2p:udp", "ipp2p:all" a number, or "all".
 #                       "ipp2p*" requires ipp2p match support in your kernel
 #                       and iptables.
+#
+			"tcpsyn" implies "tcp" plus the SYN flag must be
+			set and the RST,ACK and FIN flags must be reset.
 #
 #	DEST PORT(S)	Destination Ports. A comma-separated list of Port
 #			names (from /etc/services), port numbers or port

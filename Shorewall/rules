@@ -47,16 +47,14 @@
 #	NEW			Packets in the NEW and INVALID states are
 #				processed by rules in this section.
 #
-# NOTE: If you don't understand the above description of SECTIONS then just
-#       PUT YOUR RULES AFTER THE "SECTION NEW" BELOW.
-#
-# WARNING: If you specify FASTACCEPT=Yes in shorewall.conf then the
-#	   ESTABLISHED and RELATED sections must be empty.
-#
 # Note: If you are not familiar with Netfilter to the point where you are
 #	comfortable with the differences between the various connection
 #	tracking states, then I suggest that you omit the ESTABLISHED and
-#	RELATED sections and place all of your rules in the NEW section.
+#	RELATED sections and place all of your rules in the NEW section
+#	(That's after the line that reads SECTION NEW').
+#
+# WARNING: If you specify FASTACCEPT=Yes in shorewall.conf then the
+#	   ESTABLISHED and RELATED sections must be empty.
 #
 # You may omit any section that you don't need. If no Section Headers appear
 # in the file then all rules are assumed to be in the NEW section.

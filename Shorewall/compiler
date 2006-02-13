@@ -2453,7 +2453,8 @@ setup_mac_lists() {
 
 	[ -n "$MACLIST_TTL" ] && chain=$(macrecent_target $interface) || chain=$(mac_chain $interface)
 
-	cat >&3 << __EOF__
+	if [ -n "$MACLIST_LOG_LEVEL" -o $MACLIST_DISPOSITION != ACCEPT ]; then
+	    cat >&3 << __EOF__
 
 ${INDENT}blob=\$(ip link show $interface 2> /dev/null)
 
@@ -2472,11 +2473,15 @@ ${INDENT}done
 
 __EOF__
 
+	fi
+
 	if [ -n "$MACLIST_LOG_LEVEL" ]; then
 	    log_rule_limit $MACLIST_LOG_LEVEL $chain $(mac_chain $interface) $MACLIST_DISPOSITION "$LOGLIMIT" "" -A -t $MACLIST_TABLE
 	fi
 
-	run_iptables -A $chain -t $MACLIST_TABLE -j $maclist_target
+	if [ $MACLIST_DISPOSITION != ACCEPT ]; then
+	    run_iptables -A $chain -t $MACLIST_TABLE -j $maclist_target
+	fi
     done
     #
     # Generate jumps from the input and forward chains

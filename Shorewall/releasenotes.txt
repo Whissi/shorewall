@@ -1,4 +1,4 @@
-Shorewall 3.1.6
+Shorewall 3.1.7
 
 Note to users upgrading from Shorewall 2.x or 3.0
 
@@ -29,74 +29,12 @@ Note to users upgrading from Shorewall 2.x or 3.0
 
 Problems Corrected in 3.1.6
 
-1)  Syntax errors reported in response to "shorewall help <command>" have
-    been eliminated.
+None.
 
-2)  The 'allow', 'drop' and 'reject' commands no longer produce iptables
-    errors when executed while Shorewall is not started.
+Other changes in 3.1.7
 
-3)  Shorewall now correctly handles devices in /etc/shorewall/tcdevices that
-    are actually bridge ports.
-
-4)  A typo in the output of "help drop" has been corrected.
-
-Other changes in 3.1.6
-
-1)  In macro files, you can now use the reserved words SOURCE and DEST
-    in the columns of the same names. When Shorewall expands the
-    macro, it will substitute the SOURCE from the macro invocation for
-    SOURCE and the DEST from the invocation for DEST. This allows you
-    to write macros that act in both directions (from source to destination
-    and from destination to source).
-
-    Example:
-
-	macro.FOO:
-
-	    PARAM      SOURCE        DEST      udp     500
-	    PARAM      DEST          SOURCE    udp     500
-
-	/etc/shorewall/rules:
-
-	    FOO/ACCEPT    fw         net
-
-	Resulting rules:
-
-	    ACCEPT        fw         net        udp     500
-	    ACCEPT        net        fw         udp     500
-
-    This new feature has been used to implement the SMBBI macro.
-    SMBBI is the same as the SMB macro with the exception that
-    it passes SMB traffic in both directions whereas SMB only
-    passes that traffic in one direction.
-
-2)  "shorewall check -e" is now supported and uses the
-    /etc/shorewall/capabilities file to determine the capabilities of
-    the target system.
-
-3)  When "shorewall check" or "shorewall compile" is run by a user other
-    than root, Shorewall now automatically uses the /etc/shorewall/capabilities
-    file to determine the capabilities of the target system.
-
-4)  Shorewall now includes a 'shorecap' program. The RPM installs the
-    program in the documentation directory. The install.sh script does
-    not install the program.
-
-    The shorecap program can be used to create an /etc/shorewall/capabilities
-    file on a remote system. The file can then be copied to the local
-    system where it can be used when compiling firewall programs targeted for
-    the remote system.
-
-    For instructions about running shorecap, see the comments at the top
-    of the program file (it's a simple shell script).
-
-5)  In the /etc/shorewall/rules file and in actions, you may now specify
-    'tcpsyn' in the PROTO column. 'tcpsyn' is equivalent to 'tcp' but also
-    requires that the SYN flag is set and the RST, FIN and ACK flags be
-    off ("--syn" is added to the iptables rule).
-
-    As part of this change, Shorewall no longer adds the "--syn" option
-    to TCP rules that specify QUEUE as their target.
+1)  'tcpsyn' has been changed to 'tcp:syn' (tcpsyn was added in 3.1.6).
+    This new syntax is easier to extend in the future than was the old.
 
 Migration Considerations:
 
@@ -228,6 +166,22 @@ file>
 	    - started
 	    - All scripts associated with a given chain such as Action
               chains
+
+    c) If you run the "shorewall compile" or "shorewall check" commands under
+       a user other than 'root', then you must supply
+       /etc/shorewall/capabilities.
+
+    d) To aid in building /etc/shorewall/capabilities, a 'shorecap' program
+       is provided. The RPM installs the program in the documentation
+       directory. The install.sh script does not install the program.
+
+       The program can be run on the target system to produce a
+       capabilities file taylored for that system. The capabilities
+       file can then be copied to the local system where it can be used
+       when compiling firewall programs targeted for the remote system.
+
+       For instructions about running shorecap, see the comments at the
+       top of the program file (it's a simple shell script).
 
     If you need to interject run-time code into the generated script then
     you need to write it to file descriptor 3. Here is an example of creating
@@ -375,4 +329,40 @@ file>
     required a single -v to enable MAC display but means that if you set
     VERBOSITY=0 in shorewall.conf, then you will need to include -vvv in
     commands that display log records in order to have MACs displayed.
+
+4)  In macro files, you can now use the reserved words SOURCE and DEST
+    in the columns of the same names. When Shorewall expands the
+    macro, it will substitute the SOURCE from the macro invocation for
+    SOURCE and the DEST from the invocation for DEST. This allows you
+    to write macros that act in both directions (from source to destination
+    and from destination to source).
+
+    Example:
+
+	macro.FOO:
+
+	    PARAM      SOURCE        DEST      udp     500
+	    PARAM      DEST          SOURCE    udp     500
+
+	/etc/shorewall/rules:
+
+	    FOO/ACCEPT    fw         net
+
+	Resulting rules:
+
+	    ACCEPT        fw         net        udp     500
+	    ACCEPT        net        fw         udp     500
+
+    This new feature has been used to implement the SMBBI macro.
+    SMBBI is the same as the SMB macro with the exception that
+    it passes SMB traffic in both directions whereas SMB only
+    passes that traffic in one direction.
+
+5)  In the /etc/shorewall/rules file and in actions, you may now specify
+    'tcp:syn' in the PROTO column. 'tcp:syn' is equivalent to 'tcp' but also
+    requires that the SYN flag is set and the RST, FIN and ACK flags be
+    off ("--syn" is added to the iptables rule).
+
+    As part of this change, Shorewall no longer adds the "--syn" option
+    to TCP rules that specify QUEUE as their target.
 

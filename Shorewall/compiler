@@ -3756,7 +3756,7 @@ add_an_action()
 	tcp|TCP|6)
 	    do_ports
 	    ;;
-	tcpsyn)
+	tcp:syn)
 	    proto="$proto --syn"
 	    do_ports
 	    ;;
@@ -5175,7 +5175,7 @@ process_rule() # $1 = target
 	    tcp|TCP|6)
 		do_ports
 		;;
-	    tcpsyn)
+	    tcp:syn)
 		proto="tcp --syn"
 		do_ports
 		;;

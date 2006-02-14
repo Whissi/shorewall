@@ -3,7 +3,7 @@ VARDIR=/var/lib/shorewall
 CONFDIR=/etc/shorewall
 all: $(VARDIR)/.restore
 
-$(VARDIR)/restore-base: $(CONFDIR)/*
+$(VARDIR)/.restore: $(CONFDIR)/*
 	@/sbin/shorewall -q save >/dev/null; \
 	if \
 	    /sbin/shorewall -q restart >/dev/null 2>&1; \

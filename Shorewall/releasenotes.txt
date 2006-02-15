@@ -37,10 +37,25 @@ Problems Corrected in 3.1.6
     a re-compilation always occured even if the restore file was
     current.
 
+3)  Log messages for "started", "restarted" and "restored" are once again
+    generated.
+
 Other changes in 3.1.7
 
 1)  'tcpsyn' has been changed to 'tcp:syn' (tcpsyn was added in 3.1.6).
     This new syntax is easier to extend in the future than was the old.
+
+2)  /sbin/shorewall now supports a "-t" option that causes all progress
+    messages to be timestamped.
+
+    Example (VERBOSITY=0 in shorewall.conf):
+
+    gateway:/etc/shorewall # shorewall -t restart
+    07:08:51 Compiling...
+    07:09:05 Shorewall configuration compiled to /var/lib/shorewall/.restart
+    07:09:05 Restarting Shorewall....
+    07:09:08 done.
+    gateway:/etc/shorewall #
 
 Migration Considerations:
 

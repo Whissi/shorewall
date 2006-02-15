@@ -8665,6 +8665,18 @@ __EOF__
 
     cp -f \$(my_pathname) /var/lib/shorewall/.restore
 
+    case \$COMMAND in
+	start)
+	    logger "Shorewall started"
+	    ;;
+	restart)
+	    logger "Shorewall restarted"
+	    ;;
+	restore)
+	    logger "Shorewall restored"
+	    ;;
+    esac
+
 }
 
 #

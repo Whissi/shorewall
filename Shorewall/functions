@@ -87,17 +87,32 @@ list_count() {
 #
 progress_message() # $* = Message
 {
-    [ $VERBOSE -gt 1 ] && echo "$@"
+    local timestamp=
+
+    if [ $VERBOSE -gt 1 ]; then
+	[ -n "$TIMESTAMP" ] && timestamp="$(date +%H:%M:%S) "
+	echo "${timestamp}$@"
+    fi
 }
 
 progress_message2() # $* = Message
 {
-    [ $VERBOSE -gt 0 ] && echo "$@"
+    local timestamp=
+
+    if [ $VERBOSE -gt 0 ]; then
+	[ -n "$TIMESTAMP" ] && timestamp="$(date +%H:%M:%S) "
+	echo "${timestamp}$@"
+    fi
 }
 
 progress_message3() # $* = Message
 {
-    [ $VERBOSE -ge 0 ] && echo "$@"
+    local timestamp=
+
+    if [ $VERBOSE -ge 0 ]; then
+	[ -n "$TIMESTAMP" ] && timestamp="$(date +%H:%M:%S) "
+	echo "${timestamp}$@"
+    fi
 }
 
 #

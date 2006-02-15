@@ -1294,7 +1294,7 @@ help()
 #
 usage() # $1 = exit status
 {
-    echo "Usage: $(basename $0) [debug|trace] [nolock] [ -q ] [ -v ] <command>"
+    echo "Usage: $(basename $0) [debug|trace] [nolock] [ -q ] [ -v ] [ -t ] <command>"
     echo "where <command> is one of:"
     echo "   add <interface>[:<host-list>] ... <zone>"
     echo "   allow <address> ..."
@@ -1417,6 +1417,7 @@ FAST=
 VERBOSE=0
 NOROUTES=
 EXPORT=
+export TIMESTAMP=
 noroutes=
 
 finished=0
@@ -1474,6 +1475,10 @@ while [ $finished -eq 0 ]; do
 			NOROUTES=Yes
 			option=${option#n}
 			;;
+		    t*)
+			TIMESTAMP=Yes
+			option=${option#t}
+			;;
 		    -)
 			finished=1
 			option=
@@ -1529,7 +1534,6 @@ else
 fi
 
 ensure_config_path
-
 export CONFIG_PATH
 
 get_config

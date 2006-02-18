@@ -12,7 +12,7 @@
       <surname>Eastep</surname>
     </author>
 
-    <pubdate>2006-01-15</pubdate>
+    <pubdate>2006-02-12</pubdate>
 
     <copyright>
       <year>2002-</year>
@@ -593,11 +593,14 @@ $FW        net         ACCEPT</programlisting> The above policy will:
     <para>The general form of a simple port forwarding rule in <filename
     class="directory">/etc/shorewall/</filename><filename>rules</filename> is:
     <programlisting>#ACTION   SOURCE    DEST                                          PROTO      DEST PORT(S)
-DNAT      net       loc:<emphasis>&lt;server local ip address&gt;</emphasis>[:<emphasis>&lt;server port&gt;</emphasis>] <emphasis>&lt;protocol&gt;</emphasis> <emphasis>&lt;port&gt;</emphasis></programlisting>Shorewall
-    has <ulink url="Macros.html">macros</ulink> for many popular applications.
-    Look at /usr/share/shorewall/macro.* to see what is available in your
-    release. Macros simplify creating DNAT rules by supplying the protocol and
-    port(s) as shown in the following examples.</para>
+DNAT      net       loc:<emphasis>&lt;server local ip address&gt;</emphasis>[:<emphasis>&lt;server port&gt;</emphasis>] <emphasis>&lt;protocol&gt;</emphasis> <emphasis>&lt;port&gt;</emphasis></programlisting><important>
+        <para>Be sure to add your rules after the line that reads <emphasis
+        role="bold">SECTON NEW.</emphasis></para>
+      </important>Shorewall has <ulink url="Macros.html">macros</ulink> for
+    many popular applications. Look at /usr/share/shorewall/macro.* to see
+    what is available in your release. Macros simplify creating DNAT rules by
+    supplying the protocol and port(s) as shown in the following
+    examples.</para>
 
     <para><example label="1">
         <title>Web Server</title>

@@ -124,10 +124,12 @@
     <para>There are three Xen domains. Dom0 (ursa) is used as a file server.
     One DomU (which is usually Domain 1) is used as a firewall and the other
     (normally Domain 2) is used as a public Web/FTP/Mail/DNS server. Because
-    Xen only supports three virtual interface per domain, I also use ursa as a
+    Xen only supports three virtual interfaces per DomU, I also use ursa as a
     gateway for our wireless network. Shorewall runs in both Dom0 and in the
-    firewall domain. I have 1.5GB of RAM so I allocate 512MB to each server
-    and 448MB to the firewall (the remaining 64MB is used by Xen).</para>
+    firewall domain.</para>
+
+    <para>I have 1.5GB of RAM so I allocate 512MB to each server and 448MB to
+    the firewall (the remaining 64MB is used by Xen).</para>
 
     <para>Here are the relevant configuration files for the three
     domains:</para>
@@ -226,7 +228,7 @@ ${INDENT}        /sbin/ip link set dev \$bridge up
 ${INDENT}        case \$bridge in
 ${INDENT}            xenbr2)
 ${INDENT}                mac=`ip link show eth1 | grep 'link\/ether' | sed -e 's/.*ether \(..:..:..:..:..:..\).*/\1/'`
-${INDENT}                /sbin/ip link set dev eth1 addr fe:ff:ff:ff:ff:ff
+${INDENT}                [ "$mac" = "fe:ff:ff:ff:ff:ff" ] || /sbin/ip link set dev eth1 addr fe:ff:ff:ff:ff:ff
 ${INDENT}                /sbin/ip link set dev eth1 up
 ${INDENT}                /sbin/brctl addif xenbr2 eth1
 ${INDENT}                ;;

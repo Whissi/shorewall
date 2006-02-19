@@ -346,8 +346,16 @@ ACCEPT          Wifi                            fw                      udp     
 
     <para>In the firewall DomU, I run a conventional three-interface firewall
     with Proxy ARP DMZ -- it is very similar to the firewall described in the
-    <ulink url="shorewall_setup_guide.htm">Shorewall Setup
-    Guide</ulink>.</para>
+    <ulink url="shorewall_setup_guide.htm">Shorewall Setup Guide</ulink>. The
+    firewall runs a routed <ulink url="OPENVPN.html">OpenVPN server</ulink> to
+    provide roadwarrior access for our two laptops. Here is the firewall's
+    view of the network:</para>
+
+    <graphic align="center" fileref="images/network4.png" />
+
+    <para>The Shorewall configuration files are shown below. All routing and
+    secondary IP addresses are handled in the SuSE network
+    configuration.</para>
 
     <blockquote>
       <para>/etc/shorewall/shorewall.conf:</para>
@@ -410,7 +418,7 @@ TCP_FLAGS_DISPOSITION=DROP</programlisting>
 fw      firewall
 net     ipv4            #Internet
 loc     ipv4            #Local wired Zone
-dmz:loc ipv4            #DMZ -- server running in virtual machine at 192.168.1.7
+dmz:loc ipv4            #DMZ -- server running in virtual machine at 206.124.146.177
 vpn     ipv4            #Open VPN clients
 #LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE
 </programlisting>

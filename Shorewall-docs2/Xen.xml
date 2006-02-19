@@ -46,11 +46,13 @@
 
     <para>Xen refers to the virtual machines as
     <firstterm>Domains</firstterm>. Domains are numbered with the first domain
-    being domain 0, the second domain 1, and so on. Domain 0 is special
-    because that is the domain created when to machine is booted. Additional
-    domains are created using the <command>xm create</command> command from
-    within Domain 0. Additional domains can also be created automatically at
-    boot time by using the <command>xendomains</command> service.</para>
+    being domain 0, the second domain 1, and so on. Domain 0
+    (<firstterm>Dom0</firstterm>) is special because that is the domain
+    created when to machine is booted. Additional domains (called
+    <firstterm>DomU</firstterm>'s) are created using the <command>xm
+    create</command> command from within Domain 0. Additional domains can also
+    be created automatically at boot time by using the
+    <command>xendomains</command> service.</para>
 
     <para>Xen virtualizes a network interface named <filename
     class="devicefile">eth0</filename><footnote>
@@ -58,16 +60,15 @@
         <command>xend </command>and assumes that the host system has a single
         ethernet interface named <filename
         class="devicefile">eth0</filename>.</para>
-      </footnote> in each domain. In domain 0, Xen also creates a bridge
+      </footnote> in each domain. In Dom0, Xen also creates a bridge
     (<filename class="devicefile">xenbr0</filename>) and a number of virtual
     interfaces as shown in the following diagram.</para>
 
     <graphic align="center" fileref="images/Xen1.png" />
 
-    <para>I use the term <firstterm>Extended Domain 0</firstterm> to
-    distinguish the bridge and virtual interfaces from domain 0 itself. That
-    distinction is important when we try to apply Shorewall in this
-    environment.</para>
+    <para>I use the term <firstterm>Extended Dom0</firstterm> to distinguish
+    the bridge and virtual interfaces from Dom0 itself. That distinction is
+    important when we try to apply Shorewall in this environment.</para>
 
     <para>The bridge has a number of ports:</para>
 
@@ -90,25 +91,20 @@
   </section>
 
   <section>
-    <title>Configuring Shorewall in Domain 0</title>
+    <title>Configuring Shorewall in Dom0</title>
 
     <para>As I state in the answer to <ulink url="FAQ.htm#faq2">Shorewall FAQ
     2</ulink>, I object to running servers in a local zone because if the
     server becomes compromised then there is no protection between that
     compromised server and the other local systems. Xen allows me to safely
     run Internet-accessible servers in my local zone by creating a firewall in
-    (the Extended) Domain 0 to isolate the server(s) from the other local
-    systems (including Domain 0).</para>
+    (the Extended) Dom0 to isolate the server(s) from the other local systems
+    (including Dom0).</para>
 
     <para>Here is an example. In this example, we will assume that the system
     is behind a second firewall that restricts incoming traffic so that we
     only have to worry about protecting the local lan from the systems running
-    in domains other than domain 0.</para>
-
-    <note>
-      <para>This is the real <ulink url="myfiles.htm">configuration which I
-      run at shorewall.net</ulink>.</para>
-    </note>
+    in the DomU's.</para>
 
     <section>
       <title>/etc/shorewall/shorewall.conf</title>
@@ -125,13 +121,13 @@
       <title>/etc/shorewall/zones</title>
 
       <para>One thing strange about configuring Shorewall in this environment
-      is that Domain 0 is defined as two different zones. It is defined as the
+      is that Dom0 is defined as two different zones. It is defined as the
       firewall zone and it is also defined as "all systems connected to
       <filename class="devicefile">xenbr0:vif0.0</filename>. In this case, I
       call this second zone <emphasis role="bold">ursa</emphasis> (which is
-      the name given to the virtual system running in Domain 0); that zone
-      corresponds to Domain 0 as seen from the outside in the diagram above
-      (see more <link linkend="zones">below</link>).</para>
+      the name given to the virtual system running in Dom0); that zone
+      corresponds to Dom0 as seen from the outside in the diagram above (see
+      more <link linkend="zones">below</link>).</para>
 
       <blockquote>
         <programlisting>#                                       OPTIONS                 OPTIONS
@@ -174,11 +170,11 @@ net     xenbr0:peth0
         </blockquote></para>
 
       <para>Note that the <emphasis role="bold">net</emphasis> zone has two
-      different interfaces. From the point of view of Domain 0 (which is where
+      different interfaces. From the point of view of Dom0 (which is where
       Shorewall runs), the <emphasis role="bold">net</emphasis> zone comprises
-      everything except Domain 0. From the point of view of the Extended
-      Domain 0, the <emphasis role="bold">net</emphasis> zone is everything
-      connected (directly or indirectly) to the <filename
+      everything except Dom0. From the point of view of the Extended Domain 0,
+      the <emphasis role="bold">net</emphasis> zone is everything connected
+      (directly or indirectly) to the <filename
       class="devicefile">peth0</filename> port on the bridge.</para>
     </section>
 
@@ -238,6 +234,10 @@ Ping/ACCEPT     dmz                ursa</programlisting>
       interface to xenbr0's vif0.0 port — it is the rules governing traffic
       to/from the <emphasis role="bold">ursa</emphasis> zone that protect the
       firewall in this configuration.</para>
+
+      <para>More elaborate configurations are possible as described in my
+      <ulink url="XenMyWay.html">Xen and the Art of Consolidation</ulink>
+      article.</para>
     </section>
   </section>
 </article>

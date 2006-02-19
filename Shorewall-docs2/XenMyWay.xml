@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2006-02-18</pubdate>
+    <pubdate>2006-02-19</pubdate>
 
     <copyright>
       <year>2006</year>
@@ -243,9 +243,24 @@ ${INDENT}done
 __EOF__</programlisting>
     </blockquote>
 
-    <para>Remember, I run Shorewall 3 so this script runs at compile-time
-    rather than at run time. The "\$"'s above cause evaluation of the
-    variable's value to be deferred until run time.</para>
+    <para>I run Shorewall 3.1 so this script runs at compile-time rather than
+    at run time. The "\$"'s above cause evaluation of the variables or
+    expressions to be deferred until run time. To use this script on earlier
+    releases:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Remove the first and last lines.</para>
+      </listitem>
+
+      <listitem>
+        <para>Remove the leading "${INDENT}" from the remaining lines.</para>
+      </listitem>
+
+      <listitem>
+        <para>Replace "\$/ with "$".</para>
+      </listitem>
+    </itemizedlist>
 
     <para>The goals for the Shorewall configuration in Dom0 are as
     follows:</para>
@@ -262,7 +277,7 @@ __EOF__</programlisting>
       </listitem>
 
       <listitem>
-        <para>Ensure that there is no stray traffic between the zones. </para>
+        <para>Ensure that there is no stray traffic between the zones.</para>
       </listitem>
     </itemizedlist>
 

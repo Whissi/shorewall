@@ -100,9 +100,12 @@ progress_message_and_save()
 #
 append_file() # $1 = File Name
 {
-    save_command "cat > /var/lib/shorewall/$1 << __EOF__"
-    cat $STATEDIR/$1 >&3
-    save_command_unindented __EOF__
+    local user_exit=$(find_file $1)
+
+    if [ -f $user_exit ]; then
+	save_progress_message "Processing $user_exit ..."
+	eval sed \'s\/^/"$INDENT"\/\' $user_exit >&3
+    fi
 }
 
 #
@@ -3335,11 +3338,8 @@ setup_tc1() {
     run_iptables -t mangle -A POSTROUTING -j tcpost
 
     if [ -n "$TC_SCRIPT" ]; then
-
-	run_user_exit $TC_SCRIPT
-
         save_progress_message "Setting up Traffic Control..."
-	save_command . $TC_SCRIPT
+	append_file $TC_SCRIPT
     elif [ -n "$TC_ENABLED" ]; then
 	setup_traffic_shaping
     fi
@@ -3365,7 +3365,7 @@ delete_tc()
 
     save_progress_message "Clearing Traffic Control/QOS"
 
-    run_user_exit tcclear
+    append_file tcclear
 
     cat >&3 << __EOF__
 ${INDENT}ip link list | while read inx interface details; do
@@ -4049,6 +4049,23 @@ process_action() # $1 = chain    (Chain to add the rules to)
 }
 
 #
+# Append a file in /var/lib/shorewall to $OUTPUT
+#
+append_action_file() # $1 = File Name
+{
+    local user_exit=$(find_file $1)
+
+    if [ -f $user_exit ]; then
+	save_progress_message "Processing $user_exit ..."
+	save_command "CHAIN=$CHAIN"
+	save_command "LEVEL=$LEVEL"
+	save_command "TAG=$TAG"
+
+	eval sed \'s\/^/"$INDENT"\/\' $user_exit >&3
+    fi
+}
+
+#
 # Create and record a log action chain -- Log action chains have names
 # that are formed from the action name by prepending a "%" and appending
 # a 1- or 2-digit sequence number. In the functions that follow,
@@ -4101,7 +4118,7 @@ createlogactionchain() # $1 = Action Name, $2 = Log Level [: Log Tag ]
 
     [ none = "${LEVEL%\!}" ] && LEVEL=
 
-    run_user_exit $1
+    append_action_file $1
 
     eval ${action}_chains=\"\$${action}_chains $level $CHAIN\"
 
@@ -4130,7 +4147,8 @@ createactionchain() # $1 = Action, including log level and tag if any
 	    LEVEL=
 	    TAG=
 	    createchain $CHAIN no
-	    run_user_exit $CHAIN
+
+	    append_action_file $CHAIN
 	    ;;
     esac
 }
@@ -6381,7 +6399,7 @@ complete_standard_chain() # $1 = chain, $2 = source zone, $3 = destination zone
     local loglevel=
     local policychain=
 
-    run_user_exit $1
+    append_file $1
 
     eval policychain=\$${2}2${3}_policychain
 
@@ -7080,7 +7098,7 @@ initialize_netfilter () {
     determine_interfaces
     determine_hosts
 
-    run_user_exit init
+    append_file init
 
     #
     # Some files might be large so strip them while the firewall is still running
@@ -7182,7 +7200,7 @@ initialize_netfilter () {
 	save_command "ipset -R < $f"
     fi
 
-    run_user_exit continue
+    append_file continue
 
     f=$(find_file routestopped)
 
@@ -7331,7 +7349,7 @@ __EOF__
 	createactionchain $action
     done
 
-    run_user_exit initdone
+    append_file initdone
 
     #
     # Process Black List
@@ -7765,7 +7783,7 @@ apply_policy_rules() {
 	for zone1 in $FW $ZONES; do
 	    chain=${zone}2${zone1}
 	    if havechain $chain; then
-		run_user_exit $chain
+		append_file $chain
 		default_policy $zone $zone1
 	    fi
 	done
@@ -8146,7 +8164,11 @@ stop_firewall() {
 
     determine_capabilities
 
-    run_user_exit stop
+__EOF__
+
+    append_file stop
+
+    cat >&3 << __EOF__
 
     if [ -n "\$MANGLE_ENABLED" ]; then
 	run_iptables -t mangle -F
@@ -8297,9 +8319,9 @@ __EOF__
 	;;
     esac
 
-    cat >&3 << __EOF__
+    append_file stopped
 
-    run_user_exit stopped
+    cat >&3 << __EOF__
 
     set_state "Stopped"
 
@@ -8419,8 +8441,9 @@ __EOF__
 __EOF__
     fi
 
+    append_file clear
+
     cat >&3 << __EOF__
-    run_user_exit clear
 
     set_state "Cleared"
 
@@ -8639,7 +8662,9 @@ __EOF__
     fi
 
     for file in chains nat proxyarp zones; do
-	append_file $file
+	save_command "cat > /var/lib/shorewall/$file << __EOF__"
+	cat $STATEDIR/$file >&3
+	save_command_unindented __EOF__
     done
 
     cat >&3 << __EOF__
@@ -8651,7 +8676,7 @@ __EOF__
 __EOF__
     save_command "date > /var/lib/shorewall/restarted"
 
-    run_user_exit start
+    append_file start
 
     [ -n "$DELAYBLACKLISTLOAD" ] && refresh_blacklist
 
@@ -8659,7 +8684,7 @@ __EOF__
 
     save_command set_state "Started"
 
-    run_user_exit started
+    append_file started
 
     cat >&3 << __EOF__
 

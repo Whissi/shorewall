@@ -1,4 +1,4 @@
-Shorewall 3.1.7
+Shorewall 3.1.8
 
 Note to users upgrading from Shorewall 2.x or 3.0
 
@@ -27,38 +27,19 @@ Note to users upgrading from Shorewall 2.x or 3.0
    Please see the "Migration Considerations" below for additional upgrade
    information.
 
-Problems Corrected in 3.1.7
+Problems Corrected in 3.1.8
 
-1)  Extra rules in maclist verification have been removed. The superfluous
-    rules were present when MACLIST_DISPOSITION=ACCEPT and
-    MACLIST_LOG_LEVEL="".
+None.
 
-2)  The Makefile installed in /etc/shorewall/ was incorrect so that
-    a re-compilation always occured even if the restore file was
-    current.
+Other changes in 3.1.8
 
-3)  Log messages for "started", "restarted" and "restored" are once again
-    generated.
+1)  The sillyness having to do with running certain extension scripts at
+    compile time has been eliminated. When a configuration is compiled,
+    the scripts are copied unmodified (except for indentation) into the
+    compiled program.
 
-4)  If VERBOSITY was set to a value less than 2, then "shorewall show
-    capabilities" produced no output.
-
-Other changes in 3.1.7
-
-1)  'tcpsyn' has been changed to 'tcp:syn' (tcpsyn was added in 3.1.6).
-    This new syntax is easier to extend in the future than was the old.
-
-2)  /sbin/shorewall now supports a "-t" option that causes all progress
-    messages to be timestamped.
-
-    Example (VERBOSITY=0 in shorewall.conf):
-
-    gateway:/etc/shorewall # shorewall -t restart
-    07:08:51 Compiling...
-    07:09:05 Shorewall configuration compiled to /var/lib/shorewall/.restart
-    07:09:05 Restarting Shorewall....
-    07:09:08 done.
-    gateway:/etc/shorewall #
+    Note: The /etc/shorewall/params file is still processed at
+    compile-time.
 
 Migration Considerations:
 
@@ -170,31 +151,11 @@ New Features:
           file included in this release includes instructions for its
           use.
 
-    b) If you have extension scripts, they may need modification. Some of
-       the scripts will be run at compile time, rather than when the
-       generated script is executed. The standard functions like
-       'run_iptables' and 'log_rule_limit' will write the iptables command
-       to the script file rather than executing the command. As always, you
-       can check $COMMAND to determine which shorewall command is being
-       executed.
-
-       Extension Scripts that are run at compile time rather than at
-       run-time are:
-
-	    - params
-	    - init
-	    - continue
-	    - initdone
-	    - start
-	    - started
-	    - All scripts associated with a given chain such as Action
-              chains
-
-    c) If you run the "shorewall compile" or "shorewall check" commands under
+    b) If you run the "shorewall compile" or "shorewall check" commands under
        a user other than 'root', then you must supply
        /etc/shorewall/capabilities.
 
-    d) To aid in building /etc/shorewall/capabilities, a 'shorecap' program
+    c) To aid in building /etc/shorewall/capabilities, a 'shorecap' program
        is provided. The RPM installs the program in the documentation
        directory. The install.sh script does not install the program.
 
@@ -205,50 +166,6 @@ New Features:
 
        For instructions about running shorecap, see the comments at the
        top of the program file (it's a simple shell script).
-
-    If you need to interject run-time code into the generated script then
-    you need to write it to file descriptor 3. Here is an example of creating
-    tap device tap0 and adding it to bridge xenbr0; the text will be indented
-    to line up with the surrounding text:
-
-    cat >&3 << __EOF__
-    ${INDENT}if ! qt /sbin/ip link ls dev tap0; then
-    ${INDENT}    /usr/sbin/openvpn --mktun --dev tap0
-    ${INDENT}    /sbin/ip link set dev tap0 up
-    ${INDENT}    /sbin/brctl addif xenbr0 tap0
-    ${INDENT}fi
-
-    __EOF__
-
-    This results in the following code in the script:
-
-    if ! qt /sbin/ip link ls dev tap0; then
-        /usr/sbin/openvpn --mktun --dev tap0
-        /sbin/ip link set dev tap0 up
-        /sbin/brctl addif xenbr0 tap0
-    fi
-
-
-    (Yes -- there is an extra blank line at the end)
-
-    If you need to expand variables in the generated text, be sure to escape
-    the '$' symbol.
-
-    Example:
-
-    cat >&3 << __EOF__
-
-    ${INDENT}addr=\$(ip -f inet addr show $interface 2> /dev/null | grep inet | head -n1)
-    ${INDENT}if [ -n "\$addr" ]; then
-    ${INDENT}    addr=\$(echo \$addr | sed 's/inet //;s/\/.*//;s/ peer.*//')
-    ${INDENT}    for network in 10.0.0.0/8 176.16.0.0/12 192.168.0.0/16; do
-    ${INDENT}        if in_network \$addr \$network; then
-    ${INDENT}            startup_error "The 'norfc1918' option has been specified on an interface with an RFC 1918 address. Interface:$interface"
-    ${INDENT}        fi
-    ${INDENT}    done
-    ${INDENT}fi
-
-    __EOF__
 
     Compilation generates a complete program. This program is suitable for
     installation into /etc/init.d and, when generated with the "-e" option,
@@ -388,4 +305,18 @@ New Features:
 
     As part of this change, Shorewall no longer adds the "--syn" option
     to TCP rules that specify QUEUE as their target.
+
+6)  /sbin/shorewall now supports a "-t" option that causes all progress
+    messages to be timestamped.
+
+    Example (VERBOSITY=0 in shorewall.conf):
+
+    gateway:/etc/shorewall # shorewall -t restart
+    07:08:51 Compiling...
+    07:09:05 Shorewall configuration compiled to /var/lib/shorewall/.restart
+    07:09:05 Restarting Shorewall....
+    07:09:08 done.
+    gateway:/etc/shorewall #
+
+
 

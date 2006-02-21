@@ -1042,7 +1042,7 @@ validate_interfaces_file() {
 		    ;;
 		norfc1918)
 		    cat >&3 << __EOF__
-${INDENT}addr=\$(ip -f inet addr show $interface 2> /dev/null | grep inet | head -n1)
+${INDENT}addr=\$(ip -f inet addr show $interface 2> /dev/null | grep 'inet\ ' | head -n1)
 ${INDENT}if [ -n "\$addr" ]; then
 ${INDENT}    addr=\$(echo \$addr | sed 's/inet //;s/\/.*//;s/ peer.*//')
 ${INDENT}    for network in 10.0.0.0/8 176.16.0.0/12 192.168.0.0/16; do

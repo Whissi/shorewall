@@ -96,7 +96,7 @@ progress_message_and_save()
 }
 
 #
-# Append a file in /var/lib/shorewall to $OUTPUT
+# Append a file to the compiler's output
 #
 append_file() # $1 = File Name
 {
@@ -1042,7 +1042,6 @@ validate_interfaces_file() {
 		    ;;
 		norfc1918)
 		    cat >&3 << __EOF__
-
 ${INDENT}addr=\$(ip -f inet addr show $interface 2> /dev/null | grep inet | head -n1)
 ${INDENT}if [ -n "\$addr" ]; then
 ${INDENT}    addr=\$(echo \$addr | sed 's/inet //;s/\/.*//;s/ peer.*//')
@@ -1052,7 +1051,6 @@ ${INDENT}            startup_error "The 'norfc1918' option has been specified on
 ${INDENT}        fi
 ${INDENT}    done
 ${INDENT}fi
-
 __EOF__
 		    ;;
 		arp_ignore=*)
@@ -1103,37 +1101,37 @@ verify_mark() # $1 = value to test
 #
 setup_providers()
 {
-    local table number mark duplicate interface gateway options provider address copy route loose addresses rulenum pref echobin=$(mywhich echo) balance
+    local table number mark duplicate interface gateway options provider address copy route loose addresses rulenum pref echobin=$(mywhich echo) balance save_indent="$INDENT"
 
     copy_table() {
 	    cat >&3 << __EOF__
-${INDENT}    ip route show table $duplicate | while read net route; do
-${INDENT}        case \$net in
-${INDENT}            default|nexthop)
-${INDENT}                ;;
-${INDENT}            *)
-${INDENT}                run_ip route add table $number \$net \$route"
-${INDENT}                ;;
-${INDENT}        esac
-${INDENT}    done
+${INDENT}ip route show table $duplicate | while read net route; do
+${INDENT}    case \$net in
+${INDENT}        default|nexthop)
+${INDENT}            ;;
+${INDENT}        *)
+${INDENT}            run_ip route add table $number \$net \$route"
+${INDENT}            ;;
+${INDENT}    esac
+${INDENT}done
 __EOF__
     }
 
     copy_and_edit_table() {
 	cat >&3 << __EOF__
-${INDENT}    ip route show table $duplicate | while read net route; do
-${INDENT}        case \$net in
-${INDENT}            default|nexthop)
-${INDENT}                ;;
-${INDENT}            *)
-${INDENT}                case \$(find_device \$route) in
-${INDENT}                    `echo $copy\) | sed 's/ /|/g'`
-${INDENT}                         run_ip route add table $number \$net \$route
-${INDENT}                         ;;
-${INDENT}                esac
-${INDENT}                ;;
-${INDENT}        esac
-${INDENT}    done
+${INDENT}ip route show table $duplicate | while read net route; do
+${INDENT}    case \$net in
+${INDENT}        default|nexthop)
+${INDENT}            ;;
+${INDENT}        *)
+${INDENT}            case \$(find_device \$route) in
+${INDENT}                `echo $copy\) | sed 's/ /|/g'`
+${INDENT}                     run_ip route add table $number \$net \$route
+${INDENT}                     ;;
+${INDENT}            esac
+${INDENT}            ;;
+${INDENT}    esac
+${INDENT}done
 
 __EOF__
     }
@@ -1157,7 +1155,7 @@ __EOF__
 
 	eval ${table}_number=$number
 
-	save_command "    qt ip route flush table $number"
+	save_command "qt ip route flush table $number"
 
 	if [ "x${duplicate:=-}" != x- ]; then
 	    if [ "x${copy:=-}" != "x-" ]; then
@@ -1174,18 +1172,18 @@ __EOF__
 
 	if [ "x$gateway" = xdetect ] ; then
 	    cat >&3 << __EOF__
-${INDENT}    gateway=\$(detect_gateway $interface)
+${INDENT}gateway=\$(detect_gateway $interface)
 
-${INDENT}    if [ -n "\$gateway" ]; then
-${INDENT}        run_ip route replace \$gateway src \$(find_first_interface_address $interface) dev $interface table $number
-${INDENT}        run_ip route add default via \$gateway dev $interface table $number
-${INDENT}    else
-${INDENT}        fatal_error "Unable to detect the gateway through interface $interface"
-${INDENT}    fi
+${INDENT}if [ -n "\$gateway" ]; then
+${INDENT}    run_ip route replace \$gateway src \$(find_first_interface_address $interface) dev $interface table $number
+${INDENT}    run_ip route add default via \$gateway dev $interface table $number
+${INDENT}else
+${INDENT}    fatal_error "Unable to detect the gateway through interface $interface"
+${INDENT}fi
 
 __EOF__
 	else
-	    save_command "    gateway=$gateway"
+	    save_command "gateway=$gateway"
 	fi
 
 	if [ x${mark} != x- ]; then
@@ -1193,8 +1191,8 @@ __EOF__
 
 	    eval ${table}_mark=$mark
 
-	    save_command "    qt ip rule del fwmark $mark"
-	    save_command "    run_ip rule add fwmark $mark pref $((10000 + $mark)) table $number"
+	    save_command "qt ip rule del fwmark $mark"
+	    save_command "run_ip rule add fwmark $mark pref $((10000 + $mark)) table $number"
 	fi
 
 	loose=
@@ -1213,17 +1211,17 @@ __EOF__
 		    ;;
 		balance=*)
 		    balance=yes
-		    save_command "    DEFAULT_ROUTE=\"\$DEFAULT_ROUTE nexthop via \$gateway dev $interface weight ${option#*=}\""
+		    save_command "DEFAULT_ROUTE=\"\$DEFAULT_ROUTE nexthop via \$gateway dev $interface weight ${option#*=}\""
 		    ;;
 		balance)
 		    balance=yes
-		    save_command "    DEFAULT_ROUTE=\"\$DEFAULT_ROUTE nexthop via \$gateway dev $interface weight 1\""
+		    save_command "DEFAULT_ROUTE=\"\$DEFAULT_ROUTE nexthop via \$gateway dev $interface weight 1\""
 		    ;;
 		loose)
 		    loose=Yes
 		    ;;
 		*)
-		    error_message "   WARNING: Invalid option ($option) ignored in provider \"$provider\""
+		    error_message "WARNING: Invalid option ($option) ignored in provider \"$provider\""
 		    ;;
 	    esac
 	done
@@ -1233,22 +1231,22 @@ __EOF__
 	if [ -z "$loose" ]; then
 	    cat >&3 << __EOF__
 
-${INDENT}    rulenum=0
+${INDENT}rulenum=0
 
-${INDENT}    find_interface_addresses $interface | while read address; do
-${INDENT}        qt ip rule del from \$address
-${INDENT}        pref=\$((20000 + \$rulenum * 1000 + $number ))
-${INDENT}        rulenum=\$((\$rulenum + 1))
-${INDENT}        run_ip rule add from \$address pref \$pref table $number
-${INDENT}    done
+${INDENT}find_interface_addresses $interface | while read address; do
+${INDENT}    qt ip rule del from \$address
+${INDENT}    pref=\$((20000 + \$rulenum * 1000 + $number ))
+${INDENT}    rulenum=\$((\$rulenum + 1))
+${INDENT}    run_ip rule add from \$address pref \$pref table $number
+${INDENT}done
 
 __EOF__
 	else
 	    cat >&3 << __EOF__
 
-${INDENT}    find_interface_addresses $interface | while read address; do
-${INDENT}        qt ip rule del from \$address
-${INDENT}    done
+${INDENT}find_interface_addresses $interface | while read address; do
+${INDENT}    qt ip rule del from \$address
+${INDENT}done
 
 __EOF__
 	fi
@@ -1263,24 +1261,25 @@ __EOF__
 	progress_message2 "$DOING $1..."
 	save_progress_message "Adding Providers..."
 	save_command "if [ -z \"\$NOROUTES\" ]; then"
-	save_command "    DEFAULT_ROUTE="
+	INDENT="$INDENT    "
+	save_command "DEFAULT_ROUTE="
 
 	while read table number mark duplicate interface gateway options copy; do
 	    expandv table number mark duplicate interface gateway options copy
 	    provider="$table $number $mark $duplicate $interface $gateway $options $copy"
 	    add_a_provider
 	    PROVIDERS="$PROVIDERS $table"
-	    progress_message "   Provider $provider $DONE"
+	    progress_message "Provider $provider $DONE"
 	done < $TMP_DIR/providers
 
 	if [ -n "$PROVIDERS" ]; then
 	    if [ -n "$balance" ]; then
-		save_command "    run_ip route replace default scope global \$DEFAULT_ROUTE"
-		save_command "    progress_message Default route \$DEFAULT_ROUTE Added"
+		save_command "run_ip route replace default scope global \$DEFAULT_ROUTE"
+		save_command "progress_message Default route \$DEFAULT_ROUTE Added"
 	    fi
 
 	    cat >&3 << __EOF__
-${INDENT}    		cat > /etc/iproute2/rt_tables <<EOF
+${INDENT}cat > /etc/iproute2/rt_tables <<EOF
 #
 # reserved values
 #
@@ -1296,12 +1295,13 @@ __EOF__
 	    for table in $PROVIDERS; do
 		eval number=\$${table}_number
 		cat >&3 << __EOF__
-${INDENT}    \${echobin:-echo} -e "$number\t$table" >>  /etc/iproute2/rt_tables
+${INDENT}\${echobin:-echo} -e "$number\t$table" >>  /etc/iproute2/rt_tables
 __EOF__
 	    done
 	fi
 
-	save_command "    run_ip route flush cache"
+	save_command "run_ip route flush cache"
+	INDENT="$save_indent"
 	save_command "fi"
 	save_command ""
     fi

@@ -229,13 +229,13 @@ case $VERSION in
 	LRPPROJ=Lrp2
 	;;
     2.4.*)
-        CVSTAG=SHOREWALL-2_4
-	DOCTAG=SHOREWALL_2_4
+    CVSTAG="branches/SHOREWALL-2_4/Shorewall"
+	DOCTAG="branches/SHOREWALL_2_4/Shorewall-docs2"
 	XMLPROJ=Shorewall-docs2
 	BUILDLRP=
 	;;
     *ex)
-        CVSTAG=EXPERIMENTAL
+    CVSTAG=EXPERIMENTAL
 	DOCTAG=HEAD
 	XMLPROJ=Shorewall-docs2
 	BUILDLRP=
@@ -304,6 +304,8 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
     rm -rf $SHOREWALLDIR
 
     do_or_die "cvs -z3 export -r $CVSTAG -d $SHOREWALLDIR Shorewall >> $LOGFILE 2>&1"
+
+	do_or_die "svn export --non-interactive https://svn.sourceforge.net/svnroot/shorewall/$CVSTAG  $SHOREWALLDIR >> $LOGFILE 2>&1"
 
     fgrep VERSION=$VERSION $SHOREWALLDIR/install.sh > /dev/null 2>&1     || fatal_error "install.sh has wrong version"
     fgrep VERSION=$VERSION $SHOREWALLDIR/uninstall.sh > /dev/null 2>&1   || fatal_error "uninstall.sh has wrong version"

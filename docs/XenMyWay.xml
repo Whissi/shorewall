@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2006-02-19</pubdate>
+    <pubdate>2006-02-20</pubdate>
 
     <copyright>
       <year>2006</year>
@@ -87,8 +87,8 @@
       </listitem>
 
       <listitem>
-        <para>My Linux desktop (which is actually the old public
-        server)</para>
+        <para>My Linux desktop (wookie, which is actually the old public
+        server box)</para>
       </listitem>
     </orderedlist>
 
@@ -123,20 +123,23 @@
 
     <para>There are three Xen domains. Dom0 (ursa) is used as a file server.
     One DomU (which is usually Domain 1) is used as a firewall and the other
-    (normally Domain 2) is used as a public Web/FTP/Mail/DNS server. Because
-    Xen only supports three virtual interfaces per DomU, I also use ursa as a
-    gateway for our wireless network. Shorewall runs in both Dom0 and in the
-    firewall domain.</para>
+    (lists, normally Domain 2) is used as a public Web/FTP/Mail/DNS server.
+    Because Xen only supports three virtual interfaces per DomU, I also use
+    ursa as a gateway for our wireless network rather than placing that
+    function in the firewall DomU (that domain already has three interfaces).
+    Shorewall runs in both Dom0 and in the firewall domain.</para>
 
-    <para>I have 1.5GB of RAM so I allocate 512MB to each server and 448MB to
-    the firewall (the remaining 64MB is used by Xen).</para>
+    <para>The system has 1.5GB of RAM so I allocate 512MB to each server and
+    448MB to the firewall (the remaining 64MB is used by Xen).</para>
 
-    <para>Here are the relevant configuration files for the three
-    domains:</para>
+    <para>Below are the relevant configuration files for the three domains.
+    The "loopback.nloopbacks=..." entries are used to restrict the number of
+    "veth<emphasis>n</emphasis>" devices that the Xen kernel creates. I use
+    partitions on my hard drives for DomU storage devices.</para>
 
     <blockquote>
       <para><filename>/boot/grub/menu.lst</filename> — here is the entry that
-      boots Xen in Dom0</para>
+      boots Xen in Dom0.</para>
 
       <programlisting>title XEN
     root (hd0,1)
@@ -210,7 +213,7 @@ disk     = [ 'phy:hda3,hda3,w' ]</programlisting>
     configuration.</para>
 
     <para>SuSE 10.0 includes Xen 3.0 which does not support PCI delegation; I
-    therefore used a bridged configuration with three briges (one for each
+    therefore use a bridged configuration with three briges (one for each
     network interface). When Shorewall starts during boot, it creates the
     three bridges and the tap device <filename
     class="devicefile">tap0</filename> and adds tap0 to <filename
@@ -220,49 +223,28 @@ disk     = [ 'phy:hda3,hda3,w' ]</programlisting>
     <para>Here is <filename>/etc/shorewall/init in Dom0</filename>:</para>
 
     <blockquote>
-      <programlisting>cat &gt;&amp;3 &lt;&lt; __EOF__
-${INDENT}for bridge in xenbr0 xenbr1 xenbr2; do
-${INDENT}    if [ -z "\$(/sbin/brctl show 2&gt; /dev/null | fgrep \$bridge)" ]; then
-${INDENT}        /sbin/brctl addbr \$bridge
-${INDENT}        /sbin/ip link set dev \$bridge up
-${INDENT}        case \$bridge in
-${INDENT}            xenbr2)
-${INDENT}                mac=`ip link show eth1 | grep 'link\/ether' | sed -e 's/.*ether \(..:..:..:..:..:..\).*/\1/'`
-${INDENT}                [ "$mac" = "fe:ff:ff:ff:ff:ff" ] || /sbin/ip link set dev eth1 addr fe:ff:ff:ff:ff:ff
-${INDENT}                /sbin/ip link set dev eth1 up
-${INDENT}                /sbin/brctl addif xenbr2 eth1
-${INDENT}                ;;
-${INDENT}            xenbr0)
-${INDENT}                if ! qt /sbin/ip link ls dev tap0; then
-${INDENT}                    /usr/sbin/openvpn --mktun --dev tap0
-${INDENT}                    /sbin/ip link set dev tap0 up
-${INDENT}                    /sbin/brctl addif xenbr0 tap0
-${INDENT}                fi
-${INDENT}                ;;
-${INDENT}       esac
-${INDENT}    fi
-${INDENT}done
-__EOF__</programlisting>
+      <programlisting>for bridge in xenbr0 xenbr1 xenbr2; do
+    if [ -z "$(/sbin/brctl show 2&gt; /dev/null | fgrep $bridge)" ]; then
+        /sbin/brctl addbr $bridge
+        /sbin/ip link set dev $bridge up
+        case $bridge in
+            xenbr2)
+                mac=`ip link show eth1 | grep 'link\/ether' | sed -e 's/.*ether \(..:..:..:..:..:..\).*/\1/'`
+                [ "$mac" = "fe:ff:ff:ff:ff:ff" ] || /sbin/ip link set dev eth1 addr fe:ff:ff:ff:ff:ff
+                /sbin/ip link set dev eth1 up
+                /sbin/brctl addif xenbr2 eth1
+                ;;
+            xenbr0)
+                if ! qt /sbin/ip link ls dev tap0; then
+                    /usr/sbin/openvpn --mktun --dev tap0
+                    /sbin/ip link set dev tap0 up
+                    /sbin/brctl addif xenbr0 tap0
+                fi
+                ;;
+       esac
+    fi
+done</programlisting>
     </blockquote>
-
-    <para>I run Shorewall 3.1 so this script runs at compile-time rather than
-    at run time. The "\$"'s above cause evaluation of the variables or
-    expressions to be deferred until run time. To use this script on earlier
-    releases:</para>
-
-    <itemizedlist>
-      <listitem>
-        <para>Remove the first and last lines.</para>
-      </listitem>
-
-      <listitem>
-        <para>Remove the leading "${INDENT}" from the remaining lines.</para>
-      </listitem>
-
-      <listitem>
-        <para>Replace "\$/ with "$".</para>
-      </listitem>
-    </itemizedlist>
 
     <para>The goals for the Shorewall configuration in Dom0 are as
     follows:</para>
@@ -461,6 +443,14 @@ OMAK=&lt;IP address at our second home&gt;
 #LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE
 </programlisting>
 
+      <para><filename>/etc/shorewall/init</filename>:</para>
+
+      <programlisting>echo 1 &gt; /proc/sys/net/ipv4/netfilter/ip_conntrack_tcp_be_liberal
+
+</programlisting>
+
+      <para><filename>/</filename></para>
+
       <para><filename>/etc/shorewall/interfaces</filename>:</para>
 
       <programlisting>#ZONE   INTERFACE       BROADCAST               OPTIONS
@@ -492,6 +482,13 @@ $EXT_IF                 192.168.0.0/22  206.124.146.179
 206.124.146.177 $DMZ_IF         $EXT_IF         yes
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
 
+      <para><filename>/etc/shorewall/tunnels</filename>:</para>
+
+      <programlisting>#TYPE                   ZONE    GATEWAY         GATEWAY
+#                                               ZONE
+openvpnserver:udp       net     0.0.0.0/0
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+
       <para><filename>/etc/shorewall/actions</filename>:</para>
 
       <programlisting>#ACTION
@@ -503,8 +500,7 @@ Mirrors             # Accept traffic from Shorewall Mirrors
       <programlisting>#TARGET SOURCE          DEST            PROTO   DEST    SOURCE     ORIGINAL     RATE
 #                                               PORT    PORT(S)    DEST         LIMIT
 ACCEPT  $MIRRORS
-#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
-</programlisting>
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
 
       <para><filename>/etc/shorewall/rules</filename>:</para>
 
@@ -534,7 +530,7 @@ ACCEPT          loc                             fw                      udp     
 ACCEPT          loc:192.168.1.5                 fw                      udp     111
 DROP            loc                             fw                      tcp     3185          #SuSE Meta pppd
 Ping/ACCEPT     loc                             fw
-REDIRECT        loc                             3128                    tcp     80                                      0               !192.168.0.7,206.124.146.177
+REDIRECT        loc                             3128                    tcp     80                                      -               !206.124.146.177
 ###############################################################################################################################################################################
 # Secure wireless to Firewall
 #

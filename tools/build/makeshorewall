@@ -27,7 +27,6 @@
 #      -r      Build RPM
 #      -h      Build HTML documentation
 #      -x      Build XML documentation
-#      -l      Build LRP
 #
 # If no options are given, all options are assumed.
 #
@@ -66,9 +65,6 @@ VERSION=
 OLDVERSION=
 SHOREWALLDIR=
 SOURCEDIR=
-LRPPROJ=
-LRPDIR=
-LRP=
 CVSTAG=
 #CVSSTABLE=
 XMLPROJ=
@@ -80,7 +76,6 @@ BUILDTARBALL=
 BUILDRPM=
 BUILDXML=
 BUILDHTML=
-BUILDLRP=
 SAMPLESTAG=
 ################################################################################
 #                               F U N C T I O N S
@@ -144,7 +139,6 @@ case $1 in
 	BUILDHTML=Yes
 	BUILDXML=Yes
 	BUILDRPM=Yes
-	BUILDLRP=Yes
 	done=Yes
 	;;
 esac
@@ -178,10 +172,6 @@ while [ -z "$done" ]; do
 			BUILDXML=Yes
 			option=${option#x}
 			;;
-		    l*)
-			BUILDLRP=Yes
-			option=${option#l}
-			;;
 	    	    *)
 			usage
 			;;
@@ -214,44 +204,21 @@ touch $LOGFILE
 progress_message "Build of Shorewall $VERSION on $(date)"
 
 case $VERSION in
-    2.0.*)
-	CVSTAG=SHOREWALL-2_0
-	DOCTAG=HEAD
-	XMLPROJ=Shorewall-docs
-	LRP=shorwall-${VERSION}.lrp
-	LRPPROJ=Lrp
-	;;
-    2.2.*)
-	CVSTAG=SHOREWALL-2_2
-	DOCTAG=SHOREWALL_2_4
-	XMLPROJ=Shorewall-docs2
-	LRP=shorewall-lrp-${VERSION}.tgz
-	LRPPROJ=Lrp2
-	;;
     2.4.*)
     CVSTAG="branches/SHOREWALL-2_4/Shorewall"
 	DOCTAG="branches/SHOREWALL_2_4/Shorewall-docs2"
 	XMLPROJ=Shorewall-docs2
-	BUILDLRP=
-	;;
-    *ex)
-    CVSTAG=EXPERIMENTAL
-	DOCTAG=HEAD
-	XMLPROJ=Shorewall-docs2
-	BUILDLRP=
 	;;
     3.0.*)
 	CVSTAG=SHOREWALL-3_0
 	DOCTAG=HEAD
 	XMLPROJ=Shorewall-docs2
-	BUILDLRP=
 	SAMPLESTAG=HEAD
 	;;
     3.1.*)
         CVSTAG=HEAD
 	DOCTAG=HEAD
 	XMLPROJ=Shorewall-docs2
-	BUILDLRP=
 	SAMPLESTAG=HEAD
 	;;
     *)
@@ -286,7 +253,6 @@ case $VERSION in
 esac
 
 HTMLDIR=shorewall-docs-html-$VERSION
-LRPDIR=shorewall-lrp-$VERSION
 
 if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
     report "Shorewall directory is $DIR/$SHOREWALLDIR"
@@ -296,7 +262,6 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 fi
 
 [ -n "$BUILDHTML" ] && report "HTML Directory is $HTMLDIR"
-[ -n "$BUILDLRP" ]  && report "LRP Directory is $LRPDIR"
 
 if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
     progress_message "Exporting $CVSTAG from CVS..."
@@ -479,51 +444,6 @@ fi
 
 ;;
 esac
-
-if [ -n "$BUILDLRP" ]; then
-    progress_message "Exporting $LRPPROJ from CVS ..."
-
-    rm -rf $LRPDIR
-    rm -rf $LRPPROJ
-
-    do_or_die "cvs -z3 export -D now $LRPPROJ >> $LOGFILE 2>&1"
-    do_or_die mv $LRPPROJ $LRPDIR
-
-    cd $LRPDIR
-
-    [ "$VERSION" = $(cat usr/share/shorewall/version) ] || fatal_error "$LRPPROJ has wrong version"
-
-    rm -f var/lib/lrpkg/shorwall.version
-
-    do_or_die ln -s ../../../usr/share/shorewall/version var/lib/lrpkg/shorwall.version
-
-    [ -d var/lib/shorewall ] || do_or_die mkdir var/lib/shorewall
-
-    do_or_die chmod 700 etc etc/init.d etc/shorewall sbin usr usr/share usr/share/shorewall var var/lib var/lib/lrpkg var/lib/shorewall
-    do_or_die chmod 600 etc/shorewall/*
-    do_or_die chmod 700 etc/init.d/shorewall
-    do_or_die chmod 700 sbin/shorewall
-    do_or_die chmod 600 usr/share/shorewall/*
-    do_or_die chmod 700 usr/share/shorewall/firewall
-    do_or_die chmod 600 var/lib/lrpkg/shorwall.help
-    do_or_die chmod 600 var/lib/lrpkg/shorwall.list
-    do_or_die chmod 600 var/lib/lrpkg/shorwall.conf
-
-    case $VERSION in
-	2.*)
-	    [ -d etc/shorewall/start.d ] || do_or_die mkdir etc/shorewall/start.d
-	    [ -d etc/shorewall/stop.d ]  || do_or_die mkdir etc/shorewall/stop.d
-	    do_or_die chmod 755 etc/shorewall/start.d
-	    do_or_die chmod 755 etc/shorewall/stop.d
-	    ;;
-    esac
-
-    progress_message "Creating $DIR/$LRP ..."
-
-    do_or_die "tar -zcvf ../$LRP $(cat var/lib/lrpkg/shorwall.list)  >> $LOGFILE 2>&1"
-
-    cd $DIR
-fi
 
 progress_message "Creating md5sums"
 do_or_die "md5sum *$VERSION[-.]*tgz *$VERSION[-.]*rpm *$VERSION[-.]*bz2 > $VERSION.md5sums"

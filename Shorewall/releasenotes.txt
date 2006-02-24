@@ -90,19 +90,45 @@ Migration Considerations:
 
 New Features:
 
-1)  A new 'shorewall compile' command has been added.
+1)  Shorewall has always been very noisy (lots of messages). No more.
+
+    You set the default level of verbosity using the VERBOSITY option in
+    shorewall.conf. If you don't set it (as would be the case of you use your
+    old shorewall.conf file) then VERBOSITY defaults to a value of 2 which is
+    the old default. A value of 1 suppresses some of the output (like the old
+    -q option did) while a value of 0 makes Shorewall almost silent. A value
+    of -1 suppresses all output except warning and error messages.
+
+    The value specified in the 3.2 shorewall.conf is 1. So you can make
+    Shorewall as verbose as previously using a single -v and you can make it
+    silent by using a single -q.
+
+    If the default is set at 2, you can still make a command silent by using
+    two "q"s (e.g., shorewall -qq restart).
+
+    In summary, each "q" subtracts one from VERBOSITY while each "v" adds one
+    to VERBOSITY.
+
+    The "shorewall show log", "shorewall logwatch" and "shorewall dump"
+    commands require VERBOSITY to be greater than or equal to 3 to display MAC
+    addresses.This is consistent with the previous implementation which
+    required a single -v to enable MAC display but means that if you set
+    VERBOSITY=0 in shorewall.conf, then you will need to include -vvv in
+    commands that display log records in order to have MACs displayed.
+
+2)  A new 'shorewall compile' command has been added.
 
      shorewall compile [ -e ] [ -d <distro> ] [ <config directory> ] <script file>
 
     where:
 
-	-e                    Generates an error if the configuration uses
+	-e                    Allows the generated script to run
+	                      on a system without Shorewall installed.
+			      Generates an error if the configuration uses
 	                      an option that would prevent the generated
 	                      script from running on a system other than
 	                      where the 'compile' command is running (see
 	                      additional consideration a) below).
-	                      Also allows the generated script to run
-	                      on a system without Shorewall installed.
 	-d <distro>           Compile the script for execution on the
 	                      distribution specified by <distro>. Currently,
 	                      'suse' is the only valid <distro>.
@@ -137,7 +163,8 @@ New Features:
        restore script exists, it is executed.
 
     b) If the restore script doesn't exist but Shorewall appears to be
-       installed on the system, an "/sbin/shorewall stop" command is executed.
+       installed on the system, the equivalent of an
+       "/sbin/shorewall stop" command is executed.
 
     Some additional considerations:
 
@@ -145,14 +172,20 @@ New Features:
        generated script on another system but there are certain
        limitations.
 
-       1) The same version of Shorewall must be running on the remote system
-          unless you use the "-e" option when you compile the script.
+       1) A compatible version of Shorewall must be running on the remote
+          system unless you use the "-e" option when you compile the script.
        2) The 'detectnets' interface option is not allowed.
        3) You must supply the file /etc/shorewall/capabilities to provide
           the compiler with knowledge of the capabilities of the system
           where the script is to be run. The /etc/shorewall/capabilities
           file included in this release includes instructions for its
-          use.
+          use. Also, find information below about how to create the
+          file using the 'shorecap' program.
+       4) If your /etc/shorewall/params file contains code other than simple
+          assignment statements with contant values, then you should move
+          that code to /etc/shorewall/init. That way, the code will be
+          executed on the target system when the compiled script is run rather
+          than on the local system at compile time.
 
     b) If you run the "shorewall compile" or "shorewall check" commands under
        a user other than 'root', then you must supply
@@ -184,11 +217,17 @@ New Features:
 	<program> [ -q ] [ -v ] [ -n ] status
 	<program> [ -q ] [ -v ] [ -n ] version
 
+    The options have the same meaning as they do with /sbin/shorewall
+    (see above).
+
     The "shorewall start" and "shorewall restart" commands have been
     rewritten to use compilation. They both compile a temporary program
     then run it. This results in a slightly longer elapsed time than the
     similar commands required under earlier versions of Shorewall but new
     connections are blocked for a much smaller percentage of that time.
+
+    If an error is found during the compilation phase, /sbin/shorewall
+    terminates and the Shorewall state is unchanged.
 
     Under Shorewall 3.1.5, "shorewall restart" takes roughly 16.5 seconds
     on my firewall:
@@ -246,32 +285,6 @@ New Features:
 
     ACCEPT, DROP and REJECT may be optionally followed by a log level to
     cause the packet to be logged.
-
-3)  Shorewall has always been very noisy (lots of messages). No more.
-
-    You set the default level of verbosity using the VERBOSITY option in
-    shorewall.conf. If you don't set it (as would be the case of you use your
-    old shorewall.conf file) then VERBOSITY defaults to a value of 2 which is
-    the old default. A value of 1 suppresses some of the output (like the old
-    -q option did) while a value of 0 makes Shorewall almost silent. A value
-    of -1 suppresses all output except warning and error messages.
-
-    The value specified in the 3.2 shorewall.conf is 1. So you can make
-    Shorewall as verbose as previously using a single -v and you can make it
-    silent by using a single -q.
-
-    If the default is set at 2, you can still make a command silent by using
-    two "q"s (e.g., shorewall -qq restart).
-
-    In summary, each "q" subtracts one from VERBOSITY while each "v" adds one
-    to VERBOSITY.
-
-    The "shorewall show log", "shorewall logwatch" and "shorewall dump"
-    commands require VERBOSITY to be greater than or equal to 3 to display MAC
-    addresses.This is consistent with the previous implementation which
-    required a single -v to enable MAC display but means that if you set
-    VERBOSITY=0 in shorewall.conf, then you will need to include -vvv in
-    commands that display log records in order to have MACs displayed.
 
 4)  In macro files, you can now use the reserved words SOURCE and DEST
     in the columns of the same names. When Shorewall expands the

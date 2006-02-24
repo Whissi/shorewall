@@ -90,7 +90,7 @@ Migration Considerations:
 
 New Features:
 
-1)  Shorewall has always been very noisy (lots of messages). No more.
+1)  Shorewall has always been very noisy (lots of messages). No longer.
 
     You set the default level of verbosity using the VERBOSITY option in
     shorewall.conf. If you don't set it (as would be the case of you use your
@@ -193,7 +193,9 @@ New Features:
 
     c) To aid in building /etc/shorewall/capabilities, a 'shorecap' program
        is provided. The RPM installs the program in the documentation
-       directory. The install.sh script does not install the program.
+       directory. The install.sh script does not install the program but
+       of course you can simply copy it from the distribution directory
+       (where you ran install.sh from).
 
        The program can be run on the target system to produce a
        capabilities file taylored for that system. The capabilities
@@ -272,10 +274,10 @@ New Features:
     iptables-restore. The system is a 1.4Ghz Celeron with 512MB RAM.
 
     As a final part of this change, the "check" command now compiles the
-    current configuration then discards the generated script. So "check"
-    performs all of the same checks that compile does. Note that there is
-    still no guarantee that the generated script won't encounter run-time
-    errors.
+    current configuration and writes the compiled output to /dev/null. So
+    "check" performs all of the same checks that compile does. Note that
+    there is still no guarantee that the generated script won't encounter
+    run-time errors.
 
 2)  The /etc/shorewall/maclist file has a new column layout. The first column
     is now DISPOSITION. This column determines what to do with matching

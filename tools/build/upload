@@ -1,6 +1,13 @@
 #/bin/sh
 
-DEST="root@mail.shorewall.net:/srv/ftp/pub/shorewall/${1%.*}/shorewall-$1"
+case $1 in
+    3.1.*)
+	DEST="root@mail.shorewall.net:/srv/ftp/pub/shorewall/development/${1%.*}/shorewall-$1"
+	;;
+    *)
+	DEST="root@mail.shorewall.net:/srv/ftp/pub/shorewall/${1%.*}/shorewall-$1"
+	;;
+esac
 
 usage() { echo "$0: <version>"; }
 

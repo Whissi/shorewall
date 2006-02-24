@@ -436,15 +436,21 @@ fi
 	    rm -f ${betaball}.asc
 	    do_or_die "$GPG $betaball"
         done
-
-;;
+	;;
 esac
 
-progress_message "Creating md5sums"
-do_or_die "md5sum *$VERSION[-.]*tgz *$VERSION[-.]*rpm *$VERSION[-.]*bz2 > $VERSION.md5sums"
+progress_message "Creating md5sums and sha1sums"
 
-progress_message "Creating sha1sums"
-do_or_die "sha1sum *$VERSION[-.]*tgz *$VERSION[-.]*rpm *$VERSION[-.]*bz2 > $VERSION.sha1sums"
+rm -f $VERSION.md5sums $VERSION.sha1sums
+
+for file in *; do
+    case $file in
+	*tgz|*rpm|*bz2)
+	    do_or_die "md5sum $file >> $VERSION.md5sums"
+	    do_or_die "sha1sum $file >> $VERSION.sha1sums"
+	    ;;
+    esac
+done
 
 if [ -n "$OLDVERSION" ]; then
     progress_message "Creating patch-$VERSION ..."

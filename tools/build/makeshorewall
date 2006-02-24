@@ -1,6 +1,8 @@
 #!/bin/sh
 #
 # Shorewall Release Processing -- (C) 2003,2004,2005 -- Tom Eastep (teastep@shorewall.net)
+#                              -- (C) 2005,2006 -- Cristian Rodriguez (webmaster@shorewall.net)
+# Version : $Id$     
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
 #
@@ -54,10 +56,6 @@ RPMDIR=~/rpm/
 # Directory where you want the release to be built
 #
 DIR=$PWD
-#
-# CVS Root
-#
-export CVSROOT=:ext:${USER}@cvs.sourceforge.net:/cvsroot/shorewall
 ################################################################################
 #                               V A R I A B L E S
 ################################################################################
@@ -65,8 +63,7 @@ VERSION=
 OLDVERSION=
 SHOREWALLDIR=
 SOURCEDIR=
-CVSTAG=
-#CVSSTABLE=
+SVNBRANCH=
 XMLPROJ=
 RPMNAME=
 TARBALL=
@@ -205,21 +202,21 @@ progress_message "Build of Shorewall $VERSION on $(date)"
 
 case $VERSION in
     2.4.*)
-    CVSTAG="branches/SHOREWALL-2_4/Shorewall"
-	DOCTAG="branches/SHOREWALL_2_4/Shorewall-docs2"
-	XMLPROJ=Shorewall-docs2
+    SVNBRANCH="branches/2.4/Shorewall"
+	DOCTAG="branches/2.4/docs"
+	XMLPROJ="docs-2.4"
 	;;
     3.0.*)
-	CVSTAG=SHOREWALL-3_0
-	DOCTAG=HEAD
-	XMLPROJ=Shorewall-docs2
-	SAMPLESTAG=HEAD
+	SVNBRANCH="branches/3.0/Shorewall"
+	DOCTAG="trunk/docs"
+	XMLPROJ="docs-3.0"
+	SAMPLESTAG="trunk/Samples"
 	;;
     3.1.*)
-        CVSTAG=HEAD
-	DOCTAG=HEAD
-	XMLPROJ=Shorewall-docs2
-	SAMPLESTAG=HEAD
+    SVNBRANCH="trunk/Shorewall"
+	DOCTAG="trunk/docs"
+	XMLPROJ="docs-3.1"
+	SAMPLESTAG="trunk/Samples"
 	;;
     *)
 	echo "Unsupported Version: $VERSION"
@@ -256,7 +253,7 @@ HTMLDIR=shorewall-docs-html-$VERSION
 
 if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
     report "Shorewall directory is $DIR/$SHOREWALLDIR"
-    report "CVS tag is $CVSTAG"
+    report "SVN tag is $SVNBRANCH"
     [ -n "$BUILDTARBALL" ] && report "TARBALL is $TARBALL"
     [ -n "$BUILDRPM" ]     && report "RPM is $RPMNAME"
 fi
@@ -264,13 +261,11 @@ fi
 [ -n "$BUILDHTML" ] && report "HTML Directory is $HTMLDIR"
 
 if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
-    progress_message "Exporting $CVSTAG from CVS..."
+    progress_message "Exporting $SVNBRANCH from SVN..."
 
     rm -rf $SHOREWALLDIR
 
-    do_or_die "cvs -z3 export -r $CVSTAG -d $SHOREWALLDIR Shorewall >> $LOGFILE 2>&1"
-
-	do_or_die "svn export --non-interactive https://svn.sourceforge.net/svnroot/shorewall/$CVSTAG  $SHOREWALLDIR >> $LOGFILE 2>&1"
+	do_or_die "svn export --non-interactive --force https://svn.sourceforge.net/svnroot/shorewall/$SVNBRANCH  $SHOREWALLDIR >> $LOGFILE 2>&1"
 
     fgrep VERSION=$VERSION $SHOREWALLDIR/install.sh > /dev/null 2>&1     || fatal_error "install.sh has wrong version"
     fgrep VERSION=$VERSION $SHOREWALLDIR/uninstall.sh > /dev/null 2>&1   || fatal_error "uninstall.sh has wrong version"
@@ -280,7 +275,7 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 
     if [ -n "$SAMPLESTAG" ]; then
 	cd $SHOREWALLDIR
-	do_or_die "cvs -z3 export -r $SAMPLESTAG Samples >> $LOGFILE 2>&1"
+	do_or_die "svn export --non-interactive --force https://svn.sourceforge.net/svnroot/shorewall/$SAMPLESTAG Samples >> $LOGFILE 2>&1"
 	cd $DIR
     fi
 
@@ -307,12 +302,12 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 fi
 
 if [ -n "${BUILDXML}${BUILDHTML}" ]; then
-    progress_message "Exporting $XMLPROJ from CVS..."
+    progress_message "Exporting $XMLPROJ from SVN..."
 
     rm -rf $XMLPROJ
     rm -rf shorewall-docs-xml-$VERSION
 
-    do_or_die "cvs -z3 export -r $DOCTAG $XMLPROJ >> $LOGFILE 2>&1"
+    do_or_die "svn export --non-interactive --force https://svn.sourceforge.net/svnroot/shorewall/$DOCTAG $XMLPROJ >> $LOGFILE 2>&1"
     do_or_die mv $XMLPROJ shorewall-docs-xml-$VERSION
 
     rm -f shorewall-docs-xml-$VERSION/images/*.vsd

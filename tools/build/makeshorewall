@@ -443,6 +443,10 @@ progress_message "Creating md5sums and sha1sums"
 
 rm -f $VERSION.md5sums $VERSION.sha1sums
 
+#
+# The following rather awkward algorithm gets around the problem of builds that don't
+# include the RPM
+#
 for file in *; do
     case $file in
 	*$VERSION[-.]*tgz|*$VERSION[-.]*rpm|*$VERSION[-.]*bz2)

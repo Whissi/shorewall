@@ -250,7 +250,6 @@ createchain2() # $1 = chain name, $2 = If "yes", create default rules
 		finish_chain_section $1 ESTABLISHED
 		;;
 	esac
-
     fi
 
     eval exists_${c}=Yes
@@ -1137,7 +1136,7 @@ __EOF__
     }
 
     add_a_provider() {
-	local t n iface option
+	local t n iface option first=Yes
 
 	[ -n "$MANGLE_ENABLED" ] || fatal_error "Providers require mangle support in your kernel and iptables"
 
@@ -1183,7 +1182,10 @@ ${INDENT}fi
 
 __EOF__
 	else
-	    save_command "gateway=$gateway"
+	    cat >&3 << __EOF__
+${INDENT}run_ip route replace $gateway src \$(find_first_interface_address $interface) dev $interface table $number
+${INDENT}run_ip route add default via $gateway dev $interface table $number
+__EOF__
 	fi
 
 	if [ x${mark} != x- ]; then
@@ -1211,7 +1213,19 @@ __EOF__
 		    ;;
 		balance=*)
 		    balance=yes
-		    save_command "DEFAULT_ROUTE=\"\$DEFAULT_ROUTE nexthop via \$gateway dev $interface weight ${option#*=}\""
+		    if [ -n "$first"]; then
+			if [ "x$gateway" = xdetect ] ; then
+			    save_command "DEFAULT_ROUTE=\"nexthop via \$gateway dev $interface weight ${option#*=}\""
+			else
+			    save_command "DEFAULT_ROUTE=\"nexthop via $gateway dev $interface weight ${option#*=}\""
+			fi
+		    else
+			if [ "x$gateway" = xdetect ] ; then
+			    save_command "DEFAULT_ROUTE=\"\$DEFAULT_ROUTE nexthop via \$gateway dev $interface weight ${option#*=}\""
+			else
+			    save_command "DEFAULT_ROUTE=\"\$DEFAULT_ROUTE nexthop via $gateway dev $interface weight ${option#*=}\""
+			fi
+		    fi
 		    ;;
 		balance)
 		    balance=yes
@@ -1224,6 +1238,7 @@ __EOF__
 		    error_message "WARNING: Invalid option ($option) ignored in provider \"$provider\""
 		    ;;
 	    esac
+	    first=
 	done
 
 	rulenum=0

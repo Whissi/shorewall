@@ -1,0 +1,623 @@
+<?xml version="1.0" encoding="ISO-8859-15"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article id="Install" lang="fr">
+  <!--$Id: Install.xml,v 1.27 2005/12/22 16:55:46 judas_iscariote Exp $-->
+
+  <articleinfo>
+    <title>Installation et mise à jour de Shorewall</title>
+
+    <subtitle>Version française de <foreignphrase lang="en"><ulink
+    url="http://www.shorewall.net/Install.html">Shorewall Installation and
+    Upgrade</ulink></foreignphrase></subtitle>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+
+      <othercredit role="translator">
+        <firstname>Guy</firstname>
+
+        <surname>Marcenac</surname>
+
+        <contrib>Adaptation française</contrib>
+      </othercredit>
+    </authorgroup>
+
+    <pubdate>2006-02-26</pubdate>
+
+    <copyright>
+      <year>2001-</year>
+
+      <year>2006</year>
+
+      <holder>Thomas M. Eastep</holder>
+
+      <holder>Guy Marcenac</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission est accordée de copier, distribuer et/ou modifier ce
+      document selon les termes de la Licence de Documentation Libre GNU (GNU
+      Free Documentation License), version 1.2 ou toute version ultérieure
+      publiée par la Free Software Foundation ; sans section Invariables, sans
+      première de Couverture, et sans texte de quatrième de couverture. Une
+      copie de la présente Licence est incluse dans la section intitulée. Une
+      traduction française de la licence se trouve dans la section
+      <quote><ulink
+      url="http://www.idealx.org/dossier/oss/gfdl.fr.html">Licence de
+      Documentation Libre GNU</ulink></quote>. Ce paragraphe est une
+      traduction française pour aider à votre compréhension. Seul le texte
+      original en anglais présenté ci-dessous fixe les conditions
+      d'utilisation de cette documentation.</para>
+
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <note>
+    <para><emphasis role="underline">Notes du traducteur :</emphasis> Si vous
+    trouvez des erreurs ou si vous avez des améliorations à apporter à cette
+    traduction vous pouvez <ulink url="mailto:guy@posteurs.com">me
+    contacter</ulink>.</para>
+  </note>
+
+  <caution>
+    <para><emphasis role="bold">Cet article s'applique à Shorewall 3.0 et à
+    ses versions ultérieures. Si vous êtes en train d'installer ou de mettre à
+    jour vers une version antérieure à Shorewall 3.0.0, merci de vous référer
+    à la documentation de cette version.</emphasis></para>
+  </caution>
+
+  <important>
+    <para>Avant de vous lancer dans l'installation, je vous encourage vivement
+    à lire et à imprimer une copie du guide pratique présenté dans <ulink
+    url="shorewall_quickstart_guide.htm">Shorewall QuickStart</ulink> et
+    décrivant la configuration la plus proche de la votre.</para>
+  </important>
+
+  <important>
+    <para>Avant toute mise à jour, assurez-vous d'avoir passé en revue <ulink
+    url="upgrade_issues.htm">les problèmes de mise à jour</ulink>.</para>
+  </important>
+
+  <note>
+    <para>Les RPM Shorewall sont signés. Pour éviter d'avoir des
+    avertissements tels que le suivant<programlisting>warning: shorewall-3.0.1-1.noarch.rpm: V3 DSA signature: NOKEY, key ID 6c562ac4</programlisting></para>
+
+    <para>téléchargez la <ulink
+    url="https://lists.shorewall.net/shorewall.gpg.key">clé GPG
+    Shorewall</ulink> puis exécutez cette commande:</para>
+
+    <programlisting><command>rpm --import shorewall.gpg.key</command></programlisting>
+  </note>
+
+  <section id="Install_RPM">
+    <title>Installation avec un RPM</title>
+
+    <para>Pour installer Shorewall avec un RPM:</para>
+
+    <orderedlist>
+      <listitem>
+        <para><emphasis role="bold">Assurez-vous d'avoir le paquetage RPM
+        adéquat!</emphasis></para>
+
+        <para>On sait que le paquetage RPM standard de shorewall.net et des
+        miroirs fonctionne avec <emphasis
+        role="bold"><trademark>SUSE</trademark></emphasis>, <emphasis
+        role="bold"><trademark>Power PPC</trademark></emphasis>, <emphasis
+        role="bold"><trademark>Trustix</trademark></emphasis> et <emphasis
+        role="bold"><trademark>TurboLinux</trademark></emphasis>. Il existe un
+        paquetage fourni par Simon Matter construit pour <trademark><emphasis
+        role="bold">RedHat/Fedora</emphasis></trademark> ainsi qu'un autre
+        paquetage de Jack Coates adapté pour <emphasis
+        role="bold"><trademark>Mandriva</trademark></emphasis>. Il sont tous
+        disponibles sur la <ulink
+        url="http://www.shorewall.net/download.htm">page de
+        téléchargement</ulink>.</para>
+
+        <para>Si vous tentez d'installer le mauvais paquetage, il ne
+        fonctionnera probablement pas.</para>
+      </listitem>
+
+      <listitem>
+        <para>Installer le RPM</para>
+
+        <programlisting><command>rpm -ivh &lt;shorewall rpm&gt;</command></programlisting>
+
+        <caution>
+          <para>Certains utilisateurs ont l'habitude d'utiliser la commande
+          <command>rpm -U</command> pour installer et pour mettre à jour leurs
+          paquetages. Si vous utilisez cette commande pour installer le RPM
+          Shorewall vous devrez activer manuellement le lancement de Shorewall
+          au démarrage en utilisant <command>chkconfig</command>,
+          <command>insserv</command> ou l'utilitaire que vous utilisez pour
+          manipuler les liens symboliques pour init.</para>
+        </caution>
+
+        <note>
+          <para>Certains utilisateurs SUSE ont rencontré un problème dans
+          lequel le rpm signale un conflit avec un noyau de version &lt;= 2.2
+          alors qu'un noyau 2.4 est installé. Si ceci se produit, utilisez
+          simplement l'option rpm --nodeps.</para>
+
+          <programlisting><filename><command>rpm -ivh --nodeps &lt;shorewall rpm&gt;</command></filename></programlisting>
+        </note>
+
+        <note>
+          <para>Shorewall dépend du paquetage iproute. Malheureusement,
+          certaines distribution nomment ce paquetage iproute2 ce qui provoque
+          un échec de l'installation de Shorewall avec le diagnostic
+          suivant:</para>
+
+          <programlisting>error: failed dependencies:iproute is needed by shorewall-2.2.x-1</programlisting>
+
+          <para>Ce problème ne devrait pas survenir si vous utilisez le bon
+          paquetage RPM (voir 1., ci-dessus), mais il peut être contourné en
+          utilisant l'option --nodeps de rpm.</para>
+
+          <programlisting><command>rpm -ivh --nodeps &lt;shorewall rpm&gt;</command></programlisting>
+        </note>
+      </listitem>
+
+      <listitem>
+        <para>Éditez les <link linkend="Config_Files">fichiers de
+        configuration</link> pour qu'ils correspondent à votre
+        configuration.</para>
+
+        <warning>
+          <para>VOUS NE POUVEZ PAS SIMPLEMENT INSTALLER LE RPM ET LANCER UNE
+          COMMANDE <quote><command>shorewall start</command></quote>. UN
+          MINIMUM DE CONFIGURATION EST NÉCESSAIRE AVANT QUE VOTRE FIREWALL NE
+          DÉMARRE. SI VOUS EXÉCUTEZ UNE COMMANDE
+          <quote><command>start</command></quote> ET QUE LE LANCEMENT DU
+          FIREWALL ÉCHOUE, VOTRE SYSTÈME N'ACCEPTERA PLUS AUCUN TRAFIC RÉSEAU.
+          SI CELA SE PRODUIT, EXÉCUTEZ LA COMMANDE <quote><command>shorewall
+          clear</command></quote> POUR RÉTABLIR LA CONNECTIVITÉ RÉSEAU.</para>
+        </warning>
+      </listitem>
+
+      <listitem>
+        <para>Activez le démarrage de shorewall en supprimant le fichier
+        <filename>/etc/shorewall/startup_disabled</filename> (Si vous utilisez
+        Shorewall 2.1.3 ou une de ses versions ultérieures, éditez le fichier
+        /<filename>etc/shorewall/shorewall.conf</filename> et mettez
+        STARTUP_ENABLED à Yes).</para>
+      </listitem>
+
+      <listitem>
+        <para>Lancez le firewall avec</para>
+
+        <programlisting><command>shorewall start</command></programlisting>
+      </listitem>
+    </orderedlist>
+  </section>
+
+  <section id="Install_Tarball">
+    <title>Installer avec le fichier tarball</title>
+
+    <para>Pour installer Shorewall avec le tarball et le script
+    d'installation:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>Décompressez le tarball (tar -zxf shorewall-x.y.z.tgz).</para>
+      </listitem>
+
+      <listitem>
+        <para>Allez dans le répertoire shorewall (la version est codée dans le
+        nom de répertoire comme par exemple dans
+        <quote>shorewall-3.0.0</quote>).</para>
+      </listitem>
+
+      <listitem>
+        <para>Tapez:</para>
+
+        <programlisting><command>./install.sh</command></programlisting>
+      </listitem>
+
+      <listitem>
+        <para>Éditez les <link linkend="Config_Files">fichiers de
+        configuration</link> pour qu'ils correspondent à votre
+        configuration.</para>
+      </listitem>
+
+      <listitem>
+        <para>Activez le démarrage de shorewall en éditant le fichier
+        <filename>/etc/shorewall/shorewall.conf</filename> et en y mettant
+        STARTUP_ENABLED=Yes.</para>
+      </listitem>
+
+      <listitem>
+        <para>Lancez le firewall avec</para>
+
+        <programlisting><command>shorewall start</command></programlisting>
+      </listitem>
+
+      <listitem>
+        <para>Si le script d'installation n'a pas réussi à configurer
+        Shorewall pour qu'il soit lancé automatiquement au démarrage du
+        système, allez voir <ulink
+        url="starting_and_stopping_shorewall.htm">ces
+        instructions</ulink>.</para>
+      </listitem>
+    </orderedlist>
+  </section>
+
+  <section id="LRP">
+    <title>Installer avec le .lrp</title>
+
+    <para>Pour installer ma version de Shorewall sur une nouvelle disquette de
+    Bering, remplacez simplement sur l'image le fichier
+    <quote><filename>shorewall.lrp</filename></quote> par celui que vous avez
+    téléchargé. Par exemple, si vous téléchargez
+    <filename>shorewall-lrp-2.2.0.tgz</filename> vous le renommerez
+    <filename>shorewall.lrp</filename> puis vous remplacerez le fichier
+    portant ce nom sur votre disque Bering par ce nouveau fichier. Configurez
+    ensuite Shorewall comme cela est décrit dans la documentation Bering (ou
+    Bering uClibc).</para>
+  </section>
+
+  <section>
+    <title>Installer avec le .deb</title>
+
+    <important>
+      <para>Après avoir installé le paquetage .deb, avant de commencer à
+      configurer Shorewall, vous devriez prendre connaissance de ce conseil de
+      Lorenzo Martignoni, le mainteneur Debian de Shorewall:</para>
+
+      <para><quote>Pour plus d'information quant à l'utilisation de Shorewall
+      sur un système Debian vous devriez aller voir le fichier
+      /usr/share/doc/shorewall/README.Debian distribué avec le paquetage
+      Debian de Shorewall.</quote></para>
+    </important>
+
+    <para>Le façon la plus simple d'installer Shorewall sur Debian est
+    d'utiliser apt-get:</para>
+
+    <para><command>apt-get install shorewall</command></para>
+
+    <para>Pour être certain d'installer la dernière version de Shorewall, vous
+    devriez modifier votre fichier <filename>/etc/apt/preferences</filename>
+    comme décrit <ulink
+    url="http://sourceforge.net/mailarchive/message.php?msg_id=13995291">ici</ulink>.</para>
+
+    <para><emphasis role="bold">Lorsque vous avez fini de configurer
+    Shorewall, vous pouvez activer son lancement au démarrage du système en
+    positionnant startup=1 dans le fichier
+    <filename>/etc/default/shorewall</filename>.</emphasis></para>
+  </section>
+
+  <section>
+    <title>Observations générales sur les mises à jour de Shorewall</title>
+
+    <para>La plupart des problèmes de mise à jour ont pour cause:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>L'utilisateur n'a pas lu et suivi les considération de migration
+        présentées dans les notes de mise à jour (<emphasis>release
+        notes</emphasis>) (ces notes sont aussi reproduites dans le document
+        <ulink url="upgrade_issues.htm">Shorewall Upgrade
+        Issues</ulink>).</para>
+      </listitem>
+
+      <listitem>
+        <para>L'utilisateur a mal géré son fichier
+        <filename>/etc/shorewall/shorewall.conf</filename> durant la mise à
+        niveau. Shorewall est conçu pour permettre à son comportement par
+        défaut d'évoluer dans le temps. Pour que ce la soit possible, il est
+        supposé de conception que <emphasis role="bold">vous ne remplacerez
+        pas votre fichier shorewall.conf lors des mises à jour</emphasis>. Il
+        est donc recommandé de modifier votre fichier
+        <filename>/etc/shorewall/shorewall.conf</filename> après la première
+        installation de shorewall de façon à empêcher votre gestionnaire de
+        paquets de l'écraser lors de mises à jour ultérieures (même pour
+        l'ajout de STARTUP_ENABLED, une telle modification est garantie
+        puisque vous devez changer son paramètrage manuellement). Si vous vous
+        sentez vraiment tenu d'avoir les derniers commentaires et options dans
+        votre fichier <filename>shorewall.conf</filename>, vous devrez
+        procéder très prudemment. Vous devrez déterminer quelles nouvelles
+        options ont été introduites. Vous devrez réinitialiser la valeur de
+        ces nouvelles options (par exemple OPTION=""), sinon, vous obtiendrez
+        un comportement différent de celui auquel vous vous attendez.</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section id="Upgrade_RPM">
+    <title>Mise à jour avec un RPM</title>
+
+    <para>Si le RPM Shorewall est déjà installé et que vous mettez à jour vers
+    une nouvelle version:</para>
+
+    <orderedlist>
+      <listitem>
+        <para><emphasis role="bold">Assurez-vous d'avoir le bon paquetage
+        RPM!</emphasis></para>
+
+        <para>On sait que le paquetage RPM standard de shorewall.net et des
+        miroirs fonctionne avec <emphasis
+        role="bold"><trademark>SUSE</trademark></emphasis>, <emphasis
+        role="bold"><trademark>Power PPC</trademark></emphasis>, <emphasis
+        role="bold"><trademark>Trustix</trademark></emphasis> et <emphasis
+        role="bold"><trademark>TurboLinux</trademark></emphasis>. Il existe un
+        paquetage fourni par Simon Matter construit pour <trademark><emphasis
+        role="bold">RedHat/Fedora</emphasis></trademark> ainsi qu'un autre
+        paquetage de Jack Coates adapté pour <emphasis
+        role="bold"><trademark>Mandriva</trademark></emphasis>. Il sont tous
+        disponibles sur la <ulink
+        url="http://www.shorewall.net/download.htm">page de
+        téléchargement</ulink>.</para>
+
+        <para>Si vous tentez d'installer le mauvais paquetage, il ne
+        fonctionnera probablement pas.</para>
+      </listitem>
+
+      <listitem>
+        <para>Procédez à la mise à jour</para>
+
+        <programlisting><command>rpm -Uvh &lt;shorewall rpm file&gt;</command></programlisting>
+
+        <note>
+          <para>Certains utilisateur de SUSE ont rencontré un problème dans
+          lequel rpm signale un conflit avec un noyau de version &lt;= 2.2
+          alors qu'un noyau 2.4 est installé. Si ceci vous arrive, vous pouvez
+          simplement utiliser l'option --nodeps de rpm.</para>
+
+          <programlisting><command>rpm -Uvh --nodeps &lt;shorewall rpm&gt;</command></programlisting>
+        </note>
+
+        <note>
+          <para>A partir de Shorewall 1.4.0, Shorewall dépend du paquetage
+          iproute. Malheureusement, certaines distributions nomment ce
+          paquetage iproute2 ce qui provoquera un échec de la mise à jour avec
+          le diagnostic suivant:</para>
+
+          <programlisting>error: failed dependencies:iproute is needed by shorewall-1.4.0-1</programlisting>
+
+          <para>Ceci peut être contourné en utilisant l'option --nodeps de
+          rpm.</para>
+
+          <programlisting><command>rpm -Uvh --nodeps &lt;shorewall rpm&gt;</command></programlisting>
+        </note>
+      </listitem>
+
+      <listitem>
+        <para>Contrôlez si il existe des incompatibilités entre votre
+        configuration et votre nouvelle version de Shorewall et corrigez quand
+        cela est nécessaire.</para>
+
+        <programlisting><command>shorewall check</command></programlisting>
+      </listitem>
+
+      <listitem>
+        <para>Redémarrez le firewall.</para>
+
+        <programlisting><command>shorewall restart</command></programlisting>
+      </listitem>
+    </orderedlist>
+  </section>
+
+  <section id="Upgrade_Tarball">
+    <title>Mise à niveau avec le tarball</title>
+
+    <para>Si Shorewall est déjà installé et que vous procédez à une mise à
+    jour de version avec le tarball:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>Décompressez le fichier.</para>
+
+        <programlisting><command>tar -zxf shorewall-x.y.z.tgz</command></programlisting>
+      </listitem>
+
+      <listitem>
+        <para>Allez dans le répertoire Shorewall (la version est codée dans le
+        nom du répertoire comme dans <quote>shorewall-3.0.1</quote>).</para>
+      </listitem>
+
+      <listitem>
+        <para>Tapez:</para>
+
+        <programlisting><command>./install.sh</command></programlisting>
+      </listitem>
+
+      <listitem>
+        <para>Contrôlez si il existe des incompatibilités entre votre
+        configuration et votre nouvelle version de Shorewall et corrigez quand
+        cela est nécessaire.</para>
+
+        <programlisting><command>shorewall check</command></programlisting>
+      </listitem>
+
+      <listitem>
+        <para>Démarrez le firewall avec</para>
+
+        <programlisting><command>shorewall start</command></programlisting>
+      </listitem>
+
+      <listitem>
+        <para>Si le script d'installation n'a pas réussi à configurer
+        Shorewall pour un démarrage automatique au boot du système,
+        reportez-vous à <ulink url="starting_and_stopping_shorewall.htm">ces
+        instructions</ulink>.</para>
+      </listitem>
+    </orderedlist>
+  </section>
+
+  <section id="LRP_Upgrade">
+    <title>Mettre à jour avec le .lrp</title>
+
+    <para>Ceci est une contribution de Charles Steinkuehler postée sur la
+    liste de diffusion Leaf:</para>
+
+    <blockquote>
+      <para>c'est *TRÈS* simple... mettez un nouveau CD et redémarrez le
+      système :-) En réalité, je ne plaisante que très peu... c'est exactement
+      de cette manière que je mets à jour mes firewall de production. La
+      fonction de sauvegarde partielle que j'ai ajoutée à Dachstein permet de
+      stocker séparément les données de configuration et le reste du
+      paquetage.</para>
+
+      <para>Une fois les données de configuration séparées du reste du
+      paquetage, il devient facile de procéder à la mise à jour du paquetage
+      en conservant votre configuration courante (dans mon cas, il me suffit
+      d'insérer un nouveau CD et de rebooter).</para>
+
+      <para>L'idée générale est d'utiliser un backup partiel pour sauvegarder
+      votre configuration, de remplacer le paquetage, puis de restaurer vos
+      anciens fichiers de configuration. Les instructions pas-à-pas données
+      ci-après proposent une manière d'y parvenir (on suppose l'utilisation
+      d'un système LEAF conventionnel sur une seule disquette):</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>Faites une copie de sauvegarde de votre disquette firewall
+          ('NEW'). C'est sur cette disquette que vous allez ajouter le(s)
+          paquetage(s) à jour.</para>
+        </listitem>
+
+        <listitem>
+          <para>Formattez une disquette que vous utiliserez comme emplacement
+          temporaire pour vos fichiers de configuration ('XFER'). Cette
+          disquette devrait avoir le même format que votre disquette firewall
+          (une autre copie de sauvegarde de votre disquette firewall ferait
+          très bien l'affaire).</para>
+        </listitem>
+
+        <listitem>
+          <para>Assurez-vous de disposer d'une copie fonctionnelle de votre
+          firewall existant ('OLD') dans un endroit sûr, et que vous
+          N'UTILISEREZ PAS PENDANT ce processus. De cette façon, si quoi que
+          ce soit se passait mal, vous pourriez simplement rebooter avec cette
+          disquette OLD pour revenir à une configuration fonctionnelle.</para>
+        </listitem>
+
+        <listitem>
+          <para>Retirez la disquette firewall courante et remplacez-la par la
+          disquette XFER.</para>
+        </listitem>
+
+        <listitem>
+          <para>Utilisez le menu de sauvegarde de <command>lrcfg</command>
+          pour réaliser un backup partiel du(des) paquetage(s) que vous voulez
+          mettre à jour en vous assurant de sauvegarder les fichiers sur la
+          disquette XFER. Dans le menu de sauvegarde:</para>
+
+          <programlisting>t e &lt;enter&gt; p &lt;enter&gt;
+b &lt;package1&gt; &lt;enter&gt;
+b &lt;package2&gt; &lt;enter&gt;
+...</programlisting>
+        </listitem>
+
+        <listitem>
+          <para>Téléchargez et copiez le(s) paquetage(s) que vous voulez
+          mettre à jour sur la disquette NEW</para>
+        </listitem>
+
+        <listitem>
+          <para>Rebootez votre firewall en utilisant la disquette NEW... à ce
+          point du processus, les paquetages que vous mettez à jour sont avec
+          leur configuration par défaut.</para>
+        </listitem>
+
+        <listitem>
+          <para>Montez la disquette XFER (mount -t msdos /dev/fd0u1680
+          /mnt)</para>
+        </listitem>
+
+        <listitem>
+          <para>Allez dans le répertoire racine (cd /)</para>
+        </listitem>
+
+        <listitem>
+          <para>Extrayez manuellement les données de configuration de chaque
+          paquetage que vous avez mis à jour:</para>
+
+          <programlisting>tar -xzvf /mnt/package1.lrp
+tar -xzvf /mnt/package2.lrp
+...</programlisting>
+        </listitem>
+
+        <listitem>
+          <para>Démontez (umount /mnt) puis retirez la disquette XFER</para>
+        </listitem>
+
+        <listitem>
+          <para>En utilisant <command>lrcfg</command>, faites une sauvegarde
+          COMPLÈTE de vos paquetages mis à jour.</para>
+        </listitem>
+
+        <listitem>
+          <para>Rebootez et vérifiez que le firewall fonctionne comme prévu.
+          Il peut être nécessaire d'ajuster certains fichiers de configuration
+          pour qu'ils fonctionnent convenablement avec les nouveaux
+          binaires.</para>
+        </listitem>
+      </itemizedlist>
+
+      <important>
+        <para>On peut utiliser le nouveau fichier de paquetage
+        &lt;paquetage&gt;.local pour fixer précisément quels fichiers du
+        backup partiel seront inclus ou pas (pour plus détails se reporter au
+        Dachstein-CD README). Si ce fichier n'existe pas, le script de backup
+        suppose que tous les fichiers de &lt;paquetage&gt;.list qui résident
+        dans <filename class="directory">/etc</filename> ou dans <filename
+        class="directory">/var/lib/lrpkg</filename> font partie de la
+        configuration et sont utilisés pour créer le backup partiel. Si
+        Shorewall installe quoi que ce soit dans <filename
+        class="directory">/etc</filename> qui ne soit pas un fichier de
+        configuration modifié par l'utilisateur, un fichier
+        <filename>shorewall.local</filename> approprié devrait être créé avant
+        de faire le backup partiel [<emphasis role="bold">Remarque de
+        l'éditeur</emphasis>: Shorewall ne place dans
+        <filename>/etc/</filename> que des fichiers modifiables par
+        l'utilisateur].</para>
+      </important>
+
+      <note>
+        <para>Il est évidemment possible de réaliser tout cela 'sur-place',
+        sans utiliser plusieurs disquettes, et même sans faire de backup
+        partiel (c.a.d. copier les fichiers de configuration courants dans
+        <filename>/tmp</filename>, extraire manuellement le nouveau paquetage
+        sur le firewall en cours d'exécution, copier et fusionner les données
+        de configuration depuis <filename>/tmp</filename> et du backup... ou
+        autre), mais quiconque est capable de cette gymnastique en ligne de
+        commande le fait sans doute déjà, sans avoir besoin d'instructions
+        détaillées! :-)</para>
+      </note>
+    </blockquote>
+
+    <para>Pour des informations concernant d'autres outils de mise à jour
+    LEAF/Bering, consultez <ulink
+    url="http://cvs.sourceforge.net/viewcvs.py/*checkout*/leaf/devel/alexrh/lck/README.html">cet
+    article de Alex Rhomberg</ulink>.</para>
+  </section>
+
+  <section id="Config_Files">
+    <title>Configurer Shorewall</title>
+
+    <para>Vous devrez éditer certains voire la totalité des fichiers de
+    configuration pour obtenir la configuration que vous souhaitez. Dans la
+    plupart des cas, les <ulink url="shorewall_quickstart_guide.htm">guides de
+    démarrage rapide shorewall</ulink> contiennent toute l'information dont
+    vous aurez besoin.</para>
+  </section>
+
+  <section>
+    <title>Désinstaller / Revenir à la version antérieure</title>
+
+    <para>Voir <quote><ulink url="fallback.htm">Fallback and
+    Uninstall</ulink></quote>.</para>
+  </section>
+</article>

@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="ISO-8859-15"?>
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
 "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
-<article id="three-interface" lang="fr">
+<article id="three-interface_fr" lang="fr">
   <!--$Id$-->
 
   <articleinfo>
     <title>Firewall à trois interfaces</title>
+
+    <subtitle>Version Française de <foreignphrase lang="en"><ulink
+    url="http://www.shorewall.net/three-interface.htm">Three-Interface
+    Firewall</ulink></foreignphrase></subtitle>
 
     <authorgroup>
       <author>
@@ -14,29 +18,35 @@
         <surname>Eastep</surname>
       </author>
 
-      <author>
+      <othercredit role="translator">
         <firstname>Patrice</firstname>
 
         <surname>Vetsel</surname>
-      </author>
 
-      <author>
+        <contrib>Traduction française initiale</contrib>
+      </othercredit>
+
+      <othercredit role="translator">
         <firstname>Fabien</firstname>
 
         <surname>Demassieux</surname>
-      </author>
 
-      <author>
+        <contrib>Adaptation française version 2.0</contrib>
+      </othercredit>
+
+      <othercredit role="translator">
         <firstname>Guy</firstname>
 
         <surname>Marcenac</surname>
-      </author>
+
+        <contrib>Adaptation française version 3.0</contrib>
+      </othercredit>
     </authorgroup>
 
-    <pubdate>2005-12-18</pubdate>
+    <pubdate>2006-02-06</pubdate>
 
     <copyright>
-      <year>2002-2005</year>
+      <year>2002-2006</year>
 
       <holder>Thomas M. Eastep</holder>
 
@@ -79,8 +89,8 @@
     révision pour la version 2 de Shorewall a été effectuée par <ulink
     url="mailto:fd03x@wanadoo.fr">Fabien Demassieux</ulink>. J'ai assuré la
     révision pour l'adapter à la version 3 de Shorewall. Si vous trouvez des
-    erreurs ou des améliorations à y apporter vous pouvez me contacter <ulink
-    url="mailto:guy@posteurs.com">Guy Marcenac</ulink>.</para>
+    erreurs ou des améliorations à y apporter vous pouvez <ulink
+    url="mailto:guy@posteurs.com">me contacter</ulink>.</para>
   </note>
 
   <caution>
@@ -119,7 +129,7 @@
       </listitem>
 
       <listitem>
-        <para>Une DMZ connectée sur une interface éthernet séparée. L'objet
+        <para>Une DMZ connectée sur une interface ethernet séparée. L'objet
         d'une <acronym>DMZ</acronym> est d'isoler les systèmes de votre réseau
         local de vos serveurs qui sont exposés sur internet, de telle manière
         que, si un de ces serveurs était compromis, il reste encore un
@@ -404,7 +414,7 @@ $FW         net         ACCEPT</programlisting>
     <para>Le firewall possède trois interfaces réseau. Lorsque la connexion
     internet passe par un <quote>modem</quote> câble ou<acronym><acronym> ADSL
     </acronym></acronym><emphasis><emphasis>l'Interface
-    Externe</emphasis></emphasis> sera l'adaptateur éthernet qui est connecté
+    Externe</emphasis></emphasis> sera l'adaptateur ethernet qui est connecté
     à ce <quote>Modem</quote> (par exemple <filename
     class="devicefile">eth0</filename>). Par contre, si vous vous connectez
     avec <acronym>PPPoE</acronym> (Point-to-Point Protocol over Ethernet) ou
@@ -428,7 +438,7 @@ $FW         net         ACCEPT</programlisting>
     <filename>/etc/shorewall/shorewall.conf</filename></emphasis>.</para>
 
     <para>Votre <emphasis>Interface locale</emphasis> sera un adaptateur
-    éthernet (<filename class="devicefile">eth0</filename>, <filename
+    ethernet (<filename class="devicefile">eth0</filename>, <filename
     class="devicefile">eth1</filename> or <filename
     class="devicefile">eth2</filename>) et sera connecté à un hub ou à un
     switch. Vos ordinateurs locaux seront connectés à ce même hub ou switch
@@ -436,7 +446,7 @@ $FW         net         ACCEPT</programlisting>
     connecter directement au firewall par un câble croisé).</para>
 
     <para>Votre <emphasis>interface <acronym>DMZ</acronym></emphasis> sera
-    aussi un adaptateur éthernet (<filename
+    aussi un adaptateur ethernet (<filename
     class="devicefile">eth0</filename>, <filename
     class="devicefile">eth1</filename> or <filename
     class="devicefile">eth2</filename>) et sera connectée à un hub ou à un
@@ -746,6 +756,11 @@ DNAT      net       dmz:<emphasis>&lt;server local IP address&gt;</emphasis>[:<e
     Si vous ne spécifiez pas <emphasis><varname>&lt;server
     port&gt;</varname></emphasis>, il est supposé être le même que
     <emphasis><varname>&lt;port&gt;</varname></emphasis>.</para>
+
+    <important>
+      <para>Assurez-vous d'ajouter vos règles après la ligne contenant
+      <emphasis role="bold">SECTION NEW.</emphasis></para>
+    </important>
 
     <example>
       <title>Vous faites tourner un serveur Web sur l'ordinateur Computer 2 de
@@ -1129,6 +1144,31 @@ ACCEPT    net       $FW                 tcp        80       </programlisting><it
         <quote><ulink url="starting_and_stopping_shorewall.htm">shorewall
         try</ulink></quote></para>
       </warning></para>
+  </section>
+
+  <section>
+    <title>Si cela ne marche pas</title>
+
+    <itemizedlist>
+      <listitem>
+        <para>Vérifiez à nouveau chacun des points repérés par un flèche
+        rouge.</para>
+      </listitem>
+
+      <listitem>
+        <para>Vérifiez vos <ulink
+        url="shorewall_logging.html">journaux</ulink>.</para>
+      </listitem>
+
+      <listitem>
+        <para>Vérifiez le <ulink url="troubleshoot.htm">Troubleshooting
+        Guide</ulink>.</para>
+      </listitem>
+
+      <listitem>
+        <para>Vérifiez la <ulink url="FAQ_fr.htm">FAQ</ulink>.</para>
+      </listitem>
+    </itemizedlist>
   </section>
 
   <section>

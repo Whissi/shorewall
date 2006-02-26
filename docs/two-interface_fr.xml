@@ -2,9 +2,13 @@
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
 "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
 <!-- $Id$ -->
-<article id="two-interface" lang="fr">
+<article id="two-interface_fr" lang="fr">
   <articleinfo>
     <title>Firewall à deux interfaces</title>
+
+    <subtitle>Version Française de <foreignphrase lang="en"><ulink
+    url="http://www.shorewall.net/two-interface.htm">Basic Two-Interface
+    Firewall</ulink></foreignphrase></subtitle>
 
     <authorgroup>
       <author>
@@ -13,35 +17,35 @@
         <surname>Eastep</surname>
       </author>
 
-      <author>
+      <othercredit role="translator">
         <firstname>Patrice</firstname>
 
         <surname>Vetsel</surname>
-      </author>
 
-      <author>
+        <contrib>Traduction française initiale</contrib>
+      </othercredit>
+
+      <othercredit role="translator">
         <firstname>Fabien</firstname>
 
         <surname>Demassieux</surname>
-      </author>
 
-      <author>
+        <contrib>Adaptation française version 2.0</contrib>
+      </othercredit>
+
+      <othercredit role="translator">
         <firstname>Guy</firstname>
 
         <surname>Marcenac</surname>
-      </author>
+
+        <contrib>Adaptation française version 3.0</contrib>
+      </othercredit>
     </authorgroup>
 
-    <pubdate>2005-12-18</pubdate>
+    <pubdate>2006-02-26</pubdate>
 
     <copyright>
-      <year>2002</year>
-
-      <year>2003</year>
-
-      <year>2004</year>
-
-      <year>2005</year>
+      <year>2002-2006</year>
 
       <holder>Thomas M. Eastep</holder>
 
@@ -84,8 +88,8 @@
     la version 2 de Shorewall a été effectuée par <ulink
     url="mailto:fd03x@wanadoo.fr">Fabien Demassieux</ulink>. J'ai assuré la
     révision pour l'adapter à la version 3 de Shorewall. Si vous trouvez des
-    erreurs ou des améliorations à y apporter vous pouvez me contacter <ulink
-    url="mailto:guy@posteurs.com">Guy Marcenac</ulink>.</para>
+    erreurs ou des améliorations à y apporter vous pouvez <ulink
+    url="mailto:guy@posteurs.com">me contacter</ulink>.</para>
   </note>
 
   <caution>
@@ -390,7 +394,7 @@ $FW        net         ACCEPT</programlisting> Ces politiques vont:
     <para>Le firewall possède deux interfaces réseau. Lorsque la connexion
     internet passe par un <quote>modem</quote> câble ou<acronym>
     <acronym>ADSL</acronym></acronym>,<emphasis> l'<emphasis>Interface
-    Externe</emphasis> </emphasis>sera l'adaptateur éthernet qui est connecté
+    Externe</emphasis> </emphasis>sera l'adaptateur ethernet qui est connecté
     à ce <quote>Modem</quote> (par exemple <filename
     class="devicefile">eth0</filename>). Par contre, si vous vous connectez
     avec <acronym>PPPoE</acronym> (Point-to-Point Protocol over Ethernet) ou
@@ -414,7 +418,7 @@ $FW        net         ACCEPT</programlisting> Ces politiques vont:
     class="directory">/etc/shorewall/</filename><filename>shorewall.conf</filename></emphasis>.</para>
 
     <para>Votre <emphasis>Interface Interne</emphasis> (interface vers votre
-    réseau local <acronym>LAN</acronym>) sera un adaptateur éthernet
+    réseau local <acronym>LAN</acronym>) sera un adaptateur ethernet
     (<filename class="devicefile">eth1</filename> or <filename
     class="devicefile">eth0</filename>) et sera connectée à un hub ou un
     switch. Vos autres ordinateurs seront connectés à ce même hub ou switch
@@ -693,16 +697,18 @@ $FW        net         ACCEPT</programlisting> Ces politiques vont:
 
     <para>La forme générale d'une simple règle de transfert de port dans
     <filename>/etc/shorewall/rules</filename> est: <programlisting>#ACTION   SOURCE    DEST                                          PROTO      DEST PORT(S)
-DNAT      net       loc:<emphasis>&lt;server local ip address&gt;</emphasis>[:<emphasis>&lt;server port&gt;</emphasis>] <emphasis>&lt;protocol&gt;</emphasis> <emphasis>&lt;port&gt;</emphasis></programlisting>Shorewall
-    possède des <ulink url="Macros.html">macros</ulink> pour de nombreuses
-    applications. Regardez les fichiers
-    <filename>/usr/share/shorewall/macro.*</filename> ou bien la commande
-    <command>shorewall show macros</command> si vous utilisez une version
-    3.0.3 ou ultérieure de Shorewall pour avoir une liste des macros comprises
-    dans votre version de Shorewall. Les macros simplifient la création de
-    règles <acronym>DNAT</acronym> en fournissant directement le protocole et
-    le(s) port(s) pour un service standard comme on peut le voir dans les
-    exemples suivants:<example label="1">
+DNAT      net       loc:<emphasis>&lt;server local ip address&gt;</emphasis>[:<emphasis>&lt;server port&gt;</emphasis>] <emphasis>&lt;protocol&gt;</emphasis> <emphasis>&lt;port&gt;</emphasis></programlisting><important>
+        <para>Assurez-vous d'ajouter vos règles après la ligne contenant
+        <emphasis role="bold">SECTION NEW.</emphasis></para>
+      </important>Shorewall possède des <ulink
+    url="Macros.html">macros</ulink> pour de nombreuses applications. Regardez
+    les fichiers <filename>/usr/share/shorewall/macro.*</filename> ou bien la
+    commande <command>shorewall show macros</command> si vous utilisez une
+    version 3.0.3 ou ultérieure de Shorewall pour avoir une liste des macros
+    comprises dans votre version de Shorewall. Les macros simplifient la
+    création de règles <acronym>DNAT</acronym> en fournissant directement le
+    protocole et le(s) port(s) pour un service standard comme on peut le voir
+    dans les exemples suivants:<example label="1">
         <title>Serveur Web</title>
 
         <para>Si vous voulez faire tourner un serveur Web sur l'ordinateur
@@ -1022,6 +1028,31 @@ ACCEPT     loc       $FW     tcp       80          #Allow Weblet to work</progra
   </section>
 
   <section>
+    <title>Si cela ne marche pas</title>
+
+    <itemizedlist>
+      <listitem>
+        <para>Vérifiez à nouveau chacun des points repérés par un flèche
+        rouge.</para>
+      </listitem>
+
+      <listitem>
+        <para>Vérifiez vos <ulink
+        url="shorewall_logging.html">journaux</ulink>.</para>
+      </listitem>
+
+      <listitem>
+        <para>Vérifiez le <ulink url="troubleshoot.htm">Troubleshooting
+        Guide</ulink>.</para>
+      </listitem>
+
+      <listitem>
+        <para>Vérifiez la <ulink url="FAQ_fr.htm">FAQ</ulink>.</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
     <title>Autres Lectures Recommandées</title>
 
     <para>Je vous recommande vivement de lire la <ulink
@@ -1038,7 +1069,7 @@ ACCEPT     loc       $FW     tcp       80          #Allow Weblet to work</progra
     <para>Maintenant que vous avez une configuration à deux interfaces qui
     marche, l'étape suivante logique est d'ajouter un réseau sans-fil. La
     première chose à faire est d'ajouter une carte à votre firewall, soit une
-    carte sans-fil soit une carte éthernet reliée à un point d'accès
+    carte sans-fil soit une carte ethernet reliée à un point d'accès
     sans-fil.<caution>
         <para>Quant vous ajoutez une carte réseau à un machine, il se peut
         qu'elle ne soit pas détectée comme celle suivant la plus haute

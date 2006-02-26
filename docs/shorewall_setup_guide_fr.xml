@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="ISO-8859-15"?>
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
 "http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
-<article id="IPIP" lang="fr">
+<article id="shorewall_setup_guide_fr" lang="fr">
   <!--$Id$-->
 
   <articleinfo>
     <title>Guide de configuration Shorewall</title>
+
+    <subtitle>Version Française de <foreignphrase lang="en"><ulink
+    url="http://www.shorewall.net/shorewall_setup_guide.html">Shorewall Setup
+    Guide</ulink></foreignphrase></subtitle>
 
     <authorgroup>
       <author>
@@ -14,23 +18,27 @@
         <surname>Eastep</surname>
       </author>
 
-      <author>
+      <othercredit role="translator">
         <firstname>Fabien</firstname>
 
         <surname>Demassieux</surname>
-      </author>
 
-      <author>
+        <contrib>Traduction Française initiale</contrib>
+      </othercredit>
+
+      <othercredit role="translator">
         <firstname>Guy</firstname>
 
         <surname>Marcenac</surname>
-      </author>
+
+        <contrib>Adaptation française version 3.0</contrib>
+      </othercredit>
     </authorgroup>
 
-    <pubdate>2005-12-18</pubdate>
+    <pubdate>2006-01-07</pubdate>
 
     <copyright>
-      <year>2001-2005</year>
+      <year>2002-2006</year>
 
       <holder>Thomas M. Eastep</holder>
 
@@ -69,8 +77,8 @@
     traduction initiale a été réalisée par <ulink
     url="mailto:fd03x@wanadoo.fr">Fabien Demassieux</ulink>. J'ai assuré la
     révision pour l'adapter à la version 3 de Shorewall. Si vous trouvez des
-    erreurs ou des améliorations à y apporter vous pouvez me contacter <ulink
-    url="mailto:guy@posteurs.com">Guy Marcenac</ulink>.</para>
+    erreurs ou des améliorations à y apporter vous pouvez <ulink
+    url="mailto:guy@posteurs.com">me contacter</ulink>.</para>
   </note>
 
   <caution>
@@ -406,7 +414,7 @@ all              all                 REJECT     info</programlisting>
     connexion internet passe par un <quote>modem</quote> câble
     ou<acronym><acronym> ADSL
     </acronym></acronym><emphasis><emphasis>l'Interface
-    Externe</emphasis></emphasis> sera l'adaptateur éthernet qui est connecté
+    Externe</emphasis></emphasis> sera l'adaptateur ethernet qui est connecté
     à ce <quote>Modem</quote> (par exemple <filename
     class="devicefile">eth0</filename>). Par contre, si vous vous connectez
     avec <acronym>PPPoE</acronym> (Point-to-Point Protocol over Ethernet) ou
@@ -430,7 +438,7 @@ all              all                 REJECT     info</programlisting>
     <filename>/etc/shorewall/shorewall.conf</filename></emphasis>.</para>
 
     <para>Votre <emphasis>Interface locale</emphasis> sera un adaptateur
-    éthernet (<filename class="devicefile"><filename
+    ethernet (<filename class="devicefile"><filename
     class="devicefile">eth0</filename></filename>, <filename
     class="devicefile"><filename class="devicefile">eth1</filename></filename>
     or <filename class="devicefile"><filename
@@ -440,7 +448,7 @@ all              all                 REJECT     info</programlisting>
     le connecter directement au firewall par un câble croisé).</para>
 
     <para>Votre <emphasis>interface <acronym>DMZ</acronym></emphasis> sera
-    aussi un adaptateur éthernet (<filename class="devicefile"><filename
+    aussi un adaptateur ethernet (<filename class="devicefile"><filename
     class="devicefile">eth0</filename></filename>, <filename
     class="devicefile"><filename class="devicefile">eth1</filename></filename>
     or <filename class="devicefile"><filename
@@ -1187,13 +1195,13 @@ Destination     Gateway         Genmask         Flgs MSS Win irtt Iface
     <section>
       <title id="ARP">Protocole de Résolution d'Adresse (ARP)</title>
 
-      <para>Quant on envoie des paquets sur éthernet, les adresses IP ne sont
-      pas utilisées. L'adressage éthernet est basé sur les adresses
+      <para>Quant on envoie des paquets sur ethernet, les adresses IP ne sont
+      pas utilisées. L'adressage ethernet est basé sur les adresses
       <acronym>MAC</acronym> (<emphasis>Media Access Control)</emphasis>.
-      Chaque carte éthernet à sa propre adresse <acronym>MAC</acronym> unique
+      Chaque carte ethernet à sa propre adresse <acronym>MAC</acronym> unique
       qui est gravée dans une <acronym>PROM</acronym> lors de sa fabrication.
       Vous pouvez obtenir l'adresse <acronym>MAC</acronym> d'une carte
-      éthernet grâce à l'utilitaire
+      ethernet grâce à l'utilitaire
       <quote><command>ip</command></quote>:</para>
 
       <programlisting>[root@gateway root]# <command>ip addr show eth0</command>
@@ -1209,7 +1217,7 @@ inet 206.124.146.179/24 brd 206.124.146.255 scope global secondary eth0
       est codée sur 6 octets (48 bits). L'adresse <acronym>MAC</acronym> est
       généralement imprimée sur la carte elle-même.</para>
 
-      <para>Comme IP utilise les adresses IP et Éthernet les adresses MAC, il
+      <para>Comme IP utilise les adresses IP et ethernet les adresses MAC, il
       faut un mécanisme pour transcrire une adresse IP en adresse MAC. C'est
       ce dont est chargé le protocole de résolution d'adresse
       (<emphasis>Address Resolution Protocol
@@ -1414,12 +1422,12 @@ Destination    Gateway     Genmask         Flags MSS Window irtt Iface
 
       <para>Donc, lorsque l'hôte DMZ 1 voudra communiquer avec 192.0.2.65, il
       enverra une requête <acronym>ARP</acronym> "qui-a 192.0.2.65" alors
-      qu'aucune interface sur le segment éthernet DMZ n'a cette adresse IP.
+      qu'aucune interface sur le segment ethernet DMZ n'a cette adresse IP.
       Assez bizarrement, le firewall répondra à la requête avec
       <emphasis><emphasis role="underlined"><emphasis
       role="underline">l'adresse MAC de sa propre interface
       DMZ</emphasis></emphasis> </emphasis>! DMZ 1 peut alors envoyer des
-      trames éthernet adressées à cette adresse <acronym>MAC</acronym> et les
+      trames ethernet adressées à cette adresse <acronym>MAC</acronym> et les
       trames seront reçues correctement par le firewall/routeur.</para>
 
       <para>L'avertissement fait plus haut qui déconseille très fortement la
@@ -1651,7 +1659,7 @@ DNAT     net     loc:192.168.201.4  tcp    www</programlisting>
 
         <para>La variable HAVE ROUTE étant à No, Shorewall ajoutera les routes
         d'hôte pour 192.0.2.177 et 192.0.2.178 par <filename
-        class="devicefile">eth2</filename>. Les interfaces éthernet des
+        class="devicefile">eth2</filename>. Les interfaces ethernet des
         machines DMZ 1 et DMZ 2 devront être configurées avec les adresses IP
         données plus haut, mais elles devront avoir la même passerelle par
         défaut que le firewall lui-même (192.0.2.254 dans notre exemple).

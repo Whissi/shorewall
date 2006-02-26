@@ -29,7 +29,7 @@
       </othercredit>
     </authorgroup>
 
-    <pubdate>2005-12-07</pubdate>
+    <pubdate>2006-02-12</pubdate>
 
     <copyright>
       <year>2001-2006</year>
@@ -67,7 +67,7 @@
   <note>
     <para><emphasis role="underline">Notes du traducteur :</emphasis> Si vous
     trouvez des erreurs ou si vous avez des améliorations à apporter à cette
-    documentation vous pouvez <ulink url="mailto:guy@posteurs.com">me
+    traduction vous pouvez <ulink url="mailto:guy@posteurs.com">me
     contacter</ulink>.</para>
   </note>
 
@@ -382,7 +382,7 @@ DNAT    net     fw:192.168.1.1:22       tcp     4104</programlisting>
       local. Si vous avez besoin d'intercepter des connexions lorsqu'elles
       arrivent sur le firewall et que vous voulez les traiter sur le firewall
       lui-même, vous utiliserez une règle REDIRECT.Dans tous les autres cas,
-      vous utiliserez ACCEPT. </para>
+      vous utiliserez ACCEPT.</para>
     </section>
 
     <section>
@@ -1320,6 +1320,29 @@ LOGBURST=""</programlisting>
       votre firewall va journaliser et ignorer (DROP) le paquet par la chaîne
       rfc1918 cas son IP source est réservée par la RFC 1918.</para>
     </section>
+
+    <section id="faq52">
+      <title>(FAQ 52) Quand je blackliste une adresse IP avec "shorewall drop
+      www.xxx.yyy.zzz", pourquoi est-ce qu'il y a toujours des entrées
+      REDIRECT et DNAT en provenance de cette adresse dans mon journal
+      ?</title>
+
+      <para>J'ai blacklisté l'adresse 130.252.100.59 avec la commande
+      <command>shorewall drop 130.252.100.59</command> mais je vois toujours
+      ces messages dans le journal:</para>
+
+      <programlisting>Jan 30 15:38:34 server Shorewall:net_dnat:REDIRECT:IN=eth1 OUT= MAC=00:4f:4e:14:97:8e:00:01:5c:23:24:cc:08:00
+                       SRC=130.252.100.59 DST=206.124.146.176 LEN=64 TOS=0x00 PREC=0x00 TTL=43 ID=42444 DF
+                       PROTO=TCP SPT=2215 DPT=139 WINDOW=53760 RES=0x00 SYN URGP=0</programlisting>
+
+      <para><emphasis role="bold">Réponse</emphasis>: Veuillez vous référer à
+      <ulink url="NetfilterOverview.html">Shorewall Netfilter
+      Documentation</ulink>. La journalisation des règles REDIRECT et DNAT se
+      produit dans la chaine PREROUTING de la table nat dans laquelle
+      l'adresse est toujours valide. Le blacklistage se produit dans les
+      chaines INPUT et FORWARD de la table filter qui ne sont traversées que
+      plus tard.</para>
+    </section>
   </section>
 
   <section>
@@ -1487,6 +1510,14 @@ Creating input Chains...
       également utiliser l'option '-q' si vous redémarrez à distance ou depuis
       un terminal lent (ou rediriger la sortie vers un fichier comme dans
       <command>shorewall restart &gt; /dev/null</command>).</para>
+
+      <para>Mettez votre matériel à niveau. De nombreux utilisateurs ont
+      constaté que même une amélioration modeste de la CPU et de la vitesse de
+      la mémoire (par exemple passer d'un P3 avec de la SDRAM à un P4 avec de
+      la DDR) avait des effets très significatifs. Les CPU dotées de la
+      technologie EM64T, aussi bien celles d'AMD que celles d'Intel, montrent
+      des performances de redémarrage très acceptables, même si vous avez un
+      jeu de règles assez complexe.</para>
 
       <para>Shorewall offre également une fonction de démarrage rapide. Pour
       l'utiliser:</para>

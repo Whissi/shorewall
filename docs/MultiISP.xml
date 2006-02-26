@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2006-02-06</pubdate>
+    <pubdate>2006-02-26</pubdate>
 
     <copyright>
       <year>2005</year>
@@ -39,8 +39,24 @@
   <section>
     <title>Multiple Internet Connection Support</title>
 
-    <para>Beginning with Shorewall 2.3.2, support is included for multiple
-    internet connections.</para>
+    <para>Beginning with Shorewall 2.3.2, limited support is included for
+    multiple internet connections. Limitations of this support are as
+    follows:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>It utilizes static routing configuration. As such, there is no
+        provision for reacting to the failure of either of the uplinks.</para>
+      </listitem>
+
+      <listitem>
+        <para>The routing changes are made and the route cache is purged when
+        Shorewall is started <emphasis role="bold">and when Shorewall is
+        restarted</emphasis> (unless you specify the "-n" option to
+        <command>shorewall restart</command>). Ideally, restarting the packet
+        filter should have no effect on routing.</para>
+      </listitem>
+    </itemizedlist>
 
     <section>
       <title>Overview</title>

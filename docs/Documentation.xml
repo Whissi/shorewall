@@ -378,11 +378,13 @@
       </varlistentry>
 
       <varlistentry>
-        <term><ulink url="Shorewall_and_Routing.html">routes</ulink></term>
+        <term><ulink url="CompiledPrograms.html">capabilities</ulink></term>
 
         <listitem>
-          <para>file in /etc/shorewall that is used to interface to the
-          experimental ROUTE target from Netfilter patch-o-matic-ng.</para>
+          <para>file in /etc/shorewall that is used to define the
+          iptables/kernel capabilities of a remote system. The file allows
+          firewall scripts compiled on one system to be taylored for a remote
+          system where the script will ultimately run.</para>
         </listitem>
       </varlistentry>
     </variablelist>
@@ -1900,6 +1902,14 @@ ACCEPT<emphasis role="bold">:info</emphasis>   -              -               tc
           <para>Protocol. Must be a protocol name from /etc/protocols, a
           number, or <quote>all</quote>. Specifies the protocol of the
           connection request.</para>
+
+          <para>In the ESTABLISHED and RELATED sections, may also be "ipp2p",
+          "ipp2p:udp", "ipp2p:all"; requires ipp2p match support in your
+          kernel and iptables.</para>
+
+          <para>Beginning with Shorewall 3.1, you may also specify "tcp:syn"
+          in this column. This is equivalent to "tcp" but also requires that
+          the SYN flag be set and the FIN, ACK and RST flags be reset.</para>
         </listitem>
       </varlistentry>
 

@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+"http://www.oasis-open.org/docbook/xml/4.2/docbookx.dtd">
+<article>
+  <!--$Id$-->
+
+  <articleinfo>
+    <title>Compiled Firewall Programs</title>
+
+    <authorgroup>
+      <author>
+        <firstname>Tom</firstname>
+
+        <surname>Eastep</surname>
+      </author>
+    </authorgroup>
+
+    <pubdate>2006-02-27</pubdate>
+
+    <copyright>
+      <year>2006</year>
+
+      <holder>Thomas M. Eastep</holder>
+    </copyright>
+
+    <legalnotice>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, with no Front-Cover, and with no Back-Cover
+      Texts. A copy of the license is included in the section entitled
+      <quote><ulink url="GnuCopyright.htm">GNU Free Documentation
+      License</ulink></quote>.</para>
+    </legalnotice>
+  </articleinfo>
+
+  <section>
+    <title>Overview</title>
+
+    <para>Beginning with Shorewall version 3.1, Shorewall has the capability
+    to compile a Shorewall configuration and produce a runnable firewall
+    program script. The script is a complete program which can be placed in
+    the /etc/init.d/ directory on a system without Shorewall installed and can
+    serve as the firewall creation script for that system.</para>
+
+    <para>Compiled programs can also be created to instantiate special
+    configurations during parts of the day; for example, to disallow web
+    browsing between the hours of 9pm and 7AM. The program can be run as a
+    cron job at 9PM and another program run at 6AM to restore normal
+    operation.</para>
+  </section>
+
+  <section>
+    <title>The "shorewall compile" command</title>
+
+    <para>A compiled script is produced using the <command>compile</command>
+    command:</para>
+
+    <blockquote>
+      <para><command>shorewall compile [ -e ] [ -d &lt;distro&gt; ] [
+      &lt;directory name&gt; ] &lt;path name&gt;</command></para>
+    </blockquote>
+
+    <para>where</para>
+
+    <blockquote>
+      <variablelist>
+        <varlistentry>
+          <term>-e</term>
+
+          <listitem>
+            <para>Indicates that the program is to be "exported" to another
+            system. When this flag is set, the "detectnets" interface is not
+            allowed but the created program may be run on a system that
+            doesn't even have Shorewall installed.</para>
+
+            <para>When this flag is given, Shorewall does not probe the
+            current system to determine the kernel/iptables features that it
+            supports. It rather reads those capabilities from
+            <filename>/etc/shorewall/capabilities</filename>. See below for
+            details.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>-d &lt;distro&gt;</term>
+
+          <listitem>
+            <para>is normally used with "-e" and specifies the Linux
+            distribution that is running on the remote system. The program
+            will be taylored so that it integrates with the intialization
+            script system (init) on that system. Distributions currently
+            supported are:</para>
+
+            <simplelist>
+              <member>suse</member>
+            </simplelist>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>&lt;directory name&gt;</term>
+
+          <listitem>
+            <para>specifies a directory to be searched for configuration files
+            before those directories listed in the CONFIG_PATH variable in
+            <filename>shorewall.conf</filename>.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>&lt;path name&gt;</term>
+
+          <listitem>
+            <para>specifies the name of the script to be created.</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </blockquote>
+  </section>
+
+  <section>
+    <title>The /etc/shorewall/capabilities file and the shorecap
+    program</title>
+
+    <para>As mentioned above, the /etc/shorewall/capabilities file specifies
+    that kernel/iptables capabilities of the target system. Here is a sample
+    file:</para>
+
+    <blockquote>
+      <programlisting>NAT_ENABLED=Yes                 # NAT
+MANGLE_ENABLED=Yes              # Packet Mangling
+CONNTRACK_MATCH=Yes             # Connection Tracking Match
+USEPKTTYPE=                     # Packet Type Match
+MULTIPORT=Yes                   # Multi-port Match
+XMULTIPORT=Yes                  # Extended Multi-port Match
+POLICY_MATCH=Yes                # Policy Match
+PHYSDEV_MATCH=Yes               # Physdev Match
+LENGTH_MATCH=Yes                # Packet Length Match
+IPRANGE_MATCH=Yes               # IP range Match
+RECENT_MATCH=Yes                # Recent Match
+OWNER_MATCH=Yes                 # Owner match
+IPSET_MATCH=                    # Ipset Match
+CONNMARK=Yes                    # CONNMARK Target
+CONNMARK_MATCH=Yes              # Connmark Match
+RAW_TABLE=Yes                   # Raw Table
+IPP2P_MATCH=                    # IPP2P Match
+CLASSIFY_TARGET=Yes             # CLASSIFY Target
+ENHANCED_REJECT=Yes             # Extended REJECT</programlisting>
+    </blockquote>
+
+    <para>As you can see, the file contains a simple list of shell variable
+    assignments -- the variables correspond to the capabilities listed by the
+    <command>shorewall show capabilities</command> command appear in the same
+    order as the output of that command.</para>
+
+    <para>To aid in creating this file, Shorewall 3.1 and later include a
+    shorecap program. The program is installed in the documentation directory
+    by the .rpm and is in the directory created when you untar the tarball. It
+    may be copied to /usr/bin on a remote system then run as follows:</para>
+
+    <blockquote>
+      <para><command>shorecap &gt; capabilities</command></para>
+    </blockquote>
+
+    <para>The <filename>capabilities</filename> file may then be copied to a
+    system with Shorewall installed and used when compiling firewall programs
+    to run on the remote system.</para>
+  </section>
+
+  <section>
+    <title>Running compiled programs</title>
+
+    <para>Compiled firewall programs are complete programs that support the
+    following run-line commands:</para>
+
+    <blockquote>
+      <simplelist>
+        <member><command>&lt;program&gt; [ -q ] [ -v ] [ -n ]
+        start</command></member>
+
+        <member><command>&lt;program&gt; [ -q ] [ -v ] [ -n ]
+        stop</command></member>
+
+        <member><command>&lt;program&gt; [ -q ] [ -v ] [ -n ]
+        clear</command></member>
+
+        <member><command>&lt;program&gt; [ -q ] [ -v ] [ -n ]
+        restart</command></member>
+
+        <member><command>&lt;program&gt; [ -q ] [ -v ] [ -n ]
+        status</command></member>
+
+        <member><command>&lt;program&gt; [ -q ] [ -v ] [ -n ]
+        version</command></member>
+      </simplelist>
+    </blockquote>
+
+    <para>The options have their same meaning is when they are passed to
+    <filename>/sbin/shorewall</filename> itself. The default VERBOSITY level
+    is the level specified in the shorewall.conf file used when then program
+    was compiled.</para>
+  </section>
+</article>

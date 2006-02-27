@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-10-13</pubdate>
+    <pubdate>2006-02-27</pubdate>
 
     <copyright>
       <year>2001-2005</year>
@@ -161,6 +161,17 @@
 
     <variablelist>
       <varlistentry>
+        <term>DISPOSITION (Added in Shorewall version 3.1)</term>
+
+        <listitem>
+          <para>Must be ACCEPT, DROP or REJECT (REJECT may not be specified if
+          <emphasis role="bold">MACLIST_TABLE</emphasis>=mangle). May be
+          optionally followed by ":" and a log level to cause packets matching
+          the rule to be logged.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term>INTERFACE</term>
 
         <listitem>
@@ -175,8 +186,9 @@
         <listitem>
           <para>The MAC address of a device on the ethernet segment connected
           by INTERFACE. It is not necessary to use the Shorewall MAC format in
-          this column although you may use that format if you so
-          choose.</para>
+          this column although you may use that format if you so choose.
+          Beginning with Shorewall 3.1, you may specify "-" here if you enter
+          an IP address in the next column.</para>
         </listitem>
       </varlistentry>
 

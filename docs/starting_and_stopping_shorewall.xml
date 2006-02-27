@@ -15,12 +15,14 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-12-09</pubdate>
+    <pubdate>2006-02-27</pubdate>
 
     <copyright>
       <year>2004</year>
 
       <year>2005</year>
+
+      <year>2006</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -122,9 +124,16 @@
       </listitem>
 
       <listitem>
-        <para><filename>/usr/share/shorewall/firewall</filename> — The program
-        responsible for configuring Netfilter based on your configuration
-        files.</para>
+        <para><filename>/usr/share/shorewall/compiler</filename> — In
+        Shorewall 3.1 and later, the program that processes your Shorewall
+        configuration files and creates a script to start, stop, restart,
+        restore and clear the firewall.</para>
+      </listitem>
+
+      <listitem>
+        <para><filename>/usr/share/shorewall/firewall</filename> — In
+        Shorewall 3.0 and earlier, the program responsible for configuring
+        Netfilter based on your configuration files.</para>
       </listitem>
 
       <listitem>
@@ -156,6 +165,15 @@
         configuration</firstterm> then that configuration is restored.
         Otherwise, an implicit <command>shorewall stop</command> is
         executed.</para>
+
+        <important>
+          <para>Beginning with Shorewall 3.1, <command>shorewall
+          start</command> is implemented as a <firstterm>compile and
+          go</firstterm>; that is, the configuration is compiled and if there
+          are no compilation errors then the resulting compiled script is
+          executed. If there are compilation errors, the command is aborted
+          and the state of the firewall is not altered.</para>
+        </important>
       </listitem>
 
       <listitem>
@@ -434,6 +452,103 @@
   <section>
     <title>Command Reference</title>
 
+    <para>The general form of a command in Shorewall 3.0 is:</para>
+
+    <blockquote>
+      <para><command>shorewall [ &lt;options&gt; ] &lt;command&gt; [
+      &lt;argument&gt; ... ]</command></para>
+
+      <para>Available options are:</para>
+
+      <variablelist>
+        <varlistentry>
+          <term>-c &lt;directory&gt;</term>
+
+          <listitem>
+            <para>Specifies an <link linkend="AltConfig">alternate
+            configuration directory</link>.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>-f</term>
+
+          <listitem>
+            <para>Specifies fast restart. See the <command>start</command>
+            command below.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>-n</term>
+
+          <listitem>
+            <para>Prevents the command from changing the firewall system's
+            routing configuration.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>-q</term>
+
+          <listitem>
+            <para>Causes some of the output to be suppressed.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>-v</term>
+
+          <listitem>
+            <para>Causes Ethernet MAC addresses to be included in log message
+            displays.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>-x</term>
+
+          <listitem>
+            <para>Causes all iptables -L commands to display actual packet and
+            byte counts.</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </blockquote>
+
+    <para>The general form of a command in Shorewall 3.1 and later is:</para>
+
+    <blockquote>
+      <para><command>shorewall [ &lt;options&gt; ] &lt;command&gt; [
+      &lt;command options&gt; ] [ &lt;argument&gt; ... ]</command></para>
+
+      <para>For compatibility, Shorewall 3.1 and later accept all of the 3.0
+      command options. In addition, 3.1 defines some new options and also
+      defines command-specific options that are entered after the command on
+      the run-line.</para>
+
+      <para>New options are:</para>
+
+      <variablelist>
+        <varlistentry>
+          <term>-t</term>
+
+          <listitem>
+            <para>All progress messages are timestamped with the date and
+            time.</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+
+      <para>In addition, the <command>-q</command> and <command>-v</command>
+      options may be repeated to make the output less or more verbose
+      respectively. The default level of verbosity is determined by the
+      setting of the VERBOSITY option in
+      <filename>/etc/shorewall/shorewall.conf</filename>.</para>
+    </blockquote>
+
+    <para>Following in alphabetical order are the supported commands.</para>
+
     <variablelist>
       <varlistentry>
         <term>add</term>
@@ -489,8 +604,8 @@
         <term>check</term>
 
         <listitem>
-          <para><command>shorewall [-q] check [
-          &lt;configuration-directory&gt; ]</command></para>
+          <para><command>shorewall check [ &lt;configuration-directory&gt;
+          ]</command></para>
 
           <para>Performs a cursory validation of the zones, interfaces, hosts,
           rules, policy, masq, blacklist, proxyarp, nat and provider files.
@@ -510,6 +625,71 @@
           The firewall is then wide open and unprotected. Existing connections
           are untouched. Clear is often used to see if the firewall is causing
           connection problems.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>compile (Shorewall 3.1 and later)</term>
+
+        <listitem>
+          <para><command>shorewall compile [ -e ] [ -d &lt;distro&gt; ] [
+          &lt;directory name&gt; ] &lt;path name&gt;</command></para>
+
+          <para>Compiles the current configuration into the executable file
+          &lt;path name&gt;. If &lt;path name&gt; names a file in
+          /var/lib/shorewall then the file may be executed using the "restore"
+          command.</para>
+
+          <para>When -e is specified, the compilation is being performed on a
+          system other than where the compiled script will run. This option
+          disables certain configuration options that require the script to be
+          compiled where it is to be run and allows the script to be run on a
+          system that does not have Shorewall installed at all. The file
+          /etc/shorewall/capabilities must be present when -e is used; that
+          file specifies the iptables/kernel capabilities on the target
+          system.</para>
+
+          <para>When -d &lt;distribution&gt; is given, the script is built for
+          execution on the distribution specified by &lt;distro&gt;.
+          Currently, 'suse' is the only valid &lt;distro&gt;. Usually
+          specified together with -e.</para>
+
+          <para>Example:<blockquote>
+              <para><command>shorewall compile -ed suse foo</command></para>
+            </blockquote>Additional distributions are expected to be supported
+          shortly.</para>
+
+          <para>The compiled script is a complete program that supports the
+          following commands:</para>
+
+          <blockquote>
+            <simplelist>
+              <member><command>&lt;program&gt; [ -q ] [ -v ] [ -n ]
+              start</command></member>
+
+              <member><command>&lt;program&gt; [ -q ] [ -v ] [ -n ]
+              stop</command></member>
+
+              <member><command>&lt;program&gt; [ -q ] [ -v ] [ -n ]
+              clear</command></member>
+
+              <member><command>&lt;program&gt; [ -q ] [ -v ] [ -n ]
+              restart</command></member>
+
+              <member><command>&lt;program&gt; [ -q ] [ -v ] [ -n ]
+              status</command></member>
+
+              <member><command>&lt;program&gt; [ -q ] [ -v ] [ -n ]
+              version</command></member>
+            </simplelist>
+          </blockquote>
+
+          <para>The options have their same meaning is when they are passed to
+          <filename>/sbin/shorewall</filename> itself.</para>
+
+          <para>When the '-e' option is specified during compilation, the
+          program may be installed in /etc/init.d/ and serve as the firewall
+          on a system without Shorewall installed.</para>
         </listitem>
       </varlistentry>
 
@@ -905,7 +1085,7 @@
   </section>
 
   <section id="State">
-    <title>Shorewall State Diagram</title>
+    <title>Shorewall State Diagram (Shorewall 3.0 and earlier)</title>
 
     <para>The Shorewall State Diargram is depicted below.</para>
 

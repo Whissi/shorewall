@@ -42,7 +42,9 @@ None.
 Migration Considerations:
 
 1)  A number of macros have been split into two.  The macros affected are:
+
 	IMAP LDAP NNTP POP3 SMTP
+
     Each of these macros now handles only traffic on the native (plaintext)
     port.  There is a corresponding macro with S added to the end of the
     name for the SSL version of the same protocol.  Thus each macro results
@@ -64,7 +66,7 @@ Migration Considerations:
 
 	DNAT     Z1!Z2        loc:192.168.1.4        ...
 
-    That syntax has never worked correctly when Z2 is a dynamic zone.
+    That feature has never worked correctly when Z2 is a dynamic zone.
     Furthermore, now that Shorewall supports exclusion lists, the capability
     is redundant since the above rule can now be written in the form:
 

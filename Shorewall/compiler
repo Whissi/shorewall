@@ -8128,6 +8128,19 @@ stop_firewall() {
 	\$IPTABLES -A \$1 -m state --state ESTABLISHED,RELATED -j ACCEPT
     }
 
+    delete_nat() {
+	\$IPTABLES -t nat -F
+	\$IPTABLES -t nat -X
+
+	if [ -f /var/lib/shorewall/nat ]; then
+	    while read external interface; do
+		qt ip addr del $external dev $interface
+	    done < /var/lib/shorewall/nat
+
+	    rm -f {/var/lib/shorewall}/nat
+	fi
+    }
+
     case \$COMMAND in
 	stop|clear)
 	    ;;

@@ -8134,10 +8134,10 @@ stop_firewall() {
 
 	if [ -f /var/lib/shorewall/nat ]; then
 	    while read external interface; do
-		qt ip addr del $external dev \$interface
+		qt ip addr del \$external dev \$interface
 	    done < /var/lib/shorewall/nat
 
-	    rm -f {/var/lib/shorewall}/nat
+	    rm -f /var/lib/shorewall/nat
 	fi
     }
 

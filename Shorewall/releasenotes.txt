@@ -37,7 +37,9 @@ Problems Corrected in 3.1.9
 
 Other changes in 3.1.9
 
-None.
+1)  The 'redhat' distribution is now supported in the compile command's -d
+    option (e.g., "compile -e -d redhat prog"). Thanks go to Simon Matter
+    for this support.
 
 Migration Considerations:
 
@@ -128,16 +130,22 @@ New Features:
 	                      additional consideration a) below).
 	-d <distro>           Compile the script for execution on the
 	                      distribution specified by <distro>. Currently,
-	                      'suse' is the only valid <distro>.
+	                      the supported distributions are:
+
+				suse
+				redhat (which includes Fedora Core and
+					CentOS).
 
 			      Note that specifying a distribution should
 			      only be required if you intend to install
 			      the compiled script in /etc/init.d on the
-			      target system.
+			      target system and the target system runs
+			      a distribution different from the system
+			      where you are doing your compiles.
 
 	                      Example:
 
-				shorewall compile -d suse foo
+				shorewall compile -e -d redhat foo
 
 			      Additional distributions are expected to be
 			      supported shortly.

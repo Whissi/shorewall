@@ -17,7 +17,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2006-01-30</pubdate>
+    <pubdate>2006-03-02</pubdate>
 
     <copyright>
       <year>2001-2006</year>
@@ -307,8 +307,9 @@ DNAT       loc           dmz:192.168.2.4    tcp      80          -         $ETH0
 
         <para><emphasis role="bold">Answer </emphasis>courtesy of Ryan: Assume
         that the IP address of your local firewall interface is 192.168.1.1.
-        If you add the following rule then from the net, you will have 4104
-        listening, from your LAN, port 22.</para>
+        If you configure SSHD to only listen on that interface and add the
+        following rule then from the net, you will have 4104 listening, from
+        your LAN, port 22.</para>
 
         <programlisting>#ACTION SOURCE  DEST                    PROTO   DEST PORT(S)
 DNAT    net     fw:192.168.1.1:22       tcp     4104</programlisting>

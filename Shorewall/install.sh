@@ -288,6 +288,15 @@ echo
 echo "Compiler installed in ${PREFIX}/usr/share/shorewall/compiler"
 
 #
+# Install Shorecap
+#
+
+install_file shorecap ${PREFIX}/usr/share/shorewall/shorecap 0555
+
+echo
+echo "Capability file builder installed in ${PREFIX}/usr/share/shorewall/shorecap"
+
+
 # Install the Help file
 #
 install_file help ${PREFIX}/usr/share/shorewall/help 0544

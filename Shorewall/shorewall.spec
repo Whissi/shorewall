@@ -112,6 +112,7 @@ fi
 %attr(0555,root,root) /usr/share/shorewall/compiler
 %attr(0444,root,root) /usr/share/shorewall/functions
 %attr(0544,root,root) /usr/share/shorewall/firewall
+%attr(0544,root,root) /usr/share/shorewall/shorecap
 %attr(0544,root,root) /usr/share/shorewall/help
 %attr(0644,root,root) /usr/share/shorewall/Limit
 %attr(0644,root,root) /usr/share/shorewall/macro.AllowICMPs
@@ -171,9 +172,11 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/rfc1918
 %attr(0644,root,root) /usr/share/shorewall/configpath
 
-%doc COPYING INSTALL changelog.txt releasenotes.txt tunnel ipsecvpn Samples shorecap
+%doc COPYING INSTALL changelog.txt releasenotes.txt tunnel ipsecvpn Samples
 
 %changelog
+* Web Mar 01 2006 Tom Eastep tom@shorewall.net
+- Moved shorecap to /usr/share/shorewall
 * Fri Feb 24 2006 Tom Eastep tom@shorewall.net
 - Updated to 3.1.8-1
 * Fri Feb 10 2006 Tom Eastep tom@shorewall.net

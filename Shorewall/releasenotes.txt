@@ -44,6 +44,14 @@ Other changes in 3.1.9
     option (e.g., "compile -e -d redhat prog"). Thanks go to Simon Matter
     for this support.
 
+2)  The 'shorecap' program will now be installed in /usr/share/shorewall on
+    all distributions.
+
+3)  The 'debian' distribution is now supported in the compile command's -d
+    option (e.g., "compile -e -d debian prog"). Please see the README.debian
+    file included with your Debian Shorewall package for information about
+    how to use compiled programs on Debian systems.
+
 Migration Considerations:
 
 1)  A number of macros have been split into two.  The macros affected are:
@@ -138,6 +146,7 @@ New Features:
 				suse
 				redhat (which includes Fedora Core and
 					CentOS).
+				debian
 
 			      Note that specifying a distribution should
 			      only be required if you intend to install
@@ -201,13 +210,11 @@ New Features:
        /etc/shorewall/capabilities.
 
     c) To aid in building /etc/shorewall/capabilities, a 'shorecap' program
-       is provided. The RPM installs the program in the documentation
-       directory. The install.sh script does not install the program but
-       of course you can simply copy it from the distribution directory
-       (where you ran install.sh from).
+       is provided. The program is installed in the /usr/share/shorewall/
+       directory.
 
-       The program can be run on the target system to produce a
-       capabilities file taylored for that system. The capabilities
+       The program can be copied to the target system and run there to
+       produce a capabilities file taylored for that system. The capabilities
        file can then be copied to the local system where it can be used
        when compiling firewall programs targeted for the remote system.
 

@@ -1504,7 +1504,7 @@ validate_policy()
 	chain=${client}2${server}
 
 	if is_policy_chain $chain ; then
-	    if eval test \$${chain}_is_optional = Yes ; then
+	    if eval test -n \"\$${chain}_is_optional\" ; then
 		eval ${chain}_is_optional=
 	    else
 		fatal_error "Duplicate policy: $client $server $policy"

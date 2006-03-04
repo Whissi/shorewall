@@ -167,6 +167,10 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/macro.Whois
 %attr(0644,root,root) /usr/share/shorewall/prog.footer
 %attr(0644,root,root) /usr/share/shorewall/prog.header
+%attr(0644,root,root) /usr/share/shorewall/prog.footer.debian
+%attr(0644,root,root) /usr/share/shorewall/prog.header.debian
+%attr(0644,root,root) /usr/share/shorewall/prog.footer.redhat
+%attr(0644,root,root) /usr/share/shorewall/prog.header.redhat
 %attr(0644,root,root) /usr/share/shorewall/prog.footer.suse
 %attr(0644,root,root) /usr/share/shorewall/prog.header.suse
 %attr(0644,root,root) /usr/share/shorewall/rfc1918
@@ -177,6 +181,7 @@ fi
 %changelog
 * Sat Mar 04 2006 Tom Eastep tom@shorewall.net
 - Updated to 3.1.9-1
+- Added debian and redhat prog header/footers
 * Wed Mar 01 2006 Tom Eastep tom@shorewall.net
 - Moved shorecap to /usr/share/shorewall
 * Fri Feb 24 2006 Tom Eastep tom@shorewall.net

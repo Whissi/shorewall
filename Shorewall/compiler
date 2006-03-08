@@ -3316,6 +3316,7 @@ process_tc_rule()
 # Setup queuing and classes
 #
 setup_tc1() {
+    local mark_part=
     #
     # Create the TC mangle chains
     #
@@ -3338,17 +3339,15 @@ setup_tc1() {
     # Link to the TC mangle chains from the main chains
     #
 
-    if [ -n "$ROUTEMARK_INTERFACES" ]; then
-	#
-	# Route marks are restored in PREROUTING/OUTPUT prior to these rules. We only send
-	# packets that are not part of a marked connection to the 'tcpre/tcout' chains
-	#
-	run_iptables -t mangle -A PREROUTING  -m mark --mark 0 -j tcpre
-	run_iptables -t mangle -A OUTPUT      -m mark --mark 0 -j tcout
-    else
-	run_iptables -t mangle -A PREROUTING -j tcpre
-	run_iptables -t mangle -A OUTPUT     -j tcout
-    fi
+    #
+    # Route marks are restored in PREROUTING/OUTPUT prior to these rules. We only send
+    # packets that are not part of a marked connection to the 'tcpre/tcout' chains
+    #
+    [ -n "$ROUTEMARK_INTERFACES" ] && mark_part="-m mark --mark 0"
+
+    run_iptables -t mangle -A PREROUTING $mark_part -j tcpre
+    run_iptables -t mangle -A OUTPUT     $mark_part -j tcout
+
     run_iptables -t mangle -A FORWARD     -j tcfor
     run_iptables -t mangle -A POSTROUTING -j tcpost
 

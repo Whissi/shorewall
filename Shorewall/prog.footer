@@ -62,7 +62,6 @@ case "$COMMAND" in
 	    progress_message3 "Starting Shorewall...."
 	    define_firewall
 	    status=$?
-	    [ $status = 0 -a -n "$SUBSYSLOCK" ] && touch $SUBSYSLOCK
 	    progress_message3 "done."
 	fi
 	;;
@@ -70,7 +69,6 @@ case "$COMMAND" in
 	progress_message3 "Stopping Shorewall...."
 	stop_firewall
 	status=0
-	[ -n "$SUBSYSLOCK" ] && rm -f $SUBSYSLOCK
 	progress_message3 "done."
 	;;
     restart)
@@ -88,7 +86,6 @@ case "$COMMAND" in
     restore)
 	restore_firewall
 	status=$?
-	[ $status = 0 -a -n "$SUBSYSLOCK" ] && touch $SUBSYSLOCK
 	;;
     clear)
 	progress_message3 "Clearing Shorewall...."

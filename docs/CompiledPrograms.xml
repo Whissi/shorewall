@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2006-02-28</pubdate>
+    <pubdate>2006-03-09</pubdate>
 
     <copyright>
       <year>2006</year>
@@ -48,6 +48,63 @@
     browsing between the hours of 9pm and 7AM. The program can be run as a
     cron job at 9PM and another program run at 6AM to restore normal
     operation.</para>
+
+    <section>
+      <title>Restrictions</title>
+
+      <para>While compiled Shorewall programs are useful in many cases, there
+      are some important restrictions that you should be aware of before
+      attempting to use them.</para>
+
+      <orderedlist>
+        <listitem>
+          <para>The <emphasis role="bold">detectnets</emphasis> interface
+          option is not supported.</para>
+        </listitem>
+
+        <listitem>
+          <para>All extension scripts used are copied into the program. The
+          ramifications of this are:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>If you update an extension script, the compiled program
+              will not use the updated script.</para>
+            </listitem>
+
+            <listitem>
+              <para>The <filename>/etc/shorewall/params</filename> extension
+              script is executed at compile time as well as at run
+              time.</para>
+
+              <para>Running the script at compile time allows variable
+              expansion (expanding $variable to it's defined value) of
+              variables used in Shorewall configuration files to occur at
+              compile time. Running it at run-time allows your extension
+              scripts to use the variables that it creates. BUT -- for any
+              given variable, the value at compile time may be different from
+              the value at run-time unless you only assign constant
+              values.</para>
+
+              <para>For example, if you have:</para>
+
+              <programlisting>EXT_IP=$(get_first_interface_address eth0)</programlisting>
+
+              <para>in <filename>/etc/shorewall/params</filename> then all
+              occurrences of $EXT_IP in Shorewall configuration files will be
+              replaced with eth0's IP address when the program is being
+              compiled. On the other hand, if you use $EXT_IP in your
+              /etc/shorewall/start script, the value will be the IP address of
+              eth0 when the program is run.</para>
+
+              <para>Bottom line: You probably want to use only constant values
+              for variables set in
+              <filename>/etc/shorewall/params</filename>.</para>
+            </listitem>
+          </itemizedlist>
+        </listitem>
+      </orderedlist>
+    </section>
   </section>
 
   <section>
@@ -88,12 +145,19 @@
           <listitem>
             <para>is normally used with "-e" and specifies the Linux
             distribution that is running on the remote system. The program
-            will be taylored so that it integrates with the intialization
+            will be tailored so that it integrates with the initialization
             script system (init) on that system. Distributions currently
             supported are:</para>
 
             <simplelist>
               <member>suse</member>
+
+              <member>redhat</member>
+
+              <member>debian (Note that Debian compiled programs may not be
+              installed directly into <filename
+              class="directory">/etc/init.d</filename> — they require the
+              soon-to-be-released Shorewall-minimal Debian package.</member>
             </simplelist>
           </listitem>
         </varlistentry>

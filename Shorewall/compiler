@@ -8537,6 +8537,8 @@ run_tc() {
 #
 initialize() {
 __EOF__
+    INDENT="    "
+
     if [ -z "$EXPORT" ]; then
 	cat >&3 << __EOF__
     if [ ! -f /usr/share/shorewall/version ]; then
@@ -8585,6 +8587,8 @@ __EOF__
 __EOF__
     fi
 
+    append_file params
+
     cat >&3 << __EOF__
 
     STOPPING=
@@ -8592,6 +8596,7 @@ __EOF__
     # The library requires that /var/lib/shorewall exist
     #
     [ -d /var/lib/shorewall ] || mkdir -p /var/lib/shorewall
+
 }
 
 #

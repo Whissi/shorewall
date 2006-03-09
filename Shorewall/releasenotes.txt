@@ -1,4 +1,4 @@
-Shorewall 3.1.9
+Shorewall 3.1.10
 
 Note to users upgrading from Shorewall 2.x or 3.0
 
@@ -27,32 +27,19 @@ Note to users upgrading from Shorewall 2.x or 3.0
    Please see the "Migration Considerations" below for additional upgrade
    information.
 
-Problems Corrected in 3.1.9
+Problems Corrected in 3.1.10
 
-1)  Route generation is now correct when a specific gateway IP address is
-    given in the GATEWAY column of the providers file.
+1)  The /etc/shorewall/params file is now copied into the compiled program
+    so that it's contents are processed both at compile-time and at
+    run-time. The latter is required so that extension scripts will have
+    access to the variables that the file initializes.
 
-2)  If any extension script used 'set --' (like the 'Limit' standard action
-    extension script) then 'shorewall restore' would fail.
+2)  The iptable_mangle and iptable_nat modules were previously omitted from
+    /etc/shorewall/modules.
 
-3)  An undefined function 'delete_nat' was previously called when a compiled
-    program was issued the 'stop' or 'clear' command.
+Other changes in 3.1.10
 
-4)  A shell syntax error was reported if a duplicate policy was detected.
-
-Other changes in 3.1.9
-
-1)  The 'redhat' distribution is now supported in the compile command's -d
-    option (e.g., "compile -e -d redhat prog"). Thanks go to Simon Matter
-    for this support.
-
-2)  The 'shorecap' program will now be installed in /usr/share/shorewall on
-    all distributions.
-
-3)  The 'debian' distribution is now supported in the compile command's -d
-    option (e.g., "compile -e -d debian prog"). Please see the README.debian
-    file included with your Debian Shorewall package for information about
-    how to use compiled programs on Debian systems.
+None.
 
 Migration Considerations:
 

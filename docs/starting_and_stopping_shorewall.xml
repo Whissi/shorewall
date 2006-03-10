@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2006-02-27</pubdate>
+    <pubdate>2006-03-07</pubdate>
 
     <copyright>
       <year>2004</year>
@@ -650,12 +650,25 @@
           system.</para>
 
           <para>When -d &lt;distribution&gt; is given, the script is built for
-          execution on the distribution specified by &lt;distro&gt;.
-          Currently, 'suse' is the only valid &lt;distro&gt;. Usually
-          specified together with -e.</para>
+          installation in <filename class="directory">/etc/init.d</filename>
+          on the distribution specified by &lt;distro&gt;. Currently supported
+          values for &lt;distro&gt;are:</para>
+
+          <simplelist>
+            <member>redhat (also good for Fedora Core and CentOS)</member>
+
+            <member>debian (Requires the soon to be released Shorewall-minimal
+            package to be run on Debian)</member>
+
+            <member>suse</member>
+          </simplelist>
+
+          <para>Usually specified together with -e. If not specified, the
+          output file is not suitable for installation into <filename
+          class="directory">/etc/init.d/</filename></para>
 
           <para>Example:<blockquote>
-              <para><command>shorewall compile -ed suse foo</command></para>
+              <para><command>shorewall compile -ed redhat foo</command></para>
             </blockquote>Additional distributions are expected to be supported
           shortly.</para>
 
@@ -690,6 +703,10 @@
           <para>When the '-e' option is specified during compilation, the
           program may be installed in /etc/init.d/ and serve as the firewall
           on a system without Shorewall installed.</para>
+
+          <para>For additional information about the
+          <command>compile</command> command, see <ulink
+          url="CompiledPrograms.html">this article</ulink>.</para>
         </listitem>
       </varlistentry>
 

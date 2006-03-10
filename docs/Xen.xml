@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2006-02-02</pubdate>
+    <pubdate>2006-03-10</pubdate>
 
     <copyright>
       <year>2006</year>
@@ -101,9 +101,18 @@
     (the Extended) Dom0 to isolate the server(s) from the other local systems
     (including Dom0).</para>
 
+    <caution>
+      <para>I find Xen Domain 0 to be an arcane environment in which to try to
+      use Netfilter (and hence Shorewall). As the number of interfaces and
+      bridges increase, complexity increases geometrically. I recommend
+      following this guide only if you really need to place a public server in
+      your local network. Otherwise, the <ulink url="XenMyWay.html">way that I
+      use Xen</ulink> is much more straight-forward.</para>
+    </caution>
+
     <para>Here is an example. In this example, we will assume that the system
     is behind a second firewall that restricts incoming traffic so that we
-    only have to worry about protecting the local lan from the systems running
+    only have to worry about protecting the local LAN from the systems running
     in the DomU's.</para>
 
     <section>

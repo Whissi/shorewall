@@ -1,11 +1,14 @@
 #/bin/sh
 
+rpm=
+
 case $1 in
     *.*[13569].*)
 	DEST="root@mail.shorewall.net:/srv/ftp/pub/shorewall/development/${1%.*}/shorewall-$1"
 	;;
     *Beta*|*RC*)
 	DEST="root@mail.shorewall.net:/srv/ftp/pub/shorewall/development/${1%.*}/shorewall-$1"
+	rpm=shorewall-${1%-*}-0${1#*-}\*
 	;;
     *)
 	DEST="root@mail.shorewall.net:/srv/ftp/pub/shorewall/${1%.*}/shorewall-$1"
@@ -19,4 +22,4 @@ usage() { echo "$0: <version>"; }
 [ -d errata ] || mkdir errata
 echo "There are no known problems in Shorewall version $1" > known_problems.txt
 
-scp -r errata known_problems.txt patch-$1 ${1}.* shorewall-${1}/releasenotes.txt shorewall-${1}-[0-1]* shorewall*${1}*.tgz* shorewall*${1}*.bz2* $DEST
+scp -r errata known_problems.txt patch-$1 ${1}.* shorewall-${1}/releasenotes.txt shorewall-${1}-[0-1]* shorewall*${1}*.tgz* shorewall*${1}*.bz2* $rpm $DEST

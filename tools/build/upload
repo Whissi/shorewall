@@ -4,6 +4,9 @@ case $1 in
     *.*[13569].*)
 	DEST="root@mail.shorewall.net:/srv/ftp/pub/shorewall/development/${1%.*}/shorewall-$1"
 	;;
+    *Beta*|*RC*)
+	DEST="root@mail.shorewall.net:/srv/ftp/pub/shorewall/development/${1%.*}/shorewall-$1"
+	;;
     *)
 	DEST="root@mail.shorewall.net:/srv/ftp/pub/shorewall/${1%.*}/shorewall-$1"
 	;;

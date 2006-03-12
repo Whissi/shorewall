@@ -535,6 +535,13 @@ DNAT       loc      dmz:192.168.2.4     tcp      80              -           206
         <programlisting>#ACTION    SOURCE        DEST               PROTO    DEST PORT   SOURCE    ORIGINAL
 #                                                                PORT      DEST.
 DNAT       loc           dmz:192.168.2.4    tcp      80          -         $ETH0_IP</programlisting>
+
+        <warning>
+          <para>With dynamic IP addresses, you probably don't want to use
+          <ulink url="starting_and_stopping_shorewall.htm"><command>shorewall
+          save</command> and <command>shorewall
+          restore</command></ulink>.</para>
+        </warning>
       </section>
     </section>
   </section>
@@ -586,11 +593,13 @@ to debug/develop the newnat interface.</programlisting></para>
       enforcing a DROP policy and the default policy to all zone from the
       internet is DROP. The Drop action is defined in
       <filename>/usr/share/shorewall/action.Drop</filename> which in turn
-      invokes the <emphasis role="bold">RejectAuth</emphasis> action (defined
-      in <filename>/usr/share/shorewall/action.RejectAuth</filename>). This is
-      necessary to prevent outgoing connection problems to services that use
-      the <quote>Auth</quote> mechanism for identifying requesting users. That
-      is the only service which the default setup rejects.</para>
+      invokes the <emphasis role="bold">Auth</emphasis> macro (defined in
+      <filename>/usr/share/shorewall/macro.Auth</filename>) specifying the
+      <emphasis role="bold">DROP</emphasis> action (i.e., <emphasis
+      role="bold">Auth/DROP</emphasis>). This is necessary to prevent outgoing
+      connection problems to services that use the <quote>Auth</quote>
+      mechanism for identifying requesting users. That is the only service
+      which the default setup rejects.</para>
 
       <para>If you are seeing closed TCP ports other than 113 (auth) then
       either you have added rules to REJECT those ports or a router outside of
@@ -629,7 +638,7 @@ to debug/develop the newnat interface.</programlisting></para>
 
         <para><ulink
         url="http://www.shorewall.net/pub/shorewall/contrib/PortsentryHOWTO.txt">Here's
-        a writeup</ulink> on a nice integration of Shorewall and
+        a writeup</ulink> describing a nice integration of Shorewall and
         PortSentry.</para>
       </section>
     </section>
@@ -699,7 +708,7 @@ ACCEPT        net            $FW         &lt;protocol&gt;    &lt;port number&gt;
 
           <programlisting>cat /proc/sys/net/ipv4/ip_forward</programlisting>
 
-          <para>The the value displayed is 0 (zero) then set <emphasis
+          <para>If the value displayed is 0 (zero) then set <emphasis
           role="bold">IP_FORWARDING=On</emphasis> in
           <filename>/etc/shorewall/shorewall.conf</filename> and restart
           Shorewall.</para>
@@ -762,7 +771,7 @@ ACCEPT        net            $FW         &lt;protocol&gt;    &lt;port number&gt;
       restart syslogd (on a RedHat system, <quote>service syslog
       restart</quote>).</para>
 
-      <para>By default, older versions of Shorewall ratelimited log messages
+      <para>By default, older versions of Shorewall rate-limited log messages
       through <ulink url="Documentation.htm#Conf">settings</ulink> in
       <filename>/etc/shorewall/shorewall.conf</filename> -- If you want to log
       all messages, set:</para>
@@ -808,8 +817,8 @@ LOGBURST=""</programlisting>
         <title>(FAQ 6d) Why is the MAC address in Shorewall log messages so
         long? I thought MAC addresses were only 6 bytes in length.</title>
 
-        <para>What is labeled as the MAC address in a Shorewall log message is
-        actually the Ethernet frame header. It contains:</para>
+        <para>What is labeled as the MAC address in a Netfilter (Shorewall)
+        log message is actually the Ethernet frame header. It contains:</para>
 
         <itemizedlist>
           <listitem>
@@ -1183,13 +1192,13 @@ LOGBURST=""</programlisting>
 
       <para><emphasis role="bold">Answer:</emphasis> While most people
       associate the Internet Control Message Protocol (ICMP) with
-      <quote>ping</quote>, ICMP is a key piece of the internet. ICMP is used
-      to report problems back to the sender of a packet; this is what is
-      happening here. Unfortunately, where NAT is involved (including SNAT,
-      DNAT and Masquerade), there are a lot of broken implementations. That is
-      what you are seeing with these messages. When Netfilter displays these
-      messages, the part before the "[" describes the ICMP packet and the part
-      between the "[" and "]" describes the packet for which the ICMP is a
+      <quote>ping</quote>, ICMP is a key piece of IP. ICMP is used to report
+      problems back to the sender of a packet; this is what is happening here.
+      Unfortunately, where NAT is involved (including SNAT, DNAT and
+      Masquerade), there are a lot of broken implementations. That is what you
+      are seeing with these messages. When Netfilter displays these messages,
+      the part before the "[" describes the ICMP packet and the part between
+      the "[" and "]" describes the packet for which the ICMP is a
       response.</para>
 
       <para>Here is my interpretation of what is happening -- to confirm this
@@ -1451,6 +1460,23 @@ Creating input Chains...
       <command>shorewall save</command>. Otherwise at the next reboot, you
       will revert to the old configuration stored in
       <filename>/var/lib/shorewall/restore</filename>.</para>
+
+      <para>Finally, the time that new connections are blocked during
+      shorewall restart can be dramatically reduced by upgrading to Shorewall
+      3.2 or later. In 3.2 and later releases, <command>shorewall
+      [re]start</command> proceeds in two phases:</para>
+
+      <orderedlist>
+        <listitem>
+          <para>The current configuration is compiled to produce a shell
+          program taylored for your configuration.</para>
+        </listitem>
+
+        <listitem>
+          <para>If compilation is error-free, the compiled program is run to
+          [re]start your firewall.</para>
+        </listitem>
+      </orderedlist>
     </section>
 
     <section id="faq43">
@@ -1628,9 +1654,9 @@ iptables: Invalid argument
       <itemizedlist>
         <listitem>
           <para>Netfilter/iptables doesn't fully support IPSEC in the 2.6
-          Kernels -- kernel and iptables patches are available and the details
-          may be found at the <ulink url="IPSEC-2.6.html">Shorewall IPSEC-2.6
-          page</ulink>.</para>
+          Kernels prior to 2.6.16 -- kernel and iptables patches are available
+          and the details may be found at the <ulink
+          url="IPSEC-2.6.html">Shorewall IPSEC-2.6 page</ulink>. </para>
         </listitem>
 
         <listitem>
@@ -1657,13 +1683,7 @@ iptables: Invalid argument
       that will let all traffic to and from the 192.168.100.1 address of the
       modem in/out but still block all other rfc1918 addresses?</para>
 
-      <para><emphasis role="bold">Answer:</emphasis> If you are running a
-      version of Shorewall earlier than 1.3.1, create /etc/shorewall/start and
-      in it, place the following:</para>
-
-      <programlisting><command>run_iptables -I rfc1918 -s 192.168.100.1 -j ACCEPT</command>      </programlisting>
-
-      <para>If you are running version 1.3.1 or later, add the following to
+      <para><emphasis role="bold">Answer:</emphasis> Add the following to
       <ulink url="Documentation.htm#rfc1918">/etc/shorewall/rfc1918</ulink>
       (Note: If you are running Shorewall 2.0.0 or later, you may need to
       first copy <filename>/usr/share/shorewall/rfc1918</filename> to
@@ -1773,17 +1793,8 @@ eth0               eth1                        # eth1 = interface to local netwo
     </section>
   </section>
 
-  <section id="faq53">
+  <section>
     <title>Miscellaneous</title>
-
-    <section id="faq19">
-      <title>(FAQ 19) I have added entries to /etc/shorewall/tcrules but they
-      don't seem to do anything. Why?</title>
-
-      <para>You probably haven't set TC_ENABLED=Yes in
-      /etc/shorewall/shorewall.conf so the contents of the tcrules file are
-      simply being ignored.</para>
-    </section>
 
     <section id="faq20">
       <title>(FAQ 20) I have just set up a server. Do I have to change
@@ -1960,8 +1971,8 @@ Shorewall has detected the following iptables/netfilter capabilities:
 gateway:~#</programlisting>
     </section>
 
-    <section>
-      <title>(FAQ 53) How do I open the firewall for all traffic to/from the
+    <section id="faq19">
+      <title>(FAQ 19) How do I open the firewall for all traffic to/from the
       LAN?</title>
 
       <para><emphasis role="bold">Answer:</emphasis> Add these two

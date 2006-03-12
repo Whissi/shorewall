@@ -583,7 +583,7 @@ start_command() {
 
     if [ -n "$FAST" ]; then
 	if qt mywhich make; then
-	    make -qf /etc/shorewall/Makefile || FAST=
+	    RESTOREFILE=$RESTOREFILE make -qf /etc/shorewall/Makefile || FAST=
 	fi
 
 	if [ -n "$FAST" ]; then

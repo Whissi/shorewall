@@ -17,7 +17,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2006-03-02</pubdate>
+    <pubdate>2006-03-11</pubdate>
 
     <copyright>
       <year>2001-2006</year>
@@ -1773,7 +1773,7 @@ eth0               eth1                        # eth1 = interface to local netwo
     </section>
   </section>
 
-  <section>
+  <section id="faq53">
     <title>Miscellaneous</title>
 
     <section id="faq19">
@@ -1958,6 +1958,23 @@ Shorewall has detected the following iptables/netfilter capabilities:
    Connmark Match: Available
    Raw Table: Available
 gateway:~#</programlisting>
+    </section>
+
+    <section>
+      <title>(FAQ 53) How do I open the firewall for all traffic to/from the
+      LAN?</title>
+
+      <para><emphasis role="bold">Answer:</emphasis> Add these two
+      policies:</para>
+
+      <programlisting>#SOURCE            DESTINATION             POLICY            LOG              LIMIT:BURST
+#                                                            LEVEL
+$FW                loc                     ACCEPT
+loc                $FW                     ACCEPT           </programlisting>
+
+      <para>You can also delete any ACCEPT rules from $FW-&gt;loc and
+      loc-&gt;$FW since those rules are redundant with the above
+      policies.</para>
     </section>
   </section>
 </article>

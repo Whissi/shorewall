@@ -583,7 +583,10 @@ start_command() {
 
     if [ -n "$FAST" ]; then
 	if qt mywhich make; then
-	    RESTOREFILE=$RESTOREFILE make -qf /etc/shorewall/Makefile || FAST=
+	    #
+	    # RESTOREFILE is exported by get_config()
+	    #
+	    make -qf /etc/shorewall/Makefile || FAST=
 	fi
 
 	if [ -n "$FAST" ]; then

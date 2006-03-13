@@ -2468,6 +2468,8 @@ refresh_firewall()
     #
     [ -n "$MANGLE_ENABLED" ] && refresh_tc
 
+    run_user_exit refreshed
+
     report "Shorewall Refreshed"
 
     rm -rf $TMP_DIR

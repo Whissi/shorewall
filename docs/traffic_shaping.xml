@@ -21,7 +21,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2006-02-27</pubdate>
+    <pubdate>2006-03-15</pubdate>
 
     <copyright>
       <year>2001-2006</year>
@@ -413,14 +413,41 @@ ppp0           6000kbit         500kbit</programlisting>
 
       <itemizedlist>
         <listitem>
-          <para>MARK - Specifies the mark value is to be assigned in case of a
-          match. This is an integer in the range 1-255. This value may be
-          optionally followed by <quote>:</quote> and either <quote>F</quote>
-          or <quote>P</quote> to designate that the marking will occur in the
-          FORWARD or PREROUTING chains respectively. If this additional
-          specification is omitted, the chain used to mark packets will be
-          determined by the setting of the MARK_IN_FORWARD_CHAIN option in
-          shorewall.conf.</para>
+          <para>MARK or CLASSIFY - MARK specifies the mark value is to be
+          assigned in case of a match. This is an integer in the range 1-255.
+          This value may be optionally followed by <quote>:</quote> and either
+          <quote>F</quote> or <quote>P</quote> to designate that the marking
+          will occur in the FORWARD or PREROUTING chains respectively. If this
+          additional specification is omitted, the chain used to mark packets
+          will be determined by the setting of the MARK_IN_FORWARD_CHAIN
+          option in shorewall.conf.</para>
+
+          <para>To use CLASSIFY, your kernel and iptables must include
+          CLASSIFY target support. In that case, this column contains a
+          classification (classid) of the form &lt;major&gt;:&lt;minor&gt;
+          where &lt;major&gt; and &lt;minor&gt; are integers. Corresponds to
+          the 'class' specification in these traffic shaping modules:</para>
+
+          <simplelist>
+            <member>atm</member>
+
+            <member>cbq</member>
+
+            <member>dsmark</member>
+
+            <member>pfifo_fast</member>
+
+            <member>htb</member>
+
+            <member>prio</member>
+          </simplelist>
+
+          <para>Classify always occurs in the POSTROUTING chain. When used
+          with the builtin traffic shaper, the &lt;major&gt; class is the
+          device number (the first entry in
+          <filename>/etc/shorewall/tcdevices</filename> is device 1, the
+          second is device 2 and so on) and the &lt;minor&gt; class is the
+          MARK value of the class + 100. </para>
         </listitem>
 
         <listitem>
@@ -484,7 +511,7 @@ ppp0           6000kbit         500kbit</programlisting>
         packets arriving on eth2 and eth3 should be marked with 2. All packets
         originating on the firewall itself should be marked with 3.</para>
 
-        <programlisting>#MARK   SOURCE    DESTINATION    PROTOCOL   USER/GROUP
+        <programlisting>#MARK   SOURCE    DESTINATION    PROTOCOL   PORT(S)
 1       eth1      0.0.0.0/0      all
 2       eth2      0.0.0.0/0      all
 2       eth3      0.0.0.0/0      all
@@ -497,18 +524,31 @@ ppp0           6000kbit         500kbit</programlisting>
         <para>All GRE (protocol 47) packets not originating on the firewall
         and destined for 155.186.235.151 should be marked with 12.</para>
 
-        <programlisting>#MARK   SOURCE    DESTINATION     PROTOCOL   USER/GROUP
+        <programlisting>#MARK   SOURCE    DESTINATION     PROTOCOL   PORT(S)
 12      0.0.0.0/0 155.182.235.151 47</programlisting>
       </example>
 
       <example>
         <title></title>
 
-        <para>All SSH packets originating in 192.168.1.0/24 and destined for
-        155.186.235.151 should be marked with 22.</para>
+        <para>All SSH request packets originating in 192.168.1.0/24 and
+        destined for 155.186.235.151 should be marked with 22.</para>
 
-        <programlisting>#MARK   SOURCE         DESTINATION     PROTOCOL   USER/GROUP
+        <programlisting>#MARK   SOURCE         DESTINATION     PROTOCOL   PORT(S)
 22      192.168.1.0/24 155.182.235.151 tcp        22</programlisting>
+      </example>
+
+      <example>
+        <title></title>
+
+        <para>All SSH packets packets going out of the first device in in
+        /etc/shorewall/tcdevices should be assigned to the class with mark
+        value 10.</para>
+
+        <programlisting>#MARK   SOURCE         DESTINATION     PROTOCOL   PORT(S)         CLIENT
+#                                                                 PORT(S)
+1:110   0.0.0.0/0      0.0.0.0/0       tcp        22
+1:110   0.0.0.0/0      0.0.0.0/0       tcp        -               22</programlisting>
       </example>
     </section>
 

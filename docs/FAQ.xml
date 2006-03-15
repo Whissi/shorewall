@@ -17,7 +17,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2006-03-11</pubdate>
+    <pubdate>2006-03-14</pubdate>
 
     <copyright>
       <year>2001-2006</year>
@@ -542,6 +542,15 @@ DNAT       loc           dmz:192.168.2.4    tcp      80          -         $ETH0
           save</command> and <command>shorewall
           restore</command></ulink>.</para>
         </warning>
+      </section>
+
+      <section id="faq2c">
+        <title>(FAQ 2c) I tried to apply the answer to FAQ 2 to my external
+        interface and the net zone and it didn't work. Why?</title>
+
+        <para><emphasis role="bold">Answer</emphasis>: Did you set <emphasis
+        role="bold">IP_FORWARDING=Yes</emphasis> in
+        <filename>shorewall.conf</filename>?</para>
       </section>
     </section>
   </section>
@@ -1656,7 +1665,7 @@ iptables: Invalid argument
           <para>Netfilter/iptables doesn't fully support IPSEC in the 2.6
           Kernels prior to 2.6.16 -- kernel and iptables patches are available
           and the details may be found at the <ulink
-          url="IPSEC-2.6.html">Shorewall IPSEC-2.6 page</ulink>. </para>
+          url="IPSEC-2.6.html">Shorewall IPSEC-2.6 page</ulink>.</para>
         </listitem>
 
         <listitem>

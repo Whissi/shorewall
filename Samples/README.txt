@@ -25,5 +25,6 @@ http://www.shorewall.net/shorewall_quickstart_guide.htm
     02110-1301  USA
 
 
-Sample files are licensed under the LGPL, please see the LICENSE file or http://www.gnu.org/licenses/lgpl.html for more details.
+Sample files are licensed under the LGPL, please see the LICENSE file or
+http://www.gnu.org/licenses/lgpl.html for more details.
 

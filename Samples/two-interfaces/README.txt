@@ -24,4 +24,7 @@ http://www.shorewall.net/two-interface.htm
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
     02110-1301  USA
 
-    http://www.gnu.org/licenses/lgpl.html
+
+Sample files are licensed under the LGPL, please see the LICENSE file or
+http://www.gnu.org/licenses/lgpl.html for more details.
+

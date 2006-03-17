@@ -1,6 +1,5 @@
 For instructions on using these sample configurations, please see
 
-<<<<<<< .mine
 http://www.shorewall.net/shorewall_quickstart_guide.htm
 
     Shorewall Samples
@@ -25,10 +24,6 @@ http://www.shorewall.net/shorewall_quickstart_guide.htm
     Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
     02110-1301  USA
 
-    http://www.gnu.org/licenses/lgpl.html
-=======
-http://www.shorewall.net/shorewall_quickstart_guide.htm
 
+Sample files are licensed under the LGPL, please see the LICENSE file or http://www.gnu.org/licenses/lgpl.html for more details.
 
-Sample files are licensed under the LGPL, please see the LICENSE file for more details.
->>>>>>> .r3680

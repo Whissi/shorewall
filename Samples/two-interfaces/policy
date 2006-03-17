@@ -106,7 +106,7 @@
 # Policies for traffic originating from the local LAN (loc)
 #
 # If you want to force clients to access the Internet via a proxy server
-# on your firewall, change the following policy to REJECT info.
+# on your firewall, change the loc to net policy to REJECT info.
 loc		net		ACCEPT
 loc		$FW		REJECT		info
 loc		all		REJECT		info
@@ -115,7 +115,7 @@ loc		all		REJECT		info
 # Policies for traffic originating from the firewall ($FW)
 #
 # If you want open access to the Internet from your firewall, change the
-# following policy to ACCEPT and remove the 'info' LOG LEVEL.
+# $FW to net policy to ACCEPT and remove the 'info' LOG LEVEL.
 # This may be useful if you run a proxy server on the firewall.
 $FW		net		REJECT		info
 $FW		loc		REJECT		info

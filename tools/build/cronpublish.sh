@@ -2,7 +2,7 @@
 
 STYLESHEET=/usr/share/xml/docbook/stylesheet/nwalsh/current/xhtml/docbook.xsl
 WEBSITE=/srv/www/html
-PROJECTS="web docs"
+PROJECTS="web docs docs-fr"
 HOMEDIR=/home/judas_iscariote
 SVN_BIN=/usr/bin/svn
 

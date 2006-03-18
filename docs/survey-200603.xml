@@ -5,7 +5,7 @@
   <!--$Id: template.xml 3517 2006-02-22 22:54:59Z judas_iscariote $-->
 
   <articleinfo>
-    <title></title>
+    <title>The Shorewall Environment Survey 2006</title>
 
     <authorgroup>
       <author>
@@ -35,9 +35,9 @@
   </articleinfo>
 
   <section>
-    <title>The Shorewall Environment Survey 2006</title>
+    <title>Background</title>
 
-    <para>In early March 2006, i @@@ embarked on the jorney of surveying
+    <para>In early March 2006, i embarked on the journey of surveying
     Shorewall users. Initially this sprang from my own curiosity: it seemed to
     me that some of the systems at work on which i was using Shorewall were
     bigger and more complex than a lot of the ones others were using, and i
@@ -77,14 +77,31 @@
   </section>
 
   <section>
-    <title>Detailed results analysis</title>
+    <title>Results analysis</title>
 
-    <para>An important note about this survey is that it has a very small
-    sample size (103 complete responses at the time of writing), so any
-    conclusions drawn should be considered tentative. Additionally, since the
-    survey was open to multiple responses, it could be that some people
-    answered the questions about themselves more than once, despite
-    instructions to the contrary in the introduction page.</para>
+    <para>An important note about this survey is that it has a small sample
+    size (103 complete responses at the time of writing), so any conclusions
+    drawn should be considered tentative.</para>
+
+    <para>To speculate on the overall number of users that this sample
+    represents, the <ulink
+    url="http://popcon.debian.org/source/by_inst.gz">Debian popularity
+    contest</ulink> reports 478 installations of Shorewall, 285 of which are
+    in active use. Assuming that the popularity contest represents 30% of the
+    Debian installed base (likely ridiculously optimistic), this would make
+    the number of active Shorewall systems approximately:</para>
+
+    <para>285 / 0.3 (percentage of Debian systems) / 0.26 (percentage Debian
+    holds of all distributions) = 3654 (rounding up the numbers to the nearest
+    whole, and assuming the percentages extrapolate regularly)</para>
+
+    <para>This means that our survey represents a maximum of 2.8% of the
+    installed base, likely far less.</para>
+
+    <para>Additionally, since the survey was open to multiple responses, it
+    could be that some people answered the questions about themselves more
+    than once, despite instructions to the contrary in the introduction
+    page.</para>
 
     <para>If you notice any errors in this analysis, or have any suggestions
     about how to improve it, please contact the author at <ulink
@@ -151,14 +168,14 @@
       <title>Users</title>
 
       <para>Unsurprisingly, 97% of survey respondents were male. Or to put it
-      another way: suprisingly, there are actually 3 female Shorewall users.
-      Being male seems to be an occupational hazard of life in the IT
+      another way: surprisingly, there are actually 3 female Shorewall users.
+      :-) Being male seems to be an occupational hazard of life in the IT
       industry, and even more so in the more "nerdy" specialisations like
-      Linux and security. :-)</para>
+      Linux and security.</para>
 
       <para>The largest age group of users is 25-34 years (42% of all
       respondents). There were no retirees (65 and over) or minors (under 18)
-      in the responses. The distribution of all remaining age groups was
+      in the responses. The distribution of the remaining age groups was
       fairly even.</para>
 
       <para>The largest group of users in terms of education was those with a
@@ -166,17 +183,16 @@
       Fifty-seven percent (57%) of Shorewall users have a Bachelor's degree or
       better. Many users' highest qualifications are not in an IT-related
       discipline (42%). This remains fairly constant across the spectrum when
-      correlated with the highest level of qualifications.</para>
-
-      <para>Those users who do not claim IT as their highest discipline hold a
-      wide variety of other qualifications, including agriculture, art,
-      business, chemistry, education, various forms of engineering, law,
-      mathematics, physics and theology.</para>
+      correlated with the highest level of qualifications. Those who do not
+      claim IT as their highest discipline come from a wide variety of other
+      fields, including agriculture, art, business, chemistry, education,
+      various forms of engineering, law, mathematics, physics, and
+      theology.</para>
 
       <para>Almost two-thirds of users (62%) use Shorewall as part of their
       paid employment. Of these, 12% (7 of 58) do not use Shorewall as part of
       their official duties. Cross correlation with level of education
-      revealed no major variances in this trend depending on level of
+      revealed no major variance in this trend depending on level of
       education.</para>
 
       <para>The majority of users (73%) began using the Internet in the 1990s.
@@ -206,25 +222,27 @@
       hardware, with a further 6% running it on x86-64/EM64T platforms. One
       response was received indicating use of Shorewall on MIPS (Linksys WRT
       platform). No responses were received for any other hardware platform.
-      While this is not surprising given Intel's</para>
+      While it is not surprising that Intel architectures would be first,
+      given their marketplace dominance, it seems a little skewed not to have
+      any representatives of other distributions.</para>
 
       <para>A good spread of CPU power is shown in the survey responses. The
       largest group was 400-999 MHz (30%), with only 16% of responses
-      indicating less than 400 MHz, with the same number greater than 2500
-      MHz. A number of responses in the field for additional information
-      suggested that the machines used were either recycled desktops, or
-      systems that were specifically built to do the job, and had been running
-      in that role for a number of years.</para>
+      indicating less than 400 MHz, and the same number greater than 2500 MHz.
+      A number of responses in the field for additional information suggested
+      that the machines used were either recycled desktops, or systems that
+      were specifically built to do the job, and had been running in that role
+      for a number of years.</para>
 
-      <para>RAM configuration seemed to mostly mirror CPU power, with the
-      majority (52%) of systems having between 256 and 1023 MB. A bias towards
-      higher RAM figures (only 11% of systems have less than 128 MB; 28% have
-      1024 MB or more) reflects the more server-oriented workload that many
-      Shorewall systems run (see section @@@ below). (Note that there is an
-      error in the released version of the survey for this question: it was a
-      multiple choice question rather than single choice, and thus there were
-      more results than expected. However, the number of errors doesn't seem
-      to be significant.)</para>
+      <para>RAM configuration seemed to mostly mirror CPU power, with a slight
+      bias towards higher RAM figures. The majority (52%) of systems have
+      between 256 and 1023 MB; only 11% of systems have less than 128 MB; 28%
+      have 1024 MB or more. This reflects the more server-oriented workload
+      that many Shorewall systems run (see the section on server roles below).
+      (Note that there is an error in the released version of the survey for
+      this question: it was a multiple choice question rather than single
+      choice, and thus there were more results than expected. However, the
+      number of errors doesn't seem to be significant.)</para>
 
       <para>Shorewall systems on the whole tend toward smaller OS hard disks,
       with 42% having disks 39 GB or smaller. The largest group by a small
@@ -291,8 +309,8 @@
     <section>
       <title>Comments from users</title>
 
-      <para>Here's a sample of the comments we received about the survey
-      (carefully sanitised to make us look good ;-).</para>
+      <para>Here's a sample of the comments we received about the survey -
+      they have been carefully sanitised to make us look good. ;-)</para>
 
       <itemizedlist>
         <listitem>
@@ -306,7 +324,7 @@
         </listitem>
 
         <listitem>
-          <para>Good job and a great product</para>
+          <para>Good job and a great product.</para>
         </listitem>
 
         <listitem>
@@ -331,32 +349,30 @@
         </listitem>
 
         <listitem>
-          <para>I'm quite intersted in seeing what the 'cross section' of
+          <para>I'm quite interested in seeing what the 'cross section' of
           Shorewall users are like. It's made my life a lot easier over the
-          years, Thank you.</para>
+          years. Thank you.</para>
         </listitem>
       </itemizedlist>
     </section>
   </section>
 
   <section>
-    <title>Conclusions</title>
-
-    <para></para>
-  </section>
-
-  <section>
     <title>Possible implications for the Shorewall project</title>
 
-    <para></para>
+    <para>The users we have seem, on the whole, rather experienced, and very
+    loyal. However, we don't seem to be attracting new users, despite new
+    features such as multi-ISP support and integrated traffic shaping. The
+    question about a GUI comes up frequently, and one wonders whether this is
+    would make a significant difference in Shorewall's uptake with new
+    users.</para>
 
-    <para></para>
-  </section>
-
-  <section>
-    <title></title>
-
-    <para></para>
+    <para>Shorewall seems to be predominantly used in small, i386-based
+    environments such as home LANs and small businesses. It seems to be
+    frequently combined with a number of other basic functions, such as DNS,
+    DHCP, NTP, VPN. Integration with (or perhaps providing a plugin module
+    for) a dedicated gateway distribution such as ipcop, Smoothwall, or Clark
+    Connect might be a good way to serve the needs of our users.</para>
   </section>
 
   <section>
@@ -371,13 +387,13 @@
     <para></para>
 
     <section>
-      <title>Things i did right</title>
+      <title>What i did right</title>
 
       <para></para>
 
       <itemizedlist>
         <listitem>
-          <para>Treat it like releasing free software:</para>
+          <para>Treat surveys like releasing free software:</para>
 
           <itemizedlist>
             <listitem>
@@ -385,9 +401,17 @@
             </listitem>
 
             <listitem>
-              <para>make branches when you release alpha and beta versions,
-              and bring the lessons you learned in those versions into the
-              main trunk</para>
+              <para>test on a small group before you go public</para>
+            </listitem>
+
+            <listitem>
+              <para>make branches (copies) when you release alpha and beta
+              versions</para>
+            </listitem>
+
+            <listitem>
+              <para>merge the changes from branches (lessons you learned in
+              those versions) into the main trunk</para>
             </listitem>
           </itemizedlist>
         </listitem>
@@ -395,23 +419,43 @@
     </section>
 
     <section>
-      <title>Things i did wrong</title>
+      <title>What i did wrong</title>
 
       <para></para>
 
       <itemizedlist>
         <listitem>
-          <para>Start small and work towards what you want to know. I tried to
-          do everything in one survey, and ended up confusing some
-          people.</para>
+          <para>Start small and work towards what you want to know.</para>
+
+          <para>I tried to do everything in one survey, and ended up confusing
+          some people. For example, despite the fact that the survey's start
+          page clearly says "Please answer the questions for only ONE SYSTEM
+          running Shorewall", i received multiple comments saying that they
+          couldn't answer accurately because they ran more than Shorewall
+          system.</para>
+
+          <para>It would have been better to have two surveys: one about the
+          people who use Shorewall, and another about the systems they run it
+          on. Better still would be for Shorewall to automatically collect
+          appropriate information about systems and request permission to send
+          it to a central location for statistical analysis. How to do this
+          and maintain users' privacy and obtain their permission efficiently
+          is not an easy problem with a product like Shorewall, which doesn't
+          actually stay running on user systems, and doesn't present a user
+          interface per-se.</para>
         </listitem>
 
         <listitem>
-          <para></para>
-        </listitem>
+          <para>Be prepared beforehand.</para>
 
-        <listitem>
-          <para>Be prepared beforehand</para>
+          <para>Within hours of the survey's release, 50% of the results were
+          in. Within 3 days, it hit the Zoomerang basic survey limit of 100
+          responses. I had not planned for such an enthusiastic response, and
+          also was too busy to download all of the results before the survey's
+          time limit expired. Fortunately, i was able to obtain funding to
+          allow a Zoomerang "pro" subscription to be purchased and thus
+          provide advanced analysis, and complete downloads of the
+          results.</para>
         </listitem>
       </itemizedlist>
 

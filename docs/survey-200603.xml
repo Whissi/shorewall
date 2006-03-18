@@ -38,74 +38,85 @@
     <title>Background</title>
 
     <para>In early March 2006, i embarked on the journey of surveying
-    Shorewall users. Initially this sprang from my own curiosity: it seemed to
-    me that some of the systems at work on which i was using Shorewall were
-    bigger and more complex than a lot of the ones others were using, and i
-    wanted to find out if there were people out there who used it like i did.
-    As started thinking about the questions i would ask, i realised that i
-    could ask a few more questions that might help us as a project to
-    understand a bit more about all of our users.</para>
+    Shorewall users. Initially this sprang from my own curiosity: i thought
+    that some of the systems at work on which i use Shorewall may be bigger
+    and more complex than most others, and i wanted to find out if there are
+    people out there who use Shorewall like i do. As started thinking about
+    the questions i would ask, i realised that if i asked the right questions,
+    i could create a survey that might help the Shorewall project better to
+    understand its users.</para>
 
     <para>I used <ulink url="http://www.zoomerang.com">Zoomerang</ulink> to
-    create the survey. It has a number of tools that make it really easy to
-    create useful surveys. To get the most benefit out of Zoomerang, you have
-    to subscribe to their professional version. In the long term, it would be
-    great to see a practical free software alternative that we could
-    self-host. A number of free content management systems such as <ulink
-    url="http://drupal.org">Drupal</ulink> have a survey module, but when i
-    last looked at them, they were much more limited and harder to use than
-    Zoomerang.</para>
+    create the survey. It has a number of tools that make it easy to create
+    useful surveys. To get the most benefit out of Zoomerang, you have to
+    subscribe to their professional version.</para>
+
+    <para>In the long term, it would be great to have a practical free
+    software alternative that could be self-hosted. A number of free content
+    management systems such as <ulink url="http://drupal.org">Drupal</ulink>
+    have a survey module, but when i last looked at them, they were more
+    limited and harder to use than Zoomerang.</para>
 
     <section>
-      <title>Take the survey</title>
+      <title>Survey and results links</title>
 
       <para>The survey is still open as of this writing, and can be accessed
       at <ulink url="http://www.zoomerang.com/survey.zgi?p=WEB2253NNBCN44">the
       Zoomerang survey page</ulink>. Further participation is encouraged. The
-      figures quoted in this document reflect the latest results at the time
-      of writing.</para>
-    </section>
-
-    <section>
-      <title>Survey results</title>
+      figures quoted in this document reflect the results at the time of
+      writing.</para>
 
       <para>The <ulink
       url="http://www.zoomerang.com/reports/public_report.zgi?ID=L22KHC6BPGLS">public
-      results</ulink> of the survey are also available. If you complete the
-      survey, a link to the results is provided on the thank you page.</para>
+      results</ulink> of the survey are available. If you complete the survey,
+      a link to the results is provided on the thank you page.</para>
+    </section>
+
+    <section>
+      <title>Sample size</title>
+
+      <para>An important note about this survey is that it has a small sample
+      size (103 complete responses at the time of writing), so any conclusions
+      drawn should be considered tentative.</para>
+
+      <para>To speculate on the overall number of users that this sample
+      represents, the <ulink
+      url="http://popcon.debian.org/source/by_inst.gz">Debian popularity
+      contest</ulink> reports 478 installations of Shorewall, 285 of which are
+      in active use. Assuming that the popularity contest represents 30% of
+      the Debian installed base (likely ridiculously optimistic), this would
+      make the number of active Shorewall systems approximately:</para>
+
+      <para>285 / 0.3 (percentage of Debian systems) / 0.26 (percentage Debian
+      holds of all distributions) = 3654 (rounding up the numbers to the
+      nearest whole, and assuming the percentages extrapolate
+      regularly)</para>
+
+      <para>This means that our survey represents a maximum of 2.8% of the
+      installed base, likely far less.</para>
+    </section>
+
+    <section>
+      <title>Other possible inaccuracies</title>
+
+      <para>Additionally, since the survey was open to multiple responses, it
+      could be that some people answered the questions about themselves more
+      than once, despite instructions to the contrary in the introduction
+      page.</para>
+
+      <para>There is an error in the released version of the survey for
+      question 15 (RAM size): it was a multiple choice question rather than
+      single choice, and thus there were more results than expected. The
+      number of errors doesn't seem to be significant.</para>
+
+      <para>If you notice any errors in this analysis, or have any suggestions
+      about how to improve it, please contact the author at <ulink
+      url="mailto:pgear@shorewall.net">pgear@shorewall.net</ulink>.</para>
     </section>
   </section>
 
   <section>
     <title>Results analysis</title>
-
-    <para>An important note about this survey is that it has a small sample
-    size (103 complete responses at the time of writing), so any conclusions
-    drawn should be considered tentative.</para>
-
-    <para>To speculate on the overall number of users that this sample
-    represents, the <ulink
-    url="http://popcon.debian.org/source/by_inst.gz">Debian popularity
-    contest</ulink> reports 478 installations of Shorewall, 285 of which are
-    in active use. Assuming that the popularity contest represents 30% of the
-    Debian installed base (likely ridiculously optimistic), this would make
-    the number of active Shorewall systems approximately:</para>
-
-    <para>285 / 0.3 (percentage of Debian systems) / 0.26 (percentage Debian
-    holds of all distributions) = 3654 (rounding up the numbers to the nearest
-    whole, and assuming the percentages extrapolate regularly)</para>
-
-    <para>This means that our survey represents a maximum of 2.8% of the
-    installed base, likely far less.</para>
-
-    <para>Additionally, since the survey was open to multiple responses, it
-    could be that some people answered the questions about themselves more
-    than once, despite instructions to the contrary in the introduction
-    page.</para>
-
-    <para>If you notice any errors in this analysis, or have any suggestions
-    about how to improve it, please contact the author at <ulink
-    url="mailto:pgear@shorewall.net">pgear@shorewall.net</ulink>.</para>
 
     <section>
       <title>Organisations</title>
@@ -222,9 +233,9 @@
       hardware, with a further 6% running it on x86-64/EM64T platforms. One
       response was received indicating use of Shorewall on MIPS (Linksys WRT
       platform). No responses were received for any other hardware platform.
-      While it is not surprising that Intel architectures would be first,
-      given their marketplace dominance, it seems a little skewed not to have
-      any representatives of other distributions.</para>
+      While it is not surprising that Intel architectures would be dominant,
+      given their market share, it seems a little skewed not to have any
+      representatives of other distributions.</para>
 
       <para>A good spread of CPU power is shown in the survey responses. The
       largest group was 400-999 MHz (30%), with only 16% of responses
@@ -238,11 +249,8 @@
       bias towards higher RAM figures. The majority (52%) of systems have
       between 256 and 1023 MB; only 11% of systems have less than 128 MB; 28%
       have 1024 MB or more. This reflects the more server-oriented workload
-      that many Shorewall systems run (see the section on server roles below).
-      (Note that there is an error in the released version of the survey for
-      this question: it was a multiple choice question rather than single
-      choice, and thus there were more results than expected. However, the
-      number of errors doesn't seem to be significant.)</para>
+      that many Shorewall systems run (see the section on server roles
+      below).</para>
 
       <para>Shorewall systems on the whole tend toward smaller OS hard disks,
       with 42% having disks 39 GB or smaller. The largest group by a small
@@ -277,9 +285,9 @@
 
       <para>The message about maintaining an up-to-date Shorewall system seems
       to have gotten through, with 61% of respondents running the latest
-      version (3.0), and an additional 22% running the previous stable version
-      (2.4). Only 14% of users are running unsupported versions (2.2 and
-      older).</para>
+      stable version (3.0), and an additional 22% running the previous stable
+      version (2.4). Only 14% of users are running unsupported older versions
+      (2.2 and previous).</para>
 
       <para>The most common roles played by Shorewall systems are:</para>
 
@@ -309,8 +317,8 @@
     <section>
       <title>Comments from users</title>
 
-      <para>Here's a sample of the comments we received about the survey -
-      they have been carefully sanitised to make us look good. ;-)</para>
+      <para>Following is a sample of the comments we received about the survey
+      - they have been carefully sanitised to make us look good. ;-)</para>
 
       <itemizedlist>
         <listitem>
@@ -358,6 +366,76 @@
   </section>
 
   <section>
+    <title>Lessons learned about survey technique</title>
+
+    <section>
+      <title>Treat surveys like releasing free software</title>
+
+      <itemizedlist>
+        <listitem>
+          <para>test on a small group before you go public</para>
+        </listitem>
+
+        <listitem>
+          <para>release early and often</para>
+        </listitem>
+
+        <listitem>
+          <para>make branches (copies) when you release alpha and beta
+          versions</para>
+        </listitem>
+
+        <listitem>
+          <para>merge the changes from branches (lessons you learned in those
+          versions) into the main trunk</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section>
+      <title>Start small and work towards what you want to know with specific,
+      concrete questions</title>
+
+      <para>I tried to do everything in one survey, and ended up confusing
+      some people. For example, despite the fact that the survey's start page
+      clearly says "Please answer the questions for only ONE SYSTEM running
+      Shorewall", i received multiple comments saying that they couldn't
+      answer accurately because they ran more than Shorewall system.</para>
+
+      <para>It would have been better to have two surveys: one about the
+      people who use Shorewall, and another about the systems they run it on.
+      Better still would be for Shorewall to automatically collect appropriate
+      information about systems and request permission to send it to a central
+      location for statistical analysis. How to do this and maintain users'
+      privacy and obtain their permission efficiently is not an easy problem
+      with a product like Shorewall, which doesn't actually stay running on
+      user systems, and doesn't present a user interface per se.</para>
+    </section>
+
+    <section>
+      <title>Be prepared beforehand</title>
+
+      <para>Within hours of the survey's release, 50% of the results were in.
+      Within 3 days, it hit the Zoomerang basic survey limit of 100 responses.
+      I had not planned for such an enthusiastic response, and also was too
+      busy to download all of the results before the survey's time limit
+      expired. Fortunately, i was able to obtain funding to allow a Zoomerang
+      "pro" subscription to be purchased and thus provide advanced analysis,
+      and complete downloads of the results.</para>
+    </section>
+
+    <section>
+      <title>Incrementally improve your surveys</title>
+
+      <para>The final version of this survey was released still with a few
+      bugs. The released version was just a copy of my master survey, and i
+      continued to maintain the master after the final survey was released
+      (and during this analysis), and i'm sure the next version will be even
+      better.</para>
+    </section>
+  </section>
+
+  <section>
     <title>Possible implications for the Shorewall project</title>
 
     <para>The users we have seem, on the whole, rather experienced, and very
@@ -370,7 +448,7 @@
     <para>Shorewall seems to be predominantly used in small, i386-based
     environments such as home LANs and small businesses. It seems to be
     frequently combined with a number of other basic functions, such as DNS,
-    DHCP, NTP, VPN. Integration with (or perhaps providing a plugin module
+    DHCP, NTP, VPN. Integration with (or perhaps providing a plug-in module
     for) a dedicated gateway distribution such as ipcop, Smoothwall, or Clark
     Connect might be a good way to serve the needs of our users.</para>
   </section>
@@ -378,100 +456,19 @@
   <section>
     <title>Possible implications for other free software projects</title>
 
-    <para></para>
-  </section>
+    <itemizedlist>
+      <listitem>
+        <para>The essence of free software is software by the people, for the
+        people. Knowing who the people are and what their needs are is
+        critical to this process.</para>
+      </listitem>
 
-  <section>
-    <title>Lessons learned about surveys</title>
-
-    <para></para>
-
-    <section>
-      <title>What i did right</title>
-
-      <para></para>
-
-      <itemizedlist>
-        <listitem>
-          <para>Treat surveys like releasing free software:</para>
-
-          <itemizedlist>
-            <listitem>
-              <para>release early and often</para>
-            </listitem>
-
-            <listitem>
-              <para>test on a small group before you go public</para>
-            </listitem>
-
-            <listitem>
-              <para>make branches (copies) when you release alpha and beta
-              versions</para>
-            </listitem>
-
-            <listitem>
-              <para>merge the changes from branches (lessons you learned in
-              those versions) into the main trunk</para>
-            </listitem>
-          </itemizedlist>
-        </listitem>
-      </itemizedlist>
-    </section>
-
-    <section>
-      <title>What i did wrong</title>
-
-      <para></para>
-
-      <itemizedlist>
-        <listitem>
-          <para>Start small and work towards what you want to know.</para>
-
-          <para>I tried to do everything in one survey, and ended up confusing
-          some people. For example, despite the fact that the survey's start
-          page clearly says "Please answer the questions for only ONE SYSTEM
-          running Shorewall", i received multiple comments saying that they
-          couldn't answer accurately because they ran more than Shorewall
-          system.</para>
-
-          <para>It would have been better to have two surveys: one about the
-          people who use Shorewall, and another about the systems they run it
-          on. Better still would be for Shorewall to automatically collect
-          appropriate information about systems and request permission to send
-          it to a central location for statistical analysis. How to do this
-          and maintain users' privacy and obtain their permission efficiently
-          is not an easy problem with a product like Shorewall, which doesn't
-          actually stay running on user systems, and doesn't present a user
-          interface per-se.</para>
-        </listitem>
-
-        <listitem>
-          <para>Be prepared beforehand.</para>
-
-          <para>Within hours of the survey's release, 50% of the results were
-          in. Within 3 days, it hit the Zoomerang basic survey limit of 100
-          responses. I had not planned for such an enthusiastic response, and
-          also was too busy to download all of the results before the survey's
-          time limit expired. Fortunately, i was able to obtain funding to
-          allow a Zoomerang "pro" subscription to be purchased and thus
-          provide advanced analysis, and complete downloads of the
-          results.</para>
-        </listitem>
-      </itemizedlist>
-
-      <para></para>
-    </section>
-  </section>
-
-  <section>
-    <title></title>
-
-    <para></para>
-  </section>
-
-  <section>
-    <title></title>
-
-    <para></para>
+      <listitem>
+        <para>If at all possible, build statistics gathering into your
+        application, and find a way to encourage people to use it. This
+        concrete data will help confirm the results of any surveys you might
+        conduct.</para>
+      </listitem>
+    </itemizedlist>
   </section>
 </article>

@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2006-03-14</pubdate>
+    <pubdate>2006-03-19</pubdate>
 
     <copyright>
       <year>2006</year>
@@ -125,16 +125,14 @@
       </listitem>
     </itemizedlist>
 
-    <para>There are three Xen domains. Dom0 (ursa) is used as a file server.
-    One DomU (which is usually Domain 1) is used as a firewall and the other
-    (lists, normally Domain 2) is used as a public Web/FTP/Mail/DNS server.
-    Because Xen 3 only supports three virtual interfaces per DomU, I also use
-    ursa as a gateway for our wireless network rather than placing that
-    function in the firewall DomU (that domain already has three interfaces).
-    Shorewall runs in both Dom0 and in the firewall domain.</para>
-
-    <para>The system has 1.5GB of RAM so I allocate 512MB to each server and
-    448MB to the firewall (the remaining 64MB is used by Xen).</para>
+    <para>There are four Xen domains. Dom0 (ursa) is used as a file server.
+    The first DomU (which is usually Domain 1) is used as a firewall; the
+    second DomU (lists, normally Domain 2) is used as a public
+    Web/FTP/Mail/DNS server while the third DomU (wireless, normally Domain 3)
+    is used as a gateway to our wireless network. A seperate wireless gateway
+    is necessary because Xen 3 only supports three virtual interfaces per DomU
+    and the firewall DomU already has three interfaces. Shorewall runs in
+    Dom0, in the firewall domain and in the wireless gateway..</para>
 
     <para>Below are the relevant configuration files for the three domains.
     The "loopback.nloopbacks=..." entries are used to restrict the number of
@@ -147,7 +145,7 @@
 
       <programlisting>title XEN
     root (hd0,1)
-    kernel /boot/xen.gz dom0_mem=524288 sched=bvt
+    kernel /boot/xen.gz dom0_mem=458752 sched=bvt
     module /boot/vmlinuz-xen root=/dev/hda2 vga=0x31a selinux=0    resume=/dev/hda1  splash=silent showopts loopback.nloopbacks=1
     module /boot/initrd-xen</programlisting>
 
@@ -160,7 +158,7 @@
 name     = "gateway"
 
 # usable ram:
-memory   = 448
+memory   = 256
 
 # kernel and initrd:
 kernel   = "/boot/vmlinuz-xen"
@@ -206,9 +204,38 @@ hostname = name
 
 # storage devices:
 disk     = [ 'phy:hda3,hda3,w' ]</programlisting>
+
+      <para>/etc/xen/auto/03-gateway — configuration file for the wireless
+      domain.</para>
+
+      <programlisting>#  -*- mode: python; -*-
+
+# configuration name:
+name     = "wireless"
+
+# usable ram:
+memory   = 256
+
+# kernel and initrd:
+kernel   = "/boot/vmlinuz-xen"
+ramdisk  = "/boot/initrd-xen"
+
+# boot device:
+root     = "/dev/hdb4"
+
+# boot to run level:
+extra    = "loopback.nloopbacks=0 3"
+
+# network interface:
+vif      = [ 'mac=aa:cc:00:00:00:04, bridge=xenbr0', 'mac=00:a0:cc:d1:db:12, bridge=xenbr3' ]
+dhcp     = 'dhcp'
+hostname = name
+
+# storage devices:
+disk     = [ 'phy:hdb4,hdb4,w' ]</programlisting>
     </blockquote>
 
-    <para>With all three Xen domains up and running, the system looks as shown
+    <para>With all four Xen domains up and running, the system looks as shown
     in the following diagram.</para>
 
     <graphic align="center" fileref="images/Xen4.png" />
@@ -217,36 +244,34 @@ disk     = [ 'phy:hda3,hda3,w' ]</programlisting>
     configuration.</para>
 
     <para>SuSE 10.0 includes Xen 3.0 which does not support PCI delegation; I
-    therefore use a bridged configuration with three briges (one for each
-    network interface). When Shorewall starts during boot, it creates the
-    three bridges and the tap device <filename
-    class="devicefile">tap0</filename> and adds tap0 to <filename
-    class="devicefile">xenbr0</filename>. tap0 is used by <ulink
-    url="OPENVPN.html">OpenVPN</ulink> to secure the Wifi zone.</para>
+    therefore use a bridged configuration with four bridges (one for each
+    network interface). When Shorewall starts during boot, it creates the four
+    bridges.</para>
 
     <para>Here is <filename>/etc/shorewall/init in Dom0</filename>:</para>
 
     <blockquote>
-      <programlisting>for bridge in xenbr0 xenbr1 xenbr2; do
+      <programlisting>for bridge in xenbr0 xenbr1 xenbr2 xenbr3; do
     if [ -z "$(/sbin/brctl show 2&gt; /dev/null | fgrep $bridge)" ]; then
-        /sbin/brctl addbr $bridge
-        /sbin/ip link set dev $bridge up
-        case $bridge in
+         /sbin/brctl addbr $bridge
+
+         case $bridge in
             xenbr2)
                 mac=`ip link show eth1 | grep 'link\/ether' | sed -e 's/.*ether \(..:..:..:..:..:..\).*/\1/'`
                 [ "$mac" = "fe:ff:ff:ff:ff:ff" ] || /sbin/ip link set dev eth1 addr fe:ff:ff:ff:ff:ff
                 /sbin/ip link set dev eth1 up
                 /sbin/brctl addif xenbr2 eth1
                 ;;
-            xenbr0)
-                if ! qt /sbin/ip link ls dev tap0; then
-                    /usr/sbin/openvpn --mktun --dev tap0
-                    /sbin/ip link set dev tap0 up
-                    /sbin/brctl addif xenbr0 tap0
-                fi
-                ;;
-       esac
-    fi
+            xenbr3)
+                 mac=`ip link show eth2 | grep 'link\/ether' | sed -e 's/.*ether \(..:..:..:..:..:..\).*/\1/'`
+                [ "$mac" = "fe:ff:ff:ff:ff:ff" ] || /sbin/ip link set dev eth2 addr fe:ff:ff:ff:ff:ff
+                /sbin/ip link set dev eth2 up
+                /sbin/brctl addif xenbr3 eth2
+               ;;
+        esac
+        
+        /sbin/ip link set dev $bridge up
+   fi
 done</programlisting>
     </blockquote>
 
@@ -254,11 +279,6 @@ done</programlisting>
     follows:</para>
 
     <itemizedlist>
-      <listitem>
-        <para>Isolate the Wireless Network so that only VPN access to the
-        local lan is allowed.</para>
-      </listitem>
-
       <listitem>
         <para>Allow traffic to flow unrestricted through the three bridges.
         This is done by configuring the hosts connected to each bridge as a
@@ -293,6 +313,7 @@ net     ipv4
       <programlisting>#SOURCE         DEST            POLICY          LOG             LIMIT:BURST
 #                                               LEVEL
 Wifi            all             REJECT          info
+all             Wifi            REJECT          info
 dmz             all             REJECT          info
 all             dmz             REJECT          info
 net             all             REJECT          info
@@ -303,7 +324,7 @@ all             all             ACCEPT
       <para><filename>/etc/shorewall/interfaces</filename>:</para>
 
       <programlisting>#ZONE   INTERFACE       BROADCAST       OPTIONS
-Wifi    eth2            192.168.3.255   dhcp,maclist
+Wifi    xenbr3          -               routeback
 loc     xenbr0          192.168.1.255   dhcp,routeback
 dmz     xenbr1          -               routeback
 net     xenbr2          -               routeback
@@ -316,23 +337,6 @@ net     xenbr2          -               routeback
 #SECTION ESTABLISHED
 #SECTION RELATED
 SECTION NEW
-#############################################################################################################
-#
-# BS Address rules
-#
-DROP            Wifi                            net:15.0.0.0/8
-DROP            Wifi                            net:16.0.0.0/8
-#
-# Insecure Wireless to local network
-#
-ACCEPT          Wifi                            loc                     udp     500
-ACCEPT          Wifi                            loc                     udp     53
-ACCEPT          Wifi                            loc                     udp     4500
-Ping/ACCEPT     Wifi                            loc
-#
-# Insecure Wireless to firewall
-#
-ACCEPT          Wifi                            fw                      udp     123
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
     </blockquote>
 
@@ -674,6 +678,237 @@ Ping/ACCEPT     fw                              dmz
 #
 DROP            net:82.96.96.3                          all
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+    </blockquote>
+
+    <para>The Shorewall configuration in the 'wireless' DomU is similarly
+    simple-minded. It's sole purpose is to protect the local network from the
+    Wireless net.</para>
+
+    <para>We restrict wireless access to clients that have established an
+    <ulink url="OPENVPN.html">OpenVPN</ulink> Bridged connection. The 'tap0'
+    device used by OpenVPN is bridged to eth2 using this startup
+    script:</para>
+
+    <blockquote>
+      <para><filename>/etc/init.d/bridge</filename>:</para>
+
+      <programlisting>#!/bin/sh
+#
+#     The Shoreline Firewall (Shorewall) Packet Filtering Firewall - V3.0
+#
+#     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
+#
+#     (c) 1999,2000,2001,2002,2003,2004,2005 - Tom Eastep (teastep@shorewall.net)
+#
+#       On most distributions, this file should be called /etc/init.d/shorewall.
+#
+#       Complete documentation is available at http://shorewall.net
+#
+#       This program is free software; you can redistribute it and/or modify
+#       it under the terms of Version 2 of the GNU General Public License
+#       as published by the Free Software Foundation.
+#
+#       This program is distributed in the hope that it will be useful,
+#       but WITHOUT ANY WARRANTY; without even the implied warranty of
+#       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#       GNU General Public License for more details.
+#
+#       You should have received a copy of the GNU General Public License
+#       along with this program; if not, write to the Free Software
+#       Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
+#
+#       If an error occurs while starting or restarting the firewall, the
+#       firewall is automatically stopped.
+#
+#       Commands are:
+#
+#          bridge start                   Starts the bridge
+#          bridge restart                         Restarts the bridge
+#          bridge reload                          Restarts the bridge
+#          bridge stop                    Stops the bridge
+#          bridge status                  Displays bridge status
+#
+
+# chkconfig: 2345 4 99
+# description: Packet filtering firewall
+
+### BEGIN INIT INFO
+# Provides:       bridge
+# Required-Start: boot.udev
+# Required-Stop:
+# Default-Start:  2 3 5
+# Default-Stop:   0 1 6
+# Description:    starts and stops the bridge
+### END INIT INFO
+
+################################################################################
+# Interfaces to be bridged -- may be listed by device name or by MAC
+#
+INTERFACES="eth0"
+
+#
+# Tap Devices
+#
+TAPS="tap0"
+
+################################################################################
+# Give Usage Information                                                       #
+################################################################################
+usage() {
+    echo "Usage: $0 start|stop|reload|restart|status"
+    exit 1
+}
+#################################################################################
+# Find the interface with the passed MAC address
+#################################################################################
+find_interface_by_mac() {
+    local mac=$1 first second rest dev
+
+    /sbin/ip link ls | while read first second rest; do
+        case $first in
+            *:)
+                dev=$second
+                ;;
+            *)
+                if [ "$second" = $mac ]; then
+                    echo ${dev%:}
+                    return
+                fi
+        esac
+    done
+}
+################################################################################
+# Convert MAC addresses to interface names
+################################################################################
+get_interfaces() {
+    local interfaces= interface
+
+    for interface in $INTERFACES; do
+        case $interface in
+            *:*:*)
+                interface=$(find_interface_by_mac $interface)
+                [ -n "$interface" ] || echo "WARNING: Can't find an interface with MAC address $mac"
+                ;;
+        esac
+        interfaces="$interfaces $interface"
+    done
+
+    INTERFACES="$interfaces"
+}
+################################################################################
+# Start the Bridge
+################################################################################
+do_start()
+{
+    local interface
+
+    get_interfaces
+
+    for interface in $TAPS; do
+        /usr/sbin/openvpn --mktun --dev $interface
+    done
+
+   /sbin/brctl addbr br0
+
+   for interface in $INTERFACES $TAPS; do
+        /sbin/ip link set $interface up
+        /sbin/brctl addif br0 $interface
+   done
+}
+################################################################################
+# Stop the Bridge
+################################################################################
+do_stop()
+{
+    local interface
+
+    get_interfaces
+
+    for interface in $INTERFACES $TAPS; do
+        /sbin/brctl delif br0 $interface
+        /sbin/ip link set $interface down
+    done
+
+    /sbin/ip link set br0 down
+
+    /sbin/brctl delbr br0
+
+    for interface in $TAPS; do
+        /usr/sbin/openvpn --rmtun --dev $interface
+    done
+}
+################################################################################
+# E X E C U T I O N    B E G I N S   H E R E                                   #
+################################################################################
+command="$1"
+
+case "$command" in
+    start)
+        do_start
+        ;;
+    stop)
+        do_stop
+        ;;
+    restart|reload)
+        do_stop
+        do_start
+        ;;
+    status)
+        /sbin/brctl show
+        ;;
+    *)
+        usage
+        ;;
+esac</programlisting>
+
+      <para>BRIDGING=No in
+      <filename>/etc/shorewall/shorewall.conf</filename>.</para>
+
+      <para><filename>/etc/shorewall/zones</filename>:</para>
+
+      <programlisting>#ZONE   TYPE            OPTIONS         IN                      OUT
+#                                       OPTIONS                 OPTIONS
+fw      firewall
+Wifi    ipv4
+loc     ipv4
+#LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
+
+      <para><filename>/etc/shorewall/interfaces</filename>:</para>
+
+      <programlisting>#ZONE   INTERFACE       BROADCAST       OPTIONS
+Wifi    eth4            192.168.3.255   dhcp,maclist
+loc     br0             192.168.1.255   dhcp,routeback
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
+</programlisting>
+
+      <para><filename>/etc/shorewall/policy</filename>:</para>
+
+      <programlisting>#SOURCE         DEST            POLICY          LOG             LIMIT:BURST
+#                                               LEVEL
+Wifi            all             REJECT          info
+all             all             ACCEPT
+#LAST LINE -- DO NOT REMOVE</programlisting>
+
+      <para><filename>/etc/shorewall/tunnels</filename>:</para>
+
+      <programlisting>#TYPE                   ZONE    GATEWAY         GATEWAY
+#                                               ZONE
+openvpnserver           Wifi    192.168.3.0/24
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+
+      <para><filename>/etc/shorewall/maclist (Note that this system runs
+      Shorewall 3.2 so there is an additional 'TARGET'
+      column)</filename>:</para>
+
+      <programlisting>#TARGET         INTERFACE               MAC                     IP ADDRESSES (Optional)
+ACCEPT          eth4                    00:04:5a:0e:85:b9                       #WAP11
+ACCEPT          eth4                    00:06:25:45:33:3c                       #WET11
+ACCEPT          eth4                    00:0b:cd:53:cc:97       192.168.3.8     #TIPPER
+ACCEPT          eth4                    00:0f:66:ef:b6:f6       192.168.3.8     #TIPPER1
+ACCEPT          eth4                    00:12:79:3d:fe:2e       192.168.3.6     #Work Laptop
+ACCEPT          eth4                    -                       192.168.3.254   #Broadcast/Multicast from us
+DROP:info       eth4                    -                       192.168.3.0/24
+#LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
     </blockquote>
   </section>
 </article>

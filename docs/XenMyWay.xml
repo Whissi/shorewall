@@ -134,8 +134,8 @@
     and the firewall DomU already has three interfaces. Shorewall runs in
     Dom0, in the firewall domain and in the wireless gateway..</para>
 
-    <para>Below are the relevant configuration files for the three domains.
-    The "loopback.nloopbacks=..." entries are used to restrict the number of
+    <para>Below are the relevant configuration files for the four domains. The
+    "loopback.nloopbacks=..." entries are used to restrict the number of
     "veth<emphasis>n</emphasis>" devices that the Xen kernel creates. I use
     partitions on my hard drives for DomU storage devices.</para>
 
@@ -280,7 +280,7 @@ done</programlisting>
 
     <itemizedlist>
       <listitem>
-        <para>Allow traffic to flow unrestricted through the three bridges.
+        <para>Allow traffic to flow unrestricted through the four bridges.
         This is done by configuring the hosts connected to each bridge as a
         separate zone and relying on the implicit intra-zone ACCEPT policy to
         permit traffic through the bridge.</para>

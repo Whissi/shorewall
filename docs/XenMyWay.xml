@@ -360,6 +360,11 @@ SECTION NEW
 
       <graphic align="center" fileref="images/network4.png" />
 
+      <para>The two laptops can be directly attached to the LAN as shown above
+      or they can be attached wirelessly through the <link
+      linkend="Wireless">wireless gateway</link> -- their IP addresses are the
+      same in either case.</para>
+
       <para>The Shorewall configuration files are shown below. All routing and
       secondary IP addresses are handled in the SuSE network
       configuration.</para>
@@ -699,7 +704,11 @@ DROP            net:82.96.96.3                          all
       connection. This configuration illustrates that you can use any Linux
       system on your internal LAN as a wireless gateway -- it doesn't have to
       be your main firewall (and it doesn't have to run in a Xen domain
-      either).</para>
+      either). The wireless gateway runs a DHCP server that assigns wireless
+      hosts an IP address in 192.168.3.0/24 -- The OpenVPN server running on
+      the gateway assigns its clients an IP address in 192.168.1.0/24 so,
+      thanks to bridging, these clients appear to be physically attached to
+      the LAN).</para>
 
       <graphic align="center" fileref="images/Xen6.png" />
 

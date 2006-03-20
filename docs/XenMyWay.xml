@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2006-03-19</pubdate>
+    <pubdate>2006-03-20</pubdate>
 
     <copyright>
       <year>2006</year>
@@ -92,7 +92,7 @@
       </listitem>
     </orderedlist>
 
-    <para>All of the Linux systems run SuSE 10.0.</para>
+    <para>All of the Linux systems run SuSE 10.0 or SuSE 10.1 Beta.</para>
 
     <para>If you are unfamiliar with Xen networking, I recommend that you read
     the first section of the companion <ulink url="Xen.html">Xen and
@@ -132,27 +132,30 @@
     is used as a gateway to our wireless network. A seperate wireless gateway
     is necessary because Xen 3 only supports three virtual interfaces per DomU
     and the firewall DomU already has three interfaces. Shorewall runs in
-    Dom0, in the firewall domain and in the wireless gateway..</para>
+    Dom0, in the firewall domain and in the wireless gateway.</para>
 
-    <para>Below are the relevant configuration files for the four domains. The
-    "loopback.nloopbacks=..." entries are used to restrict the number of
-    "veth<emphasis>n</emphasis>" devices that the Xen kernel creates. I use
-    partitions on my hard drives for DomU storage devices.</para>
+    <section id="Domains">
+      <title>Domain Configuration</title>
 
-    <blockquote>
-      <para><filename>/boot/grub/menu.lst</filename> — here is the entry that
-      boots Xen in Dom0.</para>
+      <para>Below are the relevant configuration files for the four domains.
+      The "loopback.nloopbacks=..." entries are used to restrict the number of
+      "veth<emphasis>n</emphasis>" devices that the Xen kernel creates. I use
+      partitions on my hard drives for DomU storage devices.</para>
 
-      <programlisting>title XEN
+      <blockquote>
+        <para><filename>/boot/grub/menu.lst</filename> — here is the entry
+        that boots Xen in Dom0.</para>
+
+        <programlisting>title XEN
     root (hd0,1)
     kernel /boot/xen.gz dom0_mem=458752 sched=bvt
     module /boot/vmlinuz-xen root=/dev/hda2 vga=0x31a selinux=0    resume=/dev/hda1  splash=silent showopts loopback.nloopbacks=1
     module /boot/initrd-xen</programlisting>
 
-      <para><filename>/etc/xen/auto/01-gateway</filename> — configuration file
-      for the firewall domain</para>
+        <para><filename>/etc/xen/auto/01-gateway</filename> — configuration
+        file for the firewall domain</para>
 
-      <programlisting>#  -*- mode: python; -*-
+        <programlisting>#  -*- mode: python; -*-
 
 # configuration name:
 name     = "gateway"
@@ -177,10 +180,10 @@ hostname = name
 # storage devices:
 disk     = [ 'phy:hdb2,hdb2,w' ]</programlisting>
 
-      <para><filename>/etc/xen/auto/02-server</filename> — configuration file
-      for the lists domain</para>
+        <para><filename>/etc/xen/auto/02-server</filename> — configuration
+        file for the lists domain</para>
 
-      <programlisting>#  -*- mode: python; -*-
+        <programlisting>#  -*- mode: python; -*-
 
 # configuration name:
 name     = "server"
@@ -205,10 +208,10 @@ hostname = name
 # storage devices:
 disk     = [ 'phy:hda3,hda3,w' ]</programlisting>
 
-      <para>/etc/xen/auto/03-gateway — configuration file for the wireless
-      domain.</para>
+        <para>/etc/xen/auto/03-wireless — configuration file for the wireless
+        domain.</para>
 
-      <programlisting>#  -*- mode: python; -*-
+        <programlisting>#  -*- mode: python; -*-
 
 # configuration name:
 name     = "wireless"
@@ -233,25 +236,24 @@ hostname = name
 
 # storage devices:
 disk     = [ 'phy:hdb4,hdb4,w' ]</programlisting>
-    </blockquote>
+      </blockquote>
 
-    <para>With all four Xen domains up and running, the system looks as shown
-    in the following diagram.</para>
+      <para>With all four Xen domains up and running, the system looks as
+      shown in the following diagram.</para>
 
-    <graphic align="center" fileref="images/Xen4.png" />
+      <graphic align="center" fileref="images/Xen4.png" />
 
-    <para>The zones correspond to the Shorewall zones in the Dom0
-    configuration.</para>
+      <para>The zones correspond to the Shorewall zones in the Dom0
+      configuration.</para>
 
-    <para>SuSE 10.0 includes Xen 3.0 which does not support PCI delegation; I
-    therefore use a bridged configuration with four bridges (one for each
-    network interface). When Shorewall starts during boot, it creates the four
-    bridges.</para>
+      <para>SuSE 10.0 includes Xen 3.0 which does not support PCI delegation;
+      I therefore use a bridged configuration with four bridges (one for each
+      network interface). When Shorewall starts during boot of Dom0, it
+      creates the four bridges using this
+      <filename>/etc/shorewall/init</filename> extension script:</para>
 
-    <para>Here is <filename>/etc/shorewall/init in Dom0</filename>:</para>
-
-    <blockquote>
-      <programlisting>for bridge in xenbr0 xenbr1 xenbr2 xenbr3; do
+      <blockquote>
+        <programlisting>for bridge in xenbr0 xenbr1 xenbr2 xenbr3; do
     if [ -z "$(/sbin/brctl show 2&gt; /dev/null | fgrep $bridge)" ]; then
          /sbin/brctl addbr $bridge
 
@@ -269,36 +271,40 @@ disk     = [ 'phy:hdb4,hdb4,w' ]</programlisting>
                 /sbin/brctl addif xenbr3 eth2
                ;;
         esac
-        
+
         /sbin/ip link set dev $bridge up
    fi
 done</programlisting>
-    </blockquote>
+      </blockquote>
+    </section>
 
-    <para>The goals for the Shorewall configuration in Dom0 are as
-    follows:</para>
+    <section id="Dom0">
+      <title>Dom0 Configuration</title>
 
-    <itemizedlist>
-      <listitem>
-        <para>Allow traffic to flow unrestricted through the four bridges.
-        This is done by configuring the hosts connected to each bridge as a
-        separate zone and relying on the implicit intra-zone ACCEPT policy to
-        permit traffic through the bridge.</para>
-      </listitem>
+      <para>The goals for the Shorewall configuration in Dom0 are as
+      follows:</para>
 
-      <listitem>
-        <para>Ensure that there is no stray traffic between the zones. This is
-        a "belt+suspenders" measure since there should be no routing between
-        the bridges (because they don't have IP addresses).</para>
-      </listitem>
-    </itemizedlist>
+      <itemizedlist>
+        <listitem>
+          <para>Allow traffic to flow unrestricted through the four bridges.
+          This is done by configuring the hosts connected to each bridge as a
+          separate zone and relying on Shorewall's implicit intra-zone ACCEPT
+          policy to permit traffic through the bridge.</para>
+        </listitem>
 
-    <para>The configuration is a simple one:</para>
+        <listitem>
+          <para>Ensure that there is no stray traffic between the zones. This
+          is a "belt+suspenders" measure since there should be no routing
+          between the bridges (because they don't have IP addresses).</para>
+        </listitem>
+      </itemizedlist>
 
-    <blockquote>
-      <para><filename>/etc/shorewall/zones</filename>:</para>
+      <para>The configuration is a simple one:</para>
 
-      <programlisting>#ZONE   TYPE            OPTIONS         IN                      OUT
+      <blockquote>
+        <para><filename>/etc/shorewall/zones</filename>:</para>
+
+        <programlisting>#ZONE   TYPE            OPTIONS         IN                      OUT
 #                                       OPTIONS                 OPTIONS
 fw      firewall
 Wifi    ipv4
@@ -308,9 +314,10 @@ net     ipv4
 #LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE
 </programlisting>
 
-      <para><filename>/etc/shorewall/policy</filename>:</para>
+        <para><filename>/etc/shorewall/policy</filename> (Note the unusual use
+        of an ACCEPT all-&gt;all policy):</para>
 
-      <programlisting>#SOURCE         DEST            POLICY          LOG             LIMIT:BURST
+        <programlisting>#SOURCE         DEST            POLICY          LOG             LIMIT:BURST
 #                                               LEVEL
 Wifi            all             REJECT          info
 all             Wifi            REJECT          info
@@ -321,42 +328,46 @@ all             net             REJECT          info
 all             all             ACCEPT
 #LAST LINE -- DO NOT REMOVE</programlisting>
 
-      <para><filename>/etc/shorewall/interfaces</filename>:</para>
+        <para><filename>/etc/shorewall/interfaces</filename>:</para>
 
-      <programlisting>#ZONE   INTERFACE       BROADCAST       OPTIONS
+        <programlisting>#ZONE   INTERFACE       BROADCAST       OPTIONS
 Wifi    xenbr3          -               routeback
 loc     xenbr0          192.168.1.255   dhcp,routeback
 dmz     xenbr1          -               routeback
 net     xenbr2          -               routeback
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
 
-      <para><filename>/etc/shorewall/rules</filename>:</para>
+        <para><filename>/etc/shorewall/rules</filename>:</para>
 
-      <programlisting>#ACTION         SOURCE                          DEST            PROTO   DEST    SOURCE          ORIGINAL        RATE            USER/
+        <programlisting>#ACTION         SOURCE                          DEST            PROTO   DEST    SOURCE          ORIGINAL        RATE            USER/
 #                                                                       PORT    PORT(S)         DEST            LIMIT           GROUP
 #SECTION ESTABLISHED
 #SECTION RELATED
 SECTION NEW
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
-    </blockquote>
+      </blockquote>
+    </section>
 
-    <para>In the firewall DomU, I run a conventional three-interface firewall
-    with Proxy ARP DMZ -- it is very similar to the firewall described in the
-    <ulink url="shorewall_setup_guide.htm">Shorewall Setup Guide</ulink>. The
-    firewall runs a routed <ulink url="OPENVPN.html">OpenVPN server</ulink> to
-    provide roadwarrior access for our two laptops. Here is the firewall's
-    view of the network:</para>
+    <section id="Firewall">
+      <title>Firewall DomU Configuration</title>
 
-    <graphic align="center" fileref="images/network4.png" />
+      <para>In the firewall DomU, I run a conventional three-interface
+      firewall with Proxy ARP DMZ -- it is very similar to the firewall
+      described in the <ulink url="shorewall_setup_guide.htm">Shorewall Setup
+      Guide</ulink>. The firewall runs a routed <ulink
+      url="OPENVPN.html">OpenVPN server</ulink> to provide roadwarrior access
+      for our two laptops. Here is the firewall's view of the network:</para>
 
-    <para>The Shorewall configuration files are shown below. All routing and
-    secondary IP addresses are handled in the SuSE network
-    configuration.</para>
+      <graphic align="center" fileref="images/network4.png" />
 
-    <blockquote>
-      <para>/etc/shorewall/shorewall.conf:</para>
+      <para>The Shorewall configuration files are shown below. All routing and
+      secondary IP addresses are handled in the SuSE network
+      configuration.</para>
 
-      <programlisting>TARTUP_ENABLED=Yes
+      <blockquote>
+        <para>/etc/shorewall/shorewall.conf:</para>
+
+        <programlisting>TARTUP_ENABLED=Yes
 VERBOSITY=0
 LOGFILE=/var/log/firewall
 LOGFORMAT="Shorewall:%s:%s:"
@@ -407,9 +418,9 @@ MACLIST_TABLE=mangle
 MACLIST_DISPOSITION=DROP
 TCP_FLAGS_DISPOSITION=DROP</programlisting>
 
-      <para><filename>/etc/shorewall/zones</filename>:</para>
+        <para><filename>/etc/shorewall/zones</filename>:</para>
 
-      <programlisting>#ZONE   TYPE            OPTIONS         IN                      OUT
+        <programlisting>#ZONE   TYPE            OPTIONS         IN                      OUT
 #                                       OPTIONS                 OPTIONS
 fw      firewall
 net     ipv4            #Internet
@@ -419,9 +430,9 @@ vpn     ipv4            #Open VPN clients
 #LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE
 </programlisting>
 
-      <para><filename>/etc/shorewall/policy</filename>:</para>
+        <para><filename>/etc/shorewall/policy</filename>:</para>
 
-      <programlisting>#SOURCE         DEST            POLICY          LOG             LIMIT:BURST
+        <programlisting>#SOURCE         DEST            POLICY          LOG             LIMIT:BURST
 #                                               LEVEL
 $FW             $FW             ACCEPT
 $FW             net             ACCEPT
@@ -436,9 +447,9 @@ net             all             DROP            $LOG            10/sec:40
 all             all             REJECT          $LOG
 #LAST LINE -- DO NOT REMOVE</programlisting>
 
-      <para><filename>/etc/shorewall/params (edited)</filename>:</para>
+        <para><filename>/etc/shorewall/params (edited)</filename>:</para>
 
-      <programlisting>MIRRORS=&lt;comma-separated list of Shorewall mirrors&gt;
+        <programlisting>MIRRORS=&lt;comma-separated list of Shorewall mirrors&gt;
 
 NTPSERVERS=&lt;comma-separated list of NTP servers I sync with&gt;
 
@@ -452,71 +463,68 @@ EXT_IF=eth3
 
 OMAK=&lt;IP address at our second home&gt;
 
-#LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE
-</programlisting>
+#LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
 
-      <para><filename>/etc/shorewall/init</filename>:</para>
+        <para><filename>/etc/shorewall/init</filename>:</para>
 
-      <programlisting>echo 1 &gt; /proc/sys/net/ipv4/netfilter/ip_conntrack_tcp_be_liberal
+        <programlisting>echo 1 &gt; /proc/sys/net/ipv4/netfilter/ip_conntrack_tcp_be_liberal</programlisting>
 
-</programlisting>
+        <para><filename>/</filename></para>
 
-      <para><filename>/</filename></para>
+        <para><filename>/etc/shorewall/interfaces</filename>:</para>
 
-      <para><filename>/etc/shorewall/interfaces</filename>:</para>
-
-      <programlisting>#ZONE   INTERFACE       BROADCAST               OPTIONS
+        <programlisting>#ZONE   INTERFACE       BROADCAST               OPTIONS
 net     $EXT_IF         206.124.146.255         dhcp,norfc1918,logmartians,blacklist,tcpflags,nosmurfs
 dmz     $DMZ_IF         192.168.0.255           logmartians
 loc     $INT_IF         192.168.1.255           dhcp,routeback,logmartians
 vpn     tun+            -
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
 
-      <para><filename>/etc/shorewall/nat</filename>:</para>
+        <para><filename>/etc/shorewall/nat</filename>:</para>
 
-      <programlisting>#EXTERNAL               INTERFACE       INTERNAL        ALL             LOCAL
+        <programlisting>#EXTERNAL               INTERFACE       INTERNAL        ALL             LOCAL
 #                                                       INTERFACES
 206.124.146.178         $EXT_IF         192.168.1.5     No              No
 206.124.146.180         $EXT_IF         192.168.1.6     No              No
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
 
-      <para><filename>/etc/shorewall/masq</filename>:</para>
+        <para><filename>/etc/shorewall/masq</filename>:</para>
 
-      <programlisting>#INTERFACE              SUBNET          ADDRESS         PROTO   PORT(S) IPSEC
+        <programlisting>#INTERFACE              SUBNET          ADDRESS         PROTO   PORT(S) IPSEC
 +$EXT_IF:192.168.1.1    0.0.0.0/0       192.168.1.254
 $EXT_IF                 192.168.0.0/22  206.124.146.179
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
 
-      <para><filename>/etc/shorewall/proxyarp</filename>:</para>
+        <para><filename>/etc/shorewall/proxyarp</filename>:</para>
 
-      <programlisting>#ADDRESS        INTERFACE       EXTERNAL        HAVEROUTE       PERSISTENT
+        <programlisting>#ADDRESS        INTERFACE       EXTERNAL        HAVEROUTE       PERSISTENT
 192.168.1.1     $EXT_IF         $INT_IF         yes
 206.124.146.177 $DMZ_IF         $EXT_IF         yes
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
 
-      <para><filename>/etc/shorewall/tunnels</filename>:</para>
+        <para><filename>/etc/shorewall/tunnels</filename>:</para>
 
-      <programlisting>#TYPE                   ZONE    GATEWAY         GATEWAY
+        <programlisting>#TYPE                   ZONE    GATEWAY         GATEWAY
 #                                               ZONE
 openvpnserver:udp       net     0.0.0.0/0
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
 
-      <para><filename>/etc/shorewall/actions</filename>:</para>
+        <para><filename>/etc/shorewall/actions</filename>:</para>
 
-      <programlisting>#ACTION
+        <programlisting>#ACTION
 Mirrors             # Accept traffic from Shorewall Mirrors
 #LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
 
-      <para><filename>/etc/shorewall/action.Mirrors</filename>:</para>
+        <para><filename>/etc/shorewall/action.Mirrors</filename>:</para>
 
-      <programlisting>#TARGET SOURCE          DEST            PROTO   DEST    SOURCE     ORIGINAL     RATE
+        <programlisting>#TARGET SOURCE          DEST            PROTO   DEST    SOURCE     ORIGINAL     RATE
 #                                               PORT    PORT(S)    DEST         LIMIT
 ACCEPT  $MIRRORS
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
 
-      <para><filename>/etc/shorewall/rules</filename>:</para>
+        <para><filename>/etc/shorewall/rules</filename>:</para>
 
-      <programlisting>SECTION NEW
+        <programlisting>SECTION NEW
 ###############################################################################################################################################################################
 #ACTION         SOURCE                          DEST                    PROTO   DEST                                    SOURCE          ORIGINAL        RATE    USER/
 #                                                                               PORT                                    PORT(S)         DEST            LIMIT   GROUP
@@ -678,23 +686,32 @@ Ping/ACCEPT     fw                              dmz
 #
 DROP            net:82.96.96.3                          all
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
-    </blockquote>
+      </blockquote>
+    </section>
 
-    <para>The Shorewall configuration in the 'wireless' DomU is similarly
-    simple-minded. It's sole purpose is to protect the local network from the
-    Wireless net.</para>
+    <section id="Wireless">
+      <title>Wireless Gateway DomU Configuration</title>
 
-    <graphic align="center" fileref="images/Xen6.png" />
+      <para>The Shorewall configuration in the 'wireless' DomU is very
+      simple-minded. It's sole purpose is to protect the local network from
+      the Wireless net by restricting wireless access to clients that have
+      established an <ulink url="OPENVPN.html">OpenVPN</ulink> Bridged
+      connection. This configuration illustrates that you can use any Linux
+      system on your internal LAN as a wireless gateway -- it doesn't have to
+      be your main firewall (and it doesn't have to run in a Xen domain
+      either).</para>
 
-    <para>We restrict wireless access to clients that have established an
-    <ulink url="OPENVPN.html">OpenVPN</ulink> Bridged connection. The 'tap0'
-    device used by OpenVPN is bridged to eth2 using this startup
-    script:</para>
+      <graphic align="center" fileref="images/Xen6.png" />
 
-    <blockquote>
-      <para><filename>/etc/init.d/bridge</filename>:</para>
+      <para>The 'tap0' device used by OpenVPN is bridged to eth2 using this
+      SuSE-specific startup script (see the <ulink url="bridge.html">Shorewall
+      Bridge Documentation</ulink> for scripts that work on other
+      distributions):</para>
 
-      <programlisting>#!/bin/sh
+      <blockquote>
+        <para><filename>/etc/init.d/bridge</filename>:</para>
+
+        <programlisting>#!/bin/sh
 #
 #     The Shoreline Firewall (Shorewall) Packet Filtering Firewall - V3.0
 #
@@ -744,7 +761,7 @@ DROP            net:82.96.96.3                          all
 ### END INIT INFO
 
 ################################################################################
-# Interfaces to be bridged -- may be listed by device name or by MAC
+# Interfaces to be bridged -- may be listed by device name or by MAC address
 #
 INTERFACES="eth2"
 
@@ -798,7 +815,7 @@ get_interfaces() {
     INTERFACES="$interfaces"
 }
 ################################################################################
-# Start the Bridge
+# Configure the Bridge -- IP configuration is left to the SuSE network scripts
 ################################################################################
 do_start()
 {
@@ -863,46 +880,63 @@ case "$command" in
         ;;
 esac</programlisting>
 
-      <para>BRIDGING=No in
-      <filename>/etc/shorewall/shorewall.conf</filename>.</para>
+        <para>As mentioned in the comments in the above script, IP
+        configuration of the bridge is done through the normal SuSE network
+        scripts. Here's the config file:</para>
 
-      <para><filename>/etc/shorewall/zones</filename>:</para>
+        <programlisting>BOOTPROTO='static'
+BROADCAST=''
+IPADDR='192.168.1.7'
+MTU=''
+NAME='Ethernet Network Card'
+NETMASK='255.255.255.0'
+NETWORK=''
+REMOTE_IPADDR=''
+STARTMODE='auto'
+USERCONTROL='no'
+_nm_name='br0'</programlisting>
 
-      <programlisting>#ZONE   TYPE            OPTIONS         IN                      OUT
+        <para>Since there is no requirement to restrict connections through
+        the bridge, I set BRIDGING=No in
+        <filename>/etc/shorewall/shorewall.conf</filename>.</para>
+
+        <para><filename>/etc/shorewall/zones</filename>:</para>
+
+        <programlisting>#ZONE   TYPE            OPTIONS         IN                      OUT
 #                                       OPTIONS                 OPTIONS
 fw      firewall
 Wifi    ipv4
 loc     ipv4
 #LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
 
-      <para><filename>/etc/shorewall/interfaces</filename>:</para>
+        <para><filename>/etc/shorewall/interfaces</filename>:</para>
 
-      <programlisting>#ZONE   INTERFACE       BROADCAST       OPTIONS
+        <programlisting>#ZONE   INTERFACE       BROADCAST       OPTIONS
 Wifi    eth4            192.168.3.255   dhcp,maclist
 loc     br0             192.168.1.255   dhcp,routeback
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
 </programlisting>
 
-      <para><filename>/etc/shorewall/policy</filename>:</para>
+        <para><filename>/etc/shorewall/policy</filename>:</para>
 
-      <programlisting>#SOURCE         DEST            POLICY          LOG             LIMIT:BURST
+        <programlisting>#SOURCE         DEST            POLICY          LOG             LIMIT:BURST
 #                                               LEVEL
 Wifi            all             REJECT          info
 all             all             ACCEPT
 #LAST LINE -- DO NOT REMOVE</programlisting>
 
-      <para><filename>/etc/shorewall/tunnels</filename>:</para>
+        <para><filename>/etc/shorewall/tunnels</filename>:</para>
 
-      <programlisting>#TYPE                   ZONE    GATEWAY         GATEWAY
+        <programlisting>#TYPE                   ZONE    GATEWAY         GATEWAY
 #                                               ZONE
 openvpnserver           Wifi    192.168.3.0/24
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
 
-      <para><filename>/etc/shorewall/maclist (Note that this system runs
-      Shorewall 3.2 so there is an additional 'TARGET'
-      column)</filename>:</para>
+        <para><filename>/etc/shorewall/maclist (Note that this system runs
+        Shorewall 3.2 so there is an additional 'TARGET'
+        column)</filename>:</para>
 
-      <programlisting>#TARGET         INTERFACE               MAC                     IP ADDRESSES (Optional)
+        <programlisting>#TARGET         INTERFACE               MAC                     IP ADDRESSES (Optional)
 ACCEPT          eth4                    00:04:5a:0e:85:b9                       #WAP11
 ACCEPT          eth4                    00:06:25:45:33:3c                       #WET11
 ACCEPT          eth4                    00:0b:cd:53:cc:97       192.168.3.8     #TIPPER
@@ -911,6 +945,69 @@ ACCEPT          eth4                    00:12:79:3d:fe:2e       192.168.3.6     
 ACCEPT          eth4                    -                       192.168.3.254   #Broadcast/Multicast from us
 DROP:info       eth4                    -                       192.168.3.0/24
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
-    </blockquote>
+
+        <para><filename>/etc/shorewall/rules</filename>:</para>
+
+        <programlisting>#ACTION         SOURCE                          DEST            PROTO   DEST    SOURCE          ORIGINAL        RATE            USER/
+#                                                                       PORT    PORT(S)         DEST            LIMIT           GROUP
+#SECTION ESTABLISHED
+#SECTION RELATED
+SECTION NEW
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+      </blockquote>
+
+      <para>Here is the configuration of OpenVPN on this system:</para>
+
+      <blockquote>
+        <para><filename>/etc/openvpn/server-bridge</filename> (Note that I
+        prefer to push two /1 routes rather than to use the <emphasis
+        role="bold">redirect-gateway</emphasis> directive; I find that the
+        latter occasionally leaves the remote system with <emphasis
+        role="bold">no</emphasis> default gateway):</para>
+
+        <programlisting>dev tap0
+
+local 192.168.3.254
+
+server-bridge 192.168.1.5 255.255.255.0 192.168.1.64 192.168.1.71
+
+client-to-client
+
+dh dh1024.pem
+
+ca /etc/certs/cacert.pem
+
+crl-verify /etc/certs/crl.pem
+
+cert /etc/certs/wireless.pem
+key /etc/certs/wireless_key.pem
+
+port 1194
+
+comp-lzo
+
+user nobody
+group nogroup
+
+keepalive 15 45
+ping-timer-rem
+persist-tun
+persist-key
+
+client-config-dir /etc/openvpn/bridge-clients
+ccd-exclusive
+
+verb 3
+
+push "route 0.0.0.0 128.0.0.0 192.168.1.254"
+push "route 128.0.0.0 128.0.0.0 192.168.1.254"</programlisting>
+
+        <para><filename>/etc/bridge-clients/tipper.shorewall.net</filename>
+        (used to assign a fixed IP address to clients -- there are other
+        similar files in this directory):</para>
+
+        <programlisting>ifconfig-push 192.168.1.8 255.255.255.0</programlisting>
+      </blockquote>
+    </section>
   </section>
 </article>

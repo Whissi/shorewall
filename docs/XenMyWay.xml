@@ -279,7 +279,7 @@ done</programlisting>
     </section>
 
     <section id="Dom0">
-      <title>Dom0 Configuration</title>
+      <title>Dom0 Shorewall Configuration</title>
 
       <para>The goals for the Shorewall configuration in Dom0 are as
       follows:</para>
@@ -349,7 +349,7 @@ SECTION NEW
     </section>
 
     <section id="Firewall">
-      <title>Firewall DomU Configuration</title>
+      <title>Firewall DomU Shorewall Configuration</title>
 
       <para>In the firewall DomU, I run a conventional three-interface
       firewall with Proxy ARP DMZ -- it is very similar to the firewall
@@ -970,9 +970,10 @@ SECTION NEW
       <blockquote>
         <para><filename>/etc/openvpn/server-bridge</filename> (Note that I
         prefer to push two /1 routes rather than to use the <emphasis
-        role="bold">redirect-gateway</emphasis> directive; I find that the
-        latter occasionally leaves the remote system with <emphasis
-        role="bold">no</emphasis> default gateway):</para>
+        role="bold">redirect-gateway</emphasis> directive on the client
+        systems; I find that the latter occasionally leaves the remote system
+        with <emphasis role="bold">no</emphasis> default gateway while my
+        approach always works):</para>
 
         <programlisting>dev tap0
 
@@ -1011,7 +1012,7 @@ verb 3
 push "route 0.0.0.0 128.0.0.0 192.168.1.254"
 push "route 128.0.0.0 128.0.0.0 192.168.1.254"</programlisting>
 
-        <para><filename>/etc/bridge-clients/tipper.shorewall.net</filename>
+        <para><filename>/etc/openvpn/bridge-clients/tipper.shorewall.net</filename>
         (used to assign a fixed IP address to clients -- there are other
         similar files in this directory):</para>
 

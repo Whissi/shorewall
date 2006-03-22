@@ -21,7 +21,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2006-03-19</pubdate>
+    <pubdate>2006-03-21</pubdate>
 
     <copyright>
       <year>2003</year>
@@ -181,7 +181,7 @@ openvpn:tcp:7777  net            134.28.54.2</programlisting>
 local 206.162.148.9
 remote 134.28.54.2
 ifconfig 192.168.99.1 192.168.99.2
-up ./route-a.up
+route 10.0.0.0 255.0.0.0 192.168.99.2
 tls-server
 dh dh1024.pem
 ca ca.crt
@@ -217,7 +217,7 @@ openvpn       net            206.191.148.9</programlisting>
 local 134.28.54.2
 remote 206.162.148.9
 ifconfig 192.168.99.2 192.168.99.1
-up ./route-b.up
+route 192.168.1.0 255.255.255.0 192.168.99.1
 tls-client
 ca ca.crt
 cert my-b.crt

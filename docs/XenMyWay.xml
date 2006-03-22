@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2006-03-20</pubdate>
+    <pubdate>2006-03-21</pubdate>
 
     <copyright>
       <year>2006</year>
@@ -110,7 +110,8 @@
         <para><filename class="devicefile">eth0</filename> -- conntected to
         the switch in my office. That switch is cabled to a second switch in
         my wife's office where there is my wife's desktop and her networked
-        printer.</para>
+        printer (sure which there had been wireless back when I strung that
+        CAT-5 cable halfway across the house).</para>
       </listitem>
 
       <listitem>
@@ -279,7 +280,7 @@ done</programlisting>
     </section>
 
     <section id="Dom0">
-      <title>Dom0 Shorewall Configuration</title>
+      <title>Dom0 Configuration</title>
 
       <para>The goals for the Shorewall configuration in Dom0 are as
       follows:</para>
@@ -349,7 +350,7 @@ SECTION NEW
     </section>
 
     <section id="Firewall">
-      <title>Firewall DomU Shorewall Configuration</title>
+      <title>Firewall DomU Configuration</title>
 
       <para>In the firewall DomU, I run a conventional three-interface
       firewall with Proxy ARP DMZ -- it is very similar to the firewall
@@ -493,7 +494,10 @@ vpn     tun+            -
 206.124.146.180         $EXT_IF         192.168.1.6     No              No
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
 
-        <para><filename>/etc/shorewall/masq</filename>:</para>
+        <para><filename>/etc/shorewall/masq (Note the cute drick here and in
+        the <filename>proxyarp</filename> file that follows that allows me to
+        access the DSL "Modem" using it's default IP address
+        (192.168.1.1))</filename>:</para>
 
         <programlisting>#INTERFACE              SUBNET          ADDRESS         PROTO   PORT(S) IPSEC
 +$EXT_IF:192.168.1.1    0.0.0.0/0       192.168.1.254
@@ -697,18 +701,20 @@ DROP            net:82.96.96.3                          all
     <section id="Wireless">
       <title>Wireless Gateway DomU Configuration</title>
 
-      <para>The Shorewall configuration in the 'wireless' DomU is very
-      simple-minded. It's sole purpose is to protect the local network from
-      the Wireless net by restricting wireless access to clients that have
-      established an <ulink url="OPENVPN.html">OpenVPN</ulink> Bridged
-      connection. This configuration illustrates that you can use any Linux
-      system on your internal LAN as a wireless gateway -- it doesn't have to
-      be your main firewall (and it doesn't have to run in a Xen domain
-      either). The wireless gateway runs a DHCP server that assigns wireless
-      hosts an IP address in 192.168.3.0/24 -- The OpenVPN server running on
-      the gateway assigns its clients an IP address in 192.168.1.0/24 so,
-      thanks to bridging, these clients appear to be physically attached to
-      the LAN).</para>
+      <para>The Shorewall configuration in the 'wireless' DomU is very simple.
+      It's sole purpose is to protect the local network from the Wireless net
+      by restricting wireless access to clients that have established an
+      <ulink url="OPENVPN.html">OpenVPN</ulink> Bridged connection. This
+      configuration illustrates that you can use any system on your internal
+      LAN as a wireless gateway -- it doesn't have to be your main firewall
+      (and it doesn't have to run in a Xen domain either and it doesn't even
+      have to run Linux). Our wireless gateway runs a DHCP server that assigns
+      wireless hosts an IP address in 192.168.3.0/24 -- The OpenVPN server
+      running on the gateway assigns its clients an IP address in
+      192.168.1.0/24 so, thanks to bridging, these clients appear to be
+      physically attached to the LAN). That allows our two laptops to have the
+      same IP address in 192.168.1.0/24 regardless of whether they are
+      connected to the LAN directory or are connected wirelessly.</para>
 
       <graphic align="center" fileref="images/Xen6.png" />
 
@@ -926,7 +932,8 @@ loc     br0             192.168.1.255   dhcp,routeback
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
 </programlisting>
 
-        <para><filename>/etc/shorewall/policy</filename>:</para>
+        <para><filename>/etc/shorewall/policy</filename> (again, note the use
+        of an ACCEPT all-&gt;all policy):</para>
 
         <programlisting>#SOURCE         DEST            POLICY          LOG             LIMIT:BURST
 #                                               LEVEL
@@ -953,7 +960,23 @@ ACCEPT          eth4                    00:0f:66:ef:b6:f6       192.168.3.8     
 ACCEPT          eth4                    00:12:79:3d:fe:2e       192.168.3.6     #Work Laptop
 ACCEPT          eth4                    -                       192.168.3.254   #Broadcast/Multicast from us
 DROP:info       eth4                    -                       192.168.3.0/24
+DROP:info       eth4                    -                       169.254.0.0/16  #Stop autoconfigured hosts.
 #LAST LINE -- ADD YOUR ENTRIES ABOVE THIS LINE -- DO NOT REMOVE</programlisting>
+
+        <para>The routing table on the wireless gateway is as follows:</para>
+
+        <blockquote>
+          <programlisting>192.168.3.0/24 dev eth4  proto kernel  scope link  src 192.168.3.254
+192.168.1.0/24 dev br0  proto kernel  scope link  src 192.168.1.7
+169.254.0.0/16 dev eth4  scope link
+127.0.0.0/8 dev lo  scope link
+default via 192.168.1.254 dev br0</programlisting>
+        </blockquote>
+
+        <para>The route to 169.254.0.0/16 is automatically generated by the
+        SuSE network scripts so I include that network in the
+        <filename>/etc/shorewall/maclist</filename> file for
+        completeness.</para>
 
         <para><filename>/etc/shorewall/rules</filename>:</para>
 
@@ -962,6 +985,7 @@ DROP:info       eth4                    -                       192.168.3.0/24
 #SECTION ESTABLISHED
 #SECTION RELATED
 SECTION NEW
+ACCEPT          Wifi                            loc:192.168.1.5 udp     123     #Allow NTP before OpenVPN is up.
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
       </blockquote>
 
@@ -970,10 +994,9 @@ SECTION NEW
       <blockquote>
         <para><filename>/etc/openvpn/server-bridge</filename> (Note that I
         prefer to push two /1 routes rather than to use the <emphasis
-        role="bold">redirect-gateway</emphasis> directive on the client
-        systems; I find that the latter occasionally leaves the remote system
-        with <emphasis role="bold">no</emphasis> default gateway while my
-        approach always works):</para>
+        role="bold">redirect-gateway</emphasis> directive; I find that the
+        latter occasionally leaves the remote system with <emphasis
+        role="bold">no</emphasis> default gateway):</para>
 
         <programlisting>dev tap0
 
@@ -1012,7 +1035,7 @@ verb 3
 push "route 0.0.0.0 128.0.0.0 192.168.1.254"
 push "route 128.0.0.0 128.0.0.0 192.168.1.254"</programlisting>
 
-        <para><filename>/etc/openvpn/bridge-clients/tipper.shorewall.net</filename>
+        <para><filename>/etc/bridge-clients/tipper.shorewall.net</filename>
         (used to assign a fixed IP address to clients -- there are other
         similar files in this directory):</para>
 

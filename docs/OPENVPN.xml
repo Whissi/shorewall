@@ -450,26 +450,26 @@ verb 3</programlisting>
 
     <para>The Wireless network is in the lower right of the diagram and
     consists of two laptops: Eastepnc6000 (Dual Boot Windows XP - SP1, SUSE
-    10.0) and Tipper (SUSE 10.0). We use OpenVPN to bridge those two laptops
-    with the local LAN shown in the lower left hand corner. The laptops are
+    10.0) and Tipper (SUSE 10.0). We used OpenVPN to bridge those two laptops
+    with the local LAN shown in the lower left hand corner. The laptops were
     configured with addresses in the 192.168.3.0/24 network connected to the
     firewall's <filename class="devicefile">eth0</filename> interface which
     places them in the firewall's <emphasis role="bold">Wifi</emphasis> zone.
-    OpenVPN bridging allows them to be assigned an additional IP address from
+    OpenVPN bridging allowed them to be assigned an additional IP address from
     the 192.168.1.0/24 network and to be securely bridged to the LAN on the
     lower left.</para>
 
     <note>
       <para>Eastepnc6000 is shown in both the local LAN and in the Wifi zone
-      with IP address 192.168.1.6 -- clearly, the computer can only be in one
-      place or the other. Tipper can also be in either place and will have the
-      IP address 192.168.1.8 regardless.</para>
+      with IP address 192.168.1.6 -- clearly, the computer could only be in
+      one place or the other. Tipper could also be in either place and would
+      have the IP address 192.168.1.8 regardless.</para>
     </note>
 
     <section>
       <title>Configuring the Bridge</title>
 
-      <para>The firewall runs Debian Sarge so the bridge is defined in
+      <para>The firewall ran Debian Sarge so the bridge was defined in
       <filename>/etc/network/interfaces</filename>.</para>
 
       <programlisting># LAN interface
@@ -489,21 +489,21 @@ iface br0 inet static
         post-down /usr/sbin/openvpn --rmtun --dev tap0</programlisting>
 
       <para>Note that the IP address assigned to the bridge is 192.168.1.254
-      -- that is the default gateway address for hosts in the local
+      -- that was the default gateway address for hosts in the local
       zone.</para>
     </section>
 
     <section>
       <title>Configuring OpenVPN</title>
 
-      <para>We use X.509 certificates for authentication.</para>
+      <para>We used X.509 certificates for authentication.</para>
 
       <section>
         <title>Firewall (Server) configuration.</title>
 
-        <para>/etc/openvpn/server-bridge.conf defines a bridge and reserves IP
+        <para>/etc/openvpn/server-bridge.conf defined a bridge and reserved IP
         addresses 192.168.1.64-192.168.1.71 for VPN clients. Note that the
-        bridge server only uses local IP address 192.168.3.254. We run two
+        bridge server only used local IP address 192.168.3.254. We ran two
         instances of OpenVPN; this one and a second tunnel-mode instance for
         remote access (see <ulink url="myfiles.htm">this
         article</ulink>).</para>
@@ -545,7 +545,7 @@ ccd-exclusive
 verb 3</programlisting>
 
         <para>The files in <filename>/etc/openvpn/bridge-clients</filename>
-        are used to assign a fixed IP address to each laptop. For example,
+        were used to assign a fixed IP address to each laptop. For example,
         tipper.shorewall.net:</para>
 
         <programlisting>ifconfig-push 192.168.1.8 255.255.255.0</programlisting>
@@ -620,17 +620,18 @@ verb 3</programlisting>
       <section>
         <title>Eastepnc6000 (SUSE10.0) Configuration</title>
 
-        <para>The configuration is the same as shown above only with "/Program
-        Files/OpenVPN" replaced with "/etc/openvpn" (I love OpenVPN).</para>
+        <para>The configuration was the same as shown above only with
+        "/Program Files/OpenVPN" replaced with "/etc/openvpn" (I love
+        OpenVPN).</para>
       </section>
     </section>
 
     <section>
       <title>Configuring Shorewall</title>
 
-      <para>In this configuration, we don't need any firewalling between the
+      <para>In this configuration, we didn't need any firewalling between the
       laptops and the local LAN so we set BRIDGING=No in shorewall.conf. The
-      configuration of the bridge then becomes as described in the <ulink
+      configuration of the bridge then became as described in the <ulink
       url="SimpleBridge.html">Simple Bridge documentation</ulink>. If you need
       to control the traffic allowed through the VPN bridge then you will want
       to configure Shorewall as shown in the <ulink
@@ -668,9 +669,9 @@ openvpnserver:1194      Wifi    192.168.3.0/24
         <title>Tipper</title>
 
         <para>Wireless networks pose a threat to all systems that are
-        connected to them and we therefore run Firewalls on the two Laptops.
-        Eastepnc6000 runs <trademark>Sygate</trademark> Security Agent and
-        Tipper runs a Shorewall-based Netfilter firewall.</para>
+        connected to them and we therefore ran Firewalls on the two Laptops.
+        Eastepnc6000 ran <trademark>Sygate</trademark> Security Agent and
+        Tipper ran a Shorewall-based Netfilter firewall.</para>
 
         <section>
           <title>/etc/shorewall/zones</title>
@@ -697,11 +698,11 @@ net      eth0           detect          routefilter,dhcp,tcpflags
         <section>
           <title>/etc/shorewall/policy</title>
 
-          <para>Since we don't expect any traffic between the <emphasis
+          <para>Since we didn't expect any traffic between the <emphasis
           role="bold">net</emphasis> zone and the <emphasis
-          role="bold">lan</emphasis> zone, we use NONE policies for that
-          traffic. If any such traffic should occur, it will be handled
-          according to the all-&gt;all policy.</para>
+          role="bold">lan</emphasis> zone, we used NONE policies for that
+          traffic. If any such traffic would have occurred, it would have been
+          handled according to the all-&gt;all policy.</para>
 
           <programlisting>#SOURCE         DEST            POLICY          LOG             LIMIT:BURST
 #                                               LEVEL

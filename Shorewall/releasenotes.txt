@@ -43,6 +43,17 @@ Other changes in 3.2.0 Beta 2
 1)  A 'refreshed' extension script has been added -- it is executed after
     "shorewall refresh" has finished.
 
+2)  Two new dynamic blacklisting commands have been added:
+
+	logdrop -- like 'drop' but causes the dropped packets to be logged.
+
+	logreject -- like 'reject' but causes the rejected packets to be
+	             logged.
+
+    Packets are logged at the BLACKLIST_LOGLEVEL if one was specified at the
+    last "shorewall [re]start"; otherwise, they are logged at the 'info'
+    log level.
+
 Migration Considerations:
 
 1)  A number of macros have been split into two.  The macros affected are:

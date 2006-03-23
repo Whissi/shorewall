@@ -1314,6 +1314,8 @@ usage() # $1 = exit status
     echo "   ipcalc { <address>/<vlsm> | <address> <netmask> }"
     echo "   ipdecimal { <address> | <integer> }"
     echo "   iprange <address>-<address>"
+    echo "   logdrop <address> ..."
+    echo "   logreject <address> ..."
     echo "   logwatch [<refresh interval>]"
     echo "   refresh"
     echo "   reject <address> ..."
@@ -1777,6 +1779,8 @@ case "$COMMAND" in
 		shift
 		qt $IPTABLES -D dynamic -s $1 -j reject
 		qt $IPTABLES -D dynamic -s $1 -j DROP
+		qt $IPTABLES -D dynamic -s $1 -j logreject
+		qt $IPTABLES -D dynamic -s $1 -j logdrop
 		$IPTABLES -A dynamic -s $1 -j DROP || break 1
 		echo "$1 Dropped"
 	    done
@@ -1786,7 +1790,7 @@ case "$COMMAND" in
 	    exit 2
 	fi
 	;;
-    reject)
+    logdrop)
 	[ -n "$debugging" ] && set -x
 	[ $# -eq 1 ] && usage 1
 	if shorewall_is_started ; then
@@ -1795,7 +1799,29 @@ case "$COMMAND" in
 		shift
 		qt $IPTABLES -D dynamic -s $1 -j reject
 		qt $IPTABLES -D dynamic -s $1 -j DROP
-		$IPTABLES -A dynamic -s $1 -j reject || break 1
+		qt $IPTABLES -D dynamic -s $1 -j logreject
+		qt $IPTABLES -D dynamic -s $1 -j logdrop
+		$IPTABLES -A dynamic -s $1 -j logdrop || break 1
+		echo "$1 Dropped"
+	    done
+	    mutex_off
+	else
+	    error_message "ERROR: Shorewall is not started"
+	    exit 2
+	fi
+	;;
+    reject|logreject)
+	[ -n "$debugging" ] && set -x
+	[ $# -eq 1 ] && usage 1
+	if shorewall_is_started ; then
+	    mutex_on
+	    while [ $# -gt 1 ]; do
+		shift
+		qt $IPTABLES -D dynamic -s $1 -j reject
+		qt $IPTABLES -D dynamic -s $1 -j DROP
+		qt $IPTABLES -D dynamic -s $1 -j logreject
+		qt $IPTABLES -D dynamic -s $1 -j logdrop
+		$IPTABLES -A dynamic -s $1 -j $COMMAND || break 1
 		echo "$1 Rejected"
 	    done
 	    mutex_off
@@ -1811,7 +1837,11 @@ case "$COMMAND" in
 	    mutex_on
 	    while [ $# -gt 1 ]; do
 		shift
-		if	qt $IPTABLES -D dynamic -s $1 -j reject || qt $IPTABLES -D dynamic -s $1 -j DROP; then
+		if qt $IPTABLES -D dynamic -s $1 -j reject    ||\
+		   qt $IPTABLES -D dynamic -s $1 -j DROP      ||\
+		   qt $IPTABLES -D dynamic -s $1 -j logdrop   ||\
+		   qt $IPTABLES -D dynamic -s $1 -j logreject
+		then
 		    echo "$1 Allowed"
 		else
 		    echo "$1 Not Dropped or Rejected"

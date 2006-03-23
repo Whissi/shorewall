@@ -7261,7 +7261,15 @@ initialize_netfilter () {
 
     createchain reject	no
     createchain dynamic no
+    createchain logdrop no
+    createchain logreject no
     createchain smurfs no
+
+    log_rule ${BLACKLIST_LOGLEVEL:-info} logdrop DROP
+    log_rule ${BLACKLIST_LOGLEVEL:-info} logreject REJECT
+
+    run_iptables -A logdrop   -j DROP
+    run_iptables -A logreject -j reject
 
     indent >&3 << __EOF__
 
@@ -7269,7 +7277,7 @@ if [ -f /var/lib/shorewall/save ]; then
     progress_message2 "Setting up dynamic rules..."
     while read target ignore1 ignore2 address rest; do
         case \$target in
-            DROP|reject)
+            DROP|reject|logdrop|logreject)
                 run_iptables -A dynamic -s \$address -j \$target
                 ;;
         esac

@@ -161,7 +161,7 @@ drop)
 	echo "$1: $1 <address> ...
     Causes packets from the specified <address> to be ignored
 
-    Shorewall allow, drop, reject and save implement dynamic blacklisting.
+    Shorewall allow, drop, logdrop, logreject, reject and save implement dynamic blacklisting.
 
     See also \"help address\""
 	;;
@@ -215,10 +215,28 @@ iprange)
     equivalent list of network/host addresses."
 	;;
 
+logdrop)
+	echo "$1: $1 <address> ...
+    Causes packets from the specified <address> to be ignored and loged.
+
+    Shorewall allow, drop, logdrop, logreject, reject and save implement dynamic blacklisting.
+
+    See also \"help address\""
+	;;
+
 logwatch)
 	echo "logwatch: logwatch [<refresh interval>]
     Monitors the LOGFILE, $LOGFILE,
     and produces an audible alarm when new Shorewall messages are logged."
+	;;
+
+logreject)
+	echo "$1: $1 <address> ...
+    Causes packets from the specified <address> to be rejected and logged.
+
+    Shorewall allow, drop, logdrop, logreject, reject and save implement dynamic blacklisting.
+
+    See also \"help address\""
 	;;
 
 refresh)
@@ -232,7 +250,7 @@ reject)
 	echo "$1: $1 <address> ...
     Causes packets from the specified <address> to be rejected
 
-    Shorewall allow, drop, rejct and save implement dynamic blacklisting.
+    Shorewall allow, drop, logdrop, logreject, reject and save implement dynamic blacklisting.
 
     See also \"help address\""
 	;;
@@ -283,7 +301,7 @@ save)
     and 'shorewall -f start' commands. If <file name> is not given then the state is saved
     in the file specified by the RESTOREFILE option in shorewall.conf.
 
-    Shorewall allow, drop, rejct and save implement dynamic blacklisting.
+    Shorewall allow, drop, logdrop, logreject, reject and save implement dynamic blacklisting.
 
     See also \"help restore\" and \"help forget\""
 	;;

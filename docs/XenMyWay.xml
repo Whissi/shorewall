@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2006-03-21</pubdate>
+    <pubdate>2006-03-23</pubdate>
 
     <copyright>
       <year>2006</year>
@@ -109,9 +109,9 @@
       <listitem>
         <para><filename class="devicefile">eth0</filename> -- conntected to
         the switch in my office. That switch is cabled to a second switch in
-        my wife's office where there is my wife's desktop and her networked
-        printer (sure which there had been wireless back when I strung that
-        CAT-5 cable halfway across the house).</para>
+        my wife's office where my wife has her desktop and networked printer
+        (sure wish there had been wireless back when I strung that CAT-5 cable
+        halfway across the house).</para>
       </listitem>
 
       <listitem>
@@ -127,13 +127,13 @@
     </itemizedlist>
 
     <para>There are four Xen domains. Dom0 (ursa) is used as a file server.
-    The first DomU (which is usually Domain 1) is used as a firewall; the
-    second DomU (lists, normally Domain 2) is used as a public
-    Web/FTP/Mail/DNS server while the third DomU (wireless, normally Domain 3)
-    is used as a gateway to our wireless network. A seperate wireless gateway
-    is necessary because Xen 3 only supports three virtual interfaces per DomU
-    and the firewall DomU already has three interfaces. Shorewall runs in
-    Dom0, in the firewall domain and in the wireless gateway.</para>
+    The first DomU is used as a firewall; the second DomU (lists) is used as a
+    public Web/FTP/Mail/DNS server while the third DomU (wireless, normally
+    Domain 3) is used as a gateway to our wireless network. A seperate
+    wireless gateway is necessary because Xen 3 only supports three virtual
+    interfaces per DomU and the firewall DomU already has three interfaces.
+    Shorewall runs in Dom0, in the firewall domain and in the wireless
+    gateway.</para>
 
     <section id="Domains">
       <title>Domain Configuration</title>
@@ -995,8 +995,9 @@ ACCEPT          Wifi                            loc:192.168.1.5 udp     123     
       <blockquote>
         <para><filename>/etc/openvpn/server-bridge</filename> (Note that I
         prefer to push two /1 routes rather than to use the <emphasis
-        role="bold">redirect-gateway</emphasis> directive; I find that the
-        latter occasionally leaves the remote system with <emphasis
+        role="bold">redirect-gateway</emphasis> directive on the client
+        systems; I find that <emphasis role="bold">redirect-gateway</emphasis>
+        occasionally leaves a client system with <emphasis
         role="bold">no</emphasis> default gateway):</para>
 
         <programlisting>dev tap0

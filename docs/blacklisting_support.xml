@@ -15,10 +15,10 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-08-28</pubdate>
+    <pubdate>2006-03-23</pubdate>
 
     <copyright>
-      <year>2002-2005</year>
+      <year>2002-2006</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -188,6 +188,27 @@ ipset -B Blacklist 206.124.146.177 -b SMTP</programlisting>
       <listitem>
         <para>show dynamic - displays the dynamic blacklisting
         configuration.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>If you are running Shorewall 3.2.0 Beta2 or later, there are two
+    additional commands:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>logdrop <emphasis>&lt;ip address list&gt;</emphasis> - causes
+        packets from the listed IP addresses to be dropped and logged by the
+        firewall. Logging will occur at the level specified by the
+        BLACKLIST_LOGLEVEL setting at the last [re]start (logging will be at
+        the 'info' level if no BLACKLIST_LOGLEVEL was given).</para>
+      </listitem>
+
+      <listitem>
+        <para>logreject <emphasis>&lt;ip address list&gt;</emphasis> - causes
+        packets from the listed IP addresses to be rejected and logged by the
+        firewall. Logging will occur at the level specified by the
+        BLACKLIST_LOGLEVEL setting at the last [re]start (logging will be at
+        the 'info' level if no BLACKLIST_LOGLEVEL was given).</para>
       </listitem>
     </itemizedlist>
 

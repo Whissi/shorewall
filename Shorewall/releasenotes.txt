@@ -1,4 +1,4 @@
-Shorewall 3.2.0 Beta 2.
+Shorewall 3.2.0 Beta 3.
 
 Note to users upgrading from Shorewall 2.x or 3.0
 
@@ -27,32 +27,14 @@ Note to users upgrading from Shorewall 2.x or 3.0
    Please see the "Migration Considerations" below for additional upgrade
    information.
 
-Problems Corrected in 3.2.0 Beta 2
+Problems Corrected in 3.2.0 Beta 3
 
-1)  The Makefile is now sensitive to the RESTOREFILE variable if that
-    variable is defined at make time. The /sbin/shorewall script has been
-    updated to define RESTOREFILE when it invokes 'make' during processing
-    of the "shorewall start -f" command.
-
-2)  Code involving SUBSYSLOCK has been removed from the default and Debian
-    program footers. SUBSYSLOCK only applies to programs installed in
-    /etc/init.d/.
+1)  The 'try' command with an effective verbosity of zero resulted in an
+    error message and the command failed.
 
 Other changes in 3.2.0 Beta 2
 
-1)  A 'refreshed' extension script has been added -- it is executed after
-    "shorewall refresh" has finished.
-
-2)  Two new dynamic blacklisting commands have been added:
-
-	logdrop -- like 'drop' but causes the dropped packets to be logged.
-
-	logreject -- like 'reject' but causes the rejected packets to be
-	             logged.
-
-    Packets are logged at the BLACKLIST_LOGLEVEL if one was specified at the
-    last "shorewall [re]start"; otherwise, they are logged at the 'info'
-    log level.
+None.
 
 Migration Considerations:
 
@@ -353,3 +335,18 @@ New Features:
     07:09:05 Restarting Shorewall....
     07:09:08 done.
     gateway:/etc/shorewall #
+
+7)  A 'refreshed' extension script has been added -- it is executed after
+    "shorewall refresh" has finished.
+
+8)  Two new dynamic blacklisting commands have been added:
+
+	logdrop -- like 'drop' but causes the dropped packets to be logged.
+
+	logreject -- like 'reject' but causes the rejected packets to be
+	             logged.
+
+    Packets are logged at the BLACKLIST_LOGLEVEL if one was specified at the
+    last "shorewall [re]start"; otherwise, they are logged at the 'info'
+    log level.
+

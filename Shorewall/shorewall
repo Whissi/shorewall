@@ -263,7 +263,7 @@ get_config() {
 
     [ -n "${VERBOSITY:=2}" ]
 
-    VERBOSE=$(($VERBOSE + $VERBOSITY))
+    VERBOSE=$(($VERBOSE_OFFSET + $VERBOSITY))
 
     export VERBOSE
 
@@ -857,7 +857,7 @@ show_command() {
 			    option=
 			    ;;
 			v*)
-			    VERBOSE=$(($VERBOSE + 1 ))
+			    VERBOSE_OFFSET=$(($VERBOSE_OFFSET + 1 ))
 			    option=${option#v}
 			    ;;
 			x*)
@@ -1383,17 +1383,22 @@ heading() {
 }
 
 #
-# Create the appropriate -q option to pass oneward
+# Create the appropriate -q option to pass onward
 #
 make_verbose() {
-    local v=$VERBOSE
+    local v=$VERBOSE_OFFSET option=-
 
-    if [ $VERBOSE -gt 0 ]; then
-	local option=-
-
+    if [ $VERBOSE_OFFSET -gt 0 ]; then
 	while [ $v -gt 0 ]; do
 	    option="${option}v"
 	    v=$(($v - 1))
+	done
+
+	echo $option
+    elif [ $VERBOSE_OFFSET -lt 0 ]; then
+	while [ $v -lt 0 ]; do
+	    option="${option}q"
+	    v=$(($v + 1))
 	done
 
 	echo $option
@@ -1420,7 +1425,7 @@ fi
 SHOREWALL_DIR=
 IPT_OPTIONS="-nv"
 FAST=
-VERBOSE=0
+VERBOSE_OFFSET=0
 NOROUTES=
 EXPORT=
 export TIMESTAMP=
@@ -1466,7 +1471,7 @@ while [ $finished -eq 0 ]; do
 			option=${option#x}
 			;;
 		    q*)
-			VERBOSE=$(($VERBOSE - 1 ))
+			VERBOSE_OFFSET=$(($VERBOSE_OFFSET - 1 ))
 			option=${option#q}
 			;;
 		    f*)
@@ -1474,7 +1479,7 @@ while [ $finished -eq 0 ]; do
 			option=${option#f}
 			;;
 		    v*)
-			VERBOSE=$(($VERBOSE + 1 ))
+			VERBOSE_OFFSET=$(($VERBOSE_OFFSET + 1 ))
 			option=${option#v}
 			;;
 		    n*)
@@ -1707,7 +1712,7 @@ case "$COMMAND" in
     try)
 	[ -n "$SHOREWALL_DIR" ] && startup_error "ERROR: -c option may not be used with \"try\""
 	[ $# -lt 2 -o $# -gt 3 ] && usage 1
-	[ $VERBOSE -gt 0 ] && VERBOSE=$(make_verbose)
+	VERBOSE=$(make_verbose)
 	[ -n "$NOROUTES" ] && NOROUTES=-n
 	if ! $0 $debugging $VERBOSE -c $2 restart; then
 	    if ! $IPTABLES -L shorewall > /dev/null 2> /dev/null; then

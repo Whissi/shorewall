@@ -714,7 +714,8 @@ DROP            net:82.96.96.3                          all
       192.168.1.0/24 so, thanks to bridging, these clients appear to be
       physically attached to the LAN). That allows our two laptops to have the
       same IP address in 192.168.1.0/24 regardless of whether they are
-      connected to the LAN directory or are connected wirelessly.</para>
+      connected to the LAN directly or are connected via the wireless
+      network.</para>
 
       <graphic align="center" fileref="images/Xen6.png" />
 
@@ -1040,6 +1041,39 @@ push "route 128.0.0.0 128.0.0.0 192.168.1.254"</programlisting>
         similar files in this directory):</para>
 
         <programlisting>ifconfig-push 192.168.1.8 255.255.255.0</programlisting>
+      </blockquote>
+
+      <para>Finally, here's a copy of the OpenVPN configuration file on
+      tipper, one of the laptops:</para>
+
+      <blockquote>
+        <programlisting>dev tap
+
+remote 192.168.3.254
+tls-remote wireless.shorewall.net
+
+client
+tls-client
+explicit-exit-notify
+
+ca /etc/certs/cacert.pem
+
+cert /etc/certs/tipper.pem
+key /etc/certs/tipper_key.pem
+
+port 1194
+
+comp-lzo
+
+ping 15
+ping-restart 45
+ping-timer-rem
+persist-tun
+persist-key
+
+mute-replay-warnings
+
+verb 3</programlisting>
       </blockquote>
     </section>
   </section>

@@ -73,7 +73,12 @@ Other changes in 3.2.0 Beta 2
 
 Migration Considerations:
 
-1)  A number of macros have been split into two.  The macros affected are:
+1)  If you are upgrading from Shorewall 2.x, it is essential that you read
+    the Shorewall 3.0.5 release notes:
+
+    http://www.shorewall.net/pub/shorewall/3.0/shorewall-3.0.5/releasenotes.txt
+
+2)  A number of macros have been split into two.  The macros affected are:
 
 	IMAP LDAP NNTP POP3 SMTP
 
@@ -89,7 +94,7 @@ Migration Considerations:
     These changes have been made to ensure no unexpected ports are opened due
     to the use of macros.
 
-2)  In previous Shorewall releases, DNAT and REDIRECT rules supported a
+3)  In previous Shorewall releases, DNAT and REDIRECT rules supported a
     special syntax for exclusion of a subnet from the effect of the rule.
 
     Example:
@@ -107,7 +112,7 @@ Migration Considerations:
     Beginning with Shorewall 3.2.0, the special exclusion syntax will no
     longer be supported.
 
-3)  Important if you use the QUEUE target.
+4)  Important if you use the QUEUE target.
 
     In the /etc/shorewall/rules file and in actions, you may now specify
     'tcpsyn' in the PROTO column. 'tcpsyn' is equivalent to 'tcp' but also
@@ -117,10 +122,43 @@ Migration Considerations:
     As part of this change, Shorewall no longer adds the "--syn" option
     to TCP rules that specify QUEUE as their target.
 
-4)  If you are upgrading from Shorewall 2.x, it is essential that you read
-    the Shorewall 3.0.5 release notes:
+5)  Extension Scripts may require change
 
-    http://www.shorewall.net/pub/shorewall/3.0/shorewall-3.0.5/releasenotes.txt
+    In previous releases, extension scripts were executed during [re]start
+    by using the Bourne Shell "." operator. In addition to executing commands
+    during [re]start, these scripts had to "save" the commands to be executed
+    during "shorewall restore".
+
+    This clumsiness has been eliminated in Shorewall 3.2. In Shorewall 3.2,
+    extension scripts are copied in-line into the compiled program and are
+    executed in-line during "start", "restart" and "restore".
+
+    This new approach has two implications for existing scripts.
+
+    a)  It is no longer necessary to save the commands; so functions like
+        'save_command', 'run_and_save_command' and 'ensure_and_save_command'
+        need no longer be called. The generated program will contain
+        functions with these names:
+
+	    save_command() - does nothing
+	    run_and_save_command() - runs the passed command
+	    ensure_and_save_command() - runs the passed command and
+	                                stops the firewall if the command
+	                                fails.
+
+	These functions should provide for transparent migration of
+	scripts that use them until you can get around to eliminating
+	their use completely.
+
+    b)  When the extension script is copied into the compiled program, it
+        is indented to line up with the surrounding code. If you have 'awk'
+        installed on your system, the Shorewall compiler will correctly handle
+        line continuation (last character on the line = "\"). If you do not
+        have awk, it will not be possible to use line-continuation in your
+        extension scripts.
+
+        In no case is it possible to continue a quoted string over multiple lines
+        without having additional whitespace inserted into the string.
 
 New Features:
 

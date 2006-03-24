@@ -51,20 +51,9 @@ fatal_error() # $* = Error Message
 }
 
 #
-# Write the passed args to $OUTPUT -- We need all of these varieties to support
-#                                          extension scripts.
+# Write the passed args to the compiler output file.
 #
 save_command()
-{
-    echo "${INDENT}${@}" >&3
-}
-
-run_and_save_command()
-{
-    echo "${INDENT}${@}" >&3
-}
-
-ensure_and_save_command()
 {
     echo "${INDENT}${@}" >&3
 }
@@ -75,7 +64,7 @@ save_command_unindented()
 }
 
 #
-# Write a progress_message2 command to $OUTPUT
+# Write a progress_message2 command to the output file.
 #
 save_progress_message()
 {
@@ -100,7 +89,11 @@ progress_message_and_save()
 #
 indent() {
     if [ -n "$INDENT" ]; then
-	eval sed \'s\/^/"$INDENT"\/\' $1
+	if [ -n "$HAVEAWK" ]; then
+	    eval awk \''BEGIN { indent=1; }; { nextindent=indent; indent=1; }; /\\$/ { indent=0; }; { if (nextindent == 1) print "'"$INDENT"'" $0; else print; };'\' $1
+	else
+	    eval sed \'s\/^/"$INDENT"\/\' $1
+	fi
     else
 	cat $1
     fi
@@ -8575,6 +8568,22 @@ run_tc() {
 }
 
 #
+# Functions to appease unconverted extension scripts
+#
+save_command()
+{
+    return 0
+}
+
+run_and_save_command() {
+    eval \$@
+}
+
+ensure_and_save_command() {
+    eval \$@ || fatal_error "Command \"\$@\" failed"
+}
+
+#
 # Initialize environment
 #
 initialize() {
@@ -9213,6 +9222,8 @@ do_initialize() {
 
     rm -f $TMP_DIR/physdev
     rm -f $TMP_DIR/iprange
+
+    qt which awk && HAVEAWK=Yes || HAVEAWK=
 }
 
 #

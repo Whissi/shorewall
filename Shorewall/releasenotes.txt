@@ -34,7 +34,39 @@ Problems Corrected in 3.2.0 Beta 3
 
 Other changes in 3.2.0 Beta 2
 
-None.
+2)  A new IMPLICIT_CONTINUE option has been added to shorewall.conf. When
+    this option is set to "Yes", it causes subzones to be treated differently
+    with respect to policies.
+
+    Subzones are defined by following their name by ":" and a list of parent
+    zones (in /etc/shorewall/zones). Normally, you want to have a set of
+    special rules for the subzone and if a connection doesn't match any of
+    those subzone-specific rules then you want the parent zone rules to be
+    applied. with IMPLICIT_CONTINUE=Yes, that happens automatically.
+
+    If IMPLICIT_CONTINUE=No or if IMPLICIT_CONTINUE is not set, then
+    subzones are not subject to this special treatment.
+
+    With IMPLICIT_CONTINUE=Yes, an implicit CONTINUE policy may be overridden
+    by including an explicit policy (one that does not specify "all" in either
+    the SOURCE or the DEST columns).
+
+    Example:
+
+    /etc/shorewall/zones:
+
+	par        ipv4
+	chld:par   ipv4
+
+    And traffic to/from the 'chld' zone will first pass through the applicable
+    'chld' rules and if none of those rules match then it will be passed through
+    the appropriate 'par' rules. If you want the fw->chld policy to be
+    ACCEPT, simply add this entry to /etc/shorewall/policy:
+
+	$FW      chld        ACCEPT
+
+    Traffic from all other zones to 'chld' will be subject to the implicit
+    CONTINUE policy.
 
 Migration Considerations:
 

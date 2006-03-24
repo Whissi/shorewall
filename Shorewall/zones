@@ -34,10 +34,13 @@
 #			b	  ipv4
 #			c:a,b     ipv4
 #
-#		Currently, Shorewall uses this information only to reorder the
+#		Currently, Shorewall uses this information to reorder the
 #		zone list so that parent zones appear after their subzones in
-#		the list. In the future, Shorewall may make more extensive use
-#		of that information.
+#		the list. The IMPLICIT_CONTINUE option in shorewall.conf can
+#		also create implicit CONTINUE policies to/from the subzone.
+#
+#		In the future, Shorewall may make additional use
+#		of nesting information.
 #
 #	TYPE	ipv4 -	This is the standard Shorewall zone type and is the
 #			default if you leave this column empty or if you enter
@@ -79,7 +82,7 @@
 #			strict	Means that packets must match all rules.
 #
 #			next	Separates rules; can only be used with
-#				strict..
+#				strict
 #
 #		Example:
 #			mode=transport,reqid=44

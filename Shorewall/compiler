@@ -482,9 +482,11 @@ determine_zones()
 		zone=${zone%:*}
 		[ -n "$zone" ] || fatal_error "Invalid nested zone syntax: :$parents"
 		parents=$(separate_list $parents)
+		eval ${zone}_parents=\"$parents\"
 		;;
 	    *)
 		parents=
+		eval ${zone}_parents=
 		;;
 	esac
 
@@ -1449,6 +1451,7 @@ validate_policy()
     local policy
     local loglevel
     local synparams
+    local parents
 
     print_policy() # $1 = source zone, $2 = destination zone
     {
@@ -1467,6 +1470,26 @@ validate_policy()
 	eval ${chain}_policy=ACCEPT
 	eval ${chain}_policychain=$chain
 	ALL_POLICY_CHAINS="$ALL_POLICY_CHAINS $chain"
+
+	if [ -n "$IMPLICIT_CONTINUE" ]; then
+	    eval parents=\$${zone}_parents
+	    if [ -n "$parents" ]; then
+		for zone1 in $ZONES $FW; do
+		    chain=${zone}2${zone1}
+		    eval ${chain}_is_policy=Yes
+		    eval ${chain}_is_optional=Yes
+		    eval ${chain}_policy=CONTINUE
+		    eval ${chain}_policychain=$chain
+		    ALL_POLICY_CHAINS="$ALL_POLICY_CHAINS $chain"
+		    chain=${zone1}2${zone}
+		    eval ${chain}_is_policy=Yes
+		    eval ${chain}_is_optional=Yes
+		    eval ${chain}_policy=CONTINUE
+		    eval ${chain}_policychain=$chain
+		    ALL_POLICY_CHAINS="$ALL_POLICY_CHAINS $chain"
+		done
+	    fi
+	fi
     done
 
     strip_file policy
@@ -8928,6 +8951,7 @@ do_initialize() {
     SAVE_IPSETS=
     RESTOREFILE=
     MAPOLDACTIONS=
+    IMPLICIT_CONTINUE=
 
     OUTPUT=
     TMP_DIR=
@@ -9126,6 +9150,7 @@ do_initialize() {
     SAVE_IPSETS=$(added_param_value_no SAVE_IPSETS $SAVE_IPSETS)
     MAPOLDACTIONS=$(added_param_value_yes MAPOLDACTIONS $MAPOLDACTIONS)
     FASTACCEPT=$(added_param_value_no FASTACCEPT $FASTACCEPT)
+    IMPLICIT_CONTINUE=$(added_param_value_no IMPLICIT_CONTINUE $IMPLICIT_CONTINUE)
 
     case ${IPSECFILE:=ipsec} in
 	ipsec|zones)

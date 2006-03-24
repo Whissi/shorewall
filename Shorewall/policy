@@ -18,6 +18,11 @@
 #	entry in this file. The overriding entry must be explicit (cannot use
 #	"all" in the SOURCE or DEST).
 #
+#       Similarly, if you have IMPLICIT_CONTINUE=Yes in shorewall.conf, then
+#       the implicit policy to/from any sub-zone is CONTINUE. These implicit
+#       CONTINUE policies may also be overridden by an explicit entry in this
+#       file.
+#
 # Columns are:
 #
 #	SOURCE		Source zone. Must be the name of a zone defined
@@ -93,7 +98,7 @@
 #	net		all		DROP		info
 #	#
 #	# THE FOLLOWING POLICY MUST BE LAST
-#	#	
+#	#
 #	all		all		REJECT		info
 #
 # See http://shorewall.net/Documentation.htm#Policy for additional information.

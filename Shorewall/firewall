@@ -2956,6 +2956,7 @@ do_initialize() {
     SAVE_IPSETS=
     RESTOREFILE=
     MAPOLDACTIONS=
+    IMPLICIT_CONTINUE=
 
     RESTOREBASE=
     TMP_DIR=
@@ -3153,6 +3154,8 @@ do_initialize() {
     SAVE_IPSETS=$(added_param_value_no SAVE_IPSETS $SAVE_IPSETS)
     MAPOLDACTIONS=$(added_param_value_yes MAPOLDACTIONS $MAPOLDACTIONS)
     FASTACCEPT=$(added_param_value_no FASTACCEPT $FASTACCEPT)
+    IMPLICIT_CONTINUE=$(added_param_value_no IMPLICIT_CONTINUE $IMPLICIT_CONTINUE)
+
 
     case ${IPSECFILE:=ipsec} in
 	ipsec|zones)

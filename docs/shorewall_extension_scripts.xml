@@ -247,6 +247,19 @@
       you do not have awk, you may not use line continuation in your scripts.
       Also beware that quoted strings continued from one line to another will
       have extra whitespace inserted as a result of indentation.</para>
+
+      <note>
+        <para>The <filename>/etc/shorewall/params</filename> script is
+        processed during compilation <emphasis role="bold">and</emphasis>
+        copied into the compiled script as just described. So shell variables
+        set during compilation may be used in Shorewall configuration files
+        while those set at run-time are available to your other extension
+        scripts. Note that if you assign dynamic values to variables, there is
+        no guarantee that the value calculated at compile time will be the
+        same as what is calculated at run time. This is particularly true if
+        you use the <command>shorewall compile</command> command to compile a
+        program then run that program at a later time.</para>
+      </note>
     </listitem>
   </itemizedlist>
 

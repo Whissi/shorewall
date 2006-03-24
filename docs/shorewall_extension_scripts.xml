@@ -15,10 +15,10 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-10-31</pubdate>
+    <pubdate>2006-03-24</pubdate>
 
     <copyright>
-      <year>2001-2005</year>
+      <year>2001-2006</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -178,14 +178,24 @@
     </listitem>
 
     <listitem>
-      <para>if you run commands other than <command>iptables</command> that
-      must be re-run in order to restore the firewall to its current state
-      then you must save the commands to the <firstterm>restore
-      file</firstterm>. The restore file is a temporary file in <filename
-      class="directory">/var/lib/shorewall</filename> that will be renamed
-      <filename>/var/lib/shorewall/restore-base</filename> at the successful
-      completion of the Shorewall command. The <command>shorewall
-      save</command> command combines
+      <para>Many of the extension scripts get executed for both the shorewall
+      start and shorewall restart commands. You can determine which command is
+      being executed using the contents of $COMMAND.</para>
+
+      <programlisting>if [ $COMMAND = start ]; then
+   ...</programlisting>
+    </listitem>
+
+    <listitem>
+      <para><emphasis role="bold">Shorewall versions 3.0.x and earlier
+      only.</emphasis> If you run commands other than
+      <command>iptables</command> that must be re-run in order to restore the
+      firewall to its current state then you must save the commands to the
+      <firstterm>restore file</firstterm>. The restore file is a temporary
+      file in <filename class="directory">/var/lib/shorewall</filename> that
+      will be renamed <filename>/var/lib/shorewall/restore-base</filename> at
+      the successful completion of the Shorewall command. The
+      <command>shorewall save</command> command combines
       <filename>/var/lib/shorewall/restore-base</filename> with the output of
       <command>iptables-save</command> to produce the
       <filename>/var/lib/shorewall/restore</filename> script.</para>
@@ -226,12 +236,17 @@
     </listitem>
 
     <listitem>
-      <para>Many of the extension scripts get executed for both the shorewall
-      start and shorewall restart commands. You can determine which command is
-      being executed using the contents of $COMMAND.</para>
-
-      <programlisting>if [ $COMMAND = start ]; then
-   ...</programlisting>
+      <para><emphasis role="bold">Shorewall version 3.2.0 and later
+      only.</emphasis> When compiling your firewall configuration, Shorewall
+      copies extension scripts directly into the "compiled" program where they
+      are executed in-line during processing of the start, restart and restore
+      commands. When copying a script, Shorewall indents the script to match
+      the surrounding code; if you have 'awk' installed on the system where
+      the configuration is being compiled, Shorewall can correctly handle line
+      continuation in your script ("\" as the last character on a line). If
+      you do not have awk, you may not use line continuation in your scripts.
+      Also beware that quoted strings continued from one line to another will
+      have extra whitespace inserted as a result of indentation.</para>
     </listitem>
   </itemizedlist>
 

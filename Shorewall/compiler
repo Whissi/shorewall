@@ -90,7 +90,7 @@ progress_message_and_save()
 indent() {
     if [ -n "$INDENT" ]; then
 	if [ -n "$HAVEAWK" ]; then
-	    eval awk \''BEGIN { indent=1; }; { nextindent=indent; indent=1; }; /\\$/ { indent=0; }; { if (nextindent == 1) print "'"$INDENT"'" $0; else print; };'\' $1
+	    eval awk \''BEGIN { indent=1; }; { if (indent == 1) print "'"$INDENT"'" $0; else print; }; { indent=1; }; /\\$/ { indent=0; };'\' $1
 	else
 	    eval sed \'s\/^/"$INDENT"\/\' $1
 	fi

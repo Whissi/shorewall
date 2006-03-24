@@ -60,8 +60,11 @@ Other changes in 3.2.0 Beta 2
 
     And traffic to/from the 'chld' zone will first pass through the applicable
     'chld' rules and if none of those rules match then it will be passed through
-    the appropriate 'par' rules. If you want the fw->chld policy to be
-    ACCEPT, simply add this entry to /etc/shorewall/policy:
+    the appropriate 'par' rules. If the connection request does not match
+    any of the 'par' rules then the relevant 'par' policy is applied.
+
+    If you want the fw->chld policy to be ACCEPT, simply add this entry to
+    /etc/shorewall/policy:
 
 	$FW      chld        ACCEPT
 
@@ -113,6 +116,11 @@ Migration Considerations:
 
     As part of this change, Shorewall no longer adds the "--syn" option
     to TCP rules that specify QUEUE as their target.
+
+4)  If you are upgrading from Shorewall 2.x, it is essential that you read
+    the Shorewall 3.0.5 release notes:
+
+    http://www.shorewall.net/pub/shorewall/3.0/shorewall-3.0.5/releasenotes.txt
 
 New Features:
 

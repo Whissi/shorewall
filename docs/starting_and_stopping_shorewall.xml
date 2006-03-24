@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2006-03-07</pubdate>
+    <pubdate>2006-03-24</pubdate>
 
     <copyright>
       <year>2004</year>
@@ -419,14 +419,13 @@
       </listitem>
 
       <listitem>
-        <para><command>shorewall try ./</command></para>
+        <para><command>shorewall restart ./</command></para>
       </listitem>
     </itemizedlist>
 
-    <para>If the configuration starts but doesn't work, just <quote>shorewall
-    restart</quote> to restore the old configuration. If the new configuration
-    fails to start, the <quote>try</quote> command will automatically restore
-    your configuration.</para>
+    <para>If the <command>restart</command> fails, your configuration will be
+    restored to it's state at the last <command>shorewall
+    save</command>.</para>
 
     <para>When the new configuration works then just:</para>
 
@@ -1094,7 +1093,7 @@
       </varlistentry>
 
       <varlistentry>
-        <term>try</term>
+        <term>try (Deprecated)</term>
 
         <listitem>
           <para><command>shorewall try &lt;configuration-directory&gt; [

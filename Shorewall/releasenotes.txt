@@ -32,13 +32,17 @@ Problems Corrected in 3.2.0 Beta 3
 1)  The 'try' command with an effective verbosity of zero resulted in an
     error message and the command failed.
 
+2)  /etc/shorwall/Makefile was incorrectly described as %config(noreplace)
+    in the RPM .spec file. This prevented updated versions of the file
+    from being installed properly.
+
 Other changes in 3.2.0 Beta 2
 
 2)  A new IMPLICIT_CONTINUE option has been added to shorewall.conf. When
     this option is set to "Yes", it causes subzones to be treated differently
     with respect to policies.
 
-    Subzones are defined by following their name by ":" and a list of parent
+    Subzones are defined by following their name with ":" and a list of parent
     zones (in /etc/shorewall/zones). Normally, you want to have a set of
     special rules for the subzone and if a connection doesn't match any of
     those subzone-specific rules then you want the parent zone rules to be
@@ -58,7 +62,7 @@ Other changes in 3.2.0 Beta 2
 	par        ipv4
 	chld:par   ipv4
 
-    And traffic to/from the 'chld' zone will first pass through the applicable
+    Traffic to/from the 'chld' zone will first pass through the applicable
     'chld' rules and if none of those rules match then it will be passed through
     the appropriate 'par' rules. If the connection request does not match
     any of the 'par' rules then the relevant 'par' policy is applied.

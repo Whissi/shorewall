@@ -99,7 +99,7 @@ fi
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/providers
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/tcclasses
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/tcdevices
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/Makefile
+%attr(0600,root,root) /etc/shorewall/Makefile
 
 %attr(05555,root,root) /sbin/shorewall
 
@@ -179,6 +179,8 @@ fi
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel ipsecvpn Samples
 
 %changelog
+* Sat Mar 25 2006 Tom Eastep tom@shorewall.net
+- Remove '%config' from Makefile
 * Thu Mar 23 2006 Tom Eastep tom@shorewall.net
 - Updated to 3.2.0-0Beta2
 * Thu Mar 09 2006 Tom Eastep tom@shorewall.net

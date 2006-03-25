@@ -36,6 +36,11 @@ Problems Corrected in 3.2.0 Beta 3
     in the RPM .spec file. This prevented updated versions of the file
     from being installed properly.
 
+3)  If you use SAME or SAME:nodst in the ADDRESS column of /etc/shorewall/masq
+    and if you set ADD_SNAT_ALIASES=Yes in shorewall.conf, then "shorewall
+    start" will fail with the error 'Error: an inet prefix is expected rather
+    than "SAME".'.
+
 Other changes in 3.2.0 Beta 2
 
 2)  A new IMPLICIT_CONTINUE option has been added to shorewall.conf. When

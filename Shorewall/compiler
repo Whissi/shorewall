@@ -6625,27 +6625,6 @@ setup_masq()
 		;;
 	esac
 
-	[ "x$addresses" = x- ] && addresses=
-
-	if [ -n "$addresses" -a -n "$add_snat_aliases" ]; then
-	    for address in $(separate_list $addresses); do
-		address=${address%:)}
-		if [ -n "$address" ]; then
-		    for addr in $(ip_range_explicit ${address%:*}) ; do
-			if ! list_search $addr $ALIASES_TO_ADD; then
-			    [ -n "$RETAIN_ALIASES" ] || save_command qt ip addr del $addr dev $interface
-			    ALIASES_TO_ADD="$ALIASES_TO_ADD $addr $fullinterface"
-			    case $fullinterface in
-				*:*)
-				    fullinterface=${fullinterface%:*}:$((${fullinterface#*:} + 1 ))
-				    ;;
-			    esac
-			fi
-		    done
-		fi
-	    done
-	fi
-
 	[ "x$proto" = x- ] && proto=
 	[ "x$ports" = x- ] && ports=
 
@@ -6788,6 +6767,8 @@ __EOF__
 	addrlist=
 	target=MASQUERADE
 
+	[ "x$addresses" = x- ] && addresses=
+
 	if [ -n "$addresses" ]; then
 	    case "$addresses" in
 		SAME:nodst:*)
@@ -6818,6 +6799,27 @@ __EOF__
 		    done
 		    ;;
 	    esac
+
+	    if [ -n"$add_snat_aliases" ]; then
+		for address in $(separate_list $addresses); do
+		    address=${address%:)}
+		    if [ -n "$address" ]; then
+			for addr in $(ip_range_explicit ${address%:*}) ; do
+			    if ! list_search $addr $ALIASES_TO_ADD; then
+				[ -n "$RETAIN_ALIASES" ] || save_command qt ip addr del $addr dev $interface
+				ALIASES_TO_ADD="$ALIASES_TO_ADD $addr $fullinterface"
+				case $fullinterface in
+				    *:*)
+					fullinterface=${fullinterface%:*}:$((${fullinterface#*:} + 1 ))
+					;;
+				esac
+			    fi
+			done
+		    fi
+		done
+	    fi
+
+
 	fi
 
 	if [ -n "$networks" ]; then

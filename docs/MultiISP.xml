@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2006-02-26</pubdate>
+    <pubdate>2006-03-27</pubdate>
 
     <copyright>
       <year>2005</year>
@@ -437,6 +437,23 @@ net        net            DROP</programlisting>
       <programlisting>#INTERFACE       SUBNET            ADDRESS
 eth0             130.252.99.27     206.124.146.176
 eth1             206.124.146.176   130.252.99.27</programlisting>
+
+      <note>
+        <para>If you have a Dynamic IP address on either of the interfaces,
+        you can use shell variables to construct the above rules. For example,
+        if <filename class="devicefile">eth0</filename> had a dynamic IP
+        address, then:</para>
+
+        <para><filename>/etc/shorewall/params</filename>:</para>
+
+        <programlisting>ETH0_IP=$(find_first_interface_address eth0)</programlisting>
+
+        <para>/etc/shorewall/masq:</para>
+
+        <programlisting>#INTERFACE       SUBNET            ADDRESS
+eth0             130.252.99.27     $ETH0_IP
+eth1             $ETH0_IP          130.252.99.27</programlisting>
+      </note>
 
       <para>If you have masqueraded hosts, be sure to update
       <filename>/etc/shorewall/masq</filename> to masquerade to both ISPs. For

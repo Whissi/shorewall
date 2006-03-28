@@ -1332,7 +1332,7 @@ __EOF__
 # Validate the zone names and options in the hosts file
 #
 validate_hosts_file() {
-   local z hosts options r interface host option port ports
+   local z hosts options r interface host option port
 
    check_bridge_port()
    {
@@ -1362,12 +1362,11 @@ validate_hosts_file() {
 	       ;;
        esac
 
-       ports=\$${iface}
        eval zports=\$${z}_ports
 
        for host in $(separate_list $hosts); do
-	   if [ -n "$BRIDGING" ]; then
-	       case $host in
+	    if [ -n "$BRIDGING" ]; then
+		case $host in
 		   *:*)
 		       known_interface ${host%:*} && \
 			   fatal_error "Bridged interfaces may not be defined in /etc/shorewall/interfaces: $host"
@@ -1386,7 +1385,7 @@ validate_hosts_file() {
 	       esac
 	   else
 	       case $host in
-		   +*)
+		   *+)
 		       eval ${z}_is_complex=Yes
 		       ;;
 	       esac
@@ -1397,15 +1396,14 @@ validate_hosts_file() {
 		   norfc1918|blacklist|maclist|tcpflags|nosmurfs|-)
 		       ;;
 		   ipsec)
-		       [ -n "$POLICY_MATCH" ] || \
-			   fatal_error "Your kernel and/or iptables does not support policy match: ipsec"
-		       eval ${z}_ipsec_hosts=\"\$${z}_ipsec_hosts $interface:$host\"
-		       eval ${z}_is_complex=Yes
-		       ;;
+			[ -n "$POLICY_MATCH" ] || \
+			    fatal_error "Your kernel and/or iptables does not support policy match: ipsec"
+			eval ${z}_ipsec_hosts=\"\$${z}_ipsec_hosts $interface:$host\"
+			eval ${z}_is_complex=Yes
+			;;
 		   routeback)
-		       [ -z "$ports" ] && \
-			   eval ${z}_routeback=\"$interface:$host \$${z}_routeback\"
-		       ;;
+			eval ${z}_routeback=\"$interface:$host \$${z}_routeback\"
+			;;
 		   *)
 		       error_message "WARNING: Invalid option ($option) in record \"$r\""
 		       ;;
@@ -1413,7 +1411,7 @@ validate_hosts_file() {
 	   done
        done
 
-       [ -n "$ports" ]  && eval ${z}_ports=\"$zports\"
+       [ -n "$zports" ]  && eval ${z}_ports=\"$zports\"
 
    done < $TMP_DIR/hosts
 

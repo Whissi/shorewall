@@ -1,4 +1,4 @@
-Shorewall 3.2.0 Beta 3.
+Shorewall 3.2.0 Beta 4.
 
 Note to users upgrading from Shorewall 2.x or 3.0
 
@@ -27,58 +27,18 @@ Note to users upgrading from Shorewall 2.x or 3.0
    Please see the "Migration Considerations" below for additional upgrade
    information.
 
-Problems Corrected in 3.2.0 Beta 3
+Problems Corrected in 3.2.0 Beta 4
 
-1)  The 'try' command with an effective verbosity of zero resulted in an
-    error message and the command failed.
-
-2)  /etc/shorwall/Makefile was incorrectly described as %config(noreplace)
-    in the RPM .spec file. This prevented updated versions of the file
-    from being installed properly.
-
-3)  If you use SAME or SAME:nodst in the ADDRESS column of /etc/shorewall/masq
-    and if you set ADD_SNAT_ALIASES=Yes in shorewall.conf, then "shorewall
-    start" will fail with the error 'Error: an inet prefix is expected rather
-    than "SAME".'.
-
-Other changes in 3.2.0 Beta 2
-
-2)  A new IMPLICIT_CONTINUE option has been added to shorewall.conf. When
-    this option is set to "Yes", it causes subzones to be treated differently
-    with respect to policies.
-
-    Subzones are defined by following their name with ":" and a list of parent
-    zones (in /etc/shorewall/zones). Normally, you want to have a set of
-    special rules for the subzone and if a connection doesn't match any of
-    those subzone-specific rules then you want the parent zone rules to be
-    applied. With IMPLICIT_CONTINUE=Yes, that happens automatically.
-
-    If IMPLICIT_CONTINUE=No or if IMPLICIT_CONTINUE is not set, then
-    subzones are not subject to this special treatment.
-
-    With IMPLICIT_CONTINUE=Yes, an implicit CONTINUE policy may be overridden
-    by including an explicit policy (one that does not specify "all" in either
-    the SOURCE or the DEST columns).
+1)  Previously, the 'routeback' option was ignored in the /etc/shorewall/hosts file
+    which referred to a (set of) bridge port(s).
 
     Example:
 
-    /etc/shorewall/zones:
+	    dmz        xenbr0:vif+           routeback
 
-	par        ipv4
-	chld:par   ipv4
+Other changes in 3.2.0 Beta 4
 
-    Traffic to/from the 'chld' zone will first pass through the applicable
-    'chld' rules and if none of those rules match then it will be passed through
-    the appropriate 'par' rules. If the connection request does not match
-    any of the 'par' rules then the relevant 'par' policy is applied.
-
-    If you want the fw->chld policy to be ACCEPT, simply add this entry to
-    /etc/shorewall/policy:
-
-	$FW      chld        ACCEPT
-
-    Traffic from all other zones to 'chld' will be subject to the implicit
-    CONTINUE policy.
+None.
 
 Migration Considerations:
 
@@ -436,4 +396,41 @@ New Features:
     Packets are logged at the BLACKLIST_LOGLEVEL if one was specified at the
     last "shorewall [re]start"; otherwise, they are logged at the 'info'
     log level.
+
+9)  A new IMPLICIT_CONTINUE option has been added to shorewall.conf. When
+    this option is set to "Yes", it causes subzones to be treated differently
+    with respect to policies.
+
+    Subzones are defined by following their name with ":" and a list of parent
+    zones (in /etc/shorewall/zones). Normally, you want to have a set of
+    special rules for the subzone and if a connection doesn't match any of
+    those subzone-specific rules then you want the parent zone rules to be
+    applied. With IMPLICIT_CONTINUE=Yes, that happens automatically.
+
+    If IMPLICIT_CONTINUE=No or if IMPLICIT_CONTINUE is not set, then
+    subzones are not subject to this special treatment.
+
+    With IMPLICIT_CONTINUE=Yes, an implicit CONTINUE policy may be overridden
+    by including an explicit policy (one that does not specify "all" in either
+    the SOURCE or the DEST columns).
+
+    Example:
+
+    /etc/shorewall/zones:
+
+	par        ipv4
+	chld:par   ipv4
+
+    Traffic to/from the 'chld' zone will first pass through the applicable
+    'chld' rules and if none of those rules match then it will be passed through
+    the appropriate 'par' rules. If the connection request does not match
+    any of the 'par' rules then the relevant 'par' policy is applied.
+
+    If you want the fw->chld policy to be ACCEPT, simply add this entry to
+    /etc/shorewall/policy:
+
+	$FW      chld        ACCEPT
+
+    Traffic from all other zones to 'chld' will be subject to the implicit
+    CONTINUE policy.
 

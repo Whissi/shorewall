@@ -1332,11 +1332,10 @@ __EOF__
 # Validate the zone names and options in the hosts file
 #
 validate_hosts_file() {
-   local z hosts options r interface host option port
+   local z hosts options r interface host option zports
 
    check_bridge_port()
    {
-       list_search $1 $ports || ports="$ports $1"
        list_search ${interface}:${1} $zports || zports="$zports ${interface}:${1}"
        list_search $1 $ALL_PORTS || ALL_PORTS="$ALL_PORTS $1"
    }

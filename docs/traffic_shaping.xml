@@ -95,15 +95,16 @@
     classes (and their bandwidth limits), and it uses SFQ inside these classes
     to make sure, that different data streams are handled equally.</para>
 
-    <para>You can only shape outgoing traffic. The reason for this is simple,
-    the packets were already received by your network card before you can
-    decide what to do with them. So the only choice would be to drop them
-    which normally makes no sense (since you received the packet already, it
-    went through the possible bottleneck (the incoming connection). The next
-    possible bottleneck might come if the packet leaves on another interface,
-    so this will be the place where queuing might occur. So, defining queues
-    for incoming packets is not very useful, you just want to have it
-    forwarded to the outgoing interface as fast as possible.</para>
+    <para><emphasis role="bold">You can only shape outgoing traffic. The
+    reason for this is simple, the packets were already received by your
+    network card before you can decide what to do with them</emphasis>. So the
+    only choice would be to drop them which normally makes no sense (since you
+    received the packet already, it went through the possible bottleneck (the
+    incoming connection). The next possible bottleneck might come if the
+    packet leaves on another interface, so this will be the place where
+    queuing might occur. So, defining queues for incoming packets is not very
+    useful, you just want to have it forwarded to the outgoing interface as
+    fast as possible.</para>
 
     <para>There is one exception, though. Limiting incoming traffic to a value
     a bit slower than your actual line speed will avoid queueing on the other
@@ -447,7 +448,7 @@ ppp0           6000kbit         500kbit</programlisting>
           device number (the first entry in
           <filename>/etc/shorewall/tcdevices</filename> is device 1, the
           second is device 2 and so on) and the &lt;minor&gt; class is the
-          MARK value of the class + 100. </para>
+          MARK value of the class + 100.</para>
         </listitem>
 
         <listitem>

@@ -1137,14 +1137,26 @@ determine_capabilities() {
     CLASSIFY_TARGET=
     ENHANCED_REJECT=
     USEPKTTYPE=
+    KLUDGEFREE=
 
     qt $IPTABLES -N fooX1234
     qt $IPTABLES -A fooX1234 -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT             && CONNTRACK_MATCH=Yes
     qt $IPTABLES -A fooX1234 -p tcp -m multiport --dports 21,22 -j ACCEPT               && MULTIPORT=Yes
     qt $IPTABLES -A fooX1234 -p tcp -m multiport --dports 21:22 -j ACCEPT               && XMULTIPORT=Yes
     qt $IPTABLES -A fooX1234 -m policy --pol ipsec --mode tunnel --dir in -j ACCEPT     && POLICY_MATCH=Yes
-    qt $IPTABLES -A fooX1234 -m physdev --physdev-in eth0 -j ACCEPT                     && PHYSDEV_MATCH=Yes
-    qt $IPTABLES -A fooX1234 -m iprange --src-range 192.168.1.5-192.168.1.124 -j ACCEPT && IPRANGE_MATCH=Yes
+
+    if qt $IPTABLES -A fooX1234 -m physdev --physdev-in eth0 -j ACCEPT; then
+	PHYSDEV_MATCH=Yes
+	qt $IPTABLES -A fooX1234 -m physdev --physdev-in eth1 -m physdev --physdev-out eth1 -j ACCEPT && KLUDGEFREE=Yes
+    fi
+
+    if qt $IPTABLES -A fooX1234 -m iprange --src-range 192.168.1.5-192.168.1.124 -j ACCEPT; then
+	IPRANGE_MATCH=Yes
+	if [ -z "${KLUDGEFREE}${PHYSDEV_MATCH}" ]; then
+	    qt $IPTABLES -A fooX1234 -m iprange --src-range 192.168.1.5-192.168.1.124 -m iprange --dst-range 192.168.1.5-192.168.1.124 -j ACCEPT && KLUDGEFREE=Yes
+	fi
+    fi
+
     qt $IPTABLES -A fooX1234 -m recent --update -j ACCEPT                               && RECENT_MATCH=Yes
     qt $IPTABLES -A fooX1234 -m owner --uid-owner 0 -j ACCEPT                           && OWNER_MATCH=Yes
     qt $IPTABLES -A fooX1234 -m connmark --mark 2  -j ACCEPT                            && CONNMARK_MATCH=Yes
@@ -1209,6 +1221,7 @@ report_capabilities() {
 	report_capability "IPP2P Match" $IPP2P_MATCH
 	report_capability "CLASSIFY Target" $CLASSIFY_TARGET
 	report_capability "Extended REJECT" $ENHANCED_REJECT
+	report_capability "Repeat match" $KLUDGEFREE
     fi
 
     [ -n "$PKTTYPE" ] || USEPKTTYPE=

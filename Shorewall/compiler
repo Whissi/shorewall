@@ -123,11 +123,13 @@ do_iptables() {
 # Generate an IPTABLES command. Include hacks to work around iptables limitations
 #
 run_iptables() {
-    #
-    # Purge the temporary files that we use to prevent duplicate '-m' specifications
-    #
-    [ -n "$BRIDGING" ]      && [ -f $TMP_DIR/physdev ] && rm -f $TMP_DIR/physdev
-    [ -n "$IPRANGE_MATCH" ] && [ -f $TMP_DIR/iprange ] && rm -f $TMP_DIR/iprange
+    if [ -z "$KLUDGEFREE" ]; then
+	#
+	# Purge the temporary files that we use to prevent duplicate '-m' specifications
+	#
+	[ -n "$BRIDGING" ]      && [ -f $TMP_DIR/physdev ] && rm -f $TMP_DIR/physdev
+	[ -n "$IPRANGE_MATCH" ] && [ -f $TMP_DIR/iprange ] && rm -f $TMP_DIR/iprange
+    fi
 
     save_command "$IPTABLES_COMMAND $@"
 
@@ -137,8 +139,10 @@ run_iptables() {
 # Version of 'run_iptables' that inserts white space after "!" in the arg list
 #
 run_iptables2() {
-    [ -n "$BRIDGING" ]      && [ -f $TMP_DIR/physdev ] && rm -f $TMP_DIR/physdev
-    [ -n "$IPRANGE_MATCH" ] && [ -f $TMP_DIR/iprange ] && rm -f $TMP_DIR/iprange
+    if [ -z "$KLUDGEFREE" ]; then
+	[ -n "$BRIDGING" ]      && [ -f $TMP_DIR/physdev ] && rm -f $TMP_DIR/physdev
+	[ -n "$IPRANGE_MATCH" ] && [ -f $TMP_DIR/iprange ] && rm -f $TMP_DIR/iprange
+    fi
 
     save_command run_iptables $(fix_bang $@)
 }
@@ -147,11 +151,13 @@ run_iptables2() {
 # Generate command to quietly run iptables
 #
 qt_iptables() {
-    #
-    # Purge the temporary files that we use to prevent duplicate '-m' specifications
-    #
-    [ -n "$BRIDGING" ]      && [ -f $TMP_DIR/physdev ] && rm -f $TMP_DIR/physdev
-    [ -n "$IPRANGE_MATCH" ] && [ -f $TMP_DIR/iprange ] && rm -f $TMP_DIR/iprange
+    if [ -z "$KLUDGEFREE" ]; then
+	#
+	# Purge the temporary files that we use to prevent duplicate '-m' specifications
+	#
+	[ -n "$BRIDGING" ]      && [ -f $TMP_DIR/physdev ] && rm -f $TMP_DIR/physdev
+	[ -n "$IPRANGE_MATCH" ] && [ -f $TMP_DIR/iprange ] && rm -f $TMP_DIR/iprange
+    fi
 
     save_command qt \$IPTABLES $@
 }
@@ -670,7 +676,9 @@ first_chains() #$1 = interface
 #
 iprange_echo()
 {
-    if [ -f $TMP_DIR/iprange ]; then
+    if [ -n "$KLUDGEFREE" ]; then
+	echo "-m iprange $@"
+    elif [ -f $TMP_DIR/iprange ]; then
 	echo $@
     else
 	echo "-m iprange $@"
@@ -714,7 +722,9 @@ get_set_flags() # $1 = set name and optional [levels], $2 = src or dst
 #
 physdev_echo()
 {
-    if [ -f $TMP_DIR/physdev ]; then
+    if [ -n "$KLUDGEFREE" ]; then
+	echo -m physdev $@
+    elif [ -f $TMP_DIR/physdev ]; then
 	echo $@
     else
 	echo -m physdev $@
@@ -7854,7 +7864,7 @@ activate_rules()
 
 	if havenatchain $destchain ; then
 	    run_iptables2 -t nat -A $sourcechain $@ -j $destchain
-	else
+	elif [ -z "$KLUDGEFREE" ]; then
 	    [ -n "$BRIDGING" -a -f $TMP_DIR/physdev ]      && -rm -f $TMP_DIR/physdev
 	    [ -n "$IPRANGE_MATCH" -a -f $TMP_DIR/iprange ] && rm -f $TMP_DIR/iprange
 	fi
@@ -7874,7 +7884,7 @@ activate_rules()
 	    eval run_iptables2 -t nat -I $sourcechain \
 		\$${sourcechain}_rule $@ -j $destchain
 	    eval ${sourcechain}_rule=\$\(\(\$${sourcechain}_rule + 1\)\)
-	else
+	elif [ -z "$KLUDGEFREE" ]; then
 	    [ -n "$BRIDGING" -a -f $TMP_DIR/physdev ]      && rm -f $TMP_DIR/physdev
 	    [ -n "$IPRANGE_MATCH" -a -f $TMP_DIR/iprange ] && rm -f $TMP_DIR/iprange
 
@@ -9217,8 +9227,10 @@ do_initialize() {
 	fatal_error "Shell $SHOREWALL_SHELL is broken and may not be used with Shorewall"
     fi
 
-    rm -f $TMP_DIR/physdev
-    rm -f $TMP_DIR/iprange
+    if [ -z "$KLUDGEFREE" ]; then
+	rm -f $TMP_DIR/physdev
+	rm -f $TMP_DIR/iprange
+    fi
 
     qt mywhich awk && HAVEAWK=Yes || HAVEAWK=
 }

@@ -21,7 +21,13 @@
 
       <year>2004</year>
 
-      <holder>2005 Thomas M. Eastep</holder>
+      <year>2005</year>
+
+      <year>2006</year>
+
+      <holder>Thomas M. Eastep</holder>
+
+      <holder></holder>
     </copyright>
 
     <legalnotice>
@@ -62,9 +68,134 @@
   </section>
 
   <section>
-    <title>Version &gt;= 3.0.0</title>
+    <title>Version &gt;= 3.2.0</title>
 
-    <para></para>
+    <orderedlist>
+      <listitem>
+        <para>If you are upgrading from version 2.4 or earlier, please read
+        the 3.0.0 upgrade considerations below.</para>
+      </listitem>
+
+      <listitem>
+        <para>A number of macros have been split into two. The macros affected
+        are:</para>
+
+        <simplelist>
+          <member>IMAP</member>
+
+          <member>LDAP</member>
+
+          <member>NNTP</member>
+
+          <member>POP3</member>
+
+          <member>SMTP</member>
+        </simplelist>
+
+        <para>Each of these macros now handles only traffic on the native
+        (plaintext) port. There is a corresponding macro with S added to the
+        end of the name for the SSL version of the same protocol. Thus each
+        macro results in the insertion of only one port per invocation. The
+        Web macro has not been split, but two new macros, HTTP and HTTPS have
+        been created. The Web macro is deprecated in favour of these new
+        macros, and may be removed from future Shorewall releases.</para>
+
+        <para>These changes have been made to ensure no unexpected ports are
+        opened due to the use of macros.</para>
+      </listitem>
+
+      <listitem>
+        <para>In previous Shorewall releases, DNAT and REDIRECT rules
+        supported a special syntax for exclusion of a subnet from the effect
+        of the rule.</para>
+
+        <para>Example:</para>
+
+        <blockquote>
+          <para>Z2 is a subzone of Z1:</para>
+
+          <programlisting>DNAT     Z1!Z2        loc:192.168.1.4        ...</programlisting>
+        </blockquote>
+
+        <para>That feature has never worked correctly when Z2 is a dynamic
+        zone. Furthermore, now that Shorewall supports exclusion lists, the
+        capability is redundant since the above rule can now be written in the
+        form:</para>
+
+        <programlisting>DNAT     Z1:!&lt;list of exclusions&gt;   loc:192.168.1.4   ...</programlisting>
+
+        <para>Beginning with Shorewall 3.2.0, the special exclusion syntax
+        will no longer be supported.</para>
+      </listitem>
+
+      <listitem>
+        <para>Important if you use the QUEUE target.</para>
+
+        <para>In the /etc/shorewall/rules file and in actions, you may now
+        specify 'tcpsyn' in the PROTO column. 'tcpsyn' is equivalent to 'tcp'
+        but also requires that the SYN flag is set and the RST, FIN and ACK
+        flags be off ("--syn" is added to the iptables rule).</para>
+
+        <para>As part of this change, Shorewall no longer adds the "--syn"
+        option to TCP rules that specify QUEUE as their target.</para>
+      </listitem>
+
+      <listitem>
+        <para>Extension Scripts may require change</para>
+
+        <para>In previous releases, extension scripts were executed during
+        <command>[re]start</command> by using the Bourne Shell "." operator.
+        In addition to executing commands during <command>[re]start</command>,
+        these scripts had to "save" the commands to be executed during
+        <command>shorewall restore</command>.</para>
+
+        <para>This clumsiness has been eliminated in Shorewall 3.2. In
+        Shorewall 3.2, extension scripts are copied in-line into the compiled
+        program and are executed in-line during <command>start</command>,
+        <command>restart</command> and <command>restore</command>.</para>
+
+        <para>This new approach has two implications for existing
+        scripts.</para>
+
+        <orderedlist numeration="loweralpha">
+          <listitem>
+            <para>It is no longer necessary to save the commands; so functions
+            like 'save_command', 'run_and_save_command' and
+            'ensure_and_save_command' need no longer be called. The generated
+            program will contain functions with these names:</para>
+
+            <simplelist>
+              <member>save_command() - does nothing</member>
+
+              <member>run_and_save_command() - runs the passed
+              command</member>
+
+              <member>ensure_and_save_command() - runs the passed command and
+              stops the firewall if the command fails.</member>
+            </simplelist>
+
+            <para>These functions should provide for transparent migration of
+            scripts that use them until you can get around to eliminating
+            their use completely.</para>
+          </listitem>
+
+          <listitem>
+            <para>When the extension script is copied into the compiled
+            program, it is indented to line up with the surrounding code. If
+            you have 'awk' installed on your system, the Shorewall compiler
+            will correctly handle line continuation (last character on the
+            line = "\"). If you do not have awk, it will not be possible to
+            use line-continuation in your extension scripts. In no case is it
+            possible to continue a quoted string over multiple lines without
+            having additional whitespace inserted into the string.</para>
+          </listitem>
+        </orderedlist>
+      </listitem>
+    </orderedlist>
+  </section>
+
+  <section>
+    <title>Version &gt;= 3.0.0</title>
 
     <orderedlist>
       <listitem>
@@ -156,7 +287,7 @@
       </listitem>
 
       <listitem>
-        <para> In previous versions of Shorewall, the rules generated by
+        <para>In previous versions of Shorewall, the rules generated by
         entries in <filename>/etc/shorewall/tunnels</filename> preceded those
         rules generated by entries in
         <filename>/etc/shorewall/rules</filename>. Beginning with this

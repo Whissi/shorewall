@@ -94,6 +94,23 @@
     <graphic align="center" fileref="images/Troubleshoot.png" />
 
     <orderedlist>
+      <important>
+        <para><emphasis role="bold">Please don't use distribution specific
+        programs like "service" or init scripts to start/restart Shorewall
+        while trying to solve a problem</emphasis>, just follow carefully the
+        instructions below.</para>
+      </important>
+
+      <important>
+        <para>As a general matter, <emphasis role="bold">please do not edit
+        the diagnostic information</emphasis> in an attempt to conceal your IP
+        address, netmask, nameserver addresses, domain name, etc. These
+        <emphasis role="bold">aren't secrets</emphasis>, and concealing them
+        often misleads us (and 80% of the time, a cracker could derive them
+        anyway from information contained in the SMTP headers of your
+        post).</para>
+      </important>
+
       <listitem>
         <para>If your problem is that an <emphasis
         role="bold">error</emphasis> occurs when you try to
@@ -134,20 +151,20 @@ gateway:~#</programlisting>
         similar to this:</para>
 
         <blockquote>
-          <programlisting>Shorewall-2.5.4 Status at gateway - Tue Aug 30 14:07:29 PDT 2005
+          <programlisting>Shorewall-3.0.6 Status at gateway - Thu Mar 30 14:07:29 PDT 2006
 
 Shorewall is running
-State:Started (Tue Aug 30 07:18:07 PDT 2005)</programlisting>
+State:Started (Thu Mar 30 14:07:29 PDT 2006)</programlisting>
         </blockquote>
 
         <para>If Shorewall has not started properly, you will see output
         similar to this:</para>
 
         <blockquote>
-          <programlisting>Shorewall-2.5.4 Status at gateway - Tue Aug 30 14:08:11 PDT 2005
+          <programlisting>Shorewall-3.0.6 Status at gateway - Thu Mar 30 14:08:11 PDT 2006
 
 Shorewall is stopped
-State:Stopped (Tue Aug 30 14:08:11 PDT 2005)</programlisting>
+State:Stopped (Thu Mar 30 14:08:11 PDT 2006)</programlisting>
         </blockquote>
 
         <para>The "State:" refers to the <ulink
@@ -189,15 +206,6 @@ State:Stopped (Tue Aug 30 14:08:11 PDT 2005)</programlisting>
             <para>Describe where you are trying to make the connection from
             (IP address) and what host (IP address) you are trying to connect
             to.</para>
-          </listitem>
-
-          <listitem>
-            <para><emphasis role="bold">Please do not edit the diagnostic
-            information</emphasis> in an attempt to conceal your IP address,
-            netmask, nameserver addresses, domain name, etc. These <emphasis
-            role="bold">aren't secrets</emphasis>, and concealing them often
-            misleads us and may prevent your problem from being looked at all
-            together.</para>
           </listitem>
         </orderedlist>
       </listitem>
@@ -245,11 +253,12 @@ State:Stopped (Tue Aug 30 14:08:11 PDT 2005)</programlisting>
       <listitem>
         <para>Please keep in mind that you're asking for <emphasis
         role="bold">free</emphasis> technical support. Any help we offer is an
-        act of generosity, not an obligation. Try to make it easy for us to
-        help you. Follow good, courteous practices in writing and formatting
-        your e-mail. Provide details that we need if you expect good answers.
-        Exact quoting of error messages, log entries, command output, and
-        other output is better than a paraphrase or summary.</para>
+        act of generosity, not an obligation. <emphasis role="bold">Try to
+        make it easy for us to help you</emphasis>. Follow good, courteous
+        practices in writing and formatting your e-mail. Provide details that
+        we need if you expect good answers. Exact quoting of error messages,
+        log entries, command output, and other output is better than a
+        paraphrase or summary.</para>
       </listitem>
 
       <listitem>
@@ -273,16 +282,6 @@ State:Stopped (Tue Aug 30 14:08:11 PDT 2005)</programlisting>
         -L</command> — the output of <emphasis role="bold">shorewall
         show</emphasis> or <command>shorewall status</command> is much more
         useful.</para>
-      </listitem>
-
-      <listitem>
-        <para>As a general matter, <emphasis role="bold">please do not edit
-        the diagnostic information</emphasis> in an attempt to conceal your IP
-        address, netmask, nameserver addresses, domain name, etc. These
-        <emphasis role="bold">aren't secrets</emphasis>, and concealing them
-        often misleads us (and 80% of the time, a hacker could derive them
-        anyway from information contained in the SMTP headers of your
-        post).</para>
       </listitem>
 
       <listitem>

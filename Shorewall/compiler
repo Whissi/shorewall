@@ -85,7 +85,7 @@ progress_message_and_save()
 }
 
 #
-# Filter to indent the passed text by $INTENT
+# Indent and echo the contents of the passed file by $INDENT
 #
 indent() {
     if [ -n "$INDENT" ]; then
@@ -100,7 +100,7 @@ indent() {
 }
 
 #
-# Append a file to the compiler's output
+# Append a file to the compiler's output with indentation.
 #
 append_file() # $1 = File Name
 {
@@ -691,24 +691,28 @@ iprange_echo()
 #
 get_set_flags() # $1 = set name and optional [levels], $2 = src or dst
 {
-    local temp setname=$1 options=$2
+    #
+    # Note: There is a lot of unnecessary evaluation in this function just so my text
+    #       editor doesn't get lost trying to follow the shell syntax for highlighting.
+    #
+    local temp setname=$1 options=$2 firstcase='*\[[1-6]\]' secondcase='*\[*\]'
 
     [ -n "$IPSET_MATCH" ] || fatal_error "Your kernel and/or iptables does not include ipset match: $1"
 
     case $1 in
-	*\[[1-6]\])
-            temp=${1#*\[}
-	    temp=${temp%\]}
-	    setname=${1%\[*}
+	$firstcase)
+	    eval temp='${1#*\[}'
+	    eval temp='${temp%\]}'
+	    eval setname='${1%\[*}'
 	    while [ $temp -gt 1 ]; do
 	       options="$options,$2"
 	       temp=$(($temp - 1))
 	    done
 	    ;;
-	*\[*\])
-	    options=${1#*\[}
-	    options=${options%\]}
-	    setname=${1%\[*}
+	$secondcase)
+	    eval options='${1#*\[}'
+	    eval options='${options%\]}'
+	    eval setname='${1%\[*}'
 	    ;;
 	*)
 	    ;;

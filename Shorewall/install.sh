@@ -443,6 +443,14 @@ if [ ! -f ${PREFIX}/etc/shorewall/providers ]; then
 fi
 
 #
+# Install the Route Rules file
+#
+if [ ! -f ${PREFIX}/etc/shorewall/rtrules ]; then
+    run_install $OWNERSHIP -m 0600 rtrules ${PREFIX}/etc/shorewall/rtrules
+    echo "Routing rules file installed as ${PREFIX}/etc/shorewall/rtrules"
+fi
+
+#
 # Install the tcclasses file
 #
 if [ ! -f ${PREFIX}/etc/shorewall/tcclasses ]; then

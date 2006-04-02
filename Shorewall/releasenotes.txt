@@ -38,7 +38,55 @@ Problems Corrected in 3.2.0 Beta 4
 
 Other changes in 3.2.0 Beta 4
 
-None.
+1)  Shorewall now includes support for explicit routing rules when the
+    /etc/shorewall/providers file is used. A new file, /etc/shorewall/rtrules
+    can be used to add routing rules based on packet source and/or
+    destination.
+
+    The file has the following columns:
+
+		PROVIDER        The provider to route the traffic through.
+				May be expressed either as the provider name
+				or the provider number.
+
+		PRIORITY
+				The rule's priority which determines the order
+				in which the rules are processed.
+
+				1000-1999   Before Shorewall-generated
+					    'MARK' rules
+
+				11000- 11999 After 'MARK' rules but before
+					    Shorewall-generated rules for
+					    ISP interfaces.
+
+				26000-26999 After ISP interface rules but
+					    before 'default' rule.
+
+				Rules with equal priority are applied in
+				the order in which they appear in the file.
+
+		SOURCE(optonal) An ip address (network or host) that
+				matches the source IP address in a packet.
+				May also be specified as an interface
+				name optionally followed by ":" and an
+				address. If the define 'lo' is specified,
+				the packet must originate from the firewall
+				itself.
+
+		DEST(optional)  An ip address (network or host) that
+				matches the destination IP address in a packet.
+
+				If you choose to omit either SOURCE or DEST,
+				place "-" in that column (or you can simply
+				leave the DEST column empty). Note that you
+				may not omit both SOURCE and DEST.
+
+    Example: You want all traffic coming in on eth1 to be routed to the ISP1
+	     provider:
+
+	    #PROVIDER	PRIORITY	SOURCE			DEST
+	    ISP1	1000		eth1
 
 Migration Considerations:
 

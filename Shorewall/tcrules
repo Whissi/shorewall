@@ -84,10 +84,13 @@
 #	SOURCE		Source of the packet. A comma-separated list of
 #			interface names, IP addresses, MAC addresses and/or
 #			subnets for packets being routed through a common path.
-#			For example, all packets for connections masqueraded
-#			to eth0 from other interfaces can be matched in a
-#			single rule with several alternative SOURCE criteria.
-#			However, a connection whose packets gets to eth0 in a
+#			List elements may also consist of an interface name
+#			followed by ":" and an address
+#			(e.g., eth1:192.168.1.0/24). For example, all packets
+#			for connections masqueraded to eth0 from other
+#			interfaces can be matched in a single rule with
+#			several alternative SOURCE criteria. However, a
+#			connection whose packets gets to eth0 in a
 #			different way, e.g., direct from the firewall itself,
 #			needs a different rule.
 #
@@ -105,8 +108,9 @@
 #	DEST		Destination of the packet. Comma separated list of
 #			IP addresses and/or subnets. If your kernel and
 #			iptables include iprange match support, IP address
-#			ranges are also allowed.
-#
+#			ranges are also allowed. List elements may also
+#			consist of an interface name followed by ":" and an
+#			address (e.g., eth1:192.168.1.0/24).
 #			If the MARK column specificies a classification of
 #			the form <major>:<minor> then this column may also
 #			contain an interface name.

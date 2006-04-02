@@ -292,12 +292,12 @@ separate_list() {
 	*\[*\]*)
 	    #
 	    # Where we need to embed comma-separated lists within lists, we enclose them
-	    # within square brackets
+	    # within square brackets (extra 'evals' are to keep my text editor (kate) from getting lost).
 	    #
-	    firstpart=${list%%\[*}
-	    lastpart=${list#*\[}
-	    enclosure=${lastpart%%\]*}
-	    lastpart=${lastpart#*\]}
+	    eval 'firstpart=${list%%\[*}'
+	    eval 'lastpart=${list#*\[}'
+	    eval 'enclosure=${lastpart%%\]*}'
+	    eval 'lastpart=${lastpart#*\]}'
 	    case $lastpart in
 		\,*)
 		    case $firstpart in
@@ -593,10 +593,6 @@ strip_file() # $1 = Base Name of the file, $2 = Full Name of File (optional)
 #        behavior when the shell only supports 32-bit signed arithmatic and
 #        the IP address is 128.0.0.0 or 128.0.0.1.
 #
-#
-# So that emacs doesn't get lost, we use $LEFTSHIFT rather than <<
-#
-LEFTSHIFT='<<'
 
 #
 # Convert an IP address in dot quad format to an integer
@@ -609,7 +605,7 @@ decodeaddr() {
     IFS=.
 
     for x in $1; do
-	temp=$(( $(( $temp $LEFTSHIFT 8 )) | $x ))
+	temp=$(( $(( $temp << 8 )) | $x ))
     done
 
     echo $temp
@@ -721,7 +717,7 @@ ip_range_explicit() {
 ip_netmask() {
     local vlsm=${1#*/}
 
-    [ $vlsm -eq 0 ] && echo 0 || echo $(( -1 $LEFTSHIFT $(( 32 - $vlsm )) ))
+    [ $vlsm -eq 0 ] && echo 0 || echo $(( -1 << $(( 32 - $vlsm )) ))
 }
 
 #
@@ -742,7 +738,7 @@ ip_network() {
 ip_broadcast() {
     local x=$(( 32 - ${1#*/} ))
 
-    [ $x -eq 0 ] && echo -1 || echo $(( $(( 1 $LEFTSHIFT $x )) - 1 ))
+    [ $x -eq 0 ] && echo -1 || echo $(( $(( 1 << $x )) - 1 ))
 }
 
 #
@@ -772,10 +768,10 @@ in_network() # $1 = IP address, $2 = CIDR network
 ip_vlsm() {
     local mask=$(decodeaddr $1)
     local vlsm=0
-    local x=$(( 128 $LEFTSHIFT 24 )) # 0x80000000
+    local x=$(( 128 << 24 )) # 0x80000000
 
     while [ $(( $x & $mask )) -ne 0 ]; do
-	[ $mask -eq $x ] && mask=0 || mask=$(( $mask $LEFTSHIFT 1 )) # Not all shells shift 0x80000000 left properly.
+	[ $mask -eq $x ] && mask=0 || mask=$(( $mask << 1 )) # Not all shells shift 0x80000000 left properly.
 	vlsm=$(($vlsm + 1))
     done
 
@@ -838,7 +834,7 @@ if_match() # $1 = Name in interfaces file - may end in "+"
 #
 source_ip_range() # $1 = Address or Address Range
 {
-    case $1 in
+    [ $# -gt 0 ] && case $1 in
 	*.*.*.*-*.*.*.*)
 	    case $1 in
 		!*)
@@ -866,7 +862,7 @@ source_ip_range() # $1 = Address or Address Range
 #
 dest_ip_range() # $1 = Address or Address Range
 {
-    case $1 in
+    [ $# -gt 0 ] && case $1 in
 	*.*.*.*-*.*.*.*)
 	    case $1 in
 		!*)

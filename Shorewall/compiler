@@ -1387,15 +1387,19 @@ __EOF__
 	    f=$(find_file rtrules)
 
 	    if [ -f $f ]; then
-		progress_message2 "$DOING $f..."
-
 		strip_file rtrules $f
 
-		while read provider priority source dest; do
-		    expandv priority provider source dest
-		    rule="$priority $provider $source $dest"
-		    add_an_rtrule
-		done < $TMP_DIR/rtrules
+		if [ -s $TMP_DIR/rtrules ]; then
+		    progress_message2 "$DOING $f..."
+
+		    save_command
+
+		    while read provider priority source dest; do
+			expandv priority provider source dest
+			rule="$priority $provider $source $dest"
+			add_an_rtrule
+		    done < $TMP_DIR/rtrules
+		fi
 	    fi
 	fi
 

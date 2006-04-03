@@ -1394,9 +1394,9 @@ __EOF__
 
 		    save_command
 
-		    while read provider priority source dest; do
-			expandv priority provider source dest
-			rule="$priority $provider $source $dest"
+		    while read source dest provider priority; do
+			expandv source dest provider priority
+			rule="$source $dest $priority $provider"
 			add_an_rtrule
 		    done < $TMP_DIR/rtrules
 		fi

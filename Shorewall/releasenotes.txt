@@ -36,6 +36,14 @@ Problems Corrected in 3.2.0 Beta 4
 
 	    dmz        xenbr0:vif+           routeback
 
+2)  Previously, if 'mktemp' was not installed on the firewall system and if
+    a directory or file with the name /tmp/shorewall-<pid> existed (where <pid>
+    is the pid of the shell attempting to compile the Shorewall configuration),
+    then the current command would fail with error messages such as:
+
+    /usr/share/shorewall/compiler: 1: cannot create /tmp/shorewall-20000
+    ERROR: Cannot create temporary file in /tmp
+
 Other changes in 3.2.0 Beta 4
 
 1)  Shorewall now includes support for explicit routing rules when the

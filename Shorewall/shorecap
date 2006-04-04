@@ -255,13 +255,23 @@ determine_capabilities() {
 
     qt $IPTABLES -A fooX1234 -m recent --update -j ACCEPT                               && RECENT_MATCH=Yes
     qt $IPTABLES -A fooX1234 -m owner --uid-owner 0 -j ACCEPT                           && OWNER_MATCH=Yes
-    qt $IPTABLES -A fooX1234 -m connmark --mark 2  -j ACCEPT                            && CONNMARK_MATCH=Yes
+
+    if qt $IPTABLES -A fooX1234 -m connmark --mark 2  -j ACCEPT; then
+	CONNMARK_MATCH=Yes
+	qt $IPTABLES -A fooX1234 -m connmark --mark 2/0xFF -j ACCEPT && XCONNMARK_MATCH=Yes
+    fi
+
     qt $IPTABLES -A fooX1234 -p tcp -m ipp2p --ipp2p -j ACCEPT                          && IPP2P_MATCH=Yes
     qt $IPTABLES -A fooX1234 -m length --length 10:20 -j ACCEPT                         && LENGTH_MATCH=Yes
     qt $IPTABLES -A fooX1234 -j REJECT --reject-with icmp-host-prohibited               && ENHANCED_REJECT=Yes
 
     qt $IPTABLES -t mangle -N fooX1234
-    qt $IPTABLES -t mangle -A fooX1234 -j CONNMARK --save-mark                          && CONNMARK=Yes
+
+    if qt $IPTABLES -t mangle -A fooX1234 -j CONNMARK --save-mark; then
+	CONNMARK=Yes
+	qt $IPTABLES -t mangle -A fooX1234 -j CONNMARK --save-mark --mask 0xFF && XCONNMARK=Yes
+    fi
+
     qt $IPTABLES -t mangle -A fooX1234 -j CLASSIFY --set-class 1:1                      && CLASSIFY_TARGET=Yes
     qt $IPTABLES -t mangle -F fooX1234
     qt $IPTABLES -t mangle -X fooX1234
@@ -309,7 +319,9 @@ report_capabilities() {
     report_capability OWNER_MATCH
     report_capability IPSET_MATCH
     report_capability CONNMARK
+    report_capability XCONNMARK
     report_capability CONNMARK_MATCH
+    report_capability XCONNMARK_MATCH
     report_capability RAW_TABLE
     report_capability IPP2P_MATCH
     report_capability CLASSIFY_TARGET

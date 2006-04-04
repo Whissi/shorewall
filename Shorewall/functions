@@ -530,7 +530,8 @@ mktempdir() {
 	    #
 	    # Not all versions of the BSD mktemp support the -d option under Linux
 	    #
-	    mkdir /tmp/shorewall-$$ && chmod 700 /tmp/shorewall-$$ && echo /tmp/shorewall-$$
+	    qt rm -rf /tmp/shorewall-$$
+	    mkdir -p /tmp/shorewall-$$ chmod 700 /tmp/shorewall-$$ && echo /tmp/shorewall-$$
 	    ;;
 	*)
 	    echo "   ERROR:Internal error in mktempdir" >&2
@@ -1126,7 +1127,9 @@ determine_capabilities() {
     OWNER_MATCH=
     IPSET_MATCH=
     CONNMARK=
+    XCONNMARK=
     CONNMARK_MATCH=
+    XCONNMARK_MATCH=
     RAW_TABLE=
     IPP2P_MATCH=
     LENGTH_MATCH=
@@ -1155,13 +1158,23 @@ determine_capabilities() {
 
     qt $IPTABLES -A fooX1234 -m recent --update -j ACCEPT                               && RECENT_MATCH=Yes
     qt $IPTABLES -A fooX1234 -m owner --uid-owner 0 -j ACCEPT                           && OWNER_MATCH=Yes
-    qt $IPTABLES -A fooX1234 -m connmark --mark 2  -j ACCEPT                            && CONNMARK_MATCH=Yes
+
+    if qt $IPTABLES -A fooX1234 -m connmark --mark 2  -j ACCEPT; then
+	CONNMARK_MATCH=Yes
+	qt $IPTABLES -A fooX1234 -m connmark --mark 2/0xFF -j ACCEPT && XCONNMARK_MATCH=Yes
+    fi
+
     qt $IPTABLES -A fooX1234 -p tcp -m ipp2p --ipp2p -j ACCEPT                          && IPP2P_MATCH=Yes
     qt $IPTABLES -A fooX1234 -m length --length 10:20 -j ACCEPT                         && LENGTH_MATCH=Yes
     qt $IPTABLES -A fooX1234 -j REJECT --reject-with icmp-host-prohibited               && ENHANCED_REJECT=Yes
 
     qt $IPTABLES -t mangle -N fooX1234
-    qt $IPTABLES -t mangle -A fooX1234 -j CONNMARK --save-mark                          && CONNMARK=Yes
+
+    if qt $IPTABLES -t mangle -A fooX1234 -j CONNMARK --save-mark; then
+	CONNMARK=Yes
+	qt $IPTABLES -t mangle -A fooX1234 -j CONNMARK --save-mark --mask 0xFF && XCONNMARK=Yes
+    fi
+
     qt $IPTABLES -t mangle -A fooX1234 -j CLASSIFY --set-class 1:1                      && CLASSIFY_TARGET=Yes
     qt $IPTABLES -t mangle -F fooX1234
     qt $IPTABLES -t mangle -X fooX1234
@@ -1212,7 +1225,9 @@ report_capabilities() {
 	report_capability "Owner Match" $OWNER_MATCH
 	report_capability "Ipset Match" $IPSET_MATCH
 	report_capability "CONNMARK Target" $CONNMARK
+	report_capability "Extended CONNMARK Target" $XCONNMARK
 	report_capability "Connmark Match" $CONNMARK_MATCH
+	report_capability "Extended Connmark Match" $XCONNMARK_MATCH
 	report_capability "Raw Table" $RAW_TABLE
 	report_capability "IPP2P Match" $IPP2P_MATCH
 	report_capability "CLASSIFY Target" $CLASSIFY_TARGET

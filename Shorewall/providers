@@ -23,6 +23,11 @@
 #	MARK		A FWMARK value used in your /etc/shorewall/tcrules
 #			file to direct packets to this provider.
 #
+#			If HIGH_ROUTE_MARKS=Yes in shorewall.conf, then the
+#			value must between 0x0100 and 0xff00 and the
+#			low-order byte of the value must be zero. Otherwise,
+#			the value must be between 1 and 255.
+#
 #	DUPLICATE	The name of an existing table to duplicate. May be
 #			'main' or the name of a previous provider.
 #

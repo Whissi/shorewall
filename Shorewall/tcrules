@@ -20,8 +20,17 @@
 # Columns are:
 #
 #
-#	MARK/		a) A mark value which is an integer in the range 1-255
+#	MARK/		a) A mark value which is an integer in the range 1-255.
 #	CLASSIFY
+#			   If HIGH_ROUTE_MARKS=Yes in shorewall.conf then
+#			   you may also specify a value in the range 0x0100-
+#			   0xFF00 with the low-order byte being zero. Such
+#			   values may only be used in the PREROUTING chain
+#			   (value followed by :F or you have set
+#			   MARK_IN_FORWARD_CHAIN=Yes in shorewall conf and have
+#			   not followed the value with :P) or the OUTPUT chain
+#			   (SOURCE is $FW).
+#
 #			   May optionally be followed by ":P" or ":F"
 #			   where ":P" indicates that marking should occur in
 #			   the PREROUTING chain and ":F" indicates that marking

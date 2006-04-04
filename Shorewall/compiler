@@ -1098,13 +1098,17 @@ __EOF__
 }
 
 #
-# Check that a mark value or mask is less that 256
+# Check that a mark value or mask is less that 256 or that it is less than 65536 and
+# that it's lower 8 bits are zero.
 #
 verify_mark() # $1 = value to test
 {
     verify_mark1()
     {
-	[ $1 -lt 256 ]
+	[ $1 -lt 256 ] && return 0
+	[ -n "$XCONNMARK" ] || return 1
+	[ $1 -gt 65535 ] && return 1
+	return $(($1 & 0XFF))
     }
 
     verify_mark2()
@@ -1120,7 +1124,7 @@ verify_mark() # $1 = value to test
 #
 setup_providers()
 {
-    local table number mark duplicate interface gateway options provider address copy route loose addresses rulenum pref echobin=$(mywhich echo) balance save_indent="$INDENT"
+    local table number mark duplicate interface gateway options provider address copy route loose addresses rulenum pref echobin=$(mywhich echo) balance save_indent="$INDENT" mask=
 
     copy_table() {
 	    indent >&3 << __EOF__
@@ -1210,6 +1214,14 @@ __EOF__
 
 	if [ x${mark} != x- ]; then
 	    verify_mark $mark
+
+	    if [ $mark -lt 256 ]; then
+		if [ -n "$HIGH_ROUTE_MARKS" ]; then
+		    fatal_error "Invalid Mark Value ($mark) with HIGH_ROUTE_MARKS=Yes"
+		fi
+	    elif [ -z "$HIGH_ROUTE_MARKS" ]; then
+		fatal_error "Invalid Mark Value ($mark) with HIGH_ROUTE_MARKS=No"
+	    fi
 
 	    eval ${table}_mark=$mark
 
@@ -3035,6 +3047,8 @@ setup_traffic_shaping()
 		fatal_error "device $device seems not to be configured in tcdevices"
 	    fi
 	    list_search "$device-$mark" $classlist && fatal_error "Mark $mark for interface $device defined more than once in tcclasses"
+	    verify_mark $mark
+	    [ $mark -lt 256 ] || fatal_error "Invalid Mark Value"
 	    classlist="$classlist $device-$mark"
 	done < $TMP_DIR/tcclasses
     }
@@ -3084,7 +3098,7 @@ setup_traffic_shaping()
 	run_tc qdisc add dev $device parent $classid handle 1$mark: sfq perturb 10
 	# add filters
 	if [ -n "$CLASSIFY_TARGET" ]; then
-	    run_iptables -t mangle -A tcpost $(match_dest_dev $device) -m mark --mark $mark -j CLASSIFY --set-class $classid
+	    run_iptables -t mangle -A tcpost $(match_dest_dev $device) -m mark --mark $mark/0xFF -j CLASSIFY --set-class $classid
 	else
 	    run_tc filter add dev $device protocol ip parent $devnum:0 prio 1 handle $mark fw classid $classid
 	fi
@@ -3170,6 +3184,12 @@ process_tc_rule()
 	esac
 
 	r="${r}-p $proto -m ipp2p --${port} "
+    }
+
+    verify_small_mark()
+    {
+	verify_mark $1
+	[ $1 -lt 256 ] || fatal_error "Mark Value ($1) too larg, rule \"$rule\""
     }
 
     add_a_tc_rule() {
@@ -3317,22 +3337,22 @@ process_tc_rule()
 
     case $mark in
 	SAVE)
-	    target="CONNMARK --save-mark --mask 255"
+	    target="CONNMARK --save-mark --mask 0xFF"
 	    mark=
 	    ;;
 	SAVE/*)
 	    target="CONNMARK --save-mark --mask"
 	    mark=${mark#*/}
-	    verify_mark $mark
+	    verify_small_mark $mark
 	    ;;
 	RESTORE)
-	    target="CONNMARK --restore-mark --mask 255"
+	    target="CONNMARK --restore-mark --mask 0xFF"
 	    mark=
 	    ;;
 	RESTORE/*)
 	    target="CONNMARK --restore-mark --mask"
 	    mark=${mark#*/}
-	    verify_mark $mark
+	    verify_small_mark $mark
 	    ;;
 	CONTINUE)
 	    target=RETURN
@@ -3341,6 +3361,16 @@ process_tc_rule()
 	*)
 	    if [ "$chain" != tcpost ]; then
 		verify_mark $mark
+		if [ $mark -gt 255 ]; then
+		    case $chain in
+			tcpre|tcout)
+			    target="MARK --or-mark"
+			    ;;
+			*)
+			    fatal_error "Invalid mark value ($mark) in rule \"$rule\""
+			    ;;
+		    esac
+		fi
 	    fi
 	    ;;
     esac
@@ -3369,12 +3399,12 @@ process_tc_rule()
     if [ -n "$marktest" ] ; then
 	case $testval in
 	    */*)
-		verify_mark ${testval%/*}
-		verify_mark ${testval#*/}
+		validate_mark ${testval%/*}
+		validate_mark ${testval#*/}
 		;;
 	    *)
-		verify_mark $testval
-		testval=$testval/255
+		validate_mark $testval
+		testval=$testval/$mask
 		;;
 	esac
     fi
@@ -3458,15 +3488,24 @@ setup_tc1() {
 
     #
     # Route marks are restored in PREROUTING/OUTPUT prior to these rules. We only send
-    # packets that are not part of a marked connection to the 'tcpre/tcout' chains
+    # packets that are not part of a marked connection to the 'tcpre/tcout' chains unless
+    # HIGH_
     #
-    [ -n "$ROUTEMARK_INTERFACES" ] && mark_part="-m mark --mark 0"
+    if [ -z "$HIGH_ROUTE_MARKS" -a -n "$ROUTEMARK_INTERFACES" ]; then
+	mark_part="-m mark --mark 0"
+    fi
 
     run_iptables -t mangle -A PREROUTING $mark_part -j tcpre
     run_iptables -t mangle -A OUTPUT     $mark_part -j tcout
 
     run_iptables -t mangle -A FORWARD     -j tcfor
     run_iptables -t mangle -A POSTROUTING -j tcpost
+
+    if [ -n "$HIGH_ROUTE_MARKS" ]; then
+	for chain in INPUT FORWARD; do
+	    run_iptables -t mangle -I $chain -j MARK --and-mark 0xFF
+	done
+    fi
 
     if [ -n "$TC_SCRIPT" ]; then
         save_progress_message "Setting up Traffic Control..."
@@ -6575,9 +6614,12 @@ rules_chain() # $1 = source zone, $2 = destination zone
 #
 setup_routes()
 {
+    local mask=0xFF
 
-    run_iptables -t mangle -A PREROUTING -m connmark ! --mark 0 -j CONNMARK --restore-mark
-    run_iptables -t mangle -A OUTPUT     -m connmark ! --mark 0 -j CONNMARK --restore-mark
+    [ -n "$HIGH_ROUTE_MARKS" ] && mask=0xFF00
+
+    run_iptables -t mangle -A PREROUTING -m connmark ! --mark 0/$mask -j CONNMARK --restore-mark --mask $mask
+    run_iptables -t mangle -A OUTPUT     -m connmark ! --mark 0/$mask -j CONNMARK --restore-mark --mask $mask
     createmanglechain routemark
 
     for interface in $ROUTEMARK_INTERFACES ; do
@@ -6585,12 +6627,12 @@ setup_routes()
 	iface=$(chain_base $interface)
 	eval mark_value=\$${iface}_routemark
 
-	run_iptables -t mangle -A PREROUTING -i $interface -m mark --mark 0 -j routemark
-	run_iptables -t mangle -A routemark  -i $interface                  -j MARK --set-mark $mark_value
+	run_iptables -t mangle -A PREROUTING -i $interface -m mark --mark 0/$mask -j routemark
+	run_iptables -t mangle -A routemark  -i $interface                        -j MARK --or-mark $mark_value
 
     done
 
-    run_iptables -t mangle -A routemark -m mark ! --mark 0 -j CONNMARK --save-mark --mask 255
+    run_iptables -t mangle -A routemark -m mark ! --mark 0/$mask -j CONNMARK --save-mark --mask $mask
 
 }
 
@@ -9053,6 +9095,7 @@ do_initialize() {
     RESTOREFILE=
     MAPOLDACTIONS=
     IMPLICIT_CONTINUE=
+    HIGH_ROUTE_MARKS=
 
     OUTPUT=
     TMP_DIR=
@@ -9252,6 +9295,10 @@ do_initialize() {
     MAPOLDACTIONS=$(added_param_value_yes MAPOLDACTIONS $MAPOLDACTIONS)
     FASTACCEPT=$(added_param_value_no FASTACCEPT $FASTACCEPT)
     IMPLICIT_CONTINUE=$(added_param_value_no IMPLICIT_CONTINUE $IMPLICIT_CONTINUE)
+    HIGH_ROUTE_MARKS=$(added_param_value_no HIGH_ROUTE_MARKS $HIGH_ROUTE_MARKS)
+    [ -n "$XCONNMARK_MATCH" ] || XCONNMARK=
+
+    [ -n "$HIGH_ROUTE_MARKS" -a -z "$XCONNMARK" ] && fatal_error "HIGH_ROUTE_MARKS=Yes requires extended CONNMARK target and extended CONNMARK match support"
 
     case ${IPSECFILE:=ipsec} in
 	ipsec|zones)

@@ -1137,6 +1137,8 @@ determine_capabilities() {
     ENHANCED_REJECT=
     USEPKTTYPE=
     KLUDGEFREE=
+    MARK=
+    XMARK=
 
     qt $IPTABLES -N fooX1234
     qt $IPTABLES -A fooX1234 -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT             && CONNTRACK_MATCH=Yes
@@ -1169,6 +1171,11 @@ determine_capabilities() {
     qt $IPTABLES -A fooX1234 -j REJECT --reject-with icmp-host-prohibited               && ENHANCED_REJECT=Yes
 
     qt $IPTABLES -t mangle -N fooX1234
+
+    if qt $IPTABLES -t mangle -A fooX1234 -j MARK --set-mark 1; then
+	MARK=Yes
+	qt $IPTABLES -t mangle -A fooX1234 -j MARK --and-mark 0xFF && XMARK=Yes
+    fi
 
     if qt $IPTABLES -t mangle -A fooX1234 -j CONNMARK --save-mark; then
 	CONNMARK=Yes
@@ -1225,14 +1232,16 @@ report_capabilities() {
 	report_capability "Owner Match" $OWNER_MATCH
 	report_capability "Ipset Match" $IPSET_MATCH
 	report_capability "CONNMARK Target" $CONNMARK
-	report_capability "Extended CONNMARK Target" $XCONNMARK
+	[ -n "$CONNMARK" ] && report_capability "Extended CONNMARK Target" $XCONNMARK
 	report_capability "Connmark Match" $CONNMARK_MATCH
-	report_capability "Extended Connmark Match" $XCONNMARK_MATCH
+	[ -n "$CONNMARK_MATCH" ] && report_capability "Extended Connmark Match" $XCONNMARK_MATCH
 	report_capability "Raw Table" $RAW_TABLE
 	report_capability "IPP2P Match" $IPP2P_MATCH
 	report_capability "CLASSIFY Target" $CLASSIFY_TARGET
 	report_capability "Extended REJECT" $ENHANCED_REJECT
 	report_capability "Repeat match" $KLUDGEFREE
+	report_capability "MARK Target" $MARK
+	[ -n "$MARK" ] && report_capability "Extended MARK Target" $XMARK
     fi
 
     [ -n "$PKTTYPE" ] || USEPKTTYPE=

@@ -234,6 +234,8 @@ determine_capabilities() {
     ENHANCED_REJECT=
     USEPKTTYPE=
     KLUDGEFREE=
+    MARK=
+    XMARK=
 
     qt $IPTABLES -N fooX1234
     qt $IPTABLES -A fooX1234 -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT             && CONNTRACK_MATCH=Yes
@@ -266,6 +268,11 @@ determine_capabilities() {
     qt $IPTABLES -A fooX1234 -j REJECT --reject-with icmp-host-prohibited               && ENHANCED_REJECT=Yes
 
     qt $IPTABLES -t mangle -N fooX1234
+
+    if qt $IPTABLES -t mangle -A fooX1234 -j MARK --set-mark 1; then
+	MARK=Yes
+	qt $IPTABLES -t mangle -A fooX1234 -j MARK --and-mark 0xFF && XMARK=Yes
+    fi
 
     if qt $IPTABLES -t mangle -A fooX1234 -j CONNMARK --save-mark; then
 	CONNMARK=Yes
@@ -308,7 +315,7 @@ report_capabilities() {
     report_capability NAT_ENABLED
     report_capability MANGLE_ENABLED
     report_capability MULTIPORT
-    [ -n "$MULTIPORT" ] && report_capability XMULTIPORT
+    report_capability XMULTIPORT
     report_capability CONNTRACK_MATCH
     report_capability USEPKTTYPE
     report_capability POLICY_MATCH
@@ -327,6 +334,8 @@ report_capabilities() {
     report_capability CLASSIFY_TARGET
     report_capability ENHANCED_REJECT
     report_capability KLUDGEFREE
+    report_capability MARK
+    report_capability XMARK
 }
 
 load_kernel_modules

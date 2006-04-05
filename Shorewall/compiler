@@ -9297,8 +9297,9 @@ do_initialize() {
     IMPLICIT_CONTINUE=$(added_param_value_no IMPLICIT_CONTINUE $IMPLICIT_CONTINUE)
     HIGH_ROUTE_MARKS=$(added_param_value_no HIGH_ROUTE_MARKS $HIGH_ROUTE_MARKS)
     [ -n "$XCONNMARK_MATCH" ] || XCONNMARK=
+    [ -n "$XMARK" ] || XCONNMARK=
 
-    [ -n "$HIGH_ROUTE_MARKS" -a -z "$XCONNMARK" ] && fatal_error "HIGH_ROUTE_MARKS=Yes requires extended CONNMARK target and extended CONNMARK match support"
+    [ -n "$HIGH_ROUTE_MARKS" -a -z "$XCONNMARK" ] && fatal_error "HIGH_ROUTE_MARKS=Yes requires extended CONNMARK target, extended CONNMARK match support and extended MARK support"
 
     case ${IPSECFILE:=ipsec} in
 	ipsec|zones)

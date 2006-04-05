@@ -95,6 +95,32 @@ Other changes in 3.2.0 Beta 4
 	    #PROVIDER	PRIORITY	SOURCE			DEST
 	    ISP1	1000		eth1
 
+2)  Prior to now, it has not been possible to use connection marking in
+    /etc/shorewall/tcrules if you have a multi-ISP configuration that uses the
+    'track' option.
+
+    Beginning with this release, you may now set HIGH_ROUTE_MARKS=Yes in
+    shorewall.conf to effectively divide the packet mark and connection mark
+    into two 8-byte mark fields.
+
+    When you do this:
+
+	a) The MARK field in the providers file must have a value that is
+	   less than 65536 and that is a multiple of 256 (using hex
+	   representation, the values are 0x0100-0xFF00 with the low-order
+	   8 bits being zero).
+
+	b) You may only set those mark values in the FORWARD chain.
+
+	c) Marks used for traffic shaping must still be in the range of 1-255
+	   but these may now be set in any chain. If they are set in the
+	   FORWARD chain, they must be set before any routing marks (those
+	   with values greater than 255).
+
+	d) When you SAVE or RESTORE in tcrules, only the TC mark value is
+	   saved or restored. Shorewall handles saving and restoring the
+	   routing (provider) marks.
+
 Migration Considerations:
 
 1)  If you are upgrading from Shorewall 2.x, it is essential that you read

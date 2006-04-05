@@ -1106,7 +1106,7 @@ verify_mark() # $1 = value to test
     verify_mark1()
     {
 	[ $1 -lt 256 ] && return 0
-	[ -n "$XCONNMARK" ] || return 1
+	[ -n "$HIGH_ROUTE_MARKS" ] || return 1
 	[ $1 -gt 65535 ] && return 1
 	return $(($1 & 0XFF))
     }
@@ -3370,6 +3370,8 @@ process_tc_rule()
 			    fatal_error "Invalid mark value ($mark) in rule \"$rule\""
 			    ;;
 		    esac
+		elif [ -n "$HIGH_ROUTE_MARKS" -a $chain = tcpre ]; then
+		    fatal_error "Marks < 256 may not be set in the PREROUTING chain when HIGH_ROUTE_MARKS=Yes"
 		fi
 	    fi
 	    ;;
@@ -3488,10 +3490,9 @@ setup_tc1() {
 
     #
     # Route marks are restored in PREROUTING/OUTPUT prior to these rules. We only send
-    # packets that are not part of a marked connection to the 'tcpre/tcout' chains unless
-    # HIGH_
+    # packets that are not part of a marked connection to the 'tcpre/tcout' chains.
     #
-    if [ -z "$HIGH_ROUTE_MARKS" -a -n "$ROUTEMARK_INTERFACES" ]; then
+    if [ -n "$ROUTEMARK_INTERFACES" ]; then
 	mark_part="-m mark --mark 0"
     fi
 

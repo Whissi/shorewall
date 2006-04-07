@@ -8558,9 +8558,9 @@ compile_firewall() # $1 = File Name
     # END OVERLOADED FUNCTIONS
     #
 
-    STATEDIR=$(mktempdir)
+    STATEDIR=$TMP_DIR/compiler_state/
 
-    [ -n "$STATEDIR" ] || fatal_error "Cannot create temporary directory in /tmp"
+    mkdir $STATEDIR || fatal_error "Cannot create temporary directory in $TMP_DIR"
 
     if [ $COMMAND = compile ]; then
 	dir=$(dirname $1)

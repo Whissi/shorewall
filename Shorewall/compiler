@@ -8558,6 +8558,10 @@ compile_firewall() # $1 = File Name
     # END OVERLOADED FUNCTIONS
     #
 
+    #
+    # So that mktempdir doesn't have to jump through hoops when there isn't a working 'mktemp',
+    # we create the compiler's temporary directory in TMP_DIR
+    #
     STATEDIR=$TMP_DIR/compiler_state/
 
     mkdir $STATEDIR || fatal_error "Cannot create temporary directory in $TMP_DIR"
@@ -8972,7 +8976,6 @@ __EOF__
     fi
 
     rm -rf $TMP_DIR
-    rm -rf $STATEDIR
 
 }
 

@@ -1,4 +1,4 @@
-Shorewall 3.2.0 Beta 4.
+Shorewall 3.2.0 Beta 5
 
 Note to users upgrading from Shorewall 2.x or 3.0
 
@@ -27,97 +27,20 @@ Note to users upgrading from Shorewall 2.x or 3.0
    Please see the "Migration Considerations" below for additional upgrade
    information.
 
-Problems Corrected in 3.2.0 Beta 4
+Problems Corrected in 3.2.0 Beta 5
 
-1)  Previously, the 'routeback' option was ignored in an entry in the
-    /etc/shorewall/hosts file that referred to a (set of) bridge port(s).
+1)  On systems such as LEAF Bering that either don't have the 'mktemp' utility
+   or whose 'mktemp' cannot create a temporary directory, firewall compilation
+   failed with the message:
 
-    Example:
+	ERROR: No Interfaces Defined
 
-	    dmz        xenbr0:vif+           routeback
+    after a shell error message indicating that the stripped interfaces
+    file in /tmp/shorewall-NNNN/ couldn't be opened.
 
-2)  Previously, if 'mktemp' was not installed on the firewall system and if
-    a directory or file with the name /tmp/shorewall-<pid> existed (where <pid>
-    is the pid of the shell attempting to compile the Shorewall configuration),
-    then the current command would fail with error messages such as:
+Other changes in 3.2.0 Beta 5
 
-    /usr/share/shorewall/compiler: 1: cannot create /tmp/shorewall-20000
-    ERROR: Cannot create temporary file in /tmp
-
-Other changes in 3.2.0 Beta 4
-
-1)  Shorewall now includes support for explicit routing rules when the
-    /etc/shorewall/providers file is used. A new file, /etc/shorewall/rtrules
-    can be used to add routing rules based on packet source and/or
-    destination.
-
-    The file has the following columns:
-
-		SOURCE(optonal) An ip address (network or host) that
-				matches the source IP address in a packet.
-				May also be specified as an interface
-				name optionally followed by ":" and an
-				address. If the define 'lo' is specified,
-				the packet must originate from the firewall
-				itself.
-
-		DEST(optional)  An ip address (network or host) that
-				matches the destination IP address in a packet.
-
-				If you choose to omit either SOURCE or DEST,
-				place "-" in the column. Note that you
-				may not omit both SOURCE and DEST.
-
-		PROVIDER        The provider to route the traffic through.
-				May be expressed either as the provider name
-				or the provider number.
-
-		PRIORITY
-				The rule's priority which determines the order
-				in which the rules are processed.
-
-				1000-1999   Before Shorewall-generated
-					    'MARK' rules
-
-				11000- 11999 After 'MARK' rules but before
-					    Shorewall-generated rules for
-					    provider interfaces.
-
-				26000-26999 After provider interface rules but
-					    before 'default' rule.
-
-				Rules with equal priority are applied in
-				the order in which they appear in the file.
-
-    Example: You want all traffic coming in on eth1 to be routed to the ISP1
-	     provider:
-
-	    #PROVIDER	PRIORITY	SOURCE			DEST
-	    ISP1	1000		eth1
-
-2)  Prior to now, it has not been possible to use connection marking in
-    /etc/shorewall/tcrules if you have a multi-ISP configuration that uses the
-    'track' option.
-
-    Beginning with this release, you may now set HIGH_ROUTE_MARKS=Yes in
-    shorewall.conf to effectively divide the packet mark and connection mark
-    into two 8-byte mark fields.
-
-    When you do this:
-
-	a) The MARK field in the providers file must have a value that is
-	   less than 65536 and that is a multiple of 256 (using hex
-	   representation, the values are 0x0100-0xFF00 with the low-order
-	   8 bits being zero).
-
-	b) You may only set those mark values in the PREROUTING chain.
-
-	c) Marks used for traffic shaping must still be in the range of 1-255
-	   and may still not be set in the PREROUTING chain.
-
-	d) When you SAVE or RESTORE in tcrules, only the TC mark value is
-	   saved or restored. Shorewall handles saving and restoring the
-	   routing (provider) marks.
+None.
 
 Migration Considerations:
 
@@ -513,3 +436,75 @@ New Features:
     Traffic from all other zones to 'chld' will be subject to the implicit
     CONTINUE policy.
 
+10) Shorewall now includes support for explicit routing rules when the
+    /etc/shorewall/providers file is used. A new file, /etc/shorewall/rtrules
+    can be used to add routing rules based on packet source and/or
+    destination.
+
+    The file has the following columns:
+
+		SOURCE(optonal) An ip address (network or host) that
+				matches the source IP address in a packet.
+				May also be specified as an interface
+				name optionally followed by ":" and an
+				address. If the define 'lo' is specified,
+				the packet must originate from the firewall
+				itself.
+
+		DEST(optional)  An ip address (network or host) that
+				matches the destination IP address in a packet.
+
+				If you choose to omit either SOURCE or DEST,
+				place "-" in the column. Note that you
+				may not omit both SOURCE and DEST.
+
+		PROVIDER        The provider to route the traffic through.
+				May be expressed either as the provider name
+				or the provider number.
+
+		PRIORITY
+				The rule's priority which determines the order
+				in which the rules are processed.
+
+				1000-1999   Before Shorewall-generated
+					    'MARK' rules
+
+				11000- 11999 After 'MARK' rules but before
+					    Shorewall-generated rules for
+					    provider interfaces.
+
+				26000-26999 After provider interface rules but
+					    before 'default' rule.
+
+				Rules with equal priority are applied in
+				the order in which they appear in the file.
+
+    Example: You want all traffic coming in on eth1 to be routed to the ISP1
+	     provider:
+
+	    #PROVIDER	PRIORITY	SOURCE			DEST
+	    ISP1	1000		eth1
+
+11) Prior to now, it has not been possible to use connection marking in
+    /etc/shorewall/tcrules if you have a multi-ISP configuration that uses the
+    'track' option.
+
+    Beginning with this release, you may now set HIGH_ROUTE_MARKS=Yes in
+    shorewall.conf to effectively divide the packet mark and connection mark
+    into two 8-byte mark fields.
+
+    When you do this:
+
+	a) The MARK field in the providers file must have a value that is
+	   less than 65536 and that is a multiple of 256 (using hex
+	   representation, the values are 0x0100-0xFF00 with the low-order
+	   8 bits being zero).
+
+	b) You may only set those mark values in the PREROUTING chain.
+
+	c) Marks used for traffic shaping must still be in the range of 1-255
+	   and may still not be set in the PREROUTING chain.
+
+	d) When you SAVE or RESTORE in tcrules, only the TC mark value is
+	   saved or restored. Shorewall handles saving and restoring the
+	   routing (provider) marks.

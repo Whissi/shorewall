@@ -29,7 +29,7 @@ Note to users upgrading from Shorewall 2.x or 3.0
 
 Problems Corrected in 3.2.0 Beta 5
 
-1)  On systems such as LEAF Bering that either don't have the 'mktemp' utility
+1) On systems such as LEAF Bering that either don't have the 'mktemp' utility
    or whose 'mktemp' cannot create a temporary directory, firewall compilation
    failed with the message:
 
@@ -40,7 +40,9 @@ Problems Corrected in 3.2.0 Beta 5
 
 Other changes in 3.2.0 Beta 5
 
-None.
+1)  The "shorewall refresh" command no longer refreshes traffic shaping.
+    Use "shorewall restart" instead if you need to reprocess the
+    tcrules, tcdevices and tcclasses files.
 
 Migration Considerations:
 

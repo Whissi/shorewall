@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2006-03-26</pubdate>
+    <pubdate>2006-04-10</pubdate>
 
     <copyright>
       <year>2006</year>
@@ -78,8 +78,9 @@
 
     <orderedlist>
       <listitem>
-        <para>Combination Firewall/Public Server/Private Server using Xen
-        (created by building out my Linux desktop system).</para>
+        <para>Combination Firewall/Public Server/Private Server/Wireless
+        Gateway using Xen (created by building out my Linux desktop
+        system).</para>
       </listitem>
 
       <listitem>
@@ -126,17 +127,37 @@
       </listitem>
     </itemizedlist>
 
-    <para>There are four Xen domains. Dom0 (ursa.shorewall.net) is used as a
-    file server (NFS and Samba). The first DomU (Dom name <emphasis
-    role="bold">firewall</emphasis>, gateway.shorewall.net) is used as our
-    main firewall; the second DomU (Dom name <emphasis
-    role="bold">lists</emphasis>, lists.shorewall.net) is used as a public
-    Web/FTP/Mail/DNS server while the third DomU (Dom name <emphasis
-    role="bold">wireless</emphasis>, wireless.shorewall.net) is used as a
-    gateway to our wireless network. A seperate wireless gateway is necessary
-    because Xen 3 only supports three virtual interfaces per DomU and the
-    firewall DomU already has three interfaces. Shorewall runs in Dom0, in the
-    firewall domain and in the wireless gateway.</para>
+    <para>There are four Xen domains.</para>
+
+    <orderedlist>
+      <listitem>
+        <para>Dom0 (ursa.shorewall.net) is used as a local file server (NFS
+        and Samba).</para>
+      </listitem>
+
+      <listitem>
+        <para>The first DomU (Dom name <emphasis
+        role="bold">firewall</emphasis>, gateway.shorewall.net) is used as our
+        main firewall.</para>
+      </listitem>
+
+      <listitem>
+        <para>The second DomU (Dom name <emphasis
+        role="bold">lists</emphasis>, lists.shorewall.net) is used as a public
+        Web/FTP/Mail/DNS server.</para>
+      </listitem>
+
+      <listitem>
+        <para>The third DomU (Dom name <emphasis
+        role="bold">wireless</emphasis>, wireless.shorewall.net) is used as a
+        gateway to our wireless network.</para>
+      </listitem>
+    </orderedlist>
+
+    <para>A seperate wireless gateway is necessary because Xen 3.0 only
+    supports three virtual interfaces per DomU and the firewall DomU already
+    has three interfaces. Shorewall runs in Dom0, in the firewall domain and
+    in the wireless gateway.</para>
 
     <section id="Domains">
       <title>Domain Configuration</title>
@@ -250,10 +271,13 @@ disk     = [ 'phy:hdb4,hdb4,w' ]</programlisting>
       <para>The zones correspond to the Shorewall zones in the Dom0
       configuration.</para>
 
-      <para>SuSE 10.0 includes Xen 3.0 which does not support PCI delegation;
-      I therefore use a bridged configuration with four bridges (one for each
-      network interface). When Shorewall starts during bootup of Dom0, it
-      creates the four bridges using this
+      <para>SuSE 10.0 includes Xen 3.0 which does not support PCI
+      delegation<footnote>
+          <para>PCI delegation was a feature of Xen 2.0 but that capability
+          was dropped in 3.0. It has been restore in Xen 3.0.2.</para>
+        </footnote>; I therefore use a bridged configuration with four bridges
+      (one for each network interface). When Shorewall starts during bootup of
+      Dom0, it creates the four bridges using this
       <filename>/etc/shorewall/init</filename> extension script:</para>
 
       <blockquote>
@@ -367,7 +391,9 @@ SECTION NEW
       <para>The two laptops can be directly attached to the LAN as shown above
       or they can be attached wirelessly through the <link
       linkend="Wireless">wireless gateway</link> -- their IP addresses are the
-      same in either case.</para>
+      same in either case; when they are directly attached, the IP address is
+      assigned by the DHCP server running on the firewall and when they are
+      attached wirelessly, the IP address is assigned by OpenVPN.</para>
 
       <para>The Shorewall configuration files are shown below. All routing and
       secondary IP addresses are handled in the SuSE network

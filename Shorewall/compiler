@@ -5035,13 +5035,15 @@ add_nat_rule() {
 		if [ $(list_count1 $interfaces) -eq 1 ]; then
 		    save_command "addr=\$(find_first_interface_address $interface)"
 		else
-		    savecomment "addr="
+		    save_command "addr="
 		    for interface in $interfaces; do
 			    ident >&3 << __EOF__
 addr="\$addr \$(find_first_interface_address $interface)"
 __EOF__
 		    done
 		fi
+	    else
+		addr=
 	    fi
 	    ;;
 	!*)

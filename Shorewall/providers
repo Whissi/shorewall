@@ -41,11 +41,11 @@
 #
 #	OPTIONS		A comma-separated list selected from the following:
 #
-#		track	If specified, connections FROM this interface are
-#			to be tracked so that responses may be routed back
+#		track	If specified, inbound connections on this interface
+#			are to be tracked so that responses may be routed back
 #			out this same interface.
 #
-#			You want specify 'track' if internet hosts will be
+#			You want to specify 'track' if internet hosts will be
 #			connecting to local servers through this provider.
 #
 #		balance The providers that have 'balance' specified will
@@ -56,10 +56,12 @@
 #			where <weight> is the weight of the route out of
 #			this interface.
 #
-#		loose	Normally, Shorewall adds routing rules to prohibit
-#			firewall marks from working with traffic generated
-#			on the firewall itself. By setting the 'loose'
-#			option, generation of these rules is avoided.
+#		loose	Shorewall normally adds a routing rule for each
+#			IP address on an interface which forces traffic
+#			whose source is that IP address to be sent using
+#			the routing table for that interface. Setting
+#			'loose' prevents creation of such rules on this
+#			interface.
 #
 #	COPY		A comma-separated lists of other interfaces on your
 #			firewall. Only makes sense when DUPLICATE is 'main'.

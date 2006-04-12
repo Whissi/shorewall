@@ -21,7 +21,7 @@
 #
 #			Example:
 #
-#				loc	eth1	-	
+#				loc	eth1	-
 #				loc	eth2	-
 #
 #	INTERFACE	Name of interface. Each interface may be listed only
@@ -42,11 +42,10 @@
 #			addresses on multiple subnets then list the broadcast
 #			addresses as a comma-separated list.
 #
-#			If you use the special value "detect", the firewall
-#			will detect the broadcast address for you. If you
+#			If you use the special value "detect", Shorewall
+#			will detect the broadcast address(es) for you. If you
 #			select this option, the interface must be up before
-#			the firewall is started, you must have iproute
-#			installed.
+#			the firewall is started.
 #
 #			If you don't want to give a value for this column but
 #			you want to enter a value in the OPTIONS column, enter
@@ -72,7 +71,7 @@
 #				       any packets whose source is in one
 #				       of the ranges reserved by RFC 1918
 #				       (i.e., private or "non-routable"
-#				       addresses. If packet mangling or
+#				       addresses). If packet mangling or
 #				       connection-tracking match is enabled in
 #				       your kernel, packets whose destination
 #				       addresses are reserved by RFC 1918 are

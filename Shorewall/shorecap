@@ -236,6 +236,7 @@ determine_capabilities() {
     KLUDGEFREE=
     MARK=
     XMARK=
+    MANGLE_FORWARD=
 
     qt $IPTABLES -N fooX1234
     qt $IPTABLES -A fooX1234 -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT             && CONNTRACK_MATCH=Yes
@@ -267,21 +268,24 @@ determine_capabilities() {
     qt $IPTABLES -A fooX1234 -m length --length 10:20 -j ACCEPT                         && LENGTH_MATCH=Yes
     qt $IPTABLES -A fooX1234 -j REJECT --reject-with icmp-host-prohibited               && ENHANCED_REJECT=Yes
 
-    qt $IPTABLES -t mangle -N fooX1234
+    if [ -n "$MANGLE_ENABLED" ]; then
+	qt $IPTABLES -t mangle -N fooX1234
 
-    if qt $IPTABLES -t mangle -A fooX1234 -j MARK --set-mark 1; then
-	MARK=Yes
-	qt $IPTABLES -t mangle -A fooX1234 -j MARK --and-mark 0xFF && XMARK=Yes
+	if qt $IPTABLES -t mangle -A fooX1234 -j MARK --set-mark 1; then
+	    MARK=Yes
+	    qt $IPTABLES -t mangle -A fooX1234 -j MARK --and-mark 0xFF && XMARK=Yes
+	fi
+
+	if qt $IPTABLES -t mangle -A fooX1234 -j CONNMARK --save-mark; then
+	    CONNMARK=Yes
+	    qt $IPTABLES -t mangle -A fooX1234 -j CONNMARK --save-mark --mask 0xFF && XCONNMARK=Yes
+	fi
+
+	qt $IPTABLES -t mangle -A fooX1234 -j CLASSIFY --set-class 1:1 && CLASSIFY_TARGET=Yes
+	qt $IPTABLES -t mangle -F fooX1234
+	qt $IPTABLES -t mangle -X fooX1234
+	qt $IPTABLES -t mangle -L FORWARD -n && MANGLE_FORWARD=Yes
     fi
-
-    if qt $IPTABLES -t mangle -A fooX1234 -j CONNMARK --save-mark; then
-	CONNMARK=Yes
-	qt $IPTABLES -t mangle -A fooX1234 -j CONNMARK --save-mark --mask 0xFF && XCONNMARK=Yes
-    fi
-
-    qt $IPTABLES -t mangle -A fooX1234 -j CLASSIFY --set-class 1:1                      && CLASSIFY_TARGET=Yes
-    qt $IPTABLES -t mangle -F fooX1234
-    qt $IPTABLES -t mangle -X fooX1234
 
     qt $IPTABLES -t raw	   -L -n							&& RAW_TABLE=Yes
 
@@ -336,6 +340,7 @@ report_capabilities() {
     report_capability KLUDGEFREE
     report_capability MARK
     report_capability XMARK
+    report_capability MANGLE_FORWARD
 }
 
 load_kernel_modules

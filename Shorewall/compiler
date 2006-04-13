@@ -3470,7 +3470,7 @@ setup_tc1() {
     #
 
     createmanglechain tcpre
-    createmanglechain tcfor
+    [ -n "$MANGLE_FORWARD" ] && createmanglechain tcfor
     createmanglechain tcout
     createmanglechain tcpost
     #
@@ -3498,7 +3498,7 @@ setup_tc1() {
     run_iptables -t mangle -A PREROUTING $mark_part -j tcpre
     run_iptables -t mangle -A OUTPUT     $mark_part -j tcout
 
-    run_iptables -t mangle -A FORWARD     -j tcfor
+    [ -n "$MANGLE_FORWARD" ] && run_iptables -t mangle -A FORWARD -j tcfor
     run_iptables -t mangle -A POSTROUTING -j tcpost
 
     if [ -n "$HIGH_ROUTE_MARKS" ]; then

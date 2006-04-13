@@ -1139,6 +1139,7 @@ determine_capabilities() {
     KLUDGEFREE=
     MARK=
     XMARK=
+    MANGLE_FORWARD=
 
     qt $IPTABLES -N fooX1234
     qt $IPTABLES -A fooX1234 -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT             && CONNTRACK_MATCH=Yes
@@ -1158,35 +1159,38 @@ determine_capabilities() {
 	fi
     fi
 
-    qt $IPTABLES -A fooX1234 -m recent --update -j ACCEPT                               && RECENT_MATCH=Yes
-    qt $IPTABLES -A fooX1234 -m owner --uid-owner 0 -j ACCEPT                           && OWNER_MATCH=Yes
+    qt $IPTABLES -A fooX1234 -m recent --update -j ACCEPT     && RECENT_MATCH=Yes
+    qt $IPTABLES -A fooX1234 -m owner --uid-owner 0 -j ACCEPT && OWNER_MATCH=Yes
 
     if qt $IPTABLES -A fooX1234 -m connmark --mark 2  -j ACCEPT; then
 	CONNMARK_MATCH=Yes
 	qt $IPTABLES -A fooX1234 -m connmark --mark 2/0xFF -j ACCEPT && XCONNMARK_MATCH=Yes
     fi
 
-    qt $IPTABLES -A fooX1234 -p tcp -m ipp2p --ipp2p -j ACCEPT                          && IPP2P_MATCH=Yes
-    qt $IPTABLES -A fooX1234 -m length --length 10:20 -j ACCEPT                         && LENGTH_MATCH=Yes
-    qt $IPTABLES -A fooX1234 -j REJECT --reject-with icmp-host-prohibited               && ENHANCED_REJECT=Yes
+    qt $IPTABLES -A fooX1234 -p tcp -m ipp2p --ipp2p -j ACCEPT            && IPP2P_MATCH=Yes
+    qt $IPTABLES -A fooX1234 -m length --length 10:20 -j ACCEPT           && LENGTH_MATCH=Yes
+    qt $IPTABLES -A fooX1234 -j REJECT --reject-with icmp-host-prohibited && ENHANCED_REJECT=Yes
 
-    qt $IPTABLES -t mangle -N fooX1234
+    if [ -n "$MANGLE_ENABLED" ]; then
+	qt $IPTABLES -t mangle -N fooX1234
 
-    if qt $IPTABLES -t mangle -A fooX1234 -j MARK --set-mark 1; then
-	MARK=Yes
-	qt $IPTABLES -t mangle -A fooX1234 -j MARK --and-mark 0xFF && XMARK=Yes
+	if qt $IPTABLES -t mangle -A fooX1234 -j MARK --set-mark 1; then
+	    MARK=Yes
+	    qt $IPTABLES -t mangle -A fooX1234 -j MARK --and-mark 0xFF && XMARK=Yes
+	fi
+
+	if qt $IPTABLES -t mangle -A fooX1234 -j CONNMARK --save-mark; then
+	    CONNMARK=Yes
+	    qt $IPTABLES -t mangle -A fooX1234 -j CONNMARK --save-mark --mask 0xFF && XCONNMARK=Yes
+	fi
+
+	qt $IPTABLES -t mangle -A fooX1234 -j CLASSIFY --set-class 1:1 && CLASSIFY_TARGET=Yes
+	qt $IPTABLES -t mangle -F fooX1234
+	qt $IPTABLES -t mangle -X fooX1234
+	qt $IPTABLES -t mangle -L FORWARD -n && MANGLE_FORWARD=Yes
     fi
 
-    if qt $IPTABLES -t mangle -A fooX1234 -j CONNMARK --save-mark; then
-	CONNMARK=Yes
-	qt $IPTABLES -t mangle -A fooX1234 -j CONNMARK --save-mark --mask 0xFF && XCONNMARK=Yes
-    fi
-
-    qt $IPTABLES -t mangle -A fooX1234 -j CLASSIFY --set-class 1:1                      && CLASSIFY_TARGET=Yes
-    qt $IPTABLES -t mangle -F fooX1234
-    qt $IPTABLES -t mangle -X fooX1234
-
-    qt $IPTABLES -t raw	   -L -n							&& RAW_TABLE=Yes
+    qt $IPTABLES -t raw	   -L -n && RAW_TABLE=Yes
 
     if qt mywhich ipset; then
 	qt ipset -X fooX1234 # Just in case something went wrong the last time
@@ -1242,6 +1246,7 @@ report_capabilities() {
 	report_capability "Repeat match" $KLUDGEFREE
 	report_capability "MARK Target" $MARK
 	[ -n "$MARK" ] && report_capability "Extended MARK Target" $XMARK
+	report_capability "Mangle FORWARD Chain" $MANGLE_FORWARD
     fi
 
     [ -n "$PKTTYPE" ] || USEPKTTYPE=

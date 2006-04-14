@@ -445,9 +445,9 @@ fi
 #
 # Install the Route Rules file
 #
-if [ ! -f ${PREFIX}/etc/shorewall/rtrules ]; then
-    run_install $OWNERSHIP -m 0600 rtrules ${PREFIX}/etc/shorewall/rtrules
-    echo "Routing rules file installed as ${PREFIX}/etc/shorewall/rtrules"
+if [ ! -f ${PREFIX}/etc/shorewall/route_rules ]; then
+    run_install $OWNERSHIP -m 0600 route_rules ${PREFIX}/etc/shorewall/route_rules
+    echo "Routing rules file installed as ${PREFIX}/etc/shorewall/route_rules"
 fi
 
 #

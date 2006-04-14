@@ -97,7 +97,7 @@ fi
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/continue
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/started
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/providers
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/rtrules
+%attr(0600,root,root) %config(noreplace) /etc/shorewall/route_rules
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/tcclasses
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/tcdevices
 %attr(0600,root,root) /etc/shorewall/Makefile
@@ -180,6 +180,8 @@ fi
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel ipsecvpn Samples
 
 %changelog
+* Fri Apr 14 2006 Tom Eastep tom@shorewall.net
+- Renamed rtrules to route_rules
 * Sun Apr 02 2006 Tom Eastep tom@shorewall.net
 - Added rtrules file
 - Updated to 3.2.0-0Beta4

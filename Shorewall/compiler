@@ -1308,7 +1308,7 @@ __EOF__
 	    [ "$n" = "$1" ] && return 0
 	done
 
-	fatal_error "Unknown provider $1 in rtrule \"$rule\""
+	fatal_error "Unknown provider $1 in route rule \"$rule\""
     }
 
     add_an_rtrule()
@@ -1395,12 +1395,12 @@ __EOF__
 __EOF__
 	    done
 
-	    f=$(find_file rtrules)
+	    f=$(find_file route_rules)
 
 	    if [ -f $f ]; then
-		strip_file rtrules $f
+		strip_file route_rules $f
 
-		if [ -s $TMP_DIR/rtrules ]; then
+		if [ -s $TMP_DIR/route_rules ]; then
 		    progress_message2 "$DOING $f..."
 
 		    save_command
@@ -1409,7 +1409,7 @@ __EOF__
 			expandv source dest provider priority
 			rule="$source $dest $priority $provider"
 			add_an_rtrule
-		    done < $TMP_DIR/rtrules
+		    done < $TMP_DIR/route_rules
 		fi
 	    fi
 	fi

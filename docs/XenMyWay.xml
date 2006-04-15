@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2006-04-10</pubdate>
+    <pubdate>2006-04-15</pubdate>
 
     <copyright>
       <year>2006</year>
@@ -131,26 +131,26 @@
 
     <orderedlist>
       <listitem>
-        <para>Dom0 (ursa.shorewall.net) is used as a local file server (NFS
-        and Samba).</para>
+        <para>Dom0 (DNS name ursa.shorewall.net) is used as a local file
+        server (NFS and Samba).</para>
       </listitem>
 
       <listitem>
         <para>The first DomU (Dom name <emphasis
-        role="bold">firewall</emphasis>, gateway.shorewall.net) is used as our
-        main firewall.</para>
+        role="bold">firewall</emphasis>, DNS name gateway.shorewall.net) is
+        used as our main firewall.</para>
       </listitem>
 
       <listitem>
         <para>The second DomU (Dom name <emphasis
-        role="bold">lists</emphasis>, lists.shorewall.net) is used as a public
-        Web/FTP/Mail/DNS server.</para>
+        role="bold">lists</emphasis>, DNS name lists.shorewall.net) is used as
+        a public Web/FTP/Mail/DNS server.</para>
       </listitem>
 
       <listitem>
         <para>The third DomU (Dom name <emphasis
-        role="bold">wireless</emphasis>, wireless.shorewall.net) is used as a
-        gateway to our wireless network.</para>
+        role="bold">wireless</emphasis>, DNS name wireless.shorewall.net) is
+        used as a gateway to our wireless network.</para>
       </listitem>
     </orderedlist>
 
@@ -158,6 +158,26 @@
     supports three virtual interfaces per DomU and the firewall DomU already
     has three interfaces. Shorewall runs in Dom0, in the firewall domain and
     in the wireless gateway.</para>
+
+    <caution>
+      <para>As the developer of Shorewall, I have enough experience to be very
+      comfortable with Linux networking and Shorewall/iptables. I arrived at
+      this configuration after a lot of trial and error experimentation (see
+      <ulink url="Xen.html">Xen and Shorewall</ulink>). If you are a Linux
+      networking novice, I recommend that you do not attempt a configuration
+      like this one for your first Shorewall installation. You are very likely
+      to frustrate both yourself and the Shorewall support team. Rather I
+      suggest that you start with something simple like a <ulink
+      url="standalone.htm">standalone installation</ulink> in a domU; once you
+      are comfortable with that then you will be ready to try something more
+      substantial.</para>
+
+      <para>As Paul Gear says: <emphasis>Shorewall might make iptables easy,
+      but it doesn't make understanding fundamental networking principles,
+      traffic shaping, or multi-ISP routing any easier</emphasis>.</para>
+
+      <para>The same goes for Xen networking.</para>
+    </caution>
 
     <section id="Domains">
       <title>Domain Configuration</title>
@@ -274,7 +294,11 @@ disk     = [ 'phy:hdb4,hdb4,w' ]</programlisting>
       <para>SuSE 10.0 includes Xen 3.0 which does not support PCI
       delegation<footnote>
           <para>PCI delegation was a feature of Xen 2.0 but that capability
-          was dropped in 3.0. It has been restore in Xen 3.0.2.</para>
+          was dropped in 3.0. It has been restored in Xen 3.0.2 and once I
+          upgrade this system to SuSE 10.1 (which includes Xen 3.0.2), I
+          intend to implement PCI delegation and remove three of the four
+          bridges. I will probably combine the wireless and firewall domains
+          at that time as well.</para>
         </footnote>; I therefore use a bridged configuration with four bridges
       (one for each network interface). When Shorewall starts during bootup of
       Dom0, it creates the four bridges using this
@@ -687,7 +711,7 @@ Trcrt/ACCEPT    loc                             dmz
 ###############################################################################################################################################################################
 # DMZ to Local
 #
-ACCEPT          dmz                             net:192.168.1.254       udp     123
+ACCEPT          dmz                             loc:192.168.1.5         udp     123
 ACCEPT          dmz                             loc:192.168.1.5         tcp     21
 Ping/ACCEPT     dmz                             loc
 

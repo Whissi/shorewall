@@ -46,6 +46,15 @@ Problems Corrected in 3.2.0 Beta 5
 4)  Regardless of the setting of ADD_SNAT_IPADDRS, Shorewall will delete
     the ADDRESS in an SNAT rule (/etc/shorewall/masq) during [re]start.
 
+5)  Previously, if your kernel did not supply the mangle table FORWARD chain
+    then "shorewall [re]start" would fail. Now, if your mangle table does
+    not supply this chain, Shorewall will avoid using that either that chain or
+    the mangle table POSTROUTING chain. This change is strictly to stop Shorewall
+    from blowing up during [re]start on very old kernels (such as 2.4.17
+    running on a PS2); if your kernel does not support these chains and you
+    try to mark packets in either of them using entries in
+    /etc/shorewall/tcrules, [re]start will fail.
+
 Other changes in 3.2.0 Beta 5
 
 1)  The "shorewall refresh" command no longer refreshes traffic shaping.

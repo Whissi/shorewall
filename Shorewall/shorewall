@@ -296,7 +296,7 @@ packet_log() # $1 = number of messages
 
     [ -n "$realtail" ] && options="-n$1"
 
-    if [ $VERBOSE -gt 2 ]; then
+    if [ -n "$SHOWMACS" -o $VERBOSE -gt 2 ]; then
 	grep "${LOGFORMAT}" $LOGFILE | \
 	    sed s/" kernel:"// | \
 	    sed s/" $host $LOGFORMAT"/" "/ | \
@@ -864,6 +864,10 @@ show_command() {
 			    IPT_OPTIONS="-xnv"
 			    option=${option#x}
 			    ;;
+			m*)
+			    SHOWMACS=Yes
+			    option=${option#m}
+			    ;;
 			*)
 			    usage 1
 			    ;;
@@ -1323,7 +1327,7 @@ usage() # $1 = exit status
     echo "   restart [ -n ] [ <directory> ]"
     echo "   restore [ -n ] [ <file name> ]"
     echo "   save [ <file name> ]"
-    echo "   show [ -x ] [<chain> [ <chain> ... ]|actions|capabilities|classifiers|connections|log|macros|mangle|nat|tc|zones]"
+    echo "   show [ -x ] [ -m ] [<chain> [ <chain> ... ]|actions|capabilities|classifiers|connections|log|macros|mangle|nat|tc|zones]"
     echo "   start [ -f ] [ -n ] [ <directory> ]"
     echo "   stop"
     echo "   status"
@@ -1747,6 +1751,10 @@ case "$COMMAND" in
 			    q*)
 				VERBOSE=$(($VERBOSE - 1 ))
 				option=${option#q}
+				;;
+			    m*)
+				SHOWMACS=Yes
+				option=${option#m}
 				;;
 			    -)
 				finished=1

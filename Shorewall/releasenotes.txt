@@ -88,7 +88,7 @@ Migration Considerations:
     to the use of macros.
 
 3)  In previous Shorewall releases, DNAT and REDIRECT rules supported a
-    special syntax for exclusion of a subnet from the effect of the rule.
+    special syntax for exclusion of a sub-zone from the effect of the rule.
 
     Example:
 
@@ -159,10 +159,11 @@ New Features:
 
     You set the default level of verbosity using the VERBOSITY option in
     shorewall.conf. If you don't set it (as would be the case of you use your
-    old shorewall.conf file) then VERBOSITY defaults to a value of 2 which is
-    the old default. A value of 1 suppresses some of the output (like the old
-    -q option did) while a value of 0 makes Shorewall almost silent. A value
-    of -1 suppresses all output except warning and error messages.
+    old shorewall.conf file) then VERBOSITY defaults to a value of 2 which
+    results in behavior compatible with previous Shorewall versions.
+    A value of 1 suppresses some of the output (like the old -q option did)
+    while a value of 0 makes Shorewall almost silent. A value of -1
+    suppresses all output except warning and error messages.
 
     The value specified in the 3.2 shorewall.conf is 1. So you can make
     Shorewall as verbose as previously using a single -v and you can make it
@@ -180,6 +181,12 @@ New Features:
     required a single -v to enable MAC display but means that if you set
     VERBOSITY=0 in shorewall.conf, then you will need to include -vvv in
     commands that display log records in order to have MACs displayed.
+
+    To make the display of MAC addresses let cumbersome, a '-m' option has
+    been added to the "show" and logwatch commands:
+
+	shorewall show -m log
+	shorewall logwatch -m
 
 2)  A new 'shorewall compile' command has been added.
 

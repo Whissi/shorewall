@@ -225,9 +225,10 @@ logdrop)
 	;;
 
 logwatch)
-	echo "logwatch: logwatch [<refresh interval>]
+	echo "logwatch: logwatch [ -m ] [<refresh interval>]
     Monitors the LOGFILE, $LOGFILE,
-    and produces an audible alarm when new Shorewall messages are logged."
+    and produces an audible alarm when new Shorewall messages are logged.
+    If \"-m\" is specified, then MAC addresses in the log entries (if any) are displayed."
 	;;
 
 logreject)
@@ -320,7 +321,8 @@ show)
     shorewall [-x] show nat - produce a verbose report about the nat table.
     (iptables -t nat -L -n -v)
 
-    shorewall show log - display the last 20 packet log entries.
+    shorewall show [ -m ] log - display the last 20 packet log entries. If \"-m\" is specified, then
+	MAC addresses in the log entries (if any) are displayed.
 
     shorewall show macros -- displays the standard macros.
 

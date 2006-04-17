@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2006-04-10</pubdate>
+    <pubdate>2006-04-17</pubdate>
 
     <copyright>
       <year>2004</year>
@@ -491,7 +491,14 @@
           <term>-q</term>
 
           <listitem>
-            <para>Causes some of the output to be suppressed.</para>
+            <para>In Shorewall versions prior to 3.2.0, causes some of the
+            output to be suppressed.</para>
+
+            <para>In 3.2.0 and later, reduces the verbosity level (see
+            VERBOSITY setting in <ulink
+            url="Documentation.htm#Config">shorewall.conf</ulink>). May be
+            repeated (e.g., "-qq") with each instance reducing the verbosity
+            level by one.</para>
           </listitem>
         </varlistentry>
 
@@ -499,8 +506,14 @@
           <term>-v</term>
 
           <listitem>
-            <para>Causes Ethernet MAC addresses to be included in log message
-            displays.</para>
+            <para>In Shorewall versions prior to 3.2.0, causes Ethernet MAC
+            addresses to be included in log message displays.</para>
+
+            <para>In 3.2.0 and later, increases the verbosity level (see
+            VERBOSITY setting in <ulink
+            url="Documentation.htm#Config">shorewall.conf</ulink>). May be
+            repeated (e.g., "-qq") with each instance increasing the verbosity
+            level by one.</para>
           </listitem>
         </varlistentry>
 
@@ -858,13 +871,17 @@
         <term>logwatch</term>
 
         <listitem>
-          <para><command>shorewall logwatch [&lt;refresh
+          <para><command>shorewall logwatch [ -m ] [&lt;refresh
           interval&gt;]</command></para>
 
           <para>Monitors the log file specified by theLOGFILE option in <ulink
           url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>
           and produces an audible alarm when new Shorewall messages are
           logged.</para>
+
+          <para>The '-m' option is available in Shorewall version 3.2.0 Beta5
+          and later and causes the MAC address of each packet source to be
+          displayed if that information is available.</para>
         </listitem>
       </varlistentry>
 
@@ -1023,8 +1040,11 @@
           verbose report about the nat table. (<command>iptables -t nat -L -n
           -v</command>)</para>
 
-          <para><command>shorewall show log</command> - display the last 20
-          packet log entries.</para>
+          <para><command>shorewall show [- m ] log</command> - display the
+          last 20 packet log entries. The '-m' option is available in
+          Shorewall version 3.2.0 Beta5 and later and causes the MAC address
+          of each packet source to be displayed if that information is
+          available.</para>
 
           <para><command>shorewall show capabilities</command> - Displays your
           kernel/iptables capabilities</para>

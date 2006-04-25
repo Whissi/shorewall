@@ -2,7 +2,7 @@
 #
 # Shorewall 3.2 -- /usr/share/shorewall/functions
 
-LIBVERSION=30105
+LIBVERSION=30200
 
 #
 # Message to stderr
@@ -1058,6 +1058,19 @@ find_first_interface_address() # $1 = interface
     echo $addr | sed 's/inet //;s/\/.*//;s/ peer.*//'
 }
 
+find_first_interface_address_if_any() # $1 = interface
+{
+    #
+    # get the line of output containing the first IP address
+    #
+    addr=$(ip -f inet addr show $1 2> /dev/null | grep 'inet .* global' | head -n1)
+    #
+    # Strip off the trailing VLSM mask (or the peer IP in case of a P-t-P link)
+    # along with everything else on the line
+    #
+    [ -n "$addr" ] && echo $addr | sed 's/inet //;s/\/.*//;s/ peer.*//' || echo 0.0.0.0
+}
+
 #
 # Find interface addresses--returns the set of addresses assigned to the passed
 # device
@@ -1251,6 +1264,15 @@ report_capabilities() {
 
     [ -n "$PKTTYPE" ] || USEPKTTYPE=
 
+}
+
+
+#
+# Delete IP address
+#
+del_ip_addr() # $1 = address, $2 = interface
+{
+    [ $(find_first_interface_address_if_any $2) = $1 ] || qt ip addr del $1 dev $2
 }
 
 # Add IP Aliases

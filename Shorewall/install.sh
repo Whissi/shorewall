@@ -609,7 +609,7 @@ if [ -z "$PREFIX" -a -n "$first_install" ]; then
 	echo "shorewall will start automatically at boot"
 	echo "Set startup=1 in /etc/default/shorewall to enable"
 	touch /var/log/shorewall-init.log
-	qt mywhich perl && perl -p -w -i -e 's/^STARTUP_ENABLED=No/STARTUP_ENABLED=Yes/;s/^IP_FORWARDING=On/IP_FORWARDING=Keep/' /etc/shorewall/shorewall.conf
+	qt mywhich perl && perl -p -w -i -e 's/^STARTUP_ENABLED=No/STARTUP_ENABLED=Yes/;s/^IP_FORWARDING=On/IP_FORWARDING=Keep/;s/^SUBSYSLOCK=.*/SUBSYSLOCK=/;' /etc/shorewall/shorewall.conf
     else
 	if [ -x /sbin/insserv -o -x /usr/sbin/insserv ]; then
 	    if insserv /etc/init.d/shorewall ; then

@@ -2733,7 +2733,7 @@ setup_nat() {
 		    add_ip_aliases=
 		    ;;
 		*)
-		    [ -n "$RETAIN_ALIASES" ] || save_command qt ip addr del $external dev $iface
+		    [ -n "$RETAIN_ALIASES" ] || save_command del_ip_addr $external $iface
 		    ;;
 	    esac
 	else
@@ -2793,7 +2793,7 @@ delete_nat() {
 
 if [ -f /var/lib/shorewall/nat ]; then
    while read external interface; do
-       qt ip addr del \$external dev \$interface
+       ip_addr_del \$external \$interface
     done < /var/lib/shorewall/nat
 
     rm -f {/var/lib/shorewall}/nat
@@ -6946,7 +6946,7 @@ __EOF__
 		    if [ -n "$address" ]; then
 			for addr in $(ip_range_explicit ${address%:*}) ; do
 			    if ! list_search $addr $ALIASES_TO_ADD; then
-				[ -n "$RETAIN_ALIASES" ] || save_command qt ip addr del $addr dev $interface
+				[ -n "$RETAIN_ALIASES" ] || save_command ip_addr_del $addr $interface
 				ALIASES_TO_ADD="$ALIASES_TO_ADD $addr $fullinterface"
 				case $fullinterface in
 				    *:*)
@@ -8308,7 +8308,7 @@ stop_firewall() {
 
 	if [ -f /var/lib/shorewall/nat ]; then
 	    while read external interface; do
-		qt ip addr del \$external dev \$interface
+		ip_addr_del \$external dev \$interface
 	    done < /var/lib/shorewall/nat
 
 	    rm -f /var/lib/shorewall/nat
@@ -8744,8 +8744,8 @@ __EOF__
 
     local version=\$(cat /usr/share/shorewall/version)
 
-    if [ \${LIBVERSION:-0} -lt 30105 ]; then
-	fatal_error "This script requires Shorewall version 3.1.5 or later; current version is \$version"
+    if [ \${LIBVERSION:-0} -lt 30200 ]; then
+	fatal_error "This script requires Shorewall version 3.2.0 or later; current version is \$version"
     fi
 
 __EOF__

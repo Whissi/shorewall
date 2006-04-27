@@ -259,19 +259,6 @@ hostname = name
 # storage devices:
 disk     = [ 'phy:hda3,hda3,w' ]</programlisting>
 
-        <caution>
-          <para>Under some circumstances, UDP and/or TCP communication from a
-          domU won't work for no obvious reason. That happend with the 'lists'
-          domain in my setup. Looking at the IP traffic with <command>tcpdump
-          -nvvi eth1</command> in the firewall domU showed that UDP packets
-          from the lists domU had incorrect checksums. That problem was
-          corrected by arranging for the following command to be executed in
-          the 'lists' domain when its <filename
-          class="devicefile">eth0</filename> device was brought up:</para>
-
-          <para><command>ethtool -K eth0 tx off</command></para>
-        </caution>
-
         <para>/etc/xen/auto/03-wireless — configuration file for the wireless
         domain.</para>
 
@@ -309,6 +296,21 @@ disk     = [ 'phy:hdb4,hdb4,w' ]</programlisting>
 
       <para>The zones correspond to the Shorewall zones in the Dom0
       configuration.</para>
+
+      <caution>
+        <para>Under some circumstances, UDP and/or TCP communication from a
+        domU won't work for no obvious reason. That happened with the
+        <emphasis role="bold">lists</emphasis> domain in my setup. Looking at
+        the IP traffic with <command>tcpdump -nvvi eth1</command> in the
+        <emphasis role="bold">firewall</emphasis> domU showed that UDP packets
+        from the <emphasis role="bold">lists</emphasis> domU had incorrect
+        checksums. That problem was corrected by arranging for the following
+        command to be executed in the <emphasis role="bold">lists</emphasis>
+        domain when its <filename class="devicefile">eth0</filename> device
+        was brought up:</para>
+
+        <para><command>ethtool -K eth0 tx off</command></para>
+      </caution>
 
       <para>SuSE 10.0 includes Xen 3.0 which does not support PCI
       delegation<footnote>

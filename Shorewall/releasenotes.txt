@@ -1,4 +1,4 @@
-Shorewall 3.2.0 Beta 5
+Shorewall 3.2.0 Beta 6
 
 Note to users upgrading from Shorewall 2.x or 3.0
 
@@ -27,46 +27,15 @@ Note to users upgrading from Shorewall 2.x or 3.0
    Please see the "Migration Considerations" below for additional upgrade
    information.
 
-Problems Corrected in 3.2.0 Beta 5
+Problems Corrected in 3.2.0 Beta 6
 
-1) On systems such as LEAF Bering that either don't have the 'mktemp' utility
-   or whose 'mktemp' cannot create a temporary directory, firewall compilation
-   failed with the message:
+1)  Previously, if 'shorewall restart' was done out of an ip-up.local
+    script, some of the utilities like 'tc' and 'ip6tables' were not
+    on the PATH.
 
-	ERROR: No Interfaces Defined
+Other changes in 3.2.0 Beta 6
 
-    after a shell error message indicating that the stripped interfaces
-    file in /tmp/shorewall-NNNN/ couldn't be opened.
-
-2)  With DETECT_DNAT_IPADDRS=No in shorewall.conf, DNAT rules didn't work.
-
-3)  Previously, if your kernel did not supply the mangle table FORWARD chain
-    then "shorewall [re]start" would fail.
-
-4)  Regardless of the setting of ADD_SNAT_IPADDRS, Shorewall will delete
-    the ADDRESS in an SNAT rule (/etc/shorewall/masq) during [re]start.
-
-5)  Previously, if your kernel did not supply the mangle table FORWARD chain
-    then "shorewall [re]start" would fail. Now, if your mangle table does
-    not supply this chain, Shorewall will avoid using either that chain or
-    the mangle table POSTROUTING chain. This change is strictly to stop Shorewall
-    from blowing up during [re]start on very old kernels (such as 2.4.17
-    running on a PS2); if your kernel does not support these chains and you
-    try to mark packets in either of them using entries in
-    /etc/shorewall/tcrules, [re]start will fail.
-
-6)  When install.sh is used to install on a Debian or Ubuntu system, the
-    SUBSYSLOCK option in shorewall.conf was not being cleared.
-    It will now be cleared, provided that Perl is installed on the system.
-
-Other changes in 3.2.0 Beta 5
-
-1)  The "shorewall refresh" command no longer refreshes traffic shaping.
-    Use "shorewall restart" instead if you need to reprocess the
-    tcrules, tcdevices and tcclasses files.
-
-2)  Per a suggestion by Steve Heber, the rtrules file has been renamed
-    route_rules.
+NOne.
 
 Migration Considerations:
 
@@ -156,6 +125,10 @@ Migration Considerations:
 
         In no case is it possible to continue a quoted string over multiple lines
         without having additional whitespace inserted into the string.
+
+6)  The "shorewall refresh" command no longer refreshes traffic shaping.
+    Use "shorewall restart" instead if you need to reprocess the
+    tcrules, tcdevices and tcclasses files.
 
 New Features:
 

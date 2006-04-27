@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2006-04-15</pubdate>
+    <pubdate>2006-04-27</pubdate>
 
     <copyright>
       <year>2006</year>
@@ -258,6 +258,19 @@ hostname = name
 
 # storage devices:
 disk     = [ 'phy:hda3,hda3,w' ]</programlisting>
+
+        <caution>
+          <para>Under some circumstances, UDP and/or TCP communication from a
+          domU won't work for no obvious reason. That happend with the 'lists'
+          domain in my setup. Looking at the IP traffic with <command>tcpdump
+          -nvvi eth1</command> in the firewall domU showed that UDP packets
+          from the lists domU had incorrect checksums. That problem was
+          corrected by arranging for the following command to be executed in
+          the 'lists' domain when its <filename
+          class="devicefile">eth0</filename> device was brought up:</para>
+
+          <para><command>ethtool -K eth0 tx off</command></para>
+        </caution>
 
         <para>/etc/xen/auto/03-wireless — configuration file for the wireless
         domain.</para>

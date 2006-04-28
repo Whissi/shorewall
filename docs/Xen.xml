@@ -178,9 +178,7 @@ net     eth0            detect          dhcp
       zone <emphasis role="bold">net</emphasis>.<blockquote>
           <programlisting>#ZONE   HOST(S)                                 OPTIONS
 ursa    xenbr0:vif0.0
-dmz     xenbr0:vif+<footnote>
-              <para>There is a bug in Shorewall versions prior to 3.0.4 that treats all bridge ports as if they had routeback specified. I recommend that you run a Shorewall verison &gt; 3.0.3 if you run Xen.</para>
-            </footnote>
+dmz     xenbr0:vif+
 net     xenbr0:peth0
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS LINE -- DO NOT REMOVE</programlisting>
         </blockquote></para>

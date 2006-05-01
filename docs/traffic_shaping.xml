@@ -21,7 +21,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2006-03-30</pubdate>
+    <pubdate>2006-05-01</pubdate>
 
     <copyright>
       <year>2001-2006</year>
@@ -167,7 +167,7 @@
         <firstterm>marking</firstterm> packets. Packet marks have a numeric
         value which is limited in Shorewall to the values 1-255. You assign
         packet marks to different types of traffic using entries in the
-        <filename>/etc/shorewall/tcrules</filename> file.</para>
+        <filename>/etc/shorewall/tcrules</filename> file. </para>
       </listitem>
     </orderedlist>
 
@@ -175,6 +175,12 @@
     <firstterm>default class</firstterm>. This is the class to which unmarked
     traffic (packets to which you have not assigned a mark value in
     <filename>/etc/shorewall/tcrules</filename>) is assigned.</para>
+
+    <para>Netfilter also supports mark value on each connection. You can
+    assign connection mark values in
+    <filename>/etc/shorewall/tcrules</filename> or you can copy the current
+    packet's mark to the connection mark (SAVE) or you can copy the connection
+    mark value to the current packet (RESTORE).</para>
   </section>
 
   <section>
@@ -470,7 +476,7 @@ ppp0           6000kbit         500kbit</programlisting>
         </listitem>
 
         <listitem>
-          <para>DEST -- Destination of the packet. Comma-separated list of IP
+          <para>DEST - Destination of the packet. Comma-separated list of IP
           addresses and/or subnets.</para>
         </listitem>
 
@@ -511,6 +517,27 @@ ppp0           6000kbit         500kbit</programlisting>
 :kids   #program must be run by a member of the 'kids' group
 !:kids  #program must not be run by a member of the 'kids' group
 +upnpd  #program named upnpd (This feature was removed from Netfilter in kernel version 2.6.14).</programlisting>
+        </listitem>
+
+        <listitem>
+          <para>TEST - Defines a test on the existing packet or connection
+          mark. The rule will match only if the test returns true. Tests have
+          the format [!]&lt;value&gt;[/&lt;mask&gt;][:C]</para>
+
+          <para>Where:</para>
+
+          <simplelist>
+            <member>! Inverts the test (not equal)</member>
+
+            <member>&lt;value&gt; Value of the packet or connection
+            mark.</member>
+
+            <member>&lt;mask&gt; A mask to be applied to the mark before
+            testing</member>
+
+            <member>:C Designates a connection mark. If omitted, the packet
+            mark's value is tested.</member>
+          </simplelist>
         </listitem>
       </itemizedlist>
 

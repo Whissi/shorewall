@@ -167,7 +167,7 @@
         <firstterm>marking</firstterm> packets. Packet marks have a numeric
         value which is limited in Shorewall to the values 1-255. You assign
         packet marks to different types of traffic using entries in the
-        <filename>/etc/shorewall/tcrules</filename> file. </para>
+        <filename>/etc/shorewall/tcrules</filename> file.</para>
       </listitem>
     </orderedlist>
 
@@ -176,11 +176,11 @@
     traffic (packets to which you have not assigned a mark value in
     <filename>/etc/shorewall/tcrules</filename>) is assigned.</para>
 
-    <para>Netfilter also supports mark value on each connection. You can
+    <para>Netfilter also supports a mark value on each connection. You can
     assign connection mark values in
-    <filename>/etc/shorewall/tcrules</filename> or you can copy the current
-    packet's mark to the connection mark (SAVE) or you can copy the connection
-    mark value to the current packet (RESTORE).</para>
+    <filename>/etc/shorewall/tcrules</filename>, you can copy the current
+    packet's mark to the connection mark (SAVE), or you can copy the
+    connection mark value to the current packet's mark (RESTORE).</para>
   </section>
 
   <section>
@@ -586,6 +586,38 @@ ppp0           6000kbit         500kbit</programlisting>
 #                                                                 PORT(S)
 1:110   0.0.0.0/0      0.0.0.0/0       tcp        22
 1:110   0.0.0.0/0      0.0.0.0/0       tcp        -               22</programlisting>
+      </example>
+
+      <example>
+        <title></title>
+
+        <para>Mark all ICMP echo traffic with packet mark 1. Mark all peer to
+        peer traffic with packet mark 4.</para>
+
+        <para>This is a little more complex than otherwise expected. Since the
+        ipp2p module is unable to determine all packets in a connection are
+        P2P packets, we mark the entire connection as P2P if any of the
+        packets are determined to match. We assume packet/connection mark 0 to
+        means unclassified.</para>
+
+        <programlisting>#MARK    SOURCE         DESTINATION     PROTOCOL   PORT(S)       CLIENT   USER/     TEST
+#                                                                PORT(S)  GROUP
+1        0.0.0.0/0      0.0.0.0/0       icmp       echo-request
+1        0.0.0.0/0      0.0.0.0/0       icmp       echo-reply
+
+RESTORE  0.0.0.0/0      0.0.0.0/0       all        -             -        -         0
+CONTINUE 0.0.0.0/0      0.0.0.0/0       all        -             -        -         !0
+4        0.0.0.0/0      0.0.0.0/0       ipp2p:all
+SAVE     0.0.0.0/0      0.0.0.0/0       all        -             -        -         !0</programlisting>
+
+        <para>The last four rules can be translated as:</para>
+
+        <blockquote>
+          <para>"If a packet hasn't been classifed (packet mark is 0), copy
+          the connection mark to the packet mark. If the packet mark is set,
+          we're done. If the packet is P2P, set the packet mark to 4. If the
+          packet mark has been set, save it to the connection mark."</para>
+        </blockquote>
       </example>
     </section>
 

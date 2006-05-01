@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2006-04-24</pubdate>
+    <pubdate>2006-05-01</pubdate>
 
     <copyright>
       <year>2005</year>
@@ -544,6 +544,124 @@ eth1             eth2              130.252.99.27</programlisting>
       <programlisting>#MARK           SOURCE          DEST            PROTO   PORT(S) CLIENT  USER    TEST
 #                                                               PORT(S)
 2:P             &lt;local network&gt; 0.0.0.0/0       tcp     25</programlisting>
+    </section>
+
+    <section>
+      <title>/etc/shorewall/route_rules</title>
+
+      <para>The <filename>/etc/shorewall/route_rules</filename> file was added
+      in Shorewall version 3.2.0. The <filename>route_rules</filename> file
+      allows assigning certain traffic to a particular provider just as
+      entries in the <filename>tcrules</filename> file. The difference between
+      the two files is that entries in <filename>route_rules</filename> are
+      independent of Netfilter.</para>
+
+      <section>
+        <title>Routing Rules</title>
+
+        <para>Routing rules are maintained by the Linux kernel and can be
+        displayed using the <command>ip rule ls</command> command. When
+        routing a packet, the rules are processed in turn until the packet is
+        successfully routed.</para>
+
+        <programlisting>gateway:~ # <command>ip rule ls</command>
+0:      from all lookup local
+10001:  from all fwmark 0x1 lookup Blarg
+10002:  from all fwmark 0x2 lookup Comcast
+20000:  from 206.124.146.176 lookup Blarg
+20256:  from 24.12.22.33 lookup Comcast
+32766:  from all lookup main
+32767:  from all lookup default
+gateway:~ #</programlisting>
+
+        <para>In the above example, there are two providers: Blarg and Comcast
+        with MARK 1 going to Blarg and mark 2 going to Comcast.</para>
+      </section>
+
+      <section>
+        <title>Columns in the route_rules file</title>
+
+        <para>Columns in the file are:</para>
+
+        <variablelist>
+          <varlistentry>
+            <term>SOURCE(Optional)</term>
+
+            <listitem>
+              <para>An ip address (network or host) that matches the source IP
+              address in a packet. May also be specified as an interface name
+              optionally followed by ":" and an address. If the device 'lo' is
+              specified, the packet must originate from the firewall
+              itself.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>DEST(optional)</term>
+
+            <listitem>
+              <para>An ip address (network or host) that matches the
+              destination IP address in a packet.</para>
+
+              <para>If you choose to omit either SOURCE or DEST, place "-" in
+              that column. Note that you may not omit both SOURCE and
+              DEST.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>PROVIDER</term>
+
+            <listitem>
+              <para>The provider to route the traffic through. May be
+              expressed either as the provider name or the provider
+              number.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>PRIORITY</term>
+
+            <listitem>
+              <para>The rule's priority which determines the order in which
+              the rules are processed.</para>
+
+              <para>1000-1999 Before Shorewall-generated 'MARK' rules</para>
+
+              <para>11000- 11999 After 'MARK' rules but before
+              Shorewall-generated rules for ISP interfaces.</para>
+
+              <para>26000-26999 After ISP interface rules but before 'default'
+              rule.</para>
+
+              <para>Rules with equal priority are applied in the order in
+              which they appear in the file.</para>
+            </listitem>
+          </varlistentry>
+        </variablelist>
+
+        <para>Example: You want all traffic entering the firewall on eth1 to
+        be routed through Comcast.</para>
+
+        <programlisting>#SOURCE            DEST      PROVIDER        PRIORITY
+eth1               -         Comcast         1000</programlisting>
+
+        <para>With this entry, the output of <command>ip rule ls</command>
+        would be as follows.</para>
+
+        <para><programlisting>gateway:~ # <command>ip rule ls</command>
+0:      from all lookup local
+1000:   from all iif eth1 lookup Comcast
+10001:  from all fwmark 0x1 lookup Blarg
+10002:  from all fwmark 0x2 lookup Comcast
+20000:  from 206.124.146.176 lookup Blarg
+20256:  from 24.12.22.33 lookup Comcast
+32766:  from all lookup main
+32767:  from all lookup default
+gateway:~ #</programlisting>Note that because we used a priority of 1000, the
+        test for <filename class="devicefile">eth1</filename> is inserted
+        before the fwmark tests.</para>
+      </section>
     </section>
   </section>
 </article>

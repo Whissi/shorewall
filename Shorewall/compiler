@@ -2402,9 +2402,9 @@ __EOF__
     interfaces=$(find_interfaces_by_option proxyarp)
 
     for interface in $interfaces; do
-	indent >> $RESTOREFILE << __EOF__
+	indent >&3 << __EOF__
 if [ -f /proc/sys/net/ipv4/conf/$interface/proxy_arp ] ; then
-    echo 1 > /proc/sys/net/ipv4/conf/$interface/proxy_arP
+    echo 1 > /proc/sys/net/ipv4/conf/$interface/proxy_arp
 else
     error_message "WARNING: Unable to enable proxy ARP on $interface"
 fi

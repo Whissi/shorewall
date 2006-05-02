@@ -1158,6 +1158,21 @@ done
 __EOF__
     }
 
+    balance_default_route() # $1 = weight
+    {
+	if [ -n "$first"]; then
+	    if [ "x$gateway" = xdetect ] ; then
+		save_command "DEFAULT_ROUTE=\"nexthop via \$gateway dev $interface weight $1\""
+	    else
+		save_command "DEFAULT_ROUTE=\"nexthop via $gateway dev $interface weight $1\""
+	    fi
+	elif [ "x$gateway" = xdetect ] ; then
+	    save_command "DEFAULT_ROUTE=\"\$DEFAULT_ROUTE nexthop via \$gateway dev $interface weight $1\""
+	else
+	    save_command "DEFAULT_ROUTE=\"\$DEFAULT_ROUTE nexthop via $gateway dev $interface weight $1\""
+	fi
+    }
+
     add_a_provider() {
 	local t n iface option first=Yes
 
@@ -1244,27 +1259,11 @@ __EOF__
 		    ;;
 		balance=*)
 		    balance=yes
-		    if [ -n "$first"]; then
-			if [ "x$gateway" = xdetect ] ; then
-			    save_command "DEFAULT_ROUTE=\"nexthop via \$gateway dev $interface weight ${option#*=}\""
-			else
-			    save_command "DEFAULT_ROUTE=\"nexthop via $gateway dev $interface weight ${option#*=}\""
-			fi
-		    else
-			if [ "x$gateway" = xdetect ] ; then
-			    save_command "DEFAULT_ROUTE=\"\$DEFAULT_ROUTE nexthop via \$gateway dev $interface weight ${option#*=}\""
-			else
-			    save_command "DEFAULT_ROUTE=\"\$DEFAULT_ROUTE nexthop via $gateway dev $interface weight ${option#*=}\""
-			fi
-		    fi
+		    balance_default_route ${option#*=}
 		    ;;
 		balance)
 		    balance=yes
-		    if [ "x$gateway" = xdetect ] ; then
-			save_command "DEFAULT_ROUTE=\"\$DEFAULT_ROUTE nexthop via \$gateway dev $interface weight 1\""
-		    else
-			save_command "DEFAULT_ROUTE=\"\$DEFAULT_ROUTE nexthop via $gateway dev $interface weight 1\""
-		    fi
+		    balance_default_route 1
 		    ;;
 		loose)
 		    loose=Yes

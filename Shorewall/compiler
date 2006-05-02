@@ -1260,7 +1260,11 @@ __EOF__
 		    ;;
 		balance)
 		    balance=yes
-		    save_command "DEFAULT_ROUTE=\"\$DEFAULT_ROUTE nexthop via \$gateway dev $interface weight 1\""
+		    if [ "x$gateway" = xdetect ] ; then
+			save_command "DEFAULT_ROUTE=\"\$DEFAULT_ROUTE nexthop via \$gateway dev $interface weight 1\""
+		    else
+			save_command "DEFAULT_ROUTE=\"\$DEFAULT_ROUTE nexthop via \$gateway dev $interface weight 1\""
+		    fi
 		    ;;
 		loose)
 		    loose=Yes

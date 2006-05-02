@@ -188,9 +188,12 @@
 #	LENGTH		(Optional) Packet Length. This field, if present
 #			allow you to match the length of a packet against
 #			a specific value or range of values. You must have
-#			iptables length support for this to work. If you let
-#			it empy or place an "-" here, no length match will be
-#			done.
+#			iptables length support for this to work.
+#			A range is specified in the form <min>:<max>
+#			where either <min> or <max> (but not both) may be
+#			omitted. If <min> is omitted, then 0 is assumed; if
+#			<max> is omitted, than any packet that is <min> or
+#			longer will match.
 #
 #                       Examples: 1024, 64:1500, :100 (packet of length
 #                                                      100 bytes or less)

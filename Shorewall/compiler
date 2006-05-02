@@ -3274,6 +3274,10 @@ process_tc_rule()
 	    r="${r}-m length --length ${length} "
 	fi
 
+	if [ "x${tos:=-}" != "x-" ]; then
+	    r="${r}-m tos --tos ${tos} "
+	fi
+
 	multiport=
 
 	case $proto in
@@ -3482,9 +3486,9 @@ setup_tc1() {
     #
     strip_file tcrules
 
-    while read mark sources dests proto ports sports user testval length; do
-	expandv mark sources dests proto ports sports user testval length
-	rule=$(echo "$mark $sources $dests $proto $ports $sports $user $testval $length")
+    while read mark sources dests proto ports sports user testval length tos; do
+	expandv mark sources dests proto ports sports user testval length tos
+	rule=$(echo "$mark $sources $dests $proto $ports $sports $user $testval $length $tos")
 	process_tc_rule
     done < $TMP_DIR/tcrules
     #

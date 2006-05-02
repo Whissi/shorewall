@@ -195,6 +195,19 @@
 #                       Examples: 1024, 64:1500, :100 (packet of length
 #                                                      100 bytes or less)
 #
+#			If you don't want to define a test but need to specify
+#			anything in the following columns, place a "-" in this
+#			field.
+#
+#	TOS		Type of service. Either a standard name, or a numeric
+#			value to match.
+#
+#				Minimize-Delay (16)
+#				Maximize-Throughput (8)
+#				Maximize-Reliability (4)
+#				Minimize-Cost (2)
+#				Normal-Service (0)
+#
 # Example 1:
 #
 #	Mark all ICMP echo traffic with packet mark 1.
@@ -226,6 +239,6 @@
 # For usage in selecting among multiple ISPs, see
 # http://shorewall.net/MultiISP.html
 ###############################################################################
-#MARK	SOURCE		DEST		PROTO	PORT(S)	CLIENT	USER	TEST	LENGTH
+#MARK	SOURCE		DEST		PROTO	PORT(S)	CLIENT	USER	TEST	LENGTH	TOS
 #							PORT(S)
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

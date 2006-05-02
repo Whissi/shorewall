@@ -569,7 +569,7 @@ ppp0           6000kbit         500kbit</programlisting>
         </listitem>
 
         <listitem>
-          <para>LENGTH (Optional, Added in Shorewall version 3.2.0) Packet
+          <para>LENGTH (Optional, added in Shorewall version 3.2.0) Packet
           Length - This field, if present, allows you to match the length of a
           packet against a specific value or range of values. A range is
           specified in the form &lt;min&gt;:&lt;max&gt; where either
@@ -584,6 +584,26 @@ ppp0           6000kbit         500kbit</programlisting>
 
           <para>Examples: 1024, 64:1500, :100</para>
         </listitem>
+
+        <listitem>
+          <para>TOS (Optional, added in Shorewall version 3.2.0 Beta 6) Type
+          of Service. Either a standard name, or a numeric value to
+          match.</para>
+
+          <blockquote>
+            <simplelist>
+              <member>Minimize-Delay (16)</member>
+
+              <member>Maximize-Throughput (8)</member>
+
+              <member>Maximize-Reliability (4)</member>
+
+              <member>Minimize-Cost (2)</member>
+
+              <member>Normal-Service (0)</member>
+            </simplelist>
+          </blockquote>
+        </listitem>
       </itemizedlist>
 
       <example>
@@ -597,7 +617,7 @@ ppp0           6000kbit         500kbit</programlisting>
 1       eth1      0.0.0.0/0      all
 2       eth2      0.0.0.0/0      all
 2       eth3      0.0.0.0/0      all
-3       $FW        0.0.0.0/0      all</programlisting>
+3       $FW       0.0.0.0/0     all</programlisting>
       </example>
 
       <example>

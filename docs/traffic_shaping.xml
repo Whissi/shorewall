@@ -495,29 +495,56 @@ ppp0           6000kbit         500kbit</programlisting>
         </listitem>
 
         <listitem>
-          <para>SOURCE - The source of the packet. If the packet originates on
-          the firewall, place <quote>$FW</quote> in this column. Otherwise,
-          this is a comma-separated list of interface names, IP addresses, MAC
-          addresses in Shorewall Format and/or Subnets.</para>
+          <para>SOURCE - Source of the packet. A comma-separated list of
+          interface names, IP addresses, MAC addresses and/or subnets for
+          packets being routed through a common path. List elements may also
+          consist of an interface name followed by ":" and an address (e.g.,
+          eth1:192.168.1.0/24). For example, all packets for connections
+          masqueraded to eth0 from other interfaces can be matched in a single
+          rule with several alternative SOURCE criteria. However, a connection
+          whose packets gets to eth0 in a different way, e.g., direct from the
+          firewall itself, needs a different rule.</para>
 
-          <para>Examples <programlisting>    eth0     192.168.2.4,192.168.1.0/24</programlisting></para>
+          <para>Accordingly, use $FW in its own separate rule for packets
+          originating on the firewall. In such a rule, the MARK column may NOT
+          specify either ":P" or ":F" because marking for firewall-originated
+          packets always occurs in the OUTPUT chain.</para>
+
+          <para>MAC addresses must be prefixed with "~" and use "-" as a
+          separator.</para>
+
+          <para>Example: ~00-A0-C9-15-39-78</para>
         </listitem>
 
         <listitem>
-          <para>DEST - Destination of the packet. Comma-separated list of IP
-          addresses and/or subnets.</para>
+          <para>DEST - Destination of the packet. Comma separated list of IP
+          addresses and/or subnets. If your kernel and iptables include
+          iprange match support, IP address ranges are also allowed. List
+          elements may also consist of an interface name followed by ":" and
+          an address (e.g., eth1:192.168.1.0/24). If the MARK column
+          specificies a classification of the form &lt;major&gt;:&lt;minor&gt;
+          then this column may also contain an interface name.</para>
         </listitem>
 
         <listitem>
-          <para>PROTO - Protocol - Must be the name of a protocol from
-          /etc/protocol, a number or <quote>all</quote></para>
+          <para>PROTO - Protocol - Must be "tcp", "udp", "icmp", "ipp2p",
+          "ipp2p:udp", "ipp2p:all" a number, or "all". "ipp2p" requires ipp2p
+          match support in your kernel and iptables. </para>
         </listitem>
 
         <listitem>
           <para>PORT(S) - Destination Ports. A comma-separated list of Port
-          names (from /etc/services), port numbers or port ranges (e.g.,
-          21:22); if the protocol is <quote>icmp</quote>, this column is
-          interpreted as the destination icmp type(s).</para>
+          names (from /etc/services), port numbers or port ranges; if the
+          protocol is "icmp", this column is interpreted as the destination
+          icmp-type(s).</para>
+
+          <para>If the protocol is ipp2p, this column is interpreted as an
+          ipp2p option without the leading "--" (example "bit" for
+          bit-torrent). If no PORT is given, "ipp2p" is assumed.</para>
+
+          <para>This column is ignored if PROTOCOL = all but must be entered
+          if any of the following field is supplied. In that case, it is
+          suggested that this field contain "-"</para>
         </listitem>
 
         <listitem>

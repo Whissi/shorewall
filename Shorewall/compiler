@@ -3187,6 +3187,8 @@ setup_traffic_shaping()
 #
 process_tc_rule()
 {
+    local did_connmark=
+
     chain=$MARKING_CHAIN  target="MARK --set-mark" marktest=
 
     verify_designator() {
@@ -3217,6 +3219,13 @@ process_tc_rule()
     {
 	verify_mark $1
 	[ $(($1)) -lt 256 ] || fatal_error "Mark Value ($1) too larg, rule \"$rule\""
+    }
+
+    do_connmark()
+    {
+	target="CONNMARK --set-mark"
+	mark=$mark/0xff
+	did_connmark=Yes
     }
 
     add_a_tc_rule() {
@@ -3275,6 +3284,7 @@ process_tc_rule()
 		    ;;
 	    esac
 	fi
+
 
 	[ -n "$marktest" ] && r="${r}-m ${marktest}--mark $testval "
 
@@ -3345,18 +3355,18 @@ process_tc_rule()
 		;;
 	    cp|CP)
 		verify_designator tcpre
-		target="CONNMARK --set-mark"
+		do_connmark
 		;;
 	    f|F)
 		verify_designator tcfor
 		;;
 	    cf|CF)
 		verify_designator tcfor
-		target="CONNMARK --set-mark"
+		do_connmark
 		;;
 	    c|C)
-		target="CONNMARK --set-mark"
 		mark=${mark%:*}
+		do_connmark
 		;;
 	    *)
 		chain=tcpost
@@ -3368,24 +3378,29 @@ process_tc_rule()
 
     case $mark in
 	SAVE)
+	    [ -n $did_connmark ] && fatal_error "SAVE not valid with :C[FP]"
 	    target="CONNMARK --save-mark --mask 0xFF"
 	    mark=
 	    ;;
 	SAVE/*)
+	    [ -n $did_connmark ] && fatal_error "SAVE not valid with :C[FP]"
 	    target="CONNMARK --save-mark --mask"
 	    mark=${mark#*/}
 	    verify_small_mark $mark
 	    ;;
 	RESTORE)
+	    [ -n $did_connmark ] && fatal_error "RESTORE not valid with :C[FP]"
 	    target="CONNMARK --restore-mark --mask 0xFF"
 	    mark=
 	    ;;
 	RESTORE/*)
+	    [ -n $did_connmark ] && fatal_error "RESTORE not valid with :C[FP]"
 	    target="CONNMARK --restore-mark --mask"
 	    mark=${mark#*/}
 	    verify_small_mark $mark
 	    ;;
 	CONTINUE)
+	    [ -n $did_connmark ] && fatal_error "CONTINUE not valid with :C[FP]"
 	    target=RETURN
 	    mark=
 	    ;;

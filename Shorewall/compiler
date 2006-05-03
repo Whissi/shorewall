@@ -1123,7 +1123,7 @@ verify_mark() # $1 = value to test
 #
 setup_providers()
 {
-    local table number mark duplicate interface gateway options provider address copy route loose addresses rulenum pref echobin=$(mywhich echo) balance save_indent="$INDENT" mask= first=Yes
+    local table number mark duplicate interface gateway options provider address copy route loose addresses rulenum base pref echobin=$(mywhich echo) balance save_indent="$INDENT" mask= first=Yes
 
     copy_table() {
 	    indent >&3 << __EOF__
@@ -1160,6 +1160,8 @@ __EOF__
 
     balance_default_route() # $1 = weight
     {
+	balance=yes
+
 	if [ -n "$first"]; then
 	    if [ "x$gateway" = xdetect ] ; then
 		save_command "DEFAULT_ROUTE=\"nexthop via \$gateway dev $interface weight $1\""
@@ -1260,11 +1262,9 @@ __EOF__
 		    ROUTEMARK_INTERFACES="$ROUTEMARK_INTERFACES $interface"
 		    ;;
 		balance=*)
-		    balance=yes
 		    balance_default_route ${option#*=}
 		    ;;
 		balance)
-		    balance=yes
 		    balance_default_route 1
 		    ;;
 		loose)
@@ -1280,13 +1280,14 @@ __EOF__
 	rulenum=0
 
 	if [ -z "$loose" ]; then
+	    base=$(( 20000 + ( 256 * ($number-1) ) ))
 	    indent >&3 << __EOF__
 
 rulenum=0
 
 find_interface_addresses $interface | while read address; do
     qt ip rule del from \$address
-    pref=\$((20000 + ($number - 1) * 256 + \$rulenum ))
+    pref=\$(( $base + \$rulenum ))
     rulenum=\$((\$rulenum + 1))
     run_ip rule add from \$address pref \$pref table $number
 done

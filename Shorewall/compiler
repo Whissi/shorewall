@@ -55,7 +55,8 @@ fatal_error() # $* = Error Message
 #
 save_command()
 {
-    echo "${INDENT}${@}" >&3
+
+    [ $# -gt 0 ] && echo "${INDENT}${@}" >&3 || echo >&3
 }
 
 save_command_unindented()
@@ -90,7 +91,7 @@ progress_message_and_save()
 indent() {
     if [ -n "$INDENT" ]; then
 	if [ -n "$HAVEAWK" ]; then
-	    eval awk \''BEGIN { indent=1; }; { if (indent == 1) print "'"$INDENT"'" $0; else print; }; { indent=1; }; /\\$/ { indent=0; };'\' $1
+	    eval awk \''BEGIN { indent=1; }; /^[[:space:]]*$/ { print ""; indent=1; next; }; { if (indent == 1) print "'"$INDENT"'" $0; else print; }; { indent=1; }; /\\$/ { indent=0; };'\' $1
 	else
 	    eval sed \'s\/^/"$INDENT"\/\' $1
 	fi
@@ -1196,6 +1197,11 @@ __EOF__
 
 	eval ${table}_number=$number
 
+	indent >&3 << __EOF__
+#
+# Add Provider $table ($number)
+#
+__EOF__
 	save_command "qt ip route flush table $number"
 
 	if [ "x${duplicate:=-}" != x- ]; then
@@ -1290,7 +1296,6 @@ find_interface_addresses $interface | while read address; do
     run_ip rule add from \$address pref \$(( $rulebase + \$rulenum )) table $number
     rulenum=\$((\$rulenum + 1))
 done
-
 __EOF__
 	else
 	    indent >&3 << __EOF__
@@ -1298,9 +1303,15 @@ __EOF__
 find_interface_addresses $interface | while read address; do
     qt ip rule del from \$address
 done
-
 __EOF__
 	fi
+
+    indent >&3 << __EOF__
+
+progress_message "   Provider $table ($number) Added"
+
+__EOF__
+
     }
 
     verify_provider()
@@ -1360,9 +1371,10 @@ __EOF__
 	balance=
 
 	progress_message2 "$DOING $1..."
-	save_progress_message "Adding Providers..."
+	save_command
 	save_command "if [ -z \"\$NOROUTES\" ]; then"
 	INDENT="$INDENT    "
+	save_progress_message "Adding Providers..."
 	save_command "DEFAULT_ROUTE="
 
 	while read table number mark duplicate interface gateway options copy; do
@@ -1422,7 +1434,7 @@ __EOF__
 	save_command "run_ip route flush cache"
 	INDENT="$save_indent"
 	save_command "fi"
-	save_command ""
+	save_command
     fi
 }
 
@@ -4246,7 +4258,7 @@ append_action_file() # $1 = File Name
 	save_command "LEVEL=$LEVEL"
 	save_command "TAG=$TAG"
 
-	eval sed \'s\/^/"$INDENT"\/\' $user_exit >&3
+	append_file $user_exit
     fi
 }
 
@@ -5046,7 +5058,7 @@ add_nat_rule() {
 
 	    if [ -n "$DETECT_DNAT_IPADDRS" -a "$source" != "$FW" ]; then
 
-		save_command ""
+		save_command
 		if [ $(list_count1 $interfaces) -eq 1 ]; then
 		    save_command "addr=\$(find_first_interface_address $interface)"
 		else

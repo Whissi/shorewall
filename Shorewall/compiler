@@ -1182,14 +1182,6 @@ __EOF__
 	local t n iface option first=Yes
 
 	[ -n "$MANGLE_ENABLED" ] || fatal_error "Providers require mangle support in your kernel and iptables"
-	#
-	# The following is because the %$#@ shell doesn't except hex numbers in '-eq' tests
-	#
-	case number in
-	    0*)
-		number=$(($number + 0))
-		;;
-	esac
 
 	for t in $PROVIDERS; do
 	    if [ "$t" = "$table" ]; then
@@ -1197,8 +1189,10 @@ __EOF__
 	    fi
 
 	    eval n=\$${t}_number
-
-	    if [ $n -eq $number ]; then
+	    #
+	    # The following is because the %$#@ shell doesn't except hex numbers in '-eq' tests
+	    #
+	    if [ $(($n)) -eq $(($number)) ]; then
 		fatal_error "Duplicate Provider number: $number, provider: \"$provider\""
 	    fi
 	done
@@ -1247,7 +1241,7 @@ __EOF__
 	if [ x${mark} != x- ]; then
 	    verify_mark $mark
 
-	    if [ $mark -lt 256 ]; then
+	    if [ $(($mark)) -lt 256 ]; then
 		if [ -n "$HIGH_ROUTE_MARKS" ]; then
 		    fatal_error "Invalid Mark Value ($mark) with HIGH_ROUTE_MARKS=Yes"
 		fi
@@ -3072,7 +3066,7 @@ setup_traffic_shaping()
 	    fi
 	    list_search "$device-$mark" $classlist && fatal_error "Mark $mark for interface $device defined more than once in tcclasses"
 	    verify_mark $mark
-	    [ $mark -lt 256 ] || fatal_error "Invalid Mark Value"
+	    [ $(($mark)) -lt 256 ] || fatal_error "Invalid Mark Value"
 	    classlist="$classlist $device-$mark"
 	done < $TMP_DIR/tcclasses
     }
@@ -3213,7 +3207,7 @@ process_tc_rule()
     verify_small_mark()
     {
 	verify_mark $1
-	[ $1 -lt 256 ] || fatal_error "Mark Value ($1) too larg, rule \"$rule\""
+	[ $(($1)) -lt 256 ] || fatal_error "Mark Value ($1) too larg, rule \"$rule\""
     }
 
     add_a_tc_rule() {
@@ -3389,7 +3383,7 @@ process_tc_rule()
 	*)
 	    if [ "$chain" != tcpost ]; then
 		verify_mark $mark
-		if [ $mark -gt 255 ]; then
+		if [ $(($mark)) -gt 255 ]; then
 		    case $chain in
 			tcpre|tcout)
 			    target="MARK --or-mark"

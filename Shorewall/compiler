@@ -1182,6 +1182,14 @@ __EOF__
 	local t n iface option first=Yes
 
 	[ -n "$MANGLE_ENABLED" ] || fatal_error "Providers require mangle support in your kernel and iptables"
+	#
+	# The following is because the %$#@ shell doesn't except hex numbers in '-eq' tests
+	#
+	case number in
+	    0*)
+		number=$(($number + 0))
+		;;
+	esac
 
 	for t in $PROVIDERS; do
 	    if [ "$t" = "$table" ]; then

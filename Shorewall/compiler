@@ -3112,6 +3112,11 @@ setup_traffic_shaping()
 	esac
 
 	eval devnum=\$$(chain_base $device)_devnum
+	#
+	# Convert HEX/OCTAL mark representation to decimal
+	#
+	mark=$(($mark))
+
 	classid=$devnum:1$mark
 
 	[ -n "$devnum" ] || fatal_error "Device $device not defined in $devfile"

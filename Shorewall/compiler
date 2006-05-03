@@ -1105,9 +1105,9 @@ verify_mark() # $1 = value to test
 {
     verify_mark1()
     {
-	[ $1 -lt 256 ] && return 0
+	[ $(($1)) -lt 256 ] && return 0
 	[ -n "$HIGH_ROUTE_MARKS" ] || return 1
-	[ $1 -gt 65535 ] && return 1
+	[ $(($1)) -gt 65535 ] && return 1
 	return $(($1 & 0XFF))
     }
 
@@ -3065,8 +3065,12 @@ setup_traffic_shaping()
 		fatal_error "device $device seems not to be configured in tcdevices"
 	    fi
 	    list_search "$device-$mark" $classlist && fatal_error "Mark $mark for interface $device defined more than once in tcclasses"
+	    #
+	    # Convert HEX/OCTAL mark representation to decimal
+	    #
+	    mark=$(($mark))
 	    verify_mark $mark
-	    [ $(($mark)) -lt 256 ] || fatal_error "Invalid Mark Value"
+	    [ $mark -lt 256 ] || fatal_error "Invalid Mark Value"
 	    classlist="$classlist $device-$mark"
 	done < $TMP_DIR/tcclasses
     }

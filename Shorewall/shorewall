@@ -1027,7 +1027,8 @@ dump_command() {
     show_reset
     host=$(echo $HOSTNAME | sed 's/\..*$//')
     $IPTABLES -L $IPT_OPTIONS
-    echo
+
+    heading "Log ($LOGFILE)"
     packet_log 20
 
     heading "NAT Table"
@@ -1035,7 +1036,8 @@ dump_command() {
 
     heading "Mangle Table"
     $IPTABLES -t mangle -L $IPT_OPTIONS
-    echo
+
+    heading "Conntrack Table"
     cat /proc/net/ip_conntrack
 
     heading "IP Configuration"
@@ -1087,12 +1089,9 @@ dump_command() {
     report_capabilities
 
     if [ -n "$TC_ENABLED" ]; then
-	echo
-	echo "Traffic Control"
-	echo
+	heading "Traffic Control"
 	show_tc
-	echo "Traffic Filters"
-	echo
+	heading "TC Filters"
 	show_classifiers
 	fi
 }

@@ -1597,9 +1597,7 @@ COMMAND=$1
 case "$COMMAND" in
     start)
 	shift
-
 	start_command $@
-
 	;;
     stop|reset|clear|refresh)
 	[ $# -ne 1 ] && usage 1
@@ -1608,21 +1606,15 @@ case "$COMMAND" in
 	;;
     compile)
 	shift
-
 	compile_command $@
-
 	;;
     restart)
 	shift
-
 	restart_command $@
-
 	;;
     check)
 	shift
-
 	check_command $@
-
 	;;
     add|delete)
 	[ $# -lt 3 ] && usage 1
@@ -1630,9 +1622,7 @@ case "$COMMAND" in
 	;;
     show|list)
     	shift
-
     	show_command $@
-
 	;;
     status)
 	[ $# -eq 1 ] || usage 1
@@ -1662,9 +1652,7 @@ case "$COMMAND" in
 	;;
     dump)
     	shift
-
     	dump_command $@
-
 	;;
     hits)
 	[ -n "$debugging" ] && set -x
@@ -1967,9 +1955,7 @@ case "$COMMAND" in
 	;;
     restore)
 	shift
-
 	restore_command $@
-
         ;;
     call)
 	[ -n "$debugging" ] && set -x
@@ -1986,9 +1972,7 @@ case "$COMMAND" in
 	;;
     safe-restart|safe-start)
 	shift
-
 	safe_commands $@
-
 	;;
     *)
 	usage 1

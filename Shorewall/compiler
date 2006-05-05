@@ -3376,6 +3376,8 @@ process_tc_rule()
 
     fi
 
+    mask=0xffff
+
     case $mark in
 	SAVE)
 	    [ -n "$did_connmark" ] && fatal_error "SAVE not valid with :C[FP]"
@@ -3416,7 +3418,7 @@ process_tc_rule()
 			    fatal_error "Invalid mark value ($mark) in rule \"$rule\""
 			    ;;
 		    esac
-		elif [ $(($mask)) -ne 0 -a -n "$HIGH_ROUTE_MARKS" -a $chain = tcpre ]; then
+		elif [ $(($mark)) -ne 0 -a -n "$HIGH_ROUTE_MARKS" -a $chain = tcpre ]; then
 		    fatal_error "Marks < 256 may not be set in the PREROUTING chain when HIGH_ROUTE_MARKS=Yes"
 		fi
 	    fi

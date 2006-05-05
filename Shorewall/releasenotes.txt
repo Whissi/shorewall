@@ -51,12 +51,23 @@ Other changes in 3.2.0 Beta 6
 1)  A TOS column has been added to /etc/shorewall/tcrules. This allows marking
     based on the contents of the TOS field in the packet header.
 
+2)  Beginning with this release, the way in which packet marking in the
+    PREROUTING chain interracts with the 'track' option in /etc/shorewall/providers
+    has changed in two ways:
+
+    a)  Packets *arriving* on a tracked interface are now passed to the PREROUTING
+	marking chain so that they may be marked with a mark other than the
+	'track' mark (the connection still retains the 'track' mark).
+
+    b)  When HIGH_ROUTE_MARKS=Yes, you can still clear the mark on packets
+	in the PREROUTING chain (i.e., you can specify a mark value of zero).
+
 Migration Considerations:
 
 1)  If you are upgrading from Shorewall 2.x, it is essential that you read
-    the Shorewall 3.0.5 release notes:
+    the Shorewall 3.0.6 release notes:
 
-    http://www.shorewall.net/pub/shorewall/3.0/shorewall-3.0.5/releasenotes.txt
+    http://www.shorewall.net/pub/shorewall/3.0/shorewall-3.0.6/releasenotes.txt
 
 2)  A number of macros have been split into two.  The macros affected are:
 
@@ -143,6 +154,17 @@ Migration Considerations:
 6)  The "shorewall refresh" command no longer refreshes traffic shaping.
     Use "shorewall restart" instead if you need to reprocess the
     tcrules, tcdevices and tcclasses files.
+
+7)  Beginning with this release, the way in which packet marking in the
+    PREROUTING chain interracts with the 'track' option in /etc/shorewall/providers
+    has changed in two ways:
+
+    a)  Packets arriving on a tracked interface are now passed to the PREROUTING
+	marking chain so that they may be marked with a mark other than the
+	'track' mark (the connection still retains the 'track' mark).
+
+    b)  When HIGH_ROUTE_MARKS=Yes, you can still clear the mark on packets
+	in the PREROUTING chain (i.e., you can specify a mark value of zero).
 
 New Features:
 

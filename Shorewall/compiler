@@ -3447,11 +3447,11 @@ process_tc_rule()
     if [ -n "$marktest" ] ; then
 	case $testval in
 	    */*)
-		validate_mark ${testval%/*}
-		validate_mark ${testval#*/}
+		verify_mark ${testval%/*}
+		verify_mark ${testval#*/}
 		;;
 	    *)
-		validate_mark $testval
+		verify_mark $testval
 		testval=$testval/$mask
 		;;
 	esac

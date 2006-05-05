@@ -128,14 +128,14 @@ Migration Considerations:
 
     a)  It is no longer necessary to save the commands; so functions like
         'save_command', 'run_and_save_command' and 'ensure_and_save_command'
-        need no longer be called. The generated program will contain
-        functions with these names:
+        need no longer be called. For convenience, the generated program will
+        supply functions with these names:
 
 	    save_command() - does nothing
 	    run_and_save_command() - runs the passed command
 	    ensure_and_save_command() - runs the passed command and
-	                                stops the firewall if the command
-	                                fails.
+	                                stops/restores the firewall if the
+	                                command fails.
 
 	These functions should provide for transparent migration of
 	scripts that use them until you can get around to eliminating

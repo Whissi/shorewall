@@ -3378,29 +3378,29 @@ process_tc_rule()
 
     case $mark in
 	SAVE)
-	    [ -n $did_connmark ] && fatal_error "SAVE not valid with :C[FP]"
+	    [ -n "$did_connmark" ] && fatal_error "SAVE not valid with :C[FP]"
 	    target="CONNMARK --save-mark --mask 0xFF"
 	    mark=
 	    ;;
 	SAVE/*)
-	    [ -n $did_connmark ] && fatal_error "SAVE not valid with :C[FP]"
+	    [ -n "$did_connmark" ] && fatal_error "SAVE not valid with :C[FP]"
 	    target="CONNMARK --save-mark --mask"
 	    mark=${mark#*/}
 	    verify_small_mark $mark
 	    ;;
 	RESTORE)
-	    [ -n $did_connmark ] && fatal_error "RESTORE not valid with :C[FP]"
+	    [ -n "$did_connmark" ] && fatal_error "RESTORE not valid with :C[FP]"
 	    target="CONNMARK --restore-mark --mask 0xFF"
 	    mark=
 	    ;;
 	RESTORE/*)
-	    [ -n $did_connmark ] && fatal_error "RESTORE not valid with :C[FP]"
+	    [ -n "$did_connmark" ] && fatal_error "RESTORE not valid with :C[FP]"
 	    target="CONNMARK --restore-mark --mask"
 	    mark=${mark#*/}
 	    verify_small_mark $mark
 	    ;;
 	CONTINUE)
-	    [ -n $did_connmark ] && fatal_error "CONTINUE not valid with :C[FP]"
+	    [ -n "$did_connmark" ] && fatal_error "CONTINUE not valid with :C[FP]"
 	    target=RETURN
 	    mark=
 	    ;;

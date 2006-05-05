@@ -21,7 +21,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2006-05-01</pubdate>
+    <pubdate>2006-05-05</pubdate>
 
     <copyright>
       <year>2001-2006</year>
@@ -529,7 +529,7 @@ ppp0           6000kbit         500kbit</programlisting>
         <listitem>
           <para>PROTO - Protocol - Must be "tcp", "udp", "icmp", "ipp2p",
           "ipp2p:udp", "ipp2p:all" a number, or "all". "ipp2p" requires ipp2p
-          match support in your kernel and iptables. </para>
+          match support in your kernel and iptables.</para>
         </listitem>
 
         <listitem>
@@ -772,8 +772,8 @@ ppp0            3       8*full/10       8*full/10       2</programlisting>
 
           <programlisting>#MARK           SOURCE          DEST            PROTO   PORT(S) CLIENT   USER
 #                                                              PORT(S)
-1:P             0.0.0.0/0       0.0.0.0/0       icmp    echo-request
-1:P             0.0.0.0/0       0.0.0.0/0       icmp    echo-reply
+1:F             0.0.0.0/0       0.0.0.0/0       icmp    echo-request
+1:F             0.0.0.0/0       0.0.0.0/0       icmp    echo-reply
 # mark traffic which should have a lower priority with a 3:
 # mldonkey
 3               0.0.0.0/0       0.0.0.0/0       udp     -        4666</programlisting>
@@ -856,10 +856,10 @@ ppp0            4       90kbit          200kbit         3           default</pro
 
           <programlisting>#MARK           SOURCE          DEST            PROTO   PORT(S)      CLIENT   USER
 #                                                                    PORT(S)
-1:P             0.0.0.0/0       0.0.0.0/0       icmp    echo-request
-1:P             0.0.0.0/0       0.0.0.0/0       icmp    echo-reply
-2:P             192.168.2.23    0.0.0.0/0       all
-3:P             192.168.2.42    0.0.0.0/0       all</programlisting>
+1:F             0.0.0.0/0       0.0.0.0/0       icmp    echo-request
+1:F             0.0.0.0/0       0.0.0.0/0       icmp    echo-reply
+2:F             192.168.2.23    0.0.0.0/0       all
+3:F             192.168.2.42    0.0.0.0/0       all</programlisting>
 
           <para>We mark icmp ping and replies so they will go into the fast
           interactive class and set a mark for each host.</para>

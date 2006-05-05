@@ -15,12 +15,14 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-10-04</pubdate>
+    <pubdate>2006-05-05</pubdate>
 
     <copyright>
       <year>2004</year>
 
       <year>2005</year>
+
+      <year>2006</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -120,7 +122,7 @@ tcp      6 269712 ESTABLISHED src=192.168.3.8 dst=206.124.146.177 sport=50584 dp
 ...</programlisting>
 
     <para>Connection marks are persistent -- that is, once a connection mark
-    is set it retains its value until the connection is terminated. </para>
+    is set it retains its value until the connection is terminated.</para>
 
     <para>Netfilter provides features to:</para>
 
@@ -208,5 +210,20 @@ SAVE:P               -             -           tcp          -              -    
 
     <para>These rules do exactly the same thing as their counterparts
     described above.</para>
+
+    <para>One change that I recommend --do your marking in the FORWARD chain
+    rather than in the PREROUTING chain:</para>
+
+    <programlisting>#MARK                SOURCE        DEST        PROTO        PORT(S)        CLIENT     USER    TEST
+#                                                                          PORT(S)
+RESTORE:F            -             -           tcp
+CONTINUE:F           -             -           tcp          -              -          -       !0
+1:F                  -             -           ipp2p        ipp2p
+SAVE:F               -             -           tcp          -              -          -       1
+1:12                 -             eth0        -            -              -          -       1
+2:12                 -             eth1        -            -              -          -       1    </programlisting>
+
+    <para>It will work the same and will work with a <ulink
+    url="MultiISP.html">Multi-ISP setup</ulink>.</para>
   </section>
 </article>

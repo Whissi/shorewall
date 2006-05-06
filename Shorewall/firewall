@@ -1775,10 +1775,13 @@ refresh_tc() {
     # Flush the TC mangle chains
     #
 
-    [ -n "$MANGLE_FORWARD" ] && run_iptables -t mangle -F tcfor
+    if [ -n "$MANGLE_FORWARD" ]; then
+	run_iptables -t mangle -F tcfor
+	run_iptables -t mangle -F tcpost
+    fi
+
     run_iptables -t mangle -F tcpre
     run_iptables -t mangle -F tcout
-    run_iptables -t mangle -F tcpost
     #
     # Remove all exclusion chains from the mangle table
     #

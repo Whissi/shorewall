@@ -1103,17 +1103,25 @@ __EOF__
 #
 verify_mark() # $1 = value to test
 {
-    verify_mark1()
-    {
-	[ $(($1)) -lt 256 ] && return 0
-	[ -n "$HIGH_ROUTE_MARKS" ] || return 1
-	[ $(($1)) -gt 65535 ] && return 1
-	return $(($1 & 0XFF))
-    }
-
     verify_mark2()
     {
-	verify_mark1 $1 2> /dev/null
+	case $1 in
+	    0*)
+		[ $(($1)) -lt 256 ] && return 0
+		[ -n "$HIGH_ROUTE_MARKS" ] || return 1
+		[ $(($1)) -gt 65535 ] && return 1
+		return $(($1 & 0xFF))
+		;;
+	    [1-9]*)
+		[ $1 -lt 256 ] && return 0
+		[ -n "$HIGH_ROUTE_MARKS" ] || return 1
+		[ $1 -gt 65535 ] && return 1
+		return $(($1 & 0xFF))
+		;;
+	    *)
+		return 2
+		;;
+	esac
     }
 
     verify_mark2 $1 || fatal_error "Invalid Mark or Mask value: $1"
@@ -3228,7 +3236,20 @@ process_tc_rule()
 	did_connmark=Yes
     }
 
-    add_a_tc_rule() {
+    validate_mark()
+    {
+	case $1 in
+	    */*)
+		verify_mark ${1%/*}
+		verify_mark ${1#*/}
+		;;
+	    *)
+		verify_mark $1
+		;;
+	esac
+    }
+
+   add_a_tc_rule() {
 	r=
 
 	if [ "x$source" != "x-"	 ]; then
@@ -3408,8 +3429,8 @@ process_tc_rule()
 	    ;;
 	*)
 	    if [ "$chain" != tcpost ]; then
-		verify_mark $mark
-		if [ $(($mark)) -gt 255 ]; then
+		validate_mark $mark
+		if [ $((${mark%/*})) -gt 255 ]; then
 		    case $chain in
 			tcpre|tcout)
 			    target="MARK --or-mark"
@@ -3418,7 +3439,7 @@ process_tc_rule()
 			    fatal_error "Invalid mark value ($mark) in rule \"$rule\""
 			    ;;
 		    esac
-		elif [ $(($mark)) -ne 0 -a -n "$HIGH_ROUTE_MARKS" -a $chain = tcpre ]; then
+		elif [ $((${mark%/*})) -ne 0 -a -n "$HIGH_ROUTE_MARKS" -a $chain = tcpre ]; then
 		    fatal_error "Marks < 256 may not be set in the PREROUTING chain when HIGH_ROUTE_MARKS=Yes"
 		fi
 	    fi

@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2006-05-01</pubdate>
+    <pubdate>2006-05-06</pubdate>
 
     <copyright>
       <year>2005</year>
@@ -475,11 +475,24 @@ ip route add</command> 192.168.1.1 dev eth3  scope link
 <command>ip route add </command>169.254.0.0/16 dev eth0  scope link
 <command>ip route add </command>127.0.0.0/8 dev lo  scope link
 <command>ip route add </command>default via 206.124.146.254 dev eth3
-<command>ip route flush cache</command>
-</programlisting>
+<command>ip route flush cache</command></programlisting>
 
             <para>Now paste the contents of that file into
             <filename>/etc/shorewall/stopped</filename>.</para>
+
+            <para>You might also want to consider adding the following to the
+            file:</para>
+
+            <programlisting><command>ip rule ls</command> | while read priority rule; do
+    case ${priority%:} in
+        0|3276[67])
+            ;;
+        *) ip rule del $rule
+            ;;
+    esac
+done</programlisting>
+
+            <para>That will delete all but the default routing rules.</para>
           </listitem>
         </itemizedlist>
       </warning>

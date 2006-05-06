@@ -1646,8 +1646,12 @@ setup_traffic_shaping()
     add_root_tc() {
 	local defmark
 	defmark=$(get_defmark_for_dev $device)
-	save_command qt tc qdisc del dev $device root
-	save_command qt tc qdisc del dev $device ingress
+
+	if [ $COMMAND = compile ]; then
+	    save_command qt tc qdisc del dev $device root
+	    save_command qt tc qdisc del dev $device ingress
+	fi
+
 	run_tc qdisc add dev $device root handle $devnum: htb default 1$defmark
 	run_tc class add dev $device parent $devnum: classid $devnum:1 htb rate $outband
 	run_tc qdisc add dev $device handle ffff: ingress
@@ -1725,7 +1729,7 @@ setup_traffic_shaping()
     validate_tcclasses_file
 
     if [ -s $TMP_DIR/tcdevices ]; then
-	save_progress_message "Setting up Traffic Control..."
+	[ $COMMAND = compile ] && save_progress_message "Setting up Traffic Control..."
 	progress_message2 "$DOING $devfile..."
 
 	while read device inband outband defmark ackmark; do
@@ -2087,7 +2091,7 @@ process_tc_rule()
     done
 
     progress_message "   TC Rule \"$rule\" $DONE"
-    save_progress_message "   TC Rule \"$rule\" Added"
+    [ $COMMAND = compile ] && save_progress_message "   TC Rule \"$rule\" Added"
 }
 
 delete_tc1()

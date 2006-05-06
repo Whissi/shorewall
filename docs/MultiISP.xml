@@ -609,7 +609,7 @@ eth1             eth2              130.252.99.27</programlisting>
 20000:  from 206.124.146.176 lookup Blarg    &lt;=== This and the next rule are generated unless
 20256:  from 24.12.22.33 lookup Comcast           'loose' is specified; based in the output of 'ip addr ls'
 32766:  from all lookup main                 &lt;=== This is the routing table shown by 'iproute -n'
-32767:  from all lookup default              &lt;=== This table is empty
+32767:  from all lookup default              &lt;=== This table is usually empty
 gateway:~ #</programlisting>
 
         <para>In the above example, there are two providers: Blarg and Comcast
@@ -678,7 +678,7 @@ gateway:~ #</programlisting>
           </varlistentry>
         </variablelist>
 
-        <para>Example: You want all traffic entering the firewall on eth1 to
+        <para>Example 1: You want all traffic entering the firewall on eth1 to
         be routed through Comcast.</para>
 
         <programlisting>#SOURCE            DEST      PROVIDER        PRIORITY
@@ -699,6 +699,16 @@ eth1               -         Comcast         1000</programlisting>
 gateway:~ #</programlisting>Note that because we used a priority of 1000, the
         test for <filename class="devicefile">eth1</filename> is inserted
         before the fwmark tests.</para>
+
+        <para>Example 2: You use OpenVPN (routed setup /tunX) in combination
+        with multiple providers. In this case you have to set up a rule to
+        ensure that the OpenVPN traffic is routed back through the tunX
+        interface(s) rather than through any of the providers. 10.8.0.0/24 is
+        the subnet choosen in your OpenVPN configuration (server 10.8.0.0
+        255.255.255.0).</para>
+
+        <programlisting>#SOURCE                 DEST            PROVIDER        PRIORITY
+-                       10.8.0.0/24     main            1000</programlisting>
       </section>
     </section>
   </section>

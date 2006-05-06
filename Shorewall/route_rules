@@ -27,7 +27,9 @@
 #		PROVIDER        The provider to route the traffic through.
 #				May be expressed either as the provider name
 #				or the provider number. May also be 'main'
-#				or 254 for the main routing table.
+#				or 254 for the main routing table. This can
+#				be used in combination with VPN tunnels, see
+#				example 2 below.
 #
 #		PRIORITY
 #				The rule's priority which determines the order
@@ -46,11 +48,21 @@
 #				Rules with equal priority are applied in
 #				the order in which they appear in the file.
 #
-# Example: You want all traffic coming in on eth1 to be routed to the ISP1
+# Example 1: You want all traffic coming in on eth1 to be routed to the ISP1
 #          provider:
 #
 #	#SOURCE			DEST		PROVIDER	PRIORITY
 #	eth1	    		-		ISP1		1000
+#
+# Example 2: You use OpenVPN (routed setup /tunX) in combination with multiple
+#            providers. In this case you have to set up a rule to ensure that
+#            the OpenVPN traffic is routed back through the tunX interface(s)
+#            rather than through any of the providers. 10.8.0.0/24 is the
+#            subnet choosen in your OpenVPN configuration (server 10.8.0.0
+#            255.255.255.0)
+#
+#	#SOURCE			DEST		PROVIDER	PRIORITY
+#	-	    		10.8.0.0/24	ISP1		1000
 #
 # For additional information, see http://www.shorewall.net/MultiISP.html
 ##############################################################################

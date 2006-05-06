@@ -1743,11 +1743,76 @@ check_disabled_startup() {
 }
 
 #
+# Dummy functions to make refresh_tc happy
+#
+save_progress_message()
+{
+    return 0
+}
+
+save_command()
+{
+    return 0
+}
+
+progress_message_and_save()
+{
+    progress_message $@
+}
+
+#
+# Refresh queuing and classes
+#
+refresh_tc() {
+
+    echo "Refreshing Traffic Control Rules..."
+
+    [ -n "$CLEAR_TC" ] && delete_tc1
+
+    [ -n "$MARK_IN_FORWARD_CHAIN" ] && chain=tcfor || chain=tcpre
+
+    #
+    # Flush the TC mangle chains
+    #
+
+    [ -n "$MANGLE_FORWARD" ] && run_iptables -t mangle -F tcfor
+    run_iptables -t mangle -F tcpre
+    run_iptables -t mangle -F tcout
+    run_iptables -t mangle -F tcpost
+    #
+    # Remove all exclusion chains from the mangle table
+    #
+    $IPTABLES -t mangle -L -n | grep '^Chain excl_' | while read junk chain rest; do
+	run_iptables -t mangle -F $chain
+	run_iptables -t mangle -X $chain
+    done
+
+    #
+    # Process the TC Rules File
+    #
+    strip_file tcrules
+
+    while read mark sources dests proto ports sports user testval; do
+	expandv mark sources dests proto ports sports user testval
+	rule=$(echo "$mark $sources $dests $proto $ports $sports $user $testval")
+	process_tc_rule
+    done < $TMP_DIR/tcrules
+
+    if [ -n "$TC_SCRIPT" ]; then
+	run_user_exit $TC_SCRIPT
+    elif [ -n "$TC_ENABLED" ]; then
+	setup_traffic_shaping
+    fi
+
+}
+
+#
 # Refresh the firewall
 #
 refresh_firewall()
 {
-    #
+    DOING=Refreshing
+    DONE=Refreshed
 
     progress_message3 "Refreshing Shorewall..."
 
@@ -1769,6 +1834,11 @@ refresh_firewall()
     ecn=$(find_file ecn)
 
     [ -f $ecn ] && [ -n "$MANGLE_ENABLED" ] && setup_ecn $ecn
+
+    #
+    # Refresh Traffic Control
+    #
+    [ -n "$MANGLE_ENABLED" ] && refresh_tc
 
     run_user_exit refreshed
 

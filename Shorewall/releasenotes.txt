@@ -1,4 +1,4 @@
-Shorewall 3.2.0 Beta 6
+Shorewall 3.2.0 Beta 7
 
 Note to users upgrading from Shorewall 2.x or 3.0
 
@@ -27,40 +27,14 @@ Note to users upgrading from Shorewall 2.x or 3.0
    Please see the "Migration Considerations" below for additional upgrade
    information.
 
-Problems Corrected in 3.2.0 Beta 6
+Problems Corrected in 3.2.0 Beta 7
 
-1)  Previously, if 'shorewall restart' was done out of an ip-up.local
-    script, some of the utilities like 'tc' and 'ip6tables' were not
-    on the PATH.
+1)  Previously, if 'ash' was used as the SHOREWALL_SHELL then any use of
+    packet marks would fail.
 
-2)  In previous 3.2.0 releases, 'detectnets' in /etc/shorewall/interfaces
-    produced an error message:
+Other changes in 3.2.0 Beta 7
 
-	ERROR: 'detectnets' not permitted with the -e run-line option
-
-    even when the -e option had not been specified.
-
-3)  Previously, the 'proxyarp' option in /etc/shorewall/interfaces caused
-    startup errors.
-
-4)  Previously, specifying specific IP addresses for GATEWAY in with 'balance'
-    /etc/shorewall/providers caused a [re]start error.
-
-Other changes in 3.2.0 Beta 6
-
-1)  A TOS column has been added to /etc/shorewall/tcrules. This allows marking
-    based on the contents of the TOS field in the packet header.
-
-2)  Beginning with this release, the way in which packet marking in the
-    PREROUTING chain interracts with the 'track' option in /etc/shorewall/providers
-    has changed in two ways:
-
-    a)  Packets *arriving* on a tracked interface are now passed to the PREROUTING
-	marking chain so that they may be marked with a mark other than the
-	'track' mark (the connection still retains the 'track' mark).
-
-    b)  When HIGH_ROUTE_MARKS=Yes, you can still clear the mark on packets
-	in the PREROUTING chain (i.e., you can specify a mark value of zero).
+1)  'shorewall refresh' once again refreshes the tcrules and traffic shaping.
 
 Migration Considerations:
 
@@ -151,11 +125,7 @@ Migration Considerations:
         In no case is it possible to continue a quoted string over multiple lines
         without having additional whitespace inserted into the string.
 
-6)  The "shorewall refresh" command no longer refreshes traffic shaping.
-    Use "shorewall restart" instead if you need to reprocess the
-    tcrules, tcdevices and tcclasses files.
-
-7)  Beginning with this release, the way in which packet marking in the
+6)  Beginning with this release, the way in which packet marking in the
     PREROUTING chain interracts with the 'track' option in /etc/shorewall/providers
     has changed in two ways:
 
@@ -550,3 +520,17 @@ New Features:
 	d) When you SAVE or RESTORE in tcrules, only the TC mark value is
 	   saved or restored. Shorewall handles saving and restoring the
 	   routing (provider) marks.
+
+12) A TOS column has been added to /etc/shorewall/tcrules. This allows marking
+    based on the contents of the TOS field in the packet header.
+
+13) Beginning with this release, the way in which packet marking in the
+    PREROUTING chain interracts with the 'track' option in /etc/shorewall/providers
+    has changed in two ways:
+
+    a)  Packets *arriving* on a tracked interface are now passed to the PREROUTING
+	marking chain so that they may be marked with a mark other than the
+	'track' mark (the connection still retains the 'track' mark).
+
+    b)  When HIGH_ROUTE_MARKS=Yes, you can still clear the mark on packets
+	in the PREROUTING chain (i.e., you can specify a mark value of zero).

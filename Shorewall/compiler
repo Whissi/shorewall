@@ -1298,7 +1298,7 @@ __EOF__
     {
 	local p n
 
-	for p in $PROVIDERS; do
+	for p in $PROVIDERS main; do
 	    [ "$p" = "$1" ] && return 0
 	    eval n=\$${p}_number}
 	    [ "$n" = "$1" ] && return 0
@@ -1396,6 +1396,8 @@ __EOF__
 
 	    if [ -f $f ]; then
 		strip_file route_rules $f
+
+		main_number=254
 
 		if [ -s $TMP_DIR/route_rules ]; then
 		    progress_message2 "$DOING $f..."

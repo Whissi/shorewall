@@ -1787,7 +1787,7 @@ refresh_tc() {
 
     while read mark sources dests proto ports sports user testval; do
 	expandv mark sources dests proto ports sports user testval tos
-	rule=$(echo "$mark $sources $dests $proto $ports $sports $user $testval tos")
+	rule=$(echo "$mark $sources $dests $proto $ports $sports $user $testval $tos")
 	process_tc_rule
     done < $TMP_DIR/tcrules
 

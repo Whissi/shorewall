@@ -1147,16 +1147,16 @@
   </section>
 
   <section id="State">
-    <title>Shorewall State Diagram (Shorewall 3.0 and earlier)</title>
+    <title>Shorewall State Diagram</title>
 
     <para>The Shorewall State Diargram is depicted below.</para>
 
     <para><graphic align="center" fileref="images/State_Diagram.png" /></para>
 
-    <para>You will note that the commands that result in state transitions use
-    the word <quote>firewall</quote> rather than <quote>shorewall</quote>.
-    That is because the actual transitions are done by
-    <command>/usr/share/shorewall/firewall</command>;
+    <para>You will note that mose of the commands that result in state
+    transitions use the word <quote>firewall</quote> rather than
+    <quote>shorewall</quote>. That is because the actual transitions are done
+    by <command>/usr/share/shorewall/firewall</command>;
     <command>/sbin/shorewall</command> runs <quote>firewall</quote> according
     to the following table:</para>
 
@@ -1258,5 +1258,31 @@
         </tbody>
       </tgroup>
     </informaltable>
+
+    <para>The only time that a program other than
+    <command>/usr/share/shorewall/firewall</command> performs a state
+    transition itself is when it executes the <command>shorewall
+    restore</command> command is executed. In that case, the
+    <command>/var/lib/shorewall/restore</command> program sets the state to
+    "Started".</para>
+
+    <section>
+      <title>Notes for Shorewall 3.2.0 and Later</title>
+
+      <para>With any command that involves compilation, there is no state
+      transition while the compiler is running. If compilation fails, the
+      state remains unchanged.</para>
+
+      <para>Also, <command>shorewall start</command> and <command>shorewall
+      restart</command> involve compilation followed by execution of the
+      compiled script. So it is the compiled script that performs the state
+      transition in these commands rather than
+      <command>/usr/share/shorewall/firewall</command>.</para>
+
+      <para>The compiled script is placed in <filename
+      class="directory">/var/lib/shorewall</filename> and is named either
+      <filename>.start</filename> or <filename>.restart</filename> depending
+      on the command.</para>
+    </section>
   </section>
 </article>

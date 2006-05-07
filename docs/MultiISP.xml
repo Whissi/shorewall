@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2006-05-06</pubdate>
+    <pubdate>2006-05-07</pubdate>
 
     <copyright>
       <year>2005</year>
@@ -207,8 +207,27 @@
             <para>A mark value used in your /etc/shorewall/tcrules file to
             direct packets to this provider. Shorewall will also mark
             connections that have seen input from this provider with this
-            value and will restore the packet mark in the PREROUTING
-            CHAIN.</para>
+            value and will restore the packet mark in the PREROUTING CHAIN.
+            Mark values must be in the range 1-255.</para>
+
+            <para>Beginning with Shorewall version 3.2.0 Beta 6, you may use
+            may set HIGH_ROUTE_MARKS=Yes in
+            <filename>/etc/shorewall/shorewall.conf</filename>. This allows
+            you to:</para>
+
+            <itemizedlist>
+              <listitem>
+                <para>Use connection marks for traffic shaping, provided that
+                you assign those marks in the FORWARD table.</para>
+              </listitem>
+
+              <listitem>
+                <para>Use mark values &gt; 255 for provider marks in this
+                column. These mark values must be a multiple of 256 in the
+                range 256-65280 (hex equivalent 0x100 - 0xFF00 with the
+                low-order 8 bits being zero).</para>
+              </listitem>
+            </itemizedlist>
           </listitem>
         </varlistentry>
 
@@ -487,12 +506,14 @@ ip route add</command> 192.168.1.1 dev eth3  scope link
     case ${priority%:} in
         0|3276[67])
             ;;
-        *) ip rule del $rule
+        *)
+            ip rule del $rule
             ;;
     esac
 done</programlisting>
 
-            <para>That will delete all but the default routing rules.</para>
+            <para>That code will delete all but the default routing
+            rules.</para>
           </listitem>
         </itemizedlist>
       </warning>

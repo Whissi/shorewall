@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2006-04-23</pubdate>
+    <pubdate>2006-05-07</pubdate>
 
     <copyright>
       <year>2001-2006</year>
@@ -2742,6 +2742,125 @@ eth0                  eth1            206.124.146.176</programlisting>
     <para>This file is used to set the following firewall parameters:</para>
 
     <variablelist>
+      <varlistentry>
+        <term>VERBOSITY (Added in version 3.2.0)</term>
+
+        <listitem>
+          <para>Shorewall has traditionally been very noisy (produced lots of
+          output). You may now set the default level of verbosity using the
+          VERBOSITY OPTION.</para>
+
+          <para>Values are:</para>
+
+          <simplelist>
+            <member>0 — Silent. You may make it more verbose using the -v
+            option</member>
+
+            <member>1 — Major progress messages displayed</member>
+
+            <member>2 — All progress messages displayed (old default
+            behavior)</member>
+          </simplelist>
+
+          <para>If not specified, then 2 is assumed.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>IMPLICIT_CONTINUE (Added in version 3.2.0)</term>
+
+        <listitem>
+          <para>When this option is set to "Yes", it causes subzones to be
+          treated differently with respect to policies.</para>
+
+          <para>Subzones are defined by following their name with ":" and a
+          list of parent zones (in /etc/shorewall/zones). Normally, you want
+          to have a set of special rules for the subzone and if a connection
+          doesn't match any of those subzone-specific rules then you want the
+          parent zone rules and policies to be applied. With
+          IMPLICIT_CONTINUE=Yes, that happens automatically.</para>
+
+          <para>If IMPLICIT_CONTINUE=No or if IMPLICIT_CONTINUE is not set,
+          then subzones are not subject to this special treatment. With
+          IMPLICIT_CONTINUE=Yes, an implicit CONTINUE policy may be overridden
+          by including an explicit policy (one that does not specify "all" in
+          either the SOURCE or the DEST columns).</para>
+
+          <para>Example:</para>
+
+          <blockquote>
+            <para><filename>/etc/shorewall/zones</filename>:</para>
+
+            <programlisting>#ZONE      TYPE
+prnt       ipv4
+chld:prnt  ipv4</programlisting>
+
+            <para>Traffic to/from the <emphasis role="bold">chld</emphasis>
+            zone will first pass through the applicable <emphasis
+            role="bold">chld</emphasis> rules and if none of those rules match
+            then it will be passed through the appropriate <emphasis
+            role="bold">prnt</emphasis> rules. If the connection request does
+            not match any of the <emphasis role="bold">prnt</emphasis> rules
+            then the relevant <emphasis role="bold">prnt</emphasis> policy is
+            applied.</para>
+
+            <para>If you want the <emphasis
+            role="bold">fw</emphasis>-&gt;<emphasis
+            role="bold">chld</emphasis> policy to be ACCEPT, simply add this
+            entry to <filename>/etc/shorewall/policy</filename>:</para>
+
+            <programlisting>#SOURCE  DESTINATION        POLICY
+$FW      chld               ACCEPT</programlisting>
+
+            <para>Traffic from all other zones to 'chld' will be subject to
+            the implicit CONTINUE policy.</para>
+          </blockquote>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>HIGH_ROUTE_MARKS (Added in version 3.2.0)</term>
+
+        <listitem>
+          <para>Prior to version 3.2.0, it was not possible to use connection
+          marking in <filename>/etc/shorewall/tcrules</filename> if you have a
+          multi-ISP configuration that uses the <emphasis
+          role="bold">track</emphasis> option.</para>
+
+          <para>Beginning with release 3.2.0, you may now set
+          HIGH_ROUTE_MARKS=Yes in to effectively divide the packet mark and
+          connection mark into two 8-byte mark fields.</para>
+
+          <para>When you do this:</para>
+
+          <orderedlist numeration="loweralpha">
+            <listitem>
+              <para>The MARK field in the <filename>providers</filename> file
+              must have a value that is less than 65536 and that is a multiple
+              of 256 (using hex representation, the values are 0x0100-0xFF00
+              with the low-order 8 bits being zero).</para>
+            </listitem>
+
+            <listitem>
+              <para>You may only set those mark values in the PREROUTING
+              chain.</para>
+            </listitem>
+
+            <listitem>
+              <para>Marks used for traffic shaping must still be in the range
+              of 1-255 and may still not be set in the PREROUTING
+              chain.</para>
+            </listitem>
+
+            <listitem>
+              <para>When you SAVE or RESTORE in tcrules, only the TC mark
+              value is saved or restored. Shorewall handles saving and
+              restoring the routing (provider) marks.</para>
+            </listitem>
+          </orderedlist>
+        </listitem>
+      </varlistentry>
+
       <varlistentry>
         <term>FASTACCEPT</term>
 

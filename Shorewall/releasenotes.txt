@@ -418,8 +418,9 @@ New Features:
     Subzones are defined by following their name with ":" and a list of parent
     zones (in /etc/shorewall/zones). Normally, you want to have a set of
     special rules for the subzone and if a connection doesn't match any of
-    those subzone-specific rules then you want the parent zone rules to be
-    applied. With IMPLICIT_CONTINUE=Yes, that happens automatically.
+    those subzone-specific rules then you want the parent zone rules and
+    policies to be applied. With IMPLICIT_CONTINUE=Yes, that happens
+    automatically.
 
     If IMPLICIT_CONTINUE=No or if IMPLICIT_CONTINUE is not set, then
     subzones are not subject to this special treatment.
@@ -432,13 +433,13 @@ New Features:
 
     /etc/shorewall/zones:
 
-	par        ipv4
-	chld:par   ipv4
+	prnt       ipv4
+	chld:prnt  ipv4
 
     Traffic to/from the 'chld' zone will first pass through the applicable
     'chld' rules and if none of those rules match then it will be passed through
-    the appropriate 'par' rules. If the connection request does not match
-    any of the 'par' rules then the relevant 'par' policy is applied.
+    the appropriate 'prnt' rules. If the connection request does not match
+    any of the 'prnt' rules then the relevant 'prnt' policy is applied.
 
     If you want the fw->chld policy to be ACCEPT, simply add this entry to
     /etc/shorewall/policy:
@@ -472,7 +473,9 @@ New Features:
 
 		PROVIDER        The provider to route the traffic through.
 				May be expressed either as the provider name
-				or the provider number.
+				or the provider number. You may also specify
+				the 'main' routing table here, either by
+				name or by number (254).
 
 		PRIORITY
 				The rule's priority which determines the order
@@ -491,11 +494,21 @@ New Features:
 				Rules with equal priority are applied in
 				the order in which they appear in the file.
 
-    Example: You want all traffic coming in on eth1 to be routed to the ISP1
+    Example 1: You want all traffic coming in on eth1 to be routed to the ISP1
 	     provider:
 
 	    #PROVIDER	PRIORITY	SOURCE			DEST
 	    ISP1	1000		eth1
+
+    Example 2: You use OpenVPN (routed setup /tunX) in combination with multiple
+	       providers. In this case you have to set up a rule to ensure that
+	       the OpenVPN traffic is routed back through the tunX interface(s)
+	       rather than through any of the providers. 10.8.0.0/24 is the
+	       subnet choosen in your OpenVPN configuration (server 10.8.0.0
+	       255.255.255.0)
+
+	#SOURCE			DEST		PROVIDER	PRIORITY
+	-	    		10.8.0.0/24	main		1000
 
 11) Prior to now, it has not been possible to use connection marking in
     /etc/shorewall/tcrules if you have a multi-ISP configuration that uses the

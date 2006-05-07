@@ -1161,7 +1161,7 @@ __EOF__
 
 	[ -n "$MANGLE_ENABLED" ] || fatal_error "Providers require mangle support in your kernel and iptables"
 
-	for t in $PROVIDERS; do
+	for t in $PROVIDERS local main default unspec; do
 	    if [ "$t" = "$table" ]; then
 		fatal_error "Duplicate Provider: $table, provider: \"$provider\""
 	    fi
@@ -1344,6 +1344,11 @@ __EOF__
 	progress_message "Routing rule \"$rule\" $DONE"
     }
 
+    local_number=255
+    main_number=254
+    default_number=253
+    unspec_number=0
+
     strip_file providers $1
 
     if [ -s $TMP_DIR/providers ]; then
@@ -1396,8 +1401,6 @@ __EOF__
 
 	    if [ -f $f ]; then
 		strip_file route_rules $f
-
-		main_number=254
 
 		if [ -s $TMP_DIR/route_rules ]; then
 		    progress_message2 "$DOING $f..."

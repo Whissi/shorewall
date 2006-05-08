@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2006-04-27</pubdate>
+    <pubdate>2006-05-08</pubdate>
 
     <copyright>
       <year>2006</year>
@@ -767,6 +767,26 @@ Ping/ACCEPT     fw                              dmz
 #
 DROP            net:82.96.96.3                          all
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting>
+
+        <para><filename>/etc/shorewall/tcdevices</filename></para>
+
+        <programlisting>#INTERFACE      IN-BANDWITH     OUT-BANDWIDTH
+$EXT_IF         1.3mbit         384kbit
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE
+</programlisting>
+
+        <para><filename>/etc/shorewall/tcclasses</filename><programlisting>#INTERFACE      MARK    RATE            CEIL            PRIORITY        OPTIONS
+$EXT_IF         10      full            full            1               tcp-ack,tos-minimize-delay
+$EXT_IF         20      9*full/10       9*full/10       2               default
+$EXT_IF         30      6*full/10       6*full/10       3
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting></para>
+
+        <para><filename>/etc/shorewall/tcrules</filename><programlisting>#MARK   SOURCE          DEST            PROTO   PORT(S) CLIENT  USER    TEST
+#                                                       PORT(S)
+1:110   192.168.0.0/22  $EXT_IF                                         #Our internel nets get priority
+                                                                        #over the server
+1:130   206.124.146.177 $EXT_IF         tcp     -       873
+#LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting></para>
       </blockquote>
     </section>
 

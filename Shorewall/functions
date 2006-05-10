@@ -1502,7 +1502,6 @@ verify_mark() # $1 = value to test
 setup_traffic_shaping()
 {
     local mtu r2q tc_all_devices device mark rate ceil prio options devfile=$(find_file tcdevices) classfile=$(find_file tcclasses) devnum=1
-    mtu=1500
     r2q=10
 
     rate_to_kbit() {
@@ -1644,7 +1643,8 @@ setup_traffic_shaping()
     }
 
     add_root_tc() {
-	local defmark
+	local defmark dev
+	dev=$(chain_base $device)
 	defmark=$(get_defmark_for_dev $device)
 
 	if [ $COMMAND = compile ]; then
@@ -1652,12 +1652,16 @@ setup_traffic_shaping()
 	    save_command qt tc qdisc del dev $device ingress
 	fi
 
+	[ x${mtu:--} = x- ] && mtu=1500
+	
+	eval ${dev}_mtu=$mtu
+	
 	run_tc qdisc add dev $device root handle $devnum: htb default 1$defmark
-	run_tc class add dev $device parent $devnum: classid $devnum:1 htb rate $outband
+	run_tc class add dev $device parent $devnum: classid $devnum:1 htb rate $outband mtu $mtu
 	run_tc qdisc add dev $device handle ffff: ingress
 	run_tc filter add dev $device parent ffff: protocol ip prio 50 u32 match ip src 0.0.0.0/0 police rate ${inband} burst 10k drop flowid :1
-	eval $(chain_base $device)_devnum=$devnum
-	devnum=$(($devnum + 1))
+	devnum=$(($devnum + 1))	
+	eval ${dev}_devnum=$devnum
     }
 
     add_tc_class() {
@@ -1683,7 +1687,9 @@ setup_traffic_shaping()
 		;;
 	esac
 
-	eval devnum=\$$(chain_base $device)_devnum
+	dev=$(chain_base $device)
+	eval devnum=\$${dev}_devnum
+	eval mtu=\$${dev}_mtu
 	#
 	# Convert HEX/OCTAL mark representation to decimal
 	#
@@ -1693,7 +1699,7 @@ setup_traffic_shaping()
 
 	[ -n "$devnum" ] || fatal_error "Device $device not defined in $devfile"
 
-	run_tc class add dev $device parent $devnum:1 classid $classid htb rate $rate ceil $ceil prio $prio quantum $(calculate_quantum $rate)
+	run_tc class add dev $device parent $devnum:1 classid $classid htb rate $rate ceil $ceil prio $prio mtu $mtu quantum $(calculate_quantum $rate)
 	run_tc qdisc add dev $device parent $classid handle 1$mark: sfq perturb 10
 	# add filters
 	if [ -n "$CLASSIFY_TARGET" ]; then
@@ -1732,9 +1738,9 @@ setup_traffic_shaping()
 	[ $COMMAND = compile ] && save_progress_message "Setting up Traffic Control..."
 	progress_message2 "$DOING $devfile..."
 
-	while read device inband outband defmark ackmark; do
-	    expandv device inband outband defmark ackmark
-	    tcdev="$device $inband $outband"
+	while read device inband outband mtu; do
+	    expandv device inband outband mtu
+	    tcdev="$device $inband $outband $mtu"
 	    add_root_tc
 	    progress_message_and_save "   TC Device $tcdev defined."
 	done < $TMP_DIR/tcdevices

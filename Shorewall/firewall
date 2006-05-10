@@ -1743,17 +1743,16 @@ check_disabled_startup() {
 }
 
 #
-# tc4shorewall uses this function to report progress
-#
-progress_message_and_save()
-{
-    progress_message $@
-}
-
-#
 # Refresh queuing and classes
 #
 refresh_tc() {
+    #
+    # tc4shorewall (setup_traffic_shaping()) uses this function to report progress
+    #
+    progress_message_and_save()
+    {
+	progress_message $@
+    }
 
     echo "Refreshing Traffic Control Rules..."
 

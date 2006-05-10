@@ -608,7 +608,7 @@ start_command() {
 		echo Restoring Shorewall...
 		$RESTOREPATH restore
 		date > /var/lib/shorewall/restarted
-		echo Shorewall restored from $RESTOREPATH
+		progress_message3 Shorewall restored from $RESTOREPATH
 	    else
 		do_it
 	    fi
@@ -1279,7 +1279,7 @@ restore_command() {
 	fi
 
 	progress_message3 "Restoring Shorewall..."
-	$RESTOREPATH restore && echo "Shorewall restored from /var/lib/shorewall/$RESTOREFILE"
+	$RESTOREPATH restore && progress_message3 "Shorewall restored from /var/lib/shorewall/$RESTOREFILE"
 	[ -n "$nolock" ] || mutex_off
     else
 	echo "File /var/lib/shorewall/$RESTOREFILE: file not found"

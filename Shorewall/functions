@@ -1529,7 +1529,7 @@ get_device_mtu() # $1 = device
 #
 setup_traffic_shaping()
 {
-    local mtu r2q tc_all_devices device mark rate ceil prio options devfile=$(find_file tcdevices) classfile=$(find_file tcclasses) devnum=1
+    local mtu r2q tc_all_devices device mark rate ceil prio options devfile=$(find_file tcdevices) classfile=$(find_file tcclasses) devnum=1 last_device=
     r2q=10
 
     rate_to_kbit() {
@@ -1676,7 +1676,8 @@ setup_traffic_shaping()
 	run_tc qdisc add dev $device root handle $devnum: htb default 1$defmark
 
 	if [ $COMMAND = compile ]; then
-	    run_tc "class add dev $device parent $devnum: classid $devnum:1 htb rate $outband mtu \$(get_device_mtu $device)"
+	    save_command "${dev}_mtu=\$(get_device_mtu $device)"
+	    run_tc "class add dev $device parent $devnum: classid $devnum:1 htb rate $outband mtu \$${dev}_mtu"
 	else
 	    run_tc class add dev $device parent $devnum: classid $devnum:1 htb rate $outband mtu $(get_device_mtu $device)
 	fi
@@ -1724,11 +1725,10 @@ setup_traffic_shaping()
 	quantum=$(calculate_quantum $rate)
 
 	if [ $COMMAND = compile ]; then
-	    save_command "mtu=\$(get_device_mtu $device)"
-	    save_command "[ \$mtu -gt $quantum ] && quantum=\$mtu || quantum=$quantum" 
-	    run_tc "class add dev $device parent $devnum:1 classid $classid htb rate $rate ceil $ceil prio $prio mtu \$mtu quantum \$quantum"
+	    save_command "[ \$${dev}_mtu -gt $quantum ] && quantum=\$${dev}_mtu || quantum=$quantum" 
+	    run_tc "class add dev $device parent $devnum:1 classid $classid htb rate $rate ceil $ceil prio $prio mtu \$${dev}_mtu quantum \$quantum"
 	else
-	    mtu= $(get_device_mtu $device)
+	    [ "$last_device" = $device ] || mtu=$(get_device_mtu $device)
 	    [ $mtu -gt $quantum ] && quantum=$mtu
 	    run_tc class add dev $device parent $devnum:1 classid $classid htb rate $rate ceil $ceil prio $prio mtu $mtu quantum $quantum
 	fi
@@ -1788,6 +1788,7 @@ setup_traffic_shaping()
 	    options=$(separate_list $options | tr '[A-Z]' '[a-z]')
 	    add_tc_class
 	    progress_message_and_save "   TC Class $tcdev defined."
+	    last_device=$device
 	done < $TMP_DIR/tcclasses
     fi
 }

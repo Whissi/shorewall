@@ -619,6 +619,9 @@ strip_file() # $1 = Base Name of the file, $2 = Full Name of File (optional)
 #        the IP address is 128.0.0.0 or 128.0.0.1.
 #
 
+LEFTSHIFT='<<'
+
+
 #
 # Convert an IP address in dot quad format to an integer
 #
@@ -630,7 +633,7 @@ decodeaddr() {
     IFS=.
 
     for x in $1; do
-	temp=$(( $(( $temp << 8 )) | $x ))
+	temp=$(( $(( $temp $LEFTSHIFT 8 )) | $x ))
     done
 
     echo $temp
@@ -742,7 +745,7 @@ ip_range_explicit() {
 ip_netmask() {
     local vlsm=${1#*/}
 
-    [ $vlsm -eq 0 ] && echo 0 || echo $(( -1 << $(( 32 - $vlsm )) ))
+    [ $vlsm -eq 0 ] && echo 0 || echo $(( -1 $LEFTSHIFT $(( 32 - $vlsm )) ))
 }
 
 #
@@ -763,7 +766,7 @@ ip_network() {
 ip_broadcast() {
     local x=$(( 32 - ${1#*/} ))
 
-    [ $x -eq 0 ] && echo -1 || echo $(( $(( 1 << $x )) - 1 ))
+    [ $x -eq 0 ] && echo -1 || echo $(( $(( 1 $LEFTSHIFT $x )) - 1 ))
 }
 
 #
@@ -796,7 +799,7 @@ ip_vlsm() {
     local x=$(( 128 << 24 )) # 0x80000000
 
     while [ $(( $x & $mask )) -ne 0 ]; do
-	[ $mask -eq $x ] && mask=0 || mask=$(( $mask << 1 )) # Not all shells shift 0x80000000 left properly.
+	[ $mask -eq $x ] && mask=0 || mask=$(( $mask $LEFTSHIFT 1 )) # Not all shells shift 0x80000000 left properly.
 	vlsm=$(($vlsm + 1))
     done
 
@@ -1446,7 +1449,7 @@ log_rule_limit() # $1 = log level, $2 = chain, $3 = display Chain $4 = dispositi
 	    run_iptables $command $chain $@ $limit -j ULOG $LOGPARMS --ulog-prefix "$prefix"
 	    ;;
 	*)
-	    run_iptables $command $chain $@ $limit -j LOG $LOGPARMS --log-level $level --log-prefix "$prefix"
+	    run_iptables $command $chain $@ $limit -j LOG $LOGPARMS --log-level $level --log-prefix "$prefix" 
 	    ;;
     esac
 
@@ -1660,8 +1663,8 @@ setup_traffic_shaping()
 	run_tc class add dev $device parent $devnum: classid $devnum:1 htb rate $outband mtu $mtu
 	run_tc qdisc add dev $device handle ffff: ingress
 	run_tc filter add dev $device parent ffff: protocol ip prio 50 u32 match ip src 0.0.0.0/0 police rate ${inband} burst 10k drop flowid :1
-	devnum=$(($devnum + 1))	
 	eval ${dev}_devnum=$devnum
+	devnum=$(($devnum + 1))	
     }
 
     add_tc_class() {

@@ -979,6 +979,17 @@ find_gateway() {
 }
 
 #
+# Find the value 'mtu' in the passed arguments then echo the next value
+#
+
+find_mtu() {
+    while [ $# -gt 1 ]; do
+	[ "x$1" = xmtu ] && echo $2 && return
+	shift
+    done
+}
+
+#
 # Find the value 'peer' in the passed arguments then echo the next value up to
 # "/"
 #
@@ -1500,6 +1511,20 @@ verify_mark() # $1 = value to test
 }
 
 #
+# Detect a device's MTU
+#
+get_device_mtu() # $1 = device
+{
+    local output=$(ip link ls dev $1 2> /dev/null)
+
+    if [ -n "$output" ]; then
+	echo $(find_mtu $output)
+    else
+	echo 1500
+    fi
+}
+
+#
 # Arne Bernin's 'tc4shorewall'
 #
 setup_traffic_shaping()
@@ -1534,15 +1559,8 @@ setup_traffic_shaping()
     }
 
     calculate_quantum() {
-	local rate
-	rate=$1
-	rate=$(rate_to_kbit $rate)
-	rate=$(expr $rate \* 128 / $r2q )
-	if [ $rate -lt $mtu ] ; then
-	    echo $mtu
-	else
-	    echo $rate
-	fi
+	local rate=$(rate_to_kbit $1)
+	echo $(( $rate * ( 128 / $r2q ) ))
     }
 
     # get given outbandwidth for device
@@ -1655,12 +1673,14 @@ setup_traffic_shaping()
 	    save_command qt tc qdisc del dev $device ingress
 	fi
 
-	[ x${mtu:--} = x- ] && mtu=1500
-	
-	eval ${dev}_mtu=$mtu
-	
 	run_tc qdisc add dev $device root handle $devnum: htb default 1$defmark
-	run_tc class add dev $device parent $devnum: classid $devnum:1 htb rate $outband mtu $mtu
+
+	if [ $COMMAND = compile ]; then
+	    run_tc "class add dev $device parent $devnum: classid $devnum:1 htb rate $outband mtu \$(get_device_mtu $device)"
+	else
+	    run_tc class add dev $device parent $devnum: classid $devnum:1 htb rate $outband mtu $(get_device_mtu $device)
+	fi
+
 	run_tc qdisc add dev $device handle ffff: ingress
 	run_tc filter add dev $device parent ffff: protocol ip prio 50 u32 match ip src 0.0.0.0/0 police rate ${inband} burst 10k drop flowid :1
 	eval ${dev}_devnum=$devnum
@@ -1668,7 +1688,7 @@ setup_traffic_shaping()
     }
 
     add_tc_class() {
-	local full classid tospair tosmask
+	local full classid tospair tosmask quantum
 	full=$(get_outband_for_dev $device)
 	full=$(rate_to_kbit $full)
 
@@ -1692,7 +1712,6 @@ setup_traffic_shaping()
 
 	dev=$(chain_base $device)
 	eval devnum=\$${dev}_devnum
-	eval mtu=\$${dev}_mtu
 	#
 	# Convert HEX/OCTAL mark representation to decimal
 	#
@@ -1702,7 +1721,18 @@ setup_traffic_shaping()
 
 	[ -n "$devnum" ] || fatal_error "Device $device not defined in $devfile"
 
-	run_tc class add dev $device parent $devnum:1 classid $classid htb rate $rate ceil $ceil prio $prio mtu $mtu quantum $(calculate_quantum $rate)
+	quantum=$(calculate_quantum $rate)
+
+	if [ $COMMAND = compile ]; then
+	    save_command "mtu=\$(get_device_mtu $device)"
+	    save_command "[ \$mtu -gt $quantum ] && quantum=\$mtu || quantum=$quantum" 
+	    run_tc "class add dev $device parent $devnum:1 classid $classid htb rate $rate ceil $ceil prio $prio mtu \$mtu quantum \$quantum"
+	else
+	    mtu= $(get_device_mtu $device)
+	    [ $mtu -gt $quantum ] && quantum=$mtu
+	    run_tc class add dev $device parent $devnum:1 classid $classid htb rate $rate ceil $ceil prio $prio mtu $mtu quantum $quantum
+	fi
+
 	run_tc qdisc add dev $device parent $classid handle 1$mark: sfq perturb 10
 	# add filters
 	if [ -n "$CLASSIFY_TARGET" ]; then
@@ -1741,9 +1771,9 @@ setup_traffic_shaping()
 	[ $COMMAND = compile ] && save_progress_message "Setting up Traffic Control..."
 	progress_message2 "$DOING $devfile..."
 
-	while read device inband outband mtu; do
-	    expandv device inband outband mtu
-	    tcdev="$device $inband $outband $mtu"
+	while read device inband outband; do
+	    expandv device inband outband
+	    tcdev="$device $inband $outband"
 	    add_root_tc
 	    progress_message_and_save "   TC Device $tcdev defined."
 	done < $TMP_DIR/tcdevices

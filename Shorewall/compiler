@@ -8263,7 +8263,7 @@ __EOF__
 
     INDENT="    "
 
-cat >&3 << __EOF__
+    cat >&3 << __EOF__
 
     load_kernel_modules
 
@@ -8351,7 +8351,7 @@ __EOF__
     fi
 
     for file in chains nat proxyarp zones; do
-	save_command "cat > /var/lib/shorewall/$file << __EOF__"
+	save_command "cat > /var/lib/shorewall/$file $LEFTSHIFT __EOF__"
 	cat $STATEDIR/$file >&3
 	save_command_unindented __EOF__
     done
@@ -8431,7 +8431,7 @@ __EOF__
     exec 3>&-
 
     if [ $COMMAND = check ]; then
-	echo "Shorewall configuration verified"
+	progress_message3 "Shorewall configuration verified"
     else
 	INDENT=
 	cat $(find_file prog.header${DISTRIBUTION}) $OUTPUT $(find_file prog.footer${DISTRIBUTION}) > $outfile

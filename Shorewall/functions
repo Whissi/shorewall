@@ -1515,7 +1515,7 @@ verify_mark() # $1 = value to test
 #
 get_device_mtu() # $1 = device
 {
-    local output=$(ip link ls dev $1 2> /dev/null)
+    local output="$(ip link ls dev $1 2> /dev/null)" # quotes required for /bin/ash
 
     if [ -n "$output" ]; then
 	echo $(find_mtu $output)

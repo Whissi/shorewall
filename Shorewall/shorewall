@@ -158,12 +158,12 @@ showchain() # $1 = name of chain
 iptablesbug()
 {
     if qt mywhich awk ; then
-	awk 'BEGIN           {sline=""; };\
+	awk 'BEGIN           { sline=""; };\
              /^-j/           { print sline $0; next };\
              /-m policy.*-j/ { print $0; next };\
              /-m policy/     { sline=$0; next };\
              /--mask ff/     { sub( /--mask ff/, "--mask 0xff" ) };\
-                             {print ; sline="" }'
+                             { print ; sline="" }'
     else
 	echo "   WARNING: You don't have 'awk' on this system so the output of the save command may be unusable" >&2
 	cat
@@ -832,7 +832,7 @@ restart_command() {
     progress_message3 "Compiling..."
 
     if $SHOREWALL_SHELL /usr/share/shorewall/compiler $debugging $nolock compile /var/lib/shorewall/.restart; then
-	/var/lib/shorewall/.restart restart
+	$SHOREWALL_SHELL /var/lib/shorewall/.restart restart
     fi
 
     [ -n "$nolock" ] || mutex_off
@@ -1275,11 +1275,11 @@ restore_command() {
 	    echo Restoring Ipsets...
 	    iptables -F
 	    iptables -X
-	    ${RESTOREPATH}-ipsets
+	    $SHOREWALL_SHELL ${RESTOREPATH}-ipsets
 	fi
 
 	progress_message3 "Restoring Shorewall..."
-	$RESTOREPATH restore && progress_message3 "Shorewall restored from /var/lib/shorewall/$RESTOREFILE"
+	$SHOREWALL_SHELL $RESTOREPATH restore && progress_message3 "Shorewall restored from /var/lib/shorewall/$RESTOREFILE"
 	[ -n "$nolock" ] || mutex_off
     else
 	echo "File /var/lib/shorewall/$RESTOREFILE: file not found"

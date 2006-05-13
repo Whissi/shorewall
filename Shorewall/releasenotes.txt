@@ -36,6 +36,17 @@ Problems Corrected in 3.2.0 Beta 7
     compilation but used the default shell for executing the compiled
     script. "shorewall restore" also used the default shell.
 
+3)  If the 'upnp' interface option was specified on one or more
+    interfaces but no forwardUPnP rule was included, the following
+    diagnostic messages were issued:
+
+        WARNING:Missing forwardUPnP rule (required by 'upnp' interface option on eth0)
+	ERROR: Fatal error in find_logactionchain
+    
+    Given that the fatal error message is obscure if the first WARNING
+    isn't noticed, the ERROR message has been eliminated with the
+    result that Shorewall now starts but won't handle UPnP properly.
+
 Other changes in 3.2.0 Beta 7
 
 1)  'shorewall refresh' once again refreshes the tcrules and traffic shaping.

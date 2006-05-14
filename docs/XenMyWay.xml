@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2006-05-08</pubdate>
+    <pubdate>2006-05-12</pubdate>
 
     <copyright>
       <year>2006</year>
@@ -99,7 +99,8 @@
       </listitem>
     </orderedlist>
 
-    <para>All of the Linux systems run SuSE 10.0 or SuSE 10.1 Beta.</para>
+    <para>Most of the Linux systems run SuSE 10.0 or SuSE 10.1 Beta; my
+    personal Linux desktop system runs Ubuntu "Breezy Badger".</para>
 
     <para>If you are unfamiliar with Xen networking, I recommend that you read
     the first section of the companion <ulink url="Xen.html">Xen and
@@ -785,7 +786,8 @@ $EXT_IF         30      6*full/10       6*full/10       3
 #                                                       PORT(S)
 1:110   192.168.0.0/22  $EXT_IF                                         #Our internel nets get priority
                                                                         #over the server
-1:130   206.124.146.177 $EXT_IF         tcp     -       873
+1:130   206.124.146.177 $EXT_IF         tcp     -       873             #Throttle rsync traffic to the
+                                                                        #Shorewall Mirrors.
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE</programlisting></para>
       </blockquote>
     </section>

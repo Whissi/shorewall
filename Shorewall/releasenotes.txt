@@ -47,6 +47,17 @@ Problems Corrected in 3.2.0 Beta 7
     isn't noticed, the ERROR message has been eliminated with the
     result that Shorewall now starts but won't handle UPnP properly.
 
+4)  If BRIDGING=No in shorewall.conf, then an entry in
+    /etc/shorewall/hosts such as the following would result in an
+    obscure failure of an iptables command:
+
+    loc   br0:eth0
+
+    Shorewall now detects this case and issues a more helpful error
+    message:
+
+    ERROR: BRIDGING=Yes is required for this zone definition: loc br0:eth0  
+
 Other changes in 3.2.0 Beta 7
 
 1)  'shorewall refresh' once again refreshes the tcrules and traffic shaping.

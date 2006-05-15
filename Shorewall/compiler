@@ -1466,9 +1466,9 @@ validate_hosts_file() {
 			   fatal_error "Bridged interfaces may not be defined in /etc/shorewall/interfaces: $host"
 		       check_bridge_port ${host%%:*}
 		       ;;
-		   *.*.*.*)
+		   *.*.*)
 		       ;;
-		   +*)
+		   *+|+*)
 		       eval ${z}_is_complex=Yes
 		       ;;
 		   *)
@@ -1479,8 +1479,13 @@ validate_hosts_file() {
 	       esac
 	   else
 	       case $host in
+		   *.*.*)
+		       ;;
 		   *+)
 		       eval ${z}_is_complex=Yes
+		       ;;
+		   *)
+		       fatal_error "BRIDGING=Yes is needed for this zone definition: $r"
 		       ;;
 	       esac
 	   fi

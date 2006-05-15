@@ -1,4 +1,4 @@
-Shorewall 3.2.0 Beta 7
+Shorewall 3.2.0 Beta 8
 
 Note to users upgrading from Shorewall 2.x or 3.0
 
@@ -27,27 +27,9 @@ Note to users upgrading from Shorewall 2.x or 3.0
    Please see the "Migration Considerations" below for additional upgrade
    information.
 
-Problems Corrected in 3.2.0 Beta 7
+Problems Corrected in 3.2.0 Beta 8
 
-1)  Previously, if 'ash' was used as the SHOREWALL_SHELL then any use of
-    packet marks would fail.
-
-2)  Previously, "shorewall restart" used SHOREWALL_SHELL for
-    compilation but used the default shell for executing the compiled
-    script. "shorewall restore" also used the default shell.
-
-3)  If the 'upnp' interface option was specified on one or more
-    interfaces but no forwardUPnP rule was included, the following
-    diagnostic messages were issued:
-
-        WARNING:Missing forwardUPnP rule (required by 'upnp' interface option on eth0)
-	ERROR: Fatal error in find_logactionchain
-    
-    Given that the fatal error message is obscure if the first WARNING
-    isn't noticed, the ERROR message has been eliminated with the
-    result that Shorewall now starts but won't handle UPnP properly.
-
-4)  If BRIDGING=No in shorewall.conf, then an entry in
+1)  If BRIDGING=No in shorewall.conf, then an entry in
     /etc/shorewall/hosts such as the following would result in an
     obscure failure of an iptables command:
 
@@ -59,12 +41,6 @@ Problems Corrected in 3.2.0 Beta 7
     ERROR: BRIDGING=Yes is required for this zone definition: loc br0:eth0  
 
 Other changes in 3.2.0 Beta 7
-
-1)  'shorewall refresh' once again refreshes the tcrules and traffic shaping.
-
-2)  Shorewall will now attempt to detect the MTU of devices listed in
-    /etc/shorewall/tcdevices and will use the detected MTU in setting
-    up traffic shaping.
 
 Migration Considerations:
 
@@ -577,3 +553,8 @@ New Features:
 
     b)  When HIGH_ROUTE_MARKS=Yes, you can still clear the mark on packets
 	in the PREROUTING chain (i.e., you can specify a mark value of zero).
+
+14) Shorewall will now attempt to detect the MTU of devices listed in
+    /etc/shorewall/tcdevices and will use the detected MTU in setting
+    up traffic shaping.
+

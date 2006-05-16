@@ -130,12 +130,47 @@ dmz                    Demilitarized Zone</programlisting>
     <para>Zones are declared and given a type in the <ulink
     url="Documentation.htm#Zones"><filename
     class="directory">/etc/shorewall/</filename><filename>zones</filename></ulink>
-    file.</para>
+    file.Here is the <ulink url="Documentation.htm#Zones"><filename
+    class="directory">/etc/shorewall/</filename><filename>zones</filename></ulink>
+    file from the three-interface sample:</para>
+
+    <programlisting>#ZONE   TYPE    OPTIONS                 IN                      OUT
+#                                       OPTIONS                 OPTIONS
+fw      firewall
+net     ipv4
+loc     ipv4
+dmz     ipv4
+#LAST LINE - ADD YOUR ENTRIES ABOVE THIS ONE - DO NOT REMOVE</programlisting>
 
     <para>Note that Shorewall recognizes the firewall system as its own zone.
-    The name of the zone designating the firewall itself is stored in the
-    shell variable $<firstterm>FW</firstterm> which may be used throughout the
-    Shorewall configuration to refer to the firewall zone.</para>
+    The name of the zone designating the firewall itself (usually 'fw' as
+    shown in the above file) is stored in the shell variable
+    $<firstterm>FW</firstterm> which may be used throughout the Shorewall
+    configuration to refer to the firewall zone.</para>
+
+    <para>The simplest way to define the hosts in a zone is to associate the
+    zone with a network interface using the <ulink
+    url="Documentation.htm#Interfaces"><filename>/etc/shorewall/interfaces</filename></ulink>
+    file. In the three-interface sample, the three zones are defined using
+    that file as follows:</para>
+
+    <programlisting>#ZONE      INTERFACE     BROADCAST     OPTIONS
+net        eth0          detect        dhcp,routefilter,norfc1918
+loc        eth1          detect
+dmz        eth2          detect</programlisting>
+
+    <para>The above file defines the net zone as all IPv4 hosts interfacing to
+    the firewall through eth0, the loc zone as all IPv4 hosts interfacing
+    through eth1 and the dmz as all IPv4 hosts interfacing through eth2. It is
+    important to note that the composition of a zone is defined in terms of a
+    combination of addresses <emphasis role="bold">and</emphasis> interfaces.
+    When using the <ulink
+    url="Documentation.htm#Interfaces"><filename>/etc/shorewall/interfaces</filename></ulink>
+    file to define a zone, all addresses are included; when you want to define
+    a zone that contains a limited subset of the IPv4 address space, you use
+    the <ulink
+    url="Documentation.htm#Hosts"><filename>/etc/shorewall/hosts</filename></ulink>
+    file.</para>
 
     <para>Rules about what traffic to allow and what traffic to deny are
     expressed in terms of zones. <itemizedlist spacing="compact">
@@ -231,21 +266,6 @@ $FW        net         ACCEPT</programlisting> The above policy will:
           <emphasis>info</emphasis> syslog priority (log level).</para>
         </listitem>
       </itemizedlist></para>
-
-    <para>The simplest way to define the hosts in a zone is to associate the
-    zone with a network interface using the <ulink
-    url="Documentation.htm#Interfaces"><filename>/etc/shorewall/interfaces</filename></ulink>
-    file. In the three-interface sample, the three zones are defined using
-    that file as follows:</para>
-
-    <programlisting>#ZONE      INTERFACE     BROADCAST     OPTIONS
-net        eth0          detect        dhcp,routefilter,norfc1918
-loc        eth1          detect
-dmz        eth2          detect</programlisting>
-
-    <para>The above file defines the net zone as all hosts interfacing to the
-    firewall through eth0, the loc zone as all hosts interfacing through eth1
-    and the dmz as all hosts interfacing through eth2.</para>
 
     <para>To illustrate how rules provide exceptions to policies, suppose that
     you have the polcies listed above but you want to be able to connect to

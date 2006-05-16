@@ -86,7 +86,7 @@ progress_message_and_save()
 }
 
 #
-# Indent and echo the contents of the passed file by $INDENT
+# Echo the contents of the passed file indented by $INDENT
 #
 indent() {
     if [ -n "$INDENT" ]; then
@@ -140,6 +140,9 @@ run_iptables() {
 #
 run_iptables2() {
     if [ -z "$KLUDGEFREE" ]; then
+	#
+	# Purge the temporary files that we use to prevent duplicate '-m' specifications
+	#
 	[ -n "$BRIDGING" ]      && [ -f $TMP_DIR/physdev ] && rm -f $TMP_DIR/physdev
 	[ -n "$IPRANGE_MATCH" ] && [ -f $TMP_DIR/iprange ] && rm -f $TMP_DIR/iprange
     fi
@@ -939,7 +942,7 @@ interface_has_option() # $1 = interface, #2 = option
 }
 
 #
-# Determine the defined hosts in each zone and generate report
+# Determine the defined hosts in each zone
 #
 determine_hosts() {
     for zone in $ZONES; do

@@ -17,7 +17,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2006-03-14</pubdate>
+    <pubdate>2006-05-18</pubdate>
 
     <copyright>
       <year>2001-2006</year>
@@ -237,6 +237,17 @@ DNAT    net    loc:&lt;l<emphasis>ocal IP address</emphasis>&gt;[:&lt;<emphasis>
                 problem.</para>
               </listitem>
             </itemizedlist>
+          </listitem>
+
+          <listitem>
+            <para>If the packet count is non-zero, check your log to see if
+            the connection is being dropped or rejected. If it is, then you
+            may have a zone definition problem such that the server is in a
+            different zone than what is specified in the DEST column. At a
+            root promt, type "<command>shorewall show zones</command>" then be
+            sure that you have specified in the DEST column the first zone in
+            the list that matches the OUT=&lt;dev&gt; and the DEST=
+            &lt;ip&gt;from the REJECT/DROP log message.</para>
           </listitem>
         </itemizedlist>
       </section>

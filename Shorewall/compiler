@@ -5559,6 +5559,10 @@ process_rules()
 		xclients=all
 		intrazone=Yes
 		;;
+	    all+-|all-+)
+		xclients=all-
+		intrazone=Yes
+		;;
 	esac
 
 	case $xservers in
@@ -5566,22 +5570,34 @@ process_rules()
 		xservers=all
 		intrazone=Yes
 		;;
+	    all+-|all-+)
+		xservers=all-
+		intrazone=Yes
+		;;
 	esac
 
-	if [ "x$xclients" = xall ]; then
-	    xclients="$ZONES $FW"
-	    if [ "x$xservers" = xall ]; then
-		xservers="$ZONES $FW"
-	    fi
-	    process_wildcard_rule "$1" $intrazone
-	    return
-	fi
+	case $xclients in
+	    all|all-)
+		[ $xclients = all ] && xclients="$ZONES $FW" || xclients="$ZONES"
 
-	if [ "x$xservers" = xall ]; then
-	    xservers="$ZONES $FW"
-	    process_wildcard_rule "$1" $intrazone
-	    return
-	fi
+		if [ "x$xservers" = xall ]; then
+		    xservers="$ZONES $FW"
+		elif [ "x$xservers" = xall- ]; then
+		    xservers="$ZONES"
+		fi
+
+		process_wildcard_rule "$1" $intrazone
+		return
+		;;
+	esac	
+
+	case $xservers in
+	    all|all-)
+		xservers="$ZONES $FW"
+		process_wildcard_rule "$1" $intrazone
+		return
+		;;
+	esac
 
 	if [ "$1" = Yes ]; then
 	    process_macro $xtarget "$xparam" $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec

@@ -80,7 +80,6 @@ fi
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/routestopped
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/maclist
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/masq
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/modules
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/tcrules
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/tos
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/tunnels
@@ -166,6 +165,7 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/macro.Web
 %attr(0644,root,root) /usr/share/shorewall/macro.Webmin
 %attr(0644,root,root) /usr/share/shorewall/macro.Whois
+%attr(0644,root,root) /usr/share/shorewall/modules
 %attr(0644,root,root) /usr/share/shorewall/prog.footer
 %attr(0644,root,root) /usr/share/shorewall/prog.header
 %attr(0644,root,root) /usr/share/shorewall/prog.footer.debian
@@ -176,6 +176,7 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/prog.header.suse
 %attr(0644,root,root) /usr/share/shorewall/rfc1918
 %attr(0644,root,root) /usr/share/shorewall/configpath
+%attr(0644,root,root) /usr/share/shorewall/xmodules
 
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel ipsecvpn Samples
 

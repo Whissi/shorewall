@@ -389,12 +389,18 @@ if [ ! -f ${PREFIX}/etc/shorewall/masq ]; then
     echo "Masquerade file installed as ${PREFIX}/etc/shorewall/masq"
 fi
 #
-# Install the Modules file
+# Install the Modules files
 #
-if [ ! -f ${PREFIX}/etc/shorewall/modules ]; then
-    run_install $OWNERSHIP -m 0600 modules ${PREFIX}/etc/shorewall/modules
-    echo "Modules file installed as ${PREFIX}/etc/shorewall/modules"
+if [ ! -f ${PREFIX}/usr/share/shorewall/modules ]; then
+    run_install $OWNERSHIP -m 0600 modules ${PREFIX}/usr/share/shorewall/modules
+    echo "Modules file installed as ${PREFIX}/usr/share/shorewall/modules"
 fi
+
+if [ ! -f ${PREFIX}/usr/share/shorewall/xmodules ]; then
+    run_install $OWNERSHIP -m 0600 modules ${PREFIX}/usr/share/shorewall/xmodules
+    echo "Xmodules file installed as ${PREFIX}/usr/share/shorewall/xmodules"
+fi
+
 #
 # Install the TC Rules file
 #

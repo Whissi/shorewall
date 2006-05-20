@@ -24,6 +24,10 @@ Note to users upgrading from Shorewall 2.x or 3.0
 	172.16.0.0 - 172.31.255.255
 	192.168.0.0 - 192.168.255.255
 
+   If you have a file named /etc/shorewall/modules, please remove
+   it. The default modules file is now located in /usr/share/shorewall/
+   (see the "Migration Considerations" below).
+
    Please see the "Migration Considerations" below for additional upgrade
    information.
 
@@ -46,6 +50,21 @@ Other changes in 3.2.0 Beta 8
     used for zone names. "all-" means "All zones except the firewall";
     "all+-" means "All zones except the firewall" and intra-zone
     traffic is included.
+
+2)  Kernel version 2.6.16 introduces 'xtables', a new common packet
+    filtering and connection tracking facility that supports both IPv4
+    and IPv6. Because a different set of kernel modules must be loaded
+    for xtables, Shorewall now includes two 'modules' files:
+
+    a) /usr/share/shorewall/modules -- the former
+    /etc/shorewall/modules
+
+    b) /usr/share/shorewall/xmodules -- a new file that support
+    xtables.
+
+    If you wish to use the new file, then simply execute this command:
+
+    cp -f /usr/share/shorewall/xmodules /etc/modules
 
 Migration Considerations:
 
@@ -146,6 +165,21 @@ Migration Considerations:
 
     b)  When HIGH_ROUTE_MARKS=Yes, you can still clear the mark on packets
 	in the PREROUTING chain (i.e., you can specify a mark value of zero).
+
+7)  Kernel version 2.6.16 introduces 'xtables', a new common packet
+    filtering and connection tracking facility that supports both IPv4
+    and IPv6. Because a different set of kernel modules must be loaded
+    for xtables, Shorewall now includes two 'modules' files:
+
+    a) /usr/share/shorewall/modules -- the former
+    /etc/shorewall/modules
+
+    b) /usr/share/shorewall/xmodules -- a new file that support
+    xtables.
+
+    If you wish to use the new file, then simply execute this command:
+
+    cp -f /usr/share/shorewall/xmodules /etc/modules
 
 New Features:
 
@@ -395,6 +429,21 @@ New Features:
 
     As part of this change, Shorewall no longer adds the "--syn" option
     to TCP rules that specify QUEUE as their target.
+2)  Kernel version 2.6.16 introduces 'xtables', a new common packet
+    filtering and connection tracking facility that supports both IPv4
+    and IPv6. Because a different set of kernel modules must be loaded
+    for xtables, Shorewall now includes two 'modules' files:
+
+    a) /usr/share/shorewall/modules -- the former
+    /etc/shorewall/modules
+
+    b) /usr/share/shorewall/xmodules -- a new file that support
+    xtables.
+
+    If you wish to use the new file, then simply execute this command:
+
+    cp -f /usr/share/shorewall/xmodules /etc/modules
+
 
 6)  /sbin/shorewall now supports a "-t" option that causes all progress
     messages to be timestamped.

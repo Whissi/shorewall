@@ -375,7 +375,7 @@ loadmodule() # $1 = module name, $2 - * arguments
 	moduleloader=insmod
     fi
 
-    if [ -z "$(lsmod | grep $modulename)" ]; then
+    if ! list_search $modulename $MODULES ; then
 	shift
 
 	for suffix in $MODULE_SUFFIX ; do
@@ -391,7 +391,8 @@ loadmodule() # $1 = module name, $2 - * arguments
 			;;
 		esac
 
-		return
+		MODULES=$(lsmod | cut -d ' ' -f1)
+		break
 	    fi
 	done
     fi
@@ -403,6 +404,7 @@ loadmodule() # $1 = module name, $2 - * arguments
 reload_kernel_modules() {
 
     [ -z "$MODULESDIR" ] && MODULESDIR=/lib/modules/$(uname -r)/kernel/net/ipv4/netfilter
+    MODULES=$(lsmod | cut -d ' ' -f1)
 
     while read command; do
 	eval $command
@@ -423,6 +425,7 @@ load_kernel_modules()
     modules=$(find_file modules)
 
     if [ -f $modules -a -d $MODULESDIR ]; then
+	MODULES=$(lsmod | cut -d ' ' -f1)
 	progress_message "Loading Modules..."
 	. $modules
     fi

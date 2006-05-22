@@ -302,7 +302,16 @@
           only once in this file. You may NOT specify the name of an alias
           (e.g., eth0:0) here; see <ulink url="FAQ.htm#faq18">FAQ #18</ulink>.
           You man NOT specify wildcards here, e.g. if you have multiple ppp
-          interfaces, you need to put them all in here!</para>
+          interfaces, you need to put them all in here! With Shorewall
+          versions prior to 3.0.8 and 3.2.0 Beta 8, the device named in this
+          column must exist at the time that Shorewall is started, restarted
+          or refreshed. Beginning with Shorewall 3.0.8 and 3.2.0 Beta 8,
+          Shorewall will determine if the device exists and will only
+          configure the device if it exists. If it doesn't exist, the
+          following warning is issued:</para>
+
+          <para><emphasis role="bold">WARNING: Device &lt;device name&gt; not
+          found -- traffic-shaping configuration skipped</emphasis></para>
         </listitem>
 
         <listitem>

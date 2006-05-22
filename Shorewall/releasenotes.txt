@@ -66,6 +66,12 @@ Other changes in 3.2.0 Beta 8
 
     cp -f /usr/share/shorewall/xmodules /etc/modules
 
+3)  Shorewall now checks to see if devices in /etc/shorewall/tcdevices 
+    exist. If a device does not exist, a warning message is issued and
+    that device's entries in /etc/shorewall/tcclasses are ignored. This
+    applies to "shorewall start", "shorewall restart" and "shorewall 
+    refresh".
+
 Migration Considerations:
 
 1)  If you are upgrading from Shorewall 2.x, it is essential that you read

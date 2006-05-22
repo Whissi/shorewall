@@ -1667,14 +1667,22 @@ setup_traffic_shaping()
     }
 
     add_root_tc() {
-	local defmark dev
+	local defmark dev indent
+
 	dev=$(chain_base $device)
-	defmark=$(get_defmark_for_dev $device)
 
 	if [ $COMMAND = compile ]; then
+	    save_command "if qt ip link ls dev $device; then"
+	    indent="$INDENT"
+	    INDENT="$INDENT    "
+	    save_command ${dev}_exists=Yes
 	    save_command qt tc qdisc del dev $device root
 	    save_command qt tc qdisc del dev $device ingress
+	else 
+	    qt ip link ls dev $device || return 1
 	fi
+
+	defmark=$(get_defmark_for_dev $device)
 
 	run_tc qdisc add dev $device root handle $devnum: htb default 1$defmark
 
@@ -1688,11 +1696,36 @@ setup_traffic_shaping()
 	run_tc qdisc add dev $device handle ffff: ingress
 	run_tc filter add dev $device parent ffff: protocol ip prio 50 u32 match ip src 0.0.0.0/0 police rate ${inband} burst 10k drop flowid :1
 	eval ${dev}_devnum=$devnum
-	devnum=$(($devnum + 1))	
+	devnum=$(($devnum + 1))
+	
+	if [ $COMMAND = compile ]; then
+	    save_progress_message_short "   TC Device $tcdev defined."
+	    INDENT="$indent"
+	    save_command else
+	    INDENT="$INDENT    "
+	    save_command error_message "\"WARNING: Device $device not found -- traffic-shaping configuration skipped\""
+	    save_command "${dev}_exists="
+	    INDENT="$indent"
+	    save_command "fi"
+	    save_command
+	fi
+
+	return 0
     }
 
     add_tc_class() {
-	local full classid tospair tosmask quantum
+	local full classid tospair tosmask quantum indent
+
+	dev=$(chain_base $device)
+
+	if [ $COMMAND = compile ]; then
+	    save_command "if [ -n \"\$${dev}_exists\" ] ; then"
+	    indent="$INDENT"
+	    INDENT="$INDENT    "
+	else 
+	    qt ip link ls dev $device || return 1
+	fi
+
 	full=$(get_outband_for_dev $device)
 	full=$(rate_to_kbit $full)
 
@@ -1714,7 +1747,6 @@ setup_traffic_shaping()
 		;;
 	esac
 
-	dev=$(chain_base $device)
 	eval devnum=\$${dev}_devnum
 	#
 	# Convert HEX/OCTAL mark representation to decimal
@@ -1762,6 +1794,15 @@ setup_traffic_shaping()
 	    esac
 	    run_tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos ${tospair%%/*} $tosmask flowid $classid
 	done
+
+	if [ $COMMAND = compile ]; then
+	    save_progress_message_short "   TC Class $tcdev defined."
+	    INDENT="$indent"
+	    save_command fi
+	    save_command
+	fi
+
+	return 0
     }
 
     strip_file tcdevices $devfile
@@ -1777,8 +1818,7 @@ setup_traffic_shaping()
 	while read device inband outband; do
 	    expandv device inband outband
 	    tcdev="$device $inband $outband"
-	    add_root_tc
-	    progress_message_and_save "   TC Device $tcdev defined."
+	    add_root_tc && progress_message "   TC Device $tcdev defined."
 	done < $TMP_DIR/tcdevices
     fi
 
@@ -1789,8 +1829,7 @@ setup_traffic_shaping()
 	    expandv device mark rate ceil prio options
 	    tcdev="$device $mark $rate $ceil $prio $options"
 	    options=$(separate_list $options | tr '[A-Z]' '[a-z]')
-	    add_tc_class
-	    progress_message_and_save "   TC Class $tcdev defined."
+	    add_tc_class && progress_message "   TC Class $tcdev defined."
 	    last_device=$device
 	done < $TMP_DIR/tcclasses
     fi

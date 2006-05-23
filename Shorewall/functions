@@ -1678,8 +1678,9 @@ setup_traffic_shaping()
 	    save_command ${dev}_exists=Yes
 	    save_command qt tc qdisc del dev $device root
 	    save_command qt tc qdisc del dev $device ingress
-	else 
-	    qt ip link ls dev $device || return 1
+	elif ! qt ip link ls dev $device; then
+	    error_message "WARNING: Device $device not found -- traffic-shaping configuration skipped"
+	    return 1
 	fi
 
 	defmark=$(get_defmark_for_dev $device)

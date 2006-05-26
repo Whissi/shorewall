@@ -1460,10 +1460,10 @@ log_rule_limit() # $1 = log level, $2 = chain, $3 = display Chain $4 = dispositi
 
     case $level in
 	ULOG)
-	    run_iptables $command $chain $@ $limit -j ULOG $LOGPARMS --ulog-prefix "$prefix"
+	    run_iptables $command $chain $@ $limit -j ULOG $LOGPARMS --ulog-prefix \"$prefix\"
 	    ;;
 	*)
-	    run_iptables $command $chain $@ $limit -j LOG $LOGPARMS --log-level $level --log-prefix "$prefix" 
+	    run_iptables $command $chain $@ $limit -j LOG $LOGPARMS --log-level $level --log-prefix \"$prefix\"
 	    ;;
     esac
 
@@ -1698,7 +1698,7 @@ setup_traffic_shaping()
 	run_tc filter add dev $device parent ffff: protocol ip prio 50 u32 match ip src 0.0.0.0/0 police rate ${inband} burst 10k drop flowid :1
 	eval ${dev}_devnum=$devnum
 	devnum=$(($devnum + 1))
-	
+
 	if [ $COMMAND = compile ]; then
 	    save_progress_message_short "   TC Device $tcdev defined."
 	    INDENT="$indent"
@@ -1723,7 +1723,7 @@ setup_traffic_shaping()
 	    save_command "if [ -n \"\$${dev}_exists\" ] ; then"
 	    indent="$INDENT"
 	    INDENT="$INDENT    "
-	else 
+	else
 	    qt ip link ls dev $device || return 1
 	fi
 
@@ -1761,7 +1761,7 @@ setup_traffic_shaping()
 	quantum=$(calculate_quantum $rate)
 
 	if [ $COMMAND = compile ]; then
-	    save_command "[ \$${dev}_mtu -gt $quantum ] && quantum=\$${dev}_mtu || quantum=$quantum" 
+	    save_command "[ \$${dev}_mtu -gt $quantum ] && quantum=\$${dev}_mtu || quantum=$quantum"
 	    run_tc "class add dev $device parent $devnum:1 classid $classid htb rate $rate ceil $ceil prio $prio mtu \$${dev}_mtu quantum \$quantum"
 	else
 	    [ "$last_device" = $device ] || mtu=$(get_device_mtu $device)

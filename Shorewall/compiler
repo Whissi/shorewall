@@ -5184,6 +5184,10 @@ __EOF__
 	*!*!*)
 	    fatal_error "Invalid SOURCE in rule \"$rule\""
 	    ;;
+	!~*)
+	    excludesource=${clients#!}
+	    clients=
+	    ;;
 	!*)
 	    if [ $(list_count $clients) -gt 1 ]; then
 		excludesource=${clients#!}
@@ -5589,7 +5593,7 @@ process_rules()
 		process_wildcard_rule "$1" $intrazone
 		return
 		;;
-	esac	
+	esac
 
 	case $xservers in
 	    all|all-)

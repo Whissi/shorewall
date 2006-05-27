@@ -3590,6 +3590,10 @@ process_action() # $1 = chain    (Chain to add the rules to)
 	*!*!*)
 	    fatal_error "Invalid SOURCE in rule \"$rule\""
 	    ;;
+	!~*)
+	    excludesource=${clients#!}
+	    clients=
+	    ;;
 	!*)
 	    if [ $(list_count $clients) -gt 1 ]; then
 		excludesource=${clients#!}

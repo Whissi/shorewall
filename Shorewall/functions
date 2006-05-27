@@ -1913,7 +1913,7 @@ process_tc_rule()
 		*.*.*|+*|!+*)
 		    r="$(source_ip_range $source) "
 		    ;;
-		~*)
+		~*|!~*)
 		    r="$(mac_match $source) "
 		    ;;
 		$FW)
@@ -2132,10 +2132,6 @@ process_tc_rule()
     case ${sources:=-} in
 	*!*!*)
 	    fatal_error "Invalid SOURCE in rule \"$rule\""
-	    ;;
-	!~*)
-	    excludesources=${sources#!}
-	    sources=-
 	    ;;
 	!*)
 	    if [ $(list_count $sources) -gt 1 ]; then

@@ -3351,7 +3351,7 @@ add_an_action()
     *.*.*|+*|!+*)
 	cli="$(source_ip_range $client)"
 	;;
-    ~*)
+    ~*|!~*)
 	cli=$(mac_match $client)
 	;;
     *)
@@ -3373,7 +3373,7 @@ add_an_action()
     *.*.*|+*|!+*)
 	serv=$server
 	;;
-    ~*)
+    ~*|!~*)
 	fatal_error "Rule \"$rule\" - Destination may not be specified by MAC Address"
 	;;
     *)
@@ -3589,10 +3589,6 @@ process_action() # $1 = chain    (Chain to add the rules to)
     case ${clients:=-} in
 	*!*!*)
 	    fatal_error "Invalid SOURCE in rule \"$rule\""
-	    ;;
-	!~*)
-	    excludesource=${clients#!}
-	    clients=
 	    ;;
 	!*)
 	    if [ $(list_count $clients) -gt 1 ]; then
@@ -3976,7 +3972,7 @@ merge_macro_source_dest() # $1 = source/dest from macro body, $2 = source/dest f
 	-)
 	    echo ${1}
 	    ;;
-	*.*.*|+*|~*)
+	*.*.*|+*|~*|!~*)
 	    #
 	    # Value in the invocation is an address -- put it behind the value from the macro
 	    #
@@ -4788,7 +4784,7 @@ process_rule() # $1 = target
 	    *.*.*|+*)
 		cli="$(source_ip_range $client)"
 		;;
-	    ~*)
+	    ~*|!~*)
 		cli=$(mac_match $client)
 		;;
 	    *)
@@ -4810,7 +4806,7 @@ process_rule() # $1 = target
 	    *.*.*|+*)
 		serv=$server
 		;;
-	    ~*)
+	    ~*|!~*)
 		fatal_error "Rule \"$rule\" - Destination may not be specified by MAC Address"
 		;;
 	    *)
@@ -5187,10 +5183,6 @@ __EOF__
     case $clients in
 	*!*!*)
 	    fatal_error "Invalid SOURCE in rule \"$rule\""
-	    ;;
-	!~*)
-	    excludesource=${clients#!}
-	    clients=
 	    ;;
 	!*)
 	    if [ $(list_count $clients) -gt 1 ]; then
@@ -5750,7 +5742,7 @@ process_tos_rule() {
 	    #
 	    src="$(source_ip_range $src)"
 	    ;;
-	~*)
+	~*|!~*)
 	    src=$(mac_match $src)
 	    ;;
 	*)
@@ -6552,7 +6544,7 @@ process_blacklist_rec() {
 	    -)
 		source=
 		;;
-	    ~*)
+	    ~*|!~*)
 		addr=$(echo $addr | sed 's/~//;s/-/:/g')
 		source="--match mac --mac-source $addr"
 		;;

@@ -10,6 +10,11 @@ usage() {
 ################################################################################
 initialize
 
+#
+# Start trace if first arg is "debug"
+#
+[ $# -gt 1 ] && [ "$1" = "debug" ] && { set -x ; shift ; }
+
 finished=0
 
 while [ $finished -eq 0 -a $# -gt 0 ]; do

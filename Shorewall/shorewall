@@ -512,7 +512,7 @@ start_command() {
 	progress_message3 "Compiling..."
 
 	if $SHOREWALL_SHELL /usr/share/shorewall/compiler $debugging $nolock compile /var/lib/shorewall/.start; then
-	    /var/lib/shorewall/.start start
+	    /var/lib/shorewall/.start $debugging start
 	fi
 
 	[ -n "$nolock" ] || mutex_off
@@ -832,7 +832,7 @@ restart_command() {
     progress_message3 "Compiling..."
 
     if $SHOREWALL_SHELL /usr/share/shorewall/compiler $debugging $nolock compile /var/lib/shorewall/.restart; then
-	$SHOREWALL_SHELL /var/lib/shorewall/.restart restart
+	$SHOREWALL_SHELL /var/lib/shorewall/.restart $debugging restart
     fi
 
     [ -n "$nolock" ] || mutex_off

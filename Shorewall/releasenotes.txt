@@ -44,6 +44,12 @@ Problems Corrected in 3.2.0 Beta 8
 
     ERROR: BRIDGING=Yes is required for this zone definition: loc br0:eth0
 
+2)  Previously, if LOGFORMAT generated any embedded white-space then a
+    startup error would result.
+
+3)  The 'trace' keyword now causes the execution of the compiled script to
+    be traced when the command is 'start' or 'restart'.
+
 Other changes in 3.2.0 Beta 8
 
 1)  In /etc/shorewall/rules, the values "all-" and "all+-" may now be
@@ -71,9 +77,6 @@ Other changes in 3.2.0 Beta 8
     that device's entries in /etc/shorewall/tcclasses are ignored. This
     applies to "shorewall start", "shorewall restart" and "shorewall
     refresh".
-
-4)  Previously, if LOGFORMAT generated any embedded white-space then a
-    startup error would result.
 
 Migration Considerations:
 

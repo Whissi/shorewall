@@ -2133,8 +2133,12 @@ process_tc_rule()
 	*!*!*)
 	    fatal_error "Invalid SOURCE in rule \"$rule\""
 	    ;;
+	!~*)
+	    excludesources=${sources#!}
+	    sources=-
+	    ;;
 	!*)
-	    if [ $(list_count $sourcess) -gt 1 ]; then
+	    if [ $(list_count $sources) -gt 1 ]; then
 		excludesources=${sources#!}
 		sources=-
 	    fi

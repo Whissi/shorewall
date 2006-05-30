@@ -181,7 +181,7 @@ fi
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel ipsecvpn Samples
 
 %changelog
-* Mon May 29 2006 Tom Eastep tom@shorewall.net
+* Tue May 30 2006 Tom Eastep tom@shorewall.net
 - Updated to 3.2.0-0RC1
 * Mon May 29 2006 Tom Eastep tom@shorewall.net
 - Updated to 3.2.0-0Beta8

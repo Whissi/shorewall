@@ -178,6 +178,40 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/configpath
 %attr(0644,root,root) /usr/share/shorewall/xmodules
 
+%attr(0644,root,root) /usr/share/shorewall/configfiles/shorewall.conf
+%attr(0600,root,root) /usr/share/shorewall/configfiles/zones
+%attr(0600,root,root) /usr/share/shorewall/configfiles/policy
+%attr(0600,root,root) /usr/share/shorewall/configfiles/interfaces
+%attr(0600,root,root) /usr/share/shorewall/configfiles/ipsec
+%attr(0600,root,root) /usr/share/shorewall/configfiles/rules
+%attr(0600,root,root) /usr/share/shorewall/configfiles/nat
+%attr(0600,root,root) /usr/share/shorewall/configfiles/netmap
+%attr(0600,root,root) /usr/share/shorewall/configfiles/params
+%attr(0600,root,root) /usr/share/shorewall/configfiles/proxyarp
+%attr(0600,root,root) /usr/share/shorewall/configfiles/routestopped
+%attr(0600,root,root) /usr/share/shorewall/configfiles/maclist
+%attr(0600,root,root) /usr/share/shorewall/configfiles/masq
+%attr(0600,root,root) /usr/share/shorewall/configfiles/tcrules
+%attr(0600,root,root) /usr/share/shorewall/configfiles/tos
+%attr(0600,root,root) /usr/share/shorewall/configfiles/tunnels
+%attr(0600,root,root) /usr/share/shorewall/configfiles/hosts
+%attr(0600,root,root) /usr/share/shorewall/configfiles/blacklist
+%attr(0600,root,root) /usr/share/shorewall/configfiles/init
+%attr(0600,root,root) /usr/share/shorewall/configfiles/initdone
+%attr(0600,root,root) /usr/share/shorewall/configfiles/start
+%attr(0600,root,root) /usr/share/shorewall/configfiles/stop
+%attr(0600,root,root) /usr/share/shorewall/configfiles/stopped
+%attr(0600,root,root) /usr/share/shorewall/configfiles/ecn
+%attr(0600,root,root) /usr/share/shorewall/configfiles/accounting
+%attr(0600,root,root) /usr/share/shorewall/configfiles/actions
+%attr(0600,root,root) /usr/share/shorewall/configfiles/continue
+%attr(0600,root,root) /usr/share/shorewall/configfiles/started
+%attr(0600,root,root) /usr/share/shorewall/configfiles/providers
+%attr(0600,root,root) /usr/share/shorewall/configfiles/route_rules
+%attr(0600,root,root) /usr/share/shorewall/configfiles/tcclasses
+%attr(0600,root,root) /usr/share/shorewall/configfiles/tcdevices
+%attr(0600,root,root) /usr/share/shorewall/configfiles/Makefile
+
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel ipsecvpn Samples
 
 %changelog

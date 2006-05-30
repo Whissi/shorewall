@@ -185,10 +185,10 @@ fi
 - Updated to 3.2.0-0RC1
 * Mon May 29 2006 Tom Eastep tom@shorewall.net
 - Updated to 3.2.0-0Beta8
-* Fri May 05 2006 Tom Eastep tom@shorewall.net
-- Updated to 3.2.0-0Beta7
 * Thu May 11 2006 Tom Eastep tom@shorewall.net
 - Updated to 3.2.0-0Beta6
+* Fri May 05 2006 Tom Eastep tom@shorewall.net
+- Updated to 3.2.0-0Beta7
 * Wed Apr 26 2006 Tom Eastep tom@shorewall.net
 - Updated to 3.2.0-0Beta5
 * Fri Apr 14 2006 Tom Eastep tom@shorewall.net

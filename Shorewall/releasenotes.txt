@@ -1,4 +1,4 @@
-Shorewall 3.2.0 Beta 8
+Shorewall 3.2.0 RC 1
 
 Note to users upgrading from Shorewall 2.x or 3.0
 
@@ -31,55 +31,13 @@ Note to users upgrading from Shorewall 2.x or 3.0
    Please see the "Migration Considerations" below for additional upgrade
    information.
 
-Problems Corrected in 3.2.0 Beta 8
+Problems Corrected in 3.2.0 RC 1
 
-1)  If BRIDGING=No in shorewall.conf, then an entry in
-    /etc/shorewall/hosts such as the following would result in an
-    obscure failure of an iptables command:
+None.
 
-    loc   br0:eth0
+Other changes in 3.2.0 RC 1
 
-    Shorewall now detects this case and issues a more helpful error
-    message:
-
-    ERROR: BRIDGING=Yes is required for this zone definition: loc br0:eth0
-
-2)  Previously, if LOGFORMAT generated any embedded white-space then a
-    startup error would result.
-
-3)  The 'trace' keyword now causes the execution of the compiled script to
-    be traced when the command is 'start' or 'restart'.
-
-4)  It is now possible to exclude a single source MAC address using
-    !<MAC address>. Previously, a startup error occurred.
-
-Other changes in 3.2.0 Beta 8
-
-1)  In /etc/shorewall/rules, the values "all-" and "all+-" may now be
-    used for zone names. "all-" means "All zones except the firewall";
-    "all+-" means "All zones except the firewall" and intra-zone
-    traffic is included.
-
-2)  Kernel version 2.6.16 introduces 'xtables', a new common packet
-    filtering and connection tracking facility that supports both IPv4
-    and IPv6. Because a different set of kernel modules must be loaded
-    for xtables, Shorewall now includes two 'modules' files:
-
-    a) /usr/share/shorewall/modules -- the former
-    /etc/shorewall/modules
-
-    b) /usr/share/shorewall/xmodules -- a new file that support
-    xtables.
-
-    If you wish to use the new file, then simply execute this command:
-
-    cp -f /usr/share/shorewall/xmodules /etc/modules
-
-3)  Shorewall now checks to see if devices in /etc/shorewall/tcdevices
-    exist. If a device does not exist, a warning message is issued and
-    that device's entries in /etc/shorewall/tcclasses are ignored. This
-    applies to "shorewall start", "shorewall restart" and "shorewall
-    refresh".
+None.
 
 Migration Considerations:
 
@@ -626,4 +584,32 @@ New Features:
 14) Shorewall will now attempt to detect the MTU of devices listed in
     /etc/shorewall/tcdevices and will use the detected MTU in setting
     up traffic shaping.
+
+15) In /etc/shorewall/rules, the values "all-" and "all+-" may now be
+    used for zone names. "all-" means "All zones except the firewall";
+    "all+-" means "All zones except the firewall" and intra-zone
+    traffic is included.
+
+16) Kernel version 2.6.16 introduces 'xtables', a new common packet
+    filtering and connection tracking facility that supports both IPv4
+    and IPv6. Because a different set of kernel modules must be loaded
+    for xtables, Shorewall now includes two 'modules' files:
+
+    a) /usr/share/shorewall/modules -- the former
+    /etc/shorewall/modules
+
+    b) /usr/share/shorewall/xmodules -- a new file that support
+    xtables.
+
+    If you wish to use the new file, then simply execute this command:
+
+    cp -f /usr/share/shorewall/xmodules /etc/shorewall/modules
+
+17) Shorewall now checks to see if devices in /etc/shorewall/tcdevices
+    exist. If a device does not exist, a warning message is issued and
+    that device's entries in /etc/shorewall/tcclasses are ignored. This
+    applies to "shorewall start", "shorewall restart" and "shorewall
+    refresh".
+
+
 

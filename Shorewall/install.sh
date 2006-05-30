@@ -532,7 +532,7 @@ echo "Default config path file installed as ${PREFIX}/usr/share/shorewall/config
 #
 # Install the init file
 #
-echo "Init file installed as ${PREFIX}/usr/share/shorewall/configfiles/init"
+run_install $OWNERSHIP -m 0600 init ${PREFIX}/usr/share/shorewall/configfiles/init
 
 if [ ! -f ${PREFIX}/etc/shorewall/init ]; then
     run_install $OWNERSHIP -m 0600 init ${PREFIX}/etc/shorewall/init

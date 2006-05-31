@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2006-03-29</pubdate>
+    <pubdate>2006-05-31</pubdate>
 
     <copyright>
       <year>2006</year>
@@ -185,6 +185,60 @@
         </varlistentry>
       </variablelist>
     </blockquote>
+  </section>
+
+  <section>
+    <title>/usr/share/shorewall/configfiles</title>
+
+    <para>The <filename
+    class="directory">/usr/share/shorewall/configfiles</filename> directory
+    contains a copy of the Shorewall configuration files that are normally
+    installed in <filename class="directory">/etc/shorewall</filename>.</para>
+
+    <para>Suppose that you want to create a configuration directory for remote
+    system 'gateway'.</para>
+
+    <orderedlist>
+      <listitem>
+        <para><command>mkdir gateway</command></para>
+      </listitem>
+
+      <listitem>
+        <para><command>cp /usr/share/shorewall/configfiles/*
+        gateway</command></para>
+      </listitem>
+
+      <listitem>
+        <para>Generate a <filename>capabilities</filename> file on the remote
+        system as described in the next section and copy that file to the
+        <filename class="directory">gateway</filename> directory.</para>
+      </listitem>
+
+      <listitem>
+        <para>Modify the files in the <filename
+        class="directory">gateway</filename> directory to match the
+        configuration on 'gateway'.</para>
+      </listitem>
+
+      <listitem>
+        <para><command>cd gateway</command></para>
+      </listitem>
+
+      <listitem>
+        <para><command>/sbin/shorewall compile -e . firewall</command></para>
+      </listitem>
+
+      <listitem>
+        <para>Copy the <filename>firewall</filename> file to <filename
+        class="directory">/etc/init.d</filename> on system 'gateway' and
+        arrange for it to be started at boot time.</para>
+      </listitem>
+
+      <listitem>
+        <para>On the 'gateway' system, <command>/etc/init.d/firewall
+        start</command></para>
+      </listitem>
+    </orderedlist>
   </section>
 
   <section>

@@ -267,6 +267,12 @@ if [ -n "$ARCHLINUX" ] ; then
 fi
 
 #
+# Install the default config path file
+#
+install_file configpath ${PREFIX}/usr/share/shorewall/configpath 0644
+echo "Default config path file installed as ${PREFIX}/usr/share/shorewall/configpath"
+
+#
 # Install the functions file
 #
 

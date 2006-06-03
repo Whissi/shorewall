@@ -30,23 +30,18 @@ directory' for each firewall system. You copy the contents of
 d) On each firewall system, you run:
 
    /usr/share/shorewall/shorecap > capabilities
-
-   The 'capabilities' file is then copied to the corresponding
-   configuration directory on the administrative system.
+   scp capabilities <admin system>:<this system's config dir>
 
 e) On the administrative system, for each firewall system you:
 
    1) modify the files in the corresponding configuration
       directory appropriately.
 
-   2) As a non-root user:
+   2) (this may be done as a non-root user)
 
       cd <configuration directory>
-      /sbin/shorewall compile . firewall
-      
-      Then copy the compiled 'firewall' script to
-      /usr/share/shorewall/firewall on the corresponding firewall
-      system.
+      /sbin/shorewall compile -e . firewall
+      scp firewall root@<firewall system>:/usr/share/shorewall/
 
    3) On the firewall system, 'shorewall start'.
 

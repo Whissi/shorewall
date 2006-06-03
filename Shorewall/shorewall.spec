@@ -168,12 +168,6 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/modules
 %attr(0644,root,root) /usr/share/shorewall/prog.footer
 %attr(0644,root,root) /usr/share/shorewall/prog.header
-%attr(0644,root,root) /usr/share/shorewall/prog.footer.debian
-%attr(0644,root,root) /usr/share/shorewall/prog.header.debian
-%attr(0644,root,root) /usr/share/shorewall/prog.footer.redhat
-%attr(0644,root,root) /usr/share/shorewall/prog.header.redhat
-%attr(0644,root,root) /usr/share/shorewall/prog.footer.suse
-%attr(0644,root,root) /usr/share/shorewall/prog.header.suse
 %attr(0644,root,root) /usr/share/shorewall/rfc1918
 %attr(0644,root,root) /usr/share/shorewall/configpath
 %attr(0644,root,root) /usr/share/shorewall/xmodules

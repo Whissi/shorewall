@@ -8081,15 +8081,10 @@ compile_firewall() # $1 = File Name
 #
 __EOF__
 
-    if [ -n "$EXPORT" ]; then
-	cat /usr/share/shorewall/functions >&3
-    else
-	cat >&3 << __EOF__
+    cat >&3 << __EOF__
 
 . /usr/share/shorewall/functions
 __EOF__
-
-    fi
 
     compile_stop_firewall
 
@@ -8215,20 +8210,18 @@ initialize() {
 __EOF__
     INDENT="    "
 
-    if [ -z "$EXPORT" ]; then
-	cat >&3 << __EOF__
+    cat >&3 << __EOF__
     if [ ! -f /usr/share/shorewall/version ]; then
-	fatal_error "This script requires Shorewall which does not appear to be installed on this system"
+	fatal_error "This script requires Shorewall or Shorewall Lite which do not appear to be installed on this system"
     fi
 
     local version=\$(cat /usr/share/shorewall/version)
 
     if [ \${LIBVERSION:-0} -lt 30191 ]; then
-	fatal_error "This script requires Shorewall version 3.2.0-Beta7 or later; current version is \$version"
+	fatal_error "This script requires Shorewall [Lite] version 3.2.0-Beta7 or later; current version is \$version"
     fi
 
 __EOF__
-    fi
 
     cat >&3 << __EOF__
     #
@@ -8456,7 +8449,7 @@ __EOF__
 	progress_message3 "Shorewall configuration verified"
     else
 	INDENT=
-	cat $(find_file prog.header${DISTRIBUTION}) $OUTPUT $(find_file prog.footer${DISTRIBUTION}) > $outfile
+	cat $(find_file prog.header) $OUTPUT $(find_file prog.footer) > $outfile
 	chmod 700 $outfile
 	progress_message3 "Shorewall configuration compiled to $outfile"
 	rm -f $OUTPUT

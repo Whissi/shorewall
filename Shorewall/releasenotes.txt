@@ -37,7 +37,9 @@ None.
 
 Other changes in 3.2.0 RC 1
 
-None.
+1)  Support for distribution-specific compilation has been removed. In
+    it's place, a new "Shorewall Lite" product has been created. See
+    the Shorewall Lite documentation for details.
 
 Migration Considerations:
 
@@ -191,39 +193,17 @@ New Features:
 
 2)  A new 'shorewall compile' command has been added.
 
-     shorewall compile [ -e ] [ -d <distro> ] [ <config directory> ] <script file>
+     shorewall compile [ -e ] [ <config directory> ] <script file>
 
     where:
 
 	-e                    Allows the generated script to run
-	                      on a system without Shorewall installed.
+	                      on a system with Shorewall Lite installed.
 			      Generates an error if the configuration uses
 	                      an option that would prevent the generated
 	                      script from running on a system other than
 	                      where the 'compile' command is running (see
 	                      additional consideration a) below).
-	-d <distro>           Compile the script for execution on the
-	                      distribution specified by <distro>. Currently,
-	                      the supported distributions are:
-
-				suse
-				redhat (which includes Fedora Core and
-					CentOS).
-				debian
-
-			      Note that specifying a distribution should
-			      only be required if you intend to install
-			      the compiled script in /etc/init.d on the
-			      target system and the target system runs
-			      a distribution different from the system
-			      where you are doing your compiles.
-
-	                      Example:
-
-				shorewall compile -e -d redhat foo
-
-			      Additional distributions are expected to be
-			      supported shortly.
 
 	<config directory>    Is an optional directory to be searched for
 	                      configuration files prior to those listed
@@ -252,54 +232,28 @@ New Features:
        generated script on another system but there are certain
        limitations.
 
-       1) A compatible version of Shorewall must be running on the remote
-          system unless you use the "-e" option when you compile the script.
-          Currently, "compatible" means Shorewall 3.1.5 or later.
+       1) A compatible version of Shorewall Lite must be running on the remote
+          system.
        2) The 'detectnets' interface option is not allowed.
        3) You must supply the file /etc/shorewall/capabilities to provide
           the compiler with knowledge of the capabilities of the system
-          where the script is to be run. The /etc/shorewall/capabilities
-          file included in this release includes instructions for its
-          use. Also, find information below about how to create the
-          file using the 'shorecap' program.
+          where the script is to be run. See below.
        4) If your /etc/shorewall/params file contains code other than simple
           assignment statements with contant values, then you should move
           that code to /etc/shorewall/init. That way, the code will be
-          executed on the target system when the compiled script is run rather
-          than on the local system at compile time.
+          executed on the target system when the compiled script is run and
+          not on the local system at compile time.
 
     b) If you run the "shorewall compile" or "shorewall check" commands under
        a user other than 'root', then you must supply
        /etc/shorewall/capabilities.
 
     c) To aid in building /etc/shorewall/capabilities, a 'shorecap' program
-       is provided. The program is installed in the /usr/share/shorewall/
-       directory.
-
-       The program can be copied to the target system and run there to
-       produce a capabilities file taylored for that system. The capabilities
-       file can then be copied to the local system where it can be used
-       when compiling firewall programs targeted for the remote system.
+       is provided in the Shorewall Lite package and is installed in
+       /usr/share/shorewall/shorecap when you install Shorewall Lite.
 
        For instructions about running shorecap, see the comments at the
        top of the program file (it's a simple shell script).
-
-    Compilation generates a complete program. This program is suitable for
-    installation into /etc/init.d and, when generated with the "-e" option,
-    can serve as your firewall on a system that doesn't even have Shorewall
-    installed.
-
-    The generated program supports the following commands:
-
-	<program> [ -q ] [ -v ] [ -n ] start
-	<program> [ -q ] [ -v ] [ -n ] stop
-	<program> [ -q ] [ -v ] [ -n ] clear
-	<program> [ -q ] [ -v ] [ -n ] restart
-	<program> [ -q ] [ -v ] [ -n ] status
-	<program> [ -q ] [ -v ] [ -n ] version
-
-    The options have the same meaning as they do with /sbin/shorewall
-    (see above).
 
     The "shorewall start" and "shorewall restart" commands have been
     rewritten to use compilation. They both compile a temporary program
@@ -354,7 +308,7 @@ New Features:
 
     As a final part of this change, the "check" command now compiles the
     current configuration and writes the compiled output to /dev/null. So
-    "check" performs all of the same checks that compile does. Note that
+    "check" performs all of the same valication that compile does. Note that
     there is still no guarantee that the generated script won't encounter
     run-time errors.
 

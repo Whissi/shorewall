@@ -641,16 +641,6 @@ compile_command() {
 			    EXPORT=Yes
 			    option=${option#e}
 			    ;;
-			d)
-			    [ -n "$DISTRIBUTION" -o $# -lt 2 ] && usage 2
-
-			    [ -f /usr/share/shorewall/prog.header.$1 -a -f /usr/share/shorewall/prog.footer.$1 ] || \
-				{ echo "Distribution $1 is not supported" >&2 && exit 2; }
-			    DISTRIBUTION=".$1"
-			    export DISTRIBUTION
-			    shift
-			    option=${option#d}
-			    ;;
 			-)
 			    finished=1
 			    option=
@@ -1307,7 +1297,7 @@ usage() # $1 = exit status
     echo "   allow <address> ..."
     echo "   check [ -e ] [ <directory> ]"
     echo "   clear"
-    echo "   compile [ -e ] [ -d <distribution> ] [ <directory name> ] <path name>"
+    echo "   compile [ -e ] [ <directory name> ] <path name>"
     echo "   delete <interface>[:<host-list>] ... <zone>"
     echo "   drop <address> ..."
     echo "   dump [ -x ]"

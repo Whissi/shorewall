@@ -1,0 +1,2202 @@
+#!/bin/sh
+#
+# Shorewall 3.2 -- /usr/share/shorewall/functions
+#
+#     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
+#
+#     (c) 1999,2000,2001,2002,2003,2004,2005,2006 - Tom Eastep (teastep@shorewall.net)
+#
+#     tcstart from tc4shorewall       Version 0.5
+#     (c) 2005 Arne Bernin <arne@ucbering.de>
+#     Modified by Tom Eastep for integration into the Shorewall distribution
+#     published under GPL Version 2#
+#
+#	Complete documentation is available at http://shorewall.net
+#
+#	This program is free software; you can redistribute it and/or modify
+#	it under the terms of Version 2 of the GNU General Public License
+#	as published by the Free Software Foundation.
+#
+#	This program is distributed in the hope that it will be useful,
+#	but WITHOUT ANY WARRANTY; without even the implied warranty of
+#	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#	GNU General Public License for more details.
+#
+#	You should have received a copy of the GNU General Public License
+#	along with this program; if not, write to the Free Software
+#	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
+
+LIBVERSION=30191
+
+#
+# Message to stderr
+#
+error_message() # $* = Error Message
+{
+   echo "   $@" >&2
+}
+
+# Function to truncate a string -- It uses 'cut -b -<n>'
+# rather than ${v:first:last} because light-weight shells like ash and
+# dash do not support that form of expansion.
+#
+
+truncate() # $1 = length
+{
+    cut -b -${1}
+}
+
+#
+# Split a colon-separated list into a space-separated list
+#
+split() {
+    local ifs=$IFS
+    IFS=:
+    set -- $1
+    echo $*
+    IFS=$ifs
+}
+
+#
+# Search a list looking for a match -- returns zero if a match found
+# 1 otherwise
+#
+list_search() # $1 = element to search for , $2-$n = list
+{
+    local e=$1
+
+    while [ $# -gt 1 ]; do
+	shift
+	[ "x$e" = "x$1" ] && return 0
+    done
+
+    return 1
+}
+
+#
+# Return a space separated list of values matching
+#
+list_walk() # $1 = element to search for, $2-$n = list
+{
+    local e=$1 result=
+
+    while [ $# -gt 1 ]; do
+	shift
+	case $1 in
+	    $e*)
+	    	result="$result ${1##$e}"
+		;;
+	esac
+    done
+    echo $result
+}
+
+#
+# Functions to count list elements
+# - - - - - - - - - - - - - - - -
+# Whitespace-separated list
+#
+list_count1() {
+    echo $#
+}
+#
+# Comma-separated list
+#
+list_count() {
+    list_count1 $(separate_list $1)
+}
+
+#
+# Conditionally produce message
+#
+progress_message() # $* = Message
+{
+    local timestamp=
+
+    if [ $VERBOSE -gt 1 ]; then
+	[ -n "$TIMESTAMP" ] && timestamp="$(date +%H:%M:%S) "
+	echo "${timestamp}$@"
+    fi
+}
+
+progress_message2() # $* = Message
+{
+    local timestamp=
+
+    if [ $VERBOSE -gt 0 ]; then
+	[ -n "$TIMESTAMP" ] && timestamp="$(date +%H:%M:%S) "
+	echo "${timestamp}$@"
+    fi
+}
+
+progress_message3() # $* = Message
+{
+    local timestamp=
+
+    if [ $VERBOSE -ge 0 ]; then
+	[ -n "$TIMESTAMP" ] && timestamp="$(date +%H:%M:%S) "
+	echo "${timestamp}$@"
+    fi
+}
+
+#
+# Suppress all output for a command
+#
+qt()
+{
+    "$@" >/dev/null 2>&1
+}
+
+#
+# Determine if Shorewall is "running"
+#
+shorewall_is_started() {
+    qt $IPTABLES -L shorewall -n
+}
+
+#
+# Perform variable substitution on the passed argument and echo the result
+#
+expand() # $@ = contents of variable which may be the name of another variable
+{
+    eval echo \"$@\"
+}
+
+#
+# Perform variable substitition on the values of the passed list of variables
+#
+expandv() # $* = list of variable names
+{
+    local varval
+
+    while [ $# -gt 0 ]; do
+	eval varval=\$${1}
+	eval $1=\"$varval\"
+	shift
+    done
+}
+
+#
+# Add whitespace after "!"
+#
+fix_bang()
+{
+    local result=
+
+    while [ $# -gt 0 ]; do
+	case $1 in
+	    !*)
+		result="$result ! ${1#!}"
+		;;
+	    *)
+		result="$result $1"
+		;;
+	esac
+	shift
+    done
+
+    echo $result
+}
+
+#
+# Echos the fully-qualified name of the calling shell program
+#
+my_pathname() {
+    cd $(dirname $0)
+    echo $PWD/$(basename $0)
+}
+
+#
+# Set default config path
+#
+ensure_config_path() {
+    local F=/usr/share/shorewall/configpath
+    if [ -z "$CONFIG_PATH" ]; then
+	[ -f $F ] || { echo "   ERROR: $F does not exist"; exit 2; }
+	. $F
+    fi
+}
+
+#
+# Find a File -- For relative file name, look first in $SHOREWALL_DIR then in /etc/shorewall
+#
+find_file()
+{
+    local saveifs= directory
+
+    case $1 in
+	/*)
+	    echo $1
+	    ;;
+	*)
+	    if [ -n "$SHOREWALL_DIR" -a -f $SHOREWALL_DIR/$1 ]; then
+		echo $SHOREWALL_DIR/$1
+	    else
+		saveifs=$IFS
+		IFS=:
+		for directory in $CONFIG_PATH; do
+		    if [ -f $directory/$1 ]; then
+			echo $directory/$1
+			IFS=$saveifs
+			return
+		    fi
+		done
+
+		IFS=$saveifs
+
+		echo /etc/shorewall/$1
+	    fi
+	    ;;
+    esac
+}
+
+#
+# Get fully-qualified name of file
+#
+resolve_file() # $1 = file name
+{
+    local pwd=$PWD
+
+    case $1 in
+	/*)
+	    echo $1
+	    ;;
+	./*)
+	    echo ${pwd}${1#.}
+	    ;;
+	../*)
+	    cd ..
+	    echo ${PWD}${1#..}
+	    cd $pwd
+	    ;;
+	*)
+	    echo $pwd/$1
+	    ;;
+    esac
+}
+
+##
+# Source a user exit file if it exists
+#
+run_user_exit() # $1 = file name
+{
+    local user_exit=$(find_file $1)
+
+    if [ -f $user_exit ]; then
+	progress_message "Processing $user_exit ..."
+	. $user_exit
+    fi
+}
+
+#
+# Replace commas with spaces and echo the result
+#
+separate_list() {
+    local list="$@"
+    local part
+    local newlist
+    local firstpart
+    local lastpart
+    local enclosure
+
+    case "$list" in
+	*,|,*|*,,*|*[[:space:]]*)
+	    #
+	    # There's been whining about us not catching embedded white space in
+	    # comma-separated lists. This is an attempt to snag some of the cases.
+	    #
+	    # The 'TERMINATOR' function will be set by the 'firewall' script to
+	    # either 'startup_error' or 'fatal_error' depending on the command and
+	    # command phase
+	    #
+            [ -n "$TERMINATOR" ] && \
+		$TERMINATOR "Invalid comma-separated list \"$@\""
+            echo "WARNING -- invalid comma-separated list \"$@\"" >&2
+	    ;;
+	*\[*\]*)
+	    #
+	    # Where we need to embed comma-separated lists within lists, we enclose them
+	    # within square brackets (extra 'evals' are to keep my text editor (kate) from getting lost).
+	    #
+	    eval 'firstpart=${list%%\[*}'
+	    eval 'lastpart=${list#*\[}'
+	    eval 'enclosure=${lastpart%%\]*}'
+	    eval 'lastpart=${lastpart#*\]}'
+	    case $lastpart in
+		\,*)
+		    case $firstpart in
+			*\,)
+			    echo "$(separate_list ${firstpart%,}) [$enclosure] $(separate_list ${lastpart#,})"
+			    ;;
+			*)
+			    echo "$(separate_list $firstpart)[$enclosure] $(separate_list ${lastpart#,})"
+			    ;;
+		    esac
+		    ;;
+		*)
+		    case $firstpart in
+			*\,)
+			    echo "$(separate_list ${firstpart%,}) [$enclosure]$(separate_list $lastpart)"
+			    ;;
+			*)
+			    echo "$(separate_list $firstpart)[$enclosure]$(separate_list $lastpart)"
+			    ;;
+		    esac
+		    ;;
+	    esac
+	    return
+	    ;;
+    esac
+
+    list="$@"
+    part="${list%%,*}"
+    newlist="$part"
+
+    while [ "x$part" != "x$list" ]; do
+	list="${list#*,}";
+	part="${list%%,*}";
+	newlist="$newlist $part";
+    done
+
+    echo "$newlist"
+}
+
+#
+# Load a Kernel Module
+#
+loadmodule() # $1 = module name, $2 - * arguments
+{
+    local modulename=$1
+    local modulefile
+    local suffix
+    moduleloader=modprobe
+
+    if ! qt mywhich modprobe; then
+	moduleloader=insmod
+    fi
+
+    if ! list_search $modulename $MODULES ; then
+	shift
+
+	for suffix in $MODULE_SUFFIX ; do
+	    modulefile=$MODULESDIR/${modulename}.${suffix}
+
+	    if [ -f $modulefile ]; then
+		case $moduleloader in
+		    insmod)
+			insmod $modulefile $*
+			;;
+		    *)
+			modprobe $modulename $*
+			;;
+		esac
+
+		MODULES=$(lsmod | cut -d ' ' -f1)
+		break
+	    fi
+	done
+    fi
+}
+
+#
+# Reload the Modules
+#
+reload_kernel_modules() {
+
+    [ -z "$MODULESDIR" ] && MODULESDIR=/lib/modules/$(uname -r)/kernel/net/ipv4/netfilter
+    MODULES=$(lsmod | cut -d ' ' -f1)
+
+    while read command; do
+	eval $command
+    done
+
+}
+
+#
+# Load kernel modules required for Shorewall
+#
+load_kernel_modules()
+{
+    save_modules_dir=$MODULESDIR
+
+    [ -z "$MODULESDIR" ] && \
+	MODULESDIR=/lib/modules/$(uname -r)/kernel/net/ipv4/netfilter
+
+    modules=$(find_file modules)
+
+    if [ -f $modules -a -d $MODULESDIR ]; then
+	MODULES=$(lsmod | cut -d ' ' -f1)
+	progress_message "Loading Modules..."
+	. $modules
+    fi
+
+    MODULESDIR=$save_modules_dir
+}
+
+#
+# Call this function to assert MUTEX with Shorewall. If you invoke the
+# /sbin/shorewall program while holding MUTEX, you should pass "nolock" as
+# the first argument. Example "shorewall nolock refresh"
+#
+# This function uses the lockfile utility from procmail if it exists.
+# Otherwise, it uses a somewhat race-prone algorithm to attempt to simulate the
+# behavior of lockfile.
+#
+mutex_on()
+{
+    local try=0
+    local lockf=/var/lib/shorewall/lock
+
+    MUTEX_TIMEOUT=${MUTEX_TIMEOUT:-60}
+
+    if [ $MUTEX_TIMEOUT -gt 0 ]; then
+
+	[ -d /var/lib/shorewall ] || mkdir -p /var/lib/shorewall
+
+	if qt mywhich lockfile; then
+	    lockfile -${MUTEX_TIMEOUT} -r1 ${lockf}
+	else
+	    while [ -f ${lockf} -a ${try} -lt ${MUTEX_TIMEOUT} ] ; do
+		sleep 1
+		try=$((${try} + 1))
+	    done
+
+	    if  [ ${try} -lt ${MUTEX_TIMEOUT} ] ; then
+	        # Create the lockfile
+		echo $$ > ${lockf}
+	    else
+		echo "Giving up on lock file ${lockf}" >&2
+	    fi
+	fi
+    fi
+}
+
+#
+# Call this function to release MUTEX
+#
+mutex_off()
+{
+    rm -f /var/lib/shorewall/lock
+}
+
+#
+# Determine which version of mktemp is present (if any) and set MKTEMP accortingly:
+#
+#     None - No mktemp
+#     BSD  - BSD mktemp (Mandrake)
+#     STD  - mktemp.org mktemp
+#
+find_mktemp() {
+    local mktemp=`mywhich mktemp 2> /dev/null`
+
+    if [ -n "$mktemp" ]; then
+	if qt mktemp -V ; then
+	    MKTEMP=STD
+	else
+	    MKTEMP=BSD
+	fi
+    else
+	MKTEMP=None
+    fi
+}
+
+#
+# create a temporary file. If a directory name is passed, the file will be created in
+# that directory. Otherwise, it will be created in a temporary directory.
+#
+mktempfile() {
+
+    [ -z "$MKTEMP" ] && find_mktemp
+
+    if [ $# -gt 0 ]; then
+	case "$MKTEMP" in
+	    BSD)
+		mktemp $1/shorewall.XXXXXX
+		;;
+	    STD)
+		mktemp -p $1 shorewall.XXXXXX
+		;;
+	    None)
+		> $1/shorewall-$$ && echo $1/shorewall-$$
+		;;
+	    *)
+		error_message "ERROR:Internal error in mktempfile"
+		;;
+	esac
+    else
+	case "$MKTEMP" in
+	    BSD)
+		mktemp /tmp/shorewall.XXXXXX
+		;;
+	    STD)
+		mktemp -t shorewall.XXXXXX
+		;;
+	    None)
+		rm -f /tmp/shorewall-$$
+		> /tmp/shorewall-$$ && echo /tmp/shorewall-$$
+		;;
+	    *)
+		error_message "ERROR:Internal error in mktempfile"
+		;;
+	esac
+    fi
+}
+
+#
+# create a temporary directory
+#
+mktempdir() {
+
+    [ -z "$MKTEMP" ] && find_mktemp
+
+    case "$MKTEMP" in
+	STD)
+	    mktemp -td shorewall.XXXXXX
+	    ;;
+	None|BSD)
+	    #
+	    # Not all versions of the BSD mktemp support the -d option under Linux
+	    #
+	    qt rm -rf /tmp/shorewall-$$
+	    mkdir -p /tmp/shorewall-$$ chmod 700 /tmp/shorewall-$$ && echo /tmp/shorewall-$$
+	    ;;
+	*)
+	    error_message "ERROR:Internal error in mktempdir"
+	    ;;
+	esac
+}
+
+#
+# Read a file and handle "INCLUDE" directives
+#
+
+read_file() # $1 = file name, $2 = nest count
+{
+    local first rest
+
+    if [  -f $1 ]; then
+	while read first rest; do
+	    if [ "x$first"  = "xINCLUDE" ]; then
+		if [ $2 -lt 4 ]; then
+		    read_file $(find_file $(expand ${rest%#*})) $(($2 + 1))
+		else
+		    error_message "WARNING: INCLUDE in $1 ignored (nested too deeply)"
+		fi
+	    else
+		echo "$first $rest"
+	    fi
+	done < $1
+    else
+	[ -n "$TERMINATOR" ] && $TERMINATOR "No such file: $1"
+	echo "WARNING -- No such file: $1"
+    fi
+}
+
+#
+# Function for including one file into another
+#
+INCLUDE() {
+    . $(find_file $(expand $@))
+}
+
+#
+# Strip comments and blank lines from a file and place the result in the
+# temporary directory
+#
+strip_file() # $1 = Base Name of the file, $2 = Full Name of File (optional)
+{
+    local fname
+
+    [ $# = 1 ] && fname=$(find_file $1) || fname=$2
+
+    if [ -f $fname ]; then
+	read_file $fname 0 | cut -d'#' -f1 | grep -v '^[[:space:]]*$' > $TMP_DIR/$1
+    else
+	> $TMP_DIR/$1
+    fi
+}
+
+#
+#  Note: The following set of IP address manipulation functions have anomalous
+#        behavior when the shell only supports 32-bit signed arithmatic and
+#        the IP address is 128.0.0.0 or 128.0.0.1.
+#
+
+LEFTSHIFT='<<'
+
+
+#
+# Convert an IP address in dot quad format to an integer
+#
+decodeaddr() {
+    local x
+    local temp=0
+    local ifs=$IFS
+
+    IFS=.
+
+    for x in $1; do
+	temp=$(( $(( $temp $LEFTSHIFT 8 )) | $x ))
+    done
+
+    echo $temp
+
+    IFS=$ifs
+}
+
+#
+# convert an integer to dot quad format
+#
+encodeaddr() {
+    addr=$1
+    local x
+    local y=$(($addr & 255))
+
+    for x in 1 2 3 ; do
+	addr=$(($addr >> 8))
+	y=$(($addr & 255)).$y
+    done
+
+    echo $y
+}
+
+#
+# Enumerate the members of an IP range -- When using a shell supporting only
+# 32-bit signed arithmetic, the range cannot span 128.0.0.0.
+#
+# Comes in two flavors:
+#
+# ip_range() - produces a mimimal list of network/host addresses that spans
+#              the range.
+#
+# ip_range_explicit() - explicitly enumerates the range.
+#
+ip_range() {
+    local first last l x y z vlsm
+
+    case $1 in
+	!*)
+	    #
+	    # Let iptables complain if it's a range
+	    #
+	    echo $1
+	    return
+	    ;;
+	[0-9]*.*.*.*-*.*.*.*)
+            ;;
+	*)
+	    echo $1
+	    return
+	    ;;
+    esac
+
+    first=$(decodeaddr ${1%-*})
+    last=$(decodeaddr ${1#*-})
+
+    if [ $first -gt $last ]; then
+	fatal_error "Invalid IP address range: $1"
+    fi
+
+    l=$(( $last + 1 ))
+
+    while [ $first -le $last ]; do
+	vlsm=
+	x=31
+	y=2
+	z=1
+
+	while [ $(( $first % $y )) -eq 0 -a $(( $first + $y )) -le $l ]; do
+	    vlsm=/$x
+	    x=$(( $x - 1 ))
+	    z=$y
+	    y=$(( $y * 2 ))
+	done
+
+	echo $(encodeaddr $first)$vlsm
+	first=$(($first + $z))
+    done
+}
+
+ip_range_explicit() {
+    local first last
+
+    case $1 in
+    [0-9]*.*.*.*-*.*.*.*)
+	;;
+    *)
+	echo $1
+	return
+	;;
+    esac
+
+    first=$(decodeaddr ${1%-*})
+    last=$(decodeaddr ${1#*-})
+
+    if [ $first -gt $last ]; then
+	fatal_error "Invalid IP address range: $1"
+    fi
+
+    while [ $first -le $last ]; do
+	echo $(encodeaddr $first)
+	first=$(($first + 1))
+    done
+}
+
+#
+# Netmask from CIDR
+#
+ip_netmask() {
+    local vlsm=${1#*/}
+
+    [ $vlsm -eq 0 ] && echo 0 || echo $(( -1 $LEFTSHIFT $(( 32 - $vlsm )) ))
+}
+
+#
+# Network address from CIDR
+#
+ip_network() {
+    local decodedaddr=$(decodeaddr ${1%/*})
+    local netmask=$(ip_netmask $1)
+
+    echo $(encodeaddr $(($decodedaddr & $netmask)))
+}
+
+#
+# The following hack is supplied to compensate for the fact that many of
+# the popular light-weight Bourne shell derivatives don't support XOR ("^").
+#
+
+ip_broadcast() {
+    local x=$(( 32 - ${1#*/} ))
+
+    [ $x -eq 0 ] && echo -1 || echo $(( $(( 1 $LEFTSHIFT $x )) - 1 ))
+}
+
+#
+# Calculate broadcast address from CIDR
+#
+broadcastaddress() {
+    local decodedaddr=$(decodeaddr ${1%/*})
+    local netmask=$(ip_netmask $1)
+    local broadcast=$(ip_broadcast $1)
+
+    echo $(encodeaddr $(( $(($decodedaddr & $netmask)) | $broadcast )))
+}
+
+#
+# Test for network membership
+#
+in_network() # $1 = IP address, $2 = CIDR network
+{
+    local netmask=$(ip_netmask $2)
+
+    test $(( $(decodeaddr $1) & $netmask)) -eq $(( $(decodeaddr ${2%/*}) & $netmask ))
+}
+
+#
+# Netmask to VLSM
+#
+ip_vlsm() {
+    local mask=$(decodeaddr $1)
+    local vlsm=0
+    local x=$(( 128 << 24 )) # 0x80000000
+
+    while [ $(( $x & $mask )) -ne 0 ]; do
+	[ $mask -eq $x ] && mask=0 || mask=$(( $mask $LEFTSHIFT 1 )) # Not all shells shift 0x80000000 left properly.
+	vlsm=$(($vlsm + 1))
+    done
+
+    if [ $(( $mask & 2147483647 )) -ne 0 ]; then # 2147483647 = 0x7fffffff
+	echo "Invalid net mask: $1" >&2
+    else
+	echo $vlsm
+    fi
+}
+
+
+#
+# Chain name base for an interface -- replace all periods with underscores in the passed name.
+#                                     The result is echoed (less trailing "+").
+#
+chain_base() #$1 = interface
+{
+    local c=${1%%+}
+
+    while true; do
+	case $c in
+	    *.*)
+		c="${c%.*}_${c##*.}"
+		;;
+	    *-*)
+		c="${c%-*}_${c##*-}"
+		;;
+	    *%*)
+		c="${c%\%*}_${c##*%}"
+		;;
+	    *)
+		echo ${c:=common}
+		return
+		;;
+	esac
+    done
+}
+
+#
+# Loosly Match the name of an interface
+#
+
+if_match() # $1 = Name in interfaces file - may end in "+"
+           # $2 = Full interface name - may also end in "+"
+{
+    local pattern=${1%+}
+
+    case $1 in
+	*+)
+	    test  "x$(echo $2 | truncate ${#pattern} )" = "x${pattern}"
+	    ;;
+	*)
+	    test "x$1" = "x$2"
+	    ;;
+    esac
+}
+
+#
+# Source IP range
+#
+source_ip_range() # $1 = Address or Address Range
+{
+    [ $# -gt 0 ] && case $1 in
+	*.*.*.*-*.*.*.*)
+	    case $1 in
+		!*)
+		    iprange_echo "! --src-range ${1#!}"
+		    ;;
+		*)
+		    iprange_echo "--src-range $1"
+		    ;;
+	    esac
+	    ;;
+	!+*)
+	    echo "-m set ! $(get_set_flags ${1#!} src)"
+	    ;;
+	+*)
+	    echo "-m set $(get_set_flags $1 src)"
+	    ;;
+	*)
+	    echo "-s $1"
+	    ;;
+    esac
+}
+
+#
+# Destination IP range
+#
+dest_ip_range() # $1 = Address or Address Range
+{
+    [ $# -gt 0 ] && case $1 in
+	*.*.*.*-*.*.*.*)
+	    case $1 in
+		!*)
+		    iprange_echo "! --dst-range ${1#!}"
+		    ;;
+		*)
+		    iprange_echo "--dst-range $1"
+		    ;;
+	    esac
+	    ;;
+	!+*)
+	    echo "-m set ! $(get_set_flags ${1#!} dst)"
+	    ;;
+	+*)
+	    echo "-m set $(get_set_flags $1 dst)"
+	    ;;
+	*)
+	    echo "-d $1"
+	    ;;
+    esac
+}
+
+both_ip_ranges() # $1 = Source address or range, $2 = dest address or range
+{
+    local rangeprefix= setprefix= rangematch= setmatch=
+
+    case $1 in
+	*.*.*.*-*.*.*.*)
+	    rangeprefix="-m iprange"
+	    rangematch="--src-range $1"
+	    ;;
+	!+*)
+	    setprefix="-m set"
+	    setmatch="! $(get_set_flags ${1#!} src)"
+	    ;;
+	+*)
+	    setprefix="-m set"
+	    setmatch="$(get_set_flags $1 src)"
+	    ;;
+	*)
+	    rangematch="-s $1"
+	    ;;
+    esac
+
+    case $2 in
+	*.*.*.*-*.*.*.*)
+	    rangeprefix="-m iprange"
+	    rangematch="$rangematch --dst-range $2"
+	    ;;
+	!+*)
+	    setprefix="-m set"
+	    match="$setmatch ! $(get_set_flags ${2#!} dst)"
+	    ;;
+	+*)
+	    setprefix="-m set"
+	    setmatch="$setmatch $(get_set_flags $2 dst)"
+	    ;;
+	*)
+	    rangematch="$rangematch -d $2"
+	    ;;
+    esac
+
+    echo "$rangeprefix $rangematch $setprefix $setmatch"
+}
+
+#
+# Find the value 'dev' in the passed arguments then echo the next value
+#
+
+find_device() {
+    while [ $# -gt 1 ]; do
+	[ "x$1" = xdev ] && echo $2 && return
+	shift
+    done
+}
+
+#
+# Find the value 'via' in the passed arguments then echo the next value
+#
+
+find_gateway() {
+    while [ $# -gt 1 ]; do
+	[ "x$1" = xvia ] && echo $2 && return
+	shift
+    done
+}
+
+#
+# Find the value 'mtu' in the passed arguments then echo the next value
+#
+
+find_mtu() {
+    while [ $# -gt 1 ]; do
+	[ "x$1" = xmtu ] && echo $2 && return
+	shift
+    done
+}
+
+#
+# Find the value 'peer' in the passed arguments then echo the next value up to
+# "/"
+#
+
+find_peer() {
+    while [ $# -gt 1 ]; do
+	[ "x$1" = xpeer ] && echo ${2%/*} && return
+	shift
+    done
+}
+
+#
+# Find the interfaces that have a route to the passed address - the default
+# route is not used.
+#
+
+find_rt_interface() {
+    ip route ls | while read addr rest; do
+	case $addr in
+	    */*)
+		in_network ${1%/*} $addr && echo $(find_device $rest)
+		;;
+	    default)
+		;;
+	    *)
+		if [ "$addr" = "$1" -o "$addr/32" = "$1" ]; then
+		    echo $(find_device $rest)
+		fi
+		;;
+	esac
+    done
+}
+
+#
+# Try to find the gateway through an interface looking for 'nexthop'
+
+find_nexthop() # $1 = interface
+{
+    echo $(find_gateway `ip route ls | grep "[[:space:]]nexthop.* $1"`)
+}
+
+#
+# Find the default route's interface
+#
+find_default_interface() {
+    ip route ls | while read first rest; do
+	[ "$first" = default ] && echo $(find_device $rest) && return
+    done
+}
+
+#
+# Echo the name of the interface(s) that will be used to send to the
+# passed address
+#
+
+find_interface_by_address() {
+    local dev="$(find_rt_interface $1)"
+    local first rest
+
+    [ -z "$dev" ] && dev=$(find_default_interface)
+
+    [ -n "$dev" ] && echo $dev
+}
+
+#
+# Find the interface with the passed MAC address
+#
+
+find_interface_by_mac() {
+    local mac=$1 first second rest dev
+
+    ip link ls | while read first second rest; do
+	case $first in
+	    *:)
+                dev=$second
+		;;
+	    *)
+	        if [ "$second" = $mac ]; then
+		    echo ${dev%:}
+		    return
+		fi
+	esac
+    done
+}
+
+#
+# Find interface address--returns the first IP address assigned to the passed
+# device
+#
+find_first_interface_address() # $1 = interface
+{
+    #
+    # get the line of output containing the first IP address
+    #
+    addr=$(ip -f inet addr show $1 2> /dev/null | grep 'inet .* global' | head -n1)
+    #
+    # If there wasn't one, bail out now
+    #
+    [ -n "$addr" ] || fatal_error "Can't determine the IP address of $1"
+    #
+    # Strip off the trailing VLSM mask (or the peer IP in case of a P-t-P link)
+    # along with everything else on the line
+    #
+    echo $addr | sed 's/inet //;s/\/.*//;s/ peer.*//'
+}
+
+find_first_interface_address_if_any() # $1 = interface
+{
+    #
+    # get the line of output containing the first IP address
+    #
+    addr=$(ip -f inet addr show $1 2> /dev/null | grep 'inet .* global' | head -n1)
+    #
+    # Strip off the trailing VLSM mask (or the peer IP in case of a P-t-P link)
+    # along with everything else on the line
+    #
+    [ -n "$addr" ] && echo $addr | sed 's/inet //;s/\/.*//;s/ peer.*//' || echo 0.0.0.0
+}
+
+#
+# Find interface addresses--returns the set of addresses assigned to the passed
+# device
+#
+find_interface_addresses() # $1 = interface
+{
+    ip -f inet addr show $1 | grep inet\  | sed 's/inet //;s/\/.*//;s/ peer.*//'
+}
+
+#
+#  echo the list of networks routed out of a given interface
+#
+get_routed_networks() # $1 = interface name
+{
+    local address
+    local rest
+
+    ip route show dev $1 2> /dev/null |
+	while read address rest; do
+	    if [ "x$address" = xdefault ]; then
+		error_message "WARNING: default route ignored on interface $1"
+	    else
+		[ "$address" = "${address%/*}" ] && address="${address}/32"
+		echo $address
+	    fi
+        done
+}
+
+#
+# Internal version of 'which'
+#
+mywhich() {
+    local dir
+
+    for dir in $(split $PATH); do
+	if [ -x $dir/$1 ]; then
+	    echo $dir/$1
+	    return 0
+	fi
+    done
+
+    return 2
+}
+
+#
+# Set the Shorewall state
+#
+set_state () # $1 = state
+{
+    echo "$1 ($(date))" > /var/lib/shorewall/state
+}
+
+#
+# Determine which optional facilities are supported by iptables/netfilter
+#
+determine_capabilities() {
+    qt $IPTABLES -t nat    -L -n && NAT_ENABLED=Yes    || NAT_ENABLED=
+    qt $IPTABLES -t mangle -L -n && MANGLE_ENABLED=Yes || MANGLE_ENABLED=
+
+    CONNTRACK_MATCH=
+    MULTIPORT=
+    XMULTIPORT=
+    POLICY_MATCH=
+    PHYSDEV_MATCH=
+    IPRANGE_MATCH=
+    RECENT_MATCH=
+    OWNER_MATCH=
+    IPSET_MATCH=
+    CONNMARK=
+    XCONNMARK=
+    CONNMARK_MATCH=
+    XCONNMARK_MATCH=
+    RAW_TABLE=
+    IPP2P_MATCH=
+    LENGTH_MATCH=
+    CLASSIFY_TARGET=
+    ENHANCED_REJECT=
+    USEPKTTYPE=
+    KLUDGEFREE=
+    MARK=
+    XMARK=
+    MANGLE_FORWARD=
+
+    qt $IPTABLES -N fooX1234
+    qt $IPTABLES -A fooX1234 -m conntrack --ctorigdst 192.168.1.1 -j ACCEPT             && CONNTRACK_MATCH=Yes
+    qt $IPTABLES -A fooX1234 -p tcp -m multiport --dports 21,22 -j ACCEPT               && MULTIPORT=Yes
+    qt $IPTABLES -A fooX1234 -p tcp -m multiport --dports 21:22 -j ACCEPT               && XMULTIPORT=Yes
+    qt $IPTABLES -A fooX1234 -m policy --pol ipsec --mode tunnel --dir in -j ACCEPT     && POLICY_MATCH=Yes
+
+    if qt $IPTABLES -A fooX1234 -m physdev --physdev-in eth0 -j ACCEPT; then
+	PHYSDEV_MATCH=Yes
+	qt $IPTABLES -A fooX1234 -m physdev --physdev-in eth1 -m physdev --physdev-out eth1 -j ACCEPT && KLUDGEFREE=Yes
+    fi
+
+    if qt $IPTABLES -A fooX1234 -m iprange --src-range 192.168.1.5-192.168.1.124 -j ACCEPT; then
+	IPRANGE_MATCH=Yes
+	if [ -z "${KLUDGEFREE}${PHYSDEV_MATCH}" ]; then
+	    qt $IPTABLES -A fooX1234 -m iprange --src-range 192.168.1.5-192.168.1.124 -m iprange --dst-range 192.168.1.5-192.168.1.124 -j ACCEPT && KLUDGEFREE=Yes
+	fi
+    fi
+
+    qt $IPTABLES -A fooX1234 -m recent --update -j ACCEPT     && RECENT_MATCH=Yes
+    qt $IPTABLES -A fooX1234 -m owner --uid-owner 0 -j ACCEPT && OWNER_MATCH=Yes
+
+    if qt $IPTABLES -A fooX1234 -m connmark --mark 2  -j ACCEPT; then
+	CONNMARK_MATCH=Yes
+	qt $IPTABLES -A fooX1234 -m connmark --mark 2/0xFF -j ACCEPT && XCONNMARK_MATCH=Yes
+    fi
+
+    qt $IPTABLES -A fooX1234 -p tcp -m ipp2p --ipp2p -j ACCEPT            && IPP2P_MATCH=Yes
+    qt $IPTABLES -A fooX1234 -m length --length 10:20 -j ACCEPT           && LENGTH_MATCH=Yes
+    qt $IPTABLES -A fooX1234 -j REJECT --reject-with icmp-host-prohibited && ENHANCED_REJECT=Yes
+
+    if [ -n "$MANGLE_ENABLED" ]; then
+	qt $IPTABLES -t mangle -N fooX1234
+
+	if qt $IPTABLES -t mangle -A fooX1234 -j MARK --set-mark 1; then
+	    MARK=Yes
+	    qt $IPTABLES -t mangle -A fooX1234 -j MARK --and-mark 0xFF && XMARK=Yes
+	fi
+
+	if qt $IPTABLES -t mangle -A fooX1234 -j CONNMARK --save-mark; then
+	    CONNMARK=Yes
+	    qt $IPTABLES -t mangle -A fooX1234 -j CONNMARK --save-mark --mask 0xFF && XCONNMARK=Yes
+	fi
+
+	qt $IPTABLES -t mangle -A fooX1234 -j CLASSIFY --set-class 1:1 && CLASSIFY_TARGET=Yes
+	qt $IPTABLES -t mangle -F fooX1234
+	qt $IPTABLES -t mangle -X fooX1234
+	qt $IPTABLES -t mangle -L FORWARD -n && MANGLE_FORWARD=Yes
+    fi
+
+    qt $IPTABLES -t raw	   -L -n && RAW_TABLE=Yes
+
+    if qt mywhich ipset; then
+	qt ipset -X fooX1234 # Just in case something went wrong the last time
+
+	if qt ipset -N fooX1234 iphash ; then
+	    if qt $IPTABLES -A fooX1234 -m set --set fooX1234 src -j ACCEPT; then
+		qt $IPTABLES -D fooX1234 -m set --set fooX1234 src -j ACCEPT
+		IPSET_MATCH=Yes
+	    fi
+	    qt ipset -X fooX1234
+	fi
+    fi
+
+    qt $IPTABLES -A fooX1234 -m pkttype --pkt-type broadcast -j ACCEPT && USEPKTTYPE=Yes
+
+    qt $IPTABLES -F fooX1234
+    qt $IPTABLES -X fooX1234
+}
+
+report_capability() # $1 = Capability Description , $2 Capability Setting (if any)
+{
+    local setting=
+
+    [ "x$2" = "xYes" ] && setting="Available" || setting="Not available"
+
+    echo "  " $1: $setting
+}
+
+report_capabilities() {
+    if [ $VERBOSE -gt 1 ]; then
+	echo "Shorewall has detected the following iptables/netfilter capabilities:"
+	report_capability "NAT" $NAT_ENABLED
+	report_capability "Packet Mangling" $MANGLE_ENABLED
+	report_capability "Multi-port Match" $MULTIPORT
+	[ -n "$MULTIPORT" ] && report_capability "Extended Multi-port Match" $XMULTIPORT
+	report_capability "Connection Tracking Match" $CONNTRACK_MATCH
+	report_capability "Packet Type Match" $USEPKTTYPE
+	report_capability "Policy Match" $POLICY_MATCH
+	report_capability "Physdev Match" $PHYSDEV_MATCH
+	report_capability "Packet length Match" $LENGTH_MATCH
+	report_capability "IP range Match" $IPRANGE_MATCH
+	report_capability "Recent Match" $RECENT_MATCH
+	report_capability "Owner Match" $OWNER_MATCH
+	report_capability "Ipset Match" $IPSET_MATCH
+	report_capability "CONNMARK Target" $CONNMARK
+	[ -n "$CONNMARK" ] && report_capability "Extended CONNMARK Target" $XCONNMARK
+	report_capability "Connmark Match" $CONNMARK_MATCH
+	[ -n "$CONNMARK_MATCH" ] && report_capability "Extended Connmark Match" $XCONNMARK_MATCH
+	report_capability "Raw Table" $RAW_TABLE
+	report_capability "IPP2P Match" $IPP2P_MATCH
+	report_capability "CLASSIFY Target" $CLASSIFY_TARGET
+	report_capability "Extended REJECT" $ENHANCED_REJECT
+	report_capability "Repeat match" $KLUDGEFREE
+	report_capability "MARK Target" $MARK
+	[ -n "$MARK" ] && report_capability "Extended MARK Target" $XMARK
+	report_capability "Mangle FORWARD Chain" $MANGLE_FORWARD
+    fi
+
+    [ -n "$PKTTYPE" ] || USEPKTTYPE=
+
+}
+
+
+#
+# Delete IP address
+#
+del_ip_addr() # $1 = address, $2 = interface
+{
+    [ $(find_first_interface_address_if_any $2) = $1 ] || qt ip addr del $1 dev $2
+}
+
+# Add IP Aliases
+#
+add_ip_aliases() # $* = List of addresses
+{
+    local addresses external interface inet cidr rest val arping=$(mywhich arping)
+
+    address_details()
+    {
+	#
+	# Folks feel uneasy if they don't see all of the same
+	# decoration on these IP addresses that they see when their
+	# distro's net config tool adds them. In an attempt to reduce
+	# the anxiety level, we have the following code which sets
+	# the VLSM and BRD from an existing address in the same networks
+	#
+	# Get all of the lines that contain inet addresses with broadcast
+	#
+	ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | while read inet cidr rest ; do
+	    case $cidr in
+		*/*)
+		    if in_network $external $cidr; then
+			echo "/${cidr#*/} brd $(broadcastaddress $cidr)"
+			break
+		    fi
+		    ;;
+	    esac
+	done
+    }
+
+    do_one()
+    {
+	val=$(address_details)
+
+	ip addr add ${external}${val} dev $interface $label
+	[ -n "$arping" ] && qt $arping -U -c 2 -I $interface $external
+	echo "$external $interface" >> $STATEDIR/nat
+	[ -n "$label" ] && label="with $label"
+	progress_message "   IP Address $external added to interface $interface $label"
+    }
+
+    progress_message "Adding IP Addresses..."
+
+    while [ $# -gt 0 ]; do
+	external=$1
+	interface=$2
+	label=
+
+	if [ "$interface" != "${interface%:*}" ]; then
+	    label="${interface#*:}"
+	    interface="${interface%:*}"
+	    label="label $interface:$label"
+	fi
+
+	shift 2
+
+	list_search $external $(find_interface_addresses $interface) || do_one
+    done
+}
+
+detect_gateway() # $1 = interface
+{
+    local interface=$1
+    #
+    # First assume that this is some sort of point-to-point interface
+    #
+    gateway=$( find_peer $(ip addr ls $interface ) )
+    #
+    # Maybe there's a default route through this gateway already
+    #
+    [ -n "$gateway" ] || gateway=$(find_gateway $(ip route ls dev $interface))
+    #
+    # Last hope -- is there a load-balancing route through the interface?
+    #
+    [ -n "$gateway" ] || gateway=$(find_nexthop $interface)
+    #
+    # Be sure we found one
+    #
+    [ -n "$gateway" ] && echo $gateway
+}
+
+#
+# Disable IPV6
+#
+disable_ipv6() {
+    local foo="$(ip -f inet6 addr ls 2> /dev/null)"
+
+    if [ -n "$foo" ]; then
+	if qt mywhich ip6tables; then
+	    ip6tables -P FORWARD DROP
+	    ip6tables -P INPUT DROP
+	    ip6tables -P OUTPUT DROP
+	    ip6tables -F
+	    ip6tables -X
+	    ip6tables -A OUTPUT -o lo -j ACCEPT
+	    ip6tables -A INPUT -i lo -j ACCEPT
+	else
+	    error_message "WARNING: DISABLE_IPV6=Yes in shorewall.conf but this system does not appear to have ip6tables"
+	fi
+    fi
+}
+
+#
+# Add a logging rule.
+#
+log_rule_limit() # $1 = log level, $2 = chain, $3 = display Chain $4 = disposition , $5 = rate limit $6=log tag $7=command $... = predicates for the rule
+{
+    local level=$1
+    local chain=$2
+    local displayChain=$3
+    local disposition=$4
+    local rulenum=
+    local limit="${5:-$LOGLIMIT}"
+    local tag=${6:+$6 }
+    local command=${7:--A}
+    local prefix
+    local base=$(chain_base $displayChain)
+
+    shift 7
+
+    if [ -n "$tag" -a -n "$LOGTAGONLY" ]; then
+	displayChain=$tag
+	tag=
+    fi
+
+    if [ -n "$LOGRULENUMBERS" ]; then
+	eval rulenum=\$${base}_logrules
+
+	rulenum=${rulenum:-1}
+
+	prefix="$(printf "$LOGFORMAT" $displayChain $rulenum $disposition)${tag}"
+
+	rulenum=$(($rulenum + 1))
+	eval ${base}_logrules=$rulenum
+    else
+	prefix="$(printf "$LOGFORMAT" $displayChain $disposition)${tag}"
+    fi
+
+    if [ ${#prefix} -gt 29 ]; then
+	prefix="$(echo $prefix | truncate 29)"
+	error_message "WARNING: Log Prefix shortened to \"$prefix\""
+    fi
+
+    case $level in
+	ULOG)
+	    run_iptables $command $chain $@ $limit -j ULOG $LOGPARMS --ulog-prefix "$prefix"
+	    ;;
+	*)
+	    run_iptables $command $chain $@ $limit -j LOG $LOGPARMS --log-level $level --log-prefix "$prefix" 
+	    ;;
+    esac
+
+    if [ $? -ne 0 ] ; then
+	[ -z "$STOPPING" ] && { stop_firewall; exit 2; }
+    fi
+}
+
+log_rule() # $1 = log level, $2 = chain, $3 = disposition , $... = predicates for the rule
+{
+    local level=$1
+    local chain=$2
+    local disposition=$3
+
+    shift 3
+
+    log_rule_limit $level $chain $chain $disposition "$LOGLIMIT" "" -A $@
+}
+
+#
+# Check that a mark value or mask is less that 256 or that it is less than 65536 and
+# that it's lower 8 bits are zero.
+#
+verify_mark() # $1 = value to test
+{
+    verify_mark2()
+    {
+	case $1 in
+	    0*)
+		[ $(($1)) -lt 256 ] && return 0
+		[ -n "$HIGH_ROUTE_MARKS" ] || return 1
+		[ $(($1)) -gt 65535 ] && return 1
+		return $(($1 & 0xFF))
+		;;
+	    [1-9]*)
+		[ $1 -lt 256 ] && return 0
+		[ -n "$HIGH_ROUTE_MARKS" ] || return 1
+		[ $1 -gt 65535 ] && return 1
+		return $(($1 & 0xFF))
+		;;
+	    *)
+		return 2
+		;;
+	esac
+    }
+
+    verify_mark2 $1 || fatal_error "Invalid Mark or Mask value: $1"
+}
+
+#
+# Detect a device's MTU
+#
+get_device_mtu() # $1 = device
+{
+    local output="$(ip link ls dev $1 2> /dev/null)" # quotes required for /bin/ash
+
+    if [ -n "$output" ]; then
+	echo $(find_mtu $output)
+    else
+	echo 1500
+    fi
+}
+
+#
+# Arne Bernin's 'tc4shorewall'
+#
+setup_traffic_shaping()
+{
+    local mtu r2q tc_all_devices device mark rate ceil prio options devfile=$(find_file tcdevices) classfile=$(find_file tcclasses) devnum=1 last_device=
+    r2q=10
+
+    rate_to_kbit() {
+	local rateunit rate
+	rate=$1
+	rateunit=$( echo $rate | sed -e 's/[0-9]*//')
+	rate=$( echo $rate | sed -e 's/[a-z]*//g')
+
+	case $rateunit in
+	    kbit)
+		rate=$rate
+		;;
+	    mbit)
+		rate=$(expr $rate \* 1024)
+		;;
+	    mbps)
+		rate=$(expr $rate \* 8192)
+		;;
+	    kbps)
+		rate=$(expr $rate \* 8)
+		;;
+	    *)
+		rate=$(expr $rate / 128)
+		;;
+	esac
+	echo $rate
+    }
+
+    calculate_quantum() {
+	local rate=$(rate_to_kbit $1)
+	echo $(( $rate * ( 128 / $r2q ) ))
+    }
+
+    # get given outbandwidth for device
+    get_outband_for_dev() {
+	local device inband outband
+	while read device inband outband; do
+	    expandv device inband outband
+	    tcdev="$device $inband $outband"
+	    if [ "$1" = "$device" ] ; then
+		echo $outband
+		return
+	    fi
+	done < $TMP_DIR/tcdevices
+    }
+
+    check_tcclasses_options() {
+	while [ $# -gt 1 ]; do
+	    shift
+	    case $1 in
+		default|tcp-ack|tos-minimize-delay|tos-maximize-throughput|tos-maximize-reliability|tos-minimize-cost|tos-normal-service)
+		    ;;
+		tos=0x[0-9a-f][0-9a-f]|tos=0x[0-9a-f][0-9a-f]/0x[0-9a-f][0-9a-f])
+		    ;;
+		*)
+		    echo $1
+		    return 1
+		    ;;
+	    esac
+	done
+	return 0
+    }
+
+    get_defmark_for_dev() {
+	local searchdev searchmark device ceil prio options
+	searchdev=$1
+
+	while read device mark rate ceil prio options; do
+	    expandv device mark rate ceil prio options
+	    options=$(separate_list $options | tr '[A-Z]' '[a-z]')
+	    tcdev="$device $mark $rate $ceil $prio $options"
+	    if [ "$searchdev" = "$device" ] ; then
+		list_search "default" $options && echo $mark &&return 0
+	    fi
+	done < $TMP_DIR/tcclasses
+
+	return 1
+    }
+
+    check_defmark_for_dev() {
+	get_defmark_for_dev $1 >/dev/null
+    }
+
+    validate_tcdevices_file() {
+	progress_message2 "Validating $devfile..."
+	local device local device inband outband
+	while read device inband outband; do
+	    expandv device inband outband
+	    tcdev="$device $inband $outband"
+	    check_defmark_for_dev $device || fatal_error "Option default is not defined for any class in tcclasses for interface $device"
+	    case $interface in
+		*:*|+)
+		    fatal_error "Invalid Interface Name: $interface"
+		    ;;
+	    esac
+	    list_search $device $devices && fatal_error "Interface $device is defined more than once in tcdevices"
+	    tc_all_devices="$tc_all_devices $device"
+	done < $TMP_DIR/tcdevices
+    }
+
+    validate_tcclasses_file() {
+	progress_message2 "Validating $classfile..."
+	local classlist device mark rate ceil prio bandw wrongopt allopts opt
+	allopts=""
+	while read device mark rate ceil prio options; do
+	    expandv device mark rate ceil prio options
+	    tcdev="$device $mark $rate $ceil $prio $options"
+	    ratew=$(get_outband_for_dev $device)
+	    options=$(separate_list $options | tr '[A-Z]' '[a-z]')
+	    for opt in $options; do
+	    	case $opt in
+	    	tos=0x??)
+	    	    opt="$opt/0xff"
+	    	    ;;
+		esac
+		    list_search "$device-$opt" $allopts && fatal_error "option $opt already defined in a chain for interface $device in tcclasses"
+		    allopts="$allopts $device-$opt"
+	    done
+	    wrongopt=$(check_tcclasses_options $options) || fatal_error "unknown option $wrongopt for class iface $device mark $mark in tcclasses file"
+	    if [ -z "$ratew" ] ; then
+		fatal_error "device $device seems not to be configured in tcdevices"
+	    fi
+	    list_search "$device-$mark" $classlist && fatal_error "Mark $mark for interface $device defined more than once in tcclasses"
+	    #
+	    # Convert HEX/OCTAL mark representation to decimal
+	    #
+	    mark=$(($mark))
+	    verify_mark $mark
+	    [ $mark -lt 256 ] || fatal_error "Invalid Mark Value"
+	    classlist="$classlist $device-$mark"
+	done < $TMP_DIR/tcclasses
+    }
+
+    add_root_tc() {
+	local defmark dev indent
+
+	dev=$(chain_base $device)
+
+	if [ $COMMAND = compile ]; then
+	    save_command "if qt ip link ls dev $device; then"
+	    indent="$INDENT"
+	    INDENT="$INDENT    "
+	    save_command ${dev}_exists=Yes
+	    save_command qt tc qdisc del dev $device root
+	    save_command qt tc qdisc del dev $device ingress
+	elif ! qt ip link ls dev $device; then
+	    error_message "WARNING: Device $device not found -- traffic-shaping configuration skipped"
+	    return 1
+	fi
+
+	defmark=$(get_defmark_for_dev $device)
+
+	run_tc qdisc add dev $device root handle $devnum: htb default 1$defmark
+
+	if [ $COMMAND = compile ]; then
+	    save_command "${dev}_mtu=\$(get_device_mtu $device)"
+	    run_tc "class add dev $device parent $devnum: classid $devnum:1 htb rate $outband mtu \$${dev}_mtu"
+	else
+	    run_tc class add dev $device parent $devnum: classid $devnum:1 htb rate $outband mtu $(get_device_mtu $device)
+	fi
+
+	run_tc qdisc add dev $device handle ffff: ingress
+	run_tc filter add dev $device parent ffff: protocol ip prio 50 u32 match ip src 0.0.0.0/0 police rate ${inband} burst 10k drop flowid :1
+	eval ${dev}_devnum=$devnum
+	devnum=$(($devnum + 1))
+	
+	if [ $COMMAND = compile ]; then
+	    save_progress_message_short "   TC Device $tcdev defined."
+	    INDENT="$indent"
+	    save_command else
+	    INDENT="$INDENT    "
+	    save_command error_message "\"WARNING: Device $device not found -- traffic-shaping configuration skipped\""
+	    save_command "${dev}_exists="
+	    INDENT="$indent"
+	    save_command "fi"
+	    save_command
+	fi
+
+	return 0
+    }
+
+    add_tc_class() {
+	local full classid tospair tosmask quantum indent
+
+	dev=$(chain_base $device)
+
+	if [ $COMMAND = compile ]; then
+	    save_command "if [ -n \"\$${dev}_exists\" ] ; then"
+	    indent="$INDENT"
+	    INDENT="$INDENT    "
+	else 
+	    qt ip link ls dev $device || return 1
+	fi
+
+	full=$(get_outband_for_dev $device)
+	full=$(rate_to_kbit $full)
+
+	if [ -z "$prio" ] ; then
+	    prio=1
+	fi
+
+	case $rate in
+	    *full*)
+		rate=$(echo $rate | sed -e "s/full/$full/")
+		rate="$(($rate))kbit"
+		;;
+	esac
+
+	case $ceil in
+	    *full*)
+		ceil=$(echo $ceil | sed -e "s/full/$full/")
+		ceil="$(($ceil))kbit"
+		;;
+	esac
+
+	eval devnum=\$${dev}_devnum
+	#
+	# Convert HEX/OCTAL mark representation to decimal
+	#
+	mark=$(($mark))
+
+	classid=$devnum:1$mark
+
+	[ -n "$devnum" ] || fatal_error "Device $device not defined in $devfile"
+
+	quantum=$(calculate_quantum $rate)
+
+	if [ $COMMAND = compile ]; then
+	    save_command "[ \$${dev}_mtu -gt $quantum ] && quantum=\$${dev}_mtu || quantum=$quantum" 
+	    run_tc "class add dev $device parent $devnum:1 classid $classid htb rate $rate ceil $ceil prio $prio mtu \$${dev}_mtu quantum \$quantum"
+	else
+	    [ "$last_device" = $device ] || mtu=$(get_device_mtu $device)
+	    [ $mtu -gt $quantum ] && quantum=$mtu
+	    run_tc class add dev $device parent $devnum:1 classid $classid htb rate $rate ceil $ceil prio $prio mtu $mtu quantum $quantum
+	fi
+
+	run_tc qdisc add dev $device parent $classid handle 1$mark: sfq perturb 10
+	# add filters
+	if [ -n "$CLASSIFY_TARGET" ]; then
+	    run_iptables -t mangle -A tcpost $(match_dest_dev $device) -m mark --mark $mark/0xFF -j CLASSIFY --set-class $classid
+	else
+	    run_tc filter add dev $device protocol ip parent $devnum:0 prio 1 handle $mark fw classid $classid
+	fi
+	#options
+	list_search "tcp-ack" $options && run_tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip protocol 6 0xff match u8 0x05 0x0f at 0 match u16 0x0000 0xffc0 at 2 match u8 0x10 0xff at 33 flowid $classid
+ 	list_search "tos-minimize-delay" $options       && options="$options tos=0x10/0x10"
+ 	list_search "tos-maximize-throughput" $options  && options="$options tos=0x08/0x08"
+ 	list_search "tos-maximize-reliability" $options && options="$options tos=0x04/0x04"
+ 	list_search "tos-minimize-cost" $options        && options="$options tos=0x02/0x02"
+ 	list_search "tos-normal-service" $options       && options="$options tos=0x00/0x1e"
+
+	for tospair in $(list_walk "tos=" $options) ; do
+	    case $tospair in
+	    	*/*)
+		    tosmask=${tospair##*/}
+		    ;;
+		*)
+		    tosmask=0xff
+		    ;;
+	    esac
+	    run_tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos ${tospair%%/*} $tosmask flowid $classid
+	done
+
+	if [ $COMMAND = compile ]; then
+	    save_progress_message_short "   TC Class $tcdev defined."
+	    INDENT="$indent"
+	    save_command fi
+	    save_command
+	fi
+
+	return 0
+    }
+
+    strip_file tcdevices $devfile
+    strip_file tcclasses $classfile
+
+    validate_tcdevices_file
+    validate_tcclasses_file
+
+    if [ -s $TMP_DIR/tcdevices ]; then
+	[ $COMMAND = compile ] && save_progress_message "Setting up Traffic Control..."
+	progress_message2 "$DOING $devfile..."
+
+	while read device inband outband; do
+	    expandv device inband outband
+	    tcdev="$device $inband $outband"
+	    add_root_tc && progress_message "   TC Device $tcdev defined."
+	done < $TMP_DIR/tcdevices
+    fi
+
+    if [ -s $TMP_DIR/tcclasses ]; then
+	progress_message2 "$DOING $classfile..."
+
+	while read device mark rate ceil prio options; do
+	    expandv device mark rate ceil prio options
+	    tcdev="$device $mark $rate $ceil $prio $options"
+	    options=$(separate_list $options | tr '[A-Z]' '[a-z]')
+	    add_tc_class && progress_message "   TC Class $tcdev defined."
+	    last_device=$device
+	done < $TMP_DIR/tcclasses
+    fi
+}
+
+#
+# Process a TC Rule - $MARKING_CHAIN is assumed to contain the name of the
+#                     default marking chain
+#
+process_tc_rule()
+{
+    local did_connmark=
+
+    chain=$MARKING_CHAIN  target="MARK --set-mark" marktest=
+
+    verify_designator() {
+	[ "$chain" = tcout ] && \
+	    fatal_error "Chain designator not allowed when source is \$FW; rule \"$rule\""
+	chain=$1
+	mark="${mark%:*}"
+    }
+
+    do_ipp2p()
+    {
+	[ -n "$IPP2P_MATCH" ] || fatal_error "Your kernel and/or iptables does not have IPP2P match support. Rule: \"$rule\""
+	[ "x$port" = "x-" ] && port="ipp2p"
+
+	case $proto in
+	    *:*)
+		proto=${proto#*:}
+		;;
+	    *)
+		proto=tcp
+		;;
+	esac
+
+	r="${r}-p $proto -m ipp2p --${port} "
+    }
+
+    verify_small_mark()
+    {
+	verify_mark $1
+	[ $(($1)) -lt 256 ] || fatal_error "Mark Value ($1) too larg, rule \"$rule\""
+    }
+
+    do_connmark()
+    {
+	target="CONNMARK --set-mark"
+	mark=$mark/0xff
+	did_connmark=Yes
+    }
+
+    validate_mark()
+    {
+	case $1 in
+	    */*)
+		verify_mark ${1%/*}
+		verify_mark ${1#*/}
+		;;
+	    *)
+		verify_mark $1
+		;;
+	esac
+    }
+
+   add_a_tc_rule() {
+	r=
+
+	if [ "x$source" != "x-"	 ]; then
+	    case $source in
+		$FW:*)
+		    [ $chain = tcpost ] || chain=tcout
+		    r="$(source_ip_range ${source#*:}) "
+		    ;;
+		*:*)
+		    interface=${source%:*}
+		    verify_interface $interface || fatal_error "Unknown interface $interface in rule \"$rule\""
+		    r="$(match_source_dev $interface) $(source_ip_range ${source#*:}) "
+		    ;;
+		*.*.*|+*|!+*)
+		    r="$(source_ip_range $source) "
+		    ;;
+		~*)
+		    r="$(mac_match $source) "
+		    ;;
+		$FW)
+		    [ $chain = tcpost ] || chain=tcout
+		    ;;
+		*)
+		    verify_interface $source || fatal_error "Unknown interface $source in rule \"$rule\""
+		    r="$(match_source_dev $source) "
+		    ;;
+	    esac
+	fi
+
+	if [ "x${user:--}" != "x-" ]; then
+
+	    [ "$chain" != tcout ] && \
+		fatal_error "Invalid use of a user/group: rule \"$rule\""
+
+	    r="$r-m owner"
+
+	    case "$user" in
+		*+*)
+		    r="$r --cmd-owner ${user#*+} "
+		    user=${user%+*}
+		    ;;
+	    esac
+
+	    case "$user" in
+		*:*)
+		    temp="${user%:*}"
+		    [ -n "$temp" ] && r="$r --uid-owner $temp "
+		    temp="${user#*:}"
+		    [ -n "$temp" ] && r="$r --gid-owner $temp "
+		    ;;
+		*)
+		    [ -n "$user" ] && r="$r --uid-owner $user "
+		    ;;
+	    esac
+	fi
+
+
+	[ -n "$marktest" ] && r="${r}-m ${marktest}--mark $testval "
+
+	if [ "x$dest" != "x-"  ]; then
+	    case $dest in
+		*:*)
+		    [ "$chain" = tcpre ] && fatal_error "Destination interface is not allowed in the PREROUTING chain - rule \"$rule\""
+		    interface=${dest%:*}
+		    verify_interface $interface || fatal_error "Unknown interface $interface in rule \"$rule\""
+		    r="$(match_dest_dev $interface) $(dest_ip_range ${dest#*:}) "
+		    ;;
+		*.*.*|+*|!+*)
+		    r="${r}$(dest_ip_range $dest) "
+		    ;;
+		*)
+		    [ "$chain" = tcpre ] && fatal_error "Destination interface is not allowed in the PREROUTING chain - rule \"$rule\""
+		    verify_interface $dest || fatal_error "Unknown interface $dest in rule \"$rule\""
+		    r="${r}$(match_dest_dev $dest) "
+		    ;;
+	    esac
+	fi
+
+	if [ "x${length:=-}" != "x-" ]; then
+	    [ -n "$LENGTH_MATCH" ] || fatal_error "Your kernel and/or iptables does not have length match support. Rule: \"$rule\""
+	    r="${r}-m length --length ${length} "
+	fi
+
+	if [ "x${tos:=-}" != "x-" ]; then
+	    r="${r}-m tos --tos ${tos} "
+	fi
+
+	multiport=
+
+	case $proto in
+	    ipp2p|IPP2P|ipp2p:*|IPP2P:*)
+		do_ipp2p
+		;;
+	    icmp|ICMP|1)
+		r="${r}-p icmp "
+		[ "x$port"  = "x-" ] || r="${r}--icmp-type $port"
+		;;
+	    *)
+		[ "x$proto" = "x-"  ] && proto=all
+		[ "x$proto" = "x"   ] && proto=all
+		[ "$proto"  = "all" ] || r="${r}-p $proto "
+		[ "x$port"  = "x-"  ] || r="${r}--dport $port "
+		;;
+	esac
+
+	[ "x$sport" = "x-"  ] || r="${r}--sport $sport "
+
+	if [ -n "${excludesources}${excludedests}" ]; then
+	    build_exclusion_chain chain1 mangle "$excludesources" "$excludedests"
+
+	    run_iptables2 -t mangle -A $chain $r -j $chain1
+
+	    run_iptables -t mangle -A $chain1 -j $target $mark
+	else
+	    run_iptables2 -t mangle -A $chain $r -j $target $mark
+	fi
+
+    }
+
+    if [ "$mark" != "${mark%:*}" ]; then
+	case "${mark#*:}" in
+	    p|P)
+		verify_designator tcpre
+		;;
+	    cp|CP)
+		verify_designator tcpre
+		do_connmark
+		;;
+	    f|F)
+		verify_designator tcfor
+		;;
+	    cf|CF)
+		verify_designator tcfor
+		do_connmark
+		;;
+	    c|C)
+		mark=${mark%:*}
+		do_connmark
+		;;
+	    *)
+		chain=tcpost
+		target="CLASSIFY --set-class"
+		;;
+	esac
+
+    fi
+
+    mask=0xffff
+
+    case $mark in
+	SAVE)
+	    [ -n "$did_connmark" ] && fatal_error "SAVE not valid with :C[FP]"
+	    target="CONNMARK --save-mark --mask 0xFF"
+	    mark=
+	    ;;
+	SAVE/*)
+	    [ -n "$did_connmark" ] && fatal_error "SAVE not valid with :C[FP]"
+	    target="CONNMARK --save-mark --mask"
+	    mark=${mark#*/}
+	    verify_small_mark $mark
+	    ;;
+	RESTORE)
+	    [ -n "$did_connmark" ] && fatal_error "RESTORE not valid with :C[FP]"
+	    target="CONNMARK --restore-mark --mask 0xFF"
+	    mark=
+	    ;;
+	RESTORE/*)
+	    [ -n "$did_connmark" ] && fatal_error "RESTORE not valid with :C[FP]"
+	    target="CONNMARK --restore-mark --mask"
+	    mark=${mark#*/}
+	    verify_small_mark $mark
+	    ;;
+	CONTINUE)
+	    [ -n "$did_connmark" ] && fatal_error "CONTINUE not valid with :C[FP]"
+	    target=RETURN
+	    mark=
+	    ;;
+	*)
+	    if [ "$chain" != tcpost ]; then
+		validate_mark $mark
+		if [ $((${mark%/*})) -gt 255 ]; then
+		    case $chain in
+			tcpre|tcout)
+			    target="MARK --or-mark"
+			    ;;
+			*)
+			    fatal_error "Invalid mark value ($mark) in rule \"$rule\""
+			    ;;
+		    esac
+		elif [ $((${mark%/*})) -ne 0 -a -n "$HIGH_ROUTE_MARKS" -a $chain = tcpre ]; then
+		    fatal_error "Marks < 256 may not be set in the PREROUTING chain when HIGH_ROUTE_MARKS=Yes"
+		fi
+	    fi
+	    ;;
+    esac
+
+    case $testval in
+	-)
+	    ;;
+	!*:C)
+	    marktest="connmark ! "
+	    testval=${testval%:*}
+	    testval=${testval#!}
+	    ;;
+	*:C)
+	    marktest="connmark "
+	    testval=${testval%:*}
+	    ;;
+	!*)
+	    marktest="mark ! "
+	    testval=${testval#!}
+	    ;;
+	*)
+	    [ -n "$testval" ] && marktest="mark "
+	    ;;
+    esac
+
+    if [ -n "$marktest" ] ; then
+	case $testval in
+	    */*)
+		verify_mark ${testval%/*}
+		verify_mark ${testval#*/}
+		;;
+	    *)
+		verify_mark $testval
+		testval=$testval/$mask
+		;;
+	esac
+    fi
+
+    excludesources=
+
+    case ${sources:=-} in
+	*!*!*)
+	    fatal_error "Invalid SOURCE in rule \"$rule\""
+	    ;;
+	!*)
+	    if [ $(list_count $sourcess) -gt 1 ]; then
+		excludesources=${sources#!}
+		sources=-
+	    fi
+	    ;;
+	*!*)
+	    excludesources=${sources#*!}
+	    sources=${sources%!*}
+	    ;;
+    esac
+
+    excludedests=
+
+    case ${dests:=-} in
+	*!*!*)
+	    fatal_error "Invalid DEST in rule \"$rule\""
+	    ;;
+	!*)
+	    if [ $(list_count $dests) -gt 1 ]; then
+		excludedests=${dests#*!}
+		dests=-
+	    fi
+	    ;;
+	*!*)
+	    excludedests=${dests#*!}
+	    dests=${dests%!*}
+	    ;;
+    esac
+
+    for source in $(separate_list $sources); do
+	for dest in $(separate_list $dests); do
+	    for port in $(separate_list ${ports:=-}); do
+		for sport in $(separate_list ${sports:=-}); do
+		    add_a_tc_rule
+		done
+	    done
+	done
+    done
+
+    progress_message "   TC Rule \"$rule\" $DONE"
+    [ $COMMAND = compile ] && save_progress_message "   TC Rule \"$rule\" Added"
+}
+
+delete_tc1()
+{
+    clear_one_tc() {
+	tc qdisc del dev $1 root 2> /dev/null
+	tc qdisc del dev $1 ingress 2> /dev/null
+
+    }
+
+    run_user_exit tcclear
+
+    run_ip link list | \
+    while read inx interface details; do
+	case $inx in
+	    [0-9]*)
+		clear_one_tc ${interface%:}
+		;;
+	    *)
+		;;
+	esac
+    done
+}
+
+SHOREWALL_LIBRARY=Loaded

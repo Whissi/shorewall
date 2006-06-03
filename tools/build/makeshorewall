@@ -42,7 +42,7 @@
 #
 # XSL Stylesheet to use for XML->HTML conversion
 #
-STYLESHEET=/usr/share/xml/docbook/stylesheet/nwalsh/current/xhtml/docbook.xsl
+STYLESHEET=/usr/share/xml/docbook/stylesheet/nwalsh/xhtml/docbook.xsl
 #
 # Directory where the build log will be placed. The log has the name
 # shorewall_build_<version>.log
@@ -196,7 +196,7 @@ esac
 VERSION=$1
 LOGFILE=$LOGDIR/shorewall_build_${VERSION}.log
 # location and options for GnuPG
-GPG="/usr/bin/gpg -ab --batch --comment 'To verify this, you can download our public key at https://lists.shorewall.net/shorewall.gpg.key'"
+GPG="/usr/bin/gpg -ab --no-use-agent --comment 'To verify this, you can download our public key at https://lists.shorewall.net/shorewall.gpg.key'"
 touch $LOGFILE
 progress_message "Build of Shorewall $VERSION on $(date)"
 

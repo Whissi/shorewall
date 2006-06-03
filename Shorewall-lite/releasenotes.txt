@@ -1,0 +1,52 @@
+Shorewall Lite 3.2.0 RC 1
+
+Problems Corrected in 3.2.0 RC 1
+
+None.
+
+Other changes in 3.2.0 RC 1
+
+None.
+
+New Features:
+
+Shorewall Lite is a companion product to Shorewall and is designed to
+allow you to maintain all Shorewall configuration information on a
+single system within your network.
+
+a) You install the full Shorewall release on one system within your
+network. You need not configure Shorewall there and you may totally
+disable startup of Shorewall in your init scripts. For ease of
+reference, we call this system the 'administrative system'.
+
+b) On each system where you wish to run a Shorewall-generated firewall,
+you install Shorewall Lite. For ease of reference, we will call these
+systems the 'firewall systems'.
+
+c) On the administrative system you create a separete 'configuration
+directory' for each firewall system. You copy the contents of
+/usr/share/shorewall/configfiles into each configuration directory.
+
+d) On each firewall system, you run:
+
+   /usr/share/shorewall/shorecap > capabilities
+
+   The 'capabilities' file is then copied to the corresponding
+   configuration directory on the administrative system.
+
+e) On the administrative system, for each firewall system you:
+
+   1) modify the files in the corresponding configuration
+      directory appropriately.
+
+   2) As a non-root user:
+
+      cd <configuration directory>
+      /sbin/shorewall compile . firewall
+      
+      Then copy the compiled 'firewall' script to
+      /usr/share/shorewall/firewall on the corresponding firewall
+      system.
+
+   3) On the firewall system, 'shorewall start'.
+

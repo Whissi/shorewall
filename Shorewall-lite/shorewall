@@ -957,11 +957,9 @@ usage() # $1 = exit status
 {
     echo "Usage: $(basename $0) [debug|trace] [nolock] [ -q ] [ -v ] [ -t ] <command>"
     echo "where <command> is one of:"
-    echo "   add <interface>[:<host-list>] ... <zone>"
     echo "   allow <address> ..."
     echo "   check [ -e ] [ <directory> ]"
     echo "   clear"
-    echo "   delete <interface>[:<host-list>] ... <zone>"
     echo "   drop <address> ..."
     echo "   dump [ -x ]"
     echo "   forget [ <file name> ]"
@@ -1267,10 +1265,6 @@ case "$COMMAND" in
 
 	check_command $@
 
-	;;
-    add|delete)
-	[ $# -lt 3 ] && usage 1
-	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $@
 	;;
     show|list)
     	shift

@@ -918,11 +918,6 @@ restore_command() {
 	;;
     esac
 
-    if [ -z "$STARTUP_ENABLED" ]; then
-	error_message "ERROR: Startup is disabled"
-	exit 2
-    fi
-
     RESTOREPATH=/var/lib/shorewall/$RESTOREFILE
 
     export NOROUTES

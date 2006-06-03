@@ -262,13 +262,6 @@ fi
 if [ -n "$ARCHLINUX" ] ; then
    sed -e 's!LOGFILE=/var/log/messages!LOGFILE=/var/log/messages.log!' -i ${PREFIX}/etc/shorewall/shorewall.conf
 fi
-#
-# Install the zones file
-#
-if [ ! -f ${PREFIX}/etc/shorewall/zones ]; then
-    run_install $OWNERSHIP -m 0744 zones ${PREFIX}/etc/shorewall/zones
-    echo "Zones file installed as ${PREFIX}/etc/shorewall/zones"
-fi
 
 #
 # Install the functions file

@@ -961,7 +961,6 @@ usage() # $1 = exit status
     echo "   allow <address> ..."
     echo "   check [ -e ] [ <directory> ]"
     echo "   clear"
-    echo "   compile [ -e ] [ -d <distribution> ] [ <directory name> ] <path name>"
     echo "   delete <interface>[:<host-list>] ... <zone>"
     echo "   drop <address> ..."
     echo "   dump [ -x ]"
@@ -984,7 +983,6 @@ usage() # $1 = exit status
     echo "   start [ -f ] [ -n ] [ <directory> ]"
     echo "   stop"
     echo "   status"
-    echo "   try <directory> [ <timeout> ]"
     echo "   version"
     echo
     exit $1
@@ -1258,12 +1256,6 @@ case "$COMMAND" in
 	export NOROUTES
 	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $COMMAND
 	;;
-    compile)
-	shift
-
-	compile_command $@
-
-	;;
     restart)
 	shift
 
@@ -1363,22 +1355,6 @@ case "$COMMAND" in
 	;;
     version)
 	echo $version
-	;;
-    try)
-	[ -n "$SHOREWALL_DIR" ] && startup_error "ERROR: -c option may not be used with \"try\""
-	[ $# -lt 2 -o $# -gt 3 ] && usage 1
-	VERBOSE=$(make_verbose)
-	[ -n "$NOROUTES" ] && NOROUTES=-n
-	if ! $0 $debugging $VERBOSE -c $2 restart; then
-	    if ! $IPTABLES -L shorewall > /dev/null 2> /dev/null; then
-		$0 $VERBOSE $NOROUTES start
-	    fi
-	elif ! $IPTABLES -L shorewall > /dev/null 2> /dev/null; then
-	    $0 $VERBOSE $NOROUTES start
-	elif [ $# -eq 3 ]; then
-	    sleep $3
-	    $0 $VERBOSE $NOROUTES restart
-	fi
 	;;
     logwatch)
 	shift

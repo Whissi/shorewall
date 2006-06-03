@@ -56,17 +56,22 @@ RPMDIR=~/rpm/
 # Directory where you want the release to be built
 #
 DIR=$PWD
+
 ################################################################################
 #                               V A R I A B L E S
 ################################################################################
 VERSION=
 OLDVERSION=
 SHOREWALLDIR=
+SHOREWALLLITEDIR=
 SOURCEDIR=
 SVNBRANCH=
+LITESVNBRANCH=
 XMLPROJ=
 RPMNAME=
+LITERPMNAME=
 TARBALL=
+LITETARBALL=
 LOGFILE=
 HTMLDIR=
 BUILDTARBALL=
@@ -74,6 +79,7 @@ BUILDRPM=
 BUILDXML=
 BUILDHTML=
 SAMPLESTAG=
+HASLITE=
 ################################################################################
 #                               F U N C T I O N S
 ################################################################################
@@ -214,15 +220,19 @@ case $VERSION in
 	;;
     3.2.*)
 	SVNBRANCH="trunk/Shorewall"
+	LITESVNBRANCH="trunk/Shorewall-lite"
 	DOCTAG="trunk/docs"
 	XMLPROJ="docs-3.2"
 	SAMPLESTAG="trunk/Samples"
+        HASLITE=Yes
 	;;
      3.3.*)
 	SVNBRANCH="trunk/Shorewall"
+	LITESVNBRANCH="trunk/Shorewall-lite"
 	DOCTAG="trunk/docs"
 	XMLPROJ="docs-3.3"
 	SAMPLESTAG="trunk/Samples"
+        HASLITE=Yes
 	;;
    *)
 	echo "Unsupported Version: $VERSION"
@@ -242,16 +252,22 @@ case $VERSION in
 	# Beta or Release Candidate
 	#
 	SHOREWALLDIR=shorewall-${VERSION%-*}
+	SHOREWALLLITEDIR=shorewall-lite-${VERSION%-*}
 	TARBALL=shorewall-${VERSION%-*}.tgz
+	LITETARBALL=shorewall-lite-${VERSION%-*}.tgz
 	RPMNAME=shorewall-${VERSION%-*}-0${VERSION#*-}.noarch.rpm
+	LITERPMNAME=shorewall-lite-${VERSION%-*}-0${VERSION#*-}.noarch.rpm
 	;;
     *)
 	#
 	# Normal Release
 	#
 	SHOREWALLDIR=shorewall-$VERSION
+	SHOREWALLLITEDIR=shorewall-lite-$VERSION
 	TARBALL=shorewall-$VERSION.tgz
+	LITETARBALL=shorewall-lite-$VERSION.tgz
 	RPMNAME=shorewall-${VERSION}-1.noarch.rpm
+	LITERPMNAME=shorewall-lite-${VERSION}-1.noarch.rpm
 	;;
 esac
 
@@ -259,9 +275,11 @@ HTMLDIR=shorewall-docs-html-$VERSION
 
 if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
     report "Shorewall directory is $DIR/$SHOREWALLDIR"
+    report "Shorewall Lite directory is $DIR/$SHOREWALLLITEDIR"
     report "SVN tag is $SVNBRANCH"
-    [ -n "$BUILDTARBALL" ] && report "TARBALL is $TARBALL"
-    [ -n "$BUILDRPM" ]     && report "RPM is $RPMNAME"
+    report "Lite SVN tag is $LITESVNBRANCH"
+    [ -n "$BUILDTARBALL" ] && report "TARBALL is $TARBALL" && report "LITETARBALL is $LITETARBALL"
+    [ -n "$BUILDRPM" ]     && report "RPM is $RPMNAME" && report "LITERPM is $LITERPMNAME"
 fi
 
 [ -n "$BUILDHTML" ] && report "HTML Directory is $HTMLDIR"
@@ -270,14 +288,25 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
     progress_message "Exporting $SVNBRANCH from SVN..."
 
     rm -rf $SHOREWALLDIR
+    rm -rf $SHOREWALLLITEDIR
 
-	do_or_die "svn export --non-interactive --force https://svn.sourceforge.net/svnroot/shorewall/$SVNBRANCH  $SHOREWALLDIR >> $LOGFILE 2>&1"
+    do_or_die "svn export --non-interactive --force https://svn.sourceforge.net/svnroot/shorewall/$SVNBRANCH  $SHOREWALLDIR >> $LOGFILE 2>&1"
+    if [ -n "$HASLITE" ]; then
+	progress_message "Exporting $LITESVNBRANCH from SVN..."
+	do_or_die "svn export --non-interactive --force https://svn.sourceforge.net/svnroot/shorewall/$LITESVNBRANCH  $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
+    fi
 
     fgrep VERSION=$VERSION $SHOREWALLDIR/install.sh > /dev/null 2>&1     || fatal_error "install.sh has wrong version"
     fgrep VERSION=$VERSION $SHOREWALLDIR/uninstall.sh > /dev/null 2>&1   || fatal_error "uninstall.sh has wrong version"
     fgrep VERSION=$VERSION $SHOREWALLDIR/fallback.sh > /dev/null 2>&1    || fatal_error "fallback.sh has wrong version"
     [ -f $SHOREWALLDIR/shorecap ] && \
 	{ fgrep VERSION=$VERSION $SHOREWALLDIR/shorecap > /dev/null 2>&1 || fatal_error "shorecap has wrong version"; }
+    if [ -n "$HASLITE" ]; then
+	fgrep VERSION=$VERSION $SHOREWALLLITEDIR/install.sh > /dev/null 2>&1     || fatal_error "Lite install.sh has wrong version"
+	fgrep VERSION=$VERSION $SHOREWALLLITEDIR/uninstall.sh > /dev/null 2>&1   || fatal_error "Lite uninstall.sh has wrong version"
+	fgrep VERSION=$VERSION $SHOREWALLLITEDIR/fallback.sh > /dev/null 2>&1    || fatal_error "Lite fallback.sh has wrong version"
+	fgrep VERSION=$VERSION $SHOREWALLLITEDIR/shorecap > /dev/null 2>&1       || fatal_error "Lite shorecap has wrong version"
+    fi
 
     if [ -n "$SAMPLESTAG" ]; then
 	cd $SHOREWALLDIR
@@ -297,6 +326,17 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	    rm -f ${shoreball}.asc
 	    do_or_die "$GPG $shoreball"
         done
+	if [ -n "$HASLITE" ]; then
+	    progress_message "Creating $DIR/$LITETARBALL..."
+	    do_or_die "tar -zcvf $LITETARBALL $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
+	    do_or_die "tar -jcvf shorewall-lite-${VERSION%-*}.tar.bz2 $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
+	    for shoresuffix in tgz tar.bz2; do
+		shoreball=shorewall-lite-${VERSION%-*}.${shoresuffix}
+		report "GPG signing $DIR/$shoreball"
+		rm -f ${shoreball}.asc
+		do_or_die "$GPG $shoreball"
+	    done
+	fi
     fi
 
     if [ -n "$BUILDRPM" ]; then
@@ -304,6 +344,13 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 
 	do_or_die "rpmbuild -tb --sign $TARBALL >> $LOGFILE 2>&1"
 	do_or_die cp -a $RPMDIR/RPMS/noarch/$RPMNAME .
+
+	if [ -n "$HASLITE" ]; then
+	    progress_message "Building $LITERPMNAME..."
+
+	    do_or_die "rpmbuild -tb --sign $LITETARBALL >> $LOGFILE 2>&1"
+	    do_or_die cp -a $RPMDIR/RPMS/noarch/$LITERPMNAME .
+	fi
     fi
 fi
 
@@ -442,6 +489,28 @@ fi
 	    rm -f ${betaball}.asc
 	    do_or_die "$GPG $betaball"
         done
+
+
+	if [ -n "$HASLITE" ]; then
+	    progress_message "Creating $DIR/shorewall-lite-$VERSION..."
+
+	    rm -rf shorewall-lite-$VERSION
+
+	    do_or_die mv $SHOREWALLLITEDIR shorewall-lite-$VERSION
+
+
+	    progress_message "Creating $DIR/shorewall-lite-${VERSION}.tgz ..."
+
+	    do_or_die "tar -zcvf shorewall-lite-${VERSION}.tgz shorewall-lite-$VERSION >> $LOGFILE 2>&1"
+	    do_or_die "tar -jcvf shorewall-lite-$VERSION.tar.bz2 shorewall-lite-$VERSION >> $LOGFILE 2>&1"
+
+	    for shoresuffix in tgz tar.bz2; do
+		betaball=shorewall-lite-$VERSION.${shoresuffix}
+		report "GPG signing $DIR/$betaball tarball"
+		rm -f ${betaball}.asc
+		do_or_die "$GPG $betaball"
+	    done
+	fi
 	;;
 esac
 
@@ -457,6 +526,10 @@ case $VERSION in
     *Beta*|*RC*)
 	do_or_die "md5sum shorewall-${VERSION%-*}-0${VERSION#*-}.noarch.rpm >> $VERSION.md5sums"
 	do_or_die "sha1sum shorewall-${VERSION%-*}-0${VERSION#*-}.noarch.rpm >> $VERSION.sha1sums"
+	if [ -n "$HASLITE" ]; then
+	    do_or_die "md5sum shorewall-lite-${VERSION%-*}-0${VERSION#*-}.noarch.rpm >> $VERSION.md5sums"
+	    do_or_die "sha1sum shorewall-lite-${VERSION%-*}-0${VERSION#*-}.noarch.rpm >> $VERSION.sha1sums"
+	fi
 	;;
 esac
 

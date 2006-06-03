@@ -1,6 +1,7 @@
 #/bin/sh
 
 rpm=
+literpm=
 
 case $1 in
     *.*[13569].*)
@@ -9,6 +10,7 @@ case $1 in
     *Beta*|*RC*)
 	DEST="root@mail.shorewall.net:/srv/ftp/pub/shorewall/development/${1%.*}/shorewall-$1"
 	rpm=shorewall-${1%-*}-0${1#*-}.noarch.rpm
+	literpm=shorewall-lite-${1%-*}-0${1#*-}.noarch.rpm
 	;;
     *)
 	DEST="root@mail.shorewall.net:/srv/ftp/pub/shorewall/${1%.*}/shorewall-$1"

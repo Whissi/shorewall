@@ -205,7 +205,7 @@ fi
 #
 cd "$(dirname $0)"
 
-echo "Installing Shorewall Version $VERSION"
+echo "Installing Shorewall Lite Version $VERSION"
 
 #
 # First do Backups
@@ -214,13 +214,16 @@ echo "Installing Shorewall Version $VERSION"
 #
 # Check for /etc/shorewall
 #
-if [ -d ${PREFIX}/etc/shorewall ]; then
+if [ -z "$PREFIX" && -d /etc/shorewall ]; then
     first_install=""
-    backup_directory ${PREFIX}/etc/shorewall
-    backup_directory ${PREFIX}/usr/share/shorewall
-    backup_directory ${PREFIX}/var/lib/shorewall
+    backup_directory /etc/shorewall
+    backup_directory /usr/share/shorewall
+    backup_directory /var/lib/shorewall
 else
     first_install="Yes"
+    rm -rf ${PREFIX}/etc/shorewall
+    rm -rf ${PREFIX}/usr/share/shorewall
+    rm -rf ${PREFIX}/var/lib/shorewall
 fi
 
 install_file_with_backup shorewall ${PREFIX}/sbin/shorewall 0544 ${PREFIX}/var/lib/shorewall-${VERSION}.bkout

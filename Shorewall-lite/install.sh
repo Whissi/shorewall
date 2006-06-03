@@ -272,15 +272,6 @@ install_file functions ${PREFIX}/usr/share/shorewall/functions 0444
 echo "Common functions installed in ${PREFIX}/usr/share/shorewall/functions"
 
 #
-# Install the Compiler
-#
-
-install_file compiler ${PREFIX}/usr/share/shorewall/compiler 0555
-
-echo
-echo "Compiler installed in ${PREFIX}/usr/share/shorewall/compiler"
-
-#
 # Install Shorecap
 #
 

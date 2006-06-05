@@ -112,7 +112,6 @@ fi
 %attr(0555,root,root) /usr/share/shorewall/compiler
 %attr(0444,root,root) /usr/share/shorewall/functions
 %attr(0544,root,root) /usr/share/shorewall/firewall
-%attr(0544,root,root) /usr/share/shorewall/shorecap
 %attr(0544,root,root) /usr/share/shorewall/help
 %attr(0644,root,root) /usr/share/shorewall/Limit
 %attr(0644,root,root) /usr/share/shorewall/macro.AllowICMPs

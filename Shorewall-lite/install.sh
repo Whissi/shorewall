@@ -303,6 +303,19 @@ install_file help ${PREFIX}/usr/share/shorewall/help 0544
 echo "Help command executor installed in ${PREFIX}/usr/share/shorewall/help"
 
 #
+# Install the Modules files
+#
+if [ ! -f ${PREFIX}/usr/share/shorewall/modules ]; then
+    run_install $OWNERSHIP -m 0600 modules ${PREFIX}/usr/share/shorewall/modules
+    echo "Modules file installed as ${PREFIX}/usr/share/shorewall/modules"
+fi
+
+if [ ! -f ${PREFIX}/usr/share/shorewall/xmodules ]; then
+    run_install $OWNERSHIP -m 0600 modules ${PREFIX}/usr/share/shorewall/xmodules
+    echo "Xmodules file installed as ${PREFIX}/usr/share/shorewall/xmodules"
+fi
+
+#
 # Create the version file
 #
 echo "$VERSION" > ${PREFIX}/usr/share/shorewall/version

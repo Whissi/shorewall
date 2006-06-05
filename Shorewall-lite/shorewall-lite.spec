@@ -63,6 +63,7 @@ fi
 %defattr(0644,root,root,0755)
 %attr(0755,root,root) %dir /etc/shorewall
 %attr(0644,root,root) %config(noreplace) /etc/shorewall/shorewall.conf
+%attr(0644,root,root) /etc/shorewall/Makefile
 %attr(0544,root,root) /etc/init.d/shorewall
 %attr(0755,root,root) %dir /usr/share/shorewall
 %attr(0700,root,root) %dir /var/lib/shorewall

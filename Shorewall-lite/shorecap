@@ -48,6 +48,7 @@ VERSION=3.2.0-RC1
 
 . /usr/share/shorewall/functions
 . /usr/share/shorewall/configpath
+. /etc/shorewall/shorewall.conf
 
 report_capability() # $1 = Capability
 {
@@ -85,6 +86,7 @@ report_capabilities() {
     report_capability MANGLE_FORWARD
 }
 
+[ -n "$IPTABLES" ] || iptables=$(mywhich iptables)
 VERBOSE=0
 load_kernel_modules
 determine_capabilities

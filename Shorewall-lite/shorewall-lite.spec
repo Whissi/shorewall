@@ -73,6 +73,8 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/version
 %attr(0644,root,root) /usr/share/shorewall/configpath
 %attr(0444,root,root) /usr/share/shorewall/functions
+%attr(0444,root,root) /usr/share/shorewall/modules
+%attr(0444,root,root) /usr/share/shorewall/xmodules
 %attr(0544,root,root) /usr/share/shorewall/shorecap
 %attr(0544,root,root) /usr/share/shorewall/help
 

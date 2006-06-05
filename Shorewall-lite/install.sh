@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Script to install Shoreline Firewall
+# Script to install Shoreline Firewall Lite
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
 #

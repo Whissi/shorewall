@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-#     Shorewall Packet Filtering Firewall Capabilities Detector
+#     Shorewall Lite Packet Filtering Firewall Capabilities Detector
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
 #
@@ -128,9 +128,33 @@ load_kernel_modules()
     #
     # Essential Modules
     #
+    loadmodule nfnetlink
+    loadmodule x_tables
     loadmodule ip_tables
     loadmodule iptable_filter
+    loadmodule iptable_mangle
     loadmodule ip_conntrack
+    loadmodule iptable_nat
+    loadmodule xt_state
+    loadmodule xt_tcpudp
+    #
+    # Other xtables modules
+    #
+    loadmodule xt_CLASSIFY
+    loadmodule xt_connmark
+    loadmodule xt_CONNMARK
+    loadmodule xt_conntrack
+    loadmodule xt_dccp
+    loadmodule xt_helper
+    loadmodule xt_length
+    loadmodule xt_limit
+    loadmodule xt_mac
+    loadmodule xt_mark
+    loadmodule xt_MARK
+    loadmodule xt_NFQUEUE
+    loadmodule xt_physdev
+    loadmodule xt_pkttype
+    loadmodule xt_tcpmss
     #
     # Helpers
     #

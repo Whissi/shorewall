@@ -1,13 +1,11 @@
 #!/usr/bin/perl -w
 #
-# $Id: shoregen,v 1.27 2004/04/24 12:31:18 paulgear Exp $
-# 
-# Generate shorewall configuration for a host from central configuration
-# files.
+# shoregen: Generate shorewall configuration for a host from central
+# configuration files.
 #
 
 #
-# (c) Copyright 2004 Paul D. Gear <paul@gear.dyndns.org>
+# (c) Copyright 2004-2006 Paul D. Gear <paul@gear.dyndns.org>
 #
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the
@@ -198,12 +196,12 @@ close $infile;
 
 # The firewall name must be defined
 unless (defined $fw) {
-    fatal 1, "Can't find firewall name (FW variable) for $host in $dir/shorewall.conf";
+    fatal "Can't find firewall name (FW variable) for $host in $dir/shorewall.conf";
 }
 
 # Router must be defined
 unless (defined $router) {
-    fatal 1, "Can't find IP_FORWARDING setting for $host in $dir/shorewall.conf";
+    fatal "Can't find IP_FORWARDING setting for $host in $dir/shorewall.conf";
 }
 if ($router =~ m/On|Yes/i) {
     $router = 1;
@@ -215,7 +213,7 @@ print "fw=$fw, router=$router\n" if $DEBUG > 3;
 
 # Find all valid zones
 unless (-r "zones") {
-    fatal 2, "You must provide a global zone file";
+    fatal "You must provide a global zone file";
 }
 
 
@@ -295,7 +293,7 @@ $hostzones{$fw} = 1;
 
 $conf = "policy";
 if (! -r $conf) {
-    fatal 3, "You must provide a global \"$conf\" file";
+    fatal "You must provide a global \"$conf\" file";
 }
 
 open( $outfile, ">$dir/$conf" ) or
@@ -338,7 +336,7 @@ close $outfile or warn "Can't close $dir/$conf for writing: $!";
 
 $conf = "rules";
 if (! -r $conf) {
-    fatal 4, "You must provide a global \"$conf\" file";
+    fatal "You must provide a global \"$conf\" file";
 }
 
 open( $outfile, ">$dir/$conf" ) or

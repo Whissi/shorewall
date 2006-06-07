@@ -309,7 +309,7 @@ New Features:
 
     As a final part of this change, the "check" command now compiles the
     current configuration and writes the compiled output to /dev/null. So
-    "check" performs all of the same valication that compile does. Note that
+    "check" performs all of the same validation that compile does. Note that
     there is still no guarantee that the generated script won't encounter
     run-time errors.
 
@@ -357,21 +357,6 @@ New Features:
 
     As part of this change, Shorewall no longer adds the "--syn" option
     to TCP rules that specify QUEUE as their target.
-2)  Kernel version 2.6.16 introduces 'xtables', a new common packet
-    filtering and connection tracking facility that supports both IPv4
-    and IPv6. Because a different set of kernel modules must be loaded
-    for xtables, Shorewall now includes two 'modules' files:
-
-    a) /usr/share/shorewall/modules -- the former
-    /etc/shorewall/modules
-
-    b) /usr/share/shorewall/xmodules -- a new file that support
-    xtables.
-
-    If you wish to use the new file, then simply execute this command:
-
-    cp -f /usr/share/shorewall/xmodules /etc/modules
-
 
 6)  /sbin/shorewall now supports a "-t" option that causes all progress
     messages to be timestamped.

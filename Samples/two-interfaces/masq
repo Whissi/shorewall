@@ -1,5 +1,5 @@
 #
-# Shorewall version 3.0 - Sample Masq file for two-interface configuration.
+# Shorewall version 3.2 - Sample Masq file for two-interface configuration.
 # Copyright (C) 2006 by the Shorewall Team
 #
 # This library is free software; you can redistribute it and/or
@@ -14,6 +14,10 @@
 #
 #	Use this file to define dynamic NAT (Masquerading) and to define
 #	Source NAT (SNAT).
+#
+#	WARNING: The entries in this file are order-sensitive. The first
+#	entry that matches a particular connection will be the one that
+#	is used.
 #
 #	WARNING: If you have more than one ISP, adding entries to this
 #	file will *not* force connections to go out through a particular
@@ -55,8 +59,9 @@
 #
 #	SUBNET -- Subnet that you wish to masquerade. You can specify this as
 #		  a subnet or as an interface. If you give the name of an
-#		  interface, you must have iproute installed and the interface
-#		  must be up before you start the firewall.
+#		  interface, the interface must be up before you start the
+#		  firewall (Shorewall will use your main routing table to
+#		  determine the appropriate subnet(s) to masquerade).
 #
 #		  In order to exclude a subset of the specified SUBNET, you
 #		  may append "!" and a comma-separated list of IP addresses

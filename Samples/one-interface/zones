@@ -1,5 +1,5 @@
 #
-# Shorewall version 3.0 - Sample Zones File for one-interface configuration.
+# Shorewall version 3.2 - Sample Zones File for one-interface configuration.
 # Copyright (C) 2006 by the Shorewall Team
 #
 # This library is free software; you can redistribute it and/or
@@ -12,7 +12,20 @@
 #
 # /etc/shorewall/zones
 #
-#	This file determines your network zones.
+#	This file declares your network zones. You specify the hosts in
+#	each zone through entries in /etc/shorewall/interfaces or
+#	/etc/shorewall/hosts.
+#
+#	WARNING: The format of this file changed in Shorewall 3.0.0. You can
+#		 continue to use your old records provided that you set
+#		 IPSECFILE=ipsec in /etc/shorewall/shorewall.conf. This will
+#		 signal Shorewall that the IPSEC-related zone options are
+#		 still specified in /etc/shorewall/ipsec rather than in this
+#		 file.
+#
+#		 To use records in the format described below, you must have
+#		 IPSECFILE=zones specified in /etc/shorewall/shorewall.conf
+#		 AND YOU MUST NOT SET THE 'FW' VARIABLE IN THAT FILE!!!!!
 #
 # Columns are:
 #
@@ -33,10 +46,13 @@
 #			b	  ipv4
 #			c:a,b     ipv4
 #
-#		Currently, Shorewall uses this information only to reorder the
+#		Currently, Shorewall uses this information to reorder the
 #		zone list so that parent zones appear after their subzones in
-#		the list. In the future, Shorewall may make more extensive use
-#		of that information.
+#		the list. The IMPLICIT_CONTINUE option in shorewall.conf can
+#		also create implicit CONTINUE policies to/from the subzone.
+#
+#		In the future, Shorewall may make additional use
+#		of nesting information.
 #
 #	TYPE	ipv4 -	This is the standard Shorewall zone type and is the
 #			default if you leave this column empty or if you enter
@@ -78,7 +94,7 @@
 #			strict	Means that packets must match all rules.
 #
 #			next	Separates rules; can only be used with
-#				strict..
+#				strict
 #
 #		Example:
 #			mode=transport,reqid=44
@@ -91,10 +107,8 @@
 #	If you wish to leave a column empty but need to make an entry
 #	in a following column, use "-".
 #
-# THE ORDER OF THE ENTRIES IN THIS FILE IS IMPORTANT IF YOU HAVE NESTED OR
-# OVERLAPPING ZONES DEFINED THROUGH /etc/shorewall/hosts.
+# For more information, see http://www.shorewall.net/Documentation.htm#Zones
 #
-# See http://www.shorewall.net/Documentation.htm#Nested
 ###############################################################################
 #ZONE	TYPE	OPTIONS			IN			OUT
 #					OPTIONS			OPTIONS

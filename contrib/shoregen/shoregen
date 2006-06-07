@@ -31,6 +31,7 @@ my $VERBOSE = 1;
 my $DEBUG = 1;
 my $DATE = scalar localtime;
 my $HEADER = "#\n# Shorewall %s - constructed by $0 on $DATE\n#\n\n";
+my $ret = 0;		# return code to shell
 
 if ($#ARGV != 0) {
     print STDERR "Usage: $0 <hostname>\n";
@@ -58,6 +59,7 @@ sub mesg
 sub error
 {
     mesg "ERROR", @_;
+    ++$ret;
 }
 
 sub warning
@@ -67,8 +69,8 @@ sub warning
 
 sub fatal
 {
-    my $RET = shift;
     mesg "FATAL", @_;
+    ++$ret;
     exit $RET;
 }
 
@@ -238,8 +240,8 @@ for my $infile ("$dir/hosts", "$dir/interfaces") {
 	    my @F = split;
 	    next if $#F < 0;
 	    next if $F[ 0 ] eq "-";
-	    my @IF = split /:/, $F[ 1 ];
-	    $hostzones{ $F[ 0 ] } = $IF[ 0 ];
+	    my @IF = split /:/, $F[ 0 ]; # strip off parent zone, if present
+	    $hostzones{ $IF[ 0 ] } = 1;
 	}
     }
 }
@@ -281,11 +283,11 @@ message "Other zones for $host: @tmp" if $VERBOSE > 0;
 #
 # Add 'all' as a valid source or destination.  Added here so it doesn't get
 # checked in %tmpzones check above.  Also add firewall itself.  (The
-# numbers are not important as long as they are different.)
+# numbers are not important as long as they are non-zero.)
 #
 
 $hostzones{"all"} = 1;
-$hostzones{$fw} = 2;
+$hostzones{$fw} = 1;
 
 #
 # Create the policy file, including only the applicable zones.
@@ -318,7 +320,7 @@ for (stripfile $conf) {
     # Save WARN & BAN details for later rules processing
     if ($pol eq "WARN"  or  $pol eq "BAN") {
 	if (exists $warnban{$src}{$dst}) {
-	    warning "Duplicate WARN/BAN rule: $src,$dst,$pol - possible typo?";
+	    error "Duplicate WARN/BAN rule: $src,$dst,$pol - possible typo?";
 	}
 	$warnban{$src}{$dst} = $pol;
 	next;
@@ -342,8 +344,6 @@ if (! -r $conf) {
 open( $outfile, ">$dir/$conf" ) or
     die "Can't open $dir/$conf for writing: $!";
 printf $outfile $HEADER, "$conf";
-
-my $ret = 0;
 
 for my $infile ("$conf.COMMON", "$conf.$host", "$conf") {
     next unless -r $infile;
@@ -384,7 +384,6 @@ for my $infile ("$conf.COMMON", "$conf.$host", "$conf") {
 	    }
 	    else { # $warnban{$src}{$dst} eq "BAN"
 		error "Rule contravenes BAN policy (omitted):\n\t$_";
-		++$ret;
 		next;
 	    }
 	}

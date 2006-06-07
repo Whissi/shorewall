@@ -56,7 +56,10 @@ RPMDIR=~/rpm/
 # Directory where you want the release to be built
 #
 DIR=$PWD
-
+#
+# location and options for GnuPG
+#
+GPG="/usr/bin/gpg -ab --batch --comment 'To verify this, you can download our public key at https://lists.shorewall.net/shorewall.gpg.key'"
 ################################################################################
 #                               V A R I A B L E S
 ################################################################################
@@ -201,8 +204,6 @@ esac
 
 VERSION=$1
 LOGFILE=$LOGDIR/shorewall_build_${VERSION}.log
-# location and options for GnuPG
-GPG="/usr/bin/gpg -ab --comment 'To verify this, you can download our public key at https://lists.shorewall.net/shorewall.gpg.key'"
 touch $LOGFILE
 progress_message "Build of Shorewall $VERSION on $(date)"
 

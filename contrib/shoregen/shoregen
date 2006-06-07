@@ -49,15 +49,26 @@ my $dir = "$spool/$host";
 # usual perl 'die' or 'warn' functions.
 #
 
+sub mesg
+{
+    my $type = shift;
+    print STDERR "$0: $type - @_\n";
+}
+
+sub error
+{
+    mesg "ERROR", @_;
+}
+
 sub warning
 {
-    print STDERR "$0: WARNING - @_\n";
+    mesg "WARNING", @_;
 }
 
 sub fatal
 {
     my $RET = shift;
-    print STDERR "$0: FATAL - @_\n";
+    mesg "FATAL", @_;
     exit $RET;
 }
 

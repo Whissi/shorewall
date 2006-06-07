@@ -69,7 +69,7 @@ sub fatal
 {
     mesg "FATAL", @_;
     ++$ret;
-    exit $RET;
+    exit $ret;
 }
 
 sub message
@@ -363,7 +363,10 @@ for my $infile ("$conf.COMMON", "$conf.$host", "$conf") {
 	# If host is not a router, either the source or destination zone
 	# must be the firewall itself.
 	if (!$router) {
-	    next unless $src eq $fw or $dst eq $fw;
+	    next unless $src eq $fw
+		     or $dst eq $fw
+		     or $src eq "all"
+		     or $dst eq "all";
 	}
 
 	# Save additional WARN/BAN rules

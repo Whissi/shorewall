@@ -235,10 +235,11 @@ New Features:
        1) A compatible version of Shorewall Lite must be running on the remote
           system.
        2) The 'detectnets' interface option is not allowed.
-       3) You must supply the file /etc/shorewall/capabilities to provide
+       3) DYNAMIC_ZONES=Yes is not allowed.
+       4) You must supply the file /etc/shorewall/capabilities to provide
           the compiler with knowledge of the capabilities of the system
           where the script is to be run. See below.
-       4) If your /etc/shorewall/params file contains code other than simple
+       5) If your /etc/shorewall/params file contains code other than simple
           assignment statements with contant values, then you should move
           that code to /etc/shorewall/init. That way, the code will be
           executed on the target system when the compiled script is run and

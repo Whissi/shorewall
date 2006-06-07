@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2006-06-06</pubdate>
+    <pubdate>2006-06-07</pubdate>
 
     <copyright>
       <year>2006</year>
@@ -173,7 +173,7 @@
     </blockquote>
   </section>
 
-  <section>
+  <section id="Lite">
     <title>Shorewall Lite (Added in version 3.2.0 RC 1)</title>
 
     <para>Shorewall Lite is a companion product to Shorewall and is designed
@@ -222,7 +222,9 @@
         <orderedlist>
           <listitem>
             <para>modify the files in the corresponding configuration
-            directory appropriately.</para>
+            directory appropriately. It's a good idea to include the IP
+            address of the administrative system in the
+            <filename>routestopped</filename> file.</para>
           </listitem>
 
           <listitem>
@@ -238,9 +240,119 @@
       <listitem>
         <para>On each firewall system:</para>
 
-        <programlisting><command>shorewall start</command></programlisting>
+        <para>Modify <filename>/etc/shorewall/shorewall.conf</filename> as
+        needed.</para>
+
+        <programlisting><command>shorewall restart</command></programlisting>
+
+        <para>I recommend using the <command>restart</command> command because
+        many package managers don't clear shorewall as part of the uninstall
+        process.</para>
       </listitem>
     </orderedlist>
+
+    <para>Shorewall Lite includes a very limited version of
+    <filename>/etc/shorewall/shorewall.conf</filename>. It includes the
+    following options which have the same meaning as in a full Shorewall
+    installation except as noted below:</para>
+
+    <simplelist>
+      <member>VERBOSITY</member>
+
+      <member>LOGFILE</member>
+
+      <member>LOGFORMAT — used by <filename>/sbin/shorewall</filename> for
+      finding 'Shorewall' log messages.</member>
+
+      <member>IPTABLES — determines the iptables binary to be used by
+      <filename>/sbin/shorewall</filename>.</member>
+
+      <member>PATH</member>
+
+      <member>SHOREWALL_SHELL</member>
+
+      <member>SUBSYSLOCK</member>
+    </simplelist>
+
+    <para>The <filename>/sbin/shorewall</filename> program included with
+    Shorewall Lite supports the same set of commands as the one in a full
+    Shorewall installation with the following exceptions:</para>
+
+    <simplelist>
+      <member>add</member>
+
+      <member>compile</member>
+
+      <member>delete</member>
+
+      <member>try</member>
+
+      <member>safe-start</member>
+
+      <member>safe-restart</member>
+    </simplelist>
+
+    <section>
+      <title>Converting a system from Shorewall to Shorewall Lite</title>
+
+      <para>Converting a firewall system that is currently running Shorewall
+      to run Shorewall Lite instead is straight-forward.</para>
+
+      <orderedlist>
+        <listitem>
+          <para>On the administrative system, create a configuration directory
+          for the firewall system.</para>
+        </listitem>
+
+        <listitem>
+          <para>Copy the contents of <filename
+          class="directory">/etc/shorewall/</filename> from the firewall
+          system to the configuration directory on the administrative
+          system.</para>
+        </listitem>
+
+        <listitem>
+          <para>Uninstall Shorewall on the firewall system. I recommend
+          totally removing <filename
+          class="directory">/etc/shorewall</filename>, <filename
+          class="directory">/usr/share/shorewall</filename> and <filename
+          class="directory">/var/lib/shorewall</filename> after you have used
+          the relevant package manager to remove Shorewall.</para>
+        </listitem>
+
+        <listitem>
+          <para>Install Shorewall Lite on the firewall system.</para>
+        </listitem>
+
+        <listitem>
+          <para>On the firewall system:</para>
+
+          <programlisting><command>/usr/share/shorewall/shorecap &gt; capabilities</command>
+<command>scp capabilities &lt;admin system&gt;:&lt;this system's config dir&gt;</command></programlisting>
+        </listitem>
+
+        <listitem>
+          <para>On the administrative system:</para>
+
+          <para>It's a good idea to include the IP address of the
+          administrative system in the firewall system's
+          <filename>routestopped</filename> file.</para>
+
+          <programlisting><command>cd &lt;configuration directory&gt;</command>
+<command>/sbin/shorewall compile -e . firewall</command>
+<command>scp firewall root@&lt;firewall system&gt;:/usr/share/shorewall/</command></programlisting>
+        </listitem>
+
+        <listitem>
+          <para>On the firewall system:</para>
+
+          <para>Modify <filename>/etc/shorewall/shorewall.conf</filename> as
+          needed.</para>
+
+          <programlisting><command>shorewall start</command></programlisting>
+        </listitem>
+      </orderedlist>
+    </section>
   </section>
 
   <section>

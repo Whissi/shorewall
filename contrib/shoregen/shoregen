@@ -132,6 +132,7 @@ sub constructfile
 #
 
 my $fw;			# Firewall zone for this host
+my $router;		# Is this host a router?
 my @globalzones;	# All known zones
 my %globalzones;
 my %hostzones;		# zones applicable to this host
@@ -182,9 +183,12 @@ open( my $infile, "$dir/shorewall.conf" ) or
     die "Can't open $dir/shorewall.conf: $!";
 
 for (<$infile>) {
-    next unless m/^\s*FW=(\S+)/;
-    $fw = $1;
-    last;
+    if (/^\s*FW=(\S+)/) {
+	$fw = $1 unless defined $fw;
+    }
+    if (/^\s*IP_FORWARDING=(\S+)/) {
+	$router = $1 unless defined $router;
+    }
 }
 
 close $infile;
@@ -192,9 +196,20 @@ close $infile;
 
 # The firewall name must be defined
 unless (defined $fw) {
-    fatal 1, "Can't find firewall name for $host in $dir/shorewall.conf";
+    fatal 1, "Can't find firewall name (FW variable) for $host in $dir/shorewall.conf";
 }
 
+# Router must be defined
+unless (defined $router) {
+    fatal 1, "Can't find IP_FORWARDING setting for $host in $dir/shorewall.conf";
+}
+if ($router =~ m/On|Yes/i) {
+    $router = 1;
+}
+else {
+    $router = 0;
+}
+print "fw=$fw, router=$router\n" if $DEBUG > 3;
 
 # Find all valid zones
 unless (-r "zones") {
@@ -330,56 +345,61 @@ printf $outfile $HEADER, "$conf";
 
 my $ret = 0;
 
-for (stripfile $conf) {
-    chomp;
+for my $infile ("$conf.COMMON", "$conf.$host", "$conf") {
+    next unless -r $infile;
+    for (stripfile $infile) {
+	chomp;
 
-    my ($act, $src, $dst, $rest) = split /\s+/, $_, 4;
+	my ($act, $src, $dst, $rest) = split /\s+/, $_, 4;
 
-    # strip down to only the main tag
-    $act =~ s/:.*//;
-    $src =~ s/:.*//;
-    $dst =~ s/:.*//;
-    print "$act, $src, $dst, $rest\n" if $DEBUG > 3;
+	$act =~ s/:.*//;	# strip off logging directives
+	$src =~ s/:.*//;	# strip off host & port specifiers
+	$dst =~ s/:.*//;	# strip off host & port specifiers
 
-    # Both source and destination zones must be valid on this host for this
-    # rule to apply.
-    next unless defined $hostzones{$src} and defined $hostzones{$dst};
+	print "$act, $src, $dst, $rest\n" if $DEBUG > 3;
 
-    # Source and destination zones must be on different interfaces as well,
-    # except for the case of all2all.
-    next if ($hostzones{$src} eq $hostzones{$dst} && $src ne "all");
+	# Both source and destination zones must be valid on this host
+	# for this rule to apply.
+	next unless defined $hostzones{$src} and defined $hostzones{$dst};
 
-    # Save additional WARN/BAN rules
-    if ($act eq "WARN"  or  $act eq "BAN") {
-	if (exists $warnban{$src}{$dst}) {
-	    warning "Duplicate WARN/BAN rule: $src,$dst,$act - possible typo?";
+	# If host is not a router, either the source or destination zone
+	# must be the firewall itself.
+	if (!$router) {
+	    next unless $src eq $fw or $dst eq $fw;
 	}
-	$warnban{$src}{$dst} = $act;
-	next;
-    }
 
-    # Check against WARN/BAN rules
-    if (exists $warnban{$src}{$dst} && $act =~ /^(ACCEPT|DNAT)\b/) {
-	if ($warnban{$src}{$dst} eq "WARN") {
-	    warning "Rule contravenes WARN policy:\n\t$_";
-	}
-	else { # $warnban{$src}{$dst} eq "BAN"
-	    warning "Rule contravenes BAN policy (omitted):\n\t$_";
-	    ++$ret;
+	# Save additional WARN/BAN rules
+	if ($act eq "WARN"  or  $act eq "BAN") {
+	    if (exists $warnban{$src}{$dst}) {
+		error "Duplicate WARN/BAN rule: $src,$dst,$act - possible typo?";
+	    }
+	    $warnban{$src}{$dst} = $act;
 	    next;
 	}
-    }
 
-    # Mangle DNAT rules if the destination is the local machine
-    if ($act =~ /^DNAT/  &&  $dst eq $fw) {
-	$_ =~ s/\bDNAT(-)?/ACCEPT/;	# change rule type
-	$_ =~ s/\b$fw:\S+/$dst/;	# strip trailing server address/port
-    }
+	# Check against WARN/BAN rules
+	if (exists $warnban{$src}{$dst} && $act =~ /^(ACCEPT|Allow|DNAT)/) {
+	    if ($warnban{$src}{$dst} eq "WARN") {
+		warning "Rule contravenes WARN policy:\n\t$_";
+	    }
+	    else { # $warnban{$src}{$dst} eq "BAN"
+		error "Rule contravenes BAN policy (omitted):\n\t$_";
+		++$ret;
+		next;
+	    }
+	}
 
-    printf $outfile "%s\n", $_;
+	# Mangle DNAT rules if the destination is the local machine
+	if ($act =~ /^DNAT/  &&  $dst eq $fw) {
+	    $_ =~ s/\bDNAT(-)?/ACCEPT/;	# change rule type
+	    $_ =~ s/\b$fw:\S+/$dst/;	# strip trailing server address/port
+	}
+
+	printf $outfile "%s\n", $_;
+    }
 }
 close $outfile or warn "Can't close $dir/$conf for writing: $!";
 
 
-# If we get here, everything's OK - return whatever we produced above...
+# Finished - return whatever we produced above...
 exit $ret;

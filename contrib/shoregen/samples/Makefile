@@ -6,5 +6,5 @@ default:	$(HOSTS)
 $(HOSTS):
 	shoregen $@
 
-install:
+install:	$(HOSTS)
 	install_shoregen -c -r $(HOSTS)

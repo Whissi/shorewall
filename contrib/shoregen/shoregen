@@ -48,10 +48,20 @@ my $dir = "$spool/$host";
 # usual perl 'die' or 'warn' functions.
 #
 
+sub info
+{
+    print "$0: @_\n";
+}
+
 sub mesg
 {
     my $type = shift;
     print STDERR "$0: $type - @_\n";
+}
+
+sub warning
+{
+    mesg "WARNING", @_;
 }
 
 sub error
@@ -60,21 +70,11 @@ sub error
     ++$ret;
 }
 
-sub warning
-{
-    mesg "WARNING", @_;
-}
-
 sub fatal
 {
     mesg "FATAL", @_;
     ++$ret;
     exit $ret;
-}
-
-sub message
-{
-    print "$0: @_\n";
 }
 
 
@@ -105,7 +105,7 @@ sub constructfile
     my $dst = shift;
     my $foundone = 0;
 
-    message "Constructing $confname" if $VERBOSE > 1;
+    info "Constructing $confname" if $VERBOSE > 1;
 
     open( my $DST, ">$dst" ) or die "Can't create $dst: $!";
     printf $DST $HEADER, $confname;
@@ -275,8 +275,8 @@ undef %tmpzones;
 
 
 my @tmp = sort keys %hostzones;
-message "FW zone for $host: $fw" if $VERBOSE > 0;
-message "Other zones for $host: @tmp" if $VERBOSE > 0;
+info "FW zone for $host: $fw" if $VERBOSE > 0;
+info "Other zones for $host: @tmp" if $VERBOSE > 0;
 
 #
 # Add 'all' as a valid source or destination.  Added here so it doesn't get

@@ -8234,7 +8234,19 @@ __EOF__
     LOGLIMIT="$LOGLIMIT"
     LOGTAGONLY="$LOGTAGONLY"
     LOGRULENUMBERS="$LOGRULENUMBERS"
+__EOF__
+
+    if [ -n "$LOGFORMAT" ]; then
+	cat >&3 << __EOF__
     LOGFORMAT="$LOGFORMAT"
+__EOF__
+    else
+	cat >&3 << __EOF__
+    [ -n "\$LOGFORMAT\" ] || LOGFORMAT="Shorewall:%s:%s:"
+__EOF__
+    fi
+    
+    cat >&3 << __EOF__
     RESTOREFILE="$RESTOREFILE"
     VERSION="$VERSION"
     CONFIG_PATH="$CONFIG_PATH"
@@ -8251,9 +8263,9 @@ __EOF__
 __EOF__
    else
 	cat >&3 << __EOF__
-    IPTABLES=\$(mywhich iptables 2> /dev/null)
+    [ -z "\$IPTABLES\" ] && IPTABLES=\$(mywhich iptables 2> /dev/null)
 
-    [ -z "\$IPTABLES" ] && startup_error "Can't find iptables executable"
+    [ -n \"$IPTABLES\" -a -e "\$IPTABLES" ] || startup_error "Can't find iptables executable"
 __EOF__
     fi
 

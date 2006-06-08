@@ -2,7 +2,19 @@ Shorewall Lite 3.2.0 RC 2
 
 Problems Corrected in 3.2.0 RC 2
 
-None.
+1)  The treatment of IPTABLES and LOGFORMAT have been clarified with
+    respect to Shorewall Lite. If these options are set in the
+    shorewall.conf file used at compile time, then the generated
+    firewall script will use those values. /sbin/shorewall on the
+    firewall system will use the corresponding values from
+    /etc/shorewall/shorewall.conf on that system.
+
+    If the values are not given in shorewall.conf at compile time then
+    the values in /etc/shorewall/shorewall.conf on the firewall system
+    will be used by the generated firewall script.
+
+    To take advantage of this change, both the administrative system
+    and the firewall system(s) must be running RC2 or later.
 
 Other changes in 3.2.0 RC 2
 

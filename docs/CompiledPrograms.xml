@@ -259,10 +259,21 @@
         <member>LOGFILE</member>
 
         <member>LOGFORMAT — used by <filename>/sbin/shorewall</filename> for
-        finding 'Shorewall' log messages.</member>
+        finding 'Shorewall' log messages only. The format of the messages
+        themselves is defined by the LOGFORMAT in shorewall.conf used when the
+        firewall script was compiled on the administrative system. If
+        LOGFORMAT was not specified at compile time then the firewall script
+        will use the value from
+        <filename>/etc/shorewall/shorewall.conf</filename> on the firewall
+        system.</member>
 
         <member>IPTABLES — determines the iptables binary to be used by
-        <filename>/sbin/shorewall</filename>.</member>
+        <filename>/sbin/shorewall</filename>. The compiled firewall script
+        will use the IPTABLES specified in <filename>shorewall.conf</filename>
+        at compile-time on the administrative system; if IPTABLES was not
+        specified at compile time then the IPTABLES value from
+        <filename>/etc/shorewall/shorewall.conf</filename> on the firewall
+        system will be used by the firewall script.</member>
 
         <member>PATH</member>
 

@@ -187,6 +187,8 @@ get_config() {
 
     [ -n "$LOGFORMAT" ] || LOGFORMAT="Shorewall:"
 
+    export LOGFORMAT
+
     if [ -n "$IPTABLES" ]; then
 	if [ ! -e "$IPTABLES" ]; then
 	    echo "   ERROR: The program specified in IPTABLES does not exist or is not executable" >&2
@@ -199,6 +201,8 @@ get_config() {
 	    exit 2
 	fi
     fi
+
+    export IPTABLES
 
     if [ -n "$SHOREWALL_SHELL" ]; then
 	if [ ! -e "$SHOREWALL_SHELL" ]; then

@@ -68,7 +68,7 @@ fi
 %attr(0644,root,root) /etc/shorewall-lite/Makefile
 %attr(0544,root,root) /etc/init.d/shorewall-lite
 %attr(0755,root,root) %dir /usr/share/shorewall-lite
-%attr(0700,root,root) %dir /var/lib/shorewall/lite
+%attr(0700,root,root) %dir /var/lib/shorewall-lite
 
 %attr(0555,root,root) /usr/share/shorewall-lite/shorewall
 %attr(0644,root,root) /usr/share/shorewall-lite/version

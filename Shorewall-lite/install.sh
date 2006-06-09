@@ -268,14 +268,13 @@ fi
 run_install $OWNERSHIP -m 0600 Makefile ${PREFIX}/etc/shorewall-lite/Makefile
 echo "Makefile installed as ${PREFIX}/etc/shorewall-lite/Makefile"
 
+install_file shorewall ${PREFIX}/usr/share/shorewall-lite/shorewall 0555
+echo "shorewall control program installed in /usr/share/shorewall-lite/shorewall"    
+
 if [ -z "$PREFIX" ]; then
-    install_file_with_backup shorewall /sbin/shorewall 0544 /var/lib/shorewall-lite-${VERSION}.bkout
-
-    echo "shorewall control program installed in /sbin/shorewall"
-else
-    install_file shorewall ${PREFIX}/usr/share/shorewall-lite/shorewall 0544
-
-    echo "shorewall control program installed in /usr/share/shorewall-lite/shorewall"    
+    if [ ! -L /sbin/shorewall ]; then
+	ln -sf /usr/share/shorewall-lite/shorewall /sbin/shorewall
+    fi
 fi
 
 #

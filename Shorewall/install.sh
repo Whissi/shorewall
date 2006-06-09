@@ -275,12 +275,13 @@ fi
 #
 # Install control program
 #
-if [ -n "$PREFIX" ]; then
-    install_file shorewall ${PREFIX}/usr/share/shorewall/shorewall 0555
-    echo "shorewall control program installed in ${PREFIX}/usr/share/shorewall/shorewall"
-else
-    install_file_with_backup shorewall ${PREFIX}/sbin/shorewall 0555 ${PREFIX}/var/lib/shorewall-${VERSION}.bkout
-    echo "shorewall control program installed in ${PREFIX}/sbin/shorewall"
+install_file shorewall ${PREFIX}/usr/share/shorewall/shorewall 0555
+echo "shorewall control program installed in /usr/share/shorewall/shorewall"    
+
+if [ -z "$PREFIX" ]; then
+    if [ ! -L /sbin/shorewall ]; then
+	ln -sf /usr/share/shorewall/shorewall /sbin/shorewall
+    fi
 fi
 
 #

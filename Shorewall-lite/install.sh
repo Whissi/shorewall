@@ -140,7 +140,7 @@ if [ -z "$DEST" ] ; then
 fi
 
 if [ -z "$INIT" ] ; then
-	INIT="shorewall-lite
+	INIT="shorewall-lite"
 fi
 
 if [ -z "$RUNLEVELS" ] ; then

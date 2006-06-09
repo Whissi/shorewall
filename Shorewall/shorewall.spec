@@ -48,7 +48,7 @@ if [ $1 -eq 1 ]; then
 	fi
 fi
 
-[ -L /sbin/shorewall ] || ln -s /usr/share/shorewall/shorewall /sbin/shorewall
+[ -L /sbin/shorewall ] || [ -f /sbin/shorewall] || ln -s /usr/share/shorewall/shorewall /sbin/shorewall
 
 %preun
 
@@ -61,6 +61,12 @@ if [ $1 = 0 ]; then
 
 	rm -f /etc/shorewall/startup_disabled
 
+fi
+
+%triggerpostun -- shorewall <= 3.2.0-0RC1
+
+if [ -f /usr/share/shorewall/shorewall ]; then
+   [ -L /sbin/shorewall ] || ln -s /usr/share/shorewall/shorewall /sbin/shorewall
 fi
 
 %files

@@ -48,7 +48,7 @@ if [ $1 -eq 1 ]; then
 	fi
 fi
 
-[ -L /sbin/shorewall ] || ln -s /usr/share/shorewall-lite/shorewall /sbin/shorewall
+[ -L /sbin/shorewall ] || [ -f /sbin/shorewall ] || ln -s /usr/share/shorewall-lite/shorewall /sbin/shorewall
 
 %preun
 
@@ -59,6 +59,12 @@ if [ $1 = 0 ]; then
 		/sbin/chkconfig --del shorewall-lite
 	fi
 
+fi
+
+%triggerpostun -- shorewall-lite <= 3.2.0-0RC1
+
+if [ -f /usr/share/shorewall-lite/shorewall ]; then
+   [ -L /sbin/shorewall ] || ln -s /usr/share/shorewall-lite/shorewall /sbin/shorewall
 fi
 
 %files

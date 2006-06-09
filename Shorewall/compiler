@@ -8281,9 +8281,9 @@ __EOF__
 __EOF__
    else
 	cat >&3 << __EOF__
-    [ -z "\$IPTABLES\" ] && IPTABLES=\$(mywhich iptables 2> /dev/null)
+    [ -z "\$IPTABLES" ] && IPTABLES=\$(mywhich iptables 2> /dev/null)
 
-    [ -n \"$IPTABLES\" -a -e "\$IPTABLES" ] || startup_error "Can't find iptables executable"
+    [ -n "\$IPTABLES" -a -e "\$IPTABLES" ] || startup_error "Can't find iptables executable"
 __EOF__
     fi
 

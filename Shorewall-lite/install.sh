@@ -196,7 +196,7 @@ elif [ -f /etc/slackware-version ] ; then
     INIT="rc.firewall"
 elif [ -f /etc/arch-release ] ; then
       DEST="/etc/rc.d"
-      INIT="shorewall-lite
+      INIT="shorewall-lite"
       ARCHLINUX=yes
 fi
 

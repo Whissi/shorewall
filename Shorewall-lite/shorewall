@@ -131,12 +131,12 @@ showchain() # $1 = name of chain
 iptablesbug()
 {
     if qt mywhich awk ; then
-	awk 'BEGIN           {sline=""; };\
+	awk 'BEGIN           { sline=""; };\
              /^-j/           { print sline $0; next };\
              /-m policy.*-j/ { print $0; next };\
              /-m policy/     { sline=$0; next };\
              /--mask ff/     { sub( /--mask ff/, "--mask 0xff" ) };\
-                             {print ; sline="" }'
+                             { print ; sline="" }'
     else
 	echo "   WARNING: You don't have 'awk' on this system so the output of the save command may be unusable" >&2
 	cat
@@ -553,7 +553,7 @@ start_command() {
 		    #
 		    iptables -F
 		    iptables -X
-		    ${RESTOREPATH}-ipsets
+		    $SHOREWALL_SHELL ${RESTOREPATH}-ipsets
 		fi
 
 		echo Restoring Shorewall...
@@ -933,11 +933,11 @@ restore_command() {
 	    echo Restoring Ipsets...
 	    iptables -F
 	    iptables -X
-	    ${RESTOREPATH}-ipsets
+	    $SHOREWALL_SHELL ${RESTOREPATH}-ipsets
 	fi
 
 	progress_message3 "Restoring Shorewall..."
-	$RESTOREPATH restore && echo "Shorewall restored from /var/lib/shorewall/$RESTOREFILE"
+	$SHOREWALL_SHELL $RESTOREPATH restore && echo "Shorewall restored from /var/lib/shorewall/$RESTOREFILE"
 	[ -n "$nolock" ] || mutex_off
     else
 	echo "File /var/lib/shorewall/$RESTOREFILE: file not found"
@@ -1249,9 +1249,7 @@ COMMAND=$1
 case "$COMMAND" in
     start)
 	shift
-
 	start_command $@
-
 	;;
     stop|reset|clear|refresh)
 	[ $# -ne 1 ] && usage 1
@@ -1260,21 +1258,15 @@ case "$COMMAND" in
 	;;
     restart)
 	shift
-
 	restart_command $@
-
 	;;
     check)
 	shift
-
 	check_command $@
-
 	;;
     show|list)
     	shift
-
     	show_command $@
-
 	;;
     status)
 	[ $# -eq 1 ] || usage 1
@@ -1304,9 +1296,7 @@ case "$COMMAND" in
 	;;
     dump)
     	shift
-
     	dump_command $@
-
 	;;
     hits)
 	[ -n "$debugging" ] && set -x
@@ -1593,9 +1583,7 @@ case "$COMMAND" in
 	;;
     restore)
 	shift
-
 	restore_command $@
-
         ;;
     call)
 	[ -n "$debugging" ] && set -x

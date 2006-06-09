@@ -30,6 +30,33 @@ Other changes in 3.2.0 RC 2
 	3.2.0-RC1 Lite
 	wireless:~ #
 
+3)  It is now possible to have both shorewall and Shorewall Lite 
+    installed on the same system if you use RPM. Regardless of whether
+    you use RPM or the installer, Shorewall Lite directory names have
+    been change from 'shorewall' to 'shorewall-lite':
+
+	 /etc/shorewall -> /etc/shorewall-lite
+	 /usr/share/shorewall -> /usr/share/shorewall-lite
+	 /var/lib/shorewall -> /var/lib/shorewall-lite
+
+    If you use the RPMs, whichever package is installed first will
+    determine which package /sbin/shorewall invokes. /sbin/shorewall is
+    now a symbolic link created by 'rpm':
+
+    Shorewall: /sbin/shorewall points to /usr/share/shorewall/shorewall
+    Shorewall Lite:
+        /sbin/shorewall points to /usr/share/shorewall/shorewall-lite
+
+    You may use the 'ln -sf' command to change from one to the other:
+
+    To use 'Shorewall' rather than 'Shorewall Lite'
+
+        ln -sf /usr/share/shorewall/shorewall /sbin/shorewall
+
+    To use 'Shorewall Lite' rather than 'Shorewall'
+
+        ln -sf /usr/share/shorewall-lite/shorewall /sbin/shorewall
+
 New Features:
 
 Shorewall Lite is a companion product to Shorewall and is designed to

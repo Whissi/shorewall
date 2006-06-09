@@ -195,9 +195,44 @@
 
         <note>
           <para>The firewall systems do <emphasis role="bold">NOT</emphasis>
-          have the full Shorewall product installed but rather only the
-          Shorewall Lite product. Shorewall and Shorewall LIte may not be
-          installed on the same system.</para>
+          need to have the full Shorewall product installed but rather only
+          the Shorewall Lite product. Shorewall and Shorewall LIte may be
+          installed on the same system if you use RPM. Whichever package is
+          installed first will be the one invoked by <filename
+          class="symlink">/sbin/shorewall</filename>. When RPM is used,
+          <filename class="symlink">/sbin/shorewall</filename> is a symbolic
+          link that points to the real shorewall script:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>It points to
+              <filename>/usr/share/shorewall/shorewall</filename> is the full
+              Shorewall package is to be used.</para>
+            </listitem>
+
+            <listitem>
+              <para>It points to
+              <filename>/usr/share/shorewall-lite/shorewall</filename> if
+              Shorewall Lite is to be used.</para>
+            </listitem>
+          </itemizedlist>
+
+          <para>You can switch between the two using the <command>ln
+          -sf</command> command:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>To select Shorewall:</para>
+
+              <programlisting><command>ln -sf /usr/share/shorewall/shorewall /sbin/shorewall</command></programlisting>
+            </listitem>
+
+            <listitem>
+              <para>To select Shorewall Lite</para>
+
+              <programlisting><command>ln -sf /usr/share/shorewall-lite/shorewall /sbin/shorewall</command></programlisting>
+            </listitem>
+          </itemizedlist>
         </note>
       </listitem>
 
@@ -211,7 +246,7 @@
       <listitem>
         <para>On each firewall system, you run:</para>
 
-        <programlisting><command>/usr/share/shorewall/shorecap &gt; capabilities</command>
+        <programlisting><command>/usr/share/shorewall-lite/shorecap &gt; capabilities</command>
 <command>scp capabilities &lt;admin system&gt;:&lt;this system's config dir&gt;</command></programlisting>
       </listitem>
 
@@ -228,11 +263,9 @@
           </listitem>
 
           <listitem>
-            <para></para>
-
             <programlisting><command>cd &lt;configuration directory&gt;</command>
 <command>/sbin/shorewall compile -e . firewall</command>
-<command>scp firewall root@&lt;firewall system&gt;:/usr/share/shorewall/</command></programlisting>
+<command>scp firewall root@&lt;firewall system&gt;:/usr/share/shorewall-lite/</command></programlisting>
           </listitem>
         </orderedlist>
       </listitem>
@@ -240,15 +273,15 @@
       <listitem>
         <para>On each firewall system:</para>
 
-        <para>Modify <filename>/etc/shorewall/shorewall.conf</filename> as
-        needed.</para>
+        <para>Modify <filename>/etc/shorewall-lite/shorewall.conf</filename>
+        as needed.</para>
 
         <programlisting><command>shorewall start</command></programlisting>
       </listitem>
     </orderedlist>
 
     <para>Shorewall Lite includes a very limited version of
-    <filename>/etc/shorewall/shorewall.conf</filename>. It includes the
+    <filename>/etc/shorewall-lite/shorewall.conf</filename>. It includes the
     following options which have the same meaning as in a full Shorewall
     installation except as noted below:</para>
 
@@ -260,20 +293,20 @@
 
         <member>LOGFORMAT — used by <filename>/sbin/shorewall</filename> for
         finding 'Shorewall' log messages only. The format of the messages
-        themselves is defined by the LOGFORMAT in shorewall.conf used when the
-        firewall script was compiled on the administrative system. If
+        themselves is defined by the LOGFORMAT in the shorewall.conf used when
+        the firewall script was compiled on the administrative system. If
         LOGFORMAT was not specified at compile time then the firewall script
         will use the value from
-        <filename>/etc/shorewall/shorewall.conf</filename> on the firewall
-        system.</member>
+        <filename>/etc/shorewall-lite/shorewall.conf</filename> on the
+        firewall system.</member>
 
         <member>IPTABLES — determines the iptables binary to be used by
         <filename>/sbin/shorewall</filename>. The compiled firewall script
         will use the IPTABLES specified in <filename>shorewall.conf</filename>
-        at compile-time on the administrative system; if IPTABLES was not
+        at compile time on the administrative system; if IPTABLES was not
         specified at compile time then the IPTABLES value from
-        <filename>/etc/shorewall/shorewall.conf</filename> on the firewall
-        system will be used by the firewall script.</member>
+        <filename>/etc/shorewall-lite/shorewall.conf</filename> on the
+        firewall system will be used by the firewall script.</member>
 
         <member>PATH</member>
 
@@ -323,22 +356,19 @@
         </listitem>
 
         <listitem>
-          <para>Uninstall Shorewall on the firewall system. I recommend
-          totally removing <filename
-          class="directory">/etc/shorewall</filename>, <filename
-          class="directory">/usr/share/shorewall</filename> and <filename
-          class="directory">/var/lib/shorewall</filename> after you have used
-          the relevant package manager to remove Shorewall.</para>
+          <para>If you use the install.sh script then uninstall Shorewall on
+          the firewall system using uninstall.sh.</para>
         </listitem>
 
         <listitem>
-          <para>Install Shorewall Lite on the firewall system.</para>
+          <para>Install Shorewall Lite on the firewall system. If you use RPM,
+          you will want to select Shorewall Lite as described above.</para>
         </listitem>
 
         <listitem>
           <para>On the firewall system:</para>
 
-          <programlisting><command>/usr/share/shorewall/shorecap &gt; capabilities</command>
+          <programlisting><command>/usr/share/shorewall-lite/shorecap &gt; capabilities</command>
 <command>scp capabilities &lt;admin system&gt;:&lt;this system's config dir&gt;</command></programlisting>
         </listitem>
 
@@ -351,14 +381,14 @@
 
           <programlisting><command>cd &lt;configuration directory&gt;</command>
 <command>/sbin/shorewall compile -e . firewall</command>
-<command>scp firewall root@&lt;firewall system&gt;:/usr/share/shorewall/</command></programlisting>
+<command>scp firewall root@&lt;firewall system&gt;:/usr/share/shorewall-lite/</command></programlisting>
         </listitem>
 
         <listitem>
           <para>On the firewall system:</para>
 
-          <para>Modify <filename>/etc/shorewall/shorewall.conf</filename> as
-          needed.</para>
+          <para>Modify <filename>/etc/shorewall-lite/shorewall.conf</filename>
+          as needed.</para>
 
           <programlisting><command>shorewall restart</command></programlisting>
 

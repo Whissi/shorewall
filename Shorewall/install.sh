@@ -223,10 +223,6 @@ else
     first_install="Yes"
 fi
 
-install_file_with_backup shorewall ${PREFIX}/sbin/shorewall 0555 ${PREFIX}/var/lib/shorewall-${VERSION}.bkout
-
-echo "shorewall control program installed in ${PREFIX}/sbin/shorewall"
-
 #
 # Install the Firewall Script
 #
@@ -275,6 +271,16 @@ run_install $OWNERSHIP -m 0744 zones ${PREFIX}/usr/share/shorewall/configfiles/z
 if [ ! -f ${PREFIX}/etc/shorewall/zones ]; then
     run_install $OWNERSHIP -m 0744 zones ${PREFIX}/etc/shorewall/zones
     echo "Zones file installed as ${PREFIX}/etc/shorewall/zones"
+fi
+#
+# Install control program
+#
+if [ -n "$PREFIX" ]; then
+    install_file shorewall ${PREFIX}/usr/share/shorewall/shorewall 0555
+    echo "shorewall control program installed in ${PREFIX}/usr/share/shorewall/shorewall"
+else
+    install_file_with_backup shorewall ${PREFIX}/sbin/shorewall 0555 ${PREFIX}/var/lib/shorewall-${VERSION}.bkout
+    echo "shorewall control program installed in ${PREFIX}/sbin/shorewall"
 fi
 
 #

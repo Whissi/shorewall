@@ -113,6 +113,10 @@
 #          shorewall compile [ <directory> ] ]<filename>
 #                                                  Compile a firewall program file.
 #
+SHAREDIR=/usr/share/shorewall
+VARDIR=/var/lib/shorewall
+CONFDIR=/etc/shorewall
+
 # Fatal Error
 #
 fatal_error() # $@ = Message
@@ -246,7 +250,7 @@ get_config() {
 
     case $STARTUP_ENABLED in
 	[Nn][Oo])
-            echo "   WARNING: Shorewall startup is disabled. To enable startup, set STARTUP_ENABLED=Yes in /etc/shorewall/shorewall.conf" >&2
+            echo "   WARNING: Shorewall startup is disabled. To enable startup, set STARTUP_ENABLED=Yes in ${CONFDIR}/shorewall.conf" >&2
             STARTUP_ENABLED=
 	    ;;
 	[Yy][Ee][Ss])
@@ -432,7 +436,7 @@ logwatch() # $1 = timeout -- if negative, prompt each time that
 #
 save_config() {
     if shorewall_is_started ; then
-	[ -d /var/lib/shorewall ] || mkdir -p /var/lib/shorewall
+	[ -d ${VARDIR} ] || mkdir -p ${VARDIR}
 
 	if [ -f $RESTOREPATH -a ! -x $RESTOREPATH ]; then
 	    echo "   ERROR: $RESTOREPATH exists and is not a saved Shorewall configuration"
@@ -442,12 +446,12 @@ save_config() {
 		    echo "   ERROR: Reserved file name: $RESTOREFILE"
 		    ;;
 		*)
-		    if $IPTABLES -L dynamic -n > /var/lib/shorewall/save; then
+		    if $IPTABLES -L dynamic -n > ${VARDIR}/save; then
 			echo "   Dynamic Rules Saved"
-			if [ -f /var/lib/shorewall/.restore ]; then
-			    if iptables-save | iptablesbug > /var/lib/shorewall/restore-$$; then
-				cp -f /var/lib/shorewall/.restore $RESTOREPATH
-				mv -f /var/lib/shorewall/restore-$$ ${RESTOREPATH}-iptables
+			if [ -f ${VARDIR}/.restore ]; then
+			    if iptables-save | iptablesbug > ${VARDIR}/restore-$$; then
+				cp -f ${VARDIR}/.restore $RESTOREPATH
+				mv -f ${VARDIR}/restore-$$ ${RESTOREPATH}-iptables
 				chmod +x $RESTOREPATH
 				echo "   Currently-running Configuration Saved to $RESTOREPATH"
 
@@ -457,16 +461,16 @@ save_config() {
 				    [Yy][Ee][Ss])
 					RESTOREPATH=${RESTOREPATH}-ipsets
 
-					f=/var/lib/shorewall/restore-$$
+					f=${VARDIR}/restore-$$
 
 					echo "#!/bin/sh" > $f
 					echo "#This ipset restore file generated $(date) by Shorewall $version" >> $f
 					echo  >> $f
-					echo ". /usr/share/shorewall/functions" >> $f
+					echo ". ${SHAREDIR}/functions" >> $f
 					echo  >> $f
-					grep '^MODULE' /var/lib/shorewall/restore-base >>  $f
+					grep '^MODULE' ${VARDIR}/restore-base >>  $f
 					echo "reload_kernel_modules << __EOF__" >> $f
-					grep 'loadmodule ip_set' /var/lib/shorewall/restore-base >>  $f
+					grep 'loadmodule ip_set' ${VARDIR}/restore-base >>  $f
 					echo "__EOF__" >> $f
 					echo  >> $f
 					echo "ipset -U :all: :all:" >> $f
@@ -486,11 +490,11 @@ save_config() {
 					;;
 				esac
 			    else
-			        rm -f /var/lib/shorewall/restore-$$
+			        rm -f ${VARDIR}/restore-$$
 				echo "   ERROR: Currently-running Configuration Not Saved"
 			    fi
 			else
-			    echo "   ERROR: /var/lib/shorewall/.restored oes not exist"
+			    echo "   ERROR: ${VARDIR}/.restored oes not exist"
 			fi
 		    else
 		        echo "Error Saving the Dynamic Rules"
@@ -515,8 +519,8 @@ start_command() {
 
 	progress_message3 "Compiling..."
 
-	if $SHOREWALL_SHELL /usr/share/shorewall/compiler $debugging $nolock compile /var/lib/shorewall/.start; then
-	    /var/lib/shorewall/.start $debugging start
+	if $SHOREWALL_SHELL ${SHAREDIR}/compiler $debugging $nolock compile ${VARDIR}/.start; then
+	    ${VARDIR}/.start $debugging start
 	fi
 
 	[ -n "$nolock" ] || mutex_off
@@ -590,12 +594,12 @@ start_command() {
 	    #
 	    # RESTOREFILE is exported by get_config()
 	    #
-	    make -qf /etc/shorewall/Makefile || FAST=
+	    make -qf ${CONFDIR}/Makefile || FAST=
 	fi
 
 	if [ -n "$FAST" ]; then
 
-	    RESTOREPATH=/var/lib/shorewall/$RESTOREFILE
+	    RESTOREPATH=${VARDIR}/$RESTOREFILE
 
 	    if [ -x $RESTOREPATH ]; then
 		if [ -x ${RESTOREPATH}-ipsets ]; then
@@ -611,7 +615,7 @@ start_command() {
 
 		echo Restoring Shorewall...
 		$SHOREWALL_SHELL $RESTOREPATH restore
-		date > /var/lib/shorewall/restarted
+		date > ${VARDIR}/restarted
 		progress_message3 Shorewall restored from $RESTOREPATH
 	    else
 		do_it
@@ -691,7 +695,7 @@ compile_command() {
 
     progress_message3 "Compiling..."
 
-    exec $SHOREWALL_SHELL /usr/share/shorewall/compiler $debugging compile $file
+    exec $SHOREWALL_SHELL ${SHAREDIR}/compiler $debugging compile $file
 }
 #
 # Check Command Executor
@@ -754,7 +758,7 @@ check_command() {
 
     progress_message3 "Checking..."
 
-    exec $SHOREWALL_SHELL /usr/share/shorewall/compiler $debugging $nolock check
+    exec $SHOREWALL_SHELL ${SHAREDIR}/compiler $debugging $nolock check
 }
 
 #
@@ -825,8 +829,8 @@ restart_command() {
 
     progress_message3 "Compiling..."
 
-    if $SHOREWALL_SHELL /usr/share/shorewall/compiler $debugging $nolock compile /var/lib/shorewall/.restart; then
-	$SHOREWALL_SHELL /var/lib/shorewall/.restart $debugging restart
+    if $SHOREWALL_SHELL ${SHAREDIR}/compiler $debugging $nolock compile ${VARDIR}/.restart; then
+	$SHOREWALL_SHELL ${VARDIR}/.restart $debugging restart
     fi
 
     [ -n "$nolock" ] || mutex_off
@@ -919,7 +923,7 @@ show_command() {
 	;;
     zones)
 	[ $# -gt 1 ] && usage 1
-	if [ -f /var/lib/shorewall/zones ]; then
+	if [ -f ${VARDIR}/zones ]; then
 	    echo "Shorewall-$version Zones at $HOSTNAME - $(date)"
 	    echo
 	    while read zone type hosts; do
@@ -927,10 +931,10 @@ show_command() {
 		for host in $hosts; do
 		    echo "   $host"
 		done
-	    done < /var/lib/shorewall/zones
+	    done < ${VARDIR}/zones
 	    echo
 	else
-	    echo "   ERROR: /var/lib/shorewall/zones does not exist" >&2
+	    echo "   ERROR: ${VARDIR}/zones does not exist" >&2
 	    exit 1
 	fi
 	;;
@@ -951,11 +955,11 @@ show_command() {
 	echo "allowoutUPnP        # Allow traffic from local command 'upnpd'"
 	echo "allowinUPnP         # Allow UPnP inbound (to firewall) traffic"
 	echo "forwardUPnP         # Allow traffic that upnpd has redirected from"
-	cat /usr/share/shorewall/actions.std /etc/shorewall/actions | grep -Ev '^\#|^$'
+	cat ${SHAREDIR}/actions.std ${CONFDIR}/actions | grep -Ev '^\#|^$'
 	;;
     macros)
 	[ $# -gt 1 ] && usage 1
-	for macro in /usr/share/shorewall/macro.*; do
+	for macro in ${SHAREDIR}/macro.*; do
 	    foo=`grep 'This macro' $macro | head -n 1`
 	    if [ -n "$foo" ]; then
 		macro=${macro#*.}
@@ -1164,14 +1168,14 @@ safe_commands() {
 
     progress_message3 "Compiling..."
 
-    if ! $SHOREWALL_SHELL /usr/share/shorewall/compiler $debugging nolock compile /var/lib/shorewall/.$command; then
+    if ! $SHOREWALL_SHELL ${SHAREDIR}/compiler $debugging nolock compile ${VARDIR}/.$command; then
 	status=$?
 	mutex_off
 	exit $status
     fi
 
     RESTOREFILE=.safe
-    RESTOREPATH=/var/lib/shorewall/.safe
+    RESTOREPATH=${VARDIR}/.safe
 
     save_config
 
@@ -1184,7 +1188,7 @@ safe_commands() {
 	    ;;
     esac
 
-    /var/lib/shorewall/.$command $command
+    ${VARDIR}/.$command $command
 
     echo -n "Do you want to accept the new firewall configuration? [y/n] "
 
@@ -1192,9 +1196,9 @@ safe_commands() {
 	echo "New configuration has been accepted"
     else
 	if [ "$command" = "restart" ]; then
-	    /var/lib/shorewall/.safe restore
+	    ${VARDIR}/.safe restore
 	else
-	    /var/lib/shorewall/.$command clear
+	    ${VARDIR}/.$command clear
 	fi
 
 	mutex_off
@@ -1258,7 +1262,7 @@ restore_command() {
 	exit 2
     fi
 
-    RESTOREPATH=/var/lib/shorewall/$RESTOREFILE
+    RESTOREPATH=${VARDIR}/$RESTOREFILE
 
     export NOROUTES
 
@@ -1273,10 +1277,10 @@ restore_command() {
 	fi
 
 	progress_message3 "Restoring Shorewall..."
-	$SHOREWALL_SHELL $RESTOREPATH restore && progress_message3 "Shorewall restored from /var/lib/shorewall/$RESTOREFILE"
+	$SHOREWALL_SHELL $RESTOREPATH restore && progress_message3 "Shorewall restored from ${VARDIR}/$RESTOREFILE"
 	[ -n "$nolock" ] || mutex_off
     else
-	echo "File /var/lib/shorewall/$RESTOREFILE: file not found"
+	echo "File ${VARDIR}/$RESTOREFILE: file not found"
 	[ -n "$nolock" ] || mutex_off
 	exit 2
     fi
@@ -1336,8 +1340,8 @@ usage() # $1 = exit status
 # Display the time that the counters were last reset
 #
 show_reset() {
-    [ -f /var/lib/shorewall/restarted ] && \
-	echo "Counters reset $(cat /var/lib/shorewall/restarted)" && \
+    [ -f ${VARDIR}/restarted ] && \
+	echo "Counters reset $(cat ${VARDIR}/restarted)" && \
 	echo
 }
 
@@ -1512,7 +1516,7 @@ fi
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 MUTEX_TIMEOUT=
 
-SHARED_DIR=/usr/share/shorewall
+SHARED_DIR=${SHAREDIR}
 FIREWALL=$SHARED_DIR/firewall
 FUNCTIONS=$SHARED_DIR/functions
 VERSION_FILE=$SHARED_DIR/version
@@ -1630,8 +1634,8 @@ case "$COMMAND" in
 	    status=4
 	fi
 
-	if [ -f /var/lib/shorewall/state ]; then
-	    state="$(cat /var/lib/shorewall/state)"
+	if [ -f ${VARDIR}/state ]; then
+	    state="$(cat ${VARDIR}/state)"
 	    case $state in
 		Stopped*|Clear*)
 		    status=3
@@ -1862,7 +1866,7 @@ case "$COMMAND" in
 	    ;;
 	esac
 
-	RESTOREPATH=/var/lib/shorewall/$RESTOREFILE
+	RESTOREPATH=${VARDIR}/$RESTOREFILE
 
 	[ "$nolock" ] || mutex_on
 
@@ -1884,7 +1888,7 @@ case "$COMMAND" in
 	esac
 
 
-	RESTOREPATH=/var/lib/shorewall/$RESTOREFILE
+	RESTOREPATH=${VARDIR}/$RESTOREFILE
 
 	if [ -x $RESTOREPATH ]; then
 
@@ -1899,7 +1903,7 @@ case "$COMMAND" in
 	elif [ -f $RESTOREPATH ]; then
 	    echo "   $RESTOREPATH exists and is not a saved Shorewall configuration"
 	fi
-	rm -f /var/lib/shorewall/save
+	rm -f ${VARDIR}/save
 	;;
     ipcalc)
     	[ -n "$debugging" ] && set -x
@@ -1954,7 +1958,7 @@ case "$COMMAND" in
     call)
 	[ -n "$debugging" ] && set -x
 	#
-	# Undocumented way to call functions in /usr/share/shorewall/functions directly
+	# Undocumented way to call functions in ${SHAREDIR}/functions directly
 	#
 	shift
 	$@

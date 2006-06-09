@@ -28,6 +28,10 @@
 
 LIBVERSION=30191
 
+[ -n "${VARDIR:=/var/lib/shorewall}" ]
+[ -n "${SHAREDIR:=/usr/share/shorewall}" ]
+[ -n "${CONFDIR:=/etc/shorewall}" ]
+
 #
 # Message to stderr
 #
@@ -210,7 +214,7 @@ my_pathname() {
 # Set default config path
 #
 ensure_config_path() {
-    local F=/usr/share/shorewall/configpath
+    local F=${SHAREDIR}/configpath
     if [ -z "$CONFIG_PATH" ]; then
 	[ -f $F ] || { echo "   ERROR: $F does not exist"; exit 2; }
 	. $F
@@ -218,7 +222,7 @@ ensure_config_path() {
 }
 
 #
-# Find a File -- For relative file name, look first in $SHOREWALL_DIR then in /etc/shorewall
+# Find a File -- For relative file name, look first in $SHOREWALL_DIR then in ${CONFDIR}
 #
 find_file()
 {
@@ -244,7 +248,7 @@ find_file()
 
 		IFS=$saveifs
 
-		echo /etc/shorewall/$1
+		echo ${CONFDIR}/$1
 	    fi
 	    ;;
     esac
@@ -445,13 +449,13 @@ load_kernel_modules()
 mutex_on()
 {
     local try=0
-    local lockf=/var/lib/shorewall/lock
+    local lockf=${VARDIR}/lock
 
     MUTEX_TIMEOUT=${MUTEX_TIMEOUT:-60}
 
     if [ $MUTEX_TIMEOUT -gt 0 ]; then
 
-	[ -d /var/lib/shorewall ] || mkdir -p /var/lib/shorewall
+	[ -d ${VARDIR} ] || mkdir -p ${VARDIR}
 
 	if qt mywhich lockfile; then
 	    lockfile -${MUTEX_TIMEOUT} -r1 ${lockf}
@@ -476,7 +480,7 @@ mutex_on()
 #
 mutex_off()
 {
-    rm -f /var/lib/shorewall/lock
+    rm -f ${VARDIR}/lock
 }
 
 #
@@ -1161,7 +1165,7 @@ mywhich() {
 #
 set_state () # $1 = state
 {
-    echo "$1 ($(date))" > /var/lib/shorewall/state
+    echo "$1 ($(date))" > ${VARDIR}/state
 }
 
 #

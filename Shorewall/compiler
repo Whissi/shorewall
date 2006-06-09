@@ -40,6 +40,10 @@
 #	    SHOREWALL_DIR                       A directory name was passed to /sbin/shorewall
 #	    VERBOSE                             Standard Shorewall verbosity control.
 
+SHAREDIR=/usr/share/shorewall
+VARDIR=/var/lib/shorewall
+CONFDIR=/etc/shorewall
+
 # Fatal error -- stops the compiler after issuing the error message
 #
 fatal_error() # $* = Error Message
@@ -783,11 +787,11 @@ match_dest_hosts()
 
 #
 # Similarly, the source or destination in a rule can be qualified by a device name. If
-# the device is defined in /etc/shorewall/interfaces then a normal interface match is
+# the device is defined in ${CONFDIR}/interfaces then a normal interface match is
 # generated (-i or -o); otherwise, a physdev match is generated.
 #-------------------------------------------------------------------------------------
 #
-# loosely match the passed interface with those in /etc/shorewall/interfaces.
+# loosely match the passed interface with those in ${CONFDIR}/interfaces.
 #
 known_interface() # $1 = interface name
 {
@@ -1466,7 +1470,7 @@ validate_hosts_file() {
 		case $host in
 		   *:*)
 		       known_interface ${host%:*} && \
-			   fatal_error "Bridged interfaces may not be defined in /etc/shorewall/interfaces: $host"
+			   fatal_error "Bridged interfaces may not be defined in ${CONFDIR}/interfaces: $host"
 		       check_bridge_port ${host%%:*}
 		       ;;
 		   *.*.*)
@@ -1476,7 +1480,7 @@ validate_hosts_file() {
 		       ;;
 		   *)
 		       known_interface $host && \
-			   fatal_error "Bridged interfaces may not be defined in /etc/shorewall/interfaces: $host"
+			   fatal_error "Bridged interfaces may not be defined in ${CONFDIR}/interfaces: $host"
 		       check_bridge_port $host
 		       ;;
 	       esac
@@ -2692,13 +2696,13 @@ setup_syn_flood_chains()
 #
 delete_proxy_arp() {
     indent >&3 << __EOF__
-if [ -f /var/lib/shorewall/proxyarp ]; then
+if [ -f \${VARDIR}/proxyarp ]; then
     while read address interface external haveroute; do
         qt arp -i \$external -d \$address pub
         [ -z "\$haveroute" -a -z "\$NOROUTE" ] && qt ip route del \$address dev \$interface
-    done < /var/lib/shorewall/proxyarp
+    done < \${VARDIR}/proxyarp
 
-    rm -f {/var/lib/shorewall}/nat
+    rm -f ${VARDIR}/nat
 fi
 
 for f in /proc/sys/net/ipv4/conf/*; do
@@ -2800,12 +2804,12 @@ delete_nat() {
 
     indent >&3 << __EOF__
 
-if [ -f /var/lib/shorewall/nat ]; then
+if [ -f \${VARDIR}/nat ]; then
    while read external interface; do
        ip_addr_del \$external \$interface
-    done < /var/lib/shorewall/nat
+    done < \${VARDIR}/nat
 
-    rm -f {/var/lib/shorewall}/nat
+    rm -f \${VARDIR}/nat
 fi
 
 __EOF__
@@ -3689,7 +3693,7 @@ process_action() # $1 = chain    (Chain to add the rules to)
 }
 
 #
-# Append a file in /var/lib/shorewall to $OUTPUT
+# Append a file in ${VARDIR} to $OUTPUT
 #
 append_action_file() # $1 = File Name
 {
@@ -3987,8 +3991,8 @@ merge_macro_source_dest() # $1 = source/dest from macro body, $2 = source/dest f
 #
 # The next three functions implement the three phases of action processing.
 #
-# The first phase (process_actions1) occurs before the rules file is processed. /usr/share/shorewall/actions.std
-# and /etc/shorewall/actions are scanned (in that order) and for each action:
+# The first phase (process_actions1) occurs before the rules file is processed. ${SHAREDIR}/actions.std
+# and ${CONFDIR}/actions are scanned (in that order) and for each action:
 #
 #      a) The related action definition file is located and scanned.
 #      b) Forward and unresolved action references are trapped as errors.
@@ -4018,7 +4022,7 @@ process_actions1() {
 
     strip_file actions
 
-    strip_file actions.std /usr/share/shorewall/actions.std
+    strip_file actions.std ${SHAREDIR}/actions.std
 
     for inputfile in actions.std actions; do
 	while read xaction rest; do
@@ -4486,7 +4490,7 @@ add_nat_rule() {
     # Parse SNAT address if any
 
     if [ "$addr" != "${addr%:*}" ]; then
-	fatal_error "SNAT may no longer be specified in a DNAT rule; use /etc/shorewall/masq instead"
+	fatal_error "SNAT may no longer be specified in a DNAT rule; use ${CONFDIR}/masq instead"
     fi
 
     # Set original destination address
@@ -6908,7 +6912,7 @@ initialize_netfilter () {
 
     indent >&3 << __EOF__
 
-if [ -f /var/lib/shorewall/save ]; then
+if [ -f \${VARDIR}/save ]; then
     progress_message2 "Setting up dynamic rules..."
     while read target ignore1 ignore2 address rest; do
         case \$target in
@@ -6916,7 +6920,7 @@ if [ -f /var/lib/shorewall/save ]; then
                 run_iptables -A dynamic -s \$address -j \$target
                 ;;
         esac
-    done < /var/lib/shorewall/save
+    done < \${VARDIR}/save
 fi
 __EOF__
 
@@ -7785,12 +7789,12 @@ stop_firewall() {
 	\$IPTABLES -t nat -F
 	\$IPTABLES -t nat -X
 
-	if [ -f /var/lib/shorewall/nat ]; then
+	if [ -f \${VARDIR}/nat ]; then
 	    while read external interface; do
 		ip_addr_del \$external dev \$interface
-	    done < /var/lib/shorewall/nat
+	    done < \${VARDIR}/nat
 
-	    rm -f /var/lib/shorewall/nat
+	    rm -f \${VARDIR}/nat
 	fi
     }
 
@@ -7802,7 +7806,7 @@ stop_firewall() {
 
 	    [ -n "\${RESTOREFILE:=restore}" ]
 
-	    RESTOREPATH=/var/lib/shorewall/\$RESTOREFILE
+	    RESTOREPATH=\${VARDIR}/\$RESTOREFILE
 
 	    if [ -x \$RESTOREPATH ]; then
 
@@ -7874,11 +7878,11 @@ __EOF__
 	done
     fi
 
-    if [ -f /var/lib/shorewall/proxyarp ]; then
+    if [ -f \${VARDIR}/proxyarp ]; then
 	while read address interface external haveroute; do
 	    qt arp -i \$external -d \$address pub
 	    [ -z "\${haveroute}\${NOROUTES}" ] && qt ip route del \$address dev \$interface
-	done < /var/lib/shorewall/proxyarp
+	done < \${VARDIR}/proxyarp
     fi
 
     for f in /proc/sys/net/ipv4/conf/*; do
@@ -8081,9 +8085,23 @@ compile_firewall() # $1 = File Name
 #
 __EOF__
 
+    if [ -n "$EXPORT" ]; then
+	cat >&3 << __EOF__
+SHAREDIR=/usr/share/shorewall
+CONFDIR=/etc/shorewall
+VARDIR=/var/lib/shorewall
+__EOF__
+    else
+	cat >&3 << __EOF__
+SHAREDIR=/usr/share/shorewall
+CONFDIR=/etc/shorewall
+VARDIR=/var/lib/shorewall
+__EOF__
+    fi
+
     cat >&3 << __EOF__
 
-. /usr/share/shorewall/functions
+. \${SHAREDIR}/functions
 __EOF__
 
     compile_stop_firewall
@@ -8211,11 +8229,11 @@ __EOF__
     INDENT="    "
 
     cat >&3 << __EOF__
-    if [ ! -f /usr/share/shorewall/version ]; then
+    if [ ! -f \${SHAREDIR}/version ]; then
 	fatal_error "This script requires Shorewall or Shorewall Lite which do not appear to be installed on this system"
     fi
 
-    local version=\$(cat /usr/share/shorewall/version)
+    local version=\$(cat \${SHAREDIR}/version)
 
     if [ \${LIBVERSION:-0} -lt 30191 ]; then
 	fatal_error "This script requires Shorewall [Lite] version 3.2.0-Beta7 or later; current version is \$version"
@@ -8275,9 +8293,9 @@ __EOF__
 
     STOPPING=
     #
-    # The library requires that /var/lib/shorewall exist
+    # The library requires that ${VARDIR} exist
     #
-    [ -d /var/lib/shorewall ] || mkdir -p /var/lib/shorewall
+    [ -d \${VARDIR} ] || mkdir -p \${VARDIR}
 
 }
 
@@ -8378,7 +8396,7 @@ __EOF__
     fi
 
     for file in chains nat proxyarp zones; do
-	save_command "cat > /var/lib/shorewall/$file $LEFTSHIFT __EOF__"
+	save_command "cat > \${VARDIR}/$file $LEFTSHIFT __EOF__"
 	cat $STATEDIR/$file >&3
 	save_command_unindented __EOF__
     done
@@ -8390,7 +8408,7 @@ __EOF__
     fi
 
 __EOF__
-    save_command "date > /var/lib/shorewall/restarted"
+    save_command "date > \${VARDIR}/restarted"
 
     append_file start
 
@@ -8404,7 +8422,7 @@ __EOF__
 
     cat >&3 << __EOF__
 
-    cp -f \$(my_pathname) /var/lib/shorewall/.restore
+    cp -f \$(my_pathname) \${VARDIR}/.restore
 
     case \$COMMAND in
 	start)
@@ -8425,7 +8443,7 @@ __EOF__
 #
 restore_firewall()
 {
-    iptables_save_file=/var/lib/shorewall/\$(basename \$0)-iptables
+    iptables_save_file=\${VARDIR}/\$(basename \$0)-iptables
 
     fatal_error()
     {
@@ -8565,7 +8583,7 @@ do_initialize() {
     TCP_FLAGS_LOG_LEVEL=
     RFC1918_LOG_LEVEL=
     MARK_IN_FORWARD_CHAIN=
-    SHARED_DIR=/usr/share/shorewall
+    SHARED_DIR=${SHAREDIR}
     FUNCTIONS=
     VERSION_FILE=
     LOGFORMAT=
@@ -8905,7 +8923,7 @@ case "$COMMAND" in
 
     call)
 	#
-	# Undocumented way to call functions in /usr/share/shorewall/compiler directly
+	# Undocumented way to call functions in ${SHAREDIR}/compiler directly
 	#
 	shift
 	do_initialize

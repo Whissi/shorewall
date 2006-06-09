@@ -40,6 +40,9 @@
 #						  and rules/policies.
 #	   shorewall refresh	.		  Rebuild the common chain
 #
+SHAREDIR=/usr/share/shorewall
+VARDIR=/var/lib/shorewall
+CONFDIR=/etc/shorewall
 # Mutual exclusion -- These functions are jackets for the mutual exclusion
 #		      routines in $FUNCTIONS. They invoke
 #		      the corresponding function in that file if the user did
@@ -551,11 +554,11 @@ match_dest_hosts()
 
 #
 # Similarly, the source or destination in a rule can be qualified by a device name. If
-# the device is defined in /etc/shorewall/interfaces then a normal interface match is
+# the device is defined in ${CONFDIR}/interfaces then a normal interface match is
 # generated (-i or -o); otherwise, a physdev match is generated.
 #-------------------------------------------------------------------------------------
 #
-# loosely match the passed interface with those in /etc/shorewall/interfaces.
+# loosely match the passed interface with those in ${CONFDIR}/interfaces.
 #
 known_interface() # $1 = interface name
 {
@@ -1126,7 +1129,7 @@ stop_firewall() {
 
 	    [ -n "${RESTOREFILE:=restore}" ]
 
-	    RESTOREPATH=/var/lib/shorewall/$RESTOREFILE
+	    RESTOREPATH=${VARDIR}/$RESTOREFILE
 
 	    if [ -x $RESTOREPATH ]; then
 
@@ -1422,7 +1425,7 @@ setup_ipsec() {
 # Delete existing Proxy ARP
 #
 delete_proxy_arp() {
-    if [ -f /var/lib/shorewall/proxyarp ]; then
+    if [ -f ${VARDIR}/proxyarp ]; then
 	while read address interface external haveroute; do
 	    case $COMMAND in
 		stop|clear)
@@ -1442,9 +1445,9 @@ delete_proxy_arp() {
 		    fi
 		    ;;
 	    esac
-	done < /var/lib/shorewall/proxyarp
+	done < ${VARDIR}/proxyarp
 
-	rm -f /var/lib/shorewall/proxyarp
+	rm -f ${VARDIR}/proxyarp
     fi
 
     [ -d $STATEDIR ] && touch $STATEDIR/proxyarp
@@ -1476,12 +1479,12 @@ delete_nat() {
     run_iptables -t nat -F
     run_iptables -t nat -X
 
-    if [ -f /var/lib/shorewall/nat ]; then
+    if [ -f ${VARDIR}/nat ]; then
 	while read external interface; do
 	    qt ip addr del $external dev $interface
-	done < /var/lib/shorewall/nat
+	done < ${VARDIR}/nat
 
-	rm -f {/var/lib/shorewall}/nat
+	rm -f ${VARDIR}/nat
     fi
 
     [ -d $STATEDIR ] && touch $STATEDIR/nat
@@ -1734,7 +1737,7 @@ check_disabled_startup() {
 	echo "   Shorewall Startup is disabled -- to enable startup"
 	echo "   after you have completed Shorewall configuration,"
 	echo "   change the setting of STARTUP_ENABLED to Yes in"
-        echo "   /etc/shorewall/shorewall.conf"
+        echo "   ${CONFDIR}/shorewall.conf"
 
 	[ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
 	my_mutex_off
@@ -1921,12 +1924,12 @@ add_to_zone() # $1...${n-1} = <interface>[:<hosts>] $n = zone
     #
     # Be sure that Shorewall has been restarted using a DZ-aware version of the code
     #
-    [ -f /var/lib/shorewall/chains ] || startup_error "/var/lib/shorewall/chains -- file not found"
-    [ -f /var/lib/shorewall/zones ]  || startup_error "/var/lib/shorewall/zones -- file not found"
+    [ -f ${VARDIR}/chains ] || startup_error "${VARDIR}/chains -- file not found"
+    [ -f ${VARDIR}/zones ]  || startup_error "${VARDIR}/zones -- file not found"
     #
     # Check for duplicates and create a new zone state file
     #
-    > /var/lib/shorewall/zones_$$
+    > ${VARDIR}/zones_$$
 
     while read z type hosts; do
 	if [ "$z" = "$zone" ]; then
@@ -1944,10 +1947,10 @@ add_to_zone() # $1...${n-1} = <interface>[:<hosts>] $n = zone
 
 	eval ${z}_hosts=\"$hosts\"
 
-	echo "$z $type $hosts" >> /var/lib/shorewall/zones_$$
-    done < /var/lib/shorewall/zones
+	echo "$z $type $hosts" >> ${VARDIR}/zones_$$
+    done < ${VARDIR}/zones
 
-    mv -f /var/lib/shorewall/zones_$$ /var/lib/shorewall/zones
+    mv -f ${VARDIR}/zones_$$ ${VARDIR}/zones
 
     TERMINATOR=fatal_error
     #
@@ -2017,7 +2020,7 @@ add_to_zone() # $1...${n-1} = <interface>[:<hosts>] $n = zone
 		    done
 		fi
 	    fi
-	done < /var/lib/shorewall/chains
+	done < ${VARDIR}/chains
 
 	progress_message "$newhost added to zone $zone"
 
@@ -2093,12 +2096,12 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
     #
     # Be sure that Shorewall has been restarted using a DZ-aware version of the code
     #
-    [ -f /var/lib/shorewall/chains ] || startup_error "/var/lib/shorewall/chains -- file not found"
-    [ -f /var/lib/shorewall/zones ]  || startup_error "/var/lib/shorewall/zones -- file not found"
+    [ -f ${VARDIR}/chains ] || startup_error "${VARDIR}/chains -- file not found"
+    [ -f ${VARDIR}/zones ]  || startup_error "${VARDIR}/zones -- file not found"
     #
     # Delete the passed hosts from the zone state file
     #
-    > /var/lib/shorewall/zones_$$
+    > ${VARDIR}/zones_$$
 
     while read z hosts; do
 	if [ "$z" = "$zone" ]; then
@@ -2132,10 +2135,10 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
 
 	eval ${z}_hosts=\"$hosts\"
 
-	echo "$z $hosts" >> /var/lib/shorewall/zones_$$
-    done < /var/lib/shorewall/zones
+	echo "$z $hosts" >> ${VARDIR}/zones_$$
+    done < ${VARDIR}/zones
 
-    mv -f /var/lib/shorewall/zones_$$ /var/lib/shorewall/zones
+    mv -f ${VARDIR}/zones_$$ ${VARDIR}/zones
 
     TERMINATOR=fatal_error
 
@@ -2192,7 +2195,7 @@ delete_from_zone() # $1 = <interface>[:<hosts>] $2 = zone
 		    done
 		fi
 	    fi
-	done < /var/lib/shorewall/chains
+	done < ${VARDIR}/chains
 
 	progress_message "$delhost removed from zone $zone"
 
@@ -2295,7 +2298,7 @@ do_initialize() {
     TCP_FLAGS_LOG_LEVEL=
     RFC1918_LOG_LEVEL=
     MARK_IN_FORWARD_CHAIN=
-    SHARED_DIR=/usr/share/shorewall
+    SHARED_DIR=${SHAREDIR}
     FUNCTIONS=
     VERSION_FILE=
     LOGFORMAT=
@@ -2399,7 +2402,7 @@ do_initialize() {
 	fi
 	determine_capabilities
 
-	[ -d /var/lib/shorewall ] || mkdir -p /var/lib/shorewall
+	[ -d ${VARDIR} ] || mkdir -p ${VARDIR}
 
     else
 	f=$(find_file capabilities)
@@ -2640,7 +2643,7 @@ case "$COMMAND" in
 	$IPTABLES -t nat -Z
 	$IPTABLES -t mangle -Z
 	report "Shorewall Counters Reset"
-	date > /var/lib/shorewall/restarted
+	date > ${VARDIR}/restarted
 	my_mutex_off
 	;;
 
@@ -2701,7 +2704,7 @@ case "$COMMAND" in
 
    call)
 	#
-	# Undocumented way to call functions in /usr/share/shorewall/firewall directly
+	# Undocumented way to call functions in ${SHAREDIR}/firewall directly
 	#
 	shift
 	do_initialize

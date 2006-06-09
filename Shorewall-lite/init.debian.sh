@@ -35,9 +35,9 @@ not_configured () {
 	if [ "$1" != "stop" ]
 	then
 		echo ""
-		echo "please configure it and then edit /etc/default/shorewall"
+		echo "please configure it and then edit /etc/default/shorewall-lite"
 		echo "and set the \"startup\" variable to 1 in order to allow "
-		echo "shorewall to start"
+		echo "Shorewall Lite to start"
 	fi
 	echo "#################"
 	exit 0
@@ -51,9 +51,9 @@ then
 fi
 
 # check if shorewall is configured or not
-if [ -f "/etc/default/shorewall" ]
+if [ -f "/etc/default/shorewall-lite" ]
 then
-	. /etc/default/shorewall
+	. /etc/default/shorewall-lite
 	if [ "$startup" != "1" ]
 	then
 		not_configured

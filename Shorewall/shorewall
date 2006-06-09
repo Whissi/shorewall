@@ -606,11 +606,11 @@ start_command() {
 		    #
 		    iptables -F
 		    iptables -X
-		    ${RESTOREPATH}-ipsets
+		    $SHOREWALL_SHELL ${RESTOREPATH}-ipsets
 		fi
 
 		echo Restoring Shorewall...
-		$RESTOREPATH restore
+		$SHOREWALL_SHELL $RESTOREPATH restore
 		date > /var/lib/shorewall/restarted
 		progress_message3 Shorewall restored from $RESTOREPATH
 	    else

@@ -48,7 +48,7 @@ if [ $1 -eq 1 ]; then
 	fi
 fi
 
-[ -L /sbin/shorewall ] || [ -f /sbin/shorewall] || ln -s /usr/share/shorewall/shorewall /sbin/shorewall
+[ -L /sbin/shorewall ] || [ -f /sbin/shorewall ] || ln -s /usr/share/shorewall/shorewall /sbin/shorewall
 
 %preun
 

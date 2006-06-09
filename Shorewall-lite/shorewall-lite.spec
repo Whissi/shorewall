@@ -42,45 +42,48 @@ rm -rf $RPM_BUILD_ROOT
 
 if [ $1 -eq 1 ]; then
 	if [ -x /sbin/insserv ]; then
-		/sbin/insserv /etc/rc.d/shorewall
+		/sbin/insserv /etc/rc.d/shorewall-lite
 	elif [ -x /sbin/chkconfig ]; then
-		/sbin/chkconfig --add shorewall;
+		/sbin/chkconfig --add shorewall-lite;
 	fi
 fi
+
+[ -L /sbin/shorewall ] || ln -s /usr/share/shorewall-lite/shorewall /sbin/shorewall
 
 %preun
 
 if [ $1 = 0 ]; then
 	if [ -x /sbin/insserv ]; then
-		/sbin/insserv -r /etc/init.d/shorewall
+		/sbin/insserv -r /etc/init.d/shorewall-lite
 	elif [ -x /sbin/chkconfig ]; then
-		/sbin/chkconfig --del shorewall
+		/sbin/chkconfig --del shorewall-lite
 	fi
 
 fi
 
 %files
 %defattr(0644,root,root,0755)
-%attr(0755,root,root) %dir /etc/shorewall
-%attr(0644,root,root) %config(noreplace) /etc/shorewall/shorewall.conf
-%attr(0644,root,root) /etc/shorewall/Makefile
-%attr(0544,root,root) /etc/init.d/shorewall
-%attr(0755,root,root) %dir /usr/share/shorewall
-%attr(0700,root,root) %dir /var/lib/shorewall
+%attr(0755,root,root) %dir /etc/shorewall-lite
+%attr(0644,root,root) %config(noreplace) /etc/shorewall-lite/shorewall.conf
+%attr(0644,root,root) /etc/shorewall-lite/Makefile
+%attr(0544,root,root) /etc/init.d/shorewall-lite
+%attr(0755,root,root) %dir /usr/share/shorewall-lite
+%attr(0700,root,root) %dir /var/lib/shorewall/lite
 
-%attr(0555,root,root) /sbin/shorewall
-
-%attr(0644,root,root) /usr/share/shorewall/version
-%attr(0644,root,root) /usr/share/shorewall/configpath
-%attr(0444,root,root) /usr/share/shorewall/functions
-%attr(0444,root,root) /usr/share/shorewall/modules
-%attr(0444,root,root) /usr/share/shorewall/xmodules
-%attr(0544,root,root) /usr/share/shorewall/shorecap
-%attr(0544,root,root) /usr/share/shorewall/help
+%attr(0555,root,root) /usr/share/shorewall-lite/shorewall
+%attr(0644,root,root) /usr/share/shorewall-lite/version
+%attr(0644,root,root) /usr/share/shorewall-lite/configpath
+%attr(0444,root,root) /usr/share/shorewall-lite/functions
+%attr(0444,root,root) /usr/share/shorewall-lite/modules
+%attr(0444,root,root) /usr/share/shorewall-lite/xmodules
+%attr(0544,root,root) /usr/share/shorewall-lite/shorecap
+%attr(0544,root,root) /usr/share/shorewall-lite/help
 
 %doc COPYING INSTALL changelog.txt releasenotes.txt
 
 %changelog
+* Fri Jun 09 2006 Tom Eastep tom@shorewall.net
+- Install Shorewall-lite in its own directories
 * Wed Jun 07 2006 Tom Eastep tom@shorewall.net
 - Version 3.2.0-RC2
 * Tue Apr 18 2006 Tom Eastep tom@shorewall.net

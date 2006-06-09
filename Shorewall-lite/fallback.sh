@@ -78,26 +78,26 @@ restore_file() # $1 = file to restore, $2 = (Optional) Directory to restore from
     fi
 }
 
-if [ ! -f /usr/share/shorewall-${VERSION}.bkout/version ]; then
+if [ ! -f /usr/share/shorewall-lite-${VERSION}.bkout/version ]; then
     echo "Shorewall Version $VERSION is not installed"
     exit 1
 fi
 
 echo "Backing Out Installation of Shorewall $VERSION"
 
-if [ -L /usr/share/shorewall/init ]; then
-    FIREWALL=$(ls -l /usr/share/shorewall/init | sed 's/^.*> //')
-    restore_file $FIREWALL /usr/share/shorewall-${VERSION}.bkout
+if [ -L /usr/share/shorewall-lite/init ]; then
+    FIREWALL=$(ls -l /usr/share/shorewall-lite/init | sed 's/^.*> //')
+    restore_file $FIREWALL /usr/share/shorewall-lite-${VERSION}.bkout
 else
-    restore_file /etc/init.d/shorewall /usr/share/shorewall-${VERSION}.bkout
+    restore_file /etc/init.d/shorewall /usr/share/shorewall-lite-${VERSION}.bkout
 fi
 
-restore_file /sbin/shorewall /var/lib/shorewall-${VERSION}.bkout
+restore_file /sbin/shorewall /var/lib/shorewall-lite-${VERSION}.bkout
 
-restore_directory /etc/shorewall
-restore_directory /usr/share/shorewall
-restore_directory /var/lib/shorewall
+restore_directory /etc/shorewall-lite
+restore_directory /usr/share/shorewall-lite
+restore_directory /var/lib/shorewall-lite
 
-echo "Shorewall Lite Restored to Version $(cat /usr/share/shorewall/version)"
+echo "Shorewall Lite Restored to Version $(cat /usr/share/shorewall-lite/version)"
 
 

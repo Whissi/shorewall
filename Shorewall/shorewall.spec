@@ -48,6 +48,8 @@ if [ $1 -eq 1 ]; then
 	fi
 fi
 
+[ -L /sbin/shorewall ] || ln -s /usr/share/shorewall/shorewall /sbin/shorewall
+
 %preun
 
 if [ $1 = 0 ]; then
@@ -101,8 +103,7 @@ fi
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/tcdevices
 %attr(0600,root,root) /etc/shorewall/Makefile
 
-%attr(0555,root,root) /sbin/shorewall
-
+%attr(0555,root,root) /usr/share/shorewall/shorewall
 %attr(0644,root,root) /usr/share/shorewall/version
 %attr(0644,root,root) /usr/share/shorewall/actions.std
 %attr(0644,root,root) /usr/share/shorewall/action.Drop
@@ -208,6 +209,8 @@ fi
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel ipsecvpn Samples
 
 %changelog
+* Fri Jun 09 2006 Tom Eastep tom@shorewall.net
+- Allow Shorewall and Shorewall-lite to coexist
 * Wed Jun 07 2006 Tom Eastep tom@shorewall.net
 - Updated to 3.2.0-0RC2
 * Tue May 30 2006 Tom Eastep tom@shorewall.net

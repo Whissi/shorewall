@@ -60,8 +60,8 @@ remove_file() # $1 = file to restore
     fi
 }
 
-if [ -f /usr/share/shorewall/version ]; then
-    INSTALLED_VERSION="$(cat /usr/share/shorewall/version)"
+if [ -f /usr/share/shorewall-lite/version ]; then
+    INSTALLED_VERSION="$(cat /usr/share/shorewall-lite/version)"
     if [ "$INSTALLED_VERSION" != "$VERSION" ]; then
 	echo "WARNING: Shorewall Version $INSTALLED_VERSION is installed"
 	echo "         and this is the $VERSION uninstaller."
@@ -78,8 +78,8 @@ if qt iptables -L shorewall -n; then
    /sbin/shorewall clear
 fi
 
-if [ -L /usr/share/shorewall/init ]; then
-    FIREWALL=$(ls -l /usr/share/shorewall/init | sed 's/^.*> //')
+if [ -L /usr/share/shorewall-lite/init ]; then
+    FIREWALL=$(ls -l /usr/share/shorewall-lite/init | sed 's/^.*> //')
 else
     FIREWALL=/etc/init.d/shorewall
 fi
@@ -100,12 +100,12 @@ fi
 rm -f /sbin/shorewall
 rm -f /sbin/shorewall-*.bkout
 
-rm -rf /etc/shorewall
-rm -rf /etc/shorewall-*.bkout
-rm -rf /var/lib/shorewall
-rm -rf /var/lib/shorewall-*.bkout
-rm -rf /usr/share/shorewall
-rm -rf /usr/share/shorewall-*.bkout
+rm -rf /etc/shorewall-lite
+rm -rf /etc/shorewall-lite-*.bkout
+rm -rf /var/lib/shorewall-lite
+rm -rf /var/lib/shorewall-lite-*.bkout
+rm -rf /usr/share/shorewall-lite
+rm -rf /usr/share/shorewall-lite-*.bkout
 
 echo "Shorewall Uninstalled"
 

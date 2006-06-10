@@ -1,17 +1,17 @@
-# Shorewall Makefile to restart if config-files are newer than last restart
-VARDIR=/var/lib/shorewall
-SHAREDIR=/usr/share/shorewall
+# Shorewall Lite Makefile to restart if firewall script is newer than last restart
+VARDIR=/var/lib/shorewall-lite
+SHAREDIR=/usr/share/shorewall-lite
 RESTOREFILE?=.restore
 all: $(VARDIR)/${RESTOREFILE}
 
 $(VARDIR)/${RESTOREFILE}: $(SHAREDIR)/firewall
-	@/sbin/shorewall -q save >/dev/null; \
+	@/usr/share/shorewall-lite/shorewall -q save >/dev/null; \
 	if \
-	    /sbin/shorewall -q restart >/dev/null 2>&1; \
+	    /usr/share/shorewall-lite/shorewall -q restart >/dev/null 2>&1; \
 	then \
-	    /sbin/shorewall -q save >/dev/null; \
+	    /usr/share/shorewall-lite/shorewall -q save >/dev/null; \
 	else \
-	    /sbin/shorewall -q restart 2>&1 | tail >&2; \
+	    /usr/share/shorewall-lite/shorewall -q restart 2>&1 | tail >&2; \
 	fi
 
 # EOF

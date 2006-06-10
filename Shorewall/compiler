@@ -8228,18 +8228,33 @@ initialize() {
 __EOF__
     INDENT="    "
 
-    cat >&3 << __EOF__
+    if [ -n "$EXPORT" ]; then
+	cat >&3 << __EOF__
     if [ ! -f \${SHAREDIR}/version ]; then
-	fatal_error "This script requires Shorewall or Shorewall Lite which do not appear to be installed on this system"
+	fatal_error "This script requires Shorewall Lite which do not appear to be installed on this system"
     fi
 
     local version=\$(cat \${SHAREDIR}/version)
 
     if [ \${LIBVERSION:-0} -lt 30191 ]; then
-	fatal_error "This script requires Shorewall [Lite] version 3.2.0-Beta7 or later; current version is \$version"
+	fatal_error "This script requires Shorewall Lite version 3.2.0-RC2 or later; current version is \$version"
     fi
 
 __EOF__
+    else
+	cat >&3 << __EOF__
+    if [ ! -f \${SHAREDIR}/version ]; then
+	fatal_error "This script requires Shorewall which do not appear to be installed on this system (did you forget "-e" when you compiled?)"
+    fi
+
+    local version=\$(cat \${SHAREDIR}/version)
+
+    if [ \${LIBVERSION:-0} -lt 30191 ]; then
+	fatal_error "This script requires Shorewall version 3.2.0-Beta7 or later; current version is \$version"
+    fi
+
+__EOF__
+    fi
 
     cat >&3 << __EOF__
     #

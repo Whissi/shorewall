@@ -109,8 +109,8 @@ case "$COMMAND" in
 	    status=4
 	fi
 
-	if [ -f /var/lib/shorewall/state ]; then
-	    state="$(cat /var/lib/shorewall/state)"
+	if [ -f ${VARDIR}/state ]; then
+	    state="$(cat ${VARDIR}/state)"
 	    case $state in
 		Stopped*|Clear*)
 		    status=3

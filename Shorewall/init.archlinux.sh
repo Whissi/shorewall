@@ -20,7 +20,7 @@ DAEMON_NAME="shorewall" # of course shorewall is NOT a deamon.
 case "$1" in
 	start)
 		stat_busy "Starting $DAEMON_NAME"
-		/sbin/shorewall $OPTIONS start &>/dev/null
+		/usr/share/shorewall/shorewall $OPTIONS start &>/dev/null
 		if [ $? -gt 0 ]; then
 			stat_fail
 		else
@@ -32,7 +32,7 @@ case "$1" in
 
 	stop)
 		stat_busy "Stopping $DAEMON_NAME"
-		/sbin/shorewall stop &>/dev/null
+		/usr/share/shorewall/shorewall stop &>/dev/null
 		if [ $? -gt 0 ]; then
 			stat_fail
 		else
@@ -43,7 +43,7 @@ case "$1" in
 
 	restart|reload)
 		stat_busy "Restarting $DAEMON_NAME"
-		/sbin/shorewall restart &>/dev/null
+		/usr/share/shorewall restart &>/dev/null
 		if [ $? -gt 0  ]; then
 			stat_fail
 		else

@@ -2702,7 +2702,7 @@ if [ -f \${VARDIR}/proxyarp ]; then
         [ -z "\$haveroute" -a -z "\$NOROUTE" ] && qt ip route del \$address dev \$interface
     done < \${VARDIR}/proxyarp
 
-    rm -f \${VARDIR}/nat
+    rm -f \${VARDIR}/proxyarp
 fi
 
 for f in /proc/sys/net/ipv4/conf/*; do

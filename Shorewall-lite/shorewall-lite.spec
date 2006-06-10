@@ -23,6 +23,9 @@ The Shoreline Firewall, more commonly known as "Shorewall", is a Netfilter
 (iptables) based firewall that can be used on a dedicated firewall system,
 a multi-function gateway/ router/server or on a standalone GNU/Linux system.
 
+Shorewall Lite is a companion product to Shorewall that allows network
+administrators to centralize the configuration of Shorewall-based firewalls.
+
 %prep
 
 %setup

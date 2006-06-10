@@ -2702,7 +2702,7 @@ if [ -f \${VARDIR}/proxyarp ]; then
         [ -z "\$haveroute" -a -z "\$NOROUTE" ] && qt ip route del \$address dev \$interface
     done < \${VARDIR}/proxyarp
 
-    rm -f ${VARDIR}/nat
+    rm -f \${VARDIR}/nat
 fi
 
 for f in /proc/sys/net/ipv4/conf/*; do
@@ -8263,7 +8263,7 @@ __EOF__
     [ -n "\$LOGFORMAT\" ] || LOGFORMAT="Shorewall:%s:%s:"
 __EOF__
     fi
-    
+
     cat >&3 << __EOF__
     RESTOREFILE="$RESTOREFILE"
     VERSION="$VERSION"

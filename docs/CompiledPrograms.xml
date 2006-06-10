@@ -356,6 +356,15 @@
         </listitem>
 
         <listitem>
+          <para>On the firewall system:</para>
+
+          <para>Be sure that the IP address of the administrative system is
+          included in <filename>/etc/shorewall/routestopped</filename>.</para>
+
+          <programlisting><command>shorewall stop</command></programlisting>
+        </listitem>
+
+        <listitem>
           <para>Install Shorewall Lite on the firewall system; switch
           <filename>/sbin/shorewall</filename> to Shorewall Lite as described
           above.</para>
@@ -386,11 +395,7 @@
           <para>Modify <filename>/etc/shorewall-lite/shorewall.conf</filename>
           as needed.</para>
 
-          <programlisting><command>shorewall restart</command></programlisting>
-
-          <para>I recommend using the <command>restart</command> command
-          because many package managers don't clear shorewall as part of the
-          uninstall process.</para>
+          <programlisting><command>shorewall start</command></programlisting>
         </listitem>
       </orderedlist>
     </section>

@@ -85,7 +85,7 @@ fi
 %attr(0544,root,root) /usr/share/shorewall-lite/shorecap
 %attr(0544,root,root) /usr/share/shorewall-lite/help
 
-%doc COPYING INSTALL changelog.txt releasenotes.txt
+%doc COPYING changelog.txt releasenotes.txt
 
 %changelog
 * Fri Jun 09 2006 Tom Eastep tom@shorewall.net

@@ -1,61 +1,20 @@
-Shorewall Lite 3.2.0 RC 2
+Shorewall Lite 3.2.0 RC 3
 
 Problems Corrected in 3.2.0 RC 2
 
-1)  The treatment of IPTABLES and LOGFORMAT have been clarified with
-    respect to Shorewall Lite. If these options are set in the
-    shorewall.conf file used at compile time, then the generated
-    firewall script will use those values. /sbin/shorewall on the
-    firewall system will use the corresponding values from
-    /etc/shorewall/shorewall.conf on that system.
+1)  The /usr/share/shorewall-lite/configpath file has been corrected to
+    correctly refer to /usr/share/shorewall-lite/.
 
-    If the values are not given in shorewall.conf at compile time then
-    the values in /etc/shorewall/shorewall.conf on the firewall system
-    will be used by the generated firewall script.
+2)  The /etc/shorewall-lite/Makefile has been corrected to refer to the
+    proper directories.
 
-    To take advantage of this change, both the administrative system
-    and the firewall system(s) must be running RC2 or later.
+3)  The /usr/share/shorewall-lite/shorecap program has been corrected
+    to refer to the proper directories and to correct a typo that
+    prevented the program for detecting any capabilities.
 
-Other changes in 3.2.0 RC 2
+Other changes in 3.2.0 RC 3
 
-1)  The shorecap program now gets it's version from the
-    /usr/share/shorewall/version file.
-
-2)  The output of "shorewall version" on Shorewall Lite systems now
-    includes " Lite" after the version number.
-
-    Example:
-
-        wireless:~ # shorewall version
-	3.2.0-RC1 Lite
-	wireless:~ #
-
-3)  It is now possible to have both shorewall and Shorewall Lite 
-    installed on the same system if you use RPM. Regardless of whether
-    you use RPM or the installer, Shorewall Lite directory names have
-    been change from 'shorewall' to 'shorewall-lite':
-
-	 /etc/shorewall -> /etc/shorewall-lite
-	 /usr/share/shorewall -> /usr/share/shorewall-lite
-	 /var/lib/shorewall -> /var/lib/shorewall-lite
-
-    If you use the RPMs, whichever package is installed first will
-    determine which package /sbin/shorewall invokes. /sbin/shorewall is
-    now a symbolic link created by 'rpm':
-
-    Shorewall: /sbin/shorewall points to /usr/share/shorewall/shorewall
-    Shorewall Lite:
-        /sbin/shorewall points to /usr/share/shorewall/shorewall-lite
-
-    You may use the 'ln -sf' command to change from one to the other:
-
-    To use 'Shorewall' rather than 'Shorewall Lite'
-
-        ln -sf /usr/share/shorewall/shorewall /sbin/shorewall
-
-    To use 'Shorewall Lite' rather than 'Shorewall'
-
-        ln -sf /usr/share/shorewall-lite/shorewall /sbin/shorewall
+None.
 
 New Features:
 
@@ -93,4 +52,31 @@ e) On the administrative system, for each firewall system you:
       scp firewall root@<firewall system>:/usr/share/shorewall/
 
    3) On the firewall system, 'shorewall start'.
+
+It is possible to have both shorewall and Shorewall Lite 
+installed on the same system if you use RPM. Regardless of whether
+you use RPM or the installer, Shorewall Lite directory names have
+been change from 'shorewall' to 'shorewall-lite':
+
+      /etc/shorewall -> /etc/shorewall-lite
+       /usr/share/shorewall -> /usr/share/shorewall-lite
+        /var/lib/shorewall -> /var/lib/shorewall-lite
+
+If you use the RPMs, whichever package is installed first will
+determine which package /sbin/shorewall invokes. /sbin/shorewall is
+now a symbolic link created by 'rpm':
+
+Shorewall: /sbin/shorewall points to /usr/share/shorewall/shorewall
+Shorewall Lite:
+        /sbin/shorewall points to /usr/share/shorewall/shorewall-lite
+
+You may use the 'ln -sf' command to change from one to the other:
+
+To use 'Shorewall' rather than 'Shorewall Lite'
+
+        ln -sf /usr/share/shorewall/shorewall /sbin/shorewall
+
+To use 'Shorewall Lite' rather than 'Shorewall'
+
+        ln -sf /usr/share/shorewall-lite/shorewall /sbin/shorewall
 

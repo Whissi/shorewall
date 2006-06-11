@@ -44,11 +44,11 @@
 #    used during firewall compilation, then the generated firewall program will likewise not
 #    require Shorewall to be installed.
 
-. /usr/share/shorewall/functions
-. /usr/share/shorewall/configpath
-. /etc/shorewall/shorewall.conf
+. /usr/share/shorewall-lite/functions
+. /usr/share/shorewall-lite/configpath
+. /etc/shorewall-lite/shorewall.conf
 
-VERSION=$(cat /usr/share/shorewall/version)
+VERSION=$(cat /usr/share/shorewall-lite/version)
 
 report_capability() # $1 = Capability
 {
@@ -86,7 +86,7 @@ report_capabilities() {
     report_capability MANGLE_FORWARD
 }
 
-[ -n "$IPTABLES" ] || iptables=$(mywhich iptables)
+[ -n "$IPTABLES" ] || IPTABLES=$(mywhich iptables)
 VERBOSE=0
 load_kernel_modules
 determine_capabilities

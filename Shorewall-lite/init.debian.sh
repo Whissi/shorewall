@@ -1,7 +1,7 @@
 #!/bin/sh
 
 SRWL=/usr/share/shorewall-lite/shorewall
-WAIT_FOR_IFUP=/usr/share/shorewall/wait4ifup
+WAIT_FOR_IFUP=/usr/share/shorewall-lite/wait4ifup
 # Note, set INITLOG to /dev/null if you do not want to
 # keep logs of the firewall (not recommended)
 INITLOG=/var/log/shorewall-init.log
@@ -42,13 +42,6 @@ not_configured () {
 	echo "#################"
 	exit 0
 }
-
-# parse the shorewall params file in order to use params in
-# /etc/default/shorewall
-if [ -f "/etc/shorewall/params" ]
-then
-	. /etc/shorewall/params
-fi
 
 # check if shorewall is configured or not
 if [ -f "/etc/default/shorewall-lite" ]
@@ -123,7 +116,7 @@ case "$1" in
      shorewall_restart
      ;;
   *)
-     echo "Usage: /etc/init.d/shorewall {start|stop|refresh|restart|force-reload}"
+     echo "Usage: /etc/init.d/shorewall-lite {start|stop|refresh|restart|force-reload}"
      exit 1
 esac
 

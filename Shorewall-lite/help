@@ -8,7 +8,7 @@
 #     (c) 2003-2006 - Tom Eastep (teastep@shorewall.net)
 #                     Steve Herber (herber@thing.com)
 #
-#	This file should be placed in /usr/share/shorewall/help
+#	This file should be placed in /usr/share/shorewall-lite/help
 #
 #	Shorewall documentation is available at http://shorewall.sourceforge.net
 #
@@ -97,7 +97,7 @@ dump)
 
 forget)
 	echo "forget: forget [ <file name> ]
-    Deletes /var/lib/shorewall/<file name>. If no <file name> is given then
+    Deletes /var/lib/shorewall-lite/<file name>. If no <file name> is given then
     the file specified by RESTOREFILE in shorewall.conf is removed.
 
     See also \"help save\""
@@ -190,7 +190,7 @@ restore)
 	echo "restore: restore [ -n ] [ <file name> ]
     Restore Shorewall to a state saved using the 'save' command
     Existing connections are maintained. The <file name> names a restore file in
-    /var/lib/shorewall created using \"shorewall save\"; if no <file name> is given
+    /var/lib/shorewall-lite created using \"shorewall save\"; if no <file name> is given
     then Shorewall will be restored from the file specified by the RESTOREFILE
     option in shorewall.conf.
 
@@ -201,8 +201,8 @@ restore)
 
 save)
 	echo "save: save [ <file name> ]
-    The dynamic data is stored in /var/lib/shorewall/save. The state of the
-    firewall is stored in /var/lib/shorewall/<file name> for use by the 'shorewall restore'
+    The dynamic data is stored in /var/lib/shorewall-lite/save. The state of the
+    firewall is stored in /var/lib/shorewall-lite/<file name> for use by the 'shorewall restore'
     and 'shorewall -f start' commands. If <file name> is not given then the state is saved
     in the file specified by the RESTOREFILE option in shorewall.conf.
 
@@ -217,7 +217,7 @@ show)
     shorewall [-x] show <chain> [ <chain> ... ]  - produce a verbose report about the IPtable chain(s).
     (iptables -L chain -n -v)
 
-    shorewall show actions - produce a list of builtin actions and actions defined in /usr/share/shorewall/actions.std and /etc/shorewall
+    shorewall show actions - produce a list of builtin actions and actions defined in /usr/share/shorewall-lite/actions.std and /etc/shorewall-lite
 
     shorewall [-x] show mangle - produce a verbose report about the mangle table.
     (iptables -t mangle -L -n -v)
@@ -257,9 +257,9 @@ start)
 stop)
 	echo "stop: stop
     Stops the firewall.  All existing connections, except those
-    listed in /etc/shorewall/routestopped, are taken down.
+    listed in routestopped, are taken down.
     The only new traffic permitted through the firewall
-    is from systems listed in /etc/shorewall/routestopped."
+    is from systems listed in routestopped."
 	;;
 
 status)

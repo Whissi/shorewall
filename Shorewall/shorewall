@@ -113,10 +113,6 @@
 #          shorewall compile [ <directory> ] ]<filename>
 #                                                  Compile a firewall program file.
 #
-SHAREDIR=/usr/share/shorewall
-VARDIR=/var/lib/shorewall
-CONFDIR=/etc/shorewall
-
 # Fatal Error
 #
 fatal_error() # $@ = Message
@@ -1516,11 +1512,14 @@ fi
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 MUTEX_TIMEOUT=
 
-SHARED_DIR=${SHAREDIR}
-FIREWALL=$SHARED_DIR/firewall
-FUNCTIONS=$SHARED_DIR/functions
-VERSION_FILE=$SHARED_DIR/version
-HELP=$SHARED_DIR/help
+SHAREDIR=/usr/share/shorewall
+VARDIR=/var/lib/shorewall
+CONFDIR=/etc/shorewall
+
+FIREWALL=$SHAREDIR/firewall
+FUNCTIONS=$SHAREDIR/functions
+VERSION_FILE=$SHAREDIR/version
+HELP=$SHAREDIR/help
 
 if [ -f $FUNCTIONS ]; then
     . $FUNCTIONS

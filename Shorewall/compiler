@@ -40,10 +40,6 @@
 #	    SHOREWALL_DIR                       A directory name was passed to /sbin/shorewall
 #	    VERBOSE                             Standard Shorewall verbosity control.
 
-SHAREDIR=/usr/share/shorewall
-VARDIR=/var/lib/shorewall
-CONFDIR=/etc/shorewall
-
 # Fatal error -- stops the compiler after issuing the error message
 #
 fatal_error() # $* = Error Message
@@ -8598,7 +8594,6 @@ do_initialize() {
     TCP_FLAGS_LOG_LEVEL=
     RFC1918_LOG_LEVEL=
     MARK_IN_FORWARD_CHAIN=
-    SHARED_DIR=${SHAREDIR}
     FUNCTIONS=
     VERSION_FILE=
     LOGFORMAT=
@@ -8641,7 +8636,12 @@ do_initialize() {
     SECTION=ESTABLISHED
     SECTIONS=
     ALL_PORTS=
-    FUNCTIONS=$SHARED_DIR/functions
+
+    SHAREDIR=/usr/share/shorewall
+    VARDIR=/var/lib/shorewall
+    CONFDIR=/etc/shorewall
+
+    FUNCTIONS=${SHAREDIR}/functions
 
     [ -n "${VERBOSE:=2}" ]
 

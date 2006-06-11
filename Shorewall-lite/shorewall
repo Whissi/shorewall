@@ -88,10 +88,6 @@
 #
 # Fatal Error
 #
-SHAREDIR=/usr/share/shorewall-lite
-VARDIR=/var/lib/shorewall-lite
-CONFDIR=/etc/shorewall-lite
-
 fatal_error() # $@ = Message
 {
     echo "   $@" >&2
@@ -1174,11 +1170,14 @@ fi
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 MUTEX_TIMEOUT=
 
-SHARED_DIR=${SHAREDIR}
-FIREWALL=$SHARED_DIR/firewall
-FUNCTIONS=$SHARED_DIR/functions
-VERSION_FILE=$SHARED_DIR/version
-HELP=$SHARED_DIR/help
+SHAREDIR=/usr/share/shorewall-lite
+VARDIR=/var/lib/shorewall-lite
+CONFDIR=/etc/shorewall-lite
+
+FIREWALL=$SHAREDIR/firewall
+FUNCTIONS=$SHAREDIR/functions
+VERSION_FILE=$SHAREDIR/version
+HELP=$SHAREDIR/help
 
 if [ -f $FUNCTIONS ]; then
     . $FUNCTIONS

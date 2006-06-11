@@ -40,9 +40,6 @@
 #						  and rules/policies.
 #	   shorewall refresh	.		  Rebuild the common chain
 #
-SHAREDIR=/usr/share/shorewall
-VARDIR=/var/lib/shorewall
-CONFDIR=/etc/shorewall
 # Mutual exclusion -- These functions are jackets for the mutual exclusion
 #		      routines in $FUNCTIONS. They invoke
 #		      the corresponding function in that file if the user did
@@ -2298,7 +2295,6 @@ do_initialize() {
     TCP_FLAGS_LOG_LEVEL=
     RFC1918_LOG_LEVEL=
     MARK_IN_FORWARD_CHAIN=
-    SHARED_DIR=${SHAREDIR}
     FUNCTIONS=
     VERSION_FILE=
     LOGFORMAT=
@@ -2341,7 +2337,11 @@ do_initialize() {
     SECTIONS=
     ALL_PORTS=
 
-    FUNCTIONS=$SHARED_DIR/functions
+    SHAREDIR=/usr/share/shorewall
+    VARDIR=/var/lib/shorewall
+    CONFDIR=/etc/shorewall
+    
+    FUNCTIONS=${SHAREDIR}/functions
 
     if [ -f $FUNCTIONS ]; then
 	[ $VERBOSE -gt 1 ] && echo "Loading $FUNCTIONS..."

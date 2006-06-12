@@ -197,7 +197,8 @@
           <para>The firewall systems do <emphasis role="bold">NOT</emphasis>
           need to have the full Shorewall product installed but rather only
           the Shorewall Lite product. Shorewall and Shorewall LIte may be
-          installed on the same system; whichever package is installed first
+          installed on the same system <emphasis role="bold">although we don't
+          recommend doing so</emphasis>; whichever package is installed first
           will be the one invoked by <filename
           class="symlink">/sbin/shorewall</filename>. <filename
           class="symlink">/sbin/shorewall</filename> is a symbolic link that
@@ -382,12 +383,16 @@ wireless:~ #         </programlisting>
           included in <filename>/etc/shorewall/routestopped</filename>.</para>
 
           <programlisting><command>shorewall stop</command></programlisting>
+
+          <para><emphasis role="bold">We strongly recommend that you uninstall
+          Shorewall at this point.</emphasis></para>
         </listitem>
 
         <listitem>
-          <para>Install Shorewall Lite on the firewall system; switch
-          <filename>/sbin/shorewall</filename> to Shorewall Lite as described
-          above.</para>
+          <para>Install Shorewall Lite on the firewall system; <emphasis
+          role="bold">If you did not uninstall Shorewall in the previous step,
+          then you must switch <filename>/sbin/shorewall</filename> to
+          Shorewall Lite as described above.</emphasis></para>
         </listitem>
 
         <listitem>

@@ -1,6 +1,6 @@
 %define name shorewall
 %define version 3.2.0
-%define release 0RC2
+%define release 0RC3
 %define prefix /usr
 
 Summary: Shoreline Firewall is an iptables-based firewall for Linux systems.
@@ -48,8 +48,6 @@ if [ $1 -eq 1 ]; then
 	fi
 fi
 
-[ -L /sbin/shorewall ] || [ -f /sbin/shorewall ] || ln -s /usr/share/shorewall/shorewall /sbin/shorewall
-
 %preun
 
 if [ $1 = 0 ]; then
@@ -61,12 +59,6 @@ if [ $1 = 0 ]; then
 
 	rm -f /etc/shorewall/startup_disabled
 
-fi
-
-%triggerpostun -- shorewall <= 3.2.0-0RC1
-
-if [ -f /usr/share/shorewall/shorewall ]; then
-   [ -L /sbin/shorewall ] || ln -s /usr/share/shorewall/shorewall /sbin/shorewall
 fi
 
 %files
@@ -109,7 +101,8 @@ fi
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/tcdevices
 %attr(0600,root,root) /etc/shorewall/Makefile
 
-%attr(0555,root,root) /usr/share/shorewall/shorewall
+%attr(0555,root,root) /sbin/shorewall
+
 %attr(0644,root,root) /usr/share/shorewall/version
 %attr(0644,root,root) /usr/share/shorewall/actions.std
 %attr(0644,root,root) /usr/share/shorewall/action.Drop

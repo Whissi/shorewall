@@ -1,6 +1,6 @@
 %define name shorewall-lite
 %define version 3.2.0
-%define release 0RC2
+%define release 0RC3
 %define prefix /usr
 
 Summary: Shoreline Firewall Lite is an iptables-based firewall for Linux systems.
@@ -51,8 +51,6 @@ if [ $1 -eq 1 ]; then
 	fi
 fi
 
-[ -L /sbin/shorewall ] || [ -f /sbin/shorewall ] || ln -s /usr/share/shorewall-lite/shorewall /sbin/shorewall
-
 %preun
 
 if [ $1 = 0 ]; then
@@ -64,12 +62,6 @@ if [ $1 = 0 ]; then
 
 fi
 
-%triggerpostun -- shorewall-lite <= 3.2.0-0RC1
-
-if [ -f /usr/share/shorewall-lite/shorewall ]; then
-   [ -L /sbin/shorewall ] || ln -s /usr/share/shorewall-lite/shorewall /sbin/shorewall
-fi
-
 %files
 %defattr(0644,root,root,0755)
 %attr(0755,root,root) %dir /etc/shorewall-lite
@@ -79,7 +71,8 @@ fi
 %attr(0755,root,root) %dir /usr/share/shorewall-lite
 %attr(0700,root,root) %dir /var/lib/shorewall-lite
 
-%attr(0555,root,root) /usr/share/shorewall-lite/shorewall
+%attr(0555,root,root) /sbin/shorewall-lite
+
 %attr(0644,root,root) /usr/share/shorewall-lite/version
 %attr(0644,root,root) /usr/share/shorewall-lite/configpath
 %attr(0444,root,root) /usr/share/shorewall-lite/functions
@@ -91,6 +84,9 @@ fi
 %doc COPYING changelog.txt releasenotes.txt
 
 %changelog
+* Mon Jun 12 2006 Tom Eastep tom@shorewall.net
+- Change control program to /sbin/shorewall-lite
+- Version 3.2.0-RC3
 * Fri Jun 09 2006 Tom Eastep tom@shorewall.net
 - Install Shorewall-lite in its own directories
 * Wed Jun 07 2006 Tom Eastep tom@shorewall.net

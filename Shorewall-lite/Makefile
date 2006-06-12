@@ -5,13 +5,13 @@ RESTOREFILE?=.restore
 all: $(VARDIR)/${RESTOREFILE}
 
 $(VARDIR)/${RESTOREFILE}: $(SHAREDIR)/firewall
-	@/usr/share/shorewall-lite/shorewall -q save >/dev/null; \
+	@/sbin/shorewall-lite -q save >/dev/null; \
 	if \
-	    /usr/share/shorewall-lite/shorewall -q restart >/dev/null 2>&1; \
+	    /sbin/shorewall-lite -q restart >/dev/null 2>&1; \
 	then \
-	    /usr/share/shorewall-lite/shorewall -q save >/dev/null; \
+	    /sbin/shorewall-lite -q save >/dev/null; \
 	else \
-	    /usr/share/shorewall-lite/shorewall -q restart 2>&1 | tail >&2; \
+	    /sbin/shorewall-lite -q restart 2>&1 | tail >&2; \
 	fi
 
 # EOF

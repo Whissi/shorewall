@@ -1,6 +1,6 @@
 #!/bin/sh
 
-SRWL=/usr/share/shorewall-lite/shorewall
+SRWL=/sbin/shorewall-lite
 WAIT_FOR_IFUP=/usr/share/shorewall-lite/wait4ifup
 # Note, set INITLOG to /dev/null if you do not want to
 # keep logs of the firewall (not recommended)

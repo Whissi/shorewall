@@ -197,61 +197,8 @@
           <para>The firewall systems do <emphasis role="bold">NOT</emphasis>
           need to have the full Shorewall product installed but rather only
           the Shorewall Lite product. Shorewall and Shorewall LIte may be
-          installed on the same system <emphasis role="bold">although we don't
-          recommend doing so</emphasis>; whichever package is installed first
-          will be the one invoked by <filename
-          class="symlink">/sbin/shorewall</filename>. <filename
-          class="symlink">/sbin/shorewall</filename> is a symbolic link that
-          points to the real shorewall script:</para>
-
-          <itemizedlist>
-            <listitem>
-              <para>It points to
-              <filename>/usr/share/shorewall/shorewall</filename> if the full
-              Shorewall package is to be used.</para>
-            </listitem>
-
-            <listitem>
-              <para>It points to
-              <filename>/usr/share/shorewall-lite/shorewall</filename> if
-              Shorewall Lite is to be used.</para>
-            </listitem>
-          </itemizedlist>
-
-          <para>You can switch between the two using the <command>ln
-          -sf</command> command:</para>
-
-          <itemizedlist>
-            <listitem>
-              <para>To select Shorewall:</para>
-
-              <programlisting><command>ln -sf /usr/share/shorewall/shorewall /sbin/shorewall</command></programlisting>
-            </listitem>
-
-            <listitem>
-              <para>To select Shorewall Lite</para>
-
-              <programlisting><command>ln -sf /usr/share/shorewall-lite/shorewall /sbin/shorewall</command></programlisting>
-            </listitem>
-          </itemizedlist>
+          installed on the same system.</para>
         </note>
-      </listitem>
-
-      <listitem>
-        <para>You can always see which product is being used by running the
-        version command.</para>
-
-        <para>On a system running full Shorewall:</para>
-
-        <programlisting>wifitipper:~ # <command>shorewall version</command>
-3.2.0-RC2
-wifitipper:~ #                 </programlisting>
-
-        <para>On a system running Shorewall Lite:</para>
-
-        <programlisting>wireless:~ # <command>shorewall version</command>
-3.2.0-RC2 Lite
-wireless:~ #         </programlisting>
       </listitem>
 
       <listitem>
@@ -297,7 +244,7 @@ wireless:~ #         </programlisting>
         <para>If you are running Debian or one of its derivatives like Ubuntu
         then edit /etc/default/shorewall-lite and set startup=1.</para>
 
-        <programlisting><command>shorewall start</command></programlisting>
+        <programlisting><command>shorewall-lite start</command></programlisting>
       </listitem>
     </orderedlist>
 
@@ -337,9 +284,10 @@ wireless:~ #         </programlisting>
       </simplelist>
     </blockquote>
 
-    <para>The <filename>/sbin/shorewall</filename> program included with
-    Shorewall Lite supports the same set of commands as the one in a full
-    Shorewall installation with the following exceptions:</para>
+    <para>The <filename>/sbin/shorewall-lite</filename> program included with
+    Shorewall Lite supports the same set of commands as the
+    <filename>/sbin/shorewall</filename> program in a full Shorewall
+    installation with the following exceptions:</para>
 
     <blockquote>
       <simplelist>
@@ -355,6 +303,16 @@ wireless:~ #         </programlisting>
 
         <member>safe-restart</member>
       </simplelist>
+    </blockquote>
+
+    <para>On systems with only Shorewall Lite installed, I recommend that you
+    create a symbolic link <filename>/sbin/shorewall</filename> and point it
+    at <filename>/sbin/shorewall-lite</filename>. That way, you can use
+    <command>shorewall</command> as the command regardless of which product is
+    installed.</para>
+
+    <blockquote>
+      <programlisting><command>ln -sf shorewall-lite /sbin/shorewall</command></programlisting>
     </blockquote>
 
     <section>
@@ -424,7 +382,7 @@ wireless:~ #         </programlisting>
           Ubuntu then edit /etc/default/shorewall-lite and set
           startup=1.</para>
 
-          <programlisting><command>shorewall start</command></programlisting>
+          <programlisting><command>shorewall-lite start</command></programlisting>
         </listitem>
       </orderedlist>
     </section>

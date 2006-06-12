@@ -22,7 +22,7 @@
 #       Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
 #
 
-VERSION=3.2.0-RC2
+VERSION=3.2.0-RC3
 
 usage() # $1 = exit status
 {
@@ -226,6 +226,10 @@ else
     rm -rf ${PREFIX}/var/lib/shorewall-lite
 fi
 
+install_file_with_backup shorewall-lite ${PREFIX}/sbin/shorewall-lite 0544 ${PREFIX}/var/lib/shorewall-lite-${VERSION}.bkout
+
+echo "Shorewall Lite control program installed in ${PREFIX}/sbin/shorewall-lite"
+
 #
 # Install the Firewall Script
 #
@@ -267,16 +271,6 @@ fi
 #
 run_install $OWNERSHIP -m 0600 Makefile ${PREFIX}/etc/shorewall-lite/Makefile
 echo "Makefile installed as ${PREFIX}/etc/shorewall-lite/Makefile"
-
-install_file shorewall ${PREFIX}/usr/share/shorewall-lite/shorewall 0555
-echo "shorewall control program installed in /usr/share/shorewall-lite/shorewall"    
-
-if [ -z "$PREFIX" ]; then
-    if [ ! -L /sbin/shorewall ]; then
-	[ -f /sbin/shorewall ] && backup_file /sbin/shorewall ${PREFIX}/var/lib/shorewall-lite-${VERSION}.bkout
-	ln -sf /usr/share/shorewall-lite/shorewall /sbin/shorewall
-    fi
-fi
 
 #
 # Install the default config path file

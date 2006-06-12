@@ -1,4 +1,4 @@
-Shorewall 3.2.0 RC 2
+Shorewall 3.2.0 RC 3
 
 Note to users upgrading from Shorewall 2.x or 3.0
 
@@ -31,52 +31,30 @@ Note to users upgrading from Shorewall 2.x or 3.0
    Please see the "Migration Considerations" below for additional upgrade
    information.
 
-Problems Corrected in 3.2.0 RC 2
+Problems Corrected in 3.2.0 RC 3
 
-1)  The treatment of IPTABLES and LOGFORMAT have been clarified with
-    respect to Shorewall Lite. If these options are set in the
-    shorewall.conf file used at compile time, then the generated
-    firewall script will use those values. /sbin/shorewall on the
-    firewall system will use the corresponding values from
-    /etc/shorewall/shorewall.conf on that system.
+1) When -e is specified to the compile command, it is possible for an
+   incorrect direct reference to /var/lib/shorewall to be included in the 
+   compiled script.
 
-    If the values are not given in shorewall.conf at compile time then
-    the values in /etc/shorewall/shorewall.conf on the firewall system
-    will be used by the generated firewall script.
+2) A typo in the compiler resulted in a wrong file being removed during
+   "shorewall stop" and "shorewall restart". The result was generally harmless.
 
-    To take advantage of this change, both the administrative system
-    and the firewall system(s) must be running RC2 or later.
+    Replace /usr/share/shorewall/compiler with the 'compiler' file from the
+    errata/Shorewall sub-directory.
 
-Other changes in 3.2.0 RC 2
+    Replace /usr/share/shorewall/prog.footer with the 'prog.footer' file from
+    the errata/Shorewall sub-directory.
 
-1)  The sample configurations have been updated for version 3.2.
+Other changes in 3.2.0 RC 3
 
-2)  It is now possible to have both shorewall and Shorewall Lite 
-    installed on the same system if you use RPM. Regardless of whether
-    you use RPM or the installer, Shorewall Lite directory names have
-    been change from 'shorewall' to 'shorewall-lite':
+1)  The controversial symbolic link /sbin/shorewall has been
+    eliminated. The Shorewall Lite control program is now
+    /sbin/shorewall-lite. Those users who only run Shorewall Lite and
+    who prefer the name /sbin/shorewall may create a symbolic link as
+    follows:
 
-	 /etc/shorewall -> /etc/shorewall-lite
-	 /usr/share/shorewall -> /usr/share/shorewall-lite
-	 /var/lib/shorewall -> /var/lib/shorewall-lite
-
-    If you use the RPMs, whichever package is installed first will
-    determine which package /sbin/shorewall invokes. /sbin/shorewall is
-    now a symbolic link created by 'rpm':
-
-    Shorewall: /sbin/shorewall points to /usr/share/shorewall/shorewall
-    Shorewall Lite:
-        /sbin/shorewall points to /usr/share/shorewall/shorewall-lite
-
-    You may use the 'ln -sf' command to change from one to the other:
-
-    To use 'Shorewall' rather than 'Shorewall Lite'
-
-        ln -sf /usr/share/shorewall/shorewall /sbin/shorewall
-
-    To use 'Shorewall Lite' rather than 'Shorewall'
-
-        ln -sf /usr/share/shorewall-lite/shorewall /sbin/shorewall
+	ln -sf shorewall-lite /sbin/shorewall
 
 Migration Considerations:
 

@@ -14,7 +14,13 @@ Problems Corrected in 3.2.0 RC 2
 
 Other changes in 3.2.0 RC 3
 
-None.
+1)  The controversial symbolic link /sbin/shorewall has been
+    eliminated. The Shorewall Lite control program is now
+    /sbin/shorewall-lite. Those users who only run Shorewall Lite and
+    who prefer the name /sbin/shorewall may create a symbolic link as
+    follows:
+
+	ln -sf shorewall-lite /sbin/shorewall
 
 New Features:
 
@@ -51,32 +57,8 @@ e) On the administrative system, for each firewall system you:
       /sbin/shorewall compile -e . firewall
       scp firewall root@<firewall system>:/usr/share/shorewall/
 
-   3) On the firewall system, 'shorewall start'.
+   3) On the firewall system, 'shorewall-lite start'.
 
 It is possible to have both shorewall and Shorewall Lite 
-installed on the same system if you use RPM. Regardless of whether
-you use RPM or the installer, Shorewall Lite directory names have
-been change from 'shorewall' to 'shorewall-lite':
-
-      /etc/shorewall -> /etc/shorewall-lite
-       /usr/share/shorewall -> /usr/share/shorewall-lite
-        /var/lib/shorewall -> /var/lib/shorewall-lite
-
-If you use the RPMs, whichever package is installed first will
-determine which package /sbin/shorewall invokes. /sbin/shorewall is
-now a symbolic link created by 'rpm':
-
-Shorewall: /sbin/shorewall points to /usr/share/shorewall/shorewall
-Shorewall Lite:
-        /sbin/shorewall points to /usr/share/shorewall/shorewall-lite
-
-You may use the 'ln -sf' command to change from one to the other:
-
-To use 'Shorewall' rather than 'Shorewall Lite'
-
-        ln -sf /usr/share/shorewall/shorewall /sbin/shorewall
-
-To use 'Shorewall Lite' rather than 'Shorewall'
-
-        ln -sf /usr/share/shorewall-lite/shorewall /sbin/shorewall
+installed on the same system.
 

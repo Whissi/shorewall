@@ -22,7 +22,7 @@
 #       Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
 #
 
-VERSION=3.2.0-RC2
+VERSION=3.2.0-RC3
 
 usage() # $1 = exit status
 {
@@ -223,6 +223,10 @@ else
     first_install="Yes"
 fi
 
+install_file_with_backup shorewall ${PREFIX}/sbin/shorewall 0555 ${PREFIX}/var/lib/shorewall-${VERSION}.bkout
+
+echo "shorewall control program installed in ${PREFIX}/sbin/shorewall"
+
 #
 # Install the Firewall Script
 #
@@ -271,18 +275,6 @@ run_install $OWNERSHIP -m 0744 zones ${PREFIX}/usr/share/shorewall/configfiles/z
 if [ ! -f ${PREFIX}/etc/shorewall/zones ]; then
     run_install $OWNERSHIP -m 0744 zones ${PREFIX}/etc/shorewall/zones
     echo "Zones file installed as ${PREFIX}/etc/shorewall/zones"
-fi
-#
-# Install control program
-#
-install_file shorewall ${PREFIX}/usr/share/shorewall/shorewall 0555
-echo "shorewall control program installed in /usr/share/shorewall/shorewall"    
-
-if [ -z "$PREFIX" ]; then
-    if [ ! -L /sbin/shorewall ]; then
-	[ -f /sbin/shorewall ] && backup_file /sbin/shorewall ${PREFIX}/var/lib/shorewall-lite-${VERSION}.bkout
-	ln -sf /usr/share/shorewall/shorewall /sbin/shorewall
-    fi
 fi
 
 #

@@ -74,14 +74,14 @@ command="$1"
 
 case "$command" in
     start)
-	exec /usr/share/shorewall-lite/shorewall $OPTIONS $@
+	exec /sbin/shorewall-lite $OPTIONS $@
 	;;
     stop|restart|status)
-	exec /usr/share/shorewall-lite/shorewall $@
+	exec /sbin/shorewall-lite $@
 	;;
     reload)
 	shift
-	exec /usr/share/shorewall-lite/shorewall restart $@
+	exec /sbin/shorewall-lite restart $@
 	;;
     *)
 	usage

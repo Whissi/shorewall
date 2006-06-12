@@ -685,27 +685,27 @@ show_command() {
     case "$1" in
     connections)
 	[ $# -gt 1 ] && usage 1
-	echo "Shorewall-$version Connections at $HOSTNAME - $(date)"
+	echo "Shorewall Lite $version Connections at $HOSTNAME - $(date)"
 	echo
 	cat /proc/net/ip_conntrack
 	;;
     nat)
 	[ $# -gt 1 ] && usage 1
-	echo "Shorewall-$version NAT Table at $HOSTNAME - $(date)"
+	echo "Shorewall Lite $version NAT Table at $HOSTNAME - $(date)"
 	echo
 	show_reset
 	$IPTABLES -t nat -L $IPT_OPTIONS
 	;;
     tos|mangle)
 	[ $# -gt 1 ] && usage 1
-	echo "Shorewall-$version Mangle Table at $HOSTNAME - $(date)"
+	echo "Shorewall Lite $version Mangle Table at $HOSTNAME - $(date)"
 	echo
 	show_reset
 	$IPTABLES -t mangle -L $IPT_OPTIONS
 	;;
     log)
 	[ $# -gt 1 ] && usage 1
-	echo "Shorewall-$version Log at $HOSTNAME - $(date)"
+	echo "Shorewall Lite $version Log at $HOSTNAME - $(date)"
 	echo
 	show_reset
 	host=$(echo $HOSTNAME | sed 's/\..*$//')
@@ -713,20 +713,20 @@ show_command() {
 	;;
     tc)
 	[ $# -gt 1 ] && usage 1
-	echo "Shorewall-$version Traffic Control at $HOSTNAME - $(date)"
+	echo "Shorewall Lite $version Traffic Control at $HOSTNAME - $(date)"
 	echo
 	show_tc
 	;;
     classifiers)
 	[ $# -gt 1 ] && usage 1
-	echo "Shorewall-$version Clasifiers at $HOSTNAME - $(date)"
+	echo "Shorewall Lite $version Clasifiers at $HOSTNAME - $(date)"
 	echo
 	show_classifiers
 	;;
     zones)
 	[ $# -gt 1 ] && usage 1
 	if [ -f ${VARDIR}/zones ]; then
-	    echo "Shorewall-$version Zones at $HOSTNAME - $(date)"
+	    echo "Shorewall Lite $version Zones at $HOSTNAME - $(date)"
 	    echo
 	    while read zone type hosts; do
 		echo "$zone ($type)"
@@ -747,7 +747,7 @@ show_command() {
 	report_capabilities
 	;;
     *)
-	echo "Shorewall-$version $([ $# -gt 0 ] && echo Chains || echo Chain) $* at $HOSTNAME - $(date)"
+	echo "Shorewall Lite $version $([ $# -gt 0 ] && echo Chains || echo Chain) $* at $HOSTNAME - $(date)"
 	echo
 	show_reset
 	if [ $# -gt 0 ]; then
@@ -798,7 +798,7 @@ dump_command() {
     [ -n "$debugging" ] && set -x
     [ $# -eq 0 ] || usage 1
     clear_term
-    echo "Shorewall-$version Dump at $HOSTNAME - $(date)"
+    echo "Shorewall Lite $version Dump at $HOSTNAME - $(date)"
     echo
     show_reset
     host=$(echo $HOSTNAME | sed 's/\..*$//')
@@ -1224,7 +1224,7 @@ else
     exit 1
 fi
 
-banner="Shorewall-$version Status at $HOSTNAME -"
+banner="Shorewall Lite $version Status at $HOSTNAME -"
 
 case $(echo -e) in
     -e*)
@@ -1270,7 +1270,7 @@ case "$COMMAND" in
 	;;
     status)
 	[ $# -eq 1 ] || usage 1
-	echo "Shorewall-$version Status at $HOSTNAME - $(date)"
+	echo "Shorewall Lite $version Status at $HOSTNAME - $(date)"
 	echo
 	if shorewall_is_started ; then
 	    echo "Shorewall is running"
@@ -1302,7 +1302,7 @@ case "$COMMAND" in
 	[ -n "$debugging" ] && set -x
 	[ $# -eq 1 ] || usage 1
 	clear_term
-	echo "Shorewall-$version Hits at $HOSTNAME - $(date)"
+	echo "Shorewall Lite $version Hits at $HOSTNAME - $(date)"
 	echo
 
 	timeout=30

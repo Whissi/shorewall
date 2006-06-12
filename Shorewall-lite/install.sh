@@ -273,6 +273,7 @@ echo "shorewall control program installed in /usr/share/shorewall-lite/shorewall
 
 if [ -z "$PREFIX" ]; then
     if [ ! -L /sbin/shorewall ]; then
+	[ -f /sbin/shorewall ] && backup_file /sbin/shorewall ${PREFIX}/var/lib/shorewall-lite-${VERSION}.bkout
 	ln -sf /usr/share/shorewall-lite/shorewall /sbin/shorewall
     fi
 fi

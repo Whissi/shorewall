@@ -1205,12 +1205,12 @@ export CONFIG_PATH
 get_config
 
 if [ ! -f $FIREWALL ]; then
-    echo "ERROR: Shorewall is not properly installed"
+    echo "   ERROR: Shorewall Lite is not properly installed" >&2
     if [ -L $FIREWALL ]; then
-	echo "	     $FIREWALL is a symbolic link to a"
-	echo "	     non-existant file"
+	echo "          $FIREWALL is a symbolic link to a" >&2
+	echo "          non-existant file" >&2
     else
-	echo "	     The file $FIREWALL  does not exist"
+	echo "          The file $FIREWALL does not exist" >&2
     fi
 
     exit 2
@@ -1219,8 +1219,8 @@ fi
 if [ -f $VERSION_FILE ]; then
     version=$(cat $VERSION_FILE)
 else
-    echo "ERROR: Shorewall is not properly installed"
-    echo "	 The file $VERSION_FILE does not exist"
+    echo "   ERROR: Shorewall Lite is not properly installed" >&2
+    echo "          The file $VERSION_FILE does not exist" >&2
     exit 1
 fi
 

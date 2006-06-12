@@ -5,7 +5,7 @@
   <!--$Id$-->
 
   <articleinfo>
-    <title>Operating Shorewall</title>
+    <title>Operating Shorewall and Shorewall Lite</title>
 
     <authorgroup>
       <author>
@@ -95,6 +95,10 @@
           </orderedlist>
         </warning>
 
+        <para>Beginning with Shorewall version 3.2.0 RC 2,
+        <filename>/sbin/shorewall</filename> is a symbolic link that points to
+        <filename>/usr/share/shorewall/shorwall</filename>.</para>
+
         <para>To see a list of supported commands, use the
         <command>help</command> command:</para>
 
@@ -144,6 +148,36 @@
         /sbin/shorewall</filename>,
         <filename>/usr/share/shorewall/compiler</filename> and
         <filename>/usr/share/shorewall/firewall</filename>.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>There are similar components that comprise <ulink
+    url="CompiledPrograms.html#Lite">Shorewall Lite</ulink>:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para><filename>/sbin/shorewall</filename> — A symbolic link to
+        <filename>/usr/share/shorewall-lite/shorwall</filename>. This is the
+        program that you use to interact with Shorewall Lite.</para>
+      </listitem>
+
+      <listitem>
+        <para><filename>/etc/shorewall-lite</filename> — Directory where the
+        configuration file for Shorewall Lite resides.</para>
+      </listitem>
+
+      <listitem>
+        <para><filename>/usr/share/shorewall-lite/firewall</filename> — The
+        firewall program. The program is generated using the
+        <command>shorewall compile -e</command> command on a system with the
+        full Shorewall product installed.</para>
+      </listitem>
+
+      <listitem>
+        <para><filename>/usr/share/shorewall-lite/functions</filename> — A
+        library of Bourne Shell functions used by<filename>
+        /usr/share/shorewall-lite/shorewall</filename> and
+        <filename>/usr/share/shorewall-lite/firewall</filename>.</para>
       </listitem>
     </itemizedlist>
   </section>

@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2006-05-07</pubdate>
+    <pubdate>2006-06-12</pubdate>
 
     <copyright>
       <year>2001-2006</year>
@@ -384,7 +384,8 @@
           <para>file in /etc/shorewall that is used to define the
           iptables/kernel capabilities of a remote system. The file allows
           firewall scripts compiled on one system to be taylored for a remote
-          system where the script will ultimately run.</para>
+          system where the script will ultimately run under <ulink
+          url="CompiledPrograms.html#Lite">Shorewall Lite</ulink>.</para>
         </listitem>
       </varlistentry>
     </variablelist>
@@ -2746,6 +2747,9 @@ eth0                  eth1            206.124.146.176</programlisting>
   <section id="Conf" xreflabel="/etc/shorewall/shorewall.conf">
     <title>/etc/shorewall/shorewall.conf</title>
 
+    <para>See also the <ulink url="CompiledPrograms.html#Lite">description of
+    /etc/shorewall-lite/shorewall.conf</ulink>.</para>
+
     <para>This file is used to set the following firewall parameters:</para>
 
     <variablelist>
@@ -3020,7 +3024,9 @@ $FW      chld               ACCEPT</programlisting>
 
         <listitem>
           <para>When set to Yes or yes, enables <ulink url="IPSEC.htm">dynamic
-          zones</ulink>.</para>
+          zones</ulink>. DYNAMIC_ZONES=Yes is not allowed in configurations
+          that will run under <ulink
+          url="CompiledPrograms.html#Lite">Shorewall Lite</ulink>.</para>
         </listitem>
       </varlistentry>
 

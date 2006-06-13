@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2006-06-10</pubdate>
+    <pubdate>2006-06-12</pubdate>
 
     <copyright>
       <year>2006</year>
@@ -39,15 +39,9 @@
 
     <para>Beginning with Shorewall version 3.1, Shorewall has the capability
     to compile a Shorewall configuration and produce a runnable firewall
-    program script. The script is a complete program which can be placed in
-    the /etc/init.d/ directory on a system without Shorewall installed and can
-    serve as the firewall creation script for that system.</para>
-
-    <para>Compiled programs can also be created to instantiate special
-    configurations during parts of the day; for example, to disallow web
-    browsing between the hours of 9pm and 7AM. The program can be run as a
-    cron job at 9PM and another program run at 6AM to restore normal
-    operation.</para>
+    program script. The script is a complete program which can be placed on a
+    system with <emphasis>Shorewall Lite</emphasis> installed and can serve as
+    the firewall creation script for that system.</para>
 
     <section>
       <title>Restrictions</title>
@@ -197,7 +191,7 @@
           <para>The firewall systems do <emphasis role="bold">NOT</emphasis>
           need to have the full Shorewall product installed but rather only
           the Shorewall Lite product. Shorewall and Shorewall LIte may be
-          installed on the same system.</para>
+          installed on the same system but that isn't encouraged.</para>
         </note>
       </listitem>
 
@@ -225,6 +219,15 @@
             directory appropriately. It's a good idea to include the IP
             address of the administrative system in the
             <filename>routestopped</filename> file.</para>
+
+            <para>It is important to understand that with Shorewall Lite, the
+            firewall's configuration directory on the administrative system
+            acts as <filename class="directory">/etc/shorewall</filename> for
+            that firewall. So when the Shorewall documentation gives
+            instructions for placing entries in files in the firewall's
+            <filename class="directory">/etc/shorewall</filename>, when using
+            Shorewall Lite you make those changes in the firewall's
+            configuration directory on the administrative system.</para>
           </listitem>
 
           <listitem>
@@ -348,15 +351,12 @@
 
           <programlisting><command>shorewall stop</command></programlisting>
 
-          <para><emphasis role="bold">We strongly recommend that you uninstall
+          <para><emphasis role="bold">We recommend that you uninstall
           Shorewall at this point.</emphasis></para>
         </listitem>
 
         <listitem>
-          <para>Install Shorewall Lite on the firewall system; <emphasis
-          role="bold">If you did not uninstall Shorewall in the previous step,
-          then you must switch <filename>/sbin/shorewall</filename> to
-          Shorewall Lite as described above.</emphasis></para>
+          <para>Install Shorewall Lite on the firewall system.</para>
         </listitem>
 
         <listitem>

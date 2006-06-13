@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2006-03-23</pubdate>
+    <pubdate>2006-06-12</pubdate>
 
     <copyright>
       <year>2002-2006</year>
@@ -157,7 +157,7 @@ ipset -B Blacklist 206.124.146.177 -b SMTP</programlisting>
     <title>Dynamic Blacklisting</title>
 
     <para>Dynamic blacklisting doesn't use any configuration parameters but is
-    rather controlled using /sbin/shorewall commands:</para>
+    rather controlled using /sbin/shorewall[-lite] commands:</para>
 
     <itemizedlist>
       <listitem>
@@ -219,7 +219,7 @@ ipset -B Blacklist 206.124.146.177 -b SMTP</programlisting>
     <example>
       <title>Ignore packets from a pair of systems</title>
 
-      <programlisting>    <command>shorewall drop 192.0.2.124 192.0.2.125</command></programlisting>
+      <programlisting>    <command>shorewall[-lite] drop 192.0.2.124 192.0.2.125</command></programlisting>
 
       <para>Drops packets from hosts 192.0.2.124 and 192.0.2.125</para>
     </example>
@@ -227,7 +227,7 @@ ipset -B Blacklist 206.124.146.177 -b SMTP</programlisting>
     <example>
       <title>Re-enable packets from a system</title>
 
-      <programlisting>    <command>shorewall allow 192.0.2.125</command></programlisting>
+      <programlisting>    <command>shorewall[-lite] allow 192.0.2.125</command></programlisting>
 
       <para>Re-enables traffic from 192.0.2.125.</para>
     </example>

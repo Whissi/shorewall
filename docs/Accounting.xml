@@ -15,10 +15,10 @@
       </author>
     </authorgroup>
 
-    <pubdate>2005-11-02</pubdate>
+    <pubdate>2006-06-12</pubdate>
 
     <copyright>
-      <year>2003-2005</year>
+      <year>2003-2002</year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -44,9 +44,9 @@
   <para>Shorewall accounting rules are described in the file
   /etc/shorewall/accounting. By default, the accounting rules are placed in a
   chain called <quote>accounting</quote> and can thus be displayed using
-  <quote>shorewall show accounting</quote>. All traffic passing into, out of
-  or through the firewall traverses the accounting chain including traffic
-  that will later be rejected by interface options such as
+  <quote>shorewall[-lite] show accounting</quote>. All traffic passing into,
+  out of or through the firewall traverses the accounting chain including
+  traffic that will later be rejected by interface options such as
   <quote>tcpflags</quote> and <quote>maclist</quote>. If your kernel doesn't
   support the connection tracking match extension (Kernel 2.4.21) then some
   traffic rejected under <quote>norfc1918</quote> will not traverse the
@@ -184,8 +184,9 @@
         web:COUNT       -       eth1    eth0            tcp             -               443
         DONE            web</programlisting>
 
-  <para>Now <quote>shorewall show web</quote> will give you a breakdown of
-  your web traffic:</para>
+  <para>Now <quote>shorewall show web</quote> (or "shorewall-lite show web"
+  for Shorewall Lite users) will give you a breakdown of your web
+  traffic:</para>
 
   <programlisting>     [root@gateway shorewall]# shorewall show web
      Shorewall-1.4.6-20030821 Chain web at gateway.shorewall.net - Wed Aug 20 09:48:56 PDT 2003
@@ -212,8 +213,9 @@
         COUNT           web     eth0    eth1
         COUNT           web     eth1    eth0</programlisting>
 
-  <para>Now <quote>shorewall show web</quote> simply gives you a breakdown by
-  input and output:</para>
+  <para>Now <quote>shorewall show web</quote> (or "shorewall-lite show web"
+  for Shorewall Lite users) simply gives you a breakdown by input and
+  output:</para>
 
   <programlisting>     [root@gateway shorewall]# shorewall show accounting web
      Shorewall-1.4.6-20030821 Chains accounting web at gateway.shorewall.net - Wed Aug 20 10:27:21 PDT 2003

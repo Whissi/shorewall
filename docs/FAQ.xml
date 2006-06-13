@@ -193,8 +193,8 @@ DNAT    net    loc:&lt;l<emphasis>ocal IP address</emphasis>&gt;[:&lt;<emphasis>
           </listitem>
 
           <listitem>
-            <para>As root type <quote> <command>shorewall show nat</command>
-            </quote></para>
+            <para>As root type <quote> <command>shorewall[-lite] show
+            nat</command> </quote></para>
           </listitem>
 
           <listitem>
@@ -244,11 +244,11 @@ DNAT    net    loc:&lt;l<emphasis>ocal IP address</emphasis>&gt;[:&lt;<emphasis>
             the connection is being dropped or rejected. If it is, then you
             may have a zone definition problem such that the server is in a
             different zone than what is specified in the DEST column. At a
-            root promt, type "<command>shorewall show zones</command>" then be
-            sure that in the DEST column you have specified the <emphasis
-            role="bold">first</emphasis> zone in the list that matches
-            OUT=&lt;dev&gt; and DEST= &lt;ip&gt;from the REJECT/DROP log
-            message.</para>
+            root promt, type "<command>shorewall[-lite] show zones</command>"
+            then be sure that in the DEST column you have specified the
+            <emphasis role="bold">first</emphasis> zone in the list that
+            matches OUT=&lt;dev&gt; and DEST= &lt;ip&gt;from the REJECT/DROP
+            log message.</para>
           </listitem>
         </itemizedlist>
       </section>
@@ -550,8 +550,9 @@ DNAT       loc           dmz:192.168.2.4    tcp      80          -         $ETH0
 
         <warning>
           <para>With dynamic IP addresses, you probably don't want to use
-          <ulink url="starting_and_stopping_shorewall.htm"><command>shorewall
-          save</command> and <command>shorewall
+          <ulink
+          url="starting_and_stopping_shorewall.htm"><command>shorewall[-lite]
+          save</command> and <command>shorewall[-lite]
           restore</command></ulink>.</para>
         </warning>
       </section>
@@ -1063,8 +1064,8 @@ LOGBURST=""</programlisting>
 
           <listitem>
             <para>The packet has a source IP address that isn't in any of your
-            defined zones (<quote>shorewall check</quote> and look at the
-            printed zone definitions) or the chain is FORWARD and the
+            defined zones (<quote>shorewall[-lite] show zones</quote> and look
+            at the printed zone definitions) or the chain is FORWARD and the
             destination IP isn't in any of your defined zones. If the chain is
             FORWARD and the IN and OUT interfaces are the same, then you
             probably need the <emphasis role="bold">routeback</emphasis>
@@ -1083,8 +1084,8 @@ LOGBURST=""</programlisting>
 
           <listitem>
             <para>The packet has a destination IP address that isn't in any of
-            your defined zones("shorewall check" and look at the printed zone
-            definitions).</para>
+            your defined zones("shorewall show zones" and look at the printed
+            zone definitions).</para>
           </listitem>
         </varlistentry>
 
@@ -1247,9 +1248,9 @@ LOGBURST=""</programlisting>
     </section>
 
     <section id="faq52">
-      <title>(FAQ 52) When I blacklist an IP address with "shorewall drop
-      www.xxx.yyy.zzz", why does my log still show REDIRECT and DNAT entries
-      from that address?</title>
+      <title>(FAQ 52) When I blacklist an IP address with "shorewall[-lite]
+      drop www.xxx.yyy.zzz", why does my log still show REDIRECT and DNAT
+      entries from that address?</title>
 
       <para>I blacklisted the address 130.252.100.59 using <command>shorewall
       drop 130.252.100.59</command> but I am still seeing these log
@@ -1312,7 +1313,7 @@ LOGBURST=""</programlisting>
     <title>Starting and Stopping</title>
 
     <section id="faq7">
-      <title>(FAQ 7) When I stop Shorewall using <quote>shorewall
+      <title>(FAQ 7) When I stop Shorewall using <quote>shorewall[-lite]
       stop</quote>, I can't connect to anything. Why doesn't that command
       work?</title>
 
@@ -1320,7 +1321,7 @@ LOGBURST=""</programlisting>
       to place your firewall into a safe state whereby only those hosts listed
       in <filename>/etc/shorewall/routestopped</filename>' are activated. If
       you want to totally open up your firewall, you must use the <quote>
-      <command>shorewall clear</command> </quote> command.</para>
+      <command>shorewall[-lite] clear</command> </quote> command.</para>
     </section>
 
     <section id="faq8">
@@ -1512,8 +1513,8 @@ Creating input Chains...
     </section>
 
     <section id="faq45">
-      <title>(FAQ 45) Why does "shorewall start fail" when trying to set up
-      SNAT/Masquerading?</title>
+      <title>(FAQ 45) Why does "shorewall[-lite] start" fail when trying to
+      set up SNAT/Masquerading?</title>
 
       <para><command>shorewall start</command> produces the following
       output:</para>
@@ -1595,12 +1596,12 @@ iptables: Invalid argument
     </section>
 
     <section id="faq25">
-      <title>(FAQ 25) How to I tell which version of Shorewall I am
-      running?</title>
+      <title>(FAQ 25) How to I tell which version of Shorewall or Shorewall
+      Lite I am running?</title>
 
       <para>At the shell prompt, type:</para>
 
-      <programlisting><command>/sbin/shorewall version</command>      </programlisting>
+      <programlisting><command>/sbin/shorewall[-lite] version</command>      </programlisting>
     </section>
 
     <section id="faq31">
@@ -1988,7 +1989,7 @@ REJECT    fw            net:216.239.39.99    all</programlisting>Given that
       support?</title>
 
       <para><emphasis role="bold">Answer</emphasis>: Use the
-      <command>shorewall show capabilities</command> command at a root
+      <command>shorewall[-lite] show capabilities</command> command at a root
       prompt.</para>
 
       <programlisting>gateway:~# shorewall show capabilities

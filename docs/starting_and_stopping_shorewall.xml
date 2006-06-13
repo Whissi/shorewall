@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2006-06-04</pubdate>
+    <pubdate>2006-06-12</pubdate>
 
     <copyright>
       <year>2004</year>
@@ -589,6 +589,13 @@
       respectively. The default level of verbosity is determined by the
       setting of the VERBOSITY option in
       <filename>/etc/shorewall/shorewall.conf</filename>.</para>
+
+      <para>For Shorewall Lite, the general command form is:</para>
+
+      <para><command>shorewall-lite [ &lt;options&gt; ] &lt;command&gt; [
+      &lt;command options&gt; ] [ &lt;argument&gt; ... ]</command></para>
+
+      <para>where the options are the same as with Shorewall.</para>
     </blockquote>
 
     <para>Following in alphabetical order are the supported commands. Except
@@ -773,7 +780,8 @@
         <term>drop</term>
 
         <listitem>
-          <para><command>shorewall drop &lt;address&gt; ...</command></para>
+          <para><command>shorewall[-lite] drop &lt;address&gt;
+          ...</command></para>
 
           <para>Causes packets from the specified
           &lt;<emphasis>address</emphasis>&gt; to be ignored</para>
@@ -784,7 +792,7 @@
         <term>dump</term>
 
         <listitem>
-          <para><command>shorewall [ -x ] dump</command></para>
+          <para><command>shorewall[-lite] [ -x ] dump</command></para>
 
           <para>Produce a verbose report about the firewall.</para>
 
@@ -797,7 +805,7 @@
         <term>forget</term>
 
         <listitem>
-          <para><command>shorewall forget [ &lt;filename&gt;
+          <para><command>shorewall[-lite] forget [ &lt;filename&gt;
           ]</command></para>
 
           <para>Deletes<filename>
@@ -813,8 +821,8 @@
         <term>help</term>
 
         <listitem>
-          <para><command>shorewall help [&lt;command&gt; | host | address
-          ]</command></para>
+          <para><command>shorewall[-lite] help [&lt;command&gt; | host |
+          address ]</command></para>
 
           <para>Display helpful information about the shorewall
           commands.</para>
@@ -825,7 +833,7 @@
         <term>hits</term>
 
         <listitem>
-          <para><command>hits</command></para>
+          <para><command>shorewall[-lite] hits</command></para>
 
           <para>Produces several reports about the Shorewall packet log
           messages in the current log file specified by the LOGFILE option in
@@ -838,8 +846,8 @@
         <term>ipcalc</term>
 
         <listitem>
-          <para><command>shorewall ipcalc { &lt;address&gt; &lt;mask&gt; |
-          &lt;address&gt;/&lt;vlsm&gt; }</command></para>
+          <para><command>shorewall[-lite] ipcalc { &lt;address&gt;
+          &lt;mask&gt; | &lt;address&gt;/&lt;vlsm&gt; }</command></para>
 
           <para>Ipcalc displays the network address, broadcast address,
           network in CIDR notation and netmask corresponding to the
@@ -847,7 +855,8 @@
 
           <para>Example:</para>
 
-          <para><command>ipcalc 192.168.1.0/24</command></para>
+          <para><command>shorewall[-lite] ipcalc
+          192.168.1.0/24</command></para>
         </listitem>
       </varlistentry>
 
@@ -855,7 +864,7 @@
         <term>iprange</term>
 
         <listitem>
-          <para><command>shorewall iprange
+          <para><command>shorewall[-lite] iprange
           &lt;address1&gt;-&lt;address2&gt;</command></para>
 
           <para>Iprange decomposes the specified range of IP addresses into
@@ -867,7 +876,7 @@
         <term>logdrop</term>
 
         <listitem>
-          <para><command>shorewall logdrop &lt;address&gt;
+          <para><command>shorewall[-lite] logdrop &lt;address&gt;
           ...</command></para>
 
           <para>Causes packets from the specified
@@ -879,7 +888,7 @@
         <term>logwatch</term>
 
         <listitem>
-          <para><command>shorewall logwatch [ -m ] [&lt;refresh
+          <para><command>shorewall[-lite] logwatch [ -m ] [&lt;refresh
           interval&gt;]</command></para>
 
           <para>Monitors the log file specified by theLOGFILE option in <ulink
@@ -897,7 +906,7 @@
         <term>logreject</term>
 
         <listitem>
-          <para><command>shorewall logreject &lt;address&gt;
+          <para><command>shorewall[-lite] logreject &lt;address&gt;
           ...</command></para>
 
           <para>Causes packets from the specified
@@ -926,7 +935,8 @@
         <term>reject</term>
 
         <listitem>
-          <para><command>shorewall reject &lt;address&gt; ...</command></para>
+          <para><command>shorewall[-lite] reject &lt;address&gt;
+          ...</command></para>
 
           <para>Causes packets from the specified
           &lt;<emphasis>address</emphasis>&gt;s to be rejected</para>
@@ -937,7 +947,7 @@
         <term>reset</term>
 
         <listitem>
-          <para><command>shorewall reset</command></para>
+          <para><command>shorewall[-lite] reset</command></para>
 
           <para>All the packet and byte counters in the firewall are
           reset.</para>
@@ -948,7 +958,7 @@
         <term>restart</term>
 
         <listitem>
-          <para><command>shorewall [ -q ] restart
+          <para><command>shorewall[-lite] [ -q ] restart
           &lt;configuration-directory&gt;</command></para>
 
           <para>Restart is similar to <command>shorewall stop</command>
@@ -962,7 +972,7 @@
         <term>restore</term>
 
         <listitem>
-          <para><command>shorewall [ -q ] restore [ &lt;filename&gt;
+          <para><command>shorewall[-lite] [ -q ] restore [ &lt;filename&gt;
           ]</command></para>
 
           <para>Restore Shorewall to a state saved using the
@@ -1016,15 +1026,16 @@
         <term>save</term>
 
         <listitem>
-          <para><command>shorewall save [ &lt;filename&gt; ]</command></para>
+          <para><command>shorewall[-lite] save [ &lt;filename&gt;
+          ]</command></para>
 
           <para>The dynamic data is stored in /var/lib/shorewall/save. The
           state of the firewall is stored in
           <filename>/var/lib/shorewall/&lt;filename&gt;</filename> for use by
-          the <command>shorewall restore</command> and <command>shorewall -f
-          start</command> commands. If &lt;<emphasis>filename</emphasis>&gt;
-          is not given then the state is saved in the file specified by the
-          RESTOREFILE option in <ulink
+          the <command>shorewall[-lite] restore</command> and
+          <command>shorewall[-lite] -f start</command> commands. If
+          &lt;<emphasis>filename</emphasis>&gt; is not given then the state is
+          saved in the file specified by the RESTOREFILE option in <ulink
           url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>.</para>
         </listitem>
       </varlistentry>
@@ -1033,40 +1044,52 @@
         <term>show</term>
 
         <listitem>
-          <para><command>shorewall [ -x ] show [ &lt;chain&gt; [ &lt;chain&gt;
-          ...] |classifiers|connections|log|nat|tc|tos]</command></para>
+          <para><command>shorewall [ -x ] show actions (Not supported by
+          Shorewall Lite)</command> — produces a list of actions available on
+          the system.</para>
 
-          <para><command>shorewall [ -x ] show &lt;chain&gt; [ &lt;chain&gt;
-          ... ] </command> - produce a verbose report about the Netfilter
-          chain(s). (<command>iptables -L chain -n -v</command>)</para>
+          <para><command>shorewall[-lite] [ -x ] show [ &lt;chain&gt; [
+          &lt;chain&gt; ...]
+          |classifiers|connections|log|nat|tc|tos]</command></para>
 
-          <para><command>shorewall [ -x ] show mangle</command> - produce a
-          verbose report about the mangle table. (<command>iptables -t mangle
-          -L -n -v</command>)</para>
-
-          <para><command>shorewall [ -x ] show nat</command> - produce a
-          verbose report about the nat table. (<command>iptables -t nat -L -n
+          <para><command>shorewall[-lite] [ -x ] show &lt;chain&gt; [
+          &lt;chain&gt; ... ] </command> - produce a verbose report about the
+          Netfilter chain(s). (<command>iptables -L chain -n
           -v</command>)</para>
 
-          <para><command>shorewall show [- m ] log</command> - display the
-          last 20 packet log entries. The '-m' option is available in
+          <para><command>shorewall[-lite] [ -x ] show mangle</command> -
+          produce a verbose report about the mangle table. (<command>iptables
+          -t mangle -L -n -v</command>)</para>
+
+          <para><command>shorewall[-lite] [ -x ] show nat</command> - produce
+          a verbose report about the nat table. (<command>iptables -t nat -L
+          -n -v</command>)</para>
+
+          <para><command>shorewall[-lite] show [- m ] log</command> - display
+          the last 20 packet log entries. The '-m' option is available in
           Shorewall version 3.2.0 Beta5 and later and causes the MAC address
           of each packet source to be displayed if that information is
           available.</para>
 
-          <para><command>shorewall show capabilities</command> - Displays your
-          kernel/iptables capabilities</para>
+          <para><command>shorewall[-lite] show capabilities</command> -
+          Displays your kernel/iptables capabilities</para>
 
-          <para><command>shorewall show connections</command> - displays the
-          IP connections currently being tracked by the firewall.</para>
+          <para><command>shorewall[-lite] show connections</command> -
+          displays the IP connections currently being tracked by the
+          firewall.</para>
 
-          <para><command>shorewall show classifiers</command> - displays
-          information about the traffic control/shaping classifiers.</para>
+          <para><command>shorewall[-lite] show classifiers</command> -
+          displays information about the traffic control/shaping
+          classifiers.</para>
 
-          <para><command>shorewall show tc</command> - displays information
-          about the traffic control/shaping configuration.</para>
+          <para><command>shorewall [ -x ] show macros (Not supported by
+          Shorewall Lite)</command> — produces a list of macros available on
+          the system.</para>
 
-          <para><command>shorewall show zones</command> — Displays the
+          <para><command>shorewall[-lite] show tc</command> - displays
+          information about the traffic control/shaping configuration.</para>
+
+          <para><command>shorewall[-lite] show zones</command> — Displays the
           composition of each zone.</para>
 
           <para>When -x is given, that option is also passed to iptables to
@@ -1078,7 +1101,7 @@
         <term>start</term>
 
         <listitem>
-          <para><command>shorewall [ -q ] [ -f ] start [
+          <para><command>shorewall[-lite] [ -q ] [ -f ] start [
           &lt;configuration-directory&gt; ]</command></para>
 
           <para>Start shorewall. Existing connections through shorewall
@@ -1096,7 +1119,7 @@
         <term>stop</term>
 
         <listitem>
-          <para><command>shorewall stop</command></para>
+          <para><command>shorewall[-lite] stop</command></para>
 
           <para>Stops the firewall. All existing connections, except those
           listed in <filename><ulink
@@ -1114,7 +1137,7 @@
         <term>status</term>
 
         <listitem>
-          <para><command>shorewall status</command></para>
+          <para><command>shorewall[-lite] status</command></para>
 
           <para>Produce a short report about the firewall's status and state
           relative to <link linkend="State">the diagram below</link>.</para>
@@ -1146,7 +1169,7 @@
         <term>version</term>
 
         <listitem>
-          <para><command>shorewall version</command></para>
+          <para><command>shorewall[-lite] version</command></para>
 
           <para>Show the current shorewall version</para>
         </listitem>
@@ -1160,13 +1183,6 @@
     <para>The Shorewall State Diargram is depicted below.</para>
 
     <para><graphic align="center" fileref="images/State_Diagram.png" /></para>
-
-    <para>You will note that mose of the commands that result in state
-    transitions use the word <quote>firewall</quote> rather than
-    <quote>shorewall</quote>. That is because the actual transitions are done
-    by <command>/usr/share/shorewall/firewall</command>;
-    <command>/sbin/shorewall</command> runs <quote>firewall</quote> according
-    to the following table:</para>
 
     <informaltable>
       <tgroup cols="3">
@@ -1268,11 +1284,11 @@
     </informaltable>
 
     <para>The only time that a program other than
-    <command>/usr/share/shorewall/firewall</command> performs a state
-    transition itself is when it executes the <command>shorewall
+    <command>/usr/share/shorewall[-lite[/firewall</command> performs a state
+    transition itself is when it executes the <command>shorewall[-lite]
     restore</command> command is executed. In that case, the
-    <command>/var/lib/shorewall/restore</command> program sets the state to
-    "Started".</para>
+    <command>/var/lib/shorewall[-lite]/restore</command> program sets the
+    state to "Started".</para>
 
     <section>
       <title>Notes for Shorewall 3.2.0 and Later</title>

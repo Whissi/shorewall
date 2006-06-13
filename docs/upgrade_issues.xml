@@ -191,6 +191,52 @@
           </listitem>
         </orderedlist>
       </listitem>
+
+      <listitem>
+        <para> Beginning with this release, the way in which packet marking in
+        the PREROUTING chain interracts with the 'track' option in
+        /etc/shorewall/providers has changed in two ways:</para>
+
+        <orderedlist numeration="loweralpha">
+          <listitem>
+            <para>Packets arriving on a tracked interface are now passed to
+            the PREROUTING marking chain so that they may be marked with a
+            mark other than the 'track' mark (the connection still retains the
+            'track' mark).</para>
+          </listitem>
+
+          <listitem>
+            <para>When HIGH_ROUTE_MARKS=Yes, you can still clear the mark on
+            packets in the PREROUTING chain (i.e., you can specify a mark
+            value of zero).</para>
+          </listitem>
+        </orderedlist>
+      </listitem>
+
+      <listitem>
+        <para> Kernel version 2.6.16 introduces 'xtables', a new common packet
+        filtering and connection tracking facility that supports both IPv4 and
+        IPv6. Because a different set of kernel modules must be loaded for
+        xtables, Shorewall now includes two 'modules' files:</para>
+
+        <orderedlist numeration="loweralpha">
+          <listitem>
+            <para><filename>/usr/share/shorewall/modules</filename> -- the
+            former <filename>/etc/shorewall/modules</filename></para>
+          </listitem>
+
+          <listitem>
+            <para>/usr/share/shorewall/xmodules -- a new file that support
+            xtables.</para>
+          </listitem>
+        </orderedlist>
+
+        <para>If you wish to use the new file, then simply execute this
+        command:</para>
+
+        <para><command>cp -f /usr/share/shorewall/xmodules
+        /etc/shorewall/modules</command></para>
+      </listitem>
     </orderedlist>
   </section>
 

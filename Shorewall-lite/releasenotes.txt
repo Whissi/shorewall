@@ -1,28 +1,12 @@
-Shorewall Lite 3.2.0 RC 3
+Shorewall Lite 3.2.0 RC 4
 
-Problems Corrected in 3.2.0 RC 2
+Problems Corrected in 3.2.0 RC 4
 
-1)  The /usr/share/shorewall-lite/configpath file has been corrected to
-    correctly refer to /usr/share/shorewall-lite/.
+1)  RESTOREFILE has been added to shorewall.conf.
 
-2)  The /etc/shorewall-lite/Makefile has been corrected to refer to the
-    proper directories.
+Other changes in 3.2.0 RC 4
 
-3)  The /usr/share/shorewall-lite/shorecap program has been corrected
-    to refer to the proper directories and to correct a typo that
-    prevented the program for detecting any capabilities.
-
-4)  The default value of SUBSYSLOCK in shorewall.conf has been changed.
-
-Other changes in 3.2.0 RC 3
-
-1)  The controversial symbolic link /sbin/shorewall has been
-    eliminated. The Shorewall Lite control program is now
-    /sbin/shorewall-lite. Those users who only run Shorewall Lite and
-    who prefer the name /sbin/shorewall may create a symbolic link as
-    follows:
-
-	ln -sf shorewall-lite /sbin/shorewall
+None.
 
 New Features:
 
@@ -37,7 +21,14 @@ reference, we call this system the 'administrative system'.
 
 b) On each system where you wish to run a Shorewall-generated firewall,
 you install Shorewall Lite. For ease of reference, we will call these
-systems the 'firewall systems'.
+systems the 'firewall systems'.1)  The controversial symbolic link /sbin/shorewall has been
+    eliminated. The Shorewall Lite control program is now
+    /sbin/shorewall-lite. Those users who only run Shorewall Lite and
+    who prefer the name /sbin/shorewall may create a symbolic link as
+    follows:
+
+	ln -sf shorewall-lite /sbin/shorewall
+
 
 c) On the administrative system you create a separete 'configuration
 directory' for each firewall system. You copy the contents of

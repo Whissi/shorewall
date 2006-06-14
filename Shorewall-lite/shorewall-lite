@@ -553,10 +553,10 @@ start_command() {
 		    $SHOREWALL_SHELL ${RESTOREPATH}-ipsets
 		fi
 
-		echo Restoring Shorewall...
+		echo Restoring Shorewall Lite...
 		$SHOREWALL_SHELL $RESTOREPATH restore
 		date > ${VARDIR}/restarted
-		progress_message3 Shorewall restored from $RESTOREPATH
+		progress_message3 Shorewall Lite restored from $RESTOREPATH
 	    else
 		do_it
 	    fi
@@ -933,8 +933,8 @@ restore_command() {
 	    $SHOREWALL_SHELL ${RESTOREPATH}-ipsets
 	fi
 
-	progress_message3 "Restoring Shorewall..."
-	$SHOREWALL_SHELL $RESTOREPATH restore && echo "Shorewall restored from ${VARDIR}/$RESTOREFILE"
+	progress_message3 "Restoring Shorewall Lite..."
+	$SHOREWALL_SHELL $RESTOREPATH restore && echo "Shorewall Lite restored from ${VARDIR}/$RESTOREFILE"
 	[ -n "$nolock" ] || mutex_off
     else
 	echo "File ${VARDIR}/$RESTOREFILE: file not found"
@@ -1169,6 +1169,7 @@ MUTEX_TIMEOUT=
 SHAREDIR=/usr/share/shorewall-lite
 VARDIR=/var/lib/shorewall-lite
 CONFDIR=/etc/shorewall-lite
+export PRODUCT="Shorewall Lite"
 
 FIREWALL=$SHAREDIR/firewall
 FUNCTIONS=$SHAREDIR/functions

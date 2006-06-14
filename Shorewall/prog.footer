@@ -58,30 +58,32 @@ else
     COMMAND="$1"
 fi
 
+[ -n "${PRODUCT:=Shorewall}" ]
+
 case "$COMMAND" in
     start)
 	if shorewall_is_started; then
-	    error_message "Shorewall is already Running"
+	    error_message "$PRODUCT is already Running"
 	    status=1
 	else
-	    progress_message3 "Starting Shorewall...."
+	    progress_message3 "Starting $PRODUCT...."
 	    define_firewall
 	    status=$?
 	    progress_message3 "done."
 	fi
 	;;
     stop)
-	progress_message3 "Stopping Shorewall...."
+	progress_message3 "Stopping $PRODUCT...."
 	stop_firewall
 	status=0
 	progress_message3 "done."
 	;;
     restart)
 	if shorewall_is_started; then
-	    progress_message3 "Restarting Shorewall...."
+	    progress_message3 "Restarting $PRODUCT...."
 	else
-	    echo "Shorewall is not running" >&2
-	    progress_message3 "Starting Shorewall...."
+	    echo "$PRODUCT is not running" >&2
+	    progress_message3 "Starting $PRODUCT...."
 	fi
 
 	define_firewall
@@ -93,19 +95,19 @@ case "$COMMAND" in
 	status=$?
 	;;
     clear)
-	progress_message3 "Clearing Shorewall...."
+	progress_message3 "Clearing $PRODUCT...."
 	clear_firewall
 	status=0
 	progress_message3 "done."
 	;;
     status)
-	echo "Shorewall-$VERSION Status at $HOSTNAME - $(date)"
+	echo "$PRODUCT-$VERSION Status at $HOSTNAME - $(date)"
 	echo
 	if shorewall_is_started; then
-	    echo "Shorewall is running"
+	    echo "$PRODUCT is running"
 	    status=0
 	else
-	    echo "Shorewall is stopped"
+	    echo "$PRODUCT is stopped"
 	    status=4
 	fi
 

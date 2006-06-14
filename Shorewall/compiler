@@ -7820,10 +7820,10 @@ stop_firewall() {
 		    \${RESTOREPATH}-ipsets
 		fi
 
-		echo Restoring Shorewall...
+		echo Restoring \${PRODUCT:=Shorewall}...
 
 		if \$RESTOREPATH restore; then
-		    echo "Shorewall restored from \$RESTOREPATH"
+		    echo "\$PRODUCT restored from \$RESTOREPATH"
 		    set_state "Started"
 		else
 		    set_state "Unknown"

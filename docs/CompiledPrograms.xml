@@ -252,9 +252,10 @@
     </orderedlist>
 
     <para>Shorewall Lite includes a very limited version of
-    <filename>/etc/shorewall-lite/shorewall.conf</filename>. It includes the
-    following options which have the same meaning as in a full Shorewall
-    installation except as noted below:</para>
+    <filename>shorewall.conf
+    </filename>(<filename>/etc/shorewall-lite/shorewall.conf</filename>). It
+    includes the following options which have the same meaning as in a full
+    Shorewall installation except as noted below:</para>
 
     <blockquote>
       <simplelist>
@@ -263,19 +264,19 @@
         <member>LOGFILE</member>
 
         <member>LOGFORMAT — used by <filename>/sbin/shorewall</filename> for
-        finding 'Shorewall' log messages only. The format of the messages
-        themselves is defined by the LOGFORMAT in the shorewall.conf used when
-        the firewall script was compiled on the administrative system. If
-        LOGFORMAT was not specified at compile time then the firewall script
-        will use the value from
+        finding 'Shorewall' log messages. If LOGFORMAT was specified in the
+        shorewall.conf file used at compile time on the administrative system,
+        then the format of the messages themselves is defined by that value.
+        If LOGFORMAT was not specified at compile time then the firewall
+        script will use the value from
         <filename>/etc/shorewall-lite/shorewall.conf</filename> on the
         firewall system.</member>
 
         <member>IPTABLES — determines the iptables binary to be used by
         <filename>/sbin/shorewall</filename>. The compiled firewall script
         will use the IPTABLES specified in <filename>shorewall.conf</filename>
-        at compile time on the administrative system; if IPTABLES was not
-        specified at compile time then the IPTABLES value from
+        at compile time on the administrative system, if any; if IPTABLES was
+        not specified at compile time then the IPTABLES value from
         <filename>/etc/shorewall-lite/shorewall.conf</filename> on the
         firewall system will be used by the firewall script.</member>
 
@@ -393,6 +394,43 @@
           <programlisting><command>shorewall-lite start</command></programlisting>
         </listitem>
       </orderedlist>
+    </section>
+
+    <section>
+      <title>A simple shell program for remote firewall replacement</title>
+
+      <para>I use the following <ulink
+      url="ftp://ftp1.shorewall.net/pub/shorewall/contrib/compile">simple
+      shell program</ulink> for compiling firewall scripts and installing them
+      on firewall systems:</para>
+
+      <blockquote>
+        <programlisting>#/bin/bash
+
+[ $# -eq 1 ] || { echo "Usage: $(basename $0) &lt;system&gt;" &gt;&amp;2; exit 2; }
+
+/sbin/shorewall compile -e . firewall &amp;&amp; scp firewall root@${1}:/usr/share/shorewall-lite/ &amp;&amp; ssh root@${1} 'shorewall-lite restart'</programlisting>
+      </blockquote>
+
+      <para>I install this program in
+      <filename>/usr/local/bin/compile</filename> and I have my configuration
+      directories in ~/Config. So, for example, to recompile the firewall
+      script for the 'gateway' system and install the script on gateway, I do
+      the following:</para>
+
+      <blockquote>
+        <programlisting>teastep@wookie:~$ <command>cd Configs/gateway</command>
+teastep@wookie:~/Configs/gateway$ <command>compile gateway</command>
+Compiling...
+Shorewall configuration compiled to firewall
+firewall                                                                                                                  100%   29KB  29.3KB/s   00:00
+Restarting Shorewall Lite....
+done.
+teastep@wookie:~/Configs/gateway$</programlisting>
+      </blockquote>
+
+      <para>I use RSA keys and ssh-agent so I don't need to enter a password
+      to run scp or ssh.</para>
     </section>
   </section>
 

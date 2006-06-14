@@ -4,6 +4,9 @@ Problems Corrected in 3.2.0 RC 4
 
 1)  RESTOREFILE has been added to shorewall.conf.
 
+2)  /sbin/shorewall-lite has been updated to remove vestiges of the 'refresh'
+    command.
+
 Other changes in 3.2.0 RC 4
 
 None.
@@ -21,14 +24,7 @@ reference, we call this system the 'administrative system'.
 
 b) On each system where you wish to run a Shorewall-generated firewall,
 you install Shorewall Lite. For ease of reference, we will call these
-systems the 'firewall systems'.1)  The controversial symbolic link /sbin/shorewall has been
-    eliminated. The Shorewall Lite control program is now
-    /sbin/shorewall-lite. Those users who only run Shorewall Lite and
-    who prefer the name /sbin/shorewall may create a symbolic link as
-    follows:
-
-	ln -sf shorewall-lite /sbin/shorewall
-
+systems the 'firewall systems'
 
 c) On the administrative system you create a separete 'configuration
 directory' for each firewall system. You copy the contents of

@@ -948,16 +948,15 @@
         Shorewall Lite)</term>
 
         <listitem>
-          <para><command>reload [ [ &lt;directory&gt; ] &lt;system&gt;
-          ]</command></para>
+          <para><command>reload [ &lt;directory&gt; ]
+          &lt;system&gt;</command></para>
 
           <para>If &lt;directory&gt; is omitted, the current working directory
-          is assumed. If &lt;system&gt; is omitted, the local system is
-          assumed.</para>
+          is assumed. </para>
 
           <para>Allows a non-root user to compile a shorewall script and
-          install it on a system (provided that the user has access to the
-          system via ssh). The command is equivalent to:</para>
+          install it on a system (provided that the user has root access to
+          the system via ssh). The command is equivalent to:</para>
 
           <simplelist>
             <member><command>/sbin/shorewall compile -e &lt;directory&gt;
@@ -974,9 +973,11 @@
           <para>In other words, the configuration in the specified (or
           defaulted) directory is compiled to a file called
           <filename>firewall</filename> in that directory. If compilation
-          succeeds, then <filename>firewall</filename> is copied to the
-          (usually remote) &lt;system&gt; using scp. If the copy succeeds,
-          Shorewall Lite on &lt;system&gt; is restarted via ssh.</para>
+          succeeds, then <filename>firewall</filename> is copied to
+          &lt;system&gt; using scp. If the copy succeeds, Shorewall Lite on
+          &lt;system&gt; is restarted via ssh.</para>
+
+          <para>Example: <command>shorewall reload gateway</command></para>
         </listitem>
       </varlistentry>
 

@@ -1323,7 +1323,7 @@ usage() # $1 = exit status
     echo "   logwatch [<refresh interval>]"
     echo "   refresh"
     echo "   reject <address> ..."
-    echo "   reload [ <directory> ] [ <system> ]"
+    echo "   reload [ <directory> ] <system>"
     echo "   reset"
     echo "   restart [ -n ] [ <directory> ]"
     echo "   restore [ -n ] [ <file name> ]"
@@ -1633,10 +1633,6 @@ case "$COMMAND" in
     reload)
 	shift
 	case $# in
-	    0)
-		directory="."
-		system="localhost"
-		;;
 	    1)
 		directory="."
 		system=$1

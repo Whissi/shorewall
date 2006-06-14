@@ -1286,7 +1286,7 @@ restore_command() {
 #
 reload_command() 
 {
-    shorewall compile -e . firewall && scp firewall root@${1}:/usr/share/shorewall-lite/ && ssh root@${1} '/sbin/shorewall-lite restart' && progress_message3 "System $1 reloaded"
+    shorewall compile -e $1 $1/firewall && scp $1/firewall root@${2}:/usr/share/shorewall-lite/ && ssh root@${2} '/sbin/shorewall-lite restart' && progress_message3 "System $1 reloaded"
 }
 #
 # Help information
@@ -1323,7 +1323,7 @@ usage() # $1 = exit status
     echo "   logwatch [<refresh interval>]"
     echo "   refresh"
     echo "   reject <address> ..."
-    echo "   reload <system>"
+    echo "   reload [ <directory> ] [ <system> ]"
     echo "   reset"
     echo "   restart [ -n ] [ <directory> ]"
     echo "   restore [ -n ] [ <file name> ]"
@@ -1632,8 +1632,25 @@ case "$COMMAND" in
 	;;
     reload)
 	shift
-	[ $# -eq 1 ] || usage 1
-	reload_command $1
+	case $# in
+	    0)
+		directory="."
+		system="localhost"
+		;;
+	    1)
+		directory="."
+		system=$1
+		;;
+	    2)
+		directory=$1
+		system=$2
+		;;
+	    *)
+		usage 1
+		;;
+	esac
+	
+	reload_command $directory $system
 	;;
     status)
 	[ $# -eq 1 ] || usage 1

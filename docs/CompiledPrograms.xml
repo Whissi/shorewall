@@ -401,8 +401,10 @@
     <section>
       <title>/sbin/shorewall reload command (Added in 3.2.0 RC4)</title>
 
-      <para>The reload command allows for easy updating of remote firewall
-      systems. At shorewall.net, I keep my firewall configurations in
+      <para>The <ulink
+      url="starting_and_stopping_shorewall.htm#Reload"><command>reload</command>
+      command</ulink> allows for easy updating of remote firewall systems by a
+      non-root user. At shorewall.net, I keep my firewall configurations in
       sub-directories under ~/Configs. The name of the directory corresponds
       to the DNS name of the system. </para>
 
@@ -421,8 +423,11 @@ done.
 teastep@wookie:~/Configs/gateway$</programlisting>
       </blockquote>
 
-      <para>I use RSA keys and ssh-agent so I don't need to enter a password
-      to run scp or ssh.</para>
+      <para>The user running the <command>reload</command> command must have
+      ssh access to the remote system. I use RSA keys and ssh-agent so I don't
+      need to enter a password each time the command runs scp or ssh; I only
+      need to supply the password once when I log onto my desktop
+      system.</para>
     </section>
   </section>
 

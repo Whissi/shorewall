@@ -944,6 +944,38 @@
       </varlistentry>
 
       <varlistentry>
+        <term>reload (Added in Shorewall 3.2.0 RC4 -- not supported by
+        Shorewall Lite)</term>
+
+        <listitem>
+          <para><command>reload &lt;system&gt;</command></para>
+
+          <para>Allows a non-root user to compile a shorewall script and
+          install it on a remote system (provided that the user has access to
+          the remote system via ssh). The command is equivalent to:</para>
+
+          <simplelist>
+            <member><command>/sbin/shorewall compile -e . firewall
+            &amp;&amp;\</command></member>
+
+            <member><command>scp firewall
+            root@&lt;system&gt;:/usr/share/shorewall-lite/
+            &amp;&amp;\</command></member>
+
+            <member><command>ssh root@&lt;system&gt; '/sbin/shorewall-lite
+            restart'</command></member>
+          </simplelist>
+
+          <para>In other words, the configuration in the current working
+          directory is compiled to a file called <filename>firewall</filename>
+          in that directory. If compilation succeeds, then
+          <filename>firewall</filename> is copied to the remote system using
+          scp. If the copy succeeds, Shorewall Lite on the remote system is
+          restarted via ssh.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term>reset</term>
 
         <listitem>

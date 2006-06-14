@@ -248,6 +248,15 @@ reset)
     All the packet and byte counters in the firewall are reset."
 	;;
 
+reload)
+	echo "reload: reload <system>
+    Causes the shorewall configuration in the current working directory to be
+    compiled into a program called 'firewall'. If compilation is successful,
+    the 'firewall' script is copied via scp to the /usr/share/shorewall-lite/ 
+    directory on <system>. If the script is copied successfully, Shorewall 
+    Lite on <system> is restarted via ssh."
+	;;
+
 restart)
 	echo "restart: restart [ -n ] [ <configuration-directory> ]
     Restart is the same as a shorewall stop && shorewall start.

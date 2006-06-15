@@ -672,7 +672,7 @@
         <term>clear</term>
 
         <listitem>
-          <para><command>shorewall clear</command></para>
+          <para><command>shorewall[-lite] clear</command></para>
 
           <para>Clear will remove all rules and chains installed by Shorewall.
           The firewall is then wide open and unprotected. Existing connections
@@ -792,7 +792,7 @@
         <term>dump</term>
 
         <listitem>
-          <para><command>shorewall[-lite] [ -x ] dump</command></para>
+          <para><command>shorewall[-lite] dump</command></para>
 
           <para>Produce a verbose report about the firewall.</para>
 
@@ -919,7 +919,7 @@
         <term>refresh (Not supported by Shorewall Lite)</term>
 
         <listitem>
-          <para><command>shorewall [ -q ] refresh</command></para>
+          <para><command>shorewall refresh</command></para>
 
           <para>The rules involving the broadcast addresses of firewall
           interfaces, the black list and ECN control rules are recreated to
@@ -996,7 +996,7 @@
         <term>restart</term>
 
         <listitem>
-          <para><command>shorewall[-lite] [ -q ] restart
+          <para><command>shorewall[-lite] restart
           &lt;configuration-directory&gt;</command></para>
 
           <para>Restart is similar to <command>shorewall stop</command>
@@ -1010,7 +1010,7 @@
         <term>restore</term>
 
         <listitem>
-          <para><command>shorewall[-lite] [ -q ] restore [ &lt;filename&gt;
+          <para><command>shorewall[-lite] restore [ &lt;filename&gt;
           ]</command></para>
 
           <para>Restore Shorewall to a state saved using the
@@ -1030,7 +1030,7 @@
         <term>safe-restart (Not supported by Shorewall Lite)</term>
 
         <listitem>
-          <para><command>shorewall [ -q ] safe-restart [ &lt;filename&gt;
+          <para><command>shorewall safe-restart [ &lt;filename&gt;
           ]</command></para>
 
           <para>Only allowed if Shorewall is running. The current
@@ -1049,7 +1049,7 @@
         <term>safe-start (Not supported by Shorewall Lite)</term>
 
         <listitem>
-          <para><command>shorewall [ -q ] safe-start [ &lt;filename&gt;
+          <para><command>shorewall safe-start [ &lt;filename&gt;
           ]</command></para>
 
           <para>Shorewall is started normally. You will then be prompted
@@ -1082,26 +1082,24 @@
         <term>show</term>
 
         <listitem>
-          <para><command>shorewall [ -x ] show actions (Not supported by
-          Shorewall Lite)</command> — produces a list of actions available on
-          the system.</para>
+          <para><command>shorewall show actions (Not supported by Shorewall
+          Lite)</command> — produces a list of actions available on the
+          system.</para>
 
-          <para><command>shorewall[-lite] [ -x ] show [ &lt;chain&gt; [
-          &lt;chain&gt; ...]
-          |classifiers|connections|log|nat|tc|tos]</command></para>
+          <para><command>shorewall[-lite] show [ &lt;chain&gt; [ &lt;chain&gt;
+          ...] |classifiers|connections|log|nat|tc|tos]</command></para>
 
-          <para><command>shorewall[-lite] [ -x ] show &lt;chain&gt; [
-          &lt;chain&gt; ... ] </command> - produce a verbose report about the
-          Netfilter chain(s). (<command>iptables -L chain -n
+          <para><command>shorewall[-lite] show &lt;chain&gt; [ &lt;chain&gt;
+          ... ] </command> - produce a verbose report about the Netfilter
+          chain(s). (<command>iptables -L chain -n -v</command>)</para>
+
+          <para><command>shorewall[-lite] show mangle</command> - produce a
+          verbose report about the mangle table. (<command>iptables -t mangle
+          -L -n -v</command>)</para>
+
+          <para><command>shorewall[-lite] show nat</command> - produce a
+          verbose report about the nat table. (<command>iptables -t nat -L -n
           -v</command>)</para>
-
-          <para><command>shorewall[-lite] [ -x ] show mangle</command> -
-          produce a verbose report about the mangle table. (<command>iptables
-          -t mangle -L -n -v</command>)</para>
-
-          <para><command>shorewall[-lite] [ -x ] show nat</command> - produce
-          a verbose report about the nat table. (<command>iptables -t nat -L
-          -n -v</command>)</para>
 
           <para><command>shorewall[-lite] show [- m ] log</command> - display
           the last 20 packet log entries. The '-m' option is available in
@@ -1139,7 +1137,7 @@
         <term>start</term>
 
         <listitem>
-          <para><command>shorewall[-lite] [ -q ] [ -f ] start [
+          <para><command>shorewall[-lite] [ -f ] start [
           &lt;configuration-directory&gt; ]</command></para>
 
           <para>Start shorewall. Existing connections through shorewall

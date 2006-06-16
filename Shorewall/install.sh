@@ -512,7 +512,7 @@ fi
 #
 # Install the rfc1918 file
 #
-install_file rfc1918 ${PREFIX}/usr/share/shorewall/rfc1918 0600
+install_file rfc1918 ${PREFIX}/usr/share/shorewall/rfc1918 0644
 echo "RFC 1918 file installed as ${PREFIX}/usr/share/shorewall/rfc1918"
 #
 # Install the default config path file
@@ -549,7 +549,7 @@ fi
 #
 # Install the stop file
 #
-run_install $OWNERSHIP -m 0600 stop ${PREFIX}/usr/share/shorewall/configfiles/stop
+run_install $OWNERSHIP -m 0644 stop ${PREFIX}/usr/share/shorewall/configfiles/stop
 
 if [ ! -f ${PREFIX}/etc/shorewall/stop ]; then
     run_install $OWNERSHIP -m 0600 stop ${PREFIX}/etc/shorewall/stop

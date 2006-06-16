@@ -842,7 +842,7 @@ validate_interfaces_file() {
 		detectnets)
 		    [ -n "$wildcard" ] && \
 			startup_error "The \"detectnets\" option may not be used with a wild-card interface"
-		    [ -n $EXPORT ] && \
+		    [ -n "$EXPORT" ] && \
 			startup_error "'detectnets' not permitted with the -e run-line option"
 		    ;;
 		routeback)

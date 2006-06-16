@@ -193,7 +193,12 @@ validate_restorefile() # $* = label
 get_config() {
 
     if [ -z "$EXPORT" -a "$(whoami)" = root ]; then
-
+	#
+	# This block is avoided for compile for export and when the user isn't root
+	#
+	# We don't export CONFIG_PATH so that CONFIG_PATH will be picked up fresh by the compiler
+	# from /usr/share/shorewall/configpath.
+	#
 	export CONFIG_PATH
 	
 	[ -z "$LOGFILE" ] && LOGFILE=/var/log/messages
@@ -202,7 +207,7 @@ get_config() {
 	    echo "LOGFILE ($LOGFILE) does not exist!" >&2
 	    exit 2
 	fi
-
+	
 	if [ -n "$IPTABLES" ]; then
 	    if [ ! -e "$IPTABLES" ]; then
 		echo "   ERROR: The program specified in IPTABLES does not exist or is not executable" >&2
@@ -217,7 +222,7 @@ get_config() {
 	fi
 	
 	export IPTABLES
-
+	
         #
         # See if we have a real version of "tail" -- use separate redirection so
         # that ash (aka /bin/sh on LRP) doesn't crap
@@ -227,13 +232,15 @@ get_config() {
 	else
 	    realtail=""
 	fi
-
+	#
+	# Compile by non-root needs no restore file
+	#
 	[ -n "$RESTOREFILE" ] || RESTOREFILE=restore
 
 	validate_restorefile RESTOREFILE
 
 	export RESTOREFILE
-
+	
 	case $STARTUP_ENABLED in
 	    No|no|NO)
                 echo "   WARNING: Shorewall startup is disabled. To enable startup, set STARTUP_ENABLED=Yes in ${CONFDIR}/shorewall.conf" >&2
@@ -248,20 +255,20 @@ get_config() {
 		fi
 		;;
 	esac
-
+	
 	case ${TC_ENABLED:=Internal} in
 	    No|NO|no)
 	        TC_ENABLED=
 		;;
 	esac
 
-    fi
-
-    [ -n "LOGFORMAT" ] && LOGFORMAT="${LOGFORMAT%%%*}"
+	[ -n "LOGFORMAT" ] && LOGFORMAT="${LOGFORMAT%%%*}"
     
-    [ -n "$LOGFORMAT" ] || LOGFORMAT="Shorewall:"
+	[ -n "$LOGFORMAT" ] || LOGFORMAT="Shorewall:"
 
-    export LOGFORMAT
+	export LOGFORMAT
+
+    fi
 
     if [ -n "$SHOREWALL_SHELL" ]; then
 	if [ ! -e "$SHOREWALL_SHELL" ]; then

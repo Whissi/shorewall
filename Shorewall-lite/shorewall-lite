@@ -462,10 +462,10 @@ start_command() {
     do_it() {
 	[ -n "$nolock" ] || mutex_on
 
-	if [ -x ${SHAREDIR}/firewall ]; then
-	    ${SHAREDIR}/firewall $debugging start
+	if [ -x ${VARDIR}/firewall ]; then
+	    ${VARDIR}/firewall $debugging start
 	else
-	    error_message "${CONFDIR}/firewall is missing or is not executable"
+	    error_message "${VARDIR}/firewall is missing or is not executable"
 	fi
 
 	[ -n "$nolock" ] || mutex_off
@@ -629,10 +629,10 @@ restart_command() {
 
     [ -n "$nolock" ] || mutex_on
 
-    if [ -x ${SHAREDIR}/firewall ]; then
-	$SHOREWALL_SHELL ${SHAREDIR}/firewall $debugging restart
+    if [ -x ${VARDIR}/firewall ]; then
+	$SHOREWALL_SHELL ${VARDIR}/firewall $debugging restart
     else
-	error_message "${SHAREDIR}/firewall is missing or is not executable"
+	error_message "${VARDIR}/firewall is missing or is not executable"
     fi
 
     [ -n "$nolock" ] || mutex_off
@@ -1171,7 +1171,7 @@ VARDIR=/var/lib/shorewall-lite
 CONFDIR=/etc/shorewall-lite
 export PRODUCT="Shorewall Lite"
 
-FIREWALL=$SHAREDIR/firewall
+FIREWALL=$VARDIR/firewall
 FUNCTIONS=$SHAREDIR/functions
 VERSION_FILE=$SHAREDIR/version
 HELP=$SHAREDIR/help

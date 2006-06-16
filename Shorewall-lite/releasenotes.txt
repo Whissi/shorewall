@@ -23,6 +23,13 @@ Other changes in 3.2.0 RC 4
     installed on your administrative system(s) and Shorewall Lite RC4
     on the firewall system(s).
 
+2)  To appease the LHS police, the file
+    /usr/share/shorewall-lite/firewall has been moved to
+    /var/lib/shorewall-lite/firewall. When upgrading to this release of
+    Shorewall Lite, please execute the following command:
+
+    cp -a /usr/share/shorewall-lite/firewall /var/lib/shorewall-lite/
+
 New Features:
 
 Shorewall Lite is a companion product to Shorewall and is designed to
@@ -56,7 +63,7 @@ e) On the administrative system, for each firewall system you:
 
       cd <configuration directory>
       /sbin/shorewall compile -e . firewall
-      scp firewall root@<firewall system>:/usr/share/shorewall/
+      scp firewall root@<firewall system>:/var/lib/shorewall-lite/
 
    3) On the firewall system, 'shorewall-lite start'.
 

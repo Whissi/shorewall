@@ -214,7 +214,7 @@ echo "Installing Shorewall Lite Version $VERSION"
 #
 # Check for /etc/shorewall-lite
 #
-if [ -z "$PREFIX" && -d /etc/shorewall-lite ]; then
+if [ -z "$PREFIX" -a -d /etc/shorewall-lite ]; then
     first_install=""
     backup_directory /etc/shorewall-lite
     backup_directory /usr/share/shorewall-lite

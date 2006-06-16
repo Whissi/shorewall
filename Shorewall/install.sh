@@ -258,6 +258,8 @@ chmod 755 ${PREFIX}/usr/share/shorewall/configfiles
 #
 run_install $OWNERSHIP -m 0744 shorewall.conf ${PREFIX}/usr/share/shorewall/configfiles/shorewall.conf
 
+qt mywhich perl && perl -p -w -i -e 's|^CONFIG_PATH=.*|CONFIG_PATH=/usr/share/shorewall/configfiles:/usr/share/shorewall|;' /usr/share/shorewall/configfiles/shorewall.conf
+
 if [ ! -f ${PREFIX}/etc/shorewall/shorewall.conf ]; then
    run_install $OWNERSHIP -m 0744 shorewall.conf ${PREFIX}/etc/shorewall/shorewall.conf
    echo "Config file installed as ${PREFIX}/etc/shorewall/shorewall.conf"

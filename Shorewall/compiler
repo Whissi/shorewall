@@ -8661,8 +8661,6 @@ do_initialize() {
 
     ensure_config_path
 
-    [ -n "$EXPORT" ] && CONFIG_PATH=$(echo $CONFIG_PATH | sed 's|^/etc/shorewall:|/usr/share/shorewall/configfiles:|')
-
     VERSION_FILE=$SHAREDIR/version
 
     [ -f $VERSION_FILE ] && VERSION=$(cat $VERSION_FILE)

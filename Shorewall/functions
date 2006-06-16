@@ -248,7 +248,7 @@ find_file()
 
 		IFS=$saveifs
 
-		echo ${CONFDIR}/$1
+		[ -z "$EXPORT" ] && echo ${CONFDIR}/$1 || echo ${SHAREDIR}/configfiles/$1
 	    fi
 	    ;;
     esac

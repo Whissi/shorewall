@@ -159,12 +159,47 @@ if (! -d $dir) {
 #
 
 # Config files for which the host-specific file is included *first*
-my @hostfirstconfigs = qw( blacklist bogons ecn hosts interfaces maclist
-    masq nat proxyarp rfc1918 routestopped start stop stopped tcrules tos
-    tunnels );
+my @hostfirstconfigs = qw(
+    accounting
+    actions
+    blacklist
+    bogons
+    continue
+    ecn
+    hosts
+    interfaces
+    maclist
+    masq
+    nat
+    netmap
+    proxyarp
+    rfc1918
+    routestopped
+    route_rules
+    start
+    started
+    stop
+    stopped
+    tcclasses
+    tcdevices
+    tcrules
+    tos
+    tunnels
+);
 
 # Config files for which the host-specific file is included *last*
-my @hostlastconfigs = qw( common init modules params shorewall.conf );
+my @hostlastconfigs = qw(
+    common
+    configpath
+    init
+    initdone
+    ipsec
+    modules
+    params
+    providers
+    shorewall.conf
+);
+
 
 for my $conf (@hostfirstconfigs) {
     constructfile "$conf", "$dir/$conf", "$conf/$host", "$conf/COMMON";
@@ -306,7 +341,7 @@ for (stripfile $conf) {
     my ($src, $dst, $pol, $rest) = split /\s+/, $_, 4;
 
     print "$src, $dst, $pol, $rest\n" if $DEBUG > 3;
-    
+
     # Both source and destination zones must be valid on this host for this
     # policy to apply.
     next unless defined $hostzones{$src} and defined $hostzones{$dst};

@@ -1286,7 +1286,7 @@ restore_command() {
 #
 reload_command() 
 {
-    shorewall compile -e $1 $1/firewall && scp $1/firewall root@${2}:/var/lib/shorewall-lite/ && ssh root@${2} '/sbin/shorewall-lite restart' && progress_message3 "System $1 reloaded"
+    shorewall compile -e $1 $1/firewall && scp $1/firewall root@${2}:/var/lib/shorewall-lite/ && ssh root@${2} '/sbin/shorewall-lite restart' && progress_message3 "System $2 reloaded"
 }
 #
 # Help information

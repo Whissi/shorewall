@@ -110,7 +110,7 @@
 #                                                  confirmation to accept or reject the new
 #                                                  configuration
 #
-#          shorewall compile [ <directory> ] ]<filename>
+#          shorewall compile [ -e ] [ <directory> ] <filename>
 #                                                  Compile a firewall program file.
 #
 # Fatal Error
@@ -192,44 +192,74 @@ validate_restorefile() # $* = label
 #
 get_config() {
 
-    [ -z "$LOGFILE" ] && LOGFILE=/var/log/messages
+    if [ -z "$EXPORT" -a "$(whoami)" = root ]; then
 
-    if [ ! -f $LOGFILE ]; then
-	echo "LOGFILE ($LOGFILE) does not exist!" >&2
-	exit 2
-    fi
-    #
-    # See if we have a real version of "tail" -- use separate redirection so
-    # that ash (aka /bin/sh on LRP) doesn't crap
-    #
-    if ( tail -n5 $LOGFILE > /dev/null 2> /dev/null ) ; then
-	realtail="Yes"
-    else
-	realtail=""
-    fi
+	[ -z "$LOGFILE" ] && LOGFILE=/var/log/messages
 
-    [ -n "$FW" ] || FW=fw
+	if [ ! -f $LOGFILE ]; then
+	    echo "LOGFILE ($LOGFILE) does not exist!" >&2
+	    exit 2
+	fi
+
+	if [ -n "$IPTABLES" ]; then
+	    if [ ! -e "$IPTABLES" ]; then
+		echo "   ERROR: The program specified in IPTABLES does not exist or is not executable" >&2
+		exit 2
+	    fi
+	else
+	    IPTABLES=$(mywhich iptables 2> /dev/null)
+	    if [ -z "$IPTABLES" ] ; then
+		echo "   ERROR: Can't find iptables executable" >&2
+		exit 2
+	    fi
+	fi
+	
+	export IPTABLES
+
+        #
+        # See if we have a real version of "tail" -- use separate redirection so
+        # that ash (aka /bin/sh on LRP) doesn't crap
+        #
+	if ( tail -n5 $LOGFILE > /dev/null 2> /dev/null ) ; then
+	    realtail="Yes"
+	else
+	    realtail=""
+	fi
+
+	[ -n "$RESTOREFILE" ] || RESTOREFILE=restore
+
+	validate_restorefile RESTOREFILE
+
+	export RESTOREFILE
+
+	case $STARTUP_ENABLED in
+	    No|no|NO)
+                echo "   WARNING: Shorewall startup is disabled. To enable startup, set STARTUP_ENABLED=Yes in ${CONFDIR}/shorewall.conf" >&2
+		STARTUP_ENABLED=
+		;;
+	    Yes|yes|YES)
+	        ;;
+	    *)
+		if [ -n "$STARTUP_ENABLED" ]; then
+		    echo "   ERROR: Invalid Value for STARTUP_ENABLE: $STARTUP_ENABLED" >&2
+		    exit 2
+		fi
+		;;
+	esac
+
+	case ${TC_ENABLED:=Internal} in
+	    No|NO|no)
+	        TC_ENABLED=
+		;;
+	esac
+
+    fi
 
     [ -n "LOGFORMAT" ] && LOGFORMAT="${LOGFORMAT%%%*}"
-
+    
     [ -n "$LOGFORMAT" ] || LOGFORMAT="Shorewall:"
 
     export LOGFORMAT
-
-    if [ -n "$IPTABLES" ]; then
-	if [ ! -e "$IPTABLES" ]; then
-	    echo "   ERROR: The program specified in IPTABLES does not exist or is not executable" >&2
-	    exit 2
-	fi
-    else
-	IPTABLES=$(mywhich iptables 2> /dev/null)
-	if [ -z "$IPTABLES" ] ; then
-	    echo "   ERROR: Can't find iptables executable" >&2
-	    exit 2
-	fi
-    fi
-
-    export IPTABLES
 
     if [ -n "$SHOREWALL_SHELL" ]; then
 	if [ ! -e "$SHOREWALL_SHELL" ]; then
@@ -237,33 +267,6 @@ get_config() {
 	    exit 2
 	fi
     fi
-
-    [ -n "$RESTOREFILE" ] || RESTOREFILE=restore
-
-    validate_restorefile RESTOREFILE
-
-    export RESTOREFILE
-
-    case $STARTUP_ENABLED in
-	[Nn][Oo])
-            echo "   WARNING: Shorewall startup is disabled. To enable startup, set STARTUP_ENABLED=Yes in ${CONFDIR}/shorewall.conf" >&2
-            STARTUP_ENABLED=
-	    ;;
-	[Yy][Ee][Ss])
-	    ;;
-	*)
-	    if [ -n "$STARTUP_ENABLED" ]; then
-		echo "   ERROR: Invalid Value for STARTUP_ENABLE: $STARTUP_ENABLED" >&2
-		exit 2
-	    fi
-	    ;;
-    esac
-
-    case ${TC_ENABLED:=Internal} in
-	[Nn][Oo])
-	    TC_ENABLED=
-	    ;;
-    esac
 
     [ -n "${VERBOSITY:=2}" ]
 

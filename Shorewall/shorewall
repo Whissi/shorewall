@@ -1298,7 +1298,14 @@ restore_command() {
 #
 reload_command() 
 {
-    shorewall compile -e $1 $1/firewall && scp $1/firewall root@${2}:/var/lib/shorewall-lite/ && ssh root@${2} '/sbin/shorewall-lite restart' && progress_message3 "System $2 reloaded"
+    local verbose=$(make_verbose)
+
+    shorewall $debugging $verbose compile -e $1 $1/firewall && \
+	echo "Copying firewall to ${2}/var/lib/shorewall-lite/..." && \
+	scp $1/firewall root@${2}:/var/lib/shorewall-lite/ && \
+	echo "Copy complete" && \
+	ssh root@${2} "/sbin/shorewall-lite $debugging $verbose restart" && \
+	progress_message3 "System $2 reloaded"
 }
 #
 # Help information

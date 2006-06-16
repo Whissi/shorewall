@@ -194,6 +194,8 @@ get_config() {
 
     if [ -z "$EXPORT" -a "$(whoami)" = root ]; then
 
+	export CONFIG_PATH
+	
 	[ -z "$LOGFILE" ] && LOGFILE=/var/log/messages
 
 	if [ ! -f $LOGFILE ]; then
@@ -1557,7 +1559,6 @@ else
 fi
 
 ensure_config_path
-export CONFIG_PATH
 
 get_config
 

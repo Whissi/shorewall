@@ -8639,7 +8639,7 @@ do_initialize() {
 
     SHAREDIR=/usr/share/shorewall
     VARDIR=/var/lib/shorewall
-    CONFDIR=/etc/shorewall
+    [ -z "$EXPORT" ] && CONFDIR=/etc/shorewall || CONFDIR=/usr/share/shorewall/configfiles
 
     FUNCTIONS=${SHAREDIR}/functions
 

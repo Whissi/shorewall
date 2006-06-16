@@ -36,6 +36,9 @@ Problems Corrected in 3.2.0 RC 4
 1)  When install.sh was used to install/update Shorewall, the
     /usr/share/shorewall/Limit file had incorrect permissions.
 
+2)  Many permission problems in /usr/share/shorewall/configfiles/ have
+    been corrected.
+
 Other changes in 3.2.0 RC 4
 
 1)  The progress messages produced by Shorewall Lite now correctly
@@ -45,22 +48,22 @@ Other changes in 3.2.0 RC 4
     on the firewall system(s).
 
 2)  A "reload" command has been added. This command allows a non-root
-    user with ssh access to a (usually) remote system to compile a firewall
+    user with ssh access to a remote system to compile a firewall
     script on the local system and to install that script on the remote
     system.
 
     Syntax is:
 
-	   shorewall reload [ [ <directory> ] <system> ]
+	   shorewall reload [ <directory> ] <system>
 
     If <directory> is omitted, the current working directory is
-    assumed. If <system> is omitted, the local system is assumed.
+    assumed.
 
     The command is equivalent to:
 
     /sbin/shorewall compile -e . firewall &&\
     scp firewall root@<system>:/var/lib/shorewall-lite/ &&\
-    ssh root@<system> '/sbin/shorewall-lite restart'
+    ssh root@<system> '/sbin/shorewall-lite restart' # Note 1
 
     In other words, the configuration in the specified (or defaulted)
     directory is compiled to a file called firewall in that
@@ -68,7 +71,7 @@ Other changes in 3.2.0 RC 4
     (usually remote) <system> using scp. If the copy succeeds,
     Shorewall Lite on <system> is restarted via ssh.
 
-    Note: In Shorewall Lite 3.2.0 RC4, the 'firewall' script has moved
+    Note 1: In Shorewall Lite 3.2.0 RC4, the 'firewall' script has moved
     from /usr/share/shorewall/ to /var/lib/shorewall/ in order to
     appease the LHS police.
 

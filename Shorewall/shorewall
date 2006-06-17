@@ -49,6 +49,9 @@
 #						   compensate for a change of
 #						   broadcast address on any "detect"
 #						   interface.
+#	   shorewall [re]load [ <directory> ] <system>
+#						   Compile a script and install it on a
+#						   remote Shorewall Lite system.
 #	   shorewall show <chain> [ <chain> ... ]  Display the rules in each <chain> listed
 #          shorewall show actions                  Displays the available actions
 #	   shorewall show log			   Print the last 20 log messages
@@ -200,14 +203,14 @@ get_config() {
 	# from /usr/share/shorewall/configpath.
 	#
 	export CONFIG_PATH
-	
+
 	[ -z "$LOGFILE" ] && LOGFILE=/var/log/messages
 
 	if [ ! -f $LOGFILE ]; then
 	    echo "LOGFILE ($LOGFILE) does not exist!" >&2
 	    exit 2
 	fi
-	
+
 	if [ -n "$IPTABLES" ]; then
 	    if [ ! -e "$IPTABLES" ]; then
 		echo "   ERROR: The program specified in IPTABLES does not exist or is not executable" >&2
@@ -220,9 +223,9 @@ get_config() {
 		exit 2
 	    fi
 	fi
-	
+
 	export IPTABLES
-	
+
         #
         # See if we have a real version of "tail" -- use separate redirection so
         # that ash (aka /bin/sh on LRP) doesn't crap
@@ -240,7 +243,7 @@ get_config() {
 	validate_restorefile RESTOREFILE
 
 	export RESTOREFILE
-	
+
 	case $STARTUP_ENABLED in
 	    No|no|NO)
                 echo "   WARNING: Shorewall startup is disabled. To enable startup, set STARTUP_ENABLED=Yes in ${CONFDIR}/shorewall.conf" >&2
@@ -255,7 +258,7 @@ get_config() {
 		fi
 		;;
 	esac
-	
+
 	case ${TC_ENABLED:=Internal} in
 	    No|NO|no)
 	        TC_ENABLED=
@@ -263,7 +266,7 @@ get_config() {
 	esac
 
 	[ -n "LOGFORMAT" ] && LOGFORMAT="${LOGFORMAT%%%*}"
-    
+
 	[ -n "$LOGFORMAT" ] || LOGFORMAT="Shorewall:"
 
 	export LOGFORMAT
@@ -1299,18 +1302,25 @@ restore_command() {
     fi
 }
 #
-# Reload command executor
+# [Re]load command executor
 #
-reload_command() 
+reload_command()
 {
     local verbose=$(make_verbose)
 
-    shorewall $debugging $verbose compile -e $1 $1/firewall && \
+    if shorewall $debugging $verbose compile -e $1 $1/firewall && \
 	echo "Copying ${1}/firewall to ${2}:${LITEDIR}..." && \
-	scp $1/firewall root@${2}:${LITEDIR}/ && \
-	echo "Copy complete" && \
-	ssh root@${2} "/sbin/shorewall-lite $debugging $verbose restart" && \
-	progress_message3 "System $2 reloaded"
+	scp $1/firewall root@${2}:${LITEDIR}
+    then
+	echo "Copy complete"
+	if [ $COMMAND = reload ]; then
+	    ssh root@${2} "/sbin/shorewall-lite $debugging $verbose restart" && \
+	    progress_message3 "System $2 reloaded"
+	else
+	    ssh root@${2} "/sbin/shorewall-lite $debugging $verbose restart" && \
+	    progress_message3 "System $2 reloaded"
+	fi
+    fi
 }
 #
 # Help information
@@ -1342,6 +1352,7 @@ usage() # $1 = exit status
     echo "   ipcalc { <address>/<vlsm> | <address> <netmask> }"
     echo "   ipdecimal { <address> | <integer> }"
     echo "   iprange <address>-<address>"
+    echo "   load [ <directory> ] <system>"
     echo "   logdrop <address> ..."
     echo "   logreject <address> ..."
     echo "   logwatch [<refresh interval>]"
@@ -1653,7 +1664,7 @@ case "$COMMAND" in
     	shift
     	show_command $@
 	;;
-    reload)
+    load|reload)
 	shift
 	case $# in
 	    1)
@@ -1668,7 +1679,7 @@ case "$COMMAND" in
 		usage 1
 		;;
 	esac
-	
+
 	reload_command $directory $system
 	;;
     status)

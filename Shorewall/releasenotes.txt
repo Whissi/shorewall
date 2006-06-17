@@ -47,14 +47,14 @@ Other changes in 3.2.0 RC 4
     installed on your administrative system(s) and Shorewall Lite RC4
     on the firewall system(s).
 
-2)  A "reload" command has been added. This command allows a non-root
-    user with ssh access to a remote system to compile a firewall
-    script on the local system and to install that script on the remote
-    system.
+2)  "load" and "reload" commands have been added. These commands allow
+    a non-root user with ssh access to a remote system to compile a
+    firewall script on the local system and to install that script on
+    the remote system.
 
     Syntax is:
 
-	   shorewall reload [ <directory> ] <system>
+	   shorewall [re]load [ <directory> ] <system>
 
     If <directory> is omitted, the current working directory is
     assumed.
@@ -63,13 +63,15 @@ Other changes in 3.2.0 RC 4
 
     /sbin/shorewall compile -e . firewall &&\
     scp firewall root@<system>:/var/lib/shorewall-lite/ &&\
-    ssh root@<system> '/sbin/shorewall-lite restart' # Note 1
+    ssh root@<system> '/sbin/shorewall-lite [re]start' # Note 1
 
     In other words, the configuration in the specified (or defaulted)
     directory is compiled to a file called firewall in that
     directory. If compilation succeeds, then 'firewall' is copied to the
     (usually remote) <system> using scp. If the copy succeeds,
-    Shorewall Lite on <system> is restarted via ssh.
+    Shorewall Lite on <system> is started or restarted via ssh (
+    load causes Shorewall Lite to be started and 'reload' causes
+    Shorewall Lite to be re-started)
 
     Note 1: In Shorewall Lite 3.2.0 RC4, the 'firewall' script has moved
     from /usr/share/shorewall-lite/ to /var/lib/shorewall-lite in

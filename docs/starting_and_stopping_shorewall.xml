@@ -889,6 +889,61 @@ gateway:~ #</programlisting>
         </listitem>
       </varlistentry>
 
+      <varlistentry id="Reload">
+        <term>load (Added in Shorewall 3.2.0 RC4 -- not supported by Shorewall
+        Lite)</term>
+
+        <listitem>
+          <para><command>load [ &lt;directory&gt; ]
+          &lt;system&gt;</command></para>
+
+          <para>If &lt;directory&gt; is omitted, the current working directory
+          is assumed.</para>
+
+          <para>Allows a non-root user to compile a shorewall script and
+          install it on a system (provided that the user has root access to
+          the system via ssh). The command is equivalent to:</para>
+
+          <simplelist>
+            <member><command>/sbin/shorewall compile -e &lt;directory&gt;
+            &lt;directory&gt;/firewall &amp;&amp;\</command></member>
+
+            <member><command>scp &lt;directory&gt;/firewall
+            root@&lt;system&gt;:/var/lib/shorewall-lite/
+            &amp;&amp;\</command></member>
+
+            <member><command>ssh root@&lt;system&gt; '/sbin/shorewall-lite
+            start'</command></member>
+          </simplelist>
+
+          <para>In other words, the configuration in the specified (or
+          defaulted) directory is compiled to a file called
+          <filename>firewall</filename> in that directory. If compilation
+          succeeds, then <filename>firewall</filename> is copied to
+          &lt;system&gt; using scp. If the copy succeeds, Shorewall Lite on
+          &lt;system&gt; is started via ssh.</para>
+
+          <note>
+            <para>The 'firewall' script is in <filename
+            class="directory">/var/lib/shorewall-lite</filename> in packages
+            from shorewall.net. The package maintainers for the various
+            distributions are free to choose the directory where the script
+            will be stored under their distribution. See the output of
+            <command>shorewall[-lite] show config</command> for the value of
+            LITEDIR on your distribution.</para>
+
+            <para>Example:</para>
+
+            <programlisting>gateway:~ # <command>shorewall-lite show config</command>
+Default CONFIG_PATH is /etc/shorewall-lite:/usr/share/shorewall-lite
+LITEDIR is /var/lib/shorewall-lite
+gateway:~ #</programlisting>
+          </note>
+
+          <para>Example: <command>shorewall reload gateway</command></para>
+        </listitem>
+      </varlistentry>
+
       <varlistentry>
         <term>logdrop</term>
 

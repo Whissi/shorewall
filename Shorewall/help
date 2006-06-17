@@ -202,6 +202,19 @@ iprange)
     equivalent list of network/host addresses."
 	;;
 
+load)
+	echo "load: load [ <directory> ] <system>
+    If <directory> is omitted, then the current working directory is assumed.
+
+    Requires that Shorewall Lite be installed on the named <system>.
+
+    Causes the shorewall configuration in <directory> to be compiled into a
+    program called '<directory>/firewall'. If compilation is successful,
+    the '<directory>/firewall' script is copied via scp to the
+    ${LITEDIR} directory on <system>. If the script is copied
+    successfully, Shorewall Lite on <system> is started via ssh."
+	;;
+
 logdrop)
 	echo "$1: $1 <address> ...
     Causes packets from the specified <address> to be ignored and loged.

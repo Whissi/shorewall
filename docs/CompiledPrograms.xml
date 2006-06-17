@@ -214,6 +214,51 @@
 
         <programlisting><command>/usr/share/shorewall-lite/shorecap &gt; capabilities</command>
 <command>scp capabilities &lt;admin system&gt;:&lt;this system's config dir&gt;</command></programlisting>
+
+        <para>If you are running Debian or one of its derivatives like Ubuntu
+        then edit /etc/default/shorewall-lite and set startup=1.</para>
+
+        <para>Shorewall Lite includes a very limited version of
+        <filename>shorewall.conf
+        </filename>(<filename>/etc/shorewall-lite/shorewall.conf</filename>).
+        It includes the following options which have the same meaning as in a
+        full Shorewall installation except as noted below:</para>
+
+        <blockquote>
+          <simplelist>
+            <member>VERBOSITY</member>
+
+            <member>LOGFILE</member>
+
+            <member>LOGFORMAT — used by <filename>/sbin/shorewall</filename>
+            for finding 'Shorewall' log messages. If LOGFORMAT was specified
+            in the shorewall.conf file used at compile time on the
+            administrative system, then the format of the messages themselves
+            is defined by that value. If LOGFORMAT was not specified at
+            compile time then the firewall script will use the value from
+            <filename>/etc/shorewall-lite/shorewall.conf</filename> on the
+            firewall system.</member>
+
+            <member>IPTABLES — determines the iptables binary to be used by
+            <filename>/sbin/shorewall</filename>. The compiled firewall script
+            will use the IPTABLES specified in
+            <filename>shorewall.conf</filename> at compile time on the
+            administrative system, if any; if IPTABLES was not specified at
+            compile time then the IPTABLES value from
+            <filename>/etc/shorewall-lite/shorewall.conf</filename> on the
+            firewall system will be used by the firewall script.</member>
+
+            <member>PATH</member>
+
+            <member>SHOREWALL_SHELL</member>
+
+            <member>SUBSYSLOCK</member>
+
+            <member>RESTOREFILE</member>
+          </simplelist>
+        </blockquote>
+
+        <para>Edit the shorewall.conf file as required.</para>
       </listitem>
 
       <listitem>
@@ -239,80 +284,16 @@
 
           <listitem>
             <programlisting><command>cd &lt;configuration directory&gt;</command>
-<command>/sbin/shorewall compile -e . firewall</command>
-<command>scp firewall root@&lt;firewall system&gt;:/var/lib/shorewall-lite/</command></programlisting>
+<command>/sbin/shorewall load . firewall</command></programlisting>
 
-            <note>
-              <para>The 'firewall' script is in <filename
-              class="directory">/var/lib/shorewall-lite</filename> in packages
-              from shorewall.net. The package maintainers for the various
-              distributions are free to choose the directory where the script
-              will be stored under their distribution. See the output of
-              <command>shorewall[-lite] show config</command> for the value of
-              LITEDIR on your distribution.</para>
-
-              <para>Example:</para>
-
-              <programlisting>gateway:~ # <command>shorewall-lite show config</command>
-Default CONFIG_PATH is /etc/shorewall-lite:/usr/share/shorewall-lite
-LITEDIR is /var/lib/shorewall-lite
-gateway:~ #</programlisting>
-            </note>
+            <para>The load command compiles a firewall script from the
+            configuration files in the current working directory, copies that
+            file to the remote system via scp and starts Shorewall Lite on the
+            remote system via ssh.</para>
           </listitem>
         </orderedlist>
       </listitem>
-
-      <listitem>
-        <para>On each firewall system:</para>
-
-        <para>Modify <filename>/etc/shorewall-lite/shorewall.conf</filename>
-        as needed.</para>
-
-        <para>If you are running Debian or one of its derivatives like Ubuntu
-        then edit /etc/default/shorewall-lite and set startup=1.</para>
-
-        <programlisting><command>shorewall-lite start</command></programlisting>
-      </listitem>
     </orderedlist>
-
-    <para>Shorewall Lite includes a very limited version of
-    <filename>shorewall.conf
-    </filename>(<filename>/etc/shorewall-lite/shorewall.conf</filename>). It
-    includes the following options which have the same meaning as in a full
-    Shorewall installation except as noted below:</para>
-
-    <blockquote>
-      <simplelist>
-        <member>VERBOSITY</member>
-
-        <member>LOGFILE</member>
-
-        <member>LOGFORMAT — used by <filename>/sbin/shorewall</filename> for
-        finding 'Shorewall' log messages. If LOGFORMAT was specified in the
-        shorewall.conf file used at compile time on the administrative system,
-        then the format of the messages themselves is defined by that value.
-        If LOGFORMAT was not specified at compile time then the firewall
-        script will use the value from
-        <filename>/etc/shorewall-lite/shorewall.conf</filename> on the
-        firewall system.</member>
-
-        <member>IPTABLES — determines the iptables binary to be used by
-        <filename>/sbin/shorewall</filename>. The compiled firewall script
-        will use the IPTABLES specified in <filename>shorewall.conf</filename>
-        at compile time on the administrative system, if any; if IPTABLES was
-        not specified at compile time then the IPTABLES value from
-        <filename>/etc/shorewall-lite/shorewall.conf</filename> on the
-        firewall system will be used by the firewall script.</member>
-
-        <member>PATH</member>
-
-        <member>SHOREWALL_SHELL</member>
-
-        <member>SUBSYSLOCK</member>
-
-        <member>RESTOREFILE</member>
-      </simplelist>
-    </blockquote>
 
     <para>The <filename>/sbin/shorewall-lite</filename> program included with
     Shorewall Lite supports the same set of commands as the

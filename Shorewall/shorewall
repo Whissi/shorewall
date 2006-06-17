@@ -1301,8 +1301,8 @@ reload_command()
     local verbose=$(make_verbose)
 
     shorewall $debugging $verbose compile -e $1 $1/firewall && \
-	echo "Copying firewall to ${2}/var/lib/shorewall-lite/..." && \
-	scp $1/firewall root@${2}:/var/lib/shorewall-lite/ && \
+	echo "Copying ${1}/firewall to ${2}:${LITEDIR}..." && \
+	scp $1/firewall root@${2}:${LITEDIR}/ && \
 	echo "Copy complete" && \
 	ssh root@${2} "/sbin/shorewall-lite $debugging $verbose restart" && \
 	progress_message3 "System $2 reloaded"

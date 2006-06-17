@@ -220,6 +220,11 @@ get_config() {
 
     export VERBOSE
 
+    if [ -n "$LITEDIR" ]; then
+	echo "   ERROR: You must set the LITEDIR option in /etc/shorewall-lite/shorewall.conf" >&2
+	exit 2
+    fi
+
 }
 
 #
@@ -462,10 +467,10 @@ start_command() {
     do_it() {
 	[ -n "$nolock" ] || mutex_on
 
-	if [ -x ${VARDIR}/firewall ]; then
-	    ${VARDIR}/firewall $debugging start
+	if [ -x ${LITEDIR}/firewall ]; then
+	    ${LITEDIR}/firewall $debugging start
 	else
-	    error_message "${VARDIR}/firewall is missing or is not executable"
+	    error_message "${LITEDIR}/firewall is missing or is not executable"
 	fi
 
 	[ -n "$nolock" ] || mutex_off
@@ -629,10 +634,10 @@ restart_command() {
 
     [ -n "$nolock" ] || mutex_on
 
-    if [ -x ${VARDIR}/firewall ]; then
-	$SHOREWALL_SHELL ${VARDIR}/firewall $debugging restart
+    if [ -x ${LITEDIR}/firewall ]; then
+	$SHOREWALL_SHELL ${LITEDIR}/firewall $debugging restart
     else
-	error_message "${VARDIR}/firewall is missing or is not executable"
+	error_message "${LITEDIR}/firewall is missing or is not executable"
     fi
 
     [ -n "$nolock" ] || mutex_off
@@ -1171,7 +1176,6 @@ VARDIR=/var/lib/shorewall-lite
 CONFDIR=/etc/shorewall-lite
 export PRODUCT="Shorewall Lite"
 
-FIREWALL=$VARDIR/firewall
 FUNCTIONS=$SHAREDIR/functions
 VERSION_FILE=$SHAREDIR/version
 HELP=$SHAREDIR/help
@@ -1203,6 +1207,8 @@ ensure_config_path
 export CONFIG_PATH
 
 get_config
+
+FIREWALL=$LITEDIR/firewall
 
 if [ ! -f $FIREWALL ]; then
     echo "   ERROR: Shorewall Lite is not properly installed" >&2

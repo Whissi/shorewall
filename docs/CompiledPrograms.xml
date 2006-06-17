@@ -247,9 +247,16 @@
               class="directory">/var/lib/shorewall-lite</filename> in packages
               from shorewall.net. The package maintainers for the various
               distributions are free to choose the directory where the script
-              will be stored under their distribution. You can look in your
-              /usr/share/shorewall/configpath file to see what your
-              distribution defines for the value of LITEDIR.</para>
+              will be stored under their distribution. See the output of
+              <command>shorewall[-lite] show config</command> for the value of
+              LITEDIR on your distribution.</para>
+
+              <para>Example:</para>
+
+              <programlisting>gateway:~ # <command>shorewall-lite show config</command>
+Default CONFIG_PATH is /etc/shorewall-lite:/usr/share/shorewall-lite
+LITEDIR is /var/lib/shorewall-lite
+gateway:~ #</programlisting>
             </note>
           </listitem>
         </orderedlist>
@@ -398,6 +405,23 @@
           <programlisting><command>cd &lt;configuration directory&gt;</command>
 <command>/sbin/shorewall compile -e . firewall</command>
 <command>scp firewall root@&lt;firewall system&gt;:/var/lib/shorewall-lite/</command></programlisting>
+
+          <note>
+            <para>The 'firewall' script is in <filename
+            class="directory">/var/lib/shorewall-lite</filename> in packages
+            from shorewall.net. The package maintainers for the various
+            distributions are free to choose the directory where the script
+            will be stored under their distribution. See the output of
+            <command>shorewall[-lite] show config</command> for the value of
+            LITEDIR on your distribution.</para>
+
+            <para>Example:</para>
+
+            <programlisting>gateway:~ # <command>shorewall-lite show config</command>
+Default CONFIG_PATH is /etc/shorewall-lite:/usr/share/shorewall-lite
+LITEDIR is /var/lib/shorewall-lite
+gateway:~ #</programlisting>
+          </note>
         </listitem>
 
         <listitem>
@@ -433,10 +457,13 @@
         <programlisting>teastep@wookie:~$ <command>cd Configs/gateway</command>
 teastep@wookie:~/Configs/gateway$ <command>/sbin/shorewall reload gateway</command>
 Compiling...
-Shorewall configuration compiled to firewall
-firewall                                                                                                                  100%   29KB  29.3KB/s   00:00
+Shorewall configuration compiled to ./firewall
+Copying ./firewall to gateway:/var/lib/shorewall-lite...
+firewall                                                                                                                  100%   67KB  66.7KB/s   00:00
+Copy complete
 Restarting Shorewall Lite....
 done.
+System gateway reloaded
 teastep@wookie:~/Configs/gateway$</programlisting>
       </blockquote>
 

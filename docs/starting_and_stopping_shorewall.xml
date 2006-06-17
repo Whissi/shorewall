@@ -166,6 +166,23 @@
         firewall program. The program is generated using the
         <command>shorewall compile -e</command> command on a system with the
         full Shorewall product installed.</para>
+
+        <note>
+          <para>The 'firewall' script is in <filename
+          class="directory">/var/lib/shorewall-lite</filename> in packages
+          from shorewall.net. The package maintainers for the various
+          distributions are free to choose the directory where the script will
+          be stored under their distribution. See the output of
+          <command>shorewall[-lite] show config</command> for the value of
+          LITEDIR on your distribution.</para>
+
+          <para>Example:</para>
+
+          <programlisting>gateway:~ # <command>shorewall-lite show config</command>
+Default CONFIG_PATH is /etc/shorewall-lite:/usr/share/shorewall-lite
+LITEDIR is /var/lib/shorewall-lite
+gateway:~ #</programlisting>
+        </note>
       </listitem>
 
       <listitem>
@@ -982,9 +999,16 @@
             class="directory">/var/lib/shorewall-lite</filename> in packages
             from shorewall.net. The package maintainers for the various
             distributions are free to choose the directory where the script
-            will be stored under their distribution. You can look in your
-            /usr/share/shorewall/configpath file to see what your distribution
-            defines for the value of LITEDIR.</para>
+            will be stored under their distribution. See the output of
+            <command>shorewall[-lite] show config</command> for the value of
+            LITEDIR on your distribution.</para>
+
+            <para>Example:</para>
+
+            <programlisting>gateway:~ # <command>shorewall-lite show config</command>
+Default CONFIG_PATH is /etc/shorewall-lite:/usr/share/shorewall-lite
+LITEDIR is /var/lib/shorewall-lite
+gateway:~ #</programlisting>
           </note>
 
           <para>Example: <command>shorewall reload gateway</command></para>
@@ -1127,6 +1151,9 @@
           <para><command>shorewall[-lite] show classifiers</command> -
           displays information about the traffic control/shaping
           classifiers.</para>
+
+          <para><command>shorewall[-lite] show config</command> - displays the
+          default CONFIG_PATH and LITEDIR for your distribution.</para>
 
           <para><command>shorewall [ -x ] show macros (Not supported by
           Shorewall Lite)</command> — produces a list of macros available on

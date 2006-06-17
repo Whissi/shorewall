@@ -889,105 +889,110 @@ show_command() {
 
     [ -n "$debugging" ] && set -x
     case "$1" in
-    connections)
-	[ $# -gt 1 ] && usage 1
-	echo "Shorewall-$version Connections at $HOSTNAME - $(date)"
-	echo
-	cat /proc/net/ip_conntrack
-	;;
-    nat)
-	[ $# -gt 1 ] && usage 1
-	echo "Shorewall-$version NAT Table at $HOSTNAME - $(date)"
-	echo
-	show_reset
-	$IPTABLES -t nat -L $IPT_OPTIONS
-	;;
-    tos|mangle)
-	[ $# -gt 1 ] && usage 1
-	echo "Shorewall-$version Mangle Table at $HOSTNAME - $(date)"
-	echo
-	show_reset
-	$IPTABLES -t mangle -L $IPT_OPTIONS
-	;;
-    log)
-	[ $# -gt 1 ] && usage 1
-	echo "Shorewall-$version Log at $HOSTNAME - $(date)"
-	echo
-	show_reset
-	host=$(echo $HOSTNAME | sed 's/\..*$//')
-	packet_log 20
-	;;
-    tc)
-	[ $# -gt 1 ] && usage 1
-	echo "Shorewall-$version Traffic Control at $HOSTNAME - $(date)"
-	echo
-	show_tc
-	;;
-    classifiers)
-	[ $# -gt 1 ] && usage 1
-	echo "Shorewall-$version Clasifiers at $HOSTNAME - $(date)"
-	echo
-	show_classifiers
-	;;
-    zones)
-	[ $# -gt 1 ] && usage 1
-	if [ -f ${VARDIR}/zones ]; then
-	    echo "Shorewall-$version Zones at $HOSTNAME - $(date)"
+	connections)
+	    [ $# -gt 1 ] && usage 1
+	    echo "Shorewall-$version Connections at $HOSTNAME - $(date)"
 	    echo
-	    while read zone type hosts; do
-		echo "$zone ($type)"
-		for host in $hosts; do
-		    echo "   $host"
-		done
-	    done < ${VARDIR}/zones
+	    cat /proc/net/ip_conntrack
+	    ;;
+	nat)
+	    [ $# -gt 1 ] && usage 1
+	    echo "Shorewall-$version NAT Table at $HOSTNAME - $(date)"
 	    echo
-	else
-	    echo "   ERROR: ${VARDIR}/zones does not exist" >&2
-	    exit 1
-	fi
-	;;
-    capabilities)
-	[ $# -gt 1 ] && usage 1
-	determine_capabilities
-	VERBOSE=2
-	report_capabilities
-	;;
-    actions)
-	[ $# -gt 1 ] && usage 1
-	echo "allowBcast          # Silently Allow Broadcast/multicast"
-	echo "dropBcast           # Silently Drop Broadcast/multicast"
-	echo "dropNotSyn          # Silently Drop Non-syn TCP packets"
-	echo "rejNotSyn           # Silently Reject Non-syn TCP packets"
-	echo "dropInvalid         # Silently Drop packets that are in the INVALID conntrack state"
-	echo "allowInvalid        # Accept packets that are in the INVALID conntrack state."
-	echo "allowoutUPnP        # Allow traffic from local command 'upnpd'"
-	echo "allowinUPnP         # Allow UPnP inbound (to firewall) traffic"
-	echo "forwardUPnP         # Allow traffic that upnpd has redirected from"
-	cat ${SHAREDIR}/actions.std ${CONFDIR}/actions | grep -Ev '^\#|^$'
-	;;
-    macros)
-	[ $# -gt 1 ] && usage 1
-	for macro in ${SHAREDIR}/macro.*; do
-	    foo=`grep 'This macro' $macro | head -n 1`
-	    if [ -n "$foo" ]; then
-		macro=${macro#*.}
-		foo=${foo%.*}
-		echo "   $macro  ${foo#\#}" | sed 's/This macro //'
+	    show_reset
+	    $IPTABLES -t nat -L $IPT_OPTIONS
+	    ;;
+	tos|mangle)
+	    [ $# -gt 1 ] && usage 1
+	    echo "Shorewall-$version Mangle Table at $HOSTNAME - $(date)"
+	    echo
+	    show_reset
+	    $IPTABLES -t mangle -L $IPT_OPTIONS
+	    ;;
+	log)
+	    [ $# -gt 1 ] && usage 1
+	    echo "Shorewall-$version Log at $HOSTNAME - $(date)"
+	    echo
+	    show_reset
+	    host=$(echo $HOSTNAME | sed 's/\..*$//')
+	    packet_log 20
+	    ;;
+	tc)
+	    [ $# -gt 1 ] && usage 1
+	    echo "Shorewall-$version Traffic Control at $HOSTNAME - $(date)"
+	    echo
+	    show_tc
+	    ;;
+	classifiers)
+	    [ $# -gt 1 ] && usage 1
+	    echo "Shorewall-$version Clasifiers at $HOSTNAME - $(date)"
+	    echo
+	    show_classifiers
+	    ;;
+	zones)
+	    [ $# -gt 1 ] && usage 1
+	    if [ -f ${VARDIR}/zones ]; then
+		echo "Shorewall-$version Zones at $HOSTNAME - $(date)"
+		echo
+		while read zone type hosts; do
+		    echo "$zone ($type)"
+		    for host in $hosts; do
+			echo "   $host"
+		    done
+		done < ${VARDIR}/zones
+		echo
+	    else
+		echo "   ERROR: ${VARDIR}/zones does not exist" >&2
+		exit 1
 	    fi
-	done
-	;;
-    *)
-	echo "Shorewall-$version $([ $# -gt 0 ] && echo Chains || echo Chain) $* at $HOSTNAME - $(date)"
-	echo
-	show_reset
-	if [ $# -gt 0 ]; then
-	    for chain in $*; do
-		$IPTABLES -L $chain $IPT_OPTIONS
+	    ;;
+	capabilities)
+	    [ $# -gt 1 ] && usage 1
+	    determine_capabilities
+	    VERBOSE=2
+	    report_capabilities
+	    ;;
+	actions)
+	    [ $# -gt 1 ] && usage 1
+	    echo "allowBcast          # Silently Allow Broadcast/multicast"
+	    echo "dropBcast           # Silently Drop Broadcast/multicast"
+	    echo "dropNotSyn          # Silently Drop Non-syn TCP packets"
+	    echo "rejNotSyn           # Silently Reject Non-syn TCP packets"
+	    echo "dropInvalid         # Silently Drop packets that are in the INVALID conntrack state"
+	    echo "allowInvalid        # Accept packets that are in the INVALID conntrack state."
+	    echo "allowoutUPnP        # Allow traffic from local command 'upnpd'"
+	    echo "allowinUPnP         # Allow UPnP inbound (to firewall) traffic"
+	    echo "forwardUPnP         # Allow traffic that upnpd has redirected from"
+	    cat ${SHAREDIR}/actions.std ${CONFDIR}/actions | grep -Ev '^\#|^$'
+	    ;;
+	macros)
+	    [ $# -gt 1 ] && usage 1
+	    for macro in ${SHAREDIR}/macro.*; do
+		foo=`grep 'This macro' $macro | head -n 1`
+		if [ -n "$foo" ]; then
+		    macro=${macro#*.}
+		    foo=${foo%.*}
+		    echo "   $macro  ${foo#\#}" | sed 's/This macro //'
+		fi
 	    done
-	else
-	    $IPTABLES -L $IPT_OPTIONS
-	fi
-	;;
+	    ;;
+	config)
+	    . ${SHAREDIR}/configpath
+	    echo "Default CONFIG_PATH is $CONFIG_PATH"
+	    echo "LITEDIR is $LITEDIR"
+	    ;;
+	*)
+	    echo "Shorewall-$version $([ $# -gt 0 ] && echo Chains || echo Chain) $* at $HOSTNAME - $(date)"
+	    echo
+	    show_reset
+	    if [ $# -gt 0 ]; then
+		for chain in $*; do
+		    $IPTABLES -L $chain $IPT_OPTIONS
+		done
+	    else
+		$IPTABLES -L $IPT_OPTIONS
+	    fi
+	    ;;
     esac
 }
 #
@@ -1347,7 +1352,7 @@ usage() # $1 = exit status
     echo "   restart [ -n ] [ <directory> ]"
     echo "   restore [ -n ] [ <file name> ]"
     echo "   save [ <file name> ]"
-    echo "   show [ -x ] [ -m ] [<chain> [ <chain> ... ]|actions|capabilities|classifiers|connections|log|macros|mangle|nat|tc|zones]"
+    echo "   show [ -x ] [ -m ] [<chain> [ <chain> ... ]|actions|capabilities|classifiers|config|connections|log|macros|mangle|nat|tc|zones]"
     echo "   start [ -f ] [ -n ] [ <directory> ]"
     echo "   stop"
     echo "   status"

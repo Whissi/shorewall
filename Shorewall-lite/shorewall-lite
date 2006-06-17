@@ -683,81 +683,86 @@ show_command() {
 
     [ -n "$debugging" ] && set -x
     case "$1" in
-    connections)
-	[ $# -gt 1 ] && usage 1
-	echo "Shorewall Lite $version Connections at $HOSTNAME - $(date)"
-	echo
-	cat /proc/net/ip_conntrack
-	;;
-    nat)
-	[ $# -gt 1 ] && usage 1
-	echo "Shorewall Lite $version NAT Table at $HOSTNAME - $(date)"
-	echo
-	show_reset
-	$IPTABLES -t nat -L $IPT_OPTIONS
-	;;
-    tos|mangle)
-	[ $# -gt 1 ] && usage 1
-	echo "Shorewall Lite $version Mangle Table at $HOSTNAME - $(date)"
-	echo
-	show_reset
-	$IPTABLES -t mangle -L $IPT_OPTIONS
-	;;
-    log)
-	[ $# -gt 1 ] && usage 1
-	echo "Shorewall Lite $version Log at $HOSTNAME - $(date)"
-	echo
-	show_reset
-	host=$(echo $HOSTNAME | sed 's/\..*$//')
-	packet_log 20
-	;;
-    tc)
-	[ $# -gt 1 ] && usage 1
-	echo "Shorewall Lite $version Traffic Control at $HOSTNAME - $(date)"
-	echo
-	show_tc
-	;;
-    classifiers)
-	[ $# -gt 1 ] && usage 1
-	echo "Shorewall Lite $version Clasifiers at $HOSTNAME - $(date)"
-	echo
-	show_classifiers
-	;;
-    zones)
-	[ $# -gt 1 ] && usage 1
-	if [ -f ${VARDIR}/zones ]; then
-	    echo "Shorewall Lite $version Zones at $HOSTNAME - $(date)"
+	connections)
+	    [ $# -gt 1 ] && usage 1
+	    echo "Shorewall Lite $version Connections at $HOSTNAME - $(date)"
 	    echo
-	    while read zone type hosts; do
-		echo "$zone ($type)"
-		for host in $hosts; do
-		    echo "   $host"
+	    cat /proc/net/ip_conntrack
+	    ;;
+	nat)
+	    [ $# -gt 1 ] && usage 1
+	    echo "Shorewall Lite $version NAT Table at $HOSTNAME - $(date)"
+	    echo
+	    show_reset
+	    $IPTABLES -t nat -L $IPT_OPTIONS
+	    ;;
+	tos|mangle)
+	    [ $# -gt 1 ] && usage 1
+	    echo "Shorewall Lite $version Mangle Table at $HOSTNAME - $(date)"
+	    echo
+	    show_reset
+	    $IPTABLES -t mangle -L $IPT_OPTIONS
+	    ;;
+	log)
+	    [ $# -gt 1 ] && usage 1
+	    echo "Shorewall Lite $version Log at $HOSTNAME - $(date)"
+	    echo
+	    show_reset
+	    host=$(echo $HOSTNAME | sed 's/\..*$//')
+	    packet_log 20
+	    ;;
+	tc)
+	    [ $# -gt 1 ] && usage 1
+	    echo "Shorewall Lite $version Traffic Control at $HOSTNAME - $(date)"
+	    echo
+	    show_tc
+	    ;;
+	classifiers)
+	    [ $# -gt 1 ] && usage 1
+	    echo "Shorewall Lite $version Clasifiers at $HOSTNAME - $(date)"
+	    echo
+	    show_classifiers
+	    ;;
+	zones)
+	    [ $# -gt 1 ] && usage 1
+	    if [ -f ${VARDIR}/zones ]; then
+		echo "Shorewall Lite $version Zones at $HOSTNAME - $(date)"
+		echo
+		while read zone type hosts; do
+		    echo "$zone ($type)"
+		    for host in $hosts; do
+			echo "   $host"
+		    done
+		done < ${VARDIR}/zones
+		echo
+	    else
+		echo "   ERROR: ${VARDIR}/zones does not exist" >&2
+		exit 1
+	    fi
+	    ;;
+	capabilities)
+	    [ $# -gt 1 ] && usage 1
+	    determine_capabilities
+	    VERBOSE=2
+	    report_capabilities
+	    ;;
+	config)
+	    . ${SHAREDIR}/configpath
+	    echo "Default CONFIG_PATH is $CONFIG_PATH"
+	    echo "LITEDIR is $LITEDIR"
+	    ;;
+	*)
+	    echo "Shorewall Lite $version $([ $# -gt 0 ] && echo Chains || echo Chain) $* at $HOSTNAME - $(date)"
+	    echo
+	    show_reset
+	    if [ $# -gt 0 ]; then
+		for chain in $*; do
+		    $IPTABLES -L $chain $IPT_OPTIONS
 		done
-	    done < ${VARDIR}/zones
-	    echo
-	else
-	    echo "   ERROR: ${VARDIR}/zones does not exist" >&2
-	    exit 1
-	fi
-	;;
-    capabilities)
-	[ $# -gt 1 ] && usage 1
-	determine_capabilities
-	VERBOSE=2
-	report_capabilities
-	;;
-    *)
-	echo "Shorewall Lite $version $([ $# -gt 0 ] && echo Chains || echo Chain) $* at $HOSTNAME - $(date)"
-	echo
-	show_reset
-	if [ $# -gt 0 ]; then
-	    for chain in $*; do
-		$IPTABLES -L $chain $IPT_OPTIONS
-	    done
-	else
-	    $IPTABLES -L $IPT_OPTIONS
-	fi
-	;;
+	    else
+		$IPTABLES -L $IPT_OPTIONS
+	    fi
+	    ;;
     esac
 }
 #
@@ -977,7 +982,7 @@ usage() # $1 = exit status
     echo "   restart [ -n ] [ <directory> ]"
     echo "   restore [ -n ] [ <file name> ]"
     echo "   save [ <file name> ]"
-    echo "   show [ -x ] [ -m ] [<chain> [ <chain> ... ]|capabilities|classifiers|connections|log|mangle|nat|tc|zones]"
+    echo "   show [ -x ] [ -m ] [<chain> [ <chain> ... ]|capabilities|classifiers|config|connections|log|mangle|nat|tc|zones]"
     echo "   start [ -f ] [ -n ] [ <directory> ]"
     echo "   stop"
     echo "   status"

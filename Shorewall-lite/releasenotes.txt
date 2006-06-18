@@ -56,10 +56,44 @@ c) On the administrative system you create a separate 'configuration
 directory' for each firewall system. You copy the contents of
 /usr/share/shorewall/configfiles into each configuration directory.
 
-d) On each firewall system, you run:
+d) On each firewall system, you run these two commands:
 
-   /usr/share/shorewall/shorecap > capabilities
-   scp capabilities <admin system>:<this system's config dir>
+       /usr/share/shorewall/shorecap > capabilities
+       scp capabilities <admin system>:<this system's config dir>
+
+   If you are running Debian or one of its derivatives like Ubuntu then 
+   edit /etc/default/shorewall-lite and set startup=1.
+
+   Shorewall Lite includes a very limited version of shorewall.conf
+   (/etc/shorewall-lite/shorewall.conf). It includes the following
+   options which have the same meaning as in a full Shorewall
+   installation except as noted below:
+
+	VERBOSITY
+	LOGFILE
+	LOGFORMAT - used by /sbin/shorewall for finding 'Shorewall' log
+		    messages. If LOGFORMAT was specified in the
+		    shorewall.conf file used at compile time on the
+		    administrative system, then the format of the
+		    messages themselves is defined by that value. If
+		    LOGFORMAT was not specified at compile time then
+		    the firewall script will use the value from
+		    /etc/shorewall-lite/shorewall.conf on the firewall
+		    system.
+	IPTABLES - determines the iptables binary to be used by
+		   /sbin/shorewall. The compiled firewall script will
+		   use the IPTABLES specified in shorewall.conf at
+		   compile time on the administrative system, if any;
+		   if IPTABLES was not specified at compile time then
+		   the IPTABLES value from
+		   /etc/shorewall-lite/shorewall.conf on the firewall
+		   system will be used by the firewall script.
+	PATH
+	SHOREWALL_SHELL
+	SUBSYSLOCK
+	RESTOREFILE
+
+    Edit the shorewall.conf file as required.
 
 e) On the administrative system, for each firewall system you:
 
@@ -76,7 +110,6 @@ e) On the administrative system, for each firewall system you:
 
       cd <configuration directory>
       /sbin/shorewall reload . <firewall system>
-
 
 It is possible to have both shorewall and Shorewall Lite
 installed on the same system.

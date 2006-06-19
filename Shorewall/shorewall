@@ -199,10 +199,8 @@ get_config() {
 	#
 	# This block is avoided for compile for export and when the user isn't root
 	#
-	# We don't export CONFIG_PATH so that CONFIG_PATH will be picked up fresh by the compiler
-	# from /usr/share/shorewall/configpath.
-	#
 	export CONFIG_PATH
+	export LITEDIR
 
 	[ -z "$LOGFILE" ] && LOGFILE=/var/log/messages
 

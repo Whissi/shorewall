@@ -298,7 +298,7 @@ echo "Compiler installed in ${PREFIX}/usr/share/shorewall/compiler"
 
 # Install the Help file
 #
-install_file help ${PREFIX}/usr/share/shorewall/help 0544
+install_file help ${PREFIX}/usr/share/shorewall/help 0555
 
 echo "Help command executor installed in ${PREFIX}/usr/share/shorewall/help"
 
@@ -666,7 +666,7 @@ fi
 #
 # Install the firewall script
 #
-install_file firewall ${PREFIX}/usr/share/shorewall/firewall 0544
+install_file firewall ${PREFIX}/usr/share/shorewall/firewall 0555
 
 if [ -z "$PREFIX" -a -n "$first_install" ]; then
     if [ -n "$DEBIAN" ]; then

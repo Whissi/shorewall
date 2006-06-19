@@ -286,10 +286,12 @@
             <programlisting><command>cd &lt;configuration directory&gt;</command>
 <command>/sbin/shorewall load . firewall</command></programlisting>
 
-            <para>The load command compiles a firewall script from the
-            configuration files in the current working directory, copies that
-            file to the remote system via scp and starts Shorewall Lite on the
-            remote system via ssh.</para>
+            <para>The <ulink
+            url="starting_and_stopping_shorewall.htm#Load"><command>load</command></ulink>
+            command compiles a firewall script from the configuration files in
+            the current working directory, copies that file to the remote
+            system via scp and starts Shorewall Lite on the remote system via
+            ssh.</para>
           </listitem>
         </orderedlist>
       </listitem>
@@ -367,6 +369,13 @@
 
         <listitem>
           <para>Install Shorewall Lite on the firewall system.</para>
+
+          <para>Modify <filename>/etc/shorewall-lite/shorewall.conf</filename>
+          as needed.</para>
+
+          <para>If you are running Debian or one of its derivatives like
+          Ubuntu then edit /etc/default/shorewall-lite and set
+          startup=1.</para>
         </listitem>
 
         <listitem>
@@ -383,76 +392,43 @@
           administrative system in the firewall system's
           <filename>routestopped</filename> file.</para>
 
+          <para>Also, edit the shorewall.conf file in the firewall's
+          configuration directory and change the CONFIG_PATH setting to remove
+          <filename>/etc/shorewall</filename>. You can replace it with
+          <filename>/usr/share/shorewall/configfiles</filename> if you
+          like.</para>
+
+          <para>Example:</para>
+
+          <blockquote>
+            <para>Before editing:</para>
+
+            <programlisting>CONFIG_PATH=/etc/shorewall:/usr/share/shorewall</programlisting>
+
+            <para>After editing:</para>
+
+            <programlisting>CONFIG_PATH=/usr/share/shorewall/configfiles:/usr/share/shorewall</programlisting>
+          </blockquote>
+
+          <para>After having made the above changes to the firewall's
+          configuration directory, execute the following commands:</para>
+
           <programlisting><command>cd &lt;configuration directory&gt;</command>
-<command>/sbin/shorewall compile -e . firewall</command>
-<command>scp firewall root@&lt;firewall system&gt;:/var/lib/shorewall-lite/</command></programlisting>
+<command>/sbin/shorewall load &lt;firewall system&gt;</command>
+</programlisting>
 
-          <note>
-            <para>The 'firewall' script is in <filename
-            class="directory">/var/lib/shorewall-lite</filename> in packages
-            from shorewall.net. The package maintainers for the various
-            distributions are free to choose the directory where the script
-            will be stored under their distribution. See the output of
-            <command>shorewall[-lite] show config</command> for the value of
-            LITEDIR on your distribution.</para>
+          <para>Example:</para>
 
-            <para>Example:</para>
+          <para><command>/sbin/shorewall load gateway</command></para>
 
-            <programlisting>gateway:~ # <command>shorewall-lite show config</command>
-Default CONFIG_PATH is /etc/shorewall-lite:/usr/share/shorewall-lite
-LITEDIR is /var/lib/shorewall-lite
-gateway:~ #</programlisting>
-          </note>
-        </listitem>
-
-        <listitem>
-          <para>On the firewall system:</para>
-
-          <para>Modify <filename>/etc/shorewall-lite/shorewall.conf</filename>
-          as needed.</para>
-
-          <para>If you are running Debian or one of its derivatives like
-          Ubuntu then edit /etc/default/shorewall-lite and set
-          startup=1.</para>
-
-          <programlisting><command>shorewall-lite start</command></programlisting>
+          <para>The <ulink
+          url="starting_and_stopping_shorewall.htm#Load"><command>load</command></ulink>
+          command compiles a firewall script from the configuration files in
+          the current working directory, copies that file to the remote system
+          via scp and starts Shorewall Lite on the remote system via
+          ssh.</para>
         </listitem>
       </orderedlist>
-    </section>
-
-    <section>
-      <title>/sbin/shorewall reload command (Added in 3.2.0 RC4)</title>
-
-      <para>The <ulink
-      url="starting_and_stopping_shorewall.htm#Reload"><command>reload</command>
-      command</ulink> allows for easy updating of remote firewall systems by a
-      non-root user. At shorewall.net, I keep my firewall configurations in
-      sub-directories under ~/Configs. The name of the directory corresponds
-      to the DNS name of the system.</para>
-
-      <para>To recompile the firewall script for the system named gateway and
-      to install that script on gateway, I issue the following
-      commands:</para>
-
-      <blockquote>
-        <programlisting>teastep@wookie:~$ <command>cd Configs/gateway</command>
-teastep@wookie:~/Configs/gateway$ <command>/sbin/shorewall reload gateway</command>
-Compiling...
-Shorewall configuration compiled to ./firewall
-Copying ./firewall to gateway:/var/lib/shorewall-lite...
-firewall                                                                                                                  100%   67KB  66.7KB/s   00:00
-Copy complete
-Restarting Shorewall Lite....
-done.
-System gateway reloaded
-teastep@wookie:~/Configs/gateway$</programlisting>
-      </blockquote>
-
-      <para>The user running the <command>reload</command> command must have
-      ssh access to the remote system. I use RSA keys and ssh-agent so I don't
-      need to enter a password each time the command runs scp or ssh; I only
-      need to supply the password once when I log onto my desktop
-      system.</para>
     </section>
   </section>
 

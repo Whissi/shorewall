@@ -40,6 +40,9 @@ Problems Corrected in 3.2.0 RC 5
 	ERROR: LITEDIR not defined in /usr/share/shorewall/configpath
     wifitipper:
 
+2)  The compiler was running iptables needlessly when DELAYBLACKLISTLOAD=Yes.
+    This could also result in the blacklist not being loaded in some cases.
+
 Other changes in 3.2.0 RC 5
 
 None.
@@ -589,7 +592,7 @@ New Features:
     refresh".
 
 18) "load" and "reload" commands have been added. These commands allow
-    a non-root user with ssh access to a remote system running 
+    a non-root user with ssh access to a remote system running
     Shorewall Lite to compile a firewall script on the local system and
     to install that script on the remote system.
 

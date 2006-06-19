@@ -6656,21 +6656,19 @@ refresh_blacklist() {
     local f=$(find_file blacklist)
     local disposition=$BLACKLIST_DISPOSITION
 
-    if qt $IPTABLES -L blacklst -n ; then
-	progress_message2 "$DOING Black List..."
-	save_progress_message "Loading Black List..."
+    progress_message2 "$DOING Black List..."
+    save_progress_message "Loading Black List..."
 
-	strip_file blacklist $f
+    strip_file blacklist $f
 
-	[ "$disposition" = REJECT ] && disposition=reject
+    [ "$disposition" = REJECT ] && disposition=reject
 
-	run_iptables -F blacklst
+    run_iptables -F blacklst
 
-	while read networks protocol ports; do
-	    expandv networks protocol ports
-	    process_blacklist_rec
-	done < $TMP_DIR/blacklist
-    fi
+    while read networks protocol ports; do
+	expandv networks protocol ports
+	process_blacklist_rec
+    done < $TMP_DIR/blacklist
 }
 
 #

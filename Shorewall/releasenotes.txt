@@ -1,4 +1,4 @@
-Shorewall 3.2.0 RC 4
+Shorewall 3.2.0 RC 5
 
 Note to users upgrading from Shorewall 2.x or 3.0
 
@@ -31,56 +31,18 @@ Note to users upgrading from Shorewall 2.x or 3.0
    Please see the "Migration Considerations" below for additional upgrade
    information.
 
-Problems Corrected in 3.2.0 RC 4
+Problems Corrected in 3.2.0 RC 5
 
-1)  When install.sh was used to install/update Shorewall, the
-    /usr/share/shorewall/Limit file had incorrect permissions.
+1)  DOA /sbin/shorewall:
 
-2)  Many permission problems in /usr/share/shorewall/configfiles/ have
-    been corrected.
+    wifitipper:/etc/test # shorewall restart
+    Compiling...
+	ERROR: LITEDIR not defined in /usr/share/shorewall/configpath
+    wifitipper:
 
-Other changes in 3.2.0 RC 4
+Other changes in 3.2.0 RC 5
 
-1)  The progress messages produced by Shorewall Lite now correctly
-    identify the product as 'Shorewall Lite' rather than
-    'Shorewall'. In order for this to work, you must have Shorewall RC4
-    installed on your administrative system(s) and Shorewall Lite RC4
-    on the firewall system(s).
-
-2)  "load" and "reload" commands have been added. These commands allow
-    a non-root user with ssh access to a remote system to compile a
-    firewall script on the local system and to install that script on
-    the remote system.
-
-    Syntax is:
-
-	   shorewall [re]load [ <directory> ] <system>
-
-    If <directory> is omitted, the current working directory is
-    assumed.
-
-    The command is equivalent to:
-
-    /sbin/shorewall compile -e . firewall &&\
-    scp firewall root@<system>:/var/lib/shorewall-lite/ &&\
-    ssh root@<system> '/sbin/shorewall-lite [re]start' # Note 1
-
-    In other words, the configuration in the specified (or defaulted)
-    directory is compiled to a file called firewall in that
-    directory. If compilation succeeds, then 'firewall' is copied to the
-    (usually remote) <system> using scp. If the copy succeeds,
-    Shorewall Lite on <system> is started or restarted via ssh (
-    load causes Shorewall Lite to be started and 'reload' causes
-    Shorewall Lite to be re-started)
-
-    Note 1: In Shorewall Lite 3.2.0 RC4, the 'firewall' script has moved
-    from /usr/share/shorewall-lite/ to /var/lib/shorewall-lite in
-    packages from shorewall.net. The package maintainers for the
-    various distributions are free to choose the directory where the
-    script will be stored under their distribution by altering the
-    value of LITEDIR in /usr/share/shorewall/configpath. You can run the
-    "shorewall show config" command to see how your distribution
-    defines LITEDIR.
+None.
 
 Migration Considerations:
 
@@ -365,7 +327,42 @@ New Features:
 4)  In macro files, you can now use the reserved words SOURCE and DEST
     in the columns of the same names. When Shorewall expands the
     macro, it will substitute the SOURCE from the macro invocation for
-    SOURCE and the DEST from the invocation for DEST. This allows you
+    SOURCE and the DEST from the invocation for DEST. This allows you2)  "load" and "reload" commands have been added. These commands allow
+    a non-root user with ssh access to a remote system to compile a
+    firewall script on the local system and to install that script on
+    the remote system.
+
+    Syntax is:
+
+	   shorewall [re]load [ <directory> ] <system>
+
+    If <directory> is omitted, the current working directory is
+    assumed.
+
+    The command is equivalent to:
+
+    /sbin/shorewall compile -e . firewall &&\
+    scp firewall root@<system>:/var/lib/shorewall-lite/ &&\
+    ssh root@<system> '/sbin/shorewall-lite [re]start' # Note 1
+
+    In other words, the configuration in the specified (or defaulted)
+    directory is compiled to a file called firewall in that
+    directory. If compilation succeeds, then 'firewall' is copied to the
+    (usually remote) <system> using scp. If the copy succeeds,
+    Shorewall Lite on <system> is started or restarted via ssh (
+    load causes Shorewall Lite to be started and 'reload' causes
+    Shorewall Lite to be re-started)
+
+    Note 1: In Shorewall Lite 3.2.0 RC4, the 'firewall' script has moved
+    from /usr/share/shorewall-lite/ to /var/lib/shorewall-lite in
+    packages from shorewall.net. The package maintainers for the
+    various distributions are free to choose the directory where the
+    script will be stored under their distribution by altering the
+    value of LITEDIR in /usr/share/shorewall/configpath. You can run the
+    "shorewall show config" command to see how your distribution
+    defines LITEDIR.
+
+
     to write macros that act in both directions (from source to destination
     and from destination to source).
 
@@ -591,5 +588,37 @@ New Features:
     applies to "shorewall start", "shorewall restart" and "shorewall
     refresh".
 
+18) "load" and "reload" commands have been added. These commands allow
+    a non-root user with ssh access to a remote system running 
+    Shorewall Lite to compile a firewall script on the local system and
+    to install that script on the remote system.
 
+    Syntax is:
 
+	   shorewall [re]load [ <directory> ] <system>
+
+    If <directory> is omitted, the current working directory is
+    assumed.
+
+    The command is equivalent to:
+
+    /sbin/shorewall compile -e . firewall &&\
+    scp firewall root@<system>:/var/lib/shorewall-lite/ &&\
+    ssh root@<system> '/sbin/shorewall-lite [re]start' # Note 1
+
+    In other words, the configuration in the specified (or defaulted)
+    directory is compiled to a file called firewall in that
+    directory. If compilation succeeds, then 'firewall' is copied to the
+    (usually remote) <system> using scp. If the copy succeeds,
+    Shorewall Lite on <system> is started or restarted via ssh (
+    load causes Shorewall Lite to be started and 'reload' causes
+    Shorewall Lite to be re-started)
+
+    Note 1: In Shorewall Lite 3.2.0 RC4, the 'firewall' script has moved
+    from /usr/share/shorewall-lite/ to /var/lib/shorewall-lite in
+    packages from shorewall.net. The package maintainers for the
+    various distributions are free to choose the directory where the
+    script will be stored under their distribution by altering the
+    value of LITEDIR in /usr/share/shorewall/configpath. You can run the
+    "shorewall show config" command to see how your distribution
+    defines LITEDIR.

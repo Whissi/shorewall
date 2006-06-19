@@ -200,7 +200,6 @@ get_config() {
 	# This block is avoided for compile for export and when the user isn't root
 	#
 	export CONFIG_PATH
-	export LITEDIR
 
 	[ -z "$LOGFILE" ] && LOGFILE=/var/log/messages
 
@@ -1305,6 +1304,8 @@ restore_command() {
 reload_command()
 {
     local verbose=$(make_verbose)
+
+    [ -n "$LITEDIR" ] || { echo "   ERROR: LITEDIR not defined in ${SHAREDIR}/configpath" >&2; exit 2; }
 
     if shorewall $debugging $verbose compile -e $1 $1/firewall && \
 	echo "Copying ${1}/firewall to ${2}:${LITEDIR}..." && \

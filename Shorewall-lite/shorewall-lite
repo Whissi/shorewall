@@ -1206,6 +1206,8 @@ fi
 ensure_config_path
 export CONFIG_PATH
 
+[ -n "$LITEDIR" ] || { echo "   ERROR: LITEDIR not defined in ${SHAREDIR}/configpath" >&2; exit 2; }
+
 get_config
 
 FIREWALL=$LITEDIR/firewall

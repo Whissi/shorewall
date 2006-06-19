@@ -263,7 +263,8 @@
 
       <listitem>
         <para>On the administrative system, for each firewall system you do
-        the following (this may be done by a non-root user):</para>
+        the following (this may be done by a non-root user who has root ssh
+        access to the firewall system):</para>
 
         <orderedlist>
           <listitem>
@@ -284,7 +285,7 @@
 
           <listitem>
             <programlisting><command>cd &lt;configuration directory&gt;</command>
-<command>/sbin/shorewall load . firewall</command></programlisting>
+<command>/sbin/shorewall load firewall</command></programlisting>
 
             <para>The <ulink
             url="starting_and_stopping_shorewall.htm#Load"><command>load</command></ulink>
@@ -292,8 +293,27 @@
             the current working directory, copies that file to the remote
             system via scp and starts Shorewall Lite on the remote system via
             ssh.</para>
+
+            <para>Example (firewall's DNS name is 'gateway'):</para>
+
+            <para><command>/sbin/shorewall load gateway</command></para>
           </listitem>
         </orderedlist>
+      </listitem>
+
+      <listitem>
+        <para>If you later need to change the firewall's configuration, change
+        the appropriate files in the firewall's configuration directory
+        then:</para>
+
+        <programlisting><command>cd &lt;configuration directory&gt;</command>
+<command>/sbin/shorewall reload firewall</command></programlisting>
+
+        <para>The <ulink
+        url="starting_and_stopping_shorewall.htm#Reload"><command>reload</command></ulink>
+        command compiles a firewall script from the configuration files in the
+        current working directory, copies that file to the remote system via
+        scp and restarts Shorewall Lite on the remote system via ssh.</para>
       </listitem>
     </orderedlist>
 
@@ -342,7 +362,7 @@
       <para>Converting a firewall system that is currently running Shorewall
       to run Shorewall Lite instead is straight-forward.</para>
 
-      <orderedlist>
+      <orderedlist numeration="loweralpha">
         <listitem>
           <para>On the administrative system, create a configuration directory
           for the firewall system.</para>
@@ -394,8 +414,9 @@
 
           <para>Also, edit the shorewall.conf file in the firewall's
           configuration directory and change the CONFIG_PATH setting to remove
-          <filename>/etc/shorewall</filename>. You can replace it with
-          <filename>/usr/share/shorewall/configfiles</filename> if you
+          <filename class="directory">/etc/shorewall</filename>. You can
+          replace it with <filename
+          class="directory">/usr/share/shorewall/configfiles</filename> if you
           like.</para>
 
           <para>Example:</para>
@@ -410,6 +431,10 @@
             <programlisting>CONFIG_PATH=/usr/share/shorewall/configfiles:/usr/share/shorewall</programlisting>
           </blockquote>
 
+          <para>Changing CONFIG_PATH will ensure that subsequent compilations
+          using the configuration directory will not include any files from
+          <filename class="directory">/etc/shorewall</filename>.</para>
+
           <para>After having made the above changes to the firewall's
           configuration directory, execute the following commands:</para>
 
@@ -417,7 +442,7 @@
 <command>/sbin/shorewall load &lt;firewall system&gt;</command>
 </programlisting>
 
-          <para>Example:</para>
+          <para>Example (firewall's DNS name is 'gateway'):</para>
 
           <para><command>/sbin/shorewall load gateway</command></para>
 
@@ -426,6 +451,22 @@
           command compiles a firewall script from the configuration files in
           the current working directory, copies that file to the remote system
           via scp and starts Shorewall Lite on the remote system via
+          ssh.</para>
+        </listitem>
+
+        <listitem>
+          <para>If you later need to change the firewall's configuration,
+          change the appropriate files in the firewall's configuration
+          directory then:</para>
+
+          <programlisting><command>cd &lt;configuration directory&gt;</command>
+<command>/sbin/shorewall reload firewall</command></programlisting>
+
+          <para>The <ulink
+          url="starting_and_stopping_shorewall.htm#Reload"><command>reload</command></ulink>
+          command compiles a firewall script from the configuration files in
+          the current working directory, copies that file to the remote system
+          via scp and restarts Shorewall Lite on the remote system via
           ssh.</para>
         </listitem>
       </orderedlist>

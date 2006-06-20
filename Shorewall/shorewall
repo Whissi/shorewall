@@ -1762,6 +1762,7 @@ case "$COMMAND" in
 	[ $# -lt 2 -o $# -gt 3 ] && usage 1
 	VERBOSE=$(make_verbose)
 	[ -n "$NOROUTES" ] && NOROUTES=-n
+	export -n CONFIG_PATH
 	if ! $0 $debugging $VERBOSE -c $2 restart; then
 	    if ! $IPTABLES -L shorewall > /dev/null 2> /dev/null; then
 		$0 $VERBOSE $NOROUTES start

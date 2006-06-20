@@ -46,6 +46,18 @@ Problems Corrected in 3.2.0 RC 5
 3)  Some versions of 'ash' generate an error message when a log level is
     included in a rule.
 
+4)  Shorewall would use the incorrect shell for compilation in the
+    following case:
+
+    a) /etc/shorewall/shorewall.conf specified
+    SHOREWALL_SHELL=/bin/shell1.
+
+    b) /foo/bar/shorewall.conf specified SHOREWALL_SHELL=/bin/shell2.
+
+    c) The command "shorewall try /foo/bar" was executed. Compilation
+    of the configuration in /foo/bar would be done using /bin/shell2
+    rather than /bin/shell1.
+
 Other changes in 3.2.0 RC 5
 
 None.

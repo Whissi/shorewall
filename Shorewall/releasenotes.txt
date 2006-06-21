@@ -62,6 +62,12 @@ Problems Corrected in 3.2.0 RC 5
     Shorewall version 3.4. "shorewall save && shorewall restart
     <directory>" is a faster way to accomplish the same thing.
 
+5)  Previously, if A was an action and /etc/shorewall/A existed, then
+    /etc/shorewall/A was copied into the compiled program. That file is
+    now processed in the context of the compiler. Similarly, if C is a
+    chain and /etc/shorewall/C exists then the file is processed by the
+    compiler rather than being copied into the compiled script.
+
 Other changes in 3.2.0 RC 5
 
 None.
@@ -126,7 +132,10 @@ Migration Considerations:
 
     This clumsiness has been eliminated in Shorewall 3.2. In Shorewall 3.2,
     extension scripts are copied in-line into the compiled program and are
-    executed in-line during "start", "restart" and "restore".
+    executed in-line during "start", "restart" and "restore". This
+    applies to all extension scripts except those associated with a
+    chain or action -- those extension scripts continue to be processed
+    at compile time.
 
     This new approach has two implications for existing scripts.
 

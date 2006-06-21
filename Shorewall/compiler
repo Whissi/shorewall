@@ -3689,19 +3689,16 @@ process_action() # $1 = chain    (Chain to add the rules to)
 }
 
 #
-# Append a file in ${VARDIR} to $OUTPUT
+# Source the extension script for an action, if any
 #
-append_action_file() # $1 = File Name
+process_action_file() # $1 = File Name
 {
     local user_exit=$(find_file $1)
 
     if [ -f $user_exit ]; then
-	save_progress_message "Processing $user_exit ..."
-	save_command "CHAIN=$CHAIN"
-	save_command "LEVEL=$LEVEL"
-	save_command "TAG=$TAG"
+	progress_message2 "Processing $user_exit ..."
 
-	append_file $user_exit
+	. $user_exit
     fi
 }
 
@@ -3758,7 +3755,7 @@ createlogactionchain() # $1 = Action Name, $2 = Log Level [: Log Tag ]
 
     [ none = "${LEVEL%\!}" ] && LEVEL=
 
-    append_action_file $1
+    process_action_file $1
 
     eval ${action}_chains=\"\$${action}_chains $level $CHAIN\"
 
@@ -3788,7 +3785,7 @@ createactionchain() # $1 = Action, including log level and tag if any
 	    TAG=
 	    createchain $CHAIN no
 
-	    append_action_file $CHAIN
+	    process_action_file $CHAIN
 	    ;;
     esac
 }
@@ -6056,7 +6053,7 @@ complete_standard_chain() # $1 = chain, $2 = source zone, $3 = destination zone
     local loglevel=
     local policychain=
 
-    append_file $1
+    run_user_exit $1
 
     eval policychain=\$${2}2${3}_policychain
 
@@ -7449,7 +7446,7 @@ apply_policy_rules() {
 	for zone1 in $FW $ZONES; do
 	    chain=${zone}2${zone1}
 	    if havechain $chain; then
-		append_file $chain
+		run_user_exit $chain
 		default_policy $zone $zone1
 	    fi
 	done

@@ -7432,6 +7432,7 @@ apply_policy_rules() {
 		#
 		case $chain in
 		    all2*|*2all)
+			run_user_exit $chain
 			policy_rules $chain $policy $loglevel
 			;;
 		esac

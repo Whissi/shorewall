@@ -1150,6 +1150,8 @@ __EOF__
 	    else
 		save_command "DEFAULT_ROUTE=\"nexthop via $gateway dev $interface weight $1\""
 	    fi
+
+	    first=
 	else
 	    if [ "x$gateway" = xdetect ] ; then
 		save_command "DEFAULT_ROUTE=\"\$DEFAULT_ROUTE nexthop via \$gateway dev $interface weight $1\""

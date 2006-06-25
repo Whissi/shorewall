@@ -1,4 +1,4 @@
-Shorewall 3.2.0 RC 5
+Shorewall 3.2.0 RC 6
 
 Note to users upgrading from Shorewall 2.x or 3.0
 
@@ -31,47 +31,12 @@ Note to users upgrading from Shorewall 2.x or 3.0
    Please see the "Migration Considerations" below for additional upgrade
    information.
 
-Problems Corrected in 3.2.0 RC 5
+Problems Corrected in 3.2.0 RC 6
 
-1)  DOA /sbin/shorewall:
+1)  When 'balance' is specified in more than one provider, only the
+    last such provider appears in the default route.
 
-    wifitipper:/etc/test # shorewall restart
-    Compiling...
-	ERROR: LITEDIR not defined in /usr/share/shorewall/configpath
-    wifitipper:
-
-2)  The compiler was running iptables needlessly when DELAYBLACKLISTLOAD=Yes.
-    This could also result in the blacklist not being loaded in some cases.
-
-3)  Some versions of 'ash' generate an error message when a log level is
-    included in a rule.
-
-4)  Shorewall would use the incorrect shell for compilation in the
-    following case:
-
-    a) /etc/shorewall/shorewall.conf specified
-    SHOREWALL_SHELL=/bin/shell1.
-
-    b) /foo/bar/shorewall.conf specified SHOREWALL_SHELL=/bin/shell2.
-
-    c) The command "shorewall try /foo/bar" was executed. Compilation
-    of the configuration in /foo/bar would be done using /bin/shell2
-    rather than /bin/shell1.
-
-    NOTE: The 'try' command is deprecated and will be removed in
-    Shorewall version 3.4. "shorewall save && shorewall restart
-    <directory>" is a faster way to accomplish the same thing.
-
-5)  Previously, if A was an action and /etc/shorewall/A existed, then
-    /etc/shorewall/A was copied into the compiled program. That file is
-    now processed in the context of the compiler. Similarly, if C is a
-    chain and /etc/shorewall/C exists then the file is processed by the
-    compiler rather than being copied into the compiled script.
-
-6)  Extension scripts for policy chains (chains with the word 'all' in
-    their name) were not being run previously.
-
-Other changes in 3.2.0 RC 5
+Other changes in 3.2.0 RC 6
 
 None.
 

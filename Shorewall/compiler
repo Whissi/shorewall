@@ -6430,6 +6430,7 @@ __EOF__
 	    esac
 
 	    if [ "$addrlist" = '$addrlist' ]; then
+		addresses='$(combine_list $addresses)'
 		indent >&3 << __EOF__
 
 addrlist=
@@ -8239,6 +8240,25 @@ run_and_save_command() {
 
 ensure_and_save_command() {
     eval \$@ || fatal_error "Command \"\$@\" failed"
+}
+
+__EOF__
+    #
+    # The following function(s) can be removed when we require version 30192 (below)
+    #
+    cat >&3 << __EOF__
+#
+# Undo the effect of 'separate_list()'
+#
+combine_list()
+{ 
+    local f o=
+
+    for f in \$* ; do 
+        o="\${o:+\$o,}\$f"
+    done
+ 
+    echo \$o
 }
 
 #

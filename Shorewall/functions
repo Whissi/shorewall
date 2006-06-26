@@ -26,7 +26,7 @@
 #	along with this program; if not, write to the Free Software
 #	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
 
-LIBVERSION=30191
+LIBVERSION=30192
 
 [ -n "${VARDIR:=/var/lib/shorewall}" ]
 [ -n "${SHAREDIR:=/usr/share/shorewall}" ]
@@ -363,6 +363,20 @@ separate_list() {
     done
 
     echo "$newlist"
+}
+
+#
+# Undo the effect of 'separate_list()'
+#
+combine_list()
+{ 
+    local f o=
+
+    for f in $* ; do 
+        o="${o:+$o,}$f"
+    done
+ 
+    echo $o
 }
 
 #

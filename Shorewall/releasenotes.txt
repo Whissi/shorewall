@@ -38,7 +38,17 @@ Problems Corrected in 3.2.0 RC 6
 
 Other changes in 3.2.0 RC 6
 
-None.
+1)  This change will be in 3.0.9 so I'm slipping it into this RC for 
+    compatibility. 
+
+    It is now possible to use the special value 'detect' in the ADDRESS
+    column of /etc/shorewall/masq. This allows you to specify SNAT (as 
+    opposed to MASQUERADE) without having to know the ip address of the
+    external interface. Shorewall must be restarted each time that the
+    external address (the address of the interface named in the 
+    INTERFACE column) changes. Note that if you have done a 'shorewall
+    save' then it is sufficient to "shorewall restore" since the
+    restore script will re-detect the interface's IP address(es).    
 
 Migration Considerations:
 

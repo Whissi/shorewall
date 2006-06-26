@@ -78,6 +78,12 @@
 #
 #				Example: 206.124.146.177-206.124.146.180
 #
+#				You may also use the special value "detect"
+#				which causes Shorewall to determine the 
+#				IP addresses configured on the interface named
+#				in the INTERFACES column and substitute them
+#				in this column.
+#
 #				Finally, you may also specify a comma-separated
 #				list of ranges and/or addresses in this column.
 #
@@ -101,7 +107,8 @@
 #
 #			SAME:[nodst:]<address-range>[,<address-range>...]
 #
-#				The <address-ranges> may be single addresses.
+#				The <address-ranges> may be single addresses
+#				or "detect" as described above.
 #
 #				SAME works like SNAT with the exception that
 #				the same local IP address is assigned to each

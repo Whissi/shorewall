@@ -1145,18 +1145,18 @@ __EOF__
 	balance=yes
 
 	if [ -n "$first" ]; then
-	    if [ "x$gateway" = xdetect ] ; then
-		save_command "DEFAULT_ROUTE=\"nexthop via \$gateway dev $interface weight $1\""
-	    else
+	    if [ -n "$gateway" ] ; then
 		save_command "DEFAULT_ROUTE=\"nexthop via $gateway dev $interface weight $1\""
+	    else
+		save_command "DEFAULT_ROUTE=\"nexthop dev $interface weight $1\""
 	    fi
 
 	    first=
 	else
-	    if [ "x$gateway" = xdetect ] ; then
-		save_command "DEFAULT_ROUTE=\"\$DEFAULT_ROUTE nexthop via \$gateway dev $interface weight $1\""
-	    else
+	    if [ -n "$gateway" ] ; then
 		save_command "DEFAULT_ROUTE=\"\$DEFAULT_ROUTE nexthop via $gateway dev $interface weight $1\""
+	    else
+		save_command "DEFAULT_ROUTE=\"\$DEFAULT_ROUTE nexthop dev $interface weight $1\""
 	    fi
 	fi
     }
@@ -1203,6 +1203,7 @@ __EOF__
 	fi
 
 	if [ "x$gateway" = xdetect ] ; then
+	    gateway='$gateway'
 	    indent >&3 << __EOF__
 gateway=\$(detect_gateway $interface)
 
@@ -1214,11 +1215,14 @@ else
 fi
 
 __EOF__
-	else
+	elif [ "x$gateway" != "x-" -a -n "$gateway" ]; then
 	    indent >&3 << __EOF__
 run_ip route replace $gateway src \$(find_first_interface_address $interface) dev $interface table $number
 run_ip route add default via $gateway dev $interface table $number
 __EOF__
+	else
+	    gateway=
+	    save_command "run_ip route add default dev $interface table $number"
 	fi
 
 	if [ x${mark} != x- ]; then

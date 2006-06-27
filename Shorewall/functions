@@ -1114,7 +1114,7 @@ find_first_interface_address() # $1 = interface
     # Strip off the trailing VLSM mask (or the peer IP in case of a P-t-P link)
     # along with everything else on the line
     #
-    echo $addr | sed 's/inet //;s/\/.*//;s/ peer.*//'
+    echo $addr | sed 's/\s*inet //;s/\/.*//;s/ peer.*//'
 }
 
 find_first_interface_address_if_any() # $1 = interface
@@ -1127,7 +1127,7 @@ find_first_interface_address_if_any() # $1 = interface
     # Strip off the trailing VLSM mask (or the peer IP in case of a P-t-P link)
     # along with everything else on the line
     #
-    [ -n "$addr" ] && echo $addr | sed 's/inet //;s/\/.*//;s/ peer.*//' || echo 0.0.0.0
+    [ -n "$addr" ] && echo $addr | sed 's/\s*inet //;s/\/.*//;s/ peer.*//' || echo 0.0.0.0
 }
 
 #

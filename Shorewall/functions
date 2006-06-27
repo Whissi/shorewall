@@ -1136,7 +1136,7 @@ find_first_interface_address_if_any() # $1 = interface
 #
 find_interface_addresses() # $1 = interface
 {
-    ip -f inet addr show $1 | grep inet\  | sed 's/inet //;s/\/.*//;s/ peer.*//'
+    ip -f inet addr show $1 | grep inet\  | sed 's/\s*inet //;s/\/.*//;s/ peer.*//'
 }
 
 #

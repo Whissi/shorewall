@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2006-01-19</pubdate>
+    <pubdate>2006-06-27</pubdate>
 
     <copyright>
       <year>2004</year>
@@ -195,17 +195,37 @@
 
     <para><filename>/etc/shorewall/zones</filename>:</para>
 
-    <programlisting>#ZONE           DISPLAY              COMMENT
-net             Internet             The big bad net
-loc             Local                Local LAN
-<emphasis role="bold">rem             Remote               Remote LAN</emphasis></programlisting>
+    <programlisting>#ZONE           TYPE
+fw              firewall
+net             ipv4
+loc             ipv4
+<emphasis role="bold">rem             ipv4</emphasis></programlisting>
 
     <para><filename>/etc/shorewall/interfaces</filename>:</para>
 
     <programlisting>#ZONE           INTERFACE          BROADCAST          OPTION
 net             eth0               detect             norft1918,routefilter
 loc             eth1               detect
-<emphasis role="bold">rem             tun0               192.168.10.0/24</emphasis></programlisting>
+<emphasis role="bold">rem             ppp0               192.168.10.0/24</emphasis></programlisting>
+  </section>
+
+  <section>
+    <title>Allowing Traffic</title>
+
+    <para>Normally, you will just allow all traffic between your remove
+    client(s) and the local zone. You can do that with a couple of
+    policies:</para>
+
+    <programlisting>#SOURCE       DESTINATION         POLICY         LEVEL          BURST/LIMIT
+rem           loc                 ACCEPT
+loc           rem                 ACCEPT</programlisting>
+
+    <para>Similar policies using $FW rather than 'loc' can permit traffic from
+    the remote clients to/from the firewall.</para>
+  </section>
+
+  <section>
+    <title>Different Firewall Policies for Different Remote Systems</title>
 
     <para>The /etc/shorewall/hosts file comes into play when:</para>
 

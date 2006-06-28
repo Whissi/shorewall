@@ -305,7 +305,7 @@ echo "Help command executor installed in ${PREFIX}/usr/share/shorewall/help"
 #
 # Install the policy file
 #
-run_install $OWNERSHIP -m 0600 policy ${PREFIX}/usr/share/shorewall/configfiles/policy
+run_install $OWNERSHIP -m 0644 policy ${PREFIX}/usr/share/shorewall/configfiles/policy
 
 if [ ! -f ${PREFIX}/etc/shorewall/policy ]; then
     run_install $OWNERSHIP -m 0600 policy ${PREFIX}/etc/shorewall/policy
@@ -314,7 +314,7 @@ fi
 #
 # Install the interfaces file
 #
-run_install $OWNERSHIP -m 0600 interfaces ${PREFIX}/usr/share/shorewall/configfiles/interfaces
+run_install $OWNERSHIP -m 0644 interfaces ${PREFIX}/usr/share/shorewall/configfiles/interfaces
 
 if [ ! -f ${PREFIX}/etc/shorewall/interfaces ]; then
     run_install $OWNERSHIP -m 0600 interfaces ${PREFIX}/etc/shorewall/interfaces
@@ -323,7 +323,7 @@ fi
 #
 # Install the ipsec file
 #
-run_install $OWNERSHIP -m 0600 ipsec ${PREFIX}/usr/share/shorewall/configfiles/ipsec
+run_install $OWNERSHIP -m 0644 ipsec ${PREFIX}/usr/share/shorewall/configfiles/ipsec
 
 if [ ! -f ${PREFIX}/etc/shorewall/ipsec ]; then
     run_install $OWNERSHIP -m 0600 ipsec ${PREFIX}/etc/shorewall/ipsec
@@ -372,7 +372,7 @@ fi
 run_install $OWNERSHIP -m 0644 params ${PREFIX}/usr/share/shorewall/configfiles/params
 
 if [ ! -f ${PREFIX}/etc/shorewall/params ]; then
-    run_install $OWNERSHIP -m 0600 params ${PREFIX}/etc/shorewall/params
+    run_install $OWNERSHIP -m 0644 params ${PREFIX}/etc/shorewall/params
     echo "Parameter file installed as ${PREFIX}/etc/shorewall/params"
 fi
 #
@@ -524,7 +524,7 @@ echo "Default config path file installed as ${PREFIX}/usr/share/shorewall/config
 #
 # Install the init file
 #
-run_install $OWNERSHIP -m 0600 init ${PREFIX}/usr/share/shorewall/configfiles/init
+run_install $OWNERSHIP -m 0644 init ${PREFIX}/usr/share/shorewall/configfiles/init
 
 if [ ! -f ${PREFIX}/etc/shorewall/init ]; then
     run_install $OWNERSHIP -m 0600 init ${PREFIX}/etc/shorewall/init
@@ -533,7 +533,7 @@ fi
 #
 # Install the initdone file
 #
-run_install $OWNERSHIP -m 0600 initdone ${PREFIX}/usr/share/shorewall/configfiles/initdone
+run_install $OWNERSHIP -m 0644 initdone ${PREFIX}/usr/share/shorewall/configfiles/initdone
 
 if [ ! -f ${PREFIX}/etc/shorewall/initdone ]; then
     run_install $OWNERSHIP -m 0600 initdone ${PREFIX}/etc/shorewall/initdone
@@ -542,7 +542,7 @@ fi
 #
 # Install the start file
 #
-run_install $OWNERSHIP -m 0600 start ${PREFIX}/usr/share/shorewall/configfiles/start
+run_install $OWNERSHIP -m 0644 start ${PREFIX}/usr/share/shorewall/configfiles/start
 
 if [ ! -f ${PREFIX}/etc/shorewall/start ]; then
     run_install $OWNERSHIP -m 0600 start ${PREFIX}/etc/shorewall/start
@@ -560,7 +560,7 @@ fi
 #
 # Install the stopped file
 #
-run_install $OWNERSHIP -m 0600 stopped ${PREFIX}/usr/share/shorewall/configfiles/stopped
+run_install $OWNERSHIP -m 0644 stopped ${PREFIX}/usr/share/shorewall/configfiles/stopped
 
 if [ ! -f ${PREFIX}/etc/shorewall/stopped ]; then
     run_install $OWNERSHIP -m 0600 stopped ${PREFIX}/etc/shorewall/stopped
@@ -569,7 +569,7 @@ fi
 #
 # Install the ECN file
 #
-run_install $OWNERSHIP -m 0600 ecn ${PREFIX}/usr/share/shorewall/configfiles/ecn
+run_install $OWNERSHIP -m 0644 ecn ${PREFIX}/usr/share/shorewall/configfiles/ecn
 
 if [ ! -f ${PREFIX}/etc/shorewall/ecn ]; then
     run_install $OWNERSHIP -m 0600 ecn ${PREFIX}/etc/shorewall/ecn
@@ -578,7 +578,7 @@ fi
 #
 # Install the Accounting file
 #
-run_install $OWNERSHIP -m 0600 accounting ${PREFIX}/usr/share/shorewall/configfiles/accounting
+run_install $OWNERSHIP -m 0644 accounting ${PREFIX}/usr/share/shorewall/configfiles/accounting
 
 if [ ! -f ${PREFIX}/etc/shorewall/accounting ]; then
     run_install $OWNERSHIP -m 0600 accounting ${PREFIX}/etc/shorewall/accounting
@@ -587,7 +587,7 @@ fi
 #
 # Install the Continue file
 #
-run_install $OWNERSHIP -m 0600 continue ${PREFIX}/usr/share/shorewall/configfiles/continue
+run_install $OWNERSHIP -m 0644 continue ${PREFIX}/usr/share/shorewall/configfiles/continue
 
 if [ ! -f ${PREFIX}/etc/shorewall/continue ]; then
     run_install $OWNERSHIP -m 0600 continue ${PREFIX}/etc/shorewall/continue
@@ -596,7 +596,7 @@ fi
 #
 # Install the Started file
 #
-run_install $OWNERSHIP -m 0600 started ${PREFIX}/usr/share/shorewall/configfiles/started
+run_install $OWNERSHIP -m 0644 started ${PREFIX}/usr/share/shorewall/configfiles/started
 
 if [ ! -f ${PREFIX}/etc/shorewall/started ]; then
     run_install $OWNERSHIP -m 0600 started ${PREFIX}/etc/shorewall/started
@@ -621,7 +621,7 @@ fi
 #
 # Install the  Makefile
 #
-run_install $OWNERSHIP -m 0600 Makefile ${PREFIX}/usr/share/shorewall/configfiles/Makefile
+run_install $OWNERSHIP -m 0644 Makefile ${PREFIX}/usr/share/shorewall/configfiles/Makefile
 run_install $OWNERSHIP -m 0600 Makefile ${PREFIX}/etc/shorewall/Makefile
 echo "Makefile installed as ${PREFIX}/etc/shorewall/Makefile"
 

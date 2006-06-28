@@ -76,7 +76,7 @@ fi
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/rules
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/nat
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/netmap
-%attr(0600,root,root) %config(noreplace) /etc/shorewall/params
+%attr(0644,root,root) %config(noreplace) /etc/shorewall/params
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/proxyarp
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/routestopped
 %attr(0600,root,root) %config(noreplace) /etc/shorewall/maclist

@@ -8425,19 +8425,19 @@ __EOF__
 	setup_masq $masq
     fi
 
-    tos=$(find_file tos)
-    if [ -f $tos -a -n "$MANGLE_ENABLED" ]; then
-	save_progress_message "Setting up TOS..."
-	process_tos $tos
-    fi
-
-    ecn=$(find_file ecn)
-    if [ -f $ecn -a -n "$MANGLE_ENABLED" ]; then
-	save_progress_message "Setting up ECN..."
-	setup_ecn $ecn
-    fi
-
     if [ -n "$MANGLE_ENABLED" ]; then
+	tos=$(find_file tos)
+	if [ -f $tos ]; then
+	    save_progress_message "Setting up TOS..."
+	    process_tos $tos
+	fi
+
+	ecn=$(find_file ecn)
+	if [ -f $ecn ]; then
+	    save_progress_message "Setting up ECN..."
+	    setup_ecn $ecn
+	fi
+
 	save_progress_message "Setting up TC Rules..."
 	setup_tc
     fi
@@ -8536,7 +8536,7 @@ __EOF__
 	INDENT=
 	cat $(find_file prog.header) $OUTPUT $(find_file prog.footer) > $outfile
 	chmod 700 $outfile
-	progress_message3 "Shorewall configuration compiled to $outfile"
+	progress_message3 "Shorewall configuration compiled to $(resolve_file $outfile)"
 	rm -f $OUTPUT
     fi
 

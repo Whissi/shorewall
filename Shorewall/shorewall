@@ -1308,7 +1308,7 @@ reload_command()
     [ -n "$LITEDIR" ] || { echo "   ERROR: LITEDIR not defined in ${SHAREDIR}/configpath" >&2; exit 2; }
 
     if shorewall $debugging $verbose compile -e $1 $1/firewall && \
-	echo "Copying ${1}/firewall to ${2}:${LITEDIR}..." && \
+	echo "Copying $(resolve_file ${1}/firewall) to ${2}:${LITEDIR}..." && \
 	scp $1/firewall root@${2}:${LITEDIR}
     then
 	echo "Copy complete"

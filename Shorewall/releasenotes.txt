@@ -185,22 +185,23 @@ New Features:
 
     The value specified in the 3.2 shorewall.conf is 1. So you can make
     Shorewall as verbose as previously using a single -v and you can make it
-    silent by using a single -q.
+    almost silent by using a single -q.
 
-    If the default is set at 2, you can still make a command silent by using
-    two "q"s (e.g., shorewall -qq restart).
+    If VERBOSITY is set at 2, you can still make a command nearly
+    silent by using two "q"s (e.g., shorewall -qq restart).
 
     In summary, each "q" subtracts one from VERBOSITY while each "v" adds one
     to VERBOSITY.
 
     The "shorewall show log", "shorewall logwatch" and "shorewall dump"
-    commands require VERBOSITY to be greater than or equal to 3 to display MAC
-    addresses.This is consistent with the previous implementation which
-    required a single -v to enable MAC display but means that if you set
-    VERBOSITY=0 in shorewall.conf, then you will need to include -vvv in
-    commands that display log records in order to have MACs displayed.
+    commands require VERBOSITY to be greater than or equal to 3 to
+    display MAC addresses.This is consistent with the previous
+    implementation which required a single -v to enable MAC display but
+    means that if you set VERBOSITY=0 in shorewall.conf, then you will
+    need to include -vvv in commands that display log records in order
+    to have MACs displayed.
 
-    To make the display of MAC addresses let cumbersome, a '-m' option has
+    To make the display of MAC addresses less cumbersome, a '-m' option has
     been added to the "show" and logwatch commands:
 
 	shorewall show -m log
@@ -247,7 +248,10 @@ New Features:
        on another system under Shorewall Lite, there are certain limitations.
 
        1) A compatible version of Shorewall Lite must be running on the remote
-          system.
+          system. Going forward, the goal is that any minor version of
+          the current major version will be compatible. So if the
+          program is compiled using Shorewall 3.2.x, any 3.2.y version
+          or 3.p.q version (where p > 2) of Shorewall Lite will be compatible.
        2) The 'detectnets' interface option is not allowed.
        3) DYNAMIC_ZONES=Yes is not allowed.
        4) You must supply the file /etc/shorewall/capabilities to provide
@@ -339,42 +343,7 @@ New Features:
 4)  In macro files, you can now use the reserved words SOURCE and DEST
     in the columns of the same names. When Shorewall expands the
     macro, it will substitute the SOURCE from the macro invocation for
-    SOURCE and the DEST from the invocation for DEST. This allows you2)  "load" and "reload" commands have been added. These commands allow
-    a non-root user with ssh access to a remote system to compile a
-    firewall script on the local system and to install that script on
-    the remote system.
-
-    Syntax is:
-
-	   shorewall [re]load [ <directory> ] <system>
-
-    If <directory> is omitted, the current working directory is
-    assumed.
-
-    The command is equivalent to:
-
-    /sbin/shorewall compile -e . firewall &&\
-    scp firewall root@<system>:/var/lib/shorewall-lite/ &&\
-    ssh root@<system> '/sbin/shorewall-lite [re]start' # Note 1
-
-    In other words, the configuration in the specified (or defaulted)
-    directory is compiled to a file called firewall in that
-    directory. If compilation succeeds, then 'firewall' is copied to the
-    (usually remote) <system> using scp. If the copy succeeds,
-    Shorewall Lite on <system> is started or restarted via ssh (
-    load causes Shorewall Lite to be started and 'reload' causes
-    Shorewall Lite to be re-started)
-
-    Note 1: In Shorewall Lite 3.2.0 RC4, the 'firewall' script has moved
-    from /usr/share/shorewall-lite/ to /var/lib/shorewall-lite in
-    packages from shorewall.net. The package maintainers for the
-    various distributions are free to choose the directory where the
-    script will be stored under their distribution by altering the
-    value of LITEDIR in /usr/share/shorewall/configpath. You can run the
-    "shorewall show config" command to see how your distribution
-    defines LITEDIR.
-
-
+    SOURCE and the DEST from the invocation for DEST. This allows you
     to write macros that act in both directions (from source to destination
     and from destination to source).
 
@@ -614,7 +583,7 @@ New Features:
 
     The command is equivalent to:
 
-    /sbin/shorewall compile -e . firewall &&\
+    /sbin/shorewall compile -e <directory> firewall &&\
     scp firewall root@<system>:/var/lib/shorewall-lite/ &&\
     ssh root@<system> '/sbin/shorewall-lite [re]start' # Note 1
 

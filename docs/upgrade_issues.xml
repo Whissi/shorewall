@@ -152,7 +152,10 @@
         <para>This clumsiness has been eliminated in Shorewall 3.2. In
         Shorewall 3.2, extension scripts are copied in-line into the compiled
         program and are executed in-line during <command>start</command>,
-        <command>restart</command> and <command>restore</command>.</para>
+        <command>restart</command> and <command>restore</command>. This
+        applies to all extension scripts except those associated with a chain
+        or action -- those extension scripts continue to be processed at
+        compile time.</para>
 
         <para>This new approach has two implications for existing
         scripts.</para>
@@ -193,7 +196,7 @@
       </listitem>
 
       <listitem>
-        <para> Beginning with this release, the way in which packet marking in
+        <para>Beginning with this release, the way in which packet marking in
         the PREROUTING chain interracts with the 'track' option in
         /etc/shorewall/providers has changed in two ways:</para>
 
@@ -214,7 +217,7 @@
       </listitem>
 
       <listitem>
-        <para> Kernel version 2.6.16 introduces 'xtables', a new common packet
+        <para>Kernel version 2.6.16 introduces 'xtables', a new common packet
         filtering and connection tracking facility that supports both IPv4 and
         IPv6. Because a different set of kernel modules must be loaded for
         xtables, Shorewall now includes two 'modules' files:</para>

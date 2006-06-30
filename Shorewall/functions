@@ -270,7 +270,7 @@ resolve_file() # $1 = file name
 	    ;;
 	../*)
 	    cd ..
-	    echo ${PWD}${1#..}
+	    resolve_file ${1#../}
 	    cd $pwd
 	    ;;
 	*)
@@ -320,12 +320,12 @@ separate_list() {
 	*\[*\]*)
 	    #
 	    # Where we need to embed comma-separated lists within lists, we enclose them
-	    # within square brackets (extra 'evals' are to keep my text editor (kate) from getting lost).
+	    # within square brackets.
 	    #
-	    eval 'firstpart=${list%%\[*}'
-	    eval 'lastpart=${list#*\[}'
-	    eval 'enclosure=${lastpart%%\]*}'
-	    eval 'lastpart=${lastpart#*\]}'
+	    firstpart=${list%%\[*}
+	    lastpart=${list#*\[}
+	    enclosure=${lastpart%%\]*}
+	    lastpart=${lastpart#*\]}
 	    case $lastpart in
 		\,*)
 		    case $firstpart in

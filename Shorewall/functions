@@ -452,8 +452,8 @@ load_kernel_modules()
 }
 
 #
-# Call this function to assert MUTEX with Shorewall. If you invoke the
-# /sbin/shorewall program while holding MUTEX, you should pass "nolock" as
+# Call this function to assert mutual exclusion with Shorewall. If you invoke the
+# /sbin/shorewall program while holding mutual exclusion, you should pass "nolock" as
 # the first argument. Example "shorewall nolock refresh"
 #
 # This function uses the lockfile utility from procmail if it exists.
@@ -490,7 +490,7 @@ mutex_on()
 }
 
 #
-# Call this function to release MUTEX
+# Call this function to release mutual exclusion
 #
 mutex_off()
 {

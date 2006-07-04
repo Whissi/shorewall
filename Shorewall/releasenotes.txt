@@ -1,4 +1,4 @@
-Shorewall 3.2.0 RC 6
+Shorewall 3.2.0
 
 Note to users upgrading from Shorewall 2.x or 3.0
 
@@ -31,27 +31,14 @@ Note to users upgrading from Shorewall 2.x or 3.0
    Please see the "Migration Considerations" below for additional upgrade
    information.
 
-Problems Corrected in 3.2.0 RC 6
+Problems Corrected in 3.2.0 Final
 
-1)  When 'balance' is specified in more than one provider, only the
-    last such provider appears in the default route.
+1)  Logging rules generated at run-time (such as smurf rules) contained
+    extraneous double quotes around the log prefix.
 
-2)  The permission settings of /etc/shorewall/params and of several
-    files in /usr/share/shorewall/configfiles were incorrect.
+Other changes in 3.2.0 Final
 
-Other changes in 3.2.0 RC 6
-
-1)  This change will be in 3.0.9 so I'm slipping it into this RC for 
-    compatibility. 
-
-    It is now possible to use the special value 'detect' in the ADDRESS
-    column of /etc/shorewall/masq. This allows you to specify SNAT (as 
-    opposed to MASQUERADE) without having to know the ip address of the
-    external interface. Shorewall must be restarted each time that the
-    external address (the address of the interface named in the 
-    INTERFACE column) changes. Note that if you have done a 'shorewall
-    save' then it is sufficient to "shorewall restore" since the
-    restore script will re-detect the interface's IP address(es).    
+None.
 
 Migration Considerations:
 

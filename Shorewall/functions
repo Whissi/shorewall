@@ -1478,25 +1478,16 @@ log_rule_limit() # $1 = log level, $2 = chain, $3 = display Chain $4 = dispositi
 	error_message "WARNING: Log Prefix shortened to \"$prefix\""
     fi
 
-    if [ "$COMMAND" = compile ]; then
-	case $level in
-	    ULOG)
-		run_iptables $command $chain $@ $limit -j ULOG $LOGPARMS --ulog-prefix \"$prefix\"
-		;;
-	    *)
-		run_iptables $command $chain $@ $limit -j LOG $LOGPARMS --log-level $level --log-prefix \"$prefix\"
-		;;
-	esac
-    else
-	case $level in
-	    ULOG)
-		run_iptables $command $chain $@ $limit -j ULOG $LOGPARMS --ulog-prefix "$prefix"
-		;;
-	    *)
-		run_iptables $command $chain $@ $limit -j LOG $LOGPARMS --log-level $level --log-prefix "$prefix"
-		;;
-	esac
-    fi
+    [ "$COMMAND" = compile ] && prefix="\"$prefix\""
+
+    case $level in
+	ULOG)
+	    run_iptables $command $chain $@ $limit -j ULOG $LOGPARMS --ulog-prefix "$prefix"
+	    ;;
+	*)
+	    run_iptables $command $chain $@ $limit -j LOG $LOGPARMS --log-level $level --log-prefix "$prefix"
+	    ;;
+    esac
 
     if [ $? -ne 0 ] ; then
 	[ -z "$STOPPING" ] && { stop_firewall; exit 2; }

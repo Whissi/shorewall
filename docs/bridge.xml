@@ -15,7 +15,7 @@
       </author>
     </authorgroup>
 
-    <pubdate>2006-03-20</pubdate>
+    <pubdate>2006-07-06</pubdate>
 
     <copyright>
       <year>2004</year>
@@ -168,6 +168,16 @@
       </listitem>
     </itemizedlist>
 
+    <warning>
+      <para>Inserting a bridge/firewall between a router and a set of local
+      hosts only works if those local hosts form a single IP network. In the
+      above diagram, all of the hosts in the loc zone are in the
+      192.168.1.0/24 network. If the router is routing between several local
+      networks through the same physical interface (there are multiple IP
+      networks sharing the same LAN), then inserting a bridge/firewall between
+      the router and the local LAN won't work.</para>
+    </warning>
+
     <para>There are other possibilities here -- there could be a hub or switch
     between the router and the Bridge/Firewall and there could be other
     systems connected to that switch. All of the systems on the local side of
@@ -239,8 +249,8 @@ BOOTPROTO=dhcp
 ONBOOT=yes</programlisting>
     </blockquote>
 
-    <para>On both the <trademark>SUSE</trademark> and Mandriva systems,
-    a separate script is required to configure the bridge itself.</para>
+    <para>On both the <trademark>SUSE</trademark> and Mandriva systems, a
+    separate script is required to configure the bridge itself.</para>
 
     <para>Here are scripts that I used on a <trademark>SUSE</trademark> 9.1
     system.</para>

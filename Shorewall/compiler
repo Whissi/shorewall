@@ -43,7 +43,8 @@
 # Fatal error -- stops the compiler after issuing the error message
 #
 fatal_error() # $* = Error Message
-{    echo "   ERROR: $@" >&2
+{   
+    echo "   ERROR: $@" >&2
     [ -n "$TMP_DIR" ] && rm -rf $TMP_DIR
     [ -n "$OUTPUT" ] && rm -f $OUTPUT
     kill $$

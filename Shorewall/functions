@@ -1451,7 +1451,7 @@ log_rule_limit() # $1 = log level, $2 = chain, $3 = display Chain $4 = dispositi
     local prefix
     local base=$(chain_base $displayChain)
 
-    limit="${5:-$LOGLIMIT}"
+    limit="${5:-$LOGLIMIT}" # Do this here rather than in the declaration above to appease /bin/ash.
 
     shift 7
 

@@ -213,7 +213,7 @@ flushmangle() # $1 = name of chain
 
 #
 # This function assumes that the TMP_DIR variable is set and that
-# its value named an existing directory.
+# its value names an existing directory.
 #
 determine_zones()
 {
@@ -462,28 +462,24 @@ iprange_echo()
 #
 get_set_flags() # $1 = set name and optional [levels], $2 = src or dst
 {
-    #
-    # Note: There is a lot of unnecessary evaluation in this function just so my text
-    #       editor (kate) doesn't get lost trying to follow the shell syntax for highlighting.
-    #
     local temp setname=$1 options=$2
 
     [ -n "$IPSET_MATCH" ] || fatal_error "Your kernel and/or iptables does not include ipset match: $1"
 
     case $1 in
 	*\[[1-6]\])
-	    eval temp='${1#*\[}'
-	    eval temp='${temp%\]}'
-	    eval setname='${1%\[*}'
+	    temp=${1#*\[}
+	    temp=${temp%\]}
+	    setname=${1%\[*}
 	    while [ $temp -gt 1 ]; do
 	       options="$options,$2"
 	       temp=$(($temp - 1))
 	    done
 	    ;;
 	*\[*\])
-	    eval options='${1#*\[}'
-	    eval options='${options%\]}'
-	    eval setname='${1%\[*}'
+	    options=${1#*\[}
+	    options=${options%\]}
+	    setname=${1%\[*}
 	    ;;
 	*)
 	    ;;

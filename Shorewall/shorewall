@@ -31,8 +31,6 @@
 #
 #	Commands are:
 #
-#          shorewall add <iface>[:<host>] zone     Adds a host or subnet to a zone
-#          shorewall delete <iface>[:<host>] zone  Deletes a host or subnet from a zone
 #          shorewall dump                          Dumps all Shorewall-related information
 #                                                  for problem analysis
 #	   shorewall start 			   Starts the firewall
@@ -1337,12 +1335,10 @@ usage() # $1 = exit status
 {
     echo "Usage: $(basename $0) [debug|trace] [nolock] [ -q ] [ -v ] [ -t ] <command>"
     echo "where <command> is one of:"
-    echo "   add <interface>[:<host-list>] ... <zone>"
     echo "   allow <address> ..."
     echo "   check [ -e ] [ <directory> ]"
     echo "   clear"
     echo "   compile [ -e ] [ <directory name> ] <path name>"
-    echo "   delete <interface>[:<host-list>] ... <zone>"
     echo "   drop <address> ..."
     echo "   dump [ -x ]"
     echo "   forget [ <file name> ]"
@@ -1654,10 +1650,6 @@ case "$COMMAND" in
     check)
 	shift
 	check_command $@
-	;;
-    add|delete)
-	[ $# -lt 3 ] && usage 1
-	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $@
 	;;
     show|list)
     	shift

@@ -284,6 +284,464 @@ get_config() {
 }
 
 #
+# Determine the value for a parameter that defaults to Yes
+#
+added_param_value_yes() # $1 = Parameter Name, $2 = Parameter value
+{
+    local val="$2"
+
+    if [ -z "$val" ]; then
+	echo "Yes"
+    else case $val in
+	[Yy][Ee][Ss])
+	    echo "Yes"
+	    ;;
+	[Nn][Oo])
+	    echo ""
+	    ;;
+	*)
+	    fatal_error "Invalid value ($val) for $1"
+	    ;;
+	esac
+    fi
+}
+
+#
+# Determine the value for a parameter that defaults to No
+#
+added_param_value_no() # $1 = Parameter Name, $2 = Parameter value
+{
+    local val="$2"
+
+    if [ -z "$val" ]; then
+	echo ""
+    else case $val in
+	[Yy][Ee][Ss])
+	    echo "Yes"
+	    ;;
+	[Nn][Oo])
+	    echo ""
+	    ;;
+	*)
+	    fatal_error "Invalid value ($val) for $1"
+	    ;;
+	esac
+    fi
+}
+#
+# Process the shell-style configuration files that set variables needed by the compiler
+# To allow the compiler to be rewritten in a language other than Bourne Shell, we need
+# to pass all of those setting to the compiler in environmental variables
+#
+do_initialize() {
+    #
+    # Generate a sequence of 'export' commands corresponding to the variables set in
+    # the user's params file.
+    #
+    export_params() {
+	f=$(find_file params)
+
+	if [ -f $f ]; then
+	    read_file $f 0 | cut -d'#' -f1 | grep -v '^[[:space:]]*$' | while read line; do
+		case $line in
+		    *=*)
+			echo export ${line%=*}
+			;;
+		esac
+	    done
+	fi
+    }
+
+    # Run all utility programs using the C locale
+    #
+    # Thanks to Vincent Planchenault for this tip #
+
+    export LC_ALL=C
+
+    # Make sure umask is sane
+    umask 077
+
+    #
+    # Establish termination function
+    #
+    TERMINATOR=fatal_error
+    #
+    # Clear all configuration variables
+    #
+    IPTABLES=
+    FW=
+    SUBSYSLOCK=
+    LOGRATE=
+    LOGBURST=
+    LOGPARMS=
+    LOGLIMIT=
+    ADD_IP_ALIASES=
+    ADD_SNAT_ALIASES=
+    TC_ENABLED=
+    BLACKLIST_DISPOSITION=
+    BLACKLIST_LOGLEVEL=
+    CLAMPMSS=
+    ROUTE_FILTER=
+    LOG_MARTIANS=
+    DETECT_DNAT_IPADDRS=
+    MUTEX_TIMEOUT=
+    FORWARDPING=
+    MACLIST_DISPOSITION=
+    MACLIST_LOG_LEVEL=
+    TCP_FLAGS_DISPOSITION=
+    TCP_FLAGS_LOG_LEVEL=
+    RFC1918_LOG_LEVEL=
+    MARK_IN_FORWARD_CHAIN=
+    LOGFORMAT=
+    LOGRULENUMBERS=
+    ADMINISABSENTMINDED=
+    BLACKLISTNEWONLY=
+    MODULE_SUFFIX=
+    SMURF_LOG_LEVEL=
+    DISABLE_IPV6=
+    BRIDGING=
+    PKTTYPE=
+    RETAIN_ALIASES=
+    DELAYBLACKLISTLOAD=
+    LOGTAGONLY=
+    LOGALLNEW=
+    RFC1918_STRICT=
+    MACLIST_TTL=
+    SAVE_IPSETS=
+    RESTOREFILE=
+    MAPOLDACTIONS=
+    IMPLICIT_CONTINUE=
+    HIGH_ROUTE_MARKS=
+    IPSECFILE=
+    CLEAR_TC=
+    FASTACCEPT=
+
+    run_user_exit params
+
+    config=$(find_file shorewall.conf)
+
+    if [ -f $config ]; then
+	if [ -r $config ]; then
+	    progress_message "Processing $config..."
+	    . $config
+	else
+	    fatal_error "Cannot read $config (Hint: Are you root?)"
+	fi
+    else
+	fatal_error "$config does not exist!"
+    fi
+
+    #
+    # Restore CONFIG_PATH if the shorewall.conf file cleared it
+    #
+    ensure_config_path
+    #
+    # Determine the capabilities of the installed iptables/netfilter
+    # We load the kernel modules here to accurately determine
+    # capabilities when module autoloading isn't enabled.
+    #
+    PKTTYPE=$(added_param_value_no PKTTYPE $PKTTYPE)
+
+    [ -n "${MODULE_SUFFIX:=o gz ko o.gz ko.gz}" ]
+
+    if [ -z "$EXPORT" -a "$(whoami)" = root ]; then
+
+	load_kernel_modules
+
+	if [ -z "$IPTABLES" ]; then
+	    IPTABLES=$(mywhich iptables 2> /dev/null)
+
+	    [ -z "$IPTABLES" ] && fatal_error "Can't find iptables executable"
+	else
+	    [ -e "$IPTABLES" ] || fatal_error "\$IPTABLES=$IPTABLES does not exist or is not executable"
+	fi
+	determine_capabilities
+
+    else
+	f=$(find_file capabilities)
+
+	[ -f $f ] && . $f || fatal_error "The -e flag requires a capabilities file"
+    fi
+
+    ADD_IP_ALIASES="$(added_param_value_yes ADD_IP_ALIASES $ADD_IP_ALIASES)"
+
+    if [ -n "${LOGRATE}${LOGBURST}" ]; then
+	LOGLIMIT="--match limit"
+	[ -n "$LOGRATE" ]  && LOGLIMIT="$LOGLIMIT --limit $LOGRATE"
+	[ -n "$LOGBURST" ] && LOGLIMIT="$LOGLIMIT --limit-burst $LOGBURST"
+    fi
+
+    if [ -n "$IP_FORWARDING" ]; then
+	case "$IP_FORWARDING" in
+	[Oo][Nn]|[Oo][Ff][Ff]|[Kk][Ee][Ee][Pp])
+	    ;;
+	*)
+	    fatal_error "Invalid value ($IP_FORWARDING) for IP_FORWARDING"
+	    ;;
+	esac
+    else
+	IP_FORWARDING=On
+    fi
+
+   [ -n "${BLACKLIST_DISPOSITION:=DROP}" ]
+
+    case "$CLAMPMSS" in
+	[0-9]*)
+	    ;;
+	*)
+	    CLAMPMSS=$(added_param_value_no CLAMPMSS $CLAMPMSS)
+	    ;;
+    esac
+
+    ADD_SNAT_ALIASES=$(added_param_value_no ADD_SNAT_ALIASES $ADD_SNAT_ALIASES)
+    ROUTE_FILTER=$(added_param_value_no ROUTE_FILTER $ROUTE_FILTER)
+    LOG_MARTIANS=$(added_param_value_no LOG_MARTIANS $LOG_MARTIANS)
+    DETECT_DNAT_IPADDRS=$(added_param_value_no DETECT_DNAT_IPADDRS $DETECT_DNAT_IPADDRS)
+
+    maclist_target=reject
+
+    if [ -n "$MACLIST_DISPOSITION" ] ; then
+	case $MACLIST_DISPOSITION in
+	    REJECT)
+		;;
+	    DROP)
+		maclist_target=DROP
+		;;
+	    ACCEPT)
+		maclist_target=RETURN
+		;;
+	    *)
+		fatal_error "Invalid value ($MACLIST_DISPOSITION) for MACLIST_DISPOSITION"
+		;;
+	esac
+    else
+	MACLIST_DISPOSITION=REJECT
+    fi
+
+    if [ -n "$TCP_FLAGS_DISPOSITION" ] ; then
+	case $TCP_FLAGS_DISPOSITION in
+	    REJECT|ACCEPT|DROP)
+		;;
+	    *)
+		fatal_error "Invalid value ($TCP_FLAGS_DISPOSITION) for TCP_FLAGS_DISPOSITION"
+		;;
+	esac
+    else
+	TCP_FLAGS_DISPOSITION=DROP
+    fi
+
+    [ -n "${RFC1918_LOG_LEVEL:=info}" ]
+
+    MARK_IN_FORWARD_CHAIN=$(added_param_value_no MARK_IN_FORWARD_CHAIN $MARK_IN_FORWARD_CHAIN)
+    [ -n "$MARK_IN_FORWARD_CHAIN" ] && MARKING_CHAIN=tcfor || MARKING_CHAIN=tcpre
+    CLEAR_TC=$(added_param_value_yes CLEAR_TC $CLEAR_TC)
+
+    if [ -n "$LOGFORMAT" ]; then
+	if [ -n "$(echo $LOGFORMAT | grep '%d')" ]; then
+	    LOGRULENUMBERS=Yes
+	    temp=$(printf "$LOGFORMAT" fooxx 1 barxx 2> /dev/null)
+	    if [ $? -ne 0 ]; then
+		fatal_error "Invalid LOGFORMAT string: \"$LOGFORMAT\""
+	    fi
+	else
+	    temp=$(printf "$LOGFORMAT" fooxx barxx 2> /dev/null)
+	    if [ $? -ne 0 ]; then
+		fatal_error "Invalid LOGFORMAT string: \"$LOGFORMAT\""
+	    fi
+	fi
+
+	[ ${#temp} -le 29 ] || fatal_error "LOGFORMAT string is longer than 29 characters: \"$LOGFORMAT\""
+    else
+	LOGFORMAT="Shorewall:%s:%s:"
+    fi
+    ADMINISABSENTMINDED=$(added_param_value_no ADMINISABSENTMINDED $ADMINISABSENTMINDED)
+    BLACKLISTNEWONLY=$(added_param_value_no BLACKLISTNEWONLY $BLACKLISTNEWONLY)
+    DISABLE_IPV6=$(added_param_value_no DISABLE_IPV6 $DISABLE_IPV6)
+    BRIDGING=$(added_param_value_no BRIDGING $BRIDGING)
+    STARTUP_ENABLED=$(added_param_value_yes STARTUP_ENABLED $STARTUP_ENABLED)
+    RETAIN_ALIASES=$(added_param_value_no RETAIN_ALIASES $RETAIN_ALIASES)
+    [ -n "${ADD_IP_ALIASES}${ADD_SNAT_ALIASES}" ] || RETAIN_ALIASES=
+    DELAYBLACKLISTLOAD=$(added_param_value_no DELAYBLACKLISTLOAD $DELAYBLACKLISTLOAD)
+    LOGTAGONLY=$(added_param_value_no LOGTAGONLY $LOGTAGONLY)
+    RFC1918_STRICT=$(added_param_value_no RFC1918_STRICT $RFC1918_STRICT)
+    SAVE_IPSETS=$(added_param_value_no SAVE_IPSETS $SAVE_IPSETS)
+    MAPOLDACTIONS=$(added_param_value_yes MAPOLDACTIONS $MAPOLDACTIONS)
+    FASTACCEPT=$(added_param_value_no FASTACCEPT $FASTACCEPT)
+    IMPLICIT_CONTINUE=$(added_param_value_no IMPLICIT_CONTINUE $IMPLICIT_CONTINUE)
+    HIGH_ROUTE_MARKS=$(added_param_value_no HIGH_ROUTE_MARKS $HIGH_ROUTE_MARKS)
+    [ -n "$XCONNMARK_MATCH" ] || XCONNMARK=
+    [ -n "$XMARK" ] || XCONNMARK=
+
+    [ -n "$HIGH_ROUTE_MARKS" -a -z "$XCONNMARK" ] && fatal_error "HIGH_ROUTE_MARKS=Yes requires extended CONNMARK target, extended CONNMARK match support and extended MARK support"
+
+    case ${IPSECFILE:=ipsec} in
+	ipsec|zones)
+	    ;;
+	*)
+	    fatal_error "Invalid value ($IPSECFILE) for IPSECFILE option"
+	    ;;
+    esac
+
+    case ${MACLIST_TABLE:=filter} in
+	filter)
+	    ;;
+	mangle)
+	    [ $MACLIST_DISPOSITION = reject ] && fatal_error "MACLIST_DISPOSITION=REJECT is not allowed with MACLIST_TABLE=mangle"
+	    ;;	*)
+	    fatal_error "Invalid value ($MACLIST_TABLE) for MACLIST_TABLE option"
+	    ;;
+    esac
+
+   TC_SCRIPT=
+
+   if [ -n "$TC_ENABLED" ] ; then
+	case "$TC_ENABLED" in
+	    [Yy][Ee][Ss])
+		TC_ENABLED=
+		TC_SCRIPT=$(find_file tcstart)
+		[ -f $TC_SCRIPT ] || fatal_error "Unable to find tcstart file"
+		;;
+	    [Ii][Nn][Tt][Ee][Rr][Nn][Aa][Ll])
+		TC_ENABLED=Yes
+		;;
+	    [Nn][Oo])
+		TC_ENABLED=
+		;;
+	esac
+    else
+	TC_ENABLED=Yes
+    fi
+
+    if [ -n "$TC_ENABLED" ];then
+	[ -n "$MANGLE_ENABLED" ] || fatal_error "Traffic Shaping requires mangle support in your kernel and iptables"
+    fi
+
+    [ "x${SHOREWALL_DIR}" = "x." ] && SHOREWALL_DIR="$PWD"
+
+    #
+    # Check out the user's shell
+    #
+    [ -n "${SHOREWALL_SHELL:=/bin/sh}" ]
+
+    temp=$(decodeaddr 192.168.1.1)
+    if [ $(encodeaddr $temp) != 192.168.1.1 ]; then
+	fatal_error "Shell $SHOREWALL_SHELL is broken and may not be used with Shorewall"
+    fi
+    #
+    # Export variables set in shorewall.conf
+    #
+    
+    # Logging
+
+    export LOGFORMAT
+    export LOGTAGONLY
+    export LOGRATE
+    export LOGBURST
+    export LOGALLNEW
+    export BLACKLIST_LOGLEVEL
+    export MACLIST_LOG_LEVEL
+    export TCP_FLAGS_LOG_LEVEL
+    export RFC1918_LOG_LEVEL
+    export SMURF_LOG_LEVEL
+    export LOG_MARTIANS
+    
+    # Files and directories
+
+    export IPTABLES
+    export SHOREWALL_SHELL
+    export SUBSYSLOCK
+    export MODULESDIR
+    export CONFIG_PATH
+    export RESTOREFILE
+    export IPSECFILE
+
+    # Firewall options
+
+    export FW
+    export IP_FORWARDING
+    export ADD_IP_ALIASES
+    export ADD_SNAT_ALIASES
+    export RETAIN_ALIASES
+    export TC_ENABLED
+    export CLEAR_TC
+    export MARK_IN_FORWARD_CHAIN
+    export CLAMPMSS
+    export ROUTE_FILTER
+    export DETECT_DNAT_IPADDRS
+    export MUTEX_TIMEOUT
+    export ADMINISABSENTMINDED
+    export BLACKLISTNEWONLY
+    export DELAYBLACKLISTLOAD
+    export MODULE_SUFFIX
+    export DISABLE_IPV6
+    export BRIDGING
+    export PKTTYPE
+    export RFC1918_STRICT
+    export MACLIST_TABLE
+    export MACLIST_TTL
+    export SAVE_IPSETS
+    export MAPOLDACTIONS
+    export FASTACCEPT
+    export IMPLICIT_CONTINUE
+    export HIGH_ROUTE_MARKS
+
+    # Packet Disposition
+
+    export BLACKLIST_DISPOSITION
+    export MACLIST_DISPOSITION
+    export TCP_FLAGS_DISPOSITION
+    
+    # Generated values
+
+    export LOGPARMS
+    export LOGLIMIT
+    export LOGRULENUMBERS
+    export VERSION
+    
+    #
+    # Export capabilities
+    #
+    export NAT_ENABLED
+    export MANGLE_ENABLED
+    export CONNTRACK_MATCH
+    export MULTIPORT
+    export XMULTIPORT
+    export POLICY_MATCH
+    export PHYSDEV_MATCH
+    export IPRANGE_MATCH
+    export RECENT_MATCH
+    export OWNER_MATCH
+    export IPSET_MATCH
+    export CONNMARK
+    export XCONNMARK
+    export CONNMARK_MATCH
+    export XCONNMARK_MATCH
+    export RAW_TABLE
+    export IPP2P_MATCH
+    export LENGTH_MATCH
+    export CLASSIFY_TARGET
+    export ENHANCED_REJECT
+    export USEPKTTYPE
+    export KLUDGEFREE
+    export MARK
+    export XMARK
+    export MANGLE_FORWARD
+    #
+    # Export user's params
+    #
+    $(export_params)
+
+}
+
+#
+# Give Usage Information
+#
+usage() {
+    echo "Usage: $0 [debug] check|compile <filename>}"
+    exit 1
+}
+
+#
 # Clear descriptor 1 if it is a terminal
 #
 clear_term() {
@@ -470,7 +928,7 @@ save_config() {
 					f=${VARDIR}/restore-$$
 
 					echo "#!/bin/sh" > $f
-					echo "#This ipset restore file generated $(date) by Shorewall $version" >> $f
+					echo "#This ipset restore file generated $(date) by Shorewall $VERSION" >> $f
 					echo  >> $f
 					echo ". ${SHAREDIR}/functions" >> $f
 					echo  >> $f
@@ -518,15 +976,17 @@ save_config() {
 # Start Command Executor
 #
 start_command() {
-    local finished=0
+    local finished=0 shell=$SHOREWALL_SHELL
 
     do_it() {
 	[ -n "$nolock" ] || mutex_on
 
 	progress_message3 "Compiling..."
 
-	if $SHOREWALL_SHELL ${SHAREDIR}/compiler $debugging $nolock compile ${VARDIR}/.start; then
-	    ${VARDIR}/.start $debugging start
+	do_initialize
+
+	if $shell ${SHAREDIR}/compiler $debugging $nolock compile ${VARDIR}/.start; then
+	    $SHOREWALL_SHELL ${VARDIR}/.start $debugging start
 	fi
 
 	[ -n "$nolock" ] || mutex_off
@@ -637,7 +1097,7 @@ start_command() {
 # Compile Command Executor
 #
 compile_command() {
-    local finished=0
+    local finished=0 shell=$SHOREWALL_SHELL
 
     while [ $finished -eq 0 ]; do
 	[ $# -eq 0 ] && usage 1
@@ -701,13 +1161,15 @@ compile_command() {
 
     progress_message3 "Compiling..."
 
-    exec $SHOREWALL_SHELL ${SHAREDIR}/compiler $debugging compile $file
+    do_initialize
+
+    exec $shell ${SHAREDIR}/compiler $debugging compile $file
 }
 #
 # Check Command Executor
 #
 check_command() {
-    local finished=0
+    local finished=0 shell=$SHOREWALL_SHELL
 
     while [ $finished -eq 0 -a $# -gt 0 ]; do
 	option=$1
@@ -764,14 +1226,16 @@ check_command() {
 
     progress_message3 "Checking..."
 
-    exec $SHOREWALL_SHELL ${SHAREDIR}/compiler $debugging $nolock check
+    do_initialize
+
+    exec $shell ${SHAREDIR}/compiler $debugging $nolock check
 }
 
 #
 # Restart Command Executor
 #
 restart_command() {
-    local finished=0
+    local finished=0 shell=$SHOREWALL_SHELL
 
     while [ $finished -eq 0 -a $# -gt 0 ]; do
 	option=$1
@@ -835,7 +1299,9 @@ restart_command() {
 
     progress_message3 "Compiling..."
 
-    if $SHOREWALL_SHELL ${SHAREDIR}/compiler $debugging $nolock compile ${VARDIR}/.restart; then
+    do_initialize
+
+    if $shell ${SHAREDIR}/compiler $debugging $nolock compile ${VARDIR}/.restart; then
 	$SHOREWALL_SHELL ${VARDIR}/.restart $debugging restart
     fi
 
@@ -889,27 +1355,27 @@ show_command() {
     case "$1" in
 	connections)
 	    [ $# -gt 1 ] && usage 1
-	    echo "Shorewall-$version Connections at $HOSTNAME - $(date)"
+	    echo "Shorewall-$VERSION Connections at $HOSTNAME - $(date)"
 	    echo
 	    cat /proc/net/ip_conntrack
 	    ;;
 	nat)
 	    [ $# -gt 1 ] && usage 1
-	    echo "Shorewall-$version NAT Table at $HOSTNAME - $(date)"
+	    echo "Shorewall-$VERSION NAT Table at $HOSTNAME - $(date)"
 	    echo
 	    show_reset
 	    $IPTABLES -t nat -L $IPT_OPTIONS
 	    ;;
 	tos|mangle)
 	    [ $# -gt 1 ] && usage 1
-	    echo "Shorewall-$version Mangle Table at $HOSTNAME - $(date)"
+	    echo "Shorewall-$VERSION Mangle Table at $HOSTNAME - $(date)"
 	    echo
 	    show_reset
 	    $IPTABLES -t mangle -L $IPT_OPTIONS
 	    ;;
 	log)
 	    [ $# -gt 1 ] && usage 1
-	    echo "Shorewall-$version Log at $HOSTNAME - $(date)"
+	    echo "Shorewall-$VERSION Log at $HOSTNAME - $(date)"
 	    echo
 	    show_reset
 	    host=$(echo $HOSTNAME | sed 's/\..*$//')
@@ -917,20 +1383,20 @@ show_command() {
 	    ;;
 	tc)
 	    [ $# -gt 1 ] && usage 1
-	    echo "Shorewall-$version Traffic Control at $HOSTNAME - $(date)"
+	    echo "Shorewall-$VERSION Traffic Control at $HOSTNAME - $(date)"
 	    echo
 	    show_tc
 	    ;;
 	classifiers)
 	    [ $# -gt 1 ] && usage 1
-	    echo "Shorewall-$version Clasifiers at $HOSTNAME - $(date)"
+	    echo "Shorewall-$VERSION Clasifiers at $HOSTNAME - $(date)"
 	    echo
 	    show_classifiers
 	    ;;
 	zones)
 	    [ $# -gt 1 ] && usage 1
 	    if [ -f ${VARDIR}/zones ]; then
-		echo "Shorewall-$version Zones at $HOSTNAME - $(date)"
+		echo "Shorewall-$VERSION Zones at $HOSTNAME - $(date)"
 		echo
 		while read zone type hosts; do
 		    echo "$zone ($type)"
@@ -980,7 +1446,7 @@ show_command() {
 	    echo "LITEDIR is $LITEDIR"
 	    ;;
 	*)
-	    echo "Shorewall-$version $([ $# -gt 0 ] && echo Chains || echo Chain) $* at $HOSTNAME - $(date)"
+	    echo "Shorewall-$VERSION $([ $# -gt 0 ] && echo Chains || echo Chain) $* at $HOSTNAME - $(date)"
 	    echo
 	    show_reset
 	    if [ $# -gt 0 ]; then
@@ -1031,7 +1497,7 @@ dump_command() {
     [ -n "$debugging" ] && set -x
     [ $# -eq 0 ] || usage 1
     clear_term
-    echo "Shorewall-$version Dump at $HOSTNAME - $(date)"
+    echo "Shorewall-$VERSION Dump at $HOSTNAME - $(date)"
     echo
     show_reset
     host=$(echo $HOSTNAME | sed 's/\..*$//')
@@ -1324,7 +1790,7 @@ reload_command()
 #
 help()
 {
-    [ -x $HELP ] && { export version; exec $HELP $*; }
+    [ -x $HELP ] && { export version=$VERSION; exec $HELP $*; }
     echo "Help subsystem is not installed at $HELP"
 }
 
@@ -1600,7 +2066,7 @@ if [ ! -f $FIREWALL ]; then
 fi
 
 if [ -f $VERSION_FILE ]; then
-    version=$(cat $VERSION_FILE)
+    VERSION=$(cat $VERSION_FILE)
 else
     echo "   ERROR: Shorewall is not properly installed" >&2
     echo "	 The file $VERSION_FILE does not exist"  >&2
@@ -1675,7 +2141,7 @@ case "$COMMAND" in
 	;;
     status)
 	[ $# -eq 1 ] || usage 1
-	echo "Shorewall-$version Status at $HOSTNAME - $(date)"
+	echo "Shorewall-$VERSION Status at $HOSTNAME - $(date)"
 	echo
 	if shorewall_is_started ; then
 	    echo "Shorewall is running"
@@ -1707,7 +2173,7 @@ case "$COMMAND" in
 	[ -n "$debugging" ] && set -x
 	[ $# -eq 1 ] || usage 1
 	clear_term
-	echo "Shorewall-$version Hits at $HOSTNAME - $(date)"
+	echo "Shorewall-$VERSION Hits at $HOSTNAME - $(date)"
 	echo
 
 	timeout=30
@@ -1747,7 +2213,7 @@ case "$COMMAND" in
 	fi
 	;;
     version)
-	echo $version
+	echo $VERSION
 	;;
     try)
 	[ -n "$SHOREWALL_DIR" ] && startup_error "ERROR: -c option may not be used with \"try\""

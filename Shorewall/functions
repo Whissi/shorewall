@@ -594,6 +594,7 @@ read_file() # $1 = file name, $2 = nest count
 
     if [  -f $1 ]; then
 	while read first rest; do
+	    expandv first rest
 	    if [ "x$first"  = "xINCLUDE" ]; then
 		if [ $2 -lt 4 ]; then
 		    read_file $(find_file $(expand ${rest%#*})) $(($2 + 1))

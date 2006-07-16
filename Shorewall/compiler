@@ -8562,13 +8562,11 @@ usage() {
 #
 # Start trace if first arg is "debug"
 #
-[ $# -gt 1 ] && [ "$1" = "debug" ] && { set -x ; shift ; }
+[ $# -gt 1 ] && [ "$1" = "debug" ] && { set -x ; shift ; env >&2; }
 
 NOLOCK=
 
 [ $# -gt 1 ] && [ "$1" = "nolock" ] && { NOLOCK=Yes; shift ; }
-
-trap "exit 2" 1 2 3 4 5 6 9
 
 COMMAND="$1"
 

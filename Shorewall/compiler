@@ -476,6 +476,8 @@ determine_zones()
     [ "$IPSECFILE" = zones ] && new_zone_file=Yes || test -n "${FW:=fw}"
 
     while read zone type rest; do
+	expandv zone type
+
 	case $zone in
 	    *:*)
 		parents=${zone#*:}
@@ -873,7 +875,8 @@ find_hosts() # $1 = host zone
     local hosts interface address addresses
 
     while read z hosts options; do
-	if [ "x$z" = "x$1" ]; then
+	if [ "x$(expand $z)" = "x$1" ]; then
+	    expandv hosts
 	    interface=${hosts%%:*}
 	    addresses=${hosts#*:}
 	    for address in $(separate_list $addresses); do
@@ -993,6 +996,7 @@ validate_interfaces_file() {
     local z interface networks options r iface option
 
     while read z interface networks options; do
+	expandv z interface networks options
 	r="$z $interface $networks $options"
 
 	[ "x$z" = "x-" ] && z=
@@ -1338,6 +1342,7 @@ __EOF__
 	save_command "DEFAULT_ROUTE="
 
 	while read table number mark duplicate interface gateway options copy; do
+	    expandv table number mark duplicate interface gateway options copy
 	    provider="$table $number $mark $duplicate $interface $gateway $options $copy"
 	    add_a_provider
 	    PROVIDERS="$PROVIDERS $table"
@@ -1382,6 +1387,7 @@ __EOF__
 		    save_command
 
 		    while read source dest provider priority; do
+			expandv source dest provider priority
 			rule="$source $dest $priority $provider"
 			add_an_rtrule
 		    done < $TMP_DIR/route_rules
@@ -1409,6 +1415,7 @@ validate_hosts_file() {
    }
 
    while read z hosts options; do
+       expandv z hosts options
        r="$z $hosts $options"
        validate_zone1 $z || fatal_error "Invalid zone ($z) in record \"$r\""
 
@@ -1557,6 +1564,8 @@ validate_policy()
     strip_file policy
 
     while read client server policy loglevel synparams; do
+	expandv client server policy loglevel synparams
+
 	clientwild=
 	serverwild=
 
@@ -1718,9 +1727,11 @@ find_hosts_by_option() # $1 = option
     local ignore hosts interface address addresses options ipsec= list
 
     while read ignore hosts options; do
+	expandv options
 	list=$(separate_list $options)
 	if list_search $1 $list; then
 	    list_search ipsec $list && ipsec=ipsec || ipsec=none
+	    expandv hosts
 	    interface=${hosts%%:*}
 	    addresses=${hosts#*:}
 	    for address in $(separate_list $addresses); do
@@ -1770,6 +1781,7 @@ process_routestopped() # $1 = command
     local hosts= interface host host1 options networks source= dest= matched
 
     while read interface host options; do
+	expandv interface host options
 	[ "x$host" = "x-" -o -z "$host" ] && host=0.0.0.0/0
 	for h in $(separate_list $host); do
 	    hosts="$hosts $interface:$h"
@@ -1848,6 +1860,8 @@ process_criticalhosts()
     [ -f $TMP_DIR/routestopped ] || strip_file routestopped
 
     while read interface host options; do
+	expandv interface host options
+
 	[ "x$host" = "x-" -o -z "$host" ] && host=0.0.0.0/0 || host=$(separate_list $host)
 
 	if [ -n "$options" ]; then
@@ -2104,6 +2118,7 @@ setup_tunnels() # $1 = name of tunnels file
     strip_file tunnels $1
 
     while read kind z gateway z1; do
+	expandv kind z gateway z1
 	tunnel="$(echo $kind $z $gateway $z1)"
 	if validate_zone $z; then
 	    inchain=${z}2${FW}
@@ -2248,6 +2263,8 @@ setup_ipsec() {
     esac
 
     while read zone type options in_options out_options mss; do
+	expandv zone type options in_options out_options mss
+
 	if [ -n "$using_ipsec" ]; then
 	    validate_zone1 $zone || fatal_error "Unknown zone: $zone"
 	fi
@@ -2353,6 +2370,7 @@ __EOF__
     save_progress_message "Setting up Proxy ARP..."
 
     while read address interface external haveroute persistent; do
+	expandv address interface external haveroute persistent
 	list_search $interface $setlist   || setlist="$setlist $interface"
 	list_search $external  $resetlist || list_search $external $setlist || resetlist="$resetlist $external"
 	setup_one_proxy_arp
@@ -2470,6 +2488,8 @@ setup_mac_lists() {
     # Process the maclist file producing the verification rules
     #
     while read disposition interface mac addresses; do
+	expandv disposition interface mac addresses
+
 	level=
 
 	case $disposition in
@@ -2737,7 +2757,10 @@ setup_nat() {
     [ -n "$RETAIN_ALIASES" ] || save_progress_message "Setting up one-to-one NAT..."
 
     while read external interface internal allints localnat; do
+	expandv external interface internal allints localnat
+
 	do_one_nat
+
 	progress_message_and_save "   Host $internal NAT $external on $interface"
     done < $TMP_DIR/nat
 }
@@ -2770,6 +2793,8 @@ __EOF__
 setup_netmap() {
 
     while read type net1 interface net2 ; do
+	expandv type net1 interface net2
+
 	list_search $interface $ALL_INTERFACES || \
 	    fatal_error "Unknown interface $interface in entry \"$type $net1 $interface $net2\""
 
@@ -2804,6 +2829,7 @@ setup_ecn() # $1 = file name
     progress_message2 "$DOING $1..."
 
     while read interface host; do
+	expandv interface host
 	list_search  $interface $ALL_INTERFACES || \
 	    fatal_error "Unknown interface $interface"
 	list_search $interface $interfaces || \
@@ -2891,6 +2917,7 @@ setup_tc1() {
     strip_file tcrules
 
     while read mark sources dests proto ports sports user testval length tos; do
+	expandv mark sources dests proto ports sports user testval length tos
 	rule=$(echo "$mark $sources $dests $proto $ports $sports $user $testval $length $tos")
 	process_tc_rule
     done < $TMP_DIR/tcrules
@@ -3187,6 +3214,7 @@ setup_accounting() # $1 = Name of accounting file
     strip_file accounting $1
 
     while read action chain source dest proto port sport user ; do
+	expandv action chain source dest proto port sport user
 	process_accounting_rule
     done < $TMP_DIR/accounting
 
@@ -3502,9 +3530,11 @@ process_action() # $1 = chain    (Chain to add the rules to)
     else
 	loglevel="${target#*:}"
 	target="${target%%:*}"
+	expandv loglevel
 	if [ "$loglevel" != "${loglevel%:*}" ]; then
 	    logtag="${loglevel#*:}"
 	    loglevel="${loglevel%:*}"
+	    expandv logtag
 	fi
 
 	case $loglevel in
@@ -3999,6 +4029,7 @@ process_actions1() {
 		    progress_message2 "   Pre-processing $fn..."
 		    strip_file $f $fn
 		    while read xtarget xclients xservers xprotocol xports xcports xratelimit $xuserspec; do
+			expandv xtarget
 			temp="${xtarget%%:*}"
 			case "$temp" in
 			    ACCEPT|DROP|REJECT|LOG|QUEUE|CONTINUE)
@@ -4038,6 +4069,7 @@ process_actions1() {
 					    progress_message "   ..Expanding Macro $fn..."
 
 					    while read mtarget mclients mservers mprotocol mports mcports mratelimit muserspec; do
+						expandv mtarget
 						temp="${mtarget%%:*}"
 						case "$temp" in
 						    ACCEPT|DROP|REJECT|LOG|QUEUE|CONTINUE|PARAM)
@@ -4283,6 +4315,7 @@ __EOF__
 		progress_message2 "$DOING $(find_file $f) for Chain $xchain..."
 
 		while read xtarget xclients xservers xprotocol xports xcports xratelimit xuserspec; do
+		    expandv xtarget
 		    #
 		    # Generate the target:level:tag to pass to process_action()
 		    #
@@ -4315,6 +4348,8 @@ __EOF__
 			    ;;
 		    esac
 
+		    expandv xclients xservers xprotocol xports xcports xratelimit xuserspec
+
 		    if [ -n "$is_macro" ]; then
 
 			xtarget1=$(map_old_action $xtarget1)
@@ -4328,6 +4363,8 @@ __EOF__
 
 			progress_message "..Expanding Macro $(find_file macro.$xtarget1)..."
 			while read mtarget mclients mservers mprotocol mports mcports mratelimit muserspec; do
+			    expandv mtarget mclients mservers mprotocol mports mcports mratelimit muserspec
+
 			    mtarget=$(merge_levels $xaction2 $mtarget)
 
 			    case $mtarget in
@@ -4981,9 +5018,11 @@ __EOF__
     else
 	loglevel="${target#*:}"
 	target="${target%%:*}"
+	expandv loglevel
 	if [ "$loglevel" != "${loglevel%:*}" ]; then
 	    logtag="${loglevel#*:}"
 	    loglevel="${loglevel%:*}"
+	    expandv logtag
 	fi
 
 	case $loglevel in
@@ -5373,6 +5412,8 @@ process_macro() # $1 = target
     progress_message "..Expanding Macro $(find_file macro.${itarget%%:*})..."
 
     while read mtarget mclients mservers mprotocol mports mcports mratelimit muserspec; do
+	expandv mtarget mclients mservers mprotocol mports mcports mratelimit muserspec
+
 	mtarget=$(merge_levels $itarget $mtarget)
 
 	case $mtarget in
@@ -5478,6 +5519,8 @@ process_rules()
 
     do_it() # $1 = "Yes" if the target is a macro.
     {
+	expandv xprotocol xports xcports xaddress xratelimit xuserspec intrazone=
+
 	if [ -z "$SECTIONS" ]; then
 	    finish_section ESTABLISHED,RELATED
 	    SECTIONS="ESTABLISHED RELATED NEW"
@@ -5538,6 +5581,8 @@ process_rules()
     }
 
     while read xtarget xclients xservers xprotocol xports xcports xaddress xratelimit xuserspec; do
+	expandv xtarget xclients xservers
+
 	if [ "x$xclients" = xnone -o "x$servers" = xnone ]; then
 	    rule="$xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec"
 	    progress_message "   Rule \"$rule\" ignored."
@@ -5812,6 +5857,7 @@ process_tos() # $1 = name of tos file
 	createmanglechain outtos
 
 	while read src dst protocol sport dport tos; do
+	    expandv src dst protocol sport dport tos
 	    rule="$(echo $src $dst $protocol $sport $dport $tos)"
 	    process_tos_rule
 	done < $TMP_DIR/tos
@@ -6455,6 +6501,7 @@ __EOF__
     fi
 
     while read fullinterface networks addresses proto ports ipsec; do
+	expandv fullinterface networks addresses proto ports ipsec
 	if [ -n "$NAT_ENABLED" ]; then
 	    setup_one
 	else
@@ -6596,6 +6643,7 @@ setup_blacklist() {
 
 	if [ -z "$DELAYBLACKLISTLOAD" ]; then
 	    while read networks protocol ports; do
+		expandv networks protocol ports
 		process_blacklist_rec
 	    done < $TMP_DIR/blacklist
 	fi
@@ -6619,6 +6667,7 @@ refresh_blacklist() {
     run_iptables -F blacklst
 
     while read networks protocol ports; do
+	expandv networks protocol ports
 	process_blacklist_rec
     done < $TMP_DIR/blacklist
 }
@@ -6637,6 +6686,7 @@ validate_blacklist() {
     [ "$disposition" = REJECT ] && disposition=reject
 
     while read networks protocol ports; do
+	expandv networks protocol ports
 	process_blacklist_rec
     done < $TMP_DIR/blacklist
 }

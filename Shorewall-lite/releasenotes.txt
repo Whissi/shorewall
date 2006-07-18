@@ -1,91 +1,12 @@
-Shorewall Lite 3.2.0 RC 6
+Shorewall Lite 3.3.0
 
-Problems Corrected in 3.2.0 RC 6
+Problems Corrected in 3.3.0
+
+1) The output formating of the 'hits' command under BusyBox 1.2.0 has
+   been corrected.
+
+Other changes in 3.3.0
 
 None.
 
-Other changes in 3.2.0 RC 6
-
-None.
-
-New Features:
-
-Shorewall Lite is a companion product to Shorewall and is designed to
-allow you to maintain all Shorewall configuration information on a
-single system within your network.
-
-a) You install the full Shorewall release on one system within your
-network. You need not configure Shorewall there and you may totally
-disable startup of Shorewall in your init scripts. For ease of
-reference, we call this system the 'administrative system'.
-
-b) On each system where you wish to run a Shorewall-generated firewall,
-you install Shorewall Lite. For ease of reference, we will call these
-systems the 'firewall systems'
-
-c) On the administrative system you create a separate 'configuration
-directory' for each firewall system. You copy the contents of
-/usr/share/shorewall/configfiles into each configuration directory.
-
-d) On each firewall system, you run these two commands:
-
-       /usr/share/shorewall/shorecap > capabilities
-       scp capabilities <admin system>:<this system's config dir>
-
-   If you are running Debian or one of its derivatives like Ubuntu then 
-   edit /etc/default/shorewall-lite and set startup=1.
-
-   Shorewall Lite includes a very limited version of shorewall.conf
-   (/etc/shorewall-lite/shorewall.conf). It includes the following
-   options which have the same meaning as in a full Shorewall
-   installation except as noted below:
-
-	VERBOSITY
-	LOGFILE
-	LOGFORMAT - used by /sbin/shorewall for finding 'Shorewall' log
-		    messages. If LOGFORMAT was specified in the
-		    shorewall.conf file used at compile time on the
-		    administrative system, then the format of the
-		    messages themselves is defined by that value. If
-		    LOGFORMAT was not specified at compile time then
-		    the firewall script will use the value from
-		    /etc/shorewall-lite/shorewall.conf on the firewall
-		    system.
-	IPTABLES - determines the iptables binary to be used by
-		   /sbin/shorewall. The compiled firewall script will
-		   use the IPTABLES specified in shorewall.conf at
-		   compile time on the administrative system, if any;
-		   if IPTABLES was not specified at compile time then
-		   the IPTABLES value from
-		   /etc/shorewall-lite/shorewall.conf on the firewall
-		   system will be used by the firewall script.
-	PATH
-	SHOREWALL_SHELL
-	SUBSYSLOCK
-	RESTOREFILE
-
-    Edit the shorewall.conf file as required.
-
-e) On the administrative system, for each firewall system you:
-
-   1) modify the files in the corresponding configuration
-      directory appropriately.
-
-   2) (this may be done as a non-root user)
-
-      cd <configuration directory>
-      /sbin/shorewall load . <firewall system>
-
-   3) If you need to change the configuration, after you
-      have modified the configuration:
-
-      cd <configuration directory>
-      /sbin/shorewall reload . <firewall system>
-
-It is possible to have both shorewall and Shorewall Lite
-installed on the same system.
-
-For more information, see:
-
-    http://www.shorewall.net/CompiledProgram.html#Lite
 

@@ -1318,19 +1318,31 @@ case "$COMMAND" in
 	if [ $(grep -c "$LOGFORMAT" $LOGFILE ) -gt 0 ] ; then
 	    echo "   HITS IP		  DATE"
 	    echo "   ---- --------------- ------"
-	    grep "$LOGFORMAT" $LOGFILE | sed 's/\(.\{6\}\)\(.*SRC=\)\(.*\)\( DST=.*\)/\3	\1/' | sort | uniq -c | sort -rn
+	    grep "$LOGFORMAT" $LOGFILE | sed 's/\(.\{6\}\)\(.*SRC=\)\(.*\)\( DST=.*\)/\3	\1/' | sort | uniq -c | sort -rn | 
+	    while read count address month day; do
+		printf '%7d %-15s %3s %2d\n' $count $address $month $day
+	    done
+
 	    echo ""
 
 	    echo "   HITS IP		  PORT"
 	    echo "   ---- --------------- -----"
 	    grep "$LOGFORMAT" $LOGFILE | sed 's/\(.*SRC=\)\(.*\)\( DST=.*DPT=\)\([0-9]\{1,5\}\)\(.*\)/\2	\4/
 						t
-						s/\(.*SRC=\)\(.*\)\( DST=.*\)/\2/' | sort | uniq -c | sort -rn
+						s/\(.*SRC=\)\(.*\)\( DST=.*\)/\2/' | sort | uniq -c | sort -rn | \
+	    while read count address port; do
+		printf '%7d %-15s %d\n' $count $address $port
+	    done
+
 	    echo ""
 
 	    echo "   HITS DATE"
 	    echo "   ---- ------"
-	    grep "$LOGFORMAT" $LOGFILE | sed 's/\(.\{6\}\)\(.*\)/\1/' | sort | uniq -c | sort -rn
+	    grep "$LOGFORMAT" $LOGFILE | sed 's/\(.\{6\}\)\(.*\)/\1/' | sort | uniq -c | sort -rn | \
+	    while read count month day; do
+		printf '%7d %3s %2d\n' $count $month $day
+	    done
+
 	    echo ""
 
 	    echo "   HITS  PORT SERVICE(S)"

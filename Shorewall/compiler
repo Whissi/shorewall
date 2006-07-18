@@ -616,31 +616,6 @@ macrecent_target() # $1 - interface
 }
 
 #
-# Functions for creating dynamic zone rules
-#
-dynamic_fwd() # $1 = interface
-{
-   echo $(chain_base $1)_dynf
-}
-
-dynamic_in() # $1 = interface
-{
-   echo $(chain_base $1)_dyni
-}
-
-dynamic_out() # $1 = interface
-{
-   echo $(chain_base $1)_dyno
-}
-
-dynamic_chains() #$1 = interface
-{
-   local c=$(chain_base $1)
-
-   echo ${c}_dyni ${c}_dynf ${c}_dyno
-}
-
-#
 # DNAT Chain from a zone
 #
 dnat_chain() # $1 = zone
@@ -7396,22 +7371,6 @@ __EOF__
 	done
     fi
 
-    if [ -n "$DYNAMIC_ZONES" ]; then
-	progress_message "$DOING Dynamic Zone Chains..."
-
-	for interface in $ALL_INTERFACES; do
-	    for chain in $(dynamic_chains $interface); do
-		createchain $chain no
-	    done
-
-	    chain=$(dynamic_in $interface)
-	    createnatchain $chain
-
-	    run_iptables -A $(input_chain $interface)   -j $chain
-	    run_iptables -A $(forward_chain $interface) -j $(dynamic_fwd $interface)
-	    run_iptables -A OUTPUT -o $interface        -j $(dynamic_out $interface)
-	done
-    fi
     #
     # UPnP
     #
@@ -7543,12 +7502,6 @@ activate_rules()
 	addnatjump POSTROUTING $(snat_chain $interface) -o $interface
     done
     #
-    # Add jumps for dynamic nat chains
-    #
-    [ -n "$DYNAMIC_ZONES" ] && for interface in $ALL_INTERFACES ; do
-	addrulejump PREROUTING $(dynamic_in $interface) -i $interface
-    done
-    #
     # Add jumps from the builtin chains to the nat chains
     #
     addnatjump PREROUTING  nat_in
@@ -7579,10 +7532,8 @@ activate_rules()
 
 		if [ -n "$is_ipsec" ]; then
 		    eval source_hosts=\$${zone}_hosts
-		    [ -n "$DYNAMIC_ZONES" ] && create_zone_dyn_chain $zone $frwd_chain
 		else
 		    eval source_hosts=\$${zone}_ipsec_hosts
-		    [ -n "$DYNAMIC_ZONES" -a -n "$source_hosts" ] && create_zone_dyn_chain $zone $frwd_chain
 		fi
 
 		for host in $source_hosts; do
@@ -7607,11 +7558,6 @@ activate_rules()
 	[ -n "$complex" ] && frwd_chain=${zone}_frwd
 
 	echo $zone $type $source_hosts >> $STATEDIR/zones
-
-	if [ -n "$DYNAMIC_ZONES" ]; then
-	    echo "$FW $zone $chain1" >> $STATEDIR/chains
-	    echo "$zone $FW $chain2" >> $STATEDIR/chains
-	fi
 
 	need_broadcast=
 
@@ -7661,8 +7607,6 @@ activate_rules()
 	    chain="$(rules_chain $zone $zone1)"
 
 	    [ -z "$chain" ] && continue # CONTINUE policy and there is no canonical chain.
-
-	    [ -n "$DYNAMIC_ZONES" ] && echo "$zone $zone1 $chain" >> $STATEDIR/chains
 
 	    if [ $zone = $zone1 ]; then
 		#
@@ -8650,7 +8594,6 @@ do_initialize() {
     SMURF_LOG_LEVEL=
     DISABLE_IPV6=
     BRIDGING=
-    DYNAMIC_ZONES=
     PKTTYPE=
     USEPKTYPE=
     RETAIN_ALIASES=
@@ -8857,8 +8800,6 @@ do_initialize() {
     BLACKLISTNEWONLY=$(added_param_value_no BLACKLISTNEWONLY $BLACKLISTNEWONLY)
     DISABLE_IPV6=$(added_param_value_no DISABLE_IPV6 $DISABLE_IPV6)
     BRIDGING=$(added_param_value_no BRIDGING $BRIDGING)
-    DYNAMIC_ZONES=$(added_param_value_no DYNAMIC_ZONES $DYNAMIC_ZONES)
-    [ -n "$DYNAMIC_ZONES" -a -n "$EXPORT" ] && fatal_error "DYNAMIC_ZONES=Yes is incompatible with the -e option"
     STARTUP_ENABLED=$(added_param_value_yes STARTUP_ENABLED $STARTUP_ENABLED)
     RETAIN_ALIASES=$(added_param_value_no RETAIN_ALIASES $RETAIN_ALIASES)
     [ -n "${ADD_IP_ALIASES}${ADD_SNAT_ALIASES}" ] || RETAIN_ALIASES=

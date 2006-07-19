@@ -1747,7 +1747,7 @@ case "$COMMAND" in
 	    grep "$LOGFORMAT.*DPT" $LOGFILE | sed 's/\(.*DPT=\)\([0-9]\{1,5\}\)\(.*\)/\2/' | sort | uniq -c | sort -rn | \
 	    while read count port ; do
 		# List all services defined for the given port
-		srv=$(grep "^[^#].*\\b$port/" /etc/services | cut -f 1 | sort -u)
+		srv=$(grep "^[^#].*\\b$port/" /etc/services | cut -f 1  | cut -f 1 -d' ' | sort -u)
 		srv=$(echo $srv | sed 's/ /,/g')
 
 		if [ -n "$srv" ] ; then

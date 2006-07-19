@@ -311,7 +311,7 @@ if [ ! -f ${PREFIX}/usr/share/shorewall-lite/modules ]; then
 fi
 
 if [ ! -f ${PREFIX}/usr/share/shorewall-lite/xmodules ]; then
-    run_install $OWNERSHIP -m 0600 modules ${PREFIX}/usr/share/shorewall-lite/xmodules
+    run_install $OWNERSHIP -m 0600 xmodules ${PREFIX}/usr/share/shorewall-lite/xmodules
     echo "Xmodules file installed as ${PREFIX}/usr/share/shorewall-lite/xmodules"
 fi
 

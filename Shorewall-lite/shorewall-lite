@@ -1318,7 +1318,7 @@ case "$COMMAND" in
 	if [ $(grep -c "$LOGFORMAT" $LOGFILE ) -gt 0 ] ; then
 	    echo "   HITS IP		  DATE"
 	    echo "   ---- --------------- ------"
-	    grep "$LOGFORMAT" $LOGFILE | sed 's/\(.\{6\}\)\(.*SRC=\)\(.*\)\( DST=.*\)/\3	\1/' | sort | uniq -c | sort -rn | 
+	    grep "$LOGFORMAT" $LOGFILE | sed 's/\(.\{6\}\)\(.*SRC=\)\(.*\)\( DST=.*\)/\3	\1/' | sort | uniq -c | sort -rn | \ 
 	    while read count address month day; do
 		printf '%7d %-15s %3s %2d\n' $count $address $month $day
 	    done

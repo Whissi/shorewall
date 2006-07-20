@@ -337,6 +337,15 @@
                     use entries in <filename>/etc/shorewall/tcrules</filename>
                     to force traffic to one provider or another.</para>
                   </important>
+
+                  <important>
+                    <para>If you specify 'balance' and still find that all
+                    traffic is going out through only one provider, you may
+                    need to install a kernel built with
+                    CONFIG_IP_ROUTE_MULTIPATH_CACHED=n. Several users have
+                    reported that this change has corrected similar
+                    problems.</para>
+                  </important>
                 </listitem>
               </varlistentry>
 

@@ -258,6 +258,32 @@
           </simplelist>
         </blockquote>
 
+        <para>The handling of CONFIG_PATH was broken in Shorewall 3.2.0 —
+        Users wishing to use Shorewall Lite are urged to run 3.2.1 or later
+        (both Shorewall and Shorewall Lite). Beginning with version 3.2.1, the
+        CONFIG_PATH variable is treated as follows:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>The value of CONFIG_PATH in
+            <filename>/etc/shorewall/shorewall.conf </filename>is ignored when
+            compiling for export (the -e option in given).</para>
+          </listitem>
+
+          <listitem>
+            <para>The value of CONFIG_PATH in the
+            <filename>shorewall.conf</filename> file in the configuration
+            directory is used to search for configuration files during
+            compilation of that configuration.</para>
+          </listitem>
+
+          <listitem>
+            <para>The value of CONFIG_PATH used when the script is run on the
+            firewall system is
+            "/etc/shorewall-lite:/usr/share/shorewall-lite".</para>
+          </listitem>
+        </itemizedlist>
+
         <para>Edit the shorewall.conf file as required.</para>
       </listitem>
 

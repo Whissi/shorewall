@@ -258,7 +258,7 @@ chmod 755 ${PREFIX}/usr/share/shorewall/configfiles
 #
 run_install $OWNERSHIP -m 0644 shorewall.conf ${PREFIX}/usr/share/shorewall/configfiles/shorewall.conf
 
-qt mywhich perl && perl -p -w -i -e 's|^CONFIG_PATH=.*|CONFIG_PATH=/usr/share/shorewall-lite:/usr/share/shorewall/configfiles:/usr/share/shorewall|;' /usr/share/shorewall/configfiles/shorewall.conf
+qt mywhich perl && perl -p -w -i -e 's|^CONFIG_PATH=.*|CONFIG_PATH=/usr/share/shorewall/configfiles:/usr/share/shorewall|;' /usr/share/shorewall/configfiles/shorewall.conf
 
 if [ ! -f ${PREFIX}/etc/shorewall/shorewall.conf ]; then
    run_install $OWNERSHIP -m 0644 shorewall.conf ${PREFIX}/etc/shorewall/shorewall.conf
@@ -414,15 +414,11 @@ fi
 #
 # Install the Modules files
 #
-if [ ! -f ${PREFIX}/usr/share/shorewall/modules ]; then
-    run_install $OWNERSHIP -m 0600 modules ${PREFIX}/usr/share/shorewall/modules
-    echo "Modules file installed as ${PREFIX}/usr/share/shorewall/modules"
-fi
+run_install $OWNERSHIP -m 0600 modules ${PREFIX}/usr/share/shorewall/modules
+echo "Modules file installed as ${PREFIX}/usr/share/shorewall/modules"
 
-if [ ! -f ${PREFIX}/usr/share/shorewall/xmodules ]; then
-    run_install $OWNERSHIP -m 0600 xmodules ${PREFIX}/usr/share/shorewall/xmodules
-    echo "Xmodules file installed as ${PREFIX}/usr/share/shorewall/xmodules"
-fi
+run_install $OWNERSHIP -m 0600 xmodules ${PREFIX}/usr/share/shorewall/xmodules
+echo "Xmodules file installed as ${PREFIX}/usr/share/shorewall/xmodules"
 
 #
 # Install the TC Rules file

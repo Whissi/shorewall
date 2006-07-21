@@ -4,11 +4,11 @@
 #
 #     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
 #
-#     (c) 1999,2000,2001,2002,2003,2004,2005,2006 - Tom Eastep (teastep@shorewall.net)
+#     (c) 2006 - Tom Eastep (teastep@shorewall.net)
 #
 #	This file should be placed in /sbin/shorewall-lite.
 #
-#	Shorewall documentation is available at http://shorewall.sourceforge.net
+#	Shorewall documentation is available at http://shorewall.net
 #
 #	This program is free software; you can redistribute it and/or modify
 #	it under the terms of Version 2 of the GNU General Public License
@@ -23,62 +23,62 @@
 #	along with this program; if not, write to the Free Software
 #	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
 #
-#	If an error occurs while starting or restarting the firewall, the
-#	firewall is automatically stopped.
+#     If an error occurs while starting or restarting the firewall, the
+#     firewall is automatically stopped.
 #
-#	Commands are:
+#     Commands are:
 #
-#          shorewall dump                          Dumps all Shorewall-related information
+#     shorewall-lite dump                          Dumps all Shorewall-related information
 #                                                  for problem analysis
-#	   shorewall start 			   Starts the firewall
-#	   shorewall restart			   Restarts the firewall
-#	   shorewall stop			   Stops the firewall
-#	   shorewall status			   Displays firewall status
-#	   shorewall reset			   Resets iptables packet and
+#     shorewall-lite start 			   Starts the firewall
+#     shorewall-lite restart			   Restarts the firewall
+#     shorewall-lite stop			   Stops the firewall
+#     shorewall-lite status			   Displays firewall status
+#     shorewall-lite reset			   Resets iptables packet and
 #						   byte counts
-#	   shorewall clear			   Open the floodgates by
+#     shorewall-lite clear			   Open the floodgates by
 #						   removing all iptables rules
 #						   and setting the three permanent
 #						   chain policies to ACCEPT
-#	   shorewall show <chain> [ <chain> ... ]  Display the rules in each <chain> listed
-#	   shorewall show log			   Print the last 20 log messages
-#	   shorewall show connections		   Show the kernel's connection
+#     shorewall-lite show <chain> [ <chain> ... ]  Display the rules in each <chain> listed
+#     shorewall-lite show log			   Print the last 20 log messages
+#     shorewall-lite show connections		   Show the kernel's connection
 #						   tracking table
-#	   shorewall show nat			   Display the rules in the nat table
-#	   shorewall show {mangle|tos}		   Display the rules in the mangle table
-#	   shorewall show tc			   Display traffic control info
-#	   shorewall show classifiers		   Display classifiers
-#          shorewall show capabilities             Display iptables/kernel capabilities
-#	   shorewall version			   Display the installed version id
-#	   shorewall logwatch [ refresh-interval ] Monitor the local log for Shorewall
+#     shorewall-lite show nat			   Display the rules in the nat table
+#     shorewall-lite show {mangle|tos}		   Display the rules in the mangle table
+#     shorewall-lite show tc			   Display traffic control info
+#     shorewall-lite show classifiers		   Display classifiers
+#     shorewall-lite show capabilities             Display iptables/kernel capabilities
+#     shorewall-lite version			   Display the installed version id
+#     shorewall-lite logwatch [ refresh-interval ] Monitor the local log for Shorewall
 #						   messages.
-#	   shorewall drop <address> ...		   Temporarily drop all packets from the
+#     shorewall-lite drop <address> ...		   Temporarily drop all packets from the
 #						   listed address(es)
-#	   shorewall reject <address> ...	   Temporarily reject all packets from the
+#     shorewall-lite reject <address> ...	   Temporarily reject all packets from the
 #						   listed address(es)
-#	   shorewall allow <address> ...	   Reenable address(es) previously
+#     shorewall-lite allow <address> ...	   Reenable address(es) previously
 #						   disabled with "drop" or "reject"
-#	   shorewall save [ <file> ]		   Save the list of "rejected" and
+#     shorewall-lite save [ <file> ]		   Save the list of "rejected" and
 #						   "dropped" addresses so that it will
 #						   be automatically reinstated the
 #						   next time that Shorewall starts.
 #                                                  Save the current state so that 'shorewall
 #                                                  restore' can be used.
 #
-#          shorewall forget [ <file> ]             Discard the data saved by 'shorewall save'
+#     shorewall-lite forget [ <file> ]             Discard the data saved by 'shorewall save'
 #
-#          shorewall restore [ <file> ]            Restore the state of the firewall from
+#     shorewall-lite restore [ <file> ]            Restore the state of the firewall from
 #                                                  previously saved information.
 #
-#          shorewall ipaddr { <address>/<cidr> | <address> <netmask> }
+#     shorewall-lite ipaddr { <address>/<cidr> | <address> <netmask> }
 #
 #                                                  Displays information about the network
 #                                                  defined by the argument[s]
 #
-#          shorewall iprange <address>-<address>   Decomposes a range of IP addresses into
+#     shorewall-lite iprange <address>-<address>   Decomposes a range of IP addresses into
 #                                                  a list of network/host addresses.
 #
-#          shorewall ipdecimal { <address> | <integer> }
+#     shorewall-lite ipdecimal { <address> | <integer> }
 #
 #                                                  Displays the decimal equivalent of an IP
 #                                                  address and vice versa.
@@ -1318,7 +1318,7 @@ case "$COMMAND" in
 	if [ $(grep -c "$LOGFORMAT" $LOGFILE ) -gt 0 ] ; then
 	    echo "   HITS IP		  DATE"
 	    echo "   ---- --------------- ------"
-	    grep "$LOGFORMAT" $LOGFILE | sed 's/\(.\{6\}\)\(.*SRC=\)\(.*\)\( DST=.*\)/\3	\1/' | sort | uniq -c | sort -rn | \ 
+	    grep "$LOGFORMAT" $LOGFILE | sed 's/\(.\{6\}\)\(.*SRC=\)\(.*\)\( DST=.*\)/\3	\1/' | sort | uniq -c | sort -rn | \
 	    while read count address month day; do
 		printf '%7d %-15s %3s %2d\n' $count $address $month $day
 	    done

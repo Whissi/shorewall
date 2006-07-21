@@ -305,15 +305,11 @@ echo "Help command executor installed in ${PREFIX}/usr/share/shorewall-lite/help
 #
 # Install the Modules files
 #
-if [ ! -f ${PREFIX}/usr/share/shorewall-lite/modules ]; then
-    run_install $OWNERSHIP -m 0600 modules ${PREFIX}/usr/share/shorewall-lite/modules
-    echo "Modules file installed as ${PREFIX}/usr/share/shorewall-lite/modules"
-fi
+run_install $OWNERSHIP -m 0600 modules ${PREFIX}/usr/share/shorewall-lite/modules
+echo "Modules file installed as ${PREFIX}/usr/share/shorewall-lite/modules"
 
-if [ ! -f ${PREFIX}/usr/share/shorewall-lite/xmodules ]; then
-    run_install $OWNERSHIP -m 0600 xmodules ${PREFIX}/usr/share/shorewall-lite/xmodules
-    echo "Xmodules file installed as ${PREFIX}/usr/share/shorewall-lite/xmodules"
-fi
+run_install $OWNERSHIP -m 0600 xmodules ${PREFIX}/usr/share/shorewall-lite/xmodules
+echo "Xmodules file installed as ${PREFIX}/usr/share/shorewall-lite/xmodules"
 
 #
 # Create the version file

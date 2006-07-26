@@ -204,10 +204,9 @@
       </listitem>
 
       <listitem>
-        <para>On the administrative system you create a separete
-        'configuration directory' for each firewall system. You copy the
-        contents of /usr/share/shorewall/configfiles into each configuration
-        directory.</para>
+        <para>On the administrative system you create a separate 'export
+        directory' for each firewall system. You copy the contents of
+        /usr/share/shorewall/configfiles into each export directory.</para>
       </listitem>
 
       <listitem>
@@ -273,9 +272,9 @@
 
           <listitem>
             <para>The value of CONFIG_PATH in the
-            <filename>shorewall.conf</filename> file in the configuration
-            directory is used to search for configuration files during
-            compilation of that configuration.</para>
+            <filename>shorewall.conf</filename> file in the export directory
+            is used to search for configuration files during compilation of
+            that configuration.</para>
           </listitem>
 
           <listitem>
@@ -295,23 +294,23 @@
 
         <orderedlist>
           <listitem>
-            <para>modify the files in the corresponding configuration
-            directory appropriately. It's a good idea to include the IP
-            address of the administrative system in the
-            <filename>routestopped</filename> file.</para>
+            <para>modify the files in the corresponding export directory
+            appropriately. It's a good idea to include the IP address of the
+            administrative system in the <filename>routestopped</filename>
+            file.</para>
 
             <para>It is important to understand that with Shorewall Lite, the
-            firewall's configuration directory on the administrative system
-            acts as <filename class="directory">/etc/shorewall</filename> for
-            that firewall. So when the Shorewall documentation gives
-            instructions for placing entries in files in the firewall's
-            <filename class="directory">/etc/shorewall</filename>, when using
-            Shorewall Lite you make those changes in the firewall's
-            configuration directory on the administrative system.</para>
+            firewall's export directory on the administrative system acts as
+            <filename class="directory">/etc/shorewall</filename> for that
+            firewall. So when the Shorewall documentation gives instructions
+            for placing entries in files in the firewall's <filename
+            class="directory">/etc/shorewall</filename>, when using Shorewall
+            Lite you make those changes in the firewall's export directory on
+            the administrative system.</para>
           </listitem>
 
           <listitem>
-            <programlisting><command>cd &lt;configuration directory&gt;</command>
+            <programlisting><command>cd &lt;export directory&gt;</command>
 <command>/sbin/shorewall load firewall</command></programlisting>
 
             <para>The <ulink
@@ -330,10 +329,9 @@
 
       <listitem>
         <para>If you later need to change the firewall's configuration, change
-        the appropriate files in the firewall's configuration directory
-        then:</para>
+        the appropriate files in the firewall's export directory then:</para>
 
-        <programlisting><command>cd &lt;configuration directory&gt;</command>
+        <programlisting><command>cd &lt;export directory&gt;</command>
 <command>/sbin/shorewall reload firewall</command></programlisting>
 
         <para>The <ulink
@@ -391,15 +389,14 @@
 
       <orderedlist numeration="loweralpha">
         <listitem>
-          <para>On the administrative system, create a configuration directory
-          for the firewall system.</para>
+          <para>On the administrative system, create an export directory for
+          the firewall system.</para>
         </listitem>
 
         <listitem>
           <para>Copy the contents of <filename
           class="directory">/etc/shorewall/</filename> from the firewall
-          system to the configuration directory on the administrative
-          system.</para>
+          system to the export directory on the administrative system.</para>
         </listitem>
 
         <listitem>
@@ -439,10 +436,10 @@
           administrative system in the firewall system's
           <filename>routestopped</filename> file.</para>
 
-          <para>Also, edit the shorewall.conf file in the firewall's
-          configuration directory and change the CONFIG_PATH setting to remove
-          <filename class="directory">/etc/shorewall</filename>. You can
-          replace it with <filename
+          <para>Also, edit the shorewall.conf file in the firewall's export
+          directory and change the CONFIG_PATH setting to remove <filename
+          class="directory">/etc/shorewall</filename>. You can replace it with
+          <filename
           class="directory">/usr/share/shorewall/configfiles</filename> if you
           like.</para>
 
@@ -459,13 +456,13 @@
           </blockquote>
 
           <para>Changing CONFIG_PATH will ensure that subsequent compilations
-          using the configuration directory will not include any files from
-          <filename class="directory">/etc/shorewall</filename>.</para>
+          using the export directory will not include any files from <filename
+          class="directory">/etc/shorewall</filename>.</para>
 
-          <para>After having made the above changes to the firewall's
-          configuration directory, execute the following commands:</para>
+          <para>After having made the above changes to the firewall's export
+          directory, execute the following commands:</para>
 
-          <programlisting><command>cd &lt;configuration directory&gt;</command>
+          <programlisting><command>cd &lt;export directory&gt;</command>
 <command>/sbin/shorewall load &lt;firewall system&gt;</command>
 </programlisting>
 
@@ -483,10 +480,10 @@
 
         <listitem>
           <para>If you later need to change the firewall's configuration,
-          change the appropriate files in the firewall's configuration
-          directory then:</para>
+          change the appropriate files in the firewall's export directory
+          then:</para>
 
-          <programlisting><command>cd &lt;configuration directory&gt;</command>
+          <programlisting><command>cd &lt;export directory&gt;</command>
 <command>/sbin/shorewall reload firewall</command></programlisting>
 
           <para>The <ulink

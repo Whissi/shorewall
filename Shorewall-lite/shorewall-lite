@@ -1203,6 +1203,8 @@ else
     exit 2
 fi
 
+[ -n "${LITEDIR}" -a -f ${LITEDIR}/firewall.conf ] && . ${LITEDIR}/firewall.conf
+
 ensure_config_path
 export CONFIG_PATH
 

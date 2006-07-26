@@ -1299,9 +1299,9 @@ restore_command() {
 #
 # [Re]load command executor
 #
-reload_command()
+reload_command()) # $1 = directory, $2 = system
 {
-    local verbose=$(make_verbose)
+    local verbose=$(make_verbose) file=$(resolve_file $1/firewall)
 
     [ -n "$LITEDIR" ] || { echo "   ERROR: LITEDIR not defined in ${SHAREDIR}/configpath" >&2; exit 2; }
 

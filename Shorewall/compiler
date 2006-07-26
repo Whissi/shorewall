@@ -7769,8 +7769,6 @@ stop_firewall() {
 	*)
 	    set +x
 
-	    [ -n "\${RESTOREFILE:=restore}" ]
-
 	    RESTOREPATH=\${VARDIR}/\$RESTOREFILE
 
 	    if [ -x \$RESTOREPATH ]; then
@@ -8249,6 +8247,7 @@ __EOF__
     cat >&3 << __EOF__
     [ -n "\${COMMAND:=restart}" ]
     [ -n "\${VERBOSE:=0}" ]
+    [ -n "\${RESTOREFILE:=$RESTOREFILE}" ]
     MODULESDIR="$MODULESDIR"
     MODULE_SUFFIX="$MODULE_SUFFIX"
     LOGLIMIT="$LOGLIMIT"
@@ -8267,7 +8266,6 @@ __EOF__
     fi
 
     cat >&3 << __EOF__
-    RESTOREFILE="$RESTOREFILE"
     VERSION="$VERSION"
     SUBSYSLOCK="$SUBSYSLOCK"
     PATH="$PATH"
@@ -8482,6 +8480,25 @@ __EOF__
 	INDENT=
 	cat $(find_file prog.header) $OUTPUT $(find_file prog.footer) > $outfile
 	chmod 700 $outfile
+	if [ -n "$EXPORT" ]; then
+	    exec 3>${outfile}.conf
+	    cat >&3 << __EOF__
+#
+# Shorewall auxillary configuration file created by Shorewall version $VERSION - $(date)
+#
+[ -n "\${VERBOSITY:=$VERBOSITY}" ]
+[ -n "\${LOGFILE:=$LOGFILE}" ]
+[ -n "\${LOGFORMAT:=$LOGFORMAT}" ]
+[ -n "\${IPTABLES:=$IPTABLES}" ]
+[ -n "\${PATH:=$PATH}" ]
+[ -n "\${SHOREWALL_SHELL:=$SHOREWALL_SHELL}" ]
+[ -n "\${LOGFILE:=$LOGFILE}" ]
+[ -n "\${SUBSYSLOCK:=$SUBSYSLOCK}" ]
+[ -n "\${RESTOREFILE:=$RESTOREFILE}" ]
+__EOF__
+	    exec 3>&-
+	fi
+
 	progress_message3 "Shorewall configuration compiled to $(resolve_file $outfile)"
 	rm -f $OUTPUT
     fi
@@ -8861,6 +8878,7 @@ do_initialize() {
     fi
 
     [ "x${SHOREWALL_DIR}" = "x." ] && SHOREWALL_DIR="$PWD"
+    [ -n "${RESTOREFILE:=restore}" ]
 
     #
     # Strip the files that we use often

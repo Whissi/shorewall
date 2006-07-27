@@ -13,10 +13,14 @@
       </author>
     </authorgroup>
 
+    <othercredit>
+      <surname>Cristian Rodriguez R.</surname>
+    </othercredit>
+
     <pubdate><?dbtimestamp format="Y/m/d"?></pubdate>
 
     <copyright>
-      <year>2001-2006</year>
+      <year>2001-<?dbtimestamp format="Y"?></year>
 
       <holder>Thomas M. Eastep</holder>
     </copyright>
@@ -202,13 +206,18 @@ ICQ/ACCEPT  <emphasis>&lt;source&gt;</emphasis>  net</programlisting>
     <title>IMAP</title>
 
     <caution>
-      <para>When accessing you mail from the internet,use <emphasis
+      <para>When accessing your mail from the internet,use <emphasis
       role="bold">only</emphasis> <emphasis role="bold">IMAP over
-      SSL</emphasis></para>
+      SSL.</emphasis></para>
+    </caution>
+
+    <caution>
+      <para>This information is valid only for Shorewall 3.2 or later.</para>
     </caution>
 
     <programlisting>#ACTION         SOURCE    DESTINATION      PROTO      DEST PORT(S)
-IMAP/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis> #Secure &amp; Unsecure IMAP</programlisting>
+IMAP/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis> # Unsecure IMAP 
+IMAPS/ACCEPT    &lt;source&gt;  &lt;destination&gt; # IMAP over SSL.</programlisting>
   </section>
 
   <section>
@@ -224,6 +233,18 @@ ACCEPT     <emphasis>&lt;destination&gt;</emphasis>  <emphasis>&lt;source&gt;</e
 
     <para>Lots more information <ulink url="IPSEC.htm">here</ulink> and <ulink
     url="VPN.htm">here</ulink>.</para>
+  </section>
+
+  <section>
+    <title>LDAP</title>
+
+    <caution>
+      <para>This information is valid only for Shorewall 3.2 or later.</para>
+    </caution>
+
+    <programlisting>#ACTION          SOURCE           DESTINATION      PROTO      DEST PORT(S)
+LDAP/ACCEPT      <emphasis>&lt;source&gt;</emphasis>  <emphasis>     &lt;destination&gt;</emphasis> <emphasis>     #Insecure LDAP</emphasis>
+LDAPS/ACCEPT     <emphasis><emphasis>&lt;source&gt;</emphasis>  <emphasis>     &lt;destination&gt;</emphasis></emphasis><emphasis></emphasis>   # LDAP over SSL</programlisting>
   </section>
 
   <section>
@@ -252,17 +273,20 @@ PCA/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt
   </section>
 
   <section>
-    <title>Pop3</title>
+    <title>POP3</title>
 
     <caution>
       <para>If Possible , <emphasis role="bold">Avoid this protocol</emphasis>
       , use <emphasis role="bold">IMAP</emphasis> instead.</para>
     </caution>
 
-    <para>TCP Port 110 (Secure Pop3 is TCP Port 995)</para>
+    <caution>
+      <para>This information is valid only for Shorewall 3.2 or later</para>
+    </caution>
 
     <programlisting>#ACTION         SOURCE    DESTINATION      PROTO      DEST PORT(S)
-POP3/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis> # Secure &amp; Unsecure Pop3</programlisting>
+POP3/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>   # Secure
+POP3S/ACCEPT    &lt;source&gt;  &lt;destination&gt;  #Unsecure Pop3</programlisting>
   </section>
 
   <section>
@@ -298,7 +322,8 @@ SSH/ACCEPT <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</e
   </section>
 
   <section>
-    <title>SMB/NMB (Samba/Windows Browsing/File Sharing)</title>
+    <title>SMB/NMB (Samba/<trademark>Windows</trademark> Browsing/File
+    Sharing)</title>
 
     <programlisting>#ACTION        SOURCE         DESTINATION      PROTO      DEST PORT(S)
 SMB/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>     &lt;destination&gt;</emphasis>
@@ -310,9 +335,13 @@ SMB/ACCEPT     <emphasis>&lt;destination&gt;</emphasis>  <emphasis>&lt;source&gt
   <section>
     <title>SMTP</title>
 
-    <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-SMTP/ACCEPT<emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>                      #Insecure SMTP
-ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        465    #SMTP over SSL (TLS)</programlisting>
+    <caution>
+      <para>This information is valid only for Shorewall 3.2 or later.</para>
+    </caution>
+
+    <programlisting>#ACTION         SOURCE    DESTINATION      PROTO      DEST PORT(S)
+SMTP/ACCEPT<emphasis>      &lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>                      #Insecure SMTP
+SMTPS/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>                      #SMTP over SSL (TLS)</programlisting>
   </section>
 
   <section>
@@ -323,7 +352,28 @@ SNMP/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&g
   </section>
 
   <section>
+    <title>SVN</title>
+
+    <caution>
+      <para>This information is valid only for Shorewall 3.2 or later.</para>
+    </caution>
+
+    <caution>
+      <para>This rule is for Subversion running in <emphasis
+      role="bold">svnserve mode only.</emphasis></para>
+    </caution>
+
+    <programlisting>#ACTION         SOURCE    DESTINATION      PROTO      DEST PORT(S)
+SVN/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
+  </section>
+
+  <section>
     <title>Telnet</title>
+
+    <caution>
+      <para><emphasis role="bold"><emphasis>The telnet protocol is very
+      insecure</emphasis>, don't use it.</emphasis></para>
+    </caution>
 
     <programlisting>#ACTION           SOURCE    DESTINATION      PROTO      DEST PORT(S)
 Telnet/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
@@ -369,7 +419,8 @@ ACCEPT     fw        ...</programlisting>
     <title>Usenet (NNTP)</title>
 
     <programlisting>#ACTION         SOURCE    DESTINATION      PROTO      DEST PORT(S)
-NNTP/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis> </programlisting>
+NNTP/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>
+NNTPS/ACCEPT    &lt;source&gt;  &lt;destination&gt;  # secure NNTP</programlisting>
 
     <para>TCP Port 119</para>
   </section>
@@ -409,8 +460,13 @@ VNCL/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&g
   <section>
     <title>Web Access</title>
 
+    <caution>
+      <para>This information is valid for Shorewall 3.2 or later.</para>
+    </caution>
+
     <programlisting>#ACTION        SOURCE    DESTINATION      PROTO      DEST PORT(S)
-Web/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis> #Insecure HTTP&amp; Secure HTTP</programlisting>
+HTTP/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis> #Insecure HTTP 
+HTTPS/ACCEPT    &lt;source&gt;  &lt;destination&gt; #Secure   HTTP</programlisting>
   </section>
 
   <section>
@@ -454,6 +510,16 @@ ACCEPT     &lt;<emphasis>apps</emphasis>&gt;    &lt;<emphasis>chooser</emphasis>
     <title>Revision History</title>
 
     <para><revhistory>
+        <revision>
+          <revnumber>1.18</revnumber>
+
+          <date>2006-07-18</date>
+
+          <authorinitials>CR</authorinitials>
+
+          <revremark>Updated for Shorewall 3.2</revremark>
+        </revision>
+
         <revision>
           <revnumber>1.18</revnumber>
 

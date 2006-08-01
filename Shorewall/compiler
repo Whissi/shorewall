@@ -2213,13 +2213,11 @@ setup_ipsec() {
 
     do_options() # $1 = _in, _out or "" - $2 = option list
     {
-	local option opts newoptions= val
+	local option newoptions= val
 
 	[ x${2} = x- ] && return
 
-	opts=$(separate_list $2)
-
-	for option in $opts; do
+	for option in $(separate_list $2); do
 	    val=${option#*=}
 
 	    case $option in

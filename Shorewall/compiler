@@ -7844,6 +7844,8 @@ __EOF__
 	    qt arp -i \$external -d \$address pub
 	    [ -z "\${haveroute}\${NOROUTES}" ] && qt ip route del \$address dev \$interface
 	done < \${VARDIR}/proxyarp
+
+	rm -f \${VARDIR}/proxyarp
     fi
 
     for f in /proc/sys/net/ipv4/conf/*; do

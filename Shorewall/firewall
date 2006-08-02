@@ -1269,7 +1269,7 @@ delete_proxy_arp() {
 	rm -f ${VARDIR}/proxyarp
     fi
 
-    [ -d $STATEDIR ] && touch $STATEDIR/proxyarp
+    [ -d ${VARDIR} ] && touch ${VARDIR}/proxyarp
 
     case $COMMAND in
 	stop|clear)
@@ -1306,7 +1306,7 @@ delete_nat() {
 	rm -f ${VARDIR}/nat
     fi
 
-    [ -d $STATEDIR ] && touch $STATEDIR/nat
+    [ -d ${VARDIR} ] && touch ${VARDIR}/nat
 }
 
 #

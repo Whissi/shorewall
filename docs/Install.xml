@@ -235,13 +235,11 @@
     </important>
 
     <para>The easiest way to install Shorewall on Debian, is to use
-    apt-get:</para>
+    apt-get<command>. </command></para>
 
-    <para><command>apt-get install shorewall</command></para>
-
-    <para>To ensure that you are installing the latest version of Shorewall,
-    please modify your <filename>/etc/apt/preferences: </filename><ulink
-    url="http://sourceforge.net/mailarchive/message.php?msg_id=13995291"></ulink></para>
+    <para>First, to ensure that you are installing the latest version of
+    Shorewall, please modify your
+    <filename>/etc/apt/preferences:</filename></para>
 
     <para><programlisting>Package: shorewall
 Pin: release o=Debian,a=testing
@@ -249,11 +247,13 @@ Pin-Priority: 700
 
 Package: shorewall-doc
 Pin: release o=Debian,a=testing
-Pin-Priority: 700</programlisting></para>
+Pin-Priority: 700</programlisting><emphasis role="bold"><emphasis>Then
+    run:</emphasis></emphasis><programlisting># apt-get update
+# apt-get install shorewall</programlisting></para>
 
-    <para><emphasis role="bold">Once you have completed configuring Shorewall,
-    you can enable startup at boot time by setting startup=1 in
-    <filename>/etc/default/shorewall</filename>.</emphasis></para>
+    <para><emphasis><emphasis role="bold">Once you have completed configuring
+    Shorewall, you can enable startup at boot time by setting startup=1 in
+    <filename>/etc/default/shorewall</filename>.</emphasis></emphasis></para>
   </section>
 
   <section>

@@ -87,7 +87,7 @@
 
               <para>For example, if you have:</para>
 
-              <programlisting>EXT_IP=$(fiind_first_interface_address eth0)</programlisting>
+              <programlisting>EXT_IP=$(find_first_interface_address eth0)</programlisting>
 
               <para>in <filename>/etc/shorewall/params</filename> then all
               occurrences of $EXT_IP in Shorewall configuration files will be
@@ -178,6 +178,13 @@
   <section id="Lite">
     <title>Shorewall Lite (Added in version 3.2.0 RC 1)</title>
 
+    <important>
+      <para>The following information applies to <emphasis
+      role="bold">Shorewall 3.2.2 and later</emphasis>. Users running versions
+      of Shorewall and Shorewall Lite earlier than 3.2.2 are urged to
+      upgrade.</para>
+    </important>
+
     <para>Shorewall Lite is a companion product to Shorewall and is designed
     to allow you to maintain all Shorewall configuration information on a
     single system within your network.</para>
@@ -212,79 +219,11 @@
       <listitem>
         <para>On each firewall system, you run:</para>
 
-        <programlisting><command>/usr/share/shorewall-lite/shorecap &gt; capabilities</command>
+        <programlisting><command>/sbin/shorewall-lite show -f capabilities &gt; capabilities</command>
 <command>scp capabilities &lt;admin system&gt;:&lt;this system's config dir&gt;</command></programlisting>
 
         <para>If you are running Debian or one of its derivatives like Ubuntu
         then edit /etc/default/shorewall-lite and set startup=1.</para>
-
-        <para>Shorewall Lite includes a very limited version of
-        <filename>shorewall.conf
-        </filename>(<filename>/etc/shorewall-lite/shorewall.conf</filename>).
-        It includes the following options which have the same meaning as in a
-        full Shorewall installation except as noted below:</para>
-
-        <blockquote>
-          <simplelist>
-            <member>VERBOSITY</member>
-
-            <member>LOGFILE</member>
-
-            <member>LOGFORMAT — used by <filename>/sbin/shorewall</filename>
-            for finding 'Shorewall' log messages. If LOGFORMAT was specified
-            in the shorewall.conf file used at compile time on the
-            administrative system, then the format of the messages themselves
-            is defined by that value. If LOGFORMAT was not specified at
-            compile time then the firewall script will use the value from
-            <filename>/etc/shorewall-lite/shorewall.conf</filename> on the
-            firewall system.</member>
-
-            <member>IPTABLES — determines the iptables binary to be used by
-            <filename>/sbin/shorewall</filename>. The compiled firewall script
-            will use the IPTABLES specified in
-            <filename>shorewall.conf</filename> at compile time on the
-            administrative system, if any; if IPTABLES was not specified at
-            compile time then the IPTABLES value from
-            <filename>/etc/shorewall-lite/shorewall.conf</filename> on the
-            firewall system will be used by the firewall script.</member>
-
-            <member>PATH</member>
-
-            <member>SHOREWALL_SHELL</member>
-
-            <member>SUBSYSLOCK</member>
-
-            <member>RESTOREFILE</member>
-          </simplelist>
-        </blockquote>
-
-        <para>The handling of CONFIG_PATH was broken in Shorewall 3.2.0 —
-        Users wishing to use Shorewall Lite are urged to run 3.2.1 or later
-        (both Shorewall and Shorewall Lite). Beginning with version 3.2.1, the
-        CONFIG_PATH variable is treated as follows:</para>
-
-        <itemizedlist>
-          <listitem>
-            <para>The value of CONFIG_PATH in
-            <filename>/etc/shorewall/shorewall.conf </filename>is ignored when
-            compiling for export (the -e option in given).</para>
-          </listitem>
-
-          <listitem>
-            <para>The value of CONFIG_PATH in the
-            <filename>shorewall.conf</filename> file in the export directory
-            is used to search for configuration files during compilation of
-            that configuration.</para>
-          </listitem>
-
-          <listitem>
-            <para>The value of CONFIG_PATH used when the script is run on the
-            firewall system is
-            "/etc/shorewall-lite:/usr/share/shorewall-lite".</para>
-          </listitem>
-        </itemizedlist>
-
-        <para>Edit the shorewall.conf file as required.</para>
       </listitem>
 
       <listitem>
@@ -307,6 +246,31 @@
             class="directory">/etc/shorewall</filename>, when using Shorewall
             Lite you make those changes in the firewall's export directory on
             the administrative system.</para>
+
+            <para>The CONFIG_PATH variable is treated as follows:</para>
+
+            <itemizedlist>
+              <listitem>
+                <para>The value of CONFIG_PATH in
+                <filename>/etc/shorewall/shorewall.conf </filename>is ignored
+                when compiling for export (the -e option in given) and when
+                the <command>load</command> or <command>reload</command>
+                command is being executed (see below).</para>
+              </listitem>
+
+              <listitem>
+                <para>The value of CONFIG_PATH in the
+                <filename>shorewall.conf</filename> file in the export
+                directory is used to search for configuration files during
+                compilation of that configuration.</para>
+              </listitem>
+
+              <listitem>
+                <para>The value of CONFIG_PATH used when the script is run on
+                the firewall system is
+                "/etc/shorewall-lite:/usr/share/shorewall-lite".</para>
+              </listitem>
+            </itemizedlist>
           </listitem>
 
           <listitem>
@@ -316,9 +280,9 @@
             <para>The <ulink
             url="starting_and_stopping_shorewall.htm#Load"><command>load</command></ulink>
             command compiles a firewall script from the configuration files in
-            the current working directory, copies that file to the remote
-            system via scp and starts Shorewall Lite on the remote system via
-            ssh.</para>
+            the current working directory (using <command>shorewall compile
+            -e</command>), copies that file to the remote system via scp and
+            starts Shorewall Lite on the remote system via ssh.</para>
 
             <para>Example (firewall's DNS name is 'gateway'):</para>
 
@@ -337,10 +301,41 @@
         <para>The <ulink
         url="starting_and_stopping_shorewall.htm#Reload"><command>reload</command></ulink>
         command compiles a firewall script from the configuration files in the
-        current working directory, copies that file to the remote system via
-        scp and restarts Shorewall Lite on the remote system via ssh.</para>
+        current working directory (using <command>shorewall compile
+        -e</command>), copies that file to the remote system via scp and
+        restarts Shorewall Lite on the remote system via ssh.</para>
       </listitem>
     </orderedlist>
+
+    <para>There is a <filename>shorewall.conf</filename> file installed as
+    part of Shorewall Lite
+    (<filename>/etc/shorewall-lite/shorewall.conf</filename>). You can use
+    that file on the firewall system to override some of the settings from the
+    shorewall.conf file in the export directory. Settings that you can
+    override are:</para>
+
+    <blockquote>
+      <simplelist>
+        <member>VERBOSITY</member>
+
+        <member>LOGFILE</member>
+
+        <member>LOGFORMAT</member>
+
+        <member>IPTABLES</member>
+
+        <member>PATH</member>
+
+        <member>SHOREWALL_SHELL</member>
+
+        <member>SUBSYSLOCK</member>
+
+        <member>RESTOREFILE</member>
+      </simplelist>
+    </blockquote>
+
+    <para>You will normally not need to touch
+    <filename>/etc/shorewall-lite/shorewall.conf</filename>.</para>
 
     <para>The <filename>/sbin/shorewall-lite</filename> program included with
     Shorewall Lite supports the same set of commands as the
@@ -414,9 +409,6 @@
         <listitem>
           <para>Install Shorewall Lite on the firewall system.</para>
 
-          <para>Modify <filename>/etc/shorewall-lite/shorewall.conf</filename>
-          as needed.</para>
-
           <para>If you are running Debian or one of its derivatives like
           Ubuntu then edit /etc/default/shorewall-lite and set
           startup=1.</para>
@@ -425,7 +417,7 @@
         <listitem>
           <para>On the firewall system:</para>
 
-          <programlisting><command>/usr/share/shorewall-lite/shorecap &gt; capabilities</command>
+          <programlisting><command>/sbin/shorewall-lite show -f capabilities &gt; capabilities</command>
 <command>scp capabilities &lt;admin system&gt;:&lt;this system's config dir&gt;</command></programlisting>
         </listitem>
 
@@ -473,9 +465,9 @@
           <para>The <ulink
           url="starting_and_stopping_shorewall.htm#Load"><command>load</command></ulink>
           command compiles a firewall script from the configuration files in
-          the current working directory, copies that file to the remote system
-          via scp and starts Shorewall Lite on the remote system via
-          ssh.</para>
+          the current working directory (using <command>shorewall compile
+          -e</command>), copies that file to the remote system via scp and
+          starts Shorewall Lite on the remote system via ssh.</para>
         </listitem>
 
         <listitem>
@@ -489,9 +481,9 @@
           <para>The <ulink
           url="starting_and_stopping_shorewall.htm#Reload"><command>reload</command></ulink>
           command compiles a firewall script from the configuration files in
-          the current working directory, copies that file to the remote system
-          via scp and restarts Shorewall Lite on the remote system via
-          ssh.</para>
+          the current working directory (using <command>shorewall compile
+          -e</command>), copies that file to the remote system via scp and
+          restarts Shorewall Lite on the remote system via ssh.</para>
         </listitem>
       </orderedlist>
     </section>
@@ -556,6 +548,13 @@ MANGLE_FORWARD                  # Mangle table has FORWARD chain</programlisting
     <para>The <filename>capabilities</filename> file may then be copied to a
     system with Shorewall installed and used when compiling firewall programs
     to run on the remote system.</para>
+
+    <para>Beginning with Shorewall Lite version 3.2.2, the capabilities file
+    may also be creating using
+    <filename>/sbin/shorewall-lite:</filename><blockquote>
+        <para><command>shorewall-lite show -f capabilities &gt;
+        capabilities</command></para>
+      </blockquote></para>
   </section>
 
   <section>

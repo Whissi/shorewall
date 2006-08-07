@@ -897,7 +897,7 @@ gateway:~ #</programlisting>
         Lite)</term>
 
         <listitem>
-          <para><command>load [ &lt;directory&gt; ]
+          <para><command>load [ -s ] [ &lt;directory&gt; ]
           &lt;system&gt;</command></para>
 
           <para>If &lt;directory&gt; is omitted, the current working directory
@@ -945,6 +945,16 @@ gateway:~ #</programlisting>
           </note>
 
           <para>Example: <command>shorewall reload gateway</command></para>
+
+          <para>If the -s option is given and the remote
+          <command>/sbin/shorewall-lite start</command> command succeeds then
+          the configuration on the remote system is saved using the
+          command</para>
+
+          <simplelist>
+            <member><command>ssh root@&lt;system&gt; '/sbin/shorewall-lite
+            save'</command></member>
+          </simplelist>
         </listitem>
       </varlistentry>
 
@@ -1024,7 +1034,7 @@ gateway:~ #</programlisting>
         Shorewall Lite)</term>
 
         <listitem>
-          <para><command>reload [ &lt;directory&gt; ]
+          <para><command>reload [ -s ] [ &lt;directory&gt; ]
           &lt;system&gt;</command></para>
 
           <para>If &lt;directory&gt; is omitted, the current working directory
@@ -1072,6 +1082,16 @@ gateway:~ #</programlisting>
           </note>
 
           <para>Example: <command>shorewall reload gateway</command></para>
+
+          <para>If the -s option is given and the remote
+          <command>/sbin/shorewall-lite restart</command> command succeeds
+          then the configuration on the remote system is saved using the
+          command</para>
+
+          <simplelist>
+            <member><command>ssh root@&lt;system&gt; '/sbin/shorewall-lite
+            save'</command></member>
+          </simplelist>
         </listitem>
       </varlistentry>
 

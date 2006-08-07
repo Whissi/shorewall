@@ -662,7 +662,8 @@ gateway:~ #</programlisting>
         <term>allow</term>
 
         <listitem>
-          <para><command>shorewall allow &lt;address&gt; ...</command></para>
+          <para><command>shorewall[-lite] allow &lt;address&gt;
+          ...</command></para>
 
           <para>Re-enables receipt of packets from hosts previously
           blacklisted by a drop or reject command.</para>
@@ -1238,10 +1239,9 @@ gateway:~ #</programlisting>
 
           <para>Start shorewall. Existing connections through shorewall
           managed interfaces are untouched. New connections will be allowed
-          only if they are allowed by the firewall rules or policies. If -q is
-          specified, less detail is displayed making it easier to spot
-          warnings If -f is specified, the saved configuration specified by
-          the RESTOREFILE option in <ulink
+          only if they are allowed by the firewall rules or policies. If -f is
+          specified, the saved configuration specified by the RESTOREFILE
+          option in <ulink
           url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>
           will be restored if that saved configuration exists</para>
         </listitem>

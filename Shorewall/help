@@ -88,7 +88,7 @@ debug)
     If you include the keyword debug as the first argument to any
     of these commands:
 
-	start|stop|restart|reset|clear|refresh|check|add|delete|compile
+	start|stop|restart|reset|clear|refresh|check|compile
 
     then a shell trace of the command is produced.  For example:
 
@@ -159,7 +159,7 @@ iprange)
 	;;
 
 load)
-	echo "load: load [ <directory> ] <system>
+	echo "load: load [ -s ] [ <directory> ] <system>
     If <directory> is omitted, then the current working directory is assumed.
 
     Requires that Shorewall Lite be installed on the named <system>.
@@ -168,7 +168,10 @@ load)
     program called '<directory>/firewall'. If compilation is successful,
     the '<directory>/firewall' script is copied via scp to the
     ${LITEDIR} directory on <system>. If the script is copied
-    successfully, Shorewall Lite on <system> is started via ssh."
+    successfully, Shorewall Lite on <system> is started via ssh.
+
+    If the -s option is given and Shorewall Lite starts successfully then
+    ssh is used to execute 'shorewall-lite save' on <system>"
 	;;
 
 logdrop)
@@ -227,7 +230,10 @@ reload)
     program called '<directory>/firewall'. If compilation is successful,
     the '<directory>/firewall' script is copied via scp to the
     ${LITEDIR} directory on <system>. If the script is copied
-    successfully, Shorewall Lite on <system> is restarted via ssh."
+    successfully, Shorewall Lite on <system> is restarted via ssh.
+
+    If the -s option is given and Shorewall Lite restarts successfully then
+    ssh is used to execute 'shorewall-lite save' on <system>"
 	;;
 
 restart)
@@ -277,7 +283,7 @@ save)
 	;;
 
 show)
-	echo "show: show [ <chain> [ <chain> ...] |actions|classifiers|config|connections|log|macros|mangle|nat|tc|zones]
+	echo "show: show [ <chain> [ <chain> ...] |actions|capabilities|classifiers|config|connections|log|macros|mangle|nat|tc|zones]
 
     shorewall [-x] show <chain> [ <chain> ... ]  - produce a verbose report about the IPtable chain(s).
     (iptables -L chain -n -v)
@@ -303,7 +309,8 @@ show)
 
     shorewall show zones - displays the contents of all zones.
 
-    shorewall show capabilities - displays your kernel/iptables capabilities
+    shorewall show [ -f ] capabilities - displays your kernel/iptables capabilities. When \"-f\" is
+    specified, then the output is suitable for use as /etc/shorewall/capabilities.
 
     shorewall show config - displays the default CONFIG_PATH and LITEDIR for your distribution
 

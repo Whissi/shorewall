@@ -1076,7 +1076,7 @@ __EOF__
 #
 setup_providers()
 {
-    local table number mark duplicate interface gateway options provider address copy route loose addresses rulenum rulebase echobin=$(mywhich echo) balance save_indent="$INDENT" mask= first=Yes
+    local table number mark duplicate interface gateway options provider address copy route loose addresses rulenum rulebase echobin=$(mywhich echo) balance save_indent="$INDENT" mask= first=Yes save_indent1=
 
     copy_table() {
 	    indent >&3 << __EOF__
@@ -1115,6 +1115,7 @@ __EOF__
     {
 	balance=yes
 
+	save_command
 	if [ -n "$first" ]; then
 	    if [ -n "$gateway" ] ; then
 		save_command "DEFAULT_ROUTE=\"nexthop via $gateway dev $interface weight $1\""
@@ -1133,7 +1134,7 @@ __EOF__
     }
 
     add_a_provider() {
-	local t n iface option
+	local t n iface option optional=
 
 	[ -n "$MANGLE_ENABLED" ] || fatal_error "Providers require mangle support in your kernel and iptables"
 
@@ -1158,6 +1159,14 @@ __EOF__
 # Add Provider $table ($number)
 #
 __EOF__
+	save_command "if [ \"\$(find_first_interface_address_if_any $interface)\" != 0.0.0.0 ]; then"
+	save_indent1="$INDENT"
+	INDENT="$INDENT    "
+
+	iface=$(chain_base $interface)
+	
+	save_command "${iface}_up=Yes"
+	
 	save_command "qt ip route flush table $number"
 
 	if [ "x${duplicate:=-}" != x- ]; then
@@ -1222,7 +1231,6 @@ __EOF__
 		track)
 		    list_search $interface $ROUTEMARK_INTERFACES && \
 			fatal_error "Interface $interface is tracked through an earlier provider"
-		    iface=$(chain_base $interface)
 		    [ x${mark} = x- ] && fatal_error "The 'track' option requires a numeric value in the MARK column - Provider \"$provider\""
 		    eval ${iface}_routemark=$mark
 		    ROUTEMARK_INTERFACES="$ROUTEMARK_INTERFACES $interface"
@@ -1235,6 +1243,9 @@ __EOF__
 		    ;;
 		loose)
 		    loose=Yes
+		    ;;
+		optional)
+		    optional=Yes
 		    ;;
 		*)
 		    error_message "WARNING: Invalid option ($option) ignored in provider \"$provider\""
@@ -1270,6 +1281,19 @@ __EOF__
 progress_message "   Provider $table ($number) Added"
 
 __EOF__
+
+    INDENT="$save_indent1"
+    save_command else
+    
+    if [ -n "$optional" ]; then
+	save_command "    error_message \"WARNING: Interface $interface is not configured -- Provider $table ($number) not Added\""
+	save_command "    ${iface}_up="
+    else
+	save_command "    fatal_error \"ERROR: Interface $interface is not configured -- Provider $table ($number) Cannot be Added\""
+    fi
+
+    save_command fi
+    save_command
 
     }
 
@@ -1331,7 +1355,6 @@ __EOF__
     strip_file providers $1
 
     if [ -s $TMP_DIR/providers ]; then
-	DEFAULT_ROUTE=
 	balance=
 
 	progress_message2 "$DOING $1..."
@@ -1351,8 +1374,13 @@ __EOF__
 
 	if [ -n "$PROVIDERS" ]; then
 	    if [ -n "$balance" ]; then
-		save_command "run_ip route replace default scope global \$DEFAULT_ROUTE"
-		save_command "progress_message Default route \$DEFAULT_ROUTE Added"
+		save_command "if [ -n \"\$DEFAULT_ROUTE\" ]; then"
+		save_command "    run_ip route replace default scope global \$DEFAULT_ROUTE"
+		save_command "    progress_message \"Default route '\$(echo \$DEFAULT_ROUTE | sed 's/\$\\s*//')' Added\""
+		save_command "else"
+		save_command "    error_message \"WARNING: No Default route added (all 'balance' providers are down)\""
+		save_command "fi"
+		save_command
 	    fi
 
 	    cat >&3 << __EOF__
@@ -6072,7 +6100,7 @@ rules_chain() # $1 = source zone, $2 = destination zone
 #
 setup_routes()
 {
-    local mask=0xFF mark_op="--set-mark"
+    local mask=0xFF mark_op="--set-mark" save_indent="$INDENT"
 
     [ -n "$HIGH_ROUTE_MARKS" ] && mask=0xFF00 && mark_op="--or-mark"
 
@@ -6080,15 +6108,22 @@ setup_routes()
     run_iptables -t mangle -A OUTPUT     -m connmark ! --mark 0/$mask -j CONNMARK --restore-mark --mask $mask
     createmanglechain routemark
 
-    for interface in $ROUTEMARK_INTERFACES ; do
+    if [ -n "$ROUTEMARK_INTERFACES" ]; then
+	for interface in $ROUTEMARK_INTERFACES ; do
+	    iface=$(chain_base $interface)
+	    eval mark_value=\$${iface}_routemark
 
-	iface=$(chain_base $interface)
-	eval mark_value=\$${iface}_routemark
-
-	run_iptables -t mangle -A PREROUTING -i $interface -m mark --mark 0/$mask -j routemark
-	run_iptables -t mangle -A routemark  -i $interface                        -j MARK $mark_op $mark_value
-
-    done
+	    save_command
+	    save_command "if [ -n \"\$${iface}_up\" ]; then"
+	    INDENT="$INDENT    "
+	    run_iptables -t mangle -A PREROUTING -i $interface -m mark --mark 0/$mask -j routemark
+	    run_iptables -t mangle -A routemark  -i $interface                        -j MARK $mark_op $mark_value
+	    INDENT="$save_indent"
+	    save_command "fi"
+	done
+	
+	save_command
+    fi
 
     run_iptables -t mangle -A routemark -m mark ! --mark 0/$mask -j CONNMARK --save-mark --mask $mask
 
@@ -7327,6 +7362,7 @@ if [ -f $file ]; then
 else
     error_message "WARNING: Cannot set Martian logging on $interface"
 fi
+
 __EOF__
 	    done
 
@@ -7368,7 +7404,6 @@ fi
 __EOF__
 	done
     fi
-
     #
     # UPnP
     #
@@ -7485,14 +7520,6 @@ activate_rules()
 	fi
     }
 
-    #
-    # Create a dynamic chain for a zone and jump to it from a second chain
-    #
-    create_zone_dyn_chain() # $1 = zone, $2 = second chain
-    {
-	createchain ${1}_dyn No
-	run_iptables -A $2 -j ${1}_dyn
-    }
     #
     # Add jumps to early SNAT chains
     #
@@ -7992,6 +8019,21 @@ __EOF__
 }
 
 #
+# Conditionally add an option to .conf file (FD 3)
+#
+conditionally_add_option() { # $1 = option name
+    local value
+
+    eval value=\"\$$1\"
+
+    if [ -n "$value" ]; then
+	    cat >&3 << __EOF__
+[ -n "\${$1:=$value}" ]
+__EOF__
+    fi
+}	
+
+#
 # Compile a Restore Script
 #
 compile_firewall() # $1 = File Name
@@ -8484,19 +8526,13 @@ __EOF__
 	    exec 3>${outfile}.conf
 	    cat >&3 << __EOF__
 #
-# Shorewall auxillary configuration file created by Shorewall version $VERSION - $(date)
+# Shorewall auxiliary configuration file created by Shorewall version $VERSION - $(date)
 #
-[ -n "\${VERBOSITY:=$VERBOSITY}" ]
-[ -n "\${LOGFILE:=$LOGFILE}" ]
-[ -n "\${LOGFORMAT:=$LOGFORMAT}" ]
-[ -n "\${IPTABLES:=$IPTABLES}" ]
-[ -n "\${PATH:=$PATH}" ]
-[ -n "\${SHOREWALL_SHELL:=$SHOREWALL_SHELL}" ]
-[ -n "\${LOGFILE:=$LOGFILE}" ]
-[ -n "\${SUBSYSLOCK:=$SUBSYSLOCK}" ]
-[ -n "\${RESTOREFILE:=$RESTOREFILE}" ]
 __EOF__
-	    exec 3>&-
+	    for option in VERBOSITY LOGFILE LOGFORMAT IPTABLES PATH SHOREWALL_SHELL SUBSYSLOCK RESTOREFILE; do
+		conditionally_add_option $option
+	    done
+	    exec 3>&-	    
 	fi
 
 	progress_message3 "Shorewall configuration compiled to $(resolve_file $outfile)"

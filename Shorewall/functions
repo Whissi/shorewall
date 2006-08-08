@@ -1221,12 +1221,11 @@ determine_capabilities() {
 
     if qt $IPTABLES -A fooX1234 -m physdev --physdev-in eth0 -j ACCEPT; then
 	PHYSDEV_MATCH=Yes
-	qt $IPTABLES -A fooX1234 -m physdev --physdev-in eth1 -m physdev --physdev-out eth1 -j ACCEPT && KLUDGEFREE=Yes
     fi
 
     if qt $IPTABLES -A fooX1234 -m iprange --src-range 192.168.1.5-192.168.1.124 -j ACCEPT; then
 	IPRANGE_MATCH=Yes
-	if [ -z "${KLUDGEFREE}${PHYSDEV_MATCH}" ]; then
+	if [ -z "${KLUDGEFREE}" ]; then
 	    qt $IPTABLES -A fooX1234 -m iprange --src-range 192.168.1.5-192.168.1.124 -m iprange --dst-range 192.168.1.5-192.168.1.124 -j ACCEPT && KLUDGEFREE=Yes
 	fi
     fi
@@ -1282,16 +1281,16 @@ determine_capabilities() {
     qt $IPTABLES -X fooX1234
 }
 
-report_capability() # $1 = Capability Description , $2 Capability Setting (if any)
-{
-    local setting=
-
-    [ "x$2" = "xYes" ] && setting="Available" || setting="Not available"
-
-    echo "  " $1: $setting
-}
-
 report_capabilities() {
+    report_capability() # $1 = Capability Description , $2 Capability Setting (if any)
+    {
+	local setting=
+	
+	[ "x$2" = "xYes" ] && setting="Available" || setting="Not available"
+	
+	echo "  " $1: $setting
+    }
+
     if [ $VERBOSE -gt 1 ]; then
 	echo "Shorewall has detected the following iptables/netfilter capabilities:"
 	report_capability "NAT" $NAT_ENABLED
@@ -1325,6 +1324,41 @@ report_capabilities() {
 
 }
 
+report_capabilities1() {
+    report_capability1() # $1 = Capability
+    {
+	eval echo $1=\$$1
+    }
+
+    echo "#"
+    echo "# Shorewall $VERSION detected the following iptables/netfilter capabilities - $(date)"
+    echo "#"
+    report_capability1 NAT_ENABLED
+    report_capability1 MANGLE_ENABLED
+    report_capability1 MULTIPORT
+    report_capability1 XMULTIPORT
+    report_capability1 CONNTRACK_MATCH
+    report_capability1 USEPKTTYPE
+    report_capability1 POLICY_MATCH
+    report_capability1 PHYSDEV_MATCH
+    report_capability1 LENGTH_MATCH
+    report_capability1 IPRANGE_MATCH
+    report_capability1 RECENT_MATCH
+    report_capability1 OWNER_MATCH
+    report_capability1 IPSET_MATCH
+    report_capability1 CONNMARK
+    report_capability1 XCONNMARK
+    report_capability1 CONNMARK_MATCH
+    report_capability1 XCONNMARK_MATCH
+    report_capability1 RAW_TABLE
+    report_capability1 IPP2P_MATCH
+    report_capability1 CLASSIFY_TARGET
+    report_capability1 ENHANCED_REJECT
+    report_capability1 KLUDGEFREE
+    report_capability1 MARK
+    report_capability1 XMARK
+    report_capability1 MANGLE_FORWARD
+}
 
 #
 # Delete IP address

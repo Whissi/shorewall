@@ -872,6 +872,10 @@ show_command() {
 			    SHOWMACS=Yes
 			    option=${option#m}
 			    ;;
+			f*)
+			    FILEMODE=Yes
+			    option=${option#f}
+			    ;;
 			*)
 			    usage 1
 			    ;;
@@ -948,7 +952,11 @@ show_command() {
 	    [ $# -gt 1 ] && usage 1
 	    determine_capabilities
 	    VERBOSE=2
-	    report_capabilities
+	    if [ -n "$FILEMODE" ]; then
+		report_capabilities1
+	    else
+		report_capabilities
+	    fi
 	    ;;
 	actions)
 	    [ $# -gt 1 ] && usage 1
@@ -1299,23 +1307,73 @@ restore_command() {
 #
 # [Re]load command executor
 #
-reload_command()) # $1 = directory, $2 = system
+reload_command() # $* = original arguments less the command.
 {
-    local verbose=$(make_verbose) file=$(resolve_file $1/firewall)
+    local verbose=$(make_verbose) file= finished=0 saveit= result directory system
 
     [ -n "$LITEDIR" ] || { echo "   ERROR: LITEDIR not defined in ${SHAREDIR}/configpath" >&2; exit 2; }
 
-    if shorewall $debugging $verbose compile -e $1 $1/firewall && \
-	echo "Copying $(resolve_file ${1}/firewall) to ${2}:${LITEDIR}..." && \
-	scp $1/firewall root@${2}:${LITEDIR}
+    while [ $finished -eq 0 -a $# -gt 0 ]; do
+	option=$1
+	case $option in
+	    -*)
+		option=${option#-}
+
+		while [ -n "$option" ]; do
+		    case $option in
+			-)
+			    finished=1
+			    option=
+			    ;;
+			s*)
+			    saveit=Yes
+			    option=${option#s}
+			    ;;
+			*)
+			    usage 1
+			    ;;
+		    esac
+		done
+		shift
+		;;
+	    *)
+		finished=1
+		;;
+	esac
+    done
+
+    case $# in
+	1)
+	    directory="."
+	    system=$1
+	    ;;
+	2)
+	    directory=$1
+	    system=$2
+	    ;;
+	*)
+	    usage 1
+	    ;;
+    esac
+
+    file=$(resolve_file $directory/firewall)
+
+    if shorewall $debugging $verbose compile -e $directory $directory/firewall && \
+	echo "Copying $file and ${file}.conf to ${system}:${LITEDIR}..." && \
+	scp $directory/firewall $directory/firewall.conf root@${system}:${LITEDIR}
     then
 	echo "Copy complete"
 	if [ $COMMAND = reload ]; then
-	    ssh root@${2} "/sbin/shorewall-lite $debugging $verbose restart" && \
-	    progress_message3 "System $2 reloaded"
+	    ssh root@${system} "/sbin/shorewall-lite $debugging $verbose restart" && \
+	    progress_message3 "System $system reloaded" || saveit=
 	else
-	    ssh root@${2} "/sbin/shorewall-lite $debugging $verbose restart" && \
-	    progress_message3 "System $2 reloaded"
+	    ssh root@${system} "/sbin/shorewall-lite $debugging $verbose restart" && \
+	    progress_message3 "System $system reloaded" || saveit=
+	fi
+
+	if [ -n "$saveit" ]; then
+	    ssh root@${system} "/sbin/shorewall-lite $debugging $verbose save" && \
+	    progress_message3 "Configuration on system $system saved"
 	fi
     fi
 }
@@ -1347,18 +1405,18 @@ usage() # $1 = exit status
     echo "   ipcalc { <address>/<vlsm> | <address> <netmask> }"
     echo "   ipdecimal { <address> | <integer> }"
     echo "   iprange <address>-<address>"
-    echo "   load [ <directory> ] <system>"
+    echo "   load [ -s ] [ <directory> ] <system>"
     echo "   logdrop <address> ..."
     echo "   logreject <address> ..."
     echo "   logwatch [<refresh interval>]"
     echo "   refresh"
     echo "   reject <address> ..."
-    echo "   reload [ <directory> ] <system>"
+    echo "   reload [ -s ] [ <directory> ] <system>"
     echo "   reset"
     echo "   restart [ -n ] [ <directory> ]"
     echo "   restore [ -n ] [ <file name> ]"
     echo "   save [ <file name> ]"
-    echo "   show [ -x ] [ -m ] [<chain> [ <chain> ... ]|actions|capabilities|classifiers|config|connections|log|macros|mangle|nat|tc|zones]"
+    echo "   show [ -x ] [ -m ] [-f] [<chain> [ <chain> ... ]|actions|capabilities|classifiers|config|connections|log|macros|mangle|nat|tc|zones]"
     echo "   start [ -f ] [ -n ] [ <directory> ]"
     echo "   stop"
     echo "   status"
@@ -1657,21 +1715,7 @@ case "$COMMAND" in
 	;;
     load|reload)
 	shift
-	case $# in
-	    1)
-		directory="."
-		system=$1
-		;;
-	    2)
-		directory=$1
-		system=$2
-		;;
-	    *)
-		usage 1
-		;;
-	esac
-
-	reload_command $directory $system
+	reload_command $@
 	;;
     status)
 	[ $# -eq 1 ] || usage 1

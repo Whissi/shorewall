@@ -219,7 +219,7 @@
       <listitem>
         <para>On each firewall system, you run:</para>
 
-        <programlisting><command>/sbin/shorewall-lite show -f capabilities &gt; capabilities</command>
+        <programlisting><command>/usr/share/shorewall-lite/shorecap &gt; capabilities</command>
 <command>scp capabilities &lt;admin system&gt;:&lt;this system's config dir&gt;</command></programlisting>
 
         <para>If you are running Debian or one of its derivatives like Ubuntu
@@ -417,7 +417,7 @@
         <listitem>
           <para>On the firewall system:</para>
 
-          <programlisting><command>/sbin/shorewall-lite show -f capabilities &gt; capabilities</command>
+          <programlisting><command>/usr/share/shorewall-lite/shorecap &gt; capabilities</command>
 <command>scp capabilities &lt;admin system&gt;:&lt;this system's config dir&gt;</command></programlisting>
         </listitem>
 
@@ -484,6 +484,15 @@
           the current working directory (using <command>shorewall compile
           -e</command>), copies that file to the remote system via scp and
           restarts Shorewall Lite on the remote system via ssh.</para>
+        </listitem>
+
+        <listitem>
+          <para>If the kernel/iptables configuration on the firewall later
+          changes and you need to create a new capabilities file, do the
+          following:</para>
+
+          <programlisting><command>/sbin/shorewall-lite show -f capabilities &gt; capabilities</command>
+<command>scp capabilities &lt;admin system&gt;:&lt;this system's config dir&gt;</command></programlisting>
         </listitem>
       </orderedlist>
     </section>
@@ -573,6 +582,9 @@ MANGLE_FORWARD                  # Mangle table has FORWARD chain</programlisting
 
         <member><command>&lt;program&gt; [ -q ] [ -v ] [ -n ]
         clear</command></member>
+
+        <member><command>&lt;program&gt; [ -q ] [ -v ] [ -n ]
+        reset</command></member>
 
         <member><command>&lt;program&gt; [ -q ] [ -v ] [ -n ]
         restart</command></member>

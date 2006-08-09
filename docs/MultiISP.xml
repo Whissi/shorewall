@@ -343,8 +343,21 @@
                     traffic is going out through only one provider, you may
                     need to install a kernel built with
                     CONFIG_IP_ROUTE_MULTIPATH_CACHED=n. Several users have
-                    reported that this change has corrected similar
-                    problems.</para>
+		    reported that this change has corrected similar
+		    problems.
+		    </para>
+		    <para>
+		    The SUSE 10.0 kernel is subject to this problem, and
+		    <ulink
+		    url="https://bugzilla.novell.com/show_bug.cgi?id=190908">
+		    a kernel oops may result in this circumstance.</ulink>
+		    SUSE 10.1 and SLES 10 have
+		    CONFIG_IP_ROUTE_MULTIPATH_CACHED=n set by default.
+		    The source of the problem seems to be <ulink
+		    url="http://news.gmane.org/find-root.php?message_id=%3c00da01c5b35a%24b12b9860%241b00a8c0%40cruncher%3e">an
+		    incompatibility between the LARTC patches and
+		    CONFIG_IP_ROUTE_MULTIPATH_CACHED.</ulink>
+		    </para>
                   </important>
                 </listitem>
               </varlistentry>

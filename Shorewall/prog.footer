@@ -2,7 +2,7 @@
 # Give Usage Information
 #
 usage() {
-    echo "Usage: $0 [ -q ] [ -v ] [ -n ] [ start|stop|clear|restart|status|version ]"
+    echo "Usage: $0 [ -q ] [ -v ] [ -n ] [ start|stop|clear|reset|restart|status|version ]"
     exit $1
 }
 ################################################################################
@@ -78,11 +78,24 @@ case "$COMMAND" in
 	status=0
 	progress_message3 "done."
 	;;
+    reset)
+	if ! shorewall_is_started ; then
+	    error_message "$PRODUCT is not running"
+	    status=2
+	else
+	    $IPTABLES -Z
+	    $IPTABLES -t nat -Z
+	    $IPTABLES -t mangle -Z
+	    date > ${VARDIR}/restarted
+	    status=0
+	    progress_message3 "$PRODUCT Counters Reset"
+	fi
+	;;	
     restart)
 	if shorewall_is_started; then
 	    progress_message3 "Restarting $PRODUCT...."
 	else
-	    echo "$PRODUCT is not running" >&2
+	    error_message "$PRODUCT is not running"
 	    progress_message3 "Starting $PRODUCT...."
 	fi
 

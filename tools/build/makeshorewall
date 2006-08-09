@@ -29,6 +29,7 @@
 #      -r      Build RPM
 #      -h      Build HTML documentation
 #      -x      Build XML documentation
+#      -s      Don't sign with GPG
 #
 # If no options are given, all options are assumed.
 #
@@ -83,6 +84,7 @@ BUILDXML=
 BUILDHTML=
 SAMPLESTAG=
 HASLITE=
+SIGN=
 ################################################################################
 #                               F U N C T I O N S
 ################################################################################
@@ -145,6 +147,7 @@ case $1 in
 	BUILDHTML=Yes
 	BUILDXML=Yes
 	BUILDRPM=Yes
+	SIGN=Yes
 	done=Yes
 	;;
 esac
@@ -177,6 +180,10 @@ while [ -z "$done" ]; do
 		    x*)
 			BUILDXML=Yes
 			option=${option#x}
+			;;
+		    s*)
+			SIGN=""
+			option=${option#s}
 			;;
 	    	    *)
 			usage
@@ -316,35 +323,40 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	progress_message "Creating $DIR/$TARBALL..."
 	do_or_die "tar -zcvf $TARBALL $SHOREWALLDIR >> $LOGFILE 2>&1"
         do_or_die "tar -jcvf shorewall-${VERSION%-*}.tar.bz2 $SHOREWALLDIR >> $LOGFILE 2>&1"
-	for shoresuffix in tgz tar.bz2; do
-	    shoreball=shorewall-${VERSION%-*}.${shoresuffix}
-	    report "GPG signing $DIR/$shoreball"
-	    rm -f ${shoreball}.asc
-	    do_or_die "$GPG $shoreball"
-        done
-	if [ -n "$HASLITE" ]; then
-	    progress_message "Creating $DIR/$LITETARBALL..."
-	    do_or_die "tar -zcvf $LITETARBALL $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
-	    do_or_die "tar -jcvf shorewall-lite-${VERSION%-*}.tar.bz2 $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
+	if [ -n "$SIGN" ]; then
 	    for shoresuffix in tgz tar.bz2; do
-		shoreball=shorewall-lite-${VERSION%-*}.${shoresuffix}
+		shoreball=shorewall-${VERSION%-*}.${shoresuffix}
 		report "GPG signing $DIR/$shoreball"
 		rm -f ${shoreball}.asc
 		do_or_die "$GPG $shoreball"
 	    done
+	fi
+	if [ -n "$HASLITE" ]; then
+	    progress_message "Creating $DIR/$LITETARBALL..."
+	    do_or_die "tar -zcvf $LITETARBALL $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
+	    do_or_die "tar -jcvf shorewall-lite-${VERSION%-*}.tar.bz2 $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
+	    if [ -n "$SIGN" ]; then
+		for shoresuffix in tgz tar.bz2; do
+		    shoreball=shorewall-lite-${VERSION%-*}.${shoresuffix}
+		    report "GPG signing $DIR/$shoreball"
+		    rm -f ${shoreball}.asc
+		    do_or_die "$GPG $shoreball"
+		done
+	    fi
 	fi
     fi
 
     if [ -n "$BUILDRPM" ]; then
 	progress_message "Building $RPMNAME..."
 
-	do_or_die "rpmbuild -tb --sign $TARBALL >> $LOGFILE 2>&1"
+	test -n "$SIGN" && SIGN="--sign"
+	do_or_die "rpmbuild -tb $SIGN $TARBALL >> $LOGFILE 2>&1"
 	do_or_die cp -a $RPMDIR/RPMS/noarch/$RPMNAME .
 
 	if [ -n "$HASLITE" ]; then
 	    progress_message "Building $LITERPMNAME..."
 
-	    do_or_die "rpmbuild -tb --sign $LITETARBALL >> $LOGFILE 2>&1"
+	    do_or_die "rpmbuild -tb $SIGN $LITETARBALL >> $LOGFILE 2>&1"
 	    do_or_die cp -a $RPMDIR/RPMS/noarch/$LITERPMNAME .
 	fi
     fi
@@ -369,12 +381,14 @@ if [ -n "${BUILDXML}${BUILDHTML}" ]; then
 	progress_message "Creating $DIR/shorewall-docs-xml-$VERSION tarballs"
         do_or_die "tar -zcvf shorewall-docs-xml-$VERSION.tgz shorewall-docs-xml-$VERSION >> $LOGFILE 2>&1"
         do_or_die "tar -jcvf shorewall-docs-xml-$VERSION.tar.bz2 shorewall-docs-xml-$VERSION >> $LOGFILE 2>&1"
-	for shoresuffix in tgz tar.bz2; do
-	    xmlball=shorewall-docs-xml-$VERSION.${shoresuffix}
-	    report "GPG signing $DIR/$xmlball tarball"
-	    rm -f ${xmlball}.asc
-	    do_or_die "$GPG $xmlball"
-        done
+	if [ -n "$SIGN" ]; then
+	    for shoresuffix in tgz tar.bz2; do
+		xmlball=shorewall-docs-xml-$VERSION.${shoresuffix}
+		report "GPG signing $DIR/$xmlball tarball"
+		rm -f ${xmlball}.asc
+		do_or_die "$GPG $xmlball"
+	    done
+	fi
     fi
 
     if [ -n "$BUILDHTML" ]; then
@@ -453,12 +467,14 @@ if [ -n "${BUILDXML}${BUILDHTML}" ]; then
 
 	do_or_die "tar -zcvf shorewall-docs-html-$VERSION.tgz shorewall-docs-html-$VERSION >> $LOGFILE 2>&1"
 	do_or_die "tar -jcvf shorewall-docs-html-$VERSION.tar.bz2 shorewall-docs-html-$VERSION >> $LOGFILE 2>&1"
-	for shoresuffix in tgz tar.bz2; do
-	    htmlball=shorewall-docs-html-$VERSION.${shoresuffix}
-	    report "GPG signing $DIR/$htmlball tarball"
-	    rm -f ${htmlball}.asc
-	    do_or_die "$GPG $htmlball"
-	done
+	if [ -n "$SIGN" ]; then
+	    for shoresuffix in tgz tar.bz2; do
+		htmlball=shorewall-docs-html-$VERSION.${shoresuffix}
+		report "GPG signing $DIR/$htmlball tarball"
+		rm -f ${htmlball}.asc
+		do_or_die "$GPG $htmlball"
+	    done
+	fi
     fi
 fi
 
@@ -479,12 +495,14 @@ fi
         do_or_die "tar -zcvf shorewall-${VERSION}.tgz shorewall-$VERSION >> $LOGFILE 2>&1"
         do_or_die "tar -jcvf shorewall-$VERSION.tar.bz2 shorewall-$VERSION >> $LOGFILE 2>&1"
 
-	for shoresuffix in tgz tar.bz2; do
-	    betaball=shorewall-$VERSION.${shoresuffix}
-	    report "GPG signing $DIR/$betaball tarball"
-	    rm -f ${betaball}.asc
-	    do_or_die "$GPG $betaball"
-        done
+	if [ -n "$SIGN" ]; then
+	    for shoresuffix in tgz tar.bz2; do
+		betaball=shorewall-$VERSION.${shoresuffix}
+		report "GPG signing $DIR/$betaball tarball"
+		rm -f ${betaball}.asc
+		do_or_die "$GPG $betaball"
+	    done
+	fi
 
 
 	if [ -n "$HASLITE" ]; then
@@ -500,12 +518,14 @@ fi
 	    do_or_die "tar -zcvf shorewall-lite-${VERSION}.tgz shorewall-lite-$VERSION >> $LOGFILE 2>&1"
 	    do_or_die "tar -jcvf shorewall-lite-$VERSION.tar.bz2 shorewall-lite-$VERSION >> $LOGFILE 2>&1"
 
-	    for shoresuffix in tgz tar.bz2; do
-		betaball=shorewall-lite-$VERSION.${shoresuffix}
-		report "GPG signing $DIR/$betaball tarball"
-		rm -f ${betaball}.asc
-		do_or_die "$GPG $betaball"
-	    done
+	    if [ -n "$SIGN" ]; then
+		for shoresuffix in tgz tar.bz2; do
+		    betaball=shorewall-lite-$VERSION.${shoresuffix}
+		    report "GPG signing $DIR/$betaball tarball"
+		    rm -f ${betaball}.asc
+		    do_or_die "$GPG $betaball"
+		done
+	    fi
 	fi
 	;;
 esac

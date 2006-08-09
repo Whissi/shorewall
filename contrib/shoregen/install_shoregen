@@ -26,6 +26,7 @@
 VERBOSE=0
 RESTART=0
 CHECK=1
+TIME=1
 
 usage()
 {
@@ -54,6 +55,11 @@ while :; do
 
     -c|--nocheck)
 	CHECK=0
+	shift
+	;;
+
+    -t|--notime)
+	TIME=0
 	shift
 	;;
 
@@ -94,10 +100,15 @@ PATH=$PATH:
 for HOST; do
     shoregen $HOST
     rsync $RSYNC_ARGS SPOOL/$HOST/ $USER@$HOST:$DIR/
+    if [ "$TIME" -gt 0 ]; then
+	TIME=time
+    else
+	TIME=""
+    fi
     if [ "$CHECK" -gt 0 ]; then
-	ssh -l $USER -t $HOST $SW_PATH check
+	$TIME ssh -l $USER -t $HOST $SW_PATH check
     fi
     if [ "$RESTART" -gt 0 ]; then
-	ssh -l $USER -t $HOST $SW_PATH restart
+	$TIME ssh -l $USER -t $HOST $SW_PATH restart
     fi
 done

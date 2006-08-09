@@ -1191,7 +1191,7 @@ if [ -n "\$gateway" ]; then
     run_ip route replace \$gateway src \$(find_first_interface_address $interface) dev $interface table $number
     run_ip route add default via \$gateway dev $interface table $number
 else
-    fatal_error "Unable to detect the gateway through interface $interface"
+    error_message "WARNING: Unable to detect the gateway through interface $interface"
 fi
 
 __EOF__

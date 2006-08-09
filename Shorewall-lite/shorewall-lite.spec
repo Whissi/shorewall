@@ -1,5 +1,5 @@
 %define name shorewall-lite
-%define version 3.2.0
+%define version 3.3.0
 %define release 1
 %define prefix /usr
 
@@ -84,6 +84,8 @@ fi
 %doc COPYING changelog.txt releasenotes.txt
 
 %changelog
+* Wed Aug 09 2006 Tom Eastep tom@shorewall.net
+- Updated to 3.3.0-1
 * Sat Jul 08 2006 Tom Eastep tom@shorewall.net
 - Updated to 3.2.0-1
 * Thu Jun 29 2006 Tom Eastep tom@shorewall.net

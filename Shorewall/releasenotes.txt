@@ -42,6 +42,17 @@ Other changes in 3.3.0
    removed. Please use ipsets to implement dynamic zones as described
    in http://www.shorewall.net/DynamicZones.html.
 
+2) The 'try' command has been re-implemented. The command now does the
+   following:
+
+       - shorewall save
+       - shorewall restart <specified directory>
+       - if the restart is not successful, the configuration is
+         automatically restored
+       - otherwise, if a timeout is given then 
+	 - sleep for the number of seconds specified and
+	 - shorewall restore
+
 Migration Considerations:
 
 1)  Support for dynamic zones (DYNAMIC_ZONES=Yes in shorewall.conf and

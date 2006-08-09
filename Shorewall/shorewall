@@ -1811,15 +1811,13 @@ case "$COMMAND" in
 	VERBOSE=$(make_verbose)
 	[ -n "$NOROUTES" ] && NOROUTES=-n
 	export -n CONFIG_PATH
-	if ! $0 $debugging $VERBOSE -c $2 restart; then
-	    if ! $IPTABLES -L shorewall > /dev/null 2> /dev/null; then
-		$0 $VERBOSE $NOROUTES start
+	if $0 $debugging $VERBOSE save; then
+	    if $0 $debugging $VERBOSE restart $2 ; then
+		if [ $# -eq 3 ]; then
+		    sleep $3
+		    $0 $VERBOSE $NOROUTES restore
+		fi
 	    fi
-	elif ! $IPTABLES -L shorewall > /dev/null 2> /dev/null; then
-	    $0 $VERBOSE $NOROUTES start
-	elif [ $# -eq 3 ]; then
-	    sleep $3
-	    $0 $VERBOSE $NOROUTES restart
 	fi
 	;;
     logwatch)

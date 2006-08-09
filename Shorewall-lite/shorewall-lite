@@ -162,6 +162,8 @@ validate_restorefile() # $* = label
 #
 get_config() {
 
+    [ -n "$PATH" ] || PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
+
     [ -z "$LOGFILE" ] && LOGFILE=/var/log/messages
 
     if [ ! -f $LOGFILE ]; then
@@ -377,9 +379,28 @@ logwatch() # $1 = timeout -- if negative, prompt each time that
 }
 
 #
+# Verify that we have a compiled firewall script
+#
+verify_firewall_script() {
+    if [ ! -f $FIREWALL ]; then
+	echo "   ERROR: Shorewall Lite is not properly installed" >&2
+	if [ -L $FIREWALL ]; then
+	    echo "          $FIREWALL is a symbolic link to a" >&2
+	    echo "          non-existant file" >&2
+	else
+	    echo "          The file $FIREWALL does not exist" >&2
+	fi
+	
+	exit 2
+    fi
+}
+
+#
 # Save currently running configuration
 #
 save_config() {
+    verify_firewall_script
+    
     if shorewall_is_started ; then
 	[ -d ${VARDIR} ] || mkdir -p ${VARDIR}
 
@@ -470,6 +491,8 @@ start_command() {
 
 	[ -n "$nolock" ] || mutex_off
     }
+
+    verify_firewall_script
 
     if shorewall_is_started; then
 	error_message "Shorewall is already running"
@@ -574,6 +597,8 @@ start_command() {
 restart_command() {
     local finished=0
 
+    verify_firewall_script
+
     while [ $finished -eq 0 -a $# -gt 0 ]; do
 	option=$1
 	case $option in
@@ -668,6 +693,10 @@ show_command() {
 			    SHOWMACS=Yes
 			    option=${option#m}
 			    ;;
+			f*)
+			    FILEMODE=Yes
+			    option=${option#f}
+			    ;;
 			*)
 			    usage 1
 			    ;;
@@ -744,7 +773,11 @@ show_command() {
 	    [ $# -gt 1 ] && usage 1
 	    determine_capabilities
 	    VERBOSE=2
-	    report_capabilities
+	    if [ -n "$FILEMODE" ]; then
+		report_capabilities1
+	    else
+		report_capabilities
+	    fi
 	    ;;
 	config)
 	    . ${SHAREDIR}/configpath
@@ -964,7 +997,6 @@ usage() # $1 = exit status
     echo "Usage: $(basename $0) [debug|trace] [nolock] [ -q ] [ -v ] [ -t ] <command>"
     echo "where <command> is one of:"
     echo "   allow <address> ..."
-    echo "   check [ -e ] [ <directory> ]"
     echo "   clear"
     echo "   drop <address> ..."
     echo "   dump [ -x ]"
@@ -982,7 +1014,7 @@ usage() # $1 = exit status
     echo "   restart [ -n ] [ <directory> ]"
     echo "   restore [ -n ] [ <file name> ]"
     echo "   save [ <file name> ]"
-    echo "   show [ -x ] [ -m ] [<chain> [ <chain> ... ]|capabilities|classifiers|config|connections|log|mangle|nat|tc|zones]"
+    echo "   show [ -x ] [ -m ] [ -f ] [<chain> [ <chain> ... ]|capabilities|classifiers|config|connections|log|mangle|nat|tc|zones]"
     echo "   start [ -f ] [ -n ] [ <directory> ]"
     echo "   stop"
     echo "   status"
@@ -1214,18 +1246,6 @@ get_config
 
 FIREWALL=$LITEDIR/firewall
 
-if [ ! -f $FIREWALL ]; then
-    echo "   ERROR: Shorewall Lite is not properly installed" >&2
-    if [ -L $FIREWALL ]; then
-	echo "          $FIREWALL is a symbolic link to a" >&2
-	echo "          non-existant file" >&2
-    else
-	echo "          The file $FIREWALL does not exist" >&2
-    fi
-
-    exit 2
-fi
-
 if [ -f $VERSION_FILE ]; then
     version=$(cat $VERSION_FILE)
 else
@@ -1263,16 +1283,13 @@ case "$COMMAND" in
 	;;
     stop|reset|clear)
 	[ $# -ne 1 ] && usage 1
+	verify_firewall_script
 	export NOROUTES
 	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $COMMAND
 	;;
     restart)
 	shift
 	restart_command $@
-	;;
-    check)
-	shift
-	check_command $@
 	;;
     show|list)
     	shift

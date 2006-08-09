@@ -22,7 +22,7 @@
 #       Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
 #
 
-VERSION=3.2.0
+VERSION=3.2.2
 
 usage() # $1 = exit status
 {
@@ -30,6 +30,7 @@ usage() # $1 = exit status
     echo "usage: $ME"
     echo "       $ME -v"
     echo "       $ME -h"
+    echo "       $ME -n"
     exit $1
 }
 
@@ -88,7 +89,7 @@ backup_directory() # $1 = directory to backup
 
 backup_file() # $1 = file to backup, $2 = (optional) Directory in which to create the backup
 {
-    if [ -z "$PREFIX" ]; then
+    if [ -z "${PREFIX}${NOBACKUP}" ]; then
 	if [ -f $1 -a ! -f ${1}-${VERSION}.bkout ]; then
 	    if [ -n "$2" ]; then
 		if [ -d $2 ]; then
@@ -155,6 +156,8 @@ if [ -z "$GROUP" ] ; then
 	GROUP=root
 fi
 
+NOBACKUP=
+
 while [ $# -gt 0 ] ; do
     case "$1" in
 	-h|help|?)
@@ -163,6 +166,9 @@ while [ $# -gt 0 ] ; do
         -v)
 	    echo "Shorewall Lite Firewall Installer Version $VERSION"
 	    exit 0
+	    ;;
+	-n)
+	    NOBACKUP=Yes
 	    ;;
 	*)
 	    usage 1
@@ -216,9 +222,11 @@ echo "Installing Shorewall Lite Version $VERSION"
 #
 if [ -z "$PREFIX" -a -d /etc/shorewall-lite ]; then
     first_install=""
-    backup_directory /etc/shorewall-lite
-    backup_directory /usr/share/shorewall-lite
-    backup_directory /var/lib/shorewall-lite
+    if [ -z "$NOBACKUP" ]; then
+	backup_directory /etc/shorewall-lite
+	backup_directory /usr/share/shorewall-lite
+	backup_directory /var/lib/shorewall-lite
+    fi
 else
     first_install="Yes"
     rm -rf ${PREFIX}/etc/shorewall-lite

@@ -44,50 +44,18 @@
 #    used during firewall compilation, then the generated firewall program will likewise not
 #    require Shorewall to be installed.
 
+PRODUCT="Shorewall Lite"
+
 . /usr/share/shorewall-lite/functions
 . /usr/share/shorewall-lite/configpath
-. /etc/shorewall-lite/shorewall.conf
+
+[ -n "$PATH" ] || PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
 
 VERSION=$(cat /usr/share/shorewall-lite/version)
 
-report_capability() # $1 = Capability
-{
-    eval echo $1=\$$1
-}
-
-report_capabilities() {
-    echo "#"
-    echo "# Shorewall $VERSION detected the following iptables/netfilter capabilities - $(date)"
-    echo "#"
-    report_capability NAT_ENABLED
-    report_capability MANGLE_ENABLED
-    report_capability MULTIPORT
-    report_capability XMULTIPORT
-    report_capability CONNTRACK_MATCH
-    report_capability USEPKTTYPE
-    report_capability POLICY_MATCH
-    report_capability PHYSDEV_MATCH
-    report_capability LENGTH_MATCH
-    report_capability IPRANGE_MATCH
-    report_capability RECENT_MATCH
-    report_capability OWNER_MATCH
-    report_capability IPSET_MATCH
-    report_capability CONNMARK
-    report_capability XCONNMARK
-    report_capability CONNMARK_MATCH
-    report_capability XCONNMARK_MATCH
-    report_capability RAW_TABLE
-    report_capability IPP2P_MATCH
-    report_capability CLASSIFY_TARGET
-    report_capability ENHANCED_REJECT
-    report_capability KLUDGEFREE
-    report_capability MARK
-    report_capability XMARK
-    report_capability MANGLE_FORWARD
-}
-
 [ -n "$IPTABLES" ] || IPTABLES=$(mywhich iptables)
+
 VERBOSE=0
 load_kernel_modules
 determine_capabilities
-report_capabilities
+report_capabilities1

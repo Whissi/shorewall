@@ -44,7 +44,7 @@ allow)
     Re-enables receipt of packets from hosts previously blacklisted
     by a drop or reject command.
 
-    Shorewall allow, drop, rejct and save implement dynamic blacklisting.
+    shorewall-lite allow, drop, rejct and save implement dynamic blacklisting.
 
     See also \"help address\""
 	;;
@@ -66,7 +66,7 @@ debug)
 
     then a shell trace of the command is produced.  For example:
 
-	shorewall debug start 2> /tmp/trace
+	shorewall-lite debug start 2> /tmp/trace
 
     The above command would trace the 'start' command and
     place the trace information in the file /tmp/trace.
@@ -78,7 +78,7 @@ drop)
 	echo "$1: $1 <address> ...
     Causes packets from the specified <address> to be ignored
 
-    Shorewall allow, drop, logdrop, logreject, reject and save implement dynamic blacklisting.
+    shorewall-lite allow, drop, logdrop, logreject, reject and save implement dynamic blacklisting.
 
     See also \"help address\""
 	;;
@@ -86,7 +86,7 @@ drop)
 dump)
 	echo "dump: dump
 
-    shorewall [-x] dump
+    shorewall-lite [-x] dump
 
     Produce a verbose report about the firewall for problem analysis.
 
@@ -105,7 +105,7 @@ forget)
 
 help)
 	echo "help: help [<command> | host | address ]
-    Display helpful information about the shorewall commands."
+    Display helpful information about the shorewall-lite commands."
 	;;
 
 hits)
@@ -136,7 +136,7 @@ logdrop)
 	echo "$1: $1 <address> ...
     Causes packets from the specified <address> to be ignored and loged.
 
-    Shorewall allow, drop, logdrop, logreject, reject and save implement dynamic blacklisting.
+    shorewall-lite allow, drop, logdrop, logreject, reject and save implement dynamic blacklisting.
 
     See also \"help address\""
 	;;
@@ -152,7 +152,7 @@ logreject)
 	echo "$1: $1 <address> ...
     Causes packets from the specified <address> to be rejected and logged.
 
-    Shorewall allow, drop, logdrop, logreject, reject and save implement dynamic blacklisting.
+    shorewall-lite allow, drop, logdrop, logreject, reject and save implement dynamic blacklisting.
 
     See also \"help address\""
 	;;
@@ -161,7 +161,7 @@ reject)
 	echo "$1: $1 <address> ...
     Causes packets from the specified <address> to be rejected
 
-    Shorewall allow, drop, logdrop, logreject, reject and save implement dynamic blacklisting.
+    shorewall-lite allow, drop, logdrop, logreject, reject and save implement dynamic blacklisting.
 
     See also \"help address\""
 	;;
@@ -173,7 +173,7 @@ reset)
 
 restart)
 	echo "restart: restart [ -n ] [ <configuration-directory> ]
-    Restart is the same as a shorewall stop && shorewall start.
+    Restart is the same as a shorewall-lite stop && shorewall-lite start.
     Existing connections are maintained.
 
     If \"-n\" is specified, no changes to routing will be made"
@@ -183,9 +183,9 @@ restore)
 	echo "restore: restore [ -n ] [ <file name> ]
     Restore Shorewall to a state saved using the 'save' command
     Existing connections are maintained. The <file name> names a restore file in
-    /var/lib/shorewall-lite created using \"shorewall save\"; if no <file name> is given
-    then Shorewall will be restored from the file specified by the RESTOREFILE
-    option in shorewall.conf.
+    /var/lib/shorewall-lite created using \"shorewall-lite save\"; if no 
+    <file name> is given then Shorewall Lite will be restored from the file
+    specified by the RESTOREFILE option in shorewall.conf.
 
     If \"-n\" is specified, no changes to routing will be made.
 
@@ -195,50 +195,53 @@ restore)
 save)
 	echo "save: save [ <file name> ]
     The dynamic data is stored in /var/lib/shorewall-lite/save. The state of the
-    firewall is stored in /var/lib/shorewall-lite/<file name> for use by the 'shorewall restore'
-    and 'shorewall -f start' commands. If <file name> is not given then the state is saved
+    firewall is stored in /var/lib/shorewall-lite/<file name> for use by the 'shorewall-lite restore'
+    and 'shorewall-lite -f start' commands. If <file name> is not given then the state is saved
     in the file specified by the RESTOREFILE option in shorewall.conf.
 
-    Shorewall allow, drop, logdrop, logreject, reject and save implement dynamic blacklisting.
+    shorewall-lite allow, drop, logdrop, logreject, reject and save implement dynamic blacklisting.
 
     See also \"help restore\" and \"help forget\""
 	;;
 
 show)
-	echo "show: show [ <chain> [ <chain> ...] |actions|classifiers|config|connections|log|macros|mangle|nat|tc|zones]
+	echo "show: show [ <chain> [ <chain> ...] |actions|capabilities|classifiers|config|connections|log|macros|mangle|nat|tc|zones]
 
-    shorewall [-x] show <chain> [ <chain> ... ]  - produce a verbose report about the IPtable chain(s).
+    shorewall-lite [-x] show <chain> [ <chain> ... ]  - produce a verbose report about the IPtable chain(s).
     (iptables -L chain -n -v)
 
-    shorewall [-x] show mangle - produce a verbose report about the mangle table.
+    shorewall-lite [-x] show mangle - produce a verbose report about the mangle table.
     (iptables -t mangle -L -n -v)
 
-    shorewall [-x] show nat - produce a verbose report about the nat table.
+    shorewall-lite [-x] show nat - produce a verbose report about the nat table.
     (iptables -t nat -L -n -v)
 
-    shorewall show [ -m ] log - display the last 20 packet log entries. If \"-m\" is specified, then
+    shorewall-lite show [ -m ] log - display the last 20 packet log entries. If \"-m\" is specified, then
 	MAC addresses in the log entries (if any) are displayed.
 
-    shorewall show connections - displays the IP connections currently
+    shorewall-lite show connections - displays the IP connections currently
 	being tracked by the firewall.
 
-    shorewall show tc - displays information about the traffic
+    shorewall-lite show tc - displays information about the traffic
 	control/shaping configuration.
 
-    shorewall show zones - displays the contents of all zones.
+    shorewall-lite show zones - displays the contents of all zones.
 
-    shorewall show capabilities - displays your kernel/iptables capabilities
+    shorewall-lite show - [ -f ] capabilities - displays your kernel/iptables capabilities.  When \"-f\" is
+    specified, then the output is suitable for use as /etc/shorewall/capabilities on your administrative
+    system.
 
-    shorewall show config - displays the default CONFIG_PATH and LITEDIR for your distribution
+    shorewall-lite show config - displays the default CONFIG_PATH and LITEDIR for your distribution
 
     When -x is given, that option is also passed to iptables to display actual packet and byte counts."
 	;;
 
 start)
 	echo "start: start [ -f ] [ -n ] [ <configuration-directory> ]
-    Start shorewall.  Existing connections through shorewall managed
+    Start Shorewall Lite.  Existing connections through shorewall managed
     interfaces are untouched.  New connections will be allowed only
     if they are allowed by the firewall rules or policies.
+
     If \"-f\" is specified, the saved configuration specified by the RESTOREFILE option
     in shorewall.conf will be restored if that saved configuration exists. In that
     case, a <configuration-directory> may not be specified.
@@ -256,7 +259,7 @@ stop)
 status)
 	echo "status: status
 
-    shorewall status
+    shorewall-lite status
 
     Displays the Shorewall Lite status (running/not-running).
 
@@ -270,11 +273,11 @@ trace)
     If you include the keyword trace as the first argument to any
     of these commands:
 
-	start|stop|restart|reset|clear|check|add|delete
+	start|stop|restart|reset|clear
 
     then a shell trace of the command is produced.  For example:
 
-	shorewall trace start 2> /tmp/trace
+	shorewall-lite trace start 2> /tmp/trace
 
     The above command would trace the 'start' command and
     place the trace information in the file /tmp/trace.

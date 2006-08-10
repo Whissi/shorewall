@@ -84,7 +84,7 @@ BUILDXML=
 BUILDHTML=
 SAMPLESTAG=
 HASLITE=
-SIGN=Yes
+SIGN=
 ################################################################################
 #                               F U N C T I O N S
 ################################################################################
@@ -148,6 +148,7 @@ case $1 in
 	BUILDXML=Yes
 	BUILDRPM=Yes
 	done=Yes
+	SIGN=Yes
 	;;
 esac
 
@@ -181,7 +182,7 @@ while [ -z "$done" ]; do
 			option=${option#x}
 			;;
 		    s*)
-			SIGN=""
+			SIGN=Yes
 			option=${option#s}
 			;;
 	    	    *)

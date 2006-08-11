@@ -227,7 +227,7 @@ case $VERSION in
 	DOCTAG="trunk/docs"
 	XMLPROJ="docs-3.2"
 	SAMPLESTAG="trunk/Samples"
-    HASLITE=Yes
+	HASLITE=Yes
 	;;
      3.3.*)
 	SVNBRANCH="trunk/Shorewall"
@@ -235,7 +235,7 @@ case $VERSION in
 	DOCTAG="trunk/docs"
 	XMLPROJ="docs-3.3"
 	SAMPLESTAG="trunk/Samples"
-    HASLITE=Yes
+	HASLITE=Yes
 	;;
    *)
 	echo "Unsupported Version: $VERSION"
@@ -320,6 +320,14 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
     do_or_die "rm -rf $SHOREWALLDIR/debian"
 
     if [ -n "$BUILDTARBALL" ]; then
+	if [ -n "$HASLITE" ]; then
+	    #
+	    # Do this at build time so that the Gentoo people don't wet their pants
+	    #
+	    do_or_die cp $SHOREWALLDIR/shorewall.conf $SHOREWALLDIR/shorewall.configfiles
+	    do_or_die perl -p -w -i -e 's|^CONFIG_PATH=.*|CONFIG_PATH=/usr/share/shorewall/configfiles:/usr/share/shorewall|;' $SHOREWALLDIR/shorewall.conffiles
+	fi
+
 	progress_message "Creating $DIR/$TARBALL..."
 	do_or_die "tar -zcvf $TARBALL $SHOREWALLDIR >> $LOGFILE 2>&1"
         do_or_die "tar -jcvf shorewall-${VERSION%-*}.tar.bz2 $SHOREWALLDIR >> $LOGFILE 2>&1"

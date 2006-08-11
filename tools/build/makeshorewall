@@ -325,7 +325,7 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	    # Do this at build time so that the Gentoo people don't wet their pants
 	    #
 	    do_or_die cp $SHOREWALLDIR/shorewall.conf $SHOREWALLDIR/shorewall.configfiles
-	    do_or_die "perl -p -w -i -e 's|^CONFIG_PATH=.*|CONFIG_PATH=/usr/share/shorewall/configfiles:/usr/share/shorewall|' $SHOREWALLDIR/shorewall.conffiles"
+	    do_or_die "perl -p -w -i -e 's|^CONFIG_PATH=.*|CONFIG_PATH=/usr/share/shorewall/configfiles:/usr/share/shorewall|' $SHOREWALLDIR/shorewall.configfiles"
 	fi
 
 	progress_message "Creating $DIR/$TARBALL..."

@@ -1377,6 +1377,71 @@ reload_command() # $* = original arguments less the command.
 	fi
     fi
 }
+
+#
+# Export command executor
+#
+export_command() # $* = original arguments less the command.
+{
+    local verbose=$(make_verbose) file= finished=0 directory target
+
+    while [ $finished -eq 0 -a $# -gt 0 ]; do
+	option=$1
+	case $option in
+	    -*)
+		option=${option#-}
+
+		while [ -n "$option" ]; do
+		    case $option in
+			-)
+			    finished=1
+			    option=
+			    ;;
+			*)
+			    usage 1
+			    ;;
+		    esac
+		done
+		shift
+		;;
+	    *)
+		finished=1
+		;;
+	esac
+    done
+
+    case $# in
+	1)
+	    directory="."
+	    target=$1
+	    ;;
+	2)
+	    directory=$1
+	    target=$2
+	    ;;
+	*)
+	    usage 1
+	    ;;
+    esac
+
+    case $target in
+	*:*)
+	    ;;
+	*)
+	    fatal_error "Target must be of the form [user@]<system>:[<directory>]"
+	    ;;
+    esac
+
+    file=$(resolve_file $directory/firewall)
+
+    if shorewall $debugging $verbose compile -e $directory $directory/firewall && \
+	echo "Copying $file and ${file}.conf to ${target#*@}..." && \
+	scp $directory/firewall $directory/firewall.conf $target
+    then
+	progress_message3 "Copy complete"
+    fi
+}
+
 #
 # Help information
 #
@@ -1399,6 +1464,7 @@ usage() # $1 = exit status
     echo "   compile [ -e ] [ <directory name> ] <path name>"
     echo "   drop <address> ..."
     echo "   dump [ -x ]"
+    echo "   export [ <directory1> ] [<user>@]<system>:[<directory2>]"
     echo "   forget [ <file name> ]"
     echo "   help [ <command > | host | address ]"
     echo "   hits"
@@ -1716,6 +1782,10 @@ case "$COMMAND" in
     load|reload)
 	shift
 	reload_command $@
+	;;
+    export)
+	shift
+	export_command $@
 	;;
     status)
 	[ $# -eq 1 ] || usage 1

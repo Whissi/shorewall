@@ -121,6 +121,27 @@ dump)
     When -x is given, that option is also passed to iptables to display actual packet and byte counts."
 	;;
 
+export)
+	echo "export: export [ <directory1> ] <target>
+
+    If <directory1> is omitted, then the current working directory is assumed.
+
+    Causes the shorewall configuration in <directory1> to be compiled into a
+    program called '<directory1>/firewall'. If compilation is successful,
+    the '<directory1>/firewall' script is copied via scp to the specified
+    <target>
+
+    <target> is of the form [user@]<system>:[<directory1>] 
+
+    Example:
+
+        shorewall export admin@gateway:~
+
+    This command would compile the configuration in the current working directory
+    then copy the 'firewall' (and firewall.conf) files to admin's home directory
+    on system 'gateway'"
+	;;
+
 forget)
 	echo "forget: forget [ <file name> ]
     Deletes /var/lib/shorewall/<file name>. If no <file name> is given then

@@ -197,7 +197,12 @@
 
         <para>See <ulink
         url="http://wiki.xensource.com/xenwiki/Assign_hardware_to_DomU_with_PCIBack_as_module">http://wiki.xensource.com/xenwiki/Assign_hardware_to_DomU_with_PCIBack_as_module</ulink>
-        The SuSE 10.1 Xen kernel compiles pciback as a module.</para>
+        The SuSE 10.1 Xen kernel compiles pciback as a module. <filename
+        class="devicefile">eth1</filename> (PCI 00:09.0) and <filename
+        class="devicefile">eth2</filename> (PCI 00:0a.0) are delegated to the
+        firewall DomU where they become <filename
+        class="devicefile">eth3</filename> and <filename
+        class="devicefile">eth4</filename> respectively.</para>
 
         <programlisting>options pciback hide=(00:09.0)(00:0a.0)
 install tulip /sbin/modprobe pciback ; /sbin/modprobe --first-time --ignore-install tulip
@@ -228,6 +233,7 @@ extra    = "3"
 vif      = [ 'mac=aa:cc:00:00:00:02, bridge=xenbr0', 'mac=aa:cc:00:00:00:03, bridge=xenbr1' ]
 dhcp     = 'dhcp'
 hostname = name
+# Interfaces deletgated from Dom0
 pci=[ '00:09.0' , '00:0a.0' ]
 
 # storage devices:

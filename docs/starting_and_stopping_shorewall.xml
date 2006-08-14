@@ -822,6 +822,38 @@ gateway:~ #</programlisting>
       </varlistentry>
 
       <varlistentry>
+        <term>export (Shorewall 3.2.3 and later - Not supported by Shorewall
+        Lite)</term>
+
+        <listitem>
+          <para><command>export [ &lt;directory1&gt; ]
+          [&lt;user&gt;@]&lt;system&gt;:[&lt;directory2&gt;]</command></para>
+
+          <para>If &lt;directory1&gt; is omitted, the current working
+          directory is assumed.</para>
+
+          <para>Allows a non-root user to compile a shorewall script and stage
+          it on a system (provided that the user has access to the system via
+          ssh). The command is equivalent to:</para>
+
+          <simplelist>
+            <member><command>/sbin/shorewall compile -e &lt;directory1&gt;
+            &lt;directory1&gt;/firewall &amp;&amp;\</command></member>
+
+            <member><command>scp &lt;directory1&gt;/firewall
+            &lt;directory1&gt;/firewall.conf
+            [&lt;user&gt;@]&lt;system&gt;:[&lt;directory2&gt;]</command></member>
+          </simplelist>
+
+          <para>In other words, the configuration in the specified (or
+          defaulted) directory is compiled to a file called
+          <filename>firewall</filename> in that directory. If compilation
+          succeeds, then <filename>firewall and firewall.conf</filename> are
+          copied to &lt;system&gt; using scp.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
         <term>forget</term>
 
         <listitem>
@@ -912,6 +944,7 @@ gateway:~ #</programlisting>
             &lt;directory&gt;/firewall &amp;&amp;\</command></member>
 
             <member><command>scp &lt;directory&gt;/firewall
+            &lt;directory&gt;/firewall.conf
             root@&lt;system&gt;:/var/lib/shorewall-lite/
             &amp;&amp;\</command></member>
 
@@ -1049,6 +1082,7 @@ gateway:~ #</programlisting>
             &lt;directory&gt;/firewall &amp;&amp;\</command></member>
 
             <member><command>scp &lt;directory&gt;/firewall
+            &lt;directory&gt;/firewall
             root@&lt;system&gt;:/var/lib/shorewall-lite/
             &amp;&amp;\</command></member>
 
@@ -1437,8 +1471,8 @@ gateway:~ #</programlisting>
 
     <para>The only time that a program other than
     <command>/usr/share/shorewall[-lite[/firewall</command> performs a state
-    transition itself is when it executes the <command>shorewall[-lite]
-    restore</command> command is executed. In that case, the
+    transition itself is when the <command>shorewall[-lite] restore</command>
+    command is executed. In that case, the
     <command>/var/lib/shorewall[-lite]/restore</command> program sets the
     state to "Started".</para>
 

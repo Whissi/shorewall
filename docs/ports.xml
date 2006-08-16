@@ -98,6 +98,22 @@ Auth/ACCEPT     <emphasis> &lt;source&gt;</emphasis>  <emphasis>&lt;destination&
   </section>
 
   <section>
+    <title>BitTorrent</title>
+
+    <caution>
+      <para>This information is valid only for Shorewall 3.2 or later.</para>
+    </caution>
+
+    <caution>
+      <para><emphasis role="bold"><emphasis>We assume BitTorrent client listen
+      in the default port(s)</emphasis></emphasis></para>
+    </caution>
+
+    <programlisting>#ACTION           SOURCE    DESTINATION      PROTO      DEST PORT(S)
+BitTorrent/ACCEPT <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis></programlisting>
+  </section>
+
+  <section>
     <title>DNS</title>
 
     <programlisting>#ACTION          SOURCE    DESTINATION      PROTO      DEST PORT(S)
@@ -124,6 +140,10 @@ DNS/ACCEPT  dmz       net              </programlisting>
 
   <section id="Emule">
     <title>Emule</title>
+
+    <caution>
+      <para>This information is valid only for Shorewall 3.2 or later.</para>
+    </caution>
 
     <para>In contrast to how the rest of this article is organized, for emule
     I will give you the rules necessary to run emule on a single machine in
@@ -153,9 +173,9 @@ DNS/ACCEPT  dmz       net              </programlisting>
 
     <para><filename>/etc/shorewall/rules:</filename></para>
 
-    <programlisting>#ACTION     SOURCE   DESTINATION          PROTO         DEST PORT(S)
-DNAT        net      loc:192.168.1.4      tcp           4662
-DNAT        net      loc:192.168.1.4      udp           4672
+    <programlisting>#ACTION       SOURCE   DESTINATION          PROTO         DEST PORT(S)
+Edonkey/DNAT  net      loc:192.168.1.4
+#if you wish to enable the Emule webserver, add this rule too.
 DNAT        net      loc:192.168.1.4      tcp           4711</programlisting>
   </section>
 
@@ -245,6 +265,26 @@ ACCEPT     <emphasis>&lt;destination&gt;</emphasis>  <emphasis>&lt;source&gt;</e
     <programlisting>#ACTION          SOURCE           DESTINATION      PROTO      DEST PORT(S)
 LDAP/ACCEPT      <emphasis>&lt;source&gt;</emphasis>  <emphasis>     &lt;destination&gt;</emphasis> <emphasis>     #Insecure LDAP</emphasis>
 LDAPS/ACCEPT     <emphasis><emphasis>&lt;source&gt;</emphasis>  <emphasis>     &lt;destination&gt;</emphasis></emphasis><emphasis></emphasis>   # LDAP over SSL</programlisting>
+  </section>
+
+  <section>
+    <title><trademark>MySQL</trademark></title>
+
+    <caution>
+      <para>This information is valid only for Shorewall 3.2 or later.</para>
+    </caution>
+
+    <caution>
+      <para>Allowing access from untrusted hosts to your
+      <trademark>MySQL</trademark> server represents a <emphasis
+      role="bold">severe security risk</emphasis>.</para>
+
+      <para><emphasis role="bold">DO NOT USE THIS </emphasis>if you don't know
+      how to deal with the consecuences, you have been warned.</para>
+    </caution>
+
+    <programlisting>#ACTION          SOURCE           DESTINATION      PROTO      DEST PORT(S)
+MySQL/ACCEPT      <emphasis>&lt;source&gt;</emphasis>  <emphasis>     &lt;destination&gt;</emphasis> <emphasis>    </emphasis></programlisting>
   </section>
 
   <section>
@@ -428,16 +468,19 @@ NNTPS/ACCEPT    &lt;source&gt;  &lt;destination&gt;  # secure NNTP</programlisti
   <section>
     <title>VNC</title>
 
-    <para>Vncviewer to Vncserver -- TCP port 5900 + &lt;display
-    number&gt;.</para>
+    <caution>
+      <para>This information is valid only for Shorewall 3.2 or later.</para>
+    </caution>
 
     <para>Vncviewer to Vncserver -- TCP port 5900 + &lt;display
     number&gt;.</para>
+
+    <para>the following rule handles VNC traffic for VNC displays 0 -
+    9.</para>
 
     <programlisting>#ACTION    SOURCE    DESTINATION      PROTO      DEST PORT(S)
-ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        5901               #Display Number 1
-ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>    tcp        5902               #Display Number 2
-...</programlisting>
+VNC/ACCEPT     <emphasis>&lt;source&gt;</emphasis>  <emphasis>&lt;destination&gt;</emphasis>      
+</programlisting>
 
     <para>Vncserver to Vncviewer in listen mode -- TCP port 5500.</para>
 

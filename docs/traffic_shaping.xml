@@ -500,12 +500,16 @@ ppp0           6000kbit         500kbit</programlisting>
             <member>prio</member>
           </simplelist>
 
-          <para>Classify always occurs in the POSTROUTING chain. When used
-          with the builtin traffic shaper, the &lt;major&gt; class is the
-          device number (the first entry in
-          <filename>/etc/shorewall/tcdevices</filename> is device 1, the
-          second is device 2 and so on) and the &lt;minor&gt; class is the
-          MARK value of the class + 100.</para>
+          <para>With Shorewall versions prior to 3.2.3, classify always occurs
+          in the POSTROUTING chain. Beginning with Shorewall 3.2.3, classify
+          occurs in the POSTROUTING chain <emphasis
+          role="bold">except</emphasis> when the SOURCE contains
+          $FW[:&lt;<emphasis>address</emphasis>&gt;] in which case, the
+          classify action takes place in the OUTPUT chain. When used with the
+          builtin traffic shaper, the &lt;major&gt; class is the device number
+          (the first entry in <filename>/etc/shorewall/tcdevices</filename> is
+          device 1, the second is device 2 and so on) and the &lt;minor&gt;
+          class is the MARK value of the class + 100.</para>
         </listitem>
 
         <listitem>

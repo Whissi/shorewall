@@ -240,6 +240,40 @@
         <para><command>cp -f /usr/share/shorewall/xmodules
         /etc/shorewall/modules</command></para>
       </listitem>
+
+      <listitem>
+        <para>(<emphasis role="bold">Versions &gt;= 3.2.3</emphasis>)
+        Previously, CLASSIFY tcrules were always processed out of the
+        POSTROUTING chain. Beginning with this release, they are processed out
+        of the POSTROUTING chain *except* when the SOURCE is
+        $FW[:&lt;address&gt;] in which case the rule is processed out of the
+        OUTPUT chain.</para>
+
+        <para>With correctly-coded rulesets, this change should have no
+        effect. Users having incorrectly-coded tcrules may need to change
+        them.</para>
+
+        <para>Example:</para>
+
+        <blockquote>
+          <programlisting>#MARK/          SOURCE  DEST    PROTO   DEST            SOURCE
+#CLASSIFY                               PORTS(S)        PORT(S)
+1:110           $FW     eth3    tcp     -               22</programlisting>
+        </blockquote>
+
+        <para>While the user may have expected this rule to only affect
+        traffic from the firewall itself, the rule was really equivalent to
+        this one:</para>
+
+        <blockquote>
+          <programlisting>#MARK/    SOURCE        DEST    PROTO   DEST            SOURCE
+#CLASSIFY                               PORTS(S)        PORT(S)
+1:110     0.0.0.0/0     eth3    tcp     -               22</programlisting>
+        </blockquote>
+
+        <para>So after this change, the second rule will be required rather
+        than the first if that is what was really wanted.</para>
+      </listitem>
     </orderedlist>
   </section>
 

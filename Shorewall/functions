@@ -1958,7 +1958,7 @@ process_tc_rule()
 	if [ "x$source" != "x-"	 ]; then
 	    case $source in
 		$FW:*)
-		    [ $chain = tcpost ] || chain=tcout
+		    chain=tcout
 		    r="$(source_ip_range ${source#*:}) "
 		    ;;
 		*:*)
@@ -1973,7 +1973,7 @@ process_tc_rule()
 		    r="$(mac_match $source) "
 		    ;;
 		$FW)
-		    [ $chain = tcpost ] || chain=tcout
+		    chain=tcout
 		    ;;
 		*)
 		    verify_interface $source || fatal_error "Unknown interface $source in rule \"$rule\""

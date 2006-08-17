@@ -2804,7 +2804,7 @@ delete_nat() {
 
 if [ -f \${VARDIR}/nat ]; then
    while read external interface; do
-       ip_addr_del \$external \$interface
+       del_ip_addr \$external \$interface
     done < \${VARDIR}/nat
 
     rm -f \${VARDIR}/nat
@@ -2955,7 +2955,7 @@ setup_tc1() {
     # Route marks are restored in PREROUTING/OUTPUT prior to these rules. We only send
     # packets that are not part of a marked connection to the 'tcpre/tcout' chains.
     #
-    if [ -n "$ROUTEMARK_INTERFACES" ]; then
+    if [ -n "$ROUTEMARK_INTERFACES" -a -z "$TC_EXPERT" ]; then
 	mark_part="-m mark --mark 0/0xFF00"
 	#
 	# But let marks in tcpre override those assigned by 'track'
@@ -6459,7 +6459,7 @@ __EOF__
 		    if [ -n "$address" ]; then
 			for addr in $(ip_range_explicit ${address%:*}) ; do
 			    if ! list_search $addr $ALIASES_TO_ADD; then
-				[ -n "$RETAIN_ALIASES" ] || save_command ip_addr_del $addr $interface
+				[ -n "$RETAIN_ALIASES" ] || save_command del_ip_addr $addr $interface
 				ALIASES_TO_ADD="$ALIASES_TO_ADD $addr $fullinterface"
 				case $fullinterface in
 				    *:*)
@@ -7781,7 +7781,7 @@ stop_firewall() {
 
 	if [ -f \${VARDIR}/nat ]; then
 	    while read external interface; do
-		ip_addr_del \$external dev \$interface
+		del_ip_addr \$external \$interface
 	    done < \${VARDIR}/nat
 
 	    rm -f \${VARDIR}/nat
@@ -8662,6 +8662,7 @@ do_initialize() {
     MAPOLDACTIONS=
     IMPLICIT_CONTINUE=
     HIGH_ROUTE_MARKS=
+    TC_EXPERT=
 
     OUTPUT=
     TMP_DIR=
@@ -8866,6 +8867,7 @@ do_initialize() {
     FASTACCEPT=$(added_param_value_no FASTACCEPT $FASTACCEPT)
     IMPLICIT_CONTINUE=$(added_param_value_no IMPLICIT_CONTINUE $IMPLICIT_CONTINUE)
     HIGH_ROUTE_MARKS=$(added_param_value_no HIGH_ROUTE_MARKS $HIGH_ROUTE_MARKS)
+    TC_EXPERT=$(added_param_value_no TC_EXPERT $TC_EXPERT)
     [ -n "$XCONNMARK_MATCH" ] || XCONNMARK=
     [ -n "$XMARK" ] || XCONNMARK=
 

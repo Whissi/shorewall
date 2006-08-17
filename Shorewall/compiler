@@ -8040,6 +8040,7 @@ compile_firewall() # $1 = File Name
 {
     local IPTABLES_COMMAND=run_iptables
     local INDENT=""
+    local checking=
 
     outfile=$1 dir=
     #
@@ -8080,6 +8081,7 @@ compile_firewall() # $1 = File Name
     else
 	DOING=Checking
 	DONE=checked
+	checking=Yes
 
 	exec 3>/dev/null
     fi
@@ -8516,7 +8518,7 @@ __EOF__
 
     exec 3>&-
 
-    if [ $COMMAND = check ]; then
+    if [ -n "$checking" ]; then
 	progress_message3 "Shorewall configuration verified"
     else
 	INDENT=

@@ -1512,7 +1512,7 @@ log_rule_limit() # $1 = log level, $2 = chain, $3 = display Chain $4 = dispositi
 	error_message "WARNING: Log Prefix shortened to \"$prefix\""
     fi
 
-    [ "$COMMAND" = compile -o "$COMMAND" = check ] && prefix="\"$prefix\""
+    [ "$COMMAND" = compile ] && prefix="\"$prefix\""
 
     case $level in
 	ULOG)
@@ -1727,55 +1727,45 @@ setup_traffic_shaping()
 
 	dev=$(chain_base $device)
 
-	case $COMMAND in
-	    compile|check)
-		save_command "if qt ip link ls dev $device; then"
-		indent="$INDENT"
-		INDENT="$INDENT    "
-		save_command ${dev}_exists=Yes
-		save_command qt tc qdisc del dev $device root
-		save_command qt tc qdisc del dev $device ingress
-		;;
-	    *)
-		if ! qt ip link ls dev $device; then
-		    error_message "WARNING: Device $device not found -- traffic-shaping configuration skipped"
-		    return 1
-		fi
-		;;
-	esac
+	if [ "$COMMAND" = compile ]; then
+	    save_command "if qt ip link ls dev $device; then"
+	    indent="$INDENT"
+	    INDENT="$INDENT    "
+	    save_command ${dev}_exists=Yes
+	    save_command qt tc qdisc del dev $device root
+	    save_command qt tc qdisc del dev $device ingress
+	elif ! qt ip link ls dev $device; then
+	    error_message "WARNING: Device $device not found -- traffic-shaping configuration skipped"
+	    return 1
+	fi
 
 	defmark=$(get_defmark_for_dev $device)
 
 	run_tc qdisc add dev $device root handle $devnum: htb default 1$defmark
 
-	case $COMMAND in
-	    compile|check)
-		save_command "${dev}_mtu=\$(get_device_mtu $device)"
-		run_tc "class add dev $device parent $devnum: classid $devnum:1 htb rate $outband mtu \$${dev}_mtu"
-		;;
-	    *)
-		run_tc class add dev $device parent $devnum: classid $devnum:1 htb rate $outband mtu $(get_device_mtu $device)
-		;;
-	esac
+	if [ "$COMMAND" = compile ]; then 
+	    save_command "${dev}_mtu=\$(get_device_mtu $device)"
+	    run_tc "class add dev $device parent $devnum: classid $devnum:1 htb rate $outband mtu \$${dev}_mtu"
+	else
+	    run_tc class add dev $device parent $devnum: classid $devnum:1 htb rate $outband mtu $(get_device_mtu $device)
+	fi
 
 	run_tc qdisc add dev $device handle ffff: ingress
 	run_tc filter add dev $device parent ffff: protocol ip prio 50 u32 match ip src 0.0.0.0/0 police rate ${inband} burst 10k drop flowid :1
 	eval ${dev}_devnum=$devnum
 	devnum=$(($devnum + 1))
 
-	case $COMMAND in
-	    compile|check)
-		save_progress_message_short "   TC Device $tcdev defined."
-		INDENT="$indent"
-		save_command else
-		INDENT="$INDENT    "
-		save_command error_message "\"WARNING: Device $device not found -- traffic-shaping configuration skipped\""
-		save_command "${dev}_exists="
-		INDENT="$indent"
-		save_command "fi"
-		save_command
-		;;
-	esac
+	if [ "$COMMAND" = compile ]; then 
+	    save_progress_message_short "   TC Device $tcdev defined."
+	    INDENT="$indent"
+	    save_command else
+	    INDENT="$INDENT    "
+	    save_command error_message "\"WARNING: Device $device not found -- traffic-shaping configuration skipped\""
+	    save_command "${dev}_exists="
+	    INDENT="$indent"
+	    save_command "fi"
+	    save_command
+	fi
 
 	return 0
     }
@@ -1785,16 +1775,13 @@ setup_traffic_shaping()
 
 	dev=$(chain_base $device)
 
-	case $COMMAND in
-	    compile|check)
-		save_command "if [ -n \"\$${dev}_exists\" ] ; then"
-		indent="$INDENT"
-		INDENT="$INDENT    "
-		;;
-	    *)
-		qt ip link ls dev $device || return 1
-		;;
-	esac
+	if [ "$COMMAND" = compile ]; then 
+	    save_command "if [ -n \"\$${dev}_exists\" ] ; then"
+	    indent="$INDENT"
+	    INDENT="$INDENT    "
+	else
+	    qt ip link ls dev $device || return 1
+	fi
 
 	full=$(get_outband_for_dev $device)
 	full=$(rate_to_kbit $full)
@@ -1829,17 +1816,14 @@ setup_traffic_shaping()
 
 	quantum=$(calculate_quantum $rate)
 
-	case $COMMAND in
-	    compile|check)
-		save_command "[ \$${dev}_mtu -gt $quantum ] && quantum=\$${dev}_mtu || quantum=$quantum"
-		run_tc "class add dev $device parent $devnum:1 classid $classid htb rate $rate ceil $ceil prio $prio mtu \$${dev}_mtu quantum \$quantum"
-		;;
-	    *)
-		[ "$last_device" = $device ] || mtu=$(get_device_mtu $device)
-		[ $mtu -gt $quantum ] && quantum=$mtu
-		run_tc class add dev $device parent $devnum:1 classid $classid htb rate $rate ceil $ceil prio $prio mtu $mtu quantum $quantum
-		;;
-	esac
+	if [ "$COMMAND" = compile ]; then 
+	    save_command "[ \$${dev}_mtu -gt $quantum ] && quantum=\$${dev}_mtu || quantum=$quantum"
+	    run_tc "class add dev $device parent $devnum:1 classid $classid htb rate $rate ceil $ceil prio $prio mtu \$${dev}_mtu quantum \$quantum"
+	else
+	    [ "$last_device" = $device ] || mtu=$(get_device_mtu $device)
+	    [ $mtu -gt $quantum ] && quantum=$mtu
+	    run_tc class add dev $device parent $devnum:1 classid $classid htb rate $rate ceil $ceil prio $prio mtu $mtu quantum $quantum
+	fi
 
 	run_tc qdisc add dev $device parent $classid handle 1$mark: sfq perturb 10
 	# add filters
@@ -1868,14 +1852,12 @@ setup_traffic_shaping()
 	    run_tc filter add dev $device parent $devnum:0 protocol ip prio 10 u32 match ip tos ${tospair%%/*} $tosmask flowid $classid
 	done
 
-	case $COMMAND in
-	    compile|check)
-		save_progress_message_short "   TC Class $tcdev defined."
-		INDENT="$indent"
-		save_command fi
-		save_command
-		;;
-	esac
+	if [ "$COMMAND" = compile ]; then 
+	    save_progress_message_short "   TC Class $tcdev defined."
+	    INDENT="$indent"
+	    save_command fi
+	    save_command
+	fi
 
 	return 0
     }

@@ -1,0 +1,655 @@
+#!/bin/sh
+#
+# Shorewall 3.2 -- /usr/share/shorewall/clib.tunnels
+#
+#     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
+#
+#     (c) 2002,2003,2004,2005,2006 - Tom Eastep (teastep@shorewall.net)
+#
+#	Complete documentation is available at http://shorewall.net
+#
+#	This program is free software; you can redistribute it and/or modify
+#	it under the terms of Version 2 of the GNU General Public License
+#	as published by the Free Software Foundation.
+#
+#	This program is distributed in the hope that it will be useful,
+#	but WITHOUT ANY WARRANTY; without even the implied warranty of
+#	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#	GNU General Public License for more details.
+#
+#	You should have received a copy of the GNU General Public License
+#	along with this program; if not, write to the Free Software
+#	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
+
+#
+# Process the ipsec information in the zones file
+#
+setup_ipsec() {
+    local zone using_ipsec=
+    #
+    # Add a --set-mss rule to the passed chain
+    #
+    set_mss1() # $1 = chain, $2 = MSS
+    {
+	eval local policy=\$${1}_policy
+
+	if [ "$policy" != NONE ]; then
+	    ensurechain $1
+	    run_iptables -I $1 -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --set-mss $2
+	fi
+    }
+    #
+    # Set up rules to set MSS to and/or from zone "$zone"
+    #
+    set_mss() # $1 = MSS value, $2 = _in, _out or ""
+    {
+	for z in $ZONES; do
+	    case $2 in
+		_in)
+		    set_mss1 ${zone}2${z} $1
+		    ;;
+		_out)
+		    set_mss1 ${z}2${zone} $1
+		    ;;
+		*)
+		    set_mss1 ${z}2${zone} $1
+		    set_mss1 ${zone}2${z} $1
+		    ;;
+	    esac
+	done
+}
+
+    do_options() # $1 = _in, _out or "" - $2 = option list
+    {
+	local option newoptions= val
+
+	[ x${2} = x- ] && return
+
+	for option in $(separate_list $2); do
+	    val=${option#*=}
+
+	    case $option in
+		mss=[0-9]*)    set_mss $val $1 ;;
+		strict)        newoptions="$newoptions --strict" ;;
+		next)          newoptions="$newoptions --next" ;;
+		reqid=*)       newoptions="$newoptions --reqid $val" ;;
+		spi=*)         newoptions="$newoptions --spi $val" ;;
+		proto=*)       newoptions="$newoptions --proto $val" ;;
+		mode=*)        newoptions="$newoptions --mode $val" ;;
+		tunnel-src=*)  newoptions="$newoptions --tunnel-src $val" ;;
+		tunnel-dst=*)  newoptions="$newoptions --tunnel-dst $val" ;;
+		reqid!=*)      newoptions="$newoptions ! --reqid $val" ;;
+		spi!=*)        newoptions="$newoptions ! --spi $val" ;;
+		proto!=*)      newoptions="$newoptions ! --proto $val" ;;
+		mode!=*)       newoptions="$newoptions ! --mode $val" ;;
+		tunnel-src!=*) newoptions="$newoptions ! --tunnel-src $val" ;;
+		tunnel-dst!=*) newoptions="$newoptions ! --tunnel-dst $val" ;;
+		*)             fatal_error "Invalid option \"$option\" for zone $zone" ;;
+	    esac
+	done
+
+	if [ -n "$newoptions" ]; then
+	    [ -n "$POLICY_MATCH" ] || fatal_error "Your kernel and/or iptables does not support policy match"
+	    eval ${zone}_is_complex=Yes
+	    eval ${zone}_ipsec${1}_options=\"${newoptions# }\"
+	fi
+    }
+
+    case $IPSECFILE in
+	zones)
+	    f=zones
+	    progress_message2 "$DOING IPSEC..."
+	    ;;
+	*)
+	    f=$IPSECFILE
+	    strip_file $f
+	    progress_message2 "$DOING $f..."
+	    using_ipsec=Yes
+	    ;;
+    esac
+
+    while read zone type options in_options out_options mss; do
+	expandv zone type options in_options out_options mss
+
+	if [ -n "$using_ipsec" ]; then
+	    validate_zone1 $zone || fatal_error "Unknown zone: $zone"
+	fi
+
+	if [ -n "$type" ]; then
+	    if [ -n "$using_ipsec" ]; then
+		case $type in
+		    No|no)
+			;;
+		    Yes|yes)
+			[ -n "$POLICY_MATCH" ] || fatal_error "Your kernel and/or iptables does not support policy match"
+			eval ${zone}_is_ipsec=Yes
+			eval ${zone}_is_complex=Yes
+			eval ${zone}_type=ipsec4
+			;;
+		    *)
+			fatal_error "Invalid IPSEC column contents"
+			;;
+		esac
+	    fi
+
+	    do_options ""     $options
+	    do_options "_in"  $in_options
+	    do_options "_out" $out_options
+	fi
+
+    done < $TMP_DIR/$f
+}
+
+#
+# Set up tunnels
+#
+setup_tunnels() # $1 = name of tunnels file
+{
+    local inchain
+    local outchain
+    local source
+    local dest
+
+    setup_one_ipsec() # $1 = Tunnel Kind $2 = gateway zones
+    {
+    	local kind=$1 noah=
+
+	case $kind in
+	    *:*)
+	    	noah=${kind#*:}
+		[ $noah = noah -o $noah = NOAH ] || fatal_error "Invalid IPSEC modifier $noah in tunnel \"$tunnel\""
+		kind=${kind%:*}
+		;;
+	esac
+
+	[ $kind = IPSEC ] && kind=ipsec
+
+	options="-m state --state NEW -j ACCEPT"
+	addrule2 $inchain	  -p 50	 $source -j ACCEPT
+	addrule2 $outchain	  -p 50	 $dest   -j ACCEPT
+
+	if [ -z "$noah" ]; then
+	    run_iptables -A $inchain  -p 51 $source -j ACCEPT
+	    run_iptables -A $outchain -p 51 $dest   -j ACCEPT
+	fi
+
+	run_iptables -A $outchain -p udp $dest --dport 500 $options
+
+	if [ $kind = ipsec ]; then
+	    run_iptables -A $inchain  -p udp $source --dport 500 $options
+	else
+	    run_iptables -A $inchain  -p udp $source --dport 500 $options
+	    run_iptables -A $inchain  -p udp $source --dport 4500 $options
+	fi
+
+	for z in $(separate_list $2); do
+	    if validate_zone $z; then
+		if [ -z "$POLICY_MATCH" ]; then
+		    addrule ${z}2${FW} -p 50 $source -j ACCEPT
+		    addrule ${FW}2${z} -p 50 $dest   -j ACCEPT
+		    if [ -z "$noah" ]; then
+			addrule ${z}2${FW} -p 51 $source -j ACCEPT
+			addrule ${FW}2${z} -p 51 $dest   -j ACCEPT
+		    fi
+		fi
+		if [ $kind = ipsec ]; then
+		    addrule ${z}2${FW} -p udp $source --dport 500 $options
+		    addrule ${FW}2${z} -p udp $dest   --dport 500 $options
+		else
+		    addrule ${z}2${FW} -p udp $source --dport 500 $options
+		    addrule ${FW}2${z} -p udp $dest   --dport 500 $options
+		    addrule ${z}2${FW} -p udp $source --dport 4500 $options
+		    addrule ${FW}2${z} -p udp $dest   --dport 4500 $options
+		fi
+	    else
+		fatal_error "Invalid gateway zone ($z) -- Tunnel \"$tunnel\""
+	    fi
+	done
+
+	progress_message_and_save "   IPSEC tunnel to $gateway defined."
+    }
+
+    setup_one_other() # $1 = TYPE, $2 = protocol
+    {
+	addrule2 $inchain  -p $2 $source -j ACCEPT
+	addrule2 $outchain -p $2 $dest   -j ACCEPT
+
+	progress_message_and_save "   $1 tunnel to $gateway compiled."
+    }
+
+    setup_pptp_client()
+    {
+	addrule2 $outchain -p 47               $dest   -j ACCEPT
+	addrule2 $inchain  -p 47               $source -j ACCEPT
+	addrule2 $outchain -p tcp --dport 1723 $dest   -j ACCEPT
+
+	progress_message_and_save "   PPTP tunnel to $gateway defined."
+    }
+
+    setup_pptp_server()
+    {
+	addrule2 $inchain  -p 47               $source -j ACCEPT
+	addrule2 $outchain -p 47               $dest   -j ACCEPT
+	addrule2 $inchain  -p tcp --dport 1723 $source -j ACCEPT
+
+	progress_message_and_save "   PPTP server defined."
+    }
+
+    setup_one_openvpn() # $1 = kind[:port]
+    {
+	local protocol=udp
+	local p=1194
+
+	case $1 in
+	    *:*:*)
+		protocol=${1%:*}
+		protocol=${protocol#*:}
+		p=${1##*:}
+		;;
+	    *:tcp|*:udp|*:TCP|*:UDP)
+		protocol=${1#*:}
+		;;
+	    *:*)
+		p=${1#*:}
+		;;
+	esac
+
+	addrule2 $inchain  -p $protocol $source --dport $p -j ACCEPT
+	addrule2 $outchain -p $protocol $dest   --dport $p -j ACCEPT
+
+	progress_message_and_save "   OPENVPN tunnel to $gateway:$protocol:$p defined."
+    }
+
+    setup_one_openvpn_server() # $1 = kind[:port]
+    {
+	local protocol=udp
+	local p=1194
+
+	case $1 in
+	    *:*:*)
+		protocol=${1%:*}
+		protocol=${protocol#*:}
+		p=${1##*:}
+		;;
+	    *:tcp|*:udp|*:TCP|*:UDP)
+		protocol=${1#*:}
+		;;
+	    *:*)
+		p=${1#*:}
+		;;
+	esac
+#
+# Set up ipsec tunnels
+#
+setup_tunnels() # $1 = name of tunnels file
+{
+    local inchain
+    local outchain
+    local source
+    local dest
+
+    setup_one_ipsec() # $1 = Tunnel Kind $2 = gateway zones
+    {
+    	local kind=$1 noah=
+
+	case $kind in
+	    *:*)
+	    	noah=${kind#*:}
+		[ $noah = noah -o $noah = NOAH ] || fatal_error "Invalid IPSEC modifier $noah in tunnel \"$tunnel\""
+		kind=${kind%:*}
+		;;
+	esac
+
+	[ $kind = IPSEC ] && kind=ipsec
+
+	options="-m state --state NEW -j ACCEPT"
+	addrule2 $inchain	  -p 50	 $source -j ACCEPT
+	addrule2 $outchain	  -p 50	 $dest   -j ACCEPT
+
+	if [ -z "$noah" ]; then
+	    run_iptables -A $inchain  -p 51 $source -j ACCEPT
+	    run_iptables -A $outchain -p 51 $dest   -j ACCEPT
+	fi
+
+	run_iptables -A $outchain -p udp $dest --dport 500 $options
+
+	if [ $kind = ipsec ]; then
+	    run_iptables -A $inchain  -p udp $source --dport 500 $options
+	else
+	    run_iptables -A $inchain  -p udp $source --dport 500 $options
+	    run_iptables -A $inchain  -p udp $source --dport 4500 $options
+	fi
+
+	for z in $(separate_list $2); do
+	    if validate_zone $z; then
+		if [ -z "$POLICY_MATCH" ]; then
+		    addrule ${z}2${FW} -p 50 $source -j ACCEPT
+		    addrule ${FW}2${z} -p 50 $dest   -j ACCEPT
+		    if [ -z "$noah" ]; then
+			addrule ${z}2${FW} -p 51 $source -j ACCEPT
+			addrule ${FW}2${z} -p 51 $dest   -j ACCEPT
+		    fi
+		fi
+		if [ $kind = ipsec ]; then
+		    addrule ${z}2${FW} -p udp $source --dport 500 $options
+		    addrule ${FW}2${z} -p udp $dest   --dport 500 $options
+		else
+		    addrule ${z}2${FW} -p udp $source --dport 500 $options
+		    addrule ${FW}2${z} -p udp $dest   --dport 500 $options
+		    addrule ${z}2${FW} -p udp $source --dport 4500 $options
+		    addrule ${FW}2${z} -p udp $dest   --dport 4500 $options
+		fi
+	    else
+		fatal_error "Invalid gateway zone ($z) -- Tunnel \"$tunnel\""
+	    fi
+	done
+
+	progress_message_and_save "   IPSEC tunnel to $gateway defined."
+    }
+
+    setup_one_other() # $1 = TYPE, $2 = protocol
+    {
+	addrule2 $inchain  -p $2 $source -j ACCEPT
+	addrule2 $outchain -p $2 $dest   -j ACCEPT
+
+	progress_message_and_save "   $1 tunnel to $gateway compiled."
+    }
+
+    setup_pptp_client()
+    {
+	addrule2 $outchain -p 47               $dest   -j ACCEPT
+	addrule2 $inchain  -p 47               $source -j ACCEPT
+	addrule2 $outchain -p tcp --dport 1723 $dest   -j ACCEPT
+
+	progress_message_and_save "   PPTP tunnel to $gateway defined."
+    }
+
+    setup_pptp_server()
+    {
+	addrule2 $inchain  -p 47               $source -j ACCEPT
+	addrule2 $outchain -p 47               $dest   -j ACCEPT
+	addrule2 $inchain  -p tcp --dport 1723 $source -j ACCEPT
+
+	progress_message_and_save "   PPTP server defined."
+    }
+
+    setup_one_openvpn() # $1 = kind[:port]
+    {
+	local protocol=udp
+	local p=1194
+
+	case $1 in
+	    *:*:*)
+		protocol=${1%:*}
+		protocol=${protocol#*:}
+		p=${1##*:}
+		;;
+	    *:tcp|*:udp|*:TCP|*:UDP)
+		protocol=${1#*:}
+		;;
+	    *:*)
+		p=${1#*:}
+		;;
+	esac
+
+	addrule2 $inchain  -p $protocol $source --dport $p -j ACCEPT
+	addrule2 $outchain -p $protocol $dest   --dport $p -j ACCEPT
+
+	progress_message_and_save "   OPENVPN tunnel to $gateway:$protocol:$p defined."
+    }
+
+    setup_one_openvpn_server() # $1 = kind[:port]
+    {
+	local protocol=udp
+	local p=1194
+
+	case $1 in
+	    *:*:*)
+		protocol=${1%:*}
+		protocol=${protocol#*:}
+		p=${1##*:}
+		;;
+	    *:tcp|*:udp|*:TCP|*:UDP)
+		protocol=${1#*:}
+		;;
+	    *:*)
+		p=${1#*:}
+		;;
+	esac
+
+	addrule2 $inchain  -p $protocol $source --dport $p -j ACCEPT
+	addrule2 $outchain -p $protocol $dest   --sport $p -j ACCEPT
+
+	progress_message_and_save "   OPENVPN server tunnel from $gateway:$protocol:$p defined."
+    }
+
+    setup_one_openvpn_client() # $1 = kind[:port]
+    {
+	local protocol=udp
+	local p=1194
+
+	case $1 in
+	    *:*:*)
+		protocol=${1%:*}
+		protocol=${protocol#*:}
+		p=${1##*:}
+		;;
+	    *:tcp|*:udp|*:TCP|*:UDP)
+		protocol=${1#*:}
+		;;
+	    *:*)
+		p=${1#*:}
+		;;
+	esac
+
+	addrule2 $inchain  -p $protocol $source --sport $p -j ACCEPT
+	addrule2 $outchain -p $protocol $dest   --dport $p -j ACCEPT
+
+	progress_message_and_save "   OPENVPN client tunnel to $gateway:$protocol:$p defined."
+    }
+
+    setup_one_generic() # $1 = kind:protocol[:port]
+    {
+	local protocol
+	local p=
+
+	case $1 in
+	    *:*:*)
+		p=${1##*:}
+		protocol=${1%:*}
+		protocol=${protocol#*:}
+		;;
+	    *:*)
+		protocol=${1#*:}
+		;;
+	    *)
+		protocol=udp
+		p=5000
+		;;
+	esac
+
+	p=${p:+--dport $p}
+
+	addrule2 $inchain  -p $protocol $source $p -j ACCEPT
+	addrule2 $outchain -p $protocol $dest   $p -j ACCEPT
+
+	progress_message_and_save "   GENERIC tunnel to $1:$p defined."
+    }
+
+    strip_file tunnels $1
+
+    while read kind z gateway z1; do
+	expandv kind z gateway z1
+	tunnel="$(echo $kind $z $gateway $z1)"
+	if validate_zone $z; then
+	    inchain=${z}2${FW}
+	    outchain=${FW}2${z}
+	    gateway=${gateway:-0.0.0.0/0}
+	    source=$(source_ip_range $gateway)
+	    dest=$(dest_ip_range $gateway)
+
+	    case $kind in
+		ipsec|IPSEC|ipsec:*|IPSEC:*)
+		    setup_one_ipsec $kind $z1
+		    ;;
+		ipsecnat|IPSECNAT|ipsecnat:*|IPSECNAT:*)
+		    setup_one_ipsec $kind $z1
+		    ;;
+		ipip|IPIP)
+		    setup_one_other IPIP 4
+		    ;;
+		gre|GRE)
+		    setup_one_other GRE 47
+		    ;;
+		6to4|6TO4)
+		    setup_one_other 6to4 41
+		    ;;
+		pptpclient|PPTPCLIENT)
+		    setup_pptp_client
+		    ;;
+		pptpserver|PPTPSERVER)
+		    setup_pptp_server
+		    ;;
+		openvpn|OPENVPN|openvpn:*|OPENVPN:*)
+		    setup_one_openvpn $kind
+		    ;;
+		openvpnclient|OPENVPNCLIENT|openvpnclient:*|OPENVPNCLIENT:*)
+		    setup_one_openvpn_client $kind
+		    ;;
+		openvpnserver|OPENVPNSERVER|openvpnserver:*|OPENVPNSERVER:*)
+		    setup_one_openvpn_server $kind
+		    ;;
+		generic:*|GENERIC:*)
+		    setup_one_generic $kind
+		    ;;
+		*)
+		    error_message "WARNING: Tunnels of type $kind are not supported:" \
+			"Tunnel \"$tunnel\" Ignored"
+		    ;;
+	    esac
+	else
+	    error_message "ERROR: Invalid gateway zone ($z)" \
+		" -- Tunnel \"$tunnel\" Ignored"
+	fi
+    done < $TMP_DIR/tunnels
+}
+
+
+	addrule2 $inchain  -p $protocol $source --dport $p -j ACCEPT
+	addrule2 $outchain -p $protocol $dest   --sport $p -j ACCEPT
+
+	progress_message_and_save "   OPENVPN server tunnel from $gateway:$protocol:$p defined."
+    }
+
+    setup_one_openvpn_client() # $1 = kind[:port]
+    {
+	local protocol=udp
+	local p=1194
+
+	case $1 in
+	    *:*:*)
+		protocol=${1%:*}
+		protocol=${protocol#*:}
+		p=${1##*:}
+		;;
+	    *:tcp|*:udp|*:TCP|*:UDP)
+		protocol=${1#*:}
+		;;
+	    *:*)
+		p=${1#*:}
+		;;
+	esac
+
+	addrule2 $inchain  -p $protocol $source --sport $p -j ACCEPT
+	addrule2 $outchain -p $protocol $dest   --dport $p -j ACCEPT
+
+	progress_message_and_save "   OPENVPN client tunnel to $gateway:$protocol:$p defined."
+    }
+
+    setup_one_generic() # $1 = kind:protocol[:port]
+    {
+	local protocol
+	local p=
+
+	case $1 in
+	    *:*:*)
+		p=${1##*:}
+		protocol=${1%:*}
+		protocol=${protocol#*:}
+		;;
+	    *:*)
+		protocol=${1#*:}
+		;;
+	    *)
+		protocol=udp
+		p=5000
+		;;
+	esac
+
+	p=${p:+--dport $p}
+
+	addrule2 $inchain  -p $protocol $source $p -j ACCEPT
+	addrule2 $outchain -p $protocol $dest   $p -j ACCEPT
+
+	progress_message_and_save "   GENERIC tunnel to $1:$p defined."
+    }
+
+    strip_file tunnels $1
+
+    while read kind z gateway z1; do
+	expandv kind z gateway z1
+	tunnel="$(echo $kind $z $gateway $z1)"
+	if validate_zone $z; then
+	    inchain=${z}2${FW}
+	    outchain=${FW}2${z}
+	    gateway=${gateway:-0.0.0.0/0}
+	    source=$(source_ip_range $gateway)
+	    dest=$(dest_ip_range $gateway)
+
+	    case $kind in
+		ipsec|IPSEC|ipsec:*|IPSEC:*)
+		    setup_one_ipsec $kind $z1
+		    ;;
+		ipsecnat|IPSECNAT|ipsecnat:*|IPSECNAT:*)
+		    setup_one_ipsec $kind $z1
+		    ;;
+		ipip|IPIP)
+		    setup_one_other IPIP 4
+		    ;;
+		gre|GRE)
+		    setup_one_other GRE 47
+		    ;;
+		6to4|6TO4)
+		    setup_one_other 6to4 41
+		    ;;
+		pptpclient|PPTPCLIENT)
+		    setup_pptp_client
+		    ;;
+		pptpserver|PPTPSERVER)
+		    setup_pptp_server
+		    ;;
+		openvpn|OPENVPN|openvpn:*|OPENVPN:*)
+		    setup_one_openvpn $kind
+		    ;;
+		openvpnclient|OPENVPNCLIENT|openvpnclient:*|OPENVPNCLIENT:*)
+		    setup_one_openvpn_client $kind
+		    ;;
+		openvpnserver|OPENVPNSERVER|openvpnserver:*|OPENVPNSERVER:*)
+		    setup_one_openvpn_server $kind
+		    ;;
+		generic:*|GENERIC:*)
+		    setup_one_generic $kind
+		    ;;
+		*)
+		    error_message "WARNING: Tunnels of type $kind are not supported:" \
+			"Tunnel \"$tunnel\" Ignored"
+		    ;;
+	    esac
+	else
+	    error_message "ERROR: Invalid gateway zone ($z)" \
+		" -- Tunnel \"$tunnel\" Ignored"
+	fi
+    done < $TMP_DIR/tunnels
+}
+
+CLIB_TUNNELS_LOADED=Yes

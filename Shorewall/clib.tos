@@ -1,0 +1,218 @@
+#!/bin/sh
+#
+# Shorewall 3.2 -- /usr/share/shorewall/clib.tos
+#
+#     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
+#
+#     (c) 2005,2006 - Tom Eastep (teastep@shorewall.net)
+#
+#	Complete documentation is available at http://shorewall.net
+#
+#	This program is free software; you can redistribute it and/or modify
+#	it under the terms of Version 2 of the GNU General Public License
+#	as published by the Free Software Foundation.
+#
+#	This program is distributed in the hope that it will be useful,
+#	but WITHOUT ANY WARRANTY; without even the implied warranty of
+#	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#	GNU General Public License for more details.
+#
+#	You should have received a copy of the GNU General Public License
+#	along with this program; if not, write to the Free Software
+#	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
+
+#
+# Process a record from the tos file
+#
+# The caller has loaded the column contents from the record into the following
+# variables:
+#
+#    src dst protocol sport dport tos
+#
+# and has loaded a space-separated list of their values in "rule".
+#
+process_tos_rule() {
+    #
+    # Parse the contents of the 'src' variable
+    #
+    if [ "$src" = "${src%:*}" ]; then
+	srczone="$src"
+	src=
+    else
+	srczone="${src%:*}"
+	src="${src#*:}"
+    fi
+
+    source=
+    #
+    # Validate the source zone
+    #
+    if validate_zone $srczone; then
+	source=$srczone
+    elif [ "$srczone" = "all" ]; then
+	source="all"
+    else
+	error_message "WARNING: Undefined Source Zone - rule \"$rule\" ignored"
+	return
+    fi
+
+    [ -n "$src" ] && case "$src" in
+	*.*.*|+*|!+*)
+	    #
+	    # IP Address or networks
+	    #
+	    src="$(source_ip_range $src)"
+	    ;;
+	~*|!~*)
+	    src=$(mac_match $src)
+	    ;;
+	*)
+	    #
+	    # Assume that this is a device name
+	    #
+	    if ! verify_interface $src ; then
+		error_message "WARNING: Unknown Interface in rule \"$rule\" ignored"
+		return
+	    fi
+
+	    src="$(match_source_dev $src)"
+	    ;;
+    esac
+
+    #
+    # Parse the contents of the 'dst' variable
+    #
+    if [ "$dst" = "${dst%:*}" ]; then
+	dstzone="$dst"
+	dst=
+    else
+	dstzone="${dst%:*}"
+	dst="${dst#*:}"
+    fi
+
+    dest=
+    #
+    # Validate the destination zone
+    #
+    if validate_zone $dstzone; then
+	dest=$dstzone
+    elif [ "$dstzone" = "all" ]; then
+	dest="all"
+    else
+	error_message \
+	 "WARNING: Undefined Destination Zone - rule \"$rule\" ignored"
+	return
+    fi
+
+    [ -n "$dst" ] && case "$dst" in
+	*.*.*|+*|!+*)
+	    #
+	    # IP Address or networks
+	    #
+	    ;;
+	*)
+	    #
+	    # Assume that this is a device name
+	    #
+	    error_message \
+	     "WARNING: Invalid Destination - rule \"$rule\" ignored"
+	    return
+	    ;;
+    esac
+
+    #
+    # Setup PROTOCOL and PORT variables
+    #
+    sports=""
+    dports=""
+
+    case $protocol in
+	tcp|udp|TCP|UDP|6|17)
+	    [ -n "$sport" ] && [ "x${sport}" != "x-" ] && \
+		sports="--sport $sport"
+	    [ -n "$dport" ] && [ "x${dport}" != "x-" ] && \
+		dports="--dport $dport"
+	    ;;
+	icmp|ICMP|0)
+	    [ -n "$dport" ] && [ "x${dport}" != "x-" ] && \
+		dports="--icmp-type $dport"
+	    ;;
+	all|ALL)
+	    protocol=
+	    ;;
+	*)
+	    ;;
+    esac
+
+    protocol="${protocol:+-p $protocol}"
+
+    tos="-j TOS --set-tos $tos"
+
+    case "$dstzone" in
+    all|ALL)
+	dst=0.0.0.0/0
+	;;
+    *)
+	[ -z "$dst" ] && eval dst=\$${dstzone}_hosts
+	;;
+    esac
+
+    for dest in $dst; do
+	dest="$(dest_ip_range $dest)"
+
+	case $srczone in
+	$FW)
+	    run_iptables2 -t mangle -A outtos \
+		$protocol $dest $dports $sports $tos
+	    ;;
+	all|ALL)
+	    run_iptables2 -t mangle -A outtos \
+		$protocol $dest $dports $sports $tos
+	    run_iptables2 -t mangle -A pretos \
+		$protocol $dest $dports $sports $tos
+	    ;;
+	*)
+	    if [ -n "$src" ]; then
+		run_iptables2 -t mangle -A pretos $src \
+		    $protocol $dest $dports $sports $tos
+	    else
+		eval interfaces=\$${srczone}_interfaces
+
+		for interface in $interfaces; do
+		    run_iptables2 -t mangle -A pretos -i $interface \
+			$protocol $dest $dports $sports $tos
+		done
+	    fi
+	    ;;
+	esac
+    done
+
+    progress_message "   Rule \"$rule\" $DONE."
+    save_progress_message "Rule \"$rule\"  Added."
+}
+
+#
+# Process the tos file
+#
+process_tos() # $1 = name of tos file
+{
+    progress_message2 "$DOING $1..."
+
+    strip_file tos $1
+
+    if [ -s $TMP_DIR/tos ] ; then
+	createmanglechain pretos
+	createmanglechain outtos
+
+	while read src dst protocol sport dport tos; do
+	    expandv src dst protocol sport dport tos
+	    rule="$(echo $src $dst $protocol $sport $dport $tos)"
+	    process_tos_rule
+	done < $TMP_DIR/tos
+
+	run_iptables -t mangle -A PREROUTING -j pretos
+	run_iptables -t mangle -A OUTPUT     -j outtos
+    fi
+}
+
+CLIB_TOS_LOADED=Yes

@@ -628,7 +628,6 @@ fi
 run_install $OWNERSHIP -m 0644 Makefile ${PREFIX}/usr/share/shorewall/configfiles/Makefile
 run_install $OWNERSHIP -m 0600 Makefile ${PREFIX}/etc/shorewall/Makefile
 echo "Makefile installed as ${PREFIX}/etc/shorewall/Makefile"
-
 #
 # Install the Action files
 #
@@ -636,9 +635,23 @@ for f in action.* ; do
     install_file $f ${PREFIX}/usr/share/shorewall/$f 0644
     echo "Action ${f#*.} file installed as ${PREFIX}/usr/share/shorewall/$f"
 done
-
+#
 install_file Limit ${PREFIX}/usr/share/shorewall/Limit 0644
 echo "Limit action extension script installed as ${PREFIX}/usr/share/shorewall/Limit"
+#
+# Install the Compiler Library files
+#
+for f in clib.* ; do
+    install_file $f ${PREFIX}/usr/share/shorewall/$f 0555
+    echo "Compiler library ${f#*.} installed as ${PREFIX}/usr/share/shorewall/$f"
+done
+#
+# Install the Common Library files
+#
+for f in lib.* ; do
+    install_file $f ${PREFIX}/usr/share/shorewall/$f 0555
+    echo "Library ${f#*.} installed as ${PREFIX}/usr/share/shorewall/$f"
+done
 #
 # Install the Macro files
 #

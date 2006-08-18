@@ -320,6 +320,14 @@ run_install $OWNERSHIP -m 0600 xmodules ${PREFIX}/usr/share/shorewall-lite/xmodu
 echo "Xmodules file installed as ${PREFIX}/usr/share/shorewall-lite/xmodules"
 
 #
+# Install the Common Library files
+#
+for f in lib.* ; do
+    install_file $f ${PREFIX}/usr/share/shorewall-lite/$f 0555
+    echo "Library ${f#*.} installed as ${PREFIX}/usr/share/shorewall-lite/$f"
+done
+
+#
 # Create the version file
 #
 echo "$VERSION" > ${PREFIX}/usr/share/shorewall-lite/version

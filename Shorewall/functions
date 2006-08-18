@@ -1150,7 +1150,12 @@ get_routed_networks() # $1 = interface name
     ip route show dev $1 2> /dev/null |
 	while read address rest; do
 	    if [ "x$address" = xdefault ]; then
-		error_message "WARNING: default route ignored on interface $1"
+		if [ $# -gt 1 ]; then
+		    shift
+		    fatal_error "$@"
+		else
+		    "WARNING: default route ignored on interface $1"
+		fi
 	    else
 		[ "$address" = "${address%/*}" ] && address="${address}/32"
 		echo $address

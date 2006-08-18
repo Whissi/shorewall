@@ -11,9 +11,9 @@ usage() {
 initialize
 
 #
-# Start trace if first arg is "debug"
+# Start trace if first arg is "debug" or "trace"
 #
-[ $# -gt 1 ] && [ "$1" = "debug" ] && { set -x ; shift ; }
+[ $# -gt 1 ] && [ "$1" = "debug" -o "$1" = "trace" ] && { set -x ; shift ; }
 
 finished=0
 
@@ -69,6 +69,7 @@ case "$COMMAND" in
 	    progress_message3 "Starting $PRODUCT...."
 	    define_firewall
 	    status=$?
+	    [ -n "$SUBSYSLOCK" -a $status -eq 0 ] && touch $SUBSYSLOCK
 	    progress_message3 "done."
 	fi
 	;;
@@ -76,6 +77,7 @@ case "$COMMAND" in
 	progress_message3 "Stopping $PRODUCT...."
 	stop_firewall
 	status=0
+	[ -n "$SUBSYSLOCK" ] && rm -f $SUBSYSLOCK
 	progress_message3 "done."
 	;;
     reset)
@@ -101,16 +103,23 @@ case "$COMMAND" in
 
 	define_firewall
 	status=$?
+	if [ -n "$SUBSYSLOCK" ]; then
+ 	    [ $status -eq 0 ] && touch $SUBSYSLOCK || rm -f $SUBSYSLOCK
+        fi	
 	progress_message3 "done."
 	;;
     restore)
 	restore_firewall
 	status=$?
+	if [ -n "$SUBSYSLOCK" ]; then
+ 	    [ $status -eq 0 ] && touch $SUBSYSLOCK || rm -f $SUBSYSLOCK
+        fi	
 	;;
     clear)
 	progress_message3 "Clearing $PRODUCT...."
 	clear_firewall
 	status=0
+	[ -n "$SUBSYSLOCK" ] && rm -f $SUBSYSLOCK
 	progress_message3 "done."
 	;;
     status)

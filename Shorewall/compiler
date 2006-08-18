@@ -924,7 +924,7 @@ determine_hosts() {
 
 	for interface in $interfaces; do
 	    if interface_has_option $interface detectnets; then
-		networks=$(get_routed_networks $interface)
+		networks=$(get_routed_networks $interface "detectnets not allowed on interface with default route - $interface" )
 	    else
 		networks=0.0.0.0/0
 	    fi
@@ -8068,7 +8068,7 @@ compile_firewall() # $1 = File Name
 	[ -h $dir ] && fatal_error "$dir is a Symbolic Link"
 	[ -d $outfile ] && fatal_error "$outfile is a Directory"
 	[ -h $outfile ] && fatal_error "$outfile is a Symbolic Link"
-	[ -f $outfile -a ! -x $outfile ] && fatal_error "$outfile exists and is not a restore file"
+	[ -f $outfile -a ! -x $outfile ] && fatal_error "$outfile exists and is not a compiled script"
 
 	DOING=Compiling
 	DONE=compiled
@@ -8114,7 +8114,7 @@ __EOF__
 
     compile_stop_firewall
 
-cat >&3 << __EOF__
+    cat >&3 << __EOF__
 
 #
 # Set policy of chain \$1 to \$2

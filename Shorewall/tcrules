@@ -69,7 +69,9 @@
 #				- htb
 #				- prio
 #
-#			   Classify always occurs in the POSTROUTING chain.
+#			   Classification occurs in the POSTROUTING chain except
+#			   when the SOURCE is $FW[:<address>] in which case
+#			   marking occurs in the OUTPUT chain.
 #
 #			c) RESTORE[/mask] -- restore the packet's mark from the
 #			   connection's mark using the supplied mask if any.

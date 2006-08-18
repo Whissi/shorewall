@@ -1681,11 +1681,12 @@ FIREWALL=$SHAREDIR/firewall
 FUNCTIONS=$SHAREDIR/functions
 VERSION_FILE=$SHAREDIR/version
 HELP=$SHAREDIR/help
+LIBRARIES="base"
 
 if [ -f $FUNCTIONS ]; then
-    . $FUNCTIONS
+    . $FUNCTIONS $LIBRARIES
 else
-    echo "$FUNCTIONS does not exist!" >&2
+    echo "   ERROR: $FUNCTIONS does not exist!" >&2
     exit 2
 fi
 

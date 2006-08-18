@@ -61,6 +61,26 @@ DIR=$PWD
 # location and options for GnuPG
 #
 GPG="/usr/bin/gpg -ab --batch --comment 'To verify this, you can download our public key at https://lists.shorewall.net/shorewall.gpg.key'"
+#
+# Libraries to include in the tarball
+#
+XLIBS=""
+#
+# Compiler Libraries to exclude the tarball
+#
+XCLIBS=""
+#
+# Include Samples
+#
+SAMPLES=Yes
+#
+# Include configfiles
+#
+CONFIGFILES=Yes
+#
+# Include macros
+#
+MACROS=Yes
 ################################################################################
 #                               V A R I A B L E S
 ################################################################################
@@ -294,6 +314,12 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
     rm -rf $SHOREWALLLITEDIR
 
     do_or_die "svn export --non-interactive --force https://svn.sourceforge.net/svnroot/shorewall/$SVNBRANCH  $SHOREWALLDIR >> $LOGFILE 2>&1"
+ 
+    if [ -n "$HASLITE" ]; then
+	progress_message "Exporting $LITESVNBRANCH from SVN..."
+	do_or_die "svn export --non-interactive --force https://svn.sourceforge.net/svnroot/shorewall/$LITESVNBRANCH  $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
+	do_or_die "cp $SHOREWALLDIR/functions $SHOREWALLDIR/modules $SHOREWALLDIR/xmodules $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
+    fi
 
     fgrep VERSION=$VERSION $SHOREWALLDIR/install.sh > /dev/null 2>&1     || fatal_error "install.sh has wrong version"
     fgrep VERSION=$VERSION $SHOREWALLDIR/uninstall.sh > /dev/null 2>&1   || fatal_error "uninstall.sh has wrong version"
@@ -304,7 +330,7 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	fgrep VERSION=$VERSION $SHOREWALLLITEDIR/fallback.sh > /dev/null 2>&1    || fatal_error "Lite fallback.sh has wrong version"
     fi
 
-    if [ -n "$SAMPLESTAG" ]; then
+    if [ -n "$SAMPLES" -a -n "$SAMPLESTAG" ]; then
 	cd $SHOREWALLDIR
 	do_or_die "svn export --non-interactive --force https://svn.sourceforge.net/svnroot/shorewall/$SAMPLESTAG Samples >> $LOGFILE 2>&1"
 	cd $DIR
@@ -313,15 +339,19 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
     do_or_die "rm -rf $SHOREWALLDIR/debian"
 
     if [ -n "$BUILDTARBALL" ]; then
-	if [ -n "$HASLITE" ]; then
-	    #
-	    # Do this at build time so that the Gentoo people don't wet their pants
-	    #
-	    do_or_die cp $SHOREWALLDIR/shorewall.conf $SHOREWALLDIR/shorewall.configfiles
-	    do_or_die "perl -p -w -i -e 's|^CONFIG_PATH=.*|CONFIG_PATH=/usr/share/shorewall/configfiles:/usr/share/shorewall|' $SHOREWALLDIR/shorewall.configfiles"
+	progress_message "Creating $DIR/$TARBALL..."
+	for lib in $XLIBS; do
+	    rm -f $SHOREWALLDIR/lib.${lib}
+	done
+
+	for clib in $XCLIBS; do
+	    rm -f $SHOREWALLDIR/clib.${lib}
+	done
+
+	if [ -z "$MACROS" ]; then
+	    rm -f $SHOREWALLDIR/macro.*
 	fi
 
-	progress_message "Creating $DIR/$TARBALL..."
 	do_or_die "tar -zcvf $TARBALL $SHOREWALLDIR >> $LOGFILE 2>&1"
         do_or_die "tar -jcvf shorewall-${VERSION%-*}.tar.bz2 $SHOREWALLDIR >> $LOGFILE 2>&1"
 	if [ -n "$SIGN" ]; then

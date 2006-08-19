@@ -663,8 +663,14 @@ done
 # Install the Macro files
 #
 for f in macro.* ; do
-    install_file $f ${PREFIX}/usr/share/shorewall/$f 0644
-    echo "Macro ${f#*.} file installed as ${PREFIX}/usr/share/shorewall/$f"
+    case $f in
+	*.\*)
+	    ;;
+	*)
+	    install_file $f ${PREFIX}/usr/share/shorewall/$f 0644
+	    echo "Macro ${f#*.} file installed as ${PREFIX}/usr/share/shorewall/$f"
+	    ;;
+    esac
 done
 #
 # Install the program skeleton files

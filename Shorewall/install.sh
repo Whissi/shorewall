@@ -273,13 +273,12 @@ if [ -z "$NOCONFIGFILES" ]; then
     run_install $OWNERSHIP -m 0644 shorewall.conf ${PREFIX}/usr/share/shorewall/configfiles/shorewall.conf
 
     qt mywhich perl && perl -p -w -i -e 's|^CONFIG_PATH=.*|CONFIG_PATH=/usr/share/shorewall/configfiles:/usr/share/shorewall|;' ${PREFIX}/usr/share/shorewall/configfiles/shorewall.conf
-
-    if [ ! -f ${PREFIX}/etc/shorewall/shorewall.conf ]; then
-	run_install $OWNERSHIP -m 0644 shorewall.conf ${PREFIX}/etc/shorewall/shorewall.conf
-	echo "Config file installed as ${PREFIX}/etc/shorewall/shorewall.conf"
-    fi
 fi
 
+if [ ! -f ${PREFIX}/etc/shorewall/shorewall.conf ]; then
+    run_install $OWNERSHIP -m 0644 shorewall.conf ${PREFIX}/etc/shorewall/shorewall.conf
+    echo "Config file installed as ${PREFIX}/etc/shorewall/shorewall.conf"
+fi
 
 if [ -n "$ARCHLINUX" ] ; then
    sed -e 's!LOGFILE=/var/log/messages!LOGFILE=/var/log/messages.log!' -i ${PREFIX}/etc/shorewall/shorewall.conf

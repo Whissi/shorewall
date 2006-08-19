@@ -339,7 +339,9 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
     do_or_die "rm -rf $SHOREWALLDIR/debian"
 
     if [ -n "$BUILDTARBALL" ]; then
+	
 	progress_message "Creating $DIR/$TARBALL..."
+	
 	for lib in $XLIBS; do
 	    rm -f $SHOREWALLDIR/lib.${lib}
 	done

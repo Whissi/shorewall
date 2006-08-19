@@ -880,7 +880,16 @@ LOGBURST=""</programlisting>
 
         <para>Temporarily add the following rule:</para>
 
-        <programlisting>DROP net fw udp 10619</programlisting>
+        <programlisting>#ACTION   SOURCE    DEST    PROTO    DEST PORT(S)
+DROP      net       fw      udp      10619</programlisting>
+
+        <para>Alternatively, if you do not set BLACKLIST_LOGLEVEL and you have
+        specifed the 'blacklist' option on your external interface in
+        <filename>/etc/shorewall/interfaces</filename>, then you can blacklist
+        the port. In <filename>/etc/shorewall/blacklist</filename>:</para>
+
+        <programlisting>#ADDRESS/SUBNET         PROTOCOL        PORT
+-                       udp             10619</programlisting>
       </section>
 
       <section id="faq6d">

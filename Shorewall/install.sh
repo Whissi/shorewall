@@ -649,8 +649,14 @@ echo "Limit action extension script installed as ${PREFIX}/usr/share/shorewall/L
 # Install the Compiler Library files
 #
 for f in clib.* ; do
-    install_file $f ${PREFIX}/usr/share/shorewall/$f 0555
-    echo "Compiler library ${f#*.} installed as ${PREFIX}/usr/share/shorewall/$f"
+    case $f in
+	*.\*)
+	    ;;
+	*)
+	    install_file $f ${PREFIX}/usr/share/shorewall/$f 0555
+	    echo "Compiler library ${f#*.} installed as ${PREFIX}/usr/share/shorewall/$f"
+	    ;;
+    esac
 done
 #
 # Install the Common Library files

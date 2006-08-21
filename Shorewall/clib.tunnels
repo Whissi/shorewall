@@ -43,7 +43,7 @@ setup_ipsec() {
     #
     set_mss() # $1 = MSS value, $2 = _in, _out or ""
     {
-	for z in $ZONES; do
+	for z in $ZONES $FW; do
 	    case $2 in
 		_in)
 		    set_mss1 ${zone}2${z} $1

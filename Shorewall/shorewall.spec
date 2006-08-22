@@ -114,6 +114,7 @@ fi
 %attr(0555,root,root) /usr/share/shorewall/clib.ecn
 %attr(0555,root,root) /usr/share/shorewall/clib.maclist
 %attr(0555,root,root) /usr/share/shorewall/clib.macros
+%attr(0555,root,root) /usr/share/shorewall/clib.nat
 %attr(0555,root,root) /usr/share/shorewall/clib.providers
 %attr(0555,root,root) /usr/share/shorewall/clib.proxyarp
 %attr(0555,root,root) /usr/share/shorewall/clib.tcrules

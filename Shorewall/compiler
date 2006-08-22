@@ -1496,7 +1496,6 @@ process_routestopped() # $1 = command
 
     done < $TMP_DIR/routestopped
 
-
     for host in $hosts; do
 	interface=${host%:*}
 	networks=${host#*:}
@@ -1622,134 +1621,6 @@ setup_syn_flood_chains()
 
 	[ -n "$synparams" ] && setup_syn_flood_chain $chain $synparams $loglevel
     done
-}
-
-#
-# Setup Static Network Address Translation (NAT)
-#
-setup_nat() {
-    local external= interface= internal= allints= localnat= policyin= policyout=
-
-    validate_one() #1 = Variable Name, $2 = Column name, $3 = value
-    {
-	case $3 in
-	    Yes|yes)
-                ;;
-	    No|no)
-		eval ${1}=
-		;;
-	    *)
-		[ -n "$3" ] && \
-		    fatal_error "Invalid value ($3) for $2 in entry \"$external $interface $internal $allints $localnat\""
-		;;
-	esac
-    }
-
-    do_one_nat() {
-	local add_ip_aliases=$ADD_IP_ALIASES iface=${interface%:*}
-
-	if [ -n "$add_ip_aliases" ]; then
-	    case $interface in
-		*:)
-		    interface=${interface%:}
-		    add_ip_aliases=
-		    ;;
-		*)
-		    [ -n "$RETAIN_ALIASES" ] || save_command del_ip_addr $external $iface
-		    ;;
-	    esac
-	else
-	    interface=${interface%:}
-	fi
-
-	validate_one allints  "ALL INTERFACES" $allints
-	validate_one localnat "LOCAL"          $localnat
-
-	if [ -n "$allints" ]; then
-	    addnatrule nat_in  -d $external $policyin  -j DNAT --to-destination $internal
-	    addnatrule nat_out -s $internal $policyout -j SNAT --to-source $external
-	else
-	    addnatrule $(input_chain $iface)  -d $external $policyin  -j DNAT --to-destination $internal
-		addnatrule $(output_chain $iface) -s $internal $policyout -j SNAT --to-source $external
-	fi
-
-	[ -n "$localnat" ] && \
-	    run_iptables2 -t nat -A OUTPUT -d $external $policyout -j DNAT --to-destination $internal
-
-	if [ -n "$add_ip_aliases" ]; then
-	    list_search $external $ALIASES_TO_ADD || \
-		ALIASES_TO_ADD="$ALIASES_TO_ADD $external $interface"
-	fi
-    }
-    #
-    # At this point, we're just interested in the network translation
-    #
-    > $STATEDIR/nat
-
-    if [ -n "$POLICY_MATCH" ]; then
-	policyin="-m policy --pol none --dir in"
-	policyout="-m policy --pol none --dir out"
-    fi
-
-    [ -n "$RETAIN_ALIASES" ] || save_progress_message "Setting up one-to-one NAT..."
-
-    while read external interface internal allints localnat; do
-	expandv external interface internal allints localnat
-
-	do_one_nat
-
-	progress_message_and_save "   Host $internal NAT $external on $interface"
-    done < $TMP_DIR/nat
-}
-
-#
-# Delete existing Static NAT
-#
-delete_nat() {
-    run_iptables -t nat -F
-    run_iptables -t nat -X
-
-    [ -d $STATEDIR ] && touch $STATEDIR/nat
-
-    indent >&3 << __EOF__
-
-if [ -f \${VARDIR}/nat ]; then
-   while read external interface; do
-       del_ip_addr \$external \$interface
-    done < \${VARDIR}/nat
-
-    rm -f \${VARDIR}/nat
-fi
-
-__EOF__
-}
-
-#
-# Setup Network Mapping (NETMAP)
-#
-setup_netmap() {
-
-    while read type net1 interface net2 ; do
-	expandv type net1 interface net2
-
-	list_search $interface $ALL_INTERFACES || \
-	    fatal_error "Unknown interface $interface in entry \"$type $net1 $interface $net2\""
-
-	case $type in
-	    DNAT)
-		addnatrule $(input_chain $interface)  -d $net1 -j NETMAP --to $net2
-		;;
-	    SNAT)
-		addnatrule $(output_chain $interface) -s $net1 -j NETMAP --to $net2
-		;;
-	    *)
-		fatal_error "Invalid type $type in entry \"$type $net1 $interface $net2\""
-		;;
-	esac
-
-	progress_message_and_save "   Network $net1 on $interface mapped to $net2 ($type)"
-
-    done < $TMP_DIR/netmap
 }
 
 #
@@ -6962,7 +6833,7 @@ do_initialize() {
     [ -n "${RESTOREFILE:=restore}" ]
 
     #
-    # Strip the files and load modules
+    # Strip the configuration files and load modules
     #
     strip_file zones
     strip_file policy
@@ -6975,11 +6846,14 @@ do_initialize() {
     strip_file blacklist
     strip_file rules
     strip_file proxyarp
-    [ -s $TMP_DIR/proxyarp ]   && clib_load proxyarp CLIB_PROXYARP_LOADED "Use of the proxyarp file requires the Shorewall clib.proxyarp modules which is not installed"
+    [ -s $TMP_DIR/proxyarp ]   && clib_load proxyarp CLIB_PROXYARP_LOADED "Use of the proxyarp file requires the Shorewall compiler module clib.proxyarp which is not installed"
     strip_file maclist
-    [ -s $TMP_DIR/maclist ]    && clib_load maclist  CLIB_MACLIST_LOADED  "Use of the maclist file requires the Shorewall clib.maclist modules which is not installed"
+    [ -s $TMP_DIR/maclist ]    && clib_load maclist  CLIB_MACLIST_LOADED  "Use of the maclist file requires the Shorewall compiler module clib.maclist module which is not installed"
     strip_file nat
     strip_file netmap
+    if [ -s $TMP_DIR/nat -o -s $TMP_DIR/netmap ]; then
+	 clib_load nat  CLIB_NAT_LOADED  "Use of the nat or netmap files requires the Shorewall compiler module clib.nat which is not installed"
+    fi
     strip_file tcrules
     if [ -s $TMP_DIR/tcrules ]; then
 	clib_load tcrules CLIB_TCRULES_LOADED "Entries in the tcrules file require Shorewall compiler module clib.tcrules which is not installed"

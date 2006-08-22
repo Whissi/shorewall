@@ -40,6 +40,7 @@
 #	    SHOREWALL_DIR                       A directory name was passed to /sbin/shorewall
 #	    VERBOSE                             Standard Shorewall verbosity control.
 
+#
 # Fatal error -- stops the compiler after issuing the error message
 #
 fatal_error() # $* = Error Message
@@ -49,6 +50,36 @@ fatal_error() # $* = Error Message
     [ -n "$OUTPUT" ] && rm -f $OUTPUT
     kill $$
     exit 2
+}
+
+#
+# Load a compile-time library
+#
+clib_load() # $1 = library name, $2=name of 'loaded' symbol, $3-n = Fatal Error Message
+{
+    eval local loaded="\$${2}"
+
+    local clib=${SHAREDIR}/clib.${1}
+
+    if [ -z "$loaded" ]; then
+	if [ -x $clib ]; then
+	    . $clib
+	else
+	    shift 2
+	    fatal_error "$@"
+	fi
+    fi    
+}
+
+try_clib_load() # $1 = library name, $2=name of 'loaded' symbol
+{
+    eval local loaded="\$${2}"
+
+    local clib=${SHAREDIR}/clib.${1}
+
+    if [ -z "$loaded" ]; then
+	[ -x $clib ] && . $clib
+    fi    
 }
 
 #
@@ -460,8 +491,6 @@ determine_zones()
 	fi
     }
 
-    strip_file zones
-
     ZONES=
     IPV4_ZONES=
     IPSEC_ZONES=
@@ -511,7 +540,7 @@ determine_zones()
 		ipsec|IPSEC|ipsec4|IPSEC4)
 		    list_search $zone $ZONES $FW && fatal_error "Zone $zone is defined more than once"
 		    [ -n "$POLICY_MATCH" ] || fatal_error "Your kernel and/or iptables does not support policy match"
-		    [ -n "$CLIB_TUNNELS_LOADED" ] || fatal_error "Shorewall clib.tunnels module not loaded"
+		    clib_load tunnels CLIB_TUNNELS_LOADED "The $type zone type requires Shorewall compiler module clib.tunnels which is not installed"
 		    eval ${zone}_is_ipsec=Yes
 		    eval ${zone}_is_complex=Yes
 		    merge_zone
@@ -1116,12 +1145,10 @@ validate_hosts_file() {
 		   norfc1918|blacklist|tcpflags|nosmurfs|-)
 		       ;;
 		   maclist)
-		       [ -n "$CLIB_MACLIST_LOADED" ] || \
-			   fatal_error "Shorewall module clib.maclist not loaded"
+		       clib_load maclist CLIB_MACLIST_LOADED "The maclist host option requires Shorewall compiler module clib.maclist which is not installed"
 		       ;;
 		   ipsec)
-		       [ -n "$CLIB_TUNNELS_LOADED" ] || \
-			   fatal_error "Shorewall module clib.tunnels not loaded"
+		       clib_load tunnels CLIB_TUNNELS_LOADED "The ipsec host option requires Shorewall compiler module clib.tunnels which is not installed"
 		       [ -n "$POLICY_MATCH" ] || \
 			    fatal_error "Your kernel and/or iptables does not support policy match: ipsec"
 		       eval ${z}_ipsec_hosts=\"\$${z}_ipsec_hosts $interface:$host\"
@@ -1208,8 +1235,6 @@ validate_policy()
 	    fi
 	fi
     done
-
-    strip_file policy
 
     while read client server policy loglevel synparams; do
 	expandv client server policy loglevel synparams
@@ -1504,8 +1529,6 @@ process_routestopped() # $1 = command
 process_criticalhosts()
 {
     local hosts= interface host h options networks criticalhosts=
-
-    [ -f $TMP_DIR/routestopped ] || strip_file routestopped
 
     while read interface host options; do
 	expandv interface host options
@@ -2456,10 +2479,6 @@ process_actions1() {
 
     USEDACTIONS=
 
-    strip_file actions
-
-    strip_file actions.std ${SHAREDIR}/actions.std
-
     for inputfile in actions.std actions; do
 	while read xaction rest; do
 	    [ "x$rest" = x ] || fatal_error "Invalid Action: $xaction $rest"
@@ -2506,6 +2525,7 @@ process_actions1() {
 				    eval requiredby=\"\$requiredby_${xaction}\"
 				    list_search $xtarget $requiredby || eval requiredby_${xaction}=\"$requiredby $xtarget\"
 				else
+				    try_clib_load macros CLIB_MACROS_LOADED
 				    if [ -n "$CLIB_MACROS_LOADED" ]; then
 					verify_macro_from_action
 				    else
@@ -3900,6 +3920,8 @@ process_rules()
 			    ;;
 		    esac
 
+		    try_clib_load macros CLIB_MACROS_LOADED
+		    
 		    if [ -n "$CLIB_MACROS_LOADED" ]; then
 			f=macro.$xtarget1
 			
@@ -3918,7 +3940,7 @@ process_rules()
 			fi
 		    else
 			rule="$xtarget $xclients $xservers $xprotocol $xports $xcports $xaddress $xratelimit $xuserspec"
-			fatal_error "Invalid Action in rule \"$rule\""
+			fatal_error "Invalid Action in rule \"$rule\" (do you need the clib.macros Shorewall compile-time library?)"
 		    fi
 		fi
 		;;
@@ -4537,8 +4559,6 @@ __EOF__
 
     }
 
-    strip_file masq $1
-
     if [ -n "$NAT_ENABLED" ]; then
 	progress_message2 "$DOING Masquerading/SNAT"
 	save_progress_message "Setting up Masquerading/SNAT..."
@@ -4654,14 +4674,11 @@ process_blacklist_rec() {
 #
 setup_blacklist() {
     local hosts="$(find_hosts_by_option blacklist)"
-    local f=$(find_file blacklist)
     local disposition=$BLACKLIST_DISPOSITION
     local ipsec policy
 
-    if [ -n "$hosts" -a -f $f ]; then
+    if [ -n "$hosts" -a -s $TMP_DIR/blacklist ]; then
 	progress_message2 "$DOING Blacklisting..."
-
-	strip_file blacklist $f
 
 	createchain blacklst no
 
@@ -4698,13 +4715,10 @@ setup_blacklist() {
 # Refresh the Black List
 #
 refresh_blacklist() {
-    local f=$(find_file blacklist)
     local disposition=$BLACKLIST_DISPOSITION
 
     progress_message2 "$DOING Black List..."
     save_progress_message "Loading Black List..."
-
-    strip_file blacklist $f
 
     [ "$disposition" = REJECT ] && disposition=reject
 
@@ -4720,12 +4734,9 @@ refresh_blacklist() {
 # Verify the Black List
 #
 validate_blacklist() {
-    local f=$(find_file blacklist)
     local disposition=$BLACKLIST_DISPOSITION
 
     progress_message2 "Checking Black List..."
-
-    strip_file blacklist $f
 
     [ "$disposition" = REJECT ] && disposition=reject
 
@@ -4809,12 +4820,6 @@ initialize_netfilter () {
     # accepting new connections.
     #
 
-    strip_file rules
-    [ -n "$CLIB_PROXYARP_LOADED" ] && strip_file proxyarp
-    [ -n "$CLIB_MACLIST_LOADED" ]  && strip_file maclist
-    strip_file nat
-    strip_file netmap
-
     progress_message2 "Pre-processing Actions..."
     process_actions1
 
@@ -4847,7 +4852,7 @@ initialize_netfilter () {
 	done
     fi
 
-    [ -n "$CLIB_TCRULES_LOADED" ] && [ -n "$CLEAR_TC" ] && delete_tc
+    [ -n "$CLIB_TCRULES_LOADED" -a -n "$CLEAR_TC" ] && delete_tc
 
     progress_message2 "Deleting user chains..."
 
@@ -4909,8 +4914,6 @@ initialize_netfilter () {
 
     progress_message2 "$DOING $f ..."
 
-    strip_file routestopped $f
-
     process_routestopped -A
 
     if [ -n "$DISABLE_IPV6" ]; then
@@ -4935,8 +4938,7 @@ initialize_netfilter () {
 
     if [ -n "$CLIB_ACCOUNTING_LOADED" ]; then
 	accounting_file=$(find_file accounting)
-
-	[ -f $accounting_file ] && setup_accounting $accounting_file
+	setup_accounting $accounting_file
     fi
 
     createchain reject	no
@@ -5124,8 +5126,6 @@ __EOF__
 	progress_message2 "Enabling RFC1918 Filtering"
 
 	save_progress_message "Setting up RFC1918 Filtering..."
-
-	strip_file rfc1918
 
 	createchain norfc1918 no
 
@@ -6423,11 +6423,9 @@ __EOF__
 
     if [ -n "$CLIB_TUNNELS_LOADED" ]; then
 	tunnels=$(find_file tunnels)
-	if [ -f $tunnels ]; then
-	    progress_message2 "$DOING $tunnels..."
-	    save_progress_message "Setting up Tunnels..."
-	    setup_tunnels $tunnels
-	fi
+	progress_message2 "$DOING $tunnels..."
+	save_progress_message "Setting up Tunnels..."
+	setup_tunnels $tunnels
     fi
 
     save_progress_message "Setting up Actions..."
@@ -6475,13 +6473,15 @@ __EOF__
 	save_command add_ip_aliases $ALIASES_TO_ADD
     fi
 
-    if [ -n "$CLIB_PROXYARP_LOADED" ]; then
-	for file in chains nat proxyarp zones; do
-	    save_command "cat > \${VARDIR}/$file $LEFTSHIFT __EOF__"
-	    cat $STATEDIR/$file >&3
-	    save_command_unindented __EOF__
-	done
-    fi
+    files="zones nat"
+
+    [ -n "$CLIB_PROXYARP_LOADED" ] && files="$files proxyarp"
+
+    for file in chains $files; do
+	save_command "cat > \${VARDIR}/$file $LEFTSHIFT __EOF__"
+	cat $STATEDIR/$file >&3
+	save_command_unindented __EOF__
+    done
 
     cat >&3 << __EOF__
 
@@ -6737,18 +6737,6 @@ do_initialize() {
     else
 	fatal_error "$FUNCTIONS does not exist!"
     fi
-    #
-    # Load compiler libraries
-    #
-    for clib in ${SHAREDIR}/clib.*; do
-	case $clib in
-	    ${SHAREDIR}/clib.\*)
-                ;;
-	    *)
-		. $clib
-		;;
-	esac
-    done
 
     TMP_DIR=$(mktempdir)
 
@@ -6974,10 +6962,45 @@ do_initialize() {
     [ -n "${RESTOREFILE:=restore}" ]
 
     #
-    # Strip the files that we use often
+    # Strip the files and load modules
     #
+    strip_file zones
+    strip_file policy
     strip_file interfaces
     strip_file hosts
+    strip_file routestopped
+    strip_file actions
+    strip_file actions.std ${SHAREDIR}/actions.std
+    strip_file masq
+    strip_file blacklist
+    strip_file rules
+    strip_file proxyarp
+    [ -s $TMP_DIR/proxyarp ]   && clib_load proxyarp CLIB_PROXYARP_LOADED "Use of the proxyarp file requires the Shorewall clib.proxyarp modules which is not installed"
+    strip_file maclist
+    [ -s $TMP_DIR/maclist ]    && clib_load maclist  CLIB_MACLIST_LOADED  "Use of the maclist file requires the Shorewall clib.maclist modules which is not installed"
+    strip_file nat
+    strip_file netmap
+    strip_file tcrules
+    if [ -s $TMP_DIR/tcrules ]; then
+	clib_load tcrules CLIB_TCRULES_LOADED "Entries in the tcrules file require Shorewall compiler module clib.tcrules which is not installed"
+	lib_load tcrules LIB_TCRULES_LOADED "Entries in the tcrules file require Shorewall library module lib.tcrules which is not installed"
+    fi
+    strip_file rfc1918
+    strip_file accounting
+    [ -s $TMP_DIR/accounting ] && clib_load accounting CLIB_ACCOUNTING_LOADED "Entries in the accounting file require Shorewall compiler module clib.accounting which is not installed"
+    strip_file ecn
+    [ -s $TMP_DIR/ecn ]        && clib_load ecn CLIB_ECN_LOADED "Entries in the ecn file require Shorewall compiler module clib.ecn which is not installed"
+    strip_file providers
+    [ -s $TMP_DIR/providers  ] && clib_load providers CLIB_PROVIDERS_LOADED "Entries in the providers file require Shorewall compiler module clib.providers which is not installed"
+    strip_file tos
+    [ -s $TMP_DIR/tos ]        && clib_load tos CLIB_TOS_LOADED "Entries in the tos file require Shorewall compiler module clib.tos which is not installed"
+    strip_file ipsec
+    [ -s $TMP_DIR/ipsec ]      && clib_load tunnels CLIB_TUNNELS_LOADED "Entries in the ipsec file require Shorewall compiler module clib.tunnels which is not installed"
+    strip_file tunnels
+    [ -s $TMP_DIR/tunnels ]    && clib_load tunnels CLIB_TUNNELS_LOADED "Entries in the tunnels file require Shorewall compiler module clib.tunnels which is not installed"
+    strip_file tcdevices $devfile
+    [ -s $TMP_DIR/tcdevices ]  && lib_load tc LIB_TC_LOADED "Entries in the tcdevices file require Shorewall library module lib.tc which is not installed"
+    strip_file tcclasses $classfile
     #
     # Check out the user's shell
     #

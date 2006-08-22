@@ -102,7 +102,6 @@ setup_ipsec() {
 	    ;;
 	*)
 	    f=$IPSECFILE
-	    strip_file $f
 	    progress_message2 "$DOING $f..."
 	    using_ipsec=Yes
 	    ;;
@@ -476,8 +475,6 @@ setup_tunnels() # $1 = name of tunnels file
 	progress_message_and_save "   GENERIC tunnel to $1:$p defined."
     }
 
-    strip_file tunnels $1
-
     while read kind z gateway z1; do
 	expandv kind z gateway z1
 	tunnel="$(echo $kind $z $gateway $z1)"
@@ -593,8 +590,6 @@ setup_tunnels() # $1 = name of tunnels file
 
 	progress_message_and_save "   GENERIC tunnel to $1:$p defined."
     }
-
-    strip_file tunnels $1
 
     while read kind z gateway z1; do
 	expandv kind z gateway z1

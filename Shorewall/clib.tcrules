@@ -48,8 +48,6 @@ setup_tc1() {
     #
     # Process the TC Rules File
     #
-    strip_file tcrules
-
     while read mark sources dests proto ports sports user testval length tos; do
 	expandv mark sources dests proto ports sports user testval length tos
 	rule=$(echo "$mark $sources $dests $proto $ports $sports $user $testval $length $tos")

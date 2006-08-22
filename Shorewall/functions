@@ -23,29 +23,29 @@
 
 LIBVERSION=30192
 
+#
+# Load a run-time library
+#
+lib_load() # $1 = library name, $2=name of 'loaded' symbol, $3-n = Fatal Error Message
+{
+    eval local loaded="\$${2}"
+
+    local lib=${SHAREDIR}/lib.${1}
+
+    if [ -z "$loaded" ]; then
+	if [ -x $lib ]; then
+	    . $lib
+	else
+	    shift 2
+	    fatal_error "$@"
+	fi
+    fi    
+}
+
 [ -n "${VARDIR:=/var/lib/shorewall}" ]
 [ -n "${SHAREDIR:=/usr/share/shorewall}" ]
 [ -n "${CONFDIR:=/etc/shorewall}" ]
 
 SHOREWALL_LIBRARY=Loaded
 
-if [ $# -gt 0 ]; then
-    #
-    # Load a specific set of libraries
-    #
-    for lib in $@; do
-	. ${SHAREDIR}/lib.${lib}
-    done
-else
-    for lib in ${SHAREDIR}/lib.*; do
-	case $lib in
-	    ${SHAREDIR}/lib.\*)
-	        echo "   ERROR: ${SHAREDIR}/lib.\* not found" >&2
-	        exit 2
-	    ;;
-	    *)
-		. $lib
-		;;
-	esac
-    done
-fi
+lib_load base base LIB_BASE_LOADED "Installation Error: ${SHAREDIR}/lib.base not found"

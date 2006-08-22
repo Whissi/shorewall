@@ -1578,16 +1578,26 @@ refresh_tc() {
     #
     strip_file tcrules
 
-    while read mark sources dests proto ports sports user testval; do
-	expandv mark sources dests proto ports sports user testval tos
-	rule=$(echo "$mark $sources $dests $proto $ports $sports $user $testval $tos")
-	process_tc_rule
-    done < $TMP_DIR/tcrules
+    if [ -s $TMP_DIR/tcrules ]; then
+	lib_load tcrules LIB_TCRULES_LOADED "Entries in the tcrules file require the Shorewall library lib.tcrules which is not installed"
+
+	while read mark sources dests proto ports sports user testval; do
+	    expandv mark sources dests proto ports sports user testval tos
+	    rule=$(echo "$mark $sources $dests $proto $ports $sports $user $testval $tos")
+	    process_tc_rule
+	done < $TMP_DIR/tcrules
+    fi
 
     if [ -n "$TC_SCRIPT" ]; then
 	run_user_exit $TC_SCRIPT
     elif [ -n "$TC_ENABLED" ]; then
-	setup_traffic_shaping
+	strip_file tcdevices
+	strip_file tcclasses
+
+	if [ -s $TMP_DIR/tcdevices ]; then
+	    lib_load tc LIB_TC_LOADED "Entries in the tcdevices file require the Shorewall library lib.tc which is not installed"
+	    setup_traffic_shaping
+	fi
     fi
 
 }
@@ -1615,6 +1625,8 @@ refresh_firewall()
     #
     # Blacklist
     #
+    strip_file blacklist
+
     refresh_blacklist
 
     ecn=$(find_file ecn)

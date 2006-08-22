@@ -2201,14 +2201,16 @@ process_action() # $1 = chain    (Chain to add the rules to)
 #
 # Source the extension script for an action, if any
 #
-process_action_file() # $1 = File Name
+process_action_file() # $1 = File Name, $2 - n = Arguments
 {
     local user_exit=$(find_file $1)
+
+    shift
 
     if [ -f $user_exit ]; then
 	progress_message "Processing $user_exit ..."
 
-	. $user_exit
+	. $user_exit $@
     fi
 }
 
@@ -2265,7 +2267,7 @@ createlogactionchain() # $1 = Action Name, $2 = Log Level [: Log Tag ]
 
     [ none = "${LEVEL%\!}" ] && LEVEL=
 
-    process_action_file $1
+    process_action_file $1 "$CHAIN" "$LEVEL" "$TAG"
 
     eval ${action}_chains=\"\$${action}_chains $level $CHAIN\"
 
@@ -2508,7 +2510,7 @@ process_actions1() {
 					verify_macro_from_action
 				    else
 					rule="$xtarget $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec"
-					fatal_error "Invalid TARGET in rule \"$rule\""
+					fatal_error "Invalid TARGET in rule \"$rule\" (do you need the clib.macros Shorewall Library?)"
 				    fi
 				fi
 				;;
@@ -6726,14 +6728,18 @@ do_initialize() {
     FUNCTIONS=${SHAREDIR}/functions
 
     [ -n "${VERBOSE:=2}" ]
-
+    #
+    # Load Libraries shared with run-time
+    #
     if [ -f $FUNCTIONS ]; then
 	[ $VERBOSE -ge 2 ] && echo "Loading $FUNCTIONS..."
 	. $FUNCTIONS
     else
 	fatal_error "$FUNCTIONS does not exist!"
     fi
-
+    #
+    # Load compiler libraries
+    #
     for clib in ${SHAREDIR}/clib.*; do
 	case $clib in
 	    ${SHAREDIR}/clib.\*)

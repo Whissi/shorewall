@@ -53,7 +53,7 @@ fatal_error() # $* = Error Message
 }
 
 #
-# Load a compile-time library
+# Load a library functions
 #
 clib_load() # $1 = library name, $2=name of 'loaded' symbol, $3-n = Fatal Error Message
 {
@@ -69,6 +69,30 @@ clib_load() # $1 = library name, $2=name of 'loaded' symbol, $3-n = Fatal Error 
 	    fatal_error "$@"
 	fi
     fi    
+}
+
+strip_file_and_clib_load() # $1 = logical file, $2 = library to load if logical file non-empty, $3 = name of 'loaded' symbol
+{
+    local f=$(find_file $1)
+
+    strip_file $1 $f
+    
+    if [ -s $TMP_DIR/$1 ]; then
+	shift
+	clib_load $2 $3 "Entries in the $f file require the Shorewall compiler module ${SHAREDIR}/clib.$2 which is not installed"
+    fi
+}
+
+strip_file_and_lib_load() # $1 = logical file, $2 = library to load if logical file non-empty, $3 = name of 'loaded' symbol, $4-n = Fatal Error Message
+{
+    local f=$(find_file $1)
+
+    strip_file $1 $f
+    
+    if [ -s $TMP_DIR/$1 ]; then
+	shift
+	lib_load $2 $3 "Entries in the $f file require the Shorewall library ${SHAREDIR}/lib.$2 which is not installed"
+    fi
 }
 
 try_clib_load() # $1 = library name, $2=name of 'loaded' symbol
@@ -6849,36 +6873,24 @@ do_initialize() {
     strip_file masq
     strip_file blacklist
     strip_file rules
-    strip_file proxyarp
-    [ -s $TMP_DIR/proxyarp ]   && clib_load proxyarp CLIB_PROXYARP_LOADED "Use of the proxyarp file requires the Shorewall compiler module clib.proxyarp which is not installed"
-    strip_file maclist
-    [ -s $TMP_DIR/maclist ]    && clib_load maclist  CLIB_MACLIST_LOADED  "Use of the maclist file requires the Shorewall compiler module clib.maclist module which is not installed"
-    strip_file nat
-    strip_file netmap
-    if [ -s $TMP_DIR/nat -o -s $TMP_DIR/netmap ]; then
-	 clib_load nat  CLIB_NAT_LOADED  "Use of the nat or netmap files requires the Shorewall compiler module clib.nat which is not installed"
-    fi
-    strip_file tcrules
-    if [ -s $TMP_DIR/tcrules ]; then
-	clib_load tcrules CLIB_TCRULES_LOADED "Entries in the tcrules file require Shorewall compiler module clib.tcrules which is not installed"
+    strip_file rfc1918
+    strip_file_and_clib_load proxyarp   proxyarp   CLIB_PROXYARP_LOADED
+    strip_file_and_clib_load maclist    maclist    CLIB_MACLIST_LOADED
+    strip_file_and_clib_load nat        nat        CLIB_NAT_LOADED
+    strip_file_and_clib_load netmap     nat        CLIB_NAT_LOADED
+    strip_file_and_clib_load tcrules    tcrules    CLIB_TCRULES_LOADED
+    strip_file_and_clib_load accounting accounting CLIB_ACCOUNTING_LOADED
+    strip_file_and_clib_load ecn        ecn        CLIB_ECN_LOADED
+    strip_file_and_clib_load providers  providers  CLIB_PROVIDERS_LOADED
+    strip_file_and_clib_load tos        tos        CLIB_TOS_LOADED
+    strip_file_and_clib_load ipsec      tunnels    CLIB_TUNNELS_LOADED
+    strip_file_and_clib_load tunnels    tunnels    CLIB_TUNNELS_LOADED
+    strip_file_and_lib_load  tcdevices  tc         LIB_TC_LOADED
+    strip_file_and_lib_load  tcclasses  tc         LIB_TC_LOADED
+
+    if [ -n "$CLIB_TCRULES_LOADED" ]; then
 	lib_load tcrules LIB_TCRULES_LOADED "Entries in the tcrules file require Shorewall library module lib.tcrules which is not installed"
     fi
-    strip_file rfc1918
-    strip_file accounting
-    [ -s $TMP_DIR/accounting ] && clib_load accounting CLIB_ACCOUNTING_LOADED "Entries in the accounting file require Shorewall compiler module clib.accounting which is not installed"
-    strip_file ecn
-    [ -s $TMP_DIR/ecn ]        && clib_load ecn CLIB_ECN_LOADED "Entries in the ecn file require Shorewall compiler module clib.ecn which is not installed"
-    strip_file providers
-    [ -s $TMP_DIR/providers  ] && clib_load providers CLIB_PROVIDERS_LOADED "Entries in the providers file require Shorewall compiler module clib.providers which is not installed"
-    strip_file tos
-    [ -s $TMP_DIR/tos ]        && clib_load tos CLIB_TOS_LOADED "Entries in the tos file require Shorewall compiler module clib.tos which is not installed"
-    strip_file ipsec
-    [ -s $TMP_DIR/ipsec ]      && clib_load tunnels CLIB_TUNNELS_LOADED "Entries in the ipsec file require Shorewall compiler module clib.tunnels which is not installed"
-    strip_file tunnels
-    [ -s $TMP_DIR/tunnels ]    && clib_load tunnels CLIB_TUNNELS_LOADED "Entries in the tunnels file require Shorewall compiler module clib.tunnels which is not installed"
-    strip_file tcdevices $devfile
-    [ -s $TMP_DIR/tcdevices ]  && lib_load tc LIB_TC_LOADED "Entries in the tcdevices file require Shorewall library module lib.tc which is not installed"
-    strip_file tcclasses $classfile
     #
     # Check out the user's shell
     #

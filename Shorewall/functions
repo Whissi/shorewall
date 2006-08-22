@@ -30,9 +30,10 @@ lib_load() # $1 = library name, $2=name of 'loaded' symbol, $3-n = Fatal Error M
 {
     eval local loaded="\$${2}"
 
-    local lib=${SHAREDIR}/lib.${1}
-
     if [ -z "$loaded" ]; then
+	
+	local lib=${SHAREDIR}/lib.${1}
+
 	if [ -x $lib ]; then
 	    . $lib
 	else
@@ -48,4 +49,4 @@ lib_load() # $1 = library name, $2=name of 'loaded' symbol, $3-n = Fatal Error M
 
 SHOREWALL_LIBRARY=Loaded
 
-lib_load base base LIB_BASE_LOADED "Installation Error: ${SHAREDIR}/lib.base not found"
+lib_load base LIB_BASE_LOADED "Installation Error: ${SHAREDIR}/lib.base not found"

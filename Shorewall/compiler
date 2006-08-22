@@ -4699,7 +4699,7 @@ initialize_netfilter () {
     deletechain shorewall
 
     if [ -n "$NAT_ENABLED" ]; then
-	delete_nat
+	[ -n "$CLIB_NAT_LOADED" ] && delete_nat
 	for chain in PREROUTING POSTROUTING OUTPUT; do
 	    qt_iptables -t nat -P $chain ACCEPT
 	done
@@ -6264,8 +6264,11 @@ __EOF__
 	[ -n "$ROUTEMARK_INTERFACES" ] &&               setup_routes
     fi
 
-    progress_message2 "$DOING NAT...";                  setup_nat
-    progress_message2 "$DOING NETMAP...";               setup_netmap
+    if [ -n "$CLIB_NAT_LOADED" ]; then
+	progress_message2 "$DOING NAT...";              setup_nat
+	progress_message2 "$DOING NETMAP...";           setup_netmap
+    fi
+
     progress_message2 "$DOING Common Rules";            add_common_rules
 
     save_progress_message "Setting up SYN Flood Protection..."
@@ -6344,9 +6347,10 @@ __EOF__
 	save_command add_ip_aliases $ALIASES_TO_ADD
     fi
 
-    files="zones nat"
+    files="zones"
 
     [ -n "$CLIB_PROXYARP_LOADED" ] && files="$files proxyarp"
+    [ -n "$CLIB_NAT_LOADED" ]      && files="$files nat"
 
     for file in chains $files; do
 	save_command "cat > \${VARDIR}/$file $LEFTSHIFT __EOF__"

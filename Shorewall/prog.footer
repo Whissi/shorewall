@@ -11,9 +11,15 @@ usage() {
 initialize
 
 #
-# Start trace if first arg is "debug" or "trace"
+# Start trace if first arg is "debug" or "trace" (the awkward code works around
+# a bug in BusyBox ash on some distros).
 #
-[ $# -gt 1 ] && [ "$1" = "debug" -o "$1" = "trace" ] && { set -x ; shift ; }
+if [ $# -gt 1 ]; then
+    if [ "$1" = "debug" ] || [ "$1" = "trace" ]; then
+	set -x
+	shift
+    fi
+fi
 
 finished=0
 

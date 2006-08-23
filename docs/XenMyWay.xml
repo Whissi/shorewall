@@ -99,8 +99,9 @@
       </listitem>
     </orderedlist>
 
-    <para>Most of the Linux systems run SUSE 10.1; my personal Linux desktop
-    system and our Linux Laptop run Ubuntu "Dapper Drake".</para>
+    <para>Most of the Linux systems run <trademark>SuSE </trademark>10.1; my
+    personal Linux desktop system and our Linux Laptop run
+    <trademark>Ubuntu</trademark> "Dapper Drake".</para>
 
     <para>If you are unfamiliar with Xen networking, I recommend that you read
     the first section of the companion <ulink url="Xen.html">Xen and
@@ -296,6 +297,27 @@ disk     = [ 'phy:hda3,hda3,w' ]</programlisting>
         was brought up:</para>
 
         <para><command>ethtool -K eth0 tx off</command></para>
+
+        <para>Under SuSE 10.1, I placed the following in
+        <filename>/etc/sysconfig/network/if-up.d/resettx</filename> (that file
+        is executable): </para>
+
+        <programlisting>#!/bin/sh
+
+if [ $2 = eth0 ]; then
+    ethtool -K eth0 tx off
+    echo "TX Checksum reset on eth0"
+fi</programlisting>
+
+        <para>Under other distributions, the technique will vary. For example,
+        under <trademark>Debian</trademark> or Ubuntu, you can just add a
+        'post-up' entry to <filename>/etc/network/interfaces</filename> as
+        shown here:</para>
+
+        <programlisting> iface eth0 inet static
+         address 206.124.146.177
+         netmask 255.255.255.0
+         post-up ethtool -K eth0 tx off</programlisting>
       </caution>
 
       <para>SuSE 10.1 includes Xen 3.0.2 which supports PCI delegation. The

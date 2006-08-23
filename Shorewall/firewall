@@ -1483,25 +1483,6 @@ refresh_blacklist() {
 }
 
 #
-# Verify the Black List
-#
-validate_blacklist() {
-    local f=$(find_file blacklist)
-    local disposition=$BLACKLIST_DISPOSITION
-
-    progress_message2 "Checking Black List..."
-
-    strip_file blacklist $f
-
-    [ "$disposition" = REJECT ] && disposition=reject
-
-    while read networks protocol ports; do
-	expandv networks protocol ports
-	process_blacklist_rec
-    done < $TMP_DIR/blacklist
-}
-
-#
 # Verify that kernel has netfilter support
 #
 verify_os_version() {
@@ -1594,7 +1575,7 @@ refresh_tc() {
 	strip_file tcdevices
 	strip_file tcclasses
 
-	if [ -s $TMP_DIR/tcdevices ]; then
+	if [ -s $TMP_DIR/tcdevices -o -s $TMP_DIR/tcclasses ]; then
 	    lib_load tc LIB_TC_LOADED "Entries in the tcdevices file require the Shorewall library lib.tc which is not installed"
 	    setup_traffic_shaping
 	fi

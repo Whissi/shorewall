@@ -24,6 +24,18 @@
 
 VERSION=3.3.0
 
+list_search() # $1 = element to search for , $2-$n = list
+{
+    local e=$1
+
+    while [ $# -gt 1 ]; do
+	shift
+	[ "x$e" = "x$1" ] && return 0
+    done
+
+    return 1
+}
+
 usage() # $1 = exit status
 {
     ME=$(basename $0)
@@ -32,6 +44,10 @@ usage() # $1 = exit status
     echo "       $ME -h"
     echo "       $ME -n"
     echo "       $ME -c"
+    echo "       $ME -l <library> [ ... ]"
+    echo "       $ME -L <compiler library> [ ... ]"
+    echo "       $ME -m"
+    echo "       $ME -s"
     exit $1
 }
 
@@ -133,9 +149,7 @@ install_file_with_backup() # $1 = source $2 = target $3 = mode $4 = (optional) b
 # DEST is the SysVInit script directory
 # INIT is the name of the script in the $DEST directory
 # RUNLEVELS is the chkconfig parmeters for firewall
-# ARGS is "yes" if we've already parsed an argument
 #
-ARGS=""
 
 if [ -z "$DEST" ] ; then
 	DEST="/etc/init.d"
@@ -159,6 +173,9 @@ fi
 
 NOBACKUP=
 NOCONFIGFILES=
+XLIBS=
+XCLIBS=
+NOMACROS=
 
 while [ $# -gt 0 ] ; do
     case "$1" in
@@ -175,12 +192,40 @@ while [ $# -gt 0 ] ; do
 	-c)
 	    NOCONFIGFILES=Yes
 	    ;;
+	-m)
+	    NOMACROS=Yes
+	    ;;
+	-l)	    
+	    while [ $# -gt 1 ]; do
+		case $2 in
+		    -*)
+			break
+			;;
+		    *)
+			XLIBS="$XLIBS $2"
+			shift
+			;;
+		esac
+	    done
+	    ;;
+	-L)	    
+	    while [ $# -gt 1 ]; do
+		case $2 in
+		    -*)
+			break
+			;;
+		    *)
+			XCLIBS="$XCLIBS $2"
+			shift
+			;;
+		esac
+	    done
+	    ;;
 	*)
 	    usage 1
 	    ;;
     esac
     shift
-    ARGS="yes"
 done
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
@@ -652,8 +697,10 @@ for f in clib.* ; do
 	*.\*)
 	    ;;
 	*)
-	    install_file $f ${PREFIX}/usr/share/shorewall/$f 0555
-	    echo "Compiler library ${f#*.} installed as ${PREFIX}/usr/share/shorewall/$f"
+	    if ! list_search ${f#clib.} $XCLIBS ; then
+		install_file $f ${PREFIX}/usr/share/shorewall/$f 0555
+		echo "Compiler library ${f#*.} installed as ${PREFIX}/usr/share/shorewall/$f"
+	    fi
 	    ;;
     esac
 done
@@ -661,22 +708,27 @@ done
 # Install the Common Library files
 #
 for f in lib.* ; do
-    install_file $f ${PREFIX}/usr/share/shorewall/$f 0555
-    echo "Library ${f#*.} installed as ${PREFIX}/usr/share/shorewall/$f"
+    if ! list_search ${f#lib.} $XLIBS ; then
+	install_file $f ${PREFIX}/usr/share/shorewall/$f 0555
+	echo "Library ${f#*.} installed as ${PREFIX}/usr/share/shorewall/$f"
+    fi
 done
-#
-# Install the Macro files
-#
-for f in macro.* ; do
-    case $f in
-	*.\*)
+
+if [ -z "$NOMACROS" ]; then
+    #
+    # Install the Macro files
+    #
+    for f in macro.* ; do
+	case $f in
+	    *.\*)
 	    ;;
-	*)
-	    install_file $f ${PREFIX}/usr/share/shorewall/$f 0644
-	    echo "Macro ${f#*.} file installed as ${PREFIX}/usr/share/shorewall/$f"
-	    ;;
-    esac
-done
+	    *)
+		install_file $f ${PREFIX}/usr/share/shorewall/$f 0644
+		echo "Macro ${f#*.} file installed as ${PREFIX}/usr/share/shorewall/$f"
+		;;
+	esac
+    done
+fi
 #
 # Install the program skeleton files
 #

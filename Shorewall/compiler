@@ -78,7 +78,6 @@ strip_file_and_clib_load() # $1 = logical file, $2 = library to load if logical 
     strip_file $1 $f
     
     if [ -s $TMP_DIR/$1 ]; then
-	shift
 	clib_load $2 $3 "Entries in the $f file require the Shorewall compiler module ${SHAREDIR}/clib.$2 which is not installed"
     fi
 }
@@ -90,7 +89,6 @@ strip_file_and_lib_load() # $1 = logical file, $2 = library to load if logical f
     strip_file $1 $f
     
     if [ -s $TMP_DIR/$1 ]; then
-	shift
 	lib_load $2 $3 "Entries in the $f file require the Shorewall library ${SHAREDIR}/lib.$2 which is not installed"
     fi
 }
@@ -6160,6 +6158,10 @@ combine_list()
     done
  
     echo \$o
+}
+
+interface_is_up() {
+    test -n "\$(ip link ls dev \$1 | grep -e '[<,]UP[,>]')"
 }
 
 #

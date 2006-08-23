@@ -1086,6 +1086,13 @@ find_interface_by_mac() {
 }
 
 #
+# Determine if an interface is in the UP state
+#
+interface_is_up() {
+    test -n "$(ip link ls dev $1 | grep -e '[<,]UP[,>]')"
+}
+
+#
 # Find interface address--returns the first IP address assigned to the passed
 # device
 #

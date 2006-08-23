@@ -109,7 +109,7 @@ __EOF__
 # Add Provider $table ($number)
 #
 __EOF__
-	save_command "if [ \"\$(find_first_interface_address_if_any $interface)\" != 0.0.0.0 ]; then"
+	save_command "if interface_is_up $interface && [ \"\$(find_first_interface_address_if_any $interface)\" != 0.0.0.0 ]; then"
 	save_indent1="$INDENT"
 	INDENT="$INDENT    "
 

@@ -1567,8 +1567,7 @@ make_verbose() {
 #
 debugging=
 
-if [ $# -gt 0 ] ; then 
-    if [ "$1" = "debug" ] || [ "$1" = "trace" ]; then
+if [ $# -gt 0 ] && [ "x$1" = "xdebug" ] || [ "x$1" = "xtrace" ]; then
         debugging=debug
         shift
     fi

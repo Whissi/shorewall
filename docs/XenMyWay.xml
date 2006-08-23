@@ -151,7 +151,7 @@
       <listitem>
         <para>The second DomU (Dom name <emphasis
         role="bold">lists</emphasis>, DNS name lists.shorewall.net) is used as
-        a public Web/FTP/Mail/DNS serv</para>
+        a public Web/FTP/Mail/DNS server.</para>
       </listitem>
     </orderedlist>
 
@@ -274,6 +274,14 @@ disk     = [ 'phy:hda3,hda3,w' ]</programlisting>
 
       <para>The zones correspond to the Shorewall zones in the firewall DomU
       configuration.</para>
+
+      <note>
+        <para>If you want to run a simple NAT gateway in a Xen DomU, just omit
+        the second bridge (xenbr1), the second delegated interface, and the
+        second DomU from the above configuration. You can then install the
+        <ulink url="two-interface.htm">normal Shorewall two-interface sample
+        configuration</ulink> in the DomU.</para>
+      </note>
 
       <caution>
         <para>Under some circumstances, UDP and/or TCP communication from a

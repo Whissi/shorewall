@@ -117,6 +117,13 @@
       use Xen</ulink> is much more straight-forward.</para>
     </caution>
 
+    <warning>
+      <para>I know of no case where a user has successfully used NAT
+      (including Masquerade) in a Xen Dom0. So if you want to create a
+      masquerading firewall/gateway using Xen, you need to do so in a DomU
+      (see <ulink url="XenMyWay.html">how I do it</ulink>).</para>
+    </warning>
+
     <para>Here is an example. In this example, we will assume that the system
     is behind a second firewall that restricts incoming traffic so that we
     only have to worry about protecting the local LAN from the systems running

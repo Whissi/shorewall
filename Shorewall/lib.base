@@ -867,6 +867,57 @@ if_match() # $1 = Name in interfaces file - may end in "+"
     esac
 }
 
+verify_interface()
+{
+    known_interface $1 || { [ -n "$BRIDGING" ] && known_port $1 ; }
+}
+
+#
+# Determine if communication to/from a host is encrypted using IPSEC
+#
+is_ipsec_host() # $1 = zone, $2 = host
+{
+    eval local is_ipsec=\$${1}_is_ipsec
+    eval local hosts=\"\$${1}_ipsec_hosts\"
+
+    test -n "$is_ipsec" || list_search $2 $hosts
+}
+
+#
+# Generate a match for decrypted packets
+#
+match_ipsec_in() # $1 = zone, $2 = host
+{
+    if is_ipsec_host $1 $2 ; then
+	eval local options=\"\$${1}_ipsec_options \$${1}_ipsec_in_options\"
+	echo "-m policy --pol ipsec --dir in $options"
+    elif [ -n "$POLICY_MATCH" ]; then
+	echo "-m policy --pol none --dir in"
+    fi
+}
+
+#
+# Generate a match for packets that will be encrypted
+#
+match_ipsec_out() # $1 = zone, $2 = host
+{
+    if is_ipsec_host $1 $2 ; then
+	eval local options=\"\$${1}_ipsec_options \$${1}_ipsec_out_options\"
+	echo "-m policy --pol ipsec --dir out $options"
+    elif [ -n "$POLICY_MATCH" ]; then
+	echo "-m policy --pol none --dir out"
+    fi
+}
+
+#
+# Jacket for ip_range() that takes care of iprange match
+#
+
+firewall_ip_range() # $1 = IP address or range
+{
+    [ -n "$IPRANGE_MATCH" ] && echo $1 || ip_range $1
+}
+
 #
 # Source IP range
 #
@@ -964,6 +1015,138 @@ both_ip_ranges() # $1 = Source address or range, $2 = dest address or range
     esac
 
     echo "$rangeprefix $rangematch $setprefix $setmatch"
+}
+
+#
+#
+# Find hosts in a given zone
+#
+# Read hosts file and for each record matching the passed ZONE,
+# echo the expanded contents of the "HOST(S)" column
+#
+find_hosts() # $1 = host zone
+{
+    local hosts interface address addresses
+
+    while read z hosts options; do
+	if [ "x$(expand $z)" = "x$1" ]; then
+	    expandv hosts
+	    interface=${hosts%%:*}
+	    addresses=${hosts#*:}
+	    for address in $(separate_list $addresses); do
+		echo $interface:$address
+	    done
+	fi
+    done < $TMP_DIR/hosts
+}
+
+#
+# Determine the interfaces on the firewall
+#
+# For each zone, create a variable called ${zone}_interfaces. This
+# variable contains a space-separated list of interfaces to the zone
+#
+determine_interfaces() {
+    for zone in $ZONES; do
+	interfaces=$(find_interfaces $zone)
+	interfaces=$(echo $interfaces) # Remove extra trash
+	eval ${zone}_interfaces=\"\$interfaces\"
+    done
+}
+
+#
+# Determine if an interface has a given option
+#
+interface_has_option() # $1 = interface, #2 = option
+{
+    local options
+
+    eval options=\$$(chain_base $1)_options
+
+    list_search $2 $options
+}
+
+#
+# Ensure that the passed zone is defined in the zones file or is the firewall
+#
+validate_zone() # $1 = zone
+{
+    list_search $1 $ZONES $FW
+}
+
+#
+# Ensure that the passed zone is defined in the zones file.
+#
+validate_zone1() # $1 = zone
+{
+    list_search $1 $ZONES
+}
+
+#
+# Format a match by the passed MAC address
+# The passed address begins with "~" and uses "-" as a separator between bytes
+# Example: ~01-02-03-04-05-06
+#
+mac_match() # $1 = MAC address formated as described above
+{
+    echo "--match mac --mac-source $(echo $1 | sed 's/~//;s/-/:/g')"
+}
+
+#
+# Find interfaces that have the passed option specified
+#
+find_interfaces_by_option() # $1 = option
+{
+    for interface in $ALL_INTERFACES; do
+	eval options=\$$(chain_base $interface)_options
+	list_search $1 $options && echo $interface
+    done
+}
+
+#
+# This slightly slower version is used to find both the option and option followed
+# by equal sign ("=") and a value
+#
+find_interfaces_by_option1() # $1 = option
+{
+    local options option
+
+    for interface in $ALL_INTERFACES; do
+	eval options=\$$(chain_base $interface)_options
+	for option in $options; do
+	    if [ "${option%=*}" = "$1" ]; then
+		echo $interface
+		break
+	    fi
+	done
+    done
+}
+
+#
+# Find hosts with the passed option
+#
+find_hosts_by_option() # $1 = option
+{
+    local ignore hosts interface address addresses options ipsec= list
+
+    while read ignore hosts options; do
+	expandv options
+	list=$(separate_list $options)
+	if list_search $1 $list; then
+	    list_search ipsec $list && ipsec=ipsec || ipsec=none
+	    expandv hosts
+	    interface=${hosts%%:*}
+	    addresses=${hosts#*:}
+	    for address in $(separate_list $addresses); do
+		echo ${ipsec}^$interface:$address
+	    done
+	fi
+    done < $TMP_DIR/hosts
+
+    for interface in $ALL_INTERFACES; do
+	interface_has_option $interface $1 && \
+	    echo none^${interface}:0.0.0.0/0
+    done
 }
 
 #

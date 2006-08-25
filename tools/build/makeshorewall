@@ -115,6 +115,7 @@ BUILDHTML=
 SAMPLESTAG=
 HASLITE=
 SIGN=
+MODULAR=
 ################################################################################
 #                               F U N C T I O N S
 ################################################################################
@@ -164,60 +165,6 @@ usage()
 set -e
 set -u
 
-#
-# Include Samples
-#
-if [ -n "$SAMPLES" ]; then
-    case $SAMPLES in
-	Y*|y*)
-	    ;;
-	N*|n*)
-	    SAMPLES=
-	    ;;
-	*)
-	    echo "   ERROR: Invalid value ($SAMPLES) for SAMPLES" >&2
-	    exit 2
-	    ;;
-    esac
-else	
-    SAMPLES=Yes
-fi
-#
-# Include configfiles
-#
-if [ -n "$CONFIGFILES" ]; then
-    case $CONFIGFILES in
-	Y*|y*)
-	    ;;
-	N*|n*)
-	    CONFIGFILES=
-	    ;;
-	*)
-	    echo "   ERROR: Invalid value ($CONFIGFILES) for CONFIGFILES" >&2
-	    exit 2
-	    ;;
-    esac
-else	
-    CONFIGFILES=Yes
-fi
-#
-# Include macros
-#
-if [ -n "$MACROS" ]; then
-    case $MACROS in
-	Y*|y*)
-	    ;;
-	N*|n*)
-	    MACROS=
-	    ;;
-	*)
-	    echo "   ERROR: Invalid value ($MACROS) for MACROS" >&2
-	    exit 2
-	    ;;
-    esac
-else	
-    MACROS=Yes
-fi
 
 done=
 
@@ -321,12 +268,67 @@ case $VERSION in
 	XMLPROJ="docs-3.3"
 	SAMPLESTAG="trunk/Samples"
 	HASLITE=Yes
+	MODULAR=Yes
 	;;
    *)
 	echo "Unsupported Version: $VERSION"
 	exit 2
 	;;
 esac
+
+if [ -n "$MODULAR" ]; then
+    #
+    # Include Samples
+    #
+    case ${SAMPLES:=Yes} in
+	Y*|y*)
+	    ;;
+	N*|n*)
+	    SAMPLES=
+	    ;;
+	*)
+	    echo "   ERROR: Invalid value ($SAMPLES) for SAMPLES" >&2
+	    exit 2
+	    ;;
+    esac
+    #
+    # Include configfiles
+    #
+    case ${CONFIGFILES:=Yes} in
+	Y*|y*)
+	    ;;
+	N*|n*)
+	    CONFIGFILES=
+	    ;;
+	*)
+	    echo "   ERROR: Invalid value ($CONFIGFILES) for CONFIGFILES" >&2
+	    exit 2
+	    ;;
+    esac
+    #
+    # Include macros
+    #
+    case ${MACROS:=Yes} in
+	Y*|y*)
+	    ;;
+	N*|n*)
+	    MACROS=
+	    ;;
+	*)
+	    echo "   ERROR: Invalid value ($MACROS) for MACROS" >&2
+	    exit 2
+	    ;;
+    esac
+
+    [ -n "${XLIBS:=}"  ] || true
+    [ -n "${XCLIBS:=}" ] || true
+else
+    XLIBS=
+    XCLIBS=
+    SAMPLES=Yes
+    CONFIGFILES=Yes
+    MACROS=Yes
+fi
 
 [ -d $DIR ] || { echo "Directory $DIR does not exist or is unaccessible" ; exit 2 ; }
 
@@ -389,6 +391,7 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	progress_message "Exporting $LITESVNBRANCH from SVN..."
 	do_or_die "svn export --non-interactive --force https://svn.sourceforge.net/svnroot/shorewall/$LITESVNBRANCH  $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
 	do_or_die "cp $SHOREWALLDIR/functions $SHOREWALLDIR/modules $SHOREWALLDIR/xmodules $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
+	[ -n "$MODULAR" ] && do_or_die "cp $SHOREWALLDIR/lib.* $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
     fi
 
     fgrep VERSION=$VERSION $SHOREWALLDIR/install.sh > /dev/null 2>&1     || fatal_error "install.sh has wrong version"
@@ -448,7 +451,7 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	fi
 	if [ -n "$HASLITE" ]; then
 	    progress_message "Creating $DIR/$LITETARBALL..."
-	    do_or_die "cp $SHOREWALLDIR/lib.* $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
+	    [ -n "$MODULAR" ] && do_or_die "cp $SHOREWALLDIR/lib.* $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
 	    do_or_die "tar -zcvf $LITETARBALL $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
 	    do_or_die "tar -jcvf shorewall-lite-${VERSION%-*}.tar.bz2 $SHOREWALLLITEDIR >> $LOGFILE 2>&1"
 	    if [ -n "$SIGN" ]; then

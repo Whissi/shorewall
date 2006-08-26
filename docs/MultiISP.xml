@@ -343,21 +343,19 @@
                     traffic is going out through only one provider, you may
                     need to install a kernel built with
                     CONFIG_IP_ROUTE_MULTIPATH_CACHED=n. Several users have
-		    reported that this change has corrected similar
-		    problems.
-		    </para>
-		    <para>
-		    The SUSE 10.0 kernel is subject to this problem, and
-		    <ulink
-		    url="https://bugzilla.novell.com/show_bug.cgi?id=190908">
-		    a kernel oops may result in this circumstance.</ulink>
-		    SUSE 10.1 and SLES 10 have
-		    CONFIG_IP_ROUTE_MULTIPATH_CACHED=n set by default.
-		    The source of the problem seems to be <ulink
-		    url="http://news.gmane.org/find-root.php?message_id=%3c00da01c5b35a%24b12b9860%241b00a8c0%40cruncher%3e">an
-		    incompatibility between the LARTC patches and
-		    CONFIG_IP_ROUTE_MULTIPATH_CACHED.</ulink>
-		    </para>
+                    reported that this change has corrected similar
+                    problems.</para>
+
+                    <para>The SUSE 10.0 kernel is subject to this problem, and
+                    <ulink
+                    url="https://bugzilla.novell.com/show_bug.cgi?id=190908">
+                    a kernel oops may result in this circumstance.</ulink>
+                    SUSE 10.1 and SLES 10 have
+                    CONFIG_IP_ROUTE_MULTIPATH_CACHED=n set by default. The
+                    source of the problem seems to be <ulink
+                    url="http://news.gmane.org/find-root.php?message_id=%3c00da01c5b35a%24b12b9860%241b00a8c0%40cruncher%3e">an
+                    incompatibility between the LARTC patches and
+                    CONFIG_IP_ROUTE_MULTIPATH_CACHED.</ulink></para>
                   </important>
                 </listitem>
               </varlistentry>
@@ -381,6 +379,15 @@
                   <para>Shorewall will determine of this interface is up and
                   has a configured IPv4 address. If it is not, a warning is
                   issued and this provider is not configured.</para>
+
+                  <note>
+                    <para>'optional' is designed to detect interface states
+                    that will cause <command>shorewall start</command> or
+                    <command>shorewall restart</command> to fail; just because
+                    an interface is in a state that Shorewall can [re]start
+                    without error doesn't mean that traffic can actually be
+                    sent through the interface.</para>
+                  </note>
                 </listitem>
               </varlistentry>
             </variablelist>

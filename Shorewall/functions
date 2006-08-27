@@ -1743,6 +1743,41 @@ strip_file() # $1 = Base Name of the file, $2 = Full Name of File (optional)
 }
 
 #
+# Load an optional library
+#
+lib_load() # $1 = Name of the Library, $2 = Error Message heading if the library cannot be found
+{
+    local lib=${SHAREDIR}/lib.$1
+    local loaded
+
+    eval loaded=\$LIB_${1}_LOADED
+
+    if [ -z "$loaded" ]; then
+	if [ -f $lib ]; then
+	    . $lib
+	    eval LIB_${1}_LOADED=Yes
+	else
+	    startup_error "$2 requires the Shorewall library $1 ($lib) which is not installed"
+	fi
+    fi
+}
+
+#
+# Determine if an optional library is available
+#
+lib_avail() # $1 = Name of the Library
+{
+    [ -f ${SHAREDIR}/lib.$1 ]
+}   
+
+strip_file_and_lib_load() # $1 = logical file name, $3 = Error message heading if the library cannot be found
+{
+    strip_file $1
+
+    [ -s $TMP_DIR/$1 ] && lib_load $2 "$3"
+}
+
+#
 #  Note: The following set of IP address manipulation functions have anomalous
 #        behavior when the shell only supports 32-bit signed arithmatic and
 #        the IP address is 128.0.0.0 or 128.0.0.1.
@@ -3123,14 +3158,6 @@ do_initialize() {
     fi
 
     qt mywhich awk && HAVEAWK=Yes || HAVEAWK=
-}
-
-#
-# Give Usage Information
-#
-usage() {
-    echo "Usage: $0 [debug] check|compile <filename>}"
-    exit 1
 }
 
 SHOREWALL_LIBRARY=Loaded

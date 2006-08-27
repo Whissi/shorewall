@@ -1,5 +1,5 @@
 %define name shorewall
-%define version 3.3.0
+%define version 3.2.3
 %define release 1
 %define prefix /usr
 
@@ -110,23 +110,10 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/action.Limit
 %attr(0644,root,root) /usr/share/shorewall/action.Reject
 %attr(0644,root,root) /usr/share/shorewall/action.template
-%attr(0555,root,root) /usr/share/shorewall/clib.accounting
-%attr(0555,root,root) /usr/share/shorewall/clib.ecn
-%attr(0555,root,root) /usr/share/shorewall/clib.maclist
-%attr(0555,root,root) /usr/share/shorewall/clib.macros
-%attr(0555,root,root) /usr/share/shorewall/clib.nat
-%attr(0555,root,root) /usr/share/shorewall/clib.providers
-%attr(0555,root,root) /usr/share/shorewall/clib.proxyarp
-%attr(0555,root,root) /usr/share/shorewall/clib.tcrules
-%attr(0555,root,root) /usr/share/shorewall/clib.tos
-%attr(0555,root,root) /usr/share/shorewall/clib.tunnels
 %attr(0555,root,root) /usr/share/shorewall/compiler
 %attr(0444,root,root) /usr/share/shorewall/functions
 %attr(0555,root,root) /usr/share/shorewall/firewall
 %attr(0555,root,root) /usr/share/shorewall/help
-%attr(0555,root,root) /usr/share/shorewall/lib.base
-%attr(0555,root,root) /usr/share/shorewall/lib.tc
-%attr(0555,root,root) /usr/share/shorewall/lib.tcrules
 %attr(0644,root,root) /usr/share/shorewall/Limit
 %attr(0644,root,root) /usr/share/shorewall/macro.AllowICMPs
 %attr(0644,root,root) /usr/share/shorewall/macro.Amanda
@@ -222,8 +209,8 @@ fi
 %doc COPYING INSTALL changelog.txt releasenotes.txt tunnel ipsecvpn Samples
 
 %changelog
-* Wed Aug 09 2006 Tom Eastep tom@shorewall.net
-- Updated to 3.3.0-1
+* Fri Aug 25 2006 Tom Eastep tom@shorewall.net
+- Updated to 3.2.3-1
 * Wed Aug 02 2006 Tom Eastep tom@shorewall.net
 - Updated to 3.2.2-1
 * Fri Jul 21 2006 Tom Eastep tom@shorewall.net

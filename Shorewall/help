@@ -28,6 +28,28 @@
 
 case $1 in
 
+add)
+	echo "add: add <interface>[:<host-list>] ... <zone>
+    Adds a list of hosts or subnets to a dynamic zone usually used with VPN's.
+
+    shorewall add interface:host-list ... zone - Adds the specified interface
+    (and host-list if included) to the specified zone.
+
+    A host-list is a comma-separated list whose elements are:
+
+        A host or network address
+        The name of a bridge port
+        The name of a bridge port followed by a colon (":") and a host or
+        network address.
+
+    Example:
+
+    shorewall add ipsec0:192.0.2.24 vpn1 -- adds the address 192.0.2.24
+    from interface ipsec0 to the zone vpn1.
+
+    See also \"help host\""
+	;;
+
 address|host)
         echo "<$1>:
     May be either a host IP address such as 192.168.1.4 or a network address in
@@ -88,7 +110,7 @@ debug)
     If you include the keyword debug as the first argument to any
     of these commands:
 
-	start|stop|restart|reset|clear|refresh|check|compile
+	start|stop|restart|reset|clear|refresh|check|add|delete|compile
 
     then a shell trace of the command is produced.  For example:
 
@@ -98,6 +120,28 @@ debug)
     place the trace information in the file /tmp/trace.
 
     The word 'trace' is a synonym for 'debug'."
+	;;
+
+delete)
+	echo "delete: delete <interface>[:<host-list>] ... <zone>
+    Deletes a list of hosts or networks from a dynamic zone usually used with VPN's.
+
+    shorewall delete interface[:host-list] ... zone - Deletes the specified
+    interfaces (and host list if included) from the specified zone.
+
+    A host-list is a comma-separated list whose elements are:
+
+        A host or network address
+        The name of a bridge port
+        The name of a bridge port followed by a colon (":") and a host or
+        network address.
+
+    Example:
+
+    shorewall delete ipsec0:192.0.2.24 vpn1 -- deletes the address
+    192.0.2.24 from interface ipsec0 from zone vpn1
+
+    See also \"help host\""
 	;;
 
 drop)

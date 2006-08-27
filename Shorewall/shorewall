@@ -31,6 +31,8 @@
 #
 #	Commands are:
 #
+#          shorewall add <iface>[:<host>] zone     Adds a host or subnet to a zone
+#          shorewall delete <iface>[:<host>] zone  Deletes a host or subnet from a zone
 #          shorewall dump                          Dumps all Shorewall-related information
 #                                                  for problem analysis
 #	   shorewall start 			   Starts the firewall
@@ -117,7 +119,7 @@
 #
 fatal_error() # $@ = Message
 {
-    echo "   ERROR: $@" >&2
+    echo "   $@" >&2
     exit 2
 }
 
@@ -584,7 +586,7 @@ start_command() {
 		fi
 	    fi
 
-	    SHOREWALL_DIR=$
+	    SHOREWALL_DIR=$1
 	    export SHOREWALL_DIR
 	    ;;
 	*)
@@ -836,6 +838,68 @@ restart_command() {
 
     if $SHOREWALL_SHELL ${SHAREDIR}/compiler $debugging $nolock compile ${VARDIR}/.restart; then
 	$SHOREWALL_SHELL ${VARDIR}/.restart $debugging restart
+    fi
+
+    [ -n "$nolock" ] || mutex_off
+}
+
+#
+# Refresh Command Executor
+#
+refresh_command() {
+    local finished=0
+
+    while [ $finished -eq 0 -a $# -gt 0 ]; do
+	option=$1
+	case $option in
+	    -*)
+		option=${option#-}
+
+		while [ -n "$option" ]; do
+		    case $option in
+			-)
+			    finished=1
+			    option=
+			    ;;
+			*)
+			    usage 1
+			    ;;
+		    esac
+		done
+		shift
+		;;
+	    *)
+		finished=1
+		;;
+	esac
+    done
+
+    case $# in
+	0)
+	    ;;
+	*)
+	    usage 1
+	    ;;
+    esac
+
+    if ! shorewall_is_started ; then
+	error_message "ERROR: Shorewall is not running"
+	exit 2
+    fi
+
+    if [ -z "$STARTUP_ENABLED" ]; then
+	error_message "ERROR: Startup is disabled"
+	exit 2
+    fi
+
+    export NOROUTES
+
+    [ -n "$nolock" ] || mutex_on
+
+    progress_message3 "Compiling..."
+
+    if $SHOREWALL_SHELL ${SHAREDIR}/compiler $debugging $nolock compile ${VARDIR}/.refresh; then
+	$SHOREWALL_SHELL ${VARDIR}/.refresh $debugging refresh
     fi
 
     [ -n "$nolock" ] || mutex_off
@@ -1456,10 +1520,12 @@ usage() # $1 = exit status
 {
     echo "Usage: $(basename $0) [debug|trace] [nolock] [ -q ] [ -v ] [ -t ] <command>"
     echo "where <command> is one of:"
+    echo "   add <interface>[:<host-list>] ... <zone>"
     echo "   allow <address> ..."
     echo "   check [ -e ] [ <directory> ]"
     echo "   clear"
     echo "   compile [ -e ] [ <directory name> ] <path name>"
+    echo "   delete <interface>[:<host-list>] ... <zone>"
     echo "   drop <address> ..."
     echo "   dump [ -x ]"
     echo "   export [ <directory1> ] [<user>@]<system>:[<directory2>]"
@@ -1563,14 +1629,13 @@ make_verbose() {
 }
 
 #
-# Execution begins here
+# Execution begins here 
 #
 debugging=
 
-if [ $# -gt 0 ] && [ "x$1" = "xdebug" ] || [ "x$1" = "xtrace" ]; then
-        debugging=debug
-        shift
-    fi
+if [ $# -gt 0 ] && [ "x$1" = "xdebug" -o "x$1" = "xtrace" ]; then
+    debugging=debug
+    shift
 fi
 
 nolock=
@@ -1686,7 +1751,7 @@ HELP=$SHAREDIR/help
 if [ -f $FUNCTIONS ]; then
     . $FUNCTIONS
 else
-    echo "   ERROR: $FUNCTIONS does not exist!" >&2
+    echo "$FUNCTIONS does not exist!" >&2
     exit 2
 fi
 
@@ -1757,7 +1822,7 @@ case "$COMMAND" in
 	shift
 	start_command $@
 	;;
-    stop|reset|clear|refresh)
+    stop|reset|clear)
 	[ $# -ne 1 ] && usage 1
 	export NOROUTES
 	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $COMMAND
@@ -1770,9 +1835,17 @@ case "$COMMAND" in
 	shift
 	restart_command $@
 	;;
+    refresh)
+	shift
+	refresh_command $@
+	;;
     check)
 	shift
 	check_command $@
+	;;
+    add|delete)
+	[ $# -lt 3 ] && usage 1
+	exec $SHOREWALL_SHELL $FIREWALL $debugging $nolock $@
 	;;
     show|list)
     	shift
@@ -1880,13 +1953,15 @@ case "$COMMAND" in
 	VERBOSE=$(make_verbose)
 	[ -n "$NOROUTES" ] && NOROUTES=-n
 	export -n CONFIG_PATH
-	if $0 $debugging $VERBOSE save; then
-	    if $0 $debugging $VERBOSE restart $2 ; then
-		if [ $# -eq 3 ]; then
-		    sleep $3
-		    $0 $VERBOSE $NOROUTES restore
-		fi
+	if ! $0 $debugging $VERBOSE -c $2 restart; then
+	    if ! $IPTABLES -L shorewall > /dev/null 2> /dev/null; then
+		$0 $VERBOSE $NOROUTES start
 	    fi
+	elif ! $IPTABLES -L shorewall > /dev/null 2> /dev/null; then
+	    $0 $VERBOSE $NOROUTES start
+	elif [ $# -eq 3 ]; then
+	    sleep $3
+	    $0 $VERBOSE $NOROUTES restart
 	fi
 	;;
     logwatch)

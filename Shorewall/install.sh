@@ -22,19 +22,7 @@
 #       Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
 #
 
-VERSION=3.3.0
-
-list_search() # $1 = element to search for , $2-$n = list
-{
-    local e=$1
-
-    while [ $# -gt 1 ]; do
-	shift
-	[ "x$e" = "x$1" ] && return 0
-    done
-
-    return 1
-}
+VERSION=3.2.3
 
 usage() # $1 = exit status
 {
@@ -43,11 +31,6 @@ usage() # $1 = exit status
     echo "       $ME -v"
     echo "       $ME -h"
     echo "       $ME -n"
-    echo "       $ME -c"
-    echo "       $ME -l <library> [ ... ]"
-    echo "       $ME -L <compiler library> [ ... ]"
-    echo "       $ME -m"
-    echo "       $ME -s"
     exit $1
 }
 
@@ -149,7 +132,9 @@ install_file_with_backup() # $1 = source $2 = target $3 = mode $4 = (optional) b
 # DEST is the SysVInit script directory
 # INIT is the name of the script in the $DEST directory
 # RUNLEVELS is the chkconfig parmeters for firewall
+# ARGS is "yes" if we've already parsed an argument
 #
+ARGS=""
 
 if [ -z "$DEST" ] ; then
 	DEST="/etc/init.d"
@@ -172,10 +157,6 @@ if [ -z "$GROUP" ] ; then
 fi
 
 NOBACKUP=
-NOCONFIGFILES=
-XLIBS=
-XCLIBS=
-NOMACROS=
 
 while [ $# -gt 0 ] ; do
     case "$1" in
@@ -189,43 +170,12 @@ while [ $# -gt 0 ] ; do
 	-n)
 	    NOBACKUP=Yes
 	    ;;
-	-c)
-	    NOCONFIGFILES=Yes
-	    ;;
-	-m)
-	    NOMACROS=Yes
-	    ;;
-	-l)	    
-	    while [ $# -gt 1 ]; do
-		case $2 in
-		    -*)
-			break
-			;;
-		    *)
-			XLIBS="$XLIBS $2"
-			shift
-			;;
-		esac
-	    done
-	    ;;
-	-L)	    
-	    while [ $# -gt 1 ]; do
-		case $2 in
-		    -*)
-			break
-			;;
-		    *)
-			XCLIBS="$XCLIBS $2"
-			shift
-			;;
-		esac
-	    done
-	    ;;
 	*)
 	    usage 1
 	    ;;
     esac
     shift
+    ARGS="yes"
 done
 
 PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/bin:/usr/local/sbin
@@ -304,26 +254,25 @@ echo  "Shorewall script installed in ${PREFIX}${DEST}/$INIT"
 #
 mkdir -p ${PREFIX}/etc/shorewall
 mkdir -p ${PREFIX}/usr/share/shorewall
-[ -n "$NOCONFIGFILES" ] || mkdir -p ${PREFIX}/usr/share/shorewall/configfiles
+mkdir -p ${PREFIX}/usr/share/shorewall/configfiles
 mkdir -p ${PREFIX}/var/lib/shorewall
 
 chmod 755 ${PREFIX}/etc/shorewall
 chmod 755 ${PREFIX}/usr/share/shorewall
-[ -n "$NOCONFIGFILES" ] || chmod 755 ${PREFIX}/usr/share/shorewall/configfiles
+chmod 755 ${PREFIX}/usr/share/shorewall/configfiles
 
-if [ -z "$NOCONFIGFILES" ]; then
-    #
-    # Install the config file
-    #
-    run_install $OWNERSHIP -m 0644 shorewall.conf ${PREFIX}/usr/share/shorewall/configfiles/shorewall.conf
+#
+# Install the config file
+#
+run_install $OWNERSHIP -m 0644 shorewall.conf ${PREFIX}/usr/share/shorewall/configfiles/shorewall.conf
 
-    qt mywhich perl && perl -p -w -i -e 's|^CONFIG_PATH=.*|CONFIG_PATH=/usr/share/shorewall/configfiles:/usr/share/shorewall|;' ${PREFIX}/usr/share/shorewall/configfiles/shorewall.conf
-fi
+qt mywhich perl && perl -p -w -i -e 's|^CONFIG_PATH=.*|CONFIG_PATH=/usr/share/shorewall/configfiles:/usr/share/shorewall|;' ${PREFIX}/usr/share/shorewall/configfiles/shorewall.conf
 
 if [ ! -f ${PREFIX}/etc/shorewall/shorewall.conf ]; then
-    run_install $OWNERSHIP -m 0644 shorewall.conf ${PREFIX}/etc/shorewall/shorewall.conf
-    echo "Config file installed as ${PREFIX}/etc/shorewall/shorewall.conf"
+   run_install $OWNERSHIP -m 0644 shorewall.conf ${PREFIX}/etc/shorewall/shorewall.conf
+   echo "Config file installed as ${PREFIX}/etc/shorewall/shorewall.conf"
 fi
+
 
 if [ -n "$ARCHLINUX" ] ; then
    sed -e 's!LOGFILE=/var/log/messages!LOGFILE=/var/log/messages.log!' -i ${PREFIX}/etc/shorewall/shorewall.conf
@@ -331,7 +280,7 @@ fi
 #
 # Install the zones file
 #
-[ -n "$NOCONFIGFILES" ] || run_install $OWNERSHIP -m 0644 zones ${PREFIX}/usr/share/shorewall/configfiles/zones
+run_install $OWNERSHIP -m 0644 zones ${PREFIX}/usr/share/shorewall/configfiles/zones
 
 if [ ! -f ${PREFIX}/etc/shorewall/zones ]; then
     run_install $OWNERSHIP -m 0744 zones ${PREFIX}/etc/shorewall/zones
@@ -364,7 +313,7 @@ echo "Help command executor installed in ${PREFIX}/usr/share/shorewall/help"
 #
 # Install the policy file
 #
-[ -n "$NOCONFIGFILES" ] || run_install $OWNERSHIP -m 0644 policy ${PREFIX}/usr/share/shorewall/configfiles/policy
+run_install $OWNERSHIP -m 0644 policy ${PREFIX}/usr/share/shorewall/configfiles/policy
 
 if [ ! -f ${PREFIX}/etc/shorewall/policy ]; then
     run_install $OWNERSHIP -m 0600 policy ${PREFIX}/etc/shorewall/policy
@@ -373,7 +322,7 @@ fi
 #
 # Install the interfaces file
 #
-[ -n "$NOCONFIGFILES" ] || run_install $OWNERSHIP -m 0644 interfaces ${PREFIX}/usr/share/shorewall/configfiles/interfaces
+run_install $OWNERSHIP -m 0644 interfaces ${PREFIX}/usr/share/shorewall/configfiles/interfaces
 
 if [ ! -f ${PREFIX}/etc/shorewall/interfaces ]; then
     run_install $OWNERSHIP -m 0600 interfaces ${PREFIX}/etc/shorewall/interfaces
@@ -382,7 +331,7 @@ fi
 #
 # Install the ipsec file
 #
-[ -n "$NOCONFIGFILES" ] || run_install $OWNERSHIP -m 0644 ipsec ${PREFIX}/usr/share/shorewall/configfiles/ipsec
+run_install $OWNERSHIP -m 0644 ipsec ${PREFIX}/usr/share/shorewall/configfiles/ipsec
 
 if [ ! -f ${PREFIX}/etc/shorewall/ipsec ]; then
     run_install $OWNERSHIP -m 0600 ipsec ${PREFIX}/etc/shorewall/ipsec
@@ -392,7 +341,7 @@ fi
 #
 # Install the hosts file
 #
-[ -n "$NOCONFIGFILES" ] || run_install $OWNERSHIP -m 0644 hosts ${PREFIX}/usr/share/shorewall/configfiles/hosts
+run_install $OWNERSHIP -m 0644 hosts ${PREFIX}/usr/share/shorewall/configfiles/hosts
 
 if [ ! -f ${PREFIX}/etc/shorewall/hosts ]; then
     run_install $OWNERSHIP -m 0600 hosts ${PREFIX}/etc/shorewall/hosts
@@ -401,7 +350,7 @@ fi
 #
 # Install the rules file
 #
-[ -n "$NOCONFIGFILES" ] || run_install $OWNERSHIP -m 0644 rules ${PREFIX}/usr/share/shorewall/configfiles/rules
+run_install $OWNERSHIP -m 0644 rules ${PREFIX}/usr/share/shorewall/configfiles/rules
 
 if [ ! -f ${PREFIX}/etc/shorewall/rules ]; then
     run_install $OWNERSHIP -m 0600 rules ${PREFIX}/etc/shorewall/rules
@@ -410,7 +359,7 @@ fi
 #
 # Install the NAT file
 #
-[ -n "$NOCONFIGFILES" ] || run_install $OWNERSHIP -m 0644 nat ${PREFIX}/usr/share/shorewall/configfiles/nat
+run_install $OWNERSHIP -m 0644 nat ${PREFIX}/usr/share/shorewall/configfiles/nat
 
 if [ ! -f ${PREFIX}/etc/shorewall/nat ]; then
     run_install $OWNERSHIP -m 0600 nat ${PREFIX}/etc/shorewall/nat
@@ -419,7 +368,7 @@ fi
 #
 # Install the NETMAP file
 #
-[ -n "$NOCONFIGFILES" ] || run_install $OWNERSHIP -m 0644 netmap ${PREFIX}/usr/share/shorewall/configfiles/netmap
+run_install $OWNERSHIP -m 0644 netmap ${PREFIX}/usr/share/shorewall/configfiles/netmap
 
 if [ ! -f ${PREFIX}/etc/shorewall/netmap ]; then
     run_install $OWNERSHIP -m 0600 netmap ${PREFIX}/etc/shorewall/netmap
@@ -428,7 +377,7 @@ fi
 #
 # Install the Parameters file
 #
-[ -n "$NOCONFIGFILES" ] || run_install $OWNERSHIP -m 0644 params ${PREFIX}/usr/share/shorewall/configfiles/params
+run_install $OWNERSHIP -m 0644 params ${PREFIX}/usr/share/shorewall/configfiles/params
 
 if [ ! -f ${PREFIX}/etc/shorewall/params ]; then
     run_install $OWNERSHIP -m 0644 params ${PREFIX}/etc/shorewall/params
@@ -437,7 +386,7 @@ fi
 #
 # Install the proxy ARP file
 #
-[ -n "$NOCONFIGFILES" ] || run_install $OWNERSHIP -m 0644 proxyarp ${PREFIX}/usr/share/shorewall/configfiles/proxyarp
+run_install $OWNERSHIP -m 0644 proxyarp ${PREFIX}/usr/share/shorewall/configfiles/proxyarp
 
 if [ ! -f ${PREFIX}/etc/shorewall/proxyarp ]; then
     run_install $OWNERSHIP -m 0600 proxyarp ${PREFIX}/etc/shorewall/proxyarp
@@ -446,7 +395,7 @@ fi
 #
 # Install the Stopped Routing file
 #
-[ -n "$NOCONFIGFILES" ] || run_install $OWNERSHIP -m 0644 routestopped ${PREFIX}/usr/share/shorewall/configfiles/routestopped
+run_install $OWNERSHIP -m 0644 routestopped ${PREFIX}/usr/share/shorewall/configfiles/routestopped
 
 if [ ! -f ${PREFIX}/etc/shorewall/routestopped ]; then
     run_install $OWNERSHIP -m 0600 routestopped ${PREFIX}/etc/shorewall/routestopped
@@ -455,7 +404,7 @@ fi
 #
 # Install the Mac List file
 #
-[ -n "$NOCONFIGFILES" ] || run_install $OWNERSHIP -m 0644 maclist ${PREFIX}/usr/share/shorewall/configfiles/maclist
+run_install $OWNERSHIP -m 0644 maclist ${PREFIX}/usr/share/shorewall/configfiles/maclist
 
 if [ ! -f ${PREFIX}/etc/shorewall/maclist ]; then
     run_install $OWNERSHIP -m 0600 maclist ${PREFIX}/etc/shorewall/maclist
@@ -464,7 +413,7 @@ fi
 #
 # Install the Masq file
 #
-[ -n "$NOCONFIGFILES" ] || run_install $OWNERSHIP -m 0644 masq ${PREFIX}/usr/share/shorewall/configfiles/masq
+run_install $OWNERSHIP -m 0644 masq ${PREFIX}/usr/share/shorewall/configfiles/masq
 
 if [ ! -f ${PREFIX}/etc/shorewall/masq ]; then
     run_install $OWNERSHIP -m 0600 masq ${PREFIX}/etc/shorewall/masq
@@ -482,7 +431,7 @@ echo "Xmodules file installed as ${PREFIX}/usr/share/shorewall/xmodules"
 #
 # Install the TC Rules file
 #
-[ -n "$NOCONFIGFILES" ] || run_install $OWNERSHIP -m 0644 tcrules ${PREFIX}/usr/share/shorewall/configfiles/tcrules
+run_install $OWNERSHIP -m 0644 tcrules ${PREFIX}/usr/share/shorewall/configfiles/tcrules
 
 if [ ! -f ${PREFIX}/etc/shorewall/tcrules ]; then
     run_install $OWNERSHIP -m 0600 tcrules ${PREFIX}/etc/shorewall/tcrules
@@ -492,7 +441,7 @@ fi
 #
 # Install the TOS file
 #
-[ -n "$NOCONFIGFILES" ] || run_install $OWNERSHIP -m 0644 tos ${PREFIX}/usr/share/shorewall/configfiles/tos
+run_install $OWNERSHIP -m 0644 tos ${PREFIX}/usr/share/shorewall/configfiles/tos
 
 if [ ! -f ${PREFIX}/etc/shorewall/tos ]; then
     run_install $OWNERSHIP -m 0600 tos ${PREFIX}/etc/shorewall/tos
@@ -501,7 +450,7 @@ fi
 #
 # Install the Tunnels file
 #
-[ -n "$NOCONFIGFILES" ] || run_install $OWNERSHIP -m 0644 tunnels ${PREFIX}/usr/share/shorewall/configfiles/tunnels
+run_install $OWNERSHIP -m 0644 tunnels ${PREFIX}/usr/share/shorewall/configfiles/tunnels
 
 if [ ! -f ${PREFIX}/etc/shorewall/tunnels ]; then
     run_install $OWNERSHIP -m 0600 tunnels ${PREFIX}/etc/shorewall/tunnels
@@ -510,7 +459,7 @@ fi
 #
 # Install the blacklist file
 #
-[ -n "$NOCONFIGFILES" ] || run_install $OWNERSHIP -m 0644 blacklist ${PREFIX}/usr/share/shorewall/configfiles/blacklist
+run_install $OWNERSHIP -m 0644 blacklist ${PREFIX}/usr/share/shorewall/configfiles/blacklist
 
 if [ ! -f ${PREFIX}/etc/shorewall/blacklist ]; then
     run_install $OWNERSHIP -m 0600 blacklist ${PREFIX}/etc/shorewall/blacklist
@@ -529,7 +478,7 @@ delete_file ${PREFIX}/usr/share/shorewall/tcstart
 #
 # Install the Providers file
 #
-[ -n "$NOCONFIGFILES" ] || run_install $OWNERSHIP -m 0644 providers ${PREFIX}/usr/share/shorewall/configfiles/providers
+run_install $OWNERSHIP -m 0644 providers ${PREFIX}/usr/share/shorewall/configfiles/providers
 
 if [ ! -f ${PREFIX}/etc/shorewall/providers ]; then
     run_install $OWNERSHIP -m 0600 providers ${PREFIX}/etc/shorewall/providers
@@ -539,7 +488,7 @@ fi
 #
 # Install the Route Rules file
 #
-[ -n "$NOCONFIGFILES" ] || run_install $OWNERSHIP -m 0644 route_rules ${PREFIX}/usr/share/shorewall/configfiles/route_rules
+run_install $OWNERSHIP -m 0644 route_rules ${PREFIX}/usr/share/shorewall/configfiles/route_rules
 
 if [ ! -f ${PREFIX}/etc/shorewall/route_rules ]; then
     run_install $OWNERSHIP -m 0600 route_rules ${PREFIX}/etc/shorewall/route_rules
@@ -549,7 +498,7 @@ fi
 #
 # Install the tcclasses file
 #
-[ -n "$NOCONFIGFILES" ] || run_install $OWNERSHIP -m 0644 tcclasses ${PREFIX}/usr/share/shorewall/configfiles/tcclasses
+run_install $OWNERSHIP -m 0644 tcclasses ${PREFIX}/usr/share/shorewall/configfiles/tcclasses
 
 if [ ! -f ${PREFIX}/etc/shorewall/tcclasses ]; then
     run_install $OWNERSHIP -m 0600 tcclasses ${PREFIX}/etc/shorewall/tcclasses
@@ -559,7 +508,7 @@ fi
 #
 # Install the tcdevices file
 #
-[ -n "$NOCONFIGFILES" ] || run_install $OWNERSHIP -m 0644 tcdevices ${PREFIX}/usr/share/shorewall/configfiles/tcdevices
+run_install $OWNERSHIP -m 0644 tcdevices ${PREFIX}/usr/share/shorewall/configfiles/tcdevices
 
 if [ ! -f ${PREFIX}/etc/shorewall/tcdevices ]; then
     run_install $OWNERSHIP -m 0600 tcdevices ${PREFIX}/etc/shorewall/tcdevices
@@ -579,7 +528,7 @@ echo "Default config path file installed as ${PREFIX}/usr/share/shorewall/config
 #
 # Install the init file
 #
-[ -n "$NOCONFIGFILES" ] || run_install $OWNERSHIP -m 0644 init ${PREFIX}/usr/share/shorewall/configfiles/init
+run_install $OWNERSHIP -m 0644 init ${PREFIX}/usr/share/shorewall/configfiles/init
 
 if [ ! -f ${PREFIX}/etc/shorewall/init ]; then
     run_install $OWNERSHIP -m 0600 init ${PREFIX}/etc/shorewall/init
@@ -588,7 +537,7 @@ fi
 #
 # Install the initdone file
 #
-[ -n "$NOCONFIGFILES" ] || run_install $OWNERSHIP -m 0644 initdone ${PREFIX}/usr/share/shorewall/configfiles/initdone
+run_install $OWNERSHIP -m 0644 initdone ${PREFIX}/usr/share/shorewall/configfiles/initdone
 
 if [ ! -f ${PREFIX}/etc/shorewall/initdone ]; then
     run_install $OWNERSHIP -m 0600 initdone ${PREFIX}/etc/shorewall/initdone
@@ -597,7 +546,7 @@ fi
 #
 # Install the start file
 #
-[ -n "$NOCONFIGFILES" ] || run_install $OWNERSHIP -m 0644 start ${PREFIX}/usr/share/shorewall/configfiles/start
+run_install $OWNERSHIP -m 0644 start ${PREFIX}/usr/share/shorewall/configfiles/start
 
 if [ ! -f ${PREFIX}/etc/shorewall/start ]; then
     run_install $OWNERSHIP -m 0600 start ${PREFIX}/etc/shorewall/start
@@ -606,7 +555,7 @@ fi
 #
 # Install the stop file
 #
-[ -n "$NOCONFIGFILES" ] || run_install $OWNERSHIP -m 0644 stop ${PREFIX}/usr/share/shorewall/configfiles/stop
+run_install $OWNERSHIP -m 0644 stop ${PREFIX}/usr/share/shorewall/configfiles/stop
 
 if [ ! -f ${PREFIX}/etc/shorewall/stop ]; then
     run_install $OWNERSHIP -m 0600 stop ${PREFIX}/etc/shorewall/stop
@@ -615,7 +564,7 @@ fi
 #
 # Install the stopped file
 #
-[ -n "$NOCONFIGFILES" ] || run_install $OWNERSHIP -m 0644 stopped ${PREFIX}/usr/share/shorewall/configfiles/stopped
+run_install $OWNERSHIP -m 0644 stopped ${PREFIX}/usr/share/shorewall/configfiles/stopped
 
 if [ ! -f ${PREFIX}/etc/shorewall/stopped ]; then
     run_install $OWNERSHIP -m 0600 stopped ${PREFIX}/etc/shorewall/stopped
@@ -624,7 +573,7 @@ fi
 #
 # Install the ECN file
 #
-[ -n "$NOCONFIGFILES" ] || run_install $OWNERSHIP -m 0644 ecn ${PREFIX}/usr/share/shorewall/configfiles/ecn
+run_install $OWNERSHIP -m 0644 ecn ${PREFIX}/usr/share/shorewall/configfiles/ecn
 
 if [ ! -f ${PREFIX}/etc/shorewall/ecn ]; then
     run_install $OWNERSHIP -m 0600 ecn ${PREFIX}/etc/shorewall/ecn
@@ -633,7 +582,7 @@ fi
 #
 # Install the Accounting file
 #
-[ -n "$NOCONFIGFILES" ] || run_install $OWNERSHIP -m 0644 accounting ${PREFIX}/usr/share/shorewall/configfiles/accounting
+run_install $OWNERSHIP -m 0644 accounting ${PREFIX}/usr/share/shorewall/configfiles/accounting
 
 if [ ! -f ${PREFIX}/etc/shorewall/accounting ]; then
     run_install $OWNERSHIP -m 0600 accounting ${PREFIX}/etc/shorewall/accounting
@@ -642,7 +591,7 @@ fi
 #
 # Install the Continue file
 #
-[ -n "$NOCONFIGFILES" ] || run_install $OWNERSHIP -m 0644 continue ${PREFIX}/usr/share/shorewall/configfiles/continue
+run_install $OWNERSHIP -m 0644 continue ${PREFIX}/usr/share/shorewall/configfiles/continue
 
 if [ ! -f ${PREFIX}/etc/shorewall/continue ]; then
     run_install $OWNERSHIP -m 0600 continue ${PREFIX}/etc/shorewall/continue
@@ -651,7 +600,7 @@ fi
 #
 # Install the Started file
 #
-[ -n "$NOCONFIGFILES" ] || run_install $OWNERSHIP -m 0644 started ${PREFIX}/usr/share/shorewall/configfiles/started
+run_install $OWNERSHIP -m 0644 started ${PREFIX}/usr/share/shorewall/configfiles/started
 
 if [ ! -f ${PREFIX}/etc/shorewall/started ]; then
     run_install $OWNERSHIP -m 0600 started ${PREFIX}/etc/shorewall/started
@@ -666,7 +615,7 @@ echo "Standard actions file installed as ${PREFIX}/etc/shorewall/actions.std"
 #
 # Install the Actions file
 #
-[ -n "$NOCONFIGFILES" ] || run_install $OWNERSHIP -m 0644 actions ${PREFIX}/usr/share/shorewall/configfiles/actions
+run_install $OWNERSHIP -m 0644 actions ${PREFIX}/usr/share/shorewall/configfiles/actions
 
 if [ ! -f ${PREFIX}/etc/shorewall/actions ]; then
     run_install $OWNERSHIP -m 0644 actions ${PREFIX}/etc/shorewall/actions
@@ -676,9 +625,10 @@ fi
 #
 # Install the  Makefile
 #
-[ -n "$NOCONFIGFILES" ] || run_install $OWNERSHIP -m 0644 Makefile ${PREFIX}/usr/share/shorewall/configfiles/Makefile
+run_install $OWNERSHIP -m 0644 Makefile ${PREFIX}/usr/share/shorewall/configfiles/Makefile
 run_install $OWNERSHIP -m 0600 Makefile ${PREFIX}/etc/shorewall/Makefile
 echo "Makefile installed as ${PREFIX}/etc/shorewall/Makefile"
+
 #
 # Install the Action files
 #
@@ -686,49 +636,16 @@ for f in action.* ; do
     install_file $f ${PREFIX}/usr/share/shorewall/$f 0644
     echo "Action ${f#*.} file installed as ${PREFIX}/usr/share/shorewall/$f"
 done
-#
+
 install_file Limit ${PREFIX}/usr/share/shorewall/Limit 0644
 echo "Limit action extension script installed as ${PREFIX}/usr/share/shorewall/Limit"
 #
-# Install the Compiler Library files
+# Install the Macro files
 #
-for f in clib.* ; do
-    case $f in
-	*.\*)
-	    ;;
-	*)
-	    if ! list_search ${f#clib.} $XCLIBS ; then
-		install_file $f ${PREFIX}/usr/share/shorewall/$f 0555
-		echo "Compiler library ${f#*.} installed as ${PREFIX}/usr/share/shorewall/$f"
-	    fi
-	    ;;
-    esac
+for f in macro.* ; do
+    install_file $f ${PREFIX}/usr/share/shorewall/$f 0644
+    echo "Macro ${f#*.} file installed as ${PREFIX}/usr/share/shorewall/$f"
 done
-#
-# Install the Common Library files
-#
-for f in lib.* ; do
-    if ! list_search ${f#lib.} $XLIBS ; then
-	install_file $f ${PREFIX}/usr/share/shorewall/$f 0555
-	echo "Library ${f#*.} installed as ${PREFIX}/usr/share/shorewall/$f"
-    fi
-done
-
-if [ -z "$NOMACROS" ]; then
-    #
-    # Install the Macro files
-    #
-    for f in macro.* ; do
-	case $f in
-	    *.\*)
-	    ;;
-	    *)
-		install_file $f ${PREFIX}/usr/share/shorewall/$f 0644
-		echo "Macro ${f#*.} file installed as ${PREFIX}/usr/share/shorewall/$f"
-		;;
-	esac
-    done
-fi
 #
 # Install the program skeleton files
 #

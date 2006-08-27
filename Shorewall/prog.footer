@@ -2,7 +2,7 @@
 # Give Usage Information
 #
 usage() {
-    echo "Usage: $0 [ -q ] [ -v ] [ -n ] [ start|stop|clear|reset|restart|status|version ]"
+    echo "Usage: $0 [ -q ] [ -v ] [ -n ] [ start|stop|clear|reset|refresh|restart|status|version ]"
     exit $1
 }
 ################################################################################
@@ -11,14 +11,11 @@ usage() {
 initialize
 
 #
-# Start trace if first arg is "debug" or "trace" (the awkward code works around
-# a bug in BusyBox ash on some distros).
+# Start trace if first arg is "debug" or "trace"
 #
-if [ $# -gt 1 ]; then
-    if [ "$1" = "debug" ] || [ "$1" = "trace" ]; then
-	set -x
-	shift
-    fi
+if [ $# -gt 1 ] && [ "x$1" = "xdebug" -o "x$1" = "xtrace" ]; then
+    set -x	
+    shift
 fi
 
 finished=0
@@ -113,6 +110,17 @@ case "$COMMAND" in
  	    [ $status -eq 0 ] && touch $SUBSYSLOCK || rm -f $SUBSYSLOCK
         fi	
 	progress_message3 "done."
+	;;
+    refresh)
+	if shorewall_is_started; then
+	    progress_message3 "Refreshing $PRODUCT...."
+	    refresh_firewall
+	    status=$?
+	    progress_message3 "done."
+	else
+	    echo "$PRODUCT is not running" >&2
+	    status=2
+	fi
 	;;
     restore)
 	restore_firewall

@@ -284,11 +284,6 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
     report "Lite SVN tag is $LITESVNBRANCH"
     [ -n "$BUILDTARBALL" ] && report "TARBALL is $TARBALL" && report "LITETARBALL is $LITETARBALL"
     [ -n "$BUILDRPM" ]     && report "RPM is $RPMNAME" && report "LITERPM is $LITERPMNAME"
-    [ -n "$XLIBS" ] && report "Excluding the following run-time libraries: $XLIBS"
-    [ -n "$XCLIBS" ] && report "Excluding the following compiler libraries: $XCLIBS"
-    [ -n "$CONFIGFILES" ] && report "Including configuration files in /usr/share/shorewall/" || report "Excluding configuration files from /usr/share/shorewall/"
-    [ -n "$SAMPLES" ] && report "Including samples in /usr/share/shorewall/" || report "Excluding samples from /usr/share/shorewall/"
-    [ -n "$MACROS" ] && report "Including macros in /usr/share/shorewall/" || report "Excluding macros from /usr/share/shorewall/"
 fi
 
 [ -n "$BUILDHTML" ] && report "HTML Directory is $HTMLDIR"
@@ -316,14 +311,10 @@ if [ -n "${BUILDTARBALL}${BUILDRPM}" ]; then
 	fgrep VERSION=$VERSION $SHOREWALLLITEDIR/fallback.sh > /dev/null 2>&1    || fatal_error "Lite fallback.sh has wrong version"
     fi
 
-    if [ -n "$SAMPLES" ]; then
-	if [ -n "$SAMPLESTAG" ]; then
-	    cd $SHOREWALLDIR
-	    do_or_die "svn export --non-interactive --force https://svn.sourceforge.net/svnroot/shorewall/$SAMPLESTAG Samples >> $LOGFILE 2>&1"
-	    cd $DIR
-	fi
-    else
-	perl -p -w -i -e "s|Samples||" $SHOREWALLDIR/shorewall.spec
+    if [ -n "$SAMPLESTAG" ]; then
+	cd $SHOREWALLDIR
+	do_or_die "svn export --non-interactive --force https://svn.sourceforge.net/svnroot/shorewall/$SAMPLESTAG Samples >> $LOGFILE 2>&1"
+	cd $DIR
     fi
 
     do_or_die "rm -rf $SHOREWALLDIR/debian"

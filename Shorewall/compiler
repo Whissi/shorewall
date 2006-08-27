@@ -642,112 +642,6 @@ disable_critical_hosts()
 }
 
 #
-# Setup Proxy ARP
-#
-setup_proxy_arp() {
-
-    local setlist= resetlist=
-
-    print_error() {
-	error_message "Invalid value for HAVEROUTE - ($haveroute)"
-	error_message "Entry \"$address $interface $external $haveroute\" ignored"
-    }
-
-    print_error1() {
-	error_message "Invalid value for PERSISTENT - ($persistent)"
-	error_message "Entry \"$address $interface $external $haveroute $persistent\" ignored"
-    }
-
-    print_warning() {
-	error_message "PERSISTENT setting ignored - ($persistent)"
-	error_message "Entry \"$address $interface $external $haveroute $persistent\""
-    }
-
-    setup_one_proxy_arp() {
-
-	case $haveroute in
-	[Nn][Oo])
-	    haveroute=
-	    ;;
-	[Yy][Ee][Ss])
-	    ;;
-	*)
-	    if [ -n "$haveroute" ]; then
-		print_error
-		return
-	    fi
-	    ;;
-	esac
-
-	case $persistent in
-	[Nn][Oo])
-	    persistent=
-	    ;;
-	[Yy][Ee][Ss])
-	    [ -z "$haveroute" ] || print_warning
-	    ;;
-	*)
-	    if [ -n "$persistent" ]; then
-		print_error1
-		return
-	    fi
-	    ;;
-	esac
-
-	if [ -z "$haveroute" ]; then
-	    save_command "[ -n \"\$NOROUTES\" ] || run_ip route replace $address dev $interface"
-	    [ -n "$persistent" ] && haveroute=yes
-	fi
-
-	indent >&3 << __EOF__
-if ! arp -i $external -Ds $address $external pub; then
-    fatal_error "Command \"arp -i $external -Ds $address $external pub\" failed"
-fi
-
-progress_message "   Host $address connected to $interface added to ARP on $external"
-
-__EOF__
-	echo $address $interface $external $haveroute >> $STATEDIR/proxyarp
-
-	progress_message "   Host $address connected to $interface added to ARP on $external"
-    }
-
-    > $STATEDIR/proxyarp
-
-    save_progress_message "Setting up Proxy ARP..."
-
-    while read address interface external haveroute persistent; do
-	expandv address interface external haveroute persistent
-	list_search $interface $setlist   || setlist="$setlist $interface"
-	list_search $external  $resetlist || list_search $external $setlist || resetlist="$resetlist $external"
-	setup_one_proxy_arp
-    done < $TMP_DIR/proxyarp
-
-    for interface in $resetlist; do
-	list_search $interface $setlist || \
-	    save_command "echo 0 > /proc/sys/net/ipv4/conf/$interface/proxy_arp"
-    done
-
-    for interface in $setlist; do
-	save_command "echo 1 > /proc/sys/net/ipv4/conf/$interface/proxy_arp"
-    done
-
-    interfaces=$(find_interfaces_by_option proxyarp)
-
-    for interface in $interfaces; do
-	indent >&3 << __EOF__
-if [ -f /proc/sys/net/ipv4/conf/$interface/proxy_arp ] ; then
-    echo 1 > /proc/sys/net/ipv4/conf/$interface/proxy_arp
-else
-    error_message "WARNING: Unable to enable proxy ARP on $interface"
-fi
-
-__EOF__
-    done
-
-}
-
-#
 # Set up MAC Verification
 #
 setup_mac_lists() {
@@ -4442,7 +4336,6 @@ initialize_netfilter () {
     #
 
     strip_file rules
-    strip_file proxyarp
     strip_file maclist
 
     progress_message2 "Pre-processing Actions..."
@@ -6054,7 +5947,13 @@ __EOF__
 
     initialize_netfilter
 
-    progress_message2 "$DOING Proxy ARP";               setup_proxy_arp
+    if strip_file_and_lib_load proxyarp proxyarp; then
+	progress_message2 "$DOING Proxy ARP"
+	setup_proxy_arp
+    else
+	> $STATEDIR/proxyarp
+    fi
+
     #
     # [re]-Establish routing
     #
@@ -6113,8 +6012,7 @@ __EOF__
     progress_message2 "$DOING $(find_file policy)...";   apply_policy_rules
 
     if strip_file_and_lib_load masq nat; then
-	masq=$(find_file masq)
-	setup_masq $masq
+	setup_masq $(find_file masq)
     fi
 
     if [ -n "$MANGLE_ENABLED" ]; then

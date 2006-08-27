@@ -1,0 +1,540 @@
+#!/bin/sh
+#
+# Shorewall 3.2 -- /usr/share/shorewall/lib.nat
+#
+#     This program is under GPL [http://www.gnu.org/copyleft/gpl.htm]
+#
+#     (c) 1999,2000,2001,2002,2003,2004,2005,2006 - Tom Eastep (teastep@shorewall.net)
+#
+#	Complete documentation is available at http://shorewall.net
+#
+#	This program is free software; you can redistribute it and/or modify
+#	it under the terms of Version 2 of the GNU General Public License
+#	as published by the Free Software Foundation.
+#
+#	This program is distributed in the hope that it will be useful,
+#	but WITHOUT ANY WARRANTY; without even the implied warranty of
+#	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+#	GNU General Public License for more details.
+#
+#	You should have received a copy of the GNU General Public License
+#	along with this program; if not, write to the Free Software
+#	Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA
+
+#
+# Set up Source NAT (including masquerading)
+#
+setup_masq()
+{
+    do_ipsec_options() {
+	local options="$(separate_list $ipsec)" option
+	policy="-m policy --pol ipsec --dir out"
+
+	for option in $options; do
+	    case $option in
+		[Yy]es)         ;;
+		strict)         policy="$policy --strict" ;;
+		next)           policy="$policy --next" ;;
+		reqid=*)        policy="$policy --reqid ${option#*=}" ;;
+		spi=*)          policy="$policy --spi ${option#*=}" ;;
+		proto=*)        policy="$policy --proto ${option#*=}" ;;
+		mode=*)         policy="$policy --mode ${option#*=}" ;;
+		tunnel-src=*)   policy="$policy --tunnel-src ${option#*=}" ;;
+		tunnel-dst=*)   policy="$policy --tunnel-dst ${option#*=}" ;;
+		reqid!=*)       policy="$policy ! --reqid ${option#*=}" ;;
+		spi!=*)         policy="$policy ! --spi ${option#*=}" ;;
+		proto!=*)       policy="$policy ! --proto ${option#*=}" ;;
+		mode!=*)        policy="$policy ! --mode ${option#*=}" ;;
+		tunnel-src!=*)  policy="$policy ! --tunnel-src ${option#*=}" ;;
+		tunnel-dst!=*)  policy="$policy ! --tunnel-dst ${option#*=}" ;;
+		*)              fatal_error "Invalid IPSEC option \"$option\"" ;;
+	    esac
+	done
+    }
+
+    setup_one() {
+	local add_snat_aliases=$ADD_SNAT_ALIASES pre_nat= policy= destnets=
+
+	[ "x$ipsec" = x- ] && ipsec=
+
+	case $ipsec in
+	    Yes|yes)
+		[ -n "$POLICY_MATCH" ] || \
+		    fatal_error "IPSEC=Yes requires policy match support in your kernel and iptables"
+		policy="-m policy --pol ipsec --dir out"
+		;;
+	    No|no)
+		[ -n "$POLICY_MATCH" ] || \
+		    fatal_error "IPSEC=No requires policy match support in your kernel and iptables"
+		policy="-m policy --pol none --dir out"
+		;;
+	    *)
+		if [ -n "$ipsec" ]; then
+		    do_ipsec_options
+		elif [ -n "$POLICY_MATCH" ]; then
+		    policy="-m policy --pol none --dir out"
+		fi
+		;;
+	esac
+
+	case $fullinterface in
+	    +*)
+		pre_nat=Yes
+		fullinterface=${fullinterface#+}
+		;;
+	esac
+
+	case $fullinterface in
+	    *::*)
+		add_snat_aliases=
+		destnets="${fullinterface##*:}"
+		fullinterface="${fullinterface%:*}"
+		;;
+	    *:*:*)
+		# Both alias name and networks
+		destnets="${fullinterface##*:}"
+		fullinterface="${fullinterface%:*}"
+		;;
+	    *:)
+		add_snat_aliases=
+	        fullinterface=${fullinterface%:}
+		;;
+	    *:*)
+		# Alias name OR networks
+		case ${fullinterface#*:} in
+		    *.*)
+			# It's a networks
+			destnets="${fullinterface#*:}"
+			fullinterface="${fullinterface%:*}"
+			;;
+		    *)
+			#it's an alias name
+			;;
+		esac
+		;;
+	    *)
+		;;
+	esac
+
+	interface=${fullinterface%:*}
+
+	if ! list_search $interface $ALL_INTERFACES; then
+	    fatal_error "Unknown interface $interface"
+	fi
+
+	if [ "$networks" = "${networks%!*}" ]; then
+	    nomasq=
+	else
+	    nomasq="${networks#*!}"
+	    networks="${networks%!*}"
+	fi
+
+	source="${networks:=0.0.0.0/0}"
+
+	detectinterface=
+
+	case $source in
+	    *.*.*|+*|!+*)
+		;;
+	    *)
+		detectinterface=$networks
+		networks=
+		;;
+	esac
+
+	[ "x$proto" = x- ] && proto=
+	[ "x$ports" = x- ] && ports=
+
+	if [ -n "$proto" ]; then
+
+	    displayproto="($proto)"
+
+	    case $proto in
+		tcp|TCP|udp|UDP|6|17)
+		    if [ -n "$ports" ]; then
+			displayproto="($proto $ports)"
+
+			listcount=$(list_count $ports)
+
+			if [ $listcount -gt 1 ]; then
+			    case $ports in
+				*:*)
+				    if [ -n "$XMULTIPORT" ]; then
+					if [ $(($listcount + $(list_count1 $(split $ports) ) )) -le 16 ]; then
+					    ports="-m multiport --dports $ports"
+					else
+					    fatal_error "More than 15 entries in port list ($ports)"
+					fi
+				    else
+					fatal_error "Port Range not allowed in list ($ports)"
+				    fi
+				    ;;
+				*)
+				    if [ -n "$MULTIPORT" ]; then
+					[ $listcount -le 15 ] || fatal_error "More than 15 entries in port list ($ports)"
+					ports="-m multiport --dports $ports"
+				    else
+					fatal_error "Port Ranges require multiport match support in your kernel ($ports)"
+				    fi
+				    ;;
+			    esac
+			else
+			    ports="--dport $ports"
+			fi
+		    fi
+		    ;;
+		*)
+		    [ -n "$ports" ] && fatal_error "Ports only allowed with UDP or TCP ($ports)"
+		    ;;
+	    esac
+
+	    proto="-p $proto"
+	else
+	    displayproto="(all)"
+	    [ -n "$ports" ] && fatal_error "Ports only allowed with UDP or TCP ($ports)"
+	fi
+
+	destination=${destnets:=0.0.0.0/0}
+
+	[ -z "$pre_nat" ] && chain=$(masq_chain $interface) || chain=$(snat_chain $interface)
+
+	ensurenatchain $chain
+
+	case $destnets in
+	    !*)
+		destnets=${destnets#!}
+
+		build_exclusion_chain newchain nat "$nomasq" "$destnets"
+
+		if [ -n "$networks" ]; then
+		    for s in $networks; do
+			addnatrule $chain $(source_ip_range $s) $proto $ports $policy -j $newchain
+		    done
+		    networks=
+		elif [ -n "$detectinterface" ]; then
+		    indent >&3 << __EOF__
+
+networks="\$(get_routed_networks $detectinterface)"
+
+[ -z "\$networks" ] && fatal_error "Unable to determine the routes through interface \"$detectinterface\""
+
+for network in \$networks; do
+    run_iptables -t nat -A $chain -s \$network $proto $ports $policy -j $newchain
+done
+
+__EOF__
+		else
+		    addnatrule $chain -j $newchain
+		fi
+
+		chain=$newchain
+		destnets=0.0.0.0/0
+		proto=
+		ports=
+		policy=
+
+		[ -n "$nomasq" ] && source="$source except $nomasq"
+		;;
+	    *)
+		if [ -n "$nomasq" ]; then
+		    build_exclusion_chain newchain nat $nomasq
+
+		    if [ -n "$networks" ]; then
+			for s in $networks; do
+			    for destnet in $(separate_list $destnets); do
+				addnatrule $chain $(both_ip_ranges $s $destnet) $proto $ports $policy -j $newchain
+			    done
+			done
+		    elif [ -n "$detectinterface" ]; then
+			indent >&3 << __EOF__
+
+networks="\$(get_routed_networks $detectinterface)"
+
+[ -z "\$networks" ] && fatal_error "Unable to determine the routes through interface \"$detectinterface\""
+
+for network in \$networks; do
+__EOF__
+			for destnet in $(separate_list $destnets); do
+			    indent >&3 << __EOF__
+    run_iptables -t nat -A $chain -s \$network $(dest_ip_range $destnet) $proto $sports $policy -j $netchain
+__EOF__
+			done
+			indent >&3 << __EOF__
+
+done
+__EOF__
+		    else
+			for destnet in $(separate_list $destnets); do
+			    addnatrule $chain $(dest_ip_range $destnet) $proto $ports $policy -j $newchain
+			done
+		    fi
+
+		    chain=$newchain
+		    networks=
+		    destnets=0.0.0.0/0
+		    proto=
+		    ports=
+		    policy=
+		    source="$source except $nomasq"
+		fi
+
+		;;
+	esac
+
+	addrlist=
+	target=MASQUERADE
+
+	[ "x$addresses" = x- ] && addresses=
+
+	if [ -n "$addresses" ]; then
+	    case "$addresses" in
+		SAME:nodst:*)
+		    target="SAME --nodst"
+		    addresses=${addresses#SAME:nodst:}
+		    if [ "$addresses" = detect ]; then
+			addrlist='$addrlist'
+		    else
+			for address in $(separate_list $addresses); do
+			    addrlist="$addrlist --to $address";
+			done
+		    fi
+		    ;;
+		SAME:*)
+		    target="SAME"
+		    addresses=${addresses#SAME:}
+		    if [ "$addresses" = detect ]; then
+			addrlist='$addrlist'
+		    else
+			for address in $(separate_list $addresses); do
+			    addrlist="$addrlist --to $address";
+			done
+		    fi
+		    ;;
+		detect)
+		    target=SNAT
+		    addrlist='$addrlist'
+		    ;;
+		*)
+		    for address in $(separate_list $addresses); do
+			case $address in
+			    *.*.*.*)
+				target=SNAT
+				addrlist="$addrlist --to-source $address"
+				;;
+			    *)
+				addrlist="$addrlist --to-ports ${address#:}"
+				;;
+			esac
+		    done
+		    ;;
+	    esac
+
+	    if [ "$addrlist" = '$addrlist' ]; then
+		addresses='$(combine_list $addresses)'
+		indent >&3 << __EOF__
+
+addrlist=
+addressses=\$(find_interface_addresses $interface)
+
+if [ -n "\$addresses" ]; then
+    for address in \$addresses; do
+        addrlist="$addrlist --to-source $address"
+    done
+else
+    fatal_error "Unable to determine the IP address(es) of $interface"
+fi
+
+__EOF__
+	    elif [ -n "$add_snat_aliases" ]; then
+		for address in $(separate_list $addresses); do
+		    address=${address%:)}
+		    if [ -n "$address" ]; then
+			for addr in $(ip_range_explicit ${address%:*}) ; do
+			    if ! list_search $addr $ALIASES_TO_ADD; then
+				[ -n "$RETAIN_ALIASES" ] || save_command del_ip_addr $addr $interface
+				ALIASES_TO_ADD="$ALIASES_TO_ADD $addr $fullinterface"
+				case $fullinterface in
+				    *:*)
+					fullinterface=${fullinterface%:*}:$((${fullinterface#*:} + 1 ))
+					;;
+				esac
+			    fi
+			done
+		    fi
+		done
+	    fi
+	fi
+
+	if [ -n "$networks" ]; then
+	    for network in $networks; do
+		for destnet in $(separate_list $destnets); do
+		    addnatrule $chain $(both_ip_ranges $network $destnet) $proto $ports $policy -j $target $addrlist
+		done
+
+		if [ -n "$addresses" ]; then
+		    progress_message_and_save "   To $destination $displayproto from $network through ${interface} using $addresses"
+		else
+		    progress_message_and_save "   To $destination $displayproto from $network through ${interface}"
+		fi
+	    done
+	elif [ -n "$detectinterface" ]; then
+	    indent >&3 << __EOF__
+
+networks="\$(get_routed_networks $detectinterface)"
+
+[ -z "\$networks" ] && fatal_error "Unable to determine the routes through interface \"$detectinterface\""
+
+for network in \$networks; do
+__EOF__
+	    for destnet in $(separate_list $destnets); do
+		indent >&3 << __EOF__
+    run_iptables -t nat -A $chain -s \$network $(dest_ip_range $destnet) $proto $ports $policy -j $target $addrlist
+__EOF__
+	    done
+
+	    if [ -n "$addresses" ]; then
+		message="   To $destination $displayproto from \$network through ${interface} using $addresses"
+	    else
+		message="   To $destination $displayproto from \$network through ${interface}"
+	    fi
+
+	    indent >&3 << __EOF__
+   progress_message "$message"
+done
+
+__EOF__
+
+	else
+	    for destnet in $(separate_list $destnets); do
+		addnatrule $chain $(dest_ip_range $destnet) $proto $ports $policy -j $target $addrlist
+	    done
+
+	    if [ -n "$addresses" ]; then
+		progress_message_and_save "   To $destination $displayproto from $source through ${interface} using $addresses"
+	    else
+		progress_message_and_save "   To $destination $displayproto from $source through ${interface}"
+	    fi
+	fi
+
+    }
+
+    if [ -n "$NAT_ENABLED" ]; then
+	progress_message2 "$DOING Masquerading/SNAT"
+	save_progress_message "Setting up Masquerading/SNAT..."
+    fi
+
+    while read fullinterface networks addresses proto ports ipsec; do
+	expandv fullinterface networks addresses proto ports ipsec
+	if [ -n "$NAT_ENABLED" ]; then
+	    setup_one
+	else
+	    error_message "WARNING: NAT disabled; masq rule ignored"
+	fi
+    done < $TMP_DIR/masq
+}
+
+#
+# Setup Static Network Address Translation (NAT)
+#
+setup_nat() {
+    local external= interface= internal= allints= localnat= policyin= policyout=
+
+    validate_one() #1 = Variable Name, $2 = Column name, $3 = value
+    {
+	case $3 in
+	    Yes|yes)
+                ;;
+	    No|no)
+		eval ${1}=
+		;;
+	    *)
+		[ -n "$3" ] && \
+		    fatal_error "Invalid value ($3) for $2 in entry \"$external $interface $internal $allints $localnat\""
+		;;
+	esac
+    }
+
+    do_one_nat() {
+	local add_ip_aliases=$ADD_IP_ALIASES iface=${interface%:*}
+
+	if [ -n "$add_ip_aliases" ]; then
+	    case $interface in
+		*:)
+		    interface=${interface%:}
+		    add_ip_aliases=
+		    ;;
+		*)
+		    [ -n "$RETAIN_ALIASES" ] || save_command del_ip_addr $external $iface
+		    ;;
+	    esac
+	else
+	    interface=${interface%:}
+	fi
+
+	validate_one allints  "ALL INTERFACES" $allints
+	validate_one localnat "LOCAL"          $localnat
+
+	if [ -n "$allints" ]; then
+	    addnatrule nat_in  -d $external $policyin  -j DNAT --to-destination $internal
+	    addnatrule nat_out -s $internal $policyout -j SNAT --to-source $external
+	else
+	    addnatrule $(input_chain $iface)  -d $external $policyin  -j DNAT --to-destination $internal
+		addnatrule $(output_chain $iface) -s $internal $policyout -j SNAT --to-source $external
+	fi
+
+	[ -n "$localnat" ] && \
+	    run_iptables2 -t nat -A OUTPUT -d $external $policyout -j DNAT --to-destination $internal
+
+	if [ -n "$add_ip_aliases" ]; then
+	    list_search $external $ALIASES_TO_ADD || \
+		ALIASES_TO_ADD="$ALIASES_TO_ADD $external $interface"
+	fi
+    }
+    #
+    # At this point, we're just interested in the network translation
+    #
+    > $STATEDIR/nat
+
+    if [ -n "$POLICY_MATCH" ]; then
+	policyin="-m policy --pol none --dir in"
+	policyout="-m policy --pol none --dir out"
+    fi
+
+    [ -n "$RETAIN_ALIASES" ] || save_progress_message "Setting up one-to-one NAT..."
+
+    while read external interface internal allints localnat; do
+	expandv external interface internal allints localnat
+
+	do_one_nat
+
+	progress_message_and_save "   Host $internal NAT $external on $interface"
+    done < $TMP_DIR/nat
+}
+
+#
+# Setup Network Mapping (NETMAP)
+#
+setup_netmap() {
+
+    while read type net1 interface net2 ; do
+	expandv type net1 interface net2
+
+	list_search $interface $ALL_INTERFACES || \
+	    fatal_error "Unknown interface $interface in entry \"$type $net1 $interface $net2\""
+
+	case $type in
+	    DNAT)
+		addnatrule $(input_chain $interface)  -d $net1 -j NETMAP --to $net2
+		;;
+	    SNAT)
+		addnatrule $(output_chain $interface) -s $net1 -j NETMAP --to $net2
+		;;
+	    *)
+		fatal_error "Invalid type $type in entry \"$type $net1 $interface $net2\""
+		;;
+	esac
+
+	progress_message_and_save "   Network $net1 on $interface mapped to $net2 ($type)"
+
+    done < $TMP_DIR/netmap
+}

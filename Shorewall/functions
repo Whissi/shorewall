@@ -1776,7 +1776,12 @@ strip_file_and_lib_load() # $1 = logical file name, $2 = library to load if the 
 
     strip_file $1 $f
 
-    [ -s $TMP_DIR/$1 ] && lib_load $2 "A non-empty $1 file ($f)"
+    if [ -s $TMP_DIR/$1 ];
+	lib_load $2 "A non-empty $1 file ($f)"
+	return 0
+    fi
+    
+    return 1
 }
 
 #

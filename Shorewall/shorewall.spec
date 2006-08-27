@@ -117,6 +117,7 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/Limit
 %attr(0444,root,root) /usr/share/shorewall/lib.accounting
 %attr(0444,root,root) /usr/share/shorewall/lib.dynamiczones
+%attr(0444,root,root) /usr/share/shorewall/lib.maclist
 %attr(0444,root,root) /usr/share/shorewall/lib.nat
 %attr(0444,root,root) /usr/share/shorewall/lib.providers
 %attr(0444,root,root) /usr/share/shorewall/lib.proxyarp

@@ -1770,11 +1770,13 @@ lib_avail() # $1 = Name of the Library
     [ -f ${SHAREDIR}/lib.$1 ]
 }   
 
-strip_file_and_lib_load() # $1 = logical file name, $3 = Error message heading if the library cannot be found
+strip_file_and_lib_load() # $1 = logical file name, $2 = library to load if the stripped file is non-empty
 {
-    strip_file $1
+    local f=$(find_file $1)
 
-    [ -s $TMP_DIR/$1 ] && lib_load $2 "$3"
+    strip_file $1 $f
+
+    [ -s $TMP_DIR/$1 ] && lib_load $2 "A non-empty $1 file ($f)"
 }
 
 #
@@ -1784,7 +1786,6 @@ strip_file_and_lib_load() # $1 = logical file name, $3 = Error message heading i
 #
 
 LEFTSHIFT='<<'
-
 
 #
 # Convert an IP address in dot quad format to an integer
@@ -3073,8 +3074,13 @@ do_initialize() {
     BLACKLISTNEWONLY=$(added_param_value_no BLACKLISTNEWONLY $BLACKLISTNEWONLY)
     DISABLE_IPV6=$(added_param_value_no DISABLE_IPV6 $DISABLE_IPV6)
     BRIDGING=$(added_param_value_no BRIDGING $BRIDGING)
+
     DYNAMIC_ZONES=$(added_param_value_no DYNAMIC_ZONES $DYNAMIC_ZONES)
-    [ -n "$DYNAMIC_ZONES" -a -n "$EXPORT" ] && fatal_error "DYNAMIC_ZONES=Yes is incompatible with the -e option"
+    if [ -n "$DYNAMIC_ZONES" ]; then
+	[ -n "$EXPORT" ] && fatal_error "DYNAMIC_ZONES=Yes is incompatible with the -e option"
+	lib_avail dynamiczones || error_message "WARNING: DYNAMIC_ZONES=Yes requires the Shorewall dynamiczones library (${SHAREDIR}/lib.dynamiczones) which is not installed"
+    fi
+
     STARTUP_ENABLED=$(added_param_value_yes STARTUP_ENABLED $STARTUP_ENABLED)
     RETAIN_ALIASES=$(added_param_value_no RETAIN_ALIASES $RETAIN_ALIASES)
     [ -n "${ADD_IP_ALIASES}${ADD_SNAT_ALIASES}" ] || RETAIN_ALIASES=

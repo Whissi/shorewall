@@ -115,6 +115,8 @@ fi
 %attr(0555,root,root) /usr/share/shorewall/firewall
 %attr(0555,root,root) /usr/share/shorewall/help
 %attr(0644,root,root) /usr/share/shorewall/Limit
+%attr(0444,root,root) /usr/share/shorewall/lib.dynamiczones
+%attr(0444,root,root) /usr/share/shorewall/lib.tc
 %attr(0644,root,root) /usr/share/shorewall/macro.AllowICMPs
 %attr(0644,root,root) /usr/share/shorewall/macro.Amanda
 %attr(0644,root,root) /usr/share/shorewall/macro.Auth

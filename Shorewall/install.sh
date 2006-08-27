@@ -647,6 +647,15 @@ for f in macro.* ; do
     echo "Macro ${f#*.} file installed as ${PREFIX}/usr/share/shorewall/$f"
 done
 #
+# Install the libraries
+#
+for f in lib.* ; do
+    if [ -f $f ]; then
+	install_file $f ${PREFIX}/usr/share/shorewall/$f 0644
+	echo "Macro ${f#*.} file installed as ${PREFIX}/usr/share/shorewall/$f"
+    fi
+done
+#
 # Install the program skeleton files
 #
 for f in prog.* ; do

@@ -1780,6 +1780,9 @@ lib_avail() # $1 = Name of the Library
     [ -f ${SHAREDIR}/lib.$1 ]
 }   
 
+#
+# Strip the passed file. Return success if a) the stripped file is non-empty; or b) the library had been previously loaded
+#
 strip_file_and_lib_load() # $1 = logical file name, $2 = library to load if the stripped file is non-empty
 {
     local f=$(find_file $1)
@@ -1791,7 +1794,7 @@ strip_file_and_lib_load() # $1 = logical file name, $2 = library to load if the 
 	return 0
     fi
     
-    return 1
+    eval test -n \"\$LIB_${2}_LOADED\"
 }
 
 #

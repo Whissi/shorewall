@@ -568,7 +568,10 @@ validate_interfaces_file() {
 	    case $option in
 		-)
 		    ;;
-		dhcp|tcpflags|arp_filter|routefilter|logmartians|sourceroute|blacklist|proxyarp|nosmurfs|upnp|-)
+		dhcp|tcpflags|arp_filter|routefilter|logmartians|sourceroute|blacklist|nosmurfs|upnp|-)
+		    ;;
+		proxyarp)
+		    lib_load proxyarp "The 'proxyarp' option"
 		    ;;
 		maclist)
 		    lib_load maclist "The 'maclist' option"

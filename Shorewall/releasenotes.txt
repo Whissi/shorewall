@@ -1,4 +1,4 @@
-Shorewall 3.3.0
+Shorewall 3.3.1
 	  	 
  Note to users upgrading from Shorewall 3.0 or 3.2	 
   	 
@@ -31,11 +31,14 @@ Shorewall 3.3.0
     Please see the "Migration Considerations" below for additional upgrade 	 
     information. 	 
   	 
-Problems Corrected in 3.3.0
+Problems Corrected in 3.3.1
 
-None.
+1)  The 'proxyarp' option in /etc/shorewall/interfaces was not
+    triggering the loading of lib.proxyarp with the result that the
+    option was ignored unless there were also entries in
+    /etc/shorewall/proxyarp.
 
-Other changes in 3.3.0
+Other changes in 3.3.1
 
 None. 
 
@@ -68,7 +71,8 @@ New Features:
       /etc/shorewall/providers.
 
     - lib.proxyarp. Must be available if you have entries in
-      /etc/shorewall/proxyarp.
+      /etc/shorewall/proxyarp or if you specify the 'proxyarp' option
+      in /etc/shorewall/interfaces.
 
     - lib.tc. Must be available if you have entries in
       /etc/shorewall/tcdevices and /etc/shorewall/tcclasses.

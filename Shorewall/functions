@@ -1760,6 +1760,7 @@ lib_load() # $1 = Name of the Library, $2 = Error Message heading if the library
 
     if [ -z "$loaded" ]; then
 	if [ -f $lib ]; then
+	    progress_message "Loading library $lib..."
 	    . $lib
 	    eval LIB_${1}_LOADED=Yes
 	else

@@ -2856,8 +2856,6 @@ do_initialize() {
     ALLOWRELATED=Yes
     LOGRATE=
     LOGBURST=
-    LOGPARMS=
-    LOGLIMIT=
     ADD_IP_ALIASES=
     ADD_SNAT_ALIASES=
     TC_ENABLED=
@@ -2901,7 +2899,15 @@ do_initialize() {
     IMPLICIT_CONTINUE=
     HIGH_ROUTE_MARKS=
     TC_EXPERT=
+    MODULESDIR=
+    IPSECFILE=
+    IP_FORWARDING=
+    CLEAR_TC=
+    MACLIST_TABLE=
+    FASTACCEPT=
 
+    LOGLIMIT=
+    LOGPARMS=
     OUTPUT=
     TMP_DIR=
     ALL_INTERFACES=
@@ -2909,7 +2915,6 @@ do_initialize() {
     IPSECMARK=256
     PROVIDERS=
     CRITICALHOSTS=
-    IPSECFILE=
     EXCLUSION_SEQ=1
     STOPPING=
     HAVE_MUTEX=
@@ -3082,6 +3087,7 @@ do_initialize() {
     else
 	LOGFORMAT="Shorewall:%s:%s:"
     fi
+
     ADMINISABSENTMINDED=$(added_param_value_no ADMINISABSENTMINDED $ADMINISABSENTMINDED)
     BLACKLISTNEWONLY=$(added_param_value_no BLACKLISTNEWONLY $BLACKLISTNEWONLY)
     DISABLE_IPV6=$(added_param_value_no DISABLE_IPV6 $DISABLE_IPV6)

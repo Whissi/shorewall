@@ -42,3 +42,50 @@ None.
 Migration Considerations: 	 
   	 
 New Features:
+
+1)  In order to accomodate small embedded applications, Shorewall 3.3
+    is now modularized. In addition to the base files, there are
+    loadable "libraries" that may be included or omitted from an
+    embedded system as required.
+
+    Loadable Shorewall libraries reside in /usr/share/shorewall/ and
+    have names that begin with "lib.". The following libraries are
+    included in Shorewall 3.3:
+
+    - lib.accounting. Must be available if you include entries in
+      /etc/shorewall/accounging.
+
+    - lib.dynamiczones. Must be available if you specify
+      DYNAMIC_ZONES=Yes in shorewall.conf.
+
+    - lib.maclist. Must be available if you specify the 'maclilst'
+      option in /etc/shorewall/interfaces or /etc/shorewall/hosts.
+
+    - lib.nat. Must be available if you have entries in
+      /etc/shorewall/masq, /etc/shorewall/nat or /etc/shorewall/netmap.
+
+    - lib.providers. Must be available if you have entries in
+      /etc/shorewall/providers.
+
+    - lib.proxyarp. Must be available if you have entries in
+      /etc/shorewall/proxyarp.
+
+    - lib.tc. Must be available if you have entries in
+      /etc/shorewall/tcdevices and /etc/shorewall/tcclasses.
+
+    - lib.tcrules. Must be available if you have entries in
+      /etc/shorewall/tcrules.
+
+    - lib.tunnels. Must be available if you have entries in
+      /etc/shorewall/tunnels.
+
+    Embedded applications can also decrease the size of the Shorewall
+    footprint by:
+
+    - Omitting the macro files.
+    - Only including the 'modules' file appropriate for the kernel in
+      use.
+    - Omitting all unused extension scripts.
+    - Stripping the comments (except for copyright) from the various
+      files.
+

@@ -101,31 +101,31 @@ ACCEPT   -              -               tcp     135,139,445
       <listitem>
         <para>User-defined Actions. These actions are created by end-users.
         They are listed in the file /etc/shorewall/actions and are defined in
-        action.* files in /etc/shorewall or in another directory
-        listed in your CONFIG_PATH (defined in <ulink
+        action.* files in /etc/shorewall or in another directory listed in
+        your CONFIG_PATH (defined in <ulink
         url="Documentation.htm#Conf">/etc/shorewall/shorewall.conf</ulink>).</para>
       </listitem>
     </orderedlist>
   </section>
 
   <section>
-    <title>Common Actions</title>
+    <title>Default Actions (Formerly Common Actions)</title>
 
-    <para>Shorewall allows the association of a <firstterm>common
-    action</firstterm> with policies. A separate common action may be
-    associated with ACCEPT, DROP and REJECT policies. Common actions provide a
-    way to invoke a set of common rules just before the policy is enforced.
-    Common actions accomplish two goals:</para>
+    <para>Shorewall allows the association of a <firstterm>default
+    action</firstterm> with policies. A separate default action may be
+    associated with ACCEPT, DROP and REJECT policies. Default actions provide
+    a way to invoke a set of common rules just before the policy is enforced.
+    Default actions accomplish two goals:</para>
 
     <orderedlist>
       <listitem>
-        <para>Relieve log congestion. Common actions typically include rules
+        <para>Relieve log congestion. Default actions typically include rules
         to silently drop or reject traffic that would otherwise be logged when
         the policy is enforced.</para>
       </listitem>
 
       <listitem>
-        <para>Ensure correct operation. Common actions can also avoid common
+        <para>Ensure correct operation. Default actions can also avoid common
         pitfalls like dropping connection requests on port TCP port 113. If
         these connections are dropped (rather than rejected) then you may
         encounter problems connecting to internet services that utilize the
@@ -136,23 +136,23 @@ ACCEPT   -              -               tcp     135,139,445
       </listitem>
     </orderedlist>
 
-    <para>Shorewall provides common actions for the REJECT and DROP policies.
-    The common action for REJECT is named <firstterm>Reject</firstterm> and
-    the common action for DROP is named <firstterm>Drop</firstterm>. These
+    <para>Shorewall provides default actions for the REJECT and DROP policies.
+    The default action for REJECT is named <firstterm>Reject</firstterm> and
+    the default action for DROP is named <firstterm>Drop</firstterm>. These
     associations are made through two entries in
     /usr/share/shorewall/actions.std:</para>
 
-    <programlisting>Drop:DROP       #Common Action for DROP policy
-Reject:REJECT   #Common Action for REJECT policy</programlisting>
+    <programlisting>Drop:DROP       #Default Action for DROP policy
+Reject:REJECT   #Default Action for REJECT policy</programlisting>
 
     <para>These may be overridden by entries in your /etc/shorewall/actions
     file.</para>
 
     <warning>
-      <para>Entries in the DROP and REJECT common actions <emphasis
+      <para>Entries in the DROP and REJECT default actions <emphasis
       role="bold">ARE NOT THE CAUSE OF CONNECTION PROBLEMS</emphasis>.
-      Remember — common actions are only invoked immediately before the packet
-      is going to be dropped or rejected anyway!!!</para>
+      Remember — default actions are only invoked immediately before the
+      packet is going to be dropped or rejected anyway!!!</para>
     </warning>
   </section>
 
@@ -180,8 +180,8 @@ Reject:REJECT   #Common Action for REJECT policy</programlisting>
 
         <para>The name of the action may be optionally followed by a colon
         (<quote>:</quote>) and ACCEPT, DROP or REJECT. When this is done, the
-        named action will become the <emphasis>common action </emphasis>for
-        policies of type ACCEPT, DROP or REJECT respectively. The common
+        named action will become the <emphasis>default action </emphasis>for
+        policies of type ACCEPT, DROP or REJECT respectively. The default
         action is applied immediately before the policy is enforced (before
         any logging is done under that policy) and is used mainly to suppress
         logging of uninteresting traffic which would otherwise clog your logs.

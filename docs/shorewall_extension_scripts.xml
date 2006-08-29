@@ -5,7 +5,7 @@
   <!--$Id$-->
 
   <articleinfo>
-    <title>Extension Scripts and Common Actions</title>
+    <title>Extension Scripts and Default Actions</title>
 
     <authorgroup>
       <author>
@@ -101,7 +101,7 @@
 
     <listitem>
       <para>refresh -- invoked while the firewall is being refreshed but
-      before the common and/or blacklst chains have been rebuilt.</para>
+      before the blacklst chains have been rebuilt.</para>
     </listitem>
 
     <listitem>
@@ -274,11 +274,11 @@
     </listitem>
   </itemizedlist>
 
-  <para>You can also define a <emphasis>common action</emphasis> to be
+  <para>You can also define a <emphasis>default action</emphasis> to be
   performed immediately before a policy of ACCEPT, DROP or REJECT is applied.
   Separate <ulink url="Actions.html">actions</ulink> can be assigned to each
-  policy type so for example you can have a different common action for DROP
-  and REJECT policies. The most common usage of common actions is to silently
+  policy type so for example you can have a different default action for DROP
+  and REJECT policies. The most common usage of default actions is to silently
   drop traffic that you don't wish to have logged by the policy.</para>
 
   <para>As released, Shorewall defines a number of actions which are cataloged
@@ -297,7 +297,7 @@ Reject:REJECT</programlisting>
 
   <para>You can override these defaults with entries in your
   /etc/shorewall/actions file. For example, if that file were to contain
-  <quote>MyDrop:DROP</quote> then the common action for DROP policies would
+  <quote>MyDrop:DROP</quote> then the default action for DROP policies would
   become <quote>MyDrop</quote>.</para>
 
   <para>One final note. The chain created to perform an action has the same

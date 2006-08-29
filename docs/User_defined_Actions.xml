@@ -64,8 +64,8 @@
         <para>Beginning with Shorewall-2.0.0-Beta1, the name of the action may
         be optionally followed by a colon (<quote>:</quote>) and ACCEPT, DROP
         or REJECT. When this is done, the named action will become the
-        <emphasis>common action </emphasis>for policies of type ACCEPT, DROP
-        or REJECT respectively. The common action is applied immediately
+        <emphasis>default action </emphasis>for policies of type ACCEPT, DROP
+        or REJECT respectively. The default action is applied immediately
         before the policy is enforced (before any logging is done under that
         policy) and is used mainly to suppress logging of uninteresting
         traffic which would otherwise clog your logs. The same policy name can
@@ -397,7 +397,7 @@ AllowFTP  loc         $FW</programlisting>
     class="directory">/etc/shorewall and modify</filename> it to suit your
     needs. The next <command>shorewall restart</command> will cause your
     action to be installed in place of the standard one. In particular, if you
-    want to modify the common actions <quote>Drop</quote> or
+    want to modify the default actions <quote>Drop</quote> or
     <quote>Reject</quote>, simply copy <filename>action.Drop</filename> or
     <filename>Action.Reject</filename> to <filename
     class="directory">/etc/shorewall</filename> and modify that copy as
@@ -415,22 +415,22 @@ AllowFTP  loc         $FW</programlisting>
   </section>
 
   <section id="Common">
-    <title>Common Actions</title>
+    <title>Default Actions (Formerly Common Actions)</title>
 
     <para>Also beginning with Shorewall version 2.2.0-Beta1, when an ACCEPT,
-    DROP or REJECT policy is about to be enforced, a <firstterm>common
+    DROP or REJECT policy is about to be enforced, a <firstterm>default
     action</firstterm> can first be invoked. In /etc/shorewall/actions.std are
     found these two entries:</para>
 
-    <programlisting>Drop:DROP       #Common Action for DROP policy
-Reject:REJECT   #Common Action for REJECT policy</programlisting>
+    <programlisting>Drop:DROP       #Default Action for DROP policy
+Reject:REJECT   #Default Action for REJECT policy</programlisting>
 
     <para>These entries designate the action named <firstterm>Drop</firstterm>
-    as the common action for DROP policies and the common action
-    <firstterm>Reject</firstterm> as the common action for REJECT
+    as the default action for DROP policies and the default action
+    <firstterm>Reject</firstterm> as the default action for REJECT
     policies.</para>
 
-    <para>The purpose of common actions is:</para>
+    <para>The purpose of default actions is:</para>
 
     <itemizedlist>
       <listitem>
@@ -448,7 +448,7 @@ Reject:REJECT   #Common Action for REJECT policy</programlisting>
       </listitem>
     </itemizedlist>
 
-    <para>It should be stressed that <emphasis role="bold">the common actions
+    <para>It should be stressed that <emphasis role="bold">the default actions
     do not cause any traffic to be dropped or rejected that isn't about to be
     dropped or rejected anyway</emphasis> (remember that these actions are
     invoked just before the connection request is going to be dropped or

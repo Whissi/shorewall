@@ -58,6 +58,9 @@ New Features:
     - lib.accounting. Must be available if you include entries in
       /etc/shorewall/accounting.
 
+    - lib.actions. Must be available if you do not specify 
+      USE_ACTIONS=No in /etc/shorewall/shorewall.conf.
+
     - lib.dynamiczones. Must be available if you specify
       DYNAMIC_ZONES=Yes in shorewall.conf.
 
@@ -92,4 +95,21 @@ New Features:
     - Omitting all unused extension scripts.
     - Stripping the comments (except for copyright) from the various
       files.
+
+2)  As hinted in the previous bullet, there is a new USE_ACTIONS option
+    in /etc/shorewall/shorewall.conf. Shorewall actions can be very
+    powerful but they also require a lot of code to implement. Embedded
+    applications can omit that code by setting
+    USE_ACTIONS=No. Shorewall will ignore all action-related files
+    including /usr/share/shorewall/actions.std and
+    /etc/shorewall/actions. Builtin actions will still be available for
+    use in rules and macros.
+
+    Note that with USE_ACTIONS=No, there will be no default actions so
+    you must include explicit rules to handle those rules that are normally
+    supplied by the default actions.
+
+    The macros macro.Drop and macro.Reject are supplied to help you do
+    that.
+
 

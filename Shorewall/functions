@@ -2915,6 +2915,7 @@ do_initialize() {
     CLEAR_TC=
     MACLIST_TABLE=
     FASTACCEPT=
+    USE_ACTIONS=
 
     LOGLIMIT=
     LOGPARMS=
@@ -3121,6 +3122,9 @@ do_initialize() {
     IMPLICIT_CONTINUE=$(added_param_value_no IMPLICIT_CONTINUE $IMPLICIT_CONTINUE)
     HIGH_ROUTE_MARKS=$(added_param_value_no HIGH_ROUTE_MARKS $HIGH_ROUTE_MARKS)
     TC_EXPERT=$(added_param_value_no TC_EXPERT $TC_EXPERT)
+    USE_ACTIONS=$(added_param_value_yes USE_ACTIONS $USE_ACTIONS)
+    [ -n "$USE_ACTIONS" ] && lib_load actions "USE_ACTIONS=Yes"
+    
     [ -n "$XCONNMARK_MATCH" ] || XCONNMARK=
     [ -n "$XMARK" ] || XCONNMARK=
 

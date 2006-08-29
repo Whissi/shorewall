@@ -131,6 +131,7 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/macro.CVS
 %attr(0644,root,root) /usr/share/shorewall/macro.Distcc
 %attr(0644,root,root) /usr/share/shorewall/macro.DNS
+%attr(0644,root,root) /usr/share/shorewall/macro.Drop
 %attr(0644,root,root) /usr/share/shorewall/macro.DropDNSrep
 %attr(0644,root,root) /usr/share/shorewall/macro.DropUPnP
 %attr(0644,root,root) /usr/share/shorewall/macro.Edonkey
@@ -154,6 +155,7 @@ fi
 %attr(0644,root,root) /usr/share/shorewall/macro.POP3S
 %attr(0644,root,root) /usr/share/shorewall/macro.PostgreSQL
 %attr(0644,root,root) /usr/share/shorewall/macro.Rdate
+%attr(0644,root,root) /usr/share/shorewall/macro.Reject
 %attr(0644,root,root) /usr/share/shorewall/macro.Rsync
 %attr(0644,root,root) /usr/share/shorewall/macro.SMB
 %attr(0644,root,root) /usr/share/shorewall/macro.SMBBI

@@ -1,24 +1,23 @@
 #
-# Shorewall version 3.2 - Reject Action
+# Shorewall version 3.2 - Drop Macro
 #
-# /usr/share/shorewall/action.Reject
+# /usr/share/shorewall/macro.Drop
 #
-#	The default REJECT action common rules
+#	This macro generates the same rules as the Drop default action
+#       You can use it at the end of the rules file to simulate a Drop
+#	default action when USE_ACTIONS=No.
 #
-#	This action is invoked before a REJECT policy is enforced. The purpose
-#	of the action is:
+#	Example:
 #
-#	a) Avoid logging lots of useless cruft.
-#	b) Ensure that certain ICMP packets that are necessary for successful
-#	   internet operation are always ACCEPTed.
+#		Drop	net	all	
 #
-# IF YOU ARE HAVING CONNECTION PROBLEMS, CHANGING THIS FILE WON'T HELP!!!!!!!!!
 ###############################################################################
-#TARGET		SOURCE	DEST	PROTO
+#ACTION	SOURCE	DEST	PROTO	DEST	SOURCE	ORIGINAL	RATE	USER/
+#				PORT	PORT(S)	DEST		LIMIT	GROUP
 #
 # Don't log 'auth' REJECT
 #
-Auth/REJECT
+REJECT	-	-	tcp	113
 #
 # Drop Broadcasts so they don't clutter up the log
 # (broadcasts must *not* be rejected).
@@ -27,7 +26,8 @@ dropBcast
 #
 # ACCEPT critical ICMP types
 #
-AllowICMPs	-	-	icmp
+ACCEPT	-	-	icmp	fragmentation-needed
+ACCEPT	-	-	icmp	time-exceeded
 #
 # Drop packets that in the INVALID state -- these are usually ICMP packets
 # and just confuse people when they appear in the log (these ICMPs cannot be
@@ -35,17 +35,20 @@ AllowICMPs	-	-	icmp
 #
 dropInvalid
 #
-# Reject Microsoft noise so that it doesn't clutter up the lot.
+# Drop Microsoft noise so that it doesn't clutter up the lot.
 #
-SMB/REJECT
-DropUPnP
+DROP	-	-	udp	135,445
+DROP	-	-	udp	137:139
+DROP	-	-	udp	1024:	137
+DROP	-	-	tcp	135,139,445
+DROP	-	-	udp	1900
 #
 # Drop 'newnotsyn' traffic so that it doesn't get logged.
 #
-dropNotSyn	-	-	tcp
+dropNotSyn
 #
 # Drop late-arriving DNS replies. These are just a nuisance and clutter up
 # the log.
 #
-DropDNSrep
+DROP	-	-	udp	-	53
 #LAST LINE -- ADD YOUR ENTRIES BEFORE THIS ONE -- DO NOT REMOVE

@@ -1004,444 +1004,6 @@ compile_refresh_firewall()
 }
 
 #
-# Add one Filter Rule from an action -- Helper function for the action file processor
-#
-# The caller has established the following variables:
-#    COMMAND      = current command.
-#    client	  = SOURCE IP or MAC
-#    server	  = DESTINATION IP or interface
-#    protocol	  = Protocol
-#    address	  = Original Destination Address
-#    port	  = Destination Port
-#    cport	  = Source Port
-#    multioption  = String to invoke multiport match if appropriate
-#    action	  = The chain for this rule
-#    ratelimit    = Optional rate limiting clause
-#    userandgroup = owner match clause
-#    logtag       = Log tag
-#
-add_an_action()
-{
-    local chain1
-
-    do_ports() {
-	if [ -n "$port" ]; then
-	    dports="--dport"
-	    if [ -n "$multioption" -a "$port" != "${port%,*}" ]; then
-		multiport="$multioption"
-		dports="--dports"
-	    fi
-	    dports="$dports $port"
-	fi
-
-	if [ -n "$cport" ]; then
-	    sports="--sport"
-	    if [ -n "$multioption" -a "$cport" != "${cport%,*}" ]; then
-		multiport="$multioption"
-		sports="--sports"
-	    fi
-	    sports="$sports $cport"
-	fi
-    }
-
-    interface_error()
-    {
-	fatal_error "Unknown interface $1 in rule: \"$rule\""
-    }
-
-    action_interface_verify()
-    {
-	verify_interface $1 || interface_error $1
-    }
-
-    handle_exclusion()
-    {
-	build_exclusion_chain chain1 filter "$excludesource" "$excludedest"
-
-	run_iptables -A $chain $(fix_bang $cli $proto $sports $multiport $dports) $user -j $chain1
-
-	cli=
-	proto=
-	sports=
-	multiport=
-	dports=
-	user=
-    }
-
-    do_ipp2p() {
-	[ -n "$IPP2P_MATCH" ] || fatal_error "Your kernel and/or iptables does not have IPP2P match support. Rule: \"$rule\""
-
-	dports="-m ipp2p --${port:-ipp2p}"
-
-	case $proto in
-	    ipp2p|IPP2P)
-		proto=tcp
-		port=
-		do_ports
-		;;
-	    ipp2p:udpIPP2P:UDP)
-		proto=udp
-		port=
-		do_ports
-		;;
-	    ipp2p:all|IPP2P:ALL)
-		proto=all
-		;;
-	esac
-    }
-
-    # Set source variables. The 'cli' variable will hold the client match predicate(s).
-
-    cli=
-
-    case "$client" in
-    -)
-	;;
-    *:*)
-	action_interface_verify ${client%:*}
-	cli="$(match_source_dev ${client%:*}) $(source_ip_range ${client#*:})"
-	;;
-    *.*.*|+*|!+*)
-	cli="$(source_ip_range $client)"
-	;;
-    ~*|!~*)
-	cli=$(mac_match $client)
-	;;
-    *)
-	if [ -n "$client" ]; then
-	    action_interface_verify $client
-	    cli="$(match_source_dev $client)"
-	fi
-	;;
-    esac
-
-    # Set destination variables - 'serv' and 'dest_interface' hold the server match predicate(s).
-
-    dest_interface=
-    serv=
-
-    case "$server" in
-    -)
-	;;
-    *.*.*|+*|!+*)
-	serv=$server
-	;;
-    ~*|!~*)
-	fatal_error "Rule \"$rule\" - Destination may not be specified by MAC Address"
-	;;
-    *)
-	if [ -n "$server" ]; then
-	    action_interface_verify $server
-	    dest_interface="$(match_dest_dev $server)"
-	fi
-	;;
-    esac
-
-    # Setup protocol and port variables
-
-    sports=
-    dports=
-    proto=$protocol
-    servport=$serverport
-    multiport=
-    chain1=$chain
-    user="$userandgroup"
-
-    [ x$port  = x- ] && port=
-    [ x$cport = x- ] && cport=
-
-    case $proto in
-	tcp|TCP|6)
-	    do_ports
-	    ;;
-	tcp:syn)
-	    proto="$proto --syn"
-	    do_ports
-	    ;;
-	udp|UDP|17)
-	    do_ports
-	    ;;
-	icmp|ICMP|1)
-	    [ -n "$port" ]  && 	dports="--icmp-type $port"
-	    ;;
-	ipp2p|IPP2P|ipp2p:*|IPP2P:*)
-	    do_ipp2p
-	    ;;
-	*)
-	    [ -n "$port" ] && \
-		fatal_error "Port number not allowed with protocol \"$proto\"; rule: \"$rule\""
-	    ;;
-    esac
-
-    proto="${proto:+-p $proto}"
-
-    # Some misc. setup
-
-    case "$logtarget" in
-	LOG)
-	    [ -z "$loglevel" ] && fatal_error "LOG requires log level"
-	    ;;
-    esac
-
-    if [ -n "${excludesource}${excludedest}" ]; then
-	handle_exclusion
-    fi
-
-    if [ -n "${serv}" ]; then
-	for serv1 in $(separate_list $serv); do
-	    for srv in $(firewall_ip_range $serv1); do
-		if [ -n "$loglevel" ]; then
-		    log_rule_limit $loglevel $chain1 $action $logtarget "$ratelimit" "$logtag" -A $user \
-			$(fix_bang $proto $sports $multiport $cli $(dest_ip_range $srv) $dports)
-		fi
-
-		run_iptables2 -A $chain1 $proto $multiport $cli $sports \
-		    $(dest_ip_range $srv) $dports $ratelimit $user -j $target
-	    done
-	done
-    else
-	if [ -n "$loglevel" ]; then
-	    log_rule_limit $loglevel $chain1 $action $logtarget "$ratelimit" "$logtag" -A $user \
-		$(fix_bang $proto $sports $multiport $cli $dest_interface $dports)
-	fi
-
-	run_iptables2 -A $chain1 $proto $multiport $cli $dest_interface $sports \
-	    $dports $ratelimit $user -j $target
-    fi
-}
-
-#
-# Process a record from an action file
-#
-process_action() # $1 = chain    (Chain to add the rules to)
-                 # $2 = action   (The action name for logging purposes)
-                 # $3 = target   (The (possibly modified) contents of the TARGET column)
-                 # $4 = clients
-                 # $5 = servers
-                 # $6 = protocol
-                 # $7 = ports
-                 # $8 = cports
-                 # $9 = ratelimit
-                 # $10 = userspec
-{
-    local chain="$1"
-    local action="$2"
-    local target="$3"
-    local clients="$4"
-    local servers="$5"
-    local protocol="$6"
-    local ports="$7"
-    local cports="$8"
-    local ratelimit="$9"
-    local userspec="${10}"
-    local userandgroup=
-    local logtag=
-
-    if [ -n "$ratelimit" ]; then
-	case $ratelimit in
-	    -)
-		ratelimit=
-		;;
-	    *:*)
-		ratelimit="-m limit --limit ${ratelimit%:*} --limit-burst ${ratelimit#*:}"
-		;;
-	    *)
-		ratelimit="-m limit --limit $ratelimit"
-		;;
-	esac
-    fi
-
-    [ "x$userspec" = "x-" ] && userspec=
-
-    if [ -n "$userspec" ]; then
-	userandgroup="-m owner"
-
-	case "$userspec" in
-	    !*+*)
-		if [ -n "${userspec#*+}" ]; then
-		    userandgroup="$userandgroup ! --cmd-owner ${userspec#*+}"
-		fi
-		userspec=${userspec%+*}
-		;;
-	    *+*)
-		if [ -n "${userspec#*+}" ]; then
-		    userandgroup="$userandgroup --cmd-owner ${userspec#*+}"
-		fi
-		userspec=${userspec%+*}
-		;;
-	esac
-
-	case "$userspec" in
-	    !*:*)
-		if [ "$userspec" != "!:" ]; then
-		    temp="${userspec#!}"
-		    temp="${temp%:*}"
-		    [ -n "$temp" ] && userandgroup="$userandgroup ! --uid-owner $temp"
-		    temp="${userspec#*:}"
-		    [ -n "$temp" ] && userandgroup="$userandgroup ! --gid-owner $temp"
-		fi
-		;;
-	    *:*)
-		if [ "$userspec" != ":" ]; then
-		    temp="${userspec%:*}"
-		    [ -n "$temp" ] && userandgroup="$userandgroup --uid-owner $temp"
-		    temp="${userspec#*:}"
-		    [ -n "$temp" ] && userandgroup="$userandgroup --gid-owner $temp"
-		fi
-		;;
-	    !*)
-		[ "$userspec" != "!" ] && userandgroup="$userandgroup ! --uid-owner ${userspec#!}"
-		;;
-	    *)
-		[ -n "$userspec" ] && userandgroup="$userandgroup --uid-owner $userspec"
-		;;
-	esac
-
-	[ "$userandgroup" = "-m owner" ] && userandgroup=
-    fi
-
-    # Isolate log level
-
-    if [ "$target" = "${target%:*}" ]; then
-	loglevel=
-    else
-	loglevel="${target#*:}"
-	target="${target%%:*}"
-	expandv loglevel
-	if [ "$loglevel" != "${loglevel%:*}" ]; then
-	    logtag="${loglevel#*:}"
-	    loglevel="${loglevel%:*}"
-	    expandv logtag
-	fi
-
-	case $loglevel in
-	    none*)
-		loglevel=
-		[ $target = LOG ] && return
-		;;
-	esac
-
-	loglevel=${loglevel%\!}
-    fi
-
-    logtarget="$target"
-
-    case $target in
-	REJECT)
-	    target=reject
-	    ;;
-	CONTINUE)
-	    target=RETURN
-	    ;;
-	*)
-	    ;;
-	esac
-
-    excludesource=
-
-    case ${clients:=-} in
-	*!*!*)
-	    fatal_error "Invalid SOURCE in rule \"$rule\""
-	    ;;
-	!*)
-	    if [ $(list_count $clients) -gt 1 ]; then
-		excludesource=${clients#!}
-		clients=
-	    fi
-	    ;;
-	*!*)
-	    excludesource=${clients#*!}
-	    clients=${clients%!*}
-	    ;;
-    esac
-
-    excludedest=
-
-    case ${servers:=-} in
-	*!*!*)
-	    fatal_error "Invalid DEST in rule \"$rule\""
-	    ;;
-	!*)
-	    if [ $(list_count $servers) -gt 1 ]; then
-		excludedest=${servers#*!}
-		servers=
-	    fi
-	    ;;
-	*!*)
-	    excludedest=${servers#*!}
-	    servers=${servers%!*}
-	    ;;
-    esac
-
-    # Generate Netfilter rule(s)
-
-    [ "x$protocol" = "x-" ] && protocol=all || protocol=${protocol:=all}
-
-    if [ -n "$XMULTIPORT" ] && \
-	! list_search $protocol "icmp" "ICMP" "1" && \
-	[ $(( $(list_count $ports)  + $(list_count1 $(split $ports ) ) ))  -le 16 -a \
-	  $(( $(list_count $cports) + $(list_count1 $(split $cports ) ) )) -le 16 ]
-	then
-	#
-	# Extended MULTIPORT is enabled, and less than
-	# 16 ports are listed (port ranges count as two ports) - use multiport match.
-	#
-	multioption="-m multiport"
-	for client in $(separate_list $clients); do
-	    for server in $(separate_list $servers); do
-		#
-		# add_an_action() modifies these so we must set their values each time
-		#
-		port=${ports:=-}
-		cport=${cports:=-}
-		add_an_action
-	    done
-	done
-    elif [ -n "$MULTIPORT" ] && \
-	! list_search $protocol "icmp" "ICMP" "1" && \
-	[ "$ports" = "${ports%:*}" -a \
-	"$cports" = "${cports%:*}" -a \
-	$(list_count $ports) -le 15 -a \
-	$(list_count $cports) -le 15 ]
-	then
-	#
-	# MULTIPORT is enabled, there are no port ranges in the rule and less than
-	# 16 ports are listed - use multiport match.
-	#
-	multioption="-m multiport"
-	for client in $(separate_list $clients); do
-	    for server in $(separate_list $servers); do
-		#
-		# add_an_action() modifies these so we must set their values each time
-		#
-		port=${ports:=-}
-		cport=${cports:=-}
-		add_an_action
-	    done
-	done
-    else
-	#
-	# MULTIPORT is disabled or the rule isn't compatible with multiport match
-	#
-	multioption=
-	for client in $(separate_list $clients); do
-	    for server in $(separate_list $servers); do
-		for port in $(separate_list ${ports:=-}); do
-		    for cport in $(separate_list ${cports:=-}); do
-			add_an_action
-		    done
-		done
-	    done
-	done
-    fi
-    #
-    # Report Result
-    #
-    progress_message "   Rule \"$rule\" $DONE."
-    save_progress_message_short "   Rule \\\"$rule\\\" added."
-}
-
-#
 # Source the extension script for an action, if any
 #
 process_action_file() # $1 = File Name
@@ -1643,26 +1205,13 @@ merge_levels() # $1=level at which superior action is called, $2=level at which 
     esac
 }
 
-# This function substitutes the second argument for the first part of the first argument up to the first colon (":")
 #
-# Example:
+# Define the builtin actions. They are available even when USE_ACTIONS=No
 #
-#         substitute_action DNAT PARAM:info:FTP
-#
-#         produces "DNAT:info:FTP"
-#
-substitute_action() # $1 = parameter, $2 = action
-{
-    local logpart=${2#*:}
+define_builtin_actions() {
+    ACTIONS="dropBcast allowBcast dropNotSyn rejNotSyn dropInvalid allowInvalid allowinUPnP allowoutUPnP forwardUPnP"
 
-    case $2 in
-	*:*)
-	    echo $1:${logpart%/}
-	    ;;
-	*)
-	    echo $1
-	    ;;
-    esac
+    USEDACTIONS=
 }
 
 #
@@ -1713,210 +1262,26 @@ map_old_action() # $1 = Potential Old Action
     echo $1
 }
 
+# This function substitutes the second argument for the first part of the first argument up to the first colon (":")
 #
-# Combine a source/dest from the macro body with one from the macro invocation
+# Example:
 #
-merge_macro_source_dest() # $1 = source/dest from macro body, $2 = source/dest from invocation
+#         substitute_action DNAT PARAM:info:FTP
+#
+#         produces "DNAT:info:FTP"
+#
+substitute_action() # $1 = parameter, $2 = action
 {
+    local logpart=${2#*:}
+
     case $2 in
-	-)
-	    echo ${1}
-	    ;;
-	*.*.*|+*|~*|!~*)
-	    #
-	    # Value in the invocation is an address -- put it behind the value from the macro
-	    #
-	    echo ${1}:${2}
+	*:*)
+	    echo $1:${logpart%/}
 	    ;;
 	*)
-	    echo ${2}:${1}
+	    echo $1
 	    ;;
     esac
-}
-
-#
-# The next three functions implement the three phases of action processing.
-#
-# The first phase (process_actions1) occurs before the rules file is processed. ${SHAREDIR}/actions.std
-# and ${CONFDIR}/actions are scanned (in that order) and for each action:
-#
-#      a) The related action definition file is located and scanned.
-#      b) Forward and unresolved action references are trapped as errors.
-#      c) A dependency graph is created. For each <action>, the variable 'requiredby_<action>' lists the
-#         action[:level[:tag]] of each action invoked by <action>.
-#      d) All actions are listed in the global variable ACTIONS.
-#      e) Common actions are recorded (in variables of the name <policy>_common) and are added to the global
-#         USEDACTIONS
-#
-# As the rules file is scanned, each action[:level[:tag]] is merged onto the USEDACTIONS list. When an <action>
-# is merged onto this list, its action chain is created. Where logging is specified, a chain with the name
-# %<action>n is used where the <action> name is truncated on the right where necessary to ensure that the total
-# length of the chain name does not exceed 30 characters.
-#
-# The second phase (process_actions2) occurs after the rules file is scanned. The transitive closure of
-# USEDACTIONS is generated; again, as new actions are merged onto this list, their action chains are created.
-#
-# The final phase (process_actions3) is to traverse the USEDACTIONS list populating each chain appropriately
-# by reading the action definition files and creating rules. Note that a given action definition file is
-# processed once for each unique [:level[:tag]] applied to an invocation of the action.
-#
-process_actions1() {
-
-    ACTIONS="dropBcast allowBcast dropNotSyn rejNotSyn dropInvalid allowInvalid allowinUPnP allowoutUPnP forwardUPnP"
-
-    USEDACTIONS=
-
-    strip_file actions
-
-    strip_file actions.std ${SHAREDIR}/actions.std
-
-    for inputfile in actions.std actions; do
-	while read xaction rest; do
-	    [ "x$rest" = x ] || fatal_error "Invalid Action: $xaction $rest"
-
-	    case $xaction in
-		*:*)
-		    temp=${xaction#*:}
-		    [ ${#temp} -le 30 ] || fatal_error "Action Name Longer than 30 Characters: $temp"
-		    xaction=${xaction%:*}
-		    case $temp in
-			ACCEPT|REJECT|DROP|QUEUE)
-			    eval ${temp}_common=$xaction
-			    if [ -n "$xaction" ] && ! list_search $xaction $USEDACTIONS; then
-				USEDACTIONS="$USEDACTIONS $xaction"
-			    fi
-			    ;;
-			*)
-			    fatal_error "Common Actions are only allowed for ACCEPT, DROP, REJECT and QUEUE"
-			    ;;
-		    esac
-	    esac
-
-	    [ -z "$xaction" ] && continue
-
-	    [ "$xaction" = "$(chain_base $xaction)" ] || fatal_error "Invalid Action Name: $xaction"
-
-	    if ! list_search $xaction $ACTIONS; then
-		f=action.$xaction
-		fn=$(find_file $f)
-
-		eval requiredby_${action}=
-
-		if [ -f $fn ]; then
-		    progress_message2 "   Pre-processing $fn..."
-		    strip_file $f $fn
-		    while read xtarget xclients xservers xprotocol xports xcports xratelimit $xuserspec; do
-			expandv xtarget
-			temp="${xtarget%%:*}"
-			case "$temp" in
-			    ACCEPT|DROP|REJECT|LOG|QUEUE|CONTINUE)
-				;;
-			    *)
-				if list_search $temp $ACTIONS; then
-				    eval requiredby=\"\$requiredby_${xaction}\"
-				    list_search $xtarget $requiredby || eval requiredby_${xaction}=\"$requiredby $xtarget\"
-				else
-				    temp=$(map_old_action $temp)
-
-				    case $temp in
-					*/*)
-					    param=${temp#*/}
-					    case $param in
-						ACCEPT|DROP|REJECT|LOG|QUEUE|CONTINUE)
-						    ;;
-						*)
-						    rule="$xtarget $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec"
-						    fatal_error "Invalid Macro Parameter in rule \"$rule\""
-						    ;;
-					    esac
-					    temp=${temp%%/*}
-					    ;;
-				    esac
-
-				    f1=macro.${temp}
-				    fn=$(find_file $f1)
-
-				    if [ ! -f $TMP_DIR/$f1 ]; then
-					#
-					# We must only verify macros once to ensure that they don't invoke any non-standard actions
-					#
-					if [ -f $fn ]; then
-					    strip_file $f1 $fn
-
-					    progress_message "   ..Expanding Macro $fn..."
-
-					    while read mtarget mclients mservers mprotocol mports mcports mratelimit muserspec; do
-						expandv mtarget
-						temp="${mtarget%%:*}"
-						case "$temp" in
-						    ACCEPT|DROP|REJECT|LOG|QUEUE|CONTINUE|PARAM)
-							;;
-						    *)
-							rule="$mtarget $mclients $mservers $mprotocol $mports $mcports $mratelimit $muserspec"
-							fatal_error "Invalid TARGET in rule \"$rule\""
-						esac
-					    done < $TMP_DIR/$f1
-
-					    progress_message "   ..End Macro"
-					else
-					    rule="$xtarget $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec"
-					    fatal_error "Invalid TARGET in rule \"$rule\""
-					fi
-				    fi
-				fi
-				;;
-
-			esac
-		    done < $TMP_DIR/$f
-		else
-		    fatal_error "Missing Action File: $f"
-		fi
-
-		ACTIONS="$ACTIONS $xaction"
-	    fi
-	done < $TMP_DIR/$inputfile
-    done
-}
-
-process_actions2() {
-
-    local interfaces="$(find_interfaces_by_option upnp)"
-
-    if [ -n "$interfaces" ]; then
-	if ! list_search forwardUPnP $USEDACTIONS; then
-	    error_message "WARNING:Missing forwardUPnP rule (required by 'upnp' interface option on $interfaces)"
-	fi
-    fi
-
-    progress_message "   Generating Transitive Closure of Used-action List..."
-
-    changed=Yes
-
-    while [ -n "$changed" ]; do
-	changed=
-	for xaction in $USEDACTIONS; do
-
-	    eval required=\"\$requiredby_${xaction%%:*}\"
-
-	    for xaction1 in $required; do
-		#
-		# Generate the action that will be passed to process_action by merging the
-		# logging specified when the action was invoked with the logging in the
-		# invocation of the subordinate action (usually no logging)
-		#
-		xaction2=$(merge_levels $xaction $xaction1)
-
-		if ! list_search $xaction2 $USEDACTIONS; then
-		    #
-		    # We haven't seen this one before -- create and record a chain to handle it
-		    #
-		    USEDACTIONS="$USEDACTIONS $xaction2"
-		    createactionchain $xaction2
-		    changed=Yes
-		fi
-	    done
-	done
-    done
 }
 
 process_actions3() {
@@ -2087,116 +1452,7 @@ __EOF__
 		#
 		# Not a builtin
 		#
-		f=action.$xaction1
-
-		progress_message2 "$DOING $(find_file $f) for Chain $xchain..."
-
-		while read xtarget xclients xservers xprotocol xports xcports xratelimit xuserspec; do
-		    expandv xtarget
-		    #
-		    # Generate the target:level:tag to pass to process_action()
-		    #
-		    xaction2=$(merge_levels $xaction $xtarget)
-
-		    is_macro=
-		    param=
-
-		    xtarget1=${xaction2%%:*}
-
-		    case $xtarget1 in
-			ACCEPT|DROP|REJECT|LOG|QUEUE|CONTINUE)
-			    #
-			    # Builtin target -- Nothing to do
-			    #
-			    ;;
-			*)
-			    if list_search $xtarget1 $ACTIONS ; then
-			        #
-			        # An Action             -- Replace the target from the file
-			        #                       -- with the one generated above
-				xtarget=$xaction2
-			        #
-			        # And locate the chain for that action:level:tag
-			        #
-			        xaction2=$(find_logactionchain $xtarget)
-			    else
-				is_macro=yes
-			    fi
-			    ;;
-		    esac
-
-		    expandv xclients xservers xprotocol xports xcports xratelimit xuserspec
-
-		    if [ -n "$is_macro" ]; then
-
-			xtarget1=$(map_old_action $xtarget1)
-
-			case $xtarget1 in
-			    */*)
-				param=${xtarget1#*/}
-				xtarget1=${xtarget1%%/*}
-				;;
-			esac
-
-			progress_message "..Expanding Macro $(find_file macro.$xtarget1)..."
-			while read mtarget mclients mservers mprotocol mports mcports mratelimit muserspec; do
-			    expandv mtarget mclients mservers mprotocol mports mcports mratelimit muserspec
-
-			    mtarget=$(merge_levels $xaction2 $mtarget)
-
-			    case $mtarget in
-				PARAM|PARAM:*)
-				    [ -n "$param" ] && mtarget=$(substitute_action $param $mtarget) || fatal_error "PARAM requires that a parameter be supplied in macro invocation"
-				    ;;
-			    esac
-
-			    if [ -n "$mclients" ]; then
-				case $mclients in
-				    -|SOURCE)
-					mclients=${xclients}
-					;;
-				    DEST)
-					mclients=${xservers}
-					;;
-				    *)
-					mclients=$(merge_macro_source_dest $mclients $xclients)
-					;;
-				esac
-			    else
-				mclients=${xclients}
-			    fi
-
-			    if [ -n "$mservers" ]; then
-				case $mservers in
-				    -|DEST)
-					mservers=${xservers}
-					;;
-				    SOURCE)
-					mservers=${xclients}
-					;;
-				    *)
-					mservers=$(merge_macro_source_dest $mservers $xservers)
-					;;
-				esac
-			    else
-				mservers=${xserverss}
-			    fi
-
-			    [ -n "$xprotocol" ]  && [ "x${xprotocol}" != x- ]  && mprotocol=$xprotocol
-			    [ -n "$xports" ]     && [ "x${xports}" != x- ]     && mports=$xports
-			    [ -n "$xcports" ]    && [ "x${xcports}" != x- ]    && mcports=$xcports
-			    [ -n "$xratelimit" ] && [ "x${xratelimit}" != x- ] && mratelimit=$xratelimit
-			    [ -n "$xuserspec" ]  && [ "x${xuserspec}" != x- ]  && muserspec=$xuserspec
-
-			    rule="$mtarget ${mclients:=-} ${mservers:=-} ${mprotocol:=-} ${mports:=-} ${mcports:=-} ${mratelimit:-} ${muserspec:=-}"
-			    process_action $xchain $xaction1 $mtarget $mclients $mservers $mprotocol $mports $mcports $mratelimit $muserspec
-			done < $TMP_DIR/macro.$xtarget1
-			progress_message "..End Macro"
-		    else
-			rule="$xtarget $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec"
-			process_action $xchain $xaction1 $xaction2 $xclients $xservers $xprotocol $xports $xcports $xratelimit $xuserspec
-		    fi
-		done < $TMP_DIR/$f
+		process_actions3a
 		;;
 	esac
     done
@@ -3660,17 +2916,17 @@ policy_rules() # $1 = chain to add rules to
 
     case "$target" in
 	ACCEPT)
-	    [ -n "$ACCEPT_common" ] && run_iptables -A $1 -j $ACCEPT_common
+	    [ -n "$ACCEPT_default" ] && run_iptables -A $1 -j $ACCEPT_default
 	    ;;
 	DROP)
-	    [ -n "$DROP_common" ] && run_iptables -A $1 -j $DROP_common
+	    [ -n "$DROP_default" ] && run_iptables -A $1 -j $DROP_default
 	    ;;
 	REJECT)
-	    [ -n "$REJECT_common" ] && run_iptables -A $1 -j $REJECT_common
+	    [ -n "$REJECT_default" ] && run_iptables -A $1 -j $REJECT_default
 	    target=reject
 	    ;;
 	QUEUE)
-	    [ -n "$QUEUE_common" ] && run_iptables -A $1 -j $QUEUE_common
+	    [ -n "$QUEUE_default" ] && run_iptables -A $1 -j $QUEUE_default
 	    ;;
 	CONTINUE)
 	    target=
@@ -4111,8 +3367,12 @@ initialize_netfilter () {
     strip_file rules
     strip_file maclist
 
-    progress_message2 "Pre-processing Actions..."
-    process_actions1
+    define_builtin_actions
+
+    if [ -n "$USE_ACTIONS" ]; then
+	progress_message2 "Pre-processing Actions..."
+	process_actions1
+    fi
 
     TERMINATOR=fatal_error
 
@@ -4348,7 +3608,7 @@ __EOF__
     fi
 
     #
-    # Create common action chains
+    # Create default action chains
     #
     for action in $USEDACTIONS; do
 	createactionchain $action
@@ -5775,10 +5035,13 @@ __EOF__
 	setup_tunnels $tunnels
     fi
 
-    save_progress_message "Setting up Actions..."
+    if [ -n "$USEDACTIONS" ]; then
+	save_progress_message "Setting up Actions..."
 
-    progress_message2 "$DOING Actions...";               process_actions2
-                                                         process_actions3
+	progress_message2 "$DOING Actions...";
+	[ -n "$USE_ACTIONS" ] && process_actions2
+	process_actions3
+    fi
 
     save_progress_message "Applying Policies..."
 

@@ -418,19 +418,19 @@ __EOF__
 
     }
 
-    if [ -n "$NAT_ENABLED" ]; then
+    if [ -s $TMP_DIR/masq ]; then
 	progress_message2 "$DOING Masquerading/SNAT"
 	save_progress_message "Setting up Masquerading/SNAT..."
-    fi
 
-    while read fullinterface networks addresses proto ports ipsec; do
-	expandv fullinterface networks addresses proto ports ipsec
-	if [ -n "$NAT_ENABLED" ]; then
-	    setup_one
-	else
-	    error_message "WARNING: NAT disabled; masq rule ignored"
-	fi
-    done < $TMP_DIR/masq
+	while read fullinterface networks addresses proto ports ipsec; do
+	    expandv fullinterface networks addresses proto ports ipsec
+	    if [ -n "$NAT_ENABLED" ]; then
+		setup_one
+	    else
+		error_message "WARNING: NAT disabled; masq rule ignored"
+	    fi
+	done < $TMP_DIR/masq
+    fi
 }
 
 #
@@ -500,15 +500,17 @@ setup_nat() {
 	policyout="-m policy --pol none --dir out"
     fi
 
-    [ -n "$RETAIN_ALIASES" ] || save_progress_message "Setting up one-to-one NAT..."
+    if [ -s $TMP_DIR/nat ]; then
+	save_progress_message "Setting up one-to-one NAT..."
 
-    while read external interface internal allints localnat; do
-	expandv external interface internal allints localnat
+	while read external interface internal allints localnat; do
+	    expandv external interface internal allints localnat
+	    
+	    do_one_nat
 
-	do_one_nat
-
-	progress_message_and_save "   Host $internal NAT $external on $interface"
-    done < $TMP_DIR/nat
+	    progress_message_and_save "   Host $internal NAT $external on $interface"
+	done < $TMP_DIR/nat
+    fi
 }
 
 #

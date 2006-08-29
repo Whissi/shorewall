@@ -1781,7 +1781,11 @@ lib_avail() # $1 = Name of the Library
 }   
 
 #
-# Strip the passed file. Return success if a) the stripped file is non-empty; or b) the library had been previously loaded
+# Strip the passed file.
+#
+# Return success if
+#     a) the stripped file is non-empty and the library was successfully loaded; or
+#     b) the stripped file is empty but the library had been loaded previously
 #
 strip_file_and_lib_load() # $1 = logical file name, $2 = library to load if the stripped file is non-empty
 {

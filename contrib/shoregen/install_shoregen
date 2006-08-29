@@ -97,14 +97,16 @@ DIR=/etc/shorewall
 SW_PATH=/sbin/shorewall
 
 PATH=$PATH:
+
+if [ "$TIME" -gt 0 ]; then
+    TIME="time"
+else
+    TIME=""
+fi
+
 for HOST; do
     shoregen $HOST
     rsync $RSYNC_ARGS SPOOL/$HOST/ $USER@$HOST:$DIR/
-    if [ "$TIME" -gt 0 ]; then
-	TIME=time
-    else
-	TIME=""
-    fi
     if [ "$CHECK" -gt 0 ]; then
 	$TIME ssh -l $USER -t $HOST $SW_PATH check
     fi

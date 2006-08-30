@@ -476,6 +476,12 @@ delete_file ${PREFIX}/etc/shorewall/routes
 delete_file ${PREFIX}/usr/share/shorewall/tcstart
 
 #
+# Delete the Limits Files
+#
+delete_file ${PREFIX}/usr/share/shorewall/action.Limit
+delete_file ${PREFIX}/usr/share/shorewall/Limit
+
+#
 # Install the Providers file
 #
 run_install $OWNERSHIP -m 0644 providers ${PREFIX}/usr/share/shorewall/configfiles/providers

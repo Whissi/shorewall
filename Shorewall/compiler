@@ -1256,7 +1256,7 @@ merge_levels() # $1=level at which superior action is called, $2=level at which 
 # Define the builtin actions. They are available even when USE_ACTIONS=No
 #
 define_builtin_actions() {
-    ACTIONS="dropBcast allowBcast dropNotSyn rejNotSyn dropInvalid allowInvalid allowinUPnP allowoutUPnP forwardUPnP"
+    ACTIONS="dropBcast allowBcast dropNotSyn rejNotSyn dropInvalid allowInvalid allowinUPnP allowoutUPnP forwardUPnP Limit"
 
     USEDACTIONS=
 }
@@ -1494,6 +1494,24 @@ __EOF__
 		[ -n "$xlevel" ] && \
 		    log_rule_limit ${xlevel%\!} $xchain allowoutUPnP ACCEPT "" "$xtag" -A -m owner --owner-cmd upnpd
 		run_iptables -A $xchain -m owner --cmd-owner upnpd -j ACCEPT
+		;;
+	    Limit)
+		set -- $(separate_list $xtag)
+
+		[ $# -eq 3 ] || fatal_error "Rule must include <set name>,<max connections>,<interval> as the log tag"
+		
+		run_iptables -A $xchain -m recent --name $1 --set
+
+		if [ -n "$xlevel" ]; then
+		    run_iptables -N $xchain%
+		    log_rule_limit $xlevel $xchain% $1 DROP "" "" -A
+		    run_iptables -A $xchain% -j DROP
+		    run_iptables -A $xchain -m recent --name $1 --update --seconds $3 --hitcount $(( $2 + 1 )) -j $xchain%
+		else
+		    run_iptables -A $xchain -m recent --update --name $1 --seconds $3 --hitcount $(( $2 + 1 )) -j DROP
+		fi
+
+		run_iptables -A $xchain -j ACCEPT
 		;;
 	    *)
 		#

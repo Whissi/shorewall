@@ -59,19 +59,20 @@
 #					  contain the firewall zone ($FW) or
 #					  "all".
 #
-#			If USE_ACTIONS=Yes in shorewall.conf (or if that
-#			option is not set) then if this column contains ACCEPT,
-#			DROP, or REJECT and a corresponding default action
-#			is defined in /etc/shorewall/actions (or
-#			/usr/share/shorewall/actions.std) then that action
-#			will be invoked before the policy named in this column
-#			is enforced.
-#
-#			If USE_ACTIONS=No in shorewall.conf then ACCEPT,DROP
-#			REJECT may be optionally followed by ":" and the name
-#			of a macro. The rules in the macro will be expanded 
-#			and packets will pass through the rules prior to 
-#			the policy being applied.
+#			If the policy is ACCEPT, DROP, REJECT or QUEUE then
+#			the policy may be followed by ":" and one of the
+#			following:
+#			
+#			a) The word "None" or "none". This causes any default
+#			   action define in /etc/shorewall/actions.std or
+#			   /etc/shorewall/actions to be omitted for this
+#			   policy.
+#			b) The name of an action (requires that USE_ACTIONS=Yes
+#			   in shorewall.conf). That action will be invoked 
+#			   before the policy is enforced.
+#			c) The name of a macro. The rules in that macro will
+#			   be applied before the policy is enforced. This
+#			   does not require USE_ACTIONS=Yes.
 #
 #	LOG LEVEL	If supplied, each connection handled under the default
 #			POLICY is logged at that level. If not supplied, no

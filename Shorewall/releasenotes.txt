@@ -112,4 +112,50 @@ New Features:
     The macros macro.Drop and macro.Reject are supplied to help you do
     that.
 
+3)  Prior to Shorewall 3.3, default actions were specified in
+    /usr/share/shorewall/actions.std or in /etc/shorewall/actions.
 
+    This approach has two drawbacks:
+
+    a) All DROP policies must use the same default action and all
+       REJECT policies must use the same default action.
+
+    b) Now that we have modularized action processing, we need a way to
+       define default rules for a policy.
+
+    The solution is to extend the POLICY column in
+    /etc/shorewall/policy.
+
+    When the POLICY is ACCEPT, DROP, REJECT or QUEUE then the policy
+    may be followed by ":" and one of the following:
+			
+	a) The word "None" or "none". This causes any default
+	   action define in /etc/shorewall/actions.std or
+	   /etc/shorewall/actions to be omitted for this
+	   policy.
+	b) The name of an action (requires that USE_ACTIONS=Yes
+	   in shorewall.conf). That action will be invoked 
+	   before the policy is enforced.
+	c) The name of a macro. The rules in that macro will
+	   be applied before the policy is enforced. This
+	   does not require USE_ACTIONS=Yes.
+
+    Example:
+
+	#SOURCE		DEST		POLICY		LOG
+	#						LEVEL
+	loc		net		ACCEPT
+	net		all		DROP:Drop	info
+	#
+	# THE FOLLOWING POLICY MUST BE LAST
+	#
+	all		all		REJECT:Reject	info
+
+    With USE_ACTIONS=Yes, the above will work the same way that the
+    pre-3.3 setup did. The 'Drop' and 'Reject' actions will be invoked
+    before the DROP and REJECT policies are enforced.
+
+    With USE_ACTION=No, there will be no Drop or Reject actions so 
+    Shorewall will look for macros by that name; as described in item
+    2) above, these macros are provided as part of the Shorewall 3.3
+    release.

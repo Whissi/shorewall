@@ -426,6 +426,7 @@ validate_policy()
     local loglevel
     local synparams
     local parents
+    local default
 
     print_policy() # $1 = source zone, $2 = destination zone
     {
@@ -494,16 +495,24 @@ validate_policy()
 	    fi
 	esac
 
+	default=
+	
 	case $policy in
+	    *:None|*:none)
+		default=none
+		;;
 	    *:*)
-		macro=${policy#*:}
-		if ! list_search $macro $DEFAULT_MACROS;
-		    [ -f find_file macro.${macro} ] || fatal_error "$client $server $policy $loglevel $synparams: Default Macro $macro not found"
-		    DEFAULT_MACROS="$DEFAULT_MACROS $macro"
+		default=${policy#*:}
+		if list_search $default $ACTIONS; then
+		    if ! list_search $default $USEDACTIONS; then
+			USEDACTIONS="$USEDACTIONS $default"
+		    fi
+		elif ! list_search $default $DEFAULT_MACROS; then
+		    [ -f $(find_file macro.${default}) ] || fatal_error "$client $server $policy $loglevel $synparams: Default Macro $default not found"
+		    DEFAULT_MACROS="$DEFAULT_MACROS $default"
 		fi
 		;;
 	    *)
-		macro=
 		;;
 	esac
 
@@ -543,7 +552,7 @@ validate_policy()
 	eval ${chain}_policy=$policy
 	eval ${chain}_loglevel=$loglevel
 	eval ${chain}_synparams=$synparams
-	eval ${chain}_macro=$macro
+	eval ${chain}_default=$default
 
 	if [ -n "${clientwild}" ]; then
 	    if [ -n "${serverwild}" ]; then
@@ -1300,8 +1309,8 @@ substitute_action() # $1 = parameter, $2 = action
     esac
 }
 
-process_actions3() {
-
+process_actions3()
+{    
     for xaction in $USEDACTIONS; do
 	#
 	# Find the chain associated with this action:level:tag
@@ -1310,7 +1319,7 @@ process_actions3() {
 	#
 	# Split the action:level:tag
 	#
-        set -- $(split $xaction)
+	set -- $(split $xaction)
 
 	xaction1=$1
 	xlevel=$2
@@ -1396,18 +1405,18 @@ __EOF__
 
 ip -f inet addr show $interface 2> /dev/null | grep 'inet.*brd' | sed 's/inet.*brd //; s/scope.*//;' | sort -u | while read address; do
 __EOF__
-			    case $xlevel in
-				none*)
-				    ;;
-				*)
-				    [ -n "$xlevel" ] && \
-					indent >&3 << __EOF__
+			case $xlevel in
+			    none*)
+				;;
+			    *)
+				[ -n "$xlevel" ] && \
+				    indent >&3 << __EOF__
    log_rule_limit ${xlevel%\!} $xchain allowBcast ACCEPT "" "$xtag" -A -d \$address
 __EOF__
-				    ;;
-			    esac
+				;;
+			esac
 
-			    indent >&3 << __EOF__
+			indent >&3 << __EOF__
     run_iptables -A $xchain -d \$address -j ACCEPT
 done
 
@@ -1664,6 +1673,362 @@ __EOF__
 }
 
 #
+# Add one Filter Rule
+#
+# The caller has established the following variables:
+#	 COMMAND	= current command.
+#	 client		= SOURCE IP or MAC
+#	 server		= DESTINATION IP or interface
+#	 protocol	= Protocol
+#	 address	= Original Destination Address
+#	 port		= Destination Port
+#	 cport		= Source Port
+#	 multioption	= String to invoke multiport match if appropriate
+#	 servport	= Port the server listens on
+#	 chain		= The canonical chain for this rule
+#	 logchain	= The chain that should be mentioned in log messages
+#	 ratelimit	= Optional rate limiting clause
+#	 userandgroup	= -m owner clause
+#	 userspec	= User name
+#	 logtag		= Log tag
+#	 policy		= Applicable Policy
+#
+add_a_rule() {
+    local natrule=
+
+    do_ports() {
+	if [ -n "$port" ]; then
+	    dports="--dport"
+	    if [ -n "$multioption" -a "$port" != "${port%,*}" ]; then
+		multiport="$multioption"
+		dports="--dports"
+	    fi
+	    dports="$dports $port"
+	fi
+
+	if [ -n "$cport" ]; then
+	    sports="--sport"
+	    if [ -n "$multioption" -a "$cport" != "${cport%,*}" ]; then
+		multiport="$multioption"
+		sports="--sports"
+	    fi
+	    sports="$sports $cport"
+	fi
+    }
+
+    interface_error()
+    {
+	fatal_error "Unknown interface $1 in rule: \"$rule\""
+    }
+    
+    rule_interface_verify()
+    {
+	verify_interface $1 || interface_error $1
+    }
+    
+    handle_exclusion()
+    {
+	build_exclusion_chain chain filter "$excludesource" "$excludedest"
+
+	if [ -n "$addr" -a -n "$CONNTRACK_MATCH" ]; then
+	    for adr in $(separate_list $addr); do
+		run_iptables -A $logchain $state $(fix_bang $proto $sports $multiport $dports) $user -m conntrack --ctorigdst $adr -j $chain
+	    done
+	    addr=
+	else
+	    run_iptables -A $logchain $state $(fix_bang $cli $proto $sports $multiport $dports) $user -j $chain
+	fi
+
+	cli=
+	proto=
+	sports=
+	multiport=
+	dports=
+	user=
+	state=
+    }
+
+    do_ipp2p() {
+	[ -n "$IPP2P_MATCH" ] || fatal_error "Your kernel and/or iptables does not have IPP2P match support. Rule: \"$rule\""
+	
+	dports="-m ipp2p --${port:-ipp2p}"
+
+	case $proto in
+	    ipp2p|IPP2P|ipp2p:tcp|IPP2P:TCP)
+		port=
+		proto=tcp
+		do_ports
+		;;
+	    ipp2p:udp|IPP2P:UDP)
+		port=
+		proto=udp
+		do_ports
+		;;
+	    ipp2p:all|IPP2P:ALL)
+		port=
+		proto=all
+		;;
+	    *)
+		fatal_error "Invalid IPP2P protocol ${proto#*:}. Rule:  \"$rule\""
+		;;
+	esac
+    }
+
+    # Set source variables. The 'cli' variable will hold the client match predicate(s).
+
+    cli=
+
+    case "$client" in
+	-)
+	    ;;
+	*:*)
+	    rule_interface_verify ${client%:*}
+	    cli="$(match_source_dev ${client%:*}) $(source_ip_range ${client#*:})"
+	    ;;
+	*.*.*|+*)
+	    cli="$(source_ip_range $client)"
+	    ;;
+	~*|!~*)
+	    cli=$(mac_match $client)
+	    ;;
+	*)
+	    if [ -n "$client" ]; then
+		rule_interface_verify $client
+		cli="$(match_source_dev $client)"
+	    fi
+	    ;;
+    esac
+
+    # Set destination variables - 'serv' and 'dest_interface' hold the server match predicate(s).
+
+    dest_interface=
+    serv=
+    
+    case "$server" in
+	-)
+	    ;;
+	*.*.*|+*)
+	    serv=$server
+	    ;;
+	~*|!~*)
+	    fatal_error "Rule \"$rule\" - Destination may not be specified by MAC Address"
+	    ;;
+	*)
+	    if [ -n "$server" ]; then
+		[ -n "$nonat" ] && fatal_error "Destination interface not allowed with $logtarget"
+		rule_interface_verify $server
+		dest_interface="$(match_dest_dev $server)"
+	    fi
+	    ;;
+    esac
+
+    # Setup protocol and port variables
+
+    sports=
+    dports=
+    proto=$protocol
+    addr=$address
+    servport=$serverport
+    multiport=
+    user="$userandgroup"
+    
+    # Restore $chain to the canonical chain.
+
+    chain=$logchain
+
+    [ x$port  = x- ] && port=
+    [ x$cport = x- ] && cport=
+
+    case $proto in
+	tcp|TCP|6)
+	    do_ports
+	    ;;
+	tcp:syn)
+	    proto="tcp --syn"
+	    do_ports
+	    ;;
+	udp|UDP|17)
+	    do_ports
+	    ;;
+	icmp|ICMP|1)
+	    [ -n "$port" ] && dports="--icmp-type $port"
+	    ;;
+	all|ALL)
+	    [ -n "$port" ] && \
+		fatal_error "Port number not allowed with protocol \"all\"; rule: \"$rule\""
+	    proto=
+	    ;;
+	ipp2p|IPP2P|ipp2p:*|IPP2P:*)
+	    do_ipp2p
+	    ;;
+	*)
+	    [ -n "$port" ] && \
+		fatal_error "Port number not allowed with protocol \"$proto\"; rule: \"$rule\""
+	    ;;
+    esac
+
+    proto="${proto:+-p $proto}"
+
+    # Some misc. setup
+
+    case "$logtarget" in
+	ACCEPT|DROP|REJECT|CONTINUE)
+	    if [ "$SECTION" != DONE ]; then
+		if [ -z "$proto" -a -z "$cli" -a -z "$serv" -a -z "$servport" -a -z "$user" -a -z "$excludesource" -a -z "$excludedest" ] ; then
+		    error_message "WARNING -- Rule \"$rule\" is a POLICY"
+		    error_message "	   -- and should be moved to the policy file"
+		fi
+	    fi
+	    ;;
+	REDIRECT)
+	    [ -n "$excludedest" ] && fatal_error "Invalid DEST for this ACTION; rule \"$rule\""
+	    
+	    [ -n "$serv" ] && \
+		fatal_error "REDIRECT rules cannot  specify a server IP; rule: \"$rule\""
+	    servport=${servport:=$port}
+	    natrule=Yes
+	    ;;
+	DNAT|SAME)
+	    [ -n "$excludedest" ] && fatal_error "Invalid DEST for this ACTION; rule \"$rule\""
+	    
+	    [ -n "$serv" ] || \
+		fatal_error "$logtarget rules require a server address; rule: \"$rule\""
+	    natrule=Yes
+	    ;;
+	LOG)
+	    [ -z "$loglevel" ] && \
+		fatal_error "LOG requires log level"
+	    ;;
+    esac
+
+    case $SECTION in
+	ESTABLISHED|RELATED)
+	    [ -n "$FASTACCEPT" ] && fatal_error "Entries in the $SECTION SECTION of the rules file not permitted with FASTACCEPT=Yes"
+	    state="-m state --state $SECTION"
+	    ;;
+	*)
+	    state=
+	    ;;
+    esac
+    
+    if [ -n "${serv}${servport}" ]; then
+
+        # A specific server or server port given
+
+	if [ -n "$natrule" ]; then
+	    add_nat_rule
+	    [ $policy = ACCEPT ] && return
+	elif [ -n "$servport" -a "$servport" != "$port" ]; then
+	    fatal_error "Only DNAT, SAME and REDIRECT rules may specify destination port mapping; rule \"$rule\""
+	fi
+	
+	if [ -n "${excludesource}${excludedest}" ]; then
+	    handle_exclusion
+	fi
+	
+	if [ -z "$dnat_only" ]; then
+	    if [ -n "$serv" ]; then
+		for serv1 in $(separate_list $serv); do
+		    for srv in $(firewall_ip_range $serv1); do
+			if [ -n "$addr" -a -n "$CONNTRACK_MATCH" ]; then
+			    if [ "$addr" = detect ]; then
+				indent >&3 << __EOF__
+    run_iptables -A $chain $state $proto $ratelimit $multiport $cli $sports $(dest_ip_range $srv) $dports -m conntrack --ctorigdst \$adr $user -j $target
+done
+
+__EOF__
+			    else
+				for adr in $(separate_list $addr); do
+				    if [ -n "$loglevel" -a -z "$natrule" ]; then
+					log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A -m conntrack --ctorigdst $adr \
+					    $user $(fix_bang $proto $sports $multiport $cli $(dest_ip_range $srv) $dports) $state
+				    fi
+				    
+				    run_iptables2 -A $chain $state $proto $ratelimit $multiport $cli $sports \
+					$(dest_ip_range $srv) $dports -m conntrack --ctorigdst $adr $user -j $target
+				done
+			    fi
+			else
+			    if [ -n "$loglevel" -a -z "$natrule" ]; then
+				log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $user \
+				    $state $(fix_bang $proto $sports $multiport $cli $(dest_ip_range $srv) $dports)
+			    fi
+			    
+			    if [ -n "$nonat" ]; then
+				addnatrule $(dnat_chain $source) $proto $multiport \
+				    $cli $sports $(dest_ip_range $srv) $dports $ratelimit $user -j RETURN
+			    fi
+			    
+			    if [ "$logtarget" != NONAT ]; then
+				run_iptables2 -A $chain $state $proto $multiport $cli $sports \
+				    $(dest_ip_range $srv) $dports $ratelimit $user -j $target
+			    fi
+			fi
+		    done
+		done
+	    else
+		if [ -n "$loglevel" -a -z "$natrule" ]; then
+		    log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $user \
+			$state $(fix_bang $proto $sports $multiport $cli $dports)
+		fi
+		
+		[ -n "$nonat" ] && \
+		    addnatrule $(dnat_chain $source) $proto $multiport \
+		    $cli $sports $dports $ratelimit $user -j RETURN
+		    
+		    [ "$logtarget" != NONAT ] && \
+			run_iptables2 -A $chain $state $proto $multiport $cli $sports \
+			$dports $ratelimit $user -j $target
+	    fi
+	fi
+    else
+
+    # Destination is a simple zone
+
+	if [ -n "${excludesource}${excludedest}" ]; then
+	    handle_exclusion
+	fi
+
+	if [ -n "$addr" ]; then
+	    for adr in $(separate_list $addr); do
+		if [ -n "$loglevel" ]; then
+		    log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $user \
+			$state $(fix_bang $proto $multiport $cli $dest_interface $sports $dports -m conntrack --ctorigdst $adr)
+		fi
+		
+		if [ "$logtarget" != LOG ]; then
+		    if [ -n "$nonat" ]; then
+			addnatrule $(dnat_chain $source) $proto $multiport \
+			    $cli $sports $dports $ratelimit $user  -m conntrack --ctorigdst $adr -j RETURN
+		    fi
+		    
+		    if [ "$logtarget" != NONAT ]; then
+			run_iptables2 -A $chain $state $proto $multiport $cli $dest_interface \
+			    $sports $dports $ratelimit $user  -m conntrack --ctorigdst $adr -j $target
+		    fi
+		fi
+	    done
+	else
+	    if [ -n "$loglevel" ]; then
+		log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $user \
+		    $state $(fix_bang $proto $multiport $cli $dest_interface $sports $dports)
+	    fi
+	    
+	    if [ "$logtarget" != LOG ]; then
+		if [ -n "$nonat" ]; then
+		    addnatrule $(dnat_chain $source) $proto $multiport \
+			$cli $sports $dports $ratelimit $user -j RETURN
+		fi
+		
+		if [ "$logtarget" != NONAT ]; then
+		    run_iptables2 -A $chain $state $proto $multiport $cli $dest_interface \
+			$sports $dports $ratelimit $user -j $target
+		fi
+	    fi
+	fi
+    fi
+}
+#
 # Process a record from the rules file
 #
 process_rule() # $1 = target
@@ -1688,362 +2053,6 @@ process_rule() # $1 = target
     local userandgroup=
     local logtag=
     local nonat=
-    #
-    # Add one Filter Rule
-    #
-    # The caller has established the following variables:
-    #	 COMMAND	= current command.
-    #			  which only goes through the motions.
-    #	 client		= SOURCE IP or MAC
-    #	 server		= DESTINATION IP or interface
-    #	 protocol	= Protocol
-    #	 address	= Original Destination Address
-    #	 port		= Destination Port
-    #	 cport		= Source Port
-    #	 multioption	= String to invoke multiport match if appropriate
-    #	 servport	= Port the server listens on
-    #	 chain		= The canonical chain for this rule
-    #	 logchain	= The chain that should be mentioned in log messages
-    #	 ratelimit	= Optional rate limiting clause
-    #	 userandgroup	= -m owner clause
-    #	 userspec	= User name
-    #	 logtag		= Log tag
-    #	 policy		= Applicable Policy
-    #
-    add_a_rule()
-    {
-	local natrule=
-
-	do_ports() {
-	    if [ -n "$port" ]; then
-		dports="--dport"
-		if [ -n "$multioption" -a "$port" != "${port%,*}" ]; then
-		    multiport="$multioption"
-		    dports="--dports"
-		fi
-		dports="$dports $port"
-	    fi
-
-	    if [ -n "$cport" ]; then
-		sports="--sport"
-		if [ -n "$multioption" -a "$cport" != "${cport%,*}" ]; then
-		    multiport="$multioption"
-		    sports="--sports"
-		fi
-		sports="$sports $cport"
-	    fi
-	}
-
-	interface_error()
-	{
-	    fatal_error "Unknown interface $1 in rule: \"$rule\""
-	}
-
-	rule_interface_verify()
-	{
-	    verify_interface $1 || interface_error $1
-	}
-
-	handle_exclusion()
-	{
-	    build_exclusion_chain chain filter "$excludesource" "$excludedest"
-
-	    if [ -n "$addr" -a -n "$CONNTRACK_MATCH" ]; then
-		for adr in $(separate_list $addr); do
-		    run_iptables -A $logchain $state $(fix_bang $proto $sports $multiport $dports) $user -m conntrack --ctorigdst $adr -j $chain
-		done
-		addr=
-	    else
-		run_iptables -A $state $logchain $(fix_bang $cli $proto $sports $multiport $dports) $user -j $chain
-	    fi
-
-	    cli=
-	    proto=
-	    sports=
-	    multiport=
-	    dports=
-	    user=
-	    state=
-	}
-
-	do_ipp2p() {
-	    [ -n "$IPP2P_MATCH" ] || fatal_error "Your kernel and/or iptables does not have IPP2P match support. Rule: \"$rule\""
-
-	    dports="-m ipp2p --${port:-ipp2p}"
-
-	    case $proto in
-		ipp2p|IPP2P|ipp2p:tcp|IPP2P:TCP)
-		    port=
-		    proto=tcp
-		    do_ports
-		    ;;
-		ipp2p:udp|IPP2P:UDP)
-		    port=
-		    proto=udp
-		    do_ports
-		    ;;
-		ipp2p:all|IPP2P:ALL)
-		    port=
-		    proto=all
-		    ;;
-		*)
-		    fatal_error "Invalid IPP2P protocol ${proto#*:}. Rule:  \"$rule\""
-		    ;;
-	    esac
-	}
-
-	# Set source variables. The 'cli' variable will hold the client match predicate(s).
-
-	cli=
-
-	case "$client" in
-	    -)
-		;;
-	    *:*)
-		rule_interface_verify ${client%:*}
-		cli="$(match_source_dev ${client%:*}) $(source_ip_range ${client#*:})"
-		;;
-	    *.*.*|+*)
-		cli="$(source_ip_range $client)"
-		;;
-	    ~*|!~*)
-		cli=$(mac_match $client)
-		;;
-	    *)
-		if [ -n "$client" ]; then
-		    rule_interface_verify $client
-		    cli="$(match_source_dev $client)"
-		fi
-		;;
-	esac
-
-	# Set destination variables - 'serv' and 'dest_interface' hold the server match predicate(s).
-
-	dest_interface=
-	serv=
-
-	case "$server" in
-	    -)
-		;;
-	    *.*.*|+*)
-		serv=$server
-		;;
-	    ~*|!~*)
-		fatal_error "Rule \"$rule\" - Destination may not be specified by MAC Address"
-		;;
-	    *)
-		if [ -n "$server" ]; then
-		    [ -n "$nonat" ] && fatal_error "Destination interface not allowed with $logtarget"
-		    rule_interface_verify $server
-		    dest_interface="$(match_dest_dev $server)"
-		fi
-		;;
-	esac
-
-	# Setup protocol and port variables
-
-	sports=
-	dports=
-	proto=$protocol
-	addr=$address
-	servport=$serverport
-	multiport=
-	user="$userandgroup"
-
-	# Restore $chain to the canonical chain.
-
-	chain=$logchain
-
-	[ x$port  = x- ] && port=
-	[ x$cport = x- ] && cport=
-
-	case $proto in
-	    tcp|TCP|6)
-		do_ports
-		;;
-	    tcp:syn)
-		proto="tcp --syn"
-		do_ports
-		;;
-	    udp|UDP|17)
-		do_ports
-		;;
-	    icmp|ICMP|1)
-		[ -n "$port" ] && dports="--icmp-type $port"
-		;;
-	    all|ALL)
-		[ -n "$port" ] && \
-		    fatal_error "Port number not allowed with protocol \"all\"; rule: \"$rule\""
-		proto=
-		;;
-	    ipp2p|IPP2P|ipp2p:*|IPP2P:*)
-		do_ipp2p
-		;;
-	    *)
-		[ -n "$port" ] && \
-		    fatal_error "Port number not allowed with protocol \"$proto\"; rule: \"$rule\""
-		;;
-	esac
-
-	proto="${proto:+-p $proto}"
-
-	# Some misc. setup
-
-	case "$logtarget" in
-	    ACCEPT|DROP|REJECT|CONTINUE)
-		if [ -z "$proto" -a -z "$cli" -a -z "$serv" -a -z "$servport" -a -z "$user" -a -z "$excludesource" -a -z "$excludedest" ] ; then
-		    error_message "WARNING -- Rule \"$rule\" is a POLICY"
-		    error_message "	   -- and should be moved to the policy file"
-		fi
-		;;
-	    REDIRECT)
-		[ -n "$excludedest" ] && fatal_error "Invalid DEST for this ACTION; rule \"$rule\""
-
-		[ -n "$serv" ] && \
-		    fatal_error "REDIRECT rules cannot  specify a server IP; rule: \"$rule\""
-		servport=${servport:=$port}
-		natrule=Yes
-		;;
-	    DNAT|SAME)
-		[ -n "$excludedest" ] && fatal_error "Invalid DEST for this ACTION; rule \"$rule\""
-
-		[ -n "$serv" ] || \
-		    fatal_error "$logtarget rules require a server address; rule: \"$rule\""
-		natrule=Yes
-		;;
-	    LOG)
-		[ -z "$loglevel" ] && \
-		    fatal_error "LOG requires log level"
-		;;
-	esac
-
-	case $SECTION in
-	    ESTABLISHED|RELATED)
-		[ -n "$FASTACCEPT" ] && fatal_error "Entries in the $SECTION SECTION of the rules file not permitted with FASTACCEPT=Yes"
-		state="-m state --state $SECTION"
-		;;
-	    *)
-		state=
-		;;
-	esac
-
-	if [ -n "${serv}${servport}" ]; then
-
-	    # A specific server or server port given
-
-	    if [ -n "$natrule" ]; then
-		add_nat_rule
-		[ $policy = ACCEPT ] && return
-	    elif [ -n "$servport" -a "$servport" != "$port" ]; then
-		fatal_error "Only DNAT, SAME and REDIRECT rules may specify destination port mapping; rule \"$rule\""
-	    fi
-
-	    if [ -n "${excludesource}${excludedest}" ]; then
-		handle_exclusion
-	    fi
-
-	    if [ -z "$dnat_only" ]; then
-		if [ -n "$serv" ]; then
-		    for serv1 in $(separate_list $serv); do
-			for srv in $(firewall_ip_range $serv1); do
-			    if [ -n "$addr" -a -n "$CONNTRACK_MATCH" ]; then
-				if [ "$addr" = detect ]; then
-				    indent >&3 << __EOF__
-    run_iptables -A $chain $state $proto $ratelimit $multiport $cli $sports $(dest_ip_range $srv) $dports -m conntrack --ctorigdst \$adr $user -j $target
-done
-
-__EOF__
-				else
-				    for adr in $(separate_list $addr); do
-					if [ -n "$loglevel" -a -z "$natrule" ]; then
-					    log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A -m conntrack --ctorigdst $adr \
-						$user $(fix_bang $proto $sports $multiport $cli $(dest_ip_range $srv) $dports) $state
-					fi
-
-					run_iptables2 -A $chain $state $proto $ratelimit $multiport $cli $sports \
-					    $(dest_ip_range $srv) $dports -m conntrack --ctorigdst $adr $user -j $target
-				    done
-				fi
-			    else
-				if [ -n "$loglevel" -a -z "$natrule" ]; then
-				    log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $user \
-					    $state $(fix_bang $proto $sports $multiport $cli $(dest_ip_range $srv) $dports)
-				fi
-
-				if [ -n "$nonat" ]; then
-				    addnatrule $(dnat_chain $source) $proto $multiport \
-					$cli $sports $(dest_ip_range $srv) $dports $ratelimit $user -j RETURN
-				fi
-
-				if [ "$logtarget" != NONAT ]; then
-				    run_iptables2 -A $chain $state $proto $multiport $cli $sports \
-					$(dest_ip_range $srv) $dports $ratelimit $user -j $target
-				fi
-			    fi
-			done
-		    done
-		else
-		    if [ -n "$loglevel" -a -z "$natrule" ]; then
-			log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $user \
-				$state $(fix_bang $proto $sports $multiport $cli $dports)
-		    fi
-
-		    [ -n "$nonat" ] && \
-			addnatrule $(dnat_chain $source) $proto $multiport \
-			$cli $sports $dports $ratelimit $user -j RETURN
-
-			[ "$logtarget" != NONAT ] && \
-			    run_iptables2 -A $chain $state $proto $multiport $cli $sports \
-			    $dports $ratelimit $user -j $target
-		fi
-	    fi
-	else
-
-	# Destination is a simple zone
-
-	    if [ -n "${excludesource}${excludedest}" ]; then
-		handle_exclusion
-	    fi
-
-	    if [ -n "$addr" ]; then
-		for adr in $(separate_list $addr); do
-		    if [ -n "$loglevel" ]; then
-			log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $user \
-				$state $(fix_bang $proto $multiport $cli $dest_interface $sports $dports -m conntrack --ctorigdst $adr)
-		    fi
-
-		    if [ "$logtarget" != LOG ]; then
-			if [ -n "$nonat" ]; then
-			    addnatrule $(dnat_chain $source) $proto $multiport \
-				$cli $sports $dports $ratelimit $user  -m conntrack --ctorigdst $adr -j RETURN
-			fi
-
-			if [ "$logtarget" != NONAT ]; then
-			    run_iptables2 -A $chain $state $proto $multiport $cli $dest_interface \
-				$sports $dports $ratelimit $user  -m conntrack --ctorigdst $adr -j $target
-			fi
-		    fi
-		done
-	    else
-		if [ -n "$loglevel" ]; then
-		    log_rule_limit $loglevel $chain $logchain $logtarget "$ratelimit" "$logtag" -A $user \
-			    $state $(fix_bang $proto $multiport $cli $dest_interface $sports $dports)
-		fi
-
-		if [ "$logtarget" != LOG ]; then
-		    if [ -n "$nonat" ]; then
-			addnatrule $(dnat_chain $source) $proto $multiport \
-			    $cli $sports $dports $ratelimit $user -j RETURN
-		    fi
-
-		    if [ "$logtarget" != NONAT ]; then
-			run_iptables2 -A $chain $state $proto $multiport $cli $dest_interface \
-			    $sports $dports $ratelimit $user -j $target
-		    fi
-		fi
-	    fi
-	fi
-    }
 
     # # # # # F u n c t i o n   B o d y # # # # #
 
@@ -2723,114 +2732,141 @@ process_rules()
 }
 
 #
-# Expand an entry in a default macro
-#
-expand_macro() {
-    local chain=$1
-    local target=$2
-    local protocol=$3
-    local port=$4
-    local cport=$5
-    local rule=
-
-    if [ "x$protocol" != x- -a -n "$protocol" ]; then
-	rule="-p $protocol"
-
-	case $protocol in
-	    6|tcp|TCP|17|udp|UDP)
-		if [ "x$port" != x- -a -n "$port" ]; then
-		    rule="$rule -m multiport --dports $port"
-		    [ "x$cport" != x- -a -n "$cport" ] && rule="$rule --sports $cport"
-		else
-		    [ "x$cport" != x- -a -n "$cport" ] && rule="$rule -m multiport --sports $cport"
-		fi
-		;;
-	    icmp|ICMP|0)
-		[ "x$port" != x- -a -n "$port" ]   && rule="$rule --icmp-type $port"
-		;;
-		;;
-	    *)
-		[ "x$port" != x- -a -n "$port" ]   && fatal_error "DEST PORT(S) not allowed with protocol $protocol"
-		[ "x$cport" != x- -a -n "$cport" ] && fatal_error "SOURCE PORT(S) not allowed with protocol $protocol"
-		;;
-	esac
-    fi
-		
-    run_iptables -A $chain $rule -j $target
-}
-
-#
 # Process a default macro
 #
 process_default_macro() # $1 = macro name
 {
     local macro=$1
+    local address=
+    local multioption=
+    local servport=
+    local chain=$1
+    local logchain=$1
+    local userandgroup=
+    local logtag=
+    local excludesource=
+    local target client server protocol port cport ratelimit userspec rule
 
     havechain $macro && fatal_error "Illegal duplicate default macro name: $macro"
 
-    createchain $macro
-    strip_file macro.${macro}
-    progress_message "..Expanding Macro $(find_file macro.${macro})..."
+    createchain $macro no
+    strip_file macro.$macro
+    progress_message "..Expanding Default Macro $(find_file macro.${macro}) into chain $macro..."
 
-    while read mtarget mclients mservers mprotocol mports mcports mratelimit muserspec; do
-	expandv mtarget mclients mservers mprotocol mports mcports mratelimit muserspec
+    while read target client server protocol port cport ratelimit userspec; do
+	expandv target client server protocol port cport ratelimit userspec
+	rule="$target ${client:--} ${server:--} ${protocol:--} ${port:--} ${cport:--} ${ratelimit:--} ${userspec:--}"
 
-	case $mtarget in
+	case $target in
 	    PARAM|PARAM:*)
-		fatal_error "Invalid target ($mtarget) in default macro $macro"
+		fatal_error "Invalid target ($target) in default macro $macro"
 		;;
 	esac
 
-	case ${mtarget} in
+	case ${target} in
 	    ACCEPT|DROP|REJECT)
 		;;
 	    *)
-		if list_search ${mtarget%%:*} $ACTIONS; then
-		    if ! list_search $mtarget $USEDACTIONS; then
-			createactionchain $mtarget
-			USEDACTIONS="$USEDACTIONS $mtarget"
+		if list_search $target $ACTIONS; then
+		    if ! list_search $target $USEDACTIONS; then
+			createactionchain $target
+			USEDACTIONS="$USEDACTIONS $target"
 		    fi
-
-		    mtarget=$(find_logactionchain $mtarget)
 		else
-		    fatal_error "Invalid Action in rule \"$mtarget ${mclients:--} ${mservers:--} ${mprotocol:--} ${mports:--} ${mcports:--} ${xaddress:--} ${mratelimit:--} ${muserspec:--}\""
+		    fatal_error "Invalid target ($target) in default macro $macro"
 		fi
 		;;
 	esac
 
-	if [ -n "$mclients" ]; then
-	    case $mclients in
+	if [ $(list_count ${port}${cport}) -gt 1 ]; then
+	    multioption="-m multiport"
+	fi
+
+	if [ -n "$client" ]; then
+	    case $client in
 		-|SOURCE)
-		    ;;
-		*)
-		    fatal_error "Invalid SOURCE ($mclients) in default macro $macro"
+		    client=
 		    ;;
 	    esac
 	fi
 
-	if [ -n "$mservers" ]; then
-	    case $mservers in
+	if [ -n "$server" ]; then
+	    case $server in
 		-|DEST)
+		    server=
 		    ;;
 		*)
-		    fatal_error "Invalid DEST ($mservers) in default macro $macro"
 		    ;;
 	    esac
 	fi
 
-	case ${mports}${mcports} in 
-	    *,*)
-		fatal_error "Port lists not allowed in default macro"
-		;;
-	esac
+	[ "x$userspec" = "x-" ] && userspec=
 
-	[ "x$mratelimit" != "x-" -a -n "$mratelimit"  ] && fatal_error "Invalid Rate Limit ($mratelimit) in default macro $macro"
-	[ "x$muserspec" != "x-"  -a -n "$muserspec"   ] && fatal_error "Invalid USER/GROUP ($muserspec) in default macro $macro"
+	if [ -n "$userspec" ]; then
 
-	expand_macro $1 $target $mprotocol $mports $mcports $mratelimit $muserspec
-	progress_message "Rule \"$target $mprotocol $mports $mcports $mratelimit $muserspec\" $DONE"
+	    userandgroup="-m owner"
+
+	    case "$userspec" in
+		!*+*)
+		    if [ -n "${userspec#*+}" ]; then
+			userandgroup="$userandgroup ! --cmd-owner ${userspec#*+}"
+		    fi
+		    userspec=${userspec%+*}
+		    ;;
+		*+*)
+		    if [ -n "${userspec#*+}" ]; then
+			userandgroup="$userandgroup --cmd-owner ${userspec#*+}"
+		    fi
+		    userspec=${userspec%+*}
+		    ;;
+	    esac
+
+	    case "$userspec" in
+		!*:*)
+		    if [ "$userspec" != "!:" ]; then
+			temp="${userspec#!}"
+			temp="${temp%:*}"
+			[ -n "$temp" ] && userandgroup="$userandgroup ! --uid-owner $temp"
+			temp="${userspec#*:}"
+			[ -n "$temp" ] && userandgroup="$userandgroup ! --gid-owner $temp"
+		    fi
+		    ;;
+		*:*)
+		    if [ "$userspec" != ":" ]; then
+			temp="${userspec%:*}"
+			[ -n "$temp" ] && userandgroup="$userandgroup --uid-owner $temp"
+			temp="${userspec#*:}"
+			[ -n "$temp" ] && userandgroup="$userandgroup --gid-owner $temp"
+		    fi
+		    ;;
+		!*)
+		    [ "$userspec" != "!" ] && userandgroup="$userandgroup ! --uid-owner ${userspec#!}"
+		    ;;
+		*)
+		    [ -n "$userspec" ] && userandgroup="$userandgroup --uid-owner $userspec"
+		    ;;
+	    esac
+
+	    [ "$userandgroup" = "-m owner" ] && userandgroup=
+	fi
+
+	[ "x$ratelimit" = "x-" ] && ratelimit=
+
+	if [ -n "$ratelimit" ]; then
+	    case $ratelimit in
+		*:*)
+		    ratelimit="-m limit --limit ${ratelimit%:*} --limit-burst ${ratelimit#*:}"
+		    ;;
+		*)
+		    ratelimit="-m limit --limit $ratelimit"
+		    ;;
+	    esac
+	fi
+
+	add_a_rule
+	progress_message "Rule \"$target $protocol $port $cport $ratelimit $userspec\" $DONE"
 	
-    done < $TMP_DIR/macro.${itarget%%:*}
+    done < $TMP_DIR/macro.$macro
 
     progress_message "..End Macro"
 
@@ -3043,12 +3079,12 @@ policy_rules() # $1 = chain to add rules to
 	       # $3 = loglevel
 {
     local target="$2"
-    local macro
+    local default
 
-    eval macro=\$${1}_macro
+    eval default=\$${1}_default
 
-    if [ -n "$macro" ]; then
-	run_iptables -A $1 -j $macro
+    if [ -n "$default" ]; then
+	[ "$default" = none ] || run_iptables -A $1 -j $default
     else
 	case "$target" in
 	    ACCEPT)
@@ -3484,6 +3520,13 @@ initialize_netfilter () {
 
     validate_hosts_file
 
+    define_builtin_actions
+
+    if [ -n "$USE_ACTIONS" ]; then
+	progress_message2 "Pre-processing Actions..."
+	process_actions1
+    fi
+
     progress_message2 "Validating Policy file..."
 
     validate_policy
@@ -3495,21 +3538,8 @@ initialize_netfilter () {
 
     append_file init
 
-    #
-    # Some files might be large so strip them while the firewall is still running
-    # (restart command). This reduces the length of time that the firewall isn't
-    # accepting new connections.
-    #
-
     strip_file rules
     strip_file maclist
-
-    define_builtin_actions
-
-    if [ -n "$USE_ACTIONS" ]; then
-	progress_message2 "Pre-processing Actions..."
-	process_actions1
-    fi
 
     TERMINATOR=fatal_error
 
@@ -5174,6 +5204,7 @@ __EOF__
 
     if [ -n "$DEFAULT_MACROS" ]; then
 	progress_message2 "$DOING default macros..."
+	save_progress_message "Creating default macro chains..."
 	for macro in $DEFAULT_MACROS; do
 	    process_default_macro $macro
 	done

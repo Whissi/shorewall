@@ -3117,21 +3117,30 @@ display_list() # $1 = List Title, rest of $* = list to display
 policy_rules() # $1 = chain to add rules to
 	       # $2 = policy
 	       # $3 = loglevel
+               # $4 = Default Action/Macro
 {
     local target="$2"
-    local default
-
-    eval default=\$${1}_default
+    local default="$4"
 
     if [ -n "$default" ]; then
 	[ "$default" = none ] || run_iptables -A $1 -j $default
     fi
 
-    if [ $# -eq 3 -a "x${3}" != "x-" ]; then
+
+    if [ $# -ge 3 -a "x${3}" != "x-" ]; then
 	log_rule $3 $1 $2
     fi
 
-    [ -n "$target" ] && run_iptables -A $1 -j $target
+    if [ -n "$target" ]; then
+	case $target in
+	    REJECT)
+		run_iptables -A $1 -j reject
+		;;
+	    *)
+		run_iptables -A $1 -j $target
+		;;
+	esac
+    fi
 }
 
 #
@@ -3173,6 +3182,7 @@ default_policy() # $1 = client $2 = server
 	eval policy=\$${chain1}_policy
 	eval loglevel=\$${chain1}_loglevel
 	eval synparams=\$${chain1}_synparams
+	eval default=\$${chain1}_default
 	#
 	# Add the appropriate rules to the canonical chain ($chain) to enforce
 	# the specified policy
@@ -3182,7 +3192,7 @@ default_policy() # $1 = client $2 = server
 	    # The policy chain is the canonical chain; add policy rule to it
 	    # The syn flood jump has already been added if required.
 	    #
-	    policy_rules $chain $policy $loglevel
+	    policy_rules $chain $policy $loglevel $default
 	else
 	    #
 	    # The policy chain is different from the canonical chain -- approach
@@ -3196,7 +3206,7 @@ default_policy() # $1 = client $2 = server
 		    # in this chain.
 		    #
 		    report_syn_flood_protection
-		    policy_rules $chain $policy $loglevel
+		    policy_rules $chain $policy $loglevel $default
 		else
 		    #
 		    # No problem with double-counting so just jump to the
@@ -3212,7 +3222,7 @@ default_policy() # $1 = client $2 = server
 		#
 		[ -n "$synparams" ] && \
 		    report_syn_flood_protection
-		policy_rules $chain $policy $loglevel
+		policy_rules $chain $policy $loglevel $default
 		;;
 	    *)
 		#
@@ -3252,6 +3262,7 @@ complete_standard_chain() # $1 = chain, $2 = source zone, $3 = destination zone
     local policy=
     local loglevel=
     local policychain=
+    local default=
 
     run_user_exit $1
 
@@ -3260,9 +3271,10 @@ complete_standard_chain() # $1 = chain, $2 = source zone, $3 = destination zone
     if [ -n "$policychain" ]; then
 	eval policy=\$${policychain}_policy
 	eval loglevel=\$${policychain}_loglevel
+	eval default=\$${policychain}_default
 	eval
 
-	policy_rules $1 $policy $loglevel
+	policy_rules $1 $policy $loglevel $default
     else
 	policy_rules $1 DROP info
     fi
@@ -3968,6 +3980,7 @@ apply_policy_rules() {
 	eval policy=\$${chain}_policy
 	eval loglevel=\$${chain}_loglevel
 	eval optional=\$${chain}_is_optional
+	eval default=\$${chain}_default
 
 	if [ "$policy" != NONE ]; then
 	    if ! havechain $chain && [ -z "$optional" -a "$policy" != CONTINUE ]; then
@@ -3986,7 +3999,7 @@ apply_policy_rules() {
 		case $chain in
 		    all2*|*2all)
 			run_user_exit $chain
-			policy_rules $chain $policy $loglevel
+			policy_rules $chain $policy $loglevel $default
 			;;
 		esac
 	    fi

@@ -42,7 +42,77 @@ Other changes in 3.3.1
 
 None. 
 
-Migration Considerations: 	 
+Migration Considerations:
+
+1)  Shorewall supports the notion of "default actions". A default
+    action defines a set of rules that are applied before a policy is
+    enforced. Default actions accomplish two goals:
+
+    a) Relieve log congestion. Default actions typically include rules
+       to silently drop or reject traffic that would otherwise be logged
+       when the policy is enforced.
+
+    b) Ensure correct operation. Default actions can also avoid common
+       pitfalls like dropping connection requests on port TCP port
+       113. If these connections are dropped (rather than rejected)
+       then you may encounter problems connecting to internet services
+       that utilize the AUTH protocol of client authentication.
+
+    In prior Shorewall versions, default actions (action.Drop and
+    action.Reject) were defined for DROP and REJECT policies in
+    /usr/share/shorewall/actions.std.
+
+    This approach has two drawbacks:
+
+    a) All DROP policies must use the same default action and all
+       REJECT policies must use the same default action.
+
+    b) Now that we have modularized action processing (see the New
+       Features section below), we need a way to define default rules
+       for a policy.
+
+    The solution is to extend the POLICY column in
+    /etc/shorewall/policy and to remove the specification of 
+    a default action in /etc/shorewall/actions.std.
+
+    When the POLICY is ACCEPT, DROP, REJECT or QUEUE then the policy
+    may be followed by ":" and one of the following:
+			
+	a) The word "None" or "none". This causes any default
+	   action define in /etc/shorewall/actions to be omitted for
+	   this policy.
+	b) The name of an action (requires that USE_ACTIONS=Yes
+	   in shorewall.conf). That action will be invoked 
+	   before the policy is enforced.
+	c) The name of a macro. The rules in that macro will
+	   be applied before the policy is enforced. This
+	   does not require USE_ACTIONS=Yes.
+
+    Example:
+
+	#SOURCE		DEST		POLICY		LOG
+	#						LEVEL
+	loc		net		ACCEPT
+	net		all		DROP:Drop	info
+	#
+	# THE FOLLOWING POLICY MUST BE LAST
+	#
+	all		all		REJECT:Reject	info
+
+    With USE_ACTIONS=Yes, the above will work the same way that the
+    pre-3.3 setup did. The 'Drop' and 'Reject' actions will be invoked
+    before the DROP and REJECT policies are enforced.
+
+    With USE_ACTION=No, there will be no Drop or Reject actions so 
+    Shorewall will look for macros by that name; as described in item
+    2) above, these macros are provided as part of the Shorewall 3.3
+    release.
+
+    If you are happy with the way that things worked in prior releases,
+    then simply add these two lines to your /etc/shorewall/actions:
+
+	 Drop:DROP
+	 Reject:REJECT
   	 
 New Features:
 

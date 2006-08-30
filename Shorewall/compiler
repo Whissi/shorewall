@@ -517,7 +517,13 @@ validate_policy()
 	esac
 
 	case ${policy%:*} in
-	    ACCEPT|REJECT|DROP|CONTINUE|QUEUE)
+	    ACCEPT|CONTINUE|QUEUE)
+		;;
+	    REJECT|DROP)
+		if [ -n "$default" ]; then
+		    error_message "WARNING: Policy has no default action or macro:  $client $server $policy $loglevel $synparams"
+		    error_message "         Please see http://www.shorewall.net/DefaultActionsandMacros.html"
+		fi
 		;;
 	    NONE)
 		[ "$client" = "$FW" -o "$server" = "$FW" ] && \
